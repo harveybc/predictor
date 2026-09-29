@@ -1,0 +1,88 @@
+{
+ "author": "Satoshi, successor technical lead",
+ "authorises_broker_deployment": false,
+ "checkpoint": {
+  "id": "convaiinnovations/laya-typed-decisions",
+  "inference_files_identical_to_revision_live_at_the_published_run": "f9ab0b22",
+  "revision": "1a793eb568e6718f15941d08f85432581df534e3",
+  "weights_sha256": "4fa56de72383a9d3efa9cfa78955733c81b9fc8067a587ca4beb82c78107a24e"
+ },
+ "date": "2026-09-29",
+ "evaluator": {
+  "bench_apps_sha256": "b25e7fb1228fb7d4d51d121ea08b3c3471b9c9af67d5a40fe415a2f33983e960",
+  "bench_local_sha256": "08862fb4dba102db873e3e3ad428dedf92c12832b4e8ef71b35e433cce4eea22",
+  "commit": "ee760389dc69e28c66893b717fa87c84c0b6063a",
+  "repository": "NandhaKishorM/laya"
+ },
+ "execution_authority": "NONE",
+ "files": {
+  "CB03_CLASSIFICATION_RECEIPTS.json": {
+   "bytes": 28317,
+   "sha256": "1acc3db88486d88524dd166d16715d53e5e4eea9a3a1a669a6c5ca659fa3097d",
+   "what_it_is": "Three classification_metrics.v1 receipts built by CB04's own contract: our accuracy, our macro-F1, and the author's published value as a PUBLISHED_REFERENCE receipt of its own. Includes the two refusals exercised and compare() returning difference 0.0 against the published value."
+  },
+  "CB03_PARITY_ATTRIBUTION.json": {
+   "bytes": 4261,
+   "sha256": "92491b2df91dfcc812b32459d2d5a92b3e730bddc5428be9f9799726429a9f34",
+   "what_it_is": "The ladder, computed from the artefacts above: one change per rung, so each step's disagreement belongs to that change alone."
+  },
+  "cb03_checkpoint_manifest.json": {
+   "bytes": 3788,
+   "sha256": "85f4d6128c15cb2959c0060184ec2af84ada29370066cd938ecd2c59966631de",
+   "what_it_is": "news_checkpoint.v1: the sealed checkpoint directory the framework loaded, every file with its size and sha256. The framework refuses to run if it changes."
+  },
+  "native_published400.json": {
+   "bytes": 144749,
+   "sha256": "6078a7365a606f2c3ba96249e961eaed5d4687986fbe4bc81e4814376fef6d1a",
+   "what_it_is": "THE REPRODUCTION. The author's own harness, laya 0.2.1, the checkpoint's own budget, the author's state envelope, on the pinned 400-row published population. accuracy 0.9525 against the published 0.9525."
+  },
+  "parity_400.json": {
+   "bytes": 82375,
+   "sha256": "aed76fb1953d1f29c1dfbdddd4b8dec5f4fc5c5de809f1a528208b6a27156660",
+   "what_it_is": "THE PARITY RUN. The same 400 rows through m5phet.runtime.run with the distribution's laya_news provider. accuracy 0.9350, 387/400 label agreement against the reproduction, 0 refusals, coverage 400/400."
+  },
+  "parity_smoke8.json": {
+   "bytes": 3483,
+   "sha256": "07ac1ba6e7173065ef6d4d9b955f3cdcf8b8048bbdf9142bee36644f4126fb3f",
+   "what_it_is": "A COST MEASUREMENT, not a result. 8 rows through the framework, to catch contract errors before the 400-row run. Its parity fields are computed against a 400-row reference and are therefore incomplete by construction."
+  },
+  "smoke_train32.json": {
+   "bytes": 13411,
+   "sha256": "5a44a15a612403c95aeba427f274e0449514d8afa3c7b8aa8cae01fe7c7ace68",
+   "what_it_is": "A COST MEASUREMENT, not a result. 32 rows of the official TRAIN split, run before the evaluation population was opened, to size the memory cap and the wall clock. Its accuracy is on 32 same-class train rows and is not a quality claim."
+  },
+  "v_sdk0311_ckptbudget_author.json": {
+   "bytes": 144959,
+   "sha256": "aef190e8730ed9aa19e4ec619a67044b7c96d07e6e6917796f3c629258f3ed68",
+   "what_it_is": "ATTRIBUTION N2. The author's recipe under the SDK the framework pins (laya 0.3.11), everything else unchanged. Bit-identical to the reproduction."
+  },
+  "v_sdk0311_fwbudget_author.json": {
+   "bytes": 144957,
+   "sha256": "728753dc4343dd08a9f8d93307030eaff7adee57e0fd52c99447ea8ea787d8b3",
+   "what_it_is": "ATTRIBUTION N3. N2 plus the sequence budget the framework hard-codes (512/192). Bit-identical to N2 on these rows, whose longest sequence is 232 tokens."
+  },
+  "v_sdk0311_fwbudget_fwenvelope.json": {
+   "bytes": 144837,
+   "sha256": "e7ad1a1e1c3cc8805b4cf1cf648b27e343cbc7ee550a7c58e7b047249c98c49c",
+   "what_it_is": "ATTRIBUTION N4. N3 plus the state envelope the framework serialises. THIS is where the gap appears: accuracy 0.9350, 13 label flips, max |dp| 0.346653."
+  }
+ },
+ "package": "CB03 native AG News reproduction, then M5PHET parity",
+ "population": {
+  "governed_resource_sha256": "71de87ec66bc5737752a2502204dfa6d7fe9856ade3ea444dc6317789a4f13fb",
+  "held_out": false,
+  "held_out_note": "the benchmark's own results file marks this suite in_training: true",
+  "id": "agnews_test_first400_laya_published",
+  "paired_naive_accuracy_same_rows": 0.18,
+  "population_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+  "rows": 400
+ },
+ "schema": "cb03_evidence_manifest.v1",
+ "what_is_not_here": [
+  "no full 7,600-row AG News test evaluation: a separate experiment, and its denominator is never attached to the 400-row published score",
+  "no BANKING77, FOMC, MASSIVE or Financial PhraseBank measurement",
+  "no GPU run: the published cell is device cpu and the author's harness hard-codes CPU",
+  "no business held-out measurement and therefore no provider quality badge",
+  "nothing from the 19-prompt router corpus, at any point, in any file here"
+ ]
+}

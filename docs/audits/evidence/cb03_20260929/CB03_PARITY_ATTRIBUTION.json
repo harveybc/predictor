@@ -1,0 +1,235 @@
+{
+ "schema": "cb03_parity_attribution.v1",
+ "accuracies": {
+  "N1_laya021_ckptbudget_author": 0.9525,
+  "N2_laya0311_ckptbudget_author": 0.9525,
+  "N3_laya0311_fwbudget_author": 0.9525,
+  "N4_laya0311_fwbudget_fwenvelope": 0.935,
+  "F1_m5phet_runtime": 0.935
+ },
+ "end_to_end": {
+  "from": "N1_laya021_ckptbudget_author",
+  "to": "F1_m5phet_runtime",
+  "the_one_change": "everything the framework changes, together",
+  "rows_compared": 400,
+  "rows_only_in_left": [],
+  "rows_only_in_right": [],
+  "label_agreement": 387,
+  "label_agreement_fraction": 0.9675,
+  "label_flips": 13,
+  "max_abs_probability_difference": 0.3466853626679519,
+  "identical": false,
+  "flips": [
+   {
+    "i": 9,
+    "from": 2,
+    "to": 3
+   },
+   {
+    "i": 36,
+    "from": 0,
+    "to": 2
+   },
+   {
+    "i": 84,
+    "from": 0,
+    "to": 2
+   },
+   {
+    "i": 103,
+    "from": 2,
+    "to": 3
+   },
+   {
+    "i": 155,
+    "from": 0,
+    "to": 3
+   },
+   {
+    "i": 207,
+    "from": 3,
+    "to": 2
+   },
+   {
+    "i": 258,
+    "from": 3,
+    "to": 2
+   },
+   {
+    "i": 288,
+    "from": 2,
+    "to": 0
+   },
+   {
+    "i": 297,
+    "from": 2,
+    "to": 3
+   },
+   {
+    "i": 303,
+    "from": 2,
+    "to": 3
+   },
+   {
+    "i": 311,
+    "from": 0,
+    "to": 1
+   },
+   {
+    "i": 316,
+    "from": 0,
+    "to": 2
+   },
+   {
+    "i": 349,
+    "from": 2,
+    "to": 3
+   }
+  ]
+ },
+ "ladder": [
+  {
+   "from": "N1_laya021_ckptbudget_author",
+   "to": "N2_laya0311_ckptbudget_author",
+   "the_one_change": "the SDK version the framework pins (0.2.1 -> 0.3.11)",
+   "rows_compared": 400,
+   "rows_only_in_left": [],
+   "rows_only_in_right": [],
+   "label_agreement": 400,
+   "label_agreement_fraction": 1.0,
+   "label_flips": 0,
+   "max_abs_probability_difference": 0.0,
+   "identical": true,
+   "flips": []
+  },
+  {
+   "from": "N2_laya0311_ckptbudget_author",
+   "to": "N3_laya0311_fwbudget_author",
+   "the_one_change": "the sequence budget the framework hard-codes (1024/256 -> 512/192)",
+   "rows_compared": 400,
+   "rows_only_in_left": [],
+   "rows_only_in_right": [],
+   "label_agreement": 400,
+   "label_agreement_fraction": 1.0,
+   "label_flips": 0,
+   "max_abs_probability_difference": 0.0,
+   "identical": true,
+   "flips": []
+  },
+  {
+   "from": "N3_laya0311_fwbudget_author",
+   "to": "N4_laya0311_fwbudget_fwenvelope",
+   "the_one_change": "the state envelope the framework serialises ({article} -> {asset,body,headline})",
+   "rows_compared": 400,
+   "rows_only_in_left": [],
+   "rows_only_in_right": [],
+   "label_agreement": 387,
+   "label_agreement_fraction": 0.9675,
+   "label_flips": 13,
+   "max_abs_probability_difference": 0.3466531393375117,
+   "identical": false,
+   "flips": [
+    {
+     "i": 9,
+     "from": 2,
+     "to": 3
+    },
+    {
+     "i": 36,
+     "from": 0,
+     "to": 2
+    },
+    {
+     "i": 84,
+     "from": 0,
+     "to": 2
+    },
+    {
+     "i": 103,
+     "from": 2,
+     "to": 3
+    },
+    {
+     "i": 155,
+     "from": 0,
+     "to": 3
+    },
+    {
+     "i": 207,
+     "from": 3,
+     "to": 2
+    },
+    {
+     "i": 258,
+     "from": 3,
+     "to": 2
+    },
+    {
+     "i": 288,
+     "from": 2,
+     "to": 0
+    },
+    {
+     "i": 297,
+     "from": 2,
+     "to": 3
+    },
+    {
+     "i": 303,
+     "from": 2,
+     "to": 3
+    },
+    {
+     "i": 311,
+     "from": 0,
+     "to": 1
+    },
+    {
+     "i": 316,
+     "from": 0,
+     "to": 2
+    },
+    {
+     "i": 349,
+     "from": 2,
+     "to": 3
+    }
+   ]
+  },
+  {
+   "from": "N4_laya0311_fwbudget_fwenvelope",
+   "to": "F1_m5phet_runtime",
+   "the_one_change": "the framework itself: provider, runtime, contract validation, per-row calls",
+   "rows_compared": 400,
+   "rows_only_in_left": [],
+   "rows_only_in_right": [],
+   "label_agreement": 400,
+   "label_agreement_fraction": 1.0,
+   "label_flips": 0,
+   "max_abs_probability_difference": 5.0235052264868685e-05,
+   "identical": false,
+   "flips": []
+  }
+ ],
+ "framework_disagreements_against_the_reproduction": {
+  "disagreements": 13,
+  "reference_top2_margin_min": 0.042208,
+  "reference_top2_margin_median": 0.190768,
+  "reference_top2_margin_max": 0.403827,
+  "margins": [
+   0.042208,
+   0.071708,
+   0.088717,
+   0.148302,
+   0.157034,
+   0.157532,
+   0.190768,
+   0.241654,
+   0.247356,
+   0.25227,
+   0.384428,
+   0.399401,
+   0.403827
+  ]
+ }
+}

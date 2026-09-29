@@ -1,0 +1,5900 @@
+{
+ "schema": "cb03_m5phet_parity.v1",
+ "produced": "2026-09-29T20:12:45Z",
+ "population_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+ "rows": 400,
+ "native_artifact": "native_published400.json",
+ "native_artifact_sha256": "6078a7365a606f2c3ba96249e961eaed5d4687986fbe4bc81e4814376fef6d1a",
+ "native_accuracy": 0.9525,
+ "framework": {
+  "provider": "laya_news",
+  "task_id": "adhoc.question.v1:9081cf28e1203ec0bbf0569cb5403411b37d71913fa22afbd0fbfa0fbbc3d967",
+  "questions_as_built": {
+   "topic": {
+    "type": "choice",
+    "instructions": "What is the topic of `article`?",
+    "criteria": {
+     "world": "world news and international politics",
+     "sports": "sports",
+     "business": "business and economy",
+     "sci_tech": "science and technology"
+    }
+   }
+  },
+  "backend_identity": {
+   "kind": "LAYA_LOCAL_CHECKPOINT",
+   "sdk_version": "0.3.11",
+   "sdk_commit": "1e28ac20c0896b1c37a744cd11f740eb98f8b178",
+   "checkpoint_sha256": "06895c8661cd14a0a2a9f79dc3f4854eee01e25c5152b7792c97661ad1863076",
+   "device": "cpu",
+   "gpu_uuid": null,
+   "gpu_uuid_observed": null,
+   "gpu_uuid_attribution": "NOT_APPLICABLE",
+   "torch_version": "2.14.0+cpu",
+   "cuda_version": null,
+   "adapter_sha256": "ffd2da0f4e49cafb8cafa297259f8fae6c49e52f4ae2bb3dc39fb4d39ca63047"
+  },
+  "checkpoint_manifest_sha256": "06895c8661cd14a0a2a9f79dc3f4854eee01e25c5152b7792c97661ad1863076",
+  "backend_declared_budget": {
+   "max_len": 512,
+   "head_max_len": 192
+  },
+  "state_envelope_fields": {
+   "asset": "AGNEWS",
+   "headline": "AG News item"
+  }
+ },
+ "framework_answered": 400,
+ "framework_refused": 0,
+ "framework_accuracy_on_answered": 0.935,
+ "coverage": 1.0,
+ "parity": {
+  "rows_compared": 400,
+  "label_agreement": 387,
+  "label_agreement_fraction": 0.9675,
+  "max_abs_probability_difference": 0.3466853626679519,
+  "exact_label_parity": false,
+  "population_coverage_parity": true,
+  "disagreements": [
+   {
+    "i": 9,
+    "gold": 3,
+    "framework": 3,
+    "native": 2,
+    "framework_probabilities": [
+     0.1664,
+     0.0574,
+     0.3789,
+     0.3974
+    ],
+    "native_probabilities": [
+     0.1367484623304023,
+     0.03541421777742957,
+     0.5093025872352777,
+     0.31853473265689036
+    ]
+   },
+   {
+    "i": 36,
+    "gold": 0,
+    "framework": 2,
+    "native": 0,
+    "framework_probabilities": [
+     0.407,
+     0.0529,
+     0.4489,
+     0.0913
+    ],
+    "native_probabilities": [
+     0.6594956205864612,
+     0.03841851578067265,
+     0.2600946915028705,
+     0.041991172129995605
+    ]
+   },
+   {
+    "i": 84,
+    "gold": 0,
+    "framework": 2,
+    "native": 0,
+    "framework_probabilities": [
+     0.4343,
+     0.0451,
+     0.4681,
+     0.0525
+    ],
+    "native_probabilities": [
+     0.5875721098376798,
+     0.03720050446928163,
+     0.33530190309215535,
+     0.039925482600883126
+    ]
+   },
+   {
+    "i": 103,
+    "gold": 2,
+    "framework": 3,
+    "native": 2,
+    "framework_probabilities": [
+     0.0739,
+     0.0511,
+     0.3691,
+     0.5059
+    ],
+    "native_probabilities": [
+     0.07039981422950674,
+     0.03747806240703182,
+     0.5202123102390134,
+     0.3719098131244481
+    ]
+   },
+   {
+    "i": 155,
+    "gold": 0,
+    "framework": 3,
+    "native": 0,
+    "framework_probabilities": [
+     0.3833,
+     0.105,
+     0.1229,
+     0.3887
+    ],
+    "native_probabilities": [
+     0.5521050961258706,
+     0.05623970797994449,
+     0.08120392948106135,
+     0.31045126641312365
+    ]
+   },
+   {
+    "i": 207,
+    "gold": 3,
+    "framework": 2,
+    "native": 3,
+    "framework_probabilities": [
+     0.0875,
+     0.06,
+     0.4903,
+     0.3622
+    ],
+    "native_probabilities": [
+     0.06769097615097444,
+     0.04709906741263417,
+     0.42150118706494494,
+     0.46370876937144656
+    ]
+   },
+   {
+    "i": 258,
+    "gold": 3,
+    "framework": 2,
+    "native": 3,
+    "framework_probabilities": [
+     0.0472,
+     0.0393,
+     0.5728,
+     0.3407
+    ],
+    "native_probabilities": [
+     0.022894737474795805,
+     0.021963659652889756,
+     0.3988049826038386,
+     0.5563366202684759
+    ]
+   },
+   {
+    "i": 288,
+    "gold": 2,
+    "framework": 0,
+    "native": 2,
+    "framework_probabilities": [
+     0.483,
+     0.0992,
+     0.2996,
+     0.1182
+    ],
+    "native_probabilities": [
+     0.4088272720975829,
+     0.05234190443673351,
+     0.48053504099963007,
+     0.05829578246605345
+    ]
+   },
+   {
+    "i": 297,
+    "gold": 3,
+    "framework": 3,
+    "native": 2,
+    "framework_probabilities": [
+     0.0709,
+     0.0425,
+     0.3508,
+     0.5359
+    ],
+    "native_probabilities": [
+     0.06424657138534257,
+     0.03963895255184908,
+     0.5265743922242919,
+     0.3695400838385164
+    ]
+   },
+   {
+    "i": 303,
+    "gold": 2,
+    "framework": 3,
+    "native": 2,
+    "framework_probabilities": [
+     0.1035,
+     0.0439,
+     0.3368,
+     0.5158
+    ],
+    "native_probabilities": [
+     0.1052336804429152,
+     0.03545513082074647,
+     0.5533338219826952,
+     0.30597736675364307
+    ]
+   },
+   {
+    "i": 311,
+    "gold": 1,
+    "framework": 1,
+    "native": 0,
+    "framework_probabilities": [
+     0.3225,
+     0.5713,
+     0.0487,
+     0.0575
+    ],
+    "native_probabilities": [
+     0.6691853626679519,
+     0.2653580301834514,
+     0.028469957078498406,
+     0.03698665007009837
+    ]
+   },
+   {
+    "i": 316,
+    "gold": 0,
+    "framework": 2,
+    "native": 0,
+    "framework_probabilities": [
+     0.306,
+     0.0804,
+     0.4837,
+     0.13
+    ],
+    "native_probabilities": [
+     0.43643579300837343,
+     0.05725126090641297,
+     0.34771880009473216,
+     0.15859414599048144
+    ]
+   },
+   {
+    "i": 349,
+    "gold": 2,
+    "framework": 3,
+    "native": 2,
+    "framework_probabilities": [
+     0.1191,
+     0.0414,
+     0.4029,
+     0.4366
+    ],
+    "native_probabilities": [
+     0.13413048368899108,
+     0.030542585967053514,
+     0.6098775459478751,
+     0.22544938439608042
+    ]
+   }
+  ],
+  "disagreement_count": 13,
+  "refusals": []
+ },
+ "wall_seconds": 312.9,
+ "per_row": [
+  {
+   "i": 0,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0569,
+    0.0376,
+    0.7529,
+    0.1525
+   ],
+   "refused": false
+  },
+  {
+   "i": 1,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0594,
+    0.0354,
+    0.041,
+    0.8643
+   ],
+   "refused": false
+  },
+  {
+   "i": 2,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1127,
+    0.0687,
+    0.091,
+    0.7276
+   ],
+   "refused": false
+  },
+  {
+   "i": 3,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.2151,
+    0.0529,
+    0.0549,
+    0.6771
+   ],
+   "refused": false
+  },
+  {
+   "i": 4,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0919,
+    0.0357,
+    0.0382,
+    0.8342
+   ],
+   "refused": false
+  },
+  {
+   "i": 5,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1351,
+    0.0365,
+    0.1018,
+    0.7265
+   ],
+   "refused": false
+  },
+  {
+   "i": 6,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0828,
+    0.0341,
+    0.0615,
+    0.8216
+   ],
+   "refused": false
+  },
+  {
+   "i": 7,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0621,
+    0.0415,
+    0.0774,
+    0.819
+   ],
+   "refused": false
+  },
+  {
+   "i": 8,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1549,
+    0.0492,
+    0.1069,
+    0.689
+   ],
+   "refused": false
+  },
+  {
+   "i": 9,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1664,
+    0.0574,
+    0.3789,
+    0.3974
+   ],
+   "refused": false
+  },
+  {
+   "i": 10,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.039,
+    0.0342,
+    0.0589,
+    0.868
+   ],
+   "refused": false
+  },
+  {
+   "i": 11,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0537,
+    0.0344,
+    0.0508,
+    0.8611
+   ],
+   "refused": false
+  },
+  {
+   "i": 12,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0842,
+    0.0374,
+    0.0774,
+    0.8011
+   ],
+   "refused": false
+  },
+  {
+   "i": 13,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1747,
+    0.03,
+    0.0393,
+    0.756
+   ],
+   "refused": false
+  },
+  {
+   "i": 14,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1253,
+    0.042,
+    0.0466,
+    0.7862
+   ],
+   "refused": false
+  },
+  {
+   "i": 15,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0763,
+    0.0434,
+    0.0458,
+    0.8345
+   ],
+   "refused": false
+  },
+  {
+   "i": 16,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1306,
+    0.0426,
+    0.0459,
+    0.7809
+   ],
+   "refused": false
+  },
+  {
+   "i": 17,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1358,
+    0.0345,
+    0.0405,
+    0.7893
+   ],
+   "refused": false
+  },
+  {
+   "i": 18,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0905,
+    0.0526,
+    0.0577,
+    0.7993
+   ],
+   "refused": false
+  },
+  {
+   "i": 19,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0541,
+    0.0359,
+    0.1851,
+    0.725
+   ],
+   "refused": false
+  },
+  {
+   "i": 20,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0802,
+    0.0413,
+    0.2615,
+    0.6171
+   ],
+   "refused": false
+  },
+  {
+   "i": 21,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0643,
+    0.0398,
+    0.0479,
+    0.848
+   ],
+   "refused": false
+  },
+  {
+   "i": 22,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0723,
+    0.0367,
+    0.1354,
+    0.7556
+   ],
+   "refused": false
+  },
+  {
+   "i": 23,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1331,
+    0.0416,
+    0.2604,
+    0.5649
+   ],
+   "refused": false
+  },
+  {
+   "i": 24,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0666,
+    0.0438,
+    0.1472,
+    0.7424
+   ],
+   "refused": false
+  },
+  {
+   "i": 25,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1094,
+    0.0368,
+    0.1955,
+    0.6583
+   ],
+   "refused": false
+  },
+  {
+   "i": 26,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1759,
+    0.7221,
+    0.0506,
+    0.0514
+   ],
+   "refused": false
+  },
+  {
+   "i": 27,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0568,
+    0.8559,
+    0.0433,
+    0.0439
+   ],
+   "refused": false
+  },
+  {
+   "i": 28,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0584,
+    0.8653,
+    0.0385,
+    0.0378
+   ],
+   "refused": false
+  },
+  {
+   "i": 29,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1396,
+    0.7616,
+    0.0492,
+    0.0496
+   ],
+   "refused": false
+  },
+  {
+   "i": 30,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0379,
+    0.8911,
+    0.0357,
+    0.0353
+   ],
+   "refused": false
+  },
+  {
+   "i": 31,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0616,
+    0.8713,
+    0.0336,
+    0.0335
+   ],
+   "refused": false
+  },
+  {
+   "i": 32,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8948,
+    0.0348,
+    0.0347,
+    0.0357
+   ],
+   "refused": false
+  },
+  {
+   "i": 33,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8217,
+    0.06,
+    0.058,
+    0.0603
+   ],
+   "refused": false
+  },
+  {
+   "i": 34,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.9161,
+    0.0272,
+    0.0279,
+    0.0288
+   ],
+   "refused": false
+  },
+  {
+   "i": 35,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.9002,
+    0.0323,
+    0.0328,
+    0.0347
+   ],
+   "refused": false
+  },
+  {
+   "i": 36,
+   "gold": 0,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.407,
+    0.0529,
+    0.4489,
+    0.0913
+   ],
+   "refused": false
+  },
+  {
+   "i": 37,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.7092,
+    0.0879,
+    0.0984,
+    0.1046
+   ],
+   "refused": false
+  },
+  {
+   "i": 38,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8449,
+    0.0483,
+    0.0534,
+    0.0533
+   ],
+   "refused": false
+  },
+  {
+   "i": 39,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.9108,
+    0.0292,
+    0.0299,
+    0.0301
+   ],
+   "refused": false
+  },
+  {
+   "i": 40,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0612,
+    0.8751,
+    0.0317,
+    0.032
+   ],
+   "refused": false
+  },
+  {
+   "i": 41,
+   "gold": 2,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1934,
+    0.0952,
+    0.2513,
+    0.4602
+   ],
+   "refused": false
+  },
+  {
+   "i": 42,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.5032,
+    0.0992,
+    0.0986,
+    0.299
+   ],
+   "refused": false
+  },
+  {
+   "i": 43,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0659,
+    0.0353,
+    0.1064,
+    0.7924
+   ],
+   "refused": false
+  },
+  {
+   "i": 44,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1266,
+    0.8041,
+    0.035,
+    0.0344
+   ],
+   "refused": false
+  },
+  {
+   "i": 45,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0543,
+    0.8823,
+    0.0315,
+    0.0319
+   ],
+   "refused": false
+  },
+  {
+   "i": 46,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8072,
+    0.0536,
+    0.0816,
+    0.0576
+   ],
+   "refused": false
+  },
+  {
+   "i": 47,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1205,
+    0.0332,
+    0.2212,
+    0.6251
+   ],
+   "refused": false
+  },
+  {
+   "i": 48,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.7175,
+    0.0878,
+    0.0949,
+    0.0998
+   ],
+   "refused": false
+  },
+  {
+   "i": 49,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1155,
+    0.7941,
+    0.0479,
+    0.0425
+   ],
+   "refused": false
+  },
+  {
+   "i": 50,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.7511,
+    0.0726,
+    0.0838,
+    0.0925
+   ],
+   "refused": false
+  },
+  {
+   "i": 51,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0505,
+    0.8718,
+    0.0391,
+    0.0386
+   ],
+   "refused": false
+  },
+  {
+   "i": 52,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.874,
+    0.0414,
+    0.0417,
+    0.0429
+   ],
+   "refused": false
+  },
+  {
+   "i": 53,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0774,
+    0.0351,
+    0.436,
+    0.4514
+   ],
+   "refused": false
+  },
+  {
+   "i": 54,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0809,
+    0.0358,
+    0.846,
+    0.0372
+   ],
+   "refused": false
+  },
+  {
+   "i": 55,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1722,
+    0.1006,
+    0.2016,
+    0.5256
+   ],
+   "refused": false
+  },
+  {
+   "i": 56,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.5456,
+    0.0547,
+    0.3358,
+    0.0638
+   ],
+   "refused": false
+  },
+  {
+   "i": 57,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.9011,
+    0.0322,
+    0.033,
+    0.0337
+   ],
+   "refused": false
+  },
+  {
+   "i": 58,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0596,
+    0.0376,
+    0.8639,
+    0.039
+   ],
+   "refused": false
+  },
+  {
+   "i": 59,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0561,
+    0.0445,
+    0.8513,
+    0.0481
+   ],
+   "refused": false
+  },
+  {
+   "i": 60,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0466,
+    0.8725,
+    0.0402,
+    0.0408
+   ],
+   "refused": false
+  },
+  {
+   "i": 61,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1013,
+    0.8276,
+    0.0354,
+    0.0357
+   ],
+   "refused": false
+  },
+  {
+   "i": 62,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0802,
+    0.8208,
+    0.0477,
+    0.0514
+   ],
+   "refused": false
+  },
+  {
+   "i": 63,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0489,
+    0.0372,
+    0.0612,
+    0.8527
+   ],
+   "refused": false
+  },
+  {
+   "i": 64,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.854,
+    0.0477,
+    0.0491,
+    0.0493
+   ],
+   "refused": false
+  },
+  {
+   "i": 65,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1359,
+    0.0332,
+    0.0989,
+    0.732
+   ],
+   "refused": false
+  },
+  {
+   "i": 66,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.9046,
+    0.0299,
+    0.0338,
+    0.0317
+   ],
+   "refused": false
+  },
+  {
+   "i": 67,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.9168,
+    0.0274,
+    0.028,
+    0.0278
+   ],
+   "refused": false
+  },
+  {
+   "i": 68,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0422,
+    0.8931,
+    0.0324,
+    0.0322
+   ],
+   "refused": false
+  },
+  {
+   "i": 69,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8968,
+    0.034,
+    0.034,
+    0.0352
+   ],
+   "refused": false
+  },
+  {
+   "i": 70,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1078,
+    0.0367,
+    0.1232,
+    0.7323
+   ],
+   "refused": false
+  },
+  {
+   "i": 71,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0478,
+    0.0373,
+    0.058,
+    0.8569
+   ],
+   "refused": false
+  },
+  {
+   "i": 72,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0744,
+    0.0326,
+    0.0337,
+    0.8593
+   ],
+   "refused": false
+  },
+  {
+   "i": 73,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.5436,
+    0.0482,
+    0.0612,
+    0.3471
+   ],
+   "refused": false
+  },
+  {
+   "i": 74,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1954,
+    0.0408,
+    0.0505,
+    0.7132
+   ],
+   "refused": false
+  },
+  {
+   "i": 75,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1003,
+    0.8271,
+    0.0353,
+    0.0373
+   ],
+   "refused": false
+  },
+  {
+   "i": 76,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8489,
+    0.0487,
+    0.0506,
+    0.0518
+   ],
+   "refused": false
+  },
+  {
+   "i": 77,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0522,
+    0.8731,
+    0.0378,
+    0.037
+   ],
+   "refused": false
+  },
+  {
+   "i": 78,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.84,
+    0.0521,
+    0.0527,
+    0.0552
+   ],
+   "refused": false
+  },
+  {
+   "i": 79,
+   "gold": 0,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.218,
+    0.6496,
+    0.0645,
+    0.0678
+   ],
+   "refused": false
+  },
+  {
+   "i": 80,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.7086,
+    0.0917,
+    0.0967,
+    0.103
+   ],
+   "refused": false
+  },
+  {
+   "i": 81,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.114,
+    0.78,
+    0.0512,
+    0.0548
+   ],
+   "refused": false
+  },
+  {
+   "i": 82,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0662,
+    0.0332,
+    0.8655,
+    0.035
+   ],
+   "refused": false
+  },
+  {
+   "i": 83,
+   "gold": 2,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0592,
+    0.0353,
+    0.2102,
+    0.6953
+   ],
+   "refused": false
+  },
+  {
+   "i": 84,
+   "gold": 0,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.4343,
+    0.0451,
+    0.4681,
+    0.0525
+   ],
+   "refused": false
+  },
+  {
+   "i": 85,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8642,
+    0.0449,
+    0.0445,
+    0.0463
+   ],
+   "refused": false
+  },
+  {
+   "i": 86,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.2119,
+    0.0531,
+    0.6788,
+    0.0562
+   ],
+   "refused": false
+  },
+  {
+   "i": 87,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8269,
+    0.058,
+    0.0566,
+    0.0585
+   ],
+   "refused": false
+  },
+  {
+   "i": 88,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8622,
+    0.0844,
+    0.0262,
+    0.0272
+   ],
+   "refused": false
+  },
+  {
+   "i": 89,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0545,
+    0.0323,
+    0.1188,
+    0.7944
+   ],
+   "refused": false
+  },
+  {
+   "i": 90,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8846,
+    0.0375,
+    0.0385,
+    0.0395
+   ],
+   "refused": false
+  },
+  {
+   "i": 91,
+   "gold": 2,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.075,
+    0.0501,
+    0.2471,
+    0.6277
+   ],
+   "refused": false
+  },
+  {
+   "i": 92,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0609,
+    0.0337,
+    0.1052,
+    0.8003
+   ],
+   "refused": false
+  },
+  {
+   "i": 93,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0975,
+    0.0776,
+    0.7329,
+    0.0921
+   ],
+   "refused": false
+  },
+  {
+   "i": 94,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.2089,
+    0.7129,
+    0.0394,
+    0.0389
+   ],
+   "refused": false
+  },
+  {
+   "i": 95,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0416,
+    0.8839,
+    0.0367,
+    0.0378
+   ],
+   "refused": false
+  },
+  {
+   "i": 96,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0594,
+    0.863,
+    0.0383,
+    0.0393
+   ],
+   "refused": false
+  },
+  {
+   "i": 97,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0402,
+    0.0333,
+    0.8907,
+    0.0358
+   ],
+   "refused": false
+  },
+  {
+   "i": 98,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8352,
+    0.053,
+    0.0552,
+    0.0566
+   ],
+   "refused": false
+  },
+  {
+   "i": 99,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0613,
+    0.0471,
+    0.8418,
+    0.0497
+   ],
+   "refused": false
+  },
+  {
+   "i": 100,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.2421,
+    0.644,
+    0.0569,
+    0.057
+   ],
+   "refused": false
+  },
+  {
+   "i": 101,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0833,
+    0.0369,
+    0.836,
+    0.0438
+   ],
+   "refused": false
+  },
+  {
+   "i": 102,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.2012,
+    0.0333,
+    0.1209,
+    0.6446
+   ],
+   "refused": false
+  },
+  {
+   "i": 103,
+   "gold": 2,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0739,
+    0.0511,
+    0.3691,
+    0.5059
+   ],
+   "refused": false
+  },
+  {
+   "i": 104,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8204,
+    0.0626,
+    0.0579,
+    0.0591
+   ],
+   "refused": false
+  },
+  {
+   "i": 105,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1845,
+    0.7103,
+    0.0512,
+    0.054
+   ],
+   "refused": false
+  },
+  {
+   "i": 106,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8263,
+    0.0271,
+    0.1189,
+    0.0277
+   ],
+   "refused": false
+  },
+  {
+   "i": 107,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0716,
+    0.8337,
+    0.0472,
+    0.0475
+   ],
+   "refused": false
+  },
+  {
+   "i": 108,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8731,
+    0.042,
+    0.0422,
+    0.0427
+   ],
+   "refused": false
+  },
+  {
+   "i": 109,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0557,
+    0.0374,
+    0.0991,
+    0.8077
+   ],
+   "refused": false
+  },
+  {
+   "i": 110,
+   "gold": 2,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0815,
+    0.0321,
+    0.1988,
+    0.6877
+   ],
+   "refused": false
+  },
+  {
+   "i": 111,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1209,
+    0.0321,
+    0.2635,
+    0.5835
+   ],
+   "refused": false
+  },
+  {
+   "i": 112,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0933,
+    0.0371,
+    0.1234,
+    0.7462
+   ],
+   "refused": false
+  },
+  {
+   "i": 113,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1,
+    0.0378,
+    0.0489,
+    0.8134
+   ],
+   "refused": false
+  },
+  {
+   "i": 114,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1031,
+    0.0346,
+    0.037,
+    0.8253
+   ],
+   "refused": false
+  },
+  {
+   "i": 115,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.043,
+    0.8772,
+    0.0394,
+    0.0404
+   ],
+   "refused": false
+  },
+  {
+   "i": 116,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0657,
+    0.038,
+    0.1473,
+    0.749
+   ],
+   "refused": false
+  },
+  {
+   "i": 117,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0437,
+    0.0374,
+    0.0673,
+    0.8516
+   ],
+   "refused": false
+  },
+  {
+   "i": 118,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1244,
+    0.047,
+    0.7525,
+    0.0761
+   ],
+   "refused": false
+  },
+  {
+   "i": 119,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0628,
+    0.854,
+    0.0413,
+    0.0419
+   ],
+   "refused": false
+  },
+  {
+   "i": 120,
+   "gold": 0,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1895,
+    0.056,
+    0.6891,
+    0.0654
+   ],
+   "refused": false
+  },
+  {
+   "i": 121,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.2746,
+    0.5794,
+    0.0687,
+    0.0773
+   ],
+   "refused": false
+  },
+  {
+   "i": 122,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0542,
+    0.036,
+    0.1001,
+    0.8098
+   ],
+   "refused": false
+  },
+  {
+   "i": 123,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8188,
+    0.0567,
+    0.0623,
+    0.0623
+   ],
+   "refused": false
+  },
+  {
+   "i": 124,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0427,
+    0.0351,
+    0.0409,
+    0.8813
+   ],
+   "refused": false
+  },
+  {
+   "i": 125,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.2211,
+    0.1153,
+    0.4069,
+    0.2567
+   ],
+   "refused": false
+  },
+  {
+   "i": 126,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.2338,
+    0.655,
+    0.0479,
+    0.0634
+   ],
+   "refused": false
+  },
+  {
+   "i": 127,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0538,
+    0.8659,
+    0.0408,
+    0.0395
+   ],
+   "refused": false
+  },
+  {
+   "i": 128,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0793,
+    0.8056,
+    0.0559,
+    0.0592
+   ],
+   "refused": false
+  },
+  {
+   "i": 129,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8573,
+    0.0462,
+    0.0479,
+    0.0486
+   ],
+   "refused": false
+  },
+  {
+   "i": 130,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.7728,
+    0.0744,
+    0.0757,
+    0.0771
+   ],
+   "refused": false
+  },
+  {
+   "i": 131,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8741,
+    0.0421,
+    0.0413,
+    0.0425
+   ],
+   "refused": false
+  },
+  {
+   "i": 132,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0392,
+    0.8932,
+    0.0337,
+    0.0339
+   ],
+   "refused": false
+  },
+  {
+   "i": 133,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.7595,
+    0.076,
+    0.0767,
+    0.0878
+   ],
+   "refused": false
+  },
+  {
+   "i": 134,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0515,
+    0.8788,
+    0.034,
+    0.0357
+   ],
+   "refused": false
+  },
+  {
+   "i": 135,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1449,
+    0.7681,
+    0.0426,
+    0.0444
+   ],
+   "refused": false
+  },
+  {
+   "i": 136,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.6856,
+    0.1007,
+    0.1108,
+    0.1029
+   ],
+   "refused": false
+  },
+  {
+   "i": 137,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1289,
+    0.7992,
+    0.0358,
+    0.0361
+   ],
+   "refused": false
+  },
+  {
+   "i": 138,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1006,
+    0.811,
+    0.0436,
+    0.0447
+   ],
+   "refused": false
+  },
+  {
+   "i": 139,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8796,
+    0.0382,
+    0.042,
+    0.0401
+   ],
+   "refused": false
+  },
+  {
+   "i": 140,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0968,
+    0.831,
+    0.0354,
+    0.0368
+   ],
+   "refused": false
+  },
+  {
+   "i": 141,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.5406,
+    0.0464,
+    0.0824,
+    0.3306
+   ],
+   "refused": false
+  },
+  {
+   "i": 142,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0976,
+    0.8247,
+    0.0387,
+    0.039
+   ],
+   "refused": false
+  },
+  {
+   "i": 143,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8114,
+    0.0573,
+    0.063,
+    0.0683
+   ],
+   "refused": false
+  },
+  {
+   "i": 144,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.84,
+    0.0513,
+    0.0538,
+    0.0549
+   ],
+   "refused": false
+  },
+  {
+   "i": 145,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.873,
+    0.0422,
+    0.0424,
+    0.0423
+   ],
+   "refused": false
+  },
+  {
+   "i": 146,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0595,
+    0.842,
+    0.0493,
+    0.0492
+   ],
+   "refused": false
+  },
+  {
+   "i": 147,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0725,
+    0.0503,
+    0.8225,
+    0.0548
+   ],
+   "refused": false
+  },
+  {
+   "i": 148,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1005,
+    0.813,
+    0.0431,
+    0.0434
+   ],
+   "refused": false
+  },
+  {
+   "i": 149,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1357,
+    0.7719,
+    0.0455,
+    0.0469
+   ],
+   "refused": false
+  },
+  {
+   "i": 150,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0616,
+    0.8606,
+    0.0392,
+    0.0386
+   ],
+   "refused": false
+  },
+  {
+   "i": 151,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8414,
+    0.0531,
+    0.0525,
+    0.053
+   ],
+   "refused": false
+  },
+  {
+   "i": 152,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1109,
+    0.7481,
+    0.069,
+    0.0719
+   ],
+   "refused": false
+  },
+  {
+   "i": 153,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8073,
+    0.0605,
+    0.0628,
+    0.0695
+   ],
+   "refused": false
+  },
+  {
+   "i": 154,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.7898,
+    0.0264,
+    0.1141,
+    0.0697
+   ],
+   "refused": false
+  },
+  {
+   "i": 155,
+   "gold": 0,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.3833,
+    0.105,
+    0.1229,
+    0.3887
+   ],
+   "refused": false
+  },
+  {
+   "i": 156,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.128,
+    0.028,
+    0.8143,
+    0.0297
+   ],
+   "refused": false
+  },
+  {
+   "i": 157,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1339,
+    0.7839,
+    0.041,
+    0.0412
+   ],
+   "refused": false
+  },
+  {
+   "i": 158,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.105,
+    0.7895,
+    0.0518,
+    0.0538
+   ],
+   "refused": false
+  },
+  {
+   "i": 159,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8969,
+    0.0339,
+    0.0345,
+    0.0348
+   ],
+   "refused": false
+  },
+  {
+   "i": 160,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0345,
+    0.8992,
+    0.033,
+    0.0333
+   ],
+   "refused": false
+  },
+  {
+   "i": 161,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1343,
+    0.0921,
+    0.4502,
+    0.3234
+   ],
+   "refused": false
+  },
+  {
+   "i": 162,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0716,
+    0.0352,
+    0.1755,
+    0.7177
+   ],
+   "refused": false
+  },
+  {
+   "i": 163,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8675,
+    0.0435,
+    0.0443,
+    0.0446
+   ],
+   "refused": false
+  },
+  {
+   "i": 164,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.7913,
+    0.0631,
+    0.0798,
+    0.0659
+   ],
+   "refused": false
+  },
+  {
+   "i": 165,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0982,
+    0.0435,
+    0.6417,
+    0.2166
+   ],
+   "refused": false
+  },
+  {
+   "i": 166,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0326,
+    0.0295,
+    0.9067,
+    0.0311
+   ],
+   "refused": false
+  },
+  {
+   "i": 167,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0776,
+    0.1573,
+    0.6815,
+    0.0835
+   ],
+   "refused": false
+  },
+  {
+   "i": 168,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.3267,
+    0.5945,
+    0.0389,
+    0.0399
+   ],
+   "refused": false
+  },
+  {
+   "i": 169,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8406,
+    0.0509,
+    0.0538,
+    0.0547
+   ],
+   "refused": false
+  },
+  {
+   "i": 170,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0428,
+    0.0358,
+    0.0588,
+    0.8626
+   ],
+   "refused": false
+  },
+  {
+   "i": 171,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0719,
+    0.0454,
+    0.0985,
+    0.7843
+   ],
+   "refused": false
+  },
+  {
+   "i": 172,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.204,
+    0.0777,
+    0.4595,
+    0.2588
+   ],
+   "refused": false
+  },
+  {
+   "i": 173,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1088,
+    0.051,
+    0.1588,
+    0.6814
+   ],
+   "refused": false
+  },
+  {
+   "i": 174,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8134,
+    0.0596,
+    0.0622,
+    0.0648
+   ],
+   "refused": false
+  },
+  {
+   "i": 175,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.888,
+    0.0354,
+    0.0381,
+    0.0386
+   ],
+   "refused": false
+  },
+  {
+   "i": 176,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0625,
+    0.0425,
+    0.1103,
+    0.7847
+   ],
+   "refused": false
+  },
+  {
+   "i": 177,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1398,
+    0.7789,
+    0.0404,
+    0.0409
+   ],
+   "refused": false
+  },
+  {
+   "i": 178,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.071,
+    0.0365,
+    0.2102,
+    0.6823
+   ],
+   "refused": false
+  },
+  {
+   "i": 179,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.191,
+    0.7111,
+    0.0477,
+    0.0501
+   ],
+   "refused": false
+  },
+  {
+   "i": 180,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0523,
+    0.0409,
+    0.8649,
+    0.0418
+   ],
+   "refused": false
+  },
+  {
+   "i": 181,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0488,
+    0.8671,
+    0.0435,
+    0.0405
+   ],
+   "refused": false
+  },
+  {
+   "i": 182,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.041,
+    0.8969,
+    0.0311,
+    0.0309
+   ],
+   "refused": false
+  },
+  {
+   "i": 183,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1346,
+    0.0429,
+    0.1906,
+    0.6319
+   ],
+   "refused": false
+  },
+  {
+   "i": 184,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1929,
+    0.1116,
+    0.5388,
+    0.1567
+   ],
+   "refused": false
+  },
+  {
+   "i": 185,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.751,
+    0.0808,
+    0.084,
+    0.0842
+   ],
+   "refused": false
+  },
+  {
+   "i": 186,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1017,
+    0.0447,
+    0.0544,
+    0.7992
+   ],
+   "refused": false
+  },
+  {
+   "i": 187,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.818,
+    0.0598,
+    0.0594,
+    0.0629
+   ],
+   "refused": false
+  },
+  {
+   "i": 188,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1225,
+    0.6959,
+    0.0923,
+    0.0893
+   ],
+   "refused": false
+  },
+  {
+   "i": 189,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0656,
+    0.0339,
+    0.1217,
+    0.7788
+   ],
+   "refused": false
+  },
+  {
+   "i": 190,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0437,
+    0.0336,
+    0.0564,
+    0.8664
+   ],
+   "refused": false
+  },
+  {
+   "i": 191,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.903,
+    0.0316,
+    0.0323,
+    0.0331
+   ],
+   "refused": false
+  },
+  {
+   "i": 192,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8713,
+    0.0424,
+    0.0429,
+    0.0434
+   ],
+   "refused": false
+  },
+  {
+   "i": 193,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.7858,
+    0.0675,
+    0.0725,
+    0.0742
+   ],
+   "refused": false
+  },
+  {
+   "i": 194,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0331,
+    0.0303,
+    0.9041,
+    0.0325
+   ],
+   "refused": false
+  },
+  {
+   "i": 195,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.2703,
+    0.0705,
+    0.584,
+    0.0752
+   ],
+   "refused": false
+  },
+  {
+   "i": 196,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8345,
+    0.029,
+    0.0856,
+    0.0509
+   ],
+   "refused": false
+  },
+  {
+   "i": 197,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1145,
+    0.8003,
+    0.0421,
+    0.0431
+   ],
+   "refused": false
+  },
+  {
+   "i": 198,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0331,
+    0.0311,
+    0.903,
+    0.0327
+   ],
+   "refused": false
+  },
+  {
+   "i": 199,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1599,
+    0.7493,
+    0.0456,
+    0.0453
+   ],
+   "refused": false
+  },
+  {
+   "i": 200,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0567,
+    0.0371,
+    0.044,
+    0.8621
+   ],
+   "refused": false
+  },
+  {
+   "i": 201,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.062,
+    0.0389,
+    0.0698,
+    0.8293
+   ],
+   "refused": false
+  },
+  {
+   "i": 202,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1443,
+    0.0393,
+    0.0461,
+    0.7702
+   ],
+   "refused": false
+  },
+  {
+   "i": 203,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8949,
+    0.0343,
+    0.0349,
+    0.0359
+   ],
+   "refused": false
+  },
+  {
+   "i": 204,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1481,
+    0.776,
+    0.0389,
+    0.037
+   ],
+   "refused": false
+  },
+  {
+   "i": 205,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1507,
+    0.7678,
+    0.0405,
+    0.0411
+   ],
+   "refused": false
+  },
+  {
+   "i": 206,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0472,
+    0.8792,
+    0.0368,
+    0.0369
+   ],
+   "refused": false
+  },
+  {
+   "i": 207,
+   "gold": 3,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0875,
+    0.06,
+    0.4903,
+    0.3622
+   ],
+   "refused": false
+  },
+  {
+   "i": 208,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1057,
+    0.7985,
+    0.0481,
+    0.0476
+   ],
+   "refused": false
+  },
+  {
+   "i": 209,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1352,
+    0.0509,
+    0.0561,
+    0.7578
+   ],
+   "refused": false
+  },
+  {
+   "i": 210,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1085,
+    0.7917,
+    0.0491,
+    0.0508
+   ],
+   "refused": false
+  },
+  {
+   "i": 211,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.6652,
+    0.1338,
+    0.1113,
+    0.0897
+   ],
+   "refused": false
+  },
+  {
+   "i": 212,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0336,
+    0.9043,
+    0.0313,
+    0.0308
+   ],
+   "refused": false
+  },
+  {
+   "i": 213,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.3595,
+    0.5199,
+    0.066,
+    0.0546
+   ],
+   "refused": false
+  },
+  {
+   "i": 214,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1232,
+    0.8029,
+    0.0365,
+    0.0373
+   ],
+   "refused": false
+  },
+  {
+   "i": 215,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1414,
+    0.0959,
+    0.1182,
+    0.6446
+   ],
+   "refused": false
+  },
+  {
+   "i": 216,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0748,
+    0.0342,
+    0.8545,
+    0.0365
+   ],
+   "refused": false
+  },
+  {
+   "i": 217,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0827,
+    0.0389,
+    0.8359,
+    0.0425
+   ],
+   "refused": false
+  },
+  {
+   "i": 218,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0554,
+    0.0372,
+    0.1795,
+    0.728
+   ],
+   "refused": false
+  },
+  {
+   "i": 219,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.2946,
+    0.5853,
+    0.0459,
+    0.0742
+   ],
+   "refused": false
+  },
+  {
+   "i": 220,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.097,
+    0.8134,
+    0.0441,
+    0.0455
+   ],
+   "refused": false
+  },
+  {
+   "i": 221,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8654,
+    0.0439,
+    0.0454,
+    0.0454
+   ],
+   "refused": false
+  },
+  {
+   "i": 222,
+   "gold": 2,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.2378,
+    0.1209,
+    0.2384,
+    0.4029
+   ],
+   "refused": false
+  },
+  {
+   "i": 223,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1835,
+    0.7394,
+    0.0384,
+    0.0386
+   ],
+   "refused": false
+  },
+  {
+   "i": 224,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1022,
+    0.0398,
+    0.8116,
+    0.0464
+   ],
+   "refused": false
+  },
+  {
+   "i": 225,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1178,
+    0.0553,
+    0.7566,
+    0.0703
+   ],
+   "refused": false
+  },
+  {
+   "i": 226,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8802,
+    0.0395,
+    0.0398,
+    0.0405
+   ],
+   "refused": false
+  },
+  {
+   "i": 227,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0919,
+    0.8239,
+    0.0419,
+    0.0424
+   ],
+   "refused": false
+  },
+  {
+   "i": 228,
+   "gold": 2,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.4538,
+    0.0658,
+    0.3721,
+    0.1083
+   ],
+   "refused": false
+  },
+  {
+   "i": 229,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8572,
+    0.0468,
+    0.0474,
+    0.0485
+   ],
+   "refused": false
+  },
+  {
+   "i": 230,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0583,
+    0.8701,
+    0.0356,
+    0.036
+   ],
+   "refused": false
+  },
+  {
+   "i": 231,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0726,
+    0.8438,
+    0.042,
+    0.0416
+   ],
+   "refused": false
+  },
+  {
+   "i": 232,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0695,
+    0.037,
+    0.8532,
+    0.0403
+   ],
+   "refused": false
+  },
+  {
+   "i": 233,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0532,
+    0.0374,
+    0.1256,
+    0.7838
+   ],
+   "refused": false
+  },
+  {
+   "i": 234,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1675,
+    0.1202,
+    0.414,
+    0.2983
+   ],
+   "refused": false
+  },
+  {
+   "i": 235,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0489,
+    0.8777,
+    0.0361,
+    0.0373
+   ],
+   "refused": false
+  },
+  {
+   "i": 236,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1191,
+    0.0309,
+    0.8174,
+    0.0326
+   ],
+   "refused": false
+  },
+  {
+   "i": 237,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1847,
+    0.6896,
+    0.0594,
+    0.0663
+   ],
+   "refused": false
+  },
+  {
+   "i": 238,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8374,
+    0.0547,
+    0.0546,
+    0.0533
+   ],
+   "refused": false
+  },
+  {
+   "i": 239,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0513,
+    0.0388,
+    0.6778,
+    0.2321
+   ],
+   "refused": false
+  },
+  {
+   "i": 240,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1007,
+    0.0303,
+    0.2484,
+    0.6206
+   ],
+   "refused": false
+  },
+  {
+   "i": 241,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0578,
+    0.8619,
+    0.04,
+    0.0403
+   ],
+   "refused": false
+  },
+  {
+   "i": 242,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.3341,
+    0.5552,
+    0.0565,
+    0.0541
+   ],
+   "refused": false
+  },
+  {
+   "i": 243,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0482,
+    0.0389,
+    0.0685,
+    0.8444
+   ],
+   "refused": false
+  },
+  {
+   "i": 244,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1077,
+    0.0419,
+    0.807,
+    0.0434
+   ],
+   "refused": false
+  },
+  {
+   "i": 245,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.092,
+    0.0493,
+    0.8062,
+    0.0526
+   ],
+   "refused": false
+  },
+  {
+   "i": 246,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0767,
+    0.0423,
+    0.0925,
+    0.7885
+   ],
+   "refused": false
+  },
+  {
+   "i": 247,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1758,
+    0.0409,
+    0.0891,
+    0.6942
+   ],
+   "refused": false
+  },
+  {
+   "i": 248,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0669,
+    0.033,
+    0.3112,
+    0.5888
+   ],
+   "refused": false
+  },
+  {
+   "i": 249,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8744,
+    0.0408,
+    0.0424,
+    0.0424
+   ],
+   "refused": false
+  },
+  {
+   "i": 250,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0824,
+    0.049,
+    0.8166,
+    0.0519
+   ],
+   "refused": false
+  },
+  {
+   "i": 251,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8719,
+    0.0427,
+    0.0425,
+    0.0429
+   ],
+   "refused": false
+  },
+  {
+   "i": 252,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.132,
+    0.7568,
+    0.0554,
+    0.0558
+   ],
+   "refused": false
+  },
+  {
+   "i": 253,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1196,
+    0.0274,
+    0.8241,
+    0.0289
+   ],
+   "refused": false
+  },
+  {
+   "i": 254,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1175,
+    0.0408,
+    0.7949,
+    0.0468
+   ],
+   "refused": false
+  },
+  {
+   "i": 255,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.205,
+    0.0539,
+    0.0603,
+    0.6808
+   ],
+   "refused": false
+  },
+  {
+   "i": 256,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0338,
+    0.0314,
+    0.9012,
+    0.0337
+   ],
+   "refused": false
+  },
+  {
+   "i": 257,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0561,
+    0.0353,
+    0.1464,
+    0.7622
+   ],
+   "refused": false
+  },
+  {
+   "i": 258,
+   "gold": 3,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0472,
+    0.0393,
+    0.5728,
+    0.3407
+   ],
+   "refused": false
+  },
+  {
+   "i": 259,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0457,
+    0.0318,
+    0.0352,
+    0.8873
+   ],
+   "refused": false
+  },
+  {
+   "i": 260,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1272,
+    0.7752,
+    0.0479,
+    0.0498
+   ],
+   "refused": false
+  },
+  {
+   "i": 261,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.7866,
+    0.0673,
+    0.0711,
+    0.0749
+   ],
+   "refused": false
+  },
+  {
+   "i": 262,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.2052,
+    0.0447,
+    0.1227,
+    0.6273
+   ],
+   "refused": false
+  },
+  {
+   "i": 263,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0774,
+    0.0342,
+    0.1341,
+    0.7543
+   ],
+   "refused": false
+  },
+  {
+   "i": 264,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1259,
+    0.0485,
+    0.0546,
+    0.771
+   ],
+   "refused": false
+  },
+  {
+   "i": 265,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1577,
+    0.0443,
+    0.0472,
+    0.7508
+   ],
+   "refused": false
+  },
+  {
+   "i": 266,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0584,
+    0.8528,
+    0.0441,
+    0.0447
+   ],
+   "refused": false
+  },
+  {
+   "i": 267,
+   "gold": 3,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0753,
+    0.0353,
+    0.4663,
+    0.4231
+   ],
+   "refused": false
+  },
+  {
+   "i": 268,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1754,
+    0.7154,
+    0.0527,
+    0.0565
+   ],
+   "refused": false
+  },
+  {
+   "i": 269,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0915,
+    0.825,
+    0.0415,
+    0.042
+   ],
+   "refused": false
+  },
+  {
+   "i": 270,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0651,
+    0.8529,
+    0.0401,
+    0.0419
+   ],
+   "refused": false
+  },
+  {
+   "i": 271,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.789,
+    0.0696,
+    0.0696,
+    0.0718
+   ],
+   "refused": false
+  },
+  {
+   "i": 272,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.2646,
+    0.1066,
+    0.3861,
+    0.2426
+   ],
+   "refused": false
+  },
+  {
+   "i": 273,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0593,
+    0.0348,
+    0.0762,
+    0.8297
+   ],
+   "refused": false
+  },
+  {
+   "i": 274,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0702,
+    0.8245,
+    0.0523,
+    0.053
+   ],
+   "refused": false
+  },
+  {
+   "i": 275,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.2204,
+    0.0475,
+    0.0509,
+    0.6812
+   ],
+   "refused": false
+  },
+  {
+   "i": 276,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1183,
+    0.0511,
+    0.0539,
+    0.7768
+   ],
+   "refused": false
+  },
+  {
+   "i": 277,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0544,
+    0.8747,
+    0.0351,
+    0.0358
+   ],
+   "refused": false
+  },
+  {
+   "i": 278,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1017,
+    0.043,
+    0.8092,
+    0.0462
+   ],
+   "refused": false
+  },
+  {
+   "i": 279,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0593,
+    0.0377,
+    0.0964,
+    0.8066
+   ],
+   "refused": false
+  },
+  {
+   "i": 280,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0918,
+    0.055,
+    0.7457,
+    0.1075
+   ],
+   "refused": false
+  },
+  {
+   "i": 281,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0944,
+    0.8176,
+    0.0432,
+    0.0448
+   ],
+   "refused": false
+  },
+  {
+   "i": 282,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0406,
+    0.8817,
+    0.0389,
+    0.0388
+   ],
+   "refused": false
+  },
+  {
+   "i": 283,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1019,
+    0.0318,
+    0.0344,
+    0.8319
+   ],
+   "refused": false
+  },
+  {
+   "i": 284,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1269,
+    0.7732,
+    0.0494,
+    0.0504
+   ],
+   "refused": false
+  },
+  {
+   "i": 285,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8893,
+    0.0363,
+    0.037,
+    0.0374
+   ],
+   "refused": false
+  },
+  {
+   "i": 286,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.736,
+    0.0438,
+    0.1753,
+    0.045
+   ],
+   "refused": false
+  },
+  {
+   "i": 287,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0696,
+    0.0325,
+    0.8636,
+    0.0344
+   ],
+   "refused": false
+  },
+  {
+   "i": 288,
+   "gold": 2,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.483,
+    0.0992,
+    0.2996,
+    0.1182
+   ],
+   "refused": false
+  },
+  {
+   "i": 289,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0558,
+    0.8659,
+    0.039,
+    0.0393
+   ],
+   "refused": false
+  },
+  {
+   "i": 290,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0803,
+    0.8434,
+    0.038,
+    0.0382
+   ],
+   "refused": false
+  },
+  {
+   "i": 291,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1758,
+    0.0517,
+    0.0672,
+    0.7054
+   ],
+   "refused": false
+  },
+  {
+   "i": 292,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0732,
+    0.0364,
+    0.2378,
+    0.6525
+   ],
+   "refused": false
+  },
+  {
+   "i": 293,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0898,
+    0.042,
+    0.0756,
+    0.7926
+   ],
+   "refused": false
+  },
+  {
+   "i": 294,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0657,
+    0.8509,
+    0.0413,
+    0.0421
+   ],
+   "refused": false
+  },
+  {
+   "i": 295,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.4804,
+    0.1309,
+    0.1665,
+    0.2222
+   ],
+   "refused": false
+  },
+  {
+   "i": 296,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8361,
+    0.0528,
+    0.0539,
+    0.0571
+   ],
+   "refused": false
+  },
+  {
+   "i": 297,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0709,
+    0.0425,
+    0.3508,
+    0.5359
+   ],
+   "refused": false
+  },
+  {
+   "i": 298,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0659,
+    0.8374,
+    0.0478,
+    0.0489
+   ],
+   "refused": false
+  },
+  {
+   "i": 299,
+   "gold": 2,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1419,
+    0.0751,
+    0.2757,
+    0.5073
+   ],
+   "refused": false
+  },
+  {
+   "i": 300,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1556,
+    0.7496,
+    0.0464,
+    0.0484
+   ],
+   "refused": false
+  },
+  {
+   "i": 301,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0325,
+    0.0291,
+    0.9069,
+    0.0315
+   ],
+   "refused": false
+  },
+  {
+   "i": 302,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.133,
+    0.0446,
+    0.776,
+    0.0463
+   ],
+   "refused": false
+  },
+  {
+   "i": 303,
+   "gold": 2,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1035,
+    0.0439,
+    0.3368,
+    0.5158
+   ],
+   "refused": false
+  },
+  {
+   "i": 304,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0764,
+    0.034,
+    0.826,
+    0.0636
+   ],
+   "refused": false
+  },
+  {
+   "i": 305,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1977,
+    0.5413,
+    0.1802,
+    0.0807
+   ],
+   "refused": false
+  },
+  {
+   "i": 306,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0632,
+    0.0385,
+    0.1581,
+    0.7401
+   ],
+   "refused": false
+  },
+  {
+   "i": 307,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0936,
+    0.0554,
+    0.0717,
+    0.7794
+   ],
+   "refused": false
+  },
+  {
+   "i": 308,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0379,
+    0.8955,
+    0.0329,
+    0.0337
+   ],
+   "refused": false
+  },
+  {
+   "i": 309,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0843,
+    0.0477,
+    0.8094,
+    0.0587
+   ],
+   "refused": false
+  },
+  {
+   "i": 310,
+   "gold": 2,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.063,
+    0.0387,
+    0.2658,
+    0.6324
+   ],
+   "refused": false
+  },
+  {
+   "i": 311,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.3225,
+    0.5713,
+    0.0487,
+    0.0575
+   ],
+   "refused": false
+  },
+  {
+   "i": 312,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1605,
+    0.0458,
+    0.068,
+    0.7257
+   ],
+   "refused": false
+  },
+  {
+   "i": 313,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1596,
+    0.0925,
+    0.5251,
+    0.2229
+   ],
+   "refused": false
+  },
+  {
+   "i": 314,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1017,
+    0.0579,
+    0.7803,
+    0.0601
+   ],
+   "refused": false
+  },
+  {
+   "i": 315,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8781,
+    0.04,
+    0.0407,
+    0.0412
+   ],
+   "refused": false
+  },
+  {
+   "i": 316,
+   "gold": 0,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.306,
+    0.0804,
+    0.4837,
+    0.13
+   ],
+   "refused": false
+  },
+  {
+   "i": 317,
+   "gold": 2,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.058,
+    0.027,
+    0.1827,
+    0.7323
+   ],
+   "refused": false
+  },
+  {
+   "i": 318,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0829,
+    0.8175,
+    0.0487,
+    0.051
+   ],
+   "refused": false
+  },
+  {
+   "i": 319,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0947,
+    0.0652,
+    0.7351,
+    0.105
+   ],
+   "refused": false
+  },
+  {
+   "i": 320,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0688,
+    0.0588,
+    0.8108,
+    0.0617
+   ],
+   "refused": false
+  },
+  {
+   "i": 321,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8655,
+    0.044,
+    0.0446,
+    0.0459
+   ],
+   "refused": false
+  },
+  {
+   "i": 322,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0637,
+    0.8601,
+    0.0387,
+    0.0375
+   ],
+   "refused": false
+  },
+  {
+   "i": 323,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.088,
+    0.041,
+    0.1932,
+    0.6779
+   ],
+   "refused": false
+  },
+  {
+   "i": 324,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0765,
+    0.8308,
+    0.0458,
+    0.0469
+   ],
+   "refused": false
+  },
+  {
+   "i": 325,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0583,
+    0.0325,
+    0.1362,
+    0.773
+   ],
+   "refused": false
+  },
+  {
+   "i": 326,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8492,
+    0.0495,
+    0.0499,
+    0.0514
+   ],
+   "refused": false
+  },
+  {
+   "i": 327,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.6664,
+    0.0703,
+    0.1729,
+    0.0905
+   ],
+   "refused": false
+  },
+  {
+   "i": 328,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0561,
+    0.0344,
+    0.0507,
+    0.8588
+   ],
+   "refused": false
+  },
+  {
+   "i": 329,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0778,
+    0.0319,
+    0.7001,
+    0.1903
+   ],
+   "refused": false
+  },
+  {
+   "i": 330,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1523,
+    0.0378,
+    0.044,
+    0.7658
+   ],
+   "refused": false
+  },
+  {
+   "i": 331,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1639,
+    0.7222,
+    0.056,
+    0.0578
+   ],
+   "refused": false
+  },
+  {
+   "i": 332,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8919,
+    0.0357,
+    0.0359,
+    0.0365
+   ],
+   "refused": false
+  },
+  {
+   "i": 333,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.9045,
+    0.0308,
+    0.0317,
+    0.033
+   ],
+   "refused": false
+  },
+  {
+   "i": 334,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1904,
+    0.7059,
+    0.0509,
+    0.0528
+   ],
+   "refused": false
+  },
+  {
+   "i": 335,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8906,
+    0.0362,
+    0.0361,
+    0.0371
+   ],
+   "refused": false
+  },
+  {
+   "i": 336,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1925,
+    0.0423,
+    0.651,
+    0.1141
+   ],
+   "refused": false
+  },
+  {
+   "i": 337,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0965,
+    0.0641,
+    0.758,
+    0.0814
+   ],
+   "refused": false
+  },
+  {
+   "i": 338,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.2994,
+    0.6259,
+    0.0369,
+    0.0378
+   ],
+   "refused": false
+  },
+  {
+   "i": 339,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0423,
+    0.8912,
+    0.0333,
+    0.0332
+   ],
+   "refused": false
+  },
+  {
+   "i": 340,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0765,
+    0.0416,
+    0.0947,
+    0.7873
+   ],
+   "refused": false
+  },
+  {
+   "i": 341,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1191,
+    0.8072,
+    0.0364,
+    0.0373
+   ],
+   "refused": false
+  },
+  {
+   "i": 342,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8634,
+    0.0446,
+    0.0454,
+    0.0465
+   ],
+   "refused": false
+  },
+  {
+   "i": 343,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.054,
+    0.868,
+    0.0389,
+    0.0391
+   ],
+   "refused": false
+  },
+  {
+   "i": 344,
+   "gold": 1,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.5331,
+    0.0697,
+    0.139,
+    0.2582
+   ],
+   "refused": false
+  },
+  {
+   "i": 345,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.062,
+    0.0292,
+    0.2774,
+    0.6314
+   ],
+   "refused": false
+  },
+  {
+   "i": 346,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0698,
+    0.0329,
+    0.3057,
+    0.5916
+   ],
+   "refused": false
+  },
+  {
+   "i": 347,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0458,
+    0.8615,
+    0.0461,
+    0.0466
+   ],
+   "refused": false
+  },
+  {
+   "i": 348,
+   "gold": 0,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.4163,
+    0.4364,
+    0.0656,
+    0.0817
+   ],
+   "refused": false
+  },
+  {
+   "i": 349,
+   "gold": 2,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1191,
+    0.0414,
+    0.4029,
+    0.4366
+   ],
+   "refused": false
+  },
+  {
+   "i": 350,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0767,
+    0.8574,
+    0.0329,
+    0.0331
+   ],
+   "refused": false
+  },
+  {
+   "i": 351,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8649,
+    0.044,
+    0.0451,
+    0.046
+   ],
+   "refused": false
+  },
+  {
+   "i": 352,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8727,
+    0.0421,
+    0.0426,
+    0.0426
+   ],
+   "refused": false
+  },
+  {
+   "i": 353,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1622,
+    0.7186,
+    0.0582,
+    0.0609
+   ],
+   "refused": false
+  },
+  {
+   "i": 354,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8934,
+    0.0347,
+    0.0359,
+    0.036
+   ],
+   "refused": false
+  },
+  {
+   "i": 355,
+   "gold": 0,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.3382,
+    0.5182,
+    0.0686,
+    0.0751
+   ],
+   "refused": false
+  },
+  {
+   "i": 356,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1754,
+    0.6929,
+    0.0638,
+    0.0679
+   ],
+   "refused": false
+  },
+  {
+   "i": 357,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.2247,
+    0.0457,
+    0.6161,
+    0.1135
+   ],
+   "refused": false
+  },
+  {
+   "i": 358,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0333,
+    0.8984,
+    0.0341,
+    0.0342
+   ],
+   "refused": false
+  },
+  {
+   "i": 359,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1157,
+    0.7869,
+    0.0482,
+    0.0491
+   ],
+   "refused": false
+  },
+  {
+   "i": 360,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1469,
+    0.7365,
+    0.0576,
+    0.059
+   ],
+   "refused": false
+  },
+  {
+   "i": 361,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8694,
+    0.0435,
+    0.0434,
+    0.0437
+   ],
+   "refused": false
+  },
+  {
+   "i": 362,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1039,
+    0.0389,
+    0.8147,
+    0.0425
+   ],
+   "refused": false
+  },
+  {
+   "i": 363,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.6873,
+    0.0932,
+    0.1191,
+    0.1004
+   ],
+   "refused": false
+  },
+  {
+   "i": 364,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8901,
+    0.0359,
+    0.0366,
+    0.0374
+   ],
+   "refused": false
+  },
+  {
+   "i": 365,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1291,
+    0.1101,
+    0.2639,
+    0.4969
+   ],
+   "refused": false
+  },
+  {
+   "i": 366,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0857,
+    0.8218,
+    0.0453,
+    0.0472
+   ],
+   "refused": false
+  },
+  {
+   "i": 367,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0903,
+    0.0434,
+    0.8184,
+    0.0479
+   ],
+   "refused": false
+  },
+  {
+   "i": 368,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8827,
+    0.0387,
+    0.0387,
+    0.04
+   ],
+   "refused": false
+  },
+  {
+   "i": 369,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8405,
+    0.098,
+    0.0282,
+    0.0333
+   ],
+   "refused": false
+  },
+  {
+   "i": 370,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1243,
+    0.7986,
+    0.0392,
+    0.0379
+   ],
+   "refused": false
+  },
+  {
+   "i": 371,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8855,
+    0.0371,
+    0.0379,
+    0.0396
+   ],
+   "refused": false
+  },
+  {
+   "i": 372,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8502,
+    0.0971,
+    0.0258,
+    0.0269
+   ],
+   "refused": false
+  },
+  {
+   "i": 373,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1228,
+    0.7947,
+    0.0411,
+    0.0414
+   ],
+   "refused": false
+  },
+  {
+   "i": 374,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0831,
+    0.8467,
+    0.0352,
+    0.0349
+   ],
+   "refused": false
+  },
+  {
+   "i": 375,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.2856,
+    0.0401,
+    0.056,
+    0.6183
+   ],
+   "refused": false
+  },
+  {
+   "i": 376,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1713,
+    0.732,
+    0.0478,
+    0.0489
+   ],
+   "refused": false
+  },
+  {
+   "i": 377,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0904,
+    0.8444,
+    0.0324,
+    0.0329
+   ],
+   "refused": false
+  },
+  {
+   "i": 378,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1367,
+    0.0747,
+    0.7028,
+    0.0858
+   ],
+   "refused": false
+  },
+  {
+   "i": 379,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.6904,
+    0.1003,
+    0.1069,
+    0.1024
+   ],
+   "refused": false
+  },
+  {
+   "i": 380,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0691,
+    0.8548,
+    0.0375,
+    0.0385
+   ],
+   "refused": false
+  },
+  {
+   "i": 381,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0852,
+    0.8328,
+    0.0405,
+    0.0414
+   ],
+   "refused": false
+  },
+  {
+   "i": 382,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0725,
+    0.0368,
+    0.0389,
+    0.8517
+   ],
+   "refused": false
+  },
+  {
+   "i": 383,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0521,
+    0.8608,
+    0.0407,
+    0.0464
+   ],
+   "refused": false
+  },
+  {
+   "i": 384,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.1642,
+    0.0608,
+    0.6978,
+    0.0772
+   ],
+   "refused": false
+  },
+  {
+   "i": 385,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0389,
+    0.8937,
+    0.0338,
+    0.0335
+   ],
+   "refused": false
+  },
+  {
+   "i": 386,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0382,
+    0.8913,
+    0.0351,
+    0.0354
+   ],
+   "refused": false
+  },
+  {
+   "i": 387,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.093,
+    0.8285,
+    0.039,
+    0.0394
+   ],
+   "refused": false
+  },
+  {
+   "i": 388,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.882,
+    0.0384,
+    0.0395,
+    0.04
+   ],
+   "refused": false
+  },
+  {
+   "i": 389,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8719,
+    0.0414,
+    0.0442,
+    0.0424
+   ],
+   "refused": false
+  },
+  {
+   "i": 390,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.6746,
+    0.096,
+    0.1081,
+    0.1214
+   ],
+   "refused": false
+  },
+  {
+   "i": 391,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0481,
+    0.8712,
+    0.0403,
+    0.0404
+   ],
+   "refused": false
+  },
+  {
+   "i": 392,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8716,
+    0.0415,
+    0.0427,
+    0.0441
+   ],
+   "refused": false
+  },
+  {
+   "i": 393,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8788,
+    0.0392,
+    0.0402,
+    0.0418
+   ],
+   "refused": false
+  },
+  {
+   "i": 394,
+   "gold": 0,
+   "status": "OK",
+   "label": "world",
+   "predicted": 0,
+   "probabilities": [
+    0.8398,
+    0.0511,
+    0.0537,
+    0.0554
+   ],
+   "refused": false
+  },
+  {
+   "i": 395,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0708,
+    0.8049,
+    0.0607,
+    0.0636
+   ],
+   "refused": false
+  },
+  {
+   "i": 396,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.0362,
+    0.8963,
+    0.0333,
+    0.0343
+   ],
+   "refused": false
+  },
+  {
+   "i": 397,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0798,
+    0.035,
+    0.1577,
+    0.7275
+   ],
+   "refused": false
+  },
+  {
+   "i": 398,
+   "gold": 1,
+   "status": "OK",
+   "label": "sports",
+   "predicted": 1,
+   "probabilities": [
+    0.1097,
+    0.8228,
+    0.034,
+    0.0335
+   ],
+   "refused": false
+  },
+  {
+   "i": 399,
+   "gold": 2,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.051,
+    0.0308,
+    0.4587,
+    0.4594
+   ],
+   "refused": false
+  }
+ ]
+}

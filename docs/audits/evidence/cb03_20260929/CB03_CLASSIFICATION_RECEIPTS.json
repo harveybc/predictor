@@ -1,0 +1,761 @@
+{
+ "identities_differ": {
+  "author_published_accuracy": "1756f8771910067a7162ca869aedd7ca5582ccd0e49621f9de319e2bfbae8665",
+  "ours_accuracy": "1756f8771910067a7162ca869aedd7ca5582ccd0e49621f9de319e2bfbae8665",
+  "ours_macro_f1": "a62f184c48a8216d2a425090540f6fa93eaaf16babdf9e66483974cd3bee6d4b"
+ },
+ "metric_contract": "classification_metrics.v1",
+ "ours_against_published": {
+  "author_name": "accuracy",
+  "difference": 0.0,
+  "family": "ACCURACY",
+  "independent_units": 400,
+  "left": 0.9525,
+  "left_naive": 0.18,
+  "population": 400,
+  "right": 0.9525,
+  "right_naive": 0.18,
+  "unit": "accuracy_fraction"
+ },
+ "receipts": {
+  "author_published_accuracy": {
+   "abstention": {
+    "abstained": 0,
+    "abstention_rule": "the author's recipe offers no refusal token: a row is dropped only when the rendered options do not fit the sequence budget, and no row did",
+    "answered": 400,
+    "answered_fraction": 1.0,
+    "coverage": 0.0,
+    "denominator_policy": "FULL_POPULATION_ABSTENTION_WRONG"
+   },
+   "author_primary_metric": {
+    "denominator_policy": "FULL_POPULATION_ABSTENTION_WRONG",
+    "family": "ACCURACY",
+    "metric": "classification.accuracy",
+    "name": "accuracy",
+    "unit": "accuracy_fraction",
+    "value": 0.9525
+   },
+   "authorises_broker_deployment": false,
+   "calibrated": false,
+   "calibration_split": {
+    "fitted_parameters": null,
+    "population_sha256": null,
+    "rows": 0,
+    "split_id": "NONE"
+   },
+   "checkpoint": "convaiinnovations/laya-typed-decisions@1a793eb568e6718f15941d08f85432581df534e3",
+   "checkpoint_sha256": "4fa56de72383a9d3efa9cfa78955733c81b9fc8067a587ca4beb82c78107a24e",
+   "class_vocabulary": {
+    "label_order_sha256": "c8088b2ff18cff0f14faa9d46fa7d1a704ee63d17dceb886e380c55e27ca5af9",
+    "labels": [
+     "world",
+     "sports",
+     "business",
+     "sci_tech"
+    ],
+    "size": 4
+   },
+   "corpus_class": "PUBLIC_BENCHMARK",
+   "corpus_id": "agnews_zhang2015_test_first400_file_order",
+   "corpus_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+   "declared_fields": [
+    "author_primary_metric"
+   ],
+   "evaluation_population_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+   "evaluation_split": "test_first400_file_order",
+   "evidence_class": "PUBLISHED_REFERENCE",
+   "execution_authority": "NONE",
+   "labelled_rows_fit_head": false,
+   "limitations": "the author's published value, quoted from its artefact and never labelled as our measured result: author_primary_metric is the declaration here. Source: NandhaKishorM/laya, research/results/app_benchmark_results.json, suites['jev.ag_news']['typed-decisions'], committed at 010bacef (release 0.3.7, 2026-09-23); the run itself is stamped 2026-09-19 11:57:16, device cpu, laya 0.2.1, n_per_task 400, seed 13. The author publishes NO per-class confusion, no per-row predictions and no population digest for this cell, so the confusion, abstention, population and probability metrics carried in this receipt are OURS - they are present because the contract requires every field, and they are not the author's numbers. The author's published macro-F1 is 0.9468. AG News is NOT held out for this checkpoint: the author's own results file marks the suite in_training true, so this is an in-training-mix score and no generalisation claim follows from it. The population is the first 400 rows of the official test split in file order, which is NOT balanced (72/102/123/103), so the paired train-derived majority naive on these rows is 0.180000 and not the full split's 0.250000; the full 7,600-row test split is a separate experiment and its denominator is never attached to this score. The train split is exactly balanced at 30,000 per class, so the majority is a four-way tie; CB01 broke it alphabetically (ALPHABETICAL_OVER_CLASS_NAMES_SELECTS_Business) before any score existed, which is the WEAKEST of the four choices - the strongest, World, would give 0.2575. The author's recipe applies the checkpoint's own per-bucket temperatures, whose fitting split the author does not publish, so the posterior is declared UNCALIBRATED and calibrated false; ECE is reported as measured with its bin count, not as evidence of calibration. Latency is not comparable: this ran under a single BLAS thread by admission policy. Macro-F1 is carried at full precision (0.946754652763); the author's harness rounds it to 0.9468, and the contract refuses a carried metric that disagrees with its own confusion, so the rounding is recorded here rather than absorbed.",
+   "metric_identity_sha256": "1756f8771910067a7162ca869aedd7ca5582ccd0e49621f9de319e2bfbae8665",
+   "paired_naive": {
+    "evaluation_population_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+    "family": "ACCURACY",
+    "metric": "classification.naive_accuracy",
+    "policy": "MAJORITY_CLASS_FROM_TRAIN",
+    "seed": null,
+    "train_label_population_sha256": "74a50b920b22dff2adfade31fe5f1ce206f08d9cb9988af94c60f42f10a6ecf4",
+    "unit": "accuracy_fraction",
+    "value": 0.18
+   },
+   "per_class_confusion": {
+    "abstained": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "abstention_column": "ABSTAINED",
+    "confusion_sha256": "fd1cbc2e71c5d18bc6063ac2b4895b2a505f9a21bdb6089b7fc210dce4e09b10",
+    "correct": [
+     99,
+     121,
+     62,
+     99
+    ],
+    "matrix": [
+     [
+      99,
+      3,
+      1,
+      0,
+      0
+     ],
+     [
+      2,
+      121,
+      0,
+      0,
+      0
+     ],
+     [
+      1,
+      0,
+      62,
+      9,
+      0
+     ],
+     [
+      0,
+      0,
+      3,
+      99,
+      0
+     ]
+    ],
+    "orientation": "rows are reference labels, columns are predicted labels, both in class_vocabulary order",
+    "predicted": [
+     102,
+     124,
+     66,
+     108
+    ],
+    "support": [
+     103,
+     123,
+     72,
+     102
+    ]
+   },
+   "population": {
+    "abstained": 0,
+    "answered": 400,
+    "clustered_by": "NONE",
+    "independent_units": 400,
+    "repeats": 1,
+    "total": 400
+   },
+   "probability_metrics": {
+    "brier": 0.1137,
+    "ece": 0.155,
+    "ece_bins": 15,
+    "nll": 0.2801
+   },
+   "probability_semantics": "SOFTMAX_POSTERIOR_UNCALIBRATED",
+   "protocol_sha256": "cc23449632f6e16c4fa0ed3398de6b15a1258e5f8d49e8a441aa5263ddab2f0c",
+   "provider": "AUTHOR_PUBLISHED_RUN_laya_0.2.1",
+   "receipt_id": "agnews_topic_zhang2015_laya_published_row.v1:agnews_zhang2015_test_first400_file_order:AUTHOR_PUBLISHED_RUN_laya_0.2.1:ACCURACY",
+   "receipt_sha256": "ae0ba9a5653566f8f735017f14e041d279fb3c1f91a2b2ca1f177d31ff8cfeb3",
+   "schema": "classification_metrics.v1",
+   "scorer_sha256": "08862fb4dba102db873e3e3ad428dedf92c12832b4e8ef71b35e433cce4eea22",
+   "secondary_metrics": {},
+   "seed": null,
+   "supervision_regime": "ZERO_SHOT_PROMPTED",
+   "task_id": "agnews_topic_zhang2015_laya_published_row.v1"
+  },
+  "ours_accuracy": {
+   "abstention": {
+    "abstained": 0,
+    "abstention_rule": "the author's recipe offers no refusal token: a row is dropped only when the rendered options do not fit the sequence budget, and no row did",
+    "answered": 400,
+    "answered_fraction": 1.0,
+    "coverage": 0.0,
+    "denominator_policy": "FULL_POPULATION_ABSTENTION_WRONG"
+   },
+   "author_primary_metric": {
+    "denominator_policy": "FULL_POPULATION_ABSTENTION_WRONG",
+    "family": "ACCURACY",
+    "metric": "classification.accuracy",
+    "name": "accuracy",
+    "unit": "accuracy_fraction",
+    "value": 0.9525
+   },
+   "authorises_broker_deployment": false,
+   "calibrated": false,
+   "calibration_split": {
+    "fitted_parameters": null,
+    "population_sha256": null,
+    "rows": 0,
+    "split_id": "NONE"
+   },
+   "checkpoint": "convaiinnovations/laya-typed-decisions@1a793eb568e6718f15941d08f85432581df534e3",
+   "checkpoint_sha256": "4fa56de72383a9d3efa9cfa78955733c81b9fc8067a587ca4beb82c78107a24e",
+   "class_vocabulary": {
+    "label_order_sha256": "c8088b2ff18cff0f14faa9d46fa7d1a704ee63d17dceb886e380c55e27ca5af9",
+    "labels": [
+     "world",
+     "sports",
+     "business",
+     "sci_tech"
+    ],
+    "size": 4
+   },
+   "corpus_class": "PUBLIC_BENCHMARK",
+   "corpus_id": "agnews_zhang2015_test_first400_file_order",
+   "corpus_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+   "declared_fields": [],
+   "evaluation_population_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+   "evaluation_split": "test_first400_file_order",
+   "evidence_class": "MEASUREMENT",
+   "execution_authority": "NONE",
+   "labelled_rows_fit_head": false,
+   "limitations": "AG News is NOT held out for this checkpoint: the author's own results file marks the suite in_training true, so this is an in-training-mix score and no generalisation claim follows from it. The population is the first 400 rows of the official test split in file order, which is NOT balanced (72/102/123/103), so the paired train-derived majority naive on these rows is 0.180000 and not the full split's 0.250000; the full 7,600-row test split is a separate experiment and its denominator is never attached to this score. The train split is exactly balanced at 30,000 per class, so the majority is a four-way tie; CB01 broke it alphabetically (ALPHABETICAL_OVER_CLASS_NAMES_SELECTS_Business) before any score existed, which is the WEAKEST of the four choices - the strongest, World, would give 0.2575. The author's recipe applies the checkpoint's own per-bucket temperatures, whose fitting split the author does not publish, so the posterior is declared UNCALIBRATED and calibrated false; ECE is reported as measured with its bin count, not as evidence of calibration. Latency is not comparable: this ran under a single BLAS thread by admission policy. Macro-F1 is carried at full precision (0.946754652763); the author's harness rounds it to 0.9468, and the contract refuses a carried metric that disagrees with its own confusion, so the rounding is recorded here rather than absorbed.",
+   "metric_identity_sha256": "1756f8771910067a7162ca869aedd7ca5582ccd0e49621f9de319e2bfbae8665",
+   "paired_naive": {
+    "evaluation_population_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+    "family": "ACCURACY",
+    "metric": "classification.naive_accuracy",
+    "policy": "MAJORITY_CLASS_FROM_TRAIN",
+    "seed": null,
+    "train_label_population_sha256": "74a50b920b22dff2adfade31fe5f1ce206f08d9cb9988af94c60f42f10a6ecf4",
+    "unit": "accuracy_fraction",
+    "value": 0.18
+   },
+   "per_class_confusion": {
+    "abstained": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "abstention_column": "ABSTAINED",
+    "confusion_sha256": "fd1cbc2e71c5d18bc6063ac2b4895b2a505f9a21bdb6089b7fc210dce4e09b10",
+    "correct": [
+     99,
+     121,
+     62,
+     99
+    ],
+    "matrix": [
+     [
+      99,
+      3,
+      1,
+      0,
+      0
+     ],
+     [
+      2,
+      121,
+      0,
+      0,
+      0
+     ],
+     [
+      1,
+      0,
+      62,
+      9,
+      0
+     ],
+     [
+      0,
+      0,
+      3,
+      99,
+      0
+     ]
+    ],
+    "orientation": "rows are reference labels, columns are predicted labels, both in class_vocabulary order",
+    "predicted": [
+     102,
+     124,
+     66,
+     108
+    ],
+    "support": [
+     103,
+     123,
+     72,
+     102
+    ]
+   },
+   "population": {
+    "abstained": 0,
+    "answered": 400,
+    "clustered_by": "NONE",
+    "independent_units": 400,
+    "repeats": 1,
+    "total": 400
+   },
+   "probability_metrics": {
+    "brier": 0.1137,
+    "ece": 0.155,
+    "ece_bins": 15,
+    "nll": 0.2801
+   },
+   "probability_semantics": "SOFTMAX_POSTERIOR_UNCALIBRATED",
+   "protocol_sha256": "cc23449632f6e16c4fa0ed3398de6b15a1258e5f8d49e8a441aa5263ddab2f0c",
+   "provider": "NATIVE_AUTHOR_HARNESS_laya_0.2.1",
+   "receipt_id": "agnews_topic_zhang2015_laya_published_row.v1:agnews_zhang2015_test_first400_file_order:NATIVE_AUTHOR_HARNESS_laya_0.2.1:ACCURACY",
+   "receipt_sha256": "3cc6045247f8ae5ed68468d4b339a8054605e2cf0083914fa317ab032562a5e5",
+   "schema": "classification_metrics.v1",
+   "scorer_sha256": "08862fb4dba102db873e3e3ad428dedf92c12832b4e8ef71b35e433cce4eea22",
+   "secondary_metrics": {
+    "MACRO_F1": 0.9467546527629132
+   },
+   "seed": null,
+   "supervision_regime": "ZERO_SHOT_PROMPTED",
+   "task_id": "agnews_topic_zhang2015_laya_published_row.v1"
+  },
+  "ours_macro_f1": {
+   "abstention": {
+    "abstained": 0,
+    "abstention_rule": "the author's recipe offers no refusal token: a row is dropped only when the rendered options do not fit the sequence budget, and no row did",
+    "answered": 400,
+    "answered_fraction": 1.0,
+    "coverage": 0.0,
+    "denominator_policy": "FULL_POPULATION_ABSTENTION_WRONG"
+   },
+   "author_primary_metric": {
+    "denominator_policy": "FULL_POPULATION_ABSTENTION_WRONG",
+    "family": "MACRO_F1",
+    "metric": "classification.macro_f1",
+    "name": "macro-F1",
+    "unit": "macro_f1_fraction",
+    "value": 0.9467546527629132
+   },
+   "authorises_broker_deployment": false,
+   "calibrated": false,
+   "calibration_split": {
+    "fitted_parameters": null,
+    "population_sha256": null,
+    "rows": 0,
+    "split_id": "NONE"
+   },
+   "checkpoint": "convaiinnovations/laya-typed-decisions@1a793eb568e6718f15941d08f85432581df534e3",
+   "checkpoint_sha256": "4fa56de72383a9d3efa9cfa78955733c81b9fc8067a587ca4beb82c78107a24e",
+   "class_vocabulary": {
+    "label_order_sha256": "c8088b2ff18cff0f14faa9d46fa7d1a704ee63d17dceb886e380c55e27ca5af9",
+    "labels": [
+     "world",
+     "sports",
+     "business",
+     "sci_tech"
+    ],
+    "size": 4
+   },
+   "corpus_class": "PUBLIC_BENCHMARK",
+   "corpus_id": "agnews_zhang2015_test_first400_file_order",
+   "corpus_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+   "declared_fields": [],
+   "evaluation_population_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+   "evaluation_split": "test_first400_file_order",
+   "evidence_class": "MEASUREMENT",
+   "execution_authority": "NONE",
+   "labelled_rows_fit_head": false,
+   "limitations": "AG News is NOT held out for this checkpoint: the author's own results file marks the suite in_training true, so this is an in-training-mix score and no generalisation claim follows from it. The population is the first 400 rows of the official test split in file order, which is NOT balanced (72/102/123/103), so the paired train-derived majority naive on these rows is 0.180000 and not the full split's 0.250000; the full 7,600-row test split is a separate experiment and its denominator is never attached to this score. The train split is exactly balanced at 30,000 per class, so the majority is a four-way tie; CB01 broke it alphabetically (ALPHABETICAL_OVER_CLASS_NAMES_SELECTS_Business) before any score existed, which is the WEAKEST of the four choices - the strongest, World, would give 0.2575. The author's recipe applies the checkpoint's own per-bucket temperatures, whose fitting split the author does not publish, so the posterior is declared UNCALIBRATED and calibrated false; ECE is reported as measured with its bin count, not as evidence of calibration. Latency is not comparable: this ran under a single BLAS thread by admission policy. Macro-F1 is carried at full precision (0.946754652763); the author's harness rounds it to 0.9468, and the contract refuses a carried metric that disagrees with its own confusion, so the rounding is recorded here rather than absorbed.",
+   "metric_identity_sha256": "a62f184c48a8216d2a425090540f6fa93eaaf16babdf9e66483974cd3bee6d4b",
+   "paired_naive": {
+    "evaluation_population_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+    "family": "MACRO_F1",
+    "metric": "classification.naive_macro_f1",
+    "policy": "MAJORITY_CLASS_FROM_TRAIN",
+    "seed": null,
+    "train_label_population_sha256": "74a50b920b22dff2adfade31fe5f1ce206f08d9cb9988af94c60f42f10a6ecf4",
+    "unit": "macro_f1_fraction",
+    "value": 0.07627118644067797
+   },
+   "per_class_confusion": {
+    "abstained": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "abstention_column": "ABSTAINED",
+    "confusion_sha256": "fd1cbc2e71c5d18bc6063ac2b4895b2a505f9a21bdb6089b7fc210dce4e09b10",
+    "correct": [
+     99,
+     121,
+     62,
+     99
+    ],
+    "matrix": [
+     [
+      99,
+      3,
+      1,
+      0,
+      0
+     ],
+     [
+      2,
+      121,
+      0,
+      0,
+      0
+     ],
+     [
+      1,
+      0,
+      62,
+      9,
+      0
+     ],
+     [
+      0,
+      0,
+      3,
+      99,
+      0
+     ]
+    ],
+    "orientation": "rows are reference labels, columns are predicted labels, both in class_vocabulary order",
+    "predicted": [
+     102,
+     124,
+     66,
+     108
+    ],
+    "support": [
+     103,
+     123,
+     72,
+     102
+    ]
+   },
+   "population": {
+    "abstained": 0,
+    "answered": 400,
+    "clustered_by": "NONE",
+    "independent_units": 400,
+    "repeats": 1,
+    "total": 400
+   },
+   "probability_metrics": {
+    "brier": 0.1137,
+    "ece": 0.155,
+    "ece_bins": 15,
+    "nll": 0.2801
+   },
+   "probability_semantics": "SOFTMAX_POSTERIOR_UNCALIBRATED",
+   "protocol_sha256": "cc23449632f6e16c4fa0ed3398de6b15a1258e5f8d49e8a441aa5263ddab2f0c",
+   "provider": "NATIVE_AUTHOR_HARNESS_laya_0.2.1",
+   "receipt_id": "agnews_topic_zhang2015_laya_published_row.v1:agnews_zhang2015_test_first400_file_order:NATIVE_AUTHOR_HARNESS_laya_0.2.1:MACRO_F1",
+   "receipt_sha256": "252d1726e5b5bfec1d91dbda434c14f6463e6812cc10a4545af4c930e0c72da3",
+   "schema": "classification_metrics.v1",
+   "scorer_sha256": "08862fb4dba102db873e3e3ad428dedf92c12832b4e8ef71b35e433cce4eea22",
+   "secondary_metrics": {
+    "ACCURACY": 0.9525
+   },
+   "seed": null,
+   "supervision_regime": "ZERO_SHOT_PROMPTED",
+   "task_id": "agnews_topic_zhang2015_laya_published_row.v1"
+  }
+ },
+ "refusals_exercised": {
+  "compare_accuracy_to_macro_f1": "ACCURACY and MACRO_F1 are different metrics: TOP_ONE_AGREEMENT against UNWEIGHTED_MEAN_OF_PER_CLASS_F1. Both lie in a shared numeric interval and neither is a version of the other, so no difference, ratio or ranking between ACCURACY and MACRO_F1 is defined here",
+  "read_accuracy_receipt_as_MAP": "this receipt carries ACCURACY (the author calls it 'accuracy') and does not carry MAP; ACCURACY and MAP are different metrics and neither substitutes for the other"
+ },
+ "schema": "cb03_classification_receipts.v1",
+ "train_label_population": {
+  "class_counts": {
+   "business": 30000,
+   "sci_tech": 30000,
+   "sports": 30000,
+   "world": 30000
+  },
+  "rows": 120000,
+  "sha256": "74a50b920b22dff2adfade31fe5f1ce206f08d9cb9988af94c60f42f10a6ecf4"
+ },
+ "warehouse_projection": {
+  "ours_accuracy": {
+   "metrics": [
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.accuracy",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "accuracy_fraction",
+     "value": 0.9525
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.naive_accuracy",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "accuracy_fraction",
+     "value": 0.18
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.macro_f1",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "macro_f1_fraction",
+     "value": 0.9467546527629132
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.brier",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "brier_fraction",
+     "value": 0.1137
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.ece",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "ece_fraction",
+     "value": 0.155
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.nll",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "nats",
+     "value": 0.2801
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.abstention_coverage",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "abstained_fraction",
+     "value": 0.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.answered_fraction",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "answered_fraction",
+     "value": 1.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.support.class_0",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 103.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.predicted.class_0",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 102.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.correct.class_0",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 99.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.abstained.class_0",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 0.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.support.class_1",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 123.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.predicted.class_1",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 124.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.correct.class_1",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 121.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.abstained.class_1",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 0.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.support.class_2",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 72.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.predicted.class_2",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 66.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.correct.class_2",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 62.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.abstained.class_2",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 0.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.support.class_3",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 102.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.predicted.class_3",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 108.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.correct.class_3",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 99.0
+    },
+    {
+     "horizon": null,
+     "max_value": null,
+     "metric": "classification.abstained.class_3",
+     "min_value": null,
+     "split": "test_first400_file_order",
+     "std_dev": null,
+     "unit": "rows",
+     "value": 0.0
+    }
+   ],
+   "tags": {
+    "abstention_rule": "the author's recipe offers no refusal token: a row is dropped only when the rendered options do not fit the sequence budget, and no row did",
+    "author_primary_metric_family": "ACCURACY",
+    "author_primary_metric_name": "accuracy",
+    "calibrated": "false",
+    "calibration_population_sha256": "None",
+    "calibration_split": "NONE",
+    "checkpoint": "convaiinnovations/laya-typed-decisions@1a793eb568e6718f15941d08f85432581df534e3",
+    "checkpoint_sha256": "4fa56de72383a9d3efa9cfa78955733c81b9fc8067a587ca4beb82c78107a24e",
+    "class_vocabulary_json": "[\"world\",\"sports\",\"business\",\"sci_tech\"]",
+    "class_vocabulary_size": "4",
+    "clustered_by": "NONE",
+    "confusion_matrix_json": "{\"labels\":[\"world\",\"sports\",\"business\",\"sci_tech\"],\"matrix\":[[99,3,1,0,0],[2,121,0,0,0],[1,0,62,9,0],[0,0,3,99,0]]}",
+    "confusion_sha256": "fd1cbc2e71c5d18bc6063ac2b4895b2a505f9a21bdb6089b7fc210dce4e09b10",
+    "corpus_class": "PUBLIC_BENCHMARK",
+    "corpus_id": "agnews_zhang2015_test_first400_file_order",
+    "corpus_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+    "declared_fields": "NONE",
+    "denominator_policy": "FULL_POPULATION_ABSTENTION_WRONG",
+    "evaluation_population_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+    "evaluation_split": "test_first400_file_order",
+    "evidence_class": "MEASUREMENT",
+    "execution_authority": "NONE",
+    "independent_units": "400",
+    "label_order_sha256": "c8088b2ff18cff0f14faa9d46fa7d1a704ee63d17dceb886e380c55e27ca5af9",
+    "limitations": "AG News is NOT held out for this checkpoint: the author's own results file marks the suite in_training true, so this is an in-training-mix score and no generalisation claim follows from it. The population is the first 400 rows of the official test split in file order, which is NOT balanced (72/102/123/103), so the paired train-derived majority naive on these rows is 0.180000 and not the full split's 0.250000; the full 7,600-row test split is a separate experiment and its denominator is never attached to this score. The train split is exactly balanced at 30,000 per class, so the majority is a four-way tie; CB01 broke it alphabetically (ALPHABETICAL_OVER_CLASS_NAMES_SELECTS_Business) before any score existed, which is the WEAKEST of the four choices - the strongest, World, would give 0.2575. The author's recipe applies the checkpoint's own per-bucket temperatures, whose fitting split the author does not publish, so the posterior is declared UNCALIBRATED and calibrated false; ECE is reported as measured with its bin count, not as evidence of calibration. Latency is not comparable: this ran under a single BLAS thread by admission policy. Macro-F1 is carried at full precision (0.946754652763); the author's harness rounds it to 0.9468, and the contract refuses a carried metric that disagrees with its own confusion, so the rounding is recorded here rather than absorbed.",
+    "metric_contract": "classification_metrics.v1",
+    "metric_identity_sha256": "1756f8771910067a7162ca869aedd7ca5582ccd0e49621f9de319e2bfbae8665",
+    "naive_policy": "MAJORITY_CLASS_FROM_TRAIN",
+    "population_abstained": "0",
+    "population_answered": "400",
+    "population_total": "400",
+    "probability_semantics": "SOFTMAX_POSTERIOR_UNCALIBRATED",
+    "protocol_sha256": "cc23449632f6e16c4fa0ed3398de6b15a1258e5f8d49e8a441aa5263ddab2f0c",
+    "provider": "NATIVE_AUTHOR_HARNESS_laya_0.2.1",
+    "receipt_sha256": "3cc6045247f8ae5ed68468d4b339a8054605e2cf0083914fa317ab032562a5e5",
+    "repeats": "1",
+    "scorer_sha256": "08862fb4dba102db873e3e3ad428dedf92c12832b4e8ef71b35e433cce4eea22",
+    "seed": "None",
+    "supervision_regime": "ZERO_SHOT_PROMPTED",
+    "task_id": "agnews_topic_zhang2015_laya_published_row.v1",
+    "train_label_population_sha256": "74a50b920b22dff2adfade31fe5f1ce206f08d9cb9988af94c60f42f10a6ecf4"
+   }
+  }
+ }
+}

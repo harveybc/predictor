@@ -1,0 +1,177 @@
+{
+ "schema": "cb03_m5phet_parity.v1",
+ "produced": "2026-09-29T20:07:17Z",
+ "population_sha256": null,
+ "rows": 8,
+ "native_artifact": "native_published400.json",
+ "native_artifact_sha256": "6078a7365a606f2c3ba96249e961eaed5d4687986fbe4bc81e4814376fef6d1a",
+ "native_accuracy": 0.9525,
+ "framework": {
+  "provider": "laya_news",
+  "task_id": "adhoc.question.v1:9081cf28e1203ec0bbf0569cb5403411b37d71913fa22afbd0fbfa0fbbc3d967",
+  "questions_as_built": {
+   "topic": {
+    "type": "choice",
+    "instructions": "What is the topic of `article`?",
+    "criteria": {
+     "world": "world news and international politics",
+     "sports": "sports",
+     "business": "business and economy",
+     "sci_tech": "science and technology"
+    }
+   }
+  },
+  "backend_identity": {
+   "kind": "LAYA_LOCAL_CHECKPOINT",
+   "sdk_version": "0.3.11",
+   "sdk_commit": "1e28ac20c0896b1c37a744cd11f740eb98f8b178",
+   "checkpoint_sha256": "06895c8661cd14a0a2a9f79dc3f4854eee01e25c5152b7792c97661ad1863076",
+   "device": "cpu",
+   "gpu_uuid": null,
+   "gpu_uuid_observed": null,
+   "gpu_uuid_attribution": "NOT_APPLICABLE",
+   "torch_version": "2.14.0+cpu",
+   "cuda_version": null,
+   "adapter_sha256": "ffd2da0f4e49cafb8cafa297259f8fae6c49e52f4ae2bb3dc39fb4d39ca63047"
+  },
+  "checkpoint_manifest_sha256": "06895c8661cd14a0a2a9f79dc3f4854eee01e25c5152b7792c97661ad1863076",
+  "backend_declared_budget": {
+   "max_len": 512,
+   "head_max_len": 192
+  },
+  "state_envelope_fields": {
+   "asset": "AGNEWS",
+   "headline": "AG News item"
+  }
+ },
+ "framework_answered": 8,
+ "framework_refused": 0,
+ "framework_accuracy_on_answered": 1.0,
+ "coverage": 1.0,
+ "parity": {
+  "rows_compared": 8,
+  "label_agreement": 8,
+  "label_agreement_fraction": 1.0,
+  "max_abs_probability_difference": 0.09952875955084803,
+  "exact_label_parity": true,
+  "population_coverage_parity": false,
+  "disagreements": [],
+  "disagreement_count": 0,
+  "refusals": []
+ },
+ "wall_seconds": 14.5,
+ "per_row": [
+  {
+   "i": 0,
+   "gold": 2,
+   "status": "OK",
+   "label": "business",
+   "predicted": 2,
+   "probabilities": [
+    0.0569,
+    0.0376,
+    0.7529,
+    0.1525
+   ],
+   "refused": false
+  },
+  {
+   "i": 1,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0594,
+    0.0354,
+    0.041,
+    0.8643
+   ],
+   "refused": false
+  },
+  {
+   "i": 2,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1127,
+    0.0687,
+    0.091,
+    0.7276
+   ],
+   "refused": false
+  },
+  {
+   "i": 3,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.2151,
+    0.0529,
+    0.0549,
+    0.6771
+   ],
+   "refused": false
+  },
+  {
+   "i": 4,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0919,
+    0.0357,
+    0.0382,
+    0.8342
+   ],
+   "refused": false
+  },
+  {
+   "i": 5,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.1351,
+    0.0365,
+    0.1018,
+    0.7265
+   ],
+   "refused": false
+  },
+  {
+   "i": 6,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0828,
+    0.0341,
+    0.0615,
+    0.8216
+   ],
+   "refused": false
+  },
+  {
+   "i": 7,
+   "gold": 3,
+   "status": "OK",
+   "label": "sci_tech",
+   "predicted": 3,
+   "probabilities": [
+    0.0621,
+    0.0415,
+    0.0774,
+    0.819
+   ],
+   "refused": false
+  }
+ ]
+}
