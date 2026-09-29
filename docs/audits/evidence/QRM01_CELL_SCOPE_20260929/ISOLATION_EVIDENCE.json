@@ -1,0 +1,422 @@
+{
+ "at": "2026-09-29T22:17:13Z",
+ "cells": {
+  "qrm01_cell_a": {
+   "child_record": {
+    "cell_id": "qrm01_cell_a",
+    "cpu_seconds": 0.0,
+    "fixture_allocation_bytes": 62914560,
+    "gpu": {
+     "allocated_bytes": null,
+     "reserved_bytes": null,
+     "source": "none",
+     "status": "UNKNOWN",
+     "visible_devices": null,
+     "why": "no device was selected for this cell (CUDA_VISIBLE_DEVICES is empty or unset), so a GPU figure is ABSENT -- it is not zero"
+    },
+    "host_identity": {
+     "host_id": "41a95367ee66ef71",
+     "host_name_recorded": false,
+     "scope": null,
+     "why": "AGENTS.md forbids a machine host name in this repository; an opaque per-host id is recorded instead"
+    },
+    "host_ram": {
+     "cgroup_peak": {
+      "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+      "bytes": 72626176,
+      "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm01_cell_a-1790720229-3360079.scope",
+      "status": "MEASURED"
+     },
+     "comparability": "NOT_INTERCHANGEABLE: a resident set and a cgroup peak measure different quantities.  In the one bounded pilot where both were read of the same load the resident set exceeded the whole-scope charged peak by 9,158,656 B, so neither bounds the other and one observed ordering is not an invariant.",
+     "process_rss_peak": {
+      "basis": "MAIN_PROCESS_RSS_ONLY: resource.getrusage(RUSAGE_SELF).ru_maxrss of this process alone.  NOT a process-tree or cgroup peak: it excludes every other task in the cgroup and all cgroup-charged page and kernel memory.  Never size a cap with it.",
+      "bytes": 80162816,
+      "status": "MEASURED"
+     }
+    },
+    "kernel_limit": {
+     "bytes": 402653184,
+     "source": "memory.max",
+     "status": "MEASURED",
+     "unlimited": false
+    },
+    "optimizer_updates": 0,
+    "recorded_at": 1790720231.2483656,
+    "schema": "df_cell_scope_record.v1",
+    "scope": {
+     "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+     "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm01_cell_a-1790720229-3360079.scope",
+     "inode": 767629,
+     "is_scope": true,
+     "parent": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+     "path_exists": true,
+     "read_at": 1790720229.7197247,
+     "unit": "crispdm-qrm01_cell_a-1790720229-3360079.scope"
+    },
+    "stage": "FIXTURE_KNOWN_ALLOCATION",
+    "usable_for_costing": true,
+    "wall_seconds": 0.0,
+    "why_not_usable": null
+   },
+   "supervision": {
+    "cell_id": "qrm01_cell_a",
+    "child_record": {
+     "cell_id": "qrm01_cell_a",
+     "cpu_seconds": 0.0,
+     "fixture_allocation_bytes": 62914560,
+     "gpu": {
+      "allocated_bytes": null,
+      "reserved_bytes": null,
+      "source": "none",
+      "status": "UNKNOWN",
+      "visible_devices": null,
+      "why": "no device was selected for this cell (CUDA_VISIBLE_DEVICES is empty or unset), so a GPU figure is ABSENT -- it is not zero"
+     },
+     "host_identity": {
+      "host_id": "41a95367ee66ef71",
+      "host_name_recorded": false,
+      "scope": null,
+      "why": "AGENTS.md forbids a machine host name in this repository; an opaque per-host id is recorded instead"
+     },
+     "host_ram": {
+      "cgroup_peak": {
+       "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+       "bytes": 72626176,
+       "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm01_cell_a-1790720229-3360079.scope",
+       "status": "MEASURED"
+      },
+      "comparability": "NOT_INTERCHANGEABLE: a resident set and a cgroup peak measure different quantities.  In the one bounded pilot where both were read of the same load the resident set exceeded the whole-scope charged peak by 9,158,656 B, so neither bounds the other and one observed ordering is not an invariant.",
+      "process_rss_peak": {
+       "basis": "MAIN_PROCESS_RSS_ONLY: resource.getrusage(RUSAGE_SELF).ru_maxrss of this process alone.  NOT a process-tree or cgroup peak: it excludes every other task in the cgroup and all cgroup-charged page and kernel memory.  Never size a cap with it.",
+       "bytes": 80162816,
+       "status": "MEASURED"
+      }
+     },
+     "kernel_limit": {
+      "bytes": 402653184,
+      "source": "memory.max",
+      "status": "MEASURED",
+      "unlimited": false
+     },
+     "optimizer_updates": 0,
+     "recorded_at": 1790720231.2483656,
+     "schema": "df_cell_scope_record.v1",
+     "scope": {
+      "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+      "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm01_cell_a-1790720229-3360079.scope",
+      "inode": 767629,
+      "is_scope": true,
+      "parent": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+      "path_exists": true,
+      "read_at": 1790720229.7197247,
+      "unit": "crispdm-qrm01_cell_a-1790720229-3360079.scope"
+     },
+     "stage": "FIXTURE_KNOWN_ALLOCATION",
+     "usable_for_costing": true,
+     "wall_seconds": 0.0,
+     "why_not_usable": null
+    },
+    "host_identity": {
+     "host_id": "41a95367ee66ef71",
+     "host_name_recorded": false,
+     "scope": null,
+     "why": "AGENTS.md forbids a machine host name in this repository; an opaque per-host id is recorded instead"
+    },
+    "host_ram": {
+     "cgroup_peak": {
+      "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+      "bytes": 72626176,
+      "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm01_cell_a-1790720229-3360079.scope",
+      "read_by": "THE_CHILD_INSIDE_ITS_OWN_SCOPE_BEFORE_THE_SCOPE_WAS_REMOVED",
+      "status": "MEASURED"
+     },
+     "comparability": "NOT_INTERCHANGEABLE: a resident set and a cgroup peak measure different quantities.  In the one bounded pilot where both were read of the same load the resident set exceeded the whole-scope charged peak by 9,158,656 B, so neither bounds the other and one observed ordering is not an invariant."
+    },
+    "lease_confirmed": true,
+    "lease_id": "qrm01_cell_a-1790720229-3360097-3772e5",
+    "schema": "df_cell_scope_supervision.v1",
+    "scope": {
+     "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+     "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm01_cell_a-1790720229-3360079.scope",
+     "inode": 767629,
+     "is_scope": true,
+     "parent": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+     "path_exists": true,
+     "read_at": 1790720229.8255975,
+     "unit": "crispdm-qrm01_cell_a-1790720229-3360079.scope"
+    },
+    "scope_identity_agrees_with_the_child": true,
+    "stage": "FIXTURE_KNOWN_ALLOCATION",
+    "started_at": 1790720229.4238837,
+    "supervisor_observed_peak": {
+     "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+     "bytes": 72560640,
+     "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm01_cell_a-1790720229-3360079.scope",
+     "status": "MEASURED"
+    },
+    "supervisor_peak_samples": 8,
+    "termination": {
+     "cap_asked_once_at_the_declared_size": true,
+     "cap_bytes_declared": 402653184,
+     "command": [
+      "/home/harveybc/.local/bin/crispdm-run",
+      "-m",
+      "402653184",
+      "-t",
+      "180",
+      "-n",
+      "qrm01_cell_a",
+      "-L",
+      "cell:qrm01_cell_a",
+      "-S",
+      "crispdm-batch.slice",
+      "--",
+      "/home/harveybc/anaconda3/bin/python3",
+      "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/qrm01work3/cell_child.py",
+      "qrm01_cell_a",
+      "62914560"
+     ],
+     "exit_code": 0,
+     "launched": true,
+     "meaning": "the child exited 0",
+     "signal": null,
+     "status": "COMPLETED",
+     "wall_seconds": 3.9648175420006737
+    },
+    "usable_for_costing": true,
+    "why_lease_unconfirmed": null
+   }
+  },
+  "qrm01_cell_b": {
+   "child_record": {
+    "cell_id": "qrm01_cell_b",
+    "cpu_seconds": 0.0,
+    "fixture_allocation_bytes": 188743680,
+    "gpu": {
+     "allocated_bytes": null,
+     "reserved_bytes": null,
+     "source": "none",
+     "status": "UNKNOWN",
+     "visible_devices": null,
+     "why": "no device was selected for this cell (CUDA_VISIBLE_DEVICES is empty or unset), so a GPU figure is ABSENT -- it is not zero"
+    },
+    "host_identity": {
+     "host_id": "41a95367ee66ef71",
+     "host_name_recorded": false,
+     "scope": null,
+     "why": "AGENTS.md forbids a machine host name in this repository; an opaque per-host id is recorded instead"
+    },
+    "host_ram": {
+     "cgroup_peak": {
+      "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+      "bytes": 198443008,
+      "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm01_cell_b-1790720229-3360081.scope",
+      "status": "MEASURED"
+     },
+     "comparability": "NOT_INTERCHANGEABLE: a resident set and a cgroup peak measure different quantities.  In the one bounded pilot where both were read of the same load the resident set exceeded the whole-scope charged peak by 9,158,656 B, so neither bounds the other and one observed ordering is not an invariant.",
+     "process_rss_peak": {
+      "basis": "MAIN_PROCESS_RSS_ONLY: resource.getrusage(RUSAGE_SELF).ru_maxrss of this process alone.  NOT a process-tree or cgroup peak: it excludes every other task in the cgroup and all cgroup-charged page and kernel memory.  Never size a cap with it.",
+      "bytes": 206143488,
+      "status": "MEASURED"
+     }
+    },
+    "kernel_limit": {
+     "bytes": 402653184,
+     "source": "memory.max",
+     "status": "MEASURED",
+     "unlimited": false
+    },
+    "optimizer_updates": 0,
+    "recorded_at": 1790720231.3079095,
+    "schema": "df_cell_scope_record.v1",
+    "scope": {
+     "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+     "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm01_cell_b-1790720229-3360081.scope",
+     "inode": 767673,
+     "is_scope": true,
+     "parent": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+     "path_exists": true,
+     "read_at": 1790720229.72646,
+     "unit": "crispdm-qrm01_cell_b-1790720229-3360081.scope"
+    },
+    "stage": "FIXTURE_KNOWN_ALLOCATION",
+    "usable_for_costing": true,
+    "wall_seconds": 0.0,
+    "why_not_usable": null
+   },
+   "supervision": {
+    "cell_id": "qrm01_cell_b",
+    "child_record": {
+     "cell_id": "qrm01_cell_b",
+     "cpu_seconds": 0.0,
+     "fixture_allocation_bytes": 188743680,
+     "gpu": {
+      "allocated_bytes": null,
+      "reserved_bytes": null,
+      "source": "none",
+      "status": "UNKNOWN",
+      "visible_devices": null,
+      "why": "no device was selected for this cell (CUDA_VISIBLE_DEVICES is empty or unset), so a GPU figure is ABSENT -- it is not zero"
+     },
+     "host_identity": {
+      "host_id": "41a95367ee66ef71",
+      "host_name_recorded": false,
+      "scope": null,
+      "why": "AGENTS.md forbids a machine host name in this repository; an opaque per-host id is recorded instead"
+     },
+     "host_ram": {
+      "cgroup_peak": {
+       "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+       "bytes": 198443008,
+       "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm01_cell_b-1790720229-3360081.scope",
+       "status": "MEASURED"
+      },
+      "comparability": "NOT_INTERCHANGEABLE: a resident set and a cgroup peak measure different quantities.  In the one bounded pilot where both were read of the same load the resident set exceeded the whole-scope charged peak by 9,158,656 B, so neither bounds the other and one observed ordering is not an invariant.",
+      "process_rss_peak": {
+       "basis": "MAIN_PROCESS_RSS_ONLY: resource.getrusage(RUSAGE_SELF).ru_maxrss of this process alone.  NOT a process-tree or cgroup peak: it excludes every other task in the cgroup and all cgroup-charged page and kernel memory.  Never size a cap with it.",
+       "bytes": 206143488,
+       "status": "MEASURED"
+      }
+     },
+     "kernel_limit": {
+      "bytes": 402653184,
+      "source": "memory.max",
+      "status": "MEASURED",
+      "unlimited": false
+     },
+     "optimizer_updates": 0,
+     "recorded_at": 1790720231.3079095,
+     "schema": "df_cell_scope_record.v1",
+     "scope": {
+      "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+      "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm01_cell_b-1790720229-3360081.scope",
+      "inode": 767673,
+      "is_scope": true,
+      "parent": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+      "path_exists": true,
+      "read_at": 1790720229.72646,
+      "unit": "crispdm-qrm01_cell_b-1790720229-3360081.scope"
+     },
+     "stage": "FIXTURE_KNOWN_ALLOCATION",
+     "usable_for_costing": true,
+     "wall_seconds": 0.0,
+     "why_not_usable": null
+    },
+    "host_identity": {
+     "host_id": "41a95367ee66ef71",
+     "host_name_recorded": false,
+     "scope": null,
+     "why": "AGENTS.md forbids a machine host name in this repository; an opaque per-host id is recorded instead"
+    },
+    "host_ram": {
+     "cgroup_peak": {
+      "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+      "bytes": 198443008,
+      "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm01_cell_b-1790720229-3360081.scope",
+      "read_by": "THE_CHILD_INSIDE_ITS_OWN_SCOPE_BEFORE_THE_SCOPE_WAS_REMOVED",
+      "status": "MEASURED"
+     },
+     "comparability": "NOT_INTERCHANGEABLE: a resident set and a cgroup peak measure different quantities.  In the one bounded pilot where both were read of the same load the resident set exceeded the whole-scope charged peak by 9,158,656 B, so neither bounds the other and one observed ordering is not an invariant."
+    },
+    "lease_confirmed": true,
+    "lease_id": "qrm01_cell_b-1790720229-3360098-935923",
+    "schema": "df_cell_scope_supervision.v1",
+    "scope": {
+     "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+     "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm01_cell_b-1790720229-3360081.scope",
+     "inode": 767673,
+     "is_scope": true,
+     "parent": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+     "path_exists": true,
+     "read_at": 1790720229.8268971,
+     "unit": "crispdm-qrm01_cell_b-1790720229-3360081.scope"
+    },
+    "scope_identity_agrees_with_the_child": true,
+    "stage": "FIXTURE_KNOWN_ALLOCATION",
+    "started_at": 1790720229.4251332,
+    "supervisor_observed_peak": {
+     "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+     "bytes": 198393856,
+     "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm01_cell_b-1790720229-3360081.scope",
+     "status": "MEASURED"
+    },
+    "supervisor_peak_samples": 8,
+    "termination": {
+     "cap_asked_once_at_the_declared_size": true,
+     "cap_bytes_declared": 402653184,
+     "command": [
+      "/home/harveybc/.local/bin/crispdm-run",
+      "-m",
+      "402653184",
+      "-t",
+      "180",
+      "-n",
+      "qrm01_cell_b",
+      "-L",
+      "cell:qrm01_cell_b",
+      "-S",
+      "crispdm-batch.slice",
+      "--",
+      "/home/harveybc/anaconda3/bin/python3",
+      "/tmp/claude-1000/-home-harveybc-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/qrm01work3/cell_child.py",
+      "qrm01_cell_b",
+      "188743680"
+     ],
+     "exit_code": 0,
+     "launched": true,
+     "meaning": "the child exited 0",
+     "signal": null,
+     "status": "COMPLETED",
+     "wall_seconds": 4.072092025002348
+    },
+    "usable_for_costing": true,
+    "why_lease_unconfirmed": null
+   }
+  }
+ },
+ "elapsed_seconds": 4.082857847213745,
+ "isolation": {
+  "distinct_cgroups": true,
+  "distinct_inodes": true,
+  "distinct_leases": true,
+  "each_scope_carried_its_own_kernel_limit": [
+   {
+    "bytes": 402653184,
+    "source": "memory.max",
+    "status": "MEASURED",
+    "unlimited": false
+   },
+   {
+    "bytes": 402653184,
+    "source": "memory.max",
+    "status": "MEASURED",
+    "unlimited": false
+   }
+  ],
+  "supervisor_agreed_with_each_child": [
+   true,
+   true
+  ]
+ },
+ "peaks": {
+  "qrm01_cell_a": {
+   "cgroup_peak_bytes": 72626176,
+   "cgroup_peak_status": "MEASURED",
+   "declared_cap_bytes": 402653184,
+   "fixture_allocation_bytes": 62914560,
+   "process_rss_peak_bytes": 80162816,
+   "usable_for_costing": true
+  },
+  "qrm01_cell_b": {
+   "cgroup_peak_bytes": 198443008,
+   "cgroup_peak_status": "MEASURED",
+   "declared_cap_bytes": 402653184,
+   "fixture_allocation_bytes": 188743680,
+   "process_rss_peak_bytes": 206143488,
+   "usable_for_costing": true
+  }
+ },
+ "reading": "the two cgroup peaks differ in the direction of the two different known allocations, which a SHARED driver scope could not produce: in a shared scope both children read the same charge.  The resident set and the cgroup peak are reported side by side and are NOT equal, which is the point: they measure different quantities.",
+ "schema": "df_qrm01_isolation_evidence.v1",
+ "what_ran": "two children launched CONCURRENTLY through the deployed crispdm-run, each with a declared 384 MiB cap, each allocating a DIFFERENT known number of bytes so the two peaks cannot be confused; bounded on purpose, and no host memory was pressured"
+}

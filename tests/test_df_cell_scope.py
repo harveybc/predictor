@@ -348,11 +348,18 @@ def test_each_child_takes_a_fresh_aggregate_admission_and_the_second_is_refused(
     assert first["verdict"] == adm.ADMITTED
     adm.arm(store, res, first["lease_id"], now, pid=os.getpid())
     second = adm.acquire(store, res, adm.Request(name="cell_b", cap_bytes=768 * MIB, wall_seconds=60), now)
-    assert second["verdict"] == adm.REFUSED
+    # the aggregate crossing is NOT admitted.  It is QUEUED rather than REFUSED, and the
+    # distinction is the module's, not a detail: a ceiling crossing clears when a live
+    # reservation ends, so the correct answer is to wait -- never to start anyway, and never to
+    # ask again for less.
+    assert second["verdict"] != adm.ADMITTED
+    assert second["verdict"] == adm.QUEUED and second["code"] == "SLICE_AGGREGATE_BUDGET"
     assert "aggregate" in second["reason"].lower()
+    assert "lease_id" not in second, "a child that was not admitted holds no reservation"
     # and the refusal may NOT be evaded by asking again for less
     third = adm.acquire(store, res, adm.Request(name="cell_b", cap_bytes=128 * MIB, wall_seconds=60), now)
     assert third["verdict"] == adm.REFUSED, "a lowered cap after a refusal must stay terminal"
+    assert third["code"] == "CAP_LOWERED_AFTER_REFUSAL"
 
 
 def test_the_supervisor_never_lowers_a_declared_cap_to_pass_admission(tmp_path):
@@ -378,9 +385,15 @@ def test_the_reservation_is_released_after_the_tree_finishes(tmp_path):
     store = adm.Store(tmp_path / "store")
     res = adm.FileResources(readings(tmp_path / "res.json", slice_memory_max=1 * GIB), adm.DEFAULT_SLICE)
     now = time.time()
+    witness = 4242424                       # a pid the readings file decides for: no real process
+    readings(tmp_path / "res.json", slice_memory_max=1 * GIB, alive={str(witness): True})
     d = adm.acquire(store, res, adm.Request(name="cell_a", cap_bytes=768 * MIB, wall_seconds=60), now)
-    adm.arm(store, res, d["lease_id"], now, pid=os.getpid())
+    adm.arm(store, res, d["lease_id"], now, pid=witness)
     assert adm.state(store, res, now)["live"], "a live reservation is visible while the tree runs"
+    # a release asked for while the tree is still alive must KEEP the reservation
+    kept = adm.release(store, res, d["lease_id"], now, observed_peak_bytes=101 * MIB)
+    assert kept["ok"] is False and kept["code"] == "CHILD_STILL_ALIVE"
+    readings(tmp_path / "res.json", slice_memory_max=1 * GIB, alive={str(witness): False})
     out = adm.release(store, res, d["lease_id"], now, observed_peak_bytes=101 * MIB)
     assert out["ok"], out
     assert not adm.state(store, res, now)["live"]
@@ -442,3 +455,132 @@ def test_the_record_carries_every_field_the_order_names(cg, claims):
     blob = json.dumps(rec)
     assert os.uname().nodename not in blob
     assert rec["host_identity"]["host_name_recorded"] is False
+
+
+# ---- the block runner's own launch path --------------------------------------------------------
+
+def test_the_block_runner_no_longer_launches_a_cell_with_a_bare_subprocess():
+    """The regression this file exists to prevent, read off the source: `run_units` must launch
+    through the existing launcher and not with a bare subprocess that takes no scope."""
+    src = (TOOLS / "df_e1_block.py").read_text()
+    start = src.index("def run_units(")
+    end = src.index("\ndef ", start + 10)
+    body = src[start:end]
+    assert "CSC.supervise(" in body
+    assert "subprocess.run(" not in body, "a cell launched with a bare subprocess takes no scope"
+    assert "cell_cap_bytes(a, design)" in body
+    assert "launcher_available()" in body
+
+
+def test_a_cell_child_started_without_the_supervisor_refuses_by_name(tmp_path, monkeypatch):
+    K = _load("df_e1_block")
+    monkeypatch.delenv("CRISPDM_CELL_SCOPE_PARENT_CGROUP", raising=False)
+    with pytest.raises(SystemExit) as e:
+        K.child(tmp_path, "cell_a")
+    assert "CELL_NOT_LAUNCHED_BY_THE_SUPERVISOR" in str(e.value)
+
+
+def test_a_cell_child_in_the_drivers_scope_refuses_by_name(tmp_path, monkeypatch):
+    """The exact defect: one sequential child inside a reused driver scope."""
+    K = _load("df_e1_block")
+    root = tmp_path / "cgroup"
+    make_cgroup(root, f"{SLICE_REL}/crispdm-driver-1-9.scope", peak=7 * GIB, limit=9 * GIB)
+    monkeypatch.setenv("CRISPDM_CGROUP_ROOT", str(root))
+    monkeypatch.setenv("CRISPDM_CELL_SCOPE_SELF_CGROUP", f"{SLICE_REL}/crispdm-driver-1-9.scope")
+    monkeypatch.setenv("CRISPDM_CELL_SCOPE_PARENT_CGROUP", f"{SLICE_REL}/crispdm-driver-1-9.scope")
+    monkeypatch.setenv("CRISPDM_CELL_SCOPE_CLAIMS", str(tmp_path / "claims"))
+    with pytest.raises(SystemExit) as e:
+        K.child(tmp_path, "cell_a")
+    assert "REUSED_DRIVER_SCOPE" in str(e.value)
+
+
+def test_no_cap_may_be_declared_from_a_retained_q2_figure():
+    """`NULL IS NOT SMALL`: the absence of a measured training footprint is a refusal, not a
+    default, and none of the three circulating numbers may supply one."""
+    K = _load("df_e1_block")
+
+    class A:
+        cell_cap_bytes = None
+    with pytest.raises(SystemExit) as e:
+        K.cell_cap_bytes(A(), {})
+    assert "NO_DECLARED_CELL_CAP" in str(e.value)
+    assert K.cell_cap_bytes(A(), {"resources": {"cell_cap_bytes": 6 * GIB}}) == 6 * GIB
+
+    class B:
+        cell_cap_bytes = 2 * GIB
+    assert K.cell_cap_bytes(B(), {}) == 2 * GIB
+
+
+def test_a_cell_record_made_outside_an_enforced_scope_says_so_and_costs_nothing(cg, claims):
+    """A record whose scope was never claimed is self-identifying: it is not quietly costed."""
+    rel = f"{SLICE_REL}/crispdm-cell_a-1-11.scope"
+    make_cgroup(cg, rel, peak=500 * MIB, limit=1 * GIB)
+    unclaimed = CS.cell_scope_record("cell_a", stage="CELL_TRAIN_AND_SCORE", rel=rel,
+                                     extra={"scope_enforced": False})
+    assert unclaimed["scope_enforced"] is False
+    claim = CS.require_fresh_exclusive_scope(claims, "cell_a", identity=CS.scope_identity(rel),
+                                             parent_cgroup="user.slice/driver.scope")
+    claimed = CS.cell_scope_record("cell_a", stage="CELL_TRAIN_AND_SCORE", claim=claim,
+                                   extra={"scope_enforced": True})
+    assert claimed["scope_enforced"] is True and claimed["usable_for_costing"] is True
+
+
+def test_the_admission_module_is_published_before_its_body_runs():
+    """A real defect this suite found in its own first implementation.
+
+    `admission_module()` executed the module WITHOUT registering it in sys.modules.  @dataclass
+    resolves its annotations through sys.modules[cls.__module__], so the first dataclass raised
+    AttributeError, the supervisor's lease lookup swallowed it, and every cell recorded
+    `lease_id: null` -- a reservation the launcher had genuinely taken, reported as unconfirmed.
+    It must be checked in a FRESH interpreter: inside this pytest process another test has already
+    published the module, which is exactly what hid it.
+    """
+    code = (f"import importlib.util, sys\n"
+            f"spec = importlib.util.spec_from_file_location('df_cell_scope', {str(TOOLS / 'df_cell_scope.py')!r})\n"
+            f"m = importlib.util.module_from_spec(spec); sys.modules['df_cell_scope'] = m; spec.loader.exec_module(m)\n"
+            f"adm = m.admission_module()\n"
+            f"assert sys.modules.get('crispdm_admission') is adm\n"
+            f"adm.Request(name='x', cap_bytes=1, wall_seconds=1)\n"
+            f"print('OK')\n")
+    r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0, r.stderr[-2000:]
+    assert "OK" in r.stdout
+
+
+def test_two_threads_loading_the_admission_module_at_once_both_get_a_usable_module():
+    """The second half of the same defect, and the one that actually fired.
+
+    `run_units` supervises a batch of cells on a ThreadPoolExecutor, so two threads asked for the
+    admission module at the same instant: one published it and began executing its body while the
+    other found the half-built module and read attributes that did not exist yet.  Every cell of
+    the batch then recorded `lease_id: null` for reservations the launcher had genuinely taken.
+    """
+    code = (f"import importlib.util, sys, threading\n"
+            f"spec = importlib.util.spec_from_file_location('df_cell_scope', {str(TOOLS / 'df_cell_scope.py')!r})\n"
+            f"m = importlib.util.module_from_spec(spec); sys.modules['df_cell_scope'] = m; spec.loader.exec_module(m)\n"
+            f"errs = []\n"
+            f"start = threading.Barrier(4)\n"
+            f"def go():\n"
+            f"    start.wait(10)\n"
+            f"    try:\n"
+            f"        adm = m.admission_module()\n"
+            f"        adm.Store(); adm.resources_from_env(); adm.Request(name='x', cap_bytes=1, wall_seconds=1)\n"
+            f"    except BaseException as e:\n"
+            f"        errs.append(repr(e))\n"
+            f"ts = [threading.Thread(target=go) for _ in range(4)]\n"
+            f"[t.start() for t in ts]; [t.join(30) for t in ts]\n"
+            f"assert not errs, errs\n"
+            f"print('OK')\n")
+    r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=180)
+    assert r.returncode == 0, r.stderr[-2000:]
+    assert "OK" in r.stdout
+
+
+def test_an_unconfirmed_reservation_says_why_instead_of_reading_as_none(tmp_path):
+    """`could not confirm` and `there is none` are different statements."""
+    sup = tmp_path / "SUPERVISOR"
+    launcher = _stub_launcher(tmp_path, exit_code=0)
+    r = CS.supervise(cell_id="cell_a", argv=[sys.executable, "-c", "pass"], cap_bytes=256 * MIB,
+                     wall_seconds=5, supervisor_dir=sup, log_path=tmp_path / "a.log", launcher=launcher)
+    assert r["lease_confirmed"] is False
+    assert r["why_lease_unconfirmed"], "an unconfirmed reservation must carry its reason"

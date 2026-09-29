@@ -743,7 +743,7 @@ def fit_by_updates(model, train, val, *, max_updates: int, validate_every: int, 
 
 # --- one cell (child process) ------------------------------------------------------------------------------------
 
-def run_cell(design: dict, data: dict, cell: dict, out_dir: Path, *, pilot: bool) -> dict:
+def run_cell(design: dict, data: dict, cell: dict, out_dir: Path, *, pilot: bool, cell_scope: dict | None = None) -> dict:
     cpu0, wall0 = time.process_time(), time.monotonic()
     setup0 = time.process_time()
     spec = next(a for a in design["arms"] if a["arm"] == cell["arm"])
@@ -812,11 +812,52 @@ def run_cell(design: dict, data: dict, cell: dict, out_dir: Path, *, pilot: bool
                                                    "means the cgroup was unreadable and this cell has NO tree peak",
                        "host": None, "host_identity": host_identity()},
               "arrays_sha256": sha_file(out_dir/"arrays.npz"), "weights_file_sha256": sha_file(out_dir/"weights.weights.h5")}
+    # QRM01: the per-CELL resource row, read from inside this cell's own scope BEFORE the scope is
+    # removed.  Host RAM (a cgroup peak) and device memory are separate fields and are never added;
+    # the process resident set is kept beside them with its basis, never in their place.  A record
+    # produced outside an enforced scope says so and costs nothing.
+    CSC = _module("df_cell_scope")
+    record["cell_scope"] = CSC.cell_scope_record(
+        cell["cell_id"], stage="PILOT_TRAIN_SUBSET" if pilot else "CELL_TRAIN_AND_SCORE",
+        claim=cell_scope, updates=training["updates"],
+        cpu_seconds=record["cost"]["cpu_seconds"], wall_seconds=record["cost"]["wall_seconds"],
+        extra={"scope_enforced": cell_scope is not None,
+               "design_sha256": design["design_sha256"], "arm": cell["arm"], "seed": cell["seed"]})
+    if cell_scope is None:
+        record["cell_scope"]["usable_for_costing"] = False
+        record["cell_scope"]["why_not_usable"] = (
+            "this cell was run outside an enforced exclusive scope (no claim), so whatever cgroup it "
+            "was charged to is shared with its caller: the peak is not this cell's footprint")
+    record["cost"]["cgroup_memory_peak_status"] = record["cell_scope"]["host_ram"]["cgroup_peak"]["status"]
     write(out_dir/"cell.json", record)
     return record
 
 
 def child(root: Path, unit: str) -> dict:
+    """One cell, in a scope of its own.
+
+    The refusal at the top is the correction QRM01 exists for.  Before it, `run_units` started
+    every cell with a bare `subprocess.run`, so a cell child took no scope, inherited whatever
+    cgroup the driver sat in, and shared that cgroup with up to `parallel_children` siblings.  A
+    `memory.peak` read there is the charge of a shared driver scope over a batch of cells, not this
+    cell's footprint -- and a cell that cannot report its own footprint may not be costed at all.
+    So a child that was not launched into a fresh exclusive scope refuses BY NAME and measures
+    nothing, instead of producing a number that would be read as a per-cell figure.
+    """
+    CSC = _module("df_cell_scope")
+    parent = os.environ.get("CRISPDM_CELL_SCOPE_PARENT_CGROUP")
+    if parent is None:
+        raise BlockRefusal(
+            f"REFUSED CELL_NOT_LAUNCHED_BY_THE_SUPERVISOR: {unit} was started without the external "
+            f"supervisor, so it has no scope of its own, no reservation of its own and no cgroup "
+            f"peak that belongs to it; launch it through run_units, which launches every cell "
+            f"through crispdm-run")
+    try:
+        claim = CSC.require_fresh_exclusive_scope(
+            os.environ.get("CRISPDM_CELL_SCOPE_CLAIMS") or (Path(root)/"SCOPE_CLAIMS"), unit,
+            parent_cgroup=parent or None)
+    except CSC.ScopeRefusal as e:
+        raise BlockRefusal(f"REFUSED {e.code}: {e.detail}")
     design = json.loads((Path(root)/"DESIGN.json").read_text())
     validate(design)
     resource.setrlimit(resource.RLIMIT_CPU, (LIMITS["child_cpu_seconds"], LIMITS["child_cpu_seconds"]+5))
@@ -826,7 +867,8 @@ def child(root: Path, unit: str) -> dict:
         raise BlockRefusal("REFUSED: the unit's delivery is not the source panel")
     data = load_data(root, design)
     cell = next(c for c in design["pilots"] + design["cells"] if c["cell_id"] == unit)
-    return run_cell(design, data, cell, Path(root)/"attempts"/unit, pilot=cell.get("role") == "COST_PILOT")
+    return run_cell(design, data, cell, Path(root)/"attempts"/unit,
+                    pilot=cell.get("role") == "COST_PILOT", cell_scope=claim)
 
 
 # --- governance: prepare, pilot, execute --------------------------------------------------------------------------
@@ -867,8 +909,36 @@ def governance_modules():
     return G, _module("df_utility_run")
 
 
+def cell_cap_bytes(a, design) -> int:
+    """THE one integer this cell's scope is capped at -- declared, never invented.
+
+    QRM01 delivers the mechanism, not a number.  No cap is derived here from any retained Q2
+    figure, because none of them is a cell's training footprint: 7.4 G is a killed multi-child
+    wrapper scope's cgroup peak, 8,458,399,744 B is one process's resident set, and
+    1,463,877,632 B is the whole-cgroup peak of one 20,000-window DATA materialization with no
+    model, no gradients and no optimizer slots built at all.  A data-stage floor is not a training
+    cap.  So the cap comes from the design or from the command line, and its absence is a refusal
+    rather than a default that would quietly become the declared allocation.
+    """
+    declared = getattr(a, "cell_cap_bytes", None) or (design.get("resources") or {}).get("cell_cap_bytes")
+    if not declared:
+        raise BlockRefusal(
+            "REFUSED NO_DECLARED_CELL_CAP: every cell is launched into a scope with its own "
+            "MemoryMax and its own reservation, and that one integer must be DECLARED before the "
+            "run -- with --cell-cap-bytes or design.resources.cell_cap_bytes. No retained Q2 "
+            "figure may supply it: none of them measured a cell's training footprint.")
+    return int(declared)
+
+
 def run_units(a, design, units, *, parallel: int) -> list:
     G, U = governance_modules()
+    CSC = _module("df_cell_scope")
+    if not CSC.launcher_available():
+        raise BlockRefusal(
+            "REFUSED LAUNCHER_NOT_AVAILABLE: crispdm-run or a user systemd able to create a "
+            "transient scope is not available on this host, and a cell is never started with a "
+            "bare subprocess -- a bare subprocess takes no scope and no reservation")
+    cap = cell_cap_bytes(a, design)          # declared before anything starts, for every cell
     root = Path(a.root)
     results = []
 
@@ -886,18 +956,44 @@ def run_units(a, design, units, *, parallel: int) -> list:
         started = U._z(U.now_iso())
         _acquire(a, design, unit)
         wall = time.monotonic()
-        with open(root/f"{unit}.log", "x") as log:
-            try:
-                proc = subprocess.run([sys.executable, str(Path(__file__).resolve()), "child", "--root", str(root), "--unit", unit],
-                                      env={**os.environ, "CUDA_VISIBLE_DEVICES": "", "OMP_NUM_THREADS": "2", "OPENBLAS_NUM_THREADS": "1",
-                                           "TF_CPP_MIN_LOG_LEVEL": "3"}, stdout=log, stderr=subprocess.STDOUT,
-                                      timeout=LIMITS["child_wall_seconds"])
-                code = proc.returncode
-            except subprocess.TimeoutExpired:
-                code = "WALL_TIMEOUT"
+        # QRM01.  This was a bare `subprocess.run`: the child took no scope, inherited the driver's
+        # cgroup and shared it with up to `parallel` siblings, so no Q2 cell ever had a cgroup peak
+        # of its own.  Now every cell is launched through the EXISTING launcher -- crispdm-run and
+        # its atomic admission module, not a second scheduler -- which gives this cell, and this
+        # cell alone, a fresh transient scope enclosing its complete process tree, that scope's own
+        # MemoryMax, and its own reservation held until the whole tree has finished.  The admission
+        # is taken FRESH per child, against every other live reservation on the host, and a refusal
+        # is terminal: the cap is asked for once, at the declared size, and never re-asked smaller.
+        (root/f"{unit}.log").touch(exist_ok=False)          # a cell's log is never overwritten
+        sup = CSC.supervise(cell_id=unit,
+                            argv=[sys.executable, str(Path(__file__).resolve()), "child",
+                                  "--root", str(root), "--unit", unit],
+                            cap_bytes=cap, wall_seconds=LIMITS["child_wall_seconds"],
+                            supervisor_dir=root/"SUPERVISOR", log_path=root/f"{unit}.log",
+                            claims_dir=root/"SCOPE_CLAIMS", record_path=root/"attempts"/unit/"cell.json",
+                            stage="CELL_TRAIN_AND_SCORE", queue=bool(getattr(a, "queue_admission", False)),
+                            env={**os.environ, "CUDA_VISIBLE_DEVICES": "", "OMP_NUM_THREADS": "2",
+                                 "OPENBLAS_NUM_THREADS": "1", "TF_CPP_MIN_LOG_LEVEL": "3"})
+        term = sup["termination"]
+        code = "WALL_TIMEOUT" if term["status"] == "WALL_TIMEOUT" else term["exit_code"]
         rec_path = root/"attempts"/unit/"cell.json"
-        ok = code == 0 and rec_path.exists()
+        ok = term["status"] == "COMPLETED" and rec_path.exists()
         rec = json.loads(rec_path.read_text()) if ok else None
+        # the resource row, retained per cell whatever happened to the child.  A peak neither the
+        # child nor the supervisor could read is UNKNOWN here -- never 0 and never a success.
+        with open(root/"CELL_SCOPE.jsonl", "a") as fh:
+            fh.write(json.dumps({"unit": unit, "arm": cell["arm"], "seed": cell["seed"],
+                                 "stage": "CELL_TRAIN_AND_SCORE", "termination": term,
+                                 "scope": sup["scope"], "lease_id": sup["lease_id"],
+                                 "declared_cap_bytes": cap,
+                                 "kernel_limit": (rec or {}).get("cell_scope", {}).get("kernel_limit"),
+                                 "host_ram": sup["host_ram"],
+                                 "process_rss_peak": (rec or {}).get("cell_scope", {}).get("host_ram", {}).get("process_rss_peak"),
+                                 "gpu": (rec or {}).get("cell_scope", {}).get("gpu"),
+                                 "optimizer_updates": (rec or {}).get("training", {}).get("updates"),
+                                 "cpu_seconds": (rec or {}).get("cost", {}).get("cpu_seconds"),
+                                 "wall_seconds": term["wall_seconds"],
+                                 "usable_for_costing": sup["usable_for_costing"]}, sort_keys=True) + "\n")
         terminal = _terminal_for(a, design, unit, cell, started, ok, rec, code, time.monotonic()-wall)
         (root/"TERMINALS").mkdir(exist_ok=True)
         write(root/"TERMINALS"/f"{unit}.json", terminal)
@@ -1332,6 +1428,12 @@ def main(argv=None) -> int:
     ap.add_argument("--updates", type=int, default=20)
     ap.add_argument("--seeds", type=int, nargs="*", default=None, help="execute only the cells of these seeds (a host block)")
     ap.add_argument("--parallel", type=int, default=None)
+    ap.add_argument("--cell-cap-bytes", type=int, default=None,
+                    help="THE one integer each cell's own scope is capped at (MemoryMax and reservation alike). "
+                         "Declared, never derived from a retained figure that measured something else")
+    ap.add_argument("--queue-admission", action="store_true",
+                    help="wait, under the lock, for capacity BEFORE a cell's first start. This is queuing, not a "
+                         "retry: a refusal is never answered by asking again for less")
     ap.add_argument("--decision-from", type=Path, default=None, help="the coordinator root whose REPORT.pilot.json authorises execution")
     ap.add_argument("--from", dest="sources", type=Path, action="append", default=[])
     ap.add_argument("--replay-evidence", type=Path, default=None, help="an independent fresh-process replay to ADOPT for already-replayed cells (not repeated)")
