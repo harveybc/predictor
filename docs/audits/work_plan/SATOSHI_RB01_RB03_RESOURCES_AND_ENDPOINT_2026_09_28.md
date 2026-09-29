@@ -60,6 +60,28 @@ Searched, exhaustively, before running anything:
 **1997.051 CPU s over 1477.71 s wall** — stands as spent and unrecovered; it is not re-budgeted, not reset,
 and the two attempt records in `RR01_RESTART_20260926/INTERRUPTED_ATTEMPTS.json` are untouched.
 
+### 3.2a How to read a whole-cgroup peak in this document
+
+Two properties of this measurement were found the hard way today, and they qualify **every** peak
+quoted below. They are stated here once, they are repeated inside each evidence file that carries a
+peak (`how_to_read_a_whole_cgroup_peak`), and they are not left in a covering note somewhere else.
+
+1. **Durability — the peak is written back only by a successful release.** If the launcher's
+   bounded drain loop does not succeed, it correctly leaves the reservation held rather than handing
+   its bytes to a second admission, and the sweep later reclaims it as
+   `LEASE_RECLAIMED_WITNESS_DEAD` with `observed_peak_bytes: null`. **So the measurement an incident
+   most needs is the one an incident most easily loses**, and a null peak means *not measured* — it
+   never means small. Shard 1 and shard 2 failed identically, seconds apart in CPU terms; shard 1
+   released and kept 3 540 209 664 B, shard 2 was reclaimed and kept nothing (§3.7).
+2. **Resolution — for a child shorter than the sampler's interval the peak is a floor, not a
+   measurement.** The same GPU smoke child reported 90 726 400 B when it lived 1.6 s and
+   576 438 272 B when given a dwell, against a main-process RSS peak of 967 823 360 B both times
+   (§4.3).
+
+**Consequence, applied throughout:** a cap is sized from the **larger** of the whole-cgroup peak and
+the main-process peak unless the child lived long enough to be sampled. Every cap declared in this
+round was sized that way.
+
 ### 3.2 The cap, sized from a whole-cgroup peak and not from a main-process figure
 
 The order's correction is **confirmed, and it matters more than it looked**. The repository's retained
@@ -201,7 +223,7 @@ Shard 1 and shard 2 failed the same way, in the same frame, seconds apart in CPU
 | shard 1 | `LEASE_RELEASED` | **3 540 209 664 B** |
 | shard 2 | `LEASE_RECLAIMED_WITNESS_DEAD` | **`null`** |
 
-The tree peak is written back **only by a successful release**. `crispdm-run` waits a bounded ~10 s for the
+The tree peak is written back **only by a successful release** (§3.2a, rule 1). `crispdm-run` waits a bounded ~10 s for the
 scope to drain and, if a descendant outlives that, correctly leaves the reservation held rather than
 handing its bytes to a second admission — the sweep freed it 14 minutes later. That is the right safety
 choice. But the consequence is that **the number an incident most needs is the number an incident is most
@@ -358,7 +380,7 @@ need, and inside that host's own current headroom, so no refusal had to be evade
 
 One measurement caveat, found and recorded rather than smoothed over: for a child that lives ~1.6 s the
 reservation's tree sampler reported 90 726 400 B, far below the same child's 967 MB RSS. **The
-whole-cgroup peak is a floor, not a measurement, for a child shorter than the sampler's interval.** Every
+whole-cgroup peak is a floor, not a measurement, for a child shorter than the sampler's interval** (§3.2a, rule 2). Every
 number quoted here comes from a child given a dwell long enough to be sampled.
 
 | # | probe | declared cap | outcome | elapsed | whole-cgroup peak |
@@ -603,7 +625,9 @@ what is NOT done / refused / not measured:
     that the combined run masks and the per-file shard exposes.  Diagnosed and proven by
     experiment, NOT repaired: repairing it would change the revision being measured
   - shard 2's whole-cgroup peak is LOST.  The tree peak is written back only by a successful
-    release, so an incident can lose the number it most needs.  Reported, not fixed
+    release, so an incident can lose the number it most needs.  Reported, not fixed.  That rule
+    and the sampler's resolution limit are now stated in S3.2a and inside every evidence file
+    that carries a peak, beside the numbers they qualify
   - a concurrent lane holds reservations on the same worker.  NOT adopted, NOT interfered with; my
     shards queued behind it at the same cap
   - no measurement of the preferred host's 10-minute stall cause; no cause claimed
@@ -657,6 +681,71 @@ what is NOT done / refused / not measured:
   - the September 22 failed decision units are classified (9 decision exits + 1 designed negative
     control) and NOT restarted; nothing was erased
 ```
+
+---
+
+## 6b. The two authorized follow-ons, both off the measured revision
+
+Both were authorized after this return's measurements existed, and both are separate commits **after**
+`0ea5bff4`, so nothing in §3 changes meaning.
+
+### 6b.1 The conftest defect — repaired and pinned
+
+```
+repo/branch: predictor / satoshi/rb01-rb03-resources-and-endpoint-20260928
+files: tests/conftest.py (one line), tests/test_crispdm_declared_coverage.py (new)
+does a covered file now pass on its own?  YES.
+  tests/test_df_d2_r4_comparator_guard.py alone: 17 passed, exit 0  (was 17 errors, exit 1)
+  tests/test_crispdm_declared_coverage.py:      3 passed, exit 0
+counterexample: the SAME new test file against the unrepaired 0ea5bff4 is 3 errors, exit 1 --
+  it catches the defect in its own setup, being itself a covered file run on its own
+what is NOT done: the measured revision is untouched; the scratch copy used for the
+  counterexample was removed and that worktree is clean
+```
+
+The repair registers the module before executing it, and pops the name again if the execution
+raises so a half-executed module is never left for the next test. The regression test **runs a
+covered file on its own, in a subprocess**, and that shape is the whole point: the fault reaches
+only the first unmarked test in a process, so a test that exercised the fixture from inside a group
+would have passed on the broken code and reproduced exactly the blindness that hid this.
+
+### 6b.2 The governance false green — closed on the wire and in the ledger
+
+```
+repo/branch: data-gov / satoshi/lake-unreachable-is-not-empty-20260928, cut at 8a5d2f9
+files: lake_plugins/http_lake.py, web_plugins/default_web.py,
+       inventory_plugins/default_inventory.py,
+       web_plugins/templates/{dashboard,lake}.html,
+       tests/unit/test_http_lake_unreachable_is_not_empty.py (new, 10),
+       tests/user/test_discover_of_an_unreachable_lake.py (new, 9)
+can a dead lake still produce a green preflight?  NO.
+  unreachable: HTTP 503, lake named, "inventory is UNKNOWN, not empty", no `resources` key,
+               ledger decision `unreachable`
+  reachable and empty: HTTP 200, `resources: []`, `reachable: true`, ledger decision `allow`
+  refused: HTTP 403, ledger decision `deny`
+suites: new 19 passed; full data-gov suite 243 passed, 1 skipped, 1 failed
+  (the failure is a pandas str-vs-object dtype comparison in an unrelated FRED parity test,
+   confirmed failing identically at the base revision 8a5d2f9 -- not mine)
+what is NOT done: nothing deployed, no service restarted, enabled or disabled
+```
+
+Both halves were broken. `_get` raised a bare `RuntimeError` on a transport failure and
+`discover()` turned it into `[]`; the route wrote `discover` ALLOW **before** asking the lake. Now
+`_get` raises `LakeUnreachable` by name, `discover()` swallows nothing at all — a 401, a 403 or a
+500 is not an empty inventory either — and the route records the outcome after the lake has
+answered.
+
+**Callers checked, and what changed for each:**
+
+| caller | before | after |
+|---|---|---|
+| `/api/v1/resources` | 200 + `{"resources": []}`, ledger `allow` | **503**, lake named, ledger **`unreachable`** — refuses where it previously passed |
+| dashboard (`/`) | "0 resources" for a dead lake | "unreachable — inventory unknown"; excluded from the total; would otherwise have started 500ing |
+| store page (`/lakes/<id>`) | empty inventory table | opens with a banner saying the inventory is unknown; its logs and statistics are local and stay accurate |
+| `default_inventory.sync_lake` | cached `[]` | **propagates**, deliberately: caching emptiness moves the false green into the catalog, where it outlives the outage |
+| `describe()` / `storage()` | degraded silently, looked healthy | still answer, now carry `reachable` and a named reason so zeroes read as an outage |
+| `check_startup` | — | **verified not to discover**: an unreachable store still does not block the kernel from starting |
+| any consumer outside this repository | — | **none.** The only client of the route is this repo's own `data_gov.client.resources` |
 
 ---
 

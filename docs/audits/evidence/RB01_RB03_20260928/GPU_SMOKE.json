@@ -143,6 +143,23 @@
   "sunreclaim_kb": 4600076
  },
  "host_role": "WORKER_B (the preferred external RTX 5090 host)",
+ "how_to_read_a_whole_cgroup_peak": {
+  "rule_1_durability": {
+   "consequence": "the measurement an incident most needs is the one an incident most easily loses.  A null peak means NOT MEASURED; it never means small",
+   "observed": "shard 1 and shard 2 failed identically, seconds apart in CPU terms.  Shard 1 released cleanly and kept 3540209664 B.  Shard 2 was reclaimed and kept nothing",
+   "proposed": "have the monitor persist its running peak into the lease as it samples, so a reclaim inherits the last sample instead of null",
+   "state": "OPEN, reported and not repaired",
+   "statement": "the whole-cgroup peak is written back into the lease ONLY BY A SUCCESSFUL RELEASE.  If the launcher's bounded drain loop does not succeed -- a descendant still in the scope, a core being written -- it correctly leaves the reservation held rather than handing its bytes to a second admission, and the sweep reclaims it later as LEASE_RECLAIMED_WITNESS_DEAD with observed_peak_bytes null"
+  },
+  "rule_2_resolution": {
+   "consequence": "a cap is sized from the LARGER of the whole-cgroup peak and the main-process peak unless the child was long enough to be sampled; every cap declared in this round was sized that way",
+   "observed": "the same GPU smoke child reported 90726400 B when it ran for 1.6 s and 576438272 B when given a dwell, against a main-process RSS peak of 967823360 B in both",
+   "state": "a property of the sampler, recorded so no number here is read as more than it is",
+   "statement": "for a child that lives less than the monitor's sampling interval the whole-cgroup peak is a FLOOR, NOT A MEASUREMENT"
+  },
+  "schema": "satoshi.whole_cgroup_peak_reading_rules.v1",
+  "why_this_block_exists": "two properties of this measurement were found the hard way on 2026-09-28 and they travel with every number below, so they are stated beside them rather than in a covering note somewhere else"
+ },
  "no_driver_reload_no_reboot": true,
  "recorded_by": "Satoshi III (Mujuro Utsutsu), successor technical lead",
  "schema": "satoshi.rb02_preferred_host_gpu_smoke.v1",
