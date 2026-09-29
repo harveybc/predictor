@@ -1,0 +1,330 @@
+{
+ "at": "2026-09-29T21:10:48Z",
+ "code_identity": "4d120967c51ec14d57c58b701b37c29a793af9f1",
+ "credential": "reconciled through the existing client path: tools/df_e1_governed.py reads --api-key-file and tools/governed_run.py:GovHttp sends it; the warehouse credential is read from a deployed EnvironmentFile. Nothing was printed, copied, logged or written to a second file, and no key was issued or rotated.",
+ "lake": "public_panels",
+ "recorded_by": "Satoshi, successor technical lead",
+ "resource": "uci_235_individual_household_power/panel.parquet",
+ "schema": "df_q2_household_governed_chain.v1",
+ "the_warm_cache_claim_is_settled_by_measurement": {
+  "consequence": "a warm cache does not let a consumer skip the lake: the 119 retained deliveries could not have been assumed to prove today's chain, and they were not",
+  "finding": "the probe's delivery is verification_state=VERIFIED_TRANSFER with cached=false, so the bytes were re-streamed from the lake although twelve warm caches of the identical digest exist on the coordinator"
+ },
+ "units": {
+  "pilot": {
+   "campaign_sha256": "0b1ff98b0be27cd1fdf3a6623cb28992b43b48a72548e3884ca27b39be90e083",
+   "consumed_reverified_inside_the_child": {
+    "bytes_on_disk": 10890295,
+    "matches_characterised_panel": true,
+    "matches_delivery": true,
+    "path_is_content_addressed_cache": true,
+    "sha256_reverified_in_child": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+   },
+   "delivery": {
+    "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+    "availability_label": "UNKNOWN",
+    "availability_use": "UNDECLARED",
+    "bytes": 10890295,
+    "cached": false,
+    "delivery_id": "03481116bf8a4c0ca5487aed0864b980",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "verification_state": "VERIFIED_TRANSFER"
+   },
+   "design_sha256": "a0d79298347d3ec4bfa673c2a5562e645e8e788a89d8c3712d7391c6583e1988",
+   "host_kind": "WORKER_A",
+   "interpreter_python": "3.12.13",
+   "memory": {
+    "declared_cap_bytes": 6442450944,
+    "declared_cap_gib": 6.0,
+    "rss_self_peak_bytes": 1473036288,
+    "rss_self_peak_gib": 1.3719,
+    "samples": [
+     {
+      "cgroup_is_a_launcher_scope": true,
+      "current_bytes": 53481472,
+      "label": "child_entry",
+      "peak_bytes": 53481472,
+      "rss_self_bytes": 46731264
+     },
+     {
+      "cgroup_is_a_launcher_scope": true,
+      "current_bytes": 53846016,
+      "label": "after_bytes_verified",
+      "peak_bytes": 55701504,
+      "rss_self_bytes": 46731264
+     },
+     {
+      "cgroup_is_a_launcher_scope": true,
+      "current_bytes": 366026752,
+      "label": "after_parquet_read",
+      "peak_bytes": 366034944,
+      "rss_self_bytes": 376885248
+     },
+     {
+      "cgroup_is_a_launcher_scope": true,
+      "current_bytes": 424292352,
+      "label": "after_channel_matrix",
+      "peak_bytes": 482676736,
+      "rss_self_bytes": 493346816
+     },
+     {
+      "cgroup_is_a_launcher_scope": true,
+      "current_bytes": 1463877632,
+      "label": "after_window_gather",
+      "peak_bytes": 1463877632,
+      "rss_self_bytes": 1473036288
+     },
+     {
+      "cgroup_is_a_launcher_scope": true,
+      "current_bytes": 366829568,
+      "label": "child_exit",
+      "peak_bytes": 1463877632,
+      "rss_self_bytes": 1473036288
+     }
+    ],
+    "scope_peak_bytes": 1463877632,
+    "scope_peak_gib": 1.3633,
+    "scope_peak_provenance": "WHOLE_CGROUP_PEAK_OF_THIS_JOB_S_OWN_SCOPE, read from inside the child and therefore independent of a successful release"
+   },
+   "reader": "tools/df_e1_governed.py:require_delivery -- a unit may read only a panel delivered to THAT unit, and it re-digests the delivered file before returning",
+   "terminal": {
+    "accepted": true,
+    "flushed": {
+     "failures": {},
+     "pending": 0,
+     "sent": 1
+    },
+    "receipt_terminal_sha256": "b852b550abb2c930b2b4be9f33ab974919e813b5f9d6755f783eafc6aaf07035",
+    "reconciliation": {
+     "accounting_only": [],
+     "http": 200,
+     "lake_only": [],
+     "missing_units": []
+    },
+    "status": "COMPLETED"
+   },
+   "warehouse": {
+    "artifact_rows": 1,
+    "artifacts": [
+     {
+      "bytes": 6314,
+      "role": "record",
+      "sha256": "70981986d7bc8ba4011ee94736e0ae67cc52e2aef32c4dfd82f976ea595ee77e"
+     }
+    ],
+    "metric_rows": 4,
+    "metrics": [
+     {
+      "horizon": 1,
+      "metric": "q2h.consumed_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 10890295.0
+     },
+     {
+      "horizon": 1,
+      "metric": "q2h.panel_rows",
+      "split": "development",
+      "unit": "rows",
+      "value": 2075259.0
+     },
+     {
+      "horizon": 1,
+      "metric": "q2h.scope_peak_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 1463877632.0
+     },
+     {
+      "horizon": 1,
+      "metric": "q2h.window_tensor_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 806400000.0
+     }
+    ],
+    "ok": true,
+    "reader": "tools/df_mod_e0_close.py:warehouse_terminals (the existing close client)",
+    "rows_all_generations": 1,
+    "terminal": {
+     "config_sha256": "a0d79298347d3ec4bfa673c2a5562e645e8e788a89d8c3712d7391c6583e1988",
+     "finished_at": "2026-09-29T21:04:45Z",
+     "generation": 1,
+     "started_at": "2026-09-29T21:04:42Z",
+     "status": "COMPLETED",
+     "terminal_sha256": "b852b550abb2c930b2b4be9f33ab974919e813b5f9d6755f783eafc6aaf07035",
+     "unit_id": "pilot"
+    }
+   },
+   "warehouse_digest_agrees_with_the_receipt": true,
+   "work": {
+    "bounded_by": "max_windows",
+    "bytes_per_window": 40320,
+    "channels_used": [
+     "Global_active_power",
+     "Global_reactive_power",
+     "Voltage",
+     "Global_intensity",
+     "Sub_metering_1",
+     "Sub_metering_2",
+     "Sub_metering_3"
+    ],
+    "columns": 8,
+    "full_population_window_bytes_if_all_origins_materialised": 83613962880,
+    "last_step_checksum": 5245547.738201097,
+    "matrix_bytes": 58107252,
+    "matrix_shape": [
+     2075259,
+     7
+    ],
+    "note": "this is the DATA STAGE footprint of one W1440 arm, not a cell: no model, gradients, optimizer slots or Keras graph are built here, so it is a LOWER BOUND on a W1440 cell and never a cap for one",
+    "numeric_columns": 7,
+    "rows": 2075259,
+    "usable_origins_at_W1440_h60": 2073759,
+    "window_bytes": 806400000,
+    "windows_materialised": 20000,
+    "windows_shape": [
+     20000,
+     1440,
+     7
+    ]
+   }
+  },
+  "probe": {
+   "campaign_sha256": "068e1d25cfdc7f13c3f64e42a2722b5a5ec4914496846210cccaeaaf2d0fc0ff",
+   "consumed_reverified_inside_the_child": {
+    "bytes_on_disk": 10890295,
+    "matches_characterised_panel": true,
+    "matches_delivery": true,
+    "path_is_content_addressed_cache": true,
+    "sha256_reverified_in_child": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+   },
+   "delivery": {
+    "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+    "availability_label": "UNKNOWN",
+    "availability_use": "UNDECLARED",
+    "bytes": 10890295,
+    "cached": false,
+    "delivery_id": "1dd3511387444abcb7507a0eced5f057",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "verification_state": "VERIFIED_TRANSFER"
+   },
+   "design_sha256": "b7a131e1665a7f68223236a5e5e5990c55efbece5b43a8cad463fb40ddb6522d",
+   "host_kind": "UNDECLARED",
+   "interpreter_python": "3.12.7",
+   "memory": {
+    "declared_cap_bytes": 3221225472,
+    "declared_cap_gib": 3.0,
+    "rss_self_peak_bytes": 372805632,
+    "rss_self_peak_gib": 0.3472,
+    "samples": [
+     {
+      "cgroup_is_a_launcher_scope": true,
+      "current_bytes": 74960896,
+      "label": "child_entry",
+      "peak_bytes": 74960896,
+      "rss_self_bytes": 66732032
+     },
+     {
+      "cgroup_is_a_launcher_scope": true,
+      "current_bytes": 75223040,
+      "label": "after_bytes_verified",
+      "peak_bytes": 77180928,
+      "rss_self_bytes": 66732032
+     },
+     {
+      "cgroup_is_a_launcher_scope": true,
+      "current_bytes": 384962560,
+      "label": "after_parquet_read",
+      "peak_bytes": 384962560,
+      "rss_self_bytes": 372805632
+     },
+     {
+      "cgroup_is_a_launcher_scope": true,
+      "current_bytes": 384962560,
+      "label": "child_exit",
+      "peak_bytes": 384962560,
+      "rss_self_bytes": 372805632
+     }
+    ],
+    "scope_peak_bytes": 384962560,
+    "scope_peak_gib": 0.3585,
+    "scope_peak_provenance": "WHOLE_CGROUP_PEAK_OF_THIS_JOB_S_OWN_SCOPE, read from inside the child and therefore independent of a successful release"
+   },
+   "reader": "tools/df_e1_governed.py:require_delivery -- a unit may read only a panel delivered to THAT unit, and it re-digests the delivered file before returning",
+   "terminal": {
+    "accepted": true,
+    "flushed": {
+     "failures": {},
+     "pending": 0,
+     "sent": 1
+    },
+    "receipt_terminal_sha256": "bda47cf86f7c3db9a9977235249c66e5d5155e255967089ad782bc28c0b41c5a",
+    "reconciliation": {
+     "accounting_only": [],
+     "http": 200,
+     "lake_only": [],
+     "missing_units": []
+    },
+    "status": "COMPLETED"
+   },
+   "warehouse": {
+    "artifact_rows": 1,
+    "artifacts": [
+     {
+      "bytes": 4099,
+      "role": "record",
+      "sha256": "afda6a90dbf01c05ce46f327b3bd7dfcf080e06c65e6d52656f53726412dac7e"
+     }
+    ],
+    "metric_rows": 3,
+    "metrics": [
+     {
+      "horizon": 1,
+      "metric": "q2h.consumed_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 10890295.0
+     },
+     {
+      "horizon": 1,
+      "metric": "q2h.panel_rows",
+      "split": "development",
+      "unit": "rows",
+      "value": 2075259.0
+     },
+     {
+      "horizon": 1,
+      "metric": "q2h.scope_peak_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 384962560.0
+     }
+    ],
+    "ok": true,
+    "reader": "tools/df_mod_e0_close.py:warehouse_terminals (the existing close client)",
+    "rows_all_generations": 1,
+    "terminal": {
+     "config_sha256": "b7a131e1665a7f68223236a5e5e5990c55efbece5b43a8cad463fb40ddb6522d",
+     "finished_at": "2026-09-29T21:01:40Z",
+     "generation": 1,
+     "started_at": "2026-09-29T21:01:39Z",
+     "status": "COMPLETED",
+     "terminal_sha256": "bda47cf86f7c3db9a9977235249c66e5d5155e255967089ad782bc28c0b41c5a",
+     "unit_id": "probe"
+    }
+   },
+   "warehouse_digest_agrees_with_the_receipt": true,
+   "work": {
+    "columns": 8,
+    "numeric_columns": 7,
+    "rows": 2075259
+   }
+  }
+ },
+ "what_this_chain_does_not_govern": [
+  "the twelve historical Q2 fits: they carry the WITHDRAWN v1 digest, custody UNCHECKED, 0 verified rows, closure FAILED, disposition HISTORICAL_DEV_ONLY, NOT_BOUND_TO_A_SEAL",
+  "no arm, seed, checkpoint, ranking or promotion is produced or authorised by these units",
+  "no reserve or holdout was opened; the household holdout 2006-12-16 was probed only to confirm that a range crossing it is still refused"
+ ]
+}

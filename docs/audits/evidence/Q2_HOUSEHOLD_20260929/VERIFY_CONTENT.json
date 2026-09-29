@@ -1,0 +1,97 @@
+{
+ "content_ok": true,
+ "delivered": {
+  "adopted_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+  "availability_label": "UNKNOWN",
+  "availability_use": "UNDECLARED",
+  "byte_exact_against_adoption": true,
+  "bytes": 10890295,
+  "declared_content_digest": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+  "http": 200,
+  "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+ },
+ "holdout_range_refused": true,
+ "holdout_refusal_http": 422,
+ "host": {
+  "backend": {
+   "capabilities": [
+    "describe",
+    "storage",
+    "discover",
+    "coverage",
+    "read",
+    "download",
+    "governed_download"
+   ],
+   "distribution": "financial-data-store",
+   "entry_point": "financial_files",
+   "group": "datalake.backends",
+   "module": "financial_data_store.provider:backend",
+   "settings_sha256": "5287ba27c4fe2533f375a23075bb8a945eff7cb69f185afe5f32b348a35f9d18",
+   "source_identity": {
+    "distribution": "financial-data-store",
+    "kind": "python_distribution",
+    "module": "financial_data_store.provider",
+    "source_commit": "ef0ba6612b2f161de59a58ee08f7bf61d69b8cec",
+    "version": "0.1.0"
+   },
+   "version": "0.1.0"
+  },
+  "capabilities": [
+   "coverage",
+   "describe",
+   "discover",
+   "download",
+   "governed_download",
+   "read",
+   "storage"
+  ],
+  "kind": "lake",
+  "store_id": "public_panels",
+  "transport": "http"
+ },
+ "household_listed": true,
+ "listener_pid_is_unit_main_pid": true,
+ "ok": true,
+ "other_units_now": {
+  "crispdm-data-gov.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "UnitFileState": "enabled"
+  },
+  "crispdm-data-lake-financial.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "UnitFileState": "enabled"
+  },
+  "crispdm-data-lake-sota-benchmarks.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "UnitFileState": "enabled"
+  },
+  "crispdm-data-lake-synthetic.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "UnitFileState": "enabled"
+  },
+  "crispdm-data-warehouse-olap.service": {
+   "ActiveState": "active",
+   "SubState": "running",
+   "UnitFileState": "enabled"
+  }
+ },
+ "other_units_unchanged": true,
+ "port": 5059,
+ "range_refusal_http": 422,
+ "range_refused": true,
+ "registry_digest": "91f1e627a856b8afed1de73dc2f5497ee9521045dd5979ecbe3607615dce01c6",
+ "registry_unchanged": true,
+ "resource_count": 2,
+ "stage": "verify",
+ "unit": {
+  "ActiveState": "active",
+  "SubState": "running",
+  "UnitFileState": "disabled"
+ }
+}

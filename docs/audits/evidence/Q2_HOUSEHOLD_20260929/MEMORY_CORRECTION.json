@@ -1,0 +1,142 @@
+{
+ "at": "2026-09-29T21:11:47Z",
+ "correction_1_what_7_4_G_actually_is": {
+  "and_the_order_s_own_characterisation_is_corrected_too": "the order states the 7.4 GiB figure is a resident set and not a cgroup peak. Measured against the retained journal, the opposite is true of THAT number: it is systemd's cgroup peak for the scope. The order's substantive point stands and is stated below without relying on that premise.",
+  "claim_as_circulated": "docs/tres_temas_entrevista/program_v3/EXPERIMENT_EXECUTION_QUEUE.json calls it 'a 7.4 GiB RESIDENT SET -- declared from measurement, not estimate'",
+  "so_two_things_are_wrong_in_the_circulating_line": [
+   "it calls a cgroup peak a resident set",
+   "it attributes a whole-tree, killed-at figure to one arm's cell"
+  ],
+  "the_number_that_IS_a_resident_set": {
+   "bytes": 8458399744,
+   "gib": 7.877,
+   "provenance": "MEMORY_GATE.jsonl measured_pilot_peak_bytes, taken from resource.getrusage(RUSAGE_SELF).ru_maxrss inside one cell child (tools/df_e1_block.py:run_cell), i.e. ONE PROCESS'S RESIDENT SET",
+   "the_second_such_figure": {
+    "bytes": 10279276544,
+    "gib": 9.573
+   }
+  },
+  "verdict": "REFUTED_AS_A_RESIDENT_SET_AND_REFUTED_AS_A_PER_CELL_FIGURE",
+  "what_it_is": "systemd's own end-of-unit line for the memory-gated wrapper scope: 'crispdm-q2deep-<epoch>-<pid>.scope: Consumed 21min 32.106s CPU time over 23min 9.019s wall clock time, 7.4G memory peak.'  It is therefore a CGROUP peak, not a resident set -- but of the WRAPPER SCOPE that hosted the pilot driver and its parallel children, taken AT AN oomd KILL, so it is a kill-time watermark of a multi-child tree and not any single cell's footprint."
+ },
+ "correction_2_no_per_cell_cgroup_peak_exists_for_any_Q2_cell": {
+  "and_the_repair_is_stranded_on_one_branch": {
+   "branches_containing_it": [
+    "satoshi/q2-context-deep-arms-20260926",
+    "remotes/origin/satoshi/q2-context-deep-arms-20260926"
+   ],
+   "reachability_from_the_revisions_in_use": {
+    "07846a7d": {
+     "contains_the_repair_commit_84bcd605": false,
+     "run_cell_records_cgroup_memory_peak_bytes": false,
+     "run_units_launches_children_with_a_bare_subprocess": true
+    },
+    "0ae37a68": {
+     "contains_the_repair_commit_84bcd605": false,
+     "run_cell_records_cgroup_memory_peak_bytes": false,
+     "run_units_launches_children_with_a_bare_subprocess": true
+    },
+    "4d120967": {
+     "contains_the_repair_commit_84bcd605": false,
+     "run_cell_records_cgroup_memory_peak_bytes": false,
+     "run_units_launches_children_with_a_bare_subprocess": true
+    },
+    "50d06e50": {
+     "contains_the_repair_commit_84bcd605": false,
+     "run_cell_records_cgroup_memory_peak_bytes": false,
+     "run_units_launches_children_with_a_bare_subprocess": true
+    },
+    "956dc43c": {
+     "contains_the_repair_commit_84bcd605": false,
+     "run_cell_records_cgroup_memory_peak_bytes": false,
+     "run_units_launches_children_with_a_bare_subprocess": true
+    },
+    "f40fae93": {
+     "contains_the_repair_commit_84bcd605": false,
+     "run_cell_records_cgroup_memory_peak_bytes": false,
+     "run_units_launches_children_with_a_bare_subprocess": true
+    },
+    "master": {
+     "contains_the_repair_commit_84bcd605": false,
+     "note": "tools/df_e1_block.py does not exist on master at all: the household block runner has never been merged there, so the two false flags above mean 'no such file', not 'no such code'",
+     "run_cell_records_cgroup_memory_peak_bytes": false,
+     "run_units_launches_children_with_a_bare_subprocess": false
+    }
+   },
+   "reading": "the instrument exists on exactly one branch and on no other. The household block runner is not on master at all, and every feature branch any lane is working from carries the bare-subprocess launch and records only peak_rss_bytes -- so a successor cut from any of them would reproduce the same unusable figure.",
+   "repair_commit": "84bcd605 -- run_cell gained cost.cgroup_memory_peak_bytes and labelled the RSS figure with its basis",
+   "second_limitation_of_the_repair_itself": "even on that branch the child still takes no scope, and LIMITS['parallel_children'] is 3, so cgroup_memory_peak_bytes read from a cell child returns the peak of the SHARED driver scope charging up to three concurrent cells. It is a per-batch figure, not a per-cell one."
+  },
+  "consequence": "no cell-scoped memory.peak was ever created, so no successor cap may be declared from any Q2 cell's retained numbers",
+  "mechanism": "tools/df_e1_block.py:run_units launches every unit with a bare subprocess.run([sys.executable, ..., 'child', ...]).  It never invokes the launcher, so a cell child takes no scope of its own and inherits whatever cgroup the driver sits in.",
+  "verdict": "VERIFIED"
+ },
+ "recorded_by": "Satoshi, successor technical lead",
+ "schema": "df_q2_memory_correction.v1",
+ "subject": "the numbers that have been circulating as a measured Q2 pilot peak",
+ "successor_reconciliation": {
+  "estimand": {
+   "because": "every cell is censored at 600 observed updates",
+   "label": "MATCHED_BUDGET_DIFFERENCE",
+   "never": "CONVERGED_ACCURACY"
+  },
+  "residual_budget": "UNQUANTIFIED for a cell. The measured data-stage floor is 1463877632 B; the model, gradient, optimizer-slot and per-batch-gather terms were not built and are therefore not measured. NULL IS NOT SMALL: no cap is declared from this round.",
+  "runner_identity_gap": "a successor that must report a per-cell cgroup peak needs BOTH the 84bcd605 instrument AND a change run_units does not have: each cell child launched in its own scope, or parallel_children pinned to 1. Neither is proposed here: a budget change belongs in an explicitly justified successor declared before any score.",
+  "the_six_missing_W1440_cells": {
+   "action_taken": "NONE -- not relaunched; v1 not relaunched",
+   "state": "STILL MISSING"
+  },
+  "the_twelve_landed_fits": {
+   "action_taken": "NONE -- not refitted, not re-bound, no allocation reset",
+   "bound_to": "the WITHDRAWN v1 digest",
+   "closure": "FAILED",
+   "custody": "UNCHECKED",
+   "disposition": "HISTORICAL_DEV_ONLY",
+   "state": "NOT_BOUND_TO_A_SEAL",
+   "verified_rows": 0
+  },
+  "v1": {
+   "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "state": "WITHDRAWN for carrying a machine host name"
+  },
+  "v2": {
+   "design_sha256": "27ed712d",
+   "differs_from_v1_in": "three leaf values; no science changed",
+   "reachability": "sealed on satoshi/q2-context-deep-arms-20260926 (84bcd605) and reachable from no other branch, master included",
+   "state": "SEALED_NOT_EXECUTED"
+  }
+ },
+ "what_was_measured_today_instead": {
+  "cap_was_never_lowered_to_evade_a_refusal": true,
+  "declared_cap_bytes": 6442450944,
+  "declared_cap_gib": 6.0,
+  "footprint_arithmetic_a_successor_can_be_costed_from": {
+   "bytes_per_W1440_window": 40320,
+   "channel_matrix_bytes_float32": 58107252,
+   "channels": 7,
+   "if_every_origin_were_materialised_at_once_bytes": 83613962880,
+   "if_every_origin_were_materialised_at_once_gib": 77.9,
+   "panel_rows": 2075259,
+   "reading": "the block never materialises the whole population -- Batches gathers per batch -- which is exactly why a data-stage figure cannot be a cell's cap",
+   "usable_origins_at_W1440_h60": 2073759,
+   "window_tensor_bytes_at_that_count": 806400000,
+   "windows_materialised_by_this_pilot": 20000
+  },
+  "host_kind": "WORKER_A",
+  "launched_under": "crispdm-run, one child, parallel = 1, cap declared BEFORE the run",
+  "rss_exceeded_the_cgroup_peak_by_bytes": 9158656,
+  "rss_self_peak_bytes": 1473036288,
+  "rss_self_peak_gib": 1.3719,
+  "scope_peak_bytes": 1463877632,
+  "scope_peak_gib": 1.3633,
+  "scope_peak_provenance": "WHOLE_CGROUP_PEAK_OF_THIS_JOB_S_OWN_SCOPE, read from inside the child and therefore independent of a successful release",
+  "so_rss_is_not_even_a_conservative_bound": "the child's resident set came out 9.16 MB ABOVE the whole-scope charged peak, so RSS is not a lower bound on a cgroup peak either; the two are simply not interchangeable in either direction",
+  "unit": "pilot",
+  "what_this_peak_is_NOT": [
+   "not a cap for any W1440 cell: no model, gradients, optimizer slots or Keras graph were built",
+   "not an arm, not a fit, not a score, not a checkpoint",
+   "a FLOOR for the W1440 data stage, and nothing more"
+  ],
+  "why_it_survives_a_failure": "memory.peak is a KERNEL HIGH-WATERMARK read from inside the child, not a sample and not a value the launcher writes back on release. It is therefore a measurement even for a child shorter than the sampler's interval, where a SAMPLED tree peak is only a floor, and it is not lost when a release never succeeds."
+ }
+}

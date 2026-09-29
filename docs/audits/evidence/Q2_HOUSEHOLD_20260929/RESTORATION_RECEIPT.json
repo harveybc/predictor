@@ -1,0 +1,175 @@
+{
+ "at": "2026-09-29T21:10:13Z",
+ "checks": [
+  {
+   "check": "preflight refreshed and green for a lake that now serves",
+   "evidence": {
+    "exit": 0,
+    "failed_checks": [],
+    "ok": true,
+    "port_precondition": "served_by_named_unit",
+    "port_served_by_named_unit": "the single loopback listener on 5059 is this unit's own main process"
+   },
+   "n": 1,
+   "note": "the shipped preflight required the port to be FREE, which after the owner's start is the one check that must now fail; the refreshed precondition resolves the single loopback listener's pid against the unit's own main pid, which is strictly harder",
+   "verdict": "VERIFIED"
+  },
+  {
+   "check": "the named lake, and only that lake, is serving",
+   "evidence": {
+    "household_resource_served_only_by_the_named_lake": true,
+    "no_overlap_between_the_two_inventories": true,
+    "other_store_units_start_timestamps_all_predate_the_restoration": true,
+    "resources_served_by_it": 2,
+    "served_store_id_on_the_household_port": "public_panels",
+    "the_other_store_serves_a_different_lake_id": "sota_benchmarks"
+   },
+   "n": 2,
+   "verdict": "VERIFIED"
+  },
+  {
+   "check": "actual delivered content, not merely discovery",
+   "evidence": {
+    "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+    "byte_exact_against_the_2026_09_20_adoption_binding": true,
+    "bytes": 10890295,
+    "declared_content_digest_header": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "http": 200,
+    "same_contract_digest_as_the_119_retained_deliveries": true,
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+   },
+   "n": 3,
+   "note": "discovery alone is not evidence: http_lake.discover() swallows an unreachable lake and returns an empty list, so this check streams the resource and digests what arrived",
+   "verdict": "VERIFIED"
+  },
+  {
+   "check": "the contract refusals still hold",
+   "evidence": {
+    "holdout_refusal_http": 422,
+    "holdout_start_as_the_registry_publishes_it": "2006-12-16",
+    "range_refusal_http": 422,
+    "range_spanning_the_holdout_start": "REFUSED",
+    "ranged_request_on_the_untimed_resource": "REFUSED"
+   },
+   "n": 4,
+   "verdict": "VERIFIED"
+  },
+  {
+   "check": "the governance registry was not replaced and every other store is untouched",
+   "correction": "the receipt's own documented restore line is worse than previously recorded. It copies a PRE-ADOPTION registry backup, which carries neither public_panels nor sota_benchmarks and none of the three household access policies, and then restarts the governance kernel. Applying it today would delete TWO registered lakes -- including the household lake itself -- not one. It was never used.",
+   "evidence": {
+    "lakes_the_old_restore_line_would_have_REMOVED": [
+     "public_panels",
+     "sota_benchmarks"
+    ],
+    "live_registry_lake_ids": [
+     "financial_files",
+     "olap_cube",
+     "predictor_examples",
+     "governance_smoke",
+     "public_panels",
+     "sota_benchmarks"
+    ],
+    "live_registry_sha256": "91f1e627a856b8afed1de73dc2f5497ee9521045dd5979ecbe3607615dce01c6",
+    "other_store_units_now": {
+     "crispdm-data-gov.service": {
+      "ActiveState": "active",
+      "ExecMainStartTimestamp": "Mon 2026-09-28 10:03:29 -05",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+     },
+     "crispdm-data-lake-financial.service": {
+      "ActiveState": "active",
+      "ExecMainStartTimestamp": "Mon 2026-09-28 10:03:29 -05",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+     },
+     "crispdm-data-lake-sota-benchmarks.service": {
+      "ActiveState": "active",
+      "ExecMainStartTimestamp": "Mon 2026-09-28 23:37:20 -05",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+     },
+     "crispdm-data-lake-synthetic.service": {
+      "ActiveState": "active",
+      "ExecMainStartTimestamp": "Mon 2026-09-28 10:03:29 -05",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+     },
+     "crispdm-data-warehouse-olap.service": {
+      "ActiveState": "active",
+      "ExecMainStartTimestamp": "Mon 2026-09-28 10:03:29 -05",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+     }
+    },
+    "other_store_units_unchanged": true,
+    "registry_digest_unchanged_between_preflight_and_verify": true,
+    "the_2026_09_20_backup_lake_ids": [
+     "financial_files",
+     "olap_cube",
+     "predictor_examples",
+     "governance_smoke"
+    ]
+   },
+   "n": 5,
+   "verdict": "VERIFIED"
+  },
+  {
+   "check": "a receipt and a rollback are retained",
+   "evidence": {
+    "persistence_across_reboot": "UnitFileState=disabled -- a separate explicit owner choice, neither asserted nor changed here",
+    "receipt": "this file",
+    "rollback_command": "tools/df_public_panels_restore.py rollback",
+    "rollback_is": "systemctl --user stop of that one unit and nothing else; it asserts port_free, registry_unchanged and other_units_unchanged",
+    "rollback_not_run_now": "running it would STOP the lake the owner restored; the order is verify, do not re-do",
+    "rollback_was_exercised_on_2026_09_28_as_a_no_op": "ROLLBACK_NOOP.json at 956dc43c"
+   },
+   "n": 6,
+   "verdict": "VERIFIED"
+  }
+ ],
+ "recorded_by": "Satoshi, successor technical lead",
+ "rehearsal_identity": {
+  "backend_settings_identical": true,
+  "config_differs_only_in": [
+   "web_port"
+  ],
+  "download": {
+   "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+   "byte_exact_against_adoption": true,
+   "bytes": 10890295,
+   "http": 200,
+   "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+  },
+  "exit": 0,
+  "identity_matches_the_live_serving_unit": {
+   "backend_settings_sha256": true,
+   "backend_source_identity": true,
+   "delivered_bytes_identical": true,
+   "store_id": true
+  },
+  "range_refusal_http": 422,
+  "range_refused": true,
+  "refreshed_today": true,
+  "resources": [
+   "uci_235_individual_household_power/panel.parquet",
+   "uci_321_electricityloaddiagrams20112014/panel.parquet"
+  ],
+  "throwaway_stopped": true
+ },
+ "schema": "df_public_panels_restoration_receipt.v1",
+ "subject": {
+  "lake_id": "public_panels",
+  "port": 5059,
+  "restored_at_local": "Tue 2026-09-29 14:30:05 -05",
+  "restored_by": "the owner",
+  "unit": "crispdm-data-lake-public-panels.service"
+ },
+ "verdict": "ALL_SIX_CHECKS_VERIFIED",
+ "what_this_agent_did_not_do": [
+  "no service was started, stopped, enabled, disabled, restarted or reloaded",
+  "no registry, data contract, holdout, availability declaration or panel byte was written",
+  "no credential was printed, copied, logged or written to a second file"
+ ]
+}
