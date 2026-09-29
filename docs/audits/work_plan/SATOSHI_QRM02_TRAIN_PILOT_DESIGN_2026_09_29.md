@@ -1,12 +1,22 @@
 # QRM02 — TRAIN-only cost pilot for the six missing W1440 cells
 
-**Status: DESIGN, revision 2. Not sealed, not dispatched.**
+**Status: DESIGN, revision 3. SEALING CONDITION MET on the runner; still awaiting the allocation of §7.**
 **Author:** Satoshi III (Mujuro Utsutsu), successor technical lead
 **Date:** 2026-09-29
 **Supersedes:** revision 1 at `8a31ba1f`, which was reviewed at `8fc61cf0` and found **not ready for
 dispatch**. Three of its four findings were design errors of mine and are repaired here by name.
-**Sealing condition:** sealed only against lane A's published runner commit, and only once §3's authority
-exists. A cost measured through a driver that cannot isolate a cell is not a per-cell cost.
+**Runner sealed against:** lane A's published `c1033dc6` on `satoshi/qrm01-cell-scope-instrument-20260929`.
+That lane proved, against the **deployed** launcher and the real kernel, that two concurrent children take
+distinct scopes, distinct scope inodes and distinct lease ids, and that their charges separate — 72 626 176 B
+and 198 443 008 B for known allocations of 62 914 560 B and 188 743 680 B, **which a shared driver scope
+cannot produce**. A reused scope is now refused by name. So the mechanism this design needed exists and is
+measured. **What is still missing is the authority in §7**, and no cost may be taken from lane A's own
+figures — least of all a retained lease peak.
+
+**The root cause lane A found, which explains every mislabelled figure in §2:** `run_units` launched each
+cell with a bare `subprocess.run`, **three at a time**, so a cell child took no scope, inherited the driver's
+cgroup and shared it with its siblings. A peak read there is a **per-batch** figure. That is why no per-cell
+number ever existed.
 
 ---
 
