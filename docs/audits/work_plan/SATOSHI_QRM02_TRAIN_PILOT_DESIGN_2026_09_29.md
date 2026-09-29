@@ -1,123 +1,176 @@
 # QRM02 — TRAIN-only cost pilot for the six missing W1440 cells
 
-**Status: DESIGN DRAFT. Not sealed, not dispatched, not authorized.**
+**Status: DESIGN, revision 2. Not sealed, not dispatched.**
 **Author:** Satoshi III (Mujuro Utsutsu), successor technical lead
 **Date:** 2026-09-29
-**Written under:** QRM02 of `SATOSHI_Q2_RESOURCE_SUCCESSOR_2026_09_29.md` at `04f02555`, which assigns me the
-preparation of this design while lane A builds the runner.
-**Sealing condition:** this design is sealed only after lane A publishes the per-cell scope runner, and it is
-sealed against **that runner's commit**, because a cost measured through a driver that cannot isolate a cell
-is not a per-cell cost.
+**Supersedes:** revision 1 at `8a31ba1f`, which was reviewed at `8fc61cf0` and found **not ready for
+dispatch**. Three of its four findings were design errors of mine and are repaired here by name.
+**Sealing condition:** sealed only against lane A's published runner commit, and only once §3's authority
+exists. A cost measured through a driver that cannot isolate a cell is not a per-cell cost.
 
 ---
 
-## 0. What this pilot exists to produce, and what it must not become
+## 0. The four repairs, stated before anything else
 
-The six missing cells cannot be costed today, and every number that has been offered as their cost has turned
-out to measure something else. That history is the specification:
-
-| circulating figure | what it actually is | why it cannot cost a cell |
+| # | what revision 1 did wrong | repair |
 |---|---|---|
-| 7.4 G "cell peak" | the **cgroup peak of a killed multi-child wrapper scope** | a kill-time watermark over a driver and its parallel children |
-| 8 458 399 744 B "measured pilot peak" | `getrusage(RUSAGE_SELF)` **child RSS** | a different quantity from a cgroup peak, and one child |
-| 1 463 877 632 B "pilot peak" | the cgroup peak of **one 20 000-window data materialization** | **the model was absent entirely**, and the production loader gathers batches rather than materializing them |
-
-So this pilot measures the **training path with the model present**, per cell, in that cell's own scope.
-**It is a cost measurement. It is not a result**, it produces no accuracy, it touches no test split, and it
-selects nothing.
-
-**RSS and cgroup accounting measure different quantities.** The single observed ordering between them — a
-child's RSS 9.16 MB above its scope peak — **establishes no invariant** and is not used here as a bound in
-either direction. Each is recorded under its own name, with cgroup identity, ancestry and lifetime.
+| 1 | **Circular limits.** It set the device cap from "this pilot's own stage 1" and the stage budgets from "this pilot's own warmup". Those are not limits declared before the pilot runs. | §3 declares a **finite envelope from evidence outside this pilot**, and §4 puts a **predeclared bounded calibration phase inside it**. No implicit expansion mid-run. |
+| 2 | **An assumption dressed as a stage.** It called the ragged final batch the place "where a tight cap fails". A ragged final batch is **smaller**, and nothing established it is the worst. | §5 **tests the actual full and final shapes** and reports the observed order. No shape is assumed worst. |
+| 3 | **Peak attribution overstated.** It recorded a "host RAM cgroup peak per stage". `memory.peak` is a **cumulative high-watermark over the scope lifetime**; readings at stage boundaries are cumulative, not independent stage peaks. | §6 records both, under names that cannot be confused. |
+| 4 | **The historical null used as more than a diagnostic.** | §1 keeps it as a diagnostic only and enumerates the successor's controls separately. |
 
 ---
 
-## 1. The population to cost: two architectures, not one
+## 1. The population, and what the historical null does and does not license
 
-From the sealed v2 design, the missing cells are three seeds each of **two** arms, both at window 1440:
+The six missing cells are three seeds each of **two** arms, both at window 1440:
 
-| arm | window | what it is |
+| arm | what it is |
+|---|---|
+| `long_window_own_depth` | an arm of the primary factorial, at its own depth |
+| `long_window_local_support_67` | **measured extra context of 67 raw samples** — the clamped core still reaches branch 5 + core 63 − 1. Explicitly **not** a null. |
+
+**Both are costed separately.** A bound over one may cover the other only if it is **demonstrated on the
+built models**; they differ in depth and reach, which are the terms that drive activation memory, so the
+shared window length proves nothing.
+
+The third 1440 arm, `long_window_crop60`, is the **exact-information null**. It already ran and reproduced
+the baseline bitwise in 3 of 3 seeds. It is **retained as a diagnostic** and is **not refitted** for this
+resource pilot. **It does not by itself authorize those cells as governed comparators** for the future
+scientific successor. The successor's required controls and each one's evidence status are enumerated
+**before any full fit**, not inferred from this equivalence.
+
+---
+
+## 2. What this pilot is
+
+A **cost measurement of the training path with the model present**, per cell, in that cell's own scope. It
+produces **no accuracy**, touches **no test split**, and selects nothing.
+
+It exists because every figure offered so far as the cost of these cells measures something else:
+
+| circulating figure | what it actually is |
+|---|---|
+| 7.4 G | the cgroup peak of a **killed multi-child wrapper scope**, at the kill |
+| 8 458 399 744 B | `getrusage(RUSAGE_SELF)` **child RSS** |
+| 1 463 877 632 B | the cgroup peak of one **20 000-window data materialization**, **with the model absent** |
+
+**RSS and cgroup accounting measure different quantities**, and the one observed ordering between them
+establishes no invariant. Each is recorded under its own name with the cgroup's identity, ancestry and
+lifetime.
+
+---
+
+## 3. The envelope, declared before dispatch, from evidence outside this pilot
+
+| item | value | basis, and why it is not circular |
 |---|---|---|
-| `long_window_own_depth` | 1440 | an arm in the primary factorial, at its own depth |
-| `long_window_local_support_67` | 1440 | measured **extra context of 67 raw samples** — the clamped core still reaches branch 5 + core 63 − 1; explicitly **not** a null |
+| placement | secondary worker, one cell at a time | the preferred accelerator host is ineligible: ~3 GiB free of 14 with 4.93 GiB unreclaimable kernel slab |
+| **host envelope** | **12 GiB per cell, ENFORCED** | the launcher sets cgroup `MemoryMax`; 12 GiB sits under the 14 GiB slice ceiling and inside the worker's ~21 GiB free. Chosen as a bound, not derived from the thing being measured |
+| **device envelope** | **12 GiB, MONITORED ONLY, NOT ENFORCED** | the cgroup bounds host RAM and **not** VRAM. The 4090 carries 16 376 MiB. The child asserts `torch.cuda.max_memory_allocated` and `max_memory_reserved` against the envelope and **raises**; **CUDA allocation statistics are not an enforced GPU limit** and are never described as one |
+| wall deadline | 1 800 s per cell, 4 800 s total worst case | a declared stopping rule, not a prediction |
+| CPU deadline | 2 400 CPU s per cell | as above |
+| **abort path** | host: the cgroup kills the child and the attempt is recorded **terminated**, never retried at a larger cap. device: the child raises and exits non-zero before allocating past the envelope. Either way the peak is read **before the scope is removed** and a missing peak is `UNKNOWN` | |
 
-The third 1440 arm, `long_window_crop60`, is the **exact-information null** and has already run: it reproduced
-the baseline bitwise in 3 of 3 seeds. It is **not** re-costed and **not** re-run.
-
-**Both architectures are costed separately** unless a bound over one is shown to cover the other, and such a
-bound must be **demonstrated on the built models**, never asserted from the shared window length. They differ
-in depth and in reach, which are exactly the terms that drive activation memory.
+**If a calibration exceeds the envelope, the pilot stops and reports.** It never expands mid-run.
 
 ---
 
-## 2. Stages to measure, all inside one cell scope
+## 4. Predeclared bounded calibration, then a derived proposal
 
-A cost that omits a stage is not a cost. Each stage is measured **in the same cell scope**, so nothing is
-attributed to a scope that did not hold it:
+Inside the envelope, per architecture: **30 optimizer updates**, at the production batch policy, unchanged.
+That count is fixed here, before dispatch.
+
+From the calibration, and only from it, the **proposed successor's** costs are derived and published as a
+proposal for review. The calibration's own numbers are measurements; the successor's are **projections with
+explicit headroom**, never a claim that maximum memory has been proven.
+
+An isolation fixture from lane A proves that **scope accounting works**. Its peak **does not size this
+model** and is not used to.
+
+---
+
+## 5. Stages, and the shapes actually tested
+
+Measured in the **same cell scope**, in this order:
 
 1. **model build** — parameters instantiated, before any step;
-2. **warmup** — the first steps, where allocator behaviour differs from steady state;
-3. **steady batches** — the regime that dominates wall time;
-4. **the largest final-batch shape** — the ragged last batch, which is where a tight cap fails and which a
-   steady-state measurement never sees;
-5. **forward, backward and optimizer steps that actually instantiate the optimizer slots** — a step that never
-   materializes moment buffers under-reports the peak by the size of those buffers;
+2. **optimizer-slot initialization** — completed **before** any steady-state cost is attributed, so the
+   moment buffers are resident when the steady regime is measured rather than appearing inside it;
+3. **warmup** — where allocator behaviour differs from steady state;
+4. **steady batches**;
+5. **both the full batch shape and the final batch shape**, each measured, with **graph retracing and
+   workspace allocation** observed rather than assumed absent. **The order between them is reported, not
+   assumed** — revision 1 asserted the final batch was worst and had no evidence for it;
 6. **checkpoint write and reload**;
-7. **validation mechanics** on a **TRAIN-only fixture of the planned shape** — the mechanics, not a score.
+7. **validation mechanics and their overlap with checkpointing, as production executes it** — on a
+   **TRAIN-only fixture of the planned shape**. Mechanics, never a score.
 
-Recorded per stage and per cell, each under its own name: **host RAM cgroup peak**, **GPU allocated** and
-**GPU reserved** separately, scope identity, the kernel limit, optimizer updates, CPU time, wall time.
-**The peak is read before the scope is removed.** An external supervisor retains the termination status when a
-child fails. **A missing peak is `UNKNOWN` — never zero, and never success.**
-
----
-
-## 3. Declared before dispatch
-
-Per the order, these are stated **before** anything runs, and a run that would exceed them stops rather than
-continues:
-
-| item | value | source |
-|---|---|---|
-| host cap per cell | **to be set from lane A's isolation test**, not from any figure in §0 | A's published runner |
-| device cap per cell | to be set from the built model's measured allocation at stage 1 | this pilot's own stage 1 |
-| stage budgets | wall and CPU per stage, from the pilot's own warmup | this pilot |
-| remaining allocation | **UNRECONCILED — see §5** | the dispatch index |
-
-**No allocation is invented and no cap is reduced to pass admission.** If the reconciled authority is
-insufficient, the deliverable is an **exact additional request** with its arithmetic, not a quiet resize.
+The production batch policy is **unchanged**. This pilot measures what production would do; it does not
+propose a cheaper way to do it.
 
 ---
 
-## 4. What this pilot may never do
+## 6. How each number is recorded, so none can be misread
 
-- **No test access and no accuracy selection.** Validation appears only as mechanics on a TRAIN-only fixture.
-- **No promotion of the twelve historical cells** through this or any new seal. They stay
+- **`host_cumulative_high_watermark_at_stage_boundary`** — `memory.peak` read at each boundary. **Cumulative
+  over the scope lifetime**, monotonic, and labelled so.
+- **`host_stage_peak_after_reset`** — `memory.peak` is writable on this kernel (7.0), so it is reset at each
+  stage boundary and the following reading is the peak **since that reset**. Both series are kept: resetting
+  changes what the number means, and losing the lifetime watermark would be a worse trade.
+- **`device_allocated_peak` / `device_reserved_peak`** — each names the **framework and API**
+  (`torch.cuda.max_memory_allocated`, `max_memory_reserved`) and its **reset basis**
+  (`reset_peak_memory_stats` at the same boundaries). **Unavailable statistics are `UNKNOWN`** and are
+  **never synthesized** from host memory or from a parameter count.
+- **`rss_self_peak`** — recorded separately, never as a bound on the cgroup figure or vice versa.
+- Plus, per cell: scope identity, the kernel limit in force, optimizer updates, CPU time, wall time, stage.
+
+The peak is read **before the scope is removed**. An external supervisor retains the **termination status**
+when a child fails. **A missing peak is `UNKNOWN` — never zero, and never success.**
+
+---
+
+## 7. Authority: there is none, and here is the request
+
+**Reconciled, as the order requires me to do rather than delegate.** The dispatch index records, for this
+lane: *"The six W1440 units have no approved allocation"*, and **`lease: NONE HELD`**. The only remainder
+recorded anywhere belongs to another lane and is declared not a licence to spend. **I am not borrowing it.**
+
+One further caution on the index's own `resource` row: it prices the six cells at *"2 000–4 000 updates per
+cell at 4.165 CPU s per update, 15–30 h wall … at a 7.4 GiB resident set"*. That memory term is the
+disqualified figure of §2 **and** it is called a resident set when the journal figure was a cgroup peak of a
+killed wrapper. The **time** terms are not invalidated by that mislabel, but they inherit its provenance and
+are treated as inputs to be re-measured, not as authority.
+
+> **The request, concrete and bounded.** Two architectures × one calibration cell each, sequential, on the
+> secondary worker's RTX 4090 by UUID. **Stages:** build, optimizer-slot initialization, warmup, steady,
+> both batch shapes, checkpoint write and reload, validation mechanics. **Worst-case spend: 4 800 s wall and
+> 4 800 CPU s total**, host envelope 12 GiB enforced, device envelope 12 GiB monitored.
+> **Stopping rules:** any stage exceeding either envelope stops the pilot; the wall or CPU deadline stops it;
+> a terminated child is recorded and **never retried at a larger cap**; and a missing peak stops the pilot
+> rather than being written as a number.
+> **This buys a costed successor proposal. It buys no fit, no accuracy and no training authorization.**
+
+---
+
+## 8. What this pilot may never do
+
+- No test access, no accuracy, no selection.
+- **No promotion of the twelve historical cells** through this or any new seal; they stay
   `NOT_BOUND_TO_A_SEAL`, custody unchecked.
-- **The estimand stays `MATCHED_BUDGET_DIFFERENCE`**, never `CONVERGED_ACCURACY`. Six hundred observed updates
-  cannot answer a converged-accuracy question, and renaming it would be the failure this programme exists to
-  refuse.
-- **No scientific dimension changes** — not a window, not a depth, not a cell count, not the optimization —
-  except in an explicitly justified successor **declared before any score**.
-- The reported peak is a **peak with explicit headroom**, never a claim that maximum memory has been proven.
+- The estimand stays **`MATCHED_BUDGET_DIFFERENCE`**, never `CONVERGED_ACCURACY`.
+- No scientific dimension changes — not a window, depth, cell count or the optimization — except in an
+  explicitly justified successor declared **before any score**.
 
----
+## 9. Blockers that remain
 
-## 5. Blockers, named rather than worked around
+1. **Lane A's runner does not exist yet.** A per-cell number is impossible until a cell gets a fresh
+   exclusive scope enclosing its complete process tree with its own reservation.
+2. **Reachability, not master membership:** the instrument and the v2 seal must be **reproducibly reachable
+   from the selected runner commit**.
+3. **The allocation in §7 is requested, not held.**
 
-1. **Lane A's runner does not exist yet.** Until a cell gets a fresh exclusive scope enclosing its complete
-   process tree with its own reservation, a per-cell number cannot be produced. One sequential child in a
-   reused driver scope is not sufficient.
-2. **Reachability, not master membership.** The instrument and the v2 seal must be reachable **reproducibly
-   from the selected runner commit**. Presence on master is not itself required, and the previous framing of
-   this as a master-membership problem was wrong.
-3. **The remaining allocation is unreconciled.** The Q2 lane's row carries no numeric remainder I can read,
-   and the only remainder recorded anywhere belongs to another lane and is declared not a licence to spend.
-   Reconciling it is a precondition of §3 and is mine, not another lane's.
-4. **The preferred accelerator host is ineligible** and this design does not assume it returns: read today at
-   about 3 GiB free of 14 with 4.93 GiB of unreclaimable kernel slab. The secondary worker is the placement.
-
-**Until 1, 2 and 3 are discharged, `NO_PROGRAMME_TASK_IS_READY` for a long-window fit** — which is the honest
-status, not a gap to fill with a number.
+**Until 1, 2 and 3 are discharged, `NO_PROGRAMME_TASK_IS_READY` for a long-window fit.** That is the status,
+not a gap to fill with a number.
 
 — Satoshi
