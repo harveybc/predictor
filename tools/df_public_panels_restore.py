@@ -44,6 +44,7 @@ import copy
 import hashlib
 import json
 import os
+import re
 import shutil
 import signal
 import socket
@@ -103,6 +104,35 @@ def port_is_open(port: int) -> bool:
         return sock.connect_ex(("127.0.0.1", port)) == 0
 
 
+def port_listener_pid(port: int) -> int | None:
+    """The pid of the loopback listener on `port`, or None.  Read-only; nothing is signalled."""
+    result = subprocess.run(("ss", "-ltnpH"), capture_output=True, text=True)
+    if result.returncode != 0:
+        return None
+    for line in result.stdout.splitlines():
+        fields = line.split()
+        if len(fields) < 4:
+            continue
+        local = fields[3]
+        if local.rsplit(":", 1)[-1] != str(port):
+            continue
+        match = re.search(r"pid=(\d+)", line)
+        if match:
+            return int(match.group(1))
+    return None
+
+
+def unit_main_pid(unit: str) -> int | None:
+    out = systemctl("show", unit, "-p", "MainPID").stdout.strip()
+    if "=" not in out:
+        return None
+    try:
+        pid = int(out.split("=", 1)[1])
+    except ValueError:
+        return None
+    return pid or None
+
+
 def service_token() -> str:
     """Read the token from the deployed environment file.  It is never printed or stored."""
     for line in SERVICE_ENV.read_text(encoding="utf-8").splitlines():
@@ -136,8 +166,19 @@ def api(port: int, path: str, token: str, timeout: int = 30):
 
 # --------------------------------------------------------------------------------------- preflight
 
-def preflight(verbose: bool = True) -> dict:
-    facts: dict = {"stage": "preflight", "checks": [], "ok": True}
+def preflight(verbose: bool = True, already_serving: bool = False) -> dict:
+    """`already_serving` refreshes the port precondition for a lake that is now up.
+
+    Before the restoration the only admissible state of the port was *free*: anything bound to it
+    was an unknown process and the apply stage had to refuse.  Once the named unit is running, the
+    admissible state is the opposite one, and the check that carries the same weight is that the
+    listener on that port **is that unit's own main process** and no other.  This is a refreshed
+    precondition, not a relaxed one: it is strictly harder to satisfy than `port_free`, because it
+    resolves the listener's identity instead of only counting sockets.  The flag never starts,
+    stops, enables or disables anything.
+    """
+    facts: dict = {"stage": "preflight", "checks": [], "ok": True,
+                   "port_precondition": "served_by_named_unit" if already_serving else "free"}
 
     def check(name: str, ok: bool, detail: str) -> None:
         facts["checks"].append({"check": name, "ok": bool(ok), "detail": detail})
@@ -199,8 +240,22 @@ def preflight(verbose: bool = True) -> dict:
 
     state = unit_state(UNIT)
     facts["unit_before"] = state
-    check("port_free", not port_is_open(port),
-          f"nothing is bound to {port}" if not port_is_open(port) else "something already serves it")
+    if already_serving:
+        listener = port_listener_pid(port)
+        main = unit_main_pid(UNIT)
+        facts["port_listener_pid_matches_unit_main_pid"] = bool(listener and main and listener == main)
+        check("unit_active", state.get("ActiveState") == "active" and state.get("SubState") == "running",
+              f"{state.get('ActiveState')}/{state.get('SubState')}")
+        check("port_served_by_named_unit", bool(listener and main and listener == main),
+              f"the single loopback listener on {port} is this unit's own main process"
+              if listener and main and listener == main
+              else f"listener pid {listener} is not this unit's main pid {main}")
+        check("unit_file_state_recorded", True,
+              f"UnitFileState={state.get('UnitFileState')} -- persistence across reboot is the "
+              f"owner's separate choice and is neither asserted nor changed here")
+    else:
+        check("port_free", not port_is_open(port),
+              f"nothing is bound to {port}" if not port_is_open(port) else "something already serves it")
 
     facts["other_units_before"] = {unit: unit_state(unit) for unit in OTHER_STORE_UNITS}
     facts["unit_file_digest"] = sha_file(UNIT_FILE)
@@ -212,9 +267,9 @@ def preflight(verbose: bool = True) -> dict:
 
 # --------------------------------------------------------------------------------------- rehearsal
 
-def rehearse(port: int, keep: bool = False) -> dict:
+def rehearse(port: int, keep: bool = False, already_serving: bool = False) -> dict:
     """Prove the deployed command serves the household panel, on a throwaway port."""
-    facts = preflight(verbose=False)
+    facts = preflight(verbose=False, already_serving=already_serving)
     if not facts["ok"]:
         raise Refused("preflight failed; the rehearsal does not start.  Run preflight for detail")
     if port_is_open(port):
@@ -307,7 +362,16 @@ def rehearse(port: int, keep: bool = False) -> dict:
 # ------------------------------------------------------------------------------------------- apply
 
 def verify(expect_registry_digest: str | None = None,
-           expect_other_units: dict | None = None) -> dict:
+           expect_other_units: dict | None = None,
+           content: bool = False) -> dict:
+    """Read-only. `content` additionally proves *delivered bytes* and the contract refusals.
+
+    Discovery alone is not evidence: `http_lake.discover()` swallows an unreachable lake and
+    returns an empty list, so a preflight on discovery passes while every consumer is refused at
+    its first byte.  With `content` this stage streams the household resource from the live
+    endpoint, digests what it actually received, and asserts that a ranged request over the same
+    untimed resource is still refused.  Nothing is written and no service is touched.
+    """
     config = json.loads(HOST_CONFIG.read_text(encoding="utf-8"))
     port = int(config["web_port"])
     token = service_token()
@@ -321,6 +385,48 @@ def verify(expect_registry_digest: str | None = None,
         return out
     out["household_listed"] = any(HOUSEHOLD in json.dumps(item) for item in resources)
     out["resource_count"] = len(resources)
+    if content:
+        receipt = json.loads(RECEIPT.read_text(encoding="utf-8"))
+        adopted = receipt["binding"]["expected"]["panels_sha256"][HOUSEHOLD]
+        try:
+            status, body, headers = api(
+                port, "/api/v1/host", token)
+            out["host"] = json.loads(body)
+        except (urllib.error.URLError, OSError) as exc:
+            out["host_error"] = str(exc)
+        status, body, headers = api(
+            port, f"/api/v2/download?resource={urllib.parse.quote(HOUSEHOLD)}", token, timeout=300)
+        digest = hashlib.sha256(body).hexdigest()
+        out["delivered"] = {
+            "http": status, "bytes": len(body), "sha256": digest,
+            "byte_exact_against_adoption": digest == adopted,
+            "adopted_sha256": adopted,
+            "declared_content_digest": (headers.get("X-Content-SHA256") or "").lower(),
+            "availability_use": headers.get("X-Availability-Use"),
+            "availability_label": headers.get("X-Availability-Label"),
+            "availability_contract_sha256": headers.get("X-Availability-Contract-SHA256"),
+        }
+        try:
+            api(port, f"/api/v2/download?resource={urllib.parse.quote(HOUSEHOLD)}"
+                      "&from=2007-01-01&to=2007-01-02", token, timeout=120)
+            out["range_refused"] = False
+            out["range_refusal_http"] = None
+        except urllib.error.HTTPError as exc:
+            out["range_refused"] = True
+            out["range_refusal_http"] = exc.code
+        try:
+            api(port, f"/api/v2/download?resource={urllib.parse.quote(HOUSEHOLD)}"
+                      "&from=2006-12-16&to=2010-11-26", token, timeout=120)
+            out["holdout_range_refused"] = False
+            out["holdout_refusal_http"] = None
+        except urllib.error.HTTPError as exc:
+            out["holdout_range_refused"] = True
+            out["holdout_refusal_http"] = exc.code
+        out["content_ok"] = bool(out["delivered"]["http"] == 200
+                                 and out["delivered"]["byte_exact_against_adoption"]
+                                 and out["range_refused"] and out["holdout_range_refused"])
+    out["listener_pid_is_unit_main_pid"] = (port_listener_pid(port) == unit_main_pid(UNIT)
+                                            and unit_main_pid(UNIT) is not None)
     out["registry_digest"] = sha_file(REGISTRY)
     out["registry_unchanged"] = (expect_registry_digest is None
                                  or out["registry_digest"] == expect_registry_digest)
@@ -328,7 +434,9 @@ def verify(expect_registry_digest: str | None = None,
     out["other_units_now"] = now
     out["other_units_unchanged"] = expect_other_units is None or now == expect_other_units
     out["ok"] = bool(out["household_listed"] and out["registry_unchanged"]
-                     and out["other_units_unchanged"])
+                     and out["other_units_unchanged"]
+                     and out["listener_pid_is_unit_main_pid"]
+                     and (out.get("content_ok", True)))
     print(json.dumps(out, indent=1, sort_keys=True))
     return out
 
@@ -389,28 +497,36 @@ def rollback(also_enable: bool = False) -> dict:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="stage", required=True)
-    sub.add_parser("preflight")
+    pre = sub.add_parser("preflight")
+    pre.add_argument("--already-serving", action="store_true",
+                     help="the named unit is already up: require that the listener on the port is "
+                          "that unit's own main process, instead of requiring the port to be free")
     rehearsal = sub.add_parser("rehearse")
     rehearsal.add_argument("--port", type=int, default=5069,
                            help="a free loopback port for the throwaway host (never registered)")
     rehearsal.add_argument("--keep", action="store_true",
                            help="leave the throwaway running for inspection (you must stop it)")
+    rehearsal.add_argument("--already-serving", action="store_true",
+                           help="pass the refreshed port precondition through to the preflight")
     applied = sub.add_parser("apply")
     applied.add_argument("--also-enable", action="store_true",
                          help="persist across reboot as well; rollback then disables it again")
-    sub.add_parser("verify")
+    verified = sub.add_parser("verify")
+    verified.add_argument("--content", action="store_true",
+                          help="also stream the household resource and digest what was delivered, "
+                               "and assert the ranged refusals still hold")
     reverted = sub.add_parser("rollback")
     reverted.add_argument("--also-enable", action="store_true",
                           help="also disable the unit, undoing an apply --also-enable")
     args = parser.parse_args(argv)
     if args.stage == "preflight":
-        return 0 if preflight()["ok"] else 1
+        return 0 if preflight(already_serving=args.already_serving)["ok"] else 1
     if args.stage == "rehearse":
-        return 0 if rehearse(args.port, args.keep)["ok"] else 1
+        return 0 if rehearse(args.port, args.keep, args.already_serving)["ok"] else 1
     if args.stage == "apply":
         return 0 if apply(args.also_enable)["verify"]["ok"] else 1
     if args.stage == "verify":
-        return 0 if verify()["ok"] else 1
+        return 0 if verify(content=args.content)["ok"] else 1
     if args.stage == "rollback":
         return 0 if rollback(args.also_enable)["ok"] else 1
     return 2
