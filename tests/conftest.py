@@ -78,7 +78,22 @@ def _crispdm_declared_coverage(request, _crispdm_admission_sandbox):
     tools = _Path(__file__).resolve().parents[1] / "tools"
     spec = _ilu.spec_from_file_location("crispdm_admission", tools / "crispdm_admission.py")
     A = _ilu.module_from_spec(spec)
-    spec.loader.exec_module(A)
+    # Register BEFORE executing.  `dataclasses` resolves a class's own annotations through
+    # `sys.modules[cls.__module__]`; a module executed without ever being registered makes that
+    # None, and the first `@dataclass` in the file raises
+    #     AttributeError: 'NoneType' object has no attribute '__dict__'
+    # at import, so EVERY test of that file errors at setup.  This was invisible for two days
+    # because it only bites the FIRST unmarked test in a process: tests/test_crispdm_admission.py
+    # imports the module itself, so any selection that begins with it masks the fault entirely --
+    # and every combined selection of this campaign begins with it.  Run a covered file on its own
+    # and 122 tests errored.  tests/test_crispdm_declared_coverage.py pins exactly that case.
+    sys.modules["crispdm_admission"] = A
+    try:
+        spec.loader.exec_module(A)
+    except BaseException:
+        # do not leave a half-executed module registered for the next test to find
+        sys.modules.pop("crispdm_admission", None)
+        raise
     store, res = A.Store(), A.resources_from_env()
     d = A.acquire(store, res, A.Request(name="pytest-declared-coverage", cap_bytes=2 << 30,
                                         wall_seconds=1800), A.now_from_env())
