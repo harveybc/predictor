@@ -469,6 +469,17 @@ equal where they are the same thing measured by two parties:
 `1756f877…`, and `ours_macro_f1` is `a62f184c…`. Accuracy, macro-F1 and MAP are
 not interchangeable here even when the numbers coincide.
 
+The warehouse projection was **produced and retained, not written**. The
+receipt's `terminal_tags` and its 24 `terminal_metrics` rows — including
+`classification.accuracy` 0.9525 beside `classification.naive_accuracy` 0.18,
+and the per-class `support` / `predicted` / `correct` / `abstained` rows that
+close the confusion over the population — are in
+`docs/audits/evidence/cb03_20260929/CB03_CLASSIFICATION_RECEIPTS.json`. No row
+was written to the live warehouse and no service was contacted: a household lake
+restoration is under way elsewhere and is not this lane's, and CB04 already
+proved this projection end to end against the deployed provider on a disposable
+cube. Publishing these terminals is a governed step for whoever owns that window.
+
 **No quality badge was issued, and none could be.** Nothing in this package is a
 `BUSINESS_HELD_OUT` measurement; AG News is a `PUBLIC_BENCHMARK` corpus and is
 positively known to be in the training mix. **The 19-prompt router corpus appears
@@ -574,8 +585,18 @@ what is NOT done / refused / not measured:
   - latency NOT_COMPARABLE: single BLAS thread by admission policy.
   - no quality badge, no BUSINESS_HELD_OUT measurement, no router-corpus number,
     no state-of-the-art claim, no broker deployment authority.
-  - the three framework defects in §4.2 are REPORTED, not fixed: fixing the
-    shipped provider is a change to a deployed component outside this lane.
+  - the receipts' warehouse projection is produced and retained but NOT written to
+    the live warehouse, and no service was contacted, started, stopped or
+    restarted. A household lake restoration is under way elsewhere and is not
+    this lane's.
+  - the two framework defects in §4.2 are REPORTED, not fixed: fixing the shipped
+    provider is a change to a deployed component outside this lane. They are
+    (a) the news-shaped classification entry point, which is the entire measured
+    gap, and (b) the sequence budget hard-coded below the checkpoint's own
+    declaration, which costs nothing on these 400 rows and will cost something on
+    a longer input.
+  - the pinned-SDK and hard-coded-budget hypotheses were REFUTED by measurement,
+    not by argument; recording them as refuted is part of the finding.
 ```
 
 Satoshi, successor technical lead, 2026-09-29.
