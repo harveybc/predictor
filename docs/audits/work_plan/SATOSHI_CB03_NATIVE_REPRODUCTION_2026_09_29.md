@@ -483,7 +483,7 @@ authority: every receipt reads `authorises_broker_deployment: false`,
 
 ```
 CB03 — native reproduction, then M5PHET parity
-repo/branch/tip: predictor / satoshi/cb03-native-reproduction-20260929 / CB03_TIP
+repo/branch/tip: predictor / satoshi/cb03-native-reproduction-20260929 / 46ec45f8 (this document amended at the tip below)
 files: docs/audits/work_plan/SATOSHI_CB03_NATIVE_REPRODUCTION_2026_09_29.md
        tools/df_cb03_native_agnews_20260929.py
        tools/df_cb03_m5phet_parity_20260929.py
