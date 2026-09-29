@@ -1,0 +1,443 @@
+{
+ "accepted_warehouse_rows_provable_from_this_file": 0,
+ "attribution_ladder_recounted": {
+  "F1_framework": {
+   "accuracy_recounted": 0.935,
+   "macro_f1_recounted": 0.9252733932274245,
+   "rows": 400
+  },
+  "N1": {
+   "accuracy_recounted": 0.9525,
+   "macro_f1_recounted": 0.9467546527629132,
+   "rows": 400
+  },
+  "N2": {
+   "accuracy_recounted": 0.9525,
+   "macro_f1_recounted": 0.9467546527629132,
+   "rows": 400
+  },
+  "N3": {
+   "accuracy_recounted": 0.9525,
+   "macro_f1_recounted": 0.9467546527629132,
+   "rows": 400
+  },
+  "N4": {
+   "accuracy_recounted": 0.935,
+   "macro_f1_recounted": 0.9252733932274245,
+   "rows": 400
+  }
+ },
+ "attribution_steps_recounted": {
+  "N1_to_N2": {
+   "bit_identical": true,
+   "label_agreement": 400,
+   "label_agreement_fraction": 1.0,
+   "label_flips": 0,
+   "max_abs_probability_difference": 0.0,
+   "rows_compared": 400
+  },
+  "N2_to_N3": {
+   "bit_identical": true,
+   "label_agreement": 400,
+   "label_agreement_fraction": 1.0,
+   "label_flips": 0,
+   "max_abs_probability_difference": 0.0,
+   "rows_compared": 400
+  },
+  "N3_to_N4": {
+   "bit_identical": false,
+   "label_agreement": 387,
+   "label_agreement_fraction": 0.9675,
+   "label_flips": 13,
+   "max_abs_probability_difference": 0.3466531393375117,
+   "rows_compared": 400
+  },
+  "N4_to_F1": {
+   "bit_identical": false,
+   "label_agreement": 400,
+   "label_agreement_fraction": 1.0,
+   "label_flips": 0,
+   "max_abs_probability_difference": 5.0235052264868685e-05,
+   "rows_compared": 400
+  }
+ },
+ "attribution_stored_accuracies": {
+  "F1_m5phet_runtime": 0.935,
+  "N1_laya021_ckptbudget_author": 0.9525,
+  "N2_laya0311_ckptbudget_author": 0.9525,
+  "N3_laya0311_fwbudget_author": 0.9525,
+  "N4_laya0311_fwbudget_fwenvelope": 0.935
+ },
+ "denominator_guard": {
+  "7600_appears_as_a_metric_value_or_denominator": false,
+  "7600_mentioned_only_inside_the_limitations_text": true,
+  "is_400": true,
+  "published_score_denominator_recounted": 400
+ },
+ "evidence_dir": "/home/harveybc/Documents/GitHub/.worktrees/predictor-cb-class-reconcile-20260929/docs/audits/evidence/cb03_20260929",
+ "file_digests": {
+  "CB03_CLASSIFICATION_RECEIPTS.json": "1acc3db88486d88524dd166d16715d53e5e4eea9a3a1a669a6c5ca659fa3097d",
+  "CB03_PARITY_ATTRIBUTION.json": "92491b2df91dfcc812b32459d2d5a92b3e730bddc5428be9f9799726429a9f34",
+  "MANIFEST.json": "f40d9d2eb73301dbfc3f5d0649c293b969f5a9e12ccd59e6fe3d1e7385dab7f0",
+  "cb03_checkpoint_manifest.json": "85f4d6128c15cb2959c0060184ec2af84ada29370066cd938ecd2c59966631de",
+  "native_published400.json": "6078a7365a606f2c3ba96249e961eaed5d4687986fbe4bc81e4814376fef6d1a",
+  "parity_400.json": "aed76fb1953d1f29c1dfbdddd4b8dec5f4fc5c5de809f1a528208b6a27156660",
+  "parity_smoke8.json": "07ac1ba6e7173065ef6d4d9b955f3cdcf8b8048bbdf9142bee36644f4126fb3f",
+  "smoke_train32.json": "5a44a15a612403c95aeba427f274e0449514d8afa3c7b8aa8cae01fe7c7ace68",
+  "v_sdk0311_ckptbudget_author.json": "aef190e8730ed9aa19e4ec619a67044b7c96d07e6e6917796f3c629258f3ed68",
+  "v_sdk0311_fwbudget_author.json": "728753dc4343dd08a9f8d93307030eaff7adee57e0fd52c99447ea8ea787d8b3",
+  "v_sdk0311_fwbudget_fwenvelope.json": "e7ad1a1e1c3cc8805b4cf1cf648b27e343cbc7ee550a7c58e7b047249c98c49c"
+ },
+ "held_out_status": {
+  "in_training": true,
+  "is_a_generalisation_claim": false,
+  "source": "the benchmark's own results file marks jev.ag_news in_training: true"
+ },
+ "manifest_all_match": true,
+ "manifest_check": {
+  "CB03_CLASSIFICATION_RECEIPTS.json": {
+   "manifest_sha256": "1acc3db88486d88524dd166d16715d53e5e4eea9a3a1a669a6c5ca659fa3097d",
+   "matches": true,
+   "on_disk_sha256": "1acc3db88486d88524dd166d16715d53e5e4eea9a3a1a669a6c5ca659fa3097d"
+  },
+  "CB03_PARITY_ATTRIBUTION.json": {
+   "manifest_sha256": "92491b2df91dfcc812b32459d2d5a92b3e730bddc5428be9f9799726429a9f34",
+   "matches": true,
+   "on_disk_sha256": "92491b2df91dfcc812b32459d2d5a92b3e730bddc5428be9f9799726429a9f34"
+  },
+  "cb03_checkpoint_manifest.json": {
+   "manifest_sha256": "85f4d6128c15cb2959c0060184ec2af84ada29370066cd938ecd2c59966631de",
+   "matches": true,
+   "on_disk_sha256": "85f4d6128c15cb2959c0060184ec2af84ada29370066cd938ecd2c59966631de"
+  },
+  "native_published400.json": {
+   "manifest_sha256": "6078a7365a606f2c3ba96249e961eaed5d4687986fbe4bc81e4814376fef6d1a",
+   "matches": true,
+   "on_disk_sha256": "6078a7365a606f2c3ba96249e961eaed5d4687986fbe4bc81e4814376fef6d1a"
+  },
+  "parity_400.json": {
+   "manifest_sha256": "aed76fb1953d1f29c1dfbdddd4b8dec5f4fc5c5de809f1a528208b6a27156660",
+   "matches": true,
+   "on_disk_sha256": "aed76fb1953d1f29c1dfbdddd4b8dec5f4fc5c5de809f1a528208b6a27156660"
+  },
+  "parity_smoke8.json": {
+   "manifest_sha256": "07ac1ba6e7173065ef6d4d9b955f3cdcf8b8048bbdf9142bee36644f4126fb3f",
+   "matches": true,
+   "on_disk_sha256": "07ac1ba6e7173065ef6d4d9b955f3cdcf8b8048bbdf9142bee36644f4126fb3f"
+  },
+  "smoke_train32.json": {
+   "manifest_sha256": "5a44a15a612403c95aeba427f274e0449514d8afa3c7b8aa8cae01fe7c7ace68",
+   "matches": true,
+   "on_disk_sha256": "5a44a15a612403c95aeba427f274e0449514d8afa3c7b8aa8cae01fe7c7ace68"
+  },
+  "v_sdk0311_ckptbudget_author.json": {
+   "manifest_sha256": "aef190e8730ed9aa19e4ec619a67044b7c96d07e6e6917796f3c629258f3ed68",
+   "matches": true,
+   "on_disk_sha256": "aef190e8730ed9aa19e4ec619a67044b7c96d07e6e6917796f3c629258f3ed68"
+  },
+  "v_sdk0311_fwbudget_author.json": {
+   "manifest_sha256": "728753dc4343dd08a9f8d93307030eaff7adee57e0fd52c99447ea8ea787d8b3",
+   "matches": true,
+   "on_disk_sha256": "728753dc4343dd08a9f8d93307030eaff7adee57e0fd52c99447ea8ea787d8b3"
+  },
+  "v_sdk0311_fwbudget_fwenvelope.json": {
+   "manifest_sha256": "e7ad1a1e1c3cc8805b4cf1cf648b27e343cbc7ee550a7c58e7b047249c98c49c",
+   "matches": true,
+   "on_disk_sha256": "e7ad1a1e1c3cc8805b4cf1cf648b27e343cbc7ee550a7c58e7b047249c98c49c"
+  }
+ },
+ "native_recount": {
+  "acc_at_50_coverage": 1.0,
+  "accuracy": 0.9525,
+  "brier": 0.11366765416255706,
+  "confusion_recounted": [
+   [
+    99,
+    3,
+    1,
+    0,
+    0
+   ],
+   [
+    2,
+    121,
+    0,
+    0,
+    0
+   ],
+   [
+    1,
+    0,
+    62,
+    9,
+    0
+   ],
+   [
+    0,
+    0,
+    3,
+    99,
+    0
+   ]
+  ],
+  "correct": 381,
+  "denominator": 400,
+  "dropped": 0,
+  "ece_15_first_bin_closed_left": 0.1550295715337212,
+  "ece_15_first_bin_open_left": 0.1550295715337212,
+  "macro_f1_full_precision": 0.9467546527629132,
+  "macro_f1_rounded_4": 0.9468,
+  "max_abs_softmax_reconstruction_error": 2.220446049250313e-16,
+  "mean_confidence": 0.7974704284662788,
+  "nll": 0.2800873024645501,
+  "per_class_f1": [
+   0.9658536585365853,
+   0.979757085020243,
+   0.8985507246376813,
+   0.9428571428571428
+  ],
+  "predicted_by_class": {
+   "business": 66,
+   "sci_tech": 108,
+   "sports": 124,
+   "world": 102
+  },
+  "rows_recounted": 400,
+  "support_by_class": {
+   "business": 72,
+   "sci_tech": 102,
+   "sports": 123,
+   "world": 103
+  }
+ },
+ "native_recount_vs_stored": {
+  "acc_at_50_coverage": {
+   "agrees": true,
+   "recounted": 1.0,
+   "stored": 1.0
+  },
+  "accuracy": {
+   "agrees": true,
+   "recounted": 0.9525,
+   "stored": 0.9525
+  },
+  "brier": {
+   "agrees_at_4dp": true,
+   "recounted": 0.11366765416255706,
+   "stored": 0.1137
+  },
+  "confusion": {
+   "agrees": true,
+   "recounted": [
+    [
+     99,
+     3,
+     1,
+     0,
+     0
+    ],
+    [
+     2,
+     121,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     0,
+     62,
+     9,
+     0
+    ],
+    [
+     0,
+     0,
+     3,
+     99,
+     0
+    ]
+   ],
+   "stored": [
+    [
+     99,
+     3,
+     1,
+     0,
+     0
+    ],
+    [
+     2,
+     121,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     0,
+     62,
+     9,
+     0
+    ],
+    [
+     0,
+     0,
+     3,
+     99,
+     0
+    ]
+   ]
+  },
+  "dropped": {
+   "agrees": true,
+   "recounted": 0,
+   "stored": 0
+  },
+  "ece": {
+   "agrees_at_3dp": true,
+   "recounted": 0.1550295715337212,
+   "stored": 0.155
+  },
+  "macro_f1": {
+   "agrees_at_stored_precision": true,
+   "recounted_full": 0.9467546527629132,
+   "recounted_rounded_4": 0.9468,
+   "stored": 0.9468
+  },
+  "mean_confidence": {
+   "agrees_at_4dp": true,
+   "recounted": 0.7974704284662788,
+   "stored": 0.7975
+  },
+  "nll": {
+   "agrees_at_4dp": true,
+   "recounted": 0.2800873024645501,
+   "stored": 0.2801
+  }
+ },
+ "paired_naive": {
+  "argmax": "sports",
+  "argmin": "business",
+  "naive_accuracy_by_tiebreak": {
+   "business": 0.18,
+   "sci_tech": 0.255,
+   "sports": 0.3075,
+   "world": 0.2575
+  },
+  "pinned_tiebreak": "ALPHABETICAL_OVER_CLASS_NAMES_SELECTS_Business",
+  "pinned_value": 0.18,
+  "range_high": 0.3075,
+  "range_low": 0.18,
+  "stratified_prior_from_train_expected": 0.25,
+  "tie": [
+   "business",
+   "sci_tech",
+   "sports",
+   "world"
+  ],
+  "tie_is_four_way": true,
+  "train_class_counts": {
+   "business": 30000,
+   "sci_tech": 30000,
+   "sports": 30000,
+   "world": 30000
+  },
+  "uniform_over_vocabulary": 0.25
+ },
+ "parity_recount": {
+  "coverage_parity_preserved": true,
+  "flip_margin_max": 0.40382733248450053,
+  "flip_margin_median": 0.1907678545783873,
+  "flip_margin_min": 0.04220758230650162,
+  "framework_accuracy_recounted": 0.935,
+  "framework_answered": 400,
+  "framework_confusion": [
+   [
+    95,
+    3,
+    4,
+    1,
+    0
+   ],
+   [
+    1,
+    122,
+    0,
+    0,
+    0
+   ],
+   [
+    2,
+    0,
+    58,
+    12,
+    0
+   ],
+   [
+    0,
+    0,
+    3,
+    99,
+    0
+   ]
+  ],
+  "framework_correct": 374,
+  "framework_denominator": 400,
+  "framework_macro_f1_recounted": 0.9252733932274245,
+  "framework_refused": 0,
+  "label_agreement": 387,
+  "label_agreement_fraction": 0.9675,
+  "label_flips": 13,
+  "max_abs_probability_difference": 0.3466853626679519,
+  "native_accuracy_recounted": 0.9525,
+  "net_correct_lost": 7,
+  "rows_compared": 400
+ },
+ "population_digests": {
+  "all_equal": true,
+  "native_pinned_population_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+  "native_population_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+  "parity_binds_the_native_artifact_actually_on_disk": true,
+  "parity_native_artifact_sha256_claimed": "6078a7365a606f2c3ba96249e961eaed5d4687986fbe4bc81e4814376fef6d1a",
+  "parity_native_artifact_sha256_on_disk": "6078a7365a606f2c3ba96249e961eaed5d4687986fbe4bc81e4814376fef6d1a",
+  "parity_population_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324",
+  "receipt_corpus_sha256": "b4c5f991060bcefcc69fac9339b32086dcd0674ac15e44f41eeeeb7c9e782324"
+ },
+ "receipt_inventory": [
+  {
+   "accepted_warehouse_row": "NOT_ESTABLISHED_BY_THIS_FILE",
+   "evidence_class": "PUBLISHED_REFERENCE",
+   "has_retained_warehouse_projection": false,
+   "primary_metric": "ACCURACY",
+   "receipt": "author_published_accuracy",
+   "retained_metric_rows": 0,
+   "retained_tag_count": 0,
+   "value": 0.9525
+  },
+  {
+   "accepted_warehouse_row": "NOT_ESTABLISHED_BY_THIS_FILE",
+   "evidence_class": "MEASUREMENT",
+   "has_retained_warehouse_projection": true,
+   "primary_metric": "ACCURACY",
+   "receipt": "ours_accuracy",
+   "retained_metric_rows": 24,
+   "retained_tag_count": 41,
+   "value": 0.9525
+  },
+  {
+   "accepted_warehouse_row": "NOT_ESTABLISHED_BY_THIS_FILE",
+   "evidence_class": "MEASUREMENT",
+   "has_retained_warehouse_projection": false,
+   "primary_metric": "MACRO_F1",
+   "receipt": "ours_macro_f1",
+   "retained_metric_rows": 0,
+   "retained_tag_count": 0,
+   "value": 0.9467546527629132
+  }
+ ],
+ "retained_projections": 1,
+ "schema": "cbc_recount.v1",
+ "what_this_is": "a recount of retained CB03 artifacts from their per-row arrays; no model, no dataset, no service",
+ "why_zero": "acceptance is a property of the live warehouse, not of a retained file; this module contacts no service, so it can only report RETAINED"
+}
