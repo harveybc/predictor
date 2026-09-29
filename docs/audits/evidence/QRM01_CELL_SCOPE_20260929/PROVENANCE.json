@@ -1,0 +1,117 @@
+{
+ "at": "2026-09-29",
+ "branched_from": {
+  "commit": "6de538e25a1e4f86db787c103f260c9935ced6ea",
+  "short": "6de538e2",
+  "subject": "Verify the household restoration on its own six checks, prove its chain, correct my own peak",
+  "why": "the Q2 return tip: the actual published execution lineage of the governed household chain, and the lineage that carries the DEPLOYED admission module and launcher byte for byte"
+ },
+ "carried_in": {
+  "the_deployed_runner": {
+   "admission_module": {
+    "blob": "dcf73cb68a0b595b301013398f673b4c7861105d",
+    "first_appeared": "ddadf4a9 (Answer for a reservation after it is granted, not only at the gate)",
+    "sha256": "8dc2c03b17e498697d634666309876686d051243ea4b640d65ec92c51ab8ee35",
+    "tracked": "tools/crispdm_admission.py"
+   },
+   "launcher": {
+    "blob": "00a8832370efe23e4a6eb51a4a674bab21f0a73f",
+    "sha256": "499fdc1877750337006de8aad6b30a943acfea7416aa157b7537c4b121c1dfc7",
+    "tracked": "tools/crispdm-run"
+   },
+   "note": "both halves of the runner are verified as the bytes that WILL start a cell, not only as bytes tracked in a checkout: the deployed copies are read and digested",
+   "verified": "docs/audits/evidence/QRM01_CELL_SCOPE_20260929/RUNNER_IDENTITY.json"
+  },
+  "the_instrument": {
+   "file": "tools/df_e1_block.py",
+   "how": "that commit's own diff against its parent, applied as a patch, NOT a merge of its branch: the branch adds 981 files and 412,046 lines of unrelated lineage, which is not reviewable as a runner change and is not what the order asked to integrate",
+   "reachability_before": "satoshi/q2-context-deep-arms-20260926 and no other branch, master included. tools/df_e1_block.py does not exist on master at all.",
+   "reachability_now": "reachable from this integration branch's tip, which the other lanes pin",
+   "short": "84bcd605",
+   "source_commit": "84bcd605790e24b793034aff23872c1e47f99f39",
+   "subject": "Withdraw the seal that named a machine, seal v2, and repair the cost basis",
+   "what_it_adds": [
+    "cost.cgroup_memory_peak_bytes with its basis labelled",
+    "cost.peak_rss_bytes_basis: MAIN_PROCESS_RSS_ONLY, stated on the record",
+    "host_identity(): an opaque salted per-host id instead of os.uname().nodename",
+    "close()/merge() reading host_id instead of a machine name"
+   ]
+  },
+  "the_v2_seal": {
+   "design_sha256_v1_withdrawn": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+   "design_sha256_v2": "27ed712d88e0b1a84a3a7d48d5a8dcd899274389f8cc7341df196705dbb0300d",
+   "files": {
+    "DESIGN.json": {
+     "blob_at_84bcd605": "0f1f0a136880f467d1f2607d1be3afa011bc6051",
+     "blob_here": "0f1f0a136880f467d1f2607d1be3afa011bc6051",
+     "byte_exact": true
+    },
+    "EXTENSION_SEAL.json": {
+     "blob_at_84bcd605": "47eb94ea226ee1120178b57c3d9cba4f8b16c25e",
+     "blob_here": "47eb94ea226ee1120178b57c3d9cba4f8b16c25e",
+     "byte_exact": true
+    },
+    "FOOTPRINT_BASIS.json": {
+     "blob_at_84bcd605": "b37a94859ec2bb48400d8ae8c87c49e195a675b9",
+     "blob_here": "b37a94859ec2bb48400d8ae8c87c49e195a675b9",
+     "byte_exact": true
+    },
+    "REDACTIONS.json": {
+     "blob_at_84bcd605": "ea3c96f61e4c9f34c6c5c2f77cb7fe00be68e7c8",
+     "blob_here": "ea3c96f61e4c9f34c6c5c2f77cb7fe00be68e7c8",
+     "byte_exact": true
+    },
+    "SEAL_WITHDRAWAL.json": {
+     "blob_at_84bcd605": "354ca4bd817b536e47eb716fc9cb5f6e7a2912af",
+     "blob_here": "354ca4bd817b536e47eb716fc9cb5f6e7a2912af",
+     "byte_exact": true
+    }
+   },
+   "source_commit": "84bcd605790e24b793034aff23872c1e47f99f39",
+   "what_was_deliberately_NOT_carried": [
+    "CLOSURE_TABLE.json",
+    "CLOSURE_TABLE.md",
+    "REPORT.json",
+    "TABLES.md",
+    "UNANCHORED_MEASUREMENT_TABLE.json",
+    "UNGOVERNED_RUN.json",
+    "REPLAYS.json",
+    "MEMORY_GATE.jsonl",
+    "TERMINATIONS.json",
+    "BLOCK_DATA.json",
+    "BASELINES.json",
+    "ASYMMETRIC_READING.json",
+    "BENCHMARK_CONTRACT_REGISTRY.json"
+   ],
+   "why_not": "those are the TWELVE HISTORICAL CELLS' results.  Carrying them into the branch that carries the v2 seal is precisely the move the order forbids: it would let old cells be read under a seal made after their scores existed.  The seal bytes are integrated; the results are not, and this file says so on the face."
+  }
+ },
+ "integration_branch": "satoshi/qrm01-cell-scope-instrument-20260929",
+ "non_reinterpretation": {
+  "no_cap_is_declared_here": "QRM01 delivers the mechanism.  cell_cap_bytes() REFUSES rather than default, so no retained figure can become an allocation by omission.",
+  "the_six_missing_W1440_cells": {
+   "action_taken": "NONE",
+   "state": "STILL MISSING"
+  },
+  "the_twelve_landed_fits": {
+   "changed_by_this_integration": "NOTHING",
+   "closure": "FAILED",
+   "custody": "UNCHECKED",
+   "disposition": "HISTORICAL_DEV_ONLY",
+   "explicitly": "carrying the v2 seal bytes here does NOT bind, re-bind, promote, re-read or re-cost any of the twelve cells, and none of them is re-scored under v2. Re-binding a score to a seal made after it existed is the back-dating a seal exists to prevent.",
+   "state": "NOT_BOUND_TO_A_SEAL",
+   "verified_rows": 0
+  },
+  "v2": {
+   "changed_by_this_integration": "its reachability only",
+   "state": "SEALED_NOT_EXECUTED"
+  }
+ },
+ "recorded_by": "Satoshi, successor technical lead",
+ "schema": "df_qrm01_integration_provenance.v1",
+ "what_this_integration_does_NOT_claim": [
+  "no new forecast accuracy was measured",
+  "no cell of any block was trained, scored or re-scored",
+  "no allocation was requested, changed or consumed beyond the bounded tests and one bounded isolation fixture, each launched under the existing launcher with a declared cap"
+ ]
+}

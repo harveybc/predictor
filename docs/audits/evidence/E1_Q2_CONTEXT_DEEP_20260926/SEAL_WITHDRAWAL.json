@@ -1,0 +1,70 @@
+{
+ "schema": "q2_context_deep_seal_withdrawal.v1",
+ "recorded_at": "2026-09-26",
+ "recorded_by": "Satoshi, successor technical lead",
+ "block": "Q2_CONTEXT_DEEP",
+ "withdrawn": {
+  "design_sha256": "7d0bf92152809a1e59973448f61d14cb7ffe98988944dac05a90d718be18a318",
+  "label": "v1",
+  "reason": "WITHDRAWN_FOR_CARRYING_A_MACHINE_HOST_NAME",
+  "reason_long": "the sealed body's `factorial.informed_by` field named the coordinator machine by its host name. AGENTS.md: 'Never write account identifiers, broker credentials, private IP addresses or machine host names into files here. Use placeholders such as <your-host>.' The owner's standing rule is the same and is not negotiable against a digest",
+  "bytes_of_v1_in_this_repository": "NONE. The two files that carried them, DESIGN.json and EXTENSION_SEAL.json of this evidence directory, are replaced by v2 at this branch's tip AND the branch history that served them was rewritten (see `remote_history`). v1's body is identified here by its digest only, never reproduced",
+  "where_v1_still_exists": "the run root outside every checkout (/home/harveybc/.local/state/crispdm-data-foundation/e1_block_q2_context_deep_v1/DESIGN.json). That is operator state, not a repository, and it is what the twelve landed fits were actually run against"
+ },
+ "superseded_by": {
+  "design_sha256": "27ed712d88e0b1a84a3a7d48d5a8dcd899274389f8cc7341df196705dbb0300d",
+  "label": "v2",
+  "state": "SEALED_NOT_EXECUTED",
+  "sealed_by": "python tools/df_q2_context_deep_seal.py --out DESIGN.json --crossing-out EXTENSION_SEAL.json",
+  "validates_strict_code": true,
+  "how_it_differs_from_v1": "THREE leaf values of the design body and nothing else, verified leaf by leaf: (1) `factorial.informed_by` says 'on the coordinator host' where v1 named the machine; (2) `source_code.df_e1_block.py` pins 65330dc1fc437eb4a509d85ff5a7f915cc0202ea8bc124dd88acafcdde248093 where v1 pinned 2e956b9f0ad8bf934ca63398f95c4eb0767c3fff2250c676c7dc92c86e7387e6, because that file was edited to remove the name and to repair the cost basis; (3) `design_sha256` itself. Every arm, seed, crop, dilation list, depth, parameter count, recipe field, update ceiling, limit, scaler rule, common-evaluation rule, train population, contrast, reading rule and benchmark contract is byte-identical to v1",
+  "science_changed": "none"
+ },
+ "why_a_supersession_was_admissible": {
+  "owner_adjudication_2026_09_26": "no score that matters depends on v1's seal, so nothing admissible is lost by superseding it",
+  "the_state_that_makes_that_true": {
+   "registered_cells": 18,
+   "cells_never_fitted": 6,
+   "cells_that_landed": 12,
+   "censoring_of_all_twelve": "CENSORED_BY_BUDGET at 600 observed updates",
+   "verified_rows": 0,
+   "custody_class_of_every_row": "UNCHECKED",
+   "closure_verdict": "closure FAILED: no verified comparator, no selected arm, no scientific proposal",
+   "disposition": "HISTORICAL_DEV_ONLY"
+  },
+  "the_priority_that_was_got_wrong_before": "a seal exists to prove a design predated its scores. When no admissible score exists, the seal protects nothing, and a rule against publishing a machine name outranks the checkability of a digest that guards nothing. The correct remedy was never to edit v1 in place and never to keep the name: it was to withdraw v1 by digest and seal v2"
+ },
+ "the_three_refusal_reasons_of_the_previous_round_answered": {
+  "1_editing_the_published_copy_breaks_its_digest": "TRUE, and that is why v1 was NOT edited. It was withdrawn and replaced by a design whose own digest recomputes over its own body. Nothing in this directory now claims a digest it does not have",
+  "2_editing_tools_df_e1_block_py_makes_validate_strict_code_refuse_the_design": "TRUE OF V1 ONLY, and measured: of the ten sealed designs committed in this repository that pin `source_code.df_e1_block.py`, NINE already pin a digest the current file does not have, because that file is a living tool and has drifted many times in normal practice. v1 was the only design still matching it. So the cost of the edit was exactly one strict_code validation -- the withdrawn design's. v2 pins the repaired file and validates with strict_code=True, so the block's two unstarted W1440 FULL-DEPTH arms remain runnable, which was the stated worry",
+  "3_a_design_is_never_re_sealed_after_a_score": "the rule holds, and it is not what happened. v1 is not re-sealed: it is withdrawn, by digest, in this file, and the twelve fits are NOT re-bound to v2. v2 is a new seal in state SEALED_NOT_EXECUTED with no cell of its own fitted"
+ },
+ "the_twelve_landed_fits": {
+  "binding": "NOT_BOUND_TO_A_SEAL",
+  "why": "every one of the twelve cell records, and REPORT.json, TABLES.md, CLOSURE_TABLE.json and UNANCHORED_MEASUREMENT_TABLE.json, carry `design_sha256` 7d0bf921... -- v1's digest. That is what they were run against and it is the truth of the artifacts. v1 is withdrawn, so their seal is withdrawn with it; they are therefore bound to no standing seal. They are NOT re-bound to v2: v2 was sealed after their scores existed, and re-binding them would be exactly the back-dating a seal exists to prevent",
+  "what_is_kept": "their numbers, unaltered. The twelve MAE/MAE_z/skill rows in UNANCHORED_MEASUREMENT_TABLE.json are honest measurements on 10 020 common evaluation rows and are not touched by this correction",
+  "custody_unchanged": "UNCHECKED for all twelve, 0 verified rows. This correction upgrades nothing. A fit bound to no seal is weaker evidence than it was this morning, not stronger",
+  "what_they_may_still_be_used_for": "nothing may promote, select, rank or recommend on them. They already could not: closure FAILED and the disposition is HISTORICAL_DEV_ONLY",
+  "if_the_block_is_to_yield_evidence": "refit under v2, with the two W1440 FULL-DEPTH arms, when shared admission control is repaired"
+ },
+ "cost_basis_carried_forward": {
+  "the_correction": "every footprint figure this round used or published came from resource.getrusage(RUSAGE_SELF).ru_maxrss -- MAIN-PROCESS RSS ONLY. The correct basis is the peak charged to the scope's cgroup: for long_window_own_depth's 2026-09-26 pilot that is 7.4 GiB against a declared 9 GiB cap, where the main-process figure was 7.88 GiB",
+  "labelling": "kept by basis, per figure, in FOOTPRINT_BASIS.json of this directory; no figure is restated as if it were a tree peak",
+  "the_defect": "tools/df_e1_block.run_cell recorded ONLY getrusage(RUSAGE_SELF).ru_maxrss as `cost.peak_rss_bytes`, with no cgroup or tree peak anywhere in the cell record. Every cost pilot that ever justified a placement from this runner justified it from the wrong basis",
+  "repaired": true,
+  "repair": "run_cell now records `cost.cgroup_memory_peak_bytes` from memory.peak of its own cgroup (helper `cgroup_memory_peak_bytes`, None when unreadable, and a None says the cell has NO tree peak rather than silently falling back), and labels `cost.peak_rss_bytes` with `peak_rss_bytes_basis: MAIN_PROCESS_RSS_ONLY ...`. Both bases are reported side by side in the closure rows",
+  "why_the_repair_was_allowed_here": "the owner's condition was: repair only if it does not touch a file pinned by a seal that must stay checkable. It touches tools/df_e1_block.py, pinned by ten committed designs. NINE of those ten already pin a stale digest of that file and are already outside strict_code (normal drift, not caused here). The TENTH is v1, which is withdrawn by this record and must NOT stay checkable. No seal that must stay checkable is harmed, and v2 pins the repaired file",
+  "second_defect_found_and_repaired_in_the_same_line": "run_cell also wrote `cost.host = os.uname().nodename` into EVERY cell record. That one line is the machine source of the pre-existing breach: 45 committed cell.json files on origin/master carry the coordinator host name because a tool put it there, and 44 of those 45 have their blob digest pinned in a TERMINALS or CLOSURE_TABLE artifact, so they cannot now be redacted without breaking a pin. run_cell now records `cost.host_identity` -- a salted 16-hex opaque per-host id, stable across runs on one host and different across hosts, with `host_name_recorded: false` -- and `cost.host` is None. `same host or not` is still answerable; the machine is not named"
+ },
+ "files_of_this_directory_that_still_name_the_withdrawn_v1_digest": [
+  "REPORT.json", "TABLES.md", "CLOSURE_TABLE.json", "CLOSURE_TABLE.md", "BLOCK_DATA.json",
+  "UNANCHORED_MEASUREMENT_TABLE.json", "UNGOVERNED_RUN.json", "REPLAYS.json", "BASELINES.json",
+  "ASYMMETRIC_READING.json", "BENCHMARK_CONTRACT_REGISTRY.json", "FOOTPRINT_BASIS.json", "MEMORY_GATE.jsonl"
+ ],
+ "why_those_are_not_rewritten": "they are records of what was actually run, under v1, and they name v1's digest correctly. Rewriting them to say v2 would forge a binding. None of them carries the host name: they were redacted at publication by tools/df_e1_publish_evidence.py (REPORT.json 12 occurrences, TABLES.md 1) and their digests are not load-bearing",
+ "verification_commands": [
+  "python -c \"import json,hashlib; d=json.load(open('DESIGN.json')); b={k:v for k,v in d.items() if k!='design_sha256'}; print(hashlib.sha256(json.dumps(b,sort_keys=True,separators=(',',':'),default=str).encode()).hexdigest()==d['design_sha256'])\"",
+  "python tools/df_e1_block.py validate --design docs/audits/evidence/E1_Q2_CONTEXT_DEEP_20260926/DESIGN.json",
+  "grep -riE '(^|[^a-z0-9])<the coordinator host name>([^a-z0-9]|$)' docs/audits/evidence/E1_Q2_CONTEXT_DEEP_20260926 tools/df_e1_block.py   # expect no match"
+ ]
+}
