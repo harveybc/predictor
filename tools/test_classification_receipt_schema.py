@@ -37,6 +37,13 @@ def confusion_3x3(correct=(8, 8, 8), wrong=(1, 1, 1), abstained=(1, 1, 1)):
     return rows
 
 
+#: The default fixture's confusion is symmetric, so its accuracy and its macro-F1
+#: are the SAME number, 8/9. That is the sharpest fixture available for the rule
+#: under test: one value, three families, and nothing about the value itself that
+#: tells a reader which family it came from.
+SYMMETRIC_VALUE = 8 / 9
+
+
 def document(**overrides):
     """A complete, valid receipt document. Values are fabricated schema fixtures."""
     confusion = overrides.pop("per_class_confusion", confusion_3x3())
@@ -56,7 +63,7 @@ def document(**overrides):
         "author_primary_metric": {
             "family": "MACRO_F1",
             "name": "macro-F1",
-            "value": 0.6,
+            "value": SYMMETRIC_VALUE,
             "denominator_policy": "ANSWERED_ONLY",
         },
         "paired_naive": {
@@ -164,7 +171,7 @@ class ReceiptFields(unittest.TestCase):
 class MetricsAreNotInterchangeable(unittest.TestCase):
     """The rule with teeth: MAP, accuracy and macro-F1 are different metrics."""
 
-    def _receipt(self, family, name, value=0.6):
+    def _receipt(self, family, name, value=SYMMETRIC_VALUE):
         return cr.build_receipt(document(
             author_primary_metric={"family": family, "name": name, "value": value,
                                    "denominator_policy": "ANSWERED_ONLY"},
@@ -191,7 +198,7 @@ class MetricsAreNotInterchangeable(unittest.TestCase):
 
     def test_reading_a_metric_the_receipt_does_not_carry_is_refused_by_name(self):
         receipt = self._receipt("MAP", "MAP")
-        self.assertEqual(cr.read_metric(receipt, "MAP"), 0.6)
+        self.assertEqual(cr.read_metric(receipt, "MAP"), SYMMETRIC_VALUE)
         with self.assertRaises(cr.MetricNotCarried) as caught:
             cr.read_metric(receipt, "ACCURACY")
         message = str(caught.exception)
@@ -208,9 +215,11 @@ class MetricsAreNotInterchangeable(unittest.TestCase):
             self.assertIn(right, message)
 
     def test_comparing_the_same_family_on_the_same_protocol_is_allowed(self):
-        verdict = cr.compare(self._receipt("MACRO_F1", "macro-F1", 0.6),
-                             self._receipt("MACRO_F1", "macro-F1", 0.4))
-        self.assertEqual(verdict["family"], "MACRO_F1")
+        # MAP is the family the confusion cannot derive, so two MAP values may
+        # differ on one confusion without contradicting it.
+        verdict = cr.compare(self._receipt("MAP", "MAP", 0.6),
+                             self._receipt("MAP", "MAP", 0.4))
+        self.assertEqual(verdict["family"], "MAP")
         self.assertAlmostEqual(verdict["difference"], 0.2)
 
     def test_comparing_the_same_family_on_a_different_population_refuses(self):
@@ -277,9 +286,14 @@ class AbstentionAndConfusion(unittest.TestCase):
 
     def test_a_confusion_that_does_not_close_over_the_population_is_refused(self):
         doc = document()
-        doc["population"]["total"] += 7
-        with self.assertRaises(cr.ReceiptRefused):
+        for field in ("total", "answered", "independent_units"):
+            doc["population"][field] += 7
+        doc["abstention"]["answered"] += 7
+        doc["abstention"]["coverage"] = (doc["population"]["abstained"]
+                                        / doc["population"]["total"])
+        with self.assertRaises(cr.ReceiptRefused) as caught:
             cr.build_receipt(doc)
+        self.assertIn("close over the population", str(caught.exception))
 
     def test_abstained_rows_are_not_silently_dropped_from_the_denominator(self):
         doc = document()
@@ -517,9 +531,7 @@ class TerminalProjection(unittest.TestCase):
         first = cr.build_receipt(document())
         second = cr.build_receipt(document())
         self.assertEqual(first["receipt_sha256"], second["receipt_sha256"])
-        changed = cr.build_receipt(document(
-            author_primary_metric={"family": "MACRO_F1", "name": "macro-F1", "value": 0.61,
-                                   "denominator_policy": "ANSWERED_ONLY"}))
+        changed = cr.build_receipt(document(limitations="a different stated limitation"))
         self.assertNotEqual(first["receipt_sha256"], changed["receipt_sha256"])
 
 
