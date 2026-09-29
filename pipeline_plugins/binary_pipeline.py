@@ -30,6 +30,7 @@ Steps overview (mirrored as section headers in code):
 """
 
 from typing import Dict, List, Optional
+import os
 import time
 
 import numpy as np
@@ -45,6 +46,8 @@ from .binary_metrics import (
     BINARY_METRIC_NAMES,
     compute_binary_metrics,
     aggregate_and_save_binary_results,
+    build_binary_classification_receipt,
+    save_binary_classification_receipt,
 )
 from .binary_plots import (
     plot_and_save_loss,
@@ -383,6 +386,24 @@ class BinaryPipelinePlugin:
             test_true_h0, test_prob_h0,
             config.get("roc_pr_plot_file", self.params["roc_pr_plot_file"]),
         )
+
+        # 8b) classification_metrics.v1 receipt for this evaluation
+        # The CSV says what the numbers were; the receipt says what they are of.
+        # Non-fatal: a run that cannot describe itself must still not lose its
+        # outputs, but the reason is printed rather than swallowed.
+        try:
+            receipt = build_binary_classification_receipt(
+                test_true_h0, test_prob_h0,
+                y_train_list[idx0].flatten(),
+                config=config, evaluation_split="test", horizon=h0,
+            )
+            save_binary_classification_receipt(
+                receipt,
+                config.get("classification_receipt_file",
+                           f"{os.path.splitext(results_file)[0]}_classification_receipt.json"),
+            )
+        except Exception as e:
+            print(f"WARN: classification receipt refused or unavailable: {e}")
 
         # 9) Optional model plot and save
         self._plot_model(predictor_plugin, config)

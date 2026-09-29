@@ -169,6 +169,7 @@
   "corpus_classes": {
     "PUBLIC_BENCHMARK": "an official published dataset and split",
     "BUSINESS_HELD_OUT": "a frozen, independently held business corpus, opened under a use ledger",
+    "PROGRAMME_INTERNAL_DATASET": "this programme's own market or operational data; not a published benchmark and not the held-out business corpus",
     "SMOKE_FIXTURE": "author-written smoke material; never a quality claim",
     "ROUTER_PROMPT_CORPUS": "the internal natural-language routing corpus; it measures the router, not any classifier"
   },

@@ -1,0 +1,45 @@
+{"construction_note":"canonical relevant macro surprise; a policy rate decision on one leg of the pair","item_id":"b001","novelty":"new","relevance":"related","window":"immediate"}
+{"construction_note":"restatement of b001 from a second wire; relevant but not new information","item_id":"b002","novelty":"restatement","relevance":"related","window":"session"}
+{"construction_note":"a correction that reverses the magnitude of b001; a corpus that cannot see corrections cannot be used on news","item_id":"b003","novelty":"correction","relevance":"related","window":"immediate"}
+{"construction_note":"relevant macro on the other leg; a removed sentence, not a numeric surprise","item_id":"b004","novelty":"new","relevance":"related","window":"immediate"}
+{"construction_note":"scheduled inflation release with a surprise against consensus","item_id":"b005","novelty":"new","relevance":"related","window":"immediate"}
+{"construction_note":"a confirmation of b005 with no new information and no remaining window","item_id":"b006","novelty":"restatement","relevance":"related","window":"none"}
+{"construction_note":"labour market surprise on the second leg","item_id":"b007","novelty":"new","relevance":"related","window":"immediate"}
+{"construction_note":"relevant flow data, slower window than a rate decision","item_id":"b008","novelty":"new","relevance":"related","window":"session"}
+{"construction_note":"fiscal and political news with a genuine but slower currency channel","item_id":"b009","novelty":"new","relevance":"related","window":"session"}
+{"construction_note":"an announcement with no content; relevance is high and the content is absent","item_id":"b010","novelty":"new","relevance":"related","window":"immediate"}
+{"construction_note":"strongly positive tone, no channel to the pair: sentiment is not relevance","item_id":"b011","novelty":"new","relevance":"unrelated","window":"none"}
+{"construction_note":"corporate news of a size that moves no currency","item_id":"b012","novelty":"new","relevance":"unrelated","window":"none"}
+{"construction_note":"negative tone, no economic content at all","item_id":"b013","novelty":"new","relevance":"unrelated","window":"none"}
+{"construction_note":"names the pair and reports its own price: a price report is not news about the pair's drivers","item_id":"b014","novelty":"new","relevance":"unrelated","window":"none"}
+{"construction_note":"euro-area entity, no macro channel, and already announced","item_id":"b015","novelty":"restatement","relevance":"unrelated","window":"none"}
+{"construction_note":"financial vocabulary with no macro relevance; a keyword baseline should fail here","item_id":"b016","novelty":"new","relevance":"unrelated","window":"none"}
+{"construction_note":"a price increase that is not an inflation statistic","item_id":"b017","novelty":"new","relevance":"unrelated","window":"none"}
+{"construction_note":"out-of-domain item; the decision must be `unrelated`, not an abstention","item_id":"b018","novelty":"new","relevance":"unrelated","window":"none"}
+{"construction_note":"mentions the dollar in an instrument name only","item_id":"b019","novelty":"new","relevance":"unrelated","window":"none"}
+{"construction_note":"single-company demand data, below any macro threshold","item_id":"b020","novelty":"new","relevance":"unrelated","window":"none"}
+{"construction_note":"unattributed and unquantified: the honest answer is an abstention, not a guess","item_id":"b021","novelty":"new","relevance":"unclear","window":"session"}
+{"construction_note":"relevant subject, no directional content, and a non-comparable base","item_id":"b022","novelty":"new","relevance":"unclear","window":"none"}
+{"construction_note":"unverified provenance; relevance cannot be settled from the item","item_id":"b023","novelty":"new","relevance":"unclear","window":"immediate"}
+{"construction_note":"a channel exists in principle and nothing in the item establishes it","item_id":"b024","novelty":"new","relevance":"unclear","window":"none"}
+{"construction_note":"absence of information about a relevant actor","item_id":"b025","novelty":"new","relevance":"unclear","window":"session"}
+{"construction_note":"relevant and new but continuing a known trend: window is session, not immediate","item_id":"b026","novelty":"new","relevance":"related","window":"session"}
+{"construction_note":"a revision of a second-tier series: a correction whose window has closed","item_id":"b027","novelty":"correction","relevance":"related","window":"none"}
+{"construction_note":"relevant, restates a known decision, adds dispersion detail","item_id":"b028","novelty":"restatement","relevance":"related","window":"session"}
+{"construction_note":"relevant speaker, no new information: a correct answer must not reward the speaker's identity alone","item_id":"b029","novelty":"restatement","relevance":"related","window":"none"}
+{"construction_note":"relevant release with no surprise; relevance does not require a surprise","item_id":"b030","novelty":"new","relevance":"related","window":"session"}
+{"construction_note":"Spanish is one of the interface languages; the same decision must answer the same way","item_id":"b031","novelty":"new","relevance":"related","window":"immediate"}
+{"construction_note":"Spanish restatement of b031","item_id":"b032","novelty":"restatement","relevance":"related","window":"session"}
+{"construction_note":"Spanish irrelevant item with positive tone","item_id":"b033","novelty":"new","relevance":"unrelated","window":"none"}
+{"construction_note":"Spanish abstention case, parallel to b021","item_id":"b034","novelty":"new","relevance":"unclear","window":"session"}
+{"construction_note":"Spanish relevant release with a surprise","item_id":"b035","novelty":"new","relevance":"related","window":"immediate"}
+{"construction_note":"first publication of a survey that crosses a threshold","item_id":"b036","novelty":"new","relevance":"related","window":"immediate"}
+{"construction_note":"a two-minute-later duplicate: novelty must separate what relevance cannot","item_id":"b037","novelty":"restatement","relevance":"related","window":"immediate"}
+{"construction_note":"third member of the same chain, window now closed","item_id":"b038","novelty":"restatement","relevance":"related","window":"none"}
+{"construction_note":"a correction by a relevant actor that carries no decision content","item_id":"b039","novelty":"correction","relevance":"related","window":"none"}
+{"construction_note":"opinion about the pair, not news about the pair: the sharpest trap in the corpus","item_id":"b040","novelty":"new","relevance":"unrelated","window":"none"}
+{"construction_note":"news about the absence of a scheduled release","item_id":"b041","novelty":"new","relevance":"related","window":"session"}
+{"construction_note":"a truncated item with no content; a classifier that answers confidently here is guessing","item_id":"b042","novelty":"new","relevance":"unclear","window":"none"}
+{"construction_note":"both legs, real channel, no immediate change","item_id":"b043","novelty":"new","relevance":"related","window":"session"}
+{"construction_note":"looks like a correction and is a restatement: the two labels must not collapse","item_id":"b044","novelty":"restatement","relevance":"related","window":"none"}
+{"construction_note":"market-observable relevance without a policy decision","item_id":"b045","novelty":"new","relevance":"related","window":"immediate"}
