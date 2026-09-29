@@ -1,0 +1,71 @@
+{
+  "production_nested_record": {
+    "usable_for_costing": false,
+    "lease_confirmed": false,
+    "peak": {
+      "bytes": null,
+      "status": "UNKNOWN",
+      "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+      "read_by": null,
+      "why": "this cell wrote no in-scope memory.peak read (termination: COMPLETED); a missing peak is UNKNOWN, never zero, never a success, and never filled in from a sampled floor or from the launcher's retained lease record"
+    }
+  },
+  "stale_foreign_record": {
+    "usable_for_costing": true,
+    "lease_confirmed": false,
+    "peak": {
+      "status": "MEASURED",
+      "bytes": 123456,
+      "read_by": "THE_CHILD_INSIDE_ITS_OWN_SCOPE_BEFORE_THE_SCOPE_WAS_REMOVED"
+    }
+  },
+  "negative_peak_record": {
+    "usable_for_costing": true,
+    "lease_confirmed": false,
+    "peak": {
+      "status": "MEASURED",
+      "bytes": -1,
+      "read_by": "THE_CHILD_INSIDE_ITS_OWN_SCOPE_BEFORE_THE_SCOPE_WAS_REMOVED"
+    }
+  },
+  "independent_agnews_recount": {
+    "native_sha256": "6078a7365a606f2c3ba96249e961eaed5d4687986fbe4bc81e4814376fef6d1a",
+    "published_source": "https://raw.githubusercontent.com/NandhaKishorM/laya/010bacef/research/results/app_benchmark_results.json",
+    "published_sha256": "15a7ba8a4d123cd1de499ef8036d14ce52e25bfb2bf6ac1d03702135d79c0a05",
+    "n": 400,
+    "correct": 381,
+    "accuracy": 0.9525,
+    "macro_f1": 0.946754652762913,
+    "confusion": [
+      [
+        99,
+        3,
+        1,
+        0
+      ],
+      [
+        2,
+        121,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        62,
+        9
+      ],
+      [
+        0,
+        0,
+        3,
+        99
+      ]
+    ],
+    "published_accuracy": 0.9525,
+    "published_in_training": true,
+    "accuracy_equal": true,
+    "macro_f1_equal_at_published_precision": true,
+    "scope": "Recount of retained outputs and source lookup, not fresh inference"
+  }
+}
