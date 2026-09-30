@@ -111,7 +111,7 @@ M04's pilot (6G) is **queued, not running**. The blocker is the admission defect
 
 ```
 M06 — evidence and resources
-repo/branch/tip: predictor satoshi/m06-evidence-resources-20260930 @ __TIP__ ; predictor satoshi/m06-admission-dead-cache-20260930 @ 0928dc06
+repo/branch/tip: predictor satoshi/m06-evidence-resources-20260930 @ 0e521881 (and later evidence commits) ; predictor satoshi/m06-admission-dead-cache-20260930 @ 0928dc06
 files: tools/m06_status_writer.py, tools/m06_traffic_closure.py, tools/m06_progress_png.py,
        docs/audits/evidence/MODULAR_CAMPAIGN_20260930/{RETURN.md,STATUS.json,registry.json,RESULTS/,PROGRESS.png,HEARTBEAT.json,worker_a_slab_series.jsonl},
        tools/crispdm_admission.py, tools/crispdm-run, tests/test_crispdm_admission.py (admission branch)
