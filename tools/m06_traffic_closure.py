@@ -17,7 +17,7 @@ import os
 import sys
 
 HOME = os.path.expanduser("~")
-STAGED = "/tmp/traffic-gamma-staging/code"
+STAGED = os.environ.get("M06_TSL_STAGED", "")  # path of the staged executor copy, given at run time
 ROOT = HOME + "/.local/state/crispdm-data-foundation/traffic_scored_codex_20260930"
 
 
@@ -29,7 +29,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--records", nargs="+", required=True, help="cell record JSON files (local copies)")
     ap.add_argument("--out", required=True, help="RESULTS directory")
-    ap.add_argument("--staged", default=STAGED, help="directory holding tools/df_tsl_execute.py of the sealing executor")
+    ap.add_argument("--staged", default=STAGED or None, required=not STAGED, help="directory holding tools/df_tsl_execute.py of the sealing executor")
     ap.add_argument("--design", default=ROOT + "/DESIGN.traffic.L96.json")
     a = ap.parse_args()
     STAGED_DIR = a.staged
