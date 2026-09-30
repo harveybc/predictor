@@ -1,0 +1,108 @@
+{
+  "schema": "m02.cost_pilot.v1",
+  "label": "GOVERNED INPUT COST PILOT - not a forecasting result",
+  "dataset_id": "data-gov:sota_benchmarks:7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+  "train_npz_sha256": "9215b099442928a811fddaa6fbde07ed26a625f1707f7f45d8fec24fcfda25c2",
+  "declaration_file_sha256": "9f344687aa0703d76cc49910ec94dec15f51203d808397617989389e57ab701b",
+  "declaration_sha256": "ca1098ed94a36b972b06e45f381bd192fbd30c436f60532d8674ef8820c0a62f",
+  "manifest_sha256": "eca31ec195ea6d477e2789b019500c08e2b32a7a8e9f39a948983d55d628353b",
+  "resource_sha256": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+  "train_windows": 18341,
+  "n_branches_run": 8,
+  "n_branches_total": 321,
+  "fit": {
+    "max_epochs": 100,
+    "patience": 4,
+    "min_delta": 0.0001,
+    "monitor_every": 1,
+    "max_updates": 100000,
+    "max_seconds": 600.0,
+    "batch_size": 64,
+    "learning_rate": 0.001,
+    "loss": "mse"
+  },
+  "seed": 7,
+  "measured": {
+    "total_wall_seconds": 582.1148581370071,
+    "branch_wall_seconds": [
+      43.2559597720101,
+      20.119014607014833,
+      15.502419558994006,
+      44.021735453017754,
+      67.09964712700457,
+      44.84033820699551,
+      19.713279319985304,
+      47.327612443012185
+    ],
+    "branch_stops": [
+      "patience",
+      "patience",
+      "patience",
+      "patience",
+      "patience",
+      "patience",
+      "patience",
+      "patience"
+    ],
+    "branch_updates": [
+      10810,
+      4370,
+      2990,
+      11040,
+      18170,
+      11500,
+      4370,
+      12190
+    ],
+    "branch_epochs": [
+      47,
+      19,
+      13,
+      48,
+      79,
+      50,
+      19,
+      53
+    ],
+    "fusion_wall_seconds": 9.82570387001033,
+    "core_wall_seconds": 264.74641769498703,
+    "core_stop": "patience",
+    "core_updates": 11270,
+    "core_epochs": 49,
+    "fused_shape_train": [
+      14672,
+      12,
+      128
+    ],
+    "branch_relative_MSE_validation": [
+      0.001108977738426942,
+      0.004950702308810842,
+      0.0014702175932087692,
+      0.0008122415375280102,
+      0.0009605192893048033,
+      0.000808934569370778,
+      0.007164881614872283,
+      0.0016760126802122359
+    ],
+    "core_relative_MSE_validation": 0.21323840940413943,
+    "resources_at_end": {
+      "pid": 1225528,
+      "vmhwm_kib": 1780760,
+      "vmrss_kib": 1027152,
+      "cpu_seconds": 780.12,
+      "cgroup_memory_current": 754999296,
+      "cgroup_memory_peak": 1329598464,
+      "cgroup_memory_max": 3221225472
+    }
+  },
+  "projection": {
+    "basis": "LINEAR EXTRAPOLATION from this subset; early stopping makes per-branch epochs vary",
+    "branch_ae_seconds_321": 12112.935260332375,
+    "branch_ae_seconds_321_if_every_branch_took_the_slowest": 21538.986727768468,
+    "fused_width_full": 5136,
+    "fused_bytes_full_train_plus_validation": 4515653376,
+    "fusion_seconds_full_linear_in_width": 394.25636778416447,
+    "core_seconds_full_linear_in_width_upper_estimate": 10622.950010011355,
+    "core_note": "core cost grows with width only in its input projection and decoder output; linear-in-width is a pessimistic estimate, the attention blocks are width-independent"
+  }
+}
