@@ -1,0 +1,126 @@
+{
+  "phase": "POST",
+  "ok": true,
+  "scope": "The public entry starts a child. An in-process assignment still does not load the library. No CUDA was loaded. This does not identify the worker's missing library and does not prove a GPU repair.",
+  "glibc": "glibc 2.43",
+  "cuda_visible_devices": "",
+  "tensorflow_imported": false,
+  "cuda_mapped_in_this_process": false,
+  "compile_direct": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "compile_helper": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "compile_need": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "need_dynamic_tags": {
+    "returncode": 0,
+    "needed": [
+      "libretsu_helper.so",
+      "libc.so.6"
+    ],
+    "rpath": [],
+    "runpath": [],
+    "stderr": ""
+  },
+  "in_process_assignment": {
+    "returncode": 1,
+    "stdout": "",
+    "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 3, in <module>\n  File \"<HOME>/anaconda3/lib/python3.12/ctypes/__init__.py\", line 379, in __init__\n    self._handle = _dlopen(self._name, mode)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^\nOSError: libretsu_loader_probe.so: cannot open shared object file: No such file or directory\n"
+  },
+  "public_entry": {
+    "returncode": 0,
+    "stdout": "{\n \"schema\": \"df_placement_contract.v1\",\n \"status\": \"MEASURED\",\n \"checked_in\": \"child\",\n \"supervisor_imported_tensorflow\": false,\n \"supervisor_dlopened_cuda\": false,\n \"supervisor_cuda_mapped_before\": false,\n \"supervisor_mapped_soname\": false,\n \"child_returncode\": 0,\n \"stdout\": \"42\\n\",\n \"stderr\": \"\",\n \"declaration_placement\": \"CPU\"\n}\n",
+    "stderr": "",
+    "parsed": {
+      "schema": "df_placement_contract.v1",
+      "status": "MEASURED",
+      "checked_in": "child",
+      "supervisor_imported_tensorflow": false,
+      "supervisor_dlopened_cuda": false,
+      "supervisor_cuda_mapped_before": false,
+      "supervisor_mapped_soname": false,
+      "child_returncode": 0,
+      "stdout": "42\n",
+      "stderr": "",
+      "declaration_placement": "CPU"
+    }
+  },
+  "integrated_governed_run": {
+    "source_passes_env": true,
+    "parent_ld_library_path_unchanged": true,
+    "child": {
+      "returncode": 0,
+      "stdout": "42\n",
+      "stderr": ""
+    },
+    "result": "42"
+  },
+  "integrated_supervise": {
+    "run_units_passes_env": true,
+    "supervise_popen_passes_env": true,
+    "replay_passes_env": true,
+    "parent_ld_library_path_unchanged": true,
+    "termination_status": "COMPLETED",
+    "exit_code": 0,
+    "log": "42\n",
+    "result": "42"
+  },
+  "declaration_without_verify": {
+    "returncode": 0,
+    "stdout": "{\n \"declaration\": {\n  \"schema\": \"df_placement_contract.v1\",\n  \"placement\": \"CPU\",\n  \"device_uuid\": null,\n  \"establishes_a_gpu_pilot\": false,\n  \"scope\": \"CHILD_ONLY: this mapping is handed to one child process. It is never exported into this process's os.environ, because a process-wide override is the defect being replaced -- it silently re-placed every later sibling in the same parent\",\n  \"cuda_libraries\": {\n   \"status\": \"NOT_REQUIRED\",\n   \"why\": \"a CPU placement loads none\"\n  },\n  \"env\": {\n   \"CUDA_VISIBLE_DEVICES\": \"\",\n   \"CRISPDM_PLACEMENT\": \"CPU\"\n  },\n  \"reading\": \"a DECLARED CPU placement. The empty CUDA_VISIBLE_DEVICES is the consequence of the declaration, not a leftover override: the declaration is what lets the child refuse a later GPU claim\"\n }\n}\n",
+    "stderr": ""
+  },
+  "transitive_dependency_missing": {
+    "returncode": 3,
+    "stdout": "{\n \"schema\": \"df_placement_contract.v1\",\n \"status\": \"REFUSED\",\n \"checked_in\": \"child\",\n \"supervisor_imported_tensorflow\": false,\n \"supervisor_dlopened_cuda\": false,\n \"supervisor_cuda_mapped_before\": false,\n \"supervisor_mapped_soname\": false,\n \"child_returncode\": 1,\n \"stdout\": \"\",\n \"stderr\": \"OSError: libretsu_helper.so: cannot open shared object file: No such file or directory\\n\",\n \"declaration_placement\": \"CPU\",\n \"code\": \"CHILD_CHECK_REFUSED\",\n \"detail\": \"the child failed; the supervisor does not report that as success\"\n}\n",
+    "stderr": "",
+    "parsed": {
+      "schema": "df_placement_contract.v1",
+      "status": "REFUSED",
+      "checked_in": "child",
+      "supervisor_imported_tensorflow": false,
+      "supervisor_dlopened_cuda": false,
+      "supervisor_cuda_mapped_before": false,
+      "supervisor_mapped_soname": false,
+      "child_returncode": 1,
+      "stdout": "",
+      "stderr": "OSError: libretsu_helper.so: cannot open shared object file: No such file or directory\n",
+      "declaration_placement": "CPU",
+      "code": "CHILD_CHECK_REFUSED",
+      "detail": "the child failed; the supervisor does not report that as success"
+    }
+  },
+  "transitive_dependency_present": {
+    "returncode": 0,
+    "stdout": "{\n \"schema\": \"df_placement_contract.v1\",\n \"status\": \"MEASURED\",\n \"checked_in\": \"child\",\n \"supervisor_imported_tensorflow\": false,\n \"supervisor_dlopened_cuda\": false,\n \"supervisor_cuda_mapped_before\": false,\n \"supervisor_mapped_soname\": false,\n \"child_returncode\": 0,\n \"stdout\": \"42\\n\",\n \"stderr\": \"\",\n \"declaration_placement\": \"CPU\"\n}\n",
+    "stderr": "",
+    "parsed": {
+      "schema": "df_placement_contract.v1",
+      "status": "MEASURED",
+      "checked_in": "child",
+      "supervisor_imported_tensorflow": false,
+      "supervisor_dlopened_cuda": false,
+      "supervisor_cuda_mapped_before": false,
+      "supervisor_mapped_soname": false,
+      "child_returncode": 0,
+      "stdout": "42\n",
+      "stderr": "",
+      "declaration_placement": "CPU"
+    }
+  },
+  "wrapper": {
+    "name": "retsu-gpu-launcher-post",
+    "memory": "2G",
+    "wall": "120s",
+    "cuda_visible_devices": ""
+  }
+}

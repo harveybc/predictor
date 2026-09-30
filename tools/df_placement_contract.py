@@ -22,9 +22,13 @@ and a GPU request that satisfies fewer than three is **refused**, never downgrad
 wearing a GPU label.  `PlacementRefusal` is an exception for exactly that reason: a return value
 inviting a caller to continue is how the downgrade happened.
 
-**Why before the import.**  `LD_LIBRARY_PATH` is read by the dynamic loader when TensorFlow's
-extension modules load.  Set afterwards it changes nothing, so a contract applied late is not a
-contract; `enforce_before_tensorflow` refuses when `tensorflow` is already in `sys.modules`.
+**Why a new process, and why before the import.**  On this glibc the dynamic loader reads
+`LD_LIBRARY_PATH` when a process starts.  Assigning it in the running process does not change the
+search `dlopen` uses, even when the assignment is made before TensorFlow is imported.  The
+supervisor builds a new mapping and starts a child with that mapping.  It does not write the
+mapping into its own `os.environ`, import TensorFlow, or dlopen a CUDA library.  The child keeps
+the mapping it was started with and does the check.  `enforce_before_tensorflow` still refuses
+when `tensorflow` is already in `sys.modules`: a contract examined after that import is narration.
 
 **Why child-only.**  The defect this replaces was a process-wide override.  Nothing here writes to
 `os.environ`, and nothing mutates the mapping it is given: the contract is a NEW mapping handed to
@@ -453,6 +457,163 @@ def pytorch_consulted() -> bool:
     return False
 
 
+def _do_not_dlopen(_soname: str) -> bool:
+    """The CLI supervisor resolves wheel files only. Confirming a soname here would dlopen it."""
+    return False
+
+
+def _mapped(needles: tuple) -> bool:
+    try:
+        text = Path("/proc/self/maps").read_text(errors="replace")
+    except OSError:
+        return False
+    return any(n in text for n in needles)
+
+
+_CUDA_MAPPED = (
+    "libcuda.so", "libcudart.so", "libcublas.so", "libcublasLt.so", "libcudnn.so",
+    "libcufft.so", "libcurand.so", "libcusolver.so", "libcusparse.so", "libnvJitLink.so",
+)
+
+
+def _emit(payload: dict, code: int) -> int:
+    import json                                                              # noqa: PLC0415
+    print(json.dumps(payload, indent=1, default=str))
+    return code
+
+
+def _prepared_child_env(*, placement: str, device_uuid: str | None,
+                        library_dir: str | None) -> tuple:
+    """The mapping a new process is started with. This process's os.environ is not written."""
+    prepared, decl = child_placement_env(
+        {}, placement=placement, device_uuid=device_uuid, loader=_do_not_dlopen)
+    child = dict(os.environ)
+    child.update(prepared)
+    if library_dir:
+        extra = str(library_dir)
+        prior = [p for p in str(child.get("LD_LIBRARY_PATH") or "").split(":") if p]
+        child["LD_LIBRARY_PATH"] = ":".join([extra] + [p for p in prior if p != extra])
+    return child, decl
+
+
+def start_prepared_child(argv, env, *, timeout=None):
+    """Exec argv with env as its startup environment.
+
+    On this glibc, putting LD_LIBRARY_PATH into the current process does not change dlopen's
+    search. The mapping has to be present when the new process starts. Nothing here imports
+    TensorFlow or loads a library.
+    """
+    import subprocess                                                        # noqa: PLC0415
+    if env is os.environ:
+        raise PlacementRefusal(
+            "ENV_IS_THE_SUPERVISOR",
+            "the prepared mapping is this process's os.environ; the child needs its own")
+    if "tensorflow" in sys.modules:
+        raise PlacementRefusal(
+            "SUPERVISOR_IMPORTED_TENSORFLOW",
+            "the supervisor already imported TensorFlow, so it is not a supervisor")
+    before = (os.environ.get("LD_LIBRARY_PATH"), os.environ.get("CUDA_VISIBLE_DEVICES"))
+    kwargs = {"capture_output": True, "text": True}
+    if timeout is not None:
+        kwargs["timeout"] = timeout
+    proc = subprocess.run(list(argv), env=dict(env), **kwargs)
+    after = (os.environ.get("LD_LIBRARY_PATH"), os.environ.get("CUDA_VISIBLE_DEVICES"))
+    if after != before:
+        raise PlacementRefusal(
+            "SUPERVISOR_ENVIRONMENT_MUTATED",
+            "starting the child wrote the prepared environment back onto the supervisor")
+    return proc
+
+
+def _supervise_result(decl, proc, *, soname: str | None, cuda_before: bool) -> int:
+    imported = "tensorflow" in sys.modules
+    cuda_after = _mapped(_CUDA_MAPPED)
+    dlopened = cuda_after and not cuda_before
+    mapped = bool(soname) and _mapped((soname,))
+    child_failed = proc.returncode != 0
+    body = {
+        "schema": SCHEMA,
+        "status": MEASURED if not (child_failed or imported or dlopened or mapped) else REFUSED,
+        "checked_in": "child",
+        "supervisor_imported_tensorflow": imported,
+        "supervisor_dlopened_cuda": dlopened,
+        "supervisor_cuda_mapped_before": cuda_before,
+        "supervisor_mapped_soname": mapped,
+        "child_returncode": proc.returncode,
+        "stdout": proc.stdout,
+        "stderr": proc.stderr,
+        "declaration_placement": decl.get("placement"),
+    }
+    if child_failed or imported or dlopened or mapped:
+        if child_failed:
+            code, detail = ("CHILD_CHECK_REFUSED",
+                            "the child failed; the supervisor does not report that as success")
+        elif imported:
+            code, detail = ("SUPERVISOR_IMPORTED_TENSORFLOW",
+                            "the supervisor imported TensorFlow; the check belongs to the child")
+        elif dlopened:
+            code, detail = ("SUPERVISOR_DLOPENED_CUDA",
+                            "a CUDA library was mapped in the supervisor after the child started")
+        else:
+            code, detail = ("SUPERVISOR_LOADED_THE_LIBRARY",
+                            "the supervisor's address space contains the soname; that is not a child check")
+        body["code"] = code
+        body["detail"] = detail
+        return _emit(body, 3)
+    return _emit(body, 0)
+
+
+def _launch(child_env, decl, argv, *, timeout, soname) -> int:
+    import subprocess                                                        # noqa: PLC0415
+    cuda_before = _mapped(_CUDA_MAPPED)
+    try:
+        proc = start_prepared_child(argv, child_env, timeout=timeout)
+    except subprocess.TimeoutExpired as e:
+        out = e.stdout if isinstance(e.stdout, str) else ""
+        err = e.stderr if isinstance(e.stderr, str) else ""
+        return _emit({"schema": SCHEMA, "status": REFUSED, "code": "CHILD_CHECK_REFUSED",
+                      "detail": "the child exceeded the supervisor's wait; not a success",
+                      "checked_in": "child", "stdout": out or "", "stderr": err or "",
+                      "declaration_placement": decl.get("placement")}, 3)
+    except PlacementRefusal as e:
+        return _emit({"schema": SCHEMA, "status": REFUSED, "code": e.code, "detail": e.detail,
+                      "evidence": e.evidence, "checked_in": "child"}, 3)
+    return _supervise_result(decl, proc, soname=soname, cuda_before=cuda_before)
+
+
+def _verify_in_this_process(cpu_seconds: int | None) -> int:
+    """The child. The spend limit is installed here, before TensorFlow, and only on this process."""
+    import resource                                                          # noqa: PLC0415
+    if cpu_seconds is not None:
+        limit = int(cpu_seconds)
+        if limit <= 0:
+            return _emit({"status": REFUSED, "code": "CPU_LIMIT_NOT_POSITIVE",
+                          "detail": f"{cpu_seconds!r} is not a positive CPU spend limit",
+                          "checked_in": "child"}, 2)
+        resource.setrlimit(resource.RLIMIT_CPU, (limit, limit))
+    try:
+        checked = enforce_before_tensorflow()
+        verification = verify_or_refuse(checked)
+    except PlacementRefusal as e:
+        return _emit({"status": REFUSED, "code": e.code, "detail": e.detail,
+                      "evidence": e.evidence, "checked_in": "child"}, 3)
+    return _emit({"status": verification.get("status", MEASURED), "checked_in": "child",
+                  "verification": verification}, 0)
+
+
+def _load_in_this_process(soname: str, symbol: str) -> int:
+    """Load by soname using the environment this process was started with. Do not assign one."""
+    import ctypes                                                            # noqa: PLC0415
+    try:
+        fn = getattr(ctypes.CDLL(soname), symbol)
+        fn.restype = ctypes.c_int
+        print(int(fn()))
+    except (OSError, AttributeError) as e:
+        print(f"{type(e).__name__}: {e}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def main(argv=None) -> int:
     import argparse                                                          # noqa: PLC0415
     import json                                                              # noqa: PLC0415
@@ -460,27 +621,62 @@ def main(argv=None) -> int:
     p.add_argument("--placement", choices=["CPU", "GPU", "cpu", "gpu"], required=True)
     p.add_argument("--device-uuid", default=None)
     p.add_argument("--verify", action="store_true",
-                   help="also import TensorFlow and verify the three facts in THIS process")
+                   help="prepare the child environment and verify the three facts in a new "
+                        "process. This process does not import TensorFlow and does not dlopen")
+    p.add_argument("--cpu-seconds", type=int, default=None,
+                   help="RLIMIT_CPU the verify child installs on itself before the check. "
+                        "A spend limit for that process, not a measured footprint")
+    p.add_argument("--load-dir", default=None,
+                   help="directory placed on the child process's startup LD_LIBRARY_PATH. "
+                        "This process does not load it")
+    p.add_argument("--load-soname", default=None,
+                   help="soname the child loads. A child failure is a refusal, not a success")
+    p.add_argument("--load-symbol", default="probe")
+    p.add_argument("--verify-child", action="store_true", help=argparse.SUPPRESS)
+    p.add_argument("--load-child", action="store_true", help=argparse.SUPPRESS)
     a = p.parse_args(argv)
+    if a.verify_child and a.load_child:
+        return _emit({"status": REFUSED, "code": "ONE_CHECK",
+                      "detail": "a child does one check"}, 2)
+    if a.verify_child:
+        return _verify_in_this_process(a.cpu_seconds)
+    if a.load_child:
+        if not a.load_soname:
+            return _emit({"status": REFUSED, "code": "NO_SONAME",
+                          "detail": "the child was given no soname"}, 2)
+        return _load_in_this_process(a.load_soname, a.load_symbol)
+    if a.verify and (a.load_soname or a.load_dir):
+        return _emit({"status": REFUSED, "code": "VERIFY_AND_LOAD",
+                      "detail": "--verify and --load-soname are different checks; one child does one"}, 2)
+    if a.load_dir and not a.load_soname:
+        return _emit({"status": REFUSED, "code": "NO_SONAME",
+                      "detail": "a library directory needs the soname the child loads"}, 2)
+    if a.load_soname and not a.load_dir:
+        return _emit({"status": REFUSED, "code": "NO_LIBRARY_DIR",
+                      "detail": "the soname needs its directory on the child's startup environment"}, 2)
     try:
-        env, decl = child_placement_env({}, placement=a.placement, device_uuid=a.device_uuid)
+        _child_env, decl = _prepared_child_env(
+            placement=a.placement, device_uuid=a.device_uuid,
+            library_dir=a.load_dir if a.load_soname else None)
     except PlacementRefusal as e:
-        print(json.dumps({"status": REFUSED, "code": e.code, "detail": e.detail,
-                          "evidence": e.evidence}, indent=1))
-        return 2
-    out = {"declaration": decl}
-    if a.verify:
-        for k, v in env.items():
-            os.environ[k] = v            # this process IS the child when --verify is asked for
-        try:
-            out["verification"] = verify_or_refuse(enforce_before_tensorflow())
-        except PlacementRefusal as e:
-            out["verification"] = {"status": REFUSED, "code": e.code, "detail": e.detail,
-                                   "evidence": e.evidence}
-            print(json.dumps(out, indent=1, default=str))
-            return 3
-    print(json.dumps(out, indent=1, default=str))
-    return 0
+        return _emit({"status": REFUSED, "code": e.code, "detail": e.detail,
+                      "evidence": e.evidence}, 2)
+    if not a.verify and not a.load_soname:
+        print(json.dumps({"declaration": decl}, indent=1, default=str))
+        return 0
+    script = str(Path(__file__).resolve())
+    if a.load_soname:
+        argv = [sys.executable, script, "--load-child", "--placement", a.placement,
+                "--load-soname", a.load_soname, "--load-symbol", a.load_symbol]
+        if a.device_uuid:
+            argv += ["--device-uuid", a.device_uuid]
+        return _launch(_child_env, decl, argv, timeout=30, soname=a.load_soname)
+    argv = [sys.executable, script, "--verify-child", "--placement", a.placement]
+    if a.device_uuid:
+        argv += ["--device-uuid", a.device_uuid]
+    if a.cpu_seconds is not None:
+        argv += ["--cpu-seconds", str(a.cpu_seconds)]
+    return _launch(_child_env, decl, argv, timeout=None, soname=None)
 
 
 if __name__ == "__main__":
