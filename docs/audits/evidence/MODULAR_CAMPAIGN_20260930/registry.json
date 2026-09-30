@@ -241,6 +241,21 @@
    "meets_60s": null,
    "reason": "queued_for_admission behind s2021's 12 GiB reservation on the coordinator (slice ceiling 14 GiB); not yet running, so no heartbeat is due",
    "action": "note: m01-tests is wrapped in `timeout 900` while its queue wait is -W 1800, so it will be killed while still queued if s2021 holds the lease past ~23:13Z"
+  },
+  {
+   "child": "m02-synthetic-pilot (worker_b, CPU, synthetic component check)",
+   "meets_60s": true,
+   "reason": "PYTHONUNBUFFERED=1 and heartbeat.jsonl in its output directory (observed updating); crispdm lease renewed by the monitor every 5 s"
+  },
+  {
+   "child": "m03-prof-* profiles (worker_b, CPU)",
+   "meets_60s": null,
+   "reason": "lease heartbeat present (crispdm monitor, 5 s); a progress heartbeat file was not verified by M06"
+  },
+  {
+   "child": "m04-modular-cost-pilot (worker_a, 6G)",
+   "meets_60s": null,
+   "reason": "not running: queued for admission behind ADM-DEADCACHE-01 (2.2 GiB dead clean cache charged to the 8 GiB slice)"
   }
  ],
  "events": [
@@ -268,6 +283,11 @@
    "at": "2026-09-30T23:03:00Z",
    "host_alias": "worker_a",
    "event": "orchestrator handed the 5090 slot (GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8) to M04 a083979bc9a8fa1b8 with the TF launch recipe; M06 placement: secondary worker cannot admit a 3-4G CPU suite before s2023 releases (slice 4.43 in use + 8.59 reserved + 3 > 14.00)"
+  },
+  {
+   "at": "2026-09-30T23:22:42Z",
+   "host_alias": "worker_b",
+   "event": "Traffic s2023 sealed (exit 0, 3982 s, 30/30 epochs); 12 GiB lease released; m01-suite 4G and m02-suite-wb 3G auto-admitted; release fact sent to M01/M02 with placement arithmetic"
   }
  ],
  "launch_recipes": {
@@ -280,7 +300,11 @@
     "a matmul was placed on /device:GPU:0",
     "tf.config.experimental.get_memory_info returned current 8390400 / peak 12584704 bytes"
    ],
-   "secondary_worker_check": "pending: read-only 2G probe after s2023 releases (would exceed slice aggregate now: 13.02+2 > 14.00 GiB)"
+   "secondary_worker_check": "SAME CAUSE on worker_b (M06 probe m06-tf-probe, crispdm-run -m 2G -t 3m, 2026-09-30T23:26Z, nothing installed): bare -> 'Cannot dlopen some GPU libraries', 0 GPUs; with the cu12-only LD_LIBRARY_PATH recipe -> 1 GPU (RTX 4090 Laptop), matmul placed on /device:GPU:0, get_memory_info current 263680 / peak 787968 bytes. The `tensorflow` env there also holds cu13 + cu12 NVIDIA wheels (torch 2.11.0 shares it)."
+  },
+  "worker_b_tensorflow_gpu": {
+   "recipe": "same as worker_a: LD_LIBRARY_PATH = every site-packages/nvidia/*/lib except cu13/, at launch only",
+   "verified": "2026-09-30T23:26Z by M06"
   }
  },
  "admission_findings": [
