@@ -522,40 +522,61 @@ def process_rss_peak() -> dict:
             "basis": RSS_BASIS}
 
 
-def gpu_memory() -> dict:
-    """Device memory, recorded SEPARATELY from host RAM and never added to it.
+def gpu_memory(env=None, *, tf=None) -> dict:
+    """Device memory for a **TensorFlow** recipe, from **TensorFlow's own allocator**.
 
-    The probe is deliberately not automatic: importing a framework to ask costs hundreds of MiB of
-    the very host RAM this record is measuring.  A cell that selected no device reports UNKNOWN
-    with the reason -- absence, not zero.
+    The integration's F3 correction, in the one place that used to get it wrong.  This function
+    asked **PyTorch's** caching allocator for the device figure of a model built and trained with
+    `tf.keras`, and PyTorch's allocator does not account for a single byte TensorFlow allocates: a
+    12 GiB envelope watched that way was watched by an instrument that cannot see the memory it
+    claims to watch.  **PyTorch is now out of this path entirely** -- not imported, not consulted,
+    not named as a source -- and the figure comes from
+    `tf.config.experimental.get_memory_info(device)`.
+
+    Recorded SEPARATELY from host RAM and never added to it.  The probe is deliberately not
+    automatic: importing a framework to ask costs hundreds of MiB of the very host RAM this record
+    is measuring, so it answers only where a GPU placement was DECLARED.  A cell placed on the CPU
+    reports UNKNOWN with the reason -- absence, not zero, and TensorFlow itself raises
+    `ValueError: Allocator stats not available for device 'CPU:0'` there, which is exactly this
+    UNKNOWN.
     """
-    vis = os.environ.get("CUDA_VISIBLE_DEVICES")
-    if os.environ.get("CRISPDM_CELL_SCOPE_GPU", "auto") == "off":
-        return {"allocated_bytes": None, "reserved_bytes": None, "status": UNKNOWN,
-                "source": "none", "why": "the GPU probe is switched off for this cell"}
-    if vis is None or vis.strip() == "":
-        return {"allocated_bytes": None, "reserved_bytes": None, "status": UNKNOWN,
-                "source": "none", "visible_devices": vis,
+    env = os.environ if env is None else env
+    vis = env.get("CUDA_VISIBLE_DEVICES")
+    base = {"allocated_bytes": None, "reserved_bytes": None, "peak_bytes": None,
+            "current_bytes": None, "framework": "tensorflow", "pytorch_consulted": False,
+            "visible_devices": vis, "placement": env.get("CRISPDM_PLACEMENT"),
+            "declared_device_uuid": env.get("CRISPDM_DEVICE_UUID")}
+    if env.get("CRISPDM_CELL_SCOPE_GPU", "auto") == "off":
+        return {**base, "status": UNKNOWN, "source": "none",
+                "why": "the GPU probe is switched off for this cell"}
+    placement = (env.get("CRISPDM_PLACEMENT") or "").strip().upper()
+    if placement == "CPU":
+        return {**base, "status": UNKNOWN, "source": "none",
+                "why": ("this cell declared a CPU placement, so a DEVICE figure is ABSENT -- it is "
+                        "not zero. TensorFlow carries no allocator statistics for CPU:0")}
+    if vis is None or str(vis).strip() == "":
+        return {**base, "status": UNKNOWN, "source": "none",
                 "why": ("no device was selected for this cell (CUDA_VISIBLE_DEVICES is empty or "
                         "unset), so a GPU figure is ABSENT -- it is not zero")}
     try:
-        import torch                                                        # noqa: PLC0415
-        if not torch.cuda.is_available():
-            return {"allocated_bytes": None, "reserved_bytes": None, "status": UNKNOWN,
-                    "source": "torch", "visible_devices": vis,
-                    "why": "a device was selected but torch reports no usable CUDA device"}
-        return {"allocated_bytes": int(torch.cuda.max_memory_allocated()),
-                "reserved_bytes": int(torch.cuda.max_memory_reserved()),
-                "current_allocated_bytes": int(torch.cuda.memory_allocated()),
-                "current_reserved_bytes": int(torch.cuda.memory_reserved()),
-                "status": MEASURED, "source": "torch.cuda", "visible_devices": vis,
-                "basis": ("DEVICE peaks since the process started: max_memory_allocated is live "
-                          "tensors, max_memory_reserved is the caching allocator's arena.  Neither "
-                          "is host RAM and neither may be added to the cgroup peak")}
+        if tf is None:
+            import tensorflow as tf                                         # noqa: PLC0415
+        info = tf.config.experimental.get_memory_info("GPU:0")
+        return {**base, "allocated_bytes": int(info["current"]),
+                "reserved_bytes": None, "current_bytes": int(info["current"]),
+                "peak_bytes": int(info["peak"]), "status": MEASURED,
+                "source": "tf.config.experimental.get_memory_info",
+                "basis": ("FRAMEWORK_ALLOCATOR/DEVICE: the TensorFlow allocator's own accounting "
+                          "for GPU:0 -- `current` is live and `peak` is the high-watermark since "
+                          "the last reset. It is DEVICE memory held by TensorFlow, it is never "
+                          "added to the cgroup peak or to any other scope, and it does not include "
+                          "the CUDA context or workspaces outside the arena, which are whole-device "
+                          "scope and reported there")}
     except Exception as e:                                                  # noqa: BLE001
-        return {"allocated_bytes": None, "reserved_bytes": None, "status": UNKNOWN,
-                "source": "torch", "visible_devices": vis,
-                "why": f"the device could not be interrogated: {type(e).__name__}"}
+        return {**base, "status": UNKNOWN, "source": "tf.config.experimental.get_memory_info",
+                "why": (f"the device could not be interrogated through TensorFlow's allocator: "
+                        f"{type(e).__name__}. On a CPU-only placement this is the expected "
+                        f"`Allocator stats not available` and the figure is ABSENT, not zero")}
 
 
 def host_identity() -> dict:

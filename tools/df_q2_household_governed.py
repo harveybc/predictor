@@ -144,6 +144,41 @@ def scope_memory(label: str) -> dict:
     return out
 
 
+# ------------------------------------------------------------------- the child's own byte digest
+
+def verify_consumed_bytes(path, *, delivered: dict, expected_sha256: str) -> dict:
+    """Digest the bytes the child ACTUALLY opened, and refuse a disagreement by name.
+
+    A delivery record is a claim made by the deliverer.  This is the child's own measurement of
+    the file it read, so the governed route's third hop is proved rather than assumed:
+
+      CONSUMED_BYTES_ARE_NOT_THE_DELIVERED_BYTES   the file on disk is not what was delivered
+      DELIVERED_PANEL_IS_NOT_THE_CHARACTERISED_PANEL the delivery is coherent and is the wrong panel
+
+    Returned rather than raised, so the caller can retain the refusal in the record before exiting:
+    a refusal that leaves no evidence behind is indistinguishable from a crash.
+    """
+    path = Path(path)
+    actual = sha_file(path)
+    out = {"sha256_reverified_in_child": actual,
+           "bytes_on_disk": path.stat().st_size,
+           "declared_sha256": delivered.get("sha256"),
+           "declared_bytes": delivered.get("bytes"),
+           "path_is_content_addressed_cache": "cache" in str(path),
+           "matches_delivery": actual == delivered.get("sha256"),
+           "matches_characterised_panel": actual == expected_sha256,
+           "digest_basis": ("sha256 of the whole file as THIS child opened it, computed in the "
+                            "child's own process; the delivery's own digest is a claim and this is "
+                            "the measurement")}
+    if not out["matches_delivery"]:
+        out.update({"ok": False, "refused_by": "CONSUMED_BYTES_ARE_NOT_THE_DELIVERED_BYTES"})
+    elif not out["matches_characterised_panel"]:
+        out.update({"ok": False, "refused_by": "DELIVERED_PANEL_IS_NOT_THE_CHARACTERISED_PANEL"})
+    else:
+        out.update({"ok": True, "refused_by": None})
+    return out
+
+
 # ----------------------------------------------------------------------------------- the design
 
 def design_of(unit: str, extra: dict) -> dict:
@@ -164,16 +199,59 @@ def design_of(unit: str, extra: dict) -> dict:
 def child(root: Path, unit: str) -> dict:
     root = Path(root)
     design = json.loads((root / f"DESIGN.{unit}.json").read_text(encoding="utf-8"))
+    CSC = _module("df_cell_scope")
+    PC = _module("df_placement_contract")
+
+    # THE CPU STOP, installed by this child on itself and enforced by the KERNEL: SIGXCPU at the
+    # soft limit and SIGKILL at the hard one.  A wall limit does not bound CPU on a host running
+    # other work, and a table of budgets bounds nothing at all.
+    cpu_budget = (os.environ.get("CRISPDM_CHILD_CPU_SECONDS") or "").strip()
+    cpu_stop = None
+    if cpu_budget.isdigit() and int(cpu_budget) > 0:
+        resource.setrlimit(resource.RLIMIT_CPU, (int(cpu_budget), int(cpu_budget) + 5))
+        cpu_stop = {"seconds": int(cpu_budget), "mechanism": "RLIMIT_CPU", "enforced_by": "kernel",
+                    "installed_by_the_child_on_itself": True}
+
+    # THE SCOPE.  A child that was not launched into a fresh exclusive scope by the supervisor has
+    # no cgroup peak of its own and measures nothing: it refuses by name rather than producing a
+    # number a reader would take for this unit's footprint.
+    parent = os.environ.get("CRISPDM_CELL_SCOPE_PARENT_CGROUP")
+    if parent is None:
+        raise SystemExit(
+            f"REFUSED CELL_NOT_LAUNCHED_BY_THE_SUPERVISOR: {unit} was started without the external "
+            f"supervisor, so it has no scope, no reservation and no lease of its own")
+    claim = CSC.require_fresh_exclusive_scope(
+        os.environ.get("CRISPDM_CELL_SCOPE_CLAIMS") or (root / "SCOPE_CLAIMS"), unit,
+        parent_cgroup=parent or None)
+
+    # THE PLACEMENT, before any framework import.  The integration replaces the empty CUDA
+    # override with a DECLARED placement; the child re-reads the environment it actually got rather
+    # than trusting the declaration, and a GPU declaration that arrived broken refuses here --
+    # while the check can still matter, i.e. before the dynamic loader has run.  It comes after the
+    # scope refusal on purpose: a child with no scope of its own is not a unit whose placement is
+    # worth checking.
+    placement = PC.enforce_before_tensorflow()
+    if placement["placement"] == PC.GPU:
+        placement = {**placement, **PC.verify_or_refuse(placement)}
+    placement["cpu_stop"] = cpu_stop or {
+        "seconds": None, "mechanism": None, "enforced_by": None,
+        "why": "no CPU budget reached this child; only the launcher's wall stop is in force"}
+
     entry = scope_memory("child_entry")
     G = _module("df_e1_governed")
     # THE READER: a unit may only read a panel delivered to THAT unit; this refuses otherwise
     delivered = G.require_delivery(root, design, unit)["delivery"]
     path = Path(delivered["path"])
-    consumed_sha = sha_file(path)                       # re-verified by sha256 INSIDE the child
-    if consumed_sha != delivered["sha256"]:
-        raise SystemExit("REFUSED: the bytes this child consumed are not the bytes delivered to it")
-    if consumed_sha != design["expected_panel_sha256"]:
-        raise SystemExit("REFUSED: the delivered panel is not the characterised household panel")
+    # THE CHILD'S OWN BYTE DIGEST: the governed route's third hop, measured here rather than assumed
+    consumed = verify_consumed_bytes(path, delivered=delivered,
+                                     expected_sha256=design["expected_panel_sha256"])
+    consumed_sha = consumed["sha256_reverified_in_child"]
+    if not consumed["ok"]:
+        write(root / "CHILD" / f"{unit}.json",
+              {"schema": f"{SCHEMA}.child", "unit": unit, "refused_by": consumed["refused_by"],
+               "consumed": consumed, "at": now_iso()})
+        raise SystemExit(f"REFUSED {consumed['refused_by']}: the delivery this unit consumed is "
+                         f"not the delivery it was granted")
     after_read = scope_memory("after_bytes_verified")
 
     import numpy as np
@@ -228,11 +306,8 @@ def child(root: Path, unit: str) -> dict:
                            "verification_state": delivered.get("verification_state"),
                            "availability_contract_sha256": delivered.get("availability_contract_sha256"),
                            "declared_sha256": delivered["sha256"], "bytes": delivered.get("bytes")},
-              "consumed": {"path_is_content_addressed_cache": "cache" in str(path),
-                           "sha256_reverified_in_child": consumed_sha,
-                           "bytes_on_disk": path.stat().st_size,
-                           "matches_delivery": consumed_sha == delivered["sha256"],
-                           "matches_characterised_panel": consumed_sha == PANEL_SHA256},
+              "consumed": consumed,
+              "placement": placement,
               "work": work,
               "memory": {"samples": samples,
                          "scope_peak_bytes": max(peaks) if peaks else None,
@@ -242,9 +317,21 @@ def child(root: Path, unit: str) -> dict:
                          "declared_cap_bytes_as_the_kernel_holds_it": exit_sample["max_bytes"]},
               "interpreter": {"python": sys.version.split()[0], "executable": sys.executable},
               "at": now_iso()}
+    # THE PRODUCER ENVELOPE.  The scope record travels inside this producer's own document and
+    # DECLARES where it is: the envelope version, the record version and the key it sits under.
+    # The supervisor reads it by that declaration alone and never by a field that shares a name.
+    scope_record = CSC.cell_scope_record(
+        unit, stage=os.environ.get("CRISPDM_CELL_SCOPE_STAGE") or "HOUSEHOLD_PROBE", claim=claim,
+        cpu_seconds=float(os.times().user + os.times().system),
+        extra={"placement": {k: placement.get(k) for k in
+                             ("placement", "device_uuid", "establishes_a_gpu_pilot",
+                              "facts_verified")}})
+    CSC.embed_record(record, scope_record)
     write(root / "CHILD" / f"{unit}.json", record)
     print(json.dumps({"unit": unit, "scope_peak_bytes": record["memory"]["scope_peak_bytes"],
                       "rss_self_peak_bytes": record["memory"]["rss_self_peak_bytes"],
+                      "placement": placement["placement"],
+                      "establishes_a_gpu_pilot": placement.get("establishes_a_gpu_pilot"),
                       "consumed_sha256_ok": record["consumed"]["matches_delivery"]}), flush=True)
     return record
 
@@ -329,15 +416,62 @@ def run_unit(a, unit: str, design: dict) -> dict:
                          expect_sha256=PANEL_SHA256)
     delivery = acquired["units"][unit]
 
+    # THE SUPERVISOR.  This was a bare `subprocess.run`, which takes no scope, no reservation and
+    # no lease: the household lane proved the governed chain with a child nobody could cost, and
+    # the producer-to-supervisor lane proved the scope contract with a child that never delivered
+    # or reported.  The integrated path is the one that has both hops, so the launch goes through
+    # the EXISTING launcher via df_cell_scope.supervise -- fresh transient scope, its own
+    # MemoryMax, its own reservation held until the whole tree ends, and a fresh-attempt token
+    # minted before the child exists.
+    CSC = _module("df_cell_scope")
+    PC = _module("df_placement_contract")
+    if not CSC.launcher_available():
+        raise SystemExit("REFUSED LAUNCHER_NOT_AVAILABLE: a unit is never started with a bare "
+                         "subprocess -- a bare subprocess takes no scope and no reservation")
+    # THE PLACEMENT, declared once per run and handed to the CHILD ONLY.  An empty CUDA override is
+    # gone: CPU is a declaration the child can refuse a GPU claim against, and a GPU declaration
+    # carries the device UUID and that interpreter's own CUDA library path.
+    child_env, placement = PC.child_placement_env(
+        {**os.environ, "OMP_NUM_THREADS": "2", "OPENBLAS_NUM_THREADS": "1",
+         "CRISPDM_HOST_KIND": os.environ.get("CRISPDM_HOST_KIND", "UNDECLARED")},
+        placement=getattr(a, "placement", None), device_uuid=getattr(a, "device_uuid", None))
+    # THE STOPS, executable rather than tabulated.  CPU is stopped by the KERNEL through RLIMIT_CPU,
+    # installed by the child on itself before it does any work; wall is stopped by the launcher's
+    # own -t limit, outside the child and not dependent on it.  A budget with no mechanism is not
+    # declared at all: an absent CPU budget is recorded as absent, never as unlimited-and-fine.
+    cpu_stop = getattr(a, "child_cpu_seconds", None)
+    if cpu_stop:
+        child_env["CRISPDM_CHILD_CPU_SECONDS"] = str(int(cpu_stop))
+    stops = {"cpu": ({"seconds": int(cpu_stop), "mechanism": "RLIMIT_CPU (SIGXCPU at the soft "
+                      "limit, SIGKILL at the hard one)", "enforced_by": "kernel",
+                      "executable": True} if cpu_stop else
+                     {"seconds": None, "mechanism": None, "enforced_by": None,
+                      "executable": False,
+                      "why": "no CPU budget was declared for this unit; the wall stop is the only "
+                             "one in force and this record says so rather than implying a limit"}),
+             "wall": {"seconds": int(a.child_timeout),
+                      "mechanism": "crispdm-run -t, outside the child",
+                      "enforced_by": "the launcher's supervisor", "executable": True},
+             "host_memory": {"bytes": int(a.cell_cap_bytes),
+                             "mechanism": "the transient scope's MemoryMax",
+                             "enforced_by": "kernel", "executable": True}}
+    placement["stops"] = stops
+    write(root / f"PLACEMENT.{unit}.json", placement)
+
     wall = time.monotonic()
     cpu0 = time.process_time()
-    with open(root / f"{unit}.log", "w") as log:
-        proc = subprocess.run([sys.executable, str(Path(__file__).resolve()), "child",
-                               "--root", str(root), "--unit", unit],
-                              env={**os.environ, "CUDA_VISIBLE_DEVICES": "",
-                                   "OMP_NUM_THREADS": "2", "OPENBLAS_NUM_THREADS": "1"},
-                              stdout=log, stderr=subprocess.STDOUT, timeout=a.child_timeout)
-    ok = proc.returncode == 0 and (root / "CHILD" / f"{unit}.json").is_file()
+    (root / f"{unit}.log").touch(exist_ok=True)
+    sup = CSC.supervise(cell_id=unit,
+                        argv=[sys.executable, str(Path(__file__).resolve()), "child",
+                              "--root", str(root), "--unit", unit],
+                        cap_bytes=int(a.cell_cap_bytes), wall_seconds=int(a.child_timeout),
+                        supervisor_dir=root / "SUPERVISOR", log_path=root / f"{unit}.log",
+                        claims_dir=root / "SCOPE_CLAIMS",
+                        record_path=root / "CHILD" / f"{unit}.json",
+                        stage=design.get("stage_label", "HOUSEHOLD_PROBE"),
+                        queue=bool(getattr(a, "queue_admission", False)), env=child_env)
+    term = sup["termination"]
+    ok = term["status"] == "COMPLETED" and (root / "CHILD" / f"{unit}.json").is_file()
     rec = json.loads((root / "CHILD" / f"{unit}.json").read_text()) if ok else None
     parent_after = scope_memory("parent_after_child")
 
@@ -350,14 +484,24 @@ def run_unit(a, unit: str, design: dict) -> dict:
             metrics.append(U._metric("q2h.scope_peak_bytes", float(peak), "bytes"))
         if rec["work"].get("window_bytes"):
             metrics.append(U._metric("q2h.window_tensor_bytes", float(rec["work"]["window_bytes"]), "bytes"))
+        # the supervisor's gated figure, which is a DIFFERENT quantity from the child's own sample
+        # above: it is the same scope read through the fresh-attempt contract, and it is reported
+        # only when that contract accepted the attempt
+        gated = (sup.get("host_ram") or {}).get("cgroup_peak") or {}
+        if sup["fresh_attempt_contract"]["accepted"] and isinstance(gated.get("bytes"), int):
+            metrics.append(U._metric("q2h.gated_scope_peak_bytes", float(gated["bytes"]), "bytes"))
     terminal = U._terminal(
         status="COMPLETED" if ok else "FAILED",
-        reason=None if ok else f"child exited {proc.returncode}; the retained log says why",
+        reason=None if ok else (f"child terminated {term['status']} (exit {term.get('exit_code')}); "
+                                f"the retained log says why"),
         cost={"wall_seconds": time.monotonic() - wall, "cpu_seconds": time.process_time() - cpu0},
         metrics=metrics, started=started, finished=U._z(U.now_iso()),
         tags={"purpose": design["schema"], "classification": "NON_GOVERNING", "phase": "DEVELOPMENT",
               "unit": unit, "role": design.get("stage", "PROBE").upper(),
               "design_sha256": design["design_sha256"],
+              "placement": placement["placement"],
+              "establishes_a_gpu_pilot": str(bool(placement.get("establishes_a_gpu_pilot"))),
+              "attempt_id": sup["attempt_id"],
               "estimand": "NONE_THIS_UNIT_SCORES_NO_MODEL"})
     terminal["artifacts"] = ([{"role": "record", "sha256": sha_file(root / "CHILD" / f"{unit}.json"),
                                "bytes": (root / "CHILD" / f"{unit}.json").stat().st_size}] if ok else [])
@@ -368,7 +512,19 @@ def run_unit(a, unit: str, design: dict) -> dict:
     accepted = not (reported["flushed"]["pending"] or reported["flushed"]["failures"])
     readback = warehouse_readback(a, delivery["campaign_sha256"], unit)
     out = {"schema": f"{SCHEMA}.unit", "unit": unit, "design_sha256": design["design_sha256"],
-           "child_exit": proc.returncode, "child_ok": ok,
+           "child_exit": term.get("exit_code"), "child_ok": ok,
+           "placement": placement,
+           # the supervisor's own retained evidence: the scope it observed, the lease the launcher
+           # bound to it, the token it minted before the child existed, and the gate's verdict on
+           # the document the child left behind
+           "supervision": {"scope": sup["scope"], "lease_id": sup["lease_id"],
+                           "attempt_id": sup["attempt_id"],
+                           "fresh_attempt_accepted": sup["fresh_attempt_contract"]["accepted"],
+                           "refused_by": sup["refused_by"],
+                           "usable_for_costing": sup["usable_for_costing"],
+                           "host_ram": sup["host_ram"],
+                           "declared_cap_bytes": int(a.cell_cap_bytes),
+                           "termination": term},
            "delivery": {k: delivery.get(k) for k in
                         ("delivery_id", "sha256", "bytes", "cached", "verification_state",
                          "availability_use", "availability_label", "availability_contract_sha256",
@@ -381,11 +537,31 @@ def run_unit(a, unit: str, design: dict) -> dict:
            "child_record": rec,
            "parent_scope_memory": {"before": parent_before, "after": parent_after},
            "at": now_iso()}
+    # Every hop is a condition, and each refuses under its own name.  A unit that completed, was
+    # accepted and is not costable is still a refusal here: the whole point of the integrated route
+    # is that no hop is taken on trust.
+    hops = {"child_completed": ok,
+            "consumed_bytes_are_the_delivered_bytes": bool(rec and rec["consumed"]["ok"]),
+            "producer_envelope_declared": bool(rec and rec.get("cell_scope_envelope")),
+            "supervisor_minted_the_attempt": bool(sup["attempt_id"]),
+            "lease_retained": bool(sup["lease_id"]),
+            "fresh_attempt_accepted": bool(sup["fresh_attempt_contract"]["accepted"]),
+            "terminal_accepted": bool(accepted),
+            "warehouse_readback": bool(readback.get("ok"))}
+    out["governed_route"] = {"hops": hops, "complete": all(hops.values()),
+                             "basis": ("each hop is PROVED by its own retained evidence: the "
+                                       "campaign and delivery by the governance client, the bytes "
+                                       "by the child's own digest, the shape by the declared "
+                                       "envelope, the scope by the supervisor's minted token and "
+                                       "the launcher's lease, the terminal by its receipt, and the "
+                                       "last by a read back out of the live warehouse")}
     write(Path(a.root) / f"UNIT.{unit}.json", out)
-    print(json.dumps({k: out[k] for k in ("unit", "child_ok", "terminal", "warehouse")},
-                     indent=1, default=str))
-    if not (ok and accepted):
-        raise SystemExit(f"REFUSED: unit {unit} did not complete and be accepted")
+    print(json.dumps({k: out[k] for k in
+                      ("unit", "child_ok", "placement", "terminal", "warehouse",
+                       "governed_route")}, indent=1, default=str))
+    if not out["governed_route"]["complete"]:
+        raise SystemExit("REFUSED: the governed route of unit " + unit + " is incomplete: " +
+                         ", ".join(k for k, v in hops.items() if not v))
     return out
 
 
@@ -429,7 +605,23 @@ def main(argv=None) -> int:
                          "entry of this lake id; it is never printed, copied or logged")
     ap.add_argument("--max-windows", type=int, default=20000)
     ap.add_argument("--channels", type=int, default=7)
-    ap.add_argument("--child-timeout", type=int, default=1800)
+    ap.add_argument("--child-timeout", type=int, default=1800,
+                    help="the child's WALL stop, enforced by the launcher's own -t limit")
+    ap.add_argument("--child-cpu-seconds", type=int, default=None,
+                    help="the child's CPU stop, enforced by the kernel through RLIMIT_CPU; absent "
+                         "means the wall stop alone, and the record says so")
+    ap.add_argument("--cell-cap-bytes", type=int, default=None,
+                    help="THE one integer this unit's scope is capped at. Declared before the run "
+                         "and never re-asked smaller; its absence is a refusal, not a default")
+    ap.add_argument("--placement", choices=["CPU", "GPU", "cpu", "gpu"], default=None,
+                    help="the DECLARED placement. There is no default: a default is how a GPU "
+                         "request becomes a CPU run in silence")
+    ap.add_argument("--device-uuid", default=None,
+                    help="the physical device UUID a GPU placement is verified against, through "
+                         "the CUDA driver, the framework's registration and an execution probe")
+    ap.add_argument("--queue-admission", action="store_true",
+                    help="wait for admission before a first start; a rejection is still final and "
+                         "nothing is ever re-asked smaller")
     a = ap.parse_args(argv)
     if a.command == "child":
         child(a.root, a.unit)
@@ -445,6 +637,15 @@ def main(argv=None) -> int:
     if not a.api_key_file:
         raise SystemExit("REFUSED: --api-key-file is required; the key is read from its file by the "
                          "existing client and is never printed, copied or logged")
+    if not a.cell_cap_bytes:
+        raise SystemExit("REFUSED NO_DECLARED_CELL_CAP: every unit is launched into a scope with "
+                         "its own MemoryMax and its own reservation, and that one integer must be "
+                         "DECLARED before the run with --cell-cap-bytes")
+    if not a.placement:
+        raise SystemExit("REFUSED PLACEMENT_NOT_DECLARED: declare --placement CPU or "
+                         "--placement GPU --device-uuid GPU-<uuid>. There is deliberately no "
+                         "default: a default placement is how a GPU request becomes a CPU run "
+                         "without anyone noticing")
     a.run_id = a.run_id or f"q2h-{int(time.time())}"
     return cmd_probe(a) if a.command == "probe" else cmd_pilot(a)
 

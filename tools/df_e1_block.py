@@ -743,7 +743,8 @@ def fit_by_updates(model, train, val, *, max_updates: int, validate_every: int, 
 
 # --- one cell (child process) ------------------------------------------------------------------------------------
 
-def run_cell(design: dict, data: dict, cell: dict, out_dir: Path, *, pilot: bool, cell_scope: dict | None = None) -> dict:
+def run_cell(design: dict, data: dict, cell: dict, out_dir: Path, *, pilot: bool, cell_scope: dict | None = None,
+             placement: dict | None = None) -> dict:
     cpu0, wall0 = time.process_time(), time.monotonic()
     setup0 = time.process_time()
     spec = next(a for a in design["arms"] if a["arm"] == cell["arm"])
@@ -831,6 +832,16 @@ def run_cell(design: dict, data: dict, cell: dict, out_dir: Path, *, pilot: bool
         claim=cell_scope, updates=training["updates"],
         cpu_seconds=record["cost"]["cpu_seconds"], wall_seconds=record["cost"]["wall_seconds"],
         extra={"scope_enforced": cell_scope is not None,
+               # the placement this cell ACTUALLY ran on, verified in this child rather than
+               # declared by its caller: a GPU figure is attributable only when all three facts
+               # were verified, and a CPU cell says so in the record that carries its numbers
+               "placement": ({"placement": placement.get("placement"),
+                              "device_uuid": placement.get("device_uuid"),
+                              "establishes_a_gpu_pilot": placement.get("establishes_a_gpu_pilot"),
+                              "facts_verified": placement.get("facts_verified")}
+                             if placement else
+                             {"placement": None, "establishes_a_gpu_pilot": False,
+                              "why": "no placement declaration reached this cell"}),
                "design_sha256": design["design_sha256"], "arm": cell["arm"], "seed": cell["seed"]}))
     if cell_scope is None:
         record["cell_scope"]["usable_for_costing"] = False
@@ -874,10 +885,24 @@ def child(root: Path, unit: str) -> dict:
     delivered = G.require_delivery(root, design, unit)["delivery"]
     if delivered["sha256"] != design["source_run"]["panel_sha256"]:
         raise BlockRefusal("REFUSED: the unit's delivery is not the source panel")
+    # THE PLACEMENT, and still before TensorFlow exists in this process: `load_data` on the next
+    # line is the first thing here that imports it.  `LD_LIBRARY_PATH` is read by the dynamic
+    # loader when TensorFlow's extension modules load, so a contract examined after that import is
+    # narration -- and a GPU declaration that arrived without its libraries, without its pinning or
+    # without its device is refused HERE rather than becoming a CPU cell that reports GPU figures.
+    # It comes after the scope and delivery refusals on purpose: a child that has no scope of its
+    # own, or that was handed someone else's bytes, is not a cell whose placement is worth checking.
+    PC = _module("df_placement_contract")
+    try:
+        placement = PC.enforce_before_tensorflow()
+        if placement["placement"] == PC.GPU:
+            placement = {**placement, **PC.verify_or_refuse(placement)}
+    except PC.PlacementRefusal as e:
+        raise BlockRefusal(f"REFUSED {e.code}: {e.detail}")
     data = load_data(root, design)
     cell = next(c for c in design["pilots"] + design["cells"] if c["cell_id"] == unit)
     return run_cell(design, data, cell, Path(root)/"attempts"/unit,
-                    pilot=cell.get("role") == "COST_PILOT", cell_scope=claim)
+                    pilot=cell.get("role") == "COST_PILOT", cell_scope=claim, placement=placement)
 
 
 # --- governance: prepare, pilot, execute --------------------------------------------------------------------------
@@ -942,6 +967,7 @@ def cell_cap_bytes(a, design) -> int:
 def run_units(a, design, units, *, parallel: int) -> list:
     G, U = governance_modules()
     CSC = _module("df_cell_scope")
+    PC = _module("df_placement_contract")
     if not CSC.launcher_available():
         raise BlockRefusal(
             "REFUSED LAUNCHER_NOT_AVAILABLE: crispdm-run or a user systemd able to create a "
@@ -950,6 +976,28 @@ def run_units(a, design, units, *, parallel: int) -> list:
     cap = cell_cap_bytes(a, design)          # declared before anything starts, for every cell
     root = Path(a.root)
     results = []
+    # THE PLACEMENT.  This line used to read `"CUDA_VISIBLE_DEVICES": ""`, which made every cell a
+    # CPU cell whatever the design said -- the `run_units:976` defect: a pilot sealed against this
+    # runner is a CPU pilot and may not be reported as a GPU one.  It is replaced by a DECLARED
+    # placement, built once here, handed to the CHILD ONLY (nothing is exported into this process,
+    # so two siblings can hold two different placements), and verified inside the child on three
+    # independent facts -- the driver's device UUID, TensorFlow's own registration, and where an op
+    # actually lands.  A GPU request that satisfies fewer than three REFUSES; it is never downgraded
+    # to a CPU run wearing a GPU label, because that is exactly what the telemetry lane measured on
+    # a real device with a matching UUID and zero registered GPUs.
+    placement = (getattr(a, "placement", None)
+                 or (design.get("resources") or {}).get("placement"))
+    device_uuid = (getattr(a, "device_uuid", None)
+                   or (design.get("resources") or {}).get("device_uuid"))
+    try:
+        child_env, placement_decl = PC.child_placement_env(
+            {**os.environ, "OMP_NUM_THREADS": "2", "OPENBLAS_NUM_THREADS": "1",
+             "TF_CPP_MIN_LOG_LEVEL": "3"},
+            placement=placement, device_uuid=device_uuid)
+    except PC.PlacementRefusal as e:
+        raise BlockRefusal(f"REFUSED {e.code}: {e.detail}")
+    if not (root / "PLACEMENT.json").exists():      # write_once: a placement is declared, not edited
+        write(root / "PLACEMENT.json", placement_decl)
 
     def one(cell):
         unit = cell["cell_id"]
@@ -981,8 +1029,7 @@ def run_units(a, design, units, *, parallel: int) -> list:
                             supervisor_dir=root/"SUPERVISOR", log_path=root/f"{unit}.log",
                             claims_dir=root/"SCOPE_CLAIMS", record_path=root/"attempts"/unit/"cell.json",
                             stage="CELL_TRAIN_AND_SCORE", queue=bool(getattr(a, "queue_admission", False)),
-                            env={**os.environ, "CUDA_VISIBLE_DEVICES": "", "OMP_NUM_THREADS": "2",
-                                 "OPENBLAS_NUM_THREADS": "1", "TF_CPP_MIN_LOG_LEVEL": "3"})
+                            env=child_env)
         term = sup["termination"]
         code = "WALL_TIMEOUT" if term["status"] == "WALL_TIMEOUT" else term["exit_code"]
         rec_path = root/"attempts"/unit/"cell.json"
@@ -1004,6 +1051,7 @@ def run_units(a, design, units, *, parallel: int) -> list:
                                  "host_ram": sup["host_ram"],
                                  "process_rss_peak": (rec or {}).get("cell_scope", {}).get("host_ram", {}).get("process_rss_peak"),
                                  "gpu": (rec or {}).get("cell_scope", {}).get("gpu"),
+                                 "placement": (rec or {}).get("cell_scope", {}).get("placement"),
                                  "optimizer_updates": (rec or {}).get("training", {}).get("updates"),
                                  "cpu_seconds": (rec or {}).get("cost", {}).get("cpu_seconds"),
                                  "wall_seconds": term["wall_seconds"],
@@ -1288,8 +1336,16 @@ with np.load(root/"attempts"/unit/"arrays.npz", allow_pickle=False) as z: stored
 print(json.dumps({{"unit": unit, "allclose_1e_6": bool(np.allclose(pred, stored, atol=1e-6, rtol=1e-6)), "max_abs_prediction_difference": float(np.max(np.abs(pred-stored))),
                    "mae_z_replayed": float(np.mean(np.abs(pred-y))/sd), "mae_z_stored": float(np.mean(np.abs(stored-y))/sd)}}))
 """
+    # The bitwise replay is pinned to a DECLARED CPU placement, and deliberately NOT to the run's
+    # placement.  It reloads a SEALED historical cell's weights and asserts its predictions to
+    # 1e-6: every retained cell was produced on the CPU, and GPU arithmetic -- different reduction
+    # order, TF32 in matmuls, cuDNN kernel selection -- would make a faithful replay fail for a
+    # reason that has nothing to do with the cell.  So this is an explicit declaration whose
+    # justification is the sealed objects, not a leftover empty override.
+    replay_env, _ = _module("df_placement_contract").child_placement_env(
+        {**os.environ, "TF_CPP_MIN_LOG_LEVEL": "3", "OMP_NUM_THREADS": "1"}, placement="CPU")
     proc = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=600,
-                          env={**os.environ, "CUDA_VISIBLE_DEVICES": "", "TF_CPP_MIN_LOG_LEVEL": "3", "OMP_NUM_THREADS": "1"})
+                          env=replay_env)
     if proc.returncode:
         return {"unit": unit, "allclose_1e_6": False, "error": proc.stderr[-600:]}
     return json.loads(proc.stdout.strip().splitlines()[-1])
@@ -1442,6 +1498,14 @@ def main(argv=None) -> int:
     ap.add_argument("--updates", type=int, default=20)
     ap.add_argument("--seeds", type=int, nargs="*", default=None, help="execute only the cells of these seeds (a host block)")
     ap.add_argument("--parallel", type=int, default=None)
+    ap.add_argument("--placement", choices=["CPU", "GPU", "cpu", "gpu"], default=None,
+                    help="the DECLARED placement for every cell of this run. There is no default: "
+                         "a default placement is how a GPU request becomes a CPU run in silence, "
+                         "which is the run_units:976 defect this replaces")
+    ap.add_argument("--device-uuid", default=None,
+                    help="the physical device UUID a GPU placement is verified against -- through "
+                         "the CUDA driver, the framework's own registration AND an execution probe; "
+                         "fewer than three verified facts is a refusal, never a CPU fallback")
     ap.add_argument("--cell-cap-bytes", type=int, default=None,
                     help="THE one integer each cell's own scope is capped at (MemoryMax and reservation alike). "
                          "Declared, never derived from a retained figure that measured something else")

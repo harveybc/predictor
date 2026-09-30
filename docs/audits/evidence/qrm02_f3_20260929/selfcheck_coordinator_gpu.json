@@ -1,0 +1,204 @@
+{
+ "schema": "df_tf_device_telemetry.v1",
+ "kind": "SELFCHECK",
+ "placement": "GPU",
+ "declared_uuid": "GPU-612d1e0c-REDACTED",
+ "python": "3.12.7",
+ "visible_devices": "GPU-612d1e0c-REDACTED",
+ "stops_declared": {
+  "schema": "df_tf_device_telemetry.v1",
+  "stops": [
+   {
+    "name": "cpu",
+    "budget_seconds": 120.0,
+    "mechanism": "RLIMIT_CPU (setrlimit) + SIGXCPU, SIGKILL at the hard limit",
+    "enforced_by": "kernel",
+    "executable": true
+   },
+   {
+    "name": "wall",
+    "budget_seconds": 240.0,
+    "mechanism": "an in-child watchdog thread that calls os._exit, inside the launcher's own -t limit",
+    "enforced_by": "process",
+    "executable": true,
+    "outer_stop": "the launcher's -t wall limit, which does not depend on the child"
+   },
+   {
+    "name": "host_envelope",
+    "budget_bytes": 2147483648,
+    "mechanism": "the cgroup's MemoryMax, set by the launcher; the kernel kills the tree",
+    "enforced_by": "kernel",
+    "executable": true
+   },
+   {
+    "name": "device_envelope",
+    "budget_bytes": 1073741824,
+    "mechanism": "tf.config.set_logical_device_configuration, predeclared before device init: an oversized request fails with ResourceExhaustedError where it is made",
+    "enforced_by": "framework_allocator",
+    "executable": true,
+    "enforcement": "ENFORCED_AT_ALLOCATION_BY_THE_FRAMEWORK_ALLOCATOR",
+    "not_this": "an allocator statistic compared later, which is OBSERVED_AFTER_THE_FACT"
+   },
+   {
+    "name": "stage:probe",
+    "mechanism": "setitimer(ITIMER_REAL) for the stage wall and a CPU poll that exits",
+    "enforced_by": "process",
+    "executable": true
+   }
+  ],
+  "reading": "each row names the mechanism that stops the run. A budget with no mechanism is not a stop and does not appear here"
+ },
+ "cpu_stop": {
+  "name": "cpu",
+  "mechanism": "RLIMIT_CPU (setrlimit) + SIGXCPU, SIGKILL at the hard limit",
+  "enforced_by": "kernel",
+  "executable": true,
+  "soft_seconds": 120,
+  "hard_seconds": 125,
+  "hard_stop": "SIGKILL at the hard limit, which the child cannot decline",
+  "exit_code": 68
+ },
+ "wall_stop": {
+  "name": "wall",
+  "mechanism": "an in-child watchdog thread that calls os._exit at the deadline",
+  "enforced_by": "process",
+  "executable": true,
+  "wall_seconds": 240.0,
+  "outer_stop": "the launcher's own -t wall limit and the supervisor's timeout",
+  "exit_code": 69
+ },
+ "tensorflow_version": "2.18.0",
+ "device_envelope": {
+  "api": "tf.config.set_logical_device_configuration",
+  "limit_bytes": 1073741824,
+  "limit_mib": 1024,
+  "device_index": 0,
+  "framework": "tensorflow",
+  "scope": "FRAMEWORK_ALLOCATOR: the TensorFlow allocator's own accounting for one logical device, from tf.config.experimental.get_memory_info. It is device memory held by TensorFlow and it is never added to any other scope",
+  "bounds": "the TensorFlow allocator's arena on this device",
+  "does_not_bound": "the CUDA context, cuDNN/cuBLAS workspaces outside the arena, and any other tenant of the device: those are WHOLE_DEVICE scope",
+  "status": "MEASURED",
+  "enforcement": "ENFORCED_AT_ALLOCATION_BY_THE_FRAMEWORK_ALLOCATOR",
+  "reading": "the allocator will fail an oversized request with ResourceExhaustedError at the request. This is the enforceable device mechanism; an allocator STATISTIC compared later is not"
+ },
+ "device_verification": {
+  "schema": "df_tf_device_telemetry.v1",
+  "placement": "GPU",
+  "declared_uuid": "GPU-612d1e0c-REDACTED",
+  "visible_devices": "GPU-612d1e0c-REDACTED",
+  "refusals": [],
+  "device_uuid_verified": "GPU-612d1e0c-REDACTED",
+  "uuid_source": "libcuda.cuDeviceGetUuid",
+  "framework_devices": [
+   "/physical_device:GPU:0"
+  ],
+  "placement_probe": {
+   "device": "/job:localhost/replica:0/task:0/device:GPU:0",
+   "api": "tf.device + a one-element tensor"
+  },
+  "establishes_a_gpu_pilot": true,
+  "driver": {
+   "status": "MEASURED",
+   "count": 1,
+   "uuid": "GPU-612d1e0c-REDACTED",
+   "source": "libcuda.cuDeviceGetUuid",
+   "index": 0
+  },
+  "status": "MEASURED",
+  "reading": "one device is pinned, the driver confirms its UUID, the framework registered it and an op landed on it: a figure from this process's TensorFlow allocator is attributable to this device"
+ },
+ "measured_device": "GPU:0",
+ "reset_before": {
+  "framework": "tensorflow",
+  "api": "tf.config.experimental.reset_memory_stats",
+  "device": "GPU:0",
+  "at": 1790726200.2494001,
+  "reset": true,
+  "status": "MEASURED",
+  "reset_basis": "the following peak on this device is the peak SINCE THIS RESET"
+ },
+ "probe_tensor_device": "/job:localhost/replica:0/task:0/device:GPU:0",
+ "probe_tensor_bytes": 67108864,
+ "probe_stage": {
+  "stage": "probe",
+  "stopped": false,
+  "wall_seconds": 0.000436128000728786,
+  "cpu_seconds": 0.00020874200000031706
+ },
+ "framework_allocator": {
+  "framework": "tensorflow",
+  "api": "tf.config.experimental.get_memory_info",
+  "device": "GPU:0",
+  "scope": "FRAMEWORK_ALLOCATOR: the TensorFlow allocator's own accounting for one logical device, from tf.config.experimental.get_memory_info. It is device memory held by TensorFlow and it is never added to any other scope",
+  "scope_rule": "its own scope, its own basis, its own name; two scopes are never added and merge_scopes refuses to",
+  "current_bytes": 1536,
+  "peak_bytes": 67110400,
+  "status": "MEASURED",
+  "peak_basis": "the maximum this device's TensorFlow allocator has held since the process started or since the last reset_memory_stats on this device"
+ },
+ "envelope_observation": {
+  "envelope_bytes": 1073741824,
+  "framework_peak_bytes": 67110400,
+  "api": "tf.config.experimental.get_memory_info",
+  "scope": "FRAMEWORK_ALLOCATOR: the TensorFlow allocator's own accounting for one logical device, from tf.config.experimental.get_memory_info. It is device memory held by TensorFlow and it is never added to any other scope",
+  "enforcement": "OBSERVED_AFTER_THE_FACT",
+  "does_not_prevent": true,
+  "reading": "a comparison made AFTER the allocator already held the memory. It reports an exceedance; it never prevents one. The enforceable limit is the predeclared allocator configuration, and the two are different claims",
+  "exceeded": false,
+  "status": "MEASURED",
+  "headroom_bytes": 1006631424
+ },
+ "record": {
+  "schema": "df_tf_device_telemetry.v1",
+  "cell_id": "SELFCHECK",
+  "stage": "probe",
+  "at": 1790726200.4049368,
+  "framework_allocator": {
+   "framework": "tensorflow",
+   "api": "tf.config.experimental.get_memory_info",
+   "device": "GPU:0",
+   "scope": "FRAMEWORK_ALLOCATOR: the TensorFlow allocator's own accounting for one logical device, from tf.config.experimental.get_memory_info. It is device memory held by TensorFlow and it is never added to any other scope",
+   "scope_rule": "its own scope, its own basis, its own name; two scopes are never added and merge_scopes refuses to",
+   "current_bytes": 1536,
+   "peak_bytes": 67110400,
+   "status": "MEASURED",
+   "peak_basis": "the maximum this device's TensorFlow allocator has held since the process started or since the last reset_memory_stats on this device"
+  },
+  "host_cgroup": {
+   "bytes": null,
+   "status": "UNKNOWN",
+   "scope": "HOST_CGROUP: memory.peak of this cell's own cgroup -- the whole process tree's host RAM high-watermark as the kernel charges it, and it is never added to any other scope",
+   "scope_rule": "its own scope, its own basis, its own name; two scopes are never added and merge_scopes refuses to",
+   "basis": "memory.peak of this cell's own cgroup",
+   "why": "this scope was not read for this record: ABSENT, not zero"
+  },
+  "process_rss": {
+   "bytes": 874500096,
+   "status": "MEASURED",
+   "basis": "getrusage(RUSAGE_SELF).ru_maxrss",
+   "scope": "PROCESS_RESIDENT_SET: getrusage(RUSAGE_SELF).ru_maxrss of this process alone. Host RAM, one process, no children, no kernel accounting, and it is never added to any other scope",
+   "scope_rule": "its own scope, its own basis, its own name; two scopes are never added and merge_scopes refuses to"
+  },
+  "whole_device": {
+   "bytes": 2151219200,
+   "total_bytes": 8175878144,
+   "free_bytes": 6024658944,
+   "status": "MEASURED",
+   "source": "libcuda.cuMemGetInfo",
+   "note": "IN USE BY EVERY PROCESS on this device, including this one's context",
+   "scope": "WHOLE_DEVICE: memory in use on the physical device by every process, as the driver reports it. It includes contexts and other tenants and it is never added to any other scope",
+   "scope_rule": "its own scope, its own basis, its own name; two scopes are never added and merge_scopes refuses to",
+   "basis": "the driver's whole-device report"
+  },
+  "merge_rule": "four scopes, four bases, four names. No field in this record is the sum of two of them, and merge_scopes refuses to produce one",
+  "missing_rule": "a figure that could not be read is UNKNOWN. Never 0 and never a success"
+ },
+ "oversized_request": {
+  "failed": true,
+  "status": "MEASURED",
+  "error": "ResourceExhaustedError",
+  "enforcement": "ENFORCED_AT_ALLOCATION_BY_THE_FRAMEWORK_ALLOCATOR",
+  "reading": "the framework allocator refused a request past the predeclared arena, at the request"
+ },
+ "status": "MEASURED"
+}
