@@ -60,6 +60,7 @@ def test_all_stages_export_reload_and_real_updates(pretrained):
     from predictor_plugins.modular_temporal import build_modular
     result, train, val = pretrained["result"], pretrained["train"], pretrained["val"]
     assert result["schema"] == "modular.pretrain.v2"
+    assert result["provenance"] == "synthetic_fixture" and result["label"].startswith("SYNTHETIC")
     assert len(result["branches"]) == 2
     for stage in [*result["branches"], result["core"]]:
         t = stage["training"]

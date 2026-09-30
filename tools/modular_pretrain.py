@@ -478,7 +478,11 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
                    "wall_seconds": time.monotonic() - started}
     beat.update(last_checkpoint={"stage": "core_ae", "donor_sha256": core_record["donor_sha256"]})
     resolved["core"].update(regime="R2", donor=str(donor))
-    result = {"schema": SCHEMA, "branches": records, "fusion": fusion_record, "core": core_record,
+    provenance_label = train_population.get("provenance", "undeclared")
+    result = {"schema": SCHEMA, "provenance": provenance_label,
+              "label": ("SYNTHETIC FIXTURE - component check, not a forecasting result"
+                        if provenance_label == "synthetic_fixture" else provenance_label),
+              "branches": records, "fusion": fusion_record, "core": core_record,
               "grids": grids, "seed": seed,
               "train_population": train_population, "validation_population": validation_population,
               "train_input": train_identity, "validation_input": validation_identity,
