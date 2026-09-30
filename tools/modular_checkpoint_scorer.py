@@ -100,7 +100,7 @@ def verify(receipt_path, validation_path, output_path, *, batch_size=512, rtol=1
     from predictor_plugins import modular_temporal  # noqa: F401  registers serializable layers
 
     model = tf.keras.models.load_model(artifact, compile=False, safe_mode=True)
-    if model.optimizer is not None:
+    if getattr(model, "optimizer", None) is not None:
         problems.append("loaded model carries an optimizer; scoring must be inference-only")
     chunks = []
     for start in range(0, len(x), batch_size):
