@@ -359,10 +359,17 @@
      }
     }
    },
-   "fix": "designed on branch satoshi/m06-admission-dead-cache-20260930 (off deployed ddadf4a9); NOT deployed pending orchestrator review; the one-time reclaim of the existing dead cache is the owner's decision"
+   "fix": "branch satoshi/m06-admission-dead-cache-20260930 @ 0928dc06 (off deployed ddadf4a9), 45/45 tests; REVIEWED AND ACCEPTED by the orchestrator; deployment is the owner's (orchestrator's remote deploy was denied by its permission classifier; M06 will not deploy). One-paste owner procedure: DEPLOY.md"
   }
  ],
  "tool_facts": {
   "crispdm-run option set": "identical on all three hosts (sha256 499fdc18..., getopts m:t:n:W:L:E:P:S:qh); crispdm-run has NO GPU-pinning option. --require-gpu-uuid is an option of the Traffic executor df_tsl_execute.py, not of the launcher; M06's slot note wrongly placed it on the launcher. Pin by CUDA_VISIBLE_DEVICES=<uuid> and assert the UUID inside the child."
- }
+ },
+ "independent_checks": [
+  {
+   "by": "orchestrator",
+   "at": "2026-09-30 ~23:30Z",
+   "what": "s2023 verified on the coordinator's preserved copy: record 6facce4b, checkpoint e5932881, author float32 vs independent float64 within 1e-8, naive on the same rows proven by population sha"
+  }
+ ]
 }
