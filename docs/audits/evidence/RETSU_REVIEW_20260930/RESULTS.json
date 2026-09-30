@@ -1,0 +1,28 @@
+{
+  "scope": "Synthetic independent review; no GPU, financial score or remote model execution",
+  "strategy_commit": "1b25d31a39c715e8631cec6aea0be2a0382072f8",
+  "predictor_gpu_commit": "3f910fbf4d0f29a5381fe23f40318f879b3f6a81",
+  "unit_tests": {"passed": 9, "seconds": 0.55, "warnings": 1, "clean_install": false, "initial_attempt": "COLLECTION_ERROR: trading_contracts missing; retried with explicit local src path"},
+  "probe": {
+    "horizons_true_fraction_1_9_text_1_all_become": 1,
+    "duplicate_horizons_accepted": true,
+    "nonfinite_target_accepted": true,
+    "calibration_accepted_origin": "2019-05-15 23:00:00",
+    "reserved_target_consumed_by_generator": "2019-05-16 00:00:00",
+    "synthetic_target_value": 999.0,
+    "actual_noise_fit": false,
+    "dynamic_loader_late_env_exit": 1,
+    "dynamic_loader_fresh_env_exit": 0,
+    "dynamic_loader_fresh_result": 42
+  },
+  "disk_recount": {
+    "gpu_wheels": 44, "gpu_download_bytes": 2576641397,
+    "gpu_regular_site_packages_bytes": 5135683136,
+    "classification_wheels": 87, "classification_download_bytes": 3230034941,
+    "classification_content_rehashed": false,
+    "requires_python_exclusions_for_3_12_13": [],
+    "cp312_resolution_or_installation_proved": false
+  },
+  "runtime": {"gpu_used": false, "wrapper_memory_cap_gib": 2, "wrapper_wall_cap_seconds_per_attempt": 120},
+  "result_capture": "Transcribed from actual tool outputs; reproducible probe retained, not a signed scientific receipt"
+}
