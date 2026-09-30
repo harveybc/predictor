@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Concurrent modular program status",
+  "type": "object",
+  "required": ["schema", "observed_at", "plan_revision", "agents", "devices", "jobs", "results", "milestones", "next_actions"],
+  "properties": {
+    "schema": {"const": "modular.program.status.v1"},
+    "observed_at": {"type": "string", "format": "date-time"},
+    "plan_revision": {"type": "string", "minLength": 7},
+    "agents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "lane", "state", "commit"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "kind": {"enum": ["hermes", "subagent", "orchestrator"]},
+          "lane": {"type": "string"},
+          "state": {"enum": ["assigned", "acknowledged", "running", "completed", "failed"]},
+          "commit": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "devices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["host_alias", "device", "state", "job_id", "reason", "observed_at"],
+        "properties": {
+          "host_alias": {"enum": ["coordinator", "worker_a", "worker_b"]},
+          "device": {"type": "string"},
+          "state": {"enum": ["running", "idle", "unavailable", "unknown"]},
+          "job_id": {"type": ["string", "null"]},
+          "reason": {"type": ["string", "null"]},
+          "observed_at": {"type": "string", "format": "date-time"},
+          "temperature_c": {"type": ["number", "null"]},
+          "utilization_percent": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+          "host_available_bytes": {"type": ["integer", "null"], "minimum": 0}
+        }
+      }
+    },
+    "jobs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "lane", "state", "stage", "producer_commit", "progress", "eta", "heartbeat_at"],
+        "properties": {
+          "id": {"type": "string"},
+          "lane": {"type": "string"},
+          "state": {"enum": ["queued", "running", "completed", "failed", "dependency_wait"]},
+          "stage": {"type": "string"},
+          "producer_commit": {"type": "string"},
+          "heartbeat_at": {"type": ["string", "null"], "format": "date-time"},
+          "progress": {
+            "type": "object", "required": ["unit", "completed", "total"],
+            "properties": {
+              "unit": {"enum": ["updates", "epochs", "cells", "features", "episodes", "unknown"]},
+              "completed": {"type": ["integer", "null"], "minimum": 0},
+              "total": {"type": ["integer", "null"], "minimum": 0}
+            }
+          },
+          "eta": {
+            "type": "object", "required": ["earliest", "latest", "basis", "assumptions"],
+            "properties": {
+              "earliest": {"type": ["string", "null"], "format": "date-time"},
+              "latest": {"type": ["string", "null"], "format": "date-time"},
+              "basis": {"enum": ["observed_throughput", "cost_pilot", "planning_estimate", "not_estimable"]},
+              "assumptions": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        }
+      }
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["task", "split", "population_id", "model", "metric", "space", "reduction", "value", "naive", "literature", "evidence_state"],
+        "properties": {
+          "task": {"type": "string"}, "split": {"type": "string"},
+          "population_id": {"type": "string"}, "model": {"type": "string"},
+          "metric": {"type": "string"}, "space": {"type": "string"},
+          "reduction": {"type": "string"}, "value": {"type": "number"},
+          "naive": {"type": ["number", "null"]},
+          "literature": {
+            "type": "object", "required": ["value", "source", "comparability"],
+            "properties": {
+              "value": {"type": ["number", "null"]}, "source": {"type": ["string", "null"]},
+              "comparability": {"enum": ["matched_protocol", "adapted_rerun", "not_comparable", "not_applicable"]}
+            }
+          },
+          "evidence_state": {"enum": ["synthetic_calibration", "local_pilot", "measured", "independently_verified", "governed_accepted"]}
+        }
+      }
+    },
+    "milestones": {
+      "type": "array",
+      "items": {
+        "type": "object", "required": ["id", "completion_criterion", "state", "evidence"],
+        "properties": {
+          "id": {"type": "string"}, "completion_criterion": {"type": "string"},
+          "state": {"enum": ["not_started", "in_progress", "completed"]},
+          "evidence": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "next_actions": {"type": "array", "items": {"type": "string"}}
+  }
+}
