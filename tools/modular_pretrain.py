@@ -298,8 +298,23 @@ def _label(population):
             else provenance.upper())
 
 
+def runtime_versions():
+    import sys
+    import tensorflow as tf
+    import keras
+    return {"python": sys.version.split()[0], "tensorflow": tf.__version__, "keras": keras.__version__,
+            "numpy": np.__version__, "python_executable": sys.executable}
+
+
+def config_sha256(config):
+    """Canonical JSON (sorted keys, compact separators) digest of a model config."""
+    return hashlib.sha256(json.dumps(config, sort_keys=True, separators=(",", ":"),
+                                     allow_nan=False).encode()).hexdigest()
+
+
 def _write_provenance(donor, document):
     """Sidecar beside a donor; the engine's strict .manifest.json is left untouched."""
+    document = {**document, "runtime": runtime_versions()}
     path = Path(donor).with_suffix(".provenance.json")
     path.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n")
     return {"path": str(path), "sha256": _file_sha(path)}
@@ -398,6 +413,7 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
                   "wall_seconds": time.monotonic() - started}
         record["provenance"] = _write_provenance(donor, {
             "schema": "modular.branch_donor.provenance.v1", "stage": "branch_ae", "name": name,
+            "source_config_sha256": config_sha256(config),
             "input_provenance": train_population.get("provenance", "undeclared"),
             "label": _label(train_population), "donor_sha256": record["donor_sha256"],
             "donor_sidecar_sha256": record["donor_sidecar_sha256"],
@@ -474,6 +490,7 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
     if parity > 1e-5 or weights_hash(loaded) != sidecar["weights_sha256"]:
         raise ValueError(f"core donor reload parity failed ({parity})")
     provenance = {"schema": "modular.core_donor.provenance.v1", "stage": "core_ae",
+                  "runtime": runtime_versions(), "source_config_sha256": config_sha256(config),
                   "input_provenance": train_population.get("provenance", "undeclared"),
                   "label": _label(train_population),
                   "core_donor_sha256": _file_sha(donor),
@@ -505,7 +522,8 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
               "label": ("SYNTHETIC FIXTURE - component check, not a forecasting result"
                         if provenance_label == "synthetic_fixture" else provenance_label),
               "branches": records, "fusion": fusion_record, "core": core_record,
-              "grids": grids, "seed": seed,
+              "grids": grids, "seed": seed, "runtime": runtime_versions(),
+              "source_config_sha256": config_sha256(config),
               "train_population": train_population, "validation_population": validation_population,
               "train_input": train_identity, "validation_input": validation_identity,
               "fused_train": fusion_record["files"]["train"],
@@ -599,7 +617,7 @@ def pretrain_from_train_npz(train_npz, output_dir, fit_config, *, provenance, co
 
 
 def run_cost_pilot(train_npz, declaration_path, out, *, n_branches, fit, seed=7,
-                   heartbeat_interval=30.0, total_branches=None):
+                   heartbeat_interval=30.0, total_branches=None, config_path=None):
     """Governed cost pilot: the first ``n_branches`` declared branches, all features kept.
 
     Verifies the M03 admissible-input declaration against the TRAIN NPZ (dataset,
@@ -618,7 +636,12 @@ def run_cost_pilot(train_npz, declaration_path, out, *, n_branches, fit, seed=7,
     if features != names:
         raise ValueError("TRAIN NPZ feature order differs from the admissible declaration")
     from predictor_plugins.modular_temporal import default_config
-    config = default_config(features)
+    if config_path is not None:
+        config = json.loads(Path(config_path).read_text())
+        if config.get("feature_names") != features:
+            raise ValueError("supplied config feature order differs from the TRAIN NPZ")
+    else:
+        config = default_config(features)
     config["branches"] = config["branches"][:n_branches]
     total = total_branches or len(features)
     out = Path(out)
@@ -845,13 +868,15 @@ def main(argv=None):
                         help="governed cost pilot: TRAIN NPZ (with --declaration and --branches)")
     parser.add_argument("--declaration", default=None)
     parser.add_argument("--branches", type=int, default=8)
+    parser.add_argument("--config", default=None, help="explicit nested model config JSON (e.g. M04 from_flat)")
     a = parser.parse_args(argv)
     fit = dict(max_epochs=a.max_epochs, patience=a.patience, min_delta=a.min_delta,
                monitor_every=a.monitor_every, max_updates=a.max_updates, max_seconds=a.max_seconds,
                batch_size=a.batch_size, learning_rate=a.learning_rate, loss=a.loss)
     if a.cost_pilot_train_npz:
         report = run_cost_pilot(a.cost_pilot_train_npz, a.declaration, a.out, n_branches=a.branches,
-                                fit=fit, seed=a.seed, heartbeat_interval=a.heartbeat_interval)
+                                fit=fit, seed=a.seed, heartbeat_interval=a.heartbeat_interval,
+                                config_path=a.config)
         print(json.dumps(report, indent=2), flush=True)
         return
     summary = run_synthetic_pilot(a.out, rows=a.rows, features=a.features, seed=a.seed, fit=fit,

@@ -112,6 +112,9 @@ def test_core_donor_binds_exact_upstream_and_refuses_mismatch(pretrained, tmp_pa
         [b["donor_sha256"] for b in result["branches"]]
     assert prov["fused_materialization"]["train"] == result["fused_train"]["sha256"]
     assert prov["label"].startswith("SYNTHETIC")
+    assert prov["runtime"]["keras"] and prov["runtime"]["tensorflow"]
+    from tools.modular_pretrain import config_sha256
+    assert prov["source_config_sha256"] == config_sha256(pretrained["config"])
     for b in result["branches"]:
         side = json.loads(open(b["provenance"]["path"]).read())
         assert side["label"].startswith("SYNTHETIC") and side["donor_sha256"] == b["donor_sha256"]
