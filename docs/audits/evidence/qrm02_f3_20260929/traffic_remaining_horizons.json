@@ -1,0 +1,317 @@
+{
+ "schema": "df_tsl_remaining_horizons.v1",
+ "dataset": "traffic",
+ "design": {
+  "dataset": "traffic",
+  "rows": 17544,
+  "seq_len": 96,
+  "patch_len": 96,
+  "d_model": 512,
+  "batch_size": 16,
+  "epochs": 30,
+  "train_ratio": 0.7,
+  "test_ratio": 0.2,
+  "drop_last": false,
+  "horizons": [
+   96,
+   192,
+   336,
+   720
+  ],
+  "seeds_per_horizon": 3,
+  "head_declaration": "models/TimeFilter.py:57  self.head = nn.Linear(self.dim * self.num_patches, self.pred_len)",
+  "pred_len_occurrences_in_the_model": "two: stored on the module, and as the head's out_features. The backbone is built from seq_len * n_vars // patch_len and never sees pred_len"
+ },
+ "measured_horizons": [
+  96,
+  720
+ ],
+ "horizons": [
+  {
+   "pred_len": 96,
+   "seeds": 3,
+   "geometry": {
+    "pred_len": 96,
+    "batch_size": 16,
+    "class": "DERIVED_EXACT_FROM_THE_LOADER",
+    "splits": {
+     "train": {
+      "windows": 12089,
+      "batches": 756,
+      "final_batch_rows": 9
+     },
+     "vali": {
+      "windows": 1661,
+      "batches": 104,
+      "final_batch_rows": 13
+     },
+     "test": {
+      "windows": 3413,
+      "batches": 214,
+      "final_batch_rows": 5
+     }
+    },
+    "basis": "the author's own split borders over the registered row count and the sealed batch size. No bytes are read and no device is touched"
+   },
+   "static_terms": {
+    "params": 7306748,
+    "gradient_bytes": 29164928,
+    "optimizer_slot_bytes": 58330040,
+    "checkpoint_bytes": 29248117,
+    "parameter_bytes_float32": 29226992
+   },
+   "static_terms_class": "DERIVED_EXACT_FROM_THE_DECLARATION",
+   "head_output_tensor": {
+    "bytes_per_tensor": 5296128,
+    "tensors": 1,
+    "bytes": 5296128,
+    "class": "COMPONENT_OF_A_PEAK_NOT_A_PEAK",
+    "reading": "an analytic tensor size. It does not predict the allocator's peak and is never reported as one"
+   },
+   "time": {
+    "pred_len": 96,
+    "epochs": 30,
+    "train_batches": 756,
+    "vali_batches": 104,
+    "test_batches_counts_only": 214,
+    "per_step": {
+     "pred_len": 96,
+     "seconds": 0.123025,
+     "status": "MEASURED",
+     "class": "MEASURED at this horizon",
+     "record_sha256_prefix": "ea143639"
+    },
+    "epoch_seconds": 111.59813,
+    "cell_hours": 0.9299844166666666,
+    "status": "MEASURED",
+    "class": "DERIVED from THIS horizon's measured rates and the loader's own batch counts",
+    "includes_a_derived_term": "the author's per-epoch logging pass over the test loader is priced from this horizon's measured validation rate and the sealed test batch count; its memory was never measured"
+   }
+  },
+  {
+   "pred_len": 192,
+   "seeds": 3,
+   "geometry": {
+    "pred_len": 192,
+    "batch_size": 16,
+    "class": "DERIVED_EXACT_FROM_THE_LOADER",
+    "splits": {
+     "train": {
+      "windows": 11993,
+      "batches": 750,
+      "final_batch_rows": 9
+     },
+     "vali": {
+      "windows": 1565,
+      "batches": 98,
+      "final_batch_rows": 13
+     },
+     "test": {
+      "windows": 3317,
+      "batches": 208,
+      "final_batch_rows": 5
+     }
+    },
+    "basis": "the author's own split borders over the registered row count and the sealed batch size. No bytes are read and no device is touched"
+   },
+   "static_terms": {
+    "params": 7355996,
+    "gradient_bytes": 29361920,
+    "optimizer_slot_bytes": 58724024,
+    "checkpoint_bytes": 29445109,
+    "parameter_bytes_float32": 29423984
+   },
+   "static_terms_class": "DERIVED_EXACT_FROM_THE_DECLARATION",
+   "head_output_tensor": {
+    "bytes_per_tensor": 10592256,
+    "tensors": 1,
+    "bytes": 10592256,
+    "class": "COMPONENT_OF_A_PEAK_NOT_A_PEAK",
+    "reading": "an analytic tensor size. It does not predict the allocator's peak and is never reported as one"
+   },
+   "time": {
+    "pred_len": 192,
+    "epochs": 30,
+    "train_batches": 750,
+    "vali_batches": 98,
+    "test_batches_counts_only": 208,
+    "per_step": {
+     "pred_len": 192,
+     "seconds": null,
+     "status": "UNKNOWN",
+     "class": "UNPRICED_WITHOUT_A_RUN",
+     "why": "no pilot ran at this horizon. A GPU's per-step cost is set by the kernels chosen for the shape actually launched and by occupancy at that shape; both change in steps. Two other shapes do not determine it, and a monotone reading of two points is an assumption, not a bound",
+     "what_would_settle_it": "one 30-step child at this horizon, on the admitted device"
+    },
+    "epoch_seconds": null,
+    "cell_hours": null,
+    "status": "UNKNOWN",
+    "class": "UNPRICED_WITHOUT_A_RUN",
+    "why": "the per-step and per-validation-batch rates at this horizon are UNKNOWN, so the hours are UNKNOWN. They are not filled in from another horizon"
+   }
+  },
+  {
+   "pred_len": 336,
+   "seeds": 3,
+   "geometry": {
+    "pred_len": 336,
+    "batch_size": 16,
+    "class": "DERIVED_EXACT_FROM_THE_LOADER",
+    "splits": {
+     "train": {
+      "windows": 11849,
+      "batches": 741,
+      "final_batch_rows": 9
+     },
+     "vali": {
+      "windows": 1421,
+      "batches": 89,
+      "final_batch_rows": 13
+     },
+     "test": {
+      "windows": 3173,
+      "batches": 199,
+      "final_batch_rows": 5
+     }
+    },
+    "basis": "the author's own split borders over the registered row count and the sealed batch size. No bytes are read and no device is touched"
+   },
+   "static_terms": {
+    "params": 7429868,
+    "gradient_bytes": 29657408,
+    "optimizer_slot_bytes": 59315000,
+    "checkpoint_bytes": 29740597,
+    "parameter_bytes_float32": 29719472
+   },
+   "static_terms_class": "DERIVED_EXACT_FROM_THE_DECLARATION",
+   "head_output_tensor": {
+    "bytes_per_tensor": 18536448,
+    "tensors": 1,
+    "bytes": 18536448,
+    "class": "COMPONENT_OF_A_PEAK_NOT_A_PEAK",
+    "reading": "an analytic tensor size. It does not predict the allocator's peak and is never reported as one"
+   },
+   "time": {
+    "pred_len": 336,
+    "epochs": 30,
+    "train_batches": 741,
+    "vali_batches": 89,
+    "test_batches_counts_only": 199,
+    "per_step": {
+     "pred_len": 336,
+     "seconds": null,
+     "status": "UNKNOWN",
+     "class": "UNPRICED_WITHOUT_A_RUN",
+     "why": "no pilot ran at this horizon. A GPU's per-step cost is set by the kernels chosen for the shape actually launched and by occupancy at that shape; both change in steps. Two other shapes do not determine it, and a monotone reading of two points is an assumption, not a bound",
+     "what_would_settle_it": "one 30-step child at this horizon, on the admitted device"
+    },
+    "epoch_seconds": null,
+    "cell_hours": null,
+    "status": "UNKNOWN",
+    "class": "UNPRICED_WITHOUT_A_RUN",
+    "why": "the per-step and per-validation-batch rates at this horizon are UNKNOWN, so the hours are UNKNOWN. They are not filled in from another horizon"
+   }
+  },
+  {
+   "pred_len": 720,
+   "seeds": 3,
+   "geometry": {
+    "pred_len": 720,
+    "batch_size": 16,
+    "class": "DERIVED_EXACT_FROM_THE_LOADER",
+    "splits": {
+     "train": {
+      "windows": 11465,
+      "batches": 717,
+      "final_batch_rows": 9
+     },
+     "vali": {
+      "windows": 1037,
+      "batches": 65,
+      "final_batch_rows": 13
+     },
+     "test": {
+      "windows": 2789,
+      "batches": 175,
+      "final_batch_rows": 5
+     }
+    },
+    "basis": "the author's own split borders over the registered row count and the sealed batch size. No bytes are read and no device is touched"
+   },
+   "static_terms": {
+    "params": 7626860,
+    "gradient_bytes": 30445376,
+    "optimizer_slot_bytes": 60890936,
+    "checkpoint_bytes": 30528565,
+    "parameter_bytes_float32": 30507440
+   },
+   "static_terms_class": "DERIVED_EXACT_FROM_THE_DECLARATION",
+   "head_output_tensor": {
+    "bytes_per_tensor": 39720960,
+    "tensors": 1,
+    "bytes": 39720960,
+    "class": "COMPONENT_OF_A_PEAK_NOT_A_PEAK",
+    "reading": "an analytic tensor size. It does not predict the allocator's peak and is never reported as one"
+   },
+   "time": {
+    "pred_len": 720,
+    "epochs": 30,
+    "train_batches": 717,
+    "vali_batches": 65,
+    "test_batches_counts_only": 175,
+    "per_step": {
+     "pred_len": 720,
+     "seconds": 0.153422,
+     "status": "MEASURED",
+     "class": "MEASURED at this horizon",
+     "record_sha256_prefix": "06966c3d"
+    },
+    "epoch_seconds": 153.25141399999998,
+    "cell_hours": 1.2770951166666666,
+    "status": "MEASURED",
+    "class": "DERIVED from THIS horizon's measured rates and the loader's own batch counts",
+    "includes_a_derived_term": "the author's per-epoch logging pass over the test loader is priced from this horizon's measured validation rate and the sealed test batch count; its memory was never measured"
+   }
+  }
+ ],
+ "priced_cells": 6,
+ "priced_gpu_hours": 6.6212386,
+ "unpriced_horizons": [
+  192,
+  336
+ ],
+ "unpriced_cells": 6,
+ "twelve_cell_total": null,
+ "twelve_cell_total_status": "UNKNOWN",
+ "twelve_cell_total_why": "six of the twelve cells have no measured per-step rate. Pricing them from the other horizons' rates is exactly the monotonicity assumption the audit refused, so the total is UNKNOWN. What is established is the priced subtotal above and two holes",
+ "superseded_figure": {
+  "value": "12.08 - 15.02 GPU-hours",
+  "where": "SATOSHI_TRAFFIC_TRAIN_PILOT_2026_09_29.md section 4, at 91a4c410",
+  "status": "WITHDRAWN AS A BOUND",
+  "why": "it prices h192 and h336 at the measured rates of h96 and h720, which brackets the truth only if the per-step cost is monotone in the prediction length. Two points do not establish that. It survives only as a conditional projection, and only when a caller names the assumption"
+ },
+ "minimal_measurement_that_would_close_it": {
+  "children": 2,
+  "horizons": [
+   192,
+   336
+  ],
+  "updates_each": 32,
+  "wall_seconds_each_observed_range": [
+   15.41,
+   22.62
+  ],
+  "cpu_seconds_each_observed_range": [
+   15.2,
+   22.27
+  ],
+  "requested_wall_seconds_total": 600,
+  "requested_cpu_seconds_total": 600,
+  "declared_cap_bytes": 8589934592,
+  "cap_provenance": "the 8 GiB already sealed at 8d461628 and observed ample: the worst measured training peak over both pilots is 2179903488 B",
+  "cap_rule": "asked once at the declared size; never re-asked smaller to pass an admission",
+  "what_it_buys": "a measured per-step and per-validation rate at h192 and h336, which removes the monotonicity assumption from the twelve-cell figure",
+  "what_it_does_not_buy": "no accuracy, no test split, no selection, no campaign. A 30-step child is a cost measurement",
+  "authority": "NOT HELD. The Traffic authorization named h96 and h720. These two horizons have no allocation, so they are not run and their hours stay UNKNOWN"
+ }
+}

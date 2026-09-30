@@ -1,6 +1,11 @@
 # QRM02 — TRAIN-only cost pilot for the six missing W1440 cells
 
-**Status: DESIGN, revision 3. SEALING CONDITION MET on the runner; still awaiting the allocation of §7.**
+**Status: DESIGN, revision 4. NOT READY FOR DISPATCH: the runner does not place a GPU pilot and the
+allocation of §7 is not held.**
+**Revision 4 repairs finding F3 of `MUSASHI_AUDIT_23B2EFA3_2026_09_29.md`, which is fatal to revision 3's
+measurement plan: the telemetry it named was PyTorch's and the recipe is TensorFlow's, and the runner it
+sealed against passes every child an empty `CUDA_VISIBLE_DEVICES`. The repair, its instrument and its
+evidence are `SATOSHI_QRM02_F3_TELEMETRY_2026_09_29.md`; the rows below are corrected to match it.**
 **Author:** Satoshi III (Mujuro Utsutsu), successor technical lead
 **Date:** 2026-09-29
 **Supersedes:** revision 1 at `8a31ba1f`, which was reviewed at `8fc61cf0` and found **not ready for
@@ -28,6 +33,7 @@ number ever existed.
 | 2 | **An assumption dressed as a stage.** It called the ragged final batch the place "where a tight cap fails". A ragged final batch is **smaller**, and nothing established it is the worst. | §5 **tests the actual full and final shapes** and reports the observed order. No shape is assumed worst. |
 | 3 | **Peak attribution overstated.** It recorded a "host RAM cgroup peak per stage". `memory.peak` is a **cumulative high-watermark over the scope lifetime**; readings at stage boundaries are cumulative, not independent stage peaks. | §6 records both, under names that cannot be confused. |
 | 4 | **The historical null used as more than a diagnostic.** | §1 keeps it as a diagnostic only and enumerates the successor's controls separately. |
+| 5 | **Telemetry from the wrong framework, and a placement that cannot run.** Revision 3 watched a 12 GiB device envelope with `torch.cuda.max_memory_allocated`, which does not account for one byte TensorFlow allocates, and sealed a runner that forces `CUDA_VISIBLE_DEVICES=""`. | §3 and §6 measure **TensorFlow's own allocator**, the device is **declared and verified by UUID**, the envelope is **predeclared in the framework allocator** so an oversized request fails where it is made, and the empty-device state is **refused by name**. `tools/df_tf_device_telemetry.py`. |
 
 ---
 
@@ -77,10 +83,13 @@ lifetime.
 |---|---|---|
 | placement | secondary worker, one cell at a time | the preferred accelerator host is ineligible: ~3 GiB free of 14 with 4.93 GiB unreclaimable kernel slab |
 | **host envelope** | **12 GiB per cell, ENFORCED** | the launcher sets cgroup `MemoryMax`; 12 GiB sits under the 14 GiB slice ceiling and inside the worker's ~21 GiB free. Chosen as a bound, not derived from the thing being measured |
-| **device envelope** | **12 GiB, MONITORED ONLY, NOT ENFORCED** | the cgroup bounds host RAM and **not** VRAM. The 4090 carries 16 376 MiB. The child asserts `torch.cuda.max_memory_allocated` and `max_memory_reserved` against the envelope and **raises**; **CUDA allocation statistics are not an enforced GPU limit** and are never described as one |
-| wall deadline | 1 800 s per cell, 4 800 s total worst case | a declared stopping rule, not a prediction |
-| CPU deadline | 2 400 CPU s per cell | as above |
-| **abort path** | host: the cgroup kills the child and the attempt is recorded **terminated**, never retried at a larger cap. device: the child raises and exits non-zero before allocating past the envelope. Either way the peak is read **before the scope is removed** and a missing peak is `UNKNOWN` | |
+| **device placement** | **declared by UUID and verified inside the child** | the driver's own UUID (`libcuda.cuDeviceGetUuid`), the framework's device registration and a placement probe must all agree. An empty or unset `CUDA_VISIBLE_DEVICES` is refused as `NO_VISIBLE_DEVICE`: the runner's current environment makes a **CPU** pilot, whatever the design says |
+| **device envelope** | **12 GiB, ENFORCED IN THE TENSORFLOW ALLOCATOR** | `tf.config.set_logical_device_configuration(memory_limit=12288)`, predeclared before the device is initialized: a request past the arena fails with `ResourceExhaustedError` **where it is made**. Verified on the admitted 4090 and on the coordinator's own device. It bounds the TensorFlow arena, **not** the CUDA context or workspaces outside it, which are whole-device scope and are reported separately |
+| wall deadline | 1 800 s per cell, 4 800 s total worst case | **an executable stop**: an in-child watchdog that exits non-zero at the deadline, inside the launcher's own `-t` limit, which does not depend on the child |
+| CPU deadline | 2 400 CPU s per cell | **an executable stop**: `RLIMIT_CPU`, `SIGXCPU` at the soft limit and `SIGKILL` at the hard one, which the child cannot decline |
+| per-stage stops | every stage of §5 | **an executable stop each**: a stage wall timer and a stage CPU poll that exit. Revision 3 listed stages in a table and stopped none of them |
+| **abort path** | host: the cgroup kills the child and the attempt is recorded **terminated**, never retried at a larger cap. device: the **predeclared allocator arena fails the oversized request at the request**, and the child exits non-zero on that failure. Either way the peak is read **before the scope is removed** and a missing peak is `UNKNOWN` | |
+| **what a statistics check can and cannot do** | **CORRECTION.** Revision 3 said the child "raises and exits non-zero **before** allocating past the envelope" on the evidence of allocator peaks. It cannot: a peak is read **after** the allocator already held the memory, so a comparison against it **reports** an exceedance and never prevented one. What is **enforceable** is the predeclared arena above. What is **observed after the fact** is the comparison of the framework peak with the envelope, and it is labelled `OBSERVED_AFTER_THE_FACT` wherever it appears | |
 
 **If a calibration exceeds the envelope, the pilot stops and reports.** It never expands mid-run.
 
@@ -128,10 +137,18 @@ propose a cheaper way to do it.
 - **`host_stage_peak_after_reset`** — `memory.peak` is writable on this kernel (7.0), so it is reset at each
   stage boundary and the following reading is the peak **since that reset**. Both series are kept: resetting
   changes what the number means, and losing the lifetime watermark would be a worse trade.
-- **`device_allocated_peak` / `device_reserved_peak`** — each names the **framework and API**
-  (`torch.cuda.max_memory_allocated`, `max_memory_reserved`) and its **reset basis**
-  (`reset_peak_memory_stats` at the same boundaries). **Unavailable statistics are `UNKNOWN`** and are
-  **never synthesized** from host memory or from a parameter count.
+- **`framework_device_peak` / `framework_device_current`** — the **TensorFlow** allocator's own figures
+  for the verified device, from `tf.config.experimental.get_memory_info(device)`, reset at stage
+  boundaries with `tf.config.experimental.reset_memory_stats(device)` and labelled with that basis.
+  **This is the framework that trains the model.** Revision 3 named `torch.cuda.max_memory_allocated`
+  and `max_memory_reserved`; the PyTorch allocator accounts for none of TensorFlow's allocations, and
+  PyTorch is **not** imported to ask. **Unavailable statistics are `UNKNOWN`** and are **never
+  synthesized** from host memory or from a parameter count.
+- **`whole_device_in_use`** — the driver's whole-device figure (`cuMemGetInfo`), a **separate scope**:
+  it includes this process's CUDA context and every other tenant, and it is never added to the
+  framework figure or to any host figure. On a CPU placement, `get_memory_info("CPU:0")` measures
+  TensorFlow's **host** allocator on the builds that expose it, which is a **third** scope again and
+  carries its own name.
 - **`rss_self_peak`** — recorded separately, never as a bound on the cgroup figure or vice versa.
 - Plus, per cell: scope identity, the kernel limit in force, optimizer updates, CPU time, wall time, stage.
 
@@ -174,6 +191,11 @@ are treated as inputs to be re-measured, not as authority.
 
 ## 9. Blockers that remain
 
+0. **The runner does not place a GPU pilot.** `run_units` passes `CUDA_VISIBLE_DEVICES=""` to every
+   child, and in the admitted worker's TensorFlow environment the device is additionally not
+   registered unless the child is given the environment's own CUDA library path. Both are verified.
+   Until the runner passes a declared device and that path, this design's GPU rows are not reachable
+   and a sealed run would be a **CPU** pilot. See `SATOSHI_QRM02_F3_TELEMETRY_2026_09_29.md` §3.
 1. **Lane A's runner does not exist yet.** A per-cell number is impossible until a cell gets a fresh
    exclusive scope enclosing its complete process tree with its own reservation.
 2. **Reachability, not master membership:** the instrument and the v2 seal must be **reproducibly reachable
