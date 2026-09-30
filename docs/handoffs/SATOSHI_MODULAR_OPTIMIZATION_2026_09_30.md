@@ -84,10 +84,10 @@ Changing plugin hierarchy must not break old JSON configs, result schemas,
 entry-point loading, prediction_provider, or current LTS routes. Add behavior
 regressions for those boundaries, and run them in installed isolated environments.
 
-Defaults: at least 24 physical hours, one feature per branch, causal Conv1D,
-common 12-step branch grid, concatenation on channels, positional encoding,
-two full Transformer blocks, then three configurable learned compression stages
-to 6 time steps x 8 channels. The head's forecast horizons/target count are
+Defaults: at least 24 physical hours, one feature per branch, causal Conv1D
+preserving the full input time grid, concatenation on channels, positional
+encoding after fusion, two full causal Transformer blocks, then three residual
+strided Conv1D stages to 6 time steps x 8 channels. The head's forecast horizons/target count are
 independent of this latent shape. No temporal collapse before fusion/core.
 Compression cannot guarantee zero information loss; quantify reconstruction and
 downstream utility. Shape equality alone does not establish time alignment.
@@ -185,6 +185,36 @@ task IDs. Their completion receipts may supersede this snapshot; inspect before
 spawning replacements.
 
 ## 8. Reporting: owner view, review and machine-readable state
+
+### Architecture correction: supersedes the earlier branch/core defaults
+
+Owner review found a real design violation in the first graph: each branch
+reshaped and densely projected 24 input steps to 12 before fusion. That
+operation is removed. Branch extractors now preserve the full input time axis;
+for the hourly default each maps `(batch, 24, 1)` to `(batch, 24, 16)`. Fusion
+concatenates channels at all 24 positions. The four branches in the example PNG
+are four illustrative features, not a limit on inventory size.
+
+The core adds positional encoding immediately after fusion. Its two Transformer
+blocks are standard residual blocks: multihead self-attention plus residual Add
+and normalization, followed by a per-time-step FFN plus its own residual Add and
+normalization. The bottleneck uses three residual Conv1D stages with default
+channel widths `[32, 16, 8]` and time factors `[2, 2, 1]`, mapping 24 steps to
+6. Complete adjacent blocks feed strided convolutions with matching residual
+projections; no reshape-to-Dense temporal pooling remains in branch or core.
+Per-time-step Dense projections inside the Transformer keep the time axis.
+Flatten appears only in the final direct-forecast task head.
+
+The source is now a package split by concern under
+`predictor_plugins/modular_temporal/`, with the old import path preserved. The
+NumPy-style docstrings and Sphinx Napoleon/autodoc configuration live in
+`docs/api/`. The expanded and overview diagrams are regenerated from the
+actual four-feature Keras model. After this correction, a CPU construction
+smoke produced branch `(24,16)`, fusion `(24,64)`, core `(6,8)`, and forecast
+`(1,1)` outputs. The pre-correction 24/30/6 test counts do not verify this
+revision. Run the adjusted focused engine and pretraining suites before using
+the architecture in any candidate fit; invalidate any queued candidate identity
+that encoded the earlier branch reduction.
 
 ### Completion addendum (supersedes the in-progress snapshot above)
 

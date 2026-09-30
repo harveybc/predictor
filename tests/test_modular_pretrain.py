@@ -53,4 +53,4 @@ def test_all_stages_export_reload_and_real_updates(tmp_path):
     np.testing.assert_allclose(fitted.encoder_model(val), frozen.encoder_model(val), atol=1e-6)
     assert not frozen.core_model.trainable_weights
     assert (tmp_path / "run" / "PRETRAIN.json").exists()
-    assert result["fused_train"]["shape"][:2] == [8, 12]
+    assert result["fused_train"]["shape"][:2] == [8, 24]
