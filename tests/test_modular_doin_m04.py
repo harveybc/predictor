@@ -322,3 +322,22 @@ def test_heartbeat_interval_is_bounded(tmp_path):
     assert max(b - a for a, b in zip(times, times[1:])) < 60
     fit = [r for r in records if r["stage"] == "fit"]
     assert fit and fit[0]["eta"]["per_update_seconds"] == pytest.approx(0.5)
+
+
+def test_two_host_runners_never_claim_the_same_candidate_and_verify_on_training_host(tmp_path):
+    campaign = make_campaign(tmp_path)
+    enqueue_default(campaign)
+    other = camp.Campaign(campaign.root)  # a second runner, own sqlite connection
+    a = campaign.claim("worker_a")
+    b = other.claim("worker_b")
+    assert a[0]["cid"] != b[0]["cid"] and a[1] == b[1] == "train"
+    for claimed, owner in ((a, campaign), (b, other)):
+        row, kind, attempt, root = claimed
+        owner._record(row, kind, attempt, {"status": "completed", "objective": 0.3, "receipt_path": "r"})
+    # verification of a's checkpoint is claimed only by worker_a
+    vb = other.claim("worker_b")
+    assert vb[1] == "verify" and vb[0]["cid"] == b[0]["cid"]
+    va = campaign.claim("worker_a")
+    assert va[1] == "verify" and va[0]["cid"] == a[0]["cid"]
+    hosts = dict(campaign.db.execute("SELECT cid, host FROM attempts WHERE kind='verify'").fetchall())
+    assert hosts == {a[0]["cid"]: "worker_a", b[0]["cid"]: "worker_b"}

@@ -137,7 +137,10 @@ def verify(receipt_path, validation_path, output_path, *, batch_size=512, rtol=1
                             "rescored_value": rescored_objective, "receipt_value": objective["value"]},
               "metrics": metrics, "per_horizon": per_horizon, "validation_rows": int(len(x)),
               "tolerance": {"rtol": rtol, "atol": atol},
-              "elapsed_seconds": time.monotonic() - started, "pid": os.getpid()}
+              "elapsed_seconds": time.monotonic() - started, "pid": os.getpid(),
+              "environment": {"tensorflow": tf.__version__, "keras": tf.keras.__version__,
+                              "numpy": np.__version__, "executable": sys.executable,
+                              "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES")}}
     Path(output_path).write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
     return result
 

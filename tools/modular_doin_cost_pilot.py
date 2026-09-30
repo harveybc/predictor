@@ -158,6 +158,11 @@ def main():
     candidate["evaluator"]["max_epochs"] = args.epochs
     candidate["evaluator"]["patience"] = max(candidate["evaluator"]["patience"], args.epochs)
     receipt["candidate"] = candidate
+    import keras
+    import numpy
+    receipt["environment"] = {"tensorflow": tf.__version__, "keras": keras.__version__, "numpy": numpy.__version__,
+                              "executable": sys.executable, "host_role": os.environ.get("M04_HOST_ROLE"),
+                              "device_pin": "CUDA_VISIBLE_DEVICES environment (no launcher GPU option)"}
     with Heartbeat(out / "heartbeat.json", interval=30.0, identity={"pilot": out.name}) as beat:
         def progress(**fields):
             stage = fields.get("stage")

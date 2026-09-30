@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS attempts(
   started REAL NOT NULL, finished REAL, status TEXT NOT NULL, exit_code INTEGER, error TEXT,
   cap TEXT, wall TEXT, output_root TEXT NOT NULL, cgroup_peak_bytes INTEGER, elapsed_seconds REAL,
   observed_updates INTEGER, selected_epoch INTEGER, per_update_seconds REAL, stop_reason TEXT,
-  receipt_path TEXT, objective REAL, model_sha256 TEXT, weights_sha256 TEXT, verdict TEXT,
+  receipt_path TEXT, objective REAL, model_sha256 TEXT, weights_sha256 TEXT, verdict TEXT, host TEXT,
   PRIMARY KEY(cid, attempt, kind));
 CREATE TABLE IF NOT EXISTS incumbent_changes(
   seq INTEGER PRIMARY KEY AUTOINCREMENT, time REAL NOT NULL, config_id TEXT NOT NULL,
@@ -82,6 +82,9 @@ class Campaign:
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.execute("PRAGMA synchronous=FULL")
         self.db.executescript(SCHEMA_SQL)
+        columns = {r[1] for r in self.db.execute("PRAGMA table_info(attempts)")}
+        if "host" not in columns:  # queues created before the multi-host runner
+            self.db.execute("ALTER TABLE attempts ADD COLUMN host TEXT")
         self.space = ss.validate_space(self.declaration["search_space"])
 
     # ------------------------------------------------------------ creation --
@@ -169,46 +172,75 @@ class Campaign:
             recovered.append((row["cid"], row["kind"]))
         return recovered
 
-    def next_work(self):
+    def claim(self, host="local"):
+        """Atomically pick the next work item for ``host`` and mark it running (one transaction).
+
+        Verification is claimed only by the host that holds the candidate's checkpoint.
+        Two runners (one per host) can share this queue: no candidate is dispatched twice.
+        """
+        self.db.execute("BEGIN IMMEDIATE")
+        try:
+            row = self.db.execute(
+                "SELECT c.* FROM candidates c WHERE c.status='completed' AND (SELECT a.host FROM attempts a"
+                " WHERE a.cid=c.cid AND a.kind='train' AND a.status='completed' ORDER BY a.attempt DESC LIMIT 1)"
+                " IS ? ORDER BY c.position LIMIT 1", (host,)).fetchone()
+            kind = "verify"
+            if row is None:
+                row = self.db.execute("SELECT * FROM candidates WHERE status='queued' ORDER BY position LIMIT 1").fetchone()
+                kind = "train"
+            if row is None:
+                self.db.execute("COMMIT")
+                return None
+            cid = row["cid"]
+            attempt = self.db.execute("SELECT COALESCE(MAX(attempt), 0) + 1 FROM attempts WHERE cid=? AND kind=?",
+                                      (cid, kind)).fetchone()[0]
+            output_root = self.root / "attempts" / cid[:16] / f"{kind}-{attempt}"
+            resources = self.resources(host)[kind]
+            self.db.execute("INSERT INTO attempts(cid, attempt, kind, launcher_pid, started, status, cap, wall,"
+                            " output_root, host) VALUES(?,?,?,?,?,?,?,?,?,?)",
+                            (cid, attempt, kind, os.getpid(), now(), "running", resources["cap"], resources["wall"],
+                             str(output_root), host))
+            self.db.execute("UPDATE candidates SET status=?, updated=? WHERE cid=?",
+                            ("running" if kind == "train" else "verifying", now(), cid))
+            self.db.execute("COMMIT")
+        except Exception:
+            self.db.execute("ROLLBACK")
+            raise
+        return row, kind, attempt, output_root
+
+    def resources(self, host):
+        return {**self.declaration["resources"],
+                **self.declaration.get("hosts", {}).get(host, {}).get("resources", {})}
+
+    def next_work(self, host="local"):
+        """Read-only preview of what claim() would pick (no state change)."""
         row = self.db.execute("SELECT * FROM candidates WHERE status='completed' ORDER BY position LIMIT 1").fetchone()
         if row:
             return row, "verify"
         row = self.db.execute("SELECT * FROM candidates WHERE status='queued' ORDER BY position LIMIT 1").fetchone()
         return (row, "train") if row else (None, None)
 
-    def _attempt_number(self, cid, kind):
-        return self.db.execute("SELECT COALESCE(MAX(attempt), 0) + 1 FROM attempts WHERE cid=? AND kind=?",
-                               (cid, kind)).fetchone()[0]
-
     # ------------------------------------------------------------ execution --
     def run(self, executor, max_candidates=None, stop_file=None):
         done = 0
+        host = getattr(executor, "host", "local")
         self.recover()
         while max_candidates is None or done < max_candidates:
             if stop_file and Path(stop_file).exists():
                 break
-            row, kind = self.next_work()
-            if row is None:
+            claimed = self.claim(host)
+            if claimed is None:
                 break
-            self.execute(row, kind, executor)
+            row, kind, attempt, output_root = claimed
+            self.execute(row, kind, executor, attempt, output_root)
             if kind == "verify":
                 self.update_incumbent()
             done += kind == "train"
         return done
 
-    def execute(self, row, kind, executor):
+    def execute(self, row, kind, executor, attempt, output_root):
         cid = row["cid"]
-        attempt = self._attempt_number(cid, kind)
-        output_root = self.root / "attempts" / cid[:16] / f"{kind}-{attempt}"
         output_root.mkdir(parents=True, exist_ok=False)
-        cap, wall = self.declaration["resources"][kind]["cap"], self.declaration["resources"][kind]["wall"]
-        self.db.execute("BEGIN IMMEDIATE")
-        self.db.execute("INSERT INTO attempts(cid, attempt, kind, launcher_pid, started, status, cap, wall, output_root)"
-                        " VALUES(?,?,?,?,?,?,?,?,?)", (cid, attempt, kind, os.getpid(), now(), "running", cap, wall,
-                                                        str(output_root)))
-        self.db.execute("UPDATE candidates SET status=?, updated=? WHERE cid=?",
-                        ("running" if kind == "train" else "verifying", now(), cid))
-        self.db.execute("COMMIT")
         try:
             if kind == "train":
                 outcome = executor.train(json.loads(row["nested"]), output_root, self.declaration)
@@ -218,6 +250,7 @@ class Campaign:
                 outcome = executor.verify(receipt, output_root, self.declaration)
         except Exception as exc:  # the executor normally reports failures in outcome
             outcome = {"status": "failed", "error": f"{type(exc).__name__}: {exc}"}
+        (output_root / "OUTCOME.json").write_text(json.dumps(outcome, indent=1, default=str) + "\n")
         self._record(row, kind, attempt, outcome)
         return outcome
 
@@ -356,13 +389,19 @@ def _last_heartbeat_peak(root):
 
 
 class DoinBridgeExecutor:
-    """Train through doin_node.predictor_bridge, verify through its checkpoint scorer path."""
+    """Train through doin_node.predictor_bridge, verify through its checkpoint scorer path.
 
-    def __init__(self, declaration):
-        self.e = declaration["executor"]
+    ``host`` names a role in declaration["hosts"]; its settings (cuda_visible_devices,
+    resources, extra_env) override the executor defaults. Runs on the host itself.
+    """
+
+    def __init__(self, declaration, host="local"):
+        self.host = host
+        self.e = {**declaration["executor"], **declaration.get("hosts", {}).get(host, {}).get("executor", {})}
+        self.resources = {**declaration["resources"], **declaration.get("hosts", {}).get(host, {}).get("resources", {})}
 
     def _launch(self, argv, output_root, kind, declaration):
-        res = declaration["resources"][kind]
+        res = self.resources[kind]
         env_prefix = ["env", f"CUDA_VISIBLE_DEVICES={self.e.get('cuda_visible_devices', '')}",
                       "PYTHONUNBUFFERED=1", f"PYTHONPATH={self.e['doin_pythonpath']}",
                       *[f"{k}={v}" for k, v in sorted(self.e.get("extra_env", {}).items())]]
@@ -386,7 +425,7 @@ class DoinBridgeExecutor:
                 "candidate_config": nested}
 
     def train(self, nested, output_root, declaration):
-        timeout = declaration["resources"]["train"]["timeout_seconds"]
+        timeout = self.resources["train"]["timeout_seconds"]
         config = self._bridge_config(nested, output_root, declaration, timeout)
         (output_root / "bridge.json").write_text(json.dumps(config, indent=1) + "\n")
         argv = [self.e["doin_python"], "-u", "-m", "doin_node.predictor_bridge", "--config",
@@ -395,7 +434,7 @@ class DoinBridgeExecutor:
         return summarize_train(output_root, code, elapsed)
 
     def verify(self, receipt_path, output_root, declaration):
-        timeout = declaration["resources"]["verify"]["timeout_seconds"]
+        timeout = self.resources["verify"]["timeout_seconds"]
         config = self._bridge_config({"objective": declaration["base"]["objective"]}, output_root,
                                      declaration, timeout)
         (output_root / "bridge.json").write_text(json.dumps(config, indent=1) + "\n")
@@ -403,6 +442,43 @@ class DoinBridgeExecutor:
                 str(output_root / "bridge.json"), "--verify", receipt_path]
         code, elapsed = self._launch(argv, output_root, "verify", declaration)
         return summarize_verify(output_root, code, elapsed)
+
+
+class RemoteExecutor:
+    """Runs each attempt on a worker over ssh; the queue stays on the orchestrating host.
+
+    The ssh alias is read from the environment variable M04_SSH_<role> at run time and is
+    never written to any file; files name only the role. The remote side executes
+    ``modular_doin_campaign.py attempt`` (a light launcher) which admits the heavy child
+    through crispdm-run on that host and prints the outcome as its last stdout line.
+    """
+
+    def __init__(self, declaration, host, root):
+        self.host, self.root = host, Path(root)
+        self.alias = os.environ[f"M04_SSH_{host}"]
+        spec = {**declaration["executor"], **declaration.get("hosts", {}).get(host, {}).get("executor", {})}
+        self.python, self.checkout = spec["predictor_python"], spec["predictor_checkout"]
+
+    def _remote(self, kind, output_root, payload):
+        command = ["ssh", "-o", "BatchMode=yes", "-o", "ServerAliveInterval=30", self.alias, self.python, "-u",
+                   f"{self.checkout}/tools/modular_doin_campaign.py", "attempt", "--root", str(self.root),
+                   "--host-role", self.host, "--kind", kind, "--output-root", str(output_root)]
+        (output_root / "remote_command.json").write_text(json.dumps(
+            ["ssh", f"<{self.host}>", *command[6:]], indent=1) + "\n")
+        started = time.monotonic()
+        done = subprocess.run(command, input=json.dumps(payload), capture_output=True, text=True)
+        (output_root / "remote.log").write_text(done.stdout[-20000:] + "\n--- stderr ---\n" + done.stderr[-20000:])
+        lines = [l for l in done.stdout.splitlines() if l.startswith("{")]
+        if done.returncode != 0 or not lines:
+            return {"status": "failed", "exit_code": done.returncode, "elapsed_seconds": time.monotonic() - started,
+                    "error": (done.stderr or done.stdout)[-2000:]}
+        return json.loads(lines[-1])
+
+    def train(self, nested, output_root, declaration):
+        return self._remote("train", output_root, nested)
+
+    def verify(self, receipt_path, output_root, declaration):
+        return self._remote("verify", output_root, {"receipt_path": receipt_path})
 
 
 def summarize_train(output_root, code, elapsed):
@@ -458,6 +534,16 @@ def main():
     p.add_argument("--flat", required=True)
     p.add_argument("--seed", type=int, required=True)
     p.add_argument("--huber-delta", type=float)
+    p = sub.add_parser("attempt", help="(runs ON the worker) one train/verify attempt; payload on stdin")
+    p.add_argument("--root", required=True)
+    p.add_argument("--host-role", required=True)
+    p.add_argument("--kind", choices=("train", "verify"), required=True)
+    p.add_argument("--output-root", required=True)
+    p = sub.add_parser("run-remote", help="(orchestrator) run the shared queue on one worker role")
+    p.add_argument("--root", required=True)
+    p.add_argument("--host-role", required=True)
+    p.add_argument("--max", type=int)
+    p.add_argument("--stop-file")
     p = sub.add_parser("status")
     p.add_argument("--root", required=True)
     args = parser.parse_args()
@@ -484,6 +570,23 @@ def main():
         campaign = Campaign(args.root)
         executor = DoinBridgeExecutor(campaign.declaration)
         print(json.dumps({"trained": campaign.run(executor, args.max, args.stop_file)}))
+    elif args.command == "attempt":
+        declaration = json.loads((Path(args.root) / "CAMPAIGN.json").read_text())
+        executor = DoinBridgeExecutor(declaration, args.host_role)
+        output_root = Path(args.output_root)
+        output_root.mkdir(parents=True, exist_ok=False)
+        payload = json.loads(sys.stdin.read())
+        if args.kind == "train":
+            outcome = executor.train(payload, output_root, declaration)
+        else:
+            outcome = executor.verify(payload["receipt_path"], output_root, declaration)
+        outcome["host"] = args.host_role
+        (output_root / "OUTCOME.json").write_text(json.dumps(outcome, indent=1, default=str) + "\n")
+        print(json.dumps(outcome, default=str))
+    elif args.command == "run-remote":
+        campaign = Campaign(args.root)
+        executor = RemoteExecutor(campaign.declaration, args.host_role, args.root)
+        print(json.dumps({"trained": campaign.run(executor, args.max, args.stop_file), "host": args.host_role}))
     elif args.command == "materialize":
         decl = json.loads(Path(args.declaration).read_text())
         flat = {**json.loads(Path(args.flat).read_text()), "train.seed": args.seed}

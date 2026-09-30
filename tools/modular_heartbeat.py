@@ -133,6 +133,20 @@ class Heartbeat:
         return False
 
 
+def environment():
+    """Interpreter/library identity recorded in every receipt (campaign env is pinned)."""
+    import platform
+    import sys
+
+    import keras
+    import numpy
+    import tensorflow
+
+    return {"python": platform.python_version(), "executable": sys.executable, "tensorflow": tensorflow.__version__,
+            "keras": keras.__version__, "numpy": numpy.__version__,
+            "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES")}
+
+
 def run_request(request_path, response_path, heartbeat_path, interval=30.0):
     """Evaluate one bridge request under a heartbeat; used by the DOIN worker."""
     from tools.modular_candidate_evaluator import evaluate_candidate
@@ -142,5 +156,6 @@ def run_request(request_path, response_path, heartbeat_path, interval=30.0):
     with Heartbeat(heartbeat_path, interval=interval, identity=identity) as beat:
         result = evaluate_candidate(request["config"], request["train_path"], request["validation_path"],
                                     request["output_dir"], progress=beat.update)
+    result["environment"] = environment()
     Path(response_path).write_text(json.dumps(result, allow_nan=False) + "\n")
     return result
