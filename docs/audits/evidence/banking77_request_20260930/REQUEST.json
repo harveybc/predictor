@@ -9,7 +9,7 @@
   "trust_remote_code": "OWNER_DECIDES",
   "trust_remote_code_set_by_this_lane": false,
   "absence_of_subprocess_eval_exec_is_not_a_security_certification": true,
-  "security_note": "Three remote Python files were read statically. Call-time snapshot_download(allow_patterns=['adapters/*']) runs when the path is not a local directory. Call-time AutoTokenizer.from_pretrained sets trust_remote_code=True in modeling_jina_embeddings_v5.py and custom_st.py. Absence of subprocess, eval, or exec is not a security certification.",
+  "security_note": "Three remote Python files were downloaded as bytes and not imported. Call-time snapshot_download(allow_patterns=['adapters/*']) runs when the path is not a local directory. Call-time AutoTokenizer.from_pretrained sets trust_remote_code=True in modeling_jina_embeddings_v5.py and custom_st.py. Absence of subprocess, eval, or exec is not a security certification. This download is not one either.",
   "interpreter": {
     "implementation": "cp",
     "version": "3.12.7",
@@ -23,7 +23,7 @@
     "glibc": "2.43",
     "tag_selection": "packaging.tags of the existing CPython 3.12.7 interpreter"
   },
-  "device": "cpu",
+  "device": "UNDECIDED",
   "gpu_requested": false,
   "any_dependency_requires_python_ge_3_13": false,
   "requires_python_checked_against": [
@@ -1787,8 +1787,8 @@
     "revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
     "licence": "CC BY-NC 4.0",
     "weight_tree_bytes": 1369721378,
-    "weight_tree_bytes_label": "NOT_PRESENT",
-    "weight_tree_note": "Already measured as the fully materialised revision tree. Weights are not in this lane. This command does not fetch them.",
+    "weight_tree_bytes_label": "MEASURED",
+    "weight_tree_note": "Measured from the tree this lane downloaded. The sum of the hub files is 1369721378. The REVISION file is not included in that sum.",
     "files": [
       {
         "path": ".gitattributes",
@@ -1797,8 +1797,9 @@
         "lfs": false,
         "lfs_oid": null,
         "revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
-        "sha256": null,
-        "presence": "NOT_PRESENT"
+        "sha256": "34448b82c17d60fec9b65b1f093c115ddbaadc04beb1b0140b6bfed2e012a930",
+        "presence": "MEASURED",
+        "executed": false
       },
       {
         "path": "README.md",
@@ -1807,8 +1808,9 @@
         "lfs": false,
         "lfs_oid": null,
         "revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
-        "sha256": null,
-        "presence": "NOT_PRESENT"
+        "sha256": "9a05e8bc963712cfdc0ab2f808ff857b1e4b325be7ba99960761f2358a023c66",
+        "presence": "MEASURED",
+        "executed": false
       },
       {
         "path": "adapters/classification/adapter_config.json",
@@ -1828,8 +1830,9 @@
         "lfs": true,
         "lfs_oid": "4ff3d2222b6f48354bdcf51b4dee4540c0da948d06240c7e042308f79e46c2e7",
         "revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
-        "sha256": null,
-        "presence": "NOT_PRESENT"
+        "sha256": "4ff3d2222b6f48354bdcf51b4dee4540c0da948d06240c7e042308f79e46c2e7",
+        "presence": "MEASURED",
+        "executed": false
       },
       {
         "path": "adapters/clustering/adapter_config.json",
@@ -1849,8 +1852,9 @@
         "lfs": true,
         "lfs_oid": "276e311513d8bdf3a2a099bf6b365b28d5c8e0b64cc4ac55b526f1ae76cc2b4a",
         "revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
-        "sha256": null,
-        "presence": "NOT_PRESENT"
+        "sha256": "276e311513d8bdf3a2a099bf6b365b28d5c8e0b64cc4ac55b526f1ae76cc2b4a",
+        "presence": "MEASURED",
+        "executed": false
       },
       {
         "path": "adapters/retrieval/adapter_config.json",
@@ -1870,8 +1874,9 @@
         "lfs": true,
         "lfs_oid": "2bc6ab71895eb04664e4d995ee29e1620603f3a3fc4dfc573bc2383dfc85bb94",
         "revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
-        "sha256": null,
-        "presence": "NOT_PRESENT"
+        "sha256": "2bc6ab71895eb04664e4d995ee29e1620603f3a3fc4dfc573bc2383dfc85bb94",
+        "presence": "MEASURED",
+        "executed": false
       },
       {
         "path": "adapters/text-matching/adapter_config.json",
@@ -1891,8 +1896,9 @@
         "lfs": true,
         "lfs_oid": "c3a3051591b1c769eb9b0f87fc762b599aedf11094b5b3d7488e8007cc5cfa4d",
         "revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
-        "sha256": null,
-        "presence": "NOT_PRESENT"
+        "sha256": "c3a3051591b1c769eb9b0f87fc762b599aedf11094b5b3d7488e8007cc5cfa4d",
+        "presence": "MEASURED",
+        "executed": false
       },
       {
         "path": "config.json",
@@ -1956,8 +1962,9 @@
         "lfs": false,
         "lfs_oid": null,
         "revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
-        "sha256": null,
-        "presence": "NOT_PRESENT"
+        "sha256": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
+        "presence": "MEASURED",
+        "executed": false
       },
       {
         "path": "model.safetensors",
@@ -1966,8 +1973,9 @@
         "lfs": true,
         "lfs_oid": "045fa75ff963a528cda2589fb1ca0a9ad848b53511780ed4f08f6fe10f6167c3",
         "revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
-        "sha256": null,
-        "presence": "NOT_PRESENT"
+        "sha256": "045fa75ff963a528cda2589fb1ca0a9ad848b53511780ed4f08f6fe10f6167c3",
+        "presence": "MEASURED",
+        "executed": false
       },
       {
         "path": "modeling_jina_embeddings_v5.py",
@@ -1998,8 +2006,9 @@
         "lfs": true,
         "lfs_oid": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
         "revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
-        "sha256": null,
-        "presence": "NOT_PRESENT"
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "presence": "MEASURED",
+        "executed": false
       },
       {
         "path": "tokenizer_config.json",
@@ -2019,8 +2028,9 @@
         "lfs": false,
         "lfs_oid": null,
         "revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
-        "sha256": null,
-        "presence": "NOT_PRESENT"
+        "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+        "presence": "MEASURED",
+        "executed": false
       }
     ]
   },
@@ -2037,7 +2047,7 @@
     "cp313_only_wheels_label": "MEASURED",
     "byte_delta_cp312_minus_cp313": 381728,
     "weight_tree_bytes": 1369721378,
-    "weight_tree_label": "NOT_PRESENT",
+    "weight_tree_label": "MEASURED",
     "hub_cache_copy_bytes": 1369721378,
     "hub_cache_copy_label": "NOT_PRESENT",
     "pip_cache_bytes": null,
@@ -2045,29 +2055,47 @@
     "pip_cache_note": "Install and download steps pass --no-cache-dir.",
     "installed_site_packages_bytes": null,
     "installed_site_packages_label": "NOT_PRESENT",
-    "banking77_corpus_bytes": null,
-    "banking77_corpus_label": "NOT_PRESENT",
+    "banking77_corpus_bytes": 1612800,
+    "banking77_corpus_label": "MEASURED",
     "synthetic_harness_snapshot_bytes": 1349,
     "synthetic_harness_snapshot_label": "MEASURED",
     "synthetic_harness_snapshot_note": "Inert fixture bytes. Not the weight tree.",
     "unique_payload_wheels_plus_weights_bytes": 4600138047,
-    "unique_payload_label": "MEASURED+INDEX_METADATA+NOT_PRESENT",
+    "unique_payload_label": "MEASURED+INDEX_METADATA",
     "total_including_hub_cache_copy_bytes": 5969859425,
     "total_including_hub_cache_copy_label": "MEASURED+INDEX_METADATA+NOT_PRESENT",
     "total_if_cp313_wheels_are_also_kept_bytes": 6915720714,
     "total_if_cp313_wheels_are_also_kept_label": "MEASURED+INDEX_METADATA+NOT_PRESENT",
-    "installed_expansion": "NOT_PRESENT"
+    "installed_expansion": "NOT_PRESENT",
+    "this_phase_bytes_downloaded": 1371334178,
+    "this_phase_seconds": 80.856321,
+    "this_phase_label": "MEASURED",
+    "this_phase_note": "Model hub bytes plus corpus hub bytes. Wheels were not re-downloaded. REVISION files are local and not included.",
+    "unique_payload_note": "Weight bytes are measured. The 22 cp312 replacement wheels remain INDEX_METADATA and were not remeasured.",
+    "wheels_plus_weights_plus_corpus_bytes": 4601750847,
+    "wheels_plus_weights_plus_corpus_label": "MEASURED+INDEX_METADATA"
   },
   "cost_pilot": {
-    "name": "b77-cost-pilot",
-    "memory": "8G",
-    "wall": "30m",
-    "batch_size": 8,
-    "device": "cpu",
-    "gpu_requested": false,
-    "wrapper": "crispdm-run -m 8G -t 30m -n b77-cost-pilot",
+    "status": "PROPOSAL_NOT_RUN",
+    "device_decision": "UNDECIDED",
+    "inference_cost": "NOT_MEASURED",
+    "download_is_not_inference": true,
+    "dev_split": "NOT_PRESENT",
+    "pilot_source": "train.jsonl file order only",
+    "pilot_probe_rows": 154,
+    "pilot_dev_rows": 154,
+    "pilot_rule": "For each of the 77 labels, the first two occurrences in file order are the probe and the next two are the dev slice.",
+    "pilot_uses_test_split": false,
+    "test_rows_untouched": 3080,
+    "train_rows": 10003,
+    "train_min_support": 35,
+    "train_max_support": 187,
+    "official_protocol_preserved": "ten experiments, eight train rows per label, full test split of 3080 rows",
+    "official_protocol_reexecuted": false,
     "kill_is_not_a_score": true,
-    "row_cap": "mteb 2.9.0 run has no max-rows flag. The wall clock is the row cap."
+    "row_cap": "mteb 2.9.0 run has no max-rows flag. The pilot is a declared subset, not a shorter official run.",
+    "reference_wrapper": "crispdm-run -m 8G -t 30m -n b77-reference",
+    "reference_wrapper_note": "8G and 30m are an unmeasured ceiling carried from the previous request, not a measured inference cost."
   },
   "metrics_publication": {
     "synthetic_prep": "docs/audits/evidence/banking77_request_20260930/SYNTHETIC_METRIC_RECORD.json",
@@ -2075,17 +2103,107 @@
     "real_trial_label": "NOT_PRESENT",
     "real_trial_status": "NOT_RUN"
   },
-  "command": "set -euo pipefail\n\n# Status: NOT_RUN. Licence: CC BY-NC 4.0. Research only. No commercial deployment approval.\n# Run from the repository root. This command does not fetch the weight tree.\n# A missing snapshot file is a refusal. GPU is not requested.\n: \"${OWNER_DOWNLOAD_WHEELS:?NOT_RUN: owner has not granted the wheel download}\"\n: \"${OWNER_RUN_RESEARCH:?NOT_RUN: owner has not granted the research run}\"\n: \"${OWNER_TRUST_REMOTE_CODE:?NOT_RUN: owner has not decided trust_remote_code}\"\ntest \"$OWNER_DOWNLOAD_WHEELS\" = \"1\"\ntest \"$OWNER_RUN_RESEARCH\" = \"1\"\ntest \"$OWNER_TRUST_REMOTE_CODE\" = \"1\"\n\n: \"${B77_WHEELHOUSE:?}\"\n: \"${B77_VENV:?}\"\n: \"${B77_LOCAL_SNAPSHOT:?}\"\n: \"${B77_HUB_CACHE:?}\"\n: \"${B77_OUTPUT:?}\"\n\nunset HF_TOKEN HUGGING_FACE_HUB_TOKEN HF_HUB_TOKEN HUGGINGFACE_HUB_TOKEN\nexport HF_HUB_OFFLINE=1\nexport TRANSFORMERS_OFFLINE=1\nexport HF_DATASETS_OFFLINE=1\nexport HF_HUB_DISABLE_TELEMETRY=1\nexport CUDA_VISIBLE_DEVICES=\nexport HF_HUB_CACHE=\"$B77_HUB_CACHE\"\n\nPINS=\"docs/audits/evidence/banking77_request_20260930/pins-cp312.txt\"\nREV=\"46ed7da5b47e4bca710b756313fafaf4110c6bd1\"\ntest -f \"$PINS\"\ntest -d \"$B77_LOCAL_SNAPSHOT\"\ntest -f \"$B77_LOCAL_SNAPSHOT/REVISION\"\ntest \"$(cat \"$B77_LOCAL_SNAPSHOT/REVISION\")\" = \"$REV\"\ntest -f \"$B77_LOCAL_SNAPSHOT/model.safetensors\"\ntest -f \"$B77_LOCAL_SNAPSHOT/config.json\"\ntest -d \"$B77_LOCAL_SNAPSHOT/adapters/classification\"\ntest -d \"$B77_LOCAL_SNAPSHOT/adapters/clustering\"\ntest -d \"$B77_LOCAL_SNAPSHOT/adapters/retrieval\"\ntest -d \"$B77_LOCAL_SNAPSHOT/adapters/text-matching\"\n\n# Existing CPython 3.12.7. Do not install another interpreter.\n# Do not install cp313 wheels into it. Download uses that interpreter's pip\n# and does not install into the base environment. Install is offline, into a new venv.\npython3.12 -m venv \"$B77_VENV\"\npython3.12 -m pip download --dest \"$B77_WHEELHOUSE\" --no-cache-dir --no-deps --only-binary=:all: --require-hashes -r \"$PINS\"\n\"$B77_VENV/bin/python\" -m pip install --no-index --no-cache-dir --no-deps --find-links \"$B77_WHEELHOUSE\" --require-hashes -r \"$PINS\"\n\nDEST=\"$B77_HUB_CACHE/models--jinaai--jina-embeddings-v5-text-small/snapshots/$REV\"\nmkdir -p \"$DEST\"\ncp -a \"$B77_LOCAL_SNAPSHOT\"/. \"$DEST\"/\nmkdir -p \"$B77_HUB_CACHE/models--jinaai--jina-embeddings-v5-text-small/refs\"\nprintf '%s\\n' \"$REV\" > \"$B77_HUB_CACHE/models--jinaai--jina-embeddings-v5-text-small/refs/main\"\n\n# mteb 2.9.0 --device accepts only an int CUDA index, so it is not passed.\n# An empty CUDA_VISIBLE_DEVICES makes that CLI select cpu. GPU is not requested.\n# The pinned mteb registry's loader_kwargs set trust_remote_code. That is the\n# owner's decision, gated above. This command adds no second override.\n# Offline mode makes a missing file a refusal, not a download.\n# Cost pilot: 8G memory, 30m wall, batch size 8. A kill is not a score.\nmkdir -p \"$B77_OUTPUT\"\ncrispdm-run -m 8G -t 30m -n b77-cost-pilot -- \\\n  env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN -u HF_HUB_TOKEN -u HUGGINGFACE_HUB_TOKEN \\\n    HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1 \\\n    HF_HUB_DISABLE_TELEMETRY=1 CUDA_VISIBLE_DEVICES= HF_HUB_CACHE=\"$B77_HUB_CACHE\" \\\n    \"$B77_VENV/bin/python\" -m mteb run \\\n      --model jinaai/jina-embeddings-v5-text-small \\\n      --model-revision \"$REV\" \\\n      --tasks Banking77Classification \\\n      --batch-size 8 \\\n      --no-co2-tracker \\\n      --output-folder \"$B77_OUTPUT\"\n",
+  "command": "set -euo pipefail\n\n# Status: NOT_RUN. Licence: CC BY-NC 4.0. Research only. No commercial deployment approval.\n# The snapshot and the corpus are already on disk. This command does not download them.\n# It does not set OWNER_TRUST_REMOTE_CODE. Device is not chosen by this lane.\n# prepare_data.py is not executed. A kill is not a score.\n: \"${OWNER_DOWNLOAD_WHEELS:?NOT_RUN: owner has not granted the wheel download}\"\n: \"${OWNER_RUN_RESEARCH:?NOT_RUN: owner has not granted the research run}\"\n: \"${OWNER_TRUST_REMOTE_CODE:?NOT_RUN: owner has not decided trust_remote_code}\"\n: \"${OWNER_DEVICE:?NOT_RUN: owner has not chosen the device}\"\ntest \"$OWNER_DOWNLOAD_WHEELS\" = \"1\"\ntest \"$OWNER_RUN_RESEARCH\" = \"1\"\ntest \"$OWNER_TRUST_REMOTE_CODE\" = \"1\"\n\nif [ \"$OWNER_DEVICE\" = \"gpu\" ]; then\n  printf '%s\\n' \"NOT_RUN: the GPU path stays blocked until the owner grants the diagnostic. This command does not launch that diagnostic and does not set CUDA_VISIBLE_DEVICES empty for it.\" >&2\n  exit 2\nfi\nif [ \"$OWNER_DEVICE\" != \"cpu\" ]; then\n  printf '%s\\n' \"NOT_RUN: device is not chosen\" >&2\n  exit 2\nfi\n\nSNAPSHOT=\".b77-acquired-20260930/model/jina-embeddings-v5-text-small\"\nCORPUS=\".b77-acquired-20260930/corpus/mteb-banking77\"\nRECORD=\"docs/audits/evidence/banking77_request_20260930/ACQUISITION.json\"\nPINS=\"docs/audits/evidence/banking77_request_20260930/pins-cp312.txt\"\nREV=\"46ed7da5b47e4bca710b756313fafaf4110c6bd1\"\nCORPUS_REV=\"0fd18e25b25c072e09e0d92ab615fda904d66300\"\nWHEELHOUSE=\".b77-wheelhouse\"\nVENV=\".b77-venv\"\nHUB=\".b77-run-cache\"\nOUT=\".b77-run-output\"\n\nunset HF_TOKEN HUGGING_FACE_HUB_TOKEN HF_HUB_TOKEN HUGGINGFACE_HUB_TOKEN\nexport HF_HUB_OFFLINE=1\nexport TRANSFORMERS_OFFLINE=1\nexport HF_DATASETS_OFFLINE=1\nexport HF_HUB_DISABLE_TELEMETRY=1\nexport HF_HUB_CACHE=\"$HUB\"\nexport CUDA_VISIBLE_DEVICES=\n\ntest -f \"$PINS\"\ntest -f \"$RECORD\"\ntest -d \"$SNAPSHOT\"\ntest -f \"$SNAPSHOT/REVISION\"\ntest \"$(cat \"$SNAPSHOT/REVISION\")\" = \"$REV\"\ntest -f \"$SNAPSHOT/model.safetensors\"\ntest -f \"$SNAPSHOT/config.json\"\ntest -d \"$SNAPSHOT/adapters/classification\"\ntest -d \"$SNAPSHOT/adapters/clustering\"\ntest -d \"$SNAPSHOT/adapters/retrieval\"\ntest -d \"$SNAPSHOT/adapters/text-matching\"\ntest -d \"$CORPUS\"\ntest -f \"$CORPUS/REVISION\"\ntest \"$(cat \"$CORPUS/REVISION\")\" = \"$CORPUS_REV\"\ntest -f \"$CORPUS/train.jsonl\"\ntest -f \"$CORPUS/test.jsonl\"\n\npython3.12 tools/df_b77_acquire_20260930.py --check --dest .b77-acquired-20260930 --record \"$RECORD\"\n\n# Existing CPython 3.12.7. Do not install another interpreter.\n# Do not install cp313 wheels into it. Download uses that interpreter's pip\n# and does not install into the base environment. Install is offline, into a new venv.\npython3.12 -m venv \"$VENV\"\npython3.12 -m pip download --dest \"$WHEELHOUSE\" --no-cache-dir --no-deps --only-binary=:all: --require-hashes -r \"$PINS\"\n\"$VENV/bin/python\" -m pip install --no-index --no-cache-dir --no-deps --find-links \"$WHEELHOUSE\" --require-hashes -r \"$PINS\"\n\nDEST=\"$HUB/models--jinaai--jina-embeddings-v5-text-small/snapshots/$REV\"\nmkdir -p \"$DEST\"\ncp -a \"$SNAPSHOT\"/. \"$DEST\"/\nmkdir -p \"$HUB/models--jinaai--jina-embeddings-v5-text-small/refs\"\nprintf '%s\\n' \"$REV\" > \"$HUB/models--jinaai--jina-embeddings-v5-text-small/refs/main\"\n\n# JSON lines only. prepare_data.py is not copied and not executed.\nCDEST=\"$HUB/datasets--mteb--banking77/snapshots/$CORPUS_REV\"\nmkdir -p \"$CDEST\"\ncp -a \"$CORPUS/train.jsonl\" \"$CORPUS/test.jsonl\" \"$CORPUS/.gitattributes\" \"$CDEST\"/\nprintf '%s\\n' \"$CORPUS_REV\" > \"$CDEST/REVISION\"\nmkdir -p \"$HUB/datasets--mteb--banking77/refs\"\nprintf '%s\\n' \"$CORPUS_REV\" > \"$HUB/datasets--mteb--banking77/refs/main\"\n\n# Reference protocol, not the 154/154 train pilot. mteb 2.9.0 --device accepts\n# only an int CUDA index, so it is not passed. Empty CUDA_VISIBLE_DEVICES is\n# reached only after the owner sets OWNER_DEVICE=cpu. The GPU branch exited\n# above and did not export it. The pinned registry's loader_kwargs set\n# trust_remote_code. That is the owner's decision, gated above.\n# Offline mode makes a missing file a refusal, not a download.\n# 8G and 30m are an unmeasured ceiling. A kill is not a score.\nmkdir -p \"$OUT\"\ncrispdm-run -m 8G -t 30m -n b77-reference -- \\\n  env -u HF_TOKEN -u HUGGING_FACE_HUB_TOKEN -u HF_HUB_TOKEN -u HUGGINGFACE_HUB_TOKEN \\\n    HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_DATASETS_OFFLINE=1 \\\n    HF_HUB_DISABLE_TELEMETRY=1 CUDA_VISIBLE_DEVICES= HF_HUB_CACHE=\"$HUB\" \\\n    \"$VENV/bin/python\" -m mteb run \\\n      --model jinaai/jina-embeddings-v5-text-small \\\n      --model-revision \"$REV\" \\\n      --tasks Banking77Classification \\\n      --batch-size 8 \\\n      --no-co2-tracker \\\n      --output-folder \"$OUT\"",
   "isolated_install_steps": [
     "Use the existing CPython 3.12.7. Do not install another interpreter.",
-    "Create a new venv with python3.12 -m venv. Do not install into the base environment.",
+    "Create .b77-venv with python3.12 -m venv. Do not install into the base environment.",
     "Do not install cp313 wheels into that venv.",
     "pip download the pins file with --require-hashes --no-deps --only-binary=:all: --no-cache-dir, using the 3.12 interpreter so the cp312 files are the ones whose hashes match.",
     "pip install into the venv with --no-index --no-deps --no-cache-dir --require-hashes.",
     "Do not substitute a CPU-only torch index and do not change versions.",
-    "Require the local snapshot at the pinned revision. Do not snapshot_download the weight tree.",
-    "Copy that snapshot into an empty HF_HUB_CACHE. Export HF_HUB_OFFLINE, TRANSFORMERS_OFFLINE, and HF_DATASETS_OFFLINE.",
-    "Unset hub tokens. GPU is not requested. CUDA_VISIBLE_DEVICES is empty.",
-    "Run mteb under the cost-pilot wrapper only after the three owner gates are set."
-  ]
+    "Use the local snapshot and corpus this lane acquired. Do not snapshot_download either tree.",
+    "Copy the snapshot into .b77-run-cache. Copy the corpus JSON lines and not prepare_data.py. Export HF_HUB_OFFLINE, TRANSFORMERS_OFFLINE, and HF_DATASETS_OFFLINE.",
+    "Unset hub tokens. Do not choose the device in this lane. The GPU branch does not export an empty CUDA_VISIBLE_DEVICES.",
+    "Run the reference mteb command only after the owner gates and OWNER_DEVICE are set. A kill is not a score."
+  ],
+  "acquired_by_this_lane": true,
+  "acquired_bytes": 1371334178,
+  "acquired_seconds": 80.856321,
+  "device_decision": "PROPOSAL",
+  "corpus": {
+    "repository": "mteb/banking77",
+    "revision": "0fd18e25b25c072e09e0d92ab615fda904d66300",
+    "named_by": "mteb 2.9.0 Banking77Classification task metadata, the task this request already named",
+    "not_the_v2_revision": true,
+    "bytes": 1612800,
+    "bytes_label": "MEASURED",
+    "local_dir": ".b77-acquired-20260930/corpus/mteb-banking77",
+    "prepare_data_py_executed": false,
+    "dataset_script_required": false,
+    "dev_split": "NOT_PRESENT",
+    "files": [
+      {
+        "path": ".gitattributes",
+        "bytes": 1566,
+        "sha256": "c16b7ce3cc1b9e89f2da9d83012ae183208eaf99ae6c2b138c91ef551fe15861",
+        "git_oid": "a770de78287b5353fb380cf8774b1e6caf2881d9",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "prepare_data.py",
+        "bytes": 868,
+        "sha256": "2d5558acfda50af9582759dfff8da0c91ccf148b17355cb19e9857b94e14fd6e",
+        "git_oid": "4e850b687bbd014f6edf58028069f956cd1eeb54",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "test.jsonl",
+        "bytes": 365101,
+        "sha256": "fb1b0043ded745b8767687084786e6dd0a5f0ce03243b6131992a1c7ae2c2595",
+        "git_oid": "8a8da8d3e3ad9a0575d97e5085afb1b70f01a1ce",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "train.jsonl",
+        "bytes": 1245265,
+        "sha256": "d411780d8c0e18e166f5664c6cfe90dc9de399d722aa7cde282e31a771323ea7",
+        "git_oid": "d85ae1d60f5768140eceaa5fc7c567d939408df3",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      }
+    ],
+    "splits": {
+      "train.jsonl": {
+        "rows": 10003,
+        "blank_lines": 0,
+        "label_field": "label",
+        "distinct_labels": 77,
+        "min_support": 35,
+        "max_support": 187,
+        "keys": [
+          "label",
+          "label_text",
+          "text"
+        ],
+        "reader": "json.loads per line",
+        "executed_python": false
+      },
+      "test.jsonl": {
+        "rows": 3080,
+        "blank_lines": 0,
+        "label_field": "label",
+        "distinct_labels": 77,
+        "min_support": 40,
+        "max_support": 40,
+        "keys": [
+          "label",
+          "label_text",
+          "text"
+        ],
+        "reader": "json.loads per line",
+        "executed_python": false
+      }
+    }
+  }
 }

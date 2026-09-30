@@ -199,3 +199,10 @@ docs/tesis_representaciones_modulares/referencias/*
 # Closure-review scratch: remote source and priced env. Never commit.
 .remote-src/
 .closure-env/
+
+# Pinned model and corpus bytes acquired by this lane. Commit the record, not the tree.
+.b77-acquired-20260930/
+.b77-wheelhouse/
+.b77-venv/
+.b77-run-cache/
+.b77-run-output/

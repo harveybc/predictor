@@ -1,0 +1,328 @@
+{
+  "schema": "banking77_acquisition.v1",
+  "status": "ACQUIRED_NOT_EXECUTED",
+  "trial_status": "NOT_RUN",
+  "trust_remote_code_set_by_this_lane": false,
+  "model": {
+    "repository": "jinaai/jina-embeddings-v5-text-small",
+    "revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
+    "files": [
+      {
+        "path": ".gitattributes",
+        "bytes": 1570,
+        "sha256": "34448b82c17d60fec9b65b1f093c115ddbaadc04beb1b0140b6bfed2e012a930",
+        "git_oid": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "README.md",
+        "bytes": 11340,
+        "sha256": "9a05e8bc963712cfdc0ab2f808ff857b1e4b325be7ba99960761f2358a023c66",
+        "git_oid": "648ec20a943448d606aaebd5c1879474632f5a3c",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "adapters/classification/adapter_config.json",
+        "bytes": 884,
+        "sha256": "7c3f89c17197f40070fae65449fd013c6cf0ee5565ceb45e9d5e292aa8472563",
+        "git_oid": "bba733f5032d34f38b8305d083176019aef5719f",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "adapters/classification/adapter_model.safetensors",
+        "bytes": 40420208,
+        "sha256": "4ff3d2222b6f48354bdcf51b4dee4540c0da948d06240c7e042308f79e46c2e7",
+        "git_oid": "1b150965c929f90581c294f057fe7c8d533fd98f",
+        "lfs": true,
+        "lfs_oid": "4ff3d2222b6f48354bdcf51b4dee4540c0da948d06240c7e042308f79e46c2e7",
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "adapters/clustering/adapter_config.json",
+        "bytes": 883,
+        "sha256": "af5a532a5d1855712b98829a1442f1b67e41165e140520ae5752060486a15b3f",
+        "git_oid": "76cd1fcf58b02efabf0969341249314d5288a6c6",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "adapters/clustering/adapter_model.safetensors",
+        "bytes": 40420208,
+        "sha256": "276e311513d8bdf3a2a099bf6b365b28d5c8e0b64cc4ac55b526f1ae76cc2b4a",
+        "git_oid": "f46307a70118609c395aecbab1ec8163d12749e6",
+        "lfs": true,
+        "lfs_oid": "276e311513d8bdf3a2a099bf6b365b28d5c8e0b64cc4ac55b526f1ae76cc2b4a",
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "adapters/retrieval/adapter_config.json",
+        "bytes": 883,
+        "sha256": "f37c5d6dd368e2675e54e01b685252d4d44eed042c773a48f56ebe1565cd0320",
+        "git_oid": "fd99419e46214e911553b81c1e3e76849839e650",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "adapters/retrieval/adapter_model.safetensors",
+        "bytes": 40420176,
+        "sha256": "2bc6ab71895eb04664e4d995ee29e1620603f3a3fc4dfc573bc2383dfc85bb94",
+        "git_oid": "4d69944e46103914ffbfc442ff01788262a3fc53",
+        "lfs": true,
+        "lfs_oid": "2bc6ab71895eb04664e4d995ee29e1620603f3a3fc4dfc573bc2383dfc85bb94",
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "adapters/text-matching/adapter_config.json",
+        "bytes": 883,
+        "sha256": "60009adb7fb7be486dea1e318a1acb85eba8f04e209a296eca7454d3f6d95400",
+        "git_oid": "6c453a8ff2ad0f17b6ae94114beb825f02e7c2f0",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "adapters/text-matching/adapter_model.safetensors",
+        "bytes": 40420208,
+        "sha256": "c3a3051591b1c769eb9b0f87fc762b599aedf11094b5b3d7488e8007cc5cfa4d",
+        "git_oid": "2a58bcfdcd062d52ff64ab10a300b90a0b3a7597",
+        "lfs": true,
+        "lfs_oid": "c3a3051591b1c769eb9b0f87fc762b599aedf11094b5b3d7488e8007cc5cfa4d",
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "config.json",
+        "bytes": 991,
+        "sha256": "1af1e1269488c83d8b2332e42099f0d2201d687fbe074d1ed096c6201f283546",
+        "git_oid": "454961f939be3a54402ad4cf20a7340e7ae605a5",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "config_sentence_transformers.json",
+        "bytes": 276,
+        "sha256": "e13a56778b7ba8561a3d540173e682ff92acb8457a24d567fe92a8388402fb14",
+        "git_oid": "39e42a9f309d38fae297c82616fe993034afffa8",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "configuration_jina_embeddings_v5.py",
+        "bytes": 120,
+        "sha256": "d67791f10558ca2bd67d4c64aa3262b9458b23f1803370c11aa6d5366ad8735b",
+        "git_oid": "a6656c35e76731452546baef7f6cbe49afb2ce4e",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "custom_st.py",
+        "bytes": 3929,
+        "sha256": "52e0931dca24ca1a4fe4f0a5165f1b77e85deac6bebbd3532cda4c09253a29db",
+        "git_oid": "fd4ad6331f2b3ec8758aca39348d5743da48a1ba",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "generation_config.json",
+        "bytes": 239,
+        "sha256": "2325da0f15bb848e018c5ae071b7943332e9f871d6b60e2ed22ca97d4cb993d2",
+        "git_oid": "20a8a9156fc8c3f25295ca067f61fdf120d517c5",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "merges.txt",
+        "bytes": 1671853,
+        "sha256": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
+        "git_oid": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "model.safetensors",
+        "bytes": 1192133208,
+        "sha256": "045fa75ff963a528cda2589fb1ca0a9ad848b53511780ed4f08f6fe10f6167c3",
+        "git_oid": "d87d322772b80cd16954cb2d92e9ef7a1f423f7e",
+        "lfs": true,
+        "lfs_oid": "045fa75ff963a528cda2589fb1ca0a9ad848b53511780ed4f08f6fe10f6167c3",
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "modeling_jina_embeddings_v5.py",
+        "bytes": 4132,
+        "sha256": "389836c791ae345c164108c23858522590be32477b370c94b218cb1b4f10c69c",
+        "git_oid": "a801d273577ee710c37dd3ed99634151bdf4a9ad",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "modules.json",
+        "bytes": 168,
+        "sha256": "b54acf92eab134d664abbbc5e42fd92f27535d3605666962c15dc3c32b2d9744",
+        "git_oid": "e1bc0ceca4fa282df87874293c4af2c09355fe2c",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "tokenizer.json",
+        "bytes": 11422654,
+        "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "git_oid": "cd71f61a15a522601badb3dc960d800d9cb3766c",
+        "lfs": true,
+        "lfs_oid": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "tokenizer_config.json",
+        "bytes": 9732,
+        "sha256": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101",
+        "git_oid": "417d038a63fa3de29cfde265caedae14d1a58d92",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "vocab.json",
+        "bytes": 2776833,
+        "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+        "git_oid": "4783fe10ac3adce15ac8f358ef5462739852c569",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      }
+    ],
+    "hub_bytes": 1369721378,
+    "bytes_downloaded": 1369721378,
+    "seconds": 77.753327,
+    "python_executed": false,
+    "revision_file": "REVISION",
+    "licence": "CC BY-NC 4.0",
+    "licence_is_not_commercial_approval": true,
+    "security_certification": false
+  },
+  "corpus": {
+    "repository": "mteb/banking77",
+    "revision": "0fd18e25b25c072e09e0d92ab615fda904d66300",
+    "files": [
+      {
+        "path": ".gitattributes",
+        "bytes": 1566,
+        "sha256": "c16b7ce3cc1b9e89f2da9d83012ae183208eaf99ae6c2b138c91ef551fe15861",
+        "git_oid": "a770de78287b5353fb380cf8774b1e6caf2881d9",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "prepare_data.py",
+        "bytes": 868,
+        "sha256": "2d5558acfda50af9582759dfff8da0c91ccf148b17355cb19e9857b94e14fd6e",
+        "git_oid": "4e850b687bbd014f6edf58028069f956cd1eeb54",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "test.jsonl",
+        "bytes": 365101,
+        "sha256": "fb1b0043ded745b8767687084786e6dd0a5f0ce03243b6131992a1c7ae2c2595",
+        "git_oid": "8a8da8d3e3ad9a0575d97e5085afb1b70f01a1ce",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      },
+      {
+        "path": "train.jsonl",
+        "bytes": 1245265,
+        "sha256": "d411780d8c0e18e166f5664c6cfe90dc9de399d722aa7cde282e31a771323ea7",
+        "git_oid": "d85ae1d60f5768140eceaa5fc7c567d939408df3",
+        "lfs": false,
+        "lfs_oid": null,
+        "executed": false,
+        "python_executed": false
+      }
+    ],
+    "hub_bytes": 1612800,
+    "bytes_downloaded": 1612800,
+    "seconds": 3.102994,
+    "python_executed": false,
+    "revision_file": "REVISION",
+    "splits": {
+      "train.jsonl": {
+        "rows": 10003,
+        "blank_lines": 0,
+        "label_field": "label",
+        "distinct_labels": 77,
+        "min_support": 35,
+        "max_support": 187,
+        "keys": [
+          "label",
+          "label_text",
+          "text"
+        ],
+        "reader": "json.loads per line",
+        "executed_python": false
+      },
+      "test.jsonl": {
+        "rows": 3080,
+        "blank_lines": 0,
+        "label_field": "label",
+        "distinct_labels": 77,
+        "min_support": 40,
+        "max_support": 40,
+        "keys": [
+          "label",
+          "label_text",
+          "text"
+        ],
+        "reader": "json.loads per line",
+        "executed_python": false
+      }
+    },
+    "prepare_data_py_executed": false,
+    "data_files_are_jsonl": true,
+    "dataset_script_was_required": false
+  },
+  "bytes_downloaded": 1371334178,
+  "seconds": 80.856321
+}

@@ -165,7 +165,8 @@ def test_request_is_not_run_and_pins_stay_on_3_12():
     assert document["versions_changed"] == []
     assert document["licence"] == "CC BY-NC 4.0"
     assert document["trust_remote_code_set_by_this_lane"] is False
-    assert document["device"] == "cpu"
+    assert document["device"] == "UNDECIDED"
+    assert document["device_decision"] == "PROPOSAL"
     assert document["gpu_requested"] is False
     assert document["absence_of_subprocess_eval_exec_is_not_a_security_certification"] is True
     pins = document["pins"]
@@ -196,19 +197,32 @@ def test_request_is_not_run_and_pins_stay_on_3_12():
     assert measured + indexed == CP312_TOTAL
     disk = document["disk"]
     assert disk["weight_tree_bytes"] == WEIGHTS
-    assert disk["weight_tree_label"] == "NOT_PRESENT"
+    assert disk["weight_tree_label"] == "MEASURED"
+    assert disk["banking77_corpus_bytes"] == 1612800
+    assert disk["banking77_corpus_label"] == "MEASURED"
+    assert disk["this_phase_bytes_downloaded"] == 1371334178
     assert disk["total_including_hub_cache_copy_bytes"] == WITH_HUB
+    assert disk["hub_cache_copy_label"] == "NOT_PRESENT"
     assert disk["pip_cache_label"] == "NOT_PRESENT"
     assert disk["installed_site_packages_label"] == "NOT_PRESENT"
     assert document["model"]["revision"] == b77.PINNED_REVISION
     assert document["model"]["weight_tree_bytes"] == WEIGHTS
     assert sum(item["bytes"] for item in document["model"]["files"]) == WEIGHTS
-    assert any(item["path"] == "model.safetensors" and item["presence"] == "NOT_PRESENT" for item in document["model"]["files"])
+    assert any(
+        item["path"] == "model.safetensors"
+        and item["presence"] == "MEASURED"
+        and item["sha256"] == "045fa75ff963a528cda2589fb1ca0a9ad848b53511780ed4f08f6fe10f6167c3"
+        for item in document["model"]["files"]
+    )
+    assert all(item["presence"] == "MEASURED" and item["executed"] is False for item in document["model"]["files"])
     command = document["command"]
     assert "OWNER_TRUST_REMOTE_CODE" in command
     assert "OWNER_RUN_RESEARCH" in command
     assert "HF_HUB_OFFLINE=1" in command
     assert "CUDA_VISIBLE_DEVICES=" in command
+    assert "does not set CUDA_VISIBLE_DEVICES empty for it" in command
+    assert ".b77-acquired-20260930/model/jina-embeddings-v5-text-small" in command
+    assert "0fd18e25b25c072e09e0d92ab615fda904d66300" in command
     assert "--model-revision" in command
     assert b77.PINNED_REVISION in command
     assert "trust_remote_code=True" not in command

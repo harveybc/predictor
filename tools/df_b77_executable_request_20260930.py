@@ -17,6 +17,10 @@ from pathlib import Path
 PINNED_REVISION = "46ed7da5b47e4bca710b756313fafaf4110c6bd1"
 LICENCE = "CC BY-NC 4.0"
 WEIGHT_TREE_BYTES = 1369721378
+LOCAL_SNAPSHOT_DIR = ".b77-acquired-20260930/model/jina-embeddings-v5-text-small"
+LOCAL_CORPUS_DIR = ".b77-acquired-20260930/corpus/mteb-banking77"
+CORPUS_REPOSITORY = "mteb/banking77"
+CORPUS_REVISION = "0fd18e25b25c072e09e0d92ab615fda904d66300"
 
 # Same roles as the 22-file revision tree. The synthetic fixture fills them
 # with inert bytes; those bytes are not the revision's blobs.
@@ -385,10 +389,36 @@ def synthetic_metric_record() -> dict:
     }
 
 
+def owner_gates_missing(environ=None) -> tuple:
+    """Gates the owner has not set. This function does not set them."""
+    env = os.environ if environ is None else environ
+    missing = []
+    for key in ("OWNER_DOWNLOAD_WHEELS", "OWNER_RUN_RESEARCH", "OWNER_TRUST_REMOTE_CODE"):
+        if env.get(key) != "1":
+            missing.append(key)
+    return tuple(missing)
+
+
+def local_trees() -> dict:
+    """Paths of the bytes this lane acquired. Reading them is not a model load."""
+    return {
+        "snapshot": LOCAL_SNAPSHOT_DIR,
+        "corpus": LOCAL_CORPUS_DIR,
+        "corpus_repository": CORPUS_REPOSITORY,
+        "corpus_revision": CORPUS_REVISION,
+        "model_revision": PINNED_REVISION,
+        "loads_model": False,
+        "downloads": False,
+        "trust_remote_code_set_by_this_lane": False,
+    }
+
+
 def main(argv=None) -> int:
     del argv
+    missing = ",".join(owner_gates_missing())
     raise SystemExit(
-        "NOT_RUN: this module does not load the model, does not set trust_remote_code, and does not contact the hub"
+        "NOT_RUN: this module does not load the model, does not set trust_remote_code, "
+        "and does not contact the hub. Missing owner gates: " + missing
     )
 
 
