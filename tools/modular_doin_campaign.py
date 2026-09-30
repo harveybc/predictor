@@ -364,7 +364,8 @@ class DoinBridgeExecutor:
     def _launch(self, argv, output_root, kind, declaration):
         res = declaration["resources"][kind]
         env_prefix = ["env", f"CUDA_VISIBLE_DEVICES={self.e.get('cuda_visible_devices', '')}",
-                      "PYTHONUNBUFFERED=1", f"PYTHONPATH={self.e['doin_pythonpath']}"]
+                      "PYTHONUNBUFFERED=1", f"PYTHONPATH={self.e['doin_pythonpath']}",
+                      *[f"{k}={v}" for k, v in sorted(self.e.get("extra_env", {}).items())]]
         command = [self.e["crispdm_run"], "-m", res["cap"], "-t", res["wall"], "-q", "-W",
                    str(res.get("queue_seconds", 3600)), "-n", f"m04-{kind}-{output_root.parent.name[:8]}",
                    "--", *env_prefix, *argv]
@@ -452,6 +453,11 @@ def main():
     p.add_argument("--root", required=True)
     p.add_argument("--max", type=int)
     p.add_argument("--stop-file")
+    p = sub.add_parser("materialize", help="print the nested candidate for a flat JSON (no seed added)")
+    p.add_argument("--declaration", required=True)
+    p.add_argument("--flat", required=True)
+    p.add_argument("--seed", type=int, required=True)
+    p.add_argument("--huber-delta", type=float)
     p = sub.add_parser("status")
     p.add_argument("--root", required=True)
     args = parser.parse_args()
@@ -478,6 +484,12 @@ def main():
         campaign = Campaign(args.root)
         executor = DoinBridgeExecutor(campaign.declaration)
         print(json.dumps({"trained": campaign.run(executor, args.max, args.stop_file)}))
+    elif args.command == "materialize":
+        decl = json.loads(Path(args.declaration).read_text())
+        flat = {**json.loads(Path(args.flat).read_text()), "train.seed": args.seed}
+        if args.huber_delta is not None:
+            flat["train.huber_delta"] = args.huber_delta
+        print(ss.canonical(ss.from_flat(flat, decl["base"], decl["search_space"])))
     else:
         print(json.dumps(Campaign(args.root).status(), indent=1, default=str))
 
