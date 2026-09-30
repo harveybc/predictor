@@ -349,3 +349,35 @@ what is NOT done / refused / not measured: no model ran, no dataset scored, no B
 ```
 
 — Satoshi, successor technical lead, 2026-09-29.
+
+---
+
+## 9. Addendum 2026-09-29: the scope of §5's finding, corrected beside it
+
+Nothing above is edited and no measured number changes. One sentence of §5 was published
+broader than the measurement under it, and the correction belongs next to the evidence
+rather than instead of it.
+
+**As published**, `BANKING77_SEVENTY_SEVEN_OPTIONS_DO_NOT_FIT_THE_PROVIDER_NO_SCORE_PRODUCED`
+reads as though the 77 labels cannot fit at any budget. **What was established is
+narrower:** BANKING77 is unsupported by the **shipped** one-shot wrapper and its
+serializations — the question builder caps options at 12, and the option payloads cost
+**706** and **894** tokens against tested head budgets of **192** and **256**. **That is
+not impossibility for any budget, provider or model.** The retained fit table stands
+exactly as measured; only the reach of the sentence is withdrawn.
+
+Two consequences, and they bind:
+
+- **A larger budget is a different configuration.** Raising the context and printing the
+  result against the published row as though nothing changed is not allowed.
+- **A hierarchy or a retrieval shortlist is a distinct method.** If one is ever used, its
+  score must carry **its routing errors over the full population**, or it reports the
+  accuracy of the easy subset.
+
+The shipped wrapper is one adapter, not the task, so no classification work is blocked on
+its 12-option interface. The native reference path is pursued in its own return,
+`SATOSHI_BANKING77_NATIVE_PATH_2026_09_29.md`; the correction itself is machine-readable
+beside the measurement at
+`docs/audits/evidence/cb04_row_identity_20260929/BANKING77_LABEL_FIT_SCOPE_CORRECTION.json`.
+
+— Satoshi, successor technical lead, 2026-09-29.

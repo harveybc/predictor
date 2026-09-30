@@ -1,0 +1,613 @@
+{
+ "corrected_scope": {
+  "corrected_sentence": "BANKING77 is unsupported by the SHIPPED one-shot wrapper and its serializations: the question builder caps options at 12, and the option payloads cost 706 and 894 tokens against tested head budgets of 192 and 256. That is not impossibility for any budget, provider or model.",
+  "no_score_is_fabricated_for_a_refused_request": true,
+  "retained_fit_evidence": "~/Documents/GitHub/.worktrees/predictor-b77-native-20260929/docs/audits/evidence/cb04_row_identity_20260929/BANKING77_LABEL_FIT.json",
+  "retained_fit_evidence_sha256": "1e670c222fbdad00c841595bcdceb12870c3559b6e1aa28ecf09ecc4315407d9",
+  "retained_numbers_cited_not_revised": {
+   "max_options_in_the_shipped_question_builder": 12,
+   "option_tokens_empty_description_floor": 706,
+   "option_tokens_label_as_its_own_description": 894,
+   "tested_head_budgets": [
+    192,
+    256
+   ]
+  },
+  "scope_flags": {
+   "a_hierarchy_or_retrieval_shortlist_is_a_distinct_method": true,
+   "a_larger_budget_is_a_different_configuration_not_the_same_reference": true,
+   "impossible_at_any_budget_provider_or_model": false,
+   "such_a_method_scores_its_routing_errors_over_the_full_population": true,
+   "unsupported_by_the_shipped_wrapper_and_its_serializations": true
+  },
+  "the_measurement_is_retained_unchanged": true,
+  "two_questions_never_blended": {
+   "alternative_framework_adaptation": "any adaptation through our own framework; not evidence for the first",
+   "native_author_reproduction": "the MTEB few-shot linear probe over the selected embedder; the primary route"
+  },
+  "what_is_withdrawn": "BANKING77_SEVENTY_SEVEN_OPTIONS_DO_NOT_FIT_THE_PROVIDER_NO_SCORE_PRODUCED read as though the 77 labels cannot fit at any budget. Only the scope is withdrawn; every measured number behind it stands and is retained unchanged."
+ },
+ "dependency_ledger": {
+  "components": {
+   "admissible_host": {
+    "how": "the secondary worker; capacity re-read live in this run. The preferred external host stays ineligible and unused.",
+    "state": "PRESENT"
+   },
+   "deterministic_training_draws": {
+    "draw_set_sha256": "1fed226502b20c1f2418c22417ae0fe36e329f5b363e6c47ad72386356a1311d",
+    "how": "ten 8-per-label draws reproduced offline from the pinned source",
+    "state": "PRODUCED_HERE"
+   },
+   "device_declaration": {
+    "requires": "a declared device, never a blended one",
+    "state": "UNDECIDED",
+    "what": "the published artifact records no device. The admissible host's GPU is idle and large enough; a CPU run in bfloat16 is a different device and its numerics need not match."
+   },
+   "evaluator_source_contract": {
+    "how": "pinned by digest at both 2.3.11 and 2.9.0; the draw and the scorer are source-identical for this task",
+    "state": "PRESENT"
+   },
+   "model_artifacts_at_the_pinned_revision": {
+    "bytes_classification_route_only": 1248458137,
+    "bytes_whole_repository": 1369721378,
+    "files": 22,
+    "hf_hub_cache_on_the_admissible_host": {
+     "models--convaiinnovations--laya": 40
+    },
+    "licence": "CC BY-NC 4.0, research only; incompatible with any commercial or trading use",
+    "requires": "an approved download allocation",
+    "state": "MISSING",
+    "why_all_four_adapters": "the repository's own remote code calls snapshot_download(allow_patterns=['adapters/*']) at load time whenever the model path is not a local directory, so an offline load needs the whole adapter set materialised"
+   },
+   "model_wrapper_version_declaration": {
+    "option_a": "the published row's evaluator version plus our own reconstruction of the model wrapper",
+    "option_b": "the first evaluator version whose registry names the model and pins this very revision; its draw and scorer are source-identical to the published row's for this task",
+    "recommended": "option_b, declared beside every number",
+    "state": "RESOLVED_BY_EVIDENCE_AND_MUST_BE_DECLARED",
+    "what": "the registry of the version that produced the published row does not name the selected model at all; the first release that names it is later. So a reproduction must declare which of two configurations it ran, and may not print either as though it were the other."
+   },
+   "population_bytes": {
+    "how": "the governed CB02 delivery, re-hashed in this process against the digests the contract pinned before any score existed",
+    "state": "PRESENT",
+    "test_matches": true,
+    "train_matches": true
+   },
+   "published_target_artifact": {
+    "how": "read from the results repository at the pinned model revision and retained by this lane; the aggregate is recomputed from its own cells",
+    "sha256": "ba162c90aa25977f57d0cf25dc10199d9b0d6ecf429238415faa5f065b800fa9",
+    "state": "PRESENT"
+   },
+   "remote_code_execution_decision": {
+    "requires": "an explicit trust_remote_code decision; it is a review, not a compute allocation",
+    "state": "UNDECIDED",
+    "what": "the repository ships auto_map and a custom sentence-transformers module, so loading it executes third-party code from the hub"
+   },
+   "same_row_naive": {
+    "how": "train-fitted majority on the identical governed test rows, pinned before any score existed",
+    "state": "PRESENT"
+   },
+   "third_pinned_environment": {
+    "existing_environments": {
+     "venv": {
+      "laya": "0.2.1",
+      "torch": "2.14.0+cpu",
+      "transformers": "5.17.0"
+     },
+     "venv_fw": {
+      "laya": "0.3.11",
+      "torch": "2.14.0+cpu",
+      "transformers": "5.17.0"
+     }
+    },
+    "missing_in_every_existing_environment": [
+     "datasets",
+     "mteb",
+     "peft",
+     "scikit-learn",
+     "sentence-transformers"
+    ],
+    "pip_cache_caveat": "the cache is large enough to plausibly already hold the installed torch/transformers blobs, so a same-version install may need no network at all - NOT verified, because verifying it means attempting a resolve",
+    "pip_http_cache_bytes_on_the_admissible_host": 3378626813,
+    "remote_code_symbols_under_the_installed_line": {
+     "huggingface_hub.snapshot_download": true,
+     "transformers.modeling_utils.PreTrainedModel": true,
+     "transformers.models.qwen3.Qwen3Config": true,
+     "transformers.models.qwen3.Qwen3Model": true
+    },
+    "requires": "an approved install allocation",
+    "state": "MISSING",
+    "tier_1_if_the_installed_transformers_torch_line_runs_the_remote_code": {
+     "direct_wheel_bytes": {
+      "datasets==5.0.1": 542418,
+      "mteb==2.9.0": 5138022,
+      "peft==0.21.1": 863928,
+      "scikit-learn==1.9.1 (manylinux cp313)": 9143910,
+      "sentence-transformers==5.1.2": 539845
+     },
+     "direct_wheel_bytes_total": 16228123,
+     "evidence_for_this_tier": "every symbol the repository's remote code imports - Qwen3Model, Qwen3Config, PreTrainedModel and snapshot_download - resolves under the installed transformers line, checked by import on the admissible host with no weights loaded. That is necessary, not sufficient: the code has not been RUN, because running it needs the weights.",
+     "packages": [
+      "mteb==2.9.0",
+      "sentence-transformers==5.1.2",
+      "peft",
+      "datasets",
+      "scikit-learn"
+     ]
+    },
+    "tier_2_if_it_does_not": {
+     "additional_direct_wheel_bytes": 899897446,
+     "note": "the declared toolchain on the model card is transformers 4.57.0 / torch 2.8.0 / sentence-transformers 5.1.2; the admissible host carries a newer line",
+     "packages": [
+      "transformers==4.57.0",
+      "torch==2.8.0",
+      "and tier 1"
+     ]
+    },
+    "transitive_closure": "NOT_RESOLVED; resolving it is itself a network act and belongs to the same single request",
+    "why_not_reuse": "both retained environments are pinned to a Laya SDK version, and installing into either would mutate an environment a published reproduction depends on. The native route needs its own environment."
+   }
+  },
+  "everything_else_on_the_native_path_is_pinned": true,
+  "no_authority_is_invented_here": true,
+  "no_download_install_training_or_gpu_run_happened_in_this_lane": true,
+  "the_exact_unfulfilled_dependency": "an approved acquisition of 1,369,721,378 bytes of model artifacts at the pinned revision, plus a third pinned Python 3.13 environment carrying datasets, mteb, peft, scikit-learn, sentence-transformers (16,228,123 bytes of direct wheels at tier 1, transitive closure unresolved), together with an explicit decision to execute the repository's remote code.",
+  "unfulfilled": [
+   "model_artifacts_at_the_pinned_revision",
+   "third_pinned_environment"
+  ]
+ },
+ "deterministic_recipe": {
+  "all_draws_distinct": true,
+  "draw_set_sha256": "1fed226502b20c1f2418c22417ae0fe36e329f5b363e6c47ad72386356a1311d",
+  "draws": [
+   {
+    "distinct_labels": 77,
+    "exactly_k_per_label": true,
+    "experiment": 0,
+    "first_five_indices": [
+     6883,
+     5836,
+     8601,
+     2545,
+     8697
+    ],
+    "index_set_sha256": "f81394e51a6f4a242a98de5c9725553b5a0294f571425b6b95a26022eab9088c",
+    "rows": 616
+   },
+   {
+    "distinct_labels": 77,
+    "exactly_k_per_label": true,
+    "experiment": 1,
+    "first_five_indices": [
+     1774,
+     4068,
+     3356,
+     8599,
+     7657
+    ],
+    "index_set_sha256": "d62b91e1761da61d2781f77f4cc00f3e1e34ab1f82123b5118c045dee283b6d7",
+    "rows": 616
+   },
+   {
+    "distinct_labels": 77,
+    "exactly_k_per_label": true,
+    "experiment": 2,
+    "first_five_indices": [
+     3014,
+     5020,
+     3879,
+     6540,
+     8192
+    ],
+    "index_set_sha256": "feeb0d34468c99d8b89bc869b74c77aa50b70a167bab1bac77f616ddf3fa3121",
+    "rows": 616
+   },
+   {
+    "distinct_labels": 77,
+    "exactly_k_per_label": true,
+    "experiment": 3,
+    "first_five_indices": [
+     7365,
+     9504,
+     5584,
+     2241,
+     3083
+    ],
+    "index_set_sha256": "930e3552a81c7cb42c31f49670c8ec9dbbe09da8a8fd64d270264ea3f3905d93",
+    "rows": 616
+   },
+   {
+    "distinct_labels": 77,
+    "exactly_k_per_label": true,
+    "experiment": 4,
+    "first_five_indices": [
+     5055,
+     9825,
+     6360,
+     4961,
+     4038
+    ],
+    "index_set_sha256": "bbe02aba605cc792e6b00f691e76a54289b352a4e74b4977d75b37169f18cee6",
+    "rows": 616
+   },
+   {
+    "distinct_labels": 77,
+    "exactly_k_per_label": true,
+    "experiment": 5,
+    "first_five_indices": [
+     3779,
+     698,
+     2668,
+     2431,
+     2887
+    ],
+    "index_set_sha256": "d75ca87fbad9da098e8099d90c51a33b491504810ec49f1fd5b480f8910d036e",
+    "rows": 616
+   },
+   {
+    "distinct_labels": 77,
+    "exactly_k_per_label": true,
+    "experiment": 6,
+    "first_five_indices": [
+     2263,
+     5397,
+     7551,
+     2164,
+     3057
+    ],
+    "index_set_sha256": "46560c2f811546a7f181a1168b9fcffd69e5bc532d58c91f690d653c4ef8355d",
+    "rows": 616
+   },
+   {
+    "distinct_labels": 77,
+    "exactly_k_per_label": true,
+    "experiment": 7,
+    "first_five_indices": [
+     9602,
+     8727,
+     9187,
+     8832,
+     1420
+    ],
+    "index_set_sha256": "e92ed013118ae44f9099f9cf35a87974fbf1559b74579f01573f4963d07587a8",
+    "rows": 616
+   },
+   {
+    "distinct_labels": 77,
+    "exactly_k_per_label": true,
+    "experiment": 8,
+    "first_five_indices": [
+     1081,
+     8623,
+     1733,
+     2343,
+     3994
+    ],
+    "index_set_sha256": "2af83c3ca9ab31f7bdbc90ed5dfabeb0e80615c9065b98b5e60a63e8d39c3e3d",
+    "rows": 616
+   },
+   {
+    "distinct_labels": 77,
+    "exactly_k_per_label": true,
+    "experiment": 9,
+    "first_five_indices": [
+     8084,
+     7059,
+     1803,
+     5354,
+     5391
+    ],
+    "index_set_sha256": "633da721614b3b4a2fa803e239258a4c88c7c3e089075ad1be33f0096b1b2adc",
+    "rows": 616
+   }
+  ],
+  "evaluator_model": "sklearn LogisticRegression(n_jobs=-1, max_iter=100), random_state set to the task seed",
+  "every_draw_is_exactly_k_per_label": true,
+  "expected_rows_per_draw": 616,
+  "indices_are_the_mirror_indices": "the contract records the mirror's text sequence as identical to the authors' in file order on both splits, so an index computed on the registered CSV is the same row the published evaluator drew",
+  "label_id_mapping_is_irrelevant_here": "the greedy counter buckets by label equality only, and category -> mirror id is a bijection, so the selected indices do not depend on which of the three recorded label orders is used",
+  "n_experiments": 10,
+  "samples_per_label": 8,
+  "seed": 42,
+  "train_split_rows": 10003,
+  "what_is_still_missing_after_this": "only the embeddings: the draws, the probe, the seed, the scorer and the rows are fixed, and the encoder is the one unfulfilled dependency"
+ },
+ "lane": "BANKING77 native reference path",
+ "live_resources": {
+  "capacity": {
+   "COORDINATOR": {
+    "batch_scopes_running": 1,
+    "gpus": [
+     {
+      "compute_processes": 0,
+      "index": 0,
+      "status": "SCHEDULABLE",
+      "vram_free_bytes": 7464812544
+     }
+    ],
+    "mem_available_bytes": 23401979904,
+    "mem_total_bytes": 32778358784,
+    "slice_memory_current_bytes": 1535393792,
+    "slice_memory_high_bytes": 12884901888,
+    "slice_memory_max_bytes": 15032385536
+   },
+   "WORKER_A": {
+    "batch_scopes_running": 0,
+    "gpus": [
+     {
+      "compute_processes": 0,
+      "index": 0,
+      "status": "SCHEDULABLE",
+      "vram_free_bytes": 16703815680
+     }
+    ],
+    "mem_available_bytes": 21455695872,
+    "mem_total_bytes": 32831807488,
+    "slice_memory_current_bytes": 1377067008,
+    "slice_memory_high_bytes": 12884901888,
+    "slice_memory_max_bytes": 15032385536
+   },
+   "WORKER_B": {
+    "batch_scopes_running": 0,
+    "gpus": [
+     {
+      "compute_processes": 0,
+      "index": 0,
+      "status": "SCHEDULABLE",
+      "vram_free_bytes": 12330205184
+     },
+     {
+      "compute_processes": 0,
+      "index": 1,
+      "status": "QUARANTINED_NOT_SCHEDULABLE",
+      "vram_free_bytes": 33659289600
+     }
+    ],
+    "mem_available_bytes": 3724054528,
+    "mem_total_bytes": 15340744704,
+    "slice_memory_current_bytes": 166424576,
+    "slice_memory_high_bytes": 7516192768,
+    "slice_memory_max_bytes": 8589934592
+   }
+  },
+  "nothing_was_started_stopped_or_written_on_any_host": true,
+  "probe_rc": 0,
+  "probe_stderr": "",
+  "read_at": "2026-09-30T01:41:00+00:00",
+  "secondary_worker_state": {
+   "disk_bytes_available": 707172458496,
+   "hf_hub_cache": {
+    "models--convaiinnovations--laya": 40
+   },
+   "interpreters": {
+    "venv": {
+     "bytes": 1343247857,
+     "python": "Python 3.13.9"
+    },
+    "venv_fw": {
+     "bytes": 1345599285,
+     "python": "Python 3.13.9"
+    }
+   },
+   "launcher_md5": "3779972aef0bea873fc90bff61a74fc1",
+   "packages": {
+    "venv": {
+     "datasets": "MISSING",
+     "huggingface-hub": "1.33.0",
+     "laya": "0.2.1",
+     "mteb": "MISSING",
+     "numpy": "2.5.3",
+     "peft": "MISSING",
+     "safetensors": "0.8.0",
+     "scikit-learn": "MISSING",
+     "sentence-transformers": "MISSING",
+     "torch": "2.14.0+cpu",
+     "transformers": "5.17.0"
+    },
+    "venv_fw": {
+     "datasets": "MISSING",
+     "huggingface-hub": "1.33.0",
+     "laya": "0.3.11",
+     "mteb": "MISSING",
+     "numpy": "2.5.3",
+     "peft": "MISSING",
+     "safetensors": "0.8.0",
+     "scikit-learn": "MISSING",
+     "sentence-transformers": "MISSING",
+     "torch": "2.14.0+cpu",
+     "transformers": "5.17.0"
+    }
+   },
+   "pip_http_cache_bytes": 3378626813,
+   "remote_code_symbols": {
+    "huggingface_hub.snapshot_download": true,
+    "transformers.modeling_utils.PreTrainedModel": true,
+    "transformers.models.qwen3.Qwen3Config": true,
+    "transformers.models.qwen3.Qwen3Model": true
+   },
+   "retained_checkpoint": {
+    "bytes": 846205481,
+    "name": "laya-typed-decisions"
+   }
+  }
+ },
+ "no_score_is_produced_or_fabricated_here": true,
+ "population_identity": {
+  "forced_metric_identities": {
+   "holds": true,
+   "macro_recall_equals_accuracy": true,
+   "premise": "every class has exactly the same test support",
+   "weighted_f1_equals_macro_f1": true,
+   "weighted_precision_equals_macro_precision": true,
+   "what_it_does_not_license": "MACRO_F1 and WEIGHTED_F1 remain different declared families and a comparison between them still refuses by name even where they coincide numerically; accuracy against macro-F1 refuses likewise",
+   "what_the_identity_adds": "the equality of the two keys is FORCED by the balanced support, and the published artifact shows exactly the three identities the balance predicts, which corroborates that its population is our population",
+   "what_the_published_f1_is": "macro-F1 by the pinned source's own definition - `f1` is computed with average='macro' and `f1_weighted` with average='weighted' - so the published 0.913809 is a MACRO_F1 comparison target on its definition, not on this coincidence",
+   "why": "a weighted average with equal weights IS the unweighted average, and accuracy is the support-weighted mean of per-class recall"
+  },
+  "mirror_substitution_carried_forward_not_re_derived": {
+   "mirror": "mteb/banking77@0fd18e25b25c072e09e0d92ab615fda904d66300",
+   "mirror_label_ids_are_byte_sorted": {
+    "test": false,
+    "train": false
+   },
+   "mirror_label_ids_are_case_insensitive_alphabetical": {
+    "test": true,
+    "train": true
+   },
+   "same_text_sequence_in_file_order": {
+    "test": true,
+    "train": true
+   },
+   "why_it_matters": "a naive sorted() map mislabels most of the 77 classes; the ids are carried from the contract and not re-derived here"
+  },
+  "same_row_naive_carried_forward": {
+   "majority_accuracy_pinned": 0.012987012987012988,
+   "majority_accuracy_recomputed_on_the_governed_test_rows": 0.012987012987012988,
+   "majority_class_fitted_on_train_labels_only": "card_payment_fee_charged",
+   "one_over_seventy_seven": 0.012987012987012988,
+   "source": "~/Documents/GitHub/.worktrees/predictor-b77-native-20260929/docs/contracts/classification_naive_baselines.v1.json"
+  },
+  "test": {
+   "distinct_labels": 77,
+   "exactly_balanced": true,
+   "matches": true,
+   "resource_sha256_pinned": "d12d6e3bc4c3103966ae786dc435913c0c563dfa328f5a3646d0e62cfeeb474d",
+   "resource_sha256_rehashed_now": "d12d6e3bc4c3103966ae786dc435913c0c563dfa328f5a3646d0e62cfeeb474d",
+   "rows": 3080,
+   "rows_pinned": 3080,
+   "support_per_class": 40,
+   "support_per_class_values": [
+    40
+   ]
+  },
+  "train": {
+   "distinct_labels": 77,
+   "matches": true,
+   "resource_sha256_pinned": "b06e26ac675513959a63135f11b94ea7786ed02da65db93a5650d8838cbc664b",
+   "resource_sha256_rehashed_now": "b06e26ac675513959a63135f11b94ea7786ed02da65db93a5650d8838cbc664b",
+   "rows": 10003,
+   "rows_pinned": 10003
+  }
+ },
+ "prepared_commands": {
+  "1_acquire_model_artifacts": "crispdm-run -m 4G -t 30m -n b77-native-fetch -q -- <env>/bin/python -c \"from huggingface_hub import snapshot_download; snapshot_download('jinaai/jina-embeddings-v5-text-small', revision='46ed7da5b47e4bca710b756313fafaf4110c6bd1', local_dir='$HOME/b77_models/jina-embeddings-v5-text-small')\"",
+  "2_verify_identity_before_any_use": "re-hash every file against the repository tree read at the pinned revision, on disk after the fetch and again inside the scoring child, exactly as the retained checkpoint was verified",
+  "3_build_the_third_environment": "crispdm-run -m 4G -t 30m -n b77-native-env -q -- python3.13 -m venv $HOME/b77_native/venv && $HOME/b77_native/venv/bin/pip install 'mteb==2.9.0' 'sentence-transformers==5.1.2' 'peft' 'datasets' 'scikit-learn'",
+  "4_score_the_native_path": "crispdm-run -m 8G -t 60m -n b77-native-probe -q -- $HOME/b77_native/venv/bin/python -m mteb run -m jinaai/jina-embeddings-v5-text-small --model-revision 46ed7da5b47e4bca710b756313fafaf4110c6bd1 -t Banking77Classification --output-folder $HOME/b77_native/results   # device declared explicitly",
+  "5_refuse_rather_than_adapt": "if the draws, the seed, the probe or the row order cannot be reproduced, the deliverable is the refusal, not a number",
+  "what_this_is": "prepared, NOT run. Each would need the allocation named above."
+ },
+ "produced_at": "2026-09-30T01:41:00+00:00",
+ "published_target": {
+  "accuracy": 0.914578,
+  "accuracy_per_experiment": [
+   0.91461,
+   0.91039,
+   0.914935,
+   0.914935,
+   0.914935,
+   0.91526,
+   0.915909,
+   0.913636,
+   0.916883,
+   0.914286
+  ],
+  "accuracy_spread": [
+   0.91039,
+   0.916883
+  ],
+  "accuracy_stdev_sample": 0.0017141584556601174,
+  "aggregate_recomputed_from_its_own_cells": 0.914578,
+  "aggregate_reproduces_the_published_value": true,
+  "artifact": "docs/audits/evidence/banking77_native_path_20260929/PUBLISHED_ROW_Banking77Classification.json",
+  "artifact_read": true,
+  "artifact_sha256": "ba162c90aa25977f57d0cf25dc10199d9b0d6ecf429238415faa5f065b800fa9",
+  "dataset_revision_in_the_artifact": "0fd18e25b25c072e09e0d92ab615fda904d66300",
+  "dataset_revision_matches_the_contract_pin": true,
+  "dataset_revision_pinned_by_the_contract": "0fd18e25b25c072e09e0d92ab615fda904d66300",
+  "device_recorded_in_the_artifact": null,
+  "evaluation_time_seconds": 112.94440484046936,
+  "evidence_class": "PUBLISHED_REFERENCE",
+  "f1_reported": 0.913809,
+  "f1_weighted_reported": 0.913809,
+  "identities_observed_in_the_artifact": {
+   "f1_equals_f1_weighted_in_every_experiment": true,
+   "macro_recall_equals_accuracy_in_every_experiment": true,
+   "precision_equals_precision_weighted_in_every_experiment": true
+  },
+  "main_score": 0.914578,
+  "model": "jinaai/jina-embeddings-v5-text-small",
+  "model_revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
+  "mteb_version_that_produced_the_row": "2.3.11",
+  "n_experiments_in_the_artifact": 10,
+  "task_name": "Banking77Classification",
+  "this_is_not_our_measurement": true,
+  "value_carried_forward_from_CB01": 0.914578
+ },
+ "schema": "banking77_native_path.v1",
+ "source_pins": {
+  "model_classification_adapter_config": {
+   "sha256": "7c3f89c17197f40070fae65449fd013c6cf0ee5565ceb45e9d5e292aa8472563",
+   "source": "huggingface.co/jinaai/jina-embeddings-v5-text-small/resolve/46ed7da5b47e4bca710b756313fafaf4110c6bd1/adapters/classification/adapter_config.json"
+  },
+  "model_config_json": {
+   "sha256": "1af1e1269488c83d8b2332e42099f0d2201d687fbe074d1ed096c6201f283546",
+   "source": "huggingface.co/jinaai/jina-embeddings-v5-text-small/resolve/46ed7da5b47e4bca710b756313fafaf4110c6bd1/config.json"
+  },
+  "model_remote_code_custom_st": {
+   "sha256": "52e0931dca24ca1a4fe4f0a5165f1b77e85deac6bebbd3532cda4c09253a29db",
+   "source": "huggingface.co/jinaai/jina-embeddings-v5-text-small/resolve/46ed7da5b47e4bca710b756313fafaf4110c6bd1/custom_st.py"
+  },
+  "model_remote_code_modeling": {
+   "sha256": "389836c791ae345c164108c23858522590be32477b370c94b218cb1b4f10c69c",
+   "source": "huggingface.co/jinaai/jina-embeddings-v5-text-small/resolve/46ed7da5b47e4bca710b756313fafaf4110c6bd1/modeling_jina_embeddings_v5.py"
+  },
+  "model_repo_tree_at_revision": {
+   "sha256": "c8be5f401537f21614d72f29ae7a9e06e3ae9b51c3200c9a5e7dd6149c7363eb",
+   "source": "huggingface.co/api/models/jinaai/jina-embeddings-v5-text-small/tree/46ed7da5b47e4bca710b756313fafaf4110c6bd1?recursive=true"
+  },
+  "model_sentence_transformers_config": {
+   "sha256": "e13a56778b7ba8561a3d540173e682ff92acb8457a24d567fe92a8388402fb14",
+   "source": "huggingface.co/jinaai/jina-embeddings-v5-text-small/resolve/46ed7da5b47e4bca710b756313fafaf4110c6bd1/config_sentence_transformers.json"
+  },
+  "mteb_2.3.11_abstasks_classification": {
+   "sha256": "93fc2b335aead9771510af7b46953fb8472a8625966d5eec9b707476dbcfe726",
+   "source": "embeddings-benchmark/mteb @ 2.3.11 :: mteb/abstasks/classification.py"
+  },
+  "mteb_2.3.11_banking77_task": {
+   "sha256": "6b7f4d1f272fa1b9689a16092098392374d8501ff003660780e1fadd5b06b5c0",
+   "source": "embeddings-benchmark/mteb @ 2.3.11 :: mteb/tasks/classification/eng/banking77_classification.py"
+  },
+  "mteb_2.3.11_sklearn_evaluator": {
+   "sha256": "7fd4a005bbe00ab925b5d4de6d04e2c53eca9886a01a48d0fdc3672ae1d36f7c",
+   "source": "embeddings-benchmark/mteb @ 2.3.11 :: mteb/_evaluators/sklearn_evaluator.py"
+  },
+  "mteb_2.9.0_abstasks_classification": {
+   "sha256": "f75c0c4a6b38feda8481fbbae8bafdc317466b2fc9e4eb4d89fc22ae625ae6fd",
+   "source": "embeddings-benchmark/mteb @ 2.9.0 :: mteb/abstasks/classification.py"
+  },
+  "mteb_2.9.0_banking77_task": {
+   "sha256": "6b7f4d1f272fa1b9689a16092098392374d8501ff003660780e1fadd5b06b5c0",
+   "source": "embeddings-benchmark/mteb @ 2.9.0 :: mteb/tasks/classification/eng/banking77_classification.py"
+  },
+  "mteb_2.9.0_jina_model_registry": {
+   "sha256": "dabfd27f4687e1803fcd7c5d4ca275a34874fb3a60f271d4c6c195afd4d8f09e",
+   "source": "embeddings-benchmark/mteb @ 2.9.0 :: mteb/models/model_implementations/jina_models.py"
+  },
+  "mteb_2.9.0_sklearn_evaluator": {
+   "sha256": "6538d47099e52873c0351e6dc2c5434ca00a6666310894ce86e9087e689fd967",
+   "source": "embeddings-benchmark/mteb @ 2.9.0 :: mteb/_evaluators/sklearn_evaluator.py"
+  },
+  "published_result_2_3_11": {
+   "sha256": "ba162c90aa25977f57d0cf25dc10199d9b0d6ecf429238415faa5f065b800fa9",
+   "source": "embeddings-benchmark/results @ main :: results/jinaai__jina-embeddings-v5-text-small/46ed7da5b47e4bca710b756313fafaf4110c6bd1/Banking77Classification.json"
+  }
+ },
+ "verdict": {
+  "cross_metric_comparisons_still_refuse_by_name": true,
+  "finding_instead_of_a_score": "BANKING77_NATIVE_PATH_BLOCKED_ON_MODEL_AND_ENVIRONMENT_ACQUISITION",
+  "native_path_state": "PINNED_AND_BLOCKED_ON_ACQUISITION",
+  "no_badge": true,
+  "no_warehouse_row_written": true
+ }
+}

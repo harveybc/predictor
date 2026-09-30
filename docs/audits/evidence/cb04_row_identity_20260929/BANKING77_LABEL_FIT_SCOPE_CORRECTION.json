@@ -1,0 +1,55 @@
+{
+ "by": "Satoshi, successor technical lead",
+ "dated": "2026-09-29",
+ "schema": "banking77_label_fit_scope_correction.v1",
+ "still_true_and_still_retained": {
+  "no_receipt_no_warehouse_row_no_metric_no_badge": true,
+  "no_score_was_produced_for_the_shipped_wrapper": true,
+  "the_option_list_was_never_shortened_to_make_it_fit": true
+ },
+ "the_corrected_sentence": "BANKING77 is unsupported by the SHIPPED one-shot wrapper and its serializations: the question builder caps options at 12, and the option payloads cost 706 and 894 tokens against tested head budgets of 192 and 256. That is not impossibility for any budget, provider or model.",
+ "the_retained_measurement": {
+  "bytes": 7765,
+  "edited_by_this_correction": false,
+  "file": "BANKING77_LABEL_FIT.json (this directory)",
+  "gates_cited_unchanged": {
+   "empty_description_floor/checkpoint_declared_1024_256": {
+    "fits": false,
+    "head_max_len": 256,
+    "option_budget": -450,
+    "option_tokens": 706
+   },
+   "empty_description_floor/framework_hard_coded_512_192": {
+    "fits": false,
+    "head_max_len": 192,
+    "option_budget": -514,
+    "option_tokens": 706
+   },
+   "label_as_its_own_description/checkpoint_declared_1024_256": {
+    "fits": false,
+    "head_max_len": 256,
+    "option_budget": -638,
+    "option_tokens": 894
+   },
+   "label_as_its_own_description/framework_hard_coded_512_192": {
+    "fits": false,
+    "head_max_len": 192,
+    "option_budget": -702,
+    "option_tokens": 894
+   }
+  },
+  "question_builder_max_options": 12,
+  "sha256": "1e670c222fbdad00c841595bcdceb12870c3559b6e1aa28ecf09ecc4315407d9"
+ },
+ "the_sentence_as_published": "THE_SEVENTY_SEVEN_LABELS_DO_NOT_FIT_NO_SCORE_IS_PRODUCED",
+ "what_follows_from_it": {
+  "a_hierarchy_or_a_retrieval_shortlist_is_a_distinct_method": "if one is ever used, its score must include its routing errors over the FULL population; otherwise it reports the accuracy of the easy subset",
+  "a_larger_budget_is_a_different_configuration": "a bigger context is not the same reference and its number may not be printed against the published row as though nothing changed",
+  "the_native_path_is_unaffected": "the shipped wrapper is one adapter, not the task. The native reference path is the primary route and is pursued separately; see docs/audits/evidence/banking77_native_path_20260929/NATIVE_PATH.json",
+  "the_two_questions_stay_apart": "the native author reproduction and any adaptation through our own framework answer different questions, and the second is never evidence for the first"
+ },
+ "what_is_withdrawn": "only the scope. Every measured number stands.",
+ "what_this_is": "the corrected SCOPE of the retained fit finding, written BESIDE the measurement and not in place of it, so the number and its reach travel together",
+ "what_this_is_not": "a re-measurement, a revision of any measured value, a score, or an authorisation to raise any budget",
+ "why_it_was_too_broad": "read on its own it says the 77 labels cannot fit at any budget. What was measured is narrower, and the narrower statement is the one the evidence supports."
+}
