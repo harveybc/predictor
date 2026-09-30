@@ -5,6 +5,104 @@
  "rows": [
   {
    "schema": "df_tsl_comparison_row.v1",
+   "cell_id": "traffic_L96_h96_s2021",
+   "dataset": "traffic",
+   "split": "test",
+   "horizon_steps": 96,
+   "horizon_seconds": 345600,
+   "horizon_elapsed": "96 h",
+   "input_window_steps": 96,
+   "seed": 2021,
+   "model_error": {
+    "mse": 0.3756999969482422,
+    "mae": 0.2513667941093445
+   },
+   "metric": {
+    "names": [
+     "sota.test.mse_normalized",
+     "sota.test.mae_normalized"
+    ],
+    "space": "z_train (the training-scaler normalized target space; --inverse False)",
+    "reduction": "mean over all scored window x forecast-step x target-channel elements, not an unweighted average of batch means",
+    "dtype": "float32 (the author's own reduction); a float64 reduction over the same arrays is reported beside it",
+    "independent_float64": {
+     "mae": 0.25136679019882263,
+     "mse": 0.3757000037579234
+    },
+    "scorer_sha256": "0a565c3f64d7cd29d9a87dee0c22d48f4a6a329476f893458cc18a35fa46a5df"
+   },
+   "paired_naive": {
+    "mse": 2.7144524180982588,
+    "mae": 1.0772232192211662,
+    "definition": "persistence: the window's last observed value repeated over the horizon, every channel, same test windows, normalized space",
+    "same_rows": {
+     "target_population_sha256": "717cb5b34a6fde26b0463765b9e704babd808f4c0d8f16baf2cc75c2cf3dcf62",
+     "naive_target_sha256": "717cb5b34a6fde26b0463765b9e704babd808f4c0d8f16baf2cc75c2cf3dcf62",
+     "equal": true
+    }
+   },
+   "skill_vs_naive": {
+    "mse": 0.8615927122379043,
+    "mae": 0.7666530115354522,
+    "definition": "1 - model_error / paired_naive_error on the same rows, same space, same reduction"
+   },
+   "published": {
+    "mse": 0.375,
+    "mae": 0.251,
+    "source": "Hu, Y., Zhang, G., Liu, P., Lan, D., Li, N., Cheng, D., Dai, T., Xia, S.-T., Pan, S. TimeFilter: Patch-Specific Spatial-Temporal Graph Filtration for Time Series Forecasting. ICML 2025; arXiv:2501.13041. Author code github.com/TROUBADOUR000/TimeFilter \u2014 Table 8 (L = 96, full results)",
+    "read_at": "arXiv HTML v2, Tables 6, 7, 8, 9; read 2026-09-28",
+    "not_current_sota": "a published-recipe reference reproduces ONE named paper's own reported configuration. It is not a claim that this recipe is the current best result on this benchmark"
+   },
+   "difference_vs_published": {
+    "mse": 0.0006999969482421875,
+    "mae": 0.00036679410934448153
+   },
+   "comparability": {
+    "class": "MATCHED_PUBLISHED_RECIPE_EXECUTED",
+    "single_seed_not_a_class": "a per-seed row carries a difference, not an agreement class: the predeclared class is defined on the three-seed mean and is assigned in the closure, never here",
+    "margin_source": "Table 7 (Traffic 0.407+-0.008 / 0.268+-0.004)",
+    "never": "a missing published comparability is never cured by rescaling an incompatible task"
+   },
+   "dataset_identity": {
+    "resource": "thuml_tsl_traffic/traffic.csv",
+    "dataset_sha256": "cb06463d56fa17d87f47027cd9389ceae82a69eddee51cdb61480e120dab0b16",
+    "population_sha256": "717cb5b34a6fde26b0463765b9e704babd808f4c0d8f16baf2cc75c2cf3dcf62",
+    "windows": 3413,
+    "elements": 282432576,
+    "scaler_sha256": "db6f1ab6e961dac163188e944934556d5338f4bbfa8aea8e565cf41ce91bc6ef",
+    "scaler_fit_population_sha256": "21534ad35092d916b1fe9d2dfc0a047beb9c1a16a7aeb8a5b43acfca48f564d3"
+   },
+   "convergence": {
+    "epochs_sealed": 30,
+    "epochs_run": 30,
+    "early_stopped": false,
+    "best_epoch_by_validation": 30,
+    "status": "EPOCH_BUDGET_CEILING_BEST_AT_LAST_EPOCH",
+    "reading": "the checkpoint scored is the lowest-validation-MSE epoch's, reloaded by the author's train() before test(). A best epoch at the sealed budget's last epoch means the budget, not convergence, ended the run"
+   },
+   "resources": {
+    "wall_seconds": 8292.06390118599,
+    "cpu_seconds": 8307.501056,
+    "peak_gpu_allocated_bytes": 5171546112,
+    "whole_cgroup_peak_bytes": 11224375296,
+    "declared_cap_bytes": 12884901888,
+    "device_uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326"
+   },
+   "evidence_class": "measured under the frozen design, receipts retained, NOT_INDEPENDENTLY_VERIFIED (one host, one execution per cell, not replayed in a fresh process)",
+   "transport": {
+    "class": "DECLARED_TRANSPORT_OF_GOVERNED_BYTES_NOT_A_NEW_GOVERNED_UNIT",
+    "delivery_id": "08fa0e8dfd7f44608ffc09cce6d193aa",
+    "campaign_key": "tsl-extension-1790647281-thuml_tsl_traffic-lake-route",
+    "reading": "a new governed unit for a scored cell needs the data-gov service key, which this lane does not hold and did not go looking for. The bytes read here were governed-DELIVERED by the adoption campaign named in `transport`, were verified there as VERIFIED_TRANSFER, and are re-verified by sha256 INSIDE this child before the loader sees them. The receipt is therefore a declared transport of governed bytes, not a new governed unit, and it is labelled as such in its own tags"
+   },
+   "from_record_sha256": "bdcf6e523e177b76b6942d8afdd273268a7e2293c6a00ba5dde701e0537f9f1f",
+   "receipt_terminal_sha256": "0c0ec70365f4269218a858ead0bd7007170f070dd9c4346be607aef2db19cd6b",
+   "row_sha256": "0dad1056b82960d2019012b93d89931849e7b07701225c1e0d7b775868ae1e1a",
+   "record_file_sha256": "6da180e431185fbc1c6e905d6176f1366492cabb24c687d3e441820a16b7c16f",
+   "checkpoint_sha256": "4b434bc9dd384c9eaa37f2699d69728d809aef768b44768b2b692c1e3031423e"
+  },
+  {
+   "schema": "df_tsl_comparison_row.v1",
    "cell_id": "traffic_L96_h96_s2022",
    "dataset": "traffic",
    "split": "test",
@@ -201,7 +299,44 @@
   }
  ],
  "h96_three_seed": {
-  "state": "NO_CLASS_YET: 2/3 sealed seeds present [2022, 2023]; a per-seed row carries a difference, not a class",
-  "classes": null
+  "state": "THREE_SEED_CLASS_ASSIGNED",
+  "classes": {
+   "mse": {
+    "class": "OPERATIONAL_AGREEMENT",
+    "mean": 0.3751992682615916,
+    "seed_sd_ddof1": 0.0005983014917973527,
+    "values": [
+     0.3756999969482422,
+     0.3753611147403717,
+     0.3745366930961609
+    ],
+    "n_seeds": 3,
+    "published": 0.375,
+    "difference": 0.00019926826159161193,
+    "tolerance_agreement": 0.0165,
+    "tolerance_partial": 0.0245,
+    "margin_source": "Table 7 (Traffic 0.407+-0.008 / 0.268+-0.004)",
+    "margin_std_paper": 0.008,
+    "reading": "per horizon and for the four-horizon average (formed WITHIN each seed first), the seed mean of the replicated metric is in OPERATIONAL_AGREEMENT with the published value when |mean - published| <= 2 x std_paper + 0.0005; OPERATIONAL_PARTIAL when <= 3 x std_paper + 0.0005; OUTSIDE_OPERATIONAL_MARGIN otherwise. std_paper is THIS dataset's Table 7 standard deviation of the four-horizon average, borrowed per horizon as a predeclared operational margin - it is not a published per-horizon error bar and not statistical equivalence; our own seed dispersion is reported beside it and never replaces the criterion"
+   },
+   "mae": {
+    "class": "OPERATIONAL_AGREEMENT",
+    "mean": 0.251142680644989,
+    "seed_sd_ddof1": 0.00028483104809596356,
+    "values": [
+     0.2513667941093445,
+     0.2512390911579132,
+     0.25082215666770935
+    ],
+    "n_seeds": 3,
+    "published": 0.251,
+    "difference": 0.00014268064498901278,
+    "tolerance_agreement": 0.0085,
+    "tolerance_partial": 0.0125,
+    "margin_source": "Table 7 (Traffic 0.407+-0.008 / 0.268+-0.004)",
+    "margin_std_paper": 0.004,
+    "reading": "per horizon and for the four-horizon average (formed WITHIN each seed first), the seed mean of the replicated metric is in OPERATIONAL_AGREEMENT with the published value when |mean - published| <= 2 x std_paper + 0.0005; OPERATIONAL_PARTIAL when <= 3 x std_paper + 0.0005; OUTSIDE_OPERATIONAL_MARGIN otherwise. std_paper is THIS dataset's Table 7 standard deviation of the four-horizon average, borrowed per horizon as a predeclared operational margin - it is not a published per-horizon error bar and not statistical equivalence; our own seed dispersion is reported beside it and never replaces the criterion"
+   }
+  }
  }
 }

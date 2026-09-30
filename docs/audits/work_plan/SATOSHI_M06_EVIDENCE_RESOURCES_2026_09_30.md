@@ -16,9 +16,13 @@ Metric: official normalized MSE/MAE, z_train space, float32 author reduction ove
 |---|---|---|---|---|---|---|---|---|
 | 2022 | 4090, GPU-a8bd1b2c | 3,906 | 0.3753611147 | 0.2512390912 | 2.7144524181 / 1.0772232192 | 0.7668 | +0.00036 / +0.00024 | 59d61b47… |
 | 2023 | 4090, GPU-a8bd1b2c | 3,982 | 0.3745366931 | 0.2508221567 | same rows, same values | 0.7672 | −0.00046 / −0.00018 | e5932881… |
-| 2021 | 4070, GPU-612d1e0c | __S2021_WALL__ | __S2021_MSE__ | __S2021_MAE__ | same rows, same values | __S2021_SKILL__ | __S2021_DIFF__ | __S2021_CKPT__ |
+| 2021 | 4070, GPU-612d1e0c | 8,292 | 0.3756999969 | 0.2513667941 | same rows, same values | 0.7667 | +0.00070 / +0.00037 | 4b434bc9… |
 
-__CLASS__
+**Three-seed closure, from the sealing executor's `classify()`, against the published 0.375/0.251:**
+- **MSE:** mean 0.3751992683 (sd 0.00060), Δ +0.00020, tolerance 0.0165: **OPERATIONAL_AGREEMENT**.
+- **MAE:** mean 0.2511426806 (sd 0.00028), Δ +0.00014, tolerance 0.0085: **OPERATIONAL_AGREEMENT**.
+
+The tolerance comes from the paper's Table 7 dispersion (Traffic 0.407±0.008 / 0.268±0.004), so the margin is wide relative to the observed differences. All three seeds are within ±0.0007 MSE of the published value, on both sides. The orchestrator independently checked s2023 on the preserved copy.
 
 - All three cells hit the 30-epoch budget with the best validation at the last epoch (`EPOCH_BUDGET_CEILING_BEST_AT_LAST_EPOCH`).
 - Comparison class: `MATCHED_PUBLISHED_RECIPE_EXECUTED`. The agreement class exists only on the three-seed mean.
@@ -29,7 +33,7 @@ __CLASS__
 How the ETA was estimated: observed throughput. W is the mean train cost of the last five logged epochs plus the median eval overhead, where eval overhead is the excess of each epoch's first-100-iteration speed. Epochs completed = time since the first checkpoint directory ÷ W. Earliest ETA = early stop three epochs after the last checkpoint save. Latest ETA = remaining epochs at 1.10·W plus about 2W of scoring.
 - At adoption: s2021 W=292 s, s2023 W=139 s.
 - s2023 predicted 23:01–23:38Z; actual 23:22:42Z.
-- s2021 predicted 23:10–23:56Z at adoption; actual __S2021_END__.
+- s2021 predicted 23:10–23:56Z at adoption; actual 23:28:08Z, earlier than the last running estimate (23:41–23:52Z), which overcounted the eval overhead on the 4070. The clock-restore unit ran `nvidia-smi -rgc` at 23:28:17Z.
 
 Cooling and observed limits (reported, not changed):
 - **4070 (coordinator):** application clock locked at 1500 MHz of 3105, 74–76 °C, 55 W of a 114 W limit. No active thermal reason; cumulative SW thermal slowdown was 22.6 s since driver load. The `gpu_idle` bit reads set while the GPU is at 100% utilization, an artefact of the locked clock on this laptop part. The coordinator's GPU clock-restore unit (`codex-<coordinator>-gpu-clock-restore.service`) runs `sudo -n nvidia-smi -rgc` when s2021's unit ends; sudo allows nvidia-smi without a password.
@@ -61,7 +65,7 @@ Cooling and observed limits (reported, not changed):
 | 22:53 | worker_a / GPU-a9f35631 (5090) | memory-admissible after the owner's reboot | M06 notified the orchestrator. The slot was held because TF registered 0 GPUs. |
 | ~23:03 | worker_a / GPU-a9f35631 | TF-eligible with the recipe | Orchestrator handed the slot to M04 (a083979bc9a8fa1b8). |
 | 23:22:42 | worker_b / GPU-a8bd1b2c (4090) | s2023 released | M06 sent the release fact to M01 and M02. m01-suite 4G and m02-suite-wb 3G were auto-admitted. Aggregate 8.32 GiB of 14.00, so a second 3G fits (11.32), and M03's 2G too (13.32). |
-| __S2021_END__ | coordinator / GPU-612d1e0c (4070) | s2021 released | Clock restore runs; queued CPU suites admit. |
+| 23:28:08 | coordinator / GPU-612d1e0c (4070) | s2021 released | s2021 sealed; clock restored to 3105 MHz max at 23:28:17Z; 12 GiB lease released; queued CPU suites admit. 4070 and 4090 now free GPU slots; 5090 reserved for M04. |
 
 M04's pilot (6G) is **queued, not running**. The blocker is the admission defect below, not the GPU.
 
@@ -97,7 +101,7 @@ M04's pilot (6G) is **queued, not running**. The blocker is the admission defect
 | item | class |
 |---|---|
 | Traffic h96 seeds 2021, 2022 and 2023 | new measurement (this session's cells), per-seed rows, NOT independently verified |
-| Traffic three-seed class | __CLASS_SHORT__ |
+| Traffic three-seed class | MSE and MAE OPERATIONAL_AGREEMENT (three-seed mean, executor classify()) |
 | M01/M02 component tests and M02 synthetic pilot | synthetic component checks, not forecasting results |
 | TF GPU registration on both workers | environment facts, not model evidence |
 | Slab-growth cause on worker_a | hypothesis, UNVERIFIED (no root; cache not named) |
@@ -112,7 +116,7 @@ files: tools/m06_status_writer.py, tools/m06_traffic_closure.py, tools/m06_progr
        docs/audits/evidence/MODULAR_CAMPAIGN_20260930/{RETURN.md,STATUS.json,registry.json,RESULTS/,PROGRESS.png,HEARTBEAT.json,worker_a_slab_series.jsonl},
        tools/crispdm_admission.py, tools/crispdm-run, tests/test_crispdm_admission.py (admission branch)
 suites: tests/test_crispdm_admission.py 45/45 (simulated host, run on worker_b under crispdm-run -m 1G)
-acceptance: Traffic h96 rows via executor comparison_row (3 records, digests recomputed); __CLASS_SHORT__
+acceptance: Traffic h96 rows via executor comparison_row (3 records, digests recomputed); MSE and MAE OPERATIONAL_AGREEMENT (three-seed mean, executor classify())
 what is NOT done / refused / not measured: slab cache not named (needs root); slab cause unverified;
        admission fix not deployed (review); dead cache not reclaimed (owner); branch history af215de3 still
        contains a host-named default path (force-push denied; owner's call); M03 dispatch block missing;
