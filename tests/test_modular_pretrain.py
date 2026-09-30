@@ -6,6 +6,7 @@ forecasting results.
 import copy
 import json
 import time
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -62,6 +63,7 @@ def test_all_stages_export_reload_and_real_updates(pretrained):
     assert result["schema"] == "modular.pretrain.v2"
     assert result["provenance"] == "synthetic_fixture" and result["label"].startswith("SYNTHETIC")
     assert len(result["branches"]) == 2
+    assert [Path(b["donor"]).name for b in result["branches"]] == ["branch_0.keras", "branch_1.keras"]
     for stage in [*result["branches"], result["core"]]:
         t = stage["training"]
         assert t["observed_updates"] > 0 and t["stop_reason"] in ("patience", "max_epochs")

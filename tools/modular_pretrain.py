@@ -388,11 +388,11 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
         reconstruction = {
             "train": _reconstruction(ae, train_view, stats["mean"], stats["std"], batch),
             "train_validation": _reconstruction(ae, val_view, stats["mean"], stats["std"], batch)}
-        donor = out / f"branch_{index:03d}.keras"
+        donor = out / f"{name}.keras"  # M04 maps "1:<branch name>" -> <dir>/<branch name>.keras
         manifest = bundle.donor_manifest("branch", name)
         sidecar = save_donor(encoder, donor, manifest)
         decoder = ae.layers[-1]
-        decoder_path = out / f"branch_{index:03d}.decoder.keras"
+        decoder_path = out / f"{name}.decoder.keras"
         decoder.save(decoder_path)
         loaded = load_donor(donor, manifest)
         parity = _parity(encoder, loaded, val_view, batch)
