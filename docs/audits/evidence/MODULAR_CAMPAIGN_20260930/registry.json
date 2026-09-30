@@ -1,6 +1,177 @@
-{"plan_revision": "dc72170e",
- "worker_a_idle_reason": "host ineligible: ~2 GiB MemAvailable of 14 GiB, unreclaimable slab >5 GiB and growing since 2026-09-22 (see M06 diagnosis)",
+{
+ "plan_revision": "dc72170e",
+ "worker_a_idle_reason": "memory-admissible since the owner's reboot (2026-09-30T22:53:58Z; slab 0.28 GiB, free_for_new 9.5 GiB, slice ceiling 8 GiB) but NOT TF-eligible: the coordinator's admitted probe found TensorFlow 2.21.0 (tensorflow env) registers zero GPUs while the driver sees both; slot withheld from M04 until env diagnosed. M06 launches nothing there.",
  "agents": [
-  {"id": "m06-evidence-resources (this subagent)", "kind": "subagent", "lane": "M06", "state": "running", "commit": "dc72170e"}
+  {
+   "id": "m06-evidence-resources (this subagent)",
+   "kind": "subagent",
+   "lane": "M06",
+   "state": "running",
+   "commit": "dc72170e"
+  },
+  {
+   "id": "crispdm job m01-tests",
+   "kind": "subagent",
+   "lane": "M01",
+   "state": "assigned",
+   "commit": null,
+   "admission_state": "queued_for_admission",
+   "declared_mem": "4G",
+   "host_alias": "coordinator",
+   "behind": "traffic-h96-s2021 12G lease"
+  },
+  {
+   "id": "crispdm job m02-baseline-tests",
+   "kind": "subagent",
+   "lane": "M02",
+   "state": "assigned",
+   "commit": null,
+   "admission_state": "queued_for_admission",
+   "declared_mem": "3G",
+   "host_alias": "coordinator",
+   "behind": "traffic-h96-s2021 12G lease"
+  },
+  {
+   "id": "crispdm job m02-suite",
+   "kind": "subagent",
+   "lane": "M02",
+   "state": "assigned",
+   "commit": null,
+   "admission_state": "queued_for_admission",
+   "declared_mem": "3G",
+   "host_alias": "coordinator",
+   "behind": "traffic-h96-s2021 12G lease"
+  }
  ],
- "results": [], "milestones": [], "next_actions": [], "heartbeat_audit": []}
+ "results": [
+  {
+   "task": "traffic L96->h96 long-term forecast (TimeFilter published recipe)",
+   "split": "test",
+   "population_id": "717cb5b34a6fde26b0463765b9e704babd808f4c0d8f16baf2cc75c2cf3dcf62",
+   "model": "TimeFilter author code dffde87e, seed 2022, 30 epochs (budget ceiling, best at last epoch)",
+   "metric": "MSE",
+   "space": "z_train (the training-scaler normalized target space; --inverse False)",
+   "reduction": "mean over 282,432,576 window x step x channel elements (3413 windows x 96 x 862), float32 author reduction",
+   "value": 0.3753611147403717,
+   "naive": 2.7144524180982588,
+   "literature": {
+    "value": 0.375,
+    "source": "TimeFilter (ICML 2025, arXiv:2501.13041) Table 8, L=96",
+    "comparability": "matched_protocol"
+   },
+   "evidence_state": "measured",
+   "seed": 2022,
+   "skill_vs_naive": 0.861717555910098,
+   "cell": "traffic_L96_h96_s2022",
+   "note": "ONE cell; the agreement class is assigned only on the three-seed mean"
+  },
+  {
+   "task": "traffic L96->h96 long-term forecast (TimeFilter published recipe)",
+   "split": "test",
+   "population_id": "717cb5b34a6fde26b0463765b9e704babd808f4c0d8f16baf2cc75c2cf3dcf62",
+   "model": "TimeFilter author code dffde87e, seed 2022",
+   "metric": "MAE",
+   "space": "z_train (the training-scaler normalized target space; --inverse False)",
+   "reduction": "same as MSE row",
+   "value": 0.2512390911579132,
+   "naive": 1.0772232192211662,
+   "literature": {
+    "value": 0.251,
+    "source": "TimeFilter (ICML 2025, arXiv:2501.13041) Table 8, L=96",
+    "comparability": "matched_protocol"
+   },
+   "evidence_state": "measured",
+   "seed": 2022,
+   "skill_vs_naive": 0.7667715598076698,
+   "cell": "traffic_L96_h96_s2022",
+   "note": "ONE cell"
+  }
+ ],
+ "milestones": [
+  {
+   "id": "traffic_h96_three_seed_closure",
+   "completion_criterion": "all three sealed seeds (2021,2022,2023) recorded and classified with the executor's classify() against Table 8",
+   "state": "in_progress",
+   "evidence": [
+    "RESULTS/traffic_h96_rows.json (1/3 seeds)"
+   ]
+  },
+  {
+   "id": "worker_a_host_eligible",
+   "completion_criterion": "5090 host MemAvailable and admission free-for-new >= 8 GiB with unreclaimable slab < 1 GiB",
+   "state": "completed",
+   "evidence": [
+    "owner reboot 2026-09-30T22:53Z; SUnreclaim 0.28 GiB; free_for_new 9.51 GiB at 22:58Z"
+   ]
+  },
+  {
+   "id": "status_writer_live",
+   "completion_criterion": "STATUS.json refreshed <=5 min and on job state change by a capped background writer",
+   "state": "completed",
+   "evidence": [
+    "tools/m06_status_writer.py; unit m06-status-writer.service via crispdm-run -m 512M"
+   ]
+  },
+  {
+   "id": "modular_cost_pilot",
+   "completion_criterion": "M04 complete real-model cost pilot measured on an admitted GPU slot",
+   "state": "not_started",
+   "evidence": [
+    "slot offered 22:59Z: worker_a GPU-a9f35631"
+   ]
+  }
+ ],
+ "next_actions": [
+  "collect s2021 and s2023 records when they end; run executor comparison_row + three-seed classify()",
+  "measure SUnreclaim growth per GPU re-init on the 5090 host over the next hour (baseline 0.28 GiB, 2 re-inits, 22:55Z)",
+  "M04 cost pilot on worker_a GPU-a9f35631 (offered)",
+  "next slots: 4090 after s2023, 4070 after s2021 (clock restore unit resets 1500 MHz lock)"
+ ],
+ "heartbeat_audit": [
+  {
+   "child": "traffic_L96_h96_s2021 (coordinator)",
+   "meets_60s": false,
+   "reason": "author_stdout.log is block-buffered (flushes every ~4-8 KiB, observed gaps >17 min); checkpoint.pth written only on validation improvement; no heartbeat file",
+   "action": "not hot-edited; fix in future runner snapshot (python -u / PYTHONUNBUFFERED=1 + per-epoch heartbeat JSON)"
+  },
+  {
+   "child": "traffic_L96_h96_s2023 (worker_b)",
+   "meets_60s": false,
+   "reason": "same executor and same buffering",
+   "action": "not hot-edited"
+  },
+  {
+   "child": "m06 status writer",
+   "meets_60s": true,
+   "reason": "HEARTBEAT.json every 45 s, python -u"
+  },
+  {
+   "child": "coordinator CPU pytest suites m01-tests (4G), m02-baseline-tests (3G), m02-suite (3G), plus m01-venv 3G, m05-export 4G, m05-baseline 3G, m03-tests 1G, m05-unit-notf 1G",
+   "meets_60s": null,
+   "reason": "queued_for_admission behind s2021's 12 GiB reservation on the coordinator (slice ceiling 14 GiB); not yet running, so no heartbeat is due",
+   "action": "note: m01-tests is wrapped in `timeout 900` while its queue wait is -W 1800, so it will be killed while still queued if s2021 holds the lease past ~23:13Z"
+  }
+ ],
+ "events": [
+  {
+   "at": "2026-09-30T22:52:35Z",
+   "host_alias": "worker_a",
+   "event": "interactive operator (owner) ran apt update/upgrade"
+  },
+  {
+   "at": "2026-09-30T22:53:30Z",
+   "host_alias": "worker_a",
+   "event": "shutdown -r now by the interactive operator; previous boot up since 2026-09-22T17:38:32Z (8 d 5 h), kernel 7.0.0-31 -> 7.0.0-34 after reboot, driver 580.178.04 unchanged"
+  },
+  {
+   "at": "2026-09-30T22:53:58Z",
+   "host_alias": "worker_a",
+   "event": "boot; post-reboot baseline SUnreclaim 0.27-0.28 GiB (was 5.48 GiB), MemAvailable ~12.7 GiB; slab-growth cause UNDIAGNOSED, not fixed"
+  },
+  {
+   "at": "2026-09-30T22:56:00Z",
+   "host_alias": "worker_a",
+   "event": "M06 ran one CPU-only closure job there (crispdm-run -m 1G -t 10m, ~10 s, JSON arithmetic, no GPU) before the coordinator's 'launch nothing there' instruction; nothing launched since"
+  }
+ ]
+}

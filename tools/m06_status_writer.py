@@ -39,12 +39,13 @@ TRAFFIC = [
 # One remote probe script: everything we read from a host in one ssh round-trip, read-only.
 PROBE = r'''
 import json, os, subprocess, time, glob
+QUERY_GPU = %s
 def sh(c):
     try: return subprocess.run(c, shell=True, capture_output=True, text=True, timeout=20).stdout
     except Exception as e: return ""
 out = {"now": time.time()}
-out["gpus"] = sh("nvidia-smi --query-gpu=uuid,name,temperature.gpu,utilization.gpu,clocks.sm,clocks.max.sm,memory.used,memory.total,power.draw,clocks_throttle_reasons.active --format=csv,noheader,nounits")
-out["apps"] = sh("nvidia-smi --query-compute-apps=gpu_uuid,pid,used_memory --format=csv,noheader,nounits")
+out["gpus"] = "" if not QUERY_GPU else sh("nvidia-smi --query-gpu=uuid,name,temperature.gpu,utilization.gpu,clocks.sm,clocks.max.sm,memory.used,memory.total,power.draw,clocks_throttle_reasons.active --format=csv,noheader,nounits")
+out["apps"] = "" if not QUERY_GPU else sh("nvidia-smi --query-compute-apps=gpu_uuid,pid,used_memory --format=csv,noheader,nounits")
 mi = {}
 for l in open("/proc/meminfo"):
     k, v = l.split(":"); mi[k] = int(v.split()[0]) * 1024
@@ -76,6 +77,19 @@ for d in glob.glob(root + "/cell_traffic_h96_s*"):
     cells[seed] = c
 out["cells"] = cells
 ps = sh("ps -eo pid,etimes,pcpu,rss,args | grep df_tsl_execute.py | grep -v grep | grep -v timeout | grep -v crispdm-run")
+cr = sh("ps -eo pid,etimes,args | grep -E 'bin/crispdm-run ' | grep -v grep")
+out["launchers"] = []
+for l in cr.splitlines():
+    f = l.split(None, 2)
+    if len(f) == 3:
+        a = f[2].split()
+        nm = a[a.index("-n") + 1] if "-n" in a else None
+        mem = a[a.index("-m") + 1] if "-m" in a else None
+        out["launchers"].append({"pid": int(f[0]), "elapsed_s": int(f[1]), "name": nm, "declared_mem": mem})
+out["slab_kB"] = out["mem"]["SUnreclaim"] // 1024 if out["mem"].get("SUnreclaim") else None
+if QUERY_GPU or True:
+    out["gpu_reinit_this_boot"] = sh("journalctl -k -b 0 --no-pager -q 2>/dev/null | grep -c kbifInitLtr").strip()
+out["boot_id"] = open("/proc/sys/kernel/random/boot_id").read().strip()
 out["children"] = [l.split(None, 4) for l in ps.splitlines() if "--seed" in l]
 print(json.dumps(out))
 '''
@@ -87,9 +101,19 @@ def iso(t):
     return dt.datetime.fromtimestamp(t, dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+GPU_CACHE = {}
+# Every nvidia-smi call on a host whose GPUs run without persistence mode re-initialises the
+# idle GPU (one "kbifInitLtr" line per init on the 5090 host).  M06's diagnosis suspects a
+# per-init kernel-memory leak there, so this writer queries that host's GPUs at most every
+# 10 minutes and serves the cached reading in between.
+GPU_MIN_INTERVAL = {"worker_a": 600}
+
+
 def probe(role, hosts):
     units = repr([u for (_, r, _, u, _) in TRAFFIC if r == role and u])
-    code = PROBE % (ADM, units, TRAFFIC_ROOT)
+    last = GPU_CACHE.get(role, {}).get("at", 0)
+    query = time.time() - last >= GPU_MIN_INTERVAL.get(role, 0)
+    code = PROBE % (query, ADM, units, TRAFFIC_ROOT)
     cmd = [sys.executable, "-c", code] if role == "coordinator" else \
         ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", hosts[role], "python3", "-"]
     err = None
@@ -97,7 +121,13 @@ def probe(role, hosts):
         try:
             r = subprocess.run(cmd, input=None if role == "coordinator" else code,
                                capture_output=True, text=True, timeout=60)
-            return json.loads(r.stdout)
+            out = json.loads(r.stdout)
+            if query:
+                GPU_CACHE[role] = {"at": time.time(), "gpus": out.get("gpus"), "apps": out.get("apps")}
+            elif role in GPU_CACHE:
+                out["gpus"], out["apps"] = GPU_CACHE[role]["gpus"], GPU_CACHE[role]["apps"]
+                out["gpu_reading_cached_at"] = GPU_CACHE[role]["at"]
+            return out
         except Exception as e:  # unreachable host is recorded, not fatal
             err = type(e).__name__
     return {"error": err}
@@ -229,6 +259,14 @@ def lanes():
     return out
 
 
+SLAB_SERIES = None
+
+
+def lane_of(name):
+    m = re.search(r"m0([1-6])", name or "")
+    return f"M0{m.group(1)}" if m else "unknown"
+
+
 def build(hosts, reg):
     now = time.time()
     probes = {r: probe(r, hosts) for r in ("coordinator", "worker_a", "worker_b")}
@@ -269,6 +307,29 @@ def build(hosts, reg):
         if "error" in p:
             devices.append({"host_alias": role, "device": "unreachable", "state": "unknown", "job_id": None,
                             "reason": "probe failed: " + p["error"], "observed_at": iso(now)})
+    queued, seen = [], set()
+    for role, p in probes.items():
+        try:
+            live = {l.get("name") for l in json.loads(p.get("adm") or "{}").get("live", [])}
+        except ValueError:
+            live = set()
+        for L in p.get("launchers") or []:
+            if L["name"] and L["name"] not in live and (role, L["name"]) not in seen:
+                seen.add((role, L["name"]))
+                queued.append({"id": L["name"], "lane": lane_of(L["name"]), "state": "queued",
+                               "stage": "queued_for_admission", "host_alias": role,
+                               "declared_mem": L["declared_mem"], "waiting_s": L["elapsed_s"],
+                               "producer_commit": "unknown (launcher argv only)", "heartbeat_at": iso(p.get("now")),
+                               "progress": {"unit": "unknown", "completed": None, "total": None},
+                               "eta": {"earliest": None, "latest": None, "basis": "not_estimable",
+                                       "assumptions": ["admission waits for a live lease on this host to release"]}})
+    jobs += queued
+    wa = probes.get("worker_a", {})
+    if "error" not in wa:
+        with open(SLAB_SERIES, "a") as f:
+            f.write(json.dumps({"at": iso(wa.get("now")), "boot_id": wa.get("boot_id"), "uptime_s": wa.get("uptime_s"),
+                                "SUnreclaim_kB": wa.get("slab_kB"), "gpu_reinit_this_boot": wa.get("gpu_reinit_this_boot"),
+                                "MemAvailable_B": (wa.get("mem") or {}).get("MemAvailable")}) + "\n")
     agents = reg.get("agents", [])
     wts = lanes()
     for a in agents:
@@ -284,6 +345,8 @@ def build(hosts, reg):
             "agents": agents, "devices": devices, "jobs": jobs + reg.get("extra_jobs", []),
             "results": reg.get("results", []), "milestones": reg.get("milestones", []),
             "next_actions": reg.get("next_actions", []), "lane_worktrees": wts,
+            "events": reg.get("events", []),
+            "worker_a_slab_series": {"file": os.path.basename(SLAB_SERIES), "reading": "one sample per writer cycle since the post-reboot baseline"},
             "heartbeat_audit": reg.get("heartbeat_audit", [])}
 
 
@@ -306,6 +369,8 @@ def main():
     ap.add_argument("--once", action="store_true")
     a = ap.parse_args()
     hosts = json.load(open(a.hosts))
+    global SLAB_SERIES
+    SLAB_SERIES = os.path.join(a.out_dir, "worker_a_slab_series.jsonl")
     last_sig, last_write = None, 0.0
     while True:
         try:
