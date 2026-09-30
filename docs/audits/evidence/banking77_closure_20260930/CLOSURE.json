@@ -1,0 +1,1557 @@
+{
+ "schema": "banking77_closure_review.v1",
+ "produced_at": "2026-09-30T08:39:38Z",
+ "lane": "BANKING77 closure review",
+ "branch": "satoshi/banking77-closure-review-20260930",
+ "tip": "c89a8ff4868f6055fb6969b2cb39f06a78fc75ac",
+ "licence": "CC BY-NC 4.0",
+ "commercial_deployment_approval": false,
+ "research_only": true,
+ "this_review_confers_no_commercial_deployment_approval": true,
+ "model": {
+  "repository": "jinaai/jina-embeddings-v5-text-small",
+  "revision_requested": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
+  "revision_verified": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
+  "verification": "The revision endpoint sha equals the requested revision, and every fetched object returned the same x-repo-commit. Git blob etags equal the tree oids. Five files also match the digests pinned on 2026-09-29.",
+  "weights_downloaded": false,
+  "snapshot_download_called_by_this_lane": false,
+  "trust_remote_code_set_by_this_lane": false,
+  "repository_tree": {
+   "file_count": 22,
+   "python_file_count": 3,
+   "bytes_if_fully_materialised": 1369721378,
+   "bytes_match_prior_whole_repository_figure": true,
+   "files": [
+    {
+     "path": ".gitattributes",
+     "bytes": 1570,
+     "git_oid": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": false
+    },
+    {
+     "path": "README.md",
+     "bytes": 11340,
+     "git_oid": "648ec20a943448d606aaebd5c1879474632f5a3c",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": false
+    },
+    {
+     "path": "adapters/classification/adapter_config.json",
+     "bytes": 884,
+     "git_oid": "bba733f5032d34f38b8305d083176019aef5719f",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": true
+    },
+    {
+     "path": "adapters/classification/adapter_model.safetensors",
+     "bytes": 40420208,
+     "git_oid": "1b150965c929f90581c294f057fe7c8d533fd98f",
+     "lfs": true,
+     "lfs_oid": "4ff3d2222b6f48354bdcf51b4dee4540c0da948d06240c7e042308f79e46c2e7",
+     "downloaded_for_review": false
+    },
+    {
+     "path": "adapters/clustering/adapter_config.json",
+     "bytes": 883,
+     "git_oid": "76cd1fcf58b02efabf0969341249314d5288a6c6",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": true
+    },
+    {
+     "path": "adapters/clustering/adapter_model.safetensors",
+     "bytes": 40420208,
+     "git_oid": "f46307a70118609c395aecbab1ec8163d12749e6",
+     "lfs": true,
+     "lfs_oid": "276e311513d8bdf3a2a099bf6b365b28d5c8e0b64cc4ac55b526f1ae76cc2b4a",
+     "downloaded_for_review": false
+    },
+    {
+     "path": "adapters/retrieval/adapter_config.json",
+     "bytes": 883,
+     "git_oid": "fd99419e46214e911553b81c1e3e76849839e650",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": true
+    },
+    {
+     "path": "adapters/retrieval/adapter_model.safetensors",
+     "bytes": 40420176,
+     "git_oid": "4d69944e46103914ffbfc442ff01788262a3fc53",
+     "lfs": true,
+     "lfs_oid": "2bc6ab71895eb04664e4d995ee29e1620603f3a3fc4dfc573bc2383dfc85bb94",
+     "downloaded_for_review": false
+    },
+    {
+     "path": "adapters/text-matching/adapter_config.json",
+     "bytes": 883,
+     "git_oid": "6c453a8ff2ad0f17b6ae94114beb825f02e7c2f0",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": true
+    },
+    {
+     "path": "adapters/text-matching/adapter_model.safetensors",
+     "bytes": 40420208,
+     "git_oid": "2a58bcfdcd062d52ff64ab10a300b90a0b3a7597",
+     "lfs": true,
+     "lfs_oid": "c3a3051591b1c769eb9b0f87fc762b599aedf11094b5b3d7488e8007cc5cfa4d",
+     "downloaded_for_review": false
+    },
+    {
+     "path": "config.json",
+     "bytes": 991,
+     "git_oid": "454961f939be3a54402ad4cf20a7340e7ae605a5",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": true
+    },
+    {
+     "path": "config_sentence_transformers.json",
+     "bytes": 276,
+     "git_oid": "39e42a9f309d38fae297c82616fe993034afffa8",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": true
+    },
+    {
+     "path": "configuration_jina_embeddings_v5.py",
+     "bytes": 120,
+     "git_oid": "a6656c35e76731452546baef7f6cbe49afb2ce4e",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": true
+    },
+    {
+     "path": "custom_st.py",
+     "bytes": 3929,
+     "git_oid": "fd4ad6331f2b3ec8758aca39348d5743da48a1ba",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": true
+    },
+    {
+     "path": "generation_config.json",
+     "bytes": 239,
+     "git_oid": "20a8a9156fc8c3f25295ca067f61fdf120d517c5",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": true
+    },
+    {
+     "path": "merges.txt",
+     "bytes": 1671853,
+     "git_oid": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": false
+    },
+    {
+     "path": "model.safetensors",
+     "bytes": 1192133208,
+     "git_oid": "d87d322772b80cd16954cb2d92e9ef7a1f423f7e",
+     "lfs": true,
+     "lfs_oid": "045fa75ff963a528cda2589fb1ca0a9ad848b53511780ed4f08f6fe10f6167c3",
+     "downloaded_for_review": false
+    },
+    {
+     "path": "modeling_jina_embeddings_v5.py",
+     "bytes": 4132,
+     "git_oid": "a801d273577ee710c37dd3ed99634151bdf4a9ad",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": true
+    },
+    {
+     "path": "modules.json",
+     "bytes": 168,
+     "git_oid": "e1bc0ceca4fa282df87874293c4af2c09355fe2c",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": true
+    },
+    {
+     "path": "tokenizer.json",
+     "bytes": 11422654,
+     "git_oid": "cd71f61a15a522601badb3dc960d800d9cb3766c",
+     "lfs": true,
+     "lfs_oid": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+     "downloaded_for_review": false
+    },
+    {
+     "path": "tokenizer_config.json",
+     "bytes": 9732,
+     "git_oid": "417d038a63fa3de29cfde265caedae14d1a58d92",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": true
+    },
+    {
+     "path": "vocab.json",
+     "bytes": 2776833,
+     "git_oid": "4783fe10ac3adce15ac8f358ef5462739852c569",
+     "lfs": false,
+     "lfs_oid": null,
+     "downloaded_for_review": false
+    }
+   ]
+  }
+ },
+ "source_review": {
+  "fetched": true,
+  "imported": false,
+  "executed": false,
+  "method": "ast.parse of the three Python files. No import, no exec, no trust_remote_code set by this lane.",
+  "python_file_count": 3,
+  "local_import_followed": {
+   "modeling_jina_embeddings_v5.py": "configuration_jina_embeddings_v5.py",
+   "configuration_jina_embeddings_v5.py": null,
+   "custom_st.py": null
+  },
+  "missing_local_files": [],
+  "no_init_py_in_the_tree": true,
+  "files_fetched": [
+   {
+    "path": "configuration_jina_embeddings_v5.py",
+    "bytes": 120,
+    "sha256": "d67791f10558ca2bd67d4c64aa3262b9458b23f1803370c11aa6d5366ad8735b",
+    "kind": "python",
+    "executed": false,
+    "matches_prior_digest": null
+   },
+   {
+    "path": "custom_st.py",
+    "bytes": 3929,
+    "sha256": "52e0931dca24ca1a4fe4f0a5165f1b77e85deac6bebbd3532cda4c09253a29db",
+    "kind": "python",
+    "executed": false,
+    "matches_prior_digest": true
+   },
+   {
+    "path": "modeling_jina_embeddings_v5.py",
+    "bytes": 4132,
+    "sha256": "389836c791ae345c164108c23858522590be32477b370c94b218cb1b4f10c69c",
+    "kind": "python",
+    "executed": false,
+    "matches_prior_digest": true
+   },
+   {
+    "path": "config.json",
+    "bytes": 991,
+    "sha256": "1af1e1269488c83d8b2332e42099f0d2201d687fbe074d1ed096c6201f283546",
+    "kind": "json",
+    "executed": false,
+    "matches_prior_digest": true
+   },
+   {
+    "path": "config_sentence_transformers.json",
+    "bytes": 276,
+    "sha256": "e13a56778b7ba8561a3d540173e682ff92acb8457a24d567fe92a8388402fb14",
+    "kind": "json",
+    "executed": false,
+    "matches_prior_digest": true
+   },
+   {
+    "path": "modules.json",
+    "bytes": 168,
+    "sha256": "b54acf92eab134d664abbbc5e42fd92f27535d3605666962c15dc3c32b2d9744",
+    "kind": "json",
+    "executed": false,
+    "matches_prior_digest": null
+   },
+   {
+    "path": "generation_config.json",
+    "bytes": 239,
+    "sha256": "2325da0f15bb848e018c5ae071b7943332e9f871d6b60e2ed22ca97d4cb993d2",
+    "kind": "json",
+    "executed": false,
+    "matches_prior_digest": null
+   },
+   {
+    "path": "tokenizer_config.json",
+    "bytes": 9732,
+    "sha256": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101",
+    "kind": "json",
+    "executed": false,
+    "matches_prior_digest": null
+   },
+   {
+    "path": "adapters/classification/adapter_config.json",
+    "bytes": 884,
+    "sha256": "7c3f89c17197f40070fae65449fd013c6cf0ee5565ceb45e9d5e292aa8472563",
+    "kind": "json",
+    "executed": false,
+    "matches_prior_digest": true
+   },
+   {
+    "path": "adapters/clustering/adapter_config.json",
+    "bytes": 883,
+    "sha256": "af5a532a5d1855712b98829a1442f1b67e41165e140520ae5752060486a15b3f",
+    "kind": "json",
+    "executed": false,
+    "matches_prior_digest": null
+   },
+   {
+    "path": "adapters/retrieval/adapter_config.json",
+    "bytes": 883,
+    "sha256": "f37c5d6dd368e2675e54e01b685252d4d44eed042c773a48f56ebe1565cd0320",
+    "kind": "json",
+    "executed": false,
+    "matches_prior_digest": null
+   },
+   {
+    "path": "adapters/text-matching/adapter_config.json",
+    "bytes": 883,
+    "sha256": "60009adb7fb7be486dea1e318a1acb85eba8f04e209a296eca7454d3f6d95400",
+    "kind": "json",
+    "executed": false,
+    "matches_prior_digest": null
+   }
+  ],
+  "imports": {
+   "configuration_jina_embeddings_v5.py": [
+    {
+     "line": 1,
+     "statement": "from transformers import Qwen3Config",
+     "when": "import-time"
+    }
+   ],
+   "custom_st.py": [
+    {
+     "line": 1,
+     "statement": "from typing import Any, Dict, List, Literal, Optional, Union",
+     "when": "import-time"
+    },
+    {
+     "line": 3,
+     "statement": "import torch",
+     "when": "import-time"
+    },
+    {
+     "line": 4,
+     "statement": "from torch import nn",
+     "when": "import-time"
+    },
+    {
+     "line": 5,
+     "statement": "import torch.nn.functional as F",
+     "when": "import-time"
+    },
+    {
+     "line": 6,
+     "statement": "from transformers import AutoConfig, AutoModel, AutoTokenizer",
+     "when": "import-time"
+    }
+   ],
+   "modeling_jina_embeddings_v5.py": [
+    {
+     "line": 1,
+     "statement": "from typing import List, Optional",
+     "when": "import-time"
+    },
+    {
+     "line": 2,
+     "statement": "import os",
+     "when": "import-time"
+    },
+    {
+     "line": 4,
+     "statement": "import torch",
+     "when": "import-time"
+    },
+    {
+     "line": 5,
+     "statement": "import torch.nn.functional as F",
+     "when": "import-time"
+    },
+    {
+     "line": 7,
+     "statement": "from huggingface_hub import snapshot_download",
+     "when": "import-time"
+    },
+    {
+     "line": 8,
+     "statement": "from transformers import AutoTokenizer",
+     "when": "import-time"
+    },
+    {
+     "line": 9,
+     "statement": "from transformers.modeling_utils import PreTrainedModel",
+     "when": "import-time"
+    },
+    {
+     "line": 10,
+     "statement": "from transformers.models.qwen3 import Qwen3Model",
+     "when": "import-time"
+    },
+    {
+     "line": 11,
+     "statement": "from peft import PeftMixedModel, PeftConfig",
+     "when": "import-time"
+    },
+    {
+     "line": 12,
+     "statement": "from .configuration_jina_embeddings_v5 import JinaEmbeddingsV5Config",
+     "when": "import-time"
+    }
+   ]
+  },
+  "operations": [
+   {
+    "kind": "network_hub_download",
+    "name": "huggingface_hub.snapshot_download",
+    "file": "modeling_jina_embeddings_v5.py",
+    "lines": [
+     37,
+     40
+    ],
+    "when": "call-time",
+    "where": "JinaEmbeddingsV5Model.from_pretrained",
+    "condition": "only in the else branch, when os.path.isdir(base_model.name_or_path) is false",
+    "what": "snapshot_download(repo_id=base_model.name_or_path, allow_patterns=['adapters/*']). The library writes the adapter tree into the hub cache. This source has no open() of its own.",
+    "ran_in_this_lane": false
+   },
+   {
+    "kind": "trust_remote_code",
+    "name": "AutoTokenizer.from_pretrained trust_remote_code=True",
+    "file": "modeling_jina_embeddings_v5.py",
+    "lines": [
+     57,
+     60
+    ],
+    "when": "call-time",
+    "where": "JinaEmbeddingsV5Model.from_pretrained",
+    "what": "Hardcoded. Not gated on a caller flag. This revision's tree has no tokenizer Python module; tokenizer_config.json names tokenizer_class Qwen2Tokenizer.",
+    "ran_in_this_lane": false
+   },
+   {
+    "kind": "trust_remote_code",
+    "name": "AutoTokenizer.from_pretrained trust_remote_code=True",
+    "file": "custom_st.py",
+    "lines": [
+     44,
+     47
+    ],
+    "when": "call-time",
+    "where": "Transformer.__init__",
+    "what": "Hardcoded on the tokenizer only. AutoConfig.from_pretrained and AutoModel.from_pretrained in the same method do not set trust_remote_code. model_args is forwarded as model_kwargs to AutoModel.from_pretrained, so a caller can still pass the flag in.",
+    "ran_in_this_lane": false
+   },
+   {
+    "kind": "network_hub_load",
+    "name": "from_pretrained / load_adapter",
+    "file": "modeling_jina_embeddings_v5.py",
+    "lines": [
+     25,
+     32,
+     47,
+     55,
+     57,
+     60
+    ],
+    "when": "call-time",
+    "where": "JinaEmbeddingsV5Model.from_pretrained",
+    "what": "JinaEmbeddingsV5Config.from_pretrained, Qwen3Model.from_pretrained, PeftConfig.from_pretrained, load_adapter, AutoTokenizer.from_pretrained. Each can fetch from the hub when given a repository id. No urllib, requests, or socket call appears in this source.",
+    "ran_in_this_lane": false
+   },
+   {
+    "kind": "network_hub_load",
+    "name": "from_pretrained",
+    "file": "custom_st.py",
+    "lines": [
+     32,
+     34,
+     41,
+     43,
+     44,
+     47
+    ],
+    "when": "call-time",
+    "where": "Transformer.__init__",
+    "what": "AutoConfig.from_pretrained, AutoModel.from_pretrained, AutoTokenizer.from_pretrained.",
+    "ran_in_this_lane": false
+   },
+   {
+    "kind": "filesystem_read",
+    "name": "os.path.isdir / os.path.join",
+    "file": "modeling_jina_embeddings_v5.py",
+    "lines": [
+     34,
+     35,
+     41,
+     43
+    ],
+    "when": "call-time",
+    "where": "JinaEmbeddingsV5Model.from_pretrained",
+    "what": "Path test and joins under adapters/. No os.system, no popen, no write, no open().",
+    "ran_in_this_lane": false
+   }
+  ],
+  "absent_in_the_fetched_python": [
+   "subprocess",
+   "os.system",
+   "socket",
+   "urllib",
+   "requests",
+   "open",
+   "write",
+   "pickle",
+   "torch.load",
+   "cloudpickle",
+   "eval",
+   "exec"
+  ],
+  "import_time_calls": "none. Module bodies are imports and class definitions only. snapshot_download and trust_remote_code=True run only when from_pretrained or Transformer.__init__ is called.",
+  "deserialization": "The fetched Python does not call pickle, torch.load, cloudpickle, eval, or exec. Weight loading is delegated to Qwen3Model.from_pretrained and peft load_adapter. The repository tree ships safetensors only (model.safetensors and four adapter safetensors). No .bin, .pt, or .pkl is in the 22-file tree. Those weight files were not downloaded and were not opened.",
+  "entry_points": {
+   "transformers_auto_map": {
+    "AutoConfig": "configuration_jina_embeddings_v5.JinaEmbeddingsV5Config",
+    "AutoModel": "modeling_jina_embeddings_v5.JinaEmbeddingsV5Model"
+   },
+   "sentence_transformers_modules_json": "custom_st.Transformer"
+  }
+ },
+ "transitive_revisions": {
+  "model_card_floors_read_from_the_revision_readme": {
+   "transformers": ">=4.57.0",
+   "torch": ">=2.8.0",
+   "peft": ">=0.15.2"
+  },
+  "config_sentence_transformers_recorded_versions": {
+   "sentence_transformers": "5.1.2",
+   "transformers": "4.57.0",
+   "pytorch": "2.8.0"
+  },
+  "config_json_transformers_version": "4.51.0",
+  "generation_config_transformers_version": "4.51.0",
+  "base_model_named_in_the_readme": "Qwen/Qwen3-0.6B-Base",
+  "base_model_named_by_mteb_2_9_0": "Qwen/Qwen3-0.6B",
+  "adapter_configs": {
+   "peft_type": "LORA",
+   "revision": null,
+   "peft_version_field": null,
+   "r": 32,
+   "lora_alpha": 32,
+   "base_model_name_or_path": "jinaai/jina-embeddings-v5-text-small",
+   "task_type": "FEATURE_EXTRACTION",
+   "target_modules_same_set": [
+    "down_proj",
+    "gate_proj",
+    "k_proj",
+    "o_proj",
+    "q_proj",
+    "up_proj",
+    "v_proj"
+   ],
+   "lora_dropout": {
+    "classification": 0.05,
+    "clustering": 0.1,
+    "retrieval": 0.1,
+    "text-matching": 0.1
+   }
+  },
+  "mteb_2_9_0_jina_registry": {
+   "source": "embeddings-benchmark/mteb tag 2.9.0 :: mteb/models/model_implementations/jina_models.py",
+   "sha256": "dabfd27f4687e1803fcd7c5d4ca275a34874fb3a60f271d4c6c195afd4d8f09e",
+   "bytes": 41087,
+   "matches_prior_digest": true,
+   "model_name": "jinaai/jina-embeddings-v5-text-small",
+   "revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
+   "loader_trust_remote_code": true,
+   "classification_prompt_maps_to": "classification",
+   "licence_field": "cc-by-nc-4.0",
+   "executed": false
+  },
+  "closure_pins_that_meet_the_card_floors": {
+   "transformers": "4.57.6 satisfies >=4.57.0 and sentence-transformers==5.1.2 requires transformers<5",
+   "torch": "2.14.0 satisfies >=2.8.0 and is not the recorded export version 2.8.0",
+   "peft": "0.21.1 satisfies >=0.15.2",
+   "sentence_transformers": "5.1.2 equals the recorded export version"
+  }
+ },
+ "closure": {
+  "target_python": "3.13",
+  "implementation": "cp",
+  "platform": "x86_64-manylinux_2_28",
+  "index": "pypi",
+  "what_this_is": "The complete dependency closure of the tier-1 set, resolved for CPython 3.13 on manylinux_2_28 x86_64 from the default package index. It is the default Linux torch wheel, which depends on the CUDA 13 nvidia libraries. A CPU-only index was not substituted. This is not an installed environment.",
+  "input_requirements": [
+   "mteb==2.9.0",
+   "sentence-transformers==5.1.2",
+   "peft",
+   "datasets",
+   "scikit-learn"
+  ],
+  "resolved_pin_count": 87,
+  "resolved_pins": [
+   "accelerate==1.15.0",
+   "aiohappyeyeballs==2.7.1",
+   "aiohttp==3.14.3",
+   "aiosignal==1.4.0",
+   "annotated-types==0.8.0",
+   "anyio==4.15.1",
+   "attrs==26.1.0",
+   "certifi==2026.7.22",
+   "charset-normalizer==3.5.2",
+   "cloudpickle==3.1.2",
+   "cuda-bindings==13.4.3",
+   "cuda-pathfinder==1.8.2",
+   "cuda-toolkit==13.0.3.0",
+   "datasets==5.0.1",
+   "dill==0.4.1",
+   "filelock==4.0.7",
+   "frozenlist==1.8.0",
+   "fsspec==2026.6.0",
+   "h11==0.16.0",
+   "hf-xet==1.6.0",
+   "httpcore==1.0.9",
+   "httpx==0.28.1",
+   "huggingface-hub==0.36.2",
+   "idna==3.20",
+   "Jinja2==3.1.6",
+   "joblib==1.6.0",
+   "markdown-it-py==4.2.0",
+   "MarkupSafe==3.0.3",
+   "mdurl==0.1.2",
+   "mpmath==1.3.0",
+   "mteb==2.9.0",
+   "multidict==6.9.1",
+   "multiprocess==0.70.19",
+   "narwhals==2.26.0",
+   "networkx==3.7",
+   "numpy==2.5.3",
+   "nvidia-cublas==13.1.1.3",
+   "nvidia-cuda-cupti==13.0.85",
+   "nvidia-cuda-nvrtc==13.0.88",
+   "nvidia-cuda-runtime==13.0.96",
+   "nvidia-cudnn-cu13==9.24.0.43",
+   "nvidia-cufft==12.0.0.61",
+   "nvidia-cufile==1.15.1.6",
+   "nvidia-curand==10.4.0.35",
+   "nvidia-cusolver==12.0.4.66",
+   "nvidia-cusparse==12.6.3.3",
+   "nvidia-cusparselt-cu13==0.8.1",
+   "nvidia-nccl-cu13==2.30.7",
+   "nvidia-nvjitlink==13.4.92",
+   "nvidia-nvshmem-cu13==3.4.5",
+   "nvidia-nvtx==13.0.85",
+   "packaging==26.3",
+   "pandas==3.0.6",
+   "peft==0.21.1",
+   "pillow==12.3.0",
+   "polars==1.44.2",
+   "polars-runtime-32==1.44.2",
+   "propcache==0.5.4",
+   "psutil==7.2.2",
+   "pyarrow==25.0.1",
+   "pydantic==2.13.5",
+   "pydantic_core==2.46.5",
+   "Pygments==2.21.0",
+   "python-dateutil==2.9.0.post0",
+   "pytrec-eval-terrier==0.5.10",
+   "PyYAML==6.0.3",
+   "regex==2026.9.29",
+   "requests==2.34.2",
+   "rich==15.0.0",
+   "safetensors==0.8.0",
+   "scikit-learn==1.9.1",
+   "scipy==1.18.1",
+   "sentence-transformers==5.1.2",
+   "setuptools==84.0.0",
+   "six==1.17.0",
+   "sympy==1.14.0",
+   "threadpoolctl==3.7.0",
+   "tokenizers==0.22.2",
+   "torch==2.14.0",
+   "tqdm==4.70.1",
+   "transformers==4.57.6",
+   "triton==3.8.0",
+   "typing-extensions==4.16.0",
+   "typing-inspection==0.4.4",
+   "urllib3==2.8.0",
+   "xxhash==4.0.1",
+   "yarl==1.25.1"
+  ],
+  "wheels": [
+   {
+    "name": "accelerate",
+    "version": "1.15.0",
+    "filename": "accelerate-1.15.0-py3-none-any.whl",
+    "sha256": "97eacca0b73e45cb867dbf8c5d5d4dc32219544300e0c8992c7334dc2ef33cec",
+    "bytes": 394295,
+    "locally_hashed": true
+   },
+   {
+    "name": "aiohappyeyeballs",
+    "version": "2.7.1",
+    "filename": "aiohappyeyeballs-2.7.1-py3-none-any.whl",
+    "sha256": "9243213661e29250eb41368e5daa826fc017156c3b8a11440826b2e3ed376472",
+    "bytes": 15038,
+    "locally_hashed": true
+   },
+   {
+    "name": "aiohttp",
+    "version": "3.14.3",
+    "filename": "aiohttp-3.14.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "d7d2deec16eeedf55f2c7cf75b521ea3856a5177e123844f8fd0f114ce252cb5",
+    "bytes": 1789289,
+    "locally_hashed": true
+   },
+   {
+    "name": "aiosignal",
+    "version": "1.4.0",
+    "filename": "aiosignal-1.4.0-py3-none-any.whl",
+    "sha256": "053243f8b92b990551949e63930a839ff0cf0b0ebbe0597b0f3fb19e1a0fe82e",
+    "bytes": 7490,
+    "locally_hashed": true
+   },
+   {
+    "name": "annotated-types",
+    "version": "0.8.0",
+    "filename": "annotated_types-0.8.0-py3-none-any.whl",
+    "sha256": "f072f4d804ea359e4eaf198b1af7a8b0943881a87f31bb764f8bf219bb9419e0",
+    "bytes": 13427,
+    "locally_hashed": true
+   },
+   {
+    "name": "anyio",
+    "version": "4.15.1",
+    "filename": "anyio-4.15.1-py3-none-any.whl",
+    "sha256": "6152fdbbf9a77fdec97731721bebf7c4c44f7c29b424b0065826173efc7ed101",
+    "bytes": 132079,
+    "locally_hashed": true
+   },
+   {
+    "name": "attrs",
+    "version": "26.1.0",
+    "filename": "attrs-26.1.0-py3-none-any.whl",
+    "sha256": "c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309",
+    "bytes": 67548,
+    "locally_hashed": true
+   },
+   {
+    "name": "certifi",
+    "version": "2026.7.22",
+    "filename": "certifi-2026.7.22-py3-none-any.whl",
+    "sha256": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775",
+    "bytes": 136983,
+    "locally_hashed": true
+   },
+   {
+    "name": "charset-normalizer",
+    "version": "3.5.2",
+    "filename": "charset_normalizer-3.5.2-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "7218e8f32b0956cfcd048fd42d9d5779809745ca1d86113ca56f66e7ae1549c4",
+    "bytes": 254660,
+    "locally_hashed": true
+   },
+   {
+    "name": "cloudpickle",
+    "version": "3.1.2",
+    "filename": "cloudpickle-3.1.2-py3-none-any.whl",
+    "sha256": "9acb47f6afd73f60dc1df93bb801b472f05ff42fa6c84167d25cb206be1fbf4a",
+    "bytes": 22228,
+    "locally_hashed": true
+   },
+   {
+    "name": "cuda-bindings",
+    "version": "13.4.3",
+    "filename": "cuda_bindings-13.4.3-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "1fd7d8459b364aedc11f3e59703453ced823135f78a9111ca70feef8d56d4d21",
+    "bytes": 6929124,
+    "locally_hashed": true
+   },
+   {
+    "name": "cuda-pathfinder",
+    "version": "1.8.2",
+    "filename": "cuda_pathfinder-1.8.2-py3-none-any.whl",
+    "sha256": "4e65059febdb4d19d5cbc4798677e19db2b582f2f702f457b609e571690d357e",
+    "bytes": 62551,
+    "locally_hashed": true
+   },
+   {
+    "name": "cuda-toolkit",
+    "version": "13.0.3.0",
+    "filename": "cuda_toolkit-13.0.3.0-py2.py3-none-any.whl",
+    "sha256": "d693caaa261214ddd7dbb60d68e71cbed884e68c2be7509778f3051da0b91c3f",
+    "bytes": 2512,
+    "locally_hashed": true
+   },
+   {
+    "name": "datasets",
+    "version": "5.0.1",
+    "filename": "datasets-5.0.1-py3-none-any.whl",
+    "sha256": "9fbf73688f8c18f7529b4fe592abd04015f81d1e58001e4bac73ffb2b39d7cc4",
+    "bytes": 559079,
+    "locally_hashed": true
+   },
+   {
+    "name": "dill",
+    "version": "0.4.1",
+    "filename": "dill-0.4.1-py3-none-any.whl",
+    "sha256": "1e1ce33e978ae97fcfcff5638477032b801c46c7c65cf717f95fbc2248f79a9d",
+    "bytes": 120019,
+    "locally_hashed": true
+   },
+   {
+    "name": "filelock",
+    "version": "4.0.7",
+    "filename": "filelock-4.0.7-py3-none-any.whl",
+    "sha256": "a93c4d93269b339a6af4848342c7e940d0f9928ad95eff64764699e5f1bf8a6a",
+    "bytes": 109242,
+    "locally_hashed": true
+   },
+   {
+    "name": "frozenlist",
+    "version": "1.8.0",
+    "filename": "frozenlist-1.8.0-cp313-cp313-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl",
+    "sha256": "fb30f9626572a76dfe4293c7194a09fb1fe93ba94c7d4f720dfae3b646b45027",
+    "bytes": 234391,
+    "locally_hashed": true
+   },
+   {
+    "name": "fsspec",
+    "version": "2026.6.0",
+    "filename": "fsspec-2026.6.0-py3-none-any.whl",
+    "sha256": "02e0b71817df9b2169dc30a16832045764def1191b43dcff5bb85bdee212d2a1",
+    "bytes": 203949,
+    "locally_hashed": true
+   },
+   {
+    "name": "h11",
+    "version": "0.16.0",
+    "filename": "h11-0.16.0-py3-none-any.whl",
+    "sha256": "63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86",
+    "bytes": 37515,
+    "locally_hashed": true
+   },
+   {
+    "name": "hf-xet",
+    "version": "1.6.0",
+    "filename": "hf_xet-1.6.0-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "sha256": "d62671bb130879cef0ee4c9ebe47a14af6c66ec53e6d84dc15936e5ffdfac82f",
+    "bytes": 4464663,
+    "locally_hashed": true
+   },
+   {
+    "name": "httpcore",
+    "version": "1.0.9",
+    "filename": "httpcore-1.0.9-py3-none-any.whl",
+    "sha256": "2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55",
+    "bytes": 78784,
+    "locally_hashed": true
+   },
+   {
+    "name": "httpx",
+    "version": "0.28.1",
+    "filename": "httpx-0.28.1-py3-none-any.whl",
+    "sha256": "d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad",
+    "bytes": 73517,
+    "locally_hashed": true
+   },
+   {
+    "name": "huggingface-hub",
+    "version": "0.36.2",
+    "filename": "huggingface_hub-0.36.2-py3-none-any.whl",
+    "sha256": "48f0c8eac16145dfce371e9d2d7772854a4f591bcb56c9cf548accf531d54270",
+    "bytes": 566395,
+    "locally_hashed": true
+   },
+   {
+    "name": "idna",
+    "version": "3.20",
+    "filename": "idna-3.20-py3-none-any.whl",
+    "sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c",
+    "bytes": 69583,
+    "locally_hashed": true
+   },
+   {
+    "name": "Jinja2",
+    "version": "3.1.6",
+    "filename": "jinja2-3.1.6-py3-none-any.whl",
+    "sha256": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67",
+    "bytes": 134899,
+    "locally_hashed": true
+   },
+   {
+    "name": "joblib",
+    "version": "1.6.0",
+    "filename": "joblib-1.6.0-py3-none-any.whl",
+    "sha256": "3dbbf9f6e4b592a2357b854608e980fe6390d131d7a82f011a377ef2ebef7aba",
+    "bytes": 306115,
+    "locally_hashed": true
+   },
+   {
+    "name": "markdown-it-py",
+    "version": "4.2.0",
+    "filename": "markdown_it_py-4.2.0-py3-none-any.whl",
+    "sha256": "9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a",
+    "bytes": 91687,
+    "locally_hashed": true
+   },
+   {
+    "name": "MarkupSafe",
+    "version": "3.0.3",
+    "filename": "markupsafe-3.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "ccfcd093f13f0f0b7fdd0f198b90053bf7b2f02a3927a30e63f3ccc9df56b676",
+    "bytes": 22980,
+    "locally_hashed": true
+   },
+   {
+    "name": "mdurl",
+    "version": "0.1.2",
+    "filename": "mdurl-0.1.2-py3-none-any.whl",
+    "sha256": "84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8",
+    "bytes": 9979,
+    "locally_hashed": true
+   },
+   {
+    "name": "mpmath",
+    "version": "1.3.0",
+    "filename": "mpmath-1.3.0-py3-none-any.whl",
+    "sha256": "a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+    "bytes": 536198,
+    "locally_hashed": true
+   },
+   {
+    "name": "mteb",
+    "version": "2.9.0",
+    "filename": "mteb-2.9.0-py3-none-any.whl",
+    "sha256": "94ad99fc803fe1a85f84180b10122532d01325de471092158e1a3b8115a578c7",
+    "bytes": 5124917,
+    "locally_hashed": true
+   },
+   {
+    "name": "multidict",
+    "version": "6.9.1",
+    "filename": "multidict-6.9.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "7fd79c521f6290c69125fa2b85fa65d9e657e6a8ffaf722dc881b926bef4aa5c",
+    "bytes": 336213,
+    "locally_hashed": true
+   },
+   {
+    "name": "multiprocess",
+    "version": "0.70.19",
+    "filename": "multiprocess-0.70.19-py313-none-any.whl",
+    "sha256": "8d5eb4ec5017ba2fab4e34a747c6d2c2b6fecfe9e7236e77988db91580ada952",
+    "bytes": 156414,
+    "locally_hashed": true
+   },
+   {
+    "name": "narwhals",
+    "version": "2.26.0",
+    "filename": "narwhals-2.26.0-py3-none-any.whl",
+    "sha256": "29326d74f107c347fd1009bd58e38d9f7c7c5b51e6de97bc93dbc325d9038b54",
+    "bytes": 474034,
+    "locally_hashed": true
+   },
+   {
+    "name": "networkx",
+    "version": "3.7",
+    "filename": "networkx-3.7-py3-none-any.whl",
+    "sha256": "e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0",
+    "bytes": 2142205,
+    "locally_hashed": true
+   },
+   {
+    "name": "numpy",
+    "version": "2.5.3",
+    "filename": "numpy-2.5.3-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "a5fa86b80fd24bcd1aff83ad23be44ea323de3f787be8f8b15d4a65621e25321",
+    "bytes": 16708577,
+    "locally_hashed": true
+   },
+   {
+    "name": "nvidia-cublas",
+    "version": "13.1.1.3",
+    "filename": "nvidia_cublas-13.1.1.3-py3-none-manylinux_2_27_x86_64.whl",
+    "sha256": "37936a16db8fe4ac1f065c2139360608a543a09275cb1a1af612e08cfa065436",
+    "bytes": 423138758,
+    "locally_hashed": true
+   },
+   {
+    "name": "nvidia-cuda-cupti",
+    "version": "13.0.85",
+    "filename": "nvidia_cuda_cupti-13.0.85-py3-none-manylinux_2_25_x86_64.whl",
+    "sha256": "4eb01c08e859bf924d222250d2e8f8b8ff6d3db4721288cf35d14252a4d933c8",
+    "bytes": 10715597,
+    "locally_hashed": true
+   },
+   {
+    "name": "nvidia-cuda-nvrtc",
+    "version": "13.0.88",
+    "filename": "nvidia_cuda_nvrtc-13.0.88-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl",
+    "sha256": "ad9b6d2ead2435f11cbb6868809d2adeeee302e9bb94bcf0539c7a40d80e8575",
+    "bytes": 90215200,
+    "locally_hashed": true
+   },
+   {
+    "name": "nvidia-cuda-runtime",
+    "version": "13.0.96",
+    "filename": "nvidia_cuda_runtime-13.0.96-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "sha256": "7f82250d7782aa23b6cfe765ecc7db554bd3c2870c43f3d1821f1d18aebf0548",
+    "bytes": 2243632,
+    "locally_hashed": true
+   },
+   {
+    "name": "nvidia-cudnn-cu13",
+    "version": "9.24.0.43",
+    "filename": "nvidia_cudnn_cu13-9.24.0.43-py3-none-manylinux_2_27_x86_64.whl",
+    "sha256": "71f181cd810e90f9b6023b01186fe82d13d65f0ec098581ee201d39fad769e4b",
+    "bytes": 553099438,
+    "locally_hashed": true
+   },
+   {
+    "name": "nvidia-cufft",
+    "version": "12.0.0.61",
+    "filename": "nvidia_cufft-12.0.0.61-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "sha256": "6c44f692dce8fd5ffd3e3df134b6cdb9c2f72d99cf40b62c32dde45eea9ddad3",
+    "bytes": 214085489,
+    "locally_hashed": true
+   },
+   {
+    "name": "nvidia-cufile",
+    "version": "1.15.1.6",
+    "filename": "nvidia_cufile-1.15.1.6-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "sha256": "08a3ecefae5a01c7f5117351c64f17c7c62efa5fffdbe24fc7d298da19cd0b44",
+    "bytes": 1223672,
+    "locally_hashed": true
+   },
+   {
+    "name": "nvidia-curand",
+    "version": "10.4.0.35",
+    "filename": "nvidia_curand-10.4.0.35-py3-none-manylinux_2_27_x86_64.whl",
+    "sha256": "1aee33a5da6e1db083fe2b90082def8915f30f3248d5896bcec36a579d941bfc",
+    "bytes": 59544258,
+    "locally_hashed": true
+   },
+   {
+    "name": "nvidia-cusolver",
+    "version": "12.0.4.66",
+    "filename": "nvidia_cusolver-12.0.4.66-py3-none-manylinux_2_27_x86_64.whl",
+    "sha256": "0a759da5dea5c0ea10fd307de75cdeb59e7ea4fcb8add0924859b944babf1112",
+    "bytes": 200941980,
+    "locally_hashed": true
+   },
+   {
+    "name": "nvidia-cusparse",
+    "version": "12.6.3.3",
+    "filename": "nvidia_cusparse-12.6.3.3-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "sha256": "2b3c89c88d01ee0e477cb7f82ef60a11a4bcd57b6b87c33f789350b59759360b",
+    "bytes": 145942937,
+    "locally_hashed": true
+   },
+   {
+    "name": "nvidia-cusparselt-cu13",
+    "version": "0.8.1",
+    "filename": "nvidia_cusparselt_cu13-0.8.1-py3-none-manylinux2014_x86_64.whl",
+    "sha256": "786ce87568c303fadb5afcc7102d454cd3040d75f6f8626f5db460d1871f4dd0",
+    "bytes": 170148586,
+    "locally_hashed": true
+   },
+   {
+    "name": "nvidia-nccl-cu13",
+    "version": "2.30.7",
+    "filename": "nvidia_nccl_cu13-2.30.7-py3-none-manylinux_2_18_x86_64.whl",
+    "sha256": "cefa7fdb9710efd0f39c5f1be1d61ff6fc9a996c451265bd7fbdcf9455ed4b50",
+    "bytes": 215965170,
+    "locally_hashed": true
+   },
+   {
+    "name": "nvidia-nvjitlink",
+    "version": "13.4.92",
+    "filename": "nvidia_nvjitlink-13.4.92-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl",
+    "sha256": "e0391f24ed94ec879b84e3da4d4ec320c879aff681f2c7a638462f7199284323",
+    "bytes": 42452378,
+    "locally_hashed": true
+   },
+   {
+    "name": "nvidia-nvshmem-cu13",
+    "version": "3.4.5",
+    "filename": "nvidia_nvshmem_cu13-3.4.5-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "sha256": "290f0a2ee94c9f3687a02502f3b9299a9f9fe826e6d0287ee18482e78d495b80",
+    "bytes": 60412546,
+    "locally_hashed": true
+   },
+   {
+    "name": "nvidia-nvtx",
+    "version": "13.0.85",
+    "filename": "nvidia_nvtx-13.0.85-py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl",
+    "sha256": "4936d1d6780fbe68db454f5e72a42ff64d1fd6397df9f363ae786930fd5c1cd4",
+    "bytes": 148047,
+    "locally_hashed": true
+   },
+   {
+    "name": "packaging",
+    "version": "26.3",
+    "filename": "packaging-26.3-py3-none-any.whl",
+    "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+    "bytes": 129956,
+    "locally_hashed": true
+   },
+   {
+    "name": "pandas",
+    "version": "3.0.6",
+    "filename": "pandas-3.0.6-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "1e92d9fa834c7d877130027cddc0cad8dcff97c1f6cca26bd6310f847228b658",
+    "bytes": 10757657,
+    "locally_hashed": true
+   },
+   {
+    "name": "peft",
+    "version": "0.21.1",
+    "filename": "peft-0.21.1-py3-none-any.whl",
+    "sha256": "6b99d659a33acc17295c0838f1e58267337b8c30ac9aef0c8f2d48364d3f24e2",
+    "bytes": 835387,
+    "locally_hashed": true
+   },
+   {
+    "name": "pillow",
+    "version": "12.3.0",
+    "filename": "pillow-12.3.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "0847a763afefb695bc912d7c131e7e0632d4edc1d8698f58ddabec8e46b8b6d3",
+    "bytes": 6937129,
+    "locally_hashed": true
+   },
+   {
+    "name": "polars",
+    "version": "1.44.2",
+    "filename": "polars-1.44.2-py3-none-any.whl",
+    "sha256": "1bb331f17a40d9d931101533dcd33637b66edc61eb377b07020dac16a0f0377b",
+    "bytes": 865768,
+    "locally_hashed": true
+   },
+   {
+    "name": "polars-runtime-32",
+    "version": "1.44.2",
+    "filename": "polars_runtime_32-1.44.2-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "sha256": "a1bafb441e99199a62c63bf1bbdc0ea09ee9776dbac2bf31452b5000fb1df2f7",
+    "bytes": 49912258,
+    "locally_hashed": true
+   },
+   {
+    "name": "propcache",
+    "version": "0.5.4",
+    "filename": "propcache-0.5.4-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "f85915e00dcb1cd9f2f890ead064ed40a27df06f0db65be427b29482ae357572",
+    "bytes": 234316,
+    "locally_hashed": true
+   },
+   {
+    "name": "psutil",
+    "version": "7.2.2",
+    "filename": "psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "076a2d2f923fd4821644f5ba89f059523da90dc9014e85f8e45a5774ca5bc6f9",
+    "bytes": 155560,
+    "locally_hashed": true
+   },
+   {
+    "name": "pyarrow",
+    "version": "25.0.1",
+    "filename": "pyarrow-25.0.1-cp313-cp313-manylinux_2_28_x86_64.whl",
+    "sha256": "0befcf816e45a1af33ac775a9970b749e4868a230c7372f0ae5e932bee27039f",
+    "bytes": 50104452,
+    "locally_hashed": true
+   },
+   {
+    "name": "pydantic",
+    "version": "2.13.5",
+    "filename": "pydantic-2.13.5-py3-none-any.whl",
+    "sha256": "346a034f080da3755d8e9cb5e00e8b07de1d39e4f6e2c87d8ab7cafa0b269a73",
+    "bytes": 472589,
+    "locally_hashed": true
+   },
+   {
+    "name": "pydantic_core",
+    "version": "2.46.5",
+    "filename": "pydantic_core-2.46.5-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "sha256": "6f7b393a8b3da82f5c1fc0751e6d01ac6c55b93c18226a60bdfba4a724efafd1",
+    "bytes": 2066633,
+    "locally_hashed": true
+   },
+   {
+    "name": "Pygments",
+    "version": "2.21.0",
+    "filename": "pygments-2.21.0-py3-none-any.whl",
+    "sha256": "2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9",
+    "bytes": 1250147,
+    "locally_hashed": true
+   },
+   {
+    "name": "python-dateutil",
+    "version": "2.9.0.post0",
+    "filename": "python_dateutil-2.9.0.post0-py2.py3-none-any.whl",
+    "sha256": "a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427",
+    "bytes": 229892,
+    "locally_hashed": true
+   },
+   {
+    "name": "pytrec-eval-terrier",
+    "version": "0.5.10",
+    "filename": "pytrec_eval_terrier-0.5.10-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "8455485f1faf6759f1be11b12c904d1c749ba5db7e2b6f414aa56e19533ce069",
+    "bytes": 304917,
+    "locally_hashed": true
+   },
+   {
+    "name": "PyYAML",
+    "version": "6.0.3",
+    "filename": "pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "0f29edc409a6392443abf94b9cf89ce99889a1dd5376d94316ae5145dfedd5d6",
+    "bytes": 801626,
+    "locally_hashed": true
+   },
+   {
+    "name": "regex",
+    "version": "2026.9.29",
+    "filename": "regex-2026.9.29-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "d49c18f1ea294cf4adde2e5ac256e98c82ea9d708462ce4bf799dffa7cfe8a2c",
+    "bytes": 807902,
+    "locally_hashed": true
+   },
+   {
+    "name": "requests",
+    "version": "2.34.2",
+    "filename": "requests-2.34.2-py3-none-any.whl",
+    "sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0",
+    "bytes": 73075,
+    "locally_hashed": true
+   },
+   {
+    "name": "rich",
+    "version": "15.0.0",
+    "filename": "rich-15.0.0-py3-none-any.whl",
+    "sha256": "33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb",
+    "bytes": 310654,
+    "locally_hashed": true
+   },
+   {
+    "name": "safetensors",
+    "version": "0.8.0",
+    "filename": "safetensors-0.8.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "sha256": "fd6f3f93c9a0a7cc2788ee63fb763353d4bd2e89b0751bc78fcf7dda00bea774",
+    "bytes": 516040,
+    "locally_hashed": true
+   },
+   {
+    "name": "scikit-learn",
+    "version": "1.9.1",
+    "filename": "scikit_learn-1.9.1-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "55e79d6e9b0923f1a978179822bd43d7f5543f45e970a00fe861f43486380aba",
+    "bytes": 9121732,
+    "locally_hashed": true
+   },
+   {
+    "name": "scipy",
+    "version": "1.18.1",
+    "filename": "scipy-1.18.1-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "fdaf5ea890a6183d0565f51a61799d67081bd5b1cf03c5f4b3fd3732108625c9",
+    "bytes": 35312578,
+    "locally_hashed": true
+   },
+   {
+    "name": "sentence-transformers",
+    "version": "5.1.2",
+    "filename": "sentence_transformers-5.1.2-py3-none-any.whl",
+    "sha256": "724ce0ea62200f413f1a5059712aff66495bc4e815a1493f7f9bca242414c333",
+    "bytes": 488009,
+    "locally_hashed": true
+   },
+   {
+    "name": "setuptools",
+    "version": "84.0.0",
+    "filename": "setuptools-84.0.0-py3-none-any.whl",
+    "sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+    "bytes": 818216,
+    "locally_hashed": true
+   },
+   {
+    "name": "six",
+    "version": "1.17.0",
+    "filename": "six-1.17.0-py2.py3-none-any.whl",
+    "sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
+    "bytes": 11050,
+    "locally_hashed": true
+   },
+   {
+    "name": "sympy",
+    "version": "1.14.0",
+    "filename": "sympy-1.14.0-py3-none-any.whl",
+    "sha256": "e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
+    "bytes": 6299353,
+    "locally_hashed": true
+   },
+   {
+    "name": "threadpoolctl",
+    "version": "3.7.0",
+    "filename": "threadpoolctl-3.7.0-py3-none-any.whl",
+    "sha256": "cd8b60b5641b45c67bbf73c64c843235fc2d8a480c87389f52f5dbee893b86be",
+    "bytes": 26362,
+    "locally_hashed": true
+   },
+   {
+    "name": "tokenizers",
+    "version": "0.22.2",
+    "filename": "tokenizers-0.22.2-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "sha256": "369cc9fc8cc10cb24143873a0d95438bb8ee257bb80c71989e3ee290e8d72c67",
+    "bytes": 3274982,
+    "locally_hashed": true
+   },
+   {
+    "name": "torch",
+    "version": "2.14.0",
+    "filename": "torch-2.14.0-cp313-cp313-manylinux_2_28_x86_64.whl",
+    "sha256": "84bf384779a10c02fc3c6bdbab71a9cb66b0dd93c652d1ed5d6dfc0cb37e5962",
+    "bytes": 554619993,
+    "locally_hashed": true
+   },
+   {
+    "name": "tqdm",
+    "version": "4.70.1",
+    "filename": "tqdm-4.70.1-py3-none-any.whl",
+    "sha256": "c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73",
+    "bytes": 80199,
+    "locally_hashed": true
+   },
+   {
+    "name": "transformers",
+    "version": "4.57.6",
+    "filename": "transformers-4.57.6-py3-none-any.whl",
+    "sha256": "4c9e9de11333ddfe5114bc872c9f370509198acf0b87a832a0ab9458e2bd0550",
+    "bytes": 11993498,
+    "locally_hashed": true
+   },
+   {
+    "name": "triton",
+    "version": "3.8.0",
+    "filename": "triton-3.8.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "1f0497218e26b7d79773ad9c2a3fa3b539ee69f587a13fac2e552b1d322a8015",
+    "bytes": 247975122,
+    "locally_hashed": true
+   },
+   {
+    "name": "typing-extensions",
+    "version": "4.16.0",
+    "filename": "typing_extensions-4.16.0-py3-none-any.whl",
+    "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+    "bytes": 45571,
+    "locally_hashed": true
+   },
+   {
+    "name": "typing-inspection",
+    "version": "0.4.4",
+    "filename": "typing_inspection-0.4.4-py3-none-any.whl",
+    "sha256": "65b8397ba37ccbce054456aaccddfc91e6e3083c92824df348d96ca832f3f147",
+    "bytes": 14750,
+    "locally_hashed": true
+   },
+   {
+    "name": "urllib3",
+    "version": "2.8.0",
+    "filename": "urllib3-2.8.0-py3-none-any.whl",
+    "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3",
+    "bytes": 135717,
+    "locally_hashed": true
+   },
+   {
+    "name": "xxhash",
+    "version": "4.0.1",
+    "filename": "xxhash-4.0.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "9a51b061d54cda8b83e62c44458bfbf0dabbef9b975dd9649952ba5076b9f349",
+    "bytes": 268572,
+    "locally_hashed": true
+   },
+   {
+    "name": "yarl",
+    "version": "1.25.1",
+    "filename": "yarl-1.25.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "be80550d9bfe83d9b62398a37081a90434e6df2d978ec345c3d2820de6beddab",
+    "bytes": 117012,
+    "locally_hashed": true
+   }
+  ],
+  "wheel_count": 87,
+  "all_wheels_locally_hashed": true,
+  "download_bytes": 3230034941,
+  "download_cap_bytes": 8589934592,
+  "download_cap_exceeded": false,
+  "download_performed": true,
+  "direct_five": [
+   {
+    "name": "datasets",
+    "version": "5.0.1",
+    "filename": "datasets-5.0.1-py3-none-any.whl",
+    "sha256": "9fbf73688f8c18f7529b4fe592abd04015f81d1e58001e4bac73ffb2b39d7cc4",
+    "bytes": 559079,
+    "locally_hashed": true
+   },
+   {
+    "name": "mteb",
+    "version": "2.9.0",
+    "filename": "mteb-2.9.0-py3-none-any.whl",
+    "sha256": "94ad99fc803fe1a85f84180b10122532d01325de471092158e1a3b8115a578c7",
+    "bytes": 5124917,
+    "locally_hashed": true
+   },
+   {
+    "name": "peft",
+    "version": "0.21.1",
+    "filename": "peft-0.21.1-py3-none-any.whl",
+    "sha256": "6b99d659a33acc17295c0838f1e58267337b8c30ac9aef0c8f2d48364d3f24e2",
+    "bytes": 835387,
+    "locally_hashed": true
+   },
+   {
+    "name": "scikit-learn",
+    "version": "1.9.1",
+    "filename": "scikit_learn-1.9.1-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "sha256": "55e79d6e9b0923f1a978179822bd43d7f5543f45e970a00fe861f43486380aba",
+    "bytes": 9121732,
+    "locally_hashed": true
+   },
+   {
+    "name": "sentence-transformers",
+    "version": "5.1.2",
+    "filename": "sentence_transformers-5.1.2-py3-none-any.whl",
+    "sha256": "724ce0ea62200f413f1a5059712aff66495bc4e815a1493f7f9bca242414c333",
+    "bytes": 488009,
+    "locally_hashed": true
+   }
+  ],
+  "direct_five_bytes": 16129124,
+  "prior_direct_wheel_bytes": 16228123,
+  "prior_direct_wheel_bytes_are_not_this_closure": true,
+  "prior_direct_per_package_bytes": {
+   "datasets==5.0.1": 542418,
+   "mteb==2.9.0": 5138022,
+   "peft==0.21.1": 863928,
+   "scikit-learn==1.9.1": 9143910,
+   "sentence-transformers==5.1.2": 539845
+  },
+  "direct_five_bytes_minus_prior": -98999,
+  "installed_bytes": "NOT_MEASURED_NO_PYTHON_3_13",
+  "why_installed_bytes_were_not_measured": "No Python 3.13 interpreter was present. The system interpreter is 3.14.4. The conda interpreters found are 3.12.7 and 3.12.13. A marker resolver fetched a CPython 3.13 toolchain and that toolchain was removed. It was not used to create an environment. Python 3.12 was not substituted and called 3.13.",
+  "environment_installed": false,
+  "sentence_transformers_imported_against_the_model": false
+ },
+ "approval_request": {
+  "status": "REQUESTED_NOT_GRANTED",
+  "research_run": "NOT_RUN",
+  "revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
+  "trust_remote_code_remains_false_until_the_owner_says_otherwise": true,
+  "licence": "CC BY-NC 4.0",
+  "commercial_deployment_approval": false,
+  "pinned_requirement_set": [
+   "accelerate==1.15.0",
+   "aiohappyeyeballs==2.7.1",
+   "aiohttp==3.14.3",
+   "aiosignal==1.4.0",
+   "annotated-types==0.8.0",
+   "anyio==4.15.1",
+   "attrs==26.1.0",
+   "certifi==2026.7.22",
+   "charset-normalizer==3.5.2",
+   "cloudpickle==3.1.2",
+   "cuda-bindings==13.4.3",
+   "cuda-pathfinder==1.8.2",
+   "cuda-toolkit==13.0.3.0",
+   "datasets==5.0.1",
+   "dill==0.4.1",
+   "filelock==4.0.7",
+   "frozenlist==1.8.0",
+   "fsspec==2026.6.0",
+   "h11==0.16.0",
+   "hf-xet==1.6.0",
+   "httpcore==1.0.9",
+   "httpx==0.28.1",
+   "huggingface-hub==0.36.2",
+   "idna==3.20",
+   "Jinja2==3.1.6",
+   "joblib==1.6.0",
+   "markdown-it-py==4.2.0",
+   "MarkupSafe==3.0.3",
+   "mdurl==0.1.2",
+   "mpmath==1.3.0",
+   "mteb==2.9.0",
+   "multidict==6.9.1",
+   "multiprocess==0.70.19",
+   "narwhals==2.26.0",
+   "networkx==3.7",
+   "numpy==2.5.3",
+   "nvidia-cublas==13.1.1.3",
+   "nvidia-cuda-cupti==13.0.85",
+   "nvidia-cuda-nvrtc==13.0.88",
+   "nvidia-cuda-runtime==13.0.96",
+   "nvidia-cudnn-cu13==9.24.0.43",
+   "nvidia-cufft==12.0.0.61",
+   "nvidia-cufile==1.15.1.6",
+   "nvidia-curand==10.4.0.35",
+   "nvidia-cusolver==12.0.4.66",
+   "nvidia-cusparse==12.6.3.3",
+   "nvidia-cusparselt-cu13==0.8.1",
+   "nvidia-nccl-cu13==2.30.7",
+   "nvidia-nvjitlink==13.4.92",
+   "nvidia-nvshmem-cu13==3.4.5",
+   "nvidia-nvtx==13.0.85",
+   "packaging==26.3",
+   "pandas==3.0.6",
+   "peft==0.21.1",
+   "pillow==12.3.0",
+   "polars==1.44.2",
+   "polars-runtime-32==1.44.2",
+   "propcache==0.5.4",
+   "psutil==7.2.2",
+   "pyarrow==25.0.1",
+   "pydantic==2.13.5",
+   "pydantic_core==2.46.5",
+   "Pygments==2.21.0",
+   "python-dateutil==2.9.0.post0",
+   "pytrec-eval-terrier==0.5.10",
+   "PyYAML==6.0.3",
+   "regex==2026.9.29",
+   "requests==2.34.2",
+   "rich==15.0.0",
+   "safetensors==0.8.0",
+   "scikit-learn==1.9.1",
+   "scipy==1.18.1",
+   "sentence-transformers==5.1.2",
+   "setuptools==84.0.0",
+   "six==1.17.0",
+   "sympy==1.14.0",
+   "threadpoolctl==3.7.0",
+   "tokenizers==0.22.2",
+   "torch==2.14.0",
+   "tqdm==4.70.1",
+   "transformers==4.57.6",
+   "triton==3.8.0",
+   "typing-extensions==4.16.0",
+   "typing-inspection==0.4.4",
+   "urllib3==2.8.0",
+   "xxhash==4.0.1",
+   "yarl==1.25.1"
+  ],
+  "download_bytes": 3230034941,
+  "installed_bytes": "NOT_MEASURED_NO_PYTHON_3_13",
+  "concrete_remote_operations": [
+   "modeling_jina_embeddings_v5.py:37-40 snapshot_download(allow_patterns=['adapters/*']) at call time inside from_pretrained, when the model path is not a local directory",
+   "modeling_jina_embeddings_v5.py:57-60 AutoTokenizer.from_pretrained(trust_remote_code=True) at call time",
+   "custom_st.py:44-47 AutoTokenizer.from_pretrained(trust_remote_code=True) at call time",
+   "call-time hub loads via from_pretrained and load_adapter in both modules; no shell, no eval/exec, no pickle, no torch.load, no open/write in the fetched Python"
+  ]
+ },
+ "not_done": [
+  "research run NOT_RUN",
+  "BANKING77 not scored",
+  "no warehouse row",
+  "model weights not downloaded",
+  "snapshot_download not called",
+  "trust_remote_code not set by this lane",
+  "remote Python not imported and not executed",
+  "no environment installed",
+  "no commit and no push"
+ ]
+}

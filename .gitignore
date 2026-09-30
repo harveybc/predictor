@@ -195,3 +195,7 @@ docs/tesis_representaciones_modulares/referencias/*
 # Frozen audit evidence is tracked deliberately: the LaTeX *.log/*.out
 # rules above must never swallow a PRE/POST reproduction output.
 !docs/audits/evidence/**
+
+# Closure-review scratch: remote source and priced env. Never commit.
+.remote-src/
+.closure-env/
