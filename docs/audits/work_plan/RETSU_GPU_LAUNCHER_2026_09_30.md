@@ -59,6 +59,8 @@ POST, same cap, still no CUDA:
 
 The prepared environment is on the coordinator: `.repair-env` in this worktree. The interpreter is the isolated prefix's `python3.12` (`.repair-env/bin/python3.12`). It has not been tested on the admitted worker. Do not transport the prefix. Copying a virtual environment whose scripts and `pyvenv.cfg` record absolute paths would be invalid; those paths are the machine that created the prefix, not a portable root.
 
+The worker procedure is `docs/audits/work_plan/RETSU_GPU_WORKER_VENV_2026_09_30.md`. The worker creates `.worker-diag-env` with a relative interpreter after a compute-capability gate. That procedure was written and not run. The command in the next section is the coordinator-prefix shape. It is not the worker command.
+
 The CUDA 12.5 pin is the tested-build floor used for that install (`tensorflow==2.21.0`, `nvidia-*-cu12` at the 12.5 / cuDNN 9.3 lower bounds). It is not a claim that the pin suits every GPU architecture. The installed wheel's `build_info.py`, read as text and not imported, declares CUDA 12.5.1, cuDNN 9, and compute capabilities `sm_60`, `sm_70`, `sm_80`, `sm_89`, `compute_90`. That list is not a certificate for every card.
 
 ## Diagnostic, not run

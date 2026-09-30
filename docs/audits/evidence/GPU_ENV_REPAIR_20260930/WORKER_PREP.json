@@ -1,0 +1,96 @@
+{
+  "schema": "gpu_worker_venv_prep.v1",
+  "at": "2026-09-30",
+  "diagnostic": "NOT_RUN",
+  "calibrations": "NOT_RUN",
+  "envelope_12gib_reduced": false,
+  "eighteen_gib_requested": false,
+  "venv_created": false,
+  "procedure": "WRITTEN_NOT_RUN",
+  "repair_env_transported": false,
+  "tensorflow_imported": false,
+  "driver_or_library_changed": false,
+  "establishes_a_gpu_pilot": false,
+  "preparation_pin": {
+    "tensorflow": "2.21.0",
+    "nvidia-cuda-runtime-cu12": "12.5.82",
+    "nvidia-cudnn-cu12": "9.3.0.75",
+    "file": "docs/audits/evidence/GPU_ENV_REPAIR_20260930/pins-worker-prep.txt",
+    "wheel_count": 44,
+    "wheel_bytes": 2576641397,
+    "wheel_bytes_label": "MEASURED",
+    "what_it_is": "The tested-build floor already installed on the coordinator, re-hashed from those wheels. Not a new resolve and not a demonstrated repair."
+  },
+  "coordinator_prefix_filename_inventory": {
+    "libcudart_so_12": "nvidia/cuda_runtime/lib/libcudart.so.12",
+    "libcudart_so_13_present": false,
+    "nvidia_cu13_lib_directories": 0,
+    "label": "MEASURED",
+    "loaded": false
+  },
+  "declared_compute_capabilities_read_as_text": ["sm_60", "sm_70", "sm_80", "sm_89", "compute_90"],
+  "declared_cuda_version_read_as_text": "12.5.1",
+  "declared_cudnn_version_read_as_text": "9",
+  "build_info_imported": false,
+  "cuda_12_5_versus_cuda_13_soname_clash": "NOT_DEMONSTRATED",
+  "refusal_retained": {
+    "device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+    "missing_soname": "NOT_RETAINED",
+    "driver_version": "NOT_RETAINED",
+    "tensorflow_build_cuda_cudnn": "NOT_RETAINED",
+    "libcuda_so_1": "loads, as retained in the integration note; the refusal JSON does not retain a dlerror",
+    "framework_devices": []
+  },
+  "shell_without_a_new_credential": true,
+  "occupancy": {
+    "label": "MEASURED",
+    "method": "read-only nvidia-smi query of uuid, memory, utilization, and compute capability where taken. No process was placed. The excluded UUID was not a destination.",
+    "devices": [
+      {
+        "uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+        "role": "EXCLUDED_NOT_A_DESTINATION",
+        "memory_used_mib": 647,
+        "memory_total_mib": 8188,
+        "utilization_gpu_percent": 29,
+        "compute_cap": "NOT_QUERIED",
+        "pin_applied": false
+      },
+      {
+        "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+        "role": "PREFERRED",
+        "memory_used_mib": 10,
+        "memory_total_mib": 32607,
+        "utilization_gpu_percent": 0,
+        "compute_cap": "12.0",
+        "compute_cap_label": "MEASURED",
+        "inside_declared_compute_list": false,
+        "pin_applied": false,
+        "why_the_pin_was_not_applied": "Measured compute capability 12.0 is outside the wheel text sm_60, sm_70, sm_80, sm_89, compute_90. The pin was not forced onto this card."
+      },
+      {
+        "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
+        "role": "NOT_A_DESTINATION",
+        "memory_used_mib": 14,
+        "memory_total_mib": 12227,
+        "utilization_gpu_percent": 18,
+        "compute_cap": "12.0",
+        "compute_cap_label": "MEASURED",
+        "inside_declared_compute_list": false,
+        "pin_applied": false
+      },
+      {
+        "uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+        "role": "RETAINED_REFUSAL",
+        "memory_used_mib": 14,
+        "memory_total_mib": 16376,
+        "utilization_gpu_percent": 7,
+        "compute_cap": "8.9",
+        "compute_cap_label": "MEASURED",
+        "inside_declared_compute_list": true,
+        "pin_applied": false,
+        "venv_created": false,
+        "diagnostic": "NOT_RUN"
+      }
+    ]
+  }
+}
