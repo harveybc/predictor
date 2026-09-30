@@ -473,5 +473,9 @@
    "at": "2026-09-30 ~23:30Z",
    "what": "s2023 verified on the coordinator's preserved copy: record 6facce4b, checkpoint e5932881, author float32 vs independent float64 within 1e-8, naive on the same rows proven by population sha"
   }
- ]
+ ],
+ "worker_a_idle_reason_by_uuid": {
+  "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8": "reserved for M04 cost pilot (queued behind ADM-DEADCACHE-01)",
+  "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519": "free: 5070 Ti Laptop, same host (8 GiB slice shared with M04)"
+ }
 }

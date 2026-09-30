@@ -59,7 +59,8 @@ def main(status_path, out_path):
                 ax.barh(y, b - a, left=a, height=0.42, color=DONE, zorder=3)
                 ax.text(a, y + 0.32, f"{j['id'].replace('traffic_L96_', '')} done {b:%H:%M}Z", fontsize=8, color=INK)
         if d["state"] == "idle":
-            ax.text(t0 + dt.timedelta(minutes=3), y, "idle: " + (d.get("reason") or "")[:88], va="center",
+            why = (d.get("reason") or "").removeprefix("idle: ")
+            ax.text(now + dt.timedelta(minutes=3), y, ("idle — " + why)[:70], va="center",
                     fontsize=7.5, color=INK2)
     q = [j for j in st["jobs"] if j.get("stage") == "queued_for_admission"]
     if q:

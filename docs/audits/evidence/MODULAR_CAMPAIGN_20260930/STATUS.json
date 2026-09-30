@@ -1,11 +1,11 @@
 {
  "schema": "modular.program.status.v1",
- "observed_at": "2026-09-30T23:30:15Z",
+ "observed_at": "2026-09-30T23:31:38Z",
  "plan_revision": "dc72170e",
  "writer": {
   "script": "tools/m06_status_writer.py",
   "lane": "M06",
-  "pid": 609067
+  "pid": 651294
  },
  "agents": [
   {
@@ -20,7 +20,7 @@
      "repo": "predictor",
      "branch": "satoshi/m06-evidence-resources-20260930",
      "worktree": "~/Documents/GitHub/.worktrees/predictor-m06-20260930",
-     "tip": "91f6c94dbec4"
+     "tip": "4462427d5c73"
     },
     {
      "lane": "M06",
@@ -200,20 +200,20 @@
    "state": "idle",
    "job_id": null,
    "reason": "idle: free for the next admissible slot",
-   "observed_at": "2026-09-30T23:30:15Z",
-   "temperature_c": 57.0,
-   "utilization_percent": 37.0,
-   "host_available_bytes": 20100231168,
+   "observed_at": "2026-09-30T23:31:38Z",
+   "temperature_c": 54.0,
+   "utilization_percent": 0.0,
+   "host_available_bytes": 18030358528,
    "gpu": {
     "uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
     "name": "NVIDIA GeForce RTX 4070 Laptop GPU",
-    "temperature_c": 57.0,
-    "utilization_percent": 37.0,
-    "sm_clock_mhz": 210.0,
+    "temperature_c": 54.0,
+    "utilization_percent": 0.0,
+    "sm_clock_mhz": 255.0,
     "sm_clock_max_mhz": 3105.0,
-    "vram_used_mib": 818.0,
+    "vram_used_mib": 725.0,
     "vram_total_mib": 8188.0,
-    "power_w": 5.62,
+    "power_w": 5.09,
     "throttle_reasons_hex": "0x0000000000000001",
     "throttle_reasons": [
      "gpu_idle"
@@ -222,22 +222,22 @@
    "host": {
     "mem": {
      "MemTotal": 32778358784,
-     "MemAvailable": 20100231168,
-     "SUnreclaim": 684269568,
-     "SReclaimable": 2602315776
+     "MemAvailable": 18030358528,
+     "SUnreclaim": 701673472,
+     "SReclaimable": 2601943040
     },
-    "unreclaimable_slab_bytes": 684269568,
-    "psi_memory": "some avg10=0.00 avg60=0.37 avg300=0.50 total=8925150\nfull avg10=0.00 avg60=0.36 avg300=0.49 total=8873048",
-    "uptime_s": 185264.93
+    "unreclaimable_slab_bytes": 701673472,
+    "psi_memory": "some avg10=28.90 avg60=11.03 avg300=3.03 total=17320990\nfull avg10=24.96 avg60=9.58 avg300=2.68 total=16232898",
+    "uptime_s": 185348.16
    },
    "admission": {
-    "host_free_for_new_bytes": 11385356288,
-    "held_unrealised_bytes": 5489565696,
+    "host_free_for_new_bytes": 14100860928,
+    "held_unrealised_bytes": 695033856,
     "desktop_reserve_bytes": 3221225472,
-    "pressure_some_avg10": 0.0,
-    "pressure_full_avg10": 0.0,
+    "pressure_some_avg10": 33.4,
+    "pressure_full_avg10": 28.8,
     "pressure_admit_max": 25.0,
-    "slice_memory_current": 2810990592,
+    "slice_memory_current": 4392263680,
     "slice_memory_max": 15032385536
    },
    "leases": [
@@ -245,25 +245,17 @@
      "lease_id": "m01-venv-1790810911-635210-62e19b",
      "name": "m01-venv",
      "cap_bytes": 3221225472,
-     "observed_bytes": 1450127360,
+     "observed_bytes": 3030007808,
      "armed": true,
-     "expires_at": 1790811911.3300095
+     "expires_at": 1790811996.3481555
     },
     {
-     "lease_id": "m02-suite-1790810908-599165-947fe3",
-     "name": "m02-suite",
-     "cap_bytes": 3221225472,
-     "observed_bytes": null,
-     "armed": false,
-     "expires_at": 1790811808.6989572
-    },
-    {
-     "lease_id": "m06-status-writer-1790809392-609055-91bae6",
+     "lease_id": "m06-status-writer-1790811049-651282-98717f",
      "name": "m06-status-writer",
      "cap_bytes": 536870912,
-     "observed_bytes": 39628800,
+     "observed_bytes": 33054720,
      "armed": true,
-     "expires_at": 1790811912.5768063
+     "expires_at": 1790811994.7035458
     }
    ]
   },
@@ -273,21 +265,21 @@
    "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
    "state": "idle",
    "job_id": null,
-   "reason": "slot handed to M04 (agent a083979bc9a8fa1b8) by the orchestrator with the TF launch recipe; lease id pending",
-   "observed_at": "2026-09-30T23:30:16Z",
+   "reason": "free: 5070 Ti Laptop, same host (8 GiB slice shared with M04)",
+   "observed_at": "2026-09-30T23:31:39Z",
    "temperature_c": 27.0,
-   "utilization_percent": 18.0,
-   "host_available_bytes": 12611633152,
+   "utilization_percent": 13.0,
+   "host_available_bytes": 12310638592,
    "gpu": {
     "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
     "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
     "temperature_c": 27.0,
-    "utilization_percent": 18.0,
-    "sm_clock_mhz": 352.0,
+    "utilization_percent": 13.0,
+    "sm_clock_mhz": 240.0,
     "sm_clock_max_mhz": 3090.0,
     "vram_used_mib": 14.0,
     "vram_total_mib": 12227.0,
-    "power_w": 15.98,
+    "power_w": 15.91,
     "throttle_reasons_hex": "0x0000000000000004",
     "throttle_reasons": [
      "sw_power_cap"
@@ -296,16 +288,16 @@
    "host": {
     "mem": {
      "MemTotal": 15340752896,
-     "MemAvailable": 12611633152,
-     "SUnreclaim": 337371136,
-     "SReclaimable": 206082048
+     "MemAvailable": 12310638592,
+     "SUnreclaim": 340033536,
+     "SReclaimable": 206102528
     },
-    "unreclaimable_slab_bytes": 337371136,
+    "unreclaimable_slab_bytes": 340033536,
     "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=432\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=419",
-    "uptime_s": 2178.24
+    "uptime_s": 2261.47
    },
    "admission": {
-    "host_free_for_new_bytes": 9375023104,
+    "host_free_for_new_bytes": 9075109888,
     "held_unrealised_bytes": 0,
     "desktop_reserve_bytes": 3221225472,
     "pressure_some_avg10": 0.0,
@@ -322,11 +314,11 @@
    "name": "NVIDIA GeForce RTX 5090",
    "state": "idle",
    "job_id": null,
-   "reason": "slot handed to M04 (agent a083979bc9a8fa1b8) by the orchestrator with the TF launch recipe; lease id pending",
-   "observed_at": "2026-09-30T23:30:16Z",
+   "reason": "reserved for M04 cost pilot (queued behind ADM-DEADCACHE-01)",
+   "observed_at": "2026-09-30T23:31:39Z",
    "temperature_c": 37.0,
    "utilization_percent": 0.0,
-   "host_available_bytes": 12611633152,
+   "host_available_bytes": 12310638592,
    "gpu": {
     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
     "name": "NVIDIA GeForce RTX 5090",
@@ -336,23 +328,23 @@
     "sm_clock_max_mhz": 3135.0,
     "vram_used_mib": 10.0,
     "vram_total_mib": 32607.0,
-    "power_w": 3.64,
+    "power_w": 3.17,
     "throttle_reasons_hex": "0x0000000000000000",
     "throttle_reasons": []
    },
    "host": {
     "mem": {
      "MemTotal": 15340752896,
-     "MemAvailable": 12611633152,
-     "SUnreclaim": 337371136,
-     "SReclaimable": 206082048
+     "MemAvailable": 12310638592,
+     "SUnreclaim": 340033536,
+     "SReclaimable": 206102528
     },
-    "unreclaimable_slab_bytes": 337371136,
+    "unreclaimable_slab_bytes": 340033536,
     "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=432\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=419",
-    "uptime_s": 2178.24
+    "uptime_s": 2261.47
    },
    "admission": {
-    "host_free_for_new_bytes": 9375023104,
+    "host_free_for_new_bytes": 9075109888,
     "held_unrealised_bytes": 0,
     "desktop_reserve_bytes": 3221225472,
     "pressure_some_avg10": 0.0,
@@ -370,20 +362,20 @@
    "state": "idle",
    "job_id": null,
    "reason": "idle: free for the next admissible slot",
-   "observed_at": "2026-09-30T23:30:16Z",
-   "temperature_c": 45.0,
-   "utilization_percent": 0.0,
-   "host_available_bytes": 18382692352,
+   "observed_at": "2026-09-30T23:31:40Z",
+   "temperature_c": 44.0,
+   "utilization_percent": 6.0,
+   "host_available_bytes": 18646298624,
    "gpu": {
     "uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
     "name": "NVIDIA GeForce RTX 4090 Laptop GPU",
-    "temperature_c": 45.0,
-    "utilization_percent": 0.0,
-    "sm_clock_mhz": 210.0,
+    "temperature_c": 44.0,
+    "utilization_percent": 6.0,
+    "sm_clock_mhz": 1455.0,
     "sm_clock_max_mhz": 3105.0,
     "vram_used_mib": 14.0,
     "vram_total_mib": 16376.0,
-    "power_w": 2.37,
+    "power_w": 26.58,
     "throttle_reasons_hex": "0x0000000000000001",
     "throttle_reasons": [
      "gpu_idle"
@@ -392,22 +384,22 @@
    "host": {
     "mem": {
      "MemTotal": 32831807488,
-     "MemAvailable": 18382692352,
-     "SUnreclaim": 2558726144,
-     "SReclaimable": 532201472
+     "MemAvailable": 18646298624,
+     "SUnreclaim": 2560962560,
+     "SReclaimable": 532488192
     },
-    "unreclaimable_slab_bytes": 2558726144,
-    "psi_memory": "some avg10=0.00 avg60=0.12 avg300=1.23 total=29059503\nfull avg10=0.00 avg60=0.12 avg300=1.22 total=28767867",
-    "uptime_s": 176177.05
+    "unreclaimable_slab_bytes": 2560962560,
+    "psi_memory": "some avg10=0.00 avg60=0.02 avg300=0.91 total=29059597\nfull avg10=0.00 avg60=0.02 avg300=0.90 total=28767961",
+    "uptime_s": 176263.06
    },
    "admission": {
-    "host_free_for_new_bytes": 10575970304,
-    "held_unrealised_bytes": 4573761536,
+    "host_free_for_new_bytes": 10682494976,
+    "held_unrealised_bytes": 4903350272,
     "desktop_reserve_bytes": 3221225472,
     "pressure_some_avg10": 0.0,
     "pressure_full_avg10": 0.0,
     "pressure_admit_max": 25.0,
-    "slice_memory_current": 3528011776,
+    "slice_memory_current": 3187527680,
     "slice_memory_max": 15032385536
    },
    "leases": [
@@ -415,25 +407,25 @@
      "lease_id": "m02-suite-pilot2-1790810896-1211794-2c1543",
      "name": "m02-suite-pilot2",
      "cap_bytes": 3221225472,
-     "observed_bytes": 989417472,
+     "observed_bytes": 635633664,
      "armed": true,
-     "expires_at": 1790811912.1228435
+     "expires_at": 1790812002.1512868
     },
     {
      "lease_id": "m03-prof-tsl_electricity-1790810788-1210279-83655c",
      "name": "m03-prof-tsl_electricity",
      "cap_bytes": 1610612736,
-     "observed_bytes": 215154688,
+     "observed_bytes": 216981504,
      "armed": true,
-     "expires_at": 1790811914.084106
+     "expires_at": 1790811999.101263
     },
     {
      "lease_id": "m03-profB-tsl_weather-1790810909-1212002-a8b59f",
      "name": "m03-profB-tsl_weather",
      "cap_bytes": 1073741824,
-     "observed_bytes": 127246336,
+     "observed_bytes": 149614592,
      "armed": true,
-     "expires_at": 1790811915.0729315
+     "expires_at": 1790812000.1667438
     }
    ]
   }
@@ -539,33 +531,9 @@
    "stage": "queued_for_admission",
    "host_alias": "coordinator",
    "declared_mem": "3G",
-   "waiting_s": 120,
+   "waiting_s": 203,
    "producer_commit": "unknown (launcher argv only)",
-   "heartbeat_at": "2026-09-30T23:30:15Z",
-   "progress": {
-    "unit": "unknown",
-    "completed": null,
-    "total": null
-   },
-   "eta": {
-    "earliest": null,
-    "latest": null,
-    "basis": "not_estimable",
-    "assumptions": [
-     "admission waits for a live lease on this host to release"
-    ]
-   }
-  },
-  {
-   "id": "m05-after",
-   "lane": "M05",
-   "state": "queued",
-   "stage": "queued_for_admission",
-   "host_alias": "coordinator",
-   "declared_mem": "3G",
-   "waiting_s": 8,
-   "producer_commit": "unknown (launcher argv only)",
-   "heartbeat_at": "2026-09-30T23:30:15Z",
+   "heartbeat_at": "2026-09-30T23:31:38Z",
    "progress": {
     "unit": "unknown",
     "completed": null,
@@ -587,9 +555,9 @@
    "stage": "queued_for_admission",
    "host_alias": "worker_a",
    "declared_mem": "6G",
-   "waiting_s": 1203,
+   "waiting_s": 1286,
    "producer_commit": "unknown (launcher argv only)",
-   "heartbeat_at": "2026-09-30T23:30:16Z",
+   "heartbeat_at": "2026-09-30T23:31:39Z",
    "progress": {
     "unit": "unknown",
     "completed": null,
@@ -879,7 +847,7 @@
    "repo": "predictor",
    "branch": "satoshi/m06-evidence-resources-20260930",
    "worktree": "~/Documents/GitHub/.worktrees/predictor-m06-20260930",
-   "tip": "91f6c94dbec4"
+   "tip": "4462427d5c73"
   },
   {
    "lane": "M06",

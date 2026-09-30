@@ -290,7 +290,7 @@ def build(hosts, reg):
             if run:
                 reason = "adopted Traffic cell"
             elif role == "worker_a":
-                reason = reg.get("worker_a_idle_reason")
+                reason = reg.get("worker_a_idle_reason_by_uuid", {}).get(g["uuid"]) or reg.get("worker_a_idle_reason")
             else:
                 reason = "idle: free for the next admissible slot"
             devices.append({
