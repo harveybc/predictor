@@ -1,0 +1,455 @@
+{
+  "cut": "2019-05-16 00:00:00",
+  "retained_manifests": {
+    "run_out/conditional_noise_20260927_full/manifest.json": {
+      "cell_trades_files": 241,
+      "cell_trades_files_with_reserved_timestamps": 240,
+      "exit_variant": null,
+      "input_sha256": "4b57164f54d03fe25de4796b75c367a15e2b1d90c89b0a40d831e5d65cd4b6e1",
+      "n_bars": 18475,
+      "n_origins": 13590,
+      "origin_first": "2017-03-22 18:00:00",
+      "origin_last": "2020-03-13 06:00:00",
+      "origins_csv": {
+        "data_rows": 13590,
+        "first_row": "2017-03-22 18:00:00",
+        "header_first_field": "DATE_TIME",
+        "last_row_on_or_after_cut": "2020-03-13 06:00:00",
+        "rows_first_field_on_or_after_cut": 3738,
+        "sha256": "7b7ad5edbe54583f001ee8750988dfa44685e976623dc798333adb5aca153c81"
+      },
+      "sha256": "fbed813f3c2d1d6371acb003841b0d4daa8052452b49f78132c5650d91dcf491",
+      "verdict": "RESERVED_ORIGINS_SCORED"
+    },
+    "run_out/conditional_noise_20260927_pilot/manifest.json": {
+      "cell_trades_files": 5,
+      "cell_trades_files_with_reserved_timestamps": 4,
+      "exit_variant": null,
+      "input_sha256": "4b57164f54d03fe25de4796b75c367a15e2b1d90c89b0a40d831e5d65cd4b6e1",
+      "n_bars": 18475,
+      "n_origins": 13590,
+      "origin_first": "2017-03-22 18:00:00",
+      "origin_last": "2020-03-13 06:00:00",
+      "origins_csv": {
+        "data_rows": 13590,
+        "first_row": "2017-03-22 18:00:00",
+        "header_first_field": "DATE_TIME",
+        "last_row_on_or_after_cut": "2020-03-13 06:00:00",
+        "rows_first_field_on_or_after_cut": 3738,
+        "sha256": "7b7ad5edbe54583f001ee8750988dfa44685e976623dc798333adb5aca153c81"
+      },
+      "sha256": "713144a36bf2433567caea843587fa831e604af9f9f45d47b673627060163cc0",
+      "verdict": "RESERVED_ORIGINS_SCORED"
+    },
+    "run_out/native_conditional_20260927_full/manifest.json": {
+      "cell_trades_files": 241,
+      "cell_trades_files_with_reserved_timestamps": 237,
+      "exit_variant": "E",
+      "input_sha256": "4b57164f54d03fe25de4796b75c367a15e2b1d90c89b0a40d831e5d65cd4b6e1",
+      "n_bars": 18475,
+      "n_origins": 13590,
+      "origin_first": "2017-03-22 18:00:00",
+      "origin_last": "2020-03-13 06:00:00",
+      "origins_csv": {
+        "data_rows": 13590,
+        "first_row": "2017-03-22 18:00:00",
+        "header_first_field": "DATE_TIME",
+        "last_row_on_or_after_cut": "2020-03-13 06:00:00",
+        "rows_first_field_on_or_after_cut": 3738,
+        "sha256": "7b7ad5edbe54583f001ee8750988dfa44685e976623dc798333adb5aca153c81"
+      },
+      "sha256": "958726415c09ced866c7d8164dfe4e49b99b4ccb8e0e5e7059fa26effdbba94f",
+      "verdict": "RESERVED_ORIGINS_SCORED"
+    },
+    "run_out/native_conditional_20260927_pilot/manifest.json": {
+      "cell_trades_files": 5,
+      "cell_trades_files_with_reserved_timestamps": 4,
+      "exit_variant": "E",
+      "input_sha256": "4b57164f54d03fe25de4796b75c367a15e2b1d90c89b0a40d831e5d65cd4b6e1",
+      "n_bars": 18475,
+      "n_origins": 13590,
+      "origin_first": "2017-03-22 18:00:00",
+      "origin_last": "2020-03-13 06:00:00",
+      "origins_csv": {
+        "data_rows": 13590,
+        "first_row": "2017-03-22 18:00:00",
+        "header_first_field": "DATE_TIME",
+        "last_row_on_or_after_cut": "2020-03-13 06:00:00",
+        "rows_first_field_on_or_after_cut": 3738,
+        "sha256": "7b7ad5edbe54583f001ee8750988dfa44685e976623dc798333adb5aca153c81"
+      },
+      "sha256": "d86098bb5a26708e8ad3a9042703da5333d1a3f2e5af3ec219101e2166c764ca",
+      "verdict": "RESERVED_ORIGINS_SCORED"
+    },
+    "run_out/price_noise_20260927_full/manifest.json": {
+      "cell_trades_files": 64,
+      "cell_trades_files_with_reserved_timestamps": 60,
+      "exit_variant": "E, fixed before scores",
+      "input_sha256": "4b57164f54d03fe25de4796b75c367a15e2b1d90c89b0a40d831e5d65cd4b6e1",
+      "n_bars": 18475,
+      "n_origins": 18331,
+      "origin_first": "2017-03-22 18:00:00",
+      "origin_last": "2020-03-11 06:00:00",
+      "sha256": "1128493de87b1ab3ed33717e74f642c266467568e0957e6d1f674b74b3d2bb42",
+      "verdict": "RESERVED_ORIGINS_SCORED"
+    },
+    "run_out/price_noise_20260927_pilot/manifest.json": {
+      "exit_variant": "E, fixed before scores",
+      "input_sha256": "4b57164f54d03fe25de4796b75c367a15e2b1d90c89b0a40d831e5d65cd4b6e1",
+      "n_bars": 18475,
+      "n_origins": 18331,
+      "origin_first": "2017-03-22 18:00:00",
+      "origin_last": "2020-03-11 06:00:00",
+      "sha256": "13b363c959f40ea2487f37ebe2d3cb952fa0fd3a5dca2624b11d9c21ed842044",
+      "verdict": "RESERVED_ORIGINS_SCORED"
+    },
+    "run_out/price_noise_20260927_pilot_v2/manifest.json": {
+      "cell_trades_files": 3,
+      "cell_trades_files_with_reserved_timestamps": 2,
+      "exit_variant": "E, fixed before scores",
+      "input_sha256": "4b57164f54d03fe25de4796b75c367a15e2b1d90c89b0a40d831e5d65cd4b6e1",
+      "n_bars": 18475,
+      "n_origins": 18331,
+      "origin_first": "2017-03-22 18:00:00",
+      "origin_last": "2020-03-11 06:00:00",
+      "sha256": "38dbdf02b69fc0ff98841a3d2cf496186d9de830f44d81dec42dc00b9440009a",
+      "verdict": "RESERVED_ORIGINS_SCORED"
+    },
+    "run_out/price_noise_margin5_20260927_full/manifest.json": {
+      "cell_trades_files": 64,
+      "cell_trades_files_with_reserved_timestamps": 63,
+      "exit_variant": null,
+      "input_sha256": "4b57164f54d03fe25de4796b75c367a15e2b1d90c89b0a40d831e5d65cd4b6e1",
+      "n_bars": 18475,
+      "n_origins": 13590,
+      "origin_first": "2017-03-22 18:00:00",
+      "origin_last": "2020-03-13 06:00:00",
+      "origins_csv": {
+        "data_rows": 13590,
+        "first_row": "2017-03-22 18:00:00",
+        "header_first_field": "DATE_TIME",
+        "last_row_on_or_after_cut": "2020-03-13 06:00:00",
+        "rows_first_field_on_or_after_cut": 3738,
+        "sha256": "7b7ad5edbe54583f001ee8750988dfa44685e976623dc798333adb5aca153c81"
+      },
+      "sha256": "27e60a53b018ec50e9a25e324a9fe3d603e4bc81c37cf97c99e93676b43f0b77",
+      "verdict": "RESERVED_ORIGINS_SCORED"
+    },
+    "run_out/price_noise_margin5_20260927_pilot/manifest.json": {
+      "cell_trades_files": 3,
+      "cell_trades_files_with_reserved_timestamps": 2,
+      "exit_variant": null,
+      "input_sha256": "4b57164f54d03fe25de4796b75c367a15e2b1d90c89b0a40d831e5d65cd4b6e1",
+      "n_bars": 18475,
+      "n_origins": 13590,
+      "origin_first": "2017-03-22 18:00:00",
+      "origin_last": "2020-03-13 06:00:00",
+      "origins_csv": {
+        "data_rows": 13590,
+        "first_row": "2017-03-22 18:00:00",
+        "header_first_field": "DATE_TIME",
+        "last_row_on_or_after_cut": "2020-03-13 06:00:00",
+        "rows_first_field_on_or_after_cut": 3738,
+        "sha256": "7b7ad5edbe54583f001ee8750988dfa44685e976623dc798333adb5aca153c81"
+      },
+      "sha256": "395fad980a930e22afb930e1f825be0f1f8681078c2a8fe6c513b70b42a95c21",
+      "verdict": "RESERVED_ORIGINS_SCORED"
+    },
+    "run_out/price_noise_v2_20260927_full/manifest.json": {
+      "cell_trades_files": 64,
+      "cell_trades_files_with_reserved_timestamps": 63,
+      "exit_variant": null,
+      "input_sha256": "4b57164f54d03fe25de4796b75c367a15e2b1d90c89b0a40d831e5d65cd4b6e1",
+      "n_bars": 18475,
+      "n_origins": 13590,
+      "origin_first": "2017-03-22 18:00:00",
+      "origin_last": "2020-03-13 06:00:00",
+      "origins_csv": {
+        "data_rows": 13590,
+        "first_row": "2017-03-22 18:00:00",
+        "header_first_field": "DATE_TIME",
+        "last_row_on_or_after_cut": "2020-03-13 06:00:00",
+        "rows_first_field_on_or_after_cut": 3738,
+        "sha256": "7b7ad5edbe54583f001ee8750988dfa44685e976623dc798333adb5aca153c81"
+      },
+      "sha256": "98af3934177f8f7bf571192460a601700bb6c3548c4ecdeeecc074c3dbfe6f53",
+      "verdict": "RESERVED_ORIGINS_SCORED"
+    },
+    "run_out/price_noise_v2_20260927_pilot/manifest.json": {
+      "cell_trades_files": 3,
+      "cell_trades_files_with_reserved_timestamps": 2,
+      "exit_variant": null,
+      "input_sha256": "4b57164f54d03fe25de4796b75c367a15e2b1d90c89b0a40d831e5d65cd4b6e1",
+      "n_bars": 18475,
+      "n_origins": 13590,
+      "origin_first": "2017-03-22 18:00:00",
+      "origin_last": "2020-03-13 06:00:00",
+      "origins_csv": {
+        "data_rows": 13590,
+        "first_row": "2017-03-22 18:00:00",
+        "header_first_field": "DATE_TIME",
+        "last_row_on_or_after_cut": "2020-03-13 06:00:00",
+        "rows_first_field_on_or_after_cut": 3738,
+        "sha256": "7b7ad5edbe54583f001ee8750988dfa44685e976623dc798333adb5aca153c81"
+      },
+      "sha256": "d5596eba4ca070cc399f1f12394bda0cae7d5ffbe133843502e5cb023efad799",
+      "verdict": "RESERVED_ORIGINS_SCORED"
+    },
+    "run_out/price_noise_v2_20260927_pilot_final/manifest.json": {
+      "cell_trades_files": 3,
+      "cell_trades_files_with_reserved_timestamps": 2,
+      "exit_variant": null,
+      "input_sha256": "4b57164f54d03fe25de4796b75c367a15e2b1d90c89b0a40d831e5d65cd4b6e1",
+      "n_bars": 18475,
+      "n_origins": 13590,
+      "origin_first": "2017-03-22 18:00:00",
+      "origin_last": "2020-03-13 06:00:00",
+      "origins_csv": {
+        "data_rows": 13590,
+        "first_row": "2017-03-22 18:00:00",
+        "header_first_field": "DATE_TIME",
+        "last_row_on_or_after_cut": "2020-03-13 06:00:00",
+        "rows_first_field_on_or_after_cut": 3738,
+        "sha256": "7b7ad5edbe54583f001ee8750988dfa44685e976623dc798333adb5aca153c81"
+      },
+      "sha256": "5e59bcc7effbc2ef6b3a3543f85a242695fb614aceb7953dd291300c820480d7",
+      "verdict": "RESERVED_ORIGINS_SCORED"
+    }
+  },
+  "root_files": {
+    "cnn_predictions_15yr.csv": {
+      "data_rows": 23466,
+      "first_row": "2005-05-25 01:00:00",
+      "header_first_field": "DATE_TIME",
+      "last_row_on_or_after_cut": "2020-04-29 21:00:00",
+      "rows_first_field_on_or_after_cut": 1504,
+      "sha256": "75d8d49e51bdc37f6d53252319c52e2f5e17d4628fb7a0b078e4ad3ea7f1be98",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "ensemble_predictions_15yr.csv": {
+      "data_rows": 23466,
+      "first_row": "2005-05-25 01:00:00",
+      "header_first_field": "DATE_TIME",
+      "last_row_on_or_after_cut": "2020-04-29 21:00:00",
+      "rows_first_field_on_or_after_cut": 1504,
+      "sha256": "ff2d1796c5d959c5a765df21c7b1bdf50e69b52bf5d6c461280d071945645c4e",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "oracle_ceiling_trades.csv": {
+      "data_rows": 3452,
+      "first_row": "2006-01-02 22:00:00",
+      "header_first_field": "open_dt",
+      "last_row_on_or_after_cut": "2019-12-30 22:00:00",
+      "rows_first_field_on_or_after_cut": 148,
+      "sha256": "71f4704df450cbd72cb8a7ca399c6ce023a9b344efc2c5dcd8021e91962276b3",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "phase_b_cnn_trades.csv": {
+      "data_rows": 2745,
+      "first_row": "2006-01-02 08:00:00",
+      "header_first_field": "open_dt",
+      "last_row_on_or_after_cut": "2019-12-31 06:00:00",
+      "rows_first_field_on_or_after_cut": 134,
+      "sha256": "ec43291c0ec5956596a5cce7928e070d671d5c47016467d67b5ac7fc289dc5dd",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "phase_c_ensemble_trades.csv": {
+      "data_rows": 1566,
+      "first_row": "2006-01-02 17:00:00",
+      "header_first_field": "open_dt",
+      "last_row_on_or_after_cut": "2019-12-30 05:00:00",
+      "rows_first_field_on_or_after_cut": 67,
+      "sha256": "3f081ab6167e8f39bfc7cb96df8882147fe2dddcf824f2ab1018fe07703e1f9a",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "phase_d_neat_trades.csv": {
+      "data_rows": 1396,
+      "first_row": "2006-01-03 17:00:00",
+      "header_first_field": "open_dt",
+      "last_row_on_or_after_cut": "2019-12-30 05:00:00",
+      "rows_first_field_on_or_after_cut": 21,
+      "sha256": "7c7ec2d2622e2a4cb1de07ad4165863cd9937cddd74306fa29106fc8b7ac8009",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "tests/data/ann_predictions_daily_d3.csv": {
+      "data_rows": 6156,
+      "first_row": "2018-05-16 01:00:00",
+      "header_first_field": "DATE_TIME",
+      "last_row_on_or_after_cut": null,
+      "rows_first_field_on_or_after_cut": 0,
+      "sha256": "c01341e8ebb1f1cf3128616b6eee2d7c32fd828ba5ed859101f20fae66ad34e5",
+      "verdict": "NO_RESERVED_ROWS"
+    },
+    "tests/data/ann_predictions_hourly_d3.csv": {
+      "data_rows": 6294,
+      "first_row": "2018-05-16 01:00:00",
+      "header_first_field": "DATE_TIME",
+      "last_row_on_or_after_cut": "2019-05-23 10:00:00",
+      "rows_first_field_on_or_after_cut": 127,
+      "sha256": "612fd3170086a6d14bc138340f26d19c06790bb6cc97e179d079224aef9f7493",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "tests/data/eurusd_hour_2005_2020.csv": {
+      "data_rows": 93084,
+      "first_row": "2005-05-02 00:00:00",
+      "header_first_field": "DATE_TIME",
+      "last_row_on_or_after_cut": "2020-04-29 22:00:00",
+      "rows_first_field_on_or_after_cut": 5923,
+      "sha256": "72b8271d2a6ab7fc5de8c64dc626f128dbb11a1127c333e4039edecbdcc41783",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "tests/data/ideal_predictions_daily_d3.csv": {
+      "data_rows": 11234,
+      "first_row": "2018-05-16 01:00:00",
+      "header_first_field": "DATE_TIME",
+      "last_row_on_or_after_cut": "2020-03-11 06:00:00",
+      "rows_first_field_on_or_after_cut": 5067,
+      "sha256": "90652877b8e68a2272282df1edadb584c365bbcfc490b843cd1fb758589a92ff",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "tests/data/ideal_predictions_hourly_d3.csv": {
+      "data_rows": 11234,
+      "first_row": "2018-05-16 01:00:00",
+      "header_first_field": "DATE_TIME",
+      "last_row_on_or_after_cut": "2020-03-11 06:00:00",
+      "rows_first_field_on_or_after_cut": 5067,
+      "sha256": "5b18985673a853421580bf6dbc6c6aa206d3cab732f77b0a6ddb858ebd02dde1",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "tests/data/lstm_predictions_hourly_d3.csv": {
+      "data_rows": 6288,
+      "first_row": "2018-05-16 01:00:00",
+      "header_first_field": "DATE_TIME",
+      "last_row_on_or_after_cut": "2019-05-23 04:00:00",
+      "rows_first_field_on_or_after_cut": 121,
+      "sha256": "4f4ed2d99706b64fa1fbaeb82169eeeb873c18596a80557ee1058b0c32bb9d2a",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "tests/data/phase_1_base_d3.csv": {
+      "data_rows": 11378,
+      "first_row": "2018-05-16 01:00:00",
+      "header_first_field": "DATE_TIME",
+      "last_row_on_or_after_cut": "2020-03-19 06:00:00",
+      "rows_first_field_on_or_after_cut": 5211,
+      "sha256": "c5a8d9f3d0ade7956974b59cd85ba37505053cf849f8f944a3081a19058923bf",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "tests/data/phase_1c_direction_test_ohlc.csv": {
+      "data_rows": 8682,
+      "first_row": "2018-12-02 22:00:00",
+      "header_first_field": "DATE_TIME",
+      "last_row_on_or_after_cut": "2020-04-29 22:00:00",
+      "rows_first_field_on_or_after_cut": 5923,
+      "sha256": "8b9f20cf7604762e0f5af7130517ac90a3dec9a03560639bf1aac90d9bdd9432",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "tests/data/phase_2_3_base_d3.csv": {
+      "data_rows": 18475,
+      "first_row": "2017-03-22 18:00:00",
+      "header_first_field": "DATE_TIME",
+      "last_row_on_or_after_cut": "2020-03-19 06:00:00",
+      "rows_first_field_on_or_after_cut": 5211,
+      "sha256": "4b57164f54d03fe25de4796b75c367a15e2b1d90c89b0a40d831e5d65cd4b6e1",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "tests/data/phase_2_3_base_d3_last_year.csv": {
+      "data_rows": 6189,
+      "first_row": "2019-03-20 06:00:00",
+      "header_first_field": "DATE_TIME",
+      "last_row_on_or_after_cut": "2020-03-19 06:00:00",
+      "rows_first_field_on_or_after_cut": 5211,
+      "sha256": "90c5934fcecc9e214c924def51d0dcdfa3739dcd7bc3d48f5105f5785280f0e1",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "tests/data/phase_2_3_cnn_1d_prediction_d3.csv": {
+      "data_rows": 5895,
+      "first_row": "2017-04-07 08:00:00",
+      "header_first_field": "DATE_TIME",
+      "last_row_on_or_after_cut": null,
+      "rows_first_field_on_or_after_cut": 0,
+      "sha256": "709344f7e1461d19d3c48a5cf55ef0725dcb50bcf17d2bd5b156d822885ab570",
+      "verdict": "NO_RESERVED_ROWS"
+    },
+    "tests/data/phase_2_3_cnn_1h_prediction_d3.csv": {
+      "data_rows": 6033,
+      "first_row": "2017-04-07 08:00:00",
+      "header_first_field": "DATE_TIME",
+      "last_row_on_or_after_cut": null,
+      "rows_first_field_on_or_after_cut": 0,
+      "sha256": "de98cf5bf05ecdffcf6e9c7fdd7f315f6e68c3c366fc97106823496d390c33b7",
+      "verdict": "NO_RESERVED_ROWS"
+    },
+    "trades.csv": {
+      "data_rows": 1,
+      "first_row": "2019-07-02 19:00:00",
+      "header_first_field": "open_dt",
+      "last_row_on_or_after_cut": "2019-07-02 19:00:00",
+      "rows_first_field_on_or_after_cut": 1,
+      "sha256": "b8524169cbd3c6b5289e053f5515e91d0cd0713a1612eb7e76eab8bd231ccad1",
+      "verdict": "CONTAINS_RESERVED_ROWS"
+    },
+    "wfo_oos_trades.csv": {
+      "data_rows": 396,
+      "first_row": "2009-04-02 11:00:00",
+      "header_first_field": "open_dt",
+      "last_row_on_or_after_cut": null,
+      "rows_first_field_on_or_after_cut": 0,
+      "sha256": "8ddfd1c0e201a4a3bafbee28df9e0f66d27e3433608234c7a209f2384fd04f22",
+      "verdict": "NO_RESERVED_ROWS"
+    },
+    "wfo_oos_trades_2017_2019.csv": {
+      "data_rows": 108,
+      "first_row": "2017-02-19 22:00:00",
+      "header_first_field": "open_dt",
+      "last_row_on_or_after_cut": null,
+      "rows_first_field_on_or_after_cut": 0,
+      "sha256": "9ab834e8a42d88f5f85d3f335e490509534a65b2998d62729a075e3dd7d8ff6f",
+      "verdict": "NO_RESERVED_ROWS"
+    },
+    "wfo_oos_trades_merged.csv": {
+      "data_rows": 337,
+      "first_row": "2011-02-28 17:00:00",
+      "header_first_field": "open_dt",
+      "last_row_on_or_after_cut": null,
+      "rows_first_field_on_or_after_cut": 0,
+      "sha256": "51cd8b1f138a85e82c611729f9958a83319f04629cf6f6bb68ac6dbd47e42312",
+      "verdict": "NO_RESERVED_ROWS"
+    }
+  },
+  "tool": "tools/s07_prior_access_scan.py",
+  "wall_seconds": 0.249,
+  "wfo_results_2019_fold": {
+    "wfo_results.json": {
+      "n_2019_folds": 1,
+      "sha256": "5fae21347712084dec76433d839ef1fd014e0b8d8e21e37688894992bfad6bd2",
+      "test_bars": [
+        6188
+      ]
+    },
+    "wfo_results_2017_2019.json": {
+      "n_2019_folds": 1,
+      "sha256": "1100cac4ec5d765c94db4172630b792a84cd744f5ef366df083faa135792fc55",
+      "test_bars": [
+        6188
+      ]
+    }
+  },
+  "year_loop_results_2019": {
+    "oracle_ceiling_results.json": {
+      "mentions_year_2019": true,
+      "sha256": "fc60418cbaee3aa91c8d041d2bba5a7bf8db456b0be6fe5dec56b3b77498d8ad"
+    },
+    "phase_b_cnn_results.json": {
+      "mentions_year_2019": true,
+      "sha256": "bbc815ef846be0176d28d268b6346fa50d6eb479ba4b628928fd7fb33d2634e5"
+    },
+    "phase_c_ensemble_results.json": {
+      "mentions_year_2019": true,
+      "sha256": "873ab64cd280ee53c62512a8854b2fc8c5f033577b77f8e1c71edd1c9f33d051"
+    },
+    "phase_d_neat_results.json": {
+      "mentions_year_2019": true,
+      "sha256": "3a3df8b65336d331355993ec127a8cd9fdc99798f945882e6a3708ea325d4494"
+    }
+  }
+}

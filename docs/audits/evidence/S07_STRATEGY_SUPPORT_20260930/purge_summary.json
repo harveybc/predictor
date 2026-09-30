@@ -1,0 +1,478 @@
+{
+  "arms": {
+    "R1": {
+      "arm": "R1",
+      "censoring": "trades open at the last development bar are censored at the cut and reported per variant",
+      "first_origin": "2018-05-16 01:00:00",
+      "first_purged_origin": "2019-05-08 00:00:00",
+      "last_kept_origin": "2019-05-07 23:00:00",
+      "last_origin": "2019-05-15 12:00:00",
+      "n_design_admissible_h6_h144_in_dev": 4491,
+      "n_development_origins_aligned": 6156,
+      "n_kept": 6023,
+      "n_origins_after_proposed_boundary": 133,
+      "n_purged": 133,
+      "n_purged_elapsed_target": 85,
+      "n_purged_legacy_row_offset_target": 133,
+      "n_purged_trade_support_any_variant": 1,
+      "n_purged_trade_support_only": 0,
+      "n_with_entry_signal": 6156,
+      "per_variant": {
+        "A": {
+          "censored_duration_bars_lower_bound_max": 12,
+          "censored_duration_bars_lower_bound_min": 12,
+          "exit_reason_counts": {
+            "CENSORED_AT_CUT": 1,
+            "EARLY_EXIT_SIGNAL": 386,
+            "SL_CLOSE_SIGNAL": 4394,
+            "TP_CLOSE_SIGNAL": 1375
+          },
+          "n_support_crosses_cut": 1,
+          "n_unit_trades": 6156,
+          "observed_elapsed_hours_fill_to_fill_max": 104.0,
+          "observed_plugin_duration_bars_max": 57,
+          "observed_plugin_duration_bars_median": 3.0
+        },
+        "B": {
+          "censored_duration_bars_lower_bound_max": 12,
+          "censored_duration_bars_lower_bound_min": 12,
+          "exit_reason_counts": {
+            "CENSORED_AT_CUT": 1,
+            "EARLY_EXIT_SIGNAL": 13,
+            "SL_CLOSE_SIGNAL": 4675,
+            "TP_CLOSE_SIGNAL": 1467
+          },
+          "n_support_crosses_cut": 1,
+          "n_unit_trades": 6156,
+          "observed_elapsed_hours_fill_to_fill_max": 104.0,
+          "observed_plugin_duration_bars_max": 57,
+          "observed_plugin_duration_bars_median": 3.0
+        },
+        "C": {
+          "censored_duration_bars_lower_bound_max": 12,
+          "censored_duration_bars_lower_bound_min": 12,
+          "exit_reason_counts": {
+            "CENSORED_AT_CUT": 1,
+            "EARLY_EXIT_SIGNAL": 385,
+            "SL_CLOSE_SIGNAL": 4395,
+            "TP_CLOSE_SIGNAL": 1375
+          },
+          "n_support_crosses_cut": 1,
+          "n_unit_trades": 6156,
+          "observed_elapsed_hours_fill_to_fill_max": 104.0,
+          "observed_plugin_duration_bars_max": 57,
+          "observed_plugin_duration_bars_median": 3.0
+        },
+        "D": {
+          "censored_duration_bars_lower_bound_max": 12,
+          "censored_duration_bars_lower_bound_min": 12,
+          "exit_reason_counts": {
+            "CENSORED_AT_CUT": 1,
+            "EARLY_EXIT_SIGNAL": 12,
+            "SL_CLOSE_SIGNAL": 4676,
+            "TP_CLOSE_SIGNAL": 1467
+          },
+          "n_support_crosses_cut": 1,
+          "n_unit_trades": 6156,
+          "observed_elapsed_hours_fill_to_fill_max": 104.0,
+          "observed_plugin_duration_bars_max": 57,
+          "observed_plugin_duration_bars_median": 3.0
+        },
+        "E": {
+          "censored_duration_bars_lower_bound_max": 12,
+          "censored_duration_bars_lower_bound_min": 12,
+          "exit_reason_counts": {
+            "CENSORED_AT_CUT": 1,
+            "EARLY_EXIT_SIGNAL": 89,
+            "SL_CLOSE_SIGNAL": 4614,
+            "TP_CLOSE_SIGNAL": 1452
+          },
+          "n_support_crosses_cut": 1,
+          "n_unit_trades": 6156,
+          "observed_elapsed_hours_fill_to_fill_max": 104.0,
+          "observed_plugin_duration_bars_max": 57,
+          "observed_plugin_duration_bars_median": 3.0
+        },
+        "F": {
+          "censored_duration_bars_lower_bound_max": 12,
+          "censored_duration_bars_lower_bound_min": 12,
+          "exit_reason_counts": {
+            "CENSORED_AT_CUT": 1,
+            "EARLY_EXIT_SIGNAL": 200,
+            "SL_CLOSE_SIGNAL": 4533,
+            "TP_CLOSE_SIGNAL": 1422
+          },
+          "n_support_crosses_cut": 1,
+          "n_unit_trades": 6156,
+          "observed_elapsed_hours_fill_to_fill_max": 104.0,
+          "observed_plugin_duration_bars_max": 57,
+          "observed_plugin_duration_bars_median": 3.0
+        },
+        "G": {
+          "censored_duration_bars_lower_bound_max": 12,
+          "censored_duration_bars_lower_bound_min": 12,
+          "exit_reason_counts": {
+            "CENSORED_AT_CUT": 1,
+            "SL_CLOSE_SIGNAL": 4685,
+            "TP_CLOSE_SIGNAL": 1470
+          },
+          "n_support_crosses_cut": 1,
+          "n_unit_trades": 6156,
+          "observed_elapsed_hours_fill_to_fill_max": 104.0,
+          "observed_plugin_duration_bars_max": 57,
+          "observed_plugin_duration_bars_median": 3.0
+        }
+      },
+      "pnl_computed": false,
+      "proposed_moved_boundary_last_origin_with_clean_prefix": "2019-05-07 23:00:00",
+      "reserved_start": "2019-05-16 00:00:00",
+      "trade_duration_bound": "DERIVED_ON_DEVELOPMENT_ROWS_NOT_A_CAP"
+    },
+    "R2": {
+      "arm": "R2",
+      "censoring": "trades open at the last development bar are censored at the cut and reported per variant",
+      "first_origin": "2018-05-16 01:00:00",
+      "first_purged_origin": "2019-05-08 00:00:00",
+      "last_kept_origin": "2019-05-07 23:00:00",
+      "last_origin": "2019-05-15 12:00:00",
+      "n_design_admissible_h6_h144_in_dev": 4491,
+      "n_development_origins_aligned": 6156,
+      "n_kept": 6023,
+      "n_origins_after_proposed_boundary": 133,
+      "n_purged": 133,
+      "n_purged_elapsed_target": 85,
+      "n_purged_legacy_row_offset_target": 133,
+      "n_purged_trade_support_any_variant": 1,
+      "n_purged_trade_support_only": 0,
+      "n_with_entry_signal": 6156,
+      "per_variant": {
+        "A": {
+          "censored_duration_bars_lower_bound_max": 12,
+          "censored_duration_bars_lower_bound_min": 12,
+          "exit_reason_counts": {
+            "CENSORED_AT_CUT": 1,
+            "EARLY_EXIT_SIGNAL": 13,
+            "SL_CLOSE_SIGNAL": 4675,
+            "TP_CLOSE_SIGNAL": 1467
+          },
+          "n_support_crosses_cut": 1,
+          "n_unit_trades": 6156,
+          "observed_elapsed_hours_fill_to_fill_max": 104.0,
+          "observed_plugin_duration_bars_max": 57,
+          "observed_plugin_duration_bars_median": 3.0
+        },
+        "B": {
+          "censored_duration_bars_lower_bound_max": 12,
+          "censored_duration_bars_lower_bound_min": 12,
+          "exit_reason_counts": {
+            "CENSORED_AT_CUT": 1,
+            "EARLY_EXIT_SIGNAL": 13,
+            "SL_CLOSE_SIGNAL": 4675,
+            "TP_CLOSE_SIGNAL": 1467
+          },
+          "n_support_crosses_cut": 1,
+          "n_unit_trades": 6156,
+          "observed_elapsed_hours_fill_to_fill_max": 104.0,
+          "observed_plugin_duration_bars_max": 57,
+          "observed_plugin_duration_bars_median": 3.0
+        },
+        "C": {
+          "censored_duration_bars_lower_bound_max": 12,
+          "censored_duration_bars_lower_bound_min": 12,
+          "exit_reason_counts": {
+            "CENSORED_AT_CUT": 1,
+            "EARLY_EXIT_SIGNAL": 3,
+            "SL_CLOSE_SIGNAL": 4682,
+            "TP_CLOSE_SIGNAL": 1470
+          },
+          "n_support_crosses_cut": 1,
+          "n_unit_trades": 6156,
+          "observed_elapsed_hours_fill_to_fill_max": 104.0,
+          "observed_plugin_duration_bars_max": 57,
+          "observed_plugin_duration_bars_median": 3.0
+        },
+        "D": {
+          "censored_duration_bars_lower_bound_max": 12,
+          "censored_duration_bars_lower_bound_min": 12,
+          "exit_reason_counts": {
+            "CENSORED_AT_CUT": 1,
+            "EARLY_EXIT_SIGNAL": 3,
+            "SL_CLOSE_SIGNAL": 4682,
+            "TP_CLOSE_SIGNAL": 1470
+          },
+          "n_support_crosses_cut": 1,
+          "n_unit_trades": 6156,
+          "observed_elapsed_hours_fill_to_fill_max": 104.0,
+          "observed_plugin_duration_bars_max": 57,
+          "observed_plugin_duration_bars_median": 3.0
+        },
+        "E": {
+          "censored_duration_bars_lower_bound_max": 12,
+          "censored_duration_bars_lower_bound_min": 12,
+          "exit_reason_counts": {
+            "CENSORED_AT_CUT": 1,
+            "EARLY_EXIT_SIGNAL": 3,
+            "SL_CLOSE_SIGNAL": 4682,
+            "TP_CLOSE_SIGNAL": 1470
+          },
+          "n_support_crosses_cut": 1,
+          "n_unit_trades": 6156,
+          "observed_elapsed_hours_fill_to_fill_max": 104.0,
+          "observed_plugin_duration_bars_max": 57,
+          "observed_plugin_duration_bars_median": 3.0
+        },
+        "F": {
+          "censored_duration_bars_lower_bound_max": 12,
+          "censored_duration_bars_lower_bound_min": 12,
+          "exit_reason_counts": {
+            "CENSORED_AT_CUT": 1,
+            "EARLY_EXIT_SIGNAL": 13,
+            "SL_CLOSE_SIGNAL": 4675,
+            "TP_CLOSE_SIGNAL": 1467
+          },
+          "n_support_crosses_cut": 1,
+          "n_unit_trades": 6156,
+          "observed_elapsed_hours_fill_to_fill_max": 104.0,
+          "observed_plugin_duration_bars_max": 57,
+          "observed_plugin_duration_bars_median": 3.0
+        },
+        "G": {
+          "censored_duration_bars_lower_bound_max": 12,
+          "censored_duration_bars_lower_bound_min": 12,
+          "exit_reason_counts": {
+            "CENSORED_AT_CUT": 1,
+            "SL_CLOSE_SIGNAL": 4685,
+            "TP_CLOSE_SIGNAL": 1470
+          },
+          "n_support_crosses_cut": 1,
+          "n_unit_trades": 6156,
+          "observed_elapsed_hours_fill_to_fill_max": 104.0,
+          "observed_plugin_duration_bars_max": 57,
+          "observed_plugin_duration_bars_median": 3.0
+        }
+      },
+      "pnl_computed": false,
+      "proposed_moved_boundary_last_origin_with_clean_prefix": "2019-05-07 23:00:00",
+      "reserved_start": "2019-05-16 00:00:00",
+      "trade_duration_bound": "DERIVED_ON_DEVELOPMENT_ROWS_NOT_A_CAP"
+    },
+    "R3": {
+      "arm": "R3",
+      "censoring": "trades open at the last development bar are censored at the cut and reported per variant",
+      "first_origin": "2017-04-07 08:00:00",
+      "first_purged_origin": null,
+      "last_kept_origin": "2018-03-21 19:00:00",
+      "last_origin": "2018-03-21 19:00:00",
+      "n_design_admissible_h6_h144_in_dev": 4393,
+      "n_development_origins_aligned": 5895,
+      "n_kept": 5895,
+      "n_origins_after_proposed_boundary": 0,
+      "n_purged": 0,
+      "n_purged_elapsed_target": 0,
+      "n_purged_legacy_row_offset_target": 0,
+      "n_purged_trade_support_any_variant": 0,
+      "n_purged_trade_support_only": 0,
+      "n_with_entry_signal": 5895,
+      "per_variant": {
+        "A": {
+          "censored_duration_bars_lower_bound_max": null,
+          "censored_duration_bars_lower_bound_min": null,
+          "exit_reason_counts": {
+            "EARLY_EXIT_SIGNAL": 1063,
+            "SL_CLOSE_SIGNAL": 4268,
+            "TP_CLOSE_SIGNAL": 564
+          },
+          "n_support_crosses_cut": 0,
+          "n_unit_trades": 5895,
+          "observed_elapsed_hours_fill_to_fill_max": 771.0,
+          "observed_plugin_duration_bars_max": 546,
+          "observed_plugin_duration_bars_median": 4.0
+        },
+        "B": {
+          "censored_duration_bars_lower_bound_max": null,
+          "censored_duration_bars_lower_bound_min": null,
+          "exit_reason_counts": {
+            "EARLY_EXIT_SIGNAL": 438,
+            "SL_CLOSE_SIGNAL": 4705,
+            "TP_CLOSE_SIGNAL": 752
+          },
+          "n_support_crosses_cut": 0,
+          "n_unit_trades": 5895,
+          "observed_elapsed_hours_fill_to_fill_max": 771.0,
+          "observed_plugin_duration_bars_max": 546,
+          "observed_plugin_duration_bars_median": 5.0
+        },
+        "C": {
+          "censored_duration_bars_lower_bound_max": null,
+          "censored_duration_bars_lower_bound_min": null,
+          "exit_reason_counts": {
+            "EARLY_EXIT_SIGNAL": 789,
+            "SL_CLOSE_SIGNAL": 4421,
+            "TP_CLOSE_SIGNAL": 685
+          },
+          "n_support_crosses_cut": 0,
+          "n_unit_trades": 5895,
+          "observed_elapsed_hours_fill_to_fill_max": 771.0,
+          "observed_plugin_duration_bars_max": 546,
+          "observed_plugin_duration_bars_median": 4.0
+        },
+        "D": {
+          "censored_duration_bars_lower_bound_max": null,
+          "censored_duration_bars_lower_bound_min": null,
+          "exit_reason_counts": {
+            "EARLY_EXIT_SIGNAL": 118,
+            "SL_CLOSE_SIGNAL": 4888,
+            "TP_CLOSE_SIGNAL": 889
+          },
+          "n_support_crosses_cut": 0,
+          "n_unit_trades": 5895,
+          "observed_elapsed_hours_fill_to_fill_max": 771.0,
+          "observed_plugin_duration_bars_max": 546,
+          "observed_plugin_duration_bars_median": 6.0
+        },
+        "E": {
+          "censored_duration_bars_lower_bound_max": null,
+          "censored_duration_bars_lower_bound_min": null,
+          "exit_reason_counts": {
+            "EARLY_EXIT_SIGNAL": 546,
+            "SL_CLOSE_SIGNAL": 4597,
+            "TP_CLOSE_SIGNAL": 752
+          },
+          "n_support_crosses_cut": 0,
+          "n_unit_trades": 5895,
+          "observed_elapsed_hours_fill_to_fill_max": 771.0,
+          "observed_plugin_duration_bars_max": 546,
+          "observed_plugin_duration_bars_median": 4.0
+        },
+        "F": {
+          "censored_duration_bars_lower_bound_max": null,
+          "censored_duration_bars_lower_bound_min": null,
+          "exit_reason_counts": {
+            "EARLY_EXIT_SIGNAL": 922,
+            "SL_CLOSE_SIGNAL": 4348,
+            "TP_CLOSE_SIGNAL": 625
+          },
+          "n_support_crosses_cut": 0,
+          "n_unit_trades": 5895,
+          "observed_elapsed_hours_fill_to_fill_max": 771.0,
+          "observed_plugin_duration_bars_max": 546,
+          "observed_plugin_duration_bars_median": 4.0
+        },
+        "G": {
+          "censored_duration_bars_lower_bound_max": null,
+          "censored_duration_bars_lower_bound_min": null,
+          "exit_reason_counts": {
+            "SL_CLOSE_SIGNAL": 4972,
+            "TP_CLOSE_SIGNAL": 923
+          },
+          "n_support_crosses_cut": 0,
+          "n_unit_trades": 5895,
+          "observed_elapsed_hours_fill_to_fill_max": 771.0,
+          "observed_plugin_duration_bars_max": 546,
+          "observed_plugin_duration_bars_median": 6.0
+        }
+      },
+      "pnl_computed": false,
+      "proposed_moved_boundary_last_origin_with_clean_prefix": "2018-03-21 19:00:00",
+      "reserved_start": "2019-05-16 00:00:00",
+      "trade_duration_bound": "DERIVED_ON_DEVELOPMENT_ROWS_NOT_A_CAP"
+    }
+  },
+  "files": {
+    "R1": {
+      "base": {
+        "path": "tests/data/phase_1_base_d3.csv",
+        "rows_development": 6167,
+        "rows_reserved_dropped_at_load": 5211,
+        "rows_total": 11378,
+        "sha256": "c5a8d9f3d0ade7956974b59cd85ba37505053cf849f8f944a3081a19058923bf"
+      },
+      "long": {
+        "path": "tests/data/ann_predictions_daily_d3.csv",
+        "rows_reserved_dropped_at_load": 0,
+        "rows_total": 6156,
+        "sha256": "c01341e8ebb1f1cf3128616b6eee2d7c32fd828ba5ed859101f20fae66ad34e5"
+      },
+      "short": {
+        "path": "tests/data/ann_predictions_hourly_d3.csv",
+        "rows_reserved_dropped_at_load": 127,
+        "rows_total": 6294,
+        "sha256": "612fd3170086a6d14bc138340f26d19c06790bb6cc97e179d079224aef9f7493"
+      }
+    },
+    "R2": {
+      "base": {
+        "path": "tests/data/phase_1_base_d3.csv",
+        "rows_development": 6167,
+        "rows_reserved_dropped_at_load": 5211,
+        "rows_total": 11378,
+        "sha256": "c5a8d9f3d0ade7956974b59cd85ba37505053cf849f8f944a3081a19058923bf"
+      },
+      "long": {
+        "path": "tests/data/ann_predictions_daily_d3.csv",
+        "rows_reserved_dropped_at_load": 0,
+        "rows_total": 6156,
+        "sha256": "c01341e8ebb1f1cf3128616b6eee2d7c32fd828ba5ed859101f20fae66ad34e5"
+      },
+      "short": {
+        "path": "tests/data/lstm_predictions_hourly_d3.csv",
+        "rows_reserved_dropped_at_load": 121,
+        "rows_total": 6288,
+        "sha256": "4f4ed2d99706b64fa1fbaeb82169eeeb873c18596a80557ee1058b0c32bb9d2a"
+      }
+    },
+    "R3": {
+      "base": {
+        "path": "tests/data/phase_2_3_base_d3.csv",
+        "rows_development": 13264,
+        "rows_reserved_dropped_at_load": 5211,
+        "rows_total": 18475,
+        "sha256": "4b57164f54d03fe25de4796b75c367a15e2b1d90c89b0a40d831e5d65cd4b6e1"
+      },
+      "long": {
+        "path": "tests/data/phase_2_3_cnn_1d_prediction_d3.csv",
+        "rows_reserved_dropped_at_load": 0,
+        "rows_total": 5895,
+        "sha256": "709344f7e1461d19d3c48a5cf55ef0725dcb50bcf17d2bd5b156d822885ab570"
+      },
+      "short": {
+        "path": "tests/data/phase_2_3_cnn_1h_prediction_d3.csv",
+        "rows_reserved_dropped_at_load": 0,
+        "rows_total": 6033,
+        "sha256": "de98cf5bf05ecdffcf6e9c7fdd7f315f6e68c3c366fc97106823496d390c33b7"
+      }
+    }
+  },
+  "pnl_computed": false,
+  "populations": {
+    "retained_sweep_241": {
+      "base_file": {
+        "path": "tests/data/phase_2_3_base_d3.csv",
+        "sha256": "4b57164f54d03fe25de4796b75c367a15e2b1d90c89b0a40d831e5d65cd4b6e1"
+      },
+      "last_kept_origin": "2019-05-07 23:00:00",
+      "n_dev_purged_elapsed_target": 66,
+      "n_dev_purged_legacy_row_offset_target": 114,
+      "n_development_origins": 9852,
+      "n_kept": 9738,
+      "n_origins": 13590,
+      "n_origins_reserved_already_in_population": 3738,
+      "n_purged_total": 3852,
+      "origins_file": {
+        "path": "/home/harveybc/tmp-s07-origins.csv",
+        "sha256": "7b7ad5edbe54583f001ee8750988dfa44685e976623dc798333adb5aca153c81"
+      },
+      "population": "retained_sweep_241",
+      "trade_support": "NOT_DERIVED: synthetic predictions are generated per cell; enforce by feed truncation at the cut plus censoring report"
+    }
+  },
+  "reserved_start": "2019-05-16 00:00:00",
+  "resources": {
+    "cpu_sys_seconds": 0.165,
+    "cpu_user_seconds": 19.884,
+    "host_role": "worker_b",
+    "max_rss_mib": 200.6,
+    "wall_seconds": 19.534
+  },
+  "tool": "tools/s07_target_support_purge.py"
+}

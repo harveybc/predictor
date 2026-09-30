@@ -1,0 +1,6 @@
+[R1] origins=6156 purged=133 kept=6023 first_purged=2019-05-08 00:00:00
+[R2] origins=6156 purged=133 kept=6023 first_purged=2019-05-08 00:00:00
+[R3] origins=5895 purged=0 kept=5895 first_purged=None
+[retained_sweep_241] origins=13590 reserved_in_population=3738 dev_purged_elapsed=66 kept=9738
+resources: {'wall_seconds': 19.534, 'cpu_user_seconds': 19.884, 'cpu_sys_seconds': 0.165, 'max_rss_mib': 200.6, 'host_role': 'worker_b'}
+TIME_PURGE wall=20.13 user=19.94 sys=0.17 maxrss_kb=205368
