@@ -133,8 +133,19 @@ The actor's name is incidental throughout: the retained declared-test case is st
 The withdrawal of the real checkpoint's macro-F1 from beside a declared path's answers was delivered
 on M5PHET at `d6e5f7c` (§3.4) and **is not repeated here**. What this round adds is the same rule in
 the warehouse, where the product's rule had no counterpart: a record may not travel with answers it
-was not measured on. The product's own rule still reads the word as one of two disjuncts, which this
-order names as the thing not to rely on; that repair is **not done in this delivery** (§7).
+was not measured on. The product's own rule *did* still read the word as one of two disjuncts, and
+that is repaired in the same round — in M5PHET, on the same branch name, at `a16317a`: a path keeps
+its record when it declares **weights present** *and* **names the fitted state it loaded**, and the
+declared backend is now *reported* in the withholding reason rather than matched. In that provider
+the two always travel together (`known_states` is non-empty exactly when a manifest was read and
+`weights_present` is true only then), so no genuine real-weights path loses its record; the rule is
+wider than before by one case, deliberately, because an unestablished path is not a model path. Its
+counterexample test is the mirror of this repository's: a declared non-model path free of the word is
+still withheld, and a path carrying the word *inside its own backend name* keeps its record. Suites:
+`test_unserved_offer.py` + `test_quality.py` 48 passed / 4 skipped (45 and the same 4 at `d6e5f7c`);
+full suite 710 passed / 18 skipped with the same six pre-existing data-gov binding failures this
+environment has at `d6e5f7c`. **No service was started, stopped or restarted and the owner's
+instance was not touched.**
 
 ## 4. A real producer stopped claiming a checkpoint it never read
 
@@ -164,7 +175,7 @@ may not carry a classification metric at all.
 ```
 D — the fixture case in the producer-to-store contract
 repo/branch/base: predictor · satoshi/fixture-provenance-contract-20260929 · base 40224a3a
-files: app/classification_provenance.py (new, the gate) · app/classification_receipt.py ·
+files (predictor): app/classification_provenance.py (new, the gate) · app/classification_receipt.py ·
        docs/contracts/classification_metrics.v1.json (answering_path, promotion_rule,
        store_admission, 4 badge refusals, 8 required tags) · pipeline_plugins/binary_metrics.py ·
        tools/admit_classification_terminal.py (new, the boundary command) ·
@@ -174,9 +185,13 @@ files: app/classification_provenance.py (new, the gate) · app/classification_re
        tools/test_cb04_business_corpus.py · docs/CLASSIFICATION_METRIC_CONTRACT.md ·
        docs/audits/evidence/cb04_business_corpus_20260928/MANIFEST.json (amendment appended) ·
        docs/audits/evidence/fixture_provenance_20260929/ (probe, boundary cases, 7 logs)
+files (M5PHET, same branch name, tip a16317a): src/m5phet/quality.py · tests/test_unserved_offer.py
 suites: provenance 31/31 · provenance-at-the-store 10/10 (deployed provider) · schema 56/56 ·
         warehouse end-to-end 13/13 (deployed provider) · cb04 corpus 24/24 · binary pipeline 12/12 ·
         pre-existing TSL receipt 2/2 — 148 tests, 0 failures
+suites (M5PHET a16317a): unserved-offer + quality 48 passed / 4 skipped (45 and the same 4 at
+        d6e5f7c) · full suite 710 passed / 18 skipped, with the same six pre-existing data-gov
+        binding failures this environment has at d6e5f7c
 acceptance: red first (01_red_producer.txt ImportError; 00_red_today.json badge issued at 0.8889 with
         a fabricated checkpoint digest and no field naming the path) → green
         (02_producer.txt, 03_store.txt, 07_suites.txt); boundary command on two terminals
@@ -195,8 +210,8 @@ what is NOT done / refused / not measured:
     here measures a checkpoint. No closure table (NO_NEW_MEASUREMENT).
   - the installed generic store was NOT changed and still accepts a well-shaped terminal from
     anyone; the boundary check is a repository-side gate a loader must call, not a store feature.
-  - the product's own rule (M5PHET quality.py) still reads the withdrawn word as one of two
-    disjuncts; that repair is prepared in §7 and NOT delivered.
+  - the M5PHET repair is code and tests only: the rule was NOT exercised against the owner's
+    running instance, and the served build was not restaged.
   - a falsely declared provenance is not detected; the contract makes the declaration exist and be
     digest-bound, not true.
   - MODEL_IN_PROCESS_NOT_CHECKPOINTED cannot be checked against weight bytes, by design.
@@ -208,12 +223,12 @@ what is NOT done / refused / not measured:
 
 ## 7. What the next hand should take
 
-1. **The product's disjunct.** `M5PHET src/m5phet/quality.py:178` reads
-   `weights is not False and backend != "fixture"`. The first half is provenance; the second is the
-   word. The replacement is available now: consult whether the declared backend's capabilities name
-   a **served checkpoint** at all, and withhold when they do not — which catches the same case
-   without the literal. It is a small change with its own tests, in a different repository, and it
-   should be delivered under its own branch and verified on its own port and state directory.
+1. **The M5PHET repair, on a running instance.** `a16317a` changes the rule and its tests, and was
+   verified by the suites only. Whether the served build behaves the same on the owner's instance is
+   unverified here, because a restart is the owner's and his session must not be interrupted. Next
+   hand: stage it on **your own port and your own state directory**, read `verify_envelopes`, and
+   confirm the classification entry still says `NOT_MEASURED` with
+   `QUALITY_RECORD_IS_NOT_OF_THE_ANSWERING_PATH` and the record still findable by its identifiers.
 2. **A checkpoint in the quality record.** `news_signal.quality.v1` carries no checkpoint of its own,
    so no rule anywhere can check a record *against* the checkpoint that served it. Until that field
    exists, the strongest available statement remains "this record is not of the answering path", and
