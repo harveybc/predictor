@@ -13,7 +13,7 @@ ROWS = [
     ("ARQUITECTURA", "Modular R0 / R1 / R2", "DEV MEDIDO", "ECL: 3 semillas; falta confirmación externa", "#1678a8"),
     ("", "Branching vs referencia exacta", "PENDIENTE", "falta contraste emparejado ECL/Traffic", "#b43b3b"),
     ("", "Autoencoder por extractor", "PILOTO TÉCNICO", "Conv1D causal entrenado; falta ablación de pronóstico", "#1678a8"),
-    ("", "Autoencoder del núcleo", "PENDIENTE", "sin entrenamiento ni comparación", "#b43b3b"),
+    ("", "Autoencoder del núcleo", "PILOTO TÉCNICO", "128/64 filas, 4 updates; falta ensayo de eficacia", "#1678a8"),
     ("PLATAFORMA", "DOIN · archivo externo", "PROTOTIPO", "24 pruebas; store desechable, sin cadena real", "#1678a8"),
     ("", "DOIN · optimización modular", "PENDIENTE", "sin campaña integrada", "#b43b3b"),
     ("", "LTS · selección de modelos", "EN INTEGRACIÓN", "guardas paper; sin promoción validada", "#b56800"),
