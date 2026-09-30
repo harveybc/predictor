@@ -280,3 +280,41 @@ def test_cost_pilot_binds_declaration_and_refuses_feature_order(tmp_path):
     with pytest.raises(ValueError, match="feature order"):
         run_cost_pilot(tmp_path / "SYNTHETIC_train.npz", tmp_path / "decl2.json", tmp_path / "p2",
                        n_branches=2, fit=FIT)
+
+
+def test_resume_reuses_completed_branches_and_refuses_changed_identity(tmp_path):
+    from predictor_plugins.modular_temporal import default_config
+    config = default_config(["a", "b"])
+    rng = np.random.default_rng(5)
+    train = rng.normal(size=(8, 24, 2)).astype("float32")
+    val = rng.normal(size=(4, 24, 2)).astype("float32")
+    t, v = populations()
+    out = tmp_path / "run"
+    first = pretrain_components(config, train, val, out, FIT, t, v, seed=1)
+    (out / "branch_1.record.json").unlink()  # simulate death after branch_0
+    second = pretrain_components(config, train, val, out, FIT, t, v, seed=1, resume=True)
+    assert second["resumed_branches"] == ["branch_0"]
+    assert second["branches"][0]["donor_sha256"] == first["branches"][0]["donor_sha256"]
+    assert second["branches"][1]["resumed"] is False
+    changed = copy.deepcopy(config)
+    changed["branches"][0]["params"] = {"channels": 16, "kernel_size": 3}
+    with pytest.raises(ValueError, match="cannot resume"):
+        pretrain_components(changed, train, val, out, FIT, t, v, seed=1, resume=True)
+    with pytest.raises(ValueError, match="empty"):
+        pretrain_components(config, train, val, out, FIT, t, v, seed=1)
+
+
+def test_receipt_is_generated_from_artifacts(tmp_path):
+    from tools.modular_pretrain import build_synthetic_splits, run_cost_pilot
+    train, *_ = build_synthetic_splits(rows=500, features=2, window=24, horizons=[1], seed=6)
+    np.savez(tmp_path / "SYNTHETIC_train.npz", **train)
+    decl = {"manifest_sha256": "m" * 64, "declaration_sha256": "d" * 64, "resource_sha256": "r" * 64,
+            "branches_one_feature_each": [{"branch": i, "feature": f"f{i}"} for i in range(2)]}
+    (tmp_path / "decl.json").write_text(json.dumps(decl))
+    run_cost_pilot(tmp_path / "SYNTHETIC_train.npz", tmp_path / "decl.json", tmp_path / "p", n_branches=2,
+                   fit=FIT, heartbeat_interval=0.5, label="SYNTHETIC DONORS_FOR_R1_R2 test")
+    receipt = json.loads((tmp_path / "p" / "RECEIPT.json").read_text())
+    assert receipt["label"] == "SYNTHETIC DONORS_FOR_R1_R2 test"
+    assert "not forecasting skill" in receipt["statement"]
+    assert len(receipt["branches"]) == 2 and receipt["core"]["updates"] > 0
+    assert (tmp_path / "p" / "RECEIPT.md").read_text().count("| branch_") == 2

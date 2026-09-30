@@ -329,8 +329,13 @@ def _stage_config(fit_config, stage_fit_configs, stage):
 
 def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
                         train_population, validation_population, *,
-                        stage_fit_configs=None, seed=None, heartbeat=None):
+                        stage_fit_configs=None, seed=None, heartbeat=None, resume=False):
     """Run branch AE -> fixed-donor fused materialization -> core AE.
+
+    ``resume=True`` reuses every branch whose ``<name>.record.json`` completion
+    marker exists and whose config sha, TRAIN/internal-validation input shas and
+    donor file sha all match; its donor is reloaded through ``load_donor``.
+    Fusion and the core are always recomputed from the complete branch set.
 
     ``fit_config`` applies to every stage; ``stage_fit_configs`` may override it
     per stage ("branch", "core"). Returns the PRETRAIN.json document, including
@@ -343,7 +348,7 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
     if train_x.shape[1:] != validation_x.shape[1:]:
         raise ValueError("train/validation window schemas differ")
     out = Path(output_dir).resolve()
-    if out.exists() and any(out.iterdir()):
+    if out.exists() and any(out.iterdir()) and not resume:
         raise ValueError("output directory must be empty")
     import tensorflow as tf
     from predictor_plugins.modular_temporal import (build_autoencoder, build_modular, load_donor,
@@ -369,9 +374,31 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
 
     # ---- stage 1: branch autoencoders ------------------------------------------------
     records = []
+    source_sha = config_sha256(config)
+    resumed = []
     for index, spec in enumerate(resolved["branches"]):
         name = spec["name"]
         stage = f"branch_ae:{name}"
+        donor = out / f"{name}.keras"  # M04 maps "1:<branch name>" -> <dir>/<branch name>.keras
+        marker = out / f"{name}.record.json"
+        if resume and marker.exists():
+            record = json.loads(marker.read_text())
+            if (record.get("source_config_sha256") != source_sha
+                    or record.get("train_input_sha256") != train_identity["sha256"]
+                    or record.get("train_validation_input_sha256") != validation_identity["sha256"]
+                    or not donor.exists() or _file_sha(donor) != record["donor_sha256"]):
+                raise ValueError(f"cannot resume {name}: config, input or donor identity differs")
+            loaded = load_donor(donor, bundle.donor_manifest("branch", name))
+            bundle.branch_models[name].set_weights(loaded.get_weights())
+            if weights_hash(bundle.branch_models[name]) != record["donor_weights_sha256"]:
+                raise ValueError(f"cannot resume {name}: donor weights differ from its record")
+            record["resumed"] = True
+            records.append(record)
+            resumed.append(name)
+            beat.update(stage=stage, resume_point={"completed_branches": len(records),
+                                                   "last_resumed": name, "resumed_total": len(resumed)})
+            spec.update(regime="R2", donor=str(donor))
+            continue
         beat.update(stage=stage, fit=None, eta=None)
         cfg = _stage_config(fit_config, stage_fit_configs, "branch")
         batch = int(cfg.get("batch_size", 32))
@@ -388,7 +415,6 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
         reconstruction = {
             "train": _reconstruction(ae, train_view, stats["mean"], stats["std"], batch),
             "train_validation": _reconstruction(ae, val_view, stats["mean"], stats["std"], batch)}
-        donor = out / f"{name}.keras"  # M04 maps "1:<branch name>" -> <dir>/<branch name>.keras
         manifest = bundle.donor_manifest("branch", name)
         sidecar = save_donor(encoder, donor, manifest)
         decoder = ae.layers[-1]
@@ -413,14 +439,23 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
                   "wall_seconds": time.monotonic() - started}
         record["provenance"] = _write_provenance(donor, {
             "schema": "modular.branch_donor.provenance.v1", "stage": "branch_ae", "name": name,
-            "source_config_sha256": config_sha256(config),
+            "source_config_sha256": source_sha,
+            "admissible_declaration_sha256": train_population.get("admissible_declaration_sha256"),
+            "input_manifest_sha256": train_population.get("input_manifest_sha256"),
             "input_provenance": train_population.get("provenance", "undeclared"),
             "label": _label(train_population), "donor_sha256": record["donor_sha256"],
             "donor_sidecar_sha256": record["donor_sidecar_sha256"],
             "train_input_sha256": train_identity["sha256"],
             "train_validation_input_sha256": validation_identity["sha256"]})
+        record.update(source_config_sha256=source_sha, train_input_sha256=train_identity["sha256"],
+                      train_validation_input_sha256=validation_identity["sha256"], resumed=False)
+        tmp = marker.with_suffix(".tmp")
+        tmp.write_text(json.dumps(record, indent=2, allow_nan=False) + "\n")
+        os.replace(tmp, marker)  # completion marker, written last
         records.append(record)
-        beat.update(last_checkpoint={"stage": "branch_ae", "name": name, "donor_sha256": record["donor_sha256"]})
+        beat.update(last_checkpoint={"stage": "branch_ae", "name": name, "donor_sha256": record["donor_sha256"]},
+                    resume_point={"completed_branches": len(records), "last_completed": name,
+                                  "resumed_total": len(resumed)})
         spec.update(regime="R2", donor=str(donor))
 
     # ---- stage 2: fused materialization from FIXED exported branch donors -------------
@@ -490,7 +525,9 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
     if parity > 1e-5 or weights_hash(loaded) != sidecar["weights_sha256"]:
         raise ValueError(f"core donor reload parity failed ({parity})")
     provenance = {"schema": "modular.core_donor.provenance.v1", "stage": "core_ae",
-                  "runtime": runtime_versions(), "source_config_sha256": config_sha256(config),
+                  "runtime": runtime_versions(), "source_config_sha256": source_sha,
+                  "admissible_declaration_sha256": train_population.get("admissible_declaration_sha256"),
+                  "input_manifest_sha256": train_population.get("input_manifest_sha256"),
                   "input_provenance": train_population.get("provenance", "undeclared"),
                   "label": _label(train_population),
                   "core_donor_sha256": _file_sha(donor),
@@ -522,7 +559,7 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
               "label": ("SYNTHETIC FIXTURE - component check, not a forecasting result"
                         if provenance_label == "synthetic_fixture" else provenance_label),
               "branches": records, "fusion": fusion_record, "core": core_record,
-              "grids": grids, "seed": seed, "runtime": runtime_versions(),
+              "grids": grids, "seed": seed, "runtime": runtime_versions(), "resumed_branches": resumed,
               "source_config_sha256": config_sha256(config),
               "train_population": train_population, "validation_population": validation_population,
               "train_input": train_identity, "validation_input": validation_identity,
@@ -573,7 +610,7 @@ def internal_split(timestamps, window, sample_hours, fraction=0.8):
 
 def pretrain_from_train_npz(train_npz, output_dir, fit_config, *, provenance, config=None,
                             seed=None, heartbeat=None, fraction=0.8, stage_fit_configs=None,
-                            manifest_sha256=None, declaration_sha256=None):
+                            manifest_sha256=None, declaration_sha256=None, resume=False):
     """Input swap: pretrain from an evaluator-format TRAIN NPZ (split must be 'train').
 
     Uses only the windows of that file; the outer validation, test and holdout
@@ -613,11 +650,13 @@ def pretrain_from_train_npz(train_npz, output_dir, fit_config, *, provenance, co
     train_view = windows[tr[0]:tr[-1] + 1]
     validation_view = windows[va[0]:va[-1] + 1]
     return pretrain_components(base, train_view, validation_view, output_dir, fit_config, *pops,
-                               seed=seed, heartbeat=heartbeat, stage_fit_configs=stage_fit_configs)
+                               seed=seed, heartbeat=heartbeat, stage_fit_configs=stage_fit_configs,
+                               resume=resume)
 
 
 def run_cost_pilot(train_npz, declaration_path, out, *, n_branches, fit, seed=7,
-                   heartbeat_interval=30.0, total_branches=None, config_path=None):
+                   heartbeat_interval=30.0, total_branches=None, config_path=None,
+                   label="GOVERNED INPUT COST PILOT - not a forecasting result", resume=False):
     """Governed cost pilot: the first ``n_branches`` declared branches, all features kept.
 
     Verifies the M03 admissible-input declaration against the TRAIN NPZ (dataset,
@@ -645,16 +684,16 @@ def run_cost_pilot(train_npz, declaration_path, out, *, n_branches, fit, seed=7,
     config["branches"] = config["branches"][:n_branches]
     total = total_branches or len(features)
     out = Path(out)
-    if out.exists():
+    if out.exists() and not resume:
         raise ValueError("output directory must not exist")
-    out.mkdir(parents=True)
+    out.mkdir(parents=True, exist_ok=True)
     beat = Heartbeat(out / "heartbeat.jsonl", heartbeat_interval)
     started = time.monotonic()
     with beat:
         pre = pretrain_from_train_npz(train_npz, out / "pretrain", fit, provenance="governed_resource",
                                       config=config, seed=seed, heartbeat=beat,
                                       manifest_sha256=declaration["manifest_sha256"],
-                                      declaration_sha256=declaration["declaration_sha256"])
+                                      declaration_sha256=declaration["declaration_sha256"], resume=resume)
     wall = time.monotonic() - started
     peak = _resources()
     branch_walls = [b["wall_seconds"] for b in pre["branches"]]
@@ -663,7 +702,8 @@ def run_cost_pilot(train_npz, declaration_path, out, *, n_branches, fit, seed=7,
     fused_bytes_full = (pre["fused_train"]["shape"][0] + pre["fused_validation"]["shape"][0]) * fused[1] * width_full * 4
     core_wall = pre["core"]["wall_seconds"]
     report = {
-        "schema": "m02.cost_pilot.v1", "label": "GOVERNED INPUT COST PILOT - not a forecasting result",
+        "schema": "m02.cost_pilot.v1", "label": label, "resumed_branches": pre.get("resumed_branches", []),
+        "source_config_sha256": pre.get("source_config_sha256"),
         "dataset_id": dataset_id, "train_npz_sha256": _file_sha(train_npz),
         "declaration_file_sha256": hashlib.sha256(declaration_bytes).hexdigest(),
         "declaration_sha256": declaration["declaration_sha256"], "manifest_sha256": declaration["manifest_sha256"],
@@ -691,7 +731,65 @@ def run_cost_pilot(train_npz, declaration_path, out, *, n_branches, fit, seed=7,
             "core_note": ("core cost grows with width only in its input projection and decoder output; "
                           "linear-in-width is a pessimistic estimate, the attention blocks are width-independent")}}
     (out / "COST_PILOT.json").write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
+    write_receipt(out)
     return report
+
+
+def write_receipt(out):
+    """Generated RECEIPT.json/.md from PRETRAIN.json, COST_PILOT.json and the heartbeat."""
+    out = Path(out)
+    pre = json.loads((out / "pretrain" / "PRETRAIN.json").read_text())
+    run = json.loads((out / "COST_PILOT.json").read_text())
+    beats = [json.loads(line) for line in (out / "heartbeat.jsonl").read_text().splitlines() if line.strip()]
+    stages = {}
+    for b in beats:
+        family = str(b.get("stage", "")).split(":")[0]
+        res = b.get("resources", {})
+        entry = stages.setdefault(family, {"max_sampled_memory_current": 0, "cumulative_peak_at_last_beat": None})
+        entry["max_sampled_memory_current"] = max(entry["max_sampled_memory_current"],
+                                                  int(res.get("cgroup_memory_current") or 0))
+        entry["cumulative_peak_at_last_beat"] = res.get("cgroup_memory_peak")
+    rows = [{"branch": b["name"], "wall_seconds": b.get("wall_seconds"), "epochs": b["training"]["epochs_completed"],
+             "updates": b["training"]["observed_updates"], "stop_class": b["training"]["stop_class"],
+             "stop_reason": b["training"]["stop_reason"],
+             "internal_validation_relative_MSE": b["reconstruction"]["train_validation"]["relative_MSE"],
+             "resumed": b.get("resumed", False), "donor_sha256": b["donor_sha256"]} for b in pre["branches"]]
+    fusion = pre["fusion"]
+    core = pre["core"]
+    receipt = {
+        "schema": "m02.receipt.v1", "label": run["label"],
+        "statement": "Reconstruction error is not forecasting skill; these donors are measured only as autoencoders.",
+        "runtime": pre.get("runtime"), "source_config_sha256": pre.get("source_config_sha256"),
+        "declaration_sha256": run.get("declaration_sha256"), "manifest_sha256": run.get("manifest_sha256"),
+        "train_npz_sha256": run.get("train_npz_sha256"), "branches": rows,
+        "fusion": {"wall_seconds": fusion["wall_seconds"],
+                   "bytes": {s: int(np.prod(f["shape"])) * 4 for s, f in fusion["files"].items()},
+                   "shape": {s: f["shape"] for s, f in fusion["files"].items()}},
+        "core": {"wall_seconds": core["wall_seconds"], "epochs": core["training"]["epochs_completed"],
+                 "updates": core["training"]["observed_updates"], "stop_class": core["training"]["stop_class"],
+                 "internal_validation_relative_MSE": core["reconstruction"]["train_validation"]["relative_MSE"],
+                 "internal_validation_standardized_MSE": core["reconstruction"]["train_validation"]["standardized_MSE"],
+                 "donor_sha256": core["donor_sha256"]},
+        "memory": {"cumulative_cgroup_peak_bytes": (beats[-1].get("resources", {}) or {}).get("cgroup_memory_peak"),
+                   "per_stage": stages,
+                   "per_stage_note": "per-stage value = max of memory.current sampled at heartbeats (lower bound)"},
+        "cpu_seconds_total": (beats[-1].get("resources", {}) or {}).get("cpu_seconds"),
+        "total_wall_seconds": run["measured"]["total_wall_seconds"]}
+    (out / "RECEIPT.json").write_text(json.dumps(receipt, indent=2, allow_nan=False) + "\n")
+    lines = [f"# {receipt['label']}", "", receipt["statement"], "",
+             "| branch | wall s | epochs | updates | stop | internal-val rel. MSE | resumed |", "|---|---|---|---|---|---|---|"]
+    for r in rows:
+        wall = "" if r["wall_seconds"] is None else f"{r['wall_seconds']:.1f}"
+        lines.append(f"| {r['branch']} | {wall} | {r['epochs']} | {r['updates']} | {r['stop_class']} "
+                     f"| {r['internal_validation_relative_MSE']:.5f} | {r['resumed']} |")
+    c = receipt["core"]
+    lines += ["", f"Core AE: {c['wall_seconds']:.1f} s, {c['epochs']} epochs, {c['updates']} updates, "
+                  f"{c['stop_class']}, internal-val relative MSE {c['internal_validation_relative_MSE']:.5f}.",
+              f"Fusion: {receipt['fusion']['wall_seconds']:.1f} s, bytes {receipt['fusion']['bytes']}.",
+              f"Cumulative cgroup peak: {receipt['memory']['cumulative_cgroup_peak_bytes']} B; "
+              f"CPU seconds: {receipt['cpu_seconds_total']}."]
+    (out / "RECEIPT.md").write_text("\n".join(lines) + "\n")
+    return receipt
 
 
 # --------------------------------------------------------------------------- synthetic pilot
@@ -869,6 +967,8 @@ def main(argv=None):
     parser.add_argument("--declaration", default=None)
     parser.add_argument("--branches", type=int, default=8)
     parser.add_argument("--config", default=None, help="explicit nested model config JSON (e.g. M04 from_flat)")
+    parser.add_argument("--label", default="GOVERNED INPUT COST PILOT - not a forecasting result")
+    parser.add_argument("--resume", action="store_true")
     a = parser.parse_args(argv)
     fit = dict(max_epochs=a.max_epochs, patience=a.patience, min_delta=a.min_delta,
                monitor_every=a.monitor_every, max_updates=a.max_updates, max_seconds=a.max_seconds,
@@ -876,7 +976,7 @@ def main(argv=None):
     if a.cost_pilot_train_npz:
         report = run_cost_pilot(a.cost_pilot_train_npz, a.declaration, a.out, n_branches=a.branches,
                                 fit=fit, seed=a.seed, heartbeat_interval=a.heartbeat_interval,
-                                config_path=a.config)
+                                config_path=a.config, label=a.label, resume=a.resume)
         print(json.dumps(report, indent=2), flush=True)
         return
     summary = run_synthetic_pilot(a.out, rows=a.rows, features=a.features, seed=a.seed, fit=fit,
