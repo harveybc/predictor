@@ -1,0 +1,66 @@
+{
+ "cost": {
+  "cpu_seconds": 13.114311047000001,
+  "optimizer_updates": 6,
+  "wall_seconds": 15.474352891993476
+ },
+ "files": {
+  "REAL_PRODUCER_DOCUMENT.json": "303cb5cab991f0494efc99c3cd48dda54f115ca7c49a78c71414d074d80ea5ef",
+  "REAL_SUPERVISION_RECORD.json": "6b224c71a5d84b8b847eb3f80a05915e900cf77fa4d65efb1b17d10599f541d8"
+ },
+ "gate": {
+  "accepted": true,
+  "attempt_token_echoed_by_the_child": true,
+  "refused_by": [],
+  "supervision_schema": "df_cell_scope_supervision.v2",
+  "usable_for_costing": true
+ },
+ "host_ram": {
+  "comparison_direction": "SAMPLED_ABOVE_THE_IN_SCOPE_READ",
+  "comparison_is_unsigned": true,
+  "finding": "on this run the SAMPLED value came out ABOVE the child's in-scope read, the opposite of the 9.5x undercount the classification lane measured, because the child reads its own memory.peak before it has finished.  A sampled observation therefore bounds only the scope's LIFETIME watermark; it does not bound the in-scope read in either direction.",
+  "in_scope_peak_bytes": 557481984,
+  "lifetime_watermark_bytes": 559276032,
+  "process_rss_bytes": 902348800,
+  "supervisor_sampled_bytes": 559276032,
+  "these_are_not_interchangeable": true
+ },
+ "integration": {
+  "branch": "satoshi/qrm01-f1-f2-repair-20260929",
+  "captured_at_epoch": 1790726814.623333,
+  "source_tip": "c1033dc6"
+ },
+ "limit_and_reservation": {
+  "cap_agrees_with_the_declaration": true,
+  "cap_asked_once_at_the_declared_size": true,
+  "declared_cap_bytes": 4294967296,
+  "kernel_limit_bytes": 4294967296,
+  "re_verified_by_the_supervisor": true,
+  "reservation_confirmed": true,
+  "reservation_source": "LIVE_ADMISSION_STORE"
+ },
+ "not_covered": [
+  "the governed delivery check at the top of df_e1_block.child",
+  "governance terminal reporting",
+  "any GPU: CUDA_VISIBLE_DEVICES was empty, so the GPU field is UNKNOWN and not zero"
+ ],
+ "producer_document": {
+  "envelope": {
+   "record_at": "cell_scope",
+   "record_schema": "df_cell_scope_record.v2",
+   "schema": "df_cell_scope_envelope.v1",
+   "why": "the consumer reads the scope record by this declaration alone; it never searches for a field that merely shares a name, at the root or anywhere else"
+  },
+  "root_carries_host_ram": false,
+  "schema": "df_e1_block_cell.v1"
+ },
+ "schema": "qrm01_f1_f2_evidence.v1",
+ "scope": {
+  "is_scope": true,
+  "parent": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+  "supervisor_and_child_inodes_agree": true,
+  "unit": "crispdm-modular_w60_s1-1790726773-3480544.scope",
+  "why_inode": "a scope NAME can repeat -- systemd builds it from a job name, an epoch second and a pid; a fresh scope is a fresh directory"
+ },
+ "what_this_is": "one real cell, launched through the DEPLOYED crispdm-run into a fresh transient scope with its own MemoryMax and its own reservation, trained by the real df_e1_block.run_cell on a SYNTHETIC panel, and supervised by the real df_cell_scope.supervise.  A mechanism proof, not an experiment: the panel is synthetic, the model is tiny, no quality claim is made."
+}

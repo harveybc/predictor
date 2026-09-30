@@ -51,6 +51,7 @@ import importlib.util
 import json
 import os
 import re
+import secrets
 import shutil
 import subprocess
 import sys
@@ -60,10 +61,28 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 
-SCHEMA = "df_cell_scope_record.v1"
+RECORD_SCHEMA = "df_cell_scope_record.v2"
+SCHEMA = RECORD_SCHEMA
+# v1 carried no attempt identity, no reservation evidence and no checked domains, so a v1 record
+# cannot satisfy the fresh-attempt contract and is refused BY ITS VERSION rather than by guessing
+# which of its fields might still be trustworthy.
+SUPERSEDED_RECORD_SCHEMAS = ("df_cell_scope_record.v1",)
+ENVELOPE_SCHEMA = "df_cell_scope_envelope.v1"
+CONTRACT_SCHEMA = "df_cell_scope_fresh_attempt_contract.v1"
 RUNNER_SCHEMA = "df_runner_identity.v1"
 MEASURED = "MEASURED"
 UNKNOWN = "UNKNOWN"
+
+ATTEMPT_ENV = "CRISPDM_CELL_SCOPE_ATTEMPT"
+STAGE_ENV = "CRISPDM_CELL_SCOPE_STAGE"
+CLOCK_TOLERANCE_SECONDS = 2.0
+LIMIT_PAGE_TOLERANCE_BYTES = 4096          # the kernel stores memory.max at page granularity
+
+ABSENCE_IS_NOT_COINCIDENCE = (
+    "ABSENCE_IS_NOT_COINCIDENCE: a missing identity, clock, scope inode, kernel limit, peak or "
+    "confirmed reservation REFUSES.  It is never read as agreement, never inferred from another "
+    "record, never filled in from a sampled floor, and never passes by default.  The supervisor "
+    "not having seen something is a refusal of the thing it did not see, not a licence.")
 
 RSS_BASIS = ("MAIN_PROCESS_RSS_ONLY: resource.getrusage(RUSAGE_SELF).ru_maxrss of this process "
              "alone.  NOT a process-tree or cgroup peak: it excludes every other task in the "
@@ -74,11 +93,15 @@ CGROUP_BASIS = ("CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scop
 FLOOR = "FLOOR_NOT_A_PEAK"
 FLOOR_BASIS = (
     "SAMPLED_FLOOR: the last memory.peak this cgroup was OBSERVED to hold before its scope was "
-    "removed.  It is a LOWER BOUND, never a footprint: a child that ends between two observations "
-    "-- or before the first -- takes its true high-watermark away with its scope.  Measured on a "
-    "short child by the classification lane: 27,262,976 B retained against 258,584,576 B read from "
-    "inside the same scope, an undercount of 9.5x.  A cap sized on this number would be nine times "
-    "too small, so it never shares a name or a field with a peak.")
+    "removed.  It is a lower bound on the scope's LIFETIME watermark and on nothing else, and it "
+    "is never a footprint: a child that ends between two observations -- or before the first -- "
+    "takes its true high-watermark away with its scope.  Measured on a short child by the "
+    "classification lane: 27,262,976 B retained against 258,584,576 B read from inside the same "
+    "scope, an undercount of 9.5x; a cap sized on that number would be nine times too small.  It "
+    "does NOT bound the child's own in-scope read in the other direction either: the QRM01 "
+    "producer-to-supervisor run of 2026-09-29 sampled 559,525,888 B against 557,654,016 B read in "
+    "scope, because a child reads its own peak before it has finished.  Two readings of one scope "
+    "at two instants, unsigned, so this never shares a name or a field with a peak.")
 RETAINED_LEASE_PEAK_IS_NOT_READ = (
     "The admission store's retained observed_peak_bytes is NOT read as a footprint by this "
     "instrument, in any field.  It is the launcher monitor's SAMPLED series and it was measured to "
@@ -276,6 +299,223 @@ def cgroup_peak(rel: str | None = None) -> dict:
     return {"bytes": int(v), "status": MEASURED, "basis": CGROUP_BASIS, "cgroup": rel}
 
 
+def lifetime_peak(rel: str | None = None) -> dict:
+    """The LIFETIME high-watermark of the scope, read and never reset.
+
+    Kept separately from any per-stage figure on purpose.  `memory.peak` can be reset, and a reset
+    destroys the only number that answers `what did this cell cost in all`.  This function opens a
+    fresh descriptor, reads, and writes nothing.
+    """
+    out = dict(cgroup_peak(rel))
+    out["reset"] = False
+    out["watermark"] = "LIFETIME_OF_THE_SCOPE"
+    out["why_separate"] = (
+        "a lifetime watermark is retained under its own name because a per-stage figure obtained "
+        "by resetting memory.peak destroys it; the two are never the same field")
+    return out
+
+
+def stage_peak_one_descriptor(rel: str | None = None, *, reset_after: bool = False) -> dict:
+    """A per-STAGE peak read through ONE open file descriptor, with the reset on that same fd.
+
+    The kernel documents the reset as descriptor-scoped: "a write to this file resets it to the
+    current memory usage for subsequent reads through the same file descriptor"
+    (https://docs.kernel.org/admin-guide/cgroup-v2.html, memory.peak).  A `write_text` followed by
+    a `read_text` opens TWO descriptors and therefore establishes nothing about the reset -- an
+    earlier report of ours asserted that experiment and it was not the experiment performed.  So
+    the read and the reset happen on one `os.open` here, the descriptor discipline is recorded in
+    the result, and the LIFETIME watermark is kept by `lifetime_peak()` in a field of its own.
+    """
+    rel = rel if rel is not None else own_cgroup()
+    base = {"basis": CGROUP_BASIS, "cgroup": rel, "watermark": "SINCE_THE_LAST_RESET_ON_THIS_FD",
+            "descriptor": "SAME_OPEN_FILE_DESCRIPTOR",
+            "kernel_doc": "https://docs.kernel.org/admin-guide/cgroup-v2.html (memory.peak)",
+            "why_one_descriptor": ("memory.peak's reset applies to subsequent reads THROUGH THE "
+                                   "SAME open file descriptor; a write_text followed by a "
+                                   "read_text opens a different descriptor and does not "
+                                   "establish it")}
+    if rel is None:
+        return {**base, "bytes": None, "status": UNKNOWN, "reset": False,
+                "why": "the cgroup of this process could not be read"}
+    path = cgroup_root() / str(rel).lstrip("/") / "memory.peak"
+    fd = None
+    try:
+        fd = os.open(path, os.O_RDWR if reset_after else os.O_RDONLY)
+        raw = os.pread(fd, 64, 0).decode().split()
+        value = int(raw[0]) if raw and raw[0] != "max" else None
+        out = {**base, "bytes": value,
+               "status": MEASURED if isinstance(value, int) else UNKNOWN, "reset": False}
+        if value is None:
+            out["why"] = "memory.peak held no integer for this cgroup"
+        if reset_after and isinstance(value, int):
+            try:
+                os.pwrite(fd, b"0", 0)
+                out["reset"] = True
+                out["reset_on_the_same_fd"] = True
+            except OSError as e:
+                out["reset"] = False
+                out["why_not_reset"] = f"the reset was refused on the same fd: {e.__class__.__name__}"
+        return out
+    except OSError as e:
+        return {**base, "bytes": None, "status": UNKNOWN, "reset": False,
+                "why": f"memory.peak could not be opened: {e.__class__.__name__}"}
+    finally:
+        if fd is not None:
+            os.close(fd)
+
+
+# ---- the reservation, confirmed rather than assumed ------------------------------------------
+
+def confirm_reservation(*, cgroup: str | None, unit: str | None = None, cap_bytes=None,
+                        now: float | None = None) -> dict:
+    """Is there a reservation bound to THIS cgroup, and does it hold the declared cap?
+
+    Two sources, both the launcher's own store and neither the child's word:
+
+      LIVE_ADMISSION_STORE    a live lease whose `cgroup` or `unit` is this scope.  This is the
+                              path a long child confirms itself on, from inside its own scope.
+      RETAINED_LEASE_BODY     the lease BODY the store keeps after the load ends (RR02).  This is
+                              the path that works for a SHORT child: a child whose scope is gone
+                              before any external observer could look still left a lease body
+                              naming its cgroup and its cap, so its reservation is provable after
+                              the fact without the scope being alive.
+
+    A store that cannot be read is UNKNOWN, and UNKNOWN refuses.  Absence is not coincidence.
+    """
+    out = {"schema": "df_cell_scope_reservation.v1", "confirmed": False, "lease_id": None,
+           "source": None, "cgroup": cgroup, "unit": unit, "cap_bytes": None,
+           "declared_cap_bytes": None if cap_bytes is None else int(cap_bytes),
+           "checked_at": time.time(), "why": None}
+    if not cgroup and not unit:
+        out["why"] = "no scope was named, so no reservation could be looked for"
+        return out
+    want = str(cgroup).lstrip("/") if cgroup else None
+    try:
+        adm = admission_module()
+        store = adm.Store()
+        res = adm.resources_from_env()
+    except Exception as e:                                                  # noqa: BLE001
+        out["why"] = f"the admission store could not be read: {type(e).__name__}: {e}"
+        return out
+    try:
+        for lease in adm.state(store, res, now if now is not None else time.time())["live"]:
+            if (want and lease.get("cgroup") and str(lease["cgroup"]).lstrip("/") == want) or \
+               (unit and lease.get("unit") == unit):
+                out.update(confirmed=True, lease_id=lease["lease_id"],
+                           source="LIVE_ADMISSION_STORE", cap_bytes=lease.get("cap_bytes"),
+                           cgroup=lease.get("cgroup") or cgroup, unit=lease.get("unit") or unit)
+                return _cap_checked(out)
+    except Exception as e:                                                  # noqa: BLE001
+        out["why"] = f"the live reservations could not be read: {type(e).__name__}: {e}"
+        return out
+    retained = store.retained if hasattr(store, "retained") else None
+    if retained and Path(retained).is_dir():
+        for p in sorted(Path(retained).glob("*.json")):
+            try:
+                body = json.loads(p.read_text()).get("lease") or {}
+            except Exception:                                               # noqa: BLE001
+                continue
+            if (want and body.get("cgroup") and str(body["cgroup"]).lstrip("/") == want) or \
+               (unit and body.get("unit") == unit):
+                out.update(confirmed=True, lease_id=body.get("lease_id"),
+                           source="RETAINED_LEASE_BODY", cap_bytes=body.get("cap_bytes"),
+                           cgroup=body.get("cgroup") or cgroup, unit=body.get("unit") or unit)
+                return _cap_checked(out)
+    out["why"] = (f"no live reservation and no retained lease body names {cgroup or unit}; this "
+                  f"cell holds NO confirmed reservation, which refuses rather than passing")
+    return out
+
+
+def _cap_checked(out: dict) -> dict:
+    """A reservation confirmed for the wrong number is not this cell's reservation."""
+    declared, held = out.get("declared_cap_bytes"), out.get("cap_bytes")
+    if declared is None or held is None:
+        return out
+    if int(held) != int(declared):
+        out["confirmed"] = False
+        out["cap_agrees_with_the_declaration"] = False
+        out["why"] = (f"the reservation bound to this scope holds {int(held)} B, not the declared "
+                      f"{int(declared)} B; a cap is declared once and a reservation is never "
+                      f"reduced to make a record pass")
+    else:
+        out["cap_agrees_with_the_declaration"] = True
+    return out
+
+
+def verify_reservation_independently(*, lease_id, cgroup, cap_bytes=None) -> dict:
+    """Re-verify a lease the CHILD named, against the launcher's store rather than the child.
+
+    The child can confirm its own reservation while it is alive -- the only path a short child
+    has -- so the supervisor does not take that on trust: it looks the named lease up in the live
+    set and then in the retained bodies, and requires the store's own copy to bind that lease to
+    the cgroup and the cap the record claims.
+    """
+    out = {"schema": "df_cell_scope_reservation_verification.v1", "verified": False,
+           "lease_id": lease_id, "source": None, "why": None}
+    if not lease_id:
+        out["why"] = "the record named no lease id, so there was nothing to verify"
+        return out
+    try:
+        adm = admission_module()
+        store = adm.Store()
+        res = adm.resources_from_env()
+    except Exception as e:                                                  # noqa: BLE001
+        out["why"] = f"the admission store could not be read: {type(e).__name__}: {e}"
+        return out
+    body = None
+    try:
+        for lease in adm.state(store, res, time.time())["live"]:
+            if lease.get("lease_id") == lease_id:
+                body, out["source"] = lease, "LIVE_ADMISSION_STORE"
+                break
+    except Exception as e:                                                  # noqa: BLE001
+        out["why"] = f"the live reservations could not be read: {type(e).__name__}: {e}"
+        return out
+    if body is None:
+        retained = store.retained_body(lease_id) if hasattr(store, "retained_body") else None
+        if retained:
+            body, out["source"] = retained.get("lease") or {}, "RETAINED_LEASE_BODY"
+    if body is None:
+        out["why"] = (f"the store holds no lease {lease_id}, live or retained: the reservation the "
+                      f"record claims cannot be verified and is therefore refused")
+        return out
+    held_cgroup = str(body.get("cgroup") or "").lstrip("/")
+    out["store_cgroup"], out["store_cap_bytes"] = body.get("cgroup"), body.get("cap_bytes")
+    if cgroup and held_cgroup and held_cgroup != str(cgroup).lstrip("/"):
+        out["why"] = (f"the store binds {lease_id} to {body.get('cgroup')}, not to the scope this "
+                      f"record claims ({cgroup}): the charge cannot be attributed to this cell")
+        return out
+    if cgroup and not held_cgroup:
+        out["why"] = (f"the store's copy of {lease_id} names no cgroup, so it cannot be shown to "
+                      f"be the reservation of {cgroup}")
+        return out
+    if cap_bytes is not None and body.get("cap_bytes") is not None and \
+            int(body["cap_bytes"]) != int(cap_bytes):
+        out["why"] = (f"the store holds {int(body['cap_bytes'])} B for {lease_id}, not the "
+                      f"declared {int(cap_bytes)} B")
+        return out
+    out["verified"] = True
+    return out
+
+
+# ---- the attempt -------------------------------------------------------------------------------
+
+def new_attempt_id() -> str:
+    """A token minted by the SUPERVISOR before this child starts.
+
+    This is what makes freshness checkable at all.  A record that already existed on disk cannot
+    carry a token that was created after it was written, so `attempt_id` turns "is this record
+    about the run I just performed" from an assumption into a comparison.  No host name, no
+    account identifier, no pid: an opaque nonce and a clock.
+    """
+    return f"{int(time.time() * 1000):013d}-{secrets.token_hex(12)}"
+
+
+def attempt_id_from_env() -> str | None:
+    v = (os.environ.get(ATTEMPT_ENV) or "").strip()
+    return v or None
+
+
 def process_rss_peak() -> dict:
     import resource as _r
     return {"bytes": int(_r.getrusage(_r.RUSAGE_SELF).ru_maxrss) * 1024, "status": MEASURED,
@@ -393,37 +633,386 @@ def require_fresh_exclusive_scope(claims_dir, cell_id: str, *, identity: dict | 
 
 def cell_scope_record(cell_id: str, *, stage: str, claim: dict | None = None, updates=None,
                       cpu_seconds=None, wall_seconds=None, rel: str | None = None,
-                      extra: dict | None = None) -> dict:
-    """Everything the order names, each quantity in its own labelled field.
+                      extra: dict | None = None, attempt_id: str | None = None,
+                      declared_cap_bytes=None) -> dict:
+    """Everything the order names, each quantity in its own labelled field -- v2.
 
     `stage` is mandatory and is carried into the peak evidence: a data-materialization floor and a
     training peak are different measurements of different things, and a record that does not say
     which it is can be misread as the other.
+
+    v2 adds the four things v1 let a reader assume, each of which the gate now checks:
+    the ATTEMPT this record belongs to, the BOOT it was written on, the KERNEL LIMIT in force, and
+    a CONFIRMED RESERVATION read from the launcher's own store while this child is alive -- the
+    one path a child shorter than any external observation still has.
     """
     ident = (claim or {}).get("scope") or scope_identity(rel)
     rel = ident.get("cgroup")
     peak = cgroup_peak(rel)
+    limit = (claim or {}).get("kernel_limit") or kernel_limit(rel)
+    attempt = attempt_id or attempt_id_from_env()
+    declared = declared_cap_bytes
+    if declared is None:
+        raw = (os.environ.get("CRISPDM_CELL_SCOPE_DECLARED_CAP") or "").strip()
+        declared = int(raw) if raw.isdigit() else None
+    reservation = confirm_reservation(cgroup=rel, unit=ident.get("unit"), cap_bytes=declared)
+    refusals = []
+    if attempt is None:
+        refusals.append("NO_ATTEMPT_IDENTITY: this record was not produced under a supervised "
+                        "attempt, so it cannot be shown to describe any particular run")
+    if peak["status"] != MEASURED:
+        refusals.append("NO_IN_SCOPE_PEAK: the cell's own cgroup peak is UNKNOWN, so this cell "
+                        "costs nothing and bounds nothing")
+    elif not isinstance(peak.get("bytes"), int) or isinstance(peak.get("bytes"), bool) \
+            or peak["bytes"] <= 0:
+        refusals.append("PEAK_OUT_OF_DOMAIN: a cgroup peak is a positive count of bytes")
+    if limit.get("status") != MEASURED:
+        refusals.append("NO_KERNEL_LIMIT: the scope carries no enforceable memory.max, so nothing "
+                        "was enclosed and no peak of it bounds a placement")
+    if not reservation.get("confirmed"):
+        refusals.append(f"NO_CONFIRMED_RESERVATION: {reservation.get('why')}")
     rec = {
-        "schema": SCHEMA,
+        "schema": RECORD_SCHEMA,
         "cell_id": cell_id,
+        "attempt_id": attempt,
         "stage": stage,
         "recorded_at": time.time(),
+        "boot_id": _boot_id(),
         "scope": ident,
-        "kernel_limit": (claim or {}).get("kernel_limit") or kernel_limit(rel),
+        "kernel_limit": limit,
+        "declared_cap_bytes": None if declared is None else int(declared),
+        "reservation": reservation,
         "host_ram": {"cgroup_peak": peak, "process_rss_peak": process_rss_peak(),
+                     "cgroup_lifetime_peak": lifetime_peak(rel),
                      "comparability": COMPARABILITY},
         "gpu": gpu_memory(),
         "optimizer_updates": None if updates is None else int(updates),
         "cpu_seconds": None if cpu_seconds is None else float(cpu_seconds),
         "wall_seconds": None if wall_seconds is None else float(wall_seconds),
         "host_identity": host_identity(),
-        "usable_for_costing": peak["status"] == MEASURED,
-        "why_not_usable": None if peak["status"] == MEASURED else
-                          "the cell's own cgroup peak is UNKNOWN, so this cell costs nothing and bounds nothing",
+        "absence_is_not_coincidence": ABSENCE_IS_NOT_COINCIDENCE,
+        "usable_for_costing": not refusals,
+        "why_not_usable": None if not refusals else "; ".join(refusals),
     }
     if extra:
         rec.update(extra)
     return rec
+
+
+# ---- the producer/consumer boundary, declared by schema version --------------------------------
+
+def embed_record(container: dict, record: dict, *, at: str = "cell_scope") -> dict:
+    """Put a scope record inside a PRODUCER's own document and DECLARE where it is.
+
+    F2 of the 23b2efa3 dictamen: `df_e1_block` wrote this record nested under `cell_scope` while
+    the supervisor read `host_ram` at the ROOT of the same file, so the producer's real document
+    yielded UNKNOWN and `usable_for_costing=false` while physically containing the peak.  The two
+    sides did not disagree about a value, they disagreed about a shape, silently.
+
+    The repair is not to try both places -- that replaces one silent mismatch with another, and a
+    field that merely shares a name is exactly what must never be accepted.  It is an explicit
+    envelope carrying the ENVELOPE version, the RECORD version and the key the record sits under.
+    A consumer that does not understand either version refuses by name.
+    """
+    container[at] = record
+    container["cell_scope_envelope"] = {
+        "schema": ENVELOPE_SCHEMA,
+        "record_schema": record.get("schema"),
+        "record_at": at,
+        "why": ("the consumer reads the scope record by this declaration alone; it never searches "
+                "for a field that merely shares a name, at the root or anywhere else"),
+    }
+    return container
+
+
+def extract_record(document) -> tuple[dict | None, str | None]:
+    """Read a scope record out of a producer document by its DECLARED envelope.
+
+    Returns `(record, None)` or `(None, "CODE: why")`.  The two accepted shapes, both declared:
+
+      * a document carrying `cell_scope_envelope` of a known envelope version, whose declared
+        record version is supported and whose declared key holds a record that agrees about its
+        own version;
+      * a BARE record, i.e. a document whose own root `schema` is the supported record version --
+        the shape the instrument writes when it is the whole file.
+
+    Everything else refuses.  A v1 record refuses by its version, not by a field-by-field guess.
+    """
+    if not isinstance(document, dict):
+        return None, "RECORD_NOT_A_MAPPING: the retained document is not a JSON object"
+    env = document.get("cell_scope_envelope")
+    if env is None:
+        root = document.get("schema")
+        if root == RECORD_SCHEMA:
+            return document, None
+        if root in SUPERSEDED_RECORD_SCHEMAS:
+            return None, (f"RECORD_SCHEMA_SUPERSEDED: {root} carries no attempt identity, no "
+                          f"reservation evidence and no checked domains; {RECORD_SCHEMA} is "
+                          f"required and a superseded record is refused by its version")
+        return None, ("ENVELOPE_MISSING: the document declares no cell_scope_envelope and its own "
+                      f"schema is {root!r}, not {RECORD_SCHEMA}; no field is read by name alone")
+    if not isinstance(env, dict):
+        return None, "ENVELOPE_NOT_A_MAPPING: cell_scope_envelope is not a JSON object"
+    if env.get("schema") != ENVELOPE_SCHEMA:
+        return None, (f"ENVELOPE_SCHEMA_UNKNOWN: {env.get('schema')!r} is not {ENVELOPE_SCHEMA}; "
+                      f"this consumer does not know where that producer put its record")
+    declared = env.get("record_schema")
+    if declared in SUPERSEDED_RECORD_SCHEMAS:
+        return None, (f"RECORD_SCHEMA_SUPERSEDED: the envelope declares {declared}, which carries "
+                      f"no attempt identity and no reservation evidence; {RECORD_SCHEMA} is required")
+    if declared != RECORD_SCHEMA:
+        return None, (f"RECORD_SCHEMA_NOT_SUPPORTED: the envelope declares {declared!r}, not "
+                      f"{RECORD_SCHEMA}")
+    at = env.get("record_at")
+    if not isinstance(at, str) or not at:
+        return None, "ENVELOPE_POINTER_MISSING: the envelope declares no record_at key"
+    if at not in document:
+        return None, (f"ENVELOPE_POINTER_DANGLING: the envelope points at {at!r}, which the "
+                      f"document does not contain")
+    record = document[at]
+    if not isinstance(record, dict):
+        return None, f"RECORD_NOT_A_MAPPING: {at!r} does not hold a JSON object"
+    if record.get("schema") != declared:
+        return None, (f"ENVELOPE_RECORD_SCHEMA_DISAGREES: the envelope declares {declared}, the "
+                      f"record says {record.get('schema')!r}; a disagreement is not resolved by "
+                      f"preferring one of them")
+    return record, None
+
+
+# ---- the fresh-attempt contract ----------------------------------------------------------------
+
+def _pos_int(value):
+    return isinstance(value, int) and not isinstance(value, bool) and value > 0
+
+
+def verify_fresh_attempt(document, *, cell_id: str, attempt_id: str, stage: str,
+                         declared_cap_bytes, started_at: float, finished_at: float,
+                         boot_id: str | None = None, observed_scope: dict | None = None,
+                         verify_reservation=True,
+                         clock_tolerance: float = CLOCK_TOLERANCE_SECONDS) -> dict:
+    """Does this document describe THIS attempt of THIS cell, completely and in domain?
+
+    F1 of the 23b2efa3 dictamen: the old gate read ANY pre-existing JSON at `record_path` and
+    accepted `MEASURED` plus exit 0 as a cost, demanding no cell identity, no attempt identity, no
+    stage, no clock, no limit and no reservation -- and comparing scopes only IF it happened to
+    have seen one.  Two of the auditor's counterexamples walked straight through it: a record of
+    ANOTHER cell with clock 1 and no lease, and a peak of MINUS ONE.
+
+    Every clause below refuses BY ITS OWN NAME, and every clause refuses on ABSENCE.  Nothing here
+    depends on the supervisor having observed the scope, because a short-lived child is precisely
+    where that observation does not exist -- and the old gate's conditional comparison is the hole
+    the order names.  What replaces it is checkable without an external observer: a token minted
+    before this child started, a boot, a clock inside this attempt, a kernel limit that is the
+    declared cap, and a reservation re-verified in the launcher's own store.  When an external
+    observation DOES exist it must agree; it is a further check, never the only one.
+    """
+    refusals = []
+    checks = {}
+
+    def refuse(code: str, detail: str):
+        refusals.append({"code": code, "detail": detail})
+
+    record, why = extract_record(document) if document is not None else (
+        None, "RECORD_ABSENT: no record was retained at the path this attempt was told to write")
+    if record is None:
+        code, _, detail = (why or "RECORD_ABSENT: none").partition(": ")
+        refuse(code, detail or why)
+        return {"schema": CONTRACT_SCHEMA, "accepted": False, "refusals": refusals,
+                "refused_by": [r["code"] for r in refusals], "checks": checks, "record": None,
+                "cell_id": cell_id, "attempt_id": attempt_id, "stage": stage,
+                "declared_cap_bytes": None if declared_cap_bytes is None
+                                      else int(declared_cap_bytes),
+                "absence_is_not_coincidence": ABSENCE_IS_NOT_COINCIDENCE}
+
+    # -- identity: cell, attempt, stage, boot ---------------------------------------------------
+    if record.get("cell_id") is None:
+        refuse("CELL_IDENTITY_MISSING", "the record names no cell")
+    elif record["cell_id"] != cell_id:
+        refuse("CELL_IDENTITY_MISMATCH",
+               f"the record belongs to {record['cell_id']!r}, not to {cell_id!r}; another cell's "
+               f"evidence is never this cell's cost")
+    checks["cell_id"] = record.get("cell_id")
+
+    if not attempt_id:
+        refuse("ATTEMPT_IDENTITY_NOT_MINTED",
+               "the supervisor minted no attempt token, so freshness could not be checked at all")
+    elif record.get("attempt_id") is None:
+        refuse("ATTEMPT_IDENTITY_MISSING",
+               "the record carries no attempt_id, so it cannot be shown to describe the run that "
+               "just happened rather than a file that was already on disk")
+    elif record["attempt_id"] != attempt_id:
+        refuse("ATTEMPT_IDENTITY_MISMATCH",
+               f"the record belongs to attempt {record['attempt_id']!r}, not to {attempt_id!r}")
+    checks["attempt_id"] = record.get("attempt_id")
+
+    if record.get("stage") is None:
+        refuse("STAGE_MISSING", "the record names no stage; a data-stage floor and a training "
+                                "peak are different measurements and must never be interchanged")
+    elif stage is not None and record["stage"] != stage:
+        refuse("STAGE_MISMATCH", f"the record is stage {record['stage']!r}, the attempt was "
+                                 f"{stage!r}")
+    checks["stage"] = record.get("stage")
+
+    want_boot = boot_id if boot_id is not None else _boot_id()
+    if record.get("boot_id") is None:
+        refuse("BOOT_IDENTITY_MISSING", "the record names no boot; a watermark from an earlier "
+                                        "boot describes a load this host no longer has")
+    elif want_boot is not None and record["boot_id"] != want_boot:
+        refuse("BOOT_IDENTITY_MISMATCH",
+               "the record was written on a different boot than this attempt")
+    checks["boot_id_agrees"] = (record.get("boot_id") == want_boot) if want_boot else None
+
+    # -- the scope, with its inode -------------------------------------------------------------
+    scope = record.get("scope") if isinstance(record.get("scope"), dict) else None
+    if scope is None:
+        refuse("SCOPE_IDENTITY_MISSING", "the record names no scope")
+    else:
+        if not scope.get("cgroup"):
+            refuse("SCOPE_CGROUP_MISSING", "the record's scope names no cgroup")
+        if scope.get("inode") is None:
+            refuse("SCOPE_INODE_MISSING",
+                   "the record's scope carries no directory inode, so the scope it was charged to "
+                   "cannot be identified; a missing inode REFUSES instead of being skipped")
+        elif not _pos_int(scope.get("inode")):
+            refuse("SCOPE_INODE_OUT_OF_DOMAIN",
+                   f"the scope inode {scope.get('inode')!r} is not a positive integer")
+        if scope.get("is_scope") is not True:
+            refuse("NOT_A_SCOPE",
+                   "the record's cgroup is not a transient scope, so its charge is shared with "
+                   "whatever else lives in that cgroup")
+    checks["scope_cgroup"] = (scope or {}).get("cgroup")
+    checks["scope_inode"] = (scope or {}).get("inode")
+
+    # -- the clock: it must belong to THIS attempt ----------------------------------------------
+    clock = record.get("recorded_at")
+    if clock is None:
+        refuse("CLOCK_MISSING", "the record carries no recorded_at")
+    elif isinstance(clock, bool) or not isinstance(clock, (int, float)):
+        refuse("CLOCK_OUT_OF_DOMAIN", f"recorded_at {clock!r} is not a number of seconds")
+    elif not (started_at - clock_tolerance <= float(clock) <= finished_at + clock_tolerance):
+        refuse("CLOCK_OUTSIDE_THIS_ATTEMPT",
+               f"recorded_at {float(clock)!r} lies outside this attempt's window "
+               f"[{started_at}, {finished_at}] (+/-{clock_tolerance}s); the record was not written "
+               f"while this child ran")
+    checks["recorded_at"] = clock
+
+    # -- the kernel limit in force --------------------------------------------------------------
+    limit = record.get("kernel_limit") if isinstance(record.get("kernel_limit"), dict) else None
+    limit_bytes = None
+    if limit is None:
+        refuse("KERNEL_LIMIT_MISSING", "the record names no kernel limit")
+    elif limit.get("status") != MEASURED:
+        refuse("KERNEL_LIMIT_NOT_MEASURED",
+               f"the scope's memory.max was not measured ({limit.get('why')}); an unlimited scope "
+               f"encloses nothing and its peak bounds nothing")
+    elif not _pos_int(limit.get("bytes")):
+        refuse("KERNEL_LIMIT_OUT_OF_DOMAIN",
+               f"memory.max {limit.get('bytes')!r} is not a positive integer")
+    else:
+        limit_bytes = int(limit["bytes"])
+        if declared_cap_bytes is not None:
+            delta = limit_bytes - int(declared_cap_bytes)
+            if delta < -LIMIT_PAGE_TOLERANCE_BYTES:
+                refuse("KERNEL_LIMIT_BELOW_THE_DECLARED_CAP",
+                       f"the kernel is enforcing {limit_bytes} B where {int(declared_cap_bytes)} B "
+                       f"was declared; a cap is never shrunk to make a refusal go away, and a "
+                       f"record measured under a smaller limit is not the declared attempt")
+            elif delta > LIMIT_PAGE_TOLERANCE_BYTES:
+                refuse("KERNEL_LIMIT_ABOVE_THE_DECLARED_CAP",
+                       f"the kernel is enforcing {limit_bytes} B where {int(declared_cap_bytes)} B "
+                       f"was declared; the scope was not limited at the declared size")
+    checks["kernel_limit_bytes"] = limit_bytes
+
+    # -- the peak, typed, in domain, and of the right basis --------------------------------------
+    host = record.get("host_ram") if isinstance(record.get("host_ram"), dict) else {}
+    peak = host.get("cgroup_peak") if isinstance(host.get("cgroup_peak"), dict) else None
+    if peak is None:
+        refuse("PEAK_MISSING", "the record carries no cgroup peak field")
+    else:
+        if peak.get("status") != MEASURED:
+            refuse("PEAK_NOT_MEASURED",
+                   f"the cgroup peak is {peak.get('status')!r}: {peak.get('why')}")
+        value = peak.get("bytes")
+        if value is None:
+            refuse("PEAK_BYTES_MISSING", "the cgroup peak holds no byte count")
+        elif isinstance(value, bool) or not isinstance(value, int):
+            refuse("PEAK_BYTES_OUT_OF_DOMAIN",
+                   f"the cgroup peak {value!r} is not an integer count of bytes")
+        elif value < 0:
+            refuse("PEAK_BYTES_NEGATIVE",
+                   f"the cgroup peak is {value}: a high-watermark cannot be negative, and a typed "
+                   f"field with a checked domain is what makes that impossible to accept")
+        elif value == 0:
+            refuse("PEAK_BYTES_ZERO",
+                   "the cgroup peak is 0: a cell that ran charged something, and a zero here is "
+                   "the absence of a measurement rather than a cell that used no memory")
+        elif limit_bytes is not None and value > limit_bytes:
+            refuse("PEAK_ABOVE_THE_KERNEL_LIMIT",
+                   f"the cgroup peak {value} exceeds the {limit_bytes} B the kernel was enforcing, "
+                   f"so it was not charged to this scope")
+        if peak.get("basis") != CGROUP_BASIS:
+            refuse("PEAK_BASIS_IS_NOT_THE_TREE_PEAK",
+                   "the peak field does not carry the cgroup-tree basis; a resident set and a "
+                   "sampled floor are different quantities and never occupy this field")
+        checks["peak_bytes"] = peak.get("bytes")
+
+    # -- a reservation, confirmed and independently re-verified ---------------------------------
+    reservation = record.get("reservation") if isinstance(record.get("reservation"), dict) else None
+    if reservation is None:
+        refuse("RESERVATION_MISSING",
+               "the record carries no reservation evidence; a cell with no reservation was never "
+               "admitted, and its charge is not a governed cost")
+    elif reservation.get("confirmed") is not True:
+        refuse("RESERVATION_NOT_CONFIRMED",
+               f"the record's reservation is unconfirmed: {reservation.get('why')}")
+    elif not reservation.get("lease_id"):
+        refuse("RESERVATION_LEASE_ID_MISSING",
+               "the reservation claims to be confirmed but names no lease")
+    else:
+        rc = str(reservation.get("cgroup") or "").lstrip("/")
+        sc = str((scope or {}).get("cgroup") or "").lstrip("/")
+        if rc and sc and rc != sc:
+            refuse("RESERVATION_BOUND_TO_ANOTHER_SCOPE",
+                   f"the reservation is bound to {reservation.get('cgroup')}, the record was "
+                   f"charged to {(scope or {}).get('cgroup')}")
+        if declared_cap_bytes is not None and reservation.get("cap_bytes") is not None and \
+                int(reservation["cap_bytes"]) != int(declared_cap_bytes):
+            refuse("RESERVATION_CAP_IS_NOT_THE_DECLARED_CAP",
+                   f"the reservation holds {int(reservation['cap_bytes'])} B, not the declared "
+                   f"{int(declared_cap_bytes)} B; a reservation is never reduced to pass")
+        if verify_reservation:
+            v = verify_reservation_independently(lease_id=reservation["lease_id"],
+                                                 cgroup=(scope or {}).get("cgroup"),
+                                                 cap_bytes=declared_cap_bytes)
+            checks["reservation_verification"] = v
+            if not v["verified"]:
+                refuse("RESERVATION_NOT_VERIFIABLE_IN_THE_STORE",
+                       f"the lease the record names could not be verified against the launcher's "
+                       f"own store: {v.get('why')}")
+    checks["lease_id"] = (reservation or {}).get("lease_id")
+
+    # -- the external observation: a FURTHER check, never the only one ---------------------------
+    if observed_scope and observed_scope.get("inode") is not None:
+        agrees = observed_scope.get("inode") == (scope or {}).get("inode")
+        checks["scope_identity_agrees_with_the_supervisor"] = agrees
+        if not agrees:
+            refuse("SCOPE_IS_NOT_THE_SCOPE_THE_SUPERVISOR_OBSERVED",
+                   f"the supervisor observed inode {observed_scope.get('inode')} for this cell and "
+                   f"the record claims {(scope or {}).get('inode')}; the charge cannot be attributed")
+    else:
+        checks["scope_identity_agrees_with_the_supervisor"] = None
+        checks["why_no_external_observation"] = (
+            "the supervisor observed no scope for this cell -- the ordinary case for a child "
+            "shorter than one observation interval.  This is NOT read as agreement: acceptance "
+            "rests on the minted attempt token, the boot, the clock window, the enforced kernel "
+            "limit and the reservation re-verified in the launcher's store, each of which refuses "
+            "on absence.")
+
+    return {"schema": CONTRACT_SCHEMA, "accepted": not refusals, "refusals": refusals,
+            "refused_by": [r["code"] for r in refusals], "checks": checks,
+            "record": record, "cell_id": cell_id, "attempt_id": attempt_id, "stage": stage,
+            "declared_cap_bytes": None if declared_cap_bytes is None else int(declared_cap_bytes),
+            "absence_is_not_coincidence": ABSENCE_IS_NOT_COINCIDENCE}
 
 
 def peak_evidence(record: dict) -> dict:
@@ -436,8 +1025,16 @@ def peak_evidence(record: dict) -> dict:
     peak = record["host_ram"]["cgroup_peak"]
     out = {"schema": "df_cell_scope_peak_evidence.v1", "cell_id": record["cell_id"],
            "stage": record["stage"], "scope": record["scope"], "recorded_at": record["recorded_at"],
+           "attempt_id": record.get("attempt_id"),
+           "reservation_lease_id": (record.get("reservation") or {}).get("lease_id"),
            "kernel_limit_bytes": record["kernel_limit"].get("bytes"),
            "basis": peak.get("basis"), "host_identity": record["host_identity"]}
+    if record.get("usable_for_costing") is False:
+        # a record its own producer marked unusable is not offered to admission as a footprint
+        out["peak_scope"] = UNKNOWN
+        out["why_no_peak"] = (f"this record is not usable for costing "
+                              f"({record.get('why_not_usable')}), so it offers no footprint")
+        return out
     if peak["status"] == MEASURED:
         out["peak_scope"] = "cgroup"
         out["peak_bytes"] = int(peak["bytes"])
@@ -550,9 +1147,17 @@ def supervise(*, cell_id: str, argv: list, cap_bytes: int, wall_seconds: int, su
             cmd += ["-P", str(int(peak_bytes))]
     cmd += ["--"] + [str(x) for x in argv]
 
+    # The token that makes freshness checkable.  It is minted HERE, before the child exists, so a
+    # record already lying at `record_path` cannot carry it: that is what turns "this record is
+    # about the run I just did" from an assumption into a comparison the gate performs.
+    attempt = new_attempt_id()
+
     child_env = dict(env if env is not None else os.environ)
     child_env["CRISPDM_CELL_SCOPE_PARENT_CGROUP"] = own_cgroup() or ""
     child_env["CRISPDM_CELL_SCOPE_CELL_ID"] = str(cell_id)
+    child_env[ATTEMPT_ENV] = attempt
+    child_env[STAGE_ENV] = str(stage)
+    child_env["CRISPDM_CELL_SCOPE_DECLARED_CAP"] = str(cap_bytes)
     if claims_dir:
         child_env["CRISPDM_CELL_SCOPE_CLAIMS"] = str(claims_dir)
 
@@ -576,15 +1181,36 @@ def supervise(*, cell_id: str, argv: list, cap_bytes: int, wall_seconds: int, su
     term["cap_asked_once_at_the_declared_size"] = True
     term["command"] = cmd
 
-    child_record = None
-    if record_path and Path(record_path).is_file():
+    finished = time.time()
+    document, document_why = None, None
+    if not record_path:
+        document_why = ("no record_path was given, so this attempt was never told where to write "
+                        "its in-scope reading")
+    elif not Path(record_path).is_file():
+        document_why = (f"this attempt retained no record at {record_path}: the absence of a "
+                        f"reading is a refusal, not a coincidence")
+    else:
         try:
-            child_record = json.loads(Path(record_path).read_text())
-        except Exception:                                                   # noqa: BLE001
-            child_record = None
+            document = json.loads(Path(record_path).read_text())
+        except Exception as e:                                              # noqa: BLE001
+            document_why = f"the retained document is not readable JSON: {type(e).__name__}: {e}"
 
-    rec = {"schema": "df_cell_scope_supervision.v1", "cell_id": cell_id, "stage": stage,
-           "started_at": started, "termination": term, "lease_id": lease,
+    # F1.  The gate.  Not "is there a MEASURED field somewhere in a file that happens to be here",
+    # but "does this document describe THIS attempt of THIS cell, completely and in domain".
+    contract = verify_fresh_attempt(
+        document, cell_id=cell_id, attempt_id=attempt, stage=stage,
+        declared_cap_bytes=cap_bytes, started_at=started, finished_at=finished,
+        observed_scope=watcher.identity)
+    if document_why and not contract["accepted"]:
+        contract["why_no_document"] = document_why
+    child_record = contract["record"] if contract["accepted"] else None
+
+    rec = {"schema": "df_cell_scope_supervision.v2", "cell_id": cell_id, "stage": stage,
+           "attempt_id": attempt, "declared_cap_bytes": cap_bytes,
+           "fresh_attempt_contract": contract,
+           "absence_is_not_coincidence": ABSENCE_IS_NOT_COINCIDENCE,
+           "started_at": started, "finished_at": finished,
+           "termination": term, "lease_id": lease,
            "lease_confirmed": lease is not None,
            "why_lease_unconfirmed": None if lease is not None else lease_why,
            "scope": watcher.identity or {"cgroup": None, "inode": None, "path_exists": False,
@@ -599,11 +1225,18 @@ def supervise(*, cell_id: str, argv: list, cap_bytes: int, wall_seconds: int, su
            "child_record": child_record,
            "host_identity": host_identity()}
 
-    # the authoritative host-RAM peak: the child's own in-scope read if it exists, else the
-    # supervisor's last pre-removal read, else UNKNOWN.  Never zero and never inferred from RSS.
-    if child_record and child_record.get("host_ram", {}).get("cgroup_peak", {}).get("status") == MEASURED:
+    # the authoritative host-RAM peak: the child's own in-scope read, and ONLY when the whole
+    # fresh-attempt contract accepted it.  A MEASURED field in a document that failed the contract
+    # is not a cost of this attempt and never enters this field.
+    if child_record:
         peak = dict(child_record["host_ram"]["cgroup_peak"])
         peak["read_by"] = "THE_CHILD_INSIDE_ITS_OWN_SCOPE_BEFORE_THE_SCOPE_WAS_REMOVED"
+        peak["accepted_by"] = CONTRACT_SCHEMA
+    elif document is not None:
+        peak = {"bytes": None, "status": UNKNOWN, "basis": CGROUP_BASIS, "read_by": None,
+                "why": ("a record was retained for this attempt but it did NOT satisfy the "
+                        "fresh-attempt contract, so nothing in it is this attempt's cost: "
+                        + ", ".join(contract["refused_by"]))}
     else:
         # A sampled observation is NOT promoted here, whatever the supervisor saw.  Only a read
         # taken from inside the scope is a peak; the floor stays in its own field, under its own
@@ -621,18 +1254,30 @@ def supervise(*, cell_id: str, argv: list, cap_bytes: int, wall_seconds: int, su
         f, k = int(rec["supervisor_sampled_peak_floor"]["bytes"]), int(peak["bytes"])
         rec["host_ram"]["floor_against_in_scope_peak"] = {
             "floor_bytes": f, "in_scope_peak_bytes": k, "ratio": (k / f) if f else None,
-            "reading": ("one observation of how far a sampled floor fell short of the in-scope "
-                        "read on this cell.  It is an observation, not a correction factor and "
-                        "not an invariant: the shortfall depends on when the child ended")}
-    rec["usable_for_costing"] = bool(peak["status"] == MEASURED and term["status"] == "COMPLETED")
-
-    if watcher.identity and child_record and child_record.get("scope", {}).get("inode") is not None:
-        same = watcher.identity.get("inode") == child_record["scope"]["inode"]
-        rec["scope_identity_agrees_with_the_child"] = same
-        if not same:
-            rec["usable_for_costing"] = False
-            rec["why_not_usable"] = ("the scope the supervisor observed is not the scope the child "
-                                     "reported; the cell's charge cannot be attributed")
+            "direction": ("SAMPLED_BELOW_THE_IN_SCOPE_READ" if f < k else
+                          "SAMPLED_ABOVE_THE_IN_SCOPE_READ" if f > k else "EQUAL"),
+            "reading": (
+                "one observation of two readings of ONE scope at two instants, and the comparison "
+                "is UNSIGNED.  Both directions have now been observed on real loads: the "
+                "classification lane saw 27,262,976 B sampled against 258,584,576 B read in "
+                "scope (sampled far below), and the QRM01 producer-to-supervisor run of "
+                "2026-09-29 saw 559,525,888 B sampled against 557,654,016 B read in scope "
+                "(sampled ABOVE), because the child reads its own memory.peak before it has "
+                "finished and the kernel watermark keeps rising afterwards.  So a sampled "
+                "observation is a lower bound on the scope's LIFETIME watermark and on nothing "
+                "else: it does not bound the child's in-scope read in either direction, it is "
+                "not a correction factor, and neither number may be substituted for the other."),
+            "what_bounds_both": ("host_ram.cgroup_lifetime_peak of the record: memory.peak is "
+                                 "monotone while it is never reset, so the lifetime watermark is "
+                                 "at least as large as any reading taken during the scope's life")}
+    rec["usable_for_costing"] = bool(contract["accepted"] and term["status"] == "COMPLETED")
+    rec["why_not_usable"] = None if rec["usable_for_costing"] else "; ".join(
+        [f"{r['code']}: {r['detail']}" for r in contract["refusals"]]
+        or ([] if term["status"] == "COMPLETED" else
+            [f"TERMINATION_IS_NOT_COMPLETED: {term['status']}"]))
+    rec["refused_by"] = list(contract["refused_by"])
+    rec["scope_identity_agrees_with_the_child"] = \
+        contract["checks"].get("scope_identity_agrees_with_the_supervisor")
 
     tmp = sup / f".{_sanitised(cell_id)}.json.tmp"
     tmp.write_text(json.dumps(rec, indent=1, sort_keys=True))

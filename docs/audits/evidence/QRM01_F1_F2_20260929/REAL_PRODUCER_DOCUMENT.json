@@ -1,0 +1,95 @@
+{
+ "cell_scope": {
+  "absence_is_not_coincidence": "ABSENCE_IS_NOT_COINCIDENCE: a missing identity, clock, scope inode, kernel limit, peak or confirmed reservation REFUSES.  It is never read as agreement, never inferred from another record, never filled in from a sampled floor, and never passes by default.  The supervisor not having seen something is a refusal of the thing it did not see, not a licence.",
+  "arm": "modular_w60",
+  "attempt_id": "1790726773785-e8b0639f23054d3d7bef013f",
+  "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+  "cell_id": "modular_w60_s1",
+  "cpu_seconds": 13.114311047000001,
+  "declared_cap_bytes": 4294967296,
+  "design_sha256": "ed44c3f9e82f152146a8d0057bb2df96645cd31cf3ad96726e77a47392b609c8",
+  "gpu": {
+   "allocated_bytes": null,
+   "reserved_bytes": null,
+   "source": "none",
+   "status": "UNKNOWN",
+   "visible_devices": "",
+   "why": "no device was selected for this cell (CUDA_VISIBLE_DEVICES is empty or unset), so a GPU figure is ABSENT -- it is not zero"
+  },
+  "host_identity": {
+   "host_id": "41a95367ee66ef71",
+   "host_name_recorded": false,
+   "scope": null,
+   "why": "AGENTS.md forbids a machine host name in this repository; an opaque per-host id is recorded instead"
+  },
+  "host_ram": {
+   "cgroup_lifetime_peak": {
+    "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+    "bytes": 559276032,
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+    "reset": false,
+    "status": "MEASURED",
+    "watermark": "LIFETIME_OF_THE_SCOPE",
+    "why_separate": "a lifetime watermark is retained under its own name because a per-stage figure obtained by resetting memory.peak destroys it; the two are never the same field"
+   },
+   "cgroup_peak": {
+    "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+    "bytes": 557481984,
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+    "status": "MEASURED"
+   },
+   "comparability": "NOT_INTERCHANGEABLE: a resident set and a cgroup peak measure different quantities.  In the one bounded pilot where both were read of the same load the resident set exceeded the whole-scope charged peak by 9,158,656 B, so neither bounds the other and one observed ordering is not an invariant.",
+   "process_rss_peak": {
+    "basis": "MAIN_PROCESS_RSS_ONLY: resource.getrusage(RUSAGE_SELF).ru_maxrss of this process alone.  NOT a process-tree or cgroup peak: it excludes every other task in the cgroup and all cgroup-charged page and kernel memory.  Never size a cap with it.",
+    "bytes": 902348800,
+    "status": "MEASURED"
+   }
+  },
+  "kernel_limit": {
+   "bytes": 4294967296,
+   "source": "memory.max",
+   "status": "MEASURED",
+   "unlimited": false
+  },
+  "optimizer_updates": 6,
+  "recorded_at": 1790726786.227529,
+  "reservation": {
+   "cap_agrees_with_the_declaration": true,
+   "cap_bytes": 4294967296,
+   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+   "checked_at": 1790726786.2081795,
+   "confirmed": true,
+   "declared_cap_bytes": 4294967296,
+   "lease_id": "modular_w60_s1-1790726773-3480552-0438aa",
+   "schema": "df_cell_scope_reservation.v1",
+   "source": "LIVE_ADMISSION_STORE",
+   "unit": "crispdm-modular_w60_s1-1790726773-3480544.scope",
+   "why": null
+  },
+  "schema": "df_cell_scope_record.v2",
+  "scope": {
+   "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+   "inode": 820710,
+   "is_scope": true,
+   "parent": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+   "path_exists": true,
+   "read_at": 1790726774.1508777,
+   "unit": "crispdm-modular_w60_s1-1790726773-3480544.scope"
+  },
+  "scope_enforced": true,
+  "seed": 1,
+  "stage": "CELL_TRAIN_AND_SCORE",
+  "usable_for_costing": true,
+  "wall_seconds": 12.043885884006158,
+  "why_not_usable": null
+ },
+ "cell_scope_envelope": {
+  "record_at": "cell_scope",
+  "record_schema": "df_cell_scope_record.v2",
+  "schema": "df_cell_scope_envelope.v1",
+  "why": "the consumer reads the scope record by this declaration alone; it never searches for a field that merely shares a name, at the root or anywhere else"
+ },
+ "note": "the model, scores and arrays of this synthetic cell are omitted; only the scope evidence is retained",
+ "schema": "df_e1_block_cell.v1"
+}

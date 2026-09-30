@@ -1,0 +1,76 @@
+{
+ "ag_news_recount": {
+  "accuracy": 0.9525,
+  "accuracy_equal": true,
+  "confusion": [
+   [
+    99,
+    3,
+    1,
+    0
+   ],
+   [
+    2,
+    121,
+    0,
+    0
+   ],
+   [
+    1,
+    0,
+    62,
+    9
+   ],
+   [
+    0,
+    0,
+    3,
+    99
+   ]
+  ],
+  "correct": 381,
+  "macro_f1": 0.946754652762913,
+  "macro_f1_equal_at_published_precision": true,
+  "n": 400,
+  "native_sha256": "6078a7365a606f2c3ba96249e961eaed5d4687986fbe4bc81e4814376fef6d1a",
+  "published_accuracy": 0.9525,
+  "published_in_training": true,
+  "published_sha256": "15a7ba8a4d123cd1de499ef8036d14ce52e25bfb2bf6ac1d03702135d79c0a05",
+  "published_source": "https://raw.githubusercontent.com/NandhaKishorM/laya/010bacef/research/results/app_benchmark_results.json",
+  "scope": "Recount of retained outputs and source lookup, not fresh inference"
+ },
+ "ag_news_recount_note": "the probe also recounts AG News from a native artefact and compares it to the author's published file; that is lane C/his own finding and is reproduced here only because it is part of the same script.  It is not evidence about the runner.",
+ "gate_cases": {
+  "negative_peak_record": {
+   "lease_confirmed": false,
+   "peak": {
+    "bytes": -1,
+    "read_by": "THE_CHILD_INSIDE_ITS_OWN_SCOPE_BEFORE_THE_SCOPE_WAS_REMOVED",
+    "status": "MEASURED"
+   },
+   "usable_for_costing": true
+  },
+  "production_nested_record": {
+   "lease_confirmed": false,
+   "peak": {
+    "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+    "bytes": null,
+    "read_by": null,
+    "status": "UNKNOWN",
+    "why": "this cell wrote no in-scope memory.peak read (termination: COMPLETED); a missing peak is UNKNOWN, never zero, never a success, and never filled in from a sampled floor or from the launcher's retained lease record"
+   },
+   "usable_for_costing": false
+  },
+  "stale_foreign_record": {
+   "lease_confirmed": false,
+   "peak": {
+    "bytes": 123456,
+    "read_by": "THE_CHILD_INSIDE_ITS_OWN_SCOPE_BEFORE_THE_SCOPE_WAS_REMOVED",
+    "status": "MEASURED"
+   },
+   "usable_for_costing": true
+  }
+ },
+ "schema": "qrm01_pre_repair_reproduction.v1",
+ "what_this_is": "the auditor's own probe, docs/audits/qrm_scope_probe_20260929.py, run by Satoshi on 2026-09-29 against tools/df_cell_scope.py at c1033dc6 BEFORE any change, to confirm his three counterexamples before repairing them"
+}

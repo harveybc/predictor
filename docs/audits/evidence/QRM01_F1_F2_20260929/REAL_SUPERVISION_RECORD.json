@@ -1,0 +1,303 @@
+{
+ "_redaction": "absolute paths under /home are redacted: AGENTS.md forbids an account identifier or a host name in this repository.  Nothing else was altered.",
+ "absence_is_not_coincidence": "ABSENCE_IS_NOT_COINCIDENCE: a missing identity, clock, scope inode, kernel limit, peak or confirmed reservation REFUSES.  It is never read as agreement, never inferred from another record, never filled in from a sampled floor, and never passes by default.  The supervisor not having seen something is a refusal of the thing it did not see, not a licence.",
+ "attempt_id": "1790726773785-e8b0639f23054d3d7bef013f",
+ "cell_id": "modular_w60_s1",
+ "child_record": {
+  "absence_is_not_coincidence": "ABSENCE_IS_NOT_COINCIDENCE: a missing identity, clock, scope inode, kernel limit, peak or confirmed reservation REFUSES.  It is never read as agreement, never inferred from another record, never filled in from a sampled floor, and never passes by default.  The supervisor not having seen something is a refusal of the thing it did not see, not a licence.",
+  "arm": "modular_w60",
+  "attempt_id": "1790726773785-e8b0639f23054d3d7bef013f",
+  "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+  "cell_id": "modular_w60_s1",
+  "cpu_seconds": 13.114311047000001,
+  "declared_cap_bytes": 4294967296,
+  "design_sha256": "ed44c3f9e82f152146a8d0057bb2df96645cd31cf3ad96726e77a47392b609c8",
+  "gpu": {
+   "allocated_bytes": null,
+   "reserved_bytes": null,
+   "source": "none",
+   "status": "UNKNOWN",
+   "visible_devices": "",
+   "why": "no device was selected for this cell (CUDA_VISIBLE_DEVICES is empty or unset), so a GPU figure is ABSENT -- it is not zero"
+  },
+  "host_identity": {
+   "host_id": "41a95367ee66ef71",
+   "host_name_recorded": false,
+   "scope": null,
+   "why": "AGENTS.md forbids a machine host name in this repository; an opaque per-host id is recorded instead"
+  },
+  "host_ram": {
+   "cgroup_lifetime_peak": {
+    "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+    "bytes": 559276032,
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+    "reset": false,
+    "status": "MEASURED",
+    "watermark": "LIFETIME_OF_THE_SCOPE",
+    "why_separate": "a lifetime watermark is retained under its own name because a per-stage figure obtained by resetting memory.peak destroys it; the two are never the same field"
+   },
+   "cgroup_peak": {
+    "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+    "bytes": 557481984,
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+    "status": "MEASURED"
+   },
+   "comparability": "NOT_INTERCHANGEABLE: a resident set and a cgroup peak measure different quantities.  In the one bounded pilot where both were read of the same load the resident set exceeded the whole-scope charged peak by 9,158,656 B, so neither bounds the other and one observed ordering is not an invariant.",
+   "process_rss_peak": {
+    "basis": "MAIN_PROCESS_RSS_ONLY: resource.getrusage(RUSAGE_SELF).ru_maxrss of this process alone.  NOT a process-tree or cgroup peak: it excludes every other task in the cgroup and all cgroup-charged page and kernel memory.  Never size a cap with it.",
+    "bytes": 902348800,
+    "status": "MEASURED"
+   }
+  },
+  "kernel_limit": {
+   "bytes": 4294967296,
+   "source": "memory.max",
+   "status": "MEASURED",
+   "unlimited": false
+  },
+  "optimizer_updates": 6,
+  "recorded_at": 1790726786.227529,
+  "reservation": {
+   "cap_agrees_with_the_declaration": true,
+   "cap_bytes": 4294967296,
+   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+   "checked_at": 1790726786.2081795,
+   "confirmed": true,
+   "declared_cap_bytes": 4294967296,
+   "lease_id": "modular_w60_s1-1790726773-3480552-0438aa",
+   "schema": "df_cell_scope_reservation.v1",
+   "source": "LIVE_ADMISSION_STORE",
+   "unit": "crispdm-modular_w60_s1-1790726773-3480544.scope",
+   "why": null
+  },
+  "schema": "df_cell_scope_record.v2",
+  "scope": {
+   "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+   "inode": 820710,
+   "is_scope": true,
+   "parent": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+   "path_exists": true,
+   "read_at": 1790726774.1508777,
+   "unit": "crispdm-modular_w60_s1-1790726773-3480544.scope"
+  },
+  "scope_enforced": true,
+  "seed": 1,
+  "stage": "CELL_TRAIN_AND_SCORE",
+  "usable_for_costing": true,
+  "wall_seconds": 12.043885884006158,
+  "why_not_usable": null
+ },
+ "declared_cap_bytes": 4294967296,
+ "finished_at": 1790726789.2675931,
+ "fresh_attempt_contract": {
+  "absence_is_not_coincidence": "ABSENCE_IS_NOT_COINCIDENCE: a missing identity, clock, scope inode, kernel limit, peak or confirmed reservation REFUSES.  It is never read as agreement, never inferred from another record, never filled in from a sampled floor, and never passes by default.  The supervisor not having seen something is a refusal of the thing it did not see, not a licence.",
+  "accepted": true,
+  "attempt_id": "1790726773785-e8b0639f23054d3d7bef013f",
+  "cell_id": "modular_w60_s1",
+  "checks": {
+   "attempt_id": "1790726773785-e8b0639f23054d3d7bef013f",
+   "boot_id_agrees": true,
+   "cell_id": "modular_w60_s1",
+   "kernel_limit_bytes": 4294967296,
+   "lease_id": "modular_w60_s1-1790726773-3480552-0438aa",
+   "peak_bytes": 557481984,
+   "recorded_at": 1790726786.227529,
+   "reservation_verification": {
+    "lease_id": "modular_w60_s1-1790726773-3480552-0438aa",
+    "schema": "df_cell_scope_reservation_verification.v1",
+    "source": "RETAINED_LEASE_BODY",
+    "store_cap_bytes": 4294967296,
+    "store_cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+    "verified": true,
+    "why": null
+   },
+   "scope_cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+   "scope_identity_agrees_with_the_supervisor": true,
+   "scope_inode": 820710,
+   "stage": "CELL_TRAIN_AND_SCORE"
+  },
+  "declared_cap_bytes": 4294967296,
+  "record": {
+   "absence_is_not_coincidence": "ABSENCE_IS_NOT_COINCIDENCE: a missing identity, clock, scope inode, kernel limit, peak or confirmed reservation REFUSES.  It is never read as agreement, never inferred from another record, never filled in from a sampled floor, and never passes by default.  The supervisor not having seen something is a refusal of the thing it did not see, not a licence.",
+   "arm": "modular_w60",
+   "attempt_id": "1790726773785-e8b0639f23054d3d7bef013f",
+   "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+   "cell_id": "modular_w60_s1",
+   "cpu_seconds": 13.114311047000001,
+   "declared_cap_bytes": 4294967296,
+   "design_sha256": "ed44c3f9e82f152146a8d0057bb2df96645cd31cf3ad96726e77a47392b609c8",
+   "gpu": {
+    "allocated_bytes": null,
+    "reserved_bytes": null,
+    "source": "none",
+    "status": "UNKNOWN",
+    "visible_devices": "",
+    "why": "no device was selected for this cell (CUDA_VISIBLE_DEVICES is empty or unset), so a GPU figure is ABSENT -- it is not zero"
+   },
+   "host_identity": {
+    "host_id": "41a95367ee66ef71",
+    "host_name_recorded": false,
+    "scope": null,
+    "why": "AGENTS.md forbids a machine host name in this repository; an opaque per-host id is recorded instead"
+   },
+   "host_ram": {
+    "cgroup_lifetime_peak": {
+     "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+     "bytes": 559276032,
+     "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+     "reset": false,
+     "status": "MEASURED",
+     "watermark": "LIFETIME_OF_THE_SCOPE",
+     "why_separate": "a lifetime watermark is retained under its own name because a per-stage figure obtained by resetting memory.peak destroys it; the two are never the same field"
+    },
+    "cgroup_peak": {
+     "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+     "bytes": 557481984,
+     "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+     "status": "MEASURED"
+    },
+    "comparability": "NOT_INTERCHANGEABLE: a resident set and a cgroup peak measure different quantities.  In the one bounded pilot where both were read of the same load the resident set exceeded the whole-scope charged peak by 9,158,656 B, so neither bounds the other and one observed ordering is not an invariant.",
+    "process_rss_peak": {
+     "basis": "MAIN_PROCESS_RSS_ONLY: resource.getrusage(RUSAGE_SELF).ru_maxrss of this process alone.  NOT a process-tree or cgroup peak: it excludes every other task in the cgroup and all cgroup-charged page and kernel memory.  Never size a cap with it.",
+     "bytes": 902348800,
+     "status": "MEASURED"
+    }
+   },
+   "kernel_limit": {
+    "bytes": 4294967296,
+    "source": "memory.max",
+    "status": "MEASURED",
+    "unlimited": false
+   },
+   "optimizer_updates": 6,
+   "recorded_at": 1790726786.227529,
+   "reservation": {
+    "cap_agrees_with_the_declaration": true,
+    "cap_bytes": 4294967296,
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+    "checked_at": 1790726786.2081795,
+    "confirmed": true,
+    "declared_cap_bytes": 4294967296,
+    "lease_id": "modular_w60_s1-1790726773-3480552-0438aa",
+    "schema": "df_cell_scope_reservation.v1",
+    "source": "LIVE_ADMISSION_STORE",
+    "unit": "crispdm-modular_w60_s1-1790726773-3480544.scope",
+    "why": null
+   },
+   "schema": "df_cell_scope_record.v2",
+   "scope": {
+    "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+    "inode": 820710,
+    "is_scope": true,
+    "parent": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+    "path_exists": true,
+    "read_at": 1790726774.1508777,
+    "unit": "crispdm-modular_w60_s1-1790726773-3480544.scope"
+   },
+   "scope_enforced": true,
+   "seed": 1,
+   "stage": "CELL_TRAIN_AND_SCORE",
+   "usable_for_costing": true,
+   "wall_seconds": 12.043885884006158,
+   "why_not_usable": null
+  },
+  "refusals": [],
+  "refused_by": [],
+  "schema": "df_cell_scope_fresh_attempt_contract.v1",
+  "stage": "CELL_TRAIN_AND_SCORE"
+ },
+ "host_identity": {
+  "host_id": "41a95367ee66ef71",
+  "host_name_recorded": false,
+  "scope": null,
+  "why": "AGENTS.md forbids a machine host name in this repository; an opaque per-host id is recorded instead"
+ },
+ "host_ram": {
+  "cgroup_peak": {
+   "accepted_by": "df_cell_scope_fresh_attempt_contract.v1",
+   "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+   "bytes": 557481984,
+   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+   "read_by": "THE_CHILD_INSIDE_ITS_OWN_SCOPE_BEFORE_THE_SCOPE_WAS_REMOVED",
+   "status": "MEASURED"
+  },
+  "cgroup_peak_floor": {
+   "basis": "SAMPLED_FLOOR: the last memory.peak this cgroup was OBSERVED to hold before its scope was removed.  It is a lower bound on the scope's LIFETIME watermark and on nothing else, and it is never a footprint: a child that ends between two observations -- or before the first -- takes its true high-watermark away with its scope.  Measured on a short child by the classification lane: 27,262,976 B retained against 258,584,576 B read from inside the same scope, an undercount of 9.5x; a cap sized on that number would be nine times too small.  It does NOT bound the child's own in-scope read in the other direction either: the QRM01 producer-to-supervisor run of 2026-09-29 sampled 559,525,888 B against 557,654,016 B read in scope, because a child reads its own peak before it has finished.  Two readings of one scope at two instants, unsigned, so this never shares a name or a field with a peak.",
+   "bytes": 559276032,
+   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+   "observation_index": 65,
+   "observed_at": 1790726787.0263908,
+   "poll_seconds": 0.2,
+   "status": "FLOOR_NOT_A_PEAK"
+  },
+  "comparability": "NOT_INTERCHANGEABLE: a resident set and a cgroup peak measure different quantities.  In the one bounded pilot where both were read of the same load the resident set exceeded the whole-scope charged peak by 9,158,656 B, so neither bounds the other and one observed ordering is not an invariant.",
+  "floor_against_in_scope_peak": {
+   "direction": "SAMPLED_ABOVE_THE_IN_SCOPE_READ",
+   "floor_bytes": 559276032,
+   "in_scope_peak_bytes": 557481984,
+   "ratio": 0.9967921958078833,
+   "reading": "one observation of two readings of ONE scope at two instants, and the comparison is UNSIGNED.  Both directions have now been observed on real loads: the classification lane saw 27,262,976 B sampled against 258,584,576 B read in scope (sampled far below), and the QRM01 producer-to-supervisor run of 2026-09-29 saw 559,525,888 B sampled against 557,654,016 B read in scope (sampled ABOVE), because the child reads its own memory.peak before it has finished and the kernel watermark keeps rising afterwards.  So a sampled observation is a lower bound on the scope's LIFETIME watermark and on nothing else: it does not bound the child's in-scope read in either direction, it is not a correction factor, and neither number may be substituted for the other.",
+   "what_bounds_both": "host_ram.cgroup_lifetime_peak of the record: memory.peak is monotone while it is never reset, so the lifetime watermark is at least as large as any reading taken during the scope's life"
+  },
+  "retained_lease_peak_is_not_read": "The admission store's retained observed_peak_bytes is NOT read as a footprint by this instrument, in any field.  It is the launcher monitor's SAMPLED series and it was measured to undercount a short child by 9.5x (27,262,976 B against 258,584,576 B on the same child).  The only host-RAM measurement here is memory.peak read from INSIDE the cell's own scope before the scope was removed; anything a sampler saw is carried separately, as a floor."
+ },
+ "lease_confirmed": true,
+ "lease_id": "modular_w60_s1-1790726773-3480552-0438aa",
+ "refused_by": [],
+ "retained_lease_peak_is_not_read": "The admission store's retained observed_peak_bytes is NOT read as a footprint by this instrument, in any field.  It is the launcher monitor's SAMPLED series and it was measured to undercount a short child by 9.5x (27,262,976 B against 258,584,576 B on the same child).  The only host-RAM measurement here is memory.peak read from INSIDE the cell's own scope before the scope was removed; anything a sampler saw is carried separately, as a floor.",
+ "schema": "df_cell_scope_supervision.v2",
+ "scope": {
+  "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+  "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+  "inode": 820710,
+  "is_scope": true,
+  "parent": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+  "path_exists": true,
+  "read_at": 1790726774.1941683,
+  "unit": "crispdm-modular_w60_s1-1790726773-3480544.scope"
+ },
+ "scope_identity_agrees_with_the_child": true,
+ "stage": "CELL_TRAIN_AND_SCORE",
+ "started_at": 1790726773.792599,
+ "supervisor_peak_observations": 65,
+ "supervisor_sampled_peak_floor": {
+  "basis": "SAMPLED_FLOOR: the last memory.peak this cgroup was OBSERVED to hold before its scope was removed.  It is a lower bound on the scope's LIFETIME watermark and on nothing else, and it is never a footprint: a child that ends between two observations -- or before the first -- takes its true high-watermark away with its scope.  Measured on a short child by the classification lane: 27,262,976 B retained against 258,584,576 B read from inside the same scope, an undercount of 9.5x; a cap sized on that number would be nine times too small.  It does NOT bound the child's own in-scope read in the other direction either: the QRM01 producer-to-supervisor run of 2026-09-29 sampled 559,525,888 B against 557,654,016 B read in scope, because a child reads its own peak before it has finished.  Two readings of one scope at two instants, unsigned, so this never shares a name or a field with a peak.",
+  "bytes": 559276032,
+  "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-modular_w60_s1-1790726773-3480544.scope",
+  "observation_index": 65,
+  "observed_at": 1790726787.0263908,
+  "poll_seconds": 0.2,
+  "status": "FLOOR_NOT_A_PEAK"
+ },
+ "termination": {
+  "cap_asked_once_at_the_declared_size": true,
+  "cap_bytes_declared": 4294967296,
+  "command": [
+   "/home/<redacted>/.local/bin/crispdm-run",
+   "-m",
+   "4294967296",
+   "-t",
+   "600",
+   "-n",
+   "modular_w60_s1",
+   "-L",
+   "cell:modular_w60_s1",
+   "-S",
+   "crispdm-batch.slice",
+   "--",
+   "/home/<redacted>/anaconda3/bin/python",
+   "/tmp/claude-1000/-home-<redacted>-Documents-GitHub-predictor/94c1b43d-d764-48d5-885f-68470ae06b5f/scratchpad/e2etmp2/qrm01-e2e0/e2e_child.py"
+  ],
+  "exit_code": 0,
+  "launched": true,
+  "meaning": "the child exited 0",
+  "signal": null,
+  "status": "COMPLETED",
+  "wall_seconds": 15.474352891993476
+ },
+ "usable_for_costing": true,
+ "why_lease_unconfirmed": null,
+ "why_not_usable": null
+}

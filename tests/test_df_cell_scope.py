@@ -96,6 +96,32 @@ def readings(path: Path, **over) -> Path:
     return path
 
 
+def attempt_and_lease(tmp_path, monkeypatch, *, cell, rel, cap_bytes, lease_id=None) -> str:
+    """What the fresh-attempt contract (QRM01 F1, dictamen 23b2efa3) requires before any record is
+    costable: the token the supervisor minted, the declared cap, and a reservation CONFIRMED in the
+    launcher's own store rather than assumed.
+
+    These tests therefore mint a token and write a real lease -- through the admission module's own
+    dataclass, into a tmp store -- instead of taking the reservation on trust.  Nothing here
+    reserves a byte of real memory: the store is a directory of JSON.
+    """
+    adm = CS.admission_module()
+    monkeypatch.setenv("CRISPDM_ADMISSION_DIR", str(tmp_path / "admission"))
+    monkeypatch.setenv("CRISPDM_CELL_SCOPE_DECLARED_CAP", str(int(cap_bytes)))
+    attempt = CS.new_attempt_id()
+    monkeypatch.setenv(CS.ATTEMPT_ENV, attempt)
+    store = adm.Store(tmp_path / "admission")
+    store.prepare()
+    now = time.time()
+    store.write(adm.Lease(
+        lease_id=lease_id or f"lease-{cell}", name=cell, label=f"cell:{cell}",
+        cap_bytes=int(cap_bytes), wall_seconds=600, slice_name="crispdm-batch.slice",
+        created_at=now, expires_at=now + 600, armed=True, pid=os.getpid(),
+        pid_starttime=adm.SystemResources().pid_starttime(os.getpid()),
+        cgroup=str(rel), unit=str(rel).rsplit("/", 1)[-1]))
+    return attempt
+
+
 # ---- 1. two concurrent children --------------------------------------------------------------
 
 def test_two_concurrent_children_take_two_distinct_scopes_and_two_distinct_reservations(cg, claims, tmp_path, monkeypatch):
@@ -123,6 +149,15 @@ def test_two_concurrent_children_take_two_distinct_scopes_and_two_distinct_reser
     assert ia["inode"] != ib["inode"], "two scopes that share an inode are one scope"
     assert a.name in ia["unit"] and b.name in ib["unit"]
 
+    # two cells, two scopes, TWO reservations -- each confirmed against the store for its own
+    # cgroup.  What proves the scopes are distinct is the inode, the membership and the lease
+    # binding above; two different peaks would NOT prove it (dictamen 23b2efa3), so the peaks
+    # below are read as each cell's own charge and never as evidence of separation.
+    attempt = attempt_and_lease(tmp_path, monkeypatch, cell="cell_a", cap_bytes=256 * MIB,
+                                rel=f"{SLICE_REL}/crispdm-cell_a-1-11.scope")
+    attempt_and_lease(tmp_path, monkeypatch, cell="cell_b", cap_bytes=256 * MIB,
+                      rel=f"{SLICE_REL}/crispdm-cell_b-1-12.scope")
+    monkeypatch.setenv(CS.ATTEMPT_ENV, attempt)
     ra = CS.cell_scope_record("cell_a", stage="TRAIN_UPDATES", claim=out["cell_a"], updates=600,
                               cpu_seconds=1.0, wall_seconds=2.0)
     rb = CS.cell_scope_record("cell_b", stage="TRAIN_UPDATES", claim=out["cell_b"], updates=600,
@@ -134,7 +169,12 @@ def test_two_concurrent_children_take_two_distinct_scopes_and_two_distinct_reser
     assert ra["kernel_limit"]["bytes"] == 256 * MIB
     # host RAM and GPU are recorded SEPARATELY and are never added or compared
     assert "gpu" in ra and "cgroup_peak" not in ra["gpu"]
-    assert ra["usable_for_costing"] is True
+    assert ra["usable_for_costing"] is True, ra["why_not_usable"]
+    assert rb["usable_for_costing"] is True, rb["why_not_usable"]
+    # each cell's reservation is its OWN: two leases, two cgroups, neither inherited
+    assert ra["reservation"]["lease_id"] == "lease-cell_a"
+    assert rb["reservation"]["lease_id"] == "lease-cell_b"
+    assert ra["attempt_id"] == rb["attempt_id"] == attempt
 
 
 @pytest.mark.skipif(not CS.launcher_available(), reason="the deployed launcher or systemd --user is not available here")
@@ -262,12 +302,14 @@ def test_an_unknown_peak_cannot_size_an_admission(tmp_path, cg, claims):
         adm.read_peak_evidence(ev, None)
 
 
-def test_a_measured_peak_is_offered_to_admission_as_a_cgroup_peak(tmp_path, cg, claims):
+def test_a_measured_peak_is_offered_to_admission_as_a_cgroup_peak(tmp_path, cg, claims, monkeypatch):
     rel = f"{SLICE_REL}/crispdm-cell_a-1-11.scope"
     make_cgroup(cg, rel, peak=1_463_877_632, limit=6 * GIB)
     claim = CS.require_fresh_exclusive_scope(claims, "cell_a", identity=CS.scope_identity(rel),
                                             parent_cgroup="user.slice/driver.scope")
+    attempt_and_lease(tmp_path, monkeypatch, cell="cell_a", rel=rel, cap_bytes=6 * GIB)
     rec = CS.cell_scope_record("cell_a", stage="DATA_MATERIALIZATION", claim=claim)
+    assert rec["usable_for_costing"] is True, rec["why_not_usable"]
     ev = tmp_path / "peak_evidence.json"
     ev.write_text(json.dumps(CS.peak_evidence(rec)))
     adm = CS.admission_module()
@@ -511,18 +553,21 @@ def test_no_cap_may_be_declared_from_a_retained_q2_figure():
     assert K.cell_cap_bytes(B(), {}) == 2 * GIB
 
 
-def test_a_cell_record_made_outside_an_enforced_scope_says_so_and_costs_nothing(cg, claims):
+def test_a_cell_record_made_outside_an_enforced_scope_says_so_and_costs_nothing(cg, claims, tmp_path, monkeypatch):
     """A record whose scope was never claimed is self-identifying: it is not quietly costed."""
     rel = f"{SLICE_REL}/crispdm-cell_a-1-11.scope"
     make_cgroup(cg, rel, peak=500 * MIB, limit=1 * GIB)
     unclaimed = CS.cell_scope_record("cell_a", stage="CELL_TRAIN_AND_SCORE", rel=rel,
                                      extra={"scope_enforced": False})
     assert unclaimed["scope_enforced"] is False
+    assert unclaimed["usable_for_costing"] is False
     claim = CS.require_fresh_exclusive_scope(claims, "cell_a", identity=CS.scope_identity(rel),
                                              parent_cgroup="user.slice/driver.scope")
+    attempt_and_lease(tmp_path, monkeypatch, cell="cell_a", rel=rel, cap_bytes=1 * GIB)
     claimed = CS.cell_scope_record("cell_a", stage="CELL_TRAIN_AND_SCORE", claim=claim,
                                    extra={"scope_enforced": True})
-    assert claimed["scope_enforced"] is True and claimed["usable_for_costing"] is True
+    assert claimed["scope_enforced"] is True
+    assert claimed["usable_for_costing"] is True, claimed["why_not_usable"]
 
 
 def test_the_admission_module_is_published_before_its_body_runs():
@@ -651,30 +696,80 @@ def test_a_child_too_short_to_be_observed_leaves_no_peak_and_no_zero(tmp_path, m
     assert r["usable_for_costing"] is False
 
 
+def _rising_peak_launcher(tmp_path: Path, cell: str, *, floor: int, peak: int, limit: int,
+                          record_path: Path, scope_rel: str) -> Path:
+    """A bounded stand-in for the launcher in which the WATERMARK RISES, as a real one does.
+
+    It creates the scope with `floor` in memory.peak, holds it long enough for the supervisor to
+    sample that value, raises memory.peak to `peak`, writes the child's own in-scope record through
+    the instrument's own producer path -- `cell_scope_record` embedded by `embed_record` -- and then
+    removes the scope.  So the floor and the in-scope read are two readings of ONE scope at two
+    instants, which is the only thing a pair of different peaks shows (dictamen 23b2efa3: two
+    different maxima do NOT by themselves demonstrate two distinct scopes).
+    """
+    writer = tmp_path / f"writer-{cell}.py"
+    writer.write_text(
+        "import importlib.util, json, os, sys\n"
+        "from pathlib import Path\n"
+        f"spec = importlib.util.spec_from_file_location('df_cell_scope', {str(TOOLS / 'df_cell_scope.py')!r})\n"
+        "CS = importlib.util.module_from_spec(spec); sys.modules['df_cell_scope'] = CS\n"
+        "spec.loader.exec_module(CS)\n"
+        f"rec = CS.cell_scope_record({cell!r}, stage=os.environ['CRISPDM_CELL_SCOPE_STAGE'], rel={scope_rel!r})\n"
+        f"Path({str(record_path)!r}).write_text(json.dumps(CS.embed_record({{'schema': 'df_e1_block_cell.v1'}}, rec)))\n")
+    p = tmp_path / f"rising-launcher-{cell}"
+    p.write_text(
+        "#!/usr/bin/env bash\n"
+        "while getopts \"m:t:n:W:L:E:P:S:qh\" o; do :; done\n"
+        "shift $((OPTIND - 1)); [ \"${1:-}\" = \"--\" ] && shift\n"
+        f"d=\"$CRISPDM_CGROUP_ROOT/{scope_rel}\"\n"
+        "mkdir -p \"$d\"\n"
+        f"echo {floor} > \"$d/memory.peak\"\n"
+        f"echo {limit} > \"$d/memory.max\"\n"
+        ": > \"$d/cgroup.procs\"\n"
+        "sleep 0.7\n"
+        f"echo {peak} > \"$d/memory.peak\"\n"
+        f"python3 {str(writer)}\n"
+        "rm -rf \"$d\"\n"
+        "exit 0\n")
+    p.chmod(0o755)
+    return p
+
+
 def test_the_shortfall_is_recorded_as_one_observation_not_a_correction_factor(tmp_path, monkeypatch):
     """When both exist they are compared, and the comparison is labelled an observation.  The
-    numbers here are the classification lane's own pair."""
+    numbers here are the classification lane's own pair.
+
+    The child's record is now written by the instrument's own producer path and must satisfy the
+    whole fresh-attempt contract before its reading is used at all: identity, attempt token, boot,
+    clock, enforced limit and a reservation confirmed in the launcher's store.
+    """
     root = tmp_path / "cgroup"
     make_cgroup(root, SLICE_REL)
     monkeypatch.setenv("CRISPDM_CGROUP_ROOT", str(root))
     monkeypatch.setenv("CRISPDM_CELL_SCOPE_SLICE_CGROUP", SLICE_REL)
-    # the child's own in-scope read, written where the supervisor will find it
+    scope_rel = f"{SLICE_REL}/crispdm-cell_pair-1-1.scope"
+    attempt_and_lease(tmp_path, monkeypatch, cell="cell_pair", rel=scope_rel, cap_bytes=6 * GIB)
     rec_path = tmp_path / "cell.json"
-    rec_path.write_text(json.dumps({
-        "host_ram": {"cgroup_peak": {"bytes": 258_584_576, "status": CS.MEASURED,
-                                     "basis": CS.CGROUP_BASIS}},
-        "scope": {"inode": None}}))
-    launcher = _scope_making_launcher(tmp_path, "cell_pair", peak=27_262_976, limit=6 * GIB)
+    launcher = _rising_peak_launcher(tmp_path, "cell_pair", floor=27_262_976,
+                                     peak=258_584_576, limit=6 * GIB,
+                                     record_path=rec_path, scope_rel=scope_rel)
     r = CS.supervise(cell_id="cell_pair", argv=[sys.executable, "-c", "pass"], cap_bytes=6 * GIB,
                      wall_seconds=60, supervisor_dir=tmp_path / "SUP", log_path=tmp_path / "p.log",
-                     launcher=launcher, record_path=rec_path)
+                     launcher=launcher, record_path=rec_path, stage="CELL_TRAIN_AND_SCORE")
+    assert r["fresh_attempt_contract"]["accepted"] is True, r["refused_by"]
     peak = r["host_ram"]["cgroup_peak"]
     assert peak["bytes"] == 258_584_576 and peak["status"] == CS.MEASURED
     assert peak["read_by"] == "THE_CHILD_INSIDE_ITS_OWN_SCOPE_BEFORE_THE_SCOPE_WAS_REMOVED"
     cmp = r["host_ram"]["floor_against_in_scope_peak"]
     assert cmp["floor_bytes"] == 27_262_976 and cmp["in_scope_peak_bytes"] == 258_584_576
     assert round(cmp["ratio"], 1) == 9.5
-    assert "not an invariant" in cmp["reading"]
+    assert cmp["direction"] == "SAMPLED_BELOW_THE_IN_SCOPE_READ"
+    # the comparison is UNSIGNED: the opposite direction was observed on the real QRM01 run of
+    # 2026-09-29, so neither reading bounds the other and the ratio is not a correction factor
+    assert "UNSIGNED" in cmp["reading"] and "not a correction factor" in cmp["reading"]
+    assert "lifetime" in cmp["what_bounds_both"].lower()
+    # the supervisor's own sighting and the child's record name ONE scope, by inode
+    assert r["scope_identity_agrees_with_the_child"] is True
 
 
 def test_the_instrument_never_reads_the_launchers_retained_lease_peak_as_a_footprint():

@@ -816,13 +816,22 @@ def run_cell(design: dict, data: dict, cell: dict, out_dir: Path, *, pilot: bool
     # removed.  Host RAM (a cgroup peak) and device memory are separate fields and are never added;
     # the process resident set is kept beside them with its basis, never in their place.  A record
     # produced outside an enforced scope says so and costs nothing.
+    # F2 of the 23b2efa3 dictamen.  This record used to be assigned straight into `record` under
+    # `cell_scope` while `supervise` read `host_ram` at the ROOT of the same cell.json, so the
+    # producer's real document reported UNKNOWN and usable_for_costing=false while physically
+    # containing the peak.  The two sides are now bound by a DECLARED envelope -- the envelope
+    # version, the record version and the key -- and the consumer reads that declaration alone.
+    # The stage the supervisor declared is honoured when it declared one: producer and consumer
+    # must agree about which measurement this is, not merely about where it sits.
     CSC = _module("df_cell_scope")
-    record["cell_scope"] = CSC.cell_scope_record(
-        cell["cell_id"], stage="PILOT_TRAIN_SUBSET" if pilot else "CELL_TRAIN_AND_SCORE",
+    declared_stage = os.environ.get(CSC.STAGE_ENV)
+    stage = declared_stage or ("PILOT_TRAIN_SUBSET" if pilot else "CELL_TRAIN_AND_SCORE")
+    CSC.embed_record(record, CSC.cell_scope_record(
+        cell["cell_id"], stage=stage,
         claim=cell_scope, updates=training["updates"],
         cpu_seconds=record["cost"]["cpu_seconds"], wall_seconds=record["cost"]["wall_seconds"],
         extra={"scope_enforced": cell_scope is not None,
-               "design_sha256": design["design_sha256"], "arm": cell["arm"], "seed": cell["seed"]})
+               "design_sha256": design["design_sha256"], "arm": cell["arm"], "seed": cell["seed"]}))
     if cell_scope is None:
         record["cell_scope"]["usable_for_costing"] = False
         record["cell_scope"]["why_not_usable"] = (
@@ -985,6 +994,11 @@ def run_units(a, design, units, *, parallel: int) -> list:
             fh.write(json.dumps({"unit": unit, "arm": cell["arm"], "seed": cell["seed"],
                                  "stage": "CELL_TRAIN_AND_SCORE", "termination": term,
                                  "scope": sup["scope"], "lease_id": sup["lease_id"],
+                                 "attempt_id": sup["attempt_id"],
+                                 # the gate's verdict travels with the row: a reader can see WHY a
+                                 # cell costs nothing without going back to the supervisor file
+                                 "fresh_attempt_accepted": sup["fresh_attempt_contract"]["accepted"],
+                                 "refused_by": sup["refused_by"],
                                  "declared_cap_bytes": cap,
                                  "kernel_limit": (rec or {}).get("cell_scope", {}).get("kernel_limit"),
                                  "host_ram": sup["host_ram"],
