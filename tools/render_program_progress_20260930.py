@@ -12,7 +12,7 @@ ROWS = [
     ("", "TimeFilter · Traffic", "EN CURSO", "h192/h336 coste; 2 scores h96 activos", "#b56800"),
     ("ARQUITECTURA", "Modular R0 / R1 / R2", "DEV MEDIDO", "ECL: 3 semillas; falta confirmación externa", "#1678a8"),
     ("", "Branching vs referencia exacta", "PENDIENTE", "falta contraste emparejado ECL/Traffic", "#b43b3b"),
-    ("", "Autoencoder por extractor", "PENDIENTE", "sin AE por branch ni ablación", "#b43b3b"),
+    ("", "Autoencoder por extractor", "PILOTO TÉCNICO", "Conv1D causal entrenado; falta ablación de pronóstico", "#1678a8"),
     ("", "Autoencoder del núcleo", "PENDIENTE", "sin entrenamiento ni comparación", "#b43b3b"),
     ("PLATAFORMA", "DOIN · archivo externo", "PROTOTIPO", "24 pruebas; store desechable, sin cadena real", "#1678a8"),
     ("", "DOIN · optimización modular", "PENDIENTE", "sin campaña integrada", "#b43b3b"),
