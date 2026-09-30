@@ -1,0 +1,64 @@
+{
+  "scope": "modular temporal engine and synthetic behavior tests only",
+  "base_origin_master": "12de6f6cebe5db436e55104ce0a9cbd2ade1bb35",
+  "branch": "feat/modular-temporal-engine",
+  "environment": {
+    "conda_environment": "trading-stack",
+    "python": "3.12.13",
+    "tensorflow": "2.21.0",
+    "keras": "3.15.0",
+    "numpy": "2.5.1",
+    "pytest": "9.1.1"
+  },
+  "command": "systemd-run --user --scope --quiet -p MemoryMax=3G -p MemorySwapMax=0 -p CPUQuota=200% /usr/bin/time -v env CUDA_VISIBLE_DEVICES='' TF_NUM_INTRAOP_THREADS=1 TF_NUM_INTEROP_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONPATH=. $CONDA_PREFIX/bin/python -m pytest tests/test_modular_temporal.py -q",
+  "result": {
+    "exit_status": 0,
+    "passed": 24,
+    "failed": 0,
+    "test_seconds": 21.95,
+    "wall_seconds": 23.58,
+    "max_rss_kib": 856588,
+    "warnings": 330,
+    "warning_summary": "Keras backend __array__ copy keyword NumPy deprecation",
+    "gpu_visibility": "disabled before TensorFlow import",
+    "memory_limit": "3 GiB, swap disabled",
+    "cpu_limit": "200%, numerical thread pools 1"
+  },
+  "public_api": {
+    "configuration": "default_config(feature_names) -> dict; build_modular(config: dict) -> ModularBundle",
+    "bundle": "config, branch_models, fusion_model, core_model, encoder_model, forecast_model, branch_time_grid, core_time_grid",
+    "branch_ae": "branch_autoencoder(bundle, branch_name, *, channels=32) -> keras.Model",
+    "core_ae": "core_autoencoder(bundle, *, channels=32) -> keras.Model",
+    "generic_ae": "build_autoencoder(encoder, *, channels=32) -> keras.Model",
+    "decoder": "build_decoder(latent_shape, output_steps, output_channels, channels=32) -> keras.Model",
+    "donor_manifest": "bundle.donor_manifest('branch', branch_name) or bundle.donor_manifest('core'); core computes actual upstream weights at call time",
+    "save": "save_donor(model, path, manifest) -> sidecar dict; writes .keras and .manifest.json",
+    "load": "load_donor(path, expected_manifest) -> keras.Model; safe_mode=True, compile=False",
+    "builtins": ["causal_conv1d", "sequence_concat", "transformer_conv", "forecast"],
+    "forecast": "top-level horizons=[1], target_count=1; shape (batch, len(horizons), target_count)",
+    "encoder": "output_steps=6, output_channels=8; shape (batch, 6, 8)"
+  },
+  "observed_acceptance": [
+    "Exact raw built-in fusion parity, branch selection order, default and nondefault shapes",
+    "Explicit sample period and >=24h context; exact divisibility refusals",
+    "Prefix perturbation invariance through causal attention and compression",
+    "Final sample affects final branch and core tokens; nonzero gradient support at every input sample",
+    "Two full attention/FFN blocks, four LayerNorms, three progressive causal Conv1D stages",
+    "Same-donor reload parity; actual branch/core weight immobility in R1 and movement in R2",
+    "Feature order, component parameter and changed upstream branch-weight rejection",
+    "Archive and manifest tamper rejection",
+    "Registered PE/feature selection whole-model safe-mode serialization parity",
+    "Branch AE update/export/reload and core AE training smoke checks",
+    "External entry point dispatch for all four roles; equal-shaped mismatched grids rejected",
+    "Forecast consumes all latent tokens and has independent horizon/target dimensions"
+  ],
+  "incomplete_or_not_exercised": [
+    "Parent training harness, fit_with_early_stopping, CLI and parent plugin integration",
+    "Timestamp/gap/data split/scaler validation; caller owns these contracts",
+    "External plugins are trusted contract implementations; arbitrary plugin causality cannot be established from reported grids alone",
+    "Broad legacy test suite not run; focused new module suite only",
+    "Real-data training, cost pilot, scientific comparison and model-quality assessment not run",
+    "Hash sidecars provide integrity, not signed authenticity against a producer rewriting both files"
+  ],
+  "next_action": "Parent/Satoshi cherry-picks this engine commit, integrates the documented AE/donor API and independently runs orchestration tests. No long experiment authorized by this handoff."
+}

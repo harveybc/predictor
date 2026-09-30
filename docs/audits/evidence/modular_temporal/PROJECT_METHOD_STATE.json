@@ -1,0 +1,20 @@
+{
+  "initiative": "modular_temporal",
+  "current_stage": "S14_RELEASE_OPERATION",
+  "scope": ["predictor_plugins/modular_temporal.py", "tests/test_modular_temporal.py", "own evidence"],
+  "discovery": "Reusable CPU-testable Keras engine for parent training harness; no CLI, setup, data ingestion, live training or model quality assessment.",
+  "design": "Explicit right-edge grids; block compression; raw sequence fusion; causal Transformer core; hash-checked strict donors bound to actual upstream weights.",
+  "stages": {"S0_S8": "complete: tests and API contract", "S9_S12": "complete: 24 synthetic contract tests passed", "S13": "deferred: no real data or quality evaluation requested", "S14": "bounded engine handoff; parent integration pending"},
+  "traceability": {"shape_architecture": "test_shapes_raw_fusion_and_architecture", "causality_coverage": "test_causal_prefix_and_final_sample_coverage", "refusals": "test_invalid_configs_fail_closed", "serialization": "test_pe_and_full_model_reload", "regimes": "test_donor_parity_and_real_weight_updates", "identity": "test_strict_feature_config_and_upstream_binding", "integrity": "test_tampered_donor_is_rejected", "pretrain": "test_decoder_autoencoder_pretrain_roundtrip", "plugins_grids": "test_entry_point_groups_and_grid_rejection"},
+  "evidence": "verification.json",
+  "reviewer": "implementing agent self-check; independent parent review pending",
+  "next_allowed_actions": ["parent cherry-pick engine commit", "parent integrate AE orchestration and fit_with_early_stopping", "parent run integrated tests"],
+  "blocked_actions": ["claim model quality", "claim lossless compression", "run live GPU experiments without new authorization"],
+  "history": [
+    "Tests authored before implementation; canonical method document absent, portable checklist used.",
+    "Initial red run: missing modular_temporal import, exit 2, 4.14 seconds.",
+    "Parent amended head contract: horizons/target_count independent of bottleneck; amended tests first, 11 failed and 13 passed before implementing revised API.",
+    "First green run: 24 passed, 330 upstream deprecation warnings, 23.29 seconds.",
+    "Final isolated CPU/memory-bounded run: 24 passed, 330 warnings, 21.95 test seconds, 23.58 wall seconds; ready for commit and parent handoff."
+  ]
+}
