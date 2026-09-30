@@ -1,0 +1,136 @@
+{
+ "schema": "m06.closure_table.v1",
+ "dataset": "traffic",
+ "horizon_steps": 96,
+ "input_window_steps": 96,
+ "design_sha256": "6cba7e20aa359986482c0dbae7d7bc095b1951df9fdc4db10af5837815285575",
+ "scale": {
+  "space": "z_train (the training-scaler normalized target space; --inverse False)",
+  "reduction": "mean over all scored window x forecast-step x target-channel elements, not an unweighted average of batch means",
+  "dtype": "float32, the author's own reduction; an independent float64 reduction is carried beside it",
+  "elements": 282432576,
+  "windows": 3413,
+  "target_channels": 862
+ },
+ "naive": {
+  "definition": "persistence: the window's last observed value repeated over the horizon, every channel, same test windows, normalized space",
+  "pairing_proof": {
+   "target_population_sha256": "717cb5b34a6fde26b0463765b9e704babd808f4c0d8f16baf2cc75c2cf3dcf62",
+   "naive_target_sha256": "717cb5b34a6fde26b0463765b9e704babd808f4c0d8f16baf2cc75c2cf3dcf62",
+   "equal": true
+  },
+  "population_sha256": "717cb5b34a6fde26b0463765b9e704babd808f4c0d8f16baf2cc75c2cf3dcf62"
+ },
+ "literature": {
+  "source": "Hu, Y., Zhang, G., Liu, P., Lan, D., Li, N., Cheng, D., Dai, T., Xia, S.-T., Pan, S. TimeFilter: Patch-Specific Spatial-Temporal Graph Filtration for Time Series Forecasting. ICML 2025; arXiv:2501.13041. Author code github.com/TROUBADOUR000/TimeFilter",
+  "table": "Table 8 (L = 96, full results)",
+  "read_at": "arXiv HTML v2, Tables 6, 7, 8, 9; read 2026-09-28",
+  "values": {
+   "mse": 0.375,
+   "mae": 0.251
+  },
+  "margin_source": "Table 7 (Traffic 0.407+-0.008 / 0.268+-0.004)"
+ },
+ "comparability_class": "MATCHED_PUBLISHED_RECIPE_EXECUTED",
+ "rows": [
+  {
+   "seed": 2021,
+   "cell_id": "traffic_L96_h96_s2021",
+   "mse": 0.3756999969482422,
+   "mae": 0.2513667941093445,
+   "independent_float64": {
+    "mae": 0.25136679019882263,
+    "mse": 0.3757000037579234
+   },
+   "naive_mse": 2.7144524180982588,
+   "naive_mae": 1.0772232192211662,
+   "skill_mse": 0.8615927122379043,
+   "skill_mae": 0.7666530115354522,
+   "diff_mse": 0.0006999969482421875,
+   "diff_mae": 0.00036679410934448153,
+   "wall_seconds": 8292.06390118599,
+   "device_uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+   "checkpoint_sha256": "4b434bc9dd384c9eaa37f2699d69728d809aef768b44768b2b692c1e3031423e",
+   "record_sha256": "bdcf6e523e177b76b6942d8afdd273268a7e2293c6a00ba5dde701e0537f9f1f"
+  },
+  {
+   "seed": 2022,
+   "cell_id": "traffic_L96_h96_s2022",
+   "mse": 0.3753611147403717,
+   "mae": 0.2512390911579132,
+   "independent_float64": {
+    "mae": 0.2512390973550278,
+    "mse": 0.3753611244109414
+   },
+   "naive_mse": 2.7144524180982588,
+   "naive_mae": 1.0772232192211662,
+   "skill_mse": 0.861717555910098,
+   "skill_mae": 0.7667715598076698,
+   "diff_mse": 0.0003611147403717041,
+   "diff_mae": 0.00023909115791320712,
+   "wall_seconds": 3906.2639372348785,
+   "device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+   "checkpoint_sha256": "59d61b47f854bf7f0078e231977b3817dccddf4704dee2d2a3379784d6c68ef4",
+   "record_sha256": "b1a1865dd3523ecff675c96a29189a97aad35e807cdd1d6eab7252f0becc3501"
+  },
+  {
+   "seed": 2023,
+   "cell_id": "traffic_L96_h96_s2023",
+   "mse": 0.3745366930961609,
+   "mae": 0.25082215666770935,
+   "independent_float64": {
+    "mae": 0.2508221976194653,
+    "mse": 0.3745366960044368
+   },
+   "naive_mse": 2.7144524180982588,
+   "naive_mae": 1.0772232192211662,
+   "skill_mse": 0.8620212715467082,
+   "skill_mae": 0.7671586053918759,
+   "diff_mse": -0.00046330690383911133,
+   "diff_mae": -0.0001778433322906503,
+   "wall_seconds": 3982.06032204628,
+   "device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+   "checkpoint_sha256": "e593288185b4a0428e0e787585d7b8996eb32b4ee0f034ac63acef3323b92ac4",
+   "record_sha256": "0fff7a74449604a22e9f842408fe5880289aac854f24852de28b010b39a2735f"
+  }
+ ],
+ "mean": {
+  "mse": {
+   "mean": 0.3751992682615916,
+   "seed_sd_ddof1": 0.0005983014917973527,
+   "naive": 2.7144524180982588,
+   "skill": 0.8617771798982369,
+   "published": 0.375,
+   "class": "OPERATIONAL_AGREEMENT",
+   "difference": 0.00019926826159161193,
+   "tolerance_agreement": 0.0165,
+   "tolerance_partial": 0.0245,
+   "std_paper": 0.008,
+   "margin_source": "Table 7 (Traffic 0.407+-0.008 / 0.268+-0.004)",
+   "rule": "per horizon and for the four-horizon average (formed WITHIN each seed first), the seed mean of the replicated metric is in OPERATIONAL_AGREEMENT with the published value when |mean - published| <= 2 x std_paper + 0.0005; OPERATIONAL_PARTIAL when <= 3 x std_paper + 0.0005; OUTSIDE_OPERATIONAL_MARGIN otherwise. std_paper is THIS dataset's Table 7 standard deviation of the four-horizon average, borrowed per horizon as a predeclared operational margin - it is not a published per-horizon error bar and not statistical equivalence; our own seed dispersion is reported beside it and never replaces the criterion"
+  },
+  "mae": {
+   "mean": 0.251142680644989,
+   "seed_sd_ddof1": 0.00028483104809596356,
+   "naive": 1.0772232192211662,
+   "skill": 0.766861058911666,
+   "published": 0.251,
+   "class": "OPERATIONAL_AGREEMENT",
+   "difference": 0.00014268064498901278,
+   "tolerance_agreement": 0.0085,
+   "tolerance_partial": 0.0125,
+   "std_paper": 0.004,
+   "margin_source": "Table 7 (Traffic 0.407+-0.008 / 0.268+-0.004)",
+   "rule": "per horizon and for the four-horizon average (formed WITHIN each seed first), the seed mean of the replicated metric is in OPERATIONAL_AGREEMENT with the published value when |mean - published| <= 2 x std_paper + 0.0005; OPERATIONAL_PARTIAL when <= 3 x std_paper + 0.0005; OUTSIDE_OPERATIONAL_MARGIN otherwise. std_paper is THIS dataset's Table 7 standard deviation of the four-horizon average, borrowed per horizon as a predeclared operational margin - it is not a published per-horizon error bar and not statistical equivalence; our own seed dispersion is reported beside it and never replaces the criterion"
+  }
+ },
+ "evidence": "measured; per-seed rows carry a difference, the class is on the seed mean only",
+ "inputs": {
+  "design_file_sha256": "9f264aa4869cc97b77af409669883fe38040752171c73f77a35e15c31ca2c160",
+  "record_files_sha256": {
+   "traffic_L96_h96_s2021.json": "6da180e431185fbc1c6e905d6176f1366492cabb24c687d3e441820a16b7c16f",
+   "traffic_L96_h96_s2022.json": "c28c4c77ae5c6361b104ed2a4c24a9e6f2aac230922413130382a1a7dc65ba3d",
+   "traffic_L96_h96_s2023.json": "6facce4b41d835cf2af6abb18499e1d23271150303ab3083368450b996419016"
+  }
+ }
+}
