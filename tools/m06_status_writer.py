@@ -73,7 +73,11 @@ for d in glob.glob(root + "/cell_traffic_h96_s*"):
     if cd: c["ckptdir_mtime"] = os.path.getmtime(cd[0])
     c["dir_mtime"] = os.path.getmtime(d)
     rec = root + "/CELLS/traffic_L96_h96_s%%s.json" %% seed
-    if os.path.exists(rec): c["record"] = rec; c["record_mtime"] = os.path.getmtime(rec)
+    if os.path.exists(rec):
+        c["record"] = rec; c["record_mtime"] = os.path.getmtime(rec)
+        try:
+            R = json.load(open(rec)); c["window"] = [R.get("started_at"), R.get("finished_at")]
+        except Exception: pass
     cells[seed] = c
 out["cells"] = cells
 ps = sh("ps -eo pid,etimes,pcpu,rss,args | grep df_tsl_execute.py | grep -v grep | grep -v timeout | grep -v crispdm-run")
@@ -209,6 +213,7 @@ def traffic_job(jid, role, seed, unit, uuid, p, now):
     if state == "completed":
         job["progress"]["completed"] = lg["last_epoch_logged"] or None
         job["record_path"] = cell["record"].replace(HOME, "~")
+        job["window"] = cell.get("window")
     if child:
         job["resources"] = {"pid": int(child[0][0]), "elapsed_s": int(child[0][1]),
                             "cpu_percent": float(child[0][2]), "rss_bytes": int(child[0][3]) * 1024}

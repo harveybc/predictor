@@ -1,6 +1,6 @@
 {
  "plan_revision": "dc72170e",
- "worker_a_idle_reason": "memory-admissible since the owner's reboot (2026-09-30T22:53:58Z; slab 0.28 GiB, free_for_new 9.5 GiB, slice ceiling 8 GiB) but NOT TF-eligible: the coordinator's admitted probe found TensorFlow 2.21.0 (tensorflow env) registers zero GPUs while the driver sees both; slot withheld from M04 until env diagnosed. M06 launches nothing there.",
+ "worker_a_idle_reason": "slot handed to M04 (agent a083979bc9a8fa1b8) by the orchestrator with the TF launch recipe; lease id pending",
  "agents": [
   {
    "id": "m06-evidence-resources (this subagent)",
@@ -41,6 +41,41 @@
    "declared_mem": "3G",
    "host_alias": "coordinator",
    "behind": "traffic-h96-s2021 12G lease"
+  },
+  {
+   "id": "a5b79d5488abdee3a",
+   "kind": "subagent",
+   "lane": "M01",
+   "state": "running",
+   "commit": null
+  },
+  {
+   "id": "a5289d234c296e0c5",
+   "kind": "subagent",
+   "lane": "M02",
+   "state": "running",
+   "commit": null
+  },
+  {
+   "id": "a160efdffffffa9f2",
+   "kind": "subagent",
+   "lane": "M03",
+   "state": "running",
+   "commit": null
+  },
+  {
+   "id": "a083979bc9a8fa1b8",
+   "kind": "subagent",
+   "lane": "M04",
+   "state": "running",
+   "commit": null
+  },
+  {
+   "id": "a65d2f3a115a9aa25",
+   "kind": "subagent",
+   "lane": "M05",
+   "state": "running",
+   "commit": null
   }
  ],
  "results": [
@@ -172,6 +207,24 @@
    "at": "2026-09-30T22:56:00Z",
    "host_alias": "worker_a",
    "event": "M06 ran one CPU-only closure job there (crispdm-run -m 1G -t 10m, ~10 s, JSON arithmetic, no GPU) before the coordinator's 'launch nothing there' instruction; nothing launched since"
+  },
+  {
+   "at": "2026-09-30T23:03:00Z",
+   "host_alias": "worker_a",
+   "event": "orchestrator handed the 5090 slot (GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8) to M04 a083979bc9a8fa1b8 with the TF launch recipe; M06 placement: secondary worker cannot admit a 3-4G CPU suite before s2023 releases (slice 4.43 in use + 8.59 reserved + 3 > 14.00)"
   }
- ]
+ ],
+ "launch_recipes": {
+  "worker_a_tensorflow_gpu": {
+   "established_by": "orchestrator probes tf-gpu-probe4/5 (admitted 2G/2m, nothing installed), reported to M06 2026-09-30 ~23:03Z; M06 records, did not rerun",
+   "cause": "the `tensorflow` env holds both cu12 and cu13 NVIDIA wheels (torch 2.11.0+cu130 shares it); TF 2.21.0 is a CUDA 12.5.1 build and without a loader path logs 'Cannot dlopen some GPU libraries' and registers zero GPUs",
+   "recipe": "at launch only: LD_LIBRARY_PATH = every <env>/lib/python3.*/site-packages/nvidia/*/lib EXCEPT cu13/ ; no env change",
+   "three_gpu_facts": [
+    "tf.config.list_physical_devices('GPU') lists RTX 5090 and RTX 5070 Ti Laptop (computeCapability 12.0a)",
+    "a matmul was placed on /device:GPU:0",
+    "tf.config.experimental.get_memory_info returned current 8390400 / peak 12584704 bytes"
+   ],
+   "secondary_worker_check": "pending: read-only 2G probe after s2023 releases (would exceed slice aggregate now: 13.02+2 > 14.00 GiB)"
+  }
+ }
 }
