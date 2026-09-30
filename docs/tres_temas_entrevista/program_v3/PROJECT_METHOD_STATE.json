@@ -1,5 +1,17 @@
 {
  "schema": "research_program_method_state.v1",
+ "programme_dispatch_reconciliation_20260930": {
+  "state": "PROGRAMME_WIDE_DISPATCH_RESTORED",
+  "orders": "../../handoffs/RETSU_PROGRAM_PARALLEL_DISPATCH_2026_09_30.md",
+  "observed_problem": "Recent handoffs narrowed to two lanes; historical queue rows were not reconciled with delivered work",
+  "independent_review_agents_completed": 2,
+  "implementation_dispatch_status": "ORDERS_PUBLISHED_NOT_ACKNOWLEDGED_BY_RETSU",
+  "current_scoped_acceptance": "DOIN reference repair a4f65ba: 21 tests; strategy 7a50f62: 44 synthetic cells reproduced, not financial utility",
+  "prefix_materialization_correction": "c2d4388b delivered PREFIX_OUTPUT_MATERIALIZATION.json; historical statements that materialization is still owed are superseded. Donor justification and consumer remain separate",
+  "global_experiment_hold": false,
+  "new_compute_or_remote_code_authorization": false,
+  "next_action": "Fill admitted independent development slots; auditor owns M4 and donor decisions, not executor"
+ },
  "retsu_d158_review_20260930": {
   "state": "CHANGES_REQUIRED_ACCOUNTING_AND_ARCHIVE_CONSUMER",
   "review": "../../audits/work_plan/MUSASHI_RETSU_D158_REVIEW_2026_09_30.md",
