@@ -214,7 +214,7 @@ class Campaign:
                 outcome = executor.train(json.loads(row["nested"]), output_root, self.declaration)
             else:
                 receipt = self.db.execute("SELECT receipt_path FROM attempts WHERE cid=? AND kind='train' AND"
-                                          " status='completed' ORDER BY attempt DESC LIMIT 1").fetchone()[0]
+                                          " status='completed' ORDER BY attempt DESC LIMIT 1", (cid,)).fetchone()[0]
                 outcome = executor.verify(receipt, output_root, self.declaration)
         except Exception as exc:  # the executor normally reports failures in outcome
             outcome = {"status": "failed", "error": f"{type(exc).__name__}: {exc}"}
