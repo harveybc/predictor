@@ -1,5 +1,10 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
+**Estado operativo actual (30-sep-2026):**
+[carriles, resultados, recursos y ETA](program_v3/CURRENT_EXECUTION_2026_09_30.md).
+Las revisiones fechadas abajo conservan su contexto historico; no describen
+por si solas lo que esta ejecutandose hoy.
+
 ## Actualizacion operativa: 28 de septiembre de 2026
 
 **Clasificacion tambien parte de referencias reproducidas.** Se incorpora
