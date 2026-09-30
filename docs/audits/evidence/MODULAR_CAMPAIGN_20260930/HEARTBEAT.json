@@ -1,6 +1,6 @@
 {
- "at": "2026-09-30T23:04:01Z",
+ "at": "2026-09-30T23:23:53Z",
  "pid": 609067,
- "status_written_at": "2026-09-30T23:03:14Z",
- "job_signature": "[[\"traffic_L96_h96_s2021\", \"running\", \"training_or_scoring\"], [\"traffic_L96_h96_s2022\", \"completed\", \"record_sealed\"], [\"traffic_L96_h96_s2023\", \"running\", \"training_or_scoring\"], [\"m02-baseline-tests\", \"queued\", \"queued_for_admission\"], [\"m01-venv\", \"queued\", \"queued_for_admission\"], [\"m05-export\", \"queued\", \"queued_for_admission\"], [\"m01-tests\", \"queued\", \"queued_for_admission\"], [\"m02-suite\", \"queued\", \"queued_for_admission\"], [\"m05-baseline\", \"queued\", \"queued_for_admission\"], [\"m03-tests\", \"queued\", \"queued_for_admission\"], [\"m05-unit-notf\", \"queued\", \"queued_for_admission\"], [\"m04-unit\", \"queued\", \"queued_for_admission\"], [\"m04-unit\", \"queued\", \"queued_for_admission\"]]"
+ "status_written_at": "2026-09-30T23:23:53Z",
+ "job_signature": "[[\"traffic_L96_h96_s2021\", \"running\", \"training_or_scoring\"], [\"traffic_L96_h96_s2022\", \"completed\", \"record_sealed\"], [\"traffic_L96_h96_s2023\", \"completed\", \"record_sealed\"], [\"m02-baseline-tests\", \"queued\", \"queued_for_admission\"], [\"m05-export\", \"queued\", \"queued_for_admission\"], [\"m05-baseline\", \"queued\", \"queued_for_admission\"], [\"m03-tests\", \"queued\", \"queued_for_admission\"], [\"m05-unit-notf\", \"queued\", \"queued_for_admission\"], [\"m02-suite-wb\", \"queued\", \"queued_for_admission\"], [\"m06-admission-tests\", \"queued\", \"queued_for_admission\"], [\"m01-venv\", \"queued\", \"queued_for_admission\"], [\"m04-modular-cost-pilot\", \"queued\", \"queued_for_admission\"]]"
 }
