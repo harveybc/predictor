@@ -91,13 +91,16 @@ LEASE=$("$PY" "$ADM" explain "$work/decision.json" --lease-id)
 
 # ---- launch, then bind the reservation to the load ------------------------------------------
 # --scope, and NOT exec: this shell must outlive the reading so the reservation covers the whole
-# load.  CUDA_VISIBLE_DEVICES is inherited unchanged (unset stays unset), so GPUs are not hidden
+# load.  ADM-DEADCACHE-01: the command runs under `scope-exec`, which stays INSIDE the job's own
+# scope, forwards TERM/INT/HUP, and after the command ends asks the kernel to reclaim that scope's
+# OWN clean file cache through the scope's own memory.reclaim -- so the cache of a finished job is
+# not left recharged to the slice as "in use".  CUDA_VISIBLE_DEVICES is inherited unchanged (unset stays unset), so GPUs are not hidden
 # by accident.
 systemd-run --user --scope --quiet --collect --slice="$SLICE" --unit="$unit" \
   -p MemoryMax="$CAP_BYTES" -p MemoryHigh="$(( CAP_BYTES * 9 / 10 ))" -p MemorySwapMax=0 \
   env OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}" OPENBLAS_NUM_THREADS="${OPENBLAS_NUM_THREADS:-1}" \
       MKL_NUM_THREADS="${MKL_NUM_THREADS:-1}" \
-  timeout --kill-after=30s "$WALL" "$@" &
+  timeout --kill-after=30s "$WALL" "$PY" "$ADM" scope-exec --lease "$LEASE" --slice "$SLICE" -- "$@" &
 child=$!
 
 slice_cg=$(systemctl --user show "$SLICE" -p ControlGroup --value 2>/dev/null || true)

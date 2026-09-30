@@ -642,3 +642,119 @@ def test_2026_09_26_a_teardown_zombie_in_the_cgroup_is_not_a_live_child(tmp_path
 
     (cg / "cgroup.procs").write_text(f"{os.getpid()}\n")   # a task that really is running
     assert res.cgroup_alive("user.slice/crispdm-batch.slice/crispdm-x.scope") is True
+
+
+# ---- ADM-DEADCACHE-01 (2026-09-30): dead clean file cache is not live use ----------------------
+
+# the preferred worker's slice at 18:40 local: no scope, no process, no lease, only the page cache a
+# finished NPZ build left recharged to the slice
+DEAD_CACHE_STAT = {"anon": 0, "file": 2_327_924_736, "file_dirty": 0, "file_writeback": 0,
+                   "shmem": 16_564_224, "slab": 57_008_080, "unevictable": 0}
+
+
+def test_2026_09_30_dead_clean_cache_left_by_a_finished_scope_does_not_queue_the_next_load(host):
+    host.set(mem_available_bytes=12 * GIB, slice_memory_max=8 * GIB,
+             slice_memory_current=2_385_801_216, slice_memory_stat=DEAD_CACHE_STAT)
+    d = host.acquire("m04-pilot", 6_442_450_944)
+    assert d["verdict"] == A.ADMITTED, d
+    r = d["readings"]
+    clean = 2_327_924_736 - 16_564_224
+    assert r["slice_clean_file_bytes_not_charged"] == clean
+    assert r["slice_charged_bytes"] == 2_385_801_216 - clean
+    assert r["aggregate_committed_bytes"] == r["slice_charged_bytes"]
+
+
+def test_2026_09_30_without_a_memory_stat_reading_everything_stays_charged_as_before(host):
+    """The defect, reproduced: the same bytes read only as memory.current queue forever."""
+    host.set(mem_available_bytes=12 * GIB, slice_memory_max=8 * GIB, slice_memory_current=2_385_801_216)
+    d = host.acquire("m04-pilot", 6_442_450_944)
+    assert d["verdict"] == A.QUEUED and d["code"] == "SLICE_AGGREGATE_BUDGET"
+
+
+@pytest.mark.parametrize("kind", ["shmem", "file_dirty", "file_writeback", "unevictable"])
+def test_2026_09_30_shmem_dirty_writeback_and_unevictable_pages_stay_charged(host, kind):
+    stat = {"anon": 0, "file": 3 * GIB, "shmem": 0, "file_dirty": 0, "file_writeback": 0,
+            "unevictable": 0, "slab": 0}
+    stat[kind] = 3 * GIB                      # the whole file charge is NOT clean
+    host.set(mem_available_bytes=12 * GIB, slice_memory_max=8 * GIB,
+             slice_memory_current=3 * GIB, slice_memory_stat=stat)
+    d = host.acquire("x", 6 * GIB)
+    assert d["verdict"] == A.QUEUED and d["code"] == "SLICE_AGGREGATE_BUDGET"
+    assert d["readings"]["slice_charged_bytes"] == 3 * GIB
+
+
+def test_2026_09_30_anon_and_slab_are_charged_and_clean_cache_is_never_negative(host):
+    assert A.clean_file_bytes({"file": 1, "shmem": 5}) == 0
+    host.set(mem_available_bytes=12 * GIB, slice_memory_max=8 * GIB, slice_memory_current=5 * GIB,
+             slice_memory_stat={"anon": 4 * GIB, "slab": GIB, "file": 0})
+    d = host.acquire("x", 4 * GIB)
+    assert d["verdict"] == A.QUEUED and d["readings"]["slice_charged_bytes"] == 5 * GIB
+
+
+def _fake_scope(host, rel, stat):
+    cg = host.dir / "cgroup" / rel
+    cg.mkdir(parents=True)
+    (cg / "memory.stat").write_text("".join(f"{k} {v}\n" for k, v in stat.items()))
+    (cg / "memory.reclaim").write_text("")
+    return cg
+
+
+SCOPE_STAT = {"anon": 3 * GIB, "file": 2 * GIB, "shmem": 100, "file_dirty": 200,
+              "file_writeback": 0, "unevictable": 0}
+
+
+def test_2026_09_30_the_launcher_reclaims_its_own_scope_clean_cache_at_scope_end(host, fake_systemd):
+    rel = "user.slice/u.service/crispdm.slice/crispdm-batch.slice/crispdm-job-1-2.scope"
+    cg = _fake_scope(host, rel, SCOPE_STAT)
+    host.patch(self_cgroup=rel)
+    r = _run_launcher(host, fake_systemd, "-m", "1G", "-n", "job", "--", "true")
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert (cg / "memory.reclaim").read_text() == str(2 * GIB - 100 - 200)
+    ev = [x for x in host.ledger() if x["event"] == "SCOPE_CLEAN_CACHE_RECLAIM"]
+    assert len(ev) == 1 and ev[0]["result"] == "RECLAIMED" and ev[0]["cgroup"] == rel
+    assert ev[0]["lease_id"] and ev[0]["requested"] == 2 * GIB - 300
+    assert host.live_lease_ids() == []                       # released after, as before
+
+
+@pytest.mark.parametrize("rel", [
+    "user.slice/u.service/crispdm.slice/crispdm-batch.slice",                 # the slice itself
+    "user.slice/u.service/crispdm.slice/other.slice/crispdm-job-1-2.scope",   # another slice
+    "user.slice/u.service/app.slice/crispdm-job-1-2.scope",                   # not under crispdm
+    "user.slice/u.service/crispdm.slice/crispdm-batch.slice/session-3.scope",  # not a job scope
+    "",                                                                        # the host root
+])
+def test_2026_09_30_scope_exec_never_reclaims_anything_but_its_own_job_scope(host, fake_systemd, rel):
+    cg = _fake_scope(host, rel or "rootcg", SCOPE_STAT)
+    host.patch(self_cgroup=rel)
+    r = _run_launcher(host, fake_systemd, "-m", "1G", "-n", "job", "--", "true")
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert (cg / "memory.reclaim").read_text() == ""
+    ev = [x for x in host.ledger() if x["event"] == "SCOPE_CLEAN_CACHE_RECLAIM"]
+    assert ev and ev[0]["result"] == "SKIPPED_NOT_OWN_CRISPDM_SCOPE"
+
+
+def test_2026_09_30_scope_exec_keeps_the_command_exit_status_and_a_death_by_signal(host, fake_systemd):
+    rel = "s/crispdm.slice/crispdm-batch.slice/crispdm-job-1-2.scope"
+    _fake_scope(host, rel, SCOPE_STAT)
+    host.patch(self_cgroup=rel)
+    three = host.dir / "three.sh"
+    three.write_text("#!/usr/bin/env bash\nexit 3\n")
+    three.chmod(0o755)
+    assert _run_launcher(host, fake_systemd, "-m", "1G", "-n", "a", "--", str(three)).returncode == 3
+    termed = host.dir / "termed.sh"
+    termed.write_text("#!/usr/bin/env bash\nkill -TERM $$\nsleep 5\n")
+    termed.chmod(0o755)
+    r = _run_launcher(host, fake_systemd, "-m", "1G", "-n", "b", "--", str(termed))
+    assert r.returncode == 128 + 15, r.stdout + r.stderr
+    # the reclaim ran after both, and both reservations were released
+    assert len([x for x in host.ledger() if x["event"] == "SCOPE_CLEAN_CACHE_RECLAIM"]) == 2
+    assert host.live_lease_ids() == []
+
+
+def test_2026_09_30_the_launcher_routes_the_command_through_scope_exec_inside_the_scope(host, fake_systemd):
+    r = _run_launcher(host, fake_systemd, "-m", "1G", "-n", "one", "--", "true")
+    assert r.returncode == 0, r.stdout + r.stderr
+    passed = [p.decode() for p in fake_systemd["record"].read_bytes().split(b"\0") if p]
+    i = passed.index("timeout")
+    assert passed[i + 4:i + 6] == [str(MODULE), "scope-exec"] or passed[i + 4].endswith("crispdm_admission.py")
+    assert passed[-2:] == ["--", "true"]

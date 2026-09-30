@@ -39,8 +39,16 @@ Invariants the order names
 * Evidence, not assertion.  ``peak_bytes`` is only accepted together with the retained record
   it was read from; the file is hashed and the number re-read from it.
 * Observed aggregate budget.  The slice gate is
-  ``slice.memory.current + sum(max(0, reserved - observed)) + cap <= slice MemoryMax``, not the
-  child's own limit against the ceiling.
+  ``slice charged bytes + sum(max(0, reserved - observed)) + cap <= slice MemoryMax``, not the
+  child's own limit against the ceiling.  "Charged" is memory.current minus the slice's CLEAN
+  file cache (file - shmem - file_dirty - file_writeback - unevictable, from memory.stat): clean
+  page cache left behind by a finished scope is reclaimed by the kernel the moment a live load
+  under the same ceiling needs it, so counting it as live use queued requests forever
+  (ADM-DEADCACHE-01, 2026-09-30).  Anon, shmem/tmpfs, dirty/writeback, unevictable, slab and all
+  other kernel memory stay charged.
+* Own-scope cache at scope end.  ``scope-exec`` runs INSIDE the job's own scope, after the command
+  ends, and asks the kernel to reclaim that scope's own clean file cache through the scope's own
+  memory.reclaim -- never the host's, never the slice's, never another scope's.
 * Never a retry with a bigger cap.  This module has no retry.  QUEUED means *not started yet*;
   REFUSED means not started at all.  An out-of-memory kill is a terminal outcome here.
 
@@ -164,6 +172,25 @@ def human(n) -> str:
 
 
 # ---- resources -----------------------------------------------------------------------------
+
+def clean_file_bytes(stat: dict) -> int:
+    """Clean, reclaimable page cache in a memory.stat reading: file pages that are neither
+    shmem/tmpfs, dirty, under writeback nor unevictable.  Never negative."""
+    g = lambda k: int(stat.get(k, 0) or 0)  # noqa: E731
+    return max(0, g("file") - g("shmem") - g("file_dirty") - g("file_writeback") - g("unevictable"))
+
+
+def parse_memory_stat(text: str) -> dict:
+    out = {}
+    for line in text.splitlines():
+        parts = line.split()
+        if len(parts) == 2:
+            try:
+                out[parts[0]] = int(parts[1])
+            except ValueError:
+                pass
+    return out
+
 
 class SystemResources:
     """The live host.  Read-only: /proc, the cgroup tree and `systemctl --user show`."""
@@ -310,6 +337,19 @@ class SystemResources:
         except (OSError, ValueError):
             return 0
 
+    def slice_memory_stat(self):
+        p = self.slice_cgroup_path()
+        try:
+            return parse_memory_stat((p / "memory.stat").read_text()) if p else None
+        except OSError:
+            return None
+
+    def slice_charged_bytes(self) -> int:
+        """memory.current minus clean file cache.  An unreadable memory.stat charges everything."""
+        cur = self.slice_memory_current()
+        st = self.slice_memory_stat()
+        return cur if st is None else max(0, cur - clean_file_bytes(st))
+
     # -- per-lease observation.  The cgroup is the whole process tree; never one process's RSS.
     def cgroup_current_bytes(self, cgroup: str):
         return self._cgroup_int(cgroup, "memory.current")
@@ -427,6 +467,14 @@ class FileResources:
 
     def slice_memory_current(self):
         return int(self.d.get("slice_memory_current", 0))
+
+    def slice_memory_stat(self):
+        return self.d.get("slice_memory_stat")
+
+    def slice_charged_bytes(self):
+        cur = self.slice_memory_current()
+        st = self.slice_memory_stat()
+        return cur if st is None else max(0, cur - clean_file_bytes(st))
 
     def cgroup_current_bytes(self, cgroup):
         v = self.d.get("cgroup_current", {}).get(str(cgroup))
@@ -846,18 +894,21 @@ def evaluate(store: Store, res, req: Request, now: float) -> dict:
     total = int(res.mem_total_bytes())
     slice_max = res.slice_memory_max()
     slice_current = int(res.slice_memory_current())
+    slice_charged = int(res.slice_charged_bytes()) if hasattr(res, "slice_charged_bytes") else slice_current
     pressure = float(res.pressure_some_avg10())
 
     held_unrealised = sum(l.unrealised_bytes(res) for l in live)
     held_reserved = sum(l.cap_bytes for l in live)
     host_free = avail - DESKTOP_RESERVE_BYTES - held_unrealised
-    aggregate_committed = slice_current + held_unrealised
+    aggregate_committed = slice_charged + held_unrealised
 
     readings = {
         "mem_available_bytes": avail, "mem_total_bytes": total,
         "desktop_reserve_bytes": DESKTOP_RESERVE_BYTES,
         "slice": req.slice_name, "slice_memory_max": slice_max,
         "slice_memory_current": slice_current,
+        "slice_charged_bytes": slice_charged,
+        "slice_clean_file_bytes_not_charged": slice_current - slice_charged,
         "pressure_some_avg10": pressure, "pressure_admit_max": PRESSURE_ADMIT_MAX,
         "live_leases": len(live),
         "live_lease_ids": [l.lease_id for l in live],
@@ -908,7 +959,8 @@ def evaluate(store: Store, res, req: Request, now: float) -> dict:
         return {"verdict": QUEUED, "code": "SLICE_AGGREGATE_BUDGET",
                 "reason": f"the observed aggregate budget would be "
                           f"{human(aggregate_committed + req.cap_bytes)} against the {req.slice_name} ceiling "
-                          f"{human(slice_max)} (in use {human(slice_current)}, "
+                          f"{human(slice_max)} (charged {human(slice_charged)} = in use {human(slice_current)} "
+                          f"minus {human(slice_current - slice_charged)} clean file cache, "
                           f"unrealised reservations {human(held_unrealised)})",
                 "readings": readings}
     if pressure > PRESSURE_ADMIT_MAX:
@@ -1143,6 +1195,8 @@ def state(store: Store, res, now: float) -> dict:
             "host_free_for_new_bytes": avail - DESKTOP_RESERVE_BYTES - held,
             "slice_memory_max": slice_max,
             "slice_memory_current": res.slice_memory_current(),
+            "slice_charged_bytes": (res.slice_charged_bytes() if hasattr(res, "slice_charged_bytes")
+                                    else res.slice_memory_current()),
             "pressure_some_avg10": res.pressure_some_avg10(),
             "pressure_full_avg10": (res.pressure_full_avg10()
                                     if hasattr(res, "pressure_full_avg10") else None),
@@ -1584,6 +1638,116 @@ def build_request(a) -> Request:
                    peak_evidence_sha256=ev_sha, size_text=a.mem, detached=bool(getattr(a, "detached", False)))
 
 
+# ---- own-scope clean-cache reclaim at scope end (ADM-DEADCACHE-01) ---------------------------
+
+def own_scope_cgroup(slice_name: str):
+    """This process's own cgroup, relative to the cgroup root, ONLY if it is a crispdm job scope
+    directly under ``slice_name``; otherwise None.  Never the host, never the slice itself, never
+    another slice.  In simulation (a readings file is set) the path comes from the readings'
+    "self_cgroup" instead of /proc/self/cgroup."""
+    rel = None
+    sim = os.environ.get("CRISPDM_ADMISSION_RESOURCES_JSON")
+    if sim:
+        try:
+            rel = json.loads(Path(sim).read_text()).get("self_cgroup")
+        except (OSError, ValueError):
+            rel = None
+    else:
+        try:
+            for line in Path("/proc/self/cgroup").read_text().splitlines():
+                if line.startswith("0::"):
+                    rel = line[3:]
+        except OSError:
+            rel = None
+    if not rel:
+        return None
+    parts = [x for x in str(rel).strip().split("/") if x]
+    if len(parts) < 2:
+        return None
+    leaf, parent = parts[-1], parts[-2]
+    if not (leaf.startswith("crispdm-") and leaf.endswith(".scope")) or parent != slice_name:
+        return None
+    if any(x in ("..", ".") for x in parts):
+        return None
+    return "/".join(parts)
+
+
+def reclaim_own_scope(store: "Store", slice_name: str, lease_id: str | None, now: float) -> dict:
+    """Ask the kernel to reclaim this scope's OWN clean file cache through its OWN memory.reclaim.
+
+    The amount written is the clean file bytes read from the scope's own memory.stat; anon,
+    shmem, dirty, writeback and unevictable pages are never asked for.  A partial reclaim (EAGAIN)
+    is recorded, not retried.  Nothing is written when this process is not inside a crispdm job
+    scope under ``slice_name``."""
+    rel = own_scope_cgroup(slice_name)
+    out = {"event": "SCOPE_CLEAN_CACHE_RECLAIM", "lease_id": lease_id, "cgroup": rel, "slice": slice_name}
+    if rel is None:
+        out.update(result="SKIPPED_NOT_OWN_CRISPDM_SCOPE")
+    else:
+        root = Path(os.environ.get("CRISPDM_CGROUP_ROOT") or "/sys/fs/cgroup")
+        cg = root / rel
+        try:
+            before = parse_memory_stat((cg / "memory.stat").read_text())
+            want = clean_file_bytes(before)
+            out.update(file_before=before.get("file"), shmem_before=before.get("shmem"),
+                       clean_file_before=want)
+            if want <= 0:
+                out.update(result="NOTHING_CLEAN_TO_RECLAIM", requested=0)
+            else:
+                out["requested"] = want
+                try:
+                    with open(cg / "memory.reclaim", "w") as fh:
+                        fh.write(str(want))
+                    out["result"] = "RECLAIMED"
+                except OSError as e:
+                    out["result"] = "PARTIAL" if e.errno == errno.EAGAIN else f"ERROR_{errno.errorcode.get(e.errno, e.errno)}"
+                try:
+                    after = parse_memory_stat((cg / "memory.stat").read_text())
+                    out.update(file_after=after.get("file"), clean_file_after=clean_file_bytes(after))
+                except OSError:
+                    pass
+        except OSError as e:
+            out.update(result=f"UNREADABLE_{errno.errorcode.get(e.errno, e.errno)}")
+    try:
+        store.log({**out, "_now": now})
+    except OSError:
+        pass
+    return out
+
+
+def scope_exec(store: "Store", slice_name: str, lease_id: str | None, argv: list) -> int:
+    """Run ``argv`` as this process's child inside the job's own scope, forward the operator's
+    TERM/INT/HUP to it, and when it has ended reclaim the scope's own clean file cache before the
+    scope empties.  The command's exit status is returned unchanged (a death by signal N is
+    re-raised on this process, as the shell would see it)."""
+    import signal
+    import subprocess
+    if not argv:
+        return 2
+    child = subprocess.Popen(argv)
+
+    def fwd(sig, _frame):
+        try:
+            child.send_signal(sig)
+        except ProcessLookupError:
+            pass
+    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+        signal.signal(sig, fwd)
+    while True:
+        try:
+            rc = child.wait()
+            break
+        except InterruptedError:
+            continue
+    reclaim_own_scope(store, slice_name, lease_id, now_from_env())
+    if rc < 0:
+        sig = -rc
+        signal.signal(sig, signal.SIG_DFL)
+        os.kill(os.getpid(), sig)
+        return 128 + sig
+    return rc
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="crispdm-admission", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1643,6 +1807,13 @@ def main(argv=None) -> int:
                         "spawns its own fit children shares its parent's cgroup and its parent's "
                         "MemoryMax, so it needs no reservation of its own -- but it does need its "
                         "parent to have one.  Exit 0 covered, 1 not covered.")
+    se = sub.add_parser("scope-exec",
+                        help="INSIDE a job's own scope: run the command, forward TERM/INT/HUP, and when it "
+                             "ends reclaim that scope's own clean file cache through its own "
+                             "memory.reclaim before the scope empties (ADM-DEADCACHE-01)")
+    se.add_argument("--lease", default=None)
+    se.add_argument("--slice", default=DEFAULT_SLICE)
+    se.add_argument("argv", nargs=argparse.REMAINDER)
     sub.add_parser("state", help="the live reservations and the capacity they leave")
     sub.add_parser("reclaim", help="sweep: free only the leases whose witness is dead")
 
@@ -1672,6 +1843,11 @@ def main(argv=None) -> int:
             print(f"crispdm-run: {d.get('verdict')} {d.get('code')} -- {d.get('reason')}")
         return 0
     store = Store(a.store)
+    if a.cmd == "scope-exec":
+        argv = list(a.argv)
+        if argv and argv[0] == "--":
+            argv = argv[1:]
+        return scope_exec(store, a.slice, a.lease, argv)
     res = resources_from_env(getattr(a, "slice", DEFAULT_SLICE))
     now = now_from_env()
 
