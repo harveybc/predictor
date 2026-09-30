@@ -32,7 +32,7 @@ How the ETA was estimated: observed throughput. W is the mean train cost of the 
 - s2021 predicted 23:10–23:56Z at adoption; actual __S2021_END__.
 
 Cooling and observed limits (reported, not changed):
-- **4070 (coordinator):** application clock locked at 1500 MHz of 3105, 74–76 °C, 55 W of a 114 W limit. No active thermal reason; cumulative SW thermal slowdown was 22.6 s since driver load. The `gpu_idle` bit reads set while the GPU is at 100% utilization, an artefact of the locked clock on this laptop part. `codex-omega-gpu-clock-restore.service` runs `sudo -n nvidia-smi -rgc` when s2021's unit ends; sudo allows nvidia-smi without a password.
+- **4070 (coordinator):** application clock locked at 1500 MHz of 3105, 74–76 °C, 55 W of a 114 W limit. No active thermal reason; cumulative SW thermal slowdown was 22.6 s since driver load. The `gpu_idle` bit reads set while the GPU is at 100% utilization, an artefact of the locked clock on this laptop part. The coordinator's GPU clock-restore unit (`codex-<coordinator>-gpu-clock-restore.service`) runs `sudo -n nvidia-smi -rgc` when s2021's unit ends; sudo allows nvidia-smi without a password.
 - **4090 (worker_b):** SW THERMAL SLOWDOWN ACTIVE throughout s2023. 82–83 °C (target 87 °C), 120 W of 175 W, SM clock swinging 930–1470 MHz of 3105. Cumulative SW thermal slowdown 1,771 s since driver load; no HW thermal slowdown. The epoch cost matched s2022's (about 112 s), so this is the host's steady thermal ceiling, not a degradation. The laptop's cooling is saturated. Recommendation for the owner: check the intake and exhaust (stand, dust), or cap power if longer fits are planned there. No breach occurred: no HW slowdown and no stop condition.
 
 ## 2. The 5090 host (worker_a), read-only diagnosis
