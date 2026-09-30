@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -149,6 +150,13 @@ def main():
         horizons = [int(h) for h in args.horizons.split(",")]
     manifest = build(args.source, args.out, window=args.window, horizons=horizons,
                      expected_sha=args.expected_sha256)
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+        from tools.modular_heartbeat import cgroup_memory, process_memory
+        manifest["build_resources"] = {"cgroup": cgroup_memory(), "process": process_memory()}
+        (Path(args.out) / "MANIFEST.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    except OSError:
+        pass
     print(json.dumps({k: manifest[k] for k in ("dataset_id", "splits", "scaler_identity")}, indent=1))
 
 
