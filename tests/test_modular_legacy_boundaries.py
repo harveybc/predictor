@@ -74,6 +74,14 @@ def test_every_legacy_entry_point_is_byte_identical_and_only_opt_in_names_are_ad
 
 
 def test_legacy_names_resolve_to_legacy_classes_never_to_the_modular_plugin():
+    try:
+        foreign = _installed("predictor.plugins") is None
+        metadata.distribution("predictor")
+    except metadata.PackageNotFoundError:
+        foreign = False
+    if foreign and not REQUIRE_INSTALLED:
+        pytest.skip("a different predictor distribution is installed here; the resolver would "
+                    "(correctly) consult it -- run the isolated installed suite instead")
     from app.plugin_loader import load_plugin
     from app.plugin_resolver import resolve
     for name, value in LEGACY["predictor.plugins"].items():

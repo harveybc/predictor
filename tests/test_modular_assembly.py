@@ -113,7 +113,8 @@ def test_flat_mapping_is_reversible_and_overrides_reach_the_graph():
     flat = mc.flatten(c)
     assert flat["core.params.d_model"] == 16 and flat["branches.price.params.channels"] == 4
     assert mc.unflatten(flat) == c
-    assert mc.dumps(c) == mc.dumps(json.loads(json.dumps(c)[::-1][::-1]))
+    assert mc.dumps(c) == mc.dumps(dict(reversed(list(c.items()))))     # key order irrelevant
+    assert mc.loads(mc.dumps(c)) == c
     resolved, applied = mc.apply_flat_overrides(
         c, {"core.params.blocks": 1, "branches.volume.params.channels": 6, "epochs": 99})
     assert applied == {"branches.volume.params.channels": 6, "core.params.blocks": 1}
@@ -132,7 +133,7 @@ def test_flat_mapping_is_reversible_and_overrides_reach_the_graph():
     (lambda c: c.update(sample_hours=0.25), "24h"),               # 24 x 15 min = 6 h
     (lambda c: c.update(output_steps=5), "divisib"),
     (lambda c: c["core"]["params"].update(heads=3), "divisib"),
-    (lambda c: c["core"]["params"].update(stage_channels=[12, 10, 9, 8]), "stages"),
+    (lambda c: c["core"]["params"].update(stage_channels=[12, 10, 9, 8], time_factors=[2, 1, 1]), "stages"),
     (lambda c: c["core"]["params"].update(time_factors=[3, 1, 1]), "reduce"),
     (lambda c: c["branches"][0]["params"].update(dilation=2), "branch params"),
     (lambda c: c.update(schema="predictor.modular.v0"), "schema"),
@@ -181,8 +182,7 @@ def test_default_plan_shapes_rank_three_and_independent_head():
     assert len(attention) == 2 and all(l.get_config()["num_heads"] == 4 for l in attention)
     assert len([l for l in core.layers if l.name.startswith("stage_") and l.name.endswith("_projection")]) == 3
     for model in [*b.branch_models.values(), b.fusion_model, core]:
-        assert all(len(l.output.shape) == 3 for l in model.layers if hasattr(l, "output")
-                   and not isinstance(l, tf.keras.layers.Reshape) or len(l.output.shape) == 3)
+        assert all(len(l.output.shape) == 3 for l in model.layers)   # no temporal collapse
         assert not any(isinstance(l, (tf.keras.layers.Flatten, tf.keras.layers.GlobalAveragePooling1D))
                        for l in model.layers)
 
@@ -210,11 +210,9 @@ def test_time_alignment_is_behavioural_on_the_common_right_edge_grid():
         first, moved = _first_moved(b.fusion_model, x, i, 2)
         assert first == i // 2 and np.all(moved[:i // 2] <= 1e-6)   # branch grid 2,4,...,24 h
         # every branch, not only the concatenation, moves at the same block
-        for name, m in b.branch_models.items():
-            column = ["close", "volume", "spread"].index(b.config["branches"][
-                [s["name"] for s in b.config["branches"]].index(name)]["features"][0])
-            f, mv = _first_moved(m, x[:, :, [column]], i, 2)
-            assert f == i // 2
+        for name, column in (("price", 0), ("volume", 1), ("spread", 2)):
+            f, mv = _first_moved(b.branch_models[name], x[:, :, [column]], i, 2)
+            assert f == i // 2 and np.all(mv[:i // 2] <= 1e-6)
         first, moved = _first_moved(b.encoder_model, x, i, 4)
         assert first == i // 4 and np.all(moved[:i // 4] <= 1e-6)   # latent grid 4,...,24 h
     assert b.branch_time_grid == tuple(range(2, 25, 2)) and b.core_time_grid == tuple(range(4, 25, 4))
@@ -383,7 +381,7 @@ def test_explicit_bad_donors_are_rejected_before_fit(tmp_path, monkeypatch, kind
     c = _bad(specs, tmp_path, kind)
     plugin = Plugin()
     window = c["window"]
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="onor"):
         plugin.build_model((window, 3), x_data(4, window=window), run_config(c))
     assert plugin.model is None and fits == []
 
@@ -425,6 +423,6 @@ def test_legacy_stl_pipeline_build_and_train_contract():
     history, tp, tu, vp, vu = STLPipelinePlugin()._build_and_train(
         plugin, x, y_dict(x), vx, y_dict(vx), run_config(nested()))
     assert plugin.output_names == ["output_horizon_1", "output_horizon_3"]
-    assert [o.name.split("/")[0] for o in plugin.model.outputs] == plugin.output_names
+    assert list(plugin.model.output_names) == plugin.output_names
     assert "loss" in history.history and "val_loss" in history.history
     assert all(np.all(u == 0) for u in vu) and len(vp) == 2
