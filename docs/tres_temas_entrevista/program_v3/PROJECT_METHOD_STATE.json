@@ -1,5 +1,13 @@
 {
  "schema": "research_program_method_state.v1",
+ "doin_offchain_body_20260930": {
+  "state": "REQUIREMENTS_AND_ACCEPTANCE_PLAN_RECORDED_NOT_IMPLEMENTED",
+  "plan": "DOIN_OFFCHAIN_BODY_PLAN_2026_09_30.md",
+  "next_gate": "Owner-specific component and unit test designs before protocol implementation",
+  "production_adoption": "NOT_DEPLOYED_REQUIRES_DISPOSABLE_PILOT_AND_REVIEW",
+  "global_experiment_hold": false,
+  "scientific_approval": false
+ },
  "classification_reference_20260928": {
   "state": "SOURCE_REVIEWED_SHORTLIST_NOT_EXECUTED",
   "plan": "CLASSIFICATION_REFERENCE_PLAN_2026_09_28.md",

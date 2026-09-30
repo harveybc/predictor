@@ -134,6 +134,21 @@
  ],
  "lanes": [
   {
+   "lane": "DOIN-OFFCHAIN-BODY",
+   "title": "Governed archived block bodies and rebuildable OLAP",
+   "map": "Independent infrastructure for DOIN and doctoral experiments",
+   "commit": "Plan introduced by this revision; implementation absent",
+   "artifact_or_receipt": "DOIN_OFFCHAIN_BODY_PLAN_2026_09_30.md",
+   "observed_state": "PLANNED_NOT_IMPLEMENTED_NOT_DEPLOYED",
+   "observed_at": "2026-09-30",
+   "real_dependency": "Shared versioned contract, owner test designs, verified lake write API; rollout needs disposable pilot and review",
+   "next_eligible_work": "Parallel core/storage/analytics test design, followed by isolated implementation; no live chain mutation",
+   "resource": "CPU worker under admission; no GPU required",
+   "remaining_cost": "NOT_MEASURED; pilot requires cost and disk admission",
+   "lease": "NONE_REQUESTED",
+   "observation_history": []
+  },
+  {
    "lane": "ADMISSION",
    "title": "Shared memory admission: the atomic gate (DR01) and its follow-on deployment",
    "map": "ENABLING: it belongs to neither map's science. It is the resource gate both maps pass through, and it is the named blocker of six E1-Q2-CONTEXT units",
