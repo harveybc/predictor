@@ -1,0 +1,61 @@
+{
+  "schema": "m02.synthetic_donor_index.v1",
+  "label": "SYNTHETIC FIXTURE - PLUMBING_NOT_A_RESULT",
+  "produced_by": "predictor tools/modular_pretrain.py at 9844dafd, run on worker_b CPU under crispdm-run 3G",
+  "note": "engine .manifest.json schema is strict (M01); the SYNTHETIC label lives in each *.provenance.json and here",
+  "fused_width_channels": 48,
+  "fused_shape_per_row": [
+    12,
+    48
+  ],
+  "latent_shape_per_row": [
+    6,
+    8
+  ],
+  "donors": [
+    {
+      "stage": "branch_ae",
+      "donor": "pretrain/branch_000.keras",
+      "donor_sha256": "51dc60d01020bfdfd5be429feb33fdc5ae6000951ba3b8c31cb5558a54b32383",
+      "manifest": "pretrain/branch_000.manifest.json",
+      "manifest_file_sha256": "822f8abfbc2cdcf0ece31a289ff1aa79503289812a572e52c6dd1784b7987a12",
+      "manifest_sha256": "5acf87c17e81cf580c55d410cd18bc6bd45897588b7c6b371a8a0717e5293b64",
+      "provenance": "pretrain/branch_000.provenance.json",
+      "provenance_sha256": "70a3560b2e29385a33c4360f1aeed43113d5131ca6eb0a7a0eef453a254a68fd",
+      "label": "SYNTHETIC FIXTURE - PLUMBING_NOT_A_RESULT"
+    },
+    {
+      "stage": "branch_ae",
+      "donor": "pretrain/branch_001.keras",
+      "donor_sha256": "41535c31db42c60fc2d91f0d2a68a717728010af918d874941218f179c937597",
+      "manifest": "pretrain/branch_001.manifest.json",
+      "manifest_file_sha256": "79c245f635691515c5e7115b3d4424955ec20c8eb058ff493476c49cb15f0472",
+      "manifest_sha256": "679cc3bd2a2d88c8b3faffc9b8738db6b62a508d5c413e37809db412adba829c",
+      "provenance": "pretrain/branch_001.provenance.json",
+      "provenance_sha256": "7f76810e16058cda556a9b41f2568537660a377326807babe81d224bdaaff151",
+      "label": "SYNTHETIC FIXTURE - PLUMBING_NOT_A_RESULT"
+    },
+    {
+      "stage": "branch_ae",
+      "donor": "pretrain/branch_002.keras",
+      "donor_sha256": "7db348c53c9a05c8b13a6e8b7d58a0dd942db69332b27c3a6e27e91babbf08da",
+      "manifest": "pretrain/branch_002.manifest.json",
+      "manifest_file_sha256": "6eedd4041eb7f5b5298acbcd2b05a5ea6ae2a51bd6399101f96793f83607e0c1",
+      "manifest_sha256": "97ae5a4b71702cf40bb42268056479bf12b53b974e68baa9efc77fbb7299629a",
+      "provenance": "pretrain/branch_002.provenance.json",
+      "provenance_sha256": "74ee0c059b3eb2e2609176cc19ea5e9ca46a12296af95d2dc303f374d46e9a42",
+      "label": "SYNTHETIC FIXTURE - PLUMBING_NOT_A_RESULT"
+    },
+    {
+      "stage": "core_ae",
+      "donor": "pretrain/core.keras",
+      "donor_sha256": "86e1b118cd5e4c33d44d3e2af37c3c3a0dd126d948f278713a29e4345b767aa4",
+      "manifest": "pretrain/core.manifest.json",
+      "manifest_file_sha256": "3b809f047610b1867b715035c967b60512d041213cbb7399ecc46f5161bbc32e",
+      "manifest_sha256": "03b5f1f97228afd9b15994402bd6141d7c34b193f042a25c3a6776232ac93960",
+      "provenance": "pretrain/core.provenance.json",
+      "provenance_sha256": "93deec733dd69ea4604aff81afaf81235fd955a753917c1414ffb4fba765a876",
+      "label": "SYNTHETIC FIXTURE - PLUMBING_NOT_A_RESULT"
+    }
+  ]
+}

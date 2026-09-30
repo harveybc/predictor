@@ -1,0 +1,11 @@
+{
+  "donor_sha256": "41535c31db42c60fc2d91f0d2a68a717728010af918d874941218f179c937597",
+  "donor_sidecar_sha256": "79c245f635691515c5e7115b3d4424955ec20c8eb058ff493476c49cb15f0472",
+  "input_provenance": "synthetic_fixture",
+  "label": "SYNTHETIC FIXTURE - PLUMBING_NOT_A_RESULT",
+  "name": "branch_1",
+  "schema": "modular.branch_donor.provenance.v1",
+  "stage": "branch_ae",
+  "train_input_sha256": "14f11a16bd708e087d73c5b3ea21a80c38c01edd1b2265d84acc926fb2264c42",
+  "train_validation_input_sha256": "6024a46e23d74f2399c18aea9dbdc94bae83b7635530dc54ba5d175a828d4c60"
+}

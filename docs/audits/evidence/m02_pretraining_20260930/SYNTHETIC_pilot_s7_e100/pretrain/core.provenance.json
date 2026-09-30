@@ -1,0 +1,42 @@
+{
+  "core_donor_sha256": "86e1b118cd5e4c33d44d3e2af37c3c3a0dd126d948f278713a29e4345b767aa4",
+  "core_manifest_sha256": "03b5f1f97228afd9b15994402bd6141d7c34b193f042a25c3a6776232ac93960",
+  "fused_materialization": {
+    "train": "a0a8c4400f781842ecb2c87f0643418779aea7ad8c64659c8acb2b46e6b1c67a",
+    "train_validation": "8c01c3bb4b6ebee07ae98adf0b409f25292890e9f5d795ed89dc116cc11111ab"
+  },
+  "fusion_identity": {
+    "identity": {
+      "group": "modular.fusion",
+      "implementation": "modular_temporal.v1:sequence_concat",
+      "name": "sequence_concat",
+      "params": {}
+    },
+    "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "fusion_record_sha256": "4688527aa18c1e2b0fbbb5775dfeeb0a4ec7a4a5d7c7d4a042c015cc864ffdf0",
+  "input_provenance": "synthetic_fixture",
+  "label": "SYNTHETIC FIXTURE - PLUMBING_NOT_A_RESULT",
+  "schema": "modular.core_donor.provenance.v1",
+  "stage": "core_ae",
+  "upstream_branch_donors": [
+    {
+      "donor_sha256": "51dc60d01020bfdfd5be429feb33fdc5ae6000951ba3b8c31cb5558a54b32383",
+      "donor_sidecar_sha256": "822f8abfbc2cdcf0ece31a289ff1aa79503289812a572e52c6dd1784b7987a12",
+      "name": "branch_0",
+      "weights_sha256": "e8a98697c0dc037b18bc2d8c9f6cb000c419520e92f1718b2c875b74e59c7471"
+    },
+    {
+      "donor_sha256": "41535c31db42c60fc2d91f0d2a68a717728010af918d874941218f179c937597",
+      "donor_sidecar_sha256": "79c245f635691515c5e7115b3d4424955ec20c8eb058ff493476c49cb15f0472",
+      "name": "branch_1",
+      "weights_sha256": "b54549a8182a7f283d8e7ec8da253974a5aebbee398ba585d1d5fb6be2a8b734"
+    },
+    {
+      "donor_sha256": "7db348c53c9a05c8b13a6e8b7d58a0dd942db69332b27c3a6e27e91babbf08da",
+      "donor_sidecar_sha256": "6eedd4041eb7f5b5298acbcd2b05a5ea6ae2a51bd6399101f96793f83607e0c1",
+      "name": "branch_2",
+      "weights_sha256": "ffb9fa359e28e6171693e7995622200864a8cee41a31287a3b066972740606e9"
+    }
+  ]
+}

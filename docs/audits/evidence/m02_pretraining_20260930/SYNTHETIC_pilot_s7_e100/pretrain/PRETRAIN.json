@@ -1,0 +1,2890 @@
+{
+  "schema": "modular.pretrain.v2",
+  "provenance": "synthetic_fixture",
+  "label": "SYNTHETIC FIXTURE - component check, not a forecasting result",
+  "branches": [
+    {
+      "stage": "branch_ae",
+      "name": "branch_0",
+      "features": [
+        "f0"
+      ],
+      "donor": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/branch_000.keras",
+      "donor_sha256": "51dc60d01020bfdfd5be429feb33fdc5ae6000951ba3b8c31cb5558a54b32383",
+      "donor_sidecar_sha256": "822f8abfbc2cdcf0ece31a289ff1aa79503289812a572e52c6dd1784b7987a12",
+      "donor_weights_sha256": "e8a98697c0dc037b18bc2d8c9f6cb000c419520e92f1718b2c875b74e59c7471",
+      "donor_manifest_sha256": "5acf87c17e81cf580c55d410cd18bc6bd45897588b7c6b371a8a0717e5293b64",
+      "decoder": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/branch_000.decoder.keras",
+      "decoder_sha256": "00ea2cc20f45d63bbf152eac16d17f024b5b52c3f335c2dc66eaf28162811f87",
+      "encoder_parameters": 592,
+      "decoder_parameters": 1601,
+      "train_channel_stats": {
+        "mean": [
+          0.02634353877353597
+        ],
+        "std": [
+          0.9925367361347426
+        ],
+        "min": [
+          -2.6176645755767822
+        ],
+        "max": [
+          2.7303659915924072
+        ],
+        "observations_per_channel": 31680
+      },
+      "training": {
+        "settings": {
+          "max_epochs": 100,
+          "patience": 4,
+          "batch_size": 64,
+          "learning_rate": 0.001,
+          "weight_decay": 0.0001,
+          "loss": "mse",
+          "huber_delta": 1.0,
+          "min_delta": 0.0001,
+          "seed": 42,
+          "max_updates": 20000,
+          "max_seconds": 600.0,
+          "monitor": "validation_loss",
+          "monitor_every": 1
+        },
+        "history": [
+          {
+            "epoch": 1,
+            "train_loss": 0.8564625537756717,
+            "validation_loss": 0.42036521162971224,
+            "monitored": true,
+            "updates": 21,
+            "weights_sha256": "36d3577bb51918a1df8748fbdf95bb0fb04c6a4c373a174dd7bab4b5654f6d72"
+          },
+          {
+            "epoch": 2,
+            "train_loss": 0.22248767758860732,
+            "validation_loss": 0.11028088347725448,
+            "monitored": true,
+            "updates": 42,
+            "weights_sha256": "31ff38d7935d703600ffbf9fa25fcb6878ea78dedd21ca2cbc7aa2b5b1942ab3"
+          },
+          {
+            "epoch": 3,
+            "train_loss": 0.07921861839113814,
+            "validation_loss": 0.05240710730078943,
+            "monitored": true,
+            "updates": 63,
+            "weights_sha256": "ca82411087c3931b544c03f4695f3f27752be77e35e905212606b1f1f8c660dc"
+          },
+          {
+            "epoch": 4,
+            "train_loss": 0.04825431925780845,
+            "validation_loss": 0.041507784095183256,
+            "monitored": true,
+            "updates": 84,
+            "weights_sha256": "ca0aa230feacce644579b8f137c2940472bb2f7ff5288aff4ed7fc5919c59017"
+          },
+          {
+            "epoch": 5,
+            "train_loss": 0.0397042237673745,
+            "validation_loss": 0.034992101938988565,
+            "monitored": true,
+            "updates": 105,
+            "weights_sha256": "c71d607e8e598d4f5b24da45a6222023d35d13cbe4e0f71a0d7f49dfeb9a3591"
+          },
+          {
+            "epoch": 6,
+            "train_loss": 0.03453894731673327,
+            "validation_loss": 0.03055395273922515,
+            "monitored": true,
+            "updates": 126,
+            "weights_sha256": "8ce65badec52dfe965d529c62b554b417a373dcd25d0319f6d313545ecb691f7"
+          },
+          {
+            "epoch": 7,
+            "train_loss": 0.030363330606258277,
+            "validation_loss": 0.026906741303710284,
+            "monitored": true,
+            "updates": 147,
+            "weights_sha256": "65d4e204a898ccaf06b22308ecb24f34625bd2dfd84740eb2efc2cf1309bcb5f"
+          },
+          {
+            "epoch": 8,
+            "train_loss": 0.026877448312712438,
+            "validation_loss": 0.02378229350336988,
+            "monitored": true,
+            "updates": 168,
+            "weights_sha256": "8c02052552984293e465449d2dceeba7cfe775819ea0f86f303ffac6815a4a4f"
+          },
+          {
+            "epoch": 9,
+            "train_loss": 0.02389310725936384,
+            "validation_loss": 0.021132776307409284,
+            "monitored": true,
+            "updates": 189,
+            "weights_sha256": "40e5993e3c3b0642eb981ca324d1a1086d923586ea932831d387812ba34d7878"
+          },
+          {
+            "epoch": 10,
+            "train_loss": 0.021378690331722752,
+            "validation_loss": 0.018930936820732266,
+            "monitored": true,
+            "updates": 210,
+            "weights_sha256": "d6ec282036cbe14144d861c10d7ac5c0779312201356b5136c5f69e359c69121"
+          },
+          {
+            "epoch": 11,
+            "train_loss": 0.019298146507053665,
+            "validation_loss": 0.017141152397768894,
+            "monitored": true,
+            "updates": 231,
+            "weights_sha256": "f83df7e07f732b8bc91e3a6bb430ec53bfc3007df2bde1fb6a7834882653733d"
+          },
+          {
+            "epoch": 12,
+            "train_loss": 0.017623848840594293,
+            "validation_loss": 0.01572972471167482,
+            "monitored": true,
+            "updates": 252,
+            "weights_sha256": "3f4633e0ad0b050b830fc21c1a69301924b6266b4eb25551a5185cd07fb4a454"
+          },
+          {
+            "epoch": 13,
+            "train_loss": 0.016312522745945236,
+            "validation_loss": 0.01463812380932053,
+            "monitored": true,
+            "updates": 273,
+            "weights_sha256": "9dcee3145ca2e0fe3dc57f9709b9dc7be42a5bc0057ea4d3258167743f7fa18c"
+          },
+          {
+            "epoch": 14,
+            "train_loss": 0.015294919512940175,
+            "validation_loss": 0.013789505497567623,
+            "monitored": true,
+            "updates": 294,
+            "weights_sha256": "44ed023550293eaa2a0c16d3d981324bbffef1c1e7d41dccfa9e51c926b99fe6"
+          },
+          {
+            "epoch": 15,
+            "train_loss": 0.014489674105337172,
+            "validation_loss": 0.013107599781565248,
+            "monitored": true,
+            "updates": 315,
+            "weights_sha256": "9104af0cca89a7708daa085b89d835a0f5dfd0866053bc1fea8705ac436a2014"
+          },
+          {
+            "epoch": 16,
+            "train_loss": 0.0138247822778243,
+            "validation_loss": 0.012533964222169661,
+            "monitored": true,
+            "updates": 336,
+            "weights_sha256": "c38fb74015549d77fb29247893e72a9b7309b43b4d3c0c3dff44de450fd3e7da"
+          },
+          {
+            "epoch": 17,
+            "train_loss": 0.013250275825460752,
+            "validation_loss": 0.01203271057092697,
+            "monitored": true,
+            "updates": 357,
+            "weights_sha256": "354db516c8a984ac21a2dd115482b32ba429eea448c9542c50e66f4735b3f9f7"
+          },
+          {
+            "epoch": 18,
+            "train_loss": 0.012737637888075727,
+            "validation_loss": 0.011585125848286897,
+            "monitored": true,
+            "updates": 378,
+            "weights_sha256": "09c169d403bd3d111f333fb567a8f72029d68c864a9c4ca4c359b17a35683dac"
+          },
+          {
+            "epoch": 19,
+            "train_loss": 0.012272634374147112,
+            "validation_loss": 0.01118198187311911,
+            "monitored": true,
+            "updates": 399,
+            "weights_sha256": "d3201b8c9517da583bbdfb53cb097dc5627601bc7cb018604ee8055bb12ee965"
+          },
+          {
+            "epoch": 20,
+            "train_loss": 0.0118484964312026,
+            "validation_loss": 0.010817947903654085,
+            "monitored": true,
+            "updates": 420,
+            "weights_sha256": "330ca813eaf31683bc4da249af44960cbec6265ecb7ab45cad329b181cae1e14"
+          },
+          {
+            "epoch": 21,
+            "train_loss": 0.011461701842420029,
+            "validation_loss": 0.01048895849236545,
+            "monitored": true,
+            "updates": 441,
+            "weights_sha256": "91a8c3e989e5503508e8bb40049a8a5e79a5e2d2709b66b85d74749688dae1db"
+          },
+          {
+            "epoch": 22,
+            "train_loss": 0.011109950043486826,
+            "validation_loss": 0.010191696935639708,
+            "monitored": true,
+            "updates": 462,
+            "weights_sha256": "de359c006ce6931ce7a22804908f7096ac6622cb1c9857513947d00ff79de7d7"
+          },
+          {
+            "epoch": 23,
+            "train_loss": 0.010791340171161927,
+            "validation_loss": 0.009923795168363893,
+            "monitored": true,
+            "updates": 483,
+            "weights_sha256": "b33daf23bb0f3a20b35a0f6ac86fc3e7eed32c80b9c92fe4778713ab45948f9e"
+          },
+          {
+            "epoch": 24,
+            "train_loss": 0.010504072740899794,
+            "validation_loss": 0.00968364662572693,
+            "monitored": true,
+            "updates": 504,
+            "weights_sha256": "676b3d968e8cc331a2625646f3dc6d11d4e9c416aaf1de57c5c691f7c5700f45"
+          },
+          {
+            "epoch": 25,
+            "train_loss": 0.010246288748175809,
+            "validation_loss": 0.00946972661739646,
+            "monitored": true,
+            "updates": 525,
+            "weights_sha256": "38c5c7bcd3592f12014e9bc817cf95913006c59e7e148cabb475d8640d01ee29"
+          },
+          {
+            "epoch": 26,
+            "train_loss": 0.010015964011351268,
+            "validation_loss": 0.009280146994546105,
+            "monitored": true,
+            "updates": 546,
+            "weights_sha256": "174cd8cadcda8db79154cc94b58198f82773767305e388e18dd47133ac449655"
+          },
+          {
+            "epoch": 27,
+            "train_loss": 0.009810921024869789,
+            "validation_loss": 0.00911266844513362,
+            "monitored": true,
+            "updates": 567,
+            "weights_sha256": "77216f7eeab0bb20e11f8124131983ce670b60382a930fa5bb225a7b139d5999"
+          },
+          {
+            "epoch": 28,
+            "train_loss": 0.009628889094473738,
+            "validation_loss": 0.008964941682178734,
+            "monitored": true,
+            "updates": 588,
+            "weights_sha256": "e9d30b962dcec56a445d0b18c83bb6ed9de848ccb7179db521833d17caa898c5"
+          },
+          {
+            "epoch": 29,
+            "train_loss": 0.00946758192484126,
+            "validation_loss": 0.00883466175511625,
+            "monitored": true,
+            "updates": 609,
+            "weights_sha256": "40c8c1e32075ba94958688d77ac638e221718b352362e4756ff18496e048e394"
+          },
+          {
+            "epoch": 30,
+            "train_loss": 0.009324741030507016,
+            "validation_loss": 0.008719633224174525,
+            "monitored": true,
+            "updates": 630,
+            "weights_sha256": "5c9c00842896c90832117d06f16a0887af09801ae33d2ec70e4891836d54b43c"
+          },
+          {
+            "epoch": 31,
+            "train_loss": 0.009198172779923136,
+            "validation_loss": 0.008617786563180557,
+            "monitored": true,
+            "updates": 651,
+            "weights_sha256": "40a137b496e8621e63b123dbb2809f6e20073033ee4b63c9308ca2cd63b3590f"
+          },
+          {
+            "epoch": 32,
+            "train_loss": 0.009085792444194808,
+            "validation_loss": 0.00852721962920035,
+            "monitored": true,
+            "updates": 672,
+            "weights_sha256": "8b26af5c66c7e6c4a7e926a430cce55659a89d5711669bbd35dcbba4c0b4e8bd"
+          },
+          {
+            "epoch": 33,
+            "train_loss": 0.00898565925431974,
+            "validation_loss": 0.008446217578280632,
+            "monitored": true,
+            "updates": 693,
+            "weights_sha256": "9654c3220411ae31df93c1d3060efa095ef632d8bc8f439f3e4682d3885e8869"
+          },
+          {
+            "epoch": 34,
+            "train_loss": 0.008896002258089456,
+            "validation_loss": 0.00837327249602988,
+            "monitored": true,
+            "updates": 714,
+            "weights_sha256": "e2e09c8837e2639d4a7eb35d2a8c0ebf7cca9b34cb110b5b55d5cd45fea2fd62"
+          },
+          {
+            "epoch": 35,
+            "train_loss": 0.008815240521322596,
+            "validation_loss": 0.008307072679824666,
+            "monitored": true,
+            "updates": 735,
+            "weights_sha256": "e536ffe40495ab3a95cc9229933bcfcbd50d88cc8ba76d3561871bcebcb4c1d3"
+          },
+          {
+            "epoch": 36,
+            "train_loss": 0.008741990392181006,
+            "validation_loss": 0.00824650409494918,
+            "monitored": true,
+            "updates": 756,
+            "weights_sha256": "ee8a615b316277e6a2d7573fd51bea5b4b9e1fd3d66f6a6bf4b19d5f03a571b9"
+          },
+          {
+            "epoch": 37,
+            "train_loss": 0.008675060884067507,
+            "validation_loss": 0.008190644786659786,
+            "monitored": true,
+            "updates": 777,
+            "weights_sha256": "e1b73d544ebafdc22dcf33b302d49b876de339bd0f6ebc9660c222e60027dbf8"
+          },
+          {
+            "epoch": 38,
+            "train_loss": 0.008613454855301163,
+            "validation_loss": 0.008138733867446646,
+            "monitored": true,
+            "updates": 798,
+            "weights_sha256": "27a74c44834a2500acfd3e82211164a41b450c84e117e5c07f3424010472c189"
+          },
+          {
+            "epoch": 39,
+            "train_loss": 0.008556341142816977,
+            "validation_loss": 0.008090157984036964,
+            "monitored": true,
+            "updates": 819,
+            "weights_sha256": "b186728bd45ac5968b6258ffde1e314ac1f899a4ce1d71af200210084a4c967c"
+          },
+          {
+            "epoch": 40,
+            "train_loss": 0.0085030466995456,
+            "validation_loss": 0.008044434735606081,
+            "monitored": true,
+            "updates": 840,
+            "weights_sha256": "8153396b176543ea919463329757afe8ef6df9914a547cbf5a0f0397e1dfb329"
+          },
+          {
+            "epoch": 41,
+            "train_loss": 0.008453022677338485,
+            "validation_loss": 0.00800117668589571,
+            "monitored": true,
+            "updates": 861,
+            "weights_sha256": "41376715bd6b93ae2beee4df6422ec7f019f1f74954988b21aaa39f453bd812c"
+          },
+          {
+            "epoch": 42,
+            "train_loss": 0.00840583455494859,
+            "validation_loss": 0.007960081346187413,
+            "monitored": true,
+            "updates": 882,
+            "weights_sha256": "63132be3126c87f418f26a1c8d6d3aeccbbcdbfe636fd2f38a7ce782750d9c5d"
+          },
+          {
+            "epoch": 43,
+            "train_loss": 0.008361135998910123,
+            "validation_loss": 0.007920912084706638,
+            "monitored": true,
+            "updates": 903,
+            "weights_sha256": "4730b67eea616e06801246545c2445c79147641d0fa214ad7fbcf1eeae35eb3c"
+          },
+          {
+            "epoch": 44,
+            "train_loss": 0.008318650316108357,
+            "validation_loss": 0.007883481056420345,
+            "monitored": true,
+            "updates": 924,
+            "weights_sha256": "0159274bfb5402855bfc84e3b436dd21294a4060355a13469c10f2935217b53b"
+          },
+          {
+            "epoch": 45,
+            "train_loss": 0.008278154931736715,
+            "validation_loss": 0.007847634966239478,
+            "monitored": true,
+            "updates": 945,
+            "weights_sha256": "62f055832d5f90e555702e97f8c4895a8ffe916a38df7ea1946c7b6344662228"
+          },
+          {
+            "epoch": 46,
+            "train_loss": 0.00823947341943329,
+            "validation_loss": 0.007813251170812096,
+            "monitored": true,
+            "updates": 966,
+            "weights_sha256": "79af98e98f2c8039a4f0f4f1c85d119e553fb8c2a4c75a92aac35c0bdbbd59f7"
+          },
+          {
+            "epoch": 47,
+            "train_loss": 0.008202456665987318,
+            "validation_loss": 0.007780225859524178,
+            "monitored": true,
+            "updates": 987,
+            "weights_sha256": "f58726a41767b4b8e53542e0cb153586b13b6ea66ba6558c6df6e0112d4d9af7"
+          },
+          {
+            "epoch": 48,
+            "train_loss": 0.00816698530406663,
+            "validation_loss": 0.007748469558668835,
+            "monitored": true,
+            "updates": 1008,
+            "weights_sha256": "0130aec936ee3df192336932b9ccb2e295ab2f13e94ed0a3d7a5fe401fd426af"
+          },
+          {
+            "epoch": 49,
+            "train_loss": 0.008132956385838263,
+            "validation_loss": 0.007717905814853475,
+            "monitored": true,
+            "updates": 1029,
+            "weights_sha256": "71e4f5f92d35f1db9d1c1d1ab5b761af35aa54352b0fe388e4a73522dfc9a86b"
+          },
+          {
+            "epoch": 50,
+            "train_loss": 0.00810027625411749,
+            "validation_loss": 0.007688466420075598,
+            "monitored": true,
+            "updates": 1050,
+            "weights_sha256": "66f12ee02a74c0a1a6b3ac674394905d3091c530ae68f2128da92a7dabed637c"
+          },
+          {
+            "epoch": 51,
+            "train_loss": 0.008068869499997659,
+            "validation_loss": 0.007660088217316699,
+            "monitored": true,
+            "updates": 1071,
+            "weights_sha256": "156c324796d682a34be7548fd040ebc36dc0b978a2c46f041a6aca411b54302a"
+          },
+          {
+            "epoch": 52,
+            "train_loss": 0.008038663548050504,
+            "validation_loss": 0.007632712642465042,
+            "monitored": true,
+            "updates": 1092,
+            "weights_sha256": "b57819d4f1398b72ca1f2d799ff0112374e5e6a9de59fb91f91ae2f8943a5c0f"
+          },
+          {
+            "epoch": 53,
+            "train_loss": 0.008009593843510656,
+            "validation_loss": 0.0076062924468264905,
+            "monitored": true,
+            "updates": 1113,
+            "weights_sha256": "529210143498cf0ef08d8b4188ce57e3a5761b66027200334a7f3115d7626d48"
+          },
+          {
+            "epoch": 54,
+            "train_loss": 0.007981600640623858,
+            "validation_loss": 0.007580779605099161,
+            "monitored": true,
+            "updates": 1134,
+            "weights_sha256": "e229d4a27cf4c3a487e939a935eb243cd6a52d2014bfe2fd9da6cc435e43ac33"
+          },
+          {
+            "epoch": 55,
+            "train_loss": 0.00795462652476448,
+            "validation_loss": 0.007556129641321272,
+            "monitored": true,
+            "updates": 1155,
+            "weights_sha256": "24cb4872e90ff07997357e1b84f26c8966ea7d52dfa74c696725e83e0314b11b"
+          },
+          {
+            "epoch": 56,
+            "train_loss": 0.007928614634456056,
+            "validation_loss": 0.007532306852771715,
+            "monitored": true,
+            "updates": 1176,
+            "weights_sha256": "dd3a32d09ed4b7b95e08d3ff59cab626f498b7845bd77449df5dc384514954b7"
+          },
+          {
+            "epoch": 57,
+            "train_loss": 0.007903515299161275,
+            "validation_loss": 0.0075092785824878985,
+            "monitored": true,
+            "updates": 1197,
+            "weights_sha256": "c7ba6b0cff2f9763716bb6eeb5200e5eb6940b9f75f6bb753b28eedcc3aeef2f"
+          }
+        ],
+        "epochs_completed": 57,
+        "monitor_evaluations": 57,
+        "selected_epoch": 53,
+        "best_epoch": 53,
+        "selected_updates": 1113,
+        "best_validation_loss": 0.0076062924468264905,
+        "observed_updates": 1197,
+        "initial_optimizer_iterations": 0,
+        "optimizer_iterations": 1197,
+        "stop_reason": "patience",
+        "stop_class": "no_improvement",
+        "restored_best_weights": true,
+        "restored_weights_sha256": "529210143498cf0ef08d8b4188ce57e3a5761b66027200334a7f3115d7626d48",
+        "last_weights_sha256": "c7ba6b0cff2f9763716bb6eeb5200e5eb6940b9f75f6bb753b28eedcc3aeef2f",
+        "restored_differs_from_last": true,
+        "early_stop": {
+          "rule": {
+            "implementation": "modular.early_stop.v2",
+            "restore": "best_monitored_checkpoint",
+            "monitor": "validation_loss",
+            "monitor_every": 1,
+            "patience": 4,
+            "min_delta": 0.0001,
+            "max_epochs": 100,
+            "max_updates": 20000,
+            "max_seconds": 600.0
+          },
+          "sha256": "5828db243c688a690f362da4cc9163f5441e05c98f7c90db8701016ba77d7e90"
+        },
+        "elapsed_seconds": 5.766375587991206
+      },
+      "reconstruction": {
+        "train": {
+          "rows": 1320,
+          "MAE": 0.07094201631674271,
+          "MSE": 0.007981236036593238,
+          "reference": "per-channel train mean (zero-information constant)",
+          "reference_MAE": 0.8107377398836071,
+          "reference_MSE": 0.9851291725770076,
+          "relative_MSE": 0.008101715245844417,
+          "standardized_MSE": 0.008101715245844418,
+          "zero_std_channels": 0,
+          "per_channel_MSE": [
+            0.007981236036593238
+          ]
+        },
+        "train_validation": {
+          "rows": 307,
+          "MAE": 0.06960036224979428,
+          "MSE": 0.007606292406178194,
+          "reference": "per-channel train mean (zero-information constant)",
+          "reference_MAE": 0.8496727116384264,
+          "reference_MSE": 1.0688901927282841,
+          "relative_MSE": 0.007116065296439428,
+          "standardized_MSE": 0.0077211117261717374,
+          "zero_std_channels": 0,
+          "per_channel_MSE": [
+            0.007606292406178194
+          ]
+        }
+      },
+      "reload_parity": {
+        "passed": true,
+        "max_abs_error": 0.0,
+        "atol": 1e-06,
+        "rows": 307,
+        "split": "train_validation"
+      },
+      "wall_seconds": 6.2184727450076025,
+      "provenance": {
+        "path": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/branch_000.provenance.json",
+        "sha256": "70a3560b2e29385a33c4360f1aeed43113d5131ca6eb0a7a0eef453a254a68fd"
+      }
+    },
+    {
+      "stage": "branch_ae",
+      "name": "branch_1",
+      "features": [
+        "f1"
+      ],
+      "donor": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/branch_001.keras",
+      "donor_sha256": "41535c31db42c60fc2d91f0d2a68a717728010af918d874941218f179c937597",
+      "donor_sidecar_sha256": "79c245f635691515c5e7115b3d4424955ec20c8eb058ff493476c49cb15f0472",
+      "donor_weights_sha256": "b54549a8182a7f283d8e7ec8da253974a5aebbee398ba585d1d5fb6be2a8b734",
+      "donor_manifest_sha256": "679cc3bd2a2d88c8b3faffc9b8738db6b62a508d5c413e37809db412adba829c",
+      "decoder": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/branch_001.decoder.keras",
+      "decoder_sha256": "c5956c0dc30870c36f89c4ce181ad89c95cf89fa085fc897fd0f40b318463638",
+      "encoder_parameters": 592,
+      "decoder_parameters": 1601,
+      "train_channel_stats": {
+        "mean": [
+          0.0024001556913381046
+        ],
+        "std": [
+          0.9884559169643525
+        ],
+        "min": [
+          -2.652287244796753
+        ],
+        "max": [
+          2.713977575302124
+        ],
+        "observations_per_channel": 31680
+      },
+      "training": {
+        "settings": {
+          "max_epochs": 100,
+          "patience": 4,
+          "batch_size": 64,
+          "learning_rate": 0.001,
+          "weight_decay": 0.0001,
+          "loss": "mse",
+          "huber_delta": 1.0,
+          "min_delta": 0.0001,
+          "seed": 42,
+          "max_updates": 20000,
+          "max_seconds": 600.0,
+          "monitor": "validation_loss",
+          "monitor_every": 1
+        },
+        "history": [
+          {
+            "epoch": 1,
+            "train_loss": 0.5228106168183413,
+            "validation_loss": 0.16537223761167122,
+            "monitored": true,
+            "updates": 21,
+            "weights_sha256": "4f68a940548c84d9efa1beb2be2a989e6fd811ec3d953d1e9f25cac1c646d80b"
+          },
+          {
+            "epoch": 2,
+            "train_loss": 0.13155256139509605,
+            "validation_loss": 0.08416254680106228,
+            "monitored": true,
+            "updates": 42,
+            "weights_sha256": "04ae1030ec6c92e065834f1e419650ec088e8e9ee49ed60828f742fb15eb48be"
+          },
+          {
+            "epoch": 3,
+            "train_loss": 0.06936999320080786,
+            "validation_loss": 0.05190828289678897,
+            "monitored": true,
+            "updates": 63,
+            "weights_sha256": "fc384cf6ebb8f6b4ecd7b92d751cc0a77f9471348c41c4b1dde99b2d9ad7fed8"
+          },
+          {
+            "epoch": 4,
+            "train_loss": 0.047911072861064566,
+            "validation_loss": 0.04282569418075807,
+            "monitored": true,
+            "updates": 84,
+            "weights_sha256": "1e3a913644c7b5538cd8c7db90030793faa374c20a976530fd16152c1e06ae6a"
+          },
+          {
+            "epoch": 5,
+            "train_loss": 0.040598819427417984,
+            "validation_loss": 0.038336280029546164,
+            "monitored": true,
+            "updates": 105,
+            "weights_sha256": "dcfc5f7df40ac6b83c0405fe92f4e4cace9f8c171d6cea6e179430d2f81b9092"
+          },
+          {
+            "epoch": 6,
+            "train_loss": 0.03633143768617601,
+            "validation_loss": 0.034646942768646376,
+            "monitored": true,
+            "updates": 126,
+            "weights_sha256": "ada34babecf879b3b2f534a98c520c7c9d89ac673b7ec66171c052d8939493b4"
+          },
+          {
+            "epoch": 7,
+            "train_loss": 0.03300382113366416,
+            "validation_loss": 0.03174224102730083,
+            "monitored": true,
+            "updates": 147,
+            "weights_sha256": "5aa2efbf6f4d2a97a7b2e67f1444d3bf678691d3495b5a1226e1560688c8e674"
+          },
+          {
+            "epoch": 8,
+            "train_loss": 0.030253766770615722,
+            "validation_loss": 0.02929461650938669,
+            "monitored": true,
+            "updates": 168,
+            "weights_sha256": "648f535724eff95ea6e7906a97d326ede4d84dca0d723983dacd46c3c044a0b5"
+          },
+          {
+            "epoch": 9,
+            "train_loss": 0.02781087625207323,
+            "validation_loss": 0.02704408763625723,
+            "monitored": true,
+            "updates": 189,
+            "weights_sha256": "d39fb1bc6bd0af6a28b1d55a1a383637b9e2f411fb2ec782379b5cf93411514a"
+          },
+          {
+            "epoch": 10,
+            "train_loss": 0.02552219997301246,
+            "validation_loss": 0.02489023443906043,
+            "monitored": true,
+            "updates": 210,
+            "weights_sha256": "bd0211c06b8d922a62f8fb5dcfc5d00abc37441ff7c497b8420b2a155d9e779c"
+          },
+          {
+            "epoch": 11,
+            "train_loss": 0.023322972384366123,
+            "validation_loss": 0.022810963813688738,
+            "monitored": true,
+            "updates": 231,
+            "weights_sha256": "5268ef071ecaf2ed3d5440952cfb96b2fe55f3740998bcd4407f143d3ed00eda"
+          },
+          {
+            "epoch": 12,
+            "train_loss": 0.021210166405547747,
+            "validation_loss": 0.020822682020524425,
+            "monitored": true,
+            "updates": 252,
+            "weights_sha256": "88094d9c96e5b51d19f25e18bf3dd85105149071290d3a219c378d32403f9df3"
+          },
+          {
+            "epoch": 13,
+            "train_loss": 0.01922432448376309,
+            "validation_loss": 0.018973804245845504,
+            "monitored": true,
+            "updates": 273,
+            "weights_sha256": "e80e6488f8ecfd70c064586b23f95c174c062fe575db393d3c41d74b3c7f0464"
+          },
+          {
+            "epoch": 14,
+            "train_loss": 0.01743110225281932,
+            "validation_loss": 0.01732706111409862,
+            "monitored": true,
+            "updates": 294,
+            "weights_sha256": "e5e3a5ce4e41466c7191227f6279332d8c0c4185a9bda7ce68423969ffa90183"
+          },
+          {
+            "epoch": 15,
+            "train_loss": 0.01589491342504819,
+            "validation_loss": 0.01593257733453854,
+            "monitored": true,
+            "updates": 315,
+            "weights_sha256": "dbd0c68962b9334f0103df3185670df1501c22c66c85841d907c8488534ced11"
+          },
+          {
+            "epoch": 16,
+            "train_loss": 0.014650236262064992,
+            "validation_loss": 0.014805492890410199,
+            "monitored": true,
+            "updates": 336,
+            "weights_sha256": "2de79b393394ce2d4bba8233f08892a82c5091295e5514526ea0bbaba094437a"
+          },
+          {
+            "epoch": 17,
+            "train_loss": 0.013685507835312322,
+            "validation_loss": 0.013920219728862714,
+            "monitored": true,
+            "updates": 357,
+            "weights_sha256": "bb0e54900ef71d118cad0476a3f2c48f48a1651b000efe6d490af39a95bfb615"
+          },
+          {
+            "epoch": 18,
+            "train_loss": 0.012950508319067232,
+            "validation_loss": 0.013225342793214205,
+            "monitored": true,
+            "updates": 378,
+            "weights_sha256": "c63cc6e39d67d879943fdc5ce86fec48d6c80743f1a140e45dc1ad40dbea0b3e"
+          },
+          {
+            "epoch": 19,
+            "train_loss": 0.01238115295542009,
+            "validation_loss": 0.012666792432847357,
+            "monitored": true,
+            "updates": 399,
+            "weights_sha256": "0a4de3325cd0d0ca245e4d2d45f59697bbbfa3506f84505288f543f2075019d8"
+          },
+          {
+            "epoch": 20,
+            "train_loss": 0.011922613102378268,
+            "validation_loss": 0.012202761490929399,
+            "monitored": true,
+            "updates": 420,
+            "weights_sha256": "49bf39de5669c9147fc3dbbf4d32dc339971b4b8c127f16d536b7a01a532654e"
+          },
+          {
+            "epoch": 21,
+            "train_loss": 0.011538044668056748,
+            "validation_loss": 0.01180595874100778,
+            "monitored": true,
+            "updates": 441,
+            "weights_sha256": "5747b1e6c91eca291e5f8b309d265e5ce49f73a0a777a311411dc2ecef909bda"
+          },
+          {
+            "epoch": 22,
+            "train_loss": 0.011205603148449551,
+            "validation_loss": 0.011459390940721046,
+            "monitored": true,
+            "updates": 462,
+            "weights_sha256": "dfc7afd55879142bdcfb67d7e791e358f32df33b3f64b94b73f751d007c54615"
+          },
+          {
+            "epoch": 23,
+            "train_loss": 0.010912413274248441,
+            "validation_loss": 0.011152025832451807,
+            "monitored": true,
+            "updates": 483,
+            "weights_sha256": "e16d90103382abde7ab2d17529e54a1de5a0809790cc37223ff21b9f42d1b7e6"
+          },
+          {
+            "epoch": 24,
+            "train_loss": 0.010650249288389178,
+            "validation_loss": 0.010876180261300713,
+            "monitored": true,
+            "updates": 504,
+            "weights_sha256": "811008be8d05184969077951b525831bdd8ca7080b110c859c474745cf22ab77"
+          },
+          {
+            "epoch": 25,
+            "train_loss": 0.01041335639628497,
+            "validation_loss": 0.010626263999917123,
+            "monitored": true,
+            "updates": 525,
+            "weights_sha256": "124ef9fd2516501ba1350a2211709ed34fe4eff53444e3ee3f3cae73c2eacb04"
+          },
+          {
+            "epoch": 26,
+            "train_loss": 0.01019747926656044,
+            "validation_loss": 0.010398130208642165,
+            "monitored": true,
+            "updates": 546,
+            "weights_sha256": "9483ca2d27d56821ba62a1f110d43ad296745f7c8c64e3d6974d9e6b0a66c398"
+          },
+          {
+            "epoch": 27,
+            "train_loss": 0.009999419872959455,
+            "validation_loss": 0.01018873686031575,
+            "monitored": true,
+            "updates": 567,
+            "weights_sha256": "baf3c68f92a789ac68b95b9324fd677ca4a76bba6ad438f0f8b2f75576b02485"
+          },
+          {
+            "epoch": 28,
+            "train_loss": 0.009816798296841707,
+            "validation_loss": 0.009995888968693026,
+            "monitored": true,
+            "updates": 588,
+            "weights_sha256": "7c72088a310c78b74632c068f5b8ca82e42766114df3939f36265d390674455d"
+          },
+          {
+            "epoch": 29,
+            "train_loss": 0.00964787175709551,
+            "validation_loss": 0.009818051301598161,
+            "monitored": true,
+            "updates": 609,
+            "weights_sha256": "fdca57b609287802e5131b79fed8aed2bbb5d4230b593f3849a3aa28dafec4fc"
+          },
+          {
+            "epoch": 30,
+            "train_loss": 0.009491397067904472,
+            "validation_loss": 0.009654145769726376,
+            "monitored": true,
+            "updates": 630,
+            "weights_sha256": "cf0d5d28d87766091655eedcaf472d7021e157cdc893db8b66d35757acfa772a"
+          },
+          {
+            "epoch": 31,
+            "train_loss": 0.009346493514198246,
+            "validation_loss": 0.009503401923584918,
+            "monitored": true,
+            "updates": 651,
+            "weights_sha256": "942ad88ddae78c5bbad7862fd44e78e55e8452813907cbf48ee03ea92ead63c9"
+          },
+          {
+            "epoch": 32,
+            "train_loss": 0.009212527683738507,
+            "validation_loss": 0.009365206300690527,
+            "monitored": true,
+            "updates": 672,
+            "weights_sha256": "2318a026a1ec6e1f0ddcac95ca9fbf415f15533d773e95dbc61257b65e3b8cc7"
+          },
+          {
+            "epoch": 33,
+            "train_loss": 0.009089011698961258,
+            "validation_loss": 0.009239002173396392,
+            "monitored": true,
+            "updates": 693,
+            "weights_sha256": "ff0a4202d6cff63598d348a5c8f2829fc133fa4c8054b01692071164c7cbca7b"
+          },
+          {
+            "epoch": 34,
+            "train_loss": 0.008975524026336092,
+            "validation_loss": 0.00912423420952275,
+            "monitored": true,
+            "updates": 714,
+            "weights_sha256": "ae6dc9542cbc7ac5ffa21b104cc9d266ae68492f0f042948db951676ae9508ea"
+          },
+          {
+            "epoch": 35,
+            "train_loss": 0.008871642816247362,
+            "validation_loss": 0.009020286330085624,
+            "monitored": true,
+            "updates": 735,
+            "weights_sha256": "79898c226992ef050d806e36a6e372ccc1e299aa036ee19bf4935c9daa30ee52"
+          },
+          {
+            "epoch": 36,
+            "train_loss": 0.008776909970875942,
+            "validation_loss": 0.008926480291077583,
+            "monitored": true,
+            "updates": 756,
+            "weights_sha256": "497a40b32997ce1e299f41347bd9eebb727a0bb9fd4be3fc8ade7fd9124be83d"
+          },
+          {
+            "epoch": 37,
+            "train_loss": 0.008690809074676398,
+            "validation_loss": 0.008842057721379915,
+            "monitored": true,
+            "updates": 777,
+            "weights_sha256": "4b08b4a50691f8bcdc57926763c0b66fd14c438878ef9c1daa87fdcb93d4ff39"
+          },
+          {
+            "epoch": 38,
+            "train_loss": 0.008612756837498058,
+            "validation_loss": 0.008766201333861787,
+            "monitored": true,
+            "updates": 798,
+            "weights_sha256": "ac113b7aa035a9782c933fff5f51e1e82f20e5bd1ef25444f9f4d7eeaeba2c97"
+          },
+          {
+            "epoch": 39,
+            "train_loss": 0.00854211293838241,
+            "validation_loss": 0.00869805446191894,
+            "monitored": true,
+            "updates": 819,
+            "weights_sha256": "d0dac2f423dfc4a696c75c3aab46f4758570118f900c8cdf2a3fa9cecbc38e9c"
+          },
+          {
+            "epoch": 40,
+            "train_loss": 0.00847819507347815,
+            "validation_loss": 0.00863674320037862,
+            "monitored": true,
+            "updates": 840,
+            "weights_sha256": "98f708cd84203edbd18d13ab8ca0bbe6d06e2dcc4ba7779eb01c07d1e5c817fa"
+          },
+          {
+            "epoch": 41,
+            "train_loss": 0.008420299083897562,
+            "validation_loss": 0.00858140460303484,
+            "monitored": true,
+            "updates": 861,
+            "weights_sha256": "57d6d8e8ea3d73a348fd79c85c11c98a26912b41e586f88babbeaa0d3982d87f"
+          },
+          {
+            "epoch": 42,
+            "train_loss": 0.008367726624463544,
+            "validation_loss": 0.008531224879008453,
+            "monitored": true,
+            "updates": 882,
+            "weights_sha256": "194a7b2dbbabd7bf7fa907f20b36b1c81f9afa619ce75af9aedc255d82cbae48"
+          },
+          {
+            "epoch": 43,
+            "train_loss": 0.008319801792050854,
+            "validation_loss": 0.008485435470271285,
+            "monitored": true,
+            "updates": 903,
+            "weights_sha256": "1b9b7194ef0ffc0f6e0ba5a9ced6501f390d604bc52fb8f29f78727946f24379"
+          },
+          {
+            "epoch": 44,
+            "train_loss": 0.00827589136633006,
+            "validation_loss": 0.008443348657291273,
+            "monitored": true,
+            "updates": 924,
+            "weights_sha256": "a2803b8776ac395554353ffce57107cf2c1065a3ed55d4c3d077119d05ebe818"
+          },
+          {
+            "epoch": 45,
+            "train_loss": 0.008235419022314476,
+            "validation_loss": 0.0084043648366965,
+            "monitored": true,
+            "updates": 945,
+            "weights_sha256": "372199d848ceea9963f18c4d0e3dcbd7dae6b6e4d6f7dcf7cd30738a72b35494"
+          },
+          {
+            "epoch": 46,
+            "train_loss": 0.008197868671832663,
+            "validation_loss": 0.008367966525317306,
+            "monitored": true,
+            "updates": 966,
+            "weights_sha256": "2b9900ba77862a64bc0b7ae71af049371a9b8540dff7ec5ca443ba394acf25cd"
+          },
+          {
+            "epoch": 47,
+            "train_loss": 0.008162793912219279,
+            "validation_loss": 0.00833372889596253,
+            "monitored": true,
+            "updates": 987,
+            "weights_sha256": "9bfc5a8b3d05ef1478fb617b7c8159f755bfff4b2ee34ab4eaadc503ec5d4571"
+          },
+          {
+            "epoch": 48,
+            "train_loss": 0.008129806737556602,
+            "validation_loss": 0.008301312545259827,
+            "monitored": true,
+            "updates": 1008,
+            "weights_sha256": "b3f62fcf9712965ce91b61dd98614eaee225ab138c06af194547f5af5c1c25f7"
+          },
+          {
+            "epoch": 49,
+            "train_loss": 0.008098579491629745,
+            "validation_loss": 0.008270457829879627,
+            "monitored": true,
+            "updates": 1029,
+            "weights_sha256": "4327004a3bf68ac708607bfe1601bfeb0a38876241e2c29c693f8c6bfe40ec56"
+          },
+          {
+            "epoch": 50,
+            "train_loss": 0.008068833646900727,
+            "validation_loss": 0.00824098176010414,
+            "monitored": true,
+            "updates": 1050,
+            "weights_sha256": "668646b43795e0bd553ebe553ec7b3ff8c07a8dfd035ada7c7a593f225de5488"
+          },
+          {
+            "epoch": 51,
+            "train_loss": 0.00804033072834665,
+            "validation_loss": 0.008212761856397122,
+            "monitored": true,
+            "updates": 1071,
+            "weights_sha256": "a200c3ccb0ffddca185f2edf61f4f4177a80438832dcc9f545a8025758f00d7b"
+          },
+          {
+            "epoch": 52,
+            "train_loss": 0.008012865946599931,
+            "validation_loss": 0.008185733813513374,
+            "monitored": true,
+            "updates": 1092,
+            "weights_sha256": "6ff06495a2f7158650b76db5f945f4fd42aaa4bbcf56d23b9bf9b92a4c22dc76"
+          },
+          {
+            "epoch": 53,
+            "train_loss": 0.007986264213016538,
+            "validation_loss": 0.0081598558812023,
+            "monitored": true,
+            "updates": 1113,
+            "weights_sha256": "f19440fef233998972c75d3121246311a81e76cfa8945faed858c02b221c8814"
+          },
+          {
+            "epoch": 54,
+            "train_loss": 0.007960372689095411,
+            "validation_loss": 0.008135098331465298,
+            "monitored": true,
+            "updates": 1134,
+            "weights_sha256": "35e0c40f5bade4b777c4dad9a09dbc6f4c4b61734fc6b598143f80670eb24dc1"
+          },
+          {
+            "epoch": 55,
+            "train_loss": 0.00793507182688424,
+            "validation_loss": 0.00811138687540052,
+            "monitored": true,
+            "updates": 1155,
+            "weights_sha256": "87d09b2d86217d220a03ed9a97cf3a571d6d4501046a612cf0bbaa7b5c8df0f7"
+          },
+          {
+            "epoch": 56,
+            "train_loss": 0.007910272817720066,
+            "validation_loss": 0.008088574317020003,
+            "monitored": true,
+            "updates": 1176,
+            "weights_sha256": "a74d110bd4dd3840d10ffcf233de6be3e53406c53d7148cc227a012c550f2cb7"
+          },
+          {
+            "epoch": 57,
+            "train_loss": 0.007885924173575459,
+            "validation_loss": 0.008066410946596037,
+            "monitored": true,
+            "updates": 1197,
+            "weights_sha256": "685002b344c59a0b9886d0d92afdb1c545f37653ffbf5d5fb1956725e6132b53"
+          },
+          {
+            "epoch": 58,
+            "train_loss": 0.007862011219064395,
+            "validation_loss": 0.008044568101302128,
+            "monitored": true,
+            "updates": 1218,
+            "weights_sha256": "b650234e4b2df7736562ca8dcc9412acc685ab219fe716a7073c785ea26f5dbf"
+          },
+          {
+            "epoch": 59,
+            "train_loss": 0.007838531719012694,
+            "validation_loss": 0.00802270532661521,
+            "monitored": true,
+            "updates": 1239,
+            "weights_sha256": "6b008f07245eaa08a46bf4e2048a186649122530f05720198762ba8b47598405"
+          }
+        ],
+        "epochs_completed": 59,
+        "monitor_evaluations": 59,
+        "selected_epoch": 55,
+        "best_epoch": 55,
+        "selected_updates": 1155,
+        "best_validation_loss": 0.00811138687540052,
+        "observed_updates": 1239,
+        "initial_optimizer_iterations": 0,
+        "optimizer_iterations": 1239,
+        "stop_reason": "patience",
+        "stop_class": "no_improvement",
+        "restored_best_weights": true,
+        "restored_weights_sha256": "87d09b2d86217d220a03ed9a97cf3a571d6d4501046a612cf0bbaa7b5c8df0f7",
+        "last_weights_sha256": "6b008f07245eaa08a46bf4e2048a186649122530f05720198762ba8b47598405",
+        "restored_differs_from_last": true,
+        "early_stop": {
+          "rule": {
+            "implementation": "modular.early_stop.v2",
+            "restore": "best_monitored_checkpoint",
+            "monitor": "validation_loss",
+            "monitor_every": 1,
+            "patience": 4,
+            "min_delta": 0.0001,
+            "max_epochs": 100,
+            "max_updates": 20000,
+            "max_seconds": 600.0
+          },
+          "sha256": "5828db243c688a690f362da4cc9163f5441e05c98f7c90db8701016ba77d7e90"
+        },
+        "elapsed_seconds": 5.922178272012388
+      },
+      "reconstruction": {
+        "train": {
+          "rows": 1320,
+          "MAE": 0.07068977265960417,
+          "MSE": 0.007923679493102614,
+          "reference": "per-channel train mean (zero-information constant)",
+          "reference_MAE": 0.8157831682566568,
+          "reference_MSE": 0.977045099781839,
+          "relative_MSE": 0.008109840062523075,
+          "standardized_MSE": 0.008109840062523075,
+          "zero_std_channels": 0,
+          "per_channel_MSE": [
+            0.007923679493102614
+          ]
+        },
+        "train_validation": {
+          "rows": 307,
+          "MAE": 0.07167423031046753,
+          "MSE": 0.008111387377133876,
+          "reference": "per-channel train mean (zero-information constant)",
+          "reference_MAE": 0.8707223487875838,
+          "reference_MSE": 1.0823289395167572,
+          "relative_MSE": 0.007494382789723318,
+          "standardized_MSE": 0.008301957994513292,
+          "zero_std_channels": 0,
+          "per_channel_MSE": [
+            0.008111387377133876
+          ]
+        }
+      },
+      "reload_parity": {
+        "passed": true,
+        "max_abs_error": 0.0,
+        "atol": 1e-06,
+        "rows": 307,
+        "split": "train_validation"
+      },
+      "wall_seconds": 6.291143246984575,
+      "provenance": {
+        "path": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/branch_001.provenance.json",
+        "sha256": "7f76810e16058cda556a9b41f2568537660a377326807babe81d224bdaaff151"
+      }
+    },
+    {
+      "stage": "branch_ae",
+      "name": "branch_2",
+      "features": [
+        "f2"
+      ],
+      "donor": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/branch_002.keras",
+      "donor_sha256": "7db348c53c9a05c8b13a6e8b7d58a0dd942db69332b27c3a6e27e91babbf08da",
+      "donor_sidecar_sha256": "6eedd4041eb7f5b5298acbcd2b05a5ea6ae2a51bd6399101f96793f83607e0c1",
+      "donor_weights_sha256": "ffb9fa359e28e6171693e7995622200864a8cee41a31287a3b066972740606e9",
+      "donor_manifest_sha256": "97ae5a4b71702cf40bb42268056479bf12b53b974e68baa9efc77fbb7299629a",
+      "decoder": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/branch_002.decoder.keras",
+      "decoder_sha256": "c44b6b001538330be9f71b36cc5e6719290dd24200ea4a677e72b1847b884482",
+      "encoder_parameters": 592,
+      "decoder_parameters": 1601,
+      "train_channel_stats": {
+        "mean": [
+          0.001376932728953302
+        ],
+        "std": [
+          0.9471363565169545
+        ],
+        "min": [
+          -2.499542474746704
+        ],
+        "max": [
+          2.6093153953552246
+        ],
+        "observations_per_channel": 31680
+      },
+      "training": {
+        "settings": {
+          "max_epochs": 100,
+          "patience": 4,
+          "batch_size": 64,
+          "learning_rate": 0.001,
+          "weight_decay": 0.0001,
+          "loss": "mse",
+          "huber_delta": 1.0,
+          "min_delta": 0.0001,
+          "seed": 42,
+          "max_updates": 20000,
+          "max_seconds": 600.0,
+          "monitor": "validation_loss",
+          "monitor_every": 1
+        },
+        "history": [
+          {
+            "epoch": 1,
+            "train_loss": 0.49231698260162815,
+            "validation_loss": 0.4658645823452294,
+            "monitored": true,
+            "updates": 21,
+            "weights_sha256": "47aa65e745224a462f08740b84c4f3eac91eb5e9f283565fb6a5cbb6443ba2cd"
+          },
+          {
+            "epoch": 2,
+            "train_loss": 0.15286205686403043,
+            "validation_loss": 0.10956912208651876,
+            "monitored": true,
+            "updates": 42,
+            "weights_sha256": "d7c235d07e03fad11468b591956a6cc9cd169ae169a3facd8c527ec401bd07dd"
+          },
+          {
+            "epoch": 3,
+            "train_loss": 0.06379299287994702,
+            "validation_loss": 0.06738847770791877,
+            "monitored": true,
+            "updates": 63,
+            "weights_sha256": "7a9552dd53515f477b81e5e22c9356df9d2e17e38b052f1c49279eabf671852e"
+          },
+          {
+            "epoch": 4,
+            "train_loss": 0.03702635911829544,
+            "validation_loss": 0.04283543138579748,
+            "monitored": true,
+            "updates": 84,
+            "weights_sha256": "b23c2c9a7af3dead8d5cb5ed45b546b703d7aece417b55a96f01a1122b662cf8"
+          },
+          {
+            "epoch": 5,
+            "train_loss": 0.028410433650468334,
+            "validation_loss": 0.03460707494242766,
+            "monitored": true,
+            "updates": 105,
+            "weights_sha256": "93949aad84d657e284ad9303cf7961b02e1e407f7d5245b009ea673ea7ddf76f"
+          },
+          {
+            "epoch": 6,
+            "train_loss": 0.025298019656629273,
+            "validation_loss": 0.03058019924168672,
+            "monitored": true,
+            "updates": 126,
+            "weights_sha256": "7060df8e201ee6e898997d0fd5dc8b2a45fdad3c88d9fbea339bdedf82199977"
+          },
+          {
+            "epoch": 7,
+            "train_loss": 0.022809888366045375,
+            "validation_loss": 0.0273545344059844,
+            "monitored": true,
+            "updates": 147,
+            "weights_sha256": "17bb4d6cc8d7f53b9cc93dce07f44c56a526eff89e0de5566e4f5dd221ebb82b"
+          },
+          {
+            "epoch": 8,
+            "train_loss": 0.020548014229897296,
+            "validation_loss": 0.02442945498087313,
+            "monitored": true,
+            "updates": 168,
+            "weights_sha256": "afb0d509f457e6fec6978c46c6c9a757d0de6bfee1807175928fc66b97de71b8"
+          },
+          {
+            "epoch": 9,
+            "train_loss": 0.01854470892611778,
+            "validation_loss": 0.02186842862795735,
+            "monitored": true,
+            "updates": 189,
+            "weights_sha256": "50d0500ee587adb4c5a2144714675e5cbbf369684505f8a1bfb7c3f74007a0e3"
+          },
+          {
+            "epoch": 10,
+            "train_loss": 0.016827113802234332,
+            "validation_loss": 0.01972347824964733,
+            "monitored": true,
+            "updates": 210,
+            "weights_sha256": "07b0fdb1739f1ee29adad9f6e8dffef0fe2b02a0b753b577c062cd23737c921e"
+          },
+          {
+            "epoch": 11,
+            "train_loss": 0.01541202487141797,
+            "validation_loss": 0.018019179925807913,
+            "monitored": true,
+            "updates": 231,
+            "weights_sha256": "7a46b8b6003261b301aa231b30f9178b6a69513f63c7680ac61be00ba16966ea"
+          },
+          {
+            "epoch": 12,
+            "train_loss": 0.014294876711386623,
+            "validation_loss": 0.016721388628457578,
+            "monitored": true,
+            "updates": 252,
+            "weights_sha256": "b91c4c685c31456709b2ff3121a042c34055d39cba0699574d5953471c287d0b"
+          },
+          {
+            "epoch": 13,
+            "train_loss": 0.01344258158721707,
+            "validation_loss": 0.01575958237646554,
+            "monitored": true,
+            "updates": 273,
+            "weights_sha256": "3e6895eda1489ed22c9b462886781276c34d6c948f1b485b4690abbf2d5fd587"
+          },
+          {
+            "epoch": 14,
+            "train_loss": 0.012802317128940062,
+            "validation_loss": 0.015049907542668065,
+            "monitored": true,
+            "updates": 294,
+            "weights_sha256": "627f0b61cb48c118a16b6055d012c1e43f00236adbc1a926f8d86f5213696d88"
+          },
+          {
+            "epoch": 15,
+            "train_loss": 0.01231828425644022,
+            "validation_loss": 0.014514341213245928,
+            "monitored": true,
+            "updates": 315,
+            "weights_sha256": "1e6824dd45ffab20f044cd88e104212178b259d7b8063ac09858dbfc312a0161"
+          },
+          {
+            "epoch": 16,
+            "train_loss": 0.0119438407321771,
+            "validation_loss": 0.01409318874186627,
+            "monitored": true,
+            "updates": 336,
+            "weights_sha256": "af444a903f488e773d641779314d2daeee8d90e0f2ef9b9aeddbbb2db65b687b"
+          },
+          {
+            "epoch": 17,
+            "train_loss": 0.011645272899080407,
+            "validation_loss": 0.01374766887666154,
+            "monitored": true,
+            "updates": 357,
+            "weights_sha256": "8123f40b4a04c6b9fe5d51e89c4a636e097e7549091b6138d4b73a2583b5aac5"
+          },
+          {
+            "epoch": 18,
+            "train_loss": 0.011399864252995362,
+            "validation_loss": 0.013455146811417143,
+            "monitored": true,
+            "updates": 378,
+            "weights_sha256": "671c4526db71e28ecefa58ad948932acd1af7246bc5e5cd19143e31aa4e16711"
+          },
+          {
+            "epoch": 19,
+            "train_loss": 0.011192373383903142,
+            "validation_loss": 0.013202053276330524,
+            "monitored": true,
+            "updates": 399,
+            "weights_sha256": "09106feb847f7ec45e76a34a36fbe60c2e35cd7bebdc91ecd13df0eaba06f114"
+          },
+          {
+            "epoch": 20,
+            "train_loss": 0.011012140695344319,
+            "validation_loss": 0.012978733295775003,
+            "monitored": true,
+            "updates": 420,
+            "weights_sha256": "d7b960d2eba2ac2fdf4a87bba8d381e0623c851f7d8a0a14357de0bacb02c52c"
+          },
+          {
+            "epoch": 21,
+            "train_loss": 0.010851345239489368,
+            "validation_loss": 0.012777215306698694,
+            "monitored": true,
+            "updates": 441,
+            "weights_sha256": "d64c2c07bb190886400876d85f180caf3656afb8dd73d7af6f0ec68c14a4777c"
+          },
+          {
+            "epoch": 22,
+            "train_loss": 0.010704066632597736,
+            "validation_loss": 0.012590891651275297,
+            "monitored": true,
+            "updates": 462,
+            "weights_sha256": "454edb4a2a641cde7c3d1d5355d43e8cb0f6f61226cc64c8d1109bd689b587ef"
+          },
+          {
+            "epoch": 23,
+            "train_loss": 0.010565785764519012,
+            "validation_loss": 0.012414673173417875,
+            "monitored": true,
+            "updates": 483,
+            "weights_sha256": "28dcd249494374dc3d6ec9d4f1dbcea1ba391906c7172c0abaccc974c5172f01"
+          },
+          {
+            "epoch": 24,
+            "train_loss": 0.010433055415298,
+            "validation_loss": 0.01224481863506648,
+            "monitored": true,
+            "updates": 504,
+            "weights_sha256": "ed359802065cb3fd30dc4c22dabd974ddbb9aeed6187d82afd4de1a3997c3ea2"
+          },
+          {
+            "epoch": 25,
+            "train_loss": 0.010303256553456638,
+            "validation_loss": 0.012078538910161207,
+            "monitored": true,
+            "updates": 525,
+            "weights_sha256": "150130317c9005968d73fb82d64a8368dab97a064292f4019ffc0a1f5585ccd0"
+          },
+          {
+            "epoch": 26,
+            "train_loss": 0.010174391548516173,
+            "validation_loss": 0.011913720852049243,
+            "monitored": true,
+            "updates": 546,
+            "weights_sha256": "81ba121f7fa2ed0b8c0d8976af422ba2342d55f470703326765cb7254b4a18e6"
+          },
+          {
+            "epoch": 27,
+            "train_loss": 0.010044933200785608,
+            "validation_loss": 0.011748778682311311,
+            "monitored": true,
+            "updates": 567,
+            "weights_sha256": "750cbf7f0dcd609d5a57e380617ce14b4b0ccc7d34e85832901f60fa5e09da07"
+          },
+          {
+            "epoch": 28,
+            "train_loss": 0.009913715675021664,
+            "validation_loss": 0.011582460315103252,
+            "monitored": true,
+            "updates": 588,
+            "weights_sha256": "3de6363a569682915b86b6a3ff536c71d0aec163f43720fc7661dfdaf4b29a1c"
+          },
+          {
+            "epoch": 29,
+            "train_loss": 0.009779840854532791,
+            "validation_loss": 0.011413832413524097,
+            "monitored": true,
+            "updates": 609,
+            "weights_sha256": "822f1b3711bd8360d835e14bd93532392698b24f2ea228b2311f8eff47726821"
+          },
+          {
+            "epoch": 30,
+            "train_loss": 0.009642631295278217,
+            "validation_loss": 0.011242194316601714,
+            "monitored": true,
+            "updates": 630,
+            "weights_sha256": "348ce5c8e6f7834d556c04840dbd32caca9e68ce9bd8d6f773a15c8b10d59964"
+          },
+          {
+            "epoch": 31,
+            "train_loss": 0.009501588288130183,
+            "validation_loss": 0.011067049013578153,
+            "monitored": true,
+            "updates": 651,
+            "weights_sha256": "5282fe4de35547362943fa2474765fd0bd3a020d59bff0e9a2b8137789c56375"
+          },
+          {
+            "epoch": 32,
+            "train_loss": 0.009356372402698704,
+            "validation_loss": 0.01088811714408452,
+            "monitored": true,
+            "updates": 672,
+            "weights_sha256": "30440727144a621e6ae9c82b1679ef3911347e295cafa78b8b8ad8cb51799aba"
+          },
+          {
+            "epoch": 33,
+            "train_loss": 0.009206810345252356,
+            "validation_loss": 0.010705325980018521,
+            "monitored": true,
+            "updates": 693,
+            "weights_sha256": "5989e7f59d98f164b5b91dc33cb3cb5309a9ac2d9754845e4775984fa1184eb5"
+          },
+          {
+            "epoch": 34,
+            "train_loss": 0.009052898802540519,
+            "validation_loss": 0.010518816806351711,
+            "monitored": true,
+            "updates": 714,
+            "weights_sha256": "638c639bc8117661b28438f53862473d2d84c097264edcaccf732afdcfdab31a"
+          },
+          {
+            "epoch": 35,
+            "train_loss": 0.0088948314670812,
+            "validation_loss": 0.010329000709475252,
+            "monitored": true,
+            "updates": 735,
+            "weights_sha256": "01b86aada44f61fc49d2fc71b74cb447e51a565fec1d40347d4623af7f760da3"
+          },
+          {
+            "epoch": 36,
+            "train_loss": 0.008733026367245298,
+            "validation_loss": 0.010136531847938652,
+            "monitored": true,
+            "updates": 756,
+            "weights_sha256": "083448b8d1aaad0b89adc13b8aad4b6a60764a691370cb45bec9b3f0100d162f"
+          },
+          {
+            "epoch": 37,
+            "train_loss": 0.008568162928250703,
+            "validation_loss": 0.009942388428975782,
+            "monitored": true,
+            "updates": 777,
+            "weights_sha256": "2d4919068de2c0ebfadde278baeee8a6e89087f889db2a00c52f973c351e5dc5"
+          },
+          {
+            "epoch": 38,
+            "train_loss": 0.008401212034126122,
+            "validation_loss": 0.009747840963146294,
+            "monitored": true,
+            "updates": 798,
+            "weights_sha256": "684d64561176d17a8e19a049905af0b2ddbdffd09ee54afab93b8a4eb38befe4"
+          },
+          {
+            "epoch": 39,
+            "train_loss": 0.008233459367219247,
+            "validation_loss": 0.009554500957034796,
+            "monitored": true,
+            "updates": 819,
+            "weights_sha256": "fb646b1d706c5787f923c12f4cbe987fdd8b74705a3d5f051d3e34eb165d923c"
+          },
+          {
+            "epoch": 40,
+            "train_loss": 0.008066513620768533,
+            "validation_loss": 0.009364303216605117,
+            "monitored": true,
+            "updates": 840,
+            "weights_sha256": "a1d82b3854ac7adc43d113a4b1df489395942e58d90d53c05bf0a6e12c0e7a67"
+          },
+          {
+            "epoch": 41,
+            "train_loss": 0.007902277402128234,
+            "validation_loss": 0.009179430903035675,
+            "monitored": true,
+            "updates": 861,
+            "weights_sha256": "b1914f965b3d4ffa6d244ffcf5d8b388035dd6ccf98f21a4a761ef26fcdde1e6"
+          },
+          {
+            "epoch": 42,
+            "train_loss": 0.007742884735379255,
+            "validation_loss": 0.009002247700886345,
+            "monitored": true,
+            "updates": 882,
+            "weights_sha256": "375f92207eb86fba68f1297f7ecdcefe255c9ebec95945ecec7f7e74473933a0"
+          },
+          {
+            "epoch": 43,
+            "train_loss": 0.0075905848209830845,
+            "validation_loss": 0.008835132059365123,
+            "monitored": true,
+            "updates": 903,
+            "weights_sha256": "e565c36ac32b6afbed47af224a1d1add8776293a5d3dfd9fcf4d855aefeca771"
+          },
+          {
+            "epoch": 44,
+            "train_loss": 0.0074475850966392145,
+            "validation_loss": 0.008680287234375939,
+            "monitored": true,
+            "updates": 924,
+            "weights_sha256": "eac0b8c95cf9d5af93554177fbc5fe2c766646a49c3a26543bb7e7ae996c99d6"
+          },
+          {
+            "epoch": 45,
+            "train_loss": 0.0073158555692344005,
+            "validation_loss": 0.0085395109560644,
+            "monitored": true,
+            "updates": 945,
+            "weights_sha256": "b7624f3ea692006802e51a351b19a3eec035ec87bed15bb0f4e2441f3ac37f3b"
+          },
+          {
+            "epoch": 46,
+            "train_loss": 0.007196932675486261,
+            "validation_loss": 0.008414006468927919,
+            "monitored": true,
+            "updates": 966,
+            "weights_sha256": "5e1568c63f2bcb6f6cedc222198f654924889917ade3cda1917507b4ddffb12f"
+          },
+          {
+            "epoch": 47,
+            "train_loss": 0.0070917571527939855,
+            "validation_loss": 0.008304241915758251,
+            "monitored": true,
+            "updates": 987,
+            "weights_sha256": "4d930df0653cc78fd7074677450c0a6be196aa19b7f4c0660b2a3349bc074027"
+          },
+          {
+            "epoch": 48,
+            "train_loss": 0.007000577692506891,
+            "validation_loss": 0.008209902087851436,
+            "monitored": true,
+            "updates": 1008,
+            "weights_sha256": "cedfa32e4c913842fc236fb519841a32c486e5b863fa0e0329a3ec8a1c4936fd"
+          },
+          {
+            "epoch": 49,
+            "train_loss": 0.006922952746125785,
+            "validation_loss": 0.008129970574029494,
+            "monitored": true,
+            "updates": 1029,
+            "weights_sha256": "0b8b06b56519bd50ece7f8c7fc99b509ae56fc63e967b05d87c0e84bbbc0ff83"
+          },
+          {
+            "epoch": 50,
+            "train_loss": 0.006857849773245327,
+            "validation_loss": 0.008062885655545256,
+            "monitored": true,
+            "updates": 1050,
+            "weights_sha256": "9a68c235ad7f6ae030f212157b6749a63bf1521adb6482fe03746bb8aa048fa6"
+          },
+          {
+            "epoch": 51,
+            "train_loss": 0.006803816122313341,
+            "validation_loss": 0.00800677132413568,
+            "monitored": true,
+            "updates": 1071,
+            "weights_sha256": "baa823ea870d7ca4107cb5c3731ba165f87c74ce3dd5583eb50cb21e6392e2bc"
+          },
+          {
+            "epoch": 52,
+            "train_loss": 0.006759173177521337,
+            "validation_loss": 0.007959655065890341,
+            "monitored": true,
+            "updates": 1092,
+            "weights_sha256": "b38c02bcc738d40e037df2d95b81fa26a662ec5bbc5cc14c2fced60dd244c027"
+          },
+          {
+            "epoch": 53,
+            "train_loss": 0.006722211674081557,
+            "validation_loss": 0.007919662521320854,
+            "monitored": true,
+            "updates": 1113,
+            "weights_sha256": "951a8bb406731b7fcc087df0346bac0777d27bbe1202e5b78999f2a98b95bc2a"
+          },
+          {
+            "epoch": 54,
+            "train_loss": 0.006691337958204023,
+            "validation_loss": 0.007885145132675622,
+            "monitored": true,
+            "updates": 1134,
+            "weights_sha256": "b2c5c0f8b74487def3875b5f6c4f3ef407b903b0880ad83a8c1a2ecb4ce9cbc1"
+          },
+          {
+            "epoch": 55,
+            "train_loss": 0.006665162713916013,
+            "validation_loss": 0.007854748644687066,
+            "monitored": true,
+            "updates": 1155,
+            "weights_sha256": "5231942700bb40e20a4eaddd8c544e03caaa3ff728f675a5fa98575360407e6d"
+          },
+          {
+            "epoch": 56,
+            "train_loss": 0.006642541992054744,
+            "validation_loss": 0.007827418016008912,
+            "monitored": true,
+            "updates": 1176,
+            "weights_sha256": "2872639c78d4afcfc70fd916ae899c5b53e5d37a338555bc54d398e86fc4aba7"
+          },
+          {
+            "epoch": 57,
+            "train_loss": 0.006622572308124015,
+            "validation_loss": 0.00780237989548703,
+            "monitored": true,
+            "updates": 1197,
+            "weights_sha256": "c5fb95a55632187e1620f75ca4fb89f42b5ed8ec017b91528ead42b2ff07d5ac"
+          },
+          {
+            "epoch": 58,
+            "train_loss": 0.006604564285865336,
+            "validation_loss": 0.007779099364197701,
+            "monitored": true,
+            "updates": 1218,
+            "weights_sha256": "0f76672aeabbec48d8109b7ad19bb218b5d37a0516d7def5bdcc603ad1f944db"
+          },
+          {
+            "epoch": 59,
+            "train_loss": 0.006588007038402738,
+            "validation_loss": 0.007757218307375617,
+            "monitored": true,
+            "updates": 1239,
+            "weights_sha256": "8bd5588a676b5e4c12c10a4e078e9cf9200a958b32f05b376692138b72854624"
+          },
+          {
+            "epoch": 60,
+            "train_loss": 0.0065725232446284,
+            "validation_loss": 0.0077365145939690474,
+            "monitored": true,
+            "updates": 1260,
+            "weights_sha256": "4d9000cf2d82c0404e0b0ab7baa75cb8f61349d7866e2c87a73ab5f6c1378369"
+          },
+          {
+            "epoch": 61,
+            "train_loss": 0.006557834913220369,
+            "validation_loss": 0.007716848000774846,
+            "monitored": true,
+            "updates": 1281,
+            "weights_sha256": "6740baa4eddaf0e55ed727d9d7b931fdb45f27e4d0e418538a481a754b832ba4"
+          },
+          {
+            "epoch": 62,
+            "train_loss": 0.00654373596224821,
+            "validation_loss": 0.007698113283791643,
+            "monitored": true,
+            "updates": 1302,
+            "weights_sha256": "3f4c4e3a121e3697f66cad58de8768ba56a49b06804cc81468da37070dd822b2"
+          }
+        ],
+        "epochs_completed": 62,
+        "monitor_evaluations": 62,
+        "selected_epoch": 58,
+        "best_epoch": 58,
+        "selected_updates": 1218,
+        "best_validation_loss": 0.007779099364197701,
+        "observed_updates": 1302,
+        "initial_optimizer_iterations": 0,
+        "optimizer_iterations": 1302,
+        "stop_reason": "patience",
+        "stop_class": "no_improvement",
+        "restored_best_weights": true,
+        "restored_weights_sha256": "0f76672aeabbec48d8109b7ad19bb218b5d37a0516d7def5bdcc603ad1f944db",
+        "last_weights_sha256": "3f4c4e3a121e3697f66cad58de8768ba56a49b06804cc81468da37070dd822b2",
+        "restored_differs_from_last": true,
+        "early_stop": {
+          "rule": {
+            "implementation": "modular.early_stop.v2",
+            "restore": "best_monitored_checkpoint",
+            "monitor": "validation_loss",
+            "monitor_every": 1,
+            "patience": 4,
+            "min_delta": 0.0001,
+            "max_epochs": 100,
+            "max_updates": 20000,
+            "max_seconds": 600.0
+          },
+          "sha256": "5828db243c688a690f362da4cc9163f5441e05c98f7c90db8701016ba77d7e90"
+        },
+        "elapsed_seconds": 6.326931221992709
+      },
+      "reconstruction": {
+        "train": {
+          "rows": 1320,
+          "MAE": 0.06549079581125607,
+          "MSE": 0.006587295422672483,
+          "reference": "per-channel train mean (zero-information constant)",
+          "reference_MAE": 0.778843958877484,
+          "reference_MSE": 0.8970672778362115,
+          "relative_MSE": 0.007343145364260188,
+          "standardized_MSE": 0.007343145364260188,
+          "zero_std_channels": 0,
+          "per_channel_MSE": [
+            0.006587295422672483
+          ]
+        },
+        "train_validation": {
+          "rows": 307,
+          "MAE": 0.07161650410828047,
+          "MSE": 0.007779099155923683,
+          "reference": "per-channel train mean (zero-information constant)",
+          "reference_MAE": 1.0013068456737144,
+          "reference_MSE": 1.4638706007795177,
+          "relative_MSE": 0.005314062015987805,
+          "standardized_MSE": 0.008671700939407142,
+          "zero_std_channels": 0,
+          "per_channel_MSE": [
+            0.007779099155923683
+          ]
+        }
+      },
+      "reload_parity": {
+        "passed": true,
+        "max_abs_error": 0.0,
+        "atol": 1e-06,
+        "rows": 307,
+        "split": "train_validation"
+      },
+      "wall_seconds": 6.695364960003644,
+      "provenance": {
+        "path": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/branch_002.provenance.json",
+        "sha256": "74ee0c059b3eb2e2609176cc19ea5e9ca46a12296af95d2dc303f374d46e9a42"
+      }
+    }
+  ],
+  "fusion": {
+    "stage": "fusion_materialization",
+    "right_edge_grid_hours": [
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20,
+      22,
+      24
+    ],
+    "branch_donors": [
+      {
+        "name": "branch_0",
+        "donor_sha256": "51dc60d01020bfdfd5be429feb33fdc5ae6000951ba3b8c31cb5558a54b32383",
+        "donor_sidecar_sha256": "822f8abfbc2cdcf0ece31a289ff1aa79503289812a572e52c6dd1784b7987a12",
+        "weights_sha256": "e8a98697c0dc037b18bc2d8c9f6cb000c419520e92f1718b2c875b74e59c7471"
+      },
+      {
+        "name": "branch_1",
+        "donor_sha256": "41535c31db42c60fc2d91f0d2a68a717728010af918d874941218f179c937597",
+        "donor_sidecar_sha256": "79c245f635691515c5e7115b3d4424955ec20c8eb058ff493476c49cb15f0472",
+        "weights_sha256": "b54549a8182a7f283d8e7ec8da253974a5aebbee398ba585d1d5fb6be2a8b734"
+      },
+      {
+        "name": "branch_2",
+        "donor_sha256": "7db348c53c9a05c8b13a6e8b7d58a0dd942db69332b27c3a6e27e91babbf08da",
+        "donor_sidecar_sha256": "6eedd4041eb7f5b5298acbcd2b05a5ea6ae2a51bd6399101f96793f83607e0c1",
+        "weights_sha256": "ffb9fa359e28e6171693e7995622200864a8cee41a31287a3b066972740606e9"
+      }
+    ],
+    "fusion_identity": {
+      "identity": {
+        "group": "modular.fusion",
+        "name": "sequence_concat",
+        "implementation": "modular_temporal.v1:sequence_concat",
+        "params": {}
+      },
+      "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "inputs": {
+      "train": {
+        "shape": [
+          1320,
+          24,
+          3
+        ],
+        "dtype": "float32",
+        "sha256": "14f11a16bd708e087d73c5b3ea21a80c38c01edd1b2265d84acc926fb2264c42"
+      },
+      "train_validation": {
+        "shape": [
+          307,
+          24,
+          3
+        ],
+        "dtype": "float32",
+        "sha256": "6024a46e23d74f2399c18aea9dbdc94bae83b7635530dc54ba5d175a828d4c60"
+      }
+    },
+    "files": {
+      "train": {
+        "path": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/fused_train.npy",
+        "file_sha256": "b2216105e42ef0f5d7ac6be8aec25fbce90eb0975272bed941f65b7915b6dfa5",
+        "shape": [
+          1320,
+          12,
+          48
+        ],
+        "dtype": "float32",
+        "sha256": "a0a8c4400f781842ecb2c87f0643418779aea7ad8c64659c8acb2b46e6b1c67a"
+      },
+      "train_validation": {
+        "path": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/fused_train_validation.npy",
+        "file_sha256": "92bb5c9b7c0d73800c58cedb0fb767f3dd2d5a2512beca255b7a422b4626c888",
+        "shape": [
+          307,
+          12,
+          48
+        ],
+        "dtype": "float32",
+        "sha256": "8c01c3bb4b6ebee07ae98adf0b409f25292890e9f5d795ed89dc116cc11111ab"
+      }
+    },
+    "bounded_batch_rows": 64,
+    "range_bounded": false,
+    "wall_seconds": 0.3915359390084632,
+    "train_channel_stats": {
+      "mean": [
+        -0.00865484915001699,
+        0.021734211276899177,
+        -0.06906935520103552,
+        0.048447599457906124,
+        0.027676979731151016,
+        -0.22300041243539784,
+        0.041811408824581335,
+        0.03917961507939235,
+        0.031338301626524435,
+        0.13642712281440678,
+        0.14354792390526697,
+        0.08556785735007254,
+        0.054095835595878515,
+        -0.015769552442241253,
+        0.0442980414437691,
+        -0.05571381255468081,
+        0.1515316336173764,
+        -0.04921447896909244,
+        -0.05712143624003864,
+        0.023879712411658743,
+        0.07038748033584044,
+        -0.12587072626990972,
+        -0.005912366505557051,
+        -0.13362392534647663,
+        0.04276334468417594,
+        0.06548744470130645,
+        -0.04921033402712018,
+        -0.10363173995427481,
+        0.04003988597201033,
+        -0.0820244199910314,
+        -0.07251424576497444,
+        -0.03149387855864732,
+        -0.16750136107592045,
+        0.06703822448732968,
+        -0.0751435783869708,
+        0.03024628514616816,
+        -0.11674153221297229,
+        0.04233403653121022,
+        0.04584745717992785,
+        -0.16209028712062792,
+        0.12972424085186723,
+        -0.08541098184221556,
+        0.06195464047428098,
+        0.08470389804700824,
+        0.142546581267732,
+        0.01815282558252673,
+        -0.028791800644154653,
+        -0.11742123136629945
+      ],
+      "std": [
+        0.1876200180520266,
+        0.308836347865652,
+        0.14131357079049334,
+        0.3922148733613435,
+        0.1797538402293924,
+        0.17698316272318665,
+        0.17560414582471592,
+        0.09972167885248238,
+        0.23550196900343498,
+        0.22589664463933648,
+        0.18801874949919953,
+        0.20225946412410103,
+        0.11656150622319215,
+        0.14461294888472193,
+        0.438571783407512,
+        0.23422389657839227,
+        0.44534357639325584,
+        0.15556411198555264,
+        0.1372253908148218,
+        0.3803955571576948,
+        0.3407604531018194,
+        0.20481557983312254,
+        0.12025980132777425,
+        0.18119175698487225,
+        0.3538545272970541,
+        0.3154877062348445,
+        0.27216850760663286,
+        0.22350910924080652,
+        0.3064677091419213,
+        0.26916295017194597,
+        0.2953631212123972,
+        0.1591252039876122,
+        0.1902008195442656,
+        0.34353459439411704,
+        0.277477749332437,
+        0.23544043984165905,
+        0.14039182086677887,
+        0.18304939060281086,
+        0.28116901552678175,
+        0.4631556625453723,
+        0.4550678608472826,
+        0.21604478519007206,
+        0.20317077202590497,
+        0.2652676609647635,
+        0.15971632233758548,
+        0.2509535018262588,
+        0.16621542836782469,
+        0.35305988198001353
+      ],
+      "min": [
+        -0.5829635262489319,
+        -0.6525605320930481,
+        -0.6133798360824585,
+        -1.3370652198791504,
+        -0.45938536524772644,
+        -0.9044404029846191,
+        -0.5256168842315674,
+        -0.14437943696975708,
+        -0.5275546312332153,
+        -0.4257407784461975,
+        -0.3239394426345825,
+        -0.5163237452507019,
+        -0.18556399643421173,
+        -0.41590914130210876,
+        -1.143721342086792,
+        -0.7781402468681335,
+        -0.5446049571037292,
+        -0.6903184056282043,
+        -0.6406364440917969,
+        -0.9542804956436157,
+        -0.8105483055114746,
+        -1.1335158348083496,
+        -0.34142279624938965,
+        -1.1826426982879639,
+        -0.8130043148994446,
+        -0.6299960017204285,
+        -0.7570464015007019,
+        -0.809302806854248,
+        -0.6241161823272705,
+        -1.1853476762771606,
+        -1.032360315322876,
+        -0.697615385055542,
+        -0.8078681230545044,
+        -1.1794319152832031,
+        -0.9564647674560547,
+        -0.4803405702114105,
+        -0.7132191061973572,
+        -0.29966244101524353,
+        -1.1602553129196167,
+        -1.8036314249038696,
+        -1.0188852548599243,
+        -0.9186927676200867,
+        -0.7527141571044922,
+        -0.41656795144081116,
+        -0.1891467422246933,
+        -0.7287707328796387,
+        -0.7345183491706848,
+        -1.3542238473892212
+      ],
+      "max": [
+        0.6252356767654419,
+        1.0531765222549438,
+        0.21189048886299133,
+        1.1651712656021118,
+        0.6642176508903503,
+        0.18095941841602325,
+        1.085096836090088,
+        0.47916364669799805,
+        0.7494305968284607,
+        1.0080128908157349,
+        0.8367189168930054,
+        0.8855341672897339,
+        0.5209059715270996,
+        0.4374699294567108,
+        1.3552433252334595,
+        0.7506923675537109,
+        1.6299575567245483,
+        0.2953692674636841,
+        0.4664493799209595,
+        1.5628877878189087,
+        1.2374277114868164,
+        0.6462669372558594,
+        0.5585881471633911,
+        0.7244731783866882,
+        1.1291183233261108,
+        1.1606532335281372,
+        0.8291122913360596,
+        0.5794060826301575,
+        1.0939218997955322,
+        0.2882120609283447,
+        0.6189716458320618,
+        0.4457798898220062,
+        0.5396196842193604,
+        1.1672483682632446,
+        0.46258923411369324,
+        1.003225564956665,
+        0.1666550487279892,
+        0.9628620147705078,
+        1.1429588794708252,
+        0.43960899114608765,
+        1.6926052570343018,
+        0.1979372501373291,
+        0.982557475566864,
+        1.144871711730957,
+        0.7966257929801941,
+        0.7136409878730774,
+        0.7237663865089417,
+        0.3223295509815216
+      ],
+      "observations_per_channel": 15840
+    }
+  },
+  "core": {
+    "stage": "core_ae",
+    "donor": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/core.keras",
+    "donor_sha256": "86e1b118cd5e4c33d44d3e2af37c3c3a0dd126d948f278713a29e4345b767aa4",
+    "donor_sidecar_sha256": "3b809f047610b1867b715035c967b60512d041213cbb7399ecc46f5161bbc32e",
+    "donor_weights_sha256": "709a552fdaeea2f955758ea495db041a604555e27b7b4096b8eed2a81d8fd348",
+    "donor_manifest_sha256": "03b5f1f97228afd9b15994402bd6141d7c34b193f042a25c3a6776232ac93960",
+    "provenance": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/core.provenance.json",
+    "provenance_sha256": "93deec733dd69ea4604aff81afaf81235fd955a753917c1414ffb4fba765a876",
+    "decoder": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/core.decoder.keras",
+    "decoder_sha256": "5a218cd7c7e14b0ef725ec25c26dbde9ee629debf792db2532734660b71bd724",
+    "encoder_parameters": 78960,
+    "decoder_parameters": 2384,
+    "upstream_bound": {
+      "branch_weights_sha256": [
+        "e8a98697c0dc037b18bc2d8c9f6cb000c419520e92f1718b2c875b74e59c7471",
+        "b54549a8182a7f283d8e7ec8da253974a5aebbee398ba585d1d5fb6be2a8b734",
+        "ffb9fa359e28e6171693e7995622200864a8cee41a31287a3b066972740606e9"
+      ],
+      "fusion": {
+        "identity": {
+          "group": "modular.fusion",
+          "name": "sequence_concat",
+          "implementation": "modular_temporal.v1:sequence_concat",
+          "params": {}
+        },
+        "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "training": {
+      "settings": {
+        "max_epochs": 100,
+        "patience": 4,
+        "batch_size": 64,
+        "learning_rate": 0.001,
+        "weight_decay": 0.0001,
+        "loss": "mse",
+        "huber_delta": 1.0,
+        "min_delta": 0.0001,
+        "seed": 42,
+        "max_updates": 20000,
+        "max_seconds": 600.0,
+        "monitor": "validation_loss",
+        "monitor_every": 1
+      },
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 0.0750758200432315,
+          "validation_loss": 0.09834698410492378,
+          "monitored": true,
+          "updates": 21,
+          "weights_sha256": "c8d4dbea4e1dd7432b95896c0926183649509d8a9efd50ce646b0ba135c84d01"
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.0689942403273149,
+          "validation_loss": 0.08661986654472661,
+          "monitored": true,
+          "updates": 42,
+          "weights_sha256": "354e64d5bcd15e6ea9934f061771341beaeb3cbf05e1e11201ffba7b565c0c34"
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.06185035398512176,
+          "validation_loss": 0.07483566127693227,
+          "monitored": true,
+          "updates": 63,
+          "weights_sha256": "096bb1d4e1a3b6ac9f012182429e457128df77d8a0d6a9e461054a6572674568"
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.055426214477329545,
+          "validation_loss": 0.06306947091843096,
+          "monitored": true,
+          "updates": 84,
+          "weights_sha256": "9a435483307ac874af00c1ed8fe303c48fd484c5da81a2495a56565c1aa0747c"
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.0465069135481661,
+          "validation_loss": 0.04942285759732467,
+          "monitored": true,
+          "updates": 105,
+          "weights_sha256": "514ab81ea1d6137910dff35861599b6f98d3d148bb84569ea8349e9f7c4e0e81"
+        },
+        {
+          "epoch": 6,
+          "train_loss": 0.036642149271387044,
+          "validation_loss": 0.03889220703017052,
+          "monitored": true,
+          "updates": 126,
+          "weights_sha256": "fec8d5bca97795b5936631df5616475bafd7fe51e421a28c4ff2aa4b255cb411"
+        },
+        {
+          "epoch": 7,
+          "train_loss": 0.030977596049055908,
+          "validation_loss": 0.03361137093011447,
+          "monitored": true,
+          "updates": 147,
+          "weights_sha256": "ab5e6521227eade67095b8a15a3bb2c41e2fac032e04e122360e3e887aab7a6c"
+        },
+        {
+          "epoch": 8,
+          "train_loss": 0.02861288133444208,
+          "validation_loss": 0.03304571429637628,
+          "monitored": true,
+          "updates": 168,
+          "weights_sha256": "b6130e8ecae184330c09a1aeb74626ff6fa97b66ae706556bccab7fd8c1c3627"
+        },
+        {
+          "epoch": 9,
+          "train_loss": 0.027112421641747157,
+          "validation_loss": 0.029741204977763593,
+          "monitored": true,
+          "updates": 189,
+          "weights_sha256": "98a482e705f3bc59531d22a85217f32dbef0ebd1ae559b4b8ac811e9c0ec2dac"
+        },
+        {
+          "epoch": 10,
+          "train_loss": 0.02504320288020553,
+          "validation_loss": 0.027403786032178502,
+          "monitored": true,
+          "updates": 210,
+          "weights_sha256": "6915e4db5c69a38cd1d4041084b7b50e6fb130d6eb9dbf52e7a452e247b961a9"
+        },
+        {
+          "epoch": 11,
+          "train_loss": 0.02315711324865168,
+          "validation_loss": 0.024977785999301203,
+          "monitored": true,
+          "updates": 231,
+          "weights_sha256": "298a2b576ffef82146b380fc57fa3ec15277c1c0b4399f1fcdcc9940532bc5d5"
+        },
+        {
+          "epoch": 12,
+          "train_loss": 0.02136869069301721,
+          "validation_loss": 0.022645590814734516,
+          "monitored": true,
+          "updates": 252,
+          "weights_sha256": "0b4f1ade13fff2b24a2e6ec0d83b4ea5bfaf52b62363b4529925ef9d0cf484c3"
+        },
+        {
+          "epoch": 13,
+          "train_loss": 0.019524089992046356,
+          "validation_loss": 0.020907877468130876,
+          "monitored": true,
+          "updates": 273,
+          "weights_sha256": "9e1de4b56d2830c33c237e2d041f87e3dd38ab8649e91aa7ee273bfed711a8d6"
+        },
+        {
+          "epoch": 14,
+          "train_loss": 0.018139606127233216,
+          "validation_loss": 0.019581581972515156,
+          "monitored": true,
+          "updates": 294,
+          "weights_sha256": "c23afa2745d88c3147b96fa2f38d0cbdd9243755100a332a02d564733a436bf4"
+        },
+        {
+          "epoch": 15,
+          "train_loss": 0.01710501348204685,
+          "validation_loss": 0.019022511233384522,
+          "monitored": true,
+          "updates": 315,
+          "weights_sha256": "5ea4d963249ef4ef1bab27179d6bef15b756492b992f0162baec46f90135f134"
+        },
+        {
+          "epoch": 16,
+          "train_loss": 0.01794399432837963,
+          "validation_loss": 0.019239126944289534,
+          "monitored": true,
+          "updates": 336,
+          "weights_sha256": "c755a80528adc0c12a305daaa82214f577aa74ad1727c03295eb3a8204ae9a8a"
+        },
+        {
+          "epoch": 17,
+          "train_loss": 0.016557428206909787,
+          "validation_loss": 0.019079554546927783,
+          "monitored": true,
+          "updates": 357,
+          "weights_sha256": "d49a8867070a8986ce5b2e17b8b0359e4c50b1c6ddaaf40df92aea42e5eb2ae7"
+        },
+        {
+          "epoch": 18,
+          "train_loss": 0.015537477487867529,
+          "validation_loss": 0.017490134732221354,
+          "monitored": true,
+          "updates": 378,
+          "weights_sha256": "edb6d1d498e44771aad6f8940c7de357c5bd4b5fba81fd39b711ba3797f48137"
+        },
+        {
+          "epoch": 19,
+          "train_loss": 0.014570894679336838,
+          "validation_loss": 0.016663212990479282,
+          "monitored": true,
+          "updates": 399,
+          "weights_sha256": "3dfa1eab3f0e75c2f9cc6b67e8c5a9cd618d941d6af40d8e5f9b036fbc6f6250"
+        },
+        {
+          "epoch": 20,
+          "train_loss": 0.014007575922843182,
+          "validation_loss": 0.015931145718824785,
+          "monitored": true,
+          "updates": 420,
+          "weights_sha256": "4fb9f07a6c1a0ad6da816684ba066dde932e03f41e31777d59e297a3a4d30924"
+        },
+        {
+          "epoch": 21,
+          "train_loss": 0.013491170909820181,
+          "validation_loss": 0.01512928637418083,
+          "monitored": true,
+          "updates": 441,
+          "weights_sha256": "044f74292f5f340cb5fe18121b1aca54962f4c3d5f62dbfbae528ec81079c633"
+        },
+        {
+          "epoch": 22,
+          "train_loss": 0.013024528855175682,
+          "validation_loss": 0.014548279548288362,
+          "monitored": true,
+          "updates": 462,
+          "weights_sha256": "99b8294ca449e4e7eac55f690366ad4bef366e64e949cebf006a847b495a51cd"
+        },
+        {
+          "epoch": 23,
+          "train_loss": 0.012666119330308654,
+          "validation_loss": 0.014154442215902603,
+          "monitored": true,
+          "updates": 483,
+          "weights_sha256": "cf4ff75f92d169f656370ebd1405bf2f1e9c32055c7e8129ee8e82b3635c2380"
+        },
+        {
+          "epoch": 24,
+          "train_loss": 0.012379033327328436,
+          "validation_loss": 0.013878775080999644,
+          "monitored": true,
+          "updates": 504,
+          "weights_sha256": "44490f3c5afd2d4aafb3125c39afec17943dca486193c732f53a2504897d1144"
+        },
+        {
+          "epoch": 25,
+          "train_loss": 0.012058492603175567,
+          "validation_loss": 0.013505482839887615,
+          "monitored": true,
+          "updates": 525,
+          "weights_sha256": "56215c0b7be7eba6193c7ec1c4b4c7d173301a1885fb793f33214e14ee2a077f"
+        },
+        {
+          "epoch": 26,
+          "train_loss": 0.011683678141597546,
+          "validation_loss": 0.012951399478758003,
+          "monitored": true,
+          "updates": 546,
+          "weights_sha256": "26ba2f0e9d879aaf145285dad4dd065579a554bed71f7aa8d2fa23ce5079aaae"
+        },
+        {
+          "epoch": 27,
+          "train_loss": 0.011335552455575177,
+          "validation_loss": 0.012735950569425033,
+          "monitored": true,
+          "updates": 567,
+          "weights_sha256": "b1678a842c95a8bd6306ce9d61e83e1729e6e4d122b0205f43bb1c49823e4830"
+        },
+        {
+          "epoch": 28,
+          "train_loss": 0.011404621471284014,
+          "validation_loss": 0.013655992130770163,
+          "monitored": true,
+          "updates": 588,
+          "weights_sha256": "3ece55d3ca9aa6c1d558caad07474f37998cb6444c7b0ca36a529b3a041b0814"
+        },
+        {
+          "epoch": 29,
+          "train_loss": 0.011411932522826122,
+          "validation_loss": 0.012930020295593172,
+          "monitored": true,
+          "updates": 609,
+          "weights_sha256": "0776e9a87141f89b349281c3f201be98b0ca9b56fa5475652526a81d198d5f1d"
+        },
+        {
+          "epoch": 30,
+          "train_loss": 0.010829587783100027,
+          "validation_loss": 0.01190928882442973,
+          "monitored": true,
+          "updates": 630,
+          "weights_sha256": "21e701e4ed7281e73eef2f758eeb721c9374b3d617256fc9d7d2a3a73f67fc87"
+        },
+        {
+          "epoch": 31,
+          "train_loss": 0.010646349315841993,
+          "validation_loss": 0.011836696388836986,
+          "monitored": true,
+          "updates": 651,
+          "weights_sha256": "3f4cc166f3d2fe7e3d4a7f3c04cd390c55b5ca165204c668ada37498c3e4456b"
+        },
+        {
+          "epoch": 32,
+          "train_loss": 0.01094331019416903,
+          "validation_loss": 0.013066368559769776,
+          "monitored": true,
+          "updates": 672,
+          "weights_sha256": "696049dea6df4248db706068001d489b76355eac706c9bdb663ab434c2c5359f"
+        },
+        {
+          "epoch": 33,
+          "train_loss": 0.010744352525833882,
+          "validation_loss": 0.011854256585191826,
+          "monitored": true,
+          "updates": 693,
+          "weights_sha256": "d5d02741be35e7e27f7b1dd204857c0d9e2e1445963a8c9aa7e220a66c5461ab"
+        },
+        {
+          "epoch": 34,
+          "train_loss": 0.01015803808289947,
+          "validation_loss": 0.011582596497519203,
+          "monitored": true,
+          "updates": 714,
+          "weights_sha256": "64c1ee24adbb48fb46dde127de2f26257533d1450d6bc0a9198b90ec2f1cf780"
+        },
+        {
+          "epoch": 35,
+          "train_loss": 0.009944603451047883,
+          "validation_loss": 0.011232722207831055,
+          "monitored": true,
+          "updates": 735,
+          "weights_sha256": "761bc3a6794f9d9c6986b0978a844c32e183fbc4ad4aaca817e6fdaed16a3b6e"
+        },
+        {
+          "epoch": 36,
+          "train_loss": 0.00972270125692541,
+          "validation_loss": 0.010654581276887985,
+          "monitored": true,
+          "updates": 756,
+          "weights_sha256": "ac6de82f9fd89950d9e2938bad074c2195bfbfd61159a9c539fc423b432b4607"
+        },
+        {
+          "epoch": 37,
+          "train_loss": 0.009508014436472546,
+          "validation_loss": 0.010688827758357658,
+          "monitored": true,
+          "updates": 777,
+          "weights_sha256": "18e3c3f7c7996bc334b725737441ad8d7d58bc0634a146bae1b8839bf71d1b00"
+        },
+        {
+          "epoch": 38,
+          "train_loss": 0.009324064145259785,
+          "validation_loss": 0.010211906335180085,
+          "monitored": true,
+          "updates": 798,
+          "weights_sha256": "6f9c153c81c30ea7562c2bff06491fdd3259cac86f47e5e78e6208b5dfdda768"
+        },
+        {
+          "epoch": 39,
+          "train_loss": 0.009144115876970869,
+          "validation_loss": 0.010014076371364757,
+          "monitored": true,
+          "updates": 819,
+          "weights_sha256": "332445f1b46fd579af824c14ab2f7d42ed7dbe8e648c45537645e32f1afc2211"
+        },
+        {
+          "epoch": 40,
+          "train_loss": 0.009017037809120887,
+          "validation_loss": 0.00985158574297199,
+          "monitored": true,
+          "updates": 840,
+          "weights_sha256": "770c5e34a8288033ce21c6eee59fbfa89810d4e540fe1b02c97866eff216a876"
+        },
+        {
+          "epoch": 41,
+          "train_loss": 0.008893036052133098,
+          "validation_loss": 0.009833250422309781,
+          "monitored": true,
+          "updates": 861,
+          "weights_sha256": "79988c0d975905d24df3185e6cb162f494f4413377293a46601f3956aafed5bc"
+        },
+        {
+          "epoch": 42,
+          "train_loss": 0.008795222860168327,
+          "validation_loss": 0.009792062287076289,
+          "monitored": true,
+          "updates": 882,
+          "weights_sha256": "8807b5a9c119added01676c871c44934e69096e4a5988a2a181c4d34ea40e713"
+        },
+        {
+          "epoch": 43,
+          "train_loss": 0.008722485889765349,
+          "validation_loss": 0.009482023806738932,
+          "monitored": true,
+          "updates": 903,
+          "weights_sha256": "55114ab5efbb321027f2c17a8bf9795e7ea8ea741dedccc27b11f69f902c7f83"
+        },
+        {
+          "epoch": 44,
+          "train_loss": 0.008638007972728122,
+          "validation_loss": 0.009510740740922452,
+          "monitored": true,
+          "updates": 924,
+          "weights_sha256": "b87891effbfd164ab0852d9cb9e3271679322aefbf60339c04959c5eda49bdf7"
+        },
+        {
+          "epoch": 45,
+          "train_loss": 0.00878184006521196,
+          "validation_loss": 0.009317569313297832,
+          "monitored": true,
+          "updates": 945,
+          "weights_sha256": "88d0937e9337fdcc08190dda0cb6fefa88cfa4b7ec42ce82bc66685a2f50b814"
+        },
+        {
+          "epoch": 46,
+          "train_loss": 0.00850563028996641,
+          "validation_loss": 0.00947325346014593,
+          "monitored": true,
+          "updates": 966,
+          "weights_sha256": "cf6f479936db9c92c906aa80b6dda7252a9a5a7821e3bc833c3bcfbf0f3405d6"
+        },
+        {
+          "epoch": 47,
+          "train_loss": 0.008462105053618099,
+          "validation_loss": 0.0091608629777348,
+          "monitored": true,
+          "updates": 987,
+          "weights_sha256": "85117293f4cdebc1165c9a171ce39a6497073abc07ac84b628b8938e926d4203"
+        },
+        {
+          "epoch": 48,
+          "train_loss": 0.00828982334245335,
+          "validation_loss": 0.009063834730984722,
+          "monitored": true,
+          "updates": 1008,
+          "weights_sha256": "8fed3924bdc2ce7bc74efd0f13ebdf6141457dcf82d785be50ffbcb26c73e9c5"
+        },
+        {
+          "epoch": 49,
+          "train_loss": 0.008282156299912568,
+          "validation_loss": 0.00929817629838514,
+          "monitored": true,
+          "updates": 1029,
+          "weights_sha256": "4bb32e24d1cdff0b02637c948823acd5032e0893d5a33bfca740495f98fd2991"
+        },
+        {
+          "epoch": 50,
+          "train_loss": 0.00850235569206151,
+          "validation_loss": 0.009106090944563721,
+          "monitored": true,
+          "updates": 1050,
+          "weights_sha256": "c7a6b21e53a9993ca75e806abf294a71010b5454e2d11f9deeb0308e9572d17a"
+        },
+        {
+          "epoch": 51,
+          "train_loss": 0.008360321475475123,
+          "validation_loss": 0.00961902168206264,
+          "monitored": true,
+          "updates": 1071,
+          "weights_sha256": "80e08365955c5b82a51ad772c34381361be63627f5282d914729429c22c2772c"
+        }
+      ],
+      "epochs_completed": 51,
+      "monitor_evaluations": 51,
+      "selected_epoch": 47,
+      "best_epoch": 47,
+      "selected_updates": 987,
+      "best_validation_loss": 0.0091608629777348,
+      "observed_updates": 1071,
+      "initial_optimizer_iterations": 0,
+      "optimizer_iterations": 1071,
+      "stop_reason": "patience",
+      "stop_class": "no_improvement",
+      "restored_best_weights": true,
+      "restored_weights_sha256": "85117293f4cdebc1165c9a171ce39a6497073abc07ac84b628b8938e926d4203",
+      "last_weights_sha256": "80e08365955c5b82a51ad772c34381361be63627f5282d914729429c22c2772c",
+      "restored_differs_from_last": true,
+      "early_stop": {
+        "rule": {
+          "implementation": "modular.early_stop.v2",
+          "restore": "best_monitored_checkpoint",
+          "monitor": "validation_loss",
+          "monitor_every": 1,
+          "patience": 4,
+          "min_delta": 0.0001,
+          "max_epochs": 100,
+          "max_updates": 20000,
+          "max_seconds": 600.0
+        },
+        "sha256": "5828db243c688a690f362da4cc9163f5441e05c98f7c90db8701016ba77d7e90"
+      },
+      "elapsed_seconds": 30.04023582697846
+    },
+    "reconstruction": {
+      "train": {
+        "rows": 1320,
+        "MAE": 0.06831235190546958,
+        "MSE": 0.008288269824560907,
+        "reference": "per-channel train mean (zero-information constant)",
+        "reference_MAE": 0.19663548997657931,
+        "reference_MSE": 0.0694159211795595,
+        "relative_MSE": 0.11940012728667072,
+        "standardized_MSE": 0.18150126061224797,
+        "zero_std_channels": 0,
+        "per_channel_MSE": [
+          0.010730585728946494,
+          0.005906716009270915,
+          0.006877084569786246,
+          0.013731698793012717,
+          0.007456445028019923,
+          0.013382352106213318,
+          0.012907869441846007,
+          0.002749148291827435,
+          0.004029828547135707,
+          0.014376350934449203,
+          0.0034229869099166887,
+          0.005114754206415583,
+          0.001326011142329688,
+          0.00936180895533458,
+          0.010739211380018147,
+          0.0061470726343730835,
+          0.006845297746719209,
+          0.0030015766053520954,
+          0.0051464669145838,
+          0.01440780592435366,
+          0.009781857679591617,
+          0.009979506737296655,
+          0.004984244008101374,
+          0.013863182193171357,
+          0.006868482018035605,
+          0.006799657872774114,
+          0.008233177960822556,
+          0.013245715749923078,
+          0.006068600817894857,
+          0.0040523965904741424,
+          0.0057542079068728744,
+          0.004725739407316986,
+          0.003753743770275384,
+          0.016033249024258647,
+          0.005380911667904631,
+          0.006773906875297445,
+          0.0029797999140604133,
+          0.0025029786426755364,
+          0.015947703488967072,
+          0.0065381556670724185,
+          0.010638421432967874,
+          0.0029426841728233144,
+          0.022975314233641467,
+          0.009713493090739824,
+          0.007028336769567941,
+          0.012396404229583297,
+          0.015717192221274927,
+          0.004496815565632836
+        ]
+      },
+      "train_validation": {
+        "rows": 307,
+        "MAE": 0.07181369231259802,
+        "MSE": 0.009160862946781173,
+        "reference": "per-channel train mean (zero-information constant)",
+        "reference_MAE": 0.22414257106127686,
+        "reference_MSE": 0.09438533793475182,
+        "relative_MSE": 0.09705811461006834,
+        "standardized_MSE": 0.19773458713686903,
+        "zero_std_channels": 0,
+        "per_channel_MSE": [
+          0.009229362900630991,
+          0.0058238972611357985,
+          0.006550373384117701,
+          0.013960439527930107,
+          0.007181144855042054,
+          0.01252237595354536,
+          0.012130771425532282,
+          0.002599638842267428,
+          0.00416735817472677,
+          0.014214898814499301,
+          0.003258430851788813,
+          0.005128628118295732,
+          0.0014270576184730462,
+          0.008352263073759941,
+          0.011066129674645583,
+          0.006052022810487017,
+          0.007525539741133573,
+          0.0029835089632765086,
+          0.005011782875521493,
+          0.014087427369302052,
+          0.009835056406215514,
+          0.010501935658817688,
+          0.005407060666340367,
+          0.014398373153713789,
+          0.007486632781332824,
+          0.007740139443300209,
+          0.008362167463783802,
+          0.01419244280800382,
+          0.006151710318502202,
+          0.005109189500712586,
+          0.00626637429925583,
+          0.004797526007342184,
+          0.00578302419123704,
+          0.019475565048650174,
+          0.0073282607124723976,
+          0.008705494113092916,
+          0.004558843494372669,
+          0.003803451213454231,
+          0.019227932365027955,
+          0.008278086622966249,
+          0.01301559974615301,
+          0.0040024064112872204,
+          0.027610863310125352,
+          0.01282179119945103,
+          0.009779148999678048,
+          0.015021022964773298,
+          0.020750599311678886,
+          0.0060376709976426015
+        ]
+      }
+    },
+    "reload_parity": {
+      "passed": true,
+      "max_abs_error": 0.0,
+      "atol": 1e-05,
+      "rows": 307,
+      "split": "train_validation"
+    },
+    "wall_seconds": 32.33292958000675
+  },
+  "grids": {
+    "input_right_edges_hours": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24
+    ],
+    "branch_right_edges_hours": [
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20,
+      22,
+      24
+    ],
+    "core_right_edges_hours": [
+      4,
+      8,
+      12,
+      16,
+      20,
+      24
+    ]
+  },
+  "seed": 7,
+  "train_population": {
+    "split": "train",
+    "dataset_id": "synthetic_fixture_m02_v1",
+    "provenance": "synthetic_fixture",
+    "support_start": 1700000000,
+    "support_end": 1704831200,
+    "time_unit": "seconds"
+  },
+  "validation_population": {
+    "split": "train_validation",
+    "dataset_id": "synthetic_fixture_m02_v1",
+    "provenance": "synthetic_fixture",
+    "support_start": 1704838400,
+    "support_end": 1706022800,
+    "time_unit": "seconds"
+  },
+  "train_input": {
+    "shape": [
+      1320,
+      24,
+      3
+    ],
+    "dtype": "float32",
+    "sha256": "14f11a16bd708e087d73c5b3ea21a80c38c01edd1b2265d84acc926fb2264c42"
+  },
+  "validation_input": {
+    "shape": [
+      307,
+      24,
+      3
+    ],
+    "dtype": "float32",
+    "sha256": "6024a46e23d74f2399c18aea9dbdc94bae83b7635530dc54ba5d175a828d4c60"
+  },
+  "fused_train": {
+    "path": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/fused_train.npy",
+    "file_sha256": "b2216105e42ef0f5d7ac6be8aec25fbce90eb0975272bed941f65b7915b6dfa5",
+    "shape": [
+      1320,
+      12,
+      48
+    ],
+    "dtype": "float32",
+    "sha256": "a0a8c4400f781842ecb2c87f0643418779aea7ad8c64659c8acb2b46e6b1c67a"
+  },
+  "fused_validation": {
+    "path": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/fused_train_validation.npy",
+    "file_sha256": "92bb5c9b7c0d73800c58cedb0fb767f3dd2d5a2512beca255b7a422b4626c888",
+    "shape": [
+      307,
+      12,
+      48
+    ],
+    "dtype": "float32",
+    "sha256": "8c01c3bb4b6ebee07ae98adf0b409f25292890e9f5d795ed89dc116cc11111ab"
+  },
+  "fine_tune_config": {
+    "branch_steps": 12,
+    "branches": [
+      {
+        "donor": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/branch_000.keras",
+        "features": [
+          "f0"
+        ],
+        "name": "branch_0",
+        "params": {},
+        "plugin": "causal_conv1d",
+        "regime": "R2"
+      },
+      {
+        "donor": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/branch_001.keras",
+        "features": [
+          "f1"
+        ],
+        "name": "branch_1",
+        "params": {},
+        "plugin": "causal_conv1d",
+        "regime": "R2"
+      },
+      {
+        "donor": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/branch_002.keras",
+        "features": [
+          "f2"
+        ],
+        "name": "branch_2",
+        "params": {},
+        "plugin": "causal_conv1d",
+        "regime": "R2"
+      }
+    ],
+    "core": {
+      "donor": "/home/harveybc/.local/state/m02_pretraining/SYNTHETIC_pilot_20260930_s7_e100/pretrain/core.keras",
+      "params": {},
+      "plugin": "transformer_conv",
+      "regime": "R2"
+    },
+    "entry_point_groups": {
+      "branch": "modular.branch",
+      "core": "modular.core",
+      "fusion": "modular.fusion",
+      "head": "modular.head"
+    },
+    "feature_names": [
+      "f0",
+      "f1",
+      "f2"
+    ],
+    "fusion": {
+      "params": {},
+      "plugin": "sequence_concat"
+    },
+    "head": {
+      "params": {},
+      "plugin": "forecast"
+    },
+    "horizons": [
+      1,
+      3,
+      6
+    ],
+    "output_channels": 8,
+    "output_steps": 6,
+    "sample_hours": 1,
+    "target_count": 1,
+    "window": 24
+  },
+  "scope": "representation pretraining; reconstruction is lossy and reported per stage; downstream utility is measured only by a separate forecasting evaluation"
+}

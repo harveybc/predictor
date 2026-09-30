@@ -1,0 +1,74 @@
+{
+  "manifest": {
+    "feature_names": [
+      "f0",
+      "f1",
+      "f2"
+    ],
+    "features": [
+      "f1"
+    ],
+    "input_grid": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24
+    ],
+    "input_shape": [
+      24,
+      1
+    ],
+    "name": "branch_1",
+    "output_grid": [
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20,
+      22,
+      24
+    ],
+    "output_shape": [
+      12,
+      16
+    ],
+    "params": {},
+    "plugin": {
+      "group": "modular.branch",
+      "implementation": "modular_temporal.v1:causal_conv1d",
+      "name": "causal_conv1d"
+    },
+    "role": "branch",
+    "sample_hours": 1,
+    "schema": 1
+  },
+  "manifest_sha256": "679cc3bd2a2d88c8b3faffc9b8738db6b62a508d5c413e37809db412adba829c",
+  "model_sha256": "41535c31db42c60fc2d91f0d2a68a717728010af918d874941218f179c937597",
+  "schema": 1,
+  "weights_sha256": "b54549a8182a7f283d8e7ec8da253974a5aebbee398ba585d1d5fb6be2a8b734"
+}
