@@ -93,19 +93,23 @@ def test_external_entry_points_undeclared_ambiguous_and_shadowing_fail(monkeypat
             return self.obj
 
     table = {"external": [EP(external)], "undeclared": [EP(undeclared)],
-             "twice": [EP(external), EP(external, "other:factory")],
-             "causal_conv1d": [EP(external)]}
+             "twice": [EP(external), EP(external, "other:factory")]}
     monkeypatch.setattr(mt, "entry_points", lambda *, group, name: table.get(name, []))
     c = nested()
     c["branches"][0]["plugin"] = "external"
     b = mt.build_modular(c)
     assert b.donor_manifest("branch", "price")["plugin"]["version"] == "2.1.0"
-    for bad, message in (("undeclared", "component"), ("twice", "exactly one"),
-                         ("causal_conv1d", "shadows")):
+    for bad, message in (("undeclared", "component"), ("twice", "exactly one")):
         c = nested()
         c["branches"][0]["plugin"] = bad
         with pytest.raises(ValueError, match=message):
             mt.build_modular(c)
+    # an installed entry point reusing a built-in name must BE the built-in
+    table["causal_conv1d"] = [EP(external)]
+    with pytest.raises(ValueError, match="shadows"):
+        mt.build_modular(nested())
+    table["causal_conv1d"] = [EP(mt.causal_conv1d, "predictor_plugins.modular_temporal:causal_conv1d")]
+    mt.build_modular(nested())
 
 
 def test_flat_mapping_is_reversible_and_overrides_reach_the_graph():

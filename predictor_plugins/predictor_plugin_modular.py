@@ -218,7 +218,7 @@ class Plugin:
         settings = self.training_settings(epochs, batch_size)
         x, vx = np.asarray(x_train, dtype="float32"), np.asarray(x_val, dtype="float32")
         y, vy = self._targets(y_train), self._targets(y_val)
-        before = {name: mt.weights_hash(m) for name, m in self._components()}
+        before = {name: mt.weights_hash(m) for name, m, _ in self._components()}
         result = fit_with_early_stopping(self.bundle.forecast_model, x, y, vx, vy, settings)
         components = {}
         for name, model, regime in self._components():
