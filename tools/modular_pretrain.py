@@ -555,7 +555,7 @@ def internal_split(timestamps, window, sample_hours, fraction=0.8):
 
 def pretrain_from_train_npz(train_npz, output_dir, fit_config, *, provenance, config=None,
                             seed=None, heartbeat=None, fraction=0.8, stage_fit_configs=None,
-                            manifest_sha256=None):
+                            manifest_sha256=None, declaration_sha256=None):
     """Input swap: pretrain from an evaluator-format TRAIN NPZ (split must be 'train').
 
     Uses only the windows of that file; the outer validation, test and holdout
@@ -585,10 +585,90 @@ def pretrain_from_train_npz(train_npz, output_dir, fit_config, *, provenance, co
     common = {"dataset_id": dataset_id, "provenance": provenance, "time_unit": "seconds"}
     if manifest_sha256:
         common["input_manifest_sha256"] = manifest_sha256
+    if declaration_sha256:
+        common["admissible_declaration_sha256"] = declaration_sha256
+    common["train_npz_sha256"] = _file_sha(train_npz)
     pops = ({"split": "train", "support_start": s_tr[0], "support_end": s_tr[1], **common},
             {"split": "train_validation", "support_start": s_va[0], "support_end": s_va[1], **common})
-    return pretrain_components(base, windows[tr], windows[va], output_dir, fit_config, *pops,
+    if not (np.array_equal(tr, np.arange(tr[0], tr[-1] + 1)) and np.array_equal(va, np.arange(va[0], va[-1] + 1))):
+        raise ValueError("internal split must be contiguous")
+    train_view = windows[tr[0]:tr[-1] + 1]
+    validation_view = windows[va[0]:va[-1] + 1]
+    return pretrain_components(base, train_view, validation_view, output_dir, fit_config, *pops,
                                seed=seed, heartbeat=heartbeat, stage_fit_configs=stage_fit_configs)
+
+
+def run_cost_pilot(train_npz, declaration_path, out, *, n_branches, fit, seed=7,
+                   heartbeat_interval=30.0, total_branches=None):
+    """Governed cost pilot: the first ``n_branches`` declared branches, all features kept.
+
+    Verifies the M03 admissible-input declaration against the TRAIN NPZ (dataset,
+    feature order = declared one-feature-per-branch order), then pretrains a
+    subset and projects the full cost. Projections are linear extrapolations and
+    are labelled as such; nothing here is a forecasting result.
+    """
+    declaration_bytes = Path(declaration_path).read_bytes()
+    declaration = json.loads(declaration_bytes)
+    branches_declared = declaration["branches_one_feature_each"]
+    names = [b if isinstance(b, str) else b.get("feature", b.get("name")) for b in branches_declared]
+    with np.load(train_npz, allow_pickle=False) as archive:
+        features = archive["feature_names"].astype(str).tolist()
+        dataset_id = str(archive["dataset_id"])
+        rows = int(archive["windows"].shape[0])
+    if features != names:
+        raise ValueError("TRAIN NPZ feature order differs from the admissible declaration")
+    from predictor_plugins.modular_temporal import default_config
+    config = default_config(features)
+    config["branches"] = config["branches"][:n_branches]
+    total = total_branches or len(features)
+    out = Path(out)
+    if out.exists():
+        raise ValueError("output directory must not exist")
+    out.mkdir(parents=True)
+    beat = Heartbeat(out / "heartbeat.jsonl", heartbeat_interval)
+    started = time.monotonic()
+    with beat:
+        pre = pretrain_from_train_npz(train_npz, out / "pretrain", fit, provenance="governed_resource",
+                                      config=config, seed=seed, heartbeat=beat,
+                                      manifest_sha256=declaration["manifest_sha256"],
+                                      declaration_sha256=declaration["declaration_sha256"])
+    wall = time.monotonic() - started
+    peak = _resources()
+    branch_walls = [b["wall_seconds"] for b in pre["branches"]]
+    fused = pre["fused_train"]["shape"]
+    width_full = total * fused[2] // n_branches
+    fused_bytes_full = (pre["fused_train"]["shape"][0] + pre["fused_validation"]["shape"][0]) * fused[1] * width_full * 4
+    core_wall = pre["core"]["wall_seconds"]
+    report = {
+        "schema": "m02.cost_pilot.v1", "label": "GOVERNED INPUT COST PILOT - not a forecasting result",
+        "dataset_id": dataset_id, "train_npz_sha256": _file_sha(train_npz),
+        "declaration_file_sha256": hashlib.sha256(declaration_bytes).hexdigest(),
+        "declaration_sha256": declaration["declaration_sha256"], "manifest_sha256": declaration["manifest_sha256"],
+        "resource_sha256": declaration["resource_sha256"], "train_windows": rows,
+        "n_branches_run": n_branches, "n_branches_total": total, "fit": fit, "seed": seed,
+        "measured": {"total_wall_seconds": wall, "branch_wall_seconds": branch_walls,
+                     "branch_stops": [b["training"]["stop_reason"] for b in pre["branches"]],
+                     "branch_updates": [b["training"]["observed_updates"] for b in pre["branches"]],
+                     "branch_epochs": [b["training"]["epochs_completed"] for b in pre["branches"]],
+                     "fusion_wall_seconds": pre["fusion"]["wall_seconds"],
+                     "core_wall_seconds": core_wall, "core_stop": pre["core"]["training"]["stop_reason"],
+                     "core_updates": pre["core"]["training"]["observed_updates"],
+                     "core_epochs": pre["core"]["training"]["epochs_completed"],
+                     "fused_shape_train": fused,
+                     "branch_relative_MSE_validation": [b["reconstruction"]["train_validation"]["relative_MSE"] for b in pre["branches"]],
+                     "core_relative_MSE_validation": pre["core"]["reconstruction"]["train_validation"]["relative_MSE"],
+                     "resources_at_end": peak},
+        "projection": {
+            "basis": "LINEAR EXTRAPOLATION from this subset; early stopping makes per-branch epochs vary",
+            "branch_ae_seconds_321": float(np.mean(branch_walls)) * total,
+            "branch_ae_seconds_321_if_every_branch_took_the_slowest": float(np.max(branch_walls)) * total,
+            "fused_width_full": width_full, "fused_bytes_full_train_plus_validation": fused_bytes_full,
+            "fusion_seconds_full_linear_in_width": pre["fusion"]["wall_seconds"] * total / n_branches,
+            "core_seconds_full_linear_in_width_upper_estimate": core_wall * total / n_branches,
+            "core_note": ("core cost grows with width only in its input projection and decoder output; "
+                          "linear-in-width is a pessimistic estimate, the attention blocks are width-independent")}}
+    (out / "COST_PILOT.json").write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
+    return report
 
 
 # --------------------------------------------------------------------------- synthetic pilot
@@ -761,10 +841,19 @@ def main(argv=None):
     parser.add_argument("--loss", default="mse", choices=["mse", "mae", "huber"])
     parser.add_argument("--heartbeat", default=None)
     parser.add_argument("--heartbeat-interval", type=float, default=30.0)
+    parser.add_argument("--cost-pilot-train-npz", default=None,
+                        help="governed cost pilot: TRAIN NPZ (with --declaration and --branches)")
+    parser.add_argument("--declaration", default=None)
+    parser.add_argument("--branches", type=int, default=8)
     a = parser.parse_args(argv)
     fit = dict(max_epochs=a.max_epochs, patience=a.patience, min_delta=a.min_delta,
                monitor_every=a.monitor_every, max_updates=a.max_updates, max_seconds=a.max_seconds,
                batch_size=a.batch_size, learning_rate=a.learning_rate, loss=a.loss)
+    if a.cost_pilot_train_npz:
+        report = run_cost_pilot(a.cost_pilot_train_npz, a.declaration, a.out, n_branches=a.branches,
+                                fit=fit, seed=a.seed, heartbeat_interval=a.heartbeat_interval)
+        print(json.dumps(report, indent=2), flush=True)
+        return
     summary = run_synthetic_pilot(a.out, rows=a.rows, features=a.features, seed=a.seed, fit=fit,
                                   heartbeat_path=a.heartbeat, heartbeat_interval=a.heartbeat_interval)
     print(json.dumps(summary, indent=2), flush=True)

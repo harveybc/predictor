@@ -252,3 +252,26 @@ def test_input_swap_from_train_npz_refuses_non_train(tmp_path):
     assert result["train_input"]["shape"][0] == len(tr)
     assert result["validation_input"]["shape"][0] == len(va)
     assert result["label"].startswith("SYNTHETIC")
+
+
+def test_cost_pilot_binds_declaration_and_refuses_feature_order(tmp_path):
+    """SYNTHETIC stand-in for a governed declaration: checks binding, not cost."""
+    from tools.modular_pretrain import build_synthetic_splits, run_cost_pilot
+    train, *_ = build_synthetic_splits(rows=500, features=3, window=24, horizons=[1], seed=4)
+    np.savez(tmp_path / "SYNTHETIC_train.npz", **train)
+    declaration = {"manifest_sha256": "m" * 64, "declaration_sha256": "d" * 64, "resource_sha256": "r" * 64,
+                   "branches_one_feature_each": [{"branch": i, "feature": f"f{i}"} for i in range(3)]}
+    (tmp_path / "decl.json").write_text(json.dumps(declaration))
+    report = run_cost_pilot(tmp_path / "SYNTHETIC_train.npz", tmp_path / "decl.json", tmp_path / "pilot",
+                            n_branches=2, fit=FIT, heartbeat_interval=0.5)
+    assert report["n_branches_run"] == 2 and report["n_branches_total"] == 3
+    assert report["measured"]["fused_shape_train"][2] == 32 and report["projection"]["fused_width_full"] == 48
+    pre = json.loads((tmp_path / "pilot" / "pretrain" / "PRETRAIN.json").read_text())
+    assert pre["train_population"]["admissible_declaration_sha256"] == "d" * 64
+    assert pre["train_population"]["input_manifest_sha256"] == "m" * 64
+    assert pre["provenance"] == "governed_resource"
+    declaration["branches_one_feature_each"].reverse()
+    (tmp_path / "decl2.json").write_text(json.dumps(declaration))
+    with pytest.raises(ValueError, match="feature order"):
+        run_cost_pilot(tmp_path / "SYNTHETIC_train.npz", tmp_path / "decl2.json", tmp_path / "p2",
+                       n_branches=2, fit=FIT)
