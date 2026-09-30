@@ -23,6 +23,8 @@ setup(
             'fused_branches=predictor_plugins.fused_branches:Plugin',
             # Quantile head fitted with the pinball loss (WP07; the first graph here with a predictive distribution)
             'quantile_ann=predictor_plugins.quantile_ann:Plugin',
+            # Opt-in hierarchical modular predictor (M01, 2026-09-30); no legacy name routes here
+            'modular_temporal=predictor_plugins.predictor_plugin_modular:Plugin',
             'base=predictor_plugin.predictor_plugin_base:Plugin',
             # Binary classification plugins
             'binary_ann=predictor_plugins.binary.predictor_plugin_binary_ann:Plugin',
@@ -45,6 +47,11 @@ setup(
             'direction_mimo=predictor_plugins.direction.predictor_plugin_direction_mimo:Plugin',
             'direction_logistic=predictor_plugins.direction.predictor_plugin_direction_logistic:Plugin',
         ],
+        # Modular components resolved by the modular_temporal predictor (each carries a version/contract)
+        'modular.branch': ['causal_conv1d=predictor_plugins.modular_temporal:causal_conv1d'],
+        'modular.fusion': ['sequence_concat=predictor_plugins.modular_temporal:sequence_concat'],
+        'modular.core': ['transformer_conv=predictor_plugins.modular_temporal:transformer_conv'],
+        'modular.head': ['forecast=predictor_plugins.modular_temporal:forecast'],
         # Plugins para la Optimización (por defecto, basado en DEAP)
         'optimizer.plugins': [
             'default_optimizer=optimizer_plugins.default_optimizer:Plugin',

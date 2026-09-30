@@ -23,6 +23,19 @@ parameter names and conditional combinations (for example heads that do not
 divide d_model, or four compression widths with three time factors) are checked
 by the component factories when the model is built -- which the predictor
 plugin does in ``build_model``, before any fit.
+
+Relation to the DOIN candidate layer (M04, ``tools/modular_search_space.py``):
+that module is a tied search-space projection (schema ``modular.candidate.v1``,
+uniform branch parameters, contiguous feature groups, indexed stage scalars and
+``train.*`` evaluator settings). This module is the complete reversible encoding
+of the model schema ``predictor.modular.v1``. The two are layers that compose;
+the facade does NOT accept M04's keys directly. The only integration path is
+M04 ``from_flat`` -> nested candidate -> its ``model`` -> the facade's ``modular``
+config. The shared ``core.`` prefix cannot shadow: this grammar only accepts
+``core.plugin|regime|donor`` and ``core.params.<p>``, so a raw M04 key such as
+``core.d_model`` or ``core.stage_count`` FAILS loudly instead of being ignored,
+and M04's ``branch.``/``model.``/``train.`` prefixes are outside this namespace
+(``tests/test_modular_flat_parity_m04.py`` pins both facts on the 3ceabfad fixtures).
 """
 from __future__ import annotations
 
