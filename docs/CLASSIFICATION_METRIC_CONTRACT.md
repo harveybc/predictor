@@ -111,10 +111,46 @@ ORDER BY task, provider, m.metric
 LIMIT 1000
 ```
 
-Group by `metric_identity_sha256`, never by `value` and never by `metric` alone across tasks. Two
-rows agree only when their identity digests agree. This query is an inventory, not a scientific
-closure: select accepted runs and adjudicated generations before aggregating, and it currently
-returns nothing, because no classification benchmark run has been launched for this contract.
+**Corrected 2026-09-29, and the correction matters.** The sentence that stood here — *group by
+`metric_identity_sha256`; two rows agree only when their identity digests agree* — is **unsound for
+secondary rows**, and is withdrawn. `metric_identity_sha256` is computed from
+`author_primary_metric`, so it is a **terminal-level** tag binding the receipt's **primary** metric:
+every other row a receipt projects reaches the warehouse carrying an identity that is not its own.
+Proved against the live warehouse, where macro-F1 `0.9467546527629132` stood under an ACCURACY
+identity on one terminal and under a MACRO_F1 identity on another, and that one ACCURACY identity
+also covered macro-F1 `0.9252733932274245`. Worse, two terminals of one campaign carried the *same*
+measurement — one as its primary, one as its secondary — so an aggregate keyed on the terminal digest
+would have averaged it twice.
+
+The repair is the successor contract
+[`classification_row_identity.v1`](contracts/classification_row_identity.v1.json), enforced by
+`app/classification_row_identity.py`. It changes no metric value, edits nothing here, and rewrites no
+stored row; it adds tags, and a producer under this contract emits both sets
+(`terminal_tags_with_row_identity`). The aggregation rule is now:
+
+> **GROUP BY `metric_row_identity_sha256` AND `evidence_class`**, never by `value`, never by `metric`
+> alone across tasks, and never by `metric_identity_sha256`. Within a group, **deduplicate on
+> `metric_occurrence_sha256`** before any mean, count or ranking. Two rows sharing an occurrence key
+> and disagreeing in value are a refusal, not an average. A group mixing evidence classes is a
+> refusal: split it, do not weight it.
+
+A row's identity digests only what the number *means* — family, metric key, unit, kind, definition,
+governing denominator policy, label order. The author's own name for a metric is **attribution**, not
+meaning, so it is carried as `reported_under_name` and refused by name in `compare()` instead of
+hidden inside a hash; that is also what lets the same macro-F1 carried as a primary in one terminal
+and as a secondary in another be recognised as one measurement at all. `evidence_class` is
+**separate from the identity** and part of the occurrence key: a published value and a measured one
+of one definition remain comparable, which is exactly why they must never be averaged. Any row's
+digest — including all 308 confusion cells of a 77-class matrix, which no tag could hold — is
+recomputable from the stored tags with `recompute_from_tags(tags, metric_key)` and is bound by
+`metric_row_identity_map_sha256`.
+
+The three accepted rows written before this repair were **not edited**. Each was corrected by a
+superseding generation 2 of the same campaign and unit, with byte-identical metric rows, its own
+reason and the digest of the generation it supersedes; generation 1 remains stored and readable.
+
+This query is an inventory, not a scientific closure: select accepted runs and adjudicated
+generations before aggregating.
 
 ## Verification performed
 

@@ -1,0 +1,102 @@
+{
+ "schema": "classification_row_identity.v1",
+ "extends": "classification_metrics.v1",
+ "why": [
+  "classification_metrics.v1 computes metric_identity_sha256 from author_primary_metric, so the digest is a TERMINAL-LEVEL tag that binds the receipt's PRIMARY metric only.",
+  "A receipt's secondary, naive, probability, coverage and confusion rows therefore inherit an identity that is not their own.",
+  "Proved against the live warehouse on 2026-09-29: macro-F1 0.9467546527629132 stands under identity 1756f877 (an ACCURACY identity) on unit native-accuracy and under a62f184c (a MACRO_F1 identity) on unit native-macro-f1, while identity 1756f877 also covers macro-F1 0.9252733932274245 on unit framework-accuracy.",
+  "So classification_metrics.v1's guidance that two rows agree only when their identity digests agree is UNSOUND FOR SECONDARY ROWS, and an aggregate keyed on the terminal-level digest would combine rows that measure different things, or the same thing twice.",
+  "This document does not edit classification_metrics.v1 and does not rewrite a stored row. It is a successor contract: every classification_metrics.v1 producer must additionally emit the tags declared here, and a reader recomputes any row's identity from the stored tags alone."
+ ],
+ "row_roles": [
+  "PRIMARY",
+  "PAIRED_NAIVE",
+  "SECONDARY",
+  "PROBABILITY",
+  "COVERAGE",
+  "CONFUSION_CELL"
+ ],
+ "identity_inputs": {
+  "note": "What the number in THIS row MEANS. Nothing about who measured it, on what, or how well.",
+  "fields": [
+   "schema",
+   "family",
+   "metric",
+   "unit",
+   "kind",
+   "definition",
+   "denominator_policy",
+   "label_order_sha256"
+  ],
+  "deliberately_excluded": {
+   "author_name": "the author's own label for a metric is attribution, not meaning; it is carried as reported_under_name and is refused by name in compare(), rather than hidden inside a digest. Keeping it out is what lets a PRIMARY macro-F1 row and a SECONDARY macro-F1 row on the same labels and denominator share one identity, which is the only way a double count between two terminals can be detected at all.",
+   "row_role": "a value does not change meaning because the receipt that carried it called it primary; if row_role entered the identity, the same measurement stored twice under two roles would hide behind two digests.",
+   "evidence_class": "SEPARATE DIMENSION. A PUBLISHED_REFERENCE accuracy and a MEASUREMENT accuracy of the same definition are comparable, which is exactly why they must not be averaged: comparability belongs in the identity, provenance belongs beside it.",
+   "value": "an identity that changed with the value would make every row unique and could never detect a duplicate.",
+   "provider_checkpoint_population_protocol": "those decide WHICH measurement this is, not what it means; they belong to the occurrence key."
+  }
+ },
+ "occurrence_inputs": {
+  "note": "What was measured, once. Two rows with one occurrence key are ONE measurement and count ONCE.",
+  "fields": [
+   "row_identity_sha256",
+   "task_id",
+   "corpus_id",
+   "corpus_sha256",
+   "provider",
+   "checkpoint_sha256",
+   "supervision_regime",
+   "evidence_class",
+   "evaluation_split",
+   "evaluation_population_sha256",
+   "protocol_sha256",
+   "scorer_sha256",
+   "seed"
+  ],
+  "deliberately_excluded": {
+   "row_role": "so the SAME measurement carried as a primary in one terminal and as a secondary in another collapses to one occurrence instead of being counted twice.",
+   "terminal_sha256_campaign_unit_generation": "a double count BETWEEN terminals is the failure this key exists to catch; a key that carried the terminal could not catch it.",
+   "receipt_sha256": "two receipts of one measurement are two reports, not two measurements."
+  },
+  "replicates": "protocol_sha256, scorer_sha256 and seed are IN the key, so a genuine re-measurement under a different protocol, scorer or seed is a distinct occurrence and is never silently deduplicated away."
+ },
+ "aggregation_rule": [
+  "GROUP BY metric_row_identity_sha256 AND evidence_class. Never by metric alone, never by value, never by the terminal-level metric_identity_sha256.",
+  "Within a group, DEDUPLICATE ON metric_occurrence_sha256 before any mean, count or ranking.",
+  "Two rows that share an occurrence key and disagree in value are a refusal (CONFLICTING_VALUES_FOR_ONE_OCCURRENCE), never an average.",
+  "A group that mixes evidence classes is a refusal (EVIDENCE_CLASSES_MIXED_IN_ONE_AGGREGATE); split it, do not weight it."
+ ],
+ "required_row_identity_tags": [
+  "row_identity_contract",
+  "metric_row_identity_map_sha256",
+  "metric_row_occurrence_map_sha256",
+  "metric_row_identity_rule",
+  "metric_row_identity_json",
+  "metric_row_occurrence_json",
+  "metric_row_roles_json",
+  "metric_row_count",
+  "author_primary_metric_denominator_policy",
+  "metric_identity_sha256_scope",
+  "evidence_class_is_a_separate_dimension_from_metric_identity",
+  "aggregation_rule",
+  "double_count_guard"
+ ],
+ "tag_budget_bytes": 8192,
+ "over_budget_sentinel": "IDENTITIES_BY_RULE_ONLY",
+ "over_budget_note": "A 77-class confusion contributes 308 rows, whose per-row digests do not fit in a tag. The map digests always cover EVERY row; the JSON maps carry the rows that fit and otherwise the sentinel, and any row's digest is recomputable from the stored tags with recompute_from_tags(tags, metric_key).",
+ "kinds": {
+  "PROBABILITY_METRIC": "a scalar over predicted probabilities on the evaluation population",
+  "POPULATION_SHARE": "a fraction of the evaluation population, not a score",
+  "CONFUSION_COUNT": "a count of rows in one cell of the reference x predicted matrix"
+ },
+ "denominator_policy_rule": "Every family-bearing row takes the governing denominator policy, which is abstention.denominator_policy, and a receipt whose author_primary_metric.denominator_policy differs from it is refused by name (PRIMARY_AND_ABSTENTION_DENOMINATOR_POLICIES_DISAGREE): classification_metrics.v1 already checks every carried value against the confusion under the abstention policy, so a second, different policy on the primary would make the receipt's own consistency check measure something the digest does not.",
+ "refusals": {
+  "ROW_IDENTITY_TAGS_MISSING": "a classification_metrics.v1 terminal without these tags; its secondary rows would inherit the primary's identity",
+  "DOUBLE_COUNT_SAME_OCCURRENCE_ACROSS_TERMINALS": "two stored rows are one measurement; counted once, and reported as dropped",
+  "CONFLICTING_VALUES_FOR_ONE_OCCURRENCE": "one occurrence, two values",
+  "EVIDENCE_CLASSES_MIXED_IN_ONE_AGGREGATE": "a measured and a published value in one mean",
+  "PRIMARY_AND_ABSTENTION_DENOMINATOR_POLICIES_DISAGREE": "two denominators in one receipt"
+ },
+ "authorises_broker_deployment": false,
+ "execution_authority": "NONE"
+}

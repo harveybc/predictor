@@ -1,0 +1,65 @@
+{
+ "baseline": {
+  "killed": [],
+  "killed_count": 0,
+  "ran": 21
+ },
+ "mutations": {
+  "M1_every_row_takes_the_terminal_level_primary_identity": {
+   "killed": [
+    "test_a_confusion_cell_is_not_a_score_and_carries_its_own_kind",
+    "test_a_different_provider_on_the_same_rows_is_its_own_occurrence",
+    "test_a_reader_with_only_the_tags_recovers_any_row",
+    "test_a_replicate_under_a_different_protocol_is_its_own_occurrence",
+    "test_a_secondary_row_does_not_inherit_the_primary_identity",
+    "test_an_aggregate_never_puts_them_in_one_group",
+    "test_every_projected_row_gets_a_digest_and_none_is_shared_by_accident",
+    "test_one_measurement_in_two_terminals_is_counted_once",
+    "test_one_occurrence_with_two_values_is_a_refusal_not_an_average",
+    "test_seventy_seven_classes_overflow_the_tag_and_stay_recomputable",
+    "test_the_authors_own_name_is_attribution_and_not_identity",
+    "test_the_old_rule_double_counts_and_the_new_one_does_not",
+    "test_the_same_metric_on_the_same_protocol_shares_one_identity_across_roles"
+   ],
+   "killed_count": 13,
+   "ran": 21
+  },
+  "M2_row_role_inside_the_identity": {
+   "killed": [
+    "test_a_reader_with_only_the_tags_recovers_any_row",
+    "test_one_measurement_in_two_terminals_is_counted_once",
+    "test_seventy_seven_classes_overflow_the_tag_and_stay_recomputable",
+    "test_the_old_rule_double_counts_and_the_new_one_does_not",
+    "test_the_same_metric_on_the_same_protocol_shares_one_identity_across_roles"
+   ],
+   "killed_count": 5,
+   "ran": 21
+  },
+  "M3_evidence_class_inside_the_identity": {
+   "killed": [
+    "test_a_published_reference_and_a_measurement_share_one_identity",
+    "test_a_reader_with_only_the_tags_recovers_any_row",
+    "test_an_aggregate_never_puts_them_in_one_group",
+    "test_seventy_seven_classes_overflow_the_tag_and_stay_recomputable"
+   ],
+   "killed_count": 4,
+   "ran": 21
+  }
+ },
+ "mutations_that_killed_nothing": [],
+ "schema": "cb04_row_identity_mutation_probe.v1",
+ "suite_after_restore": {
+  "killed": [],
+  "killed_count": 0,
+  "ran": 21
+ },
+ "test_classes": [
+  "EveryRowHasItsOwnIdentity",
+  "EvidenceClassIsSeparateFromIdentity",
+  "NoDoubleCountingBetweenTerminals",
+  "TheTagsAndTheReader"
+ ],
+ "verdict": "EVERY_MUTATION_IS_CAUGHT",
+ "what_this_is": "three wrong designs for the per-row metric identity, each substituted in turn, with the tests each one kills",
+ "what_this_is_not": "a measurement of any model, a warehouse write, or a claim about the accepted rows already stored"
+}

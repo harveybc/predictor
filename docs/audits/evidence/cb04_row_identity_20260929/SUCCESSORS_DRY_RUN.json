@@ -1,0 +1,182 @@
+{
+ "campaign_sha256": "eee796e2afb0faf9b40b3b17e6cede18c442d3f8b22a9e024987042f82e99386",
+ "defect_and_repair_from_the_live_rows": {
+  "metrics_riding_on_a_foreign_identity": [
+   "classification.accuracy",
+   "classification.macro_f1"
+  ],
+  "one_macro_f1_value_under_n_identities": {
+   "0.9252733932274245": [
+    "1756f8771910067a7162ca869aedd7ca5582ccd0e49621f9de319e2bfbae8665"
+   ],
+   "0.9467546527629132": [
+    "1756f8771910067a7162ca869aedd7ca5582ccd0e49621f9de319e2bfbae8665",
+    "a62f184c48a8216d2a425090540f6fa93eaaf16babdf9e66483974cd3bee6d4b"
+   ]
+  },
+  "row_identity_repair": {
+   "distinct_occurrences": 49,
+   "distinct_row_identities": 25,
+   "duplicate_rows_between_terminals": 23,
+   "duplicated_metrics": [
+    "classification.abstained.class_0",
+    "classification.abstained.class_1",
+    "classification.abstained.class_2",
+    "classification.abstained.class_3",
+    "classification.abstention_coverage",
+    "classification.accuracy",
+    "classification.answered_fraction",
+    "classification.brier",
+    "classification.correct.class_0",
+    "classification.correct.class_1",
+    "classification.correct.class_2",
+    "classification.correct.class_3",
+    "classification.ece",
+    "classification.macro_f1",
+    "classification.nll",
+    "classification.predicted.class_0",
+    "classification.predicted.class_1",
+    "classification.predicted.class_2",
+    "classification.predicted.class_3",
+    "classification.support.class_0",
+    "classification.support.class_1",
+    "classification.support.class_2",
+    "classification.support.class_3"
+   ],
+   "groups": 25,
+   "value_conflicts": []
+  },
+  "rows_under_the_contract": 72,
+  "terminal_level_identities": 2
+ },
+ "dry_run": true,
+ "method": "the accepted generation-1 rows are left exactly as they are; the correction is generation 2 of the same campaign and unit, with byte-identical metric rows and strictly additional tags",
+ "per_unit": {
+  "framework-accuracy": {
+   "artifacts": 5,
+   "checks": {
+    "drifted_tags": [],
+    "generation_in_the_warehouse": 1,
+    "receipt_sha256_matches_the_stored_tag": true,
+    "stored_contract_tags_have_not_drifted": true,
+    "stored_metric_rows_are_this_receipts_projection": true
+   },
+   "metric_rows": 24,
+   "metric_rows_identical_to_the_accepted_row": true,
+   "row_identity_map_sha256": "f44ce0ee59675c87340347ca609fc54085dd84ccd22d98c24983dd5c022b8e4b",
+   "row_occurrence_map_sha256": "0d02f2e41e003b0d9f58bc96fe39f82ed7850997d8bf3c28404f4a7893264c79",
+   "successor_generation": 2,
+   "tags_accepted": 55,
+   "tags_added": [
+    "aggregation_rule",
+    "author_primary_metric_denominator_policy",
+    "double_count_guard",
+    "evidence_class_is_a_separate_dimension_from_metric_identity",
+    "metric_identity_sha256_scope",
+    "metric_row_count",
+    "metric_row_identity_json",
+    "metric_row_identity_map_sha256",
+    "metric_row_identity_rule",
+    "metric_row_occurrence_json",
+    "metric_row_occurrence_map_sha256",
+    "metric_row_roles_json",
+    "probability_semantics_of_probability_rows",
+    "row_identity_contract",
+    "supersede_changed",
+    "supersede_reason",
+    "superseded_row_remains_readable",
+    "supersedes_generation",
+    "supersedes_terminal_sha256"
+   ],
+   "tags_changed": [],
+   "tags_successor": 74
+  },
+  "native-accuracy": {
+   "artifacts": 5,
+   "checks": {
+    "drifted_tags": [],
+    "generation_in_the_warehouse": 1,
+    "receipt_sha256_matches_the_stored_tag": true,
+    "stored_contract_tags_have_not_drifted": true,
+    "stored_metric_rows_are_this_receipts_projection": true
+   },
+   "metric_rows": 24,
+   "metric_rows_identical_to_the_accepted_row": true,
+   "row_identity_map_sha256": "f44ce0ee59675c87340347ca609fc54085dd84ccd22d98c24983dd5c022b8e4b",
+   "row_occurrence_map_sha256": "f22f300d4aac28c9551495ad966bf34547c6975511bea15dc4ed6c0a258fc487",
+   "successor_generation": 2,
+   "tags_accepted": 61,
+   "tags_added": [
+    "aggregation_rule",
+    "author_primary_metric_denominator_policy",
+    "double_count_guard",
+    "evidence_class_is_a_separate_dimension_from_metric_identity",
+    "metric_identity_sha256_scope",
+    "metric_row_count",
+    "metric_row_identity_json",
+    "metric_row_identity_map_sha256",
+    "metric_row_identity_rule",
+    "metric_row_occurrence_json",
+    "metric_row_occurrence_map_sha256",
+    "metric_row_roles_json",
+    "probability_semantics_of_probability_rows",
+    "row_identity_contract",
+    "supersede_changed",
+    "supersede_reason",
+    "superseded_row_remains_readable",
+    "supersedes_generation",
+    "supersedes_terminal_sha256"
+   ],
+   "tags_changed": [],
+   "tags_successor": 80
+  },
+  "native-macro-f1": {
+   "artifacts": 5,
+   "checks": {
+    "drifted_tags": [],
+    "generation_in_the_warehouse": 1,
+    "receipt_sha256_matches_the_stored_tag": true,
+    "stored_contract_tags_have_not_drifted": true,
+    "stored_metric_rows_are_this_receipts_projection": true
+   },
+   "metric_rows": 24,
+   "metric_rows_identical_to_the_accepted_row": true,
+   "row_identity_map_sha256": "629992cd1ffa34a6198492695eee16fe2f8c49d0d05e9f2345a5f4aed2dee9e6",
+   "row_occurrence_map_sha256": "d63121ddbb6a4854b7bd1bb49993db262c97f9baf4fbfe4bba96548e4d72a3d0",
+   "successor_generation": 2,
+   "tags_accepted": 55,
+   "tags_added": [
+    "aggregation_rule",
+    "author_primary_metric_denominator_policy",
+    "double_count_guard",
+    "evidence_class_is_a_separate_dimension_from_metric_identity",
+    "metric_identity_sha256_scope",
+    "metric_row_count",
+    "metric_row_identity_json",
+    "metric_row_identity_map_sha256",
+    "metric_row_identity_rule",
+    "metric_row_occurrence_json",
+    "metric_row_occurrence_map_sha256",
+    "metric_row_roles_json",
+    "probability_semantics_of_probability_rows",
+    "row_identity_contract",
+    "supersede_changed",
+    "supersede_reason",
+    "superseded_row_remains_readable",
+    "supersedes_generation",
+    "supersedes_terminal_sha256"
+   ],
+   "tags_changed": [],
+   "tags_successor": 74
+  }
+ },
+ "row_identity_contract": "classification_row_identity.v1",
+ "schema": "cb04_row_identity_successors.v1",
+ "successor_bodies_sha256": {
+  "framework-accuracy": "cca9b6cd1ad90066fe1eeab1ae6d90e738f70afc70d31298e5fd8094d35621c3",
+  "native-accuracy": "7bcfda15d7fe047a3581ced661e69ce4af0fc65b982fbfcd22f94f962f914c8c",
+  "native-macro-f1": "ea09a79613b1878468a31accff541fad884c6610138e8247236a01726d7f1cc9"
+ },
+ "supersede_reason": "METRIC_IDENTITY_WAS_TERMINAL_LEVEL_SO_SECONDARY_ROWS_INHERITED_A_FOREIGN_IDENTITY: metric_identity_sha256 binds this receipt's primary metric only, so this terminal's secondary, naive, probability, coverage and confusion rows reached the warehouse under an identity that is not their own, and the same measurement carried by two terminals could be counted twice by an aggregate keyed on it. The successor adds classification_row_identity.v1: a per-row identity, a per-row occurrence key that deduplicates between terminals, and evidence class as a dimension separate from the identity. No metric value changed and no stored row was rewritten.",
+ "what_this_is_not": "a new measurement, a new campaign, an edit of a stored row, a new metric value, or a badge"
+}
