@@ -1,4 +1,4 @@
-"""Render a dated program snapshot with an explicit, count-based denominator."""
+"""Render a dated program snapshot and a clearly labeled planning estimate."""
 
 from pathlib import Path
 
@@ -30,6 +30,10 @@ OPEN = ("Traffic 12 scores", "matched modular comparison", "branch AE",
         "core AE", "DOIN optimization", "LTS model handoff", "MT5 paper",
         "financial model evaluation", "validated live model")
 
+# Judgmental planning estimate toward a validated doctoral model in paper trading.
+# It is deliberately separate from the count of retained evidence deliverables.
+PAPER_TRADING_PROGRESS_ESTIMATE = 0.20
+
 
 def main():
     out = Path(__file__).resolve().parents[1] / "docs" / "audits" / "work_plan" / "PROGRAM_PROGRESS_2026_09_30.png"
@@ -41,11 +45,13 @@ def main():
     ax.axis("off")
     ax.text(0.7, 16.92, "De la réplica al trading", fontsize=29, weight="bold", color="#17232b")
     total = len(DONE) + len(OPEN)
-    ax.text(17.25, 16.92, f"{len(DONE)}/{total}  ·  {len(DONE)/total:.0%}", fontsize=20,
-            weight="bold", color="#087f5b", ha="right")
-    ax.text(0.72, 16.38, "Entregables con evidencia / entregables definidos · conteo, no horas ni rentabilidad", fontsize=11.8, color="#52636b")
+    ax.text(17.25, 16.92, f"≈{PAPER_TRADING_PROGRESS_ESTIMATE:.0%} ESTIMADO", fontsize=20,
+            weight="bold", color="#b56800", ha="right")
+    ax.text(0.72, 16.38,
+            f"Ruta a primer modelo doctoral validado en paper · {len(DONE)}/{total} hitos con evidencia ({len(DONE)/total:.0%}); no equivale al avance total",
+            fontsize=11.2, color="#52636b")
     ax.add_patch(Rectangle((0.72, 16.05), 16.55, 0.13, color="#e7ecee", lw=0))
-    ax.add_patch(Rectangle((0.72, 16.05), 16.55 * len(DONE) / total, 0.13, color="#087f5b", lw=0))
+    ax.add_patch(Rectangle((0.72, 16.05), 16.55 * PAPER_TRADING_PROGRESS_ESTIMATE, 0.13, color="#b56800", lw=0))
     history = [(1.1, "22 SEP", "ECL L96"), (5.0, "24 SEP", "Modular DEV"),
                (8.9, "29 SEP", "Weather"), (12.8, "30 SEP", "Traffic coste"),
                (16.7, "~22:10Z", "primer score")]
@@ -69,8 +75,12 @@ def main():
         ax.text(10.4, y + 0.11, status, fontsize=10.3, weight="bold", color=color, va="center")
         ax.text(13.55, y + 0.11, detail, fontsize=9.0, color="#3c4d55", va="center")
     ax.plot([0.72, 17.3], [0.87, 0.87], color="#17232b", lw=1.2)
-    ax.text(0.72, 0.47, "Siguiente evidencia: score Traffic → referencia emparejada → branching → preentrenamiento → promoción paper", fontsize=12, color="#17232b")
-    ax.text(0.72, 0.13, "Fuentes: cierres RP140–143, ECL R0/R1/R2, Weather 2026-09-29, Traffic TRAIN_PILOT h192, DOIN 4c23a6f, LTS 0a36609.", fontsize=8.8, color="#66777e")
+    ax.text(0.72, 0.47,
+            "ETA orientativo: Traffic 1–3 oct · contraste modular 3–7 oct · AE/integración 7–14 oct · primer paper validado 14–28 oct*",
+            fontsize=11.1, color="#17232b")
+    ax.text(0.72, 0.13,
+            "*Estimación de planificación, no garantía de ganancia. Fuentes: RP140–143, ECL R0/R1/R2, Weather 29 sep, Traffic cost, DOIN y LTS.",
+            fontsize=8.8, color="#66777e")
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=160, facecolor="white", bbox_inches="tight", pad_inches=0.2)
     plt.close(fig)
