@@ -292,6 +292,19 @@ def _materialize(model, values, path, batch_size, beat, label):
     return np.load(path, mmap_mode="r")
 
 
+def _label(population):
+    provenance = population.get("provenance", "undeclared")
+    return ("SYNTHETIC FIXTURE - PLUMBING_NOT_A_RESULT" if provenance == "synthetic_fixture"
+            else provenance.upper())
+
+
+def _write_provenance(donor, document):
+    """Sidecar beside a donor; the engine's strict .manifest.json is left untouched."""
+    path = Path(donor).with_suffix(".provenance.json")
+    path.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n")
+    return {"path": str(path), "sha256": _file_sha(path)}
+
+
 # --------------------------------------------------------------------------- pipeline
 def _stage_config(fit_config, stage_fit_configs, stage):
     cfg = dict(fit_config)
@@ -383,6 +396,13 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
                   "reload_parity": {"passed": True, "max_abs_error": parity, "atol": 1e-6,
                                     "rows": int(len(validation_x)), "split": "train_validation"},
                   "wall_seconds": time.monotonic() - started}
+        record["provenance"] = _write_provenance(donor, {
+            "schema": "modular.branch_donor.provenance.v1", "stage": "branch_ae", "name": name,
+            "input_provenance": train_population.get("provenance", "undeclared"),
+            "label": _label(train_population), "donor_sha256": record["donor_sha256"],
+            "donor_sidecar_sha256": record["donor_sidecar_sha256"],
+            "train_input_sha256": train_identity["sha256"],
+            "train_validation_input_sha256": validation_identity["sha256"]})
         records.append(record)
         beat.update(last_checkpoint={"stage": "branch_ae", "name": name, "donor_sha256": record["donor_sha256"]})
         spec.update(regime="R2", donor=str(donor))
@@ -454,6 +474,8 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
     if parity > 1e-5 or weights_hash(loaded) != sidecar["weights_sha256"]:
         raise ValueError(f"core donor reload parity failed ({parity})")
     provenance = {"schema": "modular.core_donor.provenance.v1", "stage": "core_ae",
+                  "input_provenance": train_population.get("provenance", "undeclared"),
+                  "label": _label(train_population),
                   "core_donor_sha256": _file_sha(donor),
                   "core_manifest_sha256": sidecar["manifest_sha256"],
                   "upstream_branch_donors": fusion_record["branch_donors"],

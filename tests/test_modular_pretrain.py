@@ -111,6 +111,10 @@ def test_core_donor_binds_exact_upstream_and_refuses_mismatch(pretrained, tmp_pa
     assert [b["donor_sha256"] for b in prov["upstream_branch_donors"]] == \
         [b["donor_sha256"] for b in result["branches"]]
     assert prov["fused_materialization"]["train"] == result["fused_train"]["sha256"]
+    assert prov["label"].startswith("SYNTHETIC")
+    for b in result["branches"]:
+        side = json.loads(open(b["provenance"]["path"]).read())
+        assert side["label"].startswith("SYNTHETIC") and side["donor_sha256"] == b["donor_sha256"]
     assert result["core"]["upstream_bound"]["branch_weights_sha256"] == \
         [b["donor_weights_sha256"] for b in result["branches"]]
     build_modular(regime_config(result["fine_tune_config"], "R1"))  # matched upstream loads
