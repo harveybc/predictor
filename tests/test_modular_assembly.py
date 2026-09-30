@@ -430,3 +430,70 @@ def test_legacy_stl_pipeline_build_and_train_contract():
     assert list(plugin.model.output_names) == plugin.output_names
     assert "loss" in history.history and "val_loss" in history.history
     assert all(np.all(u == 0) for u in vu) and len(vp) == 2
+
+
+# ------------------------------------------- identity domain, Keras pin
+EXPLICIT_CORE = {"d_model": 16, "heads": 2, "blocks": 2, "ff_dim": 16, "dropout": 0, "kernel_size": 3,
+                 "stage_channels": [12, 10, 8], "time_factors": [2, 1, 1]}
+
+
+def _explicit(c):
+    c = copy.deepcopy(c)
+    for spec in c["branches"]:
+        spec["params"] = {"channels": 16, "kernel_size": 3, **spec["params"]}
+    c["core"]["params"] = dict(EXPLICIT_CORE)
+    return c
+
+
+def test_implicit_and_explicit_defaults_share_one_identity(tmp_path):
+    implicit = nested()
+    for spec in implicit["branches"]:
+        spec["params"] = {}
+    a = mt.build_modular(implicit)
+    b = mt.build_modular(_explicit(implicit))
+    for name in a.branch_models:
+        assert a.donor_manifest("branch", name) == b.donor_manifest("branch", name)
+    strip = lambda m: {k: v for k, v in m.items() if k != "upstream"}
+    assert strip(a.donor_manifest("core")) == strip(b.donor_manifest("core"))
+    # donors written from the implicit form load into the explicit form (M04 from_flat output)
+    c = _explicit(implicit)
+    for spec in implicit["branches"]:
+        path = tmp_path / f"{spec['name']}.keras"
+        mt.save_donor(a.branch_models[spec["name"]], path, a.donor_manifest("branch", spec["name"]),
+                      declared_params=spec["params"])
+        next(s for s in c["branches"] if s["name"] == spec["name"]).update(regime="R1", donor=str(path))
+    core = tmp_path / "core.keras"
+    mt.save_donor(a.core_model, core, a.donor_manifest("core"))
+    c["core"].update(regime="R1", donor=str(core))
+    loaded = mt.build_modular(c)
+    np.testing.assert_allclose(loaded.encoder_model(x_data(2)), a.encoder_model(x_data(2)), atol=1e-6)
+    sidecar = json.loads((tmp_path / "price.manifest.json").read_text())
+    assert sidecar["provenance"]["declared_params"] == {}
+    assert sidecar["provenance"]["keras_version"] == mt.keras_version()
+    # any changed EFFECTIVE value is a different identity and is refused
+    for mutate in (lambda d: d["branches"][0]["params"].update(channels=8),
+                   lambda d: d["core"]["params"].update(dropout=0.1)):
+        wrong = copy.deepcopy(c)
+        mutate(wrong)
+        with pytest.raises(ValueError, match="onor"):
+            mt.build_modular(wrong)
+
+
+def test_keras_major_minor_mismatch_is_refused_before_deserialization(tmp_path):
+    b = mt.build_modular(nested())
+    mt.save_bundle(b, tmp_path / "bundle")
+    doc_path = tmp_path / "bundle" / "bundle.json"
+    doc = json.loads(doc_path.read_text())
+    assert doc["keras_version"] == mt.keras_version()
+    doc["keras_version"] = "3.99.0"
+    doc_path.write_text(json.dumps(doc))
+    with pytest.raises(ValueError, match="Keras 3.99.0"):
+        mt.load_bundle(tmp_path / "bundle")
+    path = tmp_path / "price.keras"
+    mt.save_donor(b.branch_models["price"], path, b.donor_manifest("branch", "price"))
+    side = path.with_suffix(".manifest.json")
+    doc = json.loads(side.read_text())
+    doc["provenance"]["keras_version"] = "3.99.1"
+    side.write_text(json.dumps(doc))
+    with pytest.raises(ValueError, match="Keras 3.99.1"):
+        mt.load_donor(path, b.donor_manifest("branch", "price"))

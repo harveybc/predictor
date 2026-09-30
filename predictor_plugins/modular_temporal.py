@@ -165,7 +165,35 @@ CONFIG_SCHEMA = "predictor.modular.v1"
 ROLES = ("branch", "core", "fusion", "head")
 
 
-def component(role, version, parameters, contract):
+def keras_version():
+    import keras as _keras
+    return _keras.__version__
+
+
+def _major_minor(version):
+    return ".".join(str(version).split(".")[:2])
+
+
+def effective_params(factory, params, context):
+    """Declared defaults resolved: {} and explicit defaults are ONE identity.
+
+    A factory declares ``defaults`` (a dict, or a callable(params, context)).
+    Integers supplied where the default is a float are coerced, so 0 and 0.0 do
+    not split an identity. External factories without declared defaults keep
+    their literal params (their identity is then literal, documented).
+    """
+    declared = getattr(factory, "component_defaults", None)
+    if declared is None:
+        return _copy(params)
+    base = declared(_copy(params), dict(context)) if callable(declared) else _copy(declared)
+    merged = {**base, **_copy(params)}
+    for key, value in merged.items():
+        if isinstance(base.get(key), float) and type(value) is int:
+            merged[key] = float(value)
+    return merged
+
+
+def component(role, version, parameters, contract, defaults=None):
     """Declare a factory's role, semantic version, parameter names and tensor/time contract.
 
     Every factory, built-in or external, must carry this declaration; the version
@@ -180,6 +208,7 @@ def component(role, version, parameters, contract):
         factory.component_version = version
         factory.component_parameters = tuple(sorted(parameters))
         factory.component_contract = contract
+        factory.component_defaults = defaults
         return factory
     return mark
 
@@ -194,7 +223,8 @@ def _compress(x, steps, channels, name):
 
 @component("branch", "1.0.0", {"channels", "kernel_size"},
            "(batch, window, features) -> (batch, branch_steps, channels); causal; "
-           "output k is the right edge of the k-th complete equal input block")
+           "output k is the right edge of the k-th complete equal input block",
+           defaults={"channels": 16, "kernel_size": 3})
 def causal_conv1d(*, input_shape, time_grid, output_steps, name, params):
     channels = _positive_int(params.get("channels", 16), "channels")
     kernel = _positive_int(params.get("kernel_size", 3), "kernel_size")
@@ -206,7 +236,8 @@ def causal_conv1d(*, input_shape, time_grid, output_steps, name, params):
 
 
 @component("fusion", "1.0.0", set(),
-           "list of (batch, branch_steps, c_i) on one grid -> (batch, branch_steps, sum c_i); no weights")
+           "list of (batch, branch_steps, c_i) on one grid -> (batch, branch_steps, sum c_i); no weights",
+           defaults={})
 def sequence_concat(*, input_shapes, time_grid, name, params):
     _keys(params, set(), "fusion params")
     inputs = [keras.Input(shape) for shape in input_shapes]
@@ -217,7 +248,12 @@ def sequence_concat(*, input_shapes, time_grid, name, params):
 @component("core", "1.0.0", {"d_model", "heads", "blocks", "ff_dim", "dropout",
                              "stage_channels", "time_factors", "kernel_size"},
            "(batch, branch_steps, C) -> (batch, output_steps, output_channels); positional encoding, "
-           "causal full Transformer blocks, 3-4 learned block compressions; right-edge grid")
+           "causal full Transformer blocks, 3-4 learned block compressions; right-edge grid",
+           defaults=lambda params, ctx: {
+               "d_model": 64, "heads": 4, "blocks": 2, "ff_dim": 128, "dropout": 0.0, "kernel_size": 3,
+               "stage_channels": params.get("stage_channels", [32, 16, ctx["output_channels"]]),
+               "time_factors": [ctx["input_steps"] // ctx["output_steps"]]
+               + [1] * (len(params.get("stage_channels", [0, 0, 0])) - 1)})
 def transformer_conv(*, input_shape, time_grid, output_steps, output_channels, name, params):
     _keys(params, {"d_model", "heads", "blocks", "ff_dim", "dropout",
                   "stage_channels", "time_factors", "kernel_size"}, "core params")
@@ -263,7 +299,8 @@ def transformer_conv(*, input_shape, time_grid, output_steps, output_channels, n
 
 @component("head", "1.0.0", set(),
            "(batch, output_steps, output_channels) -> (batch, len(horizons), target_count); "
-           "consumes all latent tokens; grid labels future horizons")
+           "consumes all latent tokens; grid labels future horizons",
+           defaults={})
 def forecast(*, input_shape, time_grid, horizons, target_count, name, params):
     _keys(params, set(), "head params")
     inputs = keras.Input(input_shape)
@@ -469,8 +506,8 @@ def probe_alignment(model, input_grid, output_grid, *, seed=0, label="component"
     return {"checked_inputs": length, "checked_outputs": len(output_grid)}
 
 
-def _manifest(role, config, spec, plugin, model, input_grid, output_grid):
-    return {"schema": 1, "role": role, "plugin": plugin, "params": _copy(spec["params"]),
+def _manifest(role, config, spec, plugin, model, input_grid, output_grid, params):
+    return {"schema": 1, "role": role, "plugin": plugin, "params": _copy(params),
             "features": _copy(spec.get("features", config["feature_names"])),
             "feature_names": _copy(config["feature_names"]),
             "name": spec.get("name", role), "sample_hours": config["sample_hours"],
@@ -553,7 +590,8 @@ def build_modular(config: dict) -> ModularBundle:
         component = factory(input_shape=shape, time_grid=input_grid, output_steps=c["branch_steps"],
                             name=name, params=_copy(spec["params"]))
         model = _validate_component(component, [shape], branch_grid)
-        manifest = _manifest("branch", c, spec, identity, model, input_grid, branch_grid)
+        effective = effective_params(factory, spec["params"], {"output_steps": c["branch_steps"]})
+        manifest = _manifest("branch", c, spec, identity, model, input_grid, branch_grid, effective)
         _apply_regime(model, spec, manifest)
         if c["alignment_probe"]:
             probe_alignment(model, input_grid, branch_grid, label="branch " + name)
@@ -562,7 +600,7 @@ def build_modular(config: dict) -> ModularBundle:
                               name="select_" + name)(inputs)
         sequences.append(model(local))
     factory, fusion_identity = _resolve("fusion", c["fusion"], groups)
-    fusion_identity["params"] = _copy(c["fusion"]["params"])
+    fusion_identity["params"] = effective_params(factory, c["fusion"]["params"], {})
     shapes = [tuple(x.shape[1:]) for x in sequences]
     component = factory(input_shapes=shapes, time_grid=branch_grid, name="sequence_fusion", params=_copy(c["fusion"]["params"]))
     fusion = _validate_component(component, shapes, branch_grid, sum(s[1] for s in shapes))
@@ -575,7 +613,10 @@ def build_modular(config: dict) -> ModularBundle:
                         output_steps=c["output_steps"], output_channels=c["output_channels"],
                         name="temporal_core", params=_copy(c["core"]["params"]))
     core = _validate_component(component, [tuple(fused.shape[1:])], core_grid, c["output_channels"])
-    core_manifest = _manifest("core", c, c["core"], identity, core, branch_grid, core_grid)
+    effective = effective_params(factory, c["core"]["params"], {
+        "input_steps": c["branch_steps"], "output_steps": c["output_steps"],
+        "output_channels": c["output_channels"]})
+    core_manifest = _manifest("core", c, c["core"], identity, core, branch_grid, core_grid, effective)
     core_manifest["upstream"] = _upstream(branches, manifests, fusion, fusion_identity)
     _apply_regime(core, c["core"], core_manifest)
     if c["alignment_probe"]:
@@ -618,6 +659,7 @@ def save_bundle(bundle, directory):
     archive = out / "forecast_model.keras"
     bundle.forecast_model.save(archive)
     document = {"schema": BUNDLE_SCHEMA, "config": _normalize(bundle.config),
+                "keras_version": keras_version(),
                 "components": bundle.component_manifests(),
                 "weights_sha256": weights_hash(bundle.forecast_model),
                 "archive_sha256": _file_hash(archive)}
@@ -638,6 +680,10 @@ def load_bundle(directory):
     document = json.loads((src / "bundle.json").read_text(encoding="utf-8"))
     if document.get("schema") != BUNDLE_SCHEMA:
         raise ValueError("Unsupported bundle schema")
+    saved = document.get("keras_version")
+    if saved is None or _major_minor(saved) != _major_minor(keras_version()):
+        raise ValueError(f"Bundle was saved under Keras {saved}; running Keras {keras_version()} "
+                         "(major.minor must match; re-export in the campaign environment)")
     archive = src / "forecast_model.keras"
     if _file_hash(archive) != document["archive_sha256"]:
         raise ValueError("Bundle archive hash mismatch")
@@ -707,13 +753,17 @@ def _donor_path(path):
     return path, path.with_suffix(".manifest.json")
 
 
-def save_donor(model, path, manifest):
+def save_donor(model, path, manifest, declared_params=None):
     """Save selected encoder and strict integrity sidecar; return sidecar dict."""
     path, sidecar = _donor_path(path)
     manifest = _copy(manifest)
     _check_manifest_model(manifest, model)
     model.save(path)
+    provenance = {"keras_version": keras_version()}
+    if declared_params is not None:
+        provenance["declared_params"] = _copy(declared_params)
     document = {"schema": 1, "manifest": manifest, "manifest_sha256": _digest(manifest),
+                "provenance": provenance,
                 "model_sha256": _file_hash(path), "weights_sha256": weights_hash(model)}
     sidecar.write_text(json.dumps(document, sort_keys=True, indent=2) + "\n", encoding="utf-8")
     return document
@@ -741,8 +791,13 @@ def load_donor(path, expected_manifest):
     except (json.JSONDecodeError, UnicodeError) as exc:
         raise ValueError("Invalid donor manifest JSON") from exc
     required = {"schema", "manifest", "manifest_sha256", "model_sha256", "weights_sha256"}
-    if not isinstance(document, dict) or set(document) != required or document["schema"] != 1:
+    if (not isinstance(document, dict) or not required <= set(document) <= required | {"provenance"}
+            or document["schema"] != 1):
         raise ValueError("Invalid donor manifest schema")
+    saved = (document.get("provenance") or {}).get("keras_version")
+    if saved is not None and _major_minor(saved) != _major_minor(keras_version()):
+        raise ValueError(f"Donor was saved under Keras {saved}; running Keras {keras_version()} "
+                         "(major.minor must match)")
     if _digest(document["manifest"]) != document["manifest_sha256"]:
         raise ValueError("Donor manifest hash mismatch")
     if _json(document["manifest"]) != _json(expected_manifest):
