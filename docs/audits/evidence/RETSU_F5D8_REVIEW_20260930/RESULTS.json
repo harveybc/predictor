@@ -1,0 +1,13 @@
+{
+  "scope": "Disposable source-boundary counterexamples, not deployed corruption",
+  "wrong_reference_accepted": [
+    1,
+    0.2
+  ],
+  "records_mutated_after_verification_accepted": [
+    1,
+    999.0
+  ],
+  "core": "a50a33e",
+  "node": "6c64646"
+}
