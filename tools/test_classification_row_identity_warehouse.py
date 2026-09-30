@@ -16,7 +16,7 @@ Nothing is mocked, patched or wrapped, and nothing is written outside the
 temporary directory.
 
 Run with the store host's environment, which has the provider installed:
-  /home/harveybc/.venvs/store-hosts-duckdb-prod/bin/python \
+  ~/.venvs/store-hosts-duckdb-prod/bin/python \
       tools/test_classification_row_identity_warehouse.py
 """
 import inspect

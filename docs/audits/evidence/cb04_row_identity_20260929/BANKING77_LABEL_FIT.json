@@ -1,0 +1,266 @@
+{
+ "instructions_head": "Which banking intent does this customer message express?",
+ "label_order_audit": {
+  "carried_forward_not_re_derived": "the order is read from docs/contracts/classification_populations.v1.json, which pins the mirror revision; this function only checks it and counts what a naive sorted() map would get wrong",
+  "first_five_mislabelled": [
+   {
+    "id": 0,
+    "mirror_label": "activate_my_card",
+    "naive_sorted_label": "Refund_not_showing_up"
+   },
+   {
+    "id": 1,
+    "mirror_label": "age_limit",
+    "naive_sorted_label": "activate_my_card"
+   },
+   {
+    "id": 2,
+    "mirror_label": "apple_pay_or_google_pay",
+    "naive_sorted_label": "age_limit"
+   },
+   {
+    "id": 3,
+    "mirror_label": "atm_support",
+    "naive_sorted_label": "apple_pay_or_google_pay"
+   },
+   {
+    "id": 4,
+    "mirror_label": "automatic_top_up",
+    "naive_sorted_label": "atm_support"
+   }
+  ],
+  "fraction_mislabelled": 0.6753246753246753,
+  "ids_a_naive_sorted_map_would_mislabel": 52,
+  "labels": 77,
+  "mirror_order_is_byte_sorted": false,
+  "mirror_order_is_case_insensitive_alphabetical": true
+ },
+ "labels_source": {
+  "file": "docs/contracts/classification_populations.v1.json",
+  "labels": 77,
+  "mirror": null
+ },
+ "question_builder_gate": {
+  "all_77_options_can_be_asked": false,
+  "attempts": {
+   "seventy_seven_bare_labels": {
+    "built": false,
+    "detail": "QUESTION_OPTION_COUNT: a choice needs between 2 and 12 options, got 77",
+    "refusal": "QUESTION_OPTION_COUNT"
+   },
+   "seventy_seven_with_descriptions": {
+    "built": false,
+    "detail": "QUESTION_OPTION_COUNT: a choice needs between 2 and 12 options, got 77",
+    "refusal": "QUESTION_OPTION_COUNT"
+   },
+   "thirteen_with_descriptions": {
+    "built": false,
+    "detail": "QUESTION_OPTION_COUNT: a choice needs between 2 and 12 options, got 13",
+    "refusal": "QUESTION_OPTION_COUNT"
+   },
+   "twelve_with_descriptions": {
+    "built": true,
+    "options": 12,
+    "total_characters": 550
+   }
+  },
+  "max_options": 12,
+  "max_total_question_characters": 4000,
+  "module": "~/Documents/GitHub/news-signal/src/news_signal/question.py"
+ },
+ "schema": "banking77_label_fit.v1",
+ "verdict": {
+  "all_77_labels_fit_untruncated": false,
+  "answered": true,
+  "finding_instead_of_a_score": "THE_SEVENTY_SEVEN_LABELS_DO_NOT_FIT_NO_SCORE_IS_PRODUCED",
+  "gates": {
+   "empty_description_floor/checkpoint_declared_1024_256": {
+    "fits": false,
+    "head_fully_kept": false,
+    "head_max_len": 256,
+    "option_budget": -450,
+    "option_tokens": 706,
+    "options_capped": true,
+    "options_truncated": [],
+    "room_left_for_the_news_text": 306
+   },
+   "empty_description_floor/framework_hard_coded_512_192": {
+    "fits": false,
+    "head_fully_kept": false,
+    "head_max_len": 192,
+    "option_budget": -514,
+    "option_tokens": 706,
+    "options_capped": true,
+    "options_truncated": [],
+    "room_left_for_the_news_text": 0
+   },
+   "label_as_its_own_description/checkpoint_declared_1024_256": {
+    "fits": false,
+    "head_fully_kept": false,
+    "head_max_len": 256,
+    "option_budget": -638,
+    "option_tokens": 894,
+    "options_capped": true,
+    "options_truncated": [],
+    "room_left_for_the_news_text": 118
+   },
+   "label_as_its_own_description/framework_hard_coded_512_192": {
+    "fits": false,
+    "head_fully_kept": false,
+    "head_max_len": 192,
+    "option_budget": -702,
+    "option_tokens": 894,
+    "options_capped": true,
+    "options_truncated": [],
+    "room_left_for_the_news_text": 0
+   }
+  },
+  "question": "do all 77 BANKING77 label options fit untruncated?",
+  "score_is_the_deliverable": false,
+  "the_shipped_question_builder_can_ask_them": false
+ },
+ "what_this_is": "the acceptance gate that decides whether a BANKING77 score may exist at all: do all 77 label options fit untruncated",
+ "what_this_is_not": "a score, a benchmark run, a model load, a dataset download, a badge, or any claim about accuracy",
+ "worker": {
+  "admission": "",
+  "rc": 0,
+  "record": {
+   "checkpoint": {
+    "files_in_manifest": 24,
+    "mismatched": [],
+    "tokenizer_files_verified": [
+     "tokenizer/tokenizer.json",
+     "tokenizer/tokenizer_config.json"
+    ],
+    "verified": 24
+   },
+   "checkpoint_declared_budget": {
+    "head_max_len": 256,
+    "max_len": 1024
+   },
+   "checkpoint_temperature_by_options": {
+    "choice:11+": 0.10058280825614929,
+    "choice:2": 1.9063563346862793,
+    "choice:3-5": 1.7601518630981445,
+    "choice:6-10": 1.0000158548355103,
+    "noul:2": 1.983399510383606,
+    "score:3-5": 1.2514300346374512
+   },
+   "fit": {
+    "empty_description_floor": {
+     "checkpoint_declared_1024_256": {
+      "fits": false,
+      "head_fully_kept": false,
+      "head_max_len": 256,
+      "head_tokens": 12,
+      "head_tokens_kept": 8,
+      "max_len": 1024,
+      "option_token_limit": 48,
+      "option_tokens": 706,
+      "option_tokens_max": 19,
+      "option_tokens_mean": 8.168831168831169,
+      "option_tokens_min": 5,
+      "options": 77,
+      "options_capped": true,
+      "options_over_the_per_option_limit": [],
+      "options_truncated": [],
+      "room_left_for_the_news_text": 306,
+      "state_room": 306,
+      "state_tokens": 0,
+      "state_tokens_kept": 0
+     },
+     "framework_hard_coded_512_192": {
+      "fits": false,
+      "head_fully_kept": false,
+      "head_max_len": 192,
+      "head_tokens": 12,
+      "head_tokens_kept": 8,
+      "max_len": 512,
+      "option_token_limit": 48,
+      "option_tokens": 706,
+      "option_tokens_max": 19,
+      "option_tokens_mean": 8.168831168831169,
+      "option_tokens_min": 5,
+      "options": 77,
+      "options_capped": true,
+      "options_over_the_per_option_limit": [],
+      "options_truncated": [],
+      "room_left_for_the_news_text": 0,
+      "state_room": 0,
+      "state_tokens": 0,
+      "state_tokens_kept": 0
+     }
+    },
+    "label_as_its_own_description": {
+     "checkpoint_declared_1024_256": {
+      "fits": false,
+      "head_fully_kept": false,
+      "head_max_len": 256,
+      "head_tokens": 12,
+      "head_tokens_kept": 8,
+      "max_len": 1024,
+      "option_token_limit": 48,
+      "option_tokens": 894,
+      "option_tokens_max": 27,
+      "option_tokens_mean": 10.61038961038961,
+      "option_tokens_min": 6,
+      "options": 77,
+      "options_capped": true,
+      "options_over_the_per_option_limit": [],
+      "options_truncated": [],
+      "room_left_for_the_news_text": 118,
+      "state_room": 118,
+      "state_tokens": 0,
+      "state_tokens_kept": 0
+     },
+     "framework_hard_coded_512_192": {
+      "fits": false,
+      "head_fully_kept": false,
+      "head_max_len": 192,
+      "head_tokens": 12,
+      "head_tokens_kept": 8,
+      "max_len": 512,
+      "option_token_limit": 48,
+      "option_tokens": 894,
+      "option_tokens_max": 27,
+      "option_tokens_mean": 10.61038961038961,
+      "option_tokens_min": 6,
+      "options": 77,
+      "options_capped": true,
+      "options_over_the_per_option_limit": [],
+      "options_truncated": [],
+      "room_left_for_the_news_text": 0,
+      "state_room": 0,
+      "state_tokens": 0,
+      "state_tokens_kept": 0
+     }
+    }
+   },
+   "schema": "banking77_label_fit_worker.v1",
+   "shipped": {
+    "backends_file": "~/cb03_20260929/src_fw/news-signal/src/news_signal/backends.py",
+    "framework_hard_coded_budget": {
+     "head_max_len": 192,
+     "max_len": 512
+    },
+    "option_token_limit": 48
+   },
+   "temperature": {
+    "bucket_for_77_options": "choice:11+",
+    "clamp_bounds": [
+     0.5,
+     5.0
+    ],
+    "clamp_fires": true,
+    "sdk_version": "0.3.11",
+    "shipped_value": 0.10058280825614929,
+    "value_after_clamp": 0.5
+   },
+   "tokenizer": {
+    "class": "TokenizersBackend",
+    "vocab_size": 50280
+   }
+  },
+  "stderr": ""
+ }
+}

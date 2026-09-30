@@ -1,0 +1,108 @@
+{
+ "read_at": "2026-09-30T00:02:33+00:00",
+ "roles": {
+  "COORDINATOR": {
+   "batch_scopes_current_bytes_total": 933662720,
+   "batch_scopes_running": 3,
+   "batch_slice": {
+    "active_state": "active",
+    "memory_current_bytes": 2457268224,
+    "memory_high_bytes": 12884901888,
+    "memory_max_bytes": 15032385536,
+    "present": true
+   },
+   "cpus": 16,
+   "crispdm_run_present": true,
+   "gpus": [
+    {
+     "compute_processes": 0,
+     "index": 0,
+     "name": "NVIDIA GeForce RTX 4070 Laptop GPU",
+     "quarantine_reason": null,
+     "status": "SCHEDULABLE",
+     "vram_free_bytes": 7369392128,
+     "vram_total_bytes": 8176795648
+    }
+   ],
+   "load1": 0.77,
+   "mem_available_bytes": 22555443200,
+   "mem_total_bytes": 32778358784,
+   "memguard_active": true,
+   "reachable": true,
+   "swap_free_bytes": 8588959744
+  },
+  "WORKER_A": {
+   "batch_scopes_current_bytes_total": 0,
+   "batch_scopes_running": 0,
+   "batch_slice": {
+    "active_state": "active",
+    "memory_current_bytes": 2021437440,
+    "memory_high_bytes": 12884901888,
+    "memory_max_bytes": 15032385536,
+    "present": true
+   },
+   "cpus": 32,
+   "crispdm_run_present": true,
+   "gpus": [
+    {
+     "compute_processes": 0,
+     "index": 0,
+     "name": "NVIDIA GeForce RTX 4090 Laptop GPU",
+     "quarantine_reason": null,
+     "status": "SCHEDULABLE",
+     "vram_free_bytes": 16703815680,
+     "vram_total_bytes": 16718495744
+    }
+   ],
+   "load1": 0.11,
+   "mem_available_bytes": 21814288384,
+   "mem_total_bytes": 32831807488,
+   "memguard_active": true,
+   "reachable": true,
+   "swap_free_bytes": 5144117248
+  },
+  "WORKER_B": {
+   "batch_scopes_current_bytes_total": 0,
+   "batch_scopes_running": 0,
+   "batch_slice": {
+    "active_state": "active",
+    "memory_current_bytes": 166424576,
+    "memory_high_bytes": 7516192768,
+    "memory_max_bytes": 8589934592,
+    "present": true
+   },
+   "cpus": 32,
+   "crispdm_run_present": true,
+   "gpus": [
+    {
+     "compute_processes": 0,
+     "index": 0,
+     "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+     "quarantine_reason": null,
+     "status": "SCHEDULABLE",
+     "vram_free_bytes": 12330205184,
+     "vram_total_bytes": 12344885248
+    },
+    {
+     "compute_processes": 0,
+     "index": 1,
+     "name": "NVIDIA GeForce RTX 5090",
+     "quarantine_reason": "no NVML device handle; quarantined by the auditor, never schedulable",
+     "status": "QUARANTINED_NOT_SCHEDULABLE",
+     "vram_free_bytes": 33659289600,
+     "vram_total_bytes": 33669775360
+    }
+   ],
+   "load1": 0.07,
+   "mem_available_bytes": 3508588544,
+   "mem_total_bytes": 15340744704,
+   "memguard_active": true,
+   "reachable": true,
+   "swap_free_bytes": 3988656128
+  }
+ },
+ "schema": "cb04_capacity_read.v1",
+ "source_digest_sha256": "53adde31c5759d2f5d5b1870fd0a18c2fb83e77b86297d1501cc6a43157c061e",
+ "what_this_is": "the live capacity read this lane admitted against, reduced to the fields quoted in the return; produced by tools/df_host_capacity.py (read-only) and reduced here",
+ "what_this_is_not": "a reservation, an authorisation, or a claim about any other lane's memory"
+}
