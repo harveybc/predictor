@@ -1,5 +1,10 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
+**Subplan modular vigente (30-sep):**
+[plugins, perfiles, preentrenamiento por rama/nucleo y optimizacion concurrente](program_v3/MODULAR_STACK_WORK_PLAN_2026_09_30.md).
+La GPU prioriza candidatos modulares elegibles tras las celdas ya iniciadas;
+los perfiles y las comprobaciones independientes avanzan en CPU.
+
 **Estado operativo actual (30-sep-2026):**
 [carriles, resultados, recursos y ETA](program_v3/CURRENT_EXECUTION_2026_09_30.md).
 Las revisiones fechadas abajo conservan su contexto historico; no describen
