@@ -42,23 +42,31 @@ No scientific conclusion is based on a small plumbing fixture.
 
 Default hourly input: `(batch, 24, F)`; one branch per feature initially. The
 sampling period is explicit, so 24 minute observations do not count as 24 hours.
-Each default branch uses causal Conv1D and produces `(batch, 12, branch_width)`.
-Every branch output represents the same input interval and right-edge grid.
-Concatenation is on channels, producing `(batch, 12, sum(branch_width))`.
+Each default branch uses causal Conv1D and produces `(batch, 24, branch_width)`.
+It preserves every input time step. Every branch output represents the same
+input interval and right-edge grid. Concatenation is on channels, producing
+`(batch, 24, sum(branch_width))`.
 
-The core begins with positional encoding, projects to width 64, uses two full
-Transformer blocks with four heads, then progressively compresses through three
-learned stages to `(batch, 6, 8)`. Widths, time factors, depth and attention heads
-are candidate parameters. A four-stage schedule is also permitted if dimensions
-remain compatible. The default is a starting candidate, not a discovered optimum.
+The core begins with positional encoding after fusion, projects each time step
+to width 64, uses two full causal Transformer blocks with four heads, then uses
+three residual Conv1D stages to reach `(batch, 6, 8)`. Default time factors are
+`[2, 2, 1]`, with channel widths `[32, 16, 8]`. Widths, time factors, depth and
+attention heads are candidate parameters. A four-stage schedule is also
+permitted if dimensions remain compatible. The default is a starting candidate,
+not a discovered optimum.
 
-For temporal reduction, learned projections over complete adjacent blocks can
-cover every sample and assign each output the block's right-edge time. Temporal
-factors must divide the current length exactly; incompatible configurations
-fail. This avoids silently losing the last input through causal stride placement.
-Conv1D channel projections can accompany these reductions. Compression is lossy;
-reconstruction loss and downstream skill quantify useful retention. Neither
-normalization nor a particular layer guarantees preservation of all information.
+Branches do not reduce time. In the core, each strided Conv1D stage consumes
+complete adjacent windows with valid padding and a matched residual projection.
+Temporal factors must divide the current length exactly; incompatible
+configurations fail. This maps every sample to a right-edge output without
+dropping a tail. Downsampling is inherently potentially lossy; the residual
+path and learned filters do not guarantee information preservation. Measure
+reconstruction and downstream skill at each bottleneck.
+
+The four feature channels shown in the Keras example diagram are illustrative.
+The model uses each feature/group passed in its configuration; no inventory-wide
+four-branch limit is implied. Large inventories require explicit feature
+selection or grouping with coverage and exclusions reported.
 
 External plugins must declare input/output contracts and preserve their grid.
 Equal output shapes alone do not establish aligned times. Inputs with different
