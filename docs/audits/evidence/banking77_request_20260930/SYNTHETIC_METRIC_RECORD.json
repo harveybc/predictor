@@ -1,0 +1,100 @@
+{
+  "schema": "mteb_classification_metric_record.v1",
+  "status": "SYNTHETIC_PREP",
+  "real_trial_status": "NOT_RUN",
+  "is_banking77_score": false,
+  "corpus": "synthetic_constructed_labels",
+  "model": null,
+  "model_explicitly_not": "jinaai/jina-embeddings-v5-text-small",
+  "task_name": null,
+  "task_explicitly_not": "Banking77Classification",
+  "mteb_version_executed": null,
+  "mteb_version_the_real_trial_would_use": "2.9.0",
+  "label_source": "constructed_by_this_lane",
+  "gold": [
+    "red",
+    "blue",
+    "red",
+    "green",
+    "blue",
+    "green",
+    "red",
+    "blue"
+  ],
+  "predicted": [
+    "red",
+    "blue",
+    "green",
+    "green",
+    "red",
+    "green",
+    "red",
+    "blue"
+  ],
+  "per_class": {
+    "blue": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1,
+      "support": 3,
+      "precision": 1.0,
+      "recall": 0.6666666666666666,
+      "f1": 0.8
+    },
+    "green": {
+      "tp": 2,
+      "fp": 1,
+      "fn": 0,
+      "support": 2,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "f1": 0.8
+    },
+    "red": {
+      "tp": 2,
+      "fp": 1,
+      "fn": 1,
+      "support": 3,
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1": 0.6666666666666666
+    }
+  },
+  "metric_definition": "One constructed experiment. accuracy is correct/n. precision, recall, and f1 are the unweighted mean over the sorted union of labels. The weighted keys use gold support. ap is null. A later trial replaces these numbers; it does not extend them.",
+  "scores": {
+    "test": [
+      {
+        "accuracy": 0.75,
+        "f1": 0.7555555555555555,
+        "f1_weighted": 0.75,
+        "precision": 0.7777777777777777,
+        "precision_weighted": 0.7916666666666666,
+        "recall": 0.7777777777777777,
+        "recall_weighted": 0.75,
+        "ap": null,
+        "ap_weighted": null,
+        "main_score": 0.75,
+        "hf_subset": "synthetic",
+        "languages": [
+          "und"
+        ],
+        "scores_per_experiment": [
+          {
+            "accuracy": 0.75,
+            "f1": 0.7555555555555555,
+            "f1_weighted": 0.75,
+            "precision": 0.7777777777777777,
+            "precision_weighted": 0.7916666666666666,
+            "recall": 0.7777777777777777,
+            "recall_weighted": 0.75,
+            "ap": null,
+            "ap_weighted": null
+          }
+        ]
+      }
+    ]
+  },
+  "evaluation_time": null,
+  "kg_co2_emissions": null,
+  "main_score": 0.75
+}
