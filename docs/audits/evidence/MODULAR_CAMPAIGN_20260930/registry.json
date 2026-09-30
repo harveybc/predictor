@@ -7,7 +7,8 @@
    "kind": "subagent",
    "lane": "M06",
    "state": "running",
-   "commit": "dc72170e"
+   "commit": "dc72170e",
+   "note": "M06: running (status writer, closure, slot desk)"
   },
   {
    "id": "crispdm job m01-tests",
@@ -46,42 +47,46 @@
    "id": "a5b79d5488abdee3a",
    "kind": "subagent",
    "lane": "M01",
-   "state": "acknowledged",
+   "state": "running",
    "commit": null,
    "dispatch_block": "in",
    "dispatch_tip": "feedfd00",
-   "note": "untested WIP"
+   "note": "M01: dispatch tip feedfd00, WIP, UNTESTED"
   },
   {
    "id": "a5289d234c296e0c5",
    "kind": "subagent",
    "lane": "M02",
-   "state": "acknowledged",
-   "commit": null,
+   "state": "running",
+   "commit": "3e58892a",
    "dispatch_block": "in",
-   "dispatch_tip": "05aaa1f0"
+   "dispatch_tip": "05aaa1f0",
+   "note": "M02: tested tip 3e58892a; synthetic pilot queued (synthetic component check, not a forecasting result)"
   },
   {
    "id": "a160efdffffffa9f2",
    "kind": "subagent",
    "lane": "M03",
-   "state": "assigned",
-   "commit": null,
-   "dispatch_block": "MISSING"
+   "state": "running",
+   "commit": "00facd7 (feature-eng)",
+   "dispatch_block": "in (declarations)",
+   "note": "M03: first admissible-input declarations at feature-eng 00facd7 (Weather 21/21 with a -9999 sentinel flag on 3 channels; phase-1b d4 23/28); ECL and Traffic profiles running on worker_b; declaration_sha256 c7e20f15 NOT reproduced by the orchestrator (digest domain unknown) - UNVERIFIED"
   },
   {
    "id": "a083979bc9a8fa1b8",
    "kind": "subagent",
    "lane": "M04",
    "state": "running",
-   "commit": null
+   "commit": null,
+   "note": "M04: cost pilot blocked on the 5090 by ADM-DEADCACHE-01; now launching on the 4090"
   },
   {
    "id": "a65d2f3a115a9aa25",
    "kind": "subagent",
    "lane": "M05",
-   "state": "running",
-   "commit": null
+   "state": "completed",
+   "commit": "329d9a1 (lts) / 80757c4c (predictor)",
+   "note": "M05 RETURNED (first of six): lts 329d9a1, predictor 80757c4c; REPLAY_PASS + SMOKE_PASS_SHADOW_ONLY; candidate is plumbing; nothing promoted"
   }
  ],
  "results": [
@@ -391,6 +396,11 @@
    "at": "2026-09-30T23:31:00Z",
    "host_alias": "worker_a",
    "event": "three-seed closure by the executor's classify(): MSE and MAE OPERATIONAL_AGREEMENT"
+  },
+  {
+   "at": "2026-09-30T23:31:40Z",
+   "host_alias": "coordinator",
+   "event": "INCIDENT: host memory PSI some sustained above 37.5 for >=20 s after s2021 released and queued CPU suites admitted; crispdm monitor stopped m06-status-writer (34 MB tree peak, a bystander) and m01-venv; pressure back to avg10 0.00 by 23:37Z; writer relaunched through fresh admission"
   }
  ],
  "launch_recipes": {

@@ -31,7 +31,7 @@ def main(status_path, out_path):
               f"{d.get('temperature_c') or 0:.0f} °C  {(d.get('gpu') or {}).get('sm_clock_mhz') or 0:.0f} MHz"
               f"{'  SW-thermal' if 'sw_thermal_slowdown' in (d.get('gpu') or {}).get('throttle_reasons', []) else ''}"
               for d in devs]
-    fig, (ax, ax2) = plt.subplots(2, 1, figsize=(12, 7.2), gridspec_kw={"height_ratios": [3, 1.6]},
+    fig, (ax, ax2) = plt.subplots(2, 1, figsize=(12, 8.4), gridspec_kw={"height_ratios": [3, 2.4]},
                                   facecolor=SURF)
     for a in (ax, ax2):
         a.set_facecolor(SURF)
@@ -85,8 +85,12 @@ def main(status_path, out_path):
     ax2.set_xticks([])
     ax2.set_yticks([])
     lines = []
-    for e in st.get("events", [])[-6:]:
+    for e in st.get("events", [])[-4:]:
         lines.append(f"{e['at'][11:16]}Z  [{e['host_alias']}] {e['event'][:100]}")
+    lines.append("")
+    for a in st.get("agents", []):
+        if a.get("note"):
+            lines.append(f"[{a['state']:9s}] {a['note'][:118]}")
     lines.append("")
     for m in st.get("milestones", []):
         mark = {"completed": "[done]", "in_progress": "[in progress]", "not_started": "[not started]"}[m["state"]]
