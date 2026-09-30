@@ -101,7 +101,11 @@ class Campaign:
             raise ValueError("paired_seeds must be distinct")
         for split in ("train", "validation"):
             data = declaration["data"][split]
-            if sha_file(data["path"]) != data["sha256"]:
+            if declaration.get("data_location") == "workers":
+                # bytes live on the workers; every attempt's receipt must bind these digests
+                if len(data["sha256"]) != 64:
+                    raise ValueError(f"{split} data digest must be a full sha256")
+            elif sha_file(data["path"]) != data["sha256"]:
                 raise ValueError(f"{split} data digest mismatch at creation")
         text = json.dumps(declaration, indent=2, sort_keys=True, allow_nan=False) + "\n"
         (root / "CAMPAIGN.json").write_text(text)
@@ -251,6 +255,11 @@ class Campaign:
         except Exception as exc:  # the executor normally reports failures in outcome
             outcome = {"status": "failed", "error": f"{type(exc).__name__}: {exc}"}
         (output_root / "OUTCOME.json").write_text(json.dumps(outcome, indent=1, default=str) + "\n")
+        if kind == "train" and outcome.get("status") == "completed":
+            declared = {s: self.declaration["data"][s]["sha256"] for s in ("train", "validation")}
+            if outcome.get("data_sha256") != declared:
+                outcome = {**outcome, "status": "failed",
+                           "error": f"receipt data digests {outcome.get('data_sha256')} != declared {declared}"}
         self._record(row, kind, attempt, outcome)
         return outcome
 
@@ -498,7 +507,10 @@ def summarize_train(output_root, code, elapsed):
             "objective": receipt["objective"]["value"], "observed_updates": training["observed_updates"],
             "selected_epoch": training["selected_epoch"], "stop_reason": training["stop_reason"],
             "per_update_seconds": training["elapsed_seconds"] / training["observed_updates"],
-            "model_sha256": receipt["digests"]["model_sha256"], "weights_sha256": receipt["digests"]["weights_sha256"]}
+            "model_sha256": receipt["digests"]["model_sha256"], "weights_sha256": receipt["digests"]["weights_sha256"],
+            "data_sha256": {"train": receipt["digests"]["train_sha256"],
+                            "validation": receipt["digests"]["validation_sha256"]},
+            "environment": receipt.get("environment")}
 
 
 def summarize_verify(output_root, code, elapsed):

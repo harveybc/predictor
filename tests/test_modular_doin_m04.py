@@ -137,6 +137,7 @@ class FakeExecutor:
         self.trained.append(cid)
         value = self.values[(nested["evaluator"]["loss"], nested["evaluator"]["seed"])]
         return {"status": "completed", "objective": value, "receipt_path": str(output_root / "r.json"),
+                "data_sha256": {k: declaration["data"][k]["sha256"] for k in ("train", "validation")},
                 "observed_updates": 10, "selected_epoch": 2, "per_update_seconds": 0.1, "cgroup_peak_bytes": 1}
 
     def verify(self, receipt, output_root, declaration):
@@ -195,6 +196,21 @@ def test_refuted_candidates_never_become_incumbent(tmp_path):
     campaign.run(FakeExecutor(campaign, VALUES, verdict="REFUTED"))
     assert campaign.status()["incumbent"] is None
     assert campaign.status()["counts"] == {"refuted": 4}
+
+
+def test_receipt_with_foreign_data_digest_is_failed(tmp_path):
+    campaign = make_campaign(tmp_path)
+    enqueue_default(campaign)
+
+    class Foreign(FakeExecutor):
+        def train(self, nested, output_root, declaration):
+            out = FakeExecutor.train(self, nested, output_root, declaration)
+            out["data_sha256"] = {"train": "0" * 64, "validation": "1" * 64}
+            return out
+
+    campaign.run(Foreign(campaign, VALUES), max_candidates=1)
+    row = campaign.db.execute("SELECT status, error FROM attempts WHERE kind='train'").fetchone()
+    assert row["status"] == "failed" and "declared" in row["error"]
 
 
 def test_blocked_donor_candidates_are_persisted_and_released(tmp_path):
