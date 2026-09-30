@@ -1,7 +1,8 @@
 {
  "schema": "research_dispatch_index.v2",
  "updated_on": "2026-09-30: Retsu continuation and scoped review added; historical lane observations below retain their dates",
- "latest_dispatch_supplement": "../../handoffs/RETSU_PARALLEL_CONTINUATION_2026_09_30.md",
+ "latest_dispatch_supplement": "../../handoffs/RETSU_ACCOUNTING_ARCHIVE_CONTINUATION_2026_09_30.md",
+ "dispatch_predecessor_retsu_20260930": "../../handoffs/RETSU_PARALLEL_CONTINUATION_2026_09_30.md",
  "latest_dispatch_scope": "Retsu temporarily coordinates: GPU launcher correction, synthetic strategy integration, classification closure and DOIN shadow archive. No new GPU diagnostic/calibration owner grant, remote model-code execution or live chain migration inferred.",
  "dispatch_predecessor_20260929": "../../handoffs/SATOSHI_QRM_INTEGRATION_AND_PARALLEL_WORK_2026_09_29.md",
  "dispatcher": "Retsu, temporary execution coordinator at owner's request on 2026-09-30",

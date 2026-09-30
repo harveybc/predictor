@@ -1,0 +1,20 @@
+{
+  "scope": "Disposable archive probes and retained synthetic metrics; no real trading or GPU",
+  "forged_section_projects_performance": 999.0,
+  "retains_original_manifest_digest": true,
+  "input_MAE_absent_from_projection": true,
+  "cross_experiment_round_id_reuse_silently_returns_old_id": true,
+  "same_block_different_candidates_body_digest_equal": true,
+  "same_block_different_candidates_manifest_digest_equal": false,
+  "second_manifest_storage_result": "CONFLICT",
+  "cash_reconciliation": {
+    "ideal/ideal": {
+      "cash_change_minus_reported_pnl": 33.33333333369228,
+      "reported_swap": 33.33333333333337
+    },
+    "persistence/ideal": {
+      "cash_change_minus_reported_pnl": 37.5000000003929,
+      "reported_swap": 37.5
+    }
+  }
+}
