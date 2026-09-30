@@ -161,6 +161,29 @@ class TemporalComponent:
     time_grid: tuple
 
 
+CONFIG_SCHEMA = "predictor.modular.v1"
+ROLES = ("branch", "core", "fusion", "head")
+
+
+def component(role, version, parameters, contract):
+    """Declare a factory's role, semantic version, parameter names and tensor/time contract.
+
+    Every factory, built-in or external, must carry this declaration; the version
+    enters the component identity (and therefore every donor manifest), so a donor
+    produced by another implementation version is rejected rather than reused.
+    """
+    if role not in ROLES or not isinstance(version, str) or not re.fullmatch(r"\d+\.\d+\.\d+", version):
+        raise ValueError("component() needs a known role and a semantic version")
+
+    def mark(factory):
+        factory.component_role = role
+        factory.component_version = version
+        factory.component_parameters = tuple(sorted(parameters))
+        factory.component_contract = contract
+        return factory
+    return mark
+
+
 def _compress(x, steps, channels, name):
     current, width = int(x.shape[1]), int(x.shape[2])
     _partition(tuple(range(current)), steps)
@@ -169,6 +192,9 @@ def _compress(x, steps, channels, name):
     return keras.layers.Dense(channels, name=name + "_projection")(x)
 
 
+@component("branch", "1.0.0", {"channels", "kernel_size"},
+           "(batch, window, features) -> (batch, branch_steps, channels); causal; "
+           "output k is the right edge of the k-th complete equal input block")
 def causal_conv1d(*, input_shape, time_grid, output_steps, name, params):
     channels = _positive_int(params.get("channels", 16), "channels")
     kernel = _positive_int(params.get("kernel_size", 3), "kernel_size")
@@ -179,6 +205,8 @@ def causal_conv1d(*, input_shape, time_grid, output_steps, name, params):
     return TemporalComponent(keras.Model(inputs, x, name=name), _partition(time_grid, output_steps))
 
 
+@component("fusion", "1.0.0", set(),
+           "list of (batch, branch_steps, c_i) on one grid -> (batch, branch_steps, sum c_i); no weights")
 def sequence_concat(*, input_shapes, time_grid, name, params):
     _keys(params, set(), "fusion params")
     inputs = [keras.Input(shape) for shape in input_shapes]
@@ -186,6 +214,10 @@ def sequence_concat(*, input_shapes, time_grid, name, params):
     return TemporalComponent(keras.Model(inputs, x, name=name), tuple(time_grid))
 
 
+@component("core", "1.0.0", {"d_model", "heads", "blocks", "ff_dim", "dropout",
+                             "stage_channels", "time_factors", "kernel_size"},
+           "(batch, branch_steps, C) -> (batch, output_steps, output_channels); positional encoding, "
+           "causal full Transformer blocks, 3-4 learned block compressions; right-edge grid")
 def transformer_conv(*, input_shape, time_grid, output_steps, output_channels, name, params):
     _keys(params, {"d_model", "heads", "blocks", "ff_dim", "dropout",
                   "stage_channels", "time_factors", "kernel_size"}, "core params")
@@ -229,6 +261,9 @@ def transformer_conv(*, input_shape, time_grid, output_steps, output_channels, n
     return TemporalComponent(keras.Model(inputs, x, name=name), grid)
 
 
+@component("head", "1.0.0", set(),
+           "(batch, output_steps, output_channels) -> (batch, len(horizons), target_count); "
+           "consumes all latent tokens; grid labels future horizons")
 def forecast(*, input_shape, time_grid, horizons, target_count, name, params):
     _keys(params, set(), "head params")
     inputs = keras.Input(input_shape)
@@ -252,27 +287,60 @@ def _keys(value, allowed, label):
 
 
 def _resolve(role, spec, groups):
+    """Resolve one component through its entry-point group, deterministically.
+
+    Built-in names have a fixed identity whether or not the distribution is
+    installed; an installed entry point that reuses a built-in name must point at
+    the very same factory (no shadowing). Any other name must be published by
+    exactly one entry point. Unknown, ambiguous or undeclared plugins fail.
+    """
     default_group = "modular." + role
     group = groups[role]
     name = spec["plugin"]
-    if group == default_group and name in BUILTINS[default_group]:
-        return BUILTINS[default_group][name], {"group": group, "name": name,
-                                               "implementation": "modular_temporal.v1:" + name}
     matches = list(entry_points(group=group, name=name))
-    if len(matches) != 1:
-        raise ValueError(f"Expected exactly one plugin {group}:{name}; got {len(matches)}")
-    ep = matches[0]
-    identity = {"group": group, "name": name, "implementation": ep.value,
-                "distribution": ep.dist.name if ep.dist else None,
-                "version": ep.dist.version if ep.dist else None}
-    return ep.load(), identity
+    builtin = BUILTINS[default_group].get(name) if group == default_group else None
+    if builtin is not None:
+        for ep in matches:
+            if ep.load() is not builtin:
+                raise ValueError(f"Entry point {group}:{name} shadows the built-in component")
+        factory, implementation = builtin, "predictor_plugins.modular_temporal:" + name
+        distribution, dist_version = "predictor", None
+    else:
+        if len(matches) != 1:
+            raise ValueError(f"Expected exactly one plugin {group}:{name}; got {len(matches)}")
+        ep = matches[0]
+        factory, implementation = ep.load(), ep.value
+        distribution = ep.dist.name if ep.dist else None
+        dist_version = ep.dist.version if ep.dist else None
+    if getattr(factory, "component_role", None) != role or not isinstance(
+            getattr(factory, "component_version", None), str):
+        raise ValueError(f"Plugin {group}:{name} lacks a component() declaration for role {role}")
+    identity = {"group": group, "name": name, "implementation": implementation,
+                "version": factory.component_version}
+    if builtin is None:
+        identity.update(distribution=distribution, distribution_version=dist_version)
+    return factory, identity
+
+
+def describe_component(role, name, group=None):
+    """Declared version, parameter names and tensor/time contract of one component."""
+    factory, identity = _resolve(role, {"plugin": name}, {role: group or "modular." + role})
+    return {**identity, "parameters": list(factory.component_parameters),
+            "contract": factory.component_contract}
 
 
 def _normalize(config):
     c = _copy(config)
-    _keys(c, {"window", "sample_hours", "feature_names", "branches", "branch_steps",
+    _keys(c, {"schema", "window", "sample_hours", "feature_names", "branches", "branch_steps",
               "core", "fusion", "head", "output_steps", "output_channels", "entry_point_groups",
-              "horizons", "target_count"}, "config")
+              "horizons", "target_count", "regime", "alignment_probe"}, "config")
+    if c.setdefault("schema", CONFIG_SCHEMA) != CONFIG_SCHEMA:
+        raise ValueError(f"Unsupported modular config schema {c['schema']!r}; expected {CONFIG_SCHEMA}")
+    if c.setdefault("alignment_probe", True) is not True and c["alignment_probe"] is not False:
+        raise ValueError("alignment_probe must be boolean")
+    common = c.setdefault("regime", None)
+    if common not in (None, "R0", "R1", "R2"):
+        raise ValueError("Common regime must be null, R0, R1 or R2")
     for key, default in (("window", 24), ("branch_steps", 12), ("output_steps", 6), ("output_channels", 8)):
         c[key] = _positive_int(c.get(key, default), key)
     c["target_count"] = _positive_int(c.get("target_count", 1), "target_count")
@@ -320,7 +388,10 @@ def _normalize(config):
             if not isinstance(spec["plugin"], str) or not isinstance(spec["params"], dict):
                 raise ValueError("Plugin and params must be a string and dict")
             if role in ("branch", "core"):
-                spec.setdefault("regime", "R0")
+                if common is not None and spec.get("regime", common) != common:
+                    raise ValueError("A component regime contradicts the declared common regime; "
+                                     "set regime=null to declare a mixed-regime run")
+                spec.setdefault("regime", common or "R0")
                 spec.setdefault("donor", None)
                 if spec["regime"] not in ("R0", "R1", "R2"):
                     raise ValueError("Regime must be R0, R1 or R2")
@@ -330,6 +401,18 @@ def _normalize(config):
     _partition(tuple(range(c["window"])), c["branch_steps"])
     _partition(tuple(range(c["branch_steps"])), c["output_steps"])
     return c
+
+
+def regime_summary(config):
+    """The declared common regime, or MIXED with every component's regime."""
+    c = _normalize(config)
+    regimes = {"branch:" + b["name"]: b["regime"] for b in c["branches"]}
+    regimes["core"] = c["core"]["regime"]
+    values = set(regimes.values())
+    if c["regime"] is not None:
+        return {"common": c["regime"], "components": regimes}
+    return {"common": values.pop() if len(values) == 1 else "MIXED", "declared": False,
+            "components": regimes}
 
 
 def default_config(feature_names):
@@ -353,6 +436,37 @@ def _validate_component(component, input_shapes, grid, output_channels=None):
     if output_channels is not None and model.output_shape[2] != output_channels:
         raise ValueError("Plugin channel contract mismatch")
     return model
+
+
+def probe_alignment(model, input_grid, output_grid, *, seed=0, label="component"):
+    """Behavioural time-grid check; equal shapes alone do not establish alignment.
+
+    Perturbs every input position in one batched forward pass. An output labelled
+    with right edge t may not change when an input strictly after t changes (no
+    look-ahead), and the first output whose right edge is at or after the
+    perturbed time must change (every input position participates). A component
+    that reverses, shifts or drops time fails here even with the declared shape.
+    """
+    length, channels = int(model.input_shape[1]), int(model.input_shape[2])
+    if length != len(input_grid) or int(model.output_shape[1]) != len(output_grid):
+        raise ValueError(f"{label}: probe grid does not match model shape")
+    base = np.random.default_rng(seed).normal(size=(1, length, channels)).astype("float32")
+    batch = np.repeat(base, length + 1, axis=0)
+    for i in range(length):
+        batch[i + 1, i, :] += 3.0
+    out = np.asarray(model(batch, training=False), dtype="float64")
+    moved = np.max(np.abs(out[1:] - out[:1]), axis=2)  # (perturbed input i, output step k)
+    scale = max(1.0, float(np.max(np.abs(out[0]))))
+    for i, t in enumerate(input_grid):
+        for k, edge in enumerate(output_grid):
+            if edge < t and moved[i, k] > 1e-5 * scale:
+                raise ValueError(f"{label}: time alignment violated; output at {edge} "
+                                 f"depends on the later input at {t}")
+        first = next((k for k, edge in enumerate(output_grid) if edge >= t), None)
+        if first is None or moved[i, first] <= 1e-7 * scale:
+            raise ValueError(f"{label}: time alignment violated; input at {t} does not reach "
+                             f"the output block whose right edge covers it")
+    return {"checked_inputs": length, "checked_outputs": len(output_grid)}
 
 
 def _manifest(role, config, spec, plugin, model, input_grid, output_grid):
@@ -388,6 +502,21 @@ class ModularBundle:
     _core_manifest: dict = field(repr=False)
     _fusion_component: keras.Model = field(repr=False)
     _fusion_identity: dict = field(repr=False)
+    _head_manifest: dict = field(repr=False)
+
+    def component_manifests(self):
+        """Identity, version, parameters and tensor/time contract of every component."""
+        fusion = {"schema": 1, "role": "fusion", "plugin": _copy(self._fusion_identity),
+                  "params": _copy(self.config["fusion"]["params"]),
+                  "input_shapes": [list(s[1:]) for s in self._fusion_component.input_shape]
+                  if isinstance(self._fusion_component.input_shape, list)
+                  else [list(self._fusion_component.input_shape[1:])],
+                  "output_shape": list(self._fusion_component.output_shape[1:]),
+                  "grid": list(self.branch_time_grid)}
+        return {"schema": 1, "config_sha256": config_digest(self.config),
+                "branches": {n: self.donor_manifest("branch", n) for n in self.branch_models},
+                "fusion": fusion, "core": self.donor_manifest("core"),
+                "head": _copy(self._head_manifest), "regimes": regime_summary(self.config)}
 
     def donor_manifest(self, role, name=None):
         """Snapshot identity at export time, after restoring selected weights."""
@@ -426,6 +555,8 @@ def build_modular(config: dict) -> ModularBundle:
         model = _validate_component(component, [shape], branch_grid)
         manifest = _manifest("branch", c, spec, identity, model, input_grid, branch_grid)
         _apply_regime(model, spec, manifest)
+        if c["alignment_probe"]:
+            probe_alignment(model, input_grid, branch_grid, label="branch " + name)
         branches[name], manifests[name] = model, manifest
         local = FeatureSelect([c["feature_names"].index(f) for f in spec["features"]],
                               name="select_" + name)(inputs)
@@ -447,17 +578,91 @@ def build_modular(config: dict) -> ModularBundle:
     core_manifest = _manifest("core", c, c["core"], identity, core, branch_grid, core_grid)
     core_manifest["upstream"] = _upstream(branches, manifests, fusion, fusion_identity)
     _apply_regime(core, c["core"], core_manifest)
+    if c["alignment_probe"]:
+        probe_alignment(core, branch_grid, core_grid, label="core")
     latent = core(fused)
     encoder = keras.Model(inputs, latent, name="encoder_model")
-    factory, _ = _resolve("head", c["head"], groups)
+    factory, head_identity = _resolve("head", c["head"], groups)
     forecast_grid = tuple(input_grid[-1] + h * c["sample_hours"] for h in c["horizons"])
     component = factory(input_shape=tuple(latent.shape[1:]), time_grid=forecast_grid,
                         horizons=c["horizons"], target_count=c["target_count"],
                         name="forecast_head", params=_copy(c["head"]["params"]))
     head = _validate_component(component, [tuple(latent.shape[1:])], forecast_grid, c["target_count"])
     model = keras.Model(inputs, head(latent), name="forecast_model")
+    head_manifest = {"schema": 1, "role": "head", "plugin": head_identity,
+                     "params": _copy(c["head"]["params"]), "horizons": _copy(c["horizons"]),
+                     "target_count": c["target_count"], "input_shape": list(head.input_shape[1:]),
+                     "output_shape": list(head.output_shape[1:]), "input_grid": list(core_grid),
+                     "output_grid": list(forecast_grid)}
     return ModularBundle(c, branches, fusion_model, core, encoder, model, branch_grid,
-                         core_grid, manifests, core_manifest, fusion, fusion_identity)
+                         core_grid, manifests, core_manifest, fusion, fusion_identity, head_manifest)
+
+
+def config_digest(config):
+    """SHA-256 of the canonical (sorted, compact, NaN-free) normalized configuration."""
+    return _digest(_normalize(config))
+
+
+def canonical_config_json(config):
+    """Deterministic serialization of the normalized configuration."""
+    return _json(_normalize(config))
+
+
+BUNDLE_SCHEMA = "predictor.modular.bundle.v1"
+
+
+def save_bundle(bundle, directory):
+    """Write forecast archive + canonical config + component manifests + weight identity."""
+    out = Path(directory)
+    out.mkdir(parents=True, exist_ok=True)
+    archive = out / "forecast_model.keras"
+    bundle.forecast_model.save(archive)
+    document = {"schema": BUNDLE_SCHEMA, "config": _normalize(bundle.config),
+                "components": bundle.component_manifests(),
+                "weights_sha256": weights_hash(bundle.forecast_model),
+                "archive_sha256": _file_hash(archive)}
+    (out / "bundle.json").write_text(json.dumps(document, sort_keys=True, indent=2) + "\n",
+                                     encoding="utf-8")
+    return document
+
+
+def load_bundle(directory):
+    """Rebuild the architecture from the saved config and restore the saved weights.
+
+    The archive and its weights must match their recorded digests, and the rebuilt
+    graph must reproduce the archived graph's outputs; donor paths are not
+    re-read (the archive already holds the selected weights), but their manifests
+    remain in bundle.json as provenance. Regimes are restored as trainability.
+    """
+    src = Path(directory)
+    document = json.loads((src / "bundle.json").read_text(encoding="utf-8"))
+    if document.get("schema") != BUNDLE_SCHEMA:
+        raise ValueError("Unsupported bundle schema")
+    archive = src / "forecast_model.keras"
+    if _file_hash(archive) != document["archive_sha256"]:
+        raise ValueError("Bundle archive hash mismatch")
+    stored = keras.models.load_model(archive, compile=False, safe_mode=True)
+    if weights_hash(stored) != document["weights_sha256"]:
+        raise ValueError("Bundle weights hash mismatch")
+    config = _copy(document["config"])
+    regimes = {}
+    for spec in [*config["branches"], config["core"]]:
+        regimes[spec.get("name", "core")] = spec["regime"]
+        spec.update(regime="R0", donor=None)
+    config["regime"] = None
+    rebuilt = build_modular(config)
+    rebuilt.forecast_model.set_weights(stored.get_weights())
+    if weights_hash(rebuilt.forecast_model) != document["weights_sha256"]:
+        raise ValueError("Rebuilt architecture does not hold the saved weights")
+    probe = np.random.default_rng(0).normal(
+        size=(2, *rebuilt.forecast_model.input_shape[1:])).astype("float32")
+    if not np.allclose(rebuilt.forecast_model(probe), stored(probe), atol=1e-6):
+        raise ValueError("Rebuilt architecture does not reproduce the archived outputs")
+    for name, model in rebuilt.branch_models.items():
+        model.trainable = regimes[name] != "R1"
+    rebuilt.core_model.trainable = regimes["core"] != "R1"
+    rebuilt.config = _copy(document["config"])
+    return rebuilt, document
 
 
 def build_decoder(latent_shape, output_steps, output_channels, channels=32):
@@ -529,6 +734,8 @@ def _check_manifest_model(manifest, model):
 def load_donor(path, expected_manifest):
     """Verify bytes and exact expected identity before safe-mode deserialization."""
     path, sidecar = _donor_path(path)
+    if not path.is_file() or not sidecar.is_file():
+        raise ValueError(f"Requested donor is missing: {path.name} or its manifest sidecar")
     try:
         document = json.loads(sidecar.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, UnicodeError) as exc:
