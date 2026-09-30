@@ -1,0 +1,6 @@
+{"plan_revision": "dc72170e",
+ "worker_a_idle_reason": "host ineligible: ~2 GiB MemAvailable of 14 GiB, unreclaimable slab >5 GiB and growing since 2026-09-22 (see M06 diagnosis)",
+ "agents": [
+  {"id": "m06-evidence-resources (this subagent)", "kind": "subagent", "lane": "M06", "state": "running", "commit": "dc72170e"}
+ ],
+ "results": [], "milestones": [], "next_actions": [], "heartbeat_audit": []}
