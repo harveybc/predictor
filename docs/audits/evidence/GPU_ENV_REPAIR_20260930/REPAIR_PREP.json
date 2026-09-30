@@ -1,0 +1,383 @@
+{
+ "schema": "gpu_env_repair_prep.v1",
+ "at": "2026-09-30",
+ "branch": "satoshi/gpu-env-repair-20260930",
+ "tip": "4d548a82",
+ "establishes_a_gpu_pilot": false,
+ "host_of_this_preparation": "coordinator",
+ "failed_placement_host": "admitted worker",
+ "what_the_retained_record_establishes": {
+  "quote": "Cannot dlopen some GPU libraries \u2026 Skipping registering GPU devices",
+  "quote_source": "docs/audits/work_plan/SATOSHI_QRM_INTEGRATION_2026_09_29.md section 5.3",
+  "stderr_in_refusal_json": "NOT_RETAINED",
+  "missing_soname": "NOT_RETAINED",
+  "tf_build_info_cuda_cudnn": "NOT_RETAINED",
+  "driver_version": "NOT_RETAINED",
+  "python": "3.12.13",
+  "tensorflow": "2.21.0",
+  "device_uuid_verified": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+  "libcuda_so_1": "loads, as stated in section 5.3; the refusal JSON does not retain a dlerror",
+  "framework_devices": [],
+  "placement_probe": null,
+  "refusal_code": "FRAMEWORK_REGISTERED_NO_DEVICE",
+  "refusal_names_the_failure": true,
+  "refusal_is_the_cause": false,
+  "libraries_the_contract_recorded_as_answering": {
+   "cublas": "libcublas.so.13",
+   "cublasLt": "libcublasLt.so.13",
+   "cudart": "libcudart.so.13",
+   "cudnn": "libcudnn.so.9",
+   "cufft": "libcufft.so.12",
+   "curand": "libcurand.so.10",
+   "cusolver": "libcusolver.so.12",
+   "cusparse": "libcusparse.so.12",
+   "nvJitLink": "libnvJitLink.so.13"
+  },
+  "path_order": "nvidia/cu13/lib first, then the per-package nvidia/<pkg>/lib directories",
+  "both_generations_and_both_layouts": true,
+  "reading": "The retained sentence says TensorFlow could not dlopen some GPU libraries and registered zero devices. It does not name the library. The placement contract had already recorded every family as loadable, newest soname first, so the CUDA 13 sonames are what answered the contract. That is not a measurement of which dlopen failed."
+ },
+ "prior_census_not_used_as_the_driver_version": {
+  "source": "docs/audits/evidence/RB01_RB03_20260928/HOST_CAPACITY.json",
+  "at": "2026-09-28",
+  "same_published_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+  "driver_string": "580.178.04",
+  "used_as_compatibility_constraint": false,
+  "why": "not the refusal packet. The 2.21 tested-build table has no driver column, and the refusal did not retain a driver version."
+ },
+ "compatibility": {
+  "url": "https://www.tensorflow.org/install/source",
+  "table": "Linux GPU tested build configurations",
+  "row": "tensorflow-2.21.0",
+  "constraint_used": "Python 3.10-3.13, cuDNN 9.3, CUDA 12.5",
+  "driver_column": "absent",
+  "worker_driver_listed": false,
+  "why_the_worker_driver_is_not_listed": "the refusal did not retain a driver version, and the 2.21 table has no driver column",
+  "pip_page_not_the_constraint": {
+   "url": "https://www.tensorflow.org/install/pip",
+   "states": "Linux NVIDIA GPU driver >= 525.60.13, beside CUDA Toolkit 12.3 and cuDNN SDK 8.9.7",
+   "why_not_used": "that page is not versioned to the 2.21 tested-build row. Its CUDA 12.3 / cuDNN 8.9.7 pair is not the 2.21 row (CUDA 12.5 / cuDNN 9.3)."
+  },
+  "wheel_extra": {
+   "distribution": "tensorflow==2.21.0",
+   "extra": "and-cuda",
+   "declares": "nvidia-*-cu12 only, lower bounds at the CUDA 12.5 / cuDNN 9.3 wheels, upper bounds excluding CUDA 13",
+   "unconstrained_resolve_on_2026_09_30_not_installed": {
+    "nvidia-cuda-runtime-cu12": "12.9.79",
+    "nvidia-cudnn-cu12": "9.27.0.42",
+    "why_rejected": "inside the declared ranges, not the tested-build pair"
+   }
+  }
+ },
+ "environment": {
+  "path": ".repair-env",
+  "gitignored": true,
+  "gitignore_rule": ".repair-env/",
+  "is_the_anaconda_env": false,
+  "anaconda_env_mutated": false,
+  "activated_against_a_gpu": false,
+  "tensorflow_imported": false,
+  "kernel_driver_installed": false,
+  "interpreter": {
+   "tag": "cp312",
+   "this_prefix": "3.12.7",
+   "retained_worker_interpreter": "3.12.13",
+   "patch_identity": "NOT the worker's 3.12.13. No new CPython was installed. The prefix was bootstrapped from the coordinator's base CPython 3.12.7 so the anaconda env tensorflow would not be used."
+  },
+  "pins": [
+   "absl-py==2.5.0",
+   "astunparse==1.6.3",
+   "certifi==2026.7.22",
+   "charset-normalizer==3.5.2",
+   "flatbuffers==25.12.19",
+   "gast==0.7.0",
+   "google-pasta==0.2.0",
+   "grpcio==1.84.0",
+   "h5py==3.14.0",
+   "idna==3.20",
+   "keras==3.15.1",
+   "libclang==18.1.1",
+   "markdown-it-py==4.2.0",
+   "mdurl==0.1.2",
+   "ml_dtypes==0.6.0",
+   "namex==0.1.0",
+   "numpy==2.5.3",
+   "nvidia-cublas-cu12==12.5.3.2",
+   "nvidia-cuda-cupti-cu12==12.5.82",
+   "nvidia-cuda-nvcc-cu12==12.5.82",
+   "nvidia-cuda-nvrtc-cu12==12.5.82",
+   "nvidia-cuda-runtime-cu12==12.5.82",
+   "nvidia-cudnn-cu12==9.3.0.75",
+   "nvidia-cufft-cu12==11.2.3.61",
+   "nvidia-curand-cu12==10.3.6.82",
+   "nvidia-cusolver-cu12==11.6.3.83",
+   "nvidia-cusparse-cu12==12.5.1.3",
+   "nvidia-nccl-cu12==2.27.7",
+   "nvidia-nvjitlink-cu12==12.5.82",
+   "opt_einsum==3.4.0",
+   "optree==0.20.0",
+   "packaging==26.3",
+   "pip==26.2.1",
+   "protobuf==7.36.2",
+   "Pygments==2.21.0",
+   "requests==2.34.2",
+   "rich==15.0.0",
+   "setuptools==84.0.0",
+   "six==1.17.0",
+   "tensorflow==2.21.0",
+   "termcolor==3.3.0",
+   "typing_extensions==4.16.0",
+   "urllib3==2.8.0",
+   "wheel==0.48.0",
+   "wrapt==2.5.0"
+  ],
+  "cuda_userspace_pins_match_tested_build_floor": {
+   "nvidia-cublas-cu12": "12.5.3.2",
+   "nvidia-cuda-cupti-cu12": "12.5.82",
+   "nvidia-cuda-nvcc-cu12": "12.5.82",
+   "nvidia-cuda-nvrtc-cu12": "12.5.82",
+   "nvidia-cuda-runtime-cu12": "12.5.82",
+   "nvidia-cudnn-cu12": "9.3.0.75",
+   "nvidia-cufft-cu12": "11.2.3.61",
+   "nvidia-curand-cu12": "10.3.6.82",
+   "nvidia-cusolver-cu12": "11.6.3.83",
+   "nvidia-cusparse-cu12": "12.5.1.3",
+   "nvidia-nccl-cu12": "2.27.7",
+   "nvidia-nvjitlink-cu12": "12.5.82"
+  },
+  "sonames_present_by_filename": [
+   "libcublas.so.12",
+   "libcublasLt.so.12",
+   "libcudart.so.12",
+   "libcudnn.so.9",
+   "libcufft.so.11",
+   "libcurand.so.10",
+   "libcusolver.so.11",
+   "libcusparse.so.12",
+   "libnvJitLink.so.12"
+  ],
+  "libcudart_so_13_present": false,
+  "nvidia_cu13_lib_present": false,
+  "layout": "nvidia/<pkg>/lib only"
+ },
+ "sizes": {
+  "cap_bytes": 21474836480,
+  "over_cap": false,
+  "partial_set": false,
+  "download_bytes": 2576641397,
+  "download_basis": "sum of st_size of the 44 wheel files pip download wrote under .repair-env/wheels. No pip cache outside that tree was used for this download.",
+  "pip_installer_wheel_not_in_download_bytes": "pip==26.2.1 was upgraded inside the prefix from a cache before the repair download and is not part of download_bytes",
+  "installed_bytes": 5135683136,
+  "installed_basis": "sum of st_size of regular files under .repair-env/lib/python3.12/site-packages. Symlinks not followed, so the bootstrap interpreter outside the prefix is not counted. The wheel directory is not included.",
+  "installed_prefix_excluding_wheels_bytes": 5135701564,
+  "record_bytes_lower_because_blank_size_rows": 5052426122,
+  "wheels": [
+   {
+    "filename": "absl_py-2.5.0-py3-none-any.whl",
+    "bytes": 137410
+   },
+   {
+    "filename": "astunparse-1.6.3-py2.py3-none-any.whl",
+    "bytes": 12732
+   },
+   {
+    "filename": "certifi-2026.7.22-py3-none-any.whl",
+    "bytes": 136983
+   },
+   {
+    "filename": "charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+    "bytes": 257601
+   },
+   {
+    "filename": "flatbuffers-25.12.19-py2.py3-none-any.whl",
+    "bytes": 26661
+   },
+   {
+    "filename": "gast-0.7.0-py3-none-any.whl",
+    "bytes": 22966
+   },
+   {
+    "filename": "google_pasta-0.2.0-py3-none-any.whl",
+    "bytes": 57471
+   },
+   {
+    "filename": "grpcio-1.84.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "bytes": 7156115
+   },
+   {
+    "filename": "h5py-3.14.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "bytes": 4929422
+   },
+   {
+    "filename": "idna-3.20-py3-none-any.whl",
+    "bytes": 69583
+   },
+   {
+    "filename": "keras-3.15.1-py3-none-any.whl",
+    "bytes": 2398595
+   },
+   {
+    "filename": "libclang-18.1.1-py2.py3-none-manylinux2010_x86_64.whl",
+    "bytes": 24515943
+   },
+   {
+    "filename": "markdown_it_py-4.2.0-py3-none-any.whl",
+    "bytes": 91687
+   },
+   {
+    "filename": "mdurl-0.1.2-py3-none-any.whl",
+    "bytes": 9979
+   },
+   {
+    "filename": "ml_dtypes-0.6.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "bytes": 409890
+   },
+   {
+    "filename": "namex-0.1.0-py3-none-any.whl",
+    "bytes": 5905
+   },
+   {
+    "filename": "numpy-2.5.3-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "bytes": 16717410
+   },
+   {
+    "filename": "nvidia_cublas_cu12-12.5.3.2-py3-none-manylinux2014_x86_64.whl",
+    "bytes": 363313169
+   },
+   {
+    "filename": "nvidia_cuda_cupti_cu12-12.5.82-py3-none-manylinux2014_x86_64.whl",
+    "bytes": 13811507
+   },
+   {
+    "filename": "nvidia_cuda_nvcc_cu12-12.5.82-py3-none-manylinux2014_x86_64.whl",
+    "bytes": 22468537
+   },
+   {
+    "filename": "nvidia_cuda_nvrtc_cu12-12.5.82-py3-none-manylinux2014_x86_64.whl",
+    "bytes": 24873108
+   },
+   {
+    "filename": "nvidia_cuda_runtime_cu12-12.5.82-py3-none-manylinux2014_x86_64.whl",
+    "bytes": 895707
+   },
+   {
+    "filename": "nvidia_cudnn_cu12-9.3.0.75-py3-none-manylinux2014_x86_64.whl",
+    "bytes": 577163502
+   },
+   {
+    "filename": "nvidia_cufft_cu12-11.2.3.61-py3-none-manylinux2014_x86_64.whl",
+    "bytes": 192524114
+   },
+   {
+    "filename": "nvidia_curand_cu12-10.3.6.82-py3-none-manylinux2014_x86_64.whl",
+    "bytes": 56309107
+   },
+   {
+    "filename": "nvidia_cusolver_cu12-11.6.3.83-py3-none-manylinux2014_x86_64.whl",
+    "bytes": 130341232
+   },
+   {
+    "filename": "nvidia_cusparse_cu12-12.5.1.3-py3-none-manylinux2014_x86_64.whl",
+    "bytes": 217558979
+   },
+   {
+    "filename": "nvidia_nccl_cu12-2.27.7-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "bytes": 322546339
+   },
+   {
+    "filename": "nvidia_nvjitlink_cu12-12.5.82-py3-none-manylinux2014_x86_64.whl",
+    "bytes": 21298879
+   },
+   {
+    "filename": "opt_einsum-3.4.0-py3-none-any.whl",
+    "bytes": 71932
+   },
+   {
+    "filename": "optree-0.20.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "bytes": 488981
+   },
+   {
+    "filename": "packaging-26.3-py3-none-any.whl",
+    "bytes": 129956
+   },
+   {
+    "filename": "protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl",
+    "bytes": 343223
+   },
+   {
+    "filename": "pygments-2.21.0-py3-none-any.whl",
+    "bytes": 1250147
+   },
+   {
+    "filename": "requests-2.34.2-py3-none-any.whl",
+    "bytes": 73075
+   },
+   {
+    "filename": "rich-15.0.0-py3-none-any.whl",
+    "bytes": 310654
+   },
+   {
+    "filename": "setuptools-84.0.0-py3-none-any.whl",
+    "bytes": 818216
+   },
+   {
+    "filename": "six-1.17.0-py2.py3-none-any.whl",
+    "bytes": 11050
+   },
+   {
+    "filename": "tensorflow-2.21.0-cp312-cp312-manylinux_2_27_x86_64.whl",
+    "bytes": 572611111
+   },
+   {
+    "filename": "termcolor-3.3.0-py3-none-any.whl",
+    "bytes": 7734
+   },
+   {
+    "filename": "typing_extensions-4.16.0-py3-none-any.whl",
+    "bytes": 45571
+   },
+   {
+    "filename": "urllib3-2.8.0-py3-none-any.whl",
+    "bytes": 135717
+   },
+   {
+    "filename": "wheel-0.48.0-py3-none-any.whl",
+    "bytes": 33320
+   },
+   {
+    "filename": "wrapt-2.5.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl",
+    "bytes": 250177
+   }
+  ]
+ },
+ "smoke": {
+  "status": "NOT_RUN",
+  "why": "no diagnostic allocation was granted",
+  "command": "crispdm-run -m 6G -t 300 -n gpu-env-repair-diag -- <WORKTREE>/.repair-env/bin/python tools/df_placement_contract.py --placement GPU --device-uuid GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9 --verify",
+  "proves_if_later_authorized": [
+   "driver UUID via libcuda.cuDeviceGetUuid",
+   "tf.config.list_physical_devices(\"GPU\")",
+   "one real op: tf.device(\"/GPU:0\") and a one-element tensor"
+  ],
+  "runner": "crispdm-run, the launcher tools/df_e1_block.py run_units requires. That function loads tools/governed_run.py before a cell and calls the same verify_or_refuse. tools/df_e1_block.py execute is the cell entry and is not this smoke.",
+  "not_a_calibration": true,
+  "shape_of_m_and_t": "the earlier placement-verify command's shape, not an allocation for this repair"
+ },
+ "rollback": {
+  "abandon_by": "rm -rf .repair-env",
+  "from": "the worktree root",
+  "leaves_in_place_acceptable": true,
+  "because": ".gitignore covers .repair-env/",
+  "does_not_touch": "the anaconda env, drivers, systemd, or any other interpreter"
+ },
+ "not_done": {
+  "calibrations": "NOT run. The 4800 CPU s and 3600 summed child wall s figures were not authorized and were not executed.",
+  "device_envelope_12gib": "NOT reduced",
+  "ceiling_18gib": "stays withdrawn. Not requested and not moved.",
+  "existing_interpreters": "NOT mutated",
+  "gpu_pilot": false,
+  "tensorflow_imported": false,
+  "nvidia_smi": "not run",
+  "kernel_driver": "not installed"
+ }
+}
