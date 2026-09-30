@@ -1,6 +1,6 @@
 {
- "at": "2026-09-30T23:39:12Z",
- "pid": 660731,
- "status_written_at": "2026-09-30T23:39:12Z",
- "job_signature": "[[\"traffic_L96_h96_s2021\", \"completed\", \"record_sealed\"], [\"traffic_L96_h96_s2022\", \"completed\", \"record_sealed\"], [\"traffic_L96_h96_s2023\", \"completed\", \"record_sealed\"], [\"m04-modular-cost-pilot\", \"queued\", \"queued_for_admission\"], [\"m04-modular-cost-pilot\", \"queued\", \"queued_for_admission\"]]"
+ "at": "2026-09-30T23:39:49Z",
+ "pid": 666403,
+ "status_written_at": "2026-09-30T23:39:49Z",
+ "job_signature": "[[\"traffic_L96_h96_s2021\", \"completed\", \"record_sealed\"], [\"traffic_L96_h96_s2022\", \"completed\", \"record_sealed\"], [\"traffic_L96_h96_s2023\", \"completed\", \"record_sealed\"], [\"m02-suite3\", \"queued\", \"queued_for_admission\"], [\"m04-modular-cost-pilot\", \"queued\", \"queued_for_admission\"], [\"m04-modular-cost-pilot\", \"queued\", \"queued_for_admission\"]]"
 }

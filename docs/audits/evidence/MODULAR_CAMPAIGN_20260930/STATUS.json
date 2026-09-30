@@ -1,27 +1,27 @@
 {
  "schema": "modular.program.status.v1",
- "observed_at": "2026-09-30T23:39:09Z",
+ "observed_at": "2026-09-30T23:39:44Z",
  "plan_revision": "dc72170e",
  "writer": {
   "script": "tools/m06_status_writer.py",
   "lane": "M06",
-  "pid": 660731
+  "pid": 666403
  },
  "agents": [
   {
    "id": "m06-evidence-resources (this subagent)",
    "kind": "subagent",
    "lane": "M06",
-   "state": "running",
+   "state": "completed",
    "commit": "0928dc0631a7",
-   "note": "M06: running (status writer, closure, slot desk)",
+   "note": "M06 RETURNED (third of six); status writer keeps running without an LLM",
    "worktrees": [
     {
      "lane": "M06",
      "repo": "predictor",
      "branch": "satoshi/m06-evidence-resources-20260930",
      "worktree": "~/Documents/GitHub/.worktrees/predictor-m06-20260930",
-     "tip": "96a5055f6e70"
+     "tip": "0aeadde7e0f1"
     },
     {
      "lane": "M06",
@@ -33,66 +33,6 @@
    ]
   },
   {
-   "id": "crispdm job m01-tests",
-   "kind": "subagent",
-   "lane": "M01",
-   "state": "assigned",
-   "commit": "05b08dcd90c1",
-   "admission_state": "queued_for_admission",
-   "declared_mem": "4G",
-   "host_alias": "coordinator",
-   "behind": "traffic-h96-s2021 12G lease",
-   "worktrees": [
-    {
-     "lane": "M01",
-     "repo": "predictor",
-     "branch": "satoshi/m01-model-assembly-20260930",
-     "worktree": "~/Documents/GitHub/predictor-m01-model-assembly",
-     "tip": "05b08dcd90c1"
-    }
-   ]
-  },
-  {
-   "id": "crispdm job m02-baseline-tests",
-   "kind": "subagent",
-   "lane": "M02",
-   "state": "assigned",
-   "commit": "fb20c74c0bd6",
-   "admission_state": "queued_for_admission",
-   "declared_mem": "3G",
-   "host_alias": "coordinator",
-   "behind": "traffic-h96-s2021 12G lease",
-   "worktrees": [
-    {
-     "lane": "M02",
-     "repo": "predictor",
-     "branch": "satoshi/m02-pretraining-20260930",
-     "worktree": "~/Documents/GitHub/.worktrees/predictor-m02-pretraining-20260930",
-     "tip": "fb20c74c0bd6"
-    }
-   ]
-  },
-  {
-   "id": "crispdm job m02-suite",
-   "kind": "subagent",
-   "lane": "M02",
-   "state": "assigned",
-   "commit": "fb20c74c0bd6",
-   "admission_state": "queued_for_admission",
-   "declared_mem": "3G",
-   "host_alias": "coordinator",
-   "behind": "traffic-h96-s2021 12G lease",
-   "worktrees": [
-    {
-     "lane": "M02",
-     "repo": "predictor",
-     "branch": "satoshi/m02-pretraining-20260930",
-     "worktree": "~/Documents/GitHub/.worktrees/predictor-m02-pretraining-20260930",
-     "tip": "fb20c74c0bd6"
-    }
-   ]
-  },
-  {
    "id": "a5b79d5488abdee3a",
    "kind": "subagent",
    "lane": "M01",
@@ -100,7 +40,7 @@
    "commit": "05b08dcd90c1",
    "dispatch_block": "in",
    "dispatch_tip": "feedfd00",
-   "note": "M01: dispatch tip feedfd00, WIP, UNTESTED",
+   "note": "M01: WIP, untested (dispatch tip feedfd00)",
    "worktrees": [
     {
      "lane": "M01",
@@ -119,7 +59,7 @@
    "commit": "fb20c74c0bd6",
    "dispatch_block": "in",
    "dispatch_tip": "05aaa1f0",
-   "note": "M02 RETURNED (second of six): tip 310a836f, tested code 9844dafd 71/71; synthetic pilot cgroup peak 1.03 GiB; donors PLUMBING_NOT_A_RESULT",
+   "note": "M02 RETURNED: tip 310a836f, tested code 9844dafd 71/71; synthetic pilot cgroup peak 1.03 GiB; donors PLUMBING_NOT_A_RESULT",
    "worktrees": [
     {
      "lane": "M02",
@@ -137,7 +77,7 @@
    "state": "running",
    "commit": "9c367208c215",
    "dispatch_block": "in (declarations)",
-   "note": "M03: first admissible-input declarations at feature-eng 00facd7 (Weather 21/21 with a -9999 sentinel flag on 3 channels; phase-1b d4 23/28); ECL and Traffic profiles running on worker_b; declaration_sha256 c7e20f15 NOT reproduced by the orchestrator (digest domain unknown) - UNVERIFIED",
+   "note": "M03: profiling; first admissible-input declarations at feature-eng 00facd7 (Weather 21/21 with a -9999 sentinel flag on 3 channels; phase-1b d4 23/28); declaration_sha256 c7e20f15 VERIFIED by the orchestrator: canonical JSON, sort_keys, separators (',',':'), default ensure_ascii, body without the field, per tools/declare_admissible_inputs.py",
    "worktrees": [
     {
      "lane": "M03",
@@ -154,7 +94,7 @@
    "lane": "M04",
    "state": "running",
    "commit": "a4282e17bd9e",
-   "note": "M04: cost pilot blocked on the 5090 by ADM-DEADCACHE-01; now launching on the 4090",
+   "note": "M04: cost pilot on the 4090; blocked on the 5090 by ADM-DEADCACHE-01",
    "worktrees": [
     {
      "lane": "M04",
@@ -178,7 +118,7 @@
    "lane": "M05",
    "state": "completed",
    "commit": "80757c4c69e3",
-   "note": "M05 RETURNED (first of six): lts 329d9a1, predictor 80757c4c; REPLAY_PASS + SMOKE_PASS_SHADOW_ONLY; candidate is plumbing; nothing promoted",
+   "note": "M05 RETURNED: lts 329d9a1, predictor 80757c4c; REPLAY_PASS + SMOKE_PASS_SHADOW_ONLY; candidate is plumbing; nothing promoted",
    "worktrees": [
     {
      "lane": "M05",
@@ -204,7 +144,7 @@
    "dispatch_state": "dispatched",
    "branch": "satoshi/c07-classification-remote-code-20260930",
    "commit": "dc72170e9dd5",
-   "note": "C07 dispatched: classification remote-code review; no trust_remote_code, no weights, throwaway venv only; light CPU on the coordinator under 2G caps",
+   "note": "C07 DISPATCHED ~23:25Z (post-consolidation lane): classification remote-code review; no trust_remote_code, no weights, throwaway venv only; light CPU on the coordinator under 2G caps",
    "worktrees": [
     {
      "lane": "C07",
@@ -223,7 +163,7 @@
    "dispatch_state": "dispatched",
    "branch": "satoshi/s07-strategy-support-20260930",
    "commit": "dc72170e9dd5",
-   "note": "S07 dispatched: strategy target-support purge and corrections; no scoring; tests under 2G caps",
+   "note": "S07 DISPATCHED ~23:25Z (post-consolidation lane): strategy target-support purge and corrections; no scoring; tests under 2G caps",
    "worktrees": [
     {
      "lane": "S07",
@@ -250,10 +190,10 @@
    "state": "idle",
    "job_id": null,
    "reason": "idle: free for the next admissible slot",
-   "observed_at": "2026-09-30T23:39:09Z",
+   "observed_at": "2026-09-30T23:39:44Z",
    "temperature_c": 44.0,
    "utilization_percent": 0.0,
-   "host_available_bytes": 18170011648,
+   "host_available_bytes": 18086723584,
    "gpu": {
     "uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
     "name": "NVIDIA GeForce RTX 4070 Laptop GPU",
@@ -261,9 +201,9 @@
     "utilization_percent": 0.0,
     "sm_clock_mhz": 210.0,
     "sm_clock_max_mhz": 3105.0,
-    "vram_used_mib": 686.0,
+    "vram_used_mib": 689.0,
     "vram_total_mib": 8188.0,
-    "power_w": 4.58,
+    "power_w": 4.95,
     "throttle_reasons_hex": "0x0000000000000001",
     "throttle_reasons": [
      "gpu_idle"
@@ -272,32 +212,32 @@
    "host": {
     "mem": {
      "MemTotal": 32778358784,
-     "MemAvailable": 18170011648,
-     "SUnreclaim": 701923328,
+     "MemAvailable": 18086723584,
+     "SUnreclaim": 702099456,
      "SReclaimable": 2601934848
     },
-    "unreclaimable_slab_bytes": 701923328,
-    "psi_memory": "some avg10=0.00 avg60=0.01 avg300=1.41 total=27643851\nfull avg10=0.00 avg60=0.01 avg300=1.31 total=26293684",
-    "uptime_s": 185798.53
+    "unreclaimable_slab_bytes": 702099456,
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=1.24 total=27643851\nfull avg10=0.00 avg60=0.00 avg300=1.16 total=26293685",
+    "uptime_s": 185834.22
    },
    "admission": {
-    "host_free_for_new_bytes": 14439510016,
-    "held_unrealised_bytes": 504049664,
+    "host_free_for_new_bytes": 14356119552,
+    "held_unrealised_bytes": 503582720,
     "desktop_reserve_bytes": 3221225472,
     "pressure_some_avg10": 0.0,
     "pressure_full_avg10": 0.0,
     "pressure_admit_max": 25.0,
-    "slice_memory_current": 4195848192,
+    "slice_memory_current": 4196368384,
     "slice_memory_max": 15032385536
    },
    "leases": [
     {
-     "lease_id": "m06-status-writer-1790811401-660720-d7f8f1",
+     "lease_id": "m06-status-writer-1790811584-666392-88a62e",
      "name": "m06-status-writer",
      "cap_bytes": 536870912,
-     "observed_bytes": 32821248,
+     "observed_bytes": 33288192,
      "armed": true,
-     "expires_at": 1790812447.0311768
+     "expires_at": 1790812484.9685297
     }
    ]
   },
@@ -308,10 +248,10 @@
    "state": "idle",
    "job_id": null,
    "reason": "free: 5070 Ti Laptop, same host (8 GiB slice shared with M04)",
-   "observed_at": "2026-09-30T23:39:09Z",
+   "observed_at": "2026-09-30T23:39:45Z",
    "temperature_c": 28.0,
    "utilization_percent": 10.0,
-   "host_available_bytes": 12304191488,
+   "host_available_bytes": 12529274880,
    "gpu": {
     "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
     "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
@@ -321,7 +261,7 @@
     "sm_clock_max_mhz": 3090.0,
     "vram_used_mib": 14.0,
     "vram_total_mib": 12227.0,
-    "power_w": 15.87,
+    "power_w": 15.85,
     "throttle_reasons_hex": "0x0000000000000004",
     "throttle_reasons": [
      "sw_power_cap"
@@ -330,16 +270,16 @@
    "host": {
     "mem": {
      "MemTotal": 15340752896,
-     "MemAvailable": 12304191488,
-     "SUnreclaim": 346505216,
-     "SReclaimable": 206274560
+     "MemAvailable": 12529274880,
+     "SUnreclaim": 345661440,
+     "SReclaimable": 206315520
     },
-    "unreclaimable_slab_bytes": 346505216,
+    "unreclaimable_slab_bytes": 345661440,
     "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=439\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=426",
-    "uptime_s": 2711.82
+    "uptime_s": 2750.04
    },
    "admission": {
-    "host_free_for_new_bytes": 9074122752,
+    "host_free_for_new_bytes": 9295155200,
     "held_unrealised_bytes": 0,
     "desktop_reserve_bytes": 3221225472,
     "pressure_some_avg10": 0.0,
@@ -357,10 +297,10 @@
    "state": "idle",
    "job_id": null,
    "reason": "reserved for M04 cost pilot (queued behind ADM-DEADCACHE-01; owner deploy/reclaim pending)",
-   "observed_at": "2026-09-30T23:39:09Z",
+   "observed_at": "2026-09-30T23:39:45Z",
    "temperature_c": 37.0,
    "utilization_percent": 0.0,
-   "host_available_bytes": 12304191488,
+   "host_available_bytes": 12529274880,
    "gpu": {
     "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
     "name": "NVIDIA GeForce RTX 5090",
@@ -370,23 +310,23 @@
     "sm_clock_max_mhz": 3135.0,
     "vram_used_mib": 10.0,
     "vram_total_mib": 32607.0,
-    "power_w": 3.48,
+    "power_w": 3.54,
     "throttle_reasons_hex": "0x0000000000000000",
     "throttle_reasons": []
    },
    "host": {
     "mem": {
      "MemTotal": 15340752896,
-     "MemAvailable": 12304191488,
-     "SUnreclaim": 346505216,
-     "SReclaimable": 206274560
+     "MemAvailable": 12529274880,
+     "SUnreclaim": 345661440,
+     "SReclaimable": 206315520
     },
-    "unreclaimable_slab_bytes": 346505216,
+    "unreclaimable_slab_bytes": 345661440,
     "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=439\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=426",
-    "uptime_s": 2711.82
+    "uptime_s": 2750.04
    },
    "admission": {
-    "host_free_for_new_bytes": 9074122752,
+    "host_free_for_new_bytes": 9295155200,
     "held_unrealised_bytes": 0,
     "desktop_reserve_bytes": 3221225472,
     "pressure_some_avg10": 0.0,
@@ -404,20 +344,20 @@
    "state": "idle",
    "job_id": null,
    "reason": "idle: free for the next admissible slot",
-   "observed_at": "2026-09-30T23:39:10Z",
-   "temperature_c": 40.0,
-   "utilization_percent": 6.0,
-   "host_available_bytes": 18481930240,
+   "observed_at": "2026-09-30T23:39:48Z",
+   "temperature_c": 42.0,
+   "utilization_percent": 0.0,
+   "host_available_bytes": 17785077760,
    "gpu": {
     "uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
     "name": "NVIDIA GeForce RTX 4090 Laptop GPU",
-    "temperature_c": 40.0,
-    "utilization_percent": 6.0,
+    "temperature_c": 42.0,
+    "utilization_percent": 0.0,
     "sm_clock_mhz": 1455.0,
     "sm_clock_max_mhz": 3105.0,
     "vram_used_mib": 14.0,
     "vram_total_mib": 16376.0,
-    "power_w": 24.44,
+    "power_w": 25.04,
     "throttle_reasons_hex": "0x0000000000000001",
     "throttle_reasons": [
      "gpu_idle"
@@ -426,22 +366,22 @@
    "host": {
     "mem": {
      "MemTotal": 32831807488,
-     "MemAvailable": 18481930240,
-     "SUnreclaim": 2570936320,
-     "SReclaimable": 572059648
+     "MemAvailable": 17785077760,
+     "SUnreclaim": 2572066816,
+     "SReclaimable": 572645376
     },
-    "unreclaimable_slab_bytes": 2570936320,
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.16 total=29060081\nfull avg10=0.00 avg60=0.00 avg300=0.16 total=28768354",
-    "uptime_s": 176712.67
+    "unreclaimable_slab_bytes": 2572066816,
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.14 total=29060081\nfull avg10=0.00 avg60=0.00 avg300=0.14 total=28768354",
+    "uptime_s": 176748.99
    },
    "admission": {
-    "host_free_for_new_bytes": 8964399104,
-    "held_unrealised_bytes": 6282993664,
+    "host_free_for_new_bytes": 5679091712,
+    "held_unrealised_bytes": 8871550976,
     "desktop_reserve_bytes": 3221225472,
     "pressure_some_avg10": 0.0,
     "pressure_full_avg10": 0.0,
     "pressure_admit_max": 25.0,
-    "slice_memory_current": 3446611968,
+    "slice_memory_current": 4082888704,
     "slice_memory_max": 15032385536
    },
    "leases": [
@@ -449,25 +389,33 @@
      "lease_id": "m01-venv-1790811359-1219548-bf5d97",
      "name": "m01-venv",
      "cap_bytes": 3221225472,
-     "observed_bytes": 661393408,
+     "observed_bytes": 765108224,
      "armed": true,
-     "expires_at": 1790812449.818127
+     "expires_at": 1790812484.825689
+    },
+    {
+     "lease_id": "m02-suite3-1790811572-1222842-33f74b",
+     "name": "m02-suite3",
+     "cap_bytes": 3221225472,
+     "observed_bytes": 498241536,
+     "armed": true,
+     "expires_at": 1790812487.7384944
     },
     {
      "lease_id": "m03-prof-tsl_traffic-1790811297-1217948-928e78",
      "name": "m03-prof-tsl_traffic",
      "cap_bytes": 2147483648,
-     "observed_bytes": 286158848,
+     "observed_bytes": 313987072,
      "armed": true,
-     "expires_at": 1790812448.2426233
+     "expires_at": 1790812488.2514887
     },
     {
      "lease_id": "m03-profB-tsl_traffic-1790811407-1220332-468056",
      "name": "m03-profB-tsl_traffic",
      "cap_bytes": 2147483648,
-     "observed_bytes": 285646848,
+     "observed_bytes": 288530432,
      "armed": true,
-     "expires_at": 1790812447.9454293
+     "expires_at": 1790812487.9535577
     }
    ]
   }
@@ -567,15 +515,39 @@
    ]
   },
   {
+   "id": "m02-suite3",
+   "lane": "M02",
+   "state": "queued",
+   "stage": "queued_for_admission",
+   "host_alias": "coordinator",
+   "declared_mem": "3G",
+   "waiting_s": 13,
+   "producer_commit": "unknown (launcher argv only)",
+   "heartbeat_at": "2026-09-30T23:39:44Z",
+   "progress": {
+    "unit": "unknown",
+    "completed": null,
+    "total": null
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "admission waits for a live lease on this host to release"
+    ]
+   }
+  },
+  {
    "id": "m04-modular-cost-pilot",
    "lane": "M04",
    "state": "queued",
    "stage": "queued_for_admission",
    "host_alias": "worker_a",
    "declared_mem": "6G",
-   "waiting_s": 1737,
+   "waiting_s": 1775,
    "producer_commit": "unknown (launcher argv only)",
-   "heartbeat_at": "2026-09-30T23:39:09Z",
+   "heartbeat_at": "2026-09-30T23:39:45Z",
    "progress": {
     "unit": "unknown",
     "completed": null,
@@ -597,9 +569,9 @@
    "stage": "queued_for_admission",
    "host_alias": "worker_b",
    "declared_mem": "6G",
-   "waiting_s": 239,
+   "waiting_s": 275,
    "producer_commit": "unknown (launcher argv only)",
-   "heartbeat_at": "2026-09-30T23:39:10Z",
+   "heartbeat_at": "2026-09-30T23:39:48Z",
    "progress": {
     "unit": "unknown",
     "completed": null,
@@ -904,7 +876,7 @@
    "repo": "predictor",
    "branch": "satoshi/m06-evidence-resources-20260930",
    "worktree": "~/Documents/GitHub/.worktrees/predictor-m06-20260930",
-   "tip": "96a5055f6e70"
+   "tip": "0aeadde7e0f1"
   },
   {
    "lane": "M06",
@@ -932,12 +904,12 @@
   {
    "at": "2026-09-30T22:52:35Z",
    "host_alias": "worker_a",
-   "event": "interactive operator (owner) ran apt update/upgrade"
+   "event": "the OWNER, at his own terminal (no agent), ran apt update/upgrade"
   },
   {
    "at": "2026-09-30T22:53:30Z",
    "host_alias": "worker_a",
-   "event": "shutdown -r now by the interactive operator; previous boot up since 2026-09-22T17:38:32Z (8 d 5 h), kernel 7.0.0-31 -> 7.0.0-34 after reboot, driver 580.178.04 unchanged"
+   "event": "shutdown -r now by the OWNER at his own terminal (no agent); previous boot up since 2026-09-22T17:38:32Z (8 d 5 h), kernel 7.0.0-31 -> 7.0.0-34 after reboot, driver 580.178.04 unchanged"
   },
   {
    "at": "2026-09-30T22:53:58Z",

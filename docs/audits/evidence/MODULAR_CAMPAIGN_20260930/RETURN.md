@@ -52,3 +52,13 @@ This is a new measurement from this session's cells, not a retained result.
 - M04 relaunches its cost pilot once admission clears.
 - The free GPU slots right now are the coordinator's 4070 and worker_b's 4090.
 - The writer keeps sampling the 5090 host's slab on every cycle.
+
+## Corrections (2026-09-30, 23:55Z)
+
+1. **Who rebooted the 5090 host.** My final chat report said the orchestrator ran the apt upgrade and the reboot on the preferred worker (22:52–22:53Z). That is **wrong**. The **owner** did both, at his own terminal; neither the orchestrator nor any other agent was involved. This directory's evidence files already said so. The error was only in the report text, and it is recorded here as a correction rather than silently edited.
+2. **M03 declaration digest.** `declaration_sha256 c7e20f15` is now **VERIFIED** by the orchestrator. The digest is taken over canonical JSON: sorted keys, separators `(",", ":")`, default `ensure_ascii`, and the body without the digest field itself, as in `tools/declare_admissible_inputs.py`. It had been recorded as UNVERIFIED.
+3. **Lane states.**
+   - Returned: M02 (tip 310a836f; tested code 9844dafd, 71 of 71 tests), M05, and M06.
+   - Dispatched at about 23:25Z as post-consolidation lanes: C07 and S07.
+   - Still working: M01 (work in progress, untested) and M03 (profiling).
+   - M04: its pilot is running on the 4090 and blocked on the 5090.

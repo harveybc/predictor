@@ -6,42 +6,9 @@
    "id": "m06-evidence-resources (this subagent)",
    "kind": "subagent",
    "lane": "M06",
-   "state": "running",
+   "state": "completed",
    "commit": "dc72170e",
-   "note": "M06: running (status writer, closure, slot desk)"
-  },
-  {
-   "id": "crispdm job m01-tests",
-   "kind": "subagent",
-   "lane": "M01",
-   "state": "assigned",
-   "commit": null,
-   "admission_state": "queued_for_admission",
-   "declared_mem": "4G",
-   "host_alias": "coordinator",
-   "behind": "traffic-h96-s2021 12G lease"
-  },
-  {
-   "id": "crispdm job m02-baseline-tests",
-   "kind": "subagent",
-   "lane": "M02",
-   "state": "assigned",
-   "commit": null,
-   "admission_state": "queued_for_admission",
-   "declared_mem": "3G",
-   "host_alias": "coordinator",
-   "behind": "traffic-h96-s2021 12G lease"
-  },
-  {
-   "id": "crispdm job m02-suite",
-   "kind": "subagent",
-   "lane": "M02",
-   "state": "assigned",
-   "commit": null,
-   "admission_state": "queued_for_admission",
-   "declared_mem": "3G",
-   "host_alias": "coordinator",
-   "behind": "traffic-h96-s2021 12G lease"
+   "note": "M06 RETURNED (third of six); status writer keeps running without an LLM"
   },
   {
    "id": "a5b79d5488abdee3a",
@@ -51,7 +18,7 @@
    "commit": null,
    "dispatch_block": "in",
    "dispatch_tip": "feedfd00",
-   "note": "M01: dispatch tip feedfd00, WIP, UNTESTED"
+   "note": "M01: WIP, untested (dispatch tip feedfd00)"
   },
   {
    "id": "a5289d234c296e0c5",
@@ -61,7 +28,7 @@
    "commit": "310a836f",
    "dispatch_block": "in",
    "dispatch_tip": "05aaa1f0",
-   "note": "M02 RETURNED (second of six): tip 310a836f, tested code 9844dafd 71/71; synthetic pilot cgroup peak 1.03 GiB; donors PLUMBING_NOT_A_RESULT"
+   "note": "M02 RETURNED: tip 310a836f, tested code 9844dafd 71/71; synthetic pilot cgroup peak 1.03 GiB; donors PLUMBING_NOT_A_RESULT"
   },
   {
    "id": "a160efdffffffa9f2",
@@ -70,7 +37,7 @@
    "state": "running",
    "commit": "00facd7 (feature-eng)",
    "dispatch_block": "in (declarations)",
-   "note": "M03: first admissible-input declarations at feature-eng 00facd7 (Weather 21/21 with a -9999 sentinel flag on 3 channels; phase-1b d4 23/28); ECL and Traffic profiles running on worker_b; declaration_sha256 c7e20f15 NOT reproduced by the orchestrator (digest domain unknown) - UNVERIFIED"
+   "note": "M03: profiling; first admissible-input declarations at feature-eng 00facd7 (Weather 21/21 with a -9999 sentinel flag on 3 channels; phase-1b d4 23/28); declaration_sha256 c7e20f15 VERIFIED by the orchestrator: canonical JSON, sort_keys, separators (',',':'), default ensure_ascii, body without the field, per tools/declare_admissible_inputs.py"
   },
   {
    "id": "a083979bc9a8fa1b8",
@@ -78,7 +45,7 @@
    "lane": "M04",
    "state": "running",
    "commit": null,
-   "note": "M04: cost pilot blocked on the 5090 by ADM-DEADCACHE-01; now launching on the 4090"
+   "note": "M04: cost pilot on the 4090; blocked on the 5090 by ADM-DEADCACHE-01"
   },
   {
    "id": "a65d2f3a115a9aa25",
@@ -86,7 +53,7 @@
    "lane": "M05",
    "state": "completed",
    "commit": "329d9a1 (lts) / 80757c4c (predictor)",
-   "note": "M05 RETURNED (first of six): lts 329d9a1, predictor 80757c4c; REPLAY_PASS + SMOKE_PASS_SHADOW_ONLY; candidate is plumbing; nothing promoted"
+   "note": "M05 RETURNED: lts 329d9a1, predictor 80757c4c; REPLAY_PASS + SMOKE_PASS_SHADOW_ONLY; candidate is plumbing; nothing promoted"
   },
   {
    "id": "C07 subagent (id pending from orchestrator)",
@@ -96,7 +63,7 @@
    "dispatch_state": "dispatched",
    "branch": "satoshi/c07-classification-remote-code-20260930",
    "commit": null,
-   "note": "C07 dispatched: classification remote-code review; no trust_remote_code, no weights, throwaway venv only; light CPU on the coordinator under 2G caps"
+   "note": "C07 DISPATCHED ~23:25Z (post-consolidation lane): classification remote-code review; no trust_remote_code, no weights, throwaway venv only; light CPU on the coordinator under 2G caps"
   },
   {
    "id": "S07 subagent (id pending from orchestrator)",
@@ -106,7 +73,7 @@
    "dispatch_state": "dispatched",
    "branch": "satoshi/s07-strategy-support-20260930",
    "commit": null,
-   "note": "S07 dispatched: strategy target-support purge and corrections; no scoring; tests under 2G caps"
+   "note": "S07 DISPATCHED ~23:25Z (post-consolidation lane): strategy target-support purge and corrections; no scoring; tests under 2G caps"
   }
  ],
  "results": [
@@ -380,12 +347,12 @@
   {
    "at": "2026-09-30T22:52:35Z",
    "host_alias": "worker_a",
-   "event": "interactive operator (owner) ran apt update/upgrade"
+   "event": "the OWNER, at his own terminal (no agent), ran apt update/upgrade"
   },
   {
    "at": "2026-09-30T22:53:30Z",
    "host_alias": "worker_a",
-   "event": "shutdown -r now by the interactive operator; previous boot up since 2026-09-22T17:38:32Z (8 d 5 h), kernel 7.0.0-31 -> 7.0.0-34 after reboot, driver 580.178.04 unchanged"
+   "event": "shutdown -r now by the OWNER at his own terminal (no agent); previous boot up since 2026-09-22T17:38:32Z (8 d 5 h), kernel 7.0.0-31 -> 7.0.0-34 after reboot, driver 580.178.04 unchanged"
   },
   {
    "at": "2026-09-30T22:53:58Z",
@@ -523,5 +490,15 @@
  "devices_policy": {
   "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326": "coordinator 4070: keep FREE; no new heavy compute on the owner's desktop (standing rule)",
   "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9": "worker_b 4090: handed to M04 for the cost pilot by the orchestrator (~23:40Z); lease expected"
- }
+ },
+ "corrections": [
+  {
+   "at": "2026-09-30T23:55Z",
+   "what": "ATTRIBUTION: M06's final chat report said the preferred worker's apt upgrade and reboot (22:52-22:53Z) were run by the orchestrator. WRONG. They were performed by the OWNER at his own terminal, not by the orchestrator and not by any agent. The evidence files already attributed them to the owner; the error was in the report text and is recorded here as a correction."
+  },
+  {
+   "at": "2026-09-30T23:55Z",
+   "what": "M03 declaration_sha256 c7e20f15: previously recorded as UNVERIFIED; now VERIFIED by the orchestrator under the rule canonical JSON (sort_keys, separators (',',':'), default ensure_ascii) of the body without the field, per tools/declare_admissible_inputs.py"
+  }
+ ]
 }

@@ -41,7 +41,7 @@ Cooling and observed limits (reported, not changed):
 
 ## 2. The 5090 host (worker_a), read-only diagnosis
 
-- **What happened.** An interactive operator (the owner) on that host ran `apt update`/`apt upgrade` and then `shutdown -r now` at 17:52–17:53 local. The new boot is at 17:53:58: kernel 7.0.0-31 → 7.0.0-34, driver 580.178.04 unchanged. The previous boot had been up 8 d 5 h, since 2026-09-22. Unreclaimable slab went from 5.48 GiB to 0.27–0.28 GiB, and MemAvailable to about 12.7 of 14.98 GiB. The slab growth has been **cleared, not diagnosed**.
+- **What happened.** The OWNER, at his own terminal and with no agent involved, ran `apt update`/`apt upgrade` and then `shutdown -r now` at 17:52–17:53 local. The new boot is at 17:53:58: kernel 7.0.0-31 → 7.0.0-34, driver 580.178.04 unchanged. The previous boot had been up 8 d 5 h, since 2026-09-22. Unreclaimable slab went from 5.48 GiB to 0.27–0.28 GiB, and MemAvailable to about 12.7 of 14.98 GiB. The slab growth has been **cleared, not diagnosed**.
 - **Driver host-allocation failures in the previous boot.** There were 2,201 `NVRM … NV_ERR_NO_MEMORY` lines from `_memdescAllocInternal`/`system_mem.c`. By day: 09-24 29, 09-25 8, 09-26 2, 09-27 2, 09-28 35, 09-29 347, 09-30 1,778. Separately, 154 `_kgmmuClientShadowFaultBufferPagesAllocate: big page size` failures fell on 09-30. There were no kernel page-allocation failures and no OOM kills. In other words, the driver's own host allocations failed as the unreclaimable pool grew, which is why an "idle, cold" GPU was unusable.
 - **Slab caches.** `/proc/slabinfo` and `slabtop` need root, which M06 does not have, so the cache that held the 5.48 GiB is **not named**. It cannot be recovered after the reboot.
 - **Likely cause (hypothesis, UNVERIFIED).**
@@ -126,6 +126,12 @@ what is NOT done / refused / not measured: slab cache not named (needs root); sl
        contains a host-named default path (force-push denied; owner's call); M03 dispatch block missing;
        M04 cost pilot queued behind ADM-DEADCACHE-01
 ```
+
+## Corrections (23:55Z)
+
+- **Attribution.** My final chat report said the orchestrator performed the 5090 host's apt upgrade and reboot. That was wrong: the owner did both, at his own terminal. The report text was in error; this document and the evidence files record the owner.
+- **M03 digest.** `declaration_sha256 c7e20f15` is now VERIFIED by the orchestrator. It is computed over canonical JSON (sort_keys, separators `(",",":")`, the body without the digest field), as in `tools/declare_admissible_inputs.py`.
+- **Lane states.** Returned: M02 (310a836f; 9844dafd, 71 of 71 tests), M05 and M06. Dispatched at about 23:25Z: C07 and S07. M01 is work in progress. M03 is profiling. M04 is on the 4090 and blocked on the 5090.
 
 Signed: Satoshi, successor technical lead. 2026-09-30.
 
