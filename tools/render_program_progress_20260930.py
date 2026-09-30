@@ -54,7 +54,7 @@ def main():
     ax.add_patch(Rectangle((0.72, 16.05), 16.55 * PAPER_TRADING_PROGRESS_ESTIMATE, 0.13, color="#b56800", lw=0))
     history = [(1.1, "22 SEP", "ECL L96"), (5.0, "24 SEP", "Modular DEV"),
                (8.9, "29 SEP", "Weather"), (12.8, "30 SEP", "Traffic coste"),
-               (16.7, "~22:10Z", "primer score")]
+               (16.7, "~22:30Z", "primer score")]
     ax.plot([1.1, 16.7], [15.35, 15.35], color="#aab8be", lw=2, zorder=1)
     for x, day, label in history:
         color = "#b56800" if x == 16.7 else "#087f5b"
