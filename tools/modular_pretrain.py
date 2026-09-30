@@ -510,6 +510,65 @@ def regime_config(fine_tune_config, regime):
     return config
 
 
+# --------------------------------------------------------------------------- input swap
+def internal_split(timestamps, window, sample_hours, fraction=0.8):
+    """Chronological AE train / internal validation indices inside a TRAIN split.
+
+    Internal validation starts only after a purge of ``window`` rows, so AE train
+    and internal validation windows share no observation. Returns index arrays
+    and the two declared supports (epoch seconds, input-window coverage).
+    """
+    n = len(timestamps)
+    n_ae = int(n * fraction)
+    if n_ae < 1 or n_ae + window >= n:
+        raise ValueError("too few windows for a purged internal validation")
+    step = int(round(sample_hours * 3600))
+    tr, va = np.arange(n_ae), np.arange(n_ae + window, n)
+    supports = ((int(timestamps[0]) - (window - 1) * step, int(timestamps[n_ae - 1])),
+                (int(timestamps[va[0]]) - (window - 1) * step, int(timestamps[-1])))
+    if supports[0][1] >= supports[1][0]:
+        raise ValueError("internal split supports overlap")
+    return tr, va, supports
+
+
+def pretrain_from_train_npz(train_npz, output_dir, fit_config, *, provenance, config=None,
+                            seed=None, heartbeat=None, fraction=0.8, stage_fit_configs=None,
+                            manifest_sha256=None):
+    """Input swap: pretrain from an evaluator-format TRAIN NPZ (split must be 'train').
+
+    Uses only the windows of that file; the outer validation, test and holdout
+    files are never opened. ``provenance`` must be declared ('governed_resource'
+    requires the M03 manifest digest). One branch per feature by default, so for
+    ECL (321 channels incl. OT, TRAIN rows [0, 18412)) the same code runs with
+    321 branch AEs and a 321x16-channel fused sequence.
+    """
+    if provenance not in PROVENANCE:
+        raise ValueError(f"provenance must be one of {PROVENANCE}")
+    if provenance == "governed_resource" and not manifest_sha256:
+        raise ValueError("a governed input requires the admissible-input manifest digest")
+    with np.load(train_npz, allow_pickle=False) as archive:
+        if str(archive["split"]) != "train":
+            raise ValueError("pretraining reads the TRAIN split only")
+        windows = archive["windows"]
+        timestamps = archive["timestamps"]
+        features = archive["feature_names"].astype(str).tolist()
+        dataset_id = str(archive["dataset_id"])
+        if str(archive["timestamp_unit"]) != "seconds":
+            raise ValueError("timestamp_unit must be seconds")
+    from predictor_plugins.modular_temporal import default_config
+    base = copy.deepcopy(config) if config is not None else default_config(features)
+    if base["feature_names"] != features:
+        raise ValueError("config feature order differs from the TRAIN file")
+    tr, va, (s_tr, s_va) = internal_split(timestamps, windows.shape[1], base["sample_hours"], fraction)
+    common = {"dataset_id": dataset_id, "provenance": provenance, "time_unit": "seconds"}
+    if manifest_sha256:
+        common["input_manifest_sha256"] = manifest_sha256
+    pops = ({"split": "train", "support_start": s_tr[0], "support_end": s_tr[1], **common},
+            {"split": "train_validation", "support_start": s_va[0], "support_end": s_va[1], **common})
+    return pretrain_components(base, windows[tr], windows[va], output_dir, fit_config, *pops,
+                               seed=seed, heartbeat=heartbeat, stage_fit_configs=stage_fit_configs)
+
+
 # --------------------------------------------------------------------------- synthetic pilot
 def synthetic_series(rows, features, seed):
     """Declared SYNTHETIC fixture: hourly sinusoids + AR(1) noise, cross-coupled."""

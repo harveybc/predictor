@@ -228,3 +228,23 @@ def test_end_to_end_pretrain_then_real_evaluator_regimes(tmp_path):
     assert weights_hash(r1.get_layer("temporal_core")) == donor_core      # frozen: unchanged
     assert weights_hash(r2.get_layer("temporal_core")) != donor_core      # fine-tuned: updated
     assert (tmp_path / "pilot" / "heartbeat.jsonl").exists()
+
+
+def test_input_swap_from_train_npz_refuses_non_train(tmp_path):
+    from tools.modular_pretrain import build_synthetic_splits, internal_split, pretrain_from_train_npz
+    train, validation, *_ = build_synthetic_splits(rows=500, features=2, window=24, horizons=[1], seed=2)
+    np.savez(tmp_path / "SYNTHETIC_train.npz", **train)
+    np.savez(tmp_path / "SYNTHETIC_validation.npz", **validation)
+    with pytest.raises(ValueError, match="TRAIN split only"):
+        pretrain_from_train_npz(tmp_path / "SYNTHETIC_validation.npz", tmp_path / "v", FIT,
+                                provenance="synthetic_fixture")
+    with pytest.raises(ValueError, match="manifest digest"):
+        pretrain_from_train_npz(tmp_path / "SYNTHETIC_train.npz", tmp_path / "g", FIT,
+                                provenance="governed_resource")
+    tr, va, (a, b) = internal_split(train["timestamps"], 24, 1)
+    assert va[0] - tr[-1] == 25 and a[1] < b[0]
+    result = pretrain_from_train_npz(tmp_path / "SYNTHETIC_train.npz", tmp_path / "ok", FIT,
+                                     provenance="synthetic_fixture", seed=1)
+    assert result["train_input"]["shape"][0] == len(tr)
+    assert result["validation_input"]["shape"][0] == len(va)
+    assert result["label"].startswith("SYNTHETIC")
