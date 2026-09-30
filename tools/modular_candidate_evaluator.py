@@ -249,6 +249,10 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
     import tensorflow as tf
 
     raw = dict(fit_config)
+    progress = raw.pop("progress", None)
+    if progress is not None and not callable(progress):
+        raise ValueError("progress must be callable")
+    report = progress or (lambda **_: None)
     compile_model = raw.pop("compile", True)
     custom_optimizer = raw.pop("optimizer", None)
     custom_loss = raw.get("loss")
@@ -288,6 +292,7 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
     started = time.monotonic()
     initial_iterations = int(optimizer.iterations.numpy())
     stop_reason = "max_epochs"
+    batches_per_epoch = -(-len(x) // batch)
 
     def budget_reason():
         if updates >= settings["max_updates"]:
@@ -313,6 +318,9 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
                 raise ValueError("expected exactly one observed optimizer update per batch")
             updates += delta
             train_loss += float(np.asarray(value).reshape(-1)[0]) * len(xb)
+            report(stage="fit", epoch=epoch, updates=updates, batches_per_epoch=batches_per_epoch,
+                   best_epoch=best_epoch, best_validation_loss=best_loss if best_weights is not None else None,
+                   elapsed_seconds=time.monotonic() - started, max_epochs=settings["max_epochs"])
         if interrupted:
             break
         _weight_digest(model.get_weights())
@@ -329,6 +337,8 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
         if interrupted:
             break
         val_loss /= len(vx)
+        report(stage="validated", epoch=epoch, updates=updates, validation_loss=val_loss,
+               elapsed_seconds=time.monotonic() - started)
         history.append(dict(epoch=epoch, train_loss=train_loss / len(x), validation_loss=val_loss))
         if val_loss < best_loss - settings["min_delta"]:
             best_loss, best_epoch, stale = val_loss, epoch, 0
@@ -357,10 +367,12 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
                 restored_best_weights=True, elapsed_seconds=time.monotonic() - started)
 
 
-def evaluate_candidate(config, train_path, validation_path, output_dir):
+def evaluate_candidate(config, train_path, validation_path, output_dir, progress=None):
     """Train locally and return a JSON-serializable, measured validation receipt.
 
-    Refuses invalid data/budgets before importing the engine. Output directory
+    Refuses invalid data/budgets before importing the engine. ``progress`` is an
+    optional callable receiving keyword stage/progress reports (heartbeats); it
+    never changes results and is excluded from the receipt. Output directory
     must not exist, avoiding accidental replacement of another candidate's model.
     The caller controls CPU/GPU visibility before importing TensorFlow.
     """
@@ -369,12 +381,14 @@ def evaluate_candidate(config, train_path, validation_path, output_dir):
     if not isinstance(config.get("model"), dict):
         raise ValueError("config['model'] must contain the strict engine configuration")
     settings = _settings(config)
+    report = progress or (lambda **_: None)
     try:
         canonical = json.dumps(config, sort_keys=True, separators=(",", ":"), allow_nan=False)
     except (TypeError, ValueError) as exc:
         raise ValueError("config must be finite JSON") from exc
     config = json.loads(canonical)
     model_config = config["model"]
+    report(stage="load")
     train = _load(train_path, "train", config)
     validation = _load(validation_path, "validation", config)
     objective = _objective(config, train["metric_space"])
@@ -406,6 +420,7 @@ def evaluate_candidate(config, train_path, validation_path, output_dir):
     from predictor_plugins.modular_temporal import build_modular
 
     tf.keras.utils.set_random_seed(settings["seed"])
+    report(stage="build")
     bundle = build_modular(model_config)
     model = bundle.forecast_model
     batch = settings["batch_size"]
@@ -413,7 +428,8 @@ def evaluate_candidate(config, train_path, validation_path, output_dir):
     vx, vy = validation["windows"], validation["targets"]
     _predict(model, x[:1], y[:1], batch)
     initial_digest = _weight_digest(model.get_weights())
-    training = fit_with_early_stopping(model, x, y, vx, vy, settings)
+    training = fit_with_early_stopping(model, x, y, vx, vy, {**settings, "progress": progress})
+    report(stage="score", selected_epoch=training["selected_epoch"], updates=training["observed_updates"])
     best_weights = model.get_weights()
     prediction = _predict(model, vx, vy, batch)
     baseline = np.repeat(vx[:, -1:, config["target_feature_indices"]], len(model_config["horizons"]), axis=1)
@@ -425,6 +441,7 @@ def evaluate_candidate(config, train_path, validation_path, output_dir):
         raise ValueError("objective undefined: persistence denominator is zero")
     destination.mkdir(parents=True, exist_ok=False)
     artifact = destination / "best.keras"
+    report(stage="save")
     model.save(artifact)
     restored = tf.keras.models.load_model(artifact, compile=False)
     reloaded_prediction = _predict(restored, vx, vy, batch)

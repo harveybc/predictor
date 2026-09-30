@@ -1,0 +1,249 @@
+{
+ "bounds": {
+  "branch.channels": {
+   "choices": [
+    8,
+    16,
+    32
+   ]
+  },
+  "branch.dilation_rate": {
+   "choices": [
+    1
+   ]
+  },
+  "branch.grouping_size": {
+   "choices": [
+    1,
+    8,
+    32,
+    321
+   ]
+  },
+  "branch.kernel_size": {
+   "choices": [
+    3,
+    5,
+    7
+   ]
+  },
+  "branch.plugin": {
+   "choices": [
+    "causal_conv1d"
+   ]
+  },
+  "branch.regime": {
+   "choices": [
+    "R0",
+    "R1",
+    "R2"
+   ]
+  },
+  "core.blocks": {
+   "choices": [
+    1,
+    2,
+    3
+   ]
+  },
+  "core.d_model": {
+   "choices": [
+    32,
+    64,
+    128
+   ]
+  },
+  "core.dropout": {
+   "high": 0.3,
+   "low": 0.0,
+   "type": "float"
+  },
+  "core.ff_dim": {
+   "choices": [
+    64,
+    128,
+    256
+   ]
+  },
+  "core.heads": {
+   "choices": [
+    2,
+    4,
+    8
+   ]
+  },
+  "core.kernel_size": {
+   "choices": [
+    3
+   ]
+  },
+  "core.regime": {
+   "choices": [
+    "R0",
+    "R1",
+    "R2"
+   ]
+  },
+  "core.stage_channels_0": {
+   "choices": [
+    96,
+    64,
+    48,
+    32,
+    24,
+    16,
+    12
+   ]
+  },
+  "core.stage_channels_1": {
+   "choices": [
+    96,
+    64,
+    48,
+    32,
+    24,
+    16,
+    12
+   ]
+  },
+  "core.stage_channels_2": {
+   "choices": [
+    96,
+    64,
+    48,
+    32,
+    24,
+    16,
+    12
+   ]
+  },
+  "core.stage_channels_3": {
+   "choices": [
+    96,
+    64,
+    48,
+    32,
+    24,
+    16,
+    12
+   ]
+  },
+  "core.stage_count": {
+   "choices": [
+    3,
+    4
+   ]
+  },
+  "core.time_factor_0": {
+   "choices": [
+    1,
+    2,
+    3,
+    4
+   ]
+  },
+  "core.time_factor_1": {
+   "choices": [
+    1,
+    2,
+    3,
+    4
+   ]
+  },
+  "core.time_factor_2": {
+   "choices": [
+    1,
+    2,
+    3,
+    4
+   ]
+  },
+  "core.time_factor_3": {
+   "choices": [
+    1,
+    2,
+    3,
+    4
+   ]
+  },
+  "model.branch_steps": {
+   "choices": [
+    6,
+    12,
+    24
+   ]
+  },
+  "model.output_channels": {
+   "choices": [
+    4,
+    8,
+    16
+   ]
+  },
+  "model.output_steps": {
+   "choices": [
+    3,
+    6
+   ]
+  },
+  "train.batch_size": {
+   "choices": [
+    32,
+    64,
+    128
+   ]
+  },
+  "train.huber_delta": {
+   "high": 2.0,
+   "log": true,
+   "low": 0.05,
+   "type": "float"
+  },
+  "train.learning_rate": {
+   "high": 0.003,
+   "log": true,
+   "low": 0.0001,
+   "type": "float"
+  },
+  "train.loss": {
+   "choices": [
+    "huber",
+    "mae",
+    "mse"
+   ]
+  },
+  "train.max_epochs": {
+   "choices": [
+    30
+   ]
+  },
+  "train.min_delta": {
+   "choices": [
+    0.0,
+    0.0001
+   ]
+  },
+  "train.patience": {
+   "choices": [
+    3,
+    5,
+    8
+   ]
+  },
+  "train.seed": {
+   "choices": [
+    2021,
+    2022,
+    2023
+   ]
+  },
+  "train.weight_decay": {
+   "high": 0.01,
+   "log": true,
+   "low": 1e-06,
+   "type": "float"
+  }
+ },
+ "engine": "modular_temporal.v1",
+ "schema": "modular.search_space.v1"
+}
