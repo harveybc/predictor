@@ -199,7 +199,7 @@ def test_refuted_candidates_never_become_incumbent(tmp_path):
 
 def test_blocked_donor_candidates_are_persisted_and_released(tmp_path):
     campaign = make_campaign(tmp_path)
-    flat = {**DEFAULT, "branch.regime": "R1"}
+    flat = {**DEFAULT, "branch.regime": "R1", "train.huber_delta": 1.0}
     added = campaign.enqueue(flat, "r1")
     rows = campaign.db.execute("SELECT status, blocked_reason FROM candidates").fetchall()
     assert len(added) == 2 and all(r["status"] == "blocked" and "donor" in r["blocked_reason"] for r in rows)
