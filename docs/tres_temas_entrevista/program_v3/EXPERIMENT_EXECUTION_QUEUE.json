@@ -1,7 +1,7 @@
 {
  "schema": "research_dispatch_index.v2",
  "updated_on": "2026-09-29: Q2 resource successor dispatch added; historical lane observations below retain their dates",
- "latest_dispatch_supplement": "../../handoffs/SATOSHI_Q2_RESOURCE_SUCCESSOR_2026_09_29.md",
+ "latest_dispatch_supplement": "../../handoffs/SATOSHI_QRM_INTEGRATION_AND_PARALLEL_WORK_2026_09_29.md",
  "latest_dispatch_scope": "Q2 per-cell accounting and TRAIN-only cost pilot; independent Traffic and M5PHET work continue under their own authority. No full long-window fit or M4 confirmation authorized by this supplement.",
  "dispatcher": "Satoshi III (Mujuro Utsutsu), successor technical lead",
  "supersedes": "research_execution_queue.v1 at this same path: one RP135-shaped campaign document with other lanes appended around it, whose cell list a reader could mistake for a live queue. That document is preserved verbatim under `history.superseded_queue_v1`",
