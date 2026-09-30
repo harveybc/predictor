@@ -341,6 +341,11 @@
    "child": "m04-modular-cost-pilot (worker_a, 6G)",
    "meets_60s": null,
    "reason": "not running: queued for admission behind ADM-DEADCACHE-01 (2.2 GiB dead clean cache charged to the 8 GiB slice)"
+  },
+  {
+   "child": "m04-modular-cost-pilot (worker_b)",
+   "meets_60s": true,
+   "reason": "heartbeat.json/.jsonl every 30 s with stage, eta basis, cgroup resources"
   }
  ],
  "events": [
@@ -393,6 +398,11 @@
    "at": "2026-09-30T23:45:00Z",
    "host_alias": "coordinator",
    "event": "M02 RETURNED (310a836f); with two lanes returned the orchestrator dispatched held lanes C07 and S07 (light CPU only on the coordinator, 2G caps)"
+  },
+  {
+   "at": "2026-09-30T23:44:44Z",
+   "host_alias": "worker_b",
+   "event": "M04 modular cost pilot admitted on the 4090 (full default R0, full ECL train 18341 / validation 2609 windows, 2 epochs, PILOT_NOT_A_RESULT); duplicate queued request on worker_a cancelled before admission; m02-ecl-cost-pilot also leased on worker_b"
   }
  ],
  "launch_recipes": {
@@ -489,7 +499,7 @@
  },
  "devices_policy": {
   "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326": "coordinator 4070: keep FREE; no new heavy compute on the owner's desktop (standing rule)",
-  "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9": "worker_b 4090: handed to M04 for the cost pilot by the orchestrator (~23:40Z); lease expected"
+  "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9": "worker_b 4090: M04 cost pilot ADMITTED 23:44:44Z, lease m04-modular-cost-pilot-1790811884-1218506-b4d791, cap 6G, wall 1h; heartbeat.json every 30 s (meets <=60 s); PILOT_NOT_A_RESULT; at 23:47Z stage 'build', cgroup current 5.80 GB of 6.44 GB cap, GPU 0% util / 356 MiB"
  },
  "corrections": [
   {
