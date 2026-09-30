@@ -1,0 +1,49 @@
+{
+ "schema": "df_dr05_prefix_store.v1",
+ "version": {
+  "version": "synthetic.hcore.not-the-pinned-prefix",
+  "derived_from": {
+   "data_sha256": "fb30828617a160505f538004538548d146e1c5b524c03847e760b426249c2233",
+   "design_sha256": "1ed97c0b1aa75b58d999a3f0e0e80e8cfc33550491a1f4c0789846744ae469ab",
+   "panel_sha256": "a8dee1cf6de9e09af3675fbe00f0c47df70faf0224e7e812720abfca72c673fc",
+   "donor_weights_sha256": "46a52517644aba8205ab3cd40451b8f33ca301986119f13e625a256509bba389",
+   "donor_cell": "SYNTHETIC_NOT_PINNED",
+   "prefix_ends_at": "FIXTURE_NO_ES_PREFIJO"
+  },
+  "a_different_donor_is_a_different_version": true
+ },
+ "prefix_ends_at": "FIXTURE_NO_ES_PREFIJO",
+ "donor_cell": "SYNTHETIC_NOT_PINNED",
+ "splits": {
+  "train": {
+   "split": "train",
+   "n_origins": 4,
+   "origin_span": [
+    100,
+    103
+   ],
+   "state": "FIXTURE"
+  },
+  "test": {
+   "split": "test",
+   "n_origins": 0,
+   "state": "REFUSED_UNMATERIALIZED_BY_DESIGN",
+   "materialization": null
+  }
+ },
+ "arrays": {
+  "train": {
+   "array": "prefix_output_train.npy",
+   "origins": "origins_train.npy",
+   "shape": [
+    4,
+    3,
+    2
+   ],
+   "dtype": "float32",
+   "bytes": 224,
+   "sha256": "b51e66ef6374ef5eb3a27d151f791e0501115e30b6049999f14c0f0dd94b15b2",
+   "origins_sha256": "e527147f5901fa304d94e14fdda6648c7d47a7fcb92ee42c95294ef090bd8ad8"
+  }
+ }
+}
