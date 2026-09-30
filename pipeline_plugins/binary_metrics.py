@@ -266,6 +266,20 @@ def build_binary_classification_receipt(
         naive_matrix[int(reference)][majority] += 1
     naive_macro_f1 = _macro_f1_from_confusion(naive_matrix, False)
 
+    # where these answers came from. This model is fitted and scored in THIS
+    # process, so the path is observed rather than read off a configuration; and
+    # the checkpoint file is not digested here, because the array the metrics
+    # were computed from came from the in-process model and not from that file.
+    # Before this round the field `checkpoint_sha256` carried a digest of four
+    # hyperparameters - a 64-hex value shaped exactly like a checkpoint digest,
+    # for a checkpoint nothing had read.
+    answered = {"path_id": f"pipeline_plugins.binary.{config.get('predictor_plugin', 'unknown')}",
+                "kind": "MODEL_IN_PROCESS_NOT_CHECKPOINTED",
+                "weights_present": True,
+                "served_checkpoint": str(config.get("save_model") or "in-process"),
+                "served_checkpoint_sha256": receipts.provenance.NOT_DIGESTED,
+                "attestation": "OBSERVED_FROM_ANSWERING_PATH"}
+
     document = {
         "task_id": str(config.get("olap_experiment_key")
                        or f"{config.get('predictor_plugin', 'unknown')}."
@@ -281,12 +295,9 @@ def build_binary_classification_receipt(
         "supervision_regime": "FULL_FINETUNE",
         "labelled_rows_fit_head": True,
         "provider": str(config.get("predictor_plugin", "unknown")),
-        "checkpoint": str(config.get("save_model") or "in-process"),
-        "checkpoint_sha256": _classification_digest({
-            "plugin": str(config.get("predictor_plugin")),
-            "epochs": config.get("epochs"),
-            "window_size": config.get("window_size"),
-            "learning_rate": config.get("learning_rate")}),
+        "checkpoint": answered["served_checkpoint"],
+        "checkpoint_sha256": answered["served_checkpoint_sha256"],
+        "answering_path": answered,
         "author_primary_metric": {"family": "MACRO_F1", "name": "macro-F1",
                                   "value": macro_f1, "denominator_policy": policy},
         "paired_naive": {"family": "MACRO_F1", "policy": "MAJORITY_CLASS_FROM_TRAIN",

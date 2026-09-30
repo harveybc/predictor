@@ -65,6 +65,50 @@ refused by name:
 Consistency between fields is checked: a headline accuracy or macro-F1 that contradicts the receipt's
 own confusion is refused, naming both values and the policy under which they were compared.
 
+## Where the evidence came from, and what it may become
+
+Added 2026-09-29. Every receipt carries an **`answering_path`** block, and it is checked rather than
+recorded:
+
+| field | what it says |
+|---|---|
+| `path_id` | which code path produced the answers |
+| `kind` | what that path is, from a closed vocabulary (`MODEL_CHECKPOINT_LOADED`, `MODEL_IN_PROCESS_NOT_CHECKPOINTED`, `MODEL_WEIGHTS_ABSENT`, `NON_MODEL_RULE`, `NON_MODEL_CONSTANT`, `AUTHORED_VALUES_NOT_EXECUTED`, `THIRD_PARTY_PATH_NOT_RUN_HERE`) |
+| `weights_present` | whether learned parameters were loaded. The kind determines it, so the two cannot drift apart |
+| `served_checkpoint` / `served_checkpoint_sha256` | which checkpoint served — a digest, or `CHECKPOINT_NOT_DIGESTED`, or `NO_CHECKPOINT_SERVED` |
+| `attestation` | how that was established: `OBSERVED_FROM_ANSWERING_PATH`, `DECLARED_BY_CONFIGURATION`, `NOT_ESTABLISHED` |
+
+Four rules over it, each a named refusal:
+
+- **a path without weights may not carry a checkpoint digest.** `checkpoint_sha256` was an
+  unconditional hex64 before, so a path that had loaded nothing had to invent one — and an invented
+  digest is shaped exactly like a real one.
+- **a receipt may not quote a checkpoint the answering path did not serve.** That is this
+  warehouse's form of the withdrawal the product made the same day, where a real checkpoint's
+  macro-F1 was published beside a declared non-model path's answers.
+- **a promotion is refused by reason.** `evidence_class: MEASUREMENT` requires a path with weights
+  and an attestation other than `NOT_ESTABLISHED`. A path without weights is a **declared test**: it
+  is built, projected and stored, and `evidence_role` on the receipt and on the terminal tag says
+  which of the two a row is, so a query for model results does not select it.
+- **a badge may not rest on a declared test.** It additionally requires the answering path to have
+  been `OBSERVED_FROM_ANSWERING_PATH`, and refuses a record whose checkpoint is not the served one.
+
+**No word is banned.** The gate never matches a provider, checkpoint or corpus name against a
+vocabulary of suspicious words, and `tools/test_classification_provenance.py` fails if such a match
+is reintroduced. Two counterexamples are kept: a declared test whose every field is free of the
+withdrawn word is still refused promotion, and a real measurement that carries that word in its own
+`limitations` text is admitted, stored and badge-eligible.
+
+### The store boundary
+
+The producer-side gate binds only producers that call it. Measured against the deployed provider on
+a disposable cube, the store took a terminal whose tags declared a non-model answering path and
+claimed a model result, under any actor name — so the boundary carries its own check:
+`app.classification_provenance.admit_classification_terminal`, also available as
+`tools/admit_classification_terminal.py`. It reads the **tags only**, so a terminal hand-written by
+anybody is held to the same contract; a terminal of another `metric_contract` is returned
+`NOT_THIS_CONTRACT` and admitted, because the general-purpose warehouse stays generic.
+
 ## Provenance, and what a number may not become
 
 `evidence_class` is one of `MEASUREMENT`, `PUBLISHED_REFERENCE`, `DECLARATION`,
@@ -111,7 +155,9 @@ ORDER BY task, provider, m.metric
 LIMIT 1000
 ```
 
-Group by `metric_identity_sha256`, never by `value` and never by `metric` alone across tasks. Two
+Select model results with `evidence_role = 'MODEL_RESULT'`; every other row of this contract is a
+declared test, kept on purpose. Group by `metric_identity_sha256`, never by `value` and never by
+`metric` alone across tasks. Two
 rows agree only when their identity digests agree. This query is an inventory, not a scientific
 closure: select accepted runs and adjudicated generations before aggregating, and it currently
 returns nothing, because no classification benchmark run has been launched for this contract.

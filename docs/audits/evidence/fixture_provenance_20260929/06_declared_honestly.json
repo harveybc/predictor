@@ -1,0 +1,15 @@
+{
+  "receipt_built": true,
+  "evidence_role": "DECLARED_NON_MODEL_TEST",
+  "stored_checkpoint_sha256": "NO_CHECKPOINT_SERVED",
+  "stored_evidence_class": "TRANSPORT_TEST_NOT_SCIENCE",
+  "declares_the_answering_path": true,
+  "tags_name_the_answering_path": [
+    "answering_path_id",
+    "answering_path_kind",
+    "weights_present",
+    "evidence_role"
+  ],
+  "badge_issued": false,
+  "badge_refusal": "BadgeRefused: BADGE_REFUSED_TRANSPORT_TEST_IS_NOT_SCIENCE: news_relevance_eurusd.v1:cb04_business_news.v1:canned_answer_table.v1:MACRO_F1 carries fabricated transport values"
+}

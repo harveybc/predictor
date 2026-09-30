@@ -1,0 +1,10 @@
+{
+  "receipt_built": true,
+  "stored_checkpoint_sha256": "be4e4dc1f1e4907ebc4040e2a6c2ebcba6bf79cc8211367a3aceedb760503840",
+  "stored_evidence_class": "MEASUREMENT",
+  "declares_the_answering_path": false,
+  "tags_name_the_answering_path": [],
+  "badge_issued": true,
+  "badge_value": 0.8888888888888888,
+  "badge_names_the_answering_path": false
+}

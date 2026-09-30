@@ -1,0 +1,6 @@
+{
+  "receipt_built": false,
+  "refusal": "ReceiptRefused: answering_path is required and was not given",
+  "badge_issued": false,
+  "badge_refusal": "RuntimeError: no receipt was built, so no badge was asked for"
+}

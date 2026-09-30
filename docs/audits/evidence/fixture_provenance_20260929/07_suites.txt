@@ -1,0 +1,21 @@
+### test_classification_provenance
+Ran 31 tests in 0.007s
+OK
+### test_classification_receipt_schema
+Ran 56 tests in 0.007s
+OK
+### test_cb04_business_corpus
+Ran 24 tests in 0.007s
+OK
+### test_binary_pipeline_classification_receipt
+Ran 12 tests in 1.803s
+OK
+### test_classification_provenance_store (store venv)
+Ran 10 tests in 1.143s
+OK
+### test_classification_warehouse_receipt (store venv)
+Ran 13 tests in 1.510s
+OK
+### test_tsl_warehouse_receipt (store venv)
+Ran 2 tests in 0.612s
+OK

@@ -1,0 +1,18 @@
+test_a_classification_terminal_without_provenance_tags_is_refused (__main__.ProvenanceAtTheStoreBoundary.test_a_classification_terminal_without_provenance_tags_is_refused) ... ok
+test_a_declared_test_is_admitted_stored_and_still_reads_as_a_test (__main__.ProvenanceAtTheStoreBoundary.test_a_declared_test_is_admitted_stored_and_still_reads_as_a_test) ... ok
+test_a_measurement_whose_prose_carries_the_word_is_admitted_and_stored (__main__.ProvenanceAtTheStoreBoundary.test_a_measurement_whose_prose_carries_the_word_is_admitted_and_stored) ... ok
+test_a_non_model_path_may_not_be_a_governing_terminal (__main__.ProvenanceAtTheStoreBoundary.test_a_non_model_path_may_not_be_a_governing_terminal) ... ok
+test_a_promotion_with_a_consistently_rewritten_digest_is_still_refused (__main__.ProvenanceAtTheStoreBoundary.test_a_promotion_with_a_consistently_rewritten_digest_is_still_refused)
+Rewriting the digest too does not help: the rule is the path, not the seal. ... ok
+test_a_query_separates_model_results_from_declared_tests (__main__.ProvenanceAtTheStoreBoundary.test_a_query_separates_model_results_from_declared_tests) ... ok
+test_an_evidence_role_that_contradicts_the_declared_path_is_refused (__main__.ProvenanceAtTheStoreBoundary.test_an_evidence_role_that_contradicts_the_declared_path_is_refused) ... ok
+test_another_contract_passes_through_untouched (__main__.ProvenanceAtTheStoreBoundary.test_another_contract_passes_through_untouched)
+The general-purpose warehouse stays generic. ... ok
+test_nothing_under_test_was_substituted (__main__.ProvenanceAtTheStoreBoundary.test_nothing_under_test_was_substituted) ... ok
+test_the_store_alone_is_not_a_defence (__main__.ProvenanceAtTheStoreBoundary.test_the_store_alone_is_not_a_defence)
+Measured, not asserted: the real store takes the promotion from anyone. ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 1.170s
+
+OK

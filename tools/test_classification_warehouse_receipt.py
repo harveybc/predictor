@@ -38,8 +38,19 @@ H = {name: hashlib.sha256(name.encode()).hexdigest() for name in
      ("eval", "train", "calib", "corpus", "ckpt", "protocol", "scorer")}
 
 
+#: a path that loaded weights and observed itself doing so, for the one test in
+#: this suite whose evidence_class is MEASUREMENT.
+MODEL_PATH = {"path_id": "public_benchmark_eval.serve",
+              "kind": "MODEL_CHECKPOINT_LOADED",
+              "weights_present": True,
+              "served_checkpoint": "public_benchmark_h1.keras",
+              "served_checkpoint_sha256": H["ckpt"],
+              "attestation": "OBSERVED_FROM_ANSWERING_PATH"}
+
+
 def receipt_document(family, name, value, *, corpus_class="BUSINESS_HELD_OUT",
-                     evidence_class="TRANSPORT_TEST_NOT_SCIENCE"):
+                     evidence_class="TRANSPORT_TEST_NOT_SCIENCE",
+                     answering_path=None):
     """A valid receipt document. Values are fabricated: this is a transport test."""
     # symmetric confusion: 8 correct, 1 wrong, 1 abstained per class, so accuracy
     # and macro-F1 are both exactly 8/9 and cannot be told apart by value.
@@ -60,8 +71,20 @@ def receipt_document(family, name, value, *, corpus_class="BUSINESS_HELD_OUT",
         "supervision_regime": "ZERO_SHOT_PROMPTED",
         "labelled_rows_fit_head": False,
         "provider": "NON_MODEL_FIXTURE",
-        "checkpoint": "NON_MODEL_FIXTURE",
-        "checkpoint_sha256": H["ckpt"],
+        # this suite writes DECLARED TESTS, so it declares the path that answered:
+        # a constant table, no weights, and the no-checkpoint sentinel rather than
+        # a 64-hex digest that would be shaped exactly like a real one.
+        "checkpoint": (answering_path or {}).get("served_checkpoint",
+                                                  cr.provenance.NO_CHECKPOINT),
+        "checkpoint_sha256": (answering_path or {}).get("served_checkpoint_sha256",
+                                                        cr.provenance.NO_CHECKPOINT),
+        "answering_path": {"path_id": "cb04_transport_table",
+                           "kind": "NON_MODEL_CONSTANT",
+                           "weights_present": False,
+                           "served_checkpoint": cr.provenance.NO_CHECKPOINT,
+                           "served_checkpoint_sha256": cr.provenance.NO_CHECKPOINT,
+                           "attestation": "OBSERVED_FROM_ANSWERING_PATH"}
+        if answering_path is None else dict(answering_path),
         "author_primary_metric": {"family": family, "name": name, "value": value,
                                   "denominator_policy": "ANSWERED_ONLY"},
         "paired_naive": {"family": family, "policy": "MAJORITY_CLASS_FROM_TRAIN",
@@ -338,7 +361,8 @@ class WarehouseReceipts(unittest.TestCase):
     def test_a_public_benchmark_row_in_the_warehouse_yields_no_quality_badge(self):
         receipt = cr.build_receipt(receipt_document(
             "ACCURACY", "accuracy", 8 / 9,
-            corpus_class="PUBLIC_BENCHMARK", evidence_class="MEASUREMENT"))
+            corpus_class="PUBLIC_BENCHMARK", evidence_class="MEASUREMENT",
+            answering_path=MODEL_PATH))
         self.store.write_terminal(terminal_for(receipt, "acc-public"))
         with self.assertRaises(cr.BadgeRefused) as caught:
             cr.provider_quality_badge("NON_MODEL_FIXTURE", [receipt])

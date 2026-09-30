@@ -5,7 +5,21 @@
     "contract_commit": "02a34033 (contract and schema tests) and 0ab20c80 (implementation)",
     "contract_sha256": "006d81865b635cc87770942709ce3d3f3dbfd8735346f170a679903f5bd7cb77",
     "evidence": "the two digests below are the contract and its implementation as they stood when this corpus was written; both precede this file in the branch history",
-    "implementation_sha256": "64fb105d4bd9c26224199db6bc075a65323481f631b4cc7357990708e1ff40c8"
+    "implementation_sha256": "64fb105d4bd9c26224199db6bc075a65323481f631b4cc7357990708e1ff40c8",
+    "amendments": [
+      {
+        "amended_on": "2026-09-29",
+        "amended_by": "Satoshi, successor technical lead",
+        "why": "the producer contract gained answering-path provenance as a checked field (order 4 of the 23b2efa3 dictamen). The original pin is kept above and is not rewritten; this entry is appended.",
+        "contract_sha256": "41ab92c790fcae0207cfce31f1da2a1445a272f0f609666a4302bc40e5a09377",
+        "implementation_sha256": "8bcb008f82da2871b0e606db3f28187907ef7f190d2d4a4b4eebbd56b538a897",
+        "gate_sha256": "3ede1af5da93d15da30cb5e9ed1557c4c9048ceb661115e8812a88814963f6a6",
+        "corpus_bytes_unchanged": true,
+        "items_sha256": "913c56e31211c2671fb6c8a6403dc77d862ed1412694ea316233229848c0beb7",
+        "labels_sha256": "21f3a2eeabddfc37492a57a2d702ac8de1deaafc25aa00478847c07a57a7ecc7",
+        "what_was_not_done": "the corpus was not opened, read, relabelled, extended or used to tune, select or fix anything; no use-ledger entry was appended"
+      }
+    ]
   },
   "built_by": "Satoshi, successor technical lead",
   "built_on": "2026-09-28",

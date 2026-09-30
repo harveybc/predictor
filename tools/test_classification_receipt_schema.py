@@ -57,9 +57,18 @@ def document(**overrides):
         "evidence_class": "MEASUREMENT",
         "supervision_regime": "ZERO_SHOT_PROMPTED",
         "labelled_rows_fit_head": False,
-        "provider": "NON_MODEL_FIXTURE",
-        "checkpoint": "NON_MODEL_FIXTURE",
+        "provider": "probe_provider",
+        "checkpoint": "probe_provider_h1.keras",
         "checkpoint_sha256": H["ckpt"],
+        # the base document declares a path that loaded weights and observed
+        # itself doing so, because its evidence_class is MEASUREMENT. The
+        # promotion rule lives in tools/test_classification_provenance.py.
+        "answering_path": {"path_id": "probe_provider.serve",
+                           "kind": "MODEL_CHECKPOINT_LOADED",
+                           "weights_present": True,
+                           "served_checkpoint": "probe_provider_h1.keras",
+                           "served_checkpoint_sha256": H["ckpt"],
+                           "attestation": "OBSERVED_FROM_ANSWERING_PATH"},
         "author_primary_metric": {
             "family": "MACRO_F1",
             "name": "macro-F1",
@@ -429,8 +438,8 @@ class ProviderQualityBadge(unittest.TestCase):
         return cr.build_receipt(document())
 
     def test_a_badge_needs_a_business_measurement(self):
-        badge = cr.provider_quality_badge("NON_MODEL_FIXTURE", [self._business_measurement()])
-        self.assertEqual(badge["provider"], "NON_MODEL_FIXTURE")
+        badge = cr.provider_quality_badge("probe_provider", [self._business_measurement()])
+        self.assertEqual(badge["provider"], "probe_provider")
         self.assertEqual(badge["execution_authority"], "NONE")
         self.assertIs(badge["authorises_broker_deployment"], False)
 
@@ -440,7 +449,7 @@ class ProviderQualityBadge(unittest.TestCase):
             correct=79, stored_verdicts=95, prompts=19, repeats=5,
             evidence_class="RECOUNT_OF_STORED_VERDICTS")
         with self.assertRaises(cr.BadgeRefused) as caught:
-            cr.provider_quality_badge("NON_MODEL_FIXTURE", [router])
+            cr.provider_quality_badge("probe_provider", [router])
         self.assertEqual(caught.exception.refusal,
                          "BADGE_REFUSED_ROUTER_SCORE_IS_NOT_CLASSIFIER_QUALITY")
 
@@ -458,7 +467,7 @@ class ProviderQualityBadge(unittest.TestCase):
         declared = cr.build_receipt(document(evidence_class="DECLARATION",
                                              declared_fields=["author_primary_metric"]))
         with self.assertRaises(cr.BadgeRefused) as caught:
-            cr.provider_quality_badge("NON_MODEL_FIXTURE", [declared])
+            cr.provider_quality_badge("probe_provider", [declared])
         self.assertEqual(caught.exception.refusal,
                          "BADGE_REFUSED_DECLARATION_IS_NOT_MEASUREMENT")
 
@@ -469,14 +478,14 @@ class ProviderQualityBadge(unittest.TestCase):
                 ("TRANSPORT_TEST_NOT_SCIENCE", "BADGE_REFUSED_TRANSPORT_TEST_IS_NOT_SCIENCE")):
             receipt = cr.build_receipt(document(evidence_class=evidence))
             with self.assertRaises(cr.BadgeRefused) as caught:
-                cr.provider_quality_badge("NON_MODEL_FIXTURE", [receipt])
+                cr.provider_quality_badge("probe_provider", [receipt])
             self.assertEqual(caught.exception.refusal, refusal)
 
     def test_no_badge_from_public_benchmarks_alone(self):
         public = cr.build_receipt(document(corpus_class="PUBLIC_BENCHMARK",
                                            corpus_id="ag_news.test.v1"))
         with self.assertRaises(cr.BadgeRefused) as caught:
-            cr.provider_quality_badge("NON_MODEL_FIXTURE", [public])
+            cr.provider_quality_badge("probe_provider", [public])
         self.assertEqual(caught.exception.refusal,
                          "BADGE_REFUSED_NO_BUSINESS_CORPUS_MEASUREMENT")
 
@@ -486,13 +495,13 @@ class ProviderQualityBadge(unittest.TestCase):
             correct=85, stored_verdicts=95, prompts=19, repeats=5,
             evidence_class="RECOUNT_OF_STORED_VERDICTS")
         with self.assertRaises(cr.BadgeRefused) as caught:
-            cr.provider_quality_badge("NON_MODEL_FIXTURE",
+            cr.provider_quality_badge("probe_provider",
                                       [self._business_measurement(), router])
         self.assertEqual(caught.exception.refusal,
                          "BADGE_REFUSED_ROUTER_SCORE_IS_NOT_CLASSIFIER_QUALITY")
 
     def test_no_badge_ever_carries_execution_authority(self):
-        badge = cr.provider_quality_badge("NON_MODEL_FIXTURE", [self._business_measurement()])
+        badge = cr.provider_quality_badge("probe_provider", [self._business_measurement()])
         serialised = json.dumps(badge)
         self.assertNotIn("true", serialised.split('"authorises_broker_deployment": ')[1][:8])
         self.assertEqual(badge["execution_authority"], "NONE")

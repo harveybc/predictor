@@ -54,15 +54,39 @@ class Seals(unittest.TestCase):
         self.assertIn("contract_sha256", recorded["built_after_the_protocol"])
         self.assertIn("implementation_sha256", recorded["built_after_the_protocol"])
 
-    def test_the_protocol_pin_is_the_contract_as_it_stands(self):
+    def test_the_protocol_pin_follows_the_contract_through_its_amendments(self):
+        """The pin is appended to, never rewritten.
+
+        The original pin records the contract as it stood when the corpus was
+        sealed and stays exactly as written. When the contract changes, an
+        amendment is appended saying why and carrying the new digests, and the
+        head of that chain must be the contract as it stands now.
+        """
         import hashlib
         pin = bc.manifest()["built_after_the_protocol"]
+        head = (pin.get("amendments") or [pin])[-1]
         for name, path in (("contract_sha256", "docs/contracts/classification_metrics.v1.json"),
                            ("implementation_sha256", "app/classification_receipt.py")):
             actual = hashlib.sha256((ROOT / path).read_bytes()).hexdigest()
-            self.assertEqual(pin[name], actual,
-                             f"{path} changed after the corpus was sealed; rebuild the pin "
-                             f"deliberately or explain the change")
+            self.assertEqual(head[name], actual,
+                             f"{path} changed after the corpus was sealed; append an amendment "
+                             f"to built_after_the_protocol explaining the change")
+
+    def test_every_amendment_states_that_the_corpus_bytes_did_not_move(self):
+        recorded = bc.manifest()
+        for amendment in recorded["built_after_the_protocol"].get("amendments") or []:
+            self.assertIs(amendment["corpus_bytes_unchanged"], True)
+            self.assertEqual(amendment["items_sha256"], recorded["items_sha256"])
+            self.assertEqual(amendment["labels_sha256"], recorded["labels_sha256"])
+            self.assertTrue(amendment["why"])
+            self.assertTrue(amendment["what_was_not_done"])
+        bc.verify_seals()
+
+    def test_the_original_pin_is_still_the_original_pin(self):
+        pin = bc.manifest()["built_after_the_protocol"]
+        self.assertEqual(pin["contract_sha256"],
+                         "006d81865b635cc87770942709ce3d3f3dbfd8735346f170a679903f5bd7cb77",
+                         "the pin the corpus was sealed against may not be rewritten")
 
     def test_the_named_refusal_is_recorded_and_not_dressed_up(self):
         recorded = bc.manifest()

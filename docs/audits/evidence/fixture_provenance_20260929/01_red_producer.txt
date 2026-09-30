@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "<worktree>/tools/test_classification_provenance.py", line 35, in <module>
+    from app import classification_provenance as cp         # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ImportError: cannot import name 'classification_provenance' from 'app' (<worktree>/app/__init__.py). Did you mean: 'classification_receipt'?

@@ -44,8 +44,23 @@ no metric family at all), and the badge path refuses it by name. No badge, at an
 value, carries execution authority: `execution_authority` is the constant
 `NONE`.
 
+Provenance, added 2026-09-29
+----------------------------
+A fourth separation, and the one this module could not make before: `answering_path`
+says which code path produced the answers, whether weights were loaded, which
+checkpoint served and how that was established. `app.classification_provenance`
+holds it. Three consequences here: a receipt may not quote a checkpoint the
+answering path did not serve; a path with no weights may not carry
+`evidence_class` MEASUREMENT, and is stored as a declared test instead of being
+discarded; and :func:`provider_quality_badge` refuses evidence whose answering
+path was not a model or was never observed. None of this matches a word - a
+declared test may be named anything and an honest measurement's own prose may
+contain any word.
+
 Scope. This is a producer contract. The warehouse stays a generic store; nothing
-here rewrites a historical row or reinterprets an existing number.
+here rewrites a historical row or reinterprets an existing number. The store
+boundary check `admit_classification_terminal` reads only tags, so it binds a
+terminal from any producer.
 """
 
 from __future__ import annotations
@@ -61,6 +76,10 @@ import re
 CONTRACT_PATH = Path(__file__).resolve().parents[1] / "docs/contracts/classification_metrics.v1.json"
 CONTRACT = json.loads(CONTRACT_PATH.read_text())
 SCHEMA = CONTRACT["schema"]
+
+# imported after CONTRACT so the gate can read the vocabulary from the contract
+# document rather than keeping a second copy of it
+from app import classification_provenance as provenance  # noqa: E402
 
 ROUTER_RECORD_SCHEMA = "router_reliability.v1"
 
@@ -129,6 +148,21 @@ def _finite(value, where):
 def _hex64(value, where):
     _require(isinstance(value, str) and _HEX64.fullmatch(value),
              f"{where} must be a sha256 hex digest")
+    return value
+
+
+def _checkpoint_digest(value):
+    """A sha256 digest, or a declared sentinel saying no checkpoint served.
+
+    Before this round the field was an unconditional hex64, so a path that had
+    loaded no weights had to invent one - and an invented digest is shaped
+    exactly like a real one. The sentinels are declared in the contract and the
+    answering path decides which of them is legal.
+    """
+    _require(isinstance(value, str) and
+             (_HEX64.fullmatch(value) or value in provenance.CHECKPOINT_SENTINELS),
+             f"checkpoint_sha256 must be a sha256 digest or one of "
+             + ", ".join(provenance.CHECKPOINT_SENTINELS) + f", not {value!r}")
     return value
 
 
@@ -524,10 +558,17 @@ def build_receipt(document: dict) -> dict:
     for name in ("task_id", "corpus_id", "provider", "checkpoint", "evaluation_split"):
         _require(isinstance(document[name], str) and document[name], f"{name} is required")
     _hex64(document["corpus_sha256"], "corpus_sha256")
-    _hex64(document["checkpoint_sha256"], "checkpoint_sha256")
+    _checkpoint_digest(document["checkpoint_sha256"])
     _hex64(document["evaluation_population_sha256"], "evaluation_population_sha256")
 
     _validate_provenance(document)
+    # where the evidence came from, before anything about what it says
+    path = provenance.build_answering_path(document["answering_path"])
+    provenance.quoted_record_check(path=path, checkpoint=document["checkpoint"],
+                                   checkpoint_sha256=document["checkpoint_sha256"])
+    evidence_role = provenance.promotion_check(
+        path=path, evidence_class=document["evidence_class"],
+        corpus_class=document["corpus_class"])
     primary = _validate_primary(document)
     naive = _validate_naive(document, primary)
     vocabulary = _validate_vocabulary(document)
@@ -550,6 +591,8 @@ def build_receipt(document: dict) -> dict:
         "provider": document["provider"],
         "checkpoint": document["checkpoint"],
         "checkpoint_sha256": document["checkpoint_sha256"],
+        "answering_path": path,
+        "evidence_role": evidence_role,
         "author_primary_metric": {k: primary[k] for k in
                                   ("family", "name", "value", "denominator_policy",
                                    "metric", "unit")},
@@ -686,6 +729,7 @@ def terminal_tags(receipt: dict) -> dict:
         "provider": receipt["provider"],
         "checkpoint": receipt["checkpoint"],
         "checkpoint_sha256": receipt["checkpoint_sha256"],
+        **provenance.provenance_tags(receipt["answering_path"], receipt["evidence_role"]),
         "class_vocabulary_size": str(receipt["class_vocabulary"]["size"]),
         "label_order_sha256": receipt["class_vocabulary"]["label_order_sha256"],
         "evaluation_split": receipt["evaluation_split"],
@@ -849,6 +893,10 @@ def provider_quality_badge(provider: str, evidence: list) -> dict:
             raise BadgeRefused("BADGE_REFUSED_DECLARATION_IS_NOT_MEASUREMENT",
                                f"{record['receipt_id']} is {record['evidence_class']}, not a "
                                f"measurement executed in this programme")
+        # and the label is not the evidence: what answered decides
+        refusal = provenance.badge_provenance_refusal(record)
+        if refusal is not None:
+            raise BadgeRefused(*refusal)
 
     business = [r for r in evidence if r["corpus_class"] == "BUSINESS_HELD_OUT"]
     if not business:
@@ -883,6 +931,10 @@ def provider_quality_badge(provider: str, evidence: list) -> dict:
              "population_total": r["population"]["total"],
              "independent_units": r["population"]["independent_units"],
              "metric_identity_sha256": r["metric_identity_sha256"],
+             "answering_path_id": r["answering_path"]["path_id"],
+             "answering_path_kind": r["answering_path"]["kind"],
+             "served_checkpoint_sha256": r["answering_path"]["served_checkpoint_sha256"],
+             "provenance_attestation": r["answering_path"]["attestation"],
              "limitations": r["limitations"]}
             for r in business],
         "router_evidence": "EXCLUDED_BY_CONTRACT",
