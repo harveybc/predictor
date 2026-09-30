@@ -1,0 +1,22 @@
+{
+ "at": "2026-09-29",
+ "coordinator": {
+  "desktop_reserve_bytes": 3221225472,
+  "device": {
+   "free_bytes": 7938768896,
+   "total_bytes": 8585740288,
+   "used_bytes": 646971392,
+   "uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326"
+  },
+  "host_free_for_new_bytes": 19188043776,
+  "live_reservations": 1,
+  "mem_available_bytes": 23460610048,
+  "pressure_full_avg10": 0.0,
+  "scopes": "the slice figures are a CGROUP CHARGE, the host figures are host RAM and the device figures are DEVICE memory; no two of the three are ever added",
+  "slice_headroom_bytes": 13475762176,
+  "slice_memory_current": 1556623360,
+  "slice_memory_max": 15032385536
+ },
+ "read_live": "every figure here was read at delivery time through the deployed admission module's non-mutating `state` subcommand and nvidia-smi. No figure is quoted from an earlier report: three different readings of the same slice appeared in three days, so a quoted number is not a capacity",
+ "schema": "df_qrm_integration_capacity.v1"
+}

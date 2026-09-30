@@ -1,0 +1,1 @@
+{"status": "REFUSED", "code": "NO_VISIBLE_DEVICE", "detail": "a GPU placement reached this child with CUDA_VISIBLE_DEVICES empty or unset. This is the run_units:976 state: the driver is never asked, so the run is a CPU run and is refused rather than relabelled", "evidence": {}}

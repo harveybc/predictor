@@ -1,0 +1,34 @@
+{
+ "admission_module": {
+  "deployed_path_exists": true,
+  "deployed_sha256": "8dc2c03b17e498697d634666309876686d051243ea4b640d65ec92c51ab8ee35",
+  "matches_tracked_blob": true,
+  "reachable_from": "c4a918ca72c4c10b14e3f778de3190d8968d2a68",
+  "tracked_blob": "dcf73cb68a0b595b301013398f673b4c7861105d",
+  "tracked_path": "tools/crispdm_admission.py",
+  "tracked_sha256": "8dc2c03b17e498697d634666309876686d051243ea4b640d65ec92c51ab8ee35",
+  "why": null
+ },
+ "checked_at": 1790733576.3525312,
+ "host_identity": {
+  "host_id": "41a95367ee66ef71",
+  "host_name_recorded": false,
+  "scope": null,
+  "why": "AGENTS.md forbids a machine host name in this repository; an opaque per-host id is recorded instead"
+ },
+ "integration_branch": "satoshi/qrm-integration-20260929",
+ "integration_commit": "c4a918ca72c4c10b14e3f778de3190d8968d2a68",
+ "launcher": {
+  "deployed_path_exists": true,
+  "deployed_sha256": "499fdc1877750337006de8aad6b30a943acfea7416aa157b7537c4b121c1dfc7",
+  "matches_tracked_blob": true,
+  "reachable_from": "c4a918ca72c4c10b14e3f778de3190d8968d2a68",
+  "tracked_blob": "00a8832370efe23e4a6eb51a4a674bab21f0a73f",
+  "tracked_path": "tools/crispdm-run",
+  "tracked_sha256": "499fdc1877750337006de8aad6b30a943acfea7416aa157b7537c4b121c1dfc7",
+  "why": null
+ },
+ "schema": "df_runner_identity.v1",
+ "systemd_user_available": true,
+ "verdict": "DEPLOYED_MATCHES_TRACKED"
+}

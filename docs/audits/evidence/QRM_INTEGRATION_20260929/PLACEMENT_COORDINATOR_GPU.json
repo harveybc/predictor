@@ -1,0 +1,88 @@
+{
+ "declaration": {
+  "schema": "df_placement_contract.v1",
+  "placement": "GPU",
+  "device_uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+  "establishes_a_gpu_pilot": null,
+  "scope": "CHILD_ONLY: this mapping is handed to one child process. It is never exported into this process's os.environ, because a process-wide override is the defect being replaced -- it silently re-placed every later sibling in the same parent",
+  "cuda_libraries": {
+   "status": "MEASURED",
+   "dirs": [
+    "<HOME>/anaconda3/lib/python3.12/site-packages/nvidia/cublas/lib",
+    "<HOME>/anaconda3/lib/python3.12/site-packages/nvidia/cudnn/lib"
+   ],
+   "routes": {
+    "cublas": "INTERPRETER_WHEEL",
+    "cublasLt": "INTERPRETER_WHEEL",
+    "cudart": "DYNAMIC_LOADER_DEFAULT_SEARCH",
+    "cudnn": "INTERPRETER_WHEEL",
+    "cufft": "DYNAMIC_LOADER_DEFAULT_SEARCH",
+    "curand": "DYNAMIC_LOADER_DEFAULT_SEARCH",
+    "cusolver": "DYNAMIC_LOADER_DEFAULT_SEARCH",
+    "cusparse": "DYNAMIC_LOADER_DEFAULT_SEARCH",
+    "nvJitLink": "DYNAMIC_LOADER_DEFAULT_SEARCH"
+   },
+   "sonames": {
+    "cublas": "libcublas.so.12",
+    "cublasLt": "libcublasLt.so.12",
+    "cudart": "libcudart.so.12",
+    "cudnn": "libcudnn.so.9",
+    "cufft": "libcufft.so.11",
+    "curand": "libcurand.so.10",
+    "cusolver": "libcusolver.so.11",
+    "cusparse": "libcusparse.so.12",
+    "nvJitLink": "libnvJitLink.so.12"
+   },
+   "generations_seen": [
+    "10",
+    "11",
+    "12",
+    "9"
+   ],
+   "wheel_inventory_count": 3
+  },
+  "env": {
+   "CUDA_VISIBLE_DEVICES": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+   "CRISPDM_PLACEMENT": "GPU",
+   "CRISPDM_DEVICE_UUID": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+   "LD_LIBRARY_PATH": "<HOME>/anaconda3/lib/python3.12/site-packages/nvidia/cublas/lib:<HOME>/anaconda3/lib/python3.12/site-packages/nvidia/cudnn/lib"
+  },
+  "reading": "a DECLARED GPU placement with exactly one device pinned by UUID and that interpreter's own CUDA library path. establishes_a_gpu_pilot is null until the CHILD verifies all three facts -- the declaration is a request, never the evidence"
+ },
+ "verification": {
+  "schema": "df_placement_contract.v1",
+  "placement": "GPU",
+  "declared_uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+  "visible_devices": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+  "refusals": [],
+  "device_uuid_verified": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+  "uuid_source": "libcuda.cuDeviceGetUuid",
+  "framework_devices": [
+   "/physical_device:GPU:0"
+  ],
+  "placement_probe": {
+   "device": "/job:localhost/replica:0/task:0/device:GPU:0",
+   "api": "tf.device + a one-element tensor"
+  },
+  "establishes_a_gpu_pilot": true,
+  "driver": {
+   "status": "MEASURED",
+   "count": 1,
+   "uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+   "source": "libcuda.cuDeviceGetUuid",
+   "index": 0
+  },
+  "status": "MEASURED",
+  "reading": "one device is pinned, the driver confirms its UUID, the framework registered it and an op landed on it: a figure from this process's TensorFlow allocator is attributable to this device",
+  "facts_declared": [
+   "DRIVER_UUID",
+   "FRAMEWORK_REGISTRATION",
+   "EXECUTION_PLACEMENT"
+  ],
+  "facts_verified": [
+   "DRIVER_UUID",
+   "FRAMEWORK_REGISTRATION",
+   "EXECUTION_PLACEMENT"
+  ]
+ }
+}

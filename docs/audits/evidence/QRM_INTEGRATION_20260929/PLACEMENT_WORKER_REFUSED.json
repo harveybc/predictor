@@ -1,0 +1,74 @@
+{
+ "declaration": {
+  "schema": "df_placement_contract.v1",
+  "placement": "GPU",
+  "device_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+  "establishes_a_gpu_pilot": null,
+  "scope": "CHILD_ONLY: this mapping is handed to one child process. It is never exported into this process's os.environ, because a process-wide override is the defect being replaced -- it silently re-placed every later sibling in the same parent",
+  "cuda_libraries": {
+   "status": "MEASURED",
+   "dirs": [
+    "<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cu13/lib",
+    "<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cublas/lib",
+    "<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cuda_runtime/lib",
+    "<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cudnn/lib",
+    "<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cufft/lib",
+    "<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/curand/lib",
+    "<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cusolver/lib",
+    "<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cusparse/lib",
+    "<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/nvjitlink/lib"
+   ],
+   "routes": {
+    "cublas": "INTERPRETER_WHEEL",
+    "cublasLt": "INTERPRETER_WHEEL",
+    "cudart": "INTERPRETER_WHEEL",
+    "cudnn": "INTERPRETER_WHEEL",
+    "cufft": "INTERPRETER_WHEEL",
+    "curand": "INTERPRETER_WHEEL",
+    "cusolver": "INTERPRETER_WHEEL",
+    "cusparse": "INTERPRETER_WHEEL",
+    "nvJitLink": "INTERPRETER_WHEEL"
+   },
+   "sonames": {
+    "cublas": "libcublas.so.13",
+    "cublasLt": "libcublasLt.so.13",
+    "cudart": "libcudart.so.13",
+    "cudnn": "libcudnn.so.9",
+    "cufft": "libcufft.so.12",
+    "curand": "libcurand.so.10",
+    "cusolver": "libcusolver.so.12",
+    "cusparse": "libcusparse.so.12",
+    "nvJitLink": "libnvJitLink.so.13"
+   },
+   "generations_seen": [
+    "10",
+    "11",
+    "12",
+    "13",
+    "9"
+   ],
+   "wheel_inventory_count": 15
+  },
+  "env": {
+   "CUDA_VISIBLE_DEVICES": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+   "CRISPDM_PLACEMENT": "GPU",
+   "CRISPDM_DEVICE_UUID": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+   "LD_LIBRARY_PATH": "<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cu13/lib:<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cublas/lib:<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cuda_runtime/lib:<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cudnn/lib:<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cufft/lib:<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/curand/lib:<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cusolver/lib:<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cusparse/lib:<HOME>/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/nvjitlink/lib"
+  },
+  "reading": "a DECLARED GPU placement with exactly one device pinned by UUID and that interpreter's own CUDA library path. establishes_a_gpu_pilot is null until the CHILD verifies all three facts -- the declaration is a request, never the evidence"
+ },
+ "verification": {
+  "status": "REFUSED",
+  "code": "GPU_REQUEST_FELL_BACK_TO_CPU",
+  "detail": "a GPU placement was declared and fewer than three facts were verified, so this run would have been a CPU run reported as a GPU one. Refusals: FRAMEWORK_REGISTERED_NO_DEVICE. No downgrade is available: a GPU request that cannot be established fails",
+  "evidence": {
+   "refusals": [
+    "FRAMEWORK_REGISTERED_NO_DEVICE"
+   ],
+   "establishes_a_gpu_pilot": false,
+   "framework_devices": [],
+   "device_uuid_verified": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+   "placement_probe": null
+  }
+ }
+}

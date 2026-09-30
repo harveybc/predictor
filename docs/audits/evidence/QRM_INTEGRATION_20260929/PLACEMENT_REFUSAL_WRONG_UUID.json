@@ -1,0 +1,50 @@
+{
+ "declaration": {
+  "schema": "df_placement_contract.v1",
+  "placement": "GPU",
+  "device_uuid": "GPU-00000000-0000-0000-0000-000000000000",
+  "establishes_a_gpu_pilot": null,
+  "scope": "CHILD_ONLY: this mapping is handed to one child process. It is never exported into this process's os.environ, because a process-wide override is the defect being replaced -- it silently re-placed every later sibling in the same parent",
+  "cuda_libraries": {
+   "status": "MEASURED",
+   "dirs": [
+    "<HOME>/anaconda3/lib/python3.12/site-packages/nvidia/cublas/lib",
+    "<HOME>/anaconda3/lib/python3.12/site-packages/nvidia/cudnn/lib"
+   ],
+   "routes": {
+    "libcublas.so.12": "INTERPRETER_WHEEL",
+    "libcublasLt.so.12": "INTERPRETER_WHEEL",
+    "libcudart.so.12": "DYNAMIC_LOADER_DEFAULT_SEARCH",
+    "libcudnn.so.9": "INTERPRETER_WHEEL",
+    "libcufft.so.11": "DYNAMIC_LOADER_DEFAULT_SEARCH",
+    "libcurand.so.10": "DYNAMIC_LOADER_DEFAULT_SEARCH",
+    "libcusolver.so.11": "DYNAMIC_LOADER_DEFAULT_SEARCH",
+    "libcusparse.so.12": "DYNAMIC_LOADER_DEFAULT_SEARCH",
+    "libnvJitLink.so.12": "DYNAMIC_LOADER_DEFAULT_SEARCH"
+   },
+   "wheel_inventory_count": 3
+  },
+  "env": {
+   "CUDA_VISIBLE_DEVICES": "GPU-00000000-0000-0000-0000-000000000000",
+   "CRISPDM_PLACEMENT": "GPU",
+   "CRISPDM_DEVICE_UUID": "GPU-00000000-0000-0000-0000-000000000000",
+   "LD_LIBRARY_PATH": "<HOME>/anaconda3/lib/python3.12/site-packages/nvidia/cublas/lib:<HOME>/anaconda3/lib/python3.12/site-packages/nvidia/cudnn/lib"
+  },
+  "reading": "a DECLARED GPU placement with exactly one device pinned by UUID and that interpreter's own CUDA library path. establishes_a_gpu_pilot is null until the CHILD verifies all three facts -- the declaration is a request, never the evidence"
+ },
+ "verification": {
+  "status": "REFUSED",
+  "code": "GPU_REQUEST_FELL_BACK_TO_CPU",
+  "detail": "a GPU placement was declared and fewer than three facts were verified, so this run would have been a CPU run reported as a GPU one. Refusals: DRIVER_EXPOSES_NO_DEVICE, FRAMEWORK_REGISTERED_NO_DEVICE. No downgrade is available: a GPU request that cannot be established fails",
+  "evidence": {
+   "refusals": [
+    "DRIVER_EXPOSES_NO_DEVICE",
+    "FRAMEWORK_REGISTERED_NO_DEVICE"
+   ],
+   "establishes_a_gpu_pilot": false,
+   "framework_devices": [],
+   "device_uuid_verified": null,
+   "placement_probe": null
+  }
+ }
+}

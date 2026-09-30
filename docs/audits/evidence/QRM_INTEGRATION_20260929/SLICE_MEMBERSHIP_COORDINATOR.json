@@ -1,0 +1,77 @@
+{
+ "location": {
+  "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+  "rel": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+  "status": "MEASURED"
+ },
+ "members": {
+  "count": 5,
+  "processes": [
+   {
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-b77-native-report-1790732448-3572589.scope",
+    "name": "timeout",
+    "pid": 3572602,
+    "rss_bytes": 7692288,
+    "status": "MEASURED"
+   },
+   {
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-b77-native-report-1790732448-3572589.scope",
+    "name": "python3",
+    "pid": 3572606,
+    "rss_bytes": 63266816,
+    "status": "MEASURED"
+   },
+   {
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-b77-native-report-1790732448-3572589.scope",
+    "name": "ssh",
+    "pid": 3572668,
+    "rss_bytes": 9285632,
+    "status": "MEASURED"
+   },
+   {
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm-memb-1790732452-3572677.scope",
+    "name": "timeout",
+    "pid": 3572693,
+    "rss_bytes": 7868416,
+    "status": "MEASURED"
+   },
+   {
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm-memb-1790732452-3572677.scope",
+    "name": "python3",
+    "pid": 3572697,
+    "rss_bytes": 13488128,
+    "status": "MEASURED"
+   }
+  ],
+  "scope": "PROCESS_RESIDENT_SET: one process's VmRSS in HOST RAM. It is not a cgroup charge, it double-counts shared pages between processes, and it is recorded here only to say which processes are inside a scope -- never to size or explain that scope's charge",
+  "sum_of_member_resident_sets_bytes": 101601280,
+  "why_the_sum_is_not_the_charge": "resident sets double-count shared pages and exclude kernel memory the cgroup is charged for, so their sum neither equals nor bounds memory.current; it is printed to be compared, never substituted"
+ },
+ "mutations": "NONE: every read is of /proc and /sys/fs/cgroup. No process was signalled, no memory reclaimed, no shared memory cleared, no limit moved and no service touched",
+ "named_host_wide_holders": {
+  "processes": [],
+  "scope": "PROCESS_RESIDENT_SET: one process's VmRSS in HOST RAM. It is not a cgroup charge, it double-counts shared pages between processes, and it is recorded here only to say which processes are inside a scope -- never to size or explain that scope's charge",
+  "searched_for": [
+   "qemu-system-x86"
+  ]
+ },
+ "residual": {
+  "bytes": 1440772096,
+  "definition": "the slice's memory.current minus the sum of its members' resident sets. Because those two quantities have different bases, this difference is an INDICATOR of how much of the charge the member list does not explain -- it is not itself a measured quantity of anything",
+  "host_wide_rss_is_not_evidence_of_membership": "a holder's host-wide resident set was the basis of the withdrawn attribution. It is not evidence of slice membership and it is not used as such anywhere in this record",
+  "owner": "UNDETERMINED",
+  "why": "none of the named holders is running on this host, so no attribution of this slice's residual to any of them is even available here"
+ },
+ "schema": "df_slice_membership.v1",
+ "scopes_are_never_merged": "three scopes appear in this record -- the slice's cgroup charge, each member's resident set and each non-member's resident set. Each carries its own name and basis, and no two of them are ever added",
+ "slice": "crispdm-batch.slice",
+ "slice_charge": {
+  "basis": "memory.current / memory.peak / memory.max of the slice subtree",
+  "current_bytes": 1542373376,
+  "max_bytes": 15032385536,
+  "peak_bytes": 5018566656,
+  "scope": "SLICE_CGROUP_CHARGE: memory.current and memory.peak of the named slice, as the kernel charges the whole subtree. This is the only figure in this record that is the slice's accounting, and it is never added to any resident set",
+  "status": "MEASURED"
+ },
+ "status": "MEASURED"
+}

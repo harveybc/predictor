@@ -1,0 +1,70 @@
+{
+ "location": {
+  "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+  "rel": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+  "status": "MEASURED"
+ },
+ "members": {
+  "count": 2,
+  "processes": [
+   {
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm-memb-1790732482-762838.scope",
+    "name": "timeout",
+    "pid": 762851,
+    "rss_bytes": 7888896,
+    "status": "MEASURED"
+   },
+   {
+    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-qrm-memb-1790732482-762838.scope",
+    "name": "python3",
+    "pid": 762855,
+    "rss_bytes": 16760832,
+    "status": "MEASURED"
+   }
+  ],
+  "scope": "PROCESS_RESIDENT_SET: one process's VmRSS in HOST RAM. It is not a cgroup charge, it double-counts shared pages between processes, and it is recorded here only to say which processes are inside a scope -- never to size or explain that scope's charge",
+  "sum_of_member_resident_sets_bytes": 24649728,
+  "why_the_sum_is_not_the_charge": "resident sets double-count shared pages and exclude kernel memory the cgroup is charged for, so their sum neither equals nor bounds memory.current; it is printed to be compared, never substituted"
+ },
+ "mutations": "NONE: every read is of /proc and /sys/fs/cgroup. No process was signalled, no memory reclaimed, no shared memory cleared, no limit moved and no service touched",
+ "named_host_wide_holders": {
+  "processes": [
+   {
+    "cgroup": "machine.slice/machine-qemu\\x2d1\\x2dlts\\x2dmt5\\x2dpaper.scope/libvirt/emulator",
+    "disposition": "NOT_A_SLICE_CHARGE: this holder is not a task of the slice or of any descendant of it, so the kernel does not charge its memory to the slice. Its resident set is HOST-WIDE and may not be offered as an explanation of the slice's own charge",
+    "membership": {
+     "member": false,
+     "verdict": "MEASURED",
+     "why": "the process's cgroup is outside the slice, so the kernel does not charge its memory to it"
+    },
+    "name": "qemu-system-x86",
+    "pid": 3624,
+    "rss_bytes": 5776457728,
+    "status": "MEASURED"
+   }
+  ],
+  "scope": "PROCESS_RESIDENT_SET: one process's VmRSS in HOST RAM. It is not a cgroup charge, it double-counts shared pages between processes, and it is recorded here only to say which processes are inside a scope -- never to size or explain that scope's charge",
+  "searched_for": [
+   "qemu-system-x86"
+  ]
+ },
+ "residual": {
+  "bytes": 1493319680,
+  "definition": "the slice's memory.current minus the sum of its members' resident sets. Because those two quantities have different bases, this difference is an INDICATOR of how much of the charge the member list does not explain -- it is not itself a measured quantity of anything",
+  "host_wide_rss_is_not_evidence_of_membership": "a holder's host-wide resident set was the basis of the withdrawn attribution. It is not evidence of slice membership and it is not used as such anywhere in this record",
+  "owner": "UNDETERMINED",
+  "why": "every named holder is OUTSIDE the slice by membership evidence, so none of them can account for the slice's charge. The residual's owner is UNDETERMINED: it belongs to the slice's own members, to kernel memory charged to the slice, or to shared pages -- and saying which would need a per-member measurement this record does not have"
+ },
+ "schema": "df_slice_membership.v1",
+ "scopes_are_never_merged": "three scopes appear in this record -- the slice's cgroup charge, each member's resident set and each non-member's resident set. Each carries its own name and basis, and no two of them are ever added",
+ "slice": "crispdm-batch.slice",
+ "slice_charge": {
+  "basis": "memory.current / memory.peak / memory.max of the slice subtree",
+  "current_bytes": 1517969408,
+  "max_bytes": 15032385536,
+  "peak_bytes": 11305144320,
+  "scope": "SLICE_CGROUP_CHARGE: memory.current and memory.peak of the named slice, as the kernel charges the whole subtree. This is the only figure in this record that is the slice's accounting, and it is never added to any resident set",
+  "status": "MEASURED"
+ },
+ "status": "MEASURED"
+}

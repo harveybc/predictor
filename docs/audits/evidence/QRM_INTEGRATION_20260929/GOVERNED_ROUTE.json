@@ -1,0 +1,719 @@
+{
+ "at": "2026-09-29",
+ "recorded_by": "Satoshi, successor technical lead",
+ "schema": "df_qrm_integration_governed_route.v1",
+ "units": {
+  "cpu": {
+   "campaign": {
+    "campaign_key": "q2h-1790733513-probe_cpu-data",
+    "campaign_sha256": "483b79b16feb6fe7495d7228023cf017070d839fb21c6e103a8c4ae6d7927e02"
+   },
+   "child_byte_digest": {
+    "bytes_on_disk": 10890295,
+    "declared_bytes": 10890295,
+    "declared_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "digest_basis": "sha256 of the whole file as THIS child opened it, computed in the child's own process; the delivery's own digest is a claim and this is the measurement",
+    "matches_characterised_panel": true,
+    "matches_delivery": true,
+    "ok": true,
+    "path_is_content_addressed_cache": true,
+    "refused_by": null,
+    "sha256_reverified_in_child": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+   },
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "c4a918ca72c4c10b14e3f778de3190d8968d2a68"
+   },
+   "declared_cap_bytes": 2147483648,
+   "delivery": {
+    "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+    "availability_label": "UNKNOWN",
+    "availability_use": "UNDECLARED",
+    "bytes": 10890295,
+    "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "cached": false,
+    "campaign_key": "q2h-1790733513-probe_cpu-data",
+    "campaign_sha256": "483b79b16feb6fe7495d7228023cf017070d839fb21c6e103a8c4ae6d7927e02",
+    "delivery_id": "a1f7d520ade3409e98a8bad6516b4599",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "verification_state": "VERIFIED_TRANSFER"
+   },
+   "device_figure": {
+    "allocated_bytes": null,
+    "current_bytes": null,
+    "declared_device_uuid": null,
+    "framework": "tensorflow",
+    "peak_bytes": null,
+    "placement": "CPU",
+    "pytorch_consulted": false,
+    "reserved_bytes": null,
+    "source": "none",
+    "status": "UNKNOWN",
+    "visible_devices": "",
+    "why": "this cell declared a CPU placement, so a DEVICE figure is ABSENT -- it is not zero. TensorFlow carries no allocator statistics for CPU:0"
+   },
+   "governed_route": {
+    "basis": "each hop is PROVED by its own retained evidence: the campaign and delivery by the governance client, the bytes by the child's own digest, the shape by the declared envelope, the scope by the supervisor's minted token and the launcher's lease, the terminal by its receipt, and the last by a read back out of the live warehouse",
+    "complete": true,
+    "hops": {
+     "child_completed": true,
+     "consumed_bytes_are_the_delivered_bytes": true,
+     "fresh_attempt_accepted": true,
+     "lease_retained": true,
+     "producer_envelope_declared": true,
+     "supervisor_minted_the_attempt": true,
+     "terminal_accepted": true,
+     "warehouse_readback": true
+    }
+   },
+   "host_ram": {
+    "cgroup_lifetime_peak": {
+     "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+     "bytes": 303415296,
+     "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-probe_cpu-1790733513-3593045.scope",
+     "reset": false,
+     "status": "MEASURED",
+     "watermark": "LIFETIME_OF_THE_SCOPE",
+     "why_separate": "a lifetime watermark is retained under its own name because a per-stage figure obtained by resetting memory.peak destroys it; the two are never the same field"
+    },
+    "cgroup_peak": {
+     "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+     "bytes": 301842432,
+     "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-probe_cpu-1790733513-3593045.scope",
+     "status": "MEASURED"
+    },
+    "comparability": "NOT_INTERCHANGEABLE: a resident set and a cgroup peak measure different quantities.  In the one bounded pilot where both were read of the same load the resident set exceeded the whole-scope charged peak by 9,158,656 B, so neither bounds the other and one observed ordering is not an invariant.",
+    "process_rss_peak": {
+     "basis": "MAIN_PROCESS_RSS_ONLY: resource.getrusage(RUSAGE_SELF).ru_maxrss of this process alone.  NOT a process-tree or cgroup peak: it excludes every other task in the cgroup and all cgroup-charged page and kernel memory.  Never size a cap with it.",
+     "bytes": 372015104,
+     "status": "MEASURED"
+    }
+   },
+   "kernel_limit": {
+    "bytes": 2147483648,
+    "source": "memory.max",
+    "status": "MEASURED",
+    "unlimited": false
+   },
+   "placement_declared_by_the_runner": {
+    "cuda_libraries": {
+     "status": "NOT_REQUIRED",
+     "why": "a CPU placement loads none"
+    },
+    "device_uuid": null,
+    "env": {
+     "CRISPDM_PLACEMENT": "CPU",
+     "CUDA_VISIBLE_DEVICES": ""
+    },
+    "establishes_a_gpu_pilot": false,
+    "placement": "CPU",
+    "reading": "a DECLARED CPU placement. The empty CUDA_VISIBLE_DEVICES is the consequence of the declaration, not a leftover override: the declaration is what lets the child refuse a later GPU claim",
+    "schema": "df_placement_contract.v1",
+    "scope": "CHILD_ONLY: this mapping is handed to one child process. It is never exported into this process's os.environ, because a process-wide override is the defect being replaced -- it silently re-placed every later sibling in the same parent",
+    "stops": {
+     "cpu": {
+      "enforced_by": "kernel",
+      "executable": true,
+      "mechanism": "RLIMIT_CPU (SIGXCPU at the soft limit, SIGKILL at the hard one)",
+      "seconds": 120
+     },
+     "host_memory": {
+      "bytes": 2147483648,
+      "enforced_by": "kernel",
+      "executable": true,
+      "mechanism": "the transient scope's MemoryMax"
+     },
+     "wall": {
+      "enforced_by": "the launcher's supervisor",
+      "executable": true,
+      "mechanism": "crispdm-run -t, outside the child",
+      "seconds": 600
+     }
+    }
+   },
+   "placement_verified_in_the_child": {
+    "device_uuid": null,
+    "establishes_a_gpu_pilot": false,
+    "facts_verified": null,
+    "placement": "CPU"
+   },
+   "producer_envelope": {
+    "record_at": "cell_scope",
+    "record_schema": "df_cell_scope_record.v2",
+    "schema": "df_cell_scope_envelope.v1",
+    "why": "the consumer reads the scope record by this declaration alone; it never searches for a field that merely shares a name, at the root or anywhere else"
+   },
+   "reservation": {
+    "cap_bytes": 2147483648,
+    "confirmed": true,
+    "lease_id": "probe_cpu-1790733513-3593053-6c134b",
+    "source": "LIVE_ADMISSION_STORE"
+   },
+   "supervision": {
+    "attempt_id": "1790733513783-3639c9e5722aa79636a56b59",
+    "declared_cap_bytes": 2147483648,
+    "fresh_attempt_accepted": true,
+    "host_ram": {
+     "cgroup_peak": {
+      "accepted_by": "df_cell_scope_fresh_attempt_contract.v1",
+      "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+      "bytes": 301842432,
+      "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-probe_cpu-1790733513-3593045.scope",
+      "read_by": "THE_CHILD_INSIDE_ITS_OWN_SCOPE_BEFORE_THE_SCOPE_WAS_REMOVED",
+      "status": "MEASURED"
+     },
+     "cgroup_peak_floor": {
+      "basis": "SAMPLED_FLOOR: the last memory.peak this cgroup was OBSERVED to hold before its scope was removed.  It is a lower bound on the scope's LIFETIME watermark and on nothing else, and it is never a footprint: a child that ends between two observations -- or before the first -- takes its true high-watermark away with its scope.  Measured on a short child by the classification lane: 27,262,976 B retained against 258,584,576 B read from inside the same scope, an undercount of 9.5x; a cap sized on that number would be nine times too small.  It does NOT bound the child's own in-scope read in the other direction either: the QRM01 producer-to-supervisor run of 2026-09-29 sampled 559,525,888 B against 557,654,016 B read in scope, because a child reads its own peak before it has finished.  Two readings of one scope at two instants, unsigned, so this never shares a name or a field with a peak.",
+      "bytes": 298958848,
+      "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-probe_cpu-1790733513-3593045.scope",
+      "observation_index": 3,
+      "observed_at": 1790733514.5928245,
+      "poll_seconds": 0.2,
+      "status": "FLOOR_NOT_A_PEAK"
+     },
+     "comparability": "NOT_INTERCHANGEABLE: a resident set and a cgroup peak measure different quantities.  In the one bounded pilot where both were read of the same load the resident set exceeded the whole-scope charged peak by 9,158,656 B, so neither bounds the other and one observed ordering is not an invariant.",
+     "floor_against_in_scope_peak": {
+      "direction": "SAMPLED_BELOW_THE_IN_SCOPE_READ",
+      "floor_bytes": 298958848,
+      "in_scope_peak_bytes": 301842432,
+      "ratio": 1.0096454211651231,
+      "reading": "one observation of two readings of ONE scope at two instants, and the comparison is UNSIGNED.  Both directions have now been observed on real loads: the classification lane saw 27,262,976 B sampled against 258,584,576 B read in scope (sampled far below), and the QRM01 producer-to-supervisor run of 2026-09-29 saw 559,525,888 B sampled against 557,654,016 B read in scope (sampled ABOVE), because the child reads its own memory.peak before it has finished and the kernel watermark keeps rising afterwards.  So a sampled observation is a lower bound on the scope's LIFETIME watermark and on nothing else: it does not bound the child's in-scope read in either direction, it is not a correction factor, and neither number may be substituted for the other.",
+      "what_bounds_both": "host_ram.cgroup_lifetime_peak of the record: memory.peak is monotone while it is never reset, so the lifetime watermark is at least as large as any reading taken during the scope's life"
+     },
+     "retained_lease_peak_is_not_read": "The admission store's retained observed_peak_bytes is NOT read as a footprint by this instrument, in any field.  It is the launcher monitor's SAMPLED series and it was measured to undercount a short child by 9.5x (27,262,976 B against 258,584,576 B on the same child).  The only host-RAM measurement here is memory.peak read from INSIDE the cell's own scope before the scope was removed; anything a sampler saw is carried separately, as a floor."
+    },
+    "lease_id": "probe_cpu-1790733513-3593053-6c134b",
+    "refused_by": [],
+    "scope": {
+     "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+     "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-probe_cpu-1790733513-3593045.scope",
+     "inode": 873368,
+     "is_scope": true,
+     "parent": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+     "path_exists": true,
+     "read_at": 1790733514.1917017,
+     "unit": "crispdm-probe_cpu-1790733513-3593045.scope"
+    },
+    "termination": {
+     "cap_asked_once_at_the_declared_size": true,
+     "cap_bytes_declared": 2147483648,
+     "command": [
+      "<HOME>/.local/bin/crispdm-run",
+      "-m",
+      "2147483648",
+      "-t",
+      "600",
+      "-n",
+      "probe_cpu",
+      "-L",
+      "cell:probe_cpu",
+      "-S",
+      "crispdm-batch.slice",
+      "--",
+      "<HOME>/anaconda3/bin/python3",
+      "<HOME>/Documents/GitHub/.worktrees/predictor-qrm-integration-20260929/tools/df_q2_household_governed.py",
+      "child",
+      "--root",
+      "<HOME>/.local/state/crispdm-data-foundation/qrm_int_final_cpu",
+      "--unit",
+      "probe_cpu"
+     ],
+     "exit_code": 0,
+     "launched": true,
+     "meaning": "the child exited 0",
+     "signal": null,
+     "status": "COMPLETED",
+     "wall_seconds": 3.0653630629967665
+    },
+    "usable_for_costing": true
+   },
+   "terminal": {
+    "accepted": true,
+    "costs": {
+     "cpu_seconds": 0.01671898999999999,
+     "wall_seconds": 3.0894712780136615
+    },
+    "finished_at": "2026-09-30T01:58:36Z",
+    "flushed": {
+     "failures": {},
+     "pending": 0,
+     "sent": 1
+    },
+    "metrics": [
+     {
+      "metric": "q2h.consumed_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 10890295.0
+     },
+     {
+      "metric": "q2h.panel_rows",
+      "split": "development",
+      "unit": "rows",
+      "value": 2075259.0
+     },
+     {
+      "metric": "q2h.scope_peak_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 301842432.0
+     },
+     {
+      "metric": "q2h.gated_scope_peak_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 301842432.0
+     }
+    ],
+    "receipt_terminal_sha256": "202333674ff3296059b2364f7ab93c6df5d15f6956307cae51565a060d7e98d7",
+    "reconciliation": {
+     "accounting_only": [],
+     "http": 200,
+     "lake_only": [],
+     "missing_units": []
+    },
+    "started_at": "2026-09-30T01:58:33Z",
+    "status": "COMPLETED"
+   },
+   "unit": "probe_cpu",
+   "usable_for_costing": true,
+   "warehouse_readback": {
+    "artifact_rows": 1,
+    "artifacts": [
+     {
+      "bytes": 9848,
+      "role": "record",
+      "sha256": "bc2f1dbf6714eaafc7ddadafd5559e0d58c1f4d6cf78b7873baf2af223b651b4"
+     }
+    ],
+    "campaign_sha256": "483b79b16feb6fe7495d7228023cf017070d839fb21c6e103a8c4ae6d7927e02",
+    "metric_rows": 4,
+    "metrics": [
+     {
+      "horizon": 1,
+      "metric": "q2h.consumed_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 10890295.0
+     },
+     {
+      "horizon": 1,
+      "metric": "q2h.gated_scope_peak_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 301842432.0
+     },
+     {
+      "horizon": 1,
+      "metric": "q2h.panel_rows",
+      "split": "development",
+      "unit": "rows",
+      "value": 2075259.0
+     },
+     {
+      "horizon": 1,
+      "metric": "q2h.scope_peak_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 301842432.0
+     }
+    ],
+    "ok": true,
+    "reader": "tools/df_mod_e0_close.py:warehouse_terminals (the existing close client)",
+    "rows_all_generations": 1,
+    "terminal": {
+     "config_sha256": "9f1b82a82e124d2b56422f38f5e23a0e8e4de3f3bc980e0634751a6a95c34670",
+     "finished_at": "2026-09-30T01:58:36Z",
+     "generation": 1,
+     "started_at": "2026-09-30T01:58:33Z",
+     "status": "COMPLETED",
+     "terminal_sha256": "202333674ff3296059b2364f7ab93c6df5d15f6956307cae51565a060d7e98d7",
+     "unit_id": "probe_cpu"
+    },
+    "unit": "probe_cpu",
+    "url_scheme_only": "http"
+   },
+   "work": {
+    "columns": 8,
+    "numeric_columns": 7,
+    "rows": 2075259
+   }
+  },
+  "gpu": {
+   "campaign": {
+    "campaign_key": "q2h-1790733519-probe_gpu-data",
+    "campaign_sha256": "f503079bb897469f9661ca510c0e6e110719427a75da22fe5093608adb4ab6a7"
+   },
+   "child_byte_digest": {
+    "bytes_on_disk": 10890295,
+    "declared_bytes": 10890295,
+    "declared_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "digest_basis": "sha256 of the whole file as THIS child opened it, computed in the child's own process; the delivery's own digest is a claim and this is the measurement",
+    "matches_characterised_panel": true,
+    "matches_delivery": true,
+    "ok": true,
+    "path_is_content_addressed_cache": true,
+    "refused_by": null,
+    "sha256_reverified_in_child": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db"
+   },
+   "code_identity": {
+    "kind": "git_commit",
+    "value": "c4a918ca72c4c10b14e3f778de3190d8968d2a68"
+   },
+   "declared_cap_bytes": 4294967296,
+   "delivery": {
+    "availability_contract_sha256": "93d945cf2177430842f398778a80b417d92cf1555ce1a0013cd5ece4a2ef2e2e",
+    "availability_label": "UNKNOWN",
+    "availability_use": "UNDECLARED",
+    "bytes": 10890295,
+    "bytes_on_disk_sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "cached": false,
+    "campaign_key": "q2h-1790733519-probe_gpu-data",
+    "campaign_sha256": "f503079bb897469f9661ca510c0e6e110719427a75da22fe5093608adb4ab6a7",
+    "delivery_id": "1e87ff60e2574b8c900b36908667d2be",
+    "sha256": "b3192c0bcb117b2ee120a906dbcfb9550cd907abff74fea9bc2b1aa320ebc8db",
+    "verification_state": "VERIFIED_TRANSFER"
+   },
+   "device_figure": {
+    "allocated_bytes": 1536,
+    "basis": "FRAMEWORK_ALLOCATOR/DEVICE: the TensorFlow allocator's own accounting for GPU:0 -- `current` is live and `peak` is the high-watermark since the last reset. It is DEVICE memory held by TensorFlow, it is never added to the cgroup peak or to any other scope, and it does not include the CUDA context or workspaces outside the arena, which are whole-device scope and reported there",
+    "current_bytes": 1536,
+    "declared_device_uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+    "framework": "tensorflow",
+    "peak_bytes": 1792,
+    "placement": "GPU",
+    "pytorch_consulted": false,
+    "reserved_bytes": null,
+    "source": "tf.config.experimental.get_memory_info",
+    "status": "MEASURED",
+    "visible_devices": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326"
+   },
+   "governed_route": {
+    "basis": "each hop is PROVED by its own retained evidence: the campaign and delivery by the governance client, the bytes by the child's own digest, the shape by the declared envelope, the scope by the supervisor's minted token and the launcher's lease, the terminal by its receipt, and the last by a read back out of the live warehouse",
+    "complete": true,
+    "hops": {
+     "child_completed": true,
+     "consumed_bytes_are_the_delivered_bytes": true,
+     "fresh_attempt_accepted": true,
+     "lease_retained": true,
+     "producer_envelope_declared": true,
+     "supervisor_minted_the_attempt": true,
+     "terminal_accepted": true,
+     "warehouse_readback": true
+    }
+   },
+   "host_ram": {
+    "cgroup_lifetime_peak": {
+     "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+     "bytes": 912736256,
+     "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-probe_gpu-1790733519-3593200.scope",
+     "reset": false,
+     "status": "MEASURED",
+     "watermark": "LIFETIME_OF_THE_SCOPE",
+     "why_separate": "a lifetime watermark is retained under its own name because a per-stage figure obtained by resetting memory.peak destroys it; the two are never the same field"
+    },
+    "cgroup_peak": {
+     "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+     "bytes": 910901248,
+     "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-probe_gpu-1790733519-3593200.scope",
+     "status": "MEASURED"
+    },
+    "comparability": "NOT_INTERCHANGEABLE: a resident set and a cgroup peak measure different quantities.  In the one bounded pilot where both were read of the same load the resident set exceeded the whole-scope charged peak by 9,158,656 B, so neither bounds the other and one observed ordering is not an invariant.",
+    "process_rss_peak": {
+     "basis": "MAIN_PROCESS_RSS_ONLY: resource.getrusage(RUSAGE_SELF).ru_maxrss of this process alone.  NOT a process-tree or cgroup peak: it excludes every other task in the cgroup and all cgroup-charged page and kernel memory.  Never size a cap with it.",
+     "bytes": 1324044288,
+     "status": "MEASURED"
+    }
+   },
+   "kernel_limit": {
+    "bytes": 4294967296,
+    "source": "memory.max",
+    "status": "MEASURED",
+    "unlimited": false
+   },
+   "placement_declared_by_the_runner": {
+    "cuda_libraries": {
+     "dirs": [
+      "<HOME>/anaconda3/lib/python3.12/site-packages/nvidia/cublas/lib",
+      "<HOME>/anaconda3/lib/python3.12/site-packages/nvidia/cudnn/lib"
+     ],
+     "generations_seen": [
+      "10",
+      "11",
+      "12",
+      "9"
+     ],
+     "routes": {
+      "cublas": "INTERPRETER_WHEEL",
+      "cublasLt": "INTERPRETER_WHEEL",
+      "cudart": "DYNAMIC_LOADER_DEFAULT_SEARCH",
+      "cudnn": "INTERPRETER_WHEEL",
+      "cufft": "DYNAMIC_LOADER_DEFAULT_SEARCH",
+      "curand": "DYNAMIC_LOADER_DEFAULT_SEARCH",
+      "cusolver": "DYNAMIC_LOADER_DEFAULT_SEARCH",
+      "cusparse": "DYNAMIC_LOADER_DEFAULT_SEARCH",
+      "nvJitLink": "DYNAMIC_LOADER_DEFAULT_SEARCH"
+     },
+     "sonames": {
+      "cublas": "libcublas.so.12",
+      "cublasLt": "libcublasLt.so.12",
+      "cudart": "libcudart.so.12",
+      "cudnn": "libcudnn.so.9",
+      "cufft": "libcufft.so.11",
+      "curand": "libcurand.so.10",
+      "cusolver": "libcusolver.so.11",
+      "cusparse": "libcusparse.so.12",
+      "nvJitLink": "libnvJitLink.so.12"
+     },
+     "status": "MEASURED",
+     "wheel_inventory_count": 3
+    },
+    "device_uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+    "env": {
+     "CRISPDM_DEVICE_UUID": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+     "CRISPDM_PLACEMENT": "GPU",
+     "CUDA_VISIBLE_DEVICES": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+     "LD_LIBRARY_PATH": "<HOME>/anaconda3/lib/python3.12/site-packages/nvidia/cublas/lib:<HOME>/anaconda3/lib/python3.12/site-packages/nvidia/cudnn/lib:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64"
+    },
+    "establishes_a_gpu_pilot": null,
+    "placement": "GPU",
+    "reading": "a DECLARED GPU placement with exactly one device pinned by UUID and that interpreter's own CUDA library path. establishes_a_gpu_pilot is null until the CHILD verifies all three facts -- the declaration is a request, never the evidence",
+    "schema": "df_placement_contract.v1",
+    "scope": "CHILD_ONLY: this mapping is handed to one child process. It is never exported into this process's os.environ, because a process-wide override is the defect being replaced -- it silently re-placed every later sibling in the same parent",
+    "stops": {
+     "cpu": {
+      "enforced_by": "kernel",
+      "executable": true,
+      "mechanism": "RLIMIT_CPU (SIGXCPU at the soft limit, SIGKILL at the hard one)",
+      "seconds": 240
+     },
+     "host_memory": {
+      "bytes": 4294967296,
+      "enforced_by": "kernel",
+      "executable": true,
+      "mechanism": "the transient scope's MemoryMax"
+     },
+     "wall": {
+      "enforced_by": "the launcher's supervisor",
+      "executable": true,
+      "mechanism": "crispdm-run -t, outside the child",
+      "seconds": 600
+     }
+    }
+   },
+   "placement_verified_in_the_child": {
+    "device_uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+    "establishes_a_gpu_pilot": true,
+    "facts_verified": [
+     "DRIVER_UUID",
+     "FRAMEWORK_REGISTRATION",
+     "EXECUTION_PLACEMENT"
+    ],
+    "placement": "GPU"
+   },
+   "producer_envelope": {
+    "record_at": "cell_scope",
+    "record_schema": "df_cell_scope_record.v2",
+    "schema": "df_cell_scope_envelope.v1",
+    "why": "the consumer reads the scope record by this declaration alone; it never searches for a field that merely shares a name, at the root or anywhere else"
+   },
+   "reservation": {
+    "cap_bytes": 4294967296,
+    "confirmed": true,
+    "lease_id": "probe_gpu-1790733519-3593208-9e1a5f",
+    "source": "LIVE_ADMISSION_STORE"
+   },
+   "supervision": {
+    "attempt_id": "1790733519408-85e890c7d2c4fb53ecf0cbf0",
+    "declared_cap_bytes": 4294967296,
+    "fresh_attempt_accepted": true,
+    "host_ram": {
+     "cgroup_peak": {
+      "accepted_by": "df_cell_scope_fresh_attempt_contract.v1",
+      "basis": "CGROUP_TREE_PEAK: memory.peak of this cell's OWN exclusive scope -- the complete process tree charged to it, plus the cgroup's page and kernel memory.  This is the only host-RAM basis a MemoryMax or a placement decision may be judged on.",
+      "bytes": 910901248,
+      "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-probe_gpu-1790733519-3593200.scope",
+      "read_by": "THE_CHILD_INSIDE_ITS_OWN_SCOPE_BEFORE_THE_SCOPE_WAS_REMOVED",
+      "status": "MEASURED"
+     },
+     "cgroup_peak_floor": {
+      "basis": "SAMPLED_FLOOR: the last memory.peak this cgroup was OBSERVED to hold before its scope was removed.  It is a lower bound on the scope's LIFETIME watermark and on nothing else, and it is never a footprint: a child that ends between two observations -- or before the first -- takes its true high-watermark away with its scope.  Measured on a short child by the classification lane: 27,262,976 B retained against 258,584,576 B read from inside the same scope, an undercount of 9.5x; a cap sized on that number would be nine times too small.  It does NOT bound the child's own in-scope read in the other direction either: the QRM01 producer-to-supervisor run of 2026-09-29 sampled 559,525,888 B against 557,654,016 B read in scope, because a child reads its own peak before it has finished.  Two readings of one scope at two instants, unsigned, so this never shares a name or a field with a peak.",
+      "bytes": 997756928,
+      "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-probe_gpu-1790733519-3593200.scope",
+      "observation_index": 21,
+      "observed_at": 1790733523.829769,
+      "poll_seconds": 0.2,
+      "status": "FLOOR_NOT_A_PEAK"
+     },
+     "comparability": "NOT_INTERCHANGEABLE: a resident set and a cgroup peak measure different quantities.  In the one bounded pilot where both were read of the same load the resident set exceeded the whole-scope charged peak by 9,158,656 B, so neither bounds the other and one observed ordering is not an invariant.",
+     "floor_against_in_scope_peak": {
+      "direction": "SAMPLED_ABOVE_THE_IN_SCOPE_READ",
+      "floor_bytes": 997756928,
+      "in_scope_peak_bytes": 910901248,
+      "ratio": 0.9129490584704815,
+      "reading": "one observation of two readings of ONE scope at two instants, and the comparison is UNSIGNED.  Both directions have now been observed on real loads: the classification lane saw 27,262,976 B sampled against 258,584,576 B read in scope (sampled far below), and the QRM01 producer-to-supervisor run of 2026-09-29 saw 559,525,888 B sampled against 557,654,016 B read in scope (sampled ABOVE), because the child reads its own memory.peak before it has finished and the kernel watermark keeps rising afterwards.  So a sampled observation is a lower bound on the scope's LIFETIME watermark and on nothing else: it does not bound the child's in-scope read in either direction, it is not a correction factor, and neither number may be substituted for the other.",
+      "what_bounds_both": "host_ram.cgroup_lifetime_peak of the record: memory.peak is monotone while it is never reset, so the lifetime watermark is at least as large as any reading taken during the scope's life"
+     },
+     "retained_lease_peak_is_not_read": "The admission store's retained observed_peak_bytes is NOT read as a footprint by this instrument, in any field.  It is the launcher monitor's SAMPLED series and it was measured to undercount a short child by 9.5x (27,262,976 B against 258,584,576 B on the same child).  The only host-RAM measurement here is memory.peak read from INSIDE the cell's own scope before the scope was removed; anything a sampler saw is carried separately, as a floor."
+    },
+    "lease_id": "probe_gpu-1790733519-3593208-9e1a5f",
+    "refused_by": [],
+    "scope": {
+     "boot_id": "66518ecd-eb06-43ea-a1f2-d3fccba39a62",
+     "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-probe_gpu-1790733519-3593200.scope",
+     "inode": 873456,
+     "is_scope": true,
+     "parent": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice",
+     "path_exists": true,
+     "read_at": 1790733519.8182518,
+     "unit": "crispdm-probe_gpu-1790733519-3593200.scope"
+    },
+    "termination": {
+     "cap_asked_once_at_the_declared_size": true,
+     "cap_bytes_declared": 4294967296,
+     "command": [
+      "<HOME>/.local/bin/crispdm-run",
+      "-m",
+      "4294967296",
+      "-t",
+      "600",
+      "-n",
+      "probe_gpu",
+      "-L",
+      "cell:probe_gpu",
+      "-S",
+      "crispdm-batch.slice",
+      "--",
+      "<HOME>/anaconda3/bin/python3",
+      "<HOME>/Documents/GitHub/.worktrees/predictor-qrm-integration-20260929/tools/df_q2_household_governed.py",
+      "child",
+      "--root",
+      "<HOME>/.local/state/crispdm-data-foundation/qrm_int_final_gpu",
+      "--unit",
+      "probe_gpu"
+     ],
+     "exit_code": 0,
+     "launched": true,
+     "meaning": "the child exited 0",
+     "signal": null,
+     "status": "COMPLETED",
+     "wall_seconds": 5.5420423629984725
+    },
+    "usable_for_costing": true
+   },
+   "terminal": {
+    "accepted": true,
+    "costs": {
+     "cpu_seconds": 0.023441166999999985,
+     "wall_seconds": 5.566883767998661
+    },
+    "finished_at": "2026-09-30T01:58:44Z",
+    "flushed": {
+     "failures": {},
+     "pending": 0,
+     "sent": 1
+    },
+    "metrics": [
+     {
+      "metric": "q2h.consumed_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 10890295.0
+     },
+     {
+      "metric": "q2h.panel_rows",
+      "split": "development",
+      "unit": "rows",
+      "value": 2075259.0
+     },
+     {
+      "metric": "q2h.scope_peak_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 910901248.0
+     },
+     {
+      "metric": "q2h.gated_scope_peak_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 910901248.0
+     }
+    ],
+    "receipt_terminal_sha256": "96691508bd38e20350c692f852bcf5048a0bb8082d8785221219317fa4a7a032",
+    "reconciliation": {
+     "accounting_only": [],
+     "http": 200,
+     "lake_only": [],
+     "missing_units": []
+    },
+    "started_at": "2026-09-30T01:58:39Z",
+    "status": "COMPLETED"
+   },
+   "unit": "probe_gpu",
+   "usable_for_costing": true,
+   "warehouse_readback": {
+    "artifact_rows": 1,
+    "artifacts": [
+     {
+      "bytes": 11646,
+      "role": "record",
+      "sha256": "373926d3bbdee92d7a30ab2d27d4faf19412a007a9b2ecf388b8fdb5be1a145b"
+     }
+    ],
+    "campaign_sha256": "f503079bb897469f9661ca510c0e6e110719427a75da22fe5093608adb4ab6a7",
+    "metric_rows": 4,
+    "metrics": [
+     {
+      "horizon": 1,
+      "metric": "q2h.consumed_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 10890295.0
+     },
+     {
+      "horizon": 1,
+      "metric": "q2h.gated_scope_peak_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 910901248.0
+     },
+     {
+      "horizon": 1,
+      "metric": "q2h.panel_rows",
+      "split": "development",
+      "unit": "rows",
+      "value": 2075259.0
+     },
+     {
+      "horizon": 1,
+      "metric": "q2h.scope_peak_bytes",
+      "split": "development",
+      "unit": "bytes",
+      "value": 910901248.0
+     }
+    ],
+    "ok": true,
+    "reader": "tools/df_mod_e0_close.py:warehouse_terminals (the existing close client)",
+    "rows_all_generations": 1,
+    "terminal": {
+     "config_sha256": "ba8a889f467b8a8a84d37e114bf5b0af4468dd9df9d8ecac7d035c5789f53c8e",
+     "finished_at": "2026-09-30T01:58:44Z",
+     "generation": 1,
+     "started_at": "2026-09-30T01:58:39Z",
+     "status": "COMPLETED",
+     "terminal_sha256": "96691508bd38e20350c692f852bcf5048a0bb8082d8785221219317fa4a7a032",
+     "unit_id": "probe_gpu"
+    },
+    "unit": "probe_gpu",
+    "url_scheme_only": "http"
+   },
+   "work": {
+    "columns": 8,
+    "numeric_columns": 7,
+    "rows": 2075259
+   }
+  }
+ },
+ "what_this_is": "the governed route completed end to end through the INTEGRATED runner, twice: once on a declared CPU placement and once on a GPU placement whose three facts were verified in the child. Every hop is a separate condition with its own retained evidence, and the unit refuses if any one of them is absent",
+ "what_this_is_not": "not an experiment, not a measurement of any model's quality, not a W1440 fit and not an allocation. The workload is the mechanical household probe: it verifies its own consumed bytes by sha256 and reads a parquet panel. No model is built, nothing is fitted and no score exists"
+}
