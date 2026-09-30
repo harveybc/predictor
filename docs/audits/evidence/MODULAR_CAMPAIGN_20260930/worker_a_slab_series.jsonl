@@ -41,3 +41,8 @@
 {"at": "2026-09-30T23:31:39Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 2261.47, "SUnreclaim_kB": 332064, "gpu_reinit_this_boot": "44", "MemAvailable_B": 12310638592}
 {"at": "2026-09-30T23:34:56Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 2460.47, "SUnreclaim_kB": 333844, "gpu_reinit_this_boot": "48", "MemAvailable_B": 12448448512}
 {"at": "2026-09-30T23:35:06Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 2468.66, "SUnreclaim_kB": 333860, "gpu_reinit_this_boot": "48", "MemAvailable_B": 12558045184}
+{"at": "2026-09-30T23:35:53Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 2515.28, "SUnreclaim_kB": 336000, "gpu_reinit_this_boot": "48", "MemAvailable_B": 12226338816}
+{"at": "2026-09-30T23:36:42Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 2567.1, "SUnreclaim_kB": 335072, "gpu_reinit_this_boot": "50", "MemAvailable_B": 12564459520}
+{"at": "2026-09-30T23:37:33Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 2615.64, "SUnreclaim_kB": 335784, "gpu_reinit_this_boot": "51", "MemAvailable_B": 12611223552}
+{"at": "2026-09-30T23:38:22Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 2664.2, "SUnreclaim_kB": 336344, "gpu_reinit_this_boot": "52", "MemAvailable_B": 12610019328}
+{"at": "2026-09-30T23:39:09Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 2711.82, "SUnreclaim_kB": 338384, "gpu_reinit_this_boot": "52", "MemAvailable_B": 12304191488}

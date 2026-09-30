@@ -256,10 +256,10 @@ def lanes():
                 k, _, v = l.partition(" ")
                 kv[k] = v
             br = kv.get("branch", "").replace("refs/heads/", "")
-            m = re.search(r"\bm0([1-6])-", br)
+            m = re.search(r"\b(m0[1-6]|c07|s07)-", br)
             if m and "20260930" in br:
                 wt = kv.get("worktree", "")
-                out.append({"lane": f"M0{m.group(1)}", "repo": repo, "branch": br,
+                out.append({"lane": m.group(1).upper(), "repo": repo, "branch": br,
                             "worktree": wt.replace(HOME, "~"), "tip": kv.get("HEAD", "")[:12]})
     return out
 
@@ -268,8 +268,8 @@ SLAB_SERIES = None
 
 
 def lane_of(name):
-    m = re.search(r"m0([1-6])", name or "")
-    return f"M0{m.group(1)}" if m else "unknown"
+    m = re.search(r"(m0[1-6]|c07|s07)", name or "")
+    return m.group(1).upper() if m else "unknown"
 
 
 def build(hosts, reg):

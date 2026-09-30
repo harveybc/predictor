@@ -57,11 +57,11 @@
    "id": "a5289d234c296e0c5",
    "kind": "subagent",
    "lane": "M02",
-   "state": "running",
-   "commit": "3e58892a",
+   "state": "completed",
+   "commit": "310a836f",
    "dispatch_block": "in",
    "dispatch_tip": "05aaa1f0",
-   "note": "M02: tested tip 3e58892a; synthetic pilot queued (synthetic component check, not a forecasting result)"
+   "note": "M02 RETURNED (second of six): tip 310a836f, tested code 9844dafd 71/71; synthetic pilot cgroup peak 1.03 GiB; donors PLUMBING_NOT_A_RESULT"
   },
   {
    "id": "a160efdffffffa9f2",
@@ -87,6 +87,26 @@
    "state": "completed",
    "commit": "329d9a1 (lts) / 80757c4c (predictor)",
    "note": "M05 RETURNED (first of six): lts 329d9a1, predictor 80757c4c; REPLAY_PASS + SMOKE_PASS_SHADOW_ONLY; candidate is plumbing; nothing promoted"
+  },
+  {
+   "id": "C07 subagent (id pending from orchestrator)",
+   "kind": "subagent",
+   "lane": "C07",
+   "state": "assigned",
+   "dispatch_state": "dispatched",
+   "branch": "satoshi/c07-classification-remote-code-20260930",
+   "commit": null,
+   "note": "C07 dispatched: classification remote-code review; no trust_remote_code, no weights, throwaway venv only; light CPU on the coordinator under 2G caps"
+  },
+  {
+   "id": "S07 subagent (id pending from orchestrator)",
+   "kind": "subagent",
+   "lane": "S07",
+   "state": "assigned",
+   "dispatch_state": "dispatched",
+   "branch": "satoshi/s07-strategy-support-20260930",
+   "commit": null,
+   "note": "S07 dispatched: strategy target-support purge and corrections; no scoring; tests under 2G caps"
   }
  ],
  "results": [
@@ -401,6 +421,11 @@
    "at": "2026-09-30T23:31:40Z",
    "host_alias": "coordinator",
    "event": "INCIDENT: host memory PSI some sustained above 37.5 for >=20 s after s2021 released and queued CPU suites admitted; crispdm monitor stopped m06-status-writer (34 MB tree peak, a bystander) and m01-venv; pressure back to avg10 0.00 by 23:37Z; writer relaunched through fresh admission"
+  },
+  {
+   "at": "2026-09-30T23:45:00Z",
+   "host_alias": "coordinator",
+   "event": "M02 RETURNED (310a836f); with two lanes returned the orchestrator dispatched held lanes C07 and S07 (light CPU only on the coordinator, 2G caps)"
   }
  ],
  "launch_recipes": {
