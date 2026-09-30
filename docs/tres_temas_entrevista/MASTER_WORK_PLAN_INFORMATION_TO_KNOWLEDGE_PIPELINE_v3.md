@@ -1,5 +1,10 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
+**Estado operativo actual (30-sep-2026):**
+[carriles, resultados, recursos y ETA](program_v3/CURRENT_EXECUTION_2026_09_30.md).
+Las revisiones fechadas abajo conservan su contexto historico; no describen
+por si solas lo que esta ejecutandose hoy.
+
 **Nombre y alcance general aprobados: M5PHET (24-sep UTC).**
 [M5PHET](https://github.com/harveybc/M5PHET) es un framework de tareas ML tipadas,
 no un programa generico de investigacion. Sus cinco familias de tareas son:
