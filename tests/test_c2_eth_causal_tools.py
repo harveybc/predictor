@@ -315,3 +315,58 @@ def test_recommendation_table_builds_from_the_summaries(world, tmp_path):
     assert {"population", "split", "horizon_bars", "n_eval_rows_total", "naive_zero_mae_z_mean", "leak_verdict"} <= set(table.columns)
     md = markdown(table, summary, leak)
     assert "f_signal" in md and "DEVELOPMENT" in md
+
+
+# ---------------------------------------------------------------------------------------------------- calibration
+
+
+def test_block_interval_is_calibrated_where_short_hac_over_rejects():
+    """A persistent null: AR(1) regressor residual (phi 0.97) times a persistent, volatility-clustered null outcome.
+    The short HAC (lag 7) rejects far above nominal; the block interval at the measured length must not."""
+    from c2_battery_calibration import block_bootstrap_se, integrated_autocorr_length
+    from c2_causal_dossier import hac_variance
+    rng = np.random.default_rng(5)
+    n, cells = 3000, 60
+    rej_hac, rej_boot, lengths = 0, 0, []
+    for _ in range(cells):
+        e = rng.standard_normal(n)
+        rx = np.zeros(n)
+        for t in range(1, n):
+            rx[t] = 0.97 * rx[t - 1] + e[t]
+        ry = np.zeros(n)
+        u = rng.standard_normal(n)
+        for t in range(1, n):
+            ry[t] = 0.9 * ry[t - 1] + u[t]
+        denom = float(rx @ rx)
+        theta = float(rx @ ry) / denom
+        score = rx * (ry - theta * rx)
+        se_hac = np.sqrt(hac_variance(score, 7) * n) / denom
+        L = max(integrated_autocorr_length(rx, n // 20), integrated_autocorr_length(ry, n // 20), 7)
+        lengths.append(L)
+        se_boot = block_bootstrap_se(score, denom, L, 100, rng)
+        rej_hac += abs(theta) > 1.96 * se_hac
+        rej_boot += abs(theta) > 1.96 * se_boot
+    assert rej_hac / cells > 0.10                      # the short HAC over-rejects under this null
+    assert rej_boot / cells < rej_hac / cells            # the block interval rejects less
+    assert rej_boot / cells <= 0.12                      # and sits near nominal (binomial noise on 60 cells)
+    assert np.median(lengths) > 20
+
+
+def test_calibration_aggregate_and_patch(confounded, tmp_path):
+    from c2_battery_calibration import aggregate, calibrate_cell, patch_dossiers
+    from c2_causal_dossier import dossier, study
+    pop = confounded["pop"]
+    c = calibrate_cell(pop, "x_treat", 1, boot=50)
+    assert c["block_length"] >= 7 and set(c["real"]) == set(c["scrambled"])
+    assert c["real"]["se_block_bootstrap_L"] > 0
+    agg = aggregate([c])
+    assert "battery_verdict" in agg and agg["cells"] == 1
+    d = tmp_path / "dossiers"
+    d.mkdir()
+    doc = dossier(pop, study(pop, "x_treat", 1), revision="0123456789abcdef")
+    (d / "x.json").write_text(json.dumps(doc))
+    (d / "DOSSIER_INDEX.json").write_text(json.dumps({"dossiers": [{"feature": "x_treat", "horizon_bars": 1, "file": "x.json"}]}))
+    assert patch_dossiers(d, [c], agg) == 1
+    patched = json.loads((d / "x.json").read_text())
+    assert patched["rung2"]["sensitivity"]["calibration_block_length"] == c["block_length"]
+    assert patched["rung2"]["state"] == "NOT_IDENTIFIED"
