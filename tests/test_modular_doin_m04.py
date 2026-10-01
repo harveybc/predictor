@@ -414,3 +414,14 @@ def test_cpu_request_reports_no_gpu_and_arms_nothing(monkeypatch):
 
     monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "")
     assert gpu_facts() == {"cpu_only": True, "cuda_visible_devices": "", "fallback_raise_armed": False}
+
+
+def test_placement_exclusion_keeps_candidate_for_the_admitting_host(tmp_path):
+    campaign = make_campaign(tmp_path)
+    enqueue_default(campaign)
+    first = campaign.db.execute("SELECT config_id FROM candidates ORDER BY position").fetchone()[0]
+    campaign.declaration["placement"] = {"exclude": {"worker_a": [first]}}
+    got = campaign.claim("worker_a")
+    assert got[0]["config_id"] != first
+    got_b = campaign.claim("worker_b")
+    assert got_b[0]["config_id"] == first

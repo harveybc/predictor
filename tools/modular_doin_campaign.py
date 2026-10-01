@@ -209,7 +209,10 @@ class Campaign:
                 " IS ? ORDER BY c.position LIMIT 1", (host,)).fetchone()
             kind = "verify"
             if row is None:
-                row = self.db.execute("SELECT * FROM candidates WHERE status='queued' ORDER BY position LIMIT 1").fetchone()
+                excluded = set(self.declaration.get("placement", {}).get("exclude", {}).get(host, []))
+                row = next((r for r in self.db.execute(
+                    "SELECT * FROM candidates WHERE status='queued' ORDER BY position").fetchall()
+                    if r["config_id"] not in excluded), None)
                 kind = "train"
             if row is None:
                 self.db.execute("COMMIT")
