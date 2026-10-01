@@ -113,4 +113,5 @@ def test_modular_components_resolve_through_their_entry_points():
         eps = list(metadata.entry_points(group=group, name=name))
         if REQUIRE_INSTALLED:
             assert len(eps) == 1 and eps[0].load() is mt.BUILTINS[group][name]
-        assert mt.describe_component(role, name)["version"] == "1.0.0"
+        assert mt.describe_component(role, name)["version"] == {
+            "branch": "2.0.0", "core": "2.0.0", "fusion": "1.0.0", "head": "1.0.0"}[role]

@@ -43,6 +43,11 @@ def test_m04_projection_lands_value_exact_in_m01_grammar(grouping):
     space = json.loads((FIXTURES / "ecl_l24_h24_search_space_v1.json").read_text())
     flat04 = json.loads((FIXTURES / "ecl_l24_h24_default_r0_v1.json").read_text())
     flat04.update({"train.seed": 2021, "branch.grouping_size": grouping})
+    # The approved architecture keeps every branch step (branch_steps == window) and reduces
+    # time only in the core, 24 -> 12 -> 6 -> 6. M04's pinned default point predates it
+    # (branch_steps 12, factors [2,1,1]); the corrected point is inside M04's own bounds.
+    flat04.update({"model.branch_steps": 24, "core.time_factor_0": 2, "core.time_factor_1": 2,
+                   "core.time_factor_2": 1})
     space["bounds"]["branch.grouping_size"]["choices"].append(grouping) \
         if grouping not in space["bounds"]["branch.grouping_size"]["choices"] else None
     if flat04["train.loss"] == "huber":
@@ -79,3 +84,14 @@ def test_raw_m04_keys_are_refused_by_the_m01_grammar_not_ignored():
             mc.apply_flat_overrides(model, {key: 1})
     # branch./model./train. keys are not in the M01 namespace, so the facade never reads them
     assert not any(mc.is_modular_key(k) for k in ("branch.channels", "model.output_steps", "train.loss"))
+
+
+def test_m04_pinned_default_point_is_the_superseded_design_and_is_refused():
+    m04 = _m04()
+    space = json.loads((FIXTURES / "ecl_l24_h24_search_space_v1.json").read_text())
+    flat04 = json.loads((FIXTURES / "ecl_l24_h24_default_r0_v1.json").read_text())
+    flat04.update({"train.seed": 2021, "train.huber_delta": 1.0})
+    assert flat04["model.branch_steps"] == 12                       # finding for M04: old design
+    nested = m04.from_flat(flat04, _base(), space)
+    with pytest.raises(ValueError, match="branch_steps must equal window"):
+        mc.flatten(nested["model"])

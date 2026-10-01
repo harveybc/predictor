@@ -68,7 +68,8 @@ def test_builtins_resolve_with_versions_and_unknown_names_fail():
     for role, name in (("branch", "causal_conv1d"), ("fusion", "sequence_concat"),
                        ("core", "transformer_conv"), ("head", "forecast")):
         d = mt.describe_component(role, name)
-        assert d["version"] == "1.0.0" and d["contract"] and d["name"] == name
+        expected = {"branch": "2.0.0", "core": "2.0.0", "fusion": "1.0.0", "head": "1.0.0"}[role]
+        assert d["version"] == expected and d["contract"] and d["name"] == name
     with pytest.raises(ValueError, match="exactly one plugin"):
         mt.describe_component("branch", "no_such_branch")
     c = nested()
@@ -356,9 +357,9 @@ def _bad(specs, tmp_path, kind):
     elif kind == "branch_feature_swap":
         c["branches"][0]["features"], c["branches"][1]["features"] = ["volume"], ["close"]
     elif kind == "input_time_shape":
-        c.update(window=48, sample_hours=0.5)
+        c.update(window=48, sample_hours=0.5, branch_steps=48)
     elif kind == "sampling_period":
-        c.update(window=12, sample_hours=2, output_steps=6)
+        c.update(window=12, sample_hours=2, branch_steps=12, output_steps=6)
     elif kind == "upstream_identity":
         c["regime"] = None
         for spec in c["branches"]:
