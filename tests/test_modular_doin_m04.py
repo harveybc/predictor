@@ -329,7 +329,7 @@ def test_real_engine_receipt_is_independently_rescored_and_tamper_refuted(tmp_pa
     # an R3 receipt written before training.settings existed: the batch size comes from the candidate
     legacy = json.loads(receipt_path.read_text())
     legacy["training"].pop("settings")
-    legacy["candidate"] = {"evaluator": {"batch_size": nested["evaluator"]["batch_size"]}}
+    legacy["candidate"] = nested  # complete config, authenticated by config_sha256
     legacy_path = tmp_path / "legacy_r3_receipt.json"
     legacy_path.write_text(json.dumps(legacy))
     again = scorer.verify(legacy_path, validation, tmp_path / "verification_legacy.json")

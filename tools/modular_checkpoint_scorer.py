@@ -13,6 +13,12 @@ prediction shape equals targets; every metric within ``rtol``/``atol`` of the
 receipt; objective recomputed equal to the receipt's objective. Anything else
 is ``REFUTED`` with the named mismatch. The output is a separate receipt
 (``modular.checkpoint.verification.v1``) with its own digests.
+
+Historical R3 receipts without training.settings can use --candidate-config:
+the complete configuration must hash to the receipt's config_sha256. An explicit
+--batch-size must agree with every recorded/authenticated source, never override
+one. Existing outputs are refused. This does not change the bridge's pin rule;
+do not substitute this checkout for a historical producing revision.
 """
 from __future__ import annotations
 
@@ -83,19 +89,51 @@ def _close(a, b, rtol, atol):
     return math.isfinite(a) and math.isfinite(b) and abs(a - b) <= atol + rtol * abs(b)
 
 
+def _resolve_batch_size(receipt, batch_size=None, candidate_config=None):
+    sources = {}
+    settings = receipt.get("training", {}).get("settings") or {}
+    if "batch_size" in settings:
+        sources["training.settings"] = settings["batch_size"]
+    configs = []
+    embedded = receipt.get("candidate", {})
+    if isinstance(embedded, dict) and "evaluator" in embedded:
+        configs.append(("candidate", embedded))
+    if candidate_config is not None:
+        configs.append(("candidate_config", candidate_config))
+    config_sha = None
+    for label, config in configs:
+        canonical = json.dumps(config, sort_keys=True, separators=(",", ":"), allow_nan=False)
+        config_sha = _sha(canonical.encode())
+        if config_sha != receipt.get("digests", {}).get("config_sha256"):
+            raise ValueError(f"{label} config_sha256 mismatch")
+        evaluator = config.get("evaluator", {})
+        if "batch_size" not in evaluator:
+            raise ValueError(f"{label} declares no batch_size")
+        sources[label] = evaluator["batch_size"]
+    if not sources:
+        raise ValueError("No recorded/authenticated batch_size; supply the complete candidate config")
+    if batch_size is not None:
+        sources["explicit"] = batch_size
+    for label, value in sources.items():
+        if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+            raise ValueError(f"{label} batch_size must be a positive integer")
+    if len(set(sources.values())) != 1:
+        raise ValueError("Conflicting batch_size declarations")
+    return next(iter(sources.values())), {"sources": sources, "config_sha256": config_sha}
+
+
 def verify(receipt_path, validation_path, output_path, *, batch_size=None, rtol=1e-5, atol=1e-6,
-           target_feature_indices=None):
+           target_feature_indices=None, candidate_config=None):
     started = time.monotonic()
+    if Path(output_path).exists():
+        raise FileExistsError(f"Refusing to overwrite verification evidence: {output_path}")
     receipt = json.loads(Path(receipt_path).read_text())
     problems = []
     if receipt.get("schema_version") != "modular.candidate.evaluation.v1" or receipt.get("status") != "completed":
         raise ValueError("a completed modular.candidate.evaluation.v1 receipt is required")
     # Replay the evaluator's inference contract: same batch size as the receipt's own scoring pass.
     # With TF_DETERMINISTIC_OPS=1 in both processes the rescoring is bitwise identical (probe 2026-10-01).
-    batch_size = (batch_size or (receipt["training"].get("settings") or {}).get("batch_size")
-                  or receipt.get("candidate", {}).get("evaluator", {}).get("batch_size"))
-    if not batch_size:  # R3 receipts before the evaluator recorded settings carry it in the candidate only
-        raise ValueError("receipt declares no batch size (training.settings or candidate.evaluator)")
+    batch_size, batch_binding = _resolve_batch_size(receipt, batch_size, candidate_config)
     artifact = Path(receipt["artifacts"]["best_model"])
     model_sha = _sha_file(artifact)
     if model_sha != receipt["digests"]["model_sha256"]:
@@ -155,6 +193,7 @@ def verify(receipt_path, validation_path, output_path, *, batch_size=None, rtol=
                             "rescored_value": rescored_objective, "receipt_value": objective["value"]},
               "metrics": metrics, "per_horizon": per_horizon, "validation_rows": int(len(x)),
               "tolerance": {"rtol": rtol, "atol": atol}, "batch_size": batch_size, "exact_match": exact,
+              "batch_size_binding": batch_binding,
               "elapsed_seconds": time.monotonic() - started, "pid": os.getpid(),
               "resources": _cgroup_resources(),
               "environment": {"host_role": os.environ.get("M04_HOST_ROLE"),
@@ -162,7 +201,8 @@ def verify(receipt_path, validation_path, output_path, *, batch_size=None, rtol=
                               "cuda_cache_maxsize": os.environ.get("CUDA_CACHE_MAXSIZE"), "tensorflow": tf.__version__, "keras": tf.keras.__version__,
                               "numpy": np.__version__, "executable": sys.executable,
                               "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES")}}
-    Path(output_path).write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
+    with Path(output_path).open("x") as stream:
+        stream.write(json.dumps(result, indent=2, allow_nan=False) + "\n")
     return result
 
 
@@ -172,8 +212,12 @@ def main():
     parser.add_argument("--validation", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--batch-size", type=int, help="default: the receipt's own batch size")
+    parser.add_argument("--candidate-config", type=Path,
+                        help="complete config authenticated against receipt digests.config_sha256")
     args = parser.parse_args()
-    result = verify(args.receipt, args.validation, args.output, batch_size=args.batch_size)
+    config = json.loads(args.candidate_config.read_text()) if args.candidate_config else None
+    result = verify(args.receipt, args.validation, args.output, batch_size=args.batch_size,
+                    candidate_config=config)
     print(json.dumps({"verdict": result["verdict"], "problems": result["problems"],
                       "objective": result["objective"]}))
     sys.exit(0 if result["verdict"] == "VERIFIED" else 3)
