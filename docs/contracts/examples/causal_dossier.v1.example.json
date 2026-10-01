@@ -1,0 +1,71 @@
+{
+  "schema": "causal_dossier.v1",
+  "dossier_id": "eurusd-nfp-short-h60-assumed-clock-v1",
+  "produced_at": "2026-10-01T03:00:00Z",
+  "producer": {"repository": "causal-inference", "revision": "bb11d64", "module": "causal_inference_provider.event_study"},
+  "subject": {
+    "kind": "EPISODE_POPULATION",
+    "population": "United States | Nonfarm Payrolls releases in the 2011-2021 archive with a complete 5m path to +60 min",
+    "event_type": "United States | Nonfarm Payrolls",
+    "asset": "EURUSD",
+    "head": "short",
+    "target": "Y_s",
+    "horizon_minutes": 60
+  },
+  "data_manifest": {
+    "sources": [
+      {"role": "calendar", "resource": "feature-eng/tests/data/economic_calendar_2011_2021.csv", "sha256": "5172b322bfaf7bb5000000000000000000000000000000000000000000000000", "rows": 121658, "governed": false},
+      {"role": "bars", "resource": "financial-data/market_data/forex/g10/eurusd/5m.parquet", "sha256": "d527b46a9c35100934f95d1048feb860d265c10f5211174a956f39d8e89b9891", "rows": 1552028, "governed": false}
+    ],
+    "publication_clock": "ASSUMED_SCHEDULED_PUBLICATION",
+    "consensus_clock": "ASSUMED_BEFORE_RELEASE",
+    "expectation_kind": "PUBLISHED_CONSENSUS",
+    "n_episodes": 100,
+    "exclusions": {"CLOCK_PERIOD_UNDETERMINED": 13201, "BARS_MISSING_AT_HORIZON": 12},
+    "train_folds": ["archive_2011_2021_first_80_percent_by_publication_instant"]
+  },
+  "treatment": {
+    "name": "surprise",
+    "definition": "(actual_initial - consensus_prior) / sigma_type",
+    "kind": "CONTINUOUS",
+    "standardization": "sigma_type = dispersion of this event type's surprises published strictly before the release; INSUFFICIENT_HISTORY below 8 prior releases",
+    "dose_support": {"min": -3.1, "max": 2.9, "n": 100}
+  },
+  "rung1": {
+    "state": "ASSOCIATION_REPORTED",
+    "estimators": ["pearson", "spearman", "naive_response_by_sign"],
+    "effective_n": 80,
+    "conditioning_set": ["pre_event_realized_vol", "hour_of_day_utc", "day_of_week_utc", "other_surprises_in_window_negative_offsets"],
+    "multiplicity": {"family": "event_type x horizon x outcome", "n_tests": 40, "permutations": 200, "p_floor": 0.004975, "correction": "none_declared"},
+    "evidence": [
+      {"measure": "pearson", "value": 0.12, "n": 80, "p": 0.29, "q": null, "regime": null, "signed_direction_stable": null}
+    ]
+  },
+  "rung2": {
+    "state": "NOT_IDENTIFIED",
+    "reasons": ["ASSUMED_PUBLICATION_CLOCK", "PLACEBO_FAILED"],
+    "estimand": "E[Y_60 | do(surprise=a)] - E[Y_60 | do(surprise=0)] within dose support",
+    "contrast": [1.0, 0.0],
+    "dag": {"nodes": ["W_pre", "A", "M", "Y_h"], "edges": [["W_pre", "Y_h"], ["A", "M"], ["M", "Y_h"], ["A", "Y_h"]]},
+    "adjustment": ["pre_event_realized_vol", "hour_of_day_utc", "day_of_week_utc", "other_surprises_in_window_negative_offsets"],
+    "excluded_from_adjustment": ["impact_0_5_min", "realized_vol_0_h", "neighbours_positive_offsets"],
+    "estimator": {"name": "local_projection_HAC", "library": "statsmodels", "version": "0.14.2"},
+    "support": {"state": "NOT_EVALUATED"},
+    "placebo": {"state": "FAILED", "tests": [{"name": "pseudo_event_placebo", "verdict": "PLACEBO_FAILED_40_OF_40", "n": 200}]},
+    "estimate": null
+  },
+  "rung3": {
+    "state": "NOT_IDENTIFIED",
+    "label": "MODEL_BASED_COUNTERFACTUAL",
+    "reasons": ["INHERITED_FROM_RUNG2", "NO_ABDUCTION_STEP_IN_RETAINED_COUNTERFACTUAL"]
+  },
+  "emission": {
+    "operational_use": "RETROSPECTIVE_ONLY",
+    "emittable_from": {"rung1.evidence": "2021-04-27T00:00:00Z"}
+  },
+  "selection": {"causal_evidence_level": "ASSOCIATION", "cf_eligible": false, "reason_code": "NOT_IDENTIFIED_ASSUMED_CLOCK"},
+  "limitations": [
+    "DEVELOPMENT evidence: the calendar resource has no TRAIN contract (NOT_ADMISSIBLE_NO_CONTRACT) and no publication instant was observed",
+    "EXAMPLE DOCUMENT for schema validation; the calendar sha256 is a placeholder prefix padded to 64 hex and must not be read as a measured digest; rung-1 values are illustrative, not a measurement"
+  ]
+}

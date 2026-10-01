@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/harveybc/predictor/docs/contracts/representation_candidate_card.v1.schema.json",
+  "title": "Representation candidate card (PS3-R, subplan section 6 and FS17)",
+  "description": "One card per representation family x architecture x objective candidate. Reconstruction NOT_APPLICABLE is a state, not a failure; a pooled latent never satisfies the temporal contract; weights pretrained on a foreign corpus are never TRAIN_ONLY. Model-intervention evidence (subplan 5.5) lives here and never in a causal dossier. Produced by feature-extractor / predictor lanes; consumed by selection, DOIN, SAC and the business adapter.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "candidate_id", "produced_at", "family", "architecture", "objective", "reference", "comparator", "corpus", "latent", "temporal_contract_state", "conditioning_contract", "evaluation", "cost", "admissibility", "limitations"],
+  "properties": {
+    "schema": {"const": "representation_candidate_card.v1"},
+    "candidate_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"},
+    "produced_at": {"type": "string", "format": "date-time"},
+    "family": {"enum": ["autoencoder_control", "denoising_autoencoder", "contrastive", "masked_reconstruction", "latent_prediction", "foundation_pretrained", "generative_cvae", "generative_vae_gan", "supervised"]},
+    "architecture": {"enum": ["conv1d_tcn", "recurrent", "transformer", "patch_transformer", "mlp", "other"]},
+    "objective": {"type": "string", "minLength": 1},
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["paper_title", "paper_url", "venue_year", "code_url", "code_revision", "licence"],
+      "properties": {
+        "paper_title": {"type": "string", "minLength": 1},
+        "paper_url": {"type": "string", "format": "uri"},
+        "venue_year": {"type": "string", "minLength": 1},
+        "code_url": {"type": ["string", "null"], "format": "uri"},
+        "code_revision": {"type": ["string", "null"], "pattern": "^([0-9a-f]{40}|v?[0-9][0-9A-Za-z._-]*)$", "description": "a 40-hex commit or a release tag, as git ls-remote printed it; a branch name is not a pin"},
+        "licence": {"type": "string", "minLength": 1, "description": "as read at the pin, or UNVERIFIED with the reason"},
+        "status": {"enum": ["PEER_REVIEWED", "PREPRINT", "LOCAL"]}
+      }
+    },
+    "comparator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provenance"],
+      "properties": {
+        "provenance": {"enum": ["RE_DERIVED", "TRANSCRIBED", "NOT_AVAILABLE"]},
+        "dataset": {"type": "string"},
+        "table": {"type": "string"},
+        "protocol": {"type": "string"},
+        "values": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["metric", "value"],
+                   "properties": {"metric": {"type": "string"}, "horizon": {"type": ["integer", "string", "null"]}, "value": {"type": "number"}, "dispersion": {"type": ["number", "null"]}}}},
+        "artifact": {"type": ["string", "null"], "description": "the artifact the number was read from (PDF text, results log, dossier path)"},
+        "comparable_to_ours": {"enum": ["COMPARABLE", "NOT_COMPARABLE", "NOT_EVALUATED"]},
+        "why": {"type": "string"}
+      },
+      "allOf": [
+        {"if": {"properties": {"provenance": {"enum": ["RE_DERIVED", "TRANSCRIBED"]}}}, "then": {"required": ["dataset", "table", "values", "artifact", "comparable_to_ours"]}}
+      ]
+    },
+    "corpus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "pretrained_weights_source", "train_folds"],
+      "properties": {
+        "kind": {"enum": ["TRAIN_ONLY", "FOREIGN_PRETRAINED", "MIXED"]},
+        "pretrained_weights_source": {"type": ["string", "null"]},
+        "pretrained_weights_revision": {"type": ["string", "null"]},
+        "train_folds": {"type": "array", "items": {"type": "string"}},
+        "contamination_audit": {"enum": ["NOT_REQUIRED", "REQUIRED_NOT_DONE", "DONE_NO_OVERLAP", "DONE_OVERLAP_FOUND"]}
+      },
+      "allOf": [
+        {"if": {"properties": {"pretrained_weights_source": {"type": "string"}}}, "then": {"properties": {"kind": {"enum": ["FOREIGN_PRETRAINED", "MIXED"]}, "contamination_audit": {"enum": ["REQUIRED_NOT_DONE", "DONE_NO_OVERLAP", "DONE_OVERLAP_FOUND"]}}, "required": ["contamination_audit"]}},
+        {"if": {"properties": {"kind": {"const": "TRAIN_ONLY"}}}, "then": {"properties": {"pretrained_weights_source": {"type": "null"}, "train_folds": {"minItems": 1}}}}
+      ]
+    },
+    "latent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layout", "time_steps", "channels", "grid_adapter"],
+      "properties": {
+        "layout": {"enum": ["temporal", "patch", "pooled"]},
+        "time_steps": {"type": "integer", "minimum": 1},
+        "channels": {"type": "integer", "minimum": 1},
+        "grid_adapter": {"type": ["object", "null"], "additionalProperties": false, "required": ["name", "validated_by"],
+                         "properties": {"name": {"type": "string"}, "validated_by": {"type": "string", "description": "the FS04 test id that validated the adapter"}}},
+        "inference_mode": {"enum": ["posterior_mean", "sample", "deterministic"]}
+      }
+    },
+    "temporal_contract_state": {"enum": ["SATISFIED", "VIOLATED_POOLED", "ADAPTER_DECLARED", "NOT_EVALUATED"]},
+    "conditioning_contract": {"enum": ["OPERATIONAL", "SYNTHETIC_OFFLINE"]},
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reconstruction", "probes"],
+      "properties": {
+        "reconstruction": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state"],
+          "properties": {
+            "state": {"enum": ["MEASURED", "NOT_APPLICABLE", "FAILED", "NOT_EVALUATED"]},
+            "mae_z": {"type": ["number", "null"]},
+            "mse_z": {"type": ["number", "null"]},
+            "relative_to_constant_train": {"type": ["number", "null"]},
+            "relative_to_calendar_only": {"type": ["number", "null"]},
+            "at_events": {"type": ["number", "null"]}
+          },
+          "allOf": [{"if": {"properties": {"state": {"const": "MEASURED"}}}, "then": {"required": ["mae_z", "mse_z"]}}]
+        },
+        "probes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["target", "horizon", "fold", "seed", "loss_trained", "loss_random", "loss_raw", "naive", "delta_probe", "preservation"],
+            "properties": {
+              "target": {"enum": ["Y_s", "Y_l", "Y_b", "J_policy"]},
+              "horizon": {"type": "integer", "minimum": 1},
+              "fold": {"type": "string"},
+              "seed": {"type": "integer"},
+              "probe": {"type": "string"},
+              "loss_name": {"type": "string"},
+              "loss_trained": {"type": "number"},
+              "loss_random": {"type": "number"},
+              "loss_raw": {"type": ["number", "null"]},
+              "naive": {"type": "number"},
+              "delta_probe": {"type": "number", "description": "loss_random - loss_trained; positive means training added information about the business target"},
+              "preservation": {"type": ["number", "null"], "description": "loss_raw - loss_trained; negative means the extractor degraded the input"},
+              "raw_dimension_differs": {"type": "boolean"}
+            }
+          }
+        },
+        "latent_diagnostics": {"type": "object", "additionalProperties": {"type": ["number", "string", "null"]}},
+        "generation": {"type": ["object", "null"], "additionalProperties": {"type": ["number", "string", "null"]}}
+      }
+    },
+    "model_intervention_evidence": {
+      "type": "array",
+      "description": "subplan 5.5: experiments on the MODEL (permute/replace/ablate latents or branches). Never causal evidence about the market; never copied into a causal dossier.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "scope", "delta_loss", "paired_budget"],
+        "properties": {
+          "kind": {"enum": ["permute_latent", "replace_latent", "fixed_ablation", "withdrawal_with_refit"]},
+          "scope": {"type": "string"},
+          "delta_loss": {"type": "number"},
+          "paired_budget": {"type": "boolean"},
+          "out_of_distribution_risk": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": {"enum": ["MEASURED", "ESTIMATED", "NOT_EVALUATED"]},
+        "fit_seconds": {"type": ["number", "null"]},
+        "updates": {"type": ["integer", "null"]},
+        "peak_ram_bytes": {"type": ["integer", "null"]},
+        "peak_vram_bytes": {"type": ["integer", "null"]},
+        "inference_latency_ms": {"type": ["number", "null"]},
+        "weekly_update_seconds": {"type": ["number", "null"]},
+        "device_class": {"type": ["string", "null"]}
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "upstream": {"type": ["string", "null"]},
+        "checkpoint_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "grid": {"type": ["string", "null"]},
+        "config_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "admissibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verdict", "reasons"],
+      "properties": {
+        "verdict": {"enum": ["ADMISSIBLE", "ADMISSIBLE_WITH_ADAPTER", "ADMISSIBLE_AS_FOREIGN_COMPARATOR", "ADMISSIBLE_EXPLORATORY", "SECONDARY", "NOT_ADMISSIBLE", "NOT_EVALUATED"]},
+        "reasons": {"type": "array", "items": {"type": "string"}},
+        "pilot_order": {"type": ["integer", "null"], "minimum": 1}
+      }
+    },
+    "limitations": {"type": "array", "items": {"type": "string"}, "minItems": 1}
+  },
+  "allOf": [
+    {"if": {"properties": {"latent": {"properties": {"layout": {"const": "pooled"}}}}}, "then": {"properties": {"temporal_contract_state": {"enum": ["VIOLATED_POOLED", "NOT_EVALUATED"]}}}},
+    {"if": {"properties": {"latent": {"properties": {"layout": {"const": "patch"}}}}}, "then": {"properties": {"temporal_contract_state": {"enum": ["ADAPTER_DECLARED", "NOT_EVALUATED"]}}}},
+    {"if": {"properties": {"temporal_contract_state": {"const": "ADAPTER_DECLARED"}}}, "then": {"properties": {"latent": {"properties": {"grid_adapter": {"type": "object"}}}}}},
+    {"if": {"properties": {"corpus": {"properties": {"kind": {"const": "FOREIGN_PRETRAINED"}}}}}, "then": {"properties": {"admissibility": {"properties": {"verdict": {"enum": ["ADMISSIBLE_AS_FOREIGN_COMPARATOR", "NOT_ADMISSIBLE", "NOT_EVALUATED"]}}}}}},
+    {"if": {"properties": {"family": {"enum": ["generative_cvae", "generative_vae_gan"]}}}, "then": {"properties": {"admissibility": {"properties": {"verdict": {"enum": ["SECONDARY", "NOT_ADMISSIBLE", "NOT_EVALUATED"]}}}}}},
+    {"if": {"properties": {"evaluation": {"properties": {"reconstruction": {"properties": {"state": {"const": "NOT_APPLICABLE"}}}}}}}, "then": {"properties": {"admissibility": {"properties": {"reasons": {"not": {"contains": {"const": "RECONSTRUCTION_FAILED"}}}}}}}}
+  ]
+}

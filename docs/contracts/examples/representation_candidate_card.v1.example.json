@@ -1,0 +1,45 @@
+{
+  "schema": "representation_candidate_card.v1",
+  "candidate_id": "ts2vec-contrastive-pilot-001",
+  "produced_at": "2026-10-01T03:00:00Z",
+  "family": "contrastive",
+  "architecture": "conv1d_tcn",
+  "objective": "hierarchical contrastive loss over overlapping random crops, per-timestamp representation (TS2Vec)",
+  "reference": {
+    "paper_title": "TS2Vec: Towards Universal Representation of Time Series",
+    "paper_url": "https://arxiv.org/abs/2106.10466",
+    "venue_year": "AAAI 2022",
+    "code_url": "https://github.com/zhihanyue/ts2vec",
+    "code_revision": "b0088e14a99706c05451316dc6db8d3da9351163",
+    "licence": "MIT",
+    "status": "PEER_REVIEWED"
+  },
+  "comparator": {
+    "provenance": "RE_DERIVED",
+    "dataset": "Electricity (UCI ElectricityLoadDiagrams20112014, hourly resample per the paper's preprocess_electricity.py)",
+    "table": "Table 7 (multivariate forecasting), TS2Vec columns",
+    "protocol": "encoder trained on the training split only; ridge regression on per-timestamp representations; 60/20/20 chronological split; horizons 24/48/168/336/720",
+    "values": [
+      {"metric": "MSE", "horizon": 24, "value": 0.287, "dispersion": null},
+      {"metric": "MAE", "horizon": 24, "value": 0.374, "dispersion": null},
+      {"metric": "MSE", "horizon": 168, "value": 0.332, "dispersion": null},
+      {"metric": "MAE", "horizon": 168, "value": 0.407, "dispersion": null},
+      {"metric": "MSE", "horizon": 720, "value": 0.375, "dispersion": null},
+      {"metric": "MAE", "horizon": 720, "value": 0.438, "dispersion": null}
+    ],
+    "artifact": "pdftotext of arXiv:2106.10466, read 2026-10-01 by lane C",
+    "comparable_to_ours": "NOT_COMPARABLE",
+    "why": "split and horizon protocol differ from the ECL321/TSL protocol of SOTA_REFERENCE_DOSSIER_2026_09_21; comparable only with a native-recipe reproduction of TS2Vec itself"
+  },
+  "corpus": {"kind": "TRAIN_ONLY", "pretrained_weights_source": null, "pretrained_weights_revision": null, "train_folds": ["fold_declared_by_PS0"], "contamination_audit": "NOT_REQUIRED"},
+  "latent": {"layout": "temporal", "time_steps": 24, "channels": 16, "grid_adapter": null, "inference_mode": "deterministic"},
+  "temporal_contract_state": "NOT_EVALUATED",
+  "conditioning_contract": "OPERATIONAL",
+  "evaluation": {"reconstruction": {"state": "NOT_APPLICABLE"}, "probes": []},
+  "cost": {"state": "NOT_EVALUATED"},
+  "admissibility": {"verdict": "ADMISSIBLE", "reasons": ["per-timestamp output", "TRAIN_ONLY by construction", "MIT licence read at the pin"], "pilot_order": 2},
+  "limitations": [
+    "EXAMPLE DOCUMENT for schema validation: no probe, cost or latent diagnostic has been measured; the comparator is the paper's own number on its own dataset, not a measurement of ours",
+    "PyTorch implementation; integration path with the Keras/TensorFlow repository undecided"
+  ]
+}
