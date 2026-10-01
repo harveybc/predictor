@@ -72,3 +72,28 @@ shapes in real Keras on worker_b; M01 port map; old-design job inventory; FS01-F
 - 03:25Z: each lane's acknowledgement with its own worktree, first command and ETA (or the explicit missing measurement).
 - 03:40Z: workflow verdicts on da4ce7b4 shapes and the old-design inventory; forwarded to lanes A and D.
 - Next 30-minute summary at 03:47 local cron.
+
+## 7. Addendum 03:40Z: every lane has acknowledged with its own worktree, branch, first command and ETA
+
+| Lane | Acknowledged | Worktree / branch | First command | ETA (planning, not profiled) |
+|---|---|---|---|---|
+| A M01 | 03:12Z | `predictor-a-engine-integration`, `satoshi/a-engine-integration-20261001` off `da4ce7b4` | real-Keras shape proof + graph PNGs first (ordered), then ports | ~3.5 h total |
+| A M02 | 03:08Z / stop done 03:25Z | same branch, disjoint files (`pretraining.py`, `tools/modular_pretrain.py`, evaluator early-stop, materialization, resume) | old run stopped at boundary branch 189 (190 records, no partial), `OLD_DESIGN_BRANCH_STEPS_12_SUPERSEDED.json` sha `37cc105a`, CPU 8399.49 s lower bound | port tests to 24-step grids first |
+| B M03 | 03:35Z | `feature-eng-b-selection`, `satoshi/b-selection-ps0-ps2-20261001` off `4ddcce4` | FS01/02/15/16/19 tests committed red, then `tools/progressive_selection.py` | tests + first code 60-90 min; PS1 minutes of CPU per dataset |
+| C new agent | 03:40Z | `causal-inference-c-ps3c-20261001` off `bb11d64`; `feature-extractor-c-ps3r-20261001` off `cf39e4b`; `predictor-c-contracts-20261001` off `ac125db9` | read-only inspection of the existing local-projections estimator | spec + red FS10/11/12/17 tests + contracts ~2.5 h |
+| D M04 | 03:14Z | `predictor-d-corrected-queue-20261001`, `satoshi/d-corrected-queue-20261001` off `6ced97e7` | staged CPU profile of the corrected graph against `da4ce7b4` (PRE_INTEGRATION), corrected queue draft with SUPERSEDED_OLD_ARCH test | profile 20-40 min after code; GPU pilot within 1 h after profile |
+| E M05 | 03:30Z | continues `satoshi/m05-paper-adapter-20260930` (lts `4e88c01`, predictor `a3218b78`) | named route tests before any change | runner e2e + receipt 90-120 min |
+| F M06 | 03:13Z | continues `satoshi/m06-evidence-resources-20260930` and `satoshi/m06-admission-dead-cache-20260930` | read-only process/lease/cgroup census with parsed argv | STATUS +40 min; ADM review next; ETA/PNG and gov_* proposal after |
+
+Findings already surfaced by the lanes in their first minutes, recorded as they state them:
+
+- M02: resident memory grew with branch count inside one process (about 1.2 GiB at 18 branches, 3.3 GiB at 189 of 321);
+  a single-process 321-branch run would likely have breached its 4 GiB cap. The successor frees each branch graph or
+  runs branches in bounded child processes, with a memory-growth test.
+- M03 correction: the ETH 4h model-ready view does have an immutable TRAIN contract (manifest `14a1077f`, sha `1b447c66`);
+  the earlier "no TRAIN boundary" row was wrong. Y_s is constructible only at h=4 there; Y_b is NOT_EVALUATED without a
+  versioned TP/SL rule.
+- Lane C: the retained event-study counterfactual is MODEL_BASED and does not preserve inferred perturbations (the FS11
+  gap); every retained event study is NOT_IDENTIFIED for stated reasons (assumed clock 2011-2021; no consensus 2024-12..2026-05).
+- M04: spent about 4,500 GPU-s in v2/v3 attempts and pilots; no numeric grant exists for the lane, so remaining allocation
+  cannot be stated; costs are reported as spent and proposed.
