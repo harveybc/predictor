@@ -670,3 +670,16 @@ def test_m07_fin_scaler_excludes_row0_and_flat_bars():
     keep = np.ones(299, bool)
     keep[9] = False                                      # return at row 10 belongs to the flat bar (index 9 in lr)
     assert used == 298 and np.isclose(mu, lr[:299][keep].mean()) and np.isclose(sigma, lr[:299][keep].std())
+
+
+def test_pooled_bootstrap_and_architecture_arithmetic():
+    from c2_paired_multiseed import pooled_row
+    rng = np.random.default_rng(8)
+    seeds = [-0.01 + 0.2 * rng.standard_normal(15000) for _ in range(4)]       # model better by 0.01 in every seed
+    r = pooled_row(seeds, 8, 300, np.random.default_rng(1))
+    assert r["side"] == "MODEL_BETTER" and r["seeds"] == 4 and r["seed_range"][0] <= r["mean_diff"] <= r["seed_range"][1]
+    null = [0.2 * rng.standard_normal(15000) for _ in range(4)]
+    assert pooled_row(null, 8, 300, np.random.default_rng(1))["side"] == "INCLUDES_ZERO"
+    # pooling four independent seeds shrinks the interval relative to one seed (about 1/2)
+    single = pooled_row(seeds[:1], 8, 300, np.random.default_rng(1))["se"]
+    assert r["se"] < 0.7 * single
