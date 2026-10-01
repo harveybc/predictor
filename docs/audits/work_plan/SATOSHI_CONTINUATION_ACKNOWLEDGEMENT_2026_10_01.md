@@ -282,3 +282,45 @@ Nothing else in sections 8–9 requires an owner decision; the remaining items t
 | # | Object | Owner | Minimal action |
 |---|---|---|---|
 | 20 | Data locality: the lake lives only on the coordinator (owner's desktop); every lake read lands there | owner | approve a read-only mirror of the lake root on worker_b (680 GB free; the lake measured from metadata only by M06, tip 9cb07b8b: 5,273 catalogued files ≈ 94.0 GB, of which raw 773 files 4.51 GB and derived 4,500 files 89.50 GB; all data directories 8,499 files 94.36 GB, 91.7 GB of it under features/; a mirror would leave worker_b about 586 GB free; the coordinator itself has only 89.9 GB free of 762.6), synchronized by a bounded, ionice'd job only while the owner is away; until then, lake reads on the coordinator require Satoshi's explicit approval at 256M, one file at a time, ionice -c3 |
+
+### 10.6 Addendum 07:10Z (2026-10-01): corrected donors bound-ready, incumbent seq 5, strategy gates, two incidents, questions 21–23
+
+- **Corrected ECL donors (lane A).** M02's run under engine 3ecdb256 finished on worker_b without incident: 321/321
+  branch donors + core (1,850,448 B, sha 443ed684…), index 8a6bb203…, receipt 946c252f…; CPU 7,875 s over three processes,
+  peak 6.77 GB of a 7G cap (page cache of the 9.03 GB fused memmap charged); next run declares ≥ 8G and child-process mode.
+  Reconstruction error is not forecasting skill (core relative MSE 0.441). The donors carried schema-1 sidecars and
+  therefore read UNKNOWN under bundle v2; M01's versioned migration wrote alongside schema-2 sidecars (OPERATIONAL /
+  TRAIN_ONLY, rule R-AE-TRAINONLY-1 from M02's own records, originals byte-unchanged, my spot check 39/39) as
+  DONOR_INDEX amendment 1 (2aaba33d…), countersigned by M02 (869afc6d) and M04.
+- **Engine hole found by M04 and closed by M01.** The regime path loaded donors without requiring a contract, so the
+  engine never enforced OPERATIONAL for R1/R2. Fixed at 6c15af13 (config `donor_contract`, absent = OPERATIONAL,
+  `UNKNOWN_ALLOWED` the only bypass, recorded in bundle.json, digest-neutral when absent). Lane A suite 167/2/0 at
+  a771e37e. Because the engine package differs from the campaign pin 3ecdb256, R1/R2 open ONLY after M04's bitwise
+  graph/forward identity proof at 6c15af13 (CPU, worker_b) and campaign amendment 5; the engine is frozen meanwhile.
+- **Incumbent seq 5 (verified by me on worker_a).** Corrected default per-feature R0 with MAE loss, 810,072 params:
+  8c2a2eab 0.3884455575 / 103303b1 0.3786844265, paired mean 0.3835649920 (spread 0.0098) vs 9cc0a1f4 0.3910575164,
+  Δ −0.0075. STRICT_MINIMUM_SELECTION, not a demonstrated advantage (seed spreads of the gap's size). Unchanged: VALIDATION
+  L24/H1..24, NOT_COMPARABLE to published ECL, persistence 0.851406, seasonal 24 h naive 0.247966 beats every candidate at
+  all 24 horizons, negative skill at h1/h23/h24. Campaign 20/36 verified, 4 per-feature cells left; verify cap amended to
+  3914M = 1.25× measured.
+- **Strategy gates (owner rule b327b771 §5), all red-first, mutant-killed, zero invocations at the real entry points.**
+  lts a30a2b9/f93832d/8eb1ba1 (heartbeat cycle); heuristic-strategy e6431e6 (pipeline + app/main.py) and 71fa1a4 (WFO
+  entry + per fold, phases B/C/D, sweep_noise, API plugin, oracle runner flag-gated and stamped
+  DIAGNOSTIC_ORACLE_NOT_A_STRATEGY_RESULT). Every live asset stays SKIPPED until M04 issues a real financial evidence record.
+- **Incident S09-MUT-01.** A gate-disabling mutant, untested beyond the gate, launched real phase-D NEAT training on
+  worker_b for 15 min (2G cap, wall-stopped) and modified three tracked files in that host's predictor clone; backed up,
+  restored; rule issued: never checkout/reset/clean in a foreign checkout. Collateral hazard fixed: sweep_noise did an
+  HTTP POST at import time.
+- **Rulings by me, for the owner's veto.** (a) The lane D runner launcher (512M, ssh/poll only, peak ~19 MB) is EXEMPT
+  from the zero-batch rule as orchestration, with a 64 MiB alert; reason: workers cannot reach each other and worker_a's
+  RAM is scarcer. (b) M06 self-disclosed two 384M PNG renders on the coordinator after the rule; generators now run on
+  worker_b.
+- **Lane G** returned (agent-multi 02db0701, 42/42, Keras→torch parity receipt, parameters measured from built models),
+  stopped until lane B's frozen manifest and question 19. Lane B: the ETH 4h view resolves as a git-pinned reference on
+  worker_b but is not a governed lake resource; freeze still blocked by B1 (question 19) and B2.
+
+| # | Object | Owner | Minimal action |
+|---|---|---|---|
+| 21 | Direction classifiers (phases B/C/D feed direction probabilities, which have no form in the forecast-vs-naive contract, so those runners always SKIP) | owner | rule whether a classification baseline (e.g. majority class / persistence of sign per horizon, strictly beaten) admits them, or keep them excluded |
+| 22 | `regime_wfo` declares it consumes no learned predictions → currently allowed as NOT_APPLICABLE_NO_LEARNED_PREDICTIONS with the declaration recorded | owner | confirm or require the gate anyway |
+| 23 | API-mode runs (per-tick predictions cannot bind to declared horizons) → always SKIP | owner | confirm, or define a per-tick evidence form |
