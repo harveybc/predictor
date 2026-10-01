@@ -322,6 +322,21 @@ def build(hosts, reg):
 SLAB_SERIES = None
 
 
+def scrub(obj, names):
+    """Replace every host name (aliases, the local host name) in every string with <host>.
+    Argv of child processes (e.g. a compiler's temp file) can carry the host name."""
+    pat = re.compile("|".join(re.escape(n) for n in sorted(names, key=len, reverse=True) if n))
+    def go(x):
+        if isinstance(x, str):
+            return pat.sub("<host>", x)
+        if isinstance(x, list):
+            return [go(v) for v in x]
+        if isinstance(x, dict):
+            return {go(k): go(v) for k, v in x.items()}
+        return x
+    return go(obj) if pat.pattern else obj
+
+
 def atomic_write(path, obj):
     tmp = path + ".tmp.%d" % os.getpid()
     with open(tmp, "w") as f:
@@ -349,7 +364,8 @@ def main():
             reg = json.load(open(a.registry))
         except Exception:
             reg = {}
-        st = build(hosts, reg)
+        import socket
+        st = scrub(build(hosts, reg), set(hosts.values()) | {socket.gethostname()} | set(reg.get("scrub_names_extra", [])))
         sig = json.dumps(sorted((j["id"], j["state"], j.get("phase")) for j in st["jobs"]))
         now = time.time()
         changed = sig != last_sig
