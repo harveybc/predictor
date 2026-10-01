@@ -30,7 +30,7 @@ import sqlite3
 import time
 from pathlib import Path
 
-NAIVE_NAMES = ("persistence_last_value", "zero_return", "train_mean", "seasonal_6")
+NAIVE_NAMES = ("persistence_last_value", "zero_return", "train_mean")  # + the seasonal_<P> naive found in the receipt
 LITERATURE = {"value": None, "status": "NOT_AVAILABLE",
               "reason": "no published row matches this asset (ETHUSDT 4h, view b1f8a74f), the declared calendar "
                         "split, the cumulative log-return target in train-z units, the 83-feature set and horizons "
@@ -87,7 +87,8 @@ def seed_rows(entry, sigma):
                "vs_strict": _pair(m["MAE"], strict["MAE"]),
                "beats_zero_return": m["MAE"] < naives["per_naive"]["zero_return"][h]["MAE"],
                "beats_strict_minimum": m["MAE"] < strict["MAE"]}
-        for name in NAIVE_NAMES:
+        seasonal = next((k for k in naives["per_naive"] if k.startswith("seasonal_")), None)
+        for name in (*NAIVE_NAMES, *([seasonal] if seasonal else [])):
             n = naives["per_naive"].get(name, {}).get(h, {})
             row["naives"][name] = {"MAE_z": n.get("MAE"), "MSE_z": n.get("MSE"), **_pair(m["MAE"], n.get("MAE"))}
         out["per_horizon"][h] = row
@@ -143,7 +144,7 @@ def write_csv(table, path):
         w = csv.writer(stream)
         w.writerow(["configuration", "seed", "horizon", "model_MAE_z", "model_MAE_logret", "strict_naive",
                     "strict_naive_MAE_z", "skill_vs_strict", "zero_return_MAE_z", "skill_vs_zero_return",
-                    "persistence_MAE_z", "seasonal_6_MAE_z", "beats_zero_return", "beats_strict_minimum"])
+                    "persistence_MAE_z", "seasonal_MAE_z", "beats_zero_return", "beats_strict_minimum"])
         for label, conf in table["configurations"].items():
             for seed, rows in conf["per_seed"].items():
                 for h, r in rows["per_horizon"].items():
@@ -152,7 +153,7 @@ def write_csv(table, path):
                                 _fmt(r["vs_strict"]["skill"]), _fmt(r["naives"]["zero_return"]["MAE_z"]),
                                 _fmt(r["naives"]["zero_return"]["skill"]),
                                 _fmt(r["naives"]["persistence_last_value"]["MAE_z"]),
-                                _fmt(r["naives"]["seasonal_6"]["MAE_z"]), r["beats_zero_return"], r["beats_strict_minimum"]])
+                                _fmt(next((v["MAE_z"] for k, v in r["naives"].items() if k.startswith("seasonal_")), None)), r["beats_zero_return"], r["beats_strict_minimum"]])
 
 
 def _fmt(v):

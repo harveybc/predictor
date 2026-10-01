@@ -119,3 +119,18 @@ def test_zero_return_uses_row_counts_from_label_support(tmp_path):
     preds, _ = nv.naive_predictions(data, MU, SIGMA, 6)
     assert np.allclose(preds["zero_return"][1::2, 3, 0], -4 * MU / SIGMA)
     assert np.allclose(preds["zero_return"][0::2, 3, 0], -6 * MU / SIGMA)
+
+
+def test_predictions_csv_uses_row_counts_for_irregular_bars(tmp_path):
+    x, y, z, origins = make_npz(tmp_path / "v.npz")
+    n_rows = np.tile(np.asarray(H), (N, 1)).copy()
+    n_rows[0, 5] = 9
+    np.savez(tmp_path / "label_support.npz", validation_n_rows=n_rows)
+    data, _ = nv._load_validation(tmp_path / "v.npz")
+    pred = np.zeros(y.shape, dtype="<f4")
+    view = tmp_path / "view.csv"
+    view.write_text("DATE_TIME,CLOSE,x\n" + "\n".join(f"2024-01-01 00:00:{i % 60:02d},{100 + i},0" for i in range(200)) + "\n")
+    nv.predictions_csv(pred, data, MU, SIGMA, view, tmp_path / "p.csv")
+    import csv as _csv
+    r0 = next(_csv.DictReader(open(tmp_path / "p.csv")))
+    assert float(r0["logret_hat_h6"]) == pytest.approx(9 * MU) and r0["n_rows_h6"] == "9"

@@ -57,6 +57,9 @@ def main():
     parser.add_argument("--campaign-id", required=True)
     parser.add_argument("--out-dir", required=True)
     parser.add_argument("--seasonal-period", type=int, default=6)
+    parser.add_argument("--asset", default="ETHUSDT 4h spot (trading asset; DEVELOPMENT validation 2024)")
+    parser.add_argument("--family", default=None, help="prediction family label (hourly | daily) for FX records")
+    parser.add_argument("--clock", default=None, help="source clock declared in the dataset manifest")
     parser.add_argument("--seeds", default="2021,2022")
     args = parser.parse_args()
     out = Path(args.out_dir)
@@ -75,7 +78,11 @@ def main():
                 continue
             receipt = json.loads(Path(cell["receipt_path"]).read_text())
             record = mfe.build(receipt, args.validation, campaign_id=args.campaign_id,
-                               asset="ETHUSDT 4h spot (trading asset; DEVELOPMENT validation 2024)")
+                               asset=args.asset)
+            if args.family:
+                record["population"]["family"] = args.family
+            if args.clock:
+                record["population"]["clock"] = args.clock
             strict = nv.strict_record(record, table, seasonal_period=args.seasonal_period)
             strict["cell"] = {"label": cell["label"], "seed": cell["seed"], "config_id": cell["config_id"],
                               "verification_exact_match": True,

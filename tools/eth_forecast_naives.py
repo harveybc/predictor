@@ -155,6 +155,7 @@ def predictions_csv(prediction, data, mu, sigma, view_csv, out_path, *, expected
     row_ids = data["row_ids"].astype(str).tolist()
     horizons = data["horizons"].tolist()
     rows = [int(r.split(":")[1][3:]) for r in row_ids]
+    n_rows = data.get("n_rows")  # irregular FX bars: rows elapsed per horizon (label_support); else = h
     with open(view_csv) as stream:
         reader = csv.reader(stream)
         header = next(reader)
@@ -163,17 +164,19 @@ def predictions_csv(prediction, data, mu, sigma, view_csv, out_path, *, expected
     with open(out_path, "w", newline="") as stream:
         writer = csv.writer(stream)
         writer.writerow(["row_id", "DATE_TIME", "close_origin", *[f"y_hat_z_h{h}" for h in horizons],
-                         *[f"logret_hat_h{h}" for h in horizons], *[f"close_hat_h{h}" for h in horizons]])
+                         *[f"logret_hat_h{h}" for h in horizons], *[f"close_hat_h{h}" for h in horizons],
+                         *([f"n_rows_h{h}" for h in horizons] if n_rows is not None else [])])
         for n, (rid, row) in enumerate(zip(row_ids, rows)):
             date, close = view[row]
             z = [float(pred[n, k, 0]) for k in range(len(horizons))]
-            lr = [sigma * v + h * mu for v, h in zip(z, horizons)]
+            steps = [int(n_rows[n, k]) for k in range(len(horizons))] if n_rows is not None else horizons
+            lr = [sigma * v + s * mu for v, s in zip(z, steps)]
             writer.writerow([rid, date, f"{close:.8f}", *[f"{v:.8f}" for v in z], *[f"{v:.10f}" for v in lr],
-                             *[f"{close * math.exp(v):.8f}" for v in lr]])
+                             *[f"{close * math.exp(v):.8f}" for v in lr], *(steps if n_rows is not None else [])])
     return {"path": str(out_path), "sha256": mfe.hashlib.sha256(Path(out_path).read_bytes()).hexdigest(),
             "predictions_sha256": sha, "rows": len(row_ids),
             "row_ids_sha256": hashlib.sha256("\n".join(row_ids).encode()).hexdigest(),
-            "inverse": "logret = sigma*y_hat_z + h*mu; close_hat = close_origin*exp(logret)",
+            "inverse": "logret = sigma*y_hat_z + n_rows*mu (n_rows = h on regular bars); close_hat = close_origin*exp(logret)",
             "timing": "origin row t uses rows t-23..t through the CLOSE of row t"}
 
 
