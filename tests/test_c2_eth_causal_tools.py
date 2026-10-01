@@ -606,3 +606,50 @@ def test_split_variant_selects_the_declared_block_and_never_the_reserve(tmp_path
     pr = bind_population(view, m3, spec=PopulationSpec(name="R", split_variant="S1", derived="range_v1", **{**base, "manifest_file_sha256": sha256_file(m3)}))
     c = measure_cell(pr, "log_high_low", 1, scrambles=2, boot=20)
     assert len(c["real"]["blocks_theta"]) == 5 and 0.0 <= c["real"]["sign_agreement"] <= 1.0 and isinstance(c["real"]["sign_stable_4of5"], bool)
+
+
+# ---------------------------------------------------------------------------------------------------- paired loss inference
+
+
+def test_paired_inference_detects_a_planted_margin_and_not_equality(tmp_path):
+    from c2_paired_loss_inference import analyse, block_bootstrap_mean, paired_row
+    rng = np.random.default_rng(3)
+    d_better = -0.01 + 0.2 * rng.standard_normal(20000)          # model better by 0.01 against noise 0.2
+    d_equal = 0.2 * rng.standard_normal(20000)
+    b = paired_row(d_better, 12, 400, np.random.default_rng(1))
+    e = paired_row(d_equal, 12, 400, np.random.default_rng(1))
+    assert b["excludes_zero"] and b["side"] == "MODEL_BETTER" and b["mean_diff"] < 0
+    assert not e["excludes_zero"] and e["side"] == "INCLUDES_ZERO"
+    # persistence: autocorrelated differences widen the interval at the measured block length relative to block length 1
+    ar = np.zeros(20000)
+    u = rng.standard_normal(20000)
+    for t in range(1, 20000):
+        ar[t] = 0.9 * ar[t - 1] + u[t]
+    se_short = block_bootstrap_mean(ar, 1, 300, np.random.default_rng(2))[0]
+    se_long = block_bootstrap_mean(ar, 60, 300, np.random.default_rng(2))[0]
+    assert se_long > 2 * se_short
+
+
+def test_paired_inference_refuses_evidence_it_cannot_reproduce(tmp_path):
+    from c2_eth_population import EURUSD_1H_SPEC, PopulationSpec
+    from c2_paired_loss_inference import analyse, validation_targets
+    view, man, vsha, msha = _fx_world(tmp_path)
+    spec = PopulationSpec(name="FX", view_sha256=vsha, manifest_file_sha256=msha, declaration_sha256=EURUSD_1H_SPEC.declaration_sha256, dataset_id="t", view_path="x",
+                          view_commit="0" * 40, bar_seconds=3600, split_mode="manifest", window=1, hmax=6)
+    pop = bind_population(view, man, spec=spec)
+    rows = np.arange(1810, 1900)
+    rows = rows[(pop.times[rows + 2] - pop.times[rows]) == 7200]
+    y1 = validation_targets(pop.frame["log_return_1"].to_numpy(), pop.mu, pop.sigma, pop.times, rows, 1, 3600)
+    y2 = validation_targets(pop.frame["log_return_1"].to_numpy(), pop.mu, pop.sigma, pop.times, rows, 2, 3600)
+    assert np.allclose(y2 - y1, ((pop.frame["log_return_1"].to_numpy()[rows + 2] - pop.mu) / pop.sigma))
+    preds = {1: np.zeros(len(rows)), 2: np.zeros(len(rows))}
+    good = {"per_horizon": [{"horizon": h, "model_MAE": float(np.mean(np.abs(preds[h] - y))), "naive_MAE": float(np.mean(np.abs((-h * pop.mu / pop.sigma) - y)))} for h, y in ((1, y1), (2, y2))]}
+    res = analyse(pop, rows, preds, good, boot=50)
+    assert set(res["horizons"]) == {1, 2} and res["checks"][1]["agrees"] and "combined_equal_weight" in res
+    bad = json.loads(json.dumps(good))
+    bad["per_horizon"][0]["model_MAE"] += 0.01
+    with pytest.raises(ValueError, match="EVIDENCE_NOT_REPRODUCED"):
+        analyse(pop, rows, preds, bad, boot=50)
+    # a gap inside the label span is refused
+    with pytest.raises(ValueError, match="IRREGULAR_LABEL_SPAN"):
+        validation_targets(pop.frame["log_return_1"].to_numpy(), pop.mu, pop.sigma, pop.times, np.array([118]), 3, 3600)
