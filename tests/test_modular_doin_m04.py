@@ -493,3 +493,21 @@ def test_unpinned_campaign_refuses_to_run(tmp_path):
     with pytest.raises(RuntimeError, match="not pinned"):
         campaign.run(FakeExecutor(campaign, VALUES))
     assert campaign.db.execute("SELECT COUNT(*) FROM attempts").fetchone()[0] == 0
+
+
+def test_cancelled_superseded_rows_are_never_claimed_and_attempts_stay(tmp_path):
+    campaign = make_campaign(tmp_path)
+    enqueue_default(campaign)
+    campaign.enqueue({**DEFAULT, "branch.regime": "R1", "train.huber_delta": 1.0}, "r1")  # donor-blocked
+    campaign.run(FakeExecutor(campaign, VALUES), max_candidates=1)
+    before = [tuple(r) for r in campaign.db.execute("SELECT * FROM attempts ORDER BY started")]
+    changed = campaign.cancel_unstarted("2026-10-01 owner order ac125db9: old design")
+    assert changed == 5  # 3 queued + 2 donor-blocked; the started candidate keeps its status
+    statuses = dict(campaign.db.execute("SELECT status, COUNT(*) FROM candidates GROUP BY status").fetchall())
+    assert statuses == {"CANCELLED_SUPERSEDED": 5, "verified": 1}
+    assert campaign.unblock() == [] and campaign.release_hold("BLOCKED_COST_01") == 0
+    assert campaign.claim("worker_a") is None and campaign.claim("worker_b") is None
+    assert campaign.run(FakeExecutor(campaign, VALUES)) == 0
+    assert [tuple(r) for r in campaign.db.execute("SELECT * FROM attempts ORDER BY started")] == before
+    reason = campaign.db.execute("SELECT blocked_reason FROM candidates WHERE label='r1'").fetchone()[0]
+    assert reason.startswith("2026-10-01 owner order ac125db9") and "was blocked" in reason

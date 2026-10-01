@@ -201,6 +201,33 @@ class Campaign:
         self.db.execute("COMMIT")
         return imported
 
+    def cancel_unstarted(self, note, status="CANCELLED_SUPERSEDED"):
+        """Make every never-started row (queued/blocked) terminal in place; never delete.
+
+        Rows with any attempt, and every attempt row, stay untouched as evidence.
+        Returns the number of rows changed.
+        """
+        self.db.execute("BEGIN IMMEDIATE")
+        cur = self.db.execute(
+            "UPDATE candidates SET status=?, blocked_reason=? || ' | was ' || status || "
+            "COALESCE(': ' || blocked_reason, ''), updated=? WHERE status IN ('queued','blocked') "
+            "AND NOT EXISTS (SELECT 1 FROM attempts a WHERE a.cid=candidates.cid)", (status, note, now()))
+        self.db.execute("COMMIT")
+        return cur.rowcount
+
+    def classify_superseded(self, classify):
+        """Prefix each SUPERSEDED_OLD_ARCH row's reason with classify(flat) (e.g. OLD_GRID_12)."""
+        changed = 0
+        for row in self.db.execute("SELECT cid, flat, blocked_reason FROM candidates WHERE "
+                                   "status='SUPERSEDED_OLD_ARCH'").fetchall():
+            label = classify(json.loads(row["flat"]))
+            if (row["blocked_reason"] or "").startswith(label + ":"):
+                continue
+            self.db.execute("UPDATE candidates SET blocked_reason=?, updated=? WHERE cid=?",
+                            (f"{label}: {row['blocked_reason']}", now(), row["cid"]))
+            changed += 1
+        return changed
+
     def release_hold(self, reason):
         cur = self.db.execute("UPDATE candidates SET status='queued', blocked_reason=NULL, updated=? WHERE "
                               "status='blocked' AND blocked_reason=?", (now(), "HOLD:" + reason))
