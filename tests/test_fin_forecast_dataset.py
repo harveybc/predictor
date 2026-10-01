@@ -91,3 +91,25 @@ def test_refuses_unknown_feature(tmp_path):
     with pytest.raises(ValueError, match="neither a view column"):
         fd.build(tmp_path / "fx.csv", tmp_path / "x", features=["rsi_14"], window=24, horizons=[1], sample_hours=1.0,
                  split=split, purge_seconds=0, expected_sha=None, dataset_id="fx:test")
+
+
+def test_new_york_clock_resolves_fall_back_and_refuses_spring_gap():
+    # 2020-11-01 fall-back: 01:00 local occurs twice (EDT then EST)
+    stamps = ["2020-11-01 00:00:00", "2020-11-01 01:00:00", "2020-11-01 01:00:00", "2020-11-01 02:00:00"]
+    t = fd.to_available_utc(stamps, "new_york_bar_end")
+    assert list(np.diff(t)) == [3600, 3600, 3600]
+    assert dt.datetime.fromtimestamp(int(t[1]), dt.timezone.utc).hour == 5  # 01:00 EDT = 05:00 UTC
+    assert dt.datetime.fromtimestamp(int(t[2]), dt.timezone.utc).hour == 6  # 01:00 EST = 06:00 UTC
+    # 2020-03-08 spring-forward: 02:00 local does not exist
+    with pytest.raises(ValueError, match="nonexistent"):
+        fd.to_available_utc(["2020-03-08 01:00:00", "2020-03-08 02:00:00"], "new_york_bar_end")
+    # summer stamps: EDT = UTC-4
+    s = fd.to_available_utc(["2020-07-01 17:00:00"], "new_york_bar_end")
+    assert dt.datetime.fromtimestamp(int(s[0]), dt.timezone.utc).hour == 21
+
+
+def test_utc_bar_start_shifts_to_availability():
+    t = fd.to_available_utc(["2010-01-04 00:00:00", "2010-01-04 01:00:00"], "utc_bar_start")
+    assert dt.datetime.fromtimestamp(int(t[0]), dt.timezone.utc).hour == 1
+    with pytest.raises(ValueError, match="strictly increasing"):
+        fd.to_available_utc(["2010-01-04 01:00:00", "2010-01-04 01:00:00"], "utc_bar_end")

@@ -49,7 +49,47 @@ DERIVED = {
 }
 
 
-def read_csv(path, expected_sha, date_column="DATE_TIME", date_format="%Y-%m-%d %H:%M:%S"):
+CLOCKS = ("utc_bar_end", "utc_bar_start", "new_york_bar_end")
+
+
+def to_available_utc(raw_dates, clock, date_format="%Y-%m-%d %H:%M:%S", bar_seconds=3600):
+    """Stamps -> UTC epoch seconds at which the bar's OHLC is available (bar end), strictly increasing.
+
+    ``utc_bar_end``: stamps already mark availability. ``utc_bar_start``: +bar_seconds.
+    ``new_york_bar_end``: America/New_York local with DST; fall-back duplicates (the repeated 01:xx hour)
+    are resolved by row order (first occurrence = DST, fold 0; second = standard, fold 1); a spring-forward
+    gap stamp (02:xx local that does not exist) is refused, never shifted silently.
+    """
+    if clock not in CLOCKS:
+        raise ValueError(f"clock must be one of {CLOCKS}")
+    naive = [dt.datetime.strptime(d, date_format) for d in raw_dates]
+    if clock in ("utc_bar_end", "utc_bar_start"):
+        out = [int(d.replace(tzinfo=dt.timezone.utc).timestamp()) for d in naive]
+        if clock == "utc_bar_start":
+            out = [s + bar_seconds for s in out]
+    else:
+        from zoneinfo import ZoneInfo
+        ny = ZoneInfo("America/New_York")
+        out, seen = [], {}
+        for d in naive:
+            a, b = d.replace(tzinfo=ny, fold=0), d.replace(tzinfo=ny, fold=1)
+            if a.utcoffset() != b.utcoffset():  # ambiguous (fall-back) or nonexistent (spring-forward)
+                if a.utcoffset() < b.utcoffset():  # nonexistent: fold0 offset is the earlier (EST) one
+                    raise ValueError(f"nonexistent New York local stamp {d} (spring-forward gap)")
+                fold = seen.get(d, 0)
+                seen[d] = fold + 1
+                if fold > 1:
+                    raise ValueError(f"New York local stamp {d} appears more than twice")
+                out.append(int(d.replace(tzinfo=ny, fold=fold).timestamp()))
+            else:
+                out.append(int(a.timestamp()))
+    out = np.asarray(out, dtype=np.int64)
+    if np.any(np.diff(out) <= 0):
+        raise ValueError("available-at UTC times must be strictly increasing")
+    return out
+
+
+def read_csv(path, expected_sha, date_column="DATE_TIME", date_format="%Y-%m-%d %H:%M:%S", clock="utc_bar_end"):
     actual = sha_file(path)
     if expected_sha is not None and actual != expected_sha:
         raise ValueError(f"source digest mismatch: {actual} != {expected_sha}")
@@ -58,11 +98,8 @@ def read_csv(path, expected_sha, date_column="DATE_TIME", date_format="%Y-%m-%d 
     if header[0] != date_column:
         raise ValueError(f"first column must be {date_column}")
     raw_dates = np.loadtxt(path, delimiter=",", skiprows=1, usecols=0, dtype=str)
-    times = np.array([int(dt.datetime.strptime(d, date_format).replace(tzinfo=dt.timezone.utc).timestamp())
-                      for d in raw_dates], dtype=np.int64)
+    times = to_available_utc(raw_dates.tolist(), clock, date_format)
     values = np.loadtxt(path, delimiter=",", skiprows=1, usecols=range(1, len(header)), dtype=np.float64, ndmin=2)
-    if np.any(np.diff(times) <= 0):
-        raise ValueError("timestamps must be strictly increasing")
     return header[1:], times, values, actual
 
 
@@ -82,8 +119,9 @@ def materialize_features(names, values, features):
 
 
 def build(source, out, *, features, window, horizons, sample_hours, split, purge_seconds, expected_sha,
-          dataset_id, exclude_irregular_windows=False, feature_manifest=None, date_column="DATE_TIME"):
-    names, times, values, source_sha = read_csv(source, expected_sha, date_column)
+          dataset_id, exclude_irregular_windows=False, feature_manifest=None, date_column="DATE_TIME",
+          clock="utc_bar_end"):
+    names, times, values, source_sha = read_csv(source, expected_sha, date_column, clock=clock)
     tr_lo, tr_hi = split["train_rows"]
     va_lo, va_hi = split["validation_rows"]
     te_lo, te_hi = split["test_rows"]
@@ -144,7 +182,9 @@ def build(source, out, *, features, window, horizons, sample_hours, split, purge
     out = Path(out)
     out.mkdir(parents=True, exist_ok=False)
     csum = np.concatenate([[0.0], np.cumsum(np.nan_to_num(z[:, t_idx]).astype(np.float64))])
-    manifest = {"schema": SCHEMA, "dataset_id": dataset_id, "source_sha256": source_sha, "view_rows": te_hi,
+    manifest = {"schema": SCHEMA, "clock": {"source_clock": clock, "timestamps": "UTC epoch seconds at which the bar "
+                                            "is complete (available-at); origins and labels located on this clock"},
+                "dataset_id": dataset_id, "source_sha256": source_sha, "view_rows": te_hi,
                 "features": len(declared), "feature_names": declared, "feature_order_sha256": sha_text(",".join(declared)),
                 "target_support_channel_appended": TARGET not in features, "feature_manifest": feature_manifest,
                 "window": window, "horizons": list(horizons), "sample_hours": sample_hours,
@@ -185,7 +225,7 @@ def build(source, out, *, features, window, horizons, sample_hours, split, purge
             "row_ids_sha256": sha_text("\n".join(row_ids.tolist())), "bytes": path.stat().st_size}
     np.savez(out / "label_support.npz", **support)
     manifest["label_support_sha256"] = sha_file(out / "label_support.npz")
-    split_doc = {"schema": "f2.fin_forecast_split.v1", "dataset_id": dataset_id, "source_sha256": source_sha,
+    split_doc = {"schema": "f2.fin_forecast_split.v1", "clock": manifest["clock"], "dataset_id": dataset_id, "source_sha256": source_sha,
                  "declared_split": split, "purge_seconds": purge_seconds, "window": window, "horizons": list(horizons),
                  "sample_hours": sample_hours, "label_location": manifest["label_location"],
                  "test": {"rows": [te_lo, te_hi], "status": "PROTECTED_NEVER_READ"},
@@ -211,6 +251,8 @@ def main():
     parser.add_argument("--purge-hours", type=float, default=0.0)
     parser.add_argument("--split-variant", default=None, help="key inside the manifest's split block, if variants exist")
     parser.add_argument("--exclude-irregular-windows", action="store_true")
+    parser.add_argument("--clock", required=True, choices=CLOCKS,
+                        help="lake FX 1h: new_york_bar_end; git-pinned EURUSD 1h: utc_bar_start (lane B fx_clock a94c614)")
     args = parser.parse_args()
     text = Path(args.feature_manifest).read_text()
     fm = json.loads(text)
@@ -230,7 +272,8 @@ def main():
     manifest = build(args.source, args.out, features=features, window=args.window, horizons=horizons,
                      sample_hours=args.sample_hours, split=split, purge_seconds=int(args.purge_hours * 3600),
                      expected_sha=args.expected_sha256, dataset_id=args.dataset_id,
-                     exclude_irregular_windows=args.exclude_irregular_windows, feature_manifest=feature_manifest)
+                     exclude_irregular_windows=args.exclude_irregular_windows, feature_manifest=feature_manifest,
+                     clock=args.clock)
     print(json.dumps({k: manifest[k] for k in ("dataset_id", "splits", "scaler_identity", "split_sha256")}, indent=1))
 
 
