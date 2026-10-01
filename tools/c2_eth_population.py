@@ -329,7 +329,8 @@ def naive_predictions(pop: Population, y_raw_by_h: dict, h: int, rows: np.ndarra
     n = pop.train_end
     y = y_raw_by_h[h]
     out = {"naive_zero": np.zeros(len(rows))}
-    seasonal_lag = 6 * int(np.ceil(h / 6))  # 24 h seasonal for h <= 6; the first 24 h multiple >= h otherwise
+    period = max(1, 86400 // int(pop.bar_seconds))  # bars per 24 h (6 at 4 h, 24 at 1 h)
+    seasonal_lag = period * int(np.ceil(h / period))  # 24 h seasonal for h <= period; the first 24 h multiple >= h otherwise
     for name, lag in (("naive_last_return", h), ("naive_seasonal_24h", seasonal_lag)):
         src = rows - lag
         ok = src >= 0

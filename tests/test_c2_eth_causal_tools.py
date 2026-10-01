@@ -530,3 +530,25 @@ def test_population_spec_binds_a_manifest_split_population_and_refuses_digest_mi
     with pytest.raises(PopulationRefusal, match="UNKNOWN_SPLIT_MODE"):
         bind_population(view, man, spec=replace(spec, split_mode="nope"))
     assert EURUSD_1H_SPEC.view_sha256.startswith("72b8271d") and ETH_4H_SPEC.view_sha256.startswith("1b447c66")
+
+
+def test_population_measure_runs_on_the_fx_shaped_population_and_applies_the_rule(tmp_path):
+    from dataclasses import replace
+    from c2_eth_population import EURUSD_1H_SPEC, PopulationSpec
+    from c2_population_measure import build_check_documents, measure_cell, references
+    from c2_interval_rule import check
+    view, man, vsha, msha = _fx_world(tmp_path)
+    spec = PopulationSpec(name="FX_test", view_sha256=vsha, manifest_file_sha256=msha, declaration_sha256=EURUSD_1H_SPEC.declaration_sha256, dataset_id="test.fx",
+                          view_path="fx.csv", view_commit="0" * 40, bar_seconds=3600, split_mode="manifest", window=1, hmax=6)
+    pop = bind_population(view, man, spec=spec)
+    ref = references(pop, [1, 2], tmp_path / "o")
+    assert {"naive_zero", "naive_train_mean", "naive_seasonal_24h", "full|selected"} <= set(ref[1])
+    assert ref[1]["naive_seasonal_24h"]["n_eval_total"] == ref[1]["naive_zero"]["n_eval_total"]     # identical rows
+    c = measure_cell(pop, "CLOSE", 1, scrambles=3, boot=30)
+    assert c["state"] in {"MEASURED", "TREATMENT_COLLINEAR_WITH_ALL_CONTROLS"}
+    cells = [measure_cell(pop, f, h, scrambles=3, boot=30) for f in ("OPEN", "CLOSE") for h in (1, 2)]
+    measured = [x for x in cells if x["state"] == "MEASURED"]
+    if measured:
+        cal, idx = build_check_documents(cells, 3)
+        res = check(cal, idx)
+        assert res["verdict"] in {"CONTROLS_FAIL_AS_REQUIRED", "BATTERY_SUSPECT"} and res["cells"] == 3 * len(measured)

@@ -54,10 +54,14 @@ def block_bootstrap_se(score: np.ndarray, denom: float, block: int, b: int, rng)
     n = len(score)
     block = max(1, min(block, n // 2))
     nblocks = int(np.ceil(n / block))
-    starts = rng.integers(0, n, size=(b, nblocks))
-    idx = (starts[:, :, None] + np.arange(block)[None, None, :]).reshape(b, -1)[:, :n] % n
-    sums = score[idx].sum(axis=1)
-    return float(np.std(sums / denom, ddof=1))
+    step = b if b * n <= 5_000_000 else max(1, 5_000_000 // n)   # chunk large populations; unchanged below 5M draws
+    sums = []
+    for lo in range(0, b, step):
+        k = min(step, b - lo)
+        starts = rng.integers(0, n, size=(k, nblocks))
+        idx = (starts[:, :, None] + np.arange(block)[None, None, :]).reshape(k, -1)[:, :n] % n
+        sums.append(score[idx].sum(axis=1))
+    return float(np.std(np.concatenate(sums) / denom, ddof=1))
 
 
 def scrambled_labels(y: np.ndarray, rng) -> np.ndarray:
