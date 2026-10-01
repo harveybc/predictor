@@ -139,8 +139,11 @@ def campaign_progress(reg, now):
         try:
             c = sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=5)
             st = dict(c.execute("select status, count(*) from candidates group by status").fetchall())
-            att = c.execute("select kind, status, started, finished, elapsed_seconds, cgroup_peak_bytes, host "
+            att = c.execute("select kind, status, started, finished, elapsed_seconds, cgroup_peak_bytes, host, cid "
                             "from attempts").fetchall()
+            labels = dict(c.execute("select cid, label from candidates").fetchall())
+            pending = [r[0] for r in c.execute("select label from candidates where status in "
+                                               "('queued','running','trained','verifying')").fetchall()]
             inc = c.execute("select config_id, mean_objective, time from incumbent_changes order by seq desc limit 1").fetchone()
             c.close()
         except Exception as e:
@@ -152,22 +155,42 @@ def campaign_progress(reg, now):
         remaining = sum(v for k, v in live.items() if k in ("queued", "running", "trained", "verifying"))
         dependency_held = {k: v for k, v in live.items() if k == "blocked" or k.startswith("HOLD")}
         fin = [a for a in att if a[1] == "completed" and a[4]]
+        def family(lbl):
+            # e.g. corrected_default_R0_huber -> corrected_default ; corrected_draw3_R0_mae -> corrected_draw3
+            return "_".join((lbl or "").split("_")[:2])
+        cell_s = {}
+        for a_ in fin:
+            fam = family(labels.get(a_[7]))
+            cell_s.setdefault(fam, {"train": [], "verify": []})[a_[0]].append(a_[4])
+        def fam_cost(fam):
+            d = cell_s.get(fam)
+            if not d or not d["train"]:
+                return None
+            return sum(d["train"]) / len(d["train"]) + (sum(d["verify"]) / len(d["verify"]) if d["verify"] else 0)
         per_cell = None
-        if fin:
-            tr = [a[4] for a in fin if a[0] == "train"]
-            ve = [a[4] for a in fin if a[0] == "verify"]
-            per_cell = (sum(tr) / len(tr) if tr else 0) + (sum(ve) / len(ve) if ve else 0)
         hosts = max(1, int(q.get("parallel_hosts", 1)))
-        if per_cell and remaining:
-            sec = remaining * per_cell / hosts
+        costs = [fam_cost(family(l)) for l in pending]
+        if pending and all(x is not None for x in costs):
+            sec = sum(costs) / hosts
+            per_cell = sec / len(pending)
+            fams = sorted({family(l) for l in pending})
             eta = {"earliest": iso(now + 0.8 * sec), "latest": iso(now + 1.5 * sec), "basis": "observed_throughput",
-                   "assumptions": [f"mean completed train+verify wall {per_cell:.0f} s per cell over {len(fin)} attempts",
-                                   f"{remaining} cells remaining (queued+running) across {hosts} host(s); x0.8..x1.5",
+                   "assumptions": [f"per-family measured train+verify wall: " + "; ".join(
+                                       f"{f} {fam_cost(f):.0f} s" for f in fams),
+                                   f"{len(pending)} cells pending (queued+running) across {hosts} host(s); x0.8..x1.5",
                                    "admission waits and pressure stops not modelled"]}
+        elif pending:
+            missing = sorted({family(l) for l, x in zip(pending, costs) if x is None})
+            known = [x for x in costs if x is not None]
+            part = (f"partial lower bound from measured families: {len(known)} cells x measured wall = "
+                    f"{sum(known) / hosts / 60:.0f} min (" + "; ".join(f"{f} {fam_cost(f):.0f} s/cell" for f in
+                    sorted({family(l) for l, x in zip(pending, costs) if x is not None})) + ")") if known else "no family measured"
+            eta = {"earliest": iso(now + sum(known) / hosts) if known else None, "latest": None, "basis": "not_estimable",
+                   "assumptions": [f"missing measurement: no completed train+verify attempt yet for family {missing} "
+                                   f"({sum(1 for x in costs if x is None)} cells)", part,
+                                   "earliest = the measured part only; no latest until every pending family is measured"]}
         else:
-            eta = {"earliest": None, "latest": None, "basis": "not_estimable",
-                   "assumptions": ["missing measurement: no completed train+verify attempt in this campaign yet"
-                                   if not per_cell else "no runnable cells remain"]}
+            eta = {"earliest": None, "latest": None, "basis": "not_estimable", "assumptions": ["no runnable cells remain"]}
         if dependency_held:
             eta["assumptions"].append(f"{sum(dependency_held.values())} cells held on dependencies ({dependency_held}); "
                                       "not estimable until their pilot/donors exist")

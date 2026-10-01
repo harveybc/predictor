@@ -61,8 +61,8 @@
    "id": "aa7913479a97b45c0",
    "kind": "subagent",
    "lane": "G",
-   "state": "assigned",
-   "commit": null,
+   "state": "completed",
+   "commit": "9d1a67ce (agent-multi)",
    "note": "RL owner under M05"
   }
  ],
@@ -513,6 +513,11 @@
    "at": "2026-10-01T04:19:00Z",
    "host_alias": "worker_a",
    "event": "corrected campaign amendment 4 (CAMPAIGN sha a534456b on all hosts): train cap 6580M, verify 4950M provisional, worker_a exclusion removed, per-feature calibration point added, 8 per-feature rows released; first attempt a0f9176f running on the 5090 at 6580M"
+  },
+  {
+   "at": "2026-10-01T04:50:00Z",
+   "host_alias": "worker_a",
+   "event": "lane G RETURNED (9d1a67ce); per-feature cell 1 a0f9176f VERIFIED 0.4014148874 on the 5090; lanes B, C, G idle; active: M04 (5090), M01 PS3-R child and M02 donor run (fusion/core stage, 321/321 branches) on worker_b"
   }
  ],
  "launch_recipes": {
@@ -673,7 +678,7 @@
     "a160efdffffffa9f2 (M03)"
    ],
    "branch": null,
-   "state": "running",
+   "state": "running (idle)",
    "tests": "RED at feature-eng d7dd357"
   },
   {
@@ -683,7 +688,7 @@
     "a9946e26c749a1bec"
    ],
    "branch": null,
-   "state": "acknowledged (three worktrees)"
+   "state": "acknowledged (idle)"
   },
   {
    "lane": "D",
@@ -693,7 +698,7 @@
    ],
    "branch": "satoshi/d-corrected-queue-20261001",
    "state": "running",
-   "first_deliverable": "corrected queue persisted (CAMPAIGN sha 13852a05, pin pending; no queue opened); PRE_INTEGRATION GPU pilot completed on worker_a: host peak 4.25 GB, device 0.40 GB, 0.0246 s/update (engineering, not a result)"
+   "first_deliverable": "per-feature cell 1 a0f9176f VERIFIED 0.4014148874 (peak 6.04 GB; 0.0983 s/update at width 5136 on the 5090); per-feature verify peak 3.28 GB -> verify cap 4.10 GB amendment; 93ad1b0b running, 6 queued; incumbent unchanged; runner recover() adopts finished worker outcomes (1dd13e5d, 45/45)"
   },
   {
    "lane": "E",
@@ -702,7 +707,8 @@
     "a65d2f3a115a9aa25 (M05)"
    ],
    "branch": null,
-   "state": "running"
+   "state": "running",
+   "first_deliverable": "M05 report (NOT yet verified by the orchestrator): naive gate implemented; 26 tests green on worker_b incl. the actual-runner zero-invocation proof; remaining mutants/suites queued on worker_b"
   },
   {
    "lane": "F",
@@ -720,7 +726,8 @@
     "aa7913479a97b45c0 (RL owner under M05)"
    ],
    "branch": null,
-   "state": "assigned"
+   "state": "RETURNED",
+   "first_deliverable": "agent-multi 9d1a67ce: RL01-RL08 42/42 on worker_a at 3G; 16 arm configs bound to DRAFT manifest 22ae7730; DQN verified by fixture; Keras->torch fidelity fused 1e-5 / latent 1e-4; INCIDENT_G-OOM-01; cost-pilot plan blocked on a frozen manifest; predictor export tool 600626c8 (verified by the orchestrator)"
   }
  ],
  "job_hints": {
@@ -1237,7 +1244,7 @@
     "23:30:38-40: g-rl-test_rl05_checkpoint (lane G) pressure-stopped at 1,033,658,368 B of 1 GiB (own PSI 71.0, host 63.6)"
    ],
    "the_23_28_kill_hit": "g-rl-rest (lane G, crispdm-g-rl-rest-1790828577-1032697.scope), at 99% of its 1 GiB cap",
-   "bystanders": "m06-status-writer and m06-event-watch were pressure-stopped at 23:28:06-08 and 23:30:40 (own PSI 0, 7-45 MB) and restarted automatically (Restart=on-failure)",
+   "bystanders": "m06-status-writer and m06-event-watch were pressure-stopped at 23:28:06-08 and 23:30:40 (own PSI 0, 7-45 MB) and restarted automatically (Restart=on-failure); M04's coordinator runner pressure-stopped as a bystander (incident ...-ef2a49); its remote attempt finished alone",
    "reading": "lane G RL jobs ran at ~99% of 1 GiB caps with own-cgroup PSI 70-88% (cap thrash) on the owner's desktop, alongside lane B census batches (~0.92 GB each) and lane C jobs; host PSI 63-71",
    "state_at_read_04:33Z": "PSI some avg10 0.00 avg60 1.85 avg300 11.24; MemAvailable 19.8 GB; swap free 4.9 GB",
    "orders": "g-rl-keras (lane G) and laneB-census-batch (lane B) ordered to stop/pause and move to the workers"
