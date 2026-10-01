@@ -102,6 +102,12 @@ def windows(features: np.ndarray, window: int):
     return np.array(idx), x
 
 
+def _keras_version():
+    import keras
+
+    return keras.__version__
+
+
 def _git(*args):
     try:
         return subprocess.run(["git", "-C", str(ROOT), *args], capture_output=True, text=True,
@@ -125,6 +131,14 @@ def main(argv=None) -> int:
     ap.add_argument("--threshold", type=float, default=0.001,
                     help="action dead-band on the forecast next-session log return")
     ap.add_argument("--golden", type=int, default=12)
+    ap.add_argument("--previous-contract", type=Path,
+                    help="earlier export of the same candidate recipe; its engine tip, Keras"
+                         " version and contract digest are recorded as lineage")
+    ap.add_argument("--engine-source-commit",
+                    help="commit of the engine tree when it is an exported archive, not a git checkout")
+    ap.add_argument("--previous-keras-version",
+                    help="Keras version the previous export ran under, when its contract predates"
+                         " the keras_version field (observed from that environment, not guessed)")
     args = ap.parse_args(argv)
     if os.environ.get("CUDA_VISIBLE_DEVICES", None) != "":
         raise SystemExit("refusing: set CUDA_VISIBLE_DEVICES='' (CPU only)")
@@ -219,8 +233,8 @@ def main(argv=None) -> int:
         "schema": CONTRACT_SCHEMA, "contract_version": 1,
         "model_id": args.model_id, "asset_id": args.asset_id, "timeframe": args.timeframe,
         "engine": {"module": "predictor_plugins/modular_temporal.py", "path": str(ENGINE_PATH),
-                   "sha256": _sha(ENGINE_PATH), "source_commit": _git("rev-parse", "HEAD"),
-                   "tensorflow": tf.__version__},
+                   "sha256": _sha(ENGINE_PATH), "source_commit": args.engine_source_commit or _git("rev-parse", "HEAD"),
+                   "tensorflow": tf.__version__, "keras_version": _keras_version()},
         "artifact": {"file": model_path.name, "sha256": _sha(model_path),
                      "weights_sha256": mt.weights_hash(inference),
                      "outputs": ["forecast", "bottleneck"]},
@@ -258,6 +272,17 @@ def main(argv=None) -> int:
         "bars_source": {"sha256": _sha(args.bars), "rows": len(bars),
                         "first": bars[0]["time"].isoformat(), "last": bars[-1]["time"].isoformat()},
     }
+    if args.previous_contract is not None:
+        previous = json.loads(args.previous_contract.read_text())
+        contract["engine"]["previous"] = {
+            "source_commit": previous["engine"].get("source_commit"),
+            "sha256": previous["engine"].get("sha256"),
+            "tensorflow": previous["engine"].get("tensorflow"),
+            "keras_version": previous["engine"].get("keras_version")
+            or args.previous_keras_version or "unrecorded",
+            "contract_sha256": _sha(args.previous_contract),
+            "artifact_sha256": previous["artifact"]["sha256"],
+        }
     (out / "contract.json").write_text(json.dumps(contract, indent=2, sort_keys=True) + "\n")
     provenance = {"schema": "lts.candidate_provenance.v1", "status": "verified",
                   "scope": "local_hash_binding_only", "model_id": args.model_id,
