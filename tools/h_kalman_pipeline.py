@@ -143,9 +143,9 @@ def _naive_block(data):
                                       data["mu"], data["sigma"], data["seasonal_period"])
 
 
-def evaluate_arm(data, arm):
-    Yva, Ytr = data["Y"]["validation"], data["Y"]["train"]
-    (pred,), alpha, inner = arms_lib.ridge_fit_predict(arm["train"], Ytr, [arm["validation"]])
+def score_predictions(data, pred):
+    """Per-horizon MAE/MSE beside every same-row naive, with skills, extremes and the strict-minimum naive."""
+    Yva = data["Y"]["validation"]
     nv = _naive_block(data)
     rows = []
     q90 = np.quantile(np.abs(Yva), 0.9, axis=0)
@@ -170,8 +170,15 @@ def evaluate_arm(data, arm):
                      "extremes": {"MAE_top_decile_abs_target": float(np.mean(np.abs(p[top] - y[top]))),
                                   "naive_zero_return_MAE_same_rows": float(np.mean(np.abs(nv["zero_return"][top, k] - y[top]))),
                                   "prediction_std_over_target_std": float(p.std() / y.std())}})
+    return rows
+
+
+def evaluate_arm(data, arm):
+    Ytr = data["Y"]["train"]
+    (pred,), alpha, inner = arms_lib.ridge_fit_predict(arm["train"], Ytr, [arm["validation"]])
+    rows = score_predictions(data, pred)
     return {"alpha": float(alpha), "inner_holdout_MAE_by_alpha": {str(a): v for a, v in inner.items()},
-            "rows": int(Yva.shape[0]), "per_horizon": rows, "channels": int(arm["train"].shape[1]),
+            "rows": int(data["Y"]["validation"].shape[0]), "per_horizon": rows, "channels": int(arm["train"].shape[1]),
             "eligible": bool(arm["eligible"]), "label": arm.get("label"),
             "mean_model_MAE": float(np.mean([r["model_MAE"] for r in rows])),
             "prediction_sha256": arms_lib.sha_array(pred), "_pred": pred}
