@@ -304,7 +304,8 @@ def capacity_board(reg, probes, devices, jobs, camps):
             continue
         uuid, role = dv["device"], dv["host_alias"]
         lane = owner_of.get(uuid)
-        cur = [j for j in run if j.get("host_alias") == role and j.get("uses_gpu")]
+        dev_cgs = {g.get("cgroup") for g in (dv.get("gpu") or {}).get("compute_processes", []) if g.get("cgroup")}
+        cur = [j for j in run if j.get("host_alias") == role and j.get("cgroup") in dev_cgs]
         if role == "coordinator":
             rows.append({"lane": "-", "agent": "-", "host_alias": role, "resource": uuid, "name": dv.get("name"),
                          "current_job": cur[0]["id"] if cur else None, "heartbeat": None,
@@ -406,6 +407,7 @@ def build(hosts, reg):
                 "cgroup_current_bytes": L["cgroup_current"], "cgroup_peak_bytes": L["cgroup_peak"],
                 "cap_vs_observed_peak": (round(L["cap_bytes"] / L["cgroup_peak"], 2) if L.get("cap_bytes") and L.get("cgroup_peak") else None),
                 "uses_gpu": any(g.get("cgroup") == L.get("cgroup") for g in p.get("gpu_procs", [])),
+                "cgroup": L.get("cgroup"),
                 "heartbeat_at": iso(hb_at), "heartbeat_path": (hb or {}).get("path", "").replace(HOME, "~") or None,
                 "heartbeat_stale": (hb_at is not None and now - hb_at > HEARTBEAT_STALE_S),
                 "heartbeat_status": ("NONE" if hb_at is None else
