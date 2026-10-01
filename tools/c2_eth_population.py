@@ -62,6 +62,7 @@ class PopulationSpec:
     window: int = 24
     hmax: int = 6
     availability_class: str = "DEVELOPMENT"
+    split_variant: str | None = None          # key of manifest["split_variants"] (lane B lake manifests declare S1 and S2)
     derived: str | None = None                # "range_v1": lane B vD1h recipes computed from bar t only
 
 
@@ -80,6 +81,18 @@ EURUSD_1H_RANGE_SPEC = PopulationSpec(   # lane B vD1h (range family; valid for 
     name="EURUSD_1h_vD1h_range", view_sha256=EURUSD_1H_SPEC.view_sha256, manifest_file_sha256="2985f5891b66a66e524fab2b11561d62bf782af6db678c3605661ec98c04dc57",
     declaration_sha256=None, dataset_id=EURUSD_1H_SPEC.dataset_id, view_path=EURUSD_1H_SPEC.view_path, view_commit=EURUSD_1H_SPEC.view_commit,
     bar_seconds=3600, split_mode="manifest", window=1, hmax=6, derived="range_v1")
+
+
+LAKE_VIEW_SHA256 = "ab0ada2840e1c6c14941f3109069d91efb5a1358fdf603aeca25caf84a267f80"
+LAKE_VIEW_DATASET = "lane_b_derivative:eurusd_1h_from_lake_5m (census app_ae9142c2, 5m sha c746f344)"
+_LAKE = dict(view_sha256=LAKE_VIEW_SHA256, dataset_id=LAKE_VIEW_DATASET, view_path="eurusd_1h_from_lake_5m.csv", view_commit="NONE_LANE_B_DERIVATIVE",
+             bar_seconds=3600, split_mode="manifest", window=1, hmax=6)
+_LAKE_A = dict(manifest_file_sha256="ab5ba3c8436017edda1ba30c051f0544abe787b0088bacfd92d9b8e7d1e57b58", declaration_sha256="5739469c2d0fde06004622e3af2d95b9a6c327617da2c804c4df547c1569a938")
+_LAKE_R = dict(manifest_file_sha256="963d02364e003ec88c25744b6957cc6370ade4e7e1c3522b6e61a89a73e5250c", declaration_sha256="5739469c2d0fde06004622e3af2d95b9a6c327617da2c804c4df547c1569a938", derived="range_v1")
+EURUSD_LAKE_A_S1_SPEC = PopulationSpec(name="EURUSD_lake_1h_A_S1", split_variant="S1_70_15_15", **_LAKE, **_LAKE_A)
+EURUSD_LAKE_A_S2_SPEC = PopulationSpec(name="EURUSD_lake_1h_A_S2", split_variant="S2_prospective_reserve", **_LAKE, **_LAKE_A)
+EURUSD_LAKE_RANGE_S1_SPEC = PopulationSpec(name="EURUSD_lake_1h_range_S1", split_variant="S1_70_15_15", **_LAKE, **_LAKE_R)
+EURUSD_LAKE_RANGE_S2_SPEC = PopulationSpec(name="EURUSD_lake_1h_range_S2", split_variant="S2_prospective_reserve", **_LAKE, **_LAKE_R)
 
 
 def add_range_features(frame):
@@ -261,10 +274,12 @@ def bind_population(view_path, manifest_path, split_path=None, *, expect_view=VI
         window, hmax = int(split["window"]), int(split["purge_bars"])
         authority, split_sha, split_target = SPLIT_AUTHORITY, split["_file_sha256"], split["target"]
     elif spec.split_mode == "manifest":
-        tr = tuple(int(v) for v in manifest["split"]["train"]["rows"])
-        va = [int(v) for v in manifest["split"]["validation"]["rows"]]
-        te = [int(v) for v in manifest["split"]["test"]["rows"]]
-        authority, split_sha = f"frozen manifest {manifest['_file_sha256'][:8]} ({manifest['split'].get('declared_by', '')[:60]})", manifest["_file_sha256"]
+        blk = manifest["split_variants"][spec.split_variant] if spec.split_variant else manifest["split"]
+        tr = tuple(int(v) for v in blk["train"]["rows"])
+        va = [int(v) for v in blk["validation"]["rows"]]
+        te = [int(v) for v in (blk.get("test") or blk.get("reserve"))["rows"]]       # S2: the prospective reserve, never read
+        authority = f"frozen manifest {manifest['_file_sha256'][:8]} variant {spec.split_variant or 'declared'}"
+        split_sha = manifest["_file_sha256"]
     else:
         raise PopulationRefusal(f"UNKNOWN_SPLIT_MODE: {spec.split_mode}")
     lr1 = frame["log_return_1"].to_numpy(dtype=np.float64)[: tr[1]]

@@ -579,3 +579,30 @@ def test_variant_a_price_levels_are_not_estimable_and_range_family_is(tmp_path):
     c = measure_cell(pop_r, "log_high_low", 1, scrambles=2, boot=20)
     assert c["state"] == "MEASURED" and len(c["scrambled"]) == 2 and "future_shift_template_fired" in c
     assert EURUSD_1H_RANGE_SPEC.manifest_file_sha256.startswith("2985f589")
+
+
+def test_split_variant_selects_the_declared_block_and_never_the_reserve(tmp_path):
+    from c2_eth_population import EURUSD_1H_SPEC, EURUSD_LAKE_A_S2_SPEC, EURUSD_LAKE_A_S1_SPEC, PopulationSpec
+    from c2_population_measure import measure_cell
+    view, man, vsha, msha = _fx_world(tmp_path)
+    doc = json.loads(man.read_text())
+    doc.pop("split")
+    doc["split_variants"] = {"S1": {"train": {"rows": [0, 1800]}, "validation": {"rows": [1800, 2200]}, "test": {"rows": [2200, 2600]}},
+                             "S2": {"train": {"rows": [0, 1500]}, "validation": {"rows": [1500, 2000]}, "reserve": {"rows": [2000, 2600], "status": "PROSPECTIVE_CONFIRMATION_PROTECTED"}}}
+    m2 = tmp_path / "lake_manifest.json"
+    m2.write_text(json.dumps(doc))
+    base = dict(view_sha256=vsha, manifest_file_sha256=sha256_file(m2), declaration_sha256=EURUSD_1H_SPEC.declaration_sha256, dataset_id="t", view_path="x", view_commit="0" * 40,
+                bar_seconds=3600, split_mode="manifest", window=1, hmax=6)
+    p1 = bind_population(view, m2, spec=PopulationSpec(name="S1", split_variant="S1", **base))
+    p2 = bind_population(view, m2, spec=PopulationSpec(name="S2", split_variant="S2", **base))
+    assert p1.train_rows == (0, 1800) and p2.train_rows == (0, 1500)
+    assert p2.bindings["split"]["test_rows"] == [2000, 2600] and p2.origins.max() < 1500
+    assert EURUSD_LAKE_A_S2_SPEC.split_variant == "S2_prospective_reserve" and EURUSD_LAKE_A_S1_SPEC.view_sha256.startswith("ab0ada28")
+    # per-block sign stability is reported for a measured cell
+    doc2 = json.loads(m2.read_text())
+    doc2["features"] = ["log_high_low", "close_location", "log_close_open"]; doc2["feature_count"] = 3
+    m3 = tmp_path / "lake_range.json"
+    m3.write_text(json.dumps(doc2))
+    pr = bind_population(view, m3, spec=PopulationSpec(name="R", split_variant="S1", derived="range_v1", **{**base, "manifest_file_sha256": sha256_file(m3)}))
+    c = measure_cell(pr, "log_high_low", 1, scrambles=2, boot=20)
+    assert len(c["real"]["blocks_theta"]) == 5 and 0.0 <= c["real"]["sign_agreement"] <= 1.0 and isinstance(c["real"]["sign_stable_4of5"], bool)

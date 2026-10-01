@@ -21,7 +21,9 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from c2_eth_population import ETH_4H_SPEC, EURUSD_1H_SPEC, EURUSD_1H_RANGE_SPEC, bind_population, blocked_splits  # noqa: E402
+from c2_eth_population import (ETH_4H_SPEC, EURUSD_1H_SPEC, EURUSD_1H_RANGE_SPEC, EURUSD_LAKE_A_S1_SPEC, EURUSD_LAKE_A_S2_SPEC,
+                               EURUSD_LAKE_RANGE_S1_SPEC, EURUSD_LAKE_RANGE_S2_SPEC, bind_population, blocked_splits)
+from c2_real_rejection import per_block_theta  # noqa: E402
 from c2_causal_dossier import crossfit_residuals, hac_variance, shift_control_detects_future, REDUNDANCY_CORR  # noqa: E402
 from c2_battery_calibration import block_bootstrap_se, integrated_autocorr_length, scrambled_labels, aggregate  # noqa: E402
 from c2_feature_contribution import run as contribution_run  # noqa: E402
@@ -67,6 +69,12 @@ def measure_cell(pop, feature, h, *, scrambles=10, boot=100, seed=20261001):
     w = xall[:, w_idx]
     brng = np.random.default_rng(seed + 1)
     out["real"] = _interval_row(x_t, w, y, splits, L, h, brng, boot)
+    r_x, r_y, _, _, _ = crossfit_residuals(x_t, w, y, splits)
+    bt = per_block_theta(r_x, r_y, splits)
+    fin = [b for b in bt if np.isfinite(b)]
+    out["real"]["blocks_theta"] = bt
+    out["real"]["sign_agreement"] = float(max(sum(b > 0 for b in fin), sum(b < 0 for b in fin)) / len(fin)) if fin else float("nan")
+    out["real"]["sign_stable_4of5"] = bool(out["real"]["sign_agreement"] >= 0.8)
     out["scrambled"] = [_interval_row(x_t, w, scrambled_labels(y, np.random.default_rng(seed + 10 + s)), splits, L, h, brng, boot) for s in range(scrambles)]
     out["noise"] = [_interval_row(np.random.default_rng(seed + 100 + s).standard_normal(len(x_t)), w, y, splits, L, h, brng, boot) for s in range(scrambles)]
     fired, causal_moved = shift_control_detects_future(x_t, h, [int(v) for v in np.quantile(rows, [0.3, 0.6, 0.9])])
@@ -103,7 +111,7 @@ def references(pop, horizons, out_dir):
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--population", choices=["eth_4h", "eurusd_1h", "eurusd_1h_range"], default="eurusd_1h")
+    p.add_argument("--population", choices=["eth_4h", "eurusd_1h", "eurusd_1h_range", "lake_A_S1", "lake_A_S2", "lake_range_S1", "lake_range_S2"], default="eurusd_1h")
     p.add_argument("--view", required=True)
     p.add_argument("--manifest", required=True)
     p.add_argument("--split", default=None)
@@ -113,7 +121,9 @@ def main(argv=None):
     p.add_argument("--scrambles", type=int, default=10)
     p.add_argument("--boot", type=int, default=100)
     args = p.parse_args(argv)
-    spec = {"eth_4h": ETH_4H_SPEC, "eurusd_1h": EURUSD_1H_SPEC, "eurusd_1h_range": EURUSD_1H_RANGE_SPEC}[args.population]
+    spec = {"eth_4h": ETH_4H_SPEC, "eurusd_1h": EURUSD_1H_SPEC, "eurusd_1h_range": EURUSD_1H_RANGE_SPEC,
+            "lake_A_S1": EURUSD_LAKE_A_S1_SPEC, "lake_A_S2": EURUSD_LAKE_A_S2_SPEC, "lake_range_S1": EURUSD_LAKE_RANGE_S1_SPEC,
+            "lake_range_S2": EURUSD_LAKE_RANGE_S2_SPEC}[args.population]
     pop = bind_population(args.view, args.manifest, args.split, spec=spec)
     hs = [int(v) for v in args.horizons.split(",")]
     feats = args.features.split(",") if args.features else list(pop.features)
