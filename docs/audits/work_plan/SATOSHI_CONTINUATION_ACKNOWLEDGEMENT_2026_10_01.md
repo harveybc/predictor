@@ -251,3 +251,18 @@ Nothing else in sections 8–9 requires an owner decision; the remaining items t
 | # | Object | Owner | Minimal action |
 |---|---|---|---|
 | 19 | Lane B cannot freeze the ETH 4h selected-feature manifest (draft `SELECTED_FEATURE_MANIFEST.eth_4h.v0-DRAFT.json`, sha `22ae7730`, variant A = 83 admissible features as cost-pilot/control, variant B = 58 screen-tier features) because: B1 ETH 4h has no availability contract (candidate `998e3f80` was never installed); B2 the selected columns' lake parents are outside the census and their producer is not temporally verified; B3 the lake's C127 contract for ethusdt 4h cuts 0.6/0.2/0.2 by rows, conflicting with the task's calendar split, so a successor contract is needed; B4 (variant B only) the inner-validation freeze has not run. Lane G's real-data RL pilots start only from a frozen manifest. | owner for B1 (activation); lane B for B2–B3 (successor contract drafted, not activated; producer verification with lane C) | activate the ETH 4h availability contract; lane B prepares the successor split contract now |
+
+### 10.4 Addendum 17:55Z: worker_a repair deployed and verified; question 18 downgraded
+
+- The reviewed admission repair `775c5545` is deployed on worker_a only (M06 tip `c91b91ca`; verified by me on the
+  host: `crispdm-run` 056e207a…, `crispdm_admission.py` 7882d20f…, rollback copies 499fdc18/8dc2c03b retained; slice
+  in use 2.66 GB, charged 73 MB, host free for new work 9.0 GB, six own-scope reclaim events in the ledger). Correction
+  to my earlier note: the launcher bytes did change (499fdc18 → 056e207a); only `0928dc06` had the same launcher.
+- One real CUDA operation on the RTX 5090 (GPU-a9f35631) succeeded in the pinned environment under the repaired
+  gate: a 1024×1024 ones matmul on /GPU:0, checksum exactly 1,073,741,824.0, device peak 8,411,136 B, compute
+  capability 12.0, zero NV_ERR_NO_MEMORY lines around the probe. One small operation; not proof of health under load.
+- The per-feature pilot is ordered onto worker_a; its worker_b request is cancelled through the admission tool.
+- Question 18 is downgraded: M06's arithmetic shows that even with the repair worker_b could not admit the 6.74 GB
+  pilot beside the 7G donor lease (154 MB short), so extending the repair there changes nothing for lane D; it would
+  only let M01's 4G suite and 3G child co-exist with the donor run, which they can already do one at a time. The
+  NOT-executed worker_b one-paste stays in DEPLOY.md for whenever the owner wants it; nothing critical waits on it.
