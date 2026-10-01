@@ -59,7 +59,7 @@ def old_donors(tmp_path_factory):
     env.update(PYTHONPATH=str(root / "pkg"), CUDA_VISIBLE_DEVICES="", TF_CPP_MIN_LOG_LEVEL="3",
                TF_NUM_INTRAOP_THREADS="1", TF_NUM_INTEROP_THREADS="1", OMP_NUM_THREADS="1")
     subprocess.run([sys.executable, "-s", "-c", CHILD, str(root / "pkg"), json.dumps(OLD_CONFIG), str(out)],
-                   check=True, env=env)
+                   check=True, env=env, cwd=str(root))   # cwd off the checkout: -c puts cwd first
     return out
 
 
