@@ -262,6 +262,22 @@ def coverage_block(reg, campaigns_out):
             "rule": "three counts are never summed or substituted for one another"}
 
 
+def sampler_idle(uuid, fallback):
+    """Idle counters from m06-gpu-sampler (15 s sampling; idle = 0 % or no compute process), else the
+    writer's own coarser counter."""
+    try:
+        d = json.load(open(os.path.expanduser("~/.local/state/m06/gpu_idle.json"))).get(uuid)
+    except Exception:
+        d = None
+    if d:
+        return {"gpu_idle_seconds_24h": d.get("idle_24h_s"), "gpu_idle_current_seconds": d.get("idle_current_s"),
+                "gpu_idle_note": "m06-gpu-sampler: 15 s sampling; idle = 0 % utilization or no compute process; alarm at 120 s"}
+    f = fallback.get(uuid, {})
+    return {"gpu_idle_seconds_24h": int(sum(e[1] for e in f.get("events", []))),
+            "gpu_idle_current_seconds": (int(time.time() - f["since"]) if f.get("since") else 0),
+            "gpu_idle_note": "writer cycle sampling (sampler unavailable for this device)"}
+
+
 def psi_val(text, kind, key):
     for line in (text or "").splitlines():
         if line.startswith(kind):
@@ -393,9 +409,7 @@ def build(hosts, reg):
                                                       "slice_charged_bytes", "slice_memory_max",
                                                       "pressure_some_avg10", "pressure_full_avg10", "pressure_admit_max")},
                 "next_task": reg.get("slot_plan", {}).get(uuid),
-                "gpu_idle_seconds_24h": int(sum(e[1] for e in IDLE_STATE[uuid]["events"])),
-                "gpu_idle_current_seconds": (int(time.time() - IDLE_STATE[uuid]["since"]) if IDLE_STATE[uuid]["since"] else 0),
-                "gpu_idle_note": "utilization 0% sampled every <=60 s (worker_a) / every cycle (others); counter restarts with the writer"})
+                **sampler_idle(uuid, IDLE_STATE)})
     # jobs that ended: an override for a job id no longer leased becomes its terminal record
     for name, ov in overrides.items():
         if not any(j["id"] == name for j in jobs):
