@@ -82,8 +82,15 @@ def direction_models(repo, provider):
             continue
         predictor = module.DirectionPredictor()
         log = io.StringIO()
-        with contextlib.redirect_stdout(log):
-            model = predictor._load_direction_model(str(keras_path), "probe")
+        try:
+            with contextlib.redirect_stdout(log):
+                model = predictor._load_direction_model(str(keras_path), "probe")
+        except Exception as exc:          # record the consumer's behaviour, do not hide it
+            lines = [l for l in log.getvalue().splitlines() if "DirectionPredictor" in l]
+            out[str(keras_path.relative_to(repo))] = {
+                "route": "consumer_error", "error": f"{type(exc).__name__}: {exc}"[:300],
+                "consumer_log": [l[:300] for l in lines[-3:]]}
+            continue
         shape = tuple(int(d) for d in model.input_shape[1:])
         x = np.random.default_rng(0).normal(size=(4, *shape)).astype("float32")
         y = np.asarray(model(x, training=False), dtype="float32")
