@@ -143,15 +143,15 @@ def main():
                     cols = [M[oo - l, ch[sl]] for M in blocks for l in range(24)]
                     Xtr[sl] = np.stack(cols, axis=1)
                     Ytr[sl] = np.stack([Z[oo + h, ch[sl]] - Z[oo + h - 24, ch[sl]] for h in range(1, 25)], axis=1)
-                Xva = feats(o_va).astype(np.float32)
+                Xva = [feats(o_va[i:i + 330]).astype(np.float32) for i in range(0, len(o_va), 330)]   # chunks: no 800 MB float64 temporary
                 v["arms"][arm] = {"seeds": {}, "features_per_channel": len(blocks) * 24, "train_rows_sampled": int(len(pick))}
                 pos = []
                 for seed in a.seeds:
                     hb.stage(f"{vn}:mlp:{arm}:{seed}")
                     ta, ca = time.time(), time.process_time()
-                    o_ = mlp.mlp_fit_predict(Xtr, Ytr, [Xva], seed=seed, hidden=(64, 64), max_epochs=30, patience=5,
+                    o_ = mlp.mlp_fit_predict(Xtr, Ytr, Xva, seed=seed, hidden=(64, 64), max_epochs=30, patience=5,
                                              batch_size=256)
-                    pr = o_["predictions"][0].reshape(len(o_va), d["C"], 24).transpose(0, 2, 1)
+                    pr = np.concatenate(o_["predictions"]).reshape(len(o_va), d["C"], 24).transpose(0, 2, 1)
                     rows_, po = ecl.score(Z, o_va, pr)
                     pos.append(po)
                     replay["predictions"][f"{vn}|{arm}|{seed}"] = arms_lib.sha_array(pr)
