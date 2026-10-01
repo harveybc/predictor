@@ -239,3 +239,9 @@ dataset; cross-lane owners FS16 B+A, FS19 B+F, FS18 D+B.
 4. A new reserved confirmation period for the strategy (the read reserve is development evidence), and the holding-period source.
 
 Nothing else in sections 8–9 requires an owner decision; the remaining items there are implementation tasks now owned.
+
+### 10.2 Addendum 16:40Z: question 18, the secondary worker's gate
+
+| # | Object | Owner | Minimal action |
+|---|---|---|---|
+| 18 | worker_b still runs the old admission gate, which charges its dead clean page cache (about 4 GB) plus the 7G donor reservation; M04's per-feature pilot (6.74 GB) is queued on SLICE_AGGREGATE_BUDGET and M01's 4G suite and 3G PS3-R child will queue the same way until the donor run ends, hours away. The orders authorize the repair on worker_a only and forbid extending it automatically. | owner | extend the reviewed repair `775c5545` to worker_b with the same one-paste (M06 prepares it, labelled NOT executed), or accept the wait |
