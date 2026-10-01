@@ -168,6 +168,8 @@ def main():
         k, v = l.split(":")
         mi[k] = int(v.split()[0]) * 1024
     out["mem"] = {k: mi.get(k) for k in ("MemTotal", "MemAvailable", "SUnreclaim", "SReclaimable", "Shmem", "SwapTotal", "SwapFree")}
+    out["loadavg"] = open("/proc/loadavg").read().split()[:3]
+    out["ncpu"] = os.cpu_count()
     st = os.statvfs(HOME)
     out["disk_home"] = {"free_bytes": st.f_bavail * st.f_frsize, "total_bytes": st.f_blocks * st.f_frsize}
     try:

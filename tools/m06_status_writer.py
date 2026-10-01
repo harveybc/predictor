@@ -290,6 +290,65 @@ def psi_val(text, kind, key):
     return None
 
 
+def capacity_board(reg, probes, devices, jobs, camps):
+    """Owner orders rev 1 §6: every agent, CPU and GPU with current work, NEXT PREPARED work, and the
+    measurable cause when free.  IDLE without an assigned successor is flagged ORCHESTRATION_DEFECT."""
+    nxt = reg.get("next_prepared", {})            # lane -> text
+    owner_of = reg.get("gpu_owner_lane", {})       # uuid -> lane
+    agents = {L["lane"]: L for L in reg.get("lanes", [])}
+    run = [j for j in jobs if j["state"] == "running"]
+    queued = [j for j in jobs if j["state"] == "queued"]
+    rows = []
+    for dv in devices:
+        if not str(dv.get("device", "")).startswith("GPU-"):
+            continue
+        uuid, role = dv["device"], dv["host_alias"]
+        lane = owner_of.get(uuid)
+        cur = [j for j in run if j.get("host_alias") == role and j.get("uses_gpu")]
+        if role == "coordinator":
+            rows.append({"lane": "-", "agent": "-", "host_alias": role, "resource": uuid, "name": dv.get("name"),
+                         "current_job": cur[0]["id"] if cur else None, "heartbeat": None,
+                         "next_prepared": None, "state": "RESERVED_FOR_DESKTOP" if not cur else "RUNNING",
+                         "cause_if_idle": "owner's desktop GPU: never batch work"})
+            continue
+        q = [j for j in queued if j.get("host_alias") == role and j.get("gpu_request")]
+        free = ((probes.get(role) or {}).get("admission") or {}).get("host_free_for_new_bytes")
+        cause = None
+        if not cur:
+            if q:
+                cause = f"queued for admission: {q[0]['id']} needs {q[0].get('declared_mem')}, host free-for-new {(free or 0) / 1e9:.2f} GB"
+            elif lane and nxt.get(lane):
+                cause = f"between jobs; next prepared by {lane}: {nxt[lane]}"
+            else:
+                cause = "ORCHESTRATION_DEFECT: idle with no assigned successor"
+        rows.append({"lane": lane or (cur[0].get("lane") if cur else None), "agent": ", ".join(agents.get(lane or "", {}).get("agents", [])) or None,
+                     "host_alias": role, "resource": uuid, "name": dv.get("name"),
+                     "current_job": cur[0]["id"] if cur else None,
+                     "heartbeat": (cur[0].get("heartbeat_status"), cur[0].get("heartbeat_age_s")) if cur else None,
+                     "next_prepared": (q[0]["id"] if q else nxt.get(lane or "")),
+                     "state": "RUNNING" if cur else "IDLE", "idle_seconds": dv.get("gpu_idle_current_seconds"),
+                     "cause_if_idle": cause})
+    for role, p in probes.items():
+        if "error" in p:
+            continue
+        cpu_jobs = [j for j in run if j.get("host_alias") == role and not j.get("uses_gpu") and not j["id"].startswith("m06-")]
+        rows.append({"lane": ", ".join(sorted({j.get("lane") or "?" for j in cpu_jobs})) or None, "agent": None,
+                     "host_alias": role, "resource": f"CPU x{p.get('ncpu')} (load {' '.join(p.get('loadavg') or [])})",
+                     "current_job": [f"{j['id']} [{j.get('lane')}] cap {(j.get('cap_bytes') or 0) / 1e9:.2f} GB / peak {(j.get('cgroup_peak_bytes') or 0) / 1e9:.2f} GB" for j in cpu_jobs],
+                     "heartbeat": [(j["id"], j.get("heartbeat_status")) for j in cpu_jobs],
+                     "next_prepared": [j["id"] for j in queued if j.get("host_alias") == role and not j.get("gpu_request")],
+                     "state": ("DESKTOP_RESERVED_MARGIN" if role == "coordinator" else ("RUNNING" if cpu_jobs else "IDLE")),
+                     "cause_if_idle": (None if cpu_jobs or role == "coordinator" else "no CPU job running or queued on this host")})
+    for L in reg.get("lanes", []):
+        mine = [j for j in run if j.get("lane") == L["lane"] and not j["id"].startswith("m06-")]
+        rows.append({"lane": L["lane"], "agent": ", ".join(L.get("agents", [])), "host_alias": None, "resource": "AGENT",
+                     "current_job": [j["id"] for j in mine], "heartbeat": [(j["id"], j.get("heartbeat_status")) for j in mine],
+                     "next_prepared": nxt.get(L["lane"]), "state": "RUNNING" if mine else ("HOLD" if "HOLD" in str(L.get("state")) else "NO_JOB"),
+                     "cause_if_idle": (None if mine else (L.get("state") if "HOLD" in str(L.get("state")) else
+                                       ("next prepared: " + nxt[L["lane"]] if nxt.get(L["lane"]) else "ORCHESTRATION_DEFECT: no job and no prepared successor")))})
+    return rows
+
+
 def lanes():
     out = []
     for repo in sorted(os.listdir(GITHUB)):
@@ -456,6 +515,7 @@ def build(hosts, reg):
             "agents": reg.get("agents", []), "lanes": reg.get("lanes", []), "devices": devices, "jobs": jobs,
             "campaigns": (camps := campaign_progress(reg, now)),
             "coverage": coverage_block(reg, camps),
+            "capacity_board": capacity_board(reg, probes, devices, jobs, camps),
             "unparsed_processes": unparsed, "terminal_incidents_24h": failed, "quotas_measured": quotas,
             "results": reg.get("results", []), "milestones": reg.get("milestones", []),
             "next_actions": reg.get("next_actions", []), "events": reg.get("events", []),

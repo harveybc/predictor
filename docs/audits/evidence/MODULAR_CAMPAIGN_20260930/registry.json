@@ -703,7 +703,7 @@
   "previous_campaign_return": "docs/audits/evidence/MODULAR_CAMPAIGN_20260930/RETURN.md @ 09f129c5",
   "coverage_addendum": "docs/handoffs/SATOSHI_SOURCE_TRANSFORM_COVERAGE_ADDENDUM_2026_10_01.md @ 256c61a6",
   "next_dispatch": "docs/handoffs/SATOSHI_NEXT_DISPATCH_2026_10_01.md @ b327b771",
-  "autonomous_orders": "docs/handoffs/SATOSHI_AUTONOMOUS_PARALLEL_EXECUTION_2026_10_01.md (owner standing order 2026-10-01: full autonomy; no GPU idle)"
+  "autonomous_orders": "docs/handoffs/SATOSHI_AUTONOMOUS_PARALLEL_EXECUTION_2026_10_01.md revision 1 (sha 0207ae65...): \u00a76 capacity board"
  },
  "lanes": [
   {
@@ -790,6 +790,15 @@
    "branch": "satoshi/c2-causal-eth-20261001",
    "state": "running",
    "measured": "tests 29 MB, contribution pilot 200 MB, contribution full 295 MB, leak probe 29 MB, dossiers 270 MB, PS3-R rerun 2.19 GB child RSS -> declared 2,733,056,000 B (1.25x)"
+  },
+  {
+   "lane": "H1",
+   "work": "front H: Kalman (CPU only)",
+   "agents": [
+    "(id arriving)"
+   ],
+   "branch": null,
+   "state": "assigned"
   }
  ],
  "job_hints": {
@@ -1514,6 +1523,12 @@
    "host_alias": "coordinator",
    "facts": "c2-results (and c2-table-final, c2-postfix, c2-validate; 1G caps, 2-4 s each) ran on the coordinator 08:17:58-08:18:44Z: ADMITTED -> ARMED -> RELEASED / RECLAIMED_WITNESS_DEAD; no lease held after; ZERO-BATCH BREACH by C2, recorded; C2 ordered never to queue on the coordinator again (alert closed as resolved)",
    "evidence": "predictor satoshi/c2-causal-eth-20261001 docs/audits/evidence/lane_c2_eth_20261001/COORDINATOR_ADMISSION_LEDGER_c2.txt"
+  },
+  {
+   "id": "GPU-IDLE-03",
+   "host_alias": "worker_a, worker_b",
+   "facts": "~09:25Z an API session limit killed five agents and the runner/loop processes they owned (runners were children of agent sessions), idling the 5090, 4090 and 5070 Ti; sampler alarms 09:28:29Z (5090, idle since ~09:26:29Z) and 09:29:59Z (4090, idle since ~09:27:59Z) were written but NOT relayed by M06, whose session was also killed",
+   "remedy": "durable user-systemd runner units (design under docs/audits/evidence/MODULAR_CAMPAIGN_20260930/DURABLE_RUNNERS.md); watcher alarm when a campaign has queued cells and no runner"
   }
  ],
  "owner_question_20_lake": {
@@ -1657,5 +1672,11 @@
    "evaluated_or_selected_by_temporal_model": 0
   },
   "from": "feature-eng satoshi/b-source-transform-coverage-20261001 @ 980e087 (lane B report; hold until a campaign result changes what to select)"
- }
+ },
+ "gpu_owner_lane": {
+  "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8": "D2",
+  "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9": "F2",
+  "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519": "G2"
+ },
+ "next_prepared": {}
 }
