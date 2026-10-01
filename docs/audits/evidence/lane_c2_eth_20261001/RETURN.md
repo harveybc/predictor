@@ -263,6 +263,24 @@ family is not valid (h > 1) and is of the order of the ETH `log_return_1` margin
 `close_location` filled with the neutral 0.5 on 4 rows where HIGH == LOW (declared deviation from lane B's NaN). Cost: variant A 3 s CPU (peak 210 MB, cap declared 750 MB without a pilot:
 over-declared, my error); range pilot 255 MB -> cap 319 MB; range full 73 s CPU, peak 308 MB.
 
+### 2.5 EURUSD lake S1/S2 and per-block sign stability (DEVELOPMENT) -- `eurusd_1h/{lakeR_S1,lakeR_S2,lakeA_S1,lakeA_S2,fxR2_full}/`
+
+Population: lane B's lake derivative `eurusd_1h_from_lake_5m.csv` (sha `ab0ada28…`, 129,873 rows; frozen manifests v1 file sha `ab5ba3c8…`, vDh `963d0236…`), bound through
+`PopulationSpec(split_variant=...)`. **S1** (70/15/15): TRAIN rows [0, 90911), 86,093 scored origins. **S2 (prospective reserve)**: TRAIN rows [0, 93924), 88,944 scored origins, validation
+[93924, 117405), **reserve [117405, 129873) PROTECTED_NEVER_READ -- no row of it entered any statistic here** (bind_population only records its row bounds; tested). Horizons 1..4 (the vDh valid set).
+Rule (c2_interval_rule): lake range S1 verdict CONTROLS_FAIL_AS_REQUIRED (scrambled rejection block bootstrap 0.050, tolerance 0.0898 over 120 draws), S2 CONTROLS_FAIL_AS_REQUIRED (0.033). Variant A on the lake
+is again 4 collinear price levels: NOT_ESTIMABLE in both splits. Reference rows (blocks5, MAE_z, identical rows): S1 h1 zero 0.637173, intercept 0.637255, ridge-on-range 0.636484 (0.108 % below zero);
+h4 1.314782 / 1.314922 / 1.314400. S2 h1 0.634755 / 0.634843 / 0.634098 (0.103 %); h4 1.310077 / 1.310233 / 1.309704.
+
+Per-block sign stability of the real-label partial association (5 time blocks; theta per unit of the standardized feature; stable = same sign in >= 4 of 5 blocks):
+* `close_location`: **rejects at every horizon in S1 and S2 (h1-h4) and sign-stable (1.0 at h1-h3, 0.8 at h4), always NEGATIVE** (theta about -0.12 to -0.14 z per unit in both splits, block values -0.004 to -0.31); on the
+  git-pinned file it rejects at h1-h4 and h6, stable 1.0, 1.0, 0.8, 0.8, (h5 not rejected, 0.8), 0.8. The same sign and size across three overlapping populations (git-pinned 2005-2015, lake S1, lake S2) is the only
+  association on EURUSD that is replicated, and it is not independent evidence (the populations share years).
+* `log_close_open`: rejects only on the lake at h1, h2 (theta +15.8 / +18.4 S1, +15.6 / +18.1 S2; sign stable 0.8) with block values from -15 to +65 (a heavy-tailed block 4): unstable in size, not rejected on the git-pinned file. Treat as not established.
+* `log_high_low`: never rejects at any horizon, in any population; its block signs flip (0.6): L = 692-885 shows its tau_X is the volatility-clustering length.
+Label: FINDING (predictive association under a declared model), not an effect; rung 2 stays NOT_IDENTIFIED. Cost: 70-74 s CPU each, peaks 298-329 MB (lake pilot 296 MB -> cap 370 MB; the git-pinned rerun
+at cap 400 MB).
+
 ## 3. Deliverable 3: recommendation table to M03 and M07 -- `recommendation/RECOMMENDATION_TABLE.{csv,md}`
 
 1,162 rows (83 features x 7 horizons x 2 protocols), each with population, split, rows, horizon, the four naives
