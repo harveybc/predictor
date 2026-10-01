@@ -351,7 +351,7 @@
    "completion_criterion": "paired R1/R2 candidates with corrected donors",
    "state": "in_progress",
    "evidence": [
-    "corrected ECL donors complete 04:43:27Z (321/321 + core.keras); the 12 R1/R2 rows are AWAITING BINDING (no longer blocked on donors)"
+    "donors complete 04:43:27Z; binding gated on M04 campaign amendment 5 (engine identity proof at M01's post-fix tip)"
    ]
   }
  ],
@@ -523,6 +523,11 @@
    "at": "2026-10-01T04:43:27Z",
    "host_alias": "worker_b",
    "event": "M02 corrected ECL donor run COMPLETED (321/321 + core, RECEIPT.json); lease released, no incident; R1/R2 rows now await binding"
+  },
+  {
+   "at": "2026-10-01T04:49:54Z",
+   "host_alias": "coordinator",
+   "event": "lane D runner PLANNED STOP (M04 safe stop to apply the verify-cap amendment 4.10 GB), not a pressure stop; idle gap 04:49:54Z -> relaunch (queue resumed by 05:04:54Z: 93ad1b0b verified, 1 running, 5 queued)"
   }
  ],
  "launch_recipes": {
@@ -707,7 +712,7 @@
    ],
    "branch": "satoshi/d-corrected-queue-20261001",
    "state": "running",
-   "first_deliverable": "per-feature cell 1 a0f9176f VERIFIED 0.4014148874 (peak 6.04 GB; 0.0983 s/update at width 5136 on the 5090); per-feature verify peak 3.28 GB -> verify cap 4.10 GB amendment; 93ad1b0b running, 6 queued; incumbent unchanged; runner recover() adopts finished worker outcomes (1dd13e5d, 45/45)"
+   "first_deliverable": "per-feature cell 1 a0f9176f VERIFIED 0.4014148874 (peak 6.04 GB; 0.0983 s/update at width 5136 on the 5090); per-feature verify peak 3.28 GB -> verify cap 4.10 GB amendment; 93ad1b0b running, 6 queued; incumbent unchanged; runner recover() adopts finished worker outcomes (1dd13e5d, 45/45); R1/R2 binding gated on amendment 5 (engine identity proof at M01's post-fix tip)"
   },
   {
    "lane": "E",
@@ -1051,7 +1056,7 @@
     "base": "13852a05",
     "denominator": "36 cells (72 superseded rows kept outside)"
    },
-   "dependency_note": "the 12 'blocked' R1/R2 rows await donor binding (donors complete 04:43:27Z), not donors"
+   "dependency_note": "the 12 'blocked' R1/R2 rows: binding is gated on M04's campaign amendment 5 (engine identity proof at M01's post-fix tip), not on donors (complete 04:43:27Z) or provenance"
   }
  ],
  "facts_confirmed": {
