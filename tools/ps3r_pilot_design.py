@@ -27,15 +27,20 @@ os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
 ORDER = ["PRIORITY", "SYNERGY", "REPRESENTATIVE", "EXPLORATORY", "DEFERRED"]
 QUOTA = {"PRIORITY": 5, "SYNERGY": 4, "REPRESENTATIVE": 4, "EXPLORATORY": 3, "DEFERRED": 4}
 SEED = 20261001
-WORKLIST_SHA256 = "f75260a6e7e30d340d042cb685f5e9889797fd7b0a87b4599ef99d0798670c9a"
+WORKLISTS = {   # pinned lane B ETH 4h work lists and their standing
+    "f75260a6e7e30d340d042cb685f5e9889797fd7b0a87b4599ef99d0798670c9a":
+        ("feature-eng 9c8e1a0", "PROVISIONAL_SUPERSEDED_LABELS"),
+    "397b67d6f40eaf324c0aa720291f67560c55cf0b216bc53cb9c4886b1ae66175":
+        ("feature-eng 1b22c64 (CORRECTION, label-unit fix)", "CURRENT"),
+}
 
 
 def select(path):
     import numpy as np
     raw = open(path, "rb").read()
     sha = hashlib.sha256(raw).hexdigest()
-    if sha != WORKLIST_SHA256:
-        raise SystemExit(f"work list sha256 {sha} is not the pinned {WORKLIST_SHA256}")
+    if sha not in WORKLISTS:
+        raise SystemExit(f"work list sha256 {sha} is not one of the pinned lists {sorted(WORKLISTS)}")
     rows = list(csv.DictReader(raw.decode().splitlines()))
     tiers, caution, explored = collections.defaultdict(dict), set(), set()
     for r in rows:
@@ -64,7 +69,8 @@ def select(path):
                "caution_persistent_input": f in caution,
                "inclusion_probability": QUOTA[stratum[f]] / sum(1 for s in stratum.values() if s == stratum[f])}
               for f in chosen]
-    return {"worklist_sha256": sha, "seed": SEED, "quota": QUOTA,
+    return {"worklist_sha256": sha, "worklist_source": WORKLISTS[sha][0], "status": WORKLISTS[sha][1],
+            "seed": SEED, "quota": QUOTA,
             "stratum_sizes": dict(collections.Counter(stratum.values())), "sample": sample}
 
 
