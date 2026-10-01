@@ -46,7 +46,7 @@
   "point_in_time_admissible_count": 0
  },
  "dag": {
-  "dag_sha256": "881f746f52c1d99b74525526d42712a48974d71451c1fb7a5ac7b7f7c653ba52",
+  "dag_sha256": "e15017cee5b0101352b527bee4253c6a9a047920af7e01534b82f2b0d047d8f5",
   "denominators": {
    "v2_columns_examined": 97,
    "v2_by_class": {
@@ -83,8 +83,8 @@
    "sha256": "05317f6080ad3e91ed5599713d9c25e82759e275db432140edea8c7ff23ae2f5"
   },
   "feature_dag": {
-   "from": "financial-data@42bed364:features/census/FEATURE_DAG.v3.json",
-   "sha256": "710747e43a04aa9d4fdf36b785aa389a76b039cf13ddcab3b950ae0b2db7590c"
+   "from": "financial-data@ac2e8072a:features/census/FEATURE_DAG.v3.json",
+   "sha256": "4e7d5c35a4c13eeab8a05909333c59e018a4a8f2c3b48b91d8cbe54095d74d86"
   }
  }
 }

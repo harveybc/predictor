@@ -508,6 +508,11 @@
    "at": "2026-10-01T04:16:44Z",
    "host_alias": "worker_a",
    "event": "per-feature corrected pilot COMPLETED on the 5090 (first admission enabled by the 775c5545 repair): peak 5.52 GB of 6.74 GB cap, 0.2006 s/update; no incident"
+  },
+  {
+   "at": "2026-10-01T04:19:00Z",
+   "host_alias": "worker_a",
+   "event": "corrected campaign amendment 4 (CAMPAIGN sha a534456b on all hosts): train cap 6580M, verify 4950M provisional, worker_a exclusion removed, per-feature calibration point added, 8 per-feature rows released; first attempt a0f9176f running on the 5090 at 6580M"
   }
  ],
  "launch_recipes": {
@@ -581,6 +586,17 @@
     }
    },
    "fix": "REVIEWED against the owner's five cases at 775c5545 (supersedes 0928dc06): only dead clean cache outside live scopes is uncharged; 51/51 tests; NOT deployed; owner's one action: DEPLOY_ADM_DEADCACHE.sh (DEPLOY.md)"
+  },
+  {
+   "id": "ADM-CANCEL-01",
+   "defect": "no cancel verb for a queued acquire; M04 had to TERM the acquirer after confirming it held no lease",
+   "fix": "crispdm_admission.py cancel --name --witness-pid (refuses on LEASE_EXISTS; marker consumed atomically by the bound acquirer; ADMISSION_CANCELLED); branch satoshi/m06-admission-dead-cache-20260930 @ a1f3898b with ADM-STALE-LEASE-01 (6507aa98); 62/62 tests; NOT deployed",
+   "operating_rule": "cancel queued requests through the admission tool, never by killing the wrapper, and confirm via the ledger that no lease remains (M01)"
+  },
+  {
+   "id": "ADM-STALE-LEASE-01",
+   "incident": "03:53:27Z TERM to queued wrapper pid 1410776 while acquirer 1410788 was mid-acquire; 03:53:42Z lease laneA-suite-1790826822-1410788-f31b49 written ADMITTED and never armed; 4G held, M04 per-feature pilot queued HOST_HEADROOM 03:53:52Z-03:55:16Z until manual release (RELEASED_NEVER_ARMED)",
+   "fix": "holder-pid check before commit (HOLDER_GONE) + sweep reclaims non-detached unarmed leases older than 60 s with a dead/unknown holder (LEASE_RECLAIMED_NEVER_ARMED); @ 6507aa98; NOT deployed"
   }
  ],
  "tool_facts": {
@@ -991,7 +1007,7 @@
    "identity": {
     "pin": "df9ae31c",
     "engine": "3ecdb256",
-    "campaign_sha256_current": "09f6913e (amendment 2)",
+    "campaign_sha256_current": "a534456b (amendment 4)",
     "base": "13852a05",
     "denominator": "36 cells (72 superseded rows kept outside)"
    }
@@ -1028,6 +1044,12 @@
     "AUTOENCODER_FIT_TRAIN_LT_2024_EARLYSTOP_ON_2024 (learned_cnn/lstm AEs): donors early-stopped on 2024, the task's validation year"
    ],
    "ledger_states": "17 excluded / 19 deferred / 0 evaluated / 0 selected (generated)"
+  },
+  "laneB_artifacts_686f9e5": {
+   "SOTA_PRODUCERS.v1.json": "sha 1b3e6a05",
+   "ETHUSDT_4H_CALENDAR_SUCCESSOR_CONTRACT.DRAFT.json": "sha e3b6bba1 (prepared, NOT activated)",
+   "TRANSFORM_LEDGER.v1.csv": "sha 70296348",
+   "native_wavelet_successor_producer": "financial-data satoshi/b-native-wavelet-20261001 @ 028f42847; tests 8/8 on the coordinator; worker_b run refused by slice admission (the 'native wavelet producer' absence stays until lane B's accounting removes it)"
   }
  },
  "coverage_evaluated_retained": [
@@ -1170,7 +1192,7 @@
   "M06_half_linked": {
    "ps1_run_summaries": "feature-eng @ 1b22c64 docs/feature_metrics/laneB/runs/{d4,electricity,eth_4h,traffic,weather}/run_summary.json (code sha d0679a3d)",
    "three_denominators": "feature-eng @ 9162ca3 docs/feature_metrics/laneB/THREE_DENOMINATORS.v1.json sha af22760a (copied to RESULTS/)",
-   "feature_dag": "financial-data satoshi/b-feature-dag-v3-20261001 @ 42bed364 FEATURE_DAG.v3 dag_sha256 881f746f"
+   "feature_dag": "financial-data satoshi/b-feature-dag-v3-20261001 @ ac2e8072a FEATURE_DAG.v3 dag_sha256 e15017ce (supersedes 881f746f; adds stage24/stage25 learned and sota producers/method ids)"
   },
   "warehouse": "NOT written: no governed route used for lane B artifacts; retention/lineage of reused results is linked here, not loaded"
  },
