@@ -1,0 +1,105 @@
+{
+ "repo_id": "jinaai/jina-embeddings-v5-text-small",
+ "revision": "46ed7da5b47e4bca710b756313fafaf4110c6bd1",
+ "method": "static reading of the fetched files; no import, no execution, no ast-based tooling beyond reading; the reviewed digests are in MODEL_FILES.json",
+ "python_files_in_the_tree": 3,
+ "files": {
+  "configuration_jina_embeddings_v5.py": {
+   "sha256": "d67791f10558ca2bd67d4c64aa3262b9458b23f1803370c11aa6d5366ad8735b",
+   "lines": 5,
+   "imports": [{"line": 1, "stmt": "from transformers import Qwen3Config"}],
+   "defines": [{"line": 4, "what": "class JinaEmbeddingsV5Config(Qwen3Config) with model_type = 'jina_embeddings_v5' (line 5)"}],
+   "module_level_side_effects": "none beyond the import and the class definition",
+   "network": "none", "subprocess_or_shell": "none", "file_writes": "none", "deserialization": "none", "eval_exec": "none",
+   "transitive_code_revisions": "none; imports only the installed transformers package"
+  },
+  "modeling_jina_embeddings_v5.py": {
+   "sha256": "389836c791ae345c164108c23858522590be32477b370c94b218cb1b4f10c69c",
+   "lines": 114,
+   "imports": [
+    {"line": 1, "stmt": "from typing import List, Optional"},
+    {"line": 2, "stmt": "import os"},
+    {"line": 4, "stmt": "import torch"},
+    {"line": 5, "stmt": "import torch.nn.functional as F"},
+    {"line": 7, "stmt": "from huggingface_hub import snapshot_download"},
+    {"line": 8, "stmt": "from transformers import AutoTokenizer"},
+    {"line": 9, "stmt": "from transformers.modeling_utils import PreTrainedModel"},
+    {"line": 10, "stmt": "from transformers.models.qwen3 import Qwen3Model"},
+    {"line": 11, "stmt": "from peft import PeftMixedModel, PeftConfig"},
+    {"line": 12, "stmt": "from .configuration_jina_embeddings_v5 import JinaEmbeddingsV5Config", "note": "the only relative import; the file exists in the same tree at this revision"}
+   ],
+   "defines": [{"line": 15, "what": "class JinaEmbeddingsV5Model(PeftMixedModel)"}],
+   "module_level_side_effects": "none beyond imports and the class definition",
+   "call_time_operations": [
+    {"lines": "25-27", "op": "JinaEmbeddingsV5Config.from_pretrained(pretrained_model_name_or_path)", "kind": "hub or local read of config.json", "network": "yes when the path is a repo id and the file is not cached"},
+    {"lines": "28-32", "op": "Qwen3Model.from_pretrained(path, config=base_config, dtype=kwargs.pop('dtype', torch.bfloat16))", "kind": "weight load via transformers; model.safetensors (safetensors format)", "network": "yes when the path is a repo id and not cached", "deserialization": "delegated to transformers' safetensors loader; no torch.load or pickle in this file", "note": "default dtype bfloat16 regardless of device; on CPU this is a numerics choice the caller must override explicitly"},
+    {"lines": "34-41", "op": "if os.path.isdir(base_model.name_or_path): adapters_dir = <local>/adapters  else: snapshot_download(repo_id=base_model.name_or_path, allow_patterns=['adapters/*'])", "kind": "NETWORK + FILE WRITE (hub cache) in the else branch", "network": "yes in the else branch", "file_writes": "huggingface_hub writes adapters/* into HF_HUB_CACHE in the else branch", "risk": "snapshot_download is called WITHOUT revision=, so when the model is loaded by repo id this pulls the adapters from the repository's CURRENT default branch, not from the pinned revision; a local snapshot directory avoids the branch entirely"},
+    {"lines": "42-45", "op": "adapter_paths for every name in base_config.task_names (config.json line 9: retrieval, text-matching, clustering, classification)", "kind": "path joins"},
+    {"lines": "47", "op": "PeftConfig.from_pretrained(adapter_paths['retrieval'], **kwargs)", "kind": "reads adapter_config.json"},
+    {"lines": "48", "op": "cls(base_model, peft_config, adapter_name='retrieval')", "kind": "PeftMixedModel construction"},
+    {"lines": "50-55", "op": "model.load_adapter(adapter_paths[name], adapter_name=name, **kwargs) for all four task_names", "kind": "peft adapter weight load (adapter_model.safetensors)", "deserialization": "delegated to peft; the tree ships safetensors only, no .bin/.pt/.pkl"},
+    {"lines": "57-60", "op": "AutoTokenizer.from_pretrained(path, trust_remote_code=True)", "kind": "HARD-CODED trust_remote_code=True on the tokenizer", "note": "at this revision the tree has no tokenizer Python file and tokenizer_config.json names tokenizer_class Qwen2Tokenizer (a library class) and carries no auto_map, so at this revision the flag admits nothing extra; it is still an unconditional grant written into the model code"},
+    {"lines": "63-114", "op": "encode(): tokenizes with self.tokenizer, moves tensors to the model device, set_adapter([task]), forward under torch.no_grad, last-token pooling, optional truncate_dim, F.normalize", "kind": "pure tensor computation", "network": "none", "file_writes": "none"}
+   ],
+   "not_present": ["subprocess", "os.system", "socket", "urllib", "requests", "open(", "write(", "pickle", "torch.load", "cloudpickle", "dill", "eval(", "exec(", "__import__", "importlib", "ctypes"],
+   "transitive_code_revisions": "no auto_map entries of the form 'other_repo--module.Class'; no code_revision; the only code pulled is this tree's own files. Data pulled: adapters/* from the default branch (lines 37-40) when loaded by repo id"
+  },
+  "custom_st.py": {
+   "sha256": "52e0931dca24ca1a4fe4f0a5165f1b77e85deac6bebbd3532cda4c09253a29db",
+   "lines": 106,
+   "imports": [
+    {"line": 1, "stmt": "from typing import Any, Dict, List, Literal, Optional, Union"},
+    {"line": 3, "stmt": "import torch"},
+    {"line": 4, "stmt": "from torch import nn"},
+    {"line": 5, "stmt": "import torch.nn.functional as F"},
+    {"line": 6, "stmt": "from transformers import AutoConfig, AutoModel, AutoTokenizer"}
+   ],
+   "defines": [{"line": 9, "what": "class Transformer(nn.Module), save_in_root = True (line 11); the sentence-transformers module named by modules.json type 'custom_st.Transformer'"}],
+   "module_level_side_effects": "none beyond imports and the class definition",
+   "call_time_operations": [
+    {"lines": "25-28", "op": "backend != 'torch' -> ValueError", "kind": "guard"},
+    {"lines": "32-34", "op": "AutoConfig.from_pretrained(model_name_or_path, cache_dir=cache_dir, **config_kwargs)", "kind": "config load; config.json carries auto_map.AutoConfig -> configuration_jina_embeddings_v5.JinaEmbeddingsV5Config, so this call is where transformers' remote-code gate fires for the config", "trust_remote_code": "NOT set here; whatever sentence-transformers put into config_args (see THIRD_PARTY gate notes) decides"},
+    {"lines": "35", "op": "self.default_task = model_args.pop('default_task', None)", "kind": "defect", "note": "model_args defaults to None (line 18) and the line dereferences it; a direct construction with model_args=None raises AttributeError. Through sentence-transformers it is always a dict (Transformer._load_init_kwargs 5.1.2:403-404), so the sentence-transformers path does not hit it"},
+    {"lines": "41-43", "op": "AutoModel.from_pretrained(model_name_or_path, config=self.config, cache_dir=cache_dir, **model_kwargs)", "kind": "model load; config.auto_map.AutoModel -> modeling_jina_embeddings_v5.JinaEmbeddingsV5Model, so this is where transformers' remote-code gate fires for the model and where JinaEmbeddingsV5Model.from_pretrained (above) then runs, including its snapshot_download branch", "trust_remote_code": "NOT set here; carried in model_kwargs by sentence-transformers"},
+    {"lines": "44-47", "op": "AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)", "kind": "HARD-CODED trust_remote_code=True on the tokenizer (same remark as modeling file lines 57-60)"},
+    {"lines": "48", "op": "max_seq_length = max_seq_length or config.max_position_embeddings (32768 per config.json line 19)", "kind": "budget default", "note": "the sentence-transformers path passes max_seq_length only if present in the module config; otherwise the default is the full 32768 window"},
+    {"lines": "50-55", "op": "tokenize(): tokenizer call with truncation to max_seq_length", "kind": "pure"},
+    {"lines": "57-102", "op": "forward(): resolves task (default_task or explicit; ValueError otherwise, lines 64-76), self.model.set_adapter(task) line 77, forward under no_grad, last-token pooling, optional truncate_dim, normalize; writes features['sentence_embedding']", "kind": "pure tensor computation"},
+    {"lines": "104-106", "op": "load(cls, input_path) -> cls(model_name_or_path=input_path)", "kind": "single-parameter load signature; this is what makes sentence-transformers take its legacy Transformer-like branch (SentenceTransformer.py 5.1.2:2257-2286)"}
+   ],
+   "not_present": ["subprocess", "os", "sys", "socket", "urllib", "requests", "open(", "write(", "pickle", "torch.load", "eval(", "exec(", "importlib", "huggingface_hub"],
+   "transitive_code_revisions": "none of its own; it triggers the auto_map path of config.json, which resolves to this same tree's two other Python files"
+  }
+ },
+ "json_files_reviewed": {
+  "config.json": {"sha256": "1af1e1269488c83d8b2332e42099f0d2201d687fbe074d1ed096c6201f283546", "auto_map": {"AutoConfig": "configuration_jina_embeddings_v5.JinaEmbeddingsV5Config", "AutoModel": "modeling_jina_embeddings_v5.JinaEmbeddingsV5Model"}, "lines": "2-5", "model_type": "jina_embeddings_v5 (line 21; not in transformers' CONFIG_MAPPING, so has_local_code is False)", "task_names": ["retrieval", "text-matching", "clustering", "classification"], "torch_dtype": "bfloat16", "transformers_version_that_wrote_it": "4.51.0", "no_cross_repo_reference": true},
+  "modules.json": {"sha256": "b54acf92eab134d664abbbc5e42fd92f27535d3605666962c15dc3c32b2d9744", "entry": {"type": "custom_st.Transformer", "path": "", "kwargs": ["task", "truncate_dim"]}, "note": "the type is not a sentence_transformers.* class, so sentence-transformers resolves it through transformers' dynamic-module loader"},
+  "config_sentence_transformers.json": {"sha256": "e13a56778b7ba8561a3d540173e682ff92acb8457a24d567fe92a8388402fb14", "declared_export_toolchain": {"sentence_transformers": "5.1.2", "transformers": "4.57.0", "pytorch": "2.8.0"}, "prompts": {"query": "Query: ", "document": "Document: "}, "default_prompt_name": null, "similarity_fn_name": "cosine"},
+  "tokenizer_config.json": {"sha256": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101", "tokenizer_class": "Qwen2Tokenizer", "auto_map": "absent", "model_max_length": 131072, "chat_template": "present (Qwen3 chat template with tool-call markup); it is a Jinja template rendered only by apply_chat_template, which nothing in the reviewed code calls"},
+  "generation_config.json": {"sha256": "2325da0f15bb848e018c5ae071b7943332e9f871d6b60e2ed22ca97d4cb993d2", "note": "sampling defaults inherited from the Qwen3 base; irrelevant to embedding"},
+  "adapters/*/adapter_config.json": {"sha256": {"classification": "7c3f89c17197f40070fae65449fd013c6cf0ee5565ceb45e9d5e292aa8472563", "clustering": "af5a532a5d1855712b98829a1442f1b67e41165e140520ae5752060486a15b3f", "retrieval": "f37c5d6dd368e2675e54e01b685252d4d44eed042c773a48f56ebe1565cd0320", "text-matching": "60009adb7fb7be486dea1e318a1acb85eba8f04e209a296eca7454d3f6d95400"}, "peft_type": "LORA", "r": 32, "lora_alpha": 32, "task_type": "FEATURE_EXTRACTION", "base_model_name_or_path": "jinaai/jina-embeddings-v5-text-small (the same repository; no content revision)", "revision": null, "auto_mapping": null, "differences": "lora_dropout 0.05 on classification, 0.1 on the other three; target_modules are the same seven names in different order; no peft version field"}
+ },
+ "trust_remote_code_requirement": {
+  "required": true,
+  "why": "config.json model_type 'jina_embeddings_v5' is unknown to transformers (has_local_code False) and auto_map names both AutoConfig and AutoModel (has_remote_code True). transformers 4.57.0 configuration_auto.py:1333-1342 and auto_factory.py:566-579 call resolve_trust_remote_code, which at dynamic_module_utils.py:781-785 raises ValueError when has_remote_code and not has_local_code and not trust_remote_code; when trust_remote_code is None and the process has a TTY it prompts with a SIGALRM timeout (748-776) and raises without one (777-779). A local directory does NOT bypass this transformers gate (has_local_code is about the model_type registry, not the path).",
+  "the_exact_code_path_that_executes_with_trust_remote_code_True": [
+   "1. mteb 2.9.0 jina_models.py:778-781 ModelMeta(loader=JinaV5TextWrapper, loader_kwargs={trust_remote_code: True, ...}) with revision pinned at line 800; JinaV5TextWrapper.__init__ (724-737) -> SentenceTransformerEncoderWrapper.__init__ (sentence_transformer_wrapper.py:74-76) -> SentenceTransformer(model, revision=revision, device=device, trust_remote_code=True, model_prompts=...)",
+   "2. sentence-transformers 5.1.2 SentenceTransformer._load_sbert_model reads modules.json (2236-2245) and for type 'custom_st.Transformer' calls _load_module_class_from_ref (2251-2252): since the ref is not sentence_transformers.* and trust_remote_code is True (or the path is a local directory, line 2138), transformers.get_class_from_dynamic_module('custom_st.Transformer', model_name_or_path, revision=revision) runs: dynamic_module_utils.get_cached_module_file downloads or resolves custom_st.py, check_imports (233-265) imports every top-level package it names (torch, transformers), copies the file into HF_MODULES_CACHE/transformers_modules/<repo>/<commit>/ (429-463) and imports it (get_class_in_module 268-315). IMPORTING custom_st.py is the first execution of repository code.",
+   "3. Because custom_st.Transformer.load takes one parameter (custom_st.py:104-106) and __init__ has model_args/config_args, SentenceTransformer.py:2260-2286 builds kwargs via Transformer._load_init_kwargs (models/Transformer.py:368-423), which injects subfolder/token/revision/local_files_only/trust_remote_code into model_args, tokenizer_args and config_args (394-412), and constructs custom_st.Transformer(model_name_or_path, **kwargs). Its __init__ runs custom_st.py:32-48.",
+   "4. custom_st.py:32-34 AutoConfig.from_pretrained(..., trust_remote_code=True, revision=...) -> transformers configuration_auto.py:1333-1349: get_class_from_dynamic_module('configuration_jina_embeddings_v5.JinaEmbeddingsV5Config') copies and IMPORTS configuration_jina_embeddings_v5.py (second repository file executed), then register_for_auto_class.",
+   "5. custom_st.py:41-43 AutoModel.from_pretrained(..., config=..., trust_remote_code=True, revision=...) -> auto_factory.py:566-596: get_class_from_dynamic_module('modeling_jina_embeddings_v5.JinaEmbeddingsV5Model') copies and IMPORTS modeling_jina_embeddings_v5.py (third repository file executed; check_imports requires huggingface_hub, transformers, peft, torch importable), registers it, then calls JinaEmbeddingsV5Model.from_pretrained (modeling file 21-61): config load, Qwen3Model weight load, the adapters snapshot_download branch (37-40, unpinned revision) or the local adapters dir (34-35), PeftConfig + four load_adapter calls, and AutoTokenizer with the hard-coded trust_remote_code=True (57-60).",
+   "6. custom_st.py:44-47 AutoTokenizer.from_pretrained(..., trust_remote_code=True) once more (library Qwen2Tokenizer at this revision).",
+   "7. At evaluation, mteb calls JinaV5TextWrapper.encode (jina_models.py:739-775): task 'classification' from model_prompts for Classification tasks (785), prompt 'Document: ' for non-query inputs (767-771), then SentenceTransformer.encode -> custom_st.Transformer.forward (57-102) with set_adapter('classification')."
+  ],
+  "where_a_local_snapshot_changes_the_path": "with model_name_or_path a local directory: sentence-transformers skips its own gate (2138 'or os.path.exists(model_name_or_path)') but transformers still requires trust_remote_code=True at steps 4 and 5; modeling file line 34 then takes the local adapters dir and snapshot_download (37-40) is never called, which is the only way to keep the adapter bytes at the pinned revision without network."
+ },
+ "concrete_risks_found": [
+  {"id": "R1", "where": "modeling_jina_embeddings_v5.py:37-40", "risk": "snapshot_download without revision= pulls adapters/* from the repository's default branch at load time when loaded by repo id; the pinned revision is not honoured for the adapter bytes and the adapter weights could differ from the reviewed tree", "mitigation": "load from a complete local snapshot directory (line 34 branch) with HF_HUB_OFFLINE=1 and verify all 22 files' digests against MODEL_FILES.json before the load"},
+  {"id": "R2", "where": "modeling_jina_embeddings_v5.py:57-60 and custom_st.py:44-47", "risk": "trust_remote_code=True hard-coded for the tokenizer; harmless at this revision (no tokenizer Python, library Qwen2Tokenizer), but it is an unconditional grant that a future revision could exploit", "mitigation": "pin the revision and load from the verified local snapshot; a snapshot cannot change under the process"},
+  {"id": "R3", "where": "sentence-transformers 5.1.2 SentenceTransformer.py:2138", "risk": "a local directory path bypasses sentence-transformers' own trust_remote_code gate for custom modules; only transformers' gate remains", "mitigation": "none needed for this run because the owner's decision is explicit either way; recorded so nobody reads a local-path load as a no-remote-code load"},
+  {"id": "R4", "where": "transformers dynamic_module_utils.py:429-463", "risk": "the loader COPIES the repository's .py files into HF_MODULES_CACHE (default ~/.cache/huggingface/modules/transformers_modules/...) and appends that directory to sys.path (87-96); this is a file write outside the venv and a persistent import path", "mitigation": "set HF_MODULES_CACHE (or HF_HOME) to a directory inside the throwaway environment so nothing persists on the host after the environment is abandoned"},
+  {"id": "R5", "where": "modeling_jina_embeddings_v5.py:31 and config.json torch_dtype", "risk": "default dtype bfloat16 whatever the device; a CPU bfloat16 run is a different numerics path from the published (undeclared-device) row", "mitigation": "declare the device and dtype in the request and beside every number; not a security risk"},
+  {"id": "R6", "where": "custom_st.py:35", "risk": "AttributeError when constructed directly with model_args=None; not reachable through sentence-transformers", "mitigation": "none; documented"}
+ ],
+ "not_found_in_the_reviewed_files": ["subprocess or shell", "sockets or HTTP clients other than huggingface_hub/transformers hub loaders", "pickle/torch.load/cloudpickle/dill", "eval/exec/compile/__import__", "explicit open()/write()", "cross-repository auto_map ('--') references", "code_revision pins", "requirements.txt in the tree (transformers 4.57.0 check_python_requirements would read one if present; there is none)"]
+}

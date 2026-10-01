@@ -1,0 +1,363 @@
+{
+ "measured_on": "worker_b, CPython 3.12.13 venv created with `~/anaconda3/envs/tensorflow/bin/python -m venv` (interpreter borrowed only), located ON DISK (ext4) under ~/.local/state/scratch/c07-closure/, NOT under /tmp (tmpfs); pip 26.0.1; TMPDIR on the same disk directory; crispdm-run -m 2G -t 25m, CUDA_VISIBLE_DEVICES empty; exit 0; no incident record for this job",
+ "index": "--index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple (closure A)",
+ "venv_bytes_du": 1797137014,
+ "site_packages_bytes_du": 1797103606,
+ "sum_of_RECORD_file_sizes": 1797122188,
+ "n_distributions_including_pip": 69,
+ "freeze_matches_dry_run_pins": true,
+ "freeze_minus_pins_diffs": {},
+ "earlier_attempt_on_tmpfs": {
+  "result": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND at venv 1,743,423,052 bytes on /tmp (tmpfs, charged to the job's cgroup as shmem); record c07-closure-install-1790813089-1242292-634e7b; stopped by this lane's own admission scope, nothing else signalled",
+  "tmpfs_bytes_freed_afterwards": 1746978969,
+  "disk_pip_temp_bytes_removed": 416515107,
+  "rule_recorded": "scratch goes to disk on every host; /tmp only for files under 50 MB"
+ },
+ "per_distribution": [
+  {
+   "name": "torch",
+   "version": "2.8.0+cpu",
+   "installed_bytes_from_RECORD": 719396119
+  },
+  {
+   "name": "polars-runtime-32",
+   "version": "1.44.2",
+   "installed_bytes_from_RECORD": 180197199
+  },
+  {
+   "name": "pyarrow",
+   "version": "25.0.1",
+   "installed_bytes_from_RECORD": 161152777
+  },
+  {
+   "name": "scipy",
+   "version": "1.18.1",
+   "installed_bytes_from_RECORD": 139052536
+  },
+  {
+   "name": "transformers",
+   "version": "4.57.0",
+   "installed_bytes_from_RECORD": 107520636
+  },
+  {
+   "name": "sympy",
+   "version": "1.14.0",
+   "installed_bytes_from_RECORD": 69526711
+  },
+  {
+   "name": "numpy",
+   "version": "2.5.3",
+   "installed_bytes_from_RECORD": 68354400
+  },
+  {
+   "name": "pandas",
+   "version": "3.0.6",
+   "installed_bytes_from_RECORD": 67763336
+  },
+  {
+   "name": "mteb",
+   "version": "2.9.0",
+   "installed_bytes_from_RECORD": 60510388
+  },
+  {
+   "name": "scikit-learn",
+   "version": "1.9.1",
+   "installed_bytes_from_RECORD": 46469490
+  },
+  {
+   "name": "pillow",
+   "version": "12.3.0",
+   "installed_bytes_from_RECORD": 21055697
+  },
+  {
+   "name": "networkx",
+   "version": "3.7",
+   "installed_bytes_from_RECORD": 16277875
+  },
+  {
+   "name": "hf-xet",
+   "version": "1.6.0",
+   "installed_bytes_from_RECORD": 12509404
+  },
+  {
+   "name": "pip",
+   "version": "25.0.1",
+   "installed_bytes_from_RECORD": 11122300
+  },
+  {
+   "name": "tokenizers",
+   "version": "0.22.2",
+   "installed_bytes_from_RECORD": 10397413
+  },
+  {
+   "name": "polars",
+   "version": "1.44.2",
+   "installed_bytes_from_RECORD": 8845411
+  },
+  {
+   "name": "Pygments",
+   "version": "2.21.0",
+   "installed_bytes_from_RECORD": 8539957
+  },
+  {
+   "name": "aiohttp",
+   "version": "3.14.3",
+   "installed_bytes_from_RECORD": 7694698
+  },
+  {
+   "name": "peft",
+   "version": "0.21.1",
+   "installed_bytes_from_RECORD": 5959863
+  },
+  {
+   "name": "setuptools",
+   "version": "84.0.0",
+   "installed_bytes_from_RECORD": 5458139
+  },
+  {
+   "name": "pydantic_core",
+   "version": "2.46.5",
+   "installed_bytes_from_RECORD": 5192442
+  },
+  {
+   "name": "narwhals",
+   "version": "2.26.0",
+   "installed_bytes_from_RECORD": 4643453
+  },
+  {
+   "name": "huggingface_hub",
+   "version": "0.36.2",
+   "installed_bytes_from_RECORD": 4589513
+  },
+  {
+   "name": "datasets",
+   "version": "5.0.1",
+   "installed_bytes_from_RECORD": 4584765
+  },
+  {
+   "name": "mpmath",
+   "version": "1.3.0",
+   "installed_bytes_from_RECORD": 4579878
+  },
+  {
+   "name": "pydantic",
+   "version": "2.13.5",
+   "installed_bytes_from_RECORD": 3788557
+  },
+  {
+   "name": "regex",
+   "version": "2026.9.29",
+   "installed_bytes_from_RECORD": 3629185
+  },
+  {
+   "name": "sentence-transformers",
+   "version": "5.1.2",
+   "installed_bytes_from_RECORD": 3554749
+  },
+  {
+   "name": "accelerate",
+   "version": "1.15.0",
+   "installed_bytes_from_RECORD": 3193212
+  },
+  {
+   "name": "PyYAML",
+   "version": "6.0.3",
+   "installed_bytes_from_RECORD": 3155877
+  },
+  {
+   "name": "rich",
+   "version": "15.0.0",
+   "installed_bytes_from_RECORD": 2591784
+  },
+  {
+   "name": "joblib",
+   "version": "1.6.0",
+   "installed_bytes_from_RECORD": 1941331
+  },
+  {
+   "name": "fsspec",
+   "version": "2026.6.0",
+   "installed_bytes_from_RECORD": 1684648
+  },
+  {
+   "name": "safetensors",
+   "version": "0.8.0",
+   "installed_bytes_from_RECORD": 1400873
+  },
+  {
+   "name": "multiprocess",
+   "version": "0.70.19",
+   "installed_bytes_from_RECORD": 1354392
+  },
+  {
+   "name": "anyio",
+   "version": "4.15.1",
+   "installed_bytes_from_RECORD": 1284403
+  },
+  {
+   "name": "multidict",
+   "version": "6.9.1",
+   "installed_bytes_from_RECORD": 1277493
+  },
+  {
+   "name": "Jinja2",
+   "version": "3.1.6",
+   "installed_bytes_from_RECORD": 1172996
+  },
+  {
+   "name": "xxhash",
+   "version": "4.0.1",
+   "installed_bytes_from_RECORD": 1094874
+  },
+  {
+   "name": "pytrec_eval-terrier",
+   "version": "0.5.10",
+   "installed_bytes_from_RECORD": 1093636
+  },
+  {
+   "name": "packaging",
+   "version": "26.3",
+   "installed_bytes_from_RECORD": 995858
+  },
+  {
+   "name": "charset-normalizer",
+   "version": "3.5.2",
+   "installed_bytes_from_RECORD": 939271
+  },
+  {
+   "name": "urllib3",
+   "version": "2.8.0",
+   "installed_bytes_from_RECORD": 928118
+  },
+  {
+   "name": "psutil",
+   "version": "7.2.2",
+   "installed_bytes_from_RECORD": 904306
+  },
+  {
+   "name": "propcache",
+   "version": "0.5.4",
+   "installed_bytes_from_RECORD": 885360
+  },
+  {
+   "name": "frozenlist",
+   "version": "1.8.0",
+   "installed_bytes_from_RECORD": 831105
+  },
+  {
+   "name": "dill",
+   "version": "0.4.1",
+   "installed_bytes_from_RECORD": 825823
+  },
+  {
+   "name": "filelock",
+   "version": "4.0.7",
+   "installed_bytes_from_RECORD": 812337
+  },
+  {
+   "name": "python-dateutil",
+   "version": "2.9.0.post0",
+   "installed_bytes_from_RECORD": 743134
+  },
+  {
+   "name": "httpx",
+   "version": "0.28.1",
+   "installed_bytes_from_RECORD": 635810
+  },
+  {
+   "name": "httpcore",
+   "version": "1.0.9",
+   "installed_bytes_from_RECORD": 627378
+  },
+  {
+   "name": "idna",
+   "version": "3.20",
+   "installed_bytes_from_RECORD": 518326
+  },
+  {
+   "name": "markdown-it-py",
+   "version": "4.2.0",
+   "installed_bytes_from_RECORD": 503344
+  },
+  {
+   "name": "requests",
+   "version": "2.34.2",
+   "installed_bytes_from_RECORD": 478629
+  },
+  {
+   "name": "yarl",
+   "version": "1.25.1",
+   "installed_bytes_from_RECORD": 457902
+  },
+  {
+   "name": "tqdm",
+   "version": "4.70.1",
+   "installed_bytes_from_RECORD": 449302
+  },
+  {
+   "name": "attrs",
+   "version": "26.1.0",
+   "installed_bytes_from_RECORD": 442969
+  },
+  {
+   "name": "typing_extensions",
+   "version": "4.16.0",
+   "installed_bytes_from_RECORD": 349482
+  },
+  {
+   "name": "certifi",
+   "version": "2026.7.22",
+   "installed_bytes_from_RECORD": 254076
+  },
+  {
+   "name": "h11",
+   "version": "0.16.0",
+   "installed_bytes_from_RECORD": 185886
+  },
+  {
+   "name": "threadpoolctl",
+   "version": "3.7.0",
+   "installed_bytes_from_RECORD": 166140
+  },
+  {
+   "name": "cloudpickle",
+   "version": "3.1.2",
+   "installed_bytes_from_RECORD": 125938
+  },
+  {
+   "name": "typing-inspection",
+   "version": "0.4.4",
+   "installed_bytes_from_RECORD": 90341
+  },
+  {
+   "name": "MarkupSafe",
+   "version": "3.0.3",
+   "installed_bytes_from_RECORD": 89019
+  },
+  {
+   "name": "six",
+   "version": "1.17.0",
+   "installed_bytes_from_RECORD": 79465
+  },
+  {
+   "name": "annotated-types",
+   "version": "0.8.0",
+   "installed_bytes_from_RECORD": 67462
+  },
+  {
+   "name": "aiohappyeyeballs",
+   "version": "2.7.1",
+   "installed_bytes_from_RECORD": 62716
+  },
+  {
+   "name": "mdurl",
+   "version": "0.1.2",
+   "installed_bytes_from_RECORD": 40241
+  },
+  {
+   "name": "aiosignal",
+   "version": "1.4.0",
+   "installed_bytes_from_RECORD": 20040
+  }
+ ]
+}

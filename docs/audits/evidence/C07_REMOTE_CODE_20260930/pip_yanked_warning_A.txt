@@ -1,0 +1,2 @@
+WARNING: The candidate selected for download or install is a yanked version: 'transformers' candidate (version 4.57.0 at https://files.pythonhosted.org/packages/e5/2b/4d2708ac1ff5cd708b6548f4c5812d0ae40d1c28591c4c1c762b6dbdef2d/transformers-4.57.0-py3-none-any.whl (from https://pypi.org/simple/transformers/) (requires-python:>=3.9.0))
+Reason for being yanked: Error in the setup causing installation issues

@@ -1,0 +1,61 @@
+{
+ "purpose": "the library code that decides whether and how the model repository's Python is executed; read, not run",
+ "files": [
+  {
+   "file": "mteb_2.9.0_jina_models.py",
+   "package": "mteb 2.9.0",
+   "source_url": "https://raw.githubusercontent.com/embeddings-benchmark/mteb/2.9.0/mteb/models/model_implementations/jina_models.py",
+   "http_status": 200,
+   "sha256": "dabfd27f4687e1803fcd7c5d4ca275a34874fb3a60f271d4c6c195afd4d8f09e",
+   "bytes": 41087
+  },
+  {
+   "file": "mteb_2.9.0_sentence_transformer_wrapper.py",
+   "package": "mteb 2.9.0",
+   "source_url": "https://raw.githubusercontent.com/embeddings-benchmark/mteb/2.9.0/mteb/models/sentence_transformer_wrapper.py",
+   "http_status": 200,
+   "sha256": "46c3b18fe6fbab3798731513549c9bfa56436386c8365e231001243ef298075d",
+   "bytes": 13578
+  },
+  {
+   "file": "st_5.1.2_models_Transformer.py",
+   "package": "sentence-transformers 5.1.2",
+   "source_url": "https://raw.githubusercontent.com/UKPLab/sentence-transformers/v5.1.2/sentence_transformers/models/Transformer.py",
+   "http_status": 200,
+   "sha256": "03c1ebeb82fe2b9a64a7f70ea71c8c780883498cdb1a2179c7486097d952afb2",
+   "bytes": 19610
+  },
+  {
+   "file": "st_5.1.2_SentenceTransformer.py",
+   "package": "sentence-transformers 5.1.2",
+   "source_url": "https://raw.githubusercontent.com/UKPLab/sentence-transformers/v5.1.2/sentence_transformers/SentenceTransformer.py",
+   "http_status": 200,
+   "sha256": "21933a9871ae88162c7de630ad651d2059e4570b5c3e2427794c1f791550e2b5",
+   "bytes": 125388
+  },
+  {
+   "file": "tf_4.57.0_auto_factory.py",
+   "package": "transformers 4.57.0",
+   "source_url": "https://raw.githubusercontent.com/huggingface/transformers/v4.57.0/src/transformers/models/auto/auto_factory.py",
+   "http_status": 200,
+   "sha256": "04c0b61097c533459ecf74ee8b9d730abd4febbbfa4a9f73841fb7ff49c8eee2",
+   "bytes": 47212
+  },
+  {
+   "file": "tf_4.57.0_configuration_auto.py",
+   "package": "transformers 4.57.0",
+   "source_url": "https://raw.githubusercontent.com/huggingface/transformers/v4.57.0/src/transformers/models/auto/configuration_auto.py",
+   "http_status": 200,
+   "sha256": "120b62cd4e13dd155762acd14cf64fc8bca17a068f5dd004ddfd30fbcb2ef4ab",
+   "bytes": 55606
+  },
+  {
+   "file": "tf_4.57.0_dynamic_module_utils.py",
+   "package": "transformers 4.57.0",
+   "source_url": "https://raw.githubusercontent.com/huggingface/transformers/v4.57.0/src/transformers/dynamic_module_utils.py",
+   "http_status": 200,
+   "sha256": "4cd52ca9c7e1fa224d7d70115b9d22ea2a3ffd8f43cc4ea9028dbc876a07260d",
+   "bytes": 36401
+  }
+ ]
+}
