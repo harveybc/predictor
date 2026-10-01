@@ -41,16 +41,17 @@ def main():
     derived = out / "derived_config.json"
     derived.write_text(json.dumps(config, indent=2))
     os.environ["CUDA_VISIBLE_DEVICES"] = ""
+    import subprocess
     import app
-    import app.main as entry
-    sys.argv = ["predictor", "--load_config", str(derived), "--epochs", a.epochs,
-                "--max_steps_train", a.max_steps_train, "--max_steps_test", a.max_steps_test,
-                "--mc_samples", a.mc_samples]
-    try:
-        entry.main()
-    except SystemExit as exc:
-        if exc.code not in (0, None):
-            raise
+    # The legacy entry point is a SCRIPT (app/main.py imports its siblings as top-level
+    # modules), so run the installed file as a script exactly as predictor.sh does with
+    # a checkout: -E -s keep env/user site out; the script's own directory is sys.path[0]
+    # and the current directory (the checkout, for data paths) is NOT on sys.path.
+    main_py = Path(app.__file__).parent / "main.py"
+    subprocess.run([sys.executable, "-E", "-s", str(main_py), "--load_config", str(derived),
+                    "--epochs", a.epochs, "--max_steps_train", a.max_steps_train,
+                    "--max_steps_test", a.max_steps_test, "--mc_samples", a.mc_samples],
+                   check=True, env={**os.environ, "CUDA_VISIBLE_DEVICES": ""})
     results = Path(config["results_file"])
     with results.open() as f:
         rows = list(csv.reader(f))
