@@ -112,3 +112,20 @@ def test_residual_cells_inject_cumulative_seasonal_residual(campaign):
     # the residual variant differs from the plain cell only in the residual key and its variant tag
     res["model"].pop("target_residual"); res["modular_candidate"].pop("f2_variant")
     assert res == plain
+
+
+def test_regime_suffix_and_donor_declaration(tmp_path):
+    assert fc.regime_of("per_feature_mae_adamw_r1") == "R1" and fc.regime_of("per_feature_mae_adamw") == "R0"
+    assert fc.parse_cell("per_feature_mae_adamw_r2") == ("per_feature", "mae", "adamw")
+    flat = fc.cell_flat("per_feature", "mae", "adamw", 4, "R1")
+    assert flat["branch.regime"] == flat["core.regime"] == "R1"
+    d = tmp_path / "pretrain"
+    d.mkdir()
+    names = ["a", "b"]
+    for n in ("branch_0", "branch_1", "core"):
+        for ext in (".keras", ".manifest.json", ".provenance.json"):
+            (d / (n + ext)).write_bytes(n.encode() + ext.encode())
+    (d / "PRETRAIN.json").write_text("{}")
+    donors, binding = fc.donor_declaration(d, names)
+    assert set(donors) == {"1:branch_0", "1:branch_1", "core:1"} and binding["required_contract"] == "OPERATIONAL"
+    assert set(binding["donors"][donors["core:1"]]) == {"keras", "manifest", "provenance"}

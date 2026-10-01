@@ -102,10 +102,46 @@ def with_residual(nested):
     return json.loads(ss.canonical(out))
 
 
+REGIME_SUFFIXES = {"_r1": "R1", "_r2": "R2"}
+
+
+def regime_of(cell):
+    for suffix, regime in REGIME_SUFFIXES.items():
+        if cell.endswith(suffix):
+            return regime
+    return "R0"
+
+
+def donor_declaration(donor_dir, feature_names, grouping=1):
+    """base.donors map and donor_binding from an M02-format donor directory (schema-2 manifests embed provenance)."""
+    import hashlib
+    sha = lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest()
+    d = Path(donor_dir)
+    donors, bound = {}, {}
+    names = [f"branch_{i}" for i in range(len(feature_names))] if grouping == 1 else None
+    if names is None:
+        raise ValueError("donor_declaration supports per-feature donors (grouping 1) only")
+    for name in names:
+        path = d / f"{name}.keras"
+        donors[f"{grouping}:{name}"] = str(path)
+        bound[str(path)] = {"keras": sha(path), "manifest": sha(d / f"{name}.manifest.json"),
+                            "provenance": sha(d / f"{name}.provenance.json")}
+    core = d / "core.keras"
+    donors[f"core:{grouping}"] = str(core)
+    bound[str(core)] = {"keras": sha(core), "manifest": sha(d / "core.manifest.json"),
+                        "provenance": sha(d / "core.provenance.json")}
+    binding = {"index_sha256": sha(d.parent / "PRETRAIN_RECEIPT.json") if (d.parent / "PRETRAIN_RECEIPT.json").exists()
+               else sha(d / "PRETRAIN.json"),
+               "amendment_sha256": "NOT_APPLICABLE_SCHEMA2_NATIVE_PROVENANCE", "required_contract": "OPERATIONAL",
+               "donors": bound}
+    return donors, binding
+
+
 def parse_cell(cell):
     """'<architecture>_<loss>_<optimizer>' -> (architecture, loss, optimizer), refusing unknown names."""
-    if cell.endswith(RESIDUAL_SUFFIX):
-        cell = cell[:-len(RESIDUAL_SUFFIX)]
+    for suffix in (RESIDUAL_SUFFIX, *REGIME_SUFFIXES):
+        if cell.endswith(suffix):
+            cell = cell[:-len(suffix)]
     for arch in sorted([*ARCHITECTURES, "grouped_all", CONTROL], key=len, reverse=True):
         if cell.startswith(arch + "_"):
             rest = cell[len(arch) + 1:].split("_")
@@ -114,7 +150,7 @@ def parse_cell(cell):
     raise ValueError(f"unknown cell name {cell!r}; expected <architecture>_<loss>_<optimizer>")
 
 
-def cell_flat(architecture, loss, optimizer, feature_count=None):
+def cell_flat(architecture, loss, optimizer, feature_count=None, regime="R0"):
     if architecture == "grouped_all":  # one branch over every input channel (FX campaigns, few inputs)
         if not feature_count:
             raise ValueError("grouped_all needs the feature count")
@@ -123,7 +159,10 @@ def cell_flat(architecture, loss, optimizer, feature_count=None):
         arch = ARCHITECTURES[architecture]
     else:
         raise ValueError(f"unknown architecture {architecture}")
-    return {**DEFAULT_FLAT, **arch, **LOSSES[loss], **OPTIMIZERS[optimizer]}
+    flat = {**DEFAULT_FLAT, **arch, **LOSSES[loss], **OPTIMIZERS[optimizer]}
+    if regime != "R0":
+        flat["branch.regime"] = flat["core.regime"] = regime
+    return flat
 
 
 def control_hidden_for(parameter_target, window, features, horizons, targets):
@@ -168,10 +207,15 @@ def declare(args):
     if len(revision) != 40:
         raise ValueError("predictor_revision must be a full commit id")
     seeds = [2021, 2022]
+    donors, binding = ({}, None)
+    if getattr(args, "donor_dir", None):
+        donors, binding = donor_declaration(args.donor_dir, features)
     base = {"feature_names": features, "window": manifest["window"], "sample_hours": manifest["sample_hours"],
             "horizons": horizons, "target_feature_indices": [features.index(TARGET_FEATURE)],
             "objective": {"metric": "MAE", "split": "validation", "higher_is_better": False, "unit": "z_train"},
-            "evaluator_fixed": {"max_updates": 1000000, "max_seconds": 5400.0}, "donors": {}}
+            "evaluator_fixed": {"max_updates": 1000000, "max_seconds": 5400.0}, "donors": donors}
+    if binding:
+        base["donor_binding"] = binding
     data_dir = Path(args.data_dir)
     declaration = {
         "schema": SCHEMA, "campaign_id": args.campaign_id, "label": "DEVELOPMENT",
@@ -291,7 +335,7 @@ def enqueue(args):
                 nested = control_candidate(decl["base"], loss, opt, seed, hidden)
                 added += _insert_control(campaign, nested, seed, cell)
             continue
-        flat = cell_flat(arch, loss, opt, len(decl["base"]["feature_names"]))
+        flat = cell_flat(arch, loss, opt, len(decl["base"]["feature_names"]), regime_of(cell))
         if cell.endswith(RESIDUAL_SUFFIX):
             for seed in seeds:
                 nested = with_residual(ss.from_flat({**flat, "train.seed": seed}, decl["base"], decl["search_space"]))
@@ -468,6 +512,7 @@ def main():
     p.add_argument("--ld-library-path", required=True)
     p.add_argument("--host-role", required=True)
     p.add_argument("--seasonal-period", type=int, default=None, help="rows; default 6 (ETH 4h); FX 1h uses 24")
+    p.add_argument("--donor-dir", default=None, help="M02-format donor directory (branch_i.keras, core.keras) for R1/R2 cells")
     p = sub.add_parser("materialize")
     p.add_argument("--root", required=True)
     p.add_argument("--cell", required=True, help="<architecture>_<loss>_<optimizer>")
@@ -528,7 +573,7 @@ def main():
         if arch == CONTROL:
             nested = control_candidate(decl["base"], loss, opt, args.seed, decl["control"]["hidden"])
         else:
-            nested = ss.from_flat({**cell_flat(arch, loss, opt, len(decl["base"]["feature_names"])), "train.seed": args.seed}, decl["base"], decl["search_space"])
+            nested = ss.from_flat({**cell_flat(arch, loss, opt, len(decl["base"]["feature_names"]), regime_of(cell)), "train.seed": args.seed}, decl["base"], decl["search_space"])
             if args.cell.endswith(RESIDUAL_SUFFIX):
                 nested = with_residual(nested)
         Path(args.out).write_text(json.dumps(nested, indent=1, sort_keys=True) + "\n")
