@@ -1,0 +1,57 @@
+{
+  "entry_points": {
+    "optimizer.plugins": {
+      "default_optimizer": "optimizer_plugins.default_optimizer:Plugin",
+      "neat_optimizer": "optimizer_plugins.neat_optimizer:Plugin"
+    },
+    "pipeline.plugins": {
+      "binary_pipeline": "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+      "default_pipeline": "pipeline_plugins.default_pipeline:PipelinePlugin",
+      "direction_pipeline": "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+      "stl_pipeline": "pipeline_plugins.stl_pipeline:STLPipelinePlugin"
+    },
+    "predictor.plugins": {
+      "ann": "predictor_plugins.predictor_plugin_ann:Plugin",
+      "base": "predictor_plugin.predictor_plugin_base:Plugin",
+      "binary_ann": "predictor_plugins.binary.predictor_plugin_binary_ann:Plugin",
+      "binary_cnn": "predictor_plugins.binary.predictor_plugin_binary_cnn:Plugin",
+      "binary_logistic": "predictor_plugins.binary.predictor_plugin_binary_logistic:Plugin",
+      "binary_lstm": "predictor_plugins.binary.predictor_plugin_binary_lstm:Plugin",
+      "binary_mimo": "predictor_plugins.binary.predictor_plugin_binary_mimo:Plugin",
+      "binary_n_beats": "predictor_plugins.binary.predictor_plugin_binary_n_beats:Plugin",
+      "binary_tcn": "predictor_plugins.binary.predictor_plugin_binary_tcn:Plugin",
+      "binary_tft": "predictor_plugins.binary.predictor_plugin_binary_tft:Plugin",
+      "binary_transformer": "predictor_plugins.binary.predictor_plugin_binary_transformer:Plugin",
+      "cnn": "predictor_plugins.predictor_plugin_cnn:Plugin",
+      "default_predictor": "predictor_plugins.predictor_plugin_ann:Plugin",
+      "direction_ann": "predictor_plugins.direction.predictor_plugin_direction_ann:Plugin",
+      "direction_cnn": "predictor_plugins.direction.predictor_plugin_direction_cnn:Plugin",
+      "direction_logistic": "predictor_plugins.direction.predictor_plugin_direction_logistic:Plugin",
+      "direction_lstm": "predictor_plugins.direction.predictor_plugin_direction_lstm:Plugin",
+      "direction_mimo": "predictor_plugins.direction.predictor_plugin_direction_mimo:Plugin",
+      "direction_n_beats": "predictor_plugins.direction.predictor_plugin_direction_n_beats:Plugin",
+      "direction_tcn": "predictor_plugins.direction.predictor_plugin_direction_tcn:Plugin",
+      "direction_tft": "predictor_plugins.direction.predictor_plugin_direction_tft:Plugin",
+      "direction_transformer": "predictor_plugins.direction.predictor_plugin_direction_transformer:Plugin",
+      "fused_branches": "predictor_plugins.fused_branches:Plugin",
+      "lstm": "predictor_plugins.predictor_plugin_lstm:Plugin",
+      "mimo": "predictor_plugins.predictor_plugin_mimo:Plugin",
+      "n_beats": "predictor_plugins.predictor_plugin_n_beats:Plugin",
+      "quantile_ann": "predictor_plugins.quantile_ann:Plugin",
+      "tcn": "predictor_plugins.predictor_plugin_tcn:Plugin",
+      "tft": "predictor_plugins.predictor_plugin_tft:Plugin",
+      "transformer": "predictor_plugins.predictor_plugin_transformer:Plugin"
+    },
+    "preprocessor.plugins": {
+      "default_preprocessor": "preprocessor_plugins.default_preprocessor:PreprocessorPlugin",
+      "stl_preprocessor": "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin"
+    },
+    "target.plugins": {
+      "binary_target": "target_plugins.binary_target:TargetPlugin",
+      "default_target": "target_plugins.default_target:TargetPlugin",
+      "direction_target": "target_plugins.direction_target:TargetPlugin",
+      "stl_target": "target_plugins.stl_target:TargetPlugin"
+    }
+  },
+  "source": "predictor master dc72170e setup.py (last literal wins for duplicated dict keys, as setuptools sees it)"
+}
