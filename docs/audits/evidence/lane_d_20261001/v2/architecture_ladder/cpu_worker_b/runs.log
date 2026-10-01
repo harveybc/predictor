@@ -1,0 +1,5 @@
+control s2021 exit 0 2026-10-01T06:02:09-05:00
+control cap from measurement 3570991104 -> 4257M
+g32 s2021 exit 0 2026-10-01T06:13:49-05:00
+control s2022 exit (launched by run.sh, finished under run2.sh) 2026-10-01T06:25:39-05:00
+g32 s2022 exit 0 2026-10-01T06:33:18-05:00
