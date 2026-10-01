@@ -55,12 +55,18 @@ def test_sampled_round_trips_are_exact():
         assert ss.to_flat(nested, SPACE) == flat
 
 
-def test_default_matches_engine_defaults_when_engine_available():
+def test_corrected_default_matches_integrated_engine_and_old_default_is_refused():
     mt = pytest.importorskip("predictor_plugins.modular_temporal")
-    nested = ss.from_flat(flat_default(**{"branch.grouping_size": 321}), BASE, SPACE)
+    v2 = json.loads((ROOT / "examples/config/modular_doin/ecl_l24_h24_default_r0_v2_full_grid.json").read_text())
+    space_v2 = json.loads((ROOT / "examples/config/modular_doin/ecl_l24_h24_search_space_v2_full_grid.json").read_text())
+    nested = ss.from_flat({**v2, "branch.grouping_size": 321, "train.seed": 2021, "train.huber_delta": 1.0},
+                          BASE, space_v2)
     normalized = mt._normalize(nested["model"])
     assert normalized["core"]["params"]["d_model"] == 64
-    assert normalized["branch_steps"] == 12 and normalized["output_steps"] == 6
+    assert normalized["branch_steps"] == 24 and normalized["output_steps"] == 6
+    old = ss.from_flat(flat_default(**{"branch.grouping_size": 321}), BASE, SPACE)  # branch_steps 12
+    with pytest.raises(ValueError, match="branch_steps must equal window"):
+        mt._normalize(old["model"])
 
 
 # ------------------------------------------------------------------ T2 --
@@ -284,13 +290,15 @@ def synthetic_inputs(tmp_path, features=("a", "b")):
 
 
 def small_candidate():
-    space = copy.deepcopy(SPACE)
+    space = copy.deepcopy(json.loads(
+        (ROOT / "examples/config/modular_doin/ecl_l24_h24_search_space_v2_full_grid.json").read_text()))
     base = {**BASE, "feature_names": ["a", "b"], "horizons": [1, 2], "target_feature_indices": [0],
             "evaluator_fixed": {"max_updates": 1000, "max_seconds": 120.0}}
     flat = flat_default(**{"branch.grouping_size": 1, "branch.channels": 8, "core.d_model": 32,
                            "core.heads": 2, "core.blocks": 1, "core.ff_dim": 64, "core.stage_channels_0": 24,
                            "core.stage_channels_1": 12, "train.max_epochs": 30, "train.batch_size": 32,
-                           "train.patience": 3})
+                           "train.patience": 3, "model.branch_steps": 24, "core.time_factor_0": 2,
+                           "core.time_factor_1": 2, "core.time_factor_2": 1})
     flat["train.max_epochs"] = 30
     return ss.from_flat(flat, base, space)
 
