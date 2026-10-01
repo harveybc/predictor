@@ -7,7 +7,10 @@ is configured by a nested document (schema ``predictor.modular.v1``, see
 mapping between the two:
 
 ``modular.<key>``                      top-level scalar/list settings (window,
-                                       sample_hours, horizons, regime, ...)
+                                       sample_hours, horizons, regime, ...);
+                                       ``modular.branch_steps`` is DERIVED: it
+                                       must equal ``modular.window`` (branches
+                                       keep every step) and anything else fails
 ``modular.branch_order``               the ordered branch names (keeps order)
 ``branches.<name>.<field>``            features, plugin, regime, donor
 ``branches.<name>.params.<p>[.<q>]``   branch plugin parameters

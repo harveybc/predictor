@@ -91,3 +91,23 @@ def test_time_grids_are_behavioural_at_every_stage():
             assert first == i // block and np.all(moved[:i // block] <= 1e-6)
         first, moved = _first_changed(b.encoder_model, x, i)           # causal Transformer: no look-ahead
         assert first == i // 4 and np.all(moved[:i // 4] <= 1e-6)
+
+
+def test_default_time_factors_are_pinned_but_not_an_invariant():
+    b = bundle(3)
+    manifest = b.donor_manifest("core")
+    assert manifest["params"]["time_factors"] == [2, 2, 1]               # default: 24 -> 12 -> 6 -> 6
+    assert manifest["params"]["stage_channels"] == [32, 16, 8]
+    c = mt.default_config(["f0", "f1", "f2"])
+    c["core"]["params"]["time_factors"] = [4, 1, 1]                       # a valid candidate
+    alt = mt.build_modular(c).core_model
+    assert [tuple(alt.get_layer(f"stage_{i}_output").output.shape) for i in range(3)] == [
+        (None, 6, 32), (None, 6, 16), (None, 6, 8)]
+    for bad in ([2, 1, 1], [3, 2, 1], [5, 1, 1]):                          # product != 4 or non-dividing
+        c["core"]["params"]["time_factors"] = bad
+        with pytest.raises(ValueError):
+            mt.build_modular(c)
+    c["core"]["params"].pop("time_factors")
+    c["branch_steps"] = 12                                                # branches never reduce time
+    with pytest.raises(ValueError, match="branch_steps must equal window"):
+        mt.build_modular(c)

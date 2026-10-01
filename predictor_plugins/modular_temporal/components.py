@@ -163,7 +163,14 @@ def transformer_conv(*, input_shape, time_grid, output_steps, output_channels, n
         Stable Keras model name.
     params : dict
         Transformer width, head/block counts, FFN width, dropout, and reduction
-        stage settings. Defaults are documented in the package API page.
+        stage settings. Defaults: d_model 64, heads 4, blocks 2, ff_dim 128,
+        dropout 0.0, kernel_size 3, stage_channels [32, 16, output_channels].
+        ``time_factors`` defaults to the prime factors of
+        ``steps // output_steps`` spread over the stages, i.e. [2, 2, 1] for the
+        hourly 24 -> 6 default (24 -> 12 -> 6 -> 6). That is the DEFAULT, not an
+        invariant: any factors whose product equals ``steps // output_steps``
+        and that divide the running length exactly are valid candidate
+        parameters (for example [4, 1, 1]); anything else fails.
 
     Returns
     -------
