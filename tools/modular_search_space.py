@@ -66,6 +66,8 @@ ENGINE_CAPABILITIES = {
 }
 
 LOSSES = ("huber", "mae", "mse")
+# Optional flat parameters: a space may omit them (older campaigns); when declared they are always active.
+OPTIONAL_PARAMETERS = {"model.target_residual": ("none", "seasonal_naive_24")}
 REGIMES = ("R0", "R1", "R2")
 
 
@@ -106,8 +108,9 @@ def validate_space(space):
     if space.get("engine") not in ENGINE_CAPABILITIES:
         _fail("unknown engine capability identity")
     bounds = space.get("bounds")
-    if not isinstance(bounds, dict) or set(bounds) != set(parameter_names()):
-        missing = set(parameter_names()) ^ set(bounds or {})
+    expected = set(parameter_names()) | (set(bounds or {}) & set(OPTIONAL_PARAMETERS))
+    if not isinstance(bounds, dict) or set(bounds) != expected:
+        missing = expected ^ set(bounds or {})
         _fail(f"bounds must declare every flat parameter exactly: {sorted(missing)}")
     for name, spec in bounds.items():
         if not isinstance(spec, dict):
@@ -164,6 +167,15 @@ def validate_flat(flat, space):
     validate_space(space)
     if not isinstance(flat, dict):
         _fail("flat parameters must be an object")
+    optional = {k: v for k, v in flat.items() if k in OPTIONAL_PARAMETERS}
+    for name in optional:
+        if name not in space["bounds"]:
+            _fail(f"{name} is not declared by this search space")
+        _in_bounds(name, optional[name], space["bounds"][name])
+    flat = {k: v for k, v in flat.items() if k not in OPTIONAL_PARAMETERS}
+    for name in OPTIONAL_PARAMETERS:
+        if name in space["bounds"] and name not in optional:
+            _fail(f"active parameters missing: ['{name}']")
     if flat.get("core.stage_count") not in (3, 4):
         _fail("core.stage_count must be 3 or 4")
     if flat.get("train.loss") not in LOSSES:
@@ -287,6 +299,10 @@ def from_flat(flat, base, space):
             _fail(f"donor binding lacks {len(missing)} declared donors (e.g. {missing[0]})")
         meta["donor_binding"] = {**{k: binding[k] for k in ("index_sha256", "amendment_sha256", "required_contract")},
                                  "donors": {d: binding["donors"][d] for d in used}}
+    residual = flat.get("model.target_residual", "none")
+    if residual == "seasonal_naive_24":
+        model["target_residual"] = {"kind": "seasonal_naive", "period": 24,
+                                    "target_features": [names[i] for i in base["target_feature_indices"]]}
     nested = {"modular_candidate": meta,
               "model": model, "evaluator": evaluator,
               "target_feature_indices": list(base["target_feature_indices"]),
@@ -338,6 +354,8 @@ def to_flat(nested, space):
         flat["train.huber_delta"] = ev["huber_delta"]
     elif "huber_delta" in ev:
         _fail("huber_delta present while loss is not huber")
+    if "model.target_residual" in space["bounds"]:
+        flat["model.target_residual"] = "seasonal_naive_24" if model.get("target_residual") else "none"
     validate_flat(flat, space)
     return flat
 

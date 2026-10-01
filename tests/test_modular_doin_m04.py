@@ -806,3 +806,21 @@ def test_enqueue_with_explicit_seeds_and_per_config_eligibility(tmp_path):
     table, ranked = campaign.standings()
     assert {t["label"]: t["eligible"] for t in table} == {"seeds_default": True, "sweep": True}
     assert ranked[0]["label"] == "sweep" and ranked[0]["per_seed"] == {"2021": 0.30, "2022": 0.31}
+
+
+def test_optional_seasonal_residual_parameter_round_trips_and_is_optional():
+    space = copy.deepcopy(SPACE_V2)
+    space["bounds"]["model.target_residual"] = {"choices": ["none", "seasonal_naive_24"]}
+    flat = {**DEFAULT_V2, "train.seed": 2021, "train.huber_delta": 1.0, "model.target_residual": "seasonal_naive_24"}
+    nested = ss.from_flat(flat, BASE, space)
+    assert nested["model"]["target_residual"]["period"] == 24
+    assert len(nested["model"]["target_residual"]["target_features"]) == 321
+    assert ss.to_flat(nested, space) == flat
+    plain = {**flat, "model.target_residual": "none"}
+    assert "target_residual" not in ss.from_flat(plain, BASE, space)["model"]
+    with pytest.raises(ss.SearchSpaceError, match="missing"):
+        ss.from_flat({k: v for k, v in flat.items() if k != "model.target_residual"}, BASE, space)
+    with pytest.raises(ss.SearchSpaceError, match="not declared"):
+        ss.from_flat(flat, BASE, SPACE_V2)  # older spaces never accept it silently
+    old = {**DEFAULT_V2, "train.seed": 2021, "train.huber_delta": 1.0}
+    assert ss.to_flat(ss.from_flat(old, BASE, SPACE_V2), SPACE_V2) == old  # older spaces unchanged
