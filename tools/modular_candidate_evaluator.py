@@ -479,7 +479,9 @@ def evaluate_candidate(config, train_path, validation_path, output_dir, progress
     _predict(model, x[:1], y[:1], batch)
     initial_digest = _weight_digest(model.get_weights())
     fit_settings = settings if progress is None else {**settings, "progress": progress}
-    if any(spec["regime"] == "R3" for spec in [*bundle.config["branches"], bundle.config["core"]]):
+    engine_config = getattr(bundle, "config", None) or {}
+    if any(spec.get("regime") == "R3"
+           for spec in [*engine_config.get("branches", []), engine_config.get("core", {})]):
         # R3 (warm): frozen donors for freeze_epochs, then unfrozen; every R0/R1/R2 path below is untouched
         from predictor_plugins.modular_temporal import warm as _warm
         warm_receipt = _warm.fit_warm(bundle, x, y, vx, vy, fit_settings)
