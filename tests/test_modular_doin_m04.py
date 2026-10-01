@@ -570,7 +570,7 @@ def test_deferred_candidate_returns_when_cap_or_measurement_changes(tmp_path):
     campaign.space = SPACE_V2
     campaign.enqueue({**corrected(1), "train.huber_delta": 1.0}, "per_feature")
     assert campaign.reconsider_deferred() == []  # nothing changed
-    campaign.declaration["budget"]["caps"].update(fused_width=6000, materialization_bytes=1.0e10)
+    campaign.declaration["budget"]["caps"].update(fused_width=6000, materialization_bytes=2.0e10)
     released = campaign.reconsider_deferred()
     assert len(released) == 2
     assert {r[0] for r in campaign.db.execute("SELECT status FROM candidates")} == {"queued"}
