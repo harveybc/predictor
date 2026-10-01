@@ -113,7 +113,7 @@ def main():
         v = {"kalman_cost": kcost, "fit_rows": kal["fit_rows"], "clipped_r": int(sum(c["r_clipped"] for c in pc)),
              "clipped_q": int(sum(c["q_clipped"] for c in pc)), "arms": {}, "paired_vs_A": {}}
         use = ["A", "B", "C", "C_EWMA", "B_PERMUTED", "B_NOISE", "C_SMOOTHER_NONCAUSAL"] if a.mode == "ridge" else \
-            ["A", "B", "C", "B_PERMUTED"]
+            ["A", "B", "C", "C_EWMA", "B_PERMUTED"]
         perorig = {}
         for arm in use:
             blocks = arms[arm]["blocks"]()
@@ -175,6 +175,11 @@ def main():
                     spread.append({"horizon": k + 1, "delta_by_seed": ds, "mean": float(np.mean(ds)),
                                    "seed_range": float(max(ds) - min(ds))})
                 v["paired_vs_A"][arm] = {"per_seed": per_seed, "seed_spread": spread}
+        # Kalman against its comparable causal EWMA (same capacity class, no adaptive state)
+        if a.mode == "ridge":
+            v["paired_C_vs_C_EWMA"] = paired(perorig["C_EWMA"], perorig["C"])
+        else:
+            v["paired_C_vs_C_EWMA"] = [paired(perorig["C_EWMA"][i], perorig["C"][i], B=300, seed=s) for i, s in enumerate(a.seeds)]
         res["variants"][vn] = v
         del arms, kal
     res["totals"] = {"wall_s": time.time() - t0, "cpu_s": time.process_time() - c0,

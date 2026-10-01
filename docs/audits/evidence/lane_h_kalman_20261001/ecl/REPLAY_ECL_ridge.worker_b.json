@@ -1,0 +1,71 @@
+{
+ "kalman": {
+  "declared_1e-1": {
+   "artifact_sha256s": [
+    "b00b517ec9f7b8862d4d0c5f470f63b7d1776e17facde1c8d73ec4c478c184fc",
+    "0b7740c7d7909af72995ce77861a5881ec7b64f6fadb9980c78be3b8e4e90c75",
+    "461e6ae4d20b1ac5f4d7aee9a3c848ebd8f3a6c935c710d90b63a0a4890aaff9",
+    "58049d645e9d1e81cff0ed7b351afef6492ad2b19473b27d706e6825119130ea",
+    "27fc422d6e23a7d05d18c1fb9080da38ac807d090656080d9b5874bf425dc468",
+    "247fb3642d0d1972ceb044ace3d5cc9187bfcb1449cf9d1c505443b9237d2605"
+   ],
+   "fitted_state_digests": [
+    "a73f4281ba90965a4bf40b36aa93bf3b6815c0dce4ef887faf0e760a98065de7",
+    "751748567d24717e9f411042c7539d71db887cc977028257f45db7a0ac8880aa",
+    "5ca66b26a6c081835a067f71a9b0c6292b8c5b084ca5d87b82fd1a134c079fb4",
+    "484a28ae42889b390d732a9dfcd5627248ce917d7d69502a63239340a7bc8ff5",
+    "14b01c29f7d7e88959f44250ab07fb68d3dd177ed0223dd15fe27c7bb2a8a7a7",
+    "17706782a2406b165275e2dc4e6d686835943a9b1e2d5a966640eedee3a980b2"
+   ],
+   "output_digest": "f447dff7edad1acdc0a4d86770b1a10652c8feff3fa58cc3ef184773b908662c",
+   "reason_counts": {
+    "AVAILABLE": 6751914,
+    "FUTURE_UNAVAILABLE": 0,
+    "MISSING_INPUT": 0,
+    "WARMUP": 3210
+   }
+  },
+  "moments_train": {
+   "artifact_sha256s": [
+    "65056ee9c4c6e72bb7d3ed6ca19660c26d4dce421c69e0f1a69ba0661b160bbb",
+    "a053871c6584a9fab859b015e82209a679e38f88e67307016ff16045531b2f4f",
+    "3db9dfc01cfd10e229257c8399a079b1df579153316a3172c3ba3809f497c329",
+    "488c7287bdc3597ea4c8b8fb141a642ab0c5f43ffe1aacda8c4d4fd2c550232f",
+    "2fb9045df967cd3c962ec0228be5f84ef868749b35ce4b5dc3067b758421aecd",
+    "989de1a8ac9160dd0540522f2959cd5731852be60fd9f99bb0ea20c82d311f46"
+   ],
+   "fitted_state_digests": [
+    "7de03a01e61b1bd1ef18d2d65f258bb8950677888e8b94a622fa7870c78ccb76",
+    "6980e055ed943a58eb9a6dd4d617e4a428f4a2cd8aacf8213cf9978d0bc54198",
+    "600ca4d3cc138a8bec82b79aedf32eddf6081dab0200679eaa9d3bc4baae3b47",
+    "7800a124af25f6d1d6c93bd5b5345ff8a50f4e8ad61485138b34bd9d206a71c4",
+    "e4419637dfdf29dd9eac05c15953112fdeb5c731fefae81ad5423d8bb3a96627",
+    "5eff3077698bee2954ea62dae8fed20471a4bb1d2eceabc5249d1e0a2ac2a631"
+   ],
+   "output_digest": "f4aa0b1e97734c83565bceb1d02e89e45ea129b15b2334f2b093a8ba96f1297e",
+   "reason_counts": {
+    "AVAILABLE": 6751914,
+    "FUTURE_UNAVAILABLE": 0,
+    "MISSING_INPUT": 0,
+    "WARMUP": 3210
+   }
+  }
+ },
+ "predictions": {
+  "declared_1e-1|A": "3d1e25ab31ab99faaa651bf9b1cb02dda88cf1f2cbac6adfd8de1fe7f3fd4c4f",
+  "declared_1e-1|B": "adb01a2f9cabb98cfac9eae574ef5fa2df4ee4f008f7119bd66b5894e00f1222",
+  "declared_1e-1|B_NOISE": "31d9769ae1406a07de75614028ebd8d3faae872fa93a93f8a01c1a2373106df8",
+  "declared_1e-1|B_PERMUTED": "ff83894d21875b39448acfdf3d7e103c00a744f808952f12dfc5fca409ab5efe",
+  "declared_1e-1|C": "bc31cae26ebb33e458e7a493f0d2f54ea2e30e9f79c5316d50ff1138b82d48e6",
+  "declared_1e-1|C_EWMA": "014a83df3dd35767497b2fd1d4e1ec50fefc46e7791ff7bc8fb96298efe03942",
+  "declared_1e-1|C_SMOOTHER_NONCAUSAL": "b4734bec23738f656262317a238b36374f0f1bf669452f3cf531b8f04a1ddb9f",
+  "moments_train|A": "3d1e25ab31ab99faaa651bf9b1cb02dda88cf1f2cbac6adfd8de1fe7f3fd4c4f",
+  "moments_train|B": "c0ac06746c263f1e366949ad79efab6383a70b8a5819cf4057b881843730f9ea",
+  "moments_train|B_NOISE": "db429c10f43c498b7a4028eaeb7573cce629b16a4c0b4cf10f8cd757bbd0661a",
+  "moments_train|B_PERMUTED": "fc9fcf81ddfaba3a2c1ecbfe85128b5013619a089221bc39a405663ae10ca3de",
+  "moments_train|C": "8292d3034b77b2888a2e3f65eb1f5bbf51009a1753423703b83c2eb444322d55",
+  "moments_train|C_EWMA": "2d46240cd2c955a7e8729f721dd349cf80459692ea908930a928a178a515e4a2",
+  "moments_train|C_SMOOTHER_NONCAUSAL": "eac4dd39c9ed30873df599b0a2bf9e4e1ff7aa6a08985f51329e4a6681841954"
+ },
+ "rows_sha256": "9e0b3c26b9984034871e55496e2040c223b071bdb5166f016062fe93d9723222"
+}
