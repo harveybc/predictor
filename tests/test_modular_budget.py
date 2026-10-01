@@ -73,11 +73,12 @@ def test_cap_overflow_defers_with_a_named_reason_and_never_truncates():
         mt.build_modular(dict(c, budget_caps={"max_wobble": 1}))
 
 
-def test_unrouted_declared_inputs_are_truncation_unless_excluded_with_reason():
+def test_unrouted_declared_inputs_are_truncation_under_a_cap_and_always_visible():
     c = cfg(3)
     c["branches"] = c["branches"][:2]                              # f2 declared but routed nowhere
+    assert mt.measure_budget(c)["unrouted_features"] == ["f2"]      # visible without caps (sub-bundles)
     with pytest.raises(ValueError, match="^INPUT_TRUNCATED"):
-        mt.build_modular(c)
+        mt.build_modular(dict(c, budget_caps={"max_fused_width": 32}))
     c["excluded_features"] = {"f2": "DEFERRED: budget cap on fused width (named, reversible)"}
     b = mt.measure_budget(c)
     assert b["raw_channels"] == 3 and b["routed_channels"] == 2 and b["excluded_features"] == {

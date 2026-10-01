@@ -96,7 +96,10 @@ def _normalize(config):
     if set(excluded) - set(names) or set(excluded) & routed:
         raise ValueError("excluded_features must name declared inputs that are not routed to a branch")
     unrouted = [f for f in names if f not in routed and f not in excluded]
-    if unrouted:
+    # Under a declared budget cap an unrouted input is truncation-to-fit and is refused by name. Without
+    # caps a sub-bundle (e.g. one-branch pretraining isolation) may route a subset; the budget then reports
+    # the unrouted inputs explicitly, so nothing disappears silently.
+    if unrouted and c.get("budget_caps"):
         raise ValueError(f"INPUT_TRUNCATED: declared inputs {unrouted} reach no branch and are not in "
                          "excluded_features with a reason; inputs are never dropped silently")
     return c

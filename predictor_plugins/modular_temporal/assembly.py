@@ -91,6 +91,8 @@ def _budget(bundle):
     routed = sorted({f for spec in c["branches"] for f in spec["features"]})
     return {"raw_channels": len(c["feature_names"]), "routed_channels": len(routed),
             "excluded_features": _copy(c.get("excluded_features", {})),
+            "unrouted_features": [f for f in c["feature_names"] if f not in routed
+                                  and f not in c.get("excluded_features", {})],
             "branches": len(widths), "branch_widths": widths, "fused_width": int(fused[-1]),
             "fused_time": int(fused[1]), "latent_shape": [int(d) for d in bundle.core_model.output_shape[1:]],
             "materialization_bytes_per_row": int(fused[1]) * int(fused[-1]) * 4, "dtype": "float32",
@@ -109,7 +111,9 @@ def _analytic_budget(c):
         widths.append(int(params["channels"]))
     routed = sorted({f for spec in c["branches"] for f in spec["features"]})
     return {"raw_channels": len(c["feature_names"]), "routed_channels": len(routed),
-            "excluded_features": _copy(c.get("excluded_features", {})), "branches": len(widths),
+            "excluded_features": _copy(c.get("excluded_features", {})),
+            "unrouted_features": [f for f in c["feature_names"] if f not in routed
+                                  and f not in c.get("excluded_features", {})], "branches": len(widths),
             "branch_widths": widths, "fused_width": sum(widths), "fused_time": c["branch_steps"],
             "latent_shape": [c["output_steps"], c["output_channels"]],
             "materialization_bytes_per_row": c["branch_steps"] * sum(widths) * 4, "dtype": "float32"}

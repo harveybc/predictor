@@ -54,6 +54,22 @@ TS2VEC_DEVIATIONS = [
 ]
 
 
+def memory():
+    """Own RSS peak and the enclosing cgroup's current/peak bytes (cgroup v2), read now."""
+    out = {"rss_peak_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024}
+    try:
+        rel = Path("/proc/self/cgroup").read_text().strip().split("::", 1)[1]
+        base = Path("/sys/fs/cgroup") / rel.lstrip("/")
+        for name in ("memory.current", "memory.peak"):
+            f = base / name
+            if f.is_file():
+                out["cgroup_" + name.split(".")[1] + "_bytes"] = int(f.read_text().split()[0])
+        out["cgroup"] = rel
+    except (OSError, IndexError, ValueError):
+        out["cgroup"] = "UNAVAILABLE"
+    return out
+
+
 def _atomic(path, document):
     tmp = path.with_name(path.name + ".tmp")
     tmp.write_text(json.dumps(document, indent=1, sort_keys=True, allow_nan=False) + "\n")
@@ -131,8 +147,7 @@ class Heartbeat(threading.Thread):
 
     def run(self):
         while not self.stop.is_set():
-            _atomic(self.path, {**self.state, "utc_epoch": time.time(),
-                                "peak_rss_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024})
+            _atomic(self.path, {**self.state, "utc_epoch": time.time(), "memory_now": memory()})
             self.stop.wait(self.every)
 
 
@@ -142,6 +157,20 @@ def _tracing_estimate(receipt):
         return None
     steady = float(np.median([e["seconds"] / max(e["updates"], 1) for e in epochs[1:]]))
     return max(0.0, epochs[0]["seconds"] - steady * epochs[0]["updates"])
+
+
+def _reusable(path, arm):
+    """Reuse a completed record only if it binds the same data bytes and the same objective identity."""
+    from predictor_plugins.modular_temporal import objectives as ob
+    try:
+        record = json.loads(path.read_text())
+    except ValueError:
+        return False
+    if record.get("status") != "PILOT_ENGINEERING":
+        return False
+    same_data = (record.get("input_identity") or {}).get("data_sha256") == DATA_SHA256
+    same_objective = (record.get("objective") or {}).get("sha256") == ob.objective_identity(ARMS[arm])["sha256"]
+    return same_data and same_objective
 
 
 def run_one(feature, fold, seed, arm, data, records):
@@ -192,8 +221,7 @@ def run_one(feature, fold, seed, arm, data, records):
               "probes": rows,
               "latent_diagnostics": {"trained": pb.latent_diagnostics(enc, diag_x),
                                      "random": pb.latent_diagnostics(init_twin, diag_x)},
-              "cost": {"seconds_total": time.monotonic() - started,
-                       "peak_rss_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024,
+              "cost": {"seconds_total": time.monotonic() - started, "memory_at_record": memory(),
                        "device_class": "cpu"}}
     _atomic(records / f"{feature}__{fold['name']}__{arm}__{seed}.json", record)
     return record
@@ -207,6 +235,8 @@ def main():
     p.add_argument("--shard", type=int, required=True)
     p.add_argument("--shards", type=int, default=2)
     p.add_argument("--heartbeat-seconds", type=float, default=15.0)
+    p.add_argument("--cap-bytes", type=int, required=True,
+                   help="the crispdm-run cap of this child; it stops itself at a record boundary at 90 %%")
     a = p.parse_args()
     selection = json.loads(Path(a.selection).read_text())
     if selection.get("worklist_sha256") != SELECTION_SHA or selection.get("status") != "CURRENT":
@@ -222,16 +252,14 @@ def main():
     labels = targets(train, ts)
     todo = [(f, fold, seed, arm) for f in features for fold in FOLDS for seed in SEEDS for arm in ARMS]
     done = skipped = 0
-    cache = {}
+    cache, peaks = {}, []
     for feature, fold, seed, arm in todo:
         path = records / f"{feature}__{fold['name']}__{arm}__{seed}.json"
         if path.is_file():
-            try:
-                json.loads(path.read_text())
+            if _reusable(path, arm):
                 skipped += 1
                 continue
-            except ValueError:
-                path.unlink()
+            path.rename(path.with_name(path.name + ".not_reused"))
         key = (feature, fold["name"])
         if key not in cache:
             cache = {key: fold_arrays(train[feature].to_numpy("float64"), fold, labels)}
@@ -245,6 +273,16 @@ def main():
                       "fit": {"observed_updates": None, "stop_reason": "FAILED"}, "cost": {"seconds_total": None}}
             _atomic(path, record)
         done += 1
+        mem = memory()
+        peaks.append({"input": feature, "fold": fold["name"], "seed": seed, "arm": arm, **mem})
+        _atomic(out / f"memory_peaks_shard{a.shard}.json", {"cap_bytes": a.cap_bytes, "records": peaks})
+        if max(mem.get("cgroup_peak_bytes", 0), mem["rss_peak_bytes"]) >= 0.9 * a.cap_bytes:
+            beat.state = {"stage": "stopped_near_cap", "shard": a.shard, "done": done, "memory": mem,
+                          "cap_bytes": a.cap_bytes}
+            time.sleep(a.heartbeat_seconds + 1)
+            beat.stop.set()
+            print(json.dumps({"stopped_near_cap": mem, "cap_bytes": a.cap_bytes}), flush=True)
+            raise SystemExit(3)
         print(json.dumps({"done": done, "input": feature, "fold": fold["name"], "seed": seed, "arm": arm,
                           "updates": record["fit"]["observed_updates"], "stop": record["fit"]["stop_reason"],
                           "seconds": record["cost"]["seconds_total"]}), flush=True)
