@@ -162,4 +162,4 @@ def test_results_digest_is_stable_and_json_clean():
     ev1 = pipe.evaluate_arm(d, pipe.arm_matrices(d, kal, lags=1)["B"])
     ev2 = pipe.evaluate_arm(d, pipe.arm_matrices(d, kal, lags=1)["B"])
     assert ev1["prediction_sha256"] == ev2["prediction_sha256"]
-    json.dumps(ev1, allow_nan=False)
+    json.dumps(pipe.public(ev1), allow_nan=False)
