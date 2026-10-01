@@ -1,0 +1,141 @@
+{
+  "dataset_id": "git:predictor:b1f8a74f:ethusdt_4h_tech_stat_full_model_ready.csv:1b447c66e68495e826c53e2ab2b08ecd3922c8fdc735747628f8d0435ebe440f",
+  "declared_split": {
+    "declared_by": "predictor manifest 14a1077f (view calendar split)",
+    "test_rows": [
+      15895,
+      18085
+    ],
+    "train_rows": [
+      0,
+      13699
+    ],
+    "validation_rows": [
+      13699,
+      15895
+    ]
+  },
+  "horizons": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "purge_bars": 6,
+  "sample_hours": 4.0,
+  "scaler_identity": "eth4h-train-standard:edee2af54c84ec51c5d395421f5af877748c99fde9b2d526d7b2bbba6fafe491",
+  "schema": "f2.eth_forecast_split.v1",
+  "source_sha256": "1b447c66e68495e826c53e2ab2b08ecd3922c8fdc735747628f8d0435ebe440f",
+  "splits": {
+    "train": {
+      "gap_excluded_windows": 232,
+      "input_rows": [
+        0,
+        13669
+      ],
+      "origin_end": "2023-12-27T00:00:00Z",
+      "origin_rows": [
+        23,
+        13669
+      ],
+      "origin_start": "2017-10-02T00:00:00Z",
+      "purge_components": {
+        "h_max_purge": [
+          13670,
+          13675
+        ],
+        "validation_input_support": [
+          13676,
+          13698
+        ]
+      },
+      "purged_origins": [
+        13670,
+        13671,
+        13672,
+        13673,
+        13674,
+        13675,
+        13676,
+        13677,
+        13678,
+        13679,
+        13680,
+        13681,
+        13682,
+        13683,
+        13684,
+        13685,
+        13686,
+        13687,
+        13688,
+        13689,
+        13690,
+        13691,
+        13692,
+        13693,
+        13694,
+        13695,
+        13696,
+        13697,
+        13698
+      ],
+      "row_ids_sha256": "3903daaefc4547ac6477db143478b6ec150b37bd2da06106f8c01ec068542fb0",
+      "target_rows": [
+        24,
+        13675
+      ],
+      "windows": 13415
+    },
+    "validation": {
+      "gap_excluded_windows": 0,
+      "input_rows": [
+        13676,
+        15888
+      ],
+      "origin_end": "2024-12-30T20:00:00Z",
+      "origin_rows": [
+        13699,
+        15888
+      ],
+      "origin_start": "2024-01-01T00:00:00Z",
+      "purge_components": {
+        "h_max_purge": [
+          15889,
+          15894
+        ]
+      },
+      "purged_origins": [
+        15889,
+        15890,
+        15891,
+        15892,
+        15893,
+        15894
+      ],
+      "row_ids_sha256": "879b38466be9c8f777e62b300f261d70213a0703597b4ae8b56d29c8ff8f6b31",
+      "target_rows": [
+        13700,
+        15894
+      ],
+      "windows": 2190
+    }
+  },
+  "target": {
+    "definition": "Y_h = sum_{k=1..h} z(log_return_1[t+k]) = (log(CLOSE[t+h]/CLOSE[t]) - h*mu)/sigma; mu, sigma fitted on train rows only",
+    "feature": "log_return_1",
+    "inverse": "R_h = sigma*Y_h + h*mu; CLOSE[t+h] = CLOSE[t]*exp(R_h)",
+    "mu": 0.00014609718726936276,
+    "sigma": 0.01947283965808004
+  },
+  "test": {
+    "rows": [
+      15895,
+      18085
+    ],
+    "status": "PROTECTED_NEVER_READ"
+  },
+  "window": 24
+}
