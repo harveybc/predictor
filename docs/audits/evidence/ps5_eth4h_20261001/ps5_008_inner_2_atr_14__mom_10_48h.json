@@ -1,0 +1,261 @@
+{
+ "arms": {
+  "base": {
+   "features": [
+    "return_5",
+    "close_sma_ratio_100",
+    "sma_200",
+    "close_sma_ratio_200",
+    "macd_signal",
+    "rsi_21",
+    "stoch_k",
+    "roc_10",
+    "hist_vol_20",
+    "hist_vol_60",
+    "ema_cross_20_100",
+    "volume_sma_10",
+    "volume_sma_20",
+    "statistical__log_return_1",
+    "roll_mean_ret_20",
+    "roll_mean_ret_60",
+    "realized_var_48",
+    "autocorr_lag1_100",
+    "vol_regime_low",
+    "hurst_proxy_200",
+    "zscore_close_100"
+   ],
+   "mean_val_mae": 0.047332895919680595,
+   "per_seed": {
+    "2021": {
+     "child_peak_rss_bytes": 1888546816,
+     "epochs": 17,
+     "naive_mae": 0.044308993965387344,
+     "stop_reason": "patience",
+     "updates": 2142,
+     "val_mae": 0.0445532388985157,
+     "val_rows": 2020,
+     "val_rows_sha256": "a30e88449ef28184038878ce7c60a7dc08790f9e18310dd154ed6a3bea988ce7"
+    },
+    "2022": {
+     "child_peak_rss_bytes": 1916592128,
+     "epochs": 30,
+     "naive_mae": 0.044308993965387344,
+     "stop_reason": "max_epochs",
+     "updates": 3780,
+     "val_mae": 0.05011255294084549,
+     "val_rows": 2020,
+     "val_rows_sha256": "a30e88449ef28184038878ce7c60a7dc08790f9e18310dd154ed6a3bea988ce7"
+    }
+   }
+  },
+  "base+atr_14": {
+   "features": [
+    "return_5",
+    "close_sma_ratio_100",
+    "sma_200",
+    "close_sma_ratio_200",
+    "macd_signal",
+    "rsi_21",
+    "stoch_k",
+    "roc_10",
+    "hist_vol_20",
+    "hist_vol_60",
+    "ema_cross_20_100",
+    "volume_sma_10",
+    "volume_sma_20",
+    "statistical__log_return_1",
+    "roll_mean_ret_20",
+    "roll_mean_ret_60",
+    "realized_var_48",
+    "autocorr_lag1_100",
+    "vol_regime_low",
+    "hurst_proxy_200",
+    "zscore_close_100",
+    "atr_14"
+   ],
+   "mean_val_mae": 0.044793469831347466,
+   "per_seed": {
+    "2021": {
+     "child_peak_rss_bytes": 1907793920,
+     "epochs": 21,
+     "naive_mae": 0.044308993965387344,
+     "stop_reason": "patience",
+     "updates": 2646,
+     "val_mae": 0.04453151300549507,
+     "val_rows": 2020,
+     "val_rows_sha256": "a30e88449ef28184038878ce7c60a7dc08790f9e18310dd154ed6a3bea988ce7"
+    },
+    "2022": {
+     "child_peak_rss_bytes": 1864187904,
+     "epochs": 6,
+     "naive_mae": 0.044308993965387344,
+     "stop_reason": "patience",
+     "updates": 756,
+     "val_mae": 0.04505542665719986,
+     "val_rows": 2020,
+     "val_rows_sha256": "a30e88449ef28184038878ce7c60a7dc08790f9e18310dd154ed6a3bea988ce7"
+    }
+   }
+  },
+  "base+atr_14+mom_10": {
+   "features": [
+    "return_5",
+    "close_sma_ratio_100",
+    "sma_200",
+    "close_sma_ratio_200",
+    "macd_signal",
+    "rsi_21",
+    "stoch_k",
+    "roc_10",
+    "hist_vol_20",
+    "hist_vol_60",
+    "ema_cross_20_100",
+    "volume_sma_10",
+    "volume_sma_20",
+    "statistical__log_return_1",
+    "roll_mean_ret_20",
+    "roll_mean_ret_60",
+    "realized_var_48",
+    "autocorr_lag1_100",
+    "vol_regime_low",
+    "hurst_proxy_200",
+    "zscore_close_100",
+    "atr_14",
+    "mom_10"
+   ],
+   "mean_val_mae": 0.04462997429072857,
+   "per_seed": {
+    "2021": {
+     "child_peak_rss_bytes": 1883676672,
+     "epochs": 8,
+     "naive_mae": 0.044308993965387344,
+     "stop_reason": "patience",
+     "updates": 1008,
+     "val_mae": 0.04462580010294914,
+     "val_rows": 2020,
+     "val_rows_sha256": "a30e88449ef28184038878ce7c60a7dc08790f9e18310dd154ed6a3bea988ce7"
+    },
+    "2022": {
+     "child_peak_rss_bytes": 1884917760,
+     "epochs": 7,
+     "naive_mae": 0.044308993965387344,
+     "stop_reason": "patience",
+     "updates": 882,
+     "val_mae": 0.044634148478507996,
+     "val_rows": 2020,
+     "val_rows_sha256": "a30e88449ef28184038878ce7c60a7dc08790f9e18310dd154ed6a3bea988ce7"
+    }
+   }
+  },
+  "base+mom_10": {
+   "features": [
+    "return_5",
+    "close_sma_ratio_100",
+    "sma_200",
+    "close_sma_ratio_200",
+    "macd_signal",
+    "rsi_21",
+    "stoch_k",
+    "roc_10",
+    "hist_vol_20",
+    "hist_vol_60",
+    "ema_cross_20_100",
+    "volume_sma_10",
+    "volume_sma_20",
+    "statistical__log_return_1",
+    "roll_mean_ret_20",
+    "roll_mean_ret_60",
+    "realized_var_48",
+    "autocorr_lag1_100",
+    "vol_regime_low",
+    "hurst_proxy_200",
+    "zscore_close_100",
+    "mom_10"
+   ],
+   "mean_val_mae": 0.044777531176805496,
+   "per_seed": {
+    "2021": {
+     "child_peak_rss_bytes": 1892638720,
+     "epochs": 16,
+     "naive_mae": 0.044308993965387344,
+     "stop_reason": "patience",
+     "updates": 2016,
+     "val_mae": 0.044694527983665466,
+     "val_rows": 2020,
+     "val_rows_sha256": "a30e88449ef28184038878ce7c60a7dc08790f9e18310dd154ed6a3bea988ce7"
+    },
+    "2022": {
+     "child_peak_rss_bytes": 1896906752,
+     "epochs": 13,
+     "naive_mae": 0.044308993965387344,
+     "stop_reason": "patience",
+     "updates": 1638,
+     "val_mae": 0.044860534369945526,
+     "val_rows": 2020,
+     "val_rows_sha256": "a30e88449ef28184038878ce7c60a7dc08790f9e18310dd154ed6a3bea988ce7"
+    }
+   }
+  }
+ },
+ "base": [
+  "return_5",
+  "close_sma_ratio_100",
+  "sma_200",
+  "close_sma_ratio_200",
+  "macd_signal",
+  "rsi_21",
+  "stoch_k",
+  "roc_10",
+  "hist_vol_20",
+  "hist_vol_60",
+  "ema_cross_20_100",
+  "volume_sma_10",
+  "volume_sma_20",
+  "statistical__log_return_1",
+  "roll_mean_ret_20",
+  "roll_mean_ret_60",
+  "realized_var_48",
+  "autocorr_lag1_100",
+  "vol_regime_low",
+  "hurst_proxy_200",
+  "zscore_close_100"
+ ],
+ "decision": "RE_ENTERS",
+ "fold": "inner_2",
+ "identity": {
+  "data_sha256": "1b447c66e68495e826c53e2ab2b08ecd3922c8fdc735747628f8d0435ebe440f",
+  "device_class": "cpu",
+  "manifest_file_sha256": "fdff0c85fc376cd6930cede4981a64b076022bd701c6a045339689e3ab892d4c",
+  "split": "M07 SPLIT 116a5b64, TRAIN [0,13699)",
+  "worklist_sha256": "397b67d6f40eaf324c0aa720291f67560c55cf0b216bc53cb9c4886b1ae66175"
+ },
+ "label": "DEVELOPMENT",
+ "naive": {
+  "kind": "zero_return",
+  "mae": 0.044308993965387344,
+  "rows_sha256": "a30e88449ef28184038878ce7c60a7dc08790f9e18310dd154ed6a3bea988ce7"
+ },
+ "pair": [
+  "atr_14",
+  "mom_10"
+ ],
+ "peak_child_rss_bytes": 1916592128,
+ "rule": "strict minimum of base+a+b over base, base+a, base+b",
+ "schema": "ps5.joint_reentry.v1",
+ "seconds": 817.8230533390015,
+ "seeds": [
+  2021,
+  2022
+ ],
+ "settings": {
+  "batch_size": 64,
+  "learning_rate": 0.001,
+  "loss": "mae",
+  "max_epochs": 30,
+  "max_updates": 5000,
+  "min_delta": 0.0,
+  "patience": 5,
+  "weight_decay": 0.0001
+ },
+ "target": "Y_l@48h"
+}

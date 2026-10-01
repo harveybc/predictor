@@ -1,0 +1,251 @@
+{
+ "arms": {
+  "base": {
+   "features": [
+    "return_5",
+    "log_return_60",
+    "close_sma_ratio_100",
+    "close_sma_ratio_200",
+    "macd_signal",
+    "rsi_21",
+    "williams_r_14",
+    "roc_10",
+    "hist_vol_60",
+    "ema_cross_20_100",
+    "volume_sma_10",
+    "volume_sma_20",
+    "statistical__log_return_1",
+    "roll_mean_ret_20",
+    "roll_std_ret_20",
+    "roll_mean_ret_60",
+    "autocorr_lag1_100",
+    "hurst_proxy_200",
+    "zscore_close_100"
+   ],
+   "mean_val_mae": 0.08745047077536583,
+   "per_seed": {
+    "2021": {
+     "child_peak_rss_bytes": 1799077888,
+     "epochs": 7,
+     "naive_mae": 0.08775490522384644,
+     "stop_reason": "patience",
+     "updates": 693,
+     "val_mae": 0.0875803604722023,
+     "val_rows": 2002,
+     "val_rows_sha256": "c0ce097b60bd4239f22b06b5f709da5b7fea92fce86bb0793c49af4f5a502ce7"
+    },
+    "2022": {
+     "child_peak_rss_bytes": 1816887296,
+     "epochs": 10,
+     "naive_mae": 0.08775490522384644,
+     "stop_reason": "patience",
+     "updates": 990,
+     "val_mae": 0.08732058107852936,
+     "val_rows": 2002,
+     "val_rows_sha256": "c0ce097b60bd4239f22b06b5f709da5b7fea92fce86bb0793c49af4f5a502ce7"
+    }
+   }
+  },
+  "base+sma_100": {
+   "features": [
+    "return_5",
+    "log_return_60",
+    "close_sma_ratio_100",
+    "close_sma_ratio_200",
+    "macd_signal",
+    "rsi_21",
+    "williams_r_14",
+    "roc_10",
+    "hist_vol_60",
+    "ema_cross_20_100",
+    "volume_sma_10",
+    "volume_sma_20",
+    "statistical__log_return_1",
+    "roll_mean_ret_20",
+    "roll_std_ret_20",
+    "roll_mean_ret_60",
+    "autocorr_lag1_100",
+    "hurst_proxy_200",
+    "zscore_close_100",
+    "sma_100"
+   ],
+   "mean_val_mae": 0.09037250652909279,
+   "per_seed": {
+    "2021": {
+     "child_peak_rss_bytes": 1853833216,
+     "epochs": 18,
+     "naive_mae": 0.08775490522384644,
+     "stop_reason": "patience",
+     "updates": 1782,
+     "val_mae": 0.08761496096849442,
+     "val_rows": 2002,
+     "val_rows_sha256": "c0ce097b60bd4239f22b06b5f709da5b7fea92fce86bb0793c49af4f5a502ce7"
+    },
+    "2022": {
+     "child_peak_rss_bytes": 1826377728,
+     "epochs": 7,
+     "naive_mae": 0.08775490522384644,
+     "stop_reason": "patience",
+     "updates": 693,
+     "val_mae": 0.09313005208969116,
+     "val_rows": 2002,
+     "val_rows_sha256": "c0ce097b60bd4239f22b06b5f709da5b7fea92fce86bb0793c49af4f5a502ce7"
+    }
+   }
+  },
+  "base+sma_100+vol_regime_low": {
+   "features": [
+    "return_5",
+    "log_return_60",
+    "close_sma_ratio_100",
+    "close_sma_ratio_200",
+    "macd_signal",
+    "rsi_21",
+    "williams_r_14",
+    "roc_10",
+    "hist_vol_60",
+    "ema_cross_20_100",
+    "volume_sma_10",
+    "volume_sma_20",
+    "statistical__log_return_1",
+    "roll_mean_ret_20",
+    "roll_std_ret_20",
+    "roll_mean_ret_60",
+    "autocorr_lag1_100",
+    "hurst_proxy_200",
+    "zscore_close_100",
+    "sma_100",
+    "vol_regime_low"
+   ],
+   "mean_val_mae": 0.0863705687224865,
+   "per_seed": {
+    "2021": {
+     "child_peak_rss_bytes": 1837731840,
+     "epochs": 6,
+     "naive_mae": 0.08775490522384644,
+     "stop_reason": "patience",
+     "updates": 594,
+     "val_mae": 0.08660011738538742,
+     "val_rows": 2002,
+     "val_rows_sha256": "c0ce097b60bd4239f22b06b5f709da5b7fea92fce86bb0793c49af4f5a502ce7"
+    },
+    "2022": {
+     "child_peak_rss_bytes": 1844944896,
+     "epochs": 6,
+     "naive_mae": 0.08775490522384644,
+     "stop_reason": "patience",
+     "updates": 594,
+     "val_mae": 0.08614102005958557,
+     "val_rows": 2002,
+     "val_rows_sha256": "c0ce097b60bd4239f22b06b5f709da5b7fea92fce86bb0793c49af4f5a502ce7"
+    }
+   }
+  },
+  "base+vol_regime_low": {
+   "features": [
+    "return_5",
+    "log_return_60",
+    "close_sma_ratio_100",
+    "close_sma_ratio_200",
+    "macd_signal",
+    "rsi_21",
+    "williams_r_14",
+    "roc_10",
+    "hist_vol_60",
+    "ema_cross_20_100",
+    "volume_sma_10",
+    "volume_sma_20",
+    "statistical__log_return_1",
+    "roll_mean_ret_20",
+    "roll_std_ret_20",
+    "roll_mean_ret_60",
+    "autocorr_lag1_100",
+    "hurst_proxy_200",
+    "zscore_close_100",
+    "vol_regime_low"
+   ],
+   "mean_val_mae": 0.0885017141699791,
+   "per_seed": {
+    "2021": {
+     "child_peak_rss_bytes": 1882910720,
+     "epochs": 30,
+     "naive_mae": 0.08775490522384644,
+     "stop_reason": "max_epochs",
+     "updates": 2970,
+     "val_mae": 0.08654239028692245,
+     "val_rows": 2002,
+     "val_rows_sha256": "c0ce097b60bd4239f22b06b5f709da5b7fea92fce86bb0793c49af4f5a502ce7"
+    },
+    "2022": {
+     "child_peak_rss_bytes": 1831817216,
+     "epochs": 7,
+     "naive_mae": 0.08775490522384644,
+     "stop_reason": "patience",
+     "updates": 693,
+     "val_mae": 0.09046103805303574,
+     "val_rows": 2002,
+     "val_rows_sha256": "c0ce097b60bd4239f22b06b5f709da5b7fea92fce86bb0793c49af4f5a502ce7"
+    }
+   }
+  }
+ },
+ "base": [
+  "return_5",
+  "log_return_60",
+  "close_sma_ratio_100",
+  "close_sma_ratio_200",
+  "macd_signal",
+  "rsi_21",
+  "williams_r_14",
+  "roc_10",
+  "hist_vol_60",
+  "ema_cross_20_100",
+  "volume_sma_10",
+  "volume_sma_20",
+  "statistical__log_return_1",
+  "roll_mean_ret_20",
+  "roll_std_ret_20",
+  "roll_mean_ret_60",
+  "autocorr_lag1_100",
+  "hurst_proxy_200",
+  "zscore_close_100"
+ ],
+ "decision": "RE_ENTERS",
+ "fold": "inner_1",
+ "identity": {
+  "data_sha256": "1b447c66e68495e826c53e2ab2b08ecd3922c8fdc735747628f8d0435ebe440f",
+  "device_class": "cpu",
+  "manifest_file_sha256": "fdff0c85fc376cd6930cede4981a64b076022bd701c6a045339689e3ab892d4c",
+  "split": "M07 SPLIT 116a5b64, TRAIN [0,13699)",
+  "worklist_sha256": "397b67d6f40eaf324c0aa720291f67560c55cf0b216bc53cb9c4886b1ae66175"
+ },
+ "label": "DEVELOPMENT",
+ "naive": {
+  "kind": "zero_return",
+  "mae": 0.08775490522384644,
+  "rows_sha256": "c0ce097b60bd4239f22b06b5f709da5b7fea92fce86bb0793c49af4f5a502ce7"
+ },
+ "pair": [
+  "sma_100",
+  "vol_regime_low"
+ ],
+ "peak_child_rss_bytes": 1882910720,
+ "rule": "strict minimum of base+a+b over base, base+a, base+b",
+ "schema": "ps5.joint_reentry.v1",
+ "seconds": 595.618012936,
+ "seeds": [
+  2021,
+  2022
+ ],
+ "settings": {
+  "batch_size": 64,
+  "learning_rate": 0.001,
+  "loss": "mae",
+  "max_epochs": 30,
+  "max_updates": 5000,
+  "min_delta": 0.0,
+  "patience": 5,
+  "weight_decay": 0.0001
+ },
+ "target": "Y_l@120h"
+}
