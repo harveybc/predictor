@@ -22,3 +22,9 @@ def test_probe_temperature_is_the_fallback_and_absent_job_is_none():
 def test_missing_temperature_stays_missing():
     v = w.gpu_vitals({"gpu": {}}, None)
     assert v["temperature_c"] is None
+
+
+def test_scrub_removes_addresses_and_host_names_but_not_versions():
+    out = w.scrub({"argv": "ssh: cm-u@192.0.2.10 [mux]", "k": "box1 at 198.51.100.7", "v": "TF 2.21.0", "f": 0.851406}, ["box1"])
+    assert out["argv"] == "ssh: cm-u@<ip> [mux]" and out["k"] == "<host> at <ip>"
+    assert out["v"] == "TF 2.21.0" and out["f"] == 0.851406

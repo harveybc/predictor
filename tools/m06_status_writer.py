@@ -559,15 +559,16 @@ def scrub(obj, names):
     """Replace every host name (aliases, the local host name) in every string with <host>.
     Argv of child processes (e.g. a compiler's temp file) can carry the host name."""
     pat = re.compile("|".join(re.escape(n) for n in sorted(names, key=len, reverse=True) if n))
+    ipv4 = re.compile(r"(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])")   # ssh mux names carry addresses
     def go(x):
         if isinstance(x, str):
-            return pat.sub("<host>", x)
+            return ipv4.sub("<ip>", pat.sub("<host>", x) if pat.pattern else x)
         if isinstance(x, list):
             return [go(v) for v in x]
         if isinstance(x, dict):
             return {go(k): go(v) for k, v in x.items()}
         return x
-    return go(obj) if pat.pattern else obj
+    return go(obj)
 
 
 def atomic_write(path, obj):
