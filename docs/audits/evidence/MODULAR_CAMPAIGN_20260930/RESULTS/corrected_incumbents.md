@@ -1,6 +1,6 @@
-# m04 campaign_corrected_r0_v1 (pin df9ae31c, engine 3ecdb256): incumbent history and per-horizon skill (generated)
+# m04 campaign_corrected_r0_v1 (pin df9ae31c / aaee6f94, engine 3ecdb256): incumbent history and per-horizon skill (generated)
 
-Comparability: **NOT_COMPARABLE**: ECL L24 -> H1..24, all 321 channels, z_train MAE on the VALIDATION split, corrected architecture (pin df9ae31c, engine 3ecdb256); the published ECL rows are L96 -> H96 on the test split; kept apart from the OLD batch-1 v3 tables.
+Comparability: **NOT_COMPARABLE**: ECL L24 -> H1..24, all 321 channels, z_train MAE on the VALIDATION split, corrected architecture (pins df9ae31c / aaee6f94, engine 3ecdb256); the published ECL rows are L96 -> H96 on the test split; kept apart from the OLD batch-1 v3 tables.
 
 Seasonal naive = the value 24 h before the target on the SAME validation rows (period 24 h). On this daily-periodic dataset the aggregate skill against last-value persistence OVERSTATES usefulness: the seasonal naive is the stronger, relevant baseline, and skill against it is shown separately.
 
@@ -66,7 +66,33 @@ Annotation (from predeclared strict-minimum validation incumbent rule (orders b3
 
 Horizons with NEGATIVE skill (persistence wins) in any seed: ['h1', 'h23', 'h24'].
 
+## Incumbent 6: `c950ec17` corrected_default_branch_core_R1_mae_ref_seq5, mean validation MAE 0.375091 over seeds [2021, 2022]
+Reason: lower mean validation objective across all paired seeds.
+
+Annotation (from predeclared strict-minimum validation incumbent rule; verified by the orchestrator on both workers (4 OUTCOME.json VERIFIED exact_match)): **STRICT_MINIMUM_IMPROVEMENT (not a demonstrated advantage)**. branch+core R1; paired differences vs c09f3034 -0.0133647 / -0.0035828 (mean -0.0084737): the gap exceeds the R1 two-seed spread (0.0000208) but not the R0 spread (0.0098), so it is NOT an advantage. Pretraining cost beside the rule: CPU 7,875.48 s, wall 6,636.5 s, peak 6.77 GB.
+
+| seed cid | baseline | MAE | baseline MAE (same rows) | skill | h1 | h2 | h3 | h4 | h5 | h6 | h7 | h8 | h9 | h10 | h11 | h12 | h13 | h14 | h15 | h16 | h17 | h18 | h19 | h20 | h21 | h22 | h23 | h24 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| be89bcfd23e1823b | vs persistence | 0.375081 | 0.851406 | +0.5595 | -0.41 | +0.14 | +0.35 | +0.47 | +0.55 | +0.60 | +0.63 | +0.65 | +0.67 | +0.68 | +0.68 | +0.69 | +0.69 | +0.68 | +0.67 | +0.66 | +0.64 | +0.60 | +0.56 | +0.50 | +0.41 | +0.25 | -0.04 | -0.50 |
+| be89bcfd23e1823b | vs seasonal 24 h | 0.375081 | 0.247966 | -0.5126 | -0.49 | -0.51 | -0.53 | -0.53 | -0.51 | -0.51 | -0.53 | -0.52 | -0.50 | -0.51 | -0.52 | -0.51 | -0.49 | -0.50 | -0.52 | -0.52 | -0.51 | -0.52 | -0.53 | -0.51 | -0.50 | -0.51 | -0.51 | -0.50 |
+| 51ad2cb3e2e75ec2 | vs persistence | 0.375102 | 0.851406 | +0.5594 | -0.41 | +0.14 | +0.35 | +0.47 | +0.55 | +0.60 | +0.63 | +0.65 | +0.67 | +0.68 | +0.68 | +0.69 | +0.69 | +0.68 | +0.67 | +0.66 | +0.64 | +0.60 | +0.56 | +0.50 | +0.41 | +0.25 | -0.04 | -0.50 |
+| 51ad2cb3e2e75ec2 | vs seasonal 24 h | 0.375102 | 0.247966 | -0.5127 | -0.49 | -0.51 | -0.53 | -0.53 | -0.51 | -0.51 | -0.53 | -0.52 | -0.50 | -0.51 | -0.52 | -0.51 | -0.49 | -0.50 | -0.52 | -0.52 | -0.51 | -0.52 | -0.53 | -0.51 | -0.50 | -0.51 | -0.51 | -0.50 |
+
+Horizons with NEGATIVE skill (persistence wins) in any seed: ['h1', 'h23', 'h24'].
+
 ## Every verified pair, ranked by mean validation objective
+
+### `c950ec17` corrected_default_branch_core_R1_mae_ref_seq5: mean 0.375091, two-seed spread 0.000021
+
+| seed cid | baseline | MAE | baseline MAE (same rows) | skill | h1 | h2 | h3 | h4 | h5 | h6 | h7 | h8 | h9 | h10 | h11 | h12 | h13 | h14 | h15 | h16 | h17 | h18 | h19 | h20 | h21 | h22 | h23 | h24 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| be89bcfd23e1823b | vs persistence | 0.375081 | 0.851406 | +0.5595 | -0.41 | +0.14 | +0.35 | +0.47 | +0.55 | +0.60 | +0.63 | +0.65 | +0.67 | +0.68 | +0.68 | +0.69 | +0.69 | +0.68 | +0.67 | +0.66 | +0.64 | +0.60 | +0.56 | +0.50 | +0.41 | +0.25 | -0.04 | -0.50 |
+| be89bcfd23e1823b | vs seasonal 24 h | 0.375081 | 0.247966 | -0.5126 | -0.49 | -0.51 | -0.53 | -0.53 | -0.51 | -0.51 | -0.53 | -0.52 | -0.50 | -0.51 | -0.52 | -0.51 | -0.49 | -0.50 | -0.52 | -0.52 | -0.51 | -0.52 | -0.53 | -0.51 | -0.50 | -0.51 | -0.51 | -0.50 |
+| 51ad2cb3e2e75ec2 | vs persistence | 0.375102 | 0.851406 | +0.5594 | -0.41 | +0.14 | +0.35 | +0.47 | +0.55 | +0.60 | +0.63 | +0.65 | +0.67 | +0.68 | +0.68 | +0.69 | +0.69 | +0.68 | +0.67 | +0.66 | +0.64 | +0.60 | +0.56 | +0.50 | +0.41 | +0.25 | -0.04 | -0.50 |
+| 51ad2cb3e2e75ec2 | vs seasonal 24 h | 0.375102 | 0.247966 | -0.5127 | -0.49 | -0.51 | -0.53 | -0.53 | -0.51 | -0.51 | -0.53 | -0.52 | -0.50 | -0.51 | -0.52 | -0.51 | -0.49 | -0.50 | -0.52 | -0.52 | -0.51 | -0.52 | -0.53 | -0.51 | -0.50 | -0.51 | -0.51 | -0.50 |
+
+Negative skill vs persistence in any seed: ['h1', 'h23', 'h24'].
+Negative skill vs seasonal naive in any seed: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'h11', 'h12', 'h13', 'h14', 'h15', 'h16', 'h17', 'h18', 'h19', 'h20', 'h21', 'h22', 'h23', 'h24'].
 
 ### `c09f3034` corrected_default_R0_mae: mean 0.383565, two-seed spread 0.009761
 
@@ -76,6 +102,18 @@ Horizons with NEGATIVE skill (persistence wins) in any seed: ['h1', 'h23', 'h24'
 | 8c2a2eabadd51a41 | vs seasonal 24 h | 0.388446 | 0.247966 | -0.5665 | -0.57 | -0.58 | -0.57 | -0.56 | -0.55 | -0.55 | -0.55 | -0.56 | -0.56 | -0.56 | -0.56 | -0.57 | -0.57 | -0.57 | -0.58 | -0.58 | -0.57 | -0.57 | -0.58 | -0.57 | -0.56 | -0.56 | -0.58 | -0.57 |
 | 103303b194628c9e | vs persistence | 0.378684 | 0.851406 | +0.5552 | -0.46 | +0.12 | +0.34 | +0.47 | +0.55 | +0.60 | +0.63 | +0.65 | +0.67 | +0.68 | +0.68 | +0.68 | +0.69 | +0.68 | +0.66 | +0.66 | +0.63 | +0.60 | +0.55 | +0.49 | +0.40 | +0.23 | -0.05 | -0.52 |
 | 103303b194628c9e | vs seasonal 24 h | 0.378684 | 0.247966 | -0.5272 | -0.55 | -0.54 | -0.54 | -0.54 | -0.52 | -0.52 | -0.52 | -0.51 | -0.50 | -0.50 | -0.51 | -0.51 | -0.51 | -0.53 | -0.54 | -0.52 | -0.53 | -0.55 | -0.55 | -0.54 | -0.53 | -0.54 | -0.53 | -0.52 |
+
+Negative skill vs persistence in any seed: ['h1', 'h23', 'h24'].
+Negative skill vs seasonal naive in any seed: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'h11', 'h12', 'h13', 'h14', 'h15', 'h16', 'h17', 'h18', 'h19', 'h20', 'h21', 'h22', 'h23', 'h24'].
+
+### `680a6396` corrected_default_branch_R1_mae_ref_seq5: mean 0.390565, two-seed spread 0.002866
+
+| seed cid | baseline | MAE | baseline MAE (same rows) | skill | h1 | h2 | h3 | h4 | h5 | h6 | h7 | h8 | h9 | h10 | h11 | h12 | h13 | h14 | h15 | h16 | h17 | h18 | h19 | h20 | h21 | h22 | h23 | h24 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 5e5c00f64e68e5e6 | vs persistence | 0.389132 | 0.851406 | +0.5430 | -0.46 | +0.11 | +0.33 | +0.46 | +0.54 | +0.58 | +0.62 | +0.64 | +0.66 | +0.67 | +0.67 | +0.67 | +0.66 | +0.67 | +0.66 | +0.65 | +0.62 | +0.59 | +0.54 | +0.47 | +0.38 | +0.22 | -0.07 | -0.56 |
+| 5e5c00f64e68e5e6 | vs seasonal 24 h | 0.389132 | 0.247966 | -0.5693 | -0.55 | -0.55 | -0.56 | -0.56 | -0.56 | -0.56 | -0.57 | -0.56 | -0.56 | -0.57 | -0.58 | -0.60 | -0.60 | -0.57 | -0.56 | -0.56 | -0.57 | -0.58 | -0.60 | -0.60 | -0.58 | -0.55 | -0.56 | -0.56 |
+| 5bafadefbc9caf20 | vs persistence | 0.391998 | 0.851406 | +0.5396 | -0.50 | +0.09 | +0.32 | +0.45 | +0.53 | +0.58 | +0.61 | +0.64 | +0.65 | +0.66 | +0.67 | +0.67 | +0.67 | +0.67 | +0.66 | +0.64 | +0.62 | +0.59 | +0.55 | +0.48 | +0.38 | +0.20 | -0.10 | -0.59 |
+| 5bafadefbc9caf20 | vs seasonal 24 h | 0.391998 | 0.247966 | -0.5809 | -0.59 | -0.59 | -0.59 | -0.58 | -0.59 | -0.59 | -0.58 | -0.57 | -0.57 | -0.57 | -0.59 | -0.59 | -0.58 | -0.58 | -0.58 | -0.57 | -0.57 | -0.56 | -0.57 | -0.56 | -0.58 | -0.60 | -0.59 | -0.59 |
 
 Negative skill vs persistence in any seed: ['h1', 'h23', 'h24'].
 Negative skill vs seasonal naive in any seed: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'h11', 'h12', 'h13', 'h14', 'h15', 'h16', 'h17', 'h18', 'h19', 'h20', 'h21', 'h22', 'h23', 'h24'].
@@ -128,6 +166,18 @@ Negative skill vs seasonal naive in any seed: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6
 Negative skill vs persistence in any seed: ['h1', 'h23', 'h24'].
 Negative skill vs seasonal naive in any seed: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'h11', 'h12', 'h13', 'h14', 'h15', 'h16', 'h17', 'h18', 'h19', 'h20', 'h21', 'h22', 'h23', 'h24'].
 
+### `1536c0f2` corrected_default_branch_R2_mae_ref_seq5: mean 0.397631, two-seed spread 0.012769
+
+| seed cid | baseline | MAE | baseline MAE (same rows) | skill | h1 | h2 | h3 | h4 | h5 | h6 | h7 | h8 | h9 | h10 | h11 | h12 | h13 | h14 | h15 | h16 | h17 | h18 | h19 | h20 | h21 | h22 | h23 | h24 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| b0eb7ed04181c62e | vs persistence | 0.404016 | 0.851406 | +0.5255 | -0.55 | +0.07 | +0.30 | +0.43 | +0.51 | +0.56 | +0.60 | +0.62 | +0.64 | +0.65 | +0.66 | +0.66 | +0.66 | +0.66 | +0.65 | +0.64 | +0.61 | +0.58 | +0.54 | +0.47 | +0.36 | +0.19 | -0.12 | -0.65 |
+| b0eb7ed04181c62e | vs seasonal 24 h | 0.404016 | 0.247966 | -0.6293 | -0.64 | -0.63 | -0.64 | -0.65 | -0.64 | -0.64 | -0.65 | -0.66 | -0.63 | -0.63 | -0.64 | -0.63 | -0.62 | -0.61 | -0.60 | -0.60 | -0.62 | -0.61 | -0.60 | -0.62 | -0.63 | -0.63 | -0.63 | -0.65 |
+| 3c9cd7a1c9e4e864 | vs persistence | 0.391247 | 0.851406 | +0.5405 | -0.49 | +0.09 | +0.32 | +0.45 | +0.53 | +0.58 | +0.62 | +0.64 | +0.65 | +0.66 | +0.67 | +0.67 | +0.67 | +0.66 | +0.65 | +0.64 | +0.63 | +0.60 | +0.55 | +0.48 | +0.38 | +0.21 | -0.08 | -0.58 |
+| 3c9cd7a1c9e4e864 | vs seasonal 24 h | 0.391247 | 0.247966 | -0.5778 | -0.58 | -0.58 | -0.59 | -0.59 | -0.58 | -0.58 | -0.57 | -0.57 | -0.57 | -0.58 | -0.58 | -0.58 | -0.58 | -0.60 | -0.59 | -0.57 | -0.55 | -0.56 | -0.56 | -0.57 | -0.58 | -0.58 | -0.58 | -0.58 |
+
+Negative skill vs persistence in any seed: ['h1', 'h23', 'h24'].
+Negative skill vs seasonal naive in any seed: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'h11', 'h12', 'h13', 'h14', 'h15', 'h16', 'h17', 'h18', 'h19', 'h20', 'h21', 'h22', 'h23', 'h24'].
+
 ### `de77438d` corrected_default_R0_huber: mean 0.399209, two-seed spread 0.004412
 
 | seed cid | baseline | MAE | baseline MAE (same rows) | skill | h1 | h2 | h3 | h4 | h5 | h6 | h7 | h8 | h9 | h10 | h11 | h12 | h13 | h14 | h15 | h16 | h17 | h18 | h19 | h20 | h21 | h22 | h23 | h24 |
@@ -148,6 +198,18 @@ Negative skill vs seasonal naive in any seed: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6
 | fa246e4645554981 | vs seasonal 24 h | 0.411205 | 0.247966 | -0.6583 | -0.65 | -0.65 | -0.65 | -0.65 | -0.66 | -0.66 | -0.66 | -0.67 | -0.67 | -0.67 | -0.67 | -0.66 | -0.65 | -0.64 | -0.65 | -0.65 | -0.65 | -0.65 | -0.67 | -0.67 | -0.67 | -0.67 | -0.65 | -0.64 |
 | 1bfeee4c67791f4f | vs persistence | 0.389185 | 0.851406 | +0.5429 | -0.46 | +0.12 | +0.34 | +0.46 | +0.53 | +0.58 | +0.62 | +0.65 | +0.66 | +0.67 | +0.67 | +0.67 | +0.67 | +0.66 | +0.65 | +0.64 | +0.62 | +0.58 | +0.54 | +0.48 | +0.38 | +0.21 | -0.09 | -0.57 |
 | 1bfeee4c67791f4f | vs seasonal 24 h | 0.389185 | 0.247966 | -0.5695 | -0.54 | -0.54 | -0.55 | -0.57 | -0.56 | -0.56 | -0.56 | -0.54 | -0.54 | -0.55 | -0.56 | -0.58 | -0.59 | -0.59 | -0.59 | -0.59 | -0.60 | -0.60 | -0.58 | -0.58 | -0.58 | -0.58 | -0.58 | -0.57 |
+
+Negative skill vs persistence in any seed: ['h1', 'h23', 'h24'].
+Negative skill vs seasonal naive in any seed: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'h11', 'h12', 'h13', 'h14', 'h15', 'h16', 'h17', 'h18', 'h19', 'h20', 'h21', 'h22', 'h23', 'h24'].
+
+### `209ce6c3` corrected_default_branch_core_R2_mae_ref_seq5: mean 0.401144, two-seed spread 0.004033
+
+| seed cid | baseline | MAE | baseline MAE (same rows) | skill | h1 | h2 | h3 | h4 | h5 | h6 | h7 | h8 | h9 | h10 | h11 | h12 | h13 | h14 | h15 | h16 | h17 | h18 | h19 | h20 | h21 | h22 | h23 | h24 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ed21918a149f84e0 | vs persistence | 0.399128 | 0.851406 | +0.5312 | -0.52 | +0.07 | +0.31 | +0.44 | +0.52 | +0.57 | +0.61 | +0.64 | +0.65 | +0.66 | +0.66 | +0.66 | +0.66 | +0.66 | +0.65 | +0.64 | +0.61 | +0.58 | +0.53 | +0.46 | +0.36 | +0.20 | -0.10 | -0.59 |
+| ed21918a149f84e0 | vs seasonal 24 h | 0.399128 | 0.247966 | -0.6096 | -0.61 | -0.63 | -0.62 | -0.62 | -0.62 | -0.61 | -0.60 | -0.59 | -0.59 | -0.61 | -0.61 | -0.62 | -0.61 | -0.60 | -0.60 | -0.60 | -0.61 | -0.63 | -0.63 | -0.62 | -0.61 | -0.61 | -0.60 | -0.59 |
+| 2ab64a3725e86f3a | vs persistence | 0.403161 | 0.851406 | +0.5265 | -0.52 | +0.07 | +0.30 | +0.44 | +0.51 | +0.57 | +0.60 | +0.63 | +0.65 | +0.66 | +0.66 | +0.66 | +0.66 | +0.66 | +0.65 | +0.63 | +0.61 | +0.58 | +0.52 | +0.46 | +0.35 | +0.18 | -0.12 | -0.61 |
+| 2ab64a3725e86f3a | vs seasonal 24 h | 0.403161 | 0.247966 | -0.6259 | -0.61 | -0.63 | -0.63 | -0.63 | -0.63 | -0.63 | -0.62 | -0.62 | -0.61 | -0.61 | -0.62 | -0.62 | -0.62 | -0.62 | -0.63 | -0.62 | -0.62 | -0.63 | -0.65 | -0.65 | -0.64 | -0.63 | -0.63 | -0.61 |
 
 Negative skill vs persistence in any seed: ['h1', 'h23', 'h24'].
 Negative skill vs seasonal naive in any seed: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'h11', 'h12', 'h13', 'h14', 'h15', 'h16', 'h17', 'h18', 'h19', 'h20', 'h21', 'h22', 'h23', 'h24'].

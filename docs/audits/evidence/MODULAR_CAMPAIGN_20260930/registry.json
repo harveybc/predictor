@@ -270,14 +270,14 @@
    "generated_from": "RESULTS/m04_campaign_tables.json"
   },
   {
-   "task": "ECL L24 -> H1..24, all 321 channels (corrected batch, pin df9ae31c / engine 3ecdb256)",
+   "task": "ECL L24 -> H1..24, all 321 channels (corrected batch, pins df9ae31c / aaee6f94, engine 3ecdb256)",
    "split": "validation",
    "population_id": "2609 windows x 24 horizons x 321 channels",
-   "model": "corrected incumbent seq 5 c09f3034 corrected_default_R0_mae (mean of seeds [2021, 2022])",
+   "model": "corrected incumbent seq 6 c950ec17 corrected_default_branch_core_R1_mae_ref_seq5 (mean of seeds [2021, 2022])",
    "metric": "MAE",
    "space": "z_train",
    "reduction": "mean over all elements",
-   "value": 0.38356499199182625,
+   "value": 0.37509125759139983,
    "naive": 0.8514061497227646,
    "seasonal_naive_24h": 0.24796637423429127,
    "literature": {
@@ -287,7 +287,7 @@
    },
    "evidence_state": "measured",
    "class": "NOT_COMPARABLE",
-   "note": "STRICT-MINIMUM selection, not a demonstrated advantage (\u0394 -0.0074925244 vs 9cc0a1f4; spread 0.0098); skill vs persistence negative at h1/h23/h24; the 24 h seasonal naive (0.248) beats every candidate at every horizon",
+   "note": "STRICT_MINIMUM_IMPROVEMENT over c09f3034, not a demonstrated advantage; 32/32 cells negative at h1/h23/h24 vs persistence; the 24 h seasonal naive (0.248) beats all 32 cells at every horizon",
    "generated_from": "RESULTS/corrected_campaign_tables.json"
   }
  ],
@@ -352,10 +352,10 @@
   {
    "id": "corrected_R1_R2",
    "completion_criterion": "paired R1/R2 candidates with corrected donors",
-   "state": "in_progress",
+   "state": "completed",
    "evidence": [
-    "amendment 5 accepted (IDENTITY_PROOF d3f9ffa0 IDENTICAL; pin aaee6f94; CAMPAIGN 7ac0eaab)",
-    "R1/R2 OPEN: 8 runnable rows; first attempts 5e5c00f6 (worker_a) and 5bafadef (worker_b)"
+    "8/8 runnable R1/R2 cells VERIFIED (4 REFUSED_BY_ENGINE by design); campaign 32 verified / 4 refused of 36",
+    "RESULTS/corrected_incumbents.md (6 incumbents; seq 6 c950ec17)"
    ]
   }
  ],
@@ -557,6 +557,11 @@
    "at": "2026-10-01T06:24:43Z",
    "host_alias": "worker_a",
    "event": "incumbent change seq 6: c950ec17 branch+core R1 (be89bcfd 0.3750808654518397 / 51ad2cb3 0.37510164973095994; mean 0.37509125759139983; spread 0.0000208); previous seq 5 c09f3034 0.38356499199182625; paired differences -0.0133647 / -0.0035828, mean -0.0084737; STRICT_MINIMUM_IMPROVEMENT (gap exceeds the R1 spread but not the R0 spread 0.0098), NOT an advantage; branch-only R1 pair worse than R0 (0.3905652, +0.0070); pretraining cost beside the rule: CPU 7,875.48 s, wall 6,636.5 s, peak 6.77 GB (verified by the orchestrator, 4 OUTCOME.json VERIFIED exact_match)"
+  },
+  {
+   "at": "2026-10-01T07:06:35Z",
+   "host_alias": "worker_a",
+   "event": "corrected batch CLOSED: 32/36 VERIFIED + 4 REFUSED_BY_ENGINE; incumbent seq 6 c950ec17 0.37509125759 (strict-minimum improvement, not an advantage); seasonal naive beats all 32 cells at every horizon; h1/h23/h24 negative in 32/32"
   }
  ],
  "launch_recipes": {
@@ -1102,7 +1107,7 @@
     "base": "13852a05",
     "denominator": "36 cells (72 superseded rows kept outside)"
    },
-   "dependency_note": "R1/R2 phase OPEN: 8 runnable rows after amendment 5 (accepted by the orchestrator: IDENTITY_PROOF.json sha d3f9ffa0 IDENTICAL over 18 configs, refused_identically 2, first_difference null; REPLAY_BOTH_PINS BITWISE_IDENTICAL; evidence 0e206ad4); 4 REFUSED_BY_ENGINE within the 36"
+   "dependency_note": "batch closed: 32 verified, 4 REFUSED_BY_ENGINE (core-only, by design, never run); denominator 36"
   }
  ],
  "facts_confirmed": {
@@ -1450,6 +1455,5 @@
     "observed peak < 64 MiB; breach -> immediate alert and stop via the admission tool"
    ]
   }
- ],
- "pending_regeneration": "corrected tables (with the seasonal-naive comparison) to be regenerated from the receipts when the 4 R2 cells verify"
+ ]
 }
