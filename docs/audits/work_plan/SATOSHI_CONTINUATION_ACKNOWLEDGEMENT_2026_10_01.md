@@ -205,3 +205,37 @@ until fold-bound. A claim of complete coverage is refused.
 | 15 | Alpaca: only an execution connector (paper) exists; no data plan on file, no retained bytes | owner | state whether a data plan exists and its entitlement, or mark Alpaca data NOT_PRESENT |
 | 16 | CFTC positioning and News: declared sources with no attributed bytes (path names only) | owner | declare their scope and connector, or mark them deferred with reason |
 | 17 | Availability activation: the eight FXMacroData derived resamples stay UNAVAILABLE because their producer is not located; raw-parent availability is superseded by the data-gov registry | owner / lane B | locate or declare the resample producer; activation stays the owner's |
+
+## 10. Acknowledgement of the next-dispatch orders `b327b771` (received 16:05Z, acknowledged 16:15Z)
+
+Read in full: `docs/handoffs/SATOSHI_NEXT_DISPATCH_2026_10_01.md` and
+`docs/tres_temas_entrevista/program_v3/RL_TEMPORAL_COMPARISON_WORK_PLAN_2026_10_01.md`. Accepted as a delta, not a
+restart; nothing completed is repeated; running fits continue.
+
+Assignments dispatched 16:10Z (each agent's acknowledgement pending):
+
+| Owner | Order | Immediate action |
+|---|---|---|
+| M06 | §2: deploy the reviewed admission repair `775c5545` on worker_a only (never `0928dc06`), retained one-paste procedure with rollback; read back hashes, accounting, reservations; bounded smoke; then ONE real CUDA operation on the 5090 UUID in the pinned environment, retaining any error verbatim; regenerate PNG/JSON with three denominators; plan revision `b327b771` | executing; if its permission check refuses the remote write it stops and I hand the owner the one-paste |
+| M05 | §5: the naive eligibility gate for heuristic-strategy consumption, eight required tests red first, failure proves zero strategy invocations at the actual runner; coordinates lane G | implementing on its lts branch |
+| M04 | §3: finish the finite corrected queue (8 per-feature, 12 R1/R2 as donors arrive); after the repair, place the next eligible pilot/candidate on the 5090 if its measured demand fits; §5 CPU diagnostic of the horizon pattern without retuning; frozen forecast evidence format for the gate | continuing |
+| M01 | §3: representation-cost pilot with the honest 3G cap and a per-record heartbeat; §4.6 provenance fields with a versioned migration; encoder export spec for lane G | continuing; pilot resumes after M04's per-feature pilot |
+| M03 + C | §3: source/availability reconciliation, native/proxy repair, regime audit, PS2/PS3; §4.3/4.5/4.8/4.10/4.11/4.12; a frozen SELECTED_FEATURE_MANIFEST for the ETH task when its point-in-time resources are readable | continuing |
+| Lane G (new, RL owner, under M05) | §6 and the RL subplan: inventory of installed SAC/DQN and env plugins, RL01–RL08 red tests, adapters/configs/accounting/monitoring for RL-S0/S1/D0/D1, cost-pilot plan gated on a frozen selection and readable lake resources; no real-data fit before that | dispatched; agent id recorded when it acknowledges |
+
+Resolved by me under §4 without an owner loop: the RL owner is lane G under M05; the causal home is the maintained
+provider package; the strict-minimum incumbent rule stays with full precision and paired uncertainty; `[2,2,1]` is the
+pinned default with declared variants; financial-only criteria are NOT_APPLICABLE on author-protocol TSL tasks; FS08/09
+shown as deferred optional criteria; purges by target support and by versioned trade support; splits preserved per
+dataset; cross-lane owners FS16 B+A, FS19 B+F, FS18 D+B.
+
+### 10.1 The one consolidated request for genuinely external facts
+
+1. Yahoo Finance: the actual paid product and its supported programmatic access method (today profiled only through
+   the public connector).
+2. Alpaca: whether a market-data plan exists and its entitlement (today an execution connector only, no retained bytes).
+3. C07: execution of the pinned remote classification code under its CC BY-NC 4.0 licence, per the exact request in
+   `SATOSHI_C07_CLASSIFICATION_REMOTE_CODE_2026_09_30.md` §6.
+4. A new reserved confirmation period for the strategy (the read reserve is development evidence), and the holding-period source.
+
+Nothing else in sections 8–9 requires an owner decision; the remaining items there are implementation tasks now owned.
