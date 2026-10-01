@@ -1392,7 +1392,7 @@
    "since": "2026-10-01T04:33Z",
    "rule": "ZERO batch jobs on the coordinator; the only exceptions are M06's 512M STATUS writer and 128M event watcher. Every lane's CPU work goes to worker_a (repaired gate) or worker_b.",
    "alert": "coordinator PSI some avg60 > 10 or MemAvailable < 12 GB, pushed to the orchestrator immediately; any non-M06 batch job seen on the coordinator is alerted",
-   "exceptions": "M06 STATUS writer (512M), M06 event watcher (128M), lane D runners d*-runner-* (512M, poll only, <64 MiB; orchestrator exemption)"
+   "exceptions": "M06 STATUS writer (512M), M06 event watcher (128M), lane D runners d*-runner-* (512M, poll only, <64 MiB; orchestrator exemption); approved one-off lake reads laneB-*-bounded-read (<=256M, <=10 min, named in the ack)"
   }
  ],
  "incidents": [
@@ -1442,6 +1442,14 @@
    "facts": "5090 idle after d2-runner-worker-a's lease was released at 07:40:19Z (ledger note is the launcher's fixed string, not a diagnosis; cause pending from M04); M04 relaunched the runner at 07:44:08Z; m04-verify-ac976a8c on the 5090 by ~07:47Z",
    "alarm": "M06 GPU-IDLE alarm fired at 07:45:55Z (331 s >= 300 s) and was forwarded at ~07:46Z",
    "idle_counter": "included in gpu_idle_seconds_24h (consecutive 0% samples)"
+  },
+  {
+   "id": "D2-IDLE-02",
+   "lane": "D2",
+   "host_alias": "worker_a",
+   "device": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+   "facts": "sampler alarm 07:49:33Z (134 s idle >= 120 s); m04-train-7430fff5 (cap 6,899,630,080 B) was queued on HOST_HEADROOM (host_free_for_new ~2.6 GB) while the previous cell's reservation/memory was still held; admitted by 07:49:47Z",
+   "measured_alarm_latency": "first 120 s alarm: 134 s after the first idle sample + relay <10 s"
   }
  ],
  "owner_question_20_lake": {
@@ -1549,6 +1557,19 @@
     "poll only",
     "observed peak < 64 MiB; M06 alarm at 64 MiB"
    ]
+  },
+  {
+   "job": "laneB-*-bounded-read (approved one-off lake reads on the coordinator)",
+   "granted_by": "orchestrator (Satoshi)",
+   "at": "2026-10-01T07:4xZ",
+   "conditions": [
+    "<= 256M",
+    "ionice -c3, nice 19",
+    "<= 10 min",
+    "each one named in the acknowledgement document"
+   ],
+   "first_instance": "laneB-eurusd-5m-bounded-read: approved beforehand; finished within bounds; recorded as an approved exception, NOT a breach",
+   "reason": "the lake exists only on the coordinator"
   }
  ],
  "clock": "all M06 timestamps are UTC from the host system clocks (date -u); coordinator, worker_a and worker_b agreed to the second at 07:33Z"

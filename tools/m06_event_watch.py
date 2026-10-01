@@ -14,7 +14,7 @@ while True:
     for j in d['jobs']:
         if j.get('host_alias')=='coordinator' and re.match(r'^d\d*-runner-',j['id']) and (j.get('cgroup_peak_bytes') or 0) > 64*2**20 and ('runner64'+j['id'] not in seen_coord):
             out.write(f"{ts()} ALERT exempt runner {j['id']} peak {j.get('cgroup_peak_bytes')} B > 64 MiB (exemption breached)\n"); seen_coord.add('runner64'+j['id'])
-        if j.get('host_alias')=='coordinator' and j['state'] in ('running','queued') and not j['id'].startswith('m06-') and not re.match(r'^d\d*-runner-',j['id']) and (j['id'] not in seen_coord):
+        if j.get('host_alias')=='coordinator' and j['state'] in ('running','queued') and not j['id'].startswith('m06-') and not re.match(r'^d\d*-runner-',j['id']) and not re.match(r'^laneB-.*-bounded-read',j['id']) and (j['id'] not in seen_coord):
             out.write(f"{ts()} ALERT coordinator batch job {j['id']} {j['state']}/{j.get('phase')} (rule: zero batch jobs on the coordinator)\n"); seen_coord.add(j['id'])
     cur={j['id']:(j['state'],j.get('phase'),j.get('host_alias'),j.get('cgroup_peak_bytes'),(j.get('progress') or {}).get('completed')) for j in d['jobs']}
     if jobs is not None:
