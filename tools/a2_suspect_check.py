@@ -20,6 +20,7 @@ import numpy as np
 def main(proof_dir, data_path, out_json):
     import pandas as pd
     import tensorflow as tf
+    import predictor_plugins.modular_temporal  # noqa: F401  (registers the custom layers for load_model)
     from tools import a2_regime_hash_proof as proof
     from tools.modular_candidate_evaluator import evaluate_candidate
     from tools.modular_pretrain import regime_config
