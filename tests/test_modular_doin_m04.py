@@ -439,3 +439,57 @@ def test_deterministic_campaign_accepts_only_exact_rescoring(tmp_path):
     campaign.run(NearMiss(campaign, VALUES))
     assert campaign.status()["counts"] == {"finding": 4}
     assert campaign.status()["incumbent"] is None
+
+
+# ----------------------------------------------------- corrected design (lane D) --
+SPACE_V2 = json.loads((ROOT / "examples/config/modular_doin/ecl_l24_h24_search_space_v2_full_grid.json").read_text())
+DEFAULT_V2 = json.loads((ROOT / "examples/config/modular_doin/ecl_l24_h24_default_r0_v2_full_grid.json").read_text())
+
+
+def test_full_grid_engine_requires_branch_steps_equal_window():
+    nested = ss.from_flat({**DEFAULT_V2, "train.seed": 2021, "train.huber_delta": 1.0}, BASE, SPACE_V2)
+    assert nested["model"]["branch_steps"] == 24
+    assert nested["model"]["core"]["params"]["time_factors"] == [2, 2, 1]
+    assert nested["model"]["core"]["params"]["stage_channels"] == [32, 16, 8]
+    space = copy.deepcopy(SPACE_V2)
+    space["bounds"]["model.branch_steps"] = {"choices": [12, 24]}
+    with pytest.raises(ss.SearchSpaceError, match="full-grid"):
+        ss.from_flat({**DEFAULT_V2, "model.branch_steps": 12, "core.time_factor_0": 2, "core.time_factor_1": 1,
+                      "train.seed": 2021, "train.huber_delta": 1.0}, BASE, space)
+    # the corrected design changes every candidate identity, even for identical flat values
+    old = ss.from_flat({**DEFAULT, "model.branch_steps": 24, "core.time_factor_0": 2, "core.time_factor_1": 2,
+                        "train.seed": 2021, "train.huber_delta": 1.0}, BASE, SPACE)
+    assert ss.digest(old) != ss.digest(nested)
+
+
+def test_superseded_old_arch_candidates_are_never_dispatched(tmp_path):
+    (tmp_path / "old").mkdir()
+    old = make_campaign(tmp_path / "old")
+    enqueue_default(old)
+    old.run(FakeExecutor(old, VALUES), max_candidates=1)  # some old rows verified, some still queued
+    decl = {**old.declaration, "campaign_id": "corrected", "search_space": SPACE_V2,
+            "default_candidate": DEFAULT_V2}
+    new = camp.Campaign.create(tmp_path / "new", decl)
+    assert new.import_superseded(old.root, "old architecture") == 4
+    assert new.import_superseded(old.root, "old architecture") == 0  # idempotent
+    h, m = camp.paired_loss_arms(DEFAULT_V2, 1.0)
+    fresh = new.enqueue(h, "corrected_huber") + new.enqueue(m, "corrected_mae")
+    new.hold(lambda f: True, "AWAIT_LANE_A")
+    assert new.unblock() == []
+    new.release_hold("AWAIT_LANE_A")
+    executor = FakeExecutor(new, VALUES)
+    new.run(executor)
+    assert sorted(executor.trained) == sorted(fresh)
+    rows = new.db.execute("SELECT status FROM candidates WHERE cid LIKE 'test:%'").fetchall()
+    assert [r[0] for r in rows] == ["SUPERSEDED_OLD_ARCH"] * 4
+    assert new.claim("worker_b") is None
+
+
+def test_unpinned_campaign_refuses_to_run(tmp_path):
+    campaign = make_campaign(tmp_path)
+    campaign.declaration["require_pin"] = True
+    campaign.declaration["executor"] = {"predictor_revision": "PENDING_LANE_A_INTEGRATED_COMMIT"}
+    enqueue_default(campaign)
+    with pytest.raises(RuntimeError, match="not pinned"):
+        campaign.run(FakeExecutor(campaign, VALUES))
+    assert campaign.db.execute("SELECT COUNT(*) FROM attempts").fetchone()[0] == 0

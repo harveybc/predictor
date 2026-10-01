@@ -273,7 +273,14 @@ class Campaign:
         return (row, "train") if row else (None, None)
 
     # ------------------------------------------------------------ execution --
+    def pinned(self):
+        """A campaign dispatches only when its predictor revision is a full commit id."""
+        revision = self.declaration.get("executor", {}).get("predictor_revision", "")
+        return isinstance(revision, str) and len(revision) == 40 and all(c in "0123456789abcdef" for c in revision)
+
     def run(self, executor, max_candidates=None, stop_file=None):
+        if self.declaration.get("require_pin", False) and not self.pinned():
+            raise RuntimeError("campaign is not pinned to a full predictor commit; nothing is dispatched")
         done = 0
         host = getattr(executor, "host", "local")
         self.recover()
