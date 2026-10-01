@@ -113,3 +113,15 @@ def test_utc_bar_start_shifts_to_availability():
     assert dt.datetime.fromtimestamp(int(t[0]), dt.timezone.utc).hour == 1
     with pytest.raises(ValueError, match="strictly increasing"):
         fd.to_available_utc(["2010-01-04 01:00:00", "2010-01-04 01:00:00"], "utc_bar_end")
+
+
+def test_split_from_manifest_variants_and_reserve():
+    fm = {"split_variants": {
+        "S1": {"train": {"rows": [0, 7]}, "validation": {"rows": [7, 9]}, "test": {"rows": [9, 10]}},
+        "S2": {"train": {"rows": [0, 6]}, "validation": {"rows": [6, 8]}, "reserve": {"rows": [8, 10]}}}}
+    assert fd.split_from_manifest(fm, "S1")["test_rows"] == [9, 10]
+    assert fd.split_from_manifest(fm, "S2")["test_rows"] == [8, 10]  # reserve is treated as the protected block
+    with pytest.raises(ValueError, match="split variants"):
+        fd.split_from_manifest(fm)
+    assert fd.split_from_manifest({"split": {"declared_by": "x", "train": {"rows": [0, 5]}, "validation": {"rows": [5, 7]},
+                                             "test": {"rows": [7, 9]}}})["train_rows"] == [0, 5]

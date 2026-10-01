@@ -238,6 +238,21 @@ def build(source, out, *, features, window, horizons, sample_hours, split, purge
     return manifest
 
 
+def split_from_manifest(fm, variant=None):
+    """Row split from a lane B manifest: a ``split`` block, or ``split_variants[variant]`` (S1 test / S2 reserve)."""
+    if "split_variants" in fm:
+        if variant is None or variant not in fm["split_variants"]:
+            raise ValueError(f"manifest declares split variants {sorted(fm['split_variants'])}; pass --split-variant")
+        block, declared = fm["split_variants"][variant], f"manifest split_variants.{variant}"
+    else:
+        block, declared = fm["split"], fm["split"].get("declared_by", "manifest split")
+    held = block.get("test") or block.get("reserve")
+    if held is None:
+        raise ValueError("split block has neither test nor reserve")
+    return {"declared_by": declared, "train_rows": list(block["train"]["rows"]),
+            "validation_rows": list(block["validation"]["rows"]), "test_rows": list(held["rows"])}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--source", required=True)
@@ -257,10 +272,7 @@ def main():
     text = Path(args.feature_manifest).read_text()
     fm = json.loads(text)
     features = list(fm["features"])
-    block = fm["split"][args.split_variant] if args.split_variant else fm["split"]
-    split = {"declared_by": block.get("declared_by", fm["split"].get("declared_by")),
-             "train_rows": list(block["train"]["rows"]), "validation_rows": list(block["validation"]["rows"]),
-             "test_rows": list(block["test"]["rows"])}
+    split = split_from_manifest(fm, args.split_variant)
     if "-" in args.horizons:
         a, b = map(int, args.horizons.split("-"))
         horizons = list(range(a, b + 1))
