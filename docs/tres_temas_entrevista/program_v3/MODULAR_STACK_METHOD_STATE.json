@@ -1,18 +1,29 @@
 {
   "schema": "modular_stack_method_state.v1",
-  "updated_on": "2026-09-30",
-  "current_stage": "S9_ARCHITECTURE_CORRECTION",
+  "updated_on": "2026-10-01",
+  "current_stage": "S12_SYSTEM_VERIFICATION",
   "plan": "MODULAR_STACK_WORK_PLAN_2026_09_30.md",
-  "discovery": "Existing composite predictor lacks independent per-branch/core donor contracts; modular pilots and DOIN dry run exist in separate worktrees.",
-  "requirements": "MS01-MS15 in work plan",
-  "design_evidence": "Default shapes, plugin contracts, training sequence and behavioral acceptance matrix in work plan; agent tests precede components.",
-  "owners": {
-    "engine": "Ohm",
-    "profiles": "Gibbs",
-    "candidate_evaluator": "Rawls",
-    "integration_and_review": "Musashi"
-  },
-  "verified": ["pre-correction engine: 24 focused tests", "pre-correction evaluator: 30 focused tests", "pre-correction staged pretraining: 6 CPU tests, synthetic inputs", "feature profiles: 15 focused tests, bounded coverage only", "DOIN bridge: 74 targeted tests, real-engine acceptance pending", "post-correction CPU construction smoke: four feature inputs, branches preserve 24 steps, fusion 24x64, core 6x8, forecast 1x1"],
-  "next_allowed_actions": ["implement tested components", "integrate", "bounded CPU smoke", "admitted GPU candidate pilot"],
-  "not_established": ["corrected architecture has not rerun the component or staged-pretraining suites", "full inventory profile coverage", "forecast superiority", "DOIN live optimization", "RL policy fit", "live trading"]
+  "discovery": "The integrated engine supports independent branch/core donors and staged pretraining; the durable modular DOIN campaign previously had only finite random proposals, while the legacy neat_optimizer evolved hyperparameters through another evaluator.",
+  "requirements": "MS01-MS15 plus component-wise regimes and two explicitly separate NEAT scopes in the work plan",
+  "design_evidence": "Branch AE -> fixed B1 fusion materialization -> core AE; component_regime_config names mixed arms; ModularNeatProposalPolicy adapts the existing parameters-as-genes implementation to the validated modular grammar.",
+  "verified": [
+    "integrated engine/campaign baseline: 114 focused tests",
+    "staged pretraining and component-wise regime API: 32 tests",
+    "modular NEAT policy and optimizer integration: deterministic valid candidates, two verified paired-seed generations, durable state and duplicate reuse",
+    "existing corrected campaign evidence retained; no model-quality value was produced by this integration"
+  ],
+  "traceability": "docs/audits/evidence/modular_neat_20261001/TRACEABILITY.md",
+  "next_allowed_actions": [
+    "independent review and merge of the engine/campaign integration",
+    "bounded modular NEAT cost pilot on an existing TRAIN/validation contract",
+    "finish feature selection and donors before the financial main campaign",
+    "design the separate neural NEAT head contract and frozen-latent comparator"
+  ],
+  "not_established": [
+    "neural NEAT forecasting or RL head",
+    "joint R2 branch/core autoencoder pretraining",
+    "NEAT superiority over random or DEAP proposals",
+    "financial model superiority, test performance or live-trading eligibility",
+    "complete feature selection"
+  ]
 }

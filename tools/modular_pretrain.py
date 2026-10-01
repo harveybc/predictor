@@ -744,6 +744,60 @@ def regime_config(fine_tune_config, regime):
     return config
 
 
+def component_regime_config(fine_tune_config, *, branches, core):
+    """Return an independently configured branch/core training arm.
+
+    ``branches`` is either one regime for every branch or an exact mapping from
+    branch name to regime.  R0 removes a donor; R1/R2 require the donor emitted
+    by staged pretraining.  The input document is never mutated.  R3 remains a
+    separate warm-start design because it also needs its freeze schedule.
+    """
+    config = copy.deepcopy(fine_tune_config)
+    branch_specs = config.get("branches")
+    if not isinstance(branch_specs, list) or not branch_specs:
+        raise ValueError("fine_tune_config must contain branches")
+    names = [spec.get("name") for spec in branch_specs]
+    if len(set(names)) != len(names) or any(not name for name in names):
+        raise ValueError("branch names must be unique nonempty strings")
+    if isinstance(branches, str):
+        selected = dict.fromkeys(names, branches)
+    elif isinstance(branches, dict) and set(branches) == set(names):
+        selected = dict(branches)
+    else:
+        raise ValueError("branches must be one regime or map exactly every branch name")
+
+    def apply(spec, regime, label):
+        if regime not in ("R0", "R1", "R2"):
+            raise ValueError(f"{label} regime must be R0, R1 or R2")
+        donor = spec.get("donor")
+        if regime == "R0":
+            spec.update(regime="R0", donor=None)
+        elif not donor:
+            raise ValueError(f"{label} regime {regime} requires its pretrained donor")
+        else:
+            spec["regime"] = regime
+
+    for spec in branch_specs:
+        apply(spec, selected[spec["name"]], f"branch {spec['name']}")
+    if not isinstance(config.get("core"), dict):
+        raise ValueError("fine_tune_config must contain a core")
+    apply(config["core"], core, "core")
+    regimes = [*(spec["regime"] for spec in branch_specs), config["core"]["regime"]]
+    config["regime"] = regimes[0] if len(set(regimes)) == 1 else None
+    return config
+
+
+def regime_matrix(fine_tune_config, *, branch_regimes=("R1", "R2"), core_regimes=("R0", "R1", "R2")):
+    """Build named component-wise arms without implying a global R1/R2 regime."""
+    arms = {}
+    for branch_regime in branch_regimes:
+        for core_regime in core_regimes:
+            name = f"B{branch_regime[1:]}-C{core_regime[1:]}"
+            arms[name] = component_regime_config(
+                fine_tune_config, branches=branch_regime, core=core_regime)
+    return arms
+
+
 # --------------------------------------------------------------------------- input swap
 def internal_split(timestamps, window, sample_hours, fraction=0.8):
     """Chronological AE train / internal validation indices inside a TRAIN split.

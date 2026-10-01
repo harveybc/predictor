@@ -267,6 +267,59 @@ def test_optimizer_plugin_surface_returns_incumbent_flat(tmp_path):
                           campaign.declaration) == {**flat, "train.seed": 2021}
 
 
+def test_optimizer_neat_strategy_evolves_verified_generations_and_persists_state(tmp_path):
+    from optimizer_plugins.modular_doin_optimizer import Plugin
+
+    campaign = make_campaign(tmp_path)
+    holder = {}
+
+    class EvolutionExecutor(FakeExecutor):
+        def __init__(self):
+            pass
+
+        def train(self, nested, output_root, declaration):
+            self.campaign = holder["campaign"]
+            seed = nested["evaluator"]["seed"]
+            # A deterministic objective over real candidate fields; both paired
+            # seeds evaluate every configuration and verification remains real.
+            value = (nested["model"]["core"]["params"]["d_model"] / 1000.0
+                     + nested["evaluator"]["learning_rate"] + seed / 1e9)
+            self.values, self.crash_on, self.trained = {}, None, []
+            key = (nested["evaluator"]["loss"], seed)
+            self.values[key] = value
+            return FakeExecutor.train(self, nested, output_root, declaration)
+
+        def verify(self, receipt, output_root, declaration):
+            return {"status": "completed", "verdict": "VERIFIED"}
+
+    holder["campaign"] = campaign
+    plugin = Plugin(executor=EvolutionExecutor())
+    plugin.set_params(modular_campaign_root=str(campaign.root), modular_proposal_strategy="neat",
+                      modular_neat_population_size=4, modular_neat_generations=2,
+                      modular_neat_seed=91)
+    plugin._campaign = lambda: campaign
+    incumbent = plugin.optimize(None, None, {})
+    assert "train.seed" not in incumbent
+    state = json.loads((campaign.root / "NEAT_STATE.json").read_text())
+    assert state["generation"] == 2 and len(state["population"]) == 4
+    # A repeated candidate is reused by identity rather than trained again.
+    verified = campaign.status()["counts"]["verified"]
+    assert 8 <= verified <= 16
+    assert campaign.db.execute("SELECT COUNT(DISTINCT cid) FROM candidates").fetchone()[0] == verified
+
+
+def test_optimizer_neat_refuses_more_than_three_repetitions_before_enqueue(tmp_path):
+    from optimizer_plugins.modular_doin_optimizer import Plugin
+
+    campaign = make_campaign(tmp_path, seeds=(1, 2, 3, 4))
+    plugin = Plugin(executor=object())
+    plugin.set_params(modular_campaign_root=str(campaign.root), modular_proposal_strategy="neat")
+    plugin._campaign = lambda: campaign
+    with pytest.raises(ValueError, match="one to three"):
+        plugin.optimize(None, None, {})
+    assert campaign.db.execute("SELECT COUNT(*) FROM candidates").fetchone()[0] == 0
+
+
 # ------------------------------------------------------------- T6 / T7 --
 def synthetic_inputs(tmp_path, features=("a", "b")):
     def arrays(split, offset):

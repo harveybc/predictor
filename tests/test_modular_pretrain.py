@@ -11,10 +11,49 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from tools.modular_pretrain import (Heartbeat, pretrain_components, regime_config,
-                                    run_synthetic_pilot)
+from tools.modular_pretrain import (Heartbeat, component_regime_config, pretrain_components,
+                                    regime_config, regime_matrix, run_synthetic_pilot)
 
 FIT = {"max_epochs": 2, "patience": 1, "batch_size": 4, "learning_rate": 0.001, "loss": "mse"}
+
+
+def donor_config():
+    return {
+        "regime": "R2",
+        "branches": [
+            {"name": "price", "regime": "R2", "donor": "/donors/price.keras"},
+            {"name": "volume", "regime": "R2", "donor": "/donors/volume.keras"},
+        ],
+        "core": {"regime": "R2", "donor": "/donors/core.keras"},
+    }
+
+
+def test_component_regimes_are_independent_and_do_not_mutate_the_donor_config():
+    original = donor_config()
+    mixed = component_regime_config(original, branches="R1", core="R0")
+    assert [b["regime"] for b in mixed["branches"]] == ["R1", "R1"]
+    assert all(b["donor"] for b in mixed["branches"])
+    assert mixed["core"] == {"regime": "R0", "donor": None}
+    assert mixed["regime"] is None
+    assert original == donor_config()
+
+
+def test_component_regimes_accept_an_exact_per_branch_map_and_reject_ambiguity():
+    config = donor_config()
+    mixed = component_regime_config(config, branches={"price": "R1", "volume": "R2"}, core="R1")
+    assert {b["name"]: b["regime"] for b in mixed["branches"]} == {"price": "R1", "volume": "R2"}
+    with pytest.raises(ValueError, match="exactly"):
+        component_regime_config(config, branches={"price": "R1"}, core="R1")
+    with pytest.raises(ValueError, match="donor"):
+        component_regime_config({**config, "core": {"regime": "R0", "donor": None}},
+                                branches="R1", core="R2")
+
+
+def test_regime_matrix_names_every_branch_core_arm_without_silently_adding_r0():
+    matrix = regime_matrix(donor_config(), branch_regimes=("R1", "R2"), core_regimes=("R0", "R1", "R2"))
+    assert list(matrix) == ["B1-C0", "B1-C1", "B1-C2", "B2-C0", "B2-C1", "B2-C2"]
+    assert matrix["B1-C0"]["core"]["donor"] is None
+    assert matrix["B2-C1"]["branches"][0]["regime"] == "R2"
 
 
 def populations():

@@ -120,6 +120,31 @@ Keep an all-admissible-feature control and the reasons for every exclusion.
 8. Confirm frozen finalists on the untouched test once under its declared design.
    Export eligible candidates to the LTS paper adapter only after this result.
 
+### Component-wise regimes and final neuroevolution
+
+The global R0/R1/R2 shorthand is insufficient after core pretraining. Every
+forecasting result must name branch and core regimes separately. The initial
+factorial is `B1-C0`, `B2-C0`, `B1-C1`, `B1-C2`, `B2-C1`, and `B2-C2`; R3 warm
+arms are separate because they add a freeze schedule. Core AE pretraining uses
+branch donors in B1 so its input representation is fixed. Joint branch/core AE
+training is a later explicit arm, never an implicit replacement of that stage.
+
+Two different uses of NEAT must remain distinct:
+
+1. `modular_proposal_strategy=neat` evolves active hyperparameter genes over the
+   validated flat modular search grammar. DOIN still owns durable dispatch,
+   paired seeds, deduplication, checkpoint verification and the incumbent.
+2. A future neural NEAT head consumes a fixed rank-three encoder representation.
+   That experiment is necessarily B1-C1 (R1 encoder): ordinary NEAT cannot
+   backpropagate into Keras donors. Compare it with a Keras head on the exact
+   same frozen bytes, while B2-C2/R3 Keras arms measure end-to-end adaptation.
+
+Materialized encoder outputs may be reused only when every producing component
+is frozen. Their identity must bind data rows and order, scaler, feature order,
+branch/core donor manifests and weights, fusion implementation, temporal grid,
+and normalized model configuration. Any R2/R3-unfrozen producer invalidates
+that cache because its weights can change during task fitting.
+
 AdamW with MAE, Huber and MSE are explicit candidate choices. Huber delta is in
 the target's declared scale; tune on training/inner-validation only. The metric
 used for comparison need not be the training loss. Every candidate has finite
@@ -152,6 +177,14 @@ time divisibility, width/head compatibility, donor identity, parameter bounds
 and resource limits. A dry-run contract is not an optimization result. Keep the
 incumbent, candidate history and independent verification result in the existing
 warehouse path when that adapter is exercised; local smoke metrics remain local.
+
+The modular DOIN plugin supports `random` and `neat` proposal policies. A NEAT
+generation is atomic with respect to its paired-seed fitness: an execution cap
+may not split it. Its population state is written atomically and binds the
+search space, normalized default and fixed task base by digest. Repeated
+candidates are resolved from the existing verified identity rather than fitted
+again. This is parameters-as-genes optimization, not evidence for a neural
+NEAT head.
 
 ## Test order and release evidence
 
