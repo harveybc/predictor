@@ -135,13 +135,13 @@ def statistical_flags(pop, features) -> dict:
     return out
 
 
-def run(pop, out_dir, steps=(3000, 6000, 9000, 12000, 13600), features=None) -> dict:
+def run(pop, out_dir, steps=(3000, 6000, 9000, 12000, 13600), features=None, burn_in=BURN_IN) -> dict:
     t0 = time.process_time()
     features = list(features or pop.features)
     producer = load_producer()
     raw = raw_frame(pop.frame, pop.train_end)
     recomputed = recompute(producer, raw, features)
-    identity = {f: identity_check(pop.frame[f].to_numpy()[: pop.train_end], recomputed[f].to_numpy(), f) for f in features}
+    identity = {f: identity_check(pop.frame[f].to_numpy()[: pop.train_end], recomputed[f].to_numpy(), f, burn_in) for f in features}
     perturb = perturbation_probe(producer, pop.frame, features, [s for s in steps if s < pop.train_end])
     flags = statistical_flags(pop, features)
     verdict = {}
@@ -159,7 +159,7 @@ def run(pop, out_dir, steps=(3000, 6000, 9000, 12000, 13600), features=None) -> 
            "producer": {"vendored": str(VENDOR.relative_to(VENDOR.parents[2])), "sha256": VENDOR_SHA256,
                         "source": "financial-data _scripts/workers/stage22_trading_features_worker.py @ 19fe375a"},
            "population": pop.bindings["view"], "split": pop.bindings["split"], "rows_recomputed": [0, pop.train_end],
-           "burn_in_rows": BURN_IN, "probe_steps": list(int(s) for s in steps), "identity": identity, "perturbation": perturb,
+           "burn_in_rows": int(burn_in), "probe_steps": list(int(s) for s in steps), "identity": identity, "perturbation": perturb,
            "statistical_flags": flags, "verdict": verdict,
            "counts": {k: sum(1 for v in verdict.values() if v.startswith(k)) for k in
                       ("CAUSAL_BY_RECOMPUTATION", "CAUSALITY_NOT_VERIFIED_PRODUCER_MISMATCH", "FUTURE_ROWS_INFLUENCE_PRODUCER")},

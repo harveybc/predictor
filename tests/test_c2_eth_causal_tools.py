@@ -54,7 +54,7 @@ def _synthetic_view(path: Path, seed=7, gaps=(300, 701)):
         "typical_price": close, "OPEN": close * (1 + 0.001 * rng.standard_normal(N_ROWS)),
         "HIGH": close * 1.01, "LOW": close * 0.99, "CLOSE": close, "VOLUME": 1000 + 100 * rng.random(N_ROWS),
         "log_return_1": np.concatenate([[0.0], np.diff(np.log(close))]),
-        "f_signal": z, "f_noise": rng.standard_normal(N_ROWS), "f_dup": z + 1e-3 * rng.standard_normal(N_ROWS),
+        "f_signal": z, "f_noise": rng.standard_normal(N_ROWS), "f_dup": w + 1e-3 * rng.standard_normal(N_ROWS),
         "f_leak": np.concatenate([r[1:], [0.0]]),  # the NEXT bar's return: a leak
         "f_vol": w,
     })
@@ -101,7 +101,7 @@ def world(tmp_path_factory):
 def test_binding_reproduces_m07_origins_and_row_ids(world):
     pop = world["pop"]
     assert np.array_equal(pop.origins, world["origins"])
-    assert pop.gap_excluded_windows == 2 * (24 + 6)  # each gap excludes window+hmax origins
+    assert pop.gap_excluded_windows == 2 * (24 + 6 - 1)  # a gap between rows g-1,g excludes origins [g-6, g+22]
     assert pop.bindings["split"]["train_row_ids_sha256"] == m07_row_ids_sha256(pop.origins, pop.times)
     assert pop.train_end == TRAIN_END
 
@@ -163,6 +163,10 @@ def test_planted_signal_has_positive_incremental_utility(world, tmp_path):
     assert sig["n_blocks"] == 5
     assert sig["sign_agreement"] >= 0.8 and sig["delta_mae_z_median"] > 0
     assert abs(noise["delta_mae_z_median"]) < sig["delta_mae_z_median"]
+    # f_vol is duplicated by f_dup: its CONDITIONAL incremental utility is ~0 although it is predictive alone
+    vol = summary["features"]["f_vol"]["blocks5|h1"]
+    assert abs(vol["delta_mae_z_median"]) < 0.1 * sig["delta_mae_z_median"]
+    assert vol["only_beats_naive_zero_blocks"] >= 3
     ref = summary["reference"]["blocks5|h1"]
     assert ref["full|selected"]["mae_z_mean"] < ref["naive_zero"]["mae_z_mean"]  # the planted world is predictable
     leak = summary["features"]["f_leak"]["blocks5|h1"]
@@ -200,7 +204,7 @@ def test_leak_probe_passes_a_producer_column_and_catches_a_future_shifted_one(tm
     (d / "manifest.json").write_text(json.dumps(doc))
     ssha, _ = _split(d / "split.json", vsha, times, frame["log_return_1"].to_numpy())
     pop = bind_population(view, d / "manifest.json", d / "split.json", expect_view=vsha, expect_manifest=sha256_file(d / "manifest.json"), expect_split=ssha)
-    out = lp.run(pop, d / "leak", steps=(600, 900), features=feats)
+    out = lp.run(pop, d / "leak", steps=(600, 900), features=feats, burn_in=300)
     assert out["verdict"]["rsi_14"] == "CAUSAL_BY_RECOMPUTATION"
     assert out["verdict"]["sma_10"] == "CAUSAL_BY_RECOMPUTATION"
     assert out["perturbation"]["sma_10"]["future_rows_influence"] is False
@@ -261,8 +265,9 @@ def test_dml_recovers_planted_effect_where_naive_slope_is_biased(confounded):
     assert s["support_state"] == "SUPPORTED" and s["residual_variance_share"] > 0.2
     assert s["controls"]["scrambled_label"]["failed_as_required"]
     assert s["controls"]["noise_treatment"]["failed_as_required"]
-    assert s["controls"]["future_shifted_feature"]["failed_as_required"]
-    assert s["controls"]["future_shifted_feature"]["single_feature_mae_z"] < s["controls"]["future_shifted_feature"]["causal_single_feature_mae_z"]
+    assert s["controls"]["future_shifted_feature"]["failed_as_required"]          # the shift template fires
+    assert s["controls"]["future_shifted_feature"]["causal_column_moved_by_future_rows"] is False
+    assert s["residual_variance_share_full_w"] < s["residual_variance_share"] + 1e-9
     assert "w_conf" in s["adjustment"] and "x_treat" not in s["adjustment"]
     # rung 3 under the PLM: delta is exactly theta * (x - x0)
     assert np.isclose(s["rung3"]["delta_mean"], s["theta"] * (np.mean(pop.feature_matrix_train()[pop.origins[np.isfinite(pop.m07_target(1)[pop.origins])], 0]) - s["rung3"]["x0"]), atol=1e-9)
@@ -300,7 +305,7 @@ def test_recommendation_table_builds_from_the_summaries(world, tmp_path):
     from c2_recommendation_table import build, markdown
     pop = world["pop"]
     _, summary = run(pop, [1], tmp_path / "c", protocols=("blocks5",), skip_hgb=True)
-    leak = lp.run(pop, tmp_path / "l", steps=(600,), features=pop.features)
+    leak = lp.run(pop, tmp_path / "l", steps=(600,), features=pop.features, burn_in=300)
     table = build(summary, leak)
     assert len(table) == len(pop.features)
     assert {"population", "split", "horizon_bars", "n_eval_rows_total", "naive_zero_mae_z_mean", "leak_verdict"} <= set(table.columns)

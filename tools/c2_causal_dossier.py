@@ -93,6 +93,19 @@ def plm_theta(r_x, r_y, ok, lag):
     return theta, se
 
 
+def shift_control_detects_future(x_col, h, steps):
+    """RL01 template on the future-shifted column: an observation at rows <= step built from X(t+h) MUST move when
+    the rows after step are perturbed, and the causal column's observation at rows <= step must not."""
+    detected, causal_moved = True, False
+    for step in steps:
+        pert = x_col.copy()
+        pert[step + 1:] += 1000.0
+        shifted_base, shifted_pert = np.roll(x_col, -h)[: step + 1], np.roll(pert, -h)[: step + 1]
+        detected &= not np.allclose(shifted_base, shifted_pert)
+        causal_moved |= not np.allclose(x_col[: step + 1], pert[: step + 1])
+    return bool(detected), bool(causal_moved)
+
+
 def _ridge_single_feature_mae(x_col, y, splits):
     """Held-out MAE of a one-feature ridge against the zero naive, in z-units, averaged over the blocks."""
     maes, naive = [], []
@@ -133,6 +146,11 @@ def study(pop, feature, h, *, seed=20261001, splits=None):
                     g_hat=g_hat, m_hat=m_hat, ok=ok)
 
     main = effect(x_t, y)
+    # support screen on the FULL control set (the redundancy cluster included): a treatment that the other
+    # admissible features predict is not a dose anyone can move independently
+    w_full = xall[:, [k for k in range(len(pop.features)) if k != j]]
+    r_x_full, _, _, _, ok_full = crossfit_residuals(x_t, w_full, y, splits)
+    share_full = float(np.var(r_x_full[ok_full]) / np.var(x_t[ok_full])) if np.var(x_t[ok_full]) > 0 else 0.0
     q = np.quantile(x_t[rows], [0.0, 0.25, 0.5, 0.75, 1.0])
     x0, x1 = float(q[1]), float(q[3])
     ok = main["ok"]
@@ -176,6 +194,8 @@ def study(pop, feature, h, *, seed=20261001, splits=None):
     fut_mae, fut_naive = _ridge_single_feature_mae(np.nan_to_num(x_fut), y, fut_splits)
     base_mae, base_naive = _ridge_single_feature_mae(x_t, y, splits)
     noise = effect(rng.standard_normal(len(x_t)), y)
+    probe_steps = [int(v) for v in np.quantile(rows, [0.3, 0.6, 0.9])]
+    shift_detected, causal_moved = shift_control_detects_future(x_t, h, probe_steps)
     z = 1.96
     controls = {
         "scrambled_label": {"theta": scr["theta"], "interval": [scr["theta"] - z * scr["se"], scr["theta"] + z * scr["se"]],
@@ -183,14 +203,17 @@ def study(pop, feature, h, *, seed=20261001, splits=None):
                             "failed_as_required": bool(abs(scr["theta"]) <= z * scr["se"] and scr_mae >= scr_naive * 0.999)},
         "future_shifted_feature": {"theta": th_f, "interval": [th_f - z * se_f, th_f + z * se_f], "single_feature_mae_z": fut_mae,
                                    "naive_zero_mae_z": fut_naive, "causal_single_feature_mae_z": base_mae,
-                                   "failed_as_required": bool(abs(th_f) > z * se_f and fut_mae < 0.9 * fut_naive)},
+                                   "statistical_probe_fired": bool(abs(th_f) > z * se_f and fut_mae < 0.9 * fut_naive),
+                                   "shift_template_steps": probe_steps, "shifted_column_moved_by_future_rows": shift_detected,
+                                   "causal_column_moved_by_future_rows": causal_moved,
+                                   "failed_as_required": bool(shift_detected and not causal_moved)},
         "noise_treatment": {"theta": noise["theta"], "interval": [noise["theta"] - z * noise["se"], noise["theta"] + z * noise["se"]],
                             "failed_as_required": bool(abs(noise["theta"]) <= z * noise["se"])},
     }
     reasons = ["TIMESTAMP_SEMANTICS_UNDECLARED", "TREATMENT_IS_A_DETERMINISTIC_FUNCTION_OF_PAST_PRICES_NO_PHYSICAL_INTERVENTION",
                "LATENT_MARKET_STATE_UNMEASURED", "ESTIMATE_REPORTED_UNDER_DECLARED_ASSUMPTIONS_DEVELOPMENT_ONLY"]
     support_state = "SUPPORTED"
-    if main["residual_variance_share"] < RESIDUAL_SHARE_FLOOR:
+    if share_full < RESIDUAL_SHARE_FLOOR:
         support_state = "TREATMENT_PREDICTED_BY_CONTROLS"
         reasons.insert(0, "TREATMENT_PREDICTED_BY_CONTROLS")
     return {
@@ -199,7 +222,8 @@ def study(pop, feature, h, *, seed=20261001, splits=None):
         "theta_interval": [theta - z * main["se"], theta + z * main["se"]],
         "contrast": [x0, x1], "effect_q25_to_q75_z": theta * (x1 - x0), "effect_q25_to_q75_log_return": pop.sigma * theta * (x1 - x0),
         "effect_interval_z": [(theta - z * main["se"]) * (x1 - x0), (theta + z * main["se"]) * (x1 - x0)],
-        "residual_variance_share": main["residual_variance_share"], "support_state": support_state,
+        "residual_variance_share": main["residual_variance_share"], "residual_variance_share_full_w": share_full,
+        "support_state": support_state,
         "n_per_side": [int((x_t[rows] <= x0).sum()), int((x_t[rows] >= x1).sum())],
         "dose_support": {"min": float(q[0]), "max": float(q[4]), "q25": x0, "q50": xmed, "q75": x1},
         "rung1": {"pearson": float(pr[0]), "pearson_p": float(pr[1]), "spearman": float(sr[0]), "spearman_p": float(sr[1]),
@@ -267,11 +291,14 @@ def dossier(pop, s, *, revision, produced_at=None):
                                            "no_unmeasured_confounding_given_W": False, "timestamp_is_bar_close": False,
                                            "physical_intervention_on_a_derived_feature_exists": False},
                   "estimator": {"name": "partially_linear_DML_crossfit_ridge_HAC", "library": "numpy+scikit-learn", "version": __import__("sklearn").__version__, "revision": revision},
-                  "support": {"state": s["support_state"], "n_per_side": s["n_per_side"], "residual_variance_share": s["residual_variance_share"]},
+                  "support": {"state": s["support_state"], "n_per_side": s["n_per_side"], "residual_variance_share": s["residual_variance_share_full_w"]},
                   "placebo": {"state": "PASSED" if controls_ok else "FAILED",
                               "tests": [{"name": name, "verdict": ("FAILED_AS_REQUIRED" if c["failed_as_required"] else "DID_NOT_FAIL_PROBE_SUSPECT"), "n": s["n"]}
                                         for name, c in s["controls"].items()]},
                   "sensitivity": {"theta_per_unit_z": s["theta"], "theta_se_hac": s["se"], "hac_lag": s["lag"],
+                                  "residual_variance_share_reduced_w": s["residual_variance_share"],
+                                  "residual_variance_share_full_w": s["residual_variance_share_full_w"],
+                                  "future_shift_statistical_probe_fired": s["controls"]["future_shifted_feature"]["statistical_probe_fired"],
                                   "effect_q25_to_q75_z": s["effect_q25_to_q75_z"], "effect_q25_to_q75_log_return": s["effect_q25_to_q75_log_return"],
                                   "effect_interval_z_low": s["effect_interval_z"][0], "effect_interval_z_high": s["effect_interval_z"][1],
                                   "scrambled_label_theta": s["controls"]["scrambled_label"]["theta"],
@@ -344,7 +371,7 @@ def main(argv=None):
             path.write_text(json.dumps(doc, indent=1, sort_keys=True), encoding="utf-8")
             index.append({"feature": f, "horizon_bars": h, "file": path.name, "n": s["n"], "theta_z": s["theta"], "theta_se": s["se"],
                           "effect_q25_q75_z": s["effect_q25_to_q75_z"], "effect_q25_q75_log_return": s["effect_q25_to_q75_log_return"],
-                          "residual_variance_share": s["residual_variance_share"], "support_state": s["support_state"],
+                          "residual_variance_share": s["residual_variance_share"], "residual_variance_share_full_w": s["residual_variance_share_full_w"], "support_state": s["support_state"],
                           "controls_failed_as_required": all(c["failed_as_required"] for c in s["controls"].values()),
                           "scrambled_theta": s["controls"]["scrambled_label"]["theta"],
                           "future_shifted_mae_z": s["controls"]["future_shifted_feature"]["single_feature_mae_z"],
