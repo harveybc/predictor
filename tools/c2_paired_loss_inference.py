@@ -61,6 +61,18 @@ def validation_targets(frame_lr1, mu, sigma, times, origins, h, bar_seconds):
     return csum[origins + h + 1] - csum[origins + 1]
 
 
+def m07_fin_scaler(frame, train_end):
+    """M07's `fin_forecast_dataset.py` scaler: mean/std (ddof=0) of log_return_1 over the TRAIN rows where EVERY declared channel is finite
+    (row 0 has no return; close_location is NaN where HIGH == LOW, so flat bars are excluded). Returns (mu, sigma, rows_used)."""
+    c, h, l = (frame[k].to_numpy(dtype=np.float64) for k in ("CLOSE", "HIGH", "LOW"))
+    lr1 = np.concatenate([[np.nan], np.log(c[1:] / c[:-1])])
+    with np.errstate(invalid="ignore", divide="ignore"):
+        loc = (c - l) / (h - l)
+    ok = np.isfinite(lr1) & np.isfinite(loc)
+    ok[train_end:] = False
+    return float(lr1[ok].mean()), float(lr1[ok].std()), int(ok.sum())
+
+
 def block_bootstrap_mean(d, L, b, rng):
     """Circular moving-block bootstrap of mean(d): (se, 2.5 %, 97.5 % percentiles of the resampled mean)."""
     n = len(d)
@@ -88,11 +100,16 @@ def paired_row(d, L, b, rng, naive_mae=None):
     return out
 
 
-def analyse(pop, rows, preds, evidence, *, boot=2000, seed=20261001, check_tol=1e-6):
+def analyse(pop, rows, preds, evidence, *, boot=2000, seed=20261001, check_tol=1e-6, scaler="plain"):
     times, lr1 = pop.times, pop.frame["log_return_1"].to_numpy(dtype=np.float64)
     horizons = sorted(preds)
-    mu, sigma = pop.mu, pop.sigma
-    out = {"horizons": {}, "checks": {}}
+    if scaler == "m07_fin":
+        mu, sigma, used = m07_fin_scaler(pop.frame, pop.train_end)
+        pop.mu, pop.sigma = mu, sigma                      # m07_target and the intercept use the same scaler
+        out_scaler = {"rule": "m07_fin", "mu": mu, "sigma": sigma, "train_rows_used": used, "differs_from_plain_pct": 100 * (sigma / np.std(lr1[1:pop.train_end]) - 1)}
+    else:
+        mu, sigma, out_scaler = pop.mu, pop.sigma, {"rule": "plain", "mu": pop.mu, "sigma": pop.sigma}
+    out = {"horizons": {}, "checks": {}, "scaler": out_scaler}
     ds = {"abs_zero": {}, "sq_zero": {}, "abs_int": {}, "sq_int": {}}
     y_by, yhat_by, L_by = {}, {}, {}
     for h in horizons:
@@ -149,13 +166,14 @@ def main(argv=None):
     p.add_argument("--out", required=True)
     p.add_argument("--horizons", default="1,2,3,4")
     p.add_argument("--boot", type=int, default=2000)
+    p.add_argument("--scaler", choices=["plain", "m07_fin"], default="m07_fin")
     args = p.parse_args(argv)
     pop = bind_population(args.view, args.manifest, spec=EURUSD_LAKE_A_S1_SPEC)
     hs = [int(v) for v in args.horizons.split(",")]
     rows, preds = load_predictions(args.predictions, hs)
     evidence = json.loads(Path(args.evidence).read_text())
     t0 = time.process_time()
-    res = analyse(pop, rows, preds, evidence, boot=args.boot)
+    res = analyse(pop, rows, preds, evidence, boot=args.boot, scaler=args.scaler)
     res.update({"schema": "c2_paired_loss_inference.v1", "label": "DEVELOPMENT", "bindings": pop.bindings,
                 "inputs": {"predictions_sha256": sha256_file(args.predictions), "evidence_sha256_file": sha256_file(args.evidence),
                            "evidence_candidate": evidence["artifact"]["candidate_cid"], "seed": evidence["cell"]["seed"], "label": evidence["cell"]["label"],

@@ -653,3 +653,18 @@ def test_paired_inference_refuses_evidence_it_cannot_reproduce(tmp_path):
     # a gap inside the label span is refused
     with pytest.raises(ValueError, match="IRREGULAR_LABEL_SPAN"):
         validation_targets(pop.frame["log_return_1"].to_numpy(), pop.mu, pop.sigma, pop.times, np.array([118]), 3, 3600)
+
+
+def test_m07_fin_scaler_excludes_row0_and_flat_bars():
+    from c2_paired_loss_inference import m07_fin_scaler
+    n = 400
+    rng = np.random.default_rng(4)
+    close = 1.1 * np.exp(np.cumsum(0.001 * rng.standard_normal(n)))
+    high, low = close * 1.001, close * 0.999
+    low[10] = high[10] = close[10]                       # a flat bar: close_location NaN
+    frame = pd.DataFrame({"CLOSE": close, "HIGH": high, "LOW": low})
+    mu, sigma, used = m07_fin_scaler(frame, 300)
+    lr = np.log(close[1:] / close[:-1])
+    keep = np.ones(299, bool)
+    keep[9] = False                                      # return at row 10 belongs to the flat bar (index 9 in lr)
+    assert used == 298 and np.isclose(mu, lr[:299][keep].mean()) and np.isclose(sigma, lr[:299][keep].std())
