@@ -54,7 +54,8 @@ def _pair(model, naive):
     return {"skill": 1 - model / naive, "delta": model - naive, "status": "OK"}
 
 
-def build(receipt, validation_npz, *, provenance="held_out_validation", campaign_id=None, asset=None):
+def build(receipt, validation_npz, *, provenance="held_out_validation", campaign_id=None, asset=None,
+          seasonal_period_steps=None):
     if provenance not in ALLOWED_PROVENANCE:
         raise ValueError("provenance must be held_out_validation or chronological_oof; the reserved test is never admissible")
     if receipt.get("data", {}).get("test_used") is not False:
@@ -64,20 +65,43 @@ def build(receipt, validation_npz, *, provenance="held_out_validation", campaign
         raise ValueError("validation NPZ bytes differ from the receipt")
     with np.load(io.BytesIO(raw), allow_pickle=False) as z:
         row_ids = z["row_ids"].astype(str).tolist()
+        windows = z["windows"].astype(np.float64)
+        targets = z["targets"].astype(np.float64)
+        names = z["feature_names"].astype(str).tolist()
+        target_names = z["target_names"].astype(str).tolist()
         origins = z["timestamps"].astype(np.int64)
         sample_hours = None
         if z["target_timestamps"].shape[1]:
             step = int(z["target_timestamps"][0, 0] - origins[0]) // int(z["horizons"][0])
             sample_hours = step / 3600
     iso = lambda t: dt.datetime.fromtimestamp(int(t), dt.timezone.utc).isoformat()
+    seasonal = None
+    if seasonal_period_steps is not None:
+        period = int(seasonal_period_steps)
+        idx = [names.index(t) for t in target_names]
+        seasonal = {"period_steps": period, "declared": True,
+                    "definition": "seasonal naive: value of each target one period before the target time, "
+                                  "taken from the input window; same rows, targets, scaler and reduction",
+                    "per_horizon": {}}
     per_horizon = []
-    for h, m in sorted(receipt["per_horizon"].items(), key=lambda kv: int(kv[0])):
+    for k, (h, m) in enumerate(sorted(receipt["per_horizon"].items(), key=lambda kv: int(kv[0]))):
         mae, mse, nmae, nmse = (m.get(k) for k in ("MAE", "MSE", "baseline_MAE", "baseline_MSE"))
         per_horizon.append({
             "horizon": int(h), "rows": len(row_ids),
             "model_MAE": mae if _finite(mae) else None, "naive_MAE": nmae if _finite(nmae) else None,
             "model_MSE": mse if _finite(mse) else None, "naive_MSE": nmse if _finite(nmse) else None,
             "MAE": _pair(mae, nmae), "MSE": _pair(mse, nmse)})
+        if seasonal is not None:
+            position = windows.shape[1] - 1 - (seasonal["period_steps"] - int(h))
+            entry = per_horizon[-1]
+            if int(h) > seasonal["period_steps"] or position < 0:
+                entry["seasonal_naive"] = {"status": "NOT_AVAILABLE",
+                                           "reason": "target time minus one period is not inside the input window"}
+            else:
+                err = windows[:, position, :][:, idx] - targets[:, k, :]
+                smae, smse = float(np.abs(err).mean()), float((err ** 2).mean())
+                entry["seasonal_naive"] = {"naive_MAE": smae, "naive_MSE": smse,
+                                           "MAE": _pair(mae, smae), "MSE": _pair(mse, smse)}
     record = {
         "schema": SCHEMA,
         "frozen_metric": {"primary": "MAE", "secondary": "MSE",
@@ -99,6 +123,9 @@ def build(receipt, validation_npz, *, provenance="held_out_validation", campaign
         "naive": {"definition": "persistence: last observed value of each target at the forecast origin, "
                                 "repeated for every horizon; same rows, targets, scaler and reduction"},
         "per_horizon": per_horizon}
+    if seasonal is not None:
+        seasonal.pop("per_horizon")
+        record["seasonal_naive"] = seasonal
     record["evidence_sha256"] = hashlib.sha256(canonical(record).encode()).hexdigest()
     return record
 
@@ -116,9 +143,10 @@ def main():
     parser.add_argument("--provenance", default="held_out_validation")
     parser.add_argument("--campaign-id")
     parser.add_argument("--asset")
+    parser.add_argument("--seasonal-period-steps", type=int, help="optional declared seasonal naive period")
     args = parser.parse_args()
     record = build(json.loads(Path(args.receipt).read_text()), args.validation, provenance=args.provenance,
-                   campaign_id=args.campaign_id, asset=args.asset)
+                   campaign_id=args.campaign_id, asset=args.asset, seasonal_period_steps=args.seasonal_period_steps)
     Path(args.out).write_text(json.dumps(record, indent=1, sort_keys=True) + "\n")
     print(record["evidence_sha256"])
 

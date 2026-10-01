@@ -656,3 +656,14 @@ def test_forecast_evidence_refuses_test_provenance_and_foreign_rows(tmp_path):
     receipt["digests"]["validation_sha256"] = "0" * 64
     with pytest.raises(ValueError, match="differ"):
         fe.build(receipt, validation)
+
+
+def test_forecast_evidence_optional_seasonal_naive(tmp_path):
+    from tools import modular_forecast_evidence as fe
+    receipt, validation = _evidence_inputs(tmp_path)
+    record = fe.build(receipt, validation, seasonal_period_steps=2)
+    assert record["seasonal_naive"]["period_steps"] == 2 and fe.verify(record)
+    h1, h2, h3 = record["per_horizon"]
+    assert h1["seasonal_naive"]["MAE"]["status"] in ("OK", "NOT_AVAILABLE") and "naive_MAE" in h1["seasonal_naive"]
+    assert h3["seasonal_naive"]["status"] == "NOT_AVAILABLE"  # h > period
+    assert "seasonal_naive" not in fe.build(receipt, validation)  # absent unless declared
