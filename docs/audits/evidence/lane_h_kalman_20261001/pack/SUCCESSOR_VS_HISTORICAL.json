@@ -1,0 +1,25 @@
+{
+ "declared_regime": true,
+ "true": {
+  "q": 0.05,
+  "r": 0.5,
+  "ratio": 0.1
+ },
+ "successor": {
+  "status": "FITTED",
+  "ratio": 0.10439951851968728,
+  "q": 0.05140263081855301,
+  "r": 0.4923646348891895,
+  "clipped": [
+   false,
+   false
+  ]
+ },
+ "historical": {
+  "status": "FITTED",
+  "ratio": 0.10439105192790923,
+  "q": 0.05134487780473034,
+  "r": 0.4918513307078109
+ },
+ "max_abs_level_difference_over_obs_std": 3.9032541951188586e-06
+}

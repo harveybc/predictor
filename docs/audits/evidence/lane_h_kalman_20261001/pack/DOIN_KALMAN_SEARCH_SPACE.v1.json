@@ -1,0 +1,88 @@
+{
+ "design_sha256": "88274bea864eadc4b8910508811ff424a4981978aaeb54e8bb868ff6cd7dc538",
+ "invariants": {
+  "causal": true,
+  "design_label": "DEVELOPMENT",
+  "feature_selection_inside_doin": false,
+  "fit_role": "TRAIN only",
+  "smoother": "NEVER selectable"
+ },
+ "order": [
+  "kalman.active",
+  "kalman.group",
+  "kalman.param_source",
+  "kalman.ratio_level",
+  "kalman.ratio_slope",
+  "kalman.mode"
+ ],
+ "params": {
+  "kalman.active": {
+   "active_if": null,
+   "type": "int",
+   "values": [
+    0,
+    1
+   ]
+  },
+  "kalman.group": {
+   "active_if": "active",
+   "type": "str",
+   "values": [
+    "level",
+    "slope",
+    "both"
+   ]
+  },
+  "kalman.mode": {
+   "active_if": "active",
+   "type": "str",
+   "values": [
+    "append",
+    "replace"
+   ]
+  },
+  "kalman.param_source": {
+   "active_if": "active",
+   "type": "str",
+   "values": [
+    "moments_train",
+    "declared_ratio"
+   ]
+  },
+  "kalman.ratio_level": {
+   "active_if": "active and param_source == declared_ratio",
+   "type": "float",
+   "values": [
+    0.0001,
+    0.001,
+    0.01,
+    0.1,
+    1.0
+   ]
+  },
+  "kalman.ratio_slope": {
+   "active_if": "active and param_source == declared_ratio and group in (slope, both)",
+   "type": "float",
+   "values": [
+    1e-06,
+    0.0001,
+    0.01
+   ]
+  }
+ },
+ "phases": {
+  "1": "inactive + promoted variant",
+  "2": "full conditional space"
+ },
+ "promoted_variant": {
+  "kalman.active": 1,
+  "kalman.group": "both",
+  "kalman.mode": "append",
+  "kalman.param_source": "moments_train"
+ },
+ "schema": "h_kalman.search_space.v1",
+ "sizes": {
+  "cartesian": 360,
+  "conditional": 77
+ }
+}
