@@ -71,6 +71,77 @@ def canonical_config_json(config):
     return _json(_normalize(config))
 
 
+class BudgetExceeded(ValueError):
+    """A configuration over a declared cap: the candidate is DEFERRED by name, never truncated to fit."""
+
+    def __init__(self, dimension, measured, cap):
+        self.dimension, self.measured, self.cap = dimension, measured, cap
+        super().__init__(f"BUDGET_EXCEEDED_DEFERRED: {dimension} {measured} > cap {cap}; the candidate is "
+                         "deferred with this reason (no input truncation, no temporal collapse)")
+
+
+def _budget(bundle):
+    """Measured shape budget of a built bundle."""
+    c = bundle.config
+    widths = [int(m.output_shape[-1]) for m in bundle.branch_models.values()]
+    fused = bundle.fusion_model.output_shape
+    branch_params = int(sum(m.count_params() for m in bundle.branch_models.values()))
+    core_params = int(bundle.core_model.count_params())
+    total = int(bundle.forecast_model.count_params())
+    routed = sorted({f for spec in c["branches"] for f in spec["features"]})
+    return {"raw_channels": len(c["feature_names"]), "routed_channels": len(routed),
+            "excluded_features": _copy(c.get("excluded_features", {})),
+            "branches": len(widths), "branch_widths": widths, "fused_width": int(fused[-1]),
+            "fused_time": int(fused[1]), "latent_shape": [int(d) for d in bundle.core_model.output_shape[1:]],
+            "materialization_bytes_per_row": int(fused[1]) * int(fused[-1]) * 4, "dtype": "float32",
+            "parameters": {"branches": branch_params, "core": core_params,
+                           "head": total - branch_params - core_params, "total": total}}
+
+
+def _analytic_budget(c):
+    from .registry import _resolve
+    widths = []
+    for spec in c["branches"]:
+        factory, _ = _resolve("branch", spec, c["entry_point_groups"])
+        params = effective_params(factory, spec["params"], {"output_steps": c["branch_steps"]})
+        if "channels" not in params:
+            raise ValueError("analytic budget needs a branch component that declares its channel width")
+        widths.append(int(params["channels"]))
+    routed = sorted({f for spec in c["branches"] for f in spec["features"]})
+    return {"raw_channels": len(c["feature_names"]), "routed_channels": len(routed),
+            "excluded_features": _copy(c.get("excluded_features", {})), "branches": len(widths),
+            "branch_widths": widths, "fused_width": sum(widths), "fused_time": c["branch_steps"],
+            "latent_shape": [c["output_steps"], c["output_channels"]],
+            "materialization_bytes_per_row": c["branch_steps"] * sum(widths) * 4, "dtype": "float32"}
+
+
+def _enforce_caps(budget, caps):
+    measured = {"max_branches": budget["branches"], "max_fused_width": budget["fused_width"],
+                "max_materialization_bytes_per_row": budget["materialization_bytes_per_row"],
+                "max_parameters": (budget.get("parameters") or {}).get("total")}
+    for key in sorted(caps):
+        value = measured[key]
+        if value is not None and value > caps[key]:
+            raise BudgetExceeded(key[len("max_"):], value, caps[key])
+
+
+def measure_budget(config, *, build=True):
+    """Shape budget of any config: measured from the built graph (and checked against the analytic
+    prediction), or analytic only with ``build=False``. Caps in the config are reported, not enforced."""
+    c = _normalize(config)
+    analytic = _analytic_budget(c)
+    if not build:
+        return {**analytic, "parameters": None, "measured": False, "config_sha256": _digest(c)}
+    probe_free = _copy(c)
+    probe_free.pop("budget_caps", None)
+    probe_free["alignment_probe"] = False
+    measured = _budget(build_modular(probe_free))
+    keys = ("branch_widths", "fused_width", "fused_time", "latent_shape", "materialization_bytes_per_row")
+    return {**measured, "measured": True, "config_sha256": _digest(c),
+            "analytic_matches_measured": all(analytic[k] == measured[k] for k in keys),
+            "caps": _copy(c.get("budget_caps"))}
+
+
 @dataclass
 class ModularBundle:
     """Related Keras models produced from one validated modular configuration.
@@ -113,7 +184,8 @@ class ModularBundle:
         return {"schema": 1, "config_sha256": config_digest(self.config),
                 "branches": {n: self.donor_manifest("branch", n) for n in self.branch_models},
                 "fusion": fusion, "core": self.donor_manifest("core"),
-                "head": _copy(self._head_manifest), "regimes": regime_summary(self.config)}
+                "head": _copy(self._head_manifest), "regimes": regime_summary(self.config),
+                "budget": _budget(self)}
 
     def donor_manifest(self, role, name=None):
         """Return the component identity required to save or validate a donor.
@@ -224,5 +296,8 @@ def build_modular(config: dict) -> ModularBundle:
                      "horizons": _copy(c["horizons"]), "target_count": c["target_count"],
                      "input_shape": list(head.input_shape[1:]), "output_shape": list(head.output_shape[1:]),
                      "input_grid": list(core_grid), "output_grid": list(forecast_grid)}
-    return ModularBundle(c, branches, fusion_model, core, encoder, model, branch_grid,
-                         core_grid, manifests, core_manifest, fusion, fusion_identity, head_manifest)
+    bundle = ModularBundle(c, branches, fusion_model, core, encoder, model, branch_grid,
+                           core_grid, manifests, core_manifest, fusion, fusion_identity, head_manifest)
+    if c.get("budget_caps"):
+        _enforce_caps(_budget(bundle), c["budget_caps"])
+    return bundle

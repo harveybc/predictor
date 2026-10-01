@@ -51,6 +51,7 @@ PREFIXES = ("modular.", "branches.", "core.", "fusion.", "head.")
 _TOP_KEYS = {"schema", "window", "sample_hours", "feature_names", "branch_steps",
              "output_steps", "output_channels", "horizons", "target_count", "regime",
              "alignment_probe", "entry_point_groups"}
+_OPTIONAL_TOP_KEYS = {"budget_caps", "excluded_features"}   # flattened only when present (digest-neutral)
 _FIELDS = {"branch": {"features", "plugin", "regime", "donor"},
            "core": {"plugin", "regime", "donor"},
            "fusion": {"plugin"}, "head": {"plugin"}}
@@ -82,6 +83,8 @@ def flatten(config: dict) -> dict:
                 out[f"{TOP}entry_point_groups.{role}"] = group
         else:
             out[TOP + key] = copy.deepcopy(c[key])
+    for key in sorted(_OPTIONAL_TOP_KEYS & set(c)):
+        out[TOP + key] = copy.deepcopy(c[key])
     out[TOP + "branch_order"] = [b["name"] for b in c["branches"]]
     for spec in c["branches"]:
         for field in sorted(_FIELDS["branch"]):
@@ -114,7 +117,7 @@ def _apply(nested, key, value):
             nested.setdefault("entry_point_groups", {})[parts[2]] = value
         elif len(parts) == 2 and parts[1] == "branch_order":
             raise ValueError("modular.branch_order is structural; change branches in the nested config")
-        elif len(parts) == 2 and parts[1] in _TOP_KEYS - {"entry_point_groups"}:
+        elif len(parts) == 2 and parts[1] in (_TOP_KEYS | _OPTIONAL_TOP_KEYS) - {"entry_point_groups"}:
             nested[parts[1]] = copy.deepcopy(value)
         else:
             raise ValueError(f"Unknown modular flat key {key!r}")
@@ -179,3 +182,10 @@ def dumps(config: dict) -> str:
 def loads(text: str) -> dict:
     from predictor_plugins.modular_temporal import _normalize
     return _normalize(json.loads(text))
+
+
+def budget(config, *, build=True):
+    """Measured shape budget (raw channels, branches, fused width = sum of branch widths, fused time,
+    materialization bytes per row, parameters) read from the engine, for M04's budget model."""
+    from predictor_plugins.modular_temporal import measure_budget
+    return measure_budget(config, build=build)
