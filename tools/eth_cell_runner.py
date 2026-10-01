@@ -51,7 +51,13 @@ def main():
     identity = {"campaign_id": args.campaign_id, "cid": args.cid, "label": args.label,
                 "host_role": os.environ.get("F2_HOST_ROLE") or os.environ.get("M04_HOST_ROLE"),
                 "revision": args.revision, "dataset": Path(args.train).parent.name}
-    receipt_extra = {"candidate": {"cid": args.cid, "label": args.label, "config_id": args.config_id,
+    import subprocess
+    try:
+        runner_commit = subprocess.run(["git", "-C", str(Path(__file__).resolve().parents[1]), "rev-parse", "HEAD"],
+                                       capture_output=True, text=True, timeout=20).stdout.strip() or None
+    except (OSError, subprocess.SubprocessError):
+        runner_commit = None
+    receipt_extra = {"runner_commit": runner_commit, "candidate": {"cid": args.cid, "label": args.label, "config_id": args.config_id,
                                    "nested_sha256": hashlib.sha256(json.dumps(candidate, sort_keys=True,
                                                                               separators=(",", ":")).encode()).hexdigest()},
                      "bridge": {"predictor_revision": args.revision, "host_role": identity["host_role"],
