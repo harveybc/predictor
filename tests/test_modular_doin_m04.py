@@ -867,7 +867,8 @@ def test_r3_warm_schedule_is_conditional_round_trips_and_reaches_the_engine():
 
 def test_verification_thread_never_rereads_an_amended_declaration(tmp_path):
     campaign = make_campaign(tmp_path)
-    campaign.enqueue(DEFAULT, "a")
+    huber, _ = camp.paired_loss_arms(DEFAULT, 1.0)
+    campaign.enqueue(huber, "a")
     # an amendment written to disk mid-run that this code cannot even validate
     on_disk = json.loads((campaign.root / "CAMPAIGN.json").read_text())
     on_disk["search_space"]["bounds"]["train.not_a_parameter"] = {"choices": [1]}
