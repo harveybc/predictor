@@ -120,3 +120,45 @@ def test_bundle_v2_carries_provenance_and_v1_migrates_to_unknown(tmp_path):
     assert json.loads(doc_path.read_text())["archive_sha256"] == old["archive_sha256"]
     mt.load_bundle(tmp_path / "old")
     assert pv.migrate_bundle(tmp_path / "old")["status"] == "ALREADY_CURRENT"
+
+
+def test_legacy_schema_1_and_bundle_v1_load_as_unknown_and_operational_requirement_refuses_them(tmp_path):
+    b = bundle()
+    path, manifest = tmp_path / "old.keras", b.donor_manifest("branch", "branch_0")
+    doc = mt.save_donor(b.branch_models["branch_0"], path, manifest, provenance=DECLARED)
+    legacy = {k: doc[k] for k in ("manifest", "manifest_sha256", "model_sha256", "weights_sha256")}
+    legacy["schema"] = 1
+    path.with_suffix(".manifest.json").write_text(json.dumps(legacy))
+    mt.load_donor(path, manifest)
+    assert pv.donor_provenance(path)["conditioning_contract"] == "UNKNOWN"
+    with pytest.raises(ValueError, match="CONDITIONING_CONTRACT_NOT_OPERATIONAL"):
+        mt.load_donor(path, manifest, require_contract="OPERATIONAL")
+    mt.save_bundle(b, tmp_path / "v1")
+    doc_path = tmp_path / "v1" / "bundle.json"
+    old = json.loads(doc_path.read_text())
+    old["schema"] = "predictor.modular.bundle.v1"
+    old.pop("provenance")
+    doc_path.write_text(json.dumps(old))
+    _, seen = mt.load_bundle(tmp_path / "v1")
+    assert seen["provenance"]["conditioning_contract"] == "UNKNOWN"
+    with pytest.raises(ValueError, match="CONDITIONING_CONTRACT_NOT_OPERATIONAL"):
+        mt.load_bundle(tmp_path / "v1", require_contract="OPERATIONAL")
+
+
+def test_facade_save_declares_operational_provenance_from_its_config(tmp_path):
+    import numpy as np
+    from predictor_plugins.predictor_plugin_modular import Plugin
+    model = mt.default_config(["a", "b"])
+    plugin = Plugin({"modular": model, "modular_provenance": DECLARED,
+                     "modular_training": {"max_epochs": 1, "patience": 1, "batch_size": 8, "seed": 1}})
+    x = np.random.default_rng(0).normal(size=(16, 24, 2)).astype("float32")
+    plugin.build_model((24, 2), x, {})
+    plugin.train(x, {"output_horizon_1": x[:, -1, :1]}, x_val=x[:8], y_val={"output_horizon_1": x[:8, -1, :1]})
+    plugin.save(str(tmp_path / "m.keras"))
+    _, doc = mt.load_bundle(tmp_path / "m.keras.bundle", require_contract="OPERATIONAL")
+    assert doc["provenance"]["learned_corpus"]["kind"] == "TRAIN_ONLY"
+    undeclared = Plugin({"modular": model})
+    undeclared.build_model((24, 2), x, {})
+    undeclared.save(str(tmp_path / "u.keras"))
+    with pytest.raises(ValueError, match="CONDITIONING_CONTRACT_NOT_OPERATIONAL"):
+        mt.load_bundle(tmp_path / "u.keras.bundle", require_contract="OPERATIONAL")
