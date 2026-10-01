@@ -1,0 +1,43 @@
+{
+  "schema": "feature_selection_method_state.v1",
+  "updated_at": "2026-10-01T01:56:40Z",
+  "current_stage": "S3_ACCEPTANCE_TEST_DESIGN",
+  "plan": "FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md",
+  "traceability": "Sections 9 and 10.4: FS01-FS20; section 10.1: PS0-PS7 and UC-FS1-UC-FS5",
+  "owner_approval": "Progressive resource-aware approach approved in conversation; no new financial risk or remote-code grant implied.",
+  "reviewer": "Musashi: documentation and status inspection, not scientific acceptance of new trials",
+  "stages": {
+    "S0_DISCOVERY": "DOCUMENTED: existing M01-M06 lanes, inventory and business targets",
+    "S1_REQUIREMENTS": "DOCUMENTED: progressive selection, full causal study design, temporal encoders, reversible decisions",
+    "S2_USE_CASES": "DOCUMENTED: UC-FS1-UC-FS5, alternate and refusal paths",
+    "S3_ACCEPTANCE_TEST_DESIGN": "DRAFTED: FS01-FS20; not executed",
+    "S4_ARCHITECTURE": "NOT_COMPLETED: component contracts outlined, refine per increment",
+    "S5_SYSTEM_TEST_DESIGN": "NOT_COMPLETED",
+    "S6_COMPONENT_DESIGN": "NOT_COMPLETED",
+    "S7_INTEGRATION_TEST_DESIGN": "NOT_COMPLETED",
+    "S8_UNIT_TEST_DESIGN": "NOT_COMPLETED",
+    "S9_UNIT_IMPLEMENTATION": "NOT_STARTED_FOR_THIS_INCREMENT"
+  },
+  "accepted_requirements": [],
+  "scientific_evidence": [],
+  "existing_evidence_scope": "M03 profiles and M02 AE work remain evidence of their original protocols, not completion of FS01-FS20.",
+  "next_allowed_actions": [
+    "Satoshi acknowledges orders and reconciles live work",
+    "Refine S3-S8 per bounded increment, write failing behavioral tests before new implementation",
+    "Continue independently authorized profiling, optimization and product work",
+    "Preserve and classify old-architecture donors before successor training"
+  ],
+  "blocked_actions": [
+    "Treat observational matches as intervention or individual counterfactual truth without identification assumptions",
+    "Reject every non-reconstructive representation for lacking a decoder",
+    "Select features on test or deploy future-target-conditioned operational encoders",
+    "Relabel 12-step branch donors as 24-step branch donors"
+  ],
+  "open_decisions": [
+    "Pilot family shortlist, comparable compute budget and exploratory allocation after cost measurements",
+    "Independent owner decisions for C07 remote code and S07 holdout remain separate"
+  ],
+  "history": [
+    {"event": "V2 discussion revised to V3 approved progressive subplan", "implementation_claimed": false}
+  ]
+}

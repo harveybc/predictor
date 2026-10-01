@@ -1,5 +1,15 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
+**Seleccion progresiva aprobada (30-sep, actualizacion 01-oct UTC):**
+[subplan de perfiles, causalidad, representaciones y seleccion conjunta](program_v3/FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md).
+Se inserta despues de negocio/admisibilidad de datos, dentro de perfiles y
+seleccion del ensamblaje modular; reutiliza P-PRE y P-TRN. Matriz basica para
+todas las entradas admisibles, priorizacion reversible, extraccion y causalidad
+en paralelo, metricas ampliadas y confirmacion. No impone VAE ni bloquea DOIN
+o la operacion semanal LTS esperando generadores o estudios causales completos.
+[Ordenes consolidadas para Satoshi](../handoffs/SATOSHI_PROGRESSIVE_SELECTION_AND_MODULAR_CONTINUATION_2026_09_30.md)
+integran esta ampliacion y la reconciliacion arquitectonica pendiente.
+
 **Subplan modular vigente (30-sep):**
 [plugins, perfiles, preentrenamiento por rama/nucleo y optimizacion concurrente](program_v3/MODULAR_STACK_WORK_PLAN_2026_09_30.md).
 La GPU prioriza candidatos modulares elegibles tras las celdas ya iniciadas;

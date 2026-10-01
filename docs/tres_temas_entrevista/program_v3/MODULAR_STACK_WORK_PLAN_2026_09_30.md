@@ -74,6 +74,14 @@ frequencies require a separate causal alignment transform before assembly.
 
 ## Feature characterization, grouping and selection
 
+Approved implementation sequence and causal/representation study design:
+[progressive selection subplan](FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md).
+Its PS0-PS7 increments and FS01-FS20 criteria extend this section. Broad basic
+profiling continues while ready batches enter reversible prioritization and
+parallel representation/causal studies. Neither VAE nor successful reconstruction
+is a universal eligibility requirement. New objectives do not retroactively
+change existing AE experiments or their donor identities.
+
 Profiles are fitted exclusively on the designated training period. Each report
 binds source bytes, columns, time interval, sampling frequency, transforms and
 profile settings. The coverage index distinguishes discovered files from
@@ -103,11 +111,15 @@ Keep an all-admissible-feature control and the reasons for every exclusion.
 
 1. Freeze split/time/target/scaler contracts. Partition train internally for AE
    selection with purging appropriate to window/target supports.
-2. Train one branch AE per feature/group, each with its own optimizer, loss and
-   early stopping. Export selected encoder plus manifest and reload check.
+2. For the existing reconstructive control, train one branch AE per feature/group,
+   each with its own optimizer, loss and early stopping. Export selected encoder
+   plus manifest and reload check. Other objectives follow the progressive
+   subplan with their own validation criterion; no decoder is required for a
+   contrastive or latent-prediction encoder. Keep architecture and objective
+   separate in configs and evidence.
 3. Freeze those branch encoders during materialization; encode train and internal
    validation in bounded batches. Fuse with the same plugin/grid used downstream.
-4. Train the core AE to reconstruct the fused sequences; early stop on its own
+4. For the reconstructive control, train the core AE on the fused sequences; early stop on its own
    internal validation. Export the core with upstream branch/fusion identities.
 5. Fit forecasting heads under branch/core regimes. Baseline R0 has no donor;
    R1 freezes the specified donor; R2 starts from the same donor and fine-tunes.
