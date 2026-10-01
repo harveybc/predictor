@@ -824,3 +824,14 @@ def test_optional_seasonal_residual_parameter_round_trips_and_is_optional():
         ss.from_flat(flat, BASE, SPACE_V2)  # older spaces never accept it silently
     old = {**DEFAULT_V2, "train.seed": 2021, "train.huber_delta": 1.0}
     assert ss.to_flat(ss.from_flat(old, BASE, SPACE_V2), SPACE_V2) == old  # older spaces unchanged
+
+
+def test_ecl_npz_builder_streams_and_matches_direct_indexing(tmp_path):
+    from tools import modular_doin_ecl_npz as b
+    rng = np.random.default_rng(0)
+    z = rng.standard_normal((200, 5))
+    origins = np.arange(30, 150, dtype=np.int64)
+    x, y = b.materialize(origins, z, 24, [1, 2, 24], tmp_path, "t", chunk=7)
+    offsets = np.arange(-23, 1)
+    assert np.array_equal(np.asarray(x), z[origins[:, None] + offsets[None, :]].astype(np.float32))
+    assert np.array_equal(np.asarray(y), z[origins[:, None] + np.array([1, 2, 24])[None, :]].astype(np.float32))
