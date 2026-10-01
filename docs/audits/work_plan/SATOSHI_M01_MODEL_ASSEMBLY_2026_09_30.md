@@ -121,3 +121,23 @@ feedfd00 0111c264 cf7f0297 05b08dcd c1e035d7 8f38bfeb f04858a6 48a1bd85 ec662fd3
 Re-run: `tools/m01_verify_installed.sh <isolated-venv-python> <M01 worktree> dc72170e <prediction_provider> <out>` and `tools/m01_verify_lts.sh <lts-env-python> <lts> <M01 worktree> <out>`, each under `crispdm-run -m 4G` on a CPU worker.
 
 — Satoshi, successor technical lead, 2026-09-30
+
+## Follow-up: donor remanifest for M02's running pretraining (coordinator order, same day)
+
+`tools/modular_donor_remanifest.py` converts donors written by the 556c5f3e engine (literal-params identity) to the effective-params identity without touching the weights file.
+
+- **Before writing anything**, it checks three things. The archive's sha256 must match the old `model_sha256`. The deserialized weights must hash to `weights_sha256`. Feature order, window and sampling period must be re-derived from the old manifest: grids are recomputed from `sample_hours`, output grids must be exact right-edge partitions, and a core's input grid must equal its upstream branches' grid. Optional `--feature-names/--window/--sample-hours` values must also match. Only built-in components are accepted.
+- **What it writes:** it keeps the old sidecar as `<stem>.manifest.pre_c1e035d7.json`, replaces `<stem>.manifest.json` atomically with Keras provenance, and appends a record holding both identity hashes to `<stem>.provenance.json`. Other keys in that file are preserved.
+- **After writing**, it re-checks the archive bytes and verifies the donor with `load_donor`.
+- A second run on a current donor writes nothing and reports `ALREADY_CURRENT`.
+
+`tests/test_modular_donor_remanifest.py` builds its donors with the old engine. The source is pinned verbatim with its sha256 and runs in a separate interpreter, using explicit params as M02 writes them. The tests show:
+
+- Old donors are refused by the new engine, then accepted after remanifest, with encoder outputs identical to the old engine's, under both explicit and implicit-default configs.
+- The remanifest is idempotent: every file is byte-identical after a second run.
+- A tampered archive is refused and nothing is written.
+- A different feature order, window or sampling period is refused.
+- Remanifested donors still reject a different config.
+- An external-plugin or inconsistent-grid manifest is refused.
+
+Run: pinned env `envs/tensorflow` (Keras 3.13.2), worker_b, `crispdm-run -m 2G`: **8 passed in 11.30 s**. Tip `41955f50`.
