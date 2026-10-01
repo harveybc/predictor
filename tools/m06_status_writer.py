@@ -271,6 +271,10 @@ def sampler_idle(uuid, fallback):
         d = None
     if d:
         return {"gpu_idle_seconds_24h": d.get("idle_24h_s"), "gpu_idle_current_seconds": d.get("idle_current_s"),
+                "sampler_temperature_c": d.get("temp_c"), "sampler_temperature_max_since_start_c": d.get("temp_max_since_start_c"),
+                "sampler_vram_used_mib": d.get("mem_used_mib"), "sampler_vram_total_mib": d.get("mem_total_mib"),
+                "sampler_power_w": d.get("power_w"),
+                "sampler_sample_at": (time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(d["last_t"])) if d.get("last_t") else None),
                 "gpu_idle_note": "m06-gpu-sampler: 15 s sampling; idle = 0 % utilization or no compute process; alarm at 120 s"}
     f = fallback.get(uuid, {})
     return {"gpu_idle_seconds_24h": int(sum(e[1] for e in f.get("events", []))),
@@ -288,6 +292,23 @@ def psi_val(text, kind, key):
                     except ValueError:
                         return None
     return None
+
+
+def gpu_vitals(dv, job):
+    """Temperature (15 s sampler first, else the writer's probe), VRAM, power, and the running job's
+    cap / cgroup peak / progress, for the capacity board and the 30-minute report."""
+    g = dv.get("gpu") or {}
+    t, src = dv.get("sampler_temperature_c"), "m06-gpu-sampler 15 s"
+    if t is None:
+        t, src = dv.get("temperature_c"), "writer probe"
+    return {"temperature_c": t, "temperature_source": src,
+            "temperature_max_since_sampler_start_c": dv.get("sampler_temperature_max_since_start_c"),
+            "vram_used_mib": dv.get("sampler_vram_used_mib") if dv.get("sampler_vram_used_mib") is not None else g.get("vram_used_mib"),
+            "vram_total_mib": dv.get("sampler_vram_total_mib") if dv.get("sampler_vram_total_mib") is not None else g.get("vram_total_mib"),
+            "power_w": dv.get("sampler_power_w") if dv.get("sampler_power_w") is not None else g.get("power_w"),
+            "job_cap_bytes": (job or {}).get("cap_bytes"), "job_peak_bytes": (job or {}).get("cgroup_peak_bytes"),
+            "job_progress": (job or {}).get("progress"), "job_phase": (job or {}).get("phase"),
+            "job_stage": (job or {}).get("stage"), "job_eta": (job or {}).get("eta")}
 
 
 def capacity_board(reg, probes, devices, jobs, camps):
@@ -309,6 +330,7 @@ def capacity_board(reg, probes, devices, jobs, camps):
         if role == "coordinator":
             rows.append({"lane": "-", "agent": "-", "host_alias": role, "resource": uuid, "name": dv.get("name"),
                          "current_job": cur[0]["id"] if cur else None, "heartbeat": None,
+                         **gpu_vitals(dv, cur[0] if cur else None),
                          "next_prepared": None, "state": "RESERVED_FOR_DESKTOP" if not cur else "RUNNING",
                          "cause_if_idle": "owner's desktop GPU: never batch work"})
             continue
@@ -328,6 +350,7 @@ def capacity_board(reg, probes, devices, jobs, camps):
                      "heartbeat": (cur[0].get("heartbeat_status"), cur[0].get("heartbeat_age_s")) if cur else None,
                      "next_prepared": (q[0]["id"] if q else nxt.get(lane or "")),
                      "state": "RUNNING" if cur else "IDLE", "idle_seconds": dv.get("gpu_idle_current_seconds"),
+                     **gpu_vitals(dv, cur[0] if cur else None),
                      "cause_if_idle": cause})
     for role, p in probes.items():
         if "error" in p:
