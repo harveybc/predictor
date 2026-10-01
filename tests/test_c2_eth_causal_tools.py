@@ -433,3 +433,45 @@ def test_regime_cell_returns_the_paired_variants(confounded):
     assert len(c["blocks_theta_base"]) == 5 and c["rows"] > 500
     agg = summarize_regime([c])
     assert agg["cells"] == 1 and agg["nominal"] == 0.05
+
+
+# ---------------------------------------------------------------------------------------------------- interval rule, evidence split
+
+
+def test_interval_rule_threshold_and_committed_eth_evidence():
+    from c2_interval_rule import check, tolerance
+    assert abs(tolerance(498) - 0.0695) < 5e-4
+    base = REPO / "docs" / "audits" / "evidence" / "lane_c2_eth_20261001"
+    cal = json.loads((base / "calibration" / "BATTERY_CALIBRATION.json").read_text())
+    idx = json.loads((base / "dossiers" / "DOSSIER_INDEX.json").read_text())
+    res = check(cal, idx)
+    assert res["verdict"] == "CONTROLS_FAIL_AS_REQUIRED" and "block_bootstrap_L" in res["calibrated_methods"]
+    assert "hac_lag_h6" not in res["calibrated_methods"]            # the uncalibrated interval is refused by the rule
+    bad = json.loads(json.dumps(cal))
+    bad["aggregate"]["scrambled_rate_block_bootstrap_L"] = 0.181
+    assert check(bad, idx)["verdict"] == "BATTERY_SUSPECT"
+    bad_idx = json.loads(json.dumps(idx))
+    bad_idx["battery"]["future_shift_template_fired"] -= 1
+    assert "FUTURE_SHIFT_TEMPLATE_DID_NOT_FIRE_IN_EVERY_CELL" in check(cal, bad_idx)["problems"]
+
+
+def test_evidence_split_and_time_semantics_validate_and_stay_separate(confounded):
+    pytest.importorskip("jsonschema")
+    from c2_causal_dossier import dossier, study, validate
+    from c2_dossier_evidence_split import derive
+    pop = confounded["pop"]
+    doc = dossier(pop, study(pop, "x_treat", 1), revision="0123456789abcdef")
+    doc.update(derive(doc))
+    schema = REPO / "docs" / "contracts" / "causal_dossier.v1.schema.json"
+    assert validate(doc, schema) == []
+    ec = doc["evidence_classes"]
+    assert ec["observed_natural_interventions"]["state"] == "NOT_AVAILABLE"
+    assert ec["paired_counterfactuals"]["state"] == "REPORTED_UNDER_DECLARED_MODEL" and doc["rung2"]["state"] == "NOT_IDENTIFIED"
+    assert doc["time_semantics"]["availability_time"]["state"] == "UNDECLARED"
+    assert doc["time_semantics"]["population"]["rows"] == doc["data_manifest"]["n_episodes"]
+    broken = json.loads(json.dumps(doc))
+    broken["evidence_classes"]["paired_counterfactuals"]["assumptions"] = []
+    assert validate(broken, schema) != []                         # a reported class without assumptions is refused
+    broken2 = json.loads(json.dumps(doc))
+    del broken2["time_semantics"]["availability_time"]
+    assert validate(broken2, schema) != []

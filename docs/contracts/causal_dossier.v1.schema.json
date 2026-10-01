@@ -5,6 +5,22 @@
   "description": "One document per (subject, head, horizon). The three rungs carry SEPARATE states; NOT_EVALUATED and NOT_IDENTIFIED are states, never zero. Consumers (Calendar, M5PHET, selection) read this contract, never the causal-inference internals. Produced by causal-inference; the source of every number is a pinned artifact.",
   "type": "object",
   "additionalProperties": false,
+  "$defs": {
+    "evidence_class": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "assumptions", "support"],
+      "properties": {
+        "state": {"enum": ["NOT_EVALUATED", "NOT_AVAILABLE", "REPORTED_ASSOCIATION", "REPORTED_UNDER_DECLARED_MODEL"]},
+        "assumptions": {"type": "array", "items": {"type": "string"}},
+        "support": {"type": "object", "additionalProperties": {"type": ["number", "string", "boolean", "null"]}},
+        "reason": {"type": "string"}
+      },
+      "allOf": [
+        {"if": {"properties": {"state": {"enum": ["REPORTED_ASSOCIATION", "REPORTED_UNDER_DECLARED_MODEL"]}}}, "then": {"properties": {"assumptions": {"minItems": 1}}}}
+      ]
+    }
+  },
   "required": ["schema", "dossier_id", "produced_at", "producer", "subject", "data_manifest", "treatment", "rung1", "rung2", "rung3", "emission", "selection", "limitations"],
   "properties": {
     "schema": {"const": "causal_dossier.v1"},
@@ -343,6 +359,28 @@
       "allOf": [
         {"if": {"properties": {"cf_eligible": {"const": true}}}, "then": {"properties": {"causal_evidence_level": {"const": "COUNTERFACTUAL_SENSITIVITY"}}}}
       ]
+    },
+    "evidence_classes": {
+      "description": "The three kinds of causal-flavoured evidence, kept apart (owner order MAINLINE_PARALLEL_CONTINUATION 4.C): association (predictive, no causal word), observed natural interventions (a quasi-experiment that actually exists in the data), paired counterfactuals (a declared structural model evaluated on the same row). Each carries its own assumptions and support; one class never stands in for another, and none changes a rung state.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["association", "observed_natural_interventions", "paired_counterfactuals"],
+      "properties": {
+        "association": {"$ref": "#/$defs/evidence_class"},
+        "observed_natural_interventions": {"$ref": "#/$defs/evidence_class"},
+        "paired_counterfactuals": {"$ref": "#/$defs/evidence_class"}
+      }
+    },
+    "time_semantics": {
+      "description": "Event time, availability time and population of every causal output (owner order 4.C). UNDECLARED is a value, never silently replaced by the bar stamp.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_time", "availability_time", "population"],
+      "properties": {
+        "event_time": {"type": "object", "additionalProperties": false, "required": ["definition", "span"], "properties": {"definition": {"type": "string", "minLength": 1}, "span": {"type": "array", "items": {"type": "string"}, "minItems": 2, "maxItems": 2}}},
+        "availability_time": {"type": "object", "additionalProperties": false, "required": ["state", "rule"], "properties": {"state": {"enum": ["OBSERVED", "DECLARED_ASSUMPTION", "UNDECLARED"]}, "rule": {"type": "string", "minLength": 1}}},
+        "population": {"type": "object", "additionalProperties": false, "required": ["rule", "rows", "split"], "properties": {"rule": {"type": "string", "minLength": 1}, "rows": {"type": "integer", "minimum": 0}, "split": {"type": "string", "minLength": 1}}}
+      }
     },
     "limitations": {"type": "array", "items": {"type": "string"}, "minItems": 1}
   },
