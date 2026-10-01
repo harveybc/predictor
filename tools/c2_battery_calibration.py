@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import resource
 import sys
 import time
 from pathlib import Path
@@ -184,6 +185,7 @@ def main(argv=None):
     agg = aggregate(cells)
     agg["cpu_seconds"] = time.process_time() - t0
     agg["label"] = "DEVELOPMENT"
+    agg["peak_rss_bytes_self"] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
     doc = {"schema": "c2_battery_calibration.v1", "bindings": pop.bindings, "aggregate": agg, "cells": cells}
     (out / "BATTERY_CALIBRATION.json").write_text(json.dumps(doc, indent=1, sort_keys=True))
     print(json.dumps(agg, indent=1))
