@@ -701,6 +701,10 @@
   {
    "at": "2026-10-01T05:14Z",
    "what": "M06's watcher raised 'ALERT coordinator batch job d-runner-worker-a' at 04:41:24Z (zero-batch rule) and M06 did not forward it until 05:14Z; the relaunched runner is again on the coordinator"
+  },
+  {
+   "at": "2026-10-01T09:42Z",
+   "what": "M06 handover v1 self-matched its own command line in pgrep: it touched M07 loop B's STOP on worker_a at 09:40:37Z; loop B exited; STOP removed ~09:40:50Z; durable unit started 09:41:46Z exited 0 ('trained': 0). Fixed in handover v2 (wrapper/handover processes excluded); the other handovers were re-armed with v2"
   }
  ],
  "plan_links": {
@@ -1687,5 +1691,38 @@
  },
  "next_prepared": {
   "F": "M06: PNG/RETURN/RESULTS deliverables and Hermes-drafted 30-minute summaries (ASSIGNED)"
- }
+ },
+ "durable_runners": [
+  {
+   "unit": "d2-runner-worker-a.service",
+   "host_alias": "coordinator",
+   "owner": "M04",
+   "state": "ACTIVE since 09:43:00Z (pids 1406753/1406781); preflight revision 2b89f4d9",
+   "stop": "STOP_worker_a"
+  },
+  {
+   "unit": "f2-loop-worker-b.service",
+   "host_alias": "worker_b",
+   "owner": "M07",
+   "state": "handover armed 09:42:32Z (STOP touched; starts when the current loop pid 1738275 exits)"
+  },
+  {
+   "unit": "f2-loop-worker-a.service",
+   "host_alias": "worker_a",
+   "owner": "M07",
+   "state": "started 09:41:46Z and exited 0 with {'trained': 0}; awaiting M07's queue check"
+  },
+  {
+   "unit": "g2-queue-worker-b.service",
+   "host_alias": "worker_b",
+   "owner": "lane G",
+   "state": "handover armed (no STOP; starts when the current rl_temporal_queue.sh worker_b loop exits); 15-cell list"
+  },
+  {
+   "unit": "g2-queue-worker-a",
+   "host_alias": "worker_a",
+   "owner": "lane G",
+   "state": "withdrawn: worker_a closed to lane G while M04's 5090 train holds its lease (coordinator 09:41Z)"
+  }
+ ]
 }
