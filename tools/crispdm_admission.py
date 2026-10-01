@@ -1082,9 +1082,59 @@ def _note_request(store: Store, req: Request, decision: dict, now: float):
     store.write_request(req.name, rec)
 
 
+def _cancel_marker(store: Store, name) -> Path:
+    return store.request_path(name).with_suffix(".cancel")
+
+
+def cancel(store: Store, res, name: str, witness_pid: int, now: float) -> dict:
+    """Cancel a QUEUED request (ADM-CANCEL-01).  Under the lock: refuse if a live lease of that name
+    exists (that is a release, not a cancel); otherwise, if the named acquirer is alive, leave a
+    cancel marker bound to its pid, which that acquirer consumes atomically at its next attempt and
+    exits CANCELLED without writing a lease.  Nothing is signalled."""
+    with store:
+        swept = reclaim(store, res, now)
+        held = [l.lease_id for l in swept["live"] if l.name == name]
+        if held:
+            out = {"ok": False, "code": "LEASE_EXISTS", "lease_ids": held,
+                   "reason": "a lease exists for this name: use `release <lease_id>` (or wait for its load), not cancel"}
+            store.log({"_now": now, "event": "ADMISSION_CANCEL_REFUSED", "name": name, **out})
+            return out
+        alive = res.pid_alive(witness_pid, res.pid_starttime(witness_pid))
+        if alive:
+            store.requests.mkdir(parents=True, exist_ok=True)
+            m = _cancel_marker(store, name)
+            tmp = m.with_suffix(".cancel.tmp")
+            tmp.write_text(json.dumps({"name": name, "witness_pid": witness_pid, "at": now}))
+            os.replace(tmp, m)
+        out = {"ok": True, "code": "CANCEL_PENDING" if alive else "NO_LIVE_ACQUIRER", "name": name,
+               "witness_pid": witness_pid, "witness_alive": alive}
+        store.log({"_now": now, "event": "ADMISSION_CANCELLED", **out})
+        return out
+
+
+def _consume_cancel(store: Store, req: Request, now: float):
+    m = _cancel_marker(store, req.name)
+    try:
+        rec = json.loads(m.read_text())
+    except (OSError, ValueError):
+        return None
+    if int(rec.get("witness_pid", -1)) != os.getpid():
+        return None                 # bound to another acquirer of the same name
+    m.unlink(missing_ok=True)
+    return rec
+
+
 def acquire(store: Store, res, req: Request, now: float) -> dict:
     """One atomic admission: under the lock, decide and (on ADMITTED) write the reservation."""
     with store:
+        cancelled = _consume_cancel(store, req, now)
+        if cancelled:
+            decision = {"verdict": REFUSED, "code": "CANCELLED",
+                        "reason": f"cancelled through the admission tool at {cancelled.get('at')}; no lease written",
+                        "readings": {"request_cap_bytes": req.cap_bytes}}
+            store.log({"_now": now, "event": "ADMISSION_REFUSED", "name": req.name, "label": req.label,
+                       "code": "CANCELLED", "reason": decision["reason"], "cap_bytes": req.cap_bytes})
+            return decision
         lowered = lowered_after_refusal(store, req, now)
         if lowered:
             decision = {"verdict": REFUSED, "code": lowered["code"], "reason": lowered["reason"],
@@ -1880,6 +1930,10 @@ def main(argv=None) -> int:
     se.add_argument("--lease", default=None)
     se.add_argument("--slice", default=DEFAULT_SLICE)
     se.add_argument("argv", nargs=argparse.REMAINDER)
+    cn = sub.add_parser("cancel", help="cancel a QUEUED request of this name, bound to its acquirer pid "
+                                       "(refused if a lease exists: use release)")
+    cn.add_argument("--name", required=True)
+    cn.add_argument("--witness-pid", type=int, required=True, help="the waiting acquirer's pid")
     sub.add_parser("state", help="the live reservations and the capacity they leave")
     sub.add_parser("reclaim", help="sweep: free only the leases whose witness is dead")
 
@@ -1932,6 +1986,10 @@ def main(argv=None) -> int:
                     return REFUSED_EXIT
                 time.sleep(max(1, a.poll_seconds))
                 waited += max(1, a.poll_seconds)
+        if a.cmd == "cancel":
+            d = cancel(store, res, a.name, a.witness_pid, now)
+            print(json.dumps(d, sort_keys=True))
+            return 0 if d["ok"] else 1
         if a.cmd == "arm":
             print(json.dumps(arm(store, res, a.lease_id, now, a.pid, a.cgroup, a.unit), sort_keys=True))
             return 0

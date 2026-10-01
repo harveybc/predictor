@@ -924,3 +924,61 @@ def test_2026_10_01_the_launcher_passes_its_own_pid_as_the_holder(host, fake_sys
     assert adm
     ret = list((host.store_dir / "retained").glob("*.json"))
     assert ret and json.loads(ret[-1].read_text())["lease"].get("holder_pid")
+
+
+# ---- ADM-CANCEL-01 (2026-10-01): a queued request is cancelled through the tool, never by killing ----
+
+def test_2026_10_01_cancel_makes_the_bound_acquirer_exit_cancelled_without_a_lease(host):
+    d = A.cancel(host.store, host.res, "q", os.getpid(), host.now)       # this test process is the acquirer
+    assert d["ok"] and d["code"] == "CANCEL_PENDING"
+    r = A.acquire(host.store, host.res, A.Request(name="q", cap_bytes=GIB, label="q"), host.now)
+    assert r["verdict"] == A.REFUSED and r["code"] == "CANCELLED"
+    assert host.live_lease_ids() == []
+    ev = [x["event"] for x in host.ledger()]
+    assert "ADMISSION_CANCELLED" in ev
+    # the marker was consumed: the next acquire of that name proceeds normally
+    assert A.acquire(host.store, host.res, A.Request(name="q", cap_bytes=GIB, label="q"), host.now)["verdict"] == A.ADMITTED
+
+
+def test_2026_10_01_cancel_is_refused_when_a_lease_exists_and_points_to_release(host):
+    lid = host.acquire("held", GIB)["lease_id"]
+    d = A.cancel(host.store, host.res, "held", os.getpid(), host.now)
+    assert not d["ok"] and d["code"] == "LEASE_EXISTS" and d["lease_ids"] == [lid]
+    assert host.live_lease_ids() == [lid]
+
+
+def test_2026_10_01_cancel_for_a_dead_acquirer_writes_no_marker(host):
+    host.patch(alive={"991001": False})
+    d = A.cancel(host.store, host.res, "gone", 991001, host.now)
+    assert d["ok"] and d["code"] == "NO_LIVE_ACQUIRER"
+    assert not list((host.store_dir / "requests").glob("*.cancel")) if (host.store_dir / "requests").exists() else True
+
+
+def test_2026_10_01_a_cancel_bound_to_another_acquirer_does_not_cancel_this_one(host):
+    host.patch(alive={"991002": True})
+    A.cancel(host.store, host.res, "shared", 991002, host.now)
+    r = A.acquire(host.store, host.res, A.Request(name="shared", cap_bytes=GIB, label="shared"), host.now)
+    assert r["verdict"] == A.ADMITTED
+
+
+def test_2026_10_01_cancel_end_to_end_stops_a_queued_acquirer_process(host):
+    host.patch(mem_available_bytes=4 * GIB)                  # 8G can never fit now: it queues
+    env = {**host.env}
+    env.pop("CRISPDM_ADMISSION_NOW", None)
+    p = subprocess.Popen([sys.executable, str(MODULE), "acquire", "-n", "waiter", "-m", "8G", "--queue",
+                          "--poll-seconds", "1", "--max-wait-seconds", "60"], env=env,
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    try:
+        deadline = time.time() + 20
+        while time.time() < deadline and not any(x.get("name") == "waiter" for x in host.ledger()):
+            time.sleep(0.2)
+        c = subprocess.run([sys.executable, str(MODULE), "cancel", "--name", "waiter", "--witness-pid", str(p.pid)],
+                           env=env, capture_output=True, text=True, timeout=30)
+        assert c.returncode == 0, c.stdout + c.stderr
+        out, _ = p.communicate(timeout=30)
+    finally:
+        if p.poll() is None:
+            p.terminate()
+    assert p.returncode == A.REFUSED_EXIT
+    assert '"CANCELLED"' in out
+    assert host.live_lease_ids() == []
