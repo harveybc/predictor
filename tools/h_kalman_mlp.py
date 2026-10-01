@@ -16,7 +16,9 @@ import numpy as np
 
 
 def _check(X, name):
-    X = np.asarray(X, dtype=np.float64)
+    X = np.asarray(X)
+    if X.dtype not in (np.float32, np.float64):
+        X = X.astype(np.float64)
     if X.ndim != 2 or not np.isfinite(X).all():
         raise ValueError(f"{name} must be a finite 2-D array")
     return X
@@ -39,10 +41,13 @@ def mlp_fit_predict(Xtr, Ytr, Xev_list, seed, hidden=(44, 44), max_epochs=30, pa
         pass
     N = Xtr.shape[0]
     cut = int(N * (1.0 - holdout_frac))
-    mu, sd = Xtr[:cut - purge].mean(axis=0), Xtr[:cut - purge].std(axis=0)
+    mu, sd = _col_stats(Xtr[:cut - purge])
     sd[sd == 0] = 1.0
-    def prep(X):
-        return ((X - mu) / sd).astype(np.float32)
+    def prep(X, block=2048):
+        out = np.empty(X.shape, dtype=np.float32)
+        for i in range(0, X.shape[0], block):
+            out[i:i + block] = ((X[i:i + block] - mu) / sd).astype(np.float32)
+        return out
     xin, yin = prep(Xtr[:cut - purge]), Ytr[:cut - purge].astype(np.float32)
     xho, yho = prep(Xtr[cut:]), Ytr[cut:].astype(np.float32)
     inputs = tf.keras.Input(shape=(Xtr.shape[1],))
@@ -73,3 +78,18 @@ def mlp_fit_predict(Xtr, Ytr, Xev_list, seed, hidden=(44, 44), max_epochs=30, pa
     return {"predictions": preds, "selected_epoch": int(best_epoch), "epochs_run": int(run), "inner_best_loss": best,
             "weights_sha256": h.hexdigest(), "selection": "inner_chronological_holdout_of_train",
             "hidden": list(hidden), "trainable_parameters": int(sum(int(np.prod(w.shape)) for w in model.trainable_weights))}
+
+
+def _col_stats(X, block=2048):
+    n = X.shape[0]
+    s = np.zeros(X.shape[1])
+    for i in range(0, n, block):
+        s += X[i:i + block].sum(axis=0, dtype=np.float64)
+    mu = s / n
+    v = np.zeros(X.shape[1])
+    for i in range(0, n, block):
+        d = X[i:i + block].astype(np.float64) - mu
+        v += (d * d).sum(axis=0)
+    sd = np.sqrt(v / n)
+    sd[sd == 0] = 1.0
+    return mu, sd

@@ -44,18 +44,42 @@ ALPHAS = (1.0, 10.0, 100.0, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8)
 FIXED_ALPHAS = (1.0, 1e3, 1e5)
 
 
-def sha_array(a, dtype="<f8"):
+def sha_array(a, dtype=None):
+    """SHA-256 of the array bytes in its own dtype (little endian)."""
+    dtype = np.asarray(a).dtype.newbyteorder("<") if dtype is None else dtype
     return hashlib.sha256(np.ascontiguousarray(a, dtype=dtype).tobytes()).hexdigest()
 
 
 # --------------------------------------------------------------------------------------------- windows
 def gather(C: np.ndarray, origins: np.ndarray, lags: int) -> np.ndarray:
-    """(N, lags*P): lag 0 (the origin row) first, then lag 1 ... lags-1, each block the P channels of that row."""
-    blocks = [C[origins - l] for l in range(lags)]
-    return np.concatenate(blocks, axis=1)
+    """(N, lags*P): lag 0 (the origin row) first, then lag 1 ... lags-1, each block the P channels of that row.
+
+    Wide matrices (lags > 1) are stored as float32 to bound memory (inputs are train-standardized values, float32 keeps
+    7 significant digits); all arithmetic downstream is float64. lags == 1 stays float64."""
+    dtype = np.float32 if lags > 1 else np.float64
+    out = np.empty((len(origins), lags * C.shape[1]), dtype=dtype)
+    for l in range(lags):
+        out[:, l * C.shape[1]:(l + 1) * C.shape[1]] = C[origins - l]
+    return out
 
 
 # ---------------------------------------------------------------------------------------------- ridge
+def col_stats(X, block=2048):
+    """Column mean and population std accumulated in float64, block by block (no full-size float64 temporary)."""
+    n = X.shape[0]
+    s = np.zeros(X.shape[1])
+    for i in range(0, n, block):
+        s += X[i:i + block].sum(axis=0, dtype=np.float64)
+    mu = s / n
+    v = np.zeros(X.shape[1])
+    for i in range(0, n, block):
+        d = X[i:i + block].astype(np.float64) - mu
+        v += (d * d).sum(axis=0)
+    sd = np.sqrt(v / n)
+    sd[sd == 0] = 1.0
+    return mu, sd
+
+
 def _gram_and_rhs(X, Y, mu, sd, block=2048):
     P = X.shape[1]
     G = np.zeros((P, P))
@@ -75,8 +99,7 @@ def ridge_fit_predict_multi(Xtr, Ytr, Xev_list, alphas=ALPHAS, fixed=FIXED_ALPHA
     cut = int(N * (1.0 - holdout_frac))
     inner_tr = slice(0, cut - purge)
     inner_ho = slice(cut, N)
-    mu = Xtr[inner_tr].mean(axis=0)
-    sd = Xtr[inner_tr].std(axis=0)
+    mu, sd = col_stats(Xtr[inner_tr])
     sd[sd == 0] = 1.0
     ym = Ytr[inner_tr].mean(axis=0)
     G, R = _gram_and_rhs(Xtr[inner_tr], Ytr[inner_tr] - ym, mu, sd)
@@ -90,8 +113,7 @@ def ridge_fit_predict_multi(Xtr, Ytr, Xev_list, alphas=ALPHAS, fixed=FIXED_ALPHA
         inner[a] = float(np.mean(np.abs(pred - Ytr[inner_ho])))
     best = min(alphas, key=lambda a: (inner[a], a))
     del G, V, AV, Aho
-    mu = Xtr.mean(axis=0)
-    sd = Xtr.std(axis=0)
+    mu, sd = col_stats(Xtr)
     sd[sd == 0] = 1.0
     ym = Ytr.mean(axis=0)
     G, R = _gram_and_rhs(Xtr, Ytr - ym, mu, sd)
