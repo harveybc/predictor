@@ -971,3 +971,23 @@ def test_seed_interval_table_joins_queues_by_flat_and_pairs_by_seed(tmp_path):
     assert c["paired_seeds"] == [2021] and abs(c["mean_difference"] + 0.10) < 1e-12
     assert rows["A"]["horizons_not_beating_seasonal"] == list(range(1, 25))
     assert rows["B"]["horizons_not_beating_seasonal"] == []
+
+
+def test_residual_control_adds_the_engine_seasonal_naive_and_counts_parameters():
+    from tools import modular_residual_control as rc
+    tf = pytest.importorskip("tensorflow")
+    model_config = {"window": 24, "sample_hours": 1, "feature_names": [f"f{i}" for i in range(3)],
+                    "horizons": list(range(1, 25)), "target_count": 2}
+    control = {"kind": "flatten_mlp", "hidden": [4, 4], "target_residual": {"kind": "seasonal_naive", "period": 24}}
+    model = rc.build_control(model_config, control, [0, 2])
+    assert model.count_params() == rc.control_parameters(24, 3, [4, 4], 24, 2)
+    for layer in model.layers:
+        if layer.name.startswith(("hidden_", "forecast_flat")):
+            layer.set_weights([np.zeros_like(w) for w in layer.get_weights()])
+    x = np.random.default_rng(0).standard_normal((5, 24, 3)).astype("float32")
+    out = model(x).numpy()
+    # zero head => exactly y(t+h-24) = window position h-1 for P=24, on the target channels
+    np.testing.assert_array_equal(out, x[:, :, [0, 2]])
+    assert rc.residual_positions(24, [1, 24], 24) == [0, 23]
+    with pytest.raises(ValueError, match="outside"):
+        rc.residual_positions(24, [1], 30)
