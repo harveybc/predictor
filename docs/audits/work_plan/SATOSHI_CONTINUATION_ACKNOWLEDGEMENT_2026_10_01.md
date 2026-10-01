@@ -398,3 +398,33 @@ retained, resumed); M06 writer and watcher units; the LTS campaign supervisor an
 Standing technical limits (not permissions): measured caps never lowered; zero batch work on the coordinator except the
 two exempt ≤512M launchers; one memory-heavy job per host beside measured small ones; no desktop OOM; no artificial GPU
 work; test splits untouched; DEVELOPMENT labels; paper/demo only under the existing risk mandate; roles not host names.
+
+### 10.9 Addendum 09:10Z (fleet UTC, 2026-10-01): rulings and findings in the first two hours of autonomous execution
+
+Clock note: stamps in 10.1–10.8 that read 08:00–11:10Z were the coordinator's estimates and run about 3.5 h ahead of the
+fleet's NTP-synchronised UTC; from 10.9 on, every stamp is fleet UTC as recorded in M06's STATUS.
+
+- **Lane D v2 (5090 + 4090):** c950ec17 four-seed interval 0.3750965 ± 1.97e-05 (seeds 2023/2024 verified exact); queue
+  22 cells (seeds, R2 lr 1e-4/3e-5, ABL-H2-OPT); amendment 7 widens the search space with new row identities. One idle
+  gap D2-IDLE-01 (07:40–07:44Z): a planned runner switch whose restart watcher matched its own command line; fixed
+  (PID/scope check). Engine 9223391d (seasonal-residual target option; R3 warm regime; 195/2/0) is in identity proof at
+  647M for re-pin; seasonal-residual cells are the first design that can beat the 0.248 seasonal control.
+- **PS3-R pilot (lane A) CLOSED, PILOT_ENGINEERING:** 240/240 records; raw input window wins by strict minimum in 570/840
+  cells (contrastive 117, random 80, AE 73); every arm below the zero-return naive; contrastive costs 5.9× AE. Ruling:
+  raw is the reference; neither objective becomes the default branch-pretraining objective; both remain declared options.
+- **Lane B findings that set the bar for the financial campaign:** under a pre-declared ridge probe on inner TRAIN folds,
+  no ETH 4h feature subset or transform family beats the ZERO-RETURN naive (naive 0.0374 vs all-83 0.0717; best 0.0432);
+  variants B, C and the horizon-scoped D-4h are SKIPPED. EURUSD 1h: only the 1 h horizon beats the naive; a
+  horizon-scoped manifest vD1h (range family, valid_horizons [1]) is FROZEN_DEVELOPMENT. Selection denominators are
+  honest: 78,067 candidate channels, 0 evaluated, 0 selected, 87 frozen all-admissible controls. Rulings: the zero-return
+  naive is a mandatory control on every financial row and the first bar to clear; the temporal-model test is M07's lane.
+- **Front E (M05):** RL shadow adapter (43 tests), paired forecasting+heuristic vs RL harness on the shared validation
+  episode [13699, 15895), dormant ETH 4h modular shadow route in the MT5 runner (not installed); M5PHET healthy; finding:
+  TF and torch in one pytest process segfault on the secondary worker (RL tests isolated). Interim: jose into the worker
+  test env; a direction-classifier gate (majority + sign-persistence baselines) so phases B/C/D are gated, not excluded.
+- **Priority ruling (owner §4):** M07's financial cells outrank lane D ablations on both GPUs; a second financial campaign
+  on EURUSD 1h (hourly 1..24 + daily 1..6, the heuristic strategy's horizons) opens after ETH R0.
+- **Credential rule kept under full autonomy:** no agent loads or exercises broker or data-service credentials; the
+  FXMacroData catalogue call and the Alpaca data-feed probe are named deferred rows for the owner, blocking nothing.
+- **Admission:** 775c5545 and the stale-lease + `cancel` fix a1f3898b deployed on both workers with rollback and real
+  CUDA-op checks; the coordinator keeps the old launcher (not ordered).
