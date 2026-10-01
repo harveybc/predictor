@@ -1,5 +1,75 @@
 # Current execution spine (2026-09-30)
 
+## Current update: 2026-10-01 approximately 03:44 UTC
+
+[Next orders](../../handoffs/SATOSHI_NEXT_DISPATCH_2026_10_01.md) supersede the
+unmet-integration wording below: engine `3ecdb256` is integrated with installed
+tests reported. Corrected campaign `df9ae31c` has 16 verified cells of 36, eight
+paired configurations; best mean validation MAE_z 0.3910575164, same-row naive
+0.8514061497. Reconciled here against all 16 replay receipts, not new inference.
+h1/h23/h24 skill negative in 16/16; h2 in 2/16. No paper-comparable ECL score.
+
+Corrected CPU donors reached 181/321 branches in a direct read; M06 estimated
+branch completion 04:16-04:35 UTC, excluding core and R1/R2. Per-feature pilot
+awaits RAM beside the donor and representation measurement job. The 5090 is
+detected and idle; reviewed admission fix `775c5545` is not installed yet.
+New source catalogue: 22 providers, 5,273 files, 77 transform rows, zero evaluated
+rows in that extension. This does not replace the 3,538/15,228 profile denominator.
+
+[Progress PNG](PROGRESO_MASTER_2026_10_01.png) and
+[its evidence snapshot](PROGRESO_MASTER_2026_10_01.json).
+The graphic is a dated snapshot, not a live process monitor. Historical numbers
+below retain their original architecture and scope.
+
+## Historical update: 2026-10-01 approximately 01:53 UTC
+
+Read M06's published consolidated return at `09f129c5`, the generated M04
+incumbent table, M01's return/code at `64a91a74`, and the live M02 donor config
+and heartbeat. This is a status/architecture inspection, not a new independent
+scientific replay. New governing continuation:
+[Satoshi orders](../../handoffs/SATOSHI_PROGRESSIVE_SELECTION_AND_MODULAR_CONTINUATION_2026_09_30.md).
+
+- Eight lanes returned; returning an agent does not mean every experiment ended.
+- M02's CPU process on worker_b is alive: 162/321 branch donors completed,
+  branch_162 active, cgroup peak 3.13 GB under 4 GiB. Core/receipt still pending.
+  The older return's branch_132 is a stale observation, not current progress.
+- Direct device queries: external 5090 at 37 C, 0% utilization, 10 MiB;
+  internal 5070 Ti at 27 C, 14 MiB; worker_b 4090 at 38 C, 14 MiB.
+  No training workload was established on those devices. Coordinator 4070
+  at 44 C, 1,106 MiB included desktop use; compute query named nautilus only.
+  GPU utilization alone is not proof of training or a free reservation.
+- Traffic H96 three-seed retained means: normalized author MSE/MAE
+  0.3751992683/0.2511426806; published 0.375/0.251; paired persistence
+  2.7144524181/1.0772232192. Other horizons are not certified by this row.
+- DOIN batch 1 v3 has 16 verified R0 candidate receipts (reported exact rescoring),
+  not 16 independent architectures or completed R1/R2 comparisons. ECL L24/H1..24
+  validation: incumbent mean MAE_z 0.397174 across two seeds, persistence 0.851406.
+  h1, h23 and h24 have negative skill in both seeds. No published comparable row.
+- M03 reports 3,455/15,256 inventory rows profiled, not complete coverage of every
+  metric. Distinct-column denominator 15,228; no warehouse profile write reported.
+- M05 delivered adapter/replay and shadow smoke, not a modular policy consumed
+  by a live runner. No new financial winner or real-money promotion established.
+
+**Architecture correction remains outstanding.** M01 still declares
+branch_steps=12; the live M02 donor config has window=24, branch_steps=12 and
+core factors [2,1,1]. da4ce7b4 is not an ancestor of M01's returned revision,
+and inspected code/config confirm the behavioral difference. The approved
+default preserves 24 branch steps and uses residual Conv1D core factors [2,2,1].
+Remanifesting old donors can repair metadata compatibility, not this architecture.
+Do not call the 16 results or active donors evidence of the corrected design.
+
+Next: reconcile architecture and safely disposition obsolete jobs; concurrently
+continue admitted profiles, causal-study preparation, product and reference work.
+Then cost the corrected pilot and resume its finite DOIN queue. The new progressive
+selection subplan is approved, its FS01-FS20 tests are PLANNED, not passed.
+
+ETA: the observed donor heartbeat estimated 76.5 seconds for its current fit,
+not the remaining branches/core. No credible total is available from that field.
+Satoshi must recompute from completed-stage timings and remaining work after
+the architecture disposition. Earlier calendar ETAs below are historical only.
+
+## Historical snapshot retained: 2026-09-30 22:12 UTC
+
 Snapshot at 22:12 UTC. This is the operational index for concurrent work. The
 master plan retains the scientific questions and historical decisions; older
 dated queues are evidence of their own time, not the current machine state.

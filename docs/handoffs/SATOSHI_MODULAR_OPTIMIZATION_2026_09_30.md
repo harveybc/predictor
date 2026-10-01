@@ -4,6 +4,11 @@ Written for Satoshi (execution), Musashi (independent review), and the owner.
 Owner approved this continuation on 2026-09-30. Begin immediately from observed
 state; do not wait for another "continue" after a completed unit.
 
+**Latest inspection and immediate integration orders:**
+[architecture reconciliation](SATOSHI_MODULAR_RECONCILIATION_2026_09_30.md).
+The delivered M01/M02/M04 paths still used the superseded 12-step branches at
+inspection; integrate the correction below before successor donor/candidate fits.
+
 ## 1. Objective and governing plan
 
 Deliver a working, backward-compatible hierarchical predictor and a real DOIN
@@ -13,6 +18,27 @@ grid -> fusion -> positional encoding -> Transformer core -> learned compression
 R0/R1/R2 with selected pretrained weights. The detailed design, acceptance matrix
 and experiments are in
 [MODULAR_STACK_WORK_PLAN](../tres_temas_entrevista/program_v3/MODULAR_STACK_WORK_PLAN_2026_09_30.md).
+
+**Owner architecture correction, 2026-09-30:** the first candidate implementation
+violated the intended design by reducing time inside each branch before fusion.
+That design is withdrawn. The corrected candidate is on predictor branch
+`codex/modular-stack-20260930`, commit `da4ce7b4`; inspect that tip before fitting
+or adapting M04's search space. Branches preserve the full window: hourly
+`(batch,24,1) -> (batch,24,16)`. Fusion yields `(batch,24,16 * branch_count)`.
+Positional encoding follows fusion. Two standard causal Transformer blocks each
+use attention residual Add/normalization and FFN residual Add/normalization.
+Three residual Conv1D stages then reduce time 24 -> 12 -> 6 -> 6 and channels
+to `[32,16,8]`. There is no reshape/dense pooling in branches or core. The
+forecast task head alone flattens the finished `(6,8)` latent to emit horizons.
+The four-feature diagram is illustrative; branch count comes from configured
+features/groups and the inventory still requires explicit measured coverage.
+
+The corrected package has a CPU construction smoke only. Run its adjusted
+focused component and pretraining suites before any GPU candidate fit. Discard
+or regenerate candidate identities that contain the earlier branch reduction.
+Updated source, Keras diagrams, Sphinx/Napoleon API docs and detailed decisions
+are on the linked branch. This correction supersedes the earlier 12-step branch
+default below and in older handoff snapshots.
 
 The master plan links that subplan. Use it as the current modular specification;
 older returns remain evidence of their own date. Implement any missing integration
@@ -84,10 +110,10 @@ Changing plugin hierarchy must not break old JSON configs, result schemas,
 entry-point loading, prediction_provider, or current LTS routes. Add behavior
 regressions for those boundaries, and run them in installed isolated environments.
 
-Defaults: at least 24 physical hours, one feature per branch, causal Conv1D,
-common 12-step branch grid, concatenation on channels, positional encoding,
-two full Transformer blocks, then three configurable learned compression stages
-to 6 time steps x 8 channels. The head's forecast horizons/target count are
+Defaults: at least 24 physical hours, one feature per branch, causal Conv1D
+preserving the full time grid, concatenation on channels, positional encoding,
+two full Transformer blocks, then three configurable residual Conv1D reduction
+stages to 6 time steps x 8 channels. The head's forecast horizons/target count are
 independent of this latent shape. No temporal collapse before fusion/core.
 Compression cannot guarantee zero information loss; quantify reconstruction and
 downstream utility. Shape equality alone does not establish time alignment.

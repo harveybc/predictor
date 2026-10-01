@@ -42,29 +42,45 @@ No scientific conclusion is based on a small plumbing fixture.
 
 Default hourly input: `(batch, 24, F)`; one branch per feature initially. The
 sampling period is explicit, so 24 minute observations do not count as 24 hours.
-Each default branch uses causal Conv1D and produces `(batch, 12, branch_width)`.
-Every branch output represents the same input interval and right-edge grid.
-Concatenation is on channels, producing `(batch, 12, sum(branch_width))`.
+Each default branch uses causal Conv1D and produces `(batch, 24, branch_width)`.
+It preserves every input time step. Every branch output represents the same
+input interval and right-edge grid. Concatenation is on channels, producing
+`(batch, 24, sum(branch_width))`.
 
-The core begins with positional encoding, projects to width 64, uses two full
-Transformer blocks with four heads, then progressively compresses through three
-learned stages to `(batch, 6, 8)`. Widths, time factors, depth and attention heads
-are candidate parameters. A four-stage schedule is also permitted if dimensions
-remain compatible. The default is a starting candidate, not a discovered optimum.
+The core begins with positional encoding after fusion, projects each time step
+to width 64, uses two full causal Transformer blocks with four heads, then uses
+three residual Conv1D stages to reach `(batch, 6, 8)`. Default time factors are
+`[2, 2, 1]`, with channel widths `[32, 16, 8]`. Widths, time factors, depth and
+attention heads are candidate parameters. A four-stage schedule is also
+permitted if dimensions remain compatible. The default is a starting candidate,
+not a discovered optimum.
 
-For temporal reduction, learned projections over complete adjacent blocks can
-cover every sample and assign each output the block's right-edge time. Temporal
-factors must divide the current length exactly; incompatible configurations
-fail. This avoids silently losing the last input through causal stride placement.
-Conv1D channel projections can accompany these reductions. Compression is lossy;
-reconstruction loss and downstream skill quantify useful retention. Neither
-normalization nor a particular layer guarantees preservation of all information.
+Branches do not reduce time. In the core, each strided Conv1D stage consumes
+complete adjacent windows with valid padding and a matched residual projection.
+Temporal factors must divide the current length exactly; incompatible
+configurations fail. This maps every sample to a right-edge output without
+dropping a tail. Downsampling is inherently potentially lossy; the residual
+path and learned filters do not guarantee information preservation. Measure
+reconstruction and downstream skill at each bottleneck.
+
+The four feature channels shown in the Keras example diagram are illustrative.
+The model uses each feature/group passed in its configuration; no inventory-wide
+four-branch limit is implied. Large inventories require explicit feature
+selection or grouping with coverage and exclusions reported.
 
 External plugins must declare input/output contracts and preserve their grid.
 Equal output shapes alone do not establish aligned times. Inputs with different
 frequencies require a separate causal alignment transform before assembly.
 
 ## Feature characterization, grouping and selection
+
+Approved implementation sequence and causal/representation study design:
+[progressive selection subplan](FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md).
+Its PS0-PS7 increments and FS01-FS20 criteria extend this section. Broad basic
+profiling continues while ready batches enter reversible prioritization and
+parallel representation/causal studies. Neither VAE nor successful reconstruction
+is a universal eligibility requirement. New objectives do not retroactively
+change existing AE experiments or their donor identities.
 
 Profiles are fitted exclusively on the designated training period. Each report
 binds source bytes, columns, time interval, sampling frequency, transforms and
@@ -95,11 +111,15 @@ Keep an all-admissible-feature control and the reasons for every exclusion.
 
 1. Freeze split/time/target/scaler contracts. Partition train internally for AE
    selection with purging appropriate to window/target supports.
-2. Train one branch AE per feature/group, each with its own optimizer, loss and
-   early stopping. Export selected encoder plus manifest and reload check.
+2. For the existing reconstructive control, train one branch AE per feature/group,
+   each with its own optimizer, loss and early stopping. Export selected encoder
+   plus manifest and reload check. Other objectives follow the progressive
+   subplan with their own validation criterion; no decoder is required for a
+   contrastive or latent-prediction encoder. Keep architecture and objective
+   separate in configs and evidence.
 3. Freeze those branch encoders during materialization; encode train and internal
    validation in bounded batches. Fuse with the same plugin/grid used downstream.
-4. Train the core AE to reconstruct the fused sequences; early stop on its own
+4. For the reconstructive control, train the core AE on the fused sequences; early stop on its own
    internal validation. Export the core with upstream branch/fusion identities.
 5. Fit forecasting heads under branch/core regimes. Baseline R0 has no donor;
    R1 freezes the specified donor; R2 starts from the same donor and fine-tunes.
@@ -124,6 +144,21 @@ MAE does not become an RL stopping metric. Implement this in agent-multi/gym-fx;
 the predictor encoder export alone does not implement RL training.
 
 ## Experiments and concurrent execution
+
+Owner addition 2026-10-01: [SAC/DQN with and without differentiated temporal
+representation](RL_TEMPORAL_COMPARISON_WORK_PLAN_2026_10_01.md) is a parallel
+lane. Prepare implementations now; start real-data pilots when a task-specific
+selected-feature manifest and its lake datasets are ready, without waiting for
+the entire inventory or forecasting campaign. The heuristic naive gate below
+does not admit/reject RL policies.
+
+Owner update 2026-10-01: admission to new heuristic-strategy evaluations requires
+strictly beating same-row persistence on held-out forecast validation for all
+consumed short/long horizons, using the predeclared primary metric. Failed or
+unverified candidates are not simulated; keep minimal rejection evidence.
+No trading-test selection or future per-tick error filter. Every reported
+evaluation MAE/MSE includes its matching naive and scale/population. See the
+[runner-level gate and tests](../../handoffs/SATOSHI_NEXT_DISPATCH_2026_10_01.md).
 
 GPU priority after already-running cells: cost pilot of the full modular model,
 then a finite optimization batch of the most promising validation-eligible

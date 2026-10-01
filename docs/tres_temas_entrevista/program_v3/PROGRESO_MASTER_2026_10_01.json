@@ -1,0 +1,161 @@
+{
+  "observed_at": "2026-10-01T03:46:40Z",
+  "scope": "Metadata/receipt reconciliation; no new inference or training",
+  "inputs_sha256": {
+    "STATUS.json": "c5221738650c16e6736c02d46840942ae7ab914eecac272add1d3ea436d3c910",
+    "corrected_QUEUE_r0_v1.export.json": "a5f296585cedca68e006373540d4a693579fe48b01df0f06bdef6dd574521b30",
+    "coverage_laneB.json": "d3b0131f74bf3f6ee948dc68cebbbe1260127e5b70065ef2c61a56a0f4f963d5",
+    "traffic_h96_closure_table.json": "e193e605e5d07336ccf73eacec36d679c3ea1d18713cb1218e4e3d1cc01e9dd1",
+    "fa246e4645554981.json": "b623f894e63eb6d044cd89056c8e8d6a2d7e02818866f07467ed4ea4583898eb",
+    "1bfeee4c67791f4f.json": "cedb827089dbc8ec908003e3c838b281180d8a21f53d1fad364e8ba19b76a44a",
+    "adf2e5f586ef8646.json": "844f0f25cddb7a9377e4113d6df31079eaf0f5f505240226fc35cefc3b058a49",
+    "f8bb2811807d1e07.json": "511104bcd239d1d45733c3345a22b632973400711f91843b4b9ee5931422e36a",
+    "30983a6ee620e818.json": "68a1b0007bed7f2f8ee51c5e83d6d079820527577cc1e5d0036a0c634f0353bc",
+    "98aa650370cd779c.json": "32d199ef59e14add3f505c6508ba1e7914d61ee82574f3e974b522785a5e24ce",
+    "89d84c0f1f9a7dc9.json": "329cc4c8483a62cf69fa6088abf43144a5f371050707373edf3a78f6965ba7a5",
+    "6a8c5c608c874a60.json": "d78a6d56aca1e03fdf5efc46381c9ee890a0e91b461312ebdd4045be0bcad9af",
+    "8dc07a3ca2494887.json": "7e171dd4dbac5806e59899f4c4fbd260759e22b80844c643367a6c36d2e31a9a",
+    "7bbe85ee7ccfc46e.json": "7536070e8a638dd41c32bda292cad69a80b6201f89e0540216f7666d36c99b71",
+    "5de63a4e2c581e91.json": "a5b9d781785359dcaf1ef5ef91728f8566514ca8bb56b0860754c2dee229f519",
+    "956e438fa27839cc.json": "0bc60ea9ebd5453b4c9e310fbb1f2172997f609e6f4fa3d2c1226f481151970d",
+    "baa0b3bfd2685115.json": "8d65c6a1f14c4de86aa5f1a68852cc8522fe1df8964b589fef0f6f143a33c3b5",
+    "42e246effba0b4de.json": "4eef76056e2f872ee69a256e65708b647993e3a67ea1f5d90582f5749c6fdeac",
+    "4281a2b3604ed6b3.json": "c40a3e140663d420768222cf3a34966f69f89c6fd93aa957e415437bd831948c",
+    "29831c27d426b45d.json": "7ac371ebbc8766e0b030645c9944afcc8b66a3245583de282d0da9486a94543c"
+  },
+  "rows": [
+    {
+      "name": "Motor temporal integrado",
+      "done": 8,
+      "total": 8,
+      "detail": "MS01-MS08 declarados verificados | codigo 3ecdb256",
+      "color": "#18785e"
+    },
+    {
+      "name": "Traffic / replica de referencia",
+      "done": 3,
+      "total": 12,
+      "detail": "H96 listo; H192 / H336 / H720 pendientes",
+      "color": "#347ac1"
+    },
+    {
+      "name": "DOIN / lote modular corregido",
+      "done": 16,
+      "total": 36,
+      "detail": "16 R0 listos; 8 por rasgo + 12 R1/R2 pendientes",
+      "color": "#347ac1"
+    },
+    {
+      "name": "Preentrenamiento de ramas",
+      "done": 192,
+      "total": 321,
+      "detail": "En CPU; el nucleo es una etapa posterior",
+      "color": "#b78418"
+    },
+    {
+      "name": "Perfiles / indice de columnas",
+      "done": 3538,
+      "total": 15228,
+      "detail": "Cobertura del indice; no de todas las fuentes ni metricas",
+      "color": "#b78418"
+    }
+  ],
+  "best": {
+    "label": "corrected_draw3_R0_mae",
+    "mae": 0.3910575164106178,
+    "naive": 0.8514061497227646,
+    "n": 2,
+    "scope": "ECL L24/H1..24, validation; no published comparable row"
+  },
+  "negative_skill_counts": {
+    "1": 16,
+    "10": 0,
+    "11": 0,
+    "12": 0,
+    "13": 0,
+    "14": 0,
+    "15": 0,
+    "16": 0,
+    "17": 0,
+    "18": 0,
+    "19": 0,
+    "2": 2,
+    "20": 0,
+    "21": 0,
+    "22": 0,
+    "23": 16,
+    "24": 16,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0
+  },
+  "traffic": {
+    "mse": {
+      "mean": 0.3751992682615916,
+      "naive": 2.7144524180982588,
+      "published": 0.375
+    },
+    "mae": {
+      "mean": 0.251142680644989,
+      "naive": 1.0772232192211662,
+      "published": 0.251
+    }
+  },
+  "coverage": {
+    "files": 5273,
+    "providers": 22,
+    "transform_rows": 77,
+    "evaluated": 0
+  },
+  "donor_eta": {
+    "earliest": "2026-10-01T04:17:20Z",
+    "latest": "2026-10-01T04:34:35Z",
+    "basis": "observed_throughput",
+    "assumptions": [
+      "rate 201.9 units/h measured over 56 min of heartbeat history (3->192)",
+      "remaining 129 of 321 units; interval x0.8..x1.25 of the point estimate",
+      "covers THIS stage only; later stages (e.g. a core AE after the branches) are not included"
+    ]
+  },
+  "devices": [
+    {
+      "host_alias": "coordinator",
+      "name": "NVIDIA GeForce RTX 4070 Laptop GPU",
+      "state": "idle",
+      "temperature_c": 52.0,
+      "observed_at": "2026-10-01T03:46:40Z"
+    },
+    {
+      "host_alias": "worker_a",
+      "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
+      "state": "idle",
+      "temperature_c": 27.0,
+      "observed_at": "2026-10-01T03:41:08Z"
+    },
+    {
+      "host_alias": "worker_a",
+      "name": "NVIDIA GeForce RTX 5090",
+      "state": "idle",
+      "temperature_c": 37.0,
+      "observed_at": "2026-10-01T03:41:08Z"
+    },
+    {
+      "host_alias": "worker_b",
+      "name": "NVIDIA GeForce RTX 4090 Laptop GPU",
+      "state": "idle",
+      "temperature_c": 40.0,
+      "observed_at": "2026-10-01T03:46:41Z"
+    }
+  ],
+  "next_actions": [
+    "Aplicar fix de admision 775c5545 en el obrero preferido",
+    "Continuar piloto por rasgo y cola DOIN sin duplicados",
+    "Terminar donantes, preentrenar nucleo, comparar R1/R2",
+    "Conciliar fuentes y avanzar seleccion / causalidad",
+    "Conectar finalista financiero al runner shadow/paper"
+  ]
+}
