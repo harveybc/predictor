@@ -2,12 +2,13 @@
 
 from dataclasses import dataclass, field
 
+import numpy as np
 import tensorflow as tf
 
 from .artifacts import _apply_regime, _manifest, _upstream
-from .common import _copy, _partition
-from .components import TemporalComponent
-from .config import _normalize
+from .common import _copy, _digest, _json, _partition
+from .components import TemporalComponent, effective_params
+from .config import _normalize, regime_summary
 from .layers import FeatureSelect
 from .registry import _resolve
 
@@ -27,6 +28,47 @@ def _validate_component(component, input_shapes, grid, output_channels=None):
     if output_channels is not None and model.output_shape[2] != output_channels:
         raise ValueError("Plugin channel contract mismatch")
     return model
+
+
+def probe_alignment(model, input_grid, output_grid, *, seed=0, label="component"):
+    """Behavioural time-grid check; equal shapes alone do not establish alignment.
+
+    Perturbs every input position in one batched forward pass. An output labelled
+    with right edge t may not change when an input strictly after t changes (no
+    look-ahead), and the first output whose right edge is at or after the
+    perturbed time must change (every input position participates). A component
+    that reverses, shifts or drops time fails here even with the declared shape.
+    """
+    length, channels = int(model.input_shape[1]), int(model.input_shape[2])
+    if length != len(input_grid) or int(model.output_shape[1]) != len(output_grid):
+        raise ValueError(f"{label}: probe grid does not match model shape")
+    base = np.random.default_rng(seed).normal(size=(1, length, channels)).astype("float32")
+    batch = np.repeat(base, length + 1, axis=0)
+    for i in range(length):
+        batch[i + 1, i, :] += 3.0
+    out = np.asarray(model(batch, training=False), dtype="float64")
+    moved = np.max(np.abs(out[1:] - out[:1]), axis=2)
+    scale = max(1.0, float(np.max(np.abs(out[0]))))
+    for i, t in enumerate(input_grid):
+        for k, edge in enumerate(output_grid):
+            if edge < t and moved[i, k] > 1e-5 * scale:
+                raise ValueError(f"{label}: time alignment violated; output at {edge} "
+                                 f"depends on the later input at {t}")
+        first = next((k for k, edge in enumerate(output_grid) if edge >= t), None)
+        if first is None or moved[i, first] <= 1e-7 * scale:
+            raise ValueError(f"{label}: time alignment violated; input at {t} does not reach "
+                             f"the output whose right edge covers it")
+    return {"checked_inputs": length, "checked_outputs": len(output_grid)}
+
+
+def config_digest(config):
+    """SHA-256 of the canonical (sorted, compact, NaN-free) normalized configuration."""
+    return _digest(_normalize(config))
+
+
+def canonical_config_json(config):
+    """Deterministic serialization of the normalized configuration."""
+    return _json(_normalize(config))
 
 
 @dataclass
@@ -58,6 +100,20 @@ class ModularBundle:
     _core_manifest: dict = field(repr=False)
     _fusion_component: keras.Model = field(repr=False)
     _fusion_identity: dict = field(repr=False)
+    _head_manifest: dict = field(repr=False)
+
+    def component_manifests(self):
+        """Identity, version, effective parameters and tensor/time contract of every component."""
+        shapes = self._fusion_component.input_shape
+        fusion = {"schema": 1, "role": "fusion", "plugin": _copy(self._fusion_identity),
+                  "input_shapes": [list(s[1:]) for s in shapes] if isinstance(shapes, list)
+                  else [list(shapes[1:])],
+                  "output_shape": list(self._fusion_component.output_shape[1:]),
+                  "grid": list(self.branch_time_grid)}
+        return {"schema": 1, "config_sha256": config_digest(self.config),
+                "branches": {n: self.donor_manifest("branch", n) for n in self.branch_models},
+                "fusion": fusion, "core": self.donor_manifest("core"),
+                "head": _copy(self._head_manifest), "regimes": regime_summary(self.config)}
 
     def donor_manifest(self, role, name=None):
         """Return the component identity required to save or validate a donor.
@@ -123,14 +179,17 @@ def build_modular(config: dict) -> ModularBundle:
         component = factory(input_shape=shape, time_grid=input_grid, output_steps=c["branch_steps"],
                             name=name, params=_copy(spec["params"]))
         model = _validate_component(component, [shape], branch_grid)
-        manifest = _manifest("branch", c, spec, identity, model, input_grid, branch_grid)
+        effective = effective_params(factory, spec["params"], {"output_steps": c["branch_steps"]})
+        manifest = _manifest("branch", c, spec, identity, model, input_grid, branch_grid, effective)
         _apply_regime(model, spec, manifest)
+        if c["alignment_probe"]:
+            probe_alignment(model, input_grid, branch_grid, label="branch " + name)
         branches[name], manifests[name] = model, manifest
         local = FeatureSelect([c["feature_names"].index(f) for f in spec["features"]],
                               name="select_" + name)(inputs)
         sequences.append(model(local))
     factory, fusion_identity = _resolve("fusion", c["fusion"], groups)
-    fusion_identity["params"] = _copy(c["fusion"]["params"])
+    fusion_identity["params"] = effective_params(factory, c["fusion"]["params"], {})
     shapes = [tuple(x.shape[1:]) for x in sequences]
     component = factory(input_shapes=shapes, time_grid=branch_grid, name="sequence_fusion", params=_copy(c["fusion"]["params"]))
     fusion = _validate_component(component, shapes, branch_grid, sum(s[1] for s in shapes))
@@ -143,17 +202,27 @@ def build_modular(config: dict) -> ModularBundle:
                         output_steps=c["output_steps"], output_channels=c["output_channels"],
                         name="temporal_core", params=_copy(c["core"]["params"]))
     core = _validate_component(component, [tuple(fused.shape[1:])], core_grid, c["output_channels"])
-    core_manifest = _manifest("core", c, c["core"], identity, core, branch_grid, core_grid)
+    effective = effective_params(factory, c["core"]["params"], {
+        "input_steps": c["branch_steps"], "output_steps": c["output_steps"],
+        "output_channels": c["output_channels"]})
+    core_manifest = _manifest("core", c, c["core"], identity, core, branch_grid, core_grid, effective)
     core_manifest["upstream"] = _upstream(branches, manifests, fusion, fusion_identity)
     _apply_regime(core, c["core"], core_manifest)
+    if c["alignment_probe"]:
+        probe_alignment(core, branch_grid, core_grid, label="core")
     latent = core(fused)
     encoder = keras.Model(inputs, latent, name="encoder_model")
-    factory, _ = _resolve("head", c["head"], groups)
+    factory, head_identity = _resolve("head", c["head"], groups)
     forecast_grid = tuple(input_grid[-1] + h * c["sample_hours"] for h in c["horizons"])
     component = factory(input_shape=tuple(latent.shape[1:]), time_grid=forecast_grid,
                         horizons=c["horizons"], target_count=c["target_count"],
                         name="forecast_head", params=_copy(c["head"]["params"]))
     head = _validate_component(component, [tuple(latent.shape[1:])], forecast_grid, c["target_count"])
     model = keras.Model(inputs, head(latent), name="forecast_model")
+    head_manifest = {"schema": 1, "role": "head", "plugin": head_identity,
+                     "params": effective_params(factory, c["head"]["params"], {}),
+                     "horizons": _copy(c["horizons"]), "target_count": c["target_count"],
+                     "input_shape": list(head.input_shape[1:]), "output_shape": list(head.output_shape[1:]),
+                     "input_grid": list(core_grid), "output_grid": list(forecast_grid)}
     return ModularBundle(c, branches, fusion_model, core, encoder, model, branch_grid,
-                         core_grid, manifests, core_manifest, fusion, fusion_identity)
+                         core_grid, manifests, core_manifest, fusion, fusion_identity, head_manifest)

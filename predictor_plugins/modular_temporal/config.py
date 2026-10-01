@@ -6,11 +6,21 @@ import re
 from .common import _keys, _partition, _positive_int, _copy
 from .registry import DEFAULTS
 
+CONFIG_SCHEMA = "predictor.modular.v1"
+
+
 def _normalize(config):
     c = _copy(config)
-    _keys(c, {"window", "sample_hours", "feature_names", "branches", "branch_steps",
+    _keys(c, {"schema", "window", "sample_hours", "feature_names", "branches", "branch_steps",
               "core", "fusion", "head", "output_steps", "output_channels", "entry_point_groups",
-              "horizons", "target_count"}, "config")
+              "horizons", "target_count", "regime", "alignment_probe"}, "config")
+    if c.setdefault("schema", CONFIG_SCHEMA) != CONFIG_SCHEMA:
+        raise ValueError(f"Unsupported modular config schema {c['schema']!r}; expected {CONFIG_SCHEMA}")
+    if c.setdefault("alignment_probe", True) is not True and c["alignment_probe"] is not False:
+        raise ValueError("alignment_probe must be boolean")
+    common = c.setdefault("regime", None)
+    if common not in (None, "R0", "R1", "R2"):
+        raise ValueError("Common regime must be null, R0, R1 or R2")
     for key, default in (("window", 24), ("output_steps", 6), ("output_channels", 8)):
         c[key] = _positive_int(c.get(key, default), key)
     c.setdefault("branch_steps", c["window"])
@@ -62,7 +72,10 @@ def _normalize(config):
             if not isinstance(spec["plugin"], str) or not isinstance(spec["params"], dict):
                 raise ValueError("Plugin and params must be a string and dict")
             if role in ("branch", "core"):
-                spec.setdefault("regime", "R0")
+                if common is not None and spec.get("regime", common) != common:
+                    raise ValueError("A component regime contradicts the declared common regime; "
+                                     "set regime=null to declare a mixed-regime run")
+                spec.setdefault("regime", common or "R0")
                 spec.setdefault("donor", None)
                 if spec["regime"] not in ("R0", "R1", "R2"):
                     raise ValueError("Regime must be R0, R1 or R2")
@@ -85,8 +98,9 @@ def default_config(feature_names):
     Returns
     -------
     dict
-        Validated configuration with a 24-hour window, 12 branch steps, a
-        6-step by 8-channel core representation, and one-step forecast head.
+        Validated configuration with a 24-hour window, branches that keep all
+        24 steps, a 6-step by 8-channel core representation, and a one-step
+        forecast head.
         Branch and core regimes default to R0.
 
     Raises
@@ -97,3 +111,15 @@ def default_config(feature_names):
     return _normalize({"feature_names": list(feature_names), "sample_hours": 1,
                        "branches": [{"name": f"branch_{i}", "features": [feature]}
                                     for i, feature in enumerate(feature_names)]})
+
+
+def regime_summary(config):
+    """The declared common regime, or MIXED with every component's regime."""
+    c = _normalize(config)
+    regimes = {"branch:" + b["name"]: b["regime"] for b in c["branches"]}
+    regimes["core"] = c["core"]["regime"]
+    values = set(regimes.values())
+    if c["regime"] is not None:
+        return {"common": c["regime"], "components": regimes}
+    return {"common": values.pop() if len(values) == 1 else "MIXED", "declared": False,
+            "components": regimes}

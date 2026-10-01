@@ -51,3 +51,13 @@ def _partition(grid, steps):
 def _keys(value, allowed, label):
     if not isinstance(value, dict) or set(value) - allowed:
         raise ValueError(f"Invalid {label}: expected keys in {sorted(allowed)}")
+
+
+def keras_version():
+    """Running Keras version; recorded in every donor sidecar and bundle."""
+    import keras as _keras
+    return _keras.__version__
+
+
+def _major_minor(version):
+    return ".".join(str(version).split(".")[:2])

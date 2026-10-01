@@ -227,6 +227,7 @@ def test_entry_point_groups_and_grid_rejection(monkeypatch):
             self.dist = None
 
         def load(self):
+            @mt.component(self.group.split(".")[1], "9.9.9", set(), "test wrapper")
             def factory(**kwargs):
                 seen.append(self.group)
                 result = mt.BUILTINS[self.group][mt.DEFAULTS[self.group]](**kwargs)
@@ -235,7 +236,8 @@ def test_entry_point_groups_and_grid_rejection(monkeypatch):
                 return result
             return factory
 
-    monkeypatch.setattr(mt, "entry_points", lambda *, group, name: [EP(group)])
+    monkeypatch.setattr(mt.registry, "entry_points",
+                        lambda *, group, name: [EP(group)] if name == "external" else [])
     c = config()
     c["branches"][0]["plugin"] = "external"
     c["core"]["plugin"] = "external"

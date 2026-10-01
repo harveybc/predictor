@@ -5,7 +5,16 @@ import tensorflow as tf
 keras = tf.keras
 @keras.utils.register_keras_serializable(package="modular_temporal")
 class FeatureSelect(keras.layers.Layer):
-    """Select ordered feature channels without changing the time axis.
+    """Fixed column routing: gather declared input channels for one branch.
+
+    This is NOT learned feature selection. It is a deterministic
+    ``tf.gather(inputs, indices, axis=-1)`` over the channel axis with indices
+    fixed by the configuration (each branch's ``features`` resolved against the
+    ordered ``feature_names``); it has no weights and never changes the time
+    axis. Diagrams label it "column routing". Any learned selector or gate is a
+    separately declared ablation, never a silent replacement. The registered
+    Keras name (``modular_temporal>FeatureSelect``) is kept for serialization
+    compatibility.
 
     Parameters
     ----------

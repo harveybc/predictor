@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 import math
+import re
 
 import tensorflow as tf
 
@@ -26,6 +27,55 @@ class TemporalComponent:
     time_grid: tuple
 
 
+ROLES = ("branch", "core", "fusion", "head")
+
+
+def component(role, version, parameters, contract, defaults=None):
+    """Declare a factory's role, semantic version, parameters, contract and defaults.
+
+    Every factory, built-in or external, must carry this declaration. The version
+    enters the component identity and therefore every donor manifest, so a donor
+    produced by another implementation version is refused rather than reused.
+    ``defaults`` is a dict or ``callable(params, context) -> dict`` resolving the
+    factory's declared defaults; donor identity is computed over the resulting
+    EFFECTIVE parameters (see :func:`effective_params`).
+    """
+    if role not in ROLES or not isinstance(version, str) or not re.fullmatch(r"\d+\.\d+\.\d+", version):
+        raise ValueError("component() needs a known role and a semantic version")
+
+    def mark(factory):
+        factory.component_role = role
+        factory.component_version = version
+        factory.component_parameters = tuple(sorted(parameters))
+        factory.component_contract = contract
+        factory.component_defaults = defaults
+        return factory
+    return mark
+
+
+def effective_params(factory, params, context):
+    """Declared defaults resolved: ``{}`` and explicit defaults are ONE identity.
+
+    Integers supplied where the default is a float are coerced, so ``0`` and
+    ``0.0`` do not split an identity. External factories without declared
+    defaults keep their literal params (their identity is then literal).
+    """
+    from .common import _copy
+    declared = getattr(factory, "component_defaults", None)
+    if declared is None:
+        return _copy(params)
+    base = declared(_copy(params), dict(context)) if callable(declared) else _copy(declared)
+    merged = {**base, **_copy(params)}
+    for key, value in merged.items():
+        if isinstance(base.get(key), float) and type(value) is int:
+            merged[key] = float(value)
+    return merged
+
+
+@component("branch", "2.0.0", {"channels", "kernel_size"},
+           "(batch, window, features) -> (batch, window, channels); causal Conv1D; "
+           "no time reduction: output step t is the input step t (same right-edge grid)",
+           defaults={"channels": 16, "kernel_size": 3})
 def causal_conv1d(*, input_shape, time_grid, output_steps, name, params):
     """Build a causal Conv1D branch that preserves every input time step.
 
@@ -57,6 +107,9 @@ def causal_conv1d(*, input_shape, time_grid, output_steps, name, params):
     return TemporalComponent(keras.Model(inputs, x, name=name), tuple(time_grid))
 
 
+@component("fusion", "1.0.0", set(),
+           "list of (batch, steps, c_i) on one grid -> (batch, steps, sum c_i); no weights",
+           defaults={})
 def sequence_concat(*, input_shapes, time_grid, name, params):
     """Concatenate branch channels while preserving their common time axis.
 
@@ -82,6 +135,17 @@ def sequence_concat(*, input_shapes, time_grid, name, params):
     return TemporalComponent(keras.Model(inputs, x, name=name), tuple(time_grid))
 
 
+@component("core", "2.0.0", {"d_model", "heads", "blocks", "ff_dim", "dropout",
+                             "stage_channels", "time_factors", "kernel_size"},
+           "(batch, steps, C) -> (batch, output_steps, output_channels); positional encoding after "
+           "fusion, per-step projection, causal full Transformer blocks, 3-4 residual Conv1D stages "
+           "over complete adjacent windows (valid padding, matched residual projection); right-edge grid",
+           defaults=lambda params, ctx: {
+               "d_model": 64, "heads": 4, "blocks": 2, "ff_dim": 128, "dropout": 0.0, "kernel_size": 3,
+               "stage_channels": params.get("stage_channels", [32, 16, ctx["output_channels"]]),
+               "time_factors": _default_time_factors(
+                   ctx["input_steps"] // ctx["output_steps"],
+                   len(params.get("stage_channels", [0, 0, 0])))})
 def transformer_conv(*, input_shape, time_grid, output_steps, output_channels, name, params):
     """Build the positional Transformer core and staged temporal bottleneck.
 
@@ -192,6 +256,10 @@ def _residual_temporal_stage(inputs, channels, factor, kernel, name):
     return keras.layers.Activation("gelu", name=name + "_output")(values)
 
 
+@component("head", "1.0.0", set(),
+           "(batch, output_steps, output_channels) -> (batch, len(horizons), target_count); "
+           "may flatten the completed latent; grid labels future horizons",
+           defaults={})
 def forecast(*, input_shape, time_grid, horizons, target_count, name, params):
     """Build the direct multi-horizon regression output head.
 

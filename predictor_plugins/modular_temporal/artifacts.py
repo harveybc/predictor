@@ -5,12 +5,14 @@ import json
 
 import tensorflow as tf
 
-from .common import _copy, _digest, _file_hash, _json, _positive_int, weights_hash
+from .common import (_copy, _digest, _file_hash, _json, _major_minor, _positive_int, keras_version,
+                     weights_hash)
 
 keras = tf.keras
 
-def _manifest(role, config, spec, plugin, model, input_grid, output_grid):
-    return {"schema": 1, "role": role, "plugin": plugin, "params": _copy(spec["params"]),
+def _manifest(role, config, spec, plugin, model, input_grid, output_grid, params):
+    """Component identity. ``params`` are EFFECTIVE (declared defaults resolved)."""
+    return {"schema": 1, "role": role, "plugin": plugin, "params": _copy(params),
             "features": _copy(spec.get("features", config["feature_names"])),
             "feature_names": _copy(config["feature_names"]),
             "name": spec.get("name", role), "sample_hours": config["sample_hours"],
@@ -41,7 +43,7 @@ def _donor_path(path):
     return path, path.with_suffix(".manifest.json")
 
 
-def save_donor(model, path, manifest):
+def save_donor(model, path, manifest, declared_params=None):
     """Save a selected component and a digest-bound identity sidecar.
 
     Parameters
@@ -52,6 +54,9 @@ def save_donor(model, path, manifest):
         Destination ending in ``.keras``.
     manifest : dict
         Expected component identity from :meth:`ModularBundle.donor_manifest`.
+    declared_params : dict, optional
+        The literal params as written in the configuration, kept as provenance
+        (identity itself is over effective params).
 
     Returns
     -------
@@ -62,7 +67,11 @@ def save_donor(model, path, manifest):
     manifest = _copy(manifest)
     _check_manifest_model(manifest, model)
     model.save(path)
+    provenance = {"keras_version": keras_version()}
+    if declared_params is not None:
+        provenance["declared_params"] = _copy(declared_params)
     document = {"schema": 1, "manifest": manifest, "manifest_sha256": _digest(manifest),
+                "provenance": provenance,
                 "model_sha256": _file_hash(path), "weights_sha256": weights_hash(model)}
     sidecar.write_text(json.dumps(document, sort_keys=True, indent=2) + "\n", encoding="utf-8")
     return document
@@ -99,17 +108,24 @@ def load_donor(path, expected_manifest):
     ------
     ValueError
         If the sidecar, manifest, archive, weights or requested identity differs.
-    FileNotFoundError
-        If the archive or sidecar is missing.
+        A missing archive or sidecar is also a ValueError: an explicitly
+        requested donor that is absent is an error, never a fallback.
     """
     path, sidecar = _donor_path(path)
+    if not path.is_file() or not sidecar.is_file():
+        raise ValueError(f"Requested donor is missing: {path.name} or its manifest sidecar")
     try:
         document = json.loads(sidecar.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, UnicodeError) as exc:
         raise ValueError("Invalid donor manifest JSON") from exc
     required = {"schema", "manifest", "manifest_sha256", "model_sha256", "weights_sha256"}
-    if not isinstance(document, dict) or set(document) != required or document["schema"] != 1:
+    if (not isinstance(document, dict) or not required <= set(document) <= required | {"provenance"}
+            or document["schema"] != 1):
         raise ValueError("Invalid donor manifest schema")
+    saved = (document.get("provenance") or {}).get("keras_version")
+    if saved is not None and _major_minor(saved) != _major_minor(keras_version()):
+        raise ValueError(f"Donor was saved under Keras {saved}; running Keras {keras_version()} "
+                         "(major.minor must match)")
     if _digest(document["manifest"]) != document["manifest_sha256"]:
         raise ValueError("Donor manifest hash mismatch")
     if _json(document["manifest"]) != _json(expected_manifest):
