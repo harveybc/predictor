@@ -137,3 +137,17 @@ assumption by the lanes until ruled:
 | # | Object | Owner | Minimal action |
 |---|---|---|---|
 | 13 | PS3-C has no contracted price source for its asset: none of the 198 sealed financial appearances covers EURUSD, and subplan 5.1 forbids swapping the asset; the only contracted episode sources are the FXMacroData announcements and the release calendar; the 2011-2021 archive, FRED proxies and uncontracted EURUSD bars are NOT_ADMISSIBLE_NO_CONTRACT | owner | seal a EURUSD price appearance through the governed route; lane B prepares the sealing request (source sha, split rule, identity fields, activation path) without activating it; PS3-C is specified and bound, NOT_EXECUTABLE until then |
+
+### 8.2 Addendum 07:20Z: the minimal action for question 13 is prepared
+
+Lane B wrote the EURUSD appearance sealing request (feature-eng `satoshi/b-selection-ps0-ps2-20261001` `5d12e88`,
+`docs/feature_metrics/laneB/EURUSD_APPEARANCE_SEALING_REQUEST.v1.{md,json}`, JSON sha `fddb8ceb`). Nothing is sealed,
+activated or written to the lake, data-gov or any config. Candidate: census appearance `app_ae9142c201e6694a3b1e1fde`
+(eurusd 5m parquet, sha `c746f344`, 1,552,028 rows, 2005-01-03..2025-12-31; omitted from C127 by byte budget, not
+refused; 15m/1h/4h siblings listed). Split constraint: the contract module accepts only contiguous blocks from row 0,
+so the recommended option A is train 2005-2023 / calibration 2024 / confirmation 2025 with the recipe's 2020-2023 as
+the modelling window inside train, older rows usable only under a pretraining declaration, three expanding inner
+folds with 15 % validation and a 2,016-bar purge. Owner steps, none executed: rule on the split option; seal into a
+new contract file (a calendar-cut helper does not exist yet and lane B writes it after the ruling); save the pending
+resource_contracts entry; promote and restart only the financial lake service as on 2026-09-14; register in data-gov;
+verify a VERIFIED_TRANSFER delivery.
