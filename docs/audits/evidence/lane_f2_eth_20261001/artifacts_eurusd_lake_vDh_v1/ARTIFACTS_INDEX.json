@@ -1,0 +1,629 @@
+{
+ "cells": {
+  "00839835": {
+   "beats_zero_return_by_horizon": {
+    "1": false,
+    "2": false,
+    "3": true,
+    "4": false
+   },
+   "cid": "008398354af572144fe3c3827508163593a02fd2042ec5a874e838483b9014f7",
+   "evidence": {
+    "evidence_sha256": "61698b11f9b9165f756387bc729dae79b491630df56c67112becec7d05aa95aa",
+    "path": "EVIDENCE_00839835.json",
+    "sha256": "cb46ada4093f2127f8881dadbd66891e6e06cabfdc4af3bae568a03b5848e68d"
+   },
+   "label": "grouped_all_huber_adam",
+   "made": "2026-10-01T12:35:25Z",
+   "objective_MAE_z": 0.7914741858029828,
+   "predictions": {
+    "path": "PREDICTIONS_00839835.csv",
+    "predictions_sha256": "429ad18e0a196e743d487602106d41033710ce4d253628210ce23138e2bb1e75",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "21aab6414ce5f033adeaaf18d40052147eb2e745c0d0dd9e4bdf1c7c035e4cdc"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2021
+  },
+  "045f8582": {
+   "beats_zero_return_by_horizon": {
+    "1": false,
+    "2": false,
+    "3": true,
+    "4": true
+   },
+   "cid": "045f858241d736e949ac3aa36f10fcccd0c297c63410a77cf607e16a4784ebfe",
+   "evidence": {
+    "evidence_sha256": "5fb7c129cf769b1628a981a32e8d55133c35068b2e9cf17f0e65553ece17a6e0",
+    "path": "EVIDENCE_045f8582.json",
+    "sha256": "caca3c06636c1c4a2481be1c6d3827e99ceee6c66ff815e9053c1e61ca015ac1"
+   },
+   "label": "control_mlp_huber_adam",
+   "made": "2026-10-01T12:35:27Z",
+   "objective_MAE_z": 0.7911624087963768,
+   "predictions": {
+    "path": "PREDICTIONS_045f8582.csv",
+    "predictions_sha256": "102a691951cb744c441a18d02b8078891a6d8e3c311afa3e83eff898e145f33e",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "bf4b06c483e202a6387fcb8f332e47d5e43538a15e8d6b0efcd18b2bc0e9638f"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_5090/queue.sqlite",
+   "seed": 2023
+  },
+  "086d54a4": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": true,
+    "3": true,
+    "4": true
+   },
+   "cid": "086d54a4a68bee822499f9bf278e0d1936dbcd3b25fcd1132852af9bf9ddf2cb",
+   "evidence": {
+    "evidence_sha256": "634b4c1eaa742b4667cacc27000fc1d4437f41c1780b11d7191ab3f646d150a8",
+    "path": "EVIDENCE_086d54a4.json",
+    "sha256": "505cbe23173b4f33f692bcbd306e4554b97c94a6ceb816afbd1679eed8eadd78"
+   },
+   "label": "control_mlp_huber_adam",
+   "made": "2026-10-01T12:35:26Z",
+   "objective_MAE_z": 0.7907281222394323,
+   "predictions": {
+    "path": "PREDICTIONS_086d54a4.csv",
+    "predictions_sha256": "a937a2d8dfed8470e5390d1e7e69b4572257e4d1bd58cc0ddece8e9ebf2802f1",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "0a6243b17337075d45d9d858c52b676cb4cdf6eafb0d72e5674f8a45b7852ec7"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2021
+  },
+  "0924a893": {
+   "beats_zero_return_by_horizon": {
+    "1": false,
+    "2": false,
+    "3": false,
+    "4": false
+   },
+   "cid": "0924a893e3f4f36d2693d05eaa43d633d4afe811eb5a55d0bd409f0c71626260",
+   "evidence": {
+    "evidence_sha256": "a3b7014bdae03461e3146aa3f534cafada2cdf97242bd4b9ac2b074f211b8b23",
+    "path": "EVIDENCE_0924a893.json",
+    "sha256": "3614273827606e6a7f4975b806bba50a3b1fe874d3419a6b82abe9bd5dd2c659"
+   },
+   "label": "control_mlp_mae_adamw",
+   "made": "2026-10-01T12:35:26Z",
+   "objective_MAE_z": 0.791408842103177,
+   "predictions": {
+    "path": "PREDICTIONS_0924a893.csv",
+    "predictions_sha256": "282512a0e2ff465ba030c57e1ea1b49e84393e1ef6e033120bcb7878f6be389e",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "74a80d9895bcbf93cc955ce614a39f8eb4592ba51006c43e768e575090fc511f"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_5090/queue.sqlite",
+   "seed": 2023
+  },
+  "156866ca": {
+   "beats_zero_return_by_horizon": {
+    "1": false,
+    "2": false,
+    "3": true,
+    "4": true
+   },
+   "cid": "156866ca6dfae3a5526be072c0f75a2b83f421c87bf9d27e52ff27e25e468f18",
+   "evidence": {
+    "evidence_sha256": "e5aab5fdd9599ed5ed8b5cb533b0651c5c76e45422b5c95ef28a99112f74f655",
+    "path": "EVIDENCE_156866ca.json",
+    "sha256": "eaf7b5648c1e6b5817afd8de889893407d3b7351d2a0b0549e34ffbd45cd5ea8"
+   },
+   "label": "grouped_all_huber_adam",
+   "made": "2026-10-01T12:35:26Z",
+   "objective_MAE_z": 0.7915274074052391,
+   "predictions": {
+    "path": "PREDICTIONS_156866ca.csv",
+    "predictions_sha256": "00daaa04261ea8cde8a9d1406cf1b904d65b90f5331f64962ba5716aa333d7bb",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "f06feb7ce465d64a42c3c59740732eb5bdbd12f224e0480d07caf637d59dcf68"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2022
+  },
+  "15db610f": {
+   "beats_zero_return_by_horizon": {
+    "1": false,
+    "2": false,
+    "3": false,
+    "4": true
+   },
+   "cid": "15db610f8491f189c5246044ef5cc4b2e1542a335d026e6371ad2a01424ad8de",
+   "evidence": {
+    "evidence_sha256": "18bd96c050dd6d66c769be92611dcdb3c695d982e17dca8065e1ef57b86dc1a1",
+    "path": "EVIDENCE_15db610f.json",
+    "sha256": "52fb6369fc72ad8e7d2d60dd6a4caa684da9be24bf916bb643427cc0253d8f98"
+   },
+   "label": "grouped_all_mae_adamw",
+   "made": "2026-10-01T12:35:26Z",
+   "objective_MAE_z": 0.7914619178159898,
+   "predictions": {
+    "path": "PREDICTIONS_15db610f.csv",
+    "predictions_sha256": "fb7763c527f0c93229df7e9647a67fd266b34b86ece6c99e49ad0bd820447d89",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "27b49faa63b86e3c056061917971f0fba9f56d598344c569e3932a98fd946bfd"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_5090/queue.sqlite",
+   "seed": 2023
+  },
+  "19a279ca": {
+   "beats_zero_return_by_horizon": {
+    "1": false,
+    "2": false,
+    "3": true,
+    "4": true
+   },
+   "cid": "19a279ca8e4e2364f4113cc37cbadeae7ecfbd21ffcd0f29d71a84780c78d76e",
+   "evidence": {
+    "evidence_sha256": "e01bd2f1047e2ff29fb08c8de5bcce95cc8c3d4f8336059c8ba8a4424433e56a",
+    "path": "EVIDENCE_19a279ca.json",
+    "sha256": "3d7c4224a2c6a8e3cbd43b6472d80d535eb5211cff064d732862f6deb21c7a75"
+   },
+   "label": "grouped_all_huber_adam",
+   "made": "2026-10-01T12:35:27Z",
+   "objective_MAE_z": 0.7914846637567954,
+   "predictions": {
+    "path": "PREDICTIONS_19a279ca.csv",
+    "predictions_sha256": "2a71f40346969497949b843b1646155b4ce9dcc98afa3b34e42b6182e3b4ac56",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "1b84a8b444b3d5adbaa71f7097ed1a10d4205835dd662940fe0fb5c37a61c7d6"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_5090/queue.sqlite",
+   "seed": 2023
+  },
+  "23c499c4": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": false,
+    "3": true,
+    "4": false
+   },
+   "cid": "23c499c46a163597cecbb0ceda040f68c7f7771ef15341b12b4c8d68c8b67d81",
+   "evidence": {
+    "evidence_sha256": "d857dfebe3084c03d40077ffcdfdf689055beb3524d7f25f9285b5163b1d75ce",
+    "path": "EVIDENCE_23c499c4.json",
+    "sha256": "275595ea0d4b71f75dacca04f2ad104cfd71f520f46a82b03bc3fd2ce39e7d3e"
+   },
+   "label": "control_mlp_huber_adamw",
+   "made": "2026-10-01T12:35:25Z",
+   "objective_MAE_z": 0.791459389525244,
+   "predictions": {
+    "path": "PREDICTIONS_23c499c4.csv",
+    "predictions_sha256": "fedb92abb4c6d9a90332cf8a83d3d40ae1b74805b8d54baa71d587b96cc20445",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "a4eaa3d57d463781ba861cc8d69a7ee16de6bcf2aa17892165973dc27bd7c436"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2022
+  },
+  "2cee38bc": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": false,
+    "3": true,
+    "4": true
+   },
+   "cid": "2cee38bc83d66496c8918fe9757cd4d999420be012aa14ca1e64d9389960c752",
+   "evidence": {
+    "evidence_sha256": "4d509612cf77b5fc22150cef01955b1557d796699c5bad321591ae5abd3ca9c5",
+    "path": "EVIDENCE_2cee38bc.json",
+    "sha256": "486e149011b6dd403522921e227db1441d5eba2e6d1e23d9ef111adceade142f"
+   },
+   "label": "control_mlp_huber_adamw",
+   "made": "2026-10-01T12:35:24Z",
+   "objective_MAE_z": 0.7909324722337738,
+   "predictions": {
+    "path": "PREDICTIONS_2cee38bc.csv",
+    "predictions_sha256": "6b5daf794f53923d96ec907bbac1c3ed8f48094d6a7eb08b15b5732193c210ad",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "e6b2a3dd86fa26548455b2c1fda0c67e67e7eec09b56d2bc40ee6338719a038d"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2021
+  },
+  "35f964cd": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": true,
+    "3": false,
+    "4": true
+   },
+   "cid": "35f964cd87f30143bc0921baf1ab98b2e1f5ce20380b9ccff62be0688dce0f51",
+   "evidence": {
+    "evidence_sha256": "633d2d5f3a2ee280c536d4f748ca5dc8e206cf6a328f312820766d59a0b75455",
+    "path": "EVIDENCE_35f964cd.json",
+    "sha256": "d49d9ecb57676cfb01a1baf881f3b6271f9a71940c65a84619491dd3d0a2a4f5"
+   },
+   "label": "grouped_all_mae_adam",
+   "made": "2026-10-01T12:35:25Z",
+   "objective_MAE_z": 0.7909057335457275,
+   "predictions": {
+    "path": "PREDICTIONS_35f964cd.csv",
+    "predictions_sha256": "30e73d8cac073c27fe2145842ab86c07d5b9882df374c6a79b542aa298cf3552",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "505c9cdfdf186df23f1ea05cfcc76bf5cc2509ea051e1aed5afbc0e3c05f1b99"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2022
+  },
+  "66583ab2": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": false,
+    "3": true,
+    "4": true
+   },
+   "cid": "66583ab2a185e17d8986f941c715c6eda551acfc14d82cbd184f8cbde53b500f",
+   "evidence": {
+    "evidence_sha256": "807d0bccbd3f3b8e1271d49983297cf67ec14630d9632eec58ec0a3ae1a58666",
+    "path": "EVIDENCE_66583ab2.json",
+    "sha256": "5f7422ec4127f431be11cd785ddfa1ce3e2ab8aa45c4a0b8c9fceaf10d46d6e6"
+   },
+   "label": "control_mlp_mae_adamw",
+   "made": "2026-10-01T11:19:44Z",
+   "objective_MAE_z": 0.7911438322344869,
+   "predictions": {
+    "path": "PREDICTIONS_66583ab2.csv",
+    "predictions_sha256": "7842aa008da415648c7cceb05fd6b14868287a86c3669a784079aeae845d3637",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "94cc96a65d1502a1a4fd837c6b6f3a9835e2d68c989ea6d6c497a09d35e7e66d"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2022
+  },
+  "6b0ba32b": {
+   "beats_zero_return_by_horizon": {
+    "1": false,
+    "2": false,
+    "3": false,
+    "4": true
+   },
+   "cid": "6b0ba32b49f6b864786fcb834b68171d073ff8c624cb09726665d6b42940a680",
+   "evidence": {
+    "evidence_sha256": "046e0dabbaacc82441a6c193161d9dbdc8c04864d89dffcf3c66d361a958876f",
+    "path": "EVIDENCE_6b0ba32b.json",
+    "sha256": "9594acc648f29afc4c5d58178cc37b62f0881613f7aef40d621179cd2801fdc4"
+   },
+   "label": "control_mlp_mae_adamw",
+   "made": "2026-10-01T12:35:27Z",
+   "objective_MAE_z": 0.7911298185981483,
+   "predictions": {
+    "path": "PREDICTIONS_6b0ba32b.csv",
+    "predictions_sha256": "5723fa0f861c45975e8e9f038c509b59937bdc40f1e02efdb63bdc070694aa68",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "8c920b02a015f9e5c477486012cb9daedfc34e772d77f5e68b7d90e8200d5ba2"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_5090/queue.sqlite",
+   "seed": 2024
+  },
+  "725c7cb0": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": true,
+    "3": true,
+    "4": true
+   },
+   "cid": "725c7cb0ef687c17dc8b71ba2b68b670feb94cbb50e786c1e664a1cba17f8fc6",
+   "evidence": {
+    "evidence_sha256": "19a3628835a9c7851a2967da4450ac56e147089c6368423221b52bac86d217aa",
+    "path": "EVIDENCE_725c7cb0.json",
+    "sha256": "27bb716df77d73a91bf9fc15088d01152c4326021b805519c2a0f5cca8935ed0"
+   },
+   "label": "grouped_all_huber_adam",
+   "made": "2026-10-01T12:35:27Z",
+   "objective_MAE_z": 0.7909506772396087,
+   "predictions": {
+    "path": "PREDICTIONS_725c7cb0.csv",
+    "predictions_sha256": "daabda402c657160cfbf4d1e70c6a3ed6d4e0dceefcd19d1d0db2f55ef0e0c54",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "538516f8fb08a30b2791f71c9632c1332f15927062d7909728804fc0034677f2"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_5090/queue.sqlite",
+   "seed": 2024
+  },
+  "8f539aa5": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": true,
+    "3": true,
+    "4": true
+   },
+   "cid": "8f539aa570749305129e89e5c6f39905ab5923f4a4f73782997f4a383d120be8",
+   "evidence": {
+    "evidence_sha256": "7a95d9fd3b43e8c584d552e0b41c61b675c3b59c96a2218776a98f3cfa55f20c",
+    "path": "EVIDENCE_8f539aa5.json",
+    "sha256": "df4340dd3f5e0c574ebc4eb8898a97bc3aa6144f3eb1897306ad91a71ea46884"
+   },
+   "label": "grouped_all_huber_adamw",
+   "made": "2026-10-01T12:35:24Z",
+   "objective_MAE_z": 0.7913390235509473,
+   "predictions": {
+    "path": "PREDICTIONS_8f539aa5.csv",
+    "predictions_sha256": "7218efb6532d7077735a4c010b1d214b3ce44c958e2d27295fb670eff58e4d06",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "8cfcb7e995b28067151279725febf06cee345a7356a15f6794275538fdbc8a6e"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2021
+  },
+  "90d91a43": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": true,
+    "3": true,
+    "4": true
+   },
+   "cid": "90d91a43861fbc14c69f36c93683d5c076b0bbd53600aac20a2afe4372780ae8",
+   "evidence": {
+    "evidence_sha256": "456cdb76fd125f9d844ebc561f84b406f8f1216850269654793b89b5e95072d9",
+    "path": "EVIDENCE_90d91a43.json",
+    "sha256": "38598b36255bace0a0d2f94411ab656821dd048260bf3b55f5a2b72dd4373687"
+   },
+   "label": "grouped_all_mae_adamw",
+   "made": "2026-10-01T11:19:43Z",
+   "objective_MAE_z": 0.7910517392973733,
+   "predictions": {
+    "path": "PREDICTIONS_90d91a43.csv",
+    "predictions_sha256": "2bf53e62356ad8771520a7af53d031bdd34f0e90e384dcea100a06b8e0c95846",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "17060c8b19138489bec243cd9a71c6fb229d738ca6f3044b926fd1b197d306b4"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2021
+  },
+  "9c4c7577": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": true,
+    "3": true,
+    "4": true
+   },
+   "cid": "9c4c75772fc44c11b51d83f258eb502932dec7f10477cdc9e5f5f4c9e051b4b0",
+   "evidence": {
+    "evidence_sha256": "0391cb1a872021795509e3d38cbe62f8ff1b679d69947e510b6c670ffacbb045",
+    "path": "EVIDENCE_9c4c7577.json",
+    "sha256": "7bf1f6bfa6dd32ecbe32b413b8da09ddb78ad4009c8e5e245232a3a8bd7ca82a"
+   },
+   "label": "grouped_all_mae_adamw",
+   "made": "2026-10-01T11:19:43Z",
+   "objective_MAE_z": 0.7909337176436065,
+   "predictions": {
+    "path": "PREDICTIONS_9c4c7577.csv",
+    "predictions_sha256": "fa2a11dbd253fac20827f735c15845c5b50191ab74b2d9d5360f12b19deeb338",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "a29cb13ea39991500b2fb8c1e8502adbc916183a1f6fedd6fe8b40c8957095db"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2022
+  },
+  "b4471773": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": true,
+    "3": false,
+    "4": false
+   },
+   "cid": "b4471773e36c054835e60ba11c6a0faa1a4be755b6612fbae54bf55c2ef06ec8",
+   "evidence": {
+    "evidence_sha256": "d71c554c04d5b7e4aa33b93feabec1f474d5bdc96a8e4c73ff5541a4dc67a91c",
+    "path": "EVIDENCE_b4471773.json",
+    "sha256": "393c9fd818c199182d060c942a5ff72b54bd4314d1db6f41c518a420b5a09872"
+   },
+   "label": "control_mlp_mae_adam",
+   "made": "2026-10-01T12:35:25Z",
+   "objective_MAE_z": 0.7914787538411796,
+   "predictions": {
+    "path": "PREDICTIONS_b4471773.csv",
+    "predictions_sha256": "7105267c5aec3e7dbb3193e6ea9ba087f66e3c80040483e5e9403f41bd1b0973",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "0f9043d90c6d4c30c0a1a49c63e26baadcb27db46759c897e2ef7c2558730459"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2022
+  },
+  "c3ffac22": {
+   "beats_zero_return_by_horizon": {
+    "1": false,
+    "2": false,
+    "3": true,
+    "4": true
+   },
+   "cid": "c3ffac22e1ac29420bb60e3b8bde12c9b7949a2916392016e142b9c9b74b22c3",
+   "evidence": {
+    "evidence_sha256": "dbcfb6d518c63c857e6b4f4b31996a4ef1bc78949c0f60ffb71512073cd93301",
+    "path": "EVIDENCE_c3ffac22.json",
+    "sha256": "dd8d17a66459c40a94b598e49e281d973c661a361efe3adf145f381aed4cb895"
+   },
+   "label": "control_mlp_mae_adam",
+   "made": "2026-10-01T12:35:25Z",
+   "objective_MAE_z": 0.7911816482437167,
+   "predictions": {
+    "path": "PREDICTIONS_c3ffac22.csv",
+    "predictions_sha256": "5dfa8e0130e48906d957ed53a546c4734b4c353dca07cd2c32c0e87926c67459",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "ee9f41966e139e453dd03c420999378bdae074d97dde5051ba9b2a6ec7f9f907"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2021
+  },
+  "cd4f20ce": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": false,
+    "3": true,
+    "4": false
+   },
+   "cid": "cd4f20ce85552591f19d804155945468a359be19572bfb71b47df841de2fecb9",
+   "evidence": {
+    "evidence_sha256": "60d89474a9925834fe60de88dc42db07a6ac7d324c690763c352e15393df2b51",
+    "path": "EVIDENCE_cd4f20ce.json",
+    "sha256": "4331baff049891f73fa77831808f1d42bf65ca2eed783998b55f61bcada06a98"
+   },
+   "label": "grouped_all_mae_adam",
+   "made": "2026-10-01T12:35:25Z",
+   "objective_MAE_z": 0.7914096837882336,
+   "predictions": {
+    "path": "PREDICTIONS_cd4f20ce.csv",
+    "predictions_sha256": "6fe2d37f32eafe62473d7688c1fb745edd55165152b3fedddc12dc304f545785",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "c0f376730d78e1d2d3c323cf9ea2521c7514dbaa61ee6f2983f753ce6ead1643"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2021
+  },
+  "cfe4b165": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": true,
+    "3": true,
+    "4": true
+   },
+   "cid": "cfe4b165f0d5f836512a78344a390e40ba2b9dc75aaa0dab1969e4af40ab61f7",
+   "evidence": {
+    "evidence_sha256": "ab23356cd50bec8448c66e7d45cfa8d3063d5a736752833191586021a74584dd",
+    "path": "EVIDENCE_cfe4b165.json",
+    "sha256": "4b2adb5f8f013fa31d4aec84d2f7069ac59e2d864c08dae26f6fc7819b820b01"
+   },
+   "label": "grouped_all_mae_adamw",
+   "made": "2026-10-01T12:35:26Z",
+   "objective_MAE_z": 0.7906547316520908,
+   "predictions": {
+    "path": "PREDICTIONS_cfe4b165.csv",
+    "predictions_sha256": "2f058573598b88f572b9f8e91733ae6df9d858d24e4d0bf98e34286730fe2c2d",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "178ac8818bd3e7f63017664662cc073b29766a1c595ff0b53ffd040e3aee7fec"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_5090/queue.sqlite",
+   "seed": 2024
+  },
+  "d8e0629a": {
+   "beats_zero_return_by_horizon": {
+    "1": false,
+    "2": true,
+    "3": true,
+    "4": true
+   },
+   "cid": "d8e0629a53fe7eb05dcfed8480d0f04bdf537047a27669614e66b32717c5c83a",
+   "evidence": {
+    "evidence_sha256": "15774b0b9d9d6edbc1f5853677e800098d25417ed1ca7bf31a317156d6a2d3ae",
+    "path": "EVIDENCE_d8e0629a.json",
+    "sha256": "8ac44f9f58f33e6e108df095f75240231d8c615be7277fda6f93e8034c4097af"
+   },
+   "label": "control_mlp_huber_adam",
+   "made": "2026-10-01T12:35:27Z",
+   "objective_MAE_z": 0.790836692052684,
+   "predictions": {
+    "path": "PREDICTIONS_d8e0629a.csv",
+    "predictions_sha256": "af2e96a8fe469f011956ea09ff1e2abc413a544bad1921b3f2b9a25b1576303c",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "3660c1b62803a6e62f9f238d7378d854c654578f8a10e524d83fd906c3d7f34f"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_5090/queue.sqlite",
+   "seed": 2024
+  },
+  "deb9f45b": {
+   "beats_zero_return_by_horizon": {
+    "1": false,
+    "2": true,
+    "3": true,
+    "4": true
+   },
+   "cid": "deb9f45be7231291507b5b5eba248049dd49f92276cb21352612ac5819d73c60",
+   "evidence": {
+    "evidence_sha256": "dd01c81f9392f43736d59da239f26c0e5c746282a9c638e6963298927c6676df",
+    "path": "EVIDENCE_deb9f45b.json",
+    "sha256": "bb9ce7fa8c7abedb2140d73d4dcfe3712347a24c6bf7f1b9cd371fd011bfc020"
+   },
+   "label": "grouped_all_huber_adamw",
+   "made": "2026-10-01T12:35:24Z",
+   "objective_MAE_z": 0.7915041363994424,
+   "predictions": {
+    "path": "PREDICTIONS_deb9f45b.csv",
+    "predictions_sha256": "b77aa3ca2ba90901374a079f65a4fb35652d52572ee29171694da81d52cf71b5",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "aafce9b4cec2bc9e5a6417deac65588e1c10101a9ac090bae26f5634dd68b6dd"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2022
+  },
+  "ef02938c": {
+   "beats_zero_return_by_horizon": {
+    "1": false,
+    "2": false,
+    "3": true,
+    "4": false
+   },
+   "cid": "ef02938c439bf35671f047009b55e54fcab519660b6c550eec9e33db73a3ddeb",
+   "evidence": {
+    "evidence_sha256": "cb0145600e80f226098320d7d44ef40c5e63712047c58a3a312feb7a7652e3c4",
+    "path": "EVIDENCE_ef02938c.json",
+    "sha256": "22d2367cf34a7a5bda24019f41e71588e37190f203a8747dea6023886565947e"
+   },
+   "label": "control_mlp_mae_adamw",
+   "made": "2026-10-01T11:19:43Z",
+   "objective_MAE_z": 0.7913448657801838,
+   "predictions": {
+    "path": "PREDICTIONS_ef02938c.csv",
+    "predictions_sha256": "2b6c0b05f35d9b454c715c80b632bd484c3683fe9d3777b4d8af0c8d8363f364",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "7140eded1c74c41f98b33b4eba9977edf3fb93629f358328eecacdcde6e4ca79"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2021
+  },
+  "f6070855": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": false,
+    "3": true,
+    "4": false
+   },
+   "cid": "f607085508e3ba3f8f7ab475f4ddbc34c67af4cebc2f8877d158b62d2fef78a0",
+   "evidence": {
+    "evidence_sha256": "d6b8985f02dd204a74a7ca7dca5ded064789dd53376e33a3c25654c239d50eb7",
+    "path": "EVIDENCE_f6070855.json",
+    "sha256": "3c35ef85d305fdeee7feac89e91d05f0b9a1d94ddab5ffd41bb27d37b8416b71"
+   },
+   "label": "control_mlp_huber_adam",
+   "made": "2026-10-01T12:35:26Z",
+   "objective_MAE_z": 0.7913307034405183,
+   "predictions": {
+    "path": "PREDICTIONS_f6070855.csv",
+    "predictions_sha256": "4fb564e851a964c8f3d053b72c287353bc98713ff4f1695f5bb4a8c648f62d1d",
+    "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+    "rows": 18711,
+    "sha256": "700086c41e5f96bea4787df0a2cf4938da375fa3abad47d52b1ff7f5b6091909"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_eurusd_lake_vDh_v1/queue.sqlite",
+   "seed": 2022
+  }
+ },
+ "schema": "f2.artifacts_index.v1"
+}

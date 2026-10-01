@@ -1,0 +1,485 @@
+{
+ "artifact": {
+  "campaign_id": "f2_eurusd_lake_1h_vDh_h1to4_v1",
+  "candidate_cid": "cfe4b165f0d5f836512a78344a390e40ba2b9dc75aaa0dab1969e4af40ab61f7",
+  "model_sha256": "62f3f101f3f070ee1aaca43fd8ca308d875522c92e30d734c7b65c3af8b7a98f",
+  "predictor_revision": "bbb6fac61ff1f695771778cb46266af2040e91c5",
+  "weights_sha256": "a2d22045b3f574efd2218b1fbe8a9835b60124921c9e66b436b7d0c22194a97f"
+ },
+ "cell": {
+  "config_id": "b1695799a13e344ddf429232fd68c8e2a7dd7ce3b9e8baa7bbaa9c0dc0a4e4b2",
+  "label": "grouped_all_mae_adamw",
+  "label_status": "DEVELOPMENT",
+  "seed": 2024,
+  "verification_exact_match": true,
+  "verification_predictions_sha256": "2f058573598b88f572b9f8e91733ae6df9d858d24e4d0bf98e34286730fe2c2d"
+ },
+ "evidence_sha256": "ab23356cd50bec8448c66e7d45cfa8d3063d5a736752833191586021a74584dd",
+ "frozen_metric": {
+  "frozen": "declared before selection; never switched after seeing results",
+  "primary": "MAE",
+  "secondary": "MSE"
+ },
+ "naive": {
+  "components": [
+   "persistence_last_value",
+   "seasonal_24",
+   "train_mean",
+   "zero_return"
+  ],
+  "definition": "STRICT MINIMUM per horizon: the lowest-MAE naive among persistence (last observed standardized 1-bar return repeated), zero-return (CLOSE[t+h]=CLOSE[t]), train-mean (Y_h=0) and the seasonal naive; same rows, targets, scaler, reduction",
+  "mandatory_first_bar": "zero_return",
+  "per_horizon_fields": "naive_MAE/naive_MSE = the strict minimum (strict_naive names it); zero_return_naive, train_mean_naive, persistence_naive, seasonal_naive carry each naive's MAE/MSE with skill and delta; beats_zero_return = strictly below zero-return on both MAE and MSE",
+  "strict_naive_by_horizon": {
+   "1": "zero_return",
+   "2": "zero_return",
+   "3": "zero_return",
+   "4": "train_mean"
+  }
+ },
+ "naives": {
+  "per_naive": {
+   "persistence_last_value": {
+    "1": {
+     "MAE": 0.7398971303024774,
+     "MSE": 1.247899699632757
+    },
+    "2": {
+     "MAE": 0.9124454501608283,
+     "MSE": 1.8543166707988232
+    },
+    "3": {
+     "MAE": 1.0620158189904696,
+     "MSE": 2.450607213178579
+    },
+    "4": {
+     "MAE": 1.190719383428509,
+     "MSE": 3.048518558412305
+    }
+   },
+   "seasonal_24": {
+    "1": {
+     "MAE": 0.7262792577399872,
+     "MSE": 1.2069777332303675
+    },
+    "2": {
+     "MAE": 1.036060715353519,
+     "MSE": 2.3755617630011643
+    },
+    "3": {
+     "MAE": 1.2828480287534325,
+     "MSE": 3.5318343720606333
+    },
+    "4": {
+     "MAE": 1.4895470308109369,
+     "MSE": 4.657044232597965
+    }
+   },
+   "train_mean": {
+    "1": {
+     "MAE": 0.5096019130059237,
+     "MSE": 0.6122801798634758
+    },
+    "2": {
+     "MAE": 0.7230042010976102,
+     "MSE": 1.210495892871662
+    },
+    "3": {
+     "MAE": 0.893795358542334,
+     "MSE": 1.8006153018469002
+    },
+    "4": {
+     "MAE": 1.0396145123437612,
+     "MSE": 2.383732698556067
+    }
+   },
+   "zero_return": {
+    "1": {
+     "MAE": 0.5095871279162093,
+     "MSE": 0.6122990889063958
+    },
+    "2": {
+     "MAE": 0.7229950882754574,
+     "MSE": 1.2105729199255602
+    },
+    "3": {
+     "MAE": 0.893783363092549,
+     "MSE": 1.8007722720669648
+    },
+    "4": {
+     "MAE": 1.0396371378917963,
+     "MSE": 2.3840061440105793
+    }
+   }
+  },
+  "rows": 18711,
+  "strict_minimum": {
+   "1": {
+    "MAE": 0.5095871279162093,
+    "MSE": 0.6122990889063958,
+    "naive": "zero_return"
+   },
+   "2": {
+    "MAE": 0.7229950882754574,
+    "MSE": 1.2105729199255602,
+    "naive": "zero_return"
+   },
+   "3": {
+    "MAE": 0.893783363092549,
+    "MSE": 1.8007722720669648,
+    "naive": "zero_return"
+   },
+   "4": {
+    "MAE": 1.0396145123437612,
+    "MSE": 2.383732698556067,
+    "naive": "train_mean"
+   }
+  }
+ },
+ "per_horizon": [
+  {
+   "MAE": {
+    "delta": -0.0009729671575687826,
+    "skill": 0.0019093244398605824,
+    "status": "OK"
+   },
+   "MSE": {
+    "delta": -0.00024815298832236987,
+    "skill": 0.0004052806754385463,
+    "status": "OK"
+   },
+   "beats_zero_return": true,
+   "beats_zero_return_MAE": true,
+   "beats_zero_return_MSE": true,
+   "horizon": 1,
+   "model_MAE": 0.5086141607586405,
+   "model_MSE": 0.6120509359180735,
+   "naive_MAE": 0.5095871279162093,
+   "naive_MSE": 0.6122990889063958,
+   "persistence_naive": {
+    "MAE": {
+     "delta": -0.23128296954383687,
+     "skill": 0.3125880072670184,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -0.6358487637146835,
+     "skill": 0.5095351524660249,
+     "status": "OK"
+    },
+    "naive_MAE": 0.7398971303024774,
+    "naive_MSE": 1.247899699632757
+   },
+   "rows": 18711,
+   "seasonal_naive": {
+    "MAE": {
+     "delta": -0.21766509698134673,
+     "skill": 0.2996989032272105,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -0.594926797312294,
+     "skill": 0.49290619116893386,
+     "status": "OK"
+    },
+    "naive_MAE": 0.7262792577399872,
+    "naive_MSE": 1.2069777332303675
+   },
+   "strict_naive": "zero_return",
+   "train_mean_naive": {
+    "MAE": {
+     "delta": -0.0009877522472832023,
+     "skill": 0.0019382820630654551,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -0.0002292439454023576,
+     "skill": 0.0003744102013125694,
+     "status": "OK"
+    },
+    "naive_MAE": 0.5096019130059237,
+    "naive_MSE": 0.6122801798634758
+   },
+   "zero_return_naive": {
+    "MAE": {
+     "delta": -0.0009729671575687826,
+     "skill": 0.0019093244398605824,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -0.00024815298832236987,
+     "skill": 0.0004052806754385463,
+     "status": "OK"
+    },
+    "naive_MAE": 0.5095871279162093,
+    "naive_MSE": 0.6122990889063958
+   }
+  },
+  {
+   "MAE": {
+    "delta": -0.0007784881521220033,
+    "skill": 0.001076754413337544,
+    "status": "OK"
+   },
+   "MSE": {
+    "delta": -0.000811436189510184,
+    "skill": 0.0006702910466228618,
+    "status": "OK"
+   },
+   "beats_zero_return": true,
+   "beats_zero_return_MAE": true,
+   "beats_zero_return_MSE": true,
+   "horizon": 2,
+   "model_MAE": 0.7222166001233354,
+   "model_MSE": 1.20976148373605,
+   "naive_MAE": 0.7229950882754574,
+   "naive_MSE": 1.2105729199255602,
+   "persistence_naive": {
+    "MAE": {
+     "delta": -0.1902288500374929,
+     "skill": 0.20848243585845383,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -0.6445551870627733,
+     "skill": 0.34759714843371636,
+     "status": "OK"
+    },
+    "naive_MAE": 0.9124454501608283,
+    "naive_MSE": 1.8543166707988232
+   },
+   "rows": 18711,
+   "seasonal_naive": {
+    "MAE": {
+     "delta": -0.31384411523018363,
+     "skill": 0.3029205823358484,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -1.1658002792651143,
+     "skill": 0.490747198166846,
+     "status": "OK"
+    },
+    "naive_MAE": 1.036060715353519,
+    "naive_MSE": 2.3755617630011643
+   },
+   "strict_naive": "zero_return",
+   "train_mean_naive": {
+    "MAE": {
+     "delta": -0.0007876009742747714,
+     "skill": 0.0010893449485895879,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -0.0007344091356120686,
+     "skill": 0.0006067010552756047,
+     "status": "OK"
+    },
+    "naive_MAE": 0.7230042010976102,
+    "naive_MSE": 1.210495892871662
+   },
+   "zero_return_naive": {
+    "MAE": {
+     "delta": -0.0007784881521220033,
+     "skill": 0.001076754413337544,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -0.000811436189510184,
+     "skill": 0.0006702910466228618,
+     "status": "OK"
+    },
+    "naive_MAE": 0.7229950882754574,
+    "naive_MSE": 1.2105729199255602
+   }
+  },
+  {
+   "MAE": {
+    "delta": -0.0007790174762082325,
+    "skill": 0.0008715954093313494,
+    "status": "OK"
+   },
+   "MSE": {
+    "delta": -0.001895632399663949,
+    "skill": 0.0010526774701434816,
+    "status": "OK"
+   },
+   "beats_zero_return": true,
+   "beats_zero_return_MAE": true,
+   "beats_zero_return_MSE": true,
+   "horizon": 3,
+   "model_MAE": 0.8930043456163408,
+   "model_MSE": 1.7988766396673008,
+   "naive_MAE": 0.893783363092549,
+   "naive_MSE": 1.8007722720669648,
+   "persistence_naive": {
+    "MAE": {
+     "delta": -0.1690114733741288,
+     "skill": 0.15914214303774465,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -0.6517305735112782,
+     "skill": 0.26594656622508916,
+     "status": "OK"
+    },
+    "naive_MAE": 1.0620158189904696,
+    "naive_MSE": 2.450607213178579
+   },
+   "rows": 18711,
+   "seasonal_naive": {
+    "MAE": {
+     "delta": -0.3898436831370917,
+     "skill": 0.30388921711631744,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -1.7329577323933325,
+     "skill": 0.4906678937444753,
+     "status": "OK"
+    },
+    "naive_MAE": 1.2828480287534325,
+    "naive_MSE": 3.5318343720606333
+   },
+   "strict_naive": "zero_return",
+   "train_mean_naive": {
+    "MAE": {
+     "delta": -0.0007910129259932619,
+     "skill": 0.000885004512983012,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -0.0017386621795993928,
+     "skill": 0.0009655933601231403,
+     "status": "OK"
+    },
+    "naive_MAE": 0.893795358542334,
+    "naive_MSE": 1.8006153018469002
+   },
+   "zero_return_naive": {
+    "MAE": {
+     "delta": -0.0007790174762082325,
+     "skill": 0.0008715954093313494,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -0.001895632399663949,
+     "skill": 0.0010526774701434816,
+     "status": "OK"
+    },
+    "naive_MAE": 0.893783363092549,
+    "naive_MSE": 1.8007722720669648
+   }
+  },
+  {
+   "MAE": {
+    "delta": -0.0008306922337151246,
+    "skill": 0.000799038705070032,
+    "status": "OK"
+   },
+   "MSE": {
+    "delta": -0.002062958570370199,
+    "skill": 0.0008654320057025489,
+    "status": "OK"
+   },
+   "beats_zero_return": true,
+   "beats_zero_return_MAE": true,
+   "beats_zero_return_MSE": true,
+   "horizon": 4,
+   "model_MAE": 1.038783820110046,
+   "model_MSE": 2.3816697399856968,
+   "naive_MAE": 1.0396145123437612,
+   "naive_MSE": 2.383732698556067,
+   "persistence_naive": {
+    "MAE": {
+     "delta": -0.15193556331846292,
+     "skill": 0.12759980683356797,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -0.6668488184266081,
+     "skill": 0.21874520546593257,
+     "status": "OK"
+    },
+    "naive_MAE": 1.190719383428509,
+    "naive_MSE": 3.048518558412305
+   },
+   "rows": 18711,
+   "seasonal_naive": {
+    "MAE": {
+     "delta": -0.45076321070089076,
+     "skill": 0.302617642395277,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -2.275374492612268,
+     "skill": 0.48858769188518836,
+     "status": "OK"
+    },
+    "naive_MAE": 1.4895470308109369,
+    "naive_MSE": 4.657044232597965
+   },
+   "strict_naive": "train_mean",
+   "train_mean_naive": {
+    "MAE": {
+     "delta": -0.0008306922337151246,
+     "skill": 0.000799038705070032,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -0.002062958570370199,
+     "skill": 0.0008654320057025489,
+     "status": "OK"
+    },
+    "naive_MAE": 1.0396145123437612,
+    "naive_MSE": 2.383732698556067
+   },
+   "zero_return_naive": {
+    "MAE": {
+     "delta": -0.0008533177817502402,
+     "skill": 0.0008207842435108414,
+     "status": "OK"
+    },
+    "MSE": {
+     "delta": -0.0023364040248825546,
+     "skill": 0.0009800327196103353,
+     "status": "OK"
+    },
+    "naive_MAE": 1.0396371378917963,
+    "naive_MSE": 2.3840061440105793
+   }
+  }
+ ],
+ "population": {
+  "asset": "EURUSD 1h (lake 5m->1h, HistData lineage; DEVELOPMENT)",
+  "clock": "new_york_bar_end",
+  "dataset_id": "eurusdlake1h:lake5m-c746f344:ab0ada28",
+  "family": "hourly",
+  "first_origin": "2019-08-13T11:00:00+00:00",
+  "horizon_unit": "steps of 1.0 h",
+  "last_origin": "2022-09-22T21:00:00+00:00",
+  "row_ids_sha256": "7763f8b7445ede503889a9f1060a681f2b187696f0d6822caeabcdb4521e5539",
+  "rows": 18711,
+  "sample_hours": 1.0,
+  "targets": [
+   "log_return_1"
+  ],
+  "validation_sha256": "1c12179bc3defbcc379e5e420fa143298f0ab10a139a93656570e70d96153569"
+ },
+ "scale": {
+  "metric_space": "z_train",
+  "reduction": "mean over rows x targets of absolute / squared error, per horizon",
+  "scaler_identity": "fin-train-standard:2cc66982e5afb9b0e83f3e4d07e5d1bda94c1e41ff58b26cc3523cb82a7b725e"
+ },
+ "schema": "predictor.forecast_naive_evidence.v1",
+ "seasonal_naive": {
+  "declared": true,
+  "definition": "Y_h(t) := Y_h(t-24) on the cumulative target, read from the input window; same rows, targets, scaler and reduction",
+  "period_steps": 24
+ },
+ "split": {
+  "provenance": "held_out_validation",
+  "reserved_trading_test": false,
+  "test_used": false
+ }
+}
