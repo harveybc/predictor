@@ -75,7 +75,7 @@ def gpu_facts(expected_uuid):
         raise GpuFallback("GPU_REQUEST_FELL_BACK_TO_CPU: TensorFlow registered no GPU or the driver "
                           f"does not expose {expected_uuid}")
     with tf.device("/GPU:0"):
-        a = tf.random.normal((1024, 1024))
+        a = tf.ones((1024, 1024))  # no random op: valid under TF_DETERMINISTIC_OPS=1
         b = tf.linalg.matmul(a, a)
     facts["op_placement"] = b.device
     if "GPU" not in b.device:
