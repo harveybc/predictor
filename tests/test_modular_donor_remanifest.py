@@ -104,6 +104,8 @@ def _copy_donors(src, dst):
 
 def _r1(config, d):
     c = copy.deepcopy(config)
+    # historical donors are honestly UNKNOWN after remanifest: loading them needs the explicit bypass
+    c["donor_contract"] = "UNKNOWN_ALLOWED"
     for spec in c["branches"]:
         spec.update(regime="R1", donor=str(d / f"branch_{spec['name']}.keras"))
     c["core"].update(regime="R1", donor=str(d / "core.keras"))

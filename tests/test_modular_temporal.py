@@ -14,6 +14,13 @@ import tensorflow as tf
 
 from predictor_plugins import modular_temporal as mt
 
+OPERATIONAL_FIXTURE = {"conditioning_contract": "OPERATIONAL",
+                       "learned_corpus": {"kind": "TRAIN_ONLY", "dataset_id": "fixture:synthetic-train",
+                                          "data_sha256": "e" * 64, "support": "synthetic fixture rows",
+                                          "pretrained_weights_source": None},
+                       "reconstruction": {"state": "NOT_EVALUATED"}}
+
+
 
 @pytest.fixture(autouse=True)
 def deterministic():
@@ -137,10 +144,11 @@ def donors(tmp_path):
     for spec in c["branches"]:
         name = spec["name"]
         path = tmp_path / (name + ".keras")
-        mt.save_donor(b.branch_models[name], path, b.donor_manifest("branch", name))
+        mt.save_donor(b.branch_models[name], path, b.donor_manifest("branch", name),
+                      provenance=OPERATIONAL_FIXTURE)
         spec.update(regime="R1", donor=str(path))
     core = tmp_path / "core.keras"
-    mt.save_donor(b.core_model, core, b.donor_manifest("core"))
+    mt.save_donor(b.core_model, core, b.donor_manifest("core"), provenance=OPERATIONAL_FIXTURE)
     c["core"].update(regime="R1", donor=str(core))
     return c, b
 
