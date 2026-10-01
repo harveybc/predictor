@@ -141,7 +141,7 @@ def main():
     ax.grid(axis="y", color="#e4e3dc", linewidth=0.8)
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
-    ax.legend(frameon=False, fontsize=8, loc="lower right")
+    ax.legend(frameon=False, fontsize=8, loc="upper left")
     fig.tight_layout()
     fig.savefig(out / "HORIZON_DIAGNOSTIC.png")
     print(json.dumps({"endpoint_check": endpoint, "models": len(models)}))
