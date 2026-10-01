@@ -169,7 +169,7 @@ def test_closed_form_recovers_known_variances():
     q, r = 0.04, 0.5
     _, y = make_ll(60000, q, r, 11)
     c = fit_ll(y)["fitted"]["per_column"][0]
-    assert abs(c["r"] - r) / r < 0.08 and abs(c["q"] - q) / q < 0.15
+    assert abs(c["r"] - r) / r < 0.08 and abs(c["q"] - q) < 0.025   # about 3 standard errors of the moment estimator
     assert not c["r_clipped"] and not c["q_clipped"]
     q, qs, r = 0.02, 2e-4, 0.4
     _, _, y2 = make_llt(80000, q, qs, r, 12)
