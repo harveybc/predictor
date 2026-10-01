@@ -745,7 +745,8 @@
    "branch": null,
    "state": "running",
    "eta_basis": "per-family measured cell walls from the v2 queue once a family completes",
-   "placement": "the 5090; may use the 4090 only until an RL or M07 GPU job is admitted there"
+   "placement": "the 5090; may use the 4090 only until an RL or M07 GPU job is admitted there",
+   "campaign": "d_ecl_l24_h24_corrected_r0_v2: ECL data-gov 7e45845d, L24/H1..24; train NPZ 9215b099 (18,341 windows), validation NPZ e3712565 (2,609 windows); queue never drains while cells remain (R2 lr sweep 4, ABL-H2-OPT 16, seed cells); runners d2-runner-worker-a/-b; worker_b yields to M07 once M07's first GPU job is admitted (M04 report 07:4xZ)"
   },
   {
    "lane": "E2",
