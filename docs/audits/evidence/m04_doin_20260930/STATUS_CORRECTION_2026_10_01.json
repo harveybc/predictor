@@ -3,13 +3,31 @@
  "date": "2026-10-01",
  "by": "Satoshi, successor technical lead (lane D)",
  "corrections": [
-  {"stale": "M04 cost pilot queued / running",
-   "fact": "No M04 pilot is queued or running. The per-feature old-design pilot ended at 23:48:26Z by its own scope (no updates); the grouped32 old-design pilot completed at 00:13Z; batch 1 v3 finished with 16/16 VERIFIED (exact_match) and both runners exited at about 01:25Z."},
-  {"stale": "PILOT_TERMINATED status STOPPED_BY_M04_IN_BUILD",
-   "fact": "Superseded within the same receipt by TERMINATED_IN_BUILD_STAGE_BY_ITS_OWN_SCOPE_LIMIT: systemd scope end 23:48:26Z (3m41.8s wall), ledger LEASE_RELEASED 23:48:28Z; the later M04 SIGTERM found no process. Heartbeat clock stops at wall 181 s because throttling at MemoryHigh starved the writer; peak 5,801,222,144 B is a lower bound of the OLD graph only, not a GPU-training requirement."},
-  {"stale": "v2/v3 results presented without architecture label",
-   "fact": "All batch-1 v2/v3 results (incumbent cc4235d7 0.397174) are evidence of the OLD architecture (branch_steps=12 default, core time factors [2,1,1], compress-based branches/core). They are not evidence of the corrected full-grid design and appear as SUPERSEDED_OLD_ARCH rows in campaign d_ecl_l24_h24_corrected_r0_v1."},
-  {"stale": "COST-01 8 GiB need",
-   "fact": "Number of the old graph only; it is not reused for the corrected design, which is being re-profiled stage by stage (PRE_INTEGRATION_da4ce7b4, then the lane A integrated commit)."}
+  {
+   "stale": "M04 cost pilot queued / running",
+   "fact": "No M04 pilot is queued or running. The per-feature old-design pilot ended at 23:48:26Z by its own scope (no updates); the grouped32 old-design pilot completed at 00:13Z; batch 1 v3 finished with 16/16 VERIFIED (exact_match) and both runners exited at about 01:25Z."
+  },
+  {
+   "stale": "PILOT_TERMINATED status STOPPED_BY_M04_IN_BUILD",
+   "fact": "Superseded within the same receipt by TERMINATED_IN_BUILD_STAGE_BY_ITS_OWN_SCOPE_LIMIT: systemd scope end 23:48:26Z (3m41.8s wall), ledger LEASE_RELEASED 23:48:28Z; the later M04 SIGTERM found no process. Heartbeat clock stops at wall 181 s because throttling at MemoryHigh starved the writer; peak 5,801,222,144 B is a lower bound of the OLD graph only, not a GPU-training requirement."
+  },
+  {
+   "stale": "v2/v3 results presented without architecture label",
+   "fact": "All batch-1 v2/v3 results are evidence of the OLD engine, not of the approved full-grid residual-core default. Two classes: OLD_GRID_12 = branch_steps 12 with core [2,1,1] (default and grouped32 configs; in v3 the 4 grouped32 VERIFIED rows), and OLD_ENGINE_24_NONRESIDUAL = branch_steps 24 but compress-based non-residual core with time factors such as [2,4,1]/[4,1,2]/[1,2,4] built by the 556c5f3e-lineage engine at pin 8f724b12 (draws 0-3; in v3 the other 12 VERIFIED rows, including incumbent cc4235d7 0.397174). Both classes appear as SUPERSEDED_OLD_ARCH rows in campaign d_ecl_l24_h24_corrected_r0_v1, labelled by class."
+  },
+  {
+   "stale": "COST-01 8 GiB need",
+   "fact": "Number of the old graph only; it is not reused for the corrected design, which is being re-profiled stage by stage (PRE_INTEGRATION_da4ce7b4, then the lane A integrated commit)."
+  },
+  {
+   "action": "cancel-if-unstarted, in place",
+   "fact": "2026-10-01: never-started rows set to CANCELLED_SUPERSEDED with the owner order id: v1 (m04_ecl_l24_h24_r0_batch1_20260930, worker_a) 32 rows (20 queued + 12 blocked, 0 attempts); v2 22 rows (2 queued + 20 blocked) plus 2 trained-but-unverified rows (454646ca, ee8f0e09) whose verification was never run; v3 20 rows (blocked). Attempt rows untouched (v2 25, v3 32). Test: test_cancelled_superseded_rows_are_never_claimed_and_attempts_stay."
+  }
+ ],
+ "old_evidence_not_for_binding": [
+  "worker_b default_r0_model_for_donors.json (branch_steps 12, core [2,1,1])",
+  "worker_a m02_synthetic_donors (PRETRAIN branch_steps 12)",
+  "worker_b cost_pilot_grouped32_r0_worker_b (fused [12,176])",
+  "worker_b cost_pilot_default_r0_v1_worker_b (stopped per-feature pilot, COST-01)"
  ]
 }

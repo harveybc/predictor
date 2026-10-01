@@ -5,9 +5,11 @@ Lane M04 of `docs/handoffs/SATOSHI_MODULAR_OPTIMIZATION_2026_09_30.md`, section 
 Evidence for this document is in `docs/audits/evidence/m04_doin_20260930/`.
 
 > **Correction 2026-10-01 (lane D).** Every result in this document is evidence of the
-> OLD architecture (branch_steps=12 default, core time factors [2,1,1], compress-based
-> branches/core). It is not evidence of the owner-corrected full-grid design. These rows
-> are recorded as `SUPERSEDED_OLD_ARCH` in campaign `d_ecl_l24_h24_corrected_r0_v1`.
+> OLD engine, not of the owner-corrected full-grid residual-core design. There are two classes.
+> `OLD_GRID_12` covers branch_steps 12 with core [2,1,1]: the grouped32 rows.
+> `OLD_ENGINE_24_NONRESIDUAL` covers branch_steps 24 with the compress-based non-residual core
+> (time factors [2,4,1], [4,1,2], [1,2,4]): draws 0-3, including the incumbent `cc4235d7`.
+> All of these rows are recorded as `SUPERSEDED_OLD_ARCH` in campaign `d_ecl_l24_h24_corrected_r0_v1`.
 > No M04 pilot is queued or running. See `docs/audits/evidence/m04_doin_20260930/STATUS_CORRECTION_2026_10_01.json`.
 
 ## Result first
