@@ -552,3 +552,30 @@ def test_population_measure_runs_on_the_fx_shaped_population_and_applies_the_rul
         cal, idx = build_check_documents(cells, 3)
         res = check(cal, idx)
         assert res["verdict"] in {"CONTROLS_FAIL_AS_REQUIRED", "BATTERY_SUSPECT"} and res["cells"] == 3 * len(measured)
+
+
+def test_variant_a_price_levels_are_not_estimable_and_range_family_is(tmp_path):
+    from c2_eth_population import EURUSD_1H_RANGE_SPEC, EURUSD_1H_SPEC, PopulationSpec, add_range_features
+    from c2_population_measure import build_check_documents, measure_cell
+    view, man, vsha, msha = _fx_world(tmp_path)
+    spec_a = PopulationSpec(name="FX_A", view_sha256=vsha, manifest_file_sha256=msha, declaration_sha256=EURUSD_1H_SPEC.declaration_sha256, dataset_id="t", view_path="fx.csv",
+                            view_commit="0" * 40, bar_seconds=3600, split_mode="manifest", window=1, hmax=6)
+    pop_a = bind_population(view, man, spec=spec_a)
+    cells = [measure_cell(pop_a, f, 1, scrambles=2, boot=20) for f in pop_a.features]
+    assert all(c["state"] == "TREATMENT_COLLINEAR_WITH_ALL_CONTROLS" for c in cells)     # four price levels are one series
+    assert build_check_documents(cells, 2) == (None, None)
+    doc = json.loads(man.read_text())
+    doc["features"] = ["log_high_low", "close_location", "log_close_open"]
+    doc["feature_count"] = 3
+    doc.pop("admissible_declaration_sha256")
+    man2 = tmp_path / "fx_range_manifest.json"
+    man2.write_text(json.dumps(doc))
+    spec_r = PopulationSpec(name="FX_R", view_sha256=vsha, manifest_file_sha256=sha256_file(man2), declaration_sha256=None, dataset_id="t", view_path="fx.csv",
+                            view_commit="0" * 40, bar_seconds=3600, split_mode="manifest", window=1, hmax=6, derived="range_v1")
+    pop_r = bind_population(view, man2, spec=spec_r)
+    assert pop_r.bindings["manifest"]["derived"] == "range_v1" and pop_r.bindings["manifest"]["derived_close_location_filled_rows"] >= 0
+    f = pop_r.frame
+    assert np.allclose(f["log_high_low"], np.log(f["HIGH"] / f["LOW"])) and np.isfinite(f["close_location"]).all()
+    c = measure_cell(pop_r, "log_high_low", 1, scrambles=2, boot=20)
+    assert c["state"] == "MEASURED" and len(c["scrambled"]) == 2 and "future_shift_template_fired" in c
+    assert EURUSD_1H_RANGE_SPEC.manifest_file_sha256.startswith("2985f589")

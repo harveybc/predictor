@@ -21,7 +21,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from c2_eth_population import ETH_4H_SPEC, EURUSD_1H_SPEC, bind_population, blocked_splits  # noqa: E402
+from c2_eth_population import ETH_4H_SPEC, EURUSD_1H_SPEC, EURUSD_1H_RANGE_SPEC, bind_population, blocked_splits  # noqa: E402
 from c2_causal_dossier import crossfit_residuals, hac_variance, shift_control_detects_future, REDUNDANCY_CORR  # noqa: E402
 from c2_battery_calibration import block_bootstrap_se, integrated_autocorr_length, scrambled_labels, aggregate  # noqa: E402
 from c2_feature_contribution import run as contribution_run  # noqa: E402
@@ -77,6 +77,8 @@ def measure_cell(pop, feature, h, *, scrambles=10, boot=100, seed=20261001):
 
 def build_check_documents(cells, scrambles):
     ms = [c for c in cells if c["state"] == "MEASURED"]
+    if not ms:
+        return None, None
     n_draws = len(ms) * scrambles
     agg = {"cells": n_draws, "nominal_rate": 0.05, "block_length_median": float(np.median([c["block_length"] for c in ms])),
            "block_length_min": int(min(c["block_length"] for c in ms)), "block_length_max": int(max(c["block_length"] for c in ms))}
@@ -101,7 +103,7 @@ def references(pop, horizons, out_dir):
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--population", choices=["eth_4h", "eurusd_1h"], default="eurusd_1h")
+    p.add_argument("--population", choices=["eth_4h", "eurusd_1h", "eurusd_1h_range"], default="eurusd_1h")
     p.add_argument("--view", required=True)
     p.add_argument("--manifest", required=True)
     p.add_argument("--split", default=None)
@@ -111,7 +113,7 @@ def main(argv=None):
     p.add_argument("--scrambles", type=int, default=10)
     p.add_argument("--boot", type=int, default=100)
     args = p.parse_args(argv)
-    spec = {"eth_4h": ETH_4H_SPEC, "eurusd_1h": EURUSD_1H_SPEC}[args.population]
+    spec = {"eth_4h": ETH_4H_SPEC, "eurusd_1h": EURUSD_1H_SPEC, "eurusd_1h_range": EURUSD_1H_RANGE_SPEC}[args.population]
     pop = bind_population(args.view, args.manifest, args.split, spec=spec)
     hs = [int(v) for v in args.horizons.split(",")]
     feats = args.features.split(",") if args.features else list(pop.features)
@@ -130,10 +132,10 @@ def main(argv=None):
             else:
                 print(f"{f} h{h} {c['state']}", flush=True)
     cal, idx = build_check_documents(cells, args.scrambles)
-    verdict = check(cal, idx)
+    verdict = check(cal, idx) if cal else {"verdict": "NOT_ESTIMABLE_ALL_CELLS_COLLINEAR_WITH_THEIR_CONTROLS", "problems": ["NO_MEASURABLE_CELL"], "cells": 0}
     doc = {"schema": "c2_population_measure.v1", "label": "FINDING_NOT_EFFECT_DEVELOPMENT", "population": spec.name, "bindings": pop.bindings,
            "horizons": hs, "scrambles_per_cell": args.scrambles, "bootstrap_resamples": args.boot, "references_blocks5": ref, "cells": cells,
-           "calibration_aggregate": cal["aggregate"], "battery": idx["battery"], "interval_rule_verdict": verdict,
+           "calibration_aggregate": cal["aggregate"] if cal else None, "battery": idx["battery"] if idx else None, "interval_rule_verdict": verdict,
            "cpu_seconds": time.process_time() - t0, "peak_rss_bytes_self": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024}
     (out / "POPULATION_MEASUREMENT.json").write_text(json.dumps(doc, indent=1, sort_keys=True))
     print(json.dumps({"verdict": verdict, "references_h1": ref.get(hs[0])}, indent=1)[:2500])

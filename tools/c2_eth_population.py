@@ -62,6 +62,7 @@ class PopulationSpec:
     window: int = 24
     hmax: int = 6
     availability_class: str = "DEVELOPMENT"
+    derived: str | None = None                # "range_v1": lane B vD1h recipes computed from bar t only
 
 
 ETH_4H_SPEC = PopulationSpec(
@@ -74,6 +75,24 @@ EURUSD_1H_SPEC = PopulationSpec(   # lane B frozen manifest feature-eng satoshi/
     declaration_sha256="6f8fed4197c0d1824969768b5bd69521da115bc7122f49ccd79f897f74e9ccf0",
     dataset_id="git:heuristic-strategy:939f5e6e:tests/data/eurusd_hour_2005_2020.csv", view_path="tests/data/eurusd_hour_2005_2020.csv",
     view_commit="939f5e6e9819c976a6bbb07876cb195bf1374c35", bar_seconds=3600, split_mode="manifest", window=1, hmax=6)
+
+EURUSD_1H_RANGE_SPEC = PopulationSpec(   # lane B vD1h (range family; valid for h = 1 only per lane B), same view and split as variant A
+    name="EURUSD_1h_vD1h_range", view_sha256=EURUSD_1H_SPEC.view_sha256, manifest_file_sha256="2985f5891b66a66e524fab2b11561d62bf782af6db678c3605661ec98c04dc57",
+    declaration_sha256=None, dataset_id=EURUSD_1H_SPEC.dataset_id, view_path=EURUSD_1H_SPEC.view_path, view_commit=EURUSD_1H_SPEC.view_commit,
+    bar_seconds=3600, split_mode="manifest", window=1, hmax=6, derived="range_v1")
+
+
+def add_range_features(frame):
+    """lane B vD1h recipes (bar t only, nothing fitted): ln(H/L); (C-L)/(H-L) with NaN when H == L, filled with the neutral 0.5 and
+    COUNTED (a declared deviation: lane B leaves NaN); ln(C/O). Returns the number of filled rows."""
+    o, h, l, c = (frame[k].to_numpy(dtype=np.float64) for k in ("OPEN", "HIGH", "LOW", "CLOSE"))
+    frame["log_high_low"] = np.log(h / l)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        loc = (c - l) / (h - l)
+    filled = int(np.sum(~np.isfinite(loc)))
+    frame["close_location"] = np.where(np.isfinite(loc), loc, 0.5)
+    frame["log_close_open"] = np.log(c / o)
+    return filled
 
 
 class PopulationRefusal(ValueError):
@@ -216,6 +235,7 @@ def bind_population(view_path, manifest_path, split_path=None, *, expect_view=VI
     else:
         digests = dict(view=spec.view_sha256, manifest=spec.manifest_file_sha256, split=spec.split_file_sha256, declaration=spec.declaration_sha256)
     frame = load_view(view_path, digests["view"])
+    derived_filled = add_range_features(frame) if spec.derived == "range_v1" else None
     manifest = load_manifest(manifest_path, digests["manifest"], digests["declaration"])
     if manifest["resource"]["sha256"] != frame.attrs["sha256"]:
         raise PopulationRefusal("MANIFEST_RESOURCE_SHA_MISMATCH")
@@ -271,7 +291,8 @@ def bind_population(view_path, manifest_path, split_path=None, *, expect_view=VI
         "view": {"path": spec.view_path, "commit": spec.view_commit, "sha256": frame.attrs["sha256"], "rows": int(len(frame)),
                  "dataset_id": spec.dataset_id, "availability_class": spec.availability_class},
         "manifest": {"file_sha256": manifest["_file_sha256"], "canonical_sha256": manifest["manifest_sha256_canonical"],
-                     "declaration_sha256": manifest["admissible_declaration_sha256"], "variant": manifest["variant"], "features": len(features)},
+                     "declaration_sha256": manifest.get("admissible_declaration_sha256"), "variant": manifest["variant"], "features": len(features),
+                     "derived": spec.derived, "derived_close_location_filled_rows": derived_filled},
         "split": {"file_sha256": split_sha, "authority": authority, "train_rows": list(tr), "validation_rows": va, "test_rows": te,
                   "test_status": "PROTECTED_NEVER_READ", "window": window, "purge_bars": hmax,
                   "train_origins": [int(origins.min()), int(origins.max())], "train_windows": int(len(origins)),
