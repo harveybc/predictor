@@ -175,6 +175,32 @@ class Campaign:
         self.db.execute("COMMIT")
         return held
 
+    def import_superseded(self, source_root, reason, status="SUPERSEDED_OLD_ARCH"):
+        """Record every candidate of an older campaign as a terminal, never-dispatched row.
+
+        The old cid/config_id/flat/objective are kept verbatim with their source campaign
+        and source status, so old results stay citable as evidence of their own design.
+        """
+        source = sqlite3.connect(f"file:{Path(source_root) / 'queue.sqlite'}?mode=ro", uri=True)
+        source.row_factory = sqlite3.Row
+        campaign_id = json.loads((Path(source_root) / "CAMPAIGN.json").read_text())["campaign_id"]
+        imported = 0
+        self.db.execute("BEGIN IMMEDIATE")
+        position = self.db.execute("SELECT COALESCE(MAX(position), -1) + 1 FROM candidates").fetchone()[0]
+        for row in source.execute("SELECT * FROM candidates ORDER BY position"):
+            cid = f"{campaign_id}:{row['cid']}"
+            if self.db.execute("SELECT 1 FROM candidates WHERE cid=?", (cid,)).fetchone():
+                continue
+            self.db.execute("INSERT INTO candidates VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+                            (cid, position, f"{campaign_id}:{row['config_id']}", row["seed"], row["label"],
+                             row["flat"], row["nested"], status,
+                             f"{reason} (source {campaign_id}, source status {row['status']})",
+                             now(), row["objective"], now()))
+            position += 1
+            imported += 1
+        self.db.execute("COMMIT")
+        return imported
+
     def release_hold(self, reason):
         cur = self.db.execute("UPDATE candidates SET status='queued', blocked_reason=NULL, updated=? WHERE "
                               "status='blocked' AND blocked_reason=?", (now(), "HOLD:" + reason))

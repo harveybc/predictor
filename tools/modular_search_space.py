@@ -48,6 +48,16 @@ CANDIDATE_SCHEMA = "modular.candidate.v1"
 # Parameters the pinned engine accepts per plugin. A flat value that needs a key
 # outside this table is refused before fit (not silently dropped).
 ENGINE_CAPABILITIES = {
+    # Corrected owner design (da4ce7b4 / lane A integrated commit): branches keep the full
+    # window grid (branch_steps == window), fusion (B, window, sum widths), PE after fusion,
+    # causal Transformer blocks, residual Conv1D reduction stages. Same parameter keys.
+    "modular_temporal.v2_full_grid": {
+        "full_grid": True,
+        "branch": {"causal_conv1d": {"channels", "kernel_size"}},
+        "core": {"transformer_conv": {"d_model", "heads", "blocks", "ff_dim", "dropout",
+                                      "stage_channels", "time_factors", "kernel_size"}},
+    },
+    # Superseded engine (556c5f3e lineage): branches compressed 24 -> branch_steps.
     "modular_temporal.v1": {
         "branch": {"causal_conv1d": {"channels", "kernel_size"}},
         "core": {"transformer_conv": {"d_model", "heads", "blocks", "ff_dim", "dropout",
@@ -228,6 +238,8 @@ def from_flat(flat, base, space):
         _fail("branch.grouping_size exceeds feature count")
     if base["window"] % flat["model.branch_steps"]:
         _fail("window must be divisible by model.branch_steps")
+    if ENGINE_CAPABILITIES[space["engine"]].get("full_grid") and flat["model.branch_steps"] != base["window"]:
+        _fail("full-grid engine: branches preserve the window, model.branch_steps must equal window")
     if base["sample_hours"] * base["window"] < 24:
         _fail("window must cover at least 24 physical hours")
     params = {"channels": flat["branch.channels"], "kernel_size": flat["branch.kernel_size"]}
