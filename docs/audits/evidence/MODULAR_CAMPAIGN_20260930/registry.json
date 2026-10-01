@@ -1433,6 +1433,15 @@
     "d-identity-proof": "d-identity-proof-1790833325-1576524-d54eba (M04 to report its cap derivation and re-declare from the measured peak x1.25)"
    },
    "orders": "M01 resumes ONE PS3-R child at 3G reusing 125 records; M04 reports the identity-proof cap derivation, re-declares at measured peak x1.25, and explains the 12 CANCELLED_SUPERSEDED rows; denominator stays 36"
+  },
+  {
+   "id": "D2-IDLE-01",
+   "lane": "D2",
+   "host_alias": "worker_a",
+   "device": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+   "facts": "5090 idle after d2-runner-worker-a's lease was released at 07:40:19Z (ledger note is the launcher's fixed string, not a diagnosis; cause pending from M04); M04 relaunched the runner at 07:44:08Z; m04-verify-ac976a8c on the 5090 by ~07:47Z",
+   "alarm": "M06 GPU-IDLE alarm fired at 07:45:55Z (331 s >= 300 s) and was forwarded at ~07:46Z",
+   "idle_counter": "included in gpu_idle_seconds_24h (consecutive 0% samples)"
   }
  ],
  "owner_question_20_lake": {
