@@ -698,7 +698,8 @@
    "branch": "satoshi/a-engine-integration-20261001",
    "state": "VERIFIED (by the orchestrator)",
    "first_deliverable": "c0d7b07b architecture proof VERIFIED by the orchestrator (arch_test.log in the pushed tree: 4 passed in 17.20s)",
-   "declaration": "integrated code 3ecdb256 (head 26c13fda evidence-only); suites 128/2/0 checkout, 129/1 xfail installed; legacy boundaries identical; LTS 21/21; receipts docs/audits/evidence/lane_a_engine_20261001/receipts_3ecdb256/ + LANE_A_DECLARATION.md; M02 ports included"
+   "declaration": "integrated code 3ecdb256 (head 26c13fda evidence-only); suites 128/2/0 checkout, 129/1 xfail installed; legacy boundaries identical; LTS 21/21; receipts docs/audits/evidence/lane_a_engine_20261001/receipts_3ecdb256/ + LANE_A_DECLARATION.md; M02 ports included",
+   "suite": "green at a771e37e: 167/2/0, engine byte-identical to 6c15af13 (orchestrator)"
   },
   {
    "lane": "B",
@@ -737,7 +738,7 @@
    ],
    "branch": null,
    "state": "running",
-   "first_deliverable": "M05 report (NOT yet verified by the orchestrator): naive gate implemented; 26 tests green on worker_b incl. the actual-runner zero-invocation proof; remaining mutants/suites queued on worker_b"
+   "first_deliverable": "M05 S09 RETURNED: heuristic-strategy 71fa1a4 (61 passed, 12/12 mutants); lts 2b18e17 addendum 9; owner questions 21-23 filed in ack 51339d9f"
   },
   {
    "lane": "F",
@@ -1045,6 +1046,17 @@
      "path": "docs/audits/work_plan/SATOSHI_CONTINUATION_ACKNOWLEDGEMENT_2026_10_01.md",
      "section": "9.1"
     }
+   },
+   {
+    "ids": "21-23",
+    "what": "M05 S09 questions",
+    "link": {
+     "repo": "predictor",
+     "branch": "satoshi/continuation-ack-20261001",
+     "tip": "51339d9f",
+     "path": "docs/audits/work_plan/SATOSHI_CONTINUATION_ACKNOWLEDGEMENT_2026_10_01.md",
+     "section": "(see ack)"
+    }
    }
   ]
  },
@@ -1318,7 +1330,12 @@
     "ps3r-pilot-3g": "tree peak 1,961,132,032 B of 3,221,225,472 B; own PSI 0.0 (bystander); host PSI 45.8"
    },
    "reading": "cap thrash of d-identity-proof at its own cap (UNVERIFIED); ps3r-pilot-3g bystander; no kernel OOM kill",
-   "host_after": "PSI avg10 0.64 avg60 11.35; MemAvailable 17.8 GB; swap free 5.3 GB; unreclaimable slab 3.03 GB (rising from 2.82 at 04:33Z)"
+   "host_after": "PSI avg10 0.64 avg60 11.35; MemAvailable 17.8 GB; swap free 5.3 GB; unreclaimable slab 3.03 GB (rising from 2.82 at 04:33Z)",
+   "ids": {
+    "PS3R-STOP-02": "ps3r-pilot-3g-1790828074-1428796-50b16c (bystander; M01 resumes one child at 3G reusing 125 records)",
+    "d-identity-proof": "d-identity-proof-1790833325-1576524-d54eba (M04 to report its cap derivation and re-declare from the measured peak x1.25)"
+   },
+   "orders": "M01 resumes ONE PS3-R child at 3G reusing 125 records; M04 reports the identity-proof cap derivation, re-declares at measured peak x1.25, and explains the 12 CANCELLED_SUPERSEDED rows; denominator stays 36"
   }
  ],
  "owner_question_20_lake": {

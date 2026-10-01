@@ -383,12 +383,16 @@ def build(hosts, reg):
                          "eta": {"earliest": None, "latest": None, "basis": "not_estimable", "assumptions": ["job ended"]},
                          "facts": ov.get("facts")})
     jobs += reg.get("completed_jobs", [])
-    wa = probes.get("worker_a", {})
-    if "error" not in wa and SLAB_SERIES:
-        with open(SLAB_SERIES, "a") as fh:
+    for role in ("worker_a", "worker_b"):
+        wa = probes.get(role, {})
+        if "error" in wa or not SLAB_SERIES:
+            continue
+        path = SLAB_SERIES if role == "worker_a" else SLAB_SERIES.replace("worker_a_", "worker_b_")
+        with open(path, "a") as fh:
             fh.write(json.dumps({"at": iso(wa["now"]), "boot_id": wa.get("boot_id"), "uptime_s": wa.get("uptime_s"),
                                  "SUnreclaim_kB": (wa.get("mem") or {}).get("SUnreclaim", 0) // 1024,
                                  "gpu_reinit_this_boot": wa.get("gpu_reinit_this_boot"),
+                                 "SwapFree_B": (wa.get("mem") or {}).get("SwapFree"),
                                  "MemAvailable_B": (wa.get("mem") or {}).get("MemAvailable")}) + "\n")
     quotas = {role: {**{k: (p.get("admission") or {}).get(k) for k in
                         ("host_free_for_new_bytes", "held_unrealised_bytes", "desktop_reserve_bytes", "slice_memory_max",
