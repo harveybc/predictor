@@ -1,0 +1,152 @@
+{
+  "build_seconds_F": 9.348893918999238,
+  "candidate": {
+    "candidate_sha256_m04": "5c0e29e5feb0ad184e4440dc91c2e77a4b882cc252ee59419c456a02c7f9405e",
+    "corrections_from_pinned_default": {
+      "core.time_factors": [
+        [
+          2,
+          1,
+          1
+        ],
+        [
+          2,
+          2,
+          1
+        ]
+      ],
+      "model.branch_steps": [
+        12,
+        24
+      ]
+    },
+    "flat_keys_m01": 1955,
+    "flat_point": {
+      "branch.channels": 16,
+      "branch.dilation_rate": 1,
+      "branch.grouping_size": 1,
+      "branch.kernel_size": 3,
+      "branch.plugin": "causal_conv1d",
+      "branch.regime": "R0",
+      "core.blocks": 2,
+      "core.d_model": 64,
+      "core.dropout": 0.0,
+      "core.ff_dim": 128,
+      "core.heads": 4,
+      "core.kernel_size": 3,
+      "core.regime": "R0",
+      "core.stage_channels_0": 32,
+      "core.stage_channels_1": 16,
+      "core.stage_count": 3,
+      "core.time_factor_0": 2,
+      "core.time_factor_1": 2,
+      "core.time_factor_2": 1,
+      "model.branch_steps": 24,
+      "model.output_channels": 8,
+      "model.output_steps": 6,
+      "train.batch_size": 64,
+      "train.huber_delta": 1.0,
+      "train.learning_rate": 0.001,
+      "train.loss": "huber",
+      "train.max_epochs": 30,
+      "train.min_delta": 0.0,
+      "train.patience": 5,
+      "train.seed": 2021,
+      "train.weight_decay": 0.0001
+    },
+    "model_config_sha256": "4d5402a0d79be0c17d7560b7c6d9fdde9e6f56a5b32e2fff0a4ff7fdb7f67739"
+  },
+  "data": {
+    "channels": 321,
+    "dataset_id": "data-gov:sota_benchmarks:7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+    "manifest_channel_order_sha256": "84f8490d90c050e9558268d2b93754294aeb3f8315b614c21755262b8df444d9",
+    "recomputed_channel_order_sha256": {
+      "json_compact": "65b93da972c0792941ef7320a13c9eb71283540232aa875b9283714bd70e66a1",
+      "newline_joined": "c300f913727677d6e66d708267d2c5f617dcade1ba2e14b2ebc20a77924d537f"
+    },
+    "train_windows": 18341,
+    "validation_windows": 2609
+  },
+  "donors": {
+    "branch_count": 321,
+    "branch_manifest_list_sha256": "d46b98778df2a92ae78d03a8260f62d7a43d9049848778577d4681bd36da5cf6",
+    "branch_manifest_sha256_first": [
+      "277aa930f33f43b8e9785cbdb0a2eecd72fa6d627ccde5577b6f38ca7e1ce9b5",
+      "43fbf727530dada28cd36d175a70a5971d1473468e2fb6ea049750ee757c2a7f"
+    ],
+    "core_manifest_weight_free_sha256": "d7b1ce0acb9b8970eb6977e3a6131b2e2085054c7cd5483088030a7c108c9616",
+    "note": "full core identity also binds upstream donor weight hashes (set by M02's donors)"
+  },
+  "engine": {
+    "components": {
+      "branch": "2.0.0",
+      "core": "2.0.0",
+      "fusion": "1.0.0",
+      "head": "1.0.0"
+    },
+    "keras_version": "3.13.2"
+  },
+  "fused_materialization": {
+    "analytic_bytes": {
+      "train": 9043140096,
+      "validation": 1286383104
+    },
+    "bytes_per_row": 493056,
+    "identity": {
+      "branch_identities_sha256": "d46b98778df2a92ae78d03a8260f62d7a43d9049848778577d4681bd36da5cf6",
+      "dtype": "float32",
+      "fusion": {
+        "group": "modular.fusion",
+        "implementation": "predictor_plugins.modular_temporal:sequence_concat",
+        "name": "sequence_concat",
+        "params": {},
+        "version": "1.0.0"
+      },
+      "grid": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24
+      ],
+      "row_shape": [
+        24,
+        5136
+      ]
+    },
+    "identity_sha256": "ecfb808d668857538927104c1aaf4c0b689d08b2ada7170ee41eaf966defda8b",
+    "measured": {
+      "batch": 64,
+      "file_bytes": 252444800,
+      "npy_header_bytes": 128,
+      "peak_rss_bytes": 1286475776,
+      "rows": 512,
+      "seconds": 9.200932392006507,
+      "seconds_per_row": 0.01797057107813771
+    },
+    "previous_12_step_analytic_bytes": {
+      "train": 4521570048,
+      "validation": 643191552
+    },
+    "scope": "engineering pilot: R0 random weights, real validation windows; prices I/O and memory only"
+  }
+}
