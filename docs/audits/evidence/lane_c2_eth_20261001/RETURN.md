@@ -239,6 +239,30 @@ because that reference is almost collinear with `log_return_1` and the other ret
 * Constraint recorded for selection: PS3-R is not read as selection. Extension (PS3-R/PS5) only on candidates that survive lane B's eligible ledger, with original vs transformed
   vs destroyed-signal control; on ETH 4h TRAIN no variant-A feature clears the zero-return naive, so no candidate survives that gate today.
 
+### 2.4 First EURUSD 1h measurement under the calibrated rule (DEVELOPMENT) -- `eurusd_1h/{fxA_full,fxR_full}/POPULATION_MEASUREMENT.json`
+
+Binding: `PopulationSpec` (tools/c2_eth_population.py; ETH stays the default). Population: heuristic-strategy `939f5e6e` `tests/data/eurusd_hour_2005_2020.csv`
+(sha `72b8271d…`, 93,084 rows), lane B's frozen manifests (variant A file sha `d36cb91e…`, declaration `6f8fed41…`; range family vD1h file sha `2985f589…`),
+split declared by the manifest (TRAIN rows [0, 65158), 2005-05-02 to 2015-10-16; validation and test never read). Scored origins [0, 65151], **61,796**
+(3,356 excluded for weekend gaps: label at exactly h x 3600 s), purge 6. Target: M07's cumulative standardized `log_return_1` (derived causally from CLOSE).
+Intervals: the rule of `c2_interval_rule` (block bootstrap, B = 100, S = 10 scrambled and 10 noise draws per cell). 24 h reference = 24 bars.
+
+**Variant A (OPEN, LOW, HIGH, CLOSE) is not estimable**: the four price levels are one series (every pair above the 0.95 redundancy bound), so all 24 cells are
+`TREATMENT_COLLINEAR_WITH_ALL_CONTROLS` and the rule verdict is `NOT_ESTIMABLE_ALL_CELLS_COLLINEAR_WITH_THEIR_CONTROLS`. The model references still hold on the
+same 61,796 rows (blocks5, MAE_z): zero-return naive 0.639962 (h1) ... 1.644951 (h6); intercept-only 0.639991 ... 1.645053; 24 h seasonal 0.927777 ... 2.375595; ridge on the
+four levels 0.639717 (h1, 0.04 % below zero), 0.914701 (h2, above), 1.646114 (h6, above): no gain beyond the noise, as lane B found.
+
+**Range family (log_high_low, close_location, log_close_open; lane B vD1h, valid for h = 1 only per lane B)** -- 3 features x h = 1..6 = 18 cells x 10 draws = 180 null draws:
+block length L min 7, median 11, max 692 (log_high_low carries tau_X = 692: volatility persistence). Scrambled-label rejection: HAC h+6 0.039, HAC bandwidth L 0.039,
+**block bootstrap 0.061** (tolerance 0.0825 for 180 draws); noise treatment 13/180 = 0.072; future-shift template fired 180/180. **Rule verdict CONTROLS_FAIL_AS_REQUIRED**, so these
+intervals may be read (the stricter n here is small: 180 draws, tolerance 0.0825). `close_location` rejects at h = 1, 2, 3, 4, 6 with a negative theta (-0.10 z per unit at h1,
+se 0.021, calibrated; sign-stable across blocks was not computed in this run); `log_high_low` and `log_close_open` do not reject at any horizon. Real-label rate 5/18 = 0.278.
+Model arms against the controls (blocks5, MAE_z): ridge on the three range features **0.639027 vs zero 0.639962 and intercept-only 0.639991 at h1 (0.146 % below zero)**, 0.913878 vs 0.914482
+at h2 (0.066 %), 1.131535 vs 1.132082 at h3 (0.048 %), 1.321143 vs 1.321527 at h4, 1.489645 vs 1.489797 at h5, 1.644719 vs 1.644951 at h6 (0.014 %). The gain is smallest where lane B says the
+family is not valid (h > 1) and is of the order of the ETH `log_return_1` margin; it is a finding about predictive association, not an effect, and not a financial result.
+`close_location` filled with the neutral 0.5 on 4 rows where HIGH == LOW (declared deviation from lane B's NaN). Cost: variant A 3 s CPU (peak 210 MB, cap declared 750 MB without a pilot:
+over-declared, my error); range pilot 255 MB -> cap 319 MB; range full 73 s CPU, peak 308 MB.
+
 ## 3. Deliverable 3: recommendation table to M03 and M07 -- `recommendation/RECOMMENDATION_TABLE.{csv,md}`
 
 1,162 rows (83 features x 7 horizons x 2 protocols), each with population, split, rows, horizon, the four naives
