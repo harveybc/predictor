@@ -262,12 +262,29 @@ class Campaign:
         return cur.rowcount
 
     # -------------------------------------------------------------- resume --
-    def recover(self):
-        """Interrupted launchers return their candidate to the queue; completed work is kept."""
+    def recover(self, executor=None):
+        """Interrupted launchers return their candidate to the queue; completed work is kept.
+
+        If the orchestrator died while a remote attempt kept running to its end, the
+        attempt's own OUTCOME.json on the worker is adopted (``executor.fetch_outcome``)
+        instead of re-queueing, so a finished candidate is never trained twice.
+        """
         recovered = []
         for row in self.db.execute("SELECT * FROM attempts WHERE status='running'").fetchall():
             pid = row["launcher_pid"]
             if pid and Path(f"/proc/{pid}").exists():
+                continue
+            fetch = getattr(executor, "fetch_outcome", None)
+            outcome = fetch(row["output_root"], row["host"]) if fetch else None
+            if outcome and outcome.get("status") in ("completed", "failed"):
+                if row["kind"] == "train" and outcome.get("status") == "completed":
+                    declared = {s: self.declaration["data"][s]["sha256"] for s in ("train", "validation")}
+                    if outcome.get("data_sha256") != declared:
+                        outcome = {**outcome, "status": "failed", "error": "adopted outcome binds other data"}
+                cand = self.db.execute("SELECT * FROM candidates WHERE cid=?", (row["cid"],)).fetchone()
+                self._record(cand, row["kind"], row["attempt"], {**outcome, "error": (outcome.get("error") or "")
+                                                                 + " [adopted after orchestrator interruption]"})
+                recovered.append((row["cid"], row["kind"], "adopted"))
                 continue
             self.db.execute("UPDATE attempts SET status='interrupted', finished=? WHERE cid=? AND attempt=? AND kind=?",
                             (now(), row["cid"], row["attempt"], row["kind"]))
@@ -338,7 +355,7 @@ class Campaign:
             raise RuntimeError("campaign is not pinned to a full predictor commit; nothing is dispatched")
         done = 0
         host = getattr(executor, "host", "local")
-        self.recover()
+        self.recover(executor)
         while max_candidates is None or done < max_candidates:
             if stop_file and Path(stop_file).exists():
                 break
@@ -608,6 +625,20 @@ class RemoteExecutor:
         self.alias = os.environ[f"M04_SSH_{host}"]
         spec = {**declaration["executor"], **declaration.get("hosts", {}).get(host, {}).get("executor", {})}
         self.python, self.checkout = spec["predictor_python"], spec["predictor_checkout"]
+
+    def fetch_outcome(self, output_root, host):
+        """Read a finished attempt's OUTCOME.json from the worker that ran it (None if absent)."""
+        if host != self.host:
+            return None
+        done = subprocess.run(["ssh", "-o", "BatchMode=yes", self.alias,
+                               f"cat {shlex.quote(str(Path(output_root) / 'OUTCOME.json'))}"],
+                              capture_output=True, text=True, timeout=60)
+        if done.returncode:
+            return None
+        try:
+            return json.loads(done.stdout)
+        except ValueError:
+            return None
 
     def preflight(self, revision):
         """Refuse to start a host runner unless the pinned worktree exists, is at the pin and is clean there."""

@@ -667,3 +667,26 @@ def test_forecast_evidence_optional_seasonal_naive(tmp_path):
     assert h1["seasonal_naive"]["MAE"]["status"] in ("OK", "NOT_AVAILABLE") and "naive_MAE" in h1["seasonal_naive"]
     assert h3["seasonal_naive"]["status"] == "NOT_AVAILABLE"  # h > period
     assert "seasonal_naive" not in fe.build(receipt, validation)  # absent unless declared
+
+
+def test_recover_adopts_a_finished_remote_outcome_instead_of_retraining(tmp_path):
+    campaign = make_campaign(tmp_path)
+    enqueue_default(campaign)
+    row, kind, attempt, root = campaign.claim("worker_a")
+    campaign.db.execute("UPDATE attempts SET launcher_pid=? WHERE cid=?", (2**22 + 777, row["cid"]))  # dead orchestrator
+    outcome = {"status": "completed", "objective": 0.31, "receipt_path": "r", "observed_updates": 9,
+               "data_sha256": {k: campaign.declaration["data"][k]["sha256"] for k in ("train", "validation")}}
+
+    class Adopting(FakeExecutor):
+        host = "worker_a"
+
+        def fetch_outcome(self, output_root, host):
+            return outcome if output_root == str(root) else None
+
+    executor = Adopting(campaign, VALUES)
+    campaign.run(executor)
+    assert row["cid"] not in executor.trained  # never retrained
+    att = campaign.db.execute("SELECT status, objective, error FROM attempts WHERE cid=? AND kind='train'",
+                              (row["cid"],)).fetchall()
+    assert len(att) == 1 and att[0]["status"] == "completed" and att[0]["objective"] == 0.31
+    assert "adopted" in att[0]["error"]
