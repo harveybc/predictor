@@ -453,10 +453,34 @@ def main():
     p.add_argument("--stop-file")
     p.add_argument("--status")
     p.add_argument("--status-seconds", type=int, default=300)
+    p = sub.add_parser("hold", help="park queued cells by label (never dropped); e.g. cells placed on another host")
+    p.add_argument("--root", required=True)
+    p.add_argument("--labels", required=True, help="comma list of cell labels")
+    p.add_argument("--reason", required=True)
+    p = sub.add_parser("release-hold")
+    p.add_argument("--root", required=True)
+    p.add_argument("--reason", required=True)
     p = sub.add_parser("status")
     p.add_argument("--root", required=True)
     p.add_argument("--write")
     args = parser.parse_args()
+    if args.command == "hold":
+        campaign = mdc.Campaign(args.root)
+        labels = set(args.labels.split(","))
+        rows = {r["cid"]: r["label"] for r in campaign.db.execute("SELECT cid, label FROM candidates WHERE status='queued'")}
+        held = campaign.hold(lambda flat: False, args.reason)  # predicate on flat is not label-aware; hold by cid below
+        campaign.db.execute("BEGIN IMMEDIATE")
+        for cid, label in rows.items():
+            if label in labels:
+                campaign.db.execute("UPDATE candidates SET status='blocked', blocked_reason=?, updated=? WHERE cid=? "
+                                    "AND status='queued'", ("HOLD:" + args.reason, mdc.now(), cid))
+                held.append(cid)
+        campaign.db.execute("COMMIT")
+        print(json.dumps({"held": len(held), "labels": sorted(labels)}))
+        return
+    if args.command == "release-hold":
+        print(json.dumps({"released": mdc.Campaign(args.root).release_hold(args.reason)}))
+        return
     if args.command == "declare":
         declare(args)
     elif args.command == "materialize":
