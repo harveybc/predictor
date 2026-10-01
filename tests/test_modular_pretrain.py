@@ -327,6 +327,8 @@ def test_receipt_is_generated_from_artifacts(tmp_path):
     assert receipt["interruptions"] == [] and receipt["resumed_count"] == 0
     assert len(receipt["branches"]) == 2 and receipt["core"]["updates"] > 0
     assert (tmp_path / "p" / "RECEIPT.md").read_text().count("| branch_") == 2
+    series = receipt["memory"]["rss_kib_after_each_branch"]
+    assert len(series) == 2 and all(isinstance(v, int) and v > 0 for v in series)
 
 
 def test_branch_isolation_keeps_identity_and_reports_memory(pretrained):

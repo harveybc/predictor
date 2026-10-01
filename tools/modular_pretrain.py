@@ -774,7 +774,8 @@ def write_receipt(out):
              "updates": b["training"]["observed_updates"], "stop_class": b["training"]["stop_class"],
              "stop_reason": b["training"]["stop_reason"],
              "internal_validation_relative_MSE": b["reconstruction"]["train_validation"]["relative_MSE"],
-             "resumed": b.get("resumed", False), "donor_sha256": b["donor_sha256"]} for b in pre["branches"]]
+             "resumed": b.get("resumed", False), "donor_sha256": b["donor_sha256"],
+             "process_rss_kib_after": b.get("process_rss_kib_after")} for b in pre["branches"]]
     fusion = pre["fusion"]
     core = pre["core"]
     interruptions_path = out / "INTERRUPTIONS.json"
@@ -798,7 +799,10 @@ def write_receipt(out):
                  "donor_sha256": core["donor_sha256"]},
         "memory": {"cumulative_cgroup_peak_bytes": (beats[-1].get("resources", {}) or {}).get("cgroup_memory_peak"),
                    "per_stage": stages,
-                   "per_stage_note": "per-stage value = max of memory.current sampled at heartbeats (lower bound)"},
+                   "per_stage_note": "per-stage value = max of memory.current sampled at heartbeats (lower bound)",
+                   "rss_kib_after_each_branch": [r["process_rss_kib_after"] for r in rows],
+                   "rss_note": "process VmRSS after each branch AE, its graph released and the Keras session cleared; "
+                               "a flat series means memory does not grow with the branch count"},
         "cpu_seconds_total": (beats[-1].get("resources", {}) or {}).get("cpu_seconds"),
         "total_wall_seconds": run["measured"]["total_wall_seconds"]}
     (out / "RECEIPT.json").write_text(json.dumps(receipt, indent=2, allow_nan=False) + "\n")
