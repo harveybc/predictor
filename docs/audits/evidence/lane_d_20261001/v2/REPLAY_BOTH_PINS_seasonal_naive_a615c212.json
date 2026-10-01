@@ -1,0 +1,29 @@
+{
+ "label": "PROOF_NOT_A_RESULT",
+ "host": "worker_b",
+ "device": "CPU (CUDA_VISIBLE_DEVICES='')",
+ "TF_DETERMINISTIC_OPS": "1",
+ "candidate": "grouped32 R0 Huber s2021 (fa246e46 base) + model.target_residual {kind seasonal_naive, period 24, 321 targets} (the seasonal_naive path of cells 32/33), 2 epochs, full ECL train/validation",
+ "pins": {
+  "2b89f4d9": {
+   "MAE": "0.23370016573862198",
+   "weights_sha256": "edf31f0769277d170e736acc26ce37ffe6f4f991bd38f94bf91fd41410984d2a",
+   "initial_weights_sha256": "c5935249a14df211c33aef1bb7f19158aa96e6f47b0dde43620da92d1622fda4",
+   "updates": 574
+  },
+  "a615c212": {
+   "MAE": "0.23370016573862198",
+   "weights_sha256": "edf31f0769277d170e736acc26ce37ffe6f4f991bd38f94bf91fd41410984d2a",
+   "initial_weights_sha256": "c5935249a14df211c33aef1bb7f19158aa96e6f47b0dde43620da92d1622fda4",
+   "updates": 574
+  }
+ },
+ "verdict": "BITWISE_IDENTICAL",
+ "consequence": "cells 32/33 (branch+core R1 seasonal s2023/s2024) at a615c212 stand beside their s2021/s2022 rows at 2b89f4d9; the four-seed table keeps a pin column",
+ "lean_load_A_B": {
+  "2b89f4d9_cgroup_peak_bytes": 3634577408,
+  "a615c212_cgroup_peak_bytes": 2900684800,
+  "reduction": "20.2 percent, same host, same candidate, same epochs, back to back",
+  "source": "crispdm admission retained leases d-replay3-*"
+ }
+}
