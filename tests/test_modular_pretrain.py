@@ -334,3 +334,33 @@ def test_receipt_is_generated_from_artifacts(tmp_path):
 def test_branch_isolation_keeps_identity_and_reports_memory(pretrained):
     for b in pretrained["result"]["branches"]:
         assert isinstance(b["process_rss_kib_after"], int) and b["process_rss_kib_after"] > 0
+
+
+def test_process_isolation_keeps_parent_memory_bounded_across_branches(tmp_path):
+    """MEM-02 regression: with one child process per branch AE the parent's RSS stays flat.
+
+    Measured before the fix (in-process, clear_session per branch): about +6.7 MB per branch.
+    """
+    from predictor_plugins.modular_temporal import default_config
+    names = [f"f{i}" for i in range(6)]
+    config = default_config(names)
+    rng = np.random.default_rng(12)
+    train = rng.normal(size=(16, 24, 6)).astype("float32")
+    val = rng.normal(size=(8, 24, 6)).astype("float32")
+    t, v = populations()
+    result = pretrain_components(config, train, val, tmp_path / "iso", FIT, t, v, seed=2,
+                                 branch_isolation="process")
+    series = [b["process_rss_kib_after"] for b in result["branches"]]
+    assert all(b["isolation"] == "process" for b in result["branches"])
+    assert all(b["child_resources"]["vmhwm_kib"] > 0 for b in result["branches"])
+    # Parent growth from the second to the last branch stays under 4 MB in total
+    # (the in-process path grew about 6.7 MB per branch on ECL).
+    assert series[-1] - series[1] < 4096, series
+    assert not list((tmp_path / "iso").glob(".*.work"))
+
+
+def test_isolation_mode_is_validated(tmp_path):
+    t, v = populations()
+    with pytest.raises(ValueError, match="branch_isolation"):
+        pretrain_components({}, np.zeros((2, 24, 2), "float32"), np.zeros((2, 24, 2), "float32"),
+                            tmp_path / "x", FIT, t, v, branch_isolation="thread")

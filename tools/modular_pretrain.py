@@ -328,9 +328,138 @@ def _stage_config(fit_config, stage_fit_configs, stage):
     return cfg
 
 
+def _fit_branch(job, train_view, val_view, progress):
+    """Fit, export, reload-check and describe ONE branch AE (runs in a child or in-process)."""
+    import tensorflow as tf
+    from predictor_plugins.modular_temporal import (build_autoencoder, build_modular, load_donor,
+                                                    save_donor, weights_hash)
+    from tools.modular_candidate_evaluator import fit_with_early_stopping
+    out, name, index = Path(job["out"]), job["name"], job["index"]
+    cfg, seed, manifest = dict(job["cfg"]), job["seed"], job["expected_manifest"]
+    batch = int(cfg.get("batch_size", 32))
+    stats = _channel_stats(train_view)
+    tf.keras.backend.clear_session()
+    gc.collect()
+    if seed is not None:
+        tf.keras.utils.set_random_seed(int(seed) + index)
+    single = copy.deepcopy(job["base"])
+    single["branches"] = [copy.deepcopy(job["base"]["branches"][index])]
+    branch_bundle = build_modular(single)
+    encoder = branch_bundle.branch_models[name]
+    if branch_bundle.donor_manifest("branch", name) != manifest:
+        raise ValueError(f"one-branch build of {name} differs from the full model's branch identity")
+    ae = build_autoencoder(encoder)
+    started = time.monotonic()
+    training = fit_with_early_stopping(ae, train_view, train_view, val_view, val_view,
+                                       {**cfg, "progress": progress})
+    if training["observed_updates"] < 1:
+        raise ValueError("branch AE made no optimizer update")
+    reconstruction = {
+        "train": _reconstruction(ae, train_view, stats["mean"], stats["std"], batch),
+        "train_validation": _reconstruction(ae, val_view, stats["mean"], stats["std"], batch)}
+    donor = out / f"{name}.keras"  # M04 maps "1:<branch name>" -> <dir>/<branch name>.keras
+    sidecar = save_donor(encoder, donor, manifest)
+    decoder = ae.layers[-1]
+    decoder_path = out / f"{name}.decoder.keras"
+    decoder.save(decoder_path)
+    loaded = load_donor(donor, manifest)
+    parity = _parity(encoder, loaded, val_view, batch)
+    if parity > 1e-6 or weights_hash(loaded) != sidecar["weights_sha256"]:
+        raise ValueError(f"branch {name} donor reload parity failed ({parity})")
+    population = job["train_population"]
+    record = {"stage": "branch_ae", "name": name, "features": job["features"],
+              "donor": str(donor), "donor_sha256": _file_sha(donor),
+              "donor_sidecar_sha256": _file_sha(donor.with_suffix(".manifest.json")),
+              "donor_weights_sha256": sidecar["weights_sha256"],
+              "donor_manifest_sha256": sidecar["manifest_sha256"],
+              "decoder": str(decoder_path), "decoder_sha256": _file_sha(decoder_path),
+              "encoder_parameters": int(encoder.count_params()),
+              "decoder_parameters": int(decoder.count_params()),
+              "train_channel_stats": stats, "training": training,
+              "reconstruction": reconstruction,
+              "reload_parity": {"passed": True, "max_abs_error": parity, "atol": 1e-6,
+                                "rows": int(len(val_view)), "split": "train_validation"},
+              "wall_seconds": time.monotonic() - started}
+    record["provenance"] = _write_provenance(donor, {
+        "schema": "modular.branch_donor.provenance.v1", "stage": "branch_ae", "name": name,
+        "source_config_sha256": job["source_sha"],
+        "admissible_declaration_sha256": population.get("admissible_declaration_sha256"),
+        "input_manifest_sha256": population.get("input_manifest_sha256"),
+        "input_provenance": population.get("provenance", "undeclared"),
+        "label": _label(population), "donor_sha256": record["donor_sha256"],
+        "donor_sidecar_sha256": record["donor_sidecar_sha256"],
+        "train_input_sha256": job["train_identity"]["sha256"],
+        "train_validation_input_sha256": job["validation_identity"]["sha256"]})
+    record.update(source_config_sha256=job["source_sha"], train_input_sha256=job["train_identity"]["sha256"],
+                  train_validation_input_sha256=job["validation_identity"]["sha256"], resumed=False)
+    del ae, decoder, loaded, encoder, branch_bundle
+    gc.collect()
+    return record
+
+
+def _branch_child(job_path):
+    """Child-process entry: one branch, then exit, so its memory returns to the OS."""
+    job = json.loads(Path(job_path).read_text())
+    work = Path(job_path).parent
+    train = np.load(work / "train.npy", mmap_mode="r")
+    validation = np.load(work / "validation.npy", mmap_mode="r")
+    progress_path = work / "progress.json"
+    last = [0.0]
+
+    def progress(info):
+        now = time.monotonic()
+        if now - last[0] >= 2 or info.get("event") in ("monitor", "restored"):
+            last[0] = now
+            tmp = progress_path.with_suffix(".tmp")
+            tmp.write_text(json.dumps(info, default=str))
+            os.replace(tmp, progress_path)
+
+    record = _fit_branch(job, train, validation, progress)
+    record["child_resources"] = _resources()
+    tmp = work / "record.tmp"
+    tmp.write_text(json.dumps(record, allow_nan=False))
+    os.replace(tmp, work / "record.json")
+
+
+def _fit_branch_in_child(job, train_x, validation_x, columns, beat, stage):
+    """Run ``_fit_branch`` in a spawned child; the parent's memory does not grow per branch."""
+    import multiprocessing
+    import shutil
+    work = Path(job["out"]) / f".{job['name']}.work"
+    if work.exists():
+        shutil.rmtree(work)
+    work.mkdir()
+    for split, source in (("train", train_x), ("validation", validation_x)):
+        target = np.lib.format.open_memmap(work / f"{split}.npy", mode="w+", dtype="float32",
+                                           shape=(len(source), source.shape[1], len(columns)))
+        for start in range(0, len(source), 1024):
+            target[start:start + 1024] = np.asarray(source[start:start + 1024])[..., columns]
+        target.flush()
+        del target
+    (work / "job.json").write_text(json.dumps(job, allow_nan=False))
+    child = multiprocessing.get_context("spawn").Process(target=_branch_child, args=(str(work / "job.json"),),
+                                                         name=f"m02-{job['name']}")
+    child.start()
+    while child.is_alive():
+        child.join(5)
+        progress = work / "progress.json"
+        if progress.exists():
+            try:
+                beat.update(stage=stage, fit=json.loads(progress.read_text()), child_pid=child.pid)
+            except (OSError, json.JSONDecodeError):
+                pass
+    if child.exitcode != 0 or not (work / "record.json").exists():
+        raise RuntimeError(f"branch child for {job['name']} failed with exit code {child.exitcode}")
+    record = json.loads((work / "record.json").read_text())
+    record["isolation"] = "process"
+    shutil.rmtree(work)
+    return record
+
+
 def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
                         train_population, validation_population, *,
-                        stage_fit_configs=None, seed=None, heartbeat=None, resume=False):
+                        stage_fit_configs=None, seed=None, heartbeat=None, resume=False,
+                        branch_isolation="process"):
     """Run branch AE -> fixed-donor fused materialization -> core AE.
 
     ``resume=True`` reuses every branch whose ``<name>.record.json`` completion
@@ -344,6 +473,8 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
     caller's config is never mutated.
     """
     _population_pair(train_population, validation_population)
+    if branch_isolation not in ("process", "session"):
+        raise ValueError("branch_isolation must be 'process' or 'session'")
     train_identity = _array_identity(train_x)
     validation_identity = _array_identity(validation_x)
     if train_x.shape[1:] != validation_x.shape[1:]:
@@ -408,66 +539,17 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
             continue
         beat.update(stage=stage, fit=None, eta=None)
         cfg = _stage_config(fit_config, stage_fit_configs, "branch")
-        batch = int(cfg.get("batch_size", 32))
         columns = [names.index(feature) for feature in spec["features"]]
-        train_view, val_view = FeatureView(train_x, columns), FeatureView(validation_x, columns)
-        stats = _channel_stats(train_view)
-        tf.keras.backend.clear_session()
-        gc.collect()
-        if seed is not None:
-            tf.keras.utils.set_random_seed(int(seed) + index)
-        single = copy.deepcopy(base)
-        single["branches"] = [copy.deepcopy(base["branches"][index])]
-        branch_bundle = build_modular(single)
-        encoder = branch_bundle.branch_models[name]
-        if branch_bundle.donor_manifest("branch", name) != expected_manifests[name]:
-            raise ValueError(f"one-branch build of {name} differs from the full model's branch identity")
-        ae = build_autoencoder(encoder)
-        started = time.monotonic()
-        training = fit_with_early_stopping(ae, train_view, train_view, val_view, val_view,
-                                           {**cfg, "progress": beat.progress(stage)})
-        if training["observed_updates"] < 1:
-            raise ValueError("branch AE made no optimizer update")
-        reconstruction = {
-            "train": _reconstruction(ae, train_view, stats["mean"], stats["std"], batch),
-            "train_validation": _reconstruction(ae, val_view, stats["mean"], stats["std"], batch)}
-        manifest = expected_manifests[name]
-        sidecar = save_donor(encoder, donor, manifest)
-        decoder = ae.layers[-1]
-        decoder_path = out / f"{name}.decoder.keras"
-        decoder.save(decoder_path)
-        loaded = load_donor(donor, manifest)
-        parity = _parity(encoder, loaded, val_view, batch)
-        if parity > 1e-6 or weights_hash(loaded) != sidecar["weights_sha256"]:
-            raise ValueError(f"branch {name} donor reload parity failed ({parity})")
-        record = {"stage": "branch_ae", "name": name, "features": spec["features"],
-                  "donor": str(donor), "donor_sha256": _file_sha(donor),
-                  "donor_sidecar_sha256": _file_sha(donor.with_suffix(".manifest.json")),
-                  "donor_weights_sha256": sidecar["weights_sha256"],
-                  "donor_manifest_sha256": sidecar["manifest_sha256"],
-                  "decoder": str(decoder_path), "decoder_sha256": _file_sha(decoder_path),
-                  "encoder_parameters": int(encoder.count_params()),
-                  "decoder_parameters": int(decoder.count_params()),
-                  "train_channel_stats": stats, "training": training,
-                  "reconstruction": reconstruction,
-                  "reload_parity": {"passed": True, "max_abs_error": parity, "atol": 1e-6,
-                                    "rows": int(len(validation_x)), "split": "train_validation"},
-                  "wall_seconds": time.monotonic() - started}
-        record["provenance"] = _write_provenance(donor, {
-            "schema": "modular.branch_donor.provenance.v1", "stage": "branch_ae", "name": name,
-            "source_config_sha256": source_sha,
-            "admissible_declaration_sha256": train_population.get("admissible_declaration_sha256"),
-            "input_manifest_sha256": train_population.get("input_manifest_sha256"),
-            "input_provenance": train_population.get("provenance", "undeclared"),
-            "label": _label(train_population), "donor_sha256": record["donor_sha256"],
-            "donor_sidecar_sha256": record["donor_sidecar_sha256"],
-            "train_input_sha256": train_identity["sha256"],
-            "train_validation_input_sha256": validation_identity["sha256"]})
-        del ae, decoder, loaded, encoder, branch_bundle
-        gc.collect()
+        job = {"base": base, "index": index, "name": name, "features": spec["features"], "cfg": cfg,
+               "seed": seed, "expected_manifest": expected_manifests[name], "out": str(out),
+               "source_sha": source_sha, "train_population": train_population,
+               "train_identity": train_identity, "validation_identity": validation_identity}
+        if branch_isolation == "process":
+            record = _fit_branch_in_child(job, train_x, validation_x, columns, beat, stage)
+        else:
+            record = _fit_branch(job, FeatureView(train_x, columns), FeatureView(validation_x, columns),
+                                 beat.progress(stage))
         record["process_rss_kib_after"] = _resources().get("vmrss_kib")
-        record.update(source_config_sha256=source_sha, train_input_sha256=train_identity["sha256"],
-                      train_validation_input_sha256=validation_identity["sha256"], resumed=False)
         tmp = marker.with_suffix(".tmp")
         tmp.write_text(json.dumps(record, indent=2, allow_nan=False) + "\n")
         os.replace(tmp, marker)  # completion marker, written last
