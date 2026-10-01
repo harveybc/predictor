@@ -51,9 +51,10 @@ PREFIXES = ("modular.", "branches.", "core.", "fusion.", "head.")
 _TOP_KEYS = {"schema", "window", "sample_hours", "feature_names", "branch_steps",
              "output_steps", "output_channels", "horizons", "target_count", "regime",
              "alignment_probe", "entry_point_groups"}
-_OPTIONAL_TOP_KEYS = {"budget_caps", "excluded_features", "donor_contract"}   # flattened only when present (digest-neutral)
-_FIELDS = {"branch": {"features", "plugin", "regime", "donor"},
-           "core": {"plugin", "regime", "donor"},
+_OPTIONAL_TOP_KEYS = {"budget_caps", "excluded_features", "donor_contract", "target_residual"}   # flattened only when present (digest-neutral)
+_WARM = {"freeze_epochs", "unfreeze_learning_rate"}      # R3-only, flattened only when present
+_FIELDS = {"branch": {"features", "plugin", "regime", "donor"} | _WARM,
+           "core": {"plugin", "regime", "donor"} | _WARM,
            "fusion": {"plugin"}, "head": {"plugin"}}
 _IDENT = re.compile(r"[A-Za-z][A-Za-z0-9_]*\Z")
 
@@ -88,11 +89,13 @@ def flatten(config: dict) -> dict:
     out[TOP + "branch_order"] = [b["name"] for b in c["branches"]]
     for spec in c["branches"]:
         for field in sorted(_FIELDS["branch"]):
-            out[f"branches.{spec['name']}.{field}"] = copy.deepcopy(spec[field])
+            if field in spec:
+                out[f"branches.{spec['name']}.{field}"] = copy.deepcopy(spec[field])
         _flat_params(f"branches.{spec['name']}.params.", spec["params"], out)
     for role in ("core", "fusion", "head"):
         for field in sorted(_FIELDS[role]):
-            out[f"{role}.{field}"] = copy.deepcopy(c[role][field])
+            if field in c[role]:
+                out[f"{role}.{field}"] = copy.deepcopy(c[role][field])
         _flat_params(f"{role}.params.", c[role]["params"], out)
     return dict(sorted(out.items()))
 

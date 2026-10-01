@@ -37,7 +37,7 @@ def _apply_regime(model, spec, manifest, donor_contract="OPERATIONAL"):
             model.set_weights(loaded.get_weights())
         except ValueError as exc:
             raise ValueError("Donor weights incompatible with component manifest") from exc
-    model.trainable = spec["regime"] != "R1"
+    model.trainable = spec["regime"] not in ("R1", "R3")      # R3 starts frozen; fit_warm unfreezes it
 
 
 def _upstream(branches, manifests, fusion, identity):

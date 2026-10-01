@@ -56,3 +56,24 @@ class PositionalEncoding(keras.layers.Layer):
         encoding = tf.where(channel % 2 == 0, tf.sin(angle), tf.cos(angle))
         return inputs + tf.cast(encoding[None, :, :], inputs.dtype)
 
+
+
+@keras.utils.register_keras_serializable(package="modular_temporal")
+class SeasonalNaiveBaseline(keras.layers.Layer):
+    """Seasonal naive read from INSIDE the input window: for horizon h with period P, the target
+    channel at window position ``window - 1 - (P - h)`` (time t + h - P). Fixed gathers, no weights.
+    Output ``(batch, len(horizons), len(target channels))`` -- added to the forecast head's output, so
+    the head learns y - seasonal_naive (config ``target_residual``)."""
+
+    def __init__(self, positions, channels, **kwargs):
+        super().__init__(**kwargs)
+        self.positions, self.channels = tuple(positions), tuple(channels)
+
+    def call(self, inputs):
+        return tf.gather(tf.gather(inputs, self.positions, axis=1), self.channels, axis=-1)
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], len(self.positions), len(self.channels))
+
+    def get_config(self):
+        return {**super().get_config(), "positions": list(self.positions), "channels": list(self.channels)}

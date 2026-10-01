@@ -123,6 +123,15 @@ def test_core_donor_binds_exact_upstream_and_refuses_mismatch(pretrained, tmp_pa
     assert prov["fused_materialization"]["train"] == result["fused_train"]["sha256"]
     assert prov["label"].startswith("SYNTHETIC")
     assert prov["runtime"]["keras"] and prov["runtime"]["tensorflow"]
+    from predictor_plugins.modular_temporal.provenance import donor_provenance
+    for b in result["branches"]:
+        declared = donor_provenance(b["donor"])
+        assert declared["conditioning_contract"] == "OPERATIONAL"
+        assert declared["learned_corpus"]["kind"] == "TRAIN_ONLY"
+        assert declared["learned_corpus"]["data_sha256"] == result["train_input"]["sha256"]
+        assert declared["reconstruction"]["mse_z"] == b["reconstruction"]["train_validation"]["MSE"]
+    core = donor_provenance(result["core"]["donor"])
+    assert core["learned_corpus"]["data_sha256"] == result["fused_train"]["sha256"]
     from tools.modular_pretrain import config_sha256
     assert prov["source_config_sha256"] == config_sha256(pretrained["config"])
     for b in result["branches"]:
@@ -364,3 +373,37 @@ def test_isolation_mode_is_validated(tmp_path):
     with pytest.raises(ValueError, match="branch_isolation"):
         pretrain_components({}, np.zeros((2, 24, 2), "float32"), np.zeros((2, 24, 2), "float32"),
                             tmp_path / "x", FIT, t, v, branch_isolation="thread")
+
+
+def test_bound_donors_load_under_operational_contract(pretrained):
+    from predictor_plugins.modular_temporal import load_donor, build_modular
+    from predictor_plugins.modular_temporal.provenance import donor_provenance
+    result = pretrained["result"]
+    assert result["donor_contract_declared"] == "OPERATIONAL/TRAIN_ONLY"
+    bundle = build_modular(regime_config(result["fine_tune_config"], "R1"))  # default contract OPERATIONAL
+    branch = result["branches"][0]
+    load_donor(branch["donor"], bundle.donor_manifest("branch", branch["name"]), require_contract="OPERATIONAL")
+    corpus = donor_provenance(branch["donor"])["learned_corpus"]
+    assert corpus["dataset_id"] == "synthetic_fixture:synthetic"
+
+
+def test_unbound_inputs_save_unknown_and_engine_refuses(tmp_path):
+    from predictor_plugins.modular_temporal import build_modular, default_config
+    from predictor_plugins.modular_temporal.provenance import donor_provenance
+    t, v = populations()
+    t.pop("provenance"); v.pop("provenance")  # undeclared provenance: the tool cannot bind it
+    rng = np.random.default_rng(3)
+    result = pretrain_components(default_config(["a", "b"]), rng.normal(size=(8, 24, 2)).astype("float32"),
+                                 rng.normal(size=(4, 24, 2)).astype("float32"), tmp_path / "u", FIT, t, v, seed=1)
+    assert result["donor_contract_declared"].startswith("UNKNOWN")
+    assert donor_provenance(result["branches"][0]["donor"])["conditioning_contract"] == "UNKNOWN"
+    with pytest.raises(ValueError, match="CONDITIONING_CONTRACT_NOT_OPERATIONAL"):
+        build_modular(regime_config(result["fine_tune_config"], "R1"))
+
+
+def test_governed_input_without_declaration_digests_is_unbound():
+    from tools.modular_pretrain import input_binding
+    assert input_binding({"provenance": "governed_resource", "dataset_id": "x"}) is None
+    bound = input_binding({"provenance": "governed_resource", "dataset_id": "x",
+                           "input_manifest_sha256": "m" * 64, "admissible_declaration_sha256": "d" * 64})
+    assert bound["dataset_id"] == "governed_resource:manifest:" + "m" * 64

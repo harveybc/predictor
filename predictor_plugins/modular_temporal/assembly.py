@@ -189,6 +189,9 @@ class ModularBundle:
                 "branches": {n: self.donor_manifest("branch", n) for n in self.branch_models},
                 "fusion": fusion, "core": self.donor_manifest("core"),
                 "head": _copy(self._head_manifest), "regimes": regime_summary(self.config),
+                **({"target_residual": {**_copy(self.config["target_residual"]), "per_horizon": [
+                    {"horizon": h, "source_offset_steps": -(self.config["target_residual"]["period"] - h)}
+                    for h in self.config["horizons"]]}} if self.config.get("target_residual") else {}),
                 "budget": _budget(self)}
 
     def donor_manifest(self, role, name=None):
@@ -294,7 +297,15 @@ def build_modular(config: dict) -> ModularBundle:
                         horizons=c["horizons"], target_count=c["target_count"],
                         name="forecast_head", params=_copy(c["head"]["params"]))
     head = _validate_component(component, [tuple(latent.shape[1:])], forecast_grid, c["target_count"])
-    model = keras.Model(inputs, head(latent), name="forecast_model")
+    output = head(latent)
+    residual = c.get("target_residual")
+    if residual:
+        from .layers import SeasonalNaiveBaseline
+        positions = [c["window"] - 1 - (residual["period"] - h) for h in c["horizons"]]
+        channels = [c["feature_names"].index(t) for t in residual["target_features"]]
+        baseline = SeasonalNaiveBaseline(positions, channels, name="seasonal_naive_baseline")(inputs)
+        output = keras.layers.Add(name="forecast_plus_seasonal_naive")([output, baseline])
+    model = keras.Model(inputs, output, name="forecast_model")
     head_manifest = {"schema": 1, "role": "head", "plugin": head_identity,
                      "params": effective_params(factory, c["head"]["params"], {}),
                      "horizons": _copy(c["horizons"]), "target_count": c["target_count"],

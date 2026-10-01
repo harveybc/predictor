@@ -47,3 +47,17 @@ At 03:53:27Z I stopped child `ps3r-pilot-measure2` (4G) at a record boundary. Th
 - **Resume conditions:** one child only, and only when the coordinator says M04's pilot is complete.
 
 The runner now also honours a `STOP` file in its state directory. That ends the run cleanly at the next record boundary, so future stops do not need the wrapper to be signalled.
+
+## PS3R-STOP-02: bystander pressure stop (2026-10-01 05:43:19Z)
+
+The admission monitor stopped child `ps3r-pilot-3g`. The stop is recorded as incident `ps3r-pilot-3g-1790828074-1428796-50b16c`, with exit cause `PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND`.
+
+**Why it was a bystander.** The child's own cgroup PSI was 0.0 in every sample. Host PSI was high: the last eight samples read 39.8, 32.1, 24.8, 25.4, 47.3, 55.5, 50.4 and 45.8, against a respond threshold of 37.5. Its tree peaked at 1.96 GB against its 3G cap.
+
+**Likely cause** (M06's reading of the retained leases, not yet verified by the coordinator): M04's `d-identity-proof` ran at a 433 MB cap and thrashed reclaim at that cap (own-cgroup PSI 74), which raised host pressure.
+
+**Records retained:** 125 of 240, written atomically. They are reused by data sha256 plus objective sha.
+
+**Measured rates** in this run: AE 25.1 s per record (48 measured), contrastive 87.3 s per record (47 measured).
+
+**Resume:** on the coordinator's word, one child at 3G, `crispdm-run -q -W 14400`, with no parallel probe. If the child is stopped again as a bystander, the records are kept and the stop is reported; the job is never re-requested at a lower cap.
