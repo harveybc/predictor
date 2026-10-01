@@ -792,3 +792,17 @@ def test_r1r2_table_pairs_by_seed_lists_refusals_and_closure(tmp_path):
     assert c["pretraining_cost"] == {"cpu_seconds": 1.0}
     assert all(r["comparability"].startswith("NOT_COMPARABLE") for r in report["closure"])
     assert report["closure"][0]["model_MAE"] == pytest.approx(0.365)
+
+
+def test_enqueue_with_explicit_seeds_and_per_config_eligibility(tmp_path):
+    campaign = make_campaign(tmp_path, seeds=(2023, 2024))
+    h, m = camp.paired_loss_arms(DEFAULT, 1.0)
+    campaign.enqueue(h, "seeds_default")          # declared 2023/2024
+    campaign.enqueue(m, "sweep", seeds=[2021, 2022])  # contrast on the reference's seeds
+    seeds = sorted(r[0] for r in campaign.db.execute("SELECT seed FROM candidates WHERE label='sweep'"))
+    assert seeds == [2021, 2022]
+    values = {("huber", 2023): 0.4, ("huber", 2024): 0.41, ("mae", 2021): 0.30, ("mae", 2022): 0.31}
+    campaign.run(FakeExecutor(campaign, values))
+    table, ranked = campaign.standings()
+    assert {t["label"]: t["eligible"] for t in table} == {"seeds_default": True, "sweep": True}
+    assert ranked[0]["label"] == "sweep" and ranked[0]["per_seed"] == {"2021": 0.30, "2022": 0.31}

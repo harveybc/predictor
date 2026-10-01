@@ -116,13 +116,18 @@ class Campaign:
         campaign.db.execute("INSERT INTO meta VALUES('campaign_sha256', ?)", (hashlib.sha256(text.encode()).hexdigest(),))
         return campaign
 
-    def enqueue(self, flat_without_seed, label):
-        """Persist one configuration x every paired seed BEFORE any execution."""
+    def enqueue(self, flat_without_seed, label, seeds=None):
+        """Persist one configuration x every paired seed BEFORE any execution.
+
+        ``seeds`` overrides the declared paired seeds for this configuration (e.g. a
+        contrast run on the seeds of its reference); the incumbent rule then requires
+        every seed this configuration was enqueued with.
+        """
         added = []
         self.db.execute("BEGIN IMMEDIATE")
         try:
             position = self.db.execute("SELECT COALESCE(MAX(position), -1) + 1 FROM candidates").fetchone()[0]
-            for seed in self.declaration["paired_seeds"]:
+            for seed in (seeds or self.declaration["paired_seeds"]):
                 flat = {**flat_without_seed, "train.seed": seed}
                 ss.validate_flat(flat, self.space)  # invalid combinations fail before fit and before queueing
                 try:
@@ -427,13 +432,14 @@ class Campaign:
         table = []
         for config_id, rows in groups.items():
             verified = {r["seed"]: r for r in rows if r["status"] == "verified"}
-            eligible = set(verified) == set(seeds) and all(
+            declared = {r["seed"] for r in rows if not str(r["status"]).isupper()}  # live rows, not superseded/refused
+            eligible = bool(declared) and set(verified) == declared and all(
                 r["objective"] is not None and math.isfinite(r["objective"]) for r in verified.values())
-            values = [verified[s]["objective"] for s in seeds if s in verified]
+            values = [verified[s]["objective"] for s in sorted(declared) if s in verified]
             table.append({"config_id": config_id, "label": rows[0]["label"], "eligible": eligible,
                           "mean_objective": sum(values) / len(values) if values else None,
-                          "per_seed": {str(s): verified[s]["objective"] for s in seeds if s in verified},
-                          "cids": [verified[s]["cid"] for s in seeds if s in verified],
+                          "per_seed": {str(s): verified[s]["objective"] for s in sorted(declared) if s in verified},
+                          "cids": [verified[s]["cid"] for s in sorted(declared) if s in verified],
                           "statuses": {str(r["seed"]): r["status"] for r in rows}})
         ranked = sorted((t for t in table if t["eligible"]), key=lambda t: t["mean_objective"], reverse=higher)
         return table, ranked
