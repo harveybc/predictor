@@ -891,5 +891,31 @@
    "campaign": "traffic h96 TimeFilter reference",
    "verified_rows": 3
   }
+ ],
+ "incident_rulings": [
+  {
+   "at": "2026-10-01T03:16:58Z",
+   "host_alias": "worker_b",
+   "incidents": [
+    "m02-ecl-v2-donors-r7g-1790823176-1383180-352a56",
+    "ps3r-pilot-s1-1790824388-1394314-7efb0e",
+    "ps3r-pilot-s0-1790824388-1394310-90baca"
+   ],
+   "cause_class": "PS3R_CAP_THRASH (UNVERIFIED formally; M06 reading accepted by the orchestrator)",
+   "classification": {
+    "m02-ecl-v2-donors-r7g": "BYSTANDER",
+    "ps3r-pilot-s0/s1": "cap thrash at 96% of a 2G cap"
+   },
+   "orchestrator_errors_recorded": [
+    "approved a 2G cap for PS3-R children from synthetic-noise rates without a measured real peak",
+    "co-located the PS3-R children with the 7G donor run on worker_b"
+   ],
+   "orders": [
+    "M02 resumes the donor run once with --resume (explained stop)",
+    "M01 reruns ONE PS3-R child at 4G to measure, then 1.25x the measured peak, one child at a time, never two while the donor run is live",
+    "M04 holds the per-feature pilot re-queue until worker_b is settled"
+   ],
+   "host_state_at_ruling": "worker_b swap in use (5.2 GB free), unreclaimable slab 2.8 GB; M06 alerts if swap free < 2 GB or slab > 4 GB"
+  }
  ]
 }

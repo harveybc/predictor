@@ -167,7 +167,7 @@ def main():
     for l in open("/proc/meminfo"):
         k, v = l.split(":")
         mi[k] = int(v.split()[0]) * 1024
-    out["mem"] = {k: mi.get(k) for k in ("MemTotal", "MemAvailable", "SUnreclaim", "SReclaimable", "Shmem")}
+    out["mem"] = {k: mi.get(k) for k in ("MemTotal", "MemAvailable", "SUnreclaim", "SReclaimable", "Shmem", "SwapTotal", "SwapFree")}
     st = os.statvfs(HOME)
     out["disk_home"] = {"free_bytes": st.f_bavail * st.f_frsize, "total_bytes": st.f_blocks * st.f_frsize}
     try:

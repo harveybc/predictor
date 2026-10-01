@@ -316,3 +316,11 @@
 {"at": "2026-10-01T03:13:57Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 15599.91, "SUnreclaim_kB": 498140, "gpu_reinit_this_boot": "280", "MemAvailable_B": 9146408960}
 {"at": "2026-10-01T03:14:47Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 15649.0, "SUnreclaim_kB": 498484, "gpu_reinit_this_boot": "281", "MemAvailable_B": 9697312768}
 {"at": "2026-10-01T03:15:34Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 15696.1, "SUnreclaim_kB": 499140, "gpu_reinit_this_boot": "282", "MemAvailable_B": 8425050112}
+{"at": "2026-10-01T03:16:21Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 15743.11, "SUnreclaim_kB": 499636, "gpu_reinit_this_boot": "283", "MemAvailable_B": 9203372032}
+{"at": "2026-10-01T03:17:08Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 15790.02, "SUnreclaim_kB": 499640, "gpu_reinit_this_boot": "284", "MemAvailable_B": 12106514432}
+{"at": "2026-10-01T03:17:56Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 15838.67, "SUnreclaim_kB": 502908, "gpu_reinit_this_boot": "284", "MemAvailable_B": 8917757952}
+{"at": "2026-10-01T03:18:43Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 15885.27, "SUnreclaim_kB": 503812, "gpu_reinit_this_boot": "285", "MemAvailable_B": 8830259200}
+{"at": "2026-10-01T03:19:31Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 15933.79, "SUnreclaim_kB": 502008, "gpu_reinit_this_boot": "286", "MemAvailable_B": 9539788800}
+{"at": "2026-10-01T03:20:13Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 15975.33, "SUnreclaim_kB": 502984, "gpu_reinit_this_boot": "287", "MemAvailable_B": 9141882880}
+{"at": "2026-10-01T03:21:02Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 16024.37, "SUnreclaim_kB": 505020, "gpu_reinit_this_boot": "287", "MemAvailable_B": 8846872576}
+{"at": "2026-10-01T03:21:49Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 16071.37, "SUnreclaim_kB": 502284, "gpu_reinit_this_boot": "288", "MemAvailable_B": 12089888768}

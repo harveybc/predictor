@@ -336,6 +336,9 @@ def build(hosts, reg):
                         ("host_free_for_new_bytes", "held_unrealised_bytes", "desktop_reserve_bytes", "slice_memory_max",
                          "slice_memory_current", "slice_charged_bytes", "pressure_some_avg10")},
                      "mem_available_bytes": (p.get("mem") or {}).get("MemAvailable"),
+                     "swap_free_bytes": (p.get("mem") or {}).get("SwapFree"),
+                     "swap_total_bytes": (p.get("mem") or {}).get("SwapTotal"),
+                     "unreclaimable_slab_bytes": (p.get("mem") or {}).get("SUnreclaim"),
                      "disk_home_free_bytes": (p.get("disk_home") or {}).get("free_bytes"),
                      "disk_home_total_bytes": (p.get("disk_home") or {}).get("total_bytes")}
               for role, p in probes.items() if "error" not in p}
