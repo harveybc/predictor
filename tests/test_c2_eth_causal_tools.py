@@ -475,3 +475,58 @@ def test_evidence_split_and_time_semantics_validate_and_stay_separate(confounded
     broken2 = json.loads(json.dumps(doc))
     del broken2["time_semantics"]["availability_time"]
     assert validate(broken2, schema) != []
+
+
+# ---------------------------------------------------------------------------------------------------- population spec (EURUSD 1h binding)
+
+
+def _fx_world(d: Path, seed=21):
+    """Hourly OHLC with weekend gaps, no log_return_1 column, split declared by the manifest only (lane B's EURUSD shape)."""
+    rng = np.random.default_rng(seed)
+    n, step = 2600, 3600
+    times = []
+    t = 1_600_000_000
+    for i in range(n):
+        times.append(t)
+        t += step if (i % 120) != 119 else step + 48 * 3600       # a weekend-like gap every 120 bars
+    times = np.array(times, dtype=np.int64)
+    r = 0.0004 * rng.standard_normal(n)
+    close = 1.2 * np.exp(np.cumsum(r))
+    frame = pd.DataFrame({"DATE_TIME": pd.to_datetime(times, unit="s").strftime("%Y-%m-%d %H:%M:%S"), "OPEN": np.r_[close[0], close[:-1]],
+                          "LOW": close * 0.9995, "HIGH": close * 1.0005, "CLOSE": close})
+    view = d / "fx.csv"
+    frame.to_csv(view, index=False)
+    vsha = sha256_file(view)
+    doc = {"schema": "selected_feature_manifest.v1", "status": "FROZEN_DEVELOPMENT", "variant": "A_all_admissible_control",
+           "resource": {"sha256": vsha}, "admissible_declaration_sha256": "6f8fed4197c0d1824969768b5bd69521da115bc7122f49ccd79f897f74e9ccf0",
+           "features": ["OPEN", "LOW", "HIGH", "CLOSE"], "feature_count": 4, "manifest_sha256_canonical": "0" * 64,
+           "split": {"declared_by": "coordinator ruling: 70/15/15 chronological", "train": {"rows": [0, 1800]}, "validation": {"rows": [1800, 2200]}, "test": {"rows": [2200, 2600]}}}
+    (d / "fx_manifest.json").write_text(json.dumps(doc))
+    return view, d / "fx_manifest.json", vsha, sha256_file(d / "fx_manifest.json")
+
+
+def test_population_spec_binds_a_manifest_split_population_and_refuses_digest_mismatch(tmp_path):
+    from c2_eth_population import PopulationSpec, EURUSD_1H_SPEC, ETH_4H_SPEC
+    view, man, vsha, msha = _fx_world(tmp_path)
+    spec = PopulationSpec(name="FX_test", view_sha256=vsha, manifest_file_sha256=msha, declaration_sha256=EURUSD_1H_SPEC.declaration_sha256,
+                          dataset_id="test.fx", view_path="fx.csv", view_commit="0" * 40, bar_seconds=3600, split_mode="manifest", window=1, hmax=6)
+    pop = bind_population(view, man, spec=spec)
+    assert pop.train_rows == (0, 1800) and pop.bar_seconds == 3600 and "log_return_1" in pop.frame.columns
+    assert pop.origins.max() <= 1800 - 1 - 6 and pop.gap_excluded_windows > 0
+    assert pop.bindings["split"]["test_status"] == "PROTECTED_NEVER_READ" and pop.bindings["population_spec"] == "FX_test"
+    y1 = pop.raw_log_return(1)                                    # a weekend gap row has no 1 h label
+    gap_row = 119
+    assert np.isnan(y1[gap_row]) and np.isfinite(y1[gap_row - 1])
+    z = pop.m07_target(2)
+    assert np.isclose(pop.z_to_log_return(z[10], 2), np.log(pop.frame["CLOSE"][12] / pop.frame["CLOSE"][10]), atol=1e-9)
+    # the same machinery that reads ETH reads this population: blocks and the calibrated interval run on it
+    splits = blocked_splits(pop.origins, 2)
+    assert len(splits) == 5
+    from dataclasses import replace
+    with pytest.raises(PopulationRefusal, match="VIEW_SHA256_MISMATCH"):
+        bind_population(view, man, spec=replace(spec, view_sha256="0" * 64))
+    with pytest.raises(PopulationRefusal, match="MANIFEST_SHA256_MISMATCH"):
+        bind_population(view, man, spec=replace(spec, manifest_file_sha256="0" * 64))
+    with pytest.raises(PopulationRefusal, match="UNKNOWN_SPLIT_MODE"):
+        bind_population(view, man, spec=replace(spec, split_mode="nope"))
+    assert EURUSD_1H_SPEC.view_sha256.startswith("72b8271d") and ETH_4H_SPEC.view_sha256.startswith("1b447c66")
