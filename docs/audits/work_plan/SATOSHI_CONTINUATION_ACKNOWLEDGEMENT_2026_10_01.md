@@ -97,3 +97,37 @@ Findings already surfaced by the lanes in their first minutes, recorded as they 
   gap); every retained event study is NOT_IDENTIFIED for stated reasons (assumed clock 2011-2021; no consensus 2024-12..2026-05).
 - M04: spent about 4,500 GPU-s in v2/v3 attempts and pilots; no numeric grant exists for the lane, so remaining allocation
   cannot be stated; costs are reported as spent and proposed.
+
+## 8. Addendum 05:15Z: independent verification outcome and open owner questions
+
+Independent verification workflow (16 agents, four readers plus two adversarial refuters per load-bearing claim;
+nine claims confirmed by code reading and re-execution on worker_b, two refuted):
+
+- `da4ce7b4` builds the required hourly default in real Keras 3.13.2: branch `(None,24,16)`, fused `(None,24,16F)`,
+  positional encoding then per-step projection to 64, two causal attention blocks with FFN and residual norms, residual
+  Conv1D stages `(None,12,32) -> (None,6,16) -> (None,6,8)` with valid-padded strided skip and block projections, the only
+  Flatten in the forecast head, `FeatureSelect` a weightless `tf.gather(axis=-1)`; `branch_steps != window` and
+  `time_factors [2,1,1]` are rejected. Three findings forwarded to lane A: a stale docstring (`config.py:88`), one legacy
+  test failing on the moved `entry_points` symbol (1 failed / 59 passed), and the three-stage grid being a default rather
+  than an invariant (`[4,1,1]` is accepted; factors are candidate parameters by the plan).
+- Old-design inventory: v3's 16 verified candidates split into 4 with 12-step branches and 12 with 24-step branches but
+  non-residual core factors on the compress engine; the current incumbent belongs to the second class. Unstarted rows
+  in the v1, v2 and v3 queues are being marked `CANCELLED_SUPERSEDED` in place by lane D; finished rows stay as old evidence.
+
+Open owner questions raised by the FS01-FS20 mapping (object, owner, minimal action). Each is treated as a stated
+assumption by the lanes until ruled:
+
+| # | Object | Owner | Minimal action |
+|---|---|---|---|
+| 1 | FS13/FS14 name an RL/SAC comparison arm that is none of lanes A-F | owner | name the RL owner or defer FS13/FS14 |
+| 2 | Home of the PS3-C study code: the causal-inference repo is a legacy fork with an inference-only ATE provider | owner / lane C | confirm the provider package as the home; lane C records what of the fork is not used |
+| 3 | PS3-C needs a concrete episode manifest; 6,555 financial columns lack sealed TRAIN contracts | owner / lanes B+C | lane B sends lane C the contracted financial resources; the rest are NOT_ADMISSIBLE_NO_CONTRACT |
+| 4 | FS07 (small improvements preserved) versus the live strict-minimum incumbent rule | owner / lane D | decide whether incumbency keeps a tolerance band or stays strict minimum |
+| 5 | FS15 denominator: rows (15,256 / 15,228 distinct) versus rows x metric families; 28 superseded d4 rows | owner / lane B | choose the acceptance denominator; lane B reports both meanwhile |
+| 6 | FS03/FS17 need new contract fields in `predictor.modular.v1` (lane A) and the lts inference contract (lane E) | owner | authorize the schema field additions (OPERATIONAL/SYNTHETIC_OFFLINE, corpus provenance, reconstruction NOT_APPLICABLE) |
+| 7 | FS04 oracle: literal `[2,2,1]` versus a derived default that also accepts other exact partitions | owner | confirm "default pinned by test, factors remain candidate parameters" |
+| 8 | FS02 scope: Y_s/Y_l/Y_b are financial targets; TSL lanes forecast all channels | owner | confirm NOT_APPLICABLE for TSL author-protocol lanes |
+| 9 | Reporting denominator "/20" includes FS08/FS09, which belong to optional PS7 | owner | state whether optional criteria count in the denominator |
+| 10 | FS13 holding period source for the purge: S07's variant-E config or the target plugin; S07's reserve is not a clean hold-out | owner | rule the hold-out (new prospective window or declared development) and the holding-period source |
+| 11 | FS01 fold definition: TSL 7/1/2 prefix versus 4y/1y/1y with inner chronological folds; Weather physical time UNSUPPORTED | owner / lane B | confirm the fold rule per dataset family |
+| 12 | Cross-lane dependencies absent from the lane table: FS16 M03+M01, FS19 M03+M06, FS18 M04 needs lane B's PS2 batch | owner | acknowledge; lanes name the other half as a dependency, not as covered |
