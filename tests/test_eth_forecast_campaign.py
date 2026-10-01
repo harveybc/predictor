@@ -108,6 +108,128 @@ def test_executor_refuses_without_measured_caps(campaign):
         fc.LocalCrispdmExecutor(decl, "worker_b")
 
 
+def test_legacy_default_is_one_seed_and_implicit_replica_needs_reason(campaign):
+    root, _ = campaign
+    p = root / "CAMPAIGN.json"
+    decl = json.loads(p.read_text())
+    decl["paired_seeds"] = [2021, 2022]
+    p.write_text(json.dumps(decl))
+    args = type("A", (), {"root": str(root), "cells": "per_feature_mae_adam", "seeds": None})()
+    fc.enqueue(args)
+    with sqlite3.connect(root / "queue.sqlite") as db:
+        assert db.execute("SELECT seed FROM candidates").fetchall() == [(2021,)]
+    args.cells = "per_feature_huber_adam"
+    args.seeds = "2022"
+    fc.enqueue(args)
+    args.seeds = None
+    with pytest.raises(ValueError, match="justification"):
+        fc.enqueue(args)
+
+
+def test_failed_multi_cell_request_is_atomic(campaign):
+    root, _ = campaign
+    args = type("A", (), {"root": str(root), "cells": "per_feature_mae_adam", "seeds": None})()
+    fc.enqueue(args)
+    args.cells = "per_feature_mae_adam,control_mlp_mae_adam"
+    args.seeds = "2022"
+    args.replica_justification = "measure finalist variability"
+    with pytest.raises(ValueError, match="not amended"):
+        fc.enqueue(args)
+    with sqlite3.connect(root / "queue.sqlite") as db:
+        assert db.execute("SELECT seed FROM candidates").fetchall() == [(2021,)]
+
+
+def test_justification_write_failure_cannot_leave_replica(campaign):
+    root, _ = campaign
+    args = type("A", (), {"root": str(root), "cells": "per_feature_mae_adam", "seeds": None})()
+    fc.enqueue(args)
+    with sqlite3.connect(root / "queue.sqlite") as db:
+        db.execute("CREATE TABLE replica_requests(id INTEGER PRIMARY KEY, requested_at TEXT, label TEXT, "
+                   "seeds_json TEXT, justification TEXT)")
+        db.execute("CREATE TRIGGER deny_request BEFORE INSERT ON replica_requests "
+                   "BEGIN SELECT RAISE(ABORT, 'audit unavailable'); END")
+    args.seeds = "2022"
+    args.replica_justification = "measure finalist variability"
+    with pytest.raises(sqlite3.IntegrityError, match="audit unavailable"):
+        fc.enqueue(args)
+    with sqlite3.connect(root / "queue.sqlite") as db:
+        assert db.execute("SELECT seed FROM candidates").fetchall() == [(2021,)]
+
+
+def test_dispatch_guards_historical_queue_and_allows_explicit_authorization(campaign):
+    root, _ = campaign
+    p = root / "CAMPAIGN.json"
+    decl = json.loads(p.read_text())
+    decl["paired_seeds"] = [2021, 2022]
+    decl.pop("replication_policy")
+    p.write_text(json.dumps(decl))
+    legacy = fc.mdc.Campaign(root)
+    legacy.enqueue(fc.cell_flat("per_feature", "mae", "adam", 4), "per_feature_mae_adam")
+    legacy.db.close()
+    runner = fc.F2Campaign(root)
+    first = runner.claim()
+    assert first[0]["seed"] == 2021
+    assert runner.claim() is None  # pending legacy replica is not a new authorization
+    pending = runner.db.execute("SELECT status, blocked_reason FROM candidates WHERE seed=2022").fetchone()
+    assert pending[0] == "queued" and "justification" in pending[1]
+    args = type("A", (), {"root": str(root), "cells": "per_feature_mae_adam", "seeds": "2022",
+                          "replica_justification": "compare finalist seed variability"})()
+    fc.enqueue(args)  # records authorization even though candidate already exists
+    second = runner.claim()
+    assert second[0]["seed"] == 2022
+    assert runner.claim() is None
+    assert runner.db.execute("SELECT COUNT(*) FROM attempts").fetchone()[0] == 2
+    runner.db.execute("UPDATE candidates SET status='completed' WHERE seed=2022")
+    runner.db.execute("UPDATE attempts SET status='completed' WHERE cid=?", (second[0]["cid"],))
+    assert runner.claim()[1] == "verify"
+    runner.db.close()
+
+
+def test_dispatch_requires_reason_even_for_screening_after_other_replicas(campaign):
+    root, _ = campaign
+    legacy = fc.mdc.Campaign(root)
+    flat = fc.cell_flat("per_feature", "mae", "adam", 4)
+    legacy.enqueue(flat, "per_feature_mae_adam", seeds=[2021, 2022, 2023])
+    # Historical seeds need not belong to the new allowed set.
+    legacy.db.execute("UPDATE candidates SET cid=?, seed=2024, status='verified' WHERE seed=2023", ("h" * 64,))
+    legacy.db.execute("UPDATE candidates SET status='verified' WHERE seed=2022")
+    legacy.enqueue(flat, "per_feature_mae_adam", seeds=[2023])
+    legacy.db.close()
+    args = type("A", (), {"root": str(root), "cells": "per_feature_mae_adam", "seeds": "2023",
+                          "replica_justification": "finalist"})()
+    # Authorizations cannot waive the three-replica cap.
+    with pytest.raises(ValueError, match="maximum three"):
+        fc.enqueue(args)
+    runner = fc.F2Campaign(root)
+    assert runner.claim() is None  # even the screening seed is now an additional replica
+    runner.db.close()
+
+
+def test_dispatch_maximum_counts_historical_seeds_even_with_authorization(campaign):
+    root, _ = campaign
+    args = type("A", (), {"root": str(root), "cells": "per_feature_mae_adam", "seeds": "2021,2022,2023",
+                          "replica_justification": "compare finalist variability"})()
+    fc.enqueue(args)
+    runner = fc.F2Campaign(root)
+    assert [runner.claim()[0]["seed"] for _ in range(3)] == [2021, 2022, 2023]
+    assert runner.claim() is None
+    # Three historical replicas already ran; no authorization can admit another.
+    runner.db.execute("UPDATE candidates SET status='verified'")
+    runner.db.execute("UPDATE candidates SET seed=2024 WHERE seed=2021")
+    row = dict(runner.db.execute("SELECT * FROM candidates WHERE seed=2022").fetchone())
+    row.update(cid="z" * 64, position=99, seed=2021, status="queued")
+    columns = list(row)
+    runner.db.execute("INSERT INTO candidates (" + ",".join(columns) + ") VALUES (" +
+                      ",".join("?" for _ in columns) + ")", [row[k] for k in columns])
+    runner.db.execute("INSERT INTO replica_requests(requested_at,label,seeds_json,justification) VALUES(?,?,?,?)",
+                      (fc.mdc.now(), args.cells, "[2021]", "historical authorization"))
+    assert runner.claim() is None
+    reason = runner.db.execute("SELECT blocked_reason FROM candidates WHERE seed=2021").fetchone()[0]
+    assert "maximum three" in reason
+    assert runner.db.execute("SELECT COUNT(*) FROM attempts").fetchone()[0] == 3
+    runner.db.close()
+
+
 def test_residual_cells_inject_cumulative_seasonal_residual(campaign):
     root, _ = campaign
     assert fc.parse_cell("per_feature_mae_adamw_sres") == ("per_feature", "mae", "adamw")

@@ -330,11 +330,41 @@ def amend(args):
 
 # ------------------------------------------------------------------- enqueue --
 
+def _replica_state(campaign, label):
+    rows = campaign.db.execute("SELECT seed FROM candidates WHERE label=? ORDER BY position", (label,)).fetchall()
+    primary = int(rows[0][0]) if rows else None
+    dispatched = {int(r[0]) for r in campaign.db.execute(
+        "SELECT c.seed FROM candidates c WHERE c.label=? AND ("
+        "c.status IN ('running','completed','verifying','verified') OR EXISTS ("
+        "SELECT 1 FROM attempts a WHERE a.cid=c.cid AND a.kind='train'))", (label,))}
+    authorized = set()
+    if campaign.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='replica_requests'").fetchone():
+        for request in campaign.db.execute("SELECT seeds_json, justification FROM replica_requests WHERE label=?", (label,)):
+            if request[1] and str(request[1]).strip():
+                authorized.update(json.loads(request[0]))
+    return primary, dispatched, authorized
+
+
 def enqueue(args):
     campaign = mdc.Campaign(args.root)
+    try:
+        # Serialize policy checks and publish candidates together with their audit.
+        campaign.db.execute("BEGIN IMMEDIATE")
+        result = _enqueue_locked(campaign, args)
+        campaign.db.execute("COMMIT")
+    except Exception:
+        if campaign.db.in_transaction:
+            campaign.db.execute("ROLLBACK")
+        raise
+    finally:
+        campaign.db.close()
+    print(json.dumps(result))
+
+
+def _enqueue_locked(campaign, args):
     decl = campaign.declaration
     explicit = bool(args.seeds)
-    seeds = list(decl["paired_seeds"]) if not explicit else [int(s) for s in args.seeds.split(",")]
+    seeds = list(decl["paired_seeds"][:1]) if not explicit else [int(s) for s in args.seeds.split(",")]
     if len(seeds) != len(set(seeds)):
         raise ValueError("replica seed list contains duplicates")
     allowed = set(decl.get("replication_policy", {}).get("allowed_seeds", ALLOWED_SEEDS))
@@ -350,15 +380,18 @@ def enqueue(args):
     for cell in cells:
         existing = {int(row[0]) for row in campaign.db.execute(
             "SELECT seed FROM candidates WHERE label=?", (cell,))}
-        new_seeds = set(seeds) - existing
         total = existing | set(seeds)
         if len(total) > MAX_TRAINED_REPLICAS:
             raise ValueError(
                 f"maximum three trained replicas per configuration: {cell} would have {sorted(total)}")
-        if explicit and new_seeds and len(total) > 1:
+        primary, dispatched, authorized = _replica_state(campaign, cell)
+        primary = primary if primary is not None else seeds[0]
+        needs_reason = {s for s in seeds if s not in authorized and (
+            s != primary or (s not in dispatched and dispatched))}
+        if needs_reason:
             if not justification or not str(justification).strip():
                 raise ValueError("additional replica requires a predeclared justification")
-            replica_requests.append((cell, sorted(new_seeds), str(justification).strip()))
+            replica_requests.append((cell, sorted(needs_reason), str(justification).strip()))
     added = []
     for cell in cells:
         arch, loss, opt = parse_cell(cell)
@@ -388,9 +421,8 @@ def enqueue(args):
         campaign.db.executemany(
             "INSERT INTO replica_requests(requested_at,label,seeds_json,justification) VALUES(?,?,?,?)",
             [(mdc.now(), label, json.dumps(seeds), reason) for label, seeds, reason in replica_requests])
-        campaign.db.commit()
-    print(json.dumps({"enqueued": len(added), "cids": [c[:16] for c in added],
-                      "replication_policy": {"default": 1, "maximum": MAX_TRAINED_REPLICAS}}))
+    return {"enqueued": len(added), "cids": [c[:16] for c in added],
+            "replication_policy": {"default": 1, "maximum": MAX_TRAINED_REPLICAS}}
 
 
 def _enqueue_with_seeds(campaign, flat_without_seed, label, seeds):
@@ -414,18 +446,21 @@ def _insert_custom(campaign, nested, seed, label, flat):
     cid, config_id = ss.digest(nested), ss.config_identity(nested)
     flat = {**flat, "train.seed": seed}
     db = campaign.db
-    db.execute("BEGIN IMMEDIATE")
+    nested_transaction = db.in_transaction
+    db.execute("SAVEPOINT f2_candidate" if nested_transaction else "BEGIN IMMEDIATE")
     try:
         if db.execute("SELECT 1 FROM candidates WHERE cid=?", (cid,)).fetchone():
-            db.execute("COMMIT")
+            db.execute("RELEASE f2_candidate" if nested_transaction else "COMMIT")
             return []
         position = db.execute("SELECT COALESCE(MAX(position), -1) + 1 FROM candidates").fetchone()[0]
         db.execute("INSERT INTO candidates VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
                    (cid, position, config_id, seed, label, ss.canonical(flat), ss.canonical(nested), "queued", None,
                     mdc.now(), None, mdc.now()))
-        db.execute("COMMIT")
+        db.execute("RELEASE f2_candidate" if nested_transaction else "COMMIT")
     except Exception:
-        db.execute("ROLLBACK")
+        db.execute("ROLLBACK TO f2_candidate" if nested_transaction else "ROLLBACK")
+        if nested_transaction:
+            db.execute("RELEASE f2_candidate")
         raise
     return [cid]
 
@@ -483,6 +518,17 @@ class LocalCrispdmExecutor:
 
 class F2Campaign(mdc.Campaign):
     """M04's queue with the candidate row passed to the executor (cell identity in the receipt)."""
+
+    def train_block_reason(self, row):
+        primary, dispatched, authorized = _replica_state(self, row["label"])
+        seed = int(row["seed"])
+        allowed = set(self.declaration.get("replication_policy", {}).get("allowed_seeds", ALLOWED_SEEDS))
+        if seed not in allowed or len(dispatched | {seed}) > MAX_TRAINED_REPLICAS:
+            return "REPLICA_POLICY: maximum three trained replicas within allowed seeds"
+        additional = seed != primary or (seed not in dispatched and bool(dispatched))
+        if additional and seed not in authorized:
+            return "REPLICA_POLICY: additional replica requires a predeclared justification"
+        return None
 
     def execute(self, row, kind, executor, attempt, output_root):
         if kind != "train":
@@ -573,7 +619,7 @@ def main():
     p = sub.add_parser("enqueue")
     p.add_argument("--root", required=True)
     p.add_argument("--cells", required=True, help="comma list of <architecture>_<loss>_<optimizer>")
-    p.add_argument("--seeds", help="comma list; default the paired seeds")
+    p.add_argument("--seeds", help="comma list; default the first declared screening seed only")
     p.add_argument("--replica-justification", help="required before adding a second or third trained replica")
     p = sub.add_parser("run")
     p.add_argument("--root", required=True)

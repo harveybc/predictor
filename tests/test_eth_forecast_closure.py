@@ -104,3 +104,57 @@ def test_refuses_mixed_campaign_identity_before_aggregation(tmp_path):
     receipt_path.write_text(json.dumps(changed))
     with pytest.raises(ValueError, match="mixed campaign identity"):
         cl.closure([q1, q2], sigma=0.02, seeds=(2021, 2022))
+
+
+def test_single_seed_cli_retains_existing_flags(tmp_path, monkeypatch):
+    q = make_queue(tmp_path, "q.sqlite", [("grouped32_mae_adam", 2021, .9, "verified"),
+                                          ("per_feature_mae_adam", 2021, .8, "verified")])
+    manifest = tmp_path / "MANIFEST.json"
+    manifest.write_text(json.dumps({"target": {"sigma": .02}}))
+    out = tmp_path / "closure"
+    monkeypatch.setattr(sys, "argv", ["closure", "--queue", str(q), "--manifest", str(manifest), "--out", str(out)])
+    cl.main()
+    table = json.loads(out.with_suffix(".json").read_text())
+    assert table["contrasts"][0]["spread_a"] is None
+    assert "unavailable" in table["contrasts"][0]["label_rule"]
+    assert len(out.with_suffix(".csv").read_text().splitlines()) == 13
+
+
+@pytest.mark.parametrize("wrong_digest", [False, True])
+def test_historical_receipt_identity_from_bound_declaration(tmp_path, wrong_digest):
+    q = make_queue(tmp_path, "queue.sqlite", [("grouped32_mae_adam", 2021, .9, "verified")])
+    p = next(tmp_path.glob("*_accepted.json"))
+    r = json.loads(p.read_text())
+    for key in ("artifact", "population", "scale"):
+        r.pop(key)
+    r["data"] = {"dataset_id": "eth:fixture", "target_names": ["log_return_1"],
+                 "horizons": list(range(1, 7)), "metric_space": "z_train",
+                 "scaler_identity": "train:fixture"}
+    r["digests"].update(train_sha256="t" * 64, validation_sha256="v" * 64)
+    p.write_text(json.dumps(r))
+    declaration = {"campaign_id": "eth_fixture", "asset": "ETHUSDT", "base": {"sample_hours": 4},
+                   "data_manifest": {"dataset_id": "eth:fixture", "scaler_identity": "train:fixture"},
+                   "data": {"train": {"sha256": "x" * 64 if wrong_digest else "t" * 64},
+                            "validation": {"sha256": "v" * 64}}}
+    (tmp_path / "CAMPAIGN.json").write_text(json.dumps(declaration))
+    if wrong_digest:
+        with pytest.raises(ValueError, match="digest"):
+            cl.closure([q], sigma=.02)
+    else:
+        identity = cl.closure([q], sigma=.02)["campaign_identity"]
+        assert identity["campaign_id"] == "eth_fixture"
+        assert identity["sample_hours"] == 4
+        assert identity["validation_sha256"] == "v" * 64
+
+
+def test_duplicate_label_seed_cannot_hide_other_identity(tmp_path):
+    a, b = tmp_path / "a", tmp_path / "b"
+    a.mkdir(); b.mkdir()
+    q1 = make_queue(a, "q.sqlite", [("grouped32_mae_adam", 2021, .9, "verified")])
+    q2 = make_queue(b, "q.sqlite", [("grouped32_mae_adam", 2021, .8, "verified")])
+    p = next(b.glob("*_accepted.json"))
+    r = json.loads(p.read_text())
+    r["artifact"]["campaign_id"] = "different"
+    p.write_text(json.dumps(r))
+    with pytest.raises(ValueError, match="conflicting duplicate"):
+        cl.closure([q1, q2], sigma=.02)

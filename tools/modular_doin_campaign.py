@@ -124,7 +124,8 @@ class Campaign:
         every seed this configuration was enqueued with.
         """
         added = []
-        self.db.execute("BEGIN IMMEDIATE")
+        nested_transaction = self.db.in_transaction
+        self.db.execute("SAVEPOINT enqueue_candidates" if nested_transaction else "BEGIN IMMEDIATE")
         try:
             position = self.db.execute("SELECT COALESCE(MAX(position), -1) + 1 FROM candidates").fetchone()[0]
             for seed in (seeds or self.declaration["paired_seeds"]):
@@ -152,9 +153,11 @@ class Campaign:
                                  status, reason, now(), None, now()))
                 position += 1
                 added.append(cid)
-            self.db.execute("COMMIT")
+            self.db.execute("RELEASE enqueue_candidates" if nested_transaction else "COMMIT")
         except Exception:
-            self.db.execute("ROLLBACK")
+            self.db.execute("ROLLBACK TO enqueue_candidates" if nested_transaction else "ROLLBACK")
+            if nested_transaction:
+                self.db.execute("RELEASE enqueue_candidates")
             raise
         return added
 
@@ -313,9 +316,17 @@ class Campaign:
             kind = "verify"
             if row is None:
                 excluded = set(self.declaration.get("placement", {}).get("exclude", {}).get(host, []))
-                row = next((r for r in self.db.execute(
-                    "SELECT * FROM candidates WHERE status='queued' ORDER BY position").fetchall()
-                    if r["config_id"] not in excluded), None)
+                for candidate in self.db.execute(
+                        "SELECT * FROM candidates WHERE status='queued' ORDER BY position").fetchall():
+                    if candidate["config_id"] in excluded:
+                        continue
+                    reason = self.train_block_reason(candidate)
+                    if reason:
+                        self.db.execute("UPDATE candidates SET blocked_reason=?, updated=? WHERE cid=?",
+                                        (reason, now(), candidate["cid"]))
+                        continue
+                    row = candidate
+                    break
                 kind = "train"
             if row is None:
                 self.db.execute("COMMIT")
@@ -329,13 +340,17 @@ class Campaign:
                             " output_root, host) VALUES(?,?,?,?,?,?,?,?,?,?)",
                             (cid, attempt, kind, os.getpid(), now(), "running", resources["cap"], resources["wall"],
                              str(output_root), host))
-            self.db.execute("UPDATE candidates SET status=?, updated=? WHERE cid=?",
+            self.db.execute("UPDATE candidates SET status=?, updated=?, blocked_reason=NULL WHERE cid=?",
                             ("running" if kind == "train" else "verifying", now(), cid))
             self.db.execute("COMMIT")
         except Exception:
             self.db.execute("ROLLBACK")
             raise
         return row, kind, attempt, output_root
+
+    def train_block_reason(self, row):
+        """Campaign-specific admission check, called under the claim write lock."""
+        return None
 
     def resources(self, host):
         return {**self.declaration["resources"],

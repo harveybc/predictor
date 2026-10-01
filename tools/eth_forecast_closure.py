@@ -36,11 +36,30 @@ COMPARABILITY_REASON = ("only the same-row naives and paired cells carrying this
                         "comparable; see literature.reason")
 
 
-def _receipt_identity(receipt):
+def _receipt_identity(receipt, declaration=None):
     """Return the scientific population identity asserted by an accepted receipt."""
     artifact = receipt.get("artifact", {})
     population = receipt.get("population", {})
     scale = receipt.get("scale", {})
+    if not all((artifact, population, scale)):
+        # Runner accepted.json predates the enriched evidence schema. Bind its
+        # data identity to the local declaration using recorded NPZ digests only.
+        if not declaration:
+            raise ValueError("historical receipt requires adjacent CAMPAIGN.json for campaign identity")
+        data = receipt.get("data", {})
+        manifest = declaration.get("data_manifest", {})
+        for split in ("train", "validation"):
+            expected = declaration.get("data", {}).get(split, {}).get("sha256")
+            if not expected or receipt.get("digests", {}).get(split + "_sha256") != expected:
+                raise ValueError(f"historical receipt {split} digest differs from campaign declaration")
+        for field in ("dataset_id", "scaler_identity"):
+            if not manifest.get(field) or data.get(field) != manifest[field]:
+                raise ValueError(f"historical receipt {field} differs from campaign declaration")
+        artifact = {"campaign_id": declaration.get("campaign_id")}
+        population = {"asset": declaration.get("asset"), "dataset_id": data.get("dataset_id"),
+                      "sample_hours": declaration.get("base", {}).get("sample_hours"),
+                      "targets": data.get("target_names")}
+        scale = data
     per_horizon = receipt.get("per_horizon", {})
     if isinstance(per_horizon, dict):
         horizons = sorted(int(h) for h in per_horizon)
@@ -61,6 +80,10 @@ def _receipt_identity(receipt):
     missing = [name for name, value in identity.items() if value in (None, [], "")]
     if missing:
         raise ValueError(f"accepted receipt lacks campaign identity fields: {missing}")
+    if receipt.get("data", {}).get("horizons") not in (None, horizons):
+        raise ValueError("receipt data horizons differ from metrics")
+    for split in ("train", "validation"):
+        identity[split + "_sha256"] = receipt.get("digests", {}).get(split + "_sha256")
     return identity
 
 
@@ -79,6 +102,8 @@ def load_cells(queues):
     cells = {}
     unverified = []
     for queue in queues:
+        declaration_path = Path(queue).parent / "CAMPAIGN.json"
+        declaration = json.loads(declaration_path.read_text()) if declaration_path.exists() else None
         db = sqlite3.connect(f"file:{queue}?mode=ro", uri=True)
         db.row_factory = sqlite3.Row
         for row in db.execute("SELECT * FROM candidates ORDER BY position"):
@@ -96,8 +121,15 @@ def load_cells(queues):
                 raise ValueError(f"{row['cid'][:16]} is marked verified without an exact-match verification")
             if receipt.get("candidate", {}).get("cid") != row["cid"]:
                 raise ValueError(f"receipt {train['receipt_path']} belongs to another candidate")
-            cells.setdefault(row["label"], {})[int(row["seed"])] = {
-                "cid": row["cid"], "receipt": receipt, "verification": verification, "queue": str(queue)}
+            identity = _receipt_identity(receipt, declaration)
+            by_seed = cells.setdefault(row["label"], {})
+            previous = by_seed.get(int(row["seed"]))
+            if previous and (previous["receipt"] != receipt or previous["identity"] != identity):
+                raise ValueError(f"conflicting duplicate receipt for {row['label']} seed {row['seed']}")
+            by_seed[int(row["seed"])] = {
+                "cid": row["cid"], "receipt": receipt, "verification": verification,
+                "identity": identity, "queue": str(queue)}
+        db.close()
     return cells, unverified
 
 
@@ -133,7 +165,7 @@ def seed_rows(entry, sigma):
 
 def closure(queues, *, sigma, seeds=(2021,)):
     cells, unverified = load_cells(queues)
-    identities = {_canonical_identity(_receipt_identity(entry["receipt"]))
+    identities = {_canonical_identity(entry["identity"])
                   for by_seed in cells.values() for entry in by_seed.values()}
     if not identities:
         raise ValueError("closure has no verified receipt from which to derive campaign identity")
@@ -169,13 +201,15 @@ def closure(queues, *, sigma, seeds=(2021,)):
             ca, cb = table["configurations"][a], table["configurations"][b]
             diffs = {s: ca["per_seed"][s]["objective_MAE_z"] - cb["per_seed"][s]["objective_MAE_z"] for s in seeds}
             mean = sum(diffs.values()) / len(diffs)
-            exceeds = abs(mean) > max(ca["spread"], cb["spread"])
+            spread_available = ca["spread"] is not None and cb["spread"] is not None
+            exceeds = spread_available and abs(mean) > max(ca["spread"], cb["spread"])
             table["contrasts"].append({
                 "a": a, "b": b, "paired_difference_a_minus_b": diffs, "mean_difference": mean,
                 "spread_a": ca["spread"], "spread_b": cb["spread"],
                 "label_rule": ("STRICT_MINIMUM; gap exceeds both seed spreads: lower MAE for "
                                f"{a if mean < 0 else b} by {abs(mean):.6f} z") if exceeds
-                else "STRICT_MINIMUM; gap within the requested-seed spread"})
+                else ("STRICT_MINIMUM; gap within the requested-seed spread" if spread_available
+                      else "STRICT_MINIMUM; seed spread unavailable with one seed; descriptive difference only")})
     return table
 
 
