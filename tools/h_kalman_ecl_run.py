@@ -73,7 +73,7 @@ def main():
     ap.add_argument("--mode", choices=("ridge", "mlp"), default="ridge")
     ap.add_argument("--variants", nargs="+", default=["moments_train", "declared_1e-1"])
     ap.add_argument("--seeds", type=int, nargs="+", default=[2021, 2022, 2023, 2024])
-    ap.add_argument("--mlp-rows", type=int, default=300000)
+    ap.add_argument("--mlp-rows", type=int, default=150000)
     ap.add_argument("--name", default="h1-ecl")
     a = ap.parse_args()
     out = Path(a.out)
@@ -140,8 +140,11 @@ def main():
                 for s in range(0, len(pick), 200000):
                     sl = slice(s, s + 200000)
                     oo = o_tr[oi[sl]]
-                    cols = [M[oo - l, ch[sl]] for M in blocks for l in range(24)]
-                    Xtr[sl] = np.stack(cols, axis=1)
+                    j = 0
+                    for M in blocks:                  # column by column into float32: no float64 temporary of the whole slice
+                        for l in range(24):
+                            Xtr[sl, j] = M[oo - l, ch[sl]]
+                            j += 1
                     Ytr[sl] = np.stack([Z[oo + h, ch[sl]] - Z[oo + h - 24, ch[sl]] for h in range(1, 25)], axis=1)
                 Xva = [feats(o_va[i:i + 330]).astype(np.float32) for i in range(0, len(o_va), 330)]   # chunks: no 800 MB float64 temporary
                 v["arms"][arm] = {"seeds": {}, "features_per_channel": len(blocks) * 24, "train_rows_sampled": int(len(pick))}
