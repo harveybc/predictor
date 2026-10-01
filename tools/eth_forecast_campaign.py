@@ -573,7 +573,7 @@ def main():
         if arch == CONTROL:
             nested = control_candidate(decl["base"], loss, opt, args.seed, decl["control"]["hidden"])
         else:
-            nested = ss.from_flat({**cell_flat(arch, loss, opt, len(decl["base"]["feature_names"]), regime_of(cell)), "train.seed": args.seed}, decl["base"], decl["search_space"])
+            nested = ss.from_flat({**cell_flat(arch, loss, opt, len(decl["base"]["feature_names"]), regime_of(args.cell)), "train.seed": args.seed}, decl["base"], decl["search_space"])
             if args.cell.endswith(RESIDUAL_SUFFIX):
                 nested = with_residual(nested)
         Path(args.out).write_text(json.dumps(nested, indent=1, sort_keys=True) + "\n")

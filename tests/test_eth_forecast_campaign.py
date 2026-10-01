@@ -129,3 +129,20 @@ def test_regime_suffix_and_donor_declaration(tmp_path):
     donors, binding = fc.donor_declaration(d, names)
     assert set(donors) == {"1:branch_0", "1:branch_1", "core:1"} and binding["required_contract"] == "OPERATIONAL"
     assert set(binding["donors"][donors["core:1"]]) == {"keras", "manifest", "provenance"}
+
+
+def test_materialize_regime_cell_from_declared_donors(campaign, tmp_path):
+    root, data = campaign
+    import contextlib, io, sys as _s
+    d = tmp_path / "pre"
+    d.mkdir()
+    for n in ("branch_0", "branch_1", "branch_2", "branch_3", "core"):
+        for ext in (".keras", ".manifest.json", ".provenance.json"):
+            (d / (n + ext)).write_bytes(n.encode() + ext.encode())
+    (d / "PRETRAIN.json").write_text("{}")
+    decl = json.loads((root / "CAMPAIGN.json").read_text())
+    donors, _ = fc.donor_declaration(d, decl["base"]["feature_names"])
+    decl["base"]["donors"] = donors
+    nested = fc.ss.from_flat({**fc.cell_flat("per_feature", "mae", "adamw", 4, "R1"), "train.seed": 2021}, decl["base"], decl["search_space"])
+    assert nested["model"]["core"]["regime"] == "R1" and nested["model"]["core"]["donor"].endswith("core.keras")
+    assert all(b["regime"] == "R1" and b["donor"] for b in nested["model"]["branches"])
