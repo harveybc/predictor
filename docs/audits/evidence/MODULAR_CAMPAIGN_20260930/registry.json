@@ -1,5 +1,5 @@
 {
- "plan_revision": "ac125db9",
+ "plan_revision": "256c61a6",
  "agents": [
   {
    "id": "a5b79d5488abdee3a",
@@ -549,13 +549,18 @@
   {
    "at": "2026-10-01T02:44Z",
    "what": "M06 had stamped the lane A declaration event 05:30Z and told the orchestrator '05:3xZ'; the host clock read 02:3xZ. Corrected to 02:35Z (time of recording)."
+  },
+  {
+   "at": "2026-10-01T03:20Z",
+   "what": "ps3r-pilot-s0/s1 were reported by M06 as lane C pilots; they are lane A (M01) PS3-R pilot children (2G, CPU, PILOT_ENGINEERING) approved by the orchestrator."
   }
  ],
  "plan_links": {
-  "orders": "docs/handoffs/SATOSHI_PROGRESSIVE_SELECTION_AND_MODULAR_CONTINUATION_2026_09_30.md @ ac125db9",
+  "orders": "docs/handoffs/SATOSHI_PROGRESSIVE_SELECTION_AND_MODULAR_CONTINUATION_2026_09_30.md @ ac125db9 (superseded revision for plan_revision; still governing for lanes A-F)",
   "reconciliation": "docs/handoffs/SATOSHI_MODULAR_RECONCILIATION_2026_09_30.md @ ac125db9",
   "acknowledgement": "predictor satoshi/continuation-ack-20261001 @ 5b5d44d1 (earlier 637107ee)",
-  "previous_campaign_return": "docs/audits/evidence/MODULAR_CAMPAIGN_20260930/RETURN.md @ 09f129c5"
+  "previous_campaign_return": "docs/audits/evidence/MODULAR_CAMPAIGN_20260930/RETURN.md @ 09f129c5",
+  "coverage_addendum": "docs/handoffs/SATOSHI_SOURCE_TRANSFORM_COVERAGE_ADDENDUM_2026_10_01.md @ 256c61a6"
  },
  "lanes": [
   {
@@ -642,6 +647,10 @@
   "d-.*": {
    "lane": "D",
    "producer_commit": "3ecdb256"
+  },
+  "ps3r-pilot-.*": {
+   "lane": "A",
+   "producer_commit": "lane A (M01 a5b79d5488abdee3a) PS3-R pilot child, approved by the orchestrator; 2G CPU; PILOT_ENGINEERING (lane C only specified the representation shortlist)"
   }
  },
  "job_overrides": {
@@ -859,5 +868,28 @@
  ],
  "facts_confirmed": {
   "d-runner-worker-a": "lease cap 536,870,912 B (512M) read from lease d-runner-worker-a-1790823630-924062-217068; observed 16.7 MB at 03:02Z"
- }
+ },
+ "coverage_catalogue": {
+  "old_denominator": {
+   "distinct_columns": 15228,
+   "covered": 3538,
+   "source": "lane B (M03) feature-eng docs/feature_metrics/m03/inventory_v3/coverage_summary.json, as reported by the orchestrator; NOT a census of every usable source"
+  },
+  "new_source_and_transform_denominators": "PENDING lane B publication",
+  "known_absent_from_accounting": [
+   "engineered transform files outside demonstrated selection coverage (e.g. multitaper/emd/fracdiff parquet, ~1,400 paths) until producers/aliases are resolved (addendum item 3)",
+   "market-regime provider coverage not established (addendum item 6)",
+   "source entitlement-to-use matrix not yet published (addendum next return)"
+  ]
+ },
+ "coverage_evaluated_retained": [
+  {
+   "campaign": "m04 batch1 v3 (old architecture, superseded)",
+   "verified_rows": 16
+  },
+  {
+   "campaign": "traffic h96 TimeFilter reference",
+   "verified_rows": 3
+  }
+ ]
 }

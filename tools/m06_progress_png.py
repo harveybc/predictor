@@ -99,6 +99,21 @@ def main(status_path, out_path):
                           f"{r.get('note', '')[:40]}", fontsize=7.0, family="monospace", color=INK, va="top")
         y -= 0.02
     y -= 0.03
+    cov = st.get("coverage") or {}
+    if cov:
+        cc = cov.get("catalogue_coverage", {})
+        od = cc.get("old_denominator", {})
+        ax.text(0, y, "Coverage (three counts kept apart)", fontsize=10, color=INK, weight="bold", va="top")
+        y -= 0.026
+        ax.text(0.018, y, f"catalogue {od.get('covered')}/{od.get('distinct_columns')} columns (old denominator, not a census); "
+                          f"new denominators: {cc.get('new_source_and_transform_denominators')}; "
+                          f"{cc.get('complete_coverage_claim', '')[:60]}", fontsize=7.0, family="monospace", color=INK, va="top")
+        y -= 0.02
+        mi = "; ".join(f"{m['campaign'][:30]}: {m.get('distinct_input_channel_counts')} channels" for m in cov.get("model_input_count", []))
+        ev = "; ".join(f"{e['campaign'][:30]}: {e['verified_rows']}" for e in cov.get("evaluated_candidate_count", []))
+        ax.text(0.018, y, f"model inputs: {mi}   evaluated (verified rows): {ev}"[:200], fontsize=7.0, family="monospace",
+                color=INK, va="top")
+        y -= 0.03
     ax.text(0, y, "Open owner decisions", fontsize=10, color=INK, weight="bold", va="top")
     y -= 0.028
     for n in [a for a in st.get("next_actions", []) if a.startswith("owner")][:6]:

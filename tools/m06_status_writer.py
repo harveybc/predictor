@@ -175,6 +175,42 @@ def campaign_progress(reg, now):
     return out
 
 
+def coverage_block(reg, campaigns_out):
+    """Three counts kept apart (owner addendum 256c61a6): catalogue coverage, model-input count,
+    evaluated-candidate count.  A complete-coverage claim is REFUSED while any known source or
+    transform family is absent from lane B's accounting."""
+    import sqlite3
+    cat = reg.get("coverage_catalogue", {})
+    absent = cat.get("known_absent_from_accounting", [])
+    inputs = []
+    for q in reg.get("campaign_queues", []):
+        try:
+            c = sqlite3.connect(f"file:{os.path.expanduser(q['path'])}?mode=ro", uri=True, timeout=5)
+            rows = c.execute("select label, status, nested from candidates where status not in (%s)" %
+                             ",".join("?" * len(q.get("excluded_statuses", []) or [""])),
+                             q.get("excluded_statuses", []) or [""]).fetchall()
+            c.close()
+        except Exception as e:
+            inputs.append({"campaign": q["name"], "error": type(e).__name__})
+            continue
+        per = {}
+        for label, status, nested in rows:
+            m = (json.loads(nested) if nested else {}).get("model", {})
+            chans = sorted({f for b in m.get("branches", []) for f in b.get("features", [])})
+            per.setdefault(label, {"input_channels": len(chans), "branches": len(m.get("branches", [])),
+                                   "targets": m.get("target_count"), "statuses": []})["statuses"].append(status)
+        inputs.append({"campaign": q["name"], "per_config": per,
+                       "distinct_input_channel_counts": sorted({v["input_channels"] for v in per.values()})})
+    evaluated = [{"campaign": c["campaign"], "verified_rows": (c.get("status_counts") or {}).get("verified", 0)}
+                 for c in campaigns_out if "status_counts" in c]
+    evaluated += reg.get("coverage_evaluated_retained", [])
+    return {"catalogue_coverage": {**cat, "complete_coverage_claim":
+                                   "REFUSED: known sources/families absent from lane B's accounting: " + "; ".join(absent)
+                                   if absent else "not asserted (no census of every usable source exists)"},
+            "model_input_count": inputs, "evaluated_candidate_count": evaluated,
+            "rule": "three counts are never summed or substituted for one another"}
+
+
 def lanes():
     out = []
     for repo in sorted(os.listdir(GITHUB)):
@@ -307,7 +343,8 @@ def build(hosts, reg):
             "plan_revision": reg.get("plan_revision"), "plan_links": reg.get("plan_links", {}),
             "writer": {"script": "tools/m06_status_writer.py + tools/m06_fleet_probe.py", "version": 2, "pid": os.getpid()},
             "agents": reg.get("agents", []), "lanes": reg.get("lanes", []), "devices": devices, "jobs": jobs,
-            "campaigns": campaign_progress(reg, now),
+            "campaigns": (camps := campaign_progress(reg, now)),
+            "coverage": coverage_block(reg, camps),
             "unparsed_processes": unparsed, "terminal_incidents_24h": failed, "quotas_measured": quotas,
             "results": reg.get("results", []), "milestones": reg.get("milestones", []),
             "next_actions": reg.get("next_actions", []), "events": reg.get("events", []),

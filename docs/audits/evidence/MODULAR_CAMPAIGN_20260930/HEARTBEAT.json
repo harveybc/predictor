@@ -1,6 +1,6 @@
 {
- "at": "2026-10-01T03:04:19Z",
- "pid": 929066,
- "status_written_at": "2026-10-01T03:04:19Z",
- "job_signature": "[[\"d-pilot-grouped32 (corrected, pin df9ae31c)\", \"completed\", \"completed\"], [\"d-pilot-perfeature\", \"queued\", \"queued\"], [\"d-runner-worker-a\", \"running\", \"running_stage_unknown\"], [\"laneA-timing\", \"queued\", \"queued\"], [\"m02-cert-ba2c634f\", \"running\", \"running_stage_unknown\"], [\"m02-ecl-donors-r0-resume1\", \"completed\", \"STOPPED_AT_SAFE_BOUNDARY (old design superseded)\"], [\"m02-ecl-v2-donors-r7g\", \"running\", \"fitting\"], [\"m04-modular-cost-pilot (old design, worker_b)\", \"failed\", \"failed\"], [\"m04-train-adf2e5f5\", \"running\", \"fitting\"], [\"m04_ecl_l24_h24_batch1_v3\", \"completed\", \"completed\"], [\"m06-status-writer\", \"running\", \"running_stage_unknown\"], [\"traffic_L96_h96_s2021\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2022\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2023\", \"completed\", \"completed\"]]"
+ "at": "2026-10-01T03:15:35Z",
+ "pid": 943808,
+ "status_written_at": "2026-10-01T03:15:35Z",
+ "job_signature": "[[\"d-pilot-grouped32 (corrected, pin df9ae31c)\", \"completed\", \"completed\"], [\"d-pilot-perfeature\", \"queued\", \"queued\"], [\"d-runner-worker-a\", \"running\", \"running_stage_unknown\"], [\"laneA-suite\", \"queued\", \"queued\"], [\"m02-ecl-donors-r0-resume1\", \"completed\", \"STOPPED_AT_SAFE_BOUNDARY (old design superseded)\"], [\"m02-ecl-v2-donors-r7g\", \"running\", \"fitting\"], [\"m04-modular-cost-pilot (old design, worker_b)\", \"failed\", \"failed\"], [\"m04-train-7bbe85ee\", \"running\", \"fitting\"], [\"m04_ecl_l24_h24_batch1_v3\", \"completed\", \"completed\"], [\"m06-event-watch\", \"running\", \"running_stage_unknown\"], [\"m06-status-writer\", \"running\", \"running_stage_unknown\"], [\"ps3r-pilot-s0\", \"running\", \"running_stage_unknown\"], [\"ps3r-pilot-s1\", \"running\", \"running_stage_unknown\"], [\"traffic_L96_h96_s2021\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2022\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2023\", \"completed\", \"completed\"]]"
 }
