@@ -1,6 +1,6 @@
 {
- "at": "2026-10-01T04:03:47Z",
+ "at": "2026-10-01T04:16:26Z",
  "pid": 1000321,
- "status_written_at": "2026-10-01T04:03:47Z",
- "job_signature": "[[\"d-pilot-grouped32 (corrected, pin df9ae31c)\", \"completed\", \"completed\"], [\"d-pilot-perfeature\", \"queued\", \"queued\"], [\"m02-ecl-donors-r0-resume1\", \"completed\", \"STOPPED_AT_SAFE_BOUNDARY (old design superseded)\"], [\"m02-ecl-v2-donors-r7g2\", \"running\", \"fitting\"], [\"m04-modular-cost-pilot (old design, worker_b)\", \"failed\", \"failed\"], [\"m04_ecl_l24_h24_batch1_v3\", \"completed\", \"completed\"], [\"m06-event-watch\", \"running\", \"running_stage_unknown\"], [\"m06-status-writer\", \"running\", \"running_stage_unknown\"], [\"traffic_L96_h96_s2021\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2022\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2023\", \"completed\", \"completed\"]]"
+ "status_written_at": "2026-10-01T04:16:26Z",
+ "job_signature": "[[\"d-pilot-grouped32 (corrected, pin df9ae31c)\", \"completed\", \"completed\"], [\"d-pilot-perfeature\", \"running\", \"validating\"], [\"laneB-native-wavelet-tests\", \"queued\", \"queued\"], [\"m02-ecl-donors-r0-resume1\", \"completed\", \"STOPPED_AT_SAFE_BOUNDARY (old design superseded)\"], [\"m02-ecl-v2-donors-r7g2\", \"running\", \"fitting\"], [\"m04-modular-cost-pilot (old design, worker_b)\", \"failed\", \"failed\"], [\"m04_ecl_l24_h24_batch1_v3\", \"completed\", \"completed\"], [\"m05-gate-mut\", \"queued\", \"queued\"], [\"m06-coverage-laneB\", \"queued\", \"queued\"], [\"m06-event-watch\", \"running\", \"running_stage_unknown\"], [\"m06-status-writer\", \"running\", \"running_stage_unknown\"], [\"ps3r-pilot-3g\", \"running\", \"running_stage_unknown\"], [\"traffic_L96_h96_s2021\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2022\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2023\", \"completed\", \"completed\"]]"
 }

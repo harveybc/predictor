@@ -23,8 +23,8 @@
  "transform_ledger": {
   "rows": 77,
   "by_state": {
-   "deferred": 20,
-   "excluded": 16,
+   "deferred": 19,
+   "excluded": 17,
    "profiled": 15,
    "NOT_APPLICABLE": 13,
    "materialized": 6,
@@ -71,15 +71,15 @@
  },
  "inputs": {
   "denominators": {
-   "from": "feature-eng@8215886:docs/feature_metrics/laneB/sources/DENOMINATORS.v1.json",
+   "from": "feature-eng@686f9e5:docs/feature_metrics/laneB/sources/DENOMINATORS.v1.json",
    "sha256": "92db97028699e8834d22e895178c70f4b05c34b3a400098970c6294d405045b1"
   },
   "transform_ledger": {
-   "from": "feature-eng@8215886:docs/feature_metrics/laneB/sources/TRANSFORM_LEDGER.v1.csv",
-   "sha256": "5766f8e806c7029860c5df6aac310f2b6215e0a48bddc5709f6ec24b40f65978"
+   "from": "feature-eng@686f9e5:docs/feature_metrics/laneB/sources/TRANSFORM_LEDGER.v1.csv",
+   "sha256": "70296348482bbd030f9119f1816b7a4bcb1763581308300836245f33e4207c2d"
   },
   "source_table": {
-   "from": "feature-eng@8215886:docs/feature_metrics/laneB/sources/SOURCE_TABLE.v1.csv",
+   "from": "feature-eng@686f9e5:docs/feature_metrics/laneB/sources/SOURCE_TABLE.v1.csv",
    "sha256": "05317f6080ad3e91ed5599713d9c25e82759e275db432140edea8c7ff23ae2f5"
   },
   "feature_dag": {

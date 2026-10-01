@@ -17,7 +17,8 @@ def cid(n):
 def receipt(obj, model, skills):
     return {"exact_match": True, "objective": {"rescored_value": obj}, "digests": {"model_sha256": model},
             "metrics": {"MAE": obj, "baseline_MAE": 0.85, "skill_MAE": 1 - obj / 0.85},
-            "per_horizon": {str(h): {"skill_MAE": s} for h, s in enumerate(skills, start=1)}}
+            "per_horizon": {str(h): {"skill_MAE": s, "MAE": obj, "baseline_MAE": 0.85}
+                            for h, s in enumerate(skills, start=1)}}
 
 
 def fixture():
@@ -144,3 +145,38 @@ def test_queue_export_reads_sqlite_read_only(tmp_path):
     q = X.export(str(db), "camp", {"metric": "MAE", "split": "validation", "unit": "z_train"})
     assert q["meta"]["campaign_sha256"] == "s3" and q["standings"][0]["mean_objective"] == pytest.approx(0.45)
     assert db.read_bytes() == before
+
+
+def _diag(q, rec, shift=0.0):
+    return {"label": "DIAGNOSTIC_NOT_A_RESULT", "population": {"rows": 10, "horizons": 3, "targets": 2},
+            "baselines": [{"horizon": h, "naive_MAE": 0.85, "seasonal_naive_MAE": 0.25} for h in (1, 2, 3)],
+            "models": [{"cid": c["cid"], "per_horizon": [{"horizon": h, "receipt_MAE_gpu": rec[c["cid"][:16]]["per_horizon"][str(h)]["MAE"] + shift}
+                                                       for h in (1, 2, 3)]}
+                       for c in q["candidates"] if c["status"] == "verified"]}
+
+
+def test_seasonal_naive_is_shown_beside_persistence_with_separate_skill():
+    q, rec = fixture()
+    for r in rec.values():
+        r["validation_rows"] = 10
+    seas = T.check_seasonal(_diag(q, rec), q, rec)
+    t = T.build(q, rec, None, seas)
+    cmd, inc = T.render(t)
+    assert "seasonal-naive MAE (24 h)" in cmd and "OVERSTATES" in cmd
+    assert "vs seasonal 24 h" in inc
+    r0 = t["candidates"][0]
+    assert abs(r0["skill_vs_seasonal"] - (1 - r0["objective"] / 0.25)) < 1e-12
+
+
+def test_a_seasonal_diagnostic_not_on_the_same_rows_is_refused():
+    q, rec = fixture()
+    for r in rec.values():
+        r["validation_rows"] = 10
+    with pytest.raises(T.CampaignRefusal, match="NOT_SAME_ROWS"):
+        T.check_seasonal(_diag(q, rec, shift=1e-6), q, rec)
+
+
+def test_without_same_row_seasonal_values_the_table_says_not_available():
+    q, rec = fixture()
+    cmd, inc = T.render(T.build(q, rec), legacy=True, seasonal_na="receipts carry no seasonal values")
+    assert "NOT_AVAILABLE" in cmd and "NOT_AVAILABLE" in inc and "design" not in cmd.split("\n")[4]

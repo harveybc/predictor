@@ -485,6 +485,11 @@
    "at": "2026-10-01T03:24:53Z",
    "host_alias": "worker_a",
    "event": "corrected batch 1 COMPLETE: 16/16 grouped/draw R0 VERIFIED exact-match; incumbent seq 4 9cc0a1f4 at 0.391058; CAMPAIGN amendment 2 sha 09f6913e"
+  },
+  {
+   "at": "2026-10-01T04:20:00Z",
+   "host_alias": "coordinator",
+   "event": "lane D horizon diagnostic (cf1e59f4, DIAGNOSTIC_NOT_A_RESULT): same-row 24 h seasonal naive ~0.248 MAE_z at every horizon; every corrected candidate is WORSE than seasonal naive at every horizon (skill vs seasonal -0.50..-0.71); tables regenerated with both baselines"
   }
  ],
  "launch_recipes": {
@@ -970,7 +975,18 @@
    "CFTC/News scope",
    "availability activation (no source POINT_IN_TIME_ADMISSIBLE)"
   ],
-  "absences_source": "lane B return (feature-eng satoshi/b-source-transform-coverage-20261001 @ 8215886), as listed by the orchestrator"
+  "absences_source": "lane B return (feature-eng satoshi/b-source-transform-coverage-20261001 @ 8215886), as listed by the orchestrator",
+  "laneB_facts_2026_10_01": {
+   "from": "feature-eng TRANSFORM_LEDGER.v1.csv @ 686f9e5 (generated into RESULTS/coverage_laneB.json)",
+   "excluded": [
+    "LEARNED_GAUSSIAN_HMM_3STATE_FULLSERIES (sota_hmm_regime): NON-CAUSAL, fit and scaler on the whole series incl. holdout",
+    "FEATURE_ENG_REGIME_V3_GMM: fitted outside any fold, labels from forward returns"
+   ],
+   "deferred": [
+    "AUTOENCODER_FIT_TRAIN_LT_2024_EARLYSTOP_ON_2024 (learned_cnn/lstm AEs): donors early-stopped on 2024, the task's validation year"
+   ],
+   "ledger_states": "17 excluded / 19 deferred / 0 evaluated / 0 selected (generated)"
+  }
  },
  "coverage_evaluated_retained": [
   {

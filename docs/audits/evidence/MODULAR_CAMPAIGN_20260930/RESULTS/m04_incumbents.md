@@ -2,6 +2,8 @@
 
 Comparability: **NOT_COMPARABLE**: ECL L24 -> H1..24, all 321 channels, z_train MAE on the validation split; the published TimeFilter/ECL rows are L96 -> H96 on the test split, so no literature value applies.
 
+Seasonal naive (24 h, same rows): **NOT_AVAILABLE**: the OLD v3 verification receipts carry no same-row seasonal-naive values, and the lane D horizon diagnostic covers only the corrected campaign
+
 ## Incumbent 1: `e323775b` grouped32_R0_mae, mean validation MAE 0.402279 over seeds [2021, 2022]
 Reason: first paired-seed verified configuration.
 

@@ -20,3 +20,5 @@ Campaign `m04_ecl_l24_h24_batch1_v3_deterministic`, CAMPAIGN sha `53bce359…`. 
 | grouped32_R0_huber | fe256dab | 2022 | 0.441446 | 0.4815 | VERIFIED | True | worker_a | 3.91 | 0.0165 | 2296 | 3 | patience |
 | grouped32_R0_mae | e323775b | 2021 | 0.403343 | 0.5263 | VERIFIED | True | worker_a | 3.87 | 0.0145 | 2296 | 3 | patience |
 | grouped32_R0_mae | e323775b | 2022 | 0.401216 | 0.5288 | VERIFIED | True | worker_a | 3.89 | 0.0141 | 2296 | 3 | patience |
+
+Seasonal naive (24 h, same rows): **NOT_AVAILABLE**: the OLD v3 verification receipts carry no same-row seasonal-naive values, and the lane D horizon diagnostic covers only the corrected campaign

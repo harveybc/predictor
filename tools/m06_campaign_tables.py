@@ -43,7 +43,38 @@ def design_summary(flat):
             f"d{flat.get('core.d_model')} h{flat.get('core.heads')} tf{tf}; {flat.get('train.loss')} lr{flat.get('train.learning_rate')}")
 
 
-def build(queue: dict, receipts: dict, comparability=None) -> dict:
+def check_seasonal(diag: dict, queue: dict, receipts: dict) -> dict:
+    """A same-row seasonal-naive baseline from a horizon diagnostic, accepted only if it is provably on
+    the same rows as the receipts: same population, every verified cid present, and each model's
+    per-horizon receipt MAE in the diagnostic equal to the receipt's own."""
+    pop = diag.get("population", {})
+    vcids = {c["cid"] for c in queue["candidates"] if c["status"] == "verified"}
+    dcids = {m["cid"] for m in diag.get("models", [])}
+    if vcids - dcids:
+        raise CampaignRefusal(f"SEASONAL_DIAGNOSTIC_MISSING_CIDS: {sorted(x[:16] for x in vcids - dcids)}")
+    for m in diag["models"]:
+        rc = receipts.get(m["cid"][:16])
+        if rc is None:
+            continue
+        if int(rc.get("validation_rows") or pop.get("rows")) != int(pop.get("rows")):
+            raise CampaignRefusal(f"SEASONAL_DIAGNOSTIC_POPULATION: {m['cid'][:16]}")
+        for ph in m["per_horizon"]:
+            mine = rc["per_horizon"][str(ph["horizon"])]["MAE"]
+            if abs(mine - ph["receipt_MAE_gpu"]) > 1e-9:
+                raise CampaignRefusal(f"SEASONAL_DIAGNOSTIC_NOT_SAME_ROWS: {m['cid'][:16]} h{ph['horizon']} "
+                                      f"{mine} vs {ph['receipt_MAE_gpu']}")
+    per_h = {str(b["horizon"]): b["seasonal_naive_MAE"] for b in diag["baselines"]}
+    persist = {str(b["horizon"]): b["naive_MAE"] for b in diag["baselines"]}
+    for rc in receipts.values():
+        for h, v in persist.items():
+            if abs(rc["per_horizon"][h]["baseline_MAE"] - v) > 1e-9:
+                raise CampaignRefusal(f"SEASONAL_DIAGNOSTIC_PERSISTENCE_MISMATCH h{h}")
+        break
+    return {"per_horizon": per_h, "aggregate": sum(per_h.values()) / len(per_h), "period_hours": 24,
+            "label": diag.get("label"), "population": pop}
+
+
+def build(queue: dict, receipts: dict, comparability=None, seasonal=None) -> dict:
     att = {}
     for a in queue["attempts"]:
         att.setdefault((a["cid"], a["kind"]), []).append(a)
@@ -70,6 +101,8 @@ def build(queue: dict, receipts: dict, comparability=None) -> dict:
         rows.append({"cid": c["cid"][:16], "config_id": c["config_id"][:8], "label": c["label"], "seed": c["seed"],
                      "knobs": {k: flat.get(k) for k in KNOBS}, "design": design_summary(flat),
                      "objective": float(c["objective"]),
+                     "seasonal_MAE": seasonal["aggregate"] if seasonal else None,
+                     "skill_vs_seasonal": (1 - float(c["objective"]) / seasonal["aggregate"]) if seasonal else None,
                      "skill_MAE": rc["metrics"]["skill_MAE"], "verdict": ve["verdict"], "exact_match": True,
                      "train_host": tr.get("host"), "verify_host": ve.get("host"),
                      "cgroup_peak_bytes": tr.get("cgroup_peak_bytes"), "per_update_seconds": tr.get("per_update_seconds"),
@@ -90,9 +123,15 @@ def build(queue: dict, receipts: dict, comparability=None) -> dict:
             if rc.get("exact_match") is not True:
                 raise CampaignRefusal(f"NOT_EXACT: {cid[:16]}")
             ph = rc["per_horizon"]
-            rows.append({"cid": cid[:16], "MAE": rc["metrics"]["MAE"], "baseline_MAE": rc["metrics"]["baseline_MAE"],
-                         "skill_MAE": rc["metrics"]["skill_MAE"],
-                         "per_horizon_skill_MAE": {k: ph[k]["skill_MAE"] for k in sorted(ph, key=int)}})
+            row = {"cid": cid[:16], "MAE": rc["metrics"]["MAE"], "baseline_MAE": rc["metrics"]["baseline_MAE"],
+                   "skill_MAE": rc["metrics"]["skill_MAE"],
+                   "per_horizon_skill_MAE": {k: ph[k]["skill_MAE"] for k in sorted(ph, key=int)}}
+            if seasonal:
+                row["seasonal_MAE"] = seasonal["aggregate"]
+                row["skill_vs_seasonal"] = 1 - rc["metrics"]["MAE"] / seasonal["aggregate"]
+                row["per_horizon_skill_vs_seasonal"] = {k: 1 - ph[k]["MAE"] / seasonal["per_horizon"][k]
+                                                        for k in sorted(ph, key=int)}
+            rows.append(row)
         return rows
     pairs = []
     for s_ in queue["standings"]:
@@ -105,16 +144,8 @@ def build(queue: dict, receipts: dict, comparability=None) -> dict:
                       "two_seed_spread": (max(objs) - min(objs)) if len(objs) > 1 else None, "per_seed": ps})
     hist = []
     for h in queue["incumbent_history"]:
-        per_seed = []
         cids = json.loads(h["cids"]) if isinstance(h["cids"], str) else h["cids"]
-        for cid in cids:
-            rc = receipts.get(cid[:16])
-            if rc is None:
-                raise CampaignRefusal(f"MISSING_RECEIPT: incumbent {cid[:16]}")
-            ph = rc["per_horizon"]
-            per_seed.append({"cid": cid[:16], "MAE": rc["metrics"]["MAE"], "baseline_MAE": rc["metrics"]["baseline_MAE"],
-                             "skill_MAE": rc["metrics"]["skill_MAE"],
-                             "per_horizon_skill_MAE": {k: ph[k]["skill_MAE"] for k in sorted(ph, key=int)}})
+        per_seed = per_seed_rows(cids)
         label = next((s["label"] for s in queue["standings"] if s["config_id"] == h["config_id"]), None)
         seeds = json.loads(h["seeds"]) if isinstance(h["seeds"], str) else h["seeds"]
         hist.append({"seq": h["seq"], "config_id": h["config_id"][:8], "label": label,
@@ -125,23 +156,63 @@ def build(queue: dict, receipts: dict, comparability=None) -> dict:
             "counts": queue["counts"], "candidates": rows, "incumbents": hist,
             "comparability": comparability or {"class": COMPARABILITY[0], "reason": COMPARABILITY[1]},
             "pairs": sorted(pairs, key=lambda p: p["mean_objective"]),
+            "seasonal_naive": seasonal,
             "evidence": "measured validation objective, fresh-process checkpoint rescoring exact_match; NOT test, NOT a published comparison"}
 
 
-def render(t: dict, annotations: dict | None = None):
+SEASONAL_NOTE = ("Seasonal naive = the value 24 h before the target on the SAME validation rows (period 24 h). On this "
+                 "daily-periodic dataset the aggregate skill against last-value persistence OVERSTATES usefulness: "
+                 "the seasonal naive is the stronger, relevant baseline, and skill against it is shown separately.")
+
+
+def _seed_rows(per_seed, hs, seasonal):
+    out = []
+    for s in per_seed:
+        out.append(f"| {s['cid']} | vs persistence | {s['MAE']:.6f} | {s['baseline_MAE']:.6f} | {s['skill_MAE']:+.4f} | "
+                   + " | ".join(f"{s['per_horizon_skill_MAE'][k]:+.2f}" for k in hs) + " |")
+        if seasonal:
+            out.append(f"| {s['cid']} | vs seasonal 24 h | {s['MAE']:.6f} | {s['seasonal_MAE']:.6f} | {s['skill_vs_seasonal']:+.4f} | "
+                       + " | ".join(f"{s['per_horizon_skill_vs_seasonal'][k]:+.2f}" for k in hs) + " |")
+    return out
+
+
+def render(t: dict, annotations: dict | None = None, legacy: bool = False, seasonal_na: str | None = None):
     o = t["objective"]
-    c = [f"# {t['campaign']}: verified R0 candidates (generated)", "",
+    seasonal = t.get("seasonal_naive")
+    c = [("# M04 batch-1 v3: verified R0 candidates (generated)" if legacy else
+          f"# {t['campaign']}: verified R0 candidates (generated)"), "",
          f"Campaign `{t['campaign']}`, CAMPAIGN sha `{t['campaign_sha256'][:8]}…`. Objective: {o['metric']} on "
          f"{o['split']}, {o['unit']} (lower is better). Counts: {t['counts']}. Comparability: **{t['comparability']['class']}**: "
          f"{t['comparability']['reason']}.", "",
-         "| label | cfg | design | seed | objective | skill MAE | verify | exact | train host | peak GiB | s/update | updates | epoch | stop |",
-         "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+         ]
+    if legacy:
+        c += ["| label | cfg | seed | objective | skill MAE | verify | exact | train host | peak GiB | s/update | updates | epoch | stop |",
+              "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    else:
+        c += ["| label | cfg | design | seed | objective | persistence skill MAE | seasonal-naive MAE (24 h) | skill vs seasonal | "
+              "verify | exact | train host | peak GiB | s/update | updates | epoch | stop |",
+              "|---" * 16 + "|"]
     for r in sorted(t["candidates"], key=lambda r: (r["label"], r["seed"])):
-        c.append(f"| {r['label']} | {r['config_id']} | {r.get('design', '')} | {r['seed']} | {r['objective']:.6f} | {r['skill_MAE']:.4f} | {r['verdict']} | "
-                 f"{r['exact_match']} | {r['train_host']} | {(r['cgroup_peak_bytes'] or 0) / 2**30:.2f} | "
-                 f"{r['per_update_seconds']:.4f} | {r['observed_updates']} | {r['selected_epoch']} | {r['stop_reason']} |")
-    i = [f"# {t['campaign']}: incumbent history and per-horizon skill (generated)", "",
+        tail = (f"{r['verdict']} | {r['exact_match']} | {r['train_host']} | {(r['cgroup_peak_bytes'] or 0) / 2**30:.2f} | "
+                f"{r['per_update_seconds']:.4f} | {r['observed_updates']} | {r['selected_epoch']} | {r['stop_reason']} |")
+        if legacy:
+            c.append(f"| {r['label']} | {r['config_id']} | {r['seed']} | {r['objective']:.6f} | {r['skill_MAE']:.4f} | " + tail)
+        else:
+            sm = f"{r['seasonal_MAE']:.6f}" if r.get("seasonal_MAE") is not None else "NOT_AVAILABLE"
+            ss = f"{r['skill_vs_seasonal']:+.4f}" if r.get("skill_vs_seasonal") is not None else "NOT_AVAILABLE"
+            c.append(f"| {r['label']} | {r['config_id']} | {r.get('design', '')} | {r['seed']} | {r['objective']:.6f} | "
+                     f"{r['skill_MAE']:.4f} | {sm} | {ss} | " + tail)
+    if seasonal:
+        c += ["", SEASONAL_NOTE]
+    elif seasonal_na:
+        c += ["", f"Seasonal naive (24 h, same rows): **NOT_AVAILABLE**: {seasonal_na}"]
+    i = [("# M04 batch-1 v3: incumbent history with per-horizon skill (generated)" if legacy else
+          f"# {t['campaign']}: incumbent history and per-horizon skill (generated)"), "",
          f"Comparability: **{t['comparability']['class']}**: {t['comparability']['reason']}.", ""]
+    if seasonal:
+        i += [SEASONAL_NOTE, ""]
+    elif seasonal_na:
+        i += [f"Seasonal naive (24 h, same rows): **NOT_AVAILABLE**: {seasonal_na}", ""]
     for h in t["incumbents"]:
         i += [f"## Incumbent {h['seq']}: `{h['config_id']}` {h['label']}, mean validation {t['objective']['metric']} "
               f"{h['mean_objective']:.6f} over seeds {h['seeds']}", f"Reason: {h['reason']}.", ""]
@@ -149,26 +220,33 @@ def render(t: dict, annotations: dict | None = None):
         if note:
             i += [f"Architecture class (from {note['source']}): **{note['class']}**. {note['text']}", ""]
         hs = list(h["per_seed"][0]["per_horizon_skill_MAE"])
-        i.append("| seed cid | MAE | persistence MAE | skill MAE | " + " | ".join(f"h{k}" for k in hs) + " |")
-        i.append("|---" * (4 + len(hs)) + "|")
-        for s in h["per_seed"]:
-            i.append(f"| {s['cid']} | {s['MAE']:.6f} | {s['baseline_MAE']:.6f} | {s['skill_MAE']:.4f} | "
-                     + " | ".join(f"{s['per_horizon_skill_MAE'][k]:+.2f}" for k in hs) + " |")
+        if legacy:
+            i.append("| seed cid | MAE | persistence MAE | skill MAE | " + " | ".join(f"h{k}" for k in hs) + " |")
+            i.append("|---" * (4 + len(hs)) + "|")
+            for s in h["per_seed"]:
+                i.append(f"| {s['cid']} | {s['MAE']:.6f} | {s['baseline_MAE']:.6f} | {s['skill_MAE']:.4f} | "
+                         + " | ".join(f"{s['per_horizon_skill_MAE'][k]:+.2f}" for k in hs) + " |")
+        else:
+            i.append("| seed cid | baseline | MAE | baseline MAE (same rows) | skill | " + " | ".join(f"h{k}" for k in hs) + " |")
+            i.append("|---" * (5 + len(hs)) + "|")
+            i += _seed_rows(h["per_seed"], hs, seasonal)
         neg = sorted({int(k) for s in h["per_seed"] for k, v in s["per_horizon_skill_MAE"].items() if v < 0})
         i += ["", f"Horizons with NEGATIVE skill (persistence wins) in any seed: {['h%d' % k for k in neg] or 'none'}.", ""]
-    if t.get("pairs"):
+    if t.get("pairs") and not legacy:
         i += ["## Every verified pair, ranked by mean validation objective", ""]
         for p in t["pairs"]:
             hs = list(p["per_seed"][0]["per_horizon_skill_MAE"])
             sp = f"{p['two_seed_spread']:.6f}" if p["two_seed_spread"] is not None else "n/a"
             i += [f"### `{p['config_id']}` {p['label']}: mean {p['mean_objective']:.6f}, two-seed spread {sp}", "",
-                  "| seed cid | MAE | persistence MAE (same rows) | skill MAE | " + " | ".join(f"h{k}" for k in hs) + " |",
-                  "|---" * (4 + len(hs)) + "|"]
-            for s_ in p["per_seed"]:
-                i.append(f"| {s_['cid']} | {s_['MAE']:.6f} | {s_['baseline_MAE']:.6f} | {s_['skill_MAE']:.4f} | "
-                         + " | ".join(f"{s_['per_horizon_skill_MAE'][k]:+.2f}" for k in hs) + " |")
+                  "| seed cid | baseline | MAE | baseline MAE (same rows) | skill | " + " | ".join(f"h{k}" for k in hs) + " |",
+                  "|---" * (5 + len(hs)) + "|"]
+            i += _seed_rows(p["per_seed"], hs, seasonal)
             neg = sorted({int(k) for s_ in p["per_seed"] for k, v in s_["per_horizon_skill_MAE"].items() if v < 0})
-            i += ["", f"Negative-skill horizons in any seed: {['h%d' % k for k in neg] or 'none'}.", ""]
+            i += ["", f"Negative skill vs persistence in any seed: {['h%d' % k for k in neg] or 'none'}."]
+            if seasonal:
+                negs = sorted({int(k) for s_ in p["per_seed"] for k, v in s_["per_horizon_skill_vs_seasonal"].items() if v < 0})
+                i += [f"Negative skill vs seasonal naive in any seed: {['h%d' % k for k in negs] or 'none'}."]
+            i += [""]
     return "\n".join(c) + "\n", "\n".join(i) + "\n"
 
 
@@ -179,6 +257,9 @@ def main(argv=None):
     ap.add_argument("--out-dir", required=True)
     ap.add_argument("--annotations", default=None, help="JSON {config_id8: {class, source, text}}")
     ap.add_argument("--prefix", default="m04", help="output file prefix (keeps campaigns' tables apart)")
+    ap.add_argument("--seasonal-diagnostic", default=None, help="horizon diagnostic JSON with same-row seasonal naive")
+    ap.add_argument("--seasonal-not-available", default=None, help="reason text when no same-row seasonal values exist")
+    ap.add_argument("--legacy-layout", action="store_true", help="the OLD tables' original layout")
     ap.add_argument("--comparability-class", default=None)
     ap.add_argument("--comparability-reason", default=None)
     a = ap.parse_args(argv)
@@ -187,7 +268,8 @@ def main(argv=None):
     try:
         comp = ({"class": a.comparability_class, "reason": a.comparability_reason}
                 if a.comparability_class else None)
-        t = build(q, rec, comp)
+        seas = check_seasonal(json.load(open(a.seasonal_diagnostic)), q, rec) if a.seasonal_diagnostic else None
+        t = build(q, rec, comp, seas)
     except CampaignRefusal as e:
         print(f"REFUSED {e}", file=sys.stderr)
         return 3
@@ -197,7 +279,7 @@ def main(argv=None):
     ann = json.load(open(a.annotations)) if a.annotations else None
     if ann:
         t["annotations"] = ann
-    cmd, imd = render(t, ann)
+    cmd, imd = render(t, ann, legacy=a.legacy_layout, seasonal_na=a.seasonal_not_available)
     P = a.prefix
     outs = {f"{P}_r0_candidates.md": cmd, f"{P}_incumbents.md": imd, f"{P}_campaign_tables.json": json.dumps(t, indent=1)}
     for name, text in outs.items():
@@ -206,7 +288,7 @@ def main(argv=None):
         os.replace(p + ".tmp", p)
     with open(os.path.join(a.out_dir, f"{P}_r0_candidates.csv.tmp"), "w", newline="") as f:
         w = csv.writer(f)
-        cols = ["label", "config_id", "design", "seed", "objective", "skill_MAE", "verdict", "exact_match", "train_host",
+        cols = ["label", "config_id", "design", "seed", "objective", "skill_MAE", "seasonal_MAE", "skill_vs_seasonal", "verdict", "exact_match", "train_host",
                 "verify_host", "cgroup_peak_bytes", "per_update_seconds", "observed_updates", "selected_epoch", "stop_reason",
                 *KNOBS, "cid"]
         w.writerow(cols)
