@@ -495,7 +495,7 @@
    "event": "corrected batch 1 COMPLETE: 16/16 grouped/draw R0 VERIFIED exact-match; incumbent seq 4 9cc0a1f4 at 0.391058; CAMPAIGN amendment 2 sha 09f6913e"
   },
   {
-   "at": "2026-10-01T04:20:00Z",
+   "at": "2026-10-01T04:05:00Z",
    "host_alias": "coordinator",
    "event": "lane D horizon diagnostic (cf1e59f4, DIAGNOSTIC_NOT_A_RESULT): same-row 24 h seasonal naive ~0.248 MAE_z at every horizon; every corrected candidate is WORSE than seasonal naive at every horizon (skill vs seasonal -0.50..-0.71); tables regenerated with both baselines"
   },
@@ -515,7 +515,7 @@
    "event": "corrected campaign amendment 4 (CAMPAIGN sha a534456b on all hosts): train cap 6580M, verify 4950M provisional, worker_a exclusion removed, per-feature calibration point added, 8 per-feature rows released; first attempt a0f9176f running on the 5090 at 6580M"
   },
   {
-   "at": "2026-10-01T04:50:00Z",
+   "at": "2026-10-01T04:43:00Z",
    "host_alias": "worker_a",
    "event": "lane G RETURNED (9d1a67ce); per-feature cell 1 a0f9176f VERIFIED 0.4014148874 on the 5090; lanes B, C, G idle; active: M04 (5090), M01 PS3-R child and M02 donor run (fusion/core stage, 321/321 branches) on worker_b"
   }
@@ -648,6 +648,10 @@
   {
    "at": "2026-10-01T03:20Z",
    "what": "ps3r-pilot-s0/s1 were reported by M06 as lane C pilots; they are lane A (M01) PS3-R pilot children (2G, CPU, PILOT_ENGINEERING) approved by the orchestrator."
+  },
+  {
+   "at": "2026-10-01T04:45Z",
+   "what": "three M06 event timestamps had been written as round estimates ahead of the host clock (04:50Z, 04:20Z, 04:45Z); corrected to the clock (04:43Z, 04:05Z, 04:36Z)"
   }
  ],
  "plan_links": {
@@ -1251,7 +1255,7 @@
   }
  ],
  "owner_question_20_lake": {
-  "at": "2026-10-01T04:45Z",
+  "at": "2026-10-01T04:36Z",
   "method": "metadata only: os.stat/lstat of each lane B CATALOGUE.v1.csv path (feature-eng @ 686f9e5) and an os.walk of the data top-level directories of the coordinator's financial-data checkout; no file content read; crispdm-run -m 256M, ionice -c3",
   "catalogue_listed": {
    "RAW": {
