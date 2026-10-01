@@ -528,6 +528,11 @@
    "at": "2026-10-01T04:49:54Z",
    "host_alias": "coordinator",
    "event": "lane D runner PLANNED STOP (M04 safe stop to apply the verify-cap amendment 4.10 GB), not a pressure stop; idle gap 04:49:54Z -> relaunch (queue resumed by 05:04:54Z: 93ad1b0b verified, 1 running, 5 queued)"
+  },
+  {
+   "at": "2026-10-01T05:06:00Z",
+   "host_alias": "worker_a",
+   "event": "lane D runner relaunched (d-runner-worker-a, 512M scope ON THE COORDINATOR) at pin df9ae31c, CAMPAIGN 1ccb932b; 93ad1b0b VERIFIED; train 8c2a2eab lease m04-train-8c2a2eab-1790831078-279509-6bc681 cap 6,899,630,080 B; 5 per-feature cells remain, one GPU attempt at a time"
   }
  ],
  "launch_recipes": {
@@ -662,6 +667,10 @@
   {
    "at": "2026-10-01T04:45Z",
    "what": "three M06 event timestamps had been written as round estimates ahead of the host clock (04:50Z, 04:20Z, 04:45Z); corrected to the clock (04:43Z, 04:05Z, 04:36Z)"
+  },
+  {
+   "at": "2026-10-01T05:14Z",
+   "what": "M06's watcher raised 'ALERT coordinator batch job d-runner-worker-a' at 04:41:24Z (zero-batch rule) and M06 did not forward it until 05:14Z; the relaunched runner is again on the coordinator"
   }
  ],
  "plan_links": {
@@ -1052,7 +1061,7 @@
    "identity": {
     "pin": "df9ae31c",
     "engine": "3ecdb256",
-    "campaign_sha256_current": "a534456b (amendment 4)",
+    "campaign_sha256_current": "1ccb932b (verify-cap amendment, verify cap 3914M)",
     "base": "13852a05",
     "denominator": "36 cells (72 superseded rows kept outside)"
    },
