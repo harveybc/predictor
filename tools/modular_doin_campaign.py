@@ -38,6 +38,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from tools import modular_candidate_budget as budget_model  # noqa: E402
 from tools import modular_search_space as ss  # noqa: E402
 
 TERMINAL = ("verified", "refuted", "failed")
@@ -54,6 +55,8 @@ CREATE TABLE IF NOT EXISTS attempts(
   observed_updates INTEGER, selected_epoch INTEGER, per_update_seconds REAL, stop_reason TEXT,
   receipt_path TEXT, objective REAL, model_sha256 TEXT, weights_sha256 TEXT, verdict TEXT, host TEXT,
   PRIMARY KEY(cid, attempt, kind));
+CREATE TABLE IF NOT EXISTS budget(
+  cid TEXT PRIMARY KEY, priced TEXT NOT NULL, overflow TEXT NOT NULL, updated REAL NOT NULL);
 CREATE TABLE IF NOT EXISTS incumbent_changes(
   seq INTEGER PRIMARY KEY AUTOINCREMENT, time REAL NOT NULL, config_id TEXT NOT NULL,
   mean_objective REAL NOT NULL, seeds TEXT NOT NULL, cids TEXT NOT NULL,
@@ -135,6 +138,10 @@ class Campaign:
                     config_id, cid = "flat:" + ss.digest(stripped), "flat:" + ss.digest(flat)
                 if self.db.execute("SELECT 1 FROM candidates WHERE cid=?", (cid,)).fetchone():
                     continue
+                if status == "queued" and self.declaration.get("budget"):
+                    overflow = self._price(cid, json.loads(nested_text))
+                    if overflow:  # never truncated or collapsed: kept verbatim and deferred by name
+                        status, reason = "deferred", "DEFERRED_BUDGET: " + ", ".join(overflow)
                 self.db.execute("INSERT INTO candidates VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
                                 (cid, position, config_id, seed, label, ss.canonical(flat), nested_text,
                                  status, reason, now(), None, now()))
@@ -145,6 +152,27 @@ class Campaign:
             self.db.execute("ROLLBACK")
             raise
         return added
+
+    def _price(self, cid, nested, parameters=None):
+        priced, overflow = budget_model.check(nested, self.declaration["budget"], parameters=parameters)
+        self.db.execute("INSERT OR REPLACE INTO budget VALUES(?,?,?,?)",
+                        (cid, json.dumps(priced, default=str), json.dumps(overflow), now()))
+        return overflow
+
+    def reconsider_deferred(self, parameters_by_cid=None):
+        """Re-price every deferred row under the CURRENT caps and calibration; fitting rows re-enter the queue."""
+        released = []
+        for row in self.db.execute("SELECT cid, nested FROM candidates WHERE status='deferred' ORDER BY position").fetchall():
+            overflow = self._price(row["cid"], json.loads(row["nested"]),
+                                   parameters=(parameters_by_cid or {}).get(row["cid"]))
+            if overflow:
+                self.db.execute("UPDATE candidates SET blocked_reason=?, updated=? WHERE cid=?",
+                                ("DEFERRED_BUDGET: " + ", ".join(overflow), now(), row["cid"]))
+            else:
+                self.db.execute("UPDATE candidates SET status='queued', blocked_reason=NULL, updated=? WHERE cid=?",
+                                (now(), row["cid"]))
+                released.append(row["cid"])
+        return released
 
     def unblock(self):
         """Re-materialize blocked candidates once their donors are declared in base.donors."""
@@ -458,6 +486,22 @@ def propose(space, rng, fixed=None, max_tries=2000):
         flat.pop("train.seed")
         return flat
     raise ss.SearchSpaceError("no valid configuration found within max_tries")
+
+
+def propose_within_budget(space, rng, base, budget, fixed=None, max_tries=2000):
+    """DOIN proposals restricted to valid group/encoder choices whose priced dimensions fit every cap."""
+    for _ in range(max_tries):
+        flat = propose(space, rng, fixed=fixed)
+        trial = {**flat, "train.seed": space["bounds"]["train.seed"]["choices"][0]}
+        if trial.get("train.loss") == "huber" and "train.huber_delta" not in trial:
+            trial["train.huber_delta"] = _sample(space["bounds"]["train.huber_delta"], rng)
+        try:
+            nested = ss.from_flat(trial, base, space)
+        except ss.SearchSpaceError:
+            continue
+        if not budget_model.check(nested, budget)[1]:
+            return flat
+    raise ss.SearchSpaceError("no proposal fits the declared budget within max_tries")
 
 
 def paired_loss_arms(flat, huber_delta):

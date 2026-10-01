@@ -518,3 +518,83 @@ def test_cancelled_superseded_rows_are_never_claimed_and_attempts_stay(tmp_path)
     assert [tuple(r) for r in campaign.db.execute("SELECT * FROM attempts ORDER BY started")] == before
     reason = campaign.db.execute("SELECT blocked_reason FROM candidates WHERE label='r1'").fetchone()[0]
     assert reason.startswith("2026-10-01 owner order ac125db9") and "was blocked" in reason
+
+
+# ------------------------------------------------- candidate budget (addendum 256c61a6) --
+from tools import modular_candidate_budget as budget_model  # noqa: E402
+
+BUDGET = {"populations": {"train_windows": 18341, "validation_windows": 2609},
+          "candidates_per_week": 100,
+          "calibration": [
+              {"fused_width": 176, "host_peak_bytes": 4543332352, "device_peak_bytes": 392229632,
+               "seconds_per_update": 0.0254, "source": "PIN_df9ae31c grouped32 GPU pilot"},
+              {"fused_width": 5136, "host_peak_bytes": 4726960128 + 663703552, "device_peak_bytes": 1.2e9,
+               "seconds_per_update": 0.06, "source": "per-feature profile + measured GPU increment (fixture)"}],
+          "caps": {"fused_width": 2000, "host_ram_bytes": 6.0e9, "materialization_bytes": 5.0e9}}
+
+
+def corrected(grouping, **extra):
+    return {**DEFAULT_V2, "branch.grouping_size": grouping, **extra}
+
+
+def test_budget_prices_every_dimension_with_its_source():
+    nested = ss.from_flat({**corrected(32), "train.seed": 2021, "train.huber_delta": 1.0}, BASE, SPACE_V2)
+    priced = budget_model.price(nested, BUDGET, parameters=487672)
+    assert set(priced) == set(budget_model.DIMENSIONS)
+    assert priced["fused_width"]["value"] == 11 * 16 and priced["branches"]["value"] == 11
+    assert priced["fused_time"]["value"] == 24  # never collapsed
+    assert priced["materialization_bytes"]["value"] == (18341 + 2609) * 24 * 176 * 4
+    assert priced["host_ram_bytes"]["value"] == 4543332352
+    assert "pilot" in priced["host_ram_bytes"]["source"]
+    assert priced["weekly_gpu_seconds"]["value"] == pytest.approx(priced["gpu_seconds_per_candidate"]["value"] * 100)
+
+
+def test_budget_overflow_becomes_named_deferred_row_never_truncated(tmp_path):
+    campaign = make_campaign(tmp_path)
+    campaign.declaration.update(search_space=SPACE_V2, budget=BUDGET)
+    campaign.space = SPACE_V2
+    added = campaign.enqueue({**corrected(1), "train.huber_delta": 1.0}, "per_feature")
+    rows = campaign.db.execute("SELECT status, blocked_reason, nested FROM candidates").fetchall()
+    assert len(added) == 2 and all(r["status"] == "deferred" for r in rows)
+    reason = rows[0]["blocked_reason"]
+    assert reason.startswith("DEFERRED_BUDGET:") and "fused_width=5136>2000" in reason
+    assert "materialization_bytes" in reason
+    nested = json.loads(rows[0]["nested"])
+    assert len(nested["model"]["branches"]) == 321 and nested["model"]["branch_steps"] == 24  # verbatim
+    assert campaign.claim("worker_a") is None  # deferred rows are never dispatched
+
+
+def test_deferred_candidate_returns_when_cap_or_measurement_changes(tmp_path):
+    campaign = make_campaign(tmp_path)
+    campaign.declaration.update(search_space=SPACE_V2, budget=copy.deepcopy(BUDGET))
+    campaign.space = SPACE_V2
+    campaign.enqueue({**corrected(1), "train.huber_delta": 1.0}, "per_feature")
+    assert campaign.reconsider_deferred() == []  # nothing changed
+    campaign.declaration["budget"]["caps"].update(fused_width=6000, materialization_bytes=1.0e10)
+    released = campaign.reconsider_deferred()
+    assert len(released) == 2
+    assert {r[0] for r in campaign.db.execute("SELECT status FROM candidates")} == {"queued"}
+
+
+def test_unmeasured_dimension_with_a_cap_defers_instead_of_fitting(tmp_path):
+    nested = ss.from_flat({**corrected(32), "train.seed": 2021, "train.huber_delta": 1.0}, BASE, SPACE_V2)
+    budget = {**BUDGET, "calibration": BUDGET["calibration"][:1], "caps": {"vram_bytes": 1e9}}
+    _, overflow = budget_model.check(nested, budget)
+    assert overflow == []  # width 176 is measured exactly
+    nested8 = ss.from_flat({**corrected(8), "train.seed": 2021, "train.huber_delta": 1.0}, BASE, SPACE_V2)
+    _, overflow8 = budget_model.check(nested8, budget)
+    assert overflow8 == ["vram_bytes=UNMEASURED"]
+
+
+def test_doin_proposals_respect_every_cap():
+    rng = random.Random(3)
+    space = copy.deepcopy(SPACE_V2)
+    for _ in range(20):
+        flat = camp.propose_within_budget(space, rng, BASE, BUDGET,
+                                          fixed={"branch.regime": "R0", "core.regime": "R0"})
+        trial = {**flat, "train.seed": 2021}
+        if trial["train.loss"] == "huber":
+            trial.setdefault("train.huber_delta", 1.0)
+        nested = ss.from_flat(trial, BASE, space)
+        assert budget_model.check(nested, BUDGET)[1] == []
+        assert nested["model"]["branch_steps"] == 24
