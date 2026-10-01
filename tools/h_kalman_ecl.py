@@ -92,9 +92,24 @@ def iter_member(path, key, chunk=512):
 
 
 def _origins(path):
+    """Origin row indices. Row ids of the form ``x:row<N>:<t>`` are parsed; M04's ECL ids are ``ecl:<epoch>``, so the
+    origins come from the sibling MANIFEST.json ``splits.<split>.origin_rows`` and are checked against the timestamps
+    (one origin per hour, no gap, count equal to the windows)."""
+    path = Path(path)
     with np.load(path, allow_pickle=False) as z:
         ids = z["row_ids"].astype(str).tolist()
-    return np.array([int(r.split(":")[1][3:]) for r in ids], dtype=np.int64)
+        ts = z["timestamps"].astype(np.int64) if "timestamps" in z.files else None
+    if all(":row" in r for r in ids[:3]):
+        return np.array([int(r.split(":")[1][3:]) for r in ids], dtype=np.int64)
+    man = json.loads((path.parent / "MANIFEST.json").read_text())
+    split = path.stem
+    lo, hi = man["splits"][split]["origin_rows"]
+    o = np.arange(lo, hi + 1, dtype=np.int64)
+    if len(o) != len(ids) or ts is None or not (np.diff(ts) == 3600).all():
+        raise ValueError(f"{split}: origins cannot be derived (count or hourly contiguity check failed)")
+    if not all(r == f"ecl:{t}" for r, t in zip(ids, ts.tolist())):
+        raise ValueError("row ids do not match the timestamps")
+    return o
 
 
 def reconstruct_rows(train_path, val_path, horizons=24, window=24):
