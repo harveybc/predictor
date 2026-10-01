@@ -84,7 +84,8 @@ def test_strict_record_rewrites_naive_and_resigns(tmp_path):
         assert entry["naive_MAE"] == table["strict_minimum"][h]["MAE"]
         assert entry["MAE"]["skill"] == pytest.approx(1 - entry["model_MAE"] / entry["naive_MAE"])
         assert "naive_MAE" in entry["seasonal_naive"] and "naive_MAE" in entry["zero_return_naive"]
-        assert entry["beats_zero_return"] == (entry["model_MAE"] < entry["zero_return_naive"]["naive_MAE"])
+        assert "naive_MAE" in entry["persistence_naive"] and "beats_zero_return_MSE" in entry
+        assert entry["beats_zero_return"] == (entry["model_MAE"] < entry["zero_return_naive"]["naive_MAE"] and entry["model_MSE"] < entry["zero_return_naive"]["naive_MSE"])
     assert strict["seasonal_naive"]["period_steps"] == 6
 
 

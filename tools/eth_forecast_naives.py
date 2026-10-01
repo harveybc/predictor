@@ -97,7 +97,12 @@ def strict_record(record, table, *, seasonal_period):
     out["naive"] = {"definition": "STRICT MINIMUM per horizon: the lowest-MAE naive among persistence (last "
                                   "observed standardized 1-bar return repeated), zero-return (CLOSE[t+h]=CLOSE[t]), "
                                   "train-mean (Y_h=0) and the seasonal naive; same rows, targets, scaler, reduction",
-                    "components": sorted(table["per_naive"]), "mandatory_first_bar": "zero_return"}
+                    "components": sorted(table["per_naive"]), "mandatory_first_bar": "zero_return",
+                    "per_horizon_fields": "naive_MAE/naive_MSE = the strict minimum (strict_naive names it); "
+                                          "zero_return_naive, train_mean_naive, persistence_naive, seasonal_naive "
+                                          "carry each naive's MAE/MSE with skill and delta; beats_zero_return = "
+                                          "strictly below zero-return on both MAE and MSE",
+                    "strict_naive_by_horizon": {h: v["naive"] for h, v in table["strict_minimum"].items()}}
     out["naives"] = {"per_naive": table["per_naive"], "strict_minimum": table["strict_minimum"],
                      "rows": table["rows"]}
     for entry in out["per_horizon"]:
@@ -109,6 +114,7 @@ def strict_record(record, table, *, seasonal_period):
         entry["MAE"] = mfe._pair(entry["model_MAE"], strict["MAE"])
         entry["MSE"] = mfe._pair(entry["model_MSE"], strict["MSE"])
         for name, key in (("zero_return", "zero_return_naive"), ("train_mean", "train_mean_naive"),
+                          ("persistence_last_value", "persistence_naive"),
                           (f"seasonal_{seasonal_period}", "seasonal_naive")):
             row = table["per_naive"][name][h]
             if row["MAE"] is None:
@@ -117,8 +123,12 @@ def strict_record(record, table, *, seasonal_period):
                 entry[key] = {"naive_MAE": row["MAE"], "naive_MSE": row["MSE"],
                               "MAE": mfe._pair(entry["model_MAE"], row["MAE"]),
                               "MSE": mfe._pair(entry["model_MSE"], row["MSE"])}
-        entry["beats_zero_return"] = (entry["zero_return_naive"].get("MAE", {}).get("delta") is not None
-                                      and entry["zero_return_naive"]["MAE"]["delta"] < 0)
+        zr = entry["zero_return_naive"]
+        mae_d, mse_d = zr.get("MAE", {}).get("delta"), zr.get("MSE", {}).get("delta")
+        entry["beats_zero_return_MAE"] = mae_d is not None and mae_d < 0
+        entry["beats_zero_return_MSE"] = mse_d is not None and mse_d < 0
+        # the mandatory first bar: strictly better than zero-return on BOTH MAE and MSE
+        entry["beats_zero_return"] = entry["beats_zero_return_MAE"] and entry["beats_zero_return_MSE"]
     out["seasonal_naive"] = {"period_steps": seasonal_period, "declared": True,
                              "definition": f"Y_h(t) := Y_h(t-{seasonal_period}) on the cumulative target, read from "
                                            "the input window; same rows, targets, scaler and reduction"}
