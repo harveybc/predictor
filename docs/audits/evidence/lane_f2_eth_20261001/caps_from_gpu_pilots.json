@@ -1,0 +1,23 @@
+{
+ "peaks": {
+  "grouped32_mae_adamw": 1513803776,
+  "per_feature_mae_adamw": 2107588608
+ },
+ "params": {
+  "grouped32_mae_adamw": 90726,
+  "per_feature_mae_adamw": 173926
+ },
+ "patch": {
+  "resources": {
+   "train": {
+    "cap": "2513M"
+   },
+   "verify": {
+    "cap": "2513M"
+   }
+  },
+  "control": {
+   "parameter_target": 90726
+  }
+ }
+}

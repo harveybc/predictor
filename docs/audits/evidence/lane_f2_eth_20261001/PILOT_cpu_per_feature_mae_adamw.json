@@ -1,0 +1,1621 @@
+{
+  "schema": "m04.cost_pilot.v1",
+  "label": "PILOT_NOT_A_RESULT",
+  "started": 1790840524.9471846,
+  "argv": [
+    "tools/modular_doin_cost_pilot.py",
+    "--candidate",
+    "/home/harveybc/.local/state/scratch/m07/cand_per_feature_mae_adamw_s2021.json",
+    "--train",
+    "/home/harveybc/.local/state/scratch/m07/data/eth4h_l24_h6_v1/train.npz",
+    "--validation",
+    "/home/harveybc/.local/state/scratch/m07/data/eth4h_l24_h6_v1/validation.npz",
+    "--out",
+    "/home/harveybc/.local/state/scratch/m07/cost_pilot_cpu_per_feature_mae_adamw",
+    "--epochs",
+    "2"
+  ],
+  "stages": [
+    {
+      "stage": "setup",
+      "seconds": 27.342954516003374,
+      "cgroup_peak_bytes": 1165185024,
+      "tf_device": null
+    },
+    {
+      "stage": "fit",
+      "seconds": 37.582939965999685,
+      "cgroup_peak_bytes": 1497538560,
+      "tf_device": null
+    },
+    {
+      "stage": "score",
+      "seconds": 26.21430643799249,
+      "cgroup_peak_bytes": 1516347392,
+      "tf_device": null
+    }
+  ],
+  "cgroup_peak_file": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-cpu-pilot-per_feature_mae_adamw-1790840524-1644710.scope/memory.peak",
+  "per_fd_peak_reset": true,
+  "gpu_facts": {
+    "cpu_only": true,
+    "cuda_visible_devices": ""
+  },
+  "candidate": {
+    "evaluator": {
+      "batch_size": 64,
+      "learning_rate": 0.001,
+      "loss": "mae",
+      "max_epochs": 2,
+      "max_seconds": 5400.0,
+      "max_updates": 1000000,
+      "min_delta": 0.0,
+      "patience": 5,
+      "seed": 2021,
+      "weight_decay": 0.0001
+    },
+    "model": {
+      "branch_steps": 24,
+      "branches": [
+        {
+          "donor": null,
+          "features": [
+            "return_1"
+          ],
+          "name": "branch_0",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "log_return_1"
+          ],
+          "name": "branch_1",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "return_5"
+          ],
+          "name": "branch_2",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "log_return_5"
+          ],
+          "name": "branch_3",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "return_10"
+          ],
+          "name": "branch_4",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "log_return_10"
+          ],
+          "name": "branch_5",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "return_20"
+          ],
+          "name": "branch_6",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "log_return_20"
+          ],
+          "name": "branch_7",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "return_60"
+          ],
+          "name": "branch_8",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "log_return_60"
+          ],
+          "name": "branch_9",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "sma_10"
+          ],
+          "name": "branch_10",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "ema_10"
+          ],
+          "name": "branch_11",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "close_sma_ratio_10"
+          ],
+          "name": "branch_12",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "sma_20"
+          ],
+          "name": "branch_13",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "ema_20"
+          ],
+          "name": "branch_14",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "close_sma_ratio_20"
+          ],
+          "name": "branch_15",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "sma_50"
+          ],
+          "name": "branch_16",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "ema_50"
+          ],
+          "name": "branch_17",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "close_sma_ratio_50"
+          ],
+          "name": "branch_18",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "sma_100"
+          ],
+          "name": "branch_19",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "ema_100"
+          ],
+          "name": "branch_20",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "close_sma_ratio_100"
+          ],
+          "name": "branch_21",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "sma_200"
+          ],
+          "name": "branch_22",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "ema_200"
+          ],
+          "name": "branch_23",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "close_sma_ratio_200"
+          ],
+          "name": "branch_24",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "macd"
+          ],
+          "name": "branch_25",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "macd_signal"
+          ],
+          "name": "branch_26",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "macd_hist"
+          ],
+          "name": "branch_27",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "rsi_7"
+          ],
+          "name": "branch_28",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "rsi_14"
+          ],
+          "name": "branch_29",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "rsi_21"
+          ],
+          "name": "branch_30",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "stoch_k"
+          ],
+          "name": "branch_31",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "stoch_d"
+          ],
+          "name": "branch_32",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "williams_r_14"
+          ],
+          "name": "branch_33",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "cci_14"
+          ],
+          "name": "branch_34",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roc_10"
+          ],
+          "name": "branch_35",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roc_20"
+          ],
+          "name": "branch_36",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roc_60"
+          ],
+          "name": "branch_37",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "mom_10"
+          ],
+          "name": "branch_38",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "mom_20"
+          ],
+          "name": "branch_39",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "bb_upper"
+          ],
+          "name": "branch_40",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "bb_middle"
+          ],
+          "name": "branch_41",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "bb_lower"
+          ],
+          "name": "branch_42",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "bb_pct_b"
+          ],
+          "name": "branch_43",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "bb_width"
+          ],
+          "name": "branch_44",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "atr_14"
+          ],
+          "name": "branch_45",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "natr_14"
+          ],
+          "name": "branch_46",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "hist_vol_10"
+          ],
+          "name": "branch_47",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "hist_vol_20"
+          ],
+          "name": "branch_48",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "hist_vol_60"
+          ],
+          "name": "branch_49",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "ema_cross_10_50"
+          ],
+          "name": "branch_50",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "ema_cross_20_100"
+          ],
+          "name": "branch_51",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "trend_slope_50"
+          ],
+          "name": "branch_52",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "trend_strength_50"
+          ],
+          "name": "branch_53",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "obv"
+          ],
+          "name": "branch_54",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "obv_delta_20"
+          ],
+          "name": "branch_55",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "volume_sma_10"
+          ],
+          "name": "branch_56",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "volume_sma_20"
+          ],
+          "name": "branch_57",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "volume_ratio_20"
+          ],
+          "name": "branch_58",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "vwap_60"
+          ],
+          "name": "branch_59",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "mfi_14"
+          ],
+          "name": "branch_60",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "statistical__log_return_1"
+          ],
+          "name": "branch_61",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roll_mean_ret_20"
+          ],
+          "name": "branch_62",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roll_std_ret_20"
+          ],
+          "name": "branch_63",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roll_skew_ret_20"
+          ],
+          "name": "branch_64",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roll_kurt_ret_20"
+          ],
+          "name": "branch_65",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roll_mean_ret_60"
+          ],
+          "name": "branch_66",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roll_std_ret_60"
+          ],
+          "name": "branch_67",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roll_skew_ret_60"
+          ],
+          "name": "branch_68",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roll_kurt_ret_60"
+          ],
+          "name": "branch_69",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roll_mean_ret_252"
+          ],
+          "name": "branch_70",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roll_std_ret_252"
+          ],
+          "name": "branch_71",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roll_skew_ret_252"
+          ],
+          "name": "branch_72",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roll_kurt_ret_252"
+          ],
+          "name": "branch_73",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "realized_var_12"
+          ],
+          "name": "branch_74",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "realized_var_48"
+          ],
+          "name": "branch_75",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "autocorr_lag1_100"
+          ],
+          "name": "branch_76",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "autocorr_lag5_100"
+          ],
+          "name": "branch_77",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "sqret_autocorr_lag1_100"
+          ],
+          "name": "branch_78",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "vol_regime_high"
+          ],
+          "name": "branch_79",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "vol_regime_low"
+          ],
+          "name": "branch_80",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "hurst_proxy_200"
+          ],
+          "name": "branch_81",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "zscore_close_100"
+          ],
+          "name": "branch_82",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        }
+      ],
+      "core": {
+        "donor": null,
+        "params": {
+          "blocks": 2,
+          "d_model": 64,
+          "dropout": 0.0,
+          "ff_dim": 128,
+          "heads": 4,
+          "kernel_size": 3,
+          "stage_channels": [
+            32,
+            16,
+            8
+          ],
+          "time_factors": [
+            2,
+            2,
+            1
+          ]
+        },
+        "plugin": "transformer_conv",
+        "regime": "R0"
+      },
+      "feature_names": [
+        "return_1",
+        "log_return_1",
+        "return_5",
+        "log_return_5",
+        "return_10",
+        "log_return_10",
+        "return_20",
+        "log_return_20",
+        "return_60",
+        "log_return_60",
+        "sma_10",
+        "ema_10",
+        "close_sma_ratio_10",
+        "sma_20",
+        "ema_20",
+        "close_sma_ratio_20",
+        "sma_50",
+        "ema_50",
+        "close_sma_ratio_50",
+        "sma_100",
+        "ema_100",
+        "close_sma_ratio_100",
+        "sma_200",
+        "ema_200",
+        "close_sma_ratio_200",
+        "macd",
+        "macd_signal",
+        "macd_hist",
+        "rsi_7",
+        "rsi_14",
+        "rsi_21",
+        "stoch_k",
+        "stoch_d",
+        "williams_r_14",
+        "cci_14",
+        "roc_10",
+        "roc_20",
+        "roc_60",
+        "mom_10",
+        "mom_20",
+        "bb_upper",
+        "bb_middle",
+        "bb_lower",
+        "bb_pct_b",
+        "bb_width",
+        "atr_14",
+        "natr_14",
+        "hist_vol_10",
+        "hist_vol_20",
+        "hist_vol_60",
+        "ema_cross_10_50",
+        "ema_cross_20_100",
+        "trend_slope_50",
+        "trend_strength_50",
+        "obv",
+        "obv_delta_20",
+        "volume_sma_10",
+        "volume_sma_20",
+        "volume_ratio_20",
+        "vwap_60",
+        "mfi_14",
+        "statistical__log_return_1",
+        "roll_mean_ret_20",
+        "roll_std_ret_20",
+        "roll_skew_ret_20",
+        "roll_kurt_ret_20",
+        "roll_mean_ret_60",
+        "roll_std_ret_60",
+        "roll_skew_ret_60",
+        "roll_kurt_ret_60",
+        "roll_mean_ret_252",
+        "roll_std_ret_252",
+        "roll_skew_ret_252",
+        "roll_kurt_ret_252",
+        "realized_var_12",
+        "realized_var_48",
+        "autocorr_lag1_100",
+        "autocorr_lag5_100",
+        "sqret_autocorr_lag1_100",
+        "vol_regime_high",
+        "vol_regime_low",
+        "hurst_proxy_200",
+        "zscore_close_100"
+      ],
+      "fusion": {
+        "params": {},
+        "plugin": "sequence_concat"
+      },
+      "head": {
+        "params": {},
+        "plugin": "forecast"
+      },
+      "horizons": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "output_channels": 8,
+      "output_steps": 6,
+      "sample_hours": 4.0,
+      "target_count": 1,
+      "window": 24
+    },
+    "modular_candidate": {
+      "schema": "modular.candidate.v1",
+      "search_space_sha256": "ed9b846acab6c4b24016b823da0e1200fd14430e3d70d1544800879f76831d3b"
+    },
+    "objective": {
+      "higher_is_better": false,
+      "metric": "MAE",
+      "split": "validation",
+      "unit": "z_train"
+    },
+    "target_feature_indices": [
+      1
+    ]
+  },
+  "environment": {
+    "tensorflow": "2.21.0",
+    "keras": "3.13.2",
+    "numpy": "2.4.3",
+    "executable": "/home/harveybc/anaconda3/envs/tensorflow/bin/python",
+    "host_role": "worker_b",
+    "device_pin": "CUDA_VISIBLE_DEVICES environment (no launcher GPU option)"
+  },
+  "model": {
+    "branches": 83,
+    "branch_output_shapes": [
+      "(24, 16)"
+    ],
+    "concatenated_width_before_core": 1328,
+    "fused_shape": [
+      24,
+      1328
+    ],
+    "compression_path": [
+      {
+        "layer": "positional_encoding",
+        "output_shape": [
+          24,
+          1328
+        ]
+      },
+      {
+        "layer": "model_projection",
+        "output_shape": [
+          24,
+          64
+        ]
+      },
+      {
+        "layer": "stage_0_skip_downsample",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_block_projection",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_downsample_residual",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_downsample_norm",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_downsample_activation",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_temporal_conv",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_temporal_projection",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_temporal_residual",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_temporal_norm",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_output",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_1_skip_downsample",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_block_projection",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_downsample_residual",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_downsample_norm",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_downsample_activation",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_temporal_conv",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_temporal_projection",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_temporal_residual",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_temporal_norm",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_output",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_2_skip_downsample",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_block_projection",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_downsample_residual",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_downsample_norm",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_downsample_activation",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_temporal_conv",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_temporal_projection",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_temporal_residual",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_temporal_norm",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_output",
+        "output_shape": [
+          6,
+          8
+        ]
+      }
+    ],
+    "latent_shape": [
+      6,
+      8
+    ],
+    "forecast_shape": [
+      6,
+      1
+    ],
+    "total_parameters": 173926,
+    "trainable_parameters": 173926,
+    "branch_parameters": 5312,
+    "core_parameters": 168320
+  },
+  "status": "completed",
+  "wall_seconds": 94.32266664505005,
+  "cumulative": {
+    "cgroup": {
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-cpu-pilot-per_feature_mae_adamw-1790840524-1644710.scope",
+      "current_bytes": 1408737280,
+      "peak_bytes": 1516347392,
+      "max": 6442450944
+    },
+    "process": {
+      "VmHWM": 1870589952,
+      "VmRSS": 1769324544,
+      "cpu_seconds": 164.54
+    },
+    "stage_max_cgroup_peak_bytes": 1516347392,
+    "stage_max_tf_device_peak_bytes": 0
+  },
+  "cost": {
+    "observed_updates": 420,
+    "epochs_completed": 2,
+    "fit_elapsed_seconds": 61.303794337,
+    "seconds_per_update_including_validation": 0.14596141508809524,
+    "fit_stage_seconds": 37.582939965999685,
+    "updates_per_epoch": 210,
+    "batch_size": 64
+  },
+  "pilot_metrics_PILOT_NOT_A_RESULT": {
+    "objective": {
+      "higher_is_better": false,
+      "metric": "MAE",
+      "split": "validation",
+      "unit": "z_train",
+      "value": 0.8664717182508148
+    },
+    "metrics": {
+      "MAE": 0.8664717182508148,
+      "MSE": 1.6917508876342382,
+      "baseline_MAE": 1.0224384641383506,
+      "baseline_MSE": 2.1779386239805927,
+      "skill_MAE": 0.15254389516632194,
+      "skill_MSE": 0.22323298324070995
+    },
+    "stop_reason": "max_epochs",
+    "selected_epoch": 2
+  },
+  "evaluation_receipt": "/home/harveybc/.local/state/scratch/m07/cost_pilot_cpu_per_feature_mae_adamw/candidate/evaluation.json",
+  "digests": {
+    "config_sha256": "90a76d46597c36a859d392e182d3029c2f632e80657c18c87e945ad601a58183",
+    "train_sha256": "1634f4da96df3f781eed1c5ebb3af6b1aa9a9c8dcc81d9fb56ed9b7960c92bc1",
+    "validation_sha256": "340b73ba9343464fa3201bcf86c99a94bca879fae4ef633004afb2dfbcb28f4e",
+    "initial_weights_sha256": "c0c58d0258e0a42bc386aca4471cf233a84d5ac4f61386df399b83f61d5f7168",
+    "weights_sha256": "76a25d19d01075fe398f141f76fdcb1582ce81ae81d4a22e38c9e404d4c7f75c",
+    "model_sha256": "7dd6f6be7fd641e8aea937db7f33b22e716888ada05fc502c3495a95bd3cc5d7"
+  },
+  "data": {
+    "dataset_id": "git:predictor:b1f8a74f:ethusdt_4h_tech_stat_full_model_ready.csv:1b447c66e68495e826c53e2ab2b08ecd3922c8fdc735747628f8d0435ebe440f",
+    "train_rows": 13415,
+    "validation_rows": 2190,
+    "horizons": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "target_names": [
+      "log_return_1"
+    ],
+    "metric_space": "z_train",
+    "scaler_identity": "eth4h-train-standard:edee2af54c84ec51c5d395421f5af877748c99fde9b2d526d7b2bbba6fafe491",
+    "scaler_scale": [
+      0.01947283965808004
+    ],
+    "timestamp_unit": "seconds",
+    "train_target_end": 1703721600,
+    "validation_input_start": 1703736000,
+    "validation_origin_start": 1704067200,
+    "test_used": false
+  }
+}

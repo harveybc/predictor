@@ -1,0 +1,117 @@
+{
+ "cells": {
+  "10f83766": {
+   "beats_zero_return_by_horizon": {
+    "1": false,
+    "2": false,
+    "3": false,
+    "4": true,
+    "5": false,
+    "6": false
+   },
+   "cid": "10f83766bb6864376b9c2840c0c173dedf46fd5deacd5e85485d0f36dc3a13ea",
+   "evidence": {
+    "evidence_sha256": "ebfefa2113729afd590ab5550069a2b266836f0f78f8f47ce015ac97cb51d266",
+    "path": "EVIDENCE_10f83766.json",
+    "sha256": "19879f6584e04ddd3889f3bceca273cadee07f1e41c275a5b6e3d28e341b752c"
+   },
+   "label": "grouped32_mae_adamw",
+   "made": "2026-10-01T08:21:23Z",
+   "objective_MAE_z": 0.8675261983202702,
+   "predictions": {
+    "path": "PREDICTIONS_10f83766.csv",
+    "predictions_sha256": "dd1e43842bb6ff0fb965c7fcf149ac2c3ab01498476bbea43c406e9cfff391d1",
+    "row_ids_sha256": "879b38466be9c8f777e62b300f261d70213a0703597b4ae8b56d29c8ff8f6b31",
+    "rows": 2190,
+    "sha256": "2f538a3f92218e2630f89946a6018b582d454dc5ea461dfb98558151497727f0"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_r0_v1/queue.sqlite",
+   "seed": 2021
+  },
+  "4a122eff": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": false,
+    "3": true,
+    "4": false,
+    "5": false,
+    "6": true
+   },
+   "cid": "4a122eff3340215315174016e45e30435e796d1f518baa2f4c8d62d888ff087e",
+   "evidence": {
+    "evidence_sha256": "427752e8d3c514b309197ef0c8af918ea33853d61fbd82f748d5a5d0900a7733",
+    "path": "EVIDENCE_4a122eff.json",
+    "sha256": "a0d8f0d748a9255d697b96f2025f5635b09d82cae62167bcda190e49396c1a50"
+   },
+   "label": "grouped32_mae_adamw",
+   "made": "2026-10-01T08:21:23Z",
+   "objective_MAE_z": 0.8669550204479994,
+   "predictions": {
+    "path": "PREDICTIONS_4a122eff.csv",
+    "predictions_sha256": "a36aa942462e9ed8cc66ced1bc6bce2b0f4bce9548c11640831abcc4fd9c2461",
+    "row_ids_sha256": "879b38466be9c8f777e62b300f261d70213a0703597b4ae8b56d29c8ff8f6b31",
+    "rows": 2190,
+    "sha256": "eff3b1ed2d583dda33f9a5523f036f775f514b7f1c9b25f5056b7685c2496348"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_r0_v1/queue.sqlite",
+   "seed": 2022
+  },
+  "50ee6e9b": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": false,
+    "3": false,
+    "4": false,
+    "5": true,
+    "6": true
+   },
+   "cid": "50ee6e9bd0cb7f95b857b9f2c8f56de36c696eaa20280a9063e610b08bd5c72f",
+   "evidence": {
+    "evidence_sha256": "1ea48d2669e403922e81c2eb3087601e3aa40b599ed08b5a0015c6b6cc9cc23f",
+    "path": "EVIDENCE_50ee6e9b.json",
+    "sha256": "06ec14d105befc654150dd913b9a886e1d0700e9de6309b5dfe7f26e14d5885e"
+   },
+   "label": "control_mlp_mae_adamw",
+   "made": "2026-10-01T08:21:23Z",
+   "objective_MAE_z": 0.8660259776410513,
+   "predictions": {
+    "path": "PREDICTIONS_50ee6e9b.csv",
+    "predictions_sha256": "3309c0f92cec1007e8164c9d83d9163244eba09df5b584c661d7c9d5ec13d195",
+    "row_ids_sha256": "879b38466be9c8f777e62b300f261d70213a0703597b4ae8b56d29c8ff8f6b31",
+    "rows": 2190,
+    "sha256": "e3ffedd3cfc3d0d256ef496e4ab70f3d2e309e1bc475e10dc6c26a4984a90385"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_r0_v1/queue.sqlite",
+   "seed": 2022
+  },
+  "d26350d4": {
+   "beats_zero_return_by_horizon": {
+    "1": true,
+    "2": false,
+    "3": true,
+    "4": true,
+    "5": true,
+    "6": true
+   },
+   "cid": "d26350d4e595e84a8b69d424a48148e04fba0f4a33db56395db6e68f9d457bfa",
+   "evidence": {
+    "evidence_sha256": "6876d8e9c798216c1f014aff8ea5023c7480626497aa74f052b6af1d12148a93",
+    "path": "EVIDENCE_d26350d4.json",
+    "sha256": "984f2559f8988361568330138a7f2a4b496135accd1d1ed1037725b72ab9ca17"
+   },
+   "label": "control_mlp_mae_adamw",
+   "made": "2026-10-01T08:21:23Z",
+   "objective_MAE_z": 0.8643422442553336,
+   "predictions": {
+    "path": "PREDICTIONS_d26350d4.csv",
+    "predictions_sha256": "b69b4656c3e0cc9dca0f4bd02a7dceaa7976d4b6efa1b0808d186ed041e6af2f",
+    "row_ids_sha256": "879b38466be9c8f777e62b300f261d70213a0703597b4ae8b56d29c8ff8f6b31",
+    "rows": 2190,
+    "sha256": "d87fb2b91c64b9cb3ac9c776c07be9b2208a395c5ab40ac11ee2482a92c72e7f"
+   },
+   "queue": "/home/harveybc/.local/state/scratch/m07/campaign_r0_v1/queue.sqlite",
+   "seed": 2021
+  }
+ },
+ "schema": "f2.artifacts_index.v1"
+}

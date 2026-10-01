@@ -1,0 +1,690 @@
+{
+  "schema": "m04.cost_pilot.v1",
+  "label": "PILOT_NOT_A_RESULT",
+  "started": 1790842287.6776571,
+  "argv": [
+    "tools/modular_doin_cost_pilot.py",
+    "--candidate",
+    "/home/harveybc/.local/state/scratch/m07/cand_grouped32_mae_adamw_s2021.json",
+    "--train",
+    "/home/harveybc/.local/state/scratch/m07/data/eth4h_l24_h6_v1/train.npz",
+    "--validation",
+    "/home/harveybc/.local/state/scratch/m07/data/eth4h_l24_h6_v1/validation.npz",
+    "--out",
+    "/home/harveybc/.local/state/scratch/m07/cost_pilot_gpu_grouped32_mae_adamw",
+    "--gpu-uuid",
+    "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+    "--epochs",
+    "2"
+  ],
+  "stages": [
+    {
+      "stage": "setup",
+      "seconds": 13.534988309984328,
+      "cgroup_peak_bytes": 1437724672,
+      "tf_device": {
+        "current": 1382912,
+        "peak": 103102720
+      }
+    },
+    {
+      "stage": "fit",
+      "seconds": 14.791920820018277,
+      "cgroup_peak_bytes": 1513803776,
+      "tf_device": {
+        "current": 1599232,
+        "peak": 130075648
+      }
+    },
+    {
+      "stage": "score",
+      "seconds": 6.788748003978981,
+      "cgroup_peak_bytes": 1505992704,
+      "tf_device": {
+        "current": 1994496,
+        "peak": 12977920
+      }
+    }
+  ],
+  "cgroup_peak_file": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-gpu-pilot-grouped32_mae_adamw-1790841536-1662569.scope/memory.peak",
+  "per_fd_peak_reset": true,
+  "gpu_facts": {
+    "expected_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+    "cuda_visible_devices": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+    "fallback_raise_armed": true,
+    "driver_visible": [
+      "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, NVIDIA GeForce RTX 4090 Laptop GPU, 16376 MiB, 50"
+    ],
+    "driver_uuid_ok": true,
+    "tf_version": "2.21.0",
+    "tf_registered": [
+      {
+        "name": "/physical_device:GPU:0",
+        "compute_capability": "(8, 9)",
+        "device_name": "NVIDIA GeForce RTX 4090 Laptop GPU"
+      }
+    ],
+    "op_placement": "/job:localhost/replica:0/task:0/device:GPU:0",
+    "tf_memory_after_probe": {
+      "current": 8390144,
+      "peak": 8390144
+    }
+  },
+  "candidate": {
+    "evaluator": {
+      "batch_size": 64,
+      "learning_rate": 0.001,
+      "loss": "mae",
+      "max_epochs": 2,
+      "max_seconds": 5400.0,
+      "max_updates": 1000000,
+      "min_delta": 0.0,
+      "patience": 5,
+      "seed": 2021,
+      "weight_decay": 0.0001
+    },
+    "model": {
+      "branch_steps": 24,
+      "branches": [
+        {
+          "donor": null,
+          "features": [
+            "return_1",
+            "log_return_1",
+            "return_5",
+            "log_return_5",
+            "return_10",
+            "log_return_10",
+            "return_20",
+            "log_return_20",
+            "return_60",
+            "log_return_60",
+            "sma_10",
+            "ema_10",
+            "close_sma_ratio_10",
+            "sma_20",
+            "ema_20",
+            "close_sma_ratio_20",
+            "sma_50",
+            "ema_50",
+            "close_sma_ratio_50",
+            "sma_100",
+            "ema_100",
+            "close_sma_ratio_100",
+            "sma_200",
+            "ema_200",
+            "close_sma_ratio_200",
+            "macd",
+            "macd_signal",
+            "macd_hist",
+            "rsi_7",
+            "rsi_14",
+            "rsi_21",
+            "stoch_k"
+          ],
+          "name": "branch_0",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "stoch_d",
+            "williams_r_14",
+            "cci_14",
+            "roc_10",
+            "roc_20",
+            "roc_60",
+            "mom_10",
+            "mom_20",
+            "bb_upper",
+            "bb_middle",
+            "bb_lower",
+            "bb_pct_b",
+            "bb_width",
+            "atr_14",
+            "natr_14",
+            "hist_vol_10",
+            "hist_vol_20",
+            "hist_vol_60",
+            "ema_cross_10_50",
+            "ema_cross_20_100",
+            "trend_slope_50",
+            "trend_strength_50",
+            "obv",
+            "obv_delta_20",
+            "volume_sma_10",
+            "volume_sma_20",
+            "volume_ratio_20",
+            "vwap_60",
+            "mfi_14",
+            "statistical__log_return_1",
+            "roll_mean_ret_20",
+            "roll_std_ret_20"
+          ],
+          "name": "branch_1",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        },
+        {
+          "donor": null,
+          "features": [
+            "roll_skew_ret_20",
+            "roll_kurt_ret_20",
+            "roll_mean_ret_60",
+            "roll_std_ret_60",
+            "roll_skew_ret_60",
+            "roll_kurt_ret_60",
+            "roll_mean_ret_252",
+            "roll_std_ret_252",
+            "roll_skew_ret_252",
+            "roll_kurt_ret_252",
+            "realized_var_12",
+            "realized_var_48",
+            "autocorr_lag1_100",
+            "autocorr_lag5_100",
+            "sqret_autocorr_lag1_100",
+            "vol_regime_high",
+            "vol_regime_low",
+            "hurst_proxy_200",
+            "zscore_close_100"
+          ],
+          "name": "branch_2",
+          "params": {
+            "channels": 16,
+            "kernel_size": 3
+          },
+          "plugin": "causal_conv1d",
+          "regime": "R0"
+        }
+      ],
+      "core": {
+        "donor": null,
+        "params": {
+          "blocks": 2,
+          "d_model": 64,
+          "dropout": 0.0,
+          "ff_dim": 128,
+          "heads": 4,
+          "kernel_size": 3,
+          "stage_channels": [
+            32,
+            16,
+            8
+          ],
+          "time_factors": [
+            2,
+            2,
+            1
+          ]
+        },
+        "plugin": "transformer_conv",
+        "regime": "R0"
+      },
+      "feature_names": [
+        "return_1",
+        "log_return_1",
+        "return_5",
+        "log_return_5",
+        "return_10",
+        "log_return_10",
+        "return_20",
+        "log_return_20",
+        "return_60",
+        "log_return_60",
+        "sma_10",
+        "ema_10",
+        "close_sma_ratio_10",
+        "sma_20",
+        "ema_20",
+        "close_sma_ratio_20",
+        "sma_50",
+        "ema_50",
+        "close_sma_ratio_50",
+        "sma_100",
+        "ema_100",
+        "close_sma_ratio_100",
+        "sma_200",
+        "ema_200",
+        "close_sma_ratio_200",
+        "macd",
+        "macd_signal",
+        "macd_hist",
+        "rsi_7",
+        "rsi_14",
+        "rsi_21",
+        "stoch_k",
+        "stoch_d",
+        "williams_r_14",
+        "cci_14",
+        "roc_10",
+        "roc_20",
+        "roc_60",
+        "mom_10",
+        "mom_20",
+        "bb_upper",
+        "bb_middle",
+        "bb_lower",
+        "bb_pct_b",
+        "bb_width",
+        "atr_14",
+        "natr_14",
+        "hist_vol_10",
+        "hist_vol_20",
+        "hist_vol_60",
+        "ema_cross_10_50",
+        "ema_cross_20_100",
+        "trend_slope_50",
+        "trend_strength_50",
+        "obv",
+        "obv_delta_20",
+        "volume_sma_10",
+        "volume_sma_20",
+        "volume_ratio_20",
+        "vwap_60",
+        "mfi_14",
+        "statistical__log_return_1",
+        "roll_mean_ret_20",
+        "roll_std_ret_20",
+        "roll_skew_ret_20",
+        "roll_kurt_ret_20",
+        "roll_mean_ret_60",
+        "roll_std_ret_60",
+        "roll_skew_ret_60",
+        "roll_kurt_ret_60",
+        "roll_mean_ret_252",
+        "roll_std_ret_252",
+        "roll_skew_ret_252",
+        "roll_kurt_ret_252",
+        "realized_var_12",
+        "realized_var_48",
+        "autocorr_lag1_100",
+        "autocorr_lag5_100",
+        "sqret_autocorr_lag1_100",
+        "vol_regime_high",
+        "vol_regime_low",
+        "hurst_proxy_200",
+        "zscore_close_100"
+      ],
+      "fusion": {
+        "params": {},
+        "plugin": "sequence_concat"
+      },
+      "head": {
+        "params": {},
+        "plugin": "forecast"
+      },
+      "horizons": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "output_channels": 8,
+      "output_steps": 6,
+      "sample_hours": 4.0,
+      "target_count": 1,
+      "window": 24
+    },
+    "modular_candidate": {
+      "schema": "modular.candidate.v1",
+      "search_space_sha256": "ed9b846acab6c4b24016b823da0e1200fd14430e3d70d1544800879f76831d3b"
+    },
+    "objective": {
+      "higher_is_better": false,
+      "metric": "MAE",
+      "split": "validation",
+      "unit": "z_train"
+    },
+    "target_feature_indices": [
+      1
+    ]
+  },
+  "environment": {
+    "tensorflow": "2.21.0",
+    "keras": "3.13.2",
+    "numpy": "2.4.3",
+    "executable": "/home/harveybc/anaconda3/envs/tensorflow/bin/python",
+    "host_role": "worker_b",
+    "device_pin": "CUDA_VISIBLE_DEVICES environment (no launcher GPU option)"
+  },
+  "model": {
+    "branches": 3,
+    "branch_output_shapes": [
+      "(24, 16)"
+    ],
+    "concatenated_width_before_core": 48,
+    "fused_shape": [
+      24,
+      48
+    ],
+    "compression_path": [
+      {
+        "layer": "positional_encoding",
+        "output_shape": [
+          24,
+          48
+        ]
+      },
+      {
+        "layer": "model_projection",
+        "output_shape": [
+          24,
+          64
+        ]
+      },
+      {
+        "layer": "stage_0_skip_downsample",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_block_projection",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_downsample_residual",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_downsample_norm",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_downsample_activation",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_temporal_conv",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_temporal_projection",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_temporal_residual",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_temporal_norm",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_0_output",
+        "output_shape": [
+          12,
+          32
+        ]
+      },
+      {
+        "layer": "stage_1_skip_downsample",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_block_projection",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_downsample_residual",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_downsample_norm",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_downsample_activation",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_temporal_conv",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_temporal_projection",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_temporal_residual",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_temporal_norm",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_1_output",
+        "output_shape": [
+          6,
+          16
+        ]
+      },
+      {
+        "layer": "stage_2_skip_downsample",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_block_projection",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_downsample_residual",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_downsample_norm",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_downsample_activation",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_temporal_conv",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_temporal_projection",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_temporal_residual",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_temporal_norm",
+        "output_shape": [
+          6,
+          8
+        ]
+      },
+      {
+        "layer": "stage_2_output",
+        "output_shape": [
+          6,
+          8
+        ]
+      }
+    ],
+    "latent_shape": [
+      6,
+      8
+    ],
+    "forecast_shape": [
+      6,
+      1
+    ],
+    "total_parameters": 90726,
+    "trainable_parameters": 90726,
+    "branch_parameters": 4032,
+    "core_parameters": 86400
+  },
+  "status": "completed",
+  "wall_seconds": 38.838547706604004,
+  "cumulative": {
+    "cgroup": {
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-gpu-pilot-grouped32_mae_adamw-1790841536-1662569.scope",
+      "current_bytes": 1399328768,
+      "peak_bytes": 1513803776,
+      "max": 6442450944
+    },
+    "process": {
+      "VmHWM": 2081529856,
+      "VmRSS": 1971695616,
+      "cpu_seconds": 39.480000000000004
+    },
+    "stage_max_cgroup_peak_bytes": 1513803776,
+    "stage_max_tf_device_peak_bytes": 130075648
+  },
+  "cost": {
+    "observed_updates": 420,
+    "epochs_completed": 2,
+    "fit_elapsed_seconds": 23.276637549017323,
+    "seconds_per_update_including_validation": 0.05542056559289839,
+    "fit_stage_seconds": 14.791920820018277,
+    "updates_per_epoch": 210,
+    "batch_size": 64
+  },
+  "pilot_metrics_PILOT_NOT_A_RESULT": {
+    "objective": {
+      "higher_is_better": false,
+      "metric": "MAE",
+      "split": "validation",
+      "unit": "z_train",
+      "value": 0.8675261983202702
+    },
+    "metrics": {
+      "MAE": 0.8675261983202702,
+      "MSE": 1.6930568354841375,
+      "baseline_MAE": 1.0224384641383506,
+      "baseline_MSE": 2.1779386239805927,
+      "skill_MAE": 0.15151255674700292,
+      "skill_MSE": 0.22263335759675473
+    },
+    "stop_reason": "max_epochs",
+    "selected_epoch": 2
+  },
+  "evaluation_receipt": "/home/harveybc/.local/state/scratch/m07/cost_pilot_gpu_grouped32_mae_adamw/candidate/evaluation.json",
+  "digests": {
+    "config_sha256": "fe221f1342e5c9e7bedcbc2bd6aa9ec4804799d92bf1b262c95b8d7bbd99aaca",
+    "train_sha256": "1634f4da96df3f781eed1c5ebb3af6b1aa9a9c8dcc81d9fb56ed9b7960c92bc1",
+    "validation_sha256": "340b73ba9343464fa3201bcf86c99a94bca879fae4ef633004afb2dfbcb28f4e",
+    "initial_weights_sha256": "20009dcf469d37b81082d806d515bd690461c5771083b4bb4888a691acbe358d",
+    "weights_sha256": "bc4e73593a543a4b458b2263dbb4c4d65cb9b6c83682f45d2d0a3f10f26a98d7",
+    "model_sha256": "826ff49413deda6ed094f3bc1dedb4e8048068ff0a8c3c3008ce22c46adfe8ea"
+  },
+  "data": {
+    "dataset_id": "git:predictor:b1f8a74f:ethusdt_4h_tech_stat_full_model_ready.csv:1b447c66e68495e826c53e2ab2b08ecd3922c8fdc735747628f8d0435ebe440f",
+    "train_rows": 13415,
+    "validation_rows": 2190,
+    "horizons": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "target_names": [
+      "log_return_1"
+    ],
+    "metric_space": "z_train",
+    "scaler_identity": "eth4h-train-standard:edee2af54c84ec51c5d395421f5af877748c99fde9b2d526d7b2bbba6fafe491",
+    "scaler_scale": [
+      0.01947283965808004
+    ],
+    "timestamp_unit": "seconds",
+    "train_target_end": 1703721600,
+    "validation_input_start": 1703736000,
+    "validation_origin_start": 1704067200,
+    "test_used": false
+  }
+}

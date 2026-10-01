@@ -1,0 +1,624 @@
+{
+  "amendments": [
+    {
+      "change": "caps = 1.25 x GPU-measured cgroup peak of the larger pilot (per_feature 2107588608 B, 4090, 2 epochs, real workload; verify cap equal; never lowered); control hidden widths sized to the grouped32 parameter count 90726",
+      "date": "2026-10-01",
+      "from_sha256": "1dac88dc8bfd1757386bc5ec63b89a6015c54b0bfbc122bedd6b932f534bc0b9",
+      "n": 1,
+      "patch": {
+        "control": {
+          "hidden": [
+            44,
+            44
+          ],
+          "parameter_target": 90726,
+          "parameters": 89942
+        },
+        "resources": {
+          "train": {
+            "cap": "2513M"
+          },
+          "verify": {
+            "cap": "2513M"
+          }
+        }
+      }
+    }
+  ],
+  "asset": "ETHUSDT 4h spot bars (view predictor b1f8a74f)",
+  "base": {
+    "donors": {},
+    "evaluator_fixed": {
+      "max_seconds": 5400.0,
+      "max_updates": 1000000
+    },
+    "feature_names": [
+      "return_1",
+      "log_return_1",
+      "return_5",
+      "log_return_5",
+      "return_10",
+      "log_return_10",
+      "return_20",
+      "log_return_20",
+      "return_60",
+      "log_return_60",
+      "sma_10",
+      "ema_10",
+      "close_sma_ratio_10",
+      "sma_20",
+      "ema_20",
+      "close_sma_ratio_20",
+      "sma_50",
+      "ema_50",
+      "close_sma_ratio_50",
+      "sma_100",
+      "ema_100",
+      "close_sma_ratio_100",
+      "sma_200",
+      "ema_200",
+      "close_sma_ratio_200",
+      "macd",
+      "macd_signal",
+      "macd_hist",
+      "rsi_7",
+      "rsi_14",
+      "rsi_21",
+      "stoch_k",
+      "stoch_d",
+      "williams_r_14",
+      "cci_14",
+      "roc_10",
+      "roc_20",
+      "roc_60",
+      "mom_10",
+      "mom_20",
+      "bb_upper",
+      "bb_middle",
+      "bb_lower",
+      "bb_pct_b",
+      "bb_width",
+      "atr_14",
+      "natr_14",
+      "hist_vol_10",
+      "hist_vol_20",
+      "hist_vol_60",
+      "ema_cross_10_50",
+      "ema_cross_20_100",
+      "trend_slope_50",
+      "trend_strength_50",
+      "obv",
+      "obv_delta_20",
+      "volume_sma_10",
+      "volume_sma_20",
+      "volume_ratio_20",
+      "vwap_60",
+      "mfi_14",
+      "statistical__log_return_1",
+      "roll_mean_ret_20",
+      "roll_std_ret_20",
+      "roll_skew_ret_20",
+      "roll_kurt_ret_20",
+      "roll_mean_ret_60",
+      "roll_std_ret_60",
+      "roll_skew_ret_60",
+      "roll_kurt_ret_60",
+      "roll_mean_ret_252",
+      "roll_std_ret_252",
+      "roll_skew_ret_252",
+      "roll_kurt_ret_252",
+      "realized_var_12",
+      "realized_var_48",
+      "autocorr_lag1_100",
+      "autocorr_lag5_100",
+      "sqret_autocorr_lag1_100",
+      "vol_regime_high",
+      "vol_regime_low",
+      "hurst_proxy_200",
+      "zscore_close_100"
+    ],
+    "horizons": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "objective": {
+      "higher_is_better": false,
+      "metric": "MAE",
+      "split": "validation",
+      "unit": "z_train"
+    },
+    "sample_hours": 4.0,
+    "target_feature_indices": [
+      1
+    ],
+    "window": 24
+  },
+  "campaign_id": "f2_eth4h_l24_h6_r0_v1",
+  "cells": {
+    "architectures": [
+      "grouped32",
+      "per_feature",
+      "control_mlp"
+    ],
+    "losses": [
+      "mae",
+      "huber"
+    ],
+    "naming": "<architecture>_<loss>_<optimizer> x seed",
+    "optimizers": {
+      "adam": 0.0,
+      "adamw": 0.0001
+    },
+    "regime": "R0"
+  },
+  "control": {
+    "activation": "relu",
+    "hidden": [
+      44,
+      44
+    ],
+    "kind": "flatten_mlp",
+    "parameter_target": 90726,
+    "parameters": 89942,
+    "sizing": "two equal hidden layers sized to the grouped32 modular model's trainable parameter count measured in the cost pilot (amended before enqueue)"
+  },
+  "data": {
+    "manifest": {
+      "path": "/home/harveybc/.local/state/scratch/m07/data/eth4h_l24_h6_v1/MANIFEST.json",
+      "sha256": "0c107bbf07b66c13b8f118160b084a6ebfdeae16bfef5ffed2ec9066796b73a4"
+    },
+    "train": {
+      "path": "/home/harveybc/.local/state/scratch/m07/data/eth4h_l24_h6_v1/train.npz",
+      "sha256": "1634f4da96df3f781eed1c5ebb3af6b1aa9a9c8dcc81d9fb56ed9b7960c92bc1"
+    },
+    "validation": {
+      "path": "/home/harveybc/.local/state/scratch/m07/data/eth4h_l24_h6_v1/validation.npz",
+      "sha256": "340b73ba9343464fa3201bcf86c99a94bca879fae4ef633004afb2dfbcb28f4e"
+    }
+  },
+  "data_location": "workers",
+  "data_manifest": {
+    "dataset_id": "git:predictor:b1f8a74f:ethusdt_4h_tech_stat_full_model_ready.csv:1b447c66e68495e826c53e2ab2b08ecd3922c8fdc735747628f8d0435ebe440f",
+    "declared_split": {
+      "declared_by": "predictor manifest 14a1077f (view calendar split)",
+      "test_rows": [
+        15895,
+        18085
+      ],
+      "train_rows": [
+        0,
+        13699
+      ],
+      "validation_rows": [
+        13699,
+        15895
+      ]
+    },
+    "feature_manifest": {
+      "admissible_declaration_sha256": "f3c0becaa1655ac16a567aef6ac0e67ecbb89ddc5b204e05d5a8dac2394b527d",
+      "feature_count": 83,
+      "file_sha256": "fdff0c85fc376cd6930cede4981a64b076022bd701c6a045339689e3ab892d4c",
+      "manifest_sha256_canonical": "30b780784c9ec4f04ec6d58bec056e7dd9b15706595489856bf8e336202b3a67",
+      "status": "FROZEN_DEVELOPMENT",
+      "variant": "A_all_admissible_control"
+    },
+    "feature_order_sha256": "95e9b85a29a507d86afdc2b33f582810ad1dd05c365de86211b0e4b6cd4f3193",
+    "metric_space": "z_train",
+    "purge_bars": 6,
+    "scaler_identity": "eth4h-train-standard:edee2af54c84ec51c5d395421f5af877748c99fde9b2d526d7b2bbba6fafe491",
+    "schema": "f2.eth_forecast_npz.v1",
+    "source_commit": "b1f8a74f",
+    "source_sha256": "1b447c66e68495e826c53e2ab2b08ecd3922c8fdc735747628f8d0435ebe440f",
+    "split_sha256": "116a5b645fe08138c49a558c206dd970528128bcd8370bb9ec8cd62b20a61e25",
+    "target": {
+      "definition": "Y_h = sum_{k=1..h} z(log_return_1[t+k]) = (log(CLOSE[t+h]/CLOSE[t]) - h*mu)/sigma; mu, sigma fitted on train rows only",
+      "feature": "log_return_1",
+      "inverse": "R_h = sigma*Y_h + h*mu; CLOSE[t+h] = CLOSE[t]*exp(R_h)",
+      "mu": 0.00014609718726936276,
+      "sigma": 0.01947283965808004
+    }
+  },
+  "data_manifest_sha256": "0c107bbf07b66c13b8f118160b084a6ebfdeae16bfef5ffed2ec9066796b73a4",
+  "default_candidate": {
+    "branch.channels": 16,
+    "branch.dilation_rate": 1,
+    "branch.grouping_size": 1,
+    "branch.kernel_size": 3,
+    "branch.plugin": "causal_conv1d",
+    "branch.regime": "R0",
+    "core.blocks": 2,
+    "core.d_model": 64,
+    "core.dropout": 0.0,
+    "core.ff_dim": 128,
+    "core.heads": 4,
+    "core.kernel_size": 3,
+    "core.regime": "R0",
+    "core.stage_channels_0": 32,
+    "core.stage_channels_1": 16,
+    "core.stage_count": 3,
+    "core.time_factor_0": 2,
+    "core.time_factor_1": 2,
+    "core.time_factor_2": 1,
+    "model.branch_steps": 24,
+    "model.output_channels": 8,
+    "model.output_steps": 6,
+    "train.batch_size": 64,
+    "train.learning_rate": 0.001,
+    "train.loss": "mae",
+    "train.max_epochs": 30,
+    "train.min_delta": 0.0,
+    "train.patience": 5,
+    "train.weight_decay": 0.0001
+  },
+  "default_huber_delta": 1.0,
+  "development_note": "the 2024 validation reserve is consulted by every cell and by selection; it is a DEVELOPMENT reserve. The 2025 test rows are untouched for a later confirmatory pass.",
+  "executor": {
+    "cpu_threads": 4,
+    "crispdm_run": "/home/harveybc/.local/bin/crispdm-run",
+    "cuda_visible_devices": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+    "extra_env": {
+      "CUDA_CACHE_MAXSIZE": "2147483648",
+      "LD_LIBRARY_PATH": "/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cublas/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cuda_cupti/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cuda_runtime/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cudnn/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cufft/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/curand/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cusolver/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cusparse/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cusparselt/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/nccl/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/nvjitlink/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/nvshmem/lib:",
+      "TF_CPP_MIN_LOG_LEVEL": "1",
+      "TF_DETERMINISTIC_OPS": "1",
+      "TF_NUM_INTRAOP_THREADS": "4"
+    },
+    "kind": "f2.local_crispdm",
+    "predictor_checkout": "/home/harveybc/Documents/GitHub/.worktrees/predictor-f2-eth-20261001",
+    "predictor_python": "/home/harveybc/anaconda3/envs/tensorflow/bin/python",
+    "predictor_revision": "5609f43a7e51d1aad139a44d5e196638f959ef8c"
+  },
+  "freeze": {
+    "budget": {
+      "batch_size": 64,
+      "learning_rate": 0.001,
+      "max_epochs": 30,
+      "max_seconds": 5400.0,
+      "max_updates": 1000000,
+      "patience": 5
+    },
+    "frozen_metric": {
+      "primary": "MAE",
+      "secondary": "MSE"
+    },
+    "horizons": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "models": "grouped32 and per_feature modular R0 (lane D corrected default) and flatten_mlp control",
+    "performed_by": "M07 (lane F2) under the owner standing order of 2026-10-01; no external signature",
+    "purge_bars": 6,
+    "rows": {
+      "train": 13415,
+      "validation": 2190
+    },
+    "seeds": [
+      2021,
+      2022
+    ],
+    "selection_rule": "lowest mean validation MAE (z_train, all horizons) across both paired seeds, verified cells only; naive comparisons never enter the ranking",
+    "source": "git:predictor:b1f8a74f:ethusdt_4h_tech_stat_full_model_ready.csv:1b447c66e68495e826c53e2ab2b08ecd3922c8fdc735747628f8d0435ebe440f",
+    "splits": {
+      "declared_by": "predictor manifest 14a1077f (view calendar split)",
+      "test_rows": [
+        15895,
+        18085
+      ],
+      "train_rows": [
+        0,
+        13699
+      ],
+      "validation_rows": [
+        13699,
+        15895
+      ]
+    },
+    "target": {
+      "definition": "Y_h = sum_{k=1..h} z(log_return_1[t+k]) = (log(CLOSE[t+h]/CLOSE[t]) - h*mu)/sigma; mu, sigma fitted on train rows only",
+      "feature": "log_return_1",
+      "inverse": "R_h = sigma*Y_h + h*mu; CLOSE[t+h] = CLOSE[t]*exp(R_h)",
+      "mu": 0.00014609718726936276,
+      "sigma": 0.01947283965808004
+    },
+    "train_fitted_transforms": "eth4h-train-standard:edee2af54c84ec51c5d395421f5af877748c99fde9b2d526d7b2bbba6fafe491"
+  },
+  "hosts": {
+    "worker_b": {}
+  },
+  "label": "DEVELOPMENT",
+  "lane_b_probe": {
+    "commits": [
+      "3f40cea",
+      "678665e"
+    ],
+    "result": "every feature subset lost to the zero-return naive in the ridge probe",
+    "targets": "Y_s@4h, Y_l@24h, Y_l@144h elapsed-second log returns; h=1 and h=6 coincide with Y_s@4h and Y_l@24h on windows without irregular steps (all scored windows); Y_l@144h NOT_COVERED by this campaign"
+  },
+  "naives": {
+    "persistence_last_value": "evaluator baseline: last observed standardized 1-bar return at the origin repeated per horizon (same rows)",
+    "seasonal_6": "6-bar (24 h) seasonal naive on the cumulative target: Y_h(t) := Y_h(t-6), read from the input window (same rows)",
+    "strict_minimum": "per horizon the lowest-MAE naive among the above decides the reading",
+    "train_mean": "Y_h = 0 (the train drift h*mu)",
+    "zero_return": "MANDATORY first bar: CLOSE[t+h] = CLOSE[t], i.e. Y_h = -h*mu/sigma (same rows)"
+  },
+  "paired_seeds": [
+    2021,
+    2022
+  ],
+  "require_pin": true,
+  "resources": {
+    "train": {
+      "cap": "2513M",
+      "queue_seconds": 7200,
+      "timeout_seconds": 6600,
+      "wall": "2h"
+    },
+    "verify": {
+      "cap": "2513M",
+      "queue_seconds": 7200,
+      "timeout_seconds": 1100,
+      "wall": "20m"
+    }
+  },
+  "schema": "f2.eth_forecast_campaign.v1",
+  "search_space": {
+    "bounds": {
+      "branch.channels": {
+        "choices": [
+          8,
+          16,
+          32
+        ]
+      },
+      "branch.dilation_rate": {
+        "choices": [
+          1
+        ]
+      },
+      "branch.grouping_size": {
+        "choices": [
+          1,
+          8,
+          32,
+          83
+        ]
+      },
+      "branch.kernel_size": {
+        "choices": [
+          3,
+          5,
+          7
+        ]
+      },
+      "branch.plugin": {
+        "choices": [
+          "causal_conv1d"
+        ]
+      },
+      "branch.regime": {
+        "choices": [
+          "R0",
+          "R1",
+          "R2"
+        ]
+      },
+      "core.blocks": {
+        "choices": [
+          1,
+          2,
+          3
+        ]
+      },
+      "core.d_model": {
+        "choices": [
+          32,
+          64,
+          128
+        ]
+      },
+      "core.dropout": {
+        "high": 0.3,
+        "low": 0.0,
+        "type": "float"
+      },
+      "core.ff_dim": {
+        "choices": [
+          64,
+          128,
+          256
+        ]
+      },
+      "core.heads": {
+        "choices": [
+          2,
+          4,
+          8
+        ]
+      },
+      "core.kernel_size": {
+        "choices": [
+          3
+        ]
+      },
+      "core.regime": {
+        "choices": [
+          "R0",
+          "R1",
+          "R2"
+        ]
+      },
+      "core.stage_channels_0": {
+        "choices": [
+          96,
+          64,
+          48,
+          32,
+          24,
+          16,
+          12
+        ]
+      },
+      "core.stage_channels_1": {
+        "choices": [
+          96,
+          64,
+          48,
+          32,
+          24,
+          16,
+          12
+        ]
+      },
+      "core.stage_channels_2": {
+        "choices": [
+          96,
+          64,
+          48,
+          32,
+          24,
+          16,
+          12
+        ]
+      },
+      "core.stage_channels_3": {
+        "choices": [
+          96,
+          64,
+          48,
+          32,
+          24,
+          16,
+          12
+        ]
+      },
+      "core.stage_count": {
+        "choices": [
+          3,
+          4
+        ]
+      },
+      "core.time_factor_0": {
+        "choices": [
+          1,
+          2,
+          4,
+          8
+        ]
+      },
+      "core.time_factor_1": {
+        "choices": [
+          1,
+          2,
+          4,
+          8
+        ]
+      },
+      "core.time_factor_2": {
+        "choices": [
+          1,
+          2,
+          4,
+          8
+        ]
+      },
+      "core.time_factor_3": {
+        "choices": [
+          1,
+          2,
+          4,
+          8
+        ]
+      },
+      "model.branch_steps": {
+        "choices": [
+          24
+        ]
+      },
+      "model.output_channels": {
+        "choices": [
+          4,
+          8,
+          16
+        ]
+      },
+      "model.output_steps": {
+        "choices": [
+          3,
+          6
+        ]
+      },
+      "train.batch_size": {
+        "choices": [
+          32,
+          64,
+          128
+        ]
+      },
+      "train.huber_delta": {
+        "high": 2.0,
+        "log": true,
+        "low": 0.05,
+        "type": "float"
+      },
+      "train.learning_rate": {
+        "high": 0.003,
+        "log": true,
+        "low": 0.0001,
+        "type": "float"
+      },
+      "train.loss": {
+        "choices": [
+          "huber",
+          "mae",
+          "mse"
+        ]
+      },
+      "train.max_epochs": {
+        "choices": [
+          30
+        ]
+      },
+      "train.min_delta": {
+        "choices": [
+          0.0,
+          0.0001
+        ]
+      },
+      "train.patience": {
+        "choices": [
+          3,
+          5,
+          8
+        ]
+      },
+      "train.seed": {
+        "choices": [
+          2021,
+          2022,
+          2023,
+          2024
+        ]
+      },
+      "train.weight_decay": {
+        "choices": [
+          0.0,
+          0.0001
+        ]
+      }
+    },
+    "engine": "modular_temporal.v2_full_grid",
+    "schema": "modular.search_space.v1"
+  },
+  "verification": {
+    "require_exact_match": true,
+    "rule": "VERIFIED only on bitwise-equal rescoring at the receipt batch under TF_DETERMINISTIC_OPS=1 in a fresh admitted process; a tolerance-only pass is FINDING_NOT_EXACT"
+  }
+}
