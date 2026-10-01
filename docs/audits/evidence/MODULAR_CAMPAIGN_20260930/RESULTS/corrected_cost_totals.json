@@ -1,0 +1,41 @@
+{
+ "source": "corrected queue export (read-only snapshot), completed attempts only",
+ "train": {
+  "attempts": 32,
+  "elapsed_seconds_total": 8246.190998674,
+  "max_cgroup_peak_bytes": 6211756032,
+  "by_host": {
+   "worker_a": 7750.286617513986,
+   "worker_b": 495.90438116001314
+  }
+ },
+ "verify": {
+  "attempts": 32,
+  "elapsed_seconds_total": 680.9237798860213,
+  "max_cgroup_peak_bytes": 3383320576
+ },
+ "failed_attempts": [
+  {
+   "cid": "b0eb7ed04181c62e",
+   "kind": "train",
+   "host": "worker_b",
+   "exit_code": 75
+  }
+ ],
+ "pretraining_reported_by_orchestrator": {
+  "cpu_seconds": 7875.48,
+  "wall_seconds": 6636.5,
+  "peak_gb": 6.77,
+  "note": "corrected ECL donors; not measured by M06"
+ },
+ "pilots_measured_by_m06": {
+  "d-pilot-grouped32": {
+   "fit_seconds": 14.56,
+   "cgroup_peak_bytes": 4543332352
+  },
+  "d-pilot-perfeature": {
+   "fit_seconds": 115.13,
+   "cgroup_peak_bytes": 5519405056
+  }
+ }
+}

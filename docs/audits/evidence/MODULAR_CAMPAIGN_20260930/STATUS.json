@@ -1,6 +1,6 @@
 {
  "schema": "modular.program.status.v1",
- "observed_at": "2026-10-01T07:08:24Z",
+ "observed_at": "2026-10-01T07:20:27Z",
  "plan_revision": "b327b771",
  "plan_links": {
   "orders": "docs/handoffs/SATOSHI_PROGRESSIVE_SELECTION_AND_MODULAR_CONTINUATION_2026_09_30.md @ ac125db9 (superseded revision for plan_revision; still governing for lanes A-F)",
@@ -162,16 +162,16 @@
    "state": "idle",
    "job_id": null,
    "reason": "desktop client only: snapd-desktop-integration",
-   "observed_at": "2026-10-01T07:08:24Z",
-   "temperature_c": 40.0,
+   "observed_at": "2026-10-01T07:20:27Z",
+   "temperature_c": 42.0,
    "utilization_percent": 0.0,
-   "host_available_bytes": 20287098880,
+   "host_available_bytes": 19773607936,
    "gpu": {
     "sm_clock_mhz": 210.0,
     "sm_clock_max_mhz": 3105.0,
-    "vram_used_mib": 457.0,
+    "vram_used_mib": 717.0,
     "vram_total_mib": 8188.0,
-    "power_w": 3.98,
+    "power_w": 5.12,
     "throttle_reasons": [
      "gpu_idle"
     ],
@@ -188,23 +188,23 @@
    "host": {
     "mem": {
      "MemTotal": 32778358784,
-     "MemAvailable": 20287098880,
-     "SUnreclaim": 692928512,
-     "SReclaimable": 2488750080,
-     "Shmem": 5143154688,
+     "MemAvailable": 19773607936,
+     "SUnreclaim": 695742464,
+     "SReclaimable": 2489868288,
+     "Shmem": 5226938368,
      "SwapTotal": 8589930496,
-     "SwapFree": 5024145408
+     "SwapFree": 5024571392
     },
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=219762431\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=193526654",
-    "uptime_s": 212753.46,
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=219777872\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=193541900",
+    "uptime_s": 213476.3,
     "gpu_reinit_this_boot": "0",
     "shares_host_ram_with": []
    },
    "admission": {
-    "host_free_for_new_bytes": 16431718400,
-    "held_unrealised_bytes": 627826688,
+    "host_free_for_new_bytes": 15907196928,
+    "held_unrealised_bytes": 627724288,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 8836280320,
+    "slice_memory_current": 8836317184,
     "slice_charged_bytes": null,
     "slice_memory_max": 15032385536,
     "pressure_some_avg10": 0.0,
@@ -220,42 +220,44 @@
    "state": "idle",
    "job_id": null,
    "reason": "no compute process and no GPU job lease on this device",
-   "observed_at": "2026-10-01T07:06:51Z",
-   "temperature_c": 31.0,
-   "utilization_percent": 0.0,
-   "host_available_bytes": 11677577216,
+   "observed_at": "2026-10-01T07:17:19Z",
+   "temperature_c": 28.0,
+   "utilization_percent": 11.0,
+   "host_available_bytes": 11683209216,
    "gpu": {
-    "sm_clock_mhz": 1507.0,
+    "sm_clock_mhz": 232.0,
     "sm_clock_max_mhz": 3090.0,
     "vram_used_mib": 14.0,
     "vram_total_mib": 12227.0,
-    "power_w": 18.43,
-    "throttle_reasons": [],
+    "power_w": 15.9,
+    "throttle_reasons": [
+     "sw_power_cap"
+    ],
     "compute_processes": []
    },
    "host": {
     "mem": {
      "MemTotal": 15340752896,
-     "MemAvailable": 11677577216,
-     "SUnreclaim": 659443712,
-     "SReclaimable": 677261312,
-     "Shmem": 38555648,
+     "MemAvailable": 11683209216,
+     "SUnreclaim": 667066368,
+     "SReclaimable": 677330944,
+     "Shmem": 38551552,
      "SwapTotal": 4294963200,
      "SwapFree": 4293980160
     },
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=117327294\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=114873018",
-    "uptime_s": 29666.85,
-    "gpu_reinit_this_boot": "538",
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=117327300\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=114873023",
+    "uptime_s": 30389.7,
+    "gpu_reinit_this_boot": "553",
     "shares_host_ram_with": [
      "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
     ]
    },
    "admission": {
-    "host_free_for_new_bytes": 8455557120,
+    "host_free_for_new_bytes": 8461512704,
     "held_unrealised_bytes": 0,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 1315295232,
-    "slice_charged_bytes": 65527808,
+    "slice_memory_current": 1315291136,
+    "slice_charged_bytes": 65519616,
     "slice_memory_max": 8589934592,
     "pressure_some_avg10": 0.0,
     "pressure_full_avg10": 0.0,
@@ -270,42 +272,42 @@
    "state": "idle",
    "job_id": null,
    "reason": "no compute process and no GPU job lease on this device",
-   "observed_at": "2026-10-01T07:06:51Z",
-   "temperature_c": 44.0,
+   "observed_at": "2026-10-01T07:17:19Z",
+   "temperature_c": 38.0,
    "utilization_percent": 0.0,
-   "host_available_bytes": 11677577216,
+   "host_available_bytes": 11683209216,
    "gpu": {
     "sm_clock_mhz": 225.0,
     "sm_clock_max_mhz": 3135.0,
     "vram_used_mib": 10.0,
     "vram_total_mib": 32607.0,
-    "power_w": 6.61,
+    "power_w": 3.88,
     "throttle_reasons": [],
     "compute_processes": []
    },
    "host": {
     "mem": {
      "MemTotal": 15340752896,
-     "MemAvailable": 11677577216,
-     "SUnreclaim": 659443712,
-     "SReclaimable": 677261312,
-     "Shmem": 38555648,
+     "MemAvailable": 11683209216,
+     "SUnreclaim": 667066368,
+     "SReclaimable": 677330944,
+     "Shmem": 38551552,
      "SwapTotal": 4294963200,
      "SwapFree": 4293980160
     },
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=117327294\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=114873018",
-    "uptime_s": 29666.85,
-    "gpu_reinit_this_boot": "538",
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=117327300\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=114873023",
+    "uptime_s": 30389.7,
+    "gpu_reinit_this_boot": "553",
     "shares_host_ram_with": [
      "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
     ]
    },
    "admission": {
-    "host_free_for_new_bytes": 8455557120,
+    "host_free_for_new_bytes": 8461512704,
     "held_unrealised_bytes": 0,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 1315295232,
-    "slice_charged_bytes": 65527808,
+    "slice_memory_current": 1315291136,
+    "slice_charged_bytes": 65519616,
     "slice_memory_max": 8589934592,
     "pressure_some_avg10": 0.0,
     "pressure_full_avg10": 0.0,
@@ -320,16 +322,16 @@
    "state": "idle",
    "job_id": null,
    "reason": "no compute process and no GPU job lease on this device",
-   "observed_at": "2026-10-01T07:08:25Z",
+   "observed_at": "2026-10-01T07:20:28Z",
    "temperature_c": 40.0,
-   "utilization_percent": 7.0,
-   "host_available_bytes": 17128083456,
+   "utilization_percent": 5.0,
+   "host_available_bytes": 16295432192,
    "gpu": {
     "sm_clock_mhz": 1455.0,
     "sm_clock_max_mhz": 3105.0,
     "vram_used_mib": 14.0,
     "vram_total_mib": 16376.0,
-    "power_w": 24.52,
+    "power_w": 25.07,
     "throttle_reasons": [
      "gpu_idle"
     ],
@@ -338,23 +340,23 @@
    "host": {
     "mem": {
      "MemTotal": 32831807488,
-     "MemAvailable": 17128083456,
-     "SUnreclaim": 3232219136,
-     "SReclaimable": 1064534016,
-     "Shmem": 1094037504,
+     "MemAvailable": 16295432192,
+     "SUnreclaim": 3253448704,
+     "SReclaimable": 1064611840,
+     "Shmem": 1094049792,
      "SwapTotal": 8589930496,
-     "SwapFree": 5470318592
+     "SwapFree": 5476368384
     },
     "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=123654426\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=115520824",
-    "uptime_s": 203665.65,
+    "uptime_s": 204388.49,
     "gpu_reinit_this_boot": "0",
     "shares_host_ram_with": []
    },
    "admission": {
-    "host_free_for_new_bytes": 11657920512,
-    "held_unrealised_bytes": 2236436480,
+    "host_free_for_new_bytes": 11662196736,
+    "held_unrealised_bytes": 1469091840,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 5912338432,
+    "slice_memory_current": 6679486464,
     "slice_charged_bytes": null,
     "slice_memory_max": 15032385536,
     "pressure_some_avg10": 0.0,
@@ -441,7 +443,7 @@
     ]
    ],
    "cap_bytes": 536870912,
-   "cgroup_current_bytes": 23326720,
+   "cgroup_current_bytes": 23011328,
    "cgroup_peak_bytes": 39174144,
    "heartbeat_at": null,
    "heartbeat_path": null,
@@ -498,8 +500,8 @@
     ]
    ],
    "cap_bytes": 3221225472,
-   "cgroup_current_bytes": 1032998912,
-   "cgroup_peak_bytes": 1930153984,
+   "cgroup_current_bytes": 1668231168,
+   "cgroup_peak_bytes": 1930715136,
    "heartbeat_at": null,
    "heartbeat_path": null,
    "heartbeat_stale": false,
@@ -1170,10 +1172,10 @@
  },
  "unparsed_processes": [
   {
-   "pid": 1217497,
+   "pid": 1232783,
    "argv_len": 3,
    "argv0": "bash",
-   "elapsed_s": 56,
+   "elapsed_s": 4,
    "host_alias": "coordinator",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
@@ -1181,7 +1183,7 @@
    "pid": 27201,
    "argv_len": 3,
    "argv0": "bash",
-   "elapsed_s": 28577,
+   "elapsed_s": 29300,
    "host_alias": "worker_a",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   }
@@ -1465,54 +1467,54 @@
  ],
  "quotas_measured": {
   "coordinator": {
-   "host_free_for_new_bytes": 16431718400,
-   "held_unrealised_bytes": 627826688,
+   "host_free_for_new_bytes": 15907196928,
+   "held_unrealised_bytes": 627724288,
    "desktop_reserve_bytes": 3221225472,
    "slice_memory_max": 15032385536,
-   "slice_memory_current": 8836280320,
+   "slice_memory_current": 8836317184,
    "slice_charged_bytes": null,
    "pressure_some_avg10": 0.0,
-   "mem_available_bytes": 20287098880,
+   "mem_available_bytes": 19773607936,
    "psi_some_avg10": 0.0,
    "psi_some_avg60": 0.0,
-   "swap_free_bytes": 5024145408,
+   "swap_free_bytes": 5024571392,
    "swap_total_bytes": 8589930496,
-   "unreclaimable_slab_bytes": 692928512,
-   "disk_home_free_bytes": 88818200576,
+   "unreclaimable_slab_bytes": 695742464,
+   "disk_home_free_bytes": 88821932032,
    "disk_home_total_bytes": 762623827968
   },
   "worker_a": {
-   "host_free_for_new_bytes": 8455557120,
+   "host_free_for_new_bytes": 8461512704,
    "held_unrealised_bytes": 0,
    "desktop_reserve_bytes": 3221225472,
    "slice_memory_max": 8589934592,
-   "slice_memory_current": 1315295232,
-   "slice_charged_bytes": 65527808,
+   "slice_memory_current": 1315291136,
+   "slice_charged_bytes": 65519616,
    "pressure_some_avg10": 0.0,
-   "mem_available_bytes": 11677577216,
+   "mem_available_bytes": 11683209216,
    "psi_some_avg10": 0.0,
    "psi_some_avg60": 0.0,
    "swap_free_bytes": 4293980160,
    "swap_total_bytes": 4294963200,
-   "unreclaimable_slab_bytes": 659443712,
-   "disk_home_free_bytes": 173524230144,
+   "unreclaimable_slab_bytes": 667066368,
+   "disk_home_free_bytes": 173523927040,
    "disk_home_total_bytes": 411702673408
   },
   "worker_b": {
-   "host_free_for_new_bytes": 11657920512,
-   "held_unrealised_bytes": 2236436480,
+   "host_free_for_new_bytes": 11662196736,
+   "held_unrealised_bytes": 1469091840,
    "desktop_reserve_bytes": 3221225472,
    "slice_memory_max": 15032385536,
-   "slice_memory_current": 5912338432,
+   "slice_memory_current": 6679486464,
    "slice_charged_bytes": null,
    "pressure_some_avg10": 0.0,
-   "mem_available_bytes": 17128083456,
+   "mem_available_bytes": 16295432192,
    "psi_some_avg10": 0.0,
    "psi_some_avg60": 0.0,
-   "swap_free_bytes": 5470318592,
+   "swap_free_bytes": 5476368384,
    "swap_total_bytes": 8589930496,
-   "unreclaimable_slab_bytes": 3232219136,
-   "disk_home_free_bytes": 679021981696,
+   "unreclaimable_slab_bytes": 3253448704,
+   "disk_home_free_bytes": 679021359104,
    "disk_home_total_bytes": 1005867986944
   }
  },
@@ -1807,15 +1809,23 @@
     "8/8 runnable R1/R2 cells VERIFIED (4 REFUSED_BY_ENGINE by design); campaign 32 verified / 4 refused of 36",
     "RESULTS/corrected_incumbents.md (6 incumbents; seq 6 c950ec17)"
    ]
+  },
+  {
+   "id": "corrected_campaign_closed",
+   "completion_criterion": "36/36 cells terminal on the corrected campaign; closure table independently regenerated and compared to M04's",
+   "state": "completed",
+   "evidence": [
+    "predictor@f787ad51 (M04 closure)",
+    "RESULTS/corrected_vs_m04_f787ad51.json: 16/16 configs, 0 disagreements (exact MAE equality)",
+    "RESULTS/corrected_cost_totals.json"
+   ]
   }
  ],
  "next_actions": [
-  "owner (ONE action): bash DEPLOY_ADM_DEADCACHE.sh <worker_a> <worker_b> (DEPLOY.md; rollback included)",
-  "owner: C07 approval request stays as filed (not implied by the subplan)",
-  "owner: S07: propose a new prospective window or declare development (the read reserve is not a clean hold-out)",
-  "no action by agents: persistence mode / root slabinfo timer / reboots / force-push (orders ac125db9 \u00a75)",
-  "lane A: verify c0d7b07b (logs or reproduced workflow); new donors on the corrected fusion",
-  "lane D: corrected cost pilot on the 5090 (profile build vs first step vs steady cost); finite queue after it passes"
+  "owner: DEPLOY_ADM_DEADCACHE.sh on worker_b (NOT executed; question 18 downgraded, ack a7c0599c \u00a710.4)",
+  "owner: deploy ADM-STALE-LEASE-01 + ADM-CANCEL-01 (admission branch a1f3898b; not deployed anywhere)",
+  "owner: open questions 1-12, 14-17, 21-23 (links in open_owner_questions)",
+  "M01 PS3-R child on worker_b: M06 units report its completion and any stop"
  ],
  "events": [
   {
@@ -2038,7 +2048,7 @@
    "repo": "predictor",
    "branch": "satoshi/continuation-ack-20261001",
    "worktree": "~/Documents/GitHub/.worktrees/predictor-ack-20261001",
-   "tip": "51339d9f91c4"
+   "tip": "42ef8bf7b408"
   },
   {
    "repo": "predictor",
@@ -2050,7 +2060,7 @@
    "repo": "predictor",
    "branch": "satoshi/d-corrected-queue-20261001",
    "worktree": "~/Documents/GitHub/.worktrees/predictor-d-corrected-queue-20261001",
-   "tip": "f787ad513b4c"
+   "tip": "e3330b9d86b6"
   },
   {
    "repo": "predictor",
@@ -2074,7 +2084,7 @@
    "repo": "predictor",
    "branch": "satoshi/m06-evidence-resources-20260930",
    "worktree": "~/Documents/GitHub/.worktrees/predictor-m06-20260930",
-   "tip": "66eb1af2c5df"
+   "tip": "8bd06377f1d1"
   },
   {
    "repo": "predictor",

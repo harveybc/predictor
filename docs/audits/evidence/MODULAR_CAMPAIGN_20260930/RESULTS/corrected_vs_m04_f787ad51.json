@@ -1,0 +1,14 @@
+{
+ "compared_against": "predictor@f787ad51 R1R2_AND_CLOSURE_corrected_r0_v1.json",
+ "configs_compared": 16,
+ "m04_configs": 16,
+ "m06_configs": 16,
+ "disagreements": [],
+ "refused_by_engine_in_m04": [
+  "8bcb4db6c142eb20",
+  "2969dc4c3fd68b83",
+  "ff8fd5f0d59e8edd",
+  "3a286a80c5fb6e95"
+ ],
+ "refused_overlap_with_m06_verified": []
+}

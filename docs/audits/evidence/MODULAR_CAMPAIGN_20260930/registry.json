@@ -357,15 +357,23 @@
     "8/8 runnable R1/R2 cells VERIFIED (4 REFUSED_BY_ENGINE by design); campaign 32 verified / 4 refused of 36",
     "RESULTS/corrected_incumbents.md (6 incumbents; seq 6 c950ec17)"
    ]
+  },
+  {
+   "id": "corrected_campaign_closed",
+   "completion_criterion": "36/36 cells terminal on the corrected campaign; closure table independently regenerated and compared to M04's",
+   "state": "completed",
+   "evidence": [
+    "predictor@f787ad51 (M04 closure)",
+    "RESULTS/corrected_vs_m04_f787ad51.json: 16/16 configs, 0 disagreements (exact MAE equality)",
+    "RESULTS/corrected_cost_totals.json"
+   ]
   }
  ],
  "next_actions": [
-  "owner (ONE action): bash DEPLOY_ADM_DEADCACHE.sh <worker_a> <worker_b> (DEPLOY.md; rollback included)",
-  "owner: C07 approval request stays as filed (not implied by the subplan)",
-  "owner: S07: propose a new prospective window or declare development (the read reserve is not a clean hold-out)",
-  "no action by agents: persistence mode / root slabinfo timer / reboots / force-push (orders ac125db9 \u00a75)",
-  "lane A: verify c0d7b07b (logs or reproduced workflow); new donors on the corrected fusion",
-  "lane D: corrected cost pilot on the 5090 (profile build vs first step vs steady cost); finite queue after it passes"
+  "owner: DEPLOY_ADM_DEADCACHE.sh on worker_b (NOT executed; question 18 downgraded, ack a7c0599c \u00a710.4)",
+  "owner: deploy ADM-STALE-LEASE-01 + ADM-CANCEL-01 (admission branch a1f3898b; not deployed anywhere)",
+  "owner: open questions 1-12, 14-17, 21-23 (links in open_owner_questions)",
+  "M01 PS3-R child on worker_b: M06 units report its completion and any stop"
  ],
  "heartbeat_audit": [
   {
@@ -1442,7 +1450,8 @@
     "no data loading or model code in that scope (ssh/launch/poll only)",
     "observed peak must stay under 64 MB; exceeding 64 MB or loading data is a breach M06 reports immediately and M04 stops it through the admission tool"
    ],
-   "reason": "workers cannot reach each other over ssh; the alternative (launcher on worker_a) would spend the scarcer 14 GB host memory with unreclaimable slab"
+   "reason": "workers cannot reach each other over ssh; the alternative (launcher on worker_a) would spend the scarcer 14 GB host memory with unreclaimable slab",
+   "ended": "runner ended with the campaign (last observed peaks 19.6-23.3 MB, under the 64 MiB condition)"
   },
   {
    "job": "d-runner-worker-b (lane D campaign runner for worker_b, on the coordinator)",
@@ -1453,7 +1462,8 @@
     "cap 512M",
     "ssh/launch/poll only",
     "observed peak < 64 MiB; breach -> immediate alert and stop via the admission tool"
-   ]
+   ],
+   "ended": "runner ended with the campaign (last observed peaks 19.6-23.3 MB, under the 64 MiB condition)"
   }
  ]
 }
