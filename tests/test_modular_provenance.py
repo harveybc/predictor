@@ -162,3 +162,43 @@ def test_facade_save_declares_operational_provenance_from_its_config(tmp_path):
     undeclared.save(str(tmp_path / "u.keras"))
     with pytest.raises(ValueError, match="CONDITIONING_CONTRACT_NOT_OPERATIONAL"):
         mt.load_bundle(tmp_path / "u.keras.bundle", require_contract="OPERATIONAL")
+
+
+def test_alongside_declaration_leaves_schema_1_untouched_and_binds_the_same_hashes(tmp_path):
+    import hashlib
+    b = bundle()
+    path, manifest = tmp_path / "m02.keras", b.donor_manifest("branch", "branch_0")
+    doc = mt.save_donor(b.branch_models["branch_0"], path, manifest)
+    legacy = {k: doc[k] for k in ("manifest", "manifest_sha256", "model_sha256", "weights_sha256")}
+    legacy.update(schema=1, provenance={"keras_version": doc["provenance"]["keras_version"]})
+    sidecar = path.with_suffix(".manifest.json")
+    sidecar.write_text(json.dumps(legacy))
+    before = {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in (path, sidecar)}
+    derivation = {"rule": "R-AE-TRAINONLY-1", "sources": [{"file": "m02.provenance.json", "sha256": "f" * 64}]}
+    with pytest.raises(ValueError, match="DERIVATION_MISSING"):
+        pv.write_alongside(path, DECLARED, {})
+    assert pv.write_alongside(path, DECLARED, derivation)["status"] == "WRITTEN"
+    assert {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in (path, sidecar)} == before
+    seen = pv.donor_provenance(path)
+    assert seen["conditioning_contract"] == "OPERATIONAL" and seen["derivation"]["rule"] == "R-AE-TRAINONLY-1"
+    assert seen["migration"]["mode"] == "ALONGSIDE"
+    mt.load_donor(path, manifest, require_contract="OPERATIONAL")
+    assert pv.write_alongside(path, DECLARED, derivation)["status"] == "ALREADY_CURRENT"
+    with pytest.raises(ValueError, match="ALONGSIDE_CONFLICT"):
+        pv.write_alongside(path, dict(DECLARED, conditioning_contract="SYNTHETIC_OFFLINE"), derivation)
+    # an alongside file that binds other weights is ignored: the donor reads UNKNOWN again
+    other = json.loads(pv._alongside(path).read_text())
+    other["weights_sha256"] = "0" * 64
+    pv._alongside(path).write_text(json.dumps(other))
+    assert pv.donor_provenance(path)["conditioning_contract"] == "UNKNOWN"
+    with pytest.raises(ValueError, match="CONDITIONING_CONTRACT_NOT_OPERATIONAL"):
+        mt.load_donor(path, manifest, require_contract="OPERATIONAL")
+
+
+def test_provenance_module_imports_without_tensorflow():
+    import subprocess, sys
+    code = ("import importlib.util, sys; s = importlib.util.spec_from_file_location('p', sys.argv[1]); "
+            "m = importlib.util.module_from_spec(s); s.loader.exec_module(m); "
+            "assert 'tensorflow' not in sys.modules; print(m.PROVENANCE_SCHEMA)")
+    out = subprocess.run([sys.executable, "-c", code, pv.__file__], capture_output=True, text=True, check=True)
+    assert out.stdout.strip() == pv.PROVENANCE_SCHEMA
