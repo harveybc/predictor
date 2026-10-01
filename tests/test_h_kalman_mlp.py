@@ -37,9 +37,8 @@ def task(N=1500, P=20, seed=0):
 
 
 def test_learns_a_nonlinear_signal_and_selects_on_the_inner_holdout_only():
-    X, Y = task()
-    Xte, Yte = task(400, seed=1)
-    Xte = Xte[:, :20]
+    X, Y = task(N=1700)
+    Xte, Yte = X[1200:], Y[1200:]            # same generating function, rows never used for training
     out = mlp.mlp_fit_predict(X[:1200], Y[:1200], [Xte], seed=2021, hidden=(32, 32), max_epochs=40, patience=6)
     pred = out["predictions"][0]
     assert np.mean(np.abs(pred - Yte)) < np.mean(np.abs(Y.mean(axis=0) - Yte)) * 0.9
