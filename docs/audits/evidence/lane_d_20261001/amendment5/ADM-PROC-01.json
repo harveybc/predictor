@@ -1,0 +1,59 @@
+{
+ "deviation": "ADM-PROC-01",
+ "date": "2026-10-01",
+ "by": "Satoshi, successor technical lead (lane D)",
+ "what": "Two queued admission requests were withdrawn by SIGTERM to the queued acquirer process (option b), not through an admission-tool cancel verb (the installed tool has none): (1) worker_b crispdm-d-pilot-perfeature-1790825212-1402639 (acquirer pid 1402648) at about 04:14Z after the worker_a pilot was admitted; (2) worker_b crispdm-m04-train-b0eb7ed0-1790835829-1597743 (acquirer pid 1597751) at about 06:58Z after 50+ min queued.",
+ "proof_no_lease": "admission state immediately before each signal listed no lease of these names (live: laneA-suite, m02-...-r7g2 in case 1; ps3r-pilot-3g-r2 in case 2); every ledger line for the request has lease_id null and event ADMISSION_QUEUED",
+ "ledger_lines_case2": [
+  {
+   "at": "2026-10-01T06:54:50Z",
+   "event": "ADMISSION_QUEUED",
+   "label": "crispdm-m04-train-b0eb7ed0-1790835829-1597743",
+   "lease_id": null,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "cap_bytes": 6899630080
+  },
+  {
+   "at": "2026-10-01T06:55:20Z",
+   "event": "ADMISSION_QUEUED",
+   "label": "crispdm-m04-train-b0eb7ed0-1790835829-1597743",
+   "lease_id": null,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "cap_bytes": 6899630080
+  },
+  {
+   "at": "2026-10-01T06:55:50Z",
+   "event": "ADMISSION_QUEUED",
+   "label": "crispdm-m04-train-b0eb7ed0-1790835829-1597743",
+   "lease_id": null,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "cap_bytes": 6899630080
+  },
+  {
+   "at": "2026-10-01T06:56:20Z",
+   "event": "ADMISSION_QUEUED",
+   "label": "crispdm-m04-train-b0eb7ed0-1790835829-1597743",
+   "lease_id": null,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "cap_bytes": 6899630080
+  },
+  {
+   "at": "2026-10-01T06:56:50Z",
+   "event": "ADMISSION_QUEUED",
+   "label": "crispdm-m04-train-b0eb7ed0-1790835829-1597743",
+   "lease_id": null,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "cap_bytes": 6899630080
+  },
+  {
+   "at": "2026-10-01T06:57:20Z",
+   "event": "ADMISSION_QUEUED",
+   "label": "crispdm-m04-train-b0eb7ed0-1790835829-1597743",
+   "lease_id": null,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "cap_bytes": 6899630080
+  }
+ ],
+ "after": "launcher printed 'REFUSED nothing was started' and exited 75 in both cases; no scope was created; queue rows: case 1 none (pilot outside the queue), case 2 attempt 1 failed/75 then re-queued to worker_a (amendment 5b)",
+ "rule_going_forward": "do not repeat: STOP file plus the admission tool's cancel when it exists, or leave the request queued and report"
+}
