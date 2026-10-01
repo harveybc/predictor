@@ -47,8 +47,9 @@ install_ref HEAD;          probe m01
 rm -rf "$SRC/tests" && cp -r "$CHECKOUT/tests" "$SRC/tests"
 ( cd "$SRC/tests" && M01_REQUIRE_INSTALLED=1 "$PY" -I -m pytest -q -p no:cacheprovider -rs \
     --basetemp "${M01_BASETEMP:-$HOME/.local/state/scratch/m01/pytest-installed}" \
-    -W ignore::DeprecationWarning test_modular_temporal.py test_modular_pretrain.py \
-    test_modular_assembly.py test_modular_flat_parity_m04.py test_modular_legacy_boundaries.py ) \
+    -W ignore::DeprecationWarning test_modular_architecture_default.py test_modular_temporal.py \
+    test_modular_pretrain.py test_modular_candidate_evaluator.py test_modular_assembly.py \
+    test_modular_flat_parity_m04.py test_modular_legacy_boundaries.py test_modular_donor_remanifest.py ) \
     > "$OUT/m01/pytest.log" 2>&1 || echo "PYTEST_FAILED" >> "$OUT/m01/pytest.log"
 "$PY" - "$OUT" <<'EOF' > "$OUT/probe_diff.txt"
 import json, sys
