@@ -51,7 +51,8 @@ PREFIXES = ("modular.", "branches.", "core.", "fusion.", "head.")
 _TOP_KEYS = {"schema", "window", "sample_hours", "feature_names", "branch_steps",
              "output_steps", "output_channels", "horizons", "target_count", "regime",
              "alignment_probe", "entry_point_groups"}
-_OPTIONAL_TOP_KEYS = {"budget_caps", "excluded_features", "donor_contract", "target_residual"}   # flattened only when present (digest-neutral)
+_OPTIONAL_TOP_KEYS = {"budget_caps", "excluded_features", "donor_contract", "target_residual",
+                      "input_normalization"}   # flattened only when present (digest-neutral)
 _WARM = {"freeze_epochs", "unfreeze_learning_rate"}      # R3-only, flattened only when present
 _FIELDS = {"branch": {"features", "plugin", "regime", "donor"} | _WARM,
            "core": {"plugin", "regime", "donor"} | _WARM,

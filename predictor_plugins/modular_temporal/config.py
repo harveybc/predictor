@@ -31,7 +31,7 @@ def _normalize(config):
     _keys(c, {"schema", "window", "sample_hours", "feature_names", "branches", "branch_steps",
               "core", "fusion", "head", "output_steps", "output_channels", "entry_point_groups",
               "horizons", "target_count", "regime", "alignment_probe", "budget_caps",
-              "excluded_features", "donor_contract", "target_residual"}, "config")
+              "excluded_features", "donor_contract", "target_residual", "input_normalization"}, "config")
     if "donor_contract" in c and c["donor_contract"] not in ("OPERATIONAL", "UNKNOWN_ALLOWED"):
         raise ValueError("donor_contract must be OPERATIONAL or UNKNOWN_ALLOWED (absent means OPERATIONAL)")
     if c.setdefault("schema", CONFIG_SCHEMA) != CONFIG_SCHEMA:
@@ -111,6 +111,7 @@ def _normalize(config):
                          "the latent must keep a temporal axis (the head may flatten the completed latent)")
     _check_budget_caps(c)
     _check_target_residual(c)
+    _check_input_normalization(c)
     routed = {f for spec in branches for f in spec["features"]}
     excluded = c.get("excluded_features", {})
     if not isinstance(excluded, dict) or any(not isinstance(v, str) or not v.strip() for v in excluded.values()):
@@ -127,14 +128,33 @@ def _normalize(config):
     return c
 
 
+def _check_input_normalization(c):
+    spec = c.get("input_normalization")
+    if spec is None:
+        return
+    if c.get("target_residual"):
+        raise ValueError("input_normalization and target_residual are exclusive (both re-anchor the target)")
+    if not isinstance(spec, dict) or set(spec) != {"kind", "length", "target_features"}:
+        raise ValueError("input_normalization needs exactly kind, length and target_features")
+    if spec["kind"] != "window_mean":
+        raise ValueError("input_normalization kind must be window_mean")
+    length = _positive_int(spec["length"], "input_normalization length")
+    if length > c["window"]:
+        raise ValueError("input_normalization length must not exceed the window")
+    targets = spec["target_features"]
+    if (not isinstance(targets, list) or not targets or len(set(targets)) != len(targets)
+            or any(t not in c["feature_names"] for t in targets) or len(targets) != c["target_count"]):
+        raise ValueError("input_normalization target_features must be unique feature_names matching target_count")
+
+
 def _check_target_residual(c):
     spec = c.get("target_residual")
     if spec is None:
         return
     if not isinstance(spec, dict) or set(spec) != {"kind", "period", "target_features"}:
         raise ValueError("target_residual needs exactly kind, period and target_features")
-    if spec["kind"] != "seasonal_naive":
-        raise ValueError("target_residual kind must be seasonal_naive")
+    if spec["kind"] not in ("seasonal_naive", "seasonal_naive_cumulative"):
+        raise ValueError("target_residual kind must be seasonal_naive or seasonal_naive_cumulative")
     period = _positive_int(spec["period"], "target_residual period")
     targets = spec["target_features"]
     if (not isinstance(targets, list) or not targets or len(set(targets)) != len(targets)
@@ -146,7 +166,10 @@ def _check_target_residual(c):
         if h > period:
             raise ValueError(f"SEASONAL_HORIZON_EXCEEDS_PERIOD: horizon {h} > period {period}; the naive at "
                              "t+h-P would itself lie in the future")
-        if period - h > c["window"] - 1:
+        if spec["kind"] == "seasonal_naive_cumulative" and period > c["window"]:
+            raise ValueError(f"SEASONAL_REFERENCE_OUTSIDE_WINDOW: the interval (t-{period}, t-{period}+h] needs "
+                             f"{period} steps of history in the {c['window']}-step window")
+        if spec["kind"] == "seasonal_naive" and period - h > c["window"] - 1:
             raise ValueError(f"SEASONAL_REFERENCE_OUTSIDE_WINDOW: horizon {h} needs t-{period - h}, outside "
                              f"the {c['window']}-step window")
 

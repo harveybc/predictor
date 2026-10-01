@@ -1,0 +1,13 @@
+records 240 cpu_seconds_total 11775.9 fit_seconds {'contrastive': 8532.2, 'ae': 1445.5} tracing_est 3681.8
+stops {('contrastive', 'max_epochs'): 41, ('contrastive', 'no_improvement_over_initial'): 9, ('ae', 'patience'): 75, ('ae', 'max_epochs'): 45, ('contrastive', 'patience'): 70}
+cells 840 strict-min wins {'loss_raw': 570, 'loss_random': 80, 'loss_ae': 73, 'loss_contrastive': 117}
+cells beating naive {'loss_raw': 232, 'loss_random': 150, 'loss_ae': 156, 'loss_contrastive': 147}
+('Y_l', 24) {'loss_raw': '+5.355e-06', 'loss_random': '+8.496e-05', 'loss_ae': '+1.105e-04', 'loss_contrastive': '+7.104e-05'} contrast_mean +3.944e-05 ae<cl 53 of 120
+('Y_l', 48) {'loss_raw': '+2.031e-05', 'loss_random': '+3.149e-04', 'loss_ae': '+3.798e-04', 'loss_contrastive': '+2.652e-04'} contrast_mean +1.146e-04 ae<cl 56 of 120
+('Y_l', 72) {'loss_raw': '+4.063e-05', 'loss_random': '+4.889e-04', 'loss_ae': '+5.728e-04', 'loss_contrastive': '+4.546e-04'} contrast_mean +1.182e-04 ae<cl 63 of 120
+('Y_l', 96) {'loss_raw': '+5.941e-05', 'loss_random': '+6.996e-04', 'loss_ae': '+8.588e-04', 'loss_contrastive': '+6.106e-04'} contrast_mean +2.482e-04 ae<cl 66 of 120
+('Y_l', 120) {'loss_raw': '+8.547e-05', 'loss_random': '+9.028e-04', 'loss_ae': '+1.080e-03', 'loss_contrastive': '+6.935e-04'} contrast_mean +3.862e-04 ae<cl 65 of 120
+('Y_l', 144) {'loss_raw': '+1.269e-04', 'loss_random': '+3.540e-01', 'loss_ae': '+9.283e-04', 'loss_contrastive': '+5.818e-04'} contrast_mean +3.465e-04 ae<cl 65 of 120
+('Y_s', 4) {'loss_raw': '+3.345e-07', 'loss_random': '+4.799e-06', 'loss_ae': '+5.074e-06', 'loss_contrastive': '+3.942e-06'} contrast_mean +1.132e-06 ae<cl 60 of 120
+delta_probe>0  ae 383 cl 366 of 840
+cards 40 Counter({'ADMISSIBLE': 40}) Counter({'SATISFIED': 40})

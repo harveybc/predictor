@@ -104,3 +104,21 @@ def test_round_trip_save_load_and_flat_grammar(tmp_path):
     np.testing.assert_array_equal(plain(x()), b.forecast_model(x()))
     assert mc.unflatten(mc.flatten(c)) == mt._normalize(c)
     assert mt.config_digest(c) != mt.config_digest(cfg(residual=False))
+
+
+def test_cumulative_kind_sums_the_one_bar_channel_over_the_season_ago_interval():
+    """For a target defined as the sum of a 1-bar channel over (t, t+h], the seasonal reference is the
+    same sum over (t-P, t-P+h], i.e. window positions W-P .. W-P+h-1 (M07's ETH case: P = 6 bars)."""
+    c = mt.default_config(["log_return_1", "vol"])
+    c.update(horizons=[1, 3, 6], target_count=1)
+    c["target_residual"] = {"kind": "seasonal_naive_cumulative", "period": 6, "target_features": ["log_return_1"]}
+    b = mt.build_modular(c)
+    head = b.forecast_model.get_layer("forecast_head")
+    head.set_weights([np.zeros_like(w) for w in head.get_weights()])
+    xs = x()
+    out = np.asarray(b.forecast_model(xs))
+    for i, h in enumerate((1, 3, 6)):
+        np.testing.assert_allclose(out[:, i, 0], xs[:, 24 - 6:24 - 6 + h, 0].sum(axis=1), rtol=1e-6, atol=1e-6)
+    per = b.component_manifests()["target_residual"]["per_horizon"]
+    assert per[2] == {"horizon": 6, "source_window_positions": [18, 19, 20, 21, 22, 23],
+                      "source_offset_steps": -6}

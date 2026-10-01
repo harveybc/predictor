@@ -1,0 +1,14 @@
+{
+ "done": 115,
+ "memory_now": {
+  "cgroup": "/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-ps3r-pilot-3g-r2-1790833522-1578677.scope",
+  "cgroup_current_bytes": 38133760,
+  "cgroup_peak_bytes": 1930715136,
+  "rss_peak_bytes": 38445056
+ },
+ "shard": 0,
+ "skipped": 125,
+ "stage": "complete",
+ "total": 240,
+ "utc_epoch": 1790840078.078324
+}

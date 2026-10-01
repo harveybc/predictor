@@ -15,7 +15,8 @@ from .common import _copy, _digest, _file_hash, _json, keras_version, weights_ha
 from .components import (ROLES, TemporalComponent, causal_conv1d, component, effective_params,
                          forecast, sequence_concat, transformer_conv)
 from .config import CONFIG_SCHEMA, _normalize, default_config, regime_summary
-from .layers import FeatureSelect, PositionalEncoding, SeasonalNaiveBaseline
+from .layers import (FeatureSelect, PositionalEncoding, SeasonalCumulativeBaseline, SeasonalNaiveBaseline,
+                     TargetMeanBroadcast, WindowMean)
 from .pretraining import (
     branch_autoencoder,
     build_autoencoder,
