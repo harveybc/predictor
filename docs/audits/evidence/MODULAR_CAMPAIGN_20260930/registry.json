@@ -1709,7 +1709,7 @@
    "unit": "f2-loop-worker-b.service",
    "host_alias": "worker_b",
    "owner": "M07",
-   "state": "handover armed 09:42:32Z (STOP touched; starts when the current loop pid 1738275 exits)"
+   "state": "ACTIVE since 09:48:26Z (handover: STOP removed 09:48:24Z); main pid 1754057, loop pid 1754078"
   },
   {
    "unit": "f2-loop-worker-a.service",
