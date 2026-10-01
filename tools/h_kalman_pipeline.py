@@ -175,11 +175,16 @@ def score_predictions(data, pred):
 
 def evaluate_arm(data, arm):
     Ytr = data["Y"]["train"]
-    (pred,), alpha, inner = arms_lib.ridge_fit_predict(arm["train"], Ytr, [arm["validation"]])
+    r = arms_lib.ridge_fit_predict_multi(arm["train"], Ytr, [arm["validation"]])
+    (pred,), alpha, inner = r["preds_chosen"], r["chosen"], r["inner"]
     rows = score_predictions(data, pred)
+    Yva = data["Y"]["validation"]
+    fixed = {str(a): {"MAE": [float(np.mean(np.abs(p[0][:, k] - Yva[:, k]))) for k in range(Yva.shape[1])],
+                      "MSE": [float(np.mean((p[0][:, k] - Yva[:, k]) ** 2)) for k in range(Yva.shape[1])]}
+             for a, p in r["preds_fixed"].items()}
     return {"alpha": float(alpha), "inner_holdout_MAE_by_alpha": {str(a): v for a, v in inner.items()},
             "rows": int(data["Y"]["validation"].shape[0]), "per_horizon": rows, "channels": int(arm["train"].shape[1]),
-            "eligible": bool(arm["eligible"]), "label": arm.get("label"),
+            "eligible": bool(arm["eligible"]), "label": arm.get("label"), "fixed_alpha_validation": fixed,
             "mean_model_MAE": float(np.mean([r["model_MAE"] for r in rows])),
             "prediction_sha256": arms_lib.sha_array(pred), "_pred": pred}
 

@@ -134,3 +134,16 @@ def test_kalman_channels_names_logvar_and_refusal_of_the_smoother():
     assert np.isfinite(M).all() and np.allclose(M[:, 3], np.log(out.arrays["state_var"][:, 1]))
     with pytest.raises(kf.OperatorRefusal):
         arms.kalman_channels(kf.smoother_control(a, X))
+
+
+def test_multi_ridge_fixed_alphas_agree_with_the_chosen_one_and_shrink_monotonically():
+    rng = np.random.RandomState(8)
+    X, Y = rng.standard_normal((800, 10)), rng.standard_normal((800, 2))
+    Xev = rng.standard_normal((50, 10))
+    r = arms.ridge_fit_predict_multi(X, Y, [Xev], fixed=(1.0, 1e3, 1e8))
+    # a huge alpha collapses to the train mean
+    assert np.allclose(r["preds_fixed"][1e8][0], Y.mean(axis=0), atol=1e-3)
+    chosen_alpha = r["chosen"]
+    (p_old,), a_old, _ = arms.ridge_fit_predict(X, Y, [Xev])
+    assert a_old == chosen_alpha and np.allclose(p_old, r["preds_chosen"][0], atol=1e-10)
+    assert arms.ALPHAS[-1] >= 1e8

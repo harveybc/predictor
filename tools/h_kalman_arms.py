@@ -40,7 +40,8 @@ def _load(name):
 
 kf = _load("df_kalman_family")
 
-ALPHAS = (1.0, 10.0, 100.0, 1e3, 1e4, 1e5, 1e6)
+ALPHAS = (1.0, 10.0, 100.0, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8)
+FIXED_ALPHAS = (1.0, 1e3, 1e5)
 
 
 def sha_array(a, dtype="<f8"):
@@ -66,10 +67,10 @@ def _gram_and_rhs(X, Y, mu, sd, block=2048):
     return G, R
 
 
-def ridge_fit_predict(Xtr, Ytr, Xev_list, alphas=ALPHAS, holdout_frac=0.2, purge=30):
+def ridge_fit_predict_multi(Xtr, Ytr, Xev_list, alphas=ALPHAS, fixed=FIXED_ALPHAS, holdout_frac=0.2, purge=30):
     """Choose alpha on a chronological inner hold-out of the train rows (rows are in time order), refit on all train.
 
-    Returns (predictions for each Xev, chosen alpha, per-alpha inner MAE)."""
+    Also returns the predictions of the refit at each ``fixed`` alpha (a capacity-neutral comparison across arms)."""
     N = Xtr.shape[0]
     cut = int(N * (1.0 - holdout_frac))
     inner_tr = slice(0, cut - purge)
@@ -85,17 +86,28 @@ def ridge_fit_predict(Xtr, Ytr, Xev_list, alphas=ALPHAS, holdout_frac=0.2, purge
     AV = Aho @ V
     inner = {}
     for a in alphas:
-        coef_in_eig = VtR / (w[:, None] + a)
-        pred = AV @ coef_in_eig + ym
+        pred = AV @ (VtR / (w[:, None] + a)) + ym
         inner[a] = float(np.mean(np.abs(pred - Ytr[inner_ho])))
     best = min(alphas, key=lambda a: (inner[a], a))
+    del G, V, AV, Aho
     mu = Xtr.mean(axis=0)
     sd = Xtr.std(axis=0)
     sd[sd == 0] = 1.0
     ym = Ytr.mean(axis=0)
     G, R = _gram_and_rhs(Xtr, Ytr - ym, mu, sd)
-    coef = np.linalg.solve(G + best * np.eye(G.shape[0]), R)
-    return [((X - mu) / sd) @ coef + ym for X in Xev_list], best, inner
+    w, V = np.linalg.eigh(G)
+    VtR = V.T @ R
+    del G
+    evs = [((X - mu) / sd) @ V for X in Xev_list]
+    def at(a):
+        coef_eig = VtR / (w[:, None] + a)
+        return [E @ coef_eig + ym for E in evs]
+    return {"chosen": best, "inner": inner, "preds_chosen": at(best), "preds_fixed": {a: at(a) for a in fixed}}
+
+
+def ridge_fit_predict(Xtr, Ytr, Xev_list, alphas=ALPHAS, holdout_frac=0.2, purge=30):
+    r = ridge_fit_predict_multi(Xtr, Ytr, Xev_list, alphas=alphas, fixed=(), holdout_frac=holdout_frac, purge=purge)
+    return r["preds_chosen"], r["chosen"], r["inner"]
 
 
 # --------------------------------------------------------------------------------------------- metrics
