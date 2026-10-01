@@ -115,3 +115,24 @@ class TargetMeanBroadcast(keras.layers.Layer):
 
     def get_config(self):
         return {**super().get_config(), "channels": list(self.channels), "horizons": self.horizons}
+
+
+@keras.utils.register_keras_serializable(package="modular_temporal")
+class SeasonalCumulativeBaseline(keras.layers.Layer):
+    """Seasonal reference for cumulative targets: for horizon h, the SUM of the target channel over window
+    positions ``spans[h]`` (the season-ago interval (t-P, t-P+h]). Output (B, H, T). No weights."""
+
+    def __init__(self, spans, channels, **kwargs):
+        super().__init__(**kwargs)
+        self.spans, self.channels = tuple(tuple(s) for s in spans), tuple(channels)
+
+    def call(self, inputs):
+        picked = tf.gather(inputs, self.channels, axis=-1)
+        return tf.stack([tf.reduce_sum(tf.gather(picked, list(span), axis=1), axis=1)
+                         for span in self.spans], axis=1)
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], len(self.spans), len(self.channels))
+
+    def get_config(self):
+        return {**super().get_config(), "spans": [list(s) for s in self.spans], "channels": list(self.channels)}

@@ -153,8 +153,8 @@ def _check_target_residual(c):
         return
     if not isinstance(spec, dict) or set(spec) != {"kind", "period", "target_features"}:
         raise ValueError("target_residual needs exactly kind, period and target_features")
-    if spec["kind"] != "seasonal_naive":
-        raise ValueError("target_residual kind must be seasonal_naive")
+    if spec["kind"] not in ("seasonal_naive", "seasonal_naive_cumulative"):
+        raise ValueError("target_residual kind must be seasonal_naive or seasonal_naive_cumulative")
     period = _positive_int(spec["period"], "target_residual period")
     targets = spec["target_features"]
     if (not isinstance(targets, list) or not targets or len(set(targets)) != len(targets)
@@ -166,7 +166,10 @@ def _check_target_residual(c):
         if h > period:
             raise ValueError(f"SEASONAL_HORIZON_EXCEEDS_PERIOD: horizon {h} > period {period}; the naive at "
                              "t+h-P would itself lie in the future")
-        if period - h > c["window"] - 1:
+        if spec["kind"] == "seasonal_naive_cumulative" and period > c["window"]:
+            raise ValueError(f"SEASONAL_REFERENCE_OUTSIDE_WINDOW: the interval (t-{period}, t-{period}+h] needs "
+                             f"{period} steps of history in the {c['window']}-step window")
+        if spec["kind"] == "seasonal_naive" and period - h > c["window"] - 1:
             raise ValueError(f"SEASONAL_REFERENCE_OUTSIDE_WINDOW: horizon {h} needs t-{period - h}, outside "
                              f"the {c['window']}-step window")
 

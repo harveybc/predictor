@@ -61,6 +61,16 @@ def probe_alignment(model, input_grid, output_grid, *, seed=0, label="component"
     return {"checked_inputs": length, "checked_outputs": len(output_grid)}
 
 
+def _residual_receipt(c):
+    r, w = c["target_residual"], c["window"]
+    if r["kind"] == "seasonal_naive_cumulative":
+        rows = [{"horizon": h, "source_window_positions": list(range(w - r["period"], w - r["period"] + h)),
+                 "source_offset_steps": -r["period"]} for h in c["horizons"]]
+    else:
+        rows = [{"horizon": h, "source_offset_steps": -(r["period"] - h)} for h in c["horizons"]]
+    return {**_copy(r), "per_horizon": rows}
+
+
 def config_digest(config):
     """SHA-256 of the canonical (sorted, compact, NaN-free) normalized configuration."""
     return _digest(_normalize(config))
@@ -191,9 +201,7 @@ class ModularBundle:
                 "head": _copy(self._head_manifest), "regimes": regime_summary(self.config),
                 **({"input_normalization": _copy(self.config["input_normalization"])}
                    if self.config.get("input_normalization") else {}),
-                **({"target_residual": {**_copy(self.config["target_residual"]), "per_horizon": [
-                    {"horizon": h, "source_offset_steps": -(self.config["target_residual"]["period"] - h)}
-                    for h in self.config["horizons"]]}} if self.config.get("target_residual") else {}),
+                **({"target_residual": _residual_receipt(self.config)} if self.config.get("target_residual") else {}),
                 "budget": _budget(self)}
 
     def donor_manifest(self, role, name=None):
@@ -310,10 +318,15 @@ def build_modular(config: dict) -> ModularBundle:
     output = head(latent)
     residual = c.get("target_residual")
     if residual:
-        from .layers import SeasonalNaiveBaseline
-        positions = [c["window"] - 1 - (residual["period"] - h) for h in c["horizons"]]
+        from .layers import SeasonalCumulativeBaseline, SeasonalNaiveBaseline
         channels = [c["feature_names"].index(t) for t in residual["target_features"]]
-        baseline = SeasonalNaiveBaseline(positions, channels, name="seasonal_naive_baseline")(inputs)
+        if residual["kind"] == "seasonal_naive_cumulative":
+            spans = [list(range(c["window"] - residual["period"], c["window"] - residual["period"] + h))
+                     for h in c["horizons"]]
+            baseline = SeasonalCumulativeBaseline(spans, channels, name="seasonal_naive_baseline")(inputs)
+        else:
+            positions = [c["window"] - 1 - (residual["period"] - h) for h in c["horizons"]]
+            baseline = SeasonalNaiveBaseline(positions, channels, name="seasonal_naive_baseline")(inputs)
         output = keras.layers.Add(name="forecast_plus_seasonal_naive")([output, baseline])
     if norm:
         from .layers import TargetMeanBroadcast
