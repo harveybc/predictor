@@ -1,0 +1,5644 @@
+{
+  "config_resolutions": {
+    "examples/config/modular_temporal/phase_1_modular_temporal_smoke_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "modular_temporal",
+        "predictor_plugins.predictor_plugin_modular:Plugin",
+        "predictor_plugin_modular.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/optimization/phase_1_ann_optimization_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_ann_12600_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_ann_1575_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_ann_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_ann_3150_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_ann_6300_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_cnn_12600_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_cnn_1575_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_cnn_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_cnn_3150_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_cnn_6300_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_lstm_12600_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_lstm_1575_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_lstm_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_lstm_3150_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_lstm_6300_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_transformer_12600_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_transformer_1575_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_transformer_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_transformer_3150_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1_transformer_6300_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1/phase_1b_candlestick_cnn_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "REFUSED",
+        "REFUSED: pipeline: entry point 'stl_pipeline_zscore' is registered in neither the installed registry nor this repository's setup.py for group 'pipeline.plugins'"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "REFUSED",
+        "REFUSED: preprocessor: entry point 'stl_preprocessor_zscore' is registered in neither the installed registry nor this repository's setup.py for group 'preproces"
+      ]
+    },
+    "examples/config/phase_1_daily/optimization/phase_1_ann_1d_optimization_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/optimization/phase_1_cnn_1d_incremental_optimization_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/optimization/phase_1_cnn_1d_optimization_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/optimization/phase_1_lstm_1d_optimization_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/optimization/phase_1_mimo_1d_optimization_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "mimo",
+        "predictor_plugins.predictor_plugin_mimo:Plugin",
+        "predictor_plugin_mimo.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/optimization/phase_1_n_beats_1d_optimization_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "n_beats",
+        "predictor_plugins.predictor_plugin_n_beats:Plugin",
+        "predictor_plugin_n_beats.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/optimization/phase_1_prophet_1d_optimization_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "REFUSED",
+        "REFUSED: predictor: entry point 'prophet' is registered in neither the installed registry nor this repository's setup.py for group 'predictor.plugins' \u2014 a plugi"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/optimization/phase_1_tcn_1d_optimization_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "tcn",
+        "predictor_plugins.predictor_plugin_tcn:Plugin",
+        "predictor_plugin_tcn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/optimization/phase_1_tcn_neat_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "tcn",
+        "predictor_plugins.predictor_plugin_tcn:Plugin",
+        "predictor_plugin_tcn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/optimization/phase_1_tft_1d_optimization_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "tft",
+        "predictor_plugins.predictor_plugin_tft:Plugin",
+        "predictor_plugin_tft.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/optimization/phase_1_transformer_1d_optimization_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_ann_12600_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_ann_1575_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_ann_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_ann_3150_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_ann_6300_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_cnn_12600_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_cnn_1575_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_cnn_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_cnn_25200_1d_config_naive.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_cnn_3150_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_cnn_6300_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_lstm_12600_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_lstm_1575_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_lstm_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_lstm_3150_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_lstm_6300_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_mimo_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "mimo",
+        "predictor_plugins.predictor_plugin_mimo:Plugin",
+        "predictor_plugin_mimo.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_tcn_neat_champion_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "tcn",
+        "predictor_plugins.predictor_plugin_tcn:Plugin",
+        "predictor_plugin_tcn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_transformer_12600_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_transformer_1575_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_transformer_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_transformer_3150_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1_daily/phase_1_transformer_6300_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/champion_inference_config.json": {
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tft",
+        "predictor_plugins.binary.predictor_plugin_binary_tft:Plugin",
+        "predictor_plugin_binary_tft.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_ann_buy_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_ann",
+        "predictor_plugins.binary.predictor_plugin_binary_ann:Plugin",
+        "predictor_plugin_binary_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_ann_buy_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_ann",
+        "predictor_plugins.binary.predictor_plugin_binary_ann:Plugin",
+        "predictor_plugin_binary_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_ann_sell_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_ann",
+        "predictor_plugins.binary.predictor_plugin_binary_ann:Plugin",
+        "predictor_plugin_binary_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_ann_sell_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_ann",
+        "predictor_plugins.binary.predictor_plugin_binary_ann:Plugin",
+        "predictor_plugin_binary_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_cnn_buy_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_cnn",
+        "predictor_plugins.binary.predictor_plugin_binary_cnn:Plugin",
+        "predictor_plugin_binary_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_cnn_buy_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_cnn",
+        "predictor_plugins.binary.predictor_plugin_binary_cnn:Plugin",
+        "predictor_plugin_binary_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_cnn_sell_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_cnn",
+        "predictor_plugins.binary.predictor_plugin_binary_cnn:Plugin",
+        "predictor_plugin_binary_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_cnn_sell_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_cnn",
+        "predictor_plugins.binary.predictor_plugin_binary_cnn:Plugin",
+        "predictor_plugin_binary_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_lstm_buy_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_lstm",
+        "predictor_plugins.binary.predictor_plugin_binary_lstm:Plugin",
+        "predictor_plugin_binary_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_lstm_buy_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_lstm",
+        "predictor_plugins.binary.predictor_plugin_binary_lstm:Plugin",
+        "predictor_plugin_binary_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_lstm_sell_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_lstm",
+        "predictor_plugins.binary.predictor_plugin_binary_lstm:Plugin",
+        "predictor_plugin_binary_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_lstm_sell_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_lstm",
+        "predictor_plugins.binary.predictor_plugin_binary_lstm:Plugin",
+        "predictor_plugin_binary_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_mimo_buy_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_mimo",
+        "predictor_plugins.binary.predictor_plugin_binary_mimo:Plugin",
+        "predictor_plugin_binary_mimo.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_mimo_buy_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_mimo",
+        "predictor_plugins.binary.predictor_plugin_binary_mimo:Plugin",
+        "predictor_plugin_binary_mimo.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_mimo_sell_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_mimo",
+        "predictor_plugins.binary.predictor_plugin_binary_mimo:Plugin",
+        "predictor_plugin_binary_mimo.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_mimo_sell_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_mimo",
+        "predictor_plugins.binary.predictor_plugin_binary_mimo:Plugin",
+        "predictor_plugin_binary_mimo.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_n_beats_buy_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_n_beats",
+        "predictor_plugins.binary.predictor_plugin_binary_n_beats:Plugin",
+        "predictor_plugin_binary_n_beats.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_n_beats_buy_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_n_beats",
+        "predictor_plugins.binary.predictor_plugin_binary_n_beats:Plugin",
+        "predictor_plugin_binary_n_beats.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_n_beats_sell_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_n_beats",
+        "predictor_plugins.binary.predictor_plugin_binary_n_beats:Plugin",
+        "predictor_plugin_binary_n_beats.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_n_beats_sell_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_n_beats",
+        "predictor_plugins.binary.predictor_plugin_binary_n_beats:Plugin",
+        "predictor_plugin_binary_n_beats.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_tcn_buy_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tcn",
+        "predictor_plugins.binary.predictor_plugin_binary_tcn:Plugin",
+        "predictor_plugin_binary_tcn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_tcn_buy_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tcn",
+        "predictor_plugins.binary.predictor_plugin_binary_tcn:Plugin",
+        "predictor_plugin_binary_tcn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_tcn_sell_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tcn",
+        "predictor_plugins.binary.predictor_plugin_binary_tcn:Plugin",
+        "predictor_plugin_binary_tcn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_tcn_sell_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tcn",
+        "predictor_plugins.binary.predictor_plugin_binary_tcn:Plugin",
+        "predictor_plugin_binary_tcn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_tft_buy_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tft",
+        "predictor_plugins.binary.predictor_plugin_binary_tft:Plugin",
+        "predictor_plugin_binary_tft.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_tft_buy_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tft",
+        "predictor_plugins.binary.predictor_plugin_binary_tft:Plugin",
+        "predictor_plugin_binary_tft.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_tft_sell_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tft",
+        "predictor_plugins.binary.predictor_plugin_binary_tft:Plugin",
+        "predictor_plugin_binary_tft.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_tft_sell_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tft",
+        "predictor_plugins.binary.predictor_plugin_binary_tft:Plugin",
+        "predictor_plugin_binary_tft.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_transformer_buy_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_transformer",
+        "predictor_plugins.binary.predictor_plugin_binary_transformer:Plugin",
+        "predictor_plugin_binary_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_transformer_buy_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_transformer",
+        "predictor_plugins.binary.predictor_plugin_binary_transformer:Plugin",
+        "predictor_plugin_binary_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_transformer_sell_entry_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_transformer",
+        "predictor_plugins.binary.predictor_plugin_binary_transformer:Plugin",
+        "predictor_plugin_binary_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/optimization/phase_1b_binary_transformer_sell_exit_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_transformer",
+        "predictor_plugins.binary.predictor_plugin_binary_transformer:Plugin",
+        "predictor_plugin_binary_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_ann_buy_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_ann",
+        "predictor_plugins.binary.predictor_plugin_binary_ann:Plugin",
+        "predictor_plugin_binary_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_ann_buy_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_ann",
+        "predictor_plugins.binary.predictor_plugin_binary_ann:Plugin",
+        "predictor_plugin_binary_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_ann_sell_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_ann",
+        "predictor_plugins.binary.predictor_plugin_binary_ann:Plugin",
+        "predictor_plugin_binary_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_ann_sell_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_ann",
+        "predictor_plugins.binary.predictor_plugin_binary_ann:Plugin",
+        "predictor_plugin_binary_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_cnn_buy_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_cnn",
+        "predictor_plugins.binary.predictor_plugin_binary_cnn:Plugin",
+        "predictor_plugin_binary_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_cnn_buy_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_cnn",
+        "predictor_plugins.binary.predictor_plugin_binary_cnn:Plugin",
+        "predictor_plugin_binary_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_cnn_sell_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_cnn",
+        "predictor_plugins.binary.predictor_plugin_binary_cnn:Plugin",
+        "predictor_plugin_binary_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_cnn_sell_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_cnn",
+        "predictor_plugins.binary.predictor_plugin_binary_cnn:Plugin",
+        "predictor_plugin_binary_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_logistic_buy_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_logistic",
+        "predictor_plugins.binary.predictor_plugin_binary_logistic:Plugin",
+        "predictor_plugin_binary_logistic.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_lstm_buy_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_lstm",
+        "predictor_plugins.binary.predictor_plugin_binary_lstm:Plugin",
+        "predictor_plugin_binary_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_lstm_buy_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_lstm",
+        "predictor_plugins.binary.predictor_plugin_binary_lstm:Plugin",
+        "predictor_plugin_binary_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_lstm_sell_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_lstm",
+        "predictor_plugins.binary.predictor_plugin_binary_lstm:Plugin",
+        "predictor_plugin_binary_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_lstm_sell_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_lstm",
+        "predictor_plugins.binary.predictor_plugin_binary_lstm:Plugin",
+        "predictor_plugin_binary_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_mimo_buy_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_mimo",
+        "predictor_plugins.binary.predictor_plugin_binary_mimo:Plugin",
+        "predictor_plugin_binary_mimo.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_mimo_buy_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_mimo",
+        "predictor_plugins.binary.predictor_plugin_binary_mimo:Plugin",
+        "predictor_plugin_binary_mimo.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_mimo_sell_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_mimo",
+        "predictor_plugins.binary.predictor_plugin_binary_mimo:Plugin",
+        "predictor_plugin_binary_mimo.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_mimo_sell_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_mimo",
+        "predictor_plugins.binary.predictor_plugin_binary_mimo:Plugin",
+        "predictor_plugin_binary_mimo.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_n_beats_buy_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_n_beats",
+        "predictor_plugins.binary.predictor_plugin_binary_n_beats:Plugin",
+        "predictor_plugin_binary_n_beats.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_n_beats_buy_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_n_beats",
+        "predictor_plugins.binary.predictor_plugin_binary_n_beats:Plugin",
+        "predictor_plugin_binary_n_beats.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_n_beats_sell_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_n_beats",
+        "predictor_plugins.binary.predictor_plugin_binary_n_beats:Plugin",
+        "predictor_plugin_binary_n_beats.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_n_beats_sell_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_n_beats",
+        "predictor_plugins.binary.predictor_plugin_binary_n_beats:Plugin",
+        "predictor_plugin_binary_n_beats.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_tcn_buy_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tcn",
+        "predictor_plugins.binary.predictor_plugin_binary_tcn:Plugin",
+        "predictor_plugin_binary_tcn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_tcn_buy_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tcn",
+        "predictor_plugins.binary.predictor_plugin_binary_tcn:Plugin",
+        "predictor_plugin_binary_tcn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_tcn_sell_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tcn",
+        "predictor_plugins.binary.predictor_plugin_binary_tcn:Plugin",
+        "predictor_plugin_binary_tcn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_tcn_sell_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tcn",
+        "predictor_plugins.binary.predictor_plugin_binary_tcn:Plugin",
+        "predictor_plugin_binary_tcn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_tft_buy_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tft",
+        "predictor_plugins.binary.predictor_plugin_binary_tft:Plugin",
+        "predictor_plugin_binary_tft.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_tft_buy_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tft",
+        "predictor_plugins.binary.predictor_plugin_binary_tft:Plugin",
+        "predictor_plugin_binary_tft.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_tft_sell_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tft",
+        "predictor_plugins.binary.predictor_plugin_binary_tft:Plugin",
+        "predictor_plugin_binary_tft.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_tft_sell_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_tft",
+        "predictor_plugins.binary.predictor_plugin_binary_tft:Plugin",
+        "predictor_plugin_binary_tft.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_transformer_buy_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_transformer",
+        "predictor_plugins.binary.predictor_plugin_binary_transformer:Plugin",
+        "predictor_plugin_binary_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_transformer_buy_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_transformer",
+        "predictor_plugins.binary.predictor_plugin_binary_transformer:Plugin",
+        "predictor_plugin_binary_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_transformer_sell_entry_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_transformer",
+        "predictor_plugins.binary.predictor_plugin_binary_transformer:Plugin",
+        "predictor_plugin_binary_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1b_binary/phase_1b_binary_transformer_sell_exit_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "binary_pipeline.py"
+      ],
+      "predictor": [
+        "binary_transformer",
+        "predictor_plugins.binary.predictor_plugin_binary_transformer:Plugin",
+        "predictor_plugin_binary_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "binary_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_ann_direction_long_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_ann",
+        "predictor_plugins.direction.predictor_plugin_direction_ann:Plugin",
+        "predictor_plugin_direction_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_ann_direction_short_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_ann",
+        "predictor_plugins.direction.predictor_plugin_direction_ann:Plugin",
+        "predictor_plugin_direction_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_cnn_direction_long_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_cnn",
+        "predictor_plugins.direction.predictor_plugin_direction_cnn:Plugin",
+        "predictor_plugin_direction_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_cnn_direction_short_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_cnn",
+        "predictor_plugins.direction.predictor_plugin_direction_cnn:Plugin",
+        "predictor_plugin_direction_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_logistic_direction_long_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_logistic",
+        "predictor_plugins.direction.predictor_plugin_direction_logistic:Plugin",
+        "predictor_plugin_direction_logistic.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_logistic_direction_short_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_logistic",
+        "predictor_plugins.direction.predictor_plugin_direction_logistic:Plugin",
+        "predictor_plugin_direction_logistic.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_lstm_direction_long_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_lstm",
+        "predictor_plugins.direction.predictor_plugin_direction_lstm:Plugin",
+        "predictor_plugin_direction_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_lstm_direction_short_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_lstm",
+        "predictor_plugins.direction.predictor_plugin_direction_lstm:Plugin",
+        "predictor_plugin_direction_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_mimo_direction_long_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_mimo",
+        "predictor_plugins.direction.predictor_plugin_direction_mimo:Plugin",
+        "predictor_plugin_direction_mimo.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_mimo_direction_short_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_mimo",
+        "predictor_plugins.direction.predictor_plugin_direction_mimo:Plugin",
+        "predictor_plugin_direction_mimo.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_n_beats_direction_long_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_n_beats",
+        "predictor_plugins.direction.predictor_plugin_direction_n_beats:Plugin",
+        "predictor_plugin_direction_n_beats.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_n_beats_direction_short_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_n_beats",
+        "predictor_plugins.direction.predictor_plugin_direction_n_beats:Plugin",
+        "predictor_plugin_direction_n_beats.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_tcn_direction_long_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_tcn",
+        "predictor_plugins.direction.predictor_plugin_direction_tcn:Plugin",
+        "predictor_plugin_direction_tcn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_tcn_direction_short_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_tcn",
+        "predictor_plugins.direction.predictor_plugin_direction_tcn:Plugin",
+        "predictor_plugin_direction_tcn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_tft_direction_long_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_tft",
+        "predictor_plugins.direction.predictor_plugin_direction_tft:Plugin",
+        "predictor_plugin_direction_tft.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_tft_direction_short_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_tft",
+        "predictor_plugins.direction.predictor_plugin_direction_tft:Plugin",
+        "predictor_plugin_direction_tft.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_transformer_direction_long_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_transformer",
+        "predictor_plugins.direction.predictor_plugin_direction_transformer:Plugin",
+        "predictor_plugin_direction_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/inference/phase_1c_direction_transformer_direction_short_1d_inference_config.json": {
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_transformer",
+        "predictor_plugins.direction.predictor_plugin_direction_transformer:Plugin",
+        "predictor_plugin_direction_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_ann_direction_long_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_ann",
+        "predictor_plugins.direction.predictor_plugin_direction_ann:Plugin",
+        "predictor_plugin_direction_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_ann_direction_short_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_ann",
+        "predictor_plugins.direction.predictor_plugin_direction_ann:Plugin",
+        "predictor_plugin_direction_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_cnn_direction_long_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_cnn",
+        "predictor_plugins.direction.predictor_plugin_direction_cnn:Plugin",
+        "predictor_plugin_direction_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_cnn_direction_short_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_cnn",
+        "predictor_plugins.direction.predictor_plugin_direction_cnn:Plugin",
+        "predictor_plugin_direction_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_logistic_direction_long_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_logistic",
+        "predictor_plugins.direction.predictor_plugin_direction_logistic:Plugin",
+        "predictor_plugin_direction_logistic.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_logistic_direction_short_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_logistic",
+        "predictor_plugins.direction.predictor_plugin_direction_logistic:Plugin",
+        "predictor_plugin_direction_logistic.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_lstm_direction_long_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_lstm",
+        "predictor_plugins.direction.predictor_plugin_direction_lstm:Plugin",
+        "predictor_plugin_direction_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_lstm_direction_short_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_lstm",
+        "predictor_plugins.direction.predictor_plugin_direction_lstm:Plugin",
+        "predictor_plugin_direction_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_mimo_direction_long_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_mimo",
+        "predictor_plugins.direction.predictor_plugin_direction_mimo:Plugin",
+        "predictor_plugin_direction_mimo.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_mimo_direction_short_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_mimo",
+        "predictor_plugins.direction.predictor_plugin_direction_mimo:Plugin",
+        "predictor_plugin_direction_mimo.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_n_beats_direction_long_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_n_beats",
+        "predictor_plugins.direction.predictor_plugin_direction_n_beats:Plugin",
+        "predictor_plugin_direction_n_beats.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_n_beats_direction_short_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_n_beats",
+        "predictor_plugins.direction.predictor_plugin_direction_n_beats:Plugin",
+        "predictor_plugin_direction_n_beats.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_tcn_direction_long_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_tcn",
+        "predictor_plugins.direction.predictor_plugin_direction_tcn:Plugin",
+        "predictor_plugin_direction_tcn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_tcn_direction_short_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_tcn",
+        "predictor_plugins.direction.predictor_plugin_direction_tcn:Plugin",
+        "predictor_plugin_direction_tcn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_tft_direction_long_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_tft",
+        "predictor_plugins.direction.predictor_plugin_direction_tft:Plugin",
+        "predictor_plugin_direction_tft.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_tft_direction_short_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_tft",
+        "predictor_plugins.direction.predictor_plugin_direction_tft:Plugin",
+        "predictor_plugin_direction_tft.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_transformer_direction_long_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_transformer",
+        "predictor_plugins.direction.predictor_plugin_direction_transformer:Plugin",
+        "predictor_plugin_direction_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_1c_direction/optimization/phase_1c_direction_transformer_direction_short_1d_optimization_config.json": {
+      "optimizer": [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "neat_optimizer.py"
+      ],
+      "pipeline": [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "direction_pipeline.py"
+      ],
+      "predictor": [
+        "direction_transformer",
+        "predictor_plugins.direction.predictor_plugin_direction_transformer:Plugin",
+        "predictor_plugin_direction_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ],
+      "target": [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "direction_target.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_1_ann_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_1_cnn_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_1_lstm_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_1_transformer_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_2_ann_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_2_cnn_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_2_lstm_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_2_transformer_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_3_ann_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_3_cnn_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_3_lstm_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_3_transformer_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_4_ann_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_4_cnn_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_4_lstm_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2/phase_2_4_transformer_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_1_ann_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_1_cnn_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_1_lstm_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_1_transformer_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_2_ann_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_2_cnn_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_2_lstm_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_2_transformer_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_3_ann_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_3_cnn_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_3_lstm_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_3_transformer_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_4_ann_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_4_cnn_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_4_lstm_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_2_daily/phase_2_4_transformer_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_1/phase_3_1_ann_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_1/phase_3_1_cnn_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_1/phase_3_1_lstm_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_1/phase_3_1_transformer_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_1_daily/phase_3_1_ann_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_1_daily/phase_3_1_cnn_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_1_daily/phase_3_1_lstm_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_1_daily/phase_3_1_transformer_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_2/phase_3_2_ann_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_2/phase_3_2_cnn_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_2/phase_3_2_lstm_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_2/phase_3_2_transformer_25200_1h_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_2_daily/phase_3_2_ann_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor_plugin_ann.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_2_daily/phase_3_2_cnn_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_2_daily/phase_3_2_lstm_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor_plugin_lstm.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_3_2_daily/phase_3_2_transformer_25200_1d_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_1/phase_4_1_transformer_1h_12600_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_1/phase_4_1_transformer_1h_25200_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_1/phase_4_1_transformer_1h_50400_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_1_daily/phase_4_1_cnn_1d_12600_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_1_daily/phase_4_1_cnn_1d_25200_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_1_daily/phase_4_1_cnn_1d_50400_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_2/phase_4_2_transformer_1h_12600_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_2/phase_4_2_transformer_1h_25200_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_2/phase_4_2_transformer_1h_50400_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_2_daily/phase_4_2_cnn_1d_12600_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_2_daily/phase_4_2_cnn_1d_25200_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_2_daily/phase_4_2_cnn_1d_50400_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_3/phase_4_3_transformer_1h_12600_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_3/phase_4_3_transformer_1h_25200_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_3/phase_4_3_transformer_1h_50400_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor_plugin_transformer.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_3_daily/phase_4_3_cnn_1d_12600_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_3_daily/phase_4_3_cnn_1d_25200_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    },
+    "examples/config/phase_4_3_daily/phase_4_3_cnn_1d_50400_config.json": {
+      "optimizer": [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "default_optimizer.py"
+      ],
+      "pipeline": [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "stl_pipeline.py"
+      ],
+      "predictor": [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor_plugin_cnn.py"
+      ],
+      "preprocessor": [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "stl_preprocessor.py"
+      ]
+    }
+  },
+  "direction_models": {
+    "examples/results/phase_1c_direction/phase_1c_direction_cnn_direction_long_model.keras": {
+      "consumer_log": [
+        "[DirectionPredictor:probe] Metadata: window=71, features=22",
+        "[DirectionPredictor] Plugin rebuild failed (No module named 'predictor_plugins.common'), trying direct load"
+      ],
+      "error": "RuntimeError: Cannot rebuild model 'DirectionCNN_direction_long' \u2014 install predictor repo with direction plugins",
+      "route": "consumer_error"
+    },
+    "examples/results/phase_1c_direction/phase_1c_direction_cnn_direction_short_model.keras": {
+      "consumer_log": [
+        "[DirectionPredictor:probe] Metadata: window=110, features=22",
+        "[DirectionPredictor] Plugin rebuild failed (No module named 'predictor_plugins.common'), trying direct load"
+      ],
+      "error": "RuntimeError: Cannot rebuild model 'DirectionCNN_direction_short' \u2014 install predictor repo with direction plugins",
+      "route": "consumer_error"
+    }
+  },
+  "entry_points": {
+    "modular.branch": [
+      [
+        "causal_conv1d",
+        "predictor_plugins.modular_temporal:causal_conv1d",
+        "predictor"
+      ]
+    ],
+    "modular.core": [
+      [
+        "transformer_conv",
+        "predictor_plugins.modular_temporal:transformer_conv",
+        "predictor"
+      ]
+    ],
+    "modular.fusion": [
+      [
+        "sequence_concat",
+        "predictor_plugins.modular_temporal:sequence_concat",
+        "predictor"
+      ]
+    ],
+    "modular.head": [
+      [
+        "forecast",
+        "predictor_plugins.modular_temporal:forecast",
+        "predictor"
+      ]
+    ],
+    "optimizer.plugins": [
+      [
+        "default_optimizer",
+        "optimizer_plugins.default_optimizer:Plugin",
+        "predictor"
+      ],
+      [
+        "neat_optimizer",
+        "optimizer_plugins.neat_optimizer:Plugin",
+        "predictor"
+      ]
+    ],
+    "pipeline.plugins": [
+      [
+        "binary_pipeline",
+        "pipeline_plugins.binary_pipeline:BinaryPipelinePlugin",
+        "predictor"
+      ],
+      [
+        "default_pipeline",
+        "pipeline_plugins.default_pipeline:PipelinePlugin",
+        "predictor"
+      ],
+      [
+        "direction_pipeline",
+        "pipeline_plugins.direction_pipeline:DirectionPipelinePlugin",
+        "predictor"
+      ],
+      [
+        "stl_pipeline",
+        "pipeline_plugins.stl_pipeline:STLPipelinePlugin",
+        "predictor"
+      ]
+    ],
+    "predictor.plugins": [
+      [
+        "ann",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor"
+      ],
+      [
+        "base",
+        "predictor_plugin.predictor_plugin_base:Plugin",
+        "predictor"
+      ],
+      [
+        "binary_ann",
+        "predictor_plugins.binary.predictor_plugin_binary_ann:Plugin",
+        "predictor"
+      ],
+      [
+        "binary_cnn",
+        "predictor_plugins.binary.predictor_plugin_binary_cnn:Plugin",
+        "predictor"
+      ],
+      [
+        "binary_logistic",
+        "predictor_plugins.binary.predictor_plugin_binary_logistic:Plugin",
+        "predictor"
+      ],
+      [
+        "binary_lstm",
+        "predictor_plugins.binary.predictor_plugin_binary_lstm:Plugin",
+        "predictor"
+      ],
+      [
+        "binary_mimo",
+        "predictor_plugins.binary.predictor_plugin_binary_mimo:Plugin",
+        "predictor"
+      ],
+      [
+        "binary_n_beats",
+        "predictor_plugins.binary.predictor_plugin_binary_n_beats:Plugin",
+        "predictor"
+      ],
+      [
+        "binary_tcn",
+        "predictor_plugins.binary.predictor_plugin_binary_tcn:Plugin",
+        "predictor"
+      ],
+      [
+        "binary_tft",
+        "predictor_plugins.binary.predictor_plugin_binary_tft:Plugin",
+        "predictor"
+      ],
+      [
+        "binary_transformer",
+        "predictor_plugins.binary.predictor_plugin_binary_transformer:Plugin",
+        "predictor"
+      ],
+      [
+        "cnn",
+        "predictor_plugins.predictor_plugin_cnn:Plugin",
+        "predictor"
+      ],
+      [
+        "default_predictor",
+        "predictor_plugins.predictor_plugin_ann:Plugin",
+        "predictor"
+      ],
+      [
+        "direction_ann",
+        "predictor_plugins.direction.predictor_plugin_direction_ann:Plugin",
+        "predictor"
+      ],
+      [
+        "direction_cnn",
+        "predictor_plugins.direction.predictor_plugin_direction_cnn:Plugin",
+        "predictor"
+      ],
+      [
+        "direction_logistic",
+        "predictor_plugins.direction.predictor_plugin_direction_logistic:Plugin",
+        "predictor"
+      ],
+      [
+        "direction_lstm",
+        "predictor_plugins.direction.predictor_plugin_direction_lstm:Plugin",
+        "predictor"
+      ],
+      [
+        "direction_mimo",
+        "predictor_plugins.direction.predictor_plugin_direction_mimo:Plugin",
+        "predictor"
+      ],
+      [
+        "direction_n_beats",
+        "predictor_plugins.direction.predictor_plugin_direction_n_beats:Plugin",
+        "predictor"
+      ],
+      [
+        "direction_tcn",
+        "predictor_plugins.direction.predictor_plugin_direction_tcn:Plugin",
+        "predictor"
+      ],
+      [
+        "direction_tft",
+        "predictor_plugins.direction.predictor_plugin_direction_tft:Plugin",
+        "predictor"
+      ],
+      [
+        "direction_transformer",
+        "predictor_plugins.direction.predictor_plugin_direction_transformer:Plugin",
+        "predictor"
+      ],
+      [
+        "fused_branches",
+        "predictor_plugins.fused_branches:Plugin",
+        "predictor"
+      ],
+      [
+        "lstm",
+        "predictor_plugins.predictor_plugin_lstm:Plugin",
+        "predictor"
+      ],
+      [
+        "mimo",
+        "predictor_plugins.predictor_plugin_mimo:Plugin",
+        "predictor"
+      ],
+      [
+        "modular_temporal",
+        "predictor_plugins.predictor_plugin_modular:Plugin",
+        "predictor"
+      ],
+      [
+        "n_beats",
+        "predictor_plugins.predictor_plugin_n_beats:Plugin",
+        "predictor"
+      ],
+      [
+        "quantile_ann",
+        "predictor_plugins.quantile_ann:Plugin",
+        "predictor"
+      ],
+      [
+        "tcn",
+        "predictor_plugins.predictor_plugin_tcn:Plugin",
+        "predictor"
+      ],
+      [
+        "tft",
+        "predictor_plugins.predictor_plugin_tft:Plugin",
+        "predictor"
+      ],
+      [
+        "transformer",
+        "predictor_plugins.predictor_plugin_transformer:Plugin",
+        "predictor"
+      ]
+    ],
+    "preprocessor.plugins": [
+      [
+        "default_preprocessor",
+        "preprocessor_plugins.default_preprocessor:PreprocessorPlugin",
+        "predictor"
+      ],
+      [
+        "stl_preprocessor",
+        "preprocessor_plugins.stl_preprocessor:PreprocessorPlugin",
+        "predictor"
+      ]
+    ],
+    "target.plugins": [
+      [
+        "binary_target",
+        "target_plugins.binary_target:TargetPlugin",
+        "predictor"
+      ],
+      [
+        "default_target",
+        "target_plugins.default_target:TargetPlugin",
+        "predictor"
+      ],
+      [
+        "direction_target",
+        "target_plugins.direction_target:TargetPlugin",
+        "predictor"
+      ],
+      [
+        "stl_target",
+        "target_plugins.stl_target:TargetPlugin",
+        "predictor"
+      ]
+    ]
+  },
+  "installed": {
+    "app_package": "~/.cache/m01/iso/lib/python3.12/site-packages/app",
+    "checkout_on_path": false,
+    "version": "0.1.0"
+  }
+}
