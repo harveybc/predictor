@@ -148,6 +148,9 @@ def log_var(v):
 
 def kalman_channels(out: "kf.KalmanOutput", names=None):
     """Eligible channel matrix and names for every output; state_var enters as log(state_var)."""
+    if not isinstance(out, kf.KalmanOutput) or not out.causal_forward or not out.eligible_for_inputs:
+        raise kf.OperatorRefusal("this output is not an eligible input: only the forward causal filter produces "
+                                 "eligible inputs; the backward smoother is a non-causal control")
     outputs = [o for o in kf.OUTPUTS[out.kind] if o not in ("obs", "state_var", "slope_var")]
     M, labels = kf.eligible_matrix(out, names=names, outputs=outputs)
     cols = list(range(len(out.column_ids))) if names is None else [out.column_ids.index(n) for n in names]

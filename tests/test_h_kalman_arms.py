@@ -77,7 +77,7 @@ def test_naives_match_the_lane_f2_definitions():
         want = sum(zt[origins - 6 + j] for j in range(1, h + 1))
         assert np.allclose(nv["seasonal_6"][:, k], want)
     # the seasonal naive for horizon h reads rows o-5..o-6+h: never a row after the origin
-    assert all(origins - 6 + h <= origins for h in horizons)
+    assert all(bool(np.all(origins - 6 + h <= origins)) for h in horizons)
 
 
 def test_block_bootstrap_ci_covers_the_mean_and_widens_with_block_length():
@@ -97,8 +97,7 @@ def test_phase_lag_detects_a_known_delay_and_no_delay():
     x = np.cumsum(rng.standard_normal(3000))
     assert arms.phase_lag(x, x)["best_lag_bars"] == 0
     delayed = np.concatenate([np.full(3, x[0]), x[:-3]])
-    assert arms.phase_lag(x, delayed)["best_lag_bars"] == 0 or True
-    assert arms.phase_lag(delayed, x)["best_lag_bars"] == 3
+    assert arms.phase_lag(x, delayed)["best_lag_bars"] == 3        # obs = x, level = x delayed by 3 bars
     # the filtered level of a noisy random walk lags the observation by about one bar or less
     lvl = x + 0.0
     assert arms.phase_lag(x, lvl)["corr_at_best"] > 0.99
