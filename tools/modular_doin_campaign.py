@@ -276,6 +276,10 @@ class Campaign:
                 outcome = executor.verify(receipt, output_root, self.declaration)
         except Exception as exc:  # the executor normally reports failures in outcome
             outcome = {"status": "failed", "error": f"{type(exc).__name__}: {exc}"}
+        if (kind == "verify" and outcome.get("verdict") == "VERIFIED" and outcome.get("exact_match") is not True
+                and self.declaration.get("verification", {}).get("require_exact_match")):
+            # deterministic campaigns accept only bitwise-equal rescoring; anything else is a finding
+            outcome = {**outcome, "verdict": "FINDING_NOT_EXACT"}
         (output_root / "OUTCOME.json").write_text(json.dumps(outcome, indent=1, default=str) + "\n")
         if kind == "train" and outcome.get("status") == "completed":
             declared = {s: self.declaration["data"][s]["sha256"] for s in ("train", "validation")}
@@ -301,7 +305,8 @@ class Campaign:
             self.db.execute("UPDATE candidates SET status=?, objective=?, updated=? WHERE cid=?",
                             (new, outcome.get("objective"), now(), cid))
         else:
-            new = {"VERIFIED": "verified", "REFUTED": "refuted"}.get(outcome.get("verdict"), "completed")
+            new = {"VERIFIED": "verified", "REFUTED": "refuted",
+                   "FINDING_NOT_EXACT": "finding"}.get(outcome.get("verdict"), "completed")
             if status != "completed":
                 new = "completed" if attempt < 2 else "failed"  # one verification retry, then stop
             self.db.execute("UPDATE candidates SET status=?, updated=? WHERE cid=?", (new, now(), cid))
@@ -555,6 +560,7 @@ def summarize_verify(output_root, code, elapsed):
     peak = result.get("resources", {}).get("cgroup", {}).get("peak_bytes")
     outcome["cgroup_peak_bytes"] = peak if isinstance(peak, int) else None
     return {**outcome, "status": "completed", "verdict": result["verdict"], "receipt_path": str(found[0]),
+            "exact_match": result.get("exact_match"), "batch_size": result.get("batch_size"),
             "objective": result["objective"]["rescored_value"], "model_sha256": result["digests"]["model_sha256"],
             "error": "; ".join(result["problems"]) or None}
 

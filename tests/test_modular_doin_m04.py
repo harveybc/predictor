@@ -425,3 +425,17 @@ def test_placement_exclusion_keeps_candidate_for_the_admitting_host(tmp_path):
     assert got[0]["config_id"] != first
     got_b = campaign.claim("worker_b")
     assert got_b[0]["config_id"] == first
+
+
+def test_deterministic_campaign_accepts_only_exact_rescoring(tmp_path):
+    campaign = make_campaign(tmp_path)
+    campaign.declaration["verification"] = {"require_exact_match": True}
+    enqueue_default(campaign)
+
+    class NearMiss(FakeExecutor):
+        def verify(self, receipt, output_root, declaration):
+            return {"status": "completed", "verdict": "VERIFIED", "exact_match": False}
+
+    campaign.run(NearMiss(campaign, VALUES))
+    assert campaign.status()["counts"] == {"finding": 4}
+    assert campaign.status()["incumbent"] is None
