@@ -365,3 +365,36 @@ Nothing else in sections 8–9 requires an owner decision; the remaining items t
   ADM-PROC-01 (two SIGTERMs to queued acquirers with no lease, because the admission tool has no cancel verb and
   ADM-CANCEL-01 is undeployed on the secondary worker), Q18 backlog file (old gate refused 6580M for 50+ min with
   ~17 GB available).
+
+### 10.8 Acknowledgement 10:35Z (2026-10-01): owner's full-autonomy order and the parallel dispatch (master plan, per front)
+
+Received: the owner's chat order (intent: no authorization waits from the owner or Musashi; never ask the owner; advance on
+all branches, above all code and tests of the branch+core architecture; selection in parallel with defaults and the RL
+comparison; no GPU ever idle, the 5090 first) and the written orders `docs/handoffs/SATOSHI_AUTONOMOUS_PARALLEL_EXECUTION_2026_10_01.md`
+(sha256 eef2ca9b19ed5198…, copied here unchanged). Every "owner decision open" in this document is now ruled by me and recorded
+as an assumption: Q13 EURUSD appearance = DEVELOPMENT; Q14–17 external facts = use what the held service key exposes,
+exclude only inputs whose availability time cannot be established; Q18 = deploy the admission repairs on the secondary
+worker (M06, with rollback); Q19 = DEVELOPMENT availability from the git-pinned ETH 4h view (predictor b1f8a74f, sha
+1b447c66…); Q20 = a read-only lake mirror on the secondary worker is approved when a lane needs it; Q21–23 = current gate
+behaviour as coordinator rulings; C07 = proceed as filler when a GPU would otherwise idle. Musashi audits in parallel; his
+review is not a dispatch dependency.
+
+**Live at 10:30Z (adopted by identity, not restarted):** 5090 (GPU-a9f35631) at 52 % with lane D v2 cell 3b5f18b4
+(6580M cap); 4090 (GPU-a8bd1b2c) idle until M04 places a v2 cell there and M07's first pilot admits; 5070 Ti
+(GPU-b77fc3ad) idle until lane G's first RL cell; M01's PS3-R child at 3G on the secondary worker (125/240 records
+retained, resumed); M06 writer and watcher units; the LTS campaign supervisor and MT5 services untouched.
+
+| Front | Responsible (agent id) | Branch(es) | Next action and first deliverable | ETA basis |
+|---|---|---|---|---|
+| A engine | M01 a5b79d5488abdee3a | predictor satoshi/a-engine-integration-20261001 (a771e37e) | seasonal-residual target option and R3 warm regime, tests first → tips to M04; PS3-R contrast; model card for seq 6 | next measurement when each suite runs (≈1 h per item) |
+| B data/selection | M03 a160efdffffffa9f2 | feature-eng satoshi/b-* (be2766b, 1b22c64) | ETH 4h variant A FROZEN_DEVELOPMENT within 60 min → sha to G/C2/M07; EURUSD next; Yahoo/Alpaca/FXMacroData real inventory; ledger denominators | first sha ≤11:35Z |
+| C causality/extraction | C2 a5fd5cd9bcbc7f3bd (new) | causal-inference / feature-extractor / predictor satoshi/c2-causal-eth-20261001 | per-feature incremental utility with causal-order and stability checks on M07's train split; dossier v1 with failing controls; ranking to M03/M07; PS3-R rerun on ETH | first table after M07's split sha |
+| D DOIN/training | M04 a083979bc9a8fa1b8 | predictor satoshi/d-corrected-queue-20261001 (e3330b9d→v2) | campaign v2 on the 5090 (and the 4090 until M07 claims it): seeds 2023/2024 for top-3 → intervals; R2 lr sweep; R3; two ablations; seasonal-residual pair; L96 cost pilot (literature lane, separate) | 622 s per per-feature cell measured; first v2 receipt ≤11:00Z |
+| D-financial | M07 afcf115024ffa1381 (new) | predictor satoshi/f2-eth-forecast-20261001 | split sha → CPU cost pilot → R0 (base control + grouped32 + per-feature × Huber/MAE × Adam/AdamW × 2 seeds) on the 4090 → donors → R1/R2 → evidence record v1 for M05 → donors to lane G | cost pilot sets the ETA; its first measurement reported when admitted |
+| E trading/product | M05 a65d2f3a115a9aa25 | lts satoshi/m05-paper-adapter-20260930 (2b18e17), heuristic-strategy satoshi/s08-backtest-naive-gate-20261001 (71fa1a4) | RL shadow adapter (≈1.5 h); paired forecasting+heuristic vs RL backtest harness (≈3 h after lane G's spec); PP/LTS integration dormant until a model passes the gate; M5PHET health check | per its estimates |
+| F evidence/resources | M06 aa83df3b3fa713744 | predictor satoshi/m06-evidence-resources-20260930 (1cc79478) | first dispatch report ≤20 min with GPU UUID/pid/dataset/stage; 2-min heartbeats; GPU-idle alarm; deploy 775c5545 + stale-lease/cancel on the secondary worker with rollback; STATUS/RESULTS/PROGRESS per §6 | continuous |
+| G RL | lane G aa7913479a97b45c0 | agent-multi satoshi/g-rl-temporal-20261001 (02db0701) | freeze (own or M03's) → re-materialize 16 cells → C1/C2 CPU pilots → 16 cells on the 5070 Ti and the 4090 (≤3G each, one per host) | pilot per-step time sets the ETA |
+
+Standing technical limits (not permissions): measured caps never lowered; zero batch work on the coordinator except the
+two exempt ≤512M launchers; one memory-heavy job per host beside measured small ones; no desktop OOM; no artificial GPU
+work; test splits untouched; DEVELOPMENT labels; paper/demo only under the existing risk mandate; roles not host names.
