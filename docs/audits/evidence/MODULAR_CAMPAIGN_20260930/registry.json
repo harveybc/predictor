@@ -29,7 +29,7 @@
    "id": "a9946e26c749a1bec",
    "kind": "subagent",
    "lane": "C",
-   "state": "assigned",
+   "state": "acknowledged",
    "commit": null,
    "note": "new causality/bibliography agent; dispatch block pending"
   },
@@ -240,6 +240,26 @@
    "difference": 0.00014268064498901278,
    "tolerance_agreement": 0.0085,
    "note": "three-seed class by the sealing executor's classify(); NOT independently verified except s2023 (orchestrator)"
+  },
+  {
+   "task": "ECL L24 -> H1..24, all 321 channels (M04 batch-1 v3, old architecture)",
+   "split": "validation",
+   "population_id": "2609 windows x 24 horizons x 321 channels",
+   "model": "incumbent cc4235d7 draw1_huber (mean of seeds [2021, 2022])",
+   "metric": "MAE",
+   "space": "z_train",
+   "reduction": "mean over all elements",
+   "value": 0.39717390109523637,
+   "naive": 0.8514061497227646,
+   "literature": {
+    "value": null,
+    "source": null,
+    "comparability": "not_comparable"
+   },
+   "evidence_state": "measured",
+   "class": "NOT_COMPARABLE",
+   "note": "negative skill at h1/h23/h24",
+   "generated_from": "RESULTS/m04_campaign_tables.json"
   }
  ],
  "milestones": [
@@ -282,13 +302,12 @@
   }
  ],
  "next_actions": [
-  "owner: ADM-DEADCACHE-01 (DEPLOY.md) or one-time reclaim on both workers",
-  "owner: persistence mode + root slabinfo timer on worker_a",
-  "owner: force-push decision for af215de3 / 1a80f5f6 on satoshi/m06-evidence-resources-20260930",
-  "owner: C07 approval request (research-only BANKING77 comparison)",
-  "owner: S07 hold-out decision",
-  "M02 donor job completes -> M04 v4 (R1/R2) with M01 re-manifest",
-  "COST-01: per-feature default R0 needs an 8G solo slot on worker_b"
+  "owner (ONE action): bash DEPLOY_ADM_DEADCACHE.sh <worker_a> <worker_b> (DEPLOY.md; rollback included)",
+  "owner: C07 approval request stays as filed (not implied by the subplan)",
+  "owner: S07: propose a new prospective window or declare development (the read reserve is not a clean hold-out)",
+  "no action by agents: persistence mode / root slabinfo timer / reboots / force-push (orders ac125db9 \u00a75)",
+  "lane A: verify c0d7b07b (logs or reproduced workflow); new donors on the corrected fusion",
+  "lane D: corrected cost pilot on the 5090 (profile build vs first step vs steady cost); finite queue after it passes"
  ],
  "heartbeat_audit": [
   {
@@ -390,6 +409,11 @@
    "at": "2026-09-30T23:44:44Z",
    "host_alias": "worker_b",
    "event": "M04 modular cost pilot admitted on the 4090 (full default R0, full ECL train 18341 / validation 2609 windows, 2 epochs, PILOT_NOT_A_RESULT); duplicate queued request on worker_a cancelled before admission; m02-ecl-cost-pilot also leased on worker_b"
+  },
+  {
+   "at": "2026-10-01T02:30:00Z",
+   "host_alias": "worker_b",
+   "event": "M02 old-design donor run STOPPED at a safe boundary (190 records, receipt 37cc105a); lane A first deliverable c0d7b07b (UNVERIFIED); lane B tests red at d7dd357; lane C acknowledged"
   }
  ],
  "launch_recipes": {
@@ -462,7 +486,7 @@
      }
     }
    },
-   "fix": "branch satoshi/m06-admission-dead-cache-20260930 @ 0928dc06 (off deployed ddadf4a9), 45/45 tests; REVIEWED AND ACCEPTED by the orchestrator; deployment is the owner's (orchestrator's remote deploy was denied by its permission classifier; M06 will not deploy). One-paste owner procedure: DEPLOY.md"
+   "fix": "REVIEWED against the owner's five cases at 775c5545 (supersedes 0928dc06): only dead clean cache outside live scopes is uncharged; 51/51 tests; NOT deployed; owner's one action: DEPLOY_ADM_DEADCACHE.sh (DEPLOY.md)"
   }
  ],
  "tool_facts": {
@@ -497,7 +521,7 @@
  "plan_links": {
   "orders": "docs/handoffs/SATOSHI_PROGRESSIVE_SELECTION_AND_MODULAR_CONTINUATION_2026_09_30.md @ ac125db9",
   "reconciliation": "docs/handoffs/SATOSHI_MODULAR_RECONCILIATION_2026_09_30.md @ ac125db9",
-  "acknowledgement": "predictor satoshi/continuation-ack-20261001 @ 637107ee",
+  "acknowledgement": "predictor satoshi/continuation-ack-20261001 @ 5b5d44d1 (earlier 637107ee)",
   "previous_campaign_return": "docs/audits/evidence/MODULAR_CAMPAIGN_20260930/RETURN.md @ 09f129c5"
  },
  "lanes": [
@@ -509,7 +533,8 @@
     "a5289d234c296e0c5 (M02)"
    ],
    "branch": "satoshi/a-engine-integration-20261001",
-   "state": "running"
+   "state": "running",
+   "first_deliverable": "c0d7b07b architecture proof: UNVERIFIED by the orchestrator until logs are pushed or the workflow reproduces it"
   },
   {
    "lane": "B",
@@ -518,7 +543,8 @@
     "a160efdffffffa9f2 (M03)"
    ],
    "branch": null,
-   "state": "running"
+   "state": "running",
+   "tests": "RED at feature-eng d7dd357"
   },
   {
    "lane": "C",
@@ -527,7 +553,7 @@
     "a9946e26c749a1bec"
    ],
    "branch": null,
-   "state": "assigned (dispatch block pending)"
+   "state": "acknowledged (three worktrees)"
   },
   {
    "lane": "D",
@@ -573,19 +599,21 @@
    "set_at": "2026-10-01T02:05Z",
    "terminal_state": "completed",
    "terminal_phase": "STOPPED_AT_SAFE_BOUNDARY (old design superseded)",
-   "terminal_stage": "stopped by M02 (TERM to the wrapper) at a branch record boundary; M02's own stop report pending",
+   "terminal_stage": "stopped by M02 at the boundary after branch 189: 190 branch records; receipt OLD_DESIGN_BRANCH_STEPS_12_SUPERSEDED (sha 37cc105a); CPU 8399.49 s (lower bound); lease retired; no process",
    "producer_commit": "d1e2e77c",
    "last_heartbeat_at": "2026-10-01T02:05:58Z",
    "progress": {
     "unit": "features",
-    "completed": 189,
+    "completed": 190,
     "total": 321
    },
    "facts": {
     "last_heartbeat": "2026-10-01T02:05:58Z, stage branch_ae:branch_189, resume_point.completed_branches 189 (18 reused from the first run)",
     "lease_released": "2026-10-01T02:06:06Z (ledger LEASE_RELEASED)",
     "superseded_marker": "OLD_DESIGN_BRANCH_STEPS_12_SUPERSEDED.json/.md written 02:07:02Z in the donor directory",
-    "correction": "M06's 132/321 (01:35Z) was a stale reading; the true count at stop is 189 completed branch records"
+    "correction": "M06's 132/321 (01:35Z) was a stale reading; the true count at stop is 189 completed branch records",
+    "m02_report": "M02 (via orchestrator 02:2xZ): STOPPED at boundary branch 189 = 190 records; receipt sha 37cc105a; CPU 8399.49 s lower bound; lease retired; no process",
+    "count_note": "heartbeat resume_point.completed_branches read 189 at 02:05:58Z; M02's receipt counts 190 records (branch_0..branch_189); M02's count governs"
    }
   }
  },

@@ -1,78 +1,75 @@
-# DEPLOY: ADM-DEADCACHE-01 admission fix on the preferred worker (the owner runs this)
+# ADM-DEADCACHE-01: reviewed fix, reversible deployment, and the owner's one action
 
-The orchestrator reviewed and accepted the fix at commit `0928dc06` on branch `satoshi/m06-admission-dead-cache-20260930`. Deploying it writes to shared tooling, which is the owner's call; neither M06 nor the orchestrator deployed it.
+## Status
 
-What it changes:
-- **The gate.** It charges the slice's `memory.current` minus its clean file cache. Clean cache is file − shmem − dirty − writeback − unevictable.
-- **Scope-end reclaim.** Every new launch runs its command under `scope-exec`. When the command ends, scope-exec reclaims that job's own scope's clean cache through the scope's own `memory.reclaim`.
-- **Only future launches.** Files are replaced by rename. A launcher that is already running keeps the text it opened, and no running child is touched.
+- **Review.** The owner's five required cases were added at predictor `775c5545` on branch `satoshi/m06-admission-dead-cache-20260930`. It supersedes `0928dc06`.
+- **Tests.** 51 of 51 pass in `tests/test_crispdm_admission.py`. They ran on worker_b through `crispdm-run -m 1G`.
+- **Deployment.** **Not deployed.** Replacing shared tooling on the workers is outside the agents' current authorization; the orchestrator's earlier remote deploy was denied by its permission classifier. The deployment is therefore the owner's **one action** below.
+- **Interim.** Admissible slots keep being used as they are.
 
-| file | target | new sha256 (0928dc06) | rollback sha256 (deployed ddadf4a9) |
+## What the review changed, and why
+
+The owner's rule is that a subtracted clean-cache estimate is **not permission to over-allocate RAM**. `0928dc06` uncharged *all* clean file cache in the batch slice. That included the clean cache of **live** scopes. A live scope's cache is already counted in its observed bytes, so uncharging it also shrank that scope's unrealised reservation (cap minus observed). In effect, the live scope's headroom was handed out twice.
+
+`775c5545` uncharges only **dead** clean cache, meaning clean cache outside every live leased scope:
+
+```
+charged = memory.current - max(0, clean(slice) - sum clean(live leased scopes))
+clean   = file - shmem - file_dirty - file_writeback - unevictable
+```
+
+It also keeps everything charged in the uncertain cases:
+- If a live scope's `memory.stat` cannot be read, **nothing** is uncharged.
+- An unarmed lease (one with no scope yet) holds no pages, so its whole cap stays unrealised.
+- The **host gate is unchanged**: MemAvailable minus the 3 GiB desktop reserve minus unrealised reservations. The fix only changes bookkeeping against the slice ceiling. It never promises RAM beyond what the kernel reports available.
+
+## The five owner cases, each a test (all passing)
+
+| Owner case | Test | What it proves |
+|---|---|---|
+| Live loads | `test_2026_10_01_case_live_loads_their_own_clean_cache_is_never_uncharged` | A live scope's clean cache stays charged. The aggregate = in use + (cap − observed); the next request is queued at the exact ceiling. |
+| Shared cache | `test_2026_10_01_case_shared_cache_only_the_part_outside_live_scopes_is_dead` | Slice cache split between a live scope (1 GiB) and a finished one (2 GiB): only the 2 GiB stops counting. |
+| (shared cache, unreadable) | `test_2026_10_01_case_unreadable_live_scope_stat_uncharges_nothing` | An unreadable live-scope stat means nothing is uncharged. |
+| Partial reclaim | `test_2026_10_01_case_partial_reclaim_is_recorded_and_the_gate_reads_what_remains` | `memory.reclaim` returning EAGAIN is recorded as PARTIAL and not retried; `memory.stat` is re-read, and the gate charges what remains. |
+| Reservation | `test_2026_10_01_case_reservations_are_still_held_in_full_beside_dead_cache` | A held 8 GiB reservation stays fully counted beside 3 GiB of dead cache: 8 + 6 = 14 is admitted, 8 + 6 + 1 is queued. |
+| memory.max | `test_2026_10_01_case_memory_max_request_above_ceiling_refused_and_host_gate_unchanged` | A request above slice `memory.max` is still REFUSED terminally. With 7 GiB of dead cache, a 4 GiB request is still QUEUED on HOST_HEADROOM (MemAvailable 6 GiB minus 3 GiB reserve). |
+
+The earlier tests for `0928dc06` also still pass: dead cache does not queue; shmem, dirty, writeback and unevictable stay charged; the own-scope-only guard holds; exit status is kept; a signal death is re-raised.
+
+## Bytes
+
+| File | Target | New sha256 (`775c5545`) | Rollback sha256 (deployed `ddadf4a9`) |
 |---|---|---|---|
 | launcher | `~/.local/bin/crispdm-run` | `056e207a1f36120cb24d8063932988082f50eca368bb03c6e2bb3de9df69d7d7` | `499fdc1877750337006de8aad6b30a943acfea7416aa157b7537c4b121c1dfc7` |
-| admission module | `~/.local/libexec/crispdm/crispdm_admission.py` | `5cf92c8a9c1e2e42997eecb9141b90975312fbc5c1c98f5e400a00b0c4d1582b` | `8dc2c03b17e498697d634666309876686d051243ea4b640d65ec92c51ab8ee35` |
+| admission module | `~/.local/libexec/crispdm/crispdm_admission.py` | `7882d20fe30782b5f411be01b6ba58e2de6a26aa2e4cd4ed4876cc69b86948e2` | `8dc2c03b17e498697d634666309876686d051243ea4b640d65ec92c51ab8ee35` |
 
-## One paste, on the preferred worker's own shell
+## The owner's ONE action
 
-```bash
-set -euo pipefail
-R=$HOME/Documents/GitHub/predictor
-git -C "$R" fetch -q origin satoshi/m06-admission-dead-cache-20260930
-T=$(mktemp -d)
-git -C "$R" show 0928dc06:tools/crispdm-run          > "$T/crispdm-run"
-git -C "$R" show 0928dc06:tools/crispdm_admission.py > "$T/crispdm_admission.py"
-sha256sum -c <<EOF
-056e207a1f36120cb24d8063932988082f50eca368bb03c6e2bb3de9df69d7d7  $T/crispdm-run
-5cf92c8a9c1e2e42997eecb9141b90975312fbc5c1c98f5e400a00b0c4d1582b  $T/crispdm_admission.py
-EOF
-# rollback copies of the deployed bytes, verified before anything is replaced
-B=$HOME/.local/state/crispdm-run/rollback_ddadf4a9; mkdir -p "$B"
-cp -p "$HOME/.local/bin/crispdm-run"                       "$B/crispdm-run.499fdc18"
-cp -p "$HOME/.local/libexec/crispdm/crispdm_admission.py"  "$B/crispdm_admission.py.8dc2c03b"
-sha256sum -c <<EOF
-499fdc1877750337006de8aad6b30a943acfea7416aa157b7537c4b121c1dfc7  $B/crispdm-run.499fdc18
-8dc2c03b17e498697d634666309876686d051243ea4b640d65ec92c51ab8ee35  $B/crispdm_admission.py.8dc2c03b
-EOF
-# atomic replace (write beside, then rename): running launchers keep the text they opened
-install -m 755 "$T/crispdm-run"          "$HOME/.local/bin/.crispdm-run.new"
-mv -f "$HOME/.local/bin/.crispdm-run.new" "$HOME/.local/bin/crispdm-run"
-install -m 755 "$T/crispdm_admission.py" "$HOME/.local/libexec/crispdm/.crispdm_admission.py.new"
-mv -f "$HOME/.local/libexec/crispdm/.crispdm_admission.py.new" "$HOME/.local/libexec/crispdm/crispdm_admission.py"
-sha256sum "$HOME/.local/bin/crispdm-run" "$HOME/.local/libexec/crispdm/crispdm_admission.py"
-# smoke 1: the gate now reports charged vs in-use
-python3 "$HOME/.local/libexec/crispdm/crispdm_admission.py" state | grep -E '"slice_(memory_current|charged_bytes)"'
-# smoke 2: a 256M job runs through scope-exec and records its own-scope reclaim
-"$HOME/.local/bin/crispdm-run" -m 256M -t 2m -n deploy-smoke-adm-deadcache -- true
-grep SCOPE_CLEAN_CACHE_RECLAIM "$HOME/.local/state/crispdm/admission/ledger.jsonl" | tail -1
-```
-
-Expected results:
-- Both `sha256sum -c` blocks print `OK`, and the final sha256 lines show `056e207a…` and `5cf92c8a…`.
-- `slice_charged_bytes` is far below `slice_memory_current`. At the last reading, about 0.07 GiB was charged against 2.2 GiB in use.
-- The smoke job exits 0, and the ledger's last `SCOPE_CLEAN_CACHE_RECLAIM` shows `"result": "RECLAIMED"` or `"NOTHING_CLEAN_TO_RECLAIM"` for a `crispdm-deploy-smoke-…scope` cgroup.
-
-**After deploying, M04 must re-issue its queued request.** The `m04-modular-cost-pilot` acquire that is already waiting runs the OLD module in memory, and its in-process queue loop never reloads the gate. It waits until its own `-W` expires. M04 should stop its own queued launcher and launch again with the same honest `-m 6G`. That is not a lowered cap.
-
-## Rollback (one paste)
+From the coordinator, in this directory, run:
 
 ```bash
-set -euo pipefail
-B=$HOME/.local/state/crispdm-run/rollback_ddadf4a9
-install -m 755 "$B/crispdm-run.499fdc18"          "$HOME/.local/bin/.crispdm-run.new" && mv -f "$HOME/.local/bin/.crispdm-run.new" "$HOME/.local/bin/crispdm-run"
-install -m 755 "$B/crispdm_admission.py.8dc2c03b" "$HOME/.local/libexec/crispdm/.crispdm_admission.py.new" && mv -f "$HOME/.local/libexec/crispdm/.crispdm_admission.py.new" "$HOME/.local/libexec/crispdm/crispdm_admission.py"
-sha256sum "$HOME/.local/bin/crispdm-run" "$HOME/.local/libexec/crispdm/crispdm_admission.py"   # 499fdc18…, 8dc2c03b…
+bash DEPLOY_ADM_DEADCACHE.sh <worker_a-alias> <worker_b-alias>
 ```
 
-## The alternative: a one-time reclaim of the existing dead cache (also the owner's)
+`DEPLOY_ADM_DEADCACHE.sh` does the following on each host:
+1. Fetches the branch and extracts both files from `775c5545` with `git show` into `~/.local/state`. It does not use `/tmp`, which is tmpfs on those hosts and charged to the job.
+2. Checks both sha256 values.
+3. Keeps sha-named rollback copies of the deployed bytes under `~/.local/state/crispdm-run/rollback_ddadf4a9/` and checks them.
+4. Replaces both files by atomic rename. Running launchers keep the text they opened, and no child is touched.
+5. Prints the new sha values, the `state` reading (`slice_memory_current` vs `slice_charged_bytes`), and the ledger line from a 256M `true` smoke job.
 
-The worker_a slice held about 2.17 GiB of clean file cache with no live scope. A single write reclaims it without deploying anything:
+It changes no limit, ceiling, cache, swap, oomd or persistence setting, and it restarts nothing.
+
+**Rollback**, one command:
 
 ```bash
-echo 2G > /sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/memory.reclaim
+bash DEPLOY_ADM_DEADCACHE.sh --rollback <worker_a-alias> <worker_b-alias>
 ```
 
-This is slice-level. It may return `EAGAIN` after a partial reclaim, and it does not stop the next finished job from leaving cache behind; the deployed fix does.
+**After deploying.** A request that is already queued keeps running the old module in memory. It must be re-issued with the same honest `-m`, which does not lower any cap.
+
+**Not part of this action.** Persistence mode, root timers, reboots and any one-time slice-level reclaim are excluded, under the orders at `ac125db9` §5.
 
 ## Where the leases live
 
-On every host the admission store is `~/.local/state/crispdm/admission/`, with `leases/`, `ledger.jsonl`, `queue.jsonl`, `requests/` and `retained/`. It is not `~/.local/state/crispdm-run/leases`. `crispdm_admission.py state` prints the path as `"store"`.
+On every host the store is `~/.local/state/crispdm/admission/`: `leases/`, `ledger.jsonl`, `queue.jsonl`, `requests/`, `retained/` and `incidents/`.

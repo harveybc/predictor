@@ -1,185 +1,133 @@
 {
  "schema": "modular.program.status.v1",
- "observed_at": "2026-10-01T01:38:22Z",
- "plan_revision": "dc72170e",
+ "observed_at": "2026-10-01T02:16:32Z",
+ "plan_revision": "ac125db9",
+ "plan_links": {
+  "orders": "docs/handoffs/SATOSHI_PROGRESSIVE_SELECTION_AND_MODULAR_CONTINUATION_2026_09_30.md @ ac125db9",
+  "reconciliation": "docs/handoffs/SATOSHI_MODULAR_RECONCILIATION_2026_09_30.md @ ac125db9",
+  "acknowledgement": "predictor satoshi/continuation-ack-20261001 @ 5b5d44d1 (earlier 637107ee)",
+  "previous_campaign_return": "docs/audits/evidence/MODULAR_CAMPAIGN_20260930/RETURN.md @ 09f129c5"
+ },
  "writer": {
-  "script": "tools/m06_status_writer.py",
-  "lane": "M06",
-  "pid": 695630
+  "script": "tools/m06_status_writer.py + tools/m06_fleet_probe.py",
+  "version": 2,
+  "pid": 848422
  },
  "agents": [
   {
-   "id": "m06-evidence-resources (this subagent)",
-   "kind": "subagent",
-   "lane": "M06",
-   "state": "completed",
-   "commit": "0928dc0631a7",
-   "note": "M06 RETURNED; final consolidation on satoshi/m06-evidence-resources-20260930",
-   "worktrees": [
-    {
-     "lane": "M06",
-     "repo": "predictor",
-     "branch": "satoshi/m06-evidence-resources-20260930",
-     "worktree": "~/Documents/GitHub/.worktrees/predictor-m06-20260930",
-     "tip": "3b8ecb4a4576"
-    },
-    {
-     "lane": "M06",
-     "repo": "predictor",
-     "branch": "satoshi/m06-admission-dead-cache-20260930",
-     "worktree": "~/Documents/GitHub/.worktrees/predictor-m06-admission-20260930",
-     "tip": "0928dc0631a7"
-    }
-   ]
-  },
-  {
    "id": "a5b79d5488abdee3a",
    "kind": "subagent",
-   "lane": "M01",
-   "state": "completed",
-   "commit": "1bb63f519895",
-   "dispatch_block": "in",
-   "dispatch_tip": "feedfd00",
-   "note": "M01 RETURNED: tested 64a91a74, return 1bb63f51, remanifest tool 41955f50",
-   "worktrees": [
-    {
-     "lane": "M01",
-     "repo": "predictor",
-     "branch": "satoshi/m01-model-assembly-20260930",
-     "worktree": "~/Documents/GitHub/predictor-m01-model-assembly",
-     "tip": "1bb63f519895"
-    }
-   ]
+   "lane": "A",
+   "state": "running",
+   "commit": null,
+   "note": "M01 in lane A (engine integration)"
   },
   {
    "id": "a5289d234c296e0c5",
    "kind": "subagent",
-   "lane": "M02",
-   "state": "completed",
-   "commit": "d1e2e77c79b1",
-   "dispatch_block": "in",
-   "dispatch_tip": "05aaa1f0",
-   "note": "M02 RETURNED (return 310a836f, latest d1e2e77c); ECL donor job m02-ecl-donors-r0-resume1 still LIVE on worker_b (core and receipt pending)",
-   "worktrees": [
-    {
-     "lane": "M02",
-     "repo": "predictor",
-     "branch": "satoshi/m02-pretraining-20260930",
-     "worktree": "~/Documents/GitHub/.worktrees/predictor-m02-pretraining-20260930",
-     "tip": "d1e2e77c79b1"
-    }
-   ]
+   "lane": "A",
+   "state": "running",
+   "commit": null,
+   "note": "M02 in lane A (donors)"
   },
   {
    "id": "a160efdffffffa9f2",
    "kind": "subagent",
-   "lane": "M03",
-   "state": "completed",
-   "commit": "4ddcce48d1e8",
-   "dispatch_block": "in (declarations)",
-   "note": "M03 RETURNED: feature-eng 4ddcce4",
-   "worktrees": [
-    {
-     "lane": "M03",
-     "repo": "feature-eng",
-     "branch": "satoshi/m03-feature-inventory-20260930",
-     "worktree": "~/Documents/GitHub/.worktrees/feature-eng-m03-inventory",
-     "tip": "4ddcce48d1e8"
-    }
-   ]
+   "lane": "B",
+   "state": "running",
+   "commit": null,
+   "note": "M03"
+  },
+  {
+   "id": "a9946e26c749a1bec",
+   "kind": "subagent",
+   "lane": "C",
+   "state": "acknowledged",
+   "commit": null,
+   "note": "new causality/bibliography agent; dispatch block pending"
   },
   {
    "id": "a083979bc9a8fa1b8",
    "kind": "subagent",
-   "lane": "M04",
-   "state": "completed",
-   "commit": "8f724b12f390",
-   "note": "M04 RETURNED: predictor 6ced97e7 (campaign pin 8f724b12, v3 CAMPAIGN 53bce359), doin-node 7d207a6",
-   "worktrees": [
-    {
-     "lane": "M04",
-     "repo": "doin-node",
-     "branch": "satoshi/m04-doin-execution-20260930",
-     "worktree": "~/Documents/GitHub/.worktrees/doin-node-m04-20260930",
-     "tip": "7d207a6d7fd8"
-    },
-    {
-     "lane": "M04",
-     "repo": "predictor",
-     "branch": "satoshi/m04-doin-execution-20260930",
-     "worktree": "~/Documents/GitHub/.worktrees/predictor-m04-doin-20260930",
-     "tip": "8f724b12f390"
-    }
-   ]
+   "lane": "D",
+   "state": "running",
+   "commit": null,
+   "note": "M04"
   },
   {
    "id": "a65d2f3a115a9aa25",
    "kind": "subagent",
-   "lane": "M05",
-   "state": "completed",
-   "commit": "a3218b7890ff",
-   "note": "M05 RETURNED: lts 4e88c01, predictor a3218b78",
-   "worktrees": [
-    {
-     "lane": "M05",
-     "repo": "lts",
-     "branch": "satoshi/m05-paper-adapter-20260930",
-     "worktree": "~/Documents/GitHub/lts-worktrees/m05-paper-adapter-20260930",
-     "tip": "4e88c01db632"
-    },
-    {
-     "lane": "M05",
-     "repo": "predictor",
-     "branch": "satoshi/m05-paper-adapter-20260930",
-     "worktree": "~/Documents/GitHub/.worktrees/predictor-m05-paper-adapter-20260930",
-     "tip": "a3218b7890ff"
-    }
-   ]
+   "lane": "E",
+   "state": "running",
+   "commit": null,
+   "note": "M05"
   },
   {
-   "id": "C07 subagent (id pending from orchestrator)",
+   "id": "m06 subagent",
    "kind": "subagent",
-   "lane": "C07",
-   "state": "completed",
-   "dispatch_state": "dispatched",
-   "branch": "satoshi/c07-classification-remote-code-20260930",
-   "commit": "788082f6787a",
-   "note": "C07 RETURNED: predictor 788082f6; one approval request open (owner)",
-   "worktrees": [
-    {
-     "lane": "C07",
-     "repo": "predictor",
-     "branch": "satoshi/c07-classification-remote-code-20260930",
-     "worktree": "~/Documents/GitHub/.worktrees/predictor-c07-remote-code-20260930",
-     "tip": "788082f6787a"
-    }
-   ]
+   "lane": "F",
+   "state": "running",
+   "commit": null,
+   "note": "M06"
+  }
+ ],
+ "lanes": [
+  {
+   "lane": "A",
+   "work": "engine and donors: one architecture, tests/early-stop/resume, manifests",
+   "agents": [
+    "a5b79d5488abdee3a (M01)",
+    "a5289d234c296e0c5 (M02)"
+   ],
+   "branch": "satoshi/a-engine-integration-20261001",
+   "state": "running",
+   "first_deliverable": "c0d7b07b architecture proof: UNVERIFIED by the orchestrator until logs are pushed or the workflow reproduces it"
   },
   {
-   "id": "S07 subagent (id pending from orchestrator)",
-   "kind": "subagent",
-   "lane": "S07",
-   "state": "completed",
-   "dispatch_state": "dispatched",
-   "branch": "satoshi/s07-strategy-support-20260930",
-   "commit": "53c6f47a70ae",
-   "note": "S07 RETURNED: heuristic-strategy d08ae00, predictor 53c6f47a; hold-out decision open (owner)",
-   "worktrees": [
-    {
-     "lane": "S07",
-     "repo": "heuristic-strategy",
-     "branch": "satoshi/s07-strategy-support-20260930",
-     "worktree": "~/Documents/GitHub/.worktrees/heuristic-strategy-s07-20260930",
-     "tip": "d08ae004c972"
-    },
-    {
-     "lane": "S07",
-     "repo": "predictor",
-     "branch": "satoshi/s07-strategy-support-20260930",
-     "worktree": "~/Documents/GitHub/.worktrees/predictor-s07-strategy-20260930",
-     "tip": "53c6f47a70ae"
-    }
-   ]
+   "lane": "B",
+   "work": "data and selection: PS0/PS1, PS2",
+   "agents": [
+    "a160efdffffffa9f2 (M03)"
+   ],
+   "branch": null,
+   "state": "running",
+   "tests": "RED at feature-eng d7dd357"
+  },
+  {
+   "lane": "C",
+   "work": "causality and bibliography: PS3-C spec, PS3-R shortlist",
+   "agents": [
+    "a9946e26c749a1bec"
+   ],
+   "branch": null,
+   "state": "acknowledged (three worktrees)"
+  },
+  {
+   "lane": "D",
+   "work": "optimization: corrected queue and staged cost",
+   "agents": [
+    "a083979bc9a8fa1b8 (M04)"
+   ],
+   "branch": "satoshi/d-corrected-queue-20261001",
+   "state": "running"
+  },
+  {
+   "lane": "E",
+   "work": "product/business: weekly lane, installed consumer, shadow/paper",
+   "agents": [
+    "a65d2f3a115a9aa25 (M05)"
+   ],
+   "branch": null,
+   "state": "running"
+  },
+  {
+   "lane": "F",
+   "work": "resources/evidence: reconcile leases/processes/queues, status, warehouse link",
+   "agents": [
+    "M06 subagent (this)"
+   ],
+   "branch": "satoshi/m06-evidence-resources-20260930",
+   "state": "running"
   }
  ],
  "devices": [
@@ -189,57 +137,55 @@
    "name": "NVIDIA GeForce RTX 4070 Laptop GPU",
    "state": "idle",
    "job_id": null,
-   "reason": "idle: free for the next admissible slot",
-   "observed_at": "2026-10-01T01:38:22Z",
-   "temperature_c": 40.0,
-   "utilization_percent": 0.0,
-   "host_available_bytes": 16914862080,
+   "reason": "desktop client only: nautilus",
+   "observed_at": "2026-10-01T02:16:32Z",
+   "temperature_c": 44.0,
+   "utilization_percent": 32.0,
+   "host_available_bytes": 16812613632,
    "gpu": {
-    "uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
-    "name": "NVIDIA GeForce RTX 4070 Laptop GPU",
-    "temperature_c": 40.0,
-    "utilization_percent": 0.0,
     "sm_clock_mhz": 210.0,
     "sm_clock_max_mhz": 3105.0,
-    "vram_used_mib": 664.0,
+    "vram_used_mib": 1012.0,
     "vram_total_mib": 8188.0,
-    "power_w": 3.57,
-    "throttle_reasons_hex": "0x0000000000000001",
+    "power_w": 5.43,
     "throttle_reasons": [
      "gpu_idle"
+    ],
+    "compute_processes": [
+     {
+      "uuid": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
+      "pid": 755669,
+      "used_mib": "22",
+      "cgroup": "user.slice/user-1000.slice/user@1000.service/session.slice/dbus.service",
+      "exe": "nautilus"
+     }
     ]
    },
    "host": {
     "mem": {
      "MemTotal": 32778358784,
-     "MemAvailable": 16914862080,
-     "SUnreclaim": 694788096,
-     "SReclaimable": 2448826368
+     "MemAvailable": 16812613632,
+     "SUnreclaim": 690212864,
+     "SReclaimable": 2479673344,
+     "Shmem": 5615034368
     },
-    "unreclaimable_slab_bytes": 694788096,
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=63634016\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=60417156",
-    "uptime_s": 192951.76
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=63773893\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=60556820",
+    "uptime_s": 195241.48,
+    "gpu_reinit_this_boot": "0",
+    "shares_host_ram_with": []
    },
    "admission": {
-    "host_free_for_new_bytes": 13184724992,
-    "held_unrealised_bytes": 498716672,
+    "host_free_for_new_bytes": 13082419200,
+    "held_unrealised_bytes": 501391360,
     "desktop_reserve_bytes": 3221225472,
+    "slice_memory_current": 4955049984,
+    "slice_charged_bytes": null,
+    "slice_memory_max": 15032385536,
     "pressure_some_avg10": 0.0,
     "pressure_full_avg10": 0.0,
-    "pressure_admit_max": 25.0,
-    "slice_memory_current": 4938420224,
-    "slice_memory_max": 15032385536
+    "pressure_admit_max": 25.0
    },
-   "leases": [
-    {
-     "lease_id": "m06-status-writer-1790812710-695621-c0862d",
-     "name": "m06-status-writer",
-     "cap_bytes": 536870912,
-     "observed_bytes": 38154240,
-     "armed": true,
-     "expires_at": 1790819598.0504515
-    }
-   ]
+   "next_task": null
   },
   {
    "host_alias": "worker_a",
@@ -247,46 +193,47 @@
    "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
    "state": "idle",
    "job_id": null,
-   "reason": "free: 5070 Ti Laptop, same host (8 GiB slice shared with M04)",
-   "observed_at": "2026-10-01T01:38:23Z",
+   "reason": "no compute process and no GPU job lease on this device",
+   "observed_at": "2026-10-01T02:09:22Z",
    "temperature_c": 28.0,
    "utilization_percent": 0.0,
-   "host_available_bytes": 12115251200,
+   "host_available_bytes": 12072390656,
    "gpu": {
-    "uuid": "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519",
-    "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
-    "temperature_c": 28.0,
-    "utilization_percent": 0.0,
     "sm_clock_mhz": 180.0,
     "sm_clock_max_mhz": 3090.0,
     "vram_used_mib": 14.0,
     "vram_total_mib": 12227.0,
-    "power_w": 4.8,
-    "throttle_reasons_hex": "0x0000000000000000",
-    "throttle_reasons": []
+    "power_w": 4.62,
+    "throttle_reasons": [],
+    "compute_processes": []
    },
    "host": {
     "mem": {
      "MemTotal": 15340752896,
-     "MemAvailable": 12115251200,
-     "SUnreclaim": 438386688,
-     "SReclaimable": 267292672
+     "MemAvailable": 12072390656,
+     "SUnreclaim": 461467648,
+     "SReclaimable": 319156224,
+     "Shmem": 34422784
     },
-    "unreclaimable_slab_bytes": 438386688,
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=115744434\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=113291701",
-    "uptime_s": 9865.11
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=115797272\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=113344473",
+    "uptime_s": 12154.89,
+    "gpu_reinit_this_boot": "230",
+    "shares_host_ram_with": [
+     "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
+    ]
    },
    "admission": {
-    "host_free_for_new_bytes": 8884879360,
+    "host_free_for_new_bytes": 8840241152,
     "held_unrealised_bytes": 0,
     "desktop_reserve_bytes": 3221225472,
+    "slice_memory_current": 2391003136,
+    "slice_charged_bytes": null,
+    "slice_memory_max": 8589934592,
     "pressure_some_avg10": 0.0,
     "pressure_full_avg10": 0.0,
-    "pressure_admit_max": 25.0,
-    "slice_memory_current": 2420428800,
-    "slice_memory_max": 8589934592
+    "pressure_admit_max": 25.0
    },
-   "leases": []
+   "next_task": null
   },
   {
    "host_alias": "worker_a",
@@ -294,46 +241,47 @@
    "name": "NVIDIA GeForce RTX 5090",
    "state": "idle",
    "job_id": null,
-   "reason": "reserved for M04 cost pilot (queued behind ADM-DEADCACHE-01; owner deploy/reclaim pending)",
-   "observed_at": "2026-10-01T01:38:23Z",
-   "temperature_c": 37.0,
+   "reason": "no compute process and no GPU job lease on this device",
+   "observed_at": "2026-10-01T02:09:22Z",
+   "temperature_c": 36.0,
    "utilization_percent": 0.0,
-   "host_available_bytes": 12115251200,
+   "host_available_bytes": 12072390656,
    "gpu": {
-    "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
-    "name": "NVIDIA GeForce RTX 5090",
-    "temperature_c": 37.0,
-    "utilization_percent": 0.0,
     "sm_clock_mhz": 225.0,
     "sm_clock_max_mhz": 3135.0,
     "vram_used_mib": 10.0,
     "vram_total_mib": 32607.0,
-    "power_w": 3.74,
-    "throttle_reasons_hex": "0x0000000000000000",
-    "throttle_reasons": []
+    "power_w": 3.73,
+    "throttle_reasons": [],
+    "compute_processes": []
    },
    "host": {
     "mem": {
      "MemTotal": 15340752896,
-     "MemAvailable": 12115251200,
-     "SUnreclaim": 438386688,
-     "SReclaimable": 267292672
+     "MemAvailable": 12072390656,
+     "SUnreclaim": 461467648,
+     "SReclaimable": 319156224,
+     "Shmem": 34422784
     },
-    "unreclaimable_slab_bytes": 438386688,
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=115744434\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=113291701",
-    "uptime_s": 9865.11
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=115797272\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=113344473",
+    "uptime_s": 12154.89,
+    "gpu_reinit_this_boot": "230",
+    "shares_host_ram_with": [
+     "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
+    ]
    },
    "admission": {
-    "host_free_for_new_bytes": 8884879360,
+    "host_free_for_new_bytes": 8840241152,
     "held_unrealised_bytes": 0,
     "desktop_reserve_bytes": 3221225472,
+    "slice_memory_current": 2391003136,
+    "slice_charged_bytes": null,
+    "slice_memory_max": 8589934592,
     "pressure_some_avg10": 0.0,
     "pressure_full_avg10": 0.0,
-    "pressure_admit_max": 25.0,
-    "slice_memory_current": 2420428800,
-    "slice_memory_max": 8589934592
+    "pressure_admit_max": 25.0
    },
-   "leases": []
+   "next_task": null
   },
   {
    "host_alias": "worker_b",
@@ -341,165 +289,370 @@
    "name": "NVIDIA GeForce RTX 4090 Laptop GPU",
    "state": "idle",
    "job_id": null,
-   "reason": "idle: free for the next admissible slot",
-   "observed_at": "2026-10-01T01:38:23Z",
-   "temperature_c": 38.0,
+   "reason": "no compute process and no GPU job lease on this device",
+   "observed_at": "2026-10-01T02:16:34Z",
+   "temperature_c": 39.0,
    "utilization_percent": 0.0,
-   "host_available_bytes": 16415498240,
+   "host_available_bytes": 17624690688,
    "gpu": {
-    "uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
-    "name": "NVIDIA GeForce RTX 4090 Laptop GPU",
-    "temperature_c": 38.0,
-    "utilization_percent": 0.0,
     "sm_clock_mhz": 210.0,
     "sm_clock_max_mhz": 3105.0,
     "vram_used_mib": 14.0,
     "vram_total_mib": 16376.0,
-    "power_w": 5.86,
-    "throttle_reasons_hex": "0x0000000000000001",
+    "power_w": 2.21,
     "throttle_reasons": [
      "gpu_idle"
-    ]
+    ],
+    "compute_processes": []
    },
    "host": {
     "mem": {
      "MemTotal": 32831807488,
-     "MemAvailable": 16415498240,
-     "SUnreclaim": 2717065216,
-     "SReclaimable": 728190976
+     "MemAvailable": 17624690688,
+     "SUnreclaim": 2779291648,
+     "SReclaimable": 769654784,
+     "Shmem": 1114951680
     },
-    "unreclaimable_slab_bytes": 2717065216,
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=73395568\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=68549007",
-    "uptime_s": 183864.3
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=73407809\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=68561217",
+    "uptime_s": 186154.5,
+    "gpu_reinit_this_boot": "0",
+    "shares_host_ram_with": []
    },
    "admission": {
-    "host_free_for_new_bytes": 11509059584,
-    "held_unrealised_bytes": 1687957504,
+    "host_free_for_new_bytes": 10272124928,
+    "held_unrealised_bytes": 4119613440,
     "desktop_reserve_bytes": 3221225472,
+    "slice_memory_current": 6068457472,
+    "slice_charged_bytes": null,
+    "slice_memory_max": 15032385536,
     "pressure_some_avg10": 0.0,
     "pressure_full_avg10": 0.0,
-    "pressure_admit_max": 25.0,
-    "slice_memory_current": 7034150912,
-    "slice_memory_max": 15032385536
+    "pressure_admit_max": 25.0
    },
-   "leases": [
-    {
-     "lease_id": "m02-ecl-donors-r0-resume1-1790814291-1267393-b09d72",
-     "name": "m02-ecl-donors-r0-resume1",
-     "cap_bytes": 4294967296,
-     "observed_bytes": 2607009792,
-     "armed": true,
-     "expires_at": 1790819604.0300195
-    }
-   ]
+   "next_task": null
   }
  ],
  "jobs": [
   {
-   "id": "traffic_L96_h96_s2021",
-   "lane": "M06-adopted-traffic",
-   "state": "completed",
-   "stage": "record_sealed",
-   "producer_commit": "author TimeFilter dffde87e + df_tsl_execute (staged copy)",
+   "id": "m06-status-writer",
+   "lane": "M06",
+   "state": "running",
+   "phase": "running_stage_unknown",
+   "stage": "no heartbeat stage",
+   "producer_commit": "unknown",
    "host_alias": "coordinator",
-   "device": "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326",
-   "seed": 2021,
-   "unit": "codex-traffic-h96-s2021.service",
-   "unit_active_state": "inactive",
-   "heartbeat_at": "2026-09-30T23:27:58Z",
-   "heartbeat_source": "latest of author_stdout.log mtime (block-buffered) and checkpoint.pth mtime (written only on validation improvement); no <=60 s heartbeat exists",
-   "last_checkpoint_at": "2026-09-30T23:27:16Z",
+   "lease_id": "m06-status-writer-1790820561-848413-68f832",
+   "launcher_pid": 848402,
+   "launcher_alive": true,
+   "child_heads": [
+    [
+     "timeout",
+     "--kill-after=30s",
+     "12h",
+     "/usr/bin/python3"
+    ],
+    [
+     "python3",
+     "-u",
+     "/home/harveybc/Documents/GitHub/.worktrees/predictor-m06-20260930/tools/m06_status_writer.py",
+     "--out-dir"
+    ],
+    [
+     "python3",
+     "/home/harveybc/Documents/GitHub/.worktrees/predictor-m06-20260930/tools/m06_fleet_probe.py"
+    ]
+   ],
+   "cap_bytes": 536870912,
+   "cgroup_current_bytes": 22609920,
+   "cgroup_peak_bytes": 38338560,
+   "heartbeat_at": null,
+   "heartbeat_path": null,
+   "heartbeat_stale": false,
    "progress": {
-    "unit": "epochs",
-    "completed": 30,
-    "total": 30
+    "unit": "unknown",
+    "completed": null,
+    "total": null
    },
    "eta": {
     "earliest": null,
     "latest": null,
     "basis": "not_estimable",
-    "assumptions": []
+    "assumptions": [
+     "missing measurement: the job's total work units are not declared to M06"
+    ]
    },
-   "record_path": "~/.local/state/crispdm-data-foundation/traffic_scored_codex_20260930/CELLS/traffic_L96_h96_s2021.json",
-   "window": [
-    "2026-09-30T21:09:56Z",
-    "2026-09-30T23:28:08Z"
-   ]
+   "override": null
   },
   {
-   "id": "traffic_L96_h96_s2022",
-   "lane": "M06-adopted-traffic",
-   "state": "completed",
-   "stage": "record_sealed",
-   "producer_commit": "author TimeFilter dffde87e + df_tsl_execute (staged copy)",
+   "id": "m02-port-suite2",
+   "lane": "M02",
+   "state": "running",
+   "phase": "running_stage_unknown",
+   "stage": "no heartbeat stage",
+   "producer_commit": "unknown",
    "host_alias": "worker_b",
-   "device": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
-   "seed": 2022,
-   "unit": null,
-   "unit_active_state": null,
-   "heartbeat_at": "2026-09-30T22:15:46Z",
-   "heartbeat_source": "latest of author_stdout.log mtime (block-buffered) and checkpoint.pth mtime (written only on validation improvement); no <=60 s heartbeat exists",
-   "last_checkpoint_at": "2026-09-30T22:15:24Z",
+   "lease_id": "m02-port-suite2-1790820878-1345317-94c023",
+   "launcher_pid": 1345308,
+   "launcher_alive": true,
+   "child_heads": [
+    [
+     "timeout",
+     "--kill-after=30s",
+     "40m",
+     "env"
+    ],
+    [
+     "python",
+     "-m",
+     "pytest",
+     "-q"
+    ]
+   ],
+   "cap_bytes": 3221225472,
+   "cgroup_current_bytes": 989224960,
+   "cgroup_peak_bytes": 1118916608,
+   "heartbeat_at": null,
+   "heartbeat_path": null,
+   "heartbeat_stale": false,
    "progress": {
-    "unit": "epochs",
-    "completed": 30,
-    "total": 30
+    "unit": "unknown",
+    "completed": null,
+    "total": null
    },
    "eta": {
     "earliest": null,
     "latest": null,
     "basis": "not_estimable",
-    "assumptions": []
+    "assumptions": [
+     "missing measurement: the job's total work units are not declared to M06"
+    ]
    },
-   "record_path": "~/.local/state/crispdm-data-foundation/traffic_scored_codex_20260930/CELLS/traffic_L96_h96_s2022.json",
-   "window": [
-    "2026-09-30T21:10:52Z",
-    "2026-09-30T22:15:58Z"
-   ]
+   "override": null
   },
   {
-   "id": "traffic_L96_h96_s2023",
-   "lane": "M06-adopted-traffic",
-   "state": "completed",
-   "stage": "record_sealed",
-   "producer_commit": "author TimeFilter dffde87e + df_tsl_execute (staged copy)",
+   "id": "review_refute_names",
+   "lane": "unknown",
+   "state": "running",
+   "phase": "running_stage_unknown",
+   "stage": "no heartbeat stage",
+   "producer_commit": "unknown",
    "host_alias": "worker_b",
-   "device": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
-   "seed": 2023,
-   "unit": "codex-traffic-h96-s2023.service",
-   "unit_active_state": "inactive",
-   "heartbeat_at": "2026-09-30T23:22:31Z",
-   "heartbeat_source": "latest of author_stdout.log mtime (block-buffered) and checkpoint.pth mtime (written only on validation improvement); no <=60 s heartbeat exists",
-   "last_checkpoint_at": "2026-09-30T23:22:10Z",
+   "lease_id": "review_refute_names-1790820991-1349861-ddcb60",
+   "launcher_pid": 1349852,
+   "launcher_alive": true,
+   "child_heads": [
+    [
+     "timeout",
+     "--kill-after=30s",
+     "15m",
+     "/home/harveybc/anaconda3/envs/tensorflow/bin/python"
+    ],
+    [
+     "python",
+     "refute_names.py"
+    ]
+   ],
+   "cap_bytes": 2147483648,
+   "cgroup_current_bytes": 273121280,
+   "cgroup_peak_bytes": 273121280,
+   "heartbeat_at": null,
+   "heartbeat_path": null,
+   "heartbeat_stale": false,
    "progress": {
-    "unit": "epochs",
-    "completed": 30,
-    "total": 30
+    "unit": "unknown",
+    "completed": null,
+    "total": null
    },
    "eta": {
     "earliest": null,
     "latest": null,
     "basis": "not_estimable",
-    "assumptions": []
+    "assumptions": [
+     "missing measurement: the job's total work units are not declared to M06"
+    ]
    },
-   "record_path": "~/.local/state/crispdm-data-foundation/traffic_scored_codex_20260930/CELLS/traffic_L96_h96_s2023.json",
-   "window": [
-    "2026-09-30T22:16:20Z",
-    "2026-09-30T23:22:42Z"
-   ]
+   "override": null
+  },
+  {
+   "id": "d-profile-perfeature",
+   "lane": "D-PROFILE",
+   "state": "queued",
+   "phase": "queued",
+   "stage": "waiting for admission",
+   "producer_commit": "unknown",
+   "host_alias": "worker_b",
+   "launcher_pid": 1337718,
+   "declared_mem": "8G",
+   "declared_wall": "60m",
+   "queue_wait_s": "3600",
+   "waiting_s": 488,
+   "command_head": [
+    "python",
+    "-u",
+    "tools/modular_doin_staged_profile.py",
+    "--candidate",
+    "/home/harveybc/.local/state/scratch/d-profile/PRE_INTEGRATION_da4ce7b4/candidate_perfeature.json",
+    "--train"
+   ],
+   "heartbeat_at": null,
+   "progress": {
+    "unit": "unknown",
+    "completed": null,
+    "total": null
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "admission order depends on live leases releasing"
+    ]
+   }
+  },
+  {
+   "id": "refute_da4ce7b4_single",
+   "lane": "unknown",
+   "state": "queued",
+   "phase": "queued",
+   "stage": "waiting for admission",
+   "producer_commit": "unknown",
+   "host_alias": "worker_b",
+   "launcher_pid": 1347281,
+   "declared_mem": "2G",
+   "declared_wall": "15m",
+   "queue_wait_s": "600",
+   "waiting_s": 76,
+   "command_head": [
+    "python",
+    "-m",
+    "pytest",
+    "tests/test_modular_temporal.py::test_entry_point_groups_and_grid_rejection",
+    "-p",
+    "no:cacheprovider"
+   ],
+   "heartbeat_at": null,
+   "progress": {
+    "unit": "unknown",
+    "completed": null,
+    "total": null
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "admission order depends on live leases releasing"
+    ]
+   }
+  },
+  {
+   "id": "review_shape_dev_da4",
+   "lane": "unknown",
+   "state": "queued",
+   "phase": "queued",
+   "stage": "waiting for admission",
+   "producer_commit": "unknown",
+   "host_alias": "worker_b",
+   "launcher_pid": 1349637,
+   "declared_mem": "2G",
+   "declared_wall": "15m",
+   "queue_wait_s": "600",
+   "waiting_s": 9,
+   "command_head": [
+    "python",
+    "shape_dev_probe.py"
+   ],
+   "heartbeat_at": null,
+   "progress": {
+    "unit": "unknown",
+    "completed": null,
+    "total": null
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "admission order depends on live leases releasing"
+    ]
+   }
+  },
+  {
+   "id": "review-flatten-da4",
+   "lane": "unknown",
+   "state": "queued",
+   "phase": "queued",
+   "stage": "waiting for admission",
+   "producer_commit": "unknown",
+   "host_alias": "worker_b",
+   "launcher_pid": 1349742,
+   "declared_mem": "2G",
+   "declared_wall": "15m",
+   "queue_wait_s": "600",
+   "waiting_s": 5,
+   "command_head": [
+    "python",
+    "refute_flatten.py"
+   ],
+   "heartbeat_at": null,
+   "progress": {
+    "unit": "unknown",
+    "completed": null,
+    "total": null
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "admission order depends on live leases releasing"
+    ]
+   }
+  },
+  {
+   "id": "review_tf411",
+   "lane": "unknown",
+   "state": "queued",
+   "phase": "queued",
+   "stage": "waiting for admission",
+   "producer_commit": "unknown",
+   "host_alias": "worker_b",
+   "launcher_pid": 1350199,
+   "declared_mem": "2G",
+   "declared_wall": "15m",
+   "queue_wait_s": "600",
+   "waiting_s": 0,
+   "command_head": [
+    "python",
+    "probe_tf411.py"
+   ],
+   "heartbeat_at": null,
+   "progress": {
+    "unit": "unknown",
+    "completed": null,
+    "total": null
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "admission order depends on live leases releasing"
+    ]
+   }
   },
   {
    "id": "m02-ecl-donors-r0-resume1",
-   "lane": "M02",
-   "state": "running",
-   "stage": "branch_ae:branch_132 (per-feature branch autoencoders, resumed after a pressure stop)",
+   "lane": "A",
+   "state": "completed",
+   "phase": "STOPPED_AT_SAFE_BOUNDARY (old design superseded)",
+   "stage": "stopped by M02 at the boundary after branch 189: 190 branch records; receipt OLD_DESIGN_BRANCH_STEPS_12_SUPERSEDED (sha 37cc105a); CPU 8399.49 s (lower bound); lease retired; no process",
    "producer_commit": "d1e2e77c",
    "host_alias": "worker_b",
-   "heartbeat_at": "2026-10-01T01:34:57Z",
-   "heartbeat_source": "~/.local/state/m02_pretraining/ecl/DONORS_FOR_R1_R2_ecl_r0_s7/heartbeat.jsonl (per-epoch, <=60 s)",
+   "heartbeat_at": "2026-10-01T02:05:58Z",
    "progress": {
     "unit": "features",
-    "completed": 132,
+    "completed": 190,
     "total": 321
    },
    "eta": {
@@ -507,11 +660,476 @@
     "latest": null,
     "basis": "not_estimable",
     "assumptions": [
-     "per-branch early stopping (patience 4, <=600 s per stage) makes branch times variable; branches reused on resume are counted in the receipt, not here; core AE stage follows the branches"
+     "job ended"
+    ]
+   },
+   "facts": {
+    "last_heartbeat": "2026-10-01T02:05:58Z, stage branch_ae:branch_189, resume_point.completed_branches 189 (18 reused from the first run)",
+    "lease_released": "2026-10-01T02:06:06Z (ledger LEASE_RELEASED)",
+    "superseded_marker": "OLD_DESIGN_BRANCH_STEPS_12_SUPERSEDED.json/.md written 02:07:02Z in the donor directory",
+    "correction": "M06's 132/321 (01:35Z) was a stale reading; the true count at stop is 189 completed branch records",
+    "m02_report": "M02 (via orchestrator 02:2xZ): STOPPED at boundary branch 189 = 190 records; receipt sha 37cc105a; CPU 8399.49 s lower bound; lease retired; no process",
+    "count_note": "heartbeat resume_point.completed_branches read 189 at 02:05:58Z; M02's receipt counts 190 records (branch_0..branch_189); M02's count governs"
+   }
+  },
+  {
+   "id": "traffic_L96_h96_s2021",
+   "lane": "M06-adopted",
+   "state": "completed",
+   "phase": "completed",
+   "stage": "record sealed 2026-09-30T23:28:08Z",
+   "producer_commit": "TimeFilter dffde87e",
+   "heartbeat_at": null,
+   "progress": {
+    "unit": "epochs",
+    "completed": 30,
+    "total": 30
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "ended"
+    ]
+   }
+  },
+  {
+   "id": "traffic_L96_h96_s2022",
+   "lane": "M06-adopted",
+   "state": "completed",
+   "phase": "completed",
+   "stage": "record sealed 2026-09-30T22:15:58Z",
+   "producer_commit": "TimeFilter dffde87e",
+   "heartbeat_at": null,
+   "progress": {
+    "unit": "epochs",
+    "completed": 30,
+    "total": 30
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "ended"
+    ]
+   }
+  },
+  {
+   "id": "traffic_L96_h96_s2023",
+   "lane": "M06-adopted",
+   "state": "completed",
+   "phase": "completed",
+   "stage": "record sealed 2026-09-30T23:22:42Z",
+   "producer_commit": "TimeFilter dffde87e",
+   "heartbeat_at": null,
+   "progress": {
+    "unit": "epochs",
+    "completed": 30,
+    "total": 30
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "ended"
+    ]
+   }
+  },
+  {
+   "id": "m04_ecl_l24_h24_batch1_v3",
+   "lane": "D",
+   "state": "completed",
+   "phase": "completed",
+   "stage": "FINISHED: 16 verified, 20 blocked; both runners exited (no lease, no process, no GPU compute process on any host at 02:06Z)",
+   "producer_commit": "8f724b12 / 6ced97e7",
+   "heartbeat_at": null,
+   "progress": {
+    "unit": "cells",
+    "completed": 16,
+    "total": 36
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "ended"
+    ]
+   }
+  },
+  {
+   "id": "m04-modular-cost-pilot (old design, worker_b)",
+   "lane": "D",
+   "state": "failed",
+   "phase": "failed",
+   "stage": "STOPPED_BY_M04_IN_BUILD, no_fit_no_update; peak 5,801,222,144 B under a 6 GiB cap (M04 PILOT_TERMINATED record); not a completed cost pilot and not a GPU training measurement",
+   "producer_commit": "8f724b12",
+   "heartbeat_at": null,
+   "progress": {
+    "unit": "updates",
+    "completed": 0,
+    "total": null
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "ended"
     ]
    }
   }
  ],
+ "unparsed_processes": [
+  {
+   "pid": 858001,
+   "argv_len": 3,
+   "argv0": "bash",
+   "elapsed_s": 115,
+   "host_alias": "coordinator",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 858003,
+   "argv_len": 9,
+   "argv0": "timeout",
+   "elapsed_s": 115,
+   "host_alias": "coordinator",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 858004,
+   "argv_len": 7,
+   "argv0": "ssh",
+   "elapsed_s": 115,
+   "host_alias": "coordinator",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 859867,
+   "argv_len": 3,
+   "argv0": "bash",
+   "elapsed_s": 75,
+   "host_alias": "coordinator",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 859869,
+   "argv_len": 7,
+   "argv0": "ssh",
+   "elapsed_s": 75,
+   "host_alias": "coordinator",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 861302,
+   "argv_len": 3,
+   "argv0": "bash",
+   "elapsed_s": 13,
+   "host_alias": "coordinator",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 861472,
+   "argv_len": 5,
+   "argv0": "ssh",
+   "elapsed_s": 9,
+   "host_alias": "coordinator",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 861511,
+   "argv_len": 3,
+   "argv0": "bash",
+   "elapsed_s": 6,
+   "host_alias": "coordinator",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 861586,
+   "argv_len": 5,
+   "argv0": "ssh",
+   "elapsed_s": 5,
+   "host_alias": "coordinator",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 861664,
+   "argv_len": 3,
+   "argv0": "bash",
+   "elapsed_s": 3,
+   "host_alias": "coordinator",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 861673,
+   "argv_len": 3,
+   "argv0": "bash",
+   "elapsed_s": 2,
+   "host_alias": "coordinator",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 861680,
+   "argv_len": 5,
+   "argv0": "ssh",
+   "elapsed_s": 2,
+   "host_alias": "coordinator",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 861741,
+   "argv_len": 3,
+   "argv0": "bash",
+   "elapsed_s": 0,
+   "host_alias": "coordinator",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 27201,
+   "argv_len": 3,
+   "argv0": "bash",
+   "elapsed_s": 11065,
+   "host_alias": "worker_a",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 1345282,
+   "argv_len": 3,
+   "argv0": "bash",
+   "elapsed_s": 116,
+   "host_alias": "worker_b",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 1347278,
+   "argv_len": 3,
+   "argv0": "bash",
+   "elapsed_s": 76,
+   "host_alias": "worker_b",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 1349634,
+   "argv_len": 3,
+   "argv0": "bash",
+   "elapsed_s": 9,
+   "host_alias": "worker_b",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 1349741,
+   "argv_len": 3,
+   "argv0": "bash",
+   "elapsed_s": 5,
+   "host_alias": "worker_b",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 1349851,
+   "argv_len": 3,
+   "argv0": "bash",
+   "elapsed_s": 3,
+   "host_alias": "worker_b",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 1350197,
+   "argv_len": 3,
+   "argv0": "bash",
+   "elapsed_s": 0,
+   "host_alias": "worker_b",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  }
+ ],
+ "terminal_incidents_24h": [
+  {
+   "lease_id": "m01-venv-1790810911-635210-62e19b",
+   "name": "m01-venv",
+   "at": "2026-09-30T23:31:56Z",
+   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
+   "rule": "SUSTAINED_ABOVE_RESPOND",
+   "tree_peak_bytes": 3055210496,
+   "cap_bytes": 3221225472,
+   "host_alias": "coordinator",
+   "live_again": false
+  },
+  {
+   "lease_id": "m06-status-writer-1790811049-651282-98717f",
+   "name": "m06-status-writer",
+   "at": "2026-09-30T23:31:59Z",
+   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
+   "rule": "SUSTAINED_ABOVE_RESPOND",
+   "tree_peak_bytes": 34529280,
+   "cap_bytes": 536870912,
+   "host_alias": "coordinator",
+   "live_again": true
+  },
+  {
+   "lease_id": "m06-status-writer-1790811584-666392-88a62e",
+   "name": "m06-status-writer",
+   "at": "2026-09-30T23:50:55Z",
+   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
+   "rule": "SUSTAINED_ABOVE_RESPOND",
+   "tree_peak_bytes": 46956544,
+   "cap_bytes": 536870912,
+   "host_alias": "coordinator",
+   "live_again": true
+  },
+  {
+   "lease_id": "c07-closure-1790811971-679626-b8cbc7",
+   "name": "c07-closure",
+   "at": "2026-09-30T23:50:56Z",
+   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
+   "rule": "SUSTAINED_ABOVE_RESPOND",
+   "tree_peak_bytes": 1044725760,
+   "cap_bytes": 1073741824,
+   "host_alias": "coordinator",
+   "live_again": false
+  },
+  {
+   "lease_id": "m06-status-writer-1790812377-688370-307f4e",
+   "name": "m06-status-writer",
+   "at": "2026-09-30T23:56:28Z",
+   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
+   "rule": "SUSTAINED_ABOVE_RESPOND",
+   "tree_peak_bytes": 38682624,
+   "cap_bytes": 536870912,
+   "host_alias": "coordinator",
+   "live_again": true
+  },
+  {
+   "lease_id": "c07-closure-1790812283-686547-696988",
+   "name": "c07-closure",
+   "at": "2026-09-30T23:56:29Z",
+   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
+   "rule": "SUSTAINED_ABOVE_RESPOND",
+   "tree_peak_bytes": 1050025984,
+   "cap_bytes": 1073741824,
+   "host_alias": "coordinator",
+   "live_again": false
+  },
+  {
+   "lease_id": "m04-verify-202abc49-1790814086-73182-99b5ff",
+   "name": "m04-verify-202abc49",
+   "at": "2026-10-01T00:21:57Z",
+   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
+   "rule": "SUSTAINED_ABOVE_RESPOND",
+   "tree_peak_bytes": 3030564864,
+   "cap_bytes": 3221225472,
+   "host_alias": "worker_a",
+   "live_again": false
+  },
+  {
+   "lease_id": "m04-verify-202abc49-1790814154-73750-5ad071",
+   "name": "m04-verify-202abc49",
+   "at": "2026-10-01T00:23:05Z",
+   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
+   "rule": "SUSTAINED_ABOVE_RESPOND",
+   "tree_peak_bytes": 3025633280,
+   "cap_bytes": 3221225472,
+   "host_alias": "worker_a",
+   "live_again": false
+  },
+  {
+   "lease_id": "m04-train-72a85004-1790815303-92380-8c5407",
+   "name": "m04-train-72a85004",
+   "at": "2026-10-01T00:43:43Z",
+   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
+   "rule": "SUSTAINED_ABOVE_RESPOND",
+   "tree_peak_bytes": 5032960000,
+   "cap_bytes": 5379194880,
+   "host_alias": "worker_a",
+   "live_again": false
+  },
+  {
+   "lease_id": "m04-train-4c24e903-1790815463-95654-74411d",
+   "name": "m04-train-4c24e903",
+   "at": "2026-10-01T00:46:24Z",
+   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
+   "rule": "SUSTAINED_ABOVE_RESPOND",
+   "tree_peak_bytes": 5031940096,
+   "cap_bytes": 5379194880,
+   "host_alias": "worker_a",
+   "live_again": false
+  },
+  {
+   "lease_id": "m04-train-7ab8847a-1790815621-99324-fc8edf",
+   "name": "m04-train-7ab8847a",
+   "at": "2026-10-01T00:49:07Z",
+   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
+   "rule": "SUSTAINED_ABOVE_RESPOND",
+   "tree_peak_bytes": 5037985792,
+   "cap_bytes": 5379194880,
+   "host_alias": "worker_a",
+   "live_again": false
+  },
+  {
+   "lease_id": "m03-prof-tsl_weather-1790810705-1209262-f58118",
+   "name": "m03-prof-tsl_weather",
+   "at": "2026-09-30T23:25:40Z",
+   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
+   "rule": "SUSTAINED_ABOVE_RESPOND",
+   "tree_peak_bytes": 982405120,
+   "cap_bytes": 1073741824,
+   "host_alias": "worker_b",
+   "live_again": false
+  },
+  {
+   "lease_id": "m02-ecl-donors-r0-1790812716-1237864-566ccb",
+   "name": "m02-ecl-donors-r0",
+   "at": "2026-10-01T00:09:56Z",
+   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
+   "rule": "SUSTAINED_ABOVE_RESPOND",
+   "tree_peak_bytes": 1275133952,
+   "cap_bytes": 4294967296,
+   "host_alias": "worker_b",
+   "live_again": false
+  },
+  {
+   "lease_id": "c07-closure-install-1790813089-1242292-634e7b",
+   "name": "c07-closure-install",
+   "at": "2026-10-01T00:09:59Z",
+   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
+   "rule": "SUSTAINED_ABOVE_RESPOND",
+   "tree_peak_bytes": 2084966400,
+   "cap_bytes": 2147483648,
+   "host_alias": "worker_b",
+   "live_again": false
+  }
+ ],
+ "quotas_measured": {
+  "coordinator": {
+   "host_free_for_new_bytes": 13082419200,
+   "held_unrealised_bytes": 501391360,
+   "desktop_reserve_bytes": 3221225472,
+   "slice_memory_max": 15032385536,
+   "slice_memory_current": 4955049984,
+   "slice_charged_bytes": null,
+   "pressure_some_avg10": 0.0
+  },
+  "worker_a": {
+   "host_free_for_new_bytes": 8840241152,
+   "held_unrealised_bytes": 0,
+   "desktop_reserve_bytes": 3221225472,
+   "slice_memory_max": 8589934592,
+   "slice_memory_current": 2391003136,
+   "slice_charged_bytes": null,
+   "pressure_some_avg10": 0.0
+  },
+  "worker_b": {
+   "host_free_for_new_bytes": 10272124928,
+   "held_unrealised_bytes": 4119613440,
+   "desktop_reserve_bytes": 3221225472,
+   "slice_memory_max": 15032385536,
+   "slice_memory_current": 6068457472,
+   "slice_charged_bytes": null,
+   "pressure_some_avg10": 0.0
+  }
+ },
  "results": [
   {
    "task": "traffic L96->h96 long-term forecast (TimeFilter published recipe)",
@@ -694,6 +1312,26 @@
    "difference": 0.00014268064498901278,
    "tolerance_agreement": 0.0085,
    "note": "three-seed class by the sealing executor's classify(); NOT independently verified except s2023 (orchestrator)"
+  },
+  {
+   "task": "ECL L24 -> H1..24, all 321 channels (M04 batch-1 v3, old architecture)",
+   "split": "validation",
+   "population_id": "2609 windows x 24 horizons x 321 channels",
+   "model": "incumbent cc4235d7 draw1_huber (mean of seeds [2021, 2022])",
+   "metric": "MAE",
+   "space": "z_train",
+   "reduction": "mean over all elements",
+   "value": 0.39717390109523637,
+   "naive": 0.8514061497227646,
+   "literature": {
+    "value": null,
+    "source": null,
+    "comparability": "not_comparable"
+   },
+   "evidence_state": "measured",
+   "class": "NOT_COMPARABLE",
+   "note": "negative skill at h1/h23/h24",
+   "generated_from": "RESULTS/m04_campaign_tables.json"
   }
  ],
  "milestones": [
@@ -733,110 +1371,15 @@
     "RESULTS/m04_incumbents.md",
     "predictor 6ced97e7"
    ]
-  },
-  {
-   "id": "m04_r1_r2_v4",
-   "completion_criterion": "paired pretrained R1/R2 candidates with real ECL donors (M02) under M01 effective-params identity",
-   "state": "not_started",
-   "evidence": [
-    "waits on m02-ecl-donors-r0-resume1"
-   ]
   }
  ],
  "next_actions": [
-  "owner: ADM-DEADCACHE-01 (DEPLOY.md) or one-time reclaim on both workers",
-  "owner: persistence mode + root slabinfo timer on worker_a",
-  "owner: force-push decision for af215de3 / 1a80f5f6 on satoshi/m06-evidence-resources-20260930",
-  "owner: C07 approval request (research-only BANKING77 comparison)",
-  "owner: S07 hold-out decision",
-  "M02 donor job completes -> M04 v4 (R1/R2) with M01 re-manifest",
-  "COST-01: per-feature default R0 needs an 8G solo slot on worker_b"
- ],
- "lane_worktrees": [
-  {
-   "lane": "M04",
-   "repo": "doin-node",
-   "branch": "satoshi/m04-doin-execution-20260930",
-   "worktree": "~/Documents/GitHub/.worktrees/doin-node-m04-20260930",
-   "tip": "7d207a6d7fd8"
-  },
-  {
-   "lane": "M03",
-   "repo": "feature-eng",
-   "branch": "satoshi/m03-feature-inventory-20260930",
-   "worktree": "~/Documents/GitHub/.worktrees/feature-eng-m03-inventory",
-   "tip": "4ddcce48d1e8"
-  },
-  {
-   "lane": "S07",
-   "repo": "heuristic-strategy",
-   "branch": "satoshi/s07-strategy-support-20260930",
-   "worktree": "~/Documents/GitHub/.worktrees/heuristic-strategy-s07-20260930",
-   "tip": "d08ae004c972"
-  },
-  {
-   "lane": "M05",
-   "repo": "lts",
-   "branch": "satoshi/m05-paper-adapter-20260930",
-   "worktree": "~/Documents/GitHub/lts-worktrees/m05-paper-adapter-20260930",
-   "tip": "4e88c01db632"
-  },
-  {
-   "lane": "C07",
-   "repo": "predictor",
-   "branch": "satoshi/c07-classification-remote-code-20260930",
-   "worktree": "~/Documents/GitHub/.worktrees/predictor-c07-remote-code-20260930",
-   "tip": "788082f6787a"
-  },
-  {
-   "lane": "M02",
-   "repo": "predictor",
-   "branch": "satoshi/m02-pretraining-20260930",
-   "worktree": "~/Documents/GitHub/.worktrees/predictor-m02-pretraining-20260930",
-   "tip": "d1e2e77c79b1"
-  },
-  {
-   "lane": "M04",
-   "repo": "predictor",
-   "branch": "satoshi/m04-doin-execution-20260930",
-   "worktree": "~/Documents/GitHub/.worktrees/predictor-m04-doin-20260930",
-   "tip": "8f724b12f390"
-  },
-  {
-   "lane": "M05",
-   "repo": "predictor",
-   "branch": "satoshi/m05-paper-adapter-20260930",
-   "worktree": "~/Documents/GitHub/.worktrees/predictor-m05-paper-adapter-20260930",
-   "tip": "a3218b7890ff"
-  },
-  {
-   "lane": "M06",
-   "repo": "predictor",
-   "branch": "satoshi/m06-evidence-resources-20260930",
-   "worktree": "~/Documents/GitHub/.worktrees/predictor-m06-20260930",
-   "tip": "3b8ecb4a4576"
-  },
-  {
-   "lane": "M06",
-   "repo": "predictor",
-   "branch": "satoshi/m06-admission-dead-cache-20260930",
-   "worktree": "~/Documents/GitHub/.worktrees/predictor-m06-admission-20260930",
-   "tip": "0928dc0631a7"
-  },
-  {
-   "lane": "S07",
-   "repo": "predictor",
-   "branch": "satoshi/s07-strategy-support-20260930",
-   "worktree": "~/Documents/GitHub/.worktrees/predictor-s07-strategy-20260930",
-   "tip": "53c6f47a70ae"
-  },
-  {
-   "lane": "M01",
-   "repo": "predictor",
-   "branch": "satoshi/m01-model-assembly-20260930",
-   "worktree": "~/Documents/GitHub/predictor-m01-model-assembly",
-   "tip": "1bb63f519895"
-  }
+  "owner (ONE action): bash DEPLOY_ADM_DEADCACHE.sh <worker_a> <worker_b> (DEPLOY.md; rollback included)",
+  "owner: C07 approval request stays as filed (not implied by the subplan)",
+  "owner: S07: propose a new prospective window or declare development (the read reserve is not a clean hold-out)",
+  "no action by agents: persistence mode / root slabinfo timer / reboots / force-push (orders ac125db9 \u00a75)",
+  "lane A: verify c0d7b07b (logs or reproduced workflow); new donors on the corrected fusion",
+  "lane D: corrected cost pilot on the 5090 (profile build vs first step vs steady cost); finite queue after it passes"
  ],
  "events": [
   {
@@ -893,12 +1436,180 @@
    "at": "2026-09-30T23:44:44Z",
    "host_alias": "worker_b",
    "event": "M04 modular cost pilot admitted on the 4090 (full default R0, full ECL train 18341 / validation 2609 windows, 2 epochs, PILOT_NOT_A_RESULT); duplicate queued request on worker_a cancelled before admission; m02-ecl-cost-pilot also leased on worker_b"
+  },
+  {
+   "at": "2026-10-01T02:30:00Z",
+   "host_alias": "worker_b",
+   "event": "M02 old-design donor run STOPPED at a safe boundary (190 records, receipt 37cc105a); lane A first deliverable c0d7b07b (UNVERIFIED); lane B tests red at d7dd357; lane C acknowledged"
   }
  ],
- "worker_a_slab_series": {
-  "file": "worker_a_slab_series.jsonl",
-  "reading": "one sample per writer cycle since the post-reboot baseline"
- },
+ "corrections": [
+  {
+   "at": "2026-09-30T23:55Z",
+   "what": "ATTRIBUTION: M06's final chat report said the preferred worker's apt upgrade and reboot (22:52-22:53Z) were run by the orchestrator. WRONG. They were performed by the OWNER at his own terminal, not by the orchestrator and not by any agent. The evidence files already attributed them to the owner; the error was in the report text and is recorded here as a correction."
+  },
+  {
+   "at": "2026-09-30T23:55Z",
+   "what": "M03 declaration_sha256 c7e20f15: previously recorded as UNVERIFIED; now VERIFIED by the orchestrator under the rule canonical JSON (sort_keys, separators (',',':'), default ensure_ascii) of the body without the field, per tools/declare_admissible_inputs.py"
+  },
+  {
+   "at": "2026-10-01T02:10Z",
+   "what": "STATUS reconciler v2: stale free text removed (old M04 pilot 'running'/'queued', worker_a 'reserved for M04', M02 donor 132/321). Earlier queued-job parsing guessed names/memory from token positions across ssh/bash wrappers (an ssh alias read as a job, 'venv' read as memory); v2 parses launcher argv exactly and lists other mentions as UNPARSED."
+  }
+ ],
+ "lane_worktrees": [
+  {
+   "repo": "doin-node",
+   "branch": "satoshi/m04-doin-execution-20260930",
+   "worktree": "~/Documents/GitHub/.worktrees/doin-node-m04-20260930",
+   "tip": "7d207a6d7fd8"
+  },
+  {
+   "repo": "feature-eng",
+   "branch": "satoshi/m03-feature-inventory-20260930",
+   "worktree": "~/Documents/GitHub/.worktrees/feature-eng-m03-inventory",
+   "tip": "4ddcce48d1e8"
+  },
+  {
+   "repo": "heuristic-strategy",
+   "branch": "satoshi/s07-strategy-support-20260930",
+   "worktree": "~/Documents/GitHub/.worktrees/heuristic-strategy-s07-20260930",
+   "tip": "d08ae004c972"
+  },
+  {
+   "repo": "lts",
+   "branch": "satoshi/m05-paper-adapter-20260930",
+   "worktree": "~/Documents/GitHub/lts-worktrees/m05-paper-adapter-20260930",
+   "tip": "9bd5463fff2d"
+  },
+  {
+   "repo": "predictor",
+   "branch": "satoshi/a-engine-integration-20261001-m02",
+   "worktree": "~/Documents/GitHub/.worktrees/predictor-a-engine-m02",
+   "tip": "b54742f0faf3"
+  },
+  {
+   "repo": "predictor",
+   "branch": "satoshi/continuation-ack-20261001",
+   "worktree": "~/Documents/GitHub/.worktrees/predictor-ack-20261001",
+   "tip": "5b5d44d15c43"
+  },
+  {
+   "repo": "predictor",
+   "branch": "satoshi/c07-classification-remote-code-20260930",
+   "worktree": "~/Documents/GitHub/.worktrees/predictor-c07-remote-code-20260930",
+   "tip": "788082f6787a"
+  },
+  {
+   "repo": "predictor",
+   "branch": "satoshi/d-corrected-queue-20261001",
+   "worktree": "~/Documents/GitHub/.worktrees/predictor-d-corrected-queue-20261001",
+   "tip": "643d34c41e08"
+  },
+  {
+   "repo": "predictor",
+   "branch": "satoshi/m02-pretraining-20260930",
+   "worktree": "~/Documents/GitHub/.worktrees/predictor-m02-pretraining-20260930",
+   "tip": "d1e2e77c79b1"
+  },
+  {
+   "repo": "predictor",
+   "branch": "satoshi/m04-doin-execution-20260930",
+   "worktree": "~/Documents/GitHub/.worktrees/predictor-m04-doin-20260930",
+   "tip": "8f724b12f390"
+  },
+  {
+   "repo": "predictor",
+   "branch": "satoshi/m05-paper-adapter-20260930",
+   "worktree": "~/Documents/GitHub/.worktrees/predictor-m05-paper-adapter-20260930",
+   "tip": "a3218b7890ff"
+  },
+  {
+   "repo": "predictor",
+   "branch": "satoshi/m06-evidence-resources-20260930",
+   "worktree": "~/Documents/GitHub/.worktrees/predictor-m06-20260930",
+   "tip": "d28888a7ecd8"
+  },
+  {
+   "repo": "predictor",
+   "branch": "satoshi/m06-admission-dead-cache-20260930",
+   "worktree": "~/Documents/GitHub/.worktrees/predictor-m06-admission-20260930",
+   "tip": "775c5545beae"
+  },
+  {
+   "repo": "predictor",
+   "branch": "satoshi/s07-strategy-support-20260930",
+   "worktree": "~/Documents/GitHub/.worktrees/predictor-s07-strategy-20260930",
+   "tip": "53c6f47a70ae"
+  },
+  {
+   "repo": "predictor",
+   "branch": "satoshi/a-engine-integration-20261001",
+   "worktree": "~/Documents/GitHub/predictor-a-engine-integration",
+   "tip": "dbc9720b21cc"
+  },
+  {
+   "repo": "predictor",
+   "branch": "satoshi/m01-model-assembly-20260930",
+   "worktree": "~/Documents/GitHub/predictor-m01-model-assembly",
+   "tip": "1bb63f519895"
+  }
+ ],
+ "admission_findings": [
+  {
+   "id": "ADM-DEADCACHE-01",
+   "found_by": "orchestrator (read-only), recorded and extended by M06",
+   "at": "2026-09-30 (18:40 local reading)",
+   "host_alias": "worker_a",
+   "defect": "the admission gate charges dead, clean, reclaimable file cache left in crispdm-batch.slice after a scope ends as live 'in use'; nothing reclaims clean cache without pressure and memory.high is far away, so a queued request never clears",
+   "numbers": {
+    "slice_memory_current": 2385801216,
+    "anon": 0,
+    "file": 2327924736,
+    "file_dirty": 0,
+    "shmem": 16564224,
+    "slab": 57008080,
+    "unevictable": 0,
+    "live_scopes": 0,
+    "leases": 0,
+    "memory_max": 8589934592,
+    "memory_high": 7516192768,
+    "gate": "2.386 GiB in use + 6.442 GiB request = 8.83 > 8.59 GiB ceiling -> QUEUE (M04 6G GPU pilot)"
+   },
+   "origin": "page cache of M04's finished NPZ build (1.30 GB NPZ plus source CSV), recharged to the slice when its scope ended",
+   "other_hosts_read_only_2026-09-30T23:17Z": {
+    "coordinator": {
+     "slice_minus_live_scopes_GiB": {
+      "current": 0.645,
+      "file": 0.424,
+      "shmem": 0.052,
+      "slab": 0.217,
+      "anon": 0.0
+     }
+    },
+    "worker_b": {
+     "slice_minus_live_scopes_GiB": {
+      "current": 1.02,
+      "file": 0.988,
+      "shmem": 0.751,
+      "slab": 0.032,
+      "anon": 0.0
+     },
+     "note": "0.751 GiB of that file is shmem (tmpfs), NOT reclaimable without swap; ~0.24 GiB clean file"
+    },
+    "worker_a": {
+     "slice_minus_live_scopes_GiB": {
+      "current": 2.223,
+      "file": 2.169,
+      "shmem": 0.015,
+      "slab": 0.053,
+      "anon": 0.0
+     }
+    }
+   },
+   "fix": "REVIEWED against the owner's five cases at 775c5545 (supersedes 0928dc06): only dead clean cache outside live scopes is uncharged; 51/51 tests; NOT deployed; owner's one action: DEPLOY_ADM_DEADCACHE.sh (DEPLOY.md)"
+  }
+ ],
  "heartbeat_audit": [
   {
    "child": "traffic_L96_h96_s2021 (coordinator)",
@@ -943,5 +1654,6 @@
    "meets_60s": true,
    "reason": "heartbeat.json/.jsonl every 30 s with stage, eta basis, cgroup resources"
   }
- ]
+ ],
+ "worker_a_slab_series": "worker_a_slab_series.jsonl"
 }
