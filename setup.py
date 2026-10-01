@@ -52,6 +52,11 @@ setup(
         'modular.fusion': ['sequence_concat=predictor_plugins.modular_temporal:sequence_concat'],
         'modular.core': ['transformer_conv=predictor_plugins.modular_temporal:transformer_conv'],
         'modular.head': ['forecast=predictor_plugins.modular_temporal:forecast'],
+        # Branch training objectives (PS3-R): a separate axis from the architecture, own versions
+        'modular.objective': [
+            'autoencoder_reconstruction=predictor_plugins.modular_temporal.objectives:AutoencoderReconstruction',
+            'ts2vec_contrastive=predictor_plugins.modular_temporal.objectives:TS2VecContrastive',
+        ],
         # Plugins para la Optimización (por defecto, basado en DEAP)
         'optimizer.plugins': [
             'default_optimizer=optimizer_plugins.default_optimizer:Plugin',

@@ -43,7 +43,7 @@ def _donor_path(path):
     return path, path.with_suffix(".manifest.json")
 
 
-def save_donor(model, path, manifest, declared_params=None):
+def save_donor(model, path, manifest, declared_params=None, objective=None):
     """Save a selected component and a digest-bound identity sidecar.
 
     Parameters
@@ -70,6 +70,9 @@ def save_donor(model, path, manifest, declared_params=None):
     provenance = {"keras_version": keras_version()}
     if declared_params is not None:
         provenance["declared_params"] = _copy(declared_params)
+    if objective is not None:
+        # the objective that trained these weights: provenance, NOT part of the architecture manifest
+        provenance["objective"] = _copy(objective)
     document = {"schema": 1, "manifest": manifest, "manifest_sha256": _digest(manifest),
                 "provenance": provenance,
                 "model_sha256": _file_hash(path), "weights_sha256": weights_hash(model)}
