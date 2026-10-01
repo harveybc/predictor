@@ -370,3 +370,66 @@ def test_calibration_aggregate_and_patch(confounded, tmp_path):
     patched = json.loads((d / "x.json").read_text())
     assert patched["rung2"]["sensitivity"]["calibration_block_length"] == c["block_length"]
     assert patched["rung2"]["state"] == "NOT_IDENTIFIED"
+
+
+# ---------------------------------------------------------------------------------------------------- real-label rejection
+
+
+def test_trailing_scale_uses_only_rows_up_to_t():
+    from c2_real_rejection import trailing_scale, past_return, seasonal_return
+    r = np.abs(np.random.default_rng(1).standard_normal(500)) * 0.01
+    base = trailing_scale(r)
+    r2 = r.copy()
+    r2[300:] += 5.0                                   # perturb the future of t = 299
+    assert np.allclose(base[:300], trailing_scale(r2)[:300], equal_nan=True)
+    assert np.isnan(base[58]) and np.isfinite(base[59])
+    logc = np.cumsum(np.random.default_rng(2).standard_normal(500) * 0.01)
+    for h in (1, 3, 6):
+        pr, se = past_return(logc, h), seasonal_return(logc, h)
+        t = 100
+        assert np.isclose(pr[t], logc[t] - logc[t - h])              # window ends at t
+        assert np.isclose(se[t], logc[t - 6 + h] - logc[t - 6])      # ends at t - 6 + h <= t
+        l2 = logc.copy()
+        l2[t + 1:] += 9.0
+        assert np.isclose(past_return(l2, h)[t], pr[t]) and np.isclose(seasonal_return(l2, h)[t], se[t])
+
+
+def test_seasonal_test_detects_a_planted_seasonal_dependence_and_not_its_absence(tmp_path):
+    from c2_real_rejection import seasonal_cell
+    rng = np.random.default_rng(9)
+    rows = []
+    for planted in (0.0, 0.6):
+        d = tmp_path / f"s{planted}"
+        d.mkdir()
+        n = N_ROWS
+        e = rng.standard_normal(n) * 0.01
+        r = np.zeros(n)
+        r[6:] = e[6:] + planted * e[:-6]                       # next return depends on the one 6 bars earlier
+        close = 100 * np.exp(np.cumsum(r))
+        times = np.arange(n, dtype=np.int64) * BAR + 1_600_000_000
+        frame = pd.DataFrame({"DATE_TIME": pd.to_datetime(times, unit="s").strftime("%Y-%m-%d %H:%M:%S"), "typical_price": close, "OPEN": close,
+                              "HIGH": close * 1.01, "LOW": close * 0.99, "CLOSE": close, "VOLUME": 1000.0,
+                              "log_return_1": np.concatenate([[0.0], np.diff(np.log(close))]), "noise_a": rng.standard_normal(n), "noise_b": rng.standard_normal(n)})
+        view = d / "view.csv"
+        frame.to_csv(view, index=False)
+        vsha = sha256_file(view)
+        feats = ["noise_a", "noise_b"]
+        (d / "manifest.json").write_text(json.dumps({"schema": "selected_feature_manifest.v1", "status": "FROZEN_DEVELOPMENT", "variant": "A", "resource": {"sha256": vsha},
+                                                    "split": {"train": {"rows": [0, TRAIN_END]}}, "admissible_declaration_sha256": pop_mod.DECLARATION_SHA256,
+                                                    "features": feats, "feature_count": 2, "manifest_sha256_canonical": "0" * 64}))
+        ssha, _ = _split(d / "split.json", vsha, times, frame["log_return_1"].to_numpy())
+        pop = bind_population(view, d / "manifest.json", d / "split.json", expect_view=vsha, expect_manifest=sha256_file(d / "manifest.json"), expect_split=ssha)
+        rows.append(seasonal_cell(pop, 1, boot=100))
+    null, planted = rows
+    assert planted["seasonal_24h"]["reject"] is True and planted["seasonal_24h"]["sign_agreement"] >= 0.8
+    assert planted["seasonal_24h"]["theta"] > 0
+    assert abs(null["seasonal_24h"]["t"]) < abs(planted["seasonal_24h"]["t"])
+
+
+def test_regime_cell_returns_the_paired_variants(confounded):
+    from c2_real_rejection import regime_cell, summarize_regime
+    c = regime_cell(confounded["pop"], "x_treat", 1, boot=50)
+    assert {"base", "scaled", "regime_ctrl", "both"} <= set(c) and c["finding"] in {"SURVIVES_REGIME_CONDITIONING", "REGIME_ARTEFACT_CANDIDATE", "NOT_REJECTED_AT_BASE"}
+    assert len(c["blocks_theta_base"]) == 5 and c["rows"] > 500
+    agg = summarize_regime([c])
+    assert agg["cells"] == 1 and agg["nominal"] == 0.05
