@@ -4,6 +4,11 @@ Written for Satoshi (execution), Musashi (independent review), and the owner.
 Owner approved this continuation on 2026-09-30. Begin immediately from observed
 state; do not wait for another "continue" after a completed unit.
 
+**Latest inspection and immediate integration orders:**
+[architecture reconciliation](SATOSHI_MODULAR_RECONCILIATION_2026_09_30.md).
+The delivered M01/M02/M04 paths still used the superseded 12-step branches at
+inspection; integrate the correction below before successor donor/candidate fits.
+
 ## 1. Objective and governing plan
 
 Deliver a working, backward-compatible hierarchical predictor and a real DOIN
