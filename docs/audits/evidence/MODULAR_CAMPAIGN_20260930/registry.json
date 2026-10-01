@@ -744,7 +744,8 @@
    ],
    "branch": null,
    "state": "running",
-   "eta_basis": "per-family measured cell walls from the v2 queue once a family completes"
+   "eta_basis": "per-family measured cell walls from the v2 queue once a family completes",
+   "placement": "the 5090; may use the 4090 only until an RL or M07 GPU job is admitted there"
   },
   {
    "lane": "E2",
@@ -774,7 +775,8 @@
    ],
    "branch": null,
    "state": "dispatched",
-   "eta_basis": "none yet"
+   "eta_basis": "none yet",
+   "placement": "RL GPU cells go to the worker_b 4090 FIRST, one RL job at a time beside M07 (orchestrator ruling 07:3xZ)"
   },
   {
    "lane": "F",
@@ -1028,8 +1030,8 @@
  ],
  "slot_plan": {
   "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8": "D2 (M04 a083979bc9a8fa1b8): v2 campaign on the 5090",
-  "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9": "F2 (M07 afcf115024ffa1381): ETH 4h financial forecast campaign; G2 (lane G aa7913479a97b45c0) RL cells share it",
-  "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519": "G2 (lane G aa7913479a97b45c0): RL 16 cells (shares worker_a RAM with the 5090: aggregate admission)",
+  "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9": "G2 RL cells FIRST (one at a time) beside F2 (M07); D2 only until an RL or M07 GPU job is admitted",
+  "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519": "no RL placement now: worker_a free-for-new ~2.75 GB shared with M04's 6.58G train (orchestrator ruling)",
   "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326": "coordinator: no batch work (standing rule)"
  },
  "old_design_inventory": {
@@ -1389,7 +1391,7 @@
    "since": "2026-10-01T04:33Z",
    "rule": "ZERO batch jobs on the coordinator; the only exceptions are M06's 512M STATUS writer and 128M event watcher. Every lane's CPU work goes to worker_a (repaired gate) or worker_b.",
    "alert": "coordinator PSI some avg60 > 10 or MemAvailable < 12 GB, pushed to the orchestrator immediately; any non-M06 batch job seen on the coordinator is alerted",
-   "exceptions": "M06 STATUS writer (512M), M06 event watcher (128M), d-runner-worker-a and d-runner-worker-b (lane D runners, 512M caps, <64 MiB observed, orchestration only; orchestrator exemptions)"
+   "exceptions": "M06 STATUS writer (512M), M06 event watcher (128M), lane D runners d*-runner-* (512M, poll only, <64 MiB; orchestrator exemption)"
   }
  ],
  "incidents": [
@@ -1527,6 +1529,17 @@
     "observed peak < 64 MiB; breach -> immediate alert and stop via the admission tool"
    ],
    "ended": "runner ended with the campaign (last observed peaks 19.6-23.3 MB, under the 64 MiB condition)"
+  },
+  {
+   "job": "d2-runner-worker-a and any future d*-runner-* of the same class",
+   "granted_by": "orchestrator (Satoshi)",
+   "at": "2026-10-01T07:3xZ",
+   "conditions": [
+    "512M cap",
+    "poll only",
+    "observed peak < 64 MiB; M06 alarm at 64 MiB"
+   ]
   }
- ]
+ ],
+ "clock": "all M06 timestamps are UTC from the host system clocks (date -u); coordinator, worker_a and worker_b agreed to the second at 07:33Z"
 }
