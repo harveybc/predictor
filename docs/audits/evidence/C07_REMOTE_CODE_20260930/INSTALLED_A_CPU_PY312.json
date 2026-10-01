@@ -11,7 +11,14 @@
   "result": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND at venv 1,743,423,052 bytes on /tmp (tmpfs, charged to the job's cgroup as shmem); record c07-closure-install-1790813089-1242292-634e7b; stopped by this lane's own admission scope, nothing else signalled",
   "tmpfs_bytes_freed_afterwards": 1746978969,
   "disk_pip_temp_bytes_removed": 416515107,
-  "rule_recorded": "scratch goes to disk on every host; /tmp only for files under 50 MB"
+  "rule_recorded": "scratch goes to disk on every host; /tmp only for files under 50 MB",
+  "leftover_found_by_the_coordinator_afterwards": {
+   "path": "/tmp/tmp3spjz0ia on worker_b",
+   "bytes": 827588608,
+   "what": "pip's download temp file of the CUDA cp312 torch==2.8.0 wheel (887,913,624 B), left when this lane killed its own dry-run B; owner this lane's user, mtime 19:04:25 host-local = the kill, zip first entry functorch/, zero open handles",
+   "action": "deleted by this lane",
+   "tmpfs_bytes_freed_total_by_this_lane": 2574567577
+  }
  },
  "per_distribution": [
   {
