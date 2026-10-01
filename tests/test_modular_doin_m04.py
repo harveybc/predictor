@@ -315,6 +315,8 @@ def test_real_engine_receipt_is_independently_rescored_and_tamper_refuted(tmp_pa
     receipt_path = tmp_path / "out" / "evaluation.json"
     result = scorer.verify(receipt_path, validation, tmp_path / "verification.json")
     assert result["verdict"] == "VERIFIED", result["problems"]
+    assert result["batch_size"] == nested["evaluator"]["batch_size"]  # replays the receipt's inference batch
+    assert result["exact_match"] is True  # same batch, same device class: bitwise-equal rescoring
     assert result["objective"]["rescored_value"] == pytest.approx(receipt["objective"]["value"], rel=1e-5)
     # tamper: a forged receipt metric is refuted by rescoring
     forged = json.loads(receipt_path.read_text())

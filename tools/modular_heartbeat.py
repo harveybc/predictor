@@ -144,7 +144,9 @@ def environment():
 
     return {"python": platform.python_version(), "executable": sys.executable, "tensorflow": tensorflow.__version__,
             "keras": keras.__version__, "numpy": numpy.__version__,
-            "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES")}
+            "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
+            "tf_deterministic_ops": os.environ.get("TF_DETERMINISTIC_OPS"),
+            "cuda_cache_maxsize": os.environ.get("CUDA_CACHE_MAXSIZE")}
 
 
 def gpu_facts():

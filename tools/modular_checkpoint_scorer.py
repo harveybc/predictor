@@ -83,13 +83,16 @@ def _close(a, b, rtol, atol):
     return math.isfinite(a) and math.isfinite(b) and abs(a - b) <= atol + rtol * abs(b)
 
 
-def verify(receipt_path, validation_path, output_path, *, batch_size=512, rtol=1e-5, atol=1e-6,
+def verify(receipt_path, validation_path, output_path, *, batch_size=None, rtol=1e-5, atol=1e-6,
            target_feature_indices=None):
     started = time.monotonic()
     receipt = json.loads(Path(receipt_path).read_text())
     problems = []
     if receipt.get("schema_version") != "modular.candidate.evaluation.v1" or receipt.get("status") != "completed":
         raise ValueError("a completed modular.candidate.evaluation.v1 receipt is required")
+    # Replay the evaluator's inference contract: same batch size as the receipt's own scoring pass.
+    # With TF_DETERMINISTIC_OPS=1 in both processes the rescoring is bitwise identical (probe 2026-10-01).
+    batch_size = batch_size or receipt["training"]["settings"]["batch_size"]
     artifact = Path(receipt["artifacts"]["best_model"])
     model_sha = _sha_file(artifact)
     if model_sha != receipt["digests"]["model_sha256"]:
@@ -125,6 +128,8 @@ def verify(receipt_path, validation_path, output_path, *, batch_size=512, rtol=1
     metrics = score_metrics(y, prediction, baseline)
     per_horizon = {str(h): score_metrics(y[:, i:i + 1], prediction[:, i:i + 1], baseline[:, i:i + 1])
                    for i, h in enumerate(horizons)}
+    exact = all(value == receipt["metrics"].get(key) for key, value in metrics.items()) and all(
+        row["MAE"] == receipt.get("per_horizon", {}).get(h, {}).get("MAE") for h, row in per_horizon.items())
     for key, value in metrics.items():
         if not _close(value, receipt["metrics"].get(key), rtol, atol):
             problems.append(f"metric {key}: rescored {value} vs receipt {receipt['metrics'].get(key)}")
@@ -146,10 +151,12 @@ def verify(receipt_path, validation_path, output_path, *, batch_size=512, rtol=1
               "objective": {**{k: objective[k] for k in ("metric", "split", "higher_is_better", "unit")},
                             "rescored_value": rescored_objective, "receipt_value": objective["value"]},
               "metrics": metrics, "per_horizon": per_horizon, "validation_rows": int(len(x)),
-              "tolerance": {"rtol": rtol, "atol": atol},
+              "tolerance": {"rtol": rtol, "atol": atol}, "batch_size": batch_size, "exact_match": exact,
               "elapsed_seconds": time.monotonic() - started, "pid": os.getpid(),
               "resources": _cgroup_resources(),
-              "environment": {"host_role": os.environ.get("M04_HOST_ROLE"), "tensorflow": tf.__version__, "keras": tf.keras.__version__,
+              "environment": {"host_role": os.environ.get("M04_HOST_ROLE"),
+                              "tf_deterministic_ops": os.environ.get("TF_DETERMINISTIC_OPS"),
+                              "cuda_cache_maxsize": os.environ.get("CUDA_CACHE_MAXSIZE"), "tensorflow": tf.__version__, "keras": tf.keras.__version__,
                               "numpy": np.__version__, "executable": sys.executable,
                               "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES")}}
     Path(output_path).write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
@@ -161,7 +168,7 @@ def main():
     parser.add_argument("--receipt", required=True)
     parser.add_argument("--validation", required=True)
     parser.add_argument("--output", required=True)
-    parser.add_argument("--batch-size", type=int, default=512)
+    parser.add_argument("--batch-size", type=int, help="default: the receipt's own batch size")
     args = parser.parse_args()
     result = verify(args.receipt, args.validation, args.output, batch_size=args.batch_size)
     print(json.dumps({"verdict": result["verdict"], "problems": result["problems"],
