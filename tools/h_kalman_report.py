@@ -22,9 +22,12 @@ def _load(name):
 pipe = _load("h_kalman_pipeline")
 
 
-def reading(delta, ci, quarters):
+def reading(delta, ci, quarters, naive_mae=None, floor=1e-3):
     """EXCEEDS_SPREAD only when the block-bootstrap interval excludes zero AND |delta| is larger than the range of
-    the four contiguous-quarter deltas; otherwise the gap is within the spread and is not called a difference."""
+    the four contiguous-quarter deltas; a gap below 0.1 percent of the zero-return MAE is reported as negligible whatever its
+    interval; otherwise the gap is within the spread and is not called a difference."""
+    if naive_mae and abs(delta) / naive_mae < floor:
+        return "NEGLIGIBLE_BELOW_0.1_PERCENT_OF_NAIVE_MAE"
     lo, hi = ci
     spread = max(quarters) - min(quarters)
     if (lo > 0 or hi < 0) and abs(delta) > spread:
@@ -53,7 +56,7 @@ def table_rows(results):
                     if p is not None:
                         row.update({"delta_MAE_vs_A": p["delta_MAE_mean"], "ci95_lo": p["ci95"][0], "ci95_hi": p["ci95"][1],
                                     "quarter_range": max(p["quarter_deltas"]) - min(p["quarter_deltas"])})
-                        row["reading"] = reading(p["delta_MAE_mean"], p["ci95"], p["quarter_deltas"])
+                        row["reading"] = reading(p["delta_MAE_mean"], p["ci95"], p["quarter_deltas"], naive_mae=n["zero_return"]["MAE"])
                     else:
                         row["reading"] = "BASE" if arm == "A" else "IDENTITY_CONTROL" if arm == "IDENTITY" else "UNPAIRED"
                     if not ev["eligible"]:

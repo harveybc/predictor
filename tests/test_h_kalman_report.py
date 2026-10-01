@@ -59,3 +59,9 @@ def test_gap_is_called_a_difference_only_when_it_exceeds_the_ci_and_the_block_sp
 def test_markdown_never_uses_the_word_advantage_and_states_the_label():
     md = rep.to_markdown(rep.table_rows(fixture_results()), title="t")
     assert "advantage" not in md.lower() and "DEVELOPMENT" in md and "zero_return" in md.lower()
+
+
+def test_a_gap_below_a_tenth_of_a_percent_of_the_naive_mae_is_negligible_whatever_its_interval():
+    assert rep.reading(delta=-7e-6, ci=(-1.1e-5, -3e-6), quarters=[-7e-6, -7e-6, -8e-6, -6e-6], naive_mae=0.4648) == \
+        "NEGLIGIBLE_BELOW_0.1_PERCENT_OF_NAIVE_MAE"
+    assert rep.reading(delta=-0.01, ci=(-0.02, -0.005), quarters=[-0.011, -0.009, -0.01, -0.01], naive_mae=0.46) == "EXCEEDS_SPREAD"
