@@ -310,6 +310,31 @@ zero, never MODEL_BETTER: the test does not favour a model with no information. 
 for both seeds, MAE only"; it does not support a claim at h2-h4 or on MSE, and the margin is of the order of the interval half-width (about 6e-4 absolute). DEVELOPMENT: the validation sample was consulted by M07's selection loop; this
 is not confirmation. Cost: 12 s CPU per seed, measured peak 350 MB (cap 370 MB).
 
+### 2.7 Four-seed paired inference, grouped_all vs control_mlp (mae/adamw), EURUSD lake vDh (DEVELOPMENT) -- `paired_inference/multiseed/MULTISEED.json`, `SEED_LEVEL_T_INTERVALS.json`, `tools/c2_paired_multiseed.py`
+
+Inputs: M07's 8 cells (predictor `satoshi/f2-eth-forecast-20261001` @ `eb924f49`, `artifacts_eurusd_lake_vDh_v1/`), read from git, every PREDICTIONS and EVIDENCE file sha256-verified against ARTIFACTS_INDEX.json and
+copied to worker_b (nothing written on worker_a); each cell is refused unless its evidence MAEs are reproduced (all 8 were). 18,711 validation windows. Intervals: block bootstrap (B = 2000, L = 7/8/9/10 for h1..h4); pooled = mean over the four
+seeds with each seed's rows resampled independently; plus a seed-level t-interval (3 df) because the row bootstrap does not see training-seed variance. 182 s CPU, peak 352 MB (cap 440 MB = 1.25 x the measured 353 MB per-cell peak).
+
+**Per seed, h1, absolute error vs zero-return (side B = model better, W = model worse):** grouped_all 2021 B (-4.94e-4), 2022 B (-5.97e-4), **2023 W (+2.20e-4, excludes 0 on the WRONG side)**, 2024 B (-9.73e-4); control_mlp 2021-2024 all B
+(-7.71e-4, -8.81e-4, -7.01e-4, -8.82e-4). So all 4 seeds exclude 0 at h1 for control_mlp; for grouped_all all 4 exclude 0 but one of them against the model. Against the intercept-only control the sides are identical.
+Squared error at h1: no seed of either architecture excludes 0 (either control). Per seed h2-h4 (abs vs zero): grouped_all seed 2024 excludes 0 favourably at h2, h3 and h4 (-7.78e-4, -7.79e-4, -8.53e-4; h4 also on squared error, -2.34e-3);
+other seeds include 0 at h2-h4; control_mlp includes 0 in every seed at h2-h4. Full table in MULTISEED.json `per_cell`.
+
+**Pooled over seeds (mean of seed means; row-bootstrap CI | seed range | seed-level t-CI):**
+* grouped_all h1 abs vs zero: -4.61e-4 (-6.56e-4, -2.62e-4) EXCL | [-9.73e-4, +2.20e-4] | (-1.25e-3, +3.32e-4) includes 0. h2 -4.15e-4 (-7.29e-4, -1.04e-4) EXCL | t-CI includes 0. h3 -4.75e-4 (-8.06e-4, -1.14e-4) EXCL | t-CI (-8.49e-4, -1.01e-4) excl. h4 -5.50e-4 (-9.12e-4, -2.20e-4) EXCL | t-CI (-8.99e-4, -2.00e-4) excl.
+  Squared error vs zero: h1 -1.21e-4 includes 0; h2 includes 0 (row CI) but seed t-CI excludes (-8.48e-4, -1.99e-4); h3 row CI excludes (-2.10e-3, -3.4e-6), t-CI includes; h4 both exclude (-1.66e-3).
+* control_mlp h1 abs vs zero: -8.09e-4 (-1.13e-3, -4.85e-4) EXCL | seed range [-8.82e-4, -7.01e-4] | t-CI (-9.50e-4, -6.67e-4) excl: the h1 MAE gain is reproduced by all four seeds (this is the clean result). h2-h4 abs: includes 0 on the row CI (h2 t-CI excludes: -1.59e-4, -2.8e-4..-3.7e-5);
+  squared error h1 includes 0; h2 is WORSE than zero on the seed t-CI (+5.39e-4, +1.5e-5 to +1.06e-3).
+* Intercept-only control: the same signs and almost the same intervals as zero-return (difference about 2e-5).
+
+**Architecture effect (grouped_all minus control_mlp, same rows, negative = grouped better):** h1 abs pooled **+3.48e-4 (+6.0e-5, +6.5e-4) excludes 0 in favour of the CONTROL** (per seed only 2023 excludes); h2 -2.56e-4 (-7.1e-4, +1.9e-4), h3 -5.27e-4 (-1.09e-3, +5.4e-5),
+h4 -4.90e-4 (-1.11e-3, +1.8e-4) all include 0; squared error includes 0 at every horizon (h2 -1.06e-3 (-2.31e-3, +2.2e-4)). Reading: grouped_all is not better than the control at h1 (nominally worse by 3.5e-4), and its nominal gains at h2-h4 (about -5e-4) do not exclude 0:
+no architecture effect is established; grouped_all's apparent edge over zero at h2-h4 comes mainly from seed 2024.
+
+Statement: the MAE improvement over zero-return and intercept-only at h1 is the only result all four seeds reproduce, for control_mlp (all four seeds, tight); grouped_all reproduces it in three of four seeds (seed 2023 is worse than zero at h1, excluding 0 against the model). Nothing at h2-h4 or on
+MSE is established across seeds; the row-bootstrap pooled interval is narrower than the seed spread and must not be read as an inter-seed interval. DEVELOPMENT: the validation sample was consulted by M07's selection loop; the S2 reserve and the test were not read.
+
 ## 3. Deliverable 3: recommendation table to M03 and M07 -- `recommendation/RECOMMENDATION_TABLE.{csv,md}`
 
 1,162 rows (83 features x 7 horizons x 2 protocols), each with population, split, rows, horizon, the four naives
