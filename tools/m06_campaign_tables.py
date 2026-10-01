@@ -97,7 +97,7 @@ def build(queue: dict, receipts: dict) -> dict:
             "evidence": "measured validation objective, fresh-process checkpoint rescoring exact_match; NOT test, NOT a published comparison"}
 
 
-def render(t: dict):
+def render(t: dict, annotations: dict | None = None):
     o = t["objective"]
     c = ["# M04 batch-1 v3: verified R0 candidates (generated)", "",
          f"Campaign `{t['campaign']}`, CAMPAIGN sha `{t['campaign_sha256'][:8]}…`. Objective: {o['metric']} on "
@@ -114,6 +114,9 @@ def render(t: dict):
     for h in t["incumbents"]:
         i += [f"## Incumbent {h['seq']}: `{h['config_id']}` {h['label']}, mean validation {t['objective']['metric']} "
               f"{h['mean_objective']:.6f} over seeds {h['seeds']}", f"Reason: {h['reason']}.", ""]
+        note = (annotations or {}).get(h["config_id"])
+        if note:
+            i += [f"Architecture class (from {note['source']}): **{note['class']}**. {note['text']}", ""]
         hs = list(h["per_seed"][0]["per_horizon_skill_MAE"])
         i.append("| seed cid | MAE | persistence MAE | skill MAE | " + " | ".join(f"h{k}" for k in hs) + " |")
         i.append("|---" * (4 + len(hs)) + "|")
@@ -130,6 +133,7 @@ def main(argv=None):
     ap.add_argument("--queue", required=True)
     ap.add_argument("--receipts", required=True)
     ap.add_argument("--out-dir", required=True)
+    ap.add_argument("--annotations", default=None, help="JSON {config_id8: {class, source, text}}")
     a = ap.parse_args(argv)
     q = json.load(open(a.queue))
     rec = {f[:-5]: json.load(open(os.path.join(a.receipts, f))) for f in os.listdir(a.receipts) if f.endswith(".json")}
@@ -141,7 +145,10 @@ def main(argv=None):
     t["inputs"] = {"queue_sha256": sha_file(a.queue),
                    "receipts_sha256": {f: sha_file(os.path.join(a.receipts, f)) for f in sorted(os.listdir(a.receipts))}}
     os.makedirs(a.out_dir, exist_ok=True)
-    cmd, imd = render(t)
+    ann = json.load(open(a.annotations)) if a.annotations else None
+    if ann:
+        t["annotations"] = ann
+    cmd, imd = render(t, ann)
     outs = {"m04_r0_candidates.md": cmd, "m04_incumbents.md": imd, "m04_campaign_tables.json": json.dumps(t, indent=1)}
     for name, text in outs.items():
         p = os.path.join(a.out_dir, name)

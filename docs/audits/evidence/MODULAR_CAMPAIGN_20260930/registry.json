@@ -258,7 +258,7 @@
    },
    "evidence_state": "measured",
    "class": "NOT_COMPARABLE",
-   "note": "negative skill at h1/h23/h24",
+   "note": "negative skill at h1/h23/h24; architecture class OLD_ENGINE_24_NONRESIDUAL (superseded)",
    "generated_from": "RESULTS/m04_campaign_tables.json"
   }
  ],
@@ -507,6 +507,11 @@
    "by": "orchestrator",
    "at": "2026-09-30 ~23:40Z",
    "what": "three-seed closure verified: s2021 preserved copy (record file 6da180e4, checkpoint 4b434bc9, 30/30, float32 vs float64 within 1e-8, population 717cb5b3); three-seed mean recomputed independently, identical to classify()"
+  },
+  {
+   "by": "orchestrator workflow wf_6286ece8-903 (16 agents, 0 errors)",
+   "at": "2026-10-01",
+   "what": "da4ce7b4 CONFIRMED to build the required default in real Keras on worker_b (probe outputs under worker_b ~/.local/state/scratch/review/da4ce7b4/: probe.out, tests.out); its own suites 59 passed / 1 failed (the moved entry_points symbol); nine claims confirmed by code reading and re-execution; two refuted (the 'no diagram generated' premise: da4ce7b4 ships two regenerated Keras diagrams)"
   }
  ],
  "corrections": [
@@ -739,5 +744,28 @@
    }
   }
  ],
- "slot_plan": {}
+ "slot_plan": {},
+ "old_design_inventory": {
+  "source": "wf_6286ece8-903",
+  "v3_verified_16": {
+   "OLD_GRID_12": 4,
+   "OLD_ENGINE_24_NONRESIDUAL": 12,
+   "core_factor_sets": [
+    "[2,4,1]",
+    "[4,1,2]",
+    "[1,2,4]"
+   ]
+  },
+  "dead_queues": {
+   "v1 (worker_a)": "24 queued + 12 blocked",
+   "v2": "2 queued + 20 blocked",
+   "v3": "20 blocked"
+  },
+  "disposition": "M04 ordered to mark them CANCELLED_SUPERSEDED in place",
+  "incumbent_cc4235d7_class": "OLD_ENGINE_24_NONRESIDUAL"
+ },
+ "open_owner_questions": {
+  "state": "PENDING_PUBLICATION",
+  "what": "twelve FS-mapping ambiguities, in the orchestrator's summary; link to be added when published"
+ }
 }
