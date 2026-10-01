@@ -5,19 +5,77 @@
  "label": "DEVELOPMENT",
  "branch": "satoshi/h-kalman-20261001",
  "milestones": [
-  {"name": "contract and historical operator located", "done": 1, "of": 1},
-  {"name": "successor implemented with tests (family tests)", "done": 37, "of": 37},
-  {"name": "all lane H tests green on worker_b / worker_a", "done": 172, "of": 172},
-  {"name": "parity batch/tick/restart/chunk on both workers", "done": 2, "of": 2},
-  {"name": "future-leak probe and smoother refusal on both workers", "done": 2, "of": 2},
-  {"name": "replay of exact-layer digests (ETH grid, ETH 24-lag, EURUSD)", "done": 3, "of": 3},
-  {"name": "three-arm ridge runs (ETH lag1 4 variants, ETH lag24 1 variant, EURUSD 4 variants)", "done": 3, "of": 3},
-  {"name": "MLP three-seed arms (worker_b only)", "done": 1, "of": 2},
-  {"name": "lane B gate replicated (ETH)", "done": 1, "of": 2},
-  {"name": "DOIN declaration, tests and hand-off document", "done": 1, "of": 1},
-  {"name": "multivariate family", "done": 0, "of": 1, "note": "not started: pilot showed no utility to justify it"}
+  {
+   "name": "contract and historical operator located",
+   "done": 1,
+   "of": 1
+  },
+  {
+   "name": "successor implemented with tests (family tests)",
+   "done": 37,
+   "of": 37
+  },
+  {
+   "name": "all lane H tests green on worker_b / worker_a",
+   "done": 172,
+   "of": 172
+  },
+  {
+   "name": "parity batch/tick/restart/chunk on both workers",
+   "done": 2,
+   "of": 2
+  },
+  {
+   "name": "future-leak probe and smoother refusal on both workers",
+   "done": 2,
+   "of": 2
+  },
+  {
+   "name": "replay of exact-layer digests (ETH grid, ETH 24-lag, EURUSD)",
+   "done": 3,
+   "of": 3
+  },
+  {
+   "name": "three-arm ridge runs (ETH lag1 4 variants, ETH lag24 1 variant, EURUSD 4 variants)",
+   "done": 3,
+   "of": 3
+  },
+  {
+   "name": "MLP three-seed arms (worker_b only)",
+   "done": 1,
+   "of": 2
+  },
+  {
+   "name": "lane B gate replicated (ETH)",
+   "done": 1,
+   "of": 2
+  },
+  {
+   "name": "DOIN declaration, tests and hand-off document",
+   "done": 1,
+   "of": 1
+  },
+  {
+   "name": "multivariate family",
+   "done": 0,
+   "of": 1,
+   "note": "not started: pilot showed no utility to justify it"
+  },
+  {
+   "name": "ECL testbed: ridge (2 variants x 7 arms) and MLP (4 seeds x 5 arms) on worker_b",
+   "done": 2,
+   "of": 2
+  },
+  {
+   "name": "ECL replay on worker_a",
+   "done": 0,
+   "of": 1,
+   "note": "not allowed by the worker_a memory budget for this lane"
+  }
  ],
  "current_work": "none running; all worker jobs finished",
- "next_dependencies": ["M04 phase-1 probe inside the differentiated model", "worker_a replay of the MLP layer when the GPU lane allows"],
- "result_reading": "successor verified across two workers on the exact layer; no utility shown (ridge, MLP, lane B gate); EXPLORATORY for utility"
+ "next_dependencies": [
+  "M04 phase-1 paired probe on ECL with three arms: no operator, Kalman, causal EWMA (GPU, after the financial cells)"
+ ],
+ "result_reading": "successor verified across two workers on the exact layer; no utility on ETH/EURUSD; on ECL B and C beat A beyond the seed/fold spread at h1..h6 (MLP) and h1..h24 (ridge), but the comparable causal EWMA matches or beats C with the MLP; the effect is not Kalman-specific"
 }

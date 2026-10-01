@@ -1,0 +1,52 @@
+{
+ "kalman": {
+  "moments_train": {
+   "artifact_sha256s": [
+    "65056ee9c4c6e72bb7d3ed6ca19660c26d4dce421c69e0f1a69ba0661b160bbb",
+    "a053871c6584a9fab859b015e82209a679e38f88e67307016ff16045531b2f4f",
+    "3db9dfc01cfd10e229257c8399a079b1df579153316a3172c3ba3809f497c329",
+    "488c7287bdc3597ea4c8b8fb141a642ab0c5f43ffe1aacda8c4d4fd2c550232f",
+    "2fb9045df967cd3c962ec0228be5f84ef868749b35ce4b5dc3067b758421aecd",
+    "989de1a8ac9160dd0540522f2959cd5731852be60fd9f99bb0ea20c82d311f46"
+   ],
+   "fitted_state_digests": [
+    "7de03a01e61b1bd1ef18d2d65f258bb8950677888e8b94a622fa7870c78ccb76",
+    "6980e055ed943a58eb9a6dd4d617e4a428f4a2cd8aacf8213cf9978d0bc54198",
+    "600ca4d3cc138a8bec82b79aedf32eddf6081dab0200679eaa9d3bc4baae3b47",
+    "7800a124af25f6d1d6c93bd5b5345ff8a50f4e8ad61485138b34bd9d206a71c4",
+    "e4419637dfdf29dd9eac05c15953112fdeb5c731fefae81ad5423d8bb3a96627",
+    "5eff3077698bee2954ea62dae8fed20471a4bb1d2eceabc5249d1e0a2ac2a631"
+   ],
+   "output_digest": "f4aa0b1e97734c83565bceb1d02e89e45ea129b15b2334f2b093a8ba96f1297e",
+   "reason_counts": {
+    "AVAILABLE": 6751914,
+    "FUTURE_UNAVAILABLE": 0,
+    "MISSING_INPUT": 0,
+    "WARMUP": 3210
+   }
+  }
+ },
+ "predictions": {
+  "moments_train|A|2021": "616c8f23d2643d5f62e9702156beed353481cda9d545a26a0651a16dd353be7e",
+  "moments_train|A|2022": "218f3f6f383ecb05ef85b8b2d7617f5dae0ce8d48e1af60aae28d2c9cbad8a5b",
+  "moments_train|A|2023": "0b826bdcd35cf52338b9cc50cf286c6a937c39814ceb29de7f030e574b7de2a1",
+  "moments_train|A|2024": "acda28598fb542f235eceb7dc15994107be39a6efa7f8b3a390b532be28a7e48",
+  "moments_train|B_PERMUTED|2021": "80bb9c6470f1cc3fd8fe1413abc04d8698178c01b4ad88f1d9b287b686233e28",
+  "moments_train|B_PERMUTED|2022": "c0f18bba39ab5542989c3d20e1ba6aac6914a4f0b1c9679a1ab33aafe943e148",
+  "moments_train|B_PERMUTED|2023": "53cdf0cff76b8f0d89e20d70256c5a576c40770a14ef37c8d399226035528b12",
+  "moments_train|B_PERMUTED|2024": "9e05810e7f46db6e484c1e38a50dd2fa7aef978327daae36e3fa38bdedcb36b5",
+  "moments_train|B|2021": "3052d67965fc442fc6d086789f26af20f8e0f0a81cca7f4241e238b43b641e3b",
+  "moments_train|B|2022": "9f8d184bb21ee5f7347ae8124376772cb01a25a21e3eaafab38f8169a2ee9ed6",
+  "moments_train|B|2023": "b43dbc9ae77e43f45d2709f4d4e2b25bc7c5b6fdcdbdf4a40715cc6150653097",
+  "moments_train|B|2024": "5a1c51d1b76798f82b659a6d5d468fa7c959ed186317d2ed7431854366dc63df",
+  "moments_train|C_EWMA|2021": "e34ffbc21c5187bf50863a75fc90939dbfd900e7b6fa3c91a3517b1895463f83",
+  "moments_train|C_EWMA|2022": "bbdcb34747614433153da92c73ed417d2ccbd63b684892444edc8e3a0a7f9bec",
+  "moments_train|C_EWMA|2023": "391b46d599e0bac3858b62cbf39ce8e1f7c6a10746ab74eac454758817dba5e6",
+  "moments_train|C_EWMA|2024": "ef6662dfd6051e58dbe3fad8b7ba450ba6fd0e94a0da5a16b3e32959e57c79fd",
+  "moments_train|C|2021": "d5b5e756c92501e189885f04dbc011653a3633e4982189a5aab47bd95b753fdc",
+  "moments_train|C|2022": "785ee58ec9994b546da8556414faba707b9131f082fd6f7c33a4228b234351b5",
+  "moments_train|C|2023": "5f42103356527c060015eda80de042145e0b65aee84acd2dbe687b2731a846af",
+  "moments_train|C|2024": "020a342505eb32c3873344629271e34ec5921bef61687b1906df43d3c3eaf5ef"
+ },
+ "rows_sha256": "9e0b3c26b9984034871e55496e2040c223b071bdb5166f016062fe93d9723222"
+}

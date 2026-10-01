@@ -194,3 +194,94 @@ Kalman was NOT started: the pilot did not justify widening.
 inputs/KALMAN_CANDIDATE_FEATURES.v1.json --naive-table inputs/NAIVE_TABLE_validation_eth4h_l24_h6_v1.json --out <dir> --role <worker_x>`;
 `tools/h_kalman_parity_proof.py`, `tools/h_kalman_eurusd_run.py`, `tools/h_kalman_eth_mlp_run.py`, `tools/h_kalman_gate_eth_run.py`
 with the same pattern.
+
+## 11. ECL testbed (coordinator order after the first return; worker_b, CPU, DEVELOPMENT)
+
+Inputs, read-only, M04 v2: `data_ecl_l24_h24_v1` MANIFEST 16a3e535..., train.npz 9215b099..., validation.npz e3712565...
+(digests checked at every run). 321 channels, L 24, H 1..24, z_train; TRAIN rows [0, 18412), validation origins 18411..21019
+(2,609 origins x 321 channels), test rows from 21044 never present. The row panel is reconstructed exactly from the windows and
+targets (every overlapping cell checked bitwise; rows sha 9e0b3c26...). Same-row seasonal-24 naive mean MAE 0.2479664,
+equal to M04's 0.247966. Learners are channel-independent and pooled over the 321 channels, target = seasonal residual
+y(t+h) - y(t+h-24), forecast = seasonal + predicted residual. Kalman local level per channel, fitted on TRAIN rows only, two
+declared variants: `moments_train` (closed form: 299 of 321 channels clip r to the floor, i.e. near pass-through) and
+`declared ratio 1e-1` (nothing clipped). Tools: `tools/h_kalman_ecl.py`, `tools/h_kalman_ecl_run.py`, tests `tests/test_h_kalman_ecl.py` (6).
+
+Ridge (alpha chosen on an inner chronological hold-out of TRAIN; `ecl/RESULTS_ECL_ridge2.worker_b.json`), validation MAE z_train:
+
+| h | seasonal-24 | persistence | A | B (ratio 1e-1) | C (ratio 1e-1) | C EWMA (ratio 1e-1) | B permuted | B noise | B (moments) | C (moments) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 0.2476 | 0.2623 | 0.1966 | 0.1787 | 0.1799 | 0.1849 | 0.1963 | 0.1966 | 0.1676 | 0.1702 |
+| 2 | 0.2477 | 0.4321 | 0.2338 | 0.2143 | 0.2140 | 0.2159 | 0.2333 | 0.2338 | 0.2094 | 0.2099 |
+| 3 | 0.2477 | 0.5817 | 0.2458 | 0.2308 | 0.2304 | 0.2319 | 0.2452 | 0.2458 | 0.2287 | 0.2290 |
+| 4 | 0.2478 | 0.7151 | 0.2524 | 0.2410 | 0.2405 | 0.2416 | 0.2516 | 0.2524 | 0.2403 | 0.2405 |
+| 5 | 0.2478 | 0.8315 | 0.2563 | 0.2478 | 0.2473 | 0.2482 | 0.2555 | 0.2563 | 0.2478 | 0.2479 |
+| 6 | 0.2478 | 0.9310 | 0.2587 | 0.2523 | 0.2518 | 0.2525 | 0.2578 | 0.2587 | 0.2528 | 0.2529 |
+| 7 | 0.2478 | 1.0148 | 0.2604 | 0.2555 | 0.2551 | 0.2557 | 0.2594 | 0.2604 | 0.2564 | 0.2564 |
+| 8 | 0.2477 | 1.0797 | 0.2611 | 0.2575 | 0.2572 | 0.2577 | 0.2601 | 0.2611 | 0.2585 | 0.2585 |
+| 9 | 0.2477 | 1.1275 | 0.2614 | 0.2587 | 0.2584 | 0.2589 | 0.2604 | 0.2614 | 0.2597 | 0.2597 |
+| 10 | 0.2477 | 1.1608 | 0.2618 | 0.2597 | 0.2595 | 0.2599 | 0.2609 | 0.2618 | 0.2606 | 0.2607 |
+| 11 | 0.2477 | 1.1814 | 0.2621 | 0.2604 | 0.2602 | 0.2606 | 0.2614 | 0.2621 | 0.2613 | 0.2614 |
+| 12 | 0.2477 | 1.1886 | 0.2622 | 0.2609 | 0.2606 | 0.2610 | 0.2617 | 0.2622 | 0.2619 | 0.2619 |
+| 13 | 0.2477 | 1.1850 | 0.2626 | 0.2614 | 0.2612 | 0.2616 | 0.2623 | 0.2626 | 0.2625 | 0.2624 |
+| 14 | 0.2478 | 1.1681 | 0.2628 | 0.2618 | 0.2616 | 0.2620 | 0.2629 | 0.2628 | 0.2629 | 0.2629 |
+| 15 | 0.2479 | 1.1386 | 0.2629 | 0.2621 | 0.2619 | 0.2622 | 0.2633 | 0.2629 | 0.2633 | 0.2633 |
+| 16 | 0.2480 | 1.0945 | 0.2631 | 0.2623 | 0.2620 | 0.2623 | 0.2638 | 0.2631 | 0.2636 | 0.2636 |
+| 17 | 0.2481 | 1.0335 | 0.2631 | 0.2621 | 0.2618 | 0.2621 | 0.2643 | 0.2631 | 0.2637 | 0.2637 |
+| 18 | 0.2481 | 0.9547 | 0.2631 | 0.2618 | 0.2615 | 0.2617 | 0.2648 | 0.2631 | 0.2638 | 0.2638 |
+| 19 | 0.2482 | 0.8612 | 0.2631 | 0.2614 | 0.2611 | 0.2611 | 0.2652 | 0.2631 | 0.2638 | 0.2639 |
+| 20 | 0.2483 | 0.7524 | 0.2631 | 0.2607 | 0.2603 | 0.2602 | 0.2654 | 0.2632 | 0.2638 | 0.2639 |
+| 21 | 0.2484 | 0.6303 | 0.2632 | 0.2596 | 0.2592 | 0.2590 | 0.2656 | 0.2632 | 0.2637 | 0.2638 |
+| 22 | 0.2486 | 0.4984 | 0.2632 | 0.2584 | 0.2579 | 0.2577 | 0.2657 | 0.2632 | 0.2632 | 0.2633 |
+| 23 | 0.2487 | 0.3619 | 0.2630 | 0.2575 | 0.2569 | 0.2568 | 0.2655 | 0.2630 | 0.2609 | 0.2609 |
+| 24 | 0.2488 | 0.2488 | 0.2604 | 0.2578 | 0.2572 | 0.2565 | 0.2628 | 0.2604 | 0.2567 | 0.2567 |
+| mean | 0.2480 | 0.8514 | 0.2569 | 0.2519 | 0.2516 | 0.2522 | 0.2573 | 0.2569 | 0.2524 | 0.2525 |
+
+alphas chosen on the inner hold-out: {'declared_1e-1': {'A': 100000.0, 'B': 1000000.0, 'B_NOISE': 100000.0, 'B_PERMUTED': 100000.0, 'C': 1000000.0, 'C_EWMA': 1000000.0, 'C_SMOOTHER_NONCAUSAL': 100.0}, 'moments_train': {'A': 100000.0, 'B': 1.0, 'B_NOISE': 100000.0, 'B_PERMUTED': 100000.0, 'C': 1.0, 'C_EWMA': 1.0, 'C_SMOOTHER_NONCAUSAL': 100000.0}}
+smoother (non-causal, never eligible) mean MAE: {'declared_1e-1': 0.23809, 'moments_train': 0.25689}
+
+Paired against A (block bootstrap over origins, L = 48, plus the range of four contiguous-quarter deltas):
+* ratio 1e-1: B and C are lower than A at all 24 horizons beyond both the interval and the quarter range; C minus A is
+  -0.0167 at h1 [-0.0177, -0.0154], -0.0069 at h6, -0.0033 at h24; mean over horizons -0.0054 (2.1 percent of A).
+* moments_train: C minus A -0.0264 at h1 [-0.0286, -0.0240], beyond spread at 12 of 24 horizons, unfavourable beyond spread at 5.
+* Controls: B with permuted Kalman blocks moves A by -0.0003 at h1 and +0.0023 at h24; B with noise blocks equals A (weight zero).
+  The non-causal smoother is lower still (mean 0.2381 at ratio 1e-1): the leak, never eligible.
+* Against the comparable causal EWMA (same bandwidth), C is lower at h1..h14 beyond spread at ratio 1e-1 (-0.0050 at h1,
+  shrinking to -0.0003 at h14) and higher at h24 (+0.0007); at moments_train lower at h1..h11 and h22..h24.
+* Against the seasonal naive, the ridge arms are lower only at h1..h4/h5 (C 0.1799 vs 0.2476 at h1) and higher from h6 on:
+  pooled ridge is a weak learner here (A mean 0.2569 > seasonal 0.2480).
+* Same-host rerun: predictions bitwise identical (two runs, 28 prediction digests).
+
+Flatten+MLP control learner (hidden 64-64, MAE, AdamW, batch 256, 30 epochs max, patience 5 on an inner TRAIN hold-out;
+moments_train; 150,000 sampled TRAIN (origin, channel) rows; seeds 2021-2024; `ecl/RESULTS_ECL_mlp.worker_b.json`),
+mean MAE over the four seeds:
+
+| h | seasonal | A | B | C | C EWMA | B permuted |
+|---|---|---|---|---|---|---|
+| 1 | 0.2476 | 0.1697 | 0.1582 | 0.1582 | 0.1571 | 0.1850 |
+| 2 | 0.2477 | 0.2026 | 0.1933 | 0.1919 | 0.1908 | 0.2133 |
+| 3 | 0.2477 | 0.2170 | 0.2089 | 0.2095 | 0.2078 | 0.2255 |
+| 4 | 0.2478 | 0.2245 | 0.2194 | 0.2185 | 0.2178 | 0.2317 |
+| 5 | 0.2478 | 0.2289 | 0.2248 | 0.2245 | 0.2248 | 0.2357 |
+| 6 | 0.2478 | 0.2326 | 0.2294 | 0.2297 | 0.2303 | 0.2385 |
+| 12 | 0.2477 | 0.2433 | 0.2447 | 0.2449 | 0.2442 | 0.2465 |
+| 18 | 0.2481 | 0.2456 | 0.2475 | 0.2489 | 0.2464 | 0.2499 |
+| 24 | 0.2488 | 0.2428 | 0.2412 | 0.2416 | 0.2404 | 0.2477 |
+| mean h1..h24 | 0.2480 | 0.2355 | 0.2346 | 0.2347 | 0.2333 | 0.2411 |
+
+(all 24 horizons are in the JSON). A beats the seasonal naive at every horizon. B and C are lower than A at h1..h6 for every
+seed, by more than the seed range (h1: -0.0115, seed range of A 0.0019); at h9..h22 they are higher than A. The comparable
+causal EWMA arm is at least as good as C (C minus EWMA at h1: +0.0023, +0.0008, +0.0005, +0.0007 over the four seeds) and has the
+lowest mean (0.2333). The permuted-capacity control is worse than A (0.2411): the gain of B and C is not extra width.
+
+Reading. On ECL the coordinator's condition is met at the short horizons: B and C beat A by more than the seed and fold spread
+at h1..h6 (MLP, every seed) and h1..h24 (ridge, ratio 1e-1). The condition is NOT met for anything Kalman-specific with the MLP:
+the comparable causal EWMA gives the same or a larger gain. With ridge, C beats the EWMA at h1..h14 by 0.0003-0.0050. So the
+effect is "smoothed level / innovation channels help at short horizons", and the Kalman filter is one of two ways to produce
+them. Recommendation for the DOIN phase-1 probe (after the financial cells, GPU): pair three arms, without operator, Kalman
+(moments_train, group both, append) and the causal EWMA at the Kalman gain, on M04's ECL rows and seeds, and judge h1..h6
+separately from h7..h24.
+
+Not verified on ECL: no replay on worker_a (the ridge peak is 1.67 GB and the MLP peak 2.90 GB, above the 300 MB that worker_a
+allows for this lane); the Kalman layer itself was shown bit-portable on ETH/EURUSD. Costs: ridge 695-719 s CPU per full run
+(2 variants x 7 arms), cgroup peak 1.66-1.67 GB; MLP 1,147 s CPU, cgroup peak 2.90 GB. Three earlier MLP/ridge attempts were stopped by
+me (memory.high stalls or a cap kill) and replaced by memory-reduced successors at the same caps; none of their numbers are used.
