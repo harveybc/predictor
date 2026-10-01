@@ -245,3 +245,9 @@ Nothing else in sections 8–9 requires an owner decision; the remaining items t
 | # | Object | Owner | Minimal action |
 |---|---|---|---|
 | 18 | worker_b still runs the old admission gate, which charges its dead clean page cache (about 4 GB) plus the 7G donor reservation; M04's per-feature pilot (6.74 GB) is queued on SLICE_AGGREGATE_BUDGET and M01's 4G suite and 3G PS3-R child will queue the same way until the donor run ends, hours away. The orders authorize the repair on worker_a only and forbid extending it automatically. | owner | extend the reviewed repair `775c5545` to worker_b with the same one-paste (M06 prepares it, labelled NOT executed), or accept the wait |
+
+### 10.3 Addendum 16:55Z: question 19, the ETH 4h availability contract (blocks the RL pilots' frozen manifest)
+
+| # | Object | Owner | Minimal action |
+|---|---|---|---|
+| 19 | Lane B cannot freeze the ETH 4h selected-feature manifest (draft `SELECTED_FEATURE_MANIFEST.eth_4h.v0-DRAFT.json`, sha `22ae7730`, variant A = 83 admissible features as cost-pilot/control, variant B = 58 screen-tier features) because: B1 ETH 4h has no availability contract (candidate `998e3f80` was never installed); B2 the selected columns' lake parents are outside the census and their producer is not temporally verified; B3 the lake's C127 contract for ethusdt 4h cuts 0.6/0.2/0.2 by rows, conflicting with the task's calendar split, so a successor contract is needed; B4 (variant B only) the inner-validation freeze has not run. Lane G's real-data RL pilots start only from a frozen manifest. | owner for B1 (activation); lane B for B2–B3 (successor contract drafted, not activated; producer verification with lane C) | activate the ETH 4h availability contract; lane B prepares the successor split contract now |
