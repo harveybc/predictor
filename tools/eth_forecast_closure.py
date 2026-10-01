@@ -10,13 +10,14 @@ receipts. Emits per configuration and per horizon:
 * every same-row naive (persistence, zero-return, train-mean, seasonal) with the
   strict-minimum naive named, skill = 1 - model/naive and delta = model - naive;
 * ``beats_zero_return`` (the mandatory first bar) and ``beats_strict_minimum`` per seed;
-* the two-seed spread, and for every pair of configurations sharing loss and optimizer
+* the requested-seed spread, and for every pair of configurations sharing loss and optimizer
   (control vs grouped32 vs per_feature) the paired-by-seed difference with the STRICT_MINIMUM
   label: the word "advantage" appears only when the gap exceeds BOTH seed spreads, and even
   then only beside the numbers;
 * literature value: NOT_AVAILABLE with the reason (no published row matches this asset,
   view, split, target, scaler and horizon set), comparability NOT_COMPARABLE for the same
-  reason; the only comparable rows are the same-row naives and the paired cells.
+  reason derived from the accepted receipts; the only comparable rows are the
+  same-row naives and the paired cells.
 
 Unverified cells are listed by status; nothing is computed from an unverified receipt.
 """
@@ -31,12 +32,41 @@ import time
 from pathlib import Path
 
 NAIVE_NAMES = ("persistence_last_value", "zero_return", "train_mean")  # + the seasonal_<P> naive found in the receipt
-LITERATURE = {"value": None, "status": "NOT_AVAILABLE",
-              "reason": "no published row matches this asset (ETHUSDT 4h, view b1f8a74f), the declared calendar "
-                        "split, the cumulative log-return target in train-z units, the 83-feature set and horizons "
-                        "1..6; a published crypto forecast would differ in population, scaler or horizon"}
-COMPARABILITY = {"status": "NOT_COMPARABLE", "reason": "only the same-row naives and the paired cells of this "
-                                                      "campaign are comparable; see literature.reason"}
+COMPARABILITY_REASON = ("only the same-row naives and paired cells carrying this exact campaign identity are "
+                        "comparable; see literature.reason")
+
+
+def _receipt_identity(receipt):
+    """Return the scientific population identity asserted by an accepted receipt."""
+    artifact = receipt.get("artifact", {})
+    population = receipt.get("population", {})
+    scale = receipt.get("scale", {})
+    horizons = sorted(int(h) for h in receipt.get("per_horizon", {}))
+    identity = {
+        "campaign_id": artifact.get("campaign_id"),
+        "asset": population.get("asset"),
+        "dataset_id": population.get("dataset_id"),
+        "sample_hours": population.get("sample_hours"),
+        "targets": population.get("targets"),
+        "horizons": horizons,
+        "metric_space": scale.get("metric_space"),
+        "scaler_identity": scale.get("scaler_identity"),
+    }
+    missing = [name for name, value in identity.items() if value in (None, [], "")]
+    if missing:
+        raise ValueError(f"accepted receipt lacks campaign identity fields: {missing}")
+    return identity
+
+
+def _literature(identity):
+    reason = (
+        "no published row has been registered with the exact accepted identity: "
+        f"campaign={identity['campaign_id']}, asset={identity['asset']}, dataset={identity['dataset_id']}, "
+        f"sample_hours={identity['sample_hours']}, targets={identity['targets']}, "
+        f"horizons={identity['horizons']}, metric_space={identity['metric_space']}, "
+        f"scaler={identity['scaler_identity']}"
+    )
+    return {"value": None, "status": "NOT_AVAILABLE", "reason": reason}
 
 
 def load_cells(queues):
@@ -95,12 +125,22 @@ def seed_rows(entry, sigma):
     return out
 
 
-def closure(queues, *, sigma, seeds=(2021, 2022)):
+def closure(queues, *, sigma, seeds=(2021,)):
     cells, unverified = load_cells(queues)
+    identities = {_canonical_identity(_receipt_identity(entry["receipt"]))
+                  for by_seed in cells.values() for entry in by_seed.values()}
+    if not identities:
+        raise ValueError("closure has no verified receipt from which to derive campaign identity")
+    if len(identities) != 1:
+        raise ValueError("mixed campaign identity across verified receipts")
+    identity = json.loads(next(iter(identities)))
+    literature = _literature(identity)
+    comparability = {"status": "NOT_COMPARABLE", "reason": COMPARABILITY_REASON}
     table = {"schema": "f2.closure_table.v1", "generated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
              "scale": {"metric_space": "z_train", "sigma_logret_4h_train": sigma,
                        "note": "1 z unit = sigma of the 4h close log-return on train rows; MAE_logret = MAE_z * sigma"},
-             "label": "DEVELOPMENT", "literature": LITERATURE, "comparability": COMPARABILITY,
+             "label": "DEVELOPMENT", "campaign_identity": identity,
+             "literature": literature, "comparability": comparability,
              "configurations": {}, "contrasts": [], "unverified": unverified}
     for label, by_seed in cells.items():
         rows = {s: seed_rows(by_seed[s], sigma) for s in seeds if s in by_seed}
@@ -113,7 +153,7 @@ def closure(queues, *, sigma, seeds=(2021, 2022)):
                     r["beats_zero_return"] for s in rows for r in rows[s]["per_horizon"].values()),
                 "beats_strict_minimum_by_horizon": {h: [rows[s]["per_horizon"][h]["beats_strict_minimum"] for s in rows]
                                                     for h in next(iter(rows.values()))["per_horizon"]} if rows else {},
-                "literature": LITERATURE, "comparability": COMPARABILITY}
+                "literature": literature, "comparability": comparability}
         table["configurations"][label] = conf
     labels = [l for l, c in table["configurations"].items() if c["eligible"]]
     for a in labels:
@@ -129,8 +169,12 @@ def closure(queues, *, sigma, seeds=(2021, 2022)):
                 "spread_a": ca["spread"], "spread_b": cb["spread"],
                 "label_rule": ("STRICT_MINIMUM; gap exceeds both seed spreads: lower MAE for "
                                f"{a if mean < 0 else b} by {abs(mean):.6f} z") if exceeds
-                else "STRICT_MINIMUM; gap within the two-seed spread"})
+                else "STRICT_MINIMUM; gap within the requested-seed spread"})
     return table
+
+
+def _canonical_identity(identity):
+    return json.dumps(identity, sort_keys=True, separators=(",", ":"))
 
 
 def _same_axis(a, b):
@@ -165,7 +209,7 @@ def main():
     parser.add_argument("--queue", action="append", required=True)
     parser.add_argument("--manifest", required=True, help="data MANIFEST.json (sigma)")
     parser.add_argument("--out", required=True, help="output prefix (.json and .csv)")
-    parser.add_argument("--seeds", default="2021,2022")
+    parser.add_argument("--seeds", default="2021", help="trained seeds to aggregate; default is the screening seed")
     args = parser.parse_args()
     sigma = json.loads(Path(args.manifest).read_text())["target"]["sigma"]
     table = closure(args.queue, sigma=sigma, seeds=tuple(int(s) for s in args.seeds.split(",")))

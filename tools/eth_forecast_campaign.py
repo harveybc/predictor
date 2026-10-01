@@ -8,10 +8,14 @@ training through ``tools/eth_cell_runner.py`` and verifying through the independ
 ``tools/modular_checkpoint_scorer.py`` in a fresh process (exact match required).
 
 Cells (named, R0): architecture {grouped32, per_feature, control_mlp} x loss {mae, huber}
-x optimizer {adam (weight_decay 0), adamw (weight_decay 1e-4)} x paired seeds. The
+x optimizer {adam (weight_decay 0), adamw (weight_decay 1e-4)} x one screening seed. The
 control is the non-branching base architecture (flatten + MLP) at the same target, rows,
 budget and selection rule; it is enqueued as an ordinary candidate row whose nested
 config carries ``control`` instead of a modular ``model.branches`` layout.
+
+Additional replicas require a reason recorded before enqueue and are capped at three
+total seeds per named configuration. Verification reuses checkpoints and is not a
+training replica.
 
 Subcommands: ``declare`` (CAMPAIGN.json from the NPZ manifest and the pinned checkout;
 the freeze lives in it), ``materialize`` (nested candidate for a named cell, e.g. for cost
@@ -56,6 +60,9 @@ ARCHITECTURES = {"grouped32": {"branch.grouping_size": 32}, "per_feature": {"bra
 LOSSES = {"mae": {"train.loss": "mae"}, "huber": {"train.loss": "huber", "train.huber_delta": 1.0}}
 OPTIMIZERS = {"adam": {"train.weight_decay": 0.0}, "adamw": {"train.weight_decay": 0.0001}}
 CONTROL = "control_mlp"
+DEFAULT_SEEDS = [2021]
+ALLOWED_SEEDS = [2021, 2022, 2023]
+MAX_TRAINED_REPLICAS = 3
 
 
 def search_space(feature_count, seeds):
@@ -206,7 +213,7 @@ def declare(args):
     revision = args.predictor_revision
     if len(revision) != 40:
         raise ValueError("predictor_revision must be a full commit id")
-    seeds = [2021, 2022]
+    seeds = list(DEFAULT_SEEDS)
     donors, binding = ({}, None)
     if getattr(args, "donor_dir", None):
         donors, binding = donor_declaration(args.donor_dir, features)
@@ -222,8 +229,11 @@ def declare(args):
         "development_note": "the 2024 validation reserve is consulted by every cell and by selection; it is a "
                             "DEVELOPMENT reserve. The 2025 test rows are untouched for a later confirmatory pass.",
         "asset": "ETHUSDT 4h spot bars (view predictor b1f8a74f)",
-        "base": base, "search_space": search_space(len(features), [2021, 2022, 2023, 2024]),
+        "base": base, "search_space": search_space(len(features), ALLOWED_SEEDS),
         "paired_seeds": seeds, "default_candidate": cell_flat("per_feature", "mae", "adamw"),
+        "replication_policy": {"default_replicas": 1, "maximum_replicas": MAX_TRAINED_REPLICAS,
+                               "additional_replica_requires_justification": True,
+                               "allowed_seeds": ALLOWED_SEEDS},
         "default_huber_delta": 1.0,
         "cells": {"architectures": list(ARCHITECTURES) + [CONTROL], "losses": list(LOSSES),
                   "optimizers": {k: v["train.weight_decay"] for k, v in OPTIMIZERS.items()},
@@ -280,7 +290,7 @@ def declare(args):
                                              "batch_size": DEFAULT_FLAT["train.batch_size"],
                                              "learning_rate": DEFAULT_FLAT["train.learning_rate"],
                                              **base["evaluator_fixed"]},
-                   "selection_rule": "lowest mean validation MAE (z_train, all horizons) across both paired seeds, "
+                   "selection_rule": "lowest validation MAE (z_train, all horizons) on the single screening seed, "
                                      "verified cells only; naive comparisons never enter the ranking",
                    "frozen_metric": {"primary": "MAE", "secondary": "MSE"}},
         "amendments": []}
@@ -323,9 +333,34 @@ def amend(args):
 def enqueue(args):
     campaign = mdc.Campaign(args.root)
     decl = campaign.declaration
-    seeds = list(decl["paired_seeds"]) if not args.seeds else [int(s) for s in args.seeds.split(",")]
+    explicit = bool(args.seeds)
+    seeds = list(decl["paired_seeds"]) if not explicit else [int(s) for s in args.seeds.split(",")]
+    if len(seeds) != len(set(seeds)):
+        raise ValueError("replica seed list contains duplicates")
+    allowed = set(decl.get("replication_policy", {}).get("allowed_seeds", ALLOWED_SEEDS))
+    unknown = sorted(set(seeds) - allowed)
+    if unknown:
+        raise ValueError(
+            f"maximum three trained replicas: seeds {unknown} are outside the frozen allowed seeds {sorted(allowed)}")
+    cells = [cell.strip() for cell in args.cells.split(",") if cell.strip()]
+    if not cells:
+        raise ValueError("at least one cell is required")
+    justification = getattr(args, "replica_justification", None)
+    replica_requests = []
+    for cell in cells:
+        existing = {int(row[0]) for row in campaign.db.execute(
+            "SELECT seed FROM candidates WHERE label=?", (cell,))}
+        new_seeds = set(seeds) - existing
+        total = existing | set(seeds)
+        if len(total) > MAX_TRAINED_REPLICAS:
+            raise ValueError(
+                f"maximum three trained replicas per configuration: {cell} would have {sorted(total)}")
+        if explicit and new_seeds and len(total) > 1:
+            if not justification or not str(justification).strip():
+                raise ValueError("additional replica requires a predeclared justification")
+            replica_requests.append((cell, sorted(new_seeds), str(justification).strip()))
     added = []
-    for cell in args.cells.split(","):
+    for cell in cells:
         arch, loss, opt = parse_cell(cell)
         if arch == CONTROL:
             hidden = decl["control"]["hidden"]
@@ -345,7 +380,17 @@ def enqueue(args):
             added += _enqueue_with_seeds(campaign, flat, cell, seeds)
         else:
             added += campaign.enqueue(flat, cell)
-    print(json.dumps({"enqueued": len(added), "cids": [c[:16] for c in added]}))
+    if replica_requests:
+        campaign.db.execute(
+            "CREATE TABLE IF NOT EXISTS replica_requests ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, requested_at TEXT NOT NULL, label TEXT NOT NULL, "
+            "seeds_json TEXT NOT NULL, justification TEXT NOT NULL)")
+        campaign.db.executemany(
+            "INSERT INTO replica_requests(requested_at,label,seeds_json,justification) VALUES(?,?,?,?)",
+            [(mdc.now(), label, json.dumps(seeds), reason) for label, seeds, reason in replica_requests])
+        campaign.db.commit()
+    print(json.dumps({"enqueued": len(added), "cids": [c[:16] for c in added],
+                      "replication_policy": {"default": 1, "maximum": MAX_TRAINED_REPLICAS}}))
 
 
 def _enqueue_with_seeds(campaign, flat_without_seed, label, seeds):
@@ -529,6 +574,7 @@ def main():
     p.add_argument("--root", required=True)
     p.add_argument("--cells", required=True, help="comma list of <architecture>_<loss>_<optimizer>")
     p.add_argument("--seeds", help="comma list; default the paired seeds")
+    p.add_argument("--replica-justification", help="required before adding a second or third trained replica")
     p = sub.add_parser("run")
     p.add_argument("--root", required=True)
     p.add_argument("--host-role", required=True)

@@ -53,13 +53,13 @@ def test_declare_freezes_and_enqueue_modular_and_control(campaign, capsys):
     assert decl["label"] == "DEVELOPMENT" and decl["freeze"]["rows"]["validation"] > 0
     assert decl["base"]["target_feature_indices"] == [FEATURES.index("log_return_1")]
     assert decl["resources"]["train"]["cap"] is None
-    # modular cells x paired seeds
+    # Screening uses one frozen seed per configuration.
     args = type("A", (), {"root": str(root), "cells": "per_feature_mae_adam,per_feature_huber_adamw", "seeds": None})()
     fc.enqueue(args)
     db = sqlite3.connect(root / "queue.sqlite")
     rows = db.execute("select label, seed, status from candidates order by position").fetchall()
-    assert rows == [("per_feature_mae_adam", 2021, "queued"), ("per_feature_mae_adam", 2022, "queued"),
-                    ("per_feature_huber_adamw", 2021, "queued"), ("per_feature_huber_adamw", 2022, "queued")]
+    assert rows == [("per_feature_mae_adam", 2021, "queued"),
+                    ("per_feature_huber_adamw", 2021, "queued")]
     # the control needs its amended hidden widths first
     args = type("A", (), {"root": str(root), "cells": "control_mlp_mae_adamw", "seeds": None})()
     with pytest.raises(ValueError, match="not amended"):
@@ -70,24 +70,35 @@ def test_declare_freezes_and_enqueue_modular_and_control(campaign, capsys):
     fc.amend(type("A", (), {"root": str(root), "patch": str(patch), "change": "test"})())
     fc.enqueue(args)
     rows = db.execute("select label, seed, status, config_id from candidates where label like 'control%'").fetchall()
-    assert len(rows) == 2 and rows[0][3] == rows[1][3] and rows[0][1] != rows[1][1]
+    assert len(rows) == 1
     nested = json.loads(db.execute("select nested from candidates where label like 'control%'").fetchone()[0])
     assert nested["control"]["hidden"] == [16, 16] and nested["evaluator"]["loss"] == "mae"
     assert nested["evaluator"]["weight_decay"] == 0.0001 and "huber_delta" not in nested["evaluator"]
     # idempotent
     fc.enqueue(args)
-    assert db.execute("select count(*) from candidates").fetchone()[0] == 6
+    assert db.execute("select count(*) from candidates").fetchone()[0] == 3
     # caps are never lowered
     patch.write_text(json.dumps({"resources": {"train": {"cap": "1G"}}}))
     with pytest.raises(ValueError, match="never lowered"):
         fc.amend(type("A", (), {"root": str(root), "patch": str(patch), "change": "lower"})())
-    # extra seeds for a configuration
-    args = type("A", (), {"root": str(root), "cells": "per_feature_mae_adam", "seeds": "2023,2024"})()
+    # Extra replicas require a predeclared reason and are capped at three total.
+    no_reason = type("A", (), {"root": str(root), "cells": "per_feature_mae_adam", "seeds": "2022",
+                               "replica_justification": None})()
+    with pytest.raises(ValueError, match="justification"):
+        fc.enqueue(no_reason)
+    args = type("A", (), {"root": str(root), "cells": "per_feature_mae_adam", "seeds": "2022,2023",
+                          "replica_justification": "finalists tied within the observed seed spread"})()
     fc.enqueue(args)
     seeds = sorted(r[0] for r in db.execute("select seed from candidates where label='per_feature_mae_adam'"))
-    assert seeds == [2021, 2022, 2023, 2024]
+    assert seeds == [2021, 2022, 2023]
+    request = db.execute("select label, seeds_json, justification from replica_requests").fetchone()
+    assert request == ("per_feature_mae_adam", "[2022, 2023]", "finalists tied within the observed seed spread")
+    fourth = type("A", (), {"root": str(root), "cells": "per_feature_mae_adam", "seeds": "2024",
+                            "replica_justification": "try another"})()
+    with pytest.raises(ValueError, match="maximum three"):
+        fc.enqueue(fourth)
     status = fc.mdc.Campaign(root).status()
-    assert status["counts"] == {"queued": 8}
+    assert status["counts"] == {"queued": 5}
 
 
 def test_executor_refuses_without_measured_caps(campaign):
@@ -103,12 +114,12 @@ def test_residual_cells_inject_cumulative_seasonal_residual(campaign):
     fc.enqueue(type("A", (), {"root": str(root), "cells": "per_feature_mae_adamw,per_feature_mae_adamw_sres", "seeds": None})())
     db = sqlite3.connect(root / "queue.sqlite")
     rows = db.execute("select label, seed, nested, config_id from candidates order by position").fetchall()
-    assert [r[0] for r in rows] == ["per_feature_mae_adamw"] * 2 + ["per_feature_mae_adamw_sres"] * 2
-    plain, res = json.loads(rows[0][2]), json.loads(rows[2][2])
+    assert [r[0] for r in rows] == ["per_feature_mae_adamw", "per_feature_mae_adamw_sres"]
+    plain, res = json.loads(rows[0][2]), json.loads(rows[1][2])
     assert "target_residual" not in plain["model"]
     assert res["model"]["target_residual"] == {"kind": "seasonal_naive_cumulative", "period": 6,
                                                "target_features": ["log_return_1"]}
-    assert rows[0][3] != rows[2][3] and rows[2][3] == rows[3][3]
+    assert rows[0][3] != rows[1][3]
     # the residual variant differs from the plain cell only in the residual key and its variant tag
     res["model"].pop("target_residual"); res["modular_candidate"].pop("f2_variant")
     assert res == plain

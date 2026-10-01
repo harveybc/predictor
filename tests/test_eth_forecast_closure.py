@@ -13,7 +13,8 @@ from tools.modular_doin_campaign import SCHEMA_SQL  # noqa: E402
 H = ["1", "2", "3", "4", "5", "6"]
 
 
-def receipt(tmp_path, cid, mae, zero=1.0, persist=1.3, seasonal=1.4):
+def receipt(tmp_path, cid, mae, zero=1.0, persist=1.3, seasonal=1.4,
+            campaign_id="f2_eurusd_1h_h1to6_v1"):
     per_h = {h: {"MAE": mae + 0.01 * int(h), "MSE": 2 * mae} for h in H}
     naives = {"per_naive": {"persistence_last_value": {h: {"MAE": persist, "MSE": 2.0} for h in H},
                             "zero_return": {h: {"MAE": zero, "MSE": 1.5} for h in H},
@@ -21,6 +22,10 @@ def receipt(tmp_path, cid, mae, zero=1.0, persist=1.3, seasonal=1.4):
                             "seasonal_6": {h: {"MAE": seasonal, "MSE": 2.1} for h in H}},
               "strict_minimum": {h: {"naive": "zero_return", "MAE": zero, "MSE": 1.5} for h in H}}
     r = {"objective": {"value": mae}, "per_horizon": per_h, "naives": naives, "candidate": {"cid": cid},
+         "artifact": {"campaign_id": campaign_id},
+         "population": {"asset": "EURUSD 1h", "dataset_id": "eurusd:fixture:v1", "sample_hours": 1,
+                        "targets": ["log_return_1"], "rows": 120},
+         "scale": {"metric_space": "z_train", "scaler_identity": "train-scaler:fixture"},
          "training": {"selected_epoch": 3, "observed_updates": 630, "stop_reason": "patience"},
          "digests": {"weights_sha256": "w" * 64, "model_sha256": "m" * 64}}
     p = tmp_path / f"{cid[:30]}_accepted.json"
@@ -57,7 +62,7 @@ def test_closure_pairs_cells_and_never_says_advantage_within_spread(tmp_path):
                                             ("per_feature_mae_adam", 2021, 1.10, "verified"),
                                             ("per_feature_mae_adam", 2022, 1.12, "verified"),
                                             ("per_feature_huber_adam", 2021, 0.5, "queued")])
-    table = cl.closure([q1, q2], sigma=0.02)
+    table = cl.closure([q1, q2], sigma=0.02, seeds=(2021, 2022))
     g = table["configurations"]["grouped32_mae_adam"]
     assert g["eligible"] and g["mean_MAE_z"] == pytest.approx(0.91) and g["spread"] == pytest.approx(0.02)
     assert g["beats_zero_return_all_horizons_all_seeds"] is True
@@ -66,6 +71,9 @@ def test_closure_pairs_cells_and_never_says_advantage_within_spread(tmp_path):
     assert row["model_MAE_logret"] == pytest.approx(0.93 * 0.02) and row["strict_naive"] == "zero_return"
     assert row["vs_strict"]["skill"] == pytest.approx(1 - 0.93 / 1.0)
     assert table["literature"]["status"] == "NOT_AVAILABLE" and table["comparability"]["status"] == "NOT_COMPARABLE"
+    assert table["campaign_identity"]["campaign_id"] == "f2_eurusd_1h_h1to6_v1"
+    assert "EURUSD 1h" in table["literature"]["reason"]
+    assert "ETHUSDT" not in table["literature"]["reason"]
     assert [u["label"] for u in table["unverified"]] == ["per_feature_huber_adam"]
     by = {(c["a"], c["b"]): c for c in table["contrasts"]}
     # control (0.95, 0.93) vs grouped32 (0.90, 0.92): mean diff 0.03 > spreads 0.02 -> stated with numbers
@@ -85,3 +93,14 @@ def test_refuses_non_exact_verification(tmp_path):
         v.write_text(json.dumps({"verdict": "VERIFIED", "exact_match": False}))
     with pytest.raises(ValueError, match="exact-match"):
         cl.closure([q], sigma=0.02)
+
+
+def test_refuses_mixed_campaign_identity_before_aggregation(tmp_path):
+    q1 = make_queue(tmp_path, "q1.sqlite", [("grouped32_mae_adam", 2021, 0.9, "verified")])
+    q2 = make_queue(tmp_path, "q2.sqlite", [("grouped32_mae_adam", 2022, 0.8, "verified")])
+    receipt_path = next(p for p in tmp_path.glob("*_accepted.json") if "2022" in p.name)
+    changed = json.loads(receipt_path.read_text())
+    changed["artifact"]["campaign_id"] = "another_campaign"
+    receipt_path.write_text(json.dumps(changed))
+    with pytest.raises(ValueError, match="mixed campaign identity"):
+        cl.closure([q1, q2], sigma=0.02, seeds=(2021, 2022))
