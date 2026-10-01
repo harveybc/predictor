@@ -107,15 +107,17 @@ def shift_control_detects_future(x_col, h, steps):
 
 
 def _ridge_single_feature_mae(x_col, y, splits):
-    """Held-out MAE of a one-feature ridge against the zero naive, in z-units, averaged over the blocks."""
-    maes, naive = [], []
+    """Held-out MAE of a one-feature ridge (with intercept) against the intercept-only model fitted on the same rows,
+    in z-units, averaged over the blocks. The intercept-only reference isolates what the FEATURE adds: against the
+    zero naive, an intercept alone would already move the comparison."""
+    maes, ref = [], []
     for sp in splits:
         fit, ev = sp["fit"], sp["eval"]
         xf, xe = _standardize(x_col[fit, None], x_col[ev, None])
         pred = ridge_predict(ridge_fit(xf, y[fit], 1.0), xe)
         maes.append(float(np.mean(np.abs(pred - y[ev]))))
-        naive.append(float(np.mean(np.abs(y[ev]))))
-    return float(np.mean(maes)), float(np.mean(naive))
+        ref.append(float(np.mean(np.abs(y[fit].mean() - y[ev]))))
+    return float(np.mean(maes)), float(np.mean(ref))
 
 
 def study(pop, feature, h, *, seed=20261001, splits=None):
@@ -198,16 +200,21 @@ def study(pop, feature, h, *, seed=20261001, splits=None):
     shift_detected, causal_moved = shift_control_detects_future(x_t, h, probe_steps)
     z = 1.96
     controls = {
-        "scrambled_label": {"theta": scr["theta"], "interval": [scr["theta"] - z * scr["se"], scr["theta"] + z * scr["se"]],
-                            "single_feature_mae_z": scr_mae, "naive_zero_mae_z": scr_naive,
-                            "failed_as_required": bool(abs(scr["theta"]) <= z * scr["se"] and scr_mae >= scr_naive * 0.999)},
+        "scrambled_label": {"theta": scr["theta"], "se": scr["se"], "t": float(scr["theta"] / scr["se"]) if scr["se"] > 0 else 0.0,
+                            "interval": [scr["theta"] - z * scr["se"], scr["theta"] + z * scr["se"]],
+                            "single_feature_mae_z": scr_mae, "intercept_only_mae_z": scr_naive,
+                            "feature_adds_nothing": bool(scr_mae >= scr_naive * 0.999),
+                            "null_rejected_at_5pct": bool(abs(scr["theta"]) > z * scr["se"]),
+                            "failed_as_required": bool(abs(scr["theta"]) <= z * scr["se"] and scr_mae >= scr_naive * 0.999),
+                            "note": "under the null the HAC interval excludes zero in 5 percent of cells by construction; the battery verdict is the aggregate rate in DOSSIER_INDEX"},
         "future_shifted_feature": {"theta": th_f, "interval": [th_f - z * se_f, th_f + z * se_f], "single_feature_mae_z": fut_mae,
-                                   "naive_zero_mae_z": fut_naive, "causal_single_feature_mae_z": base_mae,
+                                   "intercept_only_mae_z": fut_naive, "causal_single_feature_mae_z": base_mae,
                                    "statistical_probe_fired": bool(abs(th_f) > z * se_f and fut_mae < 0.9 * fut_naive),
                                    "shift_template_steps": probe_steps, "shifted_column_moved_by_future_rows": shift_detected,
                                    "causal_column_moved_by_future_rows": causal_moved,
                                    "failed_as_required": bool(shift_detected and not causal_moved)},
-        "noise_treatment": {"theta": noise["theta"], "interval": [noise["theta"] - z * noise["se"], noise["theta"] + z * noise["se"]],
+        "noise_treatment": {"theta": noise["theta"], "se": noise["se"], "interval": [noise["theta"] - z * noise["se"], noise["theta"] + z * noise["se"]],
+                            "null_rejected_at_5pct": bool(abs(noise["theta"]) > z * noise["se"]),
                             "failed_as_required": bool(abs(noise["theta"]) <= z * noise["se"])},
     }
     reasons = ["TIMESTAMP_SEMANTICS_UNDECLARED", "TREATMENT_IS_A_DETERMINISTIC_FUNCTION_OF_PAST_PRICES_NO_PHYSICAL_INTERVENTION",
@@ -293,19 +300,21 @@ def dossier(pop, s, *, revision, produced_at=None):
                   "estimator": {"name": "partially_linear_DML_crossfit_ridge_HAC", "library": "numpy+scikit-learn", "version": __import__("sklearn").__version__, "revision": revision},
                   "support": {"state": s["support_state"], "n_per_side": s["n_per_side"], "residual_variance_share": s["residual_variance_share_full_w"]},
                   "placebo": {"state": "PASSED" if controls_ok else "FAILED",
-                              "tests": [{"name": name, "verdict": ("FAILED_AS_REQUIRED" if c["failed_as_required"] else "DID_NOT_FAIL_PROBE_SUSPECT"), "n": s["n"]}
+                              "tests": [{"name": name, "verdict": ("FAILED_AS_REQUIRED" if c["failed_as_required"] else
+                                                                   ("NOT_FAILED_AT_NOMINAL_5PCT" if c.get("null_rejected_at_5pct") else "NOT_FAILED_PROBE_SUSPECT")), "n": s["n"]}
                                         for name, c in s["controls"].items()]},
                   "sensitivity": {"theta_per_unit_z": s["theta"], "theta_se_hac": s["se"], "hac_lag": s["lag"],
                                   "residual_variance_share_reduced_w": s["residual_variance_share"],
                                   "residual_variance_share_full_w": s["residual_variance_share_full_w"],
-                                  "future_shift_statistical_probe_fired": s["controls"]["future_shifted_feature"]["statistical_probe_fired"],
+                                  "future_shift_statistical_probe_fired": str(s["controls"]["future_shifted_feature"]["statistical_probe_fired"]),
+                                  "scrambled_label_t": s["controls"]["scrambled_label"]["t"],
                                   "effect_q25_to_q75_z": s["effect_q25_to_q75_z"], "effect_q25_to_q75_log_return": s["effect_q25_to_q75_log_return"],
                                   "effect_interval_z_low": s["effect_interval_z"][0], "effect_interval_z_high": s["effect_interval_z"][1],
                                   "scrambled_label_theta": s["controls"]["scrambled_label"]["theta"],
                                   "future_shifted_theta": s["controls"]["future_shifted_feature"]["theta"],
                                   "future_shifted_single_feature_mae_z": s["controls"]["future_shifted_feature"]["single_feature_mae_z"],
                                   "causal_single_feature_mae_z": s["controls"]["future_shifted_feature"]["causal_single_feature_mae_z"],
-                                  "naive_zero_mae_z": s["controls"]["future_shifted_feature"]["naive_zero_mae_z"],
+                                  "intercept_only_mae_z": s["controls"]["future_shifted_feature"]["intercept_only_mae_z"],
                                   "noise_treatment_theta": s["controls"]["noise_treatment"]["theta"], "label": "DEVELOPMENT"},
                   "estimate": None},
         "rung3": {"state": "NOT_IDENTIFIED", "label": "MODEL_BASED_COUNTERFACTUAL", "reasons": ["INHERITED_FROM_RUNG2"] + s["reasons"][:3],
@@ -376,12 +385,29 @@ def main(argv=None):
                           "scrambled_theta": s["controls"]["scrambled_label"]["theta"],
                           "future_shifted_mae_z": s["controls"]["future_shifted_feature"]["single_feature_mae_z"],
                           "causal_mae_z": s["controls"]["future_shifted_feature"]["causal_single_feature_mae_z"],
-                          "naive_zero_mae_z": s["controls"]["future_shifted_feature"]["naive_zero_mae_z"],
+                          "intercept_only_mae_z": s["controls"]["future_shifted_feature"]["intercept_only_mae_z"],
+                          "scrambled_null_rejected_5pct": s["controls"]["scrambled_label"]["null_rejected_at_5pct"],
+                          "scrambled_feature_adds_nothing": s["controls"]["scrambled_label"]["feature_adds_nothing"],
+                          "noise_null_rejected_5pct": s["controls"]["noise_treatment"]["null_rejected_at_5pct"],
+                          "future_shift_template_fired": s["controls"]["future_shifted_feature"]["failed_as_required"],
                           "rung2_state": doc["rung2"]["state"], "schema_errors": errors, "redundant": s["redundant"]})
             print(f"{f} h{h} n={s['n']} theta={s['theta']:.4f}+-{s['se']:.4f} share={s['residual_variance_share']:.3f} "
                   f"{s['support_state']} controls_ok={index[-1]['controls_failed_as_required']} errors={len(errors)}", flush=True)
+    n = len(index)
+    agg = {"cells": n,
+           "scrambled_label_null_rejected_5pct": sum(1 for d in index if d["scrambled_null_rejected_5pct"]),
+           "scrambled_label_feature_adds_nothing": sum(1 for d in index if d["scrambled_feature_adds_nothing"]),
+           "noise_null_rejected_5pct": sum(1 for d in index if d["noise_null_rejected_5pct"]),
+           "future_shift_template_fired": sum(1 for d in index if d["future_shift_template_fired"]),
+           "support_states": {st: sum(1 for d in index if d["support_state"] == st) for st in set(d["support_state"] for d in index)},
+           "expected_rejections_at_5pct": 0.05 * n,
+           "battery_verdict": None}
+    agg["battery_verdict"] = ("CONTROLS_FAIL_AS_REQUIRED" if agg["future_shift_template_fired"] == n and
+                              agg["scrambled_label_null_rejected_5pct"] <= 0.05 * n + 3 * (0.05 * 0.95 * n) ** 0.5 and
+                              agg["noise_null_rejected_5pct"] <= 0.05 * n + 3 * (0.05 * 0.95 * n) ** 0.5 else "BATTERY_SUSPECT")
     (out / "DOSSIER_INDEX.json").write_text(json.dumps({"label": "DEVELOPMENT", "bindings": pop.bindings, "cpu_seconds": time.process_time() - t0,
-                                                        "dossiers": index}, indent=1, sort_keys=True), encoding="utf-8")
+                                                        "battery": agg, "dossiers": index}, indent=1, sort_keys=True), encoding="utf-8")
+    print(json.dumps(agg))
     return 0
 
 
