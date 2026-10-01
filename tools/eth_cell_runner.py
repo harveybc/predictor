@@ -101,6 +101,11 @@ def main():
                    "naives": naives, "label": "DEVELOPMENT",
                    "cost": {"wall_seconds": time.time() - started, "cgroup": cgroup_memory(), "process": process_memory()}}
         (out / "accepted.json").write_text(json.dumps(receipt, indent=1, default=str) + "\n")
+        if "control" not in candidate and any(c.get("donor") for c in [*candidate["model"]["branches"], candidate["model"]["core"]]):
+            beat.update(stage="frozen_check")
+            from tools.f2_frozen_check import check as frozen_check
+            receipt["frozen_check"] = frozen_check(candidate, result["artifacts"]["best_model"])
+            (out / "accepted.json").write_text(json.dumps(receipt, indent=1, default=str) + "\n")
         beat.update(stage="save")
     print(json.dumps({"status": "completed", "objective": receipt["objective"]["value"],
                       "per_horizon_MAE": naives["model_per_horizon_MAE"] if naives else None,
