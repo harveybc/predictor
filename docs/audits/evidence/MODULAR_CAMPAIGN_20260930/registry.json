@@ -727,16 +727,6 @@
    "eta_basis": "none yet"
   },
   {
-   "lane": "C2",
-   "work": "(new agent, id to follow)",
-   "agents": [
-    "(pending)"
-   ],
-   "branch": null,
-   "state": "assigned",
-   "eta_basis": "none"
-  },
-  {
    "lane": "D2",
    "work": "M04: v2 campaign on the 5090",
    "agents": [
@@ -790,6 +780,16 @@
    "branch": "satoshi/m06-evidence-resources-20260930",
    "state": "running",
    "eta_basis": "n/a"
+  },
+  {
+   "lane": "C2",
+   "work": "causal ETH (C2 agent a5fd5cd9bcbc7f3bd)",
+   "agents": [
+    "a5fd5cd9bcbc7f3bd"
+   ],
+   "branch": "satoshi/c2-causal-eth-20261001",
+   "state": "running",
+   "measured": "tests 29 MB, contribution pilot 200 MB, contribution full 295 MB, leak probe 29 MB, dossiers 270 MB, PS3-R rerun 2.19 GB child RSS -> declared 2,733,056,000 B (1.25x)"
   }
  ],
  "job_hints": {
@@ -814,7 +814,7 @@
    "producer_commit": "3ecdb256 (pin df9ae31c)"
   },
   "d-.*": {
-   "lane": "D",
+   "lane": "D2",
    "producer_commit": "3ecdb256"
   },
   "ps3r-pilot-.*": {
@@ -1507,6 +1507,13 @@
    "id": "GPU-QBC-02",
    "host_alias": "worker_a",
    "facts": "M07's NPZ build queued behind M04's 6.9G D2 train lease (orchestrator)"
+  },
+  {
+   "id": "C2-COORD-BATCH-01",
+   "lane": "C2",
+   "host_alias": "coordinator",
+   "facts": "c2-results (and c2-table-final, c2-postfix, c2-validate; 1G caps, 2-4 s each) ran on the coordinator 08:17:58-08:18:44Z: ADMITTED -> ARMED -> RELEASED / RECLAIMED_WITNESS_DEAD; no lease held after; ZERO-BATCH BREACH by C2, recorded; C2 ordered never to queue on the coordinator again (alert closed as resolved)",
+   "evidence": "predictor satoshi/c2-causal-eth-20261001 docs/audits/evidence/lane_c2_eth_20261001/COORDINATOR_ADMISSION_LEDGER_c2.txt"
   }
  ],
  "owner_question_20_lake": {
