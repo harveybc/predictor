@@ -358,8 +358,9 @@ def build(hosts, reg):
                 "eta": eta_from_history(hb, hint.get("total"), now),
                 "override": overrides.get(L["name"])})
         for Q in p.get("launchers_without_lease", []):
-            jobs.append({"id": Q["name"] or f"unnamed-launcher-{Q['pid']}", "lane": "unknown" if not Q["name"] else
-                         (LANE_RE.search(Q["name"] + "-").group(1).upper() if LANE_RE.search(Q["name"] + "-") else "unknown"),
+            qh = next((v for k, v in hints.items() if Q["name"] and re.fullmatch(k, Q["name"])), {})
+            jobs.append({"id": Q["name"] or f"unnamed-launcher-{Q['pid']}", "lane": qh.get("lane") or ("unknown" if not Q["name"] else
+                         (LANE_RE.search(Q["name"] + "-").group(1).upper() if LANE_RE.search(Q["name"] + "-") else "unknown")),
                          "state": "queued", "phase": "queued", "stage": "waiting for admission",
                          "producer_commit": "unknown", "host_alias": role, "launcher_pid": Q["pid"],
                          "declared_mem": Q["mem"], "declared_wall": Q["wall"], "queue_wait_s": Q["wait"],
