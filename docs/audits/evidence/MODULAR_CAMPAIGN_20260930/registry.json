@@ -341,9 +341,9 @@
   {
    "id": "corrected_per_feature_R0",
    "completion_criterion": "8 per-feature default R0 rows after the per-feature pilot",
-   "state": "not_started",
+   "state": "in_progress",
    "evidence": [
-    "awaits the per-feature pilot (blocked on the 5090 by ADM-DEADCACHE; queued on worker_b on HOST_HEADROOM)"
+    "pilot completed 04:16:44Z on worker_a (peak 5.52 GB, 0.2006 s/update); 8 cells pending"
    ]
   },
   {
@@ -503,6 +503,11 @@
    "at": "2026-10-01T04:10:00Z",
    "host_alias": "worker_a",
    "event": "orchestrator: M04 GO to launch the per-feature pilot on worker_a (repaired admission) and cancel its worker_b request through the tool; M01 chained laneA-suite (4G) + ps3r-pilot-3g (3G) queued on worker_b; deployment verified by the orchestrator (charged 73 MB vs 2.66 GB, free 9.0 GB); question 18 downgraded (ack a7c0599c \u00a710.4)"
+  },
+  {
+   "at": "2026-10-01T04:16:44Z",
+   "host_alias": "worker_a",
+   "event": "per-feature corrected pilot COMPLETED on the 5090 (first admission enabled by the 775c5545 repair): peak 5.52 GB of 6.74 GB cap, 0.2006 s/update; no incident"
   }
  ],
  "launch_recipes": {
@@ -892,10 +897,34 @@
     ]
    },
    "evidence": "worker_a ~/.local/state/scratch/d-pilot/PIN_df9ae31c/pilot_grouped32/PILOT.json; admission ledger lease d-pilot-grouped32-1790823518-189673-dd72a6 (02:58:38Z-02:59:08Z)"
+  },
+  {
+   "id": "d-pilot-perfeature (corrected, pin df9ae31c)",
+   "lane": "D",
+   "state": "completed",
+   "phase": "completed",
+   "stage": "PILOT_NOT_A_RESULT completed on worker_a GPU-a9f35631 (RTX 5090) after the admission repair: 2 epochs, 574 updates, 0.2006 s/update incl. validation, fit 115.1 s; cgroup peak 5,519,405,056 B of a 6,739,197,952 B cap; TF device peak 1,085,090,048 B; scope-exec reclaimed 131,854,336 B of its own clean cache at the end",
+   "producer_commit": "3ecdb256 (pin df9ae31c)",
+   "host_alias": "worker_a",
+   "heartbeat_at": "2026-10-01T04:16:44Z",
+   "progress": {
+    "unit": "updates",
+    "completed": 574,
+    "total": 574
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "ended"
+    ]
+   },
+   "evidence": "worker_a scratch d-pilot/PIN_df9ae31c/pilot_perfeature; ledger lease d-pilot-perfeature-1790828025-244849-136980 admitted 04:13:45Z (aggregate committed 73,330,688 B), released 04:16:44Z"
   }
  ],
  "slot_plan": {
-  "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8": "ADMISSIBLE after the 03:59Z repair: host_free_for_new 8.76 GB, slice charged 0.066 of 8.59 GB; next eligible pilot/candidate placed by M04 (orders b327b771 section 3)"
+  "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8": "free after the per-feature pilot; next: M04 per-feature attempts (8 cells) per orders"
  },
  "old_design_inventory": {
   "source": "wf_6286ece8-903",
