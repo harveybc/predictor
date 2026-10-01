@@ -24,7 +24,9 @@ import re
 import shutil
 from pathlib import Path
 
-from .common import _copy
+
+def _copy(value):        # standard library only: this module is loadable without TensorFlow
+    return json.loads(json.dumps(value, sort_keys=True, allow_nan=False))
 
 PROVENANCE_SCHEMA = "predictor.modular.provenance.v1"
 DONOR_SCHEMA = 2
@@ -86,10 +88,54 @@ def _migration(from_schema, to_schema):
             "rule": "historical provenance is UNKNOWN; nothing was inferred"}
 
 
-def donor_provenance(path):
-    """Provenance of a donor; a schema-1 sidecar reports UNKNOWN with migrated=False."""
+ALONGSIDE_SUFFIX = ".manifest.v2.json"
+_BINDING = ("manifest_sha256", "model_sha256", "weights_sha256")
+
+
+def _alongside(path):
+    return Path(str(Path(path).with_suffix("")) + ALONGSIDE_SUFFIX)
+
+
+def write_alongside(path, declared, derivation):
+    """Schema-2 provenance sidecar written NEXT TO an untouched schema-1 sidecar (versioned migration
+    mode ALONGSIDE). ``declared`` must be derived by a stated rule from the producer's own records
+    (``derivation`` names the rule and the source files with their sha256); it is validated like any
+    declaration. The schema-1 sidecar, the archive and the producer's records are never modified. An
+    existing alongside file is reused only if identical; a different one is refused."""
     sidecar = Path(path).with_suffix(".manifest.json")
     document = json.loads(sidecar.read_text(encoding="utf-8"))
+    if document.get("schema") != 1:
+        _refuse("ALONGSIDE_NEEDS_SCHEMA_1", "only a schema-1 sidecar gets an alongside declaration")
+    if not isinstance(derivation, dict) or not derivation.get("rule") or not derivation.get("sources"):
+        _refuse("DERIVATION_MISSING", "an alongside declaration names its rule and its source records")
+    keep = {k: v for k, v in (document.get("provenance") or {}).items() if k == "keras_version"}
+    alongside = {"schema": DONOR_SCHEMA, "manifest": document["manifest"],
+                 **{k: document[k] for k in _BINDING},
+                 "provenance": {**complete(declared), **keep, "derivation": _copy(derivation),
+                                "migration": {"from_schema": 1, "to_schema": DONOR_SCHEMA, "mode": "ALONGSIDE",
+                                              "schema1_sidecar": sidecar.name}}}
+    target = _alongside(path)
+    if target.exists():
+        existing = json.loads(target.read_text(encoding="utf-8"))
+        strip = lambda d: {**d, "provenance": {k: v for k, v in d["provenance"].items() if k != "written_utc"}}
+        if strip(existing) == strip(alongside):
+            return {"status": "ALREADY_CURRENT", "path": str(target)}
+        _refuse("ALONGSIDE_CONFLICT", f"{target.name} exists with a different declaration")
+    alongside["provenance"]["written_utc"] = _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
+    _atomic(target, alongside)
+    return {"status": "WRITTEN", "path": str(target)}
+
+
+def donor_provenance(path):
+    """Provenance of a donor. A schema-1 sidecar reports UNKNOWN with migrated=False, unless an
+    ALONGSIDE schema-2 sidecar binds the very same manifest, archive and weights hashes."""
+    sidecar = Path(path).with_suffix(".manifest.json")
+    document = json.loads(sidecar.read_text(encoding="utf-8"))
+    target = _alongside(path)
+    if document.get("schema") == 1 and target.is_file():
+        alongside = json.loads(target.read_text(encoding="utf-8"))
+        if all(alongside.get(k) == document.get(k) for k in _BINDING) and alongside.get("schema") == DONOR_SCHEMA:
+            return _copy(alongside["provenance"])
     if document.get("schema") == 1:
         return {**unknown(), **(document.get("provenance") or {}), "migrated": False,
                 "conditioning_contract": "UNKNOWN", "learned_corpus": {"kind": "UNKNOWN"},
