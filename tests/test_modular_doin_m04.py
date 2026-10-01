@@ -690,3 +690,32 @@ def test_recover_adopts_a_finished_remote_outcome_instead_of_retraining(tmp_path
                               (row["cid"],)).fetchall()
     assert len(att) == 1 and att[0]["status"] == "completed" and att[0]["objective"] == 0.31
     assert "adopted" in att[0]["error"]
+
+
+def test_per_horizon_table_generator_reads_receipts_and_seasonal_naive(tmp_path):
+    from tools import modular_doin_per_horizon_table as table
+    campaign = make_campaign(tmp_path)
+    _, validation = synthetic_inputs(tmp_path / "v") if (tmp_path / "v").mkdir() is None else (None, None)
+    receipts = []
+
+    class Receipting(FakeExecutor):
+        def train(self, nested, output_root, declaration):
+            out = FakeExecutor.train(self, nested, output_root, declaration)
+            path = output_root / "r.json"
+            path.write_text(json.dumps({"candidate": {"cid": ss.digest(nested)}, "digests": {"model_sha256": "m"},
+                                        "metrics": {"MAE": out["objective"], "baseline_MAE": 0.5,
+                                                    "skill_MAE": 1 - out["objective"] / 0.5},
+                                        "per_horizon": {"1": {"MAE": 0.6, "baseline_MAE": 0.5, "skill_MAE": -0.2},
+                                                        "2": {"MAE": 0.2, "baseline_MAE": 0.5, "skill_MAE": 0.6}}}))
+            receipts.append(path)
+            return {**out, "receipt_path": str(path)}
+
+    enqueue_default(campaign)
+    campaign.run(Receipting(campaign, VALUES))
+    report = table.build(campaign.root / "queue.sqlite", validation, 1)
+    assert report["candidates"] == 4 and len(report["pairs"]) == 2
+    assert report["negative_skill_vs_persistence_by_horizon"] == {1: 4}
+    row = report["rows"][0]
+    assert row["h1_seasonal_MAE"] is not None and row["h2_seasonal_MAE"] is None  # h2 > period 1
+    huber = next(p for p in report["pairs"] if p["seeds"] == {2021: 0.30, 2022: 0.32})
+    assert huber["mean"] == pytest.approx(0.31) and huber["spread"] == pytest.approx(0.02)
