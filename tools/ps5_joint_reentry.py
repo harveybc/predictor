@@ -190,17 +190,29 @@ def _target(train, ts, hours):
     return y
 
 
-def _child(args):
-    out = _fit(*args)
-    out["child_peak_rss_bytes"] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
-    return out
+def _child(args, queue):
+    try:
+        out = _fit(*args)
+        out["child_peak_rss_bytes"] = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
+        queue.put(("ok", out))
+    except BaseException as exc:                                  # reported to the parent, never hidden
+        queue.put(("error", repr(exc)[:2000]))
 
 
 def spawned_fit(*args):
-    """One fresh process per fit (PS3R-MEM-01: Keras state accumulates across fits in one process)."""
+    """One fresh process per fit (PS3R-MEM-01: Keras state accumulates across fits in one process).
+
+    The child is joined before the next fit starts, so two fits never coexist in memory."""
     import multiprocessing as mp
-    with mp.get_context("spawn").Pool(1, maxtasksperchild=1) as pool:
-        return pool.apply(_child, (args,))
+    ctx = mp.get_context("spawn")
+    queue = ctx.Queue()
+    child = ctx.Process(target=_child, args=(args, queue))
+    child.start()
+    status, payload = queue.get()
+    child.join()
+    if status != "ok":
+        raise RuntimeError(f"fit child failed: {payload}")
+    return payload
 
 
 def main():
