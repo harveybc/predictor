@@ -947,7 +947,7 @@ def test_seed_interval_table_joins_queues_by_flat_and_pairs_by_seed(tmp_path):
 
     def per_h(path, maes):
         rows = [{"cid": cid, "MAE": m, "naive_MAE": 1.0,
-                 **{f"h{h}_seasonal_MAE": 0.5 for h in range(1, 25)}, **{f"h{h}_MAE": m for h in range(1, 25)}}
+                 **{f"h{h}_seasonal_MAE": 0.41 for h in range(1, 25)}, **{f"h{h}_MAE": m for h in range(1, 25)}}
                 for cid, m in maes.items()]
         path.write_text(json.dumps({"rows": rows}))
 
@@ -970,3 +970,4 @@ def test_seed_interval_table_joins_queues_by_flat_and_pairs_by_seed(tmp_path):
     c = rows["B"]["contrasts"]["A"]
     assert c["paired_seeds"] == [2021] and abs(c["mean_difference"] + 0.10) < 1e-12
     assert rows["A"]["horizons_not_beating_seasonal"] == list(range(1, 25))
+    assert rows["B"]["horizons_not_beating_seasonal"] == []
