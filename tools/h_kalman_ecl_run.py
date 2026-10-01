@@ -106,10 +106,9 @@ def main():
         tk, ck = time.time(), time.process_time()
         kal = ecl.kalman_blocks(d, pipe.VARIANTS[vn])
         kcost = {"wall_s": time.time() - tk, "cpu_s": time.process_time() - ck}
-        art = kal["artifact"]
-        pc = art["fitted"]["per_column"]
-        replay["kalman"][vn] = {"artifact_sha256": art["artifact_sha256"], "fitted_state_digest": art["fitted_state_digest"],
-                                "output_digest": kal["output"].digest()}
+        pc = kal["per_column"]
+        replay["kalman"][vn] = {"artifact_sha256s": kal["artifact_sha256s"], "fitted_state_digests": kal["fitted_state_digests"],
+                                "output_digest": kal["output_digest"], "reason_counts": kal["reason_counts"]}
         arms = ecl.arm_blocks(d, kal)
         v = {"kalman_cost": kcost, "fit_rows": kal["fit_rows"], "clipped_r": int(sum(c["r_clipped"] for c in pc)),
              "clipped_q": int(sum(c["q_clipped"] for c in pc)), "arms": {}, "paired_vs_A": {}}
@@ -117,7 +116,7 @@ def main():
             ["A", "B", "C", "B_PERMUTED"]
         perorig = {}
         for arm in use:
-            blocks = arms[arm]["blocks"]
+            blocks = arms[arm]["blocks"]()
             feats = lambda oo, blocks=blocks: ecl.channel_features(blocks, oo, 24)
             if a.mode == "ridge":
                 hb.stage(f"{vn}:ridge:{arm}")

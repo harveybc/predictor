@@ -105,13 +105,17 @@ def test_arm_specs_have_the_declared_channel_blocks(tmp_path):
     Z, o_tr, o_va = synthetic_npz(tmp_path)
     rows, origins = ecl.reconstruct_rows(tmp_path / "train.npz", tmp_path / "validation.npz", horizons=24, window=24)
     d = ecl.panel(rows, origins, train_rows=(0, 600))
-    kal = ecl.kalman_blocks(d, ecl.pipe.VARIANTS["moments_train"])
+    kal = ecl.kalman_blocks(d, ecl.pipe.VARIANTS["moments_train"], chunk=2)
+    assert len(kal["artifacts"]) == 3 and len(kal["per_column"]) == 5          # 5 channels in chunks of 2
     arms = ecl.arm_blocks(d, kal)
-    assert len(arms["A"]["blocks"]) == 1 and len(arms["B"]["blocks"]) == 5 and len(arms["C"]["blocks"]) == 4
-    assert len(arms["C_EWMA"]["blocks"]) == 2 and arms["C_SMOOTHER_NONCAUSAL"]["eligible"] is False
-    assert len(arms["B_PERMUTED"]["blocks"]) == 5 and len(arms["B_NOISE"]["blocks"]) == 5
+    n = {k: len(v["blocks"]()) for k, v in arms.items()}
+    assert n == {"A": 1, "B": 5, "C": 4, "C_EWMA": 2, "B_PERMUTED": 5, "B_NOISE": 5, "C_SMOOTHER_NONCAUSAL": 1}
+    assert arms["C_SMOOTHER_NONCAUSAL"]["eligible"] is False
+    # chunking does not change the per-column mathematics
+    kal1 = ecl.kalman_blocks(d, ecl.pipe.VARIANTS["moments_train"], chunk=5)
+    assert np.array_equal(kal1["outputs"]["level"], kal["outputs"]["level"], equal_nan=True)
     # the Kalman fit never sees rows at or after the train border
     d2 = ecl.panel(rows.copy(), origins, train_rows=(0, 600))
     d2["Z"][600:] += 5.0
-    kal2 = ecl.kalman_blocks(d2, ecl.pipe.VARIANTS["moments_train"])
-    assert kal["artifact"]["artifact_sha256"] == kal2["artifact"]["artifact_sha256"]
+    kal2 = ecl.kalman_blocks(d2, ecl.pipe.VARIANTS["moments_train"], chunk=2)
+    assert kal["artifact_sha256s"] == kal2["artifact_sha256s"]

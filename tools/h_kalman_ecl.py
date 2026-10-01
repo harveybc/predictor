@@ -249,44 +249,82 @@ def ridge_predict(fit, feats, o, block=256):
 
 
 # ---------------------------------------------------------------------------------------------- Kalman + arms
-def kalman_blocks(d, variant):
+def kalman_blocks(d, variant, chunk=64):
+    """Local level per channel, fitted on TRAIN rows only, transformed over all rows. Channels are processed in
+    chunks of ``chunk`` columns (each chunk is its own sealed artifact; the per-column mathematics is independent of
+    the chunking) so the typed-reason arrays never exist for all 321 channels at once. Outputs are kept as float32."""
     Z = d["Z"]
     t0, t1 = d["train_rows"]
     nan_rows = np.where(np.isnan(Z[t0:t1]).any(axis=1))[0]
     t1_fit = t0 + (int(nan_rows[0]) if len(nan_rows) else t1 - t0)
-    names = [f"ch{j}" for j in range(d["C"])]
     spec = kf.default_spec(kf.LOCAL_LEVEL, **variant.get("local_level", {}))
-    art = kf.fit(spec, Z[t0:t1_fit], {"dataset_id": "ecl_m04_v2", "role": "TRAIN", "row_range": [t0, t1_fit],
-                                       "column_ids": names, "units": "z_train"})
-    if art["status"] != "FITTED":
-        raise kf.OperatorAbstain(art["abstain_reason"])
-    out = kf.transform_batch(art, Z)
-    return {"artifact": art, "output": out, "fit_rows": [t0, t1_fit]}
+    R, C = Z.shape
+    outs = {k: np.empty((R, C), dtype=np.float32) for k in ("level", "innov", "zinnov", "logvar")}
+    arts, digests, counts, per_column = [], [], {}, []
+    for c0 in range(0, C, chunk):
+        cols = list(range(c0, min(C, c0 + chunk)))
+        art = kf.fit(spec, Z[t0:t1_fit][:, cols], {"dataset_id": "ecl_m04_v2", "role": "TRAIN", "row_range": [t0, t1_fit],
+                                                   "column_ids": [f"ch{j}" for j in cols], "units": "z_train"})
+        if art["status"] != "FITTED":
+            raise kf.OperatorAbstain(art["abstain_reason"])
+        o = kf.transform_batch(art, Z[:, cols])
+        outs["level"][:, cols] = o.arrays["level"]
+        outs["innov"][:, cols] = o.arrays["innov"]
+        outs["zinnov"][:, cols] = o.arrays["zinnov"]
+        with np.errstate(divide="ignore", invalid="ignore"):
+            outs["logvar"][:, cols] = np.log(o.arrays["state_var"])
+        for k, v in o.reason_counts().items():
+            counts[k] = counts.get(k, 0) + v
+        arts.append(art)
+        digests.append(o.digest())
+        per_column += art["fitted"]["per_column"]
+        del o
+    return {"artifacts": arts, "artifact_sha256s": [a["artifact_sha256"] for a in arts],
+            "fitted_state_digests": [a["fitted_state_digest"] for a in arts], "output_digests": digests,
+            "output_digest": hashlib.sha256("".join(digests).encode()).hexdigest(), "outputs": outs,
+            "reason_counts": counts, "per_column": per_column, "fit_rows": [t0, t1_fit], "chunk": chunk}
 
 
 def arm_blocks(d, kal):
+    """Arm -> {"blocks": callable returning the list of (rows x C) blocks, "eligible": bool}. Blocks are built lazily
+    so only one arm's control matrices exist at a time."""
     Z = d["Z"]
-    o = kal["output"]
-    lv, inn, zin = o.arrays["level"], o.arrays["innov"], o.arrays["zinnov"]
-    with np.errstate(divide="ignore", invalid="ignore"):
-        lvar = np.log(o.arrays["state_var"])
-    K = [lv, inn, zin, lvar]
+    o = kal["outputs"]
+    K = [o["level"], o["innov"], o["zinnov"], o["logvar"]]
     n_tr = d["train_rows"][1]
-    stackK = np.concatenate(K, axis=1)
-    P = kf.permutation_control(np.nan_to_num(stackK), [n_tr], seed=20261001)
-    N = kf.noise_control(np.nan_to_num(stackK), n_tr, seed=20261002)
     C = d["C"]
-    split = lambda M: [M[:, i * C:(i + 1) * C] for i in range(4)]
-    e = kf.ewma_comparable(kal["artifact"], Z)
-    arms = {"A": {"blocks": [Z], "eligible": True}, "B": {"blocks": [Z] + K, "eligible": True},
-            "C": {"blocks": K, "eligible": True}, "C_EWMA": {"blocks": [e["level"], e["innov"]], "eligible": True},
-            "B_PERMUTED": {"blocks": [Z] + split(P), "eligible": True}, "B_NOISE": {"blocks": [Z] + split(N), "eligible": True}}
-    if not np.isnan(Z).any():
-        sm = kf.smoother_control(kal["artifact"], Z)
-        arms["C_SMOOTHER_NONCAUSAL"] = {"blocks": [sm.arrays["level"]], "eligible": False}
-    else:
-        arms["C_SMOOTHER_NONCAUSAL"] = {"blocks": [lv], "eligible": False, "note": "smoother needs complete rows; placeholder"}
-    return arms
+
+    def destroyed(kind):
+        out = []
+        for M in K:                      # each block separately, same seed per block: equal capacity, signal destroyed
+            M64 = np.nan_to_num(M.astype(np.float64))
+            X = kf.permutation_control(M64, [n_tr], seed=20261001) if kind == "perm" else kf.noise_control(M64, n_tr, seed=20261002)
+            out.append(X.astype(np.float32))
+        return out
+
+    def ewma():
+        lv, inn = [], []
+        for art, c0 in zip(kal["artifacts"], range(0, C, kal["chunk"])):
+            cols = list(range(c0, min(C, c0 + kal["chunk"])))
+            e = kf.ewma_comparable(art, Z[:, cols])
+            lv.append(e["level"].astype(np.float32))
+            inn.append(e["innov"].astype(np.float32))
+        return [np.concatenate(lv, axis=1), np.concatenate(inn, axis=1)]
+
+    def smoother():
+        if np.isnan(Z).any():
+            return [o["level"]]
+        lv = []
+        for art, c0 in zip(kal["artifacts"], range(0, C, kal["chunk"])):
+            cols = list(range(c0, min(C, c0 + kal["chunk"])))
+            lv.append(kf.smoother_control(art, Z[:, cols]).arrays["level"].astype(np.float32))
+        return [np.concatenate(lv, axis=1)]
+
+    return {"A": {"blocks": lambda: [Z], "eligible": True}, "B": {"blocks": lambda: [Z] + K, "eligible": True},
+            "C": {"blocks": lambda: K, "eligible": True}, "C_EWMA": {"blocks": ewma, "eligible": True},
+            "B_PERMUTED": {"blocks": lambda: [Z] + destroyed("perm"), "eligible": True},
+            "B_NOISE": {"blocks": lambda: [Z] + destroyed("noise"), "eligible": True},
+            "C_SMOOTHER_NONCAUSAL": {"blocks": smoother, "eligible": False}}
 
 
 def score(Z, o, pred_res, H=24):
