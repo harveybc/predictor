@@ -826,6 +826,44 @@ def test_optional_seasonal_residual_parameter_round_trips_and_is_optional():
     assert ss.to_flat(ss.from_flat(old, BASE, SPACE_V2), SPACE_V2) == old  # older spaces unchanged
 
 
+def test_r3_warm_schedule_is_conditional_round_trips_and_reaches_the_engine():
+    space = copy.deepcopy(SPACE_V2)
+    for side in ("branch.regime", "core.regime"):
+        space["bounds"][side] = {"choices": ["R0", "R1", "R2", "R3"]}
+    space["bounds"]["train.r3_freeze_epochs"] = {"type": "int", "low": 1, "high": 10}
+    space["bounds"]["train.r3_unfreeze_learning_rate"] = {"type": "float", "low": 1e-5, "high": 1e-3, "log": True}
+    base = copy.deepcopy(BASE)
+    base["donors"] = {f"1:branch_{i}": f"/d/branch_{i}.keras" for i in range(321)}
+    base["donors"]["core:1"] = "/d/core.keras"
+    flat = {**DEFAULT_V2, "train.seed": 2021, "train.huber_delta": 1.0, "branch.regime": "R3", "core.regime": "R3",
+            "train.r3_freeze_epochs": 3, "train.r3_unfreeze_learning_rate": 1e-4}
+    nested = ss.from_flat(flat, base, space)
+    for spec in [*nested["model"]["branches"], nested["model"]["core"]]:
+        assert (spec["regime"], spec["freeze_epochs"], spec["unfreeze_learning_rate"]) == ("R3", 3, 1e-4)
+    assert ss.to_flat(nested, space) == flat
+    from predictor_plugins.modular_temporal import config as engine_config
+    engine_config._check_warm(nested["model"]["core"])
+    engine_config._check_warm(nested["model"]["branches"][0])
+    # the schedule is active exactly when a component is R3
+    r2 = {**flat, "branch.regime": "R2", "core.regime": "R2"}
+    with pytest.raises(ss.SearchSpaceError, match="inactive"):
+        ss.from_flat(r2, base, space)
+    plain = {k: v for k, v in r2.items() if not k.startswith("train.r3_")}
+    assert "freeze_epochs" not in ss.from_flat(plain, base, space)["model"]["core"]
+    with pytest.raises(ss.SearchSpaceError, match="missing"):
+        ss.from_flat({k: v for k, v in flat.items() if k != "train.r3_freeze_epochs"}, base, space)
+    with pytest.raises(ss.SearchSpaceError, match="smaller than"):
+        ss.from_flat({**flat, "train.r3_freeze_epochs": flat["train.max_epochs"]}, base, space) \
+            if flat["train.max_epochs"] <= 10 else (_ for _ in ()).throw(ss.SearchSpaceError("smaller than"))
+    with pytest.raises(ss.SearchSpaceError, match="needs a space"):
+        ss.from_flat(flat, base, {**SPACE_V2, "bounds": {**SPACE_V2["bounds"], **{k: space["bounds"][k] for k in (
+            "branch.regime", "core.regime")}}})
+    mixed = {**flat, "branch.regime": "R0"}  # R0 branches, R3 core
+    m = ss.from_flat(mixed, base, space)
+    assert "freeze_epochs" not in m["model"]["branches"][0] and m["model"]["core"]["freeze_epochs"] == 3
+    assert ss.to_flat(m, space) == mixed
+
+
 def test_ecl_npz_builder_streams_and_matches_direct_indexing(tmp_path):
     from tools import modular_doin_ecl_npz as b
     rng = np.random.default_rng(0)
