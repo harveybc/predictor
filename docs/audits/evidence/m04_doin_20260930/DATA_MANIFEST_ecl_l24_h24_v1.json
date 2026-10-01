@@ -1,0 +1,106 @@
+{
+  "borders": {
+    "n_rows": 26304,
+    "n_test": 5260,
+    "n_train": 18412,
+    "n_vali": 2632,
+    "test_first_row": 21044,
+    "train_rows": [
+      0,
+      18412
+    ],
+    "validation_rows": [
+      18388,
+      21044
+    ]
+  },
+  "build_resources": {
+    "cgroup": {
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m04-ecl-npz-1790809680-23991.scope",
+      "current_bytes": 1471541248,
+      "max": 4294967296,
+      "peak_bytes": 2886995968
+    },
+    "process": {
+      "VmHWM": 2585735168,
+      "VmRSS": 60080128,
+      "cpu_seconds": 2.33
+    }
+  },
+  "channel_order_sha256": "84f8490d90c050e9558268d2b93754294aeb3f8315b614c21755262b8df444d9",
+  "channels": 321,
+  "dataset_id": "data-gov:sota_benchmarks:7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+  "horizons": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24
+  ],
+  "metric_space": "z_train",
+  "sample_hours": 1,
+  "scaler": {
+    "fit_rows": [
+      0,
+      18412
+    ],
+    "kind": "StandardScaler(ddof=0)",
+    "mean_sha256": "121a80881f03ec6b204298bf392658d21a5b0ab3cfa75a47f752d6206dfd0e38",
+    "scale_sha256": "0865d54ab476313ea8efc556e6f28342b2a662c997b88d8720481f5029464957"
+  },
+  "scaler_identity": "ecl-train-standard:f16a1f3e9db6c5689d8ea468c57750e74389a6f0c67e829724426b52ad7b5d77",
+  "schema": "m04.ecl_npz.v1",
+  "source_sha256": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+  "splits": {
+    "train": {
+      "bytes": 1135102604,
+      "gap_excluded_windows": 0,
+      "origin_end": 1533445200,
+      "origin_rows": [
+        23,
+        18363
+      ],
+      "origin_start": 1467421200,
+      "path": "train.npz",
+      "purged_windows": 24,
+      "sha256": "9215b099442928a811fddaa6fbde07ed26a625f1707f7f45d8fec24fcfda25c2",
+      "windows": 18341
+    },
+    "validation": {
+      "bytes": 161480608,
+      "gap_excluded_windows": 0,
+      "origin_end": 1543006800,
+      "origin_rows": [
+        18411,
+        21019
+      ],
+      "origin_start": 1533618000,
+      "path": "validation.npz",
+      "purged_windows": 0,
+      "sha256": "e37125655ebeb161837fcc826073597e1266470b49a4a40f90a018e989e6a7e9",
+      "windows": 2609
+    }
+  },
+  "test_rows_read_for_statistics": false,
+  "test_windows_constructed": false,
+  "window": 24
+}

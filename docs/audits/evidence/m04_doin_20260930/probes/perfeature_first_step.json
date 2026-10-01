@@ -1,0 +1,143 @@
+{
+ "schema": "m04.build_probe.v1",
+ "label": "PROBE_NOT_A_RESULT",
+ "phase": "first_step",
+ "candidate": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/pilot_candidate_default_r0_huber_s2021.json",
+ "per_fd_peak_reset": true,
+ "cuda_visible_devices": "",
+ "environment": {
+  "tensorflow": "2.21.0",
+  "keras": "3.13.2",
+  "executable": "/home/harveybc/anaconda3/envs/tensorflow/bin/python"
+ },
+ "import": {
+  "seconds": 3.17222802399192,
+  "cgroup_peak_bytes": 292634624
+ },
+ "build": {
+  "seconds": 4.510202501987806,
+  "cgroup_peak_bytes": 390189056,
+  "process": {
+   "VmHWM": 799518720,
+   "VmRSS": 799518720,
+   "cpu_seconds": 7.7299999999999995
+  }
+ },
+ "model": {
+  "branches": 321,
+  "branch_output_shapes": [
+   "(12, 16)"
+  ],
+  "concatenated_width_before_core": 5136,
+  "fused_shape": [
+   12,
+   5136
+  ],
+  "compression_path": [
+   {
+    "layer": "positional_encoding",
+    "output_shape": [
+     12,
+     5136
+    ]
+   },
+   {
+    "layer": "model_projection",
+    "output_shape": [
+     12,
+     64
+    ]
+   },
+   {
+    "layer": "stage_0_blocks",
+    "output_shape": [
+     6,
+     128
+    ]
+   },
+   {
+    "layer": "stage_0_projection",
+    "output_shape": [
+     6,
+     32
+    ]
+   },
+   {
+    "layer": "stage_conv_0",
+    "output_shape": [
+     6,
+     32
+    ]
+   },
+   {
+    "layer": "stage_1_blocks",
+    "output_shape": [
+     6,
+     32
+    ]
+   },
+   {
+    "layer": "stage_1_projection",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_conv_1",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_2_blocks",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_2_projection",
+    "output_shape": [
+     6,
+     8
+    ]
+   },
+   {
+    "layer": "stage_conv_2",
+    "output_shape": [
+     6,
+     8
+    ]
+   }
+  ],
+  "latent_shape": [
+   6,
+   8
+  ],
+  "forecast_shape": [
+   24,
+   321
+  ],
+  "total_parameters": 972120,
+  "trainable_parameters": 972120,
+  "branch_parameters": 190032,
+  "core_parameters": 404592
+ },
+ "first_step": {
+  "batch_size": 64,
+  "first_step_seconds": 130.11712395300856,
+  "steady_step_seconds": 0.09572297033931439,
+  "resolved_jit_compile": "False",
+  "cgroup_peak_bytes": 3524870144,
+  "process": {
+   "VmHWM": 3938897920,
+   "VmRSS": 3938897920,
+   "cpu_seconds": 140.64999999999998
+  },
+  "devices": [
+   "/device:CPU:0"
+  ]
+ }
+}

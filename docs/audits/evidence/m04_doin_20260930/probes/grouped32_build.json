@@ -1,0 +1,128 @@
+{
+ "schema": "m04.build_probe.v1",
+ "label": "PROBE_NOT_A_RESULT",
+ "phase": "build",
+ "candidate": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/candidate_grouped32_r0_huber_s2021.json",
+ "per_fd_peak_reset": true,
+ "cuda_visible_devices": "",
+ "environment": {
+  "tensorflow": "2.21.0",
+  "keras": "3.13.2",
+  "executable": "/home/harveybc/anaconda3/envs/tensorflow/bin/python"
+ },
+ "import": {
+  "seconds": 3.1647394460160285,
+  "cgroup_peak_bytes": 295821312
+ },
+ "build": {
+  "seconds": 2.3727310390095226,
+  "cgroup_peak_bytes": 316325888,
+  "process": {
+   "VmHWM": 715685888,
+   "VmRSS": 715685888,
+   "cpu_seconds": 4.87
+  }
+ },
+ "model": {
+  "branches": 11,
+  "branch_output_shapes": [
+   "(12, 16)"
+  ],
+  "concatenated_width_before_core": 176,
+  "fused_shape": [
+   12,
+   176
+  ],
+  "compression_path": [
+   {
+    "layer": "positional_encoding",
+    "output_shape": [
+     12,
+     176
+    ]
+   },
+   {
+    "layer": "model_projection",
+    "output_shape": [
+     12,
+     64
+    ]
+   },
+   {
+    "layer": "stage_0_blocks",
+    "output_shape": [
+     6,
+     128
+    ]
+   },
+   {
+    "layer": "stage_0_projection",
+    "output_shape": [
+     6,
+     32
+    ]
+   },
+   {
+    "layer": "stage_conv_0",
+    "output_shape": [
+     6,
+     32
+    ]
+   },
+   {
+    "layer": "stage_1_blocks",
+    "output_shape": [
+     6,
+     32
+    ]
+   },
+   {
+    "layer": "stage_1_projection",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_conv_1",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_2_blocks",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_2_projection",
+    "output_shape": [
+     6,
+     8
+    ]
+   },
+   {
+    "layer": "stage_conv_2",
+    "output_shape": [
+     6,
+     8
+    ]
+   }
+  ],
+  "latent_shape": [
+   6,
+   8
+  ],
+  "forecast_shape": [
+   24,
+   321
+  ],
+  "total_parameters": 486040,
+  "trainable_parameters": 486040,
+  "branch_parameters": 21392,
+  "core_parameters": 87152
+ }
+}

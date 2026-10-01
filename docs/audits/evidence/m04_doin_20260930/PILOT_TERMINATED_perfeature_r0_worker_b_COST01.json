@@ -1,0 +1,104 @@
+{
+ "schema": "m04.cost_pilot.v1",
+ "label": "PILOT_NOT_A_RESULT",
+ "status": "TERMINATED_IN_BUILD_STAGE_BY_ITS_OWN_SCOPE_LIMIT",
+ "host_role": "worker_b",
+ "device": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9 (RTX 4090 Laptop)",
+ "env": "envs/tensorflow: tensorflow 2.21.0, keras 3.13.2 (pinned campaign env)",
+ "code": "predictor a4282e17",
+ "lease": "m04-modular-cost-pilot-1790811884-1218506-b4d791",
+ "cap_bytes": 6442450944,
+ "memory_high_bytes": 5798205849,
+ "admitted_at": "2026-09-30T23:44:44Z",
+ "stopped_at_epoch_s": 1790812136.9393055,
+ "reason": "The scope ended at 23:48:26Z after 3 min 41.8 s wall and 3 min 1.5 s CPU (systemd: 5.4G memory peak); admission ledger LEASE_RELEASED at 23:48:28Z with the launcher note that an out-of-memory kill is terminal. The cgroup had sat at MemoryHigh (5.80 GB of a 6.44 GB cap, memory.events high=46032) in stage build, which spans graph construction AND the first train-step trace/compile. Zero optimizer updates. CORRECTION: a later SIGTERM sent by M04 found no process; M04 did not cause this termination.",
+ "measured": {
+  "anon_bytes_at_stop": 5762408448,
+  "build_started_wall_s": 3.458657741546631,
+  "trace_wall_stage_cgroup_rss_cpu": [
+   [
+    0,
+    "start",
+    524312576,
+    1087361024,
+    3.6
+   ],
+   [
+    0,
+    "load",
+    524574720,
+    1087381504,
+    3.6
+   ],
+   [
+    3,
+    "build",
+    1845645312,
+    2409041920,
+    7.1
+   ],
+   [
+    30,
+    "build",
+    2649149440,
+    3158937600,
+    33.9
+   ],
+   [
+    60,
+    "build",
+    3227111424,
+    3735879680,
+    64.0
+   ],
+   [
+    90,
+    "build",
+    3779198976,
+    4287307776,
+    94.2
+   ],
+   [
+    120,
+    "build",
+    4070879232,
+    4579274752,
+    124.6
+   ],
+   [
+    151,
+    "build",
+    5797924864,
+    6355099648,
+    154.7
+   ],
+   [
+    181,
+    "build",
+    5798232064,
+    6362910720,
+    164.9
+   ],
+   [
+    211,
+    "build",
+    5800357888,
+    6364262400,
+    176.8
+   ]
+  ],
+  "cgroup_peak_bytes_lower_bound_of_need": 5801222144,
+  "scope_wall_seconds": 221.8
+ },
+ "no_fit_no_update": true,
+ "gpu_during_build": "0 percent utilization, 356 MiB",
+ "finding": "COST-01",
+ "model": {
+  "branches": 321,
+  "concatenated_width_before_core": 5136,
+  "fused_shape": [
+   12,
+   5136
+  ]
+ }
+}

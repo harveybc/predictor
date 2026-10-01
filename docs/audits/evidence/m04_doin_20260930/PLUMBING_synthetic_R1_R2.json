@@ -1,0 +1,69 @@
+{
+ "label": "PLUMBING_NOT_A_RESULT",
+ "donor_index": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/m02_synthetic_donors/DONORS_SYNTHETIC.json",
+ "steps": [
+  {
+   "step": "queue_blocked_to_runnable",
+   "before": [
+    {
+     "status": "blocked",
+     "blocked_reason": "core regime R1 requires a declared core donor core:1"
+    }
+   ],
+   "released": 1,
+   "after": [
+    {
+     "status": "queued"
+    }
+   ]
+  },
+  {
+   "step": "mapping_candidate_vs_synthetic_donors",
+   "outcome": "REFUSED_BEFORE_FIT",
+   "error": "Donor manifest mismatch (features/config/grid/upstream)",
+   "explanation": "donors were produced with params {} (engine defaults implicit); the flat mapping writes explicit params; the engine manifest compares literal params"
+  },
+  {
+   "step": "bridge_R1",
+   "objective": 0.7191023328196025,
+   "updates": 240,
+   "stop": "max_epochs",
+   "verdict": "VERIFIED",
+   "problems": [],
+   "seconds": 6.452260255813599,
+   "heartbeat": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/plumbing_synthetic_v2/bridge_R1/86e94767b40ef3b16328920d6a8d41b4872961ee13be3aa99d28fb14b1e21893/heartbeat.jsonl"
+  },
+  {
+   "step": "evaluate_without_receipt_R1",
+   "outcome": "REFUSED_NO_RETRAIN",
+   "error": "no accepted receipt/checkpoint for this candidate identity; evaluate does not retrain"
+  },
+  {
+   "step": "bridge_R2",
+   "objective": 0.07965957666965551,
+   "updates": 240,
+   "stop": "patience",
+   "verdict": "VERIFIED",
+   "problems": [],
+   "seconds": 9.162901878356934,
+   "heartbeat": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/plumbing_synthetic_v2/bridge_R2/2067b623576d76d247c832accf9dce650b93dec64d7e698e6a74fcc756b58d4d/heartbeat.jsonl"
+  },
+  {
+   "step": "evaluate_without_receipt_R2",
+   "outcome": "REFUSED_NO_RETRAIN",
+   "error": "no accepted receipt/checkpoint for this candidate identity; evaluate does not retrain"
+  },
+  {
+   "step": "weights_R1",
+   "branch_equals_donor": true,
+   "core_equals_donor": true,
+   "expected": "R1: both equal (frozen); R2: both differ (fine-tuned)"
+  },
+  {
+   "step": "weights_R2",
+   "branch_equals_donor": false,
+   "core_equals_donor": false,
+   "expected": "R1: both equal (frozen); R2: both differ (fine-tuned)"
+  }
+ ]
+}

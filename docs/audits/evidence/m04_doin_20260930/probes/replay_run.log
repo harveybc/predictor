@@ -1,0 +1,17 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790816567.895173 1303638 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790816569.243792 1303638 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+RECEIPT /fit_a 0.4520497731630392 18c794a08a174873 07e478a360909249 287
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790816616.161826 1304518 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790816617.525241 1304518 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+RECEIPT /fit_b 0.4520497731630392 18c794a08a174873 07e478a360909249 287
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790816658.866812 1305235 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790816660.235148 1305235 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+{"verdict": "VERIFIED", "problems": [], "objective": {"metric": "MAE", "split": "validation", "higher_is_better": false, "unit": "z_train", "rescored_value": 0.4520497731630392, "receipt_value": 0.452
+exit 0
+verify VERIFIED True 64

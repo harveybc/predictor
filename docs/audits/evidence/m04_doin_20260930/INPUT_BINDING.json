@@ -1,0 +1,48 @@
+{
+ "schema": "m04.input_binding.v1",
+ "bound_on": "2026-09-30",
+ "admissible_input_reference": {
+  "repository": "feature-eng",
+  "branch": "satoshi/m03-feature-inventory-20260930",
+  "tip": "40db792",
+  "file": "docs/feature_metrics/m03/manifests/tsl_electricity_train.v2.json",
+  "sha256": "eca31ec195ea6d477e2789b019500c08e2b32a7a8e9f39a948983d55d628353b",
+  "schema": "feature_train_manifest.v2",
+  "dataset_id": "sota_benchmarks.thuml_tsl_electricity.train",
+  "resource_sha256": "7e45845d54c5219bad0ae6bc1b5316cf8ff9cead5d33fa998a5a51c2e4a497ad",
+  "train_rows": [
+   0,
+   18412
+  ]
+ },
+ "input_set_status": "FINAL_ADMISSIBLE_DECLARATION_BOUND",
+ "input_set_note": "M03 admissible-input declaration is final: 321 of 322 columns admissible (the one exclusion is the timestamp column), zero quality flags; nothing excluded, so the NPZ needs no re-derivation. 14 channel pairs with |r| >= 0.95 flagged diagnostically, not merged.",
+ "npz_train_rows_check": {
+  "scaler_fit_rows": [
+   0,
+   18412
+  ],
+  "train_origin_rows": [
+   23,
+   18363
+  ],
+  "last_train_target_row": 18387,
+  "validation_first_input_row": 18388,
+  "purged_windows": 24,
+  "purge_applied_after_train_boundary": true
+ },
+ "device_pin": "by environment CUDA_VISIBLE_DEVICES=<uuid>, not by a launcher option; worker_a crispdm-run has no --require-gpu-uuid option. UUID, TF registration and /GPU:0 placement are asserted inside the child",
+ "admissible_input_declaration": {
+  "repository": "feature-eng",
+  "branch": "satoshi/m03-feature-inventory-20260930",
+  "tip": "9c36720",
+  "file": "docs/feature_metrics/m03/admissible/tsl_electricity.admissible_inputs.v1.json",
+  "declaration_sha256": "ca1098ed94a36b972b06e45f381bd192fbd30c436f60532d8674ef8820c0a62f",
+  "manifest_sha256": "eca31ec195ea6d477e2789b019500c08e2b32a7a8e9f39a948983d55d628353b",
+  "admissible_columns": 321,
+  "columns_total": 322
+ },
+ "history": [
+  "2026-09-30: PROVISIONAL_NO_EXCLUSIONS_YET replaced by the final M03 declaration ca1098ed"
+ ]
+}

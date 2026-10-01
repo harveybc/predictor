@@ -1,0 +1,255 @@
+{
+  "schema": "modular.checkpoint.verification.v1",
+  "verdict": "VERIFIED",
+  "problems": [],
+  "method": "fresh-process checkpoint inference; compile=False, safe_mode=True; no fit, no train or test arrays; float64 metric arithmetic independent of the evaluator",
+  "receipt_path": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/probes_replay/fit_a/evaluation.json",
+  "receipt_sha256": "1de6315ef4de45ea360f93ebdf22f0323509907dd4e47482eebe22ebf666b23d",
+  "digests": {
+    "model_sha256": "ddd06d86cdc16a8167e8aa6d4b8fe618ac40f526c0aee3b562a54cd166a61423",
+    "validation_sha256": "e37125655ebeb161837fcc826073597e1266470b49a4a40f90a018e989e6a7e9",
+    "predictions_sha256": "0047f901427305f6ff303c821d9e1f85193f2c6a5d7d9581675bc66c690b0db8"
+  },
+  "objective": {
+    "metric": "MAE",
+    "split": "validation",
+    "higher_is_better": false,
+    "unit": "z_train",
+    "rescored_value": 0.4520497731630392,
+    "receipt_value": 0.4520497731630392
+  },
+  "metrics": {
+    "MAE": 0.4520497731630392,
+    "MSE": 0.430073125484279,
+    "baseline_MAE": 0.8514061497227646,
+    "baseline_MSE": 1.3315579068905337,
+    "skill_MAE": 0.4690550763460707,
+    "skill_MSE": 0.6770150789096436
+  },
+  "per_horizon": {
+    "1": {
+      "MAE": 0.4449593188903491,
+      "MSE": 0.42415654805033065,
+      "baseline_MAE": 0.2623322746669795,
+      "baseline_MSE": 0.17840986586476096,
+      "skill_MAE": -0.6961668916080093,
+      "skill_MSE": -1.377427649499225
+    },
+    "2": {
+      "MAE": 0.44275506788823626,
+      "MSE": 0.41815477619297103,
+      "baseline_MAE": 0.43211802894920215,
+      "baseline_MSE": 0.430357880797726,
+      "skill_MAE": -0.024616049843836807,
+      "skill_MSE": 0.02835571311517493
+    },
+    "3": {
+      "MAE": 0.44478530051293474,
+      "MSE": 0.41575098532911015,
+      "baseline_MAE": 0.5816916160996698,
+      "baseline_MSE": 0.7033380337300015,
+      "skill_MAE": 0.23535892867893227,
+      "skill_MSE": 0.40888880539523154
+    },
+    "4": {
+      "MAE": 0.44283632084204677,
+      "MSE": 0.41219907921711885,
+      "baseline_MAE": 0.7151092859679566,
+      "baseline_MSE": 0.9842448110290027,
+      "skill_MAE": 0.3807431541842825,
+      "skill_MSE": 0.5812026900236587
+    },
+    "5": {
+      "MAE": 0.44518769136290326,
+      "MSE": 0.42147397671823056,
+      "baseline_MAE": 0.8315361000595647,
+      "baseline_MSE": 1.2473315631102784,
+      "skill_MAE": 0.46462012733901326,
+      "skill_MSE": 0.6620994856674147
+    },
+    "6": {
+      "MAE": 0.4447521623517075,
+      "MSE": 0.4197211629485175,
+      "baseline_MAE": 0.9309823043641594,
+      "baseline_MSE": 1.4778158471188352,
+      "skill_MAE": 0.5222764597491856,
+      "skill_MSE": 0.715985476968047
+    },
+    "7": {
+      "MAE": 0.44843143025074395,
+      "MSE": 0.4183027044923863,
+      "baseline_MAE": 1.0147956454517812,
+      "baseline_MSE": 1.6747013143823848,
+      "skill_MAE": 0.5581066668342819,
+      "skill_MSE": 0.7502225018276452
+    },
+    "8": {
+      "MAE": 0.4475007385030244,
+      "MSE": 0.41525575827717687,
+      "baseline_MAE": 1.0797483926252185,
+      "baseline_MSE": 1.8286652453065262,
+      "skill_MAE": 0.5855509102310354,
+      "skill_MSE": 0.7729186578336428
+    },
+    "9": {
+      "MAE": 0.4497438638578151,
+      "MSE": 0.42057179745570306,
+      "baseline_MAE": 1.1274677322387365,
+      "baseline_MSE": 1.936209114274224,
+      "skill_MAE": 0.6011026737192833,
+      "skill_MSE": 0.782785963378056
+    },
+    "10": {
+      "MAE": 0.45231990511627573,
+      "MSE": 0.4275248293411918,
+      "baseline_MAE": 1.1608021074123975,
+      "baseline_MSE": 2.0041252460849455,
+      "skill_MAE": 0.6103384873029178,
+      "skill_MSE": 0.786677589049706
+    },
+    "11": {
+      "MAE": 0.4513199722343425,
+      "MSE": 0.4228779353590492,
+      "baseline_MAE": 1.1814115270460255,
+      "baseline_MSE": 2.0380505867207326,
+      "skill_MAE": 0.6179824202639932,
+      "skill_MSE": 0.7925086167564325
+    },
+    "12": {
+      "MAE": 0.444386298286215,
+      "MSE": 0.4119142573813285,
+      "baseline_MAE": 1.1885783238908254,
+      "baseline_MSE": 2.048872542522281,
+      "skill_MAE": 0.6261194661269682,
+      "skill_MSE": 0.7989556456868527
+    },
+    "13": {
+      "MAE": 0.44293285398985827,
+      "MSE": 0.40967858451064615,
+      "baseline_MAE": 1.1849708033176751,
+      "baseline_MSE": 2.046081009438805,
+      "skill_MAE": 0.6262077911542316,
+      "skill_MSE": 0.7997740154858228
+    },
+    "14": {
+      "MAE": 0.4447390990585223,
+      "MSE": 0.4123825933506455,
+      "baseline_MAE": 1.1680579544894907,
+      "baseline_MSE": 2.0206625674268865,
+      "skill_MAE": 0.6192491157231157,
+      "skill_MSE": 0.7959171412395817
+    },
+    "15": {
+      "MAE": 0.44343248304408056,
+      "MSE": 0.4125891840072829,
+      "baseline_MAE": 1.1385710743794673,
+      "baseline_MSE": 1.9614767861111413,
+      "skill_MAE": 0.6105359665089369,
+      "skill_MSE": 0.789653802212317
+    },
+    "16": {
+      "MAE": 0.4470997711501044,
+      "MSE": 0.4218137004079092,
+      "baseline_MAE": 1.0944594431389818,
+      "baseline_MSE": 1.8627311573633416,
+      "skill_MAE": 0.5914880410115584,
+      "skill_MSE": 0.7735509503126698
+    },
+    "17": {
+      "MAE": 0.4570439184669893,
+      "MSE": 0.43795569973020015,
+      "baseline_MAE": 1.0334730293673162,
+      "baseline_MSE": 1.7175599259635952,
+      "skill_MAE": 0.5577592201445374,
+      "skill_MSE": 0.7450128562562406
+    },
+    "18": {
+      "MAE": 0.4621890157017775,
+      "MSE": 0.44833961114575777,
+      "baseline_MAE": 0.9547153329678786,
+      "baseline_MSE": 1.5299665494730266,
+      "skill_MAE": 0.5158881399076389,
+      "skill_MSE": 0.706961167680312
+    },
+    "19": {
+      "MAE": 0.4674594924758195,
+      "MSE": 0.4560134951479579,
+      "baseline_MAE": 0.8612151462011045,
+      "baseline_MSE": 1.309690606666329,
+      "skill_MAE": 0.4572093924058067,
+      "skill_MSE": 0.6518158618326741
+    },
+    "20": {
+      "MAE": 0.4762755057551578,
+      "MSE": 0.4737895386656175,
+      "baseline_MAE": 0.7523740115496234,
+      "baseline_MSE": 1.0608857620877417,
+      "skill_MAE": 0.3669697538140647,
+      "skill_MSE": 0.5534019254502613
+    },
+    "21": {
+      "MAE": 0.4765536239295595,
+      "MSE": 0.4802623601621397,
+      "baseline_MAE": 0.6302564115776402,
+      "baseline_MSE": 0.799420469334206,
+      "skill_MAE": 0.24387342171313453,
+      "skill_MSE": 0.3992368489611928
+    },
+    "22": {
+      "MAE": 0.46482525627097826,
+      "MSE": 0.4617005727482089,
+      "baseline_MAE": 0.4984227984551562,
+      "baseline_MSE": 0.5501282295010648,
+      "skill_MAE": 0.06740771547431679,
+      "skill_MSE": 0.1607400820587861
+    },
+    "23": {
+      "MAE": 0.45531486101647395,
+      "MSE": 0.4438634265956737,
+      "baseline_MAE": 0.36186860494646556,
+      "baseline_MSE": 0.33234963745508,
+      "skill_MAE": -0.25823255953312874,
+      "skill_MSE": -0.33553155043133076
+    },
+    "24": {
+      "MAE": 0.45235060495702556,
+      "MSE": 0.4354624343875402,
+      "baseline_MAE": 0.2487896441830307,
+      "baseline_MSE": 0.21431501360989055,
+      "skill_MAE": -0.8182051204037986,
+      "skill_MSE": -1.0318802077963416
+    }
+  },
+  "validation_rows": 2609,
+  "tolerance": {
+    "rtol": 1e-05,
+    "atol": 1e-06
+  },
+  "batch_size": 64,
+  "exact_match": true,
+  "elapsed_seconds": 13.235360146994935,
+  "pid": 1305235,
+  "resources": {
+    "cgroup": {
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m04-replay-probe-1790816173-1297628.scope",
+      "current_bytes": 1992175616,
+      "peak_bytes": 3741564928,
+      "max": 5379194880
+    },
+    "process": {
+      "VmHWM": 3124658176,
+      "VmRSS": 2661134336,
+      "cpu_seconds": 13.729999999999999
+    }
+  },
+  "environment": {
+    "host_role": null,
+    "tf_deterministic_ops": "1",
+    "cuda_cache_maxsize": null,
+    "tensorflow": "2.21.0",
+    "keras": "3.13.2",
+    "numpy": "2.4.3",
+    "executable": "/home/harveybc/anaconda3/envs/tensorflow/bin/python",
+    "cuda_visible_devices": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9"
+  }
+}
