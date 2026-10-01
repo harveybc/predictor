@@ -1,5 +1,284 @@
 {
  "schema": "research_program_method_state.v1",
+ "current_state_20261001": {
+  "generated_by": "tools/m06_method_state.py (M06), from git tips and STATUS.json; replaces nothing historical",
+  "generated_at": "2026-10-01T10:19:06Z",
+  "status_source": "docs/audits/evidence/MODULAR_CAMPAIGN_20260930/STATUS.json",
+  "orders": [
+   {
+    "path": "docs/handoffs/SATOSHI_MAINLINE_PARALLEL_CONTINUATION_2026_10_01.md",
+    "sha256": "e9d689e6060c4567e5fcb9bc73a5bb086662a0dce960f5fb87216c0890b2ff93"
+   },
+   {
+    "path": "docs/handoffs/SATOSHI_AUTONOMOUS_PARALLEL_EXECUTION_2026_10_01.md",
+    "sha256": "0207ae6570fb4d2c96fc7b9c4a43b4ca36f3123a401e081cd9ceff31a6fac55c"
+   },
+   {
+    "path": "docs/handoffs/SATOSHI_NEXT_DISPATCH_2026_10_01.md",
+    "sha256": "66bfccd8c8b67625acdf7ac035bbd632bb34d59eaea15d6277272beb2546fa46"
+   }
+  ],
+  "subplans": [
+   {
+    "path": "docs/tres_temas_entrevista/program_v3/MODULAR_STACK_WORK_PLAN_2026_09_30.md",
+    "sha256": "04809fc1891763fc3bdd665cfc1f33bd44e305dadc0a50cc108c8ad9a924fd7c"
+   },
+   {
+    "path": "docs/tres_temas_entrevista/program_v3/MODULAR_STACK_METHOD_STATE.json",
+    "sha256": "643a33e0351ab5ef2656dbfac46496cb343c5fc10e5d083abde0f347b274f3e0"
+   },
+   {
+    "path": "docs/tres_temas_entrevista/program_v3/FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md",
+    "sha256": "25d5043e316ff11c315ef6f4b3935ebe783c3b3560f484ec216354645d624c84"
+   },
+   {
+    "path": "docs/tres_temas_entrevista/program_v3/FEATURE_SELECTION_METHOD_STATE.json",
+    "sha256": "af8f246ec0a55ff8388f298eb9f8646d36e2b62af1ec233f8fccf1796e4bbda3"
+   },
+   {
+    "path": "docs/tres_temas_entrevista/program_v3/RL_TEMPORAL_COMPARISON_WORK_PLAN_2026_10_01.md",
+    "sha256": "a288f27ef158465f5e2c7e72060903df45367fb90a80daa16061e055c573089e"
+   },
+   {
+    "path": "docs/handoffs/SATOSHI_SOURCE_TRANSFORM_COVERAGE_ADDENDUM_2026_10_01.md",
+    "sha256": "f208cb77a4ae5835d87986f17d159aff85964f6b8b2ea32345480093fbf50b2f"
+   }
+  ],
+  "critical_path": [
+   "1 point-in-time financial dataset with short/long targets",
+   "2 progressive selection + temporal representation",
+   "3 DOIN R0/R1/R2 on the modular architecture",
+   "4 naive gate per horizon and seed",
+   "5 heuristic strategy replay + RL SAC/DQN contrast",
+   "6 MT5 demo + Alpaca paper with the best eligible candidate",
+   "7 progressive replacement only on better evidence"
+  ],
+  "fronts": [
+   {
+    "front": "A",
+    "owner": "M01/M02 a5b79d5488abdee3a",
+    "critical_path_step": 3,
+    "repo": "predictor",
+    "branch": "satoshi/a-engine-integration-20261001",
+    "tip": "4f3b75e48057",
+    "branch_head": "f0a850c8cd14",
+    "tip_in_branch": true,
+    "branch_location": "origin",
+    "subject": "2026-10-01T03:17:12-05:00 RL export spec verified against lane G 02db0701: satisfied for R0; three real gaps closed in the export tool (contract, identity, unsu",
+    "class": "IMPLEMENTED"
+   },
+   {
+    "front": "A",
+    "owner": "M01/M02 a5b79d5488abdee3a",
+    "critical_path_step": 3,
+    "repo": "predictor",
+    "branch": "satoshi/a-engine-integration-20261001",
+    "tip": "3b073d2ec4cb",
+    "branch_head": "f0a850c8cd14",
+    "tip_in_branch": true,
+    "branch_location": "origin",
+    "subject": "2026-10-01T03:11:35-05:00 Evaluator R3 dispatch tolerates builders that return a bundle without a config (existing fake-builder tests)",
+    "class": "IMPLEMENTED"
+   },
+   {
+    "front": "B",
+    "owner": "M03 a160efdffffffa9f2",
+    "critical_path_step": 1,
+    "repo": "feature-eng",
+    "branch": "satoshi/b-source-transform-coverage-20261001",
+    "tip": "dee000b95a89",
+    "branch_head": "2ee0a3cf18a4",
+    "tip_in_branch": true,
+    "branch_location": "origin",
+    "subject": "2026-10-01T04:41:17-05:00 Lane B: KALMAN_CANDIDATE_FEATURES.v1 for H1 (persistence-based state-space form per input; TRAIN rows only)",
+    "class": "IMPLEMENTED"
+   },
+   {
+    "front": "B",
+    "owner": "M03 a160efdffffffa9f2",
+    "critical_path_step": 1,
+    "repo": "feature-eng",
+    "branch": "satoshi/b-source-transform-coverage-20261001",
+    "tip": "8484162fae47",
+    "branch_head": "2ee0a3cf18a4",
+    "tip_in_branch": true,
+    "branch_location": "origin",
+    "subject": "2026-10-01T04:49:04-05:00 Lane B: daily FRED/Yahoo families for EURUSD/GBPUSD (no pass); drift check confirms the published passes; denominators v3 (evaluated 2",
+    "class": "IMPLEMENTED"
+   },
+   {
+    "front": "C",
+    "owner": "C2 a5fd5cd9bcbc7f3bd",
+    "critical_path_step": 2,
+    "repo": "predictor",
+    "branch": "satoshi/c2-causal-eth-20261001",
+    "tip": "141623ef251d",
+    "branch_head": "141623ef251d",
+    "tip_in_branch": true,
+    "branch_location": "origin",
+    "subject": "2026-10-01T05:07:38-05:00 Lane C2: applicable interval rule, evidence-class split and time semantics in the dossier schema (tests first, run pending on worker_b",
+    "class": "IMPLEMENTED"
+   },
+   {
+    "front": "D",
+    "owner": "M04 a083979bc9a8fa1b8",
+    "critical_path_step": 3,
+    "repo": "predictor",
+    "branch": "satoshi/d-corrected-queue-20261001",
+    "tip": "4c129c5c1033",
+    "branch_head": "205b8b560356",
+    "tip_in_branch": true,
+    "branch_location": "origin",
+    "subject": "2026-10-01T05:03:33-05:00 Lane D v2: identity proof at the lane A 3b073d2e merge, bitwise replay at both pins, R3 build probe, per-horizon table v2, amendments ",
+    "class": "IMPLEMENTED"
+   },
+   {
+    "front": "D/F2",
+    "owner": "M07 afcf115024ffa1381",
+    "critical_path_step": 4,
+    "repo": "predictor",
+    "branch": "satoshi/f2-eth-forecast-20261001",
+    "tip": "58572172b36e",
+    "branch_head": "51daf87ae05b",
+    "tip_in_branch": true,
+    "branch_location": "origin",
+    "subject": "2026-10-01T04:37:42-05:00 Lane F2: R0 batch complete, 24/24 cells verified exact; evidence v1, predictions CSVs, closure table",
+    "class": "IMPLEMENTED"
+   },
+   {
+    "front": "E",
+    "owner": "M05 a65d2f3a115a9aa25",
+    "critical_path_step": 5,
+    "repo": "lts",
+    "branch": "satoshi/m05-paper-adapter-20260930",
+    "tip": "42035f1156f3",
+    "branch_head": "42035f1156f3",
+    "tip_in_branch": true,
+    "branch_location": "origin",
+    "subject": "2026-10-01T04:49:25-05:00 M05 addendum 14: 24 ETH R0 cells, split-half, families harness, equal-bar pairing",
+    "class": "IMPLEMENTED"
+   },
+   {
+    "front": "E",
+    "owner": "M05 a65d2f3a115a9aa25",
+    "critical_path_step": 5,
+    "repo": "heuristic-strategy",
+    "branch": "satoshi/s08-backtest-naive-gate-20261001",
+    "tip": "4b5dd7ece5a3",
+    "branch_head": "114779bfe086",
+    "tip_in_branch": true,
+    "branch_location": "origin",
+    "subject": "2026-10-01T04:48:24-05:00 Paired harness over the strategy's own families; split-half and seed summaries",
+    "class": "IMPLEMENTED"
+   },
+   {
+    "front": "G",
+    "owner": "lane G aa7913479a97b45c0",
+    "critical_path_step": 5,
+    "repo": "agent-multi",
+    "branch": "satoshi/g-rl-temporal-20261001",
+    "tip": "25ee6efd2742",
+    "branch_head": "25ee6efd2742",
+    "tip_in_branch": true,
+    "branch_location": "origin",
+    "subject": "2026-10-01T04:53:41-05:00 Unknown modular config keys, branch/core params and input_normalization now raise in the torch consumer",
+    "class": "IMPLEMENTED"
+   },
+   {
+    "front": "H",
+    "owner": "H1 a1a511567dd7f306f",
+    "critical_path_step": 2,
+    "repo": "predictor",
+    "branch": "satoshi/h-kalman-20261001",
+    "tip": "940834d27235",
+    "branch_head": "7de32cddff2b",
+    "tip_in_branch": true,
+    "branch_location": "origin",
+    "subject": "2026-10-01T04:43:26-05:00 Lane H: deterministic causal Kalman family (closed-form Q/R, scalar IEEE recursion, typed warm-up, durable state, non-causal smoother ",
+    "class": "IMPLEMENTED"
+   },
+   {
+    "front": "I",
+    "owner": "I1 ad39bdf372d45ceb0",
+    "critical_path_step": null,
+    "repo": "M5PHET",
+    "branch": "satoshi/i-m5phet-20261001",
+    "tip": "a16317aa84ea",
+    "branch_head": "a16317aa84ea",
+    "tip_in_branch": true,
+    "branch_location": "local_only_unpushed",
+    "subject": "2026-09-29T19:07:26-05:00 Withhold a checkpoint's record on provenance, not on a backend's name",
+    "class": "IMPLEMENTED"
+   }
+  ],
+  "executed": {
+   "campaigns_from_status": [
+    {
+     "campaign": "m04 campaign_corrected_r0_v2 (D2)",
+     "status_counts": {
+      "blocked": 22,
+      "queued": 1,
+      "running": 1,
+      "verified": 16
+     },
+     "identity": {
+      "front": "D2",
+      "runner": "d2-runner-worker-a"
+     },
+     "incumbent": {
+      "config_id": "2c1c7afa",
+      "mean_objective": 0.21672828385640913,
+      "at": "2026-10-01T08:50:57Z"
+     }
+    },
+    {
+     "campaign": "m04 campaign_corrected_r0_v1 (CLOSED: 32 verified + 4 refused of 36)",
+     "status_counts": {
+      "CANCELLED_SUPERSEDED": 12,
+      "REFUSED_BY_ENGINE": 4,
+      "SUPERSEDED_OLD_ARCH": 72,
+      "verified": 32
+     },
+     "identity": {
+      "pin": "aaee6f94 (amendment 5)",
+      "engine": "3ecdb256",
+      "campaign_sha256_current": "7ac0eaab (amendment 5)",
+      "base": "13852a05",
+      "denominator": "36 cells (72 superseded rows kept outside)"
+     },
+     "incumbent": {
+      "config_id": "c950ec17",
+      "mean_objective": 0.37509125759139983,
+      "at": "2026-10-01T06:24:43Z"
+     }
+    },
+    {
+     "campaign": "m04_ecl_l24_h24_batch1_v3_deterministic (OLD architecture)",
+     "status_counts": {
+      "verified": 16,
+      "blocked": 20
+     },
+     "identity": {
+      "campaign_sha256": "53bce359",
+      "predictor_revision": "8f724b12"
+     },
+     "incumbent": null
+    }
+   ],
+   "ecl_corrected_v1": "CLOSED: 32 VERIFIED + 4 REFUSED_BY_ENGINE of 36; R0 incumbent c09f3034 0.383565, R1 incumbent c950ec17 0.375091 (mean validation MAE_z, 2 seeds) vs persistence 0.851406 and 24 h seasonal 0.247966 (both lose to the seasonal reference); NOT_COMPARABLE; not financial evidence",
+   "traffic_h96": "three seeds, seed-mean MSE 0.375199 / MAE 0.251143 vs TimeFilter Table 8 0.375 / 0.251: OPERATIONAL_AGREEMENT (RESULTS/traffic_h96_closure_table.md)"
+  },
+  "verified": {
+   "ecl_corrected_v1_closure": "M06 regeneration vs M04 f787ad51: 0 disagreements (RESULTS/corrected_vs_m04_f787ad51.json)",
+   "admission_repairs": "ADM 775c5545 then a1f3898b deployed on worker_a and worker_b 2026-10-01T07:25:58Z: suite 62/62 in a worker_b checkout, 256M smoke ADMITTED+RELEASED on both, launcher sha bdc50f60 / module e4128596 (registry.json deployments); coordinator not deployed"
+  },
+  "eligibility_for_strategy_and_deployment": {
+   "ETH 4h R0 (F2)": "0/12 eligible (naive gate; orchestrator report)",
+   "Kalman (H1)": "none yet",
+   "others": "none yet"
+  },
+  "superseded_current_pointer": "rp140_rp143 / rp144_rp151 blocks remain as history; they no longer describe the current state"
+ },
  "classification_first_20260924": {
   "public_interface": "Required Laya-like experience across all five families: data/context + natural-language questions -> typed engine answers; not a plugin catalog",
   "RAG": "Consider bounded documentation retrieval evaluation; market-context RAG separate and point-in-time; optional, not implemented, not a classification prerequisite",
@@ -535,7 +814,7 @@
   "historical_satoshi_return": "Preserved below as reported; this external review qualifies its closure/comparator/financial guarantees",
   "owner_action_required": false
  },
- "updated_on": "2026-09-24",
+ "updated_on": "2026-10-01",
  "current_stage": "system_verification",
  "completed_stages": [
   "discovery",
@@ -594,7 +873,7 @@
   "active_assignments": "../../handoffs/SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md",
   "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
   "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-  "orders": "../../handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md",
+  "orders": "../../handoffs/SATOSHI_MAINLINE_PARALLEL_CONTINUATION_2026_10_01.md",
   "news_live": "NEWS_LIVE_PARALLEL_2026_09_24.md",
   "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
   "concurrent_execution": "CONCURRENT_EXECUTION_2026_09_23.md",
@@ -607,7 +886,17 @@
   "benchmark_registry": "../../audits/evidence/d3_k5_20260917/RP65/BENCHMARK_CONTRACT_REGISTRY.json",
   "fin_loss_opt_design": "FIN_LOSS_OPT_DESIGN_2026_09_21.md",
   "household_literature_benchmark": "../../audits/evidence/d3_k5_20260917/RP65/HOUSEHOLD_LITERATURE_BENCHMARK.md",
-  "closure_table": "../../audits/evidence/d3_k5_20260917/RP65/CLOSURE_TABLE.md"
+  "closure_table": "../../audits/evidence/d3_k5_20260917/RP65/CLOSURE_TABLE.md",
+  "orders_history": [
+   {
+    "orders": "../../handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md",
+    "superseded_on": "2026-10-01"
+   }
+  ],
+  "orders_also_current": [
+   "../../handoffs/SATOSHI_AUTONOMOUS_PARALLEL_EXECUTION_2026_10_01.md",
+   "../../handoffs/SATOSHI_NEXT_DISPATCH_2026_10_01.md"
+  ]
  },
  "proposal_coverage": {
   "P-MOD": [
@@ -2003,5 +2292,6 @@
   "no_work_started": true,
   "where_it_would_attach": "the interpretation layer above the provider contract, never inside it",
   "invariant": "retrieved text is data; the registry's declared combinations remain the only source of what may be asked"
- }
+ },
+ "updated_on_previous": "2026-10-01"
 }
