@@ -31,7 +31,12 @@ def child(checkout, configs_path, out_path):
     configs = json.loads(Path(configs_path).read_text())
     rows = {}
     for key, config in configs.items():
-        bundle = mt.build_modular(config)
+        try:
+            bundle = mt.build_modular(config)
+        except ValueError as exc:  # a refusal is part of the engine's behaviour and must also be identical
+            rows[key] = {"refused": f"{type(exc).__name__}: {exc}"}
+            tf.keras.backend.clear_session()
+            continue
         model = bundle.forecast_model
         weights = model.get_weights()
         shapes = [[list(w.shape), str(w.dtype)] for w in weights]
@@ -67,6 +72,11 @@ def compare(a, b, configs, out, python):
         if rb is None:
             first = {"config": key, "field": "missing in b"}
             break
+        if "refused" in ra or "refused" in rb:
+            if ra.get("refused") != rb.get("refused"):
+                first = {"config": key, "field": "refusal", "a": ra.get("refused"), "b": rb.get("refused")}
+                break
+            continue
         for field in ("config_digest", "parameters", "output_shape", "output_sha256"):
             if ra[field] != rb[field]:
                 first = {"config": key, "field": field, "a": ra[field], "b": rb[field]}
@@ -81,6 +91,7 @@ def compare(a, b, configs, out, python):
     report = {"schema": "lane_d.engine_identity_proof.v1", "label": "PROOF_NOT_A_RESULT",
               "a": {"checkout": a, "tensorflow": results["a"]["tensorflow"]},
               "b": {"checkout": b, "tensorflow": results["b"]["tensorflow"]},
+              "refused_identically": sorted(k for k, v in results["a"]["rows"].items() if "refused" in v),
               "configs": len(results["a"]["rows"]), "verdict": "IDENTICAL" if first is None else "NOT_IDENTICAL",
               "first_difference": first, "deterministic": [results["a"]["deterministic"], results["b"]["deterministic"]]}
     Path(out).write_text(json.dumps(report, indent=1) + "\n")
