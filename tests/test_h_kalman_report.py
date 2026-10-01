@@ -23,12 +23,14 @@ def _load(name):
 
 rep = _load("h_kalman_report")
 pipe = rep.pipe
-test_pipe = _load("test_h_kalman_pipeline") if False else None
+
 
 
 def fixture_results():
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    tp = _load("test_h_kalman_pipeline")
+    spec = importlib.util.spec_from_file_location("test_h_kalman_pipeline_fixture", Path(__file__).resolve().parent / "test_h_kalman_pipeline.py")
+    tp = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(tp)
     d = tp.synthetic_data(R=3000, n_tr=2000, seed=5)
     kal = pipe.build_kalman(d, tp.GROUPS, pipe.VARIANTS["moments_train"])
     arms = pipe.arm_matrices(d, kal, lags=1, controls=True)
