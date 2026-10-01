@@ -478,8 +478,25 @@ def evaluate_candidate(config, train_path, validation_path, output_dir, progress
     vx, vy = validation["windows"], validation["targets"]
     _predict(model, x[:1], y[:1], batch)
     initial_digest = _weight_digest(model.get_weights())
-    training = fit_with_early_stopping(model, x, y, vx, vy,
-                                       settings if progress is None else {**settings, "progress": progress})
+    fit_settings = settings if progress is None else {**settings, "progress": progress}
+    if any(spec["regime"] == "R3" for spec in [*bundle.config["branches"], bundle.config["core"]]):
+        # R3 (warm): frozen donors for freeze_epochs, then unfrozen; every R0/R1/R2 path below is untouched
+        from predictor_plugins.modular_temporal import warm as _warm
+        warm_receipt = _warm.fit_warm(bundle, x, y, vx, vy, fit_settings)
+        p1, p2 = warm_receipt["phase_1"], warm_receipt["phase_2"]
+        chosen = p1 if warm_receipt["selected_phase"] == 1 else p2
+        training = {**{k: v for k, v in chosen.items() if k != "component_hashes_after"},
+                    "observed_updates": warm_receipt["observed_updates"],
+                    "selected_epoch": (p1["selected_epoch"] if warm_receipt["selected_phase"] == 1
+                                       else p1["epochs_completed"] + p2["selected_epoch"]),
+                    "epochs_completed": p1["epochs_completed"] + p2["epochs_completed"],
+                    "stop_reason": p2["stop_reason"],
+                    "best_validation_loss": warm_receipt["best_validation_loss"],
+                    "history": [*(warm_receipt["history"]["phase_1"] or []),
+                                *(warm_receipt["history"]["phase_2"] or [])],
+                    "warm": {k: v for k, v in warm_receipt.items() if k != "history"}}
+    else:
+        training = fit_with_early_stopping(model, x, y, vx, vy, fit_settings)
     best_weights = model.get_weights()
     prediction = _predict(model, vx, vy, batch)
     baseline = np.repeat(vx[:, -1:, config["target_feature_indices"]], len(model_config["horizons"]), axis=1)
