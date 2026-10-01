@@ -98,3 +98,29 @@ The native baseline receives the same `feature_order`, window, scaler and inform
 - baseline receives identical information.
 
 These are synthetic mechanics; they establish no financial performance.
+
+## 9. Verification against lane G's implementation (2026-10-01)
+
+**Evidence reviewed:**
+- agent-multi 02db0701: `rl_temporal/{keras_import,modular_torch,donor_contract,arms,checkpoint}.py`, tests RL01–RL08 (suite 42 passed on worker_a at 3G), and `docs/audits/evidence/g_rl_20261001/fixture_encoder_export.npz.receipt.json` (63 arrays, sha `a04c7e71…`, Keras 3.13.2, source `RANDOM_INIT_NOT_PRETRAINED`);
+- predictor `tools/export_modular_encoder_npz.py` (600626c8, now carried on this branch).
+
+| Spec item | Status | Evidence |
+|---|---|---|
+| §7 interfaces stated | SATISFIED | SB3 2.9.0 on torch 2.13; flat Box observation with an `ObservationLayout`; SAC τ 0.005, DQN hard sync 1000 |
+| Weight port with numerical parity | SATISFIED on the fixture | `test_keras_bundle_weights_import_with_fidelity`: fused atol 1e-5, latent atol 1e-4, `unmatched_keras_weights == []`, config sha bound |
+| Feature-order mismatch refused | SATISFIED | the import refuses a modular-config sha mismatch, and feature order is in the config |
+| Every variable in exactly one optimizer | SATISFIED | RL03 `test_a_gradient_step_updates_each_extractor_parameter_at_most_once`; `optimizer_ownership()` |
+| R0/R1/R2 by weight hash | SATISFIED | RL04 r1-fixed / r2-moves / donor refusals |
+| Target copies (DQN sync, SAC Polyak) | SATISFIED | RL04 `test_dqn_target_sync…`, `test_sac_target_critic_tracks…` |
+| Fresh-process replay | SATISFIED | RL05 subprocess round-trip, atol 1e-6, plus action-mapping refusal |
+| Baseline receives identical information | SATISFIED | arm configs; `PARAMETERS_MEASURED.json` discloses parameters from built models |
+| §3 explicit task-head reduction | SATISFIED | RL02 (time preserved through branches/fusion/core; the reduction is explicit in the extractor) |
+| §2 weight-sharing modes | SATISFIED with a declared difference | Lane G uses SB3's `share_features_extractor`. Under SB3 SAC sharing, the shared extractor is updated by the actor loss and excluded from the critic optimizer: **actor-owned**, not the spec's `shared_critic_owned`. The spec now accepts `shared_actor_owned` (SB3 semantics) as the sharing mode, provided it is recorded per run, as RL03 already does. `separate` and `frozen` (R1) match. |
+| §1 non-OPERATIONAL donors refused at export | **GAP, closed here** | The tool loaded bundles without a contract requirement. It now calls `load_bundle(require_contract="OPERATIONAL")`; `--allow-unknown-provenance` is an explicit, recorded bypass. |
+| §1 export identity | **GAP, closed here** | The export now carries the config digest, provenance, regimes, per-component manifest digests and any head-only options (`identity` in `__meta__` and in the receipt). |
+| Engine options after 3ecdb256 | **GAP, closed here** | `normalize_modular_config` on the torch side drops unknown keys silently, so an `input_normalization` encoder would import as a different model. The export now refuses it (`NOT_SUPPORTED_BY_TORCH_CONSUMER`). `target_residual` is head-only and does not change the encoder. |
+| Parity scope | **GAP, open (lane G)** | Parity is proven only on a random-init FIXTURE (d_model 16, 1 block, 3 features). Before any R1/R2 RL cell, a parity receipt is needed on (a) the default architecture (d_model 64, 2 blocks, 4 heads, at the task's F) and (b) the actual donor bundle to be imported. Same test, different export. |
+| §1 scaler artifact bound to the export | open, minor | Normalization lives in lane G's checkpoint (`_NORMALIZATION_KEYS`) and round-trips (RL05). It is not yet bound to the encoder export identity. |
+
+**Verdict:** the spec is satisfied for R0 RL cells. For R1/R2 RL cells it is satisfied once lane G (i) re-exports with this tool, so the export carries identity and OPERATIONAL provenance, and (ii) adds the two parity receipts listed under "Parity scope". No other implementation is required.
