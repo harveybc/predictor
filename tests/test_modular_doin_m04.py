@@ -8,6 +8,7 @@ T7 heartbeat cadence/fields; T8 optimizer.plugins surface returns incumbent flat
 """
 import copy
 import json
+import sqlite3
 import os
 import random
 import time
