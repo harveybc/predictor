@@ -299,14 +299,14 @@ def test_real_engine_receipt_is_independently_rescored_and_tamper_refuted(tmp_pa
     pytest.importorskip("tensorflow")
     from tools import modular_candidate_evaluator as evaluator
     from tools import modular_checkpoint_scorer as scorer
-    from tools.modular_heartbeat import Heartbeat
+    from tools.modular_heartbeat import Heartbeat, progress_adapter
 
     train, validation = synthetic_inputs(tmp_path)
     nested = small_candidate()
     nested["evaluator"]["max_epochs"] = 2
     beat_path = tmp_path / "heartbeat.json"
     with Heartbeat(beat_path, interval=0.5, identity={"test": "T6"}) as beat:
-        receipt = evaluator.evaluate_candidate(nested, train, validation, tmp_path / "out", progress=beat.update)
+        receipt = evaluator.evaluate_candidate(nested, train, validation, tmp_path / "out", progress=progress_adapter(beat))
     records = [json.loads(line) for line in beat_path.with_suffix(".jsonl").read_text().splitlines()]
     assert records[-1]["stage"] == "done"
     assert any(r["stage"] in ("fit", "validated", "score", "save") for r in records)

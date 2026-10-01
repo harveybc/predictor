@@ -28,7 +28,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from tools.modular_heartbeat import Heartbeat, cgroup_memory, process_memory  # noqa: E402
+from tools.modular_heartbeat import Heartbeat, cgroup_memory, process_memory, progress_adapter  # noqa: E402
 
 
 class GpuFallback(RuntimeError):
@@ -164,12 +164,15 @@ def main():
                               "executable": sys.executable, "host_role": os.environ.get("M04_HOST_ROLE"),
                               "device_pin": "CUDA_VISIBLE_DEVICES environment (no launcher GPU option)"}
     with Heartbeat(out / "heartbeat.json", interval=30.0, identity={"pilot": out.name}) as beat:
-        def progress(**fields):
-            stage = fields.get("stage")
-            coarse = "fit" if stage in ("fit", "validated") else stage
+        adapt = progress_adapter(beat)
+
+        def progress(event):
+            # integrated evaluator (3ecdb256): dict events update|monitor|restored; the first
+            # "fit" stage therefore spans data load, graph build and first-step trace
+            coarse = "fit" if event.get("event") in ("update", "monitor") else "score"
             if coarse != state["stage"]:
                 close_stage(coarse)
-            beat.update(**fields)
+            adapt(event)
 
         try:
             result = evaluator.evaluate_candidate(candidate, args.train, args.validation, out / "candidate",

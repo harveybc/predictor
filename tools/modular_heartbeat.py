@@ -149,6 +149,22 @@ def environment():
             "cuda_cache_maxsize": os.environ.get("CUDA_CACHE_MAXSIZE")}
 
 
+def progress_adapter(beat):
+    """Map the integrated evaluator's progress dicts (event=update|monitor|restored) to heartbeat stages."""
+    state = {"bpe": None}
+
+    def adapt(event):
+        fields = dict(event)
+        kind = fields.pop("event", None)
+        if kind == "monitor" and state["bpe"] is None and fields.get("epoch"):
+            state["bpe"] = -(-fields["updates"] // fields["epoch"])
+        if state["bpe"]:
+            fields["batches_per_epoch"] = state["bpe"]
+        beat.update(stage={"update": "fit", "monitor": "validated", "restored": "score"}.get(kind, kind or "fit"),
+                    **fields)
+    return adapt
+
+
 def gpu_facts():
     """Assert, inside this child, the device the launcher pinned by CUDA_VISIBLE_DEVICES=<uuid>.
 
@@ -198,7 +214,7 @@ def run_request(request_path, response_path, heartbeat_path, interval=30.0):
     identity = {"candidate_output": request["output_dir"], "host_role": os.environ.get("M04_HOST_ROLE")}
     with Heartbeat(heartbeat_path, interval=interval, identity=identity) as beat:
         result = evaluate_candidate(request["config"], request["train_path"], request["validation_path"],
-                                    request["output_dir"], progress=beat.update)
+                                    request["output_dir"], progress=progress_adapter(beat))
     result["environment"] = {**environment(), "host_role": os.environ.get("M04_HOST_ROLE"), "gpu_facts": facts}
     canonical = json.dumps(request["config"], sort_keys=True, separators=(",", ":"), allow_nan=False)
     result["candidate"] = {"cid": hashlib.sha256(canonical.encode()).hexdigest()}

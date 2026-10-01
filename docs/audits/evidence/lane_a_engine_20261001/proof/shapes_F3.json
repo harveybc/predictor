@@ -1,0 +1,1338 @@
+{
+ "F": 3,
+ "keras_version": "3.13.2",
+ "input": [
+  null,
+  24,
+  3
+ ],
+ "branch_outputs": {
+  "branch_0": [
+   null,
+   24,
+   16
+  ],
+  "branch_1": [
+   null,
+   24,
+   16
+  ],
+  "branch_2": [
+   null,
+   24,
+   16
+  ]
+ },
+ "fused": [
+  null,
+  24,
+  48
+ ],
+ "latent": [
+  null,
+  6,
+  8
+ ],
+ "forecast": [
+  null,
+  1,
+  1
+ ],
+ "branch_time_grid": [
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24
+ ],
+ "core_time_grid": [
+  4,
+  8,
+  12,
+  16,
+  20,
+  24
+ ],
+ "core_layers": [
+  {
+   "layer": "input_layer_6",
+   "class": "InputLayer",
+   "output_shape": [
+    null,
+    24,
+    48
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "positional_encoding",
+   "class": "PositionalEncoding",
+   "output_shape": [
+    null,
+    24,
+    48
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "model_projection",
+   "class": "Dense",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 3136
+  },
+  {
+   "layer": "attention_0",
+   "class": "MultiHeadAttention",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 16640
+  },
+  {
+   "layer": "dropout_1",
+   "class": "Dropout",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "add",
+   "class": "Add",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "attention_norm_0",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 128
+  },
+  {
+   "layer": "ffn_expand_0",
+   "class": "Dense",
+   "output_shape": [
+    null,
+    24,
+    128
+   ],
+   "weights": 8320
+  },
+  {
+   "layer": "dropout_2",
+   "class": "Dropout",
+   "output_shape": [
+    null,
+    24,
+    128
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "ffn_project_0",
+   "class": "Dense",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 8256
+  },
+  {
+   "layer": "add_1",
+   "class": "Add",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "ffn_norm_0",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 128
+  },
+  {
+   "layer": "attention_1",
+   "class": "MultiHeadAttention",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 16640
+  },
+  {
+   "layer": "dropout_4",
+   "class": "Dropout",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "add_2",
+   "class": "Add",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "attention_norm_1",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 128
+  },
+  {
+   "layer": "ffn_expand_1",
+   "class": "Dense",
+   "output_shape": [
+    null,
+    24,
+    128
+   ],
+   "weights": 8320
+  },
+  {
+   "layer": "dropout_5",
+   "class": "Dropout",
+   "output_shape": [
+    null,
+    24,
+    128
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "ffn_project_1",
+   "class": "Dense",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 8256
+  },
+  {
+   "layer": "add_3",
+   "class": "Add",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "ffn_norm_1",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 128
+  },
+  {
+   "layer": "stage_0_skip_downsample",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 4128
+  },
+  {
+   "layer": "stage_0_block_projection",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 4128
+  },
+  {
+   "layer": "stage_0_downsample_residual",
+   "class": "Add",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "stage_0_downsample_norm",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 64
+  },
+  {
+   "layer": "stage_0_downsample_activation",
+   "class": "Activation",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "stage_0_temporal_conv",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 3104
+  },
+  {
+   "layer": "stage_0_temporal_projection",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 1056
+  },
+  {
+   "layer": "stage_0_temporal_residual",
+   "class": "Add",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "stage_0_temporal_norm",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 64
+  },
+  {
+   "layer": "stage_0_output",
+   "class": "Activation",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "stage_1_skip_downsample",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 1040
+  },
+  {
+   "layer": "stage_1_block_projection",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 1040
+  },
+  {
+   "layer": "stage_1_downsample_residual",
+   "class": "Add",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "stage_1_downsample_norm",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 32
+  },
+  {
+   "layer": "stage_1_downsample_activation",
+   "class": "Activation",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "stage_1_temporal_conv",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 784
+  },
+  {
+   "layer": "stage_1_temporal_projection",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 272
+  },
+  {
+   "layer": "stage_1_temporal_residual",
+   "class": "Add",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "stage_1_temporal_norm",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 32
+  },
+  {
+   "layer": "stage_1_output",
+   "class": "Activation",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "stage_2_skip_downsample",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 136
+  },
+  {
+   "layer": "stage_2_block_projection",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 136
+  },
+  {
+   "layer": "stage_2_downsample_residual",
+   "class": "Add",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "stage_2_downsample_norm",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 16
+  },
+  {
+   "layer": "stage_2_downsample_activation",
+   "class": "Activation",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "stage_2_temporal_conv",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 200
+  },
+  {
+   "layer": "stage_2_temporal_projection",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 72
+  },
+  {
+   "layer": "stage_2_temporal_residual",
+   "class": "Add",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "stage_2_temporal_norm",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 16
+  },
+  {
+   "layer": "stage_2_output",
+   "class": "Activation",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 0
+  }
+ ],
+ "forecast_model_layers": [
+  {
+   "layer": "observations",
+   "class": "InputLayer",
+   "output_shape": [
+    null,
+    24,
+    3
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "select_branch_0",
+   "class": "FeatureSelect",
+   "output_shape": [
+    null,
+    24,
+    1
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "select_branch_1",
+   "class": "FeatureSelect",
+   "output_shape": [
+    null,
+    24,
+    1
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "select_branch_2",
+   "class": "FeatureSelect",
+   "output_shape": [
+    null,
+    24,
+    1
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "branch_0",
+   "class": "Functional",
+   "output_shape": [
+    null,
+    24,
+    16
+   ],
+   "weights": 64
+  },
+  {
+   "layer": "branch_0/input_layer",
+   "class": "InputLayer",
+   "output_shape": [
+    null,
+    24,
+    1
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "branch_0/conv1d",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    24,
+    16
+   ],
+   "weights": 64
+  },
+  {
+   "layer": "branch_1",
+   "class": "Functional",
+   "output_shape": [
+    null,
+    24,
+    16
+   ],
+   "weights": 64
+  },
+  {
+   "layer": "branch_1/input_layer_1",
+   "class": "InputLayer",
+   "output_shape": [
+    null,
+    24,
+    1
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "branch_1/conv1d_1",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    24,
+    16
+   ],
+   "weights": 64
+  },
+  {
+   "layer": "branch_2",
+   "class": "Functional",
+   "output_shape": [
+    null,
+    24,
+    16
+   ],
+   "weights": 64
+  },
+  {
+   "layer": "branch_2/input_layer_2",
+   "class": "InputLayer",
+   "output_shape": [
+    null,
+    24,
+    1
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "branch_2/conv1d_2",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    24,
+    16
+   ],
+   "weights": 64
+  },
+  {
+   "layer": "sequence_fusion",
+   "class": "Functional",
+   "output_shape": [
+    null,
+    24,
+    48
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "sequence_fusion/input_layer_3",
+   "class": "InputLayer",
+   "output_shape": [
+    null,
+    24,
+    16
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "sequence_fusion/input_layer_4",
+   "class": "InputLayer",
+   "output_shape": [
+    null,
+    24,
+    16
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "sequence_fusion/input_layer_5",
+   "class": "InputLayer",
+   "output_shape": [
+    null,
+    24,
+    16
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "sequence_fusion/concatenate",
+   "class": "Concatenate",
+   "output_shape": [
+    null,
+    24,
+    48
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core",
+   "class": "Functional",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 86400
+  },
+  {
+   "layer": "temporal_core/input_layer_6",
+   "class": "InputLayer",
+   "output_shape": [
+    null,
+    24,
+    48
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/positional_encoding",
+   "class": "PositionalEncoding",
+   "output_shape": [
+    null,
+    24,
+    48
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/model_projection",
+   "class": "Dense",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 3136
+  },
+  {
+   "layer": "temporal_core/attention_0",
+   "class": "MultiHeadAttention",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 16640
+  },
+  {
+   "layer": "temporal_core/dropout_1",
+   "class": "Dropout",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/add",
+   "class": "Add",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/attention_norm_0",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 128
+  },
+  {
+   "layer": "temporal_core/ffn_expand_0",
+   "class": "Dense",
+   "output_shape": [
+    null,
+    24,
+    128
+   ],
+   "weights": 8320
+  },
+  {
+   "layer": "temporal_core/dropout_2",
+   "class": "Dropout",
+   "output_shape": [
+    null,
+    24,
+    128
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/ffn_project_0",
+   "class": "Dense",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 8256
+  },
+  {
+   "layer": "temporal_core/add_1",
+   "class": "Add",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/ffn_norm_0",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 128
+  },
+  {
+   "layer": "temporal_core/attention_1",
+   "class": "MultiHeadAttention",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 16640
+  },
+  {
+   "layer": "temporal_core/dropout_4",
+   "class": "Dropout",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/add_2",
+   "class": "Add",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/attention_norm_1",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 128
+  },
+  {
+   "layer": "temporal_core/ffn_expand_1",
+   "class": "Dense",
+   "output_shape": [
+    null,
+    24,
+    128
+   ],
+   "weights": 8320
+  },
+  {
+   "layer": "temporal_core/dropout_5",
+   "class": "Dropout",
+   "output_shape": [
+    null,
+    24,
+    128
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/ffn_project_1",
+   "class": "Dense",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 8256
+  },
+  {
+   "layer": "temporal_core/add_3",
+   "class": "Add",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/ffn_norm_1",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    24,
+    64
+   ],
+   "weights": 128
+  },
+  {
+   "layer": "temporal_core/stage_0_skip_downsample",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 4128
+  },
+  {
+   "layer": "temporal_core/stage_0_block_projection",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 4128
+  },
+  {
+   "layer": "temporal_core/stage_0_downsample_residual",
+   "class": "Add",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/stage_0_downsample_norm",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 64
+  },
+  {
+   "layer": "temporal_core/stage_0_downsample_activation",
+   "class": "Activation",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/stage_0_temporal_conv",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 3104
+  },
+  {
+   "layer": "temporal_core/stage_0_temporal_projection",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 1056
+  },
+  {
+   "layer": "temporal_core/stage_0_temporal_residual",
+   "class": "Add",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/stage_0_temporal_norm",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 64
+  },
+  {
+   "layer": "temporal_core/stage_0_output",
+   "class": "Activation",
+   "output_shape": [
+    null,
+    12,
+    32
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/stage_1_skip_downsample",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 1040
+  },
+  {
+   "layer": "temporal_core/stage_1_block_projection",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 1040
+  },
+  {
+   "layer": "temporal_core/stage_1_downsample_residual",
+   "class": "Add",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/stage_1_downsample_norm",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 32
+  },
+  {
+   "layer": "temporal_core/stage_1_downsample_activation",
+   "class": "Activation",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/stage_1_temporal_conv",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 784
+  },
+  {
+   "layer": "temporal_core/stage_1_temporal_projection",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 272
+  },
+  {
+   "layer": "temporal_core/stage_1_temporal_residual",
+   "class": "Add",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/stage_1_temporal_norm",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 32
+  },
+  {
+   "layer": "temporal_core/stage_1_output",
+   "class": "Activation",
+   "output_shape": [
+    null,
+    6,
+    16
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/stage_2_skip_downsample",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 136
+  },
+  {
+   "layer": "temporal_core/stage_2_block_projection",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 136
+  },
+  {
+   "layer": "temporal_core/stage_2_downsample_residual",
+   "class": "Add",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/stage_2_downsample_norm",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 16
+  },
+  {
+   "layer": "temporal_core/stage_2_downsample_activation",
+   "class": "Activation",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/stage_2_temporal_conv",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 200
+  },
+  {
+   "layer": "temporal_core/stage_2_temporal_projection",
+   "class": "Conv1D",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 72
+  },
+  {
+   "layer": "temporal_core/stage_2_temporal_residual",
+   "class": "Add",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "temporal_core/stage_2_temporal_norm",
+   "class": "LayerNormalization",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 16
+  },
+  {
+   "layer": "temporal_core/stage_2_output",
+   "class": "Activation",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "forecast_head",
+   "class": "Functional",
+   "output_shape": [
+    null,
+    1,
+    1
+   ],
+   "weights": 49
+  },
+  {
+   "layer": "forecast_head/input_layer_7",
+   "class": "InputLayer",
+   "output_shape": [
+    null,
+    6,
+    8
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "forecast_head/task_tokens",
+   "class": "Flatten",
+   "output_shape": [
+    null,
+    48
+   ],
+   "weights": 0
+  },
+  {
+   "layer": "forecast_head/forecast_projection",
+   "class": "Dense",
+   "output_shape": [
+    null,
+    1
+   ],
+   "weights": 49
+  },
+  {
+   "layer": "forecast_head/forecast_horizons",
+   "class": "Reshape",
+   "output_shape": [
+    null,
+    1,
+    1
+   ],
+   "weights": 0
+  }
+ ],
+ "parameters": 86641
+}

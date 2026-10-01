@@ -1,0 +1,10 @@
+{
+  "files": {
+    "ecl_l24_h24_default_r0_v1.json": "b9b3d3ce6495a0b60b4227ca00a9119c86dff061aaed3ff2f61311777052538a",
+    "ecl_l24_h24_search_space_v1.json": "968c6bf4a6a29ff4bdec7d8175ac368d5db00180c5bc8b35c65f6bda8432bf7b",
+    "modular_search_space.py": "63f3cd06506947f2838ad9d4739078c9d1fc1900c14405c664709d524649af3d"
+  },
+  "purpose": "M01<->M04 flat grammar parity fixture; copied verbatim, not maintained here",
+  "source_branch": "satoshi/m04-doin-execution-20260930",
+  "source_commit": "3ceabfada9f31098df8c6e48b6730b757e146191"
+}

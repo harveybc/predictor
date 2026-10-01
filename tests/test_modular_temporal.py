@@ -26,7 +26,7 @@ def deterministic():
 def config():
     return {
         "window": 24, "sample_hours": 1, "feature_names": ["a", "b", "c"],
-        "branch_steps": 12,
+        "branch_steps": 24,
         "branches": [
             {"name": "price", "features": ["b", "a"], "plugin": "causal_conv1d",
              "params": {"channels": 8}, "regime": "R0"},
@@ -47,7 +47,7 @@ def test_shapes_raw_fusion_and_architecture():
     raw = np.concatenate([b.branch_models["price"](x[:, :, [1, 0]]),
                           b.branch_models["volume"](x[:, :, [2]])], axis=-1)
     np.testing.assert_allclose(b.fusion_model(x), raw, atol=1e-6)
-    assert raw.shape == (2, 12, 24)
+    assert raw.shape == (2, 24, 24)
     assert b.core_model(raw).shape == (2, 6, 8)
     assert b.encoder_model(x).shape == (2, 6, 8)
     assert b.forecast_model(x).shape == (2, 1, 1)
@@ -57,12 +57,14 @@ def test_shapes_raw_fusion_and_architecture():
     attention = [l for l in layers if isinstance(l, tf.keras.layers.MultiHeadAttention)]
     assert len(attention) == 2
     assert all(l.get_config()["num_heads"] == 4 for l in attention)
-    assert len([l for l in layers if isinstance(l, tf.keras.layers.LayerNormalization)]) == 4
-    conv = [l for l in layers if isinstance(l, tf.keras.layers.Conv1D)]
-    assert [l.filters for l in conv] == [32, 16, 8]
-    assert all(l.padding == "causal" for l in conv)
+    assert len([l for l in layers if isinstance(l, tf.keras.layers.LayerNormalization)]) == 10
+    stages = [layer for layer in layers if layer.name.endswith("_block_projection")]
+    assert [layer.filters for layer in stages] == [32, 16, 8]
+    assert [layer.strides for layer in stages] == [(2,), (2,), (1,)]
+    assert all(layer.padding == "valid" for layer in stages)
+    assert not any(layer.name.endswith("compression_blocks") for layer in layers)
     assert not any(isinstance(l, tf.keras.layers.Flatten) for l in layers)
-    assert b.branch_time_grid == tuple(range(2, 25, 2))
+    assert b.branch_time_grid == tuple(range(1, 25))
     assert b.core_time_grid == tuple(range(4, 25, 4))
 
 
@@ -71,8 +73,8 @@ def test_causal_prefix_and_final_sample_coverage():
     x = data()
     changed = x.copy()
     changed[:, 12:] += 20
-    np.testing.assert_allclose(b.fusion_model(x)[:, :6],
-                               b.fusion_model(changed)[:, :6], atol=1e-6)
+    np.testing.assert_allclose(b.fusion_model(x)[:, :12],
+                               b.fusion_model(changed)[:, :12], atol=1e-6)
     np.testing.assert_allclose(b.encoder_model(x)[:, :3],
                                b.encoder_model(changed)[:, :3], atol=1e-6)
     changed = x.copy()
@@ -109,9 +111,10 @@ def test_invalid_configs_fail_closed(mutation):
 
 def test_subhour_window_and_nondefault_output():
     c = config()
-    c.update(window=48, sample_hours=0.5, output_steps=3, output_channels=4)
+    c.update(window=48, branch_steps=48, sample_hours=0.5, output_steps=3, output_channels=4)
     b = mt.build_modular(c)
     assert b.branch_time_grid[-1] == 24
+    assert len(b.branch_time_grid) == 48
     assert b.core_time_grid == (8, 16, 24)
     assert b.encoder_model(data(steps=48)).shape == (2, 3, 4)
     assert b.forecast_model(data(steps=48)).shape == (2, 1, 1)
@@ -224,6 +227,7 @@ def test_entry_point_groups_and_grid_rejection(monkeypatch):
             self.dist = None
 
         def load(self):
+            @mt.component(self.group.split(".")[1], "9.9.9", set(), "test wrapper")
             def factory(**kwargs):
                 seen.append(self.group)
                 result = mt.BUILTINS[self.group][mt.DEFAULTS[self.group]](**kwargs)
@@ -232,7 +236,8 @@ def test_entry_point_groups_and_grid_rejection(monkeypatch):
                 return result
             return factory
 
-    monkeypatch.setattr(mt, "entry_points", lambda *, group, name: [EP(group)])
+    monkeypatch.setattr(mt.registry, "entry_points",
+                        lambda *, group, name: [EP(group)] if name == "external" else [])
     c = config()
     c["branches"][0]["plugin"] = "external"
     c["core"]["plugin"] = "external"

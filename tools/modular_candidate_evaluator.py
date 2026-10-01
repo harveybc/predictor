@@ -62,15 +62,34 @@ def _number(value, name, low, inclusive=True):
     return value
 
 
+EARLY_STOP_IMPLEMENTATION = "modular.early_stop.v2"
+EARLY_STOP_KEYS = ("monitor", "monitor_every", "patience", "min_delta", "max_epochs",
+                   "max_updates", "max_seconds")
+
+
+def early_stop_identity(settings):
+    """Experimental identity of the stopping rule; a changed rule is a new variant.
+
+    Binds the implementation version, the monitored quantity, cadence, patience,
+    min_delta and every hard limit, plus best-checkpoint restore. Batch size,
+    optimizer and loss are candidate parameters, not part of the stopping rule.
+    """
+    rule = {"implementation": EARLY_STOP_IMPLEMENTATION, "restore": "best_monitored_checkpoint",
+            **{key: settings[key] for key in EARLY_STOP_KEYS}}
+    canonical = json.dumps(rule, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    return {"rule": rule, "sha256": hashlib.sha256(canonical.encode()).hexdigest()}
+
+
 def _settings(config):
     settings = dict(max_epochs=20, patience=5, batch_size=32, learning_rate=1e-3,
                     weight_decay=1e-4, loss="huber", huber_delta=1.0,
-                    min_delta=0.0, seed=42, max_updates=100000, max_seconds=3600.0)
+                    min_delta=0.0, seed=42, max_updates=100000, max_seconds=3600.0,
+                    monitor="validation_loss", monitor_every=1)
     supplied = config.get("evaluator", {})
     if not isinstance(supplied, dict) or set(supplied) - set(settings):
         raise ValueError("unexpected evaluator settings")
     settings.update(supplied)
-    for name, maximum in (("max_epochs", 100), ("patience", 50),
+    for name, maximum in (("max_epochs", 100), ("patience", 50), ("monitor_every", 100),
                           ("batch_size", 65536), ("seed", 2**31 - 1), ("max_updates", 1000000)):
         _integer(settings[name], name, 0 if name == "seed" else 1, maximum)
     for name in ("learning_rate", "huber_delta", "max_seconds"):
@@ -81,6 +100,8 @@ def _settings(config):
         _number(settings[name], name, 0)
     if settings["loss"] not in ("huber", "mae", "mse"):
         raise ValueError("loss must be huber, mae or mse")
+    if settings["monitor"] != "validation_loss":
+        raise ValueError("monitor must be validation_loss (the held-out split's training loss)")
     return settings
 
 
@@ -245,16 +266,24 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
     restored (this helper is for selection, not optimizer-state resumption).
     Time is checked between batches, so an in-flight batch may exceed the limit.
     A budget-interrupted partial epoch is not eligible for checkpoint selection.
+
+    Monitor cadence: validation runs every ``monitor_every`` epochs and always on
+    the final permitted epoch; patience counts monitor evaluations, not epochs.
+    ``stop_class`` separates a patience stop ("no_improvement") from a hard
+    limit ("budget"). The restored weights are re-hashed and must equal the
+    selected checkpoint's digest. ``early_stop`` carries the rule identity: a
+    different rule is a different experimental variant. An optional
+    ``progress`` callable (popped from fit_config) receives a small dict after
+    every update and monitor evaluation; it must not raise or block.
     """
     import tensorflow as tf
 
     raw = dict(fit_config)
+    compile_model = raw.pop("compile", True)
+    custom_optimizer = raw.pop("optimizer", None)
     progress = raw.pop("progress", None)
     if progress is not None and not callable(progress):
         raise ValueError("progress must be callable")
-    report = progress or (lambda **_: None)
-    compile_model = raw.pop("compile", True)
-    custom_optimizer = raw.pop("optimizer", None)
     custom_loss = raw.get("loss")
     if custom_loss is not None and not isinstance(custom_loss, str):
         raw["loss"] = "huber"
@@ -287,12 +316,20 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
     _predict(model, x[:1], y[:1], batch)
     _predict(model, vx[:1], vy[:1], batch)
     _weight_digest(model.get_weights())
-    history, best_weights = [], None
+    history, best_weights, best_digest = [], None, None
     best_loss, stale, updates, best_epoch, selected_updates = float("inf"), 0, 0, 0, 0
+    monitor_every, monitor_count = settings["monitor_every"], 0
+
+    def report(**fields):
+        if progress is not None:
+            progress(dict(updates=updates, best_epoch=best_epoch,
+                          best_validation_loss=None if best_weights is None else best_loss,
+                          max_epochs=settings["max_epochs"], max_updates=settings["max_updates"],
+                          max_seconds=settings["max_seconds"],
+                          elapsed_seconds=time.monotonic() - started, **fields))
     started = time.monotonic()
     initial_iterations = int(optimizer.iterations.numpy())
     stop_reason = "max_epochs"
-    batches_per_epoch = -(-len(x) // batch)
 
     def budget_reason():
         if updates >= settings["max_updates"]:
@@ -318,12 +355,18 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
                 raise ValueError("expected exactly one observed optimizer update per batch")
             updates += delta
             train_loss += float(np.asarray(value).reshape(-1)[0]) * len(xb)
-            report(stage="fit", epoch=epoch, updates=updates, batches_per_epoch=batches_per_epoch,
-                   best_epoch=best_epoch, best_validation_loss=best_loss if best_weights is not None else None,
-                   elapsed_seconds=time.monotonic() - started, max_epochs=settings["max_epochs"])
+            report(event="update", epoch=epoch)
         if interrupted:
             break
-        _weight_digest(model.get_weights())
+        epoch_digest = _weight_digest(model.get_weights())
+        if epoch % monitor_every and epoch != settings["max_epochs"]:
+            history.append(dict(epoch=epoch, train_loss=train_loss / len(x), validation_loss=None,
+                                monitored=False, updates=updates, weights_sha256=epoch_digest))
+            reason = budget_reason()
+            if reason:
+                stop_reason = reason
+                break
+            continue
         val_loss = 0.0
         for start in range(0, len(vx), batch):
             if time.monotonic() - started >= settings["max_seconds"]:
@@ -337,15 +380,16 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
         if interrupted:
             break
         val_loss /= len(vx)
-        report(stage="validated", epoch=epoch, updates=updates, validation_loss=val_loss,
-               elapsed_seconds=time.monotonic() - started)
-        history.append(dict(epoch=epoch, train_loss=train_loss / len(x), validation_loss=val_loss))
+        monitor_count += 1
+        history.append(dict(epoch=epoch, train_loss=train_loss / len(x), validation_loss=val_loss,
+                            monitored=True, updates=updates, weights_sha256=epoch_digest))
         if val_loss < best_loss - settings["min_delta"]:
             best_loss, best_epoch, stale = val_loss, epoch, 0
             best_weights = [v.copy() for v in model.get_weights()]
-            selected_updates = updates
+            best_digest, selected_updates = epoch_digest, updates
         else:
             stale += 1
+        report(event="monitor", epoch=epoch, validation_loss=val_loss, stale_monitors=stale)
         reason = budget_reason()
         if reason:
             stop_reason = reason
@@ -355,24 +399,33 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
             break
     if best_weights is None or updates == 0:
         raise ValueError("training produced no fully validated checkpoint within budget")
+    last_digest = _weight_digest(model.get_weights())
     model.set_weights(best_weights)
+    restored_digest = _weight_digest(model.get_weights())
+    if restored_digest != best_digest:
+        raise ValueError("restored weights differ from the selected checkpoint")
     final_iterations = int(optimizer.iterations.numpy())
     if final_iterations - initial_iterations != updates:
         raise ValueError("optimizer update count changed outside training")
+    report(event="restored", epoch=best_epoch)
     return dict(settings=settings, history=history, epochs_completed=len(history),
+                monitor_evaluations=monitor_count,
                 selected_epoch=best_epoch, best_epoch=best_epoch, selected_updates=selected_updates,
                 best_validation_loss=best_loss, observed_updates=updates,
                 initial_optimizer_iterations=initial_iterations,
                 optimizer_iterations=final_iterations, stop_reason=stop_reason,
-                restored_best_weights=True, elapsed_seconds=time.monotonic() - started)
+                stop_class="no_improvement" if stop_reason == "patience" else "budget",
+                restored_best_weights=True, restored_weights_sha256=restored_digest,
+                last_weights_sha256=last_digest,
+                restored_differs_from_last=restored_digest != last_digest,
+                early_stop=early_stop_identity(settings),
+                elapsed_seconds=time.monotonic() - started)
 
 
 def evaluate_candidate(config, train_path, validation_path, output_dir, progress=None):
     """Train locally and return a JSON-serializable, measured validation receipt.
 
-    Refuses invalid data/budgets before importing the engine. ``progress`` is an
-    optional callable receiving keyword stage/progress reports (heartbeats); it
-    never changes results and is excluded from the receipt. Output directory
+    Refuses invalid data/budgets before importing the engine. Output directory
     must not exist, avoiding accidental replacement of another candidate's model.
     The caller controls CPU/GPU visibility before importing TensorFlow.
     """
@@ -381,14 +434,12 @@ def evaluate_candidate(config, train_path, validation_path, output_dir, progress
     if not isinstance(config.get("model"), dict):
         raise ValueError("config['model'] must contain the strict engine configuration")
     settings = _settings(config)
-    report = progress or (lambda **_: None)
     try:
         canonical = json.dumps(config, sort_keys=True, separators=(",", ":"), allow_nan=False)
     except (TypeError, ValueError) as exc:
         raise ValueError("config must be finite JSON") from exc
     config = json.loads(canonical)
     model_config = config["model"]
-    report(stage="load")
     train = _load(train_path, "train", config)
     validation = _load(validation_path, "validation", config)
     objective = _objective(config, train["metric_space"])
@@ -420,7 +471,6 @@ def evaluate_candidate(config, train_path, validation_path, output_dir, progress
     from predictor_plugins.modular_temporal import build_modular
 
     tf.keras.utils.set_random_seed(settings["seed"])
-    report(stage="build")
     bundle = build_modular(model_config)
     model = bundle.forecast_model
     batch = settings["batch_size"]
@@ -428,8 +478,8 @@ def evaluate_candidate(config, train_path, validation_path, output_dir, progress
     vx, vy = validation["windows"], validation["targets"]
     _predict(model, x[:1], y[:1], batch)
     initial_digest = _weight_digest(model.get_weights())
-    training = fit_with_early_stopping(model, x, y, vx, vy, {**settings, "progress": progress})
-    report(stage="score", selected_epoch=training["selected_epoch"], updates=training["observed_updates"])
+    training = fit_with_early_stopping(model, x, y, vx, vy,
+                                       settings if progress is None else {**settings, "progress": progress})
     best_weights = model.get_weights()
     prediction = _predict(model, vx, vy, batch)
     baseline = np.repeat(vx[:, -1:, config["target_feature_indices"]], len(model_config["horizons"]), axis=1)
@@ -441,7 +491,6 @@ def evaluate_candidate(config, train_path, validation_path, output_dir, progress
         raise ValueError("objective undefined: persistence denominator is zero")
     destination.mkdir(parents=True, exist_ok=False)
     artifact = destination / "best.keras"
-    report(stage="save")
     model.save(artifact)
     restored = tf.keras.models.load_model(artifact, compile=False)
     reloaded_prediction = _predict(restored, vx, vy, batch)
