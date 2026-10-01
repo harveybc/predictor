@@ -756,8 +756,13 @@ def write_receipt(out):
              "resumed": b.get("resumed", False), "donor_sha256": b["donor_sha256"]} for b in pre["branches"]]
     fusion = pre["fusion"]
     core = pre["core"]
+    interruptions_path = out / "INTERRUPTIONS.json"
+    interruptions = json.loads(interruptions_path.read_text()) if interruptions_path.exists() else []
     receipt = {
         "schema": "m02.receipt.v1", "label": run["label"],
+        "interruptions": interruptions,
+        "resumed_branches": pre.get("resumed_branches", []),
+        "resumed_count": len(pre.get("resumed_branches", [])),
         "statement": "Reconstruction error is not forecasting skill; these donors are measured only as autoencoders.",
         "runtime": pre.get("runtime"), "source_config_sha256": pre.get("source_config_sha256"),
         "declaration_sha256": run.get("declaration_sha256"), "manifest_sha256": run.get("manifest_sha256"),
@@ -777,6 +782,7 @@ def write_receipt(out):
         "total_wall_seconds": run["measured"]["total_wall_seconds"]}
     (out / "RECEIPT.json").write_text(json.dumps(receipt, indent=2, allow_nan=False) + "\n")
     lines = [f"# {receipt['label']}", "", receipt["statement"], "",
+             f"Interruptions: {len(interruptions)}; branches reused on resume: {receipt['resumed_count']}.", "",
              "| branch | wall s | epochs | updates | stop | internal-val rel. MSE | resumed |", "|---|---|---|---|---|---|---|"]
     for r in rows:
         wall = "" if r["wall_seconds"] is None else f"{r['wall_seconds']:.1f}"

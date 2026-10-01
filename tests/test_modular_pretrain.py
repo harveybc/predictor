@@ -316,5 +316,6 @@ def test_receipt_is_generated_from_artifacts(tmp_path):
     receipt = json.loads((tmp_path / "p" / "RECEIPT.json").read_text())
     assert receipt["label"] == "SYNTHETIC DONORS_FOR_R1_R2 test"
     assert "not forecasting skill" in receipt["statement"]
+    assert receipt["interruptions"] == [] and receipt["resumed_count"] == 0
     assert len(receipt["branches"]) == 2 and receipt["core"]["updates"] > 0
     assert (tmp_path / "p" / "RECEIPT.md").read_text().count("| branch_") == 2
