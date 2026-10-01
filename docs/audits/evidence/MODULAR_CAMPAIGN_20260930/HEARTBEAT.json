@@ -1,6 +1,6 @@
 {
- "at": "2026-10-01T02:16:34Z",
+ "at": "2026-10-01T02:18:08Z",
  "pid": 848422,
- "status_written_at": "2026-10-01T02:16:34Z",
- "job_signature": "[[\"d-profile-perfeature\", \"queued\", \"queued\"], [\"m02-ecl-donors-r0-resume1\", \"completed\", \"STOPPED_AT_SAFE_BOUNDARY (old design superseded)\"], [\"m02-port-suite2\", \"running\", \"running_stage_unknown\"], [\"m04-modular-cost-pilot (old design, worker_b)\", \"failed\", \"failed\"], [\"m04_ecl_l24_h24_batch1_v3\", \"completed\", \"completed\"], [\"m06-status-writer\", \"running\", \"running_stage_unknown\"], [\"refute_da4ce7b4_single\", \"queued\", \"queued\"], [\"review-flatten-da4\", \"queued\", \"queued\"], [\"review_refute_names\", \"running\", \"running_stage_unknown\"], [\"review_shape_dev_da4\", \"queued\", \"queued\"], [\"review_tf411\", \"queued\", \"queued\"], [\"traffic_L96_h96_s2021\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2022\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2023\", \"completed\", \"completed\"]]"
+ "status_written_at": "2026-10-01T02:18:08Z",
+ "job_signature": "[[\"d-profile-perfeature\", \"queued\", \"queued\"], [\"laneA-suite\", \"running\", \"running_stage_unknown\"], [\"laneB2-ps_electricity\", \"running\", \"running_stage_unknown\"], [\"m02-ecl-donors-r0-resume1\", \"completed\", \"STOPPED_AT_SAFE_BOUNDARY (old design superseded)\"], [\"m02-port-suite2\", \"running\", \"running_stage_unknown\"], [\"m04-modular-cost-pilot (old design, worker_b)\", \"failed\", \"failed\"], [\"m04_ecl_l24_h24_batch1_v3\", \"completed\", \"completed\"], [\"m05-replay-latent\", \"queued\", \"queued\"], [\"m06-status-writer\", \"running\", \"running_stage_unknown\"], [\"refute_da4ce7b4_three\", \"queued\", \"queued\"], [\"review_shape_dev_861302\", \"queued\", \"queued\"], [\"traffic_L96_h96_s2021\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2022\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2023\", \"completed\", \"completed\"]]"
 }

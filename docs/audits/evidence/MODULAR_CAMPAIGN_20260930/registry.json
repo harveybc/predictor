@@ -414,6 +414,11 @@
    "at": "2026-10-01T02:30:00Z",
    "host_alias": "worker_b",
    "event": "M02 old-design donor run STOPPED at a safe boundary (190 records, receipt 37cc105a); lane A first deliverable c0d7b07b (UNVERIFIED); lane B tests red at d7dd357; lane C acknowledged"
+  },
+  {
+   "at": "2026-10-01T02:40:00Z",
+   "host_alias": "worker_a",
+   "event": "lane D PRE_INTEGRATION GPU pilot completed (engineering): host peak 4.25 GB, device 0.40 GB, 0.0246 s/update; corrected queue CAMPAIGN 13852a05 persisted, pin pending, no queue opened. Lane A c0d7b07b VERIFIED by the orchestrator."
   }
  ],
  "launch_recipes": {
@@ -516,6 +521,10 @@
   {
    "at": "2026-10-01T02:10Z",
    "what": "STATUS reconciler v2: stale free text removed (old M04 pilot 'running'/'queued', worker_a 'reserved for M04', M02 donor 132/321). Earlier queued-job parsing guessed names/memory from token positions across ssh/bash wrappers (an ssh alias read as a job, 'venv' read as memory); v2 parses launcher argv exactly and lists other mentions as UNPARSED."
+  },
+  {
+   "at": "2026-10-01T02:40:00Z",
+   "what": "Orchestrator records as its own review error that it accepted 0928dc06, which uncharged clean cache inside live scopes; superseded by 775c5545 (live-scope cache stays charged)."
   }
  ],
  "plan_links": {
@@ -534,7 +543,7 @@
    ],
    "branch": "satoshi/a-engine-integration-20261001",
    "state": "running",
-   "first_deliverable": "c0d7b07b architecture proof: UNVERIFIED by the orchestrator until logs are pushed or the workflow reproduces it"
+   "first_deliverable": "c0d7b07b architecture proof VERIFIED by the orchestrator (arch_test.log in the pushed tree: 4 passed in 17.20s)"
   },
   {
    "lane": "B",
@@ -562,7 +571,8 @@
     "a083979bc9a8fa1b8 (M04)"
    ],
    "branch": "satoshi/d-corrected-queue-20261001",
-   "state": "running"
+   "state": "running",
+   "first_deliverable": "corrected queue persisted (CAMPAIGN sha 13852a05, pin pending; no queue opened); PRE_INTEGRATION GPU pilot completed on worker_a: host peak 4.25 GB, device 0.40 GB, 0.0246 s/update (engineering, not a result)"
   },
   {
    "lane": "E",
