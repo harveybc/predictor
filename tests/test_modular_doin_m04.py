@@ -852,9 +852,10 @@ def test_r3_warm_schedule_is_conditional_round_trips_and_reaches_the_engine():
     assert "freeze_epochs" not in ss.from_flat(plain, base, space)["model"]["core"]
     with pytest.raises(ss.SearchSpaceError, match="missing"):
         ss.from_flat({k: v for k, v in flat.items() if k != "train.r3_freeze_epochs"}, base, space)
+    wide = copy.deepcopy(space)
+    wide["bounds"]["train.r3_freeze_epochs"] = {"type": "int", "low": 1, "high": 100000}
     with pytest.raises(ss.SearchSpaceError, match="smaller than"):
-        ss.from_flat({**flat, "train.r3_freeze_epochs": flat["train.max_epochs"]}, base, space) \
-            if flat["train.max_epochs"] <= 10 else (_ for _ in ()).throw(ss.SearchSpaceError("smaller than"))
+        ss.from_flat({**flat, "train.r3_freeze_epochs": flat["train.max_epochs"]}, base, wide)
     with pytest.raises(ss.SearchSpaceError, match="needs a space"):
         ss.from_flat(flat, base, {**SPACE_V2, "bounds": {**SPACE_V2["bounds"], **{k: space["bounds"][k] for k in (
             "branch.regime", "core.regime")}}})
