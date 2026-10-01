@@ -704,7 +704,7 @@
   },
   {
    "at": "2026-10-01T09:42Z",
-   "what": "M06 handover v1 self-matched its own command line in pgrep: it touched M07 loop B's STOP on worker_a at 09:40:37Z; loop B exited; STOP removed ~09:40:50Z; durable unit started 09:41:46Z exited 0 ('trained': 0). Fixed in handover v2 (wrapper/handover processes excluded); the other handovers were re-armed with v2"
+   "what": "M06 handover v1 self-matched its own command line in pgrep: it touched M07 loop B's STOP on worker_a at 09:40:37Z; loop B exited; STOP removed ~09:40:50Z; durable unit started 09:41:46Z exited 0 ('trained': 0). Fixed in handover v2 (wrapper/handover processes excluded); the other handovers were re-armed with v2; M07 later clarified that it had rewritten STOP ~09:41Z itself (coordinator decision), so the unit's 'trained 0' exit was correct and no cell was lost"
   }
  ],
  "plan_links": {
@@ -809,7 +809,8 @@
     "a1a511567dd7f306f"
    ],
    "branch": null,
-   "state": "assigned"
+   "state": "running",
+   "measured": "h1-pilot-green4 on worker_b: tests 37/37, cap 2G, cgroup peak 79.4 MB, ~6 s; branch satoshi/h-kalman-20261001 @ 940834d2"
   }
  ],
  "job_hints": {
@@ -1690,14 +1691,18 @@
   "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519": "G2"
  },
  "next_prepared": {
-  "F": "M06: PNG/RETURN/RESULTS deliverables and Hermes-drafted 30-minute summaries (ASSIGNED)"
+  "F": "M06: PNG/RETURN/RESULTS deliverables and Hermes-drafted 30-minute summaries (ASSIGNED)",
+  "H1": "h1-* replay of tests + Kalman digests on worker_a, then the ETH 4h arm pilot (ridge, CPU) at 1.25x its pilot peak",
+  "G2": "worker_b 4090: durable g2-queue-worker-b takes over after the current queue (15 cells); worker_a closed to G2 while D2 holds the 5090",
+  "F2": "worker_b 4090: durable f2-loop-worker-b after the current attempt; worker_a 5070 Ti: loop B (campaign_r0_v1_wa) restarts when M07 asks (condition: D2's 5090 cell holds its lease - MET 09:49:06Z)",
+  "D2": "durable d2-runner-worker-a: 4ea6cbed then successors 30-33 on the 5090"
  },
  "durable_runners": [
   {
    "unit": "d2-runner-worker-a.service",
    "host_alias": "coordinator",
    "owner": "M04",
-   "state": "ACTIVE since 09:43:00Z (pids 1406753/1406781); preflight revision 2b89f4d9",
+   "state": "ACTIVE since 09:43:00Z (pids 1406753/1406781); preflight revision 2b89f4d9; claimed m04-train-4ea6cbed, lease on the 5090 since 09:49:06Z (cap 6868M, amendment 10 sha dd48b937)",
    "stop": "STOP_worker_a"
   },
   {
@@ -1710,7 +1715,7 @@
    "unit": "f2-loop-worker-a.service",
    "host_alias": "worker_a",
    "owner": "M07",
-   "state": "started 09:41:46Z and exited 0 with {'trained': 0}; awaiting M07's queue check"
+   "state": "STOPPED by M07 on purpose (coordinator decision): M07 rewrote STOP ~09:41Z, so the unit's 'trained 0' exit is correct; remaining rows queued, six labels moved to the worker_b root; restarts when M07 asks"
   },
   {
    "unit": "g2-queue-worker-b.service",
