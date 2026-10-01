@@ -53,6 +53,8 @@ def main():
     # and the current directory (the checkout, for data paths) is NOT on sys.path.
     env = {k: v for k, v in os.environ.items() if not k.startswith("PYTHON")}
     env["CUDA_VISIBLE_DEVICES"] = ""
+    # A compatibility smoke is not a campaign result: keep its OLAP envelopes local.
+    env["CRISPDM_OLAP_OUTBOX"] = str(out / "olap_outbox")
     if a.code_root:
         root = Path(a.code_root).resolve()
         main_py, env["PYTHONPATH"] = root / "app" / "main.py", str(root)
