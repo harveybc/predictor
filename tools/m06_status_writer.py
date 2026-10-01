@@ -234,6 +234,18 @@ def coverage_block(reg, campaigns_out):
             "rule": "three counts are never summed or substituted for one another"}
 
 
+def psi_val(text, kind, key):
+    for line in (text or "").splitlines():
+        if line.startswith(kind):
+            for part in line.split():
+                if part.startswith(key + "="):
+                    try:
+                        return float(part.split("=", 1)[1])
+                    except ValueError:
+                        return None
+    return None
+
+
 def lanes():
     out = []
     for repo in sorted(os.listdir(GITHUB)):
@@ -359,6 +371,8 @@ def build(hosts, reg):
                         ("host_free_for_new_bytes", "held_unrealised_bytes", "desktop_reserve_bytes", "slice_memory_max",
                          "slice_memory_current", "slice_charged_bytes", "pressure_some_avg10")},
                      "mem_available_bytes": (p.get("mem") or {}).get("MemAvailable"),
+                     "psi_some_avg10": psi_val(p.get("psi"), "some", "avg10"),
+                     "psi_some_avg60": psi_val(p.get("psi"), "some", "avg60"),
                      "swap_free_bytes": (p.get("mem") or {}).get("SwapFree"),
                      "swap_total_bytes": (p.get("mem") or {}).get("SwapTotal"),
                      "unreclaimable_slab_bytes": (p.get("mem") or {}).get("SUnreclaim"),

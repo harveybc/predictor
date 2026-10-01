@@ -1215,5 +1215,102 @@
    "verdict_both": "QUEUED SLICE_AGGREGATE_BUDGET (new gate over by 154,017,792 B)"
   },
   "reading": "extending the repair to worker_b would uncharge 1.56 GB but would NOT by itself admit the 6.74 GB per-feature pilot beside the live 7G donor lease (over by 0.154 GB); it would admit M01's 4G suite or the 3G PS3-R child alone (both already fit under the old gate alone), not both together beside the donor (new 15.96e9 > 15.03e9)"
+ },
+ "standing_rules": [
+  {
+   "since": "2026-10-01T04:33Z",
+   "rule": "ZERO batch jobs on the coordinator; the only exceptions are M06's 512M STATUS writer and 128M event watcher. Every lane's CPU work goes to worker_a (repaired gate) or worker_b.",
+   "alert": "coordinator PSI some avg60 > 10 or MemAvailable < 12 GB, pushed to the orchestrator immediately; any non-M06 batch job seen on the coordinator is alerted"
+  }
+ ],
+ "incidents": [
+  {
+   "id": "COORD-PSI-02",
+   "host_alias": "coordinator",
+   "reported_by": "owner (gnome-settings-daemon crashed under memory pressure)",
+   "journal": [
+    "23:22:28 local kernel: Memory cgroup out of memory: Killed process 1027457 (python) total-vm:10898456kB, anon-rss:774608kB, file-rss:749552kB in oom_memcg crispdm-g-rl-green2-1790828298-1027440.scope (lane G)",
+    "23:22:28 local kernel: Memory cgroup out of memory: Killed process 1027654 (python) total-vm:6402000kB, anon-rss:261064kB, file-rss:263900kB, same scope",
+    "23:22:29 systemd: crispdm-g-rl-green2-...scope: Failed with result 'oom-kill' (1G memory peak)",
+    "23:28:08 crispdm-run: this job's own scope was STOPPED under sustained memory pressure (g-rl-rest, lane G: tree peak 1,064,194,048 B of a 1,073,741,824 B cap; own cgroup PSI 88.2, host PSI 70.9)",
+    "23:28:08 systemd: crispdm-batch.slice / crispdm.slice: The kernel OOM killer killed some processes in this unit",
+    "23:30:38-40: g-rl-test_rl05_checkpoint (lane G) pressure-stopped at 1,033,658,368 B of 1 GiB (own PSI 71.0, host 63.6)"
+   ],
+   "the_23_28_kill_hit": "g-rl-rest (lane G, crispdm-g-rl-rest-1790828577-1032697.scope), at 99% of its 1 GiB cap",
+   "bystanders": "m06-status-writer and m06-event-watch were pressure-stopped at 23:28:06-08 and 23:30:40 (own PSI 0, 7-45 MB) and restarted automatically (Restart=on-failure)",
+   "reading": "lane G RL jobs ran at ~99% of 1 GiB caps with own-cgroup PSI 70-88% (cap thrash) on the owner's desktop, alongside lane B census batches (~0.92 GB each) and lane C jobs; host PSI 63-71",
+   "state_at_read_04:33Z": "PSI some avg10 0.00 avg60 1.85 avg300 11.24; MemAvailable 19.8 GB; swap free 4.9 GB",
+   "orders": "g-rl-keras (lane G) and laneB-census-batch (lane B) ordered to stop/pause and move to the workers"
+  }
+ ],
+ "owner_question_20_lake": {
+  "at": "2026-10-01T04:45Z",
+  "method": "metadata only: os.stat/lstat of each lane B CATALOGUE.v1.csv path (feature-eng @ 686f9e5) and an os.walk of the data top-level directories of the coordinator's financial-data checkout; no file content read; crispdm-run -m 256M, ionice -c3",
+  "catalogue_listed": {
+   "RAW": {
+    "files": 773,
+    "bytes": 4505844737
+   },
+   "DERIVED": {
+    "files": 4500,
+    "bytes": 89496505649
+   },
+   "missing_on_disk": 0,
+   "stat_equals_catalogue_bytes": true
+  },
+  "top_level_walk": {
+   "features": {
+    "files": 6759,
+    "bytes": 91744006866
+   },
+   "market_data": {
+    "files": 728,
+    "bytes": 2206068960
+   },
+   "macro_economic": {
+    "files": 580,
+    "bytes": 6053774
+   },
+   "alternative_data": {
+    "files": 264,
+    "bytes": 403281520
+   },
+   "economic_calendar": {
+    "files": 57,
+    "bytes": 511397
+   },
+   "reference_data": {
+    "files": 33,
+    "bytes": 724101
+   },
+   "lake": {
+    "files": 66,
+    "bytes": 1931842
+   },
+   "derivatives": {
+    "files": 5,
+    "bytes": 0
+   },
+   "fundamental": {
+    "files": 5,
+    "bytes": 0
+   },
+   "microstructure": {
+    "files": 2,
+    "bytes": 0
+   }
+  },
+  "walk_total": {
+   "files": 8499,
+   "bytes": 94362578460
+  },
+  "free_disk_at_read": {
+   "worker_a_home_free_bytes": 175700000000,
+   "worker_b_home_free_bytes": 680400000000,
+   "coordinator_home_free_bytes": 89900000000,
+   "source": "STATUS quotas_measured (statvfs of $HOME)"
+  },
+  "evidence": "RESULTS/lake_metadata_coordinator.json",
+  "note": "nothing copied; mirror is an owner decision"
  }
 }
