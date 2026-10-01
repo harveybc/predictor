@@ -44,6 +44,38 @@ LANE_B_INNER_FOLDS = (  # feature-eng b90c4b3 runs/eth_4h/run_summary.json: expa
 LANE_B_HORIZON_BARS = {"Y_s@4h": 1, "Y_l@24h": 6, "Y_l@144h": 36}
 
 
+@dataclass(frozen=True)
+class PopulationSpec:
+    """Everything that distinguishes one population from another: the digests it must match, its bar width and how its
+    train rows and target scale are declared. ETH 4h (M07 split file) is the default; a population whose frozen manifest
+    declares its own split (lane B, e.g. EURUSD 1h) uses split_mode 'manifest'."""
+    name: str
+    view_sha256: str
+    manifest_file_sha256: str
+    declaration_sha256: str
+    dataset_id: str
+    view_path: str
+    view_commit: str
+    bar_seconds: int
+    split_mode: str = "m07_split_file"        # or "manifest"
+    split_file_sha256: str | None = None
+    window: int = 24
+    hmax: int = 6
+    availability_class: str = "DEVELOPMENT"
+
+
+ETH_4H_SPEC = PopulationSpec(
+    name="ETH_4h_variant_A", view_sha256=VIEW_SHA256, manifest_file_sha256=MANIFEST_FILE_SHA256, declaration_sha256=DECLARATION_SHA256,
+    dataset_id=DATASET_ID, view_path=VIEW_PATH, view_commit=VIEW_COMMIT, bar_seconds=BAR_SECONDS, split_file_sha256=SPLIT_FILE_SHA256)
+
+EURUSD_1H_SPEC = PopulationSpec(   # lane B frozen manifest feature-eng satoshi/b-source-transform-coverage-20261001 (eurusd_1h.v1)
+    name="EURUSD_1h_variant_A", view_sha256="72b8271d2a6ab7fc5de8c64dc626f128dbb11a1127c333e4039edecbdcc41783",
+    manifest_file_sha256="d36cb91e895673bd2e64738b804ae50e2fb826541ceebc4fe8fd24a3df2f42c5",
+    declaration_sha256="6f8fed4197c0d1824969768b5bd69521da115bc7122f49ccd79f897f74e9ccf0",
+    dataset_id="git:heuristic-strategy:939f5e6e:tests/data/eurusd_hour_2005_2020.csv", view_path="tests/data/eurusd_hour_2005_2020.csv",
+    view_commit="939f5e6e9819c976a6bbb07876cb195bf1374c35", bar_seconds=3600, split_mode="manifest", window=1, hmax=6)
+
+
 class PopulationRefusal(ValueError):
     """A binding that does not match its pinned digest is refused with a named code."""
 
@@ -72,14 +104,14 @@ def load_view(path, expected_sha: str | None = VIEW_SHA256) -> pd.DataFrame:
     return frame
 
 
-def load_manifest(path, expected_sha: str | None = MANIFEST_FILE_SHA256) -> dict:
+def load_manifest(path, expected_sha: str | None = MANIFEST_FILE_SHA256, declaration_sha: str | None = DECLARATION_SHA256) -> dict:
     actual = sha256_file(path)
     if expected_sha is not None and actual != expected_sha:
         raise PopulationRefusal(f"MANIFEST_SHA256_MISMATCH: {actual} != {expected_sha}")
     doc = json.loads(Path(path).read_text(encoding="utf-8"))
     if doc.get("status") != "FROZEN_DEVELOPMENT":
         raise PopulationRefusal(f"MANIFEST_NOT_FROZEN: {doc.get('status')}")
-    if doc.get("admissible_declaration_sha256") != DECLARATION_SHA256:
+    if declaration_sha is not None and doc.get("admissible_declaration_sha256") != declaration_sha:
         raise PopulationRefusal("MANIFEST_DECLARATION_SHA_MISMATCH")
     features = list(doc["features"])
     if len(features) != int(doc["feature_count"]):
@@ -136,6 +168,7 @@ class Population:
     origins: np.ndarray                      # M07's scored train origins
     gap_excluded_windows: int
     bindings: dict = field(default_factory=dict)
+    bar_seconds: int = BAR_SECONDS
 
     @property
     def train_end(self) -> int:
@@ -153,7 +186,7 @@ class Population:
         n = self.train_end
         y = np.full(n, np.nan)
         t = np.arange(n - h)
-        regular = (self.times[t + h] - self.times[t]) == h * BAR_SECONDS
+        regular = (self.times[t + h] - self.times[t]) == h * self.bar_seconds
         y[t[regular]] = np.log(close[t[regular] + h]) - np.log(close[t[regular]])
         return y
 
@@ -164,7 +197,7 @@ class Population:
         n = self.train_end
         y = np.full(n, np.nan)
         t = np.arange(n - h)
-        regular = (self.times[t + h] - self.times[t]) == h * BAR_SECONDS
+        regular = (self.times[t + h] - self.times[t]) == h * self.bar_seconds
         tt = t[regular]
         y[tt] = csum[tt + h + 1] - csum[tt + 1]
         return y
@@ -173,52 +206,81 @@ class Population:
         return self.sigma * y_z + h * self.mu
 
 
-def bind_population(view_path, manifest_path, split_path, *, expect_view=VIEW_SHA256,
-                    expect_manifest=MANIFEST_FILE_SHA256, expect_split=SPLIT_FILE_SHA256) -> Population:
-    frame = load_view(view_path, expect_view)
-    manifest = load_manifest(manifest_path, expect_manifest)
-    split = load_split(split_path, expect_split)
-    if split["source_sha256"] != frame.attrs["sha256"]:
-        raise PopulationRefusal("SPLIT_SOURCE_SHA_MISMATCH")
+def bind_population(view_path, manifest_path, split_path=None, *, expect_view=VIEW_SHA256, expect_manifest=MANIFEST_FILE_SHA256,
+                    expect_split=SPLIT_FILE_SHA256, spec: PopulationSpec | None = None) -> Population:
+    """Bind a population. With `spec=None` this is the ETH 4h binding exactly as before (the expect_* arguments override
+    the digests). With a `PopulationSpec` the digests, bar width, and split source come from the spec."""
+    if spec is None:
+        spec = ETH_4H_SPEC
+        digests = dict(view=expect_view, manifest=expect_manifest, split=expect_split, declaration=DECLARATION_SHA256)
+    else:
+        digests = dict(view=spec.view_sha256, manifest=spec.manifest_file_sha256, split=spec.split_file_sha256, declaration=spec.declaration_sha256)
+    frame = load_view(view_path, digests["view"])
+    manifest = load_manifest(manifest_path, digests["manifest"], digests["declaration"])
     if manifest["resource"]["sha256"] != frame.attrs["sha256"]:
         raise PopulationRefusal("MANIFEST_RESOURCE_SHA_MISMATCH")
     features = list(manifest["features"])
     missing = [f for f in features if f not in frame.columns]
     if missing:
         raise PopulationRefusal(f"FEATURES_MISSING_FROM_VIEW: {missing[:5]}")
-    tr = tuple(int(v) for v in split["declared_split"]["train_rows"])
-    if tuple(int(v) for v in manifest["split"]["train"]["rows"]) != tr:
-        raise PopulationRefusal("MANIFEST_AND_SPLIT_DISAGREE_ON_TRAIN_ROWS")
     times = epoch_seconds(frame)
+    if "log_return_1" not in frame.columns:      # derived causally from CLOSE (row t uses rows <= t)
+        close = frame["CLOSE"].to_numpy(dtype=np.float64)
+        frame["log_return_1"] = np.concatenate([[0.0], np.diff(np.log(close))])
+    window, hmax = int(spec.window), int(spec.hmax)
+    split = split_target = None
+    if spec.split_mode == "m07_split_file":
+        split = load_split(split_path, digests["split"])
+        if split["source_sha256"] != frame.attrs["sha256"]:
+            raise PopulationRefusal("SPLIT_SOURCE_SHA_MISMATCH")
+        tr = tuple(int(v) for v in split["declared_split"]["train_rows"])
+        if tuple(int(v) for v in manifest["split"]["train"]["rows"]) != tr:
+            raise PopulationRefusal("MANIFEST_AND_SPLIT_DISAGREE_ON_TRAIN_ROWS")
+        va = [int(v) for v in split["declared_split"]["validation_rows"]]
+        te = [int(v) for v in split["declared_split"]["test_rows"]]
+        window, hmax = int(split["window"]), int(split["purge_bars"])
+        authority, split_sha, split_target = SPLIT_AUTHORITY, split["_file_sha256"], split["target"]
+    elif spec.split_mode == "manifest":
+        tr = tuple(int(v) for v in manifest["split"]["train"]["rows"])
+        va = [int(v) for v in manifest["split"]["validation"]["rows"]]
+        te = [int(v) for v in manifest["split"]["test"]["rows"]]
+        authority, split_sha = f"frozen manifest {manifest['_file_sha256'][:8]} ({manifest['split'].get('declared_by', '')[:60]})", manifest["_file_sha256"]
+    else:
+        raise PopulationRefusal(f"UNKNOWN_SPLIT_MODE: {spec.split_mode}")
     lr1 = frame["log_return_1"].to_numpy(dtype=np.float64)[: tr[1]]
     mu, sigma = float(np.mean(lr1)), float(np.std(lr1))  # ddof=0, as M07's StandardScaler
-    for name, ours, theirs in (("mu", mu, split["target"]["mu"]), ("sigma", sigma, split["target"]["sigma"])):
-        if not np.isclose(ours, float(theirs), rtol=1e-6, atol=1e-12):
-            raise PopulationRefusal(f"M07_{name.upper()}_NOT_REPRODUCED: {ours} vs {theirs}")
-    tsplit = split["splits"]["train"]
-    window, hmax = int(split["window"]), int(split["purge_bars"])
-    origins, gaps = m07_origins(times, int(tsplit["origin_rows"][0]), int(tsplit["origin_rows"][1]), window, hmax)
-    if len(origins) != int(tsplit["windows"]) or gaps != int(tsplit["gap_excluded_windows"]):
-        raise PopulationRefusal(f"M07_TRAIN_ORIGINS_NOT_REPRODUCED: {len(origins)}/{gaps} vs "
-                                f"{tsplit['windows']}/{tsplit['gap_excluded_windows']}")
-    row_ids_sha = m07_row_ids_sha256(origins, times)
-    if row_ids_sha != tsplit["row_ids_sha256"]:
-        raise PopulationRefusal("M07_TRAIN_ROW_IDS_SHA_NOT_REPRODUCED")
+    if split_target is not None:
+        for name, ours, theirs in (("mu", mu, split_target["mu"]), ("sigma", sigma, split_target["sigma"])):
+            if not np.isclose(ours, float(theirs), rtol=1e-6, atol=1e-12):
+                raise PopulationRefusal(f"M07_{name.upper()}_NOT_REPRODUCED: {ours} vs {theirs}")
+    if split is not None:
+        tsplit = split["splits"]["train"]
+        lo, hi = int(tsplit["origin_rows"][0]), int(tsplit["origin_rows"][1])
+    else:                                          # origins: declared TRAIN rows whose label support stays inside TRAIN
+        lo, hi = 0, tr[1] - 1 - hmax
+    origins, gaps = m07_origins(times, lo, hi, window, hmax, spec.bar_seconds)
+    if split is not None:
+        if len(origins) != int(tsplit["windows"]) or gaps != int(tsplit["gap_excluded_windows"]):
+            raise PopulationRefusal(f"M07_TRAIN_ORIGINS_NOT_REPRODUCED: {len(origins)}/{gaps} vs {tsplit['windows']}/{tsplit['gap_excluded_windows']}")
+        row_ids_sha = m07_row_ids_sha256(origins, times)
+        if row_ids_sha != tsplit["row_ids_sha256"]:
+            raise PopulationRefusal("M07_TRAIN_ROW_IDS_SHA_NOT_REPRODUCED")
+    else:
+        row_ids_sha = sha256_text("\n".join(f"{spec.name}:row{o}:{t}" for o, t in zip(origins.tolist(), times[origins].tolist())))
     bindings = {
-        "view": {"path": VIEW_PATH, "commit": VIEW_COMMIT, "sha256": frame.attrs["sha256"], "rows": int(len(frame)),
-                 "dataset_id": DATASET_ID, "availability_class": "DEVELOPMENT"},
+        "view": {"path": spec.view_path, "commit": spec.view_commit, "sha256": frame.attrs["sha256"], "rows": int(len(frame)),
+                 "dataset_id": spec.dataset_id, "availability_class": spec.availability_class},
         "manifest": {"file_sha256": manifest["_file_sha256"], "canonical_sha256": manifest["manifest_sha256_canonical"],
-                     "declaration_sha256": manifest["admissible_declaration_sha256"], "variant": manifest["variant"],
-                     "features": len(features)},
-        "split": {"file_sha256": split["_file_sha256"], "authority": SPLIT_AUTHORITY, "train_rows": list(tr),
-                  "validation_rows": [int(v) for v in split["declared_split"]["validation_rows"]],
-                  "test_rows": [int(v) for v in split["declared_split"]["test_rows"]], "test_status": "PROTECTED_NEVER_READ",
-                  "window": window, "purge_bars": hmax, "train_origins": [int(origins.min()), int(origins.max())],
-                  "train_windows": int(len(origins)), "gap_excluded_windows": int(gaps), "train_row_ids_sha256": row_ids_sha},
-        "target": {"definition": split["target"]["definition"], "mu": mu, "sigma": sigma, "feature": "log_return_1"},
+                     "declaration_sha256": manifest["admissible_declaration_sha256"], "variant": manifest["variant"], "features": len(features)},
+        "split": {"file_sha256": split_sha, "authority": authority, "train_rows": list(tr), "validation_rows": va, "test_rows": te,
+                  "test_status": "PROTECTED_NEVER_READ", "window": window, "purge_bars": hmax,
+                  "train_origins": [int(origins.min()), int(origins.max())], "train_windows": int(len(origins)),
+                  "gap_excluded_windows": int(gaps), "train_row_ids_sha256": row_ids_sha},
+        "target": {"definition": "Y_h = sum_{k=1..h} z(log_return_1[t+k]); mu, sigma on TRAIN rows only", "mu": mu, "sigma": sigma, "feature": "log_return_1"},
+        "population_spec": spec.name,
     }
     return Population(frame=frame, features=features, train_rows=tr, mu=mu, sigma=sigma, times=times,
-                      origins=origins, gap_excluded_windows=gaps, bindings=bindings)
+                      origins=origins, gap_excluded_windows=gaps, bindings=bindings, bar_seconds=spec.bar_seconds)
 
 
 # ----------------------------------------------------------------------------------------------- splits inside TRAIN
