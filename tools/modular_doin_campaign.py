@@ -375,6 +375,8 @@ class Campaign:
 
         def verify_job(row, attempt, output_root):
             own = Campaign(self.root)
+            own.declaration = self.declaration  # the runner's declaration, not a re-read
+            own.space = self.space
             own.execute(row, "verify", executor, attempt, output_root)
             own.update_incumbent()
 
