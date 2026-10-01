@@ -77,3 +77,41 @@ class SeasonalNaiveBaseline(keras.layers.Layer):
 
     def get_config(self):
         return {**super().get_config(), "positions": list(self.positions), "channels": list(self.channels)}
+
+
+@keras.utils.register_keras_serializable(package="modular_temporal")
+class WindowMean(keras.layers.Layer):
+    """Per-channel mean of the last ``length`` steps of the window: (B, T, F) -> (B, 1, F). Every step it
+    reads is observed by the decision time t (no value after t), but each in-window step of a centered
+    input then depends on later in-window steps: the normalized path is causal w.r.t. t, not per step."""
+
+    def __init__(self, length, **kwargs):
+        super().__init__(**kwargs)
+        self.length = int(length)
+
+    def call(self, inputs):
+        return tf.reduce_mean(inputs[:, -self.length:, :], axis=1, keepdims=True)
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], 1, input_shape[2])
+
+    def get_config(self):
+        return {**super().get_config(), "length": self.length}
+
+
+@keras.utils.register_keras_serializable(package="modular_temporal")
+class TargetMeanBroadcast(keras.layers.Layer):
+    """(B, 1, F) window mean -> (B, H, T): the target channels' mean repeated over the H horizons."""
+
+    def __init__(self, channels, horizons, **kwargs):
+        super().__init__(**kwargs)
+        self.channels, self.horizons = tuple(channels), int(horizons)
+
+    def call(self, mean):
+        return tf.repeat(tf.gather(mean, self.channels, axis=-1), self.horizons, axis=1)
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], self.horizons, len(self.channels))
+
+    def get_config(self):
+        return {**super().get_config(), "channels": list(self.channels), "horizons": self.horizons}

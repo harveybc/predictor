@@ -189,6 +189,8 @@ class ModularBundle:
                 "branches": {n: self.donor_manifest("branch", n) for n in self.branch_models},
                 "fusion": fusion, "core": self.donor_manifest("core"),
                 "head": _copy(self._head_manifest), "regimes": regime_summary(self.config),
+                **({"input_normalization": _copy(self.config["input_normalization"])}
+                   if self.config.get("input_normalization") else {}),
                 **({"target_residual": {**_copy(self.config["target_residual"]), "per_horizon": [
                     {"horizon": h, "source_offset_steps": -(self.config["target_residual"]["period"] - h)}
                     for h in self.config["horizons"]]}} if self.config.get("target_residual") else {}),
@@ -249,6 +251,14 @@ def build_modular(config: dict) -> ModularBundle:
     branch_grid = _partition(input_grid, c["branch_steps"])
     core_grid = _partition(branch_grid, c["output_steps"])
     inputs = keras.Input((c["window"], len(c["feature_names"])), name="observations")
+    raw_inputs, window_mean = inputs, None
+    norm = c.get("input_normalization")
+    if norm:
+        from .layers import WindowMean
+        window_mean = WindowMean(norm["length"], name="window_mean")(inputs)
+        inputs_for_branches = keras.layers.Subtract(name="window_mean_centered")([inputs, window_mean])
+    else:
+        inputs_for_branches = inputs
     branches, manifests, sequences = {}, {}, []
     groups = c["entry_point_groups"]
     for spec in c["branches"]:
@@ -265,7 +275,7 @@ def build_modular(config: dict) -> ModularBundle:
             probe_alignment(model, input_grid, branch_grid, label="branch " + name)
         branches[name], manifests[name] = model, manifest
         local = FeatureSelect([c["feature_names"].index(f) for f in spec["features"]],
-                              name="select_" + name)(inputs)
+                              name="select_" + name)(inputs_for_branches)
         sequences.append(model(local))
     factory, fusion_identity = _resolve("fusion", c["fusion"], groups)
     fusion_identity["params"] = effective_params(factory, c["fusion"]["params"], {})
@@ -275,7 +285,7 @@ def build_modular(config: dict) -> ModularBundle:
     if fusion.weights:
         raise ValueError("Raw sequence fusion cannot contain weights")
     fused = fusion(sequences)
-    fusion_model = keras.Model(inputs, fused, name="fusion_model")
+    fusion_model = keras.Model(raw_inputs, fused, name="fusion_model")
     factory, identity = _resolve("core", c["core"], groups)
     component = factory(input_shape=tuple(fused.shape[1:]), time_grid=branch_grid,
                         output_steps=c["output_steps"], output_channels=c["output_channels"],
@@ -305,6 +315,11 @@ def build_modular(config: dict) -> ModularBundle:
         channels = [c["feature_names"].index(t) for t in residual["target_features"]]
         baseline = SeasonalNaiveBaseline(positions, channels, name="seasonal_naive_baseline")(inputs)
         output = keras.layers.Add(name="forecast_plus_seasonal_naive")([output, baseline])
+    if norm:
+        from .layers import TargetMeanBroadcast
+        restore = TargetMeanBroadcast([c["feature_names"].index(t) for t in norm["target_features"]],
+                                      len(c["horizons"]), name="target_window_mean")(window_mean)
+        output = keras.layers.Add(name="forecast_plus_window_mean")([output, restore])
     model = keras.Model(inputs, output, name="forecast_model")
     head_manifest = {"schema": 1, "role": "head", "plugin": head_identity,
                      "params": effective_params(factory, c["head"]["params"], {}),
