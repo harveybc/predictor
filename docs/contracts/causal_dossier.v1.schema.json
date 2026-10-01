@@ -45,7 +45,7 @@
       "required": ["sources", "asset_appearance", "publication_clock", "expectation_kind", "n_episodes", "exclusions", "train_folds"],
       "properties": {
         "asset_appearance": {
-          "description": "The single slot through which every rung reads the outcome price series (owner open question 13). CONTRACTED binds the study to one contracted census appearance (lane B FINANCIAL_TRAIN_CONTRACTS.v1: appearance id, resource sha256, TRAIN rows, contract id) without redesign; NOT_EXECUTABLE_NO_CONTRACTED_PRICE is the state until such an appearance is sealed through the governed route. No uncontracted price file may stand in.",
+          "description": "The single slot through which every rung reads the outcome price series (owner open question 13). CONTRACTED binds the study to one contracted census appearance (lane B FINANCIAL_TRAIN_CONTRACTS.v1: appearance id, resource sha256, TRAIN rows, contract id) without redesign; NOT_EXECUTABLE_NO_CONTRACTED_PRICE is the state until such an appearance is sealed through the governed route. No uncontracted price file may stand in. CONTRACTED_MODEL_READY_VIEW (lane C2, 2026-10-01) binds a DEVELOPMENT study to a model-ready view that carries its own immutable dataset contract in the consuming repository (FINANCIAL_TRAIN_CONTRACTS.v1 other_contracted) and names its lake parent appearance; it never carries an identified effect.",
           "oneOf": [
             {
               "type": "object",
@@ -74,6 +74,24 @@
                 "entity": {"type": "string", "minLength": 1},
                 "reason": {"type": "string", "minLength": 1},
                 "open_question": {"type": "string"}
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["state", "dataset_id", "entity", "resource_sha256", "contract", "train_rows", "frequency", "period", "contracts_document_sha256", "lake_parent_appearance_id", "availability_class"],
+              "properties": {
+                "state": {"const": "CONTRACTED_MODEL_READY_VIEW"},
+                "dataset_id": {"type": "string", "pattern": "^financial_data\\.[a-z0-9_]+\\.[a-z0-9_.]+\\.model_ready\\.v[0-9]+$"},
+                "entity": {"type": "string", "minLength": 1},
+                "resource_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "sha256 of the view bytes"},
+                "contract": {"type": "string", "minLength": 1, "description": "the view's own immutable manifest, repository path @ commit; never a host name"},
+                "train_rows": {"type": "array", "items": {"type": "integer", "minimum": 0}, "minItems": 2, "maxItems": 2},
+                "frequency": {"enum": ["5m", "15m", "1h", "4h", "1d"]},
+                "period": {"type": "array", "items": {"type": "string", "format": "date-time"}, "minItems": 2, "maxItems": 2},
+                "contracts_document_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+                "lake_parent_appearance_id": {"type": "string", "pattern": "^app_[0-9a-f]{24}$"},
+                "availability_class": {"const": "DEVELOPMENT"}
               }
             }
           ]
@@ -329,6 +347,12 @@
     "limitations": {"type": "array", "items": {"type": "string"}, "minItems": 1}
   },
   "allOf": [
+    {
+      "if": {"properties": {"data_manifest": {"properties": {"asset_appearance": {"properties": {"state": {"const": "CONTRACTED_MODEL_READY_VIEW"}}}}}}},
+      "then": {"properties": {"rung2": {"properties": {"state": {"enum": ["NOT_EVALUATED", "NOT_IDENTIFIED"]}}},
+                              "rung3": {"properties": {"state": {"enum": ["NOT_EVALUATED", "NOT_IDENTIFIED"]}}},
+                              "selection": {"properties": {"causal_evidence_level": {"enum": ["NONE", "ASSOCIATION"]}, "cf_eligible": {"const": false}}}}}
+    },
     {
       "if": {"properties": {"data_manifest": {"properties": {"asset_appearance": {"properties": {"state": {"const": "NOT_EXECUTABLE_NO_CONTRACTED_PRICE"}}}}}}},
       "then": {"properties": {"rung1": {"properties": {"state": {"const": "NOT_EVALUATED"}}},

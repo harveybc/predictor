@@ -1,0 +1,8 @@
+{
+  "file": "stage22_trading_features_worker.py",
+  "copied_verbatim_from": "financial-data _scripts/workers/stage22_trading_features_worker.py",
+  "commit": "19fe375a1d5b65710b199d3c2026bffdbb00707b",
+  "sha256": "7495a0d974a7eb086eef0c11927b1c536946746ee3544ad82f6c256d1c6ee050",
+  "why": "FEATURE_DAG.v3 (financial-data ac2e8072, dag sha e15017ce) names compute_technical/compute_statistical of this file as the producer of the ETH 4h technical/statistical columns; lane C2 replays it on perturbed OHLCV for the causal-ordering probe. Only compute_technical, compute_statistical and their helpers are called; main/log/notify are never invoked.",
+  "not_claimed": "that the model-ready view was materialized by this exact revision; the identity check in tools/c2_leak_probe.py decides per column"
+}
