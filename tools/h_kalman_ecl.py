@@ -17,6 +17,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 import sys
 import zipfile
 from pathlib import Path
@@ -42,25 +43,52 @@ arms_lib = pipe.arms_lib
 
 
 # ---------------------------------------------------------------------------------------------- reading
-def npz_memmap(path, key):
-    """Read-only memmap of an uncompressed member ``key``.npy of an .npz file."""
+def _member(path, key):
+    """(offset, shape, dtype) of an uncompressed member ``key``.npy of an .npz file."""
     path = str(path)
     with zipfile.ZipFile(path) as z:
         info = z.getinfo(f"{key}.npy")
         if info.compress_type != 0:
-            raise ValueError(f"{key} is compressed; cannot memory-map")
+            raise ValueError(f"{key} is compressed")
     with open(path, "rb") as f:
         f.seek(info.header_offset)
         local = f.read(30)
-        name_len = int.from_bytes(local[26:28], "little")
-        extra_len = int.from_bytes(local[28:30], "little")
-        start = info.header_offset + 30 + name_len + extra_len
+        start = info.header_offset + 30 + int.from_bytes(local[26:28], "little") + int.from_bytes(local[28:30], "little")
         f.seek(start)
         version = np.lib.format.read_magic(f)
         reader = np.lib.format.read_array_header_1_0 if version == (1, 0) else np.lib.format.read_array_header_2_0
         shape, fortran, dtype = reader(f)
-        offset = f.tell()
-    return np.memmap(path, dtype=dtype, mode="r", offset=offset, shape=shape, order="F" if fortran else "C")
+        if fortran:
+            raise ValueError("fortran order not supported")
+        return f.tell(), shape, dtype
+
+
+def npz_memmap(path, key):
+    """Read-only memmap of an uncompressed member (small members and tests)."""
+    off, shape, dtype = _member(path, key)
+    return np.memmap(str(path), dtype=dtype, mode="r", offset=off, shape=shape)
+
+
+def iter_member(path, key, chunk=512):
+    """Sequential chunks of the leading axis, read with plain reads; the page cache of each chunk is dropped
+    (posix_fadvise DONTNEED) so a large member does not inflate the job's cgroup charge."""
+    off, shape, dtype = _member(path, key)
+    row_bytes = int(np.prod(shape[1:])) * dtype.itemsize
+    fd = os.open(str(path), os.O_RDONLY)
+    try:
+        for i in range(0, shape[0], chunk):
+            n = min(chunk, shape[0] - i)
+            buf = os.pread(fd, n * row_bytes, off + i * row_bytes)
+            if len(buf) != n * row_bytes:
+                raise ValueError("short read")
+            arr = np.frombuffer(buf, dtype=dtype).reshape((n,) + tuple(shape[1:]))
+            try:
+                os.posix_fadvise(fd, off + i * row_bytes, n * row_bytes, os.POSIX_FADV_DONTNEED)
+            except (AttributeError, OSError):
+                pass
+            yield i, arr
+    finally:
+        os.close(fd)
 
 
 def _origins(path):
@@ -71,35 +99,29 @@ def _origins(path):
 
 def reconstruct_rows(train_path, val_path, horizons=24, window=24):
     """Exact train-standardized rows from windows (rows o-23..o) and targets (rows o+1..o+H); NaN where not covered.
-    Every overlapping cell must agree bitwise (checked on all windows' last rows and all targets' rows)."""
+    Every cell is written from every window and every target that contains it, and every overlap must agree bitwise."""
     origins = {"train": _origins(train_path), "validation": _origins(val_path)}
     end = int(origins["validation"].max()) + horizons + 1
-    C = npz_memmap(train_path, "windows").shape[2]
+    C = _member(train_path, "windows")[1][2]
     rows = np.full((end, C), np.nan)
+
+    def put(r, vals):
+        prev = rows[r]
+        seen = ~np.isnan(prev)
+        if not np.array_equal(prev[seen], vals[seen]):
+            raise ValueError("overlapping windows/targets disagree")
+        rows[r] = vals
+
     for split, path in (("train", train_path), ("validation", val_path)):
-        W, Y, o = npz_memmap(path, "windows"), npz_memmap(path, "targets"), origins[split]
-        first = int(o[0])
-        rows[first - window + 1:first + 1] = np.asarray(W[0], dtype=np.float64)
-        for i in range(0, len(o), 1024):
-            blk_o = o[i:i + 1024]
-            last = np.asarray(W[i:i + 1024, -1, :], dtype=np.float64)
-            prev = rows[blk_o]
-            seen = ~np.isnan(prev)
-            if not np.array_equal(prev[seen], last[seen]):
-                raise ValueError("windows disagree with already reconstructed rows")
-            rows[blk_o] = last
-            T = np.asarray(Y[i:i + 1024], dtype=np.float64)
+        o = origins[split]
+        for i, W in iter_member(path, "windows"):
+            oo = o[i:i + len(W)]
+            for j in range(window):
+                put(oo - window + 1 + j, W[:, j, :].astype(np.float64))
+        for i, T in iter_member(path, "targets"):
+            oo = o[i:i + len(T)]
             for k in range(horizons):
-                r = blk_o + k + 1
-                prev = rows[r]
-                seen = ~np.isnan(prev)
-                if not np.array_equal(prev[seen], T[:, k, :][seen]):
-                    raise ValueError("targets disagree with reconstructed rows")
-                rows[r] = T[:, k, :]
-        # full window check on a deterministic sample
-        for i in np.linspace(0, len(o) - 1, 64).astype(int):
-            if not np.array_equal(rows[o[i] - window + 1:o[i] + 1], np.asarray(W[i], dtype=np.float64)):
-                raise ValueError("window check failed")
+                put(oo + k + 1, T[:, k, :].astype(np.float64))
     return rows, origins
 
 

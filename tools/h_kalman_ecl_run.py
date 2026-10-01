@@ -45,8 +45,14 @@ M04_SEASONAL_MEAN = 0.247966
 def sha_file(p):
     h = hashlib.sha256()
     with open(p, "rb") as f:
+        pos = 0
         for b in iter(lambda: f.read(1 << 22), b""):
             h.update(b)
+            try:          # drop the page cache just read: the 1.1 GB input must not inflate this job's cgroup charge
+                os.posix_fadvise(f.fileno(), pos, len(b), os.POSIX_FADV_DONTNEED)
+            except (AttributeError, OSError):
+                pass
+            pos += len(b)
     return h.hexdigest()
 
 
