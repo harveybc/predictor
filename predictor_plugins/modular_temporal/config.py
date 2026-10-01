@@ -31,7 +31,8 @@ def _normalize(config):
     _keys(c, {"schema", "window", "sample_hours", "feature_names", "branches", "branch_steps",
               "core", "fusion", "head", "output_steps", "output_channels", "entry_point_groups",
               "horizons", "target_count", "regime", "alignment_probe", "budget_caps",
-              "excluded_features", "donor_contract", "target_residual", "input_normalization"}, "config")
+              "excluded_features", "donor_contract", "target_residual", "input_normalization",
+              "extra_channels"}, "config")
     if "donor_contract" in c and c["donor_contract"] not in ("OPERATIONAL", "UNKNOWN_ALLOWED"):
         raise ValueError("donor_contract must be OPERATIONAL or UNKNOWN_ALLOWED (absent means OPERATIONAL)")
     if c.setdefault("schema", CONFIG_SCHEMA) != CONFIG_SCHEMA:
@@ -112,6 +113,7 @@ def _normalize(config):
     _check_budget_caps(c)
     _check_target_residual(c)
     _check_input_normalization(c)
+    _check_extra_channels(c)
     routed = {f for spec in branches for f in spec["features"]}
     excluded = c.get("excluded_features", {})
     if not isinstance(excluded, dict) or any(not isinstance(v, str) or not v.strip() for v in excluded.values()):
@@ -172,6 +174,56 @@ def _check_target_residual(c):
         if spec["kind"] == "seasonal_naive" and period - h > c["window"] - 1:
             raise ValueError(f"SEASONAL_REFERENCE_OUTSIDE_WINDOW: horizon {h} needs t-{period - h}, outside "
                              f"the {c['window']}-step window")
+
+
+def _check_extra_channels(c):
+    """Per-feature companion channels (e.g. causal Kalman state/slope/innovation/z-innovation/log-variance).
+
+    Layout contract: every extra is a declared input owned by exactly one parent; wherever the parent is
+    routed, its extras follow it immediately in declared order, and an extra is never routed without its
+    parent. The branch keeps the time axis; only its channel count grows. Absent = digest-neutral."""
+    spec = c.get("extra_channels")
+    if spec is None:
+        return
+    names = c["feature_names"]
+    if not isinstance(spec, dict):
+        raise ValueError("extra_channels maps a parent feature to its ordered list of extra channels")
+    owner = {}
+    for parent, extra in spec.items():
+        if parent not in names:
+            raise ValueError(f"extra_channels parent {parent!r} is not a declared input")
+        if not isinstance(extra, list) or not extra:
+            raise ValueError(f"extra_channels of {parent!r} must be a nonempty ordered list")
+        for name in extra:
+            if name in spec or name == parent:
+                raise ValueError(f"extra channel {name!r} is itself a parent")
+            if name not in names:
+                raise ValueError(f"extra channel {name!r} is not in feature_names")
+            if name in owner:
+                raise ValueError(f"extra channel {name!r} must belong to exactly one parent (declared once)")
+            owner[name] = parent
+    for branch in c["branches"]:
+        feats = branch["features"]
+        for name in feats:
+            if name in owner and owner[name] not in feats:
+                raise ValueError(f"layout: extra {name!r} routed to {branch['name']} without its parent")
+        for parent, extra in spec.items():
+            if parent in feats:
+                i = feats.index(parent)
+                if feats[i + 1:i + 1 + len(extra)] != extra:
+                    raise ValueError(f"layout: branch {branch['name']} must route {parent!r} followed by "
+                                     f"{extra} in that order")
+
+
+def config_with_extra_channels(parents, extra_channels):
+    """Default config with one branch per parent: [parent, *extras]. Empty extras = default_config."""
+    extra_channels = {p: list(v) for p, v in (extra_channels or {}).items()}
+    if not extra_channels:
+        return default_config(parents)
+    names = [n for p in parents for n in (p, *extra_channels.get(p, []))]
+    return _normalize({"feature_names": names, "sample_hours": 1, "extra_channels": extra_channels,
+                       "branches": [{"name": f"branch_{i}", "features": [p, *extra_channels.get(p, [])]}
+                                    for i, p in enumerate(parents)]})
 
 
 BUDGET_CAPS = ("max_branches", "max_fused_width", "max_materialization_bytes_per_row", "max_parameters")

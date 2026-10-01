@@ -202,6 +202,8 @@ class ModularBundle:
                 **({"input_normalization": _copy(self.config["input_normalization"])}
                    if self.config.get("input_normalization") else {}),
                 **({"target_residual": _residual_receipt(self.config)} if self.config.get("target_residual") else {}),
+                **({"extra_channels": _copy(self.config["extra_channels"])}
+                   if self.config.get("extra_channels") else {}),
                 "budget": _budget(self)}
 
     def donor_manifest(self, role, name=None):
