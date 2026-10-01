@@ -1,79 +1,61 @@
 {
- "plan_revision": "dc72170e",
- "worker_a_idle_reason": "slot handed to M04 (agent a083979bc9a8fa1b8) by the orchestrator with the TF launch recipe; lease id pending",
+ "plan_revision": "ac125db9",
  "agents": [
-  {
-   "id": "m06-evidence-resources (this subagent)",
-   "kind": "subagent",
-   "lane": "M06",
-   "state": "completed",
-   "commit": "dc72170e",
-   "note": "M06 RETURNED; final consolidation on satoshi/m06-evidence-resources-20260930"
-  },
   {
    "id": "a5b79d5488abdee3a",
    "kind": "subagent",
-   "lane": "M01",
-   "state": "completed",
-   "commit": "1bb63f51",
-   "dispatch_block": "in",
-   "dispatch_tip": "feedfd00",
-   "note": "M01 RETURNED: tested 64a91a74, return 1bb63f51, remanifest tool 41955f50"
+   "lane": "A",
+   "state": "running",
+   "commit": null,
+   "note": "M01 in lane A (engine integration)"
   },
   {
    "id": "a5289d234c296e0c5",
    "kind": "subagent",
-   "lane": "M02",
-   "state": "completed",
-   "commit": "d1e2e77c",
-   "dispatch_block": "in",
-   "dispatch_tip": "05aaa1f0",
-   "note": "M02 RETURNED (return 310a836f, latest d1e2e77c); ECL donor job m02-ecl-donors-r0-resume1 still LIVE on worker_b (core and receipt pending)"
+   "lane": "A",
+   "state": "running",
+   "commit": null,
+   "note": "M02 in lane A (donors)"
   },
   {
    "id": "a160efdffffffa9f2",
    "kind": "subagent",
-   "lane": "M03",
-   "state": "completed",
-   "commit": "4ddcce4",
-   "dispatch_block": "in (declarations)",
-   "note": "M03 RETURNED: feature-eng 4ddcce4"
+   "lane": "B",
+   "state": "running",
+   "commit": null,
+   "note": "M03"
+  },
+  {
+   "id": "a9946e26c749a1bec",
+   "kind": "subagent",
+   "lane": "C",
+   "state": "assigned",
+   "commit": null,
+   "note": "new causality/bibliography agent; dispatch block pending"
   },
   {
    "id": "a083979bc9a8fa1b8",
    "kind": "subagent",
-   "lane": "M04",
-   "state": "completed",
-   "commit": "6ced97e7",
-   "note": "M04 RETURNED: predictor 6ced97e7 (campaign pin 8f724b12, v3 CAMPAIGN 53bce359), doin-node 7d207a6"
+   "lane": "D",
+   "state": "running",
+   "commit": null,
+   "note": "M04"
   },
   {
    "id": "a65d2f3a115a9aa25",
    "kind": "subagent",
-   "lane": "M05",
-   "state": "completed",
-   "commit": "4e88c01",
-   "note": "M05 RETURNED: lts 4e88c01, predictor a3218b78"
+   "lane": "E",
+   "state": "running",
+   "commit": null,
+   "note": "M05"
   },
   {
-   "id": "C07 subagent (id pending from orchestrator)",
+   "id": "m06 subagent",
    "kind": "subagent",
-   "lane": "C07",
-   "state": "completed",
-   "dispatch_state": "dispatched",
-   "branch": "satoshi/c07-classification-remote-code-20260930",
-   "commit": "788082f6",
-   "note": "C07 RETURNED: predictor 788082f6; one approval request open (owner)"
-  },
-  {
-   "id": "S07 subagent (id pending from orchestrator)",
-   "kind": "subagent",
-   "lane": "S07",
-   "state": "completed",
-   "dispatch_state": "dispatched",
-   "branch": "satoshi/s07-strategy-support-20260930",
-   "commit": "d08ae00 / 53c6f47a",
-   "note": "S07 RETURNED: heuristic-strategy d08ae00, predictor 53c6f47a; hold-out decision open (owner)"
+   "lane": "F",
+   "state": "running",
+   "commit": null,
+   "note": "M06"
   }
  ],
  "results": [
@@ -297,14 +279,6 @@
     "RESULTS/m04_incumbents.md",
     "predictor 6ced97e7"
    ]
-  },
-  {
-   "id": "m04_r1_r2_v4",
-   "completion_criterion": "paired pretrained R1/R2 candidates with real ECL donors (M02) under M01 effective-params identity",
-   "state": "not_started",
-   "evidence": [
-    "waits on m02-ecl-donors-r0-resume1"
-   ]
   }
  ],
  "next_actions": [
@@ -506,14 +480,6 @@
    "what": "three-seed closure verified: s2021 preserved copy (record file 6da180e4, checkpoint 4b434bc9, 30/30, float32 vs float64 within 1e-8, population 717cb5b3); three-seed mean recomputed independently, identical to classify()"
   }
  ],
- "worker_a_idle_reason_by_uuid": {
-  "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8": "reserved for M04 cost pilot (queued behind ADM-DEADCACHE-01; owner deploy/reclaim pending)",
-  "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519": "free: 5070 Ti Laptop, same host (8 GiB slice shared with M04)"
- },
- "devices_policy": {
-  "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326": "coordinator 4070: keep FREE; no new heavy compute on the owner's desktop (standing rule)",
-  "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9": "worker_b 4090: M04 cost pilot ADMITTED 23:44:44Z, lease m04-modular-cost-pilot-1790811884-1218506-b4d791, cap 6G, wall 1h; heartbeat.json every 30 s (meets <=60 s); PILOT_NOT_A_RESULT; at 23:47Z stage 'build', cgroup current 5.80 GB of 6.44 GB cap, GPU 0% util / 356 MiB"
- },
  "corrections": [
   {
    "at": "2026-09-30T23:55Z",
@@ -522,31 +488,218 @@
   {
    "at": "2026-09-30T23:55Z",
    "what": "M03 declaration_sha256 c7e20f15: previously recorded as UNVERIFIED; now VERIFIED by the orchestrator under the rule canonical JSON (sort_keys, separators (',',':'), default ensure_ascii) of the body without the field, per tools/declare_admissible_inputs.py"
+  },
+  {
+   "at": "2026-10-01T02:10Z",
+   "what": "STATUS reconciler v2: stale free text removed (old M04 pilot 'running'/'queued', worker_a 'reserved for M04', M02 donor 132/321). Earlier queued-job parsing guessed names/memory from token positions across ssh/bash wrappers (an ssh alias read as a job, 'venv' read as memory); v2 parses launcher argv exactly and lists other mentions as UNPARSED."
   }
  ],
- "extra_jobs": [
+ "plan_links": {
+  "orders": "docs/handoffs/SATOSHI_PROGRESSIVE_SELECTION_AND_MODULAR_CONTINUATION_2026_09_30.md @ ac125db9",
+  "reconciliation": "docs/handoffs/SATOSHI_MODULAR_RECONCILIATION_2026_09_30.md @ ac125db9",
+  "acknowledgement": "predictor satoshi/continuation-ack-20261001 @ 637107ee",
+  "previous_campaign_return": "docs/audits/evidence/MODULAR_CAMPAIGN_20260930/RETURN.md @ 09f129c5"
+ },
+ "lanes": [
   {
-   "id": "m02-ecl-donors-r0-resume1",
-   "lane": "M02",
-   "state": "running",
-   "stage": "branch_ae:branch_132 (per-feature branch autoencoders, resumed after a pressure stop)",
-   "producer_commit": "d1e2e77c",
+   "lane": "A",
+   "work": "engine and donors: one architecture, tests/early-stop/resume, manifests",
+   "agents": [
+    "a5b79d5488abdee3a (M01)",
+    "a5289d234c296e0c5 (M02)"
+   ],
+   "branch": "satoshi/a-engine-integration-20261001",
+   "state": "running"
+  },
+  {
+   "lane": "B",
+   "work": "data and selection: PS0/PS1, PS2",
+   "agents": [
+    "a160efdffffffa9f2 (M03)"
+   ],
+   "branch": null,
+   "state": "running"
+  },
+  {
+   "lane": "C",
+   "work": "causality and bibliography: PS3-C spec, PS3-R shortlist",
+   "agents": [
+    "a9946e26c749a1bec"
+   ],
+   "branch": null,
+   "state": "assigned (dispatch block pending)"
+  },
+  {
+   "lane": "D",
+   "work": "optimization: corrected queue and staged cost",
+   "agents": [
+    "a083979bc9a8fa1b8 (M04)"
+   ],
+   "branch": "satoshi/d-corrected-queue-20261001",
+   "state": "running"
+  },
+  {
+   "lane": "E",
+   "work": "product/business: weekly lane, installed consumer, shadow/paper",
+   "agents": [
+    "a65d2f3a115a9aa25 (M05)"
+   ],
+   "branch": null,
+   "state": "running"
+  },
+  {
+   "lane": "F",
+   "work": "resources/evidence: reconcile leases/processes/queues, status, warehouse link",
+   "agents": [
+    "M06 subagent (this)"
+   ],
+   "branch": "satoshi/m06-evidence-resources-20260930",
+   "state": "running"
+  }
+ ],
+ "job_hints": {
+  "m02-ecl-donors-r0.*": {
+   "lane": "A",
+   "unit": "features",
+   "total": 321,
+   "producer_commit": "d1e2e77c (old design, branch_steps=12, superseded)"
+  }
+ },
+ "job_overrides": {
+  "m02-ecl-donors-r0-resume1": {
+   "phase": "STOPPING_AT_SAFE_BOUNDARY",
+   "lane": "A",
    "host_alias": "worker_b",
-   "heartbeat_at": "2026-10-01T01:34:57Z",
-   "heartbeat_source": "~/.local/state/m02_pretraining/ecl/DONORS_FOR_R1_R2_ecl_r0_s7/heartbeat.jsonl (per-epoch, <=60 s)",
+   "set_at": "2026-10-01T02:05Z",
+   "terminal_state": "completed",
+   "terminal_phase": "STOPPED_AT_SAFE_BOUNDARY (old design superseded)",
+   "terminal_stage": "stopped by M02 (TERM to the wrapper) at a branch record boundary; M02's own stop report pending",
+   "producer_commit": "d1e2e77c",
+   "last_heartbeat_at": "2026-10-01T02:05:58Z",
    "progress": {
     "unit": "features",
-    "completed": 132,
+    "completed": 189,
     "total": 321
+   },
+   "facts": {
+    "last_heartbeat": "2026-10-01T02:05:58Z, stage branch_ae:branch_189, resume_point.completed_branches 189 (18 reused from the first run)",
+    "lease_released": "2026-10-01T02:06:06Z (ledger LEASE_RELEASED)",
+    "superseded_marker": "OLD_DESIGN_BRANCH_STEPS_12_SUPERSEDED.json/.md written 02:07:02Z in the donor directory",
+    "correction": "M06's 132/321 (01:35Z) was a stale reading; the true count at stop is 189 completed branch records"
+   }
+  }
+ },
+ "completed_jobs": [
+  {
+   "id": "traffic_L96_h96_s2021",
+   "lane": "M06-adopted",
+   "state": "completed",
+   "phase": "completed",
+   "stage": "record sealed 2026-09-30T23:28:08Z",
+   "producer_commit": "TimeFilter dffde87e",
+   "heartbeat_at": null,
+   "progress": {
+    "unit": "epochs",
+    "completed": 30,
+    "total": 30
    },
    "eta": {
     "earliest": null,
     "latest": null,
     "basis": "not_estimable",
     "assumptions": [
-     "per-branch early stopping (patience 4, <=600 s per stage) makes branch times variable; branches reused on resume are counted in the receipt, not here; core AE stage follows the branches"
+     "ended"
+    ]
+   }
+  },
+  {
+   "id": "traffic_L96_h96_s2022",
+   "lane": "M06-adopted",
+   "state": "completed",
+   "phase": "completed",
+   "stage": "record sealed 2026-09-30T22:15:58Z",
+   "producer_commit": "TimeFilter dffde87e",
+   "heartbeat_at": null,
+   "progress": {
+    "unit": "epochs",
+    "completed": 30,
+    "total": 30
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "ended"
+    ]
+   }
+  },
+  {
+   "id": "traffic_L96_h96_s2023",
+   "lane": "M06-adopted",
+   "state": "completed",
+   "phase": "completed",
+   "stage": "record sealed 2026-09-30T23:22:42Z",
+   "producer_commit": "TimeFilter dffde87e",
+   "heartbeat_at": null,
+   "progress": {
+    "unit": "epochs",
+    "completed": 30,
+    "total": 30
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "ended"
+    ]
+   }
+  },
+  {
+   "id": "m04_ecl_l24_h24_batch1_v3",
+   "lane": "D",
+   "state": "completed",
+   "phase": "completed",
+   "stage": "FINISHED: 16 verified, 20 blocked; both runners exited (no lease, no process, no GPU compute process on any host at 02:06Z)",
+   "producer_commit": "8f724b12 / 6ced97e7",
+   "heartbeat_at": null,
+   "progress": {
+    "unit": "cells",
+    "completed": 16,
+    "total": 36
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "ended"
+    ]
+   }
+  },
+  {
+   "id": "m04-modular-cost-pilot (old design, worker_b)",
+   "lane": "D",
+   "state": "failed",
+   "phase": "failed",
+   "stage": "STOPPED_BY_M04_IN_BUILD, no_fit_no_update; peak 5,801,222,144 B under a 6 GiB cap (M04 PILOT_TERMINATED record); not a completed cost pilot and not a GPU training measurement",
+   "producer_commit": "8f724b12",
+   "heartbeat_at": null,
+   "progress": {
+    "unit": "updates",
+    "completed": 0,
+    "total": null
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "ended"
     ]
    }
   }
- ]
+ ],
+ "slot_plan": {}
 }
