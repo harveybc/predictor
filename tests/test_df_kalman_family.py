@@ -171,10 +171,15 @@ def test_closed_form_recovers_known_variances():
     c = fit_ll(y)["fitted"]["per_column"][0]
     assert abs(c["r"] - r) / r < 0.08 and abs(c["q"] - q) < 0.025   # about 3 standard errors of the moment estimator
     assert not c["r_clipped"] and not c["q_clipped"]
-    q, qs, r = 0.02, 2e-4, 0.4
+    q, qs, r = 0.02, 0.2, 0.4
     _, _, y2 = make_llt(80000, q, qs, r, 12)
     d = fit_llt(y2)["fitted"]["per_column"][0]
-    assert abs(d["r"] - r) / r < 0.15 and abs(d["q"] - q) / q < 0.5 and abs(d["qs"] - qs) / qs < 0.5
+    assert abs(d["r"] - r) / r < 0.1 and abs(d["q"] - q) < 0.05 and abs(d["qs"] - qs) / qs < 0.3
+    # honest limit, recorded: a slope variance far below the moment estimator's standard error is NOT identified
+    # by the closed form (it is clipped to the declared floor and typed as such), never silently invented
+    _, _, y3 = make_llt(80000, 0.02, 2e-4, 0.4, 12)
+    e = fit_llt(y3)["fitted"]["per_column"][0]
+    assert e["qs_clipped"] is True and e["qs"] > 0
 
 
 def test_clipping_is_typed_and_recorded():
