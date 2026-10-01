@@ -863,3 +863,64 @@ def test_2026_10_01_case_memory_max_request_above_ceiling_refused_and_host_gate_
     assert host.acquire("big", 9 * GIB)["code"] == "ABOVE_SLICE_CEILING"
     d = host.acquire("mid", 4 * GIB)          # slice-wise fine (7 GiB dead), host-wise 6 - 3 = 3 GiB free
     assert d["verdict"] == A.QUEUED and d["code"] == "HOST_HEADROOM"
+
+
+# ---- ADM-STALE-LEASE-01 (2026-10-01): a dead holder must not leave a lease holding bytes ------------
+# 03:53:27Z a queued wrapper was TERMed while its acquirer was mid-acquire; at 03:53:42Z the acquirer
+# wrote an ADMITTED 4G lease and exited without arming; the gate held the 4G for the grace and queued
+# another load on HOST_HEADROOM until a manual release at 03:55:16Z.
+
+def test_2026_10_01_no_lease_is_written_when_the_holder_wrapper_is_dead(host):
+    host.patch(alive={"990001": False})
+    req = A.Request(name="orphan", cap_bytes=4 * GIB, label="orphan", holder_pid=990001)
+    d = A.acquire(host.store, host.res, req, host.now)
+    assert d["verdict"] == A.REFUSED and d["code"] == "HOLDER_GONE"
+    assert host.live_lease_ids() == []
+
+
+def test_2026_10_01_a_live_holder_still_gets_its_lease_and_it_is_recorded(host):
+    host.patch(alive={"990002": True})
+    req = A.Request(name="ok", cap_bytes=4 * GIB, label="ok", holder_pid=990002)
+    d = A.acquire(host.store, host.res, req, host.now)
+    assert d["verdict"] == A.ADMITTED and d["lease"]["holder_pid"] == 990002
+
+
+def test_2026_10_01_an_unarmed_lease_whose_holder_died_is_reclaimed_after_the_short_bound(host):
+    host.patch(alive={"990003": True})
+    req = A.Request(name="late", cap_bytes=4 * GIB, label="late", holder_pid=990003)
+    lid = A.acquire(host.store, host.res, req, host.now)["lease_id"]
+    host.patch(alive={"990003": False})               # the wrapper is TERMed before arming
+    host.tick(A.NEVER_ARMED_BOUND_SECONDS - 5)
+    assert A.reclaim(host.store, host.res, host.now)["freed"] == []        # still inside the bound
+    host.tick(10)
+    sw = A.reclaim(host.store, host.res, host.now)
+    assert sw["freed"] == [lid]
+    assert any(r.get("reclaim_cause") == "LEASE_RECLAIMED_NEVER_ARMED" for r in host.ledger())
+    d = host.acquire("next", 4 * GIB)
+    assert d["readings"]["held_unrealised_bytes"] == 0     # the 4G is no longer held
+
+
+def test_2026_10_01_an_unarmed_lease_with_a_live_holder_keeps_the_full_grace(host):
+    host.patch(alive={"990004": True})
+    req = A.Request(name="slow", cap_bytes=4 * GIB, label="slow", holder_pid=990004)
+    lid = A.acquire(host.store, host.res, req, host.now)["lease_id"]
+    host.tick(A.NEVER_ARMED_BOUND_SECONDS + 30)       # past the bound but inside ARM_GRACE_SECONDS
+    assert A.reclaim(host.store, host.res, host.now)["freed"] == []
+    assert host.live_lease_ids() == [lid]
+
+
+def test_2026_10_01_a_detached_lease_is_not_reclaimed_by_the_never_armed_bound(host):
+    req = A.Request(name="det", cap_bytes=2 * GIB, label="det", detached=True)
+    lid = A.acquire(host.store, host.res, req, host.now)["lease_id"]
+    host.tick(A.NEVER_ARMED_BOUND_SECONDS + 30)
+    assert A.reclaim(host.store, host.res, host.now)["freed"] == []
+    assert host.live_lease_ids() == [lid]
+
+
+def test_2026_10_01_the_launcher_passes_its_own_pid_as_the_holder(host, fake_systemd):
+    r = _run_launcher(host, fake_systemd, "-m", "1G", "-n", "holder", "--", "true")
+    assert r.returncode == 0, r.stdout + r.stderr
+    adm = [x for x in host.ledger() if x["event"] == "ADMISSION_ADMITTED"]
+    assert adm
+    ret = list((host.store_dir / "retained").glob("*.json"))
+    assert ret and json.loads(ret[-1].read_text())["lease"].get("holder_pid")

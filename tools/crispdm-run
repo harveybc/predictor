@@ -71,7 +71,7 @@ WALL_SECONDS=$("$PY" "$ADM" seconds "$WALL") || exit 2
 unit="crispdm-${NAME//[^A-Za-z0-9_.-]/_}-$(date +%s)-$$"
 
 # ---- atomic admission: read, decide and reserve under one lock -------------------------------
-acq=("$PY" "$ADM" acquire -n "$NAME" -m "$MEM" --cap-bytes "$CAP_BYTES" -t "$WALL_SECONDS"
+acq=("$PY" "$ADM" acquire -n "$NAME" -m "$MEM" --cap-bytes "$CAP_BYTES" -t "$WALL_SECONDS" --holder-pid "$$"
      --label "${LABEL:-$unit}" --slice "$SLICE" --argv-file "$work/argv")
 if [ -n "$PEAK_EV" ]; then acq+=(--peak-evidence "$PEAK_EV"); fi
 if [ -n "$PEAK_BYTES" ]; then acq+=(--peak-bytes "$PEAK_BYTES"); fi

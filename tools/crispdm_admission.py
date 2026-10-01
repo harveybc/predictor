@@ -82,6 +82,10 @@ PRESSURE_ADMIT_MAX = 25.0             # user-slice memory PSI some/avg10 above w
                                       # stops well below that instead of racing it.
 LEASE_TTL_SECONDS = 900               # a lease heartbeats; expiry alone never frees a live child
 ARM_GRACE_SECONDS = 120               # before a lease is armed, a missing witness is not proof of death
+NEVER_ARMED_BOUND_SECONDS = 60        # ADM-STALE-LEASE-01: a non-detached lease still unarmed after this
+                                      # long, whose holder (the launcher wrapper) is dead or unknown, can
+                                      # never be armed: it is reclaimed instead of holding its cap for the
+                                      # full grace
 PILOT_MARGIN_BYTES = GIB              # a measured pilot peak must fit with this much room to spare
 DEFAULT_SLICE = "crispdm-batch.slice"
 TREE_PEAK_SCOPES = ("cgroup", "tree") # the only footprint scopes that may size an admission
@@ -546,6 +550,21 @@ class Lease:
     boot_id: str | None = None
     boot_time: int | None = None
     host_key: str | None = None
+    # ADM-STALE-LEASE-01: the launcher wrapper that asked for this lease and will arm it
+    holder_pid: int | None = None
+    holder_starttime: int | None = None
+    detached: bool = False
+
+    def never_armed_and_orphaned(self, res, now: float) -> bool:
+        """Unarmed, not detached, older than NEVER_ARMED_BOUND_SECONDS, and its holder is dead (or
+        was never recorded): nobody is left to arm it."""
+        if self.armed or self.detached or self.cgroup:
+            return False
+        if now < self.created_at + NEVER_ARMED_BOUND_SECONDS:
+            return False
+        if self.holder_pid is None:
+            return True
+        return not res.pid_alive(self.holder_pid, self.holder_starttime)
 
     # -- identity questions, each answered before liveness is even asked
     def foreign_host(self, res) -> bool:
@@ -610,6 +629,8 @@ class Lease:
             return False
         if self.cgroup and self._cgroup_is_my_own() and res.cgroup_alive(self.cgroup):
             return True
+        if self.never_armed_and_orphaned(res, now):
+            return False
         return now < (self.armed_at or self.created_at) + ARM_GRACE_SECONDS
 
     def _cgroup_is_my_own(self) -> bool:
@@ -773,6 +794,7 @@ class Request:
     peak_evidence_path: str | None = None
     peak_evidence_sha256: str | None = None
     size_text: str | None = None
+    holder_pid: int | None = None   # ADM-STALE-LEASE-01: the launcher wrapper that will arm the lease
     detached: bool = False      # a fire-and-forget unit: its cgroup, not a holder pid, is the witness,
                                 # so the lease must outlive the process that asked for it
 
@@ -870,7 +892,8 @@ def reclaim(store: Store, res, now: float) -> dict:
                            "cap_bytes": lease.cap_bytes, "pid": lease.pid, "cgroup": lease.cgroup})
         else:
             freed.append(lease.lease_id)
-            cause = ("LEASE_RECLAIMED_UNARMED_GRACE_EXPIRED" if not lease.armed
+            cause = ("LEASE_RECLAIMED_NEVER_ARMED" if lease.never_armed_and_orphaned(res, now)
+                     else "LEASE_RECLAIMED_UNARMED_GRACE_EXPIRED" if not lease.armed
                      else "LEASE_RECLAIMED_WITNESS_DEAD")
             peak = res.cgroup_peak_bytes(lease.cgroup) if lease.cgroup else None
             store.retire(lease, cause, now, observed_peak_bytes=peak,
@@ -1074,6 +1097,17 @@ def acquire(store: Store, res, req: Request, now: float) -> dict:
                        "cap_bytes": req.cap_bytes, "readings": decision["readings"]})
             return decision
         decision = evaluate(store, res, req, now)
+        holder_start = None
+        if req.holder_pid is not None:
+            # ADM-STALE-LEASE-01: checked under the lock, immediately before the commit.  A holder
+            # that died while this acquirer waited (e.g. TERM to a queued wrapper) can never arm
+            # the lease, so none is written.
+            holder_start = res.pid_starttime(req.holder_pid)
+            if not res.pid_alive(req.holder_pid, holder_start):
+                decision = {"verdict": REFUSED, "code": "HOLDER_GONE",
+                            "reason": f"the launcher that asked for this reservation (pid {req.holder_pid}) "
+                                      f"is gone; no lease is written",
+                            "readings": decision["readings"]}
         if decision["verdict"] == ADMITTED:
             # the id is one filesystem segment: a caller's name may carry slashes and dots
             stem = re.sub(r"[^A-Za-z0-9_-]", "_", req.name)[:80] or "job"
@@ -1091,7 +1125,8 @@ def acquire(store: Store, res, req: Request, now: float) -> dict:
                 # RR02: the identity that makes pid + pid_starttime mean anything at all
                 boot_id=res.boot_id() if hasattr(res, "boot_id") else None,
                 boot_time=res.boot_time() if hasattr(res, "boot_time") else None,
-                host_key=res.host_key() if hasattr(res, "host_key") else None)
+                host_key=res.host_key() if hasattr(res, "host_key") else None,
+                holder_pid=req.holder_pid, holder_starttime=holder_start, detached=bool(req.detached))
             store.write(lease)
             decision["lease_id"] = lease.lease_id
             decision["lease"] = asdict(lease)
@@ -1663,7 +1698,8 @@ def build_request(a) -> Request:
                    slice_name=a.slice, argv_sha256=_argv_sha256(a.argv_file, True),
                    peak_bytes=peak, peak_scope=peak_scope,
                    peak_evidence_path=str(a.peak_evidence) if a.peak_evidence else None,
-                   peak_evidence_sha256=ev_sha, size_text=a.mem, detached=bool(getattr(a, "detached", False)))
+                   peak_evidence_sha256=ev_sha, size_text=a.mem, detached=bool(getattr(a, "detached", False)),
+                   holder_pid=getattr(a, "holder_pid", None))
 
 
 # ---- own-scope clean-cache reclaim at scope end (ADM-DEADCACHE-01) ---------------------------
@@ -1796,6 +1832,8 @@ def main(argv=None) -> int:
                      help="a fire-and-forget unit: the lease outlives the asking process and its "
                           "cgroup is the witness; it expires only after the wall limit")
     acq.add_argument("--queue", action="store_true", help="wait for admission instead of returning QUEUED")
+    acq.add_argument("--holder-pid", type=int, default=None,
+                     help="the launcher wrapper's pid; the lease is not written if it has died (ADM-STALE-LEASE-01)")
     acq.add_argument("--poll-seconds", type=int, default=30)
     acq.add_argument("--max-wait-seconds", type=int, default=3600)
 
