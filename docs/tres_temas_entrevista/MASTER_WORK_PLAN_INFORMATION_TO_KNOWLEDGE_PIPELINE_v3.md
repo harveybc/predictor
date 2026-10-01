@@ -1,5 +1,15 @@
 # Plan maestro v3: programa doctoral y negocio data-centric
 
+**Delta vigente, 01-oct UTC:** [ordenes actualizadas para Satoshi](../handoffs/SATOSHI_NEXT_DISPATCH_2026_10_01.md).
+El motor temporal corregido ya esta integrado; no repetir esa tarea.
+[Progreso por entregable en PNG](program_v3/PROGRESO_MASTER_2026_10_01.png)
+y [datos y fuentes](program_v3/PROGRESO_MASTER_2026_10_01.json).
+Se incorpora el [carril SAC/DQN con y sin representacion temporal modular](program_v3/RL_TEMPORAL_COMPARISON_WORK_PLAN_2026_10_01.md),
+en paralelo al forecasting una vez disponibles la seleccion de la tarea y sus
+datasets en el lago. Para nuevas evaluaciones heuristicas, los pronosticos deben
+superar su naive en validacion y en todos los horizontes consumidos; esa regla
+no se aplica a las politicas RL. Toda MAE/MSE publicada lleva su naive pareado.
+
 **Seleccion progresiva aprobada (30-sep, actualizacion 01-oct UTC):**
 [subplan de perfiles, causalidad, representaciones y seleccion conjunta](program_v3/FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md).
 Se inserta despues de negocio/admisibilidad de datos, dentro de perfiles y

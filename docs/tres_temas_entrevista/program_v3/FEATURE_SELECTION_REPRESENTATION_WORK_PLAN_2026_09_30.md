@@ -457,6 +457,14 @@ no sustituirla por MLP plano ni DQN. Declarar si los pesos de representación so
 compartidos/congelados o ajustados por tarea, y mantener información, periodos,
 costes y riesgo comparables.
 
+Actualización del propietario, 01-oct: antes de iniciar una evaluación nueva de
+la estrategia heurística, el predictor debe superar al naive en validación
+retenida, por cada horizonte corto/largo que consuma la estrategia. Se fija MAE
+como métrica primaria y se reporta MSE también con su naive; no seleccionar con
+el test de trading ni con el error futuro de cada tick. Un rechazo conserva
+métricas y motivo, sin corrida ni trayectorias de trading. Esta condición es de
+admisión de predictores a la heurística, no una métrica de selección de SAC.
+
 La ampliación con sintéticos queda PLANIFICADA: real solo, real+sintético y
 sintético solo como control, con exposición/coste explicitados y evaluación
 siempre sobre real retenido. Generador/filtros se ajustan en TRAIN. No declarar

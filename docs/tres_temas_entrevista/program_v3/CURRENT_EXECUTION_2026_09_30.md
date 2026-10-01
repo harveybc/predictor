@@ -1,6 +1,27 @@
 # Current execution spine (2026-09-30)
 
-## Current update: 2026-10-01 approximately 01:53 UTC
+## Current update: 2026-10-01 approximately 03:44 UTC
+
+[Next orders](../../handoffs/SATOSHI_NEXT_DISPATCH_2026_10_01.md) supersede the
+unmet-integration wording below: engine `3ecdb256` is integrated with installed
+tests reported. Corrected campaign `df9ae31c` has 16 verified cells of 36, eight
+paired configurations; best mean validation MAE_z 0.3910575164, same-row naive
+0.8514061497. Reconciled here against all 16 replay receipts, not new inference.
+h1/h23/h24 skill negative in 16/16; h2 in 2/16. No paper-comparable ECL score.
+
+Corrected CPU donors reached 181/321 branches in a direct read; M06 estimated
+branch completion 04:16-04:35 UTC, excluding core and R1/R2. Per-feature pilot
+awaits RAM beside the donor and representation measurement job. The 5090 is
+detected and idle; reviewed admission fix `775c5545` is not installed yet.
+New source catalogue: 22 providers, 5,273 files, 77 transform rows, zero evaluated
+rows in that extension. This does not replace the 3,538/15,228 profile denominator.
+
+[Progress PNG](PROGRESO_MASTER_2026_10_01.png) and
+[its evidence snapshot](PROGRESO_MASTER_2026_10_01.json).
+The graphic is a dated snapshot, not a live process monitor. Historical numbers
+below retain their original architecture and scope.
+
+## Historical update: 2026-10-01 approximately 01:53 UTC
 
 Read M06's published consolidated return at `09f129c5`, the generated M04
 incumbent table, M01's return/code at `64a91a74`, and the live M02 donor config

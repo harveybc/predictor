@@ -145,6 +145,21 @@ the predictor encoder export alone does not implement RL training.
 
 ## Experiments and concurrent execution
 
+Owner addition 2026-10-01: [SAC/DQN with and without differentiated temporal
+representation](RL_TEMPORAL_COMPARISON_WORK_PLAN_2026_10_01.md) is a parallel
+lane. Prepare implementations now; start real-data pilots when a task-specific
+selected-feature manifest and its lake datasets are ready, without waiting for
+the entire inventory or forecasting campaign. The heuristic naive gate below
+does not admit/reject RL policies.
+
+Owner update 2026-10-01: admission to new heuristic-strategy evaluations requires
+strictly beating same-row persistence on held-out forecast validation for all
+consumed short/long horizons, using the predeclared primary metric. Failed or
+unverified candidates are not simulated; keep minimal rejection evidence.
+No trading-test selection or future per-tick error filter. Every reported
+evaluation MAE/MSE includes its matching naive and scale/population. See the
+[runner-level gate and tests](../../handoffs/SATOSHI_NEXT_DISPATCH_2026_10_01.md).
+
 GPU priority after already-running cells: cost pilot of the full modular model,
 then a finite optimization batch of the most promising validation-eligible
 configuration. Continue candidates automatically while independent CPU workers
