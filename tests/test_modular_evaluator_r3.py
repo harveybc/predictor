@@ -75,6 +75,7 @@ def test_r3_candidate_reaches_fit_warm_and_keeps_every_receipt_field(tmp_path, s
     assert t["selected_epoch"] == (w["phase_1"]["selected_epoch"] if w["selected_phase"] == 1
                                    else w["phase_1"]["epochs_completed"] + w["phase_2"]["selected_epoch"])
     assert result["reload_parity"]["passed"] is True and result["digests"]["weights_sha256"]
+    assert t["settings"]["batch_size"] > 0 and "progress" not in t["settings"]  # the scorer replays it
 
 
 def test_r0_candidate_never_reaches_fit_warm_and_keeps_its_layout(tmp_path, spy):
