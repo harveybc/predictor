@@ -67,6 +67,8 @@ for section in ("entry_points", "config_resolutions", "direction_models"):
         keys = sorted(set(a[section]) | set(b[section]))
         print(section, "DIFFERENT", [k for k in keys if a[section].get(k) != b[section].get(k)][:20])
 ea, eb = (json.load(open(f"{out}/{k}/e2e/e2e_summary.json")) for k in ("master", "m01"))
+print("unmigrated_old_config", "IDENTICAL" if ea["unmigrated_old_config"] == eb["unmigrated_old_config"]
+      else "DIFFERENT", eb["unmigrated_old_config"])
 print("results_header", "IDENTICAL" if ea["results_header"] == eb["results_header"] else "DIFFERENT")
 print("metric_labels", "IDENTICAL" if ea["metric_labels"] == eb["metric_labels"] else "DIFFERENT",
       len(eb["metric_labels"]))

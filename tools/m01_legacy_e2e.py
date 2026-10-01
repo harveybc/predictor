@@ -58,14 +58,26 @@ def main():
         main_py, env["PYTHONPATH"] = root / "app" / "main.py", str(root)
     else:
         main_py = Path(app.__file__).parent / "main.py"
-    subprocess.run([sys.executable, "-s", str(main_py), "--load_config", str(derived),
-                    "--epochs", a.epochs, "--max_steps_train", a.max_steps_train,
-                    "--max_steps_test", a.max_steps_test, "--mc_samples", a.mc_samples],
-                   check=True, env=env)
+    def run(config_path, check):
+        return subprocess.run([sys.executable, "-s", str(main_py), "--load_config", str(config_path),
+                               "--epochs", a.epochs, "--max_steps_train", a.max_steps_train,
+                               "--max_steps_test", a.max_steps_test, "--mc_samples", a.mc_samples],
+                              check=check, env=env, capture_output=not check, text=True)
+    # 1. the old JSON exactly as committed: master refuses it (C-series column roles) and
+    #    the M01 tip must refuse it identically.
+    first = run(derived, check=False)
+    errors = [l for l in (first.stderr + first.stdout).splitlines() if "Error" in l]
+    unmigrated = {"returncode": first.returncode, "last_error": errors[-1][:400] if errors else None}
+    # 2. the same config with the deliberate legacy migration declaration: full run.
+    config["column_roles_migration"] = "LEGACY_ALL_COLUMNS_ARE_FEATURES"
+    migrated = out / "derived_config_migrated.json"
+    migrated.write_text(json.dumps(config, indent=2))
+    run(migrated, check=True)
     results = Path(config["results_file"])
     with results.open() as f:
         rows = list(csv.reader(f))
-    summary = {"code": str(main_py.parent), "results_header": rows[0],
+    summary = {"code": str(main_py.parent), "unmigrated_old_config": unmigrated,
+               "results_header": rows[0],
                "metric_labels": [r[0] for r in rows[1:]],
                "outputs_present": sorted(p.name for p in out.iterdir())}
     (out / "e2e_summary.json").write_text(json.dumps(summary, indent=2) + "\n")
