@@ -21,6 +21,23 @@ while True:
             sc=u.get('scope','')
             if not re.match(r'^crispdm-(m06-|d\d*-runner-|laneB-.*-bounded-read)',sc) and sc not in seen_coord:
                 out.write(f"{ts()} ALERT coordinator unleased batch scope {sc} memory={u.get('memory_current')} (zero-batch rule)\n"); seen_coord.add(sc)
+    def _bytes(m):
+        try:
+            m=str(m).upper(); mul={'K':2**10,'M':2**20,'G':2**30,'T':2**40}
+            return int(float(m[:-1])*mul[m[-1]]) if m[-1] in mul else int(m)
+        except Exception: return None
+    for role,q in d.get('quotas_measured',{}).items():
+        free=q.get('host_free_for_new_bytes')
+        if free is None: continue
+        gq=[j for j in d['jobs'] if j.get('host_alias')==role and j['state']=='queued' and j.get('gpu_request')]
+        cpu=[j for j in d['jobs'] if j.get('host_alias')==role and j['state']=='running' and j.get('lease_id') and not j.get('uses_gpu') and not j['id'].startswith('m06-')]
+        for g in gq:
+            need=_bytes(g.get('declared_mem'))
+            key=('gqbc',role,g['id'])
+            if need and need>free and cpu and key not in warned:
+                lst='; '.join(f"{c['id']} [{c.get('lane')}] cap {(c.get('cap_bytes') or 0)/1e9:.2f} GB vs peak {(c.get('cgroup_peak_bytes') or 0)/1e9:.2f} GB" for c in cpu)
+                out.write(f"{ts()} ALERT GPU_QUEUED_BEHIND_CPU {role}: GPU job {g['id']} needs {need/1e9:.2f} GB, free-for-new {free/1e9:.2f} GB; CPU leases: {lst}\n"); warned.add(key)
+            if need and need<=free: warned.discard(key)
     cur={j['id']:(j['state'],j.get('phase'),j.get('host_alias'),j.get('cgroup_peak_bytes'),(j.get('progress') or {}).get('completed')) for j in d['jobs']}
     if jobs is not None:
         for k,v in cur.items():

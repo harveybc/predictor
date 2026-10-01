@@ -215,7 +215,10 @@ def main():
         if p:
             p["pid"] = int(d)
             p["elapsed_s"] = etimes(int(d))
-            p["command_head"] = [os.path.basename(x) if i == 0 else x for i, x in enumerate(p.pop("command")[:6])]
+            cmd = p.pop("command")
+            cvd = [x.split("=", 1)[1] for x in cmd if x.startswith("CUDA_VISIBLE_DEVICES=")]
+            p["gpu_request"] = bool((cvd and cvd[0] not in ("", "-1")) or "gpu" in (p.get("name") or "").lower())
+            p["command_head"] = [os.path.basename(x) if i == 0 else x for i, x in enumerate(cmd[:6])]
             launchers[int(d)] = p
     # leases
     leases = []

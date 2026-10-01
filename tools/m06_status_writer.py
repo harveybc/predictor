@@ -345,6 +345,8 @@ def build(hosts, reg):
                 "lease_id": L["lease_id"], "launcher_pid": L["launcher_pid"], "launcher_alive": L["launcher_alive"],
                 "child_heads": L["child_heads"], "cap_bytes": L["cap_bytes"],
                 "cgroup_current_bytes": L["cgroup_current"], "cgroup_peak_bytes": L["cgroup_peak"],
+                "cap_vs_observed_peak": (round(L["cap_bytes"] / L["cgroup_peak"], 2) if L.get("cap_bytes") and L.get("cgroup_peak") else None),
+                "uses_gpu": any(g.get("cgroup") == L.get("cgroup") for g in p.get("gpu_procs", [])),
                 "heartbeat_at": iso(hb_at), "heartbeat_path": (hb or {}).get("path", "").replace(HOME, "~") or None,
                 "heartbeat_stale": (hb_at is not None and now - hb_at > HEARTBEAT_STALE_S),
                 "heartbeat_status": ("NONE" if hb_at is None else
@@ -361,6 +363,7 @@ def build(hosts, reg):
                          "state": "queued", "phase": "queued", "stage": "waiting for admission",
                          "producer_commit": "unknown", "host_alias": role, "launcher_pid": Q["pid"],
                          "declared_mem": Q["mem"], "declared_wall": Q["wall"], "queue_wait_s": Q["wait"],
+                         "gpu_request": Q.get("gpu_request"),
                          "waiting_s": Q["elapsed_s"], "command_head": Q["command_head"], "heartbeat_at": None,
                          "progress": {"unit": "unknown", "completed": None, "total": None},
                          "eta": {"earliest": None, "latest": None, "basis": "not_estimable",

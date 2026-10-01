@@ -723,7 +723,7 @@
     "a160efdffffffa9f2 (M03)"
    ],
    "branch": null,
-   "state": "dispatched",
+   "state": "HOLD (until a campaign result changes what to select)",
    "eta_basis": "none yet"
   },
   {
@@ -800,7 +800,7 @@
    "producer_commit": "d1e2e77c (old design, branch_steps=12, superseded)"
   },
   "m04-.*": {
-   "lane": "D",
+   "lane": "D2",
    "producer_commit": "3ecdb256 (re-pin)"
   },
   "m02-.*donor.*": {
@@ -820,6 +820,39 @@
   "ps3r-pilot-.*": {
    "lane": "A",
    "producer_commit": "lane A (M01 a5b79d5488abdee3a) PS3-R pilot child, approved by the orchestrator; 2G CPU; PILOT_ENGINEERING (lane C only specified the representation shortlist)"
+  },
+  "c2-.*": {
+   "lane": "C2"
+  },
+  "g-rl.*": {
+   "lane": "G2"
+  },
+  "laneA.*": {
+   "lane": "A2"
+  },
+  "ps3r.*": {
+   "lane": "A2"
+  },
+  "laneB.*": {
+   "lane": "B2"
+  },
+  "f2-.*": {
+   "lane": "F2"
+  },
+  "m07.*": {
+   "lane": "F2"
+  },
+  "d\\d*-.*": {
+   "lane": "D2"
+  },
+  "m05-.*": {
+   "lane": "E2"
+  },
+  "m02-.*": {
+   "lane": "A2"
+  },
+  "m01-.*": {
+   "lane": "A2"
   }
  },
  "job_overrides": {
@@ -1395,6 +1428,11 @@
    "rule": "ZERO batch jobs on the coordinator; the only exceptions are M06's 512M STATUS writer and 128M event watcher. Every lane's CPU work goes to worker_a (repaired gate) or worker_b.",
    "alert": "coordinator PSI some avg60 > 10 or MemAvailable < 12 GB, pushed to the orchestrator immediately; any non-M06 batch job seen on the coordinator is alerted",
    "exceptions": "M06 STATUS writer (512M), M06 event watcher (128M), lane D runners d*-runner-* (512M, poll only, <64 MiB; orchestrator exemption); approved one-off lake reads laneB-*-bounded-read (<=256M, <=10 min, named in the ack)"
+  },
+  {
+   "since": "2026-10-01T08:0xZ",
+   "rule": "on any worker with a GPU job queued: one CPU job at a time per lane on that host; CPU caps declared from measured peaks (C2, M01, lane G, M04 L96 NPZ, M05 informed)",
+   "alert": "GPU_QUEUED_BEHIND_CPU when a queued GPU job's cap exceeds free-for-new while CPU leases hold reservations; names each CPU lease, its cap vs observed peak and its lane"
   }
  ],
  "incidents": [
@@ -1459,6 +1497,16 @@
    "host_alias": "coordinator",
    "facts": "M07 ran pytest/py_compile four times inside transient 512M scopes in crispdm-batch.slice on the coordinator (numpy-only, <1 s each, no TF), before the zero-batch order reached it; all exited; ZERO-BATCH BREACH by F2 (M07), ordered to move tests to worker_b (orchestrator)",
    "watch": "M06 now also alerts on any unleased scope in the coordinator's batch slice and on any non-exempt job there"
+  },
+  {
+   "id": "GPU-QBC-01",
+   "host_alias": "worker_b",
+   "facts": "M07's GPU pilot f2-gpu-pilot-grouped32_mae_adamw (6G) queued while the 4090 sat idle: free-for-new 1.86 GB, mem_available 14.3 GB; five CPU leases reserved 12.3 GB of caps against 2.9 GB observed (c2-dossiers 1G/239M, c2-dossiers-v2 1G/237M, c2-ps3r-rerun 3G/422M, g-rl-RL-S1_seed101 3G/896M, laneA-suite 4G/1136M; held_unrealised 9.36 GB) (M07 report)"
+  },
+  {
+   "id": "GPU-QBC-02",
+   "host_alias": "worker_a",
+   "facts": "M07's NPZ build queued behind M04's 6.9G D2 train lease (orchestrator)"
   }
  ],
  "owner_question_20_lake": {
@@ -1581,5 +1629,26 @@
    "reason": "the lake exists only on the coordinator"
   }
  ],
- "clock": "all M06 timestamps are UTC from the host system clocks (date -u); coordinator, worker_a and worker_b agreed to the second at 07:33Z"
+ "clock": "all M06 timestamps are UTC from the host system clocks (date -u); coordinator, worker_a and worker_b agreed to the second at 07:33Z",
+ "laneB_artifacts_980e087": {
+  "LANE_B_PROBE_SUMMARY.v1.json": {
+   "sha256": "b898077d5bede4e8fa5332f9a3bb0aa63a4f47d31d593dca96b065867c8112d0",
+   "rows": 366,
+   "PASS": 27,
+   "FAIL": 312,
+   "MSE_NOT_STORED": 27,
+   "variant_A_passes_anywhere": false,
+   "note": "range family passes only at short/specific horizons; S1/S2 agree on 125/138 pairs"
+  },
+  "SELECTION_DENOMINATORS.v2.json": {
+   "sha256": "a6224d4dc8014484928fe1ae534ebe820e1b9a624ae6410be273fbb44d7f2d43",
+   "supersedes": "v1 6e75927b (kept)",
+   "task_datasets": 5,
+   "frozen_controls": "5 (178 channels; controls, not selections)",
+   "horizon_scoped_selections": "3: EURUSD 1h [1], EURUSD lake [1-4], GBPUSD lake [8]",
+   "skipped_outcomes": 6,
+   "evaluated_or_selected_by_temporal_model": 0
+  },
+  "from": "feature-eng satoshi/b-source-transform-coverage-20261001 @ 980e087 (lane B report; hold until a campaign result changes what to select)"
+ }
 }
