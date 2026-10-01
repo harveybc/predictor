@@ -1,0 +1,275 @@
+{
+ "schema": "m04.build_probe.v1",
+ "label": "PROBE_NOT_A_RESULT",
+ "phase": "build",
+ "candidate": "/home/harveybc/.local/state/scratch/d-replay3b07/cand_r3.json",
+ "per_fd_peak_reset": true,
+ "cuda_visible_devices": "",
+ "environment": {
+  "tensorflow": "2.21.0",
+  "keras": "3.13.2",
+  "executable": "/home/harveybc/anaconda3/envs/tensorflow/bin/python"
+ },
+ "import": {
+  "seconds": 4.5201758409966715,
+  "cgroup_peak_bytes": 310599680
+ },
+ "build": {
+  "seconds": 14.151345910999225,
+  "cgroup_peak_bytes": 478580736,
+  "process": {
+   "VmHWM": 857772032,
+   "VmRSS": 853012480,
+   "cpu_seconds": 19.01
+  }
+ },
+ "model": {
+  "branches": 321,
+  "branch_output_shapes": [
+   "(24, 16)"
+  ],
+  "concatenated_width_before_core": 5136,
+  "fused_shape": [
+   24,
+   5136
+  ],
+  "compression_path": [
+   {
+    "layer": "positional_encoding",
+    "output_shape": [
+     24,
+     5136
+    ]
+   },
+   {
+    "layer": "model_projection",
+    "output_shape": [
+     24,
+     64
+    ]
+   },
+   {
+    "layer": "stage_0_skip_downsample",
+    "output_shape": [
+     12,
+     32
+    ]
+   },
+   {
+    "layer": "stage_0_block_projection",
+    "output_shape": [
+     12,
+     32
+    ]
+   },
+   {
+    "layer": "stage_0_downsample_residual",
+    "output_shape": [
+     12,
+     32
+    ]
+   },
+   {
+    "layer": "stage_0_downsample_norm",
+    "output_shape": [
+     12,
+     32
+    ]
+   },
+   {
+    "layer": "stage_0_downsample_activation",
+    "output_shape": [
+     12,
+     32
+    ]
+   },
+   {
+    "layer": "stage_0_temporal_conv",
+    "output_shape": [
+     12,
+     32
+    ]
+   },
+   {
+    "layer": "stage_0_temporal_projection",
+    "output_shape": [
+     12,
+     32
+    ]
+   },
+   {
+    "layer": "stage_0_temporal_residual",
+    "output_shape": [
+     12,
+     32
+    ]
+   },
+   {
+    "layer": "stage_0_temporal_norm",
+    "output_shape": [
+     12,
+     32
+    ]
+   },
+   {
+    "layer": "stage_0_output",
+    "output_shape": [
+     12,
+     32
+    ]
+   },
+   {
+    "layer": "stage_1_skip_downsample",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_1_block_projection",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_1_downsample_residual",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_1_downsample_norm",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_1_downsample_activation",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_1_temporal_conv",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_1_temporal_projection",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_1_temporal_residual",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_1_temporal_norm",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_1_output",
+    "output_shape": [
+     6,
+     16
+    ]
+   },
+   {
+    "layer": "stage_2_skip_downsample",
+    "output_shape": [
+     6,
+     8
+    ]
+   },
+   {
+    "layer": "stage_2_block_projection",
+    "output_shape": [
+     6,
+     8
+    ]
+   },
+   {
+    "layer": "stage_2_downsample_residual",
+    "output_shape": [
+     6,
+     8
+    ]
+   },
+   {
+    "layer": "stage_2_downsample_norm",
+    "output_shape": [
+     6,
+     8
+    ]
+   },
+   {
+    "layer": "stage_2_downsample_activation",
+    "output_shape": [
+     6,
+     8
+    ]
+   },
+   {
+    "layer": "stage_2_temporal_conv",
+    "output_shape": [
+     6,
+     8
+    ]
+   },
+   {
+    "layer": "stage_2_temporal_projection",
+    "output_shape": [
+     6,
+     8
+    ]
+   },
+   {
+    "layer": "stage_2_temporal_residual",
+    "output_shape": [
+     6,
+     8
+    ]
+   },
+   {
+    "layer": "stage_2_temporal_norm",
+    "output_shape": [
+     6,
+     8
+    ]
+   },
+   {
+    "layer": "stage_2_output",
+    "output_shape": [
+     6,
+     8
+    ]
+   }
+  ],
+  "latent_shape": [
+   6,
+   8
+  ],
+  "forecast_shape": [
+   24,
+   321
+  ],
+  "total_parameters": 810072,
+  "trainable_parameters": 377496,
+  "branch_parameters": 20544,
+  "core_parameters": 412032
+ }
+}

@@ -223,7 +223,12 @@ class Plugin:
         x, vx = np.asarray(x_train, dtype="float32"), np.asarray(x_val, dtype="float32")
         y, vy = self._targets(y_train), self._targets(y_val)
         before = {name: mt.weights_hash(m) for name, m, _ in self._components()}
-        result = fit_with_early_stopping(self.bundle.forecast_model, x, y, vx, vy, settings)
+        if any(spec["regime"] == "R3" for spec in [*self.bundle.config["branches"], self.bundle.config["core"]]):
+            from predictor_plugins.modular_temporal.warm import fit_warm
+            result = fit_warm(self.bundle, x, y, vx, vy, settings)          # R3: frozen, then unfrozen
+            result["history"] = [*(result["history"]["phase_1"] or []), *(result["history"]["phase_2"] or [])]
+        else:
+            result = fit_with_early_stopping(self.bundle.forecast_model, x, y, vx, vy, settings)
         components = {}
         for name, model, regime in self._components():
             after = mt.weights_hash(model)

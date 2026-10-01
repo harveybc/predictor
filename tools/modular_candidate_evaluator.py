@@ -124,22 +124,33 @@ def _times(array, name, shape):
 
 def _load(path, split, config):
     model_config = config["model"]
-    # Hash precisely the bytes parsed, even if a producer replaces the file later.
-    raw = Path(path).read_bytes()
+    # Hash the bytes parsed without holding a second in-memory copy of the archive:
+    # stream-hash, parse from the file, stream-hash again; a producer replacing the
+    # file between the two hashes is refused (the digest always names the parsed bytes).
+    def _stream_sha(p):
+        digest = hashlib.sha256()
+        with open(p, "rb") as stream:
+            for block in iter(lambda: stream.read(1 << 22), b""):
+                digest.update(block)
+        return digest.hexdigest()
+
+    before = _stream_sha(path)
     required = {"windows", "targets", "row_ids", "timestamps", "target_timestamps",
                 "dataset_id", "split", "feature_names", "target_names", "horizons",
                 "timestamp_unit", "metric_space", "scaler_identity", "scaler_scale"}
-    with np.load(io.BytesIO(raw), allow_pickle=False) as archive:
+    with np.load(path, allow_pickle=False) as archive:
         if set(archive.files) != required:
             raise ValueError(f"{split} NPZ missing/unexpected fields: {set(archive.files) ^ required}")
         data = {key: archive[key] for key in required}
+    if _stream_sha(path) != before:
+        raise ValueError(f"{split} NPZ changed while it was being read")
     x, y = data["windows"], data["targets"]
     if x.ndim != 3 or y.ndim != 3 or x.shape[0] != y.shape[0] or min(*x.shape, *y.shape) < 1:
         raise ValueError("windows/targets must be nonempty [N,W,F]/[N,H,T]")
     for name in ("windows", "targets"):
         if data[name].dtype.kind not in "fi":
             raise ValueError(f"{name} must be real numeric arrays")
-        data[name] = _finite(data[name].astype(np.float32), name)
+        data[name] = _finite(data[name].astype(np.float32, copy=False), name)
     n, w, f = x.shape
     _, h, t = y.shape
     if model_config.get("window") != w:
@@ -188,7 +199,7 @@ def _load(path, split, config):
     if not np.array_equal(ends, expected):
         raise ValueError("target_timestamps disagree with horizons and sample_hours in seconds")
     data["input_start"] = origins - (w - 1) * int(seconds)
-    data["sha256"] = hashlib.sha256(raw).hexdigest()
+    data["sha256"] = before
     return data
 
 
@@ -478,8 +489,27 @@ def evaluate_candidate(config, train_path, validation_path, output_dir, progress
     vx, vy = validation["windows"], validation["targets"]
     _predict(model, x[:1], y[:1], batch)
     initial_digest = _weight_digest(model.get_weights())
-    training = fit_with_early_stopping(model, x, y, vx, vy,
-                                       settings if progress is None else {**settings, "progress": progress})
+    fit_settings = settings if progress is None else {**settings, "progress": progress}
+    engine_config = getattr(bundle, "config", None) or {}
+    if any(spec.get("regime") == "R3"
+           for spec in [*engine_config.get("branches", []), engine_config.get("core", {})]):
+        # R3 (warm): frozen donors for freeze_epochs, then unfrozen; every R0/R1/R2 path below is untouched
+        from predictor_plugins.modular_temporal import warm as _warm
+        warm_receipt = _warm.fit_warm(bundle, x, y, vx, vy, fit_settings)
+        p1, p2 = warm_receipt["phase_1"], warm_receipt["phase_2"]
+        chosen = p1 if warm_receipt["selected_phase"] == 1 else p2
+        training = {**{k: v for k, v in chosen.items() if k != "component_hashes_after"},
+                    "observed_updates": warm_receipt["observed_updates"],
+                    "selected_epoch": (p1["selected_epoch"] if warm_receipt["selected_phase"] == 1
+                                       else p1["epochs_completed"] + p2["selected_epoch"]),
+                    "epochs_completed": p1["epochs_completed"] + p2["epochs_completed"],
+                    "stop_reason": p2["stop_reason"],
+                    "best_validation_loss": warm_receipt["best_validation_loss"],
+                    "history": [*(warm_receipt["history"]["phase_1"] or []),
+                                *(warm_receipt["history"]["phase_2"] or [])],
+                    "warm": {k: v for k, v in warm_receipt.items() if k != "history"}}
+    else:
+        training = fit_with_early_stopping(model, x, y, vx, vy, fit_settings)
     best_weights = model.get_weights()
     prediction = _predict(model, vx, vy, batch)
     baseline = np.repeat(vx[:, -1:, config["target_feature_indices"]], len(model_config["horizons"]), axis=1)

@@ -116,13 +116,18 @@ class Campaign:
         campaign.db.execute("INSERT INTO meta VALUES('campaign_sha256', ?)", (hashlib.sha256(text.encode()).hexdigest(),))
         return campaign
 
-    def enqueue(self, flat_without_seed, label):
-        """Persist one configuration x every paired seed BEFORE any execution."""
+    def enqueue(self, flat_without_seed, label, seeds=None):
+        """Persist one configuration x every paired seed BEFORE any execution.
+
+        ``seeds`` overrides the declared paired seeds for this configuration (e.g. a
+        contrast run on the seeds of its reference); the incumbent rule then requires
+        every seed this configuration was enqueued with.
+        """
         added = []
         self.db.execute("BEGIN IMMEDIATE")
         try:
             position = self.db.execute("SELECT COALESCE(MAX(position), -1) + 1 FROM candidates").fetchone()[0]
-            for seed in self.declaration["paired_seeds"]:
+            for seed in (seeds or self.declaration["paired_seeds"]):
                 flat = {**flat_without_seed, "train.seed": seed}
                 ss.validate_flat(flat, self.space)  # invalid combinations fail before fit and before queueing
                 try:
@@ -351,22 +356,52 @@ class Campaign:
         return isinstance(revision, str) and len(revision) == 40 and all(c in "0123456789abcdef" for c in revision)
 
     def run(self, executor, max_candidates=None, stop_file=None):
+        """Claim and execute work; verification runs concurrently with the next train attempt.
+
+        A verify claim starts in a background thread (own SQLite connection) and the loop
+        immediately claims the next train item, so the next train's admission request is
+        already queued while the previous checkpoint is rescored. At most one verification
+        is in flight; the admission gate on the worker decides whether both fit (caps are
+        never changed here).
+        """
+        import threading
+
         if self.declaration.get("require_pin", False) and not self.pinned():
             raise RuntimeError("campaign is not pinned to a full predictor commit; nothing is dispatched")
         done = 0
         host = getattr(executor, "host", "local")
         self.recover(executor)
+        verifying = None
+
+        def verify_job(row, attempt, output_root):
+            own = Campaign(self.root)
+            own.declaration = self.declaration  # the runner's declaration, not a re-read
+            own.space = self.space
+            own.execute(row, "verify", executor, attempt, output_root)
+            own.update_incumbent()
+
         while max_candidates is None or done < max_candidates:
             if stop_file and Path(stop_file).exists():
                 break
             claimed = self.claim(host)
             if claimed is None:
+                if verifying is not None and verifying.is_alive():
+                    verifying.join()  # a finished verification may make no new work, but recheck once
+                    verifying = None
+                    continue
                 break
             row, kind, attempt, output_root = claimed
-            self.execute(row, kind, executor, attempt, output_root)
             if kind == "verify":
-                self.update_incumbent()
-            done += kind == "train"
+                if verifying is not None:
+                    verifying.join()
+                verifying = threading.Thread(target=verify_job, args=(row, attempt, output_root), daemon=False)
+                verifying.start()
+                continue
+            self.execute(row, kind, executor, attempt, output_root)
+            done += 1
+        if verifying is not None:
+            verifying.join()
+        self.update_incumbent()
         return done
 
     def execute(self, row, kind, executor, attempt, output_root):
@@ -427,13 +462,14 @@ class Campaign:
         table = []
         for config_id, rows in groups.items():
             verified = {r["seed"]: r for r in rows if r["status"] == "verified"}
-            eligible = set(verified) == set(seeds) and all(
+            declared = {r["seed"] for r in rows if not str(r["status"]).isupper()}  # live rows, not superseded/refused
+            eligible = bool(declared) and set(verified) == declared and all(
                 r["objective"] is not None and math.isfinite(r["objective"]) for r in verified.values())
-            values = [verified[s]["objective"] for s in seeds if s in verified]
+            values = [verified[s]["objective"] for s in sorted(declared) if s in verified]
             table.append({"config_id": config_id, "label": rows[0]["label"], "eligible": eligible,
                           "mean_objective": sum(values) / len(values) if values else None,
-                          "per_seed": {str(s): verified[s]["objective"] for s in seeds if s in verified},
-                          "cids": [verified[s]["cid"] for s in seeds if s in verified],
+                          "per_seed": {str(s): verified[s]["objective"] for s in sorted(declared) if s in verified},
+                          "cids": [verified[s]["cid"] for s in sorted(declared) if s in verified],
                           "statuses": {str(r["seed"]): r["status"] for r in rows}})
         ranked = sorted((t for t in table if t["eligible"]), key=lambda t: t["mean_objective"], reverse=higher)
         return table, ranked

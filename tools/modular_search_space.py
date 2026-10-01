@@ -66,7 +66,11 @@ ENGINE_CAPABILITIES = {
 }
 
 LOSSES = ("huber", "mae", "mse")
-REGIMES = ("R0", "R1", "R2")
+# Optional flat parameters: a space may omit them (older campaigns); when declared they are always active.
+OPTIONAL_PARAMETERS = {"model.target_residual": ("none", "seasonal_naive_24")}
+REGIMES = ("R0", "R1", "R2", "R3")
+# R3 (warm) schedule: declared by a space as optional bounds; active exactly when a component is R3.
+WARM_PARAMETERS = ("train.r3_freeze_epochs", "train.r3_unfreeze_learning_rate")
 
 
 class SearchSpaceError(ValueError):
@@ -106,8 +110,9 @@ def validate_space(space):
     if space.get("engine") not in ENGINE_CAPABILITIES:
         _fail("unknown engine capability identity")
     bounds = space.get("bounds")
-    if not isinstance(bounds, dict) or set(bounds) != set(parameter_names()):
-        missing = set(parameter_names()) ^ set(bounds or {})
+    expected = set(parameter_names()) | (set(bounds or {}) & (set(OPTIONAL_PARAMETERS) | set(WARM_PARAMETERS)))
+    if not isinstance(bounds, dict) or set(bounds) != expected:
+        missing = expected ^ set(bounds or {})
         _fail(f"bounds must declare every flat parameter exactly: {sorted(missing)}")
     for name, spec in bounds.items():
         if not isinstance(spec, dict):
@@ -164,6 +169,29 @@ def validate_flat(flat, space):
     validate_space(space)
     if not isinstance(flat, dict):
         _fail("flat parameters must be an object")
+    optional = {k: v for k, v in flat.items() if k in OPTIONAL_PARAMETERS}
+    for name in optional:
+        if name not in space["bounds"]:
+            _fail(f"{name} is not declared by this search space")
+        _in_bounds(name, optional[name], space["bounds"][name])
+    flat = {k: v for k, v in flat.items() if k not in OPTIONAL_PARAMETERS}
+    for name in OPTIONAL_PARAMETERS:
+        if name in space["bounds"] and name not in optional:
+            _fail(f"active parameters missing: ['{name}']")
+    warm = {k: flat.pop(k) for k in WARM_PARAMETERS if k in flat}
+    is_warm = "R3" in (flat.get("branch.regime"), flat.get("core.regime"))
+    if is_warm:
+        undeclared = [k for k in WARM_PARAMETERS if k not in space["bounds"]]
+        if undeclared:
+            _fail(f"regime R3 needs a space that declares {undeclared}")
+        if set(warm) != set(WARM_PARAMETERS):
+            _fail(f"active parameters missing: {sorted(set(WARM_PARAMETERS) - set(warm))}")
+        for name, value in warm.items():
+            _in_bounds(name, value, space["bounds"][name])
+        if warm["train.r3_freeze_epochs"] >= flat.get("train.max_epochs", 0):
+            _fail("train.r3_freeze_epochs must be smaller than train.max_epochs")
+    elif warm:
+        _fail(f"conditional parameters inactive for this candidate: {sorted(warm)}")
     if flat.get("core.stage_count") not in (3, 4):
         _fail("core.stage_count must be 3 or 4")
     if flat.get("train.loss") not in LOSSES:
@@ -287,6 +315,16 @@ def from_flat(flat, base, space):
             _fail(f"donor binding lacks {len(missing)} declared donors (e.g. {missing[0]})")
         meta["donor_binding"] = {**{k: binding[k] for k in ("index_sha256", "amendment_sha256", "required_contract")},
                                  "donors": {d: binding["donors"][d] for d in used}}
+    if "R3" in (flat["branch.regime"], flat["core.regime"]):
+        schedule = {"freeze_epochs": flat["train.r3_freeze_epochs"],
+                    "unfreeze_learning_rate": flat["train.r3_unfreeze_learning_rate"]}
+        for spec in [*model["branches"], core]:
+            if spec["regime"] == "R3":
+                spec.update(schedule)
+    residual = flat.get("model.target_residual", "none")
+    if residual == "seasonal_naive_24":
+        model["target_residual"] = {"kind": "seasonal_naive", "period": 24,
+                                    "target_features": [names[i] for i in base["target_feature_indices"]]}
     nested = {"modular_candidate": meta,
               "model": model, "evaluator": evaluator,
               "target_feature_indices": list(base["target_feature_indices"]),
@@ -304,7 +342,8 @@ def to_flat(nested, space):
     branches = model["branches"]
     size = len(branches[0]["features"])
     names = model["feature_names"]
-    uniform = {canonical((b["plugin"], b["params"], b["regime"])) for b in branches}
+    uniform = {canonical((b["plugin"], b["params"], b["regime"], b.get("freeze_epochs"),
+                          b.get("unfreeze_learning_rate"))) for b in branches}
     if len(uniform) != 1:
         _fail("branches are not uniform; the flat space cannot express this candidate")
     expected = [names[i:i + size] for i in range(0, len(names), size)]
@@ -338,6 +377,14 @@ def to_flat(nested, space):
         flat["train.huber_delta"] = ev["huber_delta"]
     elif "huber_delta" in ev:
         _fail("huber_delta present while loss is not huber")
+    warm = [c for c in (branches[0], model["core"]) if c["regime"] == "R3"]
+    if warm:
+        schedules = {(c["freeze_epochs"], c["unfreeze_learning_rate"]) for c in warm}
+        if len(schedules) != 1:
+            _fail("R3 components with different warm schedules; not expressible")
+        flat["train.r3_freeze_epochs"], flat["train.r3_unfreeze_learning_rate"] = schedules.pop()
+    if "model.target_residual" in space["bounds"]:
+        flat["model.target_residual"] = "seasonal_naive_24" if model.get("target_residual") else "none"
     validate_flat(flat, space)
     return flat
 

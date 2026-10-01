@@ -1,0 +1,15 @@
+{
+ "label": "PROOF_NOT_A_RESULT",
+ "host": "worker_b",
+ "device": "CPU (CUDA_VISIBLE_DEVICES='')",
+ "TF_DETERMINISTIC_OPS": "1",
+ "candidate": "corrected grouped32 R0 Huber s2021, cid fa246e4645554981780d933cb34f03cbe0dde85fa87017e43703d127e8b7d623, 2 epochs, full ECL train/validation (amendment-5 protocol)",
+ "pins": {
+  "2b89f4d9": {"MAE": "0.4228176808598377", "weights_sha256": "fa60b1b26195dbe15184dbc0e99d2e9fb1a25b73b2ab7fc2b41cdbd6d8a09e82", "initial_weights_sha256": "c5935249a14df211c33aef1bb7f19158aa96e6f47b0dde43620da92d1622fda4", "updates": 574},
+  "a615c212": {"MAE": "0.4228176808598377", "weights_sha256": "fa60b1b26195dbe15184dbc0e99d2e9fb1a25b73b2ab7fc2b41cdbd6d8a09e82", "initial_weights_sha256": "c5935249a14df211c33aef1bb7f19158aa96e6f47b0dde43620da92d1622fda4", "updates": 574}
+ },
+ "verdict": "BITWISE_IDENTICAL",
+ "also_equal_to": "amendment-5 replay at df9ae31c and 6c15af13 (same MAE and weights sha)",
+ "lean_load_peak": {"a615c212_cgroup_peak_bytes": 2903568384, "previous_evaluator_same_replay_bytes": 3578548224, "previous_source": "d-pin-replay ledger, worker_b, same candidate and epochs", "2b89f4d9_this_run": "peak not recorded by the admission ledger for this lease"},
+ "summary": {"verdict": "BITWISE_IDENTICAL", "MAE": "0.4228176808598377", "weights_sha256": "fa60b1b2..."}
+}

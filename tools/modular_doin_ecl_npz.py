@@ -72,11 +72,24 @@ def windows_for(rows, times, z, window, horizons, sample_seconds):
             gaps += 1
             continue
         origins.append(o)
-    origins = np.asarray(origins, dtype=np.int64)
+    return np.asarray(origins, dtype=np.int64), gaps
+
+
+def materialize(origins, z, window, horizons, scratch, name, chunk=256):
+    """float32 windows/targets written in chunks into .npy memmaps (no float64 full-size copy)."""
+    from numpy.lib.format import open_memmap
     offsets = np.arange(-window + 1, 1)
-    x = z[origins[:, None] + offsets[None, :]].astype(np.float32)
-    y = z[origins[:, None] + np.asarray(horizons)[None, :]].astype(np.float32)
-    return origins, x, y, gaps
+    hz = np.asarray(horizons)
+    x = open_memmap(scratch / f"{name}_windows.npy", mode="w+", dtype=np.float32,
+                    shape=(len(origins), window, z.shape[1]))
+    y = open_memmap(scratch / f"{name}_targets.npy", mode="w+", dtype=np.float32,
+                    shape=(len(origins), len(hz), z.shape[1]))
+    for s in range(0, len(origins), chunk):
+        o = origins[s:s + chunk]
+        x[s:s + len(o)] = z[o[:, None] + offsets[None, :]]
+        y[s:s + len(o)] = z[o[:, None] + hz[None, :]]
+    x.flush(); y.flush()
+    return x, y
 
 
 def build(source, out, *, window, horizons, expected_sha=ECL_SHA256, sample_hours=1):
@@ -102,12 +115,16 @@ def build(source, out, *, window, horizons, expected_sha=ECL_SHA256, sample_hour
     dataset_id = f"data-gov:sota_benchmarks:{source_sha}"
     out = Path(out)
     out.mkdir(parents=True, exist_ok=False)
-    val_o, vx, vy, vgaps = windows_for(borders["validation_rows"], times, z, window, horizons, seconds)
+    val_o, vgaps = windows_for(borders["validation_rows"], times, z, window, horizons, seconds)
     validation_input_start = int(times[val_o.min() - window + 1])
-    tr_o, tx, ty, tgaps = windows_for(borders["train_rows"], times, z, window, horizons, seconds)
+    tr_o, tgaps = windows_for(borders["train_rows"], times, z, window, horizons, seconds)
     target_end = times[tr_o + max(horizons)]
     purge = target_end >= validation_input_start
-    tr_o, tx, ty = tr_o[~purge], tx[~purge], ty[~purge]
+    tr_o = tr_o[~purge]
+    scratch = out / ".scratch"
+    scratch.mkdir()
+    tx, ty = materialize(tr_o, z, window, horizons, scratch, "train")
+    vx, vy = materialize(val_o, z, window, horizons, scratch, "validation")
     manifest = {"schema": "m04.ecl_npz.v1", "dataset_id": dataset_id, "source_sha256": source_sha,
                 "channels": len(names), "channel_order_sha256": hashlib.sha256(",".join(names).encode()).hexdigest(),
                 "window": window, "horizons": list(horizons), "sample_hours": sample_hours,
@@ -126,6 +143,7 @@ def build(source, out, *, window, horizons, expected_sha=ECL_SHA256, sample_hour
                       scaler_scale=scale.astype(np.float64))
         path = out / f"{split}.npz"
         np.savez(path, **arrays)
+        del arrays
         manifest["splits"][split] = {"path": path.name, "sha256": sha_file(path), "windows": int(len(origins)),
                                      "origin_rows": [int(origins.min()), int(origins.max())],
                                      "origin_start": int(ts.min()), "origin_end": int(ts.max()),
