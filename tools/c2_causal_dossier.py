@@ -298,7 +298,8 @@ def dossier(pop, s, *, revision, produced_at=None):
                                            "no_unmeasured_confounding_given_W": False, "timestamp_is_bar_close": False,
                                            "physical_intervention_on_a_derived_feature_exists": False},
                   "estimator": {"name": "partially_linear_DML_crossfit_ridge_HAC", "library": "numpy+scikit-learn", "version": __import__("sklearn").__version__, "revision": revision},
-                  "support": {"state": s["support_state"], "n_per_side": s["n_per_side"], "residual_variance_share": s["residual_variance_share_full_w"]},
+                  "support": {"state": s["support_state"], "n_per_side": s["n_per_side"],
+                              "residual_variance_share": min(1.0, max(0.0, s["residual_variance_share_full_w"]))},  # contract bound; raw value in sensitivity
                   "placebo": {"state": "PASSED" if controls_ok else "FAILED",
                               "tests": [{"name": name, "verdict": ("FAILED_AS_REQUIRED" if c["failed_as_required"] else
                                                                    ("NOT_FAILED_AT_NOMINAL_5PCT" if c.get("null_rejected_at_5pct") else "NOT_FAILED_PROBE_SUSPECT")), "n": s["n"]}

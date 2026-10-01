@@ -2,19 +2,49 @@
  "schema": "lane_c2_status.v1",
  "label": "DEVELOPMENT",
  "lane": "C2 (causality and extraction, front C)",
- "updated_at": "2026-10-01T08:25Z",
+ "updated_at": "2026-10-01T08:22Z",
  "branch": "predictor satoshi/c2-causal-eth-20261001",
  "population": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1 @ predictor b1f8a74f, sha 1b447c66",
  "split": "M07 SPLIT_eth4h_l24_h6_v1 (sha 116a5b64): TRAIN rows [0,13699), origins [23,13669], 13415 windows, row-ids sha 3903daae reproduced",
  "deliverables": [
-  {"id": "D1", "name": "per-feature contribution (83 x 7 h x 8 splits)", "planned": 14336, "completed": 14336, "state": "DONE 152 s CPU, peak 295 MB"},
-  {"id": "D1b", "name": "leak probe (producer replay, 83 columns)", "planned": 83, "completed": 83, "state": "DONE 83/83 causal, 2.7 s CPU"},
-  {"id": "D2", "name": "causal dossiers (83 features x 6 h; top-20 delivered)", "planned": 498, "completed": 46, "state": "RUNNING worker_b c2-dossiers-v2"},
-  {"id": "D3", "name": "recommendation table (M03/M07)", "planned": 1, "completed": 1, "state": "PRELIMINARY; final after D2"},
-  {"id": "D4", "name": "PS3-R rerun under M01 tooling (240 records)", "planned": 240, "completed": 3, "state": "RUNNING worker_b c2-ps3r-rerun, 3G cap"}
+  {
+   "id": "D1",
+   "name": "per-feature contribution (83 x 7 h x 8 splits)",
+   "planned": 14336,
+   "completed": 14336,
+   "state": "DONE 152 s CPU, peak 295 MB"
+  },
+  {
+   "id": "D1b",
+   "name": "leak probe (producer replay, 83 columns)",
+   "planned": 83,
+   "completed": 83,
+   "state": "DONE 83/83 causal, 2.7 s CPU"
+  },
+  {
+   "id": "D2",
+   "name": "causal dossiers (83 features x 6 h; top-20 delivered)",
+   "planned": 498,
+   "completed": 498,
+   "state": "DONE 948 s CPU, 498/498 validate, battery SUSPECT (HAC anti-conservative)"
+  },
+  {
+   "id": "D3",
+   "name": "recommendation table (M03/M07)",
+   "planned": 1,
+   "completed": 1,
+   "state": "FINAL (1162 rows, dossier columns joined)"
+  },
+  {
+   "id": "D4",
+   "name": "PS3-R rerun under M01 tooling (240 records)",
+   "planned": 240,
+   "completed": 7,
+   "state": "RUNNING worker_b c2-ps3r-rerun, cap 2.73G = 1.25x measured 2.19 GB"
+  }
  ],
- "current_work": "D2 dossiers (worker_b, 1G cap, measured pilot 200 MB) and D4 PS3-R rerun (worker_b, 3G cap from M01's measured 2.16 GB child peak)",
- "next_dependencies": "D2 -> final table + schema validation on the coordinator; D4 -> paired contrast table via tools/ps3r_pilot_contrast.py @7343ffc2",
- "eta": "D2 ~09:45Z (46/498 after 15 min); D4 ~11:30Z (measured 24 s/AE, 68 s/contrastive record, 237 left)",
- "milestones": "08:00Z binding+tests green; 08:05Z D1/D1b done; 08:20Z D2 final launched; 08:05Z D4 admitted"
+ "current_work": "D4 PS3-R rerun (worker_b, the single C2 job there); no compute on the coordinator",
+ "next_dependencies": "D4 -> tools/ps3r_pilot_contrast.py @7343ffc2 on worker_b after the run; PROGRESS.png re-rendered on worker_b then",
+ "eta": "D4 ~11:30Z (24 s/AE, 68 s/contrastive record measured; 233 left)",
+ "milestones": "08:00Z binding+tests green; 08:05Z D1/D1b done; 08:20Z D2 final launched; 08:05Z D4 admitted; 08:15Z D2 done; 08:19Z D2 validated 498/498; 08:20Z D4 resumed at 1.25x measured"
 }

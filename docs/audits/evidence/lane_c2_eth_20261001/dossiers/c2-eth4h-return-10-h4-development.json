@@ -1,0 +1,409 @@
+{
+ "data_manifest": {
+  "asset_appearance": {
+   "availability_class": "DEVELOPMENT",
+   "contract": "predictor examples/data/project3/ethusdt_4h_tech_stat_full_model_ready.manifest.json @ 14a1077f",
+   "contracts_document_sha256": "bfaf2cf63814a0be5756f648f3f5c949b97d96b1f0d0c29f674bc0d36a371406",
+   "dataset_id": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1",
+   "entity": "ethusdt",
+   "frequency": "4h",
+   "lake_parent_appearance_id": "app_00bd88770beb60e9ac4b30f4",
+   "period": [
+    "2017-10-02T00:00:00+00:00",
+    "2023-12-27T00:00:00+00:00"
+   ],
+   "resource_sha256": "1b447c66e68495e826c53e2ab2b08ecd3922c8fdc735747628f8d0435ebe440f",
+   "state": "CONTRACTED_MODEL_READY_VIEW",
+   "train_rows": [
+    0,
+    13699
+   ]
+  },
+  "consensus_clock": "NONE",
+  "exclusions": {
+   "NO_BAR_AT_EXACT_ELAPSED_TIME_OR_IRREGULAR_WINDOW": 232
+  },
+  "expectation_kind": "NONE",
+  "n_episodes": 13415,
+  "publication_clock": "ASSUMED_SCHEDULED_PUBLICATION",
+  "sources": [
+   {
+    "governed": false,
+    "resource": "predictor examples/data/project3/ethusdt_4h_tech_stat_full_model_ready.csv @ b1f8a74f",
+    "role": "bars",
+    "rows": 18085,
+    "sha256": "1b447c66e68495e826c53e2ab2b08ecd3922c8fdc735747628f8d0435ebe440f"
+   },
+   {
+    "governed": false,
+    "resource": "feature-eng docs/feature_metrics/laneB/SELECTED_FEATURE_MANIFEST.eth_4h.v1.FROZEN_DEVELOPMENT.json @ b90c4b3",
+    "role": "covariates",
+    "rows": 83,
+    "sha256": "fdff0c85fc376cd6930cede4981a64b076022bd701c6a045339689e3ab892d4c"
+   },
+   {
+    "governed": false,
+    "resource": "predictor docs/audits/evidence/lane_f2_eth_20261001/SPLIT_eth4h_l24_h6_v1.json @ 13ef175f (M07 split)",
+    "role": "projections",
+    "rows": 13415,
+    "sha256": "116a5b645fe08138c49a558c206dd970528128bcd8370bb9ec8cd62b20a61e25"
+   }
+  ],
+  "train_folds": [
+   "blocks5:B1",
+   "blocks5:B2",
+   "blocks5:B3",
+   "blocks5:B4",
+   "blocks5:B5"
+  ]
+ },
+ "dossier_id": "c2-eth4h-return-10-h4-development",
+ "emission": {
+  "emittable_from": {
+   "delta": "2024-01-01T12:00:00+00:00",
+   "u": "2024-01-01T12:00:00+00:00"
+  },
+  "operational_use": "RETROSPECTIVE_ONLY"
+ },
+ "limitations": [
+  "DEVELOPMENT: the view is a git-pinned local file (no governed availability contract); nothing here is confirmatory",
+  "the timestamp semantics of the view are undeclared (FEATURE_DAG.v3); bar-close is assumed, not certified",
+  "a derived feature cannot be set without moving prices: do(X_j) is an intervention on the model's input, reported here because the orders ask for it; it is not an intervention on the market",
+  "the partially linear model is declared, not tested against a non-linear alternative here",
+  "all rows are TRAIN rows [0,13699) of the declared calendar split; validation 2024 and test 2025 were never read",
+  "the horizon 4 bars = 16 h lies between the spec's Y_s (1-6 h) and Y_l (24-144 h) grids"
+ ],
+ "produced_at": "2026-10-01T08:00:29+00:00",
+ "producer": {
+  "module": "predictor tools/c2_causal_dossier.py (lane C2; the PS3-C module causal_inference_provider.ps3c is not yet implemented, FS10-FS12 red)",
+  "repository": "causal-inference",
+  "revision": "b5823332fea804691db8a6bc2570d4961f19ef68"
+ },
+ "rung1": {
+  "conditioning_set": [
+   "W = the other admissible features at t minus the redundancy cluster"
+  ],
+  "effective_n": 13415,
+  "estimators": [
+   "pearson",
+   "spearman",
+   "ridge incremental utility (deliverable 1)"
+  ],
+  "evidence": [
+   {
+    "measure": "pearson_r",
+    "n": 13415,
+    "p": 0.034493471532638216,
+    "q": null,
+    "regime": null,
+    "signed_direction_stable": false,
+    "value": 0.018254349757289342
+   },
+   {
+    "measure": "spearman_rho",
+    "n": 13415,
+    "p": 0.2413347543832892,
+    "q": null,
+    "regime": null,
+    "signed_direction_stable": false,
+    "value": 0.01011659926822569
+   }
+  ],
+  "multiplicity": {
+   "correction": "none (reported raw; selection reads ranks, not p)",
+   "family": "83 features x 7 horizons",
+   "n_tests": 581,
+   "p_floor": 0.0,
+   "permutations": 0
+  },
+  "state": "ASSOCIATION_REPORTED"
+ },
+ "rung2": {
+  "adjustment": [
+   "return_1",
+   "log_return_1",
+   "return_5",
+   "log_return_5",
+   "return_20",
+   "log_return_20",
+   "return_60",
+   "log_return_60",
+   "sma_10",
+   "ema_10",
+   "close_sma_ratio_10",
+   "sma_20",
+   "ema_20",
+   "close_sma_ratio_20",
+   "sma_50",
+   "ema_50",
+   "close_sma_ratio_50",
+   "sma_100",
+   "ema_100",
+   "close_sma_ratio_100",
+   "sma_200",
+   "ema_200",
+   "close_sma_ratio_200",
+   "macd",
+   "macd_signal",
+   "macd_hist",
+   "rsi_7",
+   "rsi_14",
+   "rsi_21",
+   "stoch_k",
+   "stoch_d",
+   "williams_r_14",
+   "cci_14",
+   "roc_20",
+   "roc_60",
+   "mom_10",
+   "mom_20",
+   "bb_upper",
+   "bb_middle",
+   "bb_lower",
+   "bb_pct_b",
+   "bb_width",
+   "atr_14",
+   "natr_14",
+   "hist_vol_10",
+   "hist_vol_20",
+   "hist_vol_60",
+   "ema_cross_10_50",
+   "ema_cross_20_100",
+   "trend_slope_50",
+   "trend_strength_50",
+   "obv",
+   "obv_delta_20",
+   "volume_sma_10",
+   "volume_sma_20",
+   "volume_ratio_20",
+   "vwap_60",
+   "mfi_14",
+   "statistical__log_return_1",
+   "roll_mean_ret_20",
+   "roll_std_ret_20",
+   "roll_skew_ret_20",
+   "roll_kurt_ret_20",
+   "roll_mean_ret_60",
+   "roll_std_ret_60",
+   "roll_skew_ret_60",
+   "roll_kurt_ret_60",
+   "roll_mean_ret_252",
+   "roll_std_ret_252",
+   "roll_skew_ret_252",
+   "roll_kurt_ret_252",
+   "realized_var_12",
+   "realized_var_48",
+   "autocorr_lag1_100",
+   "autocorr_lag5_100",
+   "sqret_autocorr_lag1_100",
+   "vol_regime_high",
+   "vol_regime_low",
+   "hurst_proxy_200",
+   "zscore_close_100"
+  ],
+  "assumptions_declared": {
+   "additive_noise": true,
+   "lineage_dag_v3_names_the_producer": true,
+   "no_unmeasured_confounding_given_W": false,
+   "partially_linear_effect": true,
+   "physical_intervention_on_a_derived_feature_exists": false,
+   "timestamp_is_bar_close": false
+  },
+  "contrast": [
+   -0.023954465,
+   0.032198133000000004
+  ],
+  "dag": {
+   "edges": [
+    [
+     "P_hist",
+     "return_10"
+    ],
+    [
+     "P_hist",
+     "W"
+    ],
+    [
+     "U",
+     "P_hist"
+    ],
+    [
+     "U",
+     "Y_h"
+    ],
+    [
+     "return_10",
+     "Y_h"
+    ],
+    [
+     "W",
+     "Y_h"
+    ]
+   ],
+   "nodes": [
+    "P_hist",
+    "U",
+    "return_10",
+    "W",
+    "Y_h"
+   ]
+  },
+  "estimand": "E[Y_h | do(return_10 = q75)] - E[Y_h | do(return_10 = q25)] on the TRAIN population, Y_h in M07 z-units, under the declared partially linear model",
+  "estimate": null,
+  "estimator": {
+   "library": "numpy+scikit-learn",
+   "name": "partially_linear_DML_crossfit_ridge_HAC",
+   "revision": "b5823332fea804691db8a6bc2570d4961f19ef68",
+   "version": "1.9.0"
+  },
+  "excluded_from_adjustment": [
+   "log_return_10 (REDUNDANT_TRANSFORM_OF_TREATMENT |corr|>0.95)",
+   "roc_10 (REDUNDANT_TRANSFORM_OF_TREATMENT |corr|>0.95)",
+   "any column at rows > t (future)",
+   "Y at shorter horizons (descendant)"
+  ],
+  "placebo": {
+   "state": "PASSED",
+   "tests": [
+    {
+     "n": 13415,
+     "name": "scrambled_label",
+     "verdict": "FAILED_AS_REQUIRED"
+    },
+    {
+     "n": 13415,
+     "name": "future_shifted_feature",
+     "verdict": "FAILED_AS_REQUIRED"
+    },
+    {
+     "n": 13415,
+     "name": "noise_treatment",
+     "verdict": "FAILED_AS_REQUIRED"
+    }
+   ]
+  },
+  "reasons": [
+   "TREATMENT_PREDICTED_BY_CONTROLS",
+   "TIMESTAMP_SEMANTICS_UNDECLARED",
+   "TREATMENT_IS_A_DETERMINISTIC_FUNCTION_OF_PAST_PRICES_NO_PHYSICAL_INTERVENTION",
+   "LATENT_MARKET_STATE_UNMEASURED",
+   "ESTIMATE_REPORTED_UNDER_DECLARED_ASSUMPTIONS_DEVELOPMENT_ONLY"
+  ],
+  "sensitivity": {
+   "causal_single_feature_mae_z": 1.3289348630683355,
+   "effect_interval_z_high": 0.2956518568675472,
+   "effect_interval_z_low": -0.04599868812076831,
+   "effect_q25_to_q75_log_return": 0.002430728062568812,
+   "effect_q25_to_q75_z": 0.12482658437338945,
+   "future_shift_statistical_probe_fired": "True",
+   "future_shifted_single_feature_mae_z": 1.0858528300201864,
+   "future_shifted_theta": 45.27640895515956,
+   "hac_lag": 10,
+   "intercept_only_mae_z": 1.3280034683208153,
+   "label": "DEVELOPMENT",
+   "noise_treatment_theta": 0.0032043885455620737,
+   "residual_variance_share_full_w": 6.458552272377642e-10,
+   "residual_variance_share_reduced_w": 0.07498994894606822,
+   "scrambled_label_t": -0.4779049666475941,
+   "scrambled_label_theta": -0.6043070155004563,
+   "theta_per_unit_z": 2.222988585023073,
+   "theta_se_hac": 1.5521232209510496
+  },
+  "state": "NOT_IDENTIFIED",
+  "support": {
+   "n_per_side": [
+    3354,
+    3354
+   ],
+   "residual_variance_share": 6.458552272377642e-10,
+   "state": "TREATMENT_PREDICTED_BY_CONTROLS"
+  }
+ },
+ "rung3": {
+  "abduction": {
+   "n": 13415,
+   "u_mean": 0.016927905361645682,
+   "u_std": 1.9686832032515034
+  },
+  "action": {
+   "return_10": 0.0012420156
+  },
+  "label": "MODEL_BASED_COUNTERFACTUAL",
+  "prediction": {
+   "barrier_reread": null,
+   "counterfactual": -0.004965455081475444,
+   "delta": 0.004432786218870044,
+   "factual": -0.0005326688626053986,
+   "model_based": -0.02189336044312113,
+   "propagated_nodes": [],
+   "uncertainty": {
+    "delta_q05": -0.21187039801592603,
+    "delta_q50": 0.0,
+    "delta_q95": 0.22511932728748807
+   }
+  },
+  "reasons": [
+   "INHERITED_FROM_RUNG2",
+   "TREATMENT_PREDICTED_BY_CONTROLS",
+   "TIMESTAMP_SEMANTICS_UNDECLARED",
+   "TREATMENT_IS_A_DETERMINISTIC_FUNCTION_OF_PAST_PRICES_NO_PHYSICAL_INTERVENTION"
+  ],
+  "scm": {
+   "alternatives_considered": [
+    "non-linear g (HGB) not fitted here",
+    "mediators none declared"
+   ],
+   "equations": {
+    "Y_h": "theta * return_10 + g(W) + U",
+    "return_10": "deterministic producer of P_hist (not re-estimated)"
+   },
+   "fit_digest": "a8a56a0d4a98e0587336a43b3b5f04ea55208c7d7cf92cb0f604b5d8dee79cc3",
+   "invertible": true,
+   "library": "numpy (PLM, out-of-fold)",
+   "noise": "ADDITIVE",
+   "order": [
+    "P_hist",
+    "W",
+    "return_10",
+    "Y_h"
+   ]
+  },
+  "sensitivity": {
+   "delta_equals_theta_times_shift_under_PLM": "exact",
+   "units": "M07 z-units"
+  },
+  "state": "NOT_IDENTIFIED"
+ },
+ "schema": "causal_dossier.v1",
+ "selection": {
+  "causal_evidence_level": "ASSOCIATION",
+  "cf_eligible": false,
+  "reason_code": "RUNG2_NOT_IDENTIFIED_DEVELOPMENT_ESTIMATE_ONLY"
+ },
+ "subject": {
+  "asset": "ETHUSDT",
+  "event_type": "bar_close",
+  "head": "long",
+  "horizon_minutes": 960,
+  "kind": "EPISODE_POPULATION",
+  "population": "ETH 4h TRAIN bar closes, M07 scored origins rows [23,13669] with a label at exactly 4 regular bars; DEVELOPMENT",
+  "target": "Y_l"
+ },
+ "treatment": {
+  "definition": "stored column `return_10` of the view; producer financial-data stage22_trading_features_worker.py @ 19fe375a (sha 7495a0d9), value at the bar close t",
+  "dose_support": {
+   "max": 0.4262314,
+   "min": -0.45827264,
+   "n": 13415,
+   "quantiles": {
+    "q25": -0.023954465,
+    "q50": 0.0012420156,
+    "q75": 0.032198133000000004
+   }
+  },
+  "kind": "CONTINUOUS",
+  "name": "return_10",
+  "sequential_treatment_policy": "SEPARATED_EPISODES_ONLY",
+  "standardization": "raw feature units; the contrast is the TRAIN interquartile range q25 -> q75"
+ }
+}
