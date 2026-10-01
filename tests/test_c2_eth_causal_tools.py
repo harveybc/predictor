@@ -643,7 +643,9 @@ def test_paired_inference_refuses_evidence_it_cannot_reproduce(tmp_path):
     y2 = validation_targets(pop.frame["log_return_1"].to_numpy(), pop.mu, pop.sigma, pop.times, rows, 2, 3600)
     assert np.allclose(y2 - y1, ((pop.frame["log_return_1"].to_numpy()[rows + 2] - pop.mu) / pop.sigma))
     preds = {1: np.zeros(len(rows)), 2: np.zeros(len(rows))}
-    good = {"per_horizon": [{"horizon": h, "model_MAE": float(np.mean(np.abs(preds[h] - y))), "naive_MAE": float(np.mean(np.abs((-h * pop.mu / pop.sigma) - y)))} for h, y in ((1, y1), (2, y2))]}
+    zero = {h: float(np.mean(np.abs((-h * pop.mu / pop.sigma) - y))) for h, y in ((1, y1), (2, y2))}
+    good = {"per_horizon": [{"horizon": h, "model_MAE": float(np.mean(np.abs(preds[h] - y))), "naive_MAE": zero[h] - 0.001} for h, y in ((1, y1), (2, y2))],
+            "naives": {"per_naive": {"zero_return": {str(h): {"MAE": zero[h]} for h in (1, 2)}}}}
     res = analyse(pop, rows, preds, good, boot=50)
     assert set(res["horizons"]) == {1, 2} and res["checks"][1]["agrees"] and "combined_equal_weight" in res
     bad = json.loads(json.dumps(good))

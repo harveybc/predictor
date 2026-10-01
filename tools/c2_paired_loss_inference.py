@@ -121,9 +121,11 @@ def analyse(pop, rows, preds, evidence, *, boot=2000, seed=20261001, check_tol=1
         e_int = intercept - y
         e_m = yhat - y
         ph = next(p for p in evidence["per_horizon"] if int(p["horizon"]) == h)
+        zero_ev = float(evidence["naives"]["per_naive"]["zero_return"][str(h)]["MAE"])
         chk = {"model_MAE_rebuilt": float(np.mean(np.abs(e_m))), "model_MAE_evidence": float(ph["model_MAE"]),
-               "zero_MAE_rebuilt": float(np.mean(np.abs(e_zero))), "naive_MAE_evidence": float(ph["naive_MAE"])}
-        chk["agrees"] = bool(abs(chk["model_MAE_rebuilt"] - chk["model_MAE_evidence"]) < check_tol and abs(chk["zero_MAE_rebuilt"] - chk["naive_MAE_evidence"]) < check_tol)
+               "zero_MAE_rebuilt": float(np.mean(np.abs(e_zero))), "zero_MAE_evidence": zero_ev,
+               "strict_min_naive_MAE_evidence": float(ph["naive_MAE"]), "train_mean_Y0_MAE_rebuilt": float(np.mean(np.abs(y)))}
+        chk["agrees"] = bool(abs(chk["model_MAE_rebuilt"] - chk["model_MAE_evidence"]) < check_tol and abs(chk["zero_MAE_rebuilt"] - zero_ev) < check_tol)
         out["checks"][h] = chk
         if not chk["agrees"]:
             raise ValueError(f"EVIDENCE_NOT_REPRODUCED at h{h}: {chk}")
