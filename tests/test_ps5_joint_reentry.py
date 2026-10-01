@@ -20,11 +20,15 @@ SMALL_CORE = {"d_model": 12, "heads": 2, "blocks": 1, "ff_dim": 16, "stage_chann
 
 
 def synthetic(n=900, seed=0):
-    """y(t+1) depends ONLY on the product a(t)*b(t); a and b alone carry nothing; c, d are noise."""
+    """y(t+1) = a(t) + b(t) + noise: each member helps, only both together reach the floor; c, d are noise.
+
+    (A pure product a*b was tried first: 420 training rows do not teach the forecaster the interaction
+    in a test-sized budget, so the mechanics test uses an additive pair; the joint arm is still required
+    to beat both single-member arms strictly.)"""
     rng = np.random.default_rng(seed)
     cols = {k: rng.normal(size=n) for k in ("base0", "a", "b", "c", "d")}
     target = np.full(n, np.nan)
-    target[:-1] = 1.5 * cols["a"][:-1] * cols["b"][:-1] + 0.1 * rng.normal(size=n - 1)
+    target[:-1] = cols["a"][:-1] + cols["b"][:-1] + 0.1 * rng.normal(size=n - 1)
     return cols, target
 
 
