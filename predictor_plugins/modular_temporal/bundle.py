@@ -65,6 +65,8 @@ def load_bundle(directory, require_contract=None):
     for spec in [*config["branches"], config["core"]]:
         regimes[spec.get("name", "core")] = spec["regime"]
         spec.update(regime="R0", donor=None)
+        spec.pop("freeze_epochs", None)
+        spec.pop("unfreeze_learning_rate", None)
     config["regime"] = None
     rebuilt = build_modular(config)
     rebuilt.forecast_model.set_weights(stored.get_weights())
