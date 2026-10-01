@@ -324,3 +324,44 @@ Nothing else in sections 8–9 requires an owner decision; the remaining items t
 | 21 | Direction classifiers (phases B/C/D feed direction probabilities, which have no form in the forecast-vs-naive contract, so those runners always SKIP) | owner | rule whether a classification baseline (e.g. majority class / persistence of sign per horizon, strictly beaten) admits them, or keep them excluded |
 | 22 | `regime_wfo` declares it consumes no learned predictions → currently allowed as NOT_APPLICABLE_NO_LEARNED_PREDICTIONS with the declaration recorded | owner | confirm or require the gate anyway |
 | 23 | API-mode runs (per-tick predictions cannot bind to declared horizons) → always SKIP | owner | confirm, or define a per-tick evidence form |
+
+### 10.7 Addendum 09:45Z (2026-10-01): corrected campaign CLOSED (36/36 terminal), final incumbent seq 6
+
+- **Terminal state (verified by me on origin f787ad51 and on both workers' receipts):** 32 VERIFIED by exact match + 4
+  REFUSED_BY_ENGINE (core-only R1/R2: a core donor binds its upstream branch weights, by design; named inside the 36,
+  never run). Pin aaee6f94 for R1/R2 (engine 6c15af13 proven bitwise identical to 3ecdb256 on 18 configs + replay),
+  R0 rows under df9ae31c. Donors bound from index 8a6bb203 + amendment 2aaba33d, OPERATIONAL verified before build in
+  every receipt (read by me).
+- **R1/R2 vs R0 (seq 5 c09f3034, 0.3835650, R0 spread 0.00976), paired by seed, validation MAE in z_train:**
+
+| regime | mean | mean Δ vs R0 | own spread | reading |
+|---|---|---|---|---|
+| branch+core R1 (both frozen) c950ec17 | **0.3750913** | −0.0084737 | 0.00002 | STRICT_MINIMUM improvement, within the R0 spread → NOT an advantage |
+| branch R1 (frozen branches, core R0) | 0.3905652 | +0.0070002 | 0.00287 | worse, within spread |
+| branch R2 (fine-tuned) | 0.3976313 | +0.0140663 | 0.01277 | WORSE on both seeds, beyond both spreads |
+| branch+core R2 (fine-tuned) | 0.4011443 | +0.0175793 | 0.00403 | WORSE on both seeds, beyond both spreads |
+
+  Fine-tuning from these donors at lr 1e-3 hurt; freezing both gave the strict-minimum best. **Final incumbent seq 6 =
+  c950ec17 at 0.37509125759139983**, strict minimum, not advantage. Pretraining cost beside the row, outside the rule:
+  CPU 7,875.48 s, wall 6,636.5 s, peak 6.77 GB.
+- **Closure table (owner rule), top rows; all 16 verified configurations in the evidence file.** Scale: z_train
+  train-only scaler, validation mean over 2609 windows × 24 horizons × 321 channels. Same-row persistence naive
+  0.851406. Literature value NOT_AVAILABLE (no published ECL L24/H1..24 validation row; published rows are L96/H96–720
+  on test; ECL_TIMEFILTER_MATCH_20260930.md). Comparability NOT_COMPARABLE for that reason.
+
+| configuration | MAE | skill vs persistence |
+|---|---|---|
+| c950ec17 branch+core R1 | 0.375091 | 0.5594 |
+| c09f3034 default per-feature R0 MAE | 0.383565 | 0.5495 |
+| branch R1 | 0.390565 | 0.5413 |
+| 9cc0a1f4 draw3 R0 MAE | 0.391058 | 0.5407 |
+| 554ff1d6 draw1 R0 Huber | 0.391705 | 0.5399 |
+
+- **Controls that decide the reading:** the 24 h seasonal naive (0.247966) beats every one of the 32 verified cells at
+  every horizon; skill vs persistence is negative at h1/h23/h24 in 32/32. Under the owner's gate none of these forecasts
+  may reach the heuristic strategy, and none is financial evidence in any case.
+- **Not done:** ablations (proposed, not run); no test split; no learning-rate sweep for R2; no financial evidence record.
+- **Deviations/incidents in the closure evidence:** D-IDPROOF-STOP-01 (undersized cap, bystander stop of PS3-R),
+  ADM-PROC-01 (two SIGTERMs to queued acquirers with no lease, because the admission tool has no cancel verb and
+  ADM-CANCEL-01 is undeployed on the secondary worker), Q18 backlog file (old gate refused 6580M for 50+ min with
+  ~17 GB available).
