@@ -57,7 +57,8 @@ def npz_memmap(path, key):
         start = info.header_offset + 30 + name_len + extra_len
         f.seek(start)
         version = np.lib.format.read_magic(f)
-        shape, fortran, dtype = np.lib.format._read_array_header(f, version)
+        reader = np.lib.format.read_array_header_1_0 if version == (1, 0) else np.lib.format.read_array_header_2_0
+        shape, fortran, dtype = reader(f)
         offset = f.tell()
     return np.memmap(path, dtype=dtype, mode="r", offset=offset, shape=shape, order="F" if fortran else "C")
 
