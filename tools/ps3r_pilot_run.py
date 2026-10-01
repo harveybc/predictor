@@ -274,7 +274,7 @@ def main():
     helper.join()
     todo = [(f, fold, seed, arm) for f in features for fold in FOLDS for seed in SEEDS for arm in ARMS]
     done = skipped = 0
-    peaks = []
+    peaks, seconds_by_arm = [], {}
     for feature, fold, seed, arm in todo:
         if (out / "STOP").exists():                  # planned stop at a record boundary
             beat.state = {"stage": "stopped_planned", "shard": a.shard, "done": done, "skipped": skipped,
@@ -289,8 +289,21 @@ def main():
                 skipped += 1
                 continue
             path.rename(path.with_name(path.name + f".not_reused.{int(time.time())}"))
+        remaining = len(todo) - done - skipped
+        per_arm = {k: (sum(v) / len(v)) for k, v in seconds_by_arm.items() if v}
+        if len(per_arm) == len(ARMS):
+            left = {k: sum(1 for (_, _, _, ar) in todo[todo.index((feature, fold, seed, arm)):] if ar == k)
+                    for k in ARMS}
+            eta = {"state": "MEASURED_RATE", "seconds": sum(per_arm[k] * left[k] for k in ARMS),
+                   "basis": {k: {"mean_seconds_per_record": per_arm[k], "records_measured": len(seconds_by_arm[k]),
+                                 "records_left_upper_bound": left[k]} for k in ARMS},
+                   "note": "upper bound: records found reusable later are skipped"}
+        else:
+            eta = {"state": "NOT_MEASURED", "reason": "no completed record of every arm in this run yet"}
         beat.state = {"stage": "fitting", "shard": a.shard, "input": feature, "fold": fold["name"],
-                      "seed": seed, "arm": arm, "done": done, "skipped": skipped, "total": len(todo)}
+                      "seed": seed, "arm": arm, "done": done, "skipped": skipped, "total": len(todo),
+                      "remaining_upper_bound": remaining, "eta": eta, "label": "PILOT_ENGINEERING"}
+        record_started = time.monotonic()
         child = ctx.Process(target=_child, args=(a.data, feature, fold["name"], seed, arm, str(records)))
         child.start()
         child.join()
@@ -301,6 +314,7 @@ def main():
             beat.stop.set()
             raise SystemExit(f"record child failed with exit code {child.exitcode}; stopping at this boundary")
         record = json.loads(path.read_text())
+        seconds_by_arm.setdefault(arm, []).append(time.monotonic() - record_started)
         done += 1
         mem = memory()
         child_mem = (record.get("cost") or {}).get("memory_at_record") or record.get("memory_at_record") or {}
