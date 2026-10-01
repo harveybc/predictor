@@ -72,7 +72,13 @@
     "window": 24,
     "sample_hours": 4,
     "feature_names": [
-      "typical_price"
+      "typical_price",
+      "hod_sin",
+      "hod_cos",
+      "dow_sin",
+      "dow_cos",
+      "moy_sin",
+      "moy_cos"
     ],
     "branches": [
       {
@@ -84,6 +90,72 @@
         "params": {
           "channels": 16,
           "kernel_size": 3
+        }
+      },
+      {
+        "name": "hod_sin",
+        "features": [
+          "hod_sin"
+        ],
+        "plugin": "causal_conv1d",
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        }
+      },
+      {
+        "name": "hod_cos",
+        "features": [
+          "hod_cos"
+        ],
+        "plugin": "causal_conv1d",
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        }
+      },
+      {
+        "name": "dow_sin",
+        "features": [
+          "dow_sin"
+        ],
+        "plugin": "causal_conv1d",
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        }
+      },
+      {
+        "name": "dow_cos",
+        "features": [
+          "dow_cos"
+        ],
+        "plugin": "causal_conv1d",
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        }
+      },
+      {
+        "name": "moy_sin",
+        "features": [
+          "moy_sin"
+        ],
+        "plugin": "causal_conv1d",
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        }
+      },
+      {
+        "name": "moy_cos",
+        "features": [
+          "moy_cos"
+        ],
+        "plugin": "causal_conv1d",
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
         }
       }
     ],
