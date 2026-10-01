@@ -4,6 +4,12 @@ Satoshi, successor technical lead. 2026-09-30 (work ran into 2026-10-01 UTC).
 Lane M04 of `docs/handoffs/SATOSHI_MODULAR_OPTIMIZATION_2026_09_30.md`, section 6.
 Evidence for this document is in `docs/audits/evidence/m04_doin_20260930/`.
 
+> **Correction 2026-10-01 (lane D).** Every result in this document is evidence of the
+> OLD architecture (branch_steps=12 default, core time factors [2,1,1], compress-based
+> branches/core). It is not evidence of the owner-corrected full-grid design. These rows
+> are recorded as `SUPERSEDED_OLD_ARCH` in campaign `d_ecl_l24_h24_corrected_r0_v1`.
+> No M04 pilot is queued or running. See `docs/audits/evidence/m04_doin_20260930/STATUS_CORRECTION_2026_10_01.json`.
+
 ## Result first
 
 A candidate taken from the persisted DOIN queue reached the real trainer. An

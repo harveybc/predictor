@@ -1,0 +1,15 @@
+{
+ "schema": "m04.status_correction.v1",
+ "date": "2026-10-01",
+ "by": "Satoshi, successor technical lead (lane D)",
+ "corrections": [
+  {"stale": "M04 cost pilot queued / running",
+   "fact": "No M04 pilot is queued or running. The per-feature old-design pilot ended at 23:48:26Z by its own scope (no updates); the grouped32 old-design pilot completed at 00:13Z; batch 1 v3 finished with 16/16 VERIFIED (exact_match) and both runners exited at about 01:25Z."},
+  {"stale": "PILOT_TERMINATED status STOPPED_BY_M04_IN_BUILD",
+   "fact": "Superseded within the same receipt by TERMINATED_IN_BUILD_STAGE_BY_ITS_OWN_SCOPE_LIMIT: systemd scope end 23:48:26Z (3m41.8s wall), ledger LEASE_RELEASED 23:48:28Z; the later M04 SIGTERM found no process. Heartbeat clock stops at wall 181 s because throttling at MemoryHigh starved the writer; peak 5,801,222,144 B is a lower bound of the OLD graph only, not a GPU-training requirement."},
+  {"stale": "v2/v3 results presented without architecture label",
+   "fact": "All batch-1 v2/v3 results (incumbent cc4235d7 0.397174) are evidence of the OLD architecture (branch_steps=12 default, core time factors [2,1,1], compress-based branches/core). They are not evidence of the corrected full-grid design and appear as SUPERSEDED_OLD_ARCH rows in campaign d_ecl_l24_h24_corrected_r0_v1."},
+  {"stale": "COST-01 8 GiB need",
+   "fact": "Number of the old graph only; it is not reused for the corrected design, which is being re-profiled stage by stage (PRE_INTEGRATION_da4ce7b4, then the lane A integrated commit)."}
+ ]
+}
