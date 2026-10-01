@@ -1,0 +1,146 @@
+{
+ "cell": {
+  "data_sha256": "1b447c66e68495e826c53e2ab2b08ecd3922c8fdc735747628f8d0435ebe440f",
+  "features": [
+   "log_return_1",
+   "rsi_14"
+  ],
+  "forecast_train_rows": 11368,
+  "horizons_bars": [
+   1
+  ],
+  "split": "inner_3 of TRAIN [0,13699) (M07 SPLIT 116a5b64); outer validation/test unopened",
+  "target": "log_return_1",
+  "train_npz_sha256": "eb85efd551110268d920813aca2b63d036e7441eb3b0dd9636b28abe751fe6ef",
+  "validation_npz_sha256": "e16e2cb7967affa210f61fa24725f1d03b2775aee742b6bb916d45077232501b",
+  "validation_rows": 2031
+ },
+ "cost_seconds": {
+  "cell_build": 0.44422299100551754,
+  "fit_R1": 10.166841787984595,
+  "fit_R2": 27.319376397994347,
+  "pretraining_branches": {
+   "branch_0": 2.9451299170032144,
+   "branch_1": 2.8558178230014164
+  },
+  "pretraining_core": 38.50828084000386,
+  "pretraining_fusion": 0.7889662229863461,
+  "pretraining_total": 56.478092918987386
+ },
+ "donor_contract_used": "OPERATIONAL",
+ "fit": {
+  "batch_size": 128,
+  "learning_rate": 0.001,
+  "loss": "mae",
+  "max_epochs": 2,
+  "patience": 2
+ },
+ "label": "DEVELOPMENT (hash proof; one cell, one seed). MAE: VERIFIED_AT_NAIVE by SUSPECT_CHECK.json (a)-(e): the 30% figure was against last-value persistence; vs zero-return naive 0.29558 R2 is 0.29512 (-0.15%), R0 0.29592, R1 0.31321",
+ "pretrain_provenance": "local_file",
+ "regimes": {
+  "R1": {
+   "after_equals_donor": {
+    "branch_0": true,
+    "branch_1": true,
+    "temporal_core": true
+   },
+   "before_equals_donor": {
+    "branch_0": true,
+    "branch_1": true,
+    "temporal_core": true
+   },
+   "fit_seconds": 10.166841787984595,
+   "hashes": {
+    "after": {
+     "branch_0": "03c134eb379d18051b3e342c26766e09d3e3d70196b94fe0c8bb690ad497bb95",
+     "branch_1": "4bc65b4ef627b449464fe17b9ace2b196b650b6ec9cd9e7e3c40caa59f0235d9",
+     "temporal_core": "545647c405874b06f12a540c9c782f035dc5e50c2b93700ecc336b777b25cab2"
+    },
+    "before": {
+     "branch_0": "03c134eb379d18051b3e342c26766e09d3e3d70196b94fe0c8bb690ad497bb95",
+     "branch_1": "4bc65b4ef627b449464fe17b9ace2b196b650b6ec9cd9e7e3c40caa59f0235d9",
+     "temporal_core": "545647c405874b06f12a540c9c782f035dc5e50c2b93700ecc336b777b25cab2"
+    },
+    "donor": {
+     "branch_0": "03c134eb379d18051b3e342c26766e09d3e3d70196b94fe0c8bb690ad497bb95",
+     "branch_1": "4bc65b4ef627b449464fe17b9ace2b196b650b6ec9cd9e7e3c40caa59f0235d9",
+     "temporal_core": "545647c405874b06f12a540c9c782f035dc5e50c2b93700ecc336b777b25cab2"
+    }
+   },
+   "initial_weights_sha256": "0a038d107ca062006ca378b16d7ffd0800653d6d80d3941c19afee839aabf25d",
+   "observed_updates": 178,
+   "trainable_weight_tensors_at_build": {
+    "branch_0": 0,
+    "branch_1": 0,
+    "temporal_core": 0
+   },
+   "validation": {
+    "MAE": 0.3132079005458412,
+    "per_horizon": {
+     "1": {
+      "MAE": 0.3132079005458412,
+      "persistence_MAE": 0.4478157382919983
+     }
+    },
+    "persistence_MAE": 0.4478157382919983,
+    "skill_MAE": 0.30058755473749343
+   }
+  },
+  "R2": {
+   "after_equals_donor": {
+    "branch_0": false,
+    "branch_1": false,
+    "temporal_core": false
+   },
+   "before_equals_donor": {
+    "branch_0": true,
+    "branch_1": true,
+    "temporal_core": true
+   },
+   "fit_seconds": 27.319376397994347,
+   "hashes": {
+    "after": {
+     "branch_0": "acb3a0a8b61a94c935106c4f6c101ec62eac40566df8eac2d3af62949fe3f39c",
+     "branch_1": "48011487277489df04629eeb3eef45fbc217a082c0cda5bb9b3edf855816f1b2",
+     "temporal_core": "3d88fe11b59de191d90eb360ffd35d489935b57956d4fb224770b2d372dbbf4b"
+    },
+    "before": {
+     "branch_0": "03c134eb379d18051b3e342c26766e09d3e3d70196b94fe0c8bb690ad497bb95",
+     "branch_1": "4bc65b4ef627b449464fe17b9ace2b196b650b6ec9cd9e7e3c40caa59f0235d9",
+     "temporal_core": "545647c405874b06f12a540c9c782f035dc5e50c2b93700ecc336b777b25cab2"
+    },
+    "donor": {
+     "branch_0": "03c134eb379d18051b3e342c26766e09d3e3d70196b94fe0c8bb690ad497bb95",
+     "branch_1": "4bc65b4ef627b449464fe17b9ace2b196b650b6ec9cd9e7e3c40caa59f0235d9",
+     "temporal_core": "545647c405874b06f12a540c9c782f035dc5e50c2b93700ecc336b777b25cab2"
+    }
+   },
+   "initial_weights_sha256": "0a038d107ca062006ca378b16d7ffd0800653d6d80d3941c19afee839aabf25d",
+   "observed_updates": 178,
+   "trainable_weight_tensors_at_build": {
+    "branch_0": 2,
+    "branch_1": 2,
+    "temporal_core": 70
+   },
+   "validation": {
+    "MAE": 0.2951151878952676,
+    "per_horizon": {
+     "1": {
+      "MAE": 0.2951151878952676,
+      "persistence_MAE": 0.4478157382919983
+     }
+    },
+    "persistence_MAE": 0.4478157382919983,
+    "skill_MAE": 0.34098969138320523
+   }
+  }
+ },
+ "schema": "a2.regime_hash_proof.v1",
+ "seed": 7,
+ "verdict": {
+  "R1_R2_same_initial_model": true,
+  "R1_frozen_bit_for_bit": true,
+  "R2_starts_from_same_donors": true,
+  "R2_updates_every_component": true
+ }
+}

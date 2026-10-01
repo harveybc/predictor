@@ -1,0 +1,46 @@
+{
+ "label": "PILOT_SUSPECT_UNVERIFIED until (a)-(e) pass",
+ "rows": 2031,
+ "a_same_row_MAE_z": {
+  "zero_return_naive": 0.29557546140061963,
+  "train_mean_naive": 0.2955566313510085,
+  "train_median_naive": 0.29567021044566916,
+  "persistence_naive": 0.4478157382919983,
+  "R1_model": 0.3132078936822093,
+  "R2_model": 0.29511518467438635,
+  "R1_pred_std": 0.11903250217437744,
+  "R2_pred_std": 0.010503449477255344,
+  "y_std": 0.46077705089910714
+ },
+ "b_R0_same_budget": {
+  "MAE_z": 0.29591518203798445,
+  "evaluator_MAE": 0.29591518112271126,
+  "observed_updates": 178
+ },
+ "c_pretraining_population": {
+  "pretrain_supports_epoch_s": {
+   "train_population": {
+    "start": 1506571200,
+    "end": 1640836800
+   },
+   "validation_population": {
+    "start": 1640865600,
+    "end": 1673582400
+   }
+  },
+  "validation_input_start_epoch_s": 1674475200,
+  "pretrain_npz_split": "train",
+  "disjoint": true
+ },
+ "d_future_shift_probe": {
+  "origins": 64,
+  "max_abs_output_change": 0.0,
+  "passed": true
+ },
+ "e_target": {
+  "log_return_1_is_backward_max_abs_diff": 9.745879048228545e-09,
+  "log_return_1_equals_forward_return_max_abs_diff": 0.391220098816909,
+  "cell_target_vs_M07_Y1_max_abs_diff": 1.1394381260743103e-07,
+  "window_last_step_is_t": true
+ }
+}
