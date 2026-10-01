@@ -1,0 +1,1447 @@
+{
+  "archive_sha256": "fac3d91a13d998a80ff590e84bbdccf432e3885951fbd25a0230b3f3b116b499",
+  "components": {
+    "branches": {
+      "dow_cos": {
+        "feature_names": [
+          "typical_price",
+          "hod_sin",
+          "hod_cos",
+          "dow_sin",
+          "dow_cos",
+          "moy_sin",
+          "moy_cos"
+        ],
+        "features": [
+          "dow_cos"
+        ],
+        "input_grid": [
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76,
+          80,
+          84,
+          88,
+          92,
+          96
+        ],
+        "input_shape": [
+          24,
+          1
+        ],
+        "name": "dow_cos",
+        "output_grid": [
+          8,
+          16,
+          24,
+          32,
+          40,
+          48,
+          56,
+          64,
+          72,
+          80,
+          88,
+          96
+        ],
+        "output_shape": [
+          12,
+          4
+        ],
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        },
+        "plugin": {
+          "group": "modular.branch",
+          "implementation": "predictor_plugins.modular_temporal:causal_conv1d",
+          "name": "causal_conv1d",
+          "version": "1.0.0"
+        },
+        "role": "branch",
+        "sample_hours": 4,
+        "schema": 1
+      },
+      "dow_sin": {
+        "feature_names": [
+          "typical_price",
+          "hod_sin",
+          "hod_cos",
+          "dow_sin",
+          "dow_cos",
+          "moy_sin",
+          "moy_cos"
+        ],
+        "features": [
+          "dow_sin"
+        ],
+        "input_grid": [
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76,
+          80,
+          84,
+          88,
+          92,
+          96
+        ],
+        "input_shape": [
+          24,
+          1
+        ],
+        "name": "dow_sin",
+        "output_grid": [
+          8,
+          16,
+          24,
+          32,
+          40,
+          48,
+          56,
+          64,
+          72,
+          80,
+          88,
+          96
+        ],
+        "output_shape": [
+          12,
+          4
+        ],
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        },
+        "plugin": {
+          "group": "modular.branch",
+          "implementation": "predictor_plugins.modular_temporal:causal_conv1d",
+          "name": "causal_conv1d",
+          "version": "1.0.0"
+        },
+        "role": "branch",
+        "sample_hours": 4,
+        "schema": 1
+      },
+      "hod_cos": {
+        "feature_names": [
+          "typical_price",
+          "hod_sin",
+          "hod_cos",
+          "dow_sin",
+          "dow_cos",
+          "moy_sin",
+          "moy_cos"
+        ],
+        "features": [
+          "hod_cos"
+        ],
+        "input_grid": [
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76,
+          80,
+          84,
+          88,
+          92,
+          96
+        ],
+        "input_shape": [
+          24,
+          1
+        ],
+        "name": "hod_cos",
+        "output_grid": [
+          8,
+          16,
+          24,
+          32,
+          40,
+          48,
+          56,
+          64,
+          72,
+          80,
+          88,
+          96
+        ],
+        "output_shape": [
+          12,
+          4
+        ],
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        },
+        "plugin": {
+          "group": "modular.branch",
+          "implementation": "predictor_plugins.modular_temporal:causal_conv1d",
+          "name": "causal_conv1d",
+          "version": "1.0.0"
+        },
+        "role": "branch",
+        "sample_hours": 4,
+        "schema": 1
+      },
+      "hod_sin": {
+        "feature_names": [
+          "typical_price",
+          "hod_sin",
+          "hod_cos",
+          "dow_sin",
+          "dow_cos",
+          "moy_sin",
+          "moy_cos"
+        ],
+        "features": [
+          "hod_sin"
+        ],
+        "input_grid": [
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76,
+          80,
+          84,
+          88,
+          92,
+          96
+        ],
+        "input_shape": [
+          24,
+          1
+        ],
+        "name": "hod_sin",
+        "output_grid": [
+          8,
+          16,
+          24,
+          32,
+          40,
+          48,
+          56,
+          64,
+          72,
+          80,
+          88,
+          96
+        ],
+        "output_shape": [
+          12,
+          4
+        ],
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        },
+        "plugin": {
+          "group": "modular.branch",
+          "implementation": "predictor_plugins.modular_temporal:causal_conv1d",
+          "name": "causal_conv1d",
+          "version": "1.0.0"
+        },
+        "role": "branch",
+        "sample_hours": 4,
+        "schema": 1
+      },
+      "moy_cos": {
+        "feature_names": [
+          "typical_price",
+          "hod_sin",
+          "hod_cos",
+          "dow_sin",
+          "dow_cos",
+          "moy_sin",
+          "moy_cos"
+        ],
+        "features": [
+          "moy_cos"
+        ],
+        "input_grid": [
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76,
+          80,
+          84,
+          88,
+          92,
+          96
+        ],
+        "input_shape": [
+          24,
+          1
+        ],
+        "name": "moy_cos",
+        "output_grid": [
+          8,
+          16,
+          24,
+          32,
+          40,
+          48,
+          56,
+          64,
+          72,
+          80,
+          88,
+          96
+        ],
+        "output_shape": [
+          12,
+          4
+        ],
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        },
+        "plugin": {
+          "group": "modular.branch",
+          "implementation": "predictor_plugins.modular_temporal:causal_conv1d",
+          "name": "causal_conv1d",
+          "version": "1.0.0"
+        },
+        "role": "branch",
+        "sample_hours": 4,
+        "schema": 1
+      },
+      "moy_sin": {
+        "feature_names": [
+          "typical_price",
+          "hod_sin",
+          "hod_cos",
+          "dow_sin",
+          "dow_cos",
+          "moy_sin",
+          "moy_cos"
+        ],
+        "features": [
+          "moy_sin"
+        ],
+        "input_grid": [
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76,
+          80,
+          84,
+          88,
+          92,
+          96
+        ],
+        "input_shape": [
+          24,
+          1
+        ],
+        "name": "moy_sin",
+        "output_grid": [
+          8,
+          16,
+          24,
+          32,
+          40,
+          48,
+          56,
+          64,
+          72,
+          80,
+          88,
+          96
+        ],
+        "output_shape": [
+          12,
+          4
+        ],
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        },
+        "plugin": {
+          "group": "modular.branch",
+          "implementation": "predictor_plugins.modular_temporal:causal_conv1d",
+          "name": "causal_conv1d",
+          "version": "1.0.0"
+        },
+        "role": "branch",
+        "sample_hours": 4,
+        "schema": 1
+      },
+      "price": {
+        "feature_names": [
+          "typical_price",
+          "hod_sin",
+          "hod_cos",
+          "dow_sin",
+          "dow_cos",
+          "moy_sin",
+          "moy_cos"
+        ],
+        "features": [
+          "typical_price"
+        ],
+        "input_grid": [
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          36,
+          40,
+          44,
+          48,
+          52,
+          56,
+          60,
+          64,
+          68,
+          72,
+          76,
+          80,
+          84,
+          88,
+          92,
+          96
+        ],
+        "input_shape": [
+          24,
+          1
+        ],
+        "name": "price",
+        "output_grid": [
+          8,
+          16,
+          24,
+          32,
+          40,
+          48,
+          56,
+          64,
+          72,
+          80,
+          88,
+          96
+        ],
+        "output_shape": [
+          12,
+          16
+        ],
+        "params": {
+          "channels": 16,
+          "kernel_size": 3
+        },
+        "plugin": {
+          "group": "modular.branch",
+          "implementation": "predictor_plugins.modular_temporal:causal_conv1d",
+          "name": "causal_conv1d",
+          "version": "1.0.0"
+        },
+        "role": "branch",
+        "sample_hours": 4,
+        "schema": 1
+      }
+    },
+    "config_sha256": "0e2c11dc3997cf520698a464277b49adb5f40a83b2704530e9942c68dda077b7",
+    "core": {
+      "feature_names": [
+        "typical_price",
+        "hod_sin",
+        "hod_cos",
+        "dow_sin",
+        "dow_cos",
+        "moy_sin",
+        "moy_cos"
+      ],
+      "features": [
+        "typical_price",
+        "hod_sin",
+        "hod_cos",
+        "dow_sin",
+        "dow_cos",
+        "moy_sin",
+        "moy_cos"
+      ],
+      "input_grid": [
+        8,
+        16,
+        24,
+        32,
+        40,
+        48,
+        56,
+        64,
+        72,
+        80,
+        88,
+        96
+      ],
+      "input_shape": [
+        12,
+        40
+      ],
+      "name": "core",
+      "output_grid": [
+        16,
+        32,
+        48,
+        64,
+        80,
+        96
+      ],
+      "output_shape": [
+        6,
+        8
+      ],
+      "params": {
+        "blocks": 2,
+        "d_model": 64,
+        "dropout": 0.0,
+        "ff_dim": 128,
+        "heads": 4,
+        "kernel_size": 3,
+        "stage_channels": [
+          32,
+          16,
+          8
+        ],
+        "time_factors": [
+          2,
+          1,
+          1
+        ]
+      },
+      "plugin": {
+        "group": "modular.core",
+        "implementation": "predictor_plugins.modular_temporal:transformer_conv",
+        "name": "transformer_conv",
+        "version": "1.0.0"
+      },
+      "role": "core",
+      "sample_hours": 4,
+      "schema": 1,
+      "upstream": {
+        "branches": [
+          {
+            "manifest": {
+              "feature_names": [
+                "typical_price",
+                "hod_sin",
+                "hod_cos",
+                "dow_sin",
+                "dow_cos",
+                "moy_sin",
+                "moy_cos"
+              ],
+              "features": [
+                "typical_price"
+              ],
+              "input_grid": [
+                4,
+                8,
+                12,
+                16,
+                20,
+                24,
+                28,
+                32,
+                36,
+                40,
+                44,
+                48,
+                52,
+                56,
+                60,
+                64,
+                68,
+                72,
+                76,
+                80,
+                84,
+                88,
+                92,
+                96
+              ],
+              "input_shape": [
+                24,
+                1
+              ],
+              "name": "price",
+              "output_grid": [
+                8,
+                16,
+                24,
+                32,
+                40,
+                48,
+                56,
+                64,
+                72,
+                80,
+                88,
+                96
+              ],
+              "output_shape": [
+                12,
+                16
+              ],
+              "params": {
+                "channels": 16,
+                "kernel_size": 3
+              },
+              "plugin": {
+                "group": "modular.branch",
+                "implementation": "predictor_plugins.modular_temporal:causal_conv1d",
+                "name": "causal_conv1d",
+                "version": "1.0.0"
+              },
+              "role": "branch",
+              "sample_hours": 4,
+              "schema": 1
+            },
+            "weights_sha256": "ed5dee1a24c2725e4e59689b180540263cb68f58d97232d6ef8a4828587dca12"
+          },
+          {
+            "manifest": {
+              "feature_names": [
+                "typical_price",
+                "hod_sin",
+                "hod_cos",
+                "dow_sin",
+                "dow_cos",
+                "moy_sin",
+                "moy_cos"
+              ],
+              "features": [
+                "hod_sin"
+              ],
+              "input_grid": [
+                4,
+                8,
+                12,
+                16,
+                20,
+                24,
+                28,
+                32,
+                36,
+                40,
+                44,
+                48,
+                52,
+                56,
+                60,
+                64,
+                68,
+                72,
+                76,
+                80,
+                84,
+                88,
+                92,
+                96
+              ],
+              "input_shape": [
+                24,
+                1
+              ],
+              "name": "hod_sin",
+              "output_grid": [
+                8,
+                16,
+                24,
+                32,
+                40,
+                48,
+                56,
+                64,
+                72,
+                80,
+                88,
+                96
+              ],
+              "output_shape": [
+                12,
+                4
+              ],
+              "params": {
+                "channels": 4,
+                "kernel_size": 1
+              },
+              "plugin": {
+                "group": "modular.branch",
+                "implementation": "predictor_plugins.modular_temporal:causal_conv1d",
+                "name": "causal_conv1d",
+                "version": "1.0.0"
+              },
+              "role": "branch",
+              "sample_hours": 4,
+              "schema": 1
+            },
+            "weights_sha256": "3657f26cf3c66102ca05e56a8bd0a9eab6535514efee4ab7b600193b568b9682"
+          },
+          {
+            "manifest": {
+              "feature_names": [
+                "typical_price",
+                "hod_sin",
+                "hod_cos",
+                "dow_sin",
+                "dow_cos",
+                "moy_sin",
+                "moy_cos"
+              ],
+              "features": [
+                "hod_cos"
+              ],
+              "input_grid": [
+                4,
+                8,
+                12,
+                16,
+                20,
+                24,
+                28,
+                32,
+                36,
+                40,
+                44,
+                48,
+                52,
+                56,
+                60,
+                64,
+                68,
+                72,
+                76,
+                80,
+                84,
+                88,
+                92,
+                96
+              ],
+              "input_shape": [
+                24,
+                1
+              ],
+              "name": "hod_cos",
+              "output_grid": [
+                8,
+                16,
+                24,
+                32,
+                40,
+                48,
+                56,
+                64,
+                72,
+                80,
+                88,
+                96
+              ],
+              "output_shape": [
+                12,
+                4
+              ],
+              "params": {
+                "channels": 4,
+                "kernel_size": 1
+              },
+              "plugin": {
+                "group": "modular.branch",
+                "implementation": "predictor_plugins.modular_temporal:causal_conv1d",
+                "name": "causal_conv1d",
+                "version": "1.0.0"
+              },
+              "role": "branch",
+              "sample_hours": 4,
+              "schema": 1
+            },
+            "weights_sha256": "dfc814dbcd32dbe403045debb7eb48adc7cfecbeb7638746b60d4b8e0c796a61"
+          },
+          {
+            "manifest": {
+              "feature_names": [
+                "typical_price",
+                "hod_sin",
+                "hod_cos",
+                "dow_sin",
+                "dow_cos",
+                "moy_sin",
+                "moy_cos"
+              ],
+              "features": [
+                "dow_sin"
+              ],
+              "input_grid": [
+                4,
+                8,
+                12,
+                16,
+                20,
+                24,
+                28,
+                32,
+                36,
+                40,
+                44,
+                48,
+                52,
+                56,
+                60,
+                64,
+                68,
+                72,
+                76,
+                80,
+                84,
+                88,
+                92,
+                96
+              ],
+              "input_shape": [
+                24,
+                1
+              ],
+              "name": "dow_sin",
+              "output_grid": [
+                8,
+                16,
+                24,
+                32,
+                40,
+                48,
+                56,
+                64,
+                72,
+                80,
+                88,
+                96
+              ],
+              "output_shape": [
+                12,
+                4
+              ],
+              "params": {
+                "channels": 4,
+                "kernel_size": 1
+              },
+              "plugin": {
+                "group": "modular.branch",
+                "implementation": "predictor_plugins.modular_temporal:causal_conv1d",
+                "name": "causal_conv1d",
+                "version": "1.0.0"
+              },
+              "role": "branch",
+              "sample_hours": 4,
+              "schema": 1
+            },
+            "weights_sha256": "aec15142326fb11c0eb393319b313566b46b37c67fa2d500705ca5fa306d359f"
+          },
+          {
+            "manifest": {
+              "feature_names": [
+                "typical_price",
+                "hod_sin",
+                "hod_cos",
+                "dow_sin",
+                "dow_cos",
+                "moy_sin",
+                "moy_cos"
+              ],
+              "features": [
+                "dow_cos"
+              ],
+              "input_grid": [
+                4,
+                8,
+                12,
+                16,
+                20,
+                24,
+                28,
+                32,
+                36,
+                40,
+                44,
+                48,
+                52,
+                56,
+                60,
+                64,
+                68,
+                72,
+                76,
+                80,
+                84,
+                88,
+                92,
+                96
+              ],
+              "input_shape": [
+                24,
+                1
+              ],
+              "name": "dow_cos",
+              "output_grid": [
+                8,
+                16,
+                24,
+                32,
+                40,
+                48,
+                56,
+                64,
+                72,
+                80,
+                88,
+                96
+              ],
+              "output_shape": [
+                12,
+                4
+              ],
+              "params": {
+                "channels": 4,
+                "kernel_size": 1
+              },
+              "plugin": {
+                "group": "modular.branch",
+                "implementation": "predictor_plugins.modular_temporal:causal_conv1d",
+                "name": "causal_conv1d",
+                "version": "1.0.0"
+              },
+              "role": "branch",
+              "sample_hours": 4,
+              "schema": 1
+            },
+            "weights_sha256": "c2cf4579b9a0080dd3c3e95077d5acedfc507385a9452a13b435857205295589"
+          },
+          {
+            "manifest": {
+              "feature_names": [
+                "typical_price",
+                "hod_sin",
+                "hod_cos",
+                "dow_sin",
+                "dow_cos",
+                "moy_sin",
+                "moy_cos"
+              ],
+              "features": [
+                "moy_sin"
+              ],
+              "input_grid": [
+                4,
+                8,
+                12,
+                16,
+                20,
+                24,
+                28,
+                32,
+                36,
+                40,
+                44,
+                48,
+                52,
+                56,
+                60,
+                64,
+                68,
+                72,
+                76,
+                80,
+                84,
+                88,
+                92,
+                96
+              ],
+              "input_shape": [
+                24,
+                1
+              ],
+              "name": "moy_sin",
+              "output_grid": [
+                8,
+                16,
+                24,
+                32,
+                40,
+                48,
+                56,
+                64,
+                72,
+                80,
+                88,
+                96
+              ],
+              "output_shape": [
+                12,
+                4
+              ],
+              "params": {
+                "channels": 4,
+                "kernel_size": 1
+              },
+              "plugin": {
+                "group": "modular.branch",
+                "implementation": "predictor_plugins.modular_temporal:causal_conv1d",
+                "name": "causal_conv1d",
+                "version": "1.0.0"
+              },
+              "role": "branch",
+              "sample_hours": 4,
+              "schema": 1
+            },
+            "weights_sha256": "df5e32f256dff889f1cdb03a0679d795d31e20f9f49fc688c08eb78fda143d06"
+          },
+          {
+            "manifest": {
+              "feature_names": [
+                "typical_price",
+                "hod_sin",
+                "hod_cos",
+                "dow_sin",
+                "dow_cos",
+                "moy_sin",
+                "moy_cos"
+              ],
+              "features": [
+                "moy_cos"
+              ],
+              "input_grid": [
+                4,
+                8,
+                12,
+                16,
+                20,
+                24,
+                28,
+                32,
+                36,
+                40,
+                44,
+                48,
+                52,
+                56,
+                60,
+                64,
+                68,
+                72,
+                76,
+                80,
+                84,
+                88,
+                92,
+                96
+              ],
+              "input_shape": [
+                24,
+                1
+              ],
+              "name": "moy_cos",
+              "output_grid": [
+                8,
+                16,
+                24,
+                32,
+                40,
+                48,
+                56,
+                64,
+                72,
+                80,
+                88,
+                96
+              ],
+              "output_shape": [
+                12,
+                4
+              ],
+              "params": {
+                "channels": 4,
+                "kernel_size": 1
+              },
+              "plugin": {
+                "group": "modular.branch",
+                "implementation": "predictor_plugins.modular_temporal:causal_conv1d",
+                "name": "causal_conv1d",
+                "version": "1.0.0"
+              },
+              "role": "branch",
+              "sample_hours": 4,
+              "schema": 1
+            },
+            "weights_sha256": "c0c4438e447d9f5b6a225c330aecdc91e192c2195b289688076b277ee7091e9e"
+          }
+        ],
+        "fusion": {
+          "identity": {
+            "group": "modular.fusion",
+            "implementation": "predictor_plugins.modular_temporal:sequence_concat",
+            "name": "sequence_concat",
+            "params": {},
+            "version": "1.0.0"
+          },
+          "weights_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    "fusion": {
+      "grid": [
+        8,
+        16,
+        24,
+        32,
+        40,
+        48,
+        56,
+        64,
+        72,
+        80,
+        88,
+        96
+      ],
+      "input_shapes": [
+        [
+          12,
+          16
+        ],
+        [
+          12,
+          4
+        ],
+        [
+          12,
+          4
+        ],
+        [
+          12,
+          4
+        ],
+        [
+          12,
+          4
+        ],
+        [
+          12,
+          4
+        ],
+        [
+          12,
+          4
+        ]
+      ],
+      "output_shape": [
+        12,
+        40
+      ],
+      "params": {},
+      "plugin": {
+        "group": "modular.fusion",
+        "implementation": "predictor_plugins.modular_temporal:sequence_concat",
+        "name": "sequence_concat",
+        "params": {},
+        "version": "1.0.0"
+      },
+      "role": "fusion",
+      "schema": 1
+    },
+    "head": {
+      "horizons": [
+        9,
+        12,
+        15,
+        18,
+        21,
+        24
+      ],
+      "input_grid": [
+        16,
+        32,
+        48,
+        64,
+        80,
+        96
+      ],
+      "input_shape": [
+        6,
+        8
+      ],
+      "output_grid": [
+        132,
+        144,
+        156,
+        168,
+        180,
+        192
+      ],
+      "output_shape": [
+        6,
+        1
+      ],
+      "params": {},
+      "plugin": {
+        "group": "modular.head",
+        "implementation": "predictor_plugins.modular_temporal:forecast",
+        "name": "forecast",
+        "version": "1.0.0"
+      },
+      "role": "head",
+      "schema": 1,
+      "target_count": 1
+    },
+    "regimes": {
+      "common": "R0",
+      "components": {
+        "branch:dow_cos": "R0",
+        "branch:dow_sin": "R0",
+        "branch:hod_cos": "R0",
+        "branch:hod_sin": "R0",
+        "branch:moy_cos": "R0",
+        "branch:moy_sin": "R0",
+        "branch:price": "R0",
+        "core": "R0"
+      }
+    },
+    "schema": 1
+  },
+  "config": {
+    "alignment_probe": true,
+    "branch_steps": 12,
+    "branches": [
+      {
+        "donor": null,
+        "features": [
+          "typical_price"
+        ],
+        "name": "price",
+        "params": {
+          "channels": 16,
+          "kernel_size": 3
+        },
+        "plugin": "causal_conv1d",
+        "regime": "R0"
+      },
+      {
+        "donor": null,
+        "features": [
+          "hod_sin"
+        ],
+        "name": "hod_sin",
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        },
+        "plugin": "causal_conv1d",
+        "regime": "R0"
+      },
+      {
+        "donor": null,
+        "features": [
+          "hod_cos"
+        ],
+        "name": "hod_cos",
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        },
+        "plugin": "causal_conv1d",
+        "regime": "R0"
+      },
+      {
+        "donor": null,
+        "features": [
+          "dow_sin"
+        ],
+        "name": "dow_sin",
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        },
+        "plugin": "causal_conv1d",
+        "regime": "R0"
+      },
+      {
+        "donor": null,
+        "features": [
+          "dow_cos"
+        ],
+        "name": "dow_cos",
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        },
+        "plugin": "causal_conv1d",
+        "regime": "R0"
+      },
+      {
+        "donor": null,
+        "features": [
+          "moy_sin"
+        ],
+        "name": "moy_sin",
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        },
+        "plugin": "causal_conv1d",
+        "regime": "R0"
+      },
+      {
+        "donor": null,
+        "features": [
+          "moy_cos"
+        ],
+        "name": "moy_cos",
+        "params": {
+          "channels": 4,
+          "kernel_size": 1
+        },
+        "plugin": "causal_conv1d",
+        "regime": "R0"
+      }
+    ],
+    "core": {
+      "donor": null,
+      "params": {},
+      "plugin": "transformer_conv",
+      "regime": "R0"
+    },
+    "entry_point_groups": {
+      "branch": "modular.branch",
+      "core": "modular.core",
+      "fusion": "modular.fusion",
+      "head": "modular.head"
+    },
+    "feature_names": [
+      "typical_price",
+      "hod_sin",
+      "hod_cos",
+      "dow_sin",
+      "dow_cos",
+      "moy_sin",
+      "moy_cos"
+    ],
+    "fusion": {
+      "params": {},
+      "plugin": "sequence_concat"
+    },
+    "head": {
+      "params": {},
+      "plugin": "forecast"
+    },
+    "horizons": [
+      9,
+      12,
+      15,
+      18,
+      21,
+      24
+    ],
+    "output_channels": 8,
+    "output_steps": 6,
+    "regime": "R0",
+    "sample_hours": 4,
+    "schema": "predictor.modular.v1",
+    "target_count": 1,
+    "window": 24
+  },
+  "keras_version": "3.13.2",
+  "schema": "predictor.modular.bundle.v1",
+  "weights_sha256": "b63c057c7264764f64a1b5472424cdaf96f81cde849bf8f1bfe2417cc54a9490"
+}

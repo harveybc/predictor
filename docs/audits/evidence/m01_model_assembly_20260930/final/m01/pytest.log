@@ -1,0 +1,10 @@
+....................................................................x.   [100%]
+=============================== warnings summary ===============================
+test_modular_assembly.py::test_facade_save_load_reproduces_outputs_and_detects_tampering
+  ~/.cache/m01/iso/lib/python3.12/site-packages/keras/src/models/functional.py:241: UserWarning: The structure of `inputs` doesn't match the expected structure.
+  Expected: ['observations']
+  Received: inputs=Tensor(shape=(2, 24, 3))
+    warnings.warn(msg)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+69 passed, 1 xfailed, 1 warning in 119.28s (0:01:59)
