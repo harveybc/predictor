@@ -67,7 +67,9 @@ ENGINE_CAPABILITIES = {
 
 LOSSES = ("huber", "mae", "mse")
 # Optional flat parameters: a space may omit them (older campaigns); when declared they are always active.
-OPTIONAL_PARAMETERS = {"model.target_residual": ("none", "seasonal_naive_24")}
+OPTIONAL_PARAMETERS = {"model.target_residual": ("none", "seasonal_naive_24", "seasonal_naive_cumulative_6")}
+# flat value -> engine target_residual (kind, period); "none" maps to no residual
+RESIDUALS = {"seasonal_naive_24": ("seasonal_naive", 24), "seasonal_naive_cumulative_6": ("seasonal_naive_cumulative", 6)}
 REGIMES = ("R0", "R1", "R2", "R3")
 # R3 (warm) schedule: declared by a space as optional bounds; active exactly when a component is R3.
 WARM_PARAMETERS = ("train.r3_freeze_epochs", "train.r3_unfreeze_learning_rate")
@@ -322,8 +324,9 @@ def from_flat(flat, base, space):
             if spec["regime"] == "R3":
                 spec.update(schedule)
     residual = flat.get("model.target_residual", "none")
-    if residual == "seasonal_naive_24":
-        model["target_residual"] = {"kind": "seasonal_naive", "period": 24,
+    if residual in RESIDUALS:
+        kind, period = RESIDUALS[residual]
+        model["target_residual"] = {"kind": kind, "period": period,
                                     "target_features": [names[i] for i in base["target_feature_indices"]]}
     nested = {"modular_candidate": meta,
               "model": model, "evaluator": evaluator,
@@ -384,7 +387,11 @@ def to_flat(nested, space):
             _fail("R3 components with different warm schedules; not expressible")
         flat["train.r3_freeze_epochs"], flat["train.r3_unfreeze_learning_rate"] = schedules.pop()
     if "model.target_residual" in space["bounds"]:
-        flat["model.target_residual"] = "seasonal_naive_24" if model.get("target_residual") else "none"
+        tr = model.get("target_residual")
+        names_by_spec = {v: k for k, v in RESIDUALS.items()}
+        if tr and (tr["kind"], tr["period"]) not in names_by_spec:
+            _fail(f"target_residual {tr['kind']}/{tr['period']} has no flat name")
+        flat["model.target_residual"] = names_by_spec[(tr["kind"], tr["period"])] if tr else "none"
     validate_flat(flat, space)
     return flat
 

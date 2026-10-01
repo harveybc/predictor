@@ -865,6 +865,18 @@ def test_r3_warm_schedule_is_conditional_round_trips_and_reaches_the_engine():
     assert ss.to_flat(m, space) == mixed
 
 
+def test_cumulative_seasonal_residual_flat_value_round_trips():
+    space = copy.deepcopy(SPACE_V2)
+    space["bounds"]["model.target_residual"] = {"choices": ["none", "seasonal_naive_24", "seasonal_naive_cumulative_6"]}
+    flat = {**DEFAULT_V2, "train.seed": 2021, "train.huber_delta": 1.0, "model.target_residual": "seasonal_naive_cumulative_6"}
+    nested = ss.from_flat(flat, BASE, space)
+    assert (nested["model"]["target_residual"]["kind"], nested["model"]["target_residual"]["period"]) == (
+        "seasonal_naive_cumulative", 6)
+    assert ss.to_flat(nested, space) == flat
+    daily = {**flat, "model.target_residual": "seasonal_naive_24"}
+    assert ss.to_flat(ss.from_flat(daily, BASE, space), space) == daily
+
+
 def test_ecl_npz_builder_streams_and_matches_direct_indexing(tmp_path):
     from tools import modular_doin_ecl_npz as b
     rng = np.random.default_rng(0)
