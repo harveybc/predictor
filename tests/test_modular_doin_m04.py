@@ -835,3 +835,32 @@ def test_ecl_npz_builder_streams_and_matches_direct_indexing(tmp_path):
     offsets = np.arange(-23, 1)
     assert np.array_equal(np.asarray(x), z[origins[:, None] + offsets[None, :]].astype(np.float32))
     assert np.array_equal(np.asarray(y), z[origins[:, None] + np.array([1, 2, 24])[None, :]].astype(np.float32))
+
+
+def test_verification_runs_concurrently_with_the_next_train(tmp_path):
+    import threading
+    import time as _t
+    campaign = make_campaign(tmp_path)
+    enqueue_default(campaign)
+    events = []
+
+    class Slow(FakeExecutor):
+        def train(self, nested, output_root, declaration):
+            events.append(("train_start", nested["evaluator"]["seed"], _t.monotonic()))
+            out = FakeExecutor.train(self, nested, output_root, declaration)
+            _t.sleep(0.2)
+            return out
+
+        def verify(self, receipt, output_root, declaration):
+            events.append(("verify_start", threading.current_thread().name, _t.monotonic()))
+            _t.sleep(0.3)
+            events.append(("verify_end", None, _t.monotonic()))
+            return {"status": "completed", "verdict": "VERIFIED"}
+
+    assert campaign.run(Slow(campaign, VALUES)) == 4
+    assert campaign.status()["counts"] == {"verified": 4}
+    first_verify = next(e for e in events if e[0] == "verify_start")
+    second_train = [e for e in events if e[0] == "train_start"][1]
+    first_verify_end = next(e for e in events if e[0] == "verify_end")
+    assert second_train[2] < first_verify_end[2]  # next train started while the verification ran
+    assert campaign.status()["incumbent"] is not None

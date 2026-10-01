@@ -124,22 +124,33 @@ def _times(array, name, shape):
 
 def _load(path, split, config):
     model_config = config["model"]
-    # Hash precisely the bytes parsed, even if a producer replaces the file later.
-    raw = Path(path).read_bytes()
+    # Hash the bytes parsed without holding a second in-memory copy of the archive:
+    # stream-hash, parse from the file, stream-hash again; a producer replacing the
+    # file between the two hashes is refused (the digest always names the parsed bytes).
+    def _stream_sha(p):
+        digest = hashlib.sha256()
+        with open(p, "rb") as stream:
+            for block in iter(lambda: stream.read(1 << 22), b""):
+                digest.update(block)
+        return digest.hexdigest()
+
+    before = _stream_sha(path)
     required = {"windows", "targets", "row_ids", "timestamps", "target_timestamps",
                 "dataset_id", "split", "feature_names", "target_names", "horizons",
                 "timestamp_unit", "metric_space", "scaler_identity", "scaler_scale"}
-    with np.load(io.BytesIO(raw), allow_pickle=False) as archive:
+    with np.load(path, allow_pickle=False) as archive:
         if set(archive.files) != required:
             raise ValueError(f"{split} NPZ missing/unexpected fields: {set(archive.files) ^ required}")
         data = {key: archive[key] for key in required}
+    if _stream_sha(path) != before:
+        raise ValueError(f"{split} NPZ changed while it was being read")
     x, y = data["windows"], data["targets"]
     if x.ndim != 3 or y.ndim != 3 or x.shape[0] != y.shape[0] or min(*x.shape, *y.shape) < 1:
         raise ValueError("windows/targets must be nonempty [N,W,F]/[N,H,T]")
     for name in ("windows", "targets"):
         if data[name].dtype.kind not in "fi":
             raise ValueError(f"{name} must be real numeric arrays")
-        data[name] = _finite(data[name].astype(np.float32), name)
+        data[name] = _finite(data[name].astype(np.float32, copy=False), name)
     n, w, f = x.shape
     _, h, t = y.shape
     if model_config.get("window") != w:
@@ -188,7 +199,7 @@ def _load(path, split, config):
     if not np.array_equal(ends, expected):
         raise ValueError("target_timestamps disagree with horizons and sample_hours in seconds")
     data["input_start"] = origins - (w - 1) * int(seconds)
-    data["sha256"] = hashlib.sha256(raw).hexdigest()
+    data["sha256"] = before
     return data
 
 

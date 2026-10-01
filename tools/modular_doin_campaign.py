@@ -356,22 +356,50 @@ class Campaign:
         return isinstance(revision, str) and len(revision) == 40 and all(c in "0123456789abcdef" for c in revision)
 
     def run(self, executor, max_candidates=None, stop_file=None):
+        """Claim and execute work; verification runs concurrently with the next train attempt.
+
+        A verify claim starts in a background thread (own SQLite connection) and the loop
+        immediately claims the next train item, so the next train's admission request is
+        already queued while the previous checkpoint is rescored. At most one verification
+        is in flight; the admission gate on the worker decides whether both fit (caps are
+        never changed here).
+        """
+        import threading
+
         if self.declaration.get("require_pin", False) and not self.pinned():
             raise RuntimeError("campaign is not pinned to a full predictor commit; nothing is dispatched")
         done = 0
         host = getattr(executor, "host", "local")
         self.recover(executor)
+        verifying = None
+
+        def verify_job(row, attempt, output_root):
+            own = Campaign(self.root)
+            own.execute(row, "verify", executor, attempt, output_root)
+            own.update_incumbent()
+
         while max_candidates is None or done < max_candidates:
             if stop_file and Path(stop_file).exists():
                 break
             claimed = self.claim(host)
             if claimed is None:
+                if verifying is not None and verifying.is_alive():
+                    verifying.join()  # a finished verification may make no new work, but recheck once
+                    verifying = None
+                    continue
                 break
             row, kind, attempt, output_root = claimed
-            self.execute(row, kind, executor, attempt, output_root)
             if kind == "verify":
-                self.update_incumbent()
-            done += kind == "train"
+                if verifying is not None:
+                    verifying.join()
+                verifying = threading.Thread(target=verify_job, args=(row, attempt, output_root), daemon=False)
+                verifying.start()
+                continue
+            self.execute(row, kind, executor, attempt, output_root)
+            done += 1
+        if verifying is not None:
+            verifying.join()
+        self.update_incumbent()
         return done
 
     def execute(self, row, kind, executor, attempt, output_root):
