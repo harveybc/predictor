@@ -149,7 +149,8 @@ def campaign_progress(reg, now):
         excluded = {k: v for k, v in st.items() if k in q.get("excluded_statuses", [])}
         live = {k: v for k, v in st.items() if k not in excluded}
         done = live.get("verified", 0) + live.get("failed", 0)
-        remaining = live.get("queued", 0) + live.get("running", 0) + live.get("trained", 0)
+        remaining = sum(v for k, v in live.items() if k in ("queued", "running", "trained", "verifying"))
+        dependency_held = {k: v for k, v in live.items() if k == "blocked" or k.startswith("HOLD")}
         fin = [a for a in att if a[1] == "completed" and a[4]]
         per_cell = None
         if fin:
@@ -166,12 +167,17 @@ def campaign_progress(reg, now):
         else:
             eta = {"earliest": None, "latest": None, "basis": "not_estimable",
                    "assumptions": ["missing measurement: no completed train+verify attempt in this campaign yet"
-                                   if not per_cell else "no remaining cells"]}
-        out.append({"campaign": q["name"], "status_counts": st, "excluded": excluded,
+                                   if not per_cell else "no runnable cells remain"]}
+        if dependency_held:
+            eta["assumptions"].append(f"{sum(dependency_held.values())} cells held on dependencies ({dependency_held}); "
+                                      "not estimable until their pilot/donors exist")
+        out.append({"campaign": q["name"], "identity": q.get("identity"), "status_counts": st, "excluded": excluded,
+                    "dependency_held": dependency_held,
                     "cells_done": done, "cells_planned": sum(live.values()), "eta": eta,
                     "attempts": {"total": len(att), "completed": len(fin),
                                  "max_cgroup_peak_bytes": max([a[5] or 0 for a in att] or [0])},
                     "incumbent": {"config_id": inc[0][:8], "mean_objective": inc[1], "at": iso(inc[2])} if inc else None})
+    out += reg.get("campaigns_retained", [])
     return out
 
 
@@ -214,7 +220,14 @@ def coverage_block(reg, campaigns_out):
     evaluated = [{"campaign": c["campaign"], "verified_rows": (c.get("status_counts") or {}).get("verified", 0)}
                  for c in campaigns_out if "status_counts" in c]
     evaluated += reg.get("coverage_evaluated_retained", [])
-    return {"catalogue_coverage": {**cat, "complete_coverage_claim":
+    three = {"distinct_column_profiles": cat.get("old_denominator"),
+             "metric_family_cells": reg.get("coverage_metric_family_cells") or
+             "NOT_PUBLISHED: missing measurement; owner lane B (M03); no number is substituted",
+             "source_recipe_catalogue": (cat.get("new_source_and_transform_denominators") or {}).get("new_denominator")
+             if isinstance(cat.get("new_source_and_transform_denominators"), dict) else None,
+             "rule": "three denominators; none substitutes for the others (orders b327b771 item 5)"}
+    return {"three_denominators": three,
+            "catalogue_coverage": {**cat, "complete_coverage_claim":
                                    "REFUSED: known sources/families absent from lane B's accounting: " + "; ".join(absent)
                                    if absent else "not asserted (no census of every usable source exists)"},
             "model_input_count": inputs, "evaluated_candidate_count": evaluated,

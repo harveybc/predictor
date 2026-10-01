@@ -73,3 +73,43 @@ bash DEPLOY_ADM_DEADCACHE.sh --rollback <worker_a-alias> <worker_b-alias>
 ## Where the leases live
 
 On every host the store is `~/.local/state/crispdm/admission/`: `leases/`, `ledger.jsonl`, `queue.jsonl`, `requests/`, `retained/` and `incidents/`.
+
+## Deployment record: worker_a, 2026-10-01 03:59:20Z (owner-accepted, orders b327b771 §2)
+
+- **Executed by M06.** It ran `bash DEPLOY_ADM_DEADCACHE.sh <worker_a-alias>`, on worker_a only.
+- **Before.** Deployed hashes were 499fdc18… (launcher) and 8dc2c03b… (admission module). No leases or launchers were live.
+- **After.** Hashes read back as **056e207a…** and **7882d20f…**. Note that `crispdm-run` also changed (499fdc18 → 056e207a). That launcher change is the `scope-exec` own-scope reclaim, and it is part of 775c5545.
+- **Rollback copies.** sha-verified under `~/.local/state/crispdm-run/rollback_ddadf4a9/`.
+- **Accounting after deploy:**
+  - In use 2,654,863,360 B, charged 66,351,104 B. That means 2,588,512,256 B of dead clean cache is no longer charged.
+  - Slice ceiling 8,589,934,592 B. Host free for new loads 8,756,715,520 B. Nothing held unrealised. 0 live leases. PSI 0.0.
+- **Smoke.** A 256M `true` job was ADMITTED, and the ledger shows `SCOPE_CLEAN_CACHE_RECLAIM` RECLAIMED (36,864 B).
+- **CUDA check.** One operation under `crispdm-run -m 2G` passed on GPU-a9f35631 (RTX 5090): `tf.ones` 1024×1024 matmul, placed on /GPU:0, checksum exact, `get_memory_info` 8,390,144 / 8,411,136 B.
+  - There were 0 `NV_ERR_NO_MEMORY` lines in the kernel log during the probe.
+  - This is not proof of GPU health under load. The earlier driver record stays separate.
+
+## worker_b extension: one-paste, NOT EXECUTED, the owner's explicit decision
+
+The orders forbid extending to worker_b automatically. If the owner decides to, the single action is:
+
+```bash
+bash DEPLOY_ADM_DEADCACHE.sh <worker_b-alias>                 # same checks; rollback copies kept
+bash DEPLOY_ADM_DEADCACHE.sh --rollback <worker_b-alias>      # restores 499fdc18 / 8dc2c03b
+```
+
+Read-only reading of worker_b at 04:03Z, so the decision is made on numbers:
+
+| Quantity | Bytes |
+|---|---|
+| Slice in use | 4,795,273,216 |
+| Clean file cache in the slice | 1,572,048,896 |
+| …of which inside the live donor scope | 10,846,208 |
+| **Dead clean cache the old gate charges** | **1,561,202,688** |
+| Held unrealised (7G donor lease) | 5,213,134,848 |
+| Slice ceiling | 15,032,385,536 |
+
+For the queued per-feature pilot (6,739,197,952 B):
+- The old gate's aggregate would be 16,747,606,016 B.
+- The new gate's aggregate would be **15,186,403,328 B**.
+
+**Both QUEUE.** Extending alone would leave the pilot 154,017,792 B short beside the live donor lease. M01's 4G suite or the 3G PS3-R child each already fit alone. They would not fit together beside the donor even after the fix (15.96 GB against 15.03 GB).

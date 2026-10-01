@@ -1,5 +1,5 @@
 {
- "plan_revision": "256c61a6",
+ "plan_revision": "b327b771",
  "agents": [
   {
    "id": "a5b79d5488abdee3a",
@@ -611,7 +611,8 @@
   "reconciliation": "docs/handoffs/SATOSHI_MODULAR_RECONCILIATION_2026_09_30.md @ ac125db9",
   "acknowledgement": "predictor satoshi/continuation-ack-20261001 @ 5b5d44d1 (earlier 637107ee)",
   "previous_campaign_return": "docs/audits/evidence/MODULAR_CAMPAIGN_20260930/RETURN.md @ 09f129c5",
-  "coverage_addendum": "docs/handoffs/SATOSHI_SOURCE_TRANSFORM_COVERAGE_ADDENDUM_2026_10_01.md @ 256c61a6"
+  "coverage_addendum": "docs/handoffs/SATOSHI_SOURCE_TRANSFORM_COVERAGE_ADDENDUM_2026_10_01.md @ 256c61a6",
+  "next_dispatch": "docs/handoffs/SATOSHI_NEXT_DISPATCH_2026_10_01.md @ b327b771"
  },
  "lanes": [
   {
@@ -672,6 +673,15 @@
    ],
    "branch": "satoshi/m06-evidence-resources-20260930",
    "state": "running"
+  },
+  {
+   "lane": "G",
+   "work": "RL owner: SAC/DQN x with/without differentiated temporal representation (agent-multi/gym-fx), under M05 coordination",
+   "agents": [
+    "(agent id to follow)"
+   ],
+   "branch": null,
+   "state": "assigned"
   }
  ],
  "job_hints": {
@@ -867,7 +877,7 @@
   }
  ],
  "slot_plan": {
-  "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8": "IDLE BY ORDER: the only runnable work for the 5090 (per-feature pilot/attempts, 6.74 GB) cannot admit beside the 2.42 GB dead clean cache in worker_a's 8 GiB batch slice; the owner's ADM-DEADCACHE decision (DEPLOY.md, one action) directly idles the preferred GPU"
+  "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8": "ADMISSIBLE after the 03:59Z repair: host_free_for_new 8.76 GB, slice charged 0.066 of 8.59 GB; next eligible pilot/candidate placed by M04 (orders b327b771 section 3)"
  },
  "old_design_inventory": {
   "source": "wf_6286ece8-903",
@@ -928,10 +938,16 @@
    "name": "m04 campaign_corrected_r0_v1 (pin 3ecdb256)",
    "path": "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/queue.sqlite",
    "excluded_statuses": [
-    "SUPERSEDED_OLD_ARCH",
-    "blocked"
+    "SUPERSEDED_OLD_ARCH"
    ],
-   "parallel_hosts": 1
+   "parallel_hosts": 1,
+   "identity": {
+    "pin": "df9ae31c",
+    "engine": "3ecdb256",
+    "campaign_sha256_current": "09f6913e (amendment 2)",
+    "base": "13852a05",
+    "denominator": "36 cells (72 superseded rows kept outside)"
+   }
   }
  ],
  "facts_confirmed": {
@@ -992,5 +1008,132 @@
    "host_state_at_ruling": "worker_b swap in use (5.2 GB free), unreclaimable slab 2.8 GB; M06 alerts if swap free < 2 GB or slab > 4 GB"
   }
  ],
- "coverage_generated_file": "/home/harveybc/Documents/GitHub/.worktrees/predictor-m06-20260930/docs/audits/evidence/MODULAR_CAMPAIGN_20260930/RESULTS/coverage_laneB.json"
+ "coverage_generated_file": "/home/harveybc/Documents/GitHub/.worktrees/predictor-m06-20260930/docs/audits/evidence/MODULAR_CAMPAIGN_20260930/RESULTS/coverage_laneB.json",
+ "campaigns_retained": [
+  {
+   "campaign": "m04_ecl_l24_h24_batch1_v3_deterministic (OLD architecture)",
+   "identity": {
+    "campaign_sha256": "53bce359",
+    "predictor_revision": "8f724b12"
+   },
+   "status_counts": {
+    "verified": 16,
+    "blocked": 20
+   },
+   "cells_done": 16,
+   "cells_planned": 36,
+   "note": "retained; queues CANCELLED_SUPERSEDED; classes OLD_GRID_12 / OLD_ENGINE_24_NONRESIDUAL",
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "ended"
+    ]
+   }
+  }
+ ],
+ "deployments": [
+  {
+   "at": "2026-10-01T03:59:20Z",
+   "host_alias": "worker_a",
+   "what": "ADM-DEADCACHE-01 reviewed repair 775c5545 (NOT 0928dc06) via DEPLOY_ADM_DEADCACHE.sh, owner-accepted (orders b327b771 section 2), worker_a ONLY",
+   "pre": {
+    "crispdm-run": "499fdc18",
+    "crispdm_admission.py": "8dc2c03b",
+    "leases": 0,
+    "launchers": 0
+   },
+   "post": {
+    "crispdm-run": "056e207a1f36120cb24d8063932988082f50eca368bb03c6e2bb3de9df69d7d7",
+    "crispdm_admission.py": "7882d20fe30782b5f411be01b6ba58e2de6a26aa2e4cd4ed4876cc69b86948e2"
+   },
+   "note": "crispdm-run also changes (499fdc18 -> 056e207a: scope-exec own-scope reclaim) as part of the 775c5545 repair",
+   "rollback": "~/.local/state/crispdm-run/rollback_ddadf4a9/ (sha-verified); bash DEPLOY_ADM_DEADCACHE.sh --rollback <worker_a>",
+   "accounting_after": {
+    "slice_memory_current": 2654863360,
+    "slice_charged_bytes": 66351104,
+    "dead_clean_uncharged": 2588512256,
+    "slice_memory_max": 8589934592,
+    "host_free_for_new_bytes": 8756715520,
+    "held_unrealised_bytes": 0,
+    "mem_available_bytes": 11977940992,
+    "pressure_some_avg10": 0.0,
+    "live_leases": 0
+   },
+   "smoke": "256M true job: ADMITTED, SCOPE_CLEAN_CACHE_RECLAIM RECLAIMED (36,864 B), released",
+   "not_done": "no ceiling change, no drop_caches, no swap change, no persistence mode, no reboot, no force-push; NOT extended to worker_b"
+  }
+ ],
+ "gpu_facts": [
+  {
+   "at": "2026-10-01T03:59:46Z",
+   "host_alias": "worker_a",
+   "device": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+   "test": "crispdm-run -m 2G (scope-exec path), tensorflow env TF 2.21.0, cu12-only LD_LIBRARY_PATH recipe, TF_DETERMINISTIC_OPS=1, CUDA_VISIBLE_DEVICES=<uuid>: tf.ones(1024x1024) matmul on /GPU:0",
+   "result": "OK: device RTX 5090 cc 12.0; placed /job:localhost/replica:0/task:0/device:GPU:0; checksum 1073741824.0 == expected; get_memory_info current 8,390,144 / peak 8,411,136 B",
+   "driver_log": "0 NV_ERR_NO_MEMORY lines in the kernel log in the 5 minutes around the probe",
+   "caveat": "one small CUDA operation succeeded; the earlier driver NV_ERR_NO_MEMORY record stays separate; this is not a proof of GPU health under load"
+  }
+ ],
+ "coverage_metric_family_cells": {
+  "denominator": 121824,
+  "complete_new_full_train": 10160,
+  "partial": 320,
+  "present_in_reused_c162": 10760,
+  "absent_in_reused_c162": 7064,
+  "not_measured_or_excluded": 93520,
+  "families": [
+   "missingness",
+   "distribution",
+   "volatility",
+   "trend",
+   "acf",
+   "spectral",
+   "stationarity",
+   "seasonality"
+  ],
+  "lane_b_ps1_matrix": {
+   "cells": 193880,
+   "measured": 167638,
+   "reused": 6550,
+   "failed": 0,
+   "not_run_with_reason": 19692,
+   "feature_fold_pairs": 5240,
+   "basic_complete": 5206,
+   "full_complete": 1301,
+   "source": "BATCHES.v2.csv sha 4f66d99b"
+  },
+  "from": "feature-eng@9162ca3:docs/feature_metrics/laneB/THREE_DENOMINATORS.v1.json",
+  "sha256": "af22760a571617c4d624de115d97a50575afb29fce87f5c7f230201081cb06ae"
+ },
+ "laneB_fs19": {
+  "covered_by_B": "feature-eng satoshi/b-selection-ps0-ps2-20261001 @ 1b22c64 tests/test_fs19_profile_reuse.py (4); Weather restart 2,776/2,776 MEASURED_REUSED (runs/weather_restart BATCHES.v2.csv sha 4f66d99b); recipe identity feature-eng @ 9162ca3 tests/test_src03_recipe_identity.py",
+  "M06_half_linked": {
+   "ps1_run_summaries": "feature-eng @ 1b22c64 docs/feature_metrics/laneB/runs/{d4,electricity,eth_4h,traffic,weather}/run_summary.json (code sha d0679a3d)",
+   "three_denominators": "feature-eng @ 9162ca3 docs/feature_metrics/laneB/THREE_DENOMINATORS.v1.json sha af22760a (copied to RESULTS/)",
+   "feature_dag": "financial-data satoshi/b-feature-dag-v3-20261001 @ 42bed364 FEATURE_DAG.v3 dag_sha256 881f746f"
+  },
+  "warehouse": "NOT written: no governed route used for lane B artifacts; retention/lineage of reused results is linked here, not loaded"
+ },
+ "worker_b_deadcache_reading": {
+  "at": "2026-10-01T04:03Z",
+  "slice_memory_current": 4795273216,
+  "file": 2324402176,
+  "shmem": 752181248,
+  "file_dirty": 159744,
+  "file_writeback": 12288,
+  "unevictable": 0,
+  "clean_file_total": 1572048896,
+  "clean_in_live_scope_m02-ecl-v2-donors-r7g2": 10846208,
+  "dead_clean_charged_by_old_gate": 1561202688,
+  "held_unrealised": 5213134848,
+  "slice_memory_max": 15032385536,
+  "per_feature_pilot_6739197952": {
+   "old_gate_aggregate": 16747606016,
+   "new_gate_aggregate": 15186403328,
+   "verdict_both": "QUEUED SLICE_AGGREGATE_BUDGET (new gate over by 154,017,792 B)"
+  },
+  "reading": "extending the repair to worker_b would uncharge 1.56 GB but would NOT by itself admit the 6.74 GB per-feature pilot beside the live 7G donor lease (over by 0.154 GB); it would admit M01's 4G suite or the 3G PS3-R child alone (both already fit under the old gate alone), not both together beside the donor (new 15.96e9 > 15.03e9)"
+ }
 }
