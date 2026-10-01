@@ -281,6 +281,35 @@ Per-block sign stability of the real-label partial association (5 time blocks; t
 Label: FINDING (predictive association under a declared model), not an effect; rung 2 stays NOT_IDENTIFIED. Cost: 70-74 s CPU each, peaks 298-329 MB (lake pilot 296 MB -> cap 370 MB; the git-pinned rerun
 at cap 400 MB).
 
+### 2.6 Paired inference for M07's EURUSD lake vDh grouped_all mae/adamw (critical-path step 4, DEVELOPMENT) -- `paired_inference/{90d91a43,9c4c7577}/PAIRED_LOSS_INFERENCE.json`, `tools/c2_paired_loss_inference.py`
+
+Inputs (read-only copies, sha-verified against the source files): PREDICTIONS_90d91a43.csv `17060c8b…` + EVIDENCE_90d91a43.json `38598b36…` (seed 2021), PREDICTIONS_9c4c7577.csv `a29cb13e…` + EVIDENCE_9c4c7577.json `7bf1f6bf…`
+(seed 2022); 18,711 validation windows (2019-08-13 to 2022-09-22; S2 reserve and test not read). The validation targets were rebuilt from the lake view with M07's scaler rule (TRAIN rows where all declared
+channels are finite: sigma is 0.0925 % larger than the plain scaler because flat bars are excluded), and the run is REFUSED unless the model MAE and the zero-return MAE reproduce the evidence per horizon to 1e-6
+(they do: model MAE to 1e-9 at every horizon; evidence `naive_MAE` is the strict minimum across four naives, the zero-return value is read from `naives.per_naive.zero_return`).
+Paired per-row difference d = loss(model) - loss(control), negative = model better; interval = circular block bootstrap, B = 2000, L = max(tau_Y, tau_yhat, tau_d, h+6) = 7 (h1), 8, 9, 10 (the rule's L; tau of Y and of the
+predictions is 1-2 bars). Controls: zero-return; intercept-only (TRAIN mean of Y_h); time-scrambled predictions (rolled 5000 rows) vs zero.
+
+| seed | h | model MAE_z | zero MAE_z | abs vs zero: d (CI) | excl. 0 | sq vs zero | abs vs intercept | sq vs intercept |
+|---|---|---|---|---|---|---|---|---|
+| 2021 | 1 | 0.509093 | 0.509587 | -4.94e-4 (-8.76e-4, -1.30e-4), -0.097 % | YES, model better | includes 0 | YES, model better | includes 0 |
+| 2021 | 2 | 0.722536 | 0.722995 | -4.59e-4 (-1.05e-3, +1.0e-4), -0.064 % | no | includes 0 | no | no |
+| 2021 | 3 | 0.893288 | 0.893783 | -4.96e-4 (-1.15e-3, +1.5e-4), -0.055 % | no | includes 0 | no | no |
+| 2021 | 4 | 1.039291 | 1.039637 | -3.47e-4 (-8.9e-4, +2.2e-4), -0.033 % | no | includes 0 | no | no |
+| 2021 | combined h1-4 | | | -4.49e-4 (-9.10e-4, -9.2e-6) | **YES (barely)** | includes 0 (-6.6e-4; -1.9e-3, +6.3e-4) | includes 0 (-4.55e-4; -9.2e-4, +3.5e-5) | includes 0 |
+| 2022 | 1 | 0.508990 | 0.509587 | -5.97e-4 (-1.14e-3, -6.9e-5), -0.117 % | YES, model better | includes 0 | YES, model better | includes 0 |
+| 2022 | 2 | 0.722291 | 0.722995 | -7.04e-4 (-1.45e-3, +3.1e-5), -0.097 % | no (just) | includes 0 | no (+8e-6) | no |
+| 2022 | 3 | 0.893372 | 0.893783 | -4.11e-4 (-1.26e-3, +4.6e-4), -0.046 % | no | includes 0 | no | no |
+| 2022 | 4 | 1.039081 | 1.039637 | -5.56e-4 (-1.50e-3, +4.2e-4), -0.053 % | no | includes 0 | no | no |
+| 2022 | combined h1-4 | | | -5.67e-4 (-1.23e-3, +1.1e-4) | no | includes 0 (-1.0e-3) | includes 0 (-5.7e-4; -1.20e-3, +8.5e-5) | includes 0 |
+
+Reading: the MAE advantage is real in sign at all 16 (seed x horizon) cells (every point estimate negative), but only the h1 cell excludes zero, in BOTH seeds, against both controls; h2 in seed 2022 is at the edge. The equal-weight
+combination excludes zero for seed 2021 only (upper bound -9.2e-6, i.e. 0.001 % of the naive MAE away from zero) and not for seed 2022. **No squared-error interval excludes zero in any cell**, so there is no inference
+that the model beats the naive on MSE. The intercept-only control behaves like the zero-return (its MAE is 0.0000x above zero-return). The time-scrambled-predictions control is MODEL_WORSE (h1 both seeds; h1-h4 in seed 2022) or includes
+zero, never MODEL_BETTER: the test does not favour a model with no information. Statement for M07: at 0.03-0.12 % margins the evidence supports "better than zero-return at h1 on this validation sample under the calibrated interval,
+for both seeds, MAE only"; it does not support a claim at h2-h4 or on MSE, and the margin is of the order of the interval half-width (about 6e-4 absolute). DEVELOPMENT: the validation sample was consulted by M07's selection loop; this
+is not confirmation. Cost: 12 s CPU per seed, measured peak 350 MB (cap 370 MB).
+
 ## 3. Deliverable 3: recommendation table to M03 and M07 -- `recommendation/RECOMMENDATION_TABLE.{csv,md}`
 
 1,162 rows (83 features x 7 horizons x 2 protocols), each with population, split, rows, horizon, the four naives
