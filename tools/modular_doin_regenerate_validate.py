@@ -47,6 +47,7 @@ def main():
                 raise ValueError("modular_config flatten/unflatten is not the identity on this model")
             text = grammar.dumps(normalized)
             entry["model_sha256"] = hashlib.sha256(text.encode()).hexdigest()
+            entry["model_config_sha256"] = mt.config_digest(normalized) if hasattr(mt, "config_digest") else None
             entry["candidate_cid_recomputed"] = ss.digest(nested)
             entry["cid_matches_queue"] = entry["candidate_cid_recomputed"] == cid
             key = entry["model_sha256"]
