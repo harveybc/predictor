@@ -284,6 +284,78 @@ def test_card_code_revision_must_be_a_pin_not_a_branch(card_validator, card):
     assert _errors(card_validator, loose) != []
 
 
+PROXY_WAVELET_METHOD = {
+    "method_id": "PROXY",
+    "method_name": "MULTISCALE_ROLLING_MEAN_PROXY",
+    "proxy_of": "DWT_DB4",
+    "native_reference": None,
+    "inputs_transformed": ["close"],
+    "units": {"wavelet_detail_L1": "price"},
+    "sample_interval_seconds": 300,
+    "window_bars": 128,
+    "window_frozen_from": None,
+    "update_cadence_bars": 1,
+    "max_feature_age_bars": 0,
+    "timing_invariance": {"status": "NOT_EVALUATED", "tests": []},
+    "native_coverage_claimed": False,
+}
+
+
+def test_card_requires_the_method_block(card_validator, card):
+    bare = copy.deepcopy(card)
+    del bare["method"]
+    assert _errors(card_validator, bare) != []
+
+
+def test_card_proxy_method_cannot_claim_native_coverage(card_validator, card):
+    proxy = copy.deepcopy(card)
+    proxy["method"] = dict(PROXY_WAVELET_METHOD)
+    assert _errors(card_validator, proxy) == []
+    proxy["method"] = dict(PROXY_WAVELET_METHOD, native_coverage_claimed=True)
+    assert _errors(card_validator, proxy) != []
+    proxy["method"] = dict(PROXY_WAVELET_METHOD, proxy_of=None)
+    assert _errors(card_validator, proxy) != [], "a PROXY must name what it approximates"
+
+
+def test_card_native_method_names_its_library_and_has_no_proxy_of(card_validator, card):
+    native = copy.deepcopy(card)
+    native["method"] = dict(PROXY_WAVELET_METHOD, method_id="NATIVE", method_name="DWT_DB4_TRAILING_WINDOW",
+                            proxy_of=None, native_reference={"library": "pywt", "version": "1.7.0", "function": "wavedec"})
+    assert _errors(card_validator, native) == []
+    native["method"]["native_reference"] = None
+    assert _errors(card_validator, native) != []
+    native["method"]["native_reference"] = {"library": "pywt", "version": "1.7.0"}
+    native["method"]["proxy_of"] = "DWT_DB4"
+    assert _errors(card_validator, native) != []
+
+
+def test_card_learned_method_needs_a_fit_period_bound_to_a_fold(card_validator, card):
+    learned = copy.deepcopy(card)
+    learned["method"] = dict(PROXY_WAVELET_METHOD, method_id="LEARNED", method_name="LEARNED_REGIME_FIXED_CONSTANTS",
+                             proxy_of=None)
+    assert _errors(card_validator, learned) != [], "LEARNED without fit_period must be refused"
+    learned["method"]["fit_period"] = {"fold_id": "fold-1", "train_end": "2020-12-31T00:00:00Z"}
+    assert _errors(card_validator, learned) == []
+
+
+def test_card_violated_timing_cannot_be_admissible(card_validator, card):
+    violated = copy.deepcopy(card)
+    violated["method"] = dict(PROXY_WAVELET_METHOD, method_id="NATIVE", method_name="SCIPY_HILBERT_TRAILING_WINDOW",
+                              proxy_of=None, native_reference={"library": "scipy", "version": "1.13.1"},
+                              timing_invariance={"status": "VIOLATED",
+                                                 "tests": ["test_required_prefix_invariance_below_1000_rows"],
+                                                 "violations": ["WINDOW_DERIVED_FROM_INPUT_LENGTH"]})
+    violated["admissibility"] = {"verdict": "ADMISSIBLE", "reasons": []}
+    assert _errors(card_validator, violated) != []
+    violated["admissibility"] = {"verdict": "NOT_ADMISSIBLE", "reasons": ["timing invariance violated"]}
+    assert _errors(card_validator, violated) == []
+    # a VIOLATED or VERIFIED status without the deciding tests is an assertion, not a measurement
+    violated["method"]["timing_invariance"] = {"status": "VERIFIED", "tests": []}
+    assert _errors(card_validator, violated) != []
+    violated["method"]["timing_invariance"] = {"status": "VIOLATED", "tests": ["t"]}
+    assert _errors(card_validator, violated) != [], "VIOLATED must name at least one violation"
+
+
 def test_card_generative_family_is_secondary(card_validator, card):
     generative = copy.deepcopy(card)
     generative["family"] = "generative_cvae"

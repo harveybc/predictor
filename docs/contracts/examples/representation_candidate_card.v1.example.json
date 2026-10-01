@@ -35,6 +35,15 @@
   "latent": {"layout": "temporal", "time_steps": 24, "channels": 16, "grid_adapter": null, "inference_mode": "deterministic"},
   "temporal_contract_state": "NOT_EVALUATED",
   "conditioning_contract": "OPERATIONAL",
+  "method": {
+    "method_id": "NOT_APPLICABLE",
+    "method_name": "learned contrastive encoder (not a signal transform)",
+    "proxy_of": null,
+    "native_reference": null,
+    "inputs_transformed": [],
+    "timing_invariance": {"status": "NOT_EVALUATED", "tests": []},
+    "native_coverage_claimed": false
+  },
   "evaluation": {"reconstruction": {"state": "NOT_APPLICABLE"}, "probes": []},
   "cost": {"state": "NOT_EVALUATED"},
   "admissibility": {"verdict": "ADMISSIBLE", "reasons": ["per-timestamp output", "TRAIN_ONLY by construction", "MIT licence read at the pin"], "pilot_order": 2},

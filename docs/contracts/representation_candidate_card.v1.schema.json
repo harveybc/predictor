@@ -5,9 +5,52 @@
   "description": "One card per representation family x architecture x objective candidate. Reconstruction NOT_APPLICABLE is a state, not a failure; a pooled latent never satisfies the temporal contract; weights pretrained on a foreign corpus are never TRAIN_ONLY. Model-intervention evidence (subplan 5.5) lives here and never in a causal dossier. Produced by feature-extractor / predictor lanes; consumed by selection, DOIN, SAC and the business adapter.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "candidate_id", "produced_at", "family", "architecture", "objective", "reference", "comparator", "corpus", "latent", "temporal_contract_state", "conditioning_contract", "evaluation", "cost", "admissibility", "limitations"],
+  "required": ["schema", "candidate_id", "produced_at", "family", "architecture", "objective", "reference", "comparator", "corpus", "latent", "temporal_contract_state", "conditioning_contract", "method", "evaluation", "cost", "admissibility", "limitations"],
   "properties": {
     "schema": {"const": "representation_candidate_card.v1"},
+    "method": {
+      "type": "object",
+      "description": "Method semantics (owner addendum 2026-10-01, findings 4-6; financial-data docs/METHOD_SEMANTICS_DOSSIER_2026_10_01.md). PROXY = an approximation of a named native method under an honest id; NATIVE = the named method itself; LEARNED = fitted constants whose fit period must be bound to the fold; NOT_APPLICABLE = the candidate is not a signal transform. timing_invariance records whether prefix extension and chunked replay preserve emitted values, decided by named tests, never by assertion. Causality here = no use of unavailable future inputs; it is not an economic causal effect.",
+      "additionalProperties": false,
+      "required": ["method_id", "method_name", "proxy_of", "native_reference", "inputs_transformed", "timing_invariance", "native_coverage_claimed"],
+      "properties": {
+        "method_id": {"enum": ["PROXY", "NATIVE", "LEARNED", "NOT_APPLICABLE"]},
+        "method_name": {"type": "string", "minLength": 1},
+        "proxy_of": {"type": ["string", "null"], "description": "the native method a PROXY approximates, e.g. DWT_DB4"},
+        "native_reference": {"type": ["object", "null"], "additionalProperties": false, "required": ["library", "version"],
+                             "properties": {"library": {"type": "string"}, "version": {"type": "string"}, "function": {"type": "string"}, "url": {"type": "string", "format": "uri"}}},
+        "inputs_transformed": {"type": "array", "items": {"type": "string"}},
+        "units": {"type": "object", "additionalProperties": {"type": "string"}},
+        "sample_interval_seconds": {"type": ["integer", "null"], "minimum": 1},
+        "window_bars": {"type": ["integer", "null"], "minimum": 1},
+        "window_frozen_from": {"type": ["string", "null"], "description": "fold id the window/step were frozen from"},
+        "update_cadence_bars": {"type": ["integer", "null"], "minimum": 1},
+        "max_feature_age_bars": {"type": ["integer", "null"], "minimum": 0},
+        "fit_period": {"type": ["object", "null"], "additionalProperties": false, "required": ["fold_id", "train_end"],
+                       "properties": {"fold_id": {"type": "string"}, "train_end": {"type": "string", "format": "date-time"}, "data_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}},
+        "timing_invariance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "tests"],
+          "properties": {
+            "status": {"enum": ["VERIFIED", "VIOLATED", "NOT_EVALUATED"]},
+            "tests": {"type": "array", "items": {"type": "string"}},
+            "violations": {"type": "array", "items": {"enum": ["PREFIX_EXTENSION_CHANGES_EMITTED_VALUES", "RESTART_CHANGES_EMITTED_VALUES", "WINDOW_DERIVED_FROM_INPUT_LENGTH", "GRID_ANCHORED_AT_INPUT_START", "FIT_PERIOD_UNKNOWN", "LABEL_MAPPING_USES_FORWARD_RETURNS"]}}
+          },
+          "allOf": [
+            {"if": {"properties": {"status": {"enum": ["VERIFIED", "VIOLATED"]}}}, "then": {"properties": {"tests": {"minItems": 1}}}},
+            {"if": {"properties": {"status": {"const": "VIOLATED"}}}, "then": {"required": ["violations"], "properties": {"violations": {"minItems": 1}}}}
+          ]
+        },
+        "native_coverage_claimed": {"type": "boolean"}
+      },
+      "allOf": [
+        {"if": {"properties": {"method_id": {"const": "PROXY"}}}, "then": {"properties": {"proxy_of": {"type": "string", "minLength": 1}, "native_coverage_claimed": {"const": false}}}},
+        {"if": {"properties": {"method_id": {"const": "NATIVE"}}}, "then": {"properties": {"native_reference": {"type": "object"}, "proxy_of": {"type": "null"}}}},
+        {"if": {"properties": {"method_id": {"const": "LEARNED"}}}, "then": {"required": ["fit_period"], "properties": {"fit_period": {"type": "object"}}}},
+        {"if": {"properties": {"method_id": {"const": "NOT_APPLICABLE"}}}, "then": {"properties": {"native_coverage_claimed": {"const": false}, "proxy_of": {"type": "null"}}}}
+      ]
+    },
     "candidate_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"},
     "produced_at": {"type": "string", "format": "date-time"},
     "family": {"enum": ["autoencoder_control", "denoising_autoencoder", "contrastive", "masked_reconstruction", "latent_prediction", "foundation_pretrained", "generative_cvae", "generative_vae_gan", "supervised"]},
@@ -177,6 +220,7 @@
     "limitations": {"type": "array", "items": {"type": "string"}, "minItems": 1}
   },
   "allOf": [
+    {"if": {"properties": {"method": {"properties": {"timing_invariance": {"properties": {"status": {"const": "VIOLATED"}}}}}}}, "then": {"properties": {"admissibility": {"properties": {"verdict": {"enum": ["NOT_ADMISSIBLE", "NOT_EVALUATED", "SECONDARY"]}}}}}},
     {"if": {"properties": {"latent": {"properties": {"layout": {"const": "pooled"}}}}}, "then": {"properties": {"temporal_contract_state": {"enum": ["VIOLATED_POOLED", "NOT_EVALUATED"]}}}},
     {"if": {"properties": {"latent": {"properties": {"layout": {"const": "patch"}}}}}, "then": {"properties": {"temporal_contract_state": {"enum": ["ADAPTER_DECLARED", "NOT_EVALUATED"]}}}},
     {"if": {"properties": {"temporal_contract_state": {"const": "ADAPTER_DECLARED"}}}, "then": {"properties": {"latent": {"properties": {"grid_adapter": {"type": "object"}}}}}},
