@@ -615,3 +615,44 @@ def test_runner_preflight_refuses_absent_or_dirty_pin_worktree(tmp_path, monkeyp
         with pytest.raises(RuntimeError, match=match):
             executor.preflight("a" * 40)
     assert executor.preflight("a" * 40)["clean"] is True
+
+
+# ------------------------------------------- frozen forecast evidence (b327b771 s5) --
+def _evidence_inputs(tmp_path):
+    from tools import modular_forecast_evidence as fe  # noqa: F401
+    train, validation = synthetic_inputs(tmp_path)
+    receipt = {"data": {"test_used": False, "dataset_id": "synthetic-m04", "target_names": ["a"],
+                        "metric_space": "z_train", "scaler_identity": "synthetic"},
+               "digests": {"validation_sha256": camp.sha_file(validation), "model_sha256": "m" * 64,
+                           "weights_sha256": "w" * 64},
+               "candidate": {"cid": "c" * 64}, "bridge": {"predictor_revision": "r" * 40},
+               "per_horizon": {"1": {"MAE": 0.5, "MSE": 0.4, "baseline_MAE": 0.4, "baseline_MSE": 0.3},
+                               "2": {"MAE": 0.3, "MSE": 0.2, "baseline_MAE": 0.0, "baseline_MSE": 0.0},
+                               "3": {"MAE": float("nan"), "MSE": 0.2, "baseline_MAE": 0.5, "baseline_MSE": 0.4}}}
+    return receipt, validation
+
+
+def test_forecast_evidence_is_frozen_hashed_and_same_row(tmp_path):
+    from tools import modular_forecast_evidence as fe
+    receipt, validation = _evidence_inputs(tmp_path)
+    record = fe.build(receipt, validation, campaign_id="t", asset="synthetic")
+    assert record["schema"] == "predictor.forecast_naive_evidence.v1" and fe.verify(record)
+    h1, h2, h3 = record["per_horizon"]
+    assert h1["MAE"]["status"] == "OK" and h1["MAE"]["delta"] == pytest.approx(0.1) and h1["rows"] == 40
+    assert h2["MAE"] == {"skill": None, "delta": 0.3, "status": "NOT_AVAILABLE", "reason": "ZERO_NAIVE"}
+    assert h3["model_MAE"] is None and h3["MAE"]["status"] == "NOT_AVAILABLE"
+    assert record["split"] == {"provenance": "held_out_validation", "test_used": False, "reserved_trading_test": False}
+    assert record["population"]["rows"] == 40 and len(record["population"]["row_ids_sha256"]) == 64
+    tampered = json.loads(json.dumps(record))
+    tampered["per_horizon"][0]["model_MAE"] = 0.1
+    assert not fe.verify(tampered)
+
+
+def test_forecast_evidence_refuses_test_provenance_and_foreign_rows(tmp_path):
+    from tools import modular_forecast_evidence as fe
+    receipt, validation = _evidence_inputs(tmp_path)
+    with pytest.raises(ValueError, match="reserved test"):
+        fe.build(receipt, validation, provenance="trading_test")
+    receipt["digests"]["validation_sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="differ"):
+        fe.build(receipt, validation)
