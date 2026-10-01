@@ -23,9 +23,9 @@ def receipt(tmp_path, cid, mae, zero=1.0, persist=1.3, seasonal=1.4):
     r = {"objective": {"value": mae}, "per_horizon": per_h, "naives": naives, "candidate": {"cid": cid},
          "training": {"selected_epoch": 3, "observed_updates": 630, "stop_reason": "patience"},
          "digests": {"weights_sha256": "w" * 64, "model_sha256": "m" * 64}}
-    p = tmp_path / f"{cid[:8]}_accepted.json"
+    p = tmp_path / f"{cid[:30]}_accepted.json"
     p.write_text(json.dumps(r))
-    v = tmp_path / f"{cid[:8]}_verification.json"
+    v = tmp_path / f"{cid[:30]}_verification.json"
     v.write_text(json.dumps({"verdict": "VERIFIED", "exact_match": True}))
     return p, v
 

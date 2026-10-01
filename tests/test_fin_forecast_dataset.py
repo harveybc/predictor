@@ -25,6 +25,7 @@ def make_fx(path, days=30, seed=0):
             hi, lo = max(o, c) * (1 + abs(rng.normal(0, 0.0005))), min(o, c) * (1 - abs(rng.normal(0, 0.0005)))
             if len(rows) == 100:
                 hi = lo = o = c
+            o, lo, hi, c = (round(v, 6) for v in (o, lo, hi, c))
             rows.append((t, o, lo, hi, c))
             price = c
         t += dt.timedelta(hours=1)
@@ -86,7 +87,7 @@ def test_regular_series_matches_row_offsets_and_excludes_irregular(tmp_path):
 
 def test_refuses_unknown_feature(tmp_path):
     make_fx(tmp_path / "fx.csv", days=10)
-    split = {"declared_by": "t", "train_rows": [0, 100], "validation_rows": [100, 150], "test_rows": [150, 168]}
+    split = {"declared_by": "t", "train_rows": [0, 100], "validation_rows": [100, 150], "test_rows": [150, 240]}
     with pytest.raises(ValueError, match="neither a view column"):
         fd.build(tmp_path / "fx.csv", tmp_path / "x", features=["rsi_14"], window=24, horizons=[1], sample_hours=1.0,
                  split=split, purge_seconds=0, expected_sha=None, dataset_id="fx:test")
