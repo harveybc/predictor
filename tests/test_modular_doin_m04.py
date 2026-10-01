@@ -928,3 +928,44 @@ def test_verification_runs_concurrently_with_the_next_train(tmp_path):
     first_verify_end = next(e for e in events if e[0] == "verify_end")
     assert second_train[2] < first_verify_end[2]  # next train started while the verification ran
     assert campaign.status()["incumbent"] is not None
+
+
+def test_seed_interval_table_joins_queues_by_flat_and_pairs_by_seed(tmp_path):
+    from tools import modular_doin_four_seed_table as fst
+
+    def queue(path, rows):
+        db = sqlite3.connect(path)
+        db.execute("create table candidates(cid, position, label, seed, flat, status)")
+        db.execute("create table attempts(cid, attempt, kind, status, receipt_path)")
+        for i, (cid, label, seed, flat, status, pin) in enumerate(rows):
+            db.execute("insert into candidates values(?,?,?,?,?,?)", (cid, i, label, seed, json.dumps(flat), status))
+            receipt = tmp_path / f"{cid}.json"
+            receipt.write_text(json.dumps({"bridge": {"predictor_revision": pin * 5}}))
+            db.execute("insert into attempts values(?,?,?,?,?)", (cid, 1, "train", "completed", str(receipt)))
+        db.commit()
+
+    def per_h(path, maes):
+        rows = [{"cid": cid, "MAE": m, "naive_MAE": 1.0,
+                 **{f"h{h}_seasonal_MAE": 0.5 for h in range(1, 25)}, **{f"h{h}_MAE": m for h in range(1, 25)}}
+                for cid, m in maes.items()]
+        path.write_text(json.dumps({"rows": rows}))
+
+    a, b = {"x": 1}, {"x": 2}
+    queue(tmp_path / "q1.sqlite", [("a1", "A", 2021, {**a, "train.seed": 2021}, "verified", "aaaa"),
+                                   ("a2", "A", 2022, {**a, "train.seed": 2022}, "verified", "aaaa"),
+                                   ("b1", "B", 2021, {**b, "train.seed": 2021}, "verified", "aaaa"),
+                                   ("b2", "B", 2022, {**b, "train.seed": 2022}, "failed", "aaaa")])
+    queue(tmp_path / "q2.sqlite", [("a3", "A", 2023, {**a, "train.seed": 2023, "model.target_residual": "none"},
+                                    "verified", "bbbb")])
+    per_h(tmp_path / "p1.json", {"a1": 0.40, "a2": 0.44, "b1": 0.30, "b2": 0.10})
+    per_h(tmp_path / "p2.json", {"a3": 0.42})
+    report = fst.build([(tmp_path / "q1.sqlite", tmp_path / "p1.json"), (tmp_path / "q2.sqlite", tmp_path / "p2.json")],
+                       ["A"])
+    rows = {r["labels"][0]: r for r in report["rows"]}
+    assert rows["A"]["n"] == 3 and rows["A"]["pins"] == ["aaaaaaaa", "bbbbbbbb"]  # joined across queues
+    assert abs(rows["A"]["mean"] - 0.42) < 1e-12 and abs(rows["A"]["sd"] - 0.02) < 1e-12
+    assert rows["B"]["n"] == 1 and rows["B"]["sd"] is None  # the failed seed never counts
+    assert rows["B"]["strict_minimum_rank"] == 1
+    c = rows["B"]["contrasts"]["A"]
+    assert c["paired_seeds"] == [2021] and abs(c["mean_difference"] + 0.10) < 1e-12
+    assert rows["A"]["horizons_not_beating_seasonal"] == list(range(1, 25))
