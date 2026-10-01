@@ -161,3 +161,28 @@ verify a VERIFIED_TRANSFER delivery.
 - Corrected campaign (amendment 1, CAMPAIGN sha `12f6030c`, pin `df9ae31c`): 16 grouped/draw R0 cells live on worker_a
   (first verified pair pending); 8 per-feature cells await their pilot on worker_b; 12 R1/R2 await donors; the corrected
   donor run is at branch 47 of 321 under a 7G cap after a planned stop and resume (finding MEM-02). No scientific score yet.
+
+## 9. Acknowledgement of the coverage addendum `256c61a6` (received 12:05Z, acknowledged 12:15Z)
+
+Read in full: `docs/handoffs/SATOSHI_SOURCE_TRANSFORM_COVERAGE_ADDENDUM_2026_10_01.md` and the diffs it made to the
+continuation orders and the subplan. Accepted as binding: the catalogue is exhaustive relative to a declared finite
+discovery snapshot; the search is progressive; a claim of complete coverage is refused while a known source or family
+is absent from the accounting; catalogue coverage, model-input count and evaluated-candidate count are reported apart.
+
+The six findings are accepted as stated; none of my earlier coverage wording survives them: 3,538/15,228 is index
+coverage, not source completeness; five datasets are not a provider-by-entitlement census; the 1,400 engineered
+parquet files are outside demonstrated selection coverage; `compute_wavelet` is a multiscale rolling-filter proxy;
+the spectral producers carry length-dependent windows and unit-less frequencies; the legacy regime detector's
+fitting period and forward-informed labels are a provenance/leakage risk.
+
+Assignments (dispatched 12:10Z; each agent's acknowledgement pending; running fits untouched):
+
+| Lane | Owner | Task from the addendum | First deliverable |
+|---|---|---|---|
+| B | M03 | source entitlement-to-use matrix (Yahoo, Alpaca, FXMacroData, existing macro/indices/commodities/crypto/positioning/news), transform-family ledger per input type with PROXY/NATIVE, DAG extension of the existing census, old and new denominators, red tests (uncovered row, proxy cannot certify native wavelet, cache reuse vs vintage, budget overflow → named deferred, exploration survives a limited batch) | ack with branch and first command; then the two matrices |
+| C | lane C agent | method semantics and temporal tests: wavelet proxy id + native producer spec, Hilbert/multitaper units and length-dependent windows (prefix and chunked-replay invariance, frozen TRAIN windows), regime detector fold-boundary test; card field method_id PROXY/NATIVE | ack; METHOD_SEMANTICS dossier and red tests in the owning repos |
+| D | M04 | candidate budget model (measured raw/expanded channels, branches, fused width = sum of branch widths, time, materialization bytes, parameters, RAM/VRAM, weekly cost), caps, overflow → named deferred row, never truncation; tests | after the 24-row batch |
+| A | M01 | engine exposes its measured-shape budget per config; build refuses silent collapse/truncation; cards carry recipe identity | after the PS3-R pilot |
+| F | M06 | `coverage` block in STATUS with the three separate counts; plan_revision 256c61a6; no "complete coverage" wording | next STATUS write |
+
+Nothing else changes: the corrected DOIN batch, the corrected donor run and the PS3-R pilot continue as approved.
