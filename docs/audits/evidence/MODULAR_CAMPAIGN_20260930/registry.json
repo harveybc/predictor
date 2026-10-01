@@ -424,6 +424,11 @@
    "at": "2026-10-01T02:35:00Z",
    "host_alias": "coordinator",
    "event": "lane A declared at 3ecdb256 and VERIFIED by the orchestrator; ordered: M04 re-pin to 3ecdb256 (24 R0 candidates; two pilots on worker_a first), M02 certification + new donor run on worker_b (10.3 GB materialization; disk check), M05 re-export"
+  },
+  {
+   "at": "2026-10-01T02:59:08Z",
+   "host_alias": "worker_a",
+   "event": "FIRST CORRECTED PILOT completed: d-pilot-grouped32 (engineering, PILOT_NOT_A_RESULT) on the 5090; d-pilot-perfeature queued on worker_b"
   }
  ],
  "launch_recipes": {
@@ -762,6 +767,30 @@
      "ended"
     ]
    }
+  },
+  {
+   "id": "d-pilot-grouped32 (corrected, pin df9ae31c)",
+   "lane": "D",
+   "state": "completed",
+   "phase": "completed",
+   "stage": "PILOT_NOT_A_RESULT completed on worker_a GPU-a9f35631 (RTX 5090): 2 epochs, 574 updates, 0.02537 s/update incl. validation, fit 14.56 s; cgroup peak 4,543,332,352 B of a 5,320,474,624 B cap; TF device peak 392,229,632 B; 11 branches, fused [24,176], 487,672 params; GPU facts asserted in-child (UUID, TF registration, GPU:0 placement)",
+   "producer_commit": "3ecdb256 (pin df9ae31c)",
+   "host_alias": "worker_a",
+   "heartbeat_at": "2026-10-01T02:59:08Z",
+   "progress": {
+    "unit": "updates",
+    "completed": 574,
+    "total": 574
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "ended"
+    ]
+   },
+   "evidence": "worker_a ~/.local/state/scratch/d-pilot/PIN_df9ae31c/pilot_grouped32/PILOT.json; admission ledger lease d-pilot-grouped32-1790823518-189673-dd72a6 (02:58:38Z-02:59:08Z)"
   }
  ],
  "slot_plan": {},
