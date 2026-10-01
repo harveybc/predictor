@@ -71,7 +71,8 @@
   "a derived feature cannot be set without moving prices: do(X_j) is an intervention on the model's input, reported here because the orders ask for it; it is not an intervention on the market",
   "the partially linear model is declared, not tested against a non-linear alternative here",
   "all rows are TRAIN rows [0,13699) of the declared calendar split; validation 2024 and test 2025 were never read",
-  "the horizon 4 bars = 16 h lies between the spec's Y_s (1-6 h) and Y_l (24-144 h) grids"
+  "the horizon 4 bars = 16 h lies between the spec's Y_s (1-6 h) and Y_l (24-144 h) grids",
+  "interval calibration (coordinator ruling 2026-10-01): block length 11 (tau_y 4, tau_x 11); scrambled-label rejection rates over 498 cells: HAC lag h+6 0.181, HAC bandwidth L 0.054, block bootstrap L 0.056 (nominal 0.05); real-label rates 0.153 / 0.161 / 0.165"
  ],
  "produced_at": "2026-10-01T08:04:55+00:00",
  "producer": {
@@ -268,7 +269,7 @@
     {
      "n": 13415,
      "name": "scrambled_label",
-     "verdict": "NOT_FAILED_AT_NOMINAL_5PCT"
+     "verdict": "NOT_FAILED_AT_NOMINAL_5PCT_BLOCK_BOOTSTRAP"
     },
     {
      "n": 13415,
@@ -290,6 +291,10 @@
    "ESTIMATE_REPORTED_UNDER_DECLARED_ASSUMPTIONS_DEVELOPMENT_ONLY"
   ],
   "sensitivity": {
+   "calibration_battery_verdict": "CONTROLS_FAIL_AS_REQUIRED",
+   "calibration_block_length": 11,
+   "calibration_tau_x": 11,
+   "calibration_tau_y": 4,
    "causal_single_feature_mae_z": 1.32793400143155,
    "effect_interval_z_high": 131.18271195591737,
    "effect_interval_z_low": -178.05995817035446,
@@ -305,9 +310,12 @@
    "residual_variance_share_full_w": 3.394098411200901e-08,
    "residual_variance_share_reduced_w": 3.394098411200901e-08,
    "scrambled_label_t": -1.9970005211480515,
+   "scrambled_label_t_block_bootstrap": -2.038901801658148,
    "scrambled_label_theta": -27.338706562778352,
    "theta_per_unit_z": -5.487965478860971,
-   "theta_se_hac": 18.47109417979294
+   "theta_se_block_bootstrap_L": 18.222576882588868,
+   "theta_se_hac": 18.47109417979294,
+   "theta_se_hac_bandwidth_L": 18.628416868778032
   },
   "state": "NOT_IDENTIFIED",
   "support": {

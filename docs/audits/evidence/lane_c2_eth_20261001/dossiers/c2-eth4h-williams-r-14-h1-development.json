@@ -71,7 +71,8 @@
   "a derived feature cannot be set without moving prices: do(X_j) is an intervention on the model's input, reported here because the orders ask for it; it is not an intervention on the market",
   "the partially linear model is declared, not tested against a non-linear alternative here",
   "all rows are TRAIN rows [0,13699) of the declared calendar split; validation 2024 and test 2025 were never read",
-  "the horizon 1 bars = 4 h is the spec's Y_s grid (4 h)"
+  "the horizon 1 bars = 4 h is the spec's Y_s grid (4 h)",
+  "interval calibration (coordinator ruling 2026-10-01): block length 10 (tau_y 1, tau_x 10); scrambled-label rejection rates over 498 cells: HAC lag h+6 0.181, HAC bandwidth L 0.054, block bootstrap L 0.056 (nominal 0.05); real-label rates 0.153 / 0.161 / 0.165"
  ],
  "produced_at": "2026-10-01T08:05:58+00:00",
  "producer": {
@@ -290,6 +291,10 @@
    "ESTIMATE_REPORTED_UNDER_DECLARED_ASSUMPTIONS_DEVELOPMENT_ONLY"
   ],
   "sensitivity": {
+   "calibration_battery_verdict": "CONTROLS_FAIL_AS_REQUIRED",
+   "calibration_block_length": 10,
+   "calibration_tau_x": 10,
+   "calibration_tau_y": 1,
    "causal_single_feature_mae_z": 0.6347063260789975,
    "effect_interval_z_high": 0.29556092107523907,
    "effect_interval_z_low": 0.005525499126050605,
@@ -305,9 +310,12 @@
    "residual_variance_share_full_w": 1.81936243796134e-11,
    "residual_variance_share_reduced_w": 0.05417549920542075,
    "scrambled_label_t": 0.44001659584321956,
+   "scrambled_label_t_block_bootstrap": 0.4188977610247886,
    "scrambled_label_theta": 0.0006060727010924674,
    "theta_per_unit_z": 0.0031963976661665864,
-   "theta_se_hac": 0.0015709581179929977
+   "theta_se_block_bootstrap_L": 0.001528237030216047,
+   "theta_se_hac": 0.0015709581179929977,
+   "theta_se_hac_bandwidth_L": 0.001576202884088252
   },
   "state": "NOT_IDENTIFIED",
   "support": {

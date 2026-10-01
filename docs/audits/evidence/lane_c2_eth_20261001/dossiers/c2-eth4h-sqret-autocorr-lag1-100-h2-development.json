@@ -72,7 +72,8 @@
   "the partially linear model is declared, not tested against a non-linear alternative here",
   "all rows are TRAIN rows [0,13699) of the declared calendar split; validation 2024 and test 2025 were never read",
   "the horizon 2 bars = 8 h lies between the spec's Y_s (1-6 h) and Y_l (24-144 h) grids",
-  "residual_variance_share clipped to the contract bound [0,1] from 1.057230 (out-of-fold nuisance worse than the mean); raw value in rung2.sensitivity"
+  "residual_variance_share clipped to the contract bound [0,1] from 1.057230 (out-of-fold nuisance worse than the mean); raw value in rung2.sensitivity",
+  "interval calibration (coordinator ruling 2026-10-01): block length 85 (tau_y 2, tau_x 85); scrambled-label rejection rates over 498 cells: HAC lag h+6 0.181, HAC bandwidth L 0.054, block bootstrap L 0.056 (nominal 0.05); real-label rates 0.153 / 0.161 / 0.165"
  ],
  "produced_at": "2026-10-01T08:14:26+00:00",
  "producer": {
@@ -290,6 +291,10 @@
    "ESTIMATE_REPORTED_UNDER_DECLARED_ASSUMPTIONS_DEVELOPMENT_ONLY"
   ],
   "sensitivity": {
+   "calibration_battery_verdict": "CONTROLS_FAIL_AS_REQUIRED",
+   "calibration_block_length": 85,
+   "calibration_tau_x": 85,
+   "calibration_tau_y": 2,
    "causal_single_feature_mae_z": 0.905002737732838,
    "effect_interval_z_high": 0.01507805605452013,
    "effect_interval_z_low": -0.07190763074154065,
@@ -305,9 +310,12 @@
    "residual_variance_share_full_w": 1.0572300703053812,
    "residual_variance_share_reduced_w": 1.0572300703053812,
    "scrambled_label_t": 0.9079074633050503,
+   "scrambled_label_t_block_bootstrap": 0.7927125261832638,
    "scrambled_label_theta": 0.11414154575615029,
    "theta_per_unit_z": -0.18931349120002658,
-   "theta_se_hac": 0.14784235919491281
+   "theta_se_block_bootstrap_L": 0.13868533401753644,
+   "theta_se_hac": 0.14784235919491281,
+   "theta_se_hac_bandwidth_L": 0.1422194724190958
   },
   "state": "NOT_IDENTIFIED",
   "support": {

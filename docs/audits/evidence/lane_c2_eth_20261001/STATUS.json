@@ -2,7 +2,7 @@
  "schema": "lane_c2_status.v1",
  "label": "DEVELOPMENT",
  "lane": "C2 (causality and extraction, front C)",
- "updated_at": "2026-10-01T08:22Z",
+ "updated_at": "2026-10-01T09:45Z",
  "branch": "predictor satoshi/c2-causal-eth-20261001",
  "population": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1 @ predictor b1f8a74f, sha 1b447c66",
  "split": "M07 SPLIT_eth4h_l24_h6_v1 (sha 116a5b64): TRAIN rows [0,13699), origins [23,13669], 13415 windows, row-ids sha 3903daae reproduced",
@@ -46,5 +46,5 @@
  "current_work": "D4 PS3-R rerun (worker_b, the single C2 job there); no compute on the coordinator",
  "next_dependencies": "D4 -> tools/ps3r_pilot_contrast.py @7343ffc2 on worker_b after the run; PROGRESS.png re-rendered on worker_b then",
  "eta": "D4 ~11:30Z (24 s/AE, 68 s/contrastive record measured; 233 left)",
- "milestones": "08:00Z binding+tests green; 08:05Z D1/D1b done; 08:20Z D2 final launched; 08:05Z D4 admitted; 08:15Z D2 done; 08:19Z D2 validated 498/498; 08:20Z D4 resumed at 1.25x measured"
+ "milestones": "08:00Z binding+tests green; 08:05Z D1/D1b done; 08:20Z D2 final launched; 08:05Z D4 admitted; 08:15Z D2 done; 08:19Z D2 validated 498/498; 08:20Z D4 resumed at 1.25x measured; 09:44Z interval calibrated (scrambled 18.1 -> 5.6 %), 498/498 re-validated"
 }

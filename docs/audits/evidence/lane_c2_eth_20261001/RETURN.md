@@ -173,6 +173,27 @@ Top-20 dossiers at h = 1 and h = 6 (full set in `dossiers/DOSSIER_INDEX.json`):
 | zscore_close_100 | 6 | 13415 | +0.2432 +- 0.1261 | +0.5315 / +0.01035 | 0.091 | SUPPORTED | no (scrambled null rejected) |
 
 
+### 2.1 Interval calibration (coordinator ruling 2026-10-01) -- `calibration/BATTERY_CALIBRATION.json`, `tools/c2_battery_calibration.py`
+
+Measured integrated autocorrelation length (lags until rho < 0.05) of the target and of each feature on the TRAIN origins; block
+length L = max(tau_Y, tau_X, h + 6): **min 7, median 74, max 1287** (median tau_Y 3.5,
+median tau_X 74; the features, not the labels, set L). Tests first: a planted persistent null (AR(1) 0.97 regressor, AR(1) 0.9
+outcome) where the lag-7 HAC rejects above 10 % and the block interval at the measured L does not (`test_block_interval_is_calibrated_...`).
+
+| rejection rate over 498 cells (nominal 0.05; tolerance 0.0695 = nominal + 2 binomial sd) | scrambled label | real label |
+|---|---|---|
+| BEFORE: HAC lag h + 6 | **0.181** (90) | 0.153 (76) |
+| AFTER: HAC bandwidth L | 0.054 (27) | 0.161 (80) |
+| AFTER: circular block bootstrap, block L, B = 200 | 0.056 (28) | 0.165 (82) |
+
+Both calibrated intervals bring the scrambled-label rate inside the tolerance (battery verdict `CONTROLS_FAIL_AS_REQUIRED`; the future-shift
+template fired in 498/498 and the noise treatment rejected 0/498). The dossiers' scrambled-label verdict now reads the block bootstrap,
+and each dossier carries its L, tau_Y, tau_X and both calibrated SEs. **Identification is still not claimed**: the real-label rate stays
+at 16 % (about 3x nominal), which the calibrated null says is not interval error. It is association the declared model
+cannot place (non-stationary association between deterministic price transforms and returns), and rung 2 stays `NOT_IDENTIFIED` in
+498/498 for the reasons already declared. 498/498 re-validated against the contract after the patch.
+Cost: 196 s CPU, measured peak RSS 277 MB (cap declared 400M, 1.38x; the 0.28 GB pilot sampler reading was a 23 MB undercount on a seconds-long job).
+
 ## 3. Deliverable 3: recommendation table to M03 and M07 -- `recommendation/RECOMMENDATION_TABLE.{csv,md}`
 
 1,162 rows (83 features x 7 horizons x 2 protocols), each with population, split, rows, horizon, the four naives
