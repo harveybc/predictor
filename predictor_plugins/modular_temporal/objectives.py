@@ -132,11 +132,28 @@ class TS2VecContrastive:
             views.append((v * keep).astype("float32"))
         return views[0], views[1], start
 
-    def loss(self, encoder, x, rng, training):
-        v1, v2, start = self._views(x, rng)
+    def _pair_loss(self, encoder, v1, v2, start, training):
         z1 = encoder(v1, training=training)[:, start:]
         z2 = encoder(v2, training=training)[:, start:]
         return hierarchical_contrastive_loss(z1, z2, self.p["alpha"], self.p["temporal_unit"])
+
+    def loss(self, encoder, x, rng, training):
+        v1, v2, start = self._views(x, rng)
+        return self._pair_loss(encoder, v1, v2, start, training)
+
+    def _compiled(self, encoder, optimizer, variables):
+        """One traced graph per overlap start (at most T - min_overlap + 1); same math as eager."""
+        @tf.function(reduce_retracing=False)
+        def step(v1, v2, start):
+            with tf.GradientTape() as tape:
+                value = self._pair_loss(encoder, v1, v2, start, True)
+            optimizer.apply_gradients(zip(tape.gradient(value, variables), variables))
+            return value
+
+        @tf.function(reduce_retracing=False)
+        def evaluate(v1, v2, start):
+            return self._pair_loss(encoder, v1, v2, start, False)
+        return step, evaluate
 
     def fit(self, encoder, x, vx, settings):
         s = _settings(settings)
@@ -146,12 +163,15 @@ class TS2VecContrastive:
         if not variables:
             raise ValueError("objective fit needs a trainable encoder (an R1-frozen branch cannot be pretrained)")
 
+        step, evaluate = self._compiled(encoder, optimizer, variables)
+
         def validation_loss():
             vrng = np.random.default_rng(s["seed"] + 10_000)              # same augmentations every epoch
             total = 0.0
             for i in range(0, len(vx), s["batch_size"]):
                 part = vx[i:i + s["batch_size"]]
-                total += float(self.loss(encoder, part, vrng, False)) * len(part)
+                v1, v2, start = self._views(part, vrng)
+                total += float(evaluate(v1, v2, start)) * len(part)
             return total / len(vx)
 
         initial_val = validation_loss()
@@ -166,10 +186,8 @@ class TS2VecContrastive:
                     stop = "max_updates" if updates >= s["max_updates"] else "max_seconds"
                     break
                 part = x[order[i:i + s["batch_size"]]]
-                with tf.GradientTape() as tape:
-                    value = self.loss(encoder, part, rng, True)
-                grads = tape.gradient(value, variables)
-                optimizer.apply_gradients(zip(grads, variables))
+                v1, v2, start = self._views(part, rng)
+                value = step(v1, v2, start)
                 updates += 1
                 if not math.isfinite(float(value)):
                     raise ValueError("nonfinite contrastive loss")
