@@ -56,6 +56,14 @@
    "state": "running",
    "commit": null,
    "note": "M06"
+  },
+  {
+   "id": "aa7913479a97b45c0",
+   "kind": "subagent",
+   "lane": "G",
+   "state": "assigned",
+   "commit": null,
+   "note": "RL owner under M05"
   }
  ],
  "results": [
@@ -490,6 +498,11 @@
    "at": "2026-10-01T04:20:00Z",
    "host_alias": "coordinator",
    "event": "lane D horizon diagnostic (cf1e59f4, DIAGNOSTIC_NOT_A_RESULT): same-row 24 h seasonal naive ~0.248 MAE_z at every horizon; every corrected candidate is WORSE than seasonal naive at every horizon (skill vs seasonal -0.50..-0.71); tables regenerated with both baselines"
+  },
+  {
+   "at": "2026-10-01T04:10:00Z",
+   "host_alias": "worker_a",
+   "event": "orchestrator: M04 GO to launch the per-feature pilot on worker_a (repaired admission) and cancel its worker_b request through the tool; M01 chained laneA-suite (4G) + ps3r-pilot-3g (3G) queued on worker_b; deployment verified by the orchestrator (charged 73 MB vs 2.66 GB, free 9.0 GB); question 18 downgraded (ack a7c0599c \u00a710.4)"
   }
  ],
  "launch_recipes": {
@@ -683,7 +696,7 @@
    "lane": "G",
    "work": "RL owner: SAC/DQN x with/without differentiated temporal representation (agent-multi/gym-fx), under M05 coordination",
    "agents": [
-    "(agent id to follow)"
+    "aa7913479a97b45c0 (RL owner under M05)"
    ],
    "branch": null,
    "state": "assigned"
