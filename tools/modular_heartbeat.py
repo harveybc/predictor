@@ -202,10 +202,9 @@ def gpu_facts():
 def verify_donor_binding(config):
     """Worker-side check before build_modular: every bound donor's bytes and its OPERATIONAL provenance.
 
-    ``config['modular_candidate']['donor_binding']`` = {"index_sha256", "amendment_sha256",
-    "required_contract", "donors": {path: {"keras", "manifest", "manifest_v2"}}}. Every .keras,
-    schema-1 .manifest.json and alongside .manifest.v2.json sha256 must equal the binding, and
-    donor_provenance(path) must declare the required contract. Raises on any mismatch.
+    Legacy bindings retain their index/amendment and alongside manifest_v2 contract. Direct
+    schema-2 bindings instead bind PRETRAIN.json, MODEL_R*.json, the Keras archive, the schema-2
+    sidecar bytes and ordered weights; they never invent an historical amendment.
     """
     import hashlib
 
@@ -215,20 +214,64 @@ def verify_donor_binding(config):
     from predictor_plugins.modular_temporal.provenance import donor_provenance
 
     sha = lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest()
+    schema = binding.get("schema")
+    if schema == "predictor.modular.donor_binding.v2":
+        if binding.get("required_contract") != "OPERATIONAL":
+            raise ValueError("DONOR_CONTRACT_MISMATCH: direct bindings require OPERATIONAL")
+        for label in ("pretrain", "regime_config"):
+            reference = binding.get(label)
+            if (not isinstance(reference, dict) or set(reference) != {"path", "sha256"}
+                    or sha(reference["path"]) != reference["sha256"]):
+                raise ValueError(f"DONOR_BINDING_MISMATCH: {label}")
+        receipt = json.loads(Path(binding["pretrain"]["path"]).read_text(encoding="utf-8"))
+        if (receipt.get("status") != "COMPLETE"
+                or receipt.get("objective", {}).get("sha256") != binding.get("donor_objective_sha256")):
+            raise ValueError("DONOR_BINDING_MISMATCH: PRETRAIN receipt/objective")
+        bound_model = json.loads(Path(binding["regime_config"]["path"]).read_text(encoding="utf-8"))
+        canonical = lambda value: json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
+        try:
+            inline_model = config["model"]
+            if canonical(inline_model) != canonical(bound_model):
+                raise ValueError("DONOR_BINDING_MODEL_MISMATCH: inline model differs from bound regime config")
+            components = [*inline_model["branches"], inline_model["core"]]
+            used_donors = [component["donor"] for component in components]
+        except (KeyError, TypeError, ValueError) as exc:
+            if isinstance(exc, ValueError) and str(exc).startswith("DONOR_BINDING_MODEL_MISMATCH"):
+                raise
+            raise ValueError("DONOR_BINDING_MODEL_MISMATCH: invalid inline donor topology") from exc
+        bound_donors = binding.get("donors")
+        if (not isinstance(bound_donors, dict) or len(used_donors) != len(set(used_donors))
+                or set(used_donors) != set(bound_donors)):
+            raise ValueError("DONOR_BINDING_DONOR_SET_MISMATCH: branches+core must equal the bound donor set")
+    elif schema is not None:
+        raise ValueError(f"DONOR_BINDING_SCHEMA_UNKNOWN: {schema}")
     checked = 0
     for path, expected in binding["donors"].items():
         p = Path(path)
-        actual = {"keras": sha(p), "manifest": sha(p.with_suffix(".manifest.json")),
-                  "manifest_v2": sha(p.with_name(p.stem + ".manifest.v2.json"))}
+        sidecar_path = p.with_suffix(".manifest.json")
+        if schema == "predictor.modular.donor_binding.v2":
+            sidecar = json.loads(sidecar_path.read_text(encoding="utf-8"))
+            if sidecar.get("schema") != 2:
+                raise ValueError(f"DONOR_BINDING_MISMATCH: {p.name} sidecar is not schema 2")
+            actual = {"keras": sha(p), "manifest": sha(sidecar_path),
+                      "weights": sidecar.get("weights_sha256")}
+        else:
+            actual = {"keras": sha(p), "manifest": sha(sidecar_path),
+                      "manifest_v2": sha(p.with_name(p.stem + ".manifest.v2.json"))}
         if actual != expected:
             raise ValueError(f"DONOR_BINDING_MISMATCH: {p.name} {actual} != {expected}")
         contract = donor_provenance(p)["conditioning_contract"]
         if contract != binding["required_contract"]:
             raise ValueError(f"DONOR_CONTRACT_MISMATCH: {p.name} declares {contract}")
         checked += 1
-    return {"donors_checked": checked, "index_sha256": binding["index_sha256"],
-            "amendment_sha256": binding["amendment_sha256"], "required_contract": binding["required_contract"],
-            "result": "VERIFIED_BEFORE_BUILD"}
+    result = {"donors_checked": checked, "required_contract": binding["required_contract"],
+              "binding_schema": schema or "legacy.manifest_v2", "result": "VERIFIED_BEFORE_BUILD"}
+    if schema is None:
+        result.update(index_sha256=binding["index_sha256"], amendment_sha256=binding["amendment_sha256"])
+    else:
+        result.update(pretrain_sha256=binding["pretrain"]["sha256"],
+                      regime_config_sha256=binding["regime_config"]["sha256"])
+    return result
 
 
 def run_request(request_path, response_path, heartbeat_path, interval=30.0):
