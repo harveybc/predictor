@@ -354,7 +354,8 @@
    "completion_criterion": "paired R1/R2 candidates with corrected donors",
    "state": "in_progress",
    "evidence": [
-    "donors complete 04:43:27Z; binding gated on M04 campaign amendment 5 (engine identity proof at M01's post-fix tip)"
+    "amendment 5 accepted (IDENTITY_PROOF d3f9ffa0 IDENTICAL; pin aaee6f94; CAMPAIGN 7ac0eaab)",
+    "R1/R2 OPEN: 8 runnable rows; first attempts 5e5c00f6 (worker_a) and 5bafadef (worker_b)"
    ]
   }
  ],
@@ -546,6 +547,11 @@
    "at": "2026-10-01T06:02:53Z",
    "host_alias": "worker_a",
    "event": "corrected R0 COMPLETE: 24/24 VERIFIED exact; incumbent c09f3034 (seq 5) unchanged; seasonal 24 h naive beaten by 0/24 cells at any horizon; h1/h23/h24 negative skill vs persistence in 24/24 (M06 generated tables agree with the orchestrator's pair order to 7 decimals)"
+  },
+  {
+   "at": "2026-10-01T06:14:00Z",
+   "host_alias": "worker_a",
+   "event": "amendment 5 ACCEPTED (identity proof IDENTICAL, bitwise replay); R1/R2 phase OPEN on both workers; second runner d-runner-worker-b exempted"
   }
  ],
  "launch_recipes": {
@@ -1085,13 +1091,13 @@
    ],
    "parallel_hosts": 1,
    "identity": {
-    "pin": "df9ae31c",
+    "pin": "aaee6f94 (amendment 5)",
     "engine": "3ecdb256",
-    "campaign_sha256_current": "1ccb932b (verify-cap amendment, verify cap 3914M)",
+    "campaign_sha256_current": "7ac0eaab (amendment 5)",
     "base": "13852a05",
     "denominator": "36 cells (72 superseded rows kept outside)"
    },
-   "dependency_note": "within the 36: 8 admissible R1/R2 rows blocked on amendment 5 (engine identity proof; attempt 3 d-identity-proof-full3 at 4G on worker_b since 06:04:01Z) + 4 REFUSED_BY_ENGINE (core-only, by design, never run); campaign reads 24 verified / 4 refused / 8 blocked of 36"
+   "dependency_note": "R1/R2 phase OPEN: 8 runnable rows after amendment 5 (accepted by the orchestrator: IDENTITY_PROOF.json sha d3f9ffa0 IDENTICAL over 18 configs, refused_identically 2, first_difference null; REPLAY_BOTH_PINS BITWISE_IDENTICAL; evidence 0e206ad4); 4 REFUSED_BY_ENGINE within the 36"
   }
  ],
  "facts_confirmed": {
@@ -1302,7 +1308,7 @@
    "since": "2026-10-01T04:33Z",
    "rule": "ZERO batch jobs on the coordinator; the only exceptions are M06's 512M STATUS writer and 128M event watcher. Every lane's CPU work goes to worker_a (repaired gate) or worker_b.",
    "alert": "coordinator PSI some avg60 > 10 or MemAvailable < 12 GB, pushed to the orchestrator immediately; any non-M06 batch job seen on the coordinator is alerted",
-   "exceptions": "M06 STATUS writer (512M), M06 event watcher (128M), d-runner-worker-a (lane D runner, 512M cap, <64 MB observed, orchestration only; orchestrator exemption)"
+   "exceptions": "M06 STATUS writer (512M), M06 event watcher (128M), d-runner-worker-a and d-runner-worker-b (lane D runners, 512M caps, <64 MiB observed, orchestration only; orchestrator exemptions)"
   }
  ],
  "incidents": [
@@ -1427,6 +1433,17 @@
     "observed peak must stay under 64 MB; exceeding 64 MB or loading data is a breach M06 reports immediately and M04 stops it through the admission tool"
    ],
    "reason": "workers cannot reach each other over ssh; the alternative (launcher on worker_a) would spend the scarcer 14 GB host memory with unreclaimable slab"
+  },
+  {
+   "job": "d-runner-worker-b (lane D campaign runner for worker_b, on the coordinator)",
+   "granted_by": "orchestrator (Satoshi)",
+   "at": "2026-10-01T06:2xZ",
+   "class": "orchestration process",
+   "conditions": [
+    "cap 512M",
+    "ssh/launch/poll only",
+    "observed peak < 64 MiB; breach -> immediate alert and stop via the admission tool"
+   ]
   }
  ]
 }
