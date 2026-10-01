@@ -424,3 +424,12 @@
 {"at": "2026-10-01T04:41:57Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 20879.35, "SUnreclaim_kB": 547112, "gpu_reinit_this_boot": "360", "MemAvailable_B": 8678342656}
 {"at": "2026-10-01T04:42:47Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 20929.07, "SUnreclaim_kB": 549208, "gpu_reinit_this_boot": "363", "MemAvailable_B": 7716098048}
 {"at": "2026-10-01T04:43:19Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 20961.2, "SUnreclaim_kB": 548728, "gpu_reinit_this_boot": "364", "MemAvailable_B": 7441678336}
+{"at": "2026-10-01T04:44:07Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 21009.75, "SUnreclaim_kB": 549176, "gpu_reinit_this_boot": "365", "MemAvailable_B": 7482949632}
+{"at": "2026-10-01T04:44:54Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 21056.44, "SUnreclaim_kB": 551560, "gpu_reinit_this_boot": "365", "MemAvailable_B": 7050076160}
+{"at": "2026-10-01T04:45:43Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 21105.9, "SUnreclaim_kB": 551976, "gpu_reinit_this_boot": "366", "MemAvailable_B": 7146061824}
+{"at": "2026-10-01T04:46:32Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 21154.34, "SUnreclaim_kB": 550724, "gpu_reinit_this_boot": "367", "MemAvailable_B": 7432351744}
+{"at": "2026-10-01T04:47:18Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 21200.91, "SUnreclaim_kB": 552732, "gpu_reinit_this_boot": "367", "MemAvailable_B": 7167856640}
+{"at": "2026-10-01T04:48:07Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 21249.64, "SUnreclaim_kB": 551200, "gpu_reinit_this_boot": "368", "MemAvailable_B": 7421485056}
+{"at": "2026-10-01T04:48:54Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 21296.14, "SUnreclaim_kB": 551888, "gpu_reinit_this_boot": "369", "MemAvailable_B": 6442389504}
+{"at": "2026-10-01T04:49:41Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 21343.04, "SUnreclaim_kB": 553040, "gpu_reinit_this_boot": "370", "MemAvailable_B": 11909881856}
+{"at": "2026-10-01T04:50:15Z", "boot_id": "4e4c43ef-292b-404a-8c12-85f85b0c87ce", "uptime_s": 21377.85, "SUnreclaim_kB": 553580, "gpu_reinit_this_boot": "372", "MemAvailable_B": 11926614016}

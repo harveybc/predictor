@@ -143,7 +143,7 @@ def campaign_progress(reg, now):
                             "from attempts").fetchall()
             labels = dict(c.execute("select cid, label from candidates").fetchall())
             pending = [r[0] for r in c.execute("select label from candidates where status in "
-                                               "('queued','running','trained','verifying')").fetchall()]
+                                               "('queued','running','trained','verifying','completed')").fetchall()]
             inc = c.execute("select config_id, mean_objective, time from incumbent_changes order by seq desc limit 1").fetchone()
             c.close()
         except Exception as e:
@@ -152,7 +152,7 @@ def campaign_progress(reg, now):
         excluded = {k: v for k, v in st.items() if k in q.get("excluded_statuses", [])}
         live = {k: v for k, v in st.items() if k not in excluded}
         done = live.get("verified", 0) + live.get("failed", 0)
-        remaining = sum(v for k, v in live.items() if k in ("queued", "running", "trained", "verifying"))
+        remaining = sum(v for k, v in live.items() if k in ("queued", "running", "trained", "verifying", "completed"))
         dependency_held = {k: v for k, v in live.items() if k == "blocked" or k.startswith("HOLD")}
         fin = [a for a in att if a[1] == "completed" and a[4]]
         def family(lbl):
@@ -192,8 +192,8 @@ def campaign_progress(reg, now):
         else:
             eta = {"earliest": None, "latest": None, "basis": "not_estimable", "assumptions": ["no runnable cells remain"]}
         if dependency_held:
-            eta["assumptions"].append(f"{sum(dependency_held.values())} cells held on dependencies ({dependency_held}); "
-                                      "not estimable until their pilot/donors exist")
+            eta["assumptions"].append(f"{sum(dependency_held.values())} cells held ({dependency_held}): "
+                                      + (q.get("dependency_note") or "not estimable until their pilot/donors exist"))
         out.append({"campaign": q["name"], "identity": q.get("identity"), "status_counts": st, "excluded": excluded,
                     "dependency_held": dependency_held,
                     "cells_done": done, "cells_planned": sum(live.values()), "eta": eta,

@@ -349,9 +349,9 @@
   {
    "id": "corrected_R1_R2",
    "completion_criterion": "paired R1/R2 candidates with corrected donors",
-   "state": "not_started",
+   "state": "in_progress",
    "evidence": [
-    "awaits m02-ecl-v2-donors-r7g2: heartbeat resume_point 185/321 branch records at 03:3xZ (includes branches reused by digest); branch-stage ETA 04:17-04:35Z by measured rate; core stage not yet measured"
+    "corrected ECL donors complete 04:43:27Z (321/321 + core.keras); the 12 R1/R2 rows are AWAITING BINDING (no longer blocked on donors)"
    ]
   }
  ],
@@ -518,6 +518,11 @@
    "at": "2026-10-01T04:43:00Z",
    "host_alias": "worker_a",
    "event": "lane G RETURNED (9d1a67ce); per-feature cell 1 a0f9176f VERIFIED 0.4014148874 on the 5090; lanes B, C, G idle; active: M04 (5090), M01 PS3-R child and M02 donor run (fusion/core stage, 321/321 branches) on worker_b"
+  },
+  {
+   "at": "2026-10-01T04:43:27Z",
+   "host_alias": "worker_b",
+   "event": "M02 corrected ECL donor run COMPLETED (321/321 + core, RECEIPT.json); lease released, no incident; R1/R2 rows now await binding"
   }
  ],
  "launch_recipes": {
@@ -948,10 +953,34 @@
     ]
    },
    "evidence": "worker_a scratch d-pilot/PIN_df9ae31c/pilot_perfeature; ledger lease d-pilot-perfeature-1790828025-244849-136980 admitted 04:13:45Z (aggregate committed 73,330,688 B), released 04:16:44Z"
+  },
+  {
+   "id": "m02-ecl-v2-donors-r7g2 (corrected ECL donors)",
+   "lane": "A",
+   "state": "completed",
+   "phase": "completed",
+   "stage": "321/321 branch donors; pretrain/core.keras 1,850,448 B; RECEIPT.json present; lease m02-ecl-v2-donors-r7g2-1790824748-1397651-7d36e6 LEASE_RELEASED 04:43:27Z; no incident (M02 summary and donor index to follow)",
+   "producer_commit": "lane A 3ecdb256 line",
+   "host_alias": "worker_b",
+   "heartbeat_at": "2026-10-01T04:43:27Z",
+   "progress": {
+    "unit": "features",
+    "completed": 321,
+    "total": 321
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "ended"
+    ]
+   }
   }
  ],
  "slot_plan": {
-  "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8": "free after the per-feature pilot; next: M04 per-feature attempts (8 cells) per orders"
+  "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8": "free after the per-feature pilot; next: M04 per-feature attempts (8 cells) per orders",
+  "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9": "free: available to M04's runner beside M01's 3G PS3-R child and M05's 2G mutant job"
  },
  "old_design_inventory": {
   "source": "wf_6286ece8-903",
@@ -1021,7 +1050,8 @@
     "campaign_sha256_current": "a534456b (amendment 4)",
     "base": "13852a05",
     "denominator": "36 cells (72 superseded rows kept outside)"
-   }
+   },
+   "dependency_note": "the 12 'blocked' R1/R2 rows await donor binding (donors complete 04:43:27Z), not donors"
   }
  ],
  "facts_confirmed": {
