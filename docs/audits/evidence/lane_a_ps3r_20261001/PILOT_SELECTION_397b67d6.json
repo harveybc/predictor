@@ -1,0 +1,242 @@
+{
+  "quota": {
+    "DEFERRED": 4,
+    "EXPLORATORY": 3,
+    "PRIORITY": 5,
+    "REPRESENTATIVE": 4,
+    "SYNERGY": 4
+  },
+  "sample": [
+    {
+      "caution_persistent_input": false,
+      "feature": "close_sma_ratio_100",
+      "inclusion_probability": 0.5,
+      "stratum": "PRIORITY",
+      "tiers_by_fold": {
+        "inner_1": "PRIORITY",
+        "inner_2": "PRIORITY",
+        "inner_3": "PRIORITY"
+      }
+    },
+    {
+      "caution_persistent_input": true,
+      "feature": "close_sma_ratio_200",
+      "inclusion_probability": 0.5,
+      "stratum": "PRIORITY",
+      "tiers_by_fold": {
+        "inner_1": "PRIORITY",
+        "inner_2": "PRIORITY",
+        "inner_3": "PRIORITY"
+      }
+    },
+    {
+      "caution_persistent_input": true,
+      "feature": "ema_cross_20_100",
+      "inclusion_probability": 0.5,
+      "stratum": "PRIORITY",
+      "tiers_by_fold": {
+        "inner_1": "PRIORITY",
+        "inner_2": "PRIORITY",
+        "inner_3": "PRIORITY"
+      }
+    },
+    {
+      "caution_persistent_input": false,
+      "feature": "hurst_proxy_200",
+      "inclusion_probability": 0.5,
+      "stratum": "PRIORITY",
+      "tiers_by_fold": {
+        "inner_1": "PRIORITY",
+        "inner_2": "PRIORITY",
+        "inner_3": "PRIORITY"
+      }
+    },
+    {
+      "caution_persistent_input": true,
+      "feature": "volume_sma_10",
+      "inclusion_probability": 0.5,
+      "stratum": "PRIORITY",
+      "tiers_by_fold": {
+        "inner_1": "PRIORITY",
+        "inner_2": "PRIORITY",
+        "inner_3": "PRIORITY"
+      }
+    },
+    {
+      "caution_persistent_input": true,
+      "feature": "bb_middle",
+      "inclusion_probability": 0.5714285714285714,
+      "stratum": "SYNERGY",
+      "tiers_by_fold": {
+        "inner_1": "SYNERGY",
+        "inner_2": "SYNERGY",
+        "inner_3": "DEFERRED"
+      }
+    },
+    {
+      "caution_persistent_input": false,
+      "feature": "bb_width",
+      "inclusion_probability": 0.5714285714285714,
+      "stratum": "SYNERGY",
+      "tiers_by_fold": {
+        "inner_1": "DEFERRED",
+        "inner_2": "SYNERGY",
+        "inner_3": "SYNERGY"
+      }
+    },
+    {
+      "caution_persistent_input": false,
+      "feature": "roll_kurt_ret_20",
+      "inclusion_probability": 0.5714285714285714,
+      "stratum": "SYNERGY",
+      "tiers_by_fold": {
+        "inner_1": "EXPLORATORY",
+        "inner_2": "SYNERGY",
+        "inner_3": "DEFERRED"
+      }
+    },
+    {
+      "caution_persistent_input": false,
+      "feature": "sqret_autocorr_lag1_100",
+      "inclusion_probability": 0.5714285714285714,
+      "stratum": "SYNERGY",
+      "tiers_by_fold": {
+        "inner_1": "DEFERRED",
+        "inner_2": "SYNERGY",
+        "inner_3": "SYNERGY"
+      }
+    },
+    {
+      "caution_persistent_input": false,
+      "feature": "hist_vol_20",
+      "inclusion_probability": 0.36363636363636365,
+      "stratum": "REPRESENTATIVE",
+      "tiers_by_fold": {
+        "inner_1": "DEFERRED",
+        "inner_2": "REPRESENTATIVE",
+        "inner_3": "REPRESENTATIVE"
+      }
+    },
+    {
+      "caution_persistent_input": false,
+      "feature": "rsi_21",
+      "inclusion_probability": 0.36363636363636365,
+      "stratum": "REPRESENTATIVE",
+      "tiers_by_fold": {
+        "inner_1": "REPRESENTATIVE",
+        "inner_2": "REPRESENTATIVE",
+        "inner_3": "REPRESENTATIVE"
+      }
+    },
+    {
+      "caution_persistent_input": false,
+      "feature": "statistical__log_return_1",
+      "inclusion_probability": 0.36363636363636365,
+      "stratum": "REPRESENTATIVE",
+      "tiers_by_fold": {
+        "inner_1": "REPRESENTATIVE",
+        "inner_2": "REPRESENTATIVE",
+        "inner_3": "REPRESENTATIVE"
+      }
+    },
+    {
+      "caution_persistent_input": false,
+      "feature": "williams_r_14",
+      "inclusion_probability": 0.36363636363636365,
+      "stratum": "REPRESENTATIVE",
+      "tiers_by_fold": {
+        "inner_1": "REPRESENTATIVE",
+        "inner_2": "DEFERRED",
+        "inner_3": "REPRESENTATIVE"
+      }
+    },
+    {
+      "caution_persistent_input": false,
+      "feature": "log_return_10",
+      "inclusion_probability": 0.25,
+      "stratum": "EXPLORATORY",
+      "tiers_by_fold": {
+        "inner_1": "EXPLORATORY",
+        "inner_2": "DEFERRED",
+        "inner_3": "DEFERRED"
+      }
+    },
+    {
+      "caution_persistent_input": false,
+      "feature": "return_1",
+      "inclusion_probability": 0.25,
+      "stratum": "EXPLORATORY",
+      "tiers_by_fold": {
+        "inner_1": "EXPLORATORY",
+        "inner_2": "DEFERRED",
+        "inner_3": "DEFERRED"
+      }
+    },
+    {
+      "caution_persistent_input": false,
+      "feature": "roll_kurt_ret_60",
+      "inclusion_probability": 0.25,
+      "stratum": "EXPLORATORY",
+      "tiers_by_fold": {
+        "inner_1": "EXPLORATORY",
+        "inner_2": "DEFERRED",
+        "inner_3": "DEFERRED"
+      }
+    },
+    {
+      "caution_persistent_input": true,
+      "feature": "atr_14",
+      "inclusion_probability": 0.09302325581395349,
+      "stratum": "DEFERRED",
+      "tiers_by_fold": {
+        "inner_1": "DEFERRED",
+        "inner_2": "SYNERGY",
+        "inner_3": "DEFERRED"
+      }
+    },
+    {
+      "caution_persistent_input": false,
+      "feature": "close_sma_ratio_20",
+      "inclusion_probability": 0.09302325581395349,
+      "stratum": "DEFERRED",
+      "tiers_by_fold": {
+        "inner_1": "DEFERRED",
+        "inner_2": "DEFERRED",
+        "inner_3": "DEFERRED"
+      }
+    },
+    {
+      "caution_persistent_input": false,
+      "feature": "log_return_60",
+      "inclusion_probability": 0.09302325581395349,
+      "stratum": "DEFERRED",
+      "tiers_by_fold": {
+        "inner_1": "PRIORITY",
+        "inner_2": "DEFERRED",
+        "inner_3": "DEFERRED"
+      }
+    },
+    {
+      "caution_persistent_input": false,
+      "feature": "mfi_14",
+      "inclusion_probability": 0.09302325581395349,
+      "stratum": "DEFERRED",
+      "tiers_by_fold": {
+        "inner_1": "DEFERRED",
+        "inner_2": "DEFERRED",
+        "inner_3": "DEFERRED"
+      }
+    }
+  ],
+  "seed": 20261001,
+  "status": "CURRENT",
+  "stratum_sizes": {
+    "DEFERRED": 43,
+    "EXPLORATORY": 12,
+    "PRIORITY": 10,
+    "REPRESENTATIVE": 11,
+    "SYNERGY": 7
+  },
+  "worklist_sha256": "397b67d6f40eaf324c0aa720291f67560c55cf0b216bc53cb9c4886b1ae66175",
+  "worklist_source": "feature-eng 1b22c64 (CORRECTION, label-unit fix)"
+}

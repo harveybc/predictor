@@ -1,0 +1,64 @@
+[
+  {
+    "kind": "PLANNED_STOP_FOR_CAP_RAISE",
+    "cause": "coordinator ruling option (b); incident-free",
+    "term_sent_utc": "2026-10-01T02:52:30Z",
+    "wrapper_exited_utc": "2026-10-01T02:52:34Z",
+    "boundary_branch_index": 11,
+    "completed_branches": 12,
+    "retained_lease_record": "m02-ecl-v2-donors-1790822943-1378772-63107f.json",
+    "retained_lease_record_sha256": "e63be4cbd8373d7a02e3c87839b6e4295e7aa0883ab47b2ee93dc088808a622e",
+    "finding_MEM_02": {
+      "statement": "per-branch clear_session slows but does not stop resident-memory growth",
+      "rss_kib_after_branch": [
+        1374432,
+        1379720,
+        1387008,
+        1394804,
+        1401368,
+        1407800,
+        1414932,
+        1421052,
+        1427728,
+        1433364,
+        1440392,
+        1447204
+      ],
+      "slope_mb_per_branch": 6.77
+    },
+    "cap_derivation": {
+      "old_cap": "4G",
+      "new_cap": "7G",
+      "basis": [
+        "projected RSS at branch 320 about 3.4 GiB from the measured +6.7 MB/branch series",
+        "plus the full-graph fusion/materialization stage: M04's corrected per-feature CPU profile measured 4.73 GB cumulative peak with data load; this run's materialization stage held about 2 GB at 8 branches",
+        "rounded up with margin to 7G; the cap is raised, never lowered"
+      ]
+    },
+    "resumed_with": "--resume, same command, engine 3ecdb256, config 4d5402a0, cap 7G"
+  },
+  {
+    "kind": "MONITOR_PRESSURE_STOP_BYSTANDER",
+    "incident": "m02-ecl-v2-donors-r7g-1790823176-1383180-352a56",
+    "incident_record_sha256": "8b9cdb6ae77ce87f89cfca99e5c04f17f92709d75386a14cf8fc6db6741142b8",
+    "stopped_utc": "2026-10-01T03:16:58Z (as reported by the coordinator)",
+    "cause": "PS3R_CAP_THRASH as classified by the coordinator from M06's reading of the records; formally UNVERIFIED",
+    "evidence_reported": {
+      "tree_peak_bytes": 1767391232,
+      "cap": "7G",
+      "own_cgroup_psi": 0.0,
+      "host_psi": 49,
+      "offenders": "two PS3-R pilot children at 96% of their 2G caps (stopped)"
+    },
+    "last_heartbeat": {
+      "stage": "branch_ae:branch_97",
+      "resume_point": {
+        "completed_branches": 97,
+        "last_completed": "branch_96",
+        "resumed_total": 12
+      }
+    },
+    "completed_branch_records_at_stop": 98,
+    "resumed_with": "ONE authorized --resume, same command, same 7G cap, engine 3ecdb256, config 4d5402a0"
+  }
+]

@@ -49,7 +49,8 @@ def main():
         names = [str(n) for n in z["feature_names"]]
         windows_val = z["windows"]
         rows = windows_val[:a.measure_rows].astype("float32")
-    order_sha = {"json_compact": hashlib.sha256(json.dumps(names, separators=(",", ":")).encode()).hexdigest(),
+    order_sha = {"comma_joined_m04_recipe": hashlib.sha256(",".join(names).encode()).hexdigest(),
+                 "json_compact": hashlib.sha256(json.dumps(names, separators=(",", ":")).encode()).hexdigest(),
                  "newline_joined": hashlib.sha256("\n".join(names).encode()).hexdigest()}
 
     from predictor_plugins import modular_config as mc

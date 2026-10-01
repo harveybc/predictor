@@ -93,13 +93,24 @@ def test_time_grids_are_behavioural_at_every_stage():
         assert first == i // 4 and np.all(moved[:i // 4] <= 1e-6)
 
 
-def test_default_time_factors_are_pinned_but_not_an_invariant():
+def test_DEFAULT_time_factors_are_2_2_1_giving_24_12_6_6():
+    """DEFAULT (not an invariant): with no time_factors declared, the hourly core uses [2, 2, 1],
+    i.e. time 24 -> 12 -> 6 -> 6 with channels 32 -> 16 -> 8. Other valid factors are declared,
+    optimizable variants (see the INVARIANT test below)."""
     b = bundle(3)
     manifest = b.donor_manifest("core")
-    assert manifest["params"]["time_factors"] == [2, 2, 1]               # default: 24 -> 12 -> 6 -> 6
+    assert manifest["params"]["time_factors"] == [2, 2, 1]
     assert manifest["params"]["stage_channels"] == [32, 16, 8]
+    assert [tuple(b.core_model.get_layer(f"stage_{i}_output").output.shape) for i in range(3)] == [
+        (None, 12, 32), (None, 6, 16), (None, 6, 8)]
+
+
+def test_INVARIANT_time_factors_multiply_to_window_over_output_steps_and_divide_exactly():
+    """INVARIANTS (hold for every config): the factors' product equals window / output_steps and each
+    factor divides the running length exactly; branches never reduce time. A different valid
+    factorisation such as [4, 1, 1] is an allowed declared variant, not a violation of the default."""
     c = mt.default_config(["f0", "f1", "f2"])
-    c["core"]["params"]["time_factors"] = [4, 1, 1]                       # a valid candidate
+    c["core"]["params"]["time_factors"] = [4, 1, 1]                       # valid declared variant
     alt = mt.build_modular(c).core_model
     assert [tuple(alt.get_layer(f"stage_{i}_output").output.shape) for i in range(3)] == [
         (None, 6, 32), (None, 6, 16), (None, 6, 8)]
@@ -108,6 +119,6 @@ def test_default_time_factors_are_pinned_but_not_an_invariant():
         with pytest.raises(ValueError):
             mt.build_modular(c)
     c["core"]["params"].pop("time_factors")
-    c["branch_steps"] = 12                                                # branches never reduce time
+    c["branch_steps"] = 12
     with pytest.raises(ValueError, match="branch_steps must equal window"):
         mt.build_modular(c)

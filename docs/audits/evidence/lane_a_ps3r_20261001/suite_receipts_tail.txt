@@ -1,0 +1,8 @@
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_modular_legacy_boundaries.py:55: checkout run; the isolated installed run sets M01_REQUIRE_INSTALLED=1
+SKIPPED [1] tests/test_modular_legacy_boundaries.py:83: a different predictor distribution is installed here; the resolver would (correctly) consult it -- run the isolated installed suite instead
+139 passed, 2 skipped, 1 warning in 427.67s (0:07:07)
+0.97s call     tests/test_modular_objectives.py::test_donor_records_objective_beside_an_unchanged_manifest
+0.46s call     tests/test_modular_objectives.py::test_random_arm_is_the_same_architecture_untrained
+11 passed in 13.91s

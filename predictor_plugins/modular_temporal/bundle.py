@@ -11,17 +11,20 @@ from .common import _copy, _file_hash, _major_minor, keras_version, weights_hash
 from .config import _normalize
 
 keras = tf.keras
-BUNDLE_SCHEMA = "predictor.modular.bundle.v1"
+from .provenance import BUNDLE_V1, BUNDLE_V2, bundle_provenance, complete
+
+BUNDLE_SCHEMA = BUNDLE_V2
 
 
-def save_bundle(bundle, directory):
+def save_bundle(bundle, directory, provenance=None):
     """Write forecast archive, canonical config, component manifests and weight identity."""
+    declared = complete(provenance)                    # validated before anything is written
     out = Path(directory)
     out.mkdir(parents=True, exist_ok=True)
     archive = out / "forecast_model.keras"
     bundle.forecast_model.save(archive)
     document = {"schema": BUNDLE_SCHEMA, "config": _normalize(bundle.config),
-                "keras_version": keras_version(),
+                "keras_version": keras_version(), "provenance": declared,
                 "components": bundle.component_manifests(),
                 "weights_sha256": weights_hash(bundle.forecast_model),
                 "archive_sha256": _file_hash(archive)}
@@ -30,7 +33,7 @@ def save_bundle(bundle, directory):
     return document
 
 
-def load_bundle(directory):
+def load_bundle(directory, require_contract=None):
     """Rebuild the architecture from the saved config and restore the saved weights.
 
     Refuses a Keras major.minor mismatch before deserializing, a tampered archive
@@ -40,8 +43,13 @@ def load_bundle(directory):
     """
     src = Path(directory)
     document = json.loads((src / "bundle.json").read_text(encoding="utf-8"))
-    if document.get("schema") != BUNDLE_SCHEMA:
+    if document.get("schema") not in (BUNDLE_V1, BUNDLE_V2):
         raise ValueError("Unsupported bundle schema")
+    document["provenance"] = bundle_provenance(document)        # v1: UNKNOWN, migrated=False
+    if require_contract is not None and document["provenance"]["conditioning_contract"] != require_contract:
+        raise ValueError(f"CONDITIONING_CONTRACT_NOT_{require_contract}: bundle declares "
+                         f"{document['provenance']['conditioning_contract']}; UNKNOWN is never treated as "
+                         f"{require_contract}")
     saved = document.get("keras_version")
     if saved is None or _major_minor(saved) != _major_minor(keras_version()):
         raise ValueError(f"Bundle was saved under Keras {saved}; running Keras {keras_version()} "

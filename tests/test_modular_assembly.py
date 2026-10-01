@@ -21,6 +21,13 @@ from predictor_plugins import modular_config as mc
 from predictor_plugins import modular_temporal as mt
 from predictor_plugins.predictor_plugin_modular import Plugin
 
+OPERATIONAL_FIXTURE = {"conditioning_contract": "OPERATIONAL",
+                       "learned_corpus": {"kind": "TRAIN_ONLY", "dataset_id": "fixture:synthetic-train",
+                                          "data_sha256": "e" * 64, "support": "synthetic fixture rows",
+                                          "pretrained_weights_source": None},
+                       "reconstruction": {"state": "NOT_EVALUATED"}}
+
+
 SMALL_CORE = {"d_model": 16, "heads": 2, "ff_dim": 16, "stage_channels": [12, 10, 8]}
 
 
@@ -267,14 +274,15 @@ def _pretrained_donors(tmp_path):
         ae.compile(optimizer=tf.keras.optimizers.SGD(0.05), loss="mse")
         ae.train_on_batch(x[:, :, cols[name]], x[:, :, cols[name]])
         path = tmp_path / f"{name}.keras"
-        mt.save_donor(base.branch_models[name], path, base.donor_manifest("branch", name))
+        mt.save_donor(base.branch_models[name], path, base.donor_manifest("branch", name),
+                      provenance=OPERATIONAL_FIXTURE)
         spec.update(regime=None, donor=str(path))
     raw = base.fusion_model(x).numpy()
     core_ae = mt.build_autoencoder(base.core_model)
     core_ae.compile(optimizer=tf.keras.optimizers.SGD(0.05), loss="mse")
     core_ae.train_on_batch(raw, raw)
     core = tmp_path / "core.keras"
-    mt.save_donor(base.core_model, core, base.donor_manifest("core"))
+    mt.save_donor(base.core_model, core, base.donor_manifest("core"), provenance=OPERATIONAL_FIXTURE)
     specs["core"].update(regime=None, donor=str(core))
     donor_hashes = {n: mt.weights_hash(m) for n, m in base.branch_models.items()}
     donor_hashes["core"] = mt.weights_hash(base.core_model)
@@ -461,10 +469,11 @@ def test_implicit_and_explicit_defaults_share_one_identity(tmp_path):
     for spec in implicit["branches"]:
         path = tmp_path / f"{spec['name']}.keras"
         mt.save_donor(a.branch_models[spec["name"]], path, a.donor_manifest("branch", spec["name"]),
+                      provenance=OPERATIONAL_FIXTURE,
                       declared_params=spec["params"])
         next(s for s in c["branches"] if s["name"] == spec["name"]).update(regime="R1", donor=str(path))
     core = tmp_path / "core.keras"
-    mt.save_donor(a.core_model, core, a.donor_manifest("core"))
+    mt.save_donor(a.core_model, core, a.donor_manifest("core"), provenance=OPERATIONAL_FIXTURE)
     c["core"].update(regime="R1", donor=str(core))
     loaded = mt.build_modular(c)
     np.testing.assert_allclose(loaded.encoder_model(x_data(2)), a.encoder_model(x_data(2)), atol=1e-6)

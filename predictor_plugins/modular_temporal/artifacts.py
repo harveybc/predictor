@@ -20,9 +20,19 @@ def _manifest(role, config, spec, plugin, model, input_grid, output_grid, params
             "input_grid": list(input_grid), "output_grid": list(output_grid)}
 
 
-def _apply_regime(model, spec, manifest):
+DONOR_CONTRACTS = ("OPERATIONAL", "UNKNOWN_ALLOWED")
+
+
+def _apply_regime(model, spec, manifest, donor_contract="OPERATIONAL"):
+    """R1/R2 load the declared donor; the conditioning contract is enforced HERE, by the engine.
+    ``donor_contract`` OPERATIONAL (the default when the config omits it) refuses UNKNOWN and
+    SYNTHETIC_OFFLINE donors by name; only the explicit UNKNOWN_ALLOWED bypasses, and it is then part
+    of the normalized config (and so of bundle.json)."""
+    if donor_contract not in DONOR_CONTRACTS:
+        raise ValueError(f"donor_contract must be one of {DONOR_CONTRACTS}")
     if spec["regime"] != "R0":
-        loaded = load_donor(spec["donor"], manifest)
+        loaded = load_donor(spec["donor"], manifest,
+                            require_contract=None if donor_contract == "UNKNOWN_ALLOWED" else donor_contract)
         try:
             model.set_weights(loaded.get_weights())
         except ValueError as exc:
@@ -43,7 +53,7 @@ def _donor_path(path):
     return path, path.with_suffix(".manifest.json")
 
 
-def save_donor(model, path, manifest, declared_params=None):
+def save_donor(model, path, manifest, declared_params=None, objective=None, provenance=None):
     """Save a selected component and a digest-bound identity sidecar.
 
     Parameters
@@ -57,20 +67,28 @@ def save_donor(model, path, manifest, declared_params=None):
     declared_params : dict, optional
         The literal params as written in the configuration, kept as provenance
         (identity itself is over effective params).
+    provenance : dict, optional
+        ``conditioning_contract`` / ``learned_corpus`` / ``reconstruction`` (see
+        :mod:`.provenance`); undeclared fields are written as UNKNOWN, explicitly.
+        Validated BEFORE anything is written. The sidecar is schema 2.
 
     Returns
     -------
     dict
         Sidecar document containing manifest, archive and ordered weight hashes.
     """
+    from .provenance import DONOR_SCHEMA, complete
     path, sidecar = _donor_path(path)
     manifest = _copy(manifest)
     _check_manifest_model(manifest, model)
+    provenance = {**complete(provenance), "keras_version": keras_version()}
     model.save(path)
-    provenance = {"keras_version": keras_version()}
     if declared_params is not None:
         provenance["declared_params"] = _copy(declared_params)
-    document = {"schema": 1, "manifest": manifest, "manifest_sha256": _digest(manifest),
+    if objective is not None:
+        # the objective that trained these weights: provenance, NOT part of the architecture manifest
+        provenance["objective"] = _copy(objective)
+    document = {"schema": DONOR_SCHEMA, "manifest": manifest, "manifest_sha256": _digest(manifest),
                 "provenance": provenance,
                 "model_sha256": _file_hash(path), "weights_sha256": weights_hash(model)}
     sidecar.write_text(json.dumps(document, sort_keys=True, indent=2) + "\n", encoding="utf-8")
@@ -89,7 +107,7 @@ def _check_manifest_model(manifest, model):
         raise ValueError("Donor manifest/model shapes differ")
 
 
-def load_donor(path, expected_manifest):
+def load_donor(path, expected_manifest, require_contract=None):
     """Verify a donor's identity and bytes before safe Keras deserialization.
 
     Parameters
@@ -120,8 +138,14 @@ def load_donor(path, expected_manifest):
         raise ValueError("Invalid donor manifest JSON") from exc
     required = {"schema", "manifest", "manifest_sha256", "model_sha256", "weights_sha256"}
     if (not isinstance(document, dict) or not required <= set(document) <= required | {"provenance"}
-            or document["schema"] != 1):
+            or document["schema"] not in (1, 2) or (document["schema"] == 2 and "provenance" not in document)):
         raise ValueError("Invalid donor manifest schema")
+    if require_contract is not None:
+        from .provenance import donor_provenance
+        contract = donor_provenance(path)["conditioning_contract"]
+        if contract != require_contract:
+            raise ValueError(f"CONDITIONING_CONTRACT_NOT_{require_contract}: donor {path.name} declares "
+                             f"{contract}; UNKNOWN is never treated as {require_contract}")
     saved = (document.get("provenance") or {}).get("keras_version")
     if saved is not None and _major_minor(saved) != _major_minor(keras_version()):
         raise ValueError(f"Donor was saved under Keras {saved}; running Keras {keras_version()} "

@@ -13,7 +13,10 @@ def _normalize(config):
     c = _copy(config)
     _keys(c, {"schema", "window", "sample_hours", "feature_names", "branches", "branch_steps",
               "core", "fusion", "head", "output_steps", "output_channels", "entry_point_groups",
-              "horizons", "target_count", "regime", "alignment_probe"}, "config")
+              "horizons", "target_count", "regime", "alignment_probe", "budget_caps",
+              "excluded_features", "donor_contract"}, "config")
+    if "donor_contract" in c and c["donor_contract"] not in ("OPERATIONAL", "UNKNOWN_ALLOWED"):
+        raise ValueError("donor_contract must be OPERATIONAL or UNKNOWN_ALLOWED (absent means OPERATIONAL)")
     if c.setdefault("schema", CONFIG_SCHEMA) != CONFIG_SCHEMA:
         raise ValueError(f"Unsupported modular config schema {c['schema']!r}; expected {CONFIG_SCHEMA}")
     if c.setdefault("alignment_probe", True) is not True and c["alignment_probe"] is not False:
@@ -84,7 +87,37 @@ def _normalize(config):
                     raise ValueError("R0 forbids donors; R1/R2 require explicit donors")
     _partition(tuple(range(c["window"])), c["branch_steps"])
     _partition(tuple(range(c["branch_steps"])), c["output_steps"])
+    if c["output_steps"] == 1 and c["window"] > 1:
+        raise ValueError("TEMPORAL_COLLAPSE: output_steps=1 collapses the whole window into one step; "
+                         "the latent must keep a temporal axis (the head may flatten the completed latent)")
+    _check_budget_caps(c)
+    routed = {f for spec in branches for f in spec["features"]}
+    excluded = c.get("excluded_features", {})
+    if not isinstance(excluded, dict) or any(not isinstance(v, str) or not v.strip() for v in excluded.values()):
+        raise ValueError("excluded_features maps each excluded input to a nonempty reason")
+    if set(excluded) - set(names) or set(excluded) & routed:
+        raise ValueError("excluded_features must name declared inputs that are not routed to a branch")
+    unrouted = [f for f in names if f not in routed and f not in excluded]
+    # Under a declared budget cap an unrouted input is truncation-to-fit and is refused by name. Without
+    # caps a sub-bundle (e.g. one-branch pretraining isolation) may route a subset; the budget then reports
+    # the unrouted inputs explicitly, so nothing disappears silently.
+    if unrouted and c.get("budget_caps"):
+        raise ValueError(f"INPUT_TRUNCATED: declared inputs {unrouted} reach no branch and are not in "
+                         "excluded_features with a reason; inputs are never dropped silently")
     return c
+
+
+BUDGET_CAPS = ("max_branches", "max_fused_width", "max_materialization_bytes_per_row", "max_parameters")
+
+
+def _check_budget_caps(c):
+    caps = c.get("budget_caps")
+    if caps is None:
+        return
+    if not isinstance(caps, dict) or set(caps) - set(BUDGET_CAPS):
+        raise ValueError(f"budget_caps keys must be within {list(BUDGET_CAPS)}")
+    for key, value in caps.items():
+        _positive_int(value, key)
 
 
 def default_config(feature_names):

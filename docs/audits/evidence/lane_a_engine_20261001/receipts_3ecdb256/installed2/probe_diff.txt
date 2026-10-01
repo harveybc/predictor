@@ -1,0 +1,11 @@
+entry_points modular.branch removed [] added [('causal_conv1d', 'predictor_plugins.modular_temporal:causal_conv1d', 'predictor')]
+entry_points modular.core removed [] added [('transformer_conv', 'predictor_plugins.modular_temporal:transformer_conv', 'predictor')]
+entry_points modular.fusion removed [] added [('sequence_concat', 'predictor_plugins.modular_temporal:sequence_concat', 'predictor')]
+entry_points modular.head removed [] added [('forecast', 'predictor_plugins.modular_temporal:forecast', 'predictor')]
+entry_points predictor.plugins removed [] added [('modular_temporal', 'predictor_plugins.predictor_plugin_modular:Plugin', 'predictor')]
+config_resolutions DIFFERENT ['examples/config/modular_temporal/phase_1_modular_temporal_smoke_config.json']
+direction_models IDENTICAL
+unmigrated_old_config IDENTICAL {'returncode': 1, 'last_error': "app.column_roles.ColumnRoleError: this run declares no column_roles: say which columns are features, targets, time and metadata, or declare column_roles_migration: 'LEGACY_ALL_COLUMNS_ARE_FEATURES' to keep the old behaviour deliberately"}
+results_header IDENTICAL
+metric_labels IDENTICAL 90
+outputs_present IDENTICAL

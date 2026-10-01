@@ -1,0 +1,2 @@
+Filesystem         1B-blocks         Used        Avail Mounted on
+/dev/nvme1n1p2 1005867986944 262709673984 691987542016 /
