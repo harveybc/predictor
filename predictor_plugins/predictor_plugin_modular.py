@@ -79,6 +79,10 @@ class Plugin:
         "modular": None,
         "modular_config_file": None,
         "modular_training": None,
+        # provenance written into the saved bundle (item 6): conditioning_contract / learned_corpus /
+        # reconstruction. None -> every field UNKNOWN, explicitly. Bundles saved before this field
+        # existed stay UNKNOWN until re-exported with a declared provenance; nothing is inferred.
+        "modular_provenance": None,
         "predict_batch_size": 256,
     }
     plugin_debug_vars = ["predicted_horizons", "modular_config_sha256", "modular_regime"]
@@ -255,7 +259,8 @@ class Plugin:
         """``file_path`` (.keras) holds the facade graph; ``<file_path>.bundle/`` the modular bundle."""
         path = Path(file_path)
         self.model.save(path)
-        document = mt.save_bundle(self.bundle, path.with_name(path.name + ".bundle"))
+        document = mt.save_bundle(self.bundle, path.with_name(path.name + ".bundle"),
+                                  provenance=self.params.get("modular_provenance"))
         if self.training_receipt is not None:
             (path.with_name(path.name + ".bundle") / "training_receipt.json").write_text(
                 json.dumps(self.training_receipt, sort_keys=True, indent=2, default=str) + "\n",

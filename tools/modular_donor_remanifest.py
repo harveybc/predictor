@@ -196,8 +196,8 @@ def remanifest(donor, *, feature_names=None, window=None, sample_hours=None, dry
     document = json.loads(sidecar.read_text(encoding="utf-8"))
     required = {"schema", "manifest", "manifest_sha256", "model_sha256", "weights_sha256"}
     if (not isinstance(document, dict) or not required <= set(document) <= required | {"provenance"}
-            or document["schema"] != 1):
-        _refuse(f"{path.name}: sidecar layout is not a schema-1 donor document")
+            or document["schema"] not in (1, 2)):
+        _refuse(f"{path.name}: sidecar layout is not a schema-1/2 donor document")
     if mt._digest(document["manifest"]) != document["manifest_sha256"]:
         _refuse(f"{path.name}: old manifest does not match its recorded hash")
     before = mt._file_hash(path)
@@ -227,12 +227,17 @@ def remanifest(donor, *, feature_names=None, window=None, sample_hours=None, dry
     if dry_run:
         return {**result, "status": "WOULD_REMANIFEST"}
     keras_version = mt.keras_version()
-    updated = {"schema": 1, "manifest": new, "manifest_sha256": new_sha,
+    from predictor_plugins.modular_temporal import provenance as pv
+    prior = document.get("provenance") or {}
+    # historical learned provenance is never inferred: carry what schema 2 declared, else UNKNOWN
+    declared = {k: prior[k] for k in pv.DECLARABLE if k in prior} if document["schema"] == 2 else {}
+    updated = {"schema": pv.DONOR_SCHEMA, "manifest": new, "manifest_sha256": new_sha,
                "model_sha256": document["model_sha256"], "weights_sha256": document["weights_sha256"],
-               "provenance": {"keras_version": keras_version,
+               "provenance": {**pv.complete(declared), "keras_version": keras_version,
                               "keras_version_source": "remanifest_environment",
                               "declared_params": mt._copy(old["params"]),
-                              "remanifested_from_manifest_sha256": document["manifest_sha256"]}}
+                              "remanifested_from_manifest_sha256": document["manifest_sha256"],
+                              "remanifested_from_schema": document["schema"]}}
     if not backup.exists():
         shutil.copy2(sidecar, backup)
     tmp = sidecar.with_name(sidecar.name + ".tmp")
