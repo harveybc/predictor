@@ -249,9 +249,12 @@ def build(hosts, reg):
                                  "SUnreclaim_kB": (wa.get("mem") or {}).get("SUnreclaim", 0) // 1024,
                                  "gpu_reinit_this_boot": wa.get("gpu_reinit_this_boot"),
                                  "MemAvailable_B": (wa.get("mem") or {}).get("MemAvailable")}) + "\n")
-    quotas = {role: {k: (p.get("admission") or {}).get(k) for k in
-                     ("host_free_for_new_bytes", "held_unrealised_bytes", "desktop_reserve_bytes", "slice_memory_max",
-                      "slice_memory_current", "slice_charged_bytes", "pressure_some_avg10")}
+    quotas = {role: {**{k: (p.get("admission") or {}).get(k) for k in
+                        ("host_free_for_new_bytes", "held_unrealised_bytes", "desktop_reserve_bytes", "slice_memory_max",
+                         "slice_memory_current", "slice_charged_bytes", "pressure_some_avg10")},
+                     "mem_available_bytes": (p.get("mem") or {}).get("MemAvailable"),
+                     "disk_home_free_bytes": (p.get("disk_home") or {}).get("free_bytes"),
+                     "disk_home_total_bytes": (p.get("disk_home") or {}).get("total_bytes")}
               for role, p in probes.items() if "error" not in p}
     return {"schema": "modular.program.status.v1", "observed_at": iso(now),
             "plan_revision": reg.get("plan_revision"), "plan_links": reg.get("plan_links", {}),

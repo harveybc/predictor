@@ -419,6 +419,11 @@
    "at": "2026-10-01T02:40:00Z",
    "host_alias": "worker_a",
    "event": "lane D PRE_INTEGRATION GPU pilot completed (engineering): host peak 4.25 GB, device 0.40 GB, 0.0246 s/update; corrected queue CAMPAIGN 13852a05 persisted, pin pending, no queue opened. Lane A c0d7b07b VERIFIED by the orchestrator."
+  },
+  {
+   "at": "2026-10-01T05:30:00Z",
+   "host_alias": "coordinator",
+   "event": "lane A declared at 3ecdb256 and VERIFIED by the orchestrator; ordered: M04 re-pin to 3ecdb256 (24 R0 candidates; two pilots on worker_a first), M02 certification + new donor run on worker_b (10.3 GB materialization; disk check), M05 re-export"
   }
  ],
  "launch_recipes": {
@@ -547,8 +552,9 @@
     "a5289d234c296e0c5 (M02)"
    ],
    "branch": "satoshi/a-engine-integration-20261001",
-   "state": "running",
-   "first_deliverable": "c0d7b07b architecture proof VERIFIED by the orchestrator (arch_test.log in the pushed tree: 4 passed in 17.20s)"
+   "state": "VERIFIED (by the orchestrator)",
+   "first_deliverable": "c0d7b07b architecture proof VERIFIED by the orchestrator (arch_test.log in the pushed tree: 4 passed in 17.20s)",
+   "declaration": "integrated code 3ecdb256 (head 26c13fda evidence-only); suites 128/2/0 checkout, 129/1 xfail installed; legacy boundaries identical; LTS 21/21; receipts docs/audits/evidence/lane_a_engine_20261001/receipts_3ecdb256/ + LANE_A_DECLARATION.md; M02 ports included"
   },
   {
    "lane": "B",
@@ -604,6 +610,16 @@
    "unit": "features",
    "total": 321,
    "producer_commit": "d1e2e77c (old design, branch_steps=12, superseded)"
+  },
+  "m04-.*": {
+   "lane": "D",
+   "producer_commit": "3ecdb256 (re-pin)"
+  },
+  "m02-.*donor.*": {
+   "lane": "A",
+   "unit": "features",
+   "total": 321,
+   "producer_commit": "3ecdb256"
   }
  },
  "job_overrides": {
@@ -775,5 +791,13 @@
    "path": "docs/audits/work_plan/SATOSHI_CONTINUATION_ACKNOWLEDGEMENT_2026_10_01.md",
    "section": "8"
   }
+ },
+ "resource_policy": {
+  "ceiling": "one GPU attempt plus the donor run per host",
+  "watch": [
+   "worker_b disk (10.3 GB donor materialization)",
+   "RAM on worker_a and worker_b"
+  ],
+  "report": "any pressure stop immediately with its incident id"
  }
 }
