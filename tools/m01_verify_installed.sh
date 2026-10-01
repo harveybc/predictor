@@ -19,7 +19,8 @@ PY=$1; CHECKOUT=$(cd "$2" && pwd); MASTER_REF=$3; PP=$(cd "$4" && pwd); OUT=$5
 export CUDA_VISIBLE_DEVICES="" TF_CPP_MIN_LOG_LEVEL=3 PYTHONNOUSERSITE=1
 mkdir -p "$OUT"
 CONFIG=examples/config/phase_1_daily/phase_1_ann_1575_1d_config.json
-SRC=$(mktemp -d)
+SCRATCH=${M01_SCRATCH:-$HOME/.local/state/scratch/m01}; mkdir -p "$SCRATCH"; export TMPDIR="$SCRATCH"   # never tmpfs
+SRC=$(mktemp -d -p "$SCRATCH")
 trap 'rm -rf "$SRC"' EXIT
 
 install_ref () {   # $1 = git ref
