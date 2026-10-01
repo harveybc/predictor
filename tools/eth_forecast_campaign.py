@@ -106,7 +106,7 @@ def parse_cell(cell):
     """'<architecture>_<loss>_<optimizer>' -> (architecture, loss, optimizer), refusing unknown names."""
     if cell.endswith(RESIDUAL_SUFFIX):
         cell = cell[:-len(RESIDUAL_SUFFIX)]
-    for arch in sorted([*ARCHITECTURES, CONTROL], key=len, reverse=True):
+    for arch in sorted([*ARCHITECTURES, "grouped_all", CONTROL], key=len, reverse=True):
         if cell.startswith(arch + "_"):
             rest = cell[len(arch) + 1:].split("_")
             if len(rest) == 2 and rest[0] in LOSSES and rest[1] in OPTIMIZERS:
@@ -114,10 +114,16 @@ def parse_cell(cell):
     raise ValueError(f"unknown cell name {cell!r}; expected <architecture>_<loss>_<optimizer>")
 
 
-def cell_flat(architecture, loss, optimizer):
-    if architecture not in ARCHITECTURES:
+def cell_flat(architecture, loss, optimizer, feature_count=None):
+    if architecture == "grouped_all":  # one branch over every input channel (FX campaigns, few inputs)
+        if not feature_count:
+            raise ValueError("grouped_all needs the feature count")
+        arch = {"branch.grouping_size": feature_count}
+    elif architecture in ARCHITECTURES:
+        arch = ARCHITECTURES[architecture]
+    else:
         raise ValueError(f"unknown architecture {architecture}")
-    return {**DEFAULT_FLAT, **ARCHITECTURES[architecture], **LOSSES[loss], **OPTIMIZERS[optimizer]}
+    return {**DEFAULT_FLAT, **arch, **LOSSES[loss], **OPTIMIZERS[optimizer]}
 
 
 def control_hidden_for(parameter_target, window, features, horizons, targets):
@@ -155,14 +161,15 @@ def declare(args):
     with np.load(Path(args.data_dir) / "validation.npz", allow_pickle=False) as z:
         features = z["feature_names"].astype(str).tolist()
         targets = z["target_names"].astype(str).tolist()
-    if targets != [TARGET_FEATURE] or manifest["horizons"] != HORIZONS:
+    horizons = list(manifest["horizons"])
+    if targets != [TARGET_FEATURE] or horizons != sorted(set(horizons)):
         raise ValueError("NPZ target/horizons disagree with the campaign")
     revision = args.predictor_revision
     if len(revision) != 40:
         raise ValueError("predictor_revision must be a full commit id")
     seeds = [2021, 2022]
     base = {"feature_names": features, "window": manifest["window"], "sample_hours": manifest["sample_hours"],
-            "horizons": HORIZONS, "target_feature_indices": [features.index(TARGET_FEATURE)],
+            "horizons": horizons, "target_feature_indices": [features.index(TARGET_FEATURE)],
             "objective": {"metric": "MAE", "split": "validation", "higher_is_better": False, "unit": "z_train"},
             "evaluator_fixed": {"max_updates": 1000000, "max_seconds": 5400.0}, "donors": {}}
     data_dir = Path(args.data_dir)
@@ -186,9 +193,10 @@ def declare(args):
                  "manifest": {"path": str(Path(args.data_manifest).resolve()),
                               "sha256": mdc.sha_file(args.data_manifest)}},
         "data_location": "workers",
-        "data_manifest": {k: manifest[k] for k in ("schema", "dataset_id", "source_sha256", "source_commit",
+        "seasonal_period": getattr(args, "seasonal_period", None) or SEASONAL_PERIOD,
+        "data_manifest": {k: manifest.get(k) for k in ("schema", "dataset_id", "source_sha256", "source_commit",
                                                     "feature_order_sha256", "feature_manifest", "declared_split",
-                                                    "purge_bars", "scaler_identity", "target", "metric_space",
+                                                    "purge_bars", "purge_seconds", "clock", "scaler_identity", "target", "metric_space",
                                                     "split_sha256")},
         "data_manifest_sha256": mdc.sha_file(args.data_manifest),
         "naives": {"persistence_last_value": "evaluator baseline: last observed standardized 1-bar return at the "
@@ -217,9 +225,10 @@ def declare(args):
                                  "FINDING_NOT_EXACT"},
         "require_pin": True,
         "freeze": {"performed_by": "M07 (lane F2) under the owner standing order of 2026-10-01; no external signature",
-                   "source": manifest["dataset_id"], "target": manifest["target"], "horizons": HORIZONS,
+                   "source": manifest["dataset_id"], "target": manifest["target"], "horizons": horizons,
                    "rows": {k: manifest["splits"][k]["windows"] for k in ("train", "validation")},
-                   "splits": manifest["declared_split"], "purge_bars": manifest["purge_bars"],
+                   "splits": manifest["declared_split"], "purge_bars": manifest.get("purge_bars"),
+                   "purge_seconds": manifest.get("purge_seconds"),
                    "train_fitted_transforms": manifest["scaler_identity"],
                    "models": "grouped32 and per_feature modular R0 (lane D corrected default) and flatten_mlp control",
                    "seeds": seeds, "budget": {"max_epochs": DEFAULT_FLAT["train.max_epochs"],
@@ -282,7 +291,7 @@ def enqueue(args):
                 nested = control_candidate(decl["base"], loss, opt, seed, hidden)
                 added += _insert_control(campaign, nested, seed, cell)
             continue
-        flat = cell_flat(arch, loss, opt)
+        flat = cell_flat(arch, loss, opt, len(decl["base"]["feature_names"]))
         if cell.endswith(RESIDUAL_SUFFIX):
             for seed in seeds:
                 nested = with_residual(ss.from_flat({**flat, "train.seed": seed}, decl["base"], decl["search_space"]))
@@ -366,7 +375,7 @@ class LocalCrispdmExecutor:
                 str(output_root / "candidate.json"), "--train", declaration["data"]["train"]["path"],
                 "--validation", declaration["data"]["validation"]["path"], "--out", str(output_root / "cell"),
                 "--revision", self.e["predictor_revision"], "--campaign-id", declaration["campaign_id"],
-                "--manifest", declaration["data"]["manifest"]["path"], "--seasonal-period", str(SEASONAL_PERIOD),
+                "--manifest", declaration["data"]["manifest"]["path"], "--seasonal-period", str(declaration.get("seasonal_period") or SEASONAL_PERIOD),
                 "--heartbeat-interval", "30"]
         if self.e.get("cuda_visible_devices"):
             argv += ["--gpu-uuid", self.e["cuda_visible_devices"]]
@@ -458,6 +467,7 @@ def main():
     p.add_argument("--gpu-uuid", required=True)
     p.add_argument("--ld-library-path", required=True)
     p.add_argument("--host-role", required=True)
+    p.add_argument("--seasonal-period", type=int, default=None, help="rows; default 6 (ETH 4h); FX 1h uses 24")
     p = sub.add_parser("materialize")
     p.add_argument("--root", required=True)
     p.add_argument("--cell", required=True, help="<architecture>_<loss>_<optimizer>")
@@ -518,7 +528,7 @@ def main():
         if arch == CONTROL:
             nested = control_candidate(decl["base"], loss, opt, args.seed, decl["control"]["hidden"])
         else:
-            nested = ss.from_flat({**cell_flat(arch, loss, opt), "train.seed": args.seed}, decl["base"], decl["search_space"])
+            nested = ss.from_flat({**cell_flat(arch, loss, opt, len(decl["base"]["feature_names"])), "train.seed": args.seed}, decl["base"], decl["search_space"])
             if args.cell.endswith(RESIDUAL_SUFFIX):
                 nested = with_residual(nested)
         Path(args.out).write_text(json.dumps(nested, indent=1, sort_keys=True) + "\n")

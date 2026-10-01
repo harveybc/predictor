@@ -108,3 +108,14 @@ def test_predictions_csv_binds_digest_and_inverts_scale(tmp_path):
     assert float(r0["close_hat_h3"]) == pytest.approx((100 + origins[0]) * np.exp(lr), abs=1e-6)
     with pytest.raises(ValueError, match="differ from the verified digest"):
         nv.predictions_csv(pred, data, MU, SIGMA, view, tmp_path / "q.csv", expected_sha256="0" * 64)
+
+
+def test_zero_return_uses_row_counts_from_label_support(tmp_path):
+    x, y, z, origins = make_npz(tmp_path / "v.npz")
+    n_rows = np.tile(np.asarray(H), (N, 1)).copy()
+    n_rows[::2, 3] += 2  # weekend gap on every other origin: h4 label is 6 rows ahead
+    np.savez(tmp_path / "label_support.npz", validation_n_rows=n_rows)
+    data, _ = nv._load_validation(tmp_path / "v.npz")
+    preds, _ = nv.naive_predictions(data, MU, SIGMA, 6)
+    assert np.allclose(preds["zero_return"][1::2, 3, 0], -4 * MU / SIGMA)
+    assert np.allclose(preds["zero_return"][0::2, 3, 0], -6 * MU / SIGMA)

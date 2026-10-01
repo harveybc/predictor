@@ -45,6 +45,13 @@ def _load_validation(path):
         data = {k: z[k] for k in z.files}
     if str(data["split"]) != "validation":
         raise ValueError("naives are computed on the validation split only")
+    support = Path(path).with_name("label_support.npz")
+    if support.exists():  # irregular (FX) sampling: bars elapsed per horizon differ from h
+        with np.load(support, allow_pickle=False) as s:
+            n_rows = s["validation_n_rows"]
+        if n_rows.shape != data["targets"].shape[:2]:
+            raise ValueError("label_support validation_n_rows shape differs from the NPZ targets")
+        data["n_rows"] = n_rows
     return data, hashlib.sha256(raw).hexdigest()
 
 
@@ -56,7 +63,10 @@ def naive_predictions(data, mu, sigma, seasonal_period):
     horizons = data["horizons"].tolist()
     n, w, _ = x.shape
     out = {"persistence_last_value": np.repeat(x[:, -1:, idx], len(horizons), axis=1)}
-    out["zero_return"] = np.broadcast_to(np.asarray([[-h * mu / sigma] for h in horizons]), y.shape).copy()
+    if "n_rows" in data:  # CLOSE[label] = CLOSE[origin]: Y = -n_rows*mu/sigma, n_rows from the label rows
+        out["zero_return"] = (-data["n_rows"].astype(np.float64) * mu / sigma)[:, :, None] * np.ones_like(y)
+    else:
+        out["zero_return"] = np.broadcast_to(np.asarray([[-h * mu / sigma] for h in horizons]), y.shape).copy()
     out["train_mean"] = np.zeros_like(y)
     seasonal = np.full_like(y, np.nan)
     for k, h in enumerate(horizons):
