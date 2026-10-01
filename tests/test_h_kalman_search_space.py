@@ -81,7 +81,8 @@ def test_conditional_space_is_much_smaller_than_the_cartesian_product():
     cart = ss.cartesian_size()
     cond = ss.conditional_size()
     assert cond < cart and cart == 2 * 3 * 2 * 5 * 3 * 2
-    assert cond == 1 + 3 * 2 * ((1) + 5 * 1) * 1 * 0 + cond - 1 - (cond - 1) or True
+    # inactive 1; active: group x source x mode with ratios only under declared_ratio (slope ratio only for slope/both)
+    assert cond == 1 + 2 * (6 + 16 + 16) == 77
     assert ss.conditional_size() == len(list(ss.enumerate_space()))
 
 
