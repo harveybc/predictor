@@ -251,10 +251,10 @@ was blocking other admissions on that host. On the coordinator's correction the 
 `/tmp/c07-closure` and its own pip temp dirs (**1,746,978,969 bytes of tmpfs freed**, plus
 416,515,107 bytes of disk temp), recreated the venv **on disk** under its own
 `~/.local/state/scratch/c07-closure/`, and measured there. Rule recorded for every host:
-scratch goes to disk; `/tmp` only for files under 50 MB. A second leftover was found afterwards by the coordinator and confirmed mine: 
+scratch goes to disk; `/tmp` only for files under 50 MB. A second leftover was found afterwards by the coordinator and confirmed mine: `/tmp/tmp3spjz0ia`
 on worker_b, **827,588,608 bytes**, pip's download temp file of the CUDA cp312 torch wheel left
 when this lane killed its own dry-run B (mtime 19:04:25 host-local, the kill; owner this lane's
-user; zip first entry ; no open handles). Deleted; **total tmpfs freed by this lane on
+user; zip first entry `functorch/`; no open handles). Deleted; **total tmpfs freed by this lane on
 worker_b: 2,574,567,577 bytes**. After measurement the on-disk venv
 (1,798,337,765 bytes) and the coordinator's 11,166,986-byte venv were removed; the user's shared
 pip cache on worker_b now additionally holds the 68 downloaded wheels (a cache, left in place).
