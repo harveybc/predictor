@@ -1,0 +1,141 @@
+{
+  "corrected": {
+    "campaign_identity": {
+      "asset": "EURUSD 1h (lake 5m->1h, HistData lineage; DEVELOPMENT)",
+      "campaign_id": "f2_eurusd_lake_1h_vDh_h1to4_v1",
+      "dataset_id": "eurusdlake1h:lake5m-c746f344:ab0ada28",
+      "horizons": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "metric_space": "z_train",
+      "sample_hours": 1.0,
+      "scaler_identity": "fin-train-standard:2cc66982e5afb9b0e83f3e4d07e5d1bda94c1e41ff58b26cc3523cb82a7b725e",
+      "targets": [
+        "log_return_1"
+      ]
+    },
+    "literature": {
+      "reason": "no published row has been registered with the exact accepted identity: campaign=f2_eurusd_lake_1h_vDh_h1to4_v1, asset=EURUSD 1h (lake 5m->1h, HistData lineage; DEVELOPMENT), dataset=eurusdlake1h:lake5m-c746f344:ab0ada28, sample_hours=1.0, targets=['log_return_1'], horizons=[1, 2, 3, 4], metric_space=z_train, scaler=fin-train-standard:2cc66982e5afb9b0e83f3e4d07e5d1bda94c1e41ff58b26cc3523cb82a7b725e",
+      "status": "NOT_AVAILABLE",
+      "value": null
+    }
+  },
+  "generated": "2026-10-01T18:40:55Z",
+  "metrics_changed": false,
+  "original": {
+    "campaign_identity": null,
+    "literature": {
+      "reason": "no published row matches this asset (ETHUSDT 4h, view b1f8a74f), the declared calendar split, the cumulative log-return target in train-z units, the 83-feature set and horizons 1..6; a published crypto forecast would differ in population, scaler or horizon",
+      "status": "NOT_AVAILABLE",
+      "value": null
+    },
+    "path": "CLOSURE.json",
+    "sha256": "555f7fd05406f2832ea08f6623d0f2c6d1ea14c01ad0775c547d2fb8d67dc385"
+  },
+  "retained_evidence": {
+    "count": 24,
+    "files": [
+      {
+        "path": "EVIDENCE_00839835.json",
+        "sha256": "cb46ada4093f2127f8881dadbd66891e6e06cabfdc4af3bae568a03b5848e68d"
+      },
+      {
+        "path": "EVIDENCE_045f8582.json",
+        "sha256": "caca3c06636c1c4a2481be1c6d3827e99ceee6c66ff815e9053c1e61ca015ac1"
+      },
+      {
+        "path": "EVIDENCE_086d54a4.json",
+        "sha256": "505cbe23173b4f33f692bcbd306e4554b97c94a6ceb816afbd1679eed8eadd78"
+      },
+      {
+        "path": "EVIDENCE_0924a893.json",
+        "sha256": "3614273827606e6a7f4975b806bba50a3b1fe874d3419a6b82abe9bd5dd2c659"
+      },
+      {
+        "path": "EVIDENCE_156866ca.json",
+        "sha256": "eaf7b5648c1e6b5817afd8de889893407d3b7351d2a0b0549e34ffbd45cd5ea8"
+      },
+      {
+        "path": "EVIDENCE_15db610f.json",
+        "sha256": "52fb6369fc72ad8e7d2d60dd6a4caa684da9be24bf916bb643427cc0253d8f98"
+      },
+      {
+        "path": "EVIDENCE_19a279ca.json",
+        "sha256": "3d7c4224a2c6a8e3cbd43b6472d80d535eb5211cff064d732862f6deb21c7a75"
+      },
+      {
+        "path": "EVIDENCE_23c499c4.json",
+        "sha256": "275595ea0d4b71f75dacca04f2ad104cfd71f520f46a82b03bc3fd2ce39e7d3e"
+      },
+      {
+        "path": "EVIDENCE_2cee38bc.json",
+        "sha256": "486e149011b6dd403522921e227db1441d5eba2e6d1e23d9ef111adceade142f"
+      },
+      {
+        "path": "EVIDENCE_35f964cd.json",
+        "sha256": "d49d9ecb57676cfb01a1baf881f3b6271f9a71940c65a84619491dd3d0a2a4f5"
+      },
+      {
+        "path": "EVIDENCE_66583ab2.json",
+        "sha256": "5f7422ec4127f431be11cd785ddfa1ce3e2ab8aa45c4a0b8c9fceaf10d46d6e6"
+      },
+      {
+        "path": "EVIDENCE_6b0ba32b.json",
+        "sha256": "9594acc648f29afc4c5d58178cc37b62f0881613f7aef40d621179cd2801fdc4"
+      },
+      {
+        "path": "EVIDENCE_725c7cb0.json",
+        "sha256": "27bb716df77d73a91bf9fc15088d01152c4326021b805519c2a0f5cca8935ed0"
+      },
+      {
+        "path": "EVIDENCE_8f539aa5.json",
+        "sha256": "df4340dd3f5e0c574ebc4eb8898a97bc3aa6144f3eb1897306ad91a71ea46884"
+      },
+      {
+        "path": "EVIDENCE_90d91a43.json",
+        "sha256": "38598b36255bace0a0d2f94411ab656821dd048260bf3b55f5a2b72dd4373687"
+      },
+      {
+        "path": "EVIDENCE_9c4c7577.json",
+        "sha256": "7bf1f6bfa6dd32ecbe32b413b8da09ddb78ad4009c8e5e245232a3a8bd7ca82a"
+      },
+      {
+        "path": "EVIDENCE_b4471773.json",
+        "sha256": "393c9fd818c199182d060c942a5ff72b54bd4314d1db6f41c518a420b5a09872"
+      },
+      {
+        "path": "EVIDENCE_c3ffac22.json",
+        "sha256": "dd8d17a66459c40a94b598e49e281d973c661a361efe3adf145f381aed4cb895"
+      },
+      {
+        "path": "EVIDENCE_cd4f20ce.json",
+        "sha256": "4331baff049891f73fa77831808f1d42bf65ca2eed783998b55f61bcada06a98"
+      },
+      {
+        "path": "EVIDENCE_cfe4b165.json",
+        "sha256": "4b2adb5f8f013fa31d4aec84d2f7069ac59e2d864c08dae26f6fc7819b820b01"
+      },
+      {
+        "path": "EVIDENCE_d8e0629a.json",
+        "sha256": "8ac44f9f58f33e6e108df095f75240231d8c615be7277fda6f93e8034c4097af"
+      },
+      {
+        "path": "EVIDENCE_deb9f45b.json",
+        "sha256": "bb9ce7fa8c7abedb2140d73d4dcfe3712347a24c6bf7f1b9cd371fd011bfc020"
+      },
+      {
+        "path": "EVIDENCE_ef02938c.json",
+        "sha256": "22d2367cf34a7a5bda24019f41e71588e37190f203a8747dea6023886565947e"
+      },
+      {
+        "path": "EVIDENCE_f6070855.json",
+        "sha256": "3c35ef85d305fdeee7feac89e91d05f0b9a1d94ddab5ffd41bb27d37b8416b71"
+      }
+    ]
+  },
+  "schema": "f2.closure_identity_erratum.v1",
+  "scope": "identity_and_literature_metadata_only"
+}

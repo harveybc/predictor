@@ -41,7 +41,13 @@ def _receipt_identity(receipt):
     artifact = receipt.get("artifact", {})
     population = receipt.get("population", {})
     scale = receipt.get("scale", {})
-    horizons = sorted(int(h) for h in receipt.get("per_horizon", {}))
+    per_horizon = receipt.get("per_horizon", {})
+    if isinstance(per_horizon, dict):
+        horizons = sorted(int(h) for h in per_horizon)
+    elif isinstance(per_horizon, list):
+        horizons = sorted(int(row["horizon"]) for row in per_horizon)
+    else:
+        raise ValueError("accepted receipt has an invalid per_horizon collection")
     identity = {
         "campaign_id": artifact.get("campaign_id"),
         "asset": population.get("asset"),
