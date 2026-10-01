@@ -36,3 +36,14 @@ So the memory is **accumulation across fits inside one process**: TF graphs and 
 **Fix.** Every record now runs in its own spawned process (`_child`), so its memory is returned when the record ends. The parent imports no TensorFlow. The production cap will be 1.25 × the measured per-record peak under this runner.
 
 **Second correction found in the same run.** One contrastive fit (close_sma_ratio_100, inner_3, seed 2021) never beat its initial validation loss, and version 1.0.0 then failed the fit. Version 1.0.1 of `ts2vec_contrastive` instead restores the initial state as the best checkpoint, with stop reason `no_improvement_over_initial`. Δ_probe is then exactly 0, which is a result, not a failure. Because the identity changed, the earlier contrastive records are not reused: they are re-fitted under 1.0.1.
+
+## Planned stop for M04's headroom (coordinator sequencing ruling)
+
+At 03:53:27Z I stopped child `ps3r-pilot-measure2` (4G) at a record boundary. The stop came right after record 30 was written atomically, and before the next record had been written. My queued suite request (`laneA-suite`, 4G) was cancelled at the same time, so that M04's per-feature GPU pilot can be admitted on worker_b.
+
+- **Records retained:** 30 atomic records.
+- **Reuse rule:** they are reused by data sha256 and objective-identity sha when the pilot resumes.
+- **Production cap:** 3G, per the coordinator's ruling (1.25 × 2.04 GB, rounded up).
+- **Resume conditions:** one child only, and only when the coordinator says M04's pilot is complete.
+
+The runner now also honours a `STOP` file in its state directory. That ends the run cleanly at the next record boundary, so future stops do not need the wrapper to be signalled.

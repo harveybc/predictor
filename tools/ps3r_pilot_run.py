@@ -276,6 +276,13 @@ def main():
     done = skipped = 0
     peaks = []
     for feature, fold, seed, arm in todo:
+        if (out / "STOP").exists():                  # planned stop at a record boundary
+            beat.state = {"stage": "stopped_planned", "shard": a.shard, "done": done, "skipped": skipped,
+                          "reason": (out / "STOP").read_text()[:300]}
+            time.sleep(a.heartbeat_seconds + 1)
+            beat.stop.set()
+            print(json.dumps({"stopped_planned": True, "done": done, "skipped": skipped}), flush=True)
+            raise SystemExit(0)
         path = records / f"{feature}__{fold['name']}__{arm}__{seed}.json"
         if path.is_file():
             if _reusable(path, shas[arm]):
