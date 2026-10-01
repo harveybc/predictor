@@ -442,9 +442,18 @@ class DoinBridgeExecutor:
             code = subprocess.run(command, stdout=log, stderr=subprocess.STDOUT).returncode
         return code, time.monotonic() - started
 
-    def _bridge_config(self, nested, output_root, declaration, timeout):
-        return {"predictor_checkout": self.e["predictor_checkout"], "predictor_python": self.e["predictor_python"],
-                "predictor_revision": self.e["predictor_revision"],
+    def _bridge_config(self, nested, output_root, declaration, timeout, revision=None):
+        """Bridge settings; ``revision`` selects the pinned checkout that produced a receipt.
+
+        Verification always runs under the SAME predictor revision as the training attempt
+        (the bridge refuses otherwise); earlier pins stay reachable through
+        executor.checkouts_by_revision.
+        """
+        revision = revision or self.e["predictor_revision"]
+        checkout = (self.e["predictor_checkout"] if revision == self.e["predictor_revision"]
+                    else self.e.get("checkouts_by_revision", {})[revision])
+        return {"predictor_checkout": checkout, "predictor_python": self.e["predictor_python"],
+                "predictor_revision": revision,
                 "train_path": declaration["data"]["train"]["path"],
                 "validation_path": declaration["data"]["validation"]["path"],
                 "output_dir": str(output_root / "bridge"), "timeout_seconds": timeout,
@@ -463,8 +472,9 @@ class DoinBridgeExecutor:
 
     def verify(self, receipt_path, output_root, declaration):
         timeout = self.resources["verify"]["timeout_seconds"]
+        produced_by = json.loads(Path(receipt_path).read_text())["bridge"]["predictor_revision"]
         config = self._bridge_config({"objective": declaration["base"]["objective"]}, output_root,
-                                     declaration, timeout)
+                                     declaration, timeout, revision=produced_by)
         (output_root / "bridge.json").write_text(json.dumps(config, indent=1) + "\n")
         argv = [self.e["doin_python"], "-u", "-m", "doin_node.predictor_bridge", "--config",
                 str(output_root / "bridge.json"), "--verify", receipt_path]
