@@ -36,7 +36,14 @@ def sha_file(p):
     return hashlib.sha256(open(p, "rb").read()).hexdigest()
 
 
-def build(queue: dict, receipts: dict) -> dict:
+def design_summary(flat):
+    tf = [flat.get(f"core.time_factor_{i}") for i in range(3) if flat.get(f"core.time_factor_{i}") is not None]
+    return (f"{flat.get('branch.plugin')} g{flat.get('branch.grouping_size')} ch{flat.get('branch.channels')} "
+            f"k{flat.get('branch.kernel_size')}; steps {flat.get('model.branch_steps')}; core {flat.get('core.blocks')}x"
+            f"d{flat.get('core.d_model')} h{flat.get('core.heads')} tf{tf}; {flat.get('train.loss')} lr{flat.get('train.learning_rate')}")
+
+
+def build(queue: dict, receipts: dict, comparability=None) -> dict:
     att = {}
     for a in queue["attempts"]:
         att.setdefault((a["cid"], a["kind"]), []).append(a)
@@ -61,7 +68,8 @@ def build(queue: dict, receipts: dict) -> dict:
             raise CampaignRefusal(f"MODEL_DIGEST_MISMATCH: {c['cid'][:16]}")
         flat = json.loads(c["flat"]) if isinstance(c["flat"], str) else c["flat"]
         rows.append({"cid": c["cid"][:16], "config_id": c["config_id"][:8], "label": c["label"], "seed": c["seed"],
-                     "knobs": {k: flat.get(k) for k in KNOBS}, "objective": float(c["objective"]),
+                     "knobs": {k: flat.get(k) for k in KNOBS}, "design": design_summary(flat),
+                     "objective": float(c["objective"]),
                      "skill_MAE": rc["metrics"]["skill_MAE"], "verdict": ve["verdict"], "exact_match": True,
                      "train_host": tr.get("host"), "verify_host": ve.get("host"),
                      "cgroup_peak_bytes": tr.get("cgroup_peak_bytes"), "per_update_seconds": tr.get("per_update_seconds"),
@@ -73,6 +81,28 @@ def build(queue: dict, receipts: dict) -> dict:
     inc = queue["incumbent"]
     if inc["config_id"] != best["config_id"]:
         raise CampaignRefusal(f"INCUMBENT_NOT_MINIMUM: {inc['config_id'][:8]} vs {best['config_id'][:8]}")
+    def per_seed_rows(cids):
+        rows = []
+        for cid in cids:
+            rc = receipts.get(cid[:16])
+            if rc is None:
+                raise CampaignRefusal(f"MISSING_RECEIPT: {cid[:16]}")
+            if rc.get("exact_match") is not True:
+                raise CampaignRefusal(f"NOT_EXACT: {cid[:16]}")
+            ph = rc["per_horizon"]
+            rows.append({"cid": cid[:16], "MAE": rc["metrics"]["MAE"], "baseline_MAE": rc["metrics"]["baseline_MAE"],
+                         "skill_MAE": rc["metrics"]["skill_MAE"],
+                         "per_horizon_skill_MAE": {k: ph[k]["skill_MAE"] for k in sorted(ph, key=int)}})
+        return rows
+    pairs = []
+    for s_ in queue["standings"]:
+        if not s_.get("eligible"):
+            continue
+        cids = [c["cid"] for c in queue["candidates"] if c["config_id"] == s_["config_id"] and c["status"] == "verified"]
+        ps = per_seed_rows(cids)
+        objs = [r["MAE"] for r in ps]
+        pairs.append({"config_id": s_["config_id"][:8], "label": s_["label"], "mean_objective": s_["mean_objective"],
+                      "two_seed_spread": (max(objs) - min(objs)) if len(objs) > 1 else None, "per_seed": ps})
     hist = []
     for h in queue["incumbent_history"]:
         per_seed = []
@@ -93,23 +123,24 @@ def build(queue: dict, receipts: dict) -> dict:
     return {"schema": "m06.m04_campaign_tables.v1", "campaign": queue["campaign"],
             "campaign_sha256": queue["meta"]["campaign_sha256"], "objective": queue["objective"],
             "counts": queue["counts"], "candidates": rows, "incumbents": hist,
-            "comparability": {"class": COMPARABILITY[0], "reason": COMPARABILITY[1]},
+            "comparability": comparability or {"class": COMPARABILITY[0], "reason": COMPARABILITY[1]},
+            "pairs": sorted(pairs, key=lambda p: p["mean_objective"]),
             "evidence": "measured validation objective, fresh-process checkpoint rescoring exact_match; NOT test, NOT a published comparison"}
 
 
 def render(t: dict, annotations: dict | None = None):
     o = t["objective"]
-    c = ["# M04 batch-1 v3: verified R0 candidates (generated)", "",
+    c = [f"# {t['campaign']}: verified R0 candidates (generated)", "",
          f"Campaign `{t['campaign']}`, CAMPAIGN sha `{t['campaign_sha256'][:8]}…`. Objective: {o['metric']} on "
          f"{o['split']}, {o['unit']} (lower is better). Counts: {t['counts']}. Comparability: **{t['comparability']['class']}**: "
          f"{t['comparability']['reason']}.", "",
-         "| label | cfg | seed | objective | skill MAE | verify | exact | train host | peak GiB | s/update | updates | epoch | stop |",
-         "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+         "| label | cfg | design | seed | objective | skill MAE | verify | exact | train host | peak GiB | s/update | updates | epoch | stop |",
+         "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in sorted(t["candidates"], key=lambda r: (r["label"], r["seed"])):
-        c.append(f"| {r['label']} | {r['config_id']} | {r['seed']} | {r['objective']:.6f} | {r['skill_MAE']:.4f} | {r['verdict']} | "
+        c.append(f"| {r['label']} | {r['config_id']} | {r.get('design', '')} | {r['seed']} | {r['objective']:.6f} | {r['skill_MAE']:.4f} | {r['verdict']} | "
                  f"{r['exact_match']} | {r['train_host']} | {(r['cgroup_peak_bytes'] or 0) / 2**30:.2f} | "
                  f"{r['per_update_seconds']:.4f} | {r['observed_updates']} | {r['selected_epoch']} | {r['stop_reason']} |")
-    i = ["# M04 batch-1 v3: incumbent history with per-horizon skill (generated)", "",
+    i = [f"# {t['campaign']}: incumbent history and per-horizon skill (generated)", "",
          f"Comparability: **{t['comparability']['class']}**: {t['comparability']['reason']}.", ""]
     for h in t["incumbents"]:
         i += [f"## Incumbent {h['seq']}: `{h['config_id']}` {h['label']}, mean validation {t['objective']['metric']} "
@@ -125,6 +156,19 @@ def render(t: dict, annotations: dict | None = None):
                      + " | ".join(f"{s['per_horizon_skill_MAE'][k]:+.2f}" for k in hs) + " |")
         neg = sorted({int(k) for s in h["per_seed"] for k, v in s["per_horizon_skill_MAE"].items() if v < 0})
         i += ["", f"Horizons with NEGATIVE skill (persistence wins) in any seed: {['h%d' % k for k in neg] or 'none'}.", ""]
+    if t.get("pairs"):
+        i += ["## Every verified pair, ranked by mean validation objective", ""]
+        for p in t["pairs"]:
+            hs = list(p["per_seed"][0]["per_horizon_skill_MAE"])
+            sp = f"{p['two_seed_spread']:.6f}" if p["two_seed_spread"] is not None else "n/a"
+            i += [f"### `{p['config_id']}` {p['label']}: mean {p['mean_objective']:.6f}, two-seed spread {sp}", "",
+                  "| seed cid | MAE | persistence MAE (same rows) | skill MAE | " + " | ".join(f"h{k}" for k in hs) + " |",
+                  "|---" * (4 + len(hs)) + "|"]
+            for s_ in p["per_seed"]:
+                i.append(f"| {s_['cid']} | {s_['MAE']:.6f} | {s_['baseline_MAE']:.6f} | {s_['skill_MAE']:.4f} | "
+                         + " | ".join(f"{s_['per_horizon_skill_MAE'][k]:+.2f}" for k in hs) + " |")
+            neg = sorted({int(k) for s_ in p["per_seed"] for k, v in s_["per_horizon_skill_MAE"].items() if v < 0})
+            i += ["", f"Negative-skill horizons in any seed: {['h%d' % k for k in neg] or 'none'}.", ""]
     return "\n".join(c) + "\n", "\n".join(i) + "\n"
 
 
@@ -134,11 +178,16 @@ def main(argv=None):
     ap.add_argument("--receipts", required=True)
     ap.add_argument("--out-dir", required=True)
     ap.add_argument("--annotations", default=None, help="JSON {config_id8: {class, source, text}}")
+    ap.add_argument("--prefix", default="m04", help="output file prefix (keeps campaigns' tables apart)")
+    ap.add_argument("--comparability-class", default=None)
+    ap.add_argument("--comparability-reason", default=None)
     a = ap.parse_args(argv)
     q = json.load(open(a.queue))
     rec = {f[:-5]: json.load(open(os.path.join(a.receipts, f))) for f in os.listdir(a.receipts) if f.endswith(".json")}
     try:
-        t = build(q, rec)
+        comp = ({"class": a.comparability_class, "reason": a.comparability_reason}
+                if a.comparability_class else None)
+        t = build(q, rec, comp)
     except CampaignRefusal as e:
         print(f"REFUSED {e}", file=sys.stderr)
         return 3
@@ -149,20 +198,21 @@ def main(argv=None):
     if ann:
         t["annotations"] = ann
     cmd, imd = render(t, ann)
-    outs = {"m04_r0_candidates.md": cmd, "m04_incumbents.md": imd, "m04_campaign_tables.json": json.dumps(t, indent=1)}
+    P = a.prefix
+    outs = {f"{P}_r0_candidates.md": cmd, f"{P}_incumbents.md": imd, f"{P}_campaign_tables.json": json.dumps(t, indent=1)}
     for name, text in outs.items():
         p = os.path.join(a.out_dir, name)
         open(p + ".tmp", "w").write(text)
         os.replace(p + ".tmp", p)
-    with open(os.path.join(a.out_dir, "m04_r0_candidates.csv.tmp"), "w", newline="") as f:
+    with open(os.path.join(a.out_dir, f"{P}_r0_candidates.csv.tmp"), "w", newline="") as f:
         w = csv.writer(f)
-        cols = ["label", "config_id", "seed", "objective", "skill_MAE", "verdict", "exact_match", "train_host",
+        cols = ["label", "config_id", "design", "seed", "objective", "skill_MAE", "verdict", "exact_match", "train_host",
                 "verify_host", "cgroup_peak_bytes", "per_update_seconds", "observed_updates", "selected_epoch", "stop_reason",
                 *KNOBS, "cid"]
         w.writerow(cols)
         for r in t["candidates"]:
             w.writerow([r[k] if k in r else r["knobs"].get(k) for k in cols])
-    os.replace(os.path.join(a.out_dir, "m04_r0_candidates.csv.tmp"), os.path.join(a.out_dir, "m04_r0_candidates.csv"))
+    os.replace(os.path.join(a.out_dir, f"{P}_r0_candidates.csv.tmp"), os.path.join(a.out_dir, f"{P}_r0_candidates.csv"))
     print(len(t["candidates"]), "candidates;", len(t["incumbents"]), "incumbents")
     return 0
 

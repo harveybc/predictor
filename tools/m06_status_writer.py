@@ -180,7 +180,17 @@ def coverage_block(reg, campaigns_out):
     evaluated-candidate count.  A complete-coverage claim is REFUSED while any known source or
     transform family is absent from lane B's accounting."""
     import sqlite3
-    cat = reg.get("coverage_catalogue", {})
+    cat = dict(reg.get("coverage_catalogue", {}))
+    gen = reg.get("coverage_generated_file")
+    if gen and os.path.exists(gen):
+        try:
+            g = json.load(open(gen))
+            cat["new_source_and_transform_denominators"] = {
+                "generated_from": os.path.basename(gen), "new_denominator": g["new_denominator"],
+                "old_denominator": g["old_denominator"], "grain_note": g.get("grain_note"),
+                "transform_ledger": g["transform_ledger"], "sources": g["sources"], "dag": g["dag"], "inputs": g["inputs"]}
+        except Exception as e:
+            cat["new_source_and_transform_denominators"] = "unreadable generated file: " + type(e).__name__
     absent = cat.get("known_absent_from_accounting", [])
     inputs = []
     for q in reg.get("campaign_queues", []):

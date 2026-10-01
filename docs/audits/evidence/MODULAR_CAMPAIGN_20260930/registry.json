@@ -260,6 +260,26 @@
    "class": "NOT_COMPARABLE",
    "note": "negative skill at h1/h23/h24; architecture class OLD_ENGINE_24_NONRESIDUAL (superseded)",
    "generated_from": "RESULTS/m04_campaign_tables.json"
+  },
+  {
+   "task": "ECL L24 -> H1..24, all 321 channels (corrected batch 1, pin df9ae31c / engine 3ecdb256)",
+   "split": "validation",
+   "population_id": "2609 windows x 24 horizons x 321 channels",
+   "model": "corrected incumbent 9cc0a1f4 corrected_draw3_R0_mae (mean of seeds [2021, 2022])",
+   "metric": "MAE",
+   "space": "z_train",
+   "reduction": "mean over all elements",
+   "value": 0.3910575164106178,
+   "naive": 0.8514061497227646,
+   "literature": {
+    "value": null,
+    "source": null,
+    "comparability": "not_comparable"
+   },
+   "evidence_state": "measured",
+   "class": "NOT_COMPARABLE",
+   "note": "two-seed spread 0.006841; negative skill at h1/h23/h24",
+   "generated_from": "RESULTS/corrected_campaign_tables.json"
   }
  ],
  "milestones": [
@@ -298,6 +318,32 @@
     "RESULTS/m04_r0_candidates.md",
     "RESULTS/m04_incumbents.md",
     "predictor 6ced97e7"
+   ]
+  },
+  {
+   "id": "corrected_batch1",
+   "completion_criterion": "16 corrected R0 grouped/draw cells trained, independently rescored VERIFIED exact, incumbent chosen on validation",
+   "state": "completed",
+   "evidence": [
+    "RESULTS/corrected_r0_candidates.md",
+    "RESULTS/corrected_incumbents.md",
+    "CAMPAIGN amendment 2 sha 09f6913e"
+   ]
+  },
+  {
+   "id": "corrected_per_feature_R0",
+   "completion_criterion": "8 per-feature default R0 rows after the per-feature pilot",
+   "state": "not_started",
+   "evidence": [
+    "awaits the per-feature pilot (blocked on the 5090 by ADM-DEADCACHE; queued on worker_b on HOST_HEADROOM)"
+   ]
+  },
+  {
+   "id": "corrected_R1_R2",
+   "completion_criterion": "paired R1/R2 candidates with corrected donors",
+   "state": "not_started",
+   "evidence": [
+    "awaits m02-ecl-v2-donors-r7g2: heartbeat resume_point 185/321 branch records at 03:3xZ (includes branches reused by digest); branch-stage ETA 04:17-04:35Z by measured rate; core stage not yet measured"
    ]
   }
  ],
@@ -434,6 +480,11 @@
    "at": "2026-10-01T02:52:30Z",
    "host_alias": "worker_b",
    "event": "m02-ecl-v2-donors: PLANNED_STOP_FOR_CAP_RAISE (orchestrator ruling, not an incident): TERM to the wrapper 02:52:30Z at the branch_11 record boundary, exited 02:52:34Z; relaunched as m02-ecl-v2-donors-r7g with --resume under a 7G cap derived from M02's measured RSS growth (FINDING MEM-02: clear_session slows but does not stop growth, +6.77 MB/branch) plus the 4.73 GB full-graph profile; 4G lease retired; 12/12 branches reused by digest; recorded in the run's INTERRUPTIONS.json"
+  },
+  {
+   "at": "2026-10-01T03:24:53Z",
+   "host_alias": "worker_a",
+   "event": "corrected batch 1 COMPLETE: 16/16 grouped/draw R0 VERIFIED exact-match; incumbent seq 4 9cc0a1f4 at 0.391058; CAMPAIGN amendment 2 sha 09f6913e"
   }
  ],
  "launch_recipes": {
@@ -815,7 +866,9 @@
    "evidence": "worker_a ~/.local/state/scratch/d-pilot/PIN_df9ae31c/pilot_grouped32/PILOT.json; admission ledger lease d-pilot-grouped32-1790823518-189673-dd72a6 (02:58:38Z-02:59:08Z)"
   }
  ],
- "slot_plan": {},
+ "slot_plan": {
+  "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8": "IDLE BY ORDER: the only runnable work for the 5090 (per-feature pilot/attempts, 6.74 GB) cannot admit beside the 2.42 GB dead clean cache in worker_a's 8 GiB batch slice; the owner's ADM-DEADCACHE decision (DEPLOY.md, one action) directly idles the preferred GPU"
+ },
  "old_design_inventory": {
   "source": "wf_6286ece8-903",
   "v3_verified_16": {
@@ -837,15 +890,30 @@
  },
  "open_owner_questions": {
   "state": "OPEN_OWNER_QUESTIONS",
-  "count": 12,
-  "what": "feature-selection mapping ambiguities",
-  "link": {
-   "repo": "predictor",
-   "branch": "satoshi/continuation-ack-20261001",
-   "tip": "9b0300a2",
-   "path": "docs/audits/work_plan/SATOSHI_CONTINUATION_ACKNOWLEDGEMENT_2026_10_01.md",
-   "section": "8"
-  }
+  "items": [
+   {
+    "ids": "1-12",
+    "what": "feature-selection mapping ambiguities",
+    "link": {
+     "repo": "predictor",
+     "branch": "satoshi/continuation-ack-20261001",
+     "tip": "9b0300a2",
+     "path": "docs/audits/work_plan/SATOSHI_CONTINUATION_ACKNOWLEDGEMENT_2026_10_01.md",
+     "section": "8"
+    }
+   },
+   {
+    "ids": "14-17",
+    "what": "source/transform coverage questions",
+    "link": {
+     "repo": "predictor",
+     "branch": "satoshi/continuation-ack-20261001",
+     "tip": "48063ab7",
+     "path": "docs/audits/work_plan/SATOSHI_CONTINUATION_ACKNOWLEDGEMENT_2026_10_01.md",
+     "section": "9.1"
+    }
+   }
+  ]
  },
  "resource_policy": {
   "ceiling": "one GPU attempt plus the donor run per host",
@@ -873,14 +941,20 @@
   "old_denominator": {
    "distinct_columns": 15228,
    "covered": 3538,
-   "source": "lane B (M03) feature-eng docs/feature_metrics/m03/inventory_v3/coverage_summary.json, as reported by the orchestrator; NOT a census of every usable source"
+   "source": "feature-eng inventory_v3 coverage_summary.json sha 884b595e (via lane B DENOMINATORS.v1.json)"
   },
-  "new_source_and_transform_denominators": "PENDING lane B publication",
   "known_absent_from_accounting": [
-   "engineered transform files outside demonstrated selection coverage (e.g. multitaper/emd/fracdiff parquet, ~1,400 paths) until producers/aliases are resolved (addendum item 3)",
-   "market-regime provider coverage not established (addendum item 6)",
-   "source entitlement-to-use matrix not yet published (addendum next return)"
-  ]
+   "native wavelet producer",
+   "3,593 files outside the census",
+   "1,052 unresolved provenance",
+   "FRED/OECD vintages",
+   "regime/HMM fold binding",
+   "Yahoo terms",
+   "Alpaca data plan",
+   "CFTC/News scope",
+   "availability activation (no source POINT_IN_TIME_ADMISSIBLE)"
+  ],
+  "absences_source": "lane B return (feature-eng satoshi/b-source-transform-coverage-20261001 @ 8215886), as listed by the orchestrator"
  },
  "coverage_evaluated_retained": [
   {
@@ -917,5 +991,6 @@
    ],
    "host_state_at_ruling": "worker_b swap in use (5.2 GB free), unreclaimable slab 2.8 GB; M06 alerts if swap free < 2 GB or slab > 4 GB"
   }
- ]
+ ],
+ "coverage_generated_file": "/home/harveybc/Documents/GitHub/.worktrees/predictor-m06-20260930/docs/audits/evidence/MODULAR_CAMPAIGN_20260930/RESULTS/coverage_laneB.json"
 }

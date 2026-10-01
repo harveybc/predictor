@@ -1,0 +1,22 @@
+# m04 campaign_corrected_r0_v1 (pin df9ae31c, engine 3ecdb256): verified R0 candidates (generated)
+
+Campaign `m04 campaign_corrected_r0_v1 (pin df9ae31c, engine 3ecdb256)`, CAMPAIGN sha `09f6913e…`. Objective: MAE on validation, z_train (lower is better). Counts: {'SUPERSEDED_OLD_ARCH': 72, 'blocked': 20, 'verified': 16}. Comparability: **NOT_COMPARABLE**: ECL L24 -> H1..24, all 321 channels, z_train MAE on the VALIDATION split, corrected architecture (pin df9ae31c, engine 3ecdb256); the published ECL rows are L96 -> H96 on the test split; kept apart from the OLD batch-1 v3 tables.
+
+| label | cfg | design | seed | objective | skill MAE | verify | exact | train host | peak GiB | s/update | updates | epoch | stop |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| corrected_draw1_R0_huber | 554ff1d6 | causal_conv1d g321 ch16 k5; steps 24; core 2xd128 h4 tf[2, 4, 1]; huber lr0.000518849874799065 | 2021 | 0.390623 | 0.5412 | VERIFIED | True | worker_a | 3.88 | 0.0143 | 4320 | 30 | max_epochs |
+| corrected_draw1_R0_huber | 554ff1d6 | causal_conv1d g321 ch16 k5; steps 24; core 2xd128 h4 tf[2, 4, 1]; huber lr0.000518849874799065 | 2022 | 0.392788 | 0.5387 | VERIFIED | True | worker_a | 3.88 | 0.0145 | 4320 | 24 | max_epochs |
+| corrected_draw1_R0_mae | 7db1feb6 | causal_conv1d g321 ch16 k5; steps 24; core 2xd128 h4 tf[2, 4, 1]; mae lr0.000518849874799065 | 2021 | 0.396278 | 0.5346 | VERIFIED | True | worker_a | 4.04 | 0.0143 | 3888 | 19 | patience |
+| corrected_draw1_R0_mae | 7db1feb6 | causal_conv1d g321 ch16 k5; steps 24; core 2xd128 h4 tf[2, 4, 1]; mae lr0.000518849874799065 | 2022 | 0.398587 | 0.5318 | VERIFIED | True | worker_a | 3.96 | 0.0144 | 4320 | 30 | max_epochs |
+| corrected_draw2_R0_huber | 0e5b677a | causal_conv1d g8 ch32 k5; steps 24; core 3xd64 h8 tf[4, 1, 2]; huber lr0.00013587088251083477 | 2021 | 0.423092 | 0.5031 | VERIFIED | True | worker_a | 3.90 | 0.0281 | 4320 | 27 | patience |
+| corrected_draw2_R0_huber | 0e5b677a | causal_conv1d g8 ch32 k5; steps 24; core 3xd64 h8 tf[4, 1, 2]; huber lr0.00013587088251083477 | 2022 | 0.419398 | 0.5074 | VERIFIED | True | worker_a | 3.88 | 0.0280 | 4320 | 30 | max_epochs |
+| corrected_draw2_R0_mae | 345d300d | causal_conv1d g8 ch32 k5; steps 24; core 3xd64 h8 tf[4, 1, 2]; mae lr0.00013587088251083477 | 2021 | 0.426190 | 0.4994 | VERIFIED | True | worker_a | 3.88 | 0.0282 | 3600 | 22 | patience |
+| corrected_draw2_R0_mae | 345d300d | causal_conv1d g8 ch32 k5; steps 24; core 3xd64 h8 tf[4, 1, 2]; mae lr0.00013587088251083477 | 2022 | 0.431434 | 0.4933 | VERIFIED | True | worker_a | 4.03 | 0.0280 | 4320 | 30 | max_epochs |
+| corrected_draw3_R0_huber | ff759506 | causal_conv1d g321 ch8 k3; steps 24; core 1xd64 h2 tf[1, 2, 4]; huber lr0.0006565382226052071 | 2021 | 0.401661 | 0.5282 | VERIFIED | True | worker_a | 3.88 | 0.0139 | 1728 | 9 | patience |
+| corrected_draw3_R0_huber | ff759506 | causal_conv1d g321 ch8 k3; steps 24; core 1xd64 h2 tf[1, 2, 4]; huber lr0.0006565382226052071 | 2022 | 0.412697 | 0.5153 | VERIFIED | True | worker_a | 3.88 | 0.0142 | 1728 | 9 | patience |
+| corrected_draw3_R0_mae | 9cc0a1f4 | causal_conv1d g321 ch8 k3; steps 24; core 1xd64 h2 tf[1, 2, 4]; mae lr0.0006565382226052071 | 2021 | 0.394478 | 0.5367 | VERIFIED | True | worker_a | 3.88 | 0.0156 | 1008 | 4 | patience |
+| corrected_draw3_R0_mae | 9cc0a1f4 | causal_conv1d g321 ch8 k3; steps 24; core 1xd64 h2 tf[1, 2, 4]; mae lr0.0006565382226052071 | 2022 | 0.387637 | 0.5447 | VERIFIED | True | worker_a | 3.88 | 0.0144 | 1584 | 8 | patience |
+| corrected_grouped32_R0_huber | 409dedf5 | causal_conv1d g32 ch16 k3; steps 24; core 2xd64 h4 tf[2, 2, 1]; huber lr0.001 | 2021 | 0.411205 | 0.5170 | VERIFIED | True | worker_a | 4.02 | 0.0148 | 2870 | 5 | patience |
+| corrected_grouped32_R0_huber | 409dedf5 | causal_conv1d g32 ch16 k3; steps 24; core 2xd64 h4 tf[2, 2, 1]; huber lr0.001 | 2022 | 0.389185 | 0.5429 | VERIFIED | True | worker_a | 4.04 | 0.0135 | 6314 | 17 | patience |
+| corrected_grouped32_R0_mae | e7508efd | causal_conv1d g32 ch16 k3; steps 24; core 2xd64 h4 tf[2, 2, 1]; mae lr0.001 | 2021 | 0.379423 | 0.5544 | VERIFIED | True | worker_a | 4.03 | 0.0135 | 6314 | 17 | patience |
+| corrected_grouped32_R0_mae | e7508efd | causal_conv1d g32 ch16 k3; steps 24; core 2xd64 h4 tf[2, 2, 1]; mae lr0.001 | 2022 | 0.415744 | 0.5117 | VERIFIED | True | worker_a | 4.01 | 0.0155 | 2296 | 3 | patience |

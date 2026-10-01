@@ -109,3 +109,38 @@ def test_cli_writes_all_outputs(tmp_path):
     assert T.main(["--queue", str(tmp_path / "q.json"), "--receipts", str(rd), "--out-dir", str(out)]) == 0
     assert {p.name for p in out.iterdir()} == {"m04_r0_candidates.md", "m04_r0_candidates.csv", "m04_incumbents.md",
                                                "m04_campaign_tables.json"}
+
+
+def test_every_verified_pair_gets_per_horizon_rows_and_a_two_seed_spread():
+    q, rec = fixture()
+    t = T.build(q, rec, {"class": "NOT_COMPARABLE", "reason": "corrected L24/H1..24 validation"})
+    assert [p["label"] for p in t["pairs"]] == ["B", "A"]           # ranked by mean objective
+    assert all(len(p["per_seed"]) == 2 for p in t["pairs"])
+    assert abs(t["pairs"][0]["two_seed_spread"] - 0.01) < 1e-12
+    _, inc = T.render(t)
+    assert "Every verified pair" in inc and "corrected L24/H1..24 validation" in inc
+
+
+def test_a_pair_row_whose_receipt_is_not_exact_is_refused():
+    q, rec = fixture()
+    rec[cid(2)[:16]]["exact_match"] = False
+    with pytest.raises(T.CampaignRefusal, match="NOT_EXACT"):
+        T.build(q, rec)
+
+
+def test_queue_export_reads_sqlite_read_only(tmp_path):
+    import sqlite3
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+    import m06_queue_export as X
+    db = tmp_path / "q.sqlite"
+    c = sqlite3.connect(db)
+    c.executescript("""create table meta(key,value); insert into meta values('campaign_sha256','s1'),('amendment_2_campaign_sha256','s3');
+    create table candidates(cid,position,config_id,seed,label,flat,nested,status,blocked_reason,created,objective,updated);
+    insert into candidates values('c1',0,'K',2021,'L','{}','{}','verified',null,0,0.4,0),('c2',1,'K',2022,'L','{}','{}','verified',null,0,0.5,0);
+    create table attempts(cid,attempt,kind,status,started); create table incumbent_changes(seq,time,config_id,mean_objective,seeds,cids,previous_config_id,previous_mean,reason);
+    insert into incumbent_changes values(1,0,'K',0.45,'[2021,2022]','["c1","c2"]',null,null,'first');""")
+    c.commit(); c.close()
+    before = db.read_bytes()
+    q = X.export(str(db), "camp", {"metric": "MAE", "split": "validation", "unit": "z_train"})
+    assert q["meta"]["campaign_sha256"] == "s3" and q["standings"][0]["mean_objective"] == pytest.approx(0.45)
+    assert db.read_bytes() == before

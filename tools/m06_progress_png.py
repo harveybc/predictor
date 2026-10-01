@@ -105,9 +105,18 @@ def main(status_path, out_path):
         od = cc.get("old_denominator", {})
         ax.text(0, y, "Coverage (three counts kept apart)", fontsize=10, color=INK, weight="bold", va="top")
         y -= 0.026
-        ax.text(0.018, y, f"catalogue {od.get('covered')}/{od.get('distinct_columns')} columns (old denominator, not a census); "
-                          f"new denominators: {cc.get('new_source_and_transform_denominators')}; "
-                          f"{cc.get('complete_coverage_claim', '')[:60]}", fontsize=7.0, family="monospace", color=INK, va="top")
+        nd = cc.get("new_source_and_transform_denominators")
+        if isinstance(nd, dict):
+            n = nd["new_denominator"]
+            newtxt = (f"new: {n['files']} files ({n['in_census']} in census, {n['outside_census']} outside), "
+                      f"{n['column_slots']} column slots, ledger {nd['transform_ledger']['rows']} rows, "
+                      f"PIT-admissible sources {nd['sources']['point_in_time_admissible_count']}")
+        else:
+            newtxt = f"new: {nd}"
+        ax.text(0.018, y, f"catalogue old {od.get('covered')}/{od.get('distinct_columns')} column rows (not a census); {newtxt}",
+                fontsize=7.0, family="monospace", color=INK, va="top")
+        y -= 0.02
+        ax.text(0.018, y, (cc.get("complete_coverage_claim") or "")[:190], fontsize=7.0, family="monospace", color=INK, va="top")
         y -= 0.02
         mi = "; ".join(f"{m['campaign'][:30]}: {m.get('distinct_input_channel_counts')} channels" for m in cov.get("model_input_count", []))
         ev = "; ".join(f"{e['campaign'][:30]}: {e['verified_rows']}" for e in cov.get("evaluated_candidate_count", []))

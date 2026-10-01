@@ -1,6 +1,6 @@
 {
- "at": "2026-10-01T03:21:52Z",
- "pid": 950584,
- "status_written_at": "2026-10-01T03:21:52Z",
- "job_signature": "[[\"d-pilot-grouped32 (corrected, pin df9ae31c)\", \"completed\", \"completed\"], [\"d-runner-worker-a\", \"running\", \"running_stage_unknown\"], [\"d-unit-36b777a1\", \"queued\", \"queued\"], [\"laneA-suite\", \"running\", \"running_stage_unknown\"], [\"m02-ecl-donors-r0-resume1\", \"completed\", \"STOPPED_AT_SAFE_BOUNDARY (old design superseded)\"], [\"m02-ecl-v2-donors-r7g2\", \"running\", \"fitting\"], [\"m04-modular-cost-pilot (old design, worker_b)\", \"failed\", \"failed\"], [\"m04-verify-956e438f\", \"queued\", \"queued\"], [\"m04_ecl_l24_h24_batch1_v3\", \"completed\", \"completed\"], [\"m06-event-watch\", \"running\", \"running_stage_unknown\"], [\"m06-status-writer\", \"running\", \"running_stage_unknown\"], [\"traffic_L96_h96_s2021\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2022\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2023\", \"completed\", \"completed\"]]"
+ "at": "2026-10-01T03:47:01Z",
+ "pid": 980396,
+ "status_written_at": "2026-10-01T03:47:01Z",
+ "job_signature": "[[\"d-pilot-grouped32 (corrected, pin df9ae31c)\", \"completed\", \"completed\"], [\"d-pilot-perfeature\", \"queued\", \"queued\"], [\"laneA-suite\", \"queued\", \"queued\"], [\"m02-ecl-donors-r0-resume1\", \"completed\", \"STOPPED_AT_SAFE_BOUNDARY (old design superseded)\"], [\"m02-ecl-v2-donors-r7g2\", \"running\", \"fitting\"], [\"m04-modular-cost-pilot (old design, worker_b)\", \"failed\", \"failed\"], [\"m04_ecl_l24_h24_batch1_v3\", \"completed\", \"completed\"], [\"m06-event-watch\", \"running\", \"running_stage_unknown\"], [\"m06-status-writer\", \"running\", \"running_stage_unknown\"], [\"ps3r-pilot-measure2\", \"running\", \"running_stage_unknown\"], [\"traffic_L96_h96_s2021\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2022\", \"completed\", \"completed\"], [\"traffic_L96_h96_s2023\", \"completed\", \"completed\"]]"
 }

@@ -1,0 +1,90 @@
+{
+ "schema": "m06.coverage_laneB.v1",
+ "old_denominator": {
+  "grain": "dataset x column rows (inventory v3)",
+  "distinct_rows": 15228,
+  "covered": 3538,
+  "source": "feature-eng inventory_v3 coverage_summary.json sha 884b595e"
+ },
+ "new_denominator": {
+  "grain": "discovered files in raw and derived directories + declared sources without bytes",
+  "files": 5273,
+  "raw_files": 773,
+  "derived_files": 4500,
+  "sources_without_bytes": 4,
+  "in_census": 1680,
+  "outside_census": 3593,
+  "with_train_contract": 198,
+  "with_lane_b_profiled_columns": 198,
+  "column_slots": 81964,
+  "covered_files": 198
+ },
+ "grain_note": "the two grains are not commensurable: a file is not a column and a column appearance is not an economic signal; both are shown, neither replaces the other",
+ "transform_ledger": {
+  "rows": 77,
+  "by_state": {
+   "deferred": 20,
+   "excluded": 16,
+   "profiled": 15,
+   "NOT_APPLICABLE": 13,
+   "materialized": 6,
+   "applicable": 4,
+   "temporally_verified": 3
+  },
+  "evaluated_true": 0,
+  "selected_true": 0
+ },
+ "sources": {
+  "rows": 22,
+  "by_status": {
+   "RETAINED_BYTES": 12,
+   "PROFILED": 7,
+   "NOT_PRESENT": 2,
+   "FUNCTIONING_CONNECTOR": 1
+  },
+  "point_in_time_admissible": [],
+  "point_in_time_admissible_count": 0
+ },
+ "dag": {
+  "dag_sha256": "881f746f52c1d99b74525526d42712a48974d71451c1fb7a5ac7b7f7c653ba52",
+  "denominators": {
+   "v2_columns_examined": 97,
+   "v2_by_class": {
+    "CAUSAL_ACTIVE": 37,
+    "HISTORICAL_OR_RETIRED_PRODUCER": 5,
+    "UNRESOLVED": 55
+   },
+   "v3_sources": 22,
+   "v3_resources": 5273,
+   "v3_recipes": 13,
+   "v3_channel_edges": 25466,
+   "lane_b_inventory_v3": {
+    "distinct_rows": 15228,
+    "covered": 3538
+   }
+  },
+  "not_claimed": [
+   "no derived file was hashed in this snapshot (NOT_HASHED_IN_SNAPSHOT)",
+   "no recipe is temporally verified here",
+   "no channel is evaluated or selected"
+  ]
+ },
+ "inputs": {
+  "denominators": {
+   "from": "feature-eng@8215886:docs/feature_metrics/laneB/sources/DENOMINATORS.v1.json",
+   "sha256": "92db97028699e8834d22e895178c70f4b05c34b3a400098970c6294d405045b1"
+  },
+  "transform_ledger": {
+   "from": "feature-eng@8215886:docs/feature_metrics/laneB/sources/TRANSFORM_LEDGER.v1.csv",
+   "sha256": "5766f8e806c7029860c5df6aac310f2b6215e0a48bddc5709f6ec24b40f65978"
+  },
+  "source_table": {
+   "from": "feature-eng@8215886:docs/feature_metrics/laneB/sources/SOURCE_TABLE.v1.csv",
+   "sha256": "05317f6080ad3e91ed5599713d9c25e82759e275db432140edea8c7ff23ae2f5"
+  },
+  "feature_dag": {
+   "from": "financial-data@42bed364:features/census/FEATURE_DAG.v3.json",
+   "sha256": "710747e43a04aa9d4fdf36b785aa389a76b039cf13ddcab3b950ae0b2db7590c"
+  }
+ }
+}
