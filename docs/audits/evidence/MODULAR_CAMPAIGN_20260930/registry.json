@@ -1694,7 +1694,7 @@
   "F": "M06: PNG/RETURN/RESULTS deliverables and Hermes-drafted 30-minute summaries (ASSIGNED)",
   "H1": "h1-* replay of tests + Kalman digests on worker_a, then the ETH 4h arm pilot (ridge, CPU) at 1.25x its pilot peak",
   "G2": "worker_b 4090: durable g2-queue-worker-b takes over after the current queue (15 cells); worker_a closed to G2 while D2 holds the 5090",
-  "F2": "worker_b 4090: durable f2-loop-worker-b after the current attempt; worker_a 5070 Ti: loop B (campaign_r0_v1_wa) restarts when M07 asks (condition: D2's 5090 cell holds its lease - MET 09:49:06Z)",
+  "F2": "worker_b: f2-loop-worker-b (active); worker_a 5070 Ti: f2-loop-worker-a (active)",
   "D2": "durable d2-runner-worker-a: 4ea6cbed then successors 30-33 on the 5090"
  },
  "durable_runners": [
@@ -1715,7 +1715,7 @@
    "unit": "f2-loop-worker-a.service",
    "host_alias": "worker_a",
    "owner": "M07",
-   "state": "STOPPED by M07 on purpose (coordinator decision): M07 rewrote STOP ~09:41Z, so the unit's 'trained 0' exit is correct; remaining rows queued, six labels moved to the worker_b root; restarts when M07 asks"
+   "state": "ACTIVE since ~10:01:40Z on M07's request (STOP removed by M06); main pid 485447, loop pid 485500; runnable: 1 verify (1862M) + 5 cross-device train replicas (2094M); 12 seed-2023/2024 rows parked; M07 writes STOP if M04 queues another 5090 train"
   },
   {
    "unit": "g2-queue-worker-b.service",
