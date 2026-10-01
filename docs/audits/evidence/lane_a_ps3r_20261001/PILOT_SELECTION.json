@@ -229,6 +229,8 @@
     }
   ],
   "seed": 20261001,
+  "status": "PROVISIONAL_SUPERSEDED_LABELS",
+  "status_reason": "the work list f75260a6 ranks inputs against Y_s/Y_l labels placed 1000x too far ahead (pandas 3 datetime64[us] read as ns in feature-eng tools/progressive_selection.py:629); the coordinator withdrew acceptance of that list. Keep the rule and seed 20261001; redraw on lane B's republished CORRECTION sha.",
   "stratum_sizes": {
     "DEFERRED": 43,
     "EXPLORATORY": 11,

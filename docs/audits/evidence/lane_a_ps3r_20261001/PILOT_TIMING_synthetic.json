@@ -1,0 +1,17 @@
+{
+  "autoencoder_reconstruction": {
+    "includes": "per-epoch validation passes and first-call tracing",
+    "seconds": 1.0077697690285277,
+    "seconds_per_update": 0.02099520352142766,
+    "updates": 48
+  },
+  "probe_battery_seconds_inner1_two_targets": 1.7027461949910503,
+  "scope": "synthetic noise; engineering timing, not a candidate fit",
+  "threads": 32,
+  "ts2vec_contrastive": {
+    "includes": "per-epoch validation passes and first-call tracing",
+    "seconds": 11.035041074006585,
+    "seconds_per_update": 0.22989668904180385,
+    "updates": 48
+  }
+}
