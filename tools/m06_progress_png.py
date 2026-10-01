@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""PROGRESS.png generated from STATUS.json only (writer v2 fields).
+"""PROGRESS.png in the owner's continuation-order format (e9d689e6), generated from artifacts only.
 
-Panels: (1) devices by role/UUID: state, temperature, clock, throttle, VRAM, host RAM, and the job
-on it; (2) jobs with phase, progress with its denominator, ETA window and basis (or the missing
-measurement), heartbeat age; (3) lanes A-F, measured results, open owner decisions.
-No weighted completion percentage is drawn: tests and prototypes are not scientific progress.
-"""
-import datetime as dt
+Inputs: STATUS.json (capacity board, campaigns), registry.json (critical_path, lanes), the method
+record's current_state_20261001 block (front tips, eligibility), and RESULTS/corrected_v2_config_summary.json.
+Panels: newest result with its naive and class; critical path 1-7; fronts A-I; resources per GPU with
+temperature; campaign queues with ETA or the missing measurement; strategy/deployment eligibility.
+No weighted completion percentage is drawn."""
 import json
 import os
 import sys
@@ -15,122 +14,91 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-SURF, INK, INK2, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#e4e3df"
-STATE_COL = {"running": "#2a78d6", "idle": "#b4b2aa", "unknown": "#e34948"}
-PHASE_COL = {"fitting": "#2a78d6", "building": "#eda100", "validating": "#1baf7a", "transferring": "#4a3aa7",
-             "queued": "#b4b2aa", "failed": "#e34948"}
+SURF, INK, INK2 = "#fcfcfb", "#0b0b0b", "#52514e"
+COL = {"RUNNING": "#2a78d6", "IDLE": "#e34948", "RESERVED_FOR_DESKTOP": "#b4b2aa", "OPEN": "#eda100",
+       "COMPLETE": "#1baf7a", "NOT_STARTED": "#b4b2aa", "BLOCKED_ON_STEP_4": "#e34948", "HOLD": "#b4b2aa"}
+FRONT_LANE = {"A": "A2", "B": "B2", "C": "C2", "D": "D2", "D/F2": "F2", "E": "E2", "F": "F", "G": "G2", "H": "H1", "I": "I1"}
 
 
-def T(s):
-    return dt.datetime.strptime(s, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=dt.timezone.utc) if s else None
+def load(p, default=None):
+    try:
+        return json.load(open(p))
+    except Exception:
+        return default
 
 
-def gib(b):
-    return f"{b / 2**30:.1f}" if isinstance(b, (int, float)) else "?"
+def render(status, registry, method, v2, out_path):
+    st, reg, ms = load(status, {}), load(registry, {}), load(method, {})
+    cur = ms.get("current_state_20261001", {})
+    v2d = load(v2, {})
+    fig = plt.figure(figsize=(14, 11), facecolor=SURF)
+    ax = fig.add_axes([0.015, 0.02, 0.97, 0.95]); ax.set_axis_off(); ax.set_xlim(0, 1); ax.set_ylim(0, 1)
+    y = 0.99
 
+    def line(txt, size=7.4, color=INK, x=0.012, step=0.019, mono=True, bold=False):
+        nonlocal y
+        ax.text(x, y, txt, fontsize=size, color=color, va="top", family="monospace" if mono else None,
+                weight="bold" if bold else None)
+        y -= step
 
-def main(status_path, out_path):
-    st = json.load(open(status_path))
-    now = T(st["observed_at"])
-    fig = plt.figure(figsize=(13, 10), facecolor=SURF)
-    ax = fig.add_axes([0.02, 0.03, 0.96, 0.93])
-    ax.set_axis_off()
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
-    y = 0.985
-    ax.text(0, y, f"Modular program status, plan {st.get('plan_revision')}, observed {st['observed_at']} "
-                  f"(generated from STATUS.json; no weighted percentage)", fontsize=11, color=INK, va="top")
-    y -= 0.04
-    ax.text(0, y, "Devices (role / GPU UUID)", fontsize=10, color=INK, weight="bold", va="top")
-    y -= 0.03
-    for d in st["devices"]:
-        g = d.get("gpu") or {}
-        h = (d.get("host") or {}).get("mem") or {}
-        col = STATE_COL.get(d["state"], "#b4b2aa")
-        ax.add_patch(plt.Rectangle((0, y - 0.016), 0.012, 0.016, color=col))
-        thr = ",".join(t for t in g.get("throttle_reasons", []) if t != "gpu_idle") or "none"
-        ax.text(0.018, y, f"{d['host_alias']:<12} {d.get('name', '').replace('NVIDIA GeForce ', '')[:24]:<24} {d['device'][:16]}  {d['state']:<8} "
-                          f"{d.get('temperature_c') or 0:>3.0f}C  SM {g.get('sm_clock_mhz') or 0:>5.0f}/{g.get('sm_clock_max_mhz') or 0:.0f} MHz  "
-                          f"thr {thr:<20} VRAM {g.get('vram_used_mib') or 0:>6.0f}/{g.get('vram_total_mib') or 0:.0f} MiB  "
-                          f"host avail {gib(h.get('MemAvailable'))}/{gib(h.get('MemTotal'))} GiB",
-                fontsize=7.6, family="monospace", color=INK, va="top")
-        y -= 0.022
-        ax.text(0.03, y, f"job: {d.get('job_id') or '-'}; {d.get('reason')}"[:150], fontsize=7, family="monospace",
-                color=INK2, va="top")
-        y -= 0.024
+    def box(state):
+        ax.add_patch(plt.Rectangle((0, y - 0.013), 0.008, 0.013, color=COL.get(str(state).split()[0], "#b4b2aa")))
+
+    line(f"Program progress, observed {st.get('observed_at')} UTC (generated from STATUS, registry, method record; no weighted %)",
+         10.5, mono=False, step=0.03)
+    line("1. Newest result", 9.5, mono=False, bold=True, step=0.024)
+    if v2d.get("configs"):
+        c0 = v2d["configs"][0]; nv = v2d["naive_same_rows"]
+        line(f"{c0['label']} ({c0['config_id']}): validation MAE_z {c0['mean_mae_z']:.6f} (sd {c0['sd']:.6f}, {c0['n']} seeds) "
+             f"vs same-row 24 h seasonal {nv['seasonal_24h']:.6f} -> skill {c0['skill_vs_seasonal24_same_rows']:+.4f}; "
+             f"persistence {nv['persistence']:.6f} -> {c0['skill_vs_persistence_same_rows']:+.4f}")
+        line(f"population: {v2d['population']}", color=INK2)
+        line(f"class: {v2d['evidence_class']}; {v2d['comparability']}"[:200], color=INK2, step=0.028)
+    line("2. Critical path (owner order e9d689e6)", 9.5, mono=False, bold=True, step=0.024)
+    steps = (reg.get("critical_path") or {}).get("steps", [])
+    done = sum(1 for s in steps if s["state"] == "COMPLETE")
+    line(f"completed {done}/{len(steps)}", color=INK2)
+    for s in steps:
+        box(s["state"])
+        line(f"{s['n']} {s['name'][:52]:<52} {s['state'][:34]:<34} next: {s['next'][:78]}")
     y -= 0.01
-    ax.text(0, y, "Jobs (phase from probes; ETA = remaining x measured rate, or the missing measurement)",
-            fontsize=10, color=INK, weight="bold", va="top")
-    y -= 0.03
-    for j in sorted(st["jobs"], key=lambda j: (j["state"] != "running", j["state"] != "queued", j["id"])):
-        ph = j.get("phase") or j["state"]
-        col = PHASE_COL.get(ph.split()[0].lower(), "#1baf7a" if j["state"] == "completed" else "#b4b2aa")
-        ax.add_patch(plt.Rectangle((0, y - 0.014), 0.012, 0.014, color=col))
-        p = j.get("progress") or {}
-        prog = f"{p.get('completed')}/{p.get('total')} {p.get('unit')}" if p.get("completed") is not None else "-"
-        e = j.get("eta") or {}
-        if e.get("earliest"):
-            eta = f"ETA {e['earliest'][11:16]}-{e['latest'][11:16]}Z ({e['basis']})"
-        else:
-            eta = "ETA n/a: " + ((e.get("assumptions") or ["-"])[0])[:60]
-        hb = j.get("heartbeat_at")
-        age = f"hb {int((now - T(hb)).total_seconds())}s ago" if hb and j["state"] == "running" else ""
-        ax.text(0.018, y, f"{j['id'][:44]:<44} {str(j.get('host_alias') or ''):<11} {ph[:34]:<34} {prog:<20} {eta[:70]} {age}",
-                fontsize=7.2, family="monospace", color=INK, va="top")
-        y -= 0.021
+    line("3. Fronts A-I (tips read from git; IMPLEMENTED = code at the tip, not a result)", 9.5, mono=False, bold=True, step=0.024)
+    lanes = {L["lane"]: L for L in st.get("lanes", [])}
+    board_agents = {r.get("lane"): r for r in st.get("capacity_board", []) if r.get("resource") == "AGENT"}
+    seen = {}
+    for f in cur.get("fronts", []):
+        seen.setdefault((f["front"], f["owner"]), []).append(f"{f['repo']}@{(f['tip'] or '')[:8]}")
+    for (fr, owner), tips in seen.items():
+        ln = FRONT_LANE.get(fr, fr); L = lanes.get(ln, {}); b = board_agents.get(ln, {})
+        jobs = b.get("current_job") or []
+        state = b.get("state") or L.get("state", "?")
+        box(state)
+        line(f"{fr:<5}{owner[:28]:<28} {', '.join(tips)[:52]:<52} {str(state)[:10]:<10} {', '.join(jobs)[:60] if isinstance(jobs, list) else jobs}")
+    box("RUNNING"); line(f"{'F':<5}{'M06 evidence/resources':<28} {'predictor m06 branch':<52} {'RUNNING':<10} writer, watcher, sampler")
     y -= 0.01
-    ax.text(0, y, "Lanes", fontsize=10, color=INK, weight="bold", va="top")
-    y -= 0.028
-    for L in st.get("lanes", []):
-        extra = L.get("first_deliverable") or L.get("tests") or ""
-        ax.text(0.018, y, f"{L['lane']}  {L['state']:<32} {', '.join(L['agents'])[:52]:<52} {extra[:70]}",
-                fontsize=7.2, family="monospace", color=INK, va="top")
-        y -= 0.02
-    y -= 0.01
-    ax.text(0, y, "Measured results (classes as recorded; validation vs test kept apart)", fontsize=10, color=INK,
-            weight="bold", va="top")
-    y -= 0.028
-    seen = set()
-    for r in st.get("results", []):
-        if not any(w in r.get("model", "") for w in ("mean", "incumbent")):
+    line("4. Resources per GPU (temperature from the 15 s sampler)", 9.5, mono=False, bold=True, step=0.024)
+    for r in st.get("capacity_board", []):
+        if not str(r.get("resource", "")).startswith("GPU-"):
             continue
-        ax.text(0.018, y, f"{r['task'][:52]} [{r['split']}]  {r['metric']} {r['value']:.6f}  naive {r.get('naive')}  "
-                          f"lit {r['literature']['value']}  {r.get('class') or r['literature']['comparability']}  "
-                          f"{r.get('note', '')[:40]}", fontsize=7.0, family="monospace", color=INK, va="top")
-        y -= 0.02
-    y -= 0.03
-    cov = st.get("coverage") or {}
-    if cov:
-        cc = cov.get("catalogue_coverage", {})
-        od = cc.get("old_denominator", {})
-        ax.text(0, y, "Coverage (three counts kept apart)", fontsize=10, color=INK, weight="bold", va="top")
-        y -= 0.026
-        nd = cc.get("new_source_and_transform_denominators")
-        if isinstance(nd, dict):
-            n = nd["new_denominator"]
-            newtxt = (f"new: {n['files']} files ({n['in_census']} in census, {n['outside_census']} outside), "
-                      f"{n['column_slots']} column slots, ledger {nd['transform_ledger']['rows']} rows, "
-                      f"PIT-admissible sources {nd['sources']['point_in_time_admissible_count']}")
-        else:
-            newtxt = f"new: {nd}"
-        ax.text(0.018, y, f"catalogue old {od.get('covered')}/{od.get('distinct_columns')} column rows (not a census); {newtxt}",
-                fontsize=7.0, family="monospace", color=INK, va="top")
-        y -= 0.02
-        ax.text(0.018, y, (cc.get("complete_coverage_claim") or "")[:190], fontsize=7.0, family="monospace", color=INK, va="top")
-        y -= 0.02
-        mi = "; ".join(f"{m['campaign'][:30]}: {m.get('distinct_input_channel_counts')} channels" for m in cov.get("model_input_count", []))
-        ev = "; ".join(f"{e['campaign'][:30]}: {e['verified_rows']}" for e in cov.get("evaluated_candidate_count", []))
-        ax.text(0.018, y, f"model inputs: {mi}   evaluated (verified rows): {ev}"[:200], fontsize=7.0, family="monospace",
-                color=INK, va="top")
-        y -= 0.03
-    ax.text(0, y, "Open owner decisions", fontsize=10, color=INK, weight="bold", va="top")
-    y -= 0.028
-    for n in [a for a in st.get("next_actions", []) if a.startswith("owner")][:6]:
-        ax.text(0.018, y, n[:150], fontsize=7.2, family="monospace", color=INK, va="top")
-        y -= 0.02
-    fig.savefig(out_path + ".tmp.png", dpi=105, facecolor=SURF)
+        box(r.get("state"))
+        t = r.get("temperature_c"); vu, vt = r.get("vram_used_mib"), r.get("vram_total_mib")
+        line(f"{r['host_alias']:<11} {r['resource'][:20]:<20} {(r.get('name') or '').replace('NVIDIA GeForce ', '')[:22]:<22} "
+             f"{r.get('state', '')[:20]:<20} {('%.0f C' % t) if t is not None else '? C':>5}  VRAM {vu or 0:>6.0f}/{vt or 0:.0f}  "
+             f"job {str(r.get('current_job') or '-')[:26]:<26} next {str(r.get('next_prepared') or '-')[:44]}")
+    y -= 0.01
+    line("5-6. Queues and ETA (versioned denominators; ETA interval or the missing measurement)", 9.5, mono=False, bold=True, step=0.024)
+    for c in st.get("campaigns", []):
+        e = c.get("eta") or {}
+        eta = (f"ETA {e['earliest'][11:16]}-{e['latest'][11:16]}Z" if e.get("earliest") and e.get("latest")
+               else "ETA n/a: " + ("; ".join(e.get("assumptions") or ["-"]))[:90])
+        line(f"{c['campaign'][:46]:<46} {json.dumps(c.get('status_counts'))[:70]:<70} {eta}"[:205])
+    y -= 0.01
+    line("Eligibility for strategy and deployment", 9.5, mono=False, bold=True, step=0.024)
+    for k, v in (cur.get("eligibility_for_strategy_and_deployment") or {}).items():
+        line(f"{k:<24} {v}")
+    fig.savefig(out_path + ".tmp.png", dpi=100, facecolor=SURF)
     os.replace(out_path + ".tmp.png", out_path)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    render(*sys.argv[1:6])

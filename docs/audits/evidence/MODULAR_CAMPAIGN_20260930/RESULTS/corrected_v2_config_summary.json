@@ -1,0 +1,215 @@
+{
+ "schema": "m06.v2_config_summary.v1",
+ "generated_at": "2026-10-01T10:34:41Z",
+ "source": "read-only sqlite of m04 campaign_corrected_r0_v2 (status='verified' rows only; M04's own verify gate)",
+ "campaign_sha256": "1d067b40b7e3997f5ef5828728df8845ae1ecfdb1d03ac933389381e5b256800",
+ "population": "ECL L24 -> H1..24, 321 targets, z_train MAE on the validation NPZ e3712565 (2,609 windows); same NPZ as corrected v1",
+ "naive_same_rows": {
+  "seasonal_24h": 0.24796637423429127,
+  "persistence": 0.851406,
+  "source": "RESULTS/corrected_campaign_tables.json (v1, same validation NPZ)"
+ },
+ "evidence_class": "EXECUTED_AND_VERIFIED_BY_M04 (queue status verified); M06 independent receipt regeneration NOT yet done; per-horizon skill NOT yet available",
+ "comparability": "NOT_COMPARABLE with published ECL rows (L96->H96, test split); not financial evidence",
+ "configs": [
+  {
+   "config_id": "2c1c7afa",
+   "label": "seasonal_residual_default_R0_mae",
+   "seeds": [
+    2021,
+    2022,
+    2023,
+    2024
+   ],
+   "n": 4,
+   "mean_mae_z": 0.21764047249516205,
+   "sd": 0.0013565955027172313,
+   "skill_vs_seasonal24_same_rows": 0.12229844402401013,
+   "skill_vs_persistence_same_rows": 0.7443752187614816,
+   "per_seed": [
+    [
+     2021,
+     0.21775881308062603,
+     "46c7776e88c8c735"
+    ],
+    [
+     2022,
+     0.2156977546321922,
+     "4de62e3ebb1be8d0"
+    ],
+    [
+     2023,
+     0.21873802652897026,
+     "4ea6cbed0afe6723"
+    ],
+    [
+     2024,
+     0.21836729573885966,
+     "c3cb7e270f86b736"
+    ]
+   ]
+  },
+  {
+   "config_id": "b41435c6",
+   "label": "seasonal_residual_branch_core_R1_mae",
+   "seeds": [
+    2021,
+    2022,
+    2023,
+    2024
+   ],
+   "n": 4,
+   "mean_mae_z": 0.24819868148113733,
+   "sd": 7.710190095100276e-06,
+   "skill_vs_seasonal24_same_rows": -0.0009368497949102661,
+   "skill_vs_persistence_same_rows": 0.7084837533666226,
+   "per_seed": [
+    [
+     2021,
+     0.24820395535283377,
+     "14607144f7b40731"
+    ],
+    [
+     2022,
+     0.2481975279869746,
+     "44772b344bc7f9fe"
+    ],
+    [
+     2023,
+     0.2482050090234983,
+     "8117676f524f66ed"
+    ],
+    [
+     2024,
+     0.24818823356124273,
+     "c5ea3dd96d15112c"
+    ]
+   ]
+  },
+  {
+   "config_id": "2cb6cb32",
+   "label": "branch_core_R2_lr0.0001_ref_seq5",
+   "seeds": [
+    2021,
+    2022
+   ],
+   "n": 2,
+   "mean_mae_z": 0.3575593726520984,
+   "sd": 0.002940076232751074,
+   "skill_vs_seasonal24_same_rows": -0.44196717702642263,
+   "skill_vs_persistence_same_rows": 0.5800365834254182,
+   "per_seed": [
+    [
+     2021,
+     0.35548042481071473,
+     "7430fff514bda3ad"
+    ],
+    [
+     2022,
+     0.3596383204934821,
+     "8309b7ddc400f79a"
+    ]
+   ]
+  },
+  {
+   "config_id": "a1f682a6",
+   "label": "corrected_draw3_R0_mae_seeds2023_2024",
+   "seeds": [
+    2023,
+    2024
+   ],
+   "n": 2,
+   "mean_mae_z": 0.3707814852069897,
+   "sd": 0.023298040872070866,
+   "skill_vs_seasonal24_same_rows": -0.49528937684371854,
+   "skill_vs_persistence_same_rows": 0.5645068449047931,
+   "per_seed": [
+    [
+     2023,
+     0.3872556878959924,
+     "8ce04ef5e1f88ba4"
+    ],
+    [
+     2024,
+     0.3543072825179871,
+     "2b965a41bbd86700"
+    ]
+   ]
+  },
+  {
+   "config_id": "3cbe75dd",
+   "label": "corrected_default_branch_core_R1_mae_ref_seq5_seeds2023_2024",
+   "seeds": [
+    2023,
+    2024
+   ],
+   "n": 2,
+   "mean_mae_z": 0.37510177036362735,
+   "sd": 2.8944888426166872e-05,
+   "skill_vs_seasonal24_same_rows": -0.5127122438351746,
+   "skill_vs_persistence_same_rows": 0.559432549966024,
+   "per_seed": [
+    [
+     2023,
+     0.3751222374905142,
+     "3b5f18b4a9117c03"
+    ],
+    [
+     2024,
+     0.37508130323674055,
+     "c089a81a7130ad01"
+    ]
+   ]
+  },
+  {
+   "config_id": "ed62e1be",
+   "label": "branch_core_R2_lr3e-05_ref_seq5",
+   "seeds": [
+    2021,
+    2022
+   ],
+   "n": 2,
+   "mean_mae_z": 0.3806069639716664,
+   "sd": 0.0028825174956957785,
+   "skill_vs_seasonal24_same_rows": -0.5349136153922609,
+   "skill_vs_persistence_same_rows": 0.5529665471330172,
+   "per_seed": [
+    [
+     2021,
+     0.37856871630357103,
+     "b255640ba6e7563e"
+    ],
+    [
+     2022,
+     0.38264521163976173,
+     "a5eafeaecb3b0cde"
+    ]
+   ]
+  },
+  {
+   "config_id": "82fd2ce1",
+   "label": "corrected_default_R0_mae_seeds2023_2024",
+   "seeds": [
+    2023,
+    2024
+   ],
+   "n": 2,
+   "mean_mae_z": 0.3817908550313197,
+   "sd": 0.0053974810493816324,
+   "skill_vs_seasonal24_same_rows": -0.5396880170155016,
+   "skill_vs_persistence_same_rows": 0.5515760341936518,
+   "per_seed": [
+    [
+     2023,
+     0.37797425957997605,
+     "ac976a8c6153099c"
+    ],
+    [
+     2024,
+     0.3856074504826633,
+     "0f7f55b9ce035bb1"
+    ]
+   ]
+  }
+ ]
+}

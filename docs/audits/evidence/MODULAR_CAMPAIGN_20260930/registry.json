@@ -363,7 +363,7 @@
   }
  ],
  "next_actions": [
-  "owner: DEPLOY_ADM_DEADCACHE.sh on worker_b (NOT executed; question 18 downgraded, ack a7c0599c \u00a710.4)",
+  "owner: DEPLOY_ADM_DEADCACHE.sh on worker_b (NOT executed; question 18 downgraded, ack a7c0599c §10.4)",
   "ANSWERED 2026-10-01T07:25:58Z: ADM-STALE-LEASE-01 + ADM-CANCEL-01 (a1f3898b) deployed on worker_a and worker_b under the owner standing order; coordinator still on 775c5545-era launcher (not ordered)",
   "owner: open questions 1-12, 14-17, 21-23 (links in open_owner_questions)",
   "M01 PS3-R child on worker_b: M06 units report its completion and any stop"
@@ -507,7 +507,7 @@
   {
    "at": "2026-10-01T04:10:00Z",
    "host_alias": "worker_a",
-   "event": "orchestrator: M04 GO to launch the per-feature pilot on worker_a (repaired admission) and cancel its worker_b request through the tool; M01 chained laneA-suite (4G) + ps3r-pilot-3g (3G) queued on worker_b; deployment verified by the orchestrator (charged 73 MB vs 2.66 GB, free 9.0 GB); question 18 downgraded (ack a7c0599c \u00a710.4)"
+   "event": "orchestrator: M04 GO to launch the per-feature pilot on worker_a (repaired admission) and cancel its worker_b request through the tool; M01 chained laneA-suite (4G) + ps3r-pilot-3g (3G) queued on worker_b; deployment verified by the orchestrator (charged 73 MB vs 2.66 GB, free 9.0 GB); question 18 downgraded (ack a7c0599c §10.4)"
   },
   {
    "at": "2026-10-01T04:16:44Z",
@@ -705,6 +705,13 @@
   {
    "at": "2026-10-01T09:42Z",
    "what": "M06 handover v1 self-matched its own command line in pgrep: it touched M07 loop B's STOP on worker_a at 09:40:37Z; loop B exited; STOP removed ~09:40:50Z; durable unit started 09:41:46Z exited 0 ('trained': 0). Fixed in handover v2 (wrapper/handover processes excluded); the other handovers were re-armed with v2; M07 later clarified that it had rewritten STOP ~09:41Z itself (coordinator decision), so the unit's 'trained 0' exit was correct and no cell was lost"
+  },
+  {
+   "at": "2026-10-01T10:35:00Z",
+   "id": "LEAK-IP-01",
+   "what": "STATUS.json carried the workers' private network addresses (ssh multiplexer process names in unparsed_processes) in every STATUS commit from c06db834 to 513c85cd; the writer scrubbed host names only and the commit gate searched names only",
+   "fix": "scrub() replaces IPv4 addresses with <ip> (46a840f8, tested); the gate now includes an IPv4 pattern; history rewrite is the owner's decision",
+   "by": "M06 (own defect)"
   }
  ],
  "plan_links": {
@@ -714,7 +721,7 @@
   "previous_campaign_return": "docs/audits/evidence/MODULAR_CAMPAIGN_20260930/RETURN.md @ 09f129c5",
   "coverage_addendum": "docs/handoffs/SATOSHI_SOURCE_TRANSFORM_COVERAGE_ADDENDUM_2026_10_01.md @ 256c61a6",
   "next_dispatch": "docs/handoffs/SATOSHI_NEXT_DISPATCH_2026_10_01.md @ b327b771",
-  "autonomous_orders": "docs/handoffs/SATOSHI_AUTONOMOUS_PARALLEL_EXECUTION_2026_10_01.md revision 1 (sha 0207ae65...): \u00a76 capacity board"
+  "autonomous_orders": "docs/handoffs/SATOSHI_AUTONOMOUS_PARALLEL_EXECUTION_2026_10_01.md revision 1 (sha 0207ae65...): §6 capacity board"
  },
  "lanes": [
   {
@@ -811,6 +818,13 @@
    "branch": null,
    "state": "running",
    "measured": "h1-pilot-green4 on worker_b: tests 37/37, cap 2G, cgroup peak 79.4 MB, ~6 s; branch satoshi/h-kalman-20261001 @ 940834d2"
+  },
+  {
+   "lane": "I1",
+   "state": "running (CPU only; M5PHET usable adapters)",
+   "agents": [
+    "ad39bdf372d45ceb0 (I1)"
+   ]
   }
  ],
  "job_hints": {
@@ -874,6 +888,12 @@
   },
   "m01-.*": {
    "lane": "A2"
+  },
+  "h1-.*": {
+   "lane": "H1"
+  },
+  "i1-.*": {
+   "lane": "I1"
   }
  },
  "job_overrides": {
@@ -1729,5 +1749,60 @@
    "owner": "lane G",
    "state": "withdrawn: worker_a closed to lane G while M04's 5090 train holds its lease (coordinator 09:41Z)"
   }
- ]
+ ],
+ "critical_path": {
+  "as_of": "2026-10-01T10:45:00Z",
+  "source": "owner continuation order e9d689e6 §critical path; states by M06 from STATUS, RESULTS and front tips; a step is COMPLETE only with a verified, naive-gated artifact",
+  "steps": [
+   {
+    "n": 1,
+    "name": "point-in-time financial dataset with short/long targets",
+    "state": "OPEN",
+    "evidence": "B feature-eng dee000b/8484162 coverage ledger IMPLEMENTED; laneB three denominators generated; no PIT dataset sealed",
+    "next": "M03: sealed PIT ETH/EURUSD dataset identity with targets"
+   },
+   {
+    "n": 2,
+    "name": "progressive selection + temporal representation",
+    "state": "OPEN",
+    "evidence": "C2 c2-find-full RUNNING; H1 Kalman gate replication FAILS every horizon (lane B finding replicated); A2 PS5 running",
+    "next": "C2 causal contribution result on ETH 4h; H1 exact-core digest replay"
+   },
+   {
+    "n": 3,
+    "name": "DOIN R0/R1/R2 on the modular architecture",
+    "state": "OPEN (ECL non-financial: R0 seasonal-residual beats same-row seasonal naive, 4 seeds)",
+    "evidence": "RESULTS/corrected_v2_config_summary.json; F2 ETH 4h R0 12 cells",
+    "next": "D2 v2: blocked R2/ABL cells after donors; F2 R1 on ETH"
+   },
+   {
+    "n": 4,
+    "name": "naive gate per horizon and seed",
+    "state": "OPEN",
+    "evidence": "heuristic-strategy 4b5dd7e naive gate IMPLEMENTED; ETH 4h R0: 0/12 eligible",
+    "next": "first ETH candidate that passes the per-horizon, per-seed gate"
+   },
+   {
+    "n": 5,
+    "name": "heuristic replay + RL SAC/DQN contrast",
+    "state": "OPEN",
+    "evidence": "G2 g-rl-RL-D1_seed101 RUNNING; agent-multi 25ee6efd",
+    "next": "G2 first SAC/DQN contrast record"
+   },
+   {
+    "n": 6,
+    "name": "MT5 demo + Alpaca paper with the best eligible candidate",
+    "state": "BLOCKED_ON_STEP_4",
+    "evidence": "lts 42035f1 paper adapter IMPLEMENTED; no eligible candidate",
+    "next": "needs an eligible candidate from step 4"
+   },
+   {
+    "n": 7,
+    "name": "progressive replacement only on better evidence",
+    "state": "NOT_STARTED",
+    "evidence": "-",
+    "next": "needs step 6"
+   }
+  ]
+ }
 }

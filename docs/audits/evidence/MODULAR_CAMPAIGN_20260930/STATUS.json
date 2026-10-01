@@ -1,6 +1,6 @@
 {
  "schema": "modular.program.status.v1",
- "observed_at": "2026-10-01T10:32:34Z",
+ "observed_at": "2026-10-01T10:35:41Z",
  "plan_revision": "b327b771",
  "plan_links": {
   "orders": "docs/handoffs/SATOSHI_PROGRESSIVE_SELECTION_AND_MODULAR_CONTINUATION_2026_09_30.md @ ac125db9 (superseded revision for plan_revision; still governing for lanes A-F)",
@@ -170,6 +170,13 @@
    "branch": null,
    "state": "running",
    "measured": "h1-pilot-green4 on worker_b: tests 37/37, cap 2G, cgroup peak 79.4 MB, ~6 s; branch satoshi/h-kalman-20261001 @ 940834d2"
+  },
+  {
+   "lane": "I1",
+   "state": "running (CPU only; M5PHET usable adapters)",
+   "agents": [
+    "ad39bdf372d45ceb0 (I1)"
+   ]
   }
  ],
  "devices": [
@@ -180,16 +187,16 @@
    "state": "idle",
    "job_id": null,
    "reason": "desktop client only: snapd-desktop-integration",
-   "observed_at": "2026-10-01T10:32:34Z",
-   "temperature_c": 42.0,
-   "utilization_percent": 3.0,
-   "host_available_bytes": 18917658624,
+   "observed_at": "2026-10-01T10:35:41Z",
+   "temperature_c": 43.0,
+   "utilization_percent": 0.0,
+   "host_available_bytes": 18809815040,
    "gpu": {
     "sm_clock_mhz": 210.0,
     "sm_clock_max_mhz": 3105.0,
     "vram_used_mib": 612.0,
     "vram_total_mib": 8188.0,
-    "power_w": 5.11,
+    "power_w": 5.2,
     "throttle_reasons": [
      "gpu_idle"
     ],
@@ -206,23 +213,23 @@
    "host": {
     "mem": {
      "MemTotal": 32778358784,
-     "MemAvailable": 18917658624,
-     "SUnreclaim": 706408448,
-     "SReclaimable": 2689146880,
-     "Shmem": 5034979328,
+     "MemAvailable": 18809815040,
+     "SUnreclaim": 706310144,
+     "SReclaimable": 2689138688,
+     "Shmem": 5035036672,
      "SwapTotal": 8589930496,
-     "SwapFree": 4744183808
+     "SwapFree": 4744445952
     },
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=223319100\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=196986636",
-    "uptime_s": 225003.52,
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=223319105\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=196986641",
+    "uptime_s": 225190.91,
     "gpu_reinit_this_boot": "0",
     "shares_host_ram_with": []
    },
    "admission": {
-    "host_free_for_new_bytes": 14282407936,
-    "held_unrealised_bytes": 1395015680,
+    "host_free_for_new_bytes": 14186266624,
+    "held_unrealised_bytes": 1397055488,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 5043638272,
+    "slice_memory_current": 5041512448,
     "slice_charged_bytes": null,
     "slice_memory_max": 15032385536,
     "pressure_some_avg10": 0.0,
@@ -230,8 +237,8 @@
     "pressure_admit_max": 25.0
    },
    "next_task": "coordinator: no batch work (standing rule)",
-   "gpu_idle_seconds_24h": 8482,
-   "gpu_idle_current_seconds": 0,
+   "gpu_idle_seconds_24h": 8669,
+   "gpu_idle_current_seconds": 140,
    "gpu_idle_note": "writer cycle sampling (sampler unavailable for this device)"
   },
   {
@@ -241,56 +248,56 @@
    "state": "idle",
    "job_id": null,
    "reason": "no compute process and no GPU job lease on this device",
-   "observed_at": "2026-10-01T10:32:34Z",
-   "temperature_c": 36.0,
+   "observed_at": "2026-10-01T10:35:42Z",
+   "temperature_c": 37.0,
    "utilization_percent": 0.0,
-   "host_available_bytes": 6546620416,
+   "host_available_bytes": 6554152960,
    "gpu": {
     "sm_clock_mhz": 1507.0,
     "sm_clock_max_mhz": 3090.0,
     "vram_used_mib": 14.0,
     "vram_total_mib": 12227.0,
-    "power_w": 18.59,
+    "power_w": 18.6,
     "throttle_reasons": [],
     "compute_processes": []
    },
    "host": {
     "mem": {
      "MemTotal": 15340752896,
-     "MemAvailable": 6546620416,
-     "SUnreclaim": 853819392,
-     "SReclaimable": 738721792,
-     "Shmem": 84221952,
+     "MemAvailable": 6554152960,
+     "SUnreclaim": 856829952,
+     "SReclaimable": 738926592,
+     "Shmem": 75816960,
      "SwapTotal": 4294963200,
      "SwapFree": 4293955584
     },
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=118174177\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=115718011",
-    "uptime_s": 41916.93,
-    "gpu_reinit_this_boot": "875",
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=118174182\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=115718016",
+    "uptime_s": 42104.34,
+    "gpu_reinit_this_boot": "881",
     "shares_host_ram_with": [
      "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
     ]
    },
    "admission": {
-    "host_free_for_new_bytes": 1501585408,
-    "held_unrealised_bytes": 1815560192,
+    "host_free_for_new_bytes": 1503899648,
+    "held_unrealised_bytes": 1815752704,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 7342305280,
-    "slice_charged_bytes": 6392537088,
+    "slice_memory_current": 7333494784,
+    "slice_charged_bytes": 6383374336,
     "slice_memory_max": 8589934592,
     "pressure_some_avg10": 0.0,
     "pressure_full_avg10": 0.0,
     "pressure_admit_max": 25.0
    },
    "next_task": "NEXT JOB THAT FITS: M07 (F2) per-feature cell (CPU pilot peak 1.52 GB < 2.5 GB) after its 4090 pilots; lane G RL cells pending a ruling (full SB3 cell projects ~2.6 GB, 1.25x 3.25 GB > 2.5 GB; options: 40k buffer or optimize_memory_usage ~2.25 GB)",
-   "gpu_idle_seconds_24h": 9129,
-   "gpu_idle_current_seconds": 704,
-   "sampler_temperature_c": 36.0,
+   "gpu_idle_seconds_24h": 9309,
+   "gpu_idle_current_seconds": 884,
+   "sampler_temperature_c": 37.0,
    "sampler_temperature_max_since_start_c": 38.0,
    "sampler_vram_used_mib": 14.0,
    "sampler_vram_total_mib": 12227.0,
-   "sampler_power_w": 16.28,
-   "sampler_sample_at": "2026-10-01T10:32:28Z",
+   "sampler_power_w": 16.17,
+   "sampler_sample_at": "2026-10-01T10:35:28Z",
    "gpu_idle_note": "m06-gpu-sampler: 15 s sampling; idle = 0 % utilization or no compute process; alarm at 120 s"
   },
   {
@@ -300,16 +307,16 @@
    "state": "running",
    "job_id": "m04-train-f1595134",
    "reason": "compute process in a crispdm job scope",
-   "observed_at": "2026-10-01T10:32:34Z",
-   "temperature_c": 54.0,
-   "utilization_percent": 42.0,
-   "host_available_bytes": 6546620416,
+   "observed_at": "2026-10-01T10:35:42Z",
+   "temperature_c": 53.0,
+   "utilization_percent": 57.0,
+   "host_available_bytes": 6554152960,
    "gpu": {
-    "sm_clock_mhz": 2895.0,
+    "sm_clock_mhz": 2910.0,
     "sm_clock_max_mhz": 3135.0,
     "vram_used_mib": 1064.0,
     "vram_total_mib": 32607.0,
-    "power_w": 101.27,
+    "power_w": 104.61,
     "throttle_reasons": [],
     "compute_processes": [
      {
@@ -324,26 +331,26 @@
    "host": {
     "mem": {
      "MemTotal": 15340752896,
-     "MemAvailable": 6546620416,
-     "SUnreclaim": 853819392,
-     "SReclaimable": 738721792,
-     "Shmem": 84221952,
+     "MemAvailable": 6554152960,
+     "SUnreclaim": 856829952,
+     "SReclaimable": 738926592,
+     "Shmem": 75816960,
      "SwapTotal": 4294963200,
      "SwapFree": 4293955584
     },
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=118174177\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=115718011",
-    "uptime_s": 41916.93,
-    "gpu_reinit_this_boot": "875",
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=118174182\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=115718016",
+    "uptime_s": 42104.34,
+    "gpu_reinit_this_boot": "881",
     "shares_host_ram_with": [
      "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
     ]
    },
    "admission": {
-    "host_free_for_new_bytes": 1501585408,
-    "held_unrealised_bytes": 1815560192,
+    "host_free_for_new_bytes": 1503899648,
+    "held_unrealised_bytes": 1815752704,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 7342305280,
-    "slice_charged_bytes": 6392537088,
+    "slice_memory_current": 7333494784,
+    "slice_charged_bytes": 6383374336,
     "slice_memory_max": 8589934592,
     "pressure_some_avg10": 0.0,
     "pressure_full_avg10": 0.0,
@@ -352,12 +359,12 @@
    "next_task": "D2 (M04 a083979bc9a8fa1b8): v2 campaign on the 5090",
    "gpu_idle_seconds_24h": 3068,
    "gpu_idle_current_seconds": 0,
-   "sampler_temperature_c": 54.0,
+   "sampler_temperature_c": 53.0,
    "sampler_temperature_max_since_start_c": 54.0,
    "sampler_vram_used_mib": 1064.0,
    "sampler_vram_total_mib": 32607.0,
-   "sampler_power_w": 105.99,
-   "sampler_sample_at": "2026-10-01T10:32:28Z",
+   "sampler_power_w": 103.63,
+   "sampler_sample_at": "2026-10-01T10:35:28Z",
    "gpu_idle_note": "m06-gpu-sampler: 15 s sampling; idle = 0 % utilization or no compute process; alarm at 120 s"
   },
   {
@@ -365,18 +372,18 @@
    "device": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
    "name": "NVIDIA GeForce RTX 4090 Laptop GPU",
    "state": "running",
-   "job_id": "g-rl-RL-D1_seed101",
+   "job_id": "f2-train-19799131",
    "reason": "compute process in a crispdm job scope",
-   "observed_at": "2026-10-01T10:32:36Z",
+   "observed_at": "2026-10-01T10:35:43Z",
    "temperature_c": 56.0,
-   "utilization_percent": 15.0,
-   "host_available_bytes": 13419130880,
+   "utilization_percent": 22.0,
+   "host_available_bytes": 12978991104,
    "gpu": {
     "sm_clock_mhz": 1455.0,
     "sm_clock_max_mhz": 3105.0,
-    "vram_used_mib": 450.0,
+    "vram_used_mib": 787.0,
     "vram_total_mib": 16376.0,
-    "power_w": 30.19,
+    "power_w": 30.52,
     "throttle_reasons": [
      "gpu_idle"
     ],
@@ -387,44 +394,51 @@
       "used_mib": "428",
       "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-g-rl-RL-D1_seed101-1790847355-1737368.scope",
       "exe": "python"
+     },
+     {
+      "uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+      "pid": 1860198,
+      "used_mib": "332",
+      "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-train-19799131-1790850925-1860175.scope",
+      "exe": "python"
      }
     ]
    },
    "host": {
     "mem": {
      "MemTotal": 32831807488,
-     "MemAvailable": 13419130880,
-     "SUnreclaim": 3339091968,
-     "SReclaimable": 1286676480,
-     "Shmem": 1181843456,
+     "MemAvailable": 12978991104,
+     "SUnreclaim": 3340152832,
+     "SReclaimable": 1290338304,
+     "Shmem": 1212194816,
      "SwapTotal": 8589930496,
-     "SwapFree": 5526515712
+     "SwapFree": 5526519808
     },
-    "psi_memory": "some avg10=0.00 avg60=0.29 avg300=3.22 total=154662299\nfull avg10=0.00 avg60=0.24 avg300=2.70 total=141691269",
-    "uptime_s": 215916.28,
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=1.67 total=154662300\nfull avg10=0.00 avg60=0.00 avg300=1.40 total=141691269",
+    "uptime_s": 216103.37,
     "gpu_reinit_this_boot": "0",
     "shares_host_ram_with": []
    },
    "admission": {
-    "host_free_for_new_bytes": 2913036288,
-    "held_unrealised_bytes": 7274043392,
+    "host_free_for_new_bytes": 2743435264,
+    "held_unrealised_bytes": 6989455360,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 8534233088,
-    "slice_charged_bytes": 5977071616,
+    "slice_memory_current": 8952483840,
+    "slice_charged_bytes": 6394454016,
     "slice_memory_max": 15032385536,
     "pressure_some_avg10": 0.0,
     "pressure_full_avg10": 0.0,
     "pressure_admit_max": 25.0
    },
    "next_task": "G2 RL cells FIRST (one at a time) beside F2 (M07); D2 only until an RL or M07 GPU job is admitted",
-   "gpu_idle_seconds_24h": 1650,
+   "gpu_idle_seconds_24h": 1665,
    "gpu_idle_current_seconds": 0,
    "sampler_temperature_c": 56.0,
    "sampler_temperature_max_since_start_c": 63.0,
-   "sampler_vram_used_mib": 450.0,
+   "sampler_vram_used_mib": 719.0,
    "sampler_vram_total_mib": 16376.0,
-   "sampler_power_w": 30.23,
-   "sampler_sample_at": "2026-10-01T10:32:28Z",
+   "sampler_power_w": 30.41,
+   "sampler_sample_at": "2026-10-01T10:35:28Z",
    "gpu_idle_note": "m06-gpu-sampler: 15 s sampling; idle = 0 % utilization or no compute process; alarm at 120 s"
   }
  ],
@@ -513,7 +527,7 @@
     ]
    ],
    "cap_bytes": 134217728,
-   "cgroup_current_bytes": 7512064,
+   "cgroup_current_bytes": 7540736,
    "cgroup_peak_bytes": 8036352,
    "cap_vs_observed_peak": 16.7,
    "uses_gpu": false,
@@ -559,7 +573,7 @@
     ]
    ],
    "cap_bytes": 134217728,
-   "cgroup_current_bytes": 4157440,
+   "cgroup_current_bytes": 3633152,
    "cgroup_peak_bytes": 16801792,
    "cap_vs_observed_peak": 7.99,
    "uses_gpu": false,
@@ -610,7 +624,7 @@
     ]
    ],
    "cap_bytes": 134217728,
-   "cgroup_current_bytes": 8773632,
+   "cgroup_current_bytes": 8249344,
    "cgroup_peak_bytes": 11214848,
    "cap_vs_observed_peak": 11.97,
    "uses_gpu": false,
@@ -666,7 +680,7 @@
     ]
    ],
    "cap_bytes": 536870912,
-   "cgroup_current_bytes": 28008448,
+   "cgroup_current_bytes": 26075136,
    "cgroup_peak_bytes": 43298816,
    "cap_vs_observed_peak": 12.4,
    "uses_gpu": false,
@@ -730,44 +744,44 @@
     ]
    ],
    "cap_bytes": 8109686784,
-   "cgroup_current_bytes": 6294126592,
+   "cgroup_current_bytes": 6293934080,
    "cgroup_peak_bytes": 6401204224,
    "cap_vs_observed_peak": 1.27,
    "uses_gpu": true,
    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m04-train-f1595134-1790850530-519589.scope",
-   "heartbeat_at": "2026-10-01T10:32:27Z",
+   "heartbeat_at": "2026-10-01T10:35:27Z",
    "heartbeat_path": "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v2/attempts/f15951344af39361/train-1/bridge/b7967a827c5e16c7357a314d387aaf8b9f2d794a9dffe26aab65e5e35a54bd45/heartbeat.jsonl",
    "heartbeat_stale": false,
    "heartbeat_status": "OK",
-   "heartbeat_age_s": 6,
+   "heartbeat_age_s": 14,
    "last_advance": {
     "stage": "fit",
     "progress": {
      "batches_per_epoch": 287,
-     "best_epoch": 1,
-     "best_validation_loss": 0.37742707277221577,
-     "elapsed_seconds": 159.3608471769985,
-     "epoch": 4,
+     "best_epoch": 10,
+     "best_validation_loss": 0.36257986009874854,
+     "elapsed_seconds": 339.4338626040044,
+     "epoch": 11,
      "max_epochs": 27,
      "max_seconds": 5400.0,
      "max_updates": 1000000,
      "stage": "fit",
-     "stale_monitors": 2,
-     "updates": 1069,
-     "validation_loss": 0.37774995136142187
+     "stale_monitors": 0,
+     "updates": 3116,
+     "validation_loss": 0.36257986009874854
     },
     "resources": {
      "cgroup": {
       "cgroup": "/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m04-train-f1595134-1790850530-519589.scope",
-      "current_bytes": 6294126592,
+      "current_bytes": 6294196224,
       "max": 8109686784,
       "peak_bytes": 6401204224
      },
      "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
      "process": {
       "VmHWM": 5767315456,
-      "VmRSS": 5666136064,
-      "cpu_seconds": 213.51
+      "VmRSS": 5666193408,
+      "cpu_seconds": 394.63
      }
     }
    },
@@ -799,7 +813,7 @@
    "declared_wall": "10m",
    "queue_wait_s": "3600",
    "gpu_request": false,
-   "waiting_s": 185,
+   "waiting_s": 372,
    "command_head": [
     "env",
     "PYTHONPATH=/home/harveybc/Documents/GitHub/.worktrees/predictor-f2-eth-sres-024ce260",
@@ -836,7 +850,7 @@
    "declared_wall": "5m",
    "queue_wait_s": "600",
    "gpu_request": false,
-   "waiting_s": 121,
+   "waiting_s": 308,
    "command_head": [
     "env",
     "PYTHONPATH=/home/harveybc/Documents/GitHub/.worktrees/predictor-f2-eth-sres-024ce260",
@@ -861,48 +875,28 @@
    }
   },
   {
-   "id": "c2-find-full",
-   "lane": "C2",
-   "state": "running",
-   "phase": "running_stage_unknown",
-   "stage": "no heartbeat stage",
+   "id": "f2-gpu-pilot-sres-per_feature",
+   "lane": "F2",
+   "state": "queued",
+   "phase": "queued",
+   "stage": "waiting for admission",
    "producer_commit": "unknown",
-   "host_alias": "worker_b",
-   "lease_id": "c2-find-full-1790849987-1805304-06c1d8",
-   "launcher_pid": 1805296,
-   "launcher_alive": true,
-   "child_heads": [
-    [
-     "timeout",
-     "--kill-after=30s",
-     "2h",
-     "/home/harveybc/anaconda3/envs/trading-stack/bin/python"
-    ],
-    [
-     "python",
-     "/home/harveybc/.local/bin/../libexec/crispdm/crispdm_admission.py",
-     "scope-exec",
-     "--lease"
-    ],
-    [
-     "python",
-     "tools/c2_real_rejection.py",
-     "--view",
-     "/home/harveybc/.local/state/scratch/c2/data/ethusdt_4h_tech_stat_full_model_ready.csv"
-    ]
+   "host_alias": "worker_a",
+   "launcher_pid": 526043,
+   "declared_mem": "3000M",
+   "declared_wall": "45m",
+   "queue_wait_s": "7200",
+   "gpu_request": true,
+   "waiting_s": 118,
+   "command_head": [
+    "env",
+    "CUDA_VISIBLE_DEVICES=GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+    "LD_LIBRARY_PATH=/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cublas/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cuda_cupti/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cuda_nvrtc/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cuda_runtime/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cudnn/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cufft/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/curand/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cusolver/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cusparse/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cusparselt/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/nccl/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/nvjitlink/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/nvshmem/lib:",
+    "M04_HOST_ROLE=worker_a",
+    "F2_HOST_ROLE=worker_a",
+    "TF_CPP_MIN_LOG_LEVEL=1"
    ],
-   "cap_bytes": 375572480,
-   "cgroup_current_bytes": 262144000,
-   "cgroup_peak_bytes": 279871488,
-   "cap_vs_observed_peak": 1.34,
-   "uses_gpu": false,
-   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-c2-find-full-1790849987-1805296.scope",
    "heartbeat_at": null,
-   "heartbeat_path": null,
-   "heartbeat_stale": false,
-   "heartbeat_status": "NONE",
-   "heartbeat_age_s": null,
-   "last_advance": {},
    "progress": {
     "unit": "unknown",
     "completed": null,
@@ -913,75 +907,16 @@
     "latest": null,
     "basis": "not_estimable",
     "assumptions": [
-     "missing measurement: the job's total work units are not declared to M06"
+     "admission order depends on live leases releasing"
     ]
-   },
-   "override": null
-  },
-  {
-   "id": "d-unit-417a554c",
-   "lane": "D2",
-   "state": "running",
-   "phase": "running_stage_unknown",
-   "stage": "no heartbeat stage",
-   "producer_commit": "3ecdb256",
-   "host_alias": "worker_b",
-   "lease_id": "d-unit-417a554c-1790850743-1823723-36cb49",
-   "launcher_pid": 1823711,
-   "launcher_alive": true,
-   "child_heads": [
-    [
-     "timeout",
-     "--kill-after=30s",
-     "10m",
-     "python3"
-    ],
-    [
-     "python3",
-     "/home/harveybc/.local/bin/../libexec/crispdm/crispdm_admission.py",
-     "scope-exec",
-     "--lease"
-    ],
-    [
-     "python",
-     "-m",
-     "pytest",
-     "tests/test_modular_doin_m04.py"
-    ]
-   ],
-   "cap_bytes": 2147483648,
-   "cgroup_current_bytes": 319602688,
-   "cgroup_peak_bytes": 324009984,
-   "cap_vs_observed_peak": 6.63,
-   "uses_gpu": false,
-   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-d-unit-417a554c-1790850563-1823711.scope",
-   "heartbeat_at": null,
-   "heartbeat_path": null,
-   "heartbeat_stale": false,
-   "heartbeat_status": "NONE",
-   "heartbeat_age_s": null,
-   "last_advance": {},
-   "progress": {
-    "unit": "unknown",
-    "completed": null,
-    "total": null
-   },
-   "eta": {
-    "earliest": null,
-    "latest": null,
-    "basis": "not_estimable",
-    "assumptions": [
-     "missing measurement: the job's total work units are not declared to M06"
-    ]
-   },
-   "override": null
+   }
   },
   {
    "id": "f2-donor-pretrain-resume",
    "lane": "F2",
    "state": "running",
    "phase": "fitting",
-   "stage": "branch_ae:branch_31",
+   "stage": "branch_ae:branch_41 restored",
    "producer_commit": "unknown",
    "host_alias": "worker_b",
    "lease_id": "f2-donor-pretrain-resume-1790850245-1790821-8fbb3e",
@@ -1019,36 +954,47 @@
     ]
    ],
    "cap_bytes": 3607101440,
-   "cgroup_current_bytes": 968187904,
+   "cgroup_current_bytes": 827789312,
    "cgroup_peak_bytes": 997408768,
    "cap_vs_observed_peak": 3.62,
    "uses_gpu": false,
    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-donor-pretrain-resume-1790849795-1790810.scope",
-   "heartbeat_at": "2026-10-01T10:32:09Z",
+   "heartbeat_at": "2026-10-01T10:35:39Z",
    "heartbeat_path": "~/.local/state/scratch/m07/donors/eth_per_feature_v1/heartbeat.jsonl",
    "heartbeat_stale": false,
    "heartbeat_status": "OK",
-   "heartbeat_age_s": 24,
+   "heartbeat_age_s": 2,
    "last_advance": {
-    "stage": "branch_ae:branch_31",
+    "stage": "branch_ae:branch_41",
+    "fit": {
+     "best_epoch": 4,
+     "best_validation_loss": 0.005002020079615915,
+     "elapsed_seconds": 7.510382253996795,
+     "epoch": 4,
+     "event": "restored",
+     "max_epochs": 30,
+     "max_seconds": 900.0,
+     "max_updates": 20000,
+     "updates": 1344
+    },
     "resume_point": {
-     "completed_branches": 31,
-     "last_completed": "branch_30",
+     "completed_branches": 41,
+     "last_completed": "branch_40",
      "resumed_total": 4
     },
     "resources": {
-     "cgroup_memory_current": 768905216,
+     "cgroup_memory_current": 980570112,
      "cgroup_memory_max": 3607101440,
      "cgroup_memory_peak": 997408768,
-     "cpu_seconds": 6.49,
+     "cpu_seconds": 6.6,
      "pid": 1814381,
-     "vmhwm_kib": 852272,
-     "vmrss_kib": 852272
+     "vmhwm_kib": 852408,
+     "vmrss_kib": 852408
     }
    },
    "progress": {
     "unit": "unknown",
-    "completed": 31,
+    "completed": 41,
     "total": null
    },
    "eta": {
@@ -1065,8 +1011,8 @@
    "id": "f2-loop-worker-b",
    "lane": "F2",
    "state": "running",
-   "phase": "running_stage_unknown",
-   "stage": "done done",
+   "phase": "building",
+   "stage": "build build",
    "producer_commit": "unknown",
    "host_alias": "worker_b",
    "lease_id": "f2-loop-worker-b-1790848106-1754066-353e7d",
@@ -1100,51 +1046,117 @@
     [
      "python3",
      "/home/harveybc/.local/bin/../libexec/crispdm/crispdm_admission.py",
-     "acquire",
-     "-n"
+     "monitor",
+     "f2-train-19799131-1790850925-1860184-d1f093"
     ]
    ],
    "cap_bytes": 536870912,
-   "cgroup_current_bytes": 49430528,
-   "cgroup_peak_bytes": 53661696,
-   "cap_vs_observed_peak": 10.0,
+   "cgroup_current_bytes": 50118656,
+   "cgroup_peak_bytes": 56209408,
+   "cap_vs_observed_peak": 9.55,
    "uses_gpu": false,
    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-loop-worker-b-1790848106-1754057.scope",
-   "heartbeat_at": "2026-10-01T10:26:03Z",
-   "heartbeat_path": "~/.local/state/scratch/m07/campaign_r0_v1/attempts/579e39d417f29a24/train-1/cell/heartbeat.jsonl",
-   "heartbeat_stale": true,
-   "heartbeat_status": "NO_PROGRESS",
-   "heartbeat_age_s": 391,
+   "heartbeat_at": "2026-10-01T10:35:30Z",
+   "heartbeat_path": "~/.local/state/scratch/m07/campaign_r0_v1/attempts/197991317ea65102/train-1/cell/heartbeat.jsonl",
+   "heartbeat_stale": false,
+   "heartbeat_status": "OK",
+   "heartbeat_age_s": 10,
    "last_advance": {
-    "stage": "done",
+    "stage": "build",
     "progress": {
-     "batches_per_epoch": 210,
-     "best_epoch": 2,
-     "best_validation_loss": 0.8667636543104094,
-     "elapsed_seconds": 46.71936337600346,
-     "epoch": 2,
-     "error": null,
      "gpu": "/job:localhost/replica:0/task:0/device:GPU:0",
-     "max_epochs": 30,
-     "max_seconds": 5400.0,
-     "max_updates": 1000000,
-     "stage": "done",
-     "stale_monitors": 5,
-     "updates": 1470,
-     "validation_loss": 0.8672827763644527
+     "stage": "build"
     },
     "resources": {
      "cgroup": {
-      "cgroup": "/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-train-579e39d4-1790850146-1811337.scope",
-      "current_bytes": 1330716672,
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-train-19799131-1790850925-1860175.scope",
+      "current_bytes": 554545152,
       "max": 2635071488,
-      "peak_bytes": 1404444672
+      "peak_bytes": 554545152
      },
      "cuda_visible_devices": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
      "process": {
-      "VmHWM": 2085208064,
-      "VmRSS": 2015399936,
-      "cpu_seconds": 71.52
+      "VmHWM": 1094909952,
+      "VmRSS": 1094909952,
+      "cpu_seconds": 4.78
+     }
+    }
+   },
+   "progress": {
+    "unit": "unknown",
+    "completed": null,
+    "total": null
+   },
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "assumptions": [
+     "missing measurement: the job's total work units are not declared to M06"
+    ]
+   },
+   "override": null
+  },
+  {
+   "id": "f2-train-19799131",
+   "lane": "F2",
+   "state": "running",
+   "phase": "building",
+   "stage": "build build",
+   "producer_commit": "unknown",
+   "host_alias": "worker_b",
+   "lease_id": "f2-train-19799131-1790850925-1860184-d1f093",
+   "launcher_pid": 1860175,
+   "launcher_alive": true,
+   "child_heads": [
+    [
+     "timeout",
+     "--kill-after=30s",
+     "2h",
+     "python3"
+    ],
+    [
+     "python3",
+     "/home/harveybc/.local/bin/../libexec/crispdm/crispdm_admission.py",
+     "scope-exec",
+     "--lease"
+    ],
+    [
+     "python",
+     "-u",
+     "tools/eth_cell_runner.py",
+     "--candidate"
+    ]
+   ],
+   "cap_bytes": 2635071488,
+   "cgroup_current_bytes": 1105739776,
+   "cgroup_peak_bytes": 1105739776,
+   "cap_vs_observed_peak": 2.38,
+   "uses_gpu": true,
+   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-train-19799131-1790850925-1860175.scope",
+   "heartbeat_at": "2026-10-01T10:35:30Z",
+   "heartbeat_path": "~/.local/state/scratch/m07/campaign_r0_v1/attempts/197991317ea65102/train-1/cell/heartbeat.jsonl",
+   "heartbeat_stale": false,
+   "heartbeat_status": "OK",
+   "heartbeat_age_s": 10,
+   "last_advance": {
+    "stage": "build",
+    "progress": {
+     "gpu": "/job:localhost/replica:0/task:0/device:GPU:0",
+     "stage": "build"
+    },
+    "resources": {
+     "cgroup": {
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-train-19799131-1790850925-1860175.scope",
+      "current_bytes": 554545152,
+      "max": 2635071488,
+      "peak_bytes": 554545152
+     },
+     "cuda_visible_devices": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+     "process": {
+      "VmHWM": 1094909952,
+      "VmRSS": 1094909952,
+      "cpu_seconds": 4.78
      }
     }
    },
@@ -1195,16 +1207,16 @@
     ]
    ],
    "cap_bytes": 3221225472,
-   "cgroup_current_bytes": 2322554880,
-   "cgroup_peak_bytes": 2326732800,
+   "cgroup_current_bytes": 2340171776,
+   "cgroup_peak_bytes": 2341068800,
    "cap_vs_observed_peak": 1.38,
    "uses_gpu": true,
    "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-g-rl-RL-D1_seed101-1790847355-1737368.scope",
-   "heartbeat_at": "2026-10-01T10:28:58Z",
+   "heartbeat_at": "2026-10-01T10:34:53Z",
    "heartbeat_path": "~/.local/state/scratch/g-rl/runs/gpu_4090/RL-D1_seed101/heartbeat.json",
-   "heartbeat_stale": true,
-   "heartbeat_status": "NO_PROGRESS",
-   "heartbeat_age_s": 215,
+   "heartbeat_stale": false,
+   "heartbeat_status": "OK",
+   "heartbeat_age_s": 48,
    "last_advance": {},
    "progress": {
     "unit": "unknown",
@@ -1264,7 +1276,7 @@
     ]
    ],
    "cap_bytes": 2348810240,
-   "cgroup_current_bytes": 1043800064,
+   "cgroup_current_bytes": 1056411648,
    "cgroup_peak_bytes": 1598611456,
    "cap_vs_observed_peak": 1.47,
    "uses_gpu": false,
@@ -1291,26 +1303,26 @@
    "override": null
   },
   {
-   "id": "f2-verify-579e39d4",
-   "lane": "F2",
+   "id": "m05-rf-mut",
+   "lane": "E2",
    "state": "queued",
    "phase": "queued",
    "stage": "waiting for admission",
    "producer_commit": "unknown",
    "host_alias": "worker_b",
-   "launcher_pid": 1817943,
-   "declared_mem": "2513M",
-   "declared_wall": "20m",
-   "queue_wait_s": "7200",
-   "gpu_request": true,
-   "waiting_s": 389,
+   "launcher_pid": 1859409,
+   "declared_mem": "2G",
+   "declared_wall": "3m",
+   "queue_wait_s": "3600",
+   "gpu_request": false,
+   "waiting_s": 36,
    "command_head": [
     "env",
-    "CUDA_VISIBLE_DEVICES=GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
-    "M04_HOST_ROLE=worker_b",
-    "F2_HOST_ROLE=worker_b",
-    "PYTHONUNBUFFERED=1",
-    "PYTHONPATH=/home/harveybc/Documents/GitHub/.worktrees/predictor-f2-eth-20261001"
+    "CUDA_VISIBLE_DEVICES=",
+    "PYTHONDONTWRITEBYTECODE=1",
+    "/home/harveybc/.local/state/scratch/m05/venv-ts-jose/bin/python",
+    "-m",
+    "pytest"
    ],
    "heartbeat_at": null,
    "progress": {
@@ -2189,12 +2201,12 @@
    "name": "NVIDIA GeForce RTX 4070 Laptop GPU",
    "current_job": null,
    "heartbeat": null,
-   "temperature_c": 42.0,
+   "temperature_c": 43.0,
    "temperature_source": "writer probe",
    "temperature_max_since_sampler_start_c": null,
    "vram_used_mib": 612.0,
    "vram_total_mib": 8188.0,
-   "power_w": 5.11,
+   "power_w": 5.2,
    "job_cap_bytes": null,
    "job_peak_bytes": null,
    "job_progress": null,
@@ -2213,22 +2225,22 @@
    "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
    "current_job": null,
    "heartbeat": null,
-   "next_prepared": "worker_b 4090: durable g2-queue-worker-b takes over after the current queue (15 cells); worker_a closed to G2 while D2 holds the 5090",
+   "next_prepared": "f2-gpu-pilot-sres-per_feature",
    "state": "IDLE",
-   "idle_seconds": 704,
-   "temperature_c": 36.0,
+   "idle_seconds": 884,
+   "temperature_c": 37.0,
    "temperature_source": "m06-gpu-sampler 15 s",
    "temperature_max_since_sampler_start_c": 38.0,
    "vram_used_mib": 14.0,
    "vram_total_mib": 12227.0,
-   "power_w": 16.28,
+   "power_w": 16.17,
    "job_cap_bytes": null,
    "job_peak_bytes": null,
    "job_progress": null,
    "job_phase": null,
    "job_stage": null,
    "job_eta": null,
-   "cause_if_idle": "between jobs; next prepared by G2: worker_b 4090: durable g2-queue-worker-b takes over after the current queue (15 cells); worker_a closed to G2 while D2 holds the 5090"
+   "cause_if_idle": "queued for admission: f2-gpu-pilot-sres-per_feature needs 3000M, host free-for-new 1.50 GB"
   },
   {
    "lane": "D2",
@@ -2239,17 +2251,17 @@
    "current_job": "m04-train-f1595134",
    "heartbeat": [
     "OK",
-    6
+    14
    ],
-   "next_prepared": "durable d2-runner-worker-a: 4ea6cbed then successors 30-33 on the 5090",
+   "next_prepared": "f2-gpu-pilot-sres-per_feature",
    "state": "RUNNING",
    "idle_seconds": 0,
-   "temperature_c": 54.0,
+   "temperature_c": 53.0,
    "temperature_source": "m06-gpu-sampler 15 s",
    "temperature_max_since_sampler_start_c": 54.0,
    "vram_used_mib": 1064.0,
    "vram_total_mib": 32607.0,
-   "power_w": 105.99,
+   "power_w": 103.63,
    "job_cap_bytes": 8109686784,
    "job_peak_bytes": 6401204224,
    "job_progress": {
@@ -2275,29 +2287,29 @@
    "host_alias": "worker_b",
    "resource": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
    "name": "NVIDIA GeForce RTX 4090 Laptop GPU",
-   "current_job": "g-rl-RL-D1_seed101",
+   "current_job": "f2-train-19799131",
    "heartbeat": [
-    "NO_PROGRESS",
-    215
+    "OK",
+    10
    ],
-   "next_prepared": "f2-verify-579e39d4",
+   "next_prepared": "worker_b: f2-loop-worker-b (active); worker_a 5070 Ti: f2-loop-worker-a (active)",
    "state": "RUNNING",
    "idle_seconds": 0,
    "temperature_c": 56.0,
    "temperature_source": "m06-gpu-sampler 15 s",
    "temperature_max_since_sampler_start_c": 63.0,
-   "vram_used_mib": 450.0,
+   "vram_used_mib": 719.0,
    "vram_total_mib": 16376.0,
-   "power_w": 30.23,
-   "job_cap_bytes": 3221225472,
-   "job_peak_bytes": 2326732800,
+   "power_w": 30.41,
+   "job_cap_bytes": 2635071488,
+   "job_peak_bytes": 1105739776,
    "job_progress": {
     "unit": "unknown",
     "completed": null,
     "total": null
    },
-   "job_phase": "running_stage_unknown",
-   "job_stage": "no heartbeat stage",
+   "job_phase": "building",
+   "job_stage": "build build",
    "job_eta": {
     "earliest": null,
     "latest": null,
@@ -2312,7 +2324,7 @@
    "lane": "D2",
    "agent": null,
    "host_alias": "coordinator",
-   "resource": "CPU x16 (load 0.08 0.18 0.33)",
+   "resource": "CPU x16 (load 0.56 0.29 0.33)",
    "current_job": [
     "d2-runner-worker-a [D2] cap 0.54 GB / peak 0.02 GB"
    ],
@@ -2330,7 +2342,7 @@
    "lane": null,
    "agent": null,
    "host_alias": "worker_a",
-   "resource": "CPU x32 (load 1.39 1.92 1.92)",
+   "resource": "CPU x32 (load 1.41 1.68 1.82)",
    "current_job": [],
    "heartbeat": [],
    "next_prepared": [
@@ -2341,40 +2353,32 @@
    "cause_if_idle": "no CPU job running or queued on this host"
   },
   {
-   "lane": "A2, C2, D2, F2",
+   "lane": "A2, F2",
    "agent": null,
    "host_alias": "worker_b",
-   "resource": "CPU x32 (load 10.33 9.51 8.95)",
+   "resource": "CPU x32 (load 8.64 9.76 9.20)",
    "current_job": [
-    "c2-find-full [C2] cap 0.38 GB / peak 0.28 GB",
-    "d-unit-417a554c [D2] cap 2.15 GB / peak 0.32 GB",
     "f2-donor-pretrain-resume [F2] cap 3.61 GB / peak 1.00 GB",
-    "f2-loop-worker-b [F2] cap 0.54 GB / peak 0.05 GB",
+    "f2-loop-worker-b [F2] cap 0.54 GB / peak 0.06 GB",
     "m01-ps5-run [A2] cap 2.35 GB / peak 1.60 GB"
    ],
    "heartbeat": [
-    [
-     "c2-find-full",
-     "NONE"
-    ],
-    [
-     "d-unit-417a554c",
-     "NONE"
-    ],
     [
      "f2-donor-pretrain-resume",
      "OK"
     ],
     [
      "f2-loop-worker-b",
-     "NO_PROGRESS"
+     "OK"
     ],
     [
      "m01-ps5-run",
      "NONE"
     ]
    ],
-   "next_prepared": [],
+   "next_prepared": [
+    "m05-rf-mut"
+   ],
    "state": "RUNNING",
    "cause_if_idle": null
   },
@@ -2414,8 +2418,7 @@
    "resource": "AGENT",
    "current_job": [
     "d2-runner-worker-a",
-    "m04-train-f1595134",
-    "d-unit-417a554c"
+    "m04-train-f1595134"
    ],
    "heartbeat": [
     [
@@ -2425,10 +2428,6 @@
     [
      "m04-train-f1595134",
      "OK"
-    ],
-    [
-     "d-unit-417a554c",
-     "NONE"
     ]
    ],
    "next_prepared": "durable d2-runner-worker-a: 4ea6cbed then successors 30-33 on the 5090",
@@ -2453,7 +2452,8 @@
    "resource": "AGENT",
    "current_job": [
     "f2-donor-pretrain-resume",
-    "f2-loop-worker-b"
+    "f2-loop-worker-b",
+    "f2-train-19799131"
    ],
    "heartbeat": [
     [
@@ -2462,7 +2462,11 @@
     ],
     [
      "f2-loop-worker-b",
-     "NO_PROGRESS"
+     "OK"
+    ],
+    [
+     "f2-train-19799131",
+     "OK"
     ]
    ],
    "next_prepared": "worker_b: f2-loop-worker-b (active); worker_a 5070 Ti: f2-loop-worker-a (active)",
@@ -2480,7 +2484,7 @@
    "heartbeat": [
     [
      "g-rl-RL-D1_seed101",
-     "NO_PROGRESS"
+     "OK"
     ]
    ],
    "next_prepared": "worker_b 4090: durable g2-queue-worker-b takes over after the current queue (15 cells); worker_a closed to G2 while D2 holds the 5090",
@@ -2503,18 +2507,11 @@
    "agent": "a5fd5cd9bcbc7f3bd",
    "host_alias": null,
    "resource": "AGENT",
-   "current_job": [
-    "c2-find-full"
-   ],
-   "heartbeat": [
-    [
-     "c2-find-full",
-     "NONE"
-    ]
-   ],
+   "current_job": [],
+   "heartbeat": [],
    "next_prepared": null,
-   "state": "RUNNING",
-   "cause_if_idle": null
+   "state": "NO_JOB",
+   "cause_if_idle": "ORCHESTRATION_DEFECT: no job and no prepared successor"
   },
   {
    "lane": "H1",
@@ -2526,6 +2523,17 @@
    "next_prepared": "h1-* replay of tests + Kalman digests on worker_a, then the ETH 4h arm pilot (ridge, CPU) at 1.25x its pilot peak",
    "state": "NO_JOB",
    "cause_if_idle": "next prepared: h1-* replay of tests + Kalman digests on worker_a, then the ETH 4h arm pilot (ridge, CPU) at 1.25x its pilot peak"
+  },
+  {
+   "lane": "I1",
+   "agent": "ad39bdf372d45ceb0 (I1)",
+   "host_alias": null,
+   "resource": "AGENT",
+   "current_job": [],
+   "heartbeat": [],
+   "next_prepared": null,
+   "state": "NO_JOB",
+   "cause_if_idle": "ORCHESTRATION_DEFECT: no job and no prepared successor"
   }
  ],
  "unparsed_processes": [
@@ -2533,31 +2541,23 @@
    "pid": 1462967,
    "argv_len": 3,
    "argv0": "bash",
-   "elapsed_s": 750,
+   "elapsed_s": 938,
    "host_alias": "coordinator",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
   {
-   "pid": 1476175,
+   "pid": 1484014,
    "argv_len": 3,
    "argv0": "bash",
-   "elapsed_s": 197,
+   "elapsed_s": 35,
    "host_alias": "coordinator",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
   {
-   "pid": 1476251,
-   "argv_len": 8,
-   "argv0": "timeout",
-   "elapsed_s": 196,
-   "host_alias": "coordinator",
-   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
-  },
-  {
-   "pid": 1476252,
-   "argv_len": 6,
+   "pid": 1484016,
+   "argv_len": 3,
    "argv0": "ssh",
-   "elapsed_s": 196,
+   "elapsed_s": 35,
    "host_alias": "coordinator",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
@@ -2565,7 +2565,7 @@
    "pid": 27201,
    "argv_len": 3,
    "argv0": "bash",
-   "elapsed_s": 40827,
+   "elapsed_s": 41014,
    "host_alias": "worker_a",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
@@ -2573,7 +2573,7 @@
    "pid": 522248,
    "argv_len": 3,
    "argv0": "bash",
-   "elapsed_s": 121,
+   "elapsed_s": 308,
    "host_alias": "worker_a",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
@@ -2581,7 +2581,7 @@
    "pid": 522249,
    "argv_len": 27,
    "argv0": "time",
-   "elapsed_s": 121,
+   "elapsed_s": 308,
    "host_alias": "worker_a",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
@@ -2589,15 +2589,23 @@
    "pid": 1737366,
    "argv_len": 26,
    "argv0": "time",
-   "elapsed_s": 3401,
+   "elapsed_s": 3588,
    "host_alias": "worker_b",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
   {
-   "pid": 1823414,
+   "pid": 1859401,
    "argv_len": 3,
    "argv0": "bash",
-   "elapsed_s": 197,
+   "elapsed_s": 36,
+   "host_alias": "worker_b",
+   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
+  },
+  {
+   "pid": 1859408,
+   "argv_len": 3,
+   "argv0": "bash",
+   "elapsed_s": 36,
    "host_alias": "worker_b",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   }
@@ -2881,54 +2889,54 @@
  ],
  "quotas_measured": {
   "coordinator": {
-   "host_free_for_new_bytes": 14282407936,
-   "held_unrealised_bytes": 1395015680,
+   "host_free_for_new_bytes": 14186266624,
+   "held_unrealised_bytes": 1397055488,
    "desktop_reserve_bytes": 3221225472,
    "slice_memory_max": 15032385536,
-   "slice_memory_current": 5043638272,
+   "slice_memory_current": 5041512448,
    "slice_charged_bytes": null,
    "pressure_some_avg10": 0.0,
-   "mem_available_bytes": 18917658624,
+   "mem_available_bytes": 18809815040,
    "psi_some_avg10": 0.0,
    "psi_some_avg60": 0.0,
-   "swap_free_bytes": 4744183808,
+   "swap_free_bytes": 4744445952,
    "swap_total_bytes": 8589930496,
-   "unreclaimable_slab_bytes": 706408448,
-   "disk_home_free_bytes": 85369851904,
+   "unreclaimable_slab_bytes": 706310144,
+   "disk_home_free_bytes": 85361192960,
    "disk_home_total_bytes": 762623827968
   },
   "worker_a": {
-   "host_free_for_new_bytes": 1501585408,
-   "held_unrealised_bytes": 1815560192,
+   "host_free_for_new_bytes": 1503899648,
+   "held_unrealised_bytes": 1815752704,
    "desktop_reserve_bytes": 3221225472,
    "slice_memory_max": 8589934592,
-   "slice_memory_current": 7342305280,
-   "slice_charged_bytes": 6392537088,
+   "slice_memory_current": 7333494784,
+   "slice_charged_bytes": 6383374336,
    "pressure_some_avg10": 0.0,
-   "mem_available_bytes": 6546620416,
+   "mem_available_bytes": 6554152960,
    "psi_some_avg10": 0.0,
    "psi_some_avg60": 0.0,
    "swap_free_bytes": 4293955584,
    "swap_total_bytes": 4294963200,
-   "unreclaimable_slab_bytes": 853819392,
-   "disk_home_free_bytes": 166458646528,
+   "unreclaimable_slab_bytes": 856829952,
+   "disk_home_free_bytes": 166453993472,
    "disk_home_total_bytes": 411702673408
   },
   "worker_b": {
-   "host_free_for_new_bytes": 2913036288,
-   "held_unrealised_bytes": 7274043392,
+   "host_free_for_new_bytes": 2743435264,
+   "held_unrealised_bytes": 6989455360,
    "desktop_reserve_bytes": 3221225472,
    "slice_memory_max": 15032385536,
-   "slice_memory_current": 8534233088,
-   "slice_charged_bytes": 5977071616,
+   "slice_memory_current": 8952483840,
+   "slice_charged_bytes": 6394454016,
    "pressure_some_avg10": 0.0,
-   "mem_available_bytes": 13419130880,
+   "mem_available_bytes": 12978991104,
    "psi_some_avg10": 0.0,
-   "psi_some_avg60": 0.29,
-   "swap_free_bytes": 5526515712,
+   "psi_some_avg60": 0.0,
+   "swap_free_bytes": 5526519808,
    "swap_total_bytes": 8589930496,
-   "unreclaimable_slab_bytes": 3339091968,
-   "disk_home_free_bytes": 669821530112,
+   "unreclaimable_slab_bytes": 3340152832,
+   "disk_home_free_bytes": 669780631552,
    "disk_home_total_bytes": 1005867986944
   }
  },
@@ -3429,6 +3437,13 @@
   {
    "at": "2026-10-01T09:42Z",
    "what": "M06 handover v1 self-matched its own command line in pgrep: it touched M07 loop B's STOP on worker_a at 09:40:37Z; loop B exited; STOP removed ~09:40:50Z; durable unit started 09:41:46Z exited 0 ('trained': 0). Fixed in handover v2 (wrapper/handover processes excluded); the other handovers were re-armed with v2; M07 later clarified that it had rewritten STOP ~09:41Z itself (coordinator decision), so the unit's 'trained 0' exit was correct and no cell was lost"
+  },
+  {
+   "at": "2026-10-01T10:35:00Z",
+   "id": "LEAK-IP-01",
+   "what": "STATUS.json carried the workers' private network addresses (ssh multiplexer process names in unparsed_processes) in every STATUS commit from c06db834 to 513c85cd; the writer scrubbed host names only and the commit gate searched names only",
+   "fix": "scrub() replaces IPv4 addresses with <ip> (46a840f8, tested); the gate now includes an IPv4 pattern; history rewrite is the owner's decision",
+   "by": "M06 (own defect)"
   }
  ],
  "lane_worktrees": [
@@ -3478,7 +3493,7 @@
    "repo": "predictor",
    "branch": "satoshi/d-corrected-queue-20261001",
    "worktree": "~/Documents/GitHub/.worktrees/predictor-d-corrected-queue-20261001",
-   "tip": "417a554ca1ff"
+   "tip": "b60dd2717a7a"
   },
   {
    "repo": "predictor",
@@ -3502,7 +3517,7 @@
    "repo": "predictor",
    "branch": "satoshi/m06-evidence-resources-20260930",
    "worktree": "~/Documents/GitHub/.worktrees/predictor-m06-20260930",
-   "tip": "430fd60965a8"
+   "tip": "46a840f83b07"
   },
   {
    "repo": "predictor",
