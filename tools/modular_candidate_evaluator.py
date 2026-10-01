@@ -507,7 +507,10 @@ def evaluate_candidate(config, train_path, validation_path, output_dir, progress
                     "best_validation_loss": warm_receipt["best_validation_loss"],
                     "history": [*(warm_receipt["history"]["phase_1"] or []),
                                 *(warm_receipt["history"]["phase_2"] or [])],
-                    "warm": {k: v for k, v in warm_receipt.items() if k != "history"}}
+                    "warm": {k: v for k, v in warm_receipt.items() if k != "history"},
+                    # the declared settings (phase 1); phase 2's learning rate is in "warm". The checkpoint
+                    # scorer replays the receipt's batch size from here, as for every other regime.
+                    "settings": {k: v for k, v in settings.items() if k != "progress"}}
     else:
         training = fit_with_early_stopping(model, x, y, vx, vy, fit_settings)
     best_weights = model.get_weights()

@@ -92,7 +92,10 @@ def verify(receipt_path, validation_path, output_path, *, batch_size=None, rtol=
         raise ValueError("a completed modular.candidate.evaluation.v1 receipt is required")
     # Replay the evaluator's inference contract: same batch size as the receipt's own scoring pass.
     # With TF_DETERMINISTIC_OPS=1 in both processes the rescoring is bitwise identical (probe 2026-10-01).
-    batch_size = batch_size or receipt["training"]["settings"]["batch_size"]
+    batch_size = (batch_size or (receipt["training"].get("settings") or {}).get("batch_size")
+                  or receipt.get("candidate", {}).get("evaluator", {}).get("batch_size"))
+    if not batch_size:  # R3 receipts before the evaluator recorded settings carry it in the candidate only
+        raise ValueError("receipt declares no batch size (training.settings or candidate.evaluator)")
     artifact = Path(receipt["artifacts"]["best_model"])
     model_sha = _sha_file(artifact)
     if model_sha != receipt["digests"]["model_sha256"]:

@@ -326,6 +326,14 @@ def test_real_engine_receipt_is_independently_rescored_and_tamper_refuted(tmp_pa
     assert result["verdict"] == "VERIFIED", result["problems"]
     assert result["batch_size"] == nested["evaluator"]["batch_size"]  # replays the receipt's inference batch
     assert result["exact_match"] is True  # same batch, same device class: bitwise-equal rescoring
+    # an R3 receipt written before training.settings existed: the batch size comes from the candidate
+    legacy = json.loads(receipt_path.read_text())
+    legacy["training"].pop("settings")
+    legacy["candidate"] = {"evaluator": {"batch_size": nested["evaluator"]["batch_size"]}}
+    legacy_path = tmp_path / "legacy_r3_receipt.json"
+    legacy_path.write_text(json.dumps(legacy))
+    again = scorer.verify(legacy_path, validation, tmp_path / "verification_legacy.json")
+    assert again["verdict"] == "VERIFIED" and again["batch_size"] == nested["evaluator"]["batch_size"]
     assert result["objective"]["rescored_value"] == pytest.approx(receipt["objective"]["value"], rel=1e-5)
     # tamper: a forged receipt metric is refuted by rescoring
     forged = json.loads(receipt_path.read_text())
