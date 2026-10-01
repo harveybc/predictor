@@ -328,6 +328,49 @@ def _stage_config(fit_config, stage_fit_configs, stage):
     return cfg
 
 
+def input_binding(population):
+    """How the tool binds its inputs, or None when it cannot (then donors are saved UNKNOWN).
+
+    governed_resource: the input-manifest AND admissible-declaration digests must be declared.
+    synthetic_fixture / local_file: bound to the arrays actually given (their digests are
+    computed here); the dataset id is prefixed with the provenance kind, never a governed id.
+    undeclared: unbound.
+    """
+    kind = population.get("provenance", "undeclared")
+    if kind == "governed_resource":
+        if not (population.get("input_manifest_sha256") and population.get("admissible_declaration_sha256")):
+            return None
+        return {"dataset_id": f"governed_resource:manifest:{population['input_manifest_sha256']}",
+                "input_manifest_sha256": population["input_manifest_sha256"],
+                "admissible_declaration_sha256": population["admissible_declaration_sha256"]}
+    if kind in ("synthetic_fixture", "local_file"):
+        return {"dataset_id": f"{kind}:{population['dataset_id']}"}
+    return None
+
+
+def _donor_provenance(population, data_sha256, support_sha256, reconstruction, space):
+    """Write-time provenance for an AE donor (same rule as R-AE-TRAINONLY-1), or None (UNKNOWN).
+
+    OPERATIONAL: an autoencoder's target is its own input window, so no future
+    target conditions it. TRAIN_ONLY: fitted from initialization on the declared
+    train population, early-stopped on its purged internal train_validation tail.
+    Inputs the tool cannot bind get no declaration: the engine then writes UNKNOWN.
+    """
+    binding = input_binding(population)
+    if binding is None:
+        return None
+    return {"conditioning_contract": "OPERATIONAL",
+            "learned_corpus": {"kind": "TRAIN_ONLY", **binding,
+                               "input_provenance": population.get("provenance", "undeclared"),
+                               "data_sha256": data_sha256,
+                               "support": ("TRAIN only: AE-train windows + purged internal-validation tail "
+                                           f"(train_validation sha256 {support_sha256})"),
+                               "pretrained_weights_source": None},
+            "reconstruction": {"state": "MEASURED", "mae_z": float(reconstruction["MAE"]),
+                               "mse_z": float(reconstruction["MSE"]), "rows": int(reconstruction["rows"]),
+                               "space": space, "split": "train_validation (purged internal tail of TRAIN)"}}
+
+
 def _fit_branch(job, train_view, val_view, progress):
     """Fit, export, reload-check and describe ONE branch AE (runs in a child or in-process)."""
     import tensorflow as tf
@@ -358,7 +401,9 @@ def _fit_branch(job, train_view, val_view, progress):
         "train": _reconstruction(ae, train_view, stats["mean"], stats["std"], batch),
         "train_validation": _reconstruction(ae, val_view, stats["mean"], stats["std"], batch)}
     donor = out / f"{name}.keras"  # M04 maps "1:<branch name>" -> <dir>/<branch name>.keras
-    sidecar = save_donor(encoder, donor, manifest)
+    sidecar = save_donor(encoder, donor, manifest, provenance=_donor_provenance(
+        job["train_population"], job["train_identity"]["sha256"], job["validation_identity"]["sha256"],
+        reconstruction["train_validation"], "model input (the TRAIN NPZ's metric space)"))
     decoder = ae.layers[-1]
     decoder_path = out / f"{name}.decoder.keras"
     decoder.save(decoder_path)
@@ -567,6 +612,10 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
     for spec in fixed["branches"]:
         spec["regime"] = "R1"
     fixed["core"].update(regime="R0", donor=None)
+    if input_binding(train_population) is None:
+        # Unbound inputs: the donors are UNKNOWN. Materialization still needs them, so the
+        # bypass is EXPLICIT and recorded; the returned fine_tune_config does not carry it.
+        fixed["donor_contract"] = "UNKNOWN_ALLOWED"
     fixed_bundle = build_modular(fixed)
     for rec, model in zip(records, fixed_bundle.branch_models.values()):
         if weights_hash(model) != rec["donor_weights_sha256"] or model.trainable_weights:
@@ -620,7 +669,10 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
         for split in ("train", "train_validation")}
     donor = out / "core.keras"
     manifest = fixed_bundle.donor_manifest("core")
-    sidecar = save_donor(core, donor, manifest)
+    sidecar = save_donor(core, donor, manifest, provenance=_donor_provenance(
+        train_population, fusion_record["files"]["train"]["sha256"],
+        fusion_record["files"]["train_validation"]["sha256"], core_reconstruction["train_validation"],
+        "fused branch latent (materialized fusion output of the TRAIN windows)"))
     decoder_path = out / "core.decoder.keras"
     core_ae.layers[-1].save(decoder_path)
     loaded = load_donor(donor, manifest)
@@ -659,6 +711,8 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
     resolved["core"].update(regime="R2", donor=str(donor))
     provenance_label = train_population.get("provenance", "undeclared")
     result = {"schema": SCHEMA, "provenance": provenance_label,
+              "donor_contract_declared": "UNKNOWN (inputs unbound)" if input_binding(train_population) is None
+              else "OPERATIONAL/TRAIN_ONLY",
               "label": ("SYNTHETIC FIXTURE - component check, not a forecasting result"
                         if provenance_label == "synthetic_fixture" else provenance_label),
               "branches": records, "fusion": fusion_record, "core": core_record,
