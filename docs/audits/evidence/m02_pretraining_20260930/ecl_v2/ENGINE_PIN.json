@@ -1,0 +1,13 @@
+{
+  "engine_commit": "3ecdb2565ef35dec7600109516dde86d2488d921",
+  "worktree_clean": true,
+  "model_config_sha256": "4d5402a0d79be0c17d7560b7c6d9fdde9e6f56a5b32e2fff0a4ff7fdb7f67739",
+  "model_config_file_sha256": "0266df079fd04d78a15db212fad850082157eb50ad0ad01be7adea2ff768cfc1",
+  "branch_manifest_list_sha256": "d46b98778df2a92ae78d03a8260f62d7a43d9049848778577d4681bd36da5cf6",
+  "core_manifest_weight_free_sha256": "d7b1ce0acb9b8970eb6977e3a6131b2e2085054c7cd5483088030a7c108c9616",
+  "fused_identity_sha256": "ecfb808d668857538927104c1aaf4c0b689d08b2ada7170ee41eaf966defda8b",
+  "channel_order_sha256": "84f8490d90c050e9558268d2b93754294aeb3f8315b614c21755262b8df444d9",
+  "declaration_sha256": "ca1098ed94a36b972b06e45f381bd192fbd30c436f60532d8674ef8820c0a62f",
+  "manifest_sha256": "eca31ec195ea6d477e2789b019500c08e2b32a7a8e9f39a948983d55d628353b",
+  "train_npz_sha256": "9215b099442928a811fddaa6fbde07ed26a625f1707f7f45d8fec24fcfda25c2"
+}

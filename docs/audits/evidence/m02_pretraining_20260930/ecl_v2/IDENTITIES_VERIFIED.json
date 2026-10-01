@@ -1,0 +1,20 @@
+{
+  "expected": {
+    "model_config": "4d5402a0d79be0c17d7560b7c6d9fdde9e6f56a5b32e2fff0a4ff7fdb7f67739",
+    "branch_list": "d46b98778df2a92ae78d03a8260f62d7a43d9049848778577d4681bd36da5cf6",
+    "core_wf": "d7b1ce0acb9b8970eb6977e3a6131b2e2085054c7cd5483088030a7c108c9616",
+    "fused": "ecfb808d668857538927104c1aaf4c0b689d08b2ada7170ee41eaf966defda8b"
+  },
+  "got": {
+    "model_config": "4d5402a0d79be0c17d7560b7c6d9fdde9e6f56a5b32e2fff0a4ff7fdb7f67739",
+    "branch_list": "d46b98778df2a92ae78d03a8260f62d7a43d9049848778577d4681bd36da5cf6",
+    "core_wf": "d7b1ce0acb9b8970eb6977e3a6131b2e2085054c7cd5483088030a7c108c9616",
+    "fused": "ecfb808d668857538927104c1aaf4c0b689d08b2ada7170ee41eaf966defda8b"
+  },
+  "row_shape": [
+    24,
+    5136
+  ],
+  "keras": "3.13.2",
+  "engine_commit": "3ecdb256"
+}
