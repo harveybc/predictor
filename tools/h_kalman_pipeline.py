@@ -95,7 +95,9 @@ def _arm(C, names, data, lags, **extra):
     return d
 
 
-def arm_matrices(data, kal, lags=1, controls=False):
+def arm_matrices(data, kal, lags=1, controls=False, only=None):
+    """``only`` restricts which arms are materialised (memory: a lag-24 matrix is hundreds of MB)."""
+    want = (lambda n: True) if only is None else (lambda n: n in only)
     Z = data["Z"][:data["val_rows"][1]]
     names = list(data["names"])
     declared = [c for g in kal.values() for c in g["names"]]
@@ -106,16 +108,23 @@ def arm_matrices(data, kal, lags=1, controls=False):
         Ks.append(M)
         Kn += lab
     K = np.concatenate(Ks, axis=1) if Ks else np.zeros((Z.shape[0], 0))
-    arms = {"A": _arm(Z, names, data, lags),
-            "IDENTITY": _arm(kf.identity_control(Z), names, data, lags),
-            "B": _arm(np.concatenate([Z, K], axis=1), names + Kn, data, lags),
-            "C": _arm(np.concatenate([Z[:, keep], K], axis=1), [names[i] for i in keep] + Kn, data, lags)}
+    arms = {}
+    if want("A"):
+        arms["A"] = _arm(Z, names, data, lags)
+    if want("IDENTITY"):
+        arms["IDENTITY"] = _arm(kf.identity_control(Z), names, data, lags)
+    if want("B"):
+        arms["B"] = _arm(np.concatenate([Z, K], axis=1), names + Kn, data, lags)
+    if want("C"):
+        arms["C"] = _arm(np.concatenate([Z[:, keep], K], axis=1), [names[i] for i in keep] + Kn, data, lags)
     if controls:
         n_tr = data["train_rows"][1]
         P = kf.permutation_control(K, [n_tr], seed=20261001)
         N = kf.noise_control(K, n_tr, seed=20261002)
-        arms["B_PERMUTED"] = _arm(np.concatenate([Z, P], axis=1), names + Kn, data, lags, label="PERMUTATION_CONTROL")
-        arms["B_NOISE"] = _arm(np.concatenate([Z, N], axis=1), names + Kn, data, lags, label="NOISE_CONTROL")
+        if want("B_PERMUTED"):
+            arms["B_PERMUTED"] = _arm(np.concatenate([Z, P], axis=1), names + Kn, data, lags, label="PERMUTATION_CONTROL")
+        if want("B_NOISE"):
+            arms["B_NOISE"] = _arm(np.concatenate([Z, N], axis=1), names + Kn, data, lags, label="NOISE_CONTROL")
         ew_cols, ew_names = [], []
         sm_cols, sm_names = [], []
         for gname, g in kal.items():
@@ -131,10 +140,12 @@ def arm_matrices(data, kal, lags=1, controls=False):
                     sm_names.append(f"{c}__smoothed_slope_NONCAUSAL")
         E = np.stack(ew_cols, axis=1) if ew_cols else np.zeros((Z.shape[0], 0))
         S = np.stack(sm_cols, axis=1) if sm_cols else np.zeros((Z.shape[0], 0))
-        arms["C_EWMA"] = _arm(np.concatenate([Z[:, keep], E], axis=1), [names[i] for i in keep] + ew_names, data, lags,
-                              label="COMPARABLE_CAUSAL_EWMA")
-        arms["C_SMOOTHER_NONCAUSAL"] = _arm(np.concatenate([Z[:, keep], S], axis=1), [names[i] for i in keep] + sm_names,
-                                            data, lags, eligible=False, label="NON_CAUSAL_NEGATIVE_CONTROL")
+        if want("C_EWMA"):
+            arms["C_EWMA"] = _arm(np.concatenate([Z[:, keep], E], axis=1), [names[i] for i in keep] + ew_names, data, lags,
+                                  label="COMPARABLE_CAUSAL_EWMA")
+        if want("C_SMOOTHER_NONCAUSAL"):
+            arms["C_SMOOTHER_NONCAUSAL"] = _arm(np.concatenate([Z[:, keep], S], axis=1), [names[i] for i in keep] + sm_names,
+                                                data, lags, eligible=False, label="NON_CAUSAL_NEGATIVE_CONTROL")
     return arms
 
 
