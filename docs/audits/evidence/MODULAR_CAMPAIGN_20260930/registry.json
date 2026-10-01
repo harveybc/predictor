@@ -342,9 +342,11 @@
   {
    "id": "corrected_per_feature_R0",
    "completion_criterion": "8 per-feature default R0 rows after the per-feature pilot",
-   "state": "in_progress",
+   "state": "completed",
    "evidence": [
-    "pilot completed 04:16:44Z on worker_a (peak 5.52 GB, 0.2006 s/update); 8 cells pending"
+    "8/8 per-feature cells VERIFIED; R0 COMPLETE 24/24 (lane D 92c57b82; generator test 46/46 at e7b64f38)",
+    "RESULTS/corrected_r0_candidates.md",
+    "RESULTS/corrected_incumbents.md"
    ]
   },
   {
@@ -539,6 +541,11 @@
    "at": "2026-10-01T05:19:07Z",
    "host_alias": "worker_a",
    "event": "incumbent change seq 5: c09f3034 corrected_default_R0_mae (per-feature, MAE loss), seeds 8c2a2eab 0.3884455575 / 103303b1 0.3786844265, mean 0.38356499199, spread 0.0098; previous 9cc0a1f4 0.39105751641; STRICT-MINIMUM selection, NOT a demonstrated advantage; campaign 20/36 verified, 4 per-feature left"
+  },
+  {
+   "at": "2026-10-01T06:02:53Z",
+   "host_alias": "worker_a",
+   "event": "corrected R0 COMPLETE: 24/24 VERIFIED exact; incumbent c09f3034 (seq 5) unchanged; seasonal 24 h naive beaten by 0/24 cells at any horizon; h1/h23/h24 negative skill vs persistence in 24/24 (M06 generated tables agree with the orchestrator's pair order to 7 decimals)"
   }
  ],
  "launch_recipes": {
@@ -1084,7 +1091,7 @@
     "base": "13852a05",
     "denominator": "36 cells (72 superseded rows kept outside)"
    },
-   "dependency_note": "the 12 'blocked' R1/R2 rows: binding is gated on M04's campaign amendment 5 (engine identity proof at M01's post-fix tip), not on donors (complete 04:43:27Z) or provenance"
+   "dependency_note": "within the 36: 8 admissible R1/R2 rows blocked on amendment 5 (engine identity proof; attempt 3 d-identity-proof-full3 at 4G on worker_b since 06:04:01Z) + 4 REFUSED_BY_ENGINE (core-only, by design, never run); campaign reads 24 verified / 4 refused / 8 blocked of 36"
   }
  ],
  "facts_confirmed": {

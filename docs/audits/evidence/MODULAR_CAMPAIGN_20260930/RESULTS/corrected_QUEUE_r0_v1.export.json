@@ -13,12 +13,11 @@
  },
  "counts": {
   "SUPERSEDED_OLD_ARCH": 72,
-  "verified": 20,
-  "running": 1,
-  "queued": 3,
+  "verified": 24,
+  "CANCELLED_SUPERSEDED": 12,
   "blocked": 12
  },
- "total": 108,
+ "total": 120,
  "objective": {
   "metric": "MAE",
   "split": "validation",
@@ -913,9 +912,9 @@
    "seed": 2021,
    "label": "corrected_draw0_R0_huber",
    "flat": "{\"branch.channels\":8,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":5,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R0\",\"core.blocks\":2,\"core.d_model\":128,\"core.dropout\":0.020687228802490153,\"core.ff_dim\":64,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R0\",\"core.stage_channels_0\":96,\"core.stage_channels_1\":48,\"core.stage_count\":3,\"core.time_factor_0\":1,\"core.time_factor_1\":4,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":16,\"model.output_steps\":6,\"train.batch_size\":64,\"train.huber_delta\":0.30102113839946676,\"train.learning_rate\":0.0028856011274245733,\"train.loss\":\"huber\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":8,\"train.seed\":2021,\"train.weight_decay\":1.8838150872155706e-06}",
-   "status": "running",
+   "status": "verified",
    "blocked_reason": null,
-   "objective": null
+   "objective": 0.7299352983409243
   },
   {
    "cid": "f2f717ecee92c810ef9752d3752358b70323932fa398ae8e31b9bd59fc3d282d",
@@ -924,9 +923,9 @@
    "seed": 2022,
    "label": "corrected_draw0_R0_huber",
    "flat": "{\"branch.channels\":8,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":5,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R0\",\"core.blocks\":2,\"core.d_model\":128,\"core.dropout\":0.020687228802490153,\"core.ff_dim\":64,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R0\",\"core.stage_channels_0\":96,\"core.stage_channels_1\":48,\"core.stage_count\":3,\"core.time_factor_0\":1,\"core.time_factor_1\":4,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":16,\"model.output_steps\":6,\"train.batch_size\":64,\"train.huber_delta\":0.30102113839946676,\"train.learning_rate\":0.0028856011274245733,\"train.loss\":\"huber\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":8,\"train.seed\":2022,\"train.weight_decay\":1.8838150872155706e-06}",
-   "status": "queued",
+   "status": "verified",
    "blocked_reason": null,
-   "objective": null
+   "objective": 0.7307430255910836
   },
   {
    "cid": "048bc879d1031f8f0d5805b5b6156d40d3496210e8d4366c586feb8fab3ba9f8",
@@ -935,9 +934,9 @@
    "seed": 2021,
    "label": "corrected_draw0_R0_mae",
    "flat": "{\"branch.channels\":8,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":5,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R0\",\"core.blocks\":2,\"core.d_model\":128,\"core.dropout\":0.020687228802490153,\"core.ff_dim\":64,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R0\",\"core.stage_channels_0\":96,\"core.stage_channels_1\":48,\"core.stage_count\":3,\"core.time_factor_0\":1,\"core.time_factor_1\":4,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":16,\"model.output_steps\":6,\"train.batch_size\":64,\"train.learning_rate\":0.0028856011274245733,\"train.loss\":\"mae\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":8,\"train.seed\":2021,\"train.weight_decay\":1.8838150872155706e-06}",
-   "status": "queued",
+   "status": "verified",
    "blocked_reason": null,
-   "objective": null
+   "objective": 0.7326520251932855
   },
   {
    "cid": "d7d2e7493dd795c935538e3dc37608a770ec2c7c11f68d9392c00c835a0b8d86",
@@ -946,9 +945,9 @@
    "seed": 2022,
    "label": "corrected_draw0_R0_mae",
    "flat": "{\"branch.channels\":8,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":5,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R0\",\"core.blocks\":2,\"core.d_model\":128,\"core.dropout\":0.020687228802490153,\"core.ff_dim\":64,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R0\",\"core.stage_channels_0\":96,\"core.stage_channels_1\":48,\"core.stage_count\":3,\"core.time_factor_0\":1,\"core.time_factor_1\":4,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":16,\"model.output_steps\":6,\"train.batch_size\":64,\"train.learning_rate\":0.0028856011274245733,\"train.loss\":\"mae\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":8,\"train.seed\":2022,\"train.weight_decay\":1.8838150872155706e-06}",
-   "status": "queued",
+   "status": "verified",
    "blocked_reason": null,
-   "objective": null
+   "objective": 0.7345259875566894
   },
   {
    "cid": "30983a6ee620e818017ea4b56d84320c29ba13582cfad0d04fb45b6279332a4e",
@@ -1089,8 +1088,8 @@
    "seed": 2021,
    "label": "corrected_default_branch_R1_huber",
    "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R1\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R0\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.huber_delta\":1.0,\"train.learning_rate\":0.001,\"train.loss\":\"huber\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2021,\"train.weight_decay\":0.0001}",
-   "status": "blocked",
-   "blocked_reason": "regime R1 requires a declared donor for branch branch_0 at grouping 1",
+   "status": "CANCELLED_SUPERSEDED",
+   "blocked_reason": "CANCELLED_SUPERSEDED 2026-10-01: R1/R2 R0 reference changed from the default Huber point (prepared before seq 5) to the seq-5 incumbent c09f30341e78 (MAE, lr 1e-3, wd 1e-4, b64, patience 5); never started | was blocked: regime R1 requires a declared donor for branch branch_0 at grouping 1",
    "objective": null
   },
   {
@@ -1100,8 +1099,8 @@
    "seed": 2022,
    "label": "corrected_default_branch_R1_huber",
    "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R1\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R0\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.huber_delta\":1.0,\"train.learning_rate\":0.001,\"train.loss\":\"huber\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2022,\"train.weight_decay\":0.0001}",
-   "status": "blocked",
-   "blocked_reason": "regime R1 requires a declared donor for branch branch_0 at grouping 1",
+   "status": "CANCELLED_SUPERSEDED",
+   "blocked_reason": "CANCELLED_SUPERSEDED 2026-10-01: R1/R2 R0 reference changed from the default Huber point (prepared before seq 5) to the seq-5 incumbent c09f30341e78 (MAE, lr 1e-3, wd 1e-4, b64, patience 5); never started | was blocked: regime R1 requires a declared donor for branch branch_0 at grouping 1",
    "objective": null
   },
   {
@@ -1111,8 +1110,8 @@
    "seed": 2021,
    "label": "corrected_default_core_R1_huber",
    "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R0\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R1\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.huber_delta\":1.0,\"train.learning_rate\":0.001,\"train.loss\":\"huber\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2021,\"train.weight_decay\":0.0001}",
-   "status": "blocked",
-   "blocked_reason": "core regime R1 requires a declared core donor core:1",
+   "status": "CANCELLED_SUPERSEDED",
+   "blocked_reason": "CANCELLED_SUPERSEDED 2026-10-01: R1/R2 R0 reference changed from the default Huber point (prepared before seq 5) to the seq-5 incumbent c09f30341e78 (MAE, lr 1e-3, wd 1e-4, b64, patience 5); never started | was blocked: core regime R1 requires a declared core donor core:1",
    "objective": null
   },
   {
@@ -1122,8 +1121,8 @@
    "seed": 2022,
    "label": "corrected_default_core_R1_huber",
    "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R0\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R1\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.huber_delta\":1.0,\"train.learning_rate\":0.001,\"train.loss\":\"huber\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2022,\"train.weight_decay\":0.0001}",
-   "status": "blocked",
-   "blocked_reason": "core regime R1 requires a declared core donor core:1",
+   "status": "CANCELLED_SUPERSEDED",
+   "blocked_reason": "CANCELLED_SUPERSEDED 2026-10-01: R1/R2 R0 reference changed from the default Huber point (prepared before seq 5) to the seq-5 incumbent c09f30341e78 (MAE, lr 1e-3, wd 1e-4, b64, patience 5); never started | was blocked: core regime R1 requires a declared core donor core:1",
    "objective": null
   },
   {
@@ -1133,8 +1132,8 @@
    "seed": 2021,
    "label": "corrected_default_branch_core_R1_huber",
    "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R1\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R1\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.huber_delta\":1.0,\"train.learning_rate\":0.001,\"train.loss\":\"huber\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2021,\"train.weight_decay\":0.0001}",
-   "status": "blocked",
-   "blocked_reason": "core regime R1 requires a declared core donor core:1",
+   "status": "CANCELLED_SUPERSEDED",
+   "blocked_reason": "CANCELLED_SUPERSEDED 2026-10-01: R1/R2 R0 reference changed from the default Huber point (prepared before seq 5) to the seq-5 incumbent c09f30341e78 (MAE, lr 1e-3, wd 1e-4, b64, patience 5); never started | was blocked: core regime R1 requires a declared core donor core:1",
    "objective": null
   },
   {
@@ -1144,8 +1143,8 @@
    "seed": 2022,
    "label": "corrected_default_branch_core_R1_huber",
    "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R1\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R1\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.huber_delta\":1.0,\"train.learning_rate\":0.001,\"train.loss\":\"huber\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2022,\"train.weight_decay\":0.0001}",
-   "status": "blocked",
-   "blocked_reason": "core regime R1 requires a declared core donor core:1",
+   "status": "CANCELLED_SUPERSEDED",
+   "blocked_reason": "CANCELLED_SUPERSEDED 2026-10-01: R1/R2 R0 reference changed from the default Huber point (prepared before seq 5) to the seq-5 incumbent c09f30341e78 (MAE, lr 1e-3, wd 1e-4, b64, patience 5); never started | was blocked: core regime R1 requires a declared core donor core:1",
    "objective": null
   },
   {
@@ -1155,8 +1154,8 @@
    "seed": 2021,
    "label": "corrected_default_branch_R2_huber",
    "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R2\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R0\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.huber_delta\":1.0,\"train.learning_rate\":0.001,\"train.loss\":\"huber\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2021,\"train.weight_decay\":0.0001}",
-   "status": "blocked",
-   "blocked_reason": "regime R2 requires a declared donor for branch branch_0 at grouping 1",
+   "status": "CANCELLED_SUPERSEDED",
+   "blocked_reason": "CANCELLED_SUPERSEDED 2026-10-01: R1/R2 R0 reference changed from the default Huber point (prepared before seq 5) to the seq-5 incumbent c09f30341e78 (MAE, lr 1e-3, wd 1e-4, b64, patience 5); never started | was blocked: regime R2 requires a declared donor for branch branch_0 at grouping 1",
    "objective": null
   },
   {
@@ -1166,8 +1165,8 @@
    "seed": 2022,
    "label": "corrected_default_branch_R2_huber",
    "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R2\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R0\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.huber_delta\":1.0,\"train.learning_rate\":0.001,\"train.loss\":\"huber\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2022,\"train.weight_decay\":0.0001}",
-   "status": "blocked",
-   "blocked_reason": "regime R2 requires a declared donor for branch branch_0 at grouping 1",
+   "status": "CANCELLED_SUPERSEDED",
+   "blocked_reason": "CANCELLED_SUPERSEDED 2026-10-01: R1/R2 R0 reference changed from the default Huber point (prepared before seq 5) to the seq-5 incumbent c09f30341e78 (MAE, lr 1e-3, wd 1e-4, b64, patience 5); never started | was blocked: regime R2 requires a declared donor for branch branch_0 at grouping 1",
    "objective": null
   },
   {
@@ -1177,8 +1176,8 @@
    "seed": 2021,
    "label": "corrected_default_core_R2_huber",
    "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R0\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R2\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.huber_delta\":1.0,\"train.learning_rate\":0.001,\"train.loss\":\"huber\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2021,\"train.weight_decay\":0.0001}",
-   "status": "blocked",
-   "blocked_reason": "core regime R2 requires a declared core donor core:1",
+   "status": "CANCELLED_SUPERSEDED",
+   "blocked_reason": "CANCELLED_SUPERSEDED 2026-10-01: R1/R2 R0 reference changed from the default Huber point (prepared before seq 5) to the seq-5 incumbent c09f30341e78 (MAE, lr 1e-3, wd 1e-4, b64, patience 5); never started | was blocked: core regime R2 requires a declared core donor core:1",
    "objective": null
   },
   {
@@ -1188,8 +1187,8 @@
    "seed": 2022,
    "label": "corrected_default_core_R2_huber",
    "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R0\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R2\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.huber_delta\":1.0,\"train.learning_rate\":0.001,\"train.loss\":\"huber\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2022,\"train.weight_decay\":0.0001}",
-   "status": "blocked",
-   "blocked_reason": "core regime R2 requires a declared core donor core:1",
+   "status": "CANCELLED_SUPERSEDED",
+   "blocked_reason": "CANCELLED_SUPERSEDED 2026-10-01: R1/R2 R0 reference changed from the default Huber point (prepared before seq 5) to the seq-5 incumbent c09f30341e78 (MAE, lr 1e-3, wd 1e-4, b64, patience 5); never started | was blocked: core regime R2 requires a declared core donor core:1",
    "objective": null
   },
   {
@@ -1199,8 +1198,8 @@
    "seed": 2021,
    "label": "corrected_default_branch_core_R2_huber",
    "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R2\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R2\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.huber_delta\":1.0,\"train.learning_rate\":0.001,\"train.loss\":\"huber\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2021,\"train.weight_decay\":0.0001}",
-   "status": "blocked",
-   "blocked_reason": "core regime R2 requires a declared core donor core:1",
+   "status": "CANCELLED_SUPERSEDED",
+   "blocked_reason": "CANCELLED_SUPERSEDED 2026-10-01: R1/R2 R0 reference changed from the default Huber point (prepared before seq 5) to the seq-5 incumbent c09f30341e78 (MAE, lr 1e-3, wd 1e-4, b64, patience 5); never started | was blocked: core regime R2 requires a declared core donor core:1",
    "objective": null
   },
   {
@@ -1210,6 +1209,138 @@
    "seed": 2022,
    "label": "corrected_default_branch_core_R2_huber",
    "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R2\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R2\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.huber_delta\":1.0,\"train.learning_rate\":0.001,\"train.loss\":\"huber\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2022,\"train.weight_decay\":0.0001}",
+   "status": "CANCELLED_SUPERSEDED",
+   "blocked_reason": "CANCELLED_SUPERSEDED 2026-10-01: R1/R2 R0 reference changed from the default Huber point (prepared before seq 5) to the seq-5 incumbent c09f30341e78 (MAE, lr 1e-3, wd 1e-4, b64, patience 5); never started | was blocked: core regime R2 requires a declared core donor core:1",
+   "objective": null
+  },
+  {
+   "cid": "flat:91341579b6891864c797ca024304ed2646e8cf2913e2871f2e2c9c2a8fb904eb",
+   "position": 108,
+   "config_id": "flat:78f6500eefd8d9a88ea063413a87e7b9baf910017f21ff823a520176ac6f015e",
+   "seed": 2021,
+   "label": "corrected_default_branch_R1_mae_ref_seq5",
+   "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R1\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R0\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.learning_rate\":0.001,\"train.loss\":\"mae\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2021,\"train.weight_decay\":0.0001}",
+   "status": "blocked",
+   "blocked_reason": "regime R1 requires a declared donor for branch branch_0 at grouping 1",
+   "objective": null
+  },
+  {
+   "cid": "flat:90c2d476bc7c929b805a48aefd32ab7aa5b07c9d99dbac72ecc559b2f923d919",
+   "position": 109,
+   "config_id": "flat:78f6500eefd8d9a88ea063413a87e7b9baf910017f21ff823a520176ac6f015e",
+   "seed": 2022,
+   "label": "corrected_default_branch_R1_mae_ref_seq5",
+   "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R1\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R0\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.learning_rate\":0.001,\"train.loss\":\"mae\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2022,\"train.weight_decay\":0.0001}",
+   "status": "blocked",
+   "blocked_reason": "regime R1 requires a declared donor for branch branch_0 at grouping 1",
+   "objective": null
+  },
+  {
+   "cid": "flat:7acaf1deef04f5e0392510fa69ae08312155f4738767601c31bbc44c94ec273a",
+   "position": 110,
+   "config_id": "flat:9c19bfb9c5c5de60d74905ffc5315a151346c4a92b492b3789c84c19bab5da8a",
+   "seed": 2021,
+   "label": "corrected_default_core_R1_mae_ref_seq5",
+   "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R0\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R1\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.learning_rate\":0.001,\"train.loss\":\"mae\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2021,\"train.weight_decay\":0.0001}",
+   "status": "blocked",
+   "blocked_reason": "core regime R1 requires a declared core donor core:1",
+   "objective": null
+  },
+  {
+   "cid": "flat:56e67866cc00458590164494353eb7c3a0fae6e1c5a7123e5063189877656b10",
+   "position": 111,
+   "config_id": "flat:9c19bfb9c5c5de60d74905ffc5315a151346c4a92b492b3789c84c19bab5da8a",
+   "seed": 2022,
+   "label": "corrected_default_core_R1_mae_ref_seq5",
+   "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R0\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R1\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.learning_rate\":0.001,\"train.loss\":\"mae\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2022,\"train.weight_decay\":0.0001}",
+   "status": "blocked",
+   "blocked_reason": "core regime R1 requires a declared core donor core:1",
+   "objective": null
+  },
+  {
+   "cid": "flat:d2de1758affe44fdb6b8c79b40c6b2cb5781e53f42ec6a7cfa7286c0d9e10bb4",
+   "position": 112,
+   "config_id": "flat:d91767c036971fe302feba8eff2542f936c98a954b8b248c115b9890db942010",
+   "seed": 2021,
+   "label": "corrected_default_branch_core_R1_mae_ref_seq5",
+   "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R1\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R1\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.learning_rate\":0.001,\"train.loss\":\"mae\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2021,\"train.weight_decay\":0.0001}",
+   "status": "blocked",
+   "blocked_reason": "core regime R1 requires a declared core donor core:1",
+   "objective": null
+  },
+  {
+   "cid": "flat:27d577da9bb24f649420f198aa53e31db219ad6b4d2c291658c93577834e582c",
+   "position": 113,
+   "config_id": "flat:d91767c036971fe302feba8eff2542f936c98a954b8b248c115b9890db942010",
+   "seed": 2022,
+   "label": "corrected_default_branch_core_R1_mae_ref_seq5",
+   "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R1\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R1\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.learning_rate\":0.001,\"train.loss\":\"mae\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2022,\"train.weight_decay\":0.0001}",
+   "status": "blocked",
+   "blocked_reason": "core regime R1 requires a declared core donor core:1",
+   "objective": null
+  },
+  {
+   "cid": "flat:49a86aaf85cb0d8c3ed9addf97b58652603434aaaaa3ab2670b95886302a3856",
+   "position": 114,
+   "config_id": "flat:9e1b5cc463b4bfca1e5b7c2f1da0b3b82098b43b9d49f26995094d30d83dfa8b",
+   "seed": 2021,
+   "label": "corrected_default_branch_R2_mae_ref_seq5",
+   "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R2\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R0\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.learning_rate\":0.001,\"train.loss\":\"mae\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2021,\"train.weight_decay\":0.0001}",
+   "status": "blocked",
+   "blocked_reason": "regime R2 requires a declared donor for branch branch_0 at grouping 1",
+   "objective": null
+  },
+  {
+   "cid": "flat:a9b5bf2ca281aa73d27ff47a924f4a8f045676ea6b2c83144c25788806dc1357",
+   "position": 115,
+   "config_id": "flat:9e1b5cc463b4bfca1e5b7c2f1da0b3b82098b43b9d49f26995094d30d83dfa8b",
+   "seed": 2022,
+   "label": "corrected_default_branch_R2_mae_ref_seq5",
+   "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R2\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R0\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.learning_rate\":0.001,\"train.loss\":\"mae\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2022,\"train.weight_decay\":0.0001}",
+   "status": "blocked",
+   "blocked_reason": "regime R2 requires a declared donor for branch branch_0 at grouping 1",
+   "objective": null
+  },
+  {
+   "cid": "flat:f7b509e0fa87e5688aa4662554aaf8970e9c7220213945abd237ffcbb4cb62cd",
+   "position": 116,
+   "config_id": "flat:b3ae2c53074f7e9272c6c57b07082009f0bf05f908a9c8f2896e16a7e3f3e050",
+   "seed": 2021,
+   "label": "corrected_default_core_R2_mae_ref_seq5",
+   "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R0\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R2\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.learning_rate\":0.001,\"train.loss\":\"mae\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2021,\"train.weight_decay\":0.0001}",
+   "status": "blocked",
+   "blocked_reason": "core regime R2 requires a declared core donor core:1",
+   "objective": null
+  },
+  {
+   "cid": "flat:f96bde0924a4fe1ac06f85ea276139a1b1714d7e504f08a4f0108dbe824bed90",
+   "position": 117,
+   "config_id": "flat:b3ae2c53074f7e9272c6c57b07082009f0bf05f908a9c8f2896e16a7e3f3e050",
+   "seed": 2022,
+   "label": "corrected_default_core_R2_mae_ref_seq5",
+   "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R0\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R2\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.learning_rate\":0.001,\"train.loss\":\"mae\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2022,\"train.weight_decay\":0.0001}",
+   "status": "blocked",
+   "blocked_reason": "core regime R2 requires a declared core donor core:1",
+   "objective": null
+  },
+  {
+   "cid": "flat:70e8e246b737b837dfc2522e1adf8daa96e8f207a965821e19db88f2494a2cdb",
+   "position": 118,
+   "config_id": "flat:ec3514489af153aa337e6312d8f1595a54af3cc1f315a899fc4a128a23bbbdec",
+   "seed": 2021,
+   "label": "corrected_default_branch_core_R2_mae_ref_seq5",
+   "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R2\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R2\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.learning_rate\":0.001,\"train.loss\":\"mae\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2021,\"train.weight_decay\":0.0001}",
+   "status": "blocked",
+   "blocked_reason": "core regime R2 requires a declared core donor core:1",
+   "objective": null
+  },
+  {
+   "cid": "flat:47749cfab4185cc2f5053488f02d2f028e7f0bdc8c69a71fa997924e9f479f5a",
+   "position": 119,
+   "config_id": "flat:ec3514489af153aa337e6312d8f1595a54af3cc1f315a899fc4a128a23bbbdec",
+   "seed": 2022,
+   "label": "corrected_default_branch_core_R2_mae_ref_seq5",
+   "flat": "{\"branch.channels\":16,\"branch.dilation_rate\":1,\"branch.grouping_size\":1,\"branch.kernel_size\":3,\"branch.plugin\":\"causal_conv1d\",\"branch.regime\":\"R2\",\"core.blocks\":2,\"core.d_model\":64,\"core.dropout\":0.0,\"core.ff_dim\":128,\"core.heads\":4,\"core.kernel_size\":3,\"core.regime\":\"R2\",\"core.stage_channels_0\":32,\"core.stage_channels_1\":16,\"core.stage_count\":3,\"core.time_factor_0\":2,\"core.time_factor_1\":2,\"core.time_factor_2\":1,\"model.branch_steps\":24,\"model.output_channels\":8,\"model.output_steps\":6,\"train.batch_size\":64,\"train.learning_rate\":0.001,\"train.loss\":\"mae\",\"train.max_epochs\":30,\"train.min_delta\":0.0,\"train.patience\":5,\"train.seed\":2022,\"train.weight_decay\":0.0001}",
    "status": "blocked",
    "blocked_reason": "core regime R2 requires a declared core donor core:1",
    "objective": null
@@ -2262,24 +2393,206 @@
    "kind": "train",
    "launcher_pid": 1087173,
    "started": 1790831947.244995,
-   "finished": null,
-   "status": "running",
-   "exit_code": null,
+   "finished": 1790832604.1863067,
+   "status": "completed",
+   "exit_code": 0,
    "error": null,
    "cap": "6580M",
    "wall": "2h",
    "output_root": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/872bf2887bd867d6/train-1",
-   "cgroup_peak_bytes": null,
-   "elapsed_seconds": null,
+   "cgroup_peak_bytes": 6211715072,
+   "elapsed_seconds": 656.7424898520003,
+   "observed_updates": 6027,
+   "selected_epoch": 13,
+   "per_update_seconds": 0.09865513864410147,
+   "stop_reason": "patience",
+   "receipt_path": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/872bf2887bd867d6/train-1/bridge/16dc8109c23e812b9e3be28487a97698bb479cc7949e516aa81d5e4f8b5624ff/accepted.json",
+   "objective": 0.7299352983409243,
+   "model_sha256": "7d42dd0a95093aa47f35a91895768dc1280022a897e334c1ab04dd809cc42b08",
+   "weights_sha256": "ee8a941f3bc84e699c4b41b2955aa3e4e64b54429bb60ab7a99727c2b9ffdc97",
+   "verdict": null,
+   "host": "worker_a"
+  },
+  {
+   "cid": "872bf2887bd867d61d514901917e091ed65510a6eedbfe4b23c8c00e8898ad3d",
+   "attempt": 1,
+   "kind": "verify",
+   "launcher_pid": 1087173,
+   "started": 1790832604.1895962,
+   "finished": 1790832634.1276195,
+   "status": "completed",
+   "exit_code": 0,
+   "error": null,
+   "cap": "3914M",
+   "wall": "20m",
+   "output_root": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/872bf2887bd867d6/verify-1",
+   "cgroup_peak_bytes": 3371139072,
+   "elapsed_seconds": 29.748000294999656,
    "observed_updates": null,
    "selected_epoch": null,
    "per_update_seconds": null,
    "stop_reason": null,
-   "receipt_path": null,
-   "objective": null,
-   "model_sha256": null,
+   "receipt_path": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/872bf2887bd867d6/verify-1/bridge/verify-ff6b2e6f5fe5baf9f6b5efacdd4f266b/verification.json",
+   "objective": 0.7299352983409243,
+   "model_sha256": "7d42dd0a95093aa47f35a91895768dc1280022a897e334c1ab04dd809cc42b08",
    "weights_sha256": null,
+   "verdict": "VERIFIED",
+   "host": "worker_a"
+  },
+  {
+   "cid": "f2f717ecee92c810ef9752d3752358b70323932fa398ae8e31b9bd59fc3d282d",
+   "attempt": 1,
+   "kind": "train",
+   "launcher_pid": 1087173,
+   "started": 1790832634.1325312,
+   "finished": 1790833319.4199312,
+   "status": "completed",
+   "exit_code": 0,
+   "error": null,
+   "cap": "6580M",
+   "wall": "2h",
+   "output_root": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/f2f717ecee92c810/train-1",
+   "cgroup_peak_bytes": 6211710976,
+   "elapsed_seconds": 685.068765183998,
+   "observed_updates": 6314,
+   "selected_epoch": 14,
+   "per_update_seconds": 0.09873965066613899,
+   "stop_reason": "patience",
+   "receipt_path": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/f2f717ecee92c810/train-1/bridge/4c419061dff465073c30018cee2dcf1d51d2e819dfbe627788b041a5ba75330f/accepted.json",
+   "objective": 0.7307430255910836,
+   "model_sha256": "2b6e36de2aa2c94550245ce6fff44888d4522ed332682a6d046db26decc5d0ea",
+   "weights_sha256": "85698d99c0b7bf6b64bc3b738ae2baced1a2b6d5a031997a7ef89fd5e8b3b92e",
    "verdict": null,
+   "host": "worker_a"
+  },
+  {
+   "cid": "f2f717ecee92c810ef9752d3752358b70323932fa398ae8e31b9bd59fc3d282d",
+   "attempt": 1,
+   "kind": "verify",
+   "launcher_pid": 1087173,
+   "started": 1790833319.4230156,
+   "finished": 1790833350.0922704,
+   "status": "completed",
+   "exit_code": 0,
+   "error": null,
+   "cap": "3914M",
+   "wall": "20m",
+   "output_root": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/f2f717ecee92c810/verify-1",
+   "cgroup_peak_bytes": 3372986368,
+   "elapsed_seconds": 30.48633332400277,
+   "observed_updates": null,
+   "selected_epoch": null,
+   "per_update_seconds": null,
+   "stop_reason": null,
+   "receipt_path": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/f2f717ecee92c810/verify-1/bridge/verify-2786c5001e16186639e3b96200aeacfe/verification.json",
+   "objective": 0.7307430255910836,
+   "model_sha256": "2b6e36de2aa2c94550245ce6fff44888d4522ed332682a6d046db26decc5d0ea",
+   "weights_sha256": null,
+   "verdict": "VERIFIED",
+   "host": "worker_a"
+  },
+  {
+   "cid": "048bc879d1031f8f0d5805b5b6156d40d3496210e8d4366c586feb8fab3ba9f8",
+   "attempt": 1,
+   "kind": "train",
+   "launcher_pid": 1087173,
+   "started": 1790833350.0970445,
+   "finished": 1790833881.9218855,
+   "status": "completed",
+   "exit_code": 0,
+   "error": null,
+   "cap": "6580M",
+   "wall": "2h",
+   "output_root": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/048bc879d1031f8f/train-1",
+   "cgroup_peak_bytes": 6211727360,
+   "elapsed_seconds": 531.6178247690004,
+   "observed_updates": 4592,
+   "selected_epoch": 8,
+   "per_update_seconds": 0.10251762895971214,
+   "stop_reason": "patience",
+   "receipt_path": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/048bc879d1031f8f/train-1/bridge/9a8c03105d882d3caa9e8e07dd608aa63a0968145aba035789e6c4ebae9fdcd5/accepted.json",
+   "objective": 0.7326520251932855,
+   "model_sha256": "c186384628d8b87ab090aea27dd35905128b56943082f1f74a9dc090421b024e",
+   "weights_sha256": "6322599bd72d16634d63060e28c783913d9e7a7149d621fb142602a52ebc93c3",
+   "verdict": null,
+   "host": "worker_a"
+  },
+  {
+   "cid": "048bc879d1031f8f0d5805b5b6156d40d3496210e8d4366c586feb8fab3ba9f8",
+   "attempt": 1,
+   "kind": "verify",
+   "launcher_pid": 1087173,
+   "started": 1790833881.9251194,
+   "finished": 1790833912.4953794,
+   "status": "completed",
+   "exit_code": 0,
+   "error": null,
+   "cap": "3914M",
+   "wall": "20m",
+   "output_root": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/048bc879d1031f8f/verify-1",
+   "cgroup_peak_bytes": 3383320576,
+   "elapsed_seconds": 30.390441618001205,
+   "observed_updates": null,
+   "selected_epoch": null,
+   "per_update_seconds": null,
+   "stop_reason": null,
+   "receipt_path": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/048bc879d1031f8f/verify-1/bridge/verify-f1cb807da467e4c0a28095db7ef2c76d/verification.json",
+   "objective": 0.7326520251932855,
+   "model_sha256": "c186384628d8b87ab090aea27dd35905128b56943082f1f74a9dc090421b024e",
+   "weights_sha256": null,
+   "verdict": "VERIFIED",
+   "host": "worker_a"
+  },
+  {
+   "cid": "d7d2e7493dd795c935538e3dc37608a770ec2c7c11f68d9392c00c835a0b8d86",
+   "attempt": 1,
+   "kind": "train",
+   "launcher_pid": 1087173,
+   "started": 1790833912.4999206,
+   "finished": 1790834518.734665,
+   "status": "completed",
+   "exit_code": 0,
+   "error": null,
+   "cap": "6580M",
+   "wall": "2h",
+   "output_root": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/d7d2e7493dd795c9/train-1",
+   "cgroup_peak_bytes": 6211751936,
+   "elapsed_seconds": 606.0468887489988,
+   "observed_updates": 5453,
+   "selected_epoch": 11,
+   "per_update_seconds": 0.09979547934623126,
+   "stop_reason": "patience",
+   "receipt_path": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/d7d2e7493dd795c9/train-1/bridge/4df45bbcc8275d1ef70d53b55b3f0c11b00fb3c31183320f8262bb9f88aef8e2/accepted.json",
+   "objective": 0.7345259875566894,
+   "model_sha256": "9235b5f059eb3084fff1efe78abfaf199e1b697f07f03c7301a42ce45ff1e6e6",
+   "weights_sha256": "f5aada2c2cc914b32f71a4beafbfa37001c981ebdd5652d5cb73f04fb49050ba",
+   "verdict": null,
+   "host": "worker_a"
+  },
+  {
+   "cid": "d7d2e7493dd795c935538e3dc37608a770ec2c7c11f68d9392c00c835a0b8d86",
+   "attempt": 1,
+   "kind": "verify",
+   "launcher_pid": 1087173,
+   "started": 1790834518.73846,
+   "finished": 1790834549.3624864,
+   "status": "completed",
+   "exit_code": 0,
+   "error": null,
+   "cap": "3914M",
+   "wall": "20m",
+   "output_root": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/d7d2e7493dd795c9/verify-1",
+   "cgroup_peak_bytes": 3374751744,
+   "elapsed_seconds": 30.438452743997914,
+   "observed_updates": null,
+   "selected_epoch": null,
+   "per_update_seconds": null,
+   "stop_reason": null,
+   "receipt_path": "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/d7d2e7493dd795c9/verify-1/bridge/verify-a49ca825933b9f9dcc370ff3ad634b68/verification.json",
+   "objective": 0.7345259875566894,
+   "model_sha256": "9235b5f059eb3084fff1efe78abfaf199e1b697f07f03c7301a42ce45ff1e6e6",
+   "weights_sha256": null,
+   "verdict": "VERIFIED",
    "host": "worker_a"
   }
  ],
@@ -2847,29 +3160,29 @@
   {
    "config_id": "35df52f1ea09ad644cfe99547524f59075fd81a70aa8592df9d2e5300fe52a66",
    "label": "corrected_draw0_R0_huber",
-   "eligible": false,
-   "mean_objective": null,
+   "eligible": true,
+   "mean_objective": 0.730339161966004,
    "per_seed": {
-    "2021": null,
-    "2022": null
+    "2021": 0.7299352983409243,
+    "2022": 0.7307430255910836
    },
    "statuses": {
-    "2021": "running",
-    "2022": "queued"
+    "2021": "verified",
+    "2022": "verified"
    }
   },
   {
    "config_id": "66108c9c040bd8b49265568c7a56898fb461ca23256550ad9e595bb2b36f58f1",
    "label": "corrected_draw0_R0_mae",
-   "eligible": false,
-   "mean_objective": null,
+   "eligible": true,
+   "mean_objective": 0.7335890063749875,
    "per_seed": {
-    "2021": null,
-    "2022": null
+    "2021": 0.7326520251932855,
+    "2022": 0.7345259875566894
    },
    "statuses": {
-    "2021": "queued",
-    "2022": "queued"
+    "2021": "verified",
+    "2022": "verified"
    }
   },
   {
@@ -2966,8 +3279,8 @@
     "2022": null
    },
    "statuses": {
-    "2021": "blocked",
-    "2022": "blocked"
+    "2021": "CANCELLED_SUPERSEDED",
+    "2022": "CANCELLED_SUPERSEDED"
    }
   },
   {
@@ -2980,8 +3293,8 @@
     "2022": null
    },
    "statuses": {
-    "2021": "blocked",
-    "2022": "blocked"
+    "2021": "CANCELLED_SUPERSEDED",
+    "2022": "CANCELLED_SUPERSEDED"
    }
   },
   {
@@ -2994,8 +3307,8 @@
     "2022": null
    },
    "statuses": {
-    "2021": "blocked",
-    "2022": "blocked"
+    "2021": "CANCELLED_SUPERSEDED",
+    "2022": "CANCELLED_SUPERSEDED"
    }
   },
   {
@@ -3008,8 +3321,8 @@
     "2022": null
    },
    "statuses": {
-    "2021": "blocked",
-    "2022": "blocked"
+    "2021": "CANCELLED_SUPERSEDED",
+    "2022": "CANCELLED_SUPERSEDED"
    }
   },
   {
@@ -3022,13 +3335,97 @@
     "2022": null
    },
    "statuses": {
-    "2021": "blocked",
-    "2022": "blocked"
+    "2021": "CANCELLED_SUPERSEDED",
+    "2022": "CANCELLED_SUPERSEDED"
    }
   },
   {
    "config_id": "flat:82ef22619c244b7d7e5e0b31825daa26cf15550fd32a151b081382d0c330bf2e",
    "label": "corrected_default_branch_core_R2_huber",
+   "eligible": false,
+   "mean_objective": null,
+   "per_seed": {
+    "2021": null,
+    "2022": null
+   },
+   "statuses": {
+    "2021": "CANCELLED_SUPERSEDED",
+    "2022": "CANCELLED_SUPERSEDED"
+   }
+  },
+  {
+   "config_id": "flat:78f6500eefd8d9a88ea063413a87e7b9baf910017f21ff823a520176ac6f015e",
+   "label": "corrected_default_branch_R1_mae_ref_seq5",
+   "eligible": false,
+   "mean_objective": null,
+   "per_seed": {
+    "2021": null,
+    "2022": null
+   },
+   "statuses": {
+    "2021": "blocked",
+    "2022": "blocked"
+   }
+  },
+  {
+   "config_id": "flat:9c19bfb9c5c5de60d74905ffc5315a151346c4a92b492b3789c84c19bab5da8a",
+   "label": "corrected_default_core_R1_mae_ref_seq5",
+   "eligible": false,
+   "mean_objective": null,
+   "per_seed": {
+    "2021": null,
+    "2022": null
+   },
+   "statuses": {
+    "2021": "blocked",
+    "2022": "blocked"
+   }
+  },
+  {
+   "config_id": "flat:d91767c036971fe302feba8eff2542f936c98a954b8b248c115b9890db942010",
+   "label": "corrected_default_branch_core_R1_mae_ref_seq5",
+   "eligible": false,
+   "mean_objective": null,
+   "per_seed": {
+    "2021": null,
+    "2022": null
+   },
+   "statuses": {
+    "2021": "blocked",
+    "2022": "blocked"
+   }
+  },
+  {
+   "config_id": "flat:9e1b5cc463b4bfca1e5b7c2f1da0b3b82098b43b9d49f26995094d30d83dfa8b",
+   "label": "corrected_default_branch_R2_mae_ref_seq5",
+   "eligible": false,
+   "mean_objective": null,
+   "per_seed": {
+    "2021": null,
+    "2022": null
+   },
+   "statuses": {
+    "2021": "blocked",
+    "2022": "blocked"
+   }
+  },
+  {
+   "config_id": "flat:b3ae2c53074f7e9272c6c57b07082009f0bf05f908a9c8f2896e16a7e3f3e050",
+   "label": "corrected_default_core_R2_mae_ref_seq5",
+   "eligible": false,
+   "mean_objective": null,
+   "per_seed": {
+    "2021": null,
+    "2022": null
+   },
+   "statuses": {
+    "2021": "blocked",
+    "2022": "blocked"
+   }
+  },
+  {
+   "config_id": "flat:ec3514489af153aa337e6312d8f1595a54af3cc1f315a899fc4a128a23bbbdec",
+   "label": "corrected_default_branch_core_R2_mae_ref_seq5",
    "eligible": false,
    "mean_objective": null,
    "per_seed": {
