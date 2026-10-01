@@ -63,6 +63,10 @@ pero exige identidad y prueba nuevas, no etiquetar el viejo encoder como nuevo.
 
 ## 3. Despacho concurrente, sin duplicar propietarios
 
+Adenda para B/C/M04: [cobertura de fuentes y transformaciones](SATOSHI_SOURCE_TRANSFORM_COVERAGE_ADDENDUM_2026_10_01.md).
+Incluye Yahoo Finance, Alpaca, FXMacroData, indicadores/regimenes y productores
+espectrales existentes; audita proxies y crecimiento del conjunto activo.
+
 Satoshi coordina e integra; no implementa todo secuencialmente. Reutiliza agentes
 existentes solo si realmente siguen disponibles; si no, despacha reemplazos con
 acuse e ID. Hasta seis agentes al inicio, incrementables segun memoria medida;

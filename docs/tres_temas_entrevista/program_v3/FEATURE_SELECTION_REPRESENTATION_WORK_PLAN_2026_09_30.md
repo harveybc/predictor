@@ -506,6 +506,15 @@ Las siguientes pruebas se diseñan antes de implementar; NO están ejecutadas:
 
 ## 10. Subplan ejecutable por incrementos
 
+Ampliación de cobertura (01-oct):
+[fuentes de pago, indicadores, regímenes y transformaciones](../../handoffs/SATOSHI_SOURCE_TRANSFORM_COVERAGE_ADDENDUM_2026_10_01.md).
+PS0/PS1 deben conciliar el censo con fuentes y artefactos derivados existentes,
+no limitarse a las vistas ya seleccionadas. Catálogo exhaustivo respecto al
+universo declarado no significa materializar todas las combinaciones: DAG de
+recetas, expansión progresiva, exploración por familia y límites medidos del
+conjunto activo. Un proxy multiescala no certifica wavelet nativa; una métrica
+espectral descriptiva no prueba que su canal transformado llegó al modelo.
+
 Prioridad: negocio y operación semanal, después admisibilidad/calidad de datos.
 Este subplan se inserta en perfiles/selección del subplan modular y reutiliza
 P-PRE de denoising y P-TRN de transformaciones del plan maestro. No crea una
