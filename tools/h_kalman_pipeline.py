@@ -128,16 +128,18 @@ def arm_matrices(data, kal, lags=1, controls=False, only=None):
         ew_cols, ew_names = [], []
         sm_cols, sm_names = [], []
         for gname, g in kal.items():
-            e = kf.ewma_comparable(g["artifact"], Z[:, g["idx"]])
-            sm = kf.smoother_control(g["artifact"], Z[:, g["idx"]])
+            e = kf.ewma_comparable(g["artifact"], Z[:, g["idx"]]) if want("C_EWMA") else None
+            sm = kf.smoother_control(g["artifact"], Z[:, g["idx"]]) if want("C_SMOOTHER_NONCAUSAL") else None
             for j, c in enumerate(g["names"]):
-                ew_cols += [e["level"][:, j], e["innov"][:, j]]
-                ew_names += [f"{c}__ewma_level", f"{c}__ewma_innov"]
-                sm_cols.append(sm.arrays["level"][:, j])
-                sm_names.append(f"{c}__smoothed_level_NONCAUSAL")
-                if "slope" in sm.arrays:
-                    sm_cols.append(sm.arrays["slope"][:, j])
-                    sm_names.append(f"{c}__smoothed_slope_NONCAUSAL")
+                if e is not None:
+                    ew_cols += [e["level"][:, j], e["innov"][:, j]]
+                    ew_names += [f"{c}__ewma_level", f"{c}__ewma_innov"]
+                if sm is not None:
+                    sm_cols.append(sm.arrays["level"][:, j])
+                    sm_names.append(f"{c}__smoothed_level_NONCAUSAL")
+                    if "slope" in sm.arrays:
+                        sm_cols.append(sm.arrays["slope"][:, j])
+                        sm_names.append(f"{c}__smoothed_slope_NONCAUSAL")
         E = np.stack(ew_cols, axis=1) if ew_cols else np.zeros((Z.shape[0], 0))
         S = np.stack(sm_cols, axis=1) if sm_cols else np.zeros((Z.shape[0], 0))
         if want("C_EWMA"):

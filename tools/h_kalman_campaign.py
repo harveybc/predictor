@@ -43,15 +43,19 @@ def run_variants(d, groups, variants, heavy_variant, skip_heavy, hb, role, L, re
             hb.stage(f"variant:{vname}:arms:lags{lags}")
             use = ["A", "B", "C", "IDENTITY", "B_PERMUTED", "B_NOISE", "C_EWMA", "C_SMOOTHER_NONCAUSAL"] if lags == 1 \
                 else ["A", "B", "C", "C_EWMA"]
-            arms = pipe.arm_matrices(d, kal, lags=lags, controls=True, only=set(use))
+            # lag-1 matrices are small and built together; wide (lagged) matrices are built one arm at a time
+            arms_all = pipe.arm_matrices(d, kal, lags=lags, controls=True, only=set(use)) if lags == 1 else None
             evs = {}
             for a in use:
                 hb.stage(f"variant:{vname}:lags{lags}:arm:{a}")
                 t0, c0 = time.time(), time.process_time()
-                ev = pipe.evaluate_arm(d, arms[a])
+                arm = arms_all[a] if arms_all is not None else \
+                    pipe.arm_matrices(d, kal, lags=lags, controls=True, only={a})[a]
+                ev = pipe.evaluate_arm(d, arm)
                 ev["cost"] = {"wall_s": time.time() - t0, "cpu_s": time.process_time() - c0}
-                ev["input_matrix_validation_sha256"] = arms_lib.sha_array(arms[a]["validation"])
-                ev["input_matrix_train_sha256"] = arms_lib.sha_array(arms[a]["train"])
+                ev["input_matrix_validation_sha256"] = arms_lib.sha_array(arm["validation"])
+                ev["input_matrix_train_sha256"] = arms_lib.sha_array(arm["train"])
+                del arm
                 evs[a] = ev
                 replay["arms_exact_inputs"][f"{vname}|lags{lags}|{a}"] = {
                     "train": ev["input_matrix_train_sha256"], "validation": ev["input_matrix_validation_sha256"]}
@@ -60,6 +64,6 @@ def run_variants(d, groups, variants, heavy_variant, skip_heavy, hb, role, L, re
                 assert evs["IDENTITY"]["input_matrix_validation_sha256"] == evs["A"]["input_matrix_validation_sha256"]
             paired = {a: pipe.paired_against(d, evs["A"], evs[a], L) for a in use if a not in ("A", "IDENTITY")}
             vres["arms"][f"lags{lags}"] = {"evaluations": pipe.public(evs), "paired_vs_A": paired}
-            del arms
+            del arms_all
         out[vname] = vres
     return out, replay
