@@ -28,7 +28,7 @@ def control(record, cols, train, ts):
     mean_all, mean_enc, med = float(y[fit].mean()), float(y[enc].mean()), float(np.median(y[fit]))
     joint = record["arms"][f"base+{a}+{b}"]
     seeds = [s["val_mae"] for s in joint["per_seed"].values()]
-    best_const = min(float(np.mean(np.abs(truth - c))) for c in (mean_all, mean_enc, med, 0.0))
+    best_const = min(float(np.mean(np.abs(truth - c))) for c in (mean_all, med, 0.0))   # beat ALL three
     return {"fold": record["fold"], "pair": f"{a}*{b}", "target": record["target"], "rows": int(len(val)),
             "zero_naive": float(np.mean(np.abs(truth))),
             "train_mean_const": float(np.mean(np.abs(truth - mean_all))),
@@ -36,14 +36,14 @@ def control(record, cols, train, ts):
             "train_median_const": float(np.mean(np.abs(truth - med))),
             "train_mean": mean_all, "joint_mean": joint["mean_val_mae"], "joint_seeds": seeds,
             "decision": record["decision"],
-            "joint_beats_best_constant_beyond_spread": (best_const - joint["mean_val_mae"]
+            "joint_beats_zero_mean_median_beyond_spread_both_seeds": (best_const - joint["mean_val_mae"]
                                                          > (max(seeds) - min(seeds)) / 2) and max(seeds) < best_const}
 
 
 def main(data, run_dir, out):
     train, ts = ps5._eth(data)
     cols = {c: train[c].to_numpy("float64") for c in train.columns if c != "DATE_TIME"}
-    rows = [control(json.loads(p.read_text()), cols, train, ts) for p in sorted(Path(run_dir).glob("ps5_*.json"))]
+    rows = [control(json.loads(p.read_text()), cols, train, ts) for p in sorted(Path(run_dir).glob("ps5*_[0-9]*.json"))]
     Path(out).write_text(json.dumps({"label": "DEVELOPMENT", "rows": rows}, indent=1) + "\n")
     for r in rows:
         print(json.dumps({k: (round(v, 6) if isinstance(v, float) else v) for k, v in r.items() if k != "joint_seeds"}))

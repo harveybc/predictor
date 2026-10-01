@@ -168,6 +168,29 @@ def build_plan(manifest_path, worklist_path):
     return sorted(plan, key=lambda p: (p["fold"], p["pair"], p["target_hours"]))
 
 
+def targeted_plan(manifest_path, worklist_path, specs):
+    """Cross-fold units ``fold:a*b@h`` (coordinator order): same arms; base = that fold's PRIORITY and
+    REPRESENTATIVE features minus the pair, in manifest order (the rule build_plan uses)."""
+    import csv
+    if _sha(manifest_path) != MANIFEST_FILE_SHA or _sha(worklist_path) != WORKLIST_SHA:
+        raise SystemExit("manifest or work list bytes are not the frozen ones")
+    order = json.loads(Path(manifest_path).read_text())["features"]
+    rows = list(csv.DictReader(open(worklist_path, newline="")))
+    plan = []
+    for spec in specs:
+        fold, rest = spec.split(":")
+        pair, hours = rest.split("@")
+        a, b = sorted(pair.split("*"))
+        hours = int(hours.rstrip("h"))
+        core = {x["feature"] for x in rows if x["fold"] == fold
+                and x["tier"] in ("PRIORITY", "REPRESENTATIVE")} - {a, b}
+        if fold not in FOLDS or not {a, b} | core <= set(order):
+            raise SystemExit(f"bad targeted unit {spec}")
+        plan.append({"fold": fold, "pair": [a, b], "target_hours": hours, "target": f"Y_l@{hours}h",
+                     "base": [f for f in order if f in core], "targeted": True})
+    return plan
+
+
 def _eth(data_path, train_rows=13699):
     import pandas as pd
     frame = pd.read_csv(data_path)
@@ -223,20 +246,23 @@ def main():
     p.add_argument("--out", required=True)
     p.add_argument("--only", type=int, default=None, help="run only this plan index (the measured pilot)")
     p.add_argument("--max-epochs", type=int, default=RUN_SETTINGS["max_epochs"])
+    p.add_argument("--targeted", nargs="*", default=None, help="run only these cross-fold units fold:a*b@Hh")
     a = p.parse_args()
     if _sha(a.data) != DATA_SHA:
         raise SystemExit("data bytes are not the manifest's resource")
-    plan = build_plan(a.manifest, a.worklist)
+    plan = (targeted_plan(a.manifest, a.worklist, a.targeted) if a.targeted
+            else build_plan(a.manifest, a.worklist))
+    prefix = "ps5x" if a.targeted else "ps5"
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
-    (out / "PLAN.json").write_text(json.dumps(plan, indent=1) + "\n")
+    (out / ("PLAN_TARGETED.json" if a.targeted else "PLAN.json")).write_text(json.dumps(plan, indent=1) + "\n")
     train, ts = _eth(a.data)
     cols = {c: train[c].to_numpy("float64") for c in train.columns if c != "DATE_TIME"}
     settings = dict(RUN_SETTINGS, max_epochs=a.max_epochs)
     for i, item in enumerate(plan):
         if a.only is not None and i != a.only:
             continue
-        path = out / f"ps5_{i:03d}_{item['fold']}_{item['pair'][0]}__{item['pair'][1]}_{item['target_hours']}h.json"
+        path = out / f"{prefix}_{i:03d}_{item['fold']}_{item['pair'][0]}__{item['pair'][1]}_{item['target_hours']}h.json"
         if path.is_file():
             continue
         started = time.monotonic()
