@@ -42,8 +42,42 @@
     "data_manifest": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["sources", "publication_clock", "expectation_kind", "n_episodes", "exclusions", "train_folds"],
+      "required": ["sources", "asset_appearance", "publication_clock", "expectation_kind", "n_episodes", "exclusions", "train_folds"],
       "properties": {
+        "asset_appearance": {
+          "description": "The single slot through which every rung reads the outcome price series (owner open question 13). CONTRACTED binds the study to one contracted census appearance (lane B FINANCIAL_TRAIN_CONTRACTS.v1: appearance id, resource sha256, TRAIN rows, contract id) without redesign; NOT_EXECUTABLE_NO_CONTRACTED_PRICE is the state until such an appearance is sealed through the governed route. No uncontracted price file may stand in.",
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["state", "appearance_id", "dataset_id", "entity", "resource_sha256", "contract_id", "contract_sha256", "train_rows", "frequency", "period", "contracts_document_sha256"],
+              "properties": {
+                "state": {"const": "CONTRACTED"},
+                "appearance_id": {"type": "string", "pattern": "^app_[0-9a-f]{24}$"},
+                "dataset_id": {"type": "string", "pattern": "^financial_data\\.census_appearance\\.app_[0-9a-f]{24}$"},
+                "entity": {"type": "string", "minLength": 1},
+                "resource_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "physical_sha256 of the appearance bytes"},
+                "contract_id": {"type": "string", "minLength": 1, "description": "the TRAIN contract's id as the contracts document names it"},
+                "contract_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+                "train_rows": {"type": "array", "items": {"type": "integer", "minimum": 0}, "minItems": 2, "maxItems": 2, "description": "[start, end) row boundaries of the TRAIN partition; every rung fits inside them only"},
+                "frequency": {"enum": ["5m", "15m", "1h", "4h", "1d"]},
+                "period": {"type": "array", "items": {"type": "string", "format": "date-time"}, "minItems": 2, "maxItems": 2},
+                "contracts_document_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "digest of the FINANCIAL_TRAIN_CONTRACTS document the ids were read from"}
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["state", "entity", "reason"],
+              "properties": {
+                "state": {"const": "NOT_EXECUTABLE_NO_CONTRACTED_PRICE"},
+                "entity": {"type": "string", "minLength": 1},
+                "reason": {"type": "string", "minLength": 1},
+                "open_question": {"type": "string"}
+              }
+            }
+          ]
+        },
         "sources": {
           "type": "array",
           "minItems": 1,
@@ -295,6 +329,13 @@
     "limitations": {"type": "array", "items": {"type": "string"}, "minItems": 1}
   },
   "allOf": [
+    {
+      "if": {"properties": {"data_manifest": {"properties": {"asset_appearance": {"properties": {"state": {"const": "NOT_EXECUTABLE_NO_CONTRACTED_PRICE"}}}}}}},
+      "then": {"properties": {"rung1": {"properties": {"state": {"const": "NOT_EVALUATED"}}},
+                              "rung2": {"properties": {"state": {"enum": ["NOT_EVALUATED", "NOT_IDENTIFIED"]}}},
+                              "rung3": {"properties": {"state": {"enum": ["NOT_EVALUATED", "NOT_IDENTIFIED"]}}},
+                              "selection": {"properties": {"causal_evidence_level": {"const": "NONE"}}}}}
+    },
     {
       "if": {"properties": {"data_manifest": {"properties": {"publication_clock": {"const": "ASSUMED_SCHEDULED_PUBLICATION"}}}}},
       "then": {"properties": {"rung2": {"properties": {"state": {"enum": ["NOT_EVALUATED", "NOT_IDENTIFIED"]}}},

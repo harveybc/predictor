@@ -13,6 +13,12 @@
     "horizon_minutes": 60
   },
   "data_manifest": {
+    "asset_appearance": {
+      "state": "NOT_EXECUTABLE_NO_CONTRACTED_PRICE",
+      "entity": "eurusd",
+      "reason": "no EURUSD price appearance is among the 198 contracted appearances of FINANCIAL_TRAIN_CONTRACTS.v1 (sha256 bfaf2cf63814a0be5756f648f3f5c949b97d96b1f0d0c29f674bc0d36a371406); no substitution of the asset",
+      "open_question": "owner open question 13: seal a EURUSD price appearance through the governed route"
+    },
     "sources": [
       {"role": "calendar", "resource": "feature-eng/tests/data/economic_calendar_2011_2021.csv", "sha256": "5172b322bfaf7bb5000000000000000000000000000000000000000000000000", "rows": 121658, "governed": false},
       {"role": "bars", "resource": "financial-data/market_data/forex/g10/eurusd/5m.parquet", "sha256": "d527b46a9c35100934f95d1048feb860d265c10f5211174a956f39d8e89b9891", "rows": 1552028, "governed": false}
@@ -32,18 +38,14 @@
     "dose_support": {"min": -3.1, "max": 2.9, "n": 100}
   },
   "rung1": {
-    "state": "ASSOCIATION_REPORTED",
+    "state": "NOT_EVALUATED",
     "estimators": ["pearson", "spearman", "naive_response_by_sign"],
-    "effective_n": 80,
     "conditioning_set": ["pre_event_realized_vol", "hour_of_day_utc", "day_of_week_utc", "other_surprises_in_window_negative_offsets"],
-    "multiplicity": {"family": "event_type x horizon x outcome", "n_tests": 40, "permutations": 200, "p_floor": 0.004975, "correction": "none_declared"},
-    "evidence": [
-      {"measure": "pearson", "value": 0.12, "n": 80, "p": 0.29, "q": null, "regime": null, "signed_direction_stable": null}
-    ]
+    "multiplicity": {"family": "event_type x horizon x outcome", "n_tests": 40, "permutations": 200, "p_floor": 0.004975, "correction": "none_declared"}
   },
   "rung2": {
     "state": "NOT_IDENTIFIED",
-    "reasons": ["ASSUMED_PUBLICATION_CLOCK", "PLACEBO_FAILED"],
+    "reasons": ["NOT_EXECUTABLE_NO_CONTRACTED_PRICE", "ASSUMED_PUBLICATION_CLOCK", "PLACEBO_FAILED_IN_DEVELOPMENT_RUN"],
     "estimand": "E[Y_60 | do(surprise=a)] - E[Y_60 | do(surprise=0)] within dose support",
     "contrast": [1.0, 0.0],
     "dag": {"nodes": ["W_pre", "A", "M", "Y_h"], "edges": [["W_pre", "Y_h"], ["A", "M"], ["M", "Y_h"], ["A", "Y_h"]]},
@@ -63,7 +65,7 @@
     "operational_use": "RETROSPECTIVE_ONLY",
     "emittable_from": {"rung1.evidence": "2021-04-27T00:00:00Z"}
   },
-  "selection": {"causal_evidence_level": "ASSOCIATION", "cf_eligible": false, "reason_code": "NOT_IDENTIFIED_ASSUMED_CLOCK"},
+  "selection": {"causal_evidence_level": "NONE", "cf_eligible": false, "reason_code": "NOT_EXECUTABLE_NO_CONTRACTED_PRICE"},
   "limitations": [
     "DEVELOPMENT evidence: the calendar resource has no TRAIN contract (NOT_ADMISSIBLE_NO_CONTRACT) and no publication instant was observed",
     "EXAMPLE DOCUMENT for schema validation; the calendar sha256 is a placeholder prefix padded to 64 hex and must not be read as a measured digest; rung-1 values are illustrative, not a measurement"
