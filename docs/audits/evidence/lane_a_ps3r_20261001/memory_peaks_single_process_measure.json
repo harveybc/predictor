@@ -1,0 +1,95 @@
+{
+ "cap_bytes": 4294967296,
+ "records": [
+  {
+   "arm": "contrastive",
+   "cgroup": "crispdm.slice/crispdm-batch.slice/crispdm-ps3r-pilot-measure-1790824996-1400631.scope",
+   "cgroup_current_bytes": 1600442368,
+   "cgroup_peak_bytes": 1730502656,
+   "fold": "inner_1",
+   "input": "close_sma_ratio_100",
+   "rss_peak_bytes": 2126295040,
+   "seed": 2022
+  },
+  {
+   "arm": "ae",
+   "cgroup": "crispdm.slice/crispdm-batch.slice/crispdm-ps3r-pilot-measure-1790824996-1400631.scope",
+   "cgroup_current_bytes": 1280643072,
+   "cgroup_peak_bytes": 1730502656,
+   "fold": "inner_2",
+   "input": "close_sma_ratio_100",
+   "rss_peak_bytes": 2126295040,
+   "seed": 2021
+  },
+  {
+   "arm": "contrastive",
+   "cgroup": "crispdm.slice/crispdm-batch.slice/crispdm-ps3r-pilot-measure-1790824996-1400631.scope",
+   "cgroup_current_bytes": 2057334784,
+   "cgroup_peak_bytes": 2164494336,
+   "fold": "inner_2",
+   "input": "close_sma_ratio_100",
+   "rss_peak_bytes": 2557521920,
+   "seed": 2021
+  },
+  {
+   "arm": "ae",
+   "cgroup": "crispdm.slice/crispdm-batch.slice/crispdm-ps3r-pilot-measure-1790824996-1400631.scope",
+   "cgroup_current_bytes": 1825587200,
+   "cgroup_peak_bytes": 2164494336,
+   "fold": "inner_2",
+   "input": "close_sma_ratio_100",
+   "rss_peak_bytes": 2557521920,
+   "seed": 2022
+  },
+  {
+   "arm": "contrastive",
+   "cgroup": "crispdm.slice/crispdm-batch.slice/crispdm-ps3r-pilot-measure-1790824996-1400631.scope",
+   "cgroup_current_bytes": 2473193472,
+   "cgroup_peak_bytes": 2666049536,
+   "fold": "inner_2",
+   "input": "close_sma_ratio_100",
+   "rss_peak_bytes": 3053162496,
+   "seed": 2022
+  },
+  {
+   "arm": "ae",
+   "cgroup": "crispdm.slice/crispdm-batch.slice/crispdm-ps3r-pilot-measure-1790824996-1400631.scope",
+   "cgroup_current_bytes": 2386055168,
+   "cgroup_peak_bytes": 2666049536,
+   "fold": "inner_3",
+   "input": "close_sma_ratio_100",
+   "rss_peak_bytes": 3053162496,
+   "seed": 2021
+  },
+  {
+   "arm": "contrastive",
+   "cgroup": "crispdm.slice/crispdm-batch.slice/crispdm-ps3r-pilot-measure-1790824996-1400631.scope",
+   "cgroup_current_bytes": 2658619392,
+   "cgroup_peak_bytes": 2980335616,
+   "fold": "inner_3",
+   "input": "close_sma_ratio_100",
+   "rss_peak_bytes": 3363966976,
+   "seed": 2021
+  },
+  {
+   "arm": "ae",
+   "cgroup": "crispdm.slice/crispdm-batch.slice/crispdm-ps3r-pilot-measure-1790824996-1400631.scope",
+   "cgroup_current_bytes": 2763849728,
+   "cgroup_peak_bytes": 2980335616,
+   "fold": "inner_3",
+   "input": "close_sma_ratio_100",
+   "rss_peak_bytes": 3363966976,
+   "seed": 2022
+  },
+  {
+   "arm": "contrastive",
+   "cgroup": "crispdm.slice/crispdm-batch.slice/crispdm-ps3r-pilot-measure-1790824996-1400631.scope",
+   "cgroup_current_bytes": 3563110400,
+   "cgroup_peak_bytes": 3726868480,
+   "fold": "inner_3",
+   "input": "close_sma_ratio_100",
+   "rss_peak_bytes": 4104962048,
+   "seed": 2022
+  }
+ ]
+}

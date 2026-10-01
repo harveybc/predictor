@@ -111,7 +111,7 @@ def hierarchical_contrastive_loss(z1, z2, alpha=0.5, temporal_unit=0):
 
 
 # ------------------------------------------------------------------- objectives
-@objective("ts2vec_contrastive", "1.0.0", {"alpha", "mask_probability", "min_overlap", "temporal_unit"},
+@objective("ts2vec_contrastive", "1.0.1", {"alpha", "mask_probability", "min_overlap", "temporal_unit"},
            "(B,T,F) branch input -> (B,T,C) latent; hierarchical instance+temporal contrastive loss on two "
            "cropped, masked views; decoder-free (reconstruction NOT_APPLICABLE)",
            {"alpha": 0.5, "mask_probability": 0.5, "min_overlap": 8, "temporal_unit": 0})
@@ -175,6 +175,7 @@ class TS2VecContrastive:
             return total / len(vx)
 
         initial_val = validation_loss()
+        initial_weights = [w.copy() for w in encoder.get_weights()]
         best, best_weights, stale, updates, history = initial_val, None, 0, 0, []
         initial_iterations = int(optimizer.iterations.numpy())
         started, stop = time.monotonic(), "max_epochs"
@@ -208,7 +209,10 @@ class TS2VecContrastive:
                 continue
             break
         if best_weights is None:
-            raise ValueError("no epoch improved on the untrained validation loss; nothing to restore")
+            # 1.0.1: the initial state IS the best checkpoint (epoch 0); restore it and say so, instead of
+            # failing the fit -- "training added nothing" is a result (Delta_probe then is exactly 0).
+            best_weights = initial_weights
+            stop = "no_improvement_over_initial"
         encoder.set_weights(best_weights)
         iterations = int(optimizer.iterations.numpy())
         if iterations - initial_iterations != updates:

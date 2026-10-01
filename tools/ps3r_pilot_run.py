@@ -159,18 +159,35 @@ def _tracing_estimate(receipt):
     return max(0.0, epochs[0]["seconds"] - steady * epochs[0]["updates"])
 
 
-def _reusable(path, arm):
-    """Reuse a completed record only if it binds the same data bytes and the same objective identity."""
+def _objective_shas(queue):
     from predictor_plugins.modular_temporal import objectives as ob
+    queue.put({arm: ob.objective_identity(spec)["sha256"] for arm, spec in ARMS.items()})
+
+
+def _reusable(path, expected_sha):
+    """Reuse a completed record only if it binds the same data bytes and the same objective identity."""
     try:
         record = json.loads(path.read_text())
     except ValueError:
         return False
-    if record.get("status") != "PILOT_ENGINEERING":
-        return False
-    same_data = (record.get("input_identity") or {}).get("data_sha256") == DATA_SHA256
-    same_objective = (record.get("objective") or {}).get("sha256") == ob.objective_identity(ARMS[arm])["sha256"]
-    return same_data and same_objective
+    return (record.get("status") == "PILOT_ENGINEERING"
+            and (record.get("input_identity") or {}).get("data_sha256") == DATA_SHA256
+            and (record.get("objective") or {}).get("sha256") == expected_sha)
+
+
+def _child(data_path, feature, fold_name, seed, arm, records_dir):
+    """One record in its own process (FINDING PS3R-MEM-01: memory grew per fit inside one process)."""
+    train, ts = load(data_path)
+    labels = targets(train, ts)
+    fold = next(f for f in FOLDS if f["name"] == fold_name)
+    data = fold_arrays(train[feature].to_numpy("float64"), fold, labels)
+    records = Path(records_dir)
+    try:
+        run_one(feature, fold, seed, arm, data, records)
+    except ValueError as exc:                         # nonfinite loss etc.: recorded, not hidden
+        _atomic(records / f"{feature}__{fold_name}__{arm}__{seed}.json",
+                {"schema": "ps3r.pilot.record.v1", "status": "FIT_FAILED", "input": feature, "fold": fold_name,
+                 "seed": seed, "arm": arm, "reason": str(exc)[:500], "memory_at_record": memory()})
 
 
 def run_one(feature, fold, seed, arm, data, records):
@@ -248,44 +265,54 @@ def main():
     beat = Heartbeat(out / f"heartbeat_shard{a.shard}.json", a.heartbeat_seconds)
     beat.state = {"stage": "loading", "shard": a.shard, "features": features, "done": 0}
     beat.start()
-    train, ts = load(a.data)
-    labels = targets(train, ts)
+    import multiprocessing as mp
+    ctx = mp.get_context("spawn")
+    queue = ctx.Queue()
+    helper = ctx.Process(target=_objective_shas, args=(queue,))
+    helper.start()
+    shas = queue.get(timeout=600)
+    helper.join()
     todo = [(f, fold, seed, arm) for f in features for fold in FOLDS for seed in SEEDS for arm in ARMS]
     done = skipped = 0
-    cache, peaks = {}, []
+    peaks = []
     for feature, fold, seed, arm in todo:
         path = records / f"{feature}__{fold['name']}__{arm}__{seed}.json"
         if path.is_file():
-            if _reusable(path, arm):
+            if _reusable(path, shas[arm]):
                 skipped += 1
                 continue
-            path.rename(path.with_name(path.name + ".not_reused"))
-        key = (feature, fold["name"])
-        if key not in cache:
-            cache = {key: fold_arrays(train[feature].to_numpy("float64"), fold, labels)}
+            path.rename(path.with_name(path.name + f".not_reused.{int(time.time())}"))
         beat.state = {"stage": "fitting", "shard": a.shard, "input": feature, "fold": fold["name"],
                       "seed": seed, "arm": arm, "done": done, "skipped": skipped, "total": len(todo)}
-        try:
-            record = run_one(feature, fold, seed, arm, cache[key], records)
-        except ValueError as exc:                     # e.g. no epoch improved, nonfinite loss: recorded, not hidden
-            record = {"schema": "ps3r.pilot.record.v1", "status": "FIT_FAILED", "input": feature,
-                      "fold": fold["name"], "seed": seed, "arm": arm, "reason": str(exc)[:500],
-                      "fit": {"observed_updates": None, "stop_reason": "FAILED"}, "cost": {"seconds_total": None}}
-            _atomic(path, record)
+        child = ctx.Process(target=_child, args=(a.data, feature, fold["name"], seed, arm, str(records)))
+        child.start()
+        child.join()
+        if child.exitcode != 0 or not path.is_file():
+            beat.state = {"stage": "child_failed", "exitcode": child.exitcode, "input": feature,
+                          "fold": fold["name"], "seed": seed, "arm": arm, "memory": memory()}
+            time.sleep(a.heartbeat_seconds + 1)
+            beat.stop.set()
+            raise SystemExit(f"record child failed with exit code {child.exitcode}; stopping at this boundary")
+        record = json.loads(path.read_text())
         done += 1
         mem = memory()
-        peaks.append({"input": feature, "fold": fold["name"], "seed": seed, "arm": arm, **mem})
+        child_mem = (record.get("cost") or {}).get("memory_at_record") or record.get("memory_at_record") or {}
+        peaks.append({"input": feature, "fold": fold["name"], "seed": seed, "arm": arm,
+                      "child_rss_peak_bytes": child_mem.get("rss_peak_bytes"), **mem})
         _atomic(out / f"memory_peaks_shard{a.shard}.json", {"cap_bytes": a.cap_bytes, "records": peaks})
-        if max(mem.get("cgroup_peak_bytes", 0), mem["rss_peak_bytes"]) >= 0.9 * a.cap_bytes:
+        if max(mem.get("cgroup_peak_bytes", 0), child_mem.get("rss_peak_bytes") or 0) >= 0.9 * a.cap_bytes:
             beat.state = {"stage": "stopped_near_cap", "shard": a.shard, "done": done, "memory": mem,
                           "cap_bytes": a.cap_bytes}
             time.sleep(a.heartbeat_seconds + 1)
             beat.stop.set()
             print(json.dumps({"stopped_near_cap": mem, "cap_bytes": a.cap_bytes}), flush=True)
             raise SystemExit(3)
+        fit = record.get("fit") or {}
         print(json.dumps({"done": done, "input": feature, "fold": fold["name"], "seed": seed, "arm": arm,
-                          "updates": record["fit"]["observed_updates"], "stop": record["fit"]["stop_reason"],
-                          "seconds": record["cost"]["seconds_total"]}), flush=True)
+                          "status": record["status"], "updates": fit.get("observed_updates"),
+                          "stop": fit.get("stop_reason"),
+                          "child_rss_gb": round((child_mem.get("rss_peak_bytes") or 0) / 2**30, 3),
+                          "scope_peak_gb": round(mem.get("cgroup_peak_bytes", 0) / 2**30, 3)}), flush=True)
     beat.state = {"stage": "complete", "shard": a.shard, "done": done, "skipped": skipped, "total": len(todo)}
     time.sleep(a.heartbeat_seconds + 1)
     beat.stop.set()

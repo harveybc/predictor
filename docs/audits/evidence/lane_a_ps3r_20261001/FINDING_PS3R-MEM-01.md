@@ -24,3 +24,15 @@ Each child sat at about 2.06 GB against its 2G cap, with own-cgroup PSI of 79–
 - No two PS3-R children run concurrently while M02's 7G donor run is live.
 
 Note: 2.06 GB is a LOWER bound on demand, because the children were held at their cap.
+
+## Measurement under the 4G single child (one process for all records)
+
+Run as crispdm scope `ps3r-pilot-measure`, with one process fitting record after record. The scope's cgroup peak grew with every record instead of settling to a stable per-fit peak:
+
+1.61 GB → 2.02 GB → 2.48 GB → 2.78 GB → 3.73 GB, over 9 records. The last process RSS peak was 4.10 GB.
+
+So the memory is **accumulation across fits inside one process**: TF graphs and traced functions are not released by `clear_session`. It is not a per-fit requirement, which means no fixed cap would have been correct for the old runner. I stopped the child at a record boundary (3.73 GB against 4G). The per-record table is in `memory_peaks_single_process_measure.json`.
+
+**Fix.** Every record now runs in its own spawned process (`_child`), so its memory is returned when the record ends. The parent imports no TensorFlow. The production cap will be 1.25 × the measured per-record peak under this runner.
+
+**Second correction found in the same run.** One contrastive fit (close_sma_ratio_100, inner_3, seed 2021) never beat its initial validation loss, and version 1.0.0 then failed the fit. Version 1.0.1 of `ts2vec_contrastive` instead restores the initial state as the best checkpoint, with stop reason `no_improvement_over_initial`. Δ_probe is then exactly 0, which is a result, not a failure. Because the identity changed, the earlier contrastive records are not reused: they are re-fitted under 1.0.1.

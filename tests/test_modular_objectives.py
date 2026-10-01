@@ -53,9 +53,9 @@ FIT = {"max_epochs": 3, "patience": 3, "batch_size": 16, "learning_rate": 3e-3, 
 
 # ------------------------------------------------------------------ identity
 def test_objectives_resolve_with_versions_and_unknown_names_fail():
-    for name in ("autoencoder_reconstruction", "ts2vec_contrastive"):
+    for name, version in (("autoencoder_reconstruction", "1.0.0"), ("ts2vec_contrastive", "1.0.1")):
         d = ob.describe_objective(name)
-        assert d["version"] == "1.0.0" and d["group"] == "modular.objective" and d["contract"]
+        assert d["version"] == version and d["group"] == "modular.objective" and d["contract"]
     with pytest.raises(ValueError, match="objective"):
         ob.resolve_objective({"plugin": "no_such_objective"})
 
@@ -217,3 +217,14 @@ def test_latent_diagnostics_detect_collapse():
     collapsed = pb.latent_diagnostics(Fixed(lambda a: np.ones((*a.shape[:2], 4), "float32"), 4), x)
     assert healthy["effective_dimension"] > 1.5 and collapsed["effective_dimension"] < 1e-6 + 1
     assert collapsed["collapsed"] is True and healthy["collapsed"] is False
+
+
+def test_no_improvement_restores_the_initial_checkpoint_and_says_so():
+    b = mt.build_modular(config())
+    enc = b.branch_models["branch_0"]
+    before = mt.weights_hash(enc)
+    receipt = ob.fit_objective({"plugin": "ts2vec_contrastive"}, enc, windows(32, 1), windows(16, 2),
+                               dict(FIT, max_epochs=2, patience=5, min_delta=1e9))  # nothing counts as better
+    assert receipt["stop_reason"] == "no_improvement_over_initial"
+    assert mt.weights_hash(enc) == before and receipt["best_validation_loss"] == receipt["initial_validation_loss"]
+    assert receipt["observed_updates"] > 0
