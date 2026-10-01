@@ -262,6 +262,8 @@ def build(hosts, reg):
             "next_actions": reg.get("next_actions", []), "events": reg.get("events", []),
             "corrections": reg.get("corrections", []), "lane_worktrees": lanes(),
             "admission_findings": reg.get("admission_findings", []),
+            "open_owner_questions": reg.get("open_owner_questions"),
+            "independent_checks": reg.get("independent_checks", []),
             "heartbeat_audit": reg.get("heartbeat_audit", []),
             "worker_a_slab_series": "worker_a_slab_series.jsonl"}
 

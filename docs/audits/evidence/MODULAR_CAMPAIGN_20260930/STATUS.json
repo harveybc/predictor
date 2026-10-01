@@ -1,6 +1,6 @@
 {
  "schema": "modular.program.status.v1",
- "observed_at": "2026-10-01T02:22:06Z",
+ "observed_at": "2026-10-01T02:22:44Z",
  "plan_revision": "ac125db9",
  "plan_links": {
   "orders": "docs/handoffs/SATOSHI_PROGRESSIVE_SELECTION_AND_MODULAR_CONTINUATION_2026_09_30.md @ ac125db9",
@@ -11,7 +11,7 @@
  "writer": {
   "script": "tools/m06_status_writer.py + tools/m06_fleet_probe.py",
   "version": 2,
-  "pid": 848422
+  "pid": 870435
  },
  "agents": [
   {
@@ -139,16 +139,16 @@
    "state": "idle",
    "job_id": null,
    "reason": "desktop client only: nautilus",
-   "observed_at": "2026-10-01T02:22:06Z",
-   "temperature_c": 43.0,
-   "utilization_percent": 27.0,
-   "host_available_bytes": 16628924416,
+   "observed_at": "2026-10-01T02:22:44Z",
+   "temperature_c": 44.0,
+   "utilization_percent": 32.0,
+   "host_available_bytes": 16739508224,
    "gpu": {
-    "sm_clock_mhz": 240.0,
+    "sm_clock_mhz": 375.0,
     "sm_clock_max_mhz": 3105.0,
-    "vram_used_mib": 994.0,
+    "vram_used_mib": 1013.0,
     "vram_total_mib": 8188.0,
-    "power_w": 5.51,
+    "power_w": 5.69,
     "throttle_reasons": [
      "gpu_idle"
     ],
@@ -165,21 +165,21 @@
    "host": {
     "mem": {
      "MemTotal": 32778358784,
-     "MemAvailable": 16628924416,
-     "SUnreclaim": 690233344,
-     "SReclaimable": 2479853568,
-     "Shmem": 5636837376
+     "MemAvailable": 16739508224,
+     "SUnreclaim": 690180096,
+     "SReclaimable": 2479124480,
+     "Shmem": 5617897472
     },
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=63774099\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=60557024",
-    "uptime_s": 195575.82,
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=63793230\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=60576123",
+    "uptime_s": 195613.96,
     "gpu_reinit_this_boot": "0",
     "shares_host_ram_with": []
    },
    "admission": {
-    "host_free_for_new_bytes": 12901597184,
-    "held_unrealised_bytes": 500719616,
+    "host_free_for_new_bytes": 13010296832,
+    "held_unrealised_bytes": 503668736,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 4959850496,
+    "slice_memory_current": 4940185600,
     "slice_charged_bytes": null,
     "slice_memory_max": 15032385536,
     "pressure_some_avg10": 0.0,
@@ -195,16 +195,16 @@
    "state": "idle",
    "job_id": null,
    "reason": "no compute process and no GPU job lease on this device",
-   "observed_at": "2026-10-01T02:19:44Z",
-   "temperature_c": 27.0,
-   "utilization_percent": 13.0,
-   "host_available_bytes": 12428812288,
+   "observed_at": "2026-10-01T02:22:45Z",
+   "temperature_c": 28.0,
+   "utilization_percent": 11.0,
+   "host_available_bytes": 12079628288,
    "gpu": {
     "sm_clock_mhz": 232.0,
     "sm_clock_max_mhz": 3090.0,
     "vram_used_mib": 14.0,
     "vram_total_mib": 12227.0,
-    "power_w": 16.08,
+    "power_w": 15.87,
     "throttle_reasons": [
      "sw_power_cap"
     ],
@@ -213,20 +213,20 @@
    "host": {
     "mem": {
      "MemTotal": 15340752896,
-     "MemAvailable": 12428812288,
-     "SUnreclaim": 460668928,
+     "MemAvailable": 12079628288,
+     "SUnreclaim": 463405056,
      "SReclaimable": 319172608,
      "Shmem": 34430976
     },
     "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=115797275\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=113344476",
-    "uptime_s": 12489.22,
-    "gpu_reinit_this_boot": "233",
+    "uptime_s": 12527.38,
+    "gpu_reinit_this_boot": "235",
     "shares_host_ram_with": [
      "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
     ]
    },
    "admission": {
-    "host_free_for_new_bytes": 9195167744,
+    "host_free_for_new_bytes": 8845717504,
     "held_unrealised_bytes": 0,
     "desktop_reserve_bytes": 3221225472,
     "slice_memory_current": 2390999040,
@@ -245,36 +245,36 @@
    "state": "idle",
    "job_id": null,
    "reason": "no compute process and no GPU job lease on this device",
-   "observed_at": "2026-10-01T02:19:44Z",
+   "observed_at": "2026-10-01T02:22:45Z",
    "temperature_c": 37.0,
    "utilization_percent": 0.0,
-   "host_available_bytes": 12428812288,
+   "host_available_bytes": 12079628288,
    "gpu": {
     "sm_clock_mhz": 225.0,
     "sm_clock_max_mhz": 3135.0,
     "vram_used_mib": 10.0,
     "vram_total_mib": 32607.0,
-    "power_w": 3.4,
+    "power_w": 3.19,
     "throttle_reasons": [],
     "compute_processes": []
    },
    "host": {
     "mem": {
      "MemTotal": 15340752896,
-     "MemAvailable": 12428812288,
-     "SUnreclaim": 460668928,
+     "MemAvailable": 12079628288,
+     "SUnreclaim": 463405056,
      "SReclaimable": 319172608,
      "Shmem": 34430976
     },
     "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=115797275\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=113344476",
-    "uptime_s": 12489.22,
-    "gpu_reinit_this_boot": "233",
+    "uptime_s": 12527.38,
+    "gpu_reinit_this_boot": "235",
     "shares_host_ram_with": [
      "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
     ]
    },
    "admission": {
-    "host_free_for_new_bytes": 9195167744,
+    "host_free_for_new_bytes": 8845717504,
     "held_unrealised_bytes": 0,
     "desktop_reserve_bytes": 3221225472,
     "slice_memory_current": 2390999040,
@@ -293,16 +293,16 @@
    "state": "idle",
    "job_id": null,
    "reason": "no compute process and no GPU job lease on this device",
-   "observed_at": "2026-10-01T02:22:07Z",
+   "observed_at": "2026-10-01T02:22:48Z",
    "temperature_c": 39.0,
    "utilization_percent": 0.0,
-   "host_available_bytes": 16194162688,
+   "host_available_bytes": 18441412608,
    "gpu": {
     "sm_clock_mhz": 210.0,
     "sm_clock_max_mhz": 3105.0,
     "vram_used_mib": 14.0,
     "vram_total_mib": 16376.0,
-    "power_w": 1.98,
+    "power_w": 1.86,
     "throttle_reasons": [
      "gpu_idle"
     ],
@@ -311,21 +311,21 @@
    "host": {
     "mem": {
      "MemTotal": 32831807488,
-     "MemAvailable": 16194162688,
-     "SUnreclaim": 2789109760,
-     "SReclaimable": 853590016,
-     "Shmem": 1128685568
+     "MemAvailable": 18441412608,
+     "SUnreclaim": 2793451520,
+     "SReclaimable": 875945984,
+     "Shmem": 1129164800
     },
     "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=73407809\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=68561217",
-    "uptime_s": 186487.96,
+    "uptime_s": 186528.83,
     "gpu_reinit_this_boot": "0",
     "shares_host_ram_with": []
    },
    "admission": {
-    "host_free_for_new_bytes": 8162627584,
-    "held_unrealised_bytes": 4802273280,
+    "host_free_for_new_bytes": 11979161600,
+    "held_unrealised_bytes": 3222728704,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 7617695744,
+    "slice_memory_current": 5998964736,
     "slice_charged_bytes": null,
     "slice_memory_max": 15032385536,
     "pressure_some_avg10": 0.0,
@@ -344,8 +344,8 @@
    "stage": "no heartbeat stage",
    "producer_commit": "unknown",
    "host_alias": "coordinator",
-   "lease_id": "m06-status-writer-1790820561-848413-68f832",
-   "launcher_pid": 848402,
+   "lease_id": "m06-status-writer-1790821364-870423-5da0f1",
+   "launcher_pid": 870408,
    "launcher_alive": true,
    "child_heads": [
     [
@@ -366,8 +366,8 @@
     ]
    ],
    "cap_bytes": 536870912,
-   "cgroup_current_bytes": 24059904,
-   "cgroup_peak_bytes": 38518784,
+   "cgroup_current_bytes": 20615168,
+   "cgroup_peak_bytes": 35803136,
    "heartbeat_at": null,
    "heartbeat_path": null,
    "heartbeat_stale": false,
@@ -387,79 +387,45 @@
    "override": null
   },
   {
-   "id": "laneA-ident",
+   "id": "laneA-installed",
    "lane": "unknown",
    "state": "running",
    "phase": "running_stage_unknown",
    "stage": "no heartbeat stage",
    "producer_commit": "unknown",
    "host_alias": "worker_b",
-   "lease_id": "laneA-ident-1790821305-1356336-2bff64",
-   "launcher_pid": 1356248,
+   "lease_id": "laneA-installed-1790821335-1356338-dfe7c8",
+   "launcher_pid": 1356250,
    "launcher_alive": true,
    "child_heads": [
     [
      "timeout",
      "--kill-after=30s",
-     "30m",
-     "env"
+     "60m",
+     "bash"
+    ],
+    [
+     "bash",
+     "tools/m01_verify_installed.sh",
+     "/home/harveybc/.cache/m01/iso/bin/python",
+     "/home/harveybc/Documents/GitHub/predictor-a-engine-integration"
     ],
     [
      "python",
-     "tools/lane_a_identities.py",
-     "--npz",
-     "/home/harveybc/.local/state/crispdm-data-foundation/m04_doin_20260930/data_ecl_l24_h24_v1/validation.npz"
+     "-I",
+     "tools/m01_legacy_e2e.py",
+     "--config"
+    ],
+    [
+     "python",
+     "-s",
+     "/home/harveybc/.local/state/scratch/m01/tmp.S4ktKp9gjQ/pkg/app/main.py",
+     "--load_config"
     ]
    ],
    "cap_bytes": 4294967296,
-   "cgroup_current_bytes": 522629120,
-   "cgroup_peak_bytes": 882614272,
-   "heartbeat_at": null,
-   "heartbeat_path": null,
-   "heartbeat_stale": false,
-   "progress": {
-    "unit": "unknown",
-    "completed": null,
-    "total": null
-   },
-   "eta": {
-    "earliest": null,
-    "latest": null,
-    "basis": "not_estimable",
-    "assumptions": [
-     "missing measurement: the job's total work units are not declared to M06"
-    ]
-   },
-   "override": null
-  },
-  {
-   "id": "m02-port-suite2",
-   "lane": "M02",
-   "state": "running",
-   "phase": "running_stage_unknown",
-   "stage": "no heartbeat stage",
-   "producer_commit": "unknown",
-   "host_alias": "worker_b",
-   "lease_id": "m02-port-suite2-1790820878-1345317-94c023",
-   "launcher_pid": 1345308,
-   "launcher_alive": true,
-   "child_heads": [
-    [
-     "timeout",
-     "--kill-after=30s",
-     "40m",
-     "env"
-    ],
-    [
-     "python",
-     "-m",
-     "pytest",
-     "-q"
-    ]
-   ],
-   "cap_bytes": 3221225472,
-   "cgroup_current_bytes": 2191290368,
-   "cgroup_peak_bytes": 2279456768,
+   "cgroup_current_bytes": 1072775168,
+   "cgroup_peak_bytes": 1074106368,
    "heartbeat_at": null,
    "heartbeat_path": null,
    "heartbeat_stale": false,
@@ -490,7 +456,7 @@
    "declared_mem": "8G",
    "declared_wall": "60m",
    "queue_wait_s": "3600",
-   "waiting_s": 821,
+   "waiting_s": 862,
    "command_head": [
     "python",
     "-u",
@@ -498,75 +464,6 @@
     "--candidate",
     "/home/harveybc/.local/state/scratch/d-profile/PRE_INTEGRATION_da4ce7b4/candidate_perfeature.json",
     "--train"
-   ],
-   "heartbeat_at": null,
-   "progress": {
-    "unit": "unknown",
-    "completed": null,
-    "total": null
-   },
-   "eta": {
-    "earliest": null,
-    "latest": null,
-    "basis": "not_estimable",
-    "assumptions": [
-     "admission order depends on live leases releasing"
-    ]
-   }
-  },
-  {
-   "id": "laneA-installed",
-   "lane": "unknown",
-   "state": "queued",
-   "phase": "queued",
-   "stage": "waiting for admission",
-   "producer_commit": "unknown",
-   "host_alias": "worker_b",
-   "launcher_pid": 1356250,
-   "declared_mem": "4G",
-   "declared_wall": "60m",
-   "queue_wait_s": "7200",
-   "waiting_s": 82,
-   "command_head": [
-    "bash",
-    "tools/m01_verify_installed.sh",
-    "/home/harveybc/.cache/m01/iso/bin/python",
-    "/home/harveybc/Documents/GitHub/predictor-a-engine-integration",
-    "dc72170e",
-    "/home/harveybc/Documents/GitHub/prediction_provider"
-   ],
-   "heartbeat_at": null,
-   "progress": {
-    "unit": "unknown",
-    "completed": null,
-    "total": null
-   },
-   "eta": {
-    "earliest": null,
-    "latest": null,
-    "basis": "not_estimable",
-    "assumptions": [
-     "admission order depends on live leases releasing"
-    ]
-   }
-  },
-  {
-   "id": "m06-campaign-tables",
-   "lane": "M06",
-   "state": "queued",
-   "phase": "queued",
-   "stage": "waiting for admission",
-   "producer_commit": "unknown",
-   "host_alias": "worker_b",
-   "launcher_pid": 1358205,
-   "declared_mem": "1G",
-   "declared_wall": "5m",
-   "queue_wait_s": "600",
-   "waiting_s": 2,
-   "command_head": [
-    "bash",
-    "-c",
-    "/home/harveybc/anaconda3/envs/trading-stack/bin/python -m pytest -q tests/test_m06_campaign_tables.py -p no:cacheprovider 2>&1 | tail -1; /home/harveybc/anaconda3/envs/trading-stack/bin/python tools/m06_campaign_tables.py --queue in/m04_QUEUE_batch1_v3.from_6ced97e7.json --receipts in/m04_verify_receipts --annotations in/m04_architecture_annotations.json --out-dir out"
    ],
    "heartbeat_at": null,
    "progress": {
@@ -727,75 +624,11 @@
  ],
  "unparsed_processes": [
   {
-   "pid": 858001,
-   "argv_len": 3,
-   "argv0": "bash",
-   "elapsed_s": 450,
-   "host_alias": "coordinator",
-   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
-  },
-  {
-   "pid": 858003,
-   "argv_len": 9,
-   "argv0": "timeout",
-   "elapsed_s": 450,
-   "host_alias": "coordinator",
-   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
-  },
-  {
-   "pid": 858004,
-   "argv_len": 7,
-   "argv0": "ssh",
-   "elapsed_s": 450,
-   "host_alias": "coordinator",
-   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
-  },
-  {
-   "pid": 869406,
-   "argv_len": 3,
-   "argv0": "bash",
-   "elapsed_s": 3,
-   "host_alias": "coordinator",
-   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
-  },
-  {
-   "pid": 869421,
-   "argv_len": 5,
-   "argv0": "ssh",
-   "elapsed_s": 1,
-   "host_alias": "coordinator",
-   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
-  },
-  {
-   "pid": 869434,
-   "argv_len": 3,
-   "argv0": "bash",
-   "elapsed_s": 1,
-   "host_alias": "coordinator",
-   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
-  },
-  {
    "pid": 27201,
    "argv_len": 3,
    "argv0": "bash",
-   "elapsed_s": 11399,
+   "elapsed_s": 11440,
    "host_alias": "worker_a",
-   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
-  },
-  {
-   "pid": 1345282,
-   "argv_len": 3,
-   "argv0": "bash",
-   "elapsed_s": 450,
-   "host_alias": "worker_b",
-   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
-  },
-  {
-   "pid": 1358203,
-   "argv_len": 3,
-   "argv0": "bash",
-   "elapsed_s": 2,
-   "host_alias": "worker_b",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   }
  ],
@@ -957,16 +790,16 @@
  ],
  "quotas_measured": {
   "coordinator": {
-   "host_free_for_new_bytes": 12901597184,
-   "held_unrealised_bytes": 500719616,
+   "host_free_for_new_bytes": 13010296832,
+   "held_unrealised_bytes": 503668736,
    "desktop_reserve_bytes": 3221225472,
    "slice_memory_max": 15032385536,
-   "slice_memory_current": 4959850496,
+   "slice_memory_current": 4940185600,
    "slice_charged_bytes": null,
    "pressure_some_avg10": 0.0
   },
   "worker_a": {
-   "host_free_for_new_bytes": 9195167744,
+   "host_free_for_new_bytes": 8845717504,
    "held_unrealised_bytes": 0,
    "desktop_reserve_bytes": 3221225472,
    "slice_memory_max": 8589934592,
@@ -975,11 +808,11 @@
    "pressure_some_avg10": 0.0
   },
   "worker_b": {
-   "host_free_for_new_bytes": 8162627584,
-   "held_unrealised_bytes": 4802273280,
+   "host_free_for_new_bytes": 11979161600,
+   "held_unrealised_bytes": 3222728704,
    "desktop_reserve_bytes": 3221225472,
    "slice_memory_max": 15032385536,
-   "slice_memory_current": 7617695744,
+   "slice_memory_current": 5998964736,
    "slice_charged_bytes": null,
    "pressure_some_avg10": 0.0
   }
@@ -1391,7 +1224,7 @@
    "repo": "predictor",
    "branch": "satoshi/m06-evidence-resources-20260930",
    "worktree": "~/Documents/GitHub/.worktrees/predictor-m06-20260930",
-   "tip": "88ddaafa1c1e"
+   "tip": "7f8275ff04af"
   },
   {
    "repo": "predictor",
@@ -1471,6 +1304,35 @@
     }
    },
    "fix": "REVIEWED against the owner's five cases at 775c5545 (supersedes 0928dc06): only dead clean cache outside live scopes is uncharged; 51/51 tests; NOT deployed; owner's one action: DEPLOY_ADM_DEADCACHE.sh (DEPLOY.md)"
+  }
+ ],
+ "open_owner_questions": {
+  "state": "OPEN_OWNER_QUESTIONS",
+  "count": 12,
+  "what": "feature-selection mapping ambiguities",
+  "link": {
+   "repo": "predictor",
+   "branch": "satoshi/continuation-ack-20261001",
+   "tip": "9b0300a2",
+   "path": "docs/audits/work_plan/SATOSHI_CONTINUATION_ACKNOWLEDGEMENT_2026_10_01.md",
+   "section": "8"
+  }
+ },
+ "independent_checks": [
+  {
+   "by": "orchestrator",
+   "at": "2026-09-30 ~23:30Z",
+   "what": "s2023 verified on the coordinator's preserved copy: record 6facce4b, checkpoint e5932881, author float32 vs independent float64 within 1e-8, naive on the same rows proven by population sha"
+  },
+  {
+   "by": "orchestrator",
+   "at": "2026-09-30 ~23:40Z",
+   "what": "three-seed closure verified: s2021 preserved copy (record file 6da180e4, checkpoint 4b434bc9, 30/30, float32 vs float64 within 1e-8, population 717cb5b3); three-seed mean recomputed independently, identical to classify()"
+  },
+  {
+   "by": "orchestrator workflow wf_6286ece8-903 (16 agents, 0 errors)",
+   "at": "2026-10-01",
+   "what": "da4ce7b4 CONFIRMED to build the required default in real Keras on worker_b (probe outputs under worker_b ~/.local/state/scratch/review/da4ce7b4/: probe.out, tests.out); its own suites 59 passed / 1 failed (the moved entry_points symbol); nine claims confirmed by code reading and re-execution; two refuted (the 'no diagram generated' premise: da4ce7b4 ships two regenerated Keras diagrams)"
   }
  ],
  "heartbeat_audit": [
