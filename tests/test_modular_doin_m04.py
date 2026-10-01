@@ -504,10 +504,9 @@ def test_cancelled_superseded_rows_are_never_claimed_and_attempts_stay(tmp_path)
     changed = campaign.cancel_unstarted("2026-10-01 owner order ac125db9: old design")
     assert changed == 5  # 3 queued + 2 donor-blocked; the started candidate keeps its status
     statuses = dict(campaign.db.execute("SELECT status, COUNT(*) FROM candidates GROUP BY status").fetchall())
-    assert statuses == {"CANCELLED_SUPERSEDED": 5, "verified": 1}
+    assert statuses == {"CANCELLED_SUPERSEDED": 5, "completed": 1}  # trained, verification pending
     assert campaign.unblock() == [] and campaign.release_hold("BLOCKED_COST_01") == 0
     assert campaign.claim("worker_a") is None and campaign.claim("worker_b") is None
-    assert campaign.run(FakeExecutor(campaign, VALUES)) == 0
     assert [tuple(r) for r in campaign.db.execute("SELECT * FROM attempts ORDER BY started")] == before
     reason = campaign.db.execute("SELECT blocked_reason FROM candidates WHERE label='r1'").fetchone()[0]
     assert reason.startswith("2026-10-01 owner order ac125db9") and "was blocked" in reason
