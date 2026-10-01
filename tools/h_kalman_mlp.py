@@ -29,8 +29,9 @@ def mlp_fit_predict(Xtr, Ytr, Xev_list, seed, hidden=(44, 44), max_epochs=30, pa
     Xtr, Ytr = _check(Xtr, "Xtr"), _check(Ytr, "Ytr")
     if Xtr.shape[0] != Ytr.shape[0]:
         raise ValueError("Xtr and Ytr rows differ")
-    evs = [_check(X, "Xev") for X in Xev_list]
-    if any(X.shape[1] != Xtr.shape[1] for X in evs):
+    # an evaluation element may be a zero-argument callable that builds its array on demand (memory: wide validation sets)
+    evs = [X if callable(X) else _check(X, "Xev") for X in Xev_list]
+    if any((not callable(X)) and X.shape[1] != Xtr.shape[1] for X in evs):
         raise ValueError("evaluation width differs from the training width")
     import tensorflow as tf
 
@@ -83,7 +84,14 @@ def mlp_fit_predict(Xtr, Ytr, Xev_list, seed, hidden=(44, 44), max_epochs=30, pa
     h = hashlib.sha256()
     for w in best_w:
         h.update(np.ascontiguousarray(w, dtype="<f4").tobytes())
-    preds = [model.predict(prep(X), batch_size=1024, verbose=0).astype(np.float64) for X in evs]
+    preds = []
+    for X in evs:
+        if callable(X):
+            X = _check(X(), "Xev")
+            if X.shape[1] != Xtr.shape[1]:
+                raise ValueError("evaluation width differs from the training width")
+        preds.append(model.predict(prep(X), batch_size=1024, verbose=0).astype(np.float64))
+        del X
     return {"predictions": preds, "selected_epoch": int(best_epoch), "epochs_run": int(run), "inner_best_loss": best,
             "weights_sha256": h.hexdigest(), "selection": "inner_chronological_holdout_of_train",
             "hidden": list(hidden), "trainable_parameters": int(sum(int(np.prod(w.shape)) for w in model.trainable_weights))}

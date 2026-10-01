@@ -146,7 +146,7 @@ def main():
                             Xtr[sl, j] = M[oo - l, ch[sl]]
                             j += 1
                     Ytr[sl] = np.stack([Z[oo + h, ch[sl]] - Z[oo + h - 24, ch[sl]] for h in range(1, 25)], axis=1)
-                Xva = [feats(o_va[i:i + 330]).astype(np.float32) for i in range(0, len(o_va), 330)]   # chunks: no 800 MB float64 temporary
+                Xva = [(lambda i=i: feats(o_va[i:i + 330]).astype(np.float32)) for i in range(0, len(o_va), 330)]   # built on demand per chunk
                 v["arms"][arm] = {"seeds": {}, "features_per_channel": len(blocks) * 24, "train_rows_sampled": int(len(pick))}
                 pos = []
                 for seed in a.seeds:
