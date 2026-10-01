@@ -609,6 +609,24 @@ class RemoteExecutor:
         spec = {**declaration["executor"], **declaration.get("hosts", {}).get(host, {}).get("executor", {})}
         self.python, self.checkout = spec["predictor_python"], spec["predictor_checkout"]
 
+    def preflight(self, revision):
+        """Refuse to start a host runner unless the pinned worktree exists, is at the pin and is clean there."""
+        script = (f"test -d {shlex.quote(self.checkout)} || {{ echo MISSING; exit 3; }}; "
+                  f"h=$(git -C {shlex.quote(self.checkout)} rev-parse HEAD) || exit 4; "
+                  f"d=$(git -C {shlex.quote(self.checkout)} status --porcelain --untracked-files=no | wc -l); "
+                  f"echo $h $d")
+        done = subprocess.run(["ssh", "-o", "BatchMode=yes", self.alias, script], capture_output=True, text=True,
+                              timeout=60)
+        out = done.stdout.split()
+        if done.returncode or len(out) != 2:
+            raise RuntimeError(f"preflight refused on {self.host}: pin worktree {self.checkout} absent or unreadable "
+                               f"({done.stdout.strip() or done.stderr.strip()})")
+        if out[0] != revision:
+            raise RuntimeError(f"preflight refused on {self.host}: worktree at {out[0]}, pin is {revision}")
+        if out[1] != "0":
+            raise RuntimeError(f"preflight refused on {self.host}: pinned worktree has {out[1]} modified tracked files")
+        return {"host": self.host, "checkout": self.checkout, "revision": out[0], "clean": True}
+
     def _remote(self, kind, output_root, payload):
         command = ["ssh", "-o", "BatchMode=yes", "-o", "ServerAliveInterval=30", self.alias, self.python, "-u",
                    f"{self.checkout}/tools/modular_doin_campaign.py", "attempt", "--root", str(self.root),
@@ -742,6 +760,7 @@ def main():
     elif args.command == "run-remote":
         campaign = Campaign(args.root)
         executor = RemoteExecutor(campaign.declaration, args.host_role, args.root)
+        print(json.dumps({"preflight": executor.preflight(campaign.declaration["executor"]["predictor_revision"])}))
         print(json.dumps({"trained": campaign.run(executor, args.max, args.stop_file), "host": args.host_role}))
     elif args.command == "materialize":
         decl = json.loads(Path(args.declaration).read_text())

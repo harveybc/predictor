@@ -598,3 +598,20 @@ def test_doin_proposals_respect_every_cap():
         nested = ss.from_flat(trial, BASE, space)
         assert budget_model.check(nested, BUDGET)[1] == []
         assert nested["model"]["branch_steps"] == 24
+
+
+def test_runner_preflight_refuses_absent_or_dirty_pin_worktree(tmp_path, monkeypatch):
+    import subprocess as sp
+
+    decl = {"executor": {"predictor_python": "/py", "predictor_checkout": "/pin"}, "hosts": {}}
+    monkeypatch.setenv("M04_SSH_worker_b", "alias-not-written")
+    executor = camp.RemoteExecutor(decl, "worker_b", tmp_path)
+    replies = iter([sp.CompletedProcess([], 3, "MISSING\n", ""),
+                    sp.CompletedProcess([], 0, "b" * 40 + " 0\n", ""),
+                    sp.CompletedProcess([], 0, "a" * 40 + " 2\n", ""),
+                    sp.CompletedProcess([], 0, "a" * 40 + " 0\n", "")])
+    monkeypatch.setattr(camp.subprocess, "run", lambda *a, **k: next(replies))
+    for match in ("absent", "pin is", "modified"):
+        with pytest.raises(RuntimeError, match=match):
+            executor.preflight("a" * 40)
+    assert executor.preflight("a" * 40)["clean"] is True
