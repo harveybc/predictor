@@ -1061,7 +1061,8 @@
    "name": "m04 campaign_corrected_r0_v1 (pin 3ecdb256)",
    "path": "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/queue.sqlite",
    "excluded_statuses": [
-    "SUPERSEDED_OLD_ARCH"
+    "SUPERSEDED_OLD_ARCH",
+    "CANCELLED_SUPERSEDED"
    ],
    "parallel_hosts": 1,
    "identity": {
@@ -1303,6 +1304,21 @@
    "reading": "lane G RL jobs ran at ~99% of 1 GiB caps with own-cgroup PSI 70-88% (cap thrash) on the owner's desktop, alongside lane B census batches (~0.92 GB each) and lane C jobs; host PSI 63-71",
    "state_at_read_04:33Z": "PSI some avg10 0.00 avg60 1.85 avg300 11.24; MemAvailable 19.8 GB; swap free 4.9 GB",
    "orders": "g-rl-keras (lane G) and laneB-census-batch (lane B) ordered to stop/pause and move to the workers"
+  },
+  {
+   "id": "WB-PSI-05:43",
+   "host_alias": "worker_b",
+   "at": "2026-10-01T05:43:19Z",
+   "incidents": [
+    "d-identity-proof-1790833325-1576524-d54eba",
+    "ps3r-pilot-3g-1790828074-1428796-50b16c"
+   ],
+   "facts": {
+    "d-identity-proof": "tree peak 433,061,888 B = cap; own cgroup PSI 74.1; host PSI 49.5",
+    "ps3r-pilot-3g": "tree peak 1,961,132,032 B of 3,221,225,472 B; own PSI 0.0 (bystander); host PSI 45.8"
+   },
+   "reading": "cap thrash of d-identity-proof at its own cap (UNVERIFIED); ps3r-pilot-3g bystander; no kernel OOM kill",
+   "host_after": "PSI avg10 0.64 avg60 11.35; MemAvailable 17.8 GB; swap free 5.3 GB; unreclaimable slab 3.03 GB (rising from 2.82 at 04:33Z)"
   }
  ],
  "owner_question_20_lake": {
