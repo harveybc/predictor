@@ -56,7 +56,7 @@ def test_zero_weight_head_returns_the_target_window_mean_and_inputs_are_centered
     expected = xs[:, -12:, 0].mean(axis=1)
     for i in range(3):
         np.testing.assert_allclose(out[:, i, 0], expected, rtol=1e-6, atol=1e-6)
-    centered = np.asarray(b.forecast_model.get_layer("window_mean_centered")(xs))
+    centered = xs - np.asarray(b.forecast_model.get_layer("window_mean")(xs))
     np.testing.assert_allclose(centered[:, -12:, :].mean(axis=1), 0.0, atol=1e-5)
     assert b.component_manifests()["input_normalization"]["length"] == 12
 
