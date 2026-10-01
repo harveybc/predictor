@@ -1,0 +1,5 @@
+{"finding": "D-IDPROOF-STOP-01", "date": "2026-10-01", "by": "Satoshi, successor technical lead (lane D)",
+ "incident": "d-identity-proof-1790833325-1576524-d54eba (worker_b admission store incidents/)",
+ "statement": "The first identity-proof run was declared at 413M from a single-config measurement (d-identity-measure: per-feature R0 only, one checkout, peak 345,624,576 B); the real workload (two pins, 18 configs including per-feature R1/R2 donor loads, forward passes) thrashed at its own cap and was stopped by SUSTAINED_ABOVE_RESPOND, also stopping M01's PS3-R child as a bystander.",
+ "correction": "Re-declared the full workload at 4G (the order's ceiling) as the measuring run; it completed with retained peak 517,517,312 B. A second attempt failed on an unhandled engine refusal (core-only R1/R2) and the proof now records refusals per config, which must be identical on both pins.",
+ "lesson": "Never derive a cap for a workload from a measurement of a different, smaller workload."}

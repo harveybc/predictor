@@ -1,0 +1,6 @@
+{"label": "PROOF_NOT_A_RESULT", "host": "worker_b", "device": "CPU (CUDA_VISIBLE_DEVICES='')", "TF_DETERMINISTIC_OPS": "1",
+ "candidate": "corrected grouped32 R0 Huber s2021, cid fa246e4645554981780d933cb34f03cbe0dde85fa87017e43703d127e8b7d623, 2 epochs, full ECL train/validation",
+ "pins": {"df9ae31c (engine 3ecdb256)": {"MAE": "0.4228176808598377", "weights_sha256": "fa60b1b26195dbe15184dbc0e99d2e9fb1a25b73b2ab7fc2b41cdbd6d8a09e82", "initial_weights_sha256": "c5935249a14df211c33aef1bb7f19158aa96e6f47b0dde43620da92d1622fda4", "updates": 574},
+          "6c15af13": {"MAE": "0.4228176808598377", "weights_sha256": "fa60b1b26195dbe15184dbc0e99d2e9fb1a25b73b2ab7fc2b41cdbd6d8a09e82", "initial_weights_sha256": "c5935249a14df211c33aef1bb7f19158aa96e6f47b0dde43620da92d1622fda4", "updates": 574}},
+ "verdict": "BITWISE_IDENTICAL",
+ "informational_only": "GPU pilot at df9ae31c on the RTX 5090 gave 0.4323687274704862; CPU and GPU float paths are not expected to match and this is not a pass criterion"}
