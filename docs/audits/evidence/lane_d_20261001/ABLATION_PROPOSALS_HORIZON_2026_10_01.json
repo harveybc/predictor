@@ -1,0 +1,36 @@
+{
+ "schema": "lane_d.ablation_proposals.v1",
+ "date": "2026-10-01",
+ "by": "Satoshi, successor technical lead (lane D)",
+ "status": "DECLARED_NOT_RUN",
+ "decision_owner": "coordinator, with the owner informed, after the per-feature cells",
+ "motivation": "HORIZON_DIAGNOSTIC (cf1e59f4): corrected candidates are flat at about 0.40 MAE_z over h1..h24 with residual mean +0.07..+0.08 and dispersion 0.83 of the target, while a 24 h seasonal naive scores about 0.248 at every horizon. Diagnostic only; no batch result or incumbent changes.",
+ "common_protocol": {
+  "task": "ECL L24/H1..24, the same governed NPZ (train 9215b099..., validation e3712565...), z_train, author 7/1/2 borders, purge as declared",
+  "selection": "validation MAE (frozen primary metric), strict-minimum paired-seed incumbent rule, full precision, no tolerance band",
+  "baselines_reported": ["persistence (last value)", "seasonal naive 24 h (declared period 24 steps)"],
+  "seeds": [2021, 2022],
+  "verification": "exact-match checkpoint rescoring under TF_DETERMINISTIC_OPS=1",
+  "test_split": "never read; any objective/horizon-weight change is a NEW variant identity, not a rewrite of batch d_ecl_l24_h24_corrected_r0_v1",
+  "comparators": "the same configurations already verified in the corrected batch (paired by config and seed)"
+ },
+ "proposals": [
+  {"id": "ABL-H1-LEVEL",
+   "hypothesis": "a train->validation level shift drives the +0.07..+0.08 bias",
+   "variants": [
+    {"name": "seasonal_residual_target", "change": "train on y_{t+h} - y_{t+h-24} (residual over the declared seasonal naive, computed from the input window) and add it back at scoring; identical inputs, loss and budget"},
+    {"name": "window_level_normalization", "change": "subtract each window's last-24h mean per channel from inputs and targets (reversible, train-only parameters none); identical model and budget"}],
+   "identity_rule": "new search-space engine label suffix and new candidate ids; evaluator settings carry the transform name and version",
+   "cost": "per configuration x 2 seeds at measured rates: grouped/draw widths about 1-2 min each on the 5090 (0.0135-0.028 s/update, 1,000-6,300 updates); per-feature about 0.20 s/update x up to 8,610 updates = <= 29 min each",
+   "budget_proposal": "the 4 grouped/draw configurations x 2 seeds x 2 variants = 16 cells, about 30-45 GPU-min plus verification"},
+  {"id": "ABL-H2-OPT",
+   "hypothesis": "early patience at lr 1e-3 stops before horizon-specific structure is learned (several cells selected epoch 3-5)",
+   "variants": [
+    {"name": "patience_longer", "change": "patience 15 with min_delta 0, max_epochs 60 (hard limits unchanged otherwise); this is a new early-stop rule identity (modular.early_stop.v2 rule sha changes)"},
+    {"name": "lr_lower", "change": "learning_rate x 0.3 of each configuration's value, everything else identical"}],
+   "identity_rule": "new early-stop identity / evaluator settings; same model configs",
+   "cost": "patience_longer up to 2x the epochs of the comparator (upper bound 60 epochs x 287 updates x measured s/update); lr_lower same bound as comparator",
+   "budget_proposal": "the same 4 configurations x 2 seeds x 2 variants = 16 cells, about 45-90 GPU-min plus verification"}
+ ],
+ "not_proposed": ["horizon-weighted losses or dropping losing horizons (would need a separately declared strategy-input experiment)", "any change of metric after seeing results"]
+}
