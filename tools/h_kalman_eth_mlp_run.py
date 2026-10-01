@@ -52,18 +52,18 @@ def run(args):
     ds = [i for i, x in enumerate(cands["datasets"]) if x["manifest_canonical"].startswith("30b78078")][0]
     groups = eth_run.groups_from_candidates(cands, ds, features)
     kal = pipe.build_kalman(d, groups, pipe.VARIANTS[args.variant], host_role=args.role)
-    arms = pipe.arm_matrices(d, kal, lags=args.lags, controls=True)
     use = ["A", "B", "C", "B_PERMUTED", "B_NOISE", "C_EWMA"]
     res = {"schema": "lane_h_kalman_eth_mlp_results.v1", "label": "DEVELOPMENT", "role": args.role, "variant": args.variant,
            "lags": args.lags, "seeds": args.seeds, "hidden": args.hidden, "groups": groups, "arms": {}, "paired_vs_A": {},
            "environment": eth_run.kf.environment_record(args.role)}
     preds = {}
     for a in use:
-        res["arms"][a] = {"channels": int(arms[a]["train"].shape[1]), "seeds": {}, "label": arms[a].get("label")}
+        arm = pipe.arm_matrices(d, kal, lags=args.lags, controls=True, only={a})[a]     # one wide matrix in memory at a time
+        res["arms"][a] = {"channels": int(arm["train"].shape[1]), "seeds": {}, "label": arm.get("label")}
         for seed in args.seeds:
             hb.stage(f"arm:{a}:seed:{seed}")
             t1, c1 = time.time(), time.process_time()
-            o = mlp.mlp_fit_predict(arms[a]["train"], d["Y"]["train"], [arms[a]["validation"]], seed=seed,
+            o = mlp.mlp_fit_predict(arm["train"], d["Y"]["train"], [arm["validation"]], seed=seed,
                                     hidden=tuple(args.hidden), max_epochs=args.max_epochs, patience=args.patience)
             pred = o["predictions"][0]
             preds[(a, seed)] = pred
@@ -73,6 +73,7 @@ def run(args):
                 "selected_epoch": o["selected_epoch"], "epochs_run": o["epochs_run"], "weights_sha256": o["weights_sha256"],
                 "prediction_sha256": arms_lib.sha_array(pred), "trainable_parameters": o["trainable_parameters"],
                 "cost": {"wall_s": time.time() - t1, "cpu_s": time.process_time() - c1}}
+        del arm
     for a in use:
         if a == "A":
             continue

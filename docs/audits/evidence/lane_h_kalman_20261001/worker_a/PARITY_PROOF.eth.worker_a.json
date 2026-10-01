@@ -1,0 +1,167 @@
+{
+ "all_equal": true,
+ "digest_summary": {
+  "local_level": {
+   "kalman_local_level": {
+    "artifact": "85b004952c89334aec58e36a0a462a764ff439cc901105b20ce015eeadb30d92",
+    "batch": "e28365622b4d861d7eeeab463bf05a3d01380c0b1b36c10f054284f72d984ac8",
+    "chunk": "e28365622b4d861d7eeeab463bf05a3d01380c0b1b36c10f054284f72d984ac8",
+    "end_state": "eb1fc6740cc392dc56a063580b944a7dfd8882aeaeb0218f8eb89439089165b7",
+    "restart": "e28365622b4d861d7eeeab463bf05a3d01380c0b1b36c10f054284f72d984ac8",
+    "tick": "e28365622b4d861d7eeeab463bf05a3d01380c0b1b36c10f054284f72d984ac8"
+   }
+  },
+  "local_linear_trend": {
+   "kalman_local_linear_trend": {
+    "artifact": "6c2181bfbac1c178be6665aaafec240e5c38f6a321f5769178e8a59169615d89",
+    "batch": "eb8180248b17a13a10f69f1103660d094838f17773d8edf7d3f590d9840f2407",
+    "chunk": "eb8180248b17a13a10f69f1103660d094838f17773d8edf7d3f590d9840f2407",
+    "end_state": "e1ca603f89220811dc2d87bb1062005c0f6b0eebc4d8a24dc63c80377556472b",
+    "restart": "eb8180248b17a13a10f69f1103660d094838f17773d8edf7d3f590d9840f2407",
+    "tick": "eb8180248b17a13a10f69f1103660d094838f17773d8edf7d3f590d9840f2407"
+   }
+  }
+ },
+ "results": {
+  "local_level": {
+   "all_equal": true,
+   "artifact_digests": {
+    "kalman_local_level": "85b004952c89334aec58e36a0a462a764ff439cc901105b20ce015eeadb30d92"
+   },
+   "columns": 13,
+   "digest_summary": {
+    "kalman_local_level": {
+     "artifact": "85b004952c89334aec58e36a0a462a764ff439cc901105b20ce015eeadb30d92",
+     "batch": "e28365622b4d861d7eeeab463bf05a3d01380c0b1b36c10f054284f72d984ac8",
+     "chunk": "e28365622b4d861d7eeeab463bf05a3d01380c0b1b36c10f054284f72d984ac8",
+     "end_state": "eb1fc6740cc392dc56a063580b944a7dfd8882aeaeb0218f8eb89439089165b7",
+     "restart": "e28365622b4d861d7eeeab463bf05a3d01380c0b1b36c10f054284f72d984ac8",
+     "tick": "e28365622b4d861d7eeeab463bf05a3d01380c0b1b36c10f054284f72d984ac8"
+    }
+   },
+   "environment": {
+    "algorithm": "scalar IEEE double recursion, + - * / and sqrt only; no BLAS, no optimiser",
+    "byteorder": "little",
+    "cpu_flags_sha256": "567aeafd2d8afa1fb29ba5c12af7d26e4df67a7f4eec3733ef54e092d4c1ac4a",
+    "cpu_vendor": "AuthenticAMD",
+    "float_info_epsilon": 2.220446049250313e-16,
+    "host_role": "worker_a",
+    "implementation": "CPython",
+    "machine": "x86_64",
+    "numpy": "2.4.3",
+    "python": "3.12.13",
+    "single_thread_ok": true,
+    "system": "Linux",
+    "thread_variables": {
+     "MKL_NUM_THREADS": "1",
+     "NUMEXPR_NUM_THREADS": "1",
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1"
+    }
+   },
+   "kinds": {
+    "kalman_local_level": {
+     "batch_digest": "e28365622b4d861d7eeeab463bf05a3d01380c0b1b36c10f054284f72d984ac8",
+     "chunk_digest": "e28365622b4d861d7eeeab463bf05a3d01380c0b1b36c10f054284f72d984ac8",
+     "cpu_seconds": {
+      "batch": 0.130514048,
+      "tick_by_tick": 2.0639712489999997
+     },
+     "end_state_after_restart_equals": true,
+     "leak_probe": {
+      "max_abs_move_before_t": 0.0,
+      "oracle_detects_leak": true,
+      "rows_checked": 12
+     },
+     "reason_counts": {
+      "AVAILABLE": 206505,
+      "FUTURE_UNAVAILABLE": 0,
+      "MISSING_INPUT": 0,
+      "WARMUP": 130
+     },
+     "restart_digest": "e28365622b4d861d7eeeab463bf05a3d01380c0b1b36c10f054284f72d984ac8",
+     "restart_used_separate_process": true,
+     "smoother_refused_as_input": true,
+     "state_digest_end": "eb1fc6740cc392dc56a063580b944a7dfd8882aeaeb0218f8eb89439089165b7",
+     "tick_digest": "e28365622b4d861d7eeeab463bf05a3d01380c0b1b36c10f054284f72d984ac8"
+    }
+   },
+   "label": "DEVELOPMENT",
+   "n_train": 13699,
+   "rows": 15895,
+   "schema": "lane_h_kalman_parity_proof.v1",
+   "split_row": 9000
+  },
+  "local_linear_trend": {
+   "all_equal": true,
+   "artifact_digests": {
+    "kalman_local_linear_trend": "6c2181bfbac1c178be6665aaafec240e5c38f6a321f5769178e8a59169615d89"
+   },
+   "columns": 16,
+   "digest_summary": {
+    "kalman_local_linear_trend": {
+     "artifact": "6c2181bfbac1c178be6665aaafec240e5c38f6a321f5769178e8a59169615d89",
+     "batch": "eb8180248b17a13a10f69f1103660d094838f17773d8edf7d3f590d9840f2407",
+     "chunk": "eb8180248b17a13a10f69f1103660d094838f17773d8edf7d3f590d9840f2407",
+     "end_state": "e1ca603f89220811dc2d87bb1062005c0f6b0eebc4d8a24dc63c80377556472b",
+     "restart": "eb8180248b17a13a10f69f1103660d094838f17773d8edf7d3f590d9840f2407",
+     "tick": "eb8180248b17a13a10f69f1103660d094838f17773d8edf7d3f590d9840f2407"
+    }
+   },
+   "environment": {
+    "algorithm": "scalar IEEE double recursion, + - * / and sqrt only; no BLAS, no optimiser",
+    "byteorder": "little",
+    "cpu_flags_sha256": "567aeafd2d8afa1fb29ba5c12af7d26e4df67a7f4eec3733ef54e092d4c1ac4a",
+    "cpu_vendor": "AuthenticAMD",
+    "float_info_epsilon": 2.220446049250313e-16,
+    "host_role": "worker_a",
+    "implementation": "CPython",
+    "machine": "x86_64",
+    "numpy": "2.4.3",
+    "python": "3.12.13",
+    "single_thread_ok": true,
+    "system": "Linux",
+    "thread_variables": {
+     "MKL_NUM_THREADS": "1",
+     "NUMEXPR_NUM_THREADS": "1",
+     "OMP_NUM_THREADS": "1",
+     "OPENBLAS_NUM_THREADS": "1"
+    }
+   },
+   "kinds": {
+    "kalman_local_linear_trend": {
+     "batch_digest": "eb8180248b17a13a10f69f1103660d094838f17773d8edf7d3f590d9840f2407",
+     "chunk_digest": "eb8180248b17a13a10f69f1103660d094838f17773d8edf7d3f590d9840f2407",
+     "cpu_seconds": {
+      "batch": 0.21532004500000035,
+      "tick_by_tick": 3.391429154000001
+     },
+     "end_state_after_restart_equals": true,
+     "leak_probe": {
+      "max_abs_move_before_t": 0.0,
+      "oracle_detects_leak": true,
+      "rows_checked": 12
+     },
+     "reason_counts": {
+      "AVAILABLE": 254160,
+      "FUTURE_UNAVAILABLE": 0,
+      "MISSING_INPUT": 0,
+      "WARMUP": 160
+     },
+     "restart_digest": "eb8180248b17a13a10f69f1103660d094838f17773d8edf7d3f590d9840f2407",
+     "restart_used_separate_process": true,
+     "smoother_refused_as_input": true,
+     "state_digest_end": "e1ca603f89220811dc2d87bb1062005c0f6b0eebc4d8a24dc63c80377556472b",
+     "tick_digest": "eb8180248b17a13a10f69f1103660d094838f17773d8edf7d3f590d9840f2407"
+    }
+   },
+   "label": "DEVELOPMENT",
+   "n_train": 13699,
+   "rows": 15895,
+   "schema": "lane_h_kalman_parity_proof.v1",
+   "split_row": 9000
+  }
+ },
+ "role": "worker_a",
+ "schema": "lane_h_kalman_parity_proof_eth.v1"
+}
