@@ -180,7 +180,7 @@ class TS2VecContrastive:
         started, stop = time.monotonic(), "max_epochs"
         for epoch in range(1, s["max_epochs"] + 1):
             order = rng.permutation(len(x))
-            train_total = 0.0
+            train_total, epoch_started, epoch_updates = 0.0, time.monotonic(), 0
             for i in range(0, len(x), s["batch_size"]):
                 if updates >= s["max_updates"] or time.monotonic() - started >= s["max_seconds"]:
                     stop = "max_updates" if updates >= s["max_updates"] else "max_seconds"
@@ -189,12 +189,14 @@ class TS2VecContrastive:
                 v1, v2, start = self._views(part, rng)
                 value = step(v1, v2, start)
                 updates += 1
+                epoch_updates += 1
                 if not math.isfinite(float(value)):
                     raise ValueError("nonfinite contrastive loss")
                 train_total += float(value) * len(part)
             else:
                 val = validation_loss()
-                history.append({"epoch": epoch, "train_loss": train_total / len(x), "validation_loss": val})
+                history.append({"epoch": epoch, "train_loss": train_total / len(x), "validation_loss": val,
+                                "updates": epoch_updates, "seconds": time.monotonic() - epoch_started})
                 if val < best - s["min_delta"]:
                     best, stale = val, 0
                     best_weights = [w.copy() for w in encoder.get_weights()]

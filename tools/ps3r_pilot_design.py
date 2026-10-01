@@ -76,7 +76,7 @@ def timing():
     from predictor_plugins.modular_temporal import probes as pb
     tf.keras.utils.set_random_seed(0)
     rng = np.random.default_rng(0)
-    x = rng.normal(size=(1024, 24, 1)).astype("float32")
+    x = rng.normal(size=(4096, 24, 1)).astype("float32")
     vx = rng.normal(size=(256, 24, 1)).astype("float32")
     out = {"scope": "synthetic noise; engineering timing, not a candidate fit", "threads": os.cpu_count()}
     for name in ("autoencoder_reconstruction", "ts2vec_contrastive"):
@@ -87,6 +87,10 @@ def timing():
             out[name] = {"updates": r["observed_updates"], "seconds": r.get("elapsed_seconds"),
                          "seconds_per_update": (r.get("elapsed_seconds") or float("nan")) / r["observed_updates"],
                          "includes": "per-epoch validation passes and first-call tracing"}
+            last = (r.get("history") or [{}])[-1]
+            if last.get("seconds"):
+                out[name]["steady_last_epoch_seconds_per_update"] = last["seconds"] / last["updates"]
+                out[name]["steady_note"] = "last epoch: traces already built; includes its validation pass"
         except ValueError as exc:            # noise may not improve on the untrained loss; still timed
             out[name] = {"refused": str(exc)}
     enc = mt.build_modular(mt.default_config(["x"])).branch_models["branch_0"]
