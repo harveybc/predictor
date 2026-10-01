@@ -17215,6 +17215,6 @@
  "schema_validation": {
   "files": 498,
   "invalid": 0,
-  "validated_on": "worker_b, jsonschema Draft 2020-12, after calibration patch (peak 33 MB)"
+  "validated_on": "worker_b, jsonschema Draft 2020-12, with evidence_classes and time_semantics (peak 33 MB)"
  }
 }

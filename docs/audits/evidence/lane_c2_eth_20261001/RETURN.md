@@ -194,6 +194,51 @@ cannot place (non-stationary association between deterministic price transforms 
 498/498 for the reasons already declared. 498/498 re-validated against the contract after the patch.
 Cost: 196 s CPU, measured peak RSS 277 MB (cap declared 400M, 1.38x; the 0.28 GB pilot sampler reading was a 23 MB undercount on a seconds-long job).
 
+### 2.2 Findings (not effects): where the real-label rejection lives, and the seasonal reference -- `findings/REAL_REJECTION_FINDINGS.json`, `tools/c2_real_rejection.py`
+
+498 cells, calibrated block-bootstrap interval (L as in 2.1), 889 s CPU, measured peak 298 MB (cap 376 MB = 1.25x the pilot's 300 MB). Label **FINDING, not an
+effect**; every cell keeps rung 2 `NOT_IDENTIFIED`.
+
+**Real-label rejection (0.165 base).** 82 cells reject; 64 of them have the same partial-association sign in at least 4 of 5 time blocks. By horizon
+(base -> after regime conditioning): h1 0.217 -> 0.133, h2 0.181 -> 0.169, h3 0.145 -> 0.108, h4 0.145 -> 0.145, h5 0.205 -> 0.120, h6 0.096 -> 0.036.
+Conditioning on the naive's own error history (a trailing mean |return| over 60 bars as a regime scale, the label divided by it, and the
+trailing scale and the signed h-bar return added to the controls; rows <= t only): scaled label 0.096, controls added 0.165 (unchanged), both 0.118.
+Per cell: **42 SURVIVE_REGIME_CONDITIONING, 40 REGIME_ARTEFACT_CANDIDATE**, 416 not rejected. So about half of the rejections vanish once the volatility regime is
+removed (they are volatility-state features: hist_vol_20 6/6 -> 0/6, roll_std_ret_20 6/6 -> 0/6, realized_var_48 3 -> 0, mfi_14 6 -> 1, hurst_proxy_200 6 -> 1);
+the rest persists in features that carry sign-stable association with the return label: `obv` 6/6 -> 6/6, `roll_skew_ret_252` 6/6 -> 6/6, `cci_14` 5 -> 4,
+and `log_return_1` (3 -> 2). The unchanged rate with only controls added says the rejection is not the persistence/regime level in W but the scale of the label.
+Reading: the 0.16 is partly a persistent-volatility-regime artefact and partly sign-stable association of two slow-moving features; the
+latter does not improve out-of-sample error against the zero-return naive (section 1), and obv carries the sentinel-like minimum flagged in the manifest.
+
+**Seasonal reference (partial association of Y_h with the h-bar return one 24 h period earlier, beyond all 83 features, calibrated):**
+
+| h | theta (per sd of the reference) | block-bootstrap se | t | rejects | sign stable (blocks of 5) | corr with label | L |
+|---|---|---|---|---|---|---|---|
+| 1 | -0.0501 | 0.0164 | -3.05 | yes | 0.8 | -0.081 | 7 |
+| 2 | -0.1510 | 0.0246 | -6.15 | yes | 0.8 | -0.089 | 8 |
+| 3 | -0.2021 | 0.0348 | -5.80 | yes | 0.8 | -0.078 | 9 |
+| 4 | -0.2401 | 0.0445 | -5.40 | yes | 1.0 | -0.060 | 10 |
+| 5 | -0.2674 | 0.0551 | -4.85 | yes | 1.0 | -0.042 | 11 |
+| 6 | -0.1842 | 0.0720 | -2.56 | yes | 0.8 | -0.032 | 12 |
+
+The seasonal lag carries a real, calibrated, mostly sign-stable association with the label on ETH, but its sign is NEGATIVE (the label tends to
+reverse the return of the same hours the day before) with a small correlation (|r| <= 0.09). That is the opposite of what the 24 h seasonal naive
+assumes (it predicts +y(t - 6)), which is why that naive is far worse than the zero-return naive (section 1.1: 2.4856 vs 1.67674 at h6). The association
+does not by itself beat the zero-return naive: the intercept-only and zero models remain the gate. Persistence reference (h-bar return over (t - h, t]): rejects only
+at h3 (+0.26, t 4.5), h4 (+0.16, t 2.7) and h6 (-0.18, t -2.6, identical to the seasonal row at h6 because the lags coincide); at h1 and h5 its theta is degenerate (-1445, -715)
+because that reference is almost collinear with `log_return_1` and the other return features (residual variance ~0): treat those two cells as not estimable.
+
+### 2.3 Applicable interval rule, evidence classes, time semantics (owner order 4.C)
+
+* `tools/c2_interval_rule.py` + `test_interval_rule_threshold_and_committed_eth_evidence`: block length L = max(tau_Y, tau_X, h+6), block bootstrap B >= 200 (or HAC
+  bandwidth L), reject when |theta| > 1.96 se, thresholds scrambled-label and noise rates <= 0.05 + 2 sqrt(0.05*0.95/n_cells) (0.0695 at 498), future-shift template in 100 %
+  of cells; the rule refuses the uncalibrated HAC h+6 (0.181) and never moves a rung. Applies to ETH 4h variant A with the committed calibration. EURUSD 1h: NOT_MEASURED.
+* Schema: `evidence_classes` (association / observed natural interventions / paired counterfactuals, each with state, assumptions and support, assumptions required when reported)
+  and `time_semantics` (event time, availability time = UNDECLARED, population). 498/498 dossiers carry them and validate (worker_b). Observed natural interventions is
+  `NOT_AVAILABLE` in all 498 (no quasi-experiment exists for a derived feature).
+* Constraint recorded for selection: PS3-R is not read as selection. Extension (PS3-R/PS5) only on candidates that survive lane B's eligible ledger, with original vs transformed
+  vs destroyed-signal control; on ETH 4h TRAIN no variant-A feature clears the zero-return naive, so no candidate survives that gate today.
+
 ## 3. Deliverable 3: recommendation table to M03 and M07 -- `recommendation/RECOMMENDATION_TABLE.{csv,md}`
 
 1,162 rows (83 features x 7 horizons x 2 protocols), each with population, split, rows, horizon, the four naives

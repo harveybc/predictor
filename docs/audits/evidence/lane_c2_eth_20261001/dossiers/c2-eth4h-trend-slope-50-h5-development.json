@@ -65,6 +65,41 @@
   },
   "operational_use": "RETROSPECTIVE_ONLY"
  },
+ "evidence_classes": {
+  "association": {
+   "assumptions": [
+    "held-out within TRAIN blocks with embargo; association is predictive, not causal",
+    "stationarity within blocks is NOT assumed"
+   ],
+   "state": "REPORTED_ASSOCIATION",
+   "support": {
+    "block_length": 51,
+    "effective_n": 13415,
+    "interval": "block bootstrap"
+   }
+  },
+  "observed_natural_interventions": {
+   "assumptions": [],
+   "reason": "no natural or quasi-experiment exists for a derived feature of one price history; an RSI is not set without moving prices",
+   "state": "NOT_AVAILABLE",
+   "support": {}
+  },
+  "paired_counterfactuals": {
+   "assumptions": [
+    "additive_noise",
+    "lineage_dag_v3_names_the_producer",
+    "partially_linear_effect",
+    "partially linear effect",
+    "additive noise"
+   ],
+   "reason": "paired model-based counterfactual on the same row; label MODEL_BASED_COUNTERFACTUAL, retrospective only",
+   "state": "REPORTED_UNDER_DECLARED_MODEL",
+   "support": {
+    "residual_variance_share": 0.07053715555488177,
+    "state": "SUPPORTED"
+   }
+  }
+ },
  "limitations": [
   "DEVELOPMENT: the view is a git-pinned local file (no governed availability contract); nothing here is confirmatory",
   "the timestamp semantics of the view are undeclared (FEATURE_DAG.v3); bar-close is assumed, not certified",
@@ -395,6 +430,24 @@
   "kind": "EPISODE_POPULATION",
   "population": "ETH 4h TRAIN bar closes, M07 scored origins rows [23,13669] with a label at exactly 5 regular bars; DEVELOPMENT",
   "target": "Y_l"
+ },
+ "time_semantics": {
+  "availability_time": {
+   "rule": "the view declares no timestamp semantics (bar open, bar close or publication); bar-close is an uncertified working assumption",
+   "state": "UNDECLARED"
+  },
+  "event_time": {
+   "definition": "bar stamp of the scored origin t (DATE_TIME of the view, undeclared semantics)",
+   "span": [
+    "2017-10-02T00:00:00+00:00",
+    "2023-12-27T00:00:00+00:00"
+   ]
+  },
+  "population": {
+   "rows": 13415,
+   "rule": "ETH 4h TRAIN bar closes, M07 scored origins rows [23,13669] with a label at exactly 5 regular bars; DEVELOPMENT",
+   "split": "TRAIN rows [0,13699)"
+  }
  },
  "treatment": {
   "definition": "stored column `trend_slope_50` of the view; producer financial-data stage22_trading_features_worker.py @ 19fe375a (sha 7495a0d9), value at the bar close t",
