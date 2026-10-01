@@ -1,0 +1,28 @@
+{
+  "schema": "modular.supervised_donor.recipe.v1",
+  "window": 24,
+  "sample_hours": 1,
+  "horizons": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
+  "branch": {
+    "plugin": "causal_conv1d",
+    "params": {"channels": 16, "kernel_size": 3}
+  },
+  "core": {
+    "plugin": "transformer_conv",
+    "params": {
+      "blocks": 2,
+      "d_model": 64,
+      "heads": 4,
+      "ff_dim": 128,
+      "dropout": 0.0,
+      "kernel_size": 3,
+      "stage_channels": [32, 16, 8],
+      "time_factors": [2, 2, 1]
+    }
+  },
+  "fusion": {"plugin": "sequence_concat", "params": {}},
+  "head": {"plugin": "forecast", "params": {}},
+  "output_steps": 6,
+  "output_channels": 8,
+  "target_residual_period": 24
+}
