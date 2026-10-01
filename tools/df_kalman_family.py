@@ -87,7 +87,7 @@ PARAM_SOURCES = ("moments_train", "declared_ratio")
 # the predeclared grid (nothing outside it is an operator of this family)
 GRID = {
     "param_source": (str, PARAM_SOURCES),
-    "ratio_level": (float, (0.0, 0.001, 0.01, 0.1, 1.0)),
+    "ratio_level": (float, (0.0, 0.0001, 0.001, 0.01, 0.1, 1.0)),
     "ratio_slope": (float, (0.0, 1e-06, 1e-04, 1e-02)),
     "q_floor_ratio": (float, (1e-06,)),
     "r_floor_ratio": (float, (1e-06,)),

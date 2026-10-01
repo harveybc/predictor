@@ -483,8 +483,8 @@ def test_smoother_is_refused_as_an_input_everywhere():
 
 
 def test_smoother_beats_filter_on_state_recovery_which_is_why_it_must_be_rejected_not_preferred():
-    mu, y = make_ll(4000, 0.03, 0.8, 35)
-    a = fit_ll(y, param_source="declared_ratio", ratio_level=0.03 / 0.8)
+    mu, y = make_ll(4000, 0.08, 0.8, 35)
+    a = fit_ll(y, param_source="declared_ratio", ratio_level=0.1)
     fl = kf.transform_batch(a, y.reshape(-1, 1)).arrays["level"][:, 0]
     sm = kf.smoother_control(a, y.reshape(-1, 1)).arrays["level"][:, 0]
     rmse = lambda v: math.sqrt(np.mean((v[100:] - mu[100:]) ** 2))
@@ -519,9 +519,9 @@ def test_scenario_local_level_recovers_level_and_innovations_are_white():
 
 
 def test_scenario_local_linear_trend_recovers_level_and_slope():
-    q, qs, r = 0.01, 2e-5, 0.3
+    q, qs, r = 0.03, 3e-5, 0.3
     lv, bs, y = make_llt(30000, q, qs, r, 42)
-    a = fit_llt(y, param_source="declared_ratio", ratio_level=q / r, ratio_slope=1e-4)
+    a = fit_llt(y, param_source="declared_ratio", ratio_level=0.1, ratio_slope=1e-4)
     out = kf.transform_batch(a, y.reshape(-1, 1))
     rm_f = math.sqrt(np.mean((out.arrays["level"][500:, 0] - lv[500:]) ** 2))
     rm_o = math.sqrt(np.mean((y[500:] - lv[500:]) ** 2))
@@ -557,7 +557,7 @@ def test_identity_control_returns_original_unchanged_bitwise():
 
 def test_ewma_comparable_is_causal_and_uses_the_steady_state_gain():
     _, y = make_ll(600, 0.03, 0.6, 52)
-    a = fit_ll(y, param_source="declared_ratio", ratio_level=0.05)
+    a = fit_ll(y, param_source="declared_ratio", ratio_level=0.01)
     X = y.reshape(-1, 1)
     base = kf.ewma_comparable(a, X)
     c = a["fitted"]["per_column"][0]
