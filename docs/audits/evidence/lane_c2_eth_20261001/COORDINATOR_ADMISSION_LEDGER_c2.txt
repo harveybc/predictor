@@ -28,3 +28,7 @@
 NONE
 # admission state live names:
 ['d2-runner-worker-a', 'm06-event-watch', 'm06-gpu-sampler', 'm06-status-writer']
+# c2-results trace (the 13th admission): ADMITTED 08:18:00Z -> LEASE_ARMED 08:18:01Z -> LEASE_RECLAIMED_WITNESS_DEAD 08:18:01Z (the 2 s job had exited; the lease was reclaimed, not left held); leases dir holds 0 c2-* files
+{"at": "2026-10-01T08:18:00Z", "event": "ADMISSION_ADMITTED", "code": "ADMITTED", "name": "c2-results", "lease_id": "c2-results-1790842680-1314788-821751"}
+{"at": "2026-10-01T08:18:01Z", "event": "LEASE_ARMED", "code": null, "name": null, "lease_id": "c2-results-1790842680-1314788-821751"}
+{"at": "2026-10-01T08:18:01Z", "event": "LEASE_RECLAIMED_WITNESS_DEAD", "code": null, "name": null, "lease_id": "c2-results-1790842680-1314788-821751"}
