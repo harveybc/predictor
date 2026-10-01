@@ -1,0 +1,12 @@
+{
+ "finding": "D-OPS-01",
+ "date": "2026-10-01",
+ "by": "Satoshi, successor technical lead (lane D)",
+ "statement": "The per-feature GPU pilot on worker_b (PIN_df9ae31c) exited 2 before any update because the pinned worktree predictor-d-pin-df9ae31c did not exist on worker_b: it had been created only on worker_a and the orchestrating host. The launcher's cd failed, candidate generation raised ModuleNotFoundError (tools), and the admitted child could not open tools/modular_doin_cost_pilot.py.",
+ "evidence": ["worker_b ~/.local/state/scratch/d-pilot/PIN_df9ae31c/perfeature_attempt1_D-OPS-01.log",
+              "worker_b ~/.local/state/scratch/d-pilot/PIN_df9ae31c/runs.log (perfeature exit 2 2026-09-30T22:17:09-05:00)"],
+ "impact": "No GPU work, no update, no campaign row touched. The same gap would have broken every worker_b attempt of campaign d_ecl_l24_h24_corrected_r0_v1; its worker_b runner had not been started.",
+ "fix": ["Created ~/Documents/GitHub/.worktrees/predictor-d-pin-df9ae31c at df9ae31c on worker_b (clean).",
+         "RemoteExecutor.preflight: run-remote refuses to start a host runner when the pinned worktree is absent, not at the pin, or has modified tracked files (test_runner_preflight_refuses_absent_or_dirty_pin_worktree).",
+         "Per-feature pilot re-queued at its declared 6427M after the coordinator confirmed worker_b settled."]
+}

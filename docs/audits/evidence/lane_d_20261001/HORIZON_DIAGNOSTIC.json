@@ -1,0 +1,2992 @@
+{
+ "label": "DIAGNOSTIC_NOT_A_RESULT",
+ "population": {
+  "rows": 2609,
+  "horizons": 24,
+  "targets": 321
+ },
+ "endpoint_check": {
+  "target_timestamps_equal_origin_plus_h_x_period": true,
+  "sample_period_seconds": 3600,
+  "source_crosscheck_values": 2000,
+  "max_abs_difference_z": 1.1425147938837199e-07,
+  "header_matches": true
+ },
+ "baselines": [
+  {
+   "horizon": 1,
+   "target_std": 0.922718323085772,
+   "naive_MAE": 0.2623322746669795,
+   "seasonal_naive_MAE": 0.24761457246150073,
+   "corr_target_origin": 0.8952440306728059
+  },
+  {
+   "horizon": 2,
+   "target_std": 0.9225721349902908,
+   "naive_MAE": 0.43211802894920215,
+   "seasonal_naive_MAE": 0.24765917162759746,
+   "corr_target_origin": 0.747269225551921
+  },
+  {
+   "horizon": 3,
+   "target_std": 0.9224639589908479,
+   "naive_MAE": 0.5816916160996698,
+   "seasonal_naive_MAE": 0.2477015508414383,
+   "corr_target_origin": 0.5869113581052616
+  },
+  {
+   "horizon": 4,
+   "target_std": 0.9224930388797967,
+   "naive_MAE": 0.7151092859679566,
+   "seasonal_naive_MAE": 0.2477529332128213,
+   "corr_target_origin": 0.42194540287888543
+  },
+  {
+   "horizon": 5,
+   "target_std": 0.9225993036258321,
+   "naive_MAE": 0.8315361000595647,
+   "seasonal_naive_MAE": 0.24778143022186747,
+   "corr_target_origin": 0.26751629557646667
+  },
+  {
+   "horizon": 6,
+   "target_std": 0.9227248397623432,
+   "naive_MAE": 0.9309823043641594,
+   "seasonal_naive_MAE": 0.24778921641195295,
+   "corr_target_origin": 0.13228416530308196
+  },
+  {
+   "horizon": 7,
+   "target_std": 0.9228043429763669,
+   "naive_MAE": 1.0147956454517812,
+   "seasonal_naive_MAE": 0.24777253042017774,
+   "corr_target_origin": 0.016765192853458715
+  },
+  {
+   "horizon": 8,
+   "target_std": 0.9228817961676318,
+   "naive_MAE": 1.0797483926252185,
+   "seasonal_naive_MAE": 0.2477461471080155,
+   "corr_target_origin": -0.07353832854513334
+  },
+  {
+   "horizon": 9,
+   "target_std": 0.9229422894825933,
+   "naive_MAE": 1.1274677322387365,
+   "seasonal_naive_MAE": 0.24771417712482965,
+   "corr_target_origin": -0.13659795304509484
+  },
+  {
+   "horizon": 10,
+   "target_std": 0.9229686101720621,
+   "naive_MAE": 1.1608021074123975,
+   "seasonal_naive_MAE": 0.24768327127131198,
+   "corr_target_origin": -0.17643156106349833
+  },
+  {
+   "horizon": 11,
+   "target_std": 0.9230078520644306,
+   "naive_MAE": 1.1814115270460255,
+   "seasonal_naive_MAE": 0.24766607839164922,
+   "corr_target_origin": -0.19629370562100223
+  },
+  {
+   "horizon": 12,
+   "target_std": 0.92294173286287,
+   "naive_MAE": 1.1885783238908254,
+   "seasonal_naive_MAE": 0.24767712671274117,
+   "corr_target_origin": -0.2027308837129616
+  },
+  {
+   "horizon": 13,
+   "target_std": 0.9228544030291829,
+   "naive_MAE": 1.1849708033176751,
+   "seasonal_naive_MAE": 0.24772496069750374,
+   "corr_target_origin": -0.20120470990808476
+  },
+  {
+   "horizon": 14,
+   "target_std": 0.9227428458387957,
+   "naive_MAE": 1.1680579544894907,
+   "seasonal_naive_MAE": 0.24778179524902713,
+   "corr_target_origin": -0.18642466338021677
+  },
+  {
+   "horizon": 15,
+   "target_std": 0.9226352134321343,
+   "naive_MAE": 1.1385710743794673,
+   "seasonal_naive_MAE": 0.2478690168163392,
+   "corr_target_origin": -0.1518072898795027
+  },
+  {
+   "horizon": 16,
+   "target_std": 0.9224215221850894,
+   "naive_MAE": 1.0944594431389818,
+   "seasonal_naive_MAE": 0.2479754184063482,
+   "corr_target_origin": -0.09407428142859592
+  },
+  {
+   "horizon": 17,
+   "target_std": 0.9219664453793827,
+   "naive_MAE": 1.0334730293673162,
+   "seasonal_naive_MAE": 0.2480749378626682,
+   "corr_target_origin": -0.00930346210013904
+  },
+  {
+   "horizon": 18,
+   "target_std": 0.9215353282834624,
+   "naive_MAE": 0.9547153329678786,
+   "seasonal_naive_MAE": 0.24814839778503409,
+   "corr_target_origin": 0.10051616122152218
+  },
+  {
+   "horizon": 19,
+   "target_std": 0.9212594968059005,
+   "naive_MAE": 0.8612151462011045,
+   "seasonal_naive_MAE": 0.24823504491526657,
+   "corr_target_origin": 0.2297915704228706
+  },
+  {
+   "horizon": 20,
+   "target_std": 0.921127993778453,
+   "naive_MAE": 0.7523740115496234,
+   "seasonal_naive_MAE": 0.24833615088725233,
+   "corr_target_origin": 0.3760237632701837
+  },
+  {
+   "horizon": 21,
+   "target_std": 0.9210418032742728,
+   "naive_MAE": 0.6302564115776402,
+   "seasonal_naive_MAE": 0.24844694267887,
+   "corr_target_origin": 0.5297672330174802
+  },
+  {
+   "horizon": 22,
+   "target_std": 0.9209294802445815,
+   "naive_MAE": 0.4984227984551562,
+   "seasonal_naive_MAE": 0.2485691223669637,
+   "corr_target_origin": 0.676368451865358
+  },
+  {
+   "horizon": 23,
+   "target_std": 0.9207864419717935,
+   "naive_MAE": 0.36186860494646556,
+   "seasonal_naive_MAE": 0.2486833439687831,
+   "corr_target_origin": 0.8044568703918704
+  },
+  {
+   "horizon": 24,
+   "target_std": 0.9206205784675222,
+   "naive_MAE": 0.2487896441830307,
+   "seasonal_naive_MAE": 0.2487896441830307,
+   "corr_target_origin": 0.8738838428155583
+  }
+ ],
+ "models": [
+  {
+   "cid": "fa246e4645554981780d933cb34f03cbe0dde85fa87017e43703d127e8b7d623",
+   "label": "corrected_grouped32_R0_huber",
+   "seed": 2021,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.40807748383474274,
+     "receipt_MAE_gpu": 0.40808320666733217,
+     "residual_mean": 0.07684628249092863,
+     "prediction_std_ratio": 0.9163017827116259
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.40978205290391284,
+     "receipt_MAE_gpu": 0.40978576631696384,
+     "residual_mean": 0.07887311578631787,
+     "prediction_std_ratio": 0.9118121453648034
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.40879423676988075,
+     "receipt_MAE_gpu": 0.4087995425910779,
+     "residual_mean": 0.0799194551082983,
+     "prediction_std_ratio": 0.9080497507180214
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.40849935051372444,
+     "receipt_MAE_gpu": 0.4085064058553978,
+     "residual_mean": 0.07917722920213162,
+     "prediction_std_ratio": 0.9176899018266752
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.4115362485249261,
+     "receipt_MAE_gpu": 0.4115458563176337,
+     "residual_mean": 0.079903937654193,
+     "prediction_std_ratio": 0.922284355223889
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.4122938042642042,
+     "receipt_MAE_gpu": 0.41230827851498814,
+     "residual_mean": 0.08473435330302782,
+     "prediction_std_ratio": 0.9097484992291986
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.4116240438636048,
+     "receipt_MAE_gpu": 0.4116385225820319,
+     "residual_mean": 0.09003634406998208,
+     "prediction_std_ratio": 0.8981250132408487
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.41258547690798386,
+     "receipt_MAE_gpu": 0.41260069166345475,
+     "residual_mean": 0.09482665817644914,
+     "prediction_std_ratio": 0.9067851902848436
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.41398004662876353,
+     "receipt_MAE_gpu": 0.4139923656116675,
+     "residual_mean": 0.0995691321594196,
+     "prediction_std_ratio": 0.9097446585285706
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.4144835489293503,
+     "receipt_MAE_gpu": 0.4144958204818284,
+     "residual_mean": 0.10489386516248118,
+     "prediction_std_ratio": 0.8902741736461384
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.41385018748641034,
+     "receipt_MAE_gpu": 0.41386552276780664,
+     "residual_mean": 0.10284458310274208,
+     "prediction_std_ratio": 0.8764011647159949
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.4108322564709134,
+     "receipt_MAE_gpu": 0.410846634583931,
+     "residual_mean": 0.09016865634182722,
+     "prediction_std_ratio": 0.8876071294221352
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.40829293659725463,
+     "receipt_MAE_gpu": 0.40830596850783535,
+     "residual_mean": 0.07553522703985913,
+     "prediction_std_ratio": 0.8983085561509391
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.4074681281732484,
+     "receipt_MAE_gpu": 0.40747772602509363,
+     "residual_mean": 0.06927315016030783,
+     "prediction_std_ratio": 0.8926758511569665
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.408330267816032,
+     "receipt_MAE_gpu": 0.408338069545016,
+     "residual_mean": 0.07087732800103895,
+     "prediction_std_ratio": 0.8885313756989491
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.4093959922387471,
+     "receipt_MAE_gpu": 0.409403838243395,
+     "residual_mean": 0.07163781602362705,
+     "prediction_std_ratio": 0.8995856229095626
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.4092651007360064,
+     "receipt_MAE_gpu": 0.4092716758040874,
+     "residual_mean": 0.06946996128443539,
+     "prediction_std_ratio": 0.9143930960934363
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.41029082593793315,
+     "receipt_MAE_gpu": 0.4102975785117289,
+     "residual_mean": 0.07132682183519269,
+     "prediction_std_ratio": 0.915788772325799
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.41335852257367034,
+     "receipt_MAE_gpu": 0.4133667147181655,
+     "residual_mean": 0.07904560758533137,
+     "prediction_std_ratio": 0.9083458998000499
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.4151565062008493,
+     "receipt_MAE_gpu": 0.4151676866804699,
+     "residual_mean": 0.08451296867720924,
+     "prediction_std_ratio": 0.9101498916943601
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.415569234117529,
+     "receipt_MAE_gpu": 0.41557696712559117,
+     "residual_mean": 0.0846103167419936,
+     "prediction_std_ratio": 0.9201680088216332
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.4151647985712137,
+     "receipt_MAE_gpu": 0.41516850672069344,
+     "residual_mean": 0.08486774512511543,
+     "prediction_std_ratio": 0.9203062328413502
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.4113939537752173,
+     "receipt_MAE_gpu": 0.41139656169526617,
+     "residual_mean": 0.08430186371305882,
+     "prediction_std_ratio": 0.9143620316722577
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.4086773666961355,
+     "receipt_MAE_gpu": 0.4086830446048543,
+     "residual_mean": 0.08275548613622764,
+     "prediction_std_ratio": 0.9168478536714044
+    }
+   ]
+  },
+  {
+   "cid": "1bfeee4c67791f4f27471b180d55245fcc8a5e328dc8255fbee59861d869a7bd",
+   "label": "corrected_grouped32_R0_huber",
+   "seed": 2022,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.3819150865864059,
+     "receipt_MAE_gpu": 0.38190999652800545,
+     "residual_mean": 0.09001841634838333,
+     "prediction_std_ratio": 0.8836518275828205
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.3803543242226995,
+     "receipt_MAE_gpu": 0.38034735848062096,
+     "residual_mean": 0.08703781463377544,
+     "prediction_std_ratio": 0.8665806720619479
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.38303328964985806,
+     "receipt_MAE_gpu": 0.38302664647755036,
+     "residual_mean": 0.09186678594293735,
+     "prediction_std_ratio": 0.860027225532294
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.3879790189412009,
+     "receipt_MAE_gpu": 0.387973268291849,
+     "residual_mean": 0.09924582384282092,
+     "prediction_std_ratio": 0.8618825281964388
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.3871257720787412,
+     "receipt_MAE_gpu": 0.3871225483842001,
+     "residual_mean": 0.10374260171357441,
+     "prediction_std_ratio": 0.8677179196022603
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.38667513111505547,
+     "receipt_MAE_gpu": 0.3866702841777669,
+     "residual_mean": 0.10106977610219245,
+     "prediction_std_ratio": 0.8756843206096555
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.3854105422113211,
+     "receipt_MAE_gpu": 0.3854037795752584,
+     "residual_mean": 0.10092191927819376,
+     "prediction_std_ratio": 0.8808541887170822
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.38197419574422575,
+     "receipt_MAE_gpu": 0.3819679918853203,
+     "residual_mean": 0.10489448555507998,
+     "prediction_std_ratio": 0.8744393433447489
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.38133474253789973,
+     "receipt_MAE_gpu": 0.38132406382280604,
+     "residual_mean": 0.10631220178597352,
+     "prediction_std_ratio": 0.8653843641330962
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.38384032959922254,
+     "receipt_MAE_gpu": 0.3838295316285658,
+     "residual_mean": 0.10714452169390934,
+     "prediction_std_ratio": 0.8695207005725757
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.3870351753384727,
+     "receipt_MAE_gpu": 0.38702045020373455,
+     "residual_mean": 0.11631335031384098,
+     "prediction_std_ratio": 0.8809937184267171
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.3915158977776319,
+     "receipt_MAE_gpu": 0.39150226771737245,
+     "residual_mean": 0.1278037033440529,
+     "prediction_std_ratio": 0.8757484640915716
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.39439213452550337,
+     "receipt_MAE_gpu": 0.39437771869848204,
+     "residual_mean": 0.13204827049406576,
+     "prediction_std_ratio": 0.8613684780708732
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.3937823859454664,
+     "receipt_MAE_gpu": 0.39376645406400995,
+     "residual_mean": 0.1278306523781981,
+     "prediction_std_ratio": 0.8638868445494418
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.3933295645984236,
+     "receipt_MAE_gpu": 0.3933165664952237,
+     "residual_mean": 0.12378396942892433,
+     "prediction_std_ratio": 0.8786319753926054
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.39472565587708053,
+     "receipt_MAE_gpu": 0.39471490402837345,
+     "residual_mean": 0.1281065864398622,
+     "prediction_std_ratio": 0.8797169812606176
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.39743734015420124,
+     "receipt_MAE_gpu": 0.3974260522078172,
+     "residual_mean": 0.1351041036167937,
+     "prediction_std_ratio": 0.8675483248906548
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.39657317766234595,
+     "receipt_MAE_gpu": 0.3965604845745075,
+     "residual_mean": 0.1328726193682394,
+     "prediction_std_ratio": 0.8666224795733707
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.3930519328564413,
+     "receipt_MAE_gpu": 0.3930378646100489,
+     "residual_mean": 0.11998706388902025,
+     "prediction_std_ratio": 0.8767042428151713
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.3914583312322796,
+     "receipt_MAE_gpu": 0.39144371197851546,
+     "residual_mean": 0.10937438374713455,
+     "prediction_std_ratio": 0.8819385487882283
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.39242123570240256,
+     "receipt_MAE_gpu": 0.3924144789731261,
+     "residual_mean": 0.1064978127180116,
+     "prediction_std_ratio": 0.8770494092174927
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.39180173398882756,
+     "receipt_MAE_gpu": 0.39180086821683346,
+     "residual_mean": 0.1074985883213324,
+     "prediction_std_ratio": 0.8810134070570129
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.3931300277022459,
+     "receipt_MAE_gpu": 0.3931292968837769,
+     "residual_mean": 0.10816123023317101,
+     "prediction_std_ratio": 0.8919861897865051
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.3903571011797995,
+     "receipt_MAE_gpu": 0.39035062934916753,
+     "residual_mean": 0.10434740331521984,
+     "prediction_std_ratio": 0.8989137048162653
+    }
+   ]
+  },
+  {
+   "cid": "adf2e5f586ef8646f88215802bd15b49d675329ca958543bddcc3c2b2ea63f9e",
+   "label": "corrected_grouped32_R0_mae",
+   "seed": 2021,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.38762722337787925,
+     "receipt_MAE_gpu": 0.38761490374744084,
+     "residual_mean": 0.08632980976047305,
+     "prediction_std_ratio": 0.9152441409512684
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.3825403789833562,
+     "receipt_MAE_gpu": 0.38252685552578414,
+     "residual_mean": 0.07678493011676397,
+     "prediction_std_ratio": 0.9068037182181512
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.3792215419658134,
+     "receipt_MAE_gpu": 0.3792076787089571,
+     "residual_mean": 0.06735619589879036,
+     "prediction_std_ratio": 0.9028925682692106
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.3779819974718159,
+     "receipt_MAE_gpu": 0.37797116559218286,
+     "residual_mean": 0.05832840171405352,
+     "prediction_std_ratio": 0.8987705697478963
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.3759850100126599,
+     "receipt_MAE_gpu": 0.37597105848461576,
+     "residual_mean": 0.050966610065891926,
+     "prediction_std_ratio": 0.895766032843988
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.37265288426093557,
+     "receipt_MAE_gpu": 0.37264094810578513,
+     "residual_mean": 0.052599924225871855,
+     "prediction_std_ratio": 0.8948886144568935
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.37494576199711505,
+     "receipt_MAE_gpu": 0.3749335224968881,
+     "residual_mean": 0.05072861078082708,
+     "prediction_std_ratio": 0.8945212451104636
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.3766275454055296,
+     "receipt_MAE_gpu": 0.3766174232613236,
+     "residual_mean": 0.053550208109962895,
+     "prediction_std_ratio": 0.8929084165876805
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.3782698128889062,
+     "receipt_MAE_gpu": 0.3782616806222031,
+     "residual_mean": 0.060843468430255,
+     "prediction_std_ratio": 0.8856253158490136
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.3742851585890441,
+     "receipt_MAE_gpu": 0.374275159713861,
+     "residual_mean": 0.056230303911511854,
+     "prediction_std_ratio": 0.8755261830440182
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.3761442627710867,
+     "receipt_MAE_gpu": 0.3761298037441293,
+     "residual_mean": 0.05094260919968833,
+     "prediction_std_ratio": 0.8649689421873226
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.378586408437064,
+     "receipt_MAE_gpu": 0.3785729754133627,
+     "residual_mean": 0.05359944659515619,
+     "prediction_std_ratio": 0.8653008013388721
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.37806138241836246,
+     "receipt_MAE_gpu": 0.37804671071203466,
+     "residual_mean": 0.059727309822041434,
+     "prediction_std_ratio": 0.873275760143699
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.3758320548789542,
+     "receipt_MAE_gpu": 0.37581995144924696,
+     "residual_mean": 0.06509436584108189,
+     "prediction_std_ratio": 0.87589664251992
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.378383375609327,
+     "receipt_MAE_gpu": 0.3783724739603875,
+     "residual_mean": 0.0649415299720044,
+     "prediction_std_ratio": 0.875651283822914
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.3794766173286207,
+     "receipt_MAE_gpu": 0.379462295988974,
+     "residual_mean": 0.058800237177316396,
+     "prediction_std_ratio": 0.879714258740511
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.3785772493359177,
+     "receipt_MAE_gpu": 0.3785615169813574,
+     "residual_mean": 0.06346787793894534,
+     "prediction_std_ratio": 0.8811086058487575
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.3781321802169498,
+     "receipt_MAE_gpu": 0.37812235014312007,
+     "residual_mean": 0.0714539056816044,
+     "prediction_std_ratio": 0.877896617929962
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.3772820452076494,
+     "receipt_MAE_gpu": 0.3772709437277632,
+     "residual_mean": 0.06842963963990649,
+     "prediction_std_ratio": 0.8782423027121261
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.37895625731897653,
+     "receipt_MAE_gpu": 0.3789464591615997,
+     "residual_mean": 0.06828580563327338,
+     "prediction_std_ratio": 0.8844909883561365
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.38131745110931514,
+     "receipt_MAE_gpu": 0.3813050663120328,
+     "residual_mean": 0.07525607178011925,
+     "prediction_std_ratio": 0.8870101467578538
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.3838530074231656,
+     "receipt_MAE_gpu": 0.3838423508413802,
+     "residual_mean": 0.0811159727325883,
+     "prediction_std_ratio": 0.8935907046807013
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.3900243111241021,
+     "receipt_MAE_gpu": 0.3900116238100744,
+     "residual_mean": 0.0950168539064547,
+     "prediction_std_ratio": 0.9062128341093278
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.39168228451524995,
+     "receipt_MAE_gpu": 0.39167255670036216,
+     "residual_mean": 0.09704117098354692,
+     "prediction_std_ratio": 0.9172228288496018
+    }
+   ]
+  },
+  {
+   "cid": "f8bb2811807d1e07ed5458d15f0e8c78ad138e9e07f975a9f158ccda58f2f87a",
+   "label": "corrected_grouped32_R0_mae",
+   "seed": 2022,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.41538221537117986,
+     "receipt_MAE_gpu": 0.41538602208638925,
+     "residual_mean": 0.037608283125029195,
+     "prediction_std_ratio": 0.8997670321869049
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.4130994248762878,
+     "receipt_MAE_gpu": 0.4131032499436717,
+     "residual_mean": 0.029903625905966662,
+     "prediction_std_ratio": 0.8975146505076136
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.408515509112541,
+     "receipt_MAE_gpu": 0.40852125611193296,
+     "residual_mean": 0.02608873837969008,
+     "prediction_std_ratio": 0.9080027225145405
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.41095498408481584,
+     "receipt_MAE_gpu": 0.4109571755657311,
+     "residual_mean": 0.030701283505146258,
+     "prediction_std_ratio": 0.9130434738936586
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.4176884164761591,
+     "receipt_MAE_gpu": 0.4176866877527405,
+     "residual_mean": 0.03910602540802758,
+     "prediction_std_ratio": 0.9024520039976405
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.4163232274684965,
+     "receipt_MAE_gpu": 0.41632284068426645,
+     "residual_mean": 0.04563272112764478,
+     "prediction_std_ratio": 0.9001573583272722
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.4112530177326257,
+     "receipt_MAE_gpu": 0.4112562529499917,
+     "residual_mean": 0.053436439606762975,
+     "prediction_std_ratio": 0.9088799104989898
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.4146716608832503,
+     "receipt_MAE_gpu": 0.41467120383689743,
+     "residual_mean": 0.060421203763284706,
+     "prediction_std_ratio": 0.9079002817077828
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.4182784709564084,
+     "receipt_MAE_gpu": 0.4182798551372793,
+     "residual_mean": 0.06054876689883693,
+     "prediction_std_ratio": 0.8997005809389629
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.41485085674344624,
+     "receipt_MAE_gpu": 0.4148535580139067,
+     "residual_mean": 0.0547559881918068,
+     "prediction_std_ratio": 0.9035103677398351
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.41133846892573395,
+     "receipt_MAE_gpu": 0.4113400093383412,
+     "residual_mean": 0.0537792280876064,
+     "prediction_std_ratio": 0.912855895970447
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.41688332318906507,
+     "receipt_MAE_gpu": 0.4168838795770189,
+     "residual_mean": 0.05534567991873101,
+     "prediction_std_ratio": 0.9110962188722314
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.4176352973089139,
+     "receipt_MAE_gpu": 0.41763338383918125,
+     "residual_mean": 0.05492739456971182,
+     "prediction_std_ratio": 0.8935611562443255
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.4148369054684369,
+     "receipt_MAE_gpu": 0.4148397729409761,
+     "residual_mean": 0.045368867855437936,
+     "prediction_std_ratio": 0.9010549879942489
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.41097358975366455,
+     "receipt_MAE_gpu": 0.410975103666294,
+     "residual_mean": 0.042890691315927716,
+     "prediction_std_ratio": 0.9184048510091917
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.41269490754022736,
+     "receipt_MAE_gpu": 0.4126939081794428,
+     "residual_mean": 0.04889209965636519,
+     "prediction_std_ratio": 0.9194528057924914
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.4168340917303068,
+     "receipt_MAE_gpu": 0.41683362505802496,
+     "residual_mean": 0.049271716522780874,
+     "prediction_std_ratio": 0.9037067029691146
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.41933153968606984,
+     "receipt_MAE_gpu": 0.41933243655202534,
+     "residual_mean": 0.043083787304922724,
+     "prediction_std_ratio": 0.9063025268483307
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.4184083287811454,
+     "receipt_MAE_gpu": 0.41841038286890286,
+     "residual_mean": 0.04681562031512264,
+     "prediction_std_ratio": 0.9210739757844804
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.41912813253116,
+     "receipt_MAE_gpu": 0.41912622399061245,
+     "residual_mean": 0.054395201708416836,
+     "prediction_std_ratio": 0.9196945331597076
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.4201406460986228,
+     "receipt_MAE_gpu": 0.4201381482753939,
+     "residual_mean": 0.056417060404074834,
+     "prediction_std_ratio": 0.9008913606721617
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.4227859607825431,
+     "receipt_MAE_gpu": 0.42278635119325614,
+     "residual_mean": 0.049626664619522615,
+     "prediction_std_ratio": 0.9010528959500895
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.41970231241685874,
+     "receipt_MAE_gpu": 0.41970528952262776,
+     "residual_mean": 0.0451747673817787,
+     "prediction_std_ratio": 0.9183855729579746
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.41610528579169614,
+     "receipt_MAE_gpu": 0.41610870727172955,
+     "residual_mean": 0.048238693914161884,
+     "prediction_std_ratio": 0.9201808613344143
+    }
+   ]
+  },
+  {
+   "cid": "30983a6ee620e818017ea4b56d84320c29ba13582cfad0d04fb45b6279332a4e",
+   "label": "corrected_draw1_R0_huber",
+   "seed": 2021,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.38964890679842035,
+     "receipt_MAE_gpu": 0.38963019194432597,
+     "residual_mean": 0.05374889878682591,
+     "prediction_std_ratio": 0.8373805579560062
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.3874552387993513,
+     "receipt_MAE_gpu": 0.38745061803000486,
+     "residual_mean": 0.04880095016350339,
+     "prediction_std_ratio": 0.8334912135855703
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.3837997658787945,
+     "receipt_MAE_gpu": 0.38379809402217374,
+     "residual_mean": 0.04196883373241181,
+     "prediction_std_ratio": 0.8180444732909076
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.38403676042179824,
+     "receipt_MAE_gpu": 0.38404634319986825,
+     "residual_mean": 0.039729035046561535,
+     "prediction_std_ratio": 0.805112906735787
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.3873835707529228,
+     "receipt_MAE_gpu": 0.3874056155760763,
+     "residual_mean": 0.047165896964866234,
+     "prediction_std_ratio": 0.798995853230105
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.3901759701618435,
+     "receipt_MAE_gpu": 0.39020347785327175,
+     "residual_mean": 0.05515137591515497,
+     "prediction_std_ratio": 0.8012969073506335
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.39353387114431854,
+     "receipt_MAE_gpu": 0.3935572048511449,
+     "residual_mean": 0.05367616481540997,
+     "prediction_std_ratio": 0.8011060902870241
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.3897907801381991,
+     "receipt_MAE_gpu": 0.38980689940122065,
+     "residual_mean": 0.04744505228892035,
+     "prediction_std_ratio": 0.7941725284474835
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.38550782804063866,
+     "receipt_MAE_gpu": 0.3855173835938276,
+     "residual_mean": 0.04857035779426249,
+     "prediction_std_ratio": 0.7925237824277377
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.3920665615252343,
+     "receipt_MAE_gpu": 0.392065124497633,
+     "residual_mean": 0.05995967782304573,
+     "prediction_std_ratio": 0.7902763602638351
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.397678845556376,
+     "receipt_MAE_gpu": 0.39767308110167254,
+     "residual_mean": 0.07399915326686521,
+     "prediction_std_ratio": 0.7841367232961988
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.3975101551962389,
+     "receipt_MAE_gpu": 0.39750579924125184,
+     "residual_mean": 0.07879772709057173,
+     "prediction_std_ratio": 0.7822942344367972
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.3926248868296473,
+     "receipt_MAE_gpu": 0.39262527318056195,
+     "residual_mean": 0.07046616441198125,
+     "prediction_std_ratio": 0.7857744869910969
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.39133115862272483,
+     "receipt_MAE_gpu": 0.39133416207609956,
+     "residual_mean": 0.06084514260415915,
+     "prediction_std_ratio": 0.7950923633549183
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.39686249319389894,
+     "receipt_MAE_gpu": 0.3968689795269662,
+     "residual_mean": 0.059639695550839845,
+     "prediction_std_ratio": 0.8039108265793158
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.3913901201327697,
+     "receipt_MAE_gpu": 0.3914030029969624,
+     "residual_mean": 0.06614169760732962,
+     "prediction_std_ratio": 0.8205887514291927
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.3877837774563613,
+     "receipt_MAE_gpu": 0.38779282601835346,
+     "residual_mean": 0.06853614124683216,
+     "prediction_std_ratio": 0.8309799994571069
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.39268627483389523,
+     "receipt_MAE_gpu": 0.39269869427714654,
+     "residual_mean": 0.0639894371267178,
+     "prediction_std_ratio": 0.8186659189493599
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.39282460315319656,
+     "receipt_MAE_gpu": 0.3928296488239402,
+     "residual_mean": 0.061098581192637336,
+     "prediction_std_ratio": 0.8130830719249816
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.3904706055227715,
+     "receipt_MAE_gpu": 0.39046792697825394,
+     "residual_mean": 0.06282678323118142,
+     "prediction_std_ratio": 0.8313343845293343
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.3887310660379089,
+     "receipt_MAE_gpu": 0.3887193896295701,
+     "residual_mean": 0.06794895761463465,
+     "prediction_std_ratio": 0.85249898243945
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.3878526243475056,
+     "receipt_MAE_gpu": 0.3878459969658097,
+     "residual_mean": 0.06911331449644487,
+     "prediction_std_ratio": 0.8587879027094385
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.3910422279559959,
+     "receipt_MAE_gpu": 0.3910235795050401,
+     "residual_mean": 0.06516004225856172,
+     "prediction_std_ratio": 0.845899548305754
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.3927064059798081,
+     "receipt_MAE_gpu": 0.392683248162626,
+     "residual_mean": 0.06300611014558151,
+     "prediction_std_ratio": 0.8354642037987663
+    }
+   ]
+  },
+  {
+   "cid": "98aa650370cd779c420512fedc440b06b77fc6920d7f09bed73ba710d53b2bb1",
+   "label": "corrected_draw1_R0_huber",
+   "seed": 2022,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.38698892113264427,
+     "receipt_MAE_gpu": 0.3869978334976321,
+     "residual_mean": 0.03433267162727992,
+     "prediction_std_ratio": 0.792941135032496
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.38932282861340717,
+     "receipt_MAE_gpu": 0.38932980999660266,
+     "residual_mean": 0.04150591755039923,
+     "prediction_std_ratio": 0.8166151689590878
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.3907104531331637,
+     "receipt_MAE_gpu": 0.39071685189438343,
+     "residual_mean": 0.05054043422812292,
+     "prediction_std_ratio": 0.8322074469041738
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.39157367660257536,
+     "receipt_MAE_gpu": 0.39158528084159994,
+     "residual_mean": 0.05549938693786881,
+     "prediction_std_ratio": 0.8292621781008974
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.3926742537306053,
+     "receipt_MAE_gpu": 0.3926829331809428,
+     "residual_mean": 0.05486416897983546,
+     "prediction_std_ratio": 0.8114100134435381
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.38927691906115863,
+     "receipt_MAE_gpu": 0.389282895806555,
+     "residual_mean": 0.05111614984452434,
+     "prediction_std_ratio": 0.8062976343255269
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.38729970783509005,
+     "receipt_MAE_gpu": 0.3873039786054466,
+     "residual_mean": 0.05270077455968635,
+     "prediction_std_ratio": 0.8152751498302123
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.38632312071008457,
+     "receipt_MAE_gpu": 0.38633088049161096,
+     "residual_mean": 0.06163036986935363,
+     "prediction_std_ratio": 0.824830859850073
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.39423363876941003,
+     "receipt_MAE_gpu": 0.3942413551577981,
+     "residual_mean": 0.07377900406819579,
+     "prediction_std_ratio": 0.8329989499224902
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.39794440700668837,
+     "receipt_MAE_gpu": 0.39796129146932735,
+     "residual_mean": 0.08505239295373429,
+     "prediction_std_ratio": 0.8447012469764624
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.3974746543792598,
+     "receipt_MAE_gpu": 0.3974910963083521,
+     "residual_mean": 0.09651054533474719,
+     "prediction_std_ratio": 0.8559830636755132
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.4038704015496935,
+     "receipt_MAE_gpu": 0.403884402622436,
+     "residual_mean": 0.10520070507820825,
+     "prediction_std_ratio": 0.8422336129399005
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.406669105678572,
+     "receipt_MAE_gpu": 0.40668226661417806,
+     "residual_mean": 0.10526571639965035,
+     "prediction_std_ratio": 0.8187695921156324
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.40672552353056807,
+     "receipt_MAE_gpu": 0.40673939927521263,
+     "residual_mean": 0.09736182368782909,
+     "prediction_std_ratio": 0.8096918009149722
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.3961001381229687,
+     "receipt_MAE_gpu": 0.39611102340536886,
+     "residual_mean": 0.084022274273091,
+     "prediction_std_ratio": 0.8156137077608884
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.3882991211120319,
+     "receipt_MAE_gpu": 0.3883051542666899,
+     "residual_mean": 0.07132402403336784,
+     "prediction_std_ratio": 0.8153006889139177
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.39241680418709707,
+     "receipt_MAE_gpu": 0.39242144065531653,
+     "residual_mean": 0.06759611813595187,
+     "prediction_std_ratio": 0.8095818644998265
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.3907530900142619,
+     "receipt_MAE_gpu": 0.39075406347155056,
+     "residual_mean": 0.07182590889444462,
+     "prediction_std_ratio": 0.8225066770188573
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.39095517463812424,
+     "receipt_MAE_gpu": 0.39096225137124996,
+     "residual_mean": 0.07269197120454585,
+     "prediction_std_ratio": 0.8328500283683734
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.3960874292736973,
+     "receipt_MAE_gpu": 0.39609260595038664,
+     "residual_mean": 0.07012665724165358,
+     "prediction_std_ratio": 0.8247588240733763
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.3957941583257544,
+     "receipt_MAE_gpu": 0.39579925960958495,
+     "residual_mean": 0.0655983225973012,
+     "prediction_std_ratio": 0.8153608337684097
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.3884080857478202,
+     "receipt_MAE_gpu": 0.38841822995298025,
+     "residual_mean": 0.0546746853113072,
+     "prediction_std_ratio": 0.8046159711035816
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.3823114982358783,
+     "receipt_MAE_gpu": 0.38232331131922354,
+     "residual_mean": 0.04405933740302365,
+     "prediction_std_ratio": 0.7891840209093225
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.384476053138319,
+     "receipt_MAE_gpu": 0.3844840487051545,
+     "residual_mean": 0.039221152214576144,
+     "prediction_std_ratio": 0.7804666247442045
+    }
+   ]
+  },
+  {
+   "cid": "89d84c0f1f9a7dc96719b7b23953a5ff55c08b0a1ab1ce169e484347b00cf200",
+   "label": "corrected_draw1_R0_mae",
+   "seed": 2021,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.39802900165667404,
+     "receipt_MAE_gpu": 0.39802716038600455,
+     "residual_mean": 0.05019071879069549,
+     "prediction_std_ratio": 0.8317655223347832
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.4035476619923721,
+     "receipt_MAE_gpu": 0.4035454989019852,
+     "residual_mean": 0.0497933462345609,
+     "prediction_std_ratio": 0.8319259464277893
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.39557109370398624,
+     "receipt_MAE_gpu": 0.3955652104814531,
+     "residual_mean": 0.055727178834855354,
+     "prediction_std_ratio": 0.8378747111488875
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.3910113259376147,
+     "receipt_MAE_gpu": 0.39101239716647285,
+     "residual_mean": 0.06074384588269237,
+     "prediction_std_ratio": 0.8377427831958999
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.3928786301049239,
+     "receipt_MAE_gpu": 0.39287850197646174,
+     "residual_mean": 0.06645164911665634,
+     "prediction_std_ratio": 0.824691978766425
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.3955178500940256,
+     "receipt_MAE_gpu": 0.3955173789960159,
+     "residual_mean": 0.06891707209164002,
+     "prediction_std_ratio": 0.8241083991399665
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.39918721076978625,
+     "receipt_MAE_gpu": 0.3991850828782891,
+     "residual_mean": 0.0690891169366427,
+     "prediction_std_ratio": 0.8315628226080715
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.3973279675694652,
+     "receipt_MAE_gpu": 0.3973275786035979,
+     "residual_mean": 0.06752374406477103,
+     "prediction_std_ratio": 0.8402204536863894
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.3971577440597244,
+     "receipt_MAE_gpu": 0.3971591143782998,
+     "residual_mean": 0.06626743333634996,
+     "prediction_std_ratio": 0.8346863290506378
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.39534251091714384,
+     "receipt_MAE_gpu": 0.39534076640333166,
+     "residual_mean": 0.06235449088692354,
+     "prediction_std_ratio": 0.8300378758195174
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.39226202116375647,
+     "receipt_MAE_gpu": 0.39225938376118424,
+     "residual_mean": 0.05866455209821194,
+     "prediction_std_ratio": 0.8334222018461337
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.39228330262577704,
+     "receipt_MAE_gpu": 0.3922850282259573,
+     "residual_mean": 0.05566588200383955,
+     "prediction_std_ratio": 0.8307258651002697
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.3897935736945681,
+     "receipt_MAE_gpu": 0.3897932473535066,
+     "residual_mean": 0.04647460846253102,
+     "prediction_std_ratio": 0.8234271376189762
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.3897888679814415,
+     "receipt_MAE_gpu": 0.3897918116550306,
+     "residual_mean": 0.031457513034617704,
+     "prediction_std_ratio": 0.8015238319978913
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.3925201780657135,
+     "receipt_MAE_gpu": 0.3925209235136997,
+     "residual_mean": 0.0177387646168888,
+     "prediction_std_ratio": 0.7733948238596179
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.39265010471013306,
+     "receipt_MAE_gpu": 0.3926472823271126,
+     "residual_mean": 0.014119278513377442,
+     "prediction_std_ratio": 0.761631471588127
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.3915984149639733,
+     "receipt_MAE_gpu": 0.3916014723916714,
+     "residual_mean": 0.028867898839556545,
+     "prediction_std_ratio": 0.7663376280991784
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.3956741920318338,
+     "receipt_MAE_gpu": 0.39567798858490255,
+     "residual_mean": 0.053150210129302176,
+     "prediction_std_ratio": 0.7800929959833253
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.3977341552145903,
+     "receipt_MAE_gpu": 0.39773224290194326,
+     "residual_mean": 0.06863276709271553,
+     "prediction_std_ratio": 0.7924467868950118
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.39901234106202393,
+     "receipt_MAE_gpu": 0.39901269691069274,
+     "residual_mean": 0.07829247010674764,
+     "prediction_std_ratio": 0.8008159560757491
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.40691944380513545,
+     "receipt_MAE_gpu": 0.40692039930980645,
+     "residual_mean": 0.0841412972997087,
+     "prediction_std_ratio": 0.8054915386969631
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.40847311408072495,
+     "receipt_MAE_gpu": 0.40847191828447743,
+     "residual_mean": 0.08403229231186654,
+     "prediction_std_ratio": 0.8089144168658394
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.4008788292694537,
+     "receipt_MAE_gpu": 0.4008767614355489,
+     "residual_mean": 0.07858660626741114,
+     "prediction_std_ratio": 0.8143336131030454
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.39553314227123715,
+     "receipt_MAE_gpu": 0.3955317815091542,
+     "residual_mean": 0.0652157242337778,
+     "prediction_std_ratio": 0.8250808558659019
+    }
+   ]
+  },
+  {
+   "cid": "6a8c5c608c874a6065d951157baff8b9a3a4903523a977d96c41de033d506d63",
+   "label": "corrected_draw1_R0_mae",
+   "seed": 2022,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.39079509495020764,
+     "receipt_MAE_gpu": 0.3907956788716825,
+     "residual_mean": 0.059916352969541946,
+     "prediction_std_ratio": 0.8521765546018989
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.3907958303786167,
+     "receipt_MAE_gpu": 0.3907937587265082,
+     "residual_mean": 0.06812147008584238,
+     "prediction_std_ratio": 0.8624925128947959
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.38807709824733194,
+     "receipt_MAE_gpu": 0.3880820557081163,
+     "residual_mean": 0.07492386915300933,
+     "prediction_std_ratio": 0.8748181780486222
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.393069062010332,
+     "receipt_MAE_gpu": 0.39306335096893663,
+     "residual_mean": 0.08306810381126194,
+     "prediction_std_ratio": 0.8683159961463175
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.3957646293526099,
+     "receipt_MAE_gpu": 0.39575216529827545,
+     "residual_mean": 0.09040163969317234,
+     "prediction_std_ratio": 0.8534858041685779
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.39855664059181994,
+     "receipt_MAE_gpu": 0.3985441349443885,
+     "residual_mean": 0.09598438546251237,
+     "prediction_std_ratio": 0.8438868941838037
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.40396230626342716,
+     "receipt_MAE_gpu": 0.4039448200990292,
+     "residual_mean": 0.10410411047582972,
+     "prediction_std_ratio": 0.8276383932985169
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.40552358158278917,
+     "receipt_MAE_gpu": 0.4055068004675477,
+     "residual_mean": 0.10481738130115434,
+     "prediction_std_ratio": 0.8180104148545435
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.40905716472744236,
+     "receipt_MAE_gpu": 0.4090471979838877,
+     "residual_mean": 0.09640794806619328,
+     "prediction_std_ratio": 0.8119634456909062
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.40813942738308323,
+     "receipt_MAE_gpu": 0.4081222935110732,
+     "residual_mean": 0.09042850981195208,
+     "prediction_std_ratio": 0.8060928142942699
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.4032963546257061,
+     "receipt_MAE_gpu": 0.40328352221856945,
+     "residual_mean": 0.08853623499415032,
+     "prediction_std_ratio": 0.8099053533027611
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.40405375370450186,
+     "receipt_MAE_gpu": 0.404045791399823,
+     "residual_mean": 0.09148277713326056,
+     "prediction_std_ratio": 0.8202462240991053
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.40044858097864355,
+     "receipt_MAE_gpu": 0.4004453891745197,
+     "residual_mean": 0.09414393386667518,
+     "prediction_std_ratio": 0.8356189311811085
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.3950301030762393,
+     "receipt_MAE_gpu": 0.3950225562620573,
+     "residual_mean": 0.09565628734875126,
+     "prediction_std_ratio": 0.8438751888486746
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.39687352523957115,
+     "receipt_MAE_gpu": 0.39686314760726255,
+     "residual_mean": 0.09937853475524738,
+     "prediction_std_ratio": 0.8357495141231196
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.3991164609999517,
+     "receipt_MAE_gpu": 0.39910870124912384,
+     "residual_mean": 0.10411599161706908,
+     "prediction_std_ratio": 0.8358527996909463
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.40081364479046555,
+     "receipt_MAE_gpu": 0.4008080878586715,
+     "residual_mean": 0.10373871822685227,
+     "prediction_std_ratio": 0.8437882469841448
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.39660236959912054,
+     "receipt_MAE_gpu": 0.39659257952377125,
+     "residual_mean": 0.09548409383581476,
+     "prediction_std_ratio": 0.8423298723290201
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.3954395332531527,
+     "receipt_MAE_gpu": 0.39542869626071664,
+     "residual_mean": 0.08202390141762894,
+     "prediction_std_ratio": 0.8370958545102344
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.40048818955914894,
+     "receipt_MAE_gpu": 0.4004835287723363,
+     "residual_mean": 0.07587423445197139,
+     "prediction_std_ratio": 0.8270482900492343
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.3982524928974132,
+     "receipt_MAE_gpu": 0.39824452854331055,
+     "residual_mean": 0.07512421503007553,
+     "prediction_std_ratio": 0.8271348603780382
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.39590106049973706,
+     "receipt_MAE_gpu": 0.3958947352549056,
+     "residual_mean": 0.07189017934414915,
+     "prediction_std_ratio": 0.8352981889083042
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.39979062783353897,
+     "receipt_MAE_gpu": 0.39979001892189286,
+     "residual_mean": 0.0712691215789791,
+     "prediction_std_ratio": 0.8374761992719596
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.3964139186102265,
+     "receipt_MAE_gpu": 0.39641511246274136,
+     "residual_mean": 0.06622472506000057,
+     "prediction_std_ratio": 0.843669237668768
+    }
+   ]
+  },
+  {
+   "cid": "8dc07a3ca24948873574277cfd4d3ba3723b2c54b48764d5c0297cbbc8d7e841",
+   "label": "corrected_draw2_R0_huber",
+   "seed": 2021,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.4419509729590305,
+     "receipt_MAE_gpu": 0.4419637128385512,
+     "residual_mean": 0.08288385910575402,
+     "prediction_std_ratio": 0.759951903437567
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.437719220196161,
+     "receipt_MAE_gpu": 0.43772834598495913,
+     "residual_mean": 0.07371170459561407,
+     "prediction_std_ratio": 0.7492910412186972
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.4237426961452566,
+     "receipt_MAE_gpu": 0.4237425802888422,
+     "residual_mean": 0.05803497723040764,
+     "prediction_std_ratio": 0.7497596576404169
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.4100751922423569,
+     "receipt_MAE_gpu": 0.4100657832915155,
+     "residual_mean": 0.03984499107741951,
+     "prediction_std_ratio": 0.7481632996601251
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.40963119480792226,
+     "receipt_MAE_gpu": 0.40961485756182114,
+     "residual_mean": 0.026802986994587517,
+     "prediction_std_ratio": 0.7441897387436293
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.41959543326009535,
+     "receipt_MAE_gpu": 0.4195829458825719,
+     "residual_mean": 0.02413375306431447,
+     "prediction_std_ratio": 0.75141207120811
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.42628310198807734,
+     "receipt_MAE_gpu": 0.42627910809918423,
+     "residual_mean": 0.03226472990906037,
+     "prediction_std_ratio": 0.7688786768829452
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.42314579950138836,
+     "receipt_MAE_gpu": 0.4231433919544093,
+     "residual_mean": 0.046239210975481664,
+     "prediction_std_ratio": 0.7799856918157886
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.4235632521018538,
+     "receipt_MAE_gpu": 0.4235518372264383,
+     "residual_mean": 0.05883772815049532,
+     "prediction_std_ratio": 0.7759926940413443
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.4230752707640342,
+     "receipt_MAE_gpu": 0.4230690514424493,
+     "residual_mean": 0.06786350347671989,
+     "prediction_std_ratio": 0.7693377954244757
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.41879547270941575,
+     "receipt_MAE_gpu": 0.4187846848867851,
+     "residual_mean": 0.07246794470484857,
+     "prediction_std_ratio": 0.7608219286664074
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.41301442275177247,
+     "receipt_MAE_gpu": 0.4130030310289707,
+     "residual_mean": 0.07103848182442547,
+     "prediction_std_ratio": 0.7478343579195467
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.41484435500622524,
+     "receipt_MAE_gpu": 0.41482584196803135,
+     "residual_mean": 0.07177523959823184,
+     "prediction_std_ratio": 0.7319863007643127
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.4194072481653675,
+     "receipt_MAE_gpu": 0.4193918334432837,
+     "residual_mean": 0.0753318656533295,
+     "prediction_std_ratio": 0.7252706374558655
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.4152110818634273,
+     "receipt_MAE_gpu": 0.41519499126839315,
+     "residual_mean": 0.07115563796084678,
+     "prediction_std_ratio": 0.7344239793692925
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.4113234304091009,
+     "receipt_MAE_gpu": 0.41131457378204234,
+     "residual_mean": 0.05679694204999738,
+     "prediction_std_ratio": 0.7413395428966832
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.41566290630870645,
+     "receipt_MAE_gpu": 0.41565511471388633,
+     "residual_mean": 0.045740860610999405,
+     "prediction_std_ratio": 0.740545616424795
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.4233686177920943,
+     "receipt_MAE_gpu": 0.42336648350508677,
+     "residual_mean": 0.04577614047285479,
+     "prediction_std_ratio": 0.7453618474580272
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.4246958490941704,
+     "receipt_MAE_gpu": 0.4246958613424065,
+     "residual_mean": 0.04988359228062961,
+     "prediction_std_ratio": 0.7623044965057129
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.4232340792160991,
+     "receipt_MAE_gpu": 0.42324993817651396,
+     "residual_mean": 0.06055028656975335,
+     "prediction_std_ratio": 0.7788151027490938
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.4262206343361653,
+     "receipt_MAE_gpu": 0.42625179872154856,
+     "residual_mean": 0.07584082862994788,
+     "prediction_std_ratio": 0.7822367646446282
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.431398713981555,
+     "receipt_MAE_gpu": 0.4314280950505932,
+     "residual_mean": 0.08837204066616258,
+     "prediction_std_ratio": 0.7839752520557551
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.4370808224223808,
+     "receipt_MAE_gpu": 0.43710069099520477,
+     "residual_mean": 0.0953571206427367,
+     "prediction_std_ratio": 0.7874832299257546
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.44118789458158714,
+     "receipt_MAE_gpu": 0.4412044077354537,
+     "residual_mean": 0.09348726202602282,
+     "prediction_std_ratio": 0.7800189973083838
+    }
+   ]
+  },
+  {
+   "cid": "7bbe85ee7ccfc46e43846ebaa62b3bb8b6f46bddd72e26e2314077a32354d33f",
+   "label": "corrected_draw2_R0_huber",
+   "seed": 2022,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.40757117303261303,
+     "receipt_MAE_gpu": 0.4075819094904507,
+     "residual_mean": 0.07376990825572075,
+     "prediction_std_ratio": 0.8216850356173183
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.41834389749027384,
+     "receipt_MAE_gpu": 0.4183545516827418,
+     "residual_mean": 0.07840042723144669,
+     "prediction_std_ratio": 0.8321836016104884
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.42366780851477154,
+     "receipt_MAE_gpu": 0.42368534757362675,
+     "residual_mean": 0.09282210283248915,
+     "prediction_std_ratio": 0.8472109892012876
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.4268343258384461,
+     "receipt_MAE_gpu": 0.42684671635002325,
+     "residual_mean": 0.11089394954521718,
+     "prediction_std_ratio": 0.854777673503879
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.42660360870012176,
+     "receipt_MAE_gpu": 0.42661777970683207,
+     "residual_mean": 0.12239571226329722,
+     "prediction_std_ratio": 0.851954389850063
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.4245816822233791,
+     "receipt_MAE_gpu": 0.4245894380476023,
+     "residual_mean": 0.11932168533251176,
+     "prediction_std_ratio": 0.8414430918737125
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.4211325295714242,
+     "receipt_MAE_gpu": 0.4211287071689055,
+     "residual_mean": 0.10652564071175316,
+     "prediction_std_ratio": 0.8281423118846196
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.4174514268279553,
+     "receipt_MAE_gpu": 0.4174417760458127,
+     "residual_mean": 0.0957938444876674,
+     "prediction_std_ratio": 0.8192536612881675
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.4199452921164299,
+     "receipt_MAE_gpu": 0.41993476544677405,
+     "residual_mean": 0.09589923990681212,
+     "prediction_std_ratio": 0.8172963337523159
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.4218939023797021,
+     "receipt_MAE_gpu": 0.42188379993646874,
+     "residual_mean": 0.10035751321639262,
+     "prediction_std_ratio": 0.8221964003224771
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.4228369816604129,
+     "receipt_MAE_gpu": 0.42281860382390685,
+     "residual_mean": 0.11092820759507858,
+     "prediction_std_ratio": 0.8261288692705062
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.4286566737444529,
+     "receipt_MAE_gpu": 0.4286401344702767,
+     "residual_mean": 0.12305799391422179,
+     "prediction_std_ratio": 0.8239670591755637
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.43326073109956503,
+     "receipt_MAE_gpu": 0.433256331671664,
+     "residual_mean": 0.12703501208962714,
+     "prediction_std_ratio": 0.8200138260889535
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.4327710905198975,
+     "receipt_MAE_gpu": 0.43276938218710165,
+     "residual_mean": 0.11844059539894874,
+     "prediction_std_ratio": 0.8116520044503223
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.4253664044146253,
+     "receipt_MAE_gpu": 0.42537021624404536,
+     "residual_mean": 0.09751332396943357,
+     "prediction_std_ratio": 0.8023340220627649
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.42161375277011964,
+     "receipt_MAE_gpu": 0.42162286908180646,
+     "residual_mean": 0.07619607859861793,
+     "prediction_std_ratio": 0.7976705595192907
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.4158530110835957,
+     "receipt_MAE_gpu": 0.4158591434855633,
+     "residual_mean": 0.06384669393202097,
+     "prediction_std_ratio": 0.8009824504533972
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.41181846532486743,
+     "receipt_MAE_gpu": 0.4118219608797477,
+     "residual_mean": 0.05556508951957872,
+     "prediction_std_ratio": 0.811006834188188
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.4096256289996014,
+     "receipt_MAE_gpu": 0.4096250206119248,
+     "residual_mean": 0.04971457750885233,
+     "prediction_std_ratio": 0.822446593204415
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.40954915080104065,
+     "receipt_MAE_gpu": 0.40955251428624684,
+     "residual_mean": 0.04822592074152171,
+     "prediction_std_ratio": 0.8293871668107046
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.4145229925934611,
+     "receipt_MAE_gpu": 0.4145237385827858,
+     "residual_mean": 0.05831855836909887,
+     "prediction_std_ratio": 0.8246876631779595
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.4114443054128355,
+     "receipt_MAE_gpu": 0.41144613766606725,
+     "residual_mean": 0.07078080700108821,
+     "prediction_std_ratio": 0.8174451200417442
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.41151951189785474,
+     "receipt_MAE_gpu": 0.41152470474529945,
+     "residual_mean": 0.07858842366382224,
+     "prediction_std_ratio": 0.8127911109362596
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.4086405914603745,
+     "receipt_MAE_gpu": 0.40864882560464394,
+     "residual_mean": 0.08087882522203793,
+     "prediction_std_ratio": 0.8153123726128267
+    }
+   ]
+  },
+  {
+   "cid": "5de63a4e2c581e910151856e774a628221772c71a3d2f63645c0700a0775dec6",
+   "label": "corrected_draw2_R0_mae",
+   "seed": 2021,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.42709833433234395,
+     "receipt_MAE_gpu": 0.427101605418203,
+     "residual_mean": 0.07766741221705659,
+     "prediction_std_ratio": 0.7791848394671131
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.4305252167470005,
+     "receipt_MAE_gpu": 0.43052885445339245,
+     "residual_mean": 0.08325801151780246,
+     "prediction_std_ratio": 0.7793454570927089
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.42501529872046906,
+     "receipt_MAE_gpu": 0.42501688268407,
+     "residual_mean": 0.086863250544571,
+     "prediction_std_ratio": 0.7754463560561702
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.4247667624978237,
+     "receipt_MAE_gpu": 0.42476383477657415,
+     "residual_mean": 0.08684638708801556,
+     "prediction_std_ratio": 0.7646831827296212
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.4316565834370457,
+     "receipt_MAE_gpu": 0.43164882270456933,
+     "residual_mean": 0.08500555436178746,
+     "prediction_std_ratio": 0.750840271441021
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.43033358795165455,
+     "receipt_MAE_gpu": 0.43032983038686634,
+     "residual_mean": 0.08459248201090086,
+     "prediction_std_ratio": 0.7518845149311812
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.4198848629960493,
+     "receipt_MAE_gpu": 0.4198764650677013,
+     "residual_mean": 0.08150395205613352,
+     "prediction_std_ratio": 0.7696987767948669
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.4181589060424309,
+     "receipt_MAE_gpu": 0.41815111930292337,
+     "residual_mean": 0.07754158296410267,
+     "prediction_std_ratio": 0.785069763876143
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.4211349202304132,
+     "receipt_MAE_gpu": 0.42112726377949306,
+     "residual_mean": 0.0749527727007178,
+     "prediction_std_ratio": 0.7960307015547622
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.41802499960479106,
+     "receipt_MAE_gpu": 0.4180208044802244,
+     "residual_mean": 0.07414954476965514,
+     "prediction_std_ratio": 0.8064888625386812
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.41407985764226046,
+     "receipt_MAE_gpu": 0.41407615711659973,
+     "residual_mean": 0.07091622370382218,
+     "prediction_std_ratio": 0.8042590779346094
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.4188167787272504,
+     "receipt_MAE_gpu": 0.41881638537047294,
+     "residual_mean": 0.07237724009204188,
+     "prediction_std_ratio": 0.7848298478182859
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.42393207332655997,
+     "receipt_MAE_gpu": 0.42393459859229216,
+     "residual_mean": 0.0767687326688418,
+     "prediction_std_ratio": 0.7696568395230138
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.4224012260400187,
+     "receipt_MAE_gpu": 0.4224063555961212,
+     "residual_mean": 0.07873247656706006,
+     "prediction_std_ratio": 0.7679782248800681
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.424997405367205,
+     "receipt_MAE_gpu": 0.4250023488241918,
+     "residual_mean": 0.07970373530712395,
+     "prediction_std_ratio": 0.7695634352325101
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.4336399024575243,
+     "receipt_MAE_gpu": 0.4336490615916184,
+     "residual_mean": 0.08694906231876491,
+     "prediction_std_ratio": 0.7668679289508462
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.4388107213564401,
+     "receipt_MAE_gpu": 0.43881920339803066,
+     "residual_mean": 0.09415076781649462,
+     "prediction_std_ratio": 0.7697732846143083
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.4418414754552426,
+     "receipt_MAE_gpu": 0.44185158521432366,
+     "residual_mean": 0.09663544871123837,
+     "prediction_std_ratio": 0.7757074243672399
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.44023753004002675,
+     "receipt_MAE_gpu": 0.4402395802770783,
+     "residual_mean": 0.09458209293668032,
+     "prediction_std_ratio": 0.7762568932712561
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.4294556604040793,
+     "receipt_MAE_gpu": 0.4294579712159089,
+     "residual_mean": 0.09141462310710882,
+     "prediction_std_ratio": 0.7751182570028079
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.42272772930013686,
+     "receipt_MAE_gpu": 0.42272458480519715,
+     "residual_mean": 0.08604157240818665,
+     "prediction_std_ratio": 0.7719166410930156
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.4243644892996338,
+     "receipt_MAE_gpu": 0.4243605992985697,
+     "residual_mean": 0.07799638594680655,
+     "prediction_std_ratio": 0.7634929242821934
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.42432464843172313,
+     "receipt_MAE_gpu": 0.4243261709031485,
+     "residual_mean": 0.07478351649644527,
+     "prediction_std_ratio": 0.7608509488538774
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.42232385389406296,
+     "receipt_MAE_gpu": 0.42231992231736426,
+     "residual_mean": 0.07746007538243158,
+     "prediction_std_ratio": 0.7708126384947817
+    }
+   ]
+  },
+  {
+   "cid": "956e438fa27839cc677b6bc87b36f986cf47c4919335ff006b62c467bd0d7622",
+   "label": "corrected_draw2_R0_mae",
+   "seed": 2022,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.4386256049273644,
+     "receipt_MAE_gpu": 0.43862447019740464,
+     "residual_mean": 0.11270278399532888,
+     "prediction_std_ratio": 0.8007220509942797
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.43796022192978273,
+     "receipt_MAE_gpu": 0.43795980396124834,
+     "residual_mean": 0.11444693808210961,
+     "prediction_std_ratio": 0.8023417481430649
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.43412146334956936,
+     "receipt_MAE_gpu": 0.43412495455586536,
+     "residual_mean": 0.10894756346609785,
+     "prediction_std_ratio": 0.8063534810953525
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.429439599367264,
+     "receipt_MAE_gpu": 0.4294443378434396,
+     "residual_mean": 0.10070436407367993,
+     "prediction_std_ratio": 0.8091590028980293
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.42760607623168095,
+     "receipt_MAE_gpu": 0.42761022251540276,
+     "residual_mean": 0.09496556091263932,
+     "prediction_std_ratio": 0.8090506201689575
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.4278679441579009,
+     "receipt_MAE_gpu": 0.4278706575606376,
+     "residual_mean": 0.0925459087285249,
+     "prediction_std_ratio": 0.8057837277207054
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.4308906507482015,
+     "receipt_MAE_gpu": 0.43089285977197567,
+     "residual_mean": 0.09825815961597452,
+     "prediction_std_ratio": 0.7984210683097515
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.4357237483112917,
+     "receipt_MAE_gpu": 0.43571868093368027,
+     "residual_mean": 0.10911997751465045,
+     "prediction_std_ratio": 0.7900776388220251
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.43822581432612284,
+     "receipt_MAE_gpu": 0.438211678316676,
+     "residual_mean": 0.11677975785672967,
+     "prediction_std_ratio": 0.7868173505762006
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.4368712500605462,
+     "receipt_MAE_gpu": 0.4368536181529102,
+     "residual_mean": 0.12205296539298932,
+     "prediction_std_ratio": 0.7904431397945624
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.4413940337188371,
+     "receipt_MAE_gpu": 0.4413775286189289,
+     "residual_mean": 0.12370427466111933,
+     "prediction_std_ratio": 0.7919115658171834
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.4396165554496397,
+     "receipt_MAE_gpu": 0.43959926524904447,
+     "residual_mean": 0.11635180998500438,
+     "prediction_std_ratio": 0.7926147338245239
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.43383134679631224,
+     "receipt_MAE_gpu": 0.43382233314915203,
+     "residual_mean": 0.10613332274322082,
+     "prediction_std_ratio": 0.7955264564655167
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.42872174979831434,
+     "receipt_MAE_gpu": 0.4287201691877158,
+     "residual_mean": 0.09504429426056789,
+     "prediction_std_ratio": 0.7980450246501138
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.4214330955442926,
+     "receipt_MAE_gpu": 0.42143526136753306,
+     "residual_mean": 0.08659036998735292,
+     "prediction_std_ratio": 0.8025301229312636
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.42124004630328477,
+     "receipt_MAE_gpu": 0.4212469975609971,
+     "residual_mean": 0.08164431303930708,
+     "prediction_std_ratio": 0.8030517143246118
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.42474328561475294,
+     "receipt_MAE_gpu": 0.4247514950622352,
+     "residual_mean": 0.08077988954640532,
+     "prediction_std_ratio": 0.8019419491121572
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.425726934596392,
+     "receipt_MAE_gpu": 0.42572997341527763,
+     "residual_mean": 0.08349775567647069,
+     "prediction_std_ratio": 0.8078406131630563
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.42590231478897206,
+     "receipt_MAE_gpu": 0.4259083115721874,
+     "residual_mean": 0.08682179026062009,
+     "prediction_std_ratio": 0.8092797282724372
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.42598415805090273,
+     "receipt_MAE_gpu": 0.42599198736102956,
+     "residual_mean": 0.09159554769701313,
+     "prediction_std_ratio": 0.8009744558315542
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.430647654634985,
+     "receipt_MAE_gpu": 0.4306561189631309,
+     "residual_mean": 0.09734270441937311,
+     "prediction_std_ratio": 0.7935656832144823
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.4326675132804823,
+     "receipt_MAE_gpu": 0.4326676872481103,
+     "residual_mean": 0.10394701546429251,
+     "prediction_std_ratio": 0.7959664140180578
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.43051496962294566,
+     "receipt_MAE_gpu": 0.4305124793870751,
+     "residual_mean": 0.11017953733110968,
+     "prediction_std_ratio": 0.8054043403462581
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.4346919592450059,
+     "receipt_MAE_gpu": 0.4346868394303469,
+     "residual_mean": 0.11446259723826867,
+     "prediction_std_ratio": 0.8062776586787433
+    }
+   ]
+  },
+  {
+   "cid": "baa0b3bfd2685115a12edc7d2033c53fcf663d55c8b19d5e12fc5d85802fe3d8",
+   "label": "corrected_draw3_R0_huber",
+   "seed": 2021,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.3926665539172223,
+     "receipt_MAE_gpu": 0.3926651394241372,
+     "residual_mean": 0.10095228207084032,
+     "prediction_std_ratio": 0.8212427554985465
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.39343349763901214,
+     "receipt_MAE_gpu": 0.3934357376246679,
+     "residual_mean": 0.11057083954387735,
+     "prediction_std_ratio": 0.8315975567246423
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.3993045706432369,
+     "receipt_MAE_gpu": 0.3993067394991658,
+     "residual_mean": 0.1199092533529626,
+     "prediction_std_ratio": 0.8419415131365997
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.4029437116936035,
+     "receipt_MAE_gpu": 0.4029471874708168,
+     "residual_mean": 0.12095526974849205,
+     "prediction_std_ratio": 0.8488839235004878
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.4026054598082483,
+     "receipt_MAE_gpu": 0.40260754782582464,
+     "residual_mean": 0.1123590029897139,
+     "prediction_std_ratio": 0.8549091376700643
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.40277371309423576,
+     "receipt_MAE_gpu": 0.40277679458085563,
+     "residual_mean": 0.09931241605622068,
+     "prediction_std_ratio": 0.8601818824237994
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.40380903190538,
+     "receipt_MAE_gpu": 0.4038145898598176,
+     "residual_mean": 0.09356051519583512,
+     "prediction_std_ratio": 0.8586293590418416
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.4021234259181005,
+     "receipt_MAE_gpu": 0.40212368583109787,
+     "residual_mean": 0.10118643423602104,
+     "prediction_std_ratio": 0.8530212351433389
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.402215511891392,
+     "receipt_MAE_gpu": 0.4022147113922352,
+     "residual_mean": 0.11430162237832345,
+     "prediction_std_ratio": 0.8485048784869281
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.40363027360853865,
+     "receipt_MAE_gpu": 0.4036286936925414,
+     "residual_mean": 0.12268340636992214,
+     "prediction_std_ratio": 0.8518379288500872
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.4025900430619921,
+     "receipt_MAE_gpu": 0.40259294576940313,
+     "residual_mean": 0.12314585072497256,
+     "prediction_std_ratio": 0.8573876877235166
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.40049786743468946,
+     "receipt_MAE_gpu": 0.4004999181532469,
+     "residual_mean": 0.11634721268349206,
+     "prediction_std_ratio": 0.8565336812237142
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.39929360900026206,
+     "receipt_MAE_gpu": 0.39929528762154853,
+     "residual_mean": 0.10471782242489688,
+     "prediction_std_ratio": 0.8446255102011456
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.39696018493078744,
+     "receipt_MAE_gpu": 0.39696353876825086,
+     "residual_mean": 0.0949348870502074,
+     "prediction_std_ratio": 0.8345055005628105
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.39512383253430255,
+     "receipt_MAE_gpu": 0.3951272093277565,
+     "residual_mean": 0.09522699130802074,
+     "prediction_std_ratio": 0.8318725462062208
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.3944482418099718,
+     "receipt_MAE_gpu": 0.39445125434463846,
+     "residual_mean": 0.1060415084525242,
+     "prediction_std_ratio": 0.830621268883958
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.40045761476794856,
+     "receipt_MAE_gpu": 0.4004591144540481,
+     "residual_mean": 0.12203259205435091,
+     "prediction_std_ratio": 0.8307058787277849
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.40497656439676033,
+     "receipt_MAE_gpu": 0.4049773457949227,
+     "residual_mean": 0.1333055849923785,
+     "prediction_std_ratio": 0.8386136428043167
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.4063563108711842,
+     "receipt_MAE_gpu": 0.4063564887809513,
+     "residual_mean": 0.1347673577577091,
+     "prediction_std_ratio": 0.8503343525370425
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.41255013246067107,
+     "receipt_MAE_gpu": 0.41255063545175036,
+     "residual_mean": 0.13063204388469013,
+     "prediction_std_ratio": 0.8481275795298044
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.4151830843359935,
+     "receipt_MAE_gpu": 0.4151832461376291,
+     "residual_mean": 0.1245201439637412,
+     "prediction_std_ratio": 0.8319477897770153
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.40711597565232516,
+     "receipt_MAE_gpu": 0.40711632232081446,
+     "residual_mean": 0.11644127446521958,
+     "prediction_std_ratio": 0.8181976236722939
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.4010940273547613,
+     "receipt_MAE_gpu": 0.4010953682017339,
+     "residual_mean": 0.10871586492175069,
+     "prediction_std_ratio": 0.8139316616129928
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.3976838675384165,
+     "receipt_MAE_gpu": 0.3976852560994104,
+     "residual_mean": 0.10588159096232094,
+     "prediction_std_ratio": 0.8156301827604129
+    }
+   ]
+  },
+  {
+   "cid": "42e246effba0b4def5d903679340409f9afa898f01172cc7fb52c82b2082b874",
+   "label": "corrected_draw3_R0_huber",
+   "seed": 2022,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.4114658561282424,
+     "receipt_MAE_gpu": 0.41146008968112535,
+     "residual_mean": 0.13814884987295772,
+     "prediction_std_ratio": 0.8878304919995782
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.4143789605324998,
+     "receipt_MAE_gpu": 0.41437333772444224,
+     "residual_mean": 0.13508552269010807,
+     "prediction_std_ratio": 0.8914768040804653
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.4109114310427487,
+     "receipt_MAE_gpu": 0.41090529206344556,
+     "residual_mean": 0.13252621177012386,
+     "prediction_std_ratio": 0.8990081383595131
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.4069809415088696,
+     "receipt_MAE_gpu": 0.4069770010826059,
+     "residual_mean": 0.1336752069850192,
+     "prediction_std_ratio": 0.9055482518243609
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.40669378933782735,
+     "receipt_MAE_gpu": 0.4066924696056048,
+     "residual_mean": 0.13261178551485558,
+     "prediction_std_ratio": 0.9012941079071578
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.40839431461740316,
+     "receipt_MAE_gpu": 0.4083894521317355,
+     "residual_mean": 0.1311415196903434,
+     "prediction_std_ratio": 0.8914862169941307
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.40707669517804357,
+     "receipt_MAE_gpu": 0.40707385904363863,
+     "residual_mean": 0.1342200908896492,
+     "prediction_std_ratio": 0.8852807602664428
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.40521560735171286,
+     "receipt_MAE_gpu": 0.405211641716998,
+     "residual_mean": 0.13721965627770308,
+     "prediction_std_ratio": 0.8761396125157255
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.41192702943057774,
+     "receipt_MAE_gpu": 0.41192058687380567,
+     "residual_mean": 0.1410085054381636,
+     "prediction_std_ratio": 0.8622557704642402
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.418945751842496,
+     "receipt_MAE_gpu": 0.4189422012257116,
+     "residual_mean": 0.14581130299420617,
+     "prediction_std_ratio": 0.8557624749567966
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.41385485606919176,
+     "receipt_MAE_gpu": 0.413849715269457,
+     "residual_mean": 0.14791878905728054,
+     "prediction_std_ratio": 0.8581957206762996
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.4106300314428205,
+     "receipt_MAE_gpu": 0.4106251210035305,
+     "residual_mean": 0.14904632548551588,
+     "prediction_std_ratio": 0.8618645761411567
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.4127342191533289,
+     "receipt_MAE_gpu": 0.4127303391122471,
+     "residual_mean": 0.14677414866897737,
+     "prediction_std_ratio": 0.85979710217193
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.41138019494848743,
+     "receipt_MAE_gpu": 0.41137940204111695,
+     "residual_mean": 0.14551793697110035,
+     "prediction_std_ratio": 0.8614967944007345
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.4073923731708431,
+     "receipt_MAE_gpu": 0.4073925306320946,
+     "residual_mean": 0.1433559288916197,
+     "prediction_std_ratio": 0.8623987690773155
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.4051291834949075,
+     "receipt_MAE_gpu": 0.40513023694584266,
+     "residual_mean": 0.1386276672678755,
+     "prediction_std_ratio": 0.8601689524357145
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.40808897994792037,
+     "receipt_MAE_gpu": 0.40808847844133217,
+     "residual_mean": 0.13942341082196205,
+     "prediction_std_ratio": 0.8609022107581256
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.4117102746261849,
+     "receipt_MAE_gpu": 0.41170974347326955,
+     "residual_mean": 0.14318010386043103,
+     "prediction_std_ratio": 0.8687044830129081
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.41331596827841277,
+     "receipt_MAE_gpu": 0.41331330622573625,
+     "residual_mean": 0.1493948820687428,
+     "prediction_std_ratio": 0.879260933311062
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.41950403401743774,
+     "receipt_MAE_gpu": 0.41950100877415736,
+     "residual_mean": 0.1602803078436053,
+     "prediction_std_ratio": 0.8898895396059469
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.4261614865646331,
+     "receipt_MAE_gpu": 0.42615977096676483,
+     "residual_mean": 0.1673223485118425,
+     "prediction_std_ratio": 0.8955998055109484
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.4259704165278097,
+     "receipt_MAE_gpu": 0.42596550751429524,
+     "residual_mean": 0.1665590885791355,
+     "prediction_std_ratio": 0.8983868701473688
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.4224512163537192,
+     "receipt_MAE_gpu": 0.42244808383270627,
+     "residual_mean": 0.16072529449386036,
+     "prediction_std_ratio": 0.8968815824735482
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.4144878278950138,
+     "receipt_MAE_gpu": 0.41448478821400275,
+     "residual_mean": 0.1511050727110381,
+     "prediction_std_ratio": 0.8928349075381535
+    }
+   ]
+  },
+  {
+   "cid": "4281a2b3604ed6b316df269aaa7909586278137d08bf32349bca32eb7be0b58f",
+   "label": "corrected_draw3_R0_mae",
+   "seed": 2021,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.3988879600142514,
+     "receipt_MAE_gpu": 0.3988927287888614,
+     "residual_mean": 0.08261966346411533,
+     "prediction_std_ratio": 0.7916109471466742
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.3975668654982439,
+     "receipt_MAE_gpu": 0.3975695625480495,
+     "residual_mean": 0.08078157505775932,
+     "prediction_std_ratio": 0.7964102236909543
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.3885634982177426,
+     "receipt_MAE_gpu": 0.3885676968752206,
+     "residual_mean": 0.06315688222456423,
+     "prediction_std_ratio": 0.8076896208794111
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.38157311482462425,
+     "receipt_MAE_gpu": 0.3815765549858159,
+     "residual_mean": 0.038556386731863936,
+     "prediction_std_ratio": 0.8083448976349251
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.3825153405528838,
+     "receipt_MAE_gpu": 0.3825181667087452,
+     "residual_mean": 0.025507131031862036,
+     "prediction_std_ratio": 0.8031139579107046
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.385986424052506,
+     "receipt_MAE_gpu": 0.38598749436707497,
+     "residual_mean": 0.02894845470330719,
+     "prediction_std_ratio": 0.8064460389226115
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.38821355946603464,
+     "receipt_MAE_gpu": 0.38821765649009843,
+     "residual_mean": 0.044403473520003726,
+     "prediction_std_ratio": 0.8107864508189067
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.38954298313269,
+     "receipt_MAE_gpu": 0.3895441965174383,
+     "residual_mean": 0.06062426525696373,
+     "prediction_std_ratio": 0.8145967724753022
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.39367370995644885,
+     "receipt_MAE_gpu": 0.3936738705579746,
+     "residual_mean": 0.0703086511309169,
+     "prediction_std_ratio": 0.8156055031793422
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.3968119192507886,
+     "receipt_MAE_gpu": 0.3968090631563585,
+     "residual_mean": 0.07457932160809827,
+     "prediction_std_ratio": 0.8174277135841779
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.3966522134988073,
+     "receipt_MAE_gpu": 0.3966490034972986,
+     "residual_mean": 0.07296675363211651,
+     "prediction_std_ratio": 0.8167696003188166
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.39473223407549457,
+     "receipt_MAE_gpu": 0.3947282196106371,
+     "residual_mean": 0.07218825970658116,
+     "prediction_std_ratio": 0.8182109455533021
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.39637153887199855,
+     "receipt_MAE_gpu": 0.39637006376382233,
+     "residual_mean": 0.07378733773707251,
+     "prediction_std_ratio": 0.819954466574162
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.3957948028067183,
+     "receipt_MAE_gpu": 0.395795032441927,
+     "residual_mean": 0.07373247966769815,
+     "prediction_std_ratio": 0.819529171120091
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.39682563585123165,
+     "receipt_MAE_gpu": 0.3968278324588317,
+     "residual_mean": 0.06814919530653835,
+     "prediction_std_ratio": 0.8224018886789696
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.39372610553214943,
+     "receipt_MAE_gpu": 0.393730785000051,
+     "residual_mean": 0.05766262315743427,
+     "prediction_std_ratio": 0.8288073751998172
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.39365174123304886,
+     "receipt_MAE_gpu": 0.39365480429440247,
+     "residual_mean": 0.05441387966852963,
+     "prediction_std_ratio": 0.8346601975528543
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.39593358247993765,
+     "receipt_MAE_gpu": 0.3959354854607726,
+     "residual_mean": 0.06268014874819698,
+     "prediction_std_ratio": 0.8389490424921308
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.40049193534426314,
+     "receipt_MAE_gpu": 0.4004895437031058,
+     "residual_mean": 0.07263787848457165,
+     "prediction_std_ratio": 0.8395644403082957
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.40198512671694236,
+     "receipt_MAE_gpu": 0.40198147807126644,
+     "residual_mean": 0.07968476969715749,
+     "prediction_std_ratio": 0.8287849647804497
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.4023631025305039,
+     "receipt_MAE_gpu": 0.4023620640856079,
+     "residual_mean": 0.0809910784606461,
+     "prediction_std_ratio": 0.8112508145278063
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.3994832067249665,
+     "receipt_MAE_gpu": 0.3994812933690611,
+     "residual_mean": 0.07723801937466164,
+     "prediction_std_ratio": 0.8007929577385925
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.398369592739997,
+     "receipt_MAE_gpu": 0.39836900667673103,
+     "residual_mean": 0.07588410618826917,
+     "prediction_std_ratio": 0.79876147597121
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.39773497183241535,
+     "receipt_MAE_gpu": 0.39773527978631257,
+     "residual_mean": 0.08043561964152857,
+     "prediction_std_ratio": 0.7966067964689864
+    }
+   ]
+  },
+  {
+   "cid": "29831c27d426b45d99378ae1913149c749910604d6790dfc26956cef45ff4198",
+   "label": "corrected_draw3_R0_mae",
+   "seed": 2022,
+   "per_horizon": [
+    {
+     "horizon": 1,
+     "model_MAE_cpu": 0.3929477833612202,
+     "receipt_MAE_gpu": 0.392945252143853,
+     "residual_mean": 0.0739669521466135,
+     "prediction_std_ratio": 0.8381543483368534
+    },
+    {
+     "horizon": 2,
+     "model_MAE_cpu": 0.3850371577253688,
+     "receipt_MAE_gpu": 0.3850348152716387,
+     "residual_mean": 0.054343810373508494,
+     "prediction_std_ratio": 0.8309350237086448
+    },
+    {
+     "horizon": 3,
+     "model_MAE_cpu": 0.379518249223558,
+     "receipt_MAE_gpu": 0.37951689760251883,
+     "residual_mean": 0.03522114146159891,
+     "prediction_std_ratio": 0.8239434619724776
+    },
+    {
+     "horizon": 4,
+     "model_MAE_cpu": 0.3762487782429592,
+     "receipt_MAE_gpu": 0.376250528843404,
+     "residual_mean": 0.033249171080597884,
+     "prediction_std_ratio": 0.8222553759934332
+    },
+    {
+     "horizon": 5,
+     "model_MAE_cpu": 0.37664707320311736,
+     "receipt_MAE_gpu": 0.3766435083760368,
+     "residual_mean": 0.04787926113998996,
+     "prediction_std_ratio": 0.8307588648797127
+    },
+    {
+     "horizon": 6,
+     "model_MAE_cpu": 0.37908646579486016,
+     "receipt_MAE_gpu": 0.37908645313101874,
+     "residual_mean": 0.05909850115762558,
+     "prediction_std_ratio": 0.8373004504058036
+    },
+    {
+     "horizon": 7,
+     "model_MAE_cpu": 0.388135711646083,
+     "receipt_MAE_gpu": 0.38813321182344535,
+     "residual_mean": 0.06676209853224792,
+     "prediction_std_ratio": 0.8391015658672536
+    },
+    {
+     "horizon": 8,
+     "model_MAE_cpu": 0.39548164442018674,
+     "receipt_MAE_gpu": 0.39547654372588076,
+     "residual_mean": 0.07048307056548465,
+     "prediction_std_ratio": 0.844752215901431
+    },
+    {
+     "horizon": 9,
+     "model_MAE_cpu": 0.3951913958743883,
+     "receipt_MAE_gpu": 0.3951842215881916,
+     "residual_mean": 0.06730232127469998,
+     "prediction_std_ratio": 0.8414497594119773
+    },
+    {
+     "horizon": 10,
+     "model_MAE_cpu": 0.39491515952195105,
+     "receipt_MAE_gpu": 0.39490997856306587,
+     "residual_mean": 0.05901094050265601,
+     "prediction_std_ratio": 0.8209430198161147
+    },
+    {
+     "horizon": 11,
+     "model_MAE_cpu": 0.38978014571626834,
+     "receipt_MAE_gpu": 0.3897772360799092,
+     "residual_mean": 0.04358799525790723,
+     "prediction_std_ratio": 0.8032293282326983
+    },
+    {
+     "horizon": 12,
+     "model_MAE_cpu": 0.37990884821555676,
+     "receipt_MAE_gpu": 0.3799099822420915,
+     "residual_mean": 0.030692112460998993,
+     "prediction_std_ratio": 0.8109056318400168
+    },
+    {
+     "horizon": 13,
+     "model_MAE_cpu": 0.37682950247257474,
+     "receipt_MAE_gpu": 0.37683188669336076,
+     "residual_mean": 0.030765229580539778,
+     "prediction_std_ratio": 0.8236102655194002
+    },
+    {
+     "horizon": 14,
+     "model_MAE_cpu": 0.3838812236194524,
+     "receipt_MAE_gpu": 0.383880701519375,
+     "residual_mean": 0.04297615482669913,
+     "prediction_std_ratio": 0.8367762556098405
+    },
+    {
+     "horizon": 15,
+     "model_MAE_cpu": 0.38933866967867564,
+     "receipt_MAE_gpu": 0.3893405762643851,
+     "residual_mean": 0.05618513058890758,
+     "prediction_std_ratio": 0.8463687111488442
+    },
+    {
+     "horizon": 16,
+     "model_MAE_cpu": 0.39219940657084057,
+     "receipt_MAE_gpu": 0.39220029051313177,
+     "residual_mean": 0.06197407067075934,
+     "prediction_std_ratio": 0.8405874706980934
+    },
+    {
+     "horizon": 17,
+     "model_MAE_cpu": 0.3954249094055007,
+     "receipt_MAE_gpu": 0.3954274167870035,
+     "residual_mean": 0.05896000725547782,
+     "prediction_std_ratio": 0.8235834668074749
+    },
+    {
+     "horizon": 18,
+     "model_MAE_cpu": 0.3896502500935162,
+     "receipt_MAE_gpu": 0.38964982096892375,
+     "residual_mean": 0.055358495555426976,
+     "prediction_std_ratio": 0.8012882009484414
+    },
+    {
+     "horizon": 19,
+     "model_MAE_cpu": 0.3844248907157092,
+     "receipt_MAE_gpu": 0.3844250021365442,
+     "residual_mean": 0.054519200304243225,
+     "prediction_std_ratio": 0.7883620262905451
+    },
+    {
+     "horizon": 20,
+     "model_MAE_cpu": 0.3834004098152645,
+     "receipt_MAE_gpu": 0.3834020301229233,
+     "residual_mean": 0.06734538006102163,
+     "prediction_std_ratio": 0.7976506675646542
+    },
+    {
+     "horizon": 21,
+     "model_MAE_cpu": 0.38833929436612974,
+     "receipt_MAE_gpu": 0.38833713158608624,
+     "residual_mean": 0.08540963847465266,
+     "prediction_std_ratio": 0.8326824314423122
+    },
+    {
+     "horizon": 22,
+     "model_MAE_cpu": 0.39123671334378707,
+     "receipt_MAE_gpu": 0.3912357942182996,
+     "residual_mean": 0.09775563643887555,
+     "prediction_std_ratio": 0.8625293076046355
+    },
+    {
+     "horizon": 23,
+     "model_MAE_cpu": 0.3968855499659457,
+     "receipt_MAE_gpu": 0.396884324817766,
+     "residual_mean": 0.10225046247793695,
+     "prediction_std_ratio": 0.8652241022548106
+    },
+    {
+     "horizon": 24,
+     "model_MAE_cpu": 0.3988102204275986,
+     "receipt_MAE_gpu": 0.3988102994753368,
+     "residual_mean": 0.09383637073277086,
+     "prediction_std_ratio": 0.8547853050879511
+    }
+   ]
+  }
+ ],
+ "statement": [
+  "A positive aggregate does not justify suppressing losing horizons.",
+  "The pattern alone proves neither a bug nor financial uselessness.",
+  "Any objective or horizon-weight change is a new TRAIN/validation ablation, not a rewrite of this batch."
+ ]
+}

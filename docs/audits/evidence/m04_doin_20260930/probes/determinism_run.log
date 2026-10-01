@@ -1,0 +1,21 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790815989.949062 1293897 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790815991.295334 1293897 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+RECEIPT 0.4520497731630392 0.430073125484279
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790816033.029451 1294799 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790816034.379975 1294799 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+{"verdict": "VERIFIED", "problems": [], "objective": {"metric": "MAE", "split": "validation", "higher_is_better": false, "unit": "z_train", "rescored_value": 0.4520497731630392, "receipt_value": 0.4520497731630392}}
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790816046.975857 1295220 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790816048.337517 1295220 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+{"verdict": "VERIFIED", "problems": [], "objective": {"metric": "MAE", "split": "validation", "higher_is_better": false, "unit": "z_train", "rescored_value": 0.4520497731630392, "receipt_value": 0.4520497731630392}}
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790816060.923102 1295530 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790816062.298358 1295530 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+{"verdict": "VERIFIED", "problems": [], "objective": {"metric": "MAE", "split": "validation", "higher_is_better": false, "unit": "z_train", "rescored_value": 0.4520517692626588, "receipt_value": 0.4520497731630392}}
+exit 0

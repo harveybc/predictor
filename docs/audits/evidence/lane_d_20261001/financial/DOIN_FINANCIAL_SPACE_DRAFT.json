@@ -1,0 +1,125 @@
+{
+ "author": "Satoshi (M04)",
+ "base": "M07 campaign base (feature_names, window, horizons, target_feature_indices, evaluator_fixed) unchanged",
+ "budget": {
+  "caps": "1.25 x measured peak per class at the pin, never lowered without measurement",
+  "proposal": "16 configs x 2 seeds in the first DOIN batch, ordered by the DOIN proposer, capped by the candidate budget model (parameters, fused width, VRAM measured)"
+ },
+ "conditional": {
+  "front_H_kalman_slot": "RESERVED: engine key extra_channels (M01 f0a850c8) mapped to a conditional flat parameter (e.g. modular.extra_channels in {none, <H1 declared set>}) with its Kalman parameters active only when the operator is active; names and bounds come from H1's declaration, not invented here",
+  "model.target_residual": "seasonal_naive_cumulative_6 = engine kind seasonal_naive_cumulative, period 6 (Y_h(t-6), M07-confirmed)",
+  "train.huber_delta": "active iff train.loss == huber"
+ },
+ "data": "M07 eth4h_l24_h6_v1 (window 24 x 4h, horizons 1..6, target log_return_1, z_train units); split and naive rows exactly M07's",
+ "date": "2026-10-01",
+ "eligibility_and_closure": "each cell's per-horizon table carries zero-return, train-mean (strict naive), persistence and seasonal-6 MAE on the same rows; a config is ELIGIBLE only if it beats zero-return at every horizon on every seed; literature NOT_AVAILABLE / NOT_COMPARABLE",
+ "engine": "modular_temporal.v2_full_grid",
+ "fixed_from_incumbent": [
+  "branch.dilation_rate",
+  "branch.kernel_size",
+  "branch.plugin",
+  "branch.regime",
+  "core.blocks",
+  "core.d_model",
+  "core.ff_dim",
+  "core.heads",
+  "core.kernel_size",
+  "core.regime",
+  "core.stage_channels_0",
+  "core.stage_channels_1",
+  "core.stage_channels_2",
+  "core.stage_channels_3",
+  "core.stage_count",
+  "core.time_factor_0",
+  "core.time_factor_1",
+  "core.time_factor_2",
+  "core.time_factor_3",
+  "model.branch_steps",
+  "model.output_channels",
+  "model.output_steps",
+  "train.batch_size",
+  "train.max_epochs",
+  "train.min_delta"
+ ],
+ "free_bounds": {
+  "branch.channels": {
+   "choices": [
+    8,
+    16,
+    32
+   ]
+  },
+  "branch.grouping_size": {
+   "choices": [
+    1,
+    8,
+    32,
+    83
+   ]
+  },
+  "core.dropout": {
+   "high": 0.3,
+   "low": 0.0,
+   "type": "float"
+  },
+  "model.target_residual": {
+   "choices": [
+    "none",
+    "seasonal_naive_cumulative_6"
+   ]
+  },
+  "train.huber_delta": {
+   "high": 2.0,
+   "log": true,
+   "low": 0.05,
+   "type": "float"
+  },
+  "train.learning_rate": {
+   "high": 0.003,
+   "log": true,
+   "low": 1e-05,
+   "type": "float"
+  },
+  "train.loss": {
+   "choices": [
+    "mae",
+    "huber"
+   ]
+  },
+  "train.patience": {
+   "choices": [
+    3,
+    5,
+    8,
+    12
+   ]
+  },
+  "train.weight_decay": {
+   "choices": [
+    0.0,
+    1e-05,
+    0.0001,
+    0.001
+   ]
+  }
+ },
+ "label": "DESIGN_NOT_A_RESULT",
+ "objective": {
+  "higher_is_better": false,
+  "metric": "MAE",
+  "split": "validation",
+  "unit": "z_train"
+ },
+ "owner_order": "MAINLINE_PARALLEL_CONTINUATION sha e9d689e6, sections 3.1 and 7",
+ "pin": "a615c212 lineage (M07 runs 024ce260 = a615c212 + its cell variant); Kalman cells need M01 f0a850c8 or later, re-pinned through the identity-proof protocol",
+ "schema": "m04.doin_financial_space_draft.v1",
+ "seeds": {
+  "promotion": "top-3 configs re-run at seeds 2023/2024 before any claim; incumbent = strict minimum of the paired mean over all seeds the config was enqueued with",
+  "search": [
+   2021,
+   2022
+  ]
+ },
+ "trigger": "launch the moment M07 reports an ELIGIBLE financial config: validation MAE beats the zero-return naive at EVERY horizon h1..h6 on the same rows, on every paired seed (M07 CLOSURE beats_zero_return all True)",
+ "validated": "merged with M07 r0_v1 bounds, validate_space passes at e75c5414 or later (cumulative residual flat value)"
+}

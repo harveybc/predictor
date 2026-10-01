@@ -1,0 +1,32 @@
+{
+ "item": "worker_b old-gate dead-cache refusal (Q18 defect, not a capacity fact)",
+ "date": "2026-10-01",
+ "evidence": "m04-train-b0eb7ed0 at cap 6,899,630,080 B (6580M) queued SLICE_AGGREGATE_BUDGET for 50+ minutes on worker_b while the host had about 17 GB available and the only live lease was ps3r-pilot-3g-r2; the same request admitted promptly on worker_a under the repaired gate 775c5545",
+ "ledger_excerpt": [
+  {
+   "at": "2026-10-01T06:56:20Z",
+   "event": "ADMISSION_QUEUED",
+   "label": "crispdm-m04-train-b0eb7ed0-1790835829-1597743",
+   "lease_id": null,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "cap_bytes": 6899630080
+  },
+  {
+   "at": "2026-10-01T06:56:50Z",
+   "event": "ADMISSION_QUEUED",
+   "label": "crispdm-m04-train-b0eb7ed0-1790835829-1597743",
+   "lease_id": null,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "cap_bytes": 6899630080
+  },
+  {
+   "at": "2026-10-01T06:57:20Z",
+   "event": "ADMISSION_QUEUED",
+   "label": "crispdm-m04-train-b0eb7ed0-1790835829-1597743",
+   "lease_id": null,
+   "code": "SLICE_AGGREGATE_BUDGET",
+   "cap_bytes": 6899630080
+  }
+ ],
+ "for": "M06 admission backlog (also: no cancel verb in the admission tool)"
+}

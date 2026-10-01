@@ -1,0 +1,1364 @@
+{
+ "reference": {
+  "config_id": "82fd2ce14a04194f2b1496c8ff33393c7156026f734e010d8a2e5a5b8d650609",
+  "label": "corrected default per-feature R0 MAE (c09f3034 flat) seeds 2023/2024 in v2",
+  "note": "within-v2 contrasts pair only on seeds both rows share; four-seed pairing is in SEED_INTERVALS_v1_v2.json"
+ },
+ "superseded_reference": {
+  "label": "corrected default per-feature R0 Huber delta 1.0 (de77438d...), the R1/R2 reference before seq 5",
+  "mean": 0.3992086764269829,
+  "rows": "12 CANCELLED_SUPERSEDED *_huber R1/R2 rows, never run"
+ },
+ "contrasts": [
+  {
+   "config_id": "3cbe75dd0565eee94d3e5426d6692c1ec47ee4c133809f317f9e32af5f889747",
+   "label": "corrected_default_branch_core_R1_mae_ref_seq5_seeds2023_2024",
+   "regime": "R1",
+   "seeds": {
+    "2023": 0.3751222374905142,
+    "2024": 0.37508130323674055
+   },
+   "mean": 0.37510177036362735,
+   "spread": 4.093425377366122e-05,
+   "paired_difference_vs_R0": {
+    "2023": -0.0028520220894618364,
+    "2024": -0.010526147245922768
+   },
+   "mean_difference": -0.006689084667692302,
+   "R0_spread": 0.00763319090268727,
+   "label_rule": "STRICT_MINIMUM; gap within the two-seed spread",
+   "negative_skill_vs_persistence_at": {
+    "1": [
+     -0.40659435936727517,
+     -0.4071845661098068
+    ],
+    "23": [
+     -0.04023069882653951,
+     -0.04076365029323825
+    ],
+    "24": [
+     -0.5039138753350572,
+     -0.5047194753170565
+    ]
+   },
+   "beats_seasonal_naive_any_horizon": false,
+   "per_horizon": {
+    "1": {
+     "skill_vs_persistence": [
+      -0.40659435936727517,
+      -0.4071845661098068
+     ],
+     "skill_vs_seasonal": [
+      -0.4901994424578209,
+      -0.4908247298783188
+     ]
+    },
+    "2": {
+     "skill_vs_persistence": [
+      0.13665378582203713,
+      0.1359070664720986
+     ],
+     "skill_vs_seasonal": [
+      -0.5063745142954557,
+      -0.5076773971709538
+     ]
+    },
+    "3": {
+     "skill_vs_persistence": [
+      0.34931556116718276,
+      0.3494069444319703
+     ],
+     "skill_vs_seasonal": [
+      -0.5280392129553388,
+      -0.5278246124459833
+     ]
+    },
+    "4": {
+     "skill_vs_persistence": [
+      0.46980502400914614,
+      0.4705553033535017
+     ],
+     "skill_vs_seasonal": [
+      -0.5303445484495133,
+      -0.5281789566268011
+     ]
+    },
+    "5": {
+     "skill_vs_persistence": [
+      0.5486804529221601,
+      0.5494693359808716
+     ],
+     "skill_vs_seasonal": [
+      -0.5145949223140602,
+      -0.5119474892862641
+     ]
+    },
+    "6": {
+     "skill_vs_persistence": [
+      0.597040894282167,
+      0.5971903152277646
+     ],
+     "skill_vs_seasonal": [
+      -0.5139795114490402,
+      -0.5134181139101686
+     ]
+    },
+    "7": {
+     "skill_vs_persistence": [
+      0.6264208373776847,
+      0.6265451286708457
+     ],
+     "skill_vs_seasonal": [
+      -0.5300586663814255,
+      -0.5295496096960322
+     ]
+    },
+    "8": {
+     "skill_vs_persistence": [
+      0.6512915966430103,
+      0.6513832221902826
+     ],
+     "skill_vs_seasonal": [
+      -0.5197707105227238,
+      -0.5193713802463684
+     ]
+    },
+    "9": {
+     "skill_vs_persistence": [
+      0.6700656988712362,
+      0.6703191589045092
+     ],
+     "skill_vs_seasonal": [
+      -0.5016915164042632,
+      -0.5005378964853537
+     ]
+    },
+    "10": {
+     "skill_vs_persistence": [
+      0.6784543937698659,
+      0.6787712914099678
+     ],
+     "skill_vs_seasonal": [
+      -0.5069682155977258,
+      -0.5054830307219929
+     ]
+    },
+    "11": {
+     "skill_vs_persistence": [
+      0.6816278741740075,
+      0.6817592075361683
+     ],
+     "skill_vs_seasonal": [
+      -0.5186920299443696,
+      -0.5180655462977193
+     ]
+    },
+    "12": {
+     "skill_vs_persistence": [
+      0.6851783418066066,
+      0.6853144411545045
+     ],
+     "skill_vs_seasonal": [
+      -0.5107983679656616,
+      -0.5101452404970337
+     ]
+    },
+    "13": {
+     "skill_vs_persistence": [
+      0.6878946534482892,
+      0.6877872802495981
+     ],
+     "skill_vs_seasonal": [
+      -0.49292877948915104,
+      -0.4934423898461753
+     ]
+    },
+    "14": {
+     "skill_vs_persistence": [
+      0.6818497805904339,
+      0.6818295973583056
+     ],
+     "skill_vs_seasonal": [
+      -0.49977884424654695,
+      -0.4998739891897459
+     ]
+    },
+    "15": {
+     "skill_vs_persistence": [
+      0.6694099000420631,
+      0.6693458008540785
+     ],
+     "skill_vs_seasonal": [
+      -0.5185452789657086,
+      -0.5188397146409205
+     ]
+    },
+    "16": {
+     "skill_vs_persistence": [
+      0.655863655698018,
+      0.6559954579712318
+     ],
+     "skill_vs_seasonal": [
+      -0.5188734196687217,
+      -0.5182916997407014
+     ]
+    },
+    "17": {
+     "skill_vs_persistence": [
+      0.6374724965219735,
+      0.6373637711601383
+     ],
+     "skill_vs_seasonal": [
+      -0.5102791135467932,
+      -0.5107320602653651
+     ]
+    },
+    "18": {
+     "skill_vs_persistence": [
+      0.604155912899444,
+      0.6041685528829668
+     ],
+     "skill_vs_seasonal": [
+      -0.5229532924365532,
+      -0.5229046619147151
+     ]
+    },
+    "19": {
+     "skill_vs_persistence": [
+      0.5591026291906476,
+      0.558920738340464
+     ],
+     "skill_vs_seasonal": [
+      -0.5296288797211115,
+      -0.530259923396621
+     ]
+    },
+    "20": {
+     "skill_vs_persistence": [
+      0.5005027118223078,
+      0.5003451810076478
+     ],
+     "skill_vs_seasonal": [
+      -0.5133067703663909,
+      -0.5137840351163876
+     ]
+    },
+    "21": {
+     "skill_vs_persistence": [
+      0.4081168266002386,
+      0.40786120974097606
+     ],
+     "skill_vs_seasonal": [
+      -0.5014801990229767,
+      -0.5021286439694932
+     ]
+    },
+    "22": {
+     "skill_vs_persistence": [
+      0.2468469041156952,
+      0.246624049816905
+     ],
+     "skill_vs_seasonal": [
+      -0.5101983309159044,
+      -0.5106451911783259
+     ]
+    },
+    "23": {
+     "skill_vs_persistence": [
+      -0.04023069882653951,
+      -0.04076365029323825
+     ],
+     "skill_vs_seasonal": [
+      -0.513679307183915,
+      -0.5144548251606342
+     ]
+    },
+    "24": {
+     "skill_vs_persistence": [
+      -0.5039138753350572,
+      -0.5047194753170565
+     ],
+     "skill_vs_seasonal": [
+      -0.5039138753350572,
+      -0.5047194753170565
+     ]
+    }
+   },
+   "pretraining_cost": {
+    "source": "M02 RECEIPT.json, DONORS_FOR_R1_R2_ecl_v2_s7 (engine 3ecdb256, config 4d5402a0)",
+    "cpu_seconds": 7875.48,
+    "wall_seconds": 6636.5,
+    "peak": "6.77 GB under 7G",
+    "branches": 321,
+    "core": 1,
+    "note": "shown beside R1/R2 candidates; not part of the selection rule"
+   }
+  },
+  {
+   "config_id": "2cb6cb32ec8081b7cb476a29846ae9dfea5fd09355b9f75cb23980be5b3aaf66",
+   "label": "branch_core_R2_lr0.0001_ref_seq5",
+   "regime": "R2",
+   "seeds": {
+    "2021": 0.35548042481071473,
+    "2022": 0.3596383204934821
+   },
+   "mean": 0.3575593726520984,
+   "spread": 0.004157895682767365,
+   "paired_difference_vs_R0": {},
+   "mean_difference": null,
+   "R0_spread": 0.00763319090268727,
+   "label_rule": "STRICT_MINIMUM; gap within the two-seed spread",
+   "negative_skill_vs_persistence_at": {
+    "1": [
+     -0.3491909694753894,
+     -0.36263664699554243
+    ],
+    "23": [
+     -0.005430127321251588,
+     -0.0070840679101467074
+    ],
+    "24": [
+     -0.45747501099254007,
+     -0.4657164333362742
+    ]
+   },
+   "beats_seasonal_naive_any_horizon": false,
+   "per_horizon": {
+    "1": {
+     "skill_vs_persistence": [
+      -0.3491909694753894,
+      -0.36263664699554243
+     ],
+     "skill_vs_seasonal": [
+      -0.429384112833894,
+      -0.4436289738420194
+     ]
+    },
+    "2": {
+     "skill_vs_persistence": [
+      0.19245203059015314,
+      0.18205270093616222
+     ],
+     "skill_vs_seasonal": [
+      -0.4090172172102522,
+      -0.42716206443292126
+     ]
+    },
+    "3": {
+     "skill_vs_persistence": [
+      0.40359742384676733,
+      0.3974069482849031
+     ],
+     "skill_vs_seasonal": [
+      -0.40056603275227953,
+      -0.4151034780035263
+     ]
+    },
+    "4": {
+     "skill_vs_persistence": [
+      0.5115110416433402,
+      0.5080811051411209
+     ],
+     "skill_vs_seasonal": [
+      -0.4099651038786749,
+      -0.4198652064171602
+     ]
+    },
+    "5": {
+     "skill_vs_persistence": [
+      0.5787945262401946,
+      0.5766754603087811
+     ],
+     "skill_vs_seasonal": [
+      -0.4135343260403035,
+      -0.420645754119473
+     ]
+    },
+    "6": {
+     "skill_vs_persistence": [
+      0.6232977025068076,
+      0.6186955072142759
+     ],
+     "skill_vs_seasonal": [
+      -0.4153286331735946,
+      -0.43261979071715717
+     ]
+    },
+    "7": {
+     "skill_vs_persistence": [
+      0.6537833799564376,
+      0.6493314560168162
+     ],
+     "skill_vs_seasonal": [
+      -0.4179905972927378,
+      -0.43622422884240586
+     ]
+    },
+    "8": {
+     "skill_vs_persistence": [
+      0.6731471360552654,
+      0.6688164065274405
+     ],
+     "skill_vs_seasonal": [
+      -0.4245180342417445,
+      -0.4433925891082824
+     ]
+    },
+    "9": {
+     "skill_vs_persistence": [
+      0.6882445421442456,
+      0.682465316152123
+     ],
+     "skill_vs_seasonal": [
+      -0.4189507567205142,
+      -0.4452548257853619
+     ]
+    },
+    "10": {
+     "skill_vs_persistence": [
+      0.6984772933876993,
+      0.6911656212959025
+     ],
+     "skill_vs_seasonal": [
+      -0.41312811104166225,
+      -0.44739527946729685
+     ]
+    },
+    "11": {
+     "skill_vs_persistence": [
+      0.7009683959089689,
+      0.6968420902232099
+     ],
+     "skill_vs_seasonal": [
+      -0.42643427924572586,
+      -0.4461174959903391
+     ]
+    },
+    "12": {
+     "skill_vs_persistence": [
+      0.7005182901113626,
+      0.6975086501827894
+     ],
+     "skill_vs_seasonal": [
+      -0.43718345533069236,
+      -0.45162642319492874
+     ]
+    },
+    "13": {
+     "skill_vs_persistence": [
+      0.7010608421946303,
+      0.6959446080182112
+     ],
+     "skill_vs_seasonal": [
+      -0.42994946076625906,
+      -0.4544225219584883
+     ]
+    },
+    "14": {
+     "skill_vs_persistence": [
+      0.6953176253797939,
+      0.6924726881119232
+     ],
+     "skill_vs_seasonal": [
+      -0.43629063188521666,
+      -0.4497018334725664
+     ]
+    },
+    "15": {
+     "skill_vs_persistence": [
+      0.6849541145740785,
+      0.6866612096316456
+     ],
+     "skill_vs_seasonal": [
+      -0.4471438861356587,
+      -0.4393024500468463
+     ]
+    },
+    "16": {
+     "skill_vs_persistence": [
+      0.6728775408824706,
+      0.6715358467322418
+     ],
+     "skill_vs_seasonal": [
+      -0.4437812697117727,
+      -0.4497029446985896
+     ]
+    },
+    "17": {
+     "skill_vs_persistence": [
+      0.6566951524437824,
+      0.6489846925803049
+     ],
+     "skill_vs_seasonal": [
+      -0.43019808392261094,
+      -0.46231963711769697
+     ]
+    },
+    "18": {
+     "skill_vs_persistence": [
+      0.6237311305063434,
+      0.6185532486014795
+     ],
+     "skill_vs_seasonal": [
+      -0.4476404531746241,
+      -0.4675616103974598
+     ]
+    },
+    "19": {
+     "skill_vs_persistence": [
+      0.5791084930608086,
+      0.576508723531322
+     ],
+     "skill_vs_seasonal": [
+      -0.46022146392411445,
+      -0.46924098369494405
+     ]
+    },
+    "20": {
+     "skill_vs_persistence": [
+      0.5164714708081612,
+      0.5087866170251254
+     ],
+     "skill_vs_seasonal": [
+      -0.4649268658912251,
+      -0.48820935717675673
+     ]
+    },
+    "21": {
+     "skill_vs_persistence": [
+      0.4295378698616751,
+      0.41235426412826826
+     ],
+     "skill_vs_seasonal": [
+      -0.44713962347541303,
+      -0.49073073218750696
+     ]
+    },
+    "22": {
+     "skill_vs_persistence": [
+      0.27105031399097945,
+      0.26363347623158406
+     ],
+     "skill_vs_seasonal": [
+      -0.461666432958012,
+      -0.47653843715758515
+     ]
+    },
+    "23": {
+     "skill_vs_persistence": [
+      -0.005430127321251588,
+      -0.0070840679101467074
+     ],
+     "skill_vs_seasonal": [
+      -0.4630396702022799,
+      -0.46544638214372336
+     ]
+    },
+    "24": {
+     "skill_vs_persistence": [
+      -0.45747501099254007,
+      -0.4657164333362742
+     ],
+     "skill_vs_seasonal": [
+      -0.45747501099254007,
+      -0.4657164333362742
+     ]
+    }
+   },
+   "pretraining_cost": {
+    "source": "M02 RECEIPT.json, DONORS_FOR_R1_R2_ecl_v2_s7 (engine 3ecdb256, config 4d5402a0)",
+    "cpu_seconds": 7875.48,
+    "wall_seconds": 6636.5,
+    "peak": "6.77 GB under 7G",
+    "branches": 321,
+    "core": 1,
+    "note": "shown beside R1/R2 candidates; not part of the selection rule"
+   }
+  },
+  {
+   "config_id": "b41435c64e31805e63d8e6c4b3f640e73cd7c6eb208d347b3e890a6a065d481f",
+   "label": "seasonal_residual_branch_core_R1_mae",
+   "regime": "R1",
+   "seeds": {
+    "2021": 0.24820395535283377,
+    "2022": 0.2481975279869746,
+    "2023": 0.2482050090234983,
+    "2024": 0.24818823356124273
+   },
+   "mean": 0.24819868148113733,
+   "spread": 1.677546225556381e-05,
+   "paired_difference_vs_R0": {
+    "2023": -0.12976925055647776,
+    "2024": -0.1374192169214206
+   },
+   "mean_difference": -0.1335942337389492,
+   "R0_spread": 0.00763319090268727,
+   "label_rule": "STRICT_MINIMUM; gap exceeds both two-seed spreads (stated with numbers, not proof)",
+   "negative_skill_vs_persistence_at": {
+    "1": [
+     0.056607846693907726,
+     0.05644224924760799,
+     0.05652270278620364,
+     0.05659016825856411
+    ],
+    "23": [
+     0.3117842628656484,
+     0.3120193902194005,
+     0.31204502846076765,
+     0.3118639589761961
+    ],
+    "24": [
+     -0.0010826369284160364,
+     -0.0008073068646325954,
+     -0.0014981382596659376,
+     -0.0009639972285331311
+    ]
+   },
+   "beats_seasonal_naive_any_horizon": true,
+   "per_horizon": {
+    "1": {
+     "skill_vs_persistence": [
+      0.056607846693907726,
+      0.05644224924760799,
+      0.05652270278620364,
+      0.05659016825856411
+     ],
+     "skill_vs_seasonal": [
+      0.0005345524716816596,
+      0.00035911225289730897,
+      0.0004443477847764221,
+      0.0005158232664086437
+     ]
+    },
+    "2": {
+     "skill_vs_persistence": [
+      0.427421997666772,
+      0.42721785794914124,
+      0.4270618328876673,
+      0.4271701833920931
+     ],
+     "skill_vs_seasonal": [
+      0.000960569471858852,
+      0.0006043845915123525,
+      0.0003321506112898831,
+      0.0005212015804118009
+     ]
+    },
+    "3": {
+     "skill_vs_persistence": [
+      0.5742433557959747,
+      0.5741274636708482,
+      0.574346740722727,
+      0.574294552408517
+     ],
+     "skill_vs_seasonal": [
+      0.00017149835793273116,
+      -0.00010065769974643146,
+      0.00041428305152291234,
+      0.0002917262700607992
+     ]
+    },
+    "4": {
+     "skill_vs_persistence": [
+      0.6534330156603088,
+      0.653530872774679,
+      0.653585011701226,
+      0.6536052334188505
+     ],
+     "skill_vs_seasonal": [
+      -0.0003242564976388973,
+      -4.1803610899115995e-05,
+      0.00011446194206132798,
+      0.00017282951762920273
+     ]
+    },
+    "5": {
+     "skill_vs_persistence": [
+      0.7019355994298558,
+      0.7018629994411132,
+      0.7019448483567092,
+      0.7020361419593534
+     ],
+     "skill_vs_seasonal": [
+      -0.00028201869187505224,
+      -0.0005256588688220543,
+      -0.0002509799794161438,
+      5.539457914227608e-05
+     ]
+    },
+    "6": {
+     "skill_vs_persistence": [
+      0.7336938309401067,
+      0.7336237966560015,
+      0.7335715897241295,
+      0.7337046127715989
+     ],
+     "skill_vs_seasonal": [
+      -0.0005533514646174353,
+      -0.0008164810718893634,
+      -0.0010126305671815938,
+      -0.0005128424607421245
+     ]
+    },
+    "7": {
+     "skill_vs_persistence": [
+      0.7556651114106423,
+      0.7557157601237765,
+      0.7557171066173265,
+      0.7556817878363479
+     ],
+     "skill_vs_seasonal": [
+      -0.000716183315186969,
+      -0.0005087426701357867,
+      -0.000503227870779499,
+      -0.0006478821029460846
+     ]
+    },
+    "8": {
+     "skill_vs_persistence": [
+      0.7703510863713833,
+      0.770363577276287,
+      0.7703394683153817,
+      0.7702929128506817
+     ],
+     "skill_vs_seasonal": [
+      -0.0008754858678650113,
+      -0.0008210469405609544,
+      -0.00092612067062392,
+      -0.001129022668352242
+     ]
+    },
+    "9": {
+     "skill_vs_persistence": [
+      0.7800257598550298,
+      0.7801142390622108,
+      0.7800658512675822,
+      0.7800402522569236
+     ],
+     "skill_vs_seasonal": [
+      -0.0012097836540383433,
+      -0.0008070717373103165,
+      -0.0010273081311702459,
+      -0.0011438216825130354
+     ]
+    },
+    "10": {
+     "skill_vs_persistence": [
+      0.7863755820625902,
+      0.7864258523040523,
+      0.7864333506928242,
+      0.7862892288412302
+     ],
+     "skill_vs_seasonal": [
+      -0.0011805531462796282,
+      -0.0009449546662938513,
+      -0.0009098124241719852,
+      -0.00158525953126043
+     ]
+    },
+    "11": {
+     "skill_vs_persistence": [
+      0.7899986519580126,
+      0.790075229149211,
+      0.7900607612191939,
+      0.7901230047360777
+     ],
+     "skill_vs_seasonal": [
+      -0.0017440211560824093,
+      -0.0013787342464737229,
+      -0.0014477488624669022,
+      -0.001150836145117795
+     ]
+    },
+    "12": {
+     "skill_vs_persistence": [
+      0.7913472347154251,
+      0.791367732096482,
+      0.7913126558608881,
+      0.791260571097429
+     ],
+     "skill_vs_seasonal": [
+      -0.0013042275185923824,
+      -0.0012058625902515718,
+      -0.0014701680618840474,
+      -0.0017201177511190213
+     ]
+    },
+    "13": {
+     "skill_vs_persistence": [
+      0.7906035169732896,
+      0.7907036329546178,
+      0.7906703102853285,
+      0.7906101555374013
+     ],
+     "skill_vs_seasonal": [
+      -0.001629864045255891,
+      -0.0011509679562811126,
+      -0.0013103640465466082,
+      -0.0015981090512244833
+     ]
+    },
+    "14": {
+     "skill_vs_persistence": [
+      0.7875624943850478,
+      0.7874770385507865,
+      0.7874866797723996,
+      0.7875640599723972
+     ],
+     "skill_vs_seasonal": [
+      -0.0014428946083964167,
+      -0.0018457384366370455,
+      -0.0018002891509667496,
+      -0.0014355143375617274
+     ]
+    },
+    "15": {
+     "skill_vs_persistence": [
+      0.7819186126382721,
+      0.7819691861478899,
+      0.7818516478581988,
+      0.7820063328010477
+     ],
+     "skill_vs_seasonal": [
+      -0.00174343167136648,
+      -0.0015111253673345537,
+      -0.0020510302674838776,
+      -0.0013404945021353587
+     ]
+    },
+    "16": {
+     "skill_vs_persistence": [
+      0.77316939188006,
+      0.7731246896064929,
+      0.7730727169749622,
+      0.7731880757711347
+     ],
+     "skill_vs_seasonal": [
+      -0.0011351231718330634,
+      -0.0013324202497029258,
+      -0.001561805636888458,
+      -0.0010526603166325366
+     ]
+    },
+    "17": {
+     "skill_vs_persistence": [
+      0.7596226804398365,
+      0.7595609347302108,
+      0.759712942855103,
+      0.7596453553687702
+     ],
+     "skill_vs_seasonal": [
+      -0.0014049737445158694,
+      -0.0016622045882561665,
+      -0.0010289431283350137,
+      -0.0013105106451889448
+     ]
+    },
+    "18": {
+     "skill_vs_persistence": [
+      0.7397232629425262,
+      0.7397639603867012,
+      0.7396992150768078,
+      0.7397214814034251
+     ],
+     "skill_vs_seasonal": [
+      -0.0013773770116423112,
+      -0.00122079943824982,
+      -0.0014698977223599474,
+      -0.0013842312275522684
+     ]
+    },
+    "19": {
+     "skill_vs_persistence": [
+      0.7113963736397751,
+      0.7112747952077805,
+      0.7113716981786022,
+      0.7113813659410455
+     ],
+     "skill_vs_seasonal": [
+      -0.0012680294792013491,
+      -0.0016898280496686624,
+      -0.0013536373792015777,
+      -0.0013200964927853054
+     ]
+    },
+    "20": {
+     "skill_vs_persistence": [
+      0.6695010245014199,
+      0.669522444937479,
+      0.6694653461840756,
+      0.6695373624930632
+     ],
+     "skill_vs_seasonal": [
+      -0.0012994045389771447,
+      -0.0012345079085458455,
+      -0.0014074976967786146,
+      -0.0011893127925821645
+     ]
+    },
+    "21": {
+     "skill_vs_persistence": [
+      0.6052006945239834,
+      0.6052667861814509,
+      0.6053631541701363,
+      0.6054112473747795
+     ],
+     "skill_vs_seasonal": [
+      -0.0015208514128397521,
+      -0.0013531911050832512,
+      -0.001108726262469606,
+      -0.0009867241550867156
+     ]
+    },
+    "22": {
+     "skill_vs_persistence": [
+      0.5007353969773016,
+      0.5006589993063923,
+      0.5006973832152888,
+      0.5006809339600324
+     ],
+     "skill_vs_seasonal": [
+      -0.0011093020669121767,
+      -0.00126249221606467,
+      -0.0011855260381834487,
+      -0.0012185095550389935
+     ]
+    },
+    "23": {
+     "skill_vs_persistence": [
+      0.3117842628656484,
+      0.3120193902194005,
+      0.31204502846076765,
+      0.3118639589761961
+     ],
+     "skill_vs_seasonal": [
+      -0.0014489298900266512,
+      -0.0011067871227261605,
+      -0.0010694799412771516,
+      -0.001332961044332004
+     ]
+    },
+    "24": {
+     "skill_vs_persistence": [
+      -0.0010826369284160364,
+      -0.0008073068646325954,
+      -0.0014981382596659376,
+      -0.0009639972285331311
+     ],
+     "skill_vs_seasonal": [
+      -0.0010826369284160364,
+      -0.0008073068646325954,
+      -0.0014981382596659376,
+      -0.0009639972285331311
+     ]
+    }
+   },
+   "pretraining_cost": {
+    "source": "M02 RECEIPT.json, DONORS_FOR_R1_R2_ecl_v2_s7 (engine 3ecdb256, config 4d5402a0)",
+    "cpu_seconds": 7875.48,
+    "wall_seconds": 6636.5,
+    "peak": "6.77 GB under 7G",
+    "branches": 321,
+    "core": 1,
+    "note": "shown beside R1/R2 candidates; not part of the selection rule"
+   }
+  },
+  {
+   "config_id": "ed62e1be94b0890ea5ef8813577a01e520e4919d8f14cb5c73e57102593805cc",
+   "label": "branch_core_R2_lr3e-05_ref_seq5",
+   "regime": "R2",
+   "seeds": {
+    "2021": 0.37856871630357103,
+    "2022": 0.38264521163976173
+   },
+   "mean": 0.3806069639716664,
+   "spread": 0.0040764953361907,
+   "paired_difference_vs_R0": {},
+   "mean_difference": null,
+   "R0_spread": 0.00763319090268727,
+   "label_rule": "STRICT_MINIMUM; gap within the two-seed spread",
+   "negative_skill_vs_persistence_at": {
+    "1": [
+     -0.4452917987021452,
+     -0.4212705972575326
+    ],
+    "23": [
+     -0.04558276577146114,
+     -0.060672997504907844
+    ],
+    "24": [
+     -0.5313792167823406,
+     -0.5261729615066661
+    ]
+   },
+   "beats_seasonal_naive_any_horizon": false,
+   "per_horizon": {
+    "1": {
+     "skill_vs_persistence": [
+      -0.4452917987021452,
+      -0.4212705972575326
+     ],
+     "skill_vs_seasonal": [
+      -0.5311969781989063,
+      -0.5057480058199533
+     ]
+    },
+    "2": {
+     "skill_vs_persistence": [
+      0.13169146882136606,
+      0.13189826179860042
+     ],
+     "skill_vs_seasonal": [
+      -0.5150328112091493,
+      -0.5146719968967384
+     ]
+    },
+    "3": {
+     "skill_vs_persistence": [
+      0.3517906237570678,
+      0.3416861939868624
+     ],
+     "skill_vs_seasonal": [
+      -0.5222268829438093,
+      -0.545955689093105
+     ]
+    },
+    "4": {
+     "skill_vs_persistence": [
+      0.47204762516709453,
+      0.4648990879899153
+     ],
+     "skill_vs_seasonal": [
+      -0.5238715477387859,
+      -0.5445049475141048
+     ]
+    },
+    "5": {
+     "skill_vs_persistence": [
+      0.5470543742679685,
+      0.5412289365308285
+     ],
+     "skill_vs_seasonal": [
+      -0.5200519216593535,
+      -0.5396016585897758
+     ]
+    },
+    "6": {
+     "skill_vs_persistence": [
+      0.5955352170071164,
+      0.5891368089088975
+     ],
+     "skill_vs_seasonal": [
+      -0.519636573202789,
+      -0.5436763793000761
+     ]
+    },
+    "7": {
+     "skill_vs_persistence": [
+      0.6264360413882706,
+      0.621562853928603
+     ],
+     "skill_vs_seasonal": [
+      -0.5299963957023077,
+      -0.5499553855271875
+     ]
+    },
+    "8": {
+     "skill_vs_persistence": [
+      0.6475317311398848,
+      0.6455030577977727
+     ],
+     "skill_vs_seasonal": [
+      -0.536157277098537,
+      -0.5449988143166804
+     ]
+    },
+    "9": {
+     "skill_vs_persistence": [
+      0.6641074500377224,
+      0.6618827070809536
+     ],
+     "skill_vs_seasonal": [
+      -0.5288104055143148,
+      -0.538936293040801
+     ]
+    },
+    "10": {
+     "skill_vs_persistence": [
+      0.6727025704893166,
+      0.6699266001836681
+     ],
+     "skill_vs_seasonal": [
+      -0.5339249355701936,
+      -0.5469349065883053
+     ]
+    },
+    "11": {
+     "skill_vs_persistence": [
+      0.677315139116639,
+      0.6745685949193396
+     ],
+     "skill_vs_seasonal": [
+      -0.539264548163088,
+      -0.552366055625485
+     ]
+    },
+    "12": {
+     "skill_vs_persistence": [
+      0.6794096961632681,
+      0.677313279493823
+     ],
+     "skill_vs_seasonal": [
+      -0.5384815345982901,
+      -0.5485420332976139
+     ]
+    },
+    "13": {
+     "skill_vs_persistence": [
+      0.6800790256589355,
+      0.6783585014037992
+     ],
+     "skill_vs_seasonal": [
+      -0.5303141552458208,
+      -0.5385441333755816
+     ]
+    },
+    "14": {
+     "skill_vs_persistence": [
+      0.6748804829851401,
+      0.673044691998359
+     ],
+     "skill_vs_seasonal": [
+      -0.5326325230121174,
+      -0.5412865496839914
+     ]
+    },
+    "15": {
+     "skill_vs_persistence": [
+      0.6668456479929585,
+      0.6639296682387461
+     ],
+     "skill_vs_seasonal": [
+      -0.5303240129439528,
+      -0.5437183864895687
+     ]
+    },
+    "16": {
+     "skill_vs_persistence": [
+      0.6552965458099244,
+      0.6498158286049498
+     ],
+     "skill_vs_seasonal": [
+      -0.5213764047480915,
+      -0.5455659907107178
+     ]
+    },
+    "17": {
+     "skill_vs_persistence": [
+      0.6343155403038603,
+      0.6277864228428667
+     ],
+     "skill_vs_seasonal": [
+      -0.5234309020120977,
+      -0.5506310168630528
+     ]
+    },
+    "18": {
+     "skill_vs_persistence": [
+      0.60479150442151,
+      0.5953920593123165
+     ],
+     "skill_vs_seasonal": [
+      -0.5205079453094426,
+      -0.5566709608567391
+     ]
+    },
+    "19": {
+     "skill_vs_persistence": [
+      0.5631593337303272,
+      0.5503781527339071
+     ],
+     "skill_vs_seasonal": [
+      -0.5155547372307656,
+      -0.5598971735060787
+     ]
+    },
+    "20": {
+     "skill_vs_persistence": [
+      0.49717071517945255,
+      0.48498458341233464
+     ],
+     "skill_vs_seasonal": [
+      -0.523401586089749,
+      -0.5603214175767943
+     ]
+    },
+    "21": {
+     "skill_vs_persistence": [
+      0.3976319440744258,
+      0.3889409567671611
+     ],
+     "skill_vs_seasonal": [
+      -0.5280780889598768,
+      -0.5501252528906619
+     ]
+    },
+    "22": {
+     "skill_vs_persistence": [
+      0.24016653291312418,
+      0.2305533472901269
+     ],
+     "skill_vs_seasonal": [
+      -0.523593596095258,
+      -0.5428696462927141
+     ]
+    },
+    "23": {
+     "skill_vs_persistence": [
+      -0.04558276577146114,
+      -0.060672997504907844
+     ],
+     "skill_vs_seasonal": [
+      -0.5214673036296358,
+      -0.5434256745384118
+     ]
+    },
+    "24": {
+     "skill_vs_persistence": [
+      -0.5313792167823406,
+      -0.5261729615066661
+     ],
+     "skill_vs_seasonal": [
+      -0.5313792167823406,
+      -0.5261729615066661
+     ]
+    }
+   },
+   "pretraining_cost": {
+    "source": "M02 RECEIPT.json, DONORS_FOR_R1_R2_ecl_v2_s7 (engine 3ecdb256, config 4d5402a0)",
+    "cpu_seconds": 7875.48,
+    "wall_seconds": 6636.5,
+    "peak": "6.77 GB under 7G",
+    "branches": 321,
+    "core": 1,
+    "note": "shown beside R1/R2 candidates; not part of the selection rule"
+   }
+  }
+ ],
+ "refused_by_engine": [],
+ "closure": [
+  {
+   "config_id": "2c1c7afa86b61c809bde6cae92e637ab3bcb22fabde691a82c9ae122041c6020",
+   "label": "seasonal_residual_default_R0_mae",
+   "seeds": 4,
+   "model_MAE": 0.21764047249516205,
+   "scale": "z_train (train-only StandardScaler), validation, mean over 2609 windows x 24 horizons x 321 channels",
+   "naive_same_rows_MAE": 0.8514061497227646,
+   "skill": 0.744375263713998,
+   "literature": {
+    "value": null,
+    "status": "NOT_AVAILABLE",
+    "reason": "no published ECL result at L24 with H1..24 on a validation split; TimeFilter and the TSL tables report L96 with H96/192/336/720 on the test split (ECL H96 retained reference test MSE/MAE 0.1333/0.2306 etc. are a different task)",
+    "source": "docs/audits/evidence/ECL_TIMEFILTER_MATCH_20260930.md"
+   },
+   "comparability": "NOT_COMPARABLE: L24/H1..24 on the validation split; published ECL rows use L96 with H96..720 on the test split"
+  },
+  {
+   "config_id": "b41435c64e31805e63d8e6c4b3f640e73cd7c6eb208d347b3e890a6a065d481f",
+   "label": "seasonal_residual_branch_core_R1_mae",
+   "seeds": 4,
+   "model_MAE": 0.24819868148113733,
+   "scale": "z_train (train-only StandardScaler), validation, mean over 2609 windows x 24 horizons x 321 channels",
+   "naive_same_rows_MAE": 0.8514061497227646,
+   "skill": 0.7084838046307794,
+   "literature": {
+    "value": null,
+    "status": "NOT_AVAILABLE",
+    "reason": "no published ECL result at L24 with H1..24 on a validation split; TimeFilter and the TSL tables report L96 with H96/192/336/720 on the test split (ECL H96 retained reference test MSE/MAE 0.1333/0.2306 etc. are a different task)",
+    "source": "docs/audits/evidence/ECL_TIMEFILTER_MATCH_20260930.md"
+   },
+   "comparability": "NOT_COMPARABLE: L24/H1..24 on the validation split; published ECL rows use L96 with H96..720 on the test split"
+  },
+  {
+   "config_id": "2cb6cb32ec8081b7cb476a29846ae9dfea5fd09355b9f75cb23980be5b3aaf66",
+   "label": "branch_core_R2_lr0.0001_ref_seq5",
+   "seeds": 2,
+   "model_MAE": 0.3575593726520984,
+   "scale": "z_train (train-only StandardScaler), validation, mean over 2609 windows x 24 horizons x 321 channels",
+   "naive_same_rows_MAE": 0.8514061497227646,
+   "skill": 0.5800366572774613,
+   "literature": {
+    "value": null,
+    "status": "NOT_AVAILABLE",
+    "reason": "no published ECL result at L24 with H1..24 on a validation split; TimeFilter and the TSL tables report L96 with H96/192/336/720 on the test split (ECL H96 retained reference test MSE/MAE 0.1333/0.2306 etc. are a different task)",
+    "source": "docs/audits/evidence/ECL_TIMEFILTER_MATCH_20260930.md"
+   },
+   "comparability": "NOT_COMPARABLE: L24/H1..24 on the validation split; published ECL rows use L96 with H96..720 on the test split"
+  },
+  {
+   "config_id": "a1f682a6df6a3f31b15c08108c06ac1e3cd7a54f7a69d7bf89f349068d58111f",
+   "label": "corrected_draw3_R0_mae_seeds2023_2024",
+   "seeds": 2,
+   "model_MAE": 0.3707814852069897,
+   "scale": "z_train (train-only StandardScaler), validation, mean over 2609 windows x 24 horizons x 321 channels",
+   "naive_same_rows_MAE": 0.8514061497227646,
+   "skill": 0.5645069214877955,
+   "literature": {
+    "value": null,
+    "status": "NOT_AVAILABLE",
+    "reason": "no published ECL result at L24 with H1..24 on a validation split; TimeFilter and the TSL tables report L96 with H96/192/336/720 on the test split (ECL H96 retained reference test MSE/MAE 0.1333/0.2306 etc. are a different task)",
+    "source": "docs/audits/evidence/ECL_TIMEFILTER_MATCH_20260930.md"
+   },
+   "comparability": "NOT_COMPARABLE: L24/H1..24 on the validation split; published ECL rows use L96 with H96..720 on the test split"
+  },
+  {
+   "config_id": "3cbe75dd0565eee94d3e5426d6692c1ec47ee4c133809f317f9e32af5f889747",
+   "label": "corrected_default_branch_core_R1_mae_ref_seq5_seeds2023_2024",
+   "seeds": 2,
+   "model_MAE": 0.37510177036362735,
+   "scale": "z_train (train-only StandardScaler), validation, mean over 2609 windows x 24 horizons x 321 channels",
+   "naive_same_rows_MAE": 0.8514061497227646,
+   "skill": 0.559432627441359,
+   "literature": {
+    "value": null,
+    "status": "NOT_AVAILABLE",
+    "reason": "no published ECL result at L24 with H1..24 on a validation split; TimeFilter and the TSL tables report L96 with H96/192/336/720 on the test split (ECL H96 retained reference test MSE/MAE 0.1333/0.2306 etc. are a different task)",
+    "source": "docs/audits/evidence/ECL_TIMEFILTER_MATCH_20260930.md"
+   },
+   "comparability": "NOT_COMPARABLE: L24/H1..24 on the validation split; published ECL rows use L96 with H96..720 on the test split"
+  },
+  {
+   "config_id": "ed62e1be94b0890ea5ef8813577a01e520e4919d8f14cb5c73e57102593805cc",
+   "label": "branch_core_R2_lr3e-05_ref_seq5",
+   "seeds": 2,
+   "model_MAE": 0.3806069639716664,
+   "scale": "z_train (train-only StandardScaler), validation, mean over 2609 windows x 24 horizons x 321 channels",
+   "naive_same_rows_MAE": 0.8514061497227646,
+   "skill": 0.5529666257454214,
+   "literature": {
+    "value": null,
+    "status": "NOT_AVAILABLE",
+    "reason": "no published ECL result at L24 with H1..24 on a validation split; TimeFilter and the TSL tables report L96 with H96/192/336/720 on the test split (ECL H96 retained reference test MSE/MAE 0.1333/0.2306 etc. are a different task)",
+    "source": "docs/audits/evidence/ECL_TIMEFILTER_MATCH_20260930.md"
+   },
+   "comparability": "NOT_COMPARABLE: L24/H1..24 on the validation split; published ECL rows use L96 with H96..720 on the test split"
+  },
+  {
+   "config_id": "82fd2ce14a04194f2b1496c8ff33393c7156026f734e010d8a2e5a5b8d650609",
+   "label": "corrected_default_R0_mae_seeds2023_2024",
+   "seeds": 2,
+   "model_MAE": 0.3817908550313197,
+   "scale": "z_train (train-only StandardScaler), validation, mean over 2609 windows x 24 horizons x 321 channels",
+   "naive_same_rows_MAE": 0.8514061497227646,
+   "skill": 0.5515761130505826,
+   "literature": {
+    "value": null,
+    "status": "NOT_AVAILABLE",
+    "reason": "no published ECL result at L24 with H1..24 on a validation split; TimeFilter and the TSL tables report L96 with H96/192/336/720 on the test split (ECL H96 retained reference test MSE/MAE 0.1333/0.2306 etc. are a different task)",
+    "source": "docs/audits/evidence/ECL_TIMEFILTER_MATCH_20260930.md"
+   },
+   "comparability": "NOT_COMPARABLE: L24/H1..24 on the validation split; published ECL rows use L96 with H96..720 on the test split"
+  }
+ ],
+ "seasonal_period": 24
+}

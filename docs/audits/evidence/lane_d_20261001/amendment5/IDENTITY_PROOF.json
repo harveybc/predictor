@@ -1,0 +1,23 @@
+{
+ "schema": "lane_d.engine_identity_proof.v1",
+ "label": "PROOF_NOT_A_RESULT",
+ "a": {
+  "checkout": "/home/harveybc/Documents/GitHub/.worktrees/predictor-d-pin-df9ae31c",
+  "tensorflow": "2.21.0"
+ },
+ "b": {
+  "checkout": "/home/harveybc/Documents/GitHub/.worktrees/predictor-a-6c15af13",
+  "tensorflow": "2.21.0"
+ },
+ "refused_identically": [
+  "corrected_default_core_R1_huber",
+  "corrected_default_core_R2_huber"
+ ],
+ "configs": 18,
+ "verdict": "IDENTICAL",
+ "first_difference": null,
+ "deterministic": [
+  "1",
+  "1"
+ ]
+}

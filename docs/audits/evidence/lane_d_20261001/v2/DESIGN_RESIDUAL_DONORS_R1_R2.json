@@ -1,0 +1,36 @@
+{
+ "schema": "m04.design.v1",
+ "label": "DESIGN_HELD_NOT_RUN",
+ "date": "2026-10-01",
+ "author": "Satoshi (M04)",
+ "item": "R1/R2 with donors pretrained UNDER the seasonal-residual objective (ECL L24/H24)",
+ "why": "the current donors (DONORS_FOR_R1_R2_ecl_v2_s7, M02, engine 3ecdb256, config 4d5402a0) are autoencoders on the raw z_train window; with the seasonal-residual head, branch+core R1 reproduces the seasonal naive (4 seeds 0.248188-0.248205 vs naive 0.247966): the frozen representation carries no information the head can use for y - seasonal_naive",
+ "options": {
+  "A_supervised_residual_donors (recommended)": {
+   "donor_objective": "forecast the residual y(t+h) - y(t+h-24) for h=1..24 on all 321 targets, MAE, on TRAIN origins only; early stopping on an INTERNAL train_validation slice (last 10% of train origins, 24-row purge before it); the outer validation, test and any holdout are never read",
+   "export": "per-feature branch encoders (321) and the core, through the existing donor export + reload-parity path (tools/modular_pretrain.py export/load_donor), manifests bind objective='seasonal_residual_forecast_P24', train digest 9215b099..., internal-split row ranges, engine pin, and the fused-materialization identity for the core",
+   "then": "R1 = frozen residual donors + fresh head; R2 = residual donors fine-tuned at lr {1e-4, 3e-5}; R3 = frozen 3 epochs then unfrozen at 1e-4; each x seeds 2021/2022 then 2023/2024 for any that beats 2c1c7afa beyond the seed ranges",
+   "caveat": "on the same train population A is close to a warm start of R0: its value is a test of whether the residual representation, re-headed, matches or beats R0+residual at lower update cost; it is NOT new information. A claim of transfer needs donors pretrained on a different population (option C)"
+  },
+  "B_deseasonalised_autoencoder": {
+   "donor_objective": "autoencoder on d(t) = x(t) - x(t-24)",
+   "blocker": "needs 48 steps of context per window (x(t-24) for every in-window step): a new NPZ identity (L48) and a new engine input contract; not runnable on the L24 data"
+  },
+  "C_cross_population_donors": {
+   "donor_objective": "as A, on a disjoint population (e.g. other ECL clients withheld from the forecast targets, or another electricity dataset with the same channel semantics)",
+   "blocker": "needs a governed second population; none declared"
+  }
+ },
+ "identity": {
+  "donor_index": "new index, new sha; DONOR_BINDING amendment; donor contract OPERATIONAL checked by verify_donor_binding before build",
+  "pin": "a615c212 lineage (or later after an identity proof)",
+  "data": "train 9215b099..., validation e3712565... (outer validation only for the R1/R2/R3 cells, never for donors)"
+ },
+ "costs_measured_or_bounded": {
+  "donor_pretraining_A": "bounded by one per-feature R0 residual fit: 5090 wall ~1200 s (cell 30), host peak 6.34-6.49 GB at 2b89f4d9 -> cap 1.25 x the measured peak at the run pin; plus export and reload parity of 322 donors (previous M02 export inside a 6,636 s CPU run, peak 6.77 GB, not separable: UNMEASURED for A)",
+  "cells": "R1/R2/R3 x 2 seeds = 8 cells on the 5090, ~20-25 min each at the measured per-feature class (cap 7734M+, R3 class 8382M)",
+  "previous_AE_donors_for_comparison": "M02 RECEIPT: 7,875 CPU s, 6,636 s wall, peak 6.77 GB"
+ },
+ "decision_rule": "STRICT_MINIMUM on the paired-by-seed mean vs 2c1c7afa (0.217640, 4 seeds); report per-horizon skill vs the seasonal naive; no claim inside the seed ranges",
+ "status": "HELD behind the financial lane (owner MAINLINE_PARALLEL_CONTINUATION e9d689e6); not run"
+}

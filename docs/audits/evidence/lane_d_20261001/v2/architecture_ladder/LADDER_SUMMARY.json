@@ -1,0 +1,16 @@
+{
+ "label": "TABLE_FROM_RECEIPTS",
+ "question": "on the seasonal-residual target (P=24), does the differentiated per-feature model beat a strong base of the same parameter count? where does grouped32 sit?",
+ "same": "rows (ECL v2 train 9215b099 / validation e3712565), scaler, target y - y(t+h-24) via the engine SeasonalNaiveBaseline, AdamW lr 1e-3 wd 1e-4, MAE, batch 64, 30 epochs, patience 5, seeds 2021-2024",
+ "device": "RTX 5090 for all three arms (gpu_5090/); cpu_worker_b/ holds the earlier CPU s2021/s2022 runs (CPU-vs-GPU check only)",
+ "arms": {
+  "per_feature_R0_residual (2c1c7afa, 810,072 params)": {"per_seed": {"2021": 0.21775881308062603, "2022": 0.2156977546321922, "2023": 0.21873802652897026, "2024": 0.21836729573885966}, "mean": 0.217640, "sd": 0.001357, "range": 0.003040},
+  "grouped32_R0_residual (11 branches)": {"per_seed": {"2021": 0.21345769038465318, "2022": 0.21348948062066392, "2023": 0.21301753930700093, "2024": 0.21288721108371791}, "mean": 0.213213, "sd": 0.000306, "range": 0.000602, "paired_diff_vs_per_feature": [-0.004301, -0.002208, -0.00572, -0.00548], "mean_diff": -0.004427, "label": "STRICT_MINIMUM; mean paired difference exceeds both seed ranges (numbers, not proof)", "skill_vs_seasonal": "0.119-0.148, beats it at 24/24 horizons on every seed"},
+  "flatten_mlp_52x52_residual (811,728 params)": {"per_seed": {"2021": 0.2142785040032576, "2022": 0.22137007068288528, "2023": 0.22188671468770343, "2024": 0.21486285364311358}, "mean": 0.218100, "sd": 0.004087, "range": 0.007608, "paired_diff_vs_per_feature": [-0.00348, 0.005672, 0.003149, -0.003504], "mean_diff": 0.000459, "label": "STRICT_MINIMUM; within the seed ranges (no difference shown)", "note": "s2022/s2023 stopped by patience at epochs 8/6"}
+ },
+ "cpu_vs_gpu_same_seed": {"grouped32": {"2021": [0.21368786260945594, 0.21345769038465318], "2022": [0.21323471523302848, 0.21348948062066392]}, "control": {"2021": [0.2150530268192899, 0.2142785040032576], "2022": [0.2137379935203682, 0.22137007068288528]}},
+ "seasonal_naive_same_rows": 0.247966,
+ "host_peaks_bytes": {"gpu_grouped32": 5800296448, "gpu_control": 5606187008, "cpu_grouped32": [3265445888, 2985205760], "cpu_control": 3570991104},
+ "code": "tools/modular_residual_control.py (d7ba0bbc), evaluator at ba246aca (default path byte-identical to a615c212)",
+ "not_verified_through_the_campaign": "direct runs with receipts; checkpoint re-scoring through the campaign (amendment 16) is proposed for grouped32"
+}
