@@ -357,3 +357,17 @@ def test_two_host_runners_never_claim_the_same_candidate_and_verify_on_training_
     assert va[1] == "verify" and va[0]["cid"] == a[0]["cid"]
     hosts = dict(campaign.db.execute("SELECT cid, host FROM attempts WHERE kind='verify'").fetchall())
     assert hosts == {a[0]["cid"]: "worker_a", b[0]["cid"]: "worker_b"}
+
+
+def test_operational_hold_blocks_without_dropping_and_survives_unblock(tmp_path):
+    campaign = make_campaign(tmp_path)
+    enqueue_default(campaign)
+    held = campaign.hold(lambda f: f["train.loss"] == "mae", "BLOCKED_COST_01")
+    assert len(held) == 2
+    campaign.declaration["base"]["donors"] = {}
+    assert campaign.unblock() == []  # donor unblocking never releases an operational hold
+    campaign.run(FakeExecutor(campaign, VALUES))
+    counts = campaign.status()["counts"]
+    assert counts == {"verified": 2, "blocked": 2}
+    assert campaign.release_hold("BLOCKED_COST_01") == 2
+    assert campaign.status()["counts"] == {"verified": 2, "queued": 2}

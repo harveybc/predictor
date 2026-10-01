@@ -150,6 +150,8 @@ class Campaign:
         """Re-materialize blocked candidates once their donors are declared in base.donors."""
         released = []
         for row in self.db.execute("SELECT * FROM candidates WHERE status='blocked' ORDER BY position").fetchall():
+            if (row["blocked_reason"] or "").startswith("HOLD:"):
+                continue  # operational holds are released only by release_hold
             flat = json.loads(row["flat"])
             try:
                 nested = ss.from_flat(flat, self.declaration["base"], self.space)
@@ -160,6 +162,23 @@ class Campaign:
                                                       ss.canonical(nested), now(), row["cid"]))
             released.append(ss.digest(nested))
         return released
+
+    def hold(self, predicate, reason):
+        """Block queued candidates whose flat parameters satisfy ``predicate`` (never drops them)."""
+        held = []
+        self.db.execute("BEGIN IMMEDIATE")
+        for row in self.db.execute("SELECT cid, flat FROM candidates WHERE status='queued'").fetchall():
+            if predicate(json.loads(row["flat"])):
+                self.db.execute("UPDATE candidates SET status='blocked', blocked_reason=?, updated=? WHERE cid=?",
+                                ("HOLD:" + reason, now(), row["cid"]))
+                held.append(row["cid"])
+        self.db.execute("COMMIT")
+        return held
+
+    def release_hold(self, reason):
+        cur = self.db.execute("UPDATE candidates SET status='queued', blocked_reason=NULL, updated=? WHERE "
+                              "status='blocked' AND blocked_reason=?", (now(), "HOLD:" + reason))
+        return cur.rowcount
 
     # -------------------------------------------------------------- resume --
     def recover(self):
