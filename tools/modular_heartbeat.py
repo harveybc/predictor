@@ -199,6 +199,38 @@ def gpu_facts():
     return facts
 
 
+def verify_donor_binding(config):
+    """Worker-side check before build_modular: every bound donor's bytes and its OPERATIONAL provenance.
+
+    ``config['modular_candidate']['donor_binding']`` = {"index_sha256", "amendment_sha256",
+    "required_contract", "donors": {path: {"keras", "manifest", "manifest_v2"}}}. Every .keras,
+    schema-1 .manifest.json and alongside .manifest.v2.json sha256 must equal the binding, and
+    donor_provenance(path) must declare the required contract. Raises on any mismatch.
+    """
+    import hashlib
+
+    binding = (config.get("modular_candidate") or {}).get("donor_binding")
+    if not binding:
+        return None
+    from predictor_plugins.modular_temporal.provenance import donor_provenance
+
+    sha = lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest()
+    checked = 0
+    for path, expected in binding["donors"].items():
+        p = Path(path)
+        actual = {"keras": sha(p), "manifest": sha(p.with_suffix(".manifest.json")),
+                  "manifest_v2": sha(p.with_name(p.stem + ".manifest.v2.json"))}
+        if actual != expected:
+            raise ValueError(f"DONOR_BINDING_MISMATCH: {p.name} {actual} != {expected}")
+        contract = donor_provenance(p)["conditioning_contract"]
+        if contract != binding["required_contract"]:
+            raise ValueError(f"DONOR_CONTRACT_MISMATCH: {p.name} declares {contract}")
+        checked += 1
+    return {"donors_checked": checked, "index_sha256": binding["index_sha256"],
+            "amendment_sha256": binding["amendment_sha256"], "required_contract": binding["required_contract"],
+            "result": "VERIFIED_BEFORE_BUILD"}
+
+
 def run_request(request_path, response_path, heartbeat_path, interval=30.0):
     """Evaluate one bridge request under a heartbeat; used by the DOIN worker.
 
@@ -210,6 +242,7 @@ def run_request(request_path, response_path, heartbeat_path, interval=30.0):
     from tools.modular_candidate_evaluator import evaluate_candidate
 
     request = json.loads(Path(request_path).read_text())
+    donor_check = verify_donor_binding(request["config"])  # before any build or GPU work
     facts = gpu_facts()
     identity = {"candidate_output": request["output_dir"], "host_role": os.environ.get("M04_HOST_ROLE")}
     with Heartbeat(heartbeat_path, interval=interval, identity=identity) as beat:
@@ -218,5 +251,7 @@ def run_request(request_path, response_path, heartbeat_path, interval=30.0):
     result["environment"] = {**environment(), "host_role": os.environ.get("M04_HOST_ROLE"), "gpu_facts": facts}
     canonical = json.dumps(request["config"], sort_keys=True, separators=(",", ":"), allow_nan=False)
     result["candidate"] = {"cid": hashlib.sha256(canonical.encode()).hexdigest()}
+    if donor_check is not None:
+        result["donor_check"] = donor_check
     Path(response_path).write_text(json.dumps(result, allow_nan=False) + "\n")
     return result

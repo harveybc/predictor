@@ -278,7 +278,16 @@ def from_flat(flat, base, space):
                                    params, flat["branch.regime"], donors),
              "core": core, "fusion": {"plugin": "sequence_concat", "params": {}},
              "head": {"plugin": "forecast", "params": {}}}
-    nested = {"modular_candidate": {"schema": CANDIDATE_SCHEMA, "search_space_sha256": digest(space)},
+    meta = {"schema": CANDIDATE_SCHEMA, "search_space_sha256": digest(space)}
+    binding = base.get("donor_binding")
+    used = [b["donor"] for b in model["branches"] if b["donor"]] + ([core["donor"]] if core["donor"] else [])
+    if used and binding:
+        missing = [d for d in used if d not in binding["donors"]]
+        if missing:
+            _fail(f"donor binding lacks {len(missing)} declared donors (e.g. {missing[0]})")
+        meta["donor_binding"] = {**{k: binding[k] for k in ("index_sha256", "amendment_sha256", "required_contract")},
+                                 "donors": {d: binding["donors"][d] for d in used}}
+    nested = {"modular_candidate": meta,
               "model": model, "evaluator": evaluator,
               "target_feature_indices": list(base["target_feature_indices"]),
               "objective": dict(base["objective"])}

@@ -719,3 +719,40 @@ def test_per_horizon_table_generator_reads_receipts_and_seasonal_naive(tmp_path)
     assert row["h1_seasonal_MAE"] is not None and row["h2_seasonal_MAE"] is None  # h2 > period 1
     huber = next(p for p in report["pairs"] if p["seeds"] == {2021: 0.30, 2022: 0.32})
     assert huber["mean"] == pytest.approx(0.31) and huber["spread"] == pytest.approx(0.02)
+
+
+def test_worker_verifies_donor_binding_and_contract_before_build(tmp_path, monkeypatch):
+    import hashlib as hl
+    from predictor_plugins.modular_temporal import provenance
+    from tools import modular_heartbeat as hb
+
+    donor = tmp_path / "branch_0.keras"
+    for name, text in (("branch_0.keras", "k"), ("branch_0.manifest.json", "m"), ("branch_0.manifest.v2.json", "v")):
+        (tmp_path / name).write_text(text)
+    sha = lambda t: hl.sha256(t.encode()).hexdigest()
+    binding = {"index_sha256": "i" * 64, "amendment_sha256": "a" * 64, "required_contract": "OPERATIONAL",
+               "donors": {str(donor): {"keras": sha("k"), "manifest": sha("m"), "manifest_v2": sha("v")}}}
+    config = {"modular_candidate": {"donor_binding": binding}}
+    monkeypatch.setattr(provenance, "donor_provenance", lambda p: {"conditioning_contract": "OPERATIONAL"})
+    assert hb.verify_donor_binding(config)["result"] == "VERIFIED_BEFORE_BUILD"
+    monkeypatch.setattr(provenance, "donor_provenance", lambda p: {"conditioning_contract": "UNKNOWN"})
+    with pytest.raises(ValueError, match="DONOR_CONTRACT_MISMATCH"):
+        hb.verify_donor_binding(config)
+    monkeypatch.setattr(provenance, "donor_provenance", lambda p: {"conditioning_contract": "OPERATIONAL"})
+    (tmp_path / "branch_0.manifest.v2.json").write_text("tampered")
+    with pytest.raises(ValueError, match="DONOR_BINDING_MISMATCH"):
+        hb.verify_donor_binding(config)
+    assert hb.verify_donor_binding({"modular_candidate": {}}) is None  # R0: nothing to check
+
+
+def test_from_flat_embeds_only_the_used_donor_binding():
+    base = copy.deepcopy(BASE)
+    base["donors"] = {f"1:branch_{i}": f"/d/branch_{i}.keras" for i in range(321)}
+    base["donors"]["core:1"] = "/d/core.keras"
+    base["donor_binding"] = {"index_sha256": "i", "amendment_sha256": "a", "required_contract": "OPERATIONAL",
+                             "donors": {p: {"keras": "k", "manifest": "m", "manifest_v2": "v"}
+                                        for p in base["donors"].values()}}
+    r1 = ss.from_flat({**DEFAULT_V2, "branch.regime": "R1", "train.seed": 2021, "train.huber_delta": 1.0}, base, SPACE_V2)
+    assert len(r1["modular_candidate"]["donor_binding"]["donors"]) == 321  # branches only, no core
+    r0 = ss.from_flat({**DEFAULT_V2, "train.seed": 2021, "train.huber_delta": 1.0}, base, SPACE_V2)
+    assert "donor_binding" not in r0["modular_candidate"]
