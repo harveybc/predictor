@@ -76,6 +76,8 @@ def recompute(producer, raw: pd.DataFrame, features) -> pd.DataFrame:
 
 def identity_check(stored: np.ndarray, recomputed: np.ndarray, name: str, burn_in=BURN_IN) -> dict:
     s, r = stored[burn_in:].astype(np.float64), recomputed[burn_in:].astype(np.float64)
+    if not np.isfinite(recomputed).any():
+        return {"state": "NOT_PRODUCED_BY_PRODUCER", "n": 0}
     if name == "obv":  # a cumulative sum: identical up to the unknown start offset; compare first differences
         s, r = np.diff(s), np.diff(r)
     ok = np.isfinite(s) & np.isfinite(r)
@@ -148,6 +150,8 @@ def run(pop, out_dir, steps=(3000, 6000, 9000, 12000, 13600), features=None, bur
     for f in features:
         if perturb[f]["future_rows_influence"]:
             v = "FUTURE_ROWS_INFLUENCE_PRODUCER"
+        elif identity[f]["state"] == "NOT_PRODUCED_BY_PRODUCER":
+            v = "CAUSALITY_NOT_VERIFIED_NOT_PRODUCED_BY_PRODUCER"
         elif identity[f]["state"] != "IDENTICAL_WITHIN_TOL":
             v = "CAUSALITY_NOT_VERIFIED_PRODUCER_MISMATCH"
         else:
@@ -162,7 +166,7 @@ def run(pop, out_dir, steps=(3000, 6000, 9000, 12000, 13600), features=None, bur
            "burn_in_rows": int(burn_in), "probe_steps": list(int(s) for s in steps), "identity": identity, "perturbation": perturb,
            "statistical_flags": flags, "verdict": verdict,
            "counts": {k: sum(1 for v in verdict.values() if v.startswith(k)) for k in
-                      ("CAUSAL_BY_RECOMPUTATION", "CAUSALITY_NOT_VERIFIED_PRODUCER_MISMATCH", "FUTURE_ROWS_INFLUENCE_PRODUCER")},
+                      ("CAUSAL_BY_RECOMPUTATION", "CAUSALITY_NOT_VERIFIED_PRODUCER_MISMATCH", "CAUSALITY_NOT_VERIFIED_NOT_PRODUCED_BY_PRODUCER", "FUTURE_ROWS_INFLUENCE_PRODUCER")},
            "suspect_count": int(sum(1 for v in flags.values() if v["suspect"])),
            "cpu_seconds": time.process_time() - t0}
     out_dir = Path(out_dir)

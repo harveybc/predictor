@@ -35,7 +35,7 @@ from c2_eth_population import (PopulationRefusal, bind_population, blocked_split
 N_ROWS = 1400
 TRAIN_END = 1200
 BAR = 14400
-FEATURES = ["f_signal", "f_noise", "f_dup", "f_leak", "f_vol"]
+FEATURES = ["f_signal", "f_noise", "f_dup", "f_vol", "f_leak"]  # the exact leak is LAST so max_features=4 excludes it
 
 
 def _synthetic_view(path: Path, seed=7, gaps=(300, 701)):
@@ -157,7 +157,8 @@ def test_blocked_splits_embargo_the_held_out_block(world):
 def test_planted_signal_has_positive_incremental_utility(world, tmp_path):
     from c2_feature_contribution import run
     pop = world["pop"]
-    table, summary = run(pop, [1], tmp_path, protocols=("blocks5",), skip_hgb=True)
+    # without the exact leak column (which alone reproduces the label and would zero every arm's error)
+    table, summary = run(pop, [1], tmp_path / "nol", protocols=("blocks5",), skip_hgb=True, max_features=4)
     sig = summary["features"]["f_signal"]["blocks5|h1"]
     noise = summary["features"]["f_noise"]["blocks5|h1"]
     assert sig["n_blocks"] == 5
@@ -169,7 +170,8 @@ def test_planted_signal_has_positive_incremental_utility(world, tmp_path):
     assert vol["only_beats_naive_zero_blocks"] >= 3
     ref = summary["reference"]["blocks5|h1"]
     assert ref["full|selected"]["mae_z_mean"] < ref["naive_zero"]["mae_z_mean"]  # the planted world is predictable
-    leak = summary["features"]["f_leak"]["blocks5|h1"]
+    table, summary_all = run(pop, [1], tmp_path / "all", protocols=("blocks5",), skip_hgb=True)
+    leak = summary_all["features"]["f_leak"]["blocks5|h1"]
     assert leak["only_beats_naive_zero_blocks"] == 5
     assert set(table.columns) >= {"population", "view_sha256", "split", "train_rows", "horizon_bars", "n_fit", "n_eval", "mae_z", "mae_log_return"}
 
@@ -193,11 +195,11 @@ def test_leak_probe_passes_a_producer_column_and_catches_a_future_shifted_one(tm
     raw = lp.raw_frame(pd.read_csv(view, parse_dates=["DATE_TIME"]), N_ROWS)
     tech = producer.compute_technical(raw)
     frame["rsi_14"] = tech["rsi_14"].to_numpy()
-    frame["sma_10"] = tech["sma_10"].to_numpy()
-    frame["sma_10_future"] = np.concatenate([tech["sma_10"].to_numpy()[1:], [np.nan]])  # shifted from the future
+    frame["sma_20"] = tech["sma_20"].to_numpy()
+    frame["sma_10"] = np.concatenate([tech["sma_10"].to_numpy()[1:], [np.nan]])  # stored under the producer's name, but shifted from the future
     frame.to_csv(view, index=False)
     vsha = sha256_file(view)
-    feats = ["rsi_14", "sma_10", "sma_10_future", "f_leak", "f_noise"]
+    feats = ["rsi_14", "sma_20", "sma_10", "f_leak", "f_noise"]
     doc = {"schema": "selected_feature_manifest.v1", "status": "FROZEN_DEVELOPMENT", "variant": "A", "resource": {"sha256": vsha},
            "split": {"train": {"rows": [0, TRAIN_END]}}, "admissible_declaration_sha256": pop_mod.DECLARATION_SHA256,
            "features": feats, "feature_count": len(feats), "manifest_sha256_canonical": "0" * 64}
@@ -206,12 +208,14 @@ def test_leak_probe_passes_a_producer_column_and_catches_a_future_shifted_one(tm
     pop = bind_population(view, d / "manifest.json", d / "split.json", expect_view=vsha, expect_manifest=sha256_file(d / "manifest.json"), expect_split=ssha)
     out = lp.run(pop, d / "leak", steps=(600, 900), features=feats, burn_in=300)
     assert out["verdict"]["rsi_14"] == "CAUSAL_BY_RECOMPUTATION"
-    assert out["verdict"]["sma_10"] == "CAUSAL_BY_RECOMPUTATION"
-    assert out["perturbation"]["sma_10"]["future_rows_influence"] is False
-    assert out["perturbation"]["sma_10"]["past_rows_influence"] is True
-    # a column the producer cannot reproduce is not certified; the future-shifted copy differs from the producer
-    assert out["identity"]["sma_10_future"]["state"] == "PRODUCER_MISMATCH"
-    assert out["verdict"]["sma_10_future"].startswith("CAUSALITY_NOT_VERIFIED_PRODUCER_MISMATCH")
+    assert out["verdict"]["sma_20"] == "CAUSAL_BY_RECOMPUTATION"
+    assert out["perturbation"]["sma_20"]["future_rows_influence"] is False
+    assert out["perturbation"]["sma_20"]["past_rows_influence"] is True
+    # the stored sma_10 is not what the producer emits at t: not certified
+    assert out["identity"]["sma_10"]["state"] == "PRODUCER_MISMATCH"
+    assert out["verdict"]["sma_10"].startswith("CAUSALITY_NOT_VERIFIED_PRODUCER_MISMATCH")
+    # a column the producer never emits is a state of its own, and the exact leak is SUSPECT
+    assert out["identity"]["f_leak"]["state"] == "NOT_PRODUCED_BY_PRODUCER"
     assert "SUSPECT_NEXT_BAR_CORRELATION" in out["verdict"]["f_leak"]
     assert "SUSPECT" not in out["verdict"]["f_noise"]
 
