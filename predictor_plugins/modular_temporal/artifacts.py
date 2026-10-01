@@ -20,9 +20,19 @@ def _manifest(role, config, spec, plugin, model, input_grid, output_grid, params
             "input_grid": list(input_grid), "output_grid": list(output_grid)}
 
 
-def _apply_regime(model, spec, manifest):
+DONOR_CONTRACTS = ("OPERATIONAL", "UNKNOWN_ALLOWED")
+
+
+def _apply_regime(model, spec, manifest, donor_contract="OPERATIONAL"):
+    """R1/R2 load the declared donor; the conditioning contract is enforced HERE, by the engine.
+    ``donor_contract`` OPERATIONAL (the default when the config omits it) refuses UNKNOWN and
+    SYNTHETIC_OFFLINE donors by name; only the explicit UNKNOWN_ALLOWED bypasses, and it is then part
+    of the normalized config (and so of bundle.json)."""
+    if donor_contract not in DONOR_CONTRACTS:
+        raise ValueError(f"donor_contract must be one of {DONOR_CONTRACTS}")
     if spec["regime"] != "R0":
-        loaded = load_donor(spec["donor"], manifest)
+        loaded = load_donor(spec["donor"], manifest,
+                            require_contract=None if donor_contract == "UNKNOWN_ALLOWED" else donor_contract)
         try:
             model.set_weights(loaded.get_weights())
         except ValueError as exc:

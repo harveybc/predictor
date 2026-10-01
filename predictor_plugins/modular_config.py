@@ -51,7 +51,7 @@ PREFIXES = ("modular.", "branches.", "core.", "fusion.", "head.")
 _TOP_KEYS = {"schema", "window", "sample_hours", "feature_names", "branch_steps",
              "output_steps", "output_channels", "horizons", "target_count", "regime",
              "alignment_probe", "entry_point_groups"}
-_OPTIONAL_TOP_KEYS = {"budget_caps", "excluded_features"}   # flattened only when present (digest-neutral)
+_OPTIONAL_TOP_KEYS = {"budget_caps", "excluded_features", "donor_contract"}   # flattened only when present (digest-neutral)
 _FIELDS = {"branch": {"features", "plugin", "regime", "donor"},
            "core": {"plugin", "regime", "donor"},
            "fusion": {"plugin"}, "head": {"plugin"}}

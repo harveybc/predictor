@@ -14,7 +14,9 @@ def _normalize(config):
     _keys(c, {"schema", "window", "sample_hours", "feature_names", "branches", "branch_steps",
               "core", "fusion", "head", "output_steps", "output_channels", "entry_point_groups",
               "horizons", "target_count", "regime", "alignment_probe", "budget_caps",
-              "excluded_features"}, "config")
+              "excluded_features", "donor_contract"}, "config")
+    if "donor_contract" in c and c["donor_contract"] not in ("OPERATIONAL", "UNKNOWN_ALLOWED"):
+        raise ValueError("donor_contract must be OPERATIONAL or UNKNOWN_ALLOWED (absent means OPERATIONAL)")
     if c.setdefault("schema", CONFIG_SCHEMA) != CONFIG_SCHEMA:
         raise ValueError(f"Unsupported modular config schema {c['schema']!r}; expected {CONFIG_SCHEMA}")
     if c.setdefault("alignment_probe", True) is not True and c["alignment_probe"] is not False:

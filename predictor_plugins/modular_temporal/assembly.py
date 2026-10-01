@@ -257,7 +257,7 @@ def build_modular(config: dict) -> ModularBundle:
         model = _validate_component(component, [shape], branch_grid)
         effective = effective_params(factory, spec["params"], {"output_steps": c["branch_steps"]})
         manifest = _manifest("branch", c, spec, identity, model, input_grid, branch_grid, effective)
-        _apply_regime(model, spec, manifest)
+        _apply_regime(model, spec, manifest, c.get("donor_contract", "OPERATIONAL"))
         if c["alignment_probe"]:
             probe_alignment(model, input_grid, branch_grid, label="branch " + name)
         branches[name], manifests[name] = model, manifest
@@ -283,7 +283,7 @@ def build_modular(config: dict) -> ModularBundle:
         "output_channels": c["output_channels"]})
     core_manifest = _manifest("core", c, c["core"], identity, core, branch_grid, core_grid, effective)
     core_manifest["upstream"] = _upstream(branches, manifests, fusion, fusion_identity)
-    _apply_regime(core, c["core"], core_manifest)
+    _apply_regime(core, c["core"], core_manifest, c.get("donor_contract", "OPERATIONAL"))
     if c["alignment_probe"]:
         probe_alignment(core, branch_grid, core_grid, label="core")
     latent = core(fused)
