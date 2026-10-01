@@ -756,3 +756,39 @@ def test_from_flat_embeds_only_the_used_donor_binding():
     assert len(r1["modular_candidate"]["donor_binding"]["donors"]) == 321  # branches only, no core
     r0 = ss.from_flat({**DEFAULT_V2, "train.seed": 2021, "train.huber_delta": 1.0}, base, SPACE_V2)
     assert "donor_binding" not in r0["modular_candidate"]
+
+
+def test_r1r2_table_pairs_by_seed_lists_refusals_and_closure(tmp_path):
+    from tools import modular_doin_r1r2_table as r12
+    campaign = make_campaign(tmp_path)
+    (tmp_path / "v").mkdir()
+    _, validation = synthetic_inputs(tmp_path / "v")
+    values = {("huber", 2021): 0.40, ("huber", 2022): 0.38, ("mae", 2021): 0.36, ("mae", 2022): 0.37}
+
+    class Receipting(FakeExecutor):
+        def train(self, nested, output_root, declaration):
+            out = FakeExecutor.train(self, nested, output_root, declaration)
+            path = output_root / "r.json"
+            per = {"1": {"MAE": 0.6, "baseline_MAE": 0.5, "skill_MAE": -0.2},
+                   "2": {"MAE": 0.2, "baseline_MAE": 0.5, "skill_MAE": 0.6}}
+            path.write_text(json.dumps({"candidate": {"cid": ss.digest(nested)}, "digests": {"model_sha256": "m"},
+                                        "metrics": {"MAE": out["objective"], "baseline_MAE": 0.5,
+                                                    "skill_MAE": 1 - out["objective"] / 0.5}, "per_horizon": per}))
+            return {**out, "receipt_path": str(path)}
+
+    h, m = camp.paired_loss_arms(DEFAULT, 1.0)
+    campaign.enqueue(h, "default_R0_huber")
+    campaign.enqueue(m, "default_branch_core_R1_mae")
+    campaign.run(Receipting(campaign, values))
+    campaign.db.execute("UPDATE candidates SET status='REFUSED_BY_ENGINE', blocked_reason='Donor manifest mismatch' "
+                        "WHERE seed=2022 AND label='default_branch_core_R1_mae' AND 0")
+    ref_id = campaign.db.execute("SELECT config_id FROM candidates WHERE label='default_R0_huber'").fetchone()[0]
+    report = r12.build(campaign.root / "queue.sqlite", validation, 1, {"config_id": ref_id}, {"note": "old"},
+                       {"cpu_seconds": 1.0}, {"value": None, "status": "NOT_AVAILABLE", "reason": "no published L24 row"})
+    (c,) = report["contrasts"]
+    assert c["paired_difference_vs_R0"] == {2021: pytest.approx(-0.04), 2022: pytest.approx(-0.01)}
+    assert c["mean_difference"] == pytest.approx(-0.025) and c["R0_spread"] == pytest.approx(0.02)
+    assert c["label_rule"].startswith("STRICT_MINIMUM; gap exceeds")  # 0.025 > 0.02 and > 0.01
+    assert c["pretraining_cost"] == {"cpu_seconds": 1.0}
+    assert all(r["comparability"].startswith("NOT_COMPARABLE") for r in report["closure"])
+    assert report["closure"][0]["model_MAE"] == pytest.approx(0.365)
