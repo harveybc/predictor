@@ -151,3 +151,13 @@ folds with 15 % validation and a 2,016-bar purge. Owner steps, none executed: ru
 new contract file (a calendar-cut helper does not exist yet and lane B writes it after the ruling); save the pending
 resource_contracts entry; promote and restart only the financial lake service as on 2026-09-14; register in data-gov;
 verify a VERIFIED_TRANSFER delivery.
+
+### 8.3 Addendum 11:25Z: third leaked commit on lane F's branch; campaign state
+
+- Lane F reports a third host-name leak in its own branch history: `ffed65e7` pushed a STATUS.json carrying a host name
+  taken from a compiler temp-file path in a child process's command line; fixed forward at `d032d9cb` (the writer now
+  scrubs every host alias and the local host name from every string; the pre-commit grep aborts instead of printing).
+  The owner's force-push decision now covers three commits on that branch: `af215de3`, `1a80f5f6`, `ffed65e7`. Not on master.
+- Corrected campaign (amendment 1, CAMPAIGN sha `12f6030c`, pin `df9ae31c`): 16 grouped/draw R0 cells live on worker_a
+  (first verified pair pending); 8 per-feature cells await their pilot on worker_b; 12 R1/R2 await donors; the corrected
+  donor run is at branch 47 of 321 under a 7G cap after a planned stop and resume (finding MEM-02). No scientific score yet.
