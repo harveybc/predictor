@@ -34,7 +34,8 @@ probe () {   # $1 = label
   mkdir -p "$OUT/$1"
   ( cd "$OUT/$1" && "$PY" -I "$CHECKOUT/tools/m01_boundary_probe.py" --repo "$CHECKOUT" \
       --prediction-provider "$PP" --out "$OUT/$1/probe.json" ) > "$OUT/$1/probe.log" 2>&1
-  ( cd "$CHECKOUT" && "$PY" -I tools/m01_legacy_e2e.py --config "$CONFIG" --out "$OUT/$1/e2e" ) \
+  ( cd "$CHECKOUT" && "$PY" -I tools/m01_legacy_e2e.py --config "$CONFIG" --out "$OUT/$1/e2e" \
+      --code-root "$SRC/pkg" ) \
       > "$OUT/$1/e2e.log" 2>&1
   "$PY" -m pip freeze > "$OUT/$1/pip_freeze.txt"
   "$PY" -c "import keras, tensorflow, sys; print(sys.version.split()[0], tensorflow.__version__, keras.__version__)" \

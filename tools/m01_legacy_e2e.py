@@ -29,6 +29,10 @@ def main():
     p.add_argument("--max_steps_train", default="300")
     p.add_argument("--max_steps_test", default="300")
     p.add_argument("--mc_samples", default="2")
+    p.add_argument("--code-root", default=None,
+                   help="run <code-root>/app/main.py with PYTHONPATH=<code-root> (the supported "
+                        "checkout form; a non-editable install of master lacks predictor_plugins.common "
+                        "and olap, so its installed app/main.py cannot run)")
     a = p.parse_args()
     out = Path(a.out).resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -47,15 +51,21 @@ def main():
     # modules), so run the installed file as a script exactly as predictor.sh does with
     # a checkout: -E -s keep env/user site out; the script's own directory is sys.path[0]
     # and the current directory (the checkout, for data paths) is NOT on sys.path.
-    main_py = Path(app.__file__).parent / "main.py"
-    subprocess.run([sys.executable, "-E", "-s", str(main_py), "--load_config", str(derived),
+    env = {k: v for k, v in os.environ.items() if not k.startswith("PYTHON")}
+    env["CUDA_VISIBLE_DEVICES"] = ""
+    if a.code_root:
+        root = Path(a.code_root).resolve()
+        main_py, env["PYTHONPATH"] = root / "app" / "main.py", str(root)
+    else:
+        main_py = Path(app.__file__).parent / "main.py"
+    subprocess.run([sys.executable, "-s", str(main_py), "--load_config", str(derived),
                     "--epochs", a.epochs, "--max_steps_train", a.max_steps_train,
                     "--max_steps_test", a.max_steps_test, "--mc_samples", a.mc_samples],
-                   check=True, env={**os.environ, "CUDA_VISIBLE_DEVICES": ""})
+                   check=True, env=env)
     results = Path(config["results_file"])
     with results.open() as f:
         rows = list(csv.reader(f))
-    summary = {"app_package": str(Path(app.__file__).parent), "results_header": rows[0],
+    summary = {"code": str(main_py.parent), "results_header": rows[0],
                "metric_labels": [r[0] for r in rows[1:]],
                "outputs_present": sorted(p.name for p in out.iterdir())}
     (out / "e2e_summary.json").write_text(json.dumps(summary, indent=2) + "\n")
