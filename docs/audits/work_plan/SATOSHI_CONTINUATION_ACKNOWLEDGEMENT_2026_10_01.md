@@ -266,3 +266,19 @@ Nothing else in sections 8–9 requires an owner decision; the remaining items t
   pilot beside the 7G donor lease (154 MB short), so extending the repair there changes nothing for lane D; it would
   only let M01's 4G suite and 3G child co-exist with the donor run, which they can already do one at a time. The
   NOT-executed worker_b one-paste stays in DEPLOY.md for whenever the owner wants it; nothing critical waits on it.
+
+### 10.5 Addendum 20:15Z: second coordinator pressure incident and question 20
+
+- Incident COORD-PSI-02 (owner report: gnome-settings-daemon crashed): PSI some avg60 19.6, swap half used, kernel
+  OOM kills inside crispdm scopes at 23:22:28 and 23:28:08 local (lane G's green run in its own 1G cgroup; a batch-slice
+  kill). Lane jobs live on the coordinator at that time: lane G's Keras parity (1.0 GB RSS) and lane B's census hashing
+  (about 74 GB read, 1G-capped children). The earlier "≤ 1G on the coordinator" rule was insufficient. Standing rule
+  now: ZERO batch jobs on the coordinator (only M06's 512M writer and 128M watcher and the 512M campaign runners);
+  all lane CPU work on worker_a (repaired gate) or worker_b. Acknowledged by every lane.
+- Structural fact established by lane B: the lake's data files exist ONLY on the coordinator's disk (the live
+  financial-data lake root); both workers' checkouts hold zero data files; there is no mount or rsync path. Every
+  data-bound CPU job (profiles, hashing, RL pilot inputs, materializations) therefore reads the owner's desktop disk.
+
+| # | Object | Owner | Minimal action |
+|---|---|---|---|
+| 20 | Data locality: the lake lives only on the coordinator (owner's desktop); every lake read lands there | owner | approve a read-only mirror of the lake root on worker_b (646 GB free; sizes to be reported by M06 from metadata), synchronized by a bounded, ionice'd job only while the owner is away; until then, lake reads on the coordinator require Satoshi's explicit approval at 256M, one file at a time, ionice -c3 |
