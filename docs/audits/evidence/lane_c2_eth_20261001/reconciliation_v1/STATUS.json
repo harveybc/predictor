@@ -1,0 +1,95 @@
+{
+  "branch": "predictor satoshi/c2-causal-eth-20261001",
+  "current_work": "Reporting reconciliation only; no jobs started or scheduled",
+  "deliverables": [
+    {
+      "completed": 14336,
+      "id": "D1",
+      "name": "per-feature contribution (83 x 7 h x 8 splits)",
+      "planned": 14336,
+      "state": "DONE 152 s CPU, peak 295 MB"
+    },
+    {
+      "completed": 83,
+      "id": "D1b",
+      "name": "leak probe (producer replay, 83 columns)",
+      "planned": 83,
+      "state": "DONE 83/83 causal, 2.7 s CPU"
+    },
+    {
+      "completed": 498,
+      "id": "D2",
+      "identification": "NOT_IDENTIFIED",
+      "name": "causal dossiers (83 features x 6 h; top-20 delivered)",
+      "planned": 498,
+      "state": "CONTROLS_FAIL_AS_REQUIRED"
+    },
+    {
+      "completed": 1,
+      "id": "D3",
+      "name": "recommendation table (M03/M07)",
+      "planned": 1,
+      "state": "FINAL (1162 rows, dossier columns joined)"
+    },
+    {
+      "basis": "STATUS.json retained declaration; remote artifacts not recounted",
+      "completed": 136,
+      "id": "D4",
+      "name": "PS3-R rerun under M01 tooling (240 records)",
+      "planned": 240,
+      "remaining": 104,
+      "scheduled": false,
+      "state": "RETAINED_PROGRESS_NOT_LIVE_VERIFIED"
+    }
+  ],
+  "eta": null,
+  "historical_milestones": "08:00Z binding+tests green; 08:05Z D1/D1b done; 08:20Z D2 final launched; 08:05Z D4 admitted; 08:15Z D2 done; 08:19Z D2 validated 498/498; 08:20Z D4 resumed at 1.25x measured; 09:44Z interval calibrated (scrambled 18.1 -> 5.6 %), 498/498 re-validated; 10:34Z findings (regime/seasonal) done, evidence split 498/498 valid; 10:18Z ps3r stopped at 136/240 for the GPU cell; 10:41Z EURUSD 1h measurement (variant A not estimable; range family calibrated, rule PASS); 10:55Z EURUSD lake S1/S2 (reserve untouched) + sign stability done; ps3r queued -q at 2.89 GB",
+  "label": "DEVELOPMENT",
+  "lane": "C2 (causality and extraction, front C)",
+  "next_dependencies": "D4 artifact inventory and reconciliation remain outstanding; no dispatch",
+  "population": "financial_data.project3.ethusdt_4h_tech_stat.model_ready.v1 @ predictor b1f8a74f, sha 1b447c66",
+  "provenance": {
+    "evidence_class": "DEVELOPMENT",
+    "generator": "tools/c2_reconcile.py",
+    "generator_sha256": "7db48b79737717ba190d9cb3868a82880fa30e7c0bafe94c34e2f2ffa1b368b0",
+    "limitations": [
+      "D4 progress is source-declared, not a fresh remote measurement",
+      "No point-in-time availability certification or identified causal effect",
+      "Original STATUS/RESULTS/RETURN preserved byte-for-byte"
+    ],
+    "mode": "REPORT_ONLY_NO_EXPERIMENTS",
+    "source_sha256": {
+      "RESULTS.json": "38bd5f44d1261f0f97350e8286c4ccbc37e717bbcd3ccc4c5a10729e140aac70",
+      "RETURN.md": "5ee299731524b4de8b34d65c0574b42fbd017dc2fff2cf4a292975c4775f4a86",
+      "STATUS.json": "132030021f5e89ce051420fca09953ecd81ed7248515eef95c679c5462f84cd1",
+      "calibration/BATTERY_CALIBRATION.json": "1c6cd43730f6f4d74ee59b17b3fc7d355ec78ca020201597c6a90018a3cf928f",
+      "dossiers/DOSSIER_INDEX.json": "32cffc5ebd7fd7477815a37a9e633026a44110283814596fd58a030580965526",
+      "paired_inference/multiseed/MULTISEED.json": "9d3978c4b974d6c8128c9aa634e31409ecb2174349bc087afea9a4dae0ff3f1e"
+    }
+  },
+  "scheduled_actions": [],
+  "schema": "lane_c2_status.reconciled.v1",
+  "seed_policy": {
+    "absolute_max_replicas": 3,
+    "architectures": [
+      "control_mlp_mae_adamw",
+      "grouped_all_mae_adamw"
+    ],
+    "authority": "Owner instruction: preserve historical four-seed evidence as noncompliant; no repetitions",
+    "disposition": "HISTORICAL_PRESERVED_NONCOMPLIANT",
+    "evidence_preserved": true,
+    "normal_fits_per_configuration": 1,
+    "repetitions_scheduled": 0,
+    "retained_cells": 8,
+    "retroactive_seed_selection": false,
+    "seed_count_per_architecture": 4,
+    "seeds": [
+      2021,
+      2022,
+      2023,
+      2024
+    ]
+  },
+  "source_updated_at": "2026-10-01T11:05Z",
+  "split": "M07 SPLIT_eth4h_l24_h6_v1 (sha 116a5b64): TRAIN rows [0,13699), origins [23,13669], 13415 windows, row-ids sha 3903daae reproduced"
+}
