@@ -38,7 +38,10 @@ HOME = os.path.expanduser("~")
 GITHUB = HOME + "/Documents/GitHub"
 HERE = os.path.dirname(os.path.abspath(__file__))
 PROBE = os.path.join(HERE, "m06_fleet_probe.py")
-GPU_MIN_INTERVAL = {"worker_a": 600}   # each nvidia-smi re-initialises worker_a's idle GPUs (slab hypothesis)
+GPU_MIN_INTERVAL = {"worker_a": 60}    # owner order 2026-10-01 (no idle GPU): 60 s sampling for the idle alarm.
+                                       # Trade-off recorded: each query of an idle, non-persistent GPU re-initialises it
+                                       # (worker_a slab hypothesis, UNVERIFIED); the slab series is watched (alert >= 4 GB).
+IDLE_STATE: dict = {}                  # uuid -> {"since": t or None, "events": [(t, idle_dt)], "last_t": t}
 HEARTBEAT_STALE_S = 180
 GPU_CACHE: dict = {}
 LANE_RE = re.compile(r"\b(m0[1-6]|c07|s07|[a-f]-[a-z]+)-", re.I)
@@ -328,6 +331,11 @@ def build(hosts, reg):
                 "cgroup_current_bytes": L["cgroup_current"], "cgroup_peak_bytes": L["cgroup_peak"],
                 "heartbeat_at": iso(hb_at), "heartbeat_path": (hb or {}).get("path", "").replace(HOME, "~") or None,
                 "heartbeat_stale": (hb_at is not None and now - hb_at > HEARTBEAT_STALE_S),
+                "heartbeat_status": ("NONE" if hb_at is None else
+                                     "NO_PROGRESS" if now - hb_at > 120 else "OK"),
+                "heartbeat_age_s": (int(now - hb_at) if hb_at is not None else None),
+                "last_advance": {k: ((hb or {}).get("last") or {}).get(k) for k in ("stage", "progress", "fit", "resume_point", "resources")
+                                 if ((hb or {}).get("last") or {}).get(k) is not None},
                 "progress": {"unit": hint.get("unit", "unknown"), "completed": done, "total": hint.get("total")},
                 "eta": eta_from_history(hb, hint.get("total"), now),
                 "override": overrides.get(L["name"])})
@@ -354,6 +362,17 @@ def build(hosts, reg):
             job = next((j for j in jobs if j.get("host_alias") == role and any(
                 (j.get("lease_id") or "") and g["cgroup"].endswith(".scope") and j["id"] in g["cgroup"] for g in jprocs)), None)
             state = "running" if jprocs else "idle"
+            util = num(f[3])
+            st_ = IDLE_STATE.setdefault(uuid, {"since": None, "events": [], "last_t": None})
+            t_obs = time.time()
+            if st_["last_t"] is not None and util is not None and util == 0:
+                st_["events"].append((t_obs, t_obs - st_["last_t"]))
+            st_["events"] = [e for e in st_["events"] if e[0] > t_obs - 86400]
+            if util is not None and util == 0:
+                st_["since"] = st_["since"] or t_obs
+            elif util is not None:
+                st_["since"] = None
+            st_["last_t"] = t_obs
             devices.append({
                 "host_alias": role, "device": uuid, "name": f[1], "state": state,
                 "job_id": job["id"] if job else (jprocs[0]["cgroup"].rsplit("/", 1)[-1] if jprocs else None),
@@ -373,7 +392,10 @@ def build(hosts, reg):
                                                       "desktop_reserve_bytes", "slice_memory_current",
                                                       "slice_charged_bytes", "slice_memory_max",
                                                       "pressure_some_avg10", "pressure_full_avg10", "pressure_admit_max")},
-                "next_task": reg.get("slot_plan", {}).get(uuid)})
+                "next_task": reg.get("slot_plan", {}).get(uuid),
+                "gpu_idle_seconds_24h": int(sum(e[1] for e in IDLE_STATE[uuid]["events"])),
+                "gpu_idle_current_seconds": (int(time.time() - IDLE_STATE[uuid]["since"]) if IDLE_STATE[uuid]["since"] else 0),
+                "gpu_idle_note": "utilization 0% sampled every <=60 s (worker_a) / every cycle (others); counter restarts with the writer"})
     # jobs that ended: an override for a job id no longer leased becomes its terminal record
     for name, ov in overrides.items():
         if not any(j["id"] == name for j in jobs):
@@ -464,6 +486,11 @@ def main():
     a = ap.parse_args()
     hosts = json.load(open(a.hosts))
     SLAB_SERIES = os.path.join(a.out_dir, "worker_a_slab_series.jsonl")
+    idle_path = os.path.join(os.path.expanduser("~/.local/state/m06"), "gpu_idle_state.json")
+    try:
+        IDLE_STATE.update({k: {**v, "events": [tuple(e) for e in v["events"]]} for k, v in json.load(open(idle_path)).items()})
+    except Exception:
+        pass
     last_sig, last_write = None, 0.0
     while True:
         try:
@@ -478,6 +505,10 @@ def main():
         if changed or now - last_write >= a.period or a.once:
             atomic_write(os.path.join(a.out_dir, "STATUS.json"), st)
             last_write = now
+        try:
+            atomic_write(idle_path, IDLE_STATE)
+        except Exception:
+            pass
         atomic_write(os.path.join(a.out_dir, "HEARTBEAT.json"),
                      {"at": iso(now), "pid": os.getpid(), "status_written_at": iso(last_write), "job_signature": sig})
         print(iso(now), "status" if now == last_write else "poll", "changed" if changed else "same", sig[:300], flush=True)

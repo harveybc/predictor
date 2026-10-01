@@ -4,66 +4,52 @@
   {
    "id": "a5b79d5488abdee3a",
    "kind": "subagent",
-   "lane": "A",
+   "lane": "A2",
    "state": "running",
-   "commit": null,
-   "note": "M01 in lane A (engine integration)"
-  },
-  {
-   "id": "a5289d234c296e0c5",
-   "kind": "subagent",
-   "lane": "A",
-   "state": "running",
-   "commit": null,
-   "note": "M02 in lane A (donors)"
+   "commit": null
   },
   {
    "id": "a160efdffffffa9f2",
    "kind": "subagent",
-   "lane": "B",
+   "lane": "B2",
    "state": "running",
-   "commit": null,
-   "note": "M03"
-  },
-  {
-   "id": "a9946e26c749a1bec",
-   "kind": "subagent",
-   "lane": "C",
-   "state": "acknowledged",
-   "commit": null,
-   "note": "new causality/bibliography agent; dispatch block pending"
+   "commit": null
   },
   {
    "id": "a083979bc9a8fa1b8",
    "kind": "subagent",
-   "lane": "D",
+   "lane": "D2",
    "state": "running",
-   "commit": null,
-   "note": "M04"
+   "commit": null
   },
   {
    "id": "a65d2f3a115a9aa25",
    "kind": "subagent",
-   "lane": "E",
+   "lane": "E2",
    "state": "running",
+   "commit": null
+  },
+  {
+   "id": "afcf115024ffa1381",
+   "kind": "subagent",
+   "lane": "F2",
+   "state": "acknowledged",
    "commit": null,
-   "note": "M05"
+   "note": "M07; STATUS at worker_b ~/.local/state/scratch/m07/STATUS.json"
+  },
+  {
+   "id": "aa7913479a97b45c0",
+   "kind": "subagent",
+   "lane": "G2",
+   "state": "running",
+   "commit": null
   },
   {
    "id": "m06 subagent",
    "kind": "subagent",
    "lane": "F",
    "state": "running",
-   "commit": null,
-   "note": "M06"
-  },
-  {
-   "id": "aa7913479a97b45c0",
-   "kind": "subagent",
-   "lane": "G",
-   "state": "completed",
-   "commit": "9d1a67ce (agent-multi)",
-   "note": "RL owner under M05"
+   "commit": null
   }
  ],
  "results": [
@@ -716,79 +702,89 @@
   "acknowledgement": "predictor satoshi/continuation-ack-20261001 @ 5b5d44d1 (earlier 637107ee)",
   "previous_campaign_return": "docs/audits/evidence/MODULAR_CAMPAIGN_20260930/RETURN.md @ 09f129c5",
   "coverage_addendum": "docs/handoffs/SATOSHI_SOURCE_TRANSFORM_COVERAGE_ADDENDUM_2026_10_01.md @ 256c61a6",
-  "next_dispatch": "docs/handoffs/SATOSHI_NEXT_DISPATCH_2026_10_01.md @ b327b771"
+  "next_dispatch": "docs/handoffs/SATOSHI_NEXT_DISPATCH_2026_10_01.md @ b327b771",
+  "autonomous_orders": "docs/handoffs/SATOSHI_AUTONOMOUS_PARALLEL_EXECUTION_2026_10_01.md (owner standing order 2026-10-01: full autonomy; no GPU idle)"
  },
  "lanes": [
   {
-   "lane": "A",
-   "work": "engine and donors: one architecture, tests/early-stop/resume, manifests",
+   "lane": "A2",
+   "work": "M01: seasonal-residual + R3",
    "agents": [
-    "a5b79d5488abdee3a (M01)",
-    "a5289d234c296e0c5 (M02)"
+    "a5b79d5488abdee3a (M01)"
    ],
-   "branch": "satoshi/a-engine-integration-20261001",
-   "state": "VERIFIED (by the orchestrator)",
-   "first_deliverable": "c0d7b07b architecture proof VERIFIED by the orchestrator (arch_test.log in the pushed tree: 4 passed in 17.20s)",
-   "declaration": "integrated code 3ecdb256 (head 26c13fda evidence-only); suites 128/2/0 checkout, 129/1 xfail installed; legacy boundaries identical; LTS 21/21; receipts docs/audits/evidence/lane_a_engine_20261001/receipts_3ecdb256/ + LANE_A_DECLARATION.md; M02 ports included",
-   "suite": "green at a771e37e: 167/2/0, engine byte-identical to 6c15af13 (orchestrator)"
+   "branch": null,
+   "state": "dispatched",
+   "eta_basis": "none yet: next measurement = first pilot heartbeat"
   },
   {
-   "lane": "B",
-   "work": "data and selection: PS0/PS1, PS2",
+   "lane": "B2",
+   "work": "M03: freezes (selection denominators)",
    "agents": [
     "a160efdffffffa9f2 (M03)"
    ],
    "branch": null,
-   "state": "running (idle)",
-   "tests": "RED at feature-eng d7dd357"
+   "state": "dispatched",
+   "eta_basis": "none yet"
   },
   {
-   "lane": "C",
-   "work": "causality and bibliography: PS3-C spec, PS3-R shortlist",
+   "lane": "C2",
+   "work": "(new agent, id to follow)",
    "agents": [
-    "a9946e26c749a1bec"
+    "(pending)"
    ],
    "branch": null,
-   "state": "acknowledged (idle)"
+   "state": "assigned",
+   "eta_basis": "none"
   },
   {
-   "lane": "D",
-   "work": "optimization: corrected queue and staged cost",
+   "lane": "D2",
+   "work": "M04: v2 campaign on the 5090",
    "agents": [
     "a083979bc9a8fa1b8 (M04)"
    ],
-   "branch": "satoshi/d-corrected-queue-20261001",
+   "branch": null,
    "state": "running",
-   "first_deliverable": "per-feature cell 1 a0f9176f VERIFIED 0.4014148874 (peak 6.04 GB; 0.0983 s/update at width 5136 on the 5090); per-feature verify peak 3.28 GB -> verify cap 4.10 GB amendment; 93ad1b0b running, 6 queued; incumbent unchanged; runner recover() adopts finished worker outcomes (1dd13e5d, 45/45); R1/R2 binding gated on amendment 5 (engine identity proof at M01's post-fix tip)"
+   "eta_basis": "per-family measured cell walls from the v2 queue once a family completes"
   },
   {
-   "lane": "E",
-   "work": "product/business: weekly lane, installed consumer, shadow/paper",
+   "lane": "E2",
+   "work": "M05: adapters/backtest",
    "agents": [
     "a65d2f3a115a9aa25 (M05)"
    ],
    "branch": null,
-   "state": "running",
-   "first_deliverable": "M05 S09 RETURNED: heuristic-strategy 71fa1a4 (61 passed, 12/12 mutants); lts 2b18e17 addendum 9; owner questions 21-23 filed in ack 51339d9f"
+   "state": "dispatched",
+   "eta_basis": "none yet"
+  },
+  {
+   "lane": "F2",
+   "work": "M07: ETH 4h financial forecast campaign on the 4090",
+   "agents": [
+    "afcf115024ffa1381 (M07)"
+   ],
+   "branch": "satoshi/f2-eth-forecast-20261001",
+   "state": "acknowledged",
+   "eta_basis": "CPU cost pilots on worker_b first; next measurement = pilot completion"
+  },
+  {
+   "lane": "G2",
+   "work": "lane G: RL 16 cells on the 5070 Ti and the 4090",
+   "agents": [
+    "aa7913479a97b45c0 (lane G)"
+   ],
+   "branch": null,
+   "state": "dispatched",
+   "eta_basis": "none yet"
   },
   {
    "lane": "F",
-   "work": "resources/evidence: reconcile leases/processes/queues, status, warehouse link",
+   "work": "M06: evidence/resources, idle alarm, admission deploys",
    "agents": [
     "M06 subagent (this)"
    ],
    "branch": "satoshi/m06-evidence-resources-20260930",
-   "state": "running"
-  },
-  {
-   "lane": "G",
-   "work": "RL owner: SAC/DQN x with/without differentiated temporal representation (agent-multi/gym-fx), under M05 coordination",
-   "agents": [
-    "aa7913479a97b45c0 (RL owner under M05)"
-   ],
-   "branch": null,
-   "state": "RETURNED",
-   "first_deliverable": "agent-multi 9d1a67ce: RL01-RL08 42/42 on worker_a at 3G; 16 arm configs bound to DRAFT manifest 22ae7730; DQN verified by fixture; Keras->torch fidelity fused 1e-5 / latent 1e-4; INCIDENT_G-OOM-01; cost-pilot plan blocked on a frozen manifest; predictor export tool 600626c8 (verified by the orchestrator)"
+   "state": "running",
+   "eta_basis": "n/a"
   }
  ],
  "job_hints": {
@@ -1031,8 +1027,10 @@
   }
  ],
  "slot_plan": {
-  "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8": "free after the per-feature pilot; next: M04 per-feature attempts (8 cells) per orders",
-  "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9": "free: available to M04's runner beside M01's 3G PS3-R child and M05's 2G mutant job"
+  "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8": "D2 (M04 a083979bc9a8fa1b8): v2 campaign on the 5090",
+  "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9": "F2 (M07 afcf115024ffa1381): ETH 4h financial forecast campaign; G2 (lane G aa7913479a97b45c0) RL cells share it",
+  "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519": "G2 (lane G aa7913479a97b45c0): RL 16 cells (shares worker_a RAM with the 5090: aggregate admission)",
+  "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326": "coordinator: no batch work (standing rule)"
  },
  "old_design_inventory": {
   "source": "wf_6286ece8-903",
@@ -1101,7 +1099,20 @@
  },
  "campaign_queues": [
   {
-   "name": "m04 campaign_corrected_r0_v1 (pin 3ecdb256)",
+   "name": "m04 campaign_corrected_r0_v2 (D2)",
+   "path": "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v2/queue.sqlite",
+   "excluded_statuses": [
+    "SUPERSEDED_OLD_ARCH",
+    "CANCELLED_SUPERSEDED"
+   ],
+   "parallel_hosts": 1,
+   "identity": {
+    "front": "D2",
+    "runner": "d2-runner-worker-a"
+   }
+  },
+  {
+   "name": "m04 campaign_corrected_r0_v1 (CLOSED: 32 verified + 4 refused of 36)",
    "path": "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/queue.sqlite",
    "excluded_statuses": [
     "SUPERSEDED_OLD_ARCH",
@@ -1248,6 +1259,42 @@
    },
    "smoke": "256M true job: ADMITTED, SCOPE_CLEAN_CACHE_RECLAIM RECLAIMED (36,864 B), released",
    "not_done": "no ceiling change, no drop_caches, no swap change, no persistence mode, no reboot, no force-push; NOT extended to worker_b"
+  },
+  {
+   "at": "2026-10-01T07:25:00Z",
+   "host_alias": "worker_b",
+   "what": "775c5545 (ADM-DEADCACHE-01) via DEPLOY_ADM_DEADCACHE.sh (owner standing order 2026-10-01)",
+   "pre": {
+    "crispdm-run": "499fdc18",
+    "crispdm_admission.py": "8dc2c03b"
+   },
+   "post": {
+    "crispdm-run": "056e207a",
+    "crispdm_admission.py": "7882d20f"
+   },
+   "accounting_after": {
+    "slice_memory_current": 5610418176,
+    "slice_charged_bytes": 1625817088
+   },
+   "smoke": "256M true: SCOPE_CLEAN_CACHE_RECLAIM RECLAIMED 8,192 B 07:25:03Z",
+   "rollback": "rollback_ddadf4a9 (sha-verified)"
+  },
+  {
+   "at": "2026-10-01T07:25:58Z",
+   "host_alias": "worker_b, worker_a",
+   "what": "a1f3898b (ADM-STALE-LEASE-01 + ADM-CANCEL-01) via DEPLOY_ADM_A1F3898B.sh after its suite passed 62/62 in a worker_b checkout (git archive a1f3898b, run under crispdm-run 1G)",
+   "pre": {
+    "crispdm-run": "056e207a",
+    "crispdm_admission.py": "7882d20f"
+   },
+   "post": {
+    "crispdm-run": "bdc50f6063942cd16ebcaaedca3dba138738cbdfc92d07278eb8c3915ca1c666",
+    "crispdm_admission.py": "e4128596a73014e93ec17856324ea7bc83bd623c8b4b612cf866309225f31022"
+   },
+   "order": "admission module installed before the launcher (the new launcher passes --holder-pid)",
+   "smoke": "256M true ADMITTED+RELEASED on both hosts (worker_b 07:25:58-59Z, worker_a 07:26:00-01Z); cancel CLI answered (test marker removed afterwards)",
+   "rollback": "rollback_775c5545 (sha-verified) via DEPLOY_ADM_A1F3898B.sh --rollback",
+   "coordinator": "NOT deployed on the coordinator (not ordered)"
   }
  ],
  "gpu_facts": [
@@ -1259,6 +1306,22 @@
    "result": "OK: device RTX 5090 cc 12.0; placed /job:localhost/replica:0/task:0/device:GPU:0; checksum 1073741824.0 == expected; get_memory_info current 8,390,144 / peak 8,411,136 B",
    "driver_log": "0 NV_ERR_NO_MEMORY lines in the kernel log in the 5 minutes around the probe",
    "caveat": "one small CUDA operation succeeded; the earlier driver NV_ERR_NO_MEMORY record stays separate; this is not a proof of GPU health under load"
+  },
+  {
+   "at": "2026-10-01T07:26:24Z",
+   "host_alias": "worker_b",
+   "device": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+   "test": "crispdm-run -m 2G (a1f3898b launcher), tf.ones 1024x1024 matmul on /GPU:0, TF_DETERMINISTIC_OPS=1, cu12 recipe",
+   "result": "OK: RTX 4090 Laptop cc 8.9; placed GPU:0; checksum exact; memory_info 8,390,144 / 8,399,872 B; 0 NV_ERR_NO_MEMORY in 3 min",
+   "caveat": "one small op"
+  },
+  {
+   "at": "2026-10-01T07:27:45Z",
+   "host_alias": "worker_a",
+   "device": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+   "test": "after a1f3898b: crispdm-run -m 2G queued then admitted, tf.ones matmul on /GPU:0",
+   "result": "OK: RTX 5090 cc 12.0; checksum exact; memory_info 8,390,144 / 8,411,136 B; 0 NV_ERR_NO_MEMORY in 5 min",
+   "caveat": "one small op"
   }
  ],
  "coverage_metric_family_cells": {
