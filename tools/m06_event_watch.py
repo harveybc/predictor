@@ -34,6 +34,9 @@ while True:
         for g in gq:
             need=_bytes(g.get('declared_mem'))
             key=('gqbc',role,g['id'])
+            own=[j for j in d['jobs'] if j.get('host_alias')==role and j['state']=='running' and j.get('uses_gpu') and j.get('lane')==g.get('lane') and j['id']!=g['id']]
+            if own:
+                continue   # GPU_QUEUED_BEHIND_OWN_LANE: one GPU attempt per lane per host; no alarm
             if need and need>free and cpu and key not in warned:
                 lst='; '.join(f"{c['id']} [{c.get('lane')}] cap {(c.get('cap_bytes') or 0)/1e9:.2f} GB vs peak {(c.get('cgroup_peak_bytes') or 0)/1e9:.2f} GB" for c in cpu)
                 out.write(f"{ts()} ALERT GPU_QUEUED_BEHIND_CPU {role}: GPU job {g['id']} needs {need/1e9:.2f} GB, free-for-new {free/1e9:.2f} GB; CPU leases: {lst}\n"); warned.add(key)
