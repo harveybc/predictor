@@ -131,3 +131,9 @@ assumption by the lanes until ruled:
 | 10 | FS13 holding period source for the purge: S07's variant-E config or the target plugin; S07's reserve is not a clean hold-out | owner | rule the hold-out (new prospective window or declared development) and the holding-period source |
 | 11 | FS01 fold definition: TSL 7/1/2 prefix versus 4y/1y/1y with inner chronological folds; Weather physical time UNSUPPORTED | owner / lane B | confirm the fold rule per dataset family |
 | 12 | Cross-lane dependencies absent from the lane table: FS16 M03+M01, FS19 M03+M06, FS18 M04 needs lane B's PS2 batch | owner | acknowledge; lanes name the other half as a dependency, not as covered |
+
+### 8.1 Addendum 06:30Z: question 13
+
+| # | Object | Owner | Minimal action |
+|---|---|---|---|
+| 13 | PS3-C has no contracted price source for its asset: none of the 198 sealed financial appearances covers EURUSD, and subplan 5.1 forbids swapping the asset; the only contracted episode sources are the FXMacroData announcements and the release calendar; the 2011-2021 archive, FRED proxies and uncontracted EURUSD bars are NOT_ADMISSIBLE_NO_CONTRACT | owner | seal a EURUSD price appearance through the governed route; lane B prepares the sealing request (source sha, split rule, identity fields, activation path) without activating it; PS3-C is specified and bound, NOT_EXECUTABLE until then |
