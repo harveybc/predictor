@@ -156,8 +156,10 @@ def campaign_progress(reg, now):
         dependency_held = {k: v for k, v in live.items() if k == "blocked" or k.startswith("HOLD")}
         fin = [a for a in att if a[1] == "completed" and a[4]]
         def family(lbl):
-            # e.g. corrected_default_R0_huber -> corrected_default ; corrected_draw3_R0_mae -> corrected_draw3
-            return "_".join((lbl or "").split("_")[:2])
+            # the label without its loss suffix: corrected_default_R0_huber -> corrected_default_R0,
+            # corrected_default_branch_R1_huber -> corrected_default_branch_R1 (regime and donor scope matter)
+            parts = (lbl or "").split("_")
+            return "_".join(parts[:-1]) if len(parts) > 1 else (lbl or "")
         cell_s = {}
         for a_ in fin:
             fam = family(labels.get(a_[7]))
