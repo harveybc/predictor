@@ -60,7 +60,7 @@ def naive_predictions(data, mu, sigma, seasonal_period):
     out["train_mean"] = np.zeros_like(y)
     seasonal = np.full_like(y, np.nan)
     for k, h in enumerate(horizons):
-        if h <= seasonal_period and seasonal_period + h - 1 <= w - 1:
+        if h <= seasonal_period <= w:
             # rows t-P+1 .. t-P+h  <->  window positions (w-1)-P+1 .. (w-1)-P+h
             lo, hi = (w - 1) - seasonal_period + 1, (w - 1) - seasonal_period + h
             seasonal[:, k, :] = x[:, lo:hi + 1, :][:, :, idx].sum(axis=1)

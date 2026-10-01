@@ -56,7 +56,7 @@ def test_naive_definitions(tmp_path):
 def test_seasonal_not_available_when_outside_window(tmp_path):
     make_npz(tmp_path / "v.npz")
     data, _ = nv._load_validation(tmp_path / "v.npz")
-    table = nv.naive_table(data, MU, SIGMA, 30)  # period 30 > window 24
+    table = nv.naive_table(data, MU, SIGMA, 30)  # period 30 > window 24: no row one period back
     assert table["per_naive"]["seasonal_30"]["1"]["status"] == "NOT_AVAILABLE"
     assert table["strict_minimum"]["1"]["naive"] in ("persistence_last_value", "zero_return", "train_mean")
 
