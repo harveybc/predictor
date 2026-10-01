@@ -1,0 +1,86 @@
+{
+ "_source": {
+  "file": "feature-eng docs/feature_metrics/laneB/f1/ETH_VARIANT_D_FAMILIES_PROBE.v1.json @ 2840e52",
+  "sha256": "cfc77827d11908962b0403d54728384b4ac0b1ca97bd2368fe1cc05863dec623",
+  "probe": "ridge alpha=1.0, fold-TRAIN standardization, naive zero return",
+  "units": "raw log return, lane B rows"
+ },
+ "native_wavelet": {
+  "columns": [
+   "wavelet_native_A3",
+   "wavelet_native_D3",
+   "wavelet_native_D2",
+   "wavelet_native_D1",
+   "wavelet_native_energy_D3",
+   "wavelet_native_energy_D2",
+   "wavelet_native_energy_D1"
+  ],
+  "mean_mae_by_target": {
+   "Y_s@4h": 0.010920799587774142,
+   "Y_l@24h": 0.02875210538379926,
+   "Y_l@144h": 0.07445193806345633
+  },
+  "naive_mean_by_target": {
+   "Y_s@4h": 0.010880835431918345,
+   "Y_l@24h": 0.02853350826199755,
+   "Y_l@144h": 0.07269614178502508
+  },
+  "status": null
+ },
+ "rolling_zscore": {
+  "columns": [
+   "z_logclose_20",
+   "z_logclose_60",
+   "z_ret_60"
+  ],
+  "mean_mae_by_target": {
+   "Y_s@4h": 0.010944270434528655,
+   "Y_l@24h": 0.028802971395373463,
+   "Y_l@144h": 0.07345488647075085
+  },
+  "naive_mean_by_target": {
+   "Y_s@4h": 0.010880835431918345,
+   "Y_l@24h": 0.02853350826199755,
+   "Y_l@144h": 0.07269614178502508
+  },
+  "status": null
+ },
+ "realized_volatility": {
+  "columns": [
+   "rv_std_ret_6",
+   "rv_std_ret_24",
+   "rv_std_ret_42",
+   "parkinson_6",
+   "parkinson_24"
+  ],
+  "mean_mae_by_target": {
+   "Y_s@4h": 0.01087376274596087,
+   "Y_l@24h": 0.028571299554234302,
+   "Y_l@144h": 0.07299795274311505
+  },
+  "naive_mean_by_target": {
+   "Y_s@4h": 0.010880835431918345,
+   "Y_l@24h": 0.02853350826199755,
+   "Y_l@144h": 0.07269614178502508
+  },
+  "status": null
+ },
+ "range": {
+  "columns": [
+   "log_high_low",
+   "close_location",
+   "log_close_open"
+  ],
+  "mean_mae_by_target": {
+   "Y_s@4h": 0.010834431617771624,
+   "Y_l@24h": 0.02852618302617301,
+   "Y_l@144h": 0.07251790332202081
+  },
+  "naive_mean_by_target": {
+   "Y_s@4h": 0.010880835431918345,
+   "Y_l@24h": 0.02853350826199755,
+   "Y_l@144h": 0.07269614178502508
+  },
+  "status": null
+ }
+}

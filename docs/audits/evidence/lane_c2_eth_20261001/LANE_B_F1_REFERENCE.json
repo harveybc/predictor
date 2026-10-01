@@ -1,0 +1,26 @@
+{
+ "Y_s@4h": {
+  "C_ALL": 0.012955259783989606,
+  "naive": 0.010880835431918345,
+  "val_rows_total": 6162,
+  "folds": 3
+ },
+ "Y_l@24h": {
+  "C_ALL": 0.046320932651978404,
+  "naive": 0.02853350826199755,
+  "val_rows_total": 6147,
+  "folds": 3
+ },
+ "Y_l@144h": {
+  "C_ALL": 0.15574472502399136,
+  "naive": 0.07269614178502508,
+  "val_rows_total": 6057,
+  "folds": 3
+ },
+ "_source": {
+  "file": "feature-eng docs/feature_metrics/laneB/f1/eth_f1_probe.json @ 678665e",
+  "sha256": "ad7feba4bb96b7dfa94c9d47e879bf2e575ea1423f478f0b59080f8a89f58d32",
+  "units": "raw log return (elapsed-second labels), lane B rows",
+  "probe": "ridge alpha=1.0, fold-train standardization, default (declared before measuring)"
+ }
+}
