@@ -371,3 +371,44 @@ def test_operational_hold_blocks_without_dropping_and_survives_unblock(tmp_path)
     assert counts == {"verified": 2, "blocked": 2}
     assert campaign.release_hold("BLOCKED_COST_01") == 2
     assert campaign.status()["counts"] == {"verified": 2, "queued": 2}
+
+
+def test_concurrent_runners_claim_disjoint_candidates(tmp_path):
+    """Two runners racing on one sqlite queue (BEGIN IMMEDIATE claim): no candidate twice."""
+    import threading
+
+    campaign = make_campaign(tmp_path)
+    enqueue_default(campaign)
+    h, m = camp.paired_loss_arms({**DEFAULT, "core.dropout": 0.1}, 0.5)
+    campaign.enqueue(h, "x_huber")
+    campaign.enqueue(m, "x_mae")
+    claimed, errors = {"worker_a": [], "worker_b": []}, []
+    barrier = threading.Barrier(2)
+
+    def runner(host):
+        try:
+            own = camp.Campaign(campaign.root)
+            barrier.wait()
+            while True:
+                got = own.claim(host)
+                if got is None:
+                    return
+                claimed[host].append(got[0]["cid"])
+        except Exception as exc:  # pragma: no cover - reported below
+            errors.append(exc)
+
+    threads = [threading.Thread(target=runner, args=(h,)) for h in claimed]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert not errors
+    everything = claimed["worker_a"] + claimed["worker_b"]
+    assert len(everything) == len(set(everything)) == 8
+
+
+def test_cpu_request_reports_no_gpu_and_arms_nothing(monkeypatch):
+    from tools.modular_heartbeat import gpu_facts
+
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "")
+    assert gpu_facts() == {"cpu_only": True, "cuda_visible_devices": "", "fallback_raise_armed": False}

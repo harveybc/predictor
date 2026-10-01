@@ -147,15 +147,58 @@ def environment():
             "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES")}
 
 
+def gpu_facts():
+    """Assert, inside this child, the device the launcher pinned by CUDA_VISIBLE_DEVICES=<uuid>.
+
+    Three facts: the driver exposes the UUID (nvidia-smi), TensorFlow registers a GPU,
+    and a matmul is placed on /GPU:0. Any failure raises GPU_REQUEST_FELL_BACK_TO_CPU.
+    A CPU request (empty CUDA_VISIBLE_DEVICES) returns {"cpu_only": True}.
+    """
+    import subprocess
+
+    pinned = os.environ.get("CUDA_VISIBLE_DEVICES", "")
+    if not pinned.startswith("GPU-"):
+        return {"cpu_only": True, "cuda_visible_devices": pinned, "fallback_raise_armed": False}
+    smi = subprocess.run(["nvidia-smi", "--query-gpu=uuid,name,memory.total,temperature.gpu",
+                          "--format=csv,noheader"], capture_output=True, text=True, timeout=30)
+    visible = [line.strip() for line in smi.stdout.splitlines() if line.strip()]
+    import tensorflow as tf
+
+    gpus = tf.config.list_physical_devices("GPU")
+    for gpu in gpus:
+        tf.config.experimental.set_memory_growth(gpu, True)
+    facts = {"expected_uuid": pinned, "cuda_visible_devices": pinned, "fallback_raise_armed": True,
+             "driver_visible": visible, "driver_uuid_ok": any(pinned in line for line in visible),
+             "tf_registered": [{"name": g.name, **{k: str(v) for k, v in
+                                tf.config.experimental.get_device_details(g).items()}} for g in gpus]}
+    if not gpus or not facts["driver_uuid_ok"]:
+        raise RuntimeError(f"GPU_REQUEST_FELL_BACK_TO_CPU: driver/TF do not expose {pinned}")
+    with tf.device("/GPU:0"):
+        probe = tf.linalg.matmul(tf.ones((256, 256)), tf.ones((256, 256)))
+    facts["op_placement"] = probe.device
+    if "GPU" not in probe.device:
+        raise RuntimeError(f"GPU_REQUEST_FELL_BACK_TO_CPU: matmul placed on {probe.device}")
+    return facts
+
+
 def run_request(request_path, response_path, heartbeat_path, interval=30.0):
-    """Evaluate one bridge request under a heartbeat; used by the DOIN worker."""
+    """Evaluate one bridge request under a heartbeat; used by the DOIN worker.
+
+    The receipt gains ``environment`` (versions, host role, the three in-child GPU
+    facts) and ``candidate`` (the campaign candidate id = canonical sha of the config).
+    """
+    import hashlib
+
     from tools.modular_candidate_evaluator import evaluate_candidate
 
     request = json.loads(Path(request_path).read_text())
-    identity = {"candidate_output": request["output_dir"]}
+    facts = gpu_facts()
+    identity = {"candidate_output": request["output_dir"], "host_role": os.environ.get("M04_HOST_ROLE")}
     with Heartbeat(heartbeat_path, interval=interval, identity=identity) as beat:
         result = evaluate_candidate(request["config"], request["train_path"], request["validation_path"],
                                     request["output_dir"], progress=beat.update)
-    result["environment"] = environment()
+    result["environment"] = {**environment(), "host_role": os.environ.get("M04_HOST_ROLE"), "gpu_facts": facts}
+    canonical = json.dumps(request["config"], sort_keys=True, separators=(",", ":"), allow_nan=False)
+    result["candidate"] = {"cid": hashlib.sha256(canonical.encode()).hexdigest()}
     Path(response_path).write_text(json.dumps(result, allow_nan=False) + "\n")
     return result

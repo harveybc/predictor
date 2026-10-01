@@ -430,7 +430,7 @@ class DoinBridgeExecutor:
 
     def _launch(self, argv, output_root, kind, declaration):
         res = self.resources[kind]
-        env_prefix = ["env", f"CUDA_VISIBLE_DEVICES={self.e.get('cuda_visible_devices', '')}",
+        env_prefix = ["env", f"CUDA_VISIBLE_DEVICES={self.e.get('cuda_visible_devices', '')}", f"M04_HOST_ROLE={self.host}",
                       "PYTHONUNBUFFERED=1", f"PYTHONPATH={self.e['doin_pythonpath']}",
                       *[f"{k}={v}" for k, v in sorted(self.e.get("extra_env", {}).items())]]
         command = [self.e["crispdm_run"], "-m", res["cap"], "-t", res["wall"], "-q", "-W",
@@ -529,7 +529,7 @@ def summarize_train(output_root, code, elapsed):
             "model_sha256": receipt["digests"]["model_sha256"], "weights_sha256": receipt["digests"]["weights_sha256"],
             "data_sha256": {"train": receipt["digests"]["train_sha256"],
                             "validation": receipt["digests"]["validation_sha256"]},
-            "environment": receipt.get("environment")}
+            "environment": receipt.get("environment"), "candidate": receipt.get("candidate")}
 
 
 def summarize_verify(output_root, code, elapsed):
@@ -539,6 +539,8 @@ def summarize_verify(output_root, code, elapsed):
         log = Path(output_root) / "launcher.log"
         return {**outcome, "status": "failed", "error": (log.read_text()[-2000:] if log.exists() else f"exit {code}")}
     result = json.loads(found[0].read_text())
+    peak = result.get("resources", {}).get("cgroup", {}).get("peak_bytes")
+    outcome["cgroup_peak_bytes"] = peak if isinstance(peak, int) else None
     return {**outcome, "status": "completed", "verdict": result["verdict"], "receipt_path": str(found[0]),
             "objective": result["objective"]["rescored_value"], "model_sha256": result["digests"]["model_sha256"],
             "error": "; ".join(result["problems"]) or None}

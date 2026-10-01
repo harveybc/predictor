@@ -46,6 +46,16 @@ def _sha_file(path):
     return digest.hexdigest()
 
 
+def _cgroup_resources():
+    """Whole-cgroup memory of this verification child (for its declared cap)."""
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+        from tools.modular_heartbeat import cgroup_memory, process_memory
+        return {"cgroup": cgroup_memory(), "process": process_memory()}
+    except Exception as exc:  # resource reading must never change a verdict
+        return {"error": str(exc)}
+
+
 def _load_validation(path):
     raw = Path(path).read_bytes()
     with np.load(io.BytesIO(raw), allow_pickle=False) as archive:
@@ -138,7 +148,8 @@ def verify(receipt_path, validation_path, output_path, *, batch_size=512, rtol=1
               "metrics": metrics, "per_horizon": per_horizon, "validation_rows": int(len(x)),
               "tolerance": {"rtol": rtol, "atol": atol},
               "elapsed_seconds": time.monotonic() - started, "pid": os.getpid(),
-              "environment": {"tensorflow": tf.__version__, "keras": tf.keras.__version__,
+              "resources": _cgroup_resources(),
+              "environment": {"host_role": os.environ.get("M04_HOST_ROLE"), "tensorflow": tf.__version__, "keras": tf.keras.__version__,
                               "numpy": np.__version__, "executable": sys.executable,
                               "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES")}}
     Path(output_path).write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
