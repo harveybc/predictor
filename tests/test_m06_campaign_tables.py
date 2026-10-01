@@ -180,3 +180,15 @@ def test_without_same_row_seasonal_values_the_table_says_not_available():
     q, rec = fixture()
     cmd, inc = T.render(T.build(q, rec), legacy=True, seasonal_na="receipts carry no seasonal values")
     assert "NOT_AVAILABLE" in cmd and "NOT_AVAILABLE" in inc and "design" not in cmd.split("\n")[4]
+
+
+def test_a_cell_outside_the_diagnostic_is_accepted_only_with_same_row_persistence():
+    q, rec = fixture()
+    for r in rec.values():
+        r["validation_rows"] = 10
+    diag = _diag(q, rec)
+    diag["models"] = diag["models"][1:]                 # first verified cell not in the diagnostic
+    assert T.check_seasonal(diag, q, rec)["aggregate"] == 0.25
+    rec[cid(1)[:16]]["per_horizon"]["2"]["baseline_MAE"] = 0.9   # different rows
+    with pytest.raises(T.CampaignRefusal, match="MISSING_CIDS"):
+        T.check_seasonal(diag, q, rec)

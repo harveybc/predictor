@@ -270,15 +270,16 @@
    "generated_from": "RESULTS/m04_campaign_tables.json"
   },
   {
-   "task": "ECL L24 -> H1..24, all 321 channels (corrected batch 1, pin df9ae31c / engine 3ecdb256)",
+   "task": "ECL L24 -> H1..24, all 321 channels (corrected batch, pin df9ae31c / engine 3ecdb256)",
    "split": "validation",
    "population_id": "2609 windows x 24 horizons x 321 channels",
-   "model": "corrected incumbent 9cc0a1f4 corrected_draw3_R0_mae (mean of seeds [2021, 2022])",
+   "model": "corrected incumbent seq 5 c09f3034 corrected_default_R0_mae (mean of seeds [2021, 2022])",
    "metric": "MAE",
    "space": "z_train",
    "reduction": "mean over all elements",
-   "value": 0.3910575164106178,
+   "value": 0.38356499199182625,
    "naive": 0.8514061497227646,
+   "seasonal_naive_24h": 0.24796637423429127,
    "literature": {
     "value": null,
     "source": null,
@@ -286,7 +287,7 @@
    },
    "evidence_state": "measured",
    "class": "NOT_COMPARABLE",
-   "note": "two-seed spread 0.006841; negative skill at h1/h23/h24",
+   "note": "STRICT-MINIMUM selection, not a demonstrated advantage (\u0394 -0.0074925244 vs 9cc0a1f4; spread 0.0098); skill vs persistence negative at h1/h23/h24; the 24 h seasonal naive (0.248) beats every candidate at every horizon",
    "generated_from": "RESULTS/corrected_campaign_tables.json"
   }
  ],
@@ -533,6 +534,11 @@
    "at": "2026-10-01T05:06:00Z",
    "host_alias": "worker_a",
    "event": "lane D runner relaunched (d-runner-worker-a, 512M scope ON THE COORDINATOR) at pin df9ae31c, CAMPAIGN 1ccb932b; 93ad1b0b VERIFIED; train 8c2a2eab lease m04-train-8c2a2eab-1790831078-279509-6bc681 cap 6,899,630,080 B; 5 per-feature cells remain, one GPU attempt at a time"
+  },
+  {
+   "at": "2026-10-01T05:19:07Z",
+   "host_alias": "worker_a",
+   "event": "incumbent change seq 5: c09f3034 corrected_default_R0_mae (per-feature, MAE loss), seeds 8c2a2eab 0.3884455575 / 103303b1 0.3786844265, mean 0.38356499199, spread 0.0098; previous 9cc0a1f4 0.39105751641; STRICT-MINIMUM selection, NOT a demonstrated advantage; campaign 20/36 verified, 4 per-feature left"
   }
  ],
  "launch_recipes": {
@@ -1275,7 +1281,8 @@
   {
    "since": "2026-10-01T04:33Z",
    "rule": "ZERO batch jobs on the coordinator; the only exceptions are M06's 512M STATUS writer and 128M event watcher. Every lane's CPU work goes to worker_a (repaired gate) or worker_b.",
-   "alert": "coordinator PSI some avg60 > 10 or MemAvailable < 12 GB, pushed to the orchestrator immediately; any non-M06 batch job seen on the coordinator is alerted"
+   "alert": "coordinator PSI some avg60 > 10 or MemAvailable < 12 GB, pushed to the orchestrator immediately; any non-M06 batch job seen on the coordinator is alerted",
+   "exceptions": "M06 STATUS writer (512M), M06 event watcher (128M), d-runner-worker-a (lane D runner, 512M cap, <64 MB observed, orchestration only; orchestrator exemption)"
   }
  ],
  "incidents": [
@@ -1367,5 +1374,19 @@
   },
   "evidence": "RESULTS/lake_metadata_coordinator.json",
   "note": "nothing copied; mirror is an owner decision"
- }
+ },
+ "exemptions": [
+  {
+   "job": "d-runner-worker-a (lane D campaign runner on the coordinator)",
+   "granted_by": "orchestrator (Satoshi)",
+   "at": "2026-10-01T05:2xZ",
+   "class": "orchestration process (same class as M06's writer and watcher)",
+   "conditions": [
+    "cap 512M",
+    "no data loading or model code in that scope (ssh/launch/poll only)",
+    "observed peak must stay under 64 MB; exceeding 64 MB or loading data is a breach M06 reports immediately and M04 stops it through the admission tool"
+   ],
+   "reason": "workers cannot reach each other over ssh; the alternative (launcher on worker_a) would spend the scarcer 14 GB host memory with unreclaimable slab"
+  }
+ ]
 }

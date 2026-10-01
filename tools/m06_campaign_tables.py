@@ -50,8 +50,16 @@ def check_seasonal(diag: dict, queue: dict, receipts: dict) -> dict:
     pop = diag.get("population", {})
     vcids = {c["cid"] for c in queue["candidates"] if c["status"] == "verified"}
     dcids = {m["cid"] for m in diag.get("models", [])}
-    if vcids - dcids:
-        raise CampaignRefusal(f"SEASONAL_DIAGNOSTIC_MISSING_CIDS: {sorted(x[:16] for x in vcids - dcids)}")
+    persist0 = {str(b["horizon"]): b["naive_MAE"] for b in diag["baselines"]}
+    for cid in sorted(vcids - dcids):
+        # not in the diagnostic: accepted only if its own receipt proves the same rows (identical
+        # same-row persistence MAE at every horizon and the same validation row count)
+        rc = receipts.get(cid[:16])
+        if rc is None:
+            raise CampaignRefusal(f"SEASONAL_DIAGNOSTIC_MISSING_CIDS: {cid[:16]} (no receipt)")
+        if int(rc.get("validation_rows") or -1) != int(pop.get("rows")) or any(
+                abs(rc["per_horizon"][h]["baseline_MAE"] - v) > 1e-9 for h, v in persist0.items()):
+            raise CampaignRefusal(f"SEASONAL_DIAGNOSTIC_MISSING_CIDS: {cid[:16]} not proven on the same rows")
     for m in diag["models"]:
         rc = receipts.get(m["cid"][:16])
         if rc is None:
@@ -218,7 +226,8 @@ def render(t: dict, annotations: dict | None = None, legacy: bool = False, seaso
               f"{h['mean_objective']:.6f} over seeds {h['seeds']}", f"Reason: {h['reason']}.", ""]
         note = (annotations or {}).get(h["config_id"])
         if note:
-            i += [f"Architecture class (from {note['source']}): **{note['class']}**. {note['text']}", ""]
+            lead = "Architecture class" if legacy else "Annotation"
+            i += [f"{lead} (from {note['source']}): **{note['class']}**. {note['text']}", ""]
         hs = list(h["per_seed"][0]["per_horizon_skill_MAE"])
         if legacy:
             i.append("| seed cid | MAE | persistence MAE | skill MAE | " + " | ".join(f"h{k}" for k in hs) + " |")

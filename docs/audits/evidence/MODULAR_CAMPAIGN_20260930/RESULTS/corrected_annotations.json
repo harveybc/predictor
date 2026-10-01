@@ -1,0 +1,7 @@
+{
+ "c09f3034": {
+  "class": "STRICT_MINIMUM_SELECTION (not a demonstrated advantage)",
+  "source": "predeclared strict-minimum validation incumbent rule (orders b327b771 item 4); verified by the orchestrator on worker_a",
+  "text": "\u0394 vs previous incumbent 9cc0a1f4 = -0.0074925244; two-seed spreads 0.0098 (this) and 0.0068 (previous) are of the same order as the gap, so the change is a selection, not a demonstrated advantage. The 24 h seasonal naive (0.248) remains better than every candidate."
+ }
+}
