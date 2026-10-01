@@ -41,6 +41,16 @@ while True:
                 lst='; '.join(f"{c['id']} [{c.get('lane')}] cap {(c.get('cap_bytes') or 0)/1e9:.2f} GB vs peak {(c.get('cgroup_peak_bytes') or 0)/1e9:.2f} GB" for c in cpu)
                 out.write(f"{ts()} ALERT GPU_QUEUED_BEHIND_CPU {role}: GPU job {g['id']} needs {need/1e9:.2f} GB, free-for-new {free/1e9:.2f} GB; CPU leases: {lst}\n"); warned.add(key)
             if need and need<=free: warned.discard(key)
+    for c in d.get('campaigns',[]):
+        sc=c.get('status_counts') or {}
+        runnable=sum(v for k,v in sc.items() if k in ('queued','running','verifying','completed','trained'))
+        pat=(c.get('identity') or {}).get('runner_pattern') or (r'^d\d*-runner-' if 'm04' in c.get('campaign','') and 'v2' in c.get('campaign','') else None)
+        if not pat or not runnable: continue
+        alive=[j for j in d['jobs'] if j['state']=='running' and re.match(pat,j['id'])]
+        key=('runner',c['campaign'])
+        if not alive and key not in warned:
+            out.write(f"{ts()} ALERT RUNNER_DOWN {c['campaign']}: {runnable} runnable cells and no runner matching {pat} alive\n"); warned.add(key)
+        if alive: warned.discard(key)
     cur={j['id']:(j['state'],j.get('phase'),j.get('host_alias'),j.get('cgroup_peak_bytes'),(j.get('progress') or {}).get('completed')) for j in d['jobs']}
     if jobs is not None:
         for k,v in cur.items():
