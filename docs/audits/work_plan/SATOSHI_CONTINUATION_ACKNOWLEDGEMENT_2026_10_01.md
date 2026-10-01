@@ -428,3 +428,41 @@ fleet's NTP-synchronised UTC; from 10.9 on, every stamp is fleet UTC as recorded
   FXMacroData catalogue call and the Alpaca data-feed probe are named deferred rows for the owner, blocking nothing.
 - **Admission:** 775c5545 and the stale-lease + `cancel` fix a1f3898b deployed on both workers with rollback and real
   CUDA-op checks; the coordinator keeps the old launcher (not ordered).
+
+### 10.10 Addendum 08:15Z (fleet UTC, 2026-10-01): resource rules issued under §5, lane B's probe summary, front E sizing gaps
+
+- **Resource rules now in force (technical checks, not permissions), enforced by M06 alarms:** GPU jobs first on every
+  worker; a lane runs one CPU job at a time on a host that has a GPU job queued; every cap is declared at 1.25× the
+  measured peak of that job type (re-declaring a cap that was set above its measurement is not "lowering a cap"; the
+  prohibition is against going below measurement); a pre-measurement PILOT cap may be re-declared only from a stated
+  derivation, labelled PILOT_CAP_DERIVED, and a pilot stop at that cap is a fact, not a lost result; alarms
+  GPU_QUEUED_BEHIND_CPU (names the CPU leases, cap vs observed, lane owners) and GPU idle at 120 s (15 s sampling, 10 s
+  relay, measured end-to-end latency ≈145 s); exempt processes on the coordinator: M06's writer, watcher and GPU sampler,
+  the `d*-runner-*` launchers (≤512M, <64 MiB observed), and one-off approved lake reads `laneB-*-bounded-read`
+  (≤256M, ≤10 min). Over-declarations found and corrected today: C2 3.98×, lane G CPU 3.15×, lane G GPU 2.28×, lane A
+  1.45× their observed peaks.
+- **Admission on the secondary worker:** the dead-cache repair 775c5545 and the stale-lease + `cancel` fix a1f3898b are
+  deployed on both workers (62/62, real CUDA-op admission checks, rollbacks verified); the coordinator keeps the old
+  launcher. ADM-PROC-01 (two SIGTERMs to queued acquirers that held no lease) is therefore closed at the root.
+- **Idle incidents today, all with named causes:** D2-IDLE-01 (planned runner switch; restart watcher matched its own
+  command line), D2-IDLE-02 (structural 1–2 min inter-cell gap on a 14 GB host; repair ordered: queue the next train at
+  child exit, stream the fused input from the memmap to cut the per-cell cap), the 4090 queue behind over-declared CPU
+  reservations (rules above), and the 5070 Ti, idle because nothing fits in ~1.9–2.6 GB of host headroom beside a 6.9G
+  lane D lease: the next fits are lane G's DQN cells (cap to be declared from the full-buffer peak measured on the 4090)
+  and M07's per-feature cells (CPU peak 1.52 GB).
+- **Lane B (980e087), holding:** LANE_B_PROBE_SUMMARY.v1 (366 rows; 27 PASS, 312 FAIL; S1/S2 agree on 125/138) states
+  that under the pre-declared ridge probe the all-admissible variant A never beats the zero-return naive on any asset,
+  split or horizon; the range family passes only at EURUSD 1 h (git-pinned), EURUSD lake 1–4 h, GBPUSD lake 8 h; ETH 4h,
+  BTCUSDT 4h and EURUSD daily pass nowhere. SELECTION_DENOMINATORS.v2: 5 task datasets, 5 variant-A control manifests
+  (178 channels), 3 horizon-scoped selections, 6 skipped, 0 evaluated or selected by the temporal model. A second ETH
+  lineage does not exist in the lake (one Binance Spot download); a second vendor or a prospective capture is a named
+  deferred owner action.
+- **Front E sizing sheet (lts 96b0356), read-only:** the ETH 4h demo route sizes at 0.3 % of equity notional, 0.01 lot,
+  4 commands/day, stop 1 % / TP 2 %, with commission, swap and slippage not modelled in LTS sizing; the paired harness and
+  the RL episodes trade 1 ETH on 10,000 cash with a modelled 0.001 per side, so their numbers are a paired comparison only,
+  never what the route would realise; the deployed daily loss budget (0.0002) differs from the template (0.00008).
+- **Lane G:** first GPU cell RL-D0 seed 101 on the 4090 (≈0.6 ms/transition, evaluation-bound, ≤1.6 h per cell); SB3
+  `optimize_memory_usage=True` declared in all 16 cells as a storage-only change (gym-fx never truncates, so no
+  bootstrapping change); the modular CPU pilot measured 0.41–0.53 s/transition (≈130× native), so modular cells are
+  GPU-only. **M07:** split sha 116a5b64; CPU pilots grouped32 0.89 GB / 0.061 s per update, per-feature 1.52 GB /
+  0.146 s; first GPU pilot admitted on the 4090 at 08:1xZ; the zero-return naive is the mandatory first bar.
