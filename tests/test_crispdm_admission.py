@@ -758,3 +758,108 @@ def test_2026_09_30_the_launcher_routes_the_command_through_scope_exec_inside_th
     i = passed.index("timeout")
     assert passed[i + 4:i + 6] == [str(MODULE), "scope-exec"] or passed[i + 4].endswith("crispdm_admission.py")
     assert passed[-2:] == ["--", "true"]
+
+
+# ---- 2026-10-01 owner review of ADM-DEADCACHE-01: five required cases ---------------------------
+# A subtracted clean-cache estimate is NOT permission to over-allocate RAM.  Each case below pins
+# one way the subtraction could over-admit and shows it does not.
+
+def _live(host, name, cap, cg, current, stat):
+    lid = host.acquire(name, cap)["lease_id"]
+    A.arm(host.store, host.res, lid, host.now, pid=880000 + len(name), cgroup=cg)
+    d = dict(host._d)
+    d.setdefault("alive", {}).update({str(880000 + len(name)): True, cg: True})
+    d.setdefault("cgroup_current", {})[cg] = current
+    d.setdefault("cgroup_stat", {})[cg] = stat
+    host.set(**d)
+    return lid
+
+
+def test_2026_10_01_case_live_loads_their_own_clean_cache_is_never_uncharged(host):
+    """A LIVE scope's clean cache is inside its observed bytes; uncharging it would also shrink its
+    unrealised reservation and hand out its headroom twice."""
+    host.set(mem_available_bytes=30 * GIB, mem_total_bytes=64 * GIB, slice_memory_max=14 * GIB,
+             slice_memory_current=4 * GIB, slice_memory_stat={"anon": GIB, "file": 3 * GIB})
+    _live(host, "fit", 8 * GIB, "cg/fit", 4 * GIB, {"anon": GIB, "file": 3 * GIB})   # all cache is live
+    d = host.acquire("next", 6 * GIB)
+    # committed = 4 in use + (8 - 4) unrealised = 8; + 6 = 14 <= 14: admitted only at the exact ceiling
+    assert d["readings"]["slice_charged_bytes"] == 4 * GIB
+    assert d["readings"]["slice_clean_file_bytes_in_live_scopes"] == 3 * GIB
+    assert d["readings"]["aggregate_committed_bytes"] == 8 * GIB
+    d2 = host.acquire("one-more", 1 * GIB)
+    assert d2["verdict"] == A.QUEUED and d2["code"] == "SLICE_AGGREGATE_BUDGET"
+
+
+def test_2026_10_01_case_shared_cache_only_the_part_outside_live_scopes_is_dead(host):
+    """Slice cache = 1 GiB inside a live scope + 2 GiB left by a finished scope.  Only the 2 GiB
+    stop counting; the live job's 1 GiB stays charged."""
+    host.set(mem_available_bytes=30 * GIB, mem_total_bytes=64 * GIB, slice_memory_max=14 * GIB,
+             slice_memory_current=5 * GIB, slice_memory_stat={"anon": 2 * GIB, "file": 3 * GIB})
+    _live(host, "fit", 6 * GIB, "cg/fit", 3 * GIB, {"anon": 2 * GIB, "file": GIB})
+    d = host.acquire("x", GIB)
+    assert d["readings"]["slice_clean_file_bytes_not_charged"] == 2 * GIB
+    assert d["readings"]["slice_charged_bytes"] == 3 * GIB
+
+
+def test_2026_10_01_case_unreadable_live_scope_stat_uncharges_nothing(host):
+    host.set(mem_available_bytes=30 * GIB, mem_total_bytes=64 * GIB, slice_memory_max=14 * GIB,
+             slice_memory_current=5 * GIB, slice_memory_stat={"anon": 2 * GIB, "file": 3 * GIB})
+    lid = host.acquire("fit", 6 * GIB)["lease_id"]
+    A.arm(host.store, host.res, lid, host.now, pid=881111, cgroup="cg/nostat")
+    host.patch(alive={"881111": True, "cg/nostat": True}, cgroup_current={"cg/nostat": 3 * GIB})
+    d = host.acquire("x", GIB)
+    assert d["readings"]["slice_charged_bytes"] == 5 * GIB
+
+
+def test_2026_10_01_case_partial_reclaim_is_recorded_and_the_gate_reads_what_remains(host, monkeypatch):
+    """memory.reclaim may return EAGAIN after reclaiming part of the request.  The result is
+    PARTIAL, nothing is retried, and the gate keeps reading the real memory.stat afterwards."""
+    import builtins
+    import errno
+    rel = "s/crispdm.slice/crispdm-batch.slice/crispdm-job-1-2.scope"
+    cg = host.dir / "cgroup" / rel
+    cg.mkdir(parents=True)
+    (cg / "memory.stat").write_text("anon 1\nfile 1073741824\nshmem 0\n")
+    (cg / "memory.reclaim").write_text("")
+    host.patch(self_cgroup=rel)
+    monkeypatch.setenv("CRISPDM_ADMISSION_RESOURCES_JSON", str(host.readings_path))
+    monkeypatch.setenv("CRISPDM_CGROUP_ROOT", str(host.dir / "cgroup"))
+    real_open = builtins.open
+
+    def fake_open(path, mode="r", *a, **k):
+        if str(path).endswith("memory.reclaim") and "w" in mode:
+            raise OSError(errno.EAGAIN, "partial")
+        return real_open(path, mode, *a, **k)
+    monkeypatch.setattr(builtins, "open", fake_open)
+    out = A.reclaim_own_scope(host.store, "crispdm-batch.slice", "lease-x", host.now)
+    assert out["result"] == "PARTIAL" and out["requested"] == GIB
+    assert out["clean_file_after"] == GIB          # nothing assumed reclaimed: the stat is re-read
+    # and the slice gate with the same, unreclaimed cache still charges what memory.stat says
+    host.set(mem_available_bytes=30 * GIB, mem_total_bytes=64 * GIB, slice_memory_max=8 * GIB,
+             slice_memory_current=2 * GIB, slice_memory_stat={"anon": GIB, "file": GIB})
+    assert host.acquire("y", GIB)["readings"]["slice_charged_bytes"] == GIB
+
+
+def test_2026_10_01_case_reservations_are_still_held_in_full_beside_dead_cache(host):
+    """Dead cache never reduces another load's unrealised reservation."""
+    host.set(mem_available_bytes=30 * GIB, mem_total_bytes=64 * GIB, slice_memory_max=14 * GIB,
+             slice_memory_current=3 * GIB, slice_memory_stat={"anon": 0, "file": 3 * GIB})
+    first = host.acquire("held", 8 * GIB)                       # admitted, not yet armed or used
+    assert first["verdict"] == A.ADMITTED
+    d = host.acquire("next", 6 * GIB)
+    assert d["readings"]["held_unrealised_bytes"] == 8 * GIB
+    assert d["readings"]["aggregate_committed_bytes"] == 8 * GIB      # dead 3 GiB uncharged, 8 held
+    assert d["verdict"] == A.ADMITTED                                   # 8 + 6 = 14 <= 14
+    e = host.acquire("over", GIB)                                       # 8 + 6 + 1 > 14
+    assert e["verdict"] == A.QUEUED and e["code"] == "SLICE_AGGREGATE_BUDGET"
+
+
+def test_2026_10_01_case_memory_max_request_above_ceiling_refused_and_host_gate_unchanged(host):
+    """The slice memory.max still refuses a request above it terminally, and the HOST gate
+    (MemAvailable - desktop reserve - reservations) is untouched by the cache subtraction, so no
+    RAM beyond what the kernel reports available is ever promised."""
+    host.set(mem_available_bytes=6 * GIB, mem_total_bytes=64 * GIB, slice_memory_max=8 * GIB,
+             slice_memory_current=7 * GIB, slice_memory_stat={"anon": 0, "file": 7 * GIB})
+    assert host.acquire("big", 9 * GIB)["code"] == "ABOVE_SLICE_CEILING"
+    d = host.acquire("mid", 4 * GIB)          # slice-wise fine (7 GiB dead), host-wise 6 - 3 = 3 GiB free
+    assert d["verdict"] == A.QUEUED and d["code"] == "HOST_HEADROOM"

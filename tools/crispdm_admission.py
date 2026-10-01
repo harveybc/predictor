@@ -344,11 +344,13 @@ class SystemResources:
         except OSError:
             return None
 
-    def slice_charged_bytes(self) -> int:
-        """memory.current minus clean file cache.  An unreadable memory.stat charges everything."""
-        cur = self.slice_memory_current()
-        st = self.slice_memory_stat()
-        return cur if st is None else max(0, cur - clean_file_bytes(st))
+    def cgroup_memory_stat(self, cgroup):
+        if not cgroup:
+            return None
+        try:
+            return parse_memory_stat((self.cgroup_root / str(cgroup).lstrip("/") / "memory.stat").read_text())
+        except OSError:
+            return None
 
     # -- per-lease observation.  The cgroup is the whole process tree; never one process's RSS.
     def cgroup_current_bytes(self, cgroup: str):
@@ -471,10 +473,8 @@ class FileResources:
     def slice_memory_stat(self):
         return self.d.get("slice_memory_stat")
 
-    def slice_charged_bytes(self):
-        cur = self.slice_memory_current()
-        st = self.slice_memory_stat()
-        return cur if st is None else max(0, cur - clean_file_bytes(st))
+    def cgroup_memory_stat(self, cgroup):
+        return self.d.get("cgroup_stat", {}).get(str(cgroup))
 
     def cgroup_current_bytes(self, cgroup):
         v = self.d.get("cgroup_current", {}).get(str(cgroup))
@@ -885,6 +885,34 @@ def reclaim(store: Store, res, now: float) -> dict:
             "foreign": foreign, "old_boot": old_boot}
 
 
+def slice_charged_bytes(res, live, slice_current=None):
+    """(charged, clean bytes inside live scopes).  charged = memory.current minus the slice's DEAD
+    clean file cache, i.e. clean cache outside every live leased scope.
+
+    Review 2026-10-01 (owner cases "live loads" and "reservation"): a live scope's own cache is
+    already inside its observed bytes, and its unrealised reservation (cap - observed) must not
+    shrink because that cache was uncharged, or cap-sized headroom would be handed out twice.  An
+    unreadable live-scope stat counts all of the slice's clean cache as live (nothing uncharged).
+    An unreadable slice stat charges everything.  This is bookkeeping against the slice ceiling,
+    never RAM: the host gate still uses MemAvailable minus the desktop reserve and reservations."""
+    cur = int(res.slice_memory_current()) if slice_current is None else int(slice_current)
+    st = res.slice_memory_stat() if hasattr(res, "slice_memory_stat") else None
+    if st is None:
+        return cur, 0
+    total_clean = clean_file_bytes(st)
+    live_clean = 0
+    for l in live:
+        if not l.cgroup:
+            continue          # not armed to a scope yet: it holds no pages; its whole cap is unrealised
+        cs = res.cgroup_memory_stat(l.cgroup) if hasattr(res, "cgroup_memory_stat") else None
+        if cs is None:
+            live_clean = total_clean
+            break
+        live_clean += clean_file_bytes(cs)
+    dead = max(0, total_clean - live_clean)
+    return max(0, cur - dead), min(live_clean, total_clean)
+
+
 def evaluate(store: Store, res, req: Request, now: float) -> dict:
     """The decision, with every reading it used.  Pure with respect to the store: writes nothing."""
     swept = reclaim(store, res, now)
@@ -894,7 +922,7 @@ def evaluate(store: Store, res, req: Request, now: float) -> dict:
     total = int(res.mem_total_bytes())
     slice_max = res.slice_memory_max()
     slice_current = int(res.slice_memory_current())
-    slice_charged = int(res.slice_charged_bytes()) if hasattr(res, "slice_charged_bytes") else slice_current
+    slice_charged, live_clean = slice_charged_bytes(res, live, slice_current)
     pressure = float(res.pressure_some_avg10())
 
     held_unrealised = sum(l.unrealised_bytes(res) for l in live)
@@ -909,6 +937,7 @@ def evaluate(store: Store, res, req: Request, now: float) -> dict:
         "slice_memory_current": slice_current,
         "slice_charged_bytes": slice_charged,
         "slice_clean_file_bytes_not_charged": slice_current - slice_charged,
+        "slice_clean_file_bytes_in_live_scopes": live_clean,
         "pressure_some_avg10": pressure, "pressure_admit_max": PRESSURE_ADMIT_MAX,
         "live_leases": len(live),
         "live_lease_ids": [l.lease_id for l in live],
@@ -960,7 +989,7 @@ def evaluate(store: Store, res, req: Request, now: float) -> dict:
                 "reason": f"the observed aggregate budget would be "
                           f"{human(aggregate_committed + req.cap_bytes)} against the {req.slice_name} ceiling "
                           f"{human(slice_max)} (charged {human(slice_charged)} = in use {human(slice_current)} "
-                          f"minus {human(slice_current - slice_charged)} clean file cache, "
+                          f"minus {human(slice_current - slice_charged)} dead clean file cache outside live scopes, "
                           f"unrealised reservations {human(held_unrealised)})",
                 "readings": readings}
     if pressure > PRESSURE_ADMIT_MAX:
@@ -1195,8 +1224,7 @@ def state(store: Store, res, now: float) -> dict:
             "host_free_for_new_bytes": avail - DESKTOP_RESERVE_BYTES - held,
             "slice_memory_max": slice_max,
             "slice_memory_current": res.slice_memory_current(),
-            "slice_charged_bytes": (res.slice_charged_bytes() if hasattr(res, "slice_charged_bytes")
-                                    else res.slice_memory_current()),
+            "slice_charged_bytes": slice_charged_bytes(res, live)[0],
             "pressure_some_avg10": res.pressure_some_avg10(),
             "pressure_full_avg10": (res.pressure_full_avg10()
                                     if hasattr(res, "pressure_full_avg10") else None),
