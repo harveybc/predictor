@@ -421,7 +421,7 @@
    "event": "lane D PRE_INTEGRATION GPU pilot completed (engineering): host peak 4.25 GB, device 0.40 GB, 0.0246 s/update; corrected queue CAMPAIGN 13852a05 persisted, pin pending, no queue opened. Lane A c0d7b07b VERIFIED by the orchestrator."
   },
   {
-   "at": "2026-10-01T05:30:00Z",
+   "at": "2026-10-01T02:35:00Z",
    "host_alias": "coordinator",
    "event": "lane A declared at 3ecdb256 and VERIFIED by the orchestrator; ordered: M04 re-pin to 3ecdb256 (24 R0 candidates; two pilots on worker_a first), M02 certification + new donor run on worker_b (10.3 GB materialization; disk check), M05 re-export"
   }
@@ -535,6 +535,10 @@
   {
    "at": "2026-10-01T02:40:00Z",
    "what": "Orchestrator records as its own review error that it accepted 0928dc06, which uncharged clean cache inside live scopes; superseded by 775c5545 (live-scope cache stays charged)."
+  },
+  {
+   "at": "2026-10-01T02:44Z",
+   "what": "M06 had stamped the lane A declaration event 05:30Z and told the orchestrator '05:3xZ'; the host clock read 02:3xZ. Corrected to 02:35Z (time of recording)."
   }
  ],
  "plan_links": {
