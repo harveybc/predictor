@@ -429,6 +429,11 @@
    "at": "2026-10-01T02:59:08Z",
    "host_alias": "worker_a",
    "event": "FIRST CORRECTED PILOT completed: d-pilot-grouped32 (engineering, PILOT_NOT_A_RESULT) on the 5090; d-pilot-perfeature queued on worker_b"
+  },
+  {
+   "at": "2026-10-01T02:52:30Z",
+   "host_alias": "worker_b",
+   "event": "m02-ecl-v2-donors: PLANNED_STOP_FOR_CAP_RAISE (orchestrator ruling, not an incident): TERM to the wrapper 02:52:30Z at the branch_11 record boundary, exited 02:52:34Z; relaunched as m02-ecl-v2-donors-r7g with --resume under a 7G cap derived from M02's measured RSS growth (FINDING MEM-02: clear_session slows but does not stop growth, +6.77 MB/branch) plus the 4.73 GB full-graph profile; 4G lease retired; 12/12 branches reused by digest; recorded in the run's INTERRUPTIONS.json"
   }
  ],
  "launch_recipes": {
@@ -628,6 +633,14 @@
    "lane": "A",
    "unit": "features",
    "total": 321,
+   "producer_commit": "3ecdb256"
+  },
+  "m04-(train|verify)-.*": {
+   "lane": "D",
+   "producer_commit": "3ecdb256 (pin df9ae31c)"
+  },
+  "d-.*": {
+   "lane": "D",
    "producer_commit": "3ecdb256"
   }
  },
@@ -832,5 +845,19 @@
    "RAM on worker_a and worker_b"
   ],
   "report": "any pressure stop immediately with its incident id"
+ },
+ "campaign_queues": [
+  {
+   "name": "m04 campaign_corrected_r0_v1 (pin 3ecdb256)",
+   "path": "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/queue.sqlite",
+   "excluded_statuses": [
+    "SUPERSEDED_OLD_ARCH",
+    "blocked"
+   ],
+   "parallel_hosts": 1
+  }
+ ],
+ "facts_confirmed": {
+  "d-runner-worker-a": "lease cap 536,870,912 B (512M) read from lease d-runner-worker-a-1790823630-924062-217068; observed 16.7 MB at 03:02Z"
  }
 }

@@ -1,6 +1,6 @@
 {
  "schema": "modular.program.status.v1",
- "observed_at": "2026-10-01T03:01:26Z",
+ "observed_at": "2026-10-01T03:03:39Z",
  "plan_revision": "ac125db9",
  "plan_links": {
   "orders": "docs/handoffs/SATOSHI_PROGRESSIVE_SELECTION_AND_MODULAR_CONTINUATION_2026_09_30.md @ ac125db9",
@@ -11,7 +11,7 @@
  "writer": {
   "script": "tools/m06_status_writer.py + tools/m06_fleet_probe.py",
   "version": 2,
-  "pid": 899786
+  "pid": 927857
  },
  "agents": [
   {
@@ -140,12 +140,12 @@
    "state": "idle",
    "job_id": null,
    "reason": "desktop client only: nautilus",
-   "observed_at": "2026-10-01T03:01:26Z",
+   "observed_at": "2026-10-01T03:03:39Z",
    "temperature_c": 45.0,
-   "utilization_percent": 34.0,
-   "host_available_bytes": 15437783040,
+   "utilization_percent": 33.0,
+   "host_available_bytes": 15451484160,
    "gpu": {
-    "sm_clock_mhz": 375.0,
+    "sm_clock_mhz": 330.0,
     "sm_clock_max_mhz": 3105.0,
     "vram_used_mib": 875.0,
     "vram_total_mib": 8188.0,
@@ -166,21 +166,21 @@
    "host": {
     "mem": {
      "MemTotal": 32778358784,
-     "MemAvailable": 15437783040,
-     "SUnreclaim": 690761728,
+     "MemAvailable": 15451484160,
+     "SUnreclaim": 690720768,
      "SReclaimable": 2474340352,
-     "Shmem": 6515793920
+     "Shmem": 6515806208
     },
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=63861918\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=60643824",
-    "uptime_s": 197936.06,
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=63862082\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=60643988",
+    "uptime_s": 198069.14,
     "gpu_reinit_this_boot": "0",
     "shares_host_ram_with": []
    },
    "admission": {
-    "host_free_for_new_bytes": 11190599680,
-    "held_unrealised_bytes": 1022672896,
+    "host_free_for_new_bytes": 11193901056,
+    "held_unrealised_bytes": 1023283200,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 5492801536,
+    "slice_memory_current": 5496958976,
     "slice_charged_bytes": null,
     "slice_memory_max": 15032385536,
     "pressure_some_avg10": 0.0,
@@ -196,43 +196,43 @@
    "state": "idle",
    "job_id": null,
    "reason": "no compute process and no GPU job lease on this device",
-   "observed_at": "2026-10-01T02:51:48Z",
-   "temperature_c": 29.0,
+   "observed_at": "2026-10-01T03:03:40Z",
+   "temperature_c": 34.0,
    "utilization_percent": 0.0,
-   "host_available_bytes": 9225625600,
+   "host_available_bytes": 9775718400,
    "gpu": {
     "sm_clock_mhz": 180.0,
     "sm_clock_max_mhz": 3090.0,
     "vram_used_mib": 14.0,
     "vram_total_mib": 12227.0,
-    "power_w": 4.63,
+    "power_w": 4.66,
     "throttle_reasons": [],
     "compute_processes": []
    },
    "host": {
     "mem": {
      "MemTotal": 15340752896,
-     "MemAvailable": 9225625600,
-     "SUnreclaim": 502312960,
-     "SReclaimable": 526360576,
+     "MemAvailable": 9775718400,
+     "SUnreclaim": 504250368,
+     "SReclaimable": 520306688,
      "Shmem": 63676416
     },
-    "psi_memory": "some avg10=0.00 avg60=0.05 avg300=0.05 total=116157420\nfull avg10=0.00 avg60=0.05 avg300=0.05 total=113704548",
-    "uptime_s": 14849.45,
-    "gpu_reinit_this_boot": "269",
+    "psi_memory": "some avg10=0.72 avg60=0.13 avg300=0.06 total=116297242\nfull avg10=0.72 avg60=0.13 avg300=0.06 total=113844320",
+    "uptime_s": 14982.52,
+    "gpu_reinit_this_boot": "271",
     "shares_host_ram_with": [
      "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
     ]
    },
    "admission": {
-    "host_free_for_new_bytes": 3490365440,
-    "held_unrealised_bytes": 2503155712,
+    "host_free_for_new_bytes": 3252613120,
+    "held_unrealised_bytes": 3312955392,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 5432549376,
+    "slice_memory_current": 4724240384,
     "slice_charged_bytes": null,
     "slice_memory_max": 8589934592,
-    "pressure_some_avg10": 0.0,
-    "pressure_full_avg10": 0.0,
+    "pressure_some_avg10": 1.08,
+    "pressure_full_avg10": 1.08,
     "pressure_admit_max": 25.0
    },
    "next_task": null
@@ -241,46 +241,54 @@
    "host_alias": "worker_a",
    "device": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
    "name": "NVIDIA GeForce RTX 5090",
-   "state": "idle",
-   "job_id": null,
-   "reason": "no compute process and no GPU job lease on this device",
-   "observed_at": "2026-10-01T02:51:48Z",
-   "temperature_c": 36.0,
+   "state": "running",
+   "job_id": "m04-train-adf2e5f5",
+   "reason": "compute process in a crispdm job scope",
+   "observed_at": "2026-10-01T03:03:40Z",
+   "temperature_c": 46.0,
    "utilization_percent": 0.0,
-   "host_available_bytes": 9225625600,
+   "host_available_bytes": 9775718400,
    "gpu": {
-    "sm_clock_mhz": 225.0,
+    "sm_clock_mhz": 2587.0,
     "sm_clock_max_mhz": 3135.0,
-    "vram_used_mib": 10.0,
+    "vram_used_mib": 614.0,
     "vram_total_mib": 32607.0,
-    "power_w": 3.48,
+    "power_w": 61.27,
     "throttle_reasons": [],
-    "compute_processes": []
+    "compute_processes": [
+     {
+      "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+      "pid": 194683,
+      "used_mib": "596",
+      "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m04-train-adf2e5f5-1790823813-194614.scope",
+      "exe": "python3.12"
+     }
+    ]
    },
    "host": {
     "mem": {
      "MemTotal": 15340752896,
-     "MemAvailable": 9225625600,
-     "SUnreclaim": 502312960,
-     "SReclaimable": 526360576,
+     "MemAvailable": 9775718400,
+     "SUnreclaim": 504250368,
+     "SReclaimable": 520306688,
      "Shmem": 63676416
     },
-    "psi_memory": "some avg10=0.00 avg60=0.05 avg300=0.05 total=116157420\nfull avg10=0.00 avg60=0.05 avg300=0.05 total=113704548",
-    "uptime_s": 14849.45,
-    "gpu_reinit_this_boot": "269",
+    "psi_memory": "some avg10=0.72 avg60=0.13 avg300=0.06 total=116297242\nfull avg10=0.72 avg60=0.13 avg300=0.06 total=113844320",
+    "uptime_s": 14982.52,
+    "gpu_reinit_this_boot": "271",
     "shares_host_ram_with": [
      "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
     ]
    },
    "admission": {
-    "host_free_for_new_bytes": 3490365440,
-    "held_unrealised_bytes": 2503155712,
+    "host_free_for_new_bytes": 3252613120,
+    "held_unrealised_bytes": 3312955392,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 5432549376,
+    "slice_memory_current": 4724240384,
     "slice_charged_bytes": null,
     "slice_memory_max": 8589934592,
-    "pressure_some_avg10": 0.0,
-    "pressure_full_avg10": 0.0,
+    "pressure_some_avg10": 1.08,
+    "pressure_full_avg10": 1.08,
     "pressure_admit_max": 25.0
    },
    "next_task": null
@@ -292,16 +300,16 @@
    "state": "idle",
    "job_id": null,
    "reason": "no compute process and no GPU job lease on this device",
-   "observed_at": "2026-10-01T03:01:27Z",
-   "temperature_c": 41.0,
+   "observed_at": "2026-10-01T03:03:41Z",
+   "temperature_c": 40.0,
    "utilization_percent": 0.0,
-   "host_available_bytes": 16396619776,
+   "host_available_bytes": 16031002624,
    "gpu": {
-    "sm_clock_mhz": 1455.0,
+    "sm_clock_mhz": 210.0,
     "sm_clock_max_mhz": 3105.0,
     "vram_used_mib": 14.0,
     "vram_total_mib": 16376.0,
-    "power_w": 24.75,
+    "power_w": 3.45,
     "throttle_reasons": [
      "gpu_idle"
     ],
@@ -310,21 +318,21 @@
    "host": {
     "mem": {
      "MemTotal": 32831807488,
-     "MemAvailable": 16396619776,
-     "SUnreclaim": 2864414720,
-     "SReclaimable": 966791168,
-     "Shmem": 1145028608
+     "MemAvailable": 16031002624,
+     "SUnreclaim": 2867515392,
+     "SReclaimable": 967012352,
+     "Shmem": 1151840256
     },
     "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=74731983\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=69883374",
-    "uptime_s": 188848.25,
+    "uptime_s": 188981.78,
     "gpu_reinit_this_boot": "0",
     "shares_host_ram_with": []
    },
    "admission": {
-    "host_free_for_new_bytes": 4899651584,
-    "held_unrealised_bytes": 8256692224,
+    "host_free_for_new_bytes": 4951662592,
+    "held_unrealised_bytes": 7846576128,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 5300654080,
+    "slice_memory_current": 5710790656,
     "slice_charged_bytes": null,
     "slice_memory_max": 15032385536,
     "pressure_some_avg10": 0.0,
@@ -337,11 +345,11 @@
  "jobs": [
   {
    "id": "d-runner-worker-a",
-   "lane": "D-RUNNER",
+   "lane": "D",
    "state": "running",
    "phase": "running_stage_unknown",
    "stage": "no heartbeat stage",
-   "producer_commit": "unknown",
+   "producer_commit": "3ecdb256",
    "host_alias": "coordinator",
    "lease_id": "d-runner-worker-a-1790823630-924062-217068",
    "launcher_pid": 924040,
@@ -367,8 +375,8 @@
     ]
    ],
    "cap_bytes": 536870912,
-   "cgroup_current_bytes": 15986688,
-   "cgroup_peak_bytes": 16695296,
+   "cgroup_current_bytes": 17604608,
+   "cgroup_peak_bytes": 18882560,
    "heartbeat_at": null,
    "heartbeat_path": null,
    "heartbeat_stale": false,
@@ -395,8 +403,8 @@
    "stage": "no heartbeat stage",
    "producer_commit": "unknown",
    "host_alias": "coordinator",
-   "lease_id": "m06-status-writer-1790822488-899762-3736b2",
-   "launcher_pid": 899748,
+   "lease_id": "m06-status-writer-1790823819-927845-03eff9",
+   "launcher_pid": 927832,
    "launcher_alive": true,
    "child_heads": [
     [
@@ -417,8 +425,8 @@
     ]
    ],
    "cap_bytes": 536870912,
-   "cgroup_current_bytes": 22065152,
-   "cgroup_peak_bytes": 37502976,
+   "cgroup_current_bytes": 19972096,
+   "cgroup_peak_bytes": 35155968,
    "heartbeat_at": null,
    "heartbeat_path": null,
    "heartbeat_stale": false,
@@ -438,15 +446,15 @@
    "override": null
   },
   {
-   "id": "m04-train-fa246e46",
+   "id": "m04-train-adf2e5f5",
    "lane": "D",
    "state": "running",
    "phase": "running_stage_unknown",
-   "stage": "no heartbeat stage",
+   "stage": "start start",
    "producer_commit": "3ecdb256 (re-pin)",
    "host_alias": "worker_a",
-   "lease_id": "m04-train-fa246e46-1790823630-191258-29fba2",
-   "launcher_pid": 191249,
+   "lease_id": "m04-train-adf2e5f5-1790823813-194622-8ad729",
+   "launcher_pid": 194614,
    "launcher_alive": true,
    "child_heads": [
     [
@@ -466,13 +474,19 @@
      "-I",
      "-u",
      "/home/harveybc/Documents/GitHub/.worktrees/doin-node-m04-20260930/src/doin_node/predictor_worker.py"
+    ],
+    [
+     "ptxas",
+     "/tmp/tempfile-gamma-4c833f81f86212d9-194683-65cbea9b069bd",
+     "-o",
+     "/tmp/tempfile-gamma-4c833f81f86212d9-194683-65cbea9b069e4"
     ]
    ],
    "cap_bytes": 5680136192,
-   "cgroup_current_bytes": 3176980480,
-   "cgroup_peak_bytes": 4317483008,
-   "heartbeat_at": null,
-   "heartbeat_path": null,
+   "cgroup_current_bytes": 2379497472,
+   "cgroup_peak_bytes": 4330328064,
+   "heartbeat_at": "2026-10-01T03:03:37Z",
+   "heartbeat_path": "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v1/attempts/adf2e5f586ef8646/train-1/bridge/f287b2b1ee1634a9d87df69beed23239d6ecd2ca3c47029f630df8ab5d16d313/heartbeat.jsonl",
    "heartbeat_stale": false,
    "progress": {
     "unit": "unknown",
@@ -521,8 +535,8 @@
     ]
    ],
    "cap_bytes": 3221225472,
-   "cgroup_current_bytes": 1245310976,
-   "cgroup_peak_bytes": 1539846144,
+   "cgroup_current_bytes": 1579003904,
+   "cgroup_peak_bytes": 1727680512,
    "heartbeat_at": null,
    "heartbeat_path": null,
    "heartbeat_stale": false,
@@ -546,7 +560,7 @@
    "lane": "A",
    "state": "running",
    "phase": "fitting",
-   "stage": "branch_ae:branch_40 update",
+   "stage": "branch_ae:branch_49 restored",
    "producer_commit": "3ecdb256",
    "host_alias": "worker_b",
    "lease_id": "m02-ecl-v2-donors-r7g-1790823176-1383180-352a56",
@@ -567,23 +581,23 @@
     ]
    ],
    "cap_bytes": 7516192768,
-   "cgroup_current_bytes": 1237258240,
-   "cgroup_peak_bytes": 1237385216,
-   "heartbeat_at": "2026-10-01T03:01:01Z",
+   "cgroup_current_bytes": 1313411072,
+   "cgroup_peak_bytes": 1313411072,
+   "heartbeat_at": "2026-10-01T03:03:31Z",
    "heartbeat_path": "~/.local/state/m02_pretraining/ecl_v2/DONORS_FOR_R1_R2_ecl_v2_s7/heartbeat.jsonl",
    "heartbeat_stale": false,
    "progress": {
     "unit": "features",
-    "completed": 40,
+    "completed": 49,
     "total": 321
    },
    "eta": {
-    "earliest": "2026-10-01T04:07:34Z",
-    "latest": "2026-10-01T04:44:46Z",
+    "earliest": "2026-10-01T04:06:59Z",
+    "latest": "2026-10-01T04:42:36Z",
     "basis": "observed_throughput",
     "assumptions": [
-     "rate 204.0 units/h measured over 11 min of heartbeat history (3->40)",
-     "remaining 281 of 321 units; interval x0.8..x1.25 of the point estimate",
+     "rate 206.2 units/h measured over 13 min of heartbeat history (3->49)",
+     "remaining 272 of 321 units; interval x0.8..x1.25 of the point estimate",
      "covers THIS stage only; later stages (e.g. a core AE after the branches) are not included"
     ]
    },
@@ -601,7 +615,7 @@
    "declared_mem": "2G",
    "declared_wall": "20m",
    "queue_wait_s": "3600",
-   "waiting_s": 200,
+   "waiting_s": 334,
    "command_head": [
     "env",
     "CUDA_VISIBLE_DEVICES=",
@@ -637,7 +651,7 @@
    "declared_mem": "6427M",
    "declared_wall": "1h",
    "queue_wait_s": "3600",
-   "waiting_s": 110,
+   "waiting_s": 243,
    "command_head": [
     "env",
     "M04_HOST_ROLE=worker_b",
@@ -827,12 +841,50 @@
    "evidence": "worker_a ~/.local/state/scratch/d-pilot/PIN_df9ae31c/pilot_grouped32/PILOT.json; admission ledger lease d-pilot-grouped32-1790823518-189673-dd72a6 (02:58:38Z-02:59:08Z)"
   }
  ],
+ "campaigns": [
+  {
+   "campaign": "m04 campaign_corrected_r0_v1 (pin 3ecdb256)",
+   "status_counts": {
+    "SUPERSEDED_OLD_ARCH": 72,
+    "blocked": 20,
+    "queued": 13,
+    "running": 1,
+    "verified": 2
+   },
+   "excluded": {
+    "SUPERSEDED_OLD_ARCH": 72,
+    "blocked": 20
+   },
+   "cells_done": 2,
+   "cells_planned": 16,
+   "eta": {
+    "earliest": "2026-10-01T03:20:38Z",
+    "latest": "2026-10-01T03:35:28Z",
+    "basis": "observed_throughput",
+    "assumptions": [
+     "mean completed train+verify wall 91 s per cell over 4 attempts",
+     "14 cells remaining (queued+running) across 1 host(s); x0.8..x1.5",
+     "admission waits and pressure stops not modelled"
+    ]
+   },
+   "attempts": {
+    "total": 5,
+    "completed": 4,
+    "max_cgroup_peak_bytes": 4340203520
+   },
+   "incumbent": {
+    "config_id": "409dedf5",
+    "mean_objective": 0.40019500352894255,
+    "at": "2026-10-01T03:03:32Z"
+   }
+  }
+ ],
  "unparsed_processes": [
   {
    "pid": 917318,
    "argv_len": 3,
    "argv0": "bash",
-   "elapsed_s": 384,
+   "elapsed_s": 517,
    "host_alias": "coordinator",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
@@ -840,7 +892,7 @@
    "pid": 917320,
    "argv_len": 9,
    "argv0": "timeout",
-   "elapsed_s": 384,
+   "elapsed_s": 517,
    "host_alias": "coordinator",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
@@ -848,15 +900,7 @@
    "pid": 917321,
    "argv_len": 7,
    "argv0": "ssh",
-   "elapsed_s": 384,
-   "host_alias": "coordinator",
-   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
-  },
-  {
-   "pid": 924423,
-   "argv_len": 3,
-   "argv0": "bash",
-   "elapsed_s": 28,
+   "elapsed_s": 517,
    "host_alias": "coordinator",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
@@ -864,7 +908,7 @@
    "pid": 27201,
    "argv_len": 3,
    "argv0": "bash",
-   "elapsed_s": 13759,
+   "elapsed_s": 13893,
    "host_alias": "worker_a",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
@@ -872,7 +916,7 @@
    "pid": 1383147,
    "argv_len": 3,
    "argv0": "bash",
-   "elapsed_s": 511,
+   "elapsed_s": 645,
    "host_alias": "worker_b",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
@@ -880,7 +924,7 @@
    "pid": 1384576,
    "argv_len": 3,
    "argv0": "bash",
-   "elapsed_s": 385,
+   "elapsed_s": 518,
    "host_alias": "worker_b",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
@@ -888,7 +932,7 @@
    "pid": 1386691,
    "argv_len": 3,
    "argv0": "bash",
-   "elapsed_s": 200,
+   "elapsed_s": 334,
    "host_alias": "worker_b",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   }
@@ -1051,39 +1095,39 @@
  ],
  "quotas_measured": {
   "coordinator": {
-   "host_free_for_new_bytes": 11190599680,
-   "held_unrealised_bytes": 1022672896,
+   "host_free_for_new_bytes": 11193901056,
+   "held_unrealised_bytes": 1023283200,
    "desktop_reserve_bytes": 3221225472,
    "slice_memory_max": 15032385536,
-   "slice_memory_current": 5492801536,
+   "slice_memory_current": 5496958976,
    "slice_charged_bytes": null,
    "pressure_some_avg10": 0.0,
-   "mem_available_bytes": 15437783040,
-   "disk_home_free_bytes": 92553211904,
+   "mem_available_bytes": 15451484160,
+   "disk_home_free_bytes": 92551237632,
    "disk_home_total_bytes": 762623827968
   },
   "worker_a": {
-   "host_free_for_new_bytes": 3490365440,
-   "held_unrealised_bytes": 2503155712,
+   "host_free_for_new_bytes": 3252613120,
+   "held_unrealised_bytes": 3312955392,
    "desktop_reserve_bytes": 3221225472,
    "slice_memory_max": 8589934592,
-   "slice_memory_current": 5432549376,
+   "slice_memory_current": 4724240384,
    "slice_charged_bytes": null,
-   "pressure_some_avg10": 0.0,
-   "mem_available_bytes": 9225625600,
-   "disk_home_free_bytes": 178269655040,
+   "pressure_some_avg10": 1.08,
+   "mem_available_bytes": 9775718400,
+   "disk_home_free_bytes": 178262794240,
    "disk_home_total_bytes": 411702673408
   },
   "worker_b": {
-   "host_free_for_new_bytes": 4899651584,
-   "held_unrealised_bytes": 8256692224,
+   "host_free_for_new_bytes": 4951662592,
+   "held_unrealised_bytes": 7846576128,
    "desktop_reserve_bytes": 3221225472,
    "slice_memory_max": 15032385536,
-   "slice_memory_current": 5300654080,
+   "slice_memory_current": 5710790656,
    "slice_charged_bytes": null,
    "pressure_some_avg10": 0.0,
-   "mem_available_bytes": 16396619776,
-   "disk_home_free_bytes": 690990579712,
+   "mem_available_bytes": 16031002624,
+   "disk_home_free_bytes": 690989969408,
    "disk_home_total_bytes": 1005867986944
   }
  },
@@ -1413,6 +1457,11 @@
    "at": "2026-10-01T02:59:08Z",
    "host_alias": "worker_a",
    "event": "FIRST CORRECTED PILOT completed: d-pilot-grouped32 (engineering, PILOT_NOT_A_RESULT) on the 5090; d-pilot-perfeature queued on worker_b"
+  },
+  {
+   "at": "2026-10-01T02:52:30Z",
+   "host_alias": "worker_b",
+   "event": "m02-ecl-v2-donors: PLANNED_STOP_FOR_CAP_RAISE (orchestrator ruling, not an incident): TERM to the wrapper 02:52:30Z at the branch_11 record boundary, exited 02:52:34Z; relaunched as m02-ecl-v2-donors-r7g with --resume under a 7G cap derived from M02's measured RSS growth (FINDING MEM-02: clear_session slows but does not stop growth, +6.77 MB/branch) plus the 4.73 GB full-graph profile; 4G lease retired; 12/12 branches reused by digest; recorded in the run's INTERRUPTIONS.json"
   }
  ],
  "corrections": [
@@ -1508,7 +1557,7 @@
    "repo": "predictor",
    "branch": "satoshi/m06-evidence-resources-20260930",
    "worktree": "~/Documents/GitHub/.worktrees/predictor-m06-20260930",
-   "tip": "81a60ebed2b1"
+   "tip": "48d252fc713b"
   },
   {
    "repo": "predictor",

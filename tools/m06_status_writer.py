@@ -130,6 +130,51 @@ def eta_from_history(hb, total, now):
                             "covers THIS stage only; later stages (e.g. a core AE after the branches) are not included"]}
 
 
+def campaign_progress(reg, now):
+    """Read-only counts and ETA for each registered campaign queue on this (coordinator) host."""
+    import sqlite3
+    out = []
+    for q in reg.get("campaign_queues", []):
+        path = os.path.expanduser(q["path"])
+        try:
+            c = sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=5)
+            st = dict(c.execute("select status, count(*) from candidates group by status").fetchall())
+            att = c.execute("select kind, status, started, finished, elapsed_seconds, cgroup_peak_bytes, host "
+                            "from attempts").fetchall()
+            inc = c.execute("select config_id, mean_objective, time from incumbent_changes order by seq desc limit 1").fetchone()
+            c.close()
+        except Exception as e:
+            out.append({"campaign": q["name"], "error": type(e).__name__})
+            continue
+        excluded = {k: v for k, v in st.items() if k in q.get("excluded_statuses", [])}
+        live = {k: v for k, v in st.items() if k not in excluded}
+        done = live.get("verified", 0) + live.get("failed", 0)
+        remaining = live.get("queued", 0) + live.get("running", 0) + live.get("trained", 0)
+        fin = [a for a in att if a[1] == "completed" and a[4]]
+        per_cell = None
+        if fin:
+            tr = [a[4] for a in fin if a[0] == "train"]
+            ve = [a[4] for a in fin if a[0] == "verify"]
+            per_cell = (sum(tr) / len(tr) if tr else 0) + (sum(ve) / len(ve) if ve else 0)
+        hosts = max(1, int(q.get("parallel_hosts", 1)))
+        if per_cell and remaining:
+            sec = remaining * per_cell / hosts
+            eta = {"earliest": iso(now + 0.8 * sec), "latest": iso(now + 1.5 * sec), "basis": "observed_throughput",
+                   "assumptions": [f"mean completed train+verify wall {per_cell:.0f} s per cell over {len(fin)} attempts",
+                                   f"{remaining} cells remaining (queued+running) across {hosts} host(s); x0.8..x1.5",
+                                   "admission waits and pressure stops not modelled"]}
+        else:
+            eta = {"earliest": None, "latest": None, "basis": "not_estimable",
+                   "assumptions": ["missing measurement: no completed train+verify attempt in this campaign yet"
+                                   if not per_cell else "no remaining cells"]}
+        out.append({"campaign": q["name"], "status_counts": st, "excluded": excluded,
+                    "cells_done": done, "cells_planned": sum(live.values()), "eta": eta,
+                    "attempts": {"total": len(att), "completed": len(fin),
+                                 "max_cgroup_peak_bytes": max([a[5] or 0 for a in att] or [0])},
+                    "incumbent": {"config_id": inc[0][:8], "mean_objective": inc[1], "at": iso(inc[2])} if inc else None})
+    return out
+
+
 def lanes():
     out = []
     for repo in sorted(os.listdir(GITHUB)):
@@ -168,6 +213,8 @@ def build(hosts, reg):
             hb = L.get("heartbeat")
             ph, text = phase_from_heartbeat(hb)
             hb_at = (hb or {}).get("mtime")
+            if re.search(r"(^|-)verify-", L["name"]):
+                ph, text = "validating", "independent checkpoint rescoring (job kind from its launcher name)"
             if L["name"] in overrides:
                 ph = overrides[L["name"]]["phase"]
             elif ph is None:
@@ -260,6 +307,7 @@ def build(hosts, reg):
             "plan_revision": reg.get("plan_revision"), "plan_links": reg.get("plan_links", {}),
             "writer": {"script": "tools/m06_status_writer.py + tools/m06_fleet_probe.py", "version": 2, "pid": os.getpid()},
             "agents": reg.get("agents", []), "lanes": reg.get("lanes", []), "devices": devices, "jobs": jobs,
+            "campaigns": campaign_progress(reg, now),
             "unparsed_processes": unparsed, "terminal_incidents_24h": failed, "quotas_measured": quotas,
             "results": reg.get("results", []), "milestones": reg.get("milestones", []),
             "next_actions": reg.get("next_actions", []), "events": reg.get("events", []),

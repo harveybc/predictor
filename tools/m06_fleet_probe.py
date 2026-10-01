@@ -112,8 +112,22 @@ def parse_launcher(argv):
     return out
 
 
-def read_heartbeat(dirs):
+def expand_dirs(dirs):
+    """Each named directory, plus its bridge/*/ and */ children (a campaign attempt keeps its
+    heartbeat under <output_root>/bridge/<run id>/)."""
+    out = []
     for d in dirs:
+        if not d or not os.path.isdir(d):
+            continue
+        out.append(d)
+        for pat in ("bridge/*", "*", "*/bridge/*"):
+            out += sorted(glob.glob(os.path.join(d, pat)), key=lambda x: -os.path.getmtime(x))[:4]
+    return [d for d in out if os.path.isdir(d)]
+
+
+def read_heartbeat(dirs):
+    best = None
+    for d in expand_dirs(dirs):
         for name in ("heartbeat.json", "heartbeat.jsonl"):
             p = os.path.join(d, name)
             if os.path.isfile(p):
@@ -134,13 +148,15 @@ def read_heartbeat(dirs):
                     else:
                         last = json.load(open(p))
                         hist = []
-                    return {"path": p, "mtime": os.path.getmtime(p), "last": last,
+                    cand = {"path": p, "mtime": os.path.getmtime(p), "last": last,
                             "history": [{"t": h.get("time_unix"), "stage": h.get("stage"),
                                          "completed": (h.get("resume_point") or {}).get("completed_branches")}
                                         for h in hist]}
                 except Exception as e:  # unreadable is recorded, not fatal
-                    return {"path": p, "error": type(e).__name__}
-    return None
+                    cand = {"path": p, "mtime": 0, "error": type(e).__name__}
+                if best is None or cand["mtime"] > best["mtime"]:
+                    best = cand
+    return best
 
 
 def main():
@@ -226,9 +242,14 @@ def main():
         dirs = []
         for pr in procs:
             a = pr["argv"]
-            for k, w in enumerate(a[:-1]):
-                if w in OUT_FLAGS:
+            for k, w in enumerate(a):
+                if k + 1 < len(a) and w in OUT_FLAGS:
                     dirs.append(os.path.expanduser(a[k + 1]))
+                elif w.startswith("/") and w.count("/") >= 4 and "/.local/state/" in w:
+                    if os.path.isdir(w):
+                        dirs.append(w)
+                    elif os.path.isfile(w):
+                        dirs.append(os.path.dirname(w))   # e.g. a bridge request.json next to heartbeat.json
             if pr.get("cwd"):
                 dirs.append(pr["cwd"])
         cur = None
