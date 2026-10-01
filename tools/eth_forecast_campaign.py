@@ -165,7 +165,9 @@ def declare(args):
                               "parameter count measured in the cost pilot (amended before enqueue)"},
         "data": {"train": {"path": str(data_dir / "train.npz"), "sha256": manifest["splits"]["train"]["sha256"]},
                  "validation": {"path": str(data_dir / "validation.npz"),
-                                "sha256": manifest["splits"]["validation"]["sha256"]}},
+                                "sha256": manifest["splits"]["validation"]["sha256"]},
+                 "manifest": {"path": str(Path(args.data_manifest).resolve()),
+                              "sha256": mdc.sha_file(args.data_manifest)}},
         "data_location": "workers",
         "data_manifest": {k: manifest[k] for k in ("schema", "dataset_id", "source_sha256", "source_commit",
                                                     "feature_order_sha256", "feature_manifest", "declared_split",
@@ -336,6 +338,7 @@ class LocalCrispdmExecutor:
                 str(output_root / "candidate.json"), "--train", declaration["data"]["train"]["path"],
                 "--validation", declaration["data"]["validation"]["path"], "--out", str(output_root / "cell"),
                 "--revision", self.e["predictor_revision"], "--campaign-id", declaration["campaign_id"],
+                "--manifest", declaration["data"]["manifest"]["path"], "--seasonal-period", str(SEASONAL_PERIOD),
                 "--heartbeat-interval", "30"]
         if self.e.get("cuda_visible_devices"):
             argv += ["--gpu-uuid", self.e["cuda_visible_devices"]]
