@@ -100,7 +100,8 @@ def load_split(path, expected_sha: str | None = SPLIT_FILE_SHA256) -> dict:
 
 
 def epoch_seconds(frame: pd.DataFrame) -> np.ndarray:
-    return (frame["DATE_TIME"].astype("int64") // 10**9).to_numpy()
+    """UTC epoch seconds of DATE_TIME, independent of the datetime resolution pandas chose (ns, us or s)."""
+    return frame["DATE_TIME"].to_numpy().astype("datetime64[s]").astype(np.int64)
 
 
 def m07_origins(times: np.ndarray, origin_lo: int, origin_hi: int, window: int, hmax: int,
