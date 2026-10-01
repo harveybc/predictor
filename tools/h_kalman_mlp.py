@@ -34,6 +34,7 @@ def mlp_fit_predict(Xtr, Ytr, Xev_list, seed, hidden=(44, 44), max_epochs=30, pa
         raise ValueError("evaluation width differs from the training width")
     import tensorflow as tf
 
+    tf.keras.backend.clear_session()          # free the graphs of earlier fits in the same process
     tf.keras.utils.set_random_seed(int(seed))
     try:
         tf.config.experimental.enable_op_determinism()
@@ -58,18 +59,26 @@ def mlp_fit_predict(Xtr, Ytr, Xev_list, seed, hidden=(44, 44), max_epochs=30, pa
     model = tf.keras.Model(inputs, outputs)
     opt = tf.keras.optimizers.AdamW(learning_rate=learning_rate, weight_decay=weight_decay)
     model.compile(optimizer=opt, loss="mae")
-    best, best_w, best_epoch, bad = float("inf"), None, 0, 0
-    run = 0
-    for epoch in range(1, int(max_epochs) + 1):
-        model.fit(xin, yin, batch_size=batch_size, epochs=1, shuffle=True, verbose=0)
-        run = epoch
-        loss = float(np.mean(np.abs(model.predict(xho, batch_size=1024, verbose=0) - yho)))
-        if loss < best - 1e-9:
-            best, best_w, best_epoch, bad = loss, model.get_weights(), epoch, 0
-        else:
-            bad += 1
-            if bad >= patience:
-                break
+    # one fit call (a fit call per epoch re-builds the data adapter every epoch and grew memory on the ECL run);
+    # the inner hold-out is Keras validation data, the loss is MAE, the best weights are kept by the callback below
+    class _Keep(tf.keras.callbacks.Callback):
+        def __init__(self):
+            super().__init__()
+            self.best, self.best_w, self.best_epoch, self.bad = float("inf"), None, 0, 0
+
+        def on_epoch_end(self, epoch, logs=None):
+            loss = float(logs["val_loss"])
+            if loss < self.best - 1e-9:
+                self.best, self.best_w, self.best_epoch, self.bad = loss, self.model.get_weights(), epoch + 1, 0
+            else:
+                self.bad += 1
+                if self.bad >= patience:
+                    self.model.stop_training = True
+
+    keep = _Keep()
+    hist = model.fit(xin, yin, batch_size=batch_size, epochs=int(max_epochs), shuffle=True, verbose=0,
+                     validation_data=(xho, yho), validation_batch_size=4096, callbacks=[keep])
+    best, best_w, best_epoch, run = keep.best, keep.best_w, keep.best_epoch, len(hist.history["val_loss"])
     model.set_weights(best_w)
     h = hashlib.sha256()
     for w in best_w:
