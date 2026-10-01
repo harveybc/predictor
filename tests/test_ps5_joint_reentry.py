@@ -14,7 +14,7 @@ import pytest
 
 from tools import ps5_joint_reentry as ps5
 
-SETTINGS = {"max_epochs": 6, "patience": 6, "batch_size": 32, "learning_rate": 3e-3, "weight_decay": 0.0,
+SETTINGS = {"max_epochs": 25, "patience": 5, "batch_size": 32, "learning_rate": 3e-3, "weight_decay": 0.0,
             "loss": "mae", "min_delta": 0.0, "max_updates": 5000}
 SMALL_CORE = {"d_model": 12, "heads": 2, "blocks": 1, "ff_dim": 16, "stage_channels": [8, 6, 4]}
 
