@@ -95,3 +95,20 @@ def test_executor_refuses_without_measured_caps(campaign):
     decl = json.loads((root / "CAMPAIGN.json").read_text())
     with pytest.raises(RuntimeError, match="not amended from a measured pilot"):
         fc.LocalCrispdmExecutor(decl, "worker_b")
+
+
+def test_residual_cells_inject_cumulative_seasonal_residual(campaign):
+    root, _ = campaign
+    assert fc.parse_cell("per_feature_mae_adamw_sres") == ("per_feature", "mae", "adamw")
+    fc.enqueue(type("A", (), {"root": str(root), "cells": "per_feature_mae_adamw,per_feature_mae_adamw_sres", "seeds": None})())
+    db = sqlite3.connect(root / "queue.sqlite")
+    rows = db.execute("select label, seed, nested, config_id from candidates order by position").fetchall()
+    assert [r[0] for r in rows] == ["per_feature_mae_adamw"] * 2 + ["per_feature_mae_adamw_sres"] * 2
+    plain, res = json.loads(rows[0][2]), json.loads(rows[2][2])
+    assert "target_residual" not in plain["model"]
+    assert res["model"]["target_residual"] == {"kind": "seasonal_naive_cumulative", "period": 6,
+                                               "target_features": ["log_return_1"]}
+    assert rows[0][3] != rows[2][3] and rows[2][3] == rows[3][3]
+    # the residual variant differs from the plain cell only in the residual key and its variant tag
+    res["model"].pop("target_residual"); res["modular_candidate"].pop("f2_variant")
+    assert res == plain

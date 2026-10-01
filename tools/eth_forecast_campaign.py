@@ -87,8 +87,25 @@ def parse_size(text):
     return int(float(text[:-1]) * units[text[-1].upper()]) if text[-1].upper() in units else int(text)
 
 
+RESIDUAL_SUFFIX = "_sres"
+
+
+def residual_spec():
+    """M01's seasonal_naive_cumulative (a-engine 3b073d2e): exact for the cumulative standardized target."""
+    return {"kind": "seasonal_naive_cumulative", "period": SEASONAL_PERIOD, "target_features": [TARGET_FEATURE]}
+
+
+def with_residual(nested):
+    out = json.loads(ss.canonical(nested))
+    out["model"]["target_residual"] = residual_spec()
+    out["modular_candidate"]["f2_variant"] = "seasonal_residual_cumulative_p6"
+    return json.loads(ss.canonical(out))
+
+
 def parse_cell(cell):
     """'<architecture>_<loss>_<optimizer>' -> (architecture, loss, optimizer), refusing unknown names."""
+    if cell.endswith(RESIDUAL_SUFFIX):
+        cell = cell[:-len(RESIDUAL_SUFFIX)]
     for arch in sorted([*ARCHITECTURES, CONTROL], key=len, reverse=True):
         if cell.startswith(arch + "_"):
             rest = cell[len(arch) + 1:].split("_")
@@ -266,6 +283,11 @@ def enqueue(args):
                 added += _insert_control(campaign, nested, seed, cell)
             continue
         flat = cell_flat(arch, loss, opt)
+        if cell.endswith(RESIDUAL_SUFFIX):
+            for seed in seeds:
+                nested = with_residual(ss.from_flat({**flat, "train.seed": seed}, decl["base"], decl["search_space"]))
+                added += _insert_custom(campaign, nested, seed, cell, {**flat, "model.target_residual": "seasonal_naive_cumulative_p6"})
+            continue
         if seeds != list(decl["paired_seeds"]):
             added += _enqueue_with_seeds(campaign, flat, cell, seeds)
         else:
@@ -284,9 +306,15 @@ def _enqueue_with_seeds(campaign, flat_without_seed, label, seeds):
 
 
 def _insert_control(campaign, nested, seed, label):
-    cid, config_id = ss.digest(nested), ss.config_identity(nested)
     flat = {"control": nested["control"], "train.loss": nested["evaluator"]["loss"],
-            "train.weight_decay": nested["evaluator"]["weight_decay"], "train.seed": seed}
+            "train.weight_decay": nested["evaluator"]["weight_decay"]}
+    return _insert_custom(campaign, nested, seed, label, flat)
+
+
+def _insert_custom(campaign, nested, seed, label, flat):
+    """Enqueue a nested candidate the flat space cannot express (control, residual variant)."""
+    cid, config_id = ss.digest(nested), ss.config_identity(nested)
+    flat = {**flat, "train.seed": seed}
     db = campaign.db
     db.execute("BEGIN IMMEDIATE")
     try:
@@ -491,6 +519,8 @@ def main():
             nested = control_candidate(decl["base"], loss, opt, args.seed, decl["control"]["hidden"])
         else:
             nested = ss.from_flat({**cell_flat(arch, loss, opt), "train.seed": args.seed}, decl["base"], decl["search_space"])
+            if args.cell.endswith(RESIDUAL_SUFFIX):
+                nested = with_residual(nested)
         Path(args.out).write_text(json.dumps(nested, indent=1, sort_keys=True) + "\n")
         print(json.dumps({"cid": ss.digest(nested), "config_id": ss.config_identity(nested), "out": args.out}))
     elif args.command == "amend":
