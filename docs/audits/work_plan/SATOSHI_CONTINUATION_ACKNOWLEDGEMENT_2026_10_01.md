@@ -186,3 +186,22 @@ Assignments (dispatched 12:10Z; each agent's acknowledgement pending; running fi
 | F | M06 | `coverage` block in STATUS with the three separate counts; plan_revision 256c61a6; no "complete coverage" wording | next STATUS write |
 
 Nothing else changes: the corrected DOIN batch, the corrected donor run and the PS3-R pilot continue as approved.
+
+### 9.1 Addendum 14:00Z: lane B's coverage return and four more owner questions
+
+Lane B returned the source entitlement-to-use matrix and the transform-family ledger (feature-eng
+`satoshi/b-source-transform-coverage-20261001` `8215886`; DAG v3 at financial-data `satoshi/b-feature-dag-v3-20261001`
+`42bed364`, extending v2 in a worktree, live lake checkout untouched). Verified by me. Both denominators stand side by
+side: the old 15,228 / 3,538 index grain, and the new discovery grain of 5,273 files (773 raw, 4,500 derived) of which
+3,593 lie outside the census. Twenty-two providers; no source is point-in-time admissible and nothing is evaluated or
+selected. The ledger has 77 rows: 20 deferred, 16 excluded, 15 profiled, 13 not applicable with justification, 6
+materialized, 4 applicable, 3 temporally verified, 0 evaluated, 0 selected. Native wavelet is not covered (the 200
+files are a proxy); Hilbert and multitaper are excluded on timing; EMD on an undeclared backend; the regime detector
+until fold-bound. A claim of complete coverage is refused.
+
+| # | Object | Owner | Minimal action |
+|---|---|---|---|
+| 14 | Yahoo Finance: profiled through yfinance, but the paid product and its terms for programmatic access are undocumented | owner | state the actual product and supported access method, or mark Yahoo as research-only via the public connector |
+| 15 | Alpaca: only an execution connector (paper) exists; no data plan on file, no retained bytes | owner | state whether a data plan exists and its entitlement, or mark Alpaca data NOT_PRESENT |
+| 16 | CFTC positioning and News: declared sources with no attributed bytes (path names only) | owner | declare their scope and connector, or mark them deferred with reason |
+| 17 | Availability activation: the eight FXMacroData derived resamples stay UNAVAILABLE because their producer is not located; raw-parent availability is superseded by the data-gov registry | owner / lane B | locate or declare the resample producer; activation stays the owner's |
