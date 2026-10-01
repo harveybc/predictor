@@ -16,6 +16,11 @@ while True:
             out.write(f"{ts()} ALERT exempt runner {j['id']} peak {j.get('cgroup_peak_bytes')} B > 64 MiB (exemption breached)\n"); seen_coord.add('runner64'+j['id'])
         if j.get('host_alias')=='coordinator' and j['state'] in ('running','queued') and not j['id'].startswith('m06-') and not re.match(r'^d\d*-runner-',j['id']) and not re.match(r'^laneB-.*-bounded-read',j['id']) and (j['id'] not in seen_coord):
             out.write(f"{ts()} ALERT coordinator batch job {j['id']} {j['state']}/{j.get('phase')} (rule: zero batch jobs on the coordinator)\n"); seen_coord.add(j['id'])
+    for u in d.get('unparsed_processes',[]):
+        if u.get('host_alias')=='coordinator' and str(u.get('classification','')).startswith('UNLEASED_SCOPE'):
+            sc=u.get('scope','')
+            if not re.match(r'^crispdm-(m06-|d\d*-runner-|laneB-.*-bounded-read)',sc) and sc not in seen_coord:
+                out.write(f"{ts()} ALERT coordinator unleased batch scope {sc} memory={u.get('memory_current')} (zero-batch rule)\n"); seen_coord.add(sc)
     cur={j['id']:(j['state'],j.get('phase'),j.get('host_alias'),j.get('cgroup_peak_bytes'),(j.get('progress') or {}).get('completed')) for j in d['jobs']}
     if jobs is not None:
         for k,v in cur.items():

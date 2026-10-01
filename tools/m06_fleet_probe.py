@@ -265,6 +265,19 @@ def main():
                        "child_heads": [[os.path.basename(pr["argv"][0])] + pr["argv"][1:4] for pr in procs][:6],
                        "heartbeat": read_heartbeat(dirs)})
     out["leases"] = leases
+    # every scope in the batch slice, leased or not (a scope created outside crispdm-run has no lease)
+    leased_cg = {l["cgroup"] for l in leases if l.get("cgroup")}
+    base = "/sys/fs/cgroup/user.slice/user-%d.slice/user@%d.service/crispdm.slice/crispdm-batch.slice" % (os.getuid(), os.getuid())
+    unleased = []
+    for d in glob.glob(base + "/*.scope"):
+        rel = d[len("/sys/fs/cgroup/"):]
+        if rel not in leased_cg:
+            try:
+                cur = int(open(d + "/memory.current").read())
+            except (OSError, ValueError):
+                cur = None
+            unleased.append({"scope": os.path.basename(d), "memory_current": cur})
+    out["unleased_scopes"] = unleased
     leased_pids = {l["launcher_pid"] for l in leases}
     out["launchers_without_lease"] = [v for k, v in launchers.items() if k not in leased_pids]
     out["unparsed"] = unparsed

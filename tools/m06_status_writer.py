@@ -365,6 +365,8 @@ def build(hosts, reg):
                          "progress": {"unit": "unknown", "completed": None, "total": None},
                          "eta": {"earliest": None, "latest": None, "basis": "not_estimable",
                                  "assumptions": ["admission order depends on live leases releasing"]}})
+        for u in p.get("unleased_scopes", []):
+            unparsed.append({**u, "host_alias": role, "classification": "UNLEASED_SCOPE (in crispdm-batch.slice without a crispdm-run lease)"})
         for u in p.get("unparsed", []):
             unparsed.append({**u, "host_alias": role, "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"})
         for i in p.get("incidents_24h", []):

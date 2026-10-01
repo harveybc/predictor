@@ -766,7 +766,8 @@
    ],
    "branch": "satoshi/f2-eth-forecast-20261001",
    "state": "acknowledged",
-   "eta_basis": "CPU cost pilots on worker_b first; next measurement = pilot completion"
+   "eta_basis": "CPU cost pilots on worker_b first; next measurement = pilot completion",
+   "measured": "CPU pilots: grouped32_mae_adamw peak 0.89 GB, per_feature_mae_adamw peak 1.52 GB (6G caps); f2-tf-tests (3G) and f2-naive-table (1G) on worker_b; first GPU pilot waits for M04's worker_b lease release"
   },
   {
    "lane": "G2",
@@ -777,7 +778,8 @@
    "branch": null,
    "state": "dispatched",
    "eta_basis": "none yet",
-   "placement": "RL GPU cells go to the worker_b 4090 FIRST, one RL job at a time beside M07 (orchestrator ruling 07:3xZ)"
+   "placement": "RL GPU cells go to the worker_b 4090 FIRST, one RL job at a time beside M07 (orchestrator ruling 07:3xZ)",
+   "measured": "RL-D0 DQN 994,013,184 B and RL-S0 SAC 984,662,016 B observed (2 x 2,000 steps; NOT full-run: SB3 buffer fills lazily, full cell projects ~2.6 GB); modular RL-S1/RL-D1 pilots running on worker_b"
   },
   {
    "lane": "F",
@@ -1032,7 +1034,7 @@
  "slot_plan": {
   "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8": "D2 (M04 a083979bc9a8fa1b8): v2 campaign on the 5090",
   "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9": "G2 RL cells FIRST (one at a time) beside F2 (M07); D2 only until an RL or M07 GPU job is admitted",
-  "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519": "no RL placement now: worker_a free-for-new ~2.75 GB shared with M04's 6.58G train (orchestrator ruling)",
+  "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519": "NEXT JOB THAT FITS: M07 (F2) per-feature cell (CPU pilot peak 1.52 GB < 2.5 GB) after its 4090 pilots; lane G RL cells pending a ruling (full SB3 cell projects ~2.6 GB, 1.25x 3.25 GB > 2.5 GB; options: 40k buffer or optimize_memory_usage ~2.25 GB)",
   "GPU-612d1e0c-33de-d5cc-56eb-06c0ae424326": "coordinator: no batch work (standing rule)"
  },
  "old_design_inventory": {
@@ -1450,6 +1452,13 @@
    "device": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
    "facts": "sampler alarm 07:49:33Z (134 s idle >= 120 s); m04-train-7430fff5 (cap 6,899,630,080 B) was queued on HOST_HEADROOM (host_free_for_new ~2.6 GB) while the previous cell's reservation/memory was still held; admitted by 07:49:47Z",
    "measured_alarm_latency": "first 120 s alarm: 134 s after the first idle sample + relay <10 s"
+  },
+  {
+   "id": "F2-COORD-BATCH-01",
+   "lane": "F2",
+   "host_alias": "coordinator",
+   "facts": "M07 ran pytest/py_compile four times inside transient 512M scopes in crispdm-batch.slice on the coordinator (numpy-only, <1 s each, no TF), before the zero-batch order reached it; all exited; ZERO-BATCH BREACH by F2 (M07), ordered to move tests to worker_b (orchestrator)",
+   "watch": "M06 now also alerts on any unleased scope in the coordinator's batch slice and on any non-exempt job there"
   }
  ],
  "owner_question_20_lake": {
