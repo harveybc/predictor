@@ -865,6 +865,18 @@ def test_r3_warm_schedule_is_conditional_round_trips_and_reaches_the_engine():
     assert ss.to_flat(m, space) == mixed
 
 
+def test_verification_thread_never_rereads_an_amended_declaration(tmp_path):
+    campaign = make_campaign(tmp_path)
+    campaign.enqueue(DEFAULT, "a")
+    # an amendment written to disk mid-run that this code cannot even validate
+    on_disk = json.loads((campaign.root / "CAMPAIGN.json").read_text())
+    on_disk["search_space"]["bounds"]["train.not_a_parameter"] = {"choices": [1]}
+    (campaign.root / "CAMPAIGN.json").write_text(json.dumps(on_disk))
+    campaign.run(FakeExecutor(campaign, VALUES))
+    statuses = {r[0] for r in campaign.db.execute("SELECT status FROM candidates")}
+    assert statuses == {"verified"}
+
+
 def test_cumulative_seasonal_residual_flat_value_round_trips():
     space = copy.deepcopy(SPACE_V2)
     space["bounds"]["model.target_residual"] = {"choices": ["none", "seasonal_naive_24", "seasonal_naive_cumulative_6"]}

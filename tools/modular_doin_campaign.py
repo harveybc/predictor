@@ -77,9 +77,12 @@ def sha_file(path):
 
 
 class Campaign:
-    def __init__(self, root):
+    def __init__(self, root, declaration=None):
         self.root = Path(root)
-        self.declaration = json.loads((self.root / "CAMPAIGN.json").read_text())
+        # a runner's helper threads pass the runner's own declaration: re-reading an amended
+        # CAMPAIGN.json mid-run would mix declarations (and may not validate under this code)
+        self.declaration = declaration if declaration is not None else json.loads(
+            (self.root / "CAMPAIGN.json").read_text())
         self.db = sqlite3.connect(self.root / "queue.sqlite", timeout=60, isolation_level=None)
         self.db.row_factory = sqlite3.Row
         self.db.execute("PRAGMA journal_mode=WAL")
@@ -374,9 +377,7 @@ class Campaign:
         verifying = None
 
         def verify_job(row, attempt, output_root):
-            own = Campaign(self.root)
-            own.declaration = self.declaration  # the runner's declaration, not a re-read
-            own.space = self.space
+            own = Campaign(self.root, declaration=self.declaration)  # never re-read mid-run
             own.execute(row, "verify", executor, attempt, output_root)
             own.update_incumbent()
 
