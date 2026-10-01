@@ -30,7 +30,7 @@ def render(status: dict, out: Path):
         ax.text(1.02, i, f"{c}/{p}  {d['state']}", va="center", ha="left", fontsize=8.5, color=INK)
     ax.set_yticks(list(y))
     ax.set_yticklabels(names, fontsize=8.5, color=INK)
-    ax.set_xlim(0, 1.6)
+    ax.set_xlim(0, 2.1)
     ax.set_xticks([0, 0.25, 0.5, 0.75, 1.0])
     ax.set_xticklabels(["0%", "25%", "50%", "75%", "100%"], fontsize=8, color=INK2)
     for s in ("top", "right", "left"):
@@ -42,7 +42,7 @@ def render(status: dict, out: Path):
     foot = (f"current: {status['current_work']}\nnext dependencies: {status['next_dependencies']}\n"
             f"ETA: {status['eta']}\nmilestones: {status['milestones']}")
     fig.text(0.01, 0.01, foot, fontsize=7.8, color=INK2, va="bottom", ha="left", wrap=True)
-    fig.subplots_adjust(left=0.36, right=0.98, top=0.9, bottom=0.34)
+    fig.subplots_adjust(left=0.34, right=0.99, top=0.9, bottom=0.34)
     fig.savefig(out, facecolor=SURFACE)
     return out
 
