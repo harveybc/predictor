@@ -39,7 +39,27 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
-ENGINE_PATH = ROOT / "predictor_plugins" / "modular_temporal.py"
+ENGINE_FILE = ROOT / "predictor_plugins" / "modular_temporal.py"
+ENGINE_PACKAGE = ROOT / "predictor_plugins" / "modular_temporal"
+
+
+def engine_tree_sha256(directory: Path) -> tuple[str, dict]:
+    """Digest of a package engine: canonical JSON of {relative .py path: sha256}.
+
+    The LTS adapter re-derives exactly this before loading the package.
+    """
+    files = {p.relative_to(directory).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+             for p in sorted(Path(directory).rglob("*.py")) if "__pycache__" not in p.parts}
+    return hashlib.sha256(_canonical(files)).hexdigest(), files
+
+
+def engine_identity() -> dict:
+    if ENGINE_PACKAGE.is_dir():
+        digest, files = engine_tree_sha256(ENGINE_PACKAGE)
+        return {"kind": "package", "module": "predictor_plugins/modular_temporal",
+                "path": str(ENGINE_PACKAGE), "sha256": digest, "files": files}
+    return {"kind": "file", "module": "predictor_plugins/modular_temporal.py",
+            "path": str(ENGINE_FILE), "sha256": _sha(ENGINE_FILE)}
 
 FEATURE_SCHEMA = "lts.modular_features.closed_bars.v1"
 CONTRACT_SCHEMA = "lts.modular_inference_contract.v1"
@@ -134,6 +154,10 @@ def main(argv=None) -> int:
     ap.add_argument("--previous-contract", type=Path,
                     help="earlier export of the same candidate recipe; its engine tip, Keras"
                          " version and contract digest are recorded as lineage")
+    ap.add_argument("--bottleneck-semantics",
+                    help="what the exported (steps, channels) latent means for this engine")
+    ap.add_argument("--previous-bottleneck-semantics",
+                    help="what the previous export's latent of the same shape meant")
     ap.add_argument("--engine-source-commit",
                     help="commit of the engine tree when it is an exported archive, not a git checkout")
     ap.add_argument("--previous-keras-version",
@@ -232,8 +256,8 @@ def main(argv=None) -> int:
     contract = {
         "schema": CONTRACT_SCHEMA, "contract_version": 1,
         "model_id": args.model_id, "asset_id": args.asset_id, "timeframe": args.timeframe,
-        "engine": {"module": "predictor_plugins/modular_temporal.py", "path": str(ENGINE_PATH),
-                   "sha256": _sha(ENGINE_PATH), "source_commit": args.engine_source_commit or _git("rev-parse", "HEAD"),
+        "engine": {**engine_identity(),
+                   "source_commit": args.engine_source_commit or _git("rev-parse", "HEAD"),
                    "tensorflow": tf.__version__, "keras_version": _keras_version()},
         "artifact": {"file": model_path.name, "sha256": _sha(model_path),
                      "weights_sha256": mt.weights_hash(inference),
@@ -258,7 +282,9 @@ def main(argv=None) -> int:
         "outputs": {"forecast": {"horizons": [1], "target": "log_return_next_session",
                                  "scaled_by": t_scale},
                     "bottleneck": {"shape": [config["output_steps"], config["output_channels"]],
-                                   "rank": 3, "consumer": "separate_owned_policy_adapter"}},
+                                   "rank": 3, "consumer": "separate_owned_policy_adapter",
+                                   "semantics": args.bottleneck_semantics,
+                                   "previous_semantics": args.previous_bottleneck_semantics}},
         "action": {"schema": "lts.modular_action.v1", "rule": "forecast_threshold",
                    "horizon_index": 0, "target_index": 0, "long_above": args.threshold,
                    "short_below": -args.threshold, "otherwise": "hold",
@@ -282,6 +308,8 @@ def main(argv=None) -> int:
             or args.previous_keras_version or "unrecorded",
             "contract_sha256": _sha(args.previous_contract),
             "artifact_sha256": previous["artifact"]["sha256"],
+            "kind": previous["engine"].get("kind", "file"),
+            "lineage": previous["engine"].get("previous"),
         }
     (out / "contract.json").write_text(json.dumps(contract, indent=2, sort_keys=True) + "\n")
     provenance = {"schema": "lts.candidate_provenance.v1", "status": "verified",
