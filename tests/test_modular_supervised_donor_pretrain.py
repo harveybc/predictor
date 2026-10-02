@@ -127,6 +127,21 @@ def test_expand_recipe_rejects_non_partition_and_unknown_target():
         subject.expand_recipe(recipe, ["a", "b"], ["missing"])
 
 
+def test_expand_recipe_supports_direct_forecast_without_residual_transform():
+    recipe = {
+        "schema": "modular.supervised_donor.recipe.v1", "window": 24,
+        "sample_hours": 4, "horizons": [6, 12, 18, 24, 30, 36],
+        "branch": {"plugin": "causal_conv1d", "params": {}},
+        "core": {"plugin": "transformer_conv", "params": {}},
+        "fusion": {"plugin": "sequence_concat", "params": {}},
+        "head": {"plugin": "forecast", "params": {}},
+        "output_steps": 6, "output_channels": 8,
+    }
+    model = subject.expand_recipe(recipe, ["target", "volume"], ["target"])
+    assert model["target_count"] == 1
+    assert "target_residual" not in model
+
+
 def test_regime_configs_bind_every_exported_donor(tmp_path):
     base = subject.expand_recipe({
         "schema": "modular.supervised_donor.recipe.v1", "window": 24, "sample_hours": 1,

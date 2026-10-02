@@ -130,8 +130,7 @@ def expand_recipe(recipe, feature_names, target_names=None):
         for index, feature in enumerate(names):
             branches.append({"name": f"branch_{index}", "features": [feature],
                              **copy.deepcopy(branch_template), "regime": "R0", "donor": None})
-    period = int(recipe["target_residual_period"])
-    return {
+    model = {
         "schema": "predictor.modular.v1",
         "window": int(recipe["window"]),
         "sample_hours": recipe["sample_hours"],
@@ -145,9 +144,14 @@ def expand_recipe(recipe, feature_names, target_names=None):
         "output_channels": int(recipe["output_channels"]),
         "horizons": list(recipe["horizons"]),
         "target_count": len(targets),
-        "target_residual": {"kind": "seasonal_naive", "period": period,
-                            "target_features": targets},
     }
+    period = recipe.get("target_residual_period")
+    if period is not None:
+        model["target_residual"] = {
+            "kind": "seasonal_naive", "period": int(period),
+            "target_features": targets,
+        }
+    return model
 
 
 def regime_configs(model_config, donors, *, freeze_epochs, unfreeze_learning_rate):
@@ -169,11 +173,12 @@ def regime_configs(model_config, donors, *, freeze_epochs, unfreeze_learning_rat
 
 
 def _objective_identity(train, split, recipe_sha256, period):
+    objective_name = "direct_forecast" if period is None else f"seasonal_residual_forecast_P{period}"
     document = {
         "group": "modular.supervised_donor",
-        "name": f"seasonal_residual_forecast_P{period}",
+        "name": objective_name,
         "version": "1.0.0",
-        "params": {"loss": "mae", "period": period,
+        "params": {"loss": "mae", "target_residual_period": period,
                    "horizons": train["horizons"].tolist()},
         "train_sha256": train["sha256"],
         "recipe_sha256": recipe_sha256,
@@ -225,8 +230,10 @@ def run(train_npz, recipe_path, output_dir, fit_settings, *, validation_fraction
     output.mkdir(parents=True)
     donors_dir = output / "donors"
     donors_dir.mkdir()
-    objective = _objective_identity(data, split, recipe_sha,
-                                    int(recipe["target_residual_period"]))
+    period = recipe.get("target_residual_period")
+    objective = _objective_identity(
+        data, split, recipe_sha, None if period is None else int(period)
+    )
     provenance = {
         "conditioning_contract": "OPERATIONAL",
         "learned_corpus": {
