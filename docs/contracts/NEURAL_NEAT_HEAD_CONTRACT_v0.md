@@ -4,6 +4,13 @@ Satoshi lane S3, 2026-10-02. Branch base: `codex/modular-neat-integration-202610
 
 **Status: SPECIFICATION ONLY. NOT IMPLEMENTED. NOT MEASURED.** This is a separate contract. It is not the hyperparameter NEAT already merged: `tools/modular_neat_policy.py` (`ModularNeatProposalPolicy`) evolves flat candidate parameters through `optimizer_plugins/neat_optimizer.py` and its module docstring says it does not evolve a neural head. This contract specifies a NEAT-evolved neural network that maps cached frozen latents to forecasts. Companion: `LATENT_CACHE_CONTRACT_v0.md`.
 
+## 0. Coordinator rulings incorporated (2026-10-02, after a2d814b8)
+
+- First scope is ETH: 83 features, 6 horizons, so `H*T` is tiny. ECL (321 channels x 24 horizons) is OUT OF SCOPE for v0. The latent is fused across branches, so a head applied per channel on that channel's slice of the latent is not available. ECL enters only after a later amendment that declares a target-subset decision (which targets, how many) and the genome-size consequences.
+- Targets are stated per dataset in section 2.
+- The 70/30 confirmation split is accepted as an addition; full-validation numbers are ALSO reported for comparability with every campaign (section 9).
+- Budget caps stay PROPOSED, to be priced by lane D3 (agent a5441bce486e6493a) from its one-seed generation price; this document does not wait for it.
+
 ## 1. Scope and arms
 
 | Arm | Producer | Head | Role |
@@ -19,12 +26,15 @@ Frozen and trainable producers are never mixed in one comparison cell. The cache
 
 - Latent tensor: `[N, 6, 8]`, float32 little-endian, C order, layout time-major then channel (the encoder output `(6, 8)` for the default config: `branch_steps = window = 24`, core `time_factors [2,2,1]`, `stage_channels [32,16,8]`, so time 24 to 12 to 6 to 6; `components.transformer_conv`, `config.default_config`). Time index 0 is the oldest of the six right-edge steps and index 5 is the decision time t (`core_time_grid` is a right-edge grid, `config._normalize`, `common._partition`). Read only through a verified cache.
 - Horizons: `config.horizons`, strictly increasing positive ints, bound in the cache grid. Output shape `[H, T]` per row.
-- Target: identical to the supervised campaigns: the evaluator's `targets [N,H,T]` in `z_train` space (`tools/modular_candidate_evaluator.py`, scaler fitted on TRAIN rows only; `tools/modular_doin_ecl_npz.py`). No residualization, no window-mean restoration (refused in v0, cache contract 1.6).
+- Target: identical to the supervised campaigns: the evaluator's `targets [N,H,T]` in `z_train` space (`tools/modular_candidate_evaluator.py`, scaler fitted on TRAIN rows only). Per dataset, as stated by the coordinator (not independently verified from campaign configs):
+  - ETH / FX (the v0 scope): standardized CUMULATIVE log-returns `Y_h`. The zero-return forecast and the train-mean forecast are the strict-minimum references; both are reported.
+  - ECL (later stage, out of scope in v0): z-scored LEVELS. There is no zero-return naive; the references are the seasonal-24 h naive (0.247966) and persistence (0.851406) on the same rows (coordinator-supplied values, UNVERIFIED here).
+  - `target_residual` (in-window seasonal-naive terms) is supported through the residual-reference side-cache (cache contract section 2, `residual_reference`), so the head predicts the same residual target as the engine's `forecast_plus_seasonal_naive` output. `input_normalization` stays refused (cache contract 1.6).
 - Rows: `train` rows are used for any fitting a head needs; `validation` rows for fitness, selection and early stopping. No other split exists.
 
 ## 3. Genome encoding
 
-Feed-forward NEAT with explicit innovation numbers, deterministic evaluation order. The repository's genome (`neat_optimizer.NeatGene`/`NeatGenome`) encodes named parameters, not nodes and connections, so the head needs a new genome class; the existing innovation tracker and speciation may be reused only after reading them (UNVERIFIED whether they fit).
+Feed-forward NEAT with explicit innovation numbers, deterministic evaluation order. The repository's genome cannot host node/connection genomes, so the head keeps a NEW genome class. Read in `optimizer_plugins/neat_optimizer.py`: (a) `NeatGene` is `(innovation, param_name, value)` and `NeatGenome.genes` maps innovation to one scalar hyperparameter; there is no node, connection, enabled flag or acyclicity notion; (b) `InnovationTracker.get_innovation(param_name)` assigns one innovation per parameter NAME, whereas connection innovations key on `(src, dst)` and node innovations on a split connection; (c) `compatibility_distance` normalizes value differences with `full_bounds[param_name]`, which has no meaning for connection weights; (d) `mutate_add_param`, `mutate_values` and `neat_crossover` draw from the module-global `random` (`random.seed(seed)` in `create_shared_population`), not from a per-run generator, which violates section 6's replay rule. Reusable only as ideas: the matching/disjoint-by-innovation crossover shape, fitness sharing by species size (`adjust_fitness`), and the greedy species assignment loop (`speciate`) once distance is redefined over `(src,dst)` innovations and weight deltas. They must be re-implemented with an injected `random.Random`.
 
 - Nodes: input nodes `i_{t,c}` for `t in 0..5`, `c in 0..7` (48 inputs, index `t*8 + c`), one bias node, hidden nodes (innovation-numbered, each with an activation gene and a bias), output nodes `o_{h,k}` for `h in 0..H-1`, `k in 0..T-1`, linear (identity) activation.
 - Connections: `(src, dst, weight, enabled, innovation)`; acyclic only (a mutation that would create a cycle is rejected, and recurrence is not part of v0); topological evaluation with ties broken by innovation id; float32 arithmetic with float32 accumulation in fixed order.
@@ -49,7 +59,7 @@ A genome with nonfinite output on any row is assigned `+inf` fitness and is neve
 - Cost unit: multiply-add pairs, and wall seconds as a measured side column.
 - Latent cost (one time, shared): `N_cache_rows * producer_forward_cost`, built once, charged once, reported beside both arms (cache contract section 5).
 - Genome evaluation cost: `N_val * (E_enabled + hidden_nodes)` multiply-adds per genome per seed, plus `N_val*H*T` for outputs. Total NEAT cost: `sum over generations and genomes of evaluations * seeds`. Training rows are not used by `flat`, so only the `step_shared` readout fit adds `N_train * (m*6)^2`-order cost.
-- Caps declared before the run: `population <= 64`, `generations <= 200`, `seeds in {1,2,3}`, `max_genome_evaluations = population * generations * seeds` and a total multiply-add cap; exceeding any cap defers the arm by name (`BUDGET_EXCEEDED_DEFERRED`, as `assembly.BudgetExceeded` does for configs), with no truncation. The values are a proposal; the first pricing run fixes them (a one-seed costing generation precedes any comparison, as the continuation handoff orders for the hyperparameter NEAT).
+- Caps declared before the run (PROPOSED values, to be priced by lane D3's one-seed generation; do not freeze before that price): `population <= 64`, `generations <= 200`, `seeds in {1,2,3}`, `max_genome_evaluations = population * generations * seeds` and a total multiply-add cap; exceeding any cap defers the arm by name (`BUDGET_EXCEEDED_DEFERRED`, as `assembly.BudgetExceeded` does for configs), with no truncation. The values are a proposal; the first pricing run fixes them (a one-seed costing generation precedes any comparison, as the continuation handoff orders for the hyperparameter NEAT).
 - The Keras control receives a matched budget: same total multiply-add cap counted as `epochs * N_train * 3 * params` (forward + backward estimate, labelled an estimate) and the same seeds. Both arms report spent versus cap.
 
 ## 6. Determinism and replay
@@ -75,7 +85,7 @@ Same input bytes (cache shards, flattened `[N,48]` for the `flat` variant, same 
 
 ## 9. Comparison protocol and pre-registered success rule
 
-Per paired seed `s`: `d_s = MAE_z(KERAS, s) - MAE_z(NEAT, s)` on the full validation set, both with the same cache. Selection optimism: both arms select on validation (NEAT by fitness, Keras by early stopping), so the full-validation number is optimistic for both. Therefore the confirmation split is carved before any run: the last 30 % of validation rows in time order, separated from the first 70 % by a purge of `max(window, max horizon)` rows; NEAT fitness and Keras early stopping use only the first 70 %; the champion of each arm is scored once on the confirmation 30 %. Both numbers are reported; the rule below uses the confirmation numbers.
+Per paired seed `s`: `d_s = MAE_z(KERAS, s) - MAE_z(NEAT, s)` on the full validation set, both with the same cache. Selection optimism: both arms select on validation (NEAT by fitness, Keras by early stopping), so the full-validation number is optimistic for both. Therefore the confirmation split is carved before any run: the last 30 % of validation rows in time order, separated from the first 70 % by a purge of `max(window, max horizon)` rows; NEAT fitness and Keras early stopping use only the first 70 %; the champion of each arm is scored once on the confirmation 30 %. Both numbers are reported, and the FULL-validation numbers (all validation rows, no carve) are ALSO reported for every arm, seed and naive, for comparability with all supervised campaigns; they are labelled optimistic (selection and report on the same rows) and are never used by the rule. The rule below uses the confirmation numbers.
 
 Pre-registered rule (`delta` fixed before the run; default `delta = max(1 % of MAE_z(KERAS), 2 * sd_seed(MAE_z(KERAS)))`, with the sd taken over seeds; with one seed use 1 %):
 
@@ -89,7 +99,7 @@ With 1 to 3 seeds no significance test is valid; labels are descriptive and the 
 
 ## 10. Verdict table (required fields)
 
-Per arm and seed: cache id, config digest, seed, population/generation/evaluation counts, spent multiply-adds and seconds versus cap, parameter counts, `MAE_z` selection and confirmation, `baseline_MAE`, `skill_MAE` beside the zero-return and persistence naives on the same rows, champion digest, replay receipt hash. Cells that were not measured say `NO_NEW_MEASUREMENT` (standing closure-table rule).
+Per arm and seed: cache id, config digest, seed, population/generation/evaluation counts, spent multiply-adds and seconds versus cap, parameter counts, `MAE_z` selection, confirmation and full-validation, `baseline_MAE`, `skill_MAE` beside the zero-return and persistence naives on the same rows, champion digest, replay receipt hash. Cells that were not measured say `NO_NEW_MEASUREMENT` (standing closure-table rule).
 
 ## 11. Tests to write first (synthetic mechanics only)
 
@@ -97,9 +107,8 @@ Per arm and seed: cache id, config digest, seed, population/generation/evaluatio
 
 ## 12. Open questions that reading could not settle
 
-1. Output width: if ECL targets are the full 321 channels, `H*T` outputs times 48 inputs makes minimal genomes large. Options: per-target shared genome with a target embedding, a bounded set of target groups, or ECL restricted to a declared target subset. Needs Satoshi's decision.
-2. Target definition: whether the supervised campaigns' target is a standardized level (persistence naive nonzero) or a return (zero-return naive); read from the actual campaign config, not available in the files read.
-3. Whether the 70/30 confirmation carve is acceptable or whether the campaign wants full-validation comparability only.
-4. Whether `neat_optimizer` innovation tracking and speciation can host node/connection genomes (only its class list and docstring were read).
-5. The numeric budget caps (section 5): they require a priced one-seed generation first.
-6. Whether `target_residual`/`input_normalization` encoders should be supported by caching the needed raw-window terms (v0 refuses).
+1. ECL target-subset decision and a genome sharing design, required before ECL is brought into scope (section 0).
+2. The ETH/FX target definition and the ECL reference values come from the coordinator's ruling; re-read them from the actual campaign configs when the head is implemented.
+3. Numeric budget caps: pending lane D3's priced one-seed generation.
+4. No concrete ETH cache build has been made (window count, H = 6, T); the cache contract arithmetic uses F = 83.
+5. Whether `input_normalization` encoders ever need support (they remain refused).

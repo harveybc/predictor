@@ -15,7 +15,8 @@ A cache may be built only if ALL of the following hold, each checked and recorde
 3. The producer runs in inference mode (`training=False`); dropout in the core defaults to 0.0 (`components.transformer_conv`) and any nonzero value is still disabled by inference mode, but is recorded.
 4. Provenance: the bundle's `conditioning_contract` is `OPERATIONAL` (`load_bundle(..., require_contract="OPERATIONAL")`, `bundle.py`). Each donor (branch and core) that fed the bundle has OPERATIONAL provenance in its sidecar (`provenance.donor_provenance`). `UNKNOWN` and `SYNTHETIC_OFFLINE` are refused. `donor_contract: UNKNOWN_ALLOWED` in the config is refused (it is the engine's explicit bypass, `artifacts.DONOR_CONTRACTS`).
 5. Keras `major.minor` of the producing environment equals the bundle's (`bundle.load_bundle` enforces the same rule).
-6. The config has neither `input_normalization` nor `target_residual` (v0 limitation). Both add terms at the forecast output that need the raw window (`assembly.build_modular`: `forecast_plus_window_mean`, `forecast_plus_seasonal_naive`), so a head over cached latents alone would not reproduce the engine's target definition. Refused in v0; see open question 2 in the head contract.
+6. The config has no `input_normalization`: it changes the encoder input and adds a window-mean restoration at the output (`assembly.build_modular`: `forecast_plus_window_mean`), which a head over cached latents cannot reproduce. Refused. `target_residual` is allowed ONLY together with the residual-reference side-cache (section 2, `residual_reference`); without it the cache is refused with `LATENT_CACHE_HEAD_ONLY_OPTION`.
+7. Donors are schema 2, or schema 1 with an ALONGSIDE schema-2 sidecar. A donor with only a schema-1 sidecar reads as UNKNOWN (`provenance.donor_provenance`) and is refused. Declared donor sets, as stated by the coordinator and not re-verified by me: M02's 322 ECL donors carry ALONGSIDE schema-2 sidecars (OPERATIONAL, TRAIN_ONLY; DONOR_INDEX amendment 1, sha prefix 2aaba33d; predictor branch `satoshi/a-engine-integration-20261001` @ `15f5c5d0`); M07's ETH donors (worker_a, `~/.local/state/scratch/m07/donors/eth_per_feature_v1`) are declared OPERATIONAL/TRAIN_ONLY. The cache binds each donor's sidecar bytes and provenance regardless.
 
 The authority for producing latents is the Keras engine. The torch encoder in agent-multi (`rl_temporal/modular_torch.py`, branch `satoshi/g-rl-temporal-20261001` @ `27da2d96`; only its header was read, rest UNVERIFIED) is a parity-tested port for RL (`MODULAR_ENCODER_RL_EXPORT_SPEC_v0.md` §9) and must not produce a cache; it may only read one.
 
@@ -34,6 +35,7 @@ Schema string `predictor.latent_cache.v1`. Canonical JSON and digest follow `com
 | `fusion` | fusion plugin identity and params, `input_shapes`, `output_shape`, `grid` (raw channel concatenation, no weights) | `assembly.component_manifests()["fusion"]`, `components.sequence_concat` |
 | `grid` | `window`, `sample_hours`, `horizons`, `branch_time_grid`, `core_time_grid`, `latent_shape [6,8]`, purge rule, validation border rows, count of windows excluded for gaps and purged | `config._normalize`, `_partition`; purge in `modular_doin_ecl_npz.build` (`purge = target_end >= validation_input_start`) |
 | `array` | `dtype "<f4"`, byte order little-endian, C order, layout `[N, T'=6, C'=8]` (time then channel, the Keras channels-last order; no transposition is ever applied inside the cache), per-shard shape | `bundle.encoder_model.output_shape[1:]`, `assembly._budget["latent_shape"]` |
+| `residual_reference` | present iff the config has `target_residual`: float32 `[N,H,T]` of the in-window seasonal-naive terms per horizon, computed from the same source NPZ windows exactly as the engine does (`assembly._residual_receipt`: `source_window_positions` / `source_offset_steps` per horizon; layers `SeasonalNaiveBaseline`, `SeasonalCumulativeBaseline` in `layers.py`), with its own content hash, `kind`, `period`, `target_features`, the per-horizon window positions, the `row_ids_sha256` of the same row order and the source NPZ sha. The reported forecast is `head + residual_reference`, identical to the engine's `forecast_plus_seasonal_naive` | `assembly.py` `_residual_receipt`, `build_modular` |
 | `companions` | `targets [N,H,T]` and `baseline [N,H,T]` float32 shards cut from the SAME source NPZ rows (baseline = each row's last observed target feature repeated across horizons, the evaluator's persistence naive; `evaluator._metrics`, module docstring), each with its own content hash | `modular_candidate_evaluator.py` docstring: "Persistence repeats each row's last observed target feature across horizons" |
 | `environment` | Keras, TensorFlow, Python, numpy versions; device kind; batch size used (informational) | `tools/export_modular_encoder_npz.py` records `versions` the same way |
 | `shards` | list of `{split, file, n_rows, row_start, row_stop, shape, dtype, content_sha256}` where `content_sha256` is SHA-256 of the raw array bytes (not of an `.npy` header) | new |
@@ -60,10 +62,10 @@ Latent bytes per row: `6 * 8 * 4 = 192` B (float32). Per-row producer working se
 | Input window bytes per row (`24*F*4`) | 30,816 B | 7,968 B |
 | Fused bytes per row (`1536*F`) | 493,056 B (~0.47 MiB) | 127,488 B |
 | Latent per row | 192 B | 192 B |
-| Validation, 2,609 windows (latent) | 500,928 B (~0.48 MiB) | n.a. (window count not read) |
+| Validation, 2,609 windows (latent) | 500,928 B (~0.48 MiB); ECL is out of scope for the head in v0 | n.a. (window count not read) |
 | Validation, 2,609 windows, fused if materialized at once | ~1.29 GB: do not; run in batches (a batch of 256 needs ~126 MB fused) | ~0.33 GB |
 | Train, ~1.8e4 windows (latent) | ~3.5 MB (window count UNVERIFIED; from `n_train = int(0.7 * n_rows)` with ECL hourly rows, purge and gaps not counted) | n.a. |
-| Companion `targets` + `baseline` per row | `2 * H * T * 4` B; at H = 4 (UNVERIFIED), T = 321: 10,272 B per row, ~26.8 MB for 2,609 rows | depends on T |
+| Companion `targets` + `baseline` per row | `2 * H * T * 4` B; with the coordinator's 24 ECL horizons and T = 321: 61,632 B per row, ~161 MB for 2,609 rows (H, T not independently read) | H = 6 (coordinator): `48 * T` B per row, tiny |
 
 Consequences: the cache itself is tiny; its cost is the one-time producer forward, `N_rows * producer_forward_cost`, charged once to the campaign and reported beside the head arms. Memory ceiling during build is the producer batch, not the cache. Required: build in batches, one memory-heavy job per host, never on the coordinator (standing placement rule).
 
@@ -86,7 +88,11 @@ Use a tiny config (3 features, window 24, d_model 16, one block) built with `bui
 | `test_donor_bytes_binding` | altering one byte of a donor sidecar `weights_sha256` or the bundle archive refuses on read |
 | `test_shard_hash_tamper` | flipping one byte in a shard refuses on read with `DIGEST_MISMATCH` |
 | `test_no_test_split` | a split named `test` refused |
-| `test_head_only_option_refused` | config with `target_residual` or `input_normalization` refused |
+| `test_head_only_option_refused` | `input_normalization` refused; `target_residual` refused without the side-cache |
+| `test_residual_reference_exact` | an all-zero head plus `residual_reference` equals the `forecast_model` output with a zero head (within 1e-6), for both residual kinds |
+| `test_residual_reference_binding` | a side-cache row hash or window positions differing from the cache refuses on read |
+| `test_schema1_only_donor_refused` | a donor with only a schema-1 sidecar is refused; the same donor with an ALONGSIDE schema-2 sidecar is accepted |
+| `test_batch_size_sensitivity_measured` | ACCEPTANCE TEST TO RUN, not a claim: build the same rows at batch sizes 1, 32 and 256, record the maximum absolute latent difference, write it into the manifest `environment` block; the 1e-6 tolerance is accepted only if the measured value is within it |
 | `test_atomic_write` | killing the writer after shards but before the manifest leaves no readable cache |
 | `test_companions_same_rows` | `targets` and `baseline` row hashes equal the source NPZ rows; baseline equals last observed target repeated |
 | `test_nonfinite_refused` | a NaN in the producer output refused |
@@ -94,6 +100,6 @@ Use a tiny config (3 features, window 24, d_model 16, one block) built with `bui
 
 ## 7. Open questions this document could not settle by reading
 
-1. Whether the campaign's ECL cache stores per-channel or joint targets, and the horizon list; the arithmetic above assumes `H = 4` only as an example.
-2. Bitwise determinism of the Keras forward pass across batch sizes and devices: the test plan uses a tolerance across batch sizes; a stricter bitwise claim needs one measured run.
-3. Whether the donor sidecars of the actual B1-C1 donors are schema 2 with OPERATIONAL provenance; a schema-1 sidecar reads as UNKNOWN unless an ALONGSIDE schema-2 sidecar exists (`provenance.donor_provenance`), and would be refused.
+1. Whether the ECL cache stores joint or per-channel targets; ECL is out of scope for the head in v0, but the cache contract still permits it.
+2. The measured batch-size and device sensitivity of the Keras forward pass: an acceptance test (section 6), not a claim.
+3. The M02/M07 donor provenance statements are the coordinator's; the cache build re-reads them from the sidecars and refuses on mismatch.
