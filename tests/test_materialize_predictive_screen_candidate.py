@@ -1,6 +1,7 @@
 """Tests for the exploratory TRAIN-only predictive screen."""
 
 import numpy as np
+import pytest
 
 from tools.materialize_predictive_screen_candidate import screen
 
@@ -21,3 +22,13 @@ def test_screen_finds_leading_signal_and_is_deterministic():
 
     assert selected == repeated == ["lead"]
     assert max(row["score"] for row in scores if row["feature"] != "lead") < 0.3
+
+
+def test_contiguous_grouping_is_balanced_and_unknown_is_rejected():
+    from tools.materialize_predictive_screen_candidate import group_selected
+
+    selected = [f"f{i}" for i in range(8)]
+    windows = np.zeros((3, 2, 8))
+    assert [len(group) for group in group_selected(windows, selected, 3, "contiguous")] == [3, 3, 2]
+    with pytest.raises(ValueError, match="correlation or contiguous"):
+        group_selected(windows, selected, 3, "unknown")

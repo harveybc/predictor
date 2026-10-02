@@ -22,6 +22,14 @@ from tools.materialize_correlation_grouped_candidate import (
 SCHEMA = "predictor.modular.predictive_screen.v1"
 
 
+def group_selected(windows, selected, group_count, method):
+    if method == "correlation":
+        return correlation_groups(windows, selected, group_count)
+    if method == "contiguous":
+        return [part.tolist() for part in np.array_split(np.asarray(selected), group_count)]
+    raise ValueError("grouping must be correlation or contiguous")
+
+
 def screen(windows, targets, feature_names, *, top_k, fit_stop):
     """Rank features by maximum absolute Spearman association across horizons."""
     x, y = np.asarray(windows), np.asarray(targets)
@@ -49,7 +57,7 @@ def screen(windows, targets, feature_names, *, top_k, fit_stop):
 
 
 def materialize(source_path, train_npz, output_dir, *, top_k=32, group_count=3,
-                validation_fraction=0.1, purge_origins=36):
+                validation_fraction=0.1, purge_origins=36, grouping="correlation"):
     source_path, train_npz = Path(source_path).resolve(), Path(train_npz).resolve()
     candidate = json.loads(source_path.read_text())
     model = candidate["model"]
@@ -68,8 +76,8 @@ def materialize(source_path, train_npz, output_dir, *, top_k=32, group_count=3,
         selected, scores = screen(source["windows"], source["targets"], names,
                                   top_k=top_k, fit_stop=fit_stop)
         selected_indices = [names.index(name) for name in selected]
-        groups = correlation_groups(source["windows"][:fit_stop, :, selected_indices],
-                                    selected, group_count)
+        groups = group_selected(source["windows"][:fit_stop, :, selected_indices],
+                                selected, group_count, grouping)
     if names != model["feature_names"]:
         raise ValueError("candidate and TRAIN feature identities differ")
     candidate = copy.deepcopy(candidate)
@@ -91,7 +99,8 @@ def materialize(source_path, train_npz, output_dir, *, top_k=32, group_count=3,
         "selected": selected,
         "scores": scores,
         "train_npz": {"path": str(train_npz), "sha256": _sha256(train_npz)},
-        "grouping": {"schema": GROUPING_SCHEMA, "group_sizes": [len(group) for group in groups]},
+        "grouping": {"schema": GROUPING_SCHEMA, "method": grouping,
+                     "group_sizes": [len(group) for group in groups]},
     }
     destination = Path(output_dir).resolve()
     if destination.exists():
@@ -115,10 +124,13 @@ def main():
     parser.add_argument("--top-k", type=int, default=32)
     parser.add_argument("--groups", type=int, default=3)
     parser.add_argument("--purge-origins", type=int, default=36)
+    parser.add_argument("--grouping", choices=("correlation", "contiguous"),
+                        default="correlation")
     args = parser.parse_args()
     print(json.dumps(materialize(args.source, args.train_npz, args.output,
                                  top_k=args.top_k, group_count=args.groups,
-                                 purge_origins=args.purge_origins), sort_keys=True))
+                                 purge_origins=args.purge_origins,
+                                 grouping=args.grouping), sort_keys=True))
 
 
 if __name__ == "__main__":
