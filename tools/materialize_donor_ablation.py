@@ -10,7 +10,7 @@ from pathlib import Path
 from tools.modular_heartbeat import verify_donor_binding
 
 
-MODES = ("branches_only", "core_only")
+MODES = ("branches_only", "core_only", "random_all")
 
 
 def _sha256(path):
@@ -35,8 +35,11 @@ def materialize(source_path, mode, output_dir):
     model = candidate["model"]
     binding = candidate["modular_candidate"]["donor_binding"]
 
-    retained = model["branches"] if mode == "branches_only" else [model["core"]]
-    randomized = [model["core"]] if mode == "branches_only" else model["branches"]
+    retained = (model["branches"] if mode == "branches_only" else
+                [model["core"]] if mode == "core_only" else [])
+    randomized = ([model["core"]] if mode == "branches_only" else
+                  model["branches"] if mode == "core_only" else
+                  [*model["branches"], model["core"]])
     retained_paths = {component["donor"] for component in retained}
     if None in retained_paths or retained_paths - set(binding["donors"]):
         raise ValueError("retained component has no bound donor")

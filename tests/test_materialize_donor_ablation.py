@@ -37,7 +37,8 @@ def _source(tmp_path, monkeypatch):
     return source
 
 
-@pytest.mark.parametrize(("mode", "retained"), [("branches_only", 2), ("core_only", 1)])
+@pytest.mark.parametrize(("mode", "retained"),
+                         [("branches_only", 2), ("core_only", 1), ("random_all", 0)])
 def test_materializes_exact_partial_binding(tmp_path, monkeypatch, mode, retained):
     from tools import modular_heartbeat
 
@@ -46,7 +47,9 @@ def test_materializes_exact_partial_binding(tmp_path, monkeypatch, mode, retaine
     candidate = json.loads(open(receipt["candidate"]["path"]).read())
     assert receipt["retained_donors"] == retained
     assert modular_heartbeat.verify_donor_binding(candidate)["donors_checked"] == retained
-    randomized = [candidate["model"]["core"]] if mode == "branches_only" else candidate["model"]["branches"]
+    randomized = ([candidate["model"]["core"]] if mode == "branches_only" else
+                  candidate["model"]["branches"] if mode == "core_only" else
+                  [*candidate["model"]["branches"], candidate["model"]["core"]])
     assert all(component["regime"] == "R0" and component["donor"] is None for component in randomized)
 
 
