@@ -234,7 +234,10 @@ def verify_donor_binding(config):
             if canonical(inline_model) != canonical(bound_model):
                 raise ValueError("DONOR_BINDING_MODEL_MISMATCH: inline model differs from bound regime config")
             components = [*inline_model["branches"], inline_model["core"]]
-            used_donors = [component["donor"] for component in components]
+            if any((component.get("regime") == "R0") != (component.get("donor") is None)
+                   for component in components):
+                raise ValueError("DONOR_BINDING_MODEL_MISMATCH: R0 must be random and other regimes bound")
+            used_donors = [component["donor"] for component in components if component["donor"] is not None]
         except (KeyError, TypeError, ValueError) as exc:
             if isinstance(exc, ValueError) and str(exc).startswith("DONOR_BINDING_MODEL_MISMATCH"):
                 raise
