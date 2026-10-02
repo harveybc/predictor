@@ -24,7 +24,9 @@
       {"label": "R3 warm", "mae_z": 2.3711296604889625, "status": "measured; replay outside frozen skill tolerance"},
       {"label": "R0 corr groups", "mae_z": 2.373678848659875, "status": "measured"},
       {"label": "R0 top32 corr", "mae_z": 2.37340936350651, "status": "verified"},
-      {"label": "R0 top32 balanced", "mae_z": 2.3723395369557148, "status": "measured"}
+      {"label": "R0 top32 balanced", "mae_z": 2.372339158505313, "status": "verified"},
+      {"label": "R0 MI top32", "mae_z": 2.3724658472361124, "status": "verified"},
+      {"label": "R0 MI top64", "mae_z": 2.3722015819384072, "status": "measured"}
     ]
   },
   "milestones": [
