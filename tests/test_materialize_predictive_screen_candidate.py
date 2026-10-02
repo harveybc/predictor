@@ -32,3 +32,18 @@ def test_contiguous_grouping_is_balanced_and_unknown_is_rejected():
     assert [len(group) for group in group_selected(windows, selected, 3, "contiguous")] == [3, 3, 2]
     with pytest.raises(ValueError, match="correlation or contiguous"):
         group_selected(windows, selected, 3, "unknown")
+
+
+def test_mutual_information_finds_nonmonotonic_signal():
+    rng = np.random.default_rng(19)
+    rows = 800
+    nonlinear = rng.uniform(-2, 2, rows)
+    windows = rng.normal(size=(rows, 3, 3))
+    windows[:, -1, 1] = nonlinear
+    targets = (nonlinear ** 2 + rng.normal(0, 0.03, rows))[:, None, None]
+
+    selected, _ = screen(windows, targets, ["noise_a", "nonlinear", "noise_b"],
+                         top_k=1, fit_stop=700,
+                         statistic="mutual_information", seed=2021)
+
+    assert selected == ["nonlinear"]
