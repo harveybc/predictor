@@ -23,7 +23,6 @@ import numpy as np
 
 SCHEMA = "modular.supervised_donor.pretrain.v1"
 RECIPE_SCHEMA = "modular.supervised_donor.recipe.v1"
-OBJECTIVE_NAME = "seasonal_residual_forecast_P24"
 
 
 def _sha256(path):
@@ -103,18 +102,34 @@ def internal_split_indices(timestamps, target_timestamps, *, validation_fraction
             "purged": np.arange(train_stop, validation_start, dtype=np.int64)}
 
 
-def expand_recipe(recipe, feature_names):
+def expand_recipe(recipe, feature_names, target_names=None):
     """Expand a compact, reviewable recipe into the strict engine config."""
     if recipe.get("schema") != RECIPE_SCHEMA:
         raise ValueError(f"recipe schema must be {RECIPE_SCHEMA}")
     names = [str(name) for name in feature_names]
     if not names or len(set(names)) != len(names):
         raise ValueError("feature names must be unique")
-    branch_template = copy.deepcopy(recipe["branch"])
+    targets = [str(name) for name in (target_names if target_names is not None else names)]
+    if not targets or len(set(targets)) != len(targets):
+        raise ValueError("target names must be unique")
+    unknown_targets = sorted(set(targets) - set(names))
+    if unknown_targets:
+        raise ValueError(f"target names are not input features: {unknown_targets}")
     branches = []
-    for index, feature in enumerate(names):
-        branches.append({"name": f"branch_{index}", "features": [feature],
-                         **copy.deepcopy(branch_template), "regime": "R0", "donor": None})
+    if "branches" in recipe:
+        covered = []
+        for branch in copy.deepcopy(recipe["branches"]):
+            branch["regime"] = "R0"
+            branch["donor"] = None
+            branches.append(branch)
+            covered.extend(branch["features"])
+        if sorted(covered) != sorted(names) or len(covered) != len(set(covered)):
+            raise ValueError("explicit branches must partition feature names exactly once")
+    else:
+        branch_template = copy.deepcopy(recipe["branch"])
+        for index, feature in enumerate(names):
+            branches.append({"name": f"branch_{index}", "features": [feature],
+                             **copy.deepcopy(branch_template), "regime": "R0", "donor": None})
     period = int(recipe["target_residual_period"])
     return {
         "schema": "predictor.modular.v1",
@@ -129,8 +144,9 @@ def expand_recipe(recipe, feature_names):
         "output_steps": int(recipe["output_steps"]),
         "output_channels": int(recipe["output_channels"]),
         "horizons": list(recipe["horizons"]),
-        "target_count": len(names),
-        "target_residual": {"kind": "seasonal_naive", "period": period, "target_features": names},
+        "target_count": len(targets),
+        "target_residual": {"kind": "seasonal_naive", "period": period,
+                            "target_features": targets},
     }
 
 
@@ -152,12 +168,13 @@ def regime_configs(model_config, donors, *, freeze_epochs, unfreeze_learning_rat
     return result
 
 
-def _objective_identity(train, split, recipe_sha256):
+def _objective_identity(train, split, recipe_sha256, period):
     document = {
         "group": "modular.supervised_donor",
-        "name": OBJECTIVE_NAME,
+        "name": f"seasonal_residual_forecast_P{period}",
         "version": "1.0.0",
-        "params": {"loss": "mae", "period": 24, "horizons": train["horizons"].tolist()},
+        "params": {"loss": "mae", "period": period,
+                   "horizons": train["horizons"].tolist()},
         "train_sha256": train["sha256"],
         "recipe_sha256": recipe_sha256,
         "support": {"fit": [int(split["train"][0]), int(split["train"][-1])],
@@ -183,7 +200,9 @@ def run(train_npz, recipe_path, output_dir, fit_settings, *, validation_fraction
     data = load_train_npz(train_npz)
     split = internal_split_indices(data["timestamps"], data["target_timestamps"],
                                    validation_fraction=validation_fraction, purge_origins=purge_origins)
-    model_config = expand_recipe(recipe, data["feature_names"].tolist())
+    model_config = expand_recipe(
+        recipe, data["feature_names"].tolist(), data["target_names"].tolist()
+    )
     if list(model_config["horizons"]) != data["horizons"].tolist():
         raise ValueError("recipe horizons differ from TRAIN NPZ")
     if tuple(data["windows"].shape[1:]) != (model_config["window"], len(model_config["feature_names"])):
@@ -206,7 +225,8 @@ def run(train_npz, recipe_path, output_dir, fit_settings, *, validation_fraction
     output.mkdir(parents=True)
     donors_dir = output / "donors"
     donors_dir.mkdir()
-    objective = _objective_identity(data, split, recipe_sha)
+    objective = _objective_identity(data, split, recipe_sha,
+                                    int(recipe["target_residual_period"]))
     provenance = {
         "conditioning_contract": "OPERATIONAL",
         "learned_corpus": {

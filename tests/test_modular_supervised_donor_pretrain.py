@@ -86,6 +86,47 @@ def test_expand_recipe_preserves_time_and_builds_one_branch_per_feature(tmp_path
     assert model["target_residual"]["target_features"] == ["a", "b"]
 
 
+def test_expand_recipe_accepts_partitioned_branches_and_distinct_target():
+    recipe = {
+        "schema": "modular.supervised_donor.recipe.v1", "window": 24,
+        "sample_hours": 4, "horizons": [6, 12],
+        "branches": [
+            {"name": "returns", "features": ["target", "r5"],
+             "plugin": "causal_conv1d", "params": {"channels": 16}},
+            {"name": "volume", "features": ["volume"],
+             "plugin": "causal_conv1d", "params": {"channels": 16}},
+        ],
+        "core": {"plugin": "transformer_conv", "params": {}},
+        "fusion": {"plugin": "sequence_concat", "params": {}},
+        "head": {"plugin": "forecast", "params": {}},
+        "output_steps": 6, "output_channels": 8, "target_residual_period": 6,
+    }
+    model = subject.expand_recipe(recipe, ["target", "r5", "volume"], ["target"])
+    assert [branch["name"] for branch in model["branches"]] == ["returns", "volume"]
+    assert model["target_count"] == 1
+    assert model["target_residual"] == {
+        "kind": "seasonal_naive", "period": 6, "target_features": ["target"]
+    }
+
+
+def test_expand_recipe_rejects_non_partition_and_unknown_target():
+    recipe = {
+        "schema": "modular.supervised_donor.recipe.v1", "window": 24,
+        "sample_hours": 4, "horizons": [6],
+        "branches": [{"name": "bad", "features": ["a"],
+                      "plugin": "causal_conv1d", "params": {}}],
+        "core": {"plugin": "transformer_conv", "params": {}},
+        "fusion": {"plugin": "sequence_concat", "params": {}},
+        "head": {"plugin": "forecast", "params": {}},
+        "output_steps": 6, "output_channels": 8, "target_residual_period": 6,
+    }
+    with pytest.raises(ValueError, match="partition"):
+        subject.expand_recipe(recipe, ["a", "b"], ["a"])
+    recipe["branches"][0]["features"] = ["a", "b"]
+    with pytest.raises(ValueError, match="not input features"):
+        subject.expand_recipe(recipe, ["a", "b"], ["missing"])
+
+
 def test_regime_configs_bind_every_exported_donor(tmp_path):
     base = subject.expand_recipe({
         "schema": "modular.supervised_donor.recipe.v1", "window": 24, "sample_hours": 1,
@@ -112,4 +153,3 @@ def test_receipt_identity_changes_with_split_or_training_bytes():
     assert first == subject.identity(dict(base))
     assert first != subject.identity({**base, "train_rows": [0, 69]})
     assert first != subject.identity({**base, "train_sha256": "b" * 64})
-
