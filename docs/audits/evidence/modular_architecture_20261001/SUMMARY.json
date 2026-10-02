@@ -26,7 +26,7 @@
       {"label": "R0 top32 corr", "mae_z": 2.37340936350651, "status": "verified"},
       {"label": "R0 top32 balanced", "mae_z": 2.372339158505313, "status": "verified"},
       {"label": "R0 MI top32", "mae_z": 2.3724658472361124, "status": "verified"},
-      {"label": "R0 MI top64", "mae_z": 2.3722015819384072, "status": "measured"}
+      {"label": "R0 MI top64", "mae_z": 2.3722015819384072, "status": "verified"}
     ]
   },
   "milestones": [
