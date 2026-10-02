@@ -14,6 +14,8 @@ import json
 import os
 from pathlib import Path
 
+import numpy as np
+
 
 BINDING_SCHEMA = "predictor.modular.donor_binding.v2"
 PRETRAIN_SCHEMA = "modular.supervised_donor.pretrain.v1"
@@ -157,6 +159,39 @@ def _model_donor_paths(model, regime):
     return paths
 
 
+def _target_identity(receipt, names, target_count):
+    """Resolve targets from the receipt, or its digest-bound TRAIN NPZ."""
+    data = receipt.get("data", {})
+    target_indices = data.get("target_feature_indices")
+    target_names = data.get("target_names")
+    if target_indices is None and target_count == len(names):
+        return list(range(target_count)), list(names)
+    if target_indices is None:
+        path = Path(data.get("path", ""))
+        if not path.is_file() or _sha256_file(path) != data.get("sha256"):
+            raise ValueError("PRETRAIN_TARGET_SOURCE_INVALID")
+        try:
+            with np.load(path, allow_pickle=False) as source:
+                source_names = [str(value) for value in source["feature_names"].tolist()]
+                target_names = [str(value) for value in source["target_names"].tolist()]
+        except (OSError, ValueError, KeyError) as exc:
+            raise ValueError("PRETRAIN_TARGET_SOURCE_INVALID") from exc
+        if source_names != names:
+            raise ValueError("PRETRAIN_TARGET_SOURCE_FEATURES_MISMATCH")
+        try:
+            target_indices = [names.index(name) for name in target_names]
+        except ValueError as exc:
+            raise ValueError("PRETRAIN_TARGET_SOURCE_TARGET_UNKNOWN") from exc
+    if (not isinstance(target_indices, list) or len(target_indices) != target_count
+            or any(type(index) is not int or index < 0 or index >= len(names)
+                   for index in target_indices)
+            or len(set(target_indices)) != len(target_indices)
+            or not isinstance(target_names, list)
+            or target_names != [names[index] for index in target_indices]):
+        raise ValueError("PRETRAIN_TARGET_IDENTITY_INVALID")
+    return target_indices, target_names
+
+
 def materialize(pretrain_path, evaluator_settings, objective):
     """Return complete R1/R2/R3 evaluator candidates after strict verification."""
     pretrain_path = Path(pretrain_path).resolve()
@@ -196,8 +231,9 @@ def materialize(pretrain_path, evaluator_settings, objective):
         names = model.get("feature_names")
         target_count = model.get("target_count")
         if (not isinstance(names, list) or not names or len(set(names)) != len(names)
-                or type(target_count) is not int or target_count != len(names)):
+                or type(target_count) is not int or not 0 < target_count <= len(names)):
             raise ValueError(f"MODEL_{regime}_TARGETS_INVALID")
+        target_indices, _ = _target_identity(receipt, names, target_count)
         binding = {
             "schema": BINDING_SCHEMA,
             "required_contract": "OPERATIONAL",
@@ -210,7 +246,7 @@ def materialize(pretrain_path, evaluator_settings, objective):
             "modular_candidate": {"schema": "modular.candidate.v1", "donor_binding": binding},
             "model": model,
             "evaluator": settings,
-            "target_feature_indices": list(range(target_count)),
+            "target_feature_indices": target_indices,
             "objective": candidate_objective,
         }
         json.dumps(candidates[regime], allow_nan=False)

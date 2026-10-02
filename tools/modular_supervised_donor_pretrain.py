@@ -292,6 +292,10 @@ def run(train_npz, recipe_path, output_dir, fit_settings, *, validation_fraction
         "regime_configs": {key: str(output / f"MODEL_{key}.json") for key in regimes},
         "wall_seconds": time.monotonic() - started,
     }
+    names = [str(name) for name in data["feature_names"].tolist()]
+    targets = [str(name) for name in data["target_names"].tolist()]
+    receipt["data"]["target_names"] = targets
+    receipt["data"]["target_feature_indices"] = [names.index(name) for name in targets]
     _atomic(output / "PRETRAIN.json", receipt)
     return receipt
 

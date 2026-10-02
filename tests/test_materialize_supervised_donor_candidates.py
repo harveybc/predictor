@@ -129,6 +129,38 @@ def test_materializes_complete_r1_r2_r3_candidates_and_direct_bindings(tmp_path,
                    for item in binding["donors"].values())
 
 
+def test_materializes_single_target_by_retained_feature_identity(tmp_path, monkeypatch):
+    pretrain = _fixture(tmp_path / "one", monkeypatch)
+    receipt = json.loads(pretrain.read_text())
+    receipt["data"] = {"target_names": ["b"], "target_feature_indices": [1]}
+    _write(pretrain, receipt)
+    for regime in subject.REGIMES:
+        path = pretrain.parent / f"MODEL_{regime}.json"
+        model = json.loads(path.read_text())
+        model["target_count"] = 1
+        _write(path, model)
+
+    candidates = subject.materialize(pretrain, SETTINGS, OBJECTIVE)
+
+    assert all(candidate["target_feature_indices"] == [1]
+               for candidate in candidates.values())
+
+
+def test_rejects_target_identity_that_disagrees_with_feature_names(tmp_path, monkeypatch):
+    pretrain = _fixture(tmp_path / "one", monkeypatch)
+    receipt = json.loads(pretrain.read_text())
+    receipt["data"] = {"target_names": ["a"], "target_feature_indices": [1]}
+    _write(pretrain, receipt)
+    for regime in subject.REGIMES:
+        path = pretrain.parent / f"MODEL_{regime}.json"
+        model = json.loads(path.read_text())
+        model["target_count"] = 1
+        _write(path, model)
+
+    with pytest.raises(ValueError, match="TARGET_IDENTITY_INVALID"):
+        subject.materialize(pretrain, SETTINGS, OBJECTIVE)
+
+
 def test_rejects_incomplete_receipt(tmp_path, monkeypatch):
     pretrain = _fixture(tmp_path / "one", monkeypatch)
     document = json.loads(pretrain.read_text())
