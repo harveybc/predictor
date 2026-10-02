@@ -1,0 +1,41 @@
+{
+  "schema": "predictor.modular.progress.v1",
+  "generated_from_retained_receipts": true,
+  "seed_policy": "one seed by default; never more than three unless mandatory",
+  "ecl": {
+    "naive_persistence_mae_z": 0.8514061497227646,
+    "naive_seasonal_mae_z": 0.24796637423429127,
+    "rows": [
+      {"label": "R0 grouped32", "mae_z": 0.21345769038465318, "status": "measured"},
+      {"label": "R0 MLP matched", "mae_z": 0.21458615908157647, "status": "measured"},
+      {"label": "R0 per-feature", "mae_z": 0.21849672913461907, "status": "verified"},
+      {"label": "R1 frozen", "mae_z": 0.24530096152492972, "status": "verified"},
+      {"label": "R2 trainable", "mae_z": 0.21880950897232118, "status": "verified"},
+      {"label": "R3 warm", "mae_z": 0.22174073462105082, "status": "verified"},
+      {"label": "R2 branches only", "mae_z": 0.247931512889847, "status": "verified"}
+    ]
+  },
+  "eth": {
+    "naive_persistence_mae_z": 2.4409553347390545,
+    "rows": [
+      {"label": "R0 grouped32", "mae_z": 2.3686015620124463, "status": "verified"},
+      {"label": "R1 frozen", "mae_z": 2.374368502388613, "status": "verified"},
+      {"label": "R2 trainable", "mae_z": 2.37140208633382, "status": "verified"},
+      {"label": "R3 warm", "mae_z": 2.3711296604889625, "status": "measured; replay outside frozen skill tolerance"},
+      {"label": "R0 corr groups", "mae_z": 2.373678848659875, "status": "measured"},
+      {"label": "R0 top32 corr", "mae_z": 2.37340936350651, "status": "verified"},
+      {"label": "R0 top32 balanced", "mae_z": 2.3723395369557148, "status": "measured"}
+    ]
+  },
+  "milestones": [
+    {"label": "Temporal modular engine", "state": "complete"},
+    {"label": "Exact R0 controls", "state": "complete"},
+    {"label": "Branch + core donors", "state": "complete"},
+    {"label": "R1 / R2 / R3", "state": "complete"},
+    {"label": "Financial first contrast", "state": "complete"},
+    {"label": "Progressive feature screen", "state": "active"},
+    {"label": "Full causal ladder", "state": "pending"},
+    {"label": "DOIN search on selected design", "state": "pending"},
+    {"label": "RL + heuristic + paper deployment", "state": "pending"}
+  ]
+}
