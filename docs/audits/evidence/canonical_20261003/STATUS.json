@@ -1,6 +1,6 @@
 {
  "schema": "canonical_exec_status.v1",
- "observed_at": "2026-10-03T04:50:39Z",
+ "observed_at": "2026-10-03T05:01:11Z",
  "authority": "codex/workplan-consolidation-20261003@2edc2684 (master plan v3 consolidated)",
  "neat": "no process or unit on any host (verified)",
  "hermes": "not used this round (provider 403 earlier; unverified)",
@@ -42,8 +42,9 @@
    "resource": "CPU engineering",
    "work": "fail-closed selected-manifest consumer gate (predictor)",
    "declared_state": "DISPATCHED",
-   "observed_state": "NOT_YET_OBSERVED",
-   "next_transition": "gate + ECL negative fixture"
+   "observed_state": "DONE",
+   "next_transition": "wire gate into builders when those lines are integrated",
+   "evidence": "predictor satoshi/selected-manifest-gate-20261003 c0345f83; 45 tests; ECL 321/321 and ETH 83/83 refused; NOT YET WIRED into builders (they live only on unmerged lines)"
   },
   {
    "lane": "F-prep",
@@ -66,8 +67,9 @@
    "resource": "CPU services",
    "work": "M5PHET next real-provider E2E; LTS/MT5 demo/Alpaca paper health (read-only)",
    "declared_state": "DISPATCHED",
-   "observed_state": "NOT_YET_OBSERVED",
-   "next_transition": "E2E receipt"
+   "observed_state": "DONE",
+   "next_transition": "owner decision on H-D1 (Alpaca runner trades non-eligible model on paper) and H-D4 (MT5 VM running)",
+   "evidence": "M5PHET satoshi/m5phet-e2e-20261003 14d9b05 causal-ATE E2E green; laneH/REPORT.md 61564fb0"
   },
   {
    "lane": "E",
