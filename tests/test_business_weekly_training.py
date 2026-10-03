@@ -169,6 +169,7 @@ def test_monthly_non_due_weeks_reuse_only_latest_prior_release():
             if current.reused:
                 assert current.result is previous.result
                 assert current.result.week_start < current.scored_week.start
+                assert current.asof_data_identity != current.result.data_identity
             else:
                 assert current.result.week_start == current.scored_week.start
 

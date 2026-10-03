@@ -1,7 +1,7 @@
 {
   "schema": "feature_selection_method_state.v1",
-  "updated_at": "2026-10-03T18:49:00Z",
-  "current_stage": "PREPARATION_CONTRACT_IMPLEMENTED_PS3R_RUNNING_COMPARATORS_IN_PROGRESS",
+  "updated_at": "2026-10-03T19:15:00Z",
+  "current_stage": "PREPARATION_AND_COMPARATOR_CORES_IMPLEMENTED_PS3R_RUNNING",
   "plan": "FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md",
   "traceability": "Sections 9 and 10.4: FS01-FS38; section 10.1: PS0-PS7 and UC-FS1-UC-FS5; BUSINESS weekly BW01-BW18",
   "owner_approval": "Progressive resource-aware approach approved in conversation; no new financial risk or remote-code grant implied.",
@@ -16,7 +16,7 @@
     "S6_COMPONENT_DESIGN": "NOT_COMPLETED",
     "S7_INTEGRATION_TEST_DESIGN": "NOT_COMPLETED",
     "S8_UNIT_TEST_DESIGN": "NOT_COMPLETED",
-    "S9_UNIT_IMPLEMENTATION": "PARTIAL: feature_preparation_policy.v1 implemented; selector comparators and weekly integration remain"
+    "S9_UNIT_IMPLEMENTATION": "PARTIAL: preparation, filter comparators, Elastic Net and callback-based weekly orchestration implemented; governed inventory execution and real model adapters remain"
   },
   "accepted_requirements": [
     "EURUSD is the first business manifest; ETH is a separate development manifest",
@@ -67,6 +67,18 @@
       "component": "tools/feature_selector_comparators.py",
       "status": "FILTER_CONTROLS_IMPLEMENTED",
       "scope": "ALL_ADMISSIBLE, SPEARMAN_K, MI8_K, REDUNDANCY_K and RANDOM_K with complete rankings and sealed K",
+      "scientific_measurement": false
+    },
+    {
+      "component": "tools/feature_selector_elastic_net.py",
+      "status": "EMBEDDED_COMPARATOR_IMPLEMENTED",
+      "scope": "TRAIN-only chronological inner folds, fold-local standardization, deterministic Elastic Net path, complete ranking and sealed K",
+      "scientific_measurement": false
+    },
+    {
+      "component": "tools/business_weekly_training.py",
+      "status": "CALLBACK_ORCHESTRATOR_IMPLEMENTED",
+      "scope": "matched forecast, heuristic-head, SAC and DQN releases over weekly or calendar-monthly rolling four-year windows; real framework adapters remain",
       "scientific_measurement": false
     }
   ],
