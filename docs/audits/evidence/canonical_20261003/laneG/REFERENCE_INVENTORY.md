@@ -67,7 +67,7 @@ in the replay sense. **No Weather cell is SEALED_NOT_RUN.**
 | 96 | 2021, 2022, 2023 | 0.375199 / 0.251143 (sd 0.00060 / 0.00028) | 0.375 / 0.251 | 2.7145 / 1.0772 | OPERATIONAL_AGREEMENT | MEASURED_UNVERIFIED: no independent replay; scored with the author's native unchunked `test()`; every seed hit the 30-epoch ceiling with its best epoch the last one |
 | 192 | 2021, 2022, 2023 | 0.396509 / 0.262478 (sd 0.00015 / 0.00031) | 0.395 / 0.262 | 2.7471 / 1.0851 | **OPERATIONAL_AGREEMENT** (+0.0015 / +0.0005) | MEASURED_UNVERIFIED; run by lane G, bounded route with inherited parity (`TRAFFIC_L96_h192_CLOSURE.json`) |
 | 336 | 2021, 2022, 2023 | — | 0.414 / 0.271 | — | — | SEALED_NOT_RUN; the bounded probe at h336 has not been measured |
-| 720 | 2021, 2022, 2023 | — | 0.445 / 0.289 | — | — | SEALED_NOT_RUN; bounded probe `ADMISSIBLE_PARITY_INHERITED`, 3.600 GiB |
+| 720 | 2021, 2022, 2023 | — | 0.445 / 0.289 | — | — | RUNNING in lane G, one seed at a time. Bounded probe `ADMISSIBLE_PARITY_INHERITED`, 3.600 GiB. Cap 7.25 GiB = 1.25 × (h192 cell peak 5.45 − h192 probe 3.36 + h720 probe 3.60 + train-pilot delta 0.04) |
 
 The custody class for all Traffic cells is `DECLARED_TRANSPORT_OF_GOVERNED_BYTES_NOT_A_NEW_GOVERNED_UNIT`. The bytes are
 `cb06463d…`, delivered by the adoption campaign as VERIFIED_TRANSFER and re-verified inside each child.
