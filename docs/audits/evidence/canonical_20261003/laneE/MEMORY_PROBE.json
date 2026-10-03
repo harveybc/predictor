@@ -1,0 +1,10 @@
+{"schema": "laneE_memory_probe.v1", "date": "2026-10-03", "resource_role": "worker_a RTX 5090 (UUID resolved at launch, not recorded)",
+ "code": {"repo": "feature-extractor", "branch": "satoshi/univariate-temporal-extractor-20261003", "commit": "8987c573bd7e0819a54011e88ec9e7c309229350"},
+ "feature": "batch_001/px.close_loc", "families": "identity,random,ae,dae", "max_epochs": 1,
+ "attempts": [
+  {"rows": "full", "cap": "5G", "outcome": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND", "observed_tree_peak_bytes": 5029564416, "note": "ran concurrently with lane F's own probe in the same 8 GiB slice"},
+  {"rows": "full", "cap": "7G", "outcome": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND", "observed_tree_peak_bytes": 6959636480, "note": "stopped in fold 2 of 5; fold fit sets grow (57047 windows in fold 1)"},
+  {"rows": "--max_fit_windows 16384", "cap": "7G", "outcome": "COMPLETED", "cgroup_peak_bytes": 6266458112, "peak_rss_bytes": 6403551232, "wall_seconds": 103.2, "fit_seconds_per_epoch_per_family_fold": "about 5"}],
+ "rss_breakdown_synthetic_MiB": {"import_tf": 658, "gpu_init": 1905, "ae_build": 1989, "one_epoch_fit_16384": 3061, "encode": 3290},
+ "production_cap": "7471M = 1.25 x 6266458112 bytes",
+ "consequence": "one pilot process needs almost the whole 8 GiB batch slice, so lane E (5090) and lane F (5070 Ti) are serialized by admission (-q); they cannot run concurrently on worker_a with this code."}
