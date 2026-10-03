@@ -1,21 +1,21 @@
 {
  "schema": "laneE_progress.v1",
- "at_utc": "2026-10-03T07:50:12Z",
+ "at_utc": "2026-10-03T10:51:12Z",
  "features_total": 137,
- "done": 5,
+ "done": 16,
  "failed": 0,
- "pending": 132,
+ "pending": 121,
  "batch_001_tier_1": {
   "total": 33,
-  "done": 5
+  "done": 16
  },
  "wall_seconds_per_feature": {
-  "mean": 656.208,
+  "mean": 736.945,
   "min": 553.814,
   "max": 918.215
  },
- "cgroup_peak_bytes_max": 7230619648,
+ "cgroup_peak_bytes_max": 7290052608,
  "cap": "8000M",
- "eta_hours_remaining_sequential_no_lane_F_turns": 24.427626666666665,
+ "eta_hours_remaining_sequential_no_lane_F_turns": 25.10565138888889,
  "failures": []
 }

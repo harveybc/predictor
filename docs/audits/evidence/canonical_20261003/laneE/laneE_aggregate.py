@@ -89,7 +89,7 @@ def main(root, queue_path, out_dir):
                     mat.append(dict(key, family=fam, metric=f"probe_skill_{g}", status="NOT_APPLICABLE",
                                     value="", n_folds=0, note="no target in batch"))
                     continue
-                if ok and ok[0]["kind"] == "regression":
+                if ok and "mae" in ok[0]:  # emitted rows carry kind="probe"; regression rows have mae
                     skill = mean([r["skill_vs_train_mean"] for r in ok]); naive = "train_mean_same_rows"
                     loss = mean([r["mae"] for r in ok]); nl = mean([r["naive_train_mean_mae"] for r in ok])
                     sz = mean([r["skill_vs_zero"] for r in ok])

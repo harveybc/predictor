@@ -359,50 +359,798 @@ batch_001,px.log_hl,tier_1,ae,preservation_Y_b,MEASURED,-0.141416,5,positive fav
 batch_001,px.log_hl,tier_1,dae,probe_skill_Y_b,MEASURED,-0.0371489,5,10/10 fold-horizon cells; naive=train_prior_same_rows
 batch_001,px.log_hl,tier_1,dae,delta_probe_Y_b,MEASURED,-0.113244,5,positive favours trained
 batch_001,px.log_hl,tier_1,dae,preservation_Y_b,MEASURED,-0.1143,5,positive favours trained
-batch_001,px.logret_120h,tier_1,identity,*,PENDING,,,
-batch_001,px.logret_120h,tier_1,random,*,PENDING,,,
-batch_001,px.logret_120h,tier_1,ae,*,PENDING,,,
-batch_001,px.logret_120h,tier_1,dae,*,PENDING,,,
-batch_001,px.logret_12h,tier_1,identity,*,PENDING,,,
-batch_001,px.logret_12h,tier_1,random,*,PENDING,,,
-batch_001,px.logret_12h,tier_1,ae,*,PENDING,,,
-batch_001,px.logret_12h,tier_1,dae,*,PENDING,,,
-batch_001,px.logret_168h,tier_1,identity,*,PENDING,,,
-batch_001,px.logret_168h,tier_1,random,*,PENDING,,,
-batch_001,px.logret_168h,tier_1,ae,*,PENDING,,,
-batch_001,px.logret_168h,tier_1,dae,*,PENDING,,,
-batch_001,px.logret_1h,tier_1,identity,*,PENDING,,,
-batch_001,px.logret_1h,tier_1,random,*,PENDING,,,
-batch_001,px.logret_1h,tier_1,ae,*,PENDING,,,
-batch_001,px.logret_1h,tier_1,dae,*,PENDING,,,
-batch_001,px.logret_24h,tier_1,identity,*,PENDING,,,
-batch_001,px.logret_24h,tier_1,random,*,PENDING,,,
-batch_001,px.logret_24h,tier_1,ae,*,PENDING,,,
-batch_001,px.logret_24h,tier_1,dae,*,PENDING,,,
-batch_001,px.logret_2h,tier_1,identity,*,PENDING,,,
-batch_001,px.logret_2h,tier_1,random,*,PENDING,,,
-batch_001,px.logret_2h,tier_1,ae,*,PENDING,,,
-batch_001,px.logret_2h,tier_1,dae,*,PENDING,,,
-batch_001,px.logret_48h,tier_1,identity,*,PENDING,,,
-batch_001,px.logret_48h,tier_1,random,*,PENDING,,,
-batch_001,px.logret_48h,tier_1,ae,*,PENDING,,,
-batch_001,px.logret_48h,tier_1,dae,*,PENDING,,,
-batch_001,px.logret_4h,tier_1,identity,*,PENDING,,,
-batch_001,px.logret_4h,tier_1,random,*,PENDING,,,
-batch_001,px.logret_4h,tier_1,ae,*,PENDING,,,
-batch_001,px.logret_4h,tier_1,dae,*,PENDING,,,
-batch_001,px.logret_6h,tier_1,identity,*,PENDING,,,
-batch_001,px.logret_6h,tier_1,random,*,PENDING,,,
-batch_001,px.logret_6h,tier_1,ae,*,PENDING,,,
-batch_001,px.logret_6h,tier_1,dae,*,PENDING,,,
-batch_001,px.rv5,tier_1,identity,*,PENDING,,,
-batch_001,px.rv5,tier_1,random,*,PENDING,,,
-batch_001,px.rv5,tier_1,ae,*,PENDING,,,
-batch_001,px.rv5,tier_1,dae,*,PENDING,,,
-batch_001,px.zclose_168,tier_1,identity,*,PENDING,,,
-batch_001,px.zclose_168,tier_1,random,*,PENDING,,,
-batch_001,px.zclose_168,tier_1,ae,*,PENDING,,,
-batch_001,px.zclose_168,tier_1,dae,*,PENDING,,,
+batch_001,px.logret_120h,tier_1,identity,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,identity,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,identity,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,identity,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,identity,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,identity,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,identity,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,identity,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,identity,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,identity,effective_dim_pr,MEASURED,1.71047,5,
+batch_001,px.logret_120h,tier_1,identity,stability_cka_mean,MEASURED,0.99981,5,
+batch_001,px.logret_120h,tier_1,random,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,random,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,random,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,random,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,random,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,random,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,random,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,random,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,random,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_120h,tier_1,random,effective_dim_pr,MEASURED,3.9768,5,
+batch_001,px.logret_120h,tier_1,random,stability_cka_mean,MEASURED,0.999435,5,
+batch_001,px.logret_120h,tier_1,ae,rec_mae_rel_train_constant,MEASURED,0.00195242,5,
+batch_001,px.logret_120h,tier_1,ae,rec_mse_rel_train_constant,MEASURED,1.57725e-05,5,
+batch_001,px.logret_120h,tier_1,ae,rec_mae_norm,MEASURED,0.00147776,5,
+batch_001,px.logret_120h,tier_1,ae,rec_mae_orig,MEASURED,1.3062e-05,5,
+batch_001,px.logret_120h,tier_1,ae,rec_mse_orig,MEASURED,1.09086e-09,5,
+batch_001,px.logret_120h,tier_1,ae,rec_acf_l1,MEASURED,0.000356913,5,
+batch_001,px.logret_120h,tier_1,ae,rec_log_psd_l1,MEASURED,0.0215201,5,
+batch_001,px.logret_120h,tier_1,ae,rec_mae_extremes,MEASURED,0.00195014,5,
+batch_001,px.logret_120h,tier_1,ae,rec_dtw_mean,MEASURED,0.000556142,5,
+batch_001,px.logret_120h,tier_1,ae,effective_dim_pr,MEASURED,1.613,5,
+batch_001,px.logret_120h,tier_1,ae,stability_cka_mean,MEASURED,0.97747,5,
+batch_001,px.logret_120h,tier_1,ae,fit_wall_seconds,MEASURED,605.471,5,
+batch_001,px.logret_120h,tier_1,ae,updates,MEASURED,201472,5,max_epochs;patience
+batch_001,px.logret_120h,tier_1,dae,rec_mae_rel_train_constant,MEASURED,0.0471091,5,
+batch_001,px.logret_120h,tier_1,dae,rec_mse_rel_train_constant,MEASURED,0.0023136,5,
+batch_001,px.logret_120h,tier_1,dae,rec_mae_norm,MEASURED,0.0332216,5,
+batch_001,px.logret_120h,tier_1,dae,rec_mae_orig,MEASURED,0.000294192,5,
+batch_001,px.logret_120h,tier_1,dae,rec_mse_orig,MEASURED,1.44183e-07,5,
+batch_001,px.logret_120h,tier_1,dae,rec_acf_l1,MEASURED,0.00995687,5,
+batch_001,px.logret_120h,tier_1,dae,rec_log_psd_l1,MEASURED,0.414827,5,
+batch_001,px.logret_120h,tier_1,dae,rec_mae_extremes,MEASURED,0.0466168,5,
+batch_001,px.logret_120h,tier_1,dae,rec_dtw_mean,MEASURED,0.0191067,5,
+batch_001,px.logret_120h,tier_1,dae,effective_dim_pr,MEASURED,1.5908,5,
+batch_001,px.logret_120h,tier_1,dae,stability_cka_mean,MEASURED,0.967333,5,
+batch_001,px.logret_120h,tier_1,dae,fit_wall_seconds,MEASURED,158.019,5,
+batch_001,px.logret_120h,tier_1,dae,updates,MEASURED,46592,5,patience
+batch_001,px.logret_120h,tier_1,identity,probe_skill_Y_s,MEASURED,-0.033443,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_120h,tier_1,random,probe_skill_Y_s,MEASURED,-0.00499694,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_120h,tier_1,ae,probe_skill_Y_s,MEASURED,-0.00501949,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_120h,tier_1,ae,delta_probe_Y_s,MEASURED,-8.17989e-07,5,positive favours trained
+batch_001,px.logret_120h,tier_1,ae,preservation_Y_s,MEASURED,3.16021e-05,5,positive favours trained
+batch_001,px.logret_120h,tier_1,dae,probe_skill_Y_s,MEASURED,-0.00648572,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_120h,tier_1,dae,delta_probe_Y_s,MEASURED,-1.99284e-06,5,positive favours trained
+batch_001,px.logret_120h,tier_1,dae,preservation_Y_s,MEASURED,3.04272e-05,5,positive favours trained
+batch_001,px.logret_120h,tier_1,identity,probe_skill_Y_l,MEASURED,-0.0227636,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_120h,tier_1,random,probe_skill_Y_l,MEASURED,-0.00345907,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_120h,tier_1,ae,probe_skill_Y_l,MEASURED,-0.00589854,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_120h,tier_1,ae,delta_probe_Y_l,MEASURED,-1.75795e-05,5,positive favours trained
+batch_001,px.logret_120h,tier_1,ae,preservation_Y_l,MEASURED,9.25946e-05,5,positive favours trained
+batch_001,px.logret_120h,tier_1,dae,probe_skill_Y_l,MEASURED,-0.00850794,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_120h,tier_1,dae,delta_probe_Y_l,MEASURED,-2.94991e-05,5,positive favours trained
+batch_001,px.logret_120h,tier_1,dae,preservation_Y_l,MEASURED,8.06749e-05,5,positive favours trained
+batch_001,px.logret_120h,tier_1,identity,probe_skill_Y_b,MEASURED,0.073411,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_120h,tier_1,random,probe_skill_Y_b,MEASURED,0.0746339,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_120h,tier_1,ae,probe_skill_Y_b,MEASURED,-0.254496,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_120h,tier_1,ae,delta_probe_Y_b,MEASURED,-0.336801,5,positive favours trained
+batch_001,px.logret_120h,tier_1,ae,preservation_Y_b,MEASURED,-0.335612,5,positive favours trained
+batch_001,px.logret_120h,tier_1,dae,probe_skill_Y_b,MEASURED,-0.198146,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_120h,tier_1,dae,delta_probe_Y_b,MEASURED,-0.277387,5,positive favours trained
+batch_001,px.logret_120h,tier_1,dae,preservation_Y_b,MEASURED,-0.276197,5,positive favours trained
+batch_001,px.logret_12h,tier_1,identity,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,identity,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,identity,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,identity,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,identity,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,identity,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,identity,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,identity,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,identity,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,identity,effective_dim_pr,MEASURED,1.69607,5,
+batch_001,px.logret_12h,tier_1,identity,stability_cka_mean,MEASURED,0.999679,5,
+batch_001,px.logret_12h,tier_1,random,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,random,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,random,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,random,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,random,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,random,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,random,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,random,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,random,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_12h,tier_1,random,effective_dim_pr,MEASURED,4.55324,5,
+batch_001,px.logret_12h,tier_1,random,stability_cka_mean,MEASURED,0.999337,5,
+batch_001,px.logret_12h,tier_1,ae,rec_mae_rel_train_constant,MEASURED,0.00345395,5,
+batch_001,px.logret_12h,tier_1,ae,rec_mse_rel_train_constant,MEASURED,3.71679e-05,5,
+batch_001,px.logret_12h,tier_1,ae,rec_mae_norm,MEASURED,0.00232348,5,
+batch_001,px.logret_12h,tier_1,ae,rec_mae_orig,MEASURED,7.99904e-06,5,
+batch_001,px.logret_12h,tier_1,ae,rec_mse_orig,MEASURED,3.95881e-10,5,
+batch_001,px.logret_12h,tier_1,ae,rec_acf_l1,MEASURED,0.000396536,5,
+batch_001,px.logret_12h,tier_1,ae,rec_log_psd_l1,MEASURED,0.021696,5,
+batch_001,px.logret_12h,tier_1,ae,rec_mae_extremes,MEASURED,0.00416381,5,
+batch_001,px.logret_12h,tier_1,ae,rec_dtw_mean,MEASURED,0.000855968,5,
+batch_001,px.logret_12h,tier_1,ae,effective_dim_pr,MEASURED,1.55031,5,
+batch_001,px.logret_12h,tier_1,ae,stability_cka_mean,MEASURED,0.982679,5,
+batch_001,px.logret_12h,tier_1,ae,fit_wall_seconds,MEASURED,489.948,5,
+batch_001,px.logret_12h,tier_1,ae,updates,MEASURED,162304,5,patience
+batch_001,px.logret_12h,tier_1,dae,rec_mae_rel_train_constant,MEASURED,0.0422869,5,
+batch_001,px.logret_12h,tier_1,dae,rec_mse_rel_train_constant,MEASURED,0.00158249,5,
+batch_001,px.logret_12h,tier_1,dae,rec_mae_norm,MEASURED,0.0262246,5,
+batch_001,px.logret_12h,tier_1,dae,rec_mae_orig,MEASURED,9.08382e-05,5,
+batch_001,px.logret_12h,tier_1,dae,rec_mse_orig,MEASURED,1.3959e-08,5,
+batch_001,px.logret_12h,tier_1,dae,rec_acf_l1,MEASURED,0.00517007,5,
+batch_001,px.logret_12h,tier_1,dae,rec_log_psd_l1,MEASURED,0.210542,5,
+batch_001,px.logret_12h,tier_1,dae,rec_mae_extremes,MEASURED,0.0393713,5,
+batch_001,px.logret_12h,tier_1,dae,rec_dtw_mean,MEASURED,0.0161431,5,
+batch_001,px.logret_12h,tier_1,dae,effective_dim_pr,MEASURED,1.85365,5,
+batch_001,px.logret_12h,tier_1,dae,stability_cka_mean,MEASURED,0.928434,5,
+batch_001,px.logret_12h,tier_1,dae,fit_wall_seconds,MEASURED,206.775,5,
+batch_001,px.logret_12h,tier_1,dae,updates,MEASURED,64000,5,patience
+batch_001,px.logret_12h,tier_1,identity,probe_skill_Y_s,MEASURED,-0.0333271,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_12h,tier_1,random,probe_skill_Y_s,MEASURED,-0.00526728,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_12h,tier_1,ae,probe_skill_Y_s,MEASURED,-0.00639507,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_12h,tier_1,ae,delta_probe_Y_s,MEASURED,-1.36958e-06,5,positive favours trained
+batch_001,px.logret_12h,tier_1,ae,preservation_Y_s,MEASURED,3.00839e-05,5,positive favours trained
+batch_001,px.logret_12h,tier_1,dae,probe_skill_Y_s,MEASURED,-0.00598036,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_12h,tier_1,dae,delta_probe_Y_s,MEASURED,-7.1525e-07,5,positive favours trained
+batch_001,px.logret_12h,tier_1,dae,preservation_Y_s,MEASURED,3.07383e-05,5,positive favours trained
+batch_001,px.logret_12h,tier_1,identity,probe_skill_Y_l,MEASURED,-0.0243592,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_12h,tier_1,random,probe_skill_Y_l,MEASURED,-0.00577121,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_12h,tier_1,ae,probe_skill_Y_l,MEASURED,-0.00547311,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_12h,tier_1,ae,delta_probe_Y_l,MEASURED,1.69033e-06,5,positive favours trained
+batch_001,px.logret_12h,tier_1,ae,preservation_Y_l,MEASURED,0.000105641,5,positive favours trained
+batch_001,px.logret_12h,tier_1,dae,probe_skill_Y_l,MEASURED,-0.00679044,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_12h,tier_1,dae,delta_probe_Y_l,MEASURED,-4.45038e-06,5,positive favours trained
+batch_001,px.logret_12h,tier_1,dae,preservation_Y_l,MEASURED,9.95002e-05,5,positive favours trained
+batch_001,px.logret_12h,tier_1,identity,probe_skill_Y_b,MEASURED,0.0726631,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_12h,tier_1,random,probe_skill_Y_b,MEASURED,0.0720891,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_12h,tier_1,ae,probe_skill_Y_b,MEASURED,0.0452634,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_12h,tier_1,ae,delta_probe_Y_b,MEASURED,-0.0273016,5,positive favours trained
+batch_001,px.logret_12h,tier_1,ae,preservation_Y_b,MEASURED,-0.0279188,5,positive favours trained
+batch_001,px.logret_12h,tier_1,dae,probe_skill_Y_b,MEASURED,0.0733628,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_12h,tier_1,dae,delta_probe_Y_b,MEASURED,0.00122063,5,positive favours trained
+batch_001,px.logret_12h,tier_1,dae,preservation_Y_b,MEASURED,0.000603408,5,positive favours trained
+batch_001,px.logret_168h,tier_1,identity,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,identity,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,identity,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,identity,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,identity,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,identity,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,identity,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,identity,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,identity,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,identity,effective_dim_pr,MEASURED,1.69206,5,
+batch_001,px.logret_168h,tier_1,identity,stability_cka_mean,MEASURED,0.999806,5,
+batch_001,px.logret_168h,tier_1,random,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,random,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,random,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,random,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,random,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,random,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,random,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,random,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,random,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_168h,tier_1,random,effective_dim_pr,MEASURED,3.84736,5,
+batch_001,px.logret_168h,tier_1,random,stability_cka_mean,MEASURED,0.999406,5,
+batch_001,px.logret_168h,tier_1,ae,rec_mae_rel_train_constant,MEASURED,0.00307967,5,
+batch_001,px.logret_168h,tier_1,ae,rec_mse_rel_train_constant,MEASURED,5.33347e-05,5,
+batch_001,px.logret_168h,tier_1,ae,rec_mae_norm,MEASURED,0.00216583,5,
+batch_001,px.logret_168h,tier_1,ae,rec_mae_orig,MEASURED,2.3754e-05,5,
+batch_001,px.logret_168h,tier_1,ae,rec_mse_orig,MEASURED,4.98908e-09,5,
+batch_001,px.logret_168h,tier_1,ae,rec_acf_l1,MEASURED,0.000734033,5,
+batch_001,px.logret_168h,tier_1,ae,rec_log_psd_l1,MEASURED,0.0334935,5,
+batch_001,px.logret_168h,tier_1,ae,rec_mae_extremes,MEASURED,0.00604621,5,
+batch_001,px.logret_168h,tier_1,ae,rec_dtw_mean,MEASURED,0.000649686,5,
+batch_001,px.logret_168h,tier_1,ae,effective_dim_pr,MEASURED,1.54273,5,
+batch_001,px.logret_168h,tier_1,ae,stability_cka_mean,MEASURED,0.972288,5,
+batch_001,px.logret_168h,tier_1,ae,fit_wall_seconds,MEASURED,469.896,5,
+batch_001,px.logret_168h,tier_1,ae,updates,MEASURED,156160,5,max_epochs;patience
+batch_001,px.logret_168h,tier_1,dae,rec_mae_rel_train_constant,MEASURED,0.0495617,5,
+batch_001,px.logret_168h,tier_1,dae,rec_mse_rel_train_constant,MEASURED,0.00267978,5,
+batch_001,px.logret_168h,tier_1,dae,rec_mae_norm,MEASURED,0.0341317,5,
+batch_001,px.logret_168h,tier_1,dae,rec_mae_orig,MEASURED,0.000373661,5,
+batch_001,px.logret_168h,tier_1,dae,rec_mse_orig,MEASURED,2.42776e-07,5,
+batch_001,px.logret_168h,tier_1,dae,rec_acf_l1,MEASURED,0.0108997,5,
+batch_001,px.logret_168h,tier_1,dae,rec_log_psd_l1,MEASURED,0.45813,5,
+batch_001,px.logret_168h,tier_1,dae,rec_mae_extremes,MEASURED,0.0581263,5,
+batch_001,px.logret_168h,tier_1,dae,rec_dtw_mean,MEASURED,0.0199192,5,
+batch_001,px.logret_168h,tier_1,dae,effective_dim_pr,MEASURED,1.62636,5,
+batch_001,px.logret_168h,tier_1,dae,stability_cka_mean,MEASURED,0.936142,5,
+batch_001,px.logret_168h,tier_1,dae,fit_wall_seconds,MEASURED,153.626,5,
+batch_001,px.logret_168h,tier_1,dae,updates,MEASURED,45824,5,patience
+batch_001,px.logret_168h,tier_1,identity,probe_skill_Y_s,MEASURED,-0.0330692,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_168h,tier_1,random,probe_skill_Y_s,MEASURED,-0.00494576,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_168h,tier_1,ae,probe_skill_Y_s,MEASURED,-0.00463812,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_168h,tier_1,ae,delta_probe_Y_s,MEASURED,3.19895e-07,5,positive favours trained
+batch_001,px.logret_168h,tier_1,ae,preservation_Y_s,MEASURED,3.18221e-05,5,positive favours trained
+batch_001,px.logret_168h,tier_1,dae,probe_skill_Y_s,MEASURED,-0.00623636,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_168h,tier_1,dae,delta_probe_Y_s,MEASURED,-1.51078e-06,5,positive favours trained
+batch_001,px.logret_168h,tier_1,dae,preservation_Y_s,MEASURED,2.99914e-05,5,positive favours trained
+batch_001,px.logret_168h,tier_1,identity,probe_skill_Y_l,MEASURED,-0.0223762,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_168h,tier_1,random,probe_skill_Y_l,MEASURED,-0.00431135,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_168h,tier_1,ae,probe_skill_Y_l,MEASURED,-0.00634797,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_168h,tier_1,ae,delta_probe_Y_l,MEASURED,-1.30135e-05,5,positive favours trained
+batch_001,px.logret_168h,tier_1,ae,preservation_Y_l,MEASURED,8.99058e-05,5,positive favours trained
+batch_001,px.logret_168h,tier_1,dae,probe_skill_Y_l,MEASURED,-0.00589389,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_168h,tier_1,dae,delta_probe_Y_l,MEASURED,-9.44785e-06,5,positive favours trained
+batch_001,px.logret_168h,tier_1,dae,preservation_Y_l,MEASURED,9.34714e-05,5,positive favours trained
+batch_001,px.logret_168h,tier_1,identity,probe_skill_Y_b,MEASURED,0.0744041,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_168h,tier_1,random,probe_skill_Y_b,MEASURED,0.0726064,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_168h,tier_1,ae,probe_skill_Y_b,MEASURED,-0.313742,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_168h,tier_1,ae,delta_probe_Y_b,MEASURED,-0.392623,5,positive favours trained
+batch_001,px.logret_168h,tier_1,ae,preservation_Y_b,MEASURED,-0.394471,5,positive favours trained
+batch_001,px.logret_168h,tier_1,dae,probe_skill_Y_b,MEASURED,-0.273467,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_168h,tier_1,dae,delta_probe_Y_b,MEASURED,-0.350437,5,positive favours trained
+batch_001,px.logret_168h,tier_1,dae,preservation_Y_b,MEASURED,-0.352285,5,positive favours trained
+batch_001,px.logret_1h,tier_1,identity,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,identity,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,identity,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,identity,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,identity,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,identity,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,identity,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,identity,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,identity,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,identity,effective_dim_pr,MEASURED,1.72429,5,
+batch_001,px.logret_1h,tier_1,identity,stability_cka_mean,MEASURED,0.99967,5,
+batch_001,px.logret_1h,tier_1,random,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,random,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,random,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,random,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,random,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,random,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,random,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,random,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,random,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_1h,tier_1,random,effective_dim_pr,MEASURED,4.93659,5,
+batch_001,px.logret_1h,tier_1,random,stability_cka_mean,MEASURED,0.999591,5,
+batch_001,px.logret_1h,tier_1,ae,rec_mae_rel_train_constant,MEASURED,0.00325404,5,
+batch_001,px.logret_1h,tier_1,ae,rec_mse_rel_train_constant,MEASURED,2.03232e-05,5,
+batch_001,px.logret_1h,tier_1,ae,rec_mae_norm,MEASURED,0.00216929,5,
+batch_001,px.logret_1h,tier_1,ae,rec_mae_orig,MEASURED,2.23855e-06,5,
+batch_001,px.logret_1h,tier_1,ae,rec_mse_orig,MEASURED,2.36056e-11,5,
+batch_001,px.logret_1h,tier_1,ae,rec_acf_l1,MEASURED,0.000298527,5,
+batch_001,px.logret_1h,tier_1,ae,rec_log_psd_l1,MEASURED,0.00652438,5,
+batch_001,px.logret_1h,tier_1,ae,rec_mae_extremes,MEASURED,0.00655065,5,
+batch_001,px.logret_1h,tier_1,ae,rec_dtw_mean,MEASURED,0.000863932,5,
+batch_001,px.logret_1h,tier_1,ae,effective_dim_pr,MEASURED,1.15663,5,
+batch_001,px.logret_1h,tier_1,ae,stability_cka_mean,MEASURED,0.985441,5,
+batch_001,px.logret_1h,tier_1,ae,fit_wall_seconds,MEASURED,535.062,5,
+batch_001,px.logret_1h,tier_1,ae,updates,MEASURED,178176,5,max_epochs;patience
+batch_001,px.logret_1h,tier_1,dae,rec_mae_rel_train_constant,MEASURED,0.0287602,5,
+batch_001,px.logret_1h,tier_1,dae,rec_mse_rel_train_constant,MEASURED,0.00060646,5,
+batch_001,px.logret_1h,tier_1,dae,rec_mae_norm,MEASURED,0.0164896,5,
+batch_001,px.logret_1h,tier_1,dae,rec_mae_orig,MEASURED,1.7199e-05,5,
+batch_001,px.logret_1h,tier_1,dae,rec_mse_orig,MEASURED,4.80944e-10,5,
+batch_001,px.logret_1h,tier_1,dae,rec_acf_l1,MEASURED,0.00202376,5,
+batch_001,px.logret_1h,tier_1,dae,rec_log_psd_l1,MEASURED,0.0500597,5,
+batch_001,px.logret_1h,tier_1,dae,rec_mae_extremes,MEASURED,0.0385585,5,
+batch_001,px.logret_1h,tier_1,dae,rec_dtw_mean,MEASURED,0.00995501,5,
+batch_001,px.logret_1h,tier_1,dae,effective_dim_pr,MEASURED,1.63776,5,
+batch_001,px.logret_1h,tier_1,dae,stability_cka_mean,MEASURED,0.946152,5,
+batch_001,px.logret_1h,tier_1,dae,fit_wall_seconds,MEASURED,265.992,5,
+batch_001,px.logret_1h,tier_1,dae,updates,MEASURED,84224,5,patience
+batch_001,px.logret_1h,tier_1,identity,probe_skill_Y_s,MEASURED,-0.0335294,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_1h,tier_1,random,probe_skill_Y_s,MEASURED,-0.00506601,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_1h,tier_1,ae,probe_skill_Y_s,MEASURED,-0.00459984,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_1h,tier_1,ae,delta_probe_Y_s,MEASURED,1.0883e-06,5,positive favours trained
+batch_001,px.logret_1h,tier_1,ae,preservation_Y_s,MEASURED,3.26868e-05,5,positive favours trained
+batch_001,px.logret_1h,tier_1,dae,probe_skill_Y_s,MEASURED,-0.00490616,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_1h,tier_1,dae,delta_probe_Y_s,MEASURED,4.4779e-07,5,positive favours trained
+batch_001,px.logret_1h,tier_1,dae,preservation_Y_s,MEASURED,3.20462e-05,5,positive favours trained
+batch_001,px.logret_1h,tier_1,identity,probe_skill_Y_l,MEASURED,-0.0239535,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_1h,tier_1,random,probe_skill_Y_l,MEASURED,-0.00497692,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_1h,tier_1,ae,probe_skill_Y_l,MEASURED,-0.00557274,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_1h,tier_1,ae,delta_probe_Y_l,MEASURED,-2.28871e-06,5,positive favours trained
+batch_001,px.logret_1h,tier_1,ae,preservation_Y_l,MEASURED,0.000102313,5,positive favours trained
+batch_001,px.logret_1h,tier_1,dae,probe_skill_Y_l,MEASURED,-0.00629584,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_1h,tier_1,dae,delta_probe_Y_l,MEASURED,-6.61849e-06,5,positive favours trained
+batch_001,px.logret_1h,tier_1,dae,preservation_Y_l,MEASURED,9.79833e-05,5,positive favours trained
+batch_001,px.logret_1h,tier_1,identity,probe_skill_Y_b,MEASURED,0.0733721,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_1h,tier_1,random,probe_skill_Y_b,MEASURED,0.0748052,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_1h,tier_1,ae,probe_skill_Y_b,MEASURED,0.0647864,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_1h,tier_1,ae,delta_probe_Y_b,MEASURED,-0.0096393,5,positive favours trained
+batch_001,px.logret_1h,tier_1,ae,preservation_Y_b,MEASURED,-0.00825105,5,positive favours trained
+batch_001,px.logret_1h,tier_1,dae,probe_skill_Y_b,MEASURED,0.077081,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_1h,tier_1,dae,delta_probe_Y_b,MEASURED,0.00231152,5,positive favours trained
+batch_001,px.logret_1h,tier_1,dae,preservation_Y_b,MEASURED,0.00369977,5,positive favours trained
+batch_001,px.logret_24h,tier_1,identity,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,identity,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,identity,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,identity,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,identity,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,identity,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,identity,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,identity,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,identity,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,identity,effective_dim_pr,MEASURED,1.69605,5,
+batch_001,px.logret_24h,tier_1,identity,stability_cka_mean,MEASURED,0.999648,5,
+batch_001,px.logret_24h,tier_1,random,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,random,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,random,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,random,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,random,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,random,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,random,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,random,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,random,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_24h,tier_1,random,effective_dim_pr,MEASURED,4.40394,5,
+batch_001,px.logret_24h,tier_1,random,stability_cka_mean,MEASURED,0.999232,5,
+batch_001,px.logret_24h,tier_1,ae,rec_mae_rel_train_constant,MEASURED,0.00265749,5,
+batch_001,px.logret_24h,tier_1,ae,rec_mse_rel_train_constant,MEASURED,4.21797e-05,5,
+batch_001,px.logret_24h,tier_1,ae,rec_mae_norm,MEASURED,0.00184097,5,
+batch_001,px.logret_24h,tier_1,ae,rec_mae_orig,MEASURED,8.57327e-06,5,
+batch_001,px.logret_24h,tier_1,ae,rec_mse_orig,MEASURED,8.1871e-10,5,
+batch_001,px.logret_24h,tier_1,ae,rec_acf_l1,MEASURED,0.000397558,5,
+batch_001,px.logret_24h,tier_1,ae,rec_log_psd_l1,MEASURED,0.0198059,5,
+batch_001,px.logret_24h,tier_1,ae,rec_mae_extremes,MEASURED,0.00264119,5,
+batch_001,px.logret_24h,tier_1,ae,rec_dtw_mean,MEASURED,0.000423751,5,
+batch_001,px.logret_24h,tier_1,ae,effective_dim_pr,MEASURED,1.36663,5,
+batch_001,px.logret_24h,tier_1,ae,stability_cka_mean,MEASURED,0.975734,5,
+batch_001,px.logret_24h,tier_1,ae,fit_wall_seconds,MEASURED,653.479,5,
+batch_001,px.logret_24h,tier_1,ae,updates,MEASURED,221184,5,max_epochs;patience
+batch_001,px.logret_24h,tier_1,dae,rec_mae_rel_train_constant,MEASURED,0.0474535,5,
+batch_001,px.logret_24h,tier_1,dae,rec_mse_rel_train_constant,MEASURED,0.00206683,5,
+batch_001,px.logret_24h,tier_1,dae,rec_mae_norm,MEASURED,0.0304228,5,
+batch_001,px.logret_24h,tier_1,dae,rec_mae_orig,MEASURED,0.000142028,5,
+batch_001,px.logret_24h,tier_1,dae,rec_mse_orig,MEASURED,3.26197e-08,5,
+batch_001,px.logret_24h,tier_1,dae,rec_acf_l1,MEASURED,0.0068922,5,
+batch_001,px.logret_24h,tier_1,dae,rec_log_psd_l1,MEASURED,0.294086,5,
+batch_001,px.logret_24h,tier_1,dae,rec_mae_extremes,MEASURED,0.0313824,5,
+batch_001,px.logret_24h,tier_1,dae,rec_dtw_mean,MEASURED,0.0187243,5,
+batch_001,px.logret_24h,tier_1,dae,effective_dim_pr,MEASURED,1.76504,5,
+batch_001,px.logret_24h,tier_1,dae,stability_cka_mean,MEASURED,0.943691,5,
+batch_001,px.logret_24h,tier_1,dae,fit_wall_seconds,MEASURED,181.736,5,
+batch_001,px.logret_24h,tier_1,dae,updates,MEASURED,55552,5,patience
+batch_001,px.logret_24h,tier_1,identity,probe_skill_Y_s,MEASURED,-0.032327,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_24h,tier_1,random,probe_skill_Y_s,MEASURED,-0.00599088,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_24h,tier_1,ae,probe_skill_Y_s,MEASURED,-0.00483049,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_24h,tier_1,ae,delta_probe_Y_s,MEASURED,9.06592e-07,5,positive favours trained
+batch_001,px.logret_24h,tier_1,ae,preservation_Y_s,MEASURED,3.07632e-05,5,positive favours trained
+batch_001,px.logret_24h,tier_1,dae,probe_skill_Y_s,MEASURED,-0.00679439,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_24h,tier_1,dae,delta_probe_Y_s,MEASURED,-1.13397e-06,5,positive favours trained
+batch_001,px.logret_24h,tier_1,dae,preservation_Y_s,MEASURED,2.87227e-05,5,positive favours trained
+batch_001,px.logret_24h,tier_1,identity,probe_skill_Y_l,MEASURED,-0.0249853,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_24h,tier_1,random,probe_skill_Y_l,MEASURED,-0.00556807,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_24h,tier_1,ae,probe_skill_Y_l,MEASURED,-0.00943726,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_24h,tier_1,ae,delta_probe_Y_l,MEASURED,-1.54027e-05,5,positive favours trained
+batch_001,px.logret_24h,tier_1,ae,preservation_Y_l,MEASURED,9.35406e-05,5,positive favours trained
+batch_001,px.logret_24h,tier_1,dae,probe_skill_Y_l,MEASURED,-0.0106344,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_24h,tier_1,dae,delta_probe_Y_l,MEASURED,-2.04876e-05,5,positive favours trained
+batch_001,px.logret_24h,tier_1,dae,preservation_Y_l,MEASURED,8.84557e-05,5,positive favours trained
+batch_001,px.logret_24h,tier_1,identity,probe_skill_Y_b,MEASURED,0.0724432,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_24h,tier_1,random,probe_skill_Y_b,MEASURED,0.0720903,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_24h,tier_1,ae,probe_skill_Y_b,MEASURED,-0.162511,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_24h,tier_1,ae,delta_probe_Y_b,MEASURED,-0.239258,5,positive favours trained
+batch_001,px.logret_24h,tier_1,ae,preservation_Y_b,MEASURED,-0.239658,5,positive favours trained
+batch_001,px.logret_24h,tier_1,dae,probe_skill_Y_b,MEASURED,-0.0779025,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_24h,tier_1,dae,delta_probe_Y_b,MEASURED,-0.152072,5,positive favours trained
+batch_001,px.logret_24h,tier_1,dae,preservation_Y_b,MEASURED,-0.152472,5,positive favours trained
+batch_001,px.logret_2h,tier_1,identity,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,identity,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,identity,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,identity,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,identity,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,identity,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,identity,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,identity,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,identity,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,identity,effective_dim_pr,MEASURED,1.70538,5,
+batch_001,px.logret_2h,tier_1,identity,stability_cka_mean,MEASURED,0.999719,5,
+batch_001,px.logret_2h,tier_1,random,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,random,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,random,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,random,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,random,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,random,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,random,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,random,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,random,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_2h,tier_1,random,effective_dim_pr,MEASURED,4.74244,5,
+batch_001,px.logret_2h,tier_1,random,stability_cka_mean,MEASURED,0.999551,5,
+batch_001,px.logret_2h,tier_1,ae,rec_mae_rel_train_constant,MEASURED,0.00210018,5,
+batch_001,px.logret_2h,tier_1,ae,rec_mse_rel_train_constant,MEASURED,5.99618e-06,5,
+batch_001,px.logret_2h,tier_1,ae,rec_mae_norm,MEASURED,0.00127688,5,
+batch_001,px.logret_2h,tier_1,ae,rec_mae_orig,MEASURED,1.87177e-06,5,
+batch_001,px.logret_2h,tier_1,ae,rec_mse_orig,MEASURED,1.123e-11,5,
+batch_001,px.logret_2h,tier_1,ae,rec_acf_l1,MEASURED,0.00020952,5,
+batch_001,px.logret_2h,tier_1,ae,rec_log_psd_l1,MEASURED,0.00803724,5,
+batch_001,px.logret_2h,tier_1,ae,rec_mae_extremes,MEASURED,0.00307474,5,
+batch_001,px.logret_2h,tier_1,ae,rec_dtw_mean,MEASURED,0.00065429,5,
+batch_001,px.logret_2h,tier_1,ae,effective_dim_pr,MEASURED,1.19124,5,
+batch_001,px.logret_2h,tier_1,ae,stability_cka_mean,MEASURED,0.987787,5,
+batch_001,px.logret_2h,tier_1,ae,fit_wall_seconds,MEASURED,575.892,5,
+batch_001,px.logret_2h,tier_1,ae,updates,MEASURED,192512,5,max_epochs;patience
+batch_001,px.logret_2h,tier_1,dae,rec_mae_rel_train_constant,MEASURED,0.0318657,5,
+batch_001,px.logret_2h,tier_1,dae,rec_mse_rel_train_constant,MEASURED,0.000771315,5,
+batch_001,px.logret_2h,tier_1,dae,rec_mae_norm,MEASURED,0.018269,5,
+batch_001,px.logret_2h,tier_1,dae,rec_mae_orig,MEASURED,2.69056e-05,5,
+batch_001,px.logret_2h,tier_1,dae,rec_mse_orig,MEASURED,1.18817e-09,5,
+batch_001,px.logret_2h,tier_1,dae,rec_acf_l1,MEASURED,0.00238369,5,
+batch_001,px.logret_2h,tier_1,dae,rec_log_psd_l1,MEASURED,0.0903241,5,
+batch_001,px.logret_2h,tier_1,dae,rec_mae_extremes,MEASURED,0.0345863,5,
+batch_001,px.logret_2h,tier_1,dae,rec_dtw_mean,MEASURED,0.0112961,5,
+batch_001,px.logret_2h,tier_1,dae,effective_dim_pr,MEASURED,1.63861,5,
+batch_001,px.logret_2h,tier_1,dae,stability_cka_mean,MEASURED,0.790501,5,
+batch_001,px.logret_2h,tier_1,dae,fit_wall_seconds,MEASURED,213.91,5,
+batch_001,px.logret_2h,tier_1,dae,updates,MEASURED,66304,5,patience
+batch_001,px.logret_2h,tier_1,identity,probe_skill_Y_s,MEASURED,-0.0337021,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_2h,tier_1,random,probe_skill_Y_s,MEASURED,-0.00507265,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_2h,tier_1,ae,probe_skill_Y_s,MEASURED,-0.00439922,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_2h,tier_1,ae,delta_probe_Y_s,MEASURED,1.01786e-06,5,positive favours trained
+batch_001,px.logret_2h,tier_1,ae,preservation_Y_s,MEASURED,3.27344e-05,5,positive favours trained
+batch_001,px.logret_2h,tier_1,dae,probe_skill_Y_s,MEASURED,-0.00430626,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_2h,tier_1,dae,delta_probe_Y_s,MEASURED,9.7132e-07,5,positive favours trained
+batch_001,px.logret_2h,tier_1,dae,preservation_Y_s,MEASURED,3.26879e-05,5,positive favours trained
+batch_001,px.logret_2h,tier_1,identity,probe_skill_Y_l,MEASURED,-0.0241752,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_2h,tier_1,random,probe_skill_Y_l,MEASURED,-0.00525737,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_2h,tier_1,ae,probe_skill_Y_l,MEASURED,-0.00560295,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_2h,tier_1,ae,delta_probe_Y_l,MEASURED,-1.88351e-06,5,positive favours trained
+batch_001,px.logret_2h,tier_1,ae,preservation_Y_l,MEASURED,0.000101746,5,positive favours trained
+batch_001,px.logret_2h,tier_1,dae,probe_skill_Y_l,MEASURED,-0.005725,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_2h,tier_1,dae,delta_probe_Y_l,MEASURED,-4.66263e-07,5,positive favours trained
+batch_001,px.logret_2h,tier_1,dae,preservation_Y_l,MEASURED,0.000103164,5,positive favours trained
+batch_001,px.logret_2h,tier_1,identity,probe_skill_Y_b,MEASURED,0.0731638,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_2h,tier_1,random,probe_skill_Y_b,MEASURED,0.0735094,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_2h,tier_1,ae,probe_skill_Y_b,MEASURED,0.00522789,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_2h,tier_1,ae,delta_probe_Y_b,MEASURED,-0.0689971,5,positive favours trained
+batch_001,px.logret_2h,tier_1,ae,preservation_Y_b,MEASURED,-0.0686743,5,positive favours trained
+batch_001,px.logret_2h,tier_1,dae,probe_skill_Y_b,MEASURED,0.053114,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_2h,tier_1,dae,delta_probe_Y_b,MEASURED,-0.0202762,5,positive favours trained
+batch_001,px.logret_2h,tier_1,dae,preservation_Y_b,MEASURED,-0.0199534,5,positive favours trained
+batch_001,px.logret_48h,tier_1,identity,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,identity,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,identity,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,identity,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,identity,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,identity,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,identity,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,identity,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,identity,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,identity,effective_dim_pr,MEASURED,1.70424,5,
+batch_001,px.logret_48h,tier_1,identity,stability_cka_mean,MEASURED,0.999773,5,
+batch_001,px.logret_48h,tier_1,random,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,random,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,random,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,random,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,random,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,random,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,random,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,random,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,random,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_48h,tier_1,random,effective_dim_pr,MEASURED,4.286,5,
+batch_001,px.logret_48h,tier_1,random,stability_cka_mean,MEASURED,0.999456,5,
+batch_001,px.logret_48h,tier_1,ae,rec_mae_rel_train_constant,MEASURED,0.00241705,5,
+batch_001,px.logret_48h,tier_1,ae,rec_mse_rel_train_constant,MEASURED,2.3366e-05,5,
+batch_001,px.logret_48h,tier_1,ae,rec_mae_norm,MEASURED,0.00162343,5,
+batch_001,px.logret_48h,tier_1,ae,rec_mae_orig,MEASURED,9.84517e-06,5,
+batch_001,px.logret_48h,tier_1,ae,rec_mse_orig,MEASURED,6.91999e-10,5,
+batch_001,px.logret_48h,tier_1,ae,rec_acf_l1,MEASURED,0.000394118,5,
+batch_001,px.logret_48h,tier_1,ae,rec_log_psd_l1,MEASURED,0.0211158,5,
+batch_001,px.logret_48h,tier_1,ae,rec_mae_extremes,MEASURED,0.00636317,5,
+batch_001,px.logret_48h,tier_1,ae,rec_dtw_mean,MEASURED,0.000524877,5,
+batch_001,px.logret_48h,tier_1,ae,effective_dim_pr,MEASURED,1.40245,5,
+batch_001,px.logret_48h,tier_1,ae,stability_cka_mean,MEASURED,0.985898,5,
+batch_001,px.logret_48h,tier_1,ae,fit_wall_seconds,MEASURED,539.408,5,
+batch_001,px.logret_48h,tier_1,ae,updates,MEASURED,178176,5,patience
+batch_001,px.logret_48h,tier_1,dae,rec_mae_rel_train_constant,MEASURED,0.0504676,5,
+batch_001,px.logret_48h,tier_1,dae,rec_mse_rel_train_constant,MEASURED,0.00238397,5,
+batch_001,px.logret_48h,tier_1,dae,rec_mae_norm,MEASURED,0.03308,5,
+batch_001,px.logret_48h,tier_1,dae,rec_mae_orig,MEASURED,0.000200414,5,
+batch_001,px.logret_48h,tier_1,dae,rec_mse_orig,MEASURED,6.58362e-08,5,
+batch_001,px.logret_48h,tier_1,dae,rec_acf_l1,MEASURED,0.00833626,5,
+batch_001,px.logret_48h,tier_1,dae,rec_log_psd_l1,MEASURED,0.369723,5,
+batch_001,px.logret_48h,tier_1,dae,rec_mae_extremes,MEASURED,0.0356909,5,
+batch_001,px.logret_48h,tier_1,dae,rec_dtw_mean,MEASURED,0.0208398,5,
+batch_001,px.logret_48h,tier_1,dae,effective_dim_pr,MEASURED,1.56421,5,
+batch_001,px.logret_48h,tier_1,dae,stability_cka_mean,MEASURED,0.958633,5,
+batch_001,px.logret_48h,tier_1,dae,fit_wall_seconds,MEASURED,165.881,5,
+batch_001,px.logret_48h,tier_1,dae,updates,MEASURED,49408,5,patience
+batch_001,px.logret_48h,tier_1,identity,probe_skill_Y_s,MEASURED,-0.0343907,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_48h,tier_1,random,probe_skill_Y_s,MEASURED,-0.00505073,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_48h,tier_1,ae,probe_skill_Y_s,MEASURED,-0.00649149,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_48h,tier_1,ae,delta_probe_Y_s,MEASURED,-1.95731e-06,5,positive favours trained
+batch_001,px.logret_48h,tier_1,ae,preservation_Y_s,MEASURED,3.15253e-05,5,positive favours trained
+batch_001,px.logret_48h,tier_1,dae,probe_skill_Y_s,MEASURED,-0.00795059,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_48h,tier_1,dae,delta_probe_Y_s,MEASURED,-3.92981e-06,5,positive favours trained
+batch_001,px.logret_48h,tier_1,dae,preservation_Y_s,MEASURED,2.95528e-05,5,positive favours trained
+batch_001,px.logret_48h,tier_1,identity,probe_skill_Y_l,MEASURED,-0.0248073,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_48h,tier_1,random,probe_skill_Y_l,MEASURED,-0.00415418,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_48h,tier_1,ae,probe_skill_Y_l,MEASURED,-0.00940435,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_48h,tier_1,ae,delta_probe_Y_l,MEASURED,-2.75677e-05,5,positive favours trained
+batch_001,px.logret_48h,tier_1,ae,preservation_Y_l,MEASURED,9.14618e-05,5,positive favours trained
+batch_001,px.logret_48h,tier_1,dae,probe_skill_Y_l,MEASURED,-0.0105828,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_48h,tier_1,dae,delta_probe_Y_l,MEASURED,-3.01114e-05,5,positive favours trained
+batch_001,px.logret_48h,tier_1,dae,preservation_Y_l,MEASURED,8.8918e-05,5,positive favours trained
+batch_001,px.logret_48h,tier_1,identity,probe_skill_Y_b,MEASURED,0.072538,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_48h,tier_1,random,probe_skill_Y_b,MEASURED,0.0726012,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_48h,tier_1,ae,probe_skill_Y_b,MEASURED,-0.2361,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_48h,tier_1,ae,delta_probe_Y_b,MEASURED,-0.315053,5,positive favours trained
+batch_001,px.logret_48h,tier_1,ae,preservation_Y_b,MEASURED,-0.315054,5,positive favours trained
+batch_001,px.logret_48h,tier_1,dae,probe_skill_Y_b,MEASURED,-0.146874,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_48h,tier_1,dae,delta_probe_Y_b,MEASURED,-0.223606,5,positive favours trained
+batch_001,px.logret_48h,tier_1,dae,preservation_Y_b,MEASURED,-0.223607,5,positive favours trained
+batch_001,px.logret_4h,tier_1,identity,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,identity,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,identity,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,identity,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,identity,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,identity,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,identity,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,identity,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,identity,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,identity,effective_dim_pr,MEASURED,1.69869,5,
+batch_001,px.logret_4h,tier_1,identity,stability_cka_mean,MEASURED,0.999706,5,
+batch_001,px.logret_4h,tier_1,random,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,random,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,random,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,random,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,random,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,random,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,random,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,random,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,random,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_4h,tier_1,random,effective_dim_pr,MEASURED,4.54629,5,
+batch_001,px.logret_4h,tier_1,random,stability_cka_mean,MEASURED,0.999468,5,
+batch_001,px.logret_4h,tier_1,ae,rec_mae_rel_train_constant,MEASURED,0.00255816,5,
+batch_001,px.logret_4h,tier_1,ae,rec_mse_rel_train_constant,MEASURED,1.59406e-05,5,
+batch_001,px.logret_4h,tier_1,ae,rec_mae_norm,MEASURED,0.00155922,5,
+batch_001,px.logret_4h,tier_1,ae,rec_mae_orig,MEASURED,3.22001e-06,5,
+batch_001,px.logret_4h,tier_1,ae,rec_mse_orig,MEASURED,5.54824e-11,5,
+batch_001,px.logret_4h,tier_1,ae,rec_acf_l1,MEASURED,0.000248773,5,
+batch_001,px.logret_4h,tier_1,ae,rec_log_psd_l1,MEASURED,0.0133937,5,
+batch_001,px.logret_4h,tier_1,ae,rec_mae_extremes,MEASURED,0.00421415,5,
+batch_001,px.logret_4h,tier_1,ae,rec_dtw_mean,MEASURED,0.000643551,5,
+batch_001,px.logret_4h,tier_1,ae,effective_dim_pr,MEASURED,1.46581,5,
+batch_001,px.logret_4h,tier_1,ae,stability_cka_mean,MEASURED,0.990717,5,
+batch_001,px.logret_4h,tier_1,ae,fit_wall_seconds,MEASURED,590.903,5,
+batch_001,px.logret_4h,tier_1,ae,updates,MEASURED,198400,5,patience
+batch_001,px.logret_4h,tier_1,dae,rec_mae_rel_train_constant,MEASURED,0.0369452,5,
+batch_001,px.logret_4h,tier_1,dae,rec_mse_rel_train_constant,MEASURED,0.00107627,5,
+batch_001,px.logret_4h,tier_1,dae,rec_mae_norm,MEASURED,0.0218175,5,
+batch_001,px.logret_4h,tier_1,dae,rec_mae_orig,MEASURED,4.52092e-05,5,
+batch_001,px.logret_4h,tier_1,dae,rec_mse_orig,MEASURED,3.42863e-09,5,
+batch_001,px.logret_4h,tier_1,dae,rec_acf_l1,MEASURED,0.0031654,5,
+batch_001,px.logret_4h,tier_1,dae,rec_log_psd_l1,MEASURED,0.135888,5,
+batch_001,px.logret_4h,tier_1,dae,rec_mae_extremes,MEASURED,0.04173,5,
+batch_001,px.logret_4h,tier_1,dae,rec_dtw_mean,MEASURED,0.0132186,5,
+batch_001,px.logret_4h,tier_1,dae,effective_dim_pr,MEASURED,1.40284,5,
+batch_001,px.logret_4h,tier_1,dae,stability_cka_mean,MEASURED,0.950922,5,
+batch_001,px.logret_4h,tier_1,dae,fit_wall_seconds,MEASURED,215.229,5,
+batch_001,px.logret_4h,tier_1,dae,updates,MEASURED,67072,5,patience
+batch_001,px.logret_4h,tier_1,identity,probe_skill_Y_s,MEASURED,-0.0331814,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_4h,tier_1,random,probe_skill_Y_s,MEASURED,-0.00525411,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_4h,tier_1,ae,probe_skill_Y_s,MEASURED,-0.00545438,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_4h,tier_1,ae,delta_probe_Y_s,MEASURED,3.78399e-07,5,positive favours trained
+batch_001,px.logret_4h,tier_1,ae,preservation_Y_s,MEASURED,3.10685e-05,5,positive favours trained
+batch_001,px.logret_4h,tier_1,dae,probe_skill_Y_s,MEASURED,-0.00506656,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_4h,tier_1,dae,delta_probe_Y_s,MEASURED,9.28574e-07,5,positive favours trained
+batch_001,px.logret_4h,tier_1,dae,preservation_Y_s,MEASURED,3.16187e-05,5,positive favours trained
+batch_001,px.logret_4h,tier_1,identity,probe_skill_Y_l,MEASURED,-0.0239915,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_4h,tier_1,random,probe_skill_Y_l,MEASURED,-0.005513,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_4h,tier_1,ae,probe_skill_Y_l,MEASURED,-0.00474739,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_4h,tier_1,ae,delta_probe_Y_l,MEASURED,4.76308e-06,5,positive favours trained
+batch_001,px.logret_4h,tier_1,ae,preservation_Y_l,MEASURED,0.000106191,5,positive favours trained
+batch_001,px.logret_4h,tier_1,dae,probe_skill_Y_l,MEASURED,-0.00555569,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_4h,tier_1,dae,delta_probe_Y_l,MEASURED,-4.26757e-07,5,positive favours trained
+batch_001,px.logret_4h,tier_1,dae,preservation_Y_l,MEASURED,0.000101001,5,positive favours trained
+batch_001,px.logret_4h,tier_1,identity,probe_skill_Y_b,MEASURED,0.0732355,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_4h,tier_1,random,probe_skill_Y_b,MEASURED,0.072677,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_4h,tier_1,ae,probe_skill_Y_b,MEASURED,0.0527749,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_4h,tier_1,ae,delta_probe_Y_b,MEASURED,-0.0201429,5,positive favours trained
+batch_001,px.logret_4h,tier_1,ae,preservation_Y_b,MEASURED,-0.020733,5,positive favours trained
+batch_001,px.logret_4h,tier_1,dae,probe_skill_Y_b,MEASURED,0.0612247,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_4h,tier_1,dae,delta_probe_Y_b,MEASURED,-0.0119981,5,positive favours trained
+batch_001,px.logret_4h,tier_1,dae,preservation_Y_b,MEASURED,-0.0125882,5,positive favours trained
+batch_001,px.logret_6h,tier_1,identity,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,identity,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,identity,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,identity,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,identity,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,identity,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,identity,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,identity,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,identity,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,identity,effective_dim_pr,MEASURED,1.69804,5,
+batch_001,px.logret_6h,tier_1,identity,stability_cka_mean,MEASURED,0.999689,5,
+batch_001,px.logret_6h,tier_1,random,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,random,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,random,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,random,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,random,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,random,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,random,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,random,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,random,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.logret_6h,tier_1,random,effective_dim_pr,MEASURED,4.53771,5,
+batch_001,px.logret_6h,tier_1,random,stability_cka_mean,MEASURED,0.999417,5,
+batch_001,px.logret_6h,tier_1,ae,rec_mae_rel_train_constant,MEASURED,0.00358169,5,
+batch_001,px.logret_6h,tier_1,ae,rec_mse_rel_train_constant,MEASURED,3.55295e-05,5,
+batch_001,px.logret_6h,tier_1,ae,rec_mae_norm,MEASURED,0.00214565,5,
+batch_001,px.logret_6h,tier_1,ae,rec_mae_orig,MEASURED,5.40878e-06,5,
+batch_001,px.logret_6h,tier_1,ae,rec_mse_orig,MEASURED,1.82839e-10,5,
+batch_001,px.logret_6h,tier_1,ae,rec_acf_l1,MEASURED,0.000375459,5,
+batch_001,px.logret_6h,tier_1,ae,rec_log_psd_l1,MEASURED,0.0192798,5,
+batch_001,px.logret_6h,tier_1,ae,rec_mae_extremes,MEASURED,0.00620145,5,
+batch_001,px.logret_6h,tier_1,ae,rec_dtw_mean,MEASURED,0.000896617,5,
+batch_001,px.logret_6h,tier_1,ae,effective_dim_pr,MEASURED,1.54573,5,
+batch_001,px.logret_6h,tier_1,ae,stability_cka_mean,MEASURED,0.977822,5,
+batch_001,px.logret_6h,tier_1,ae,fit_wall_seconds,MEASURED,452.029,5,
+batch_001,px.logret_6h,tier_1,ae,updates,MEASURED,149504,5,patience
+batch_001,px.logret_6h,tier_1,dae,rec_mae_rel_train_constant,MEASURED,0.0370525,5,
+batch_001,px.logret_6h,tier_1,dae,rec_mse_rel_train_constant,MEASURED,0.00110862,5,
+batch_001,px.logret_6h,tier_1,dae,rec_mae_norm,MEASURED,0.0221513,5,
+batch_001,px.logret_6h,tier_1,dae,rec_mae_orig,MEASURED,5.59189e-05,5,
+batch_001,px.logret_6h,tier_1,dae,rec_mse_orig,MEASURED,5.10256e-09,5,
+batch_001,px.logret_6h,tier_1,dae,rec_acf_l1,MEASURED,0.00359466,5,
+batch_001,px.logret_6h,tier_1,dae,rec_log_psd_l1,MEASURED,0.15915,5,
+batch_001,px.logret_6h,tier_1,dae,rec_mae_extremes,MEASURED,0.0332693,5,
+batch_001,px.logret_6h,tier_1,dae,rec_dtw_mean,MEASURED,0.0136001,5,
+batch_001,px.logret_6h,tier_1,dae,effective_dim_pr,MEASURED,1.65861,5,
+batch_001,px.logret_6h,tier_1,dae,stability_cka_mean,MEASURED,0.878243,5,
+batch_001,px.logret_6h,tier_1,dae,fit_wall_seconds,MEASURED,201.537,5,
+batch_001,px.logret_6h,tier_1,dae,updates,MEASURED,62208,5,patience
+batch_001,px.logret_6h,tier_1,identity,probe_skill_Y_s,MEASURED,-0.0333024,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_6h,tier_1,random,probe_skill_Y_s,MEASURED,-0.00536954,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_6h,tier_1,ae,probe_skill_Y_s,MEASURED,-0.0054135,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_6h,tier_1,ae,delta_probe_Y_s,MEASURED,4.14629e-07,5,positive favours trained
+batch_001,px.logret_6h,tier_1,ae,preservation_Y_s,MEASURED,3.15277e-05,5,positive favours trained
+batch_001,px.logret_6h,tier_1,dae,probe_skill_Y_s,MEASURED,-0.0053567,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_6h,tier_1,dae,delta_probe_Y_s,MEASURED,-6.48815e-08,5,positive favours trained
+batch_001,px.logret_6h,tier_1,dae,preservation_Y_s,MEASURED,3.10482e-05,5,positive favours trained
+batch_001,px.logret_6h,tier_1,identity,probe_skill_Y_l,MEASURED,-0.0242084,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_6h,tier_1,random,probe_skill_Y_l,MEASURED,-0.00578127,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_6h,tier_1,ae,probe_skill_Y_l,MEASURED,-0.00467418,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_6h,tier_1,ae,delta_probe_Y_l,MEASURED,5.26703e-06,5,positive favours trained
+batch_001,px.logret_6h,tier_1,ae,preservation_Y_l,MEASURED,0.000107899,5,positive favours trained
+batch_001,px.logret_6h,tier_1,dae,probe_skill_Y_l,MEASURED,-0.00550469,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.logret_6h,tier_1,dae,delta_probe_Y_l,MEASURED,7.33646e-07,5,positive favours trained
+batch_001,px.logret_6h,tier_1,dae,preservation_Y_l,MEASURED,0.000103366,5,positive favours trained
+batch_001,px.logret_6h,tier_1,identity,probe_skill_Y_b,MEASURED,0.0732388,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_6h,tier_1,random,probe_skill_Y_b,MEASURED,0.0719148,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_6h,tier_1,ae,probe_skill_Y_b,MEASURED,0.0626673,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_6h,tier_1,ae,delta_probe_Y_b,MEASURED,-0.00931492,5,positive favours trained
+batch_001,px.logret_6h,tier_1,ae,preservation_Y_b,MEASURED,-0.0106872,5,positive favours trained
+batch_001,px.logret_6h,tier_1,dae,probe_skill_Y_b,MEASURED,0.0602942,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.logret_6h,tier_1,dae,delta_probe_Y_b,MEASURED,-0.012148,5,positive favours trained
+batch_001,px.logret_6h,tier_1,dae,preservation_Y_b,MEASURED,-0.0135202,5,positive favours trained
+batch_001,px.rv5,tier_1,identity,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,identity,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,identity,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,identity,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,identity,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,identity,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,identity,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,identity,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,identity,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,identity,effective_dim_pr,MEASURED,1.64689,5,
+batch_001,px.rv5,tier_1,identity,stability_cka_mean,MEASURED,0.999799,5,
+batch_001,px.rv5,tier_1,random,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,random,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,random,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,random,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,random,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,random,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,random,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,random,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,random,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.rv5,tier_1,random,effective_dim_pr,MEASURED,5.12846,5,
+batch_001,px.rv5,tier_1,random,stability_cka_mean,MEASURED,0.99905,5,
+batch_001,px.rv5,tier_1,ae,rec_mae_rel_train_constant,MEASURED,0.00688988,5,
+batch_001,px.rv5,tier_1,ae,rec_mse_rel_train_constant,MEASURED,0.000292684,5,
+batch_001,px.rv5,tier_1,ae,rec_mae_norm,MEASURED,0.00421354,5,
+batch_001,px.rv5,tier_1,ae,rec_mae_orig,MEASURED,2.54581e-06,5,
+batch_001,px.rv5,tier_1,ae,rec_mse_orig,MEASURED,7.52465e-11,5,
+batch_001,px.rv5,tier_1,ae,rec_acf_l1,MEASURED,0.000837095,5,
+batch_001,px.rv5,tier_1,ae,rec_log_psd_l1,MEASURED,0.0177862,5,
+batch_001,px.rv5,tier_1,ae,rec_mae_extremes,MEASURED,0.00814867,5,
+batch_001,px.rv5,tier_1,ae,rec_dtw_mean,MEASURED,0.00142885,5,
+batch_001,px.rv5,tier_1,ae,effective_dim_pr,MEASURED,1.14038,5,
+batch_001,px.rv5,tier_1,ae,stability_cka_mean,MEASURED,0.985576,5,
+batch_001,px.rv5,tier_1,ae,fit_wall_seconds,MEASURED,431.785,5,
+batch_001,px.rv5,tier_1,ae,updates,MEASURED,143872,5,max_epochs;patience
+batch_001,px.rv5,tier_1,dae,rec_mae_rel_train_constant,MEASURED,0.0402771,5,
+batch_001,px.rv5,tier_1,dae,rec_mse_rel_train_constant,MEASURED,0.00198516,5,
+batch_001,px.rv5,tier_1,dae,rec_mae_norm,MEASURED,0.0258047,5,
+batch_001,px.rv5,tier_1,dae,rec_mae_orig,MEASURED,1.5613e-05,5,
+batch_001,px.rv5,tier_1,dae,rec_mse_orig,MEASURED,5.02938e-10,5,
+batch_001,px.rv5,tier_1,dae,rec_acf_l1,MEASURED,0.00722749,5,
+batch_001,px.rv5,tier_1,dae,rec_log_psd_l1,MEASURED,0.124985,5,
+batch_001,px.rv5,tier_1,dae,rec_mae_extremes,MEASURED,0.0255642,5,
+batch_001,px.rv5,tier_1,dae,rec_dtw_mean,MEASURED,0.0166385,5,
+batch_001,px.rv5,tier_1,dae,effective_dim_pr,MEASURED,1.09328,5,
+batch_001,px.rv5,tier_1,dae,stability_cka_mean,MEASURED,0.980034,5,
+batch_001,px.rv5,tier_1,dae,fit_wall_seconds,MEASURED,184.289,5,
+batch_001,px.rv5,tier_1,dae,updates,MEASURED,56576,5,patience
+batch_001,px.rv5,tier_1,identity,probe_skill_Y_s,MEASURED,-0.0336432,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.rv5,tier_1,random,probe_skill_Y_s,MEASURED,-0.00502344,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.rv5,tier_1,ae,probe_skill_Y_s,MEASURED,-0.00493466,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.rv5,tier_1,ae,delta_probe_Y_s,MEASURED,-6.8244e-08,5,positive favours trained
+batch_001,px.rv5,tier_1,ae,preservation_Y_s,MEASURED,3.18809e-05,5,positive favours trained
+batch_001,px.rv5,tier_1,dae,probe_skill_Y_s,MEASURED,-0.00617417,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.rv5,tier_1,dae,delta_probe_Y_s,MEASURED,-1.39201e-06,5,positive favours trained
+batch_001,px.rv5,tier_1,dae,preservation_Y_s,MEASURED,3.05571e-05,5,positive favours trained
+batch_001,px.rv5,tier_1,identity,probe_skill_Y_l,MEASURED,-0.0308765,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.rv5,tier_1,random,probe_skill_Y_l,MEASURED,-0.004745,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.rv5,tier_1,ae,probe_skill_Y_l,MEASURED,-0.00746212,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.rv5,tier_1,ae,delta_probe_Y_l,MEASURED,-1.7227e-05,5,positive favours trained
+batch_001,px.rv5,tier_1,ae,preservation_Y_l,MEASURED,0.000128156,5,positive favours trained
+batch_001,px.rv5,tier_1,dae,probe_skill_Y_l,MEASURED,-0.00594653,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.rv5,tier_1,dae,delta_probe_Y_l,MEASURED,-1.01061e-05,5,positive favours trained
+batch_001,px.rv5,tier_1,dae,preservation_Y_l,MEASURED,0.000135277,5,positive favours trained
+batch_001,px.rv5,tier_1,identity,probe_skill_Y_b,MEASURED,0.0745481,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.rv5,tier_1,random,probe_skill_Y_b,MEASURED,0.0740862,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.rv5,tier_1,ae,probe_skill_Y_b,MEASURED,-0.0965064,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.rv5,tier_1,ae,delta_probe_Y_b,MEASURED,-0.174127,5,positive favours trained
+batch_001,px.rv5,tier_1,ae,preservation_Y_b,MEASURED,-0.174679,5,positive favours trained
+batch_001,px.rv5,tier_1,dae,probe_skill_Y_b,MEASURED,-0.0609427,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.rv5,tier_1,dae,delta_probe_Y_b,MEASURED,-0.138161,5,positive favours trained
+batch_001,px.rv5,tier_1,dae,preservation_Y_b,MEASURED,-0.138713,5,positive favours trained
+batch_001,px.zclose_168,tier_1,identity,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,identity,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,identity,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,identity,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,identity,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,identity,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,identity,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,identity,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,identity,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,identity,effective_dim_pr,MEASURED,1.82448,5,
+batch_001,px.zclose_168,tier_1,identity,stability_cka_mean,MEASURED,0.999987,5,
+batch_001,px.zclose_168,tier_1,random,rec_mae_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,random,rec_mse_rel_train_constant,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,random,rec_mae_norm,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,random,rec_mae_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,random,rec_mse_orig,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,random,rec_acf_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,random,rec_log_psd_l1,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,random,rec_mae_extremes,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,random,rec_dtw_mean,NOT_APPLICABLE,,5,no decoder
+batch_001,px.zclose_168,tier_1,random,effective_dim_pr,MEASURED,3.82166,5,
+batch_001,px.zclose_168,tier_1,random,stability_cka_mean,MEASURED,0.999932,5,
+batch_001,px.zclose_168,tier_1,ae,rec_mae_rel_train_constant,MEASURED,0.00220795,5,
+batch_001,px.zclose_168,tier_1,ae,rec_mse_rel_train_constant,MEASURED,2.90725e-05,5,
+batch_001,px.zclose_168,tier_1,ae,rec_mae_norm,MEASURED,0.00185692,5,
+batch_001,px.zclose_168,tier_1,ae,rec_mae_orig,MEASURED,0.00262625,5,
+batch_001,px.zclose_168,tier_1,ae,rec_mse_orig,MEASURED,5.80486e-05,5,
+batch_001,px.zclose_168,tier_1,ae,rec_acf_l1,MEASURED,0.000452503,5,
+batch_001,px.zclose_168,tier_1,ae,rec_log_psd_l1,MEASURED,0.0232973,5,
+batch_001,px.zclose_168,tier_1,ae,rec_mae_extremes,MEASURED,0.00228884,5,
+batch_001,px.zclose_168,tier_1,ae,rec_dtw_mean,MEASURED,0.00124119,5,
+batch_001,px.zclose_168,tier_1,ae,effective_dim_pr,MEASURED,1.39386,5,
+batch_001,px.zclose_168,tier_1,ae,stability_cka_mean,MEASURED,0.994147,5,
+batch_001,px.zclose_168,tier_1,ae,fit_wall_seconds,MEASURED,518.678,5,
+batch_001,px.zclose_168,tier_1,ae,updates,MEASURED,173824,5,max_epochs;patience
+batch_001,px.zclose_168,tier_1,dae,rec_mae_rel_train_constant,MEASURED,0.0428918,5,
+batch_001,px.zclose_168,tier_1,dae,rec_mse_rel_train_constant,MEASURED,0.00212588,5,
+batch_001,px.zclose_168,tier_1,dae,rec_mae_norm,MEASURED,0.0361313,5,
+batch_001,px.zclose_168,tier_1,dae,rec_mae_orig,MEASURED,0.051148,5,
+batch_001,px.zclose_168,tier_1,dae,rec_mse_orig,MEASURED,0.00420418,5,
+batch_001,px.zclose_168,tier_1,dae,rec_acf_l1,MEASURED,0.00783303,5,
+batch_001,px.zclose_168,tier_1,dae,rec_log_psd_l1,MEASURED,0.365126,5,
+batch_001,px.zclose_168,tier_1,dae,rec_mae_extremes,MEASURED,0.0424078,5,
+batch_001,px.zclose_168,tier_1,dae,rec_dtw_mean,MEASURED,0.0277599,5,
+batch_001,px.zclose_168,tier_1,dae,effective_dim_pr,MEASURED,1.40629,5,
+batch_001,px.zclose_168,tier_1,dae,stability_cka_mean,MEASURED,0.984983,5,
+batch_001,px.zclose_168,tier_1,dae,fit_wall_seconds,MEASURED,148.531,5,
+batch_001,px.zclose_168,tier_1,dae,updates,MEASURED,44032,5,patience
+batch_001,px.zclose_168,tier_1,identity,probe_skill_Y_s,MEASURED,-0.0346153,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.zclose_168,tier_1,random,probe_skill_Y_s,MEASURED,-0.00528122,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.zclose_168,tier_1,ae,probe_skill_Y_s,MEASURED,-0.00534588,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.zclose_168,tier_1,ae,delta_probe_Y_s,MEASURED,-2.1145e-07,5,positive favours trained
+batch_001,px.zclose_168,tier_1,ae,preservation_Y_s,MEASURED,3.2682e-05,5,positive favours trained
+batch_001,px.zclose_168,tier_1,dae,probe_skill_Y_s,MEASURED,-0.00888222,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.zclose_168,tier_1,dae,delta_probe_Y_s,MEASURED,-3.22311e-06,5,positive favours trained
+batch_001,px.zclose_168,tier_1,dae,preservation_Y_s,MEASURED,2.96703e-05,5,positive favours trained
+batch_001,px.zclose_168,tier_1,identity,probe_skill_Y_l,MEASURED,-0.0223561,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.zclose_168,tier_1,random,probe_skill_Y_l,MEASURED,-0.00467914,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.zclose_168,tier_1,ae,probe_skill_Y_l,MEASURED,-0.00493418,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.zclose_168,tier_1,ae,delta_probe_Y_l,MEASURED,2.82998e-06,5,positive favours trained
+batch_001,px.zclose_168,tier_1,ae,preservation_Y_l,MEASURED,0.000103122,5,positive favours trained
+batch_001,px.zclose_168,tier_1,dae,probe_skill_Y_l,MEASURED,-0.00658525,5,30/30 fold-horizon cells; naive=train_mean_same_rows
+batch_001,px.zclose_168,tier_1,dae,delta_probe_Y_l,MEASURED,-4.03122e-06,5,positive favours trained
+batch_001,px.zclose_168,tier_1,dae,preservation_Y_l,MEASURED,9.62607e-05,5,positive favours trained
+batch_001,px.zclose_168,tier_1,identity,probe_skill_Y_b,MEASURED,0.0738458,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.zclose_168,tier_1,random,probe_skill_Y_b,MEASURED,0.0736669,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.zclose_168,tier_1,ae,probe_skill_Y_b,MEASURED,-0.627642,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.zclose_168,tier_1,ae,delta_probe_Y_b,MEASURED,-0.711592,5,positive favours trained
+batch_001,px.zclose_168,tier_1,ae,preservation_Y_b,MEASURED,-0.711849,5,positive favours trained
+batch_001,px.zclose_168,tier_1,dae,probe_skill_Y_b,MEASURED,-0.77074,5,10/10 fold-horizon cells; naive=train_prior_same_rows
+batch_001,px.zclose_168,tier_1,dae,delta_probe_Y_b,MEASURED,-0.857504,5,positive favours trained
+batch_001,px.zclose_168,tier_1,dae,preservation_Y_b,MEASURED,-0.857762,5,positive favours trained
 batch_001,px.zclose_24,tier_1,identity,*,PENDING,,,
 batch_001,px.zclose_24,tier_1,random,*,PENDING,,,
 batch_001,px.zclose_24,tier_1,ae,*,PENDING,,,
