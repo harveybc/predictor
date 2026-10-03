@@ -5,58 +5,58 @@
    "id": "a5b79d5488abdee3a",
    "kind": "subagent",
    "lane": "A2",
-   "state": "running",
-   "commit": null
+   "commit": null,
+   "declared_state": "STALE, not active: no new branch tip or heartbeat since the retained M01 work"
   },
   {
    "id": "a160efdffffffa9f2",
    "kind": "subagent",
    "lane": "B2",
-   "state": "running",
-   "commit": null
+   "commit": null,
+   "declared_state": "ACTIVE DATA READY: 83-feature TRAIN-only table materialized (13,699 rows); selection not complete"
   },
   {
    "id": "a083979bc9a8fa1b8",
    "kind": "subagent",
    "lane": "D2",
-   "state": "running",
-   "commit": null
+   "commit": null,
+   "declared_state": "RUNNING on the 5090 via the NEAT generation service (parent cap 256M, child cap 6915M)"
   },
   {
    "id": "a65d2f3a115a9aa25",
    "kind": "subagent",
    "lane": "E2",
-   "state": "running",
-   "commit": null
+   "commit": null,
+   "declared_state": "PRIOR RESULT EXISTS: M05 77739a9 found the tested EURUSD SIGN rule economically non-viable"
   },
   {
    "id": "afcf115024ffa1381",
    "kind": "subagent",
    "lane": "F2",
-   "state": "acknowledged",
    "commit": null,
-   "note": "M07; STATUS at worker_b ~/.local/state/scratch/m07/STATUS.json"
+   "note": "M07; STATUS at worker_b ~/.local/state/scratch/m07/STATUS.json",
+   "declared_state": "COMPLETE/IDLE: historical forecast queues complete/exited; R1/R2 completed evidence"
   },
   {
    "id": "aa7913479a97b45c0",
    "kind": "subagent",
    "lane": "G2",
-   "state": "running",
-   "commit": null
+   "commit": null,
+   "declared_state": "RUNNING: RL-S1 seed303 on the 4090"
   },
   {
    "id": "m06 subagent",
    "kind": "subagent",
-   "lane": "F",
-   "state": "running",
-   "commit": null
+   "lane": "M06",
+   "commit": null,
+   "declared_state": "RUNNING (coordinator units)"
   },
   {
    "id": "a1a511567dd7f306f",
    "kind": "subagent",
    "lane": "H1",
-   "state": "assigned",
-   "commit": null
+   "commit": null,
+   "declared_state": "RETAINED RESULT, no new work proven"
   }
  ],
  "results": [
@@ -363,7 +363,7 @@
   }
  ],
  "next_actions": [
-  "owner: DEPLOY_ADM_DEADCACHE.sh on worker_b (NOT executed; question 18 downgraded, ack a7c0599c §10.4)",
+  "owner: DEPLOY_ADM_DEADCACHE.sh on worker_b (NOT executed; question 18 downgraded, ack a7c0599c \u00a710.4)",
   "ANSWERED 2026-10-01T07:25:58Z: ADM-STALE-LEASE-01 + ADM-CANCEL-01 (a1f3898b) deployed on worker_a and worker_b under the owner standing order; coordinator still on 775c5545-era launcher (not ordered)",
   "owner: open questions 1-12, 14-17, 21-23 (links in open_owner_questions)",
   "M01 PS3-R child on worker_b: M06 units report its completion and any stop"
@@ -507,7 +507,7 @@
   {
    "at": "2026-10-01T04:10:00Z",
    "host_alias": "worker_a",
-   "event": "orchestrator: M04 GO to launch the per-feature pilot on worker_a (repaired admission) and cancel its worker_b request through the tool; M01 chained laneA-suite (4G) + ps3r-pilot-3g (3G) queued on worker_b; deployment verified by the orchestrator (charged 73 MB vs 2.66 GB, free 9.0 GB); question 18 downgraded (ack a7c0599c §10.4)"
+   "event": "orchestrator: M04 GO to launch the per-feature pilot on worker_a (repaired admission) and cancel its worker_b request through the tool; M01 chained laneA-suite (4G) + ps3r-pilot-3g (3G) queued on worker_b; deployment verified by the orchestrator (charged 73 MB vs 2.66 GB, free 9.0 GB); question 18 downgraded (ack a7c0599c \u00a710.4)"
   },
   {
    "at": "2026-10-01T04:16:44Z",
@@ -712,6 +712,11 @@
    "what": "STATUS.json carried the workers' private network addresses (ssh multiplexer process names in unparsed_processes) in every STATUS commit from c06db834 to 513c85cd; the writer scrubbed host names only and the commit gate searched names only",
    "fix": "scrub() replaces IPv4 addresses with <ip> (46a840f8, tested); the gate now includes an IPv4 pattern; history rewrite is the owner's decision",
    "by": "M06 (own defect)"
+  },
+  {
+   "at": "2026-10-03",
+   "source": "docs/handoffs/SATOSHI_CORRECTIVE_PARALLEL_ORDER_2026_10_03.md \u00a73",
+   "correction": "agents/lanes now carry declared_state (registry) and observed_state (probes); registry rows reset to the corrective order's adopted states; legacy `state` (dispatched/assigned/acknowledged/running) removed as a fact"
   }
  ],
  "plan_links": {
@@ -721,113 +726,237 @@
   "previous_campaign_return": "docs/audits/evidence/MODULAR_CAMPAIGN_20260930/RETURN.md @ 09f129c5",
   "coverage_addendum": "docs/handoffs/SATOSHI_SOURCE_TRANSFORM_COVERAGE_ADDENDUM_2026_10_01.md @ 256c61a6",
   "next_dispatch": "docs/handoffs/SATOSHI_NEXT_DISPATCH_2026_10_01.md @ b327b771",
-  "autonomous_orders": "docs/handoffs/SATOSHI_AUTONOMOUS_PARALLEL_EXECUTION_2026_10_01.md revision 1 (sha 0207ae65...): §6 capacity board"
+  "autonomous_orders": "docs/handoffs/SATOSHI_AUTONOMOUS_PARALLEL_EXECUTION_2026_10_01.md revision 1 (sha 0207ae65...): \u00a76 capacity board"
  },
  "lanes": [
   {
    "lane": "A2",
-   "work": "M01: seasonal-residual + R3",
+   "work": "modular representation (M01 retained work)",
    "agents": [
     "a5b79d5488abdee3a (M01)"
    ],
-   "branch": null,
-   "state": "dispatched",
-   "eta_basis": "none yet: next measurement = first pilot heartbeat"
+   "declared_state": "STALE, not active: no new branch tip or heartbeat since the retained M01 work",
+   "next_transition": "reassigned bounded task: integrate the typed TRAIN-only NPZ adapter with the branch/core donor contract, test R0/R1/R2 freeze/update, then one single-seed modular cell",
+   "observe": {
+    "jobs": "(laneA|ps3r|m01-|m02-|a2-).*",
+    "branches": [
+     {
+      "repo": "predictor",
+      "branch": "satoshi/a2-adapter-donor-20261003",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     },
+     {
+      "repo": "predictor",
+      "branch": "satoshi/m01-model-assembly-20260930",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ]
+   }
   },
   {
    "lane": "B2",
-   "work": "M03: freezes (selection denominators)",
+   "work": "feature selection (ETH 4h)",
    "agents": [
     "a160efdffffffa9f2 (M03)"
    ],
-   "branch": null,
-   "state": "HOLD (until a campaign result changes what to select)",
-   "eta_basis": "none yet"
+   "declared_state": "ACTIVE DATA READY: 83-feature TRAIN-only table materialized (13,699 rows); selection not complete",
+   "next_transition": "availability/semantic rejection, cheap-metric redundancy clusters and target/horizon associations -> first versioned survivor/reject/pending table",
+   "observe": {
+    "jobs": "(laneB|b2-|m03-).*",
+    "branches": [
+     {
+      "repo": "feature-eng",
+      "branch": "codex/train-only-metrics-20261002",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     },
+     {
+      "repo": "feature-eng",
+      "branch": "satoshi/b-selection-ps0-ps2-20261001",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ],
+    "results": [
+     "b2_train_table"
+    ]
+   }
+  },
+  {
+   "lane": "C2",
+   "work": "causal ladder",
+   "agents": [
+    "a5fd5cd9bcbc7f3bd"
+   ],
+   "declared_state": "IMPLEMENTED FEASIBILITY COMPONENT, no causal winner",
+   "next_transition": "integrate 38d67b9; bind availability/event clocks and observed-intervention support to B2 survivors",
+   "observe": {
+    "jobs": "c2-.*",
+    "branches": [
+     {
+      "repo": "predictor",
+      "branch": "satoshi/c2-causal-eth-20261001",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     },
+     {
+      "repo": "causal-inference",
+      "branch": "codex/causal-ladder-feasibility-20261002",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ],
+    "results": [
+     "c2_ladder"
+    ]
+   },
+   "measured": "tests 29 MB, contribution pilot 200 MB, contribution full 295 MB, leak probe 29 MB, dossiers 270 MB, PS3-R rerun 2.19 GB child RSS -> declared 2,733,056,000 B (1.25x)"
   },
   {
    "lane": "D2",
-   "work": "M04: v2 campaign on the 5090",
+   "work": "NEAT generation 1 (ECL h24) via the NEAT generation service on worker_a",
    "agents": [
     "a083979bc9a8fa1b8 (M04)"
    ],
-   "branch": null,
-   "state": "running",
-   "eta_basis": "per-family measured cell walls from the v2 queue once a family completes",
-   "placement": "the 5090; may use the 4090 only until an RL or M07 GPU job is admitted there",
-   "campaign": "d_ecl_l24_h24_corrected_r0_v2: ECL data-gov 7e45845d, L24/H1..24; train NPZ 9215b099 (18,341 windows), validation NPZ e3712565 (2,609 windows); queue never drains while cells remain (R2 lr sweep 4, ABL-H2-OPT 16, seed cells); runners d2-runner-worker-a/-b; worker_b yields to M07 once M07's first GPU job is admitted (M04 report 07:4xZ)"
+   "declared_state": "RUNNING on the 5090 via the NEAT generation service (parent cap 256M, child cap 6915M)",
+   "campaign_roots": [
+    "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_neat_gen1_20261003_neat (worker_a)",
+    "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_neat_gen1_20261003_random (worker_a)"
+   ],
+   "next_transition": "drain the sealed generation; each verified candidate reports objective, same-row persistence and seasonal naive, skill, seed and cost; matched random arm starts after the NEAT service exits",
+   "observe": {
+    "jobs": "(neat-gen1-.*|m04-(train|verify)-.*)",
+    "queues": [
+     "neat_gen1_neat",
+     "neat_gen1_random"
+    ]
+   }
   },
   {
    "lane": "E2",
-   "work": "M05: adapters/backtest",
+   "work": "trading/product",
    "agents": [
     "a65d2f3a115a9aa25 (M05)"
    ],
-   "branch": null,
-   "state": "dispatched",
-   "eta_basis": "none yet"
+   "declared_state": "PRIOR RESULT EXISTS: M05 77739a9 found the tested EURUSD SIGN rule economically non-viable",
+   "next_transition": "keep MT5 demo / paper plumbing alive; replay the next naive-eligible financial predictor",
+   "observe": {
+    "jobs": "m05-.*",
+    "branches": [
+     {
+      "repo": "lts",
+      "branch": "satoshi/m05-paper-adapter-20260930",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ],
+    "results": [
+     "e2_m05"
+    ]
+   }
   },
   {
    "lane": "F2",
-   "work": "M07: ETH 4h financial forecast campaign on the 4090",
+   "work": "financial forecasting (ETH 4h)",
    "agents": [
     "afcf115024ffa1381 (M07)"
    ],
    "branch": "satoshi/f2-eth-forecast-20261001",
-   "state": "acknowledged",
-   "eta_basis": "CPU cost pilots on worker_b first; next measurement = pilot completion",
-   "measured": "CPU pilots: grouped32_mae_adamw peak 0.89 GB, per_feature_mae_adamw peak 1.52 GB (6G caps); f2-tf-tests (3G) and f2-naive-table (1G) on worker_b; first GPU pilot waits for M04's worker_b lease release"
+   "declared_state": "COMPLETE/IDLE: historical forecast queues complete/exited; R1/R2 completed evidence",
+   "next_transition": "first B2 admissible subset -> one single-seed financial modular candidate (all-83 kept as control)",
+   "observe": {
+    "jobs": "(f2-|m07).*",
+    "branches": [
+     {
+      "repo": "predictor",
+      "branch": "satoshi/f2-eth-forecast-20261001",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ]
+   }
   },
   {
    "lane": "G2",
-   "work": "lane G: RL 16 cells on the 5070 Ti and the 4090",
+   "work": "RL four-arm first-seed screen",
    "agents": [
     "aa7913479a97b45c0 (lane G)"
    ],
-   "branch": null,
-   "state": "dispatched",
-   "eta_basis": "none yet",
-   "placement": "RL GPU cells go to the worker_b 4090 FIRST, one RL job at a time beside M07 (orchestrator ruling 07:3xZ)",
-   "measured": "RL-D0 DQN 994,013,184 B and RL-S0 SAC 984,662,016 B observed (2 x 2,000 steps; NOT full-run: SB3 buffer fills lazily, full cell projects ~2.6 GB); modular RL-S1/RL-D1 pilots running on worker_b"
+   "declared_state": "RUNNING: RL-S1 seed303 on the 4090",
+   "next_transition": "RL-S1 completes -> next missing first-seed arm (SAC/DQN x conventional/modular); extra seeds held",
+   "observe": {
+    "jobs": "(g-rl|g2-).*",
+    "branches": [
+     {
+      "repo": "predictor",
+      "branch": "satoshi/g-rl-encoder-export-20261001",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ]
+   },
+   "placement": "RL GPU cells go to the worker_b 4090 FIRST, one RL job at a time beside M07 (orchestrator ruling 07:3xZ)"
   },
   {
-   "lane": "F",
-   "work": "M06: evidence/resources, idle alarm, admission deploys",
+   "lane": "H1",
+   "work": "Kalman (CPU only)",
+   "agents": [
+    "a1a511567dd7f306f"
+   ],
+   "declared_state": "RETAINED RESULT, no new work proven",
+   "next_transition": "first B2 subset after point-in-time checks -> original / original+Kalman / replacement",
+   "observe": {
+    "jobs": "h1-.*",
+    "branches": [
+     {
+      "repo": "predictor",
+      "branch": "satoshi/h-kalman-20261001",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ],
+    "results": [
+     "h1_kalman"
+    ]
+   }
+  },
+  {
+   "lane": "I1",
+   "work": "M5PHET real adapter E2E (CPU)",
+   "agents": [
+    "ad39bdf372d45ceb0 (I1)"
+   ],
+   "declared_state": "UNKNOWN, not active until a new process/commit proves it",
+   "next_transition": "CPU assignment only after A/B/C have workers; one real adapter E2E",
+   "observe": {
+    "jobs": "i1-.*",
+    "branches": [
+     {
+      "repo": "M5PHET",
+      "branch": "satoshi/i-m5phet-20261001",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ]
+   }
+  },
+  {
+   "lane": "LIT",
+   "work": "Traffic/Weather/ECL literature controls",
+   "declared_state": "RETAINED controls (CPU verification and tables only)",
+   "next_transition": "a sealed comparable GPU cell independently ready",
+   "observe": {}
+  },
+  {
+   "lane": "M06",
+   "work": "evidence/resources: status writer, GPU sampler, event watch",
    "agents": [
     "M06 subagent (this)"
    ],
    "branch": "satoshi/m06-evidence-resources-20260930",
-   "state": "ASSIGNED",
-   "eta_basis": "n/a"
-  },
-  {
-   "lane": "C2",
-   "work": "causal ETH (C2 agent a5fd5cd9bcbc7f3bd)",
-   "agents": [
-    "a5fd5cd9bcbc7f3bd"
-   ],
-   "branch": "satoshi/c2-causal-eth-20261001",
-   "state": "running",
-   "measured": "tests 29 MB, contribution pilot 200 MB, contribution full 295 MB, leak probe 29 MB, dossiers 270 MB, PS3-R rerun 2.19 GB child RSS -> declared 2,733,056,000 B (1.25x)"
-  },
-  {
-   "lane": "H1",
-   "work": "front H: Kalman (CPU only)",
-   "agents": [
-    "a1a511567dd7f306f"
-   ],
-   "branch": null,
-   "state": "running",
-   "measured": "h1-pilot-green4 on worker_b: tests 37/37, cap 2G, cgroup peak 79.4 MB, ~6 s; branch satoshi/h-kalman-20261001 @ 940834d2"
-  },
-  {
-   "lane": "I1",
-   "state": "running (CPU only; M5PHET usable adapters)",
-   "agents": [
-    "ad39bdf372d45ceb0 (I1)"
-   ]
+   "declared_state": "RUNNING (coordinator units)",
+   "next_transition": "continuous",
+   "observe": {
+    "jobs": "m06-.*"
+   }
   }
  ],
  "job_hints": {
+  "neat-gen1-.*": {
+   "lane": "D2",
+   "producer_commit": "NEAT generation service (crispdm-neat-gen1-<host>.service on worker_a)"
+  },
   "m02-ecl-donors-r0.*": {
    "lane": "A",
    "unit": "features",
@@ -1711,11 +1840,11 @@
   "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519": "G2"
  },
  "next_prepared": {
-  "F": "M06: PNG/RETURN/RESULTS deliverables and Hermes-drafted 30-minute summaries (ASSIGNED)",
   "H1": "h1-* replay of tests + Kalman digests on worker_a, then the ETH 4h arm pilot (ridge, CPU) at 1.25x its pilot peak",
   "G2": "worker_b 4090: durable g2-queue-worker-b takes over after the current queue (15 cells); worker_a closed to G2 while D2 holds the 5090",
   "F2": "worker_b: f2-loop-worker-b (active); worker_a 5070 Ti: f2-loop-worker-a (active)",
-  "D2": "durable d2-runner-worker-a: 4ea6cbed then successors 30-33 on the 5090"
+  "D2": "durable d2-runner-worker-a: 4ea6cbed then successors 30-33 on the 5090",
+  "M06": "M06: PNG/RETURN/RESULTS deliverables and Hermes-drafted 30-minute summaries (ASSIGNED)"
  },
  "durable_runners": [
   {
@@ -1752,7 +1881,7 @@
  ],
  "critical_path": {
   "as_of": "2026-10-01T10:45:00Z",
-  "source": "owner continuation order e9d689e6 §critical path; states by M06 from STATUS, RESULTS and front tips; a step is COMPLETE only with a verified, naive-gated artifact",
+  "source": "owner continuation order e9d689e6 \u00a7critical path; states by M06 from STATUS, RESULTS and front tips; a step is COMPLETE only with a verified, naive-gated artifact",
   "steps": [
    {
     "n": 1,
@@ -1804,5 +1933,44 @@
     "next": "needs step 6"
    }
   ]
- }
+ },
+ "lane_results": {
+  "b2_train_table": {
+   "repo": "feature-eng",
+   "commit": "88d105a"
+  },
+  "c2_ladder": {
+   "repo": "causal-inference",
+   "commit": "38d67b9"
+  },
+  "e2_m05": {
+   "repo": "lts",
+   "commit": "77739a9"
+  },
+  "h1_kalman": {
+   "repo": "predictor",
+   "commit": "940834d2"
+  }
+ },
+ "lane_queues": [
+  {
+   "name": "neat_gen1_neat",
+   "lane": "D2",
+   "host_role": "worker_a",
+   "python": "~/anaconda3/envs/tensorflow/bin/python",
+   "path": "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_neat_gen1_20261003_neat/queue.sqlite",
+   "planned_total": 12,
+   "note": "planned_total = pop 6 x gens 2 from the dispatcher argv; whether the R0 control row occupies a population slot is UNVERIFIED"
+  },
+  {
+   "name": "neat_gen1_random",
+   "lane": "D2",
+   "host_role": "worker_a",
+   "python": "~/anaconda3/envs/tensorflow/bin/python",
+   "path": "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_neat_gen1_20261003_random/queue.sqlite",
+   "planned_total": null,
+   "note": "matched random arm: N = verified NEAT rows when the NEAT service exits (sealed in chain.sh); starts after it",
+   "pending_event": "NEAT service exits -> random arm enqueues N matched rows; ETA then from the first completed random-arm cell of each family"
+  }
+ ]
 }

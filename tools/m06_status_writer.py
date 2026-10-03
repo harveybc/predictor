@@ -38,6 +38,22 @@ HOME = os.path.expanduser("~")
 GITHUB = HOME + "/Documents/GitHub"
 HERE = os.path.dirname(os.path.abspath(__file__))
 PROBE = os.path.join(HERE, "m06_fleet_probe.py")
+sys.path.insert(0, HERE)
+import m06_observed_state as obs  # noqa: E402  pure declared-vs-observed logic (corrective order 2026-10-03 §5)
+
+QUEUE_READER = r"""
+import json, sqlite3, sys
+p = sys.argv[1]
+try:
+    c = sqlite3.connect("file:%s?mode=ro" % p, uri=True, timeout=5)
+    out = {"status_counts": dict(c.execute("select status, count(*) from candidates group by status").fetchall()),
+           "candidates": [list(r) for r in c.execute("select cid, label, seed, status from candidates order by position")],
+           "attempts": [list(r) for r in c.execute("select cid, attempt, kind, status, elapsed_seconds, cgroup_peak_bytes from attempts")]}
+    c.close()
+except Exception as e:
+    out = {"error": type(e).__name__}
+print(json.dumps(out))
+"""
 GPU_MIN_INTERVAL = {"worker_a": 60}    # owner order 2026-10-01 (no idle GPU): 60 s sampling for the idle alarm.
                                        # Trade-off recorded: each query of an idle, non-persistent GPU re-initialises it
                                        # (worker_a slab hypothesis, UNVERIFIED); the slab series is watched (alert >= 4 GB).
@@ -367,8 +383,8 @@ def capacity_board(reg, probes, devices, jobs, camps):
         mine = [j for j in run if j.get("lane") == L["lane"] and not j["id"].startswith("m06-")]
         rows.append({"lane": L["lane"], "agent": ", ".join(L.get("agents", [])), "host_alias": None, "resource": "AGENT",
                      "current_job": [j["id"] for j in mine], "heartbeat": [(j["id"], j.get("heartbeat_status")) for j in mine],
-                     "next_prepared": nxt.get(L["lane"]), "state": "RUNNING" if mine else ("HOLD" if "HOLD" in str(L.get("state")) else "NO_JOB"),
-                     "cause_if_idle": (None if mine else (L.get("state") if "HOLD" in str(L.get("state")) else
+                     "next_prepared": nxt.get(L["lane"]), "state": "RUNNING" if mine else ("HOLD" if "HOLD" in str(L.get("declared_state")) else "NO_JOB"),
+                     "cause_if_idle": (None if mine else (L.get("declared_state") if "HOLD" in str(L.get("declared_state")) else
                                        ("next prepared: " + nxt[L["lane"]] if nxt.get(L["lane"]) else "ORCHESTRATION_DEFECT: no job and no prepared successor")))})
     return rows
 
@@ -391,6 +407,75 @@ def lanes():
                     ("20260930" in br or "20261001" in br):
                 out.append({"repo": repo, "branch": br, "worktree": kv.get("worktree", "").replace(HOME, "~"),
                             "tip": kv.get("HEAD", "")[:12]})
+    return out
+
+
+def read_lane_queue(q, hosts):
+    """Read-only sqlite read of a lane queue, locally or on a worker through its own python (the
+    workers have no sqlite3 CLI; the registry names the interpreter)."""
+    py = q.get("python", "python3")
+    role = q.get("host_role", "coordinator")
+    try:
+        if role == "coordinator":
+            r = subprocess.run([sys.executable, "-c", QUEUE_READER, os.path.expanduser(q["path"])],
+                               capture_output=True, text=True, timeout=30)
+        else:
+            r = subprocess.run(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", hosts[role],
+                                f"{py} - {q['path']}"], input=QUEUE_READER, capture_output=True, text=True, timeout=60)
+        return json.loads(r.stdout)
+    except Exception as e:
+        return {"error": type(e).__name__}
+
+
+def lane_queues(reg, hosts, now):
+    out = {}
+    for q in reg.get("lane_queues", []):
+        raw = read_lane_queue(q, hosts)
+        if "error" in raw:
+            out[q["name"]] = {"queue": q["name"], "error": raw["error"], "host_role": q.get("host_role")}
+            continue
+        out[q["name"]] = {**obs.queue_summary(q["name"], raw, now, q.get("parallel_hosts", 1), q.get("planned_total"),
+                                               tuple(q.get("excluded_statuses", []))),
+                          "host_role": q.get("host_role"), "lane": q.get("lane"), "note": q.get("note")}
+        e = out[q["name"]]["eta"]
+        if e.get("first_estimable_event") == "nothing pending in this queue" and q.get("pending_event"):
+            e["first_estimable_event"] = q["pending_event"]
+    return out
+
+
+def branch_tips(rows):
+    tips = {}
+    for L in rows:
+        for b in (L.get("observe") or {}).get("branches", []):
+            key = f"{b['repo']}:{b['branch']}"
+            if key in tips:
+                continue
+            path = os.path.join(GITHUB, b["repo"])
+            for ref in (b["branch"], "origin/" + b["branch"]):
+                try:
+                    r = subprocess.run(["git", "-C", path, "log", "-1", "--format=%ct %H", ref],
+                                       capture_output=True, text=True, timeout=10)
+                    ct, sha = r.stdout.split()
+                    if key not in tips or int(ct) > tips[key][0]:
+                        tips[key] = (int(ct), sha)
+                except Exception:
+                    pass
+    return tips
+
+
+def results_present(reg):
+    """Declared result commits/artifacts that exist on this host: {id: evidence path}."""
+    out = {}
+    for rid, r in (reg.get("lane_results") or {}).items():
+        if r.get("commit"):
+            try:
+                ok = subprocess.run(["git", "-C", os.path.join(GITHUB, r["repo"]), "cat-file", "-e", r["commit"] + "^{commit}"],
+                                    capture_output=True, timeout=10).returncode == 0
+            except Exception:
+                ok = False
+            out[rid] = f"{r['repo']}@{r['commit']}" if ok else None
+        elif r.get("path"):
+            out[rid] = r["path"] if os.path.exists(os.path.expanduser(r["path"])) else None
     return out
 
 
@@ -536,8 +621,14 @@ def build(hosts, reg):
               for role, p in probes.items() if "error" not in p}
     return {"schema": "modular.program.status.v1", "observed_at": iso(now),
             "plan_revision": reg.get("plan_revision"), "plan_links": reg.get("plan_links", {}),
-            "writer": {"script": "tools/m06_status_writer.py + tools/m06_fleet_probe.py", "version": 2, "pid": os.getpid()},
-            "agents": reg.get("agents", []), "lanes": reg.get("lanes", []), "devices": devices, "jobs": jobs,
+            "writer": {"script": "tools/m06_status_writer.py + tools/m06_fleet_probe.py", "version": 3, "pid": os.getpid()},
+            "agents": obs.observe_agents(reg.get("agents", []), (lanes_obs := obs.lane_rows(
+                reg.get("lanes", []), jobs, (lq := lane_queues(reg, hosts, now)), branch_tips(reg.get("lanes", [])),
+                results_present(reg), now))),
+            "lanes": lanes_obs, "lane_queues": lq,
+            "state_semantics": "declared_state is the registry's; observed_state comes only from process, lease, heartbeat, "
+                               "queue or a branch tip after assignment; STALE_DECLARATION when nothing current is observed",
+            "devices": devices, "jobs": jobs,
             "campaigns": (camps := campaign_progress(reg, now)),
             "coverage": coverage_block(reg, camps),
             "capacity_board": capacity_board(reg, probes, devices, jobs, camps),

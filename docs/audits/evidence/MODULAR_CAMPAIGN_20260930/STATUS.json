@@ -1,6 +1,6 @@
 {
  "schema": "modular.program.status.v1",
- "observed_at": "2026-10-01T10:35:41Z",
+ "observed_at": "2026-10-03T04:14:04Z",
  "plan_revision": "b327b771",
  "plan_links": {
   "orders": "docs/handoffs/SATOSHI_PROGRESSIVE_SELECTION_AND_MODULAR_CONTINUATION_2026_09_30.md @ ac125db9 (superseded revision for plan_revision; still governing for lanes A-F)",
@@ -13,172 +13,536 @@
  },
  "writer": {
   "script": "tools/m06_status_writer.py + tools/m06_fleet_probe.py",
-  "version": 2,
-  "pid": 1476344
+  "version": 3,
+  "pid": 195662
  },
  "agents": [
   {
    "id": "a5b79d5488abdee3a",
    "kind": "subagent",
    "lane": "A2",
-   "state": "running",
-   "commit": null
+   "commit": null,
+   "declared_state": "STALE, not active: no new branch tip or heartbeat since the retained M01 work",
+   "observed_state": "ACTIVE_COMMIT_AFTER_ASSIGNMENT",
+   "last_observed_at": "2026-10-03T04:10:54Z",
+   "evidence_path": "predictor@satoshi/a2-adapter-donor-20261003:96f432702c",
+   "next_transition": "reassigned bounded task: integrate the typed TRAIN-only NPZ adapter with the branch/core donor contract, test R0/R1/R2 freeze/update, then one single-seed modular cell"
   },
   {
    "id": "a160efdffffffa9f2",
    "kind": "subagent",
    "lane": "B2",
-   "state": "running",
-   "commit": null
+   "commit": null,
+   "declared_state": "ACTIVE DATA READY: 83-feature TRAIN-only table materialized (13,699 rows); selection not complete",
+   "observed_state": "IDLE_RESULT_PRESENT",
+   "last_observed_at": "2026-10-03T04:14:04Z",
+   "evidence_path": "feature-eng@88d105a",
+   "next_transition": "availability/semantic rejection, cheap-metric redundancy clusters and target/horizon associations -> first versioned survivor/reject/pending table"
   },
   {
    "id": "a083979bc9a8fa1b8",
    "kind": "subagent",
    "lane": "D2",
-   "state": "running",
-   "commit": null
+   "commit": null,
+   "declared_state": "RUNNING on the 5090 via the NEAT generation service (parent cap 256M, child cap 6915M)",
+   "observed_state": "RUNNING",
+   "last_observed_at": "2026-10-03T04:14:04Z",
+   "evidence_path": "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_neat_gen1_20261003_neat/attempts/df9d8a1cc5de1e2c/train-1/bridge/27bf89c678512ea606cc5a59eed74065bf0769b4551f704434bd7fbacdbe5ab6/heartbeat.jsonl",
+   "next_transition": "drain the sealed generation; each verified candidate reports objective, same-row persistence and seasonal naive, skill, seed and cost; matched random arm starts after the NEAT service exits | queue ETA 2026-10-03T04:27:43Z..2026-10-03T04:39:40Z"
   },
   {
    "id": "a65d2f3a115a9aa25",
    "kind": "subagent",
    "lane": "E2",
-   "state": "running",
-   "commit": null
+   "commit": null,
+   "declared_state": "PRIOR RESULT EXISTS: M05 77739a9 found the tested EURUSD SIGN rule economically non-viable",
+   "observed_state": "IDLE_RESULT_PRESENT",
+   "last_observed_at": "2026-10-03T04:14:04Z",
+   "evidence_path": "lts@77739a9",
+   "next_transition": "keep MT5 demo / paper plumbing alive; replay the next naive-eligible financial predictor"
   },
   {
    "id": "afcf115024ffa1381",
    "kind": "subagent",
    "lane": "F2",
-   "state": "acknowledged",
    "commit": null,
-   "note": "M07; STATUS at worker_b ~/.local/state/scratch/m07/STATUS.json"
+   "note": "M07; STATUS at worker_b ~/.local/state/scratch/m07/STATUS.json",
+   "declared_state": "COMPLETE/IDLE: historical forecast queues complete/exited; R1/R2 completed evidence",
+   "observed_state": "STALE_DECLARATION",
+   "last_observed_at": null,
+   "evidence_path": null,
+   "next_transition": "first B2 admissible subset -> one single-seed financial modular candidate (all-83 kept as control)"
   },
   {
    "id": "aa7913479a97b45c0",
    "kind": "subagent",
    "lane": "G2",
-   "state": "running",
-   "commit": null
+   "commit": null,
+   "declared_state": "RUNNING: RL-S1 seed303 on the 4090",
+   "observed_state": "STALE_DECLARATION",
+   "last_observed_at": null,
+   "evidence_path": null,
+   "next_transition": "RL-S1 completes -> next missing first-seed arm (SAC/DQN x conventional/modular); extra seeds held"
   },
   {
    "id": "m06 subagent",
    "kind": "subagent",
-   "lane": "F",
-   "state": "running",
-   "commit": null
+   "lane": "M06",
+   "commit": null,
+   "declared_state": "RUNNING (coordinator units)",
+   "observed_state": "RUNNING",
+   "last_observed_at": "2026-10-03T04:14:04Z",
+   "evidence_path": "lease:m06-event-watch-1790933984-3285926-6f5863",
+   "next_transition": "continuous"
   },
   {
    "id": "a1a511567dd7f306f",
    "kind": "subagent",
    "lane": "H1",
-   "state": "assigned",
-   "commit": null
+   "commit": null,
+   "declared_state": "RETAINED RESULT, no new work proven",
+   "observed_state": "IDLE_RESULT_PRESENT",
+   "last_observed_at": "2026-10-03T04:14:04Z",
+   "evidence_path": "predictor@940834d2",
+   "next_transition": "first B2 subset after point-in-time checks -> original / original+Kalman / replacement"
   }
  ],
  "lanes": [
   {
    "lane": "A2",
-   "work": "M01: seasonal-residual + R3",
+   "work": "modular representation (M01 retained work)",
    "agents": [
     "a5b79d5488abdee3a (M01)"
    ],
-   "branch": null,
-   "state": "dispatched",
-   "eta_basis": "none yet: next measurement = first pilot heartbeat"
+   "declared_state": "STALE, not active: no new branch tip or heartbeat since the retained M01 work",
+   "next_transition": "reassigned bounded task: integrate the typed TRAIN-only NPZ adapter with the branch/core donor contract, test R0/R1/R2 freeze/update, then one single-seed modular cell",
+   "observe": {
+    "jobs": "(laneA|ps3r|m01-|m02-|a2-).*",
+    "branches": [
+     {
+      "repo": "predictor",
+      "branch": "satoshi/a2-adapter-donor-20261003",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     },
+     {
+      "repo": "predictor",
+      "branch": "satoshi/m01-model-assembly-20260930",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ]
+   },
+   "observed_state": "ACTIVE_COMMIT_AFTER_ASSIGNMENT",
+   "last_observed_at": "2026-10-03T04:10:54Z",
+   "evidence_path": "predictor@satoshi/a2-adapter-donor-20261003:96f432702c"
   },
   {
    "lane": "B2",
-   "work": "M03: freezes (selection denominators)",
+   "work": "feature selection (ETH 4h)",
    "agents": [
     "a160efdffffffa9f2 (M03)"
    ],
-   "branch": null,
-   "state": "HOLD (until a campaign result changes what to select)",
-   "eta_basis": "none yet"
+   "declared_state": "ACTIVE DATA READY: 83-feature TRAIN-only table materialized (13,699 rows); selection not complete",
+   "next_transition": "availability/semantic rejection, cheap-metric redundancy clusters and target/horizon associations -> first versioned survivor/reject/pending table",
+   "observe": {
+    "jobs": "(laneB|b2-|m03-).*",
+    "branches": [
+     {
+      "repo": "feature-eng",
+      "branch": "codex/train-only-metrics-20261002",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     },
+     {
+      "repo": "feature-eng",
+      "branch": "satoshi/b-selection-ps0-ps2-20261001",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ],
+    "results": [
+     "b2_train_table"
+    ]
+   },
+   "observed_state": "IDLE_RESULT_PRESENT",
+   "last_observed_at": "2026-10-03T04:14:04Z",
+   "evidence_path": "feature-eng@88d105a"
+  },
+  {
+   "lane": "C2",
+   "work": "causal ladder",
+   "agents": [
+    "a5fd5cd9bcbc7f3bd"
+   ],
+   "declared_state": "IMPLEMENTED FEASIBILITY COMPONENT, no causal winner",
+   "next_transition": "integrate 38d67b9; bind availability/event clocks and observed-intervention support to B2 survivors",
+   "observe": {
+    "jobs": "c2-.*",
+    "branches": [
+     {
+      "repo": "predictor",
+      "branch": "satoshi/c2-causal-eth-20261001",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     },
+     {
+      "repo": "causal-inference",
+      "branch": "codex/causal-ladder-feasibility-20261002",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ],
+    "results": [
+     "c2_ladder"
+    ]
+   },
+   "measured": "tests 29 MB, contribution pilot 200 MB, contribution full 295 MB, leak probe 29 MB, dossiers 270 MB, PS3-R rerun 2.19 GB child RSS -> declared 2,733,056,000 B (1.25x)",
+   "observed_state": "RUNNING",
+   "last_observed_at": "2026-10-03T04:14:04Z",
+   "evidence_path": "lease:c2-run1-1791000710-2885961-5eb9c9",
+   "observed_jobs": [
+    {
+     "id": "c2-run1",
+     "host_alias": "worker_b",
+     "phase": "running_stage_unknown",
+     "heartbeat_status": "NONE",
+     "heartbeat_at": null,
+     "progress": null
+    }
+   ]
   },
   {
    "lane": "D2",
-   "work": "M04: v2 campaign on the 5090",
+   "work": "NEAT generation 1 (ECL h24) via the NEAT generation service on worker_a",
    "agents": [
     "a083979bc9a8fa1b8 (M04)"
    ],
-   "branch": null,
-   "state": "running",
-   "eta_basis": "per-family measured cell walls from the v2 queue once a family completes",
-   "placement": "the 5090; may use the 4090 only until an RL or M07 GPU job is admitted there",
-   "campaign": "d_ecl_l24_h24_corrected_r0_v2: ECL data-gov 7e45845d, L24/H1..24; train NPZ 9215b099 (18,341 windows), validation NPZ e3712565 (2,609 windows); queue never drains while cells remain (R2 lr sweep 4, ABL-H2-OPT 16, seed cells); runners d2-runner-worker-a/-b; worker_b yields to M07 once M07's first GPU job is admitted (M04 report 07:4xZ)"
+   "declared_state": "RUNNING on the 5090 via the NEAT generation service (parent cap 256M, child cap 6915M)",
+   "campaign_roots": [
+    "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_neat_gen1_20261003_neat (worker_a)",
+    "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_neat_gen1_20261003_random (worker_a)"
+   ],
+   "next_transition": "drain the sealed generation; each verified candidate reports objective, same-row persistence and seasonal naive, skill, seed and cost; matched random arm starts after the NEAT service exits | queue ETA 2026-10-03T04:27:43Z..2026-10-03T04:39:40Z",
+   "observe": {
+    "jobs": "(neat-gen1-.*|m04-(train|verify)-.*)",
+    "queues": [
+     "neat_gen1_neat",
+     "neat_gen1_random"
+    ]
+   },
+   "observed_state": "RUNNING",
+   "last_observed_at": "2026-10-03T04:14:04Z",
+   "evidence_path": "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_neat_gen1_20261003_neat/attempts/df9d8a1cc5de1e2c/train-1/bridge/27bf89c678512ea606cc5a59eed74065bf0769b4551f704434bd7fbacdbe5ab6/heartbeat.jsonl",
+   "observed_jobs": [
+    {
+     "id": "m04-train-df9d8a1c",
+     "host_alias": "worker_a",
+     "phase": "fitting",
+     "heartbeat_status": "OK",
+     "heartbeat_at": "2026-10-03T04:14:00Z",
+     "progress": {
+      "batches_per_epoch": 287,
+      "best_epoch": 4,
+      "best_validation_loss": 0.15713449026968068,
+      "elapsed_seconds": 25.517574334999836,
+      "epoch": 5,
+      "max_epochs": 30,
+      "max_seconds": 5400.0,
+      "max_updates": 1000000,
+      "stage": "fit",
+      "stale_monitors": 0,
+      "updates": 1390,
+      "validation_loss": 0.15713449026968068
+     }
+    },
+    {
+     "id": "neat-gen1-orch-neat-g-v2",
+     "host_alias": "worker_a",
+     "phase": "fitting",
+     "heartbeat_status": "OK",
+     "heartbeat_at": "2026-10-03T04:14:00Z",
+     "progress": {
+      "batches_per_epoch": 287,
+      "best_epoch": 4,
+      "best_validation_loss": 0.15713449026968068,
+      "elapsed_seconds": 25.517574334999836,
+      "epoch": 5,
+      "max_epochs": 30,
+      "max_seconds": 5400.0,
+      "max_updates": 1000000,
+      "stage": "fit",
+      "stale_monitors": 0,
+      "updates": 1390,
+      "validation_loss": 0.15713449026968068
+     }
+    }
+   ],
+   "queue": {
+    "name": "neat_gen1_neat",
+    "counts": {
+     "queued": 2,
+     "running": 1,
+     "verified": 7,
+     "verifying": 1
+    },
+    "eta": {
+     "earliest": "2026-10-03T04:27:43Z",
+     "latest": "2026-10-03T04:39:40Z",
+     "basis": "same_family_completed_cells",
+     "families": {
+      "neat_g0001": 256
+     },
+     "covers": "4 enqueued pending cells",
+     "first_estimable_event": null,
+     "not_covered": "1 planned cells not yet enqueued; their ETA becomes estimable at the first train+verify completion of their own family"
+    }
+   }
   },
   {
    "lane": "E2",
-   "work": "M05: adapters/backtest",
+   "work": "trading/product",
    "agents": [
     "a65d2f3a115a9aa25 (M05)"
    ],
-   "branch": null,
-   "state": "dispatched",
-   "eta_basis": "none yet"
+   "declared_state": "PRIOR RESULT EXISTS: M05 77739a9 found the tested EURUSD SIGN rule economically non-viable",
+   "next_transition": "keep MT5 demo / paper plumbing alive; replay the next naive-eligible financial predictor",
+   "observe": {
+    "jobs": "m05-.*",
+    "branches": [
+     {
+      "repo": "lts",
+      "branch": "satoshi/m05-paper-adapter-20260930",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ],
+    "results": [
+     "e2_m05"
+    ]
+   },
+   "observed_state": "IDLE_RESULT_PRESENT",
+   "last_observed_at": "2026-10-03T04:14:04Z",
+   "evidence_path": "lts@77739a9"
   },
   {
    "lane": "F2",
-   "work": "M07: ETH 4h financial forecast campaign on the 4090",
+   "work": "financial forecasting (ETH 4h)",
    "agents": [
     "afcf115024ffa1381 (M07)"
    ],
    "branch": "satoshi/f2-eth-forecast-20261001",
-   "state": "acknowledged",
-   "eta_basis": "CPU cost pilots on worker_b first; next measurement = pilot completion",
-   "measured": "CPU pilots: grouped32_mae_adamw peak 0.89 GB, per_feature_mae_adamw peak 1.52 GB (6G caps); f2-tf-tests (3G) and f2-naive-table (1G) on worker_b; first GPU pilot waits for M04's worker_b lease release"
+   "declared_state": "COMPLETE/IDLE: historical forecast queues complete/exited; R1/R2 completed evidence",
+   "next_transition": "first B2 admissible subset -> one single-seed financial modular candidate (all-83 kept as control)",
+   "observe": {
+    "jobs": "(f2-|m07).*",
+    "branches": [
+     {
+      "repo": "predictor",
+      "branch": "satoshi/f2-eth-forecast-20261001",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ]
+   },
+   "observed_state": "STALE_DECLARATION",
+   "last_observed_at": null,
+   "evidence_path": null,
+   "stale_reason": "no live lease/launcher, no queue activity, no commit after assignment on predictor@satoshi/f2-eth-forecast-20261001"
   },
   {
    "lane": "G2",
-   "work": "lane G: RL 16 cells on the 5070 Ti and the 4090",
+   "work": "RL four-arm first-seed screen",
    "agents": [
     "aa7913479a97b45c0 (lane G)"
    ],
-   "branch": null,
-   "state": "dispatched",
-   "eta_basis": "none yet",
+   "declared_state": "RUNNING: RL-S1 seed303 on the 4090",
+   "next_transition": "RL-S1 completes -> next missing first-seed arm (SAC/DQN x conventional/modular); extra seeds held",
+   "observe": {
+    "jobs": "(g-rl|g2-).*",
+    "branches": [
+     {
+      "repo": "predictor",
+      "branch": "satoshi/g-rl-encoder-export-20261001",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ]
+   },
    "placement": "RL GPU cells go to the worker_b 4090 FIRST, one RL job at a time beside M07 (orchestrator ruling 07:3xZ)",
-   "measured": "RL-D0 DQN 994,013,184 B and RL-S0 SAC 984,662,016 B observed (2 x 2,000 steps; NOT full-run: SB3 buffer fills lazily, full cell projects ~2.6 GB); modular RL-S1/RL-D1 pilots running on worker_b"
+   "observed_state": "STALE_DECLARATION",
+   "last_observed_at": null,
+   "evidence_path": null,
+   "stale_reason": "no live lease/launcher, no queue activity, no commit after assignment on predictor@satoshi/g-rl-encoder-export-20261001"
   },
   {
-   "lane": "F",
-   "work": "M06: evidence/resources, idle alarm, admission deploys",
+   "lane": "H1",
+   "work": "Kalman (CPU only)",
+   "agents": [
+    "a1a511567dd7f306f"
+   ],
+   "declared_state": "RETAINED RESULT, no new work proven",
+   "next_transition": "first B2 subset after point-in-time checks -> original / original+Kalman / replacement",
+   "observe": {
+    "jobs": "h1-.*",
+    "branches": [
+     {
+      "repo": "predictor",
+      "branch": "satoshi/h-kalman-20261001",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ],
+    "results": [
+     "h1_kalman"
+    ]
+   },
+   "observed_state": "IDLE_RESULT_PRESENT",
+   "last_observed_at": "2026-10-03T04:14:04Z",
+   "evidence_path": "predictor@940834d2"
+  },
+  {
+   "lane": "I1",
+   "work": "M5PHET real adapter E2E (CPU)",
+   "agents": [
+    "ad39bdf372d45ceb0 (I1)"
+   ],
+   "declared_state": "UNKNOWN, not active until a new process/commit proves it",
+   "next_transition": "CPU assignment only after A/B/C have workers; one real adapter E2E",
+   "observe": {
+    "jobs": "i1-.*",
+    "branches": [
+     {
+      "repo": "M5PHET",
+      "branch": "satoshi/i-m5phet-20261001",
+      "assigned_at": "2026-10-03T03:56:00Z"
+     }
+    ]
+   },
+   "observed_state": "STALE_DECLARATION",
+   "last_observed_at": null,
+   "evidence_path": null,
+   "stale_reason": "no live lease/launcher, no queue activity, no commit after assignment on M5PHET@satoshi/i-m5phet-20261001"
+  },
+  {
+   "lane": "LIT",
+   "work": "Traffic/Weather/ECL literature controls",
+   "declared_state": "RETAINED controls (CPU verification and tables only)",
+   "next_transition": "a sealed comparable GPU cell independently ready",
+   "observe": {},
+   "observed_state": "STALE_DECLARATION",
+   "last_observed_at": null,
+   "evidence_path": null,
+   "stale_reason": "no live lease/launcher, no queue activity, no commit after assignment (no branch declared)"
+  },
+  {
+   "lane": "M06",
+   "work": "evidence/resources: status writer, GPU sampler, event watch",
    "agents": [
     "M06 subagent (this)"
    ],
    "branch": "satoshi/m06-evidence-resources-20260930",
-   "state": "ASSIGNED",
-   "eta_basis": "n/a"
-  },
-  {
-   "lane": "C2",
-   "work": "causal ETH (C2 agent a5fd5cd9bcbc7f3bd)",
-   "agents": [
-    "a5fd5cd9bcbc7f3bd"
-   ],
-   "branch": "satoshi/c2-causal-eth-20261001",
-   "state": "running",
-   "measured": "tests 29 MB, contribution pilot 200 MB, contribution full 295 MB, leak probe 29 MB, dossiers 270 MB, PS3-R rerun 2.19 GB child RSS -> declared 2,733,056,000 B (1.25x)"
-  },
-  {
-   "lane": "H1",
-   "work": "front H: Kalman (CPU only)",
-   "agents": [
-    "a1a511567dd7f306f"
-   ],
-   "branch": null,
-   "state": "running",
-   "measured": "h1-pilot-green4 on worker_b: tests 37/37, cap 2G, cgroup peak 79.4 MB, ~6 s; branch satoshi/h-kalman-20261001 @ 940834d2"
-  },
-  {
-   "lane": "I1",
-   "state": "running (CPU only; M5PHET usable adapters)",
-   "agents": [
-    "ad39bdf372d45ceb0 (I1)"
+   "declared_state": "RUNNING (coordinator units)",
+   "next_transition": "continuous",
+   "observe": {
+    "jobs": "m06-.*"
+   },
+   "observed_state": "RUNNING",
+   "last_observed_at": "2026-10-03T04:14:04Z",
+   "evidence_path": "lease:m06-event-watch-1790933984-3285926-6f5863",
+   "observed_jobs": [
+    {
+     "id": "m06-event-watch",
+     "host_alias": "coordinator",
+     "phase": "running_stage_unknown",
+     "heartbeat_status": "NONE",
+     "heartbeat_at": null,
+     "progress": null
+    },
+    {
+     "id": "m06-gpu-sampler",
+     "host_alias": "coordinator",
+     "phase": "running_stage_unknown",
+     "heartbeat_status": "NONE",
+     "heartbeat_at": null,
+     "progress": null
+    },
+    {
+     "id": "m06-gpu-sampler",
+     "host_alias": "coordinator",
+     "phase": "running_stage_unknown",
+     "heartbeat_status": "NONE",
+     "heartbeat_at": null,
+     "progress": null
+    },
+    {
+     "id": "m06-status-writer",
+     "host_alias": "coordinator",
+     "phase": "running_stage_unknown",
+     "heartbeat_status": "NONE",
+     "heartbeat_at": null,
+     "progress": null
+    }
    ]
   }
  ],
+ "lane_queues": {
+  "neat_gen1_neat": {
+   "queue": "neat_gen1_neat",
+   "status_counts": {
+    "queued": 2,
+    "running": 1,
+    "verified": 7,
+    "verifying": 1
+   },
+   "enqueued": 11,
+   "planned_total": 12,
+   "done": 7,
+   "active_rows": 2,
+   "runnable_rows": 4,
+   "unenqueued": 1,
+   "eta": {
+    "earliest": "2026-10-03T04:27:43Z",
+    "latest": "2026-10-03T04:39:40Z",
+    "basis": "same_family_completed_cells",
+    "families": {
+     "neat_g0001": 256
+    },
+    "covers": "4 enqueued pending cells",
+    "first_estimable_event": null,
+    "not_covered": "1 planned cells not yet enqueued; their ETA becomes estimable at the first train+verify completion of their own family"
+   },
+   "retry_lineage": [
+    {
+     "label": "neat_g0000_i0001",
+     "seed": 2021,
+     "cid": "4761f360",
+     "attempts": [
+      "train-1:interrupted",
+      "train-2:interrupted",
+      "train-3:completed",
+      "verify-1:completed"
+     ]
+    }
+   ],
+   "host_role": "worker_a",
+   "lane": "D2",
+   "note": "planned_total = pop 6 x gens 2 from the dispatcher argv; whether the R0 control row occupies a population slot is UNVERIFIED"
+  },
+  "neat_gen1_random": {
+   "queue": "neat_gen1_random",
+   "status_counts": {
+    "verified": 1
+   },
+   "enqueued": 1,
+   "planned_total": null,
+   "done": 1,
+   "active_rows": 0,
+   "runnable_rows": 0,
+   "unenqueued": 0,
+   "eta": {
+    "earliest": null,
+    "latest": null,
+    "basis": "not_estimable",
+    "first_estimable_event": "NEAT service exits -> random arm enqueues N matched rows; ETA then from the first completed random-arm cell of each family"
+   },
+   "retry_lineage": [],
+   "host_role": "worker_a",
+   "lane": "D2",
+   "note": "matched random arm: N = verified NEAT rows when the NEAT service exits (sealed in chain.sh); starts after it"
+  }
+ },
+ "state_semantics": "declared_state is the registry's; observed_state comes only from process, lease, heartbeat, queue or a branch tip after assignment; STALE_DECLARATION when nothing current is observed",
  "devices": [
   {
    "host_alias": "coordinator",
@@ -187,16 +551,16 @@
    "state": "idle",
    "job_id": null,
    "reason": "desktop client only: snapd-desktop-integration",
-   "observed_at": "2026-10-01T10:35:41Z",
-   "temperature_c": 43.0,
-   "utilization_percent": 0.0,
-   "host_available_bytes": 18809815040,
+   "observed_at": "2026-10-03T04:14:04Z",
+   "temperature_c": 51.0,
+   "utilization_percent": 45.0,
+   "host_available_bytes": 16423915520,
    "gpu": {
-    "sm_clock_mhz": 210.0,
+    "sm_clock_mhz": 570.0,
     "sm_clock_max_mhz": 3105.0,
-    "vram_used_mib": 612.0,
+    "vram_used_mib": 1099.0,
     "vram_total_mib": 8188.0,
-    "power_w": 5.2,
+    "power_w": 8.2,
     "throttle_reasons": [
      "gpu_idle"
     ],
@@ -213,23 +577,23 @@
    "host": {
     "mem": {
      "MemTotal": 32778358784,
-     "MemAvailable": 18809815040,
-     "SUnreclaim": 706310144,
-     "SReclaimable": 2689138688,
-     "Shmem": 5035036672,
+     "MemAvailable": 16423915520,
+     "SUnreclaim": 764239872,
+     "SReclaimable": 2671714304,
+     "Shmem": 5323337728,
      "SwapTotal": 8589930496,
-     "SwapFree": 4744445952
+     "SwapFree": 3883188224
     },
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=223319105\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=196986641",
-    "uptime_s": 225190.91,
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=232779378\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=206081811",
+    "uptime_s": 375093.56,
     "gpu_reinit_this_boot": "0",
     "shares_host_ram_with": []
    },
    "admission": {
-    "host_free_for_new_bytes": 14186266624,
-    "held_unrealised_bytes": 1397055488,
+    "host_free_for_new_bytes": 12329955328,
+    "held_unrealised_bytes": 868724736,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 5041512448,
+    "slice_memory_current": 5099487232,
     "slice_charged_bytes": null,
     "slice_memory_max": 15032385536,
     "pressure_some_avg10": 0.0,
@@ -237,8 +601,8 @@
     "pressure_admit_max": 25.0
    },
    "next_task": "coordinator: no batch work (standing rule)",
-   "gpu_idle_seconds_24h": 8669,
-   "gpu_idle_current_seconds": 140,
+   "gpu_idle_seconds_24h": 43419,
+   "gpu_idle_current_seconds": 0,
    "gpu_idle_note": "writer cycle sampling (sampler unavailable for this device)"
   },
   {
@@ -248,259 +612,180 @@
    "state": "idle",
    "job_id": null,
    "reason": "no compute process and no GPU job lease on this device",
-   "observed_at": "2026-10-01T10:35:42Z",
-   "temperature_c": 37.0,
-   "utilization_percent": 0.0,
-   "host_available_bytes": 6554152960,
+   "observed_at": "2026-10-03T04:13:15Z",
+   "temperature_c": 34.0,
+   "utilization_percent": 11.0,
+   "host_available_bytes": 9664561152,
    "gpu": {
-    "sm_clock_mhz": 1507.0,
+    "sm_clock_mhz": 240.0,
     "sm_clock_max_mhz": 3090.0,
     "vram_used_mib": 14.0,
     "vram_total_mib": 12227.0,
-    "power_w": 18.6,
-    "throttle_reasons": [],
+    "power_w": 16.27,
+    "throttle_reasons": [
+     "sw_power_cap"
+    ],
     "compute_processes": []
    },
    "host": {
     "mem": {
-     "MemTotal": 15340752896,
-     "MemAvailable": 6554152960,
-     "SUnreclaim": 856829952,
-     "SReclaimable": 738926592,
-     "Shmem": 75816960,
+     "MemTotal": 15340732416,
+     "MemAvailable": 9664561152,
+     "SUnreclaim": 322457600,
+     "SReclaimable": 143425536,
+     "Shmem": 24711168,
      "SwapTotal": 4294963200,
-     "SwapFree": 4293955584
+     "SwapFree": 4294963200
     },
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=118174182\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=115718016",
-    "uptime_s": 42104.34,
-    "gpu_reinit_this_boot": "881",
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=60754\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=60164",
+    "uptime_s": 1365.13,
+    "gpu_reinit_this_boot": "41",
     "shares_host_ram_with": [
      "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8"
     ]
    },
    "admission": {
-    "host_free_for_new_bytes": 1503899648,
-    "held_unrealised_bytes": 1815752704,
+    "host_free_for_new_bytes": 4096102400,
+    "held_unrealised_bytes": 2333941760,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 7333494784,
-    "slice_charged_bytes": 6383374336,
+    "slice_memory_current": 5243486208,
+    "slice_charged_bytes": 5200977920,
     "slice_memory_max": 8589934592,
     "pressure_some_avg10": 0.0,
     "pressure_full_avg10": 0.0,
     "pressure_admit_max": 25.0
    },
    "next_task": "NEXT JOB THAT FITS: M07 (F2) per-feature cell (CPU pilot peak 1.52 GB < 2.5 GB) after its 4090 pilots; lane G RL cells pending a ruling (full SB3 cell projects ~2.6 GB, 1.25x 3.25 GB > 2.5 GB; options: 40k buffer or optimize_memory_usage ~2.25 GB)",
-   "gpu_idle_seconds_24h": 9309,
-   "gpu_idle_current_seconds": 884,
-   "sampler_temperature_c": 37.0,
-   "sampler_temperature_max_since_start_c": 38.0,
+   "gpu_idle_seconds_24h": 86147,
+   "gpu_idle_current_seconds": 9810,
+   "sampler_temperature_c": 34.0,
+   "sampler_temperature_max_since_start_c": 64.0,
    "sampler_vram_used_mib": 14.0,
    "sampler_vram_total_mib": 12227.0,
-   "sampler_power_w": 16.17,
-   "sampler_sample_at": "2026-10-01T10:35:28Z",
+   "sampler_power_w": 5.11,
+   "sampler_sample_at": "2026-10-03T04:14:02Z",
    "gpu_idle_note": "m06-gpu-sampler: 15 s sampling; idle = 0 % utilization or no compute process; alarm at 120 s"
   },
   {
    "host_alias": "worker_a",
    "device": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
    "name": "NVIDIA GeForce RTX 5090",
-   "state": "running",
-   "job_id": "m04-train-f1595134",
-   "reason": "compute process in a crispdm job scope",
-   "observed_at": "2026-10-01T10:35:42Z",
-   "temperature_c": 53.0,
-   "utilization_percent": 57.0,
-   "host_available_bytes": 6554152960,
+   "state": "idle",
+   "job_id": null,
+   "reason": "no compute process and no GPU job lease on this device",
+   "observed_at": "2026-10-03T04:13:15Z",
+   "temperature_c": 46.0,
+   "utilization_percent": 0.0,
+   "host_available_bytes": 9664561152,
    "gpu": {
-    "sm_clock_mhz": 2910.0,
+    "sm_clock_mhz": 225.0,
     "sm_clock_max_mhz": 3135.0,
-    "vram_used_mib": 1064.0,
+    "vram_used_mib": 10.0,
     "vram_total_mib": 32607.0,
-    "power_w": 104.61,
+    "power_w": 8.24,
     "throttle_reasons": [],
-    "compute_processes": [
-     {
-      "uuid": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
-      "pid": 519676,
-      "used_mib": "1046",
-      "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m04-train-f1595134-1790850530-519589.scope",
-      "exe": "python3.12"
-     }
-    ]
+    "compute_processes": []
    },
    "host": {
     "mem": {
-     "MemTotal": 15340752896,
-     "MemAvailable": 6554152960,
-     "SUnreclaim": 856829952,
-     "SReclaimable": 738926592,
-     "Shmem": 75816960,
+     "MemTotal": 15340732416,
+     "MemAvailable": 9664561152,
+     "SUnreclaim": 322457600,
+     "SReclaimable": 143425536,
+     "Shmem": 24711168,
      "SwapTotal": 4294963200,
-     "SwapFree": 4293955584
+     "SwapFree": 4294963200
     },
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=118174182\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=115718016",
-    "uptime_s": 42104.34,
-    "gpu_reinit_this_boot": "881",
+    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=60754\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=60164",
+    "uptime_s": 1365.13,
+    "gpu_reinit_this_boot": "41",
     "shares_host_ram_with": [
      "GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519"
     ]
    },
    "admission": {
-    "host_free_for_new_bytes": 1503899648,
-    "held_unrealised_bytes": 1815752704,
+    "host_free_for_new_bytes": 4096102400,
+    "held_unrealised_bytes": 2333941760,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 7333494784,
-    "slice_charged_bytes": 6383374336,
+    "slice_memory_current": 5243486208,
+    "slice_charged_bytes": 5200977920,
     "slice_memory_max": 8589934592,
     "pressure_some_avg10": 0.0,
     "pressure_full_avg10": 0.0,
     "pressure_admit_max": 25.0
    },
    "next_task": "D2 (M04 a083979bc9a8fa1b8): v2 campaign on the 5090",
-   "gpu_idle_seconds_24h": 3068,
+   "gpu_idle_seconds_24h": 84977,
    "gpu_idle_current_seconds": 0,
-   "sampler_temperature_c": 53.0,
+   "sampler_temperature_c": 50.0,
    "sampler_temperature_max_since_start_c": 54.0,
-   "sampler_vram_used_mib": 1064.0,
+   "sampler_vram_used_mib": 680.0,
    "sampler_vram_total_mib": 32607.0,
-   "sampler_power_w": 103.63,
-   "sampler_sample_at": "2026-10-01T10:35:28Z",
+   "sampler_power_w": 104.7,
+   "sampler_sample_at": "2026-10-03T04:14:02Z",
    "gpu_idle_note": "m06-gpu-sampler: 15 s sampling; idle = 0 % utilization or no compute process; alarm at 120 s"
   },
   {
    "host_alias": "worker_b",
    "device": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
    "name": "NVIDIA GeForce RTX 4090 Laptop GPU",
-   "state": "running",
-   "job_id": "f2-train-19799131",
-   "reason": "compute process in a crispdm job scope",
-   "observed_at": "2026-10-01T10:35:43Z",
-   "temperature_c": 56.0,
-   "utilization_percent": 22.0,
-   "host_available_bytes": 12978991104,
+   "state": "idle",
+   "job_id": null,
+   "reason": "no compute process and no GPU job lease on this device",
+   "observed_at": "2026-10-03T04:14:06Z",
+   "temperature_c": 35.0,
+   "utilization_percent": 0.0,
+   "host_available_bytes": 14491389952,
    "gpu": {
-    "sm_clock_mhz": 1455.0,
+    "sm_clock_mhz": 210.0,
     "sm_clock_max_mhz": 3105.0,
-    "vram_used_mib": 787.0,
+    "vram_used_mib": 14.0,
     "vram_total_mib": 16376.0,
-    "power_w": 30.52,
+    "power_w": 1.83,
     "throttle_reasons": [
      "gpu_idle"
     ],
-    "compute_processes": [
-     {
-      "uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
-      "pid": 1737410,
-      "used_mib": "428",
-      "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-g-rl-RL-D1_seed101-1790847355-1737368.scope",
-      "exe": "python"
-     },
-     {
-      "uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
-      "pid": 1860198,
-      "used_mib": "332",
-      "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-train-19799131-1790850925-1860175.scope",
-      "exe": "python"
-     }
-    ]
+    "compute_processes": []
    },
    "host": {
     "mem": {
      "MemTotal": 32831807488,
-     "MemAvailable": 12978991104,
-     "SUnreclaim": 3340152832,
-     "SReclaimable": 1290338304,
-     "Shmem": 1212194816,
+     "MemAvailable": 14491389952,
+     "SUnreclaim": 6623363072,
+     "SReclaimable": 569827328,
+     "Shmem": 382365696,
      "SwapTotal": 8589930496,
-     "SwapFree": 5526519808
+     "SwapFree": 4614385664
     },
-    "psi_memory": "some avg10=0.00 avg60=0.00 avg300=1.67 total=154662300\nfull avg10=0.00 avg60=0.00 avg300=1.40 total=141691269",
-    "uptime_s": 216103.37,
+    "psi_memory": "some avg10=0.30 avg60=1.62 avg300=2.96 total=315071273\nfull avg10=0.30 avg60=1.44 avg300=2.57 total=267151379",
+    "uptime_s": 366006.84,
     "gpu_reinit_this_boot": "0",
     "shares_host_ram_with": []
    },
    "admission": {
-    "host_free_for_new_bytes": 2743435264,
-    "held_unrealised_bytes": 6989455360,
+    "host_free_for_new_bytes": 7161790464,
+    "held_unrealised_bytes": 4095188992,
     "desktop_reserve_bytes": 3221225472,
-    "slice_memory_current": 8952483840,
-    "slice_charged_bytes": 6394454016,
+    "slice_memory_current": 286441472,
+    "slice_charged_bytes": 277635072,
     "slice_memory_max": 15032385536,
-    "pressure_some_avg10": 0.0,
-    "pressure_full_avg10": 0.0,
+    "pressure_some_avg10": 0.49,
+    "pressure_full_avg10": 0.49,
     "pressure_admit_max": 25.0
    },
    "next_task": "G2 RL cells FIRST (one at a time) beside F2 (M07); D2 only until an RL or M07 GPU job is admitted",
-   "gpu_idle_seconds_24h": 1665,
-   "gpu_idle_current_seconds": 0,
-   "sampler_temperature_c": 56.0,
-   "sampler_temperature_max_since_start_c": 63.0,
-   "sampler_vram_used_mib": 719.0,
+   "gpu_idle_seconds_24h": 64502,
+   "gpu_idle_current_seconds": 150,
+   "sampler_temperature_c": 35.0,
+   "sampler_temperature_max_since_start_c": 69.0,
+   "sampler_vram_used_mib": 14.0,
    "sampler_vram_total_mib": 16376.0,
-   "sampler_power_w": 30.41,
-   "sampler_sample_at": "2026-10-01T10:35:28Z",
+   "sampler_power_w": 2.21,
+   "sampler_sample_at": "2026-10-03T04:14:02Z",
    "gpu_idle_note": "m06-gpu-sampler: 15 s sampling; idle = 0 % utilization or no compute process; alarm at 120 s"
   }
  ],
  "jobs": [
-  {
-   "id": "d2-runner-worker-a",
-   "lane": "D2",
-   "state": "running",
-   "phase": "running_stage_unknown",
-   "stage": "no heartbeat stage",
-   "producer_commit": "unknown",
-   "host_alias": "coordinator",
-   "lease_id": "d2-runner-worker-a-1790850530-1475265-80404a",
-   "launcher_pid": 1475245,
-   "launcher_alive": true,
-   "child_heads": [
-    [
-     "timeout",
-     "--kill-after=30s",
-     "24h",
-     "python3"
-    ],
-    [
-     "python3",
-     "-u",
-     "tools/modular_doin_campaign.py",
-     "run-remote"
-    ],
-    [
-     "ssh",
-     "-o",
-     "BatchMode=yes",
-     "-o"
-    ]
-   ],
-   "cap_bytes": 536870912,
-   "cgroup_current_bytes": 20508672,
-   "cgroup_peak_bytes": 22511616,
-   "cap_vs_observed_peak": 23.85,
-   "uses_gpu": false,
-   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-d2-runner-worker-a-1790850530-1475245.scope",
-   "heartbeat_at": null,
-   "heartbeat_path": null,
-   "heartbeat_stale": false,
-   "heartbeat_status": "NONE",
-   "heartbeat_age_s": null,
-   "last_advance": {},
-   "progress": {
-    "unit": "unknown",
-    "completed": null,
-    "total": null
-   },
-   "eta": {
-    "earliest": null,
-    "latest": null,
-    "basis": "not_estimable",
-    "assumptions": [
-     "missing measurement: the job's total work units are not declared to M06"
-    ]
-   },
-   "override": null
-  },
   {
    "id": "m06-event-watch",
    "lane": "M06",
@@ -509,8 +794,8 @@
    "stage": "no heartbeat stage",
    "producer_commit": "unknown",
    "host_alias": "coordinator",
-   "lease_id": "m06-event-watch-1790847521-1398635-6ef2e5",
-   "launcher_pid": 1398582,
+   "lease_id": "m06-event-watch-1790933984-3285926-6f5863",
+   "launcher_pid": 3285918,
    "launcher_alive": true,
    "child_heads": [
     [
@@ -527,11 +812,11 @@
     ]
    ],
    "cap_bytes": 134217728,
-   "cgroup_current_bytes": 7540736,
-   "cgroup_peak_bytes": 8036352,
-   "cap_vs_observed_peak": 16.7,
+   "cgroup_current_bytes": 7483392,
+   "cgroup_peak_bytes": 8081408,
+   "cap_vs_observed_peak": 16.61,
    "uses_gpu": false,
-   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m06-event-watch-1790847521-1398582.scope",
+   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m06-event-watch-1790933984-3285918.scope",
    "heartbeat_at": null,
    "heartbeat_path": null,
    "heartbeat_stale": false,
@@ -567,13 +852,10 @@
    "child_heads": [
     [
      "cm-harveybc@<ip> [mux]"
-    ],
-    [
-     "cm-harveybc@<ip> [mux]"
     ]
    ],
    "cap_bytes": 134217728,
-   "cgroup_current_bytes": 3633152,
+   "cgroup_current_bytes": 2625536,
    "cgroup_peak_bytes": 16801792,
    "cap_vs_observed_peak": 7.99,
    "uses_gpu": false,
@@ -607,8 +889,8 @@
    "stage": "no heartbeat stage",
    "producer_commit": "unknown",
    "host_alias": "coordinator",
-   "lease_id": "m06-gpu-sampler-1790850103-1465398-f6b141",
-   "launcher_pid": 1465390,
+   "lease_id": "m06-gpu-sampler-1790936536-3325213-0de286",
+   "launcher_pid": 3325205,
    "launcher_alive": true,
    "child_heads": [
     [
@@ -621,14 +903,17 @@
      "python3",
      "-u",
      "/home/harveybc/.local/state/m06/gpu_sampler.py"
+    ],
+    [
+     "cm-harveybc@<ip> [mux]"
     ]
    ],
    "cap_bytes": 134217728,
-   "cgroup_current_bytes": 8249344,
-   "cgroup_peak_bytes": 11214848,
-   "cap_vs_observed_peak": 11.97,
+   "cgroup_current_bytes": 16859136,
+   "cgroup_peak_bytes": 20086784,
+   "cap_vs_observed_peak": 6.68,
    "uses_gpu": false,
-   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m06-gpu-sampler-1790850103-1465390.scope",
+   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m06-gpu-sampler-1790936536-3325205.scope",
    "heartbeat_at": null,
    "heartbeat_path": null,
    "heartbeat_stale": false,
@@ -658,8 +943,8 @@
    "stage": "no heartbeat stage",
    "producer_commit": "unknown",
    "host_alias": "coordinator",
-   "lease_id": "m06-status-writer-1790850562-1476335-17d904",
-   "launcher_pid": 1476327,
+   "lease_id": "m06-status-writer-1791000597-195650-1687e3",
+   "launcher_pid": 195641,
    "launcher_alive": true,
    "child_heads": [
     [
@@ -680,11 +965,11 @@
     ]
    ],
    "cap_bytes": 536870912,
-   "cgroup_current_bytes": 26075136,
-   "cgroup_peak_bytes": 43298816,
-   "cap_vs_observed_peak": 12.4,
+   "cgroup_current_bytes": 29769728,
+   "cgroup_peak_bytes": 46465024,
+   "cap_vs_observed_peak": 11.55,
    "uses_gpu": false,
-   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m06-status-writer-1790850562-1476327.scope",
+   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m06-status-writer-1791000597-195641.scope",
    "heartbeat_at": null,
    "heartbeat_path": null,
    "heartbeat_stale": false,
@@ -707,15 +992,15 @@
    "override": null
   },
   {
-   "id": "m04-train-f1595134",
+   "id": "m04-train-df9d8a1c",
    "lane": "D2",
    "state": "running",
    "phase": "fitting",
    "stage": "fit fit",
    "producer_commit": "3ecdb256 (re-pin)",
    "host_alias": "worker_a",
-   "lease_id": "m04-train-f1595134-1790850530-519597-f05947",
-   "launcher_pid": 519589,
+   "lease_id": "m04-train-df9d8a1c-1791000804-25382-7e603d",
+   "launcher_pid": 25368,
    "launcher_alive": true,
    "child_heads": [
     [
@@ -743,45 +1028,45 @@
      "/home/harveybc/Documents/GitHub/.worktrees/doin-node-m04-20260930/src/doin_node/predictor_worker.py"
     ]
    ],
-   "cap_bytes": 8109686784,
-   "cgroup_current_bytes": 6293934080,
-   "cgroup_peak_bytes": 6401204224,
-   "cap_vs_observed_peak": 1.27,
-   "uses_gpu": true,
-   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m04-train-f1595134-1790850530-519589.scope",
-   "heartbeat_at": "2026-10-01T10:35:27Z",
-   "heartbeat_path": "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_corrected_r0_v2/attempts/f15951344af39361/train-1/bridge/b7967a827c5e16c7357a314d387aaf8b9f2d794a9dffe26aab65e5e35a54bd45/heartbeat.jsonl",
+   "cap_bytes": 7250903040,
+   "cgroup_current_bytes": 5088731136,
+   "cgroup_peak_bytes": 5102817280,
+   "cap_vs_observed_peak": 1.42,
+   "uses_gpu": false,
+   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m04-train-df9d8a1c-1791000804-25368.scope",
+   "heartbeat_at": "2026-10-03T04:14:00Z",
+   "heartbeat_path": "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_neat_gen1_20261003_neat/attempts/df9d8a1cc5de1e2c/train-1/bridge/27bf89c678512ea606cc5a59eed74065bf0769b4551f704434bd7fbacdbe5ab6/heartbeat.jsonl",
    "heartbeat_stale": false,
    "heartbeat_status": "OK",
-   "heartbeat_age_s": 14,
+   "heartbeat_age_s": 3,
    "last_advance": {
     "stage": "fit",
     "progress": {
      "batches_per_epoch": 287,
-     "best_epoch": 10,
-     "best_validation_loss": 0.36257986009874854,
-     "elapsed_seconds": 339.4338626040044,
-     "epoch": 11,
-     "max_epochs": 27,
+     "best_epoch": 4,
+     "best_validation_loss": 0.15713449026968068,
+     "elapsed_seconds": 25.517574334999836,
+     "epoch": 5,
+     "max_epochs": 30,
      "max_seconds": 5400.0,
      "max_updates": 1000000,
      "stage": "fit",
      "stale_monitors": 0,
-     "updates": 3116,
-     "validation_loss": 0.36257986009874854
+     "updates": 1390,
+     "validation_loss": 0.15713449026968068
     },
     "resources": {
      "cgroup": {
-      "cgroup": "/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m04-train-f1595134-1790850530-519589.scope",
-      "current_bytes": 6294196224,
-      "max": 8109686784,
-      "peak_bytes": 6401204224
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m04-train-df9d8a1c-1791000804-25368.scope",
+      "current_bytes": 5088956416,
+      "max": 7250903040,
+      "peak_bytes": 5102817280
      },
      "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
      "process": {
-      "VmHWM": 5767315456,
-      "VmRSS": 5666193408,
-      "cpu_seconds": 394.63
+      "VmHWM": 3481530368,
+      "VmRSS": 3475095552,
+      "cpu_seconds": 30.98
      }
     }
    },
@@ -801,132 +1086,21 @@
    "override": null
   },
   {
-   "id": "f2-light-sres-mat",
-   "lane": "F2",
-   "state": "queued",
-   "phase": "queued",
-   "stage": "waiting for admission",
-   "producer_commit": "unknown",
-   "host_alias": "worker_a",
-   "launcher_pid": 520685,
-   "declared_mem": "1G",
-   "declared_wall": "10m",
-   "queue_wait_s": "3600",
-   "gpu_request": false,
-   "waiting_s": 372,
-   "command_head": [
-    "env",
-    "PYTHONPATH=/home/harveybc/Documents/GitHub/.worktrees/predictor-f2-eth-sres-024ce260",
-    "/home/harveybc/anaconda3/envs/tensorflow/bin/python",
-    "-u",
-    "tools/eth_forecast_campaign.py",
-    "materialize"
-   ],
-   "heartbeat_at": null,
-   "progress": {
-    "unit": "unknown",
-    "completed": null,
-    "total": null
-   },
-   "eta": {
-    "earliest": null,
-    "latest": null,
-    "basis": "not_estimable",
-    "assumptions": [
-     "admission order depends on live leases releasing"
-    ]
-   }
-  },
-  {
-   "id": "f2-light-sres-mat2",
-   "lane": "F2",
-   "state": "queued",
-   "phase": "queued",
-   "stage": "waiting for admission",
-   "producer_commit": "unknown",
-   "host_alias": "worker_a",
-   "launcher_pid": 522252,
-   "declared_mem": "384M",
-   "declared_wall": "5m",
-   "queue_wait_s": "600",
-   "gpu_request": false,
-   "waiting_s": 308,
-   "command_head": [
-    "env",
-    "PYTHONPATH=/home/harveybc/Documents/GitHub/.worktrees/predictor-f2-eth-sres-024ce260",
-    "/home/harveybc/anaconda3/envs/tensorflow/bin/python",
-    "-u",
-    "tools/eth_forecast_campaign.py",
-    "materialize"
-   ],
-   "heartbeat_at": null,
-   "progress": {
-    "unit": "unknown",
-    "completed": null,
-    "total": null
-   },
-   "eta": {
-    "earliest": null,
-    "latest": null,
-    "basis": "not_estimable",
-    "assumptions": [
-     "admission order depends on live leases releasing"
-    ]
-   }
-  },
-  {
-   "id": "f2-gpu-pilot-sres-per_feature",
-   "lane": "F2",
-   "state": "queued",
-   "phase": "queued",
-   "stage": "waiting for admission",
-   "producer_commit": "unknown",
-   "host_alias": "worker_a",
-   "launcher_pid": 526043,
-   "declared_mem": "3000M",
-   "declared_wall": "45m",
-   "queue_wait_s": "7200",
-   "gpu_request": true,
-   "waiting_s": 118,
-   "command_head": [
-    "env",
-    "CUDA_VISIBLE_DEVICES=GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
-    "LD_LIBRARY_PATH=/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cublas/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cuda_cupti/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cuda_nvrtc/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cuda_runtime/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cudnn/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cufft/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/curand/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cusolver/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cusparse/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/cusparselt/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/nccl/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/nvjitlink/lib:/home/harveybc/anaconda3/envs/tensorflow/lib/python3.12/site-packages/nvidia/nvshmem/lib:",
-    "M04_HOST_ROLE=worker_a",
-    "F2_HOST_ROLE=worker_a",
-    "TF_CPP_MIN_LOG_LEVEL=1"
-   ],
-   "heartbeat_at": null,
-   "progress": {
-    "unit": "unknown",
-    "completed": null,
-    "total": null
-   },
-   "eta": {
-    "earliest": null,
-    "latest": null,
-    "basis": "not_estimable",
-    "assumptions": [
-     "admission order depends on live leases releasing"
-    ]
-   }
-  },
-  {
-   "id": "f2-donor-pretrain-resume",
-   "lane": "F2",
+   "id": "neat-gen1-orch-neat-g-v2",
+   "lane": "D2",
    "state": "running",
    "phase": "fitting",
-   "stage": "branch_ae:branch_41 restored",
-   "producer_commit": "unknown",
-   "host_alias": "worker_b",
-   "lease_id": "f2-donor-pretrain-resume-1790850245-1790821-8fbb3e",
-   "launcher_pid": 1790810,
+   "stage": "fit fit",
+   "producer_commit": "NEAT generation service (crispdm-neat-gen1-<host>.service)",
+   "host_alias": "worker_a",
+   "lease_id": "neat-gen1-orch-neat-g-v2-1790999803-10369-09251b",
+   "launcher_pid": 10360,
    "launcher_alive": true,
    "child_heads": [
     [
      "timeout",
      "--kill-after=30s",
-     "3h",
+     "6h",
      "python3"
     ],
     [
@@ -938,147 +1112,67 @@
     [
      "python",
      "-u",
-     "tools/modular_pretrain.py",
-     "--resume"
-    ],
-    [
-     "python",
-     "-c",
-     "from multiprocessing.resource_tracker import main;main(8)"
-    ],
-    [
-     "python",
-     "-c",
-     "from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=9, pipe_handle=11)",
-     "--multiprocessing-fork"
-    ]
-   ],
-   "cap_bytes": 3607101440,
-   "cgroup_current_bytes": 827789312,
-   "cgroup_peak_bytes": 997408768,
-   "cap_vs_observed_peak": 3.62,
-   "uses_gpu": false,
-   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-donor-pretrain-resume-1790849795-1790810.scope",
-   "heartbeat_at": "2026-10-01T10:35:39Z",
-   "heartbeat_path": "~/.local/state/scratch/m07/donors/eth_per_feature_v1/heartbeat.jsonl",
-   "heartbeat_stale": false,
-   "heartbeat_status": "OK",
-   "heartbeat_age_s": 2,
-   "last_advance": {
-    "stage": "branch_ae:branch_41",
-    "fit": {
-     "best_epoch": 4,
-     "best_validation_loss": 0.005002020079615915,
-     "elapsed_seconds": 7.510382253996795,
-     "epoch": 4,
-     "event": "restored",
-     "max_epochs": 30,
-     "max_seconds": 900.0,
-     "max_updates": 20000,
-     "updates": 1344
-    },
-    "resume_point": {
-     "completed_branches": 41,
-     "last_completed": "branch_40",
-     "resumed_total": 4
-    },
-    "resources": {
-     "cgroup_memory_current": 980570112,
-     "cgroup_memory_max": 3607101440,
-     "cgroup_memory_peak": 997408768,
-     "cpu_seconds": 6.6,
-     "pid": 1814381,
-     "vmhwm_kib": 852408,
-     "vmrss_kib": 852408
-    }
-   },
-   "progress": {
-    "unit": "unknown",
-    "completed": 41,
-    "total": null
-   },
-   "eta": {
-    "earliest": null,
-    "latest": null,
-    "basis": "not_estimable",
-    "assumptions": [
-     "missing measurement: the job's total work units are not declared to M06"
-    ]
-   },
-   "override": null
-  },
-  {
-   "id": "f2-loop-worker-b",
-   "lane": "F2",
-   "state": "running",
-   "phase": "building",
-   "stage": "build build",
-   "producer_commit": "unknown",
-   "host_alias": "worker_b",
-   "lease_id": "f2-loop-worker-b-1790848106-1754066-353e7d",
-   "launcher_pid": 1754057,
-   "launcher_alive": true,
-   "child_heads": [
-    [
-     "timeout",
-     "--kill-after=30s",
-     "24h",
-     "python3"
-    ],
-    [
-     "python3",
-     "/home/harveybc/.local/bin/../libexec/crispdm/crispdm_admission.py",
-     "scope-exec",
-     "--lease"
-    ],
-    [
-     "python",
-     "-u",
-     "tools/eth_forecast_campaign.py",
-     "run"
+     "tools/modular_neat_matched_arms.py",
+     "neat"
     ],
     [
      "bash",
      "/home/harveybc/.local/bin/crispdm-run",
      "-m",
-     "2513M"
+     "4620M"
+    ],
+    [
+     "bash",
+     "/home/harveybc/.local/bin/crispdm-run",
+     "-m",
+     "6915M"
     ],
     [
      "python3",
      "/home/harveybc/.local/bin/../libexec/crispdm/crispdm_admission.py",
-     "monitor",
-     "f2-train-19799131-1790850925-1860184-d1f093"
+     "acquire",
+     "-n"
     ]
    ],
-   "cap_bytes": 536870912,
-   "cgroup_current_bytes": 50118656,
-   "cgroup_peak_bytes": 56209408,
-   "cap_vs_observed_peak": 9.55,
+   "cap_bytes": 268435456,
+   "cgroup_current_bytes": 96665600,
+   "cgroup_peak_bytes": 101388288,
+   "cap_vs_observed_peak": 2.65,
    "uses_gpu": false,
-   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-loop-worker-b-1790848106-1754057.scope",
-   "heartbeat_at": "2026-10-01T10:35:30Z",
-   "heartbeat_path": "~/.local/state/scratch/m07/campaign_r0_v1/attempts/197991317ea65102/train-1/cell/heartbeat.jsonl",
+   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-neat-gen1-orch-neat-g-v2-1790999803-10360.scope",
+   "heartbeat_at": "2026-10-03T04:14:00Z",
+   "heartbeat_path": "~/.local/state/crispdm-data-foundation/m04_doin_20260930/campaign_neat_gen1_20261003_neat/attempts/df9d8a1cc5de1e2c/train-1/bridge/27bf89c678512ea606cc5a59eed74065bf0769b4551f704434bd7fbacdbe5ab6/heartbeat.jsonl",
    "heartbeat_stale": false,
    "heartbeat_status": "OK",
-   "heartbeat_age_s": 10,
+   "heartbeat_age_s": 3,
    "last_advance": {
-    "stage": "build",
+    "stage": "fit",
     "progress": {
-     "gpu": "/job:localhost/replica:0/task:0/device:GPU:0",
-     "stage": "build"
+     "batches_per_epoch": 287,
+     "best_epoch": 4,
+     "best_validation_loss": 0.15713449026968068,
+     "elapsed_seconds": 25.517574334999836,
+     "epoch": 5,
+     "max_epochs": 30,
+     "max_seconds": 5400.0,
+     "max_updates": 1000000,
+     "stage": "fit",
+     "stale_monitors": 0,
+     "updates": 1390,
+     "validation_loss": 0.15713449026968068
     },
     "resources": {
      "cgroup": {
-      "cgroup": "/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-train-19799131-1790850925-1860175.scope",
-      "current_bytes": 554545152,
-      "max": 2635071488,
-      "peak_bytes": 554545152
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m04-train-df9d8a1c-1791000804-25368.scope",
+      "current_bytes": 5088956416,
+      "max": 7250903040,
+      "peak_bytes": 5102817280
      },
-     "cuda_visible_devices": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+     "cuda_visible_devices": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
      "process": {
-      "VmHWM": 1094909952,
-      "VmRSS": 1094909952,
-      "cpu_seconds": 4.78
+      "VmHWM": 3481530368,
+      "VmRSS": 3475095552,
+      "cpu_seconds": 30.98
      }
     }
    },
@@ -1098,68 +1192,28 @@
    "override": null
   },
   {
-   "id": "f2-train-19799131",
-   "lane": "F2",
-   "state": "running",
-   "phase": "building",
-   "stage": "build build",
+   "id": "m04-verify-e95be8c2",
+   "lane": "D2",
+   "state": "queued",
+   "phase": "queued",
+   "stage": "waiting for admission",
    "producer_commit": "unknown",
-   "host_alias": "worker_b",
-   "lease_id": "f2-train-19799131-1790850925-1860184-d1f093",
-   "launcher_pid": 1860175,
-   "launcher_alive": true,
-   "child_heads": [
-    [
-     "timeout",
-     "--kill-after=30s",
-     "2h",
-     "python3"
-    ],
-    [
-     "python3",
-     "/home/harveybc/.local/bin/../libexec/crispdm/crispdm_admission.py",
-     "scope-exec",
-     "--lease"
-    ],
-    [
-     "python",
-     "-u",
-     "tools/eth_cell_runner.py",
-     "--candidate"
-    ]
+   "host_alias": "worker_a",
+   "launcher_pid": 25367,
+   "declared_mem": "4620M",
+   "declared_wall": "20m",
+   "queue_wait_s": "7200",
+   "gpu_request": true,
+   "waiting_s": 41,
+   "command_head": [
+    "env",
+    "CUDA_VISIBLE_DEVICES=GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
+    "M04_HOST_ROLE=worker_a",
+    "PYTHONUNBUFFERED=1",
+    "PYTHONPATH=/home/harveybc/Documents/GitHub/.worktrees/doin-node-m04-20260930/src:/home/harveybc/Documents/GitHub/.worktrees/doin-core-m04-20260930/src",
+    "CUDA_CACHE_MAXSIZE=2147483648"
    ],
-   "cap_bytes": 2635071488,
-   "cgroup_current_bytes": 1105739776,
-   "cgroup_peak_bytes": 1105739776,
-   "cap_vs_observed_peak": 2.38,
-   "uses_gpu": true,
-   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-train-19799131-1790850925-1860175.scope",
-   "heartbeat_at": "2026-10-01T10:35:30Z",
-   "heartbeat_path": "~/.local/state/scratch/m07/campaign_r0_v1/attempts/197991317ea65102/train-1/cell/heartbeat.jsonl",
-   "heartbeat_stale": false,
-   "heartbeat_status": "OK",
-   "heartbeat_age_s": 10,
-   "last_advance": {
-    "stage": "build",
-    "progress": {
-     "gpu": "/job:localhost/replica:0/task:0/device:GPU:0",
-     "stage": "build"
-    },
-    "resources": {
-     "cgroup": {
-      "cgroup": "/user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-f2-train-19799131-1790850925-1860175.scope",
-      "current_bytes": 554545152,
-      "max": 2635071488,
-      "peak_bytes": 554545152
-     },
-     "cuda_visible_devices": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
-     "process": {
-      "VmHWM": 1094909952,
-      "VmRSS": 1094909952,
-      "cpu_seconds": 4.78
-     }
-    }
-   },
+   "heartbeat_at": null,
    "progress": {
     "unit": "unknown",
     "completed": null,
@@ -1170,27 +1224,26 @@
     "latest": null,
     "basis": "not_estimable",
     "assumptions": [
-     "missing measurement: the job's total work units are not declared to M06"
+     "admission order depends on live leases releasing"
     ]
-   },
-   "override": null
+   }
   },
   {
-   "id": "g-rl-RL-D1_seed101",
-   "lane": "G2",
+   "id": "c2-run1",
+   "lane": "C2",
    "state": "running",
    "phase": "running_stage_unknown",
    "stage": "no heartbeat stage",
    "producer_commit": "unknown",
    "host_alias": "worker_b",
-   "lease_id": "g-rl-RL-D1_seed101-1790847355-1737398-5e6a15",
-   "launcher_pid": 1737368,
+   "lease_id": "c2-run1-1791000710-2885961-5eb9c9",
+   "launcher_pid": 2885952,
    "launcher_alive": true,
    "child_heads": [
     [
      "timeout",
      "--kill-after=30s",
-     "5h",
+     "30m",
      "python3"
     ],
     [
@@ -1200,87 +1253,24 @@
      "--lease"
     ],
     [
+     "time",
+     "-v",
+     "/home/harveybc/.local/state/envs/predictor-keras315/bin/python",
+     "run_c2_ladder.py"
+    ],
+    [
      "python",
-     "tools/run_rl_temporal_cell.py",
-     "--cell",
-     "examples/config/rl_temporal/eth_4h_frozen/RL-D1_seed101.json"
+     "run_c2_ladder.py",
+     "--ci",
+     "ci"
     ]
    ],
-   "cap_bytes": 3221225472,
-   "cgroup_current_bytes": 2340171776,
-   "cgroup_peak_bytes": 2341068800,
-   "cap_vs_observed_peak": 1.38,
-   "uses_gpu": true,
-   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-g-rl-RL-D1_seed101-1790847355-1737368.scope",
-   "heartbeat_at": "2026-10-01T10:34:53Z",
-   "heartbeat_path": "~/.local/state/scratch/g-rl/runs/gpu_4090/RL-D1_seed101/heartbeat.json",
-   "heartbeat_stale": false,
-   "heartbeat_status": "OK",
-   "heartbeat_age_s": 48,
-   "last_advance": {},
-   "progress": {
-    "unit": "unknown",
-    "completed": null,
-    "total": null
-   },
-   "eta": {
-    "earliest": null,
-    "latest": null,
-    "basis": "not_estimable",
-    "assumptions": [
-     "missing measurement: the job's total work units are not declared to M06"
-    ]
-   },
-   "override": null
-  },
-  {
-   "id": "m01-ps5-run",
-   "lane": "A2",
-   "state": "running",
-   "phase": "running_stage_unknown",
-   "stage": "no heartbeat stage",
-   "producer_commit": "unknown",
-   "host_alias": "worker_b",
-   "lease_id": "m01-ps5-run-1790850480-1814169-f98439",
-   "launcher_pid": 1814161,
-   "launcher_alive": true,
-   "child_heads": [
-    [
-     "timeout",
-     "--kill-after=30s",
-     "600m",
-     "python3"
-    ],
-    [
-     "python3",
-     "/home/harveybc/.local/bin/../libexec/crispdm/crispdm_admission.py",
-     "scope-exec",
-     "--lease"
-    ],
-    [
-     "python",
-     "tools/ps5_joint_reentry.py",
-     "--data",
-     "examples/data/project3/ethusdt_4h_tech_stat_full_model_ready.csv"
-    ],
-    [
-     "python",
-     "-c",
-     "from multiprocessing.resource_tracker import main;main(5)"
-    ],
-    [
-     "python",
-     "-c",
-     "from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=6, pipe_handle=8)",
-     "--multiprocessing-fork"
-    ]
-   ],
-   "cap_bytes": 2348810240,
-   "cgroup_current_bytes": 1056411648,
-   "cgroup_peak_bytes": 1598611456,
-   "cap_vs_observed_peak": 1.47,
+   "cap_bytes": 4294967296,
+   "cgroup_current_bytes": 199778304,
+   "cgroup_peak_bytes": 3181301760,
+   "cap_vs_observed_peak": 1.35,
    "uses_gpu": false,
-   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-m01-ps5-run-1790850240-1814161.scope",
+   "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-c2-run1-1791000710-2885952.scope",
    "heartbeat_at": null,
    "heartbeat_path": null,
    "heartbeat_stale": false,
@@ -1301,43 +1291,6 @@
     ]
    },
    "override": null
-  },
-  {
-   "id": "m05-rf-mut",
-   "lane": "E2",
-   "state": "queued",
-   "phase": "queued",
-   "stage": "waiting for admission",
-   "producer_commit": "unknown",
-   "host_alias": "worker_b",
-   "launcher_pid": 1859409,
-   "declared_mem": "2G",
-   "declared_wall": "3m",
-   "queue_wait_s": "3600",
-   "gpu_request": false,
-   "waiting_s": 36,
-   "command_head": [
-    "env",
-    "CUDA_VISIBLE_DEVICES=",
-    "PYTHONDONTWRITEBYTECODE=1",
-    "/home/harveybc/.local/state/scratch/m05/venv-ts-jose/bin/python",
-    "-m",
-    "pytest"
-   ],
-   "heartbeat_at": null,
-   "progress": {
-    "unit": "unknown",
-    "completed": null,
-    "total": null
-   },
-   "eta": {
-    "earliest": null,
-    "latest": null,
-    "basis": "not_estimable",
-    "assumptions": [
-     "admission order depends on live leases releasing"
-    ]
-   }
   },
   {
    "id": "m02-ecl-donors-r0-resume1",
@@ -1560,36 +1513,34 @@
     "runner": "d2-runner-worker-a"
    },
    "status_counts": {
-    "blocked": 21,
-    "running": 1,
-    "verified": 18
+    "blocked": 19,
+    "failed": 1,
+    "verified": 24
    },
    "excluded": {},
    "dependency_held": {
-    "blocked": 21
+    "blocked": 19
    },
-   "cells_done": 18,
-   "cells_planned": 40,
+   "cells_done": 25,
+   "cells_planned": 44,
    "eta": {
     "earliest": null,
     "latest": null,
     "basis": "not_estimable",
     "assumptions": [
-     "missing measurement: no completed train+verify attempt yet for family ['branch_core_R3_warm_f3'] (1 cells)",
-     "no family measured",
-     "earliest = the measured part only; no latest until every pending family is measured",
-     "21 cells held ({'blocked': 21}): not estimable until their pilot/donors exist"
+     "no runnable cells remain",
+     "19 cells held ({'blocked': 19}): not estimable until their pilot/donors exist"
     ]
    },
    "attempts": {
-    "total": 39,
-    "completed": 36,
-    "max_cgroup_peak_bytes": 6488580096
+    "total": 57,
+    "completed": 49,
+    "max_cgroup_peak_bytes": 7029014528
    },
    "incumbent": {
-    "config_id": "2c1c7afa",
-    "mean_objective": 0.21672828385640913,
-    "at": "2026-10-01T08:50:57Z"
+    "config_id": "ac27a399",
+    "mean_objective": 0.21321298034900898,
+    "at": "2026-10-01T12:49:16Z"
    }
   },
   {
@@ -1894,7 +1845,7 @@
       "branches": 11,
       "targets": 321,
       "statuses": [
-       "blocked",
+       "verified",
        "blocked"
       ]
      },
@@ -1903,7 +1854,7 @@
       "branches": 11,
       "targets": 321,
       "statuses": [
-       "blocked",
+       "verified",
        "blocked"
       ]
      },
@@ -1988,8 +1939,19 @@
       "branches": 321,
       "targets": 321,
       "statuses": [
-       "running",
+       "failed",
        "blocked"
+      ]
+     },
+     "seasonal_residual_grouped32_R0_mae": {
+      "input_channels": 321,
+      "branches": 11,
+      "targets": 321,
+      "statuses": [
+       "verified",
+       "verified",
+       "verified",
+       "verified"
       ]
      }
     },
@@ -2171,7 +2133,7 @@
   "evaluated_candidate_count": [
    {
     "campaign": "m04 campaign_corrected_r0_v2 (D2)",
-    "verified_rows": 18
+    "verified_rows": 24
    },
    {
     "campaign": "m04 campaign_corrected_r0_v1 (CLOSED: 32 verified + 4 refused of 36)",
@@ -2201,12 +2163,12 @@
    "name": "NVIDIA GeForce RTX 4070 Laptop GPU",
    "current_job": null,
    "heartbeat": null,
-   "temperature_c": 43.0,
+   "temperature_c": 51.0,
    "temperature_source": "writer probe",
    "temperature_max_since_sampler_start_c": null,
-   "vram_used_mib": 612.0,
+   "vram_used_mib": 1099.0,
    "vram_total_mib": 8188.0,
-   "power_w": 5.2,
+   "power_w": 8.2,
    "job_cap_bytes": null,
    "job_peak_bytes": null,
    "job_progress": null,
@@ -2225,22 +2187,22 @@
    "name": "NVIDIA GeForce RTX 5070 Ti Laptop GPU",
    "current_job": null,
    "heartbeat": null,
-   "next_prepared": "f2-gpu-pilot-sres-per_feature",
+   "next_prepared": "m04-verify-e95be8c2",
    "state": "IDLE",
-   "idle_seconds": 884,
-   "temperature_c": 37.0,
+   "idle_seconds": 9810,
+   "temperature_c": 34.0,
    "temperature_source": "m06-gpu-sampler 15 s",
-   "temperature_max_since_sampler_start_c": 38.0,
+   "temperature_max_since_sampler_start_c": 64.0,
    "vram_used_mib": 14.0,
    "vram_total_mib": 12227.0,
-   "power_w": 16.17,
+   "power_w": 5.11,
    "job_cap_bytes": null,
    "job_peak_bytes": null,
    "job_progress": null,
    "job_phase": null,
    "job_stage": null,
    "job_eta": null,
-   "cause_if_idle": "queued for admission: f2-gpu-pilot-sres-per_feature needs 3000M, host free-for-new 1.50 GB"
+   "cause_if_idle": "queued for admission: m04-verify-e95be8c2 needs 4620M, host free-for-new 4.10 GB"
   },
   {
    "lane": "D2",
@@ -2248,38 +2210,24 @@
    "host_alias": "worker_a",
    "resource": "GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8",
    "name": "NVIDIA GeForce RTX 5090",
-   "current_job": "m04-train-f1595134",
-   "heartbeat": [
-    "OK",
-    14
-   ],
-   "next_prepared": "f2-gpu-pilot-sres-per_feature",
-   "state": "RUNNING",
+   "current_job": null,
+   "heartbeat": null,
+   "next_prepared": "m04-verify-e95be8c2",
+   "state": "IDLE",
    "idle_seconds": 0,
-   "temperature_c": 53.0,
+   "temperature_c": 50.0,
    "temperature_source": "m06-gpu-sampler 15 s",
    "temperature_max_since_sampler_start_c": 54.0,
-   "vram_used_mib": 1064.0,
+   "vram_used_mib": 680.0,
    "vram_total_mib": 32607.0,
-   "power_w": 103.63,
-   "job_cap_bytes": 8109686784,
-   "job_peak_bytes": 6401204224,
-   "job_progress": {
-    "unit": "unknown",
-    "completed": null,
-    "total": null
-   },
-   "job_phase": "fitting",
-   "job_stage": "fit fit",
-   "job_eta": {
-    "earliest": null,
-    "latest": null,
-    "basis": "not_estimable",
-    "assumptions": [
-     "missing measurement: the job's total work units are not declared to M06"
-    ]
-   },
-   "cause_if_idle": null
+   "power_w": 104.7,
+   "job_cap_bytes": null,
+   "job_peak_bytes": null,
+   "job_progress": null,
+   "job_phase": null,
+   "job_stage": null,
+   "job_eta": null,
+   "cause_if_idle": "queued for admission: m04-verify-e95be8c2 needs 4620M, host free-for-new 4.10 GB"
   },
   {
    "lane": "F2",
@@ -2287,98 +2235,74 @@
    "host_alias": "worker_b",
    "resource": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
    "name": "NVIDIA GeForce RTX 4090 Laptop GPU",
-   "current_job": "f2-train-19799131",
-   "heartbeat": [
-    "OK",
-    10
-   ],
+   "current_job": null,
+   "heartbeat": null,
    "next_prepared": "worker_b: f2-loop-worker-b (active); worker_a 5070 Ti: f2-loop-worker-a (active)",
-   "state": "RUNNING",
-   "idle_seconds": 0,
-   "temperature_c": 56.0,
+   "state": "IDLE",
+   "idle_seconds": 150,
+   "temperature_c": 35.0,
    "temperature_source": "m06-gpu-sampler 15 s",
-   "temperature_max_since_sampler_start_c": 63.0,
-   "vram_used_mib": 719.0,
+   "temperature_max_since_sampler_start_c": 69.0,
+   "vram_used_mib": 14.0,
    "vram_total_mib": 16376.0,
-   "power_w": 30.41,
-   "job_cap_bytes": 2635071488,
-   "job_peak_bytes": 1105739776,
-   "job_progress": {
-    "unit": "unknown",
-    "completed": null,
-    "total": null
-   },
-   "job_phase": "building",
-   "job_stage": "build build",
-   "job_eta": {
-    "earliest": null,
-    "latest": null,
-    "basis": "not_estimable",
-    "assumptions": [
-     "missing measurement: the job's total work units are not declared to M06"
-    ]
-   },
-   "cause_if_idle": null
+   "power_w": 2.21,
+   "job_cap_bytes": null,
+   "job_peak_bytes": null,
+   "job_progress": null,
+   "job_phase": null,
+   "job_stage": null,
+   "job_eta": null,
+   "cause_if_idle": "between jobs; next prepared by F2: worker_b: f2-loop-worker-b (active); worker_a 5070 Ti: f2-loop-worker-a (active)"
   },
   {
-   "lane": "D2",
+   "lane": null,
    "agent": null,
    "host_alias": "coordinator",
-   "resource": "CPU x16 (load 0.56 0.29 0.33)",
-   "current_job": [
-    "d2-runner-worker-a [D2] cap 0.54 GB / peak 0.02 GB"
-   ],
-   "heartbeat": [
-    [
-     "d2-runner-worker-a",
-     "NONE"
-    ]
-   ],
+   "resource": "CPU x16 (load 2.63 2.37 2.14)",
+   "current_job": [],
+   "heartbeat": [],
    "next_prepared": [],
    "state": "DESKTOP_RESERVED_MARGIN",
    "cause_if_idle": null
   },
   {
-   "lane": null,
+   "lane": "D2",
    "agent": null,
    "host_alias": "worker_a",
-   "resource": "CPU x32 (load 1.41 1.68 1.82)",
-   "current_job": [],
-   "heartbeat": [],
-   "next_prepared": [
-    "f2-light-sres-mat",
-    "f2-light-sres-mat2"
-   ],
-   "state": "IDLE",
-   "cause_if_idle": "no CPU job running or queued on this host"
-  },
-  {
-   "lane": "A2, F2",
-   "agent": null,
-   "host_alias": "worker_b",
-   "resource": "CPU x32 (load 8.64 9.76 9.20)",
+   "resource": "CPU x32 (load 1.23 2.04 1.40)",
    "current_job": [
-    "f2-donor-pretrain-resume [F2] cap 3.61 GB / peak 1.00 GB",
-    "f2-loop-worker-b [F2] cap 0.54 GB / peak 0.06 GB",
-    "m01-ps5-run [A2] cap 2.35 GB / peak 1.60 GB"
+    "m04-train-df9d8a1c [D2] cap 7.25 GB / peak 5.10 GB",
+    "neat-gen1-orch-neat-g-v2 [D2] cap 0.27 GB / peak 0.10 GB"
    ],
    "heartbeat": [
     [
-     "f2-donor-pretrain-resume",
+     "m04-train-df9d8a1c",
      "OK"
     ],
     [
-     "f2-loop-worker-b",
+     "neat-gen1-orch-neat-g-v2",
      "OK"
-    ],
+    ]
+   ],
+   "next_prepared": [],
+   "state": "RUNNING",
+   "cause_if_idle": null
+  },
+  {
+   "lane": "C2",
+   "agent": null,
+   "host_alias": "worker_b",
+   "resource": "CPU x32 (load 1.27 1.42 1.27)",
+   "current_job": [
+    "c2-run1 [C2] cap 4.29 GB / peak 3.18 GB"
+   ],
+   "heartbeat": [
     [
-     "m01-ps5-run",
+     "c2-run1",
      "NONE"
     ]
    ],
-   "next_prepared": [
-    "m05-rf-mut"
-   ],
+   "next_prepared": [],
    "state": "RUNNING",
    "cause_if_idle": null
   },
@@ -2387,18 +2311,11 @@
    "agent": "a5b79d5488abdee3a (M01)",
    "host_alias": null,
    "resource": "AGENT",
-   "current_job": [
-    "m01-ps5-run"
-   ],
-   "heartbeat": [
-    [
-     "m01-ps5-run",
-     "NONE"
-    ]
-   ],
+   "current_job": [],
+   "heartbeat": [],
    "next_prepared": null,
-   "state": "RUNNING",
-   "cause_if_idle": null
+   "state": "NO_JOB",
+   "cause_if_idle": "ORCHESTRATION_DEFECT: no job and no prepared successor"
   },
   {
    "lane": "B2",
@@ -2408,8 +2325,26 @@
    "current_job": [],
    "heartbeat": [],
    "next_prepared": null,
-   "state": "HOLD",
-   "cause_if_idle": "HOLD (until a campaign result changes what to select)"
+   "state": "NO_JOB",
+   "cause_if_idle": "ORCHESTRATION_DEFECT: no job and no prepared successor"
+  },
+  {
+   "lane": "C2",
+   "agent": "a5fd5cd9bcbc7f3bd",
+   "host_alias": null,
+   "resource": "AGENT",
+   "current_job": [
+    "c2-run1"
+   ],
+   "heartbeat": [
+    [
+     "c2-run1",
+     "NONE"
+    ]
+   ],
+   "next_prepared": null,
+   "state": "RUNNING",
+   "cause_if_idle": null
   },
   {
    "lane": "D2",
@@ -2417,16 +2352,16 @@
    "host_alias": null,
    "resource": "AGENT",
    "current_job": [
-    "d2-runner-worker-a",
-    "m04-train-f1595134"
+    "m04-train-df9d8a1c",
+    "neat-gen1-orch-neat-g-v2"
    ],
    "heartbeat": [
     [
-     "d2-runner-worker-a",
-     "NONE"
+     "m04-train-df9d8a1c",
+     "OK"
     ],
     [
-     "m04-train-f1595134",
+     "neat-gen1-orch-neat-g-v2",
      "OK"
     ]
    ],
@@ -2450,68 +2385,22 @@
    "agent": "afcf115024ffa1381 (M07)",
    "host_alias": null,
    "resource": "AGENT",
-   "current_job": [
-    "f2-donor-pretrain-resume",
-    "f2-loop-worker-b",
-    "f2-train-19799131"
-   ],
-   "heartbeat": [
-    [
-     "f2-donor-pretrain-resume",
-     "OK"
-    ],
-    [
-     "f2-loop-worker-b",
-     "OK"
-    ],
-    [
-     "f2-train-19799131",
-     "OK"
-    ]
-   ],
+   "current_job": [],
+   "heartbeat": [],
    "next_prepared": "worker_b: f2-loop-worker-b (active); worker_a 5070 Ti: f2-loop-worker-a (active)",
-   "state": "RUNNING",
-   "cause_if_idle": null
+   "state": "NO_JOB",
+   "cause_if_idle": "next prepared: worker_b: f2-loop-worker-b (active); worker_a 5070 Ti: f2-loop-worker-a (active)"
   },
   {
    "lane": "G2",
    "agent": "aa7913479a97b45c0 (lane G)",
    "host_alias": null,
    "resource": "AGENT",
-   "current_job": [
-    "g-rl-RL-D1_seed101"
-   ],
-   "heartbeat": [
-    [
-     "g-rl-RL-D1_seed101",
-     "OK"
-    ]
-   ],
+   "current_job": [],
+   "heartbeat": [],
    "next_prepared": "worker_b 4090: durable g2-queue-worker-b takes over after the current queue (15 cells); worker_a closed to G2 while D2 holds the 5090",
-   "state": "RUNNING",
-   "cause_if_idle": null
-  },
-  {
-   "lane": "F",
-   "agent": "M06 subagent (this)",
-   "host_alias": null,
-   "resource": "AGENT",
-   "current_job": [],
-   "heartbeat": [],
-   "next_prepared": "M06: PNG/RETURN/RESULTS deliverables and Hermes-drafted 30-minute summaries (ASSIGNED)",
    "state": "NO_JOB",
-   "cause_if_idle": "next prepared: M06: PNG/RETURN/RESULTS deliverables and Hermes-drafted 30-minute summaries (ASSIGNED)"
-  },
-  {
-   "lane": "C2",
-   "agent": "a5fd5cd9bcbc7f3bd",
-   "host_alias": null,
-   "resource": "AGENT",
-   "current_job": [],
-   "heartbeat": [],
-   "next_prepared": null,
-   "state": "NO_JOB",
-   "cause_if_idle": "ORCHESTRATION_DEFECT: no job and no prepared successor"
+   "cause_if_idle": "next prepared: worker_b 4090: durable g2-queue-worker-b takes over after the current queue (15 cells); worker_a closed to G2 while D2 holds the 5090"
   },
   {
    "lane": "H1",
@@ -2534,409 +2423,171 @@
    "next_prepared": null,
    "state": "NO_JOB",
    "cause_if_idle": "ORCHESTRATION_DEFECT: no job and no prepared successor"
+  },
+  {
+   "lane": "LIT",
+   "agent": "",
+   "host_alias": null,
+   "resource": "AGENT",
+   "current_job": [],
+   "heartbeat": [],
+   "next_prepared": null,
+   "state": "NO_JOB",
+   "cause_if_idle": "ORCHESTRATION_DEFECT: no job and no prepared successor"
+  },
+  {
+   "lane": "M06",
+   "agent": "M06 subagent (this)",
+   "host_alias": null,
+   "resource": "AGENT",
+   "current_job": [],
+   "heartbeat": [],
+   "next_prepared": "M06: PNG/RETURN/RESULTS deliverables and Hermes-drafted 30-minute summaries (ASSIGNED)",
+   "state": "NO_JOB",
+   "cause_if_idle": "next prepared: M06: PNG/RETURN/RESULTS deliverables and Hermes-drafted 30-minute summaries (ASSIGNED)"
   }
  ],
  "unparsed_processes": [
   {
-   "pid": 1462967,
+   "pid": 199097,
    "argv_len": 3,
    "argv0": "bash",
-   "elapsed_s": 938,
+   "elapsed_s": 135,
    "host_alias": "coordinator",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
   {
-   "pid": 1484014,
-   "argv_len": 3,
-   "argv0": "bash",
-   "elapsed_s": 35,
+   "pid": 199099,
+   "argv_len": 5,
+   "argv0": "timeout",
+   "elapsed_s": 135,
    "host_alias": "coordinator",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
   {
-   "pid": 1484016,
+   "pid": 199100,
    "argv_len": 3,
    "argv0": "ssh",
-   "elapsed_s": 35,
+   "elapsed_s": 135,
    "host_alias": "coordinator",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   },
   {
-   "pid": 27201,
+   "pid": 2885950,
    "argv_len": 3,
    "argv0": "bash",
-   "elapsed_s": 41014,
-   "host_alias": "worker_a",
-   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
-  },
-  {
-   "pid": 522248,
-   "argv_len": 3,
-   "argv0": "bash",
-   "elapsed_s": 308,
-   "host_alias": "worker_a",
-   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
-  },
-  {
-   "pid": 522249,
-   "argv_len": 27,
-   "argv0": "time",
-   "elapsed_s": 308,
-   "host_alias": "worker_a",
-   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
-  },
-  {
-   "pid": 1737366,
-   "argv_len": 26,
-   "argv0": "time",
-   "elapsed_s": 3588,
-   "host_alias": "worker_b",
-   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
-  },
-  {
-   "pid": 1859401,
-   "argv_len": 3,
-   "argv0": "bash",
-   "elapsed_s": 36,
-   "host_alias": "worker_b",
-   "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
-  },
-  {
-   "pid": 1859408,
-   "argv_len": 3,
-   "argv0": "bash",
-   "elapsed_s": 36,
+   "elapsed_s": 136,
    "host_alias": "worker_b",
    "classification": "UNPARSED (mentions crispdm-run; not a launcher argv)"
   }
  ],
  "terminal_incidents_24h": [
   {
-   "lease_id": "m01-venv-1790810911-635210-62e19b",
-   "name": "m01-venv",
-   "at": "2026-09-30T23:31:56Z",
+   "lease_id": "eth-ae-gpu-s0-1790988186-1974675-bd1d84",
+   "name": "eth-ae-gpu-s0",
+   "at": "2026-10-03T00:43:47Z",
    "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
    "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 3055210496,
-   "cap_bytes": 3221225472,
-   "host_alias": "coordinator",
-   "live_again": false
-  },
-  {
-   "lease_id": "m06-status-writer-1790811049-651282-98717f",
-   "name": "m06-status-writer",
-   "at": "2026-09-30T23:31:59Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 34529280,
-   "cap_bytes": 536870912,
-   "host_alias": "coordinator",
-   "live_again": true
-  },
-  {
-   "lease_id": "m06-status-writer-1790811584-666392-88a62e",
-   "name": "m06-status-writer",
-   "at": "2026-09-30T23:50:55Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 46956544,
-   "cap_bytes": 536870912,
-   "host_alias": "coordinator",
-   "live_again": true
-  },
-  {
-   "lease_id": "c07-closure-1790811971-679626-b8cbc7",
-   "name": "c07-closure",
-   "at": "2026-09-30T23:50:56Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 1044725760,
-   "cap_bytes": 1073741824,
-   "host_alias": "coordinator",
-   "live_again": false
-  },
-  {
-   "lease_id": "m06-status-writer-1790812377-688370-307f4e",
-   "name": "m06-status-writer",
-   "at": "2026-09-30T23:56:28Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 38682624,
-   "cap_bytes": 536870912,
-   "host_alias": "coordinator",
-   "live_again": true
-  },
-  {
-   "lease_id": "c07-closure-1790812283-686547-696988",
-   "name": "c07-closure",
-   "at": "2026-09-30T23:56:29Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 1050025984,
-   "cap_bytes": 1073741824,
-   "host_alias": "coordinator",
-   "live_again": false
-  },
-  {
-   "lease_id": "d-runner-worker-a-1790828259-1026359-ef2a49",
-   "name": "d-runner-worker-a",
-   "at": "2026-10-01T04:28:04Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 18178048,
-   "cap_bytes": 536870912,
-   "host_alias": "coordinator",
-   "live_again": false
-  },
-  {
-   "lease_id": "m06-status-writer-1790827230-1000312-7761d6",
-   "name": "m06-status-writer",
-   "at": "2026-10-01T04:28:05Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 45453312,
-   "cap_bytes": 536870912,
-   "host_alias": "coordinator",
-   "live_again": true
-  },
-  {
-   "lease_id": "m06-event-watch-1790828040-1021424-96de2d",
-   "name": "m06-event-watch",
-   "at": "2026-10-01T04:28:06Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 7340032,
-   "cap_bytes": 134217728,
-   "host_alias": "coordinator",
-   "live_again": true
-  },
-  {
-   "lease_id": "g-rl-rest-1790828577-1032705-16755e",
-   "name": "g-rl-rest",
-   "at": "2026-10-01T04:28:07Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 1064194048,
-   "cap_bytes": 1073741824,
-   "host_alias": "coordinator",
-   "live_again": false
-  },
-  {
-   "lease_id": "g-rl-test_rl05_checkpoint-1790828978-1042400-d0158f",
-   "name": "g-rl-test_rl05_checkpoint",
-   "at": "2026-10-01T04:30:38Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 1033658368,
-   "cap_bytes": 1073741824,
-   "host_alias": "coordinator",
-   "live_again": false
-  },
-  {
-   "lease_id": "m06-event-watch-1790828948-1041759-78c708",
-   "name": "m06-event-watch",
-   "at": "2026-10-01T04:30:38Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 7503872,
-   "cap_bytes": 134217728,
-   "host_alias": "coordinator",
-   "live_again": true
-  },
-  {
-   "lease_id": "m04-verify-202abc49-1790814086-73182-99b5ff",
-   "name": "m04-verify-202abc49",
-   "at": "2026-10-01T00:21:57Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 3030564864,
-   "cap_bytes": 3221225472,
+   "tree_peak_bytes": 2573107200,
+   "cap_bytes": 2726297600,
    "host_alias": "worker_a",
    "live_again": false
   },
   {
-   "lease_id": "m04-verify-202abc49-1790814154-73750-5ad071",
-   "name": "m04-verify-202abc49",
-   "at": "2026-10-01T00:23:05Z",
+   "lease_id": "ecl-ae-level-pilot2-1790990409-2021476-203d31",
+   "name": "ecl-ae-level-pilot2",
+   "at": "2026-10-03T01:20:39Z",
    "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
    "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 3025633280,
-   "cap_bytes": 3221225472,
+   "tree_peak_bytes": 3397877760,
+   "cap_bytes": 3565158400,
    "host_alias": "worker_a",
    "live_again": false
   },
   {
-   "lease_id": "m04-train-72a85004-1790815303-92380-8c5407",
-   "name": "m04-train-72a85004",
-   "at": "2026-10-01T00:43:43Z",
+   "lease_id": "ecl-ae-level-pilot3-1790990464-2022589-1191fc",
+   "name": "ecl-ae-level-pilot3",
+   "at": "2026-10-03T01:21:39Z",
    "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
    "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 5032960000,
-   "cap_bytes": 5379194880,
+   "tree_peak_bytes": 3358404608,
+   "cap_bytes": 3565158400,
    "host_alias": "worker_a",
    "live_again": false
   },
   {
-   "lease_id": "m04-train-4c24e903-1790815463-95654-74411d",
-   "name": "m04-train-4c24e903",
-   "at": "2026-10-01T00:46:24Z",
+   "lease_id": "c2-pilot-1791000529-2884798-819c76",
+   "name": "c2-pilot",
+   "at": "2026-10-03T04:11:14Z",
    "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
    "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 5031940096,
-   "cap_bytes": 5379194880,
-   "host_alias": "worker_a",
-   "live_again": false
-  },
-  {
-   "lease_id": "m04-train-7ab8847a-1790815621-99324-fc8edf",
-   "name": "m04-train-7ab8847a",
-   "at": "2026-10-01T00:49:07Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 5037985792,
-   "cap_bytes": 5379194880,
-   "host_alias": "worker_a",
-   "live_again": false
-  },
-  {
-   "lease_id": "m03-prof-tsl_weather-1790810705-1209262-f58118",
-   "name": "m03-prof-tsl_weather",
-   "at": "2026-09-30T23:25:40Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 982405120,
-   "cap_bytes": 1073741824,
-   "host_alias": "worker_b",
-   "live_again": false
-  },
-  {
-   "lease_id": "m02-ecl-donors-r0-1790812716-1237864-566ccb",
-   "name": "m02-ecl-donors-r0",
-   "at": "2026-10-01T00:09:56Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 1275133952,
-   "cap_bytes": 4294967296,
-   "host_alias": "worker_b",
-   "live_again": false
-  },
-  {
-   "lease_id": "c07-closure-install-1790813089-1242292-634e7b",
-   "name": "c07-closure-install",
-   "at": "2026-10-01T00:09:59Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 2084966400,
+   "tree_peak_bytes": 2043449344,
    "cap_bytes": 2147483648,
    "host_alias": "worker_b",
    "live_again": false
   },
   {
-   "lease_id": "m02-ecl-v2-donors-r7g-1790823176-1383180-352a56",
-   "name": "m02-ecl-v2-donors-r7g",
-   "at": "2026-10-01T03:16:58Z",
+   "lease_id": "g-rl-RL-S1_seed303-1790999651-2878213-465887",
+   "name": "g-rl-RL-S1_seed303",
+   "at": "2026-10-03T04:11:18Z",
    "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
    "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 1767391232,
-   "cap_bytes": 7516192768,
-   "host_alias": "worker_b",
-   "live_again": false
-  },
-  {
-   "lease_id": "ps3r-pilot-s1-1790824388-1394314-7efb0e",
-   "name": "ps3r-pilot-s1",
-   "at": "2026-10-01T03:16:59Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 2060378112,
-   "cap_bytes": 2147483648,
-   "host_alias": "worker_b",
-   "live_again": false
-  },
-  {
-   "lease_id": "ps3r-pilot-s0-1790824388-1394310-90baca",
-   "name": "ps3r-pilot-s0",
-   "at": "2026-10-01T03:16:59Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 2056757248,
-   "cap_bytes": 2147483648,
-   "host_alias": "worker_b",
-   "live_again": false
-  },
-  {
-   "lease_id": "ps3r-pilot-3g-1790828074-1428796-50b16c",
-   "name": "ps3r-pilot-3g",
-   "at": "2026-10-01T05:43:19Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 1961132032,
+   "tree_peak_bytes": 2558181376,
    "cap_bytes": 3221225472,
-   "host_alias": "worker_b",
-   "live_again": false
-  },
-  {
-   "lease_id": "d-identity-proof-1790833325-1576524-d54eba",
-   "name": "d-identity-proof",
-   "at": "2026-10-01T05:43:20Z",
-   "exit_cause": "PRESSURE_STOP_SUSTAINED_ABOVE_RESPOND",
-   "rule": "SUSTAINED_ABOVE_RESPOND",
-   "tree_peak_bytes": 433061888,
-   "cap_bytes": 433061888,
    "host_alias": "worker_b",
    "live_again": false
   }
  ],
  "quotas_measured": {
   "coordinator": {
-   "host_free_for_new_bytes": 14186266624,
-   "held_unrealised_bytes": 1397055488,
+   "host_free_for_new_bytes": 12329955328,
+   "held_unrealised_bytes": 868724736,
    "desktop_reserve_bytes": 3221225472,
    "slice_memory_max": 15032385536,
-   "slice_memory_current": 5041512448,
+   "slice_memory_current": 5099487232,
    "slice_charged_bytes": null,
    "pressure_some_avg10": 0.0,
-   "mem_available_bytes": 18809815040,
+   "mem_available_bytes": 16423915520,
    "psi_some_avg10": 0.0,
    "psi_some_avg60": 0.0,
-   "swap_free_bytes": 4744445952,
+   "swap_free_bytes": 3883188224,
    "swap_total_bytes": 8589930496,
-   "unreclaimable_slab_bytes": 706310144,
-   "disk_home_free_bytes": 85361192960,
+   "unreclaimable_slab_bytes": 764239872,
+   "disk_home_free_bytes": 76516970496,
    "disk_home_total_bytes": 762623827968
   },
   "worker_a": {
-   "host_free_for_new_bytes": 1503899648,
-   "held_unrealised_bytes": 1815752704,
+   "host_free_for_new_bytes": 4096102400,
+   "held_unrealised_bytes": 2333941760,
    "desktop_reserve_bytes": 3221225472,
    "slice_memory_max": 8589934592,
-   "slice_memory_current": 7333494784,
-   "slice_charged_bytes": 6383374336,
+   "slice_memory_current": 5243486208,
+   "slice_charged_bytes": 5200977920,
    "pressure_some_avg10": 0.0,
-   "mem_available_bytes": 6554152960,
+   "mem_available_bytes": 9664561152,
    "psi_some_avg10": 0.0,
    "psi_some_avg60": 0.0,
-   "swap_free_bytes": 4293955584,
+   "swap_free_bytes": 4294963200,
    "swap_total_bytes": 4294963200,
-   "unreclaimable_slab_bytes": 856829952,
-   "disk_home_free_bytes": 166453993472,
+   "unreclaimable_slab_bytes": 322457600,
+   "disk_home_free_bytes": 159318257664,
    "disk_home_total_bytes": 411702673408
   },
   "worker_b": {
-   "host_free_for_new_bytes": 2743435264,
-   "held_unrealised_bytes": 6989455360,
+   "host_free_for_new_bytes": 7161790464,
+   "held_unrealised_bytes": 4095188992,
    "desktop_reserve_bytes": 3221225472,
    "slice_memory_max": 15032385536,
-   "slice_memory_current": 8952483840,
-   "slice_charged_bytes": 6394454016,
-   "pressure_some_avg10": 0.0,
-   "mem_available_bytes": 12978991104,
-   "psi_some_avg10": 0.0,
-   "psi_some_avg60": 0.0,
-   "swap_free_bytes": 5526519808,
+   "slice_memory_current": 286441472,
+   "slice_charged_bytes": 277635072,
+   "pressure_some_avg10": 0.49,
+   "mem_available_bytes": 14491389952,
+   "psi_some_avg10": 0.3,
+   "psi_some_avg60": 1.62,
+   "swap_free_bytes": 4614385664,
    "swap_total_bytes": 8589930496,
-   "unreclaimable_slab_bytes": 3340152832,
-   "disk_home_free_bytes": 669780631552,
+   "unreclaimable_slab_bytes": 6623363072,
+   "disk_home_free_bytes": 653641990144,
    "disk_home_total_bytes": 1005867986944
   }
  },
@@ -3444,6 +3095,11 @@
    "what": "STATUS.json carried the workers' private network addresses (ssh multiplexer process names in unparsed_processes) in every STATUS commit from c06db834 to 513c85cd; the writer scrubbed host names only and the commit gate searched names only",
    "fix": "scrub() replaces IPv4 addresses with <ip> (46a840f8, tested); the gate now includes an IPv4 pattern; history rewrite is the owner's decision",
    "by": "M06 (own defect)"
+  },
+  {
+   "at": "2026-10-03",
+   "source": "docs/handoffs/SATOSHI_CORRECTIVE_PARALLEL_ORDER_2026_10_03.md \u00a73",
+   "correction": "agents/lanes now carry declared_state (registry) and observed_state (probes); registry rows reset to the corrective order's adopted states; legacy `state` (dispatched/assigned/acknowledged/running) removed as a fact"
   }
  ],
  "lane_worktrees": [
@@ -3469,7 +3125,7 @@
    "repo": "lts",
    "branch": "satoshi/m05-paper-adapter-20260930",
    "worktree": "~/Documents/GitHub/lts-worktrees/m05-paper-adapter-20260930",
-   "tip": "42035f1156f3"
+   "tip": "77739a906926"
   },
   {
    "repo": "predictor",
@@ -3493,7 +3149,7 @@
    "repo": "predictor",
    "branch": "satoshi/d-corrected-queue-20261001",
    "worktree": "~/Documents/GitHub/.worktrees/predictor-d-corrected-queue-20261001",
-   "tip": "b60dd2717a7a"
+   "tip": "783e2cc4e1f8"
   },
   {
    "repo": "predictor",
@@ -3517,7 +3173,7 @@
    "repo": "predictor",
    "branch": "satoshi/m06-evidence-resources-20260930",
    "worktree": "~/Documents/GitHub/.worktrees/predictor-m06-20260930",
-   "tip": "46a840f83b07"
+   "tip": "8a7cf791e101"
   },
   {
    "repo": "predictor",
@@ -3535,7 +3191,7 @@
    "repo": "predictor",
    "branch": "satoshi/a-engine-integration-20261001",
    "worktree": "~/Documents/GitHub/predictor-a-engine-integration",
-   "tip": "5e3392cc22ab"
+   "tip": "26c8ca0a25be"
   },
   {
    "repo": "predictor",
