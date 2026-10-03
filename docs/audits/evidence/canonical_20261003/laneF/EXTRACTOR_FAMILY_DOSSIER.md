@@ -183,3 +183,39 @@ Tests required: time preserved (B,T,D); future perturbation (changing inputs at
 steps > t leaves latent[:, :t+1] unchanged); target not an input (encoder input
 signature has no target, and passing one is rejected); save/load round-trip
 (identical latents); encoder exportable without decoder.
+
+## 8. Observation from reading TimeSiam's sampler (not executed)
+
+`data_provider/data_loader.py::__getitem__` draws `r_begin = random.randint(s_begin, r_limit)`,
+so the distance between "past" and "current" windows can be 0 or smaller than
+`seq_len`: the current window then overlaps, or equals, the unmasked past window,
+and masked current points are visible through the past branch. Our P2C sampler
+forbids this by construction (lag ∈ [T, max_lag], past ends at or before the
+current window begins) and a test enforces it. This is a deliberate deviation;
+it is one more reason the clean-room P2C is not a TimeSiam reproduction.
+
+## 9. Implementation status
+
+- feature-extractor branch `satoshi/alt-extractor-families-20261003`, tip
+  `981fdc3`, cut from lane D's branch at `2b9b82b` (before lane D's interface
+  existed). Files: `app/alt_extractor_families.py`,
+  `tests/test_alt_extractor_families.py`.
+- Encoder (shared): causal Conv1D stem → 2 causal self-attention blocks with
+  per-step FFN → Dense(D). Inputs exactly signal / observed_mask / delta_time /
+  calendar; output (B,T,D). Training: fresh masks every epoch, fixed validation
+  masks, early stopping, best weights restored, update count recorded.
+- Tests: 21 passed on CPU under a 3 GiB memory cap (27 s): time preserved (both
+  families), future perturbation on each of the four inputs at t ∈ {0, T/2, T−2}
+  (both families), target refused, save/load round trip of the encoder alone with
+  no decoder layers, pooled-output guard, shape/finite guards, masked values never
+  reach the encoder, best-val restore reproduces the recorded best, P2C past never
+  overlaps current. Mutation check: switching encoder attention to non-causal
+  makes 8/8 future-perturbation cases fail.
+- Integration pending lane D: lane D's red tests (`b5f63eb`) reserve
+  `U.FAMILIES["masked_temporal_ae"]` and `U.FAMILIES["past_to_current_siamese"]`
+  with status `SLOT_RESERVED_FOR_LANE_F_PREP` and assert they raise
+  `SlotNotImplemented`. Once lane D's `app/univariate_temporal.py` lands, these
+  two slots are wired to this module through lane D's `make_extractor` interface,
+  and that slot test is updated together with lane D.
+- First GPU run when lane F starts: MTAE, hourly window 168, D=8, one seed, on the
+  5070 Ti or 4090, under the paired contract with identity/random/AE/DAE.
