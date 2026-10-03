@@ -22,16 +22,80 @@ def _tuples(value):
     return value
 
 
+def normalize_restrict(space, restrict):
+    """Validate a sub-space declaration and return it in canonical form.
+
+    ``restrict`` maps a flat parameter name to ``{"choices": [subset]}`` or numeric
+    ``{"low", "high"}`` inside the declared bound.  The search-space bytes (and so every
+    candidate/config identity, which embeds the space digest) are NOT changed: only the
+    region that proposals may visit is narrowed.  ``train.seed`` is never restricted.
+    """
+    result = {}
+    for name, spec in sorted((restrict or {}).items()):
+        declared = space["bounds"].get(name)
+        if declared is None or name == "train.seed":
+            raise search.SearchSpaceError(f"cannot restrict {name!r}")
+        if "choices" in declared:
+            allowed = {search.canonical(c) for c in declared["choices"]}
+            choices = spec.get("choices") if set(spec) == {"choices"} else None
+            if not choices or any(search.canonical(c) not in allowed for c in choices):
+                raise search.SearchSpaceError(f"{name}: restriction must be a nonempty subset of the declared choices")
+            if len({search.canonical(c) for c in choices}) != len(choices):
+                raise search.SearchSpaceError(f"{name}: duplicate restricted choices")
+            result[name] = {"choices": copy.deepcopy(choices)}
+        else:
+            if set(spec) != {"low", "high"} or not declared["low"] <= spec["low"] <= spec["high"] <= declared["high"]:
+                raise search.SearchSpaceError(f"{name}: restriction must lie inside [{declared['low']}, {declared['high']}]")
+            result[name] = {"low": spec["low"], "high": spec["high"]}
+    return result
+
+
+def restricted_spec(space, restrict, name):
+    declared = space["bounds"][name]
+    if name not in restrict:
+        return declared
+    return {**declared, **restrict[name]}
+
+
+def propose_restricted(space, base, rng, restrict=None, max_tries=20000):
+    """One valid flat candidate (no seed) drawn uniformly inside the restricted sub-space.
+
+    Unlike ``modular_doin_campaign.propose`` this also draws the optional
+    ``model.target_residual`` parameter (that function drops it and so can never return a
+    valid candidate for a space that declares it).  Both matched arms use this draw
+    rule: the random arm directly, the NEAT arm for population repair.
+    """
+    restrict = restrict or {}
+    seed0 = space["bounds"]["train.seed"]["choices"][0]
+    optional = [n for n in search.OPTIONAL_PARAMETERS if n in space["bounds"]]
+    for _ in range(max_tries):
+        names = [n for n in search.parameter_names() if n != "train.seed"] + optional
+        flat = {n: campaign._sample(restricted_spec(space, restrict, n), rng) for n in names}
+        flat["train.seed"] = seed0
+        keep = (set(search.active_parameters(flat)) | set(optional))
+        flat = {n: flat[n] for n in keep}
+        try:
+            search.validate_flat(flat, space)
+            search.from_flat(flat, base, space)
+        except search.SearchSpaceError:
+            continue
+        flat.pop("train.seed")
+        return flat
+    raise search.SearchSpaceError("no valid candidate inside the restricted sub-space")
+
+
 class ModularNeatProposalPolicy:
     """Evolve valid flat modular candidates with deterministic resumable state."""
 
     SCHEMA = "modular.neat.proposal.v1"
 
-    def __init__(self, space, default, base, *, population_size=12, seed=0, default_huber_delta=None):
+    def __init__(self, space, default, base, *, population_size=12, seed=0, default_huber_delta=None,
+                 restrict=None):
         if isinstance(population_size, bool) or not isinstance(population_size, int) or population_size < 2:
             raise ValueError("population_size must be an integer >= 2")
         search.validate_space(space)
         self.space = copy.deepcopy(space)
+        self.restrict = normalize_restrict(self.space, restrict)
         self.default = copy.deepcopy(default)
         if self.default.get("train.loss") == "huber" and "train.huber_delta" not in self.default:
             spec = self.space["bounds"]["train.huber_delta"]
@@ -40,6 +104,7 @@ class ModularNeatProposalPolicy:
                                        else (spec["low"] + spec["high"]) / 2)
             self.default["train.huber_delta"] = default_huber_delta
         self.base = copy.deepcopy(base)
+        self._check_default_in_restriction()
         self.population_size = population_size
         self.seed = int(seed)
         self.generation = 0
@@ -60,13 +125,23 @@ class ModularNeatProposalPolicy:
         self.population[0] = self._encode(self.default)
         self._repair_population()
 
+    def _check_default_in_restriction(self):
+        for name, spec in self.restrict.items():
+            if name not in self.default:
+                continue
+            value = self.default[name]
+            inside = (search.canonical(value) in {search.canonical(c) for c in spec["choices"]}
+                      if "choices" in spec else spec["low"] <= value <= spec["high"])
+            if not inside:
+                raise search.SearchSpaceError(f"declared default {name}={value!r} lies outside the restriction")
+
     def _prepare_codec(self):
         self.names = [name for name in self.space["bounds"] if name != "train.seed"]
         self.choice_values = {}
         numeric = {}
         defaults = {}
         for name in self.names:
-            spec = self.space["bounds"][name]
+            spec = restricted_spec(self.space, self.restrict, name)
             if "choices" in spec:
                 self.choice_values[name] = copy.deepcopy(spec["choices"])
                 numeric[name] = (0, len(spec["choices"]) - 1)
@@ -91,7 +166,8 @@ class ModularNeatProposalPolicy:
         if name in self.choice_values:
             choices = self.choice_values[name]
             return copy.deepcopy(choices[max(0, min(len(choices) - 1, int(round(value))))])
-        spec = self.space["bounds"][name]
+        spec = restricted_spec(self.space, self.restrict, name)
+        value = max(spec["low"], min(spec["high"], value))
         return int(round(value)) if spec["type"] == "int" else float(value)
 
     def _encoded_value(self, name, value):
@@ -123,22 +199,14 @@ class ModularNeatProposalPolicy:
         genome = NeatGenome()
         for name in self.names:
             if name not in values:
-                spec = self.space["bounds"][name]
+                spec = restricted_spec(self.space, self.restrict, name)
                 values[name] = spec["choices"][0] if "choices" in spec else (spec["low"] + spec["high"]) / 2
             innovation = int(tracker[name])
             genome.genes[innovation] = NeatGene(innovation, name, self._encoded_value(name, values[name]))
         return genome.to_serializable()
 
     def _random_valid(self):
-        for _ in range(10000):
-            flat = campaign.propose(self.space, self._rng)
-            probe = {**flat, "train.seed": self.space["bounds"]["train.seed"]["choices"][0]}
-            try:
-                search.from_flat(probe, self.base, self.space)
-            except search.SearchSpaceError:
-                continue
-            return flat
-        raise search.SearchSpaceError("NEAT policy could not draw a valid modular candidate")
+        return propose_restricted(self.space, self.base, self._rng, self.restrict)
 
     def _repair_population(self):
         repaired, seen = [], set()
@@ -196,6 +264,8 @@ class ModularNeatProposalPolicy:
             "default_sha256": search.digest(self.default),
             "base_sha256": search.digest(self.base),
             "normalized_default": copy.deepcopy(self.default),
+            "restrict": copy.deepcopy(self.restrict),
+            "restrict_sha256": search.digest(self.restrict),
             "population_size": self.population_size,
             "seed": self.seed,
             "generation": self.generation,
@@ -209,7 +279,7 @@ class ModularNeatProposalPolicy:
         }
 
     @classmethod
-    def from_state(cls, space, default, base, state):
+    def from_state(cls, space, default, base, state, restrict=None):
         if state.get("schema") != cls.SCHEMA:
             raise ValueError("unsupported modular NEAT state")
         normalized_default = copy.deepcopy(default)
@@ -222,7 +292,13 @@ class ModularNeatProposalPolicy:
                                        ("base", base, state.get("base_sha256"))):
             if search.digest(value) != expected:
                 raise ValueError(f"modular NEAT {label} identity changed")
+        stored = state.get("restrict", {})
+        if search.digest(stored) != state.get("restrict_sha256", search.digest({})):
+            raise ValueError("modular NEAT restriction digest mismatch")
+        if restrict is not None and normalize_restrict(space, restrict) != stored:
+            raise ValueError("modular NEAT restriction identity changed")
         obj = cls.__new__(cls)
+        obj.restrict = normalize_restrict(space, stored)
         obj.space, obj.default, obj.base = map(copy.deepcopy, (space, normalized_default, base))
         obj.population_size = int(state["population_size"])
         obj.seed, obj.generation = int(state["seed"]), int(state["generation"])

@@ -36,11 +36,12 @@ class Plugin:
         "modular_neat_population_size": 12,
         "modular_neat_generations": 1,
         "modular_neat_seed": 0,
+        "modular_neat_restrict": None,
         "hyperparameter_bounds": None,
     }
     plugin_debug_vars = ["modular_campaign_root", "modular_proposal_draws", "modular_max_candidates",
                          "modular_proposal_strategy", "modular_neat_population_size",
-                         "modular_neat_generations", "modular_neat_seed"]
+                         "modular_neat_generations", "modular_neat_seed", "modular_neat_restrict"]
 
     def __init__(self, executor=None):
         self.params = dict(self.plugin_params)
@@ -117,13 +118,14 @@ class Plugin:
             state = json.loads(state_path.read_text())
             policy = ModularNeatProposalPolicy.from_state(
                 campaign.space, campaign.declaration["default_candidate"],
-                campaign.declaration["base"], state)
+                campaign.declaration["base"], state, restrict=self.params.get("modular_neat_restrict"))
         else:
             policy = ModularNeatProposalPolicy(
                 campaign.space, campaign.declaration["default_candidate"],
                 campaign.declaration["base"], population_size=population_size,
                 seed=int(self.params["modular_neat_seed"]),
-                default_huber_delta=campaign.declaration["default_huber_delta"])
+                default_huber_delta=campaign.declaration["default_huber_delta"],
+                restrict=self.params.get("modular_neat_restrict"))
         target_generation = policy.generation + generations
         while policy.generation < target_generation:
             candidates = policy.ask()

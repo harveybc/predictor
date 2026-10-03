@@ -1,0 +1,31 @@
+{
+  "schema": "modular.neat.restrict.v1",
+  "note": "Sub-space for the ECL v2 NEAT pricing/matched comparison. The declared search space (digest e086db4a) is NOT changed, so config identities of verified cells stay valid; only the region proposals may visit is narrowed. Free: train.learning_rate, train.weight_decay, train.patience, train.loss (+ train.huber_delta when huber), branch.channels, branch.grouping_size (8 or 32 only), core.dropout. Everything else is pinned to the verified grouped32 + seasonal-residual R0 MAE cell (config ac27a399).",
+  "restrict": {
+    "branch.regime": {"choices": ["R0"]},
+    "core.regime": {"choices": ["R0"]},
+    "model.target_residual": {"choices": ["seasonal_naive_24"]},
+    "branch.grouping_size": {"choices": [8, 32]},
+    "branch.kernel_size": {"choices": [3]},
+    "core.blocks": {"choices": [2]},
+    "core.d_model": {"choices": [64]},
+    "core.ff_dim": {"choices": [128]},
+    "core.heads": {"choices": [4]},
+    "core.kernel_size": {"choices": [3]},
+    "core.stage_count": {"choices": [3]},
+    "core.stage_channels_0": {"choices": [32]},
+    "core.stage_channels_1": {"choices": [16]},
+    "core.stage_channels_2": {"choices": [16]},
+    "core.stage_channels_3": {"choices": [16]},
+    "core.time_factor_0": {"choices": [2]},
+    "core.time_factor_1": {"choices": [2]},
+    "core.time_factor_2": {"choices": [1]},
+    "core.time_factor_3": {"choices": [1]},
+    "model.output_channels": {"choices": [8]},
+    "model.output_steps": {"choices": [6]},
+    "train.batch_size": {"choices": [64]},
+    "train.max_epochs": {"choices": [30]},
+    "train.min_delta": {"choices": [0.0]},
+    "train.huber_delta": {"low": 0.05, "high": 2.0}
+  }
+}
