@@ -1,0 +1,34 @@
+{
+ "denominator_feature_fold_units": 50,
+ "features": [
+  "tv.wav_d1",
+  "tv.wav_d2",
+  "tv.wav_d3",
+  "tv.wav_d4",
+  "tv.wav_d5",
+  "tv.mt_band_6_48h",
+  "tv.hilbert_amp",
+  "tv.stl_dev",
+  "tv.stl_seasonal",
+  "tv.kalman_dev"
+ ],
+ "flags": [
+  "NO_TARGET_READ",
+  "NO_OUTER_VALIDATION_READ",
+  "NO_TEST_READ",
+  "NO_FEATURE_SELECTION_DECISION",
+  "NO_NEW_MODEL_MEASUREMENT"
+ ],
+ "folds": [
+  "inner_2019",
+  "inner_2020",
+  "inner_2021",
+  "inner_2022",
+  "inner_2023"
+ ],
+ "metric_rows": 1050,
+ "schema": "ps4_transform_profile.v1",
+ "status_counts": {
+  "COMPLETED": 1050
+ }
+}
