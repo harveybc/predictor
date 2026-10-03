@@ -11,7 +11,7 @@ def main(a):
     tf.keras.utils.set_random_seed(a.seed)
     tr = np.load(a.data_dir + "/train.npz", allow_pickle=False); va = np.load(a.data_dir + "/validation.npz", allow_pickle=False)
     names = [str(n) for n in tr["feature_names"]]; assert names == [str(n) for n in va["feature_names"]]
-    Wtr, Wva = tr["windows"], va["windows"]
+    Wva = va["windows"]; Tva = va["targets"]
     if a.mode == "ae":
         groups = json.load(open(a.groups))["groups"]
         def lat(W):
@@ -21,32 +21,54 @@ def main(a):
                 idx = [names.index(f) for f in groups[g]]
                 out.append(enc.predict(np.ascontiguousarray(W[:, :, idx]), batch_size=256, verbose=0))
             return np.concatenate(out, 1).astype(np.float32)
-        Xtr, Xva = lat(Wtr), lat(Wva)
+        Xtr = lat(tr["windows"]); Xva = lat(Wva)
     else:
-        Xtr, Xva = Wtr.reshape(len(Wtr), -1).astype(np.float32), Wva.reshape(len(Wva), -1).astype(np.float32)
+        Xtr = tr["windows"].reshape(tr["windows"].shape[0], -1); Xva = Wva.reshape(len(Wva), -1)
     n = len(Xtr); cut = int(n * 0.85); purge = 48
-    fit_i, hold_i = np.arange(0, cut - purge), np.arange(cut, n)
-    mu, sd = Xtr[fit_i].mean(0), Xtr[fit_i].std(0) + 1e-6
-    Xtr = (Xtr - mu) / sd; Xva = (Xva - mu) / sd
-    ytr = tr["targets"].reshape(n, -1).astype(np.float32); yva = va["targets"].reshape(len(Xva), -1).astype(np.float32)
-    med = np.median(ytr[fit_i], 0)
+    nf = cut - purge  # fit rows are [0, nf), holdout rows are [cut, n): contiguous slices, no index copies
+    mu = np.zeros(Xtr.shape[1]); m2 = np.zeros(Xtr.shape[1])
+    for i in range(0, nf, 2048):
+        c = Xtr[i:min(i + 2048, nf)].astype(np.float64); mu += c.sum(0); m2 += (c ** 2).sum(0)
+    mu /= nf; sd = np.sqrt(np.maximum(m2 / nf - mu ** 2, 0)) + 1e-6
+    mu32, sd32 = mu.astype(np.float32), sd.astype(np.float32)
+    if a.mode == "raw":
+        for i in range(0, n, 2048): Xtr[i:i + 2048] = (Xtr[i:i + 2048] - mu32) / sd32  # in place on the loaded array
+        Xva = np.concatenate([(Xva[i:i + 1024] - mu32) / sd32 for i in range(0, len(Xva), 1024)])
+    else:
+        Xtr = (Xtr - mu32) / sd32; Xva = (Xva - mu32) / sd32
+    ytr = tr["targets"].reshape(n, -1)
+    med = np.concatenate([np.median(ytr[:nf, j:j + 1024], 0) for j in range(0, ytr.shape[1], 1024)]).astype(np.float32)
+    Xh, yh = Xtr[cut:], ytr[cut:]
+    class Seq(tf.keras.utils.PyDataset):  # batch slices from the numpy arrays; no whole-array tensor copies
+        def __init__(self):
+            super().__init__(); self.perm = np.random.permutation(nf)
+        def __len__(self): return int(np.ceil(nf / 64))
+        def __getitem__(self, i):
+            ix = np.sort(self.perm[i * 64:(i + 1) * 64]); return Xtr[ix], ytr[ix]
+        def on_epoch_end(self): self.perm = np.random.permutation(nf)
     L = tf.keras.layers
     inp = L.Input(shape=(Xtr.shape[1],)); h = L.Dense(64, activation="relu")(inp)
     out = L.Dense(ytr.shape[1], bias_initializer=tf.keras.initializers.Constant(med))(h)
     m = tf.keras.Model(inp, out); m.compile(tf.keras.optimizers.Adam(1e-3), loss=tf.keras.losses.Huber(delta=1.0))
+    def mae_on(X, Y):
+        t = 0.0
+        for i in range(0, len(X), 256): t += float(np.abs(m.predict(X[i:i + 256], batch_size=256, verbose=0) - Y[i:i + 256]).sum())
+        return t / Y.size
     best, bw, bad, hist = 1e9, None, 0, []
     for ep in range(30):
-        m.fit(Xtr[fit_i], ytr[fit_i], batch_size=64, epochs=1, shuffle=True, verbose=0)
-        hm = float(np.abs(m.predict(Xtr[hold_i], batch_size=512, verbose=0) - ytr[hold_i]).mean()); hist.append(hm)
+        m.fit(Seq(), epochs=1, verbose=0)
+        hm = mae_on(Xh, yh); hist.append(hm)
         if hm < best: best, bw, bad = hm, m.get_weights(), 0
         else:
             bad += 1
             if bad >= 5: break
     m.set_weights(bw)
-    pv = m.predict(Xva, batch_size=512, verbose=0)
-    err = np.abs(pv - yva).reshape(len(Xva), 24, -1)
-    ph = err.mean((0, 2)); mm = float(err.mean())
-    T = va["targets"]
+    yva = Tva.reshape(len(Xva), -1); ph = np.zeros(24); tot = 0.0
+    for i in range(0, len(Xva), 256):
+        e = np.abs(m.predict(Xva[i:i + 256], batch_size=256, verbose=0) - yva[i:i + 256]).reshape(-1, 24, Tva.shape[2])
+        ph += e.sum((0, 2)); tot += float(e.sum())
+    ph /= (len(Xva) * Tva.shape[2]); mm = tot / yva.size
+    T = Tva
     nv = {"seasonal_24": float(np.abs(Wva - T).mean()), "persistence_last_value": float(np.abs(Wva[:, -1:, :] - T).mean()),
           "intercept_train_median": float(np.abs(med.reshape(1, 24, -1) - T).mean())}
     res = {"mode": a.mode, "seed": a.seed, "input_dim": int(Xtr.shape[1]), "epochs_run": len(hist), "best_holdout_mae": best, "holdout_hist": hist,

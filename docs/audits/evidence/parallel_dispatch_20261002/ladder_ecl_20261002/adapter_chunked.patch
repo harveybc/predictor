@@ -1,0 +1,27 @@
+--- fe_adapter/app/npz_encoder_adapter.py	2026-10-02 19:07:17.459079147 -0500
++++ ladder_ecl/adapter_chunked/app/npz_encoder_adapter.py	2026-10-02 20:22:09.287614100 -0500
+@@ -119,10 +119,20 @@
+     os.makedirs(out_dir, exist_ok=True)
+     encoder, ae = _build(x.shape[1], x.shape[2], latent_dim, filters)
+     ae.compile(optimizer=tf.keras.optimizers.Adam(learning_rate), loss="mse")
+-    ae.fit(x, x, epochs=epochs, batch_size=batch_size, shuffle=True, verbose=0)
+-    rec = ae.predict(x, batch_size=batch_size, verbose=0).astype(np.float64)
+-    err = rec - x.astype(np.float64)
+-    mae, mse = float(np.mean(np.abs(err))), float(np.mean(err ** 2))
++    class _Seq(tf.keras.utils.PyDataset):  # batches sliced from the numpy array: no whole-array tensor copies (ECL 253-channel group)
++        def __init__(self):
++            super().__init__(); self.perm = np.random.permutation(x.shape[0])
++        def __len__(self): return int(np.ceil(x.shape[0] / batch_size))
++        def __getitem__(self, i):
++            b = x[np.sort(self.perm[i * batch_size:(i + 1) * batch_size])]; return b, b
++        def on_epoch_end(self): self.perm = np.random.permutation(x.shape[0])
++    ae.fit(_Seq(), epochs=epochs, verbose=0)
++    sa = sq = 0.0  # chunked float64 sums: same quantity as the single-shot version, bounded memory (ECL 253-channel group)
++    for i in range(0, x.shape[0], 1024):
++        xb = x[i:i + 1024]
++        e = ae.predict(xb, batch_size=batch_size, verbose=0).astype(np.float64) - xb.astype(np.float64)
++        sa += float(np.abs(e).sum()); sq += float((e ** 2).sum())
++    mae, mse = sa / x.size, sq / x.size
+     if not (np.isfinite(mae) and np.isfinite(mse)):
+         raise NpzContractError("training diverged: non-finite reconstruction error")
+     enc_path = os.path.join(out_dir, "encoder.keras")
