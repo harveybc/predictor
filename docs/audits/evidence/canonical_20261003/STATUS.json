@@ -1,6 +1,6 @@
 {
  "schema": "canonical_exec_status.v1",
- "observed_at": "2026-10-03T05:16:53Z",
+ "observed_at": "2026-10-03T05:30:03Z",
  "authority": "codex/workplan-consolidation-20261003@2edc2684 (master plan v3 consolidated)",
  "neat": "no process or unit on any host (verified)",
  "hermes": "not used this round (provider 403 earlier; unverified)",
@@ -10,8 +10,9 @@
    "resource": "CPU worker_a",
    "work": "EURUSD PS0/PS1 sources, availability, targets, folds, basic coverage matrix",
    "declared_state": "DISPATCHED",
-   "observed_state": "NOT_YET_OBSERVED",
-   "next_transition": "first PS1 batch"
+   "observed_state": "BATCHES_READY",
+   "next_transition": "remaining sources (archive non-EUR/USD, holidays, TFF); governed replay through data-gov",
+   "evidence": "ps1 batch_001..003 READY; 366 model-input candidates + 37 SELECTOR_EPISODE_SOURCE; 4,444 cells (4,432 MEASURED/10 NA/2 FAILED/0 PENDING); TRAIN 2012-05..2024-01, 5 inner folds, 71,734 rows; feature-eng satoshi/eurusd-ps0-ps1-20261003 1f1abdf"
   },
   {
    "lane": "B",
@@ -92,5 +93,9 @@
   }
  ],
  "checklist_ref": "docs/tres_temas_entrevista/program_v3/MASTER_CHECKLIST.json",
- "plan_authority": "codex/workplan-consolidation-20261003@02434903 (calendar = selector source only; model input deferred to I11)"
+ "plan_authority": "codex/workplan-consolidation-20261003@02434903 (calendar = selector source only; model input deferred to I11)",
+ "checklist_observed": {
+  "I1": "IN_PROGRESS (388 sources classified)",
+  "I2": "EVIDENCE_PARTIAL (3 batches, 366 candidates)"
+ }
 }
