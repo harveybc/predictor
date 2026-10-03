@@ -8,7 +8,7 @@
     {"id": "I2", "name": "basic_profiles", "state": "IN_PROGRESS", "depends_on": ["I1"], "gate": "metric-by-feature coverage matrix"},
     {"id": "I3", "name": "reversible_priority", "state": "EVIDENCE_PARTIAL", "depends_on": ["I2"], "gate": "target-specific provisional survivors plus exploration sample"},
     {"id": "I4-C", "name": "causal_ladder", "state": "EVIDENCE_PARTIAL", "depends_on": ["I1"], "gate": "three-rung EURUSD dossiers or explicit NOT_IDENTIFIED"},
-    {"id": "I4-R", "name": "extractibility", "state": "NOT_STARTED", "depends_on": ["I3"], "gate": "raw/random/trained matched evidence"},
+    {"id": "I4-R", "name": "extractibility", "state": "EVIDENCE_PARTIAL", "depends_on": ["I3"], "gate": "raw/random/trained matched evidence across the reconciled candidate population; partial E/F runs do not imply selection"},
     {"id": "I5", "name": "joint_selection", "state": "NOT_STARTED", "depends_on": ["I4-C", "I4-R"], "gate": "versioned selected/rejected/pending manifest"},
     {"id": "I6-A", "name": "architecture_controls", "state": "NOT_STARTED", "depends_on": ["I5"], "gate": "matched ARCH result"},
     {"id": "I6-B", "name": "branch_pretraining", "state": "NOT_STARTED", "depends_on": ["I6-A"], "gate": "authenticated branch donors"},

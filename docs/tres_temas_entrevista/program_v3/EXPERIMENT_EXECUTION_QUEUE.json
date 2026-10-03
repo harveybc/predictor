@@ -1,7 +1,7 @@
 {
   "schema": "experiment_execution_queue.v2",
-  "updated_on": "2026-10-03",
-  "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
+  "updated_on": "2026-10-03T16:22:00Z",
+  "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md at 02434903, merged into satoshi/canonical-exec-20261003",
   "policy": {
     "parallelism": "independent eligible lanes run concurrently",
     "seed_default": 1,
@@ -21,17 +21,17 @@
       "priority": 1,
       "id": "FS-EURUSD-PS0-PS1",
       "resource": "CPU",
-      "state": "READY",
-      "work": "Bind EURUSD sources, availability, targets, folds and basic metric coverage.",
+      "state": "IN_PROGRESS",
+      "work": "Continue the partial inventory: resolve remaining source/field availability, paid-source scope and pending causal transforms; emit an explicit disposition for every source and transform.",
       "depends_on": [],
-      "produces": "versioned admissible-feature table and coverage matrix"
+      "produces": "versioned admissible-feature table and coverage matrix; no source is silently omitted"
     },
     {
       "priority": 2,
       "id": "FS-EURUSD-PS2",
       "resource": "CPU",
-      "state": "READY_AFTER_FIRST_PS1_BATCH",
-      "work": "Redundancy, target/horizon relevance, provisional groups and exploration sample.",
+      "state": "PARTIAL_WITH_REVISIT_REQUIRED",
+      "work": "Redundancy, target/horizon relevance, provisional groups and exploration sample; explicitly revisit 87 low-priority candidates before PS5 and preserve overlapping tier semantics.",
       "depends_on": ["FS-EURUSD-PS0-PS1"],
       "produces": "reversible survivor/reject/pending priorities"
     },
@@ -39,17 +39,17 @@
       "priority": 3,
       "id": "FS-EURUSD-PS3-C",
       "resource": "CPU",
-      "state": "READY_AFTER_FIRST_PS1_BATCH",
+      "state": "METHOD_FIX_AND_READ_ONLY_REVIEW_PUBLISHED",
       "work": "Three-rung causal ladder for every prioritized candidate: external historical events or defensible endogenous transitions/shocks, with explicit abstention when unsupported.",
       "depends_on": ["FS-EURUSD-PS0-PS1"],
-      "produces": "causal dossiers with IDENTIFIED/NOT_IDENTIFIED and sensitivity"
+      "produces": "protocol-conformant causal dossiers; read-only review is complete under 48ae17c, with 0 of 1,076 historical estimates passing current identification gates"
     },
     {
       "priority": 4,
       "id": "FS-EURUSD-PS3-R",
       "resource": "gamma_external_5090",
-      "state": "READY_AFTER_FIRST_PS2_BATCH",
-      "work": "Single-feature temporal extractor pilot with seasonal context and raw/random/trained controls.",
+      "state": "RUNNING",
+      "work": "Single-feature temporal extractor on exactly the PS2 rows with seasonal context and raw/random/trained controls; batch_001 tier-1 is 33/33 complete, rg.atr_pct/rg.atr_ratio/rg.bb_width_pct completed in batch_003, and rg.di_spread is active on the 5090.",
       "depends_on": ["FS-EURUSD-PS2"],
       "produces": "extractibility matrix, cost envelope and donor candidates"
     },
@@ -57,8 +57,8 @@
       "priority": 5,
       "id": "FS-EXTRACTOR-ALT",
       "resource": "gamma_internal_5070ti_or_dragon_4090",
-      "state": "READY_AFTER_FIRST_PS2_BATCH",
-      "work": "Alternative masked or past-to-current extractor on exactly the same folds and candidates.",
+      "state": "RUNNING_QUEUED_ON_SHARED_SLICE",
+      "work": "Alternative masked temporal extractor on matched rows; 28 cells have retained results (including completed ta.roc_10), ta.rsi_14 is queued on the 5070 Ti, and both lanes alternate under one 8-GiB slice.",
       "depends_on": ["FS-EURUSD-PS2"],
       "produces": "matched alternative-family comparison"
     },
@@ -70,6 +70,15 @@
       "work": "Expanded metrics, paired set comparisons, ablations with refit and final manifest.",
       "depends_on": ["FS-EURUSD-PS3-C", "FS-EURUSD-PS3-R"],
       "produces": "selected/rejected/pending manifest"
+    },
+    {
+      "priority": 6,
+      "id": "FS-COVERAGE-RECONCILIATION",
+      "resource": "CPU_omega",
+      "state": "FEATURE_POPULATION_RECONCILED_SOURCE_AND_TRANSFORM_SCOPE_OPEN",
+      "work": "A deterministic ledger now reconciles all 366 admissible features: 279 joined plus 87 low-priority; 137 in E plus 142 outside (132 tier-3, 10 calendar). Continue source/paid-provider and transform-variant dispositions; do not call this global inventory coverage complete.",
+      "depends_on": ["FS-EURUSD-PS0-PS1", "FS-EURUSD-PS2"],
+      "produces": "coverage ledger with per-feature/per-target status, rationale, and next action; zero implicit exclusions"
     },
     {
       "priority": 7,

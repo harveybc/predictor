@@ -1,7 +1,7 @@
 {
   "schema": "feature_selection_method_state.v1",
-  "updated_at": "2026-10-03T04:35:00Z",
-  "current_stage": "S3_ACCEPTANCE_TEST_DESIGN",
+  "updated_at": "2026-10-03T16:22:00Z",
+  "current_stage": "PS3C_METHOD_FIX_PUBLISHED_PS3R_RUNNING",
   "plan": "FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md",
   "traceability": "Sections 9 and 10.4: FS01-FS20; section 10.1: PS0-PS7 and UC-FS1-UC-FS5",
   "owner_approval": "Progressive resource-aware approach approved in conversation; no new financial risk or remote-code grant implied.",
@@ -25,11 +25,27 @@
     "future targets never enter the operational encoder",
     "final selection precedes definitive branches and E1"
   ],
-  "scientific_evidence": [],
-  "existing_evidence_scope": "M03 profiles and M02 AE work remain evidence of their original protocols, not completion of FS01-FS20.",
+  "scientific_evidence": [
+    {
+      "stage": "PS3-R",
+      "status": "PARTIAL_IN_PROGRESS",
+      "scope": "Gamma: lane E batch_001 tier_1 33/33 complete, batch_003 rg.atr_pct/rg.atr_ratio/rg.bb_width_pct complete and rg.di_spread active; lane F 28 retained cells including completed ta.roc_10, ta.rsi_14 queued",
+      "evidence_ref": "docs/audits/evidence/canonical_20261003/laneE/extractibility_matrix.csv and Gamma retained run outputs",
+      "interpretation": "development evidence only; not a selected-feature manifest"
+    },
+    {
+      "stage": "PS3-C",
+      "status": "DIAGNOSTIC_FIX_AND_READ_ONLY_REVIEW_PUBLISHED",
+      "scope": "366 candidates have dossiers; fail-closed method fix published at causal-inference commit 48ae17c; read-only join produced 279 candidate rows and reclassified 1,076 historical rung-2 estimates as NOT_IDENTIFIED under current gates",
+      "evidence_ref": "docs/audits/evidence/canonical_20261003/laneC/reanalysis_48ae17c/REPORT.md",
+      "interpretation": "45 focused tests pass; full suite has 149 pass, 27 skip, 6 environment failures. The review leaves historical files unchanged; 0 causal features are selected and NOT_IDENTIFIED is not rejection."
+    }
+  ],
+  "existing_evidence_scope": "M03 profiles and M02 AE work remain evidence of their original protocols, not completion of FS01-FS20. Current PS3-R is partial; current PS3-C historical values are diagnostic and require read-only reanalysis under the published fix. Neither is feature selection.",
   "next_allowed_actions": [
-    "Execute EURUSD PS0 and PS1 in TRAIN-only chronological folds",
-    "Start PS2, PS3-C and PS3-R progressively on ready batches",
+    "Continue EURUSD PS0/PS1 and reconcile all source and transform dispositions, including paid providers",
+    "Complete paid-source and transform-variant dispositions; then revisit PS3-C only when auditable assumption evidence is available",
+    "Continue PS3-R while creating explicit dispositions for the 87 low-priority and 142 not-yet-extracted shortlist features",
     "Implement the single-feature temporal extractor interface with seasonal context",
     "Refine S3-S8 per bounded increment, write failing behavioral tests before new implementation",
     "Continue independently authorized profiling, optimization and product work",
