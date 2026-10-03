@@ -80,6 +80,18 @@
       "status": "CALLBACK_ORCHESTRATOR_IMPLEMENTED",
       "scope": "matched forecast, heuristic-head, SAC and DQN releases over weekly or calendar-monthly rolling four-year windows; real framework adapters remain",
       "scientific_measurement": false
+    },
+    {
+      "component": "tools/feature_selection_campaign.py",
+      "status": "TRAIN_ONLY_CAMPAIGN_ORCHESTRATOR_IMPLEMENTED",
+      "scope": "authenticated common-K dispatch of filter controls, up to three random tapes and Elastic Net; complete rankings and per-method dispositions retained",
+      "scientific_measurement": false
+    },
+    {
+      "component": "tools/manifest_weekly_rows.py",
+      "status": "AUTHENTICATED_ROW_PROVIDER_IMPLEMENTED",
+      "scope": "immutable JSONL/CSV custody adapter for point-in-time weekly windows; real EURUSD governed manifest binding remains",
+      "scientific_measurement": false
     }
   ],
   "existing_evidence_scope": "M03 profiles and M02 AE work remain evidence of their original protocols, not completion of FS01-FS20. Current PS3-R is partial; current PS3-C historical values are diagnostic and require read-only reanalysis under the published fix. Neither is feature selection.",

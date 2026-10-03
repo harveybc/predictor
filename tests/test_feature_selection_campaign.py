@@ -101,6 +101,15 @@ def test_deterministic_replay_is_identical() -> None:
     assert run(x, y, groups) == run(x.copy(), y.copy(), groups)
 
 
+def test_campaign_does_not_change_caller_array_writeability() -> None:
+    x, y, groups = sample()
+
+    run(x, y, groups)
+
+    assert x.flags.writeable
+    assert y.flags.writeable
+
+
 def test_unseen_train_tail_does_not_choose_elastic_hyperparameters() -> None:
     x, y, groups = sample(rows=210)
     base = run(x, y, groups)

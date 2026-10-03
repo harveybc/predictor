@@ -154,8 +154,11 @@ def _numeric_train_arrays(x: Any, y: Any) -> tuple[np.ndarray, np.ndarray]:
         raise TypeError("boolean TRAIN values are forbidden")
     if raw_x.dtype.kind not in "iuf" or raw_y.dtype.kind not in "iuf":
         raise TypeError("TRAIN matrix and target must be numeric")
-    matrix = np.asarray(raw_x, dtype="<f8", order="C")
-    target = np.asarray(raw_y, dtype="<f8", order="C")
+    # Own the buffers before freezing them for selector dispatch.  Reusing a
+    # caller's float64 C-contiguous array would make that external object
+    # read-only when setflags is applied below.
+    matrix = np.array(raw_x, dtype="<f8", order="C", copy=True)
+    target = np.array(raw_y, dtype="<f8", order="C", copy=True)
     if matrix.ndim != 2 or target.ndim != 1:
         raise ValueError("TRAIN X must be 2D and y must be 1D")
     if matrix.size == 0 or target.size == 0 or matrix.shape[1] == 0:
