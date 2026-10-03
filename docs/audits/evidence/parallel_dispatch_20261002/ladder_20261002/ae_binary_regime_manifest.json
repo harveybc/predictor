@@ -1,0 +1,15 @@
+{
+  "architecture_id": "conv1d_ae_v1",
+  "channels": 2,
+  "encoder_path": "encoder.keras",
+  "epochs": 20,
+  "input_sha256": "d5ff19db827198e3f87c3be8fad7ee5b7dab6a83112faa3361a8fe0c9bc49b1b",
+  "latent_dim": 2,
+  "n_rows": 13158,
+  "reconstruction_mae": 0.1537915591927114,
+  "reconstruction_mse": 0.12929673887721027,
+  "seed": 2021,
+  "steps": 24,
+  "train_row_ids_sha256": "a7a0a0c039089f6008c61027483b9a0554ea0f9debca391bd36ca746a93b6a32",
+  "weight_sha256": "8e8145fc57e06dce54968c8faec110523c435a539e8db4f4c31b1c5fb1299bfd"
+}

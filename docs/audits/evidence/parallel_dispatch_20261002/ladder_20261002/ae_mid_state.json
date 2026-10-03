@@ -1,0 +1,24 @@
+{
+ "group": "mid_state",
+ "channels": 9,
+ "seed": 2021,
+ "latent_dim": 8,
+ "recon_mae": 0.1661580626254068,
+ "recon_mse": 0.06005685886407379,
+ "naive_channel_mean_mae": 0.6588076672313377,
+ "naive_channel_mean_mse": 0.9903739528093678,
+ "mae_skill": 0.7477897254540283,
+ "mse_skill": 0.9393594119739195,
+ "weight_sha256": "a1300fb32059983caa1562ce7df234ec2d0f01763fbb9a90507acd7076684e24",
+ "features": [
+  "close_sma_ratio_50",
+  "macd",
+  "macd_signal",
+  "macd_hist",
+  "rsi_14",
+  "rsi_21",
+  "bb_width",
+  "trend_strength_50",
+  "realized_var_12"
+ ]
+}

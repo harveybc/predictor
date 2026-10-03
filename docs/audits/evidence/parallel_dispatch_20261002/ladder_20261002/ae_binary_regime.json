@@ -1,0 +1,17 @@
+{
+ "group": "binary_regime",
+ "channels": 2,
+ "seed": 2021,
+ "latent_dim": 2,
+ "recon_mae": 0.1537915591927114,
+ "recon_mse": 0.12929673887721027,
+ "naive_channel_mean_mae": 0.944347893434284,
+ "naive_channel_mean_mse": 0.9950743156573557,
+ "mae_skill": 0.8371452297802859,
+ "mse_skill": 0.870063233627133,
+ "weight_sha256": "8e8145fc57e06dce54968c8faec110523c435a539e8db4f4c31b1c5fb1299bfd",
+ "features": [
+  "vol_regime_high",
+  "vol_regime_low"
+ ]
+}

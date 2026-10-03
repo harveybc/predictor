@@ -1,0 +1,40 @@
+{
+ "seed": 2021,
+ "latent_dim_total": 34,
+ "groups": [
+  "binary_regime",
+  "fast_stationary",
+  "level_nonstationary",
+  "mid_state",
+  "slow_state"
+ ],
+ "epochs_run": 6,
+ "best_holdout_mae": 1.6041077375411987,
+ "val_mae_per_horizon": {
+  "6": 1.2355585098266602,
+  "12": 1.7696610689163208,
+  "18": 2.2633750438690186,
+  "24": 2.6309099197387695,
+  "30": 3.0168330669403076,
+  "36": 3.401175022125244
+ },
+ "val_mae_mean": 2.3862521648406982,
+ "naive_mean": {
+  "intercept_train_median": 2.3711467018299763,
+  "train_mean": 2.3726338419618798,
+  "persistence_last_value": 2.4409553347390545
+ },
+ "skill_vs": {
+  "intercept_train_median": -0.006370530764319149,
+  "train_mean": -0.005739749066193012,
+  "persistence_last_value": 0.022410557505839868
+ },
+ "skill_per_horizon_vs_intercept": {
+  "6": -0.024733597599542856,
+  "12": -0.009185524341172702,
+  "18": -0.010601359432244939,
+  "24": 0.0010763774663344883,
+  "30": -0.000509207849045179,
+  "36": -0.0065876932327848525
+ }
+}
