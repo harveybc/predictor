@@ -196,8 +196,8 @@ it is one more reason the clean-room P2C is not a TimeSiam reproduction.
 
 ## 9. Implementation status
 
-- feature-extractor branch `satoshi/alt-extractor-families-20261003`, tip
-  `981fdc3`, cut from lane D's branch at `2b9b82b` (before lane D's interface
+- feature-extractor branch `satoshi/alt-extractor-families-20261003`, tip `1b74f93` (module commit
+  `981fdc3`), cut from lane D's branch at `2b9b82b` (before lane D's interface
   existed). Files: `app/alt_extractor_families.py`,
   `tests/test_alt_extractor_families.py`.
 - Encoder (shared): causal Conv1D stem → 2 causal self-attention blocks with
@@ -219,3 +219,10 @@ it is one more reason the clean-room P2C is not a TimeSiam reproduction.
   and that slot test is updated together with lane D.
 - First GPU run when lane F starts: MTAE, hourly window 168, D=8, one seed, on the
   5070 Ti or 4090, under the paired contract with identity/random/AE/DAE.
+- Interface compatibility: lane D pushed `e59b91c` ("wip" implementation).
+  Its `INPUT_NAMES` equals ours, and its `make_windows` → `TemporalBatch.as_inputs()`
+  feeds both encoders unchanged (missing data included). Verified 22/22 passing
+  against `e59b91c` in a detached scratch worktree; on the lane F branch the
+  compatibility test is skipped until lane D's module is merged in. I did not
+  edit lane D's WIP file; wiring the two reserved slots is a joint change once
+  lane D marks its interface final.
