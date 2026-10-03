@@ -1,0 +1,75 @@
+{
+ "schema": "laneG.faithful_cell_result.v1",
+ "cell_id": "traffic_L96_h192_s2022",
+ "paper": "TimeFilter (ICML 2025, arXiv:2501.13041) Table 8, L=96; margin Table 7 Traffic 0.407+-0.008 / 0.268+-0.004",
+ "author_code": "TimeFilter @ dffde87e (source_drift empty)",
+ "design_sha256": "6cba7e20aa359986482c0dbae7d7bc095b1951df9fdc4db10af5837815285575",
+ "protocol_sha256": "322262e8d78abd1fe0648d8e6f66c31c129d852a7cab97aad47c366311ba5a20",
+ "seed": 2022,
+ "dataset_custody": "DECLARED_TRANSPORT_OF_GOVERNED_BYTES_NOT_A_NEW_GOVERNED_UNIT",
+ "population": {
+  "windows": 3317,
+  "target_channels": 862,
+  "elements": 548976768,
+  "sha256": "4ddc62909fbbfe2033c0b060ce71808fa9a47ae1574c944836522f8a9b7fd569",
+  "all_finite": true
+ },
+ "model_error": {
+  "mse": 0.39657917618751526,
+  "mae": 0.26269859075546265,
+  "independent_float64": {
+   "mae": 0.26269857627485416,
+   "mse": 0.39657916751284017
+  }
+ },
+ "naive_same_rows": {
+  "mse": 2.747078210964908,
+  "mae": 1.085077268712241,
+  "pairing_equal": true
+ },
+ "skill_vs_naive": {
+  "mse": 0.8556360082488451,
+  "mae": 0.7578987245145862
+ },
+ "published": {
+  "mse": 0.395,
+  "mae": 0.262,
+  "source": "Table 8, Traffic, T=192"
+ },
+ "difference": {
+  "mse": 0.001579176187515241,
+  "mae": 0.0006985907554626358
+ },
+ "comparability": "MATCHED_PUBLISHED_RECIPE_EXECUTED; per-seed difference, not a class",
+ "evaluation_route": {
+  "path": "df_sota_bounded_eval.v1; df_sota_author_metric_exact.v2",
+  "author_test_native": false,
+  "probe_verdict": "ADMISSIBLE_PARITY_INHERITED",
+  "probe_record_sha256": "3fa2e71618ea068581d5b9da1ff48886d1275d8ff4ffa220da840e5b86189382",
+  "parity": "inherited from the bit-equal reduction proof on the full real Traffic h96 population; recorded as inherited"
+ },
+ "convergence": {
+  "epochs_sealed": 30,
+  "epochs_run": 30,
+  "early_stopped": false,
+  "best_epoch_by_validation": 28,
+  "status": "RAN_THE_SEALED_EPOCH_BUDGET_BEST_BEFORE_THE_END"
+ },
+ "checkpoint_sha256": "180167bdb393d29f8d1aec23a9dda23c9ef3c63833784f53ef8a1637541bcb2b",
+ "predictions_sha256": "0c9668577d19645554ad15ac933b07174ecbfb5ad545fb2ef7addc5a22901dc6",
+ "record_sha256": "0a049f7421155e1d03d7861fdc4315d5d836353bd977a20fe061eac8ed17f6b5",
+ "cost": {
+  "device_role": "worker_b RTX 4090 (UUID asserted in-child, not recorded here)",
+  "wall_seconds": 3483.368623971939,
+  "cpu_seconds": 3479.874063,
+  "whole_cgroup_peak_bytes": 5848240128,
+  "declared_cap_bytes": 7516192768,
+  "cap_basis": "1.25 x measured h192 s2021 cell peak 5.41 GiB = 6.77 GiB, rounded to 7 GiB",
+  "peak_gpu_reserved_bytes": 5756682240,
+  "started_at": "2026-10-03T07:02:18Z",
+  "finished_at": "2026-10-03T08:00:22Z"
+ },
+ "evidence_state": "MEASURED_UNVERIFIED (no independent replay yet)",
+ "retention": "record, checkpoint and bounded arrays retained on worker_b until replay + catalog",
+ "receipt_gate": "tsl_literature_metrics.v1 producer gate passed (14 checks)"
+}
