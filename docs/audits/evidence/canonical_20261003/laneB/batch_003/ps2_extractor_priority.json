@@ -1,0 +1,35 @@
+{
+ "applied_after_publication": true,
+ "exploration": [
+  "cot.wti_nymex.mm_net_oi",
+  "tv.wav_d2"
+ ],
+ "fdr_q": 0.1,
+ "fold_majority": 3,
+ "rule": "Order the hand-off for the GPU lanes without changing any status (reads the status table).\n\n    tier_1: survivor in some cell through OOF utility or monotone (Spearman) association;\n    tier_2: survivor only through synergy or group contribution;\n    tier_3: survivor only through MI-only association (scale dependence);\n    exploration: the recorded exploration sample, always kept regardless of tier.",
+ "schema": "ps2_extractor_priority.v1",
+ "statuses_changed": false,
+ "tier_1": [
+  "rg.atr_pct",
+  "rg.atr_ratio",
+  "rg.bb_width_pct",
+  "rg.di_spread",
+  "rg.ema_alignment",
+  "rg.macd_hist",
+  "rg.price_vs_ema50",
+  "rg.roc_12",
+  "tv.hilbert_amp",
+  "tv.kalman_dev",
+  "tv.stl_dev",
+  "tv.stl_seasonal",
+  "tv.wav_d1",
+  "tv.wav_d2",
+  "tv.wav_d3",
+  "tv.wav_d4",
+  "tv.wav_d5"
+ ],
+ "tier_2": [],
+ "tier_3": [
+  "tv.mt_band_6_48h"
+ ]
+}

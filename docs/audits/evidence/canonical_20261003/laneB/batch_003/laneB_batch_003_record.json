@@ -58,6 +58,36 @@
   "n_features": 19,
   "verified_with_lane_D_reader": "feature-extractor 8987c57 read_ps2_batch + validate_fold windows 48/168/720: READER_OK (19 features, 5 folds, 102239 grid rows)"
  },
+ "extractor_priority": {
+  "exploration": [
+   "cot.wti_nymex.mm_net_oi",
+   "tv.wav_d2"
+  ],
+  "tier_1": [
+   "rg.atr_pct",
+   "rg.atr_ratio",
+   "rg.bb_width_pct",
+   "rg.di_spread",
+   "rg.ema_alignment",
+   "rg.macd_hist",
+   "rg.price_vs_ema50",
+   "rg.roc_12",
+   "tv.hilbert_amp",
+   "tv.kalman_dev",
+   "tv.stl_dev",
+   "tv.stl_seasonal",
+   "tv.wav_d1",
+   "tv.wav_d2",
+   "tv.wav_d3",
+   "tv.wav_d4",
+   "tv.wav_d5"
+  ],
+  "tier_2": [],
+  "tier_3": [
+   "tv.mt_band_6_48h"
+  ]
+ },
+ "extractor_priority_sha256": "d934581ef3f4d788b0a7bcd3778eabbbbb229446d2ff0d6bedb7571428e7dcc3",
  "input": {
   "lane_a_base_batch_digests_sha256": "449f4c3d5e992ee4f3221c7e6ac3078167fe5e31063a3d659fb2814db1c07eb4",
   "lane_a_batch": "batch_003",
