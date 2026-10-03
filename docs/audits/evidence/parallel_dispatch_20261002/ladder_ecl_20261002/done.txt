@@ -1,13 +1,13 @@
-exit 0 ecl-ae-level-pilot4 GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8 3400M 2026-10-03T01:22:36Z
-exit 0 ecl-ae-slow_state GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519 4014M 2026-10-03T01:23:50Z
-exit 0 ecl-ae-mid_state GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8 4014M 2026-10-03T01:26:09Z
-exit 124 ecl-fc-ae-s2021 GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8 4014M 2026-10-03T01:27:50Z
-exit 0 ecl-fc-raw-s2021 GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519 4014M 2026-10-03T01:28:43Z
+exit 0 ecl-ae-level-pilot4 <worker_a-5090-uuid> 3400M 2026-10-03T01:22:36Z
+exit 0 ecl-ae-slow_state <worker_a-5070Ti-uuid> 4014M 2026-10-03T01:23:50Z
+exit 0 ecl-ae-mid_state <worker_a-5090-uuid> 4014M 2026-10-03T01:26:09Z
+exit 124 ecl-fc-ae-s2021 <worker_a-5090-uuid> 4014M 2026-10-03T01:27:50Z
+exit 0 ecl-fc-raw-s2021 <worker_a-5070Ti-uuid> 4014M 2026-10-03T01:28:43Z
 exit 0 ecl-extract
-exit 124 ecl-fc-ae-s2021-v2 GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8 4014M 2026-10-03T01:29:33Z
-exit 0 ecl-fc-raw-s2021-v2 GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519 4014M 2026-10-03T01:30:28Z
-exit 124 ecl-fc-ae-s2022-v2 GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8 4014M 2026-10-03T01:31:14Z
+exit 124 ecl-fc-ae-s2021-v2 <worker_a-5090-uuid> 4014M 2026-10-03T01:29:33Z
+exit 0 ecl-fc-raw-s2021-v2 <worker_a-5070Ti-uuid> 4014M 2026-10-03T01:30:28Z
+exit 124 ecl-fc-ae-s2022-v2 <worker_a-5090-uuid> 4014M 2026-10-03T01:31:14Z
 ALLDONE2
-exit 0 ecl-fc-ae-s2021-v3 GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8 4014M 2026-10-03T01:32:08Z
-exit 0 ecl-fc-ae-s2022-v3 GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8 4014M 2026-10-03T01:33:18Z
+exit 0 ecl-fc-ae-s2021-v3 <worker_a-5090-uuid> 4014M 2026-10-03T01:32:08Z
+exit 0 ecl-fc-ae-s2022-v3 <worker_a-5090-uuid> 4014M 2026-10-03T01:33:18Z
 ALLDONE3

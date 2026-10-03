@@ -1,6 +1,6 @@
 # R1/R2 development contrast: paired same-row naive (2026-10-03)
 
-Source of the owner's numbers: worker_a (gamma) `~/.local/state/scratch/m07/STATUS_r12_5090.json`, campaign `f2_eth4h_r1r2_5090_v1`
+Source of the owner's numbers: worker_a `~/.local/state/scratch/m07/STATUS_r12_5090.json`, campaign `f2_eth4h_r1r2_5090_v1`
 (root `~/.local/state/scratch/m07/campaign_eth_r12_5090`), 8/8 cells verified, seeds 2021 and 2022, split validation.
 Dataset: ETHUSDT 4h, `eth4h_l24_h6_v1` (source commit b1f8a74f, 2190 validation rows, rows 13699-15895, train rows 0-13699, purge 6 bars),
 target Y_h = z-scored cumulative log return, horizons 1..6, metric MAE in z_train units, objective = mean over the six horizons.

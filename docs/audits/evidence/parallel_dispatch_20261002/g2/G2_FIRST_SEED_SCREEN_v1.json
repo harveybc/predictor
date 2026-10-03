@@ -4,7 +4,7 @@
  "lane": "G2 RL",
  "order": "docs/handoffs/SATOSHI_CORRECTIVE_PARALLEL_ORDER_2026_10_03.md section 3 row G2, section 4 (RTX 4090), section 6",
  "host": "worker_b",
- "gpu": "RTX 4090 GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+ "gpu": "RTX 4090 <worker_b-4090-uuid>",
  "cap": "crispdm-run -m 3G -t 5h",
  "code_identity": {
   "note": "worker_b checkout ~/.local/state/scratch/g-rl/wt/agent-multi is a git worktree whose gitdir (agent-multi/.git/worktrees/agent-multi-g-rl-20261001) no longer exists; no git tip is readable, so file digests stand in",

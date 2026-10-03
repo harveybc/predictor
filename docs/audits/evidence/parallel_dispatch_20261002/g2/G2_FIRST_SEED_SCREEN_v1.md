@@ -1,6 +1,6 @@
 # G2 RL: four-arm first-seed screen, v1
 
-Written 2026-10-03T04:20:00Z. Order: docs/handoffs/SATOSHI_CORRECTIVE_PARALLEL_ORDER_2026_10_03.md section 3 row G2, section 4 (RTX 4090), section 6. Host worker_b, RTX 4090 GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9, cap `crispdm-run -m 3G -t 5h`.
+Written 2026-10-03T04:20:00Z. Order: docs/handoffs/SATOSHI_CORRECTIVE_PARALLEL_ORDER_2026_10_03.md section 3 row G2, section 4 (RTX 4090), section 6. Host worker_b, RTX 4090 <worker_b-4090-uuid>, cap `crispdm-run -m 3G -t 5h`.
 
 ## Labels
 
