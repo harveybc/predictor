@@ -1,0 +1,804 @@
+[
+ {
+  "subject_kind": "event",
+  "subject": "Euro Zone|CPI",
+  "rung1": {
+   "ESTIMATED": 15
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 15
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 15
+  }
+ },
+ {
+  "subject_kind": "event",
+  "subject": "Euro Zone|ECB Interest Rate Decision",
+  "rung1": {
+   "ESTIMATED": 15
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 15
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 15
+  }
+ },
+ {
+  "subject_kind": "event",
+  "subject": "Germany|German GDP",
+  "rung1": {
+   "ESTIMATED": 15
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 15
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 15
+  }
+ },
+ {
+  "subject_kind": "event",
+  "subject": "Germany|German Ifo Business Climate Index",
+  "rung1": {
+   "ESTIMATED": 15
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 15
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 15
+  }
+ },
+ {
+  "subject_kind": "event",
+  "subject": "Germany|German Manufacturing PMI",
+  "rung1": {
+   "ESTIMATED": 15
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 15
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 15
+  }
+ },
+ {
+  "subject_kind": "event",
+  "subject": "Germany|German Unemployment Change",
+  "rung1": {
+   "ESTIMATED": 15
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 15
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 15
+  }
+ },
+ {
+  "subject_kind": "event",
+  "subject": "Germany|German ZEW Economic Sentiment",
+  "rung1": {
+   "ESTIMATED": 15
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 15
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 15
+  }
+ },
+ {
+  "subject_kind": "event",
+  "subject": "United States|ADP Nonfarm Employment Change",
+  "rung1": {
+   "ESTIMATED": 15
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 15
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 15
+  }
+ },
+ {
+  "subject_kind": "event",
+  "subject": "United States|Crude Oil Inventories",
+  "rung1": {
+   "ESTIMATED": 15
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 15
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 15
+  }
+ },
+ {
+  "subject_kind": "event",
+  "subject": "United States|ISM Manufacturing PMI",
+  "rung1": {
+   "ESTIMATED": 15
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 15
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 15
+  }
+ },
+ {
+  "subject_kind": "event",
+  "subject": "United States|ISM Non-Manufacturing PMI",
+  "rung1": {
+   "ESTIMATED": 15
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 15
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 15
+  }
+ },
+ {
+  "subject_kind": "event",
+  "subject": "United States|New Home Sales",
+  "rung1": {
+   "ESTIMATED": 15
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 15
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 15
+  }
+ },
+ {
+  "subject_kind": "event",
+  "subject": "United States|Nonfarm Payrolls",
+  "rung1": {
+   "ESTIMATED": 15
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 15
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 15
+  }
+ },
+ {
+  "subject_kind": "event",
+  "subject": "United States|PPI",
+  "rung1": {
+   "ESTIMATED": 15
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 15
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 15
+  }
+ },
+ {
+  "subject_kind": "event",
+  "subject": "United States|Unemployment Rate",
+  "rung1": {
+   "ESTIMATED": 15
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 15
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 15
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "cal.dow_cos",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_APPLICABLE": 14
+  },
+  "rung3": {
+   "NOT_APPLICABLE": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "cal.dow_sin",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_APPLICABLE": 14
+  },
+  "rung3": {
+   "NOT_APPLICABLE": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "cal.doy_cos",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_APPLICABLE": 14
+  },
+  "rung3": {
+   "NOT_APPLICABLE": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "cal.doy_sin",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_APPLICABLE": 14
+  },
+  "rung3": {
+   "NOT_APPLICABLE": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "cal.hour_cos",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_APPLICABLE": 14
+  },
+  "rung3": {
+   "NOT_APPLICABLE": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "cal.hour_sin",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_APPLICABLE": 14
+  },
+  "rung3": {
+   "NOT_APPLICABLE": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "cal.sess_london",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_APPLICABLE": 14
+  },
+  "rung3": {
+   "NOT_APPLICABLE": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "cal.sess_newyork",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_APPLICABLE": 14
+  },
+  "rung3": {
+   "NOT_APPLICABLE": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "cal.sess_tokyo",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_APPLICABLE": 14
+  },
+  "rung3": {
+   "NOT_APPLICABLE": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "cal.us_dst",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_APPLICABLE": 14
+  },
+  "rung3": {
+   "NOT_APPLICABLE": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.close_loc",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.ewma_vol_168",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.ewma_vol_24",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.hours_since_prev_bar",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 14
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.log_close",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 14
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.log_co",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 9,
+   "NOT_IDENTIFIED": 5
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.log_hl",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.logret_120h",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 2,
+   "ESTIMATED": 12
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.logret_12h",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.logret_168h",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 14
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.logret_1h",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 12,
+   "NOT_IDENTIFIED": 2
+  },
+  "rung3": {
+   "ESTIMATED": 6,
+   "NOT_IDENTIFIED": 8
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.logret_24h",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.logret_2h",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.logret_48h",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.logret_4h",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.logret_6h",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.parkinson_24",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.rv5",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.zclose_168",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 9,
+   "ESTIMATED": 5
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 9,
+   "ESTIMATED": 5
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "px.zclose_24",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.adx_14",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.atr_14_n",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.bb_pctb_20",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.bb_width_20",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.cci_20",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.dmn_14",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.dmp_14",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.ema20_dev",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.macd_hist_n",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.macd_n",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.mom_10_n",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.roc_10",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.rsi_14",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 1,
+   "ESTIMATED": 13
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 1,
+   "ESTIMATED": 13
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.stoch_d",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 13,
+   "NOT_IDENTIFIED": 1
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.stoch_k",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "ta.willr_14",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ }
+]

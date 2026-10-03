@@ -1,0 +1,293 @@
+[
+ {
+  "subject_kind": "feature",
+  "subject": "cot.gold_comex.mm_net_oi",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 14
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "cot.gold_comex.mm_net_oi_chg_1w",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 14
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "cot.wti_nymex.mm_net_oi",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 14
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "cot.wti_nymex.mm_net_oi_chg_1w",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 14
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "rg.atr_pct",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "rg.atr_ratio",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 13,
+   "NOT_IDENTIFIED": 1
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "rg.bb_width_pct",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "rg.di_spread",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "rg.ema_alignment",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "rg.macd_hist",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 13,
+   "NOT_IDENTIFIED": 1
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "rg.price_vs_ema50",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 13,
+   "NOT_IDENTIFIED": 1
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "rg.roc_12",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "tv.hilbert_amp",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "tv.kalman_dev",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "tv.mt_band_6_48h",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "tv.stl_dev",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "tv.stl_seasonal",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "tv.wav_d1",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 13,
+   "NOT_IDENTIFIED": 1
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 9,
+   "ESTIMATED": 5
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "tv.wav_d2",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "tv.wav_d3",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "tv.wav_d4",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ },
+ {
+  "subject_kind": "feature",
+  "subject": "tv.wav_d5",
+  "rung1": {
+   "ESTIMATED": 14
+  },
+  "rung2": {
+   "ESTIMATED": 14
+  },
+  "rung3": {
+   "ESTIMATED": 14
+  }
+ }
+]
