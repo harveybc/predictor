@@ -1,0 +1,90 @@
+{
+ "schema": "canonical_exec_status.v1",
+ "observed_at": "2026-10-03T04:50:39Z",
+ "authority": "codex/workplan-consolidation-20261003@2edc2684 (master plan v3 consolidated)",
+ "neat": "no process or unit on any host (verified)",
+ "hermes": "not used this round (provider 403 earlier; unverified)",
+ "lanes": [
+  {
+   "lane": "A",
+   "resource": "CPU worker_a",
+   "work": "EURUSD PS0/PS1 sources, availability, targets, folds, basic coverage matrix",
+   "declared_state": "DISPATCHED",
+   "observed_state": "NOT_YET_OBSERVED",
+   "next_transition": "first PS1 batch"
+  },
+  {
+   "lane": "B",
+   "resource": "CPU worker_a",
+   "work": "PS2 redundancy/relevance/exploration (code first, consumes A batch)",
+   "declared_state": "DISPATCHED",
+   "observed_state": "NOT_YET_OBSERVED",
+   "next_transition": "code+tests, then first A batch"
+  },
+  {
+   "lane": "C",
+   "resource": "CPU worker_a",
+   "work": "PS3-C three-rung causal ladder EURUSD economic events (code first)",
+   "declared_state": "DISPATCHED",
+   "observed_state": "NOT_YET_OBSERVED",
+   "next_transition": "episode/treatment contract, then first A batch"
+  },
+  {
+   "lane": "D",
+   "resource": "CPU engineering",
+   "work": "feature-extractor univariate temporal extractor plugin + controls + tests",
+   "declared_state": "DISPATCHED",
+   "observed_state": "NOT_YET_OBSERVED",
+   "next_transition": "plugin contract tests green"
+  },
+  {
+   "lane": "D-gate",
+   "resource": "CPU engineering",
+   "work": "fail-closed selected-manifest consumer gate (predictor)",
+   "declared_state": "DISPATCHED",
+   "observed_state": "NOT_YET_OBSERVED",
+   "next_transition": "gate + ECL negative fixture"
+  },
+  {
+   "lane": "F-prep",
+   "resource": "CPU research",
+   "work": "TimeSiam / Ti-MAE official code + license dossier; alternative family implementation",
+   "declared_state": "DISPATCHED",
+   "observed_state": "NOT_YET_OBSERVED",
+   "next_transition": "license dossier"
+  },
+  {
+   "lane": "G",
+   "resource": "GPU worker_b RTX 4090",
+   "work": "faithful published reference, only if a sealed cell exists",
+   "declared_state": "DISPATCHED",
+   "observed_state": "NOT_YET_OBSERVED",
+   "next_transition": "sealed-cell inventory"
+  },
+  {
+   "lane": "H",
+   "resource": "CPU services",
+   "work": "M5PHET next real-provider E2E; LTS/MT5 demo/Alpaca paper health (read-only)",
+   "declared_state": "DISPATCHED",
+   "observed_state": "NOT_YET_OBSERVED",
+   "next_transition": "E2E receipt"
+  },
+  {
+   "lane": "E",
+   "resource": "GPU worker_a RTX 5090",
+   "work": "PS3-R extractor pilot on survivors",
+   "declared_state": "WAITING",
+   "observed_state": "NOT_YET_OBSERVED",
+   "next_transition": "first PS2 batch + D plugin"
+  },
+  {
+   "lane": "F",
+   "resource": "GPU worker_a RTX 5070 Ti",
+   "work": "alternative extractor family, same rows",
+   "declared_state": "WAITING",
+   "observed_state": "NOT_YET_OBSERVED",
+   "next_transition": "first PS2 batch + F-prep"
+  }
+ ],
+ "checklist_ref": "docs/tres_temas_entrevista/program_v3/MASTER_CHECKLIST.json"
+}
