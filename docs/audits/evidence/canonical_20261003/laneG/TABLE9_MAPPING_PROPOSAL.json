@@ -1,0 +1,36 @@
+{
+ "schema": "laneG.sealed_design_proposal.v1",
+ "id": "TIMEFILTER_TABLE9_L_MAPPING_SOURCE_QUERY",
+ "status": "PROPOSED_NOT_EXECUTED",
+ "authority": "master plan v3 s3 rule 3, s10 row 'TimeFilter ECL L512: mapeo Tabla 9 no resuelto'; SOTA_PROTOCOL_B_MAPPING_2026_09_23.md choice mapping items 1-3",
+ "open_item": "Which input length L in {192,336,512,720} produced each Electricity column of TimeFilter Table 9 (0.126/0.220, 0.143/0.237, 0.153/0.252, 0.177/0.275; avg 0.150/0.246).",
+ "evidence_checked_2026_10_03": [
+  {
+   "source": "github.com/TROUBADOUR000/TimeFilter refs",
+   "finding": "HEAD and main both dffde87e (the pinned revision); no newer commit, no other branch"
+  },
+  {
+   "source": "full history of scripts/ECL.sh (single commit 6bac755, 2025-01-20)",
+   "finding": "exactly one seq_len=96 block and one seq_len=512 block ever released; no 192/336/720 ECL script in any revision"
+  },
+  {
+   "source": "arXiv 2501.13041 v1 (2025-01-22) and v2 (2025-05-20, HTML)",
+   "finding": "Table 9 caption says L is searched from {192,336,512,720}; neither version states the selected L per horizon nor whether the search used validation or test"
+  }
+ ],
+ "why_no_gpu_cell_closes_it": "The three other L have no published recipe (patch length, dropout, top_p not given). Executing them would be our own search, not a reproduction (protocol B mapping item 3). Running L=512 again is a repetition of 12 verified cells (rule 6). Therefore no faithful GPU cell exists that resolves the mapping; any 'search' result would be an intervention and must be labelled as such.",
+ "smallest_closing_step": {
+  "kind": "SOURCE_QUERY_TO_AUTHORS",
+  "action": "Open one public issue on the authors' repository (or email the corresponding author) asking: (1) the selected L per horizon for Electricity in Table 9; (2) the patch_len/dropout/top_p/batch/lr used for the non-512 L; (3) whether L was selected on validation or test. Quote the pinned revision and the Table 9 values.",
+  "who": "owner or an agent holding an authorised public GitHub identity; this is external communication from the owner's identity, so it is an irreducible human action under master plan s13",
+  "gpu_cost": 0,
+  "acceptance": "An author statement or released script/log that names L per horizon. If it names L=512 for all four horizons, the 12 verified protocol-B cells become an exact Table 9 reproduction with no new run. If it names another L WITH its recipe, that becomes a new sealed design (3 seeds max, author recipe verbatim, same governed ECL file, same agreement rule) priced by a bounded pilot before any fit. If the authors give L without the rest of the recipe, the status stays NOT_RESOLVED and nothing is run.",
+  "until_answered": "Report protocol B only as 'released L=512 script reproduced and verified (12/12, bit-exact replay); Table 9 identity NOT claimed'."
+ },
+ "not_proposed": [
+  "running L in {192,336,720} with guessed hyperparameters",
+  "selecting L on the test split",
+  "re-running any of the 12 L=512 cells"
+ ],
+ "design_sha256": "62c81248d40c3b6d852fc87a8179dfec13c177ece23156a681f317fa0b30dcf4"
+}
