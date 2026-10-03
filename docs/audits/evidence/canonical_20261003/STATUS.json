@@ -1,6 +1,6 @@
 {
  "schema": "canonical_exec_status.v1",
- "observed_at": "2026-10-03T06:21:10Z",
+ "observed_at": "2026-10-03T06:31:33Z",
  "authority": "codex/workplan-consolidation-20261003@2edc2684 (master plan v3 consolidated)",
  "neat": "no process or unit on any host (verified)",
  "hermes": "not used this round (provider 403 earlier; unverified)",
@@ -28,9 +28,9 @@
    "resource": "CPU worker_a",
    "work": "PS3-C three-rung causal ladder EURUSD economic events (code first)",
    "declared_state": "DISPATCHED",
-   "observed_state": "BATCHES_1_3_DONE",
-   "next_transition": "tag lane B priorities + multiplicity/nonlinear check of 211 rung-2 hits (resumed)",
-   "evidence": "causal-inference satoshi/eurusd-causal-ladder-20261003 4604f06 (38 tests); dossiers for all 366 candidates + 15 release types, 5,349 cells; rung1 0 robust after BH; rung2 ESTIMATED 1,076 / NOT_IDENTIFIED 4,133 / NA 140; all 15 release types NOT_IDENTIFIED (assumed clock); 211 uncorrected interval hits pending multiplicity + nonlinear adjustment; coord b35d496e"
+   "observed_state": "JOIN_AND_REVIEW_DONE",
+   "next_transition": "feeds PS5 decision with extractibility from E/F",
+   "evidence": "causal-inference 3f04f40 (39 tests); join_batch_001..003 for 279 PS2 candidates (coord 6e6ec406); rung-2: 211 uncorrected -> 109 after BH -> 8 survive cross-fitted nonlinear AIPW (weak: RV 0.007-0.048)"
   },
   {
    "lane": "D",
