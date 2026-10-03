@@ -1,0 +1,10 @@
+2026-10-03T06:38:14Z START cap=7471M
+2026-10-03T06:57:35Z STOP file
+2026-10-03T06:57:43Z START driver2
+2026-10-03T06:57:43Z YIELD to waiting lane F request
+2026-10-03T06:58:56Z START driver3 (yield to lane F bounded at 10 min)
+2026-10-03T06:58:56Z YIELD to waiting lane F request
+2026-10-03T06:59:09Z START driver4 (yield to lane F only when its cap fits the slice, bounded at 30 min)
+2026-10-03T07:09:12Z CHANGE coordinator decision: lanef_waiting.py yields to lane F requests with cap <= 8 GiB inclusive (was 8 GiB - 256 MiB); yield still bounded at 30 min per boundary
+2026-10-03T07:23:57Z YIELD to waiting lane F request
+2026-10-03T07:32:50Z CHANGE lanef_waiting.py: yield only when lane F cap + slice baseline charge <= slice_memory_max (ledger readings). Evidence: laneF-measure-mtae cap 8589934592 == slice_memory_max with 53342208 B baseline charged -> SLICE_AGGREGATE_BUDGET at 07:31Z with the slice empty; an 8 GiB request is structurally inadmissible, so yielding to it only idles the 5090
