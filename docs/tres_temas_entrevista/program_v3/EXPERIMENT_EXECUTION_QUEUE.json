@@ -1,6 +1,6 @@
 {
   "schema": "experiment_execution_queue.v2",
-  "updated_on": "2026-10-03T16:22:00Z",
+  "updated_on": "2026-10-03T16:34:00Z",
   "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md at 02434903, merged into satoshi/canonical-exec-20261003",
   "policy": {
     "parallelism": "independent eligible lanes run concurrently",
@@ -49,7 +49,7 @@
       "id": "FS-EURUSD-PS3-R",
       "resource": "gamma_external_5090",
       "state": "RUNNING",
-      "work": "Single-feature temporal extractor on exactly the PS2 rows with seasonal context and raw/random/trained controls; batch_001 tier-1 is 33/33 complete, rg.atr_pct/rg.atr_ratio/rg.bb_width_pct completed in batch_003, and rg.di_spread is active on the 5090.",
+      "work": "Single-feature temporal extractor on exactly the PS2 rows with seasonal context and raw/random/trained controls; batch_001 tier-1 is 33/33 complete, rg.atr_pct/rg.atr_ratio/rg.bb_width_pct/rg.di_spread completed in batch_003, and rg.ema_alignment is active on the 5090.",
       "depends_on": ["FS-EURUSD-PS2"],
       "produces": "extractibility matrix, cost envelope and donor candidates"
     },
@@ -57,8 +57,8 @@
       "priority": 5,
       "id": "FS-EXTRACTOR-ALT",
       "resource": "gamma_internal_5070ti_or_dragon_4090",
-      "state": "RUNNING_QUEUED_ON_SHARED_SLICE",
-      "work": "Alternative masked temporal extractor on matched rows; 28 cells have retained results (including completed ta.roc_10), ta.rsi_14 is queued on the 5070 Ti, and both lanes alternate under one 8-GiB slice.",
+      "state": "RUNNING_ALTERNATING_ON_SHARED_SLICE",
+      "work": "Alternative masked temporal extractor on matched rows; 29 cells have retained results (including completed ta.rsi_14), and both lanes alternate under one 8-GiB slice.",
       "depends_on": ["FS-EURUSD-PS2"],
       "produces": "matched alternative-family comparison"
     },

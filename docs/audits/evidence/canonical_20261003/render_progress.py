@@ -9,7 +9,7 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 
 ROOT = Path(__file__).resolve().parent
-OBSERVED_AT = datetime(2026, 10, 3, 16, 22, tzinfo=timezone.utc)
+OBSERVED_AT = datetime(2026, 10, 3, 16, 34, tzinfo=timezone.utc)
 STAMP = OBSERVED_AT.strftime("%Y%m%dT%H%MZ")
 OUTPUT = ROOT / f"PROGRESS_{STAMP}.png"
 
@@ -31,9 +31,9 @@ def box(x, y, w, h, title, status, detail, edge, fill, status_offset=0.70, detai
     patch = FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.03,rounding_size=0.08",
                            linewidth=1.5, edgecolor=edge, facecolor=fill)
     ax.add_patch(patch)
-    ax.text(x + 0.20, y + h - 0.34, title, fontsize=14, weight="bold", color="#17212b")
-    ax.text(x + 0.20, y + h - status_offset, status, fontsize=9.5, weight="bold", color=edge)
-    ax.text(x + 0.20, y + detail_offset, detail, fontsize=9.1, color="#263541", va="bottom", linespacing=1.25)
+    ax.text(x + 0.20, y + h - 0.34, title, fontsize=12, weight="bold", color="#17212b")
+    ax.text(x + 0.20, y + h - status_offset, status, fontsize=8.5, weight="bold", color=edge)
+    ax.text(x + 0.20, y + detail_offset, detail, fontsize=8.2, color="#263541", va="bottom", linespacing=1.25)
 
 
 def arrow(start, end, color="#778791", curve=0.0):
@@ -48,11 +48,11 @@ orange = ("#a35b08", "#fff0d9")
 purple = ("#755c91", "#f1ecf7")
 gray = ("#61717b", "#f3f5f6")
 
-box(0.5, 6.1, 3.25, 1.55, "PS0 / PS1", "PARTIAL", "366 admissible features;\nsource clocks and paid feeds remain open.", *blue)
+box(0.5, 6.1, 3.25, 1.55, "PS0 / PS1", "PARTIAL", "366 admissible features;\nsource clocks and paid feeds open.", *blue)
 box(4.45, 6.1, 3.25, 1.55, "PS2", "PARTIAL", "279 joined; 87 low-priority remain\nexplicitly pending, not rejected.", *green)
-box(8.8, 6.55, 3.15, 1.48, "PS3-C · causal ladder", "REVIEW COMPLETE · NO SELECTION", "Fix 48ae17c; 1,076 historical estimates\nnow NOT_IDENTIFIED under current gates.", *orange)
-box(8.8, 4.85, 3.15, 1.48, "PS3-R · extractibility", "RUNNING", "E: 33/33 tier-1; 3 batch-003 cells done.\nF: 28 retained; ta.rsi_14 queued.", *blue)
-box(13.0, 5.7, 2.5, 1.55, "PS4 / PS5", "WAITING", "Reconcile both arms; publish\nselected / rejected / pending.", *purple)
+box(8.8, 6.55, 3.15, 1.48, "PS3-C · causal ladder", "REVIEWED · NO SELECTION", "Fix 48ae17c; 1,076 estimates.\nNone passes identification gate.", *orange)
+box(8.8, 4.85, 3.15, 1.48, "PS3-R · extractibility", "RUNNING", "E: 33/33 tier-1; 4 in batch 003.\nF: 29 retained; RSI-14 done.", *blue)
+box(13.0, 5.7, 2.5, 1.55, "PS4 / PS5", "WAITING", "Reconcile both arms;\nselected / rejected / pending.", *purple)
 
 arrow((3.8, 6.88), (4.35, 6.88))
 arrow((7.75, 6.98), (8.68, 7.20), curve=0.04)
@@ -72,8 +72,8 @@ for x, title, detail in later:
 
 ax.text(0.55, 2.65, "MACHINE SLOTS · same observation window", fontsize=12, weight="bold", color="#17212b")
 machine_rows = [
-    ("Gamma · RTX 5090", "E / rg.di_spread active · 49 C · 30.4 GiB VRAM", blue[0]),
-    ("Gamma · RTX 5070 Ti", "F / ta.rsi_14 queued · 38 C · 14 MiB VRAM", orange[0]),
+    ("Gamma · RTX 5090", "E / rg.ema_alignment active · 46 C · 30.4 GiB VRAM", blue[0]),
+    ("Gamma · RTX 5070 Ti", "F / ta.rsi_14 complete · 40 C · 14 MiB VRAM", green[0]),
     ("Dragon · RTX 4090", "idle · MT5 VM running · governed inputs and pins missing", orange[0]),
     ("Omega · RTX 4070", "desktop / OLAP activity · protected from long training", green[0]),
 ]
