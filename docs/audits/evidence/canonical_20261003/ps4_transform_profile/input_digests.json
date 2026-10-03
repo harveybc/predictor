@@ -1,0 +1,11 @@
+{
+ "schema": "ps4_transform_profile_digests.v1",
+ "sha256": {
+  "READY": "d597c65dafb24be0c2a5648d49508e7114a7ea2095367836d319a4e4dab5305f",
+  "admissible_features.json": "151f05a39e23f825ae6eac59e70e44a065b6b5c51960045a1110f358de89ea66",
+  "digests.json": "2d316760324cab4cc385c655161d9cbede1fd75b2f40ec60ed2d500f5ecf6ace",
+  "features_train.parquet": "fd0b4423db991cfb05cd4f9357a378648579d4c11552a1cac413ed711c3520bc",
+  "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+  "transform_feature_join.csv": "faa568ceeec60229cb8ee319c25d69f5d0a668af59ff53b4cbcb36ef9499ac16"
+ }
+}
