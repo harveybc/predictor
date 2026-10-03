@@ -1,0 +1,123 @@
+{
+ "schema": "selected_manifest_gate.wiring.v1",
+ "recorded_on": "2026-10-03",
+ "recorded_by_role": "lane D engineering (selection-first plan)",
+ "authority": [
+  "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3 sections 3, 5, 8, 9, 11",
+  "program_v3/MASTER_CHECKLIST.json forbidden_shortcuts",
+  "SATOSHI_CANONICAL_SELECTION_FIRST_EXECUTION_2026_10_03 sections 2, 8, 9",
+  "SATOSHI_NEAT_SEQUENCE_CORRECTION_2026_10_03 section 2"
+ ],
+ "base_commit": "2edc26848733a3037088bcf70add4068ebabe506",
+ "gate": {
+  "module": "tools/selected_manifest_gate.py",
+  "entry_points": [
+   "require_selected_manifest(manifest, consumed_features, decision_record=, expected_dataset_id=, source_files=)",
+   "require_campaign_inputs(campaign_or_binding, consumed_features, base_dir=)"
+  ],
+  "manifest_schema": "feature_selection.manifest.v1",
+  "decision_schema": "feature_selection.decision.v1",
+  "override": "none"
+ },
+ "decisions": [
+  "D1 The builder entry points do not exist at the ordered base 2edc2684; they live only on unmerged lines satoshi/neat-gen1-20261003 and satoshi/parallel-dispatch-20261002 (merge base 12de6f6c). Those files belong to other lanes, so this branch does not copy or edit them. Instead the tripwire test test_every_builder_entry_point_in_this_tree_calls_the_gate fails as soon as any listed builder (or any tools/ or predictor_plugins/ file carrying input_binding, FINAL_ADMISSIBLE_DECLARATION_BOUND, def init_campaign or all_admissible_control) reaches a tree that also holds this test without calling the gate. Dry run against both lines: 7 and 8 builders flagged, all ungated today.",
+  "D2 The independent decision is a separate record (feature_selection.decision.v1) that binds manifest_sha256; the manifest only references it by decision_id and decider_role, avoiding a digest cycle. Independence means decider role != producer role and decider role not a producer role by definition.",
+  "D3 A refused manifest refuses every consumed feature (refused_features = consumed set); there is no partial admission.",
+  "D4 Digest domain is canonical JSON (sort_keys, compact separators) minus the digest field, the same domain feature-eng uses for declaration_sha256 (re-derived for the ECL fixture: ca1098ed...).",
+  "D5 Negative fixtures are byte-exact copies: ECL admissible declaration (feature-eng 9c36720, file sha 9f344687...), ETH admissible declaration and the ETH FROZEN_DEVELOPMENT 83-feature list (feature-eng b3 line, file shas 5129f274..., fdff0c85...), and the M04 ECL input binding (predictor parallel-dispatch line, sha 8ad5c6e9...). The ETH list is named selected_feature_manifest.v1 but its own not_claimed says 'any selection result'; it is refused as LEGACY_PRODUCER_FROZEN_LIST_IS_NOT_SELECTION.",
+  "D6 The legacy optimizer_plugins/neat_optimizer.py refuses at optimize, create_shared_population, reproduce_shared and evaluate_single_genome (NeatKerasConfigRefused), including with plugin-default bounds, because every bound it can evolve is a predictor/Keras config field. The late NEAT head is a different, future component.",
+  "D7 Strategy export: predictor holds no live strategy export at this base. The only in-repo strategy invocation is the dead module 'app/data_processor copy.py' (strategy_plugin.evaluate_candidate). tools/strategy_naive_guard.py provides admit_horizons and guarded_strategy_call (zero invocations when no horizon strictly beats its same-row, same-scale, same-metric naive; undefined skill refuses)."
+ ],
+ "must_wire": {
+  "selected_manifest_gate": [
+   {
+    "file": "tools/modular_doin_campaign.py",
+    "where": "campaign declaration/init and before each dispatch in main()",
+    "lines": "parallel-dispatch, neat-gen1"
+   },
+   {
+    "file": "tools/modular_doin_declare_corrected.py",
+    "where": "declare(), before copying input_binding into the new campaign",
+    "lines": "parallel-dispatch, neat-gen1"
+   },
+   {
+    "file": "tools/modular_doin_ecl_npz.py",
+    "where": "build(), before materializing any column",
+    "lines": "parallel-dispatch, neat-gen1"
+   },
+   {
+    "file": "tools/modular_pretrain.py",
+    "where": "input_binding() / before branch_ae jobs in main()",
+    "lines": "parallel-dispatch, neat-gen1"
+   },
+   {
+    "file": "tools/modular_supervised_donor_pretrain.py",
+    "where": "main(), before branch construction from features",
+    "lines": "parallel-dispatch, neat-gen1"
+   },
+   {
+    "file": "tools/modular_doin_cost_pilot.py",
+    "where": "main(), before evaluate_candidate on the populations",
+    "lines": "parallel-dispatch, neat-gen1"
+   }
+  ],
+  "neat_refusal": [
+   {
+    "file": "tools/modular_neat_matched_arms.py",
+    "where": "init_campaign(): refuse (NEAT over Keras config is out of sequence)",
+    "lines": "neat-gen1"
+   },
+   {
+    "file": "tools/modular_neat_policy.py",
+    "where": "module entry: refuse via refuse_keras_config_fields",
+    "lines": "parallel-dispatch, neat-gen1"
+   }
+  ],
+  "strategy_naive_guard": [
+   {
+    "repository": "heuristic-strategy",
+    "file": "app/data_processor.py",
+    "where": "after loading hourly/daily predictions, before any plugin evaluate_candidate call; supply per-horizon model and same-row naive errors"
+   },
+   {
+    "repository": "predictor",
+    "file": "any exporter that writes prediction files for heuristic-strategy",
+    "where": "refuse to export horizons not admitted by admit_horizons"
+   }
+  ]
+ },
+ "refusal_outputs_cli": {
+  "tsl_electricity.admissible_inputs.v1.json": {
+   "admitted": false,
+   "consumed": 321,
+   "refused": 321,
+   "reasons": [
+    "ADMISSIBLE_DECLARATION_IS_NOT_SELECTION"
+   ]
+  },
+  "eth_4h.admissible_inputs.v1.json": {
+   "admitted": false,
+   "consumed": 83,
+   "refused": 83,
+   "reasons": [
+    "ADMISSIBLE_DECLARATION_IS_NOT_SELECTION"
+   ]
+  },
+  "SELECTED_FEATURE_MANIFEST.eth_4h.v1.FROZEN_DEVELOPMENT.json": {
+   "admitted": false,
+   "consumed": 83,
+   "refused": 83,
+   "reasons": [
+    "LEGACY_PRODUCER_FROZEN_LIST_IS_NOT_SELECTION"
+   ]
+  },
+  "m04_INPUT_BINDING.ecl.json via require_campaign_inputs with the 321 ECL columns": {
+   "admitted": false,
+   "refused": 321,
+   "reasons": [
+    "ADMISSIBLE_BINDING_IS_NOT_SELECTION",
+    "MISSING_MANIFEST"
+   ]
+  }
+ }
+}

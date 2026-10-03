@@ -14,6 +14,10 @@ Key features:
   - Level-2 early stopping: patience-based convergence detection (same as default)
 
 Uses the same candidate_worker subprocess for evaluation as default_optimizer.
+
+REFUSED SINCE 2026-10-03: every entry point raises NeatKerasConfigRefused. NEAT is not a
+configuration optimizer in this program (DEAP proposes, DOIN evaluates); NEAT is reserved
+for a late head over a frozen representation. See refuse_keras_config_fields.
 """
 
 import copy
@@ -39,6 +43,29 @@ ACTIVATION_INDEX_TO_NAME = [
 
 # Encoding type mapping: GA encodes as int [0..2], preprocessor needs string.
 ENCODING_INDEX_TO_NAME = ["none", "sincos", "onehot"]
+
+
+# ── Sequence guard (order 2026-10-03, master plan v3 section 9) ─────────────
+# NEAT is NOT a hyperparameter/configuration optimizer in this program. DEAP
+# proposes configurations and DOIN evaluates them; NEAT is reserved for a late
+# predictive/policy head over a frozen, materialized temporal representation.
+# This legacy plugin evolves predictor/Keras config fields (the keys of
+# ``hyperparameter_bounds``), so every entry point refuses before doing work.
+class NeatKerasConfigRefused(RuntimeError):
+    """Raised whenever the legacy NEAT optimizer is asked to evolve config fields."""
+
+
+def refuse_keras_config_fields(config, entry):
+    cfg = config or {}
+    bounds = cfg.get("hyperparameter_bounds") or cfg.get("param_bounds") or {}
+    fields = sorted(bounds) if isinstance(bounds, dict) else []
+    extra = [k for k in ("neat_initial_params", "optimization_stages") if cfg.get(k)]
+    raise NeatKerasConfigRefused(
+        f"NEAT_AS_CONFIG_OPTIMIZER_REFUSED at {entry}: the legacy neat_optimizer evolves "
+        f"predictor/Keras config fields {fields or '(plugin defaults: learning_rate, num_layers, layer_size)'}"
+        f"{' plus ' + str(extra) if extra else ''}. Use DEAP (default_optimizer) for configuration "
+        f"search and DOIN to evaluate candidates; NEAT runs only as a late head on a frozen "
+        f"representation, never on Keras learning rate, loss, dropout, grouping or branch/core architecture.")
 
 # Loss type mapping: GA encodes as int [0..4], predictor needs string.
 LOSS_TYPE_INDEX_TO_NAME = [
@@ -507,6 +534,7 @@ class Plugin:
 
         Same interface as default_optimizer: returns dict of best hyperparameters.
         """
+        refuse_keras_config_fields(config, "optimize")
         # ── Setup ────────────────────────────────────────────
         if "predictor_plugin" in config:
             config["plugin"] = config["predictor_plugin"]
@@ -1711,6 +1739,7 @@ class Plugin:
         Uses a deterministic seed so all nodes create the *same* population
         from the same genesis block seed.
         """
+        refuse_keras_config_fields(config, "create_shared_population")
         random.seed(seed)
         np.random.seed(seed)
 
@@ -1830,6 +1859,7 @@ class Plugin:
 
         Returns dict with next population + updated state.
         """
+        refuse_keras_config_fields(config, "reproduce_shared")
         random.seed(seed)
         np.random.seed(seed)
 
@@ -2073,6 +2103,7 @@ class Plugin:
         This is the shared-population equivalent of the inner eval_genome()
         function.  Returns dict with fitness and all metrics.
         """
+        refuse_keras_config_fields(config, "evaluate_single_genome")
         # Determine worst fitness based on metric_type
         _metric_type = config.get("metric_type", "regression")
         _worst = float("-inf") if _metric_type == "binary" else float("inf")
