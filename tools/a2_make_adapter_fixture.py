@@ -9,6 +9,7 @@ the adapter source sha256. Tiny by construction (40 rows, filters 8, latent 4, 1
 import argparse
 import hashlib
 import importlib.util
+import sys
 import json
 from pathlib import Path
 
@@ -28,6 +29,7 @@ np.savez(out / "train.npz", windows=windows, row_ids=row_ids, split=np.array("tr
          feature_names=np.array(["a", "b", "c"]), dataset_id=np.array("fixture:a2:train"))
 spec = importlib.util.spec_from_file_location("npz_encoder_adapter", a.adapter_module)
 mod = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = mod
 spec.loader.exec_module(mod)
 m = mod.train_encoder(str(out / "train.npz"), str(out / "adapter"), seed=0, latent_dim=4, filters=8,
                       epochs=1, batch_size=16)
