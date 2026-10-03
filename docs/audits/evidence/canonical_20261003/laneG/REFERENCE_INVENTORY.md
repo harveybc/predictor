@@ -65,8 +65,7 @@ in the replay sense. **No Weather cell is SEALED_NOT_RUN.**
 | T | seeds | ours MSE / MAE | published | naive MSE / MAE | class | state |
 |---|---|---|---|---|---|---|
 | 96 | 2021, 2022, 2023 | 0.375199 / 0.251143 (sd 0.00060 / 0.00028) | 0.375 / 0.251 | 2.7145 / 1.0772 | OPERATIONAL_AGREEMENT | MEASURED_UNVERIFIED: no independent replay; scored with the author's native unchunked `test()`; every seed hit the 30-epoch ceiling with its best epoch the last one |
-| 192 | 2021 | 0.396605 / 0.262610 (one seed) | 0.395 / 0.262 | 2.7471 / 1.0851 | per-seed difference only (+0.0016 / +0.0006) | **MEASURED_UNVERIFIED, run by lane G (§3)** |
-| 192 | 2022, 2023 | — | 0.395 / 0.262 | — | — | SEALED_NOT_RUN |
+| 192 | 2021, 2022, 2023 | 0.396509 / 0.262478 (sd 0.00015 / 0.00031) | 0.395 / 0.262 | 2.7471 / 1.0851 | **OPERATIONAL_AGREEMENT** (+0.0015 / +0.0005) | MEASURED_UNVERIFIED; run by lane G, bounded route with inherited parity (`TRAFFIC_L96_h192_CLOSURE.json`) |
 | 336 | 2021, 2022, 2023 | — | 0.414 / 0.271 | — | — | SEALED_NOT_RUN; the bounded probe at h336 has not been measured |
 | 720 | 2021, 2022, 2023 | — | 0.445 / 0.289 | — | — | SEALED_NOT_RUN; bounded probe `ADMISSIBLE_PARITY_INHERITED`, 3.600 GiB |
 
@@ -168,3 +167,19 @@ reproduced and verified; Table 9 identity NOT claimed."
    delete the 4.2 GB prediction files.
 5. **Table 9.** Send the authors' query in `TABLE9_MAPPING_PROPOSAL.json`. This is owner-level external communication and
    uses no GPU time.
+
+## 6. Continuation log (coordinator order: h192 ×2, then h720 ×3, then h336 probe and h336 ×3)
+
+| cell | MSE / MAE | naive MSE / MAE | skill MSE / MAE | epochs (best) | wall s | peak GiB / cap |
+|---|---|---|---|---|---|---|
+| h192 s2021 | 0.396605 / 0.262610 | 2.747078 / 1.085077 | 0.8556 / 0.7580 | 30 (28) | 3478 | 5.41 / 7 |
+| h192 s2022 | 0.396579 / 0.262699 | same | 0.8556 / 0.7579 | 30 (28) | 3483 | 5.45 / 7 |
+| h192 s2023 | 0.396342 / 0.262125 | same | 0.8557 / 0.7584 | 30 (29) | 3477 | 5.43 / 7 |
+| **h192, 3-seed mean** | **0.396509 / 0.262478** | 2.747078 / 1.085077 | 0.8557 / 0.7581 | | | |
+
+On the three-seed mean, h192 is in OPERATIONAL_AGREEMENT with Table 8 (0.395 / 0.262) on both metrics. The difference is
++0.0015 MSE against a tolerance of 0.0165, and +0.0005 MAE against 0.0085. The seed SD is about 10× smaller than the
+difference. Every seed is slightly worse than published, and every seed ended at or near the 30-epoch ceiling.
+
+A supervision defect in my own wait loop caused 1 h of GPU idle time between s2022 and s2023. The liveness `pgrep` matched
+its own ssh command line, so it never saw the cell end. The pattern is now fixed with a character class.
