@@ -1,0 +1,1042 @@
+{
+ "batch_id": "batch_003",
+ "code_digest": "eeee9936f4443d9328110c2918e5a37f7d2d1e58049cb1739f3fddb8ad95bbf3",
+ "control_all_admissible": [
+  "rg.atr_pct",
+  "rg.atr_ratio",
+  "rg.bb_width_pct",
+  "rg.price_vs_ema50",
+  "rg.ema_alignment",
+  "rg.di_spread",
+  "rg.macd_hist",
+  "rg.roc_12",
+  "tv.wav_d1",
+  "tv.wav_d2",
+  "tv.wav_d3",
+  "tv.wav_d4",
+  "tv.wav_d5",
+  "tv.mt_band_6_48h",
+  "tv.hilbert_amp",
+  "tv.stl_dev",
+  "tv.stl_seasonal",
+  "tv.kalman_dev",
+  "cot.gold_comex.mm_net_oi",
+  "cot.gold_comex.mm_net_oi_chg_1w",
+  "cot.wti_nymex.mm_net_oi",
+  "cot.wti_nymex.mm_net_oi_chg_1w"
+ ],
+ "counts": {
+  "Y_b_l144|h144": {
+   "EXPLORATION": 1,
+   "PROVISIONAL_LOW_PRIORITY": 5,
+   "PROVISIONAL_SURVIVOR": 16,
+   "TECHNICAL_REJECT": 0
+  },
+  "Y_b_s6|h6": {
+   "EXPLORATION": 2,
+   "PROVISIONAL_LOW_PRIORITY": 9,
+   "PROVISIONAL_SURVIVOR": 11,
+   "TECHNICAL_REJECT": 0
+  },
+  "Y_l|h120": {
+   "EXPLORATION": 1,
+   "PROVISIONAL_LOW_PRIORITY": 13,
+   "PROVISIONAL_SURVIVOR": 8,
+   "TECHNICAL_REJECT": 0
+  },
+  "Y_l|h144": {
+   "EXPLORATION": 1,
+   "PROVISIONAL_LOW_PRIORITY": 11,
+   "PROVISIONAL_SURVIVOR": 10,
+   "TECHNICAL_REJECT": 0
+  },
+  "Y_l|h24": {
+   "EXPLORATION": 1,
+   "PROVISIONAL_LOW_PRIORITY": 12,
+   "PROVISIONAL_SURVIVOR": 9,
+   "TECHNICAL_REJECT": 0
+  },
+  "Y_l|h48": {
+   "EXPLORATION": 1,
+   "PROVISIONAL_LOW_PRIORITY": 13,
+   "PROVISIONAL_SURVIVOR": 8,
+   "TECHNICAL_REJECT": 0
+  },
+  "Y_l|h72": {
+   "EXPLORATION": 1,
+   "PROVISIONAL_LOW_PRIORITY": 14,
+   "PROVISIONAL_SURVIVOR": 7,
+   "TECHNICAL_REJECT": 0
+  },
+  "Y_l|h96": {
+   "EXPLORATION": 2,
+   "PROVISIONAL_LOW_PRIORITY": 20,
+   "PROVISIONAL_SURVIVOR": 0,
+   "TECHNICAL_REJECT": 0
+  },
+  "Y_s|h1": {
+   "EXPLORATION": 1,
+   "PROVISIONAL_LOW_PRIORITY": 6,
+   "PROVISIONAL_SURVIVOR": 15,
+   "TECHNICAL_REJECT": 0
+  },
+  "Y_s|h2": {
+   "EXPLORATION": 1,
+   "PROVISIONAL_LOW_PRIORITY": 5,
+   "PROVISIONAL_SURVIVOR": 16,
+   "TECHNICAL_REJECT": 0
+  },
+  "Y_s|h3": {
+   "EXPLORATION": 1,
+   "PROVISIONAL_LOW_PRIORITY": 6,
+   "PROVISIONAL_SURVIVOR": 15,
+   "TECHNICAL_REJECT": 0
+  },
+  "Y_s|h4": {
+   "EXPLORATION": 1,
+   "PROVISIONAL_LOW_PRIORITY": 4,
+   "PROVISIONAL_SURVIVOR": 17,
+   "TECHNICAL_REJECT": 0
+  },
+  "Y_s|h5": {
+   "EXPLORATION": 1,
+   "PROVISIONAL_LOW_PRIORITY": 4,
+   "PROVISIONAL_SURVIVOR": 17,
+   "TECHNICAL_REJECT": 0
+  },
+  "Y_s|h6": {
+   "EXPLORATION": 1,
+   "PROVISIONAL_LOW_PRIORITY": 4,
+   "PROVISIONAL_SURVIVOR": 17,
+   "TECHNICAL_REJECT": 0
+  }
+ },
+ "exploration_sample": [
+  "cot.wti_nymex.mm_net_oi",
+  "tv.wav_d2"
+ ],
+ "extractor_worklist": {
+  "cot.wti_nymex.mm_net_oi": [
+   "Y_b_l144_h144:EXPLORATION",
+   "Y_b_s6_h6:EXPLORATION",
+   "Y_l_h24:EXPLORATION",
+   "Y_l_h48:EXPLORATION",
+   "Y_l_h72:EXPLORATION",
+   "Y_l_h96:EXPLORATION",
+   "Y_l_h120:EXPLORATION",
+   "Y_l_h144:EXPLORATION",
+   "Y_s_h1:EXPLORATION",
+   "Y_s_h2:EXPLORATION",
+   "Y_s_h3:EXPLORATION",
+   "Y_s_h4:EXPLORATION",
+   "Y_s_h5:EXPLORATION",
+   "Y_s_h6:EXPLORATION"
+  ],
+  "rg.atr_pct": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "rg.atr_ratio": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR"
+  ],
+  "rg.bb_width_pct": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "rg.di_spread": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "rg.ema_alignment": [
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "rg.macd_hist": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "rg.price_vs_ema50": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "rg.roc_12": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "tv.hilbert_amp": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "tv.kalman_dev": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "tv.mt_band_6_48h": [
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "tv.stl_dev": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "tv.stl_seasonal": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "tv.wav_d1": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "tv.wav_d2": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:EXPLORATION",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:EXPLORATION",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "tv.wav_d3": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "tv.wav_d4": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "tv.wav_d5": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ]
+ },
+ "fit_scope": "inner chronological TRAIN folds",
+ "fold_clusters": {
+  "inner_2019": {
+   "dependence": [
+    [
+     "cot.gold_comex.mm_net_oi"
+    ],
+    [
+     "cot.gold_comex.mm_net_oi_chg_1w"
+    ],
+    [
+     "cot.wti_nymex.mm_net_oi"
+    ],
+    [
+     "cot.wti_nymex.mm_net_oi_chg_1w"
+    ],
+    [
+     "rg.atr_pct",
+     "rg.atr_ratio"
+    ],
+    [
+     "rg.bb_width_pct"
+    ],
+    [
+     "rg.di_spread"
+    ],
+    [
+     "rg.ema_alignment"
+    ],
+    [
+     "rg.macd_hist"
+    ],
+    [
+     "rg.price_vs_ema50"
+    ],
+    [
+     "rg.roc_12"
+    ],
+    [
+     "tv.hilbert_amp"
+    ],
+    [
+     "tv.kalman_dev"
+    ],
+    [
+     "tv.mt_band_6_48h"
+    ],
+    [
+     "tv.stl_dev"
+    ],
+    [
+     "tv.stl_seasonal"
+    ],
+    [
+     "tv.wav_d1"
+    ],
+    [
+     "tv.wav_d2"
+    ],
+    [
+     "tv.wav_d3"
+    ],
+    [
+     "tv.wav_d4"
+    ],
+    [
+     "tv.wav_d5"
+    ]
+   ],
+   "profile": [
+    [
+     "cot.gold_comex.mm_net_oi",
+     "cot.gold_comex.mm_net_oi_chg_1w",
+     "cot.wti_nymex.mm_net_oi",
+     "cot.wti_nymex.mm_net_oi_chg_1w"
+    ],
+    [
+     "rg.atr_pct",
+     "rg.bb_width_pct",
+     "rg.ema_alignment"
+    ],
+    [
+     "rg.atr_ratio",
+     "tv.hilbert_amp",
+     "tv.mt_band_6_48h"
+    ],
+    [
+     "rg.di_spread",
+     "rg.macd_hist",
+     "rg.price_vs_ema50",
+     "rg.roc_12",
+     "tv.kalman_dev",
+     "tv.stl_dev",
+     "tv.stl_seasonal",
+     "tv.wav_d2",
+     "tv.wav_d3",
+     "tv.wav_d4",
+     "tv.wav_d5"
+    ],
+    [
+     "tv.wav_d1"
+    ]
+   ]
+  },
+  "inner_2020": {
+   "dependence": [
+    [
+     "cot.gold_comex.mm_net_oi"
+    ],
+    [
+     "cot.gold_comex.mm_net_oi_chg_1w"
+    ],
+    [
+     "cot.wti_nymex.mm_net_oi"
+    ],
+    [
+     "cot.wti_nymex.mm_net_oi_chg_1w"
+    ],
+    [
+     "rg.atr_pct",
+     "rg.atr_ratio"
+    ],
+    [
+     "rg.bb_width_pct"
+    ],
+    [
+     "rg.di_spread"
+    ],
+    [
+     "rg.ema_alignment"
+    ],
+    [
+     "rg.macd_hist"
+    ],
+    [
+     "rg.price_vs_ema50"
+    ],
+    [
+     "rg.roc_12"
+    ],
+    [
+     "tv.hilbert_amp"
+    ],
+    [
+     "tv.kalman_dev"
+    ],
+    [
+     "tv.mt_band_6_48h"
+    ],
+    [
+     "tv.stl_dev"
+    ],
+    [
+     "tv.stl_seasonal"
+    ],
+    [
+     "tv.wav_d1"
+    ],
+    [
+     "tv.wav_d2"
+    ],
+    [
+     "tv.wav_d3"
+    ],
+    [
+     "tv.wav_d4"
+    ],
+    [
+     "tv.wav_d5"
+    ]
+   ],
+   "profile": [
+    [
+     "cot.gold_comex.mm_net_oi",
+     "cot.gold_comex.mm_net_oi_chg_1w",
+     "cot.wti_nymex.mm_net_oi",
+     "cot.wti_nymex.mm_net_oi_chg_1w"
+    ],
+    [
+     "rg.atr_pct",
+     "rg.bb_width_pct"
+    ],
+    [
+     "rg.atr_ratio",
+     "tv.hilbert_amp",
+     "tv.mt_band_6_48h"
+    ],
+    [
+     "rg.di_spread",
+     "rg.ema_alignment",
+     "rg.macd_hist",
+     "rg.price_vs_ema50",
+     "rg.roc_12",
+     "tv.kalman_dev",
+     "tv.stl_dev",
+     "tv.stl_seasonal",
+     "tv.wav_d2",
+     "tv.wav_d3",
+     "tv.wav_d4",
+     "tv.wav_d5"
+    ],
+    [
+     "tv.wav_d1"
+    ]
+   ]
+  },
+  "inner_2021": {
+   "dependence": [
+    [
+     "cot.gold_comex.mm_net_oi"
+    ],
+    [
+     "cot.gold_comex.mm_net_oi_chg_1w"
+    ],
+    [
+     "cot.wti_nymex.mm_net_oi"
+    ],
+    [
+     "cot.wti_nymex.mm_net_oi_chg_1w"
+    ],
+    [
+     "rg.atr_pct",
+     "rg.atr_ratio"
+    ],
+    [
+     "rg.bb_width_pct"
+    ],
+    [
+     "rg.di_spread"
+    ],
+    [
+     "rg.ema_alignment"
+    ],
+    [
+     "rg.macd_hist"
+    ],
+    [
+     "rg.price_vs_ema50"
+    ],
+    [
+     "rg.roc_12"
+    ],
+    [
+     "tv.hilbert_amp"
+    ],
+    [
+     "tv.kalman_dev"
+    ],
+    [
+     "tv.mt_band_6_48h"
+    ],
+    [
+     "tv.stl_dev"
+    ],
+    [
+     "tv.stl_seasonal"
+    ],
+    [
+     "tv.wav_d1"
+    ],
+    [
+     "tv.wav_d2"
+    ],
+    [
+     "tv.wav_d3"
+    ],
+    [
+     "tv.wav_d4"
+    ],
+    [
+     "tv.wav_d5"
+    ]
+   ],
+   "profile": [
+    [
+     "cot.gold_comex.mm_net_oi",
+     "cot.gold_comex.mm_net_oi_chg_1w",
+     "cot.wti_nymex.mm_net_oi",
+     "cot.wti_nymex.mm_net_oi_chg_1w"
+    ],
+    [
+     "rg.atr_pct",
+     "rg.bb_width_pct"
+    ],
+    [
+     "rg.atr_ratio",
+     "tv.hilbert_amp",
+     "tv.mt_band_6_48h"
+    ],
+    [
+     "rg.di_spread",
+     "rg.ema_alignment",
+     "rg.macd_hist",
+     "rg.price_vs_ema50",
+     "rg.roc_12",
+     "tv.kalman_dev",
+     "tv.stl_dev",
+     "tv.stl_seasonal",
+     "tv.wav_d2",
+     "tv.wav_d3",
+     "tv.wav_d4",
+     "tv.wav_d5"
+    ],
+    [
+     "tv.wav_d1"
+    ]
+   ]
+  },
+  "inner_2022": {
+   "dependence": [
+    [
+     "cot.gold_comex.mm_net_oi"
+    ],
+    [
+     "cot.gold_comex.mm_net_oi_chg_1w"
+    ],
+    [
+     "cot.wti_nymex.mm_net_oi"
+    ],
+    [
+     "cot.wti_nymex.mm_net_oi_chg_1w"
+    ],
+    [
+     "rg.atr_pct",
+     "rg.atr_ratio"
+    ],
+    [
+     "rg.bb_width_pct"
+    ],
+    [
+     "rg.di_spread"
+    ],
+    [
+     "rg.ema_alignment"
+    ],
+    [
+     "rg.macd_hist"
+    ],
+    [
+     "rg.price_vs_ema50"
+    ],
+    [
+     "rg.roc_12"
+    ],
+    [
+     "tv.hilbert_amp"
+    ],
+    [
+     "tv.kalman_dev"
+    ],
+    [
+     "tv.mt_band_6_48h"
+    ],
+    [
+     "tv.stl_dev"
+    ],
+    [
+     "tv.stl_seasonal"
+    ],
+    [
+     "tv.wav_d1"
+    ],
+    [
+     "tv.wav_d2"
+    ],
+    [
+     "tv.wav_d3"
+    ],
+    [
+     "tv.wav_d4"
+    ],
+    [
+     "tv.wav_d5"
+    ]
+   ],
+   "profile": [
+    [
+     "cot.gold_comex.mm_net_oi",
+     "cot.wti_nymex.mm_net_oi"
+    ],
+    [
+     "cot.gold_comex.mm_net_oi_chg_1w",
+     "cot.wti_nymex.mm_net_oi_chg_1w"
+    ],
+    [
+     "rg.atr_pct",
+     "rg.bb_width_pct",
+     "rg.di_spread",
+     "rg.ema_alignment",
+     "rg.macd_hist",
+     "rg.price_vs_ema50",
+     "rg.roc_12",
+     "tv.kalman_dev",
+     "tv.stl_dev",
+     "tv.stl_seasonal",
+     "tv.wav_d2",
+     "tv.wav_d3",
+     "tv.wav_d4",
+     "tv.wav_d5"
+    ],
+    [
+     "rg.atr_ratio",
+     "tv.hilbert_amp",
+     "tv.mt_band_6_48h"
+    ],
+    [
+     "tv.wav_d1"
+    ]
+   ]
+  },
+  "inner_2023": {
+   "dependence": [
+    [
+     "cot.gold_comex.mm_net_oi"
+    ],
+    [
+     "cot.gold_comex.mm_net_oi_chg_1w"
+    ],
+    [
+     "cot.wti_nymex.mm_net_oi"
+    ],
+    [
+     "cot.wti_nymex.mm_net_oi_chg_1w"
+    ],
+    [
+     "rg.atr_pct",
+     "rg.atr_ratio"
+    ],
+    [
+     "rg.bb_width_pct"
+    ],
+    [
+     "rg.di_spread"
+    ],
+    [
+     "rg.ema_alignment"
+    ],
+    [
+     "rg.macd_hist"
+    ],
+    [
+     "rg.price_vs_ema50"
+    ],
+    [
+     "rg.roc_12"
+    ],
+    [
+     "tv.hilbert_amp"
+    ],
+    [
+     "tv.kalman_dev"
+    ],
+    [
+     "tv.mt_band_6_48h"
+    ],
+    [
+     "tv.stl_dev"
+    ],
+    [
+     "tv.stl_seasonal"
+    ],
+    [
+     "tv.wav_d1"
+    ],
+    [
+     "tv.wav_d2"
+    ],
+    [
+     "tv.wav_d3"
+    ],
+    [
+     "tv.wav_d4"
+    ],
+    [
+     "tv.wav_d5"
+    ]
+   ],
+   "profile": [
+    [
+     "cot.gold_comex.mm_net_oi",
+     "cot.wti_nymex.mm_net_oi"
+    ],
+    [
+     "cot.gold_comex.mm_net_oi_chg_1w",
+     "cot.wti_nymex.mm_net_oi_chg_1w"
+    ],
+    [
+     "rg.atr_pct",
+     "rg.bb_width_pct",
+     "rg.di_spread",
+     "rg.ema_alignment",
+     "rg.macd_hist",
+     "rg.price_vs_ema50",
+     "rg.roc_12",
+     "tv.kalman_dev",
+     "tv.stl_dev",
+     "tv.stl_seasonal",
+     "tv.wav_d2",
+     "tv.wav_d3",
+     "tv.wav_d4",
+     "tv.wav_d5"
+    ],
+    [
+     "rg.atr_ratio",
+     "tv.hilbert_amp",
+     "tv.mt_band_6_48h"
+    ],
+    [
+     "tv.wav_d1"
+    ]
+   ]
+  }
+ },
+ "folds": [
+  {
+   "eval_end_row": 47637,
+   "eval_end_time": 1577829600,
+   "eval_start_row": 41424,
+   "eval_start_time": 1546383600,
+   "fit_end_row_laneA": 41329,
+   "fit_start_row": 0,
+   "fold": "inner_2019",
+   "label_purge_h_laneA": 144
+  },
+  {
+   "eval_end_row": 53867,
+   "eval_end_time": 1609452000,
+   "eval_start_row": 47637,
+   "eval_start_time": 1577919600,
+   "fit_end_row_laneA": 47542,
+   "fit_start_row": 0,
+   "fold": "inner_2020",
+   "label_purge_h_laneA": 144
+  },
+  {
+   "eval_end_row": 60086,
+   "eval_end_time": 1640988000,
+   "eval_start_row": 53867,
+   "eval_start_time": 1609714800,
+   "fit_end_row_laneA": 53771,
+   "fit_start_row": 0,
+   "fold": "inner_2021",
+   "label_purge_h_laneA": 144
+  },
+  {
+   "eval_end_row": 66325,
+   "eval_end_time": 1672437600,
+   "eval_start_row": 60086,
+   "eval_start_time": 1641164400,
+   "fit_end_row_laneA": 59966,
+   "fit_start_row": 0,
+   "fold": "inner_2022",
+   "label_purge_h_laneA": 144
+  },
+  {
+   "eval_end_row": 71734,
+   "eval_end_time": 1703887200,
+   "eval_start_row": 66325,
+   "eval_start_time": 1672614000,
+   "fit_end_row_laneA": 66206,
+   "fit_start_row": 0,
+   "fold": "inner_2023",
+   "label_purge_h_laneA": 144
+  }
+ ],
+ "multiplicity": {
+  "correction": "Benjamini-Hochberg within family",
+  "families": "target x horizon x fold x statistic",
+  "fdr_q": 0.1,
+  "tests_total": 3080
+ },
+ "n_admissible": 22,
+ "n_features": 22,
+ "output_sha256": {
+  "ps2_exploration.json": "4e4ab38075c249057da7d587e20c97b4b8dc3c8c05abf0d0a3f8681c50b16532",
+  "ps2_fold_cells.csv": "a2b0acf1b6d2064d8c92fffaf4e0c38668c30515cc694b421aec12de3aafe9e9",
+  "ps2_groups.csv": "4e9133e037cb6e5feae9635b3292ab3170773dc36e37d6c8de1b8061981459eb",
+  "ps2_status.csv": "b2ffaf514b6550bcf746d75b953a6588c48d46c009ae8ba4d403dc3aa6f2478a",
+  "ps2_synergy.csv": "86245884f737889a3415afb1ca63a5635b4ddd80409c0c4f51a631826063e262"
+ },
+ "parameter_digest": "e4eeebf4749addc035d4619cbae531b778e243b5a5613d47eb46f710c9bf0d73",
+ "parameters": {
+  "barrier": {
+   "classes": {
+    "-1": "lower first",
+    "0": "timeout",
+    "1": "upper first"
+   },
+   "horizon_hours": 24,
+   "k_sigma": 1.0,
+   "min_vol_returns": 48,
+   "price_rule": "close-only first touch, ties impossible",
+   "vol_window_hours": 168
+  },
+  "bin_shrink": 20.0,
+  "exploration_fraction": 0.2,
+  "exploration_min": 2,
+  "exploration_seed": 20261003,
+  "fdr_q": 0.1,
+  "fold_majority": 3,
+  "fold_source": "supplied by PS0/PS1 batch",
+  "group_drop_one_max": 30,
+  "group_max_members": 200,
+  "inner_eval_frac": 0.15,
+  "label_rule": "log(price_asof(t+h)/price(t)); price_asof = last TRAIN bar at or before t+h elapsed hours; label support ends at t+h",
+  "leak_alarm_abs_spearman": 0.98,
+  "mi_bins": 8,
+  "min_eval_rows": 100,
+  "min_fit_rows": 300,
+  "n_inner_folds": 3,
+  "n_null": 99,
+  "n_util_null": 19,
+  "null_min_shift_rows": 336,
+  "profile_acf_lags": [
+   1,
+   24,
+   168
+  ],
+  "redundancy_min_pairs": 50,
+  "redundancy_threshold": 0.9,
+  "synergy_fold_min": 4,
+  "synergy_max_pairs": 3000,
+  "synergy_min_rel_gain": 0.001,
+  "synergy_null_p": 0.05,
+  "synergy_top_k": 20,
+  "targets": {
+   "Y_b": [
+    24
+   ],
+   "Y_l": [
+    24,
+    48,
+    72,
+    96,
+    120,
+    144
+   ],
+   "Y_s": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ]
+  },
+  "util_bins": 10,
+  "util_null_p": 0.1,
+  "winsor_q": 0.005
+ },
+ "provenance": {
+  "eval_rule": "lane A val rows AND label support end <= last val decision time",
+  "fit_rule": "lane A train rows AND label support end < eval start (per target)",
+  "lane_a_artifacts_sha256": {
+   "admissible_features.csv": "0c78507059e7b150af2a264f98f03441bb5e5009e32b7b2ed086c2658340d8f6",
+   "admissible_features.json": "151f05a39e23f825ae6eac59e70e44a065b6b5c51960045a1110f358de89ea66",
+   "batch_report.json": "5750195ca47919010fec0f385b4c60dc0c67daa2078279940fe491b65ace91de",
+   "coverage_matrix.csv": "cb2546ffb7c57a88c05ed393bdd094bced086d5df776b9030faff7ed84de2142",
+   "custody.csv": "2fcf0b1c9cb3961b59be7623e1e64a8e53d3d759beb3dcb3c5cd4b77bfb675b1",
+   "features_train.parquet": "fd0b4423db991cfb05cd4f9357a378648579d4c11552a1cac413ed711c3520bc",
+   "inventory_columns.csv": "8b6d871409ef4ba031f24e1362181f8b57dcf3b376d4b00b859f71b180b2a4c9",
+   "metric_state_matrix.csv": "6dba2f11ea297cecfaa4034a101a8ab42be8576a875afc4d11f7ed4b296fa897",
+   "profile_cells.csv": "0b5d8c2f435f691047b0fe2b9e0c53e259506bba8ffdf8f412185098f1e5f506"
+  },
+  "lane_a_base_batch_digests_sha256": "449f4c3d5e992ee4f3221c7e6ac3078167fe5e31063a3d659fb2814db1c07eb4",
+  "lane_a_batch": "batch_003",
+  "lane_a_code_commit": "42272ad7f288d39d5b9f84c63bb219ef0b9a7b19",
+  "lane_a_contract_sha256": "a4b1718b84c747d134fd55da4cc789ea541021b5815e0b49df8cfd6635acdcfc",
+  "lane_a_ready_digests_sha256": "2d316760324cab4cc385c655161d9cbede1fd75b2f40ec60ed2d500f5ecf6ace",
+  "read_end": "2024-01-01 00:00:00+00:00",
+  "selector_episode_sources": [],
+  "target_columns": [
+   "Y_b_l144|144",
+   "Y_b_s6|6",
+   "Y_l|120",
+   "Y_l|144",
+   "Y_l|24",
+   "Y_l|48",
+   "Y_l|72",
+   "Y_l|96",
+   "Y_s|1",
+   "Y_s|2",
+   "Y_s|3",
+   "Y_s|4",
+   "Y_s|5",
+   "Y_s|6"
+  ]
+ },
+ "reincorporation": "re-enters on: PS4/PS5 inner-validation gain alone or as a member of a group or pair, a later exploration draw, a new vintage, a new declared target, or causal/extractibility evidence (PS3-C/PS3-R)",
+ "schema": "feature_eng.ps2_selection.v1",
+ "selector_episode_sources_reported_separately": [],
+ "status_policy": {
+  "EXPLORATION": "a low-priority cell of a feature in the exploration sample",
+  "PROVISIONAL_LOW_PRIORITY": "otherwise, or LP_CONDITIONALLY_REDUNDANT (survivor whose conditional delta within its dependence cluster is <=0 in >=fold_majority folds while a cluster member has a larger median OOF delta). Reversible; kept in the control list.",
+  "PROVISIONAL_SURVIVOR": "any of S_OOF_UTILITY (binned OOF delta>0 in >=fold_majority folds, median>0, and temporal-null p<=util_null_p in >=fold_majority folds), S_ASSOC_ROBUST (Spearman or MI q<=fdr_q in >=fold_majority folds), S_SYNERGY_PAIR, S_GROUP_CONTRIBUTION",
+  "TECHNICAL_REJECT": "declared unavailable/leak/invalid by PS0/PS1, forward-looking name token, no finite TRAIN value, or constant in TRAIN. Never association."
+ },
+ "technical_rejects": {},
+ "train_data_digest": "efc55817eecb483af2d91cd50ca531a2a9345b5aa5cff629511ca68cbbea5fea",
+ "train_first_time": 1335830400,
+ "train_last_time": 1703887200,
+ "train_rows": 71734
+}
