@@ -57,6 +57,7 @@ ARCHITECTURE_ORDER = [
     "freeze_final_representation",
     "Dense_vs_NEAT",
     "SAC_and_DQN_raw_vs_modular",
+    "deferred_causal_calendar_model_input",
 ]
 
 
@@ -129,6 +130,10 @@ def validate(state, root):
         issues.append("operational target leakage")
     if selection.get("extractibility_controls") != ["raw", "random_encoder", "trained_encoder"]:
         issues.append("extractibility controls")
+    if selection.get("calendar_episode_use_now") != "TREATMENT_CONTROL_DISCOVERY_FOR_FEATURE_SELECTION_ONLY":
+        issues.append("calendar episode selection scope")
+    if selection.get("calendar_as_model_input") != "DEFERRED_FINAL_OPTIONAL_AFTER_NEAT_RL_AND_PAPER_BASELINE":
+        issues.append("calendar model input deferral")
 
     tasks = state.get("tasks", [])
     by_id = {}
@@ -148,7 +153,7 @@ def validate(state, root):
             issues.append(f"{task_id}: evidence required")
     required_tasks = set().union(*REQUIRED.values(), {"BUSINESS-CONTRACT", "BENCHMARK-CONTRACTS"})
     required_tasks.add(state.get("first_experiment"))
-    required_tasks.update({"NEWS-ADAPTER", "NEWS-SHADOW", "NEWS-PAPER"})
+    required_tasks.update({"NEWS-ADAPTER", "NEWS-SHADOW", "NEWS-PAPER", "CAL-CAUSAL-INPUT"})
     for task_id in sorted(required_tasks, key=str):
         if task_id not in by_id:
             issues.append(f"unknown task {task_id}")
@@ -160,6 +165,7 @@ def validate(state, root):
         "MOD-CORE-PRETRAIN": ({"MOD-E1", "MOD-FROZEN-PREFIX"}, "core prerequisites"),
         "NEWS-SHADOW": ({"NEWS-ADAPTER"}, "news shadow prerequisites"),
         "NEWS-PAPER": ({"NEWS-SHADOW", "BUSINESS-CONTRACT"}, "news paper prerequisites"),
+        "CAL-CAUSAL-INPUT": ({"MOD-E3", "NEWS-PAPER"}, "causal calendar input prerequisites"),
     }
     for task_id, (dependencies, label) in required_dependencies.items():
         if not dependencies.issubset(by_id.get(task_id, {}).get("depends_on", [])):
@@ -198,6 +204,12 @@ def validate(state, root):
             issues.append("H-CORE queue sequence")
         if queue.get("superseded", {}).get("all_321_or_all_83_as_selected") is not False:
             issues.append("mechanical inventory cannot equal selection")
+        calendar_input = queued.get("CALENDAR-CAUSAL-MODEL-INPUT", {})
+        if calendar_input.get("state") != "DEFERRED_FINAL_OPTIONAL":
+            issues.append("calendar model input queue state")
+        if not {"HEAD-DENSE-NEAT", "RL-RAW-MODULAR", "TRADING-PAPER"}.issubset(
+                calendar_input.get("depends_on", [])):
+            issues.append("calendar model input queue sequence")
 
     checklist_path = documents.get("checklist")
     if checklist_path and (root / checklist_path).is_file():
@@ -205,13 +217,15 @@ def validate(state, root):
         items = {item.get("id"): item for item in checklist.get("items", [])}
         required_checklist = {"I0", "I1", "I2", "I3", "I4-C", "I4-R", "I5",
                               "I6-A", "I6-B", "I7", "I7-H", "I8", "I9-N",
-                              "I9-R", "I10"}
+                              "I9-R", "I10", "I11"}
         if set(items) != required_checklist:
             issues.append("master checklist coverage")
         if "I7" not in items.get("I7-H", {}).get("depends_on", []):
             issues.append("checklist H-CORE sequence")
         if "I7-H" not in items.get("I9-N", {}).get("depends_on", []):
             issues.append("checklist NEAT sequence")
+        if not {"I9-N", "I9-R", "I10"}.issubset(items.get("I11", {}).get("depends_on", [])):
+            issues.append("checklist calendar input sequence")
     return issues
 
 
