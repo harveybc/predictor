@@ -177,7 +177,7 @@
       "owner": "M05+forecast+RL",
       "status": "DESIGNED",
       "depends_on": ["BUSINESS-CONTRACT"],
-      "next_action": "Implement BW01-BW18 with calendar, point-in-time window, weekly trainer adapters and validation/test firewall.",
+      "next_action": "Implement the paired weekly forecast scorer and strict same-row naive gate, then close the remaining BW01-BW18 adapters.",
       "deliverable": "Restartable weekly validation/test runner with one disposition per week.",
       "evidence": []
     },
@@ -204,7 +204,7 @@
       "owner": "M03+causal+M02",
       "status": "IN_PROGRESS",
       "depends_on": ["BUSINESS-CONTRACT"],
-      "next_action": "Execute PS0-PS5 for EURUSD with causal and extractibility lanes in parallel.",
+      "next_action": "Continue disjoint PS3-R lanes, integrate the accepted ten-transform PS4 subpopulation, and build the 366-row readiness ledger before common-K PS5.",
       "deliverable": "Final selected/rejected/pending manifest.",
       "evidence": []
     },

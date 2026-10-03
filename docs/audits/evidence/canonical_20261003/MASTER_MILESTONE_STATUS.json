@@ -1,6 +1,6 @@
 {
   "schema": "predictor.master_milestones.v1",
-  "as_of": "2026-10-03T22:23:50Z",
+  "as_of": "2026-10-03T23:35:00Z",
   "critical_path_eta": "3-5 weeks, conditional on continuous GPU lanes and no failed scientific gates",
   "milestones": [
     {
@@ -17,8 +17,8 @@
       "title": "Feature selection",
       "progress": 38,
       "state": "IN_PROGRESS",
-      "evidence": "366 candidates; selector campaign implemented; 16 extractibility features complete; causal evidence currently NOT_IDENTIFIED",
-      "next": "Finish PS3-R, execute PS4 profiles, then compare common-K subsets under weekly validation",
+      "evidence": "366 candidates; ten transforms now have 50 PS4 fold units; one new PS3-R cell is authentic but has mixed utility; causal evidence remains NOT_IDENTIFIED",
+      "next": "Run disjoint PS3-R queues, build 366-row readiness ledger, then compare common-K subsets under weekly validation",
       "eta": "4-6 GPU-days with active lanes"
     },
     {
