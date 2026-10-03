@@ -13,7 +13,7 @@ from .artifacts import _check_manifest_model, load_donor, save_donor
 from .bundle import BUNDLE_SCHEMA, load_bundle, save_bundle
 from .common import _copy, _digest, _file_hash, _json, keras_version, weights_hash
 from .components import (ROLES, TemporalComponent, causal_conv1d, component, effective_params,
-                         forecast, sequence_concat, transformer_conv)
+                         forecast, npz_adapter_conv, sequence_concat, transformer_conv)
 from .config import CONFIG_SCHEMA, _normalize, config_with_extra_channels, default_config, regime_summary
 from .layers import (FeatureSelect, PositionalEncoding, SeasonalCumulativeBaseline, SeasonalNaiveBaseline,
                      TargetMeanBroadcast, WindowMean)
@@ -31,7 +31,7 @@ keras = tf.keras
 __all__ = [
     "FeatureSelect", "ModularBundle", "PositionalEncoding", "TemporalComponent",
     "BUILTINS", "DEFAULTS", "BUNDLE_SCHEMA", "CONFIG_SCHEMA", "ROLES", "BudgetExceeded", "measure_budget",
-    "canonical_config_json", "causal_conv1d", "component", "config_digest", "describe_component",
+    "canonical_config_json", "causal_conv1d", "npz_adapter_conv", "component", "config_digest", "describe_component",
     "effective_params", "forecast", "keras_version", "load_bundle", "probe_alignment",
     "regime_summary", "save_bundle", "sequence_concat", "transformer_conv", "config_with_extra_channels",
     "branch_autoencoder", "build_autoencoder", "build_decoder", "build_modular",

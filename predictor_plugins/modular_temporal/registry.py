@@ -2,13 +2,13 @@
 
 from importlib.metadata import entry_points
 
-from .components import causal_conv1d, forecast, sequence_concat, transformer_conv
+from .components import causal_conv1d, forecast, npz_adapter_conv, sequence_concat, transformer_conv
 
 DEFAULTS = {"modular.branch": "causal_conv1d", "modular.core": "transformer_conv",
             "modular.fusion": "sequence_concat", "modular.head": "forecast"}
 
 
-BUILTINS = {"modular.branch": {"causal_conv1d": causal_conv1d},
+BUILTINS = {"modular.branch": {"causal_conv1d": causal_conv1d, "npz_adapter_conv": npz_adapter_conv},
             "modular.core": {"transformer_conv": transformer_conv},
             "modular.fusion": {"sequence_concat": sequence_concat},
             "modular.head": {"forecast": forecast}}

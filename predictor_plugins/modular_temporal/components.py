@@ -107,6 +107,31 @@ def causal_conv1d(*, input_shape, time_grid, output_steps, name, params):
     return TemporalComponent(keras.Model(inputs, x, name=name), tuple(time_grid))
 
 
+@component("branch", "1.0.0", {"filters", "kernel_size"},
+           "(batch, window, features) -> (batch, window, filters); two causal ReLU Conv1D layers with the "
+           "trunk of the feature-extractor typed NPZ adapter (conv1d_ae_v1); no time reduction",
+           defaults={"filters": 32, "kernel_size": 3})
+def npz_adapter_conv(*, input_shape, time_grid, output_steps, name, params):
+    """Causal two-layer Conv1D branch that receives the typed NPZ adapter's encoder trunk.
+
+    The adapter (feature-extractor ``app/npz_encoder_adapter.py``, ``conv1d_ae_v1``) trains two
+    ``same``-padded ReLU Conv1D layers followed by Flatten/Dense to a latent vector. Its Flatten/Dense
+    collapses time and cannot meet the branch grid contract, so only the two convolutions are
+    carried (see :mod:`.adapter_donor`). Here they are causal: with the adapter's kernels the output at
+    step t equals the adapter's ``same`` trunk at step t-2 away from the left edge, a two-step lag
+    that makes the representation look-ahead free (the alignment probe passes).
+    """
+    filters = _positive_int(params.get("filters", 32), "filters")
+    kernel = _positive_int(params.get("kernel_size", 3), "kernel_size")
+    _keys(params, {"filters", "kernel_size"}, "branch params")
+    if output_steps != len(time_grid):
+        raise ValueError("Branch extractors must preserve the full temporal grid")
+    inputs = keras.Input(input_shape)
+    x = keras.layers.Conv1D(filters, kernel, padding="causal", activation="relu", name="adapter_conv_0")(inputs)
+    x = keras.layers.Conv1D(filters, kernel, padding="causal", activation="relu", name="adapter_conv_1")(x)
+    return TemporalComponent(keras.Model(inputs, x, name=name), tuple(time_grid))
+
+
 @component("fusion", "1.0.0", set(),
            "list of (batch, steps, c_i) on one grid -> (batch, steps, sum c_i); no weights",
            defaults={})
