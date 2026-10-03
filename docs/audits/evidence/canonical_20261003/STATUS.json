@@ -1,6 +1,6 @@
 {
  "schema": "canonical_exec_status.v1",
- "observed_at": "2026-10-03T05:30:03Z",
+ "observed_at": "2026-10-03T05:44:50Z",
  "authority": "codex/workplan-consolidation-20261003@2edc2684 (master plan v3 consolidated)",
  "neat": "no process or unit on any host (verified)",
  "hermes": "not used this round (provider 403 earlier; unverified)",
@@ -27,8 +27,9 @@
    "resource": "CPU worker_a",
    "work": "PS3-C three-rung causal ladder EURUSD economic events (code first)",
    "declared_state": "DISPATCHED",
-   "observed_state": "NOT_YET_OBSERVED",
-   "next_transition": "episode/treatment contract, then first A batch"
+   "observed_state": "BATCHES_1_3_DONE",
+   "next_transition": "tag lane B PS2 priorities; multiplicity control + nonlinear adjustment for rung-2 hits",
+   "evidence": "causal-inference satoshi/eurusd-causal-ladder-20261003 4604f06 (38 tests); dossiers for all 366 candidates + 15 release types, 5,349 cells; rung1 0 robust after BH; rung2 ESTIMATED 1,076 / NOT_IDENTIFIED 4,133 / NA 140; all 15 release types NOT_IDENTIFIED (assumed clock); 211 uncorrected interval hits pending multiplicity + nonlinear adjustment; coord b35d496e"
   },
   {
    "lane": "D",
@@ -96,6 +97,7 @@
  "plan_authority": "codex/workplan-consolidation-20261003@02434903 (calendar = selector source only; model input deferred to I11)",
  "checklist_observed": {
   "I1": "IN_PROGRESS (388 sources classified)",
-  "I2": "EVIDENCE_PARTIAL (3 batches, 366 candidates)"
+  "I2": "EVIDENCE_PARTIAL (3 batches, 366 candidates)",
+  "I4-C": "EVIDENCE_PARTIAL (three-rung dossiers for batches 1-3)"
  }
 }
