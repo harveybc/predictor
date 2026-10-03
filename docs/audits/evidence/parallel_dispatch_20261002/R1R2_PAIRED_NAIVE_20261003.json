@@ -1,0 +1,140 @@
+{
+ "best_naive_objective": 0.8650657691875395,
+ "horizons": [
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "objective_equivalent_mean_over_horizons_MAE": {
+  "intercept_train_mean": 0.8650850015176678,
+  "intercept_train_median": 0.8650657691875395,
+  "persistence_last_value": 1.0224384641383506,
+  "train_mean": 0.8650751578868073,
+  "zero_return": 0.8659490505690464
+ },
+ "per_horizon": {
+  "1": {
+   "intercept_train_mean_MAE": 0.4646748664641077,
+   "intercept_train_mean_value": [
+    -0.0002579288539533116
+   ],
+   "intercept_train_median_MAE": 0.464664828204001,
+   "intercept_train_median_value": [
+    0.0056269289925694466
+   ],
+   "persistence_last_value_MAE": 0.6918696038803451,
+   "seasonal_6_MAE": 0.7037516033353463,
+   "train_mean_MAE": 0.4646732176038541,
+   "zero_return_MAE": 0.4647598227149141
+  },
+  "2": {
+   "intercept_train_mean_MAE": 0.6572028111509977,
+   "intercept_train_mean_value": [
+    -0.00010673865222218862
+   ],
+   "intercept_train_median_MAE": 0.6571927476949276,
+   "intercept_train_median_value": [
+    0.0020971582271158695
+   ],
+   "persistence_last_value_MAE": 0.8346602273451579,
+   "seasonal_6_MAE": 0.984815140861338,
+   "train_mean_MAE": 0.6572023237598916,
+   "zero_return_MAE": 0.6573894824785285
+  },
+  "3": {
+   "intercept_train_mean_MAE": 0.8274917343678971,
+   "intercept_train_mean_value": [
+    -1.5588657200847417e-05
+   ],
+   "intercept_train_median_MAE": 0.8275643815516995,
+   "intercept_train_median_value": [
+    -0.00378245091997087
+   ],
+   "persistence_last_value_MAE": 0.9806360165762615,
+   "seasonal_6_MAE": 1.2354510061854524,
+   "train_mean_MAE": 0.8274914496435647,
+   "zero_return_MAE": 0.8281336622520624
+  },
+  "4": {
+   "intercept_train_mean_MAE": 0.9550873308882722,
+   "intercept_train_mean_value": [
+    -0.0005326687012241262
+   ],
+   "intercept_train_median_MAE": 0.9550246480879476,
+   "intercept_train_median_value": [
+    0.005061900708824396
+   ],
+   "persistence_last_value_MAE": 1.0923846645170217,
+   "seasonal_6_MAE": 1.433653936361507,
+   "train_mean_MAE": 0.9550800340567486,
+   "zero_return_MAE": 0.9560223010337336
+  },
+  "5": {
+   "intercept_train_mean_MAE": 1.087908373425676,
+   "intercept_train_mean_value": [
+    -0.0010329937436549409
+   ],
+   "intercept_train_median_MAE": 1.0879842074613058,
+   "intercept_train_median_value": [
+    -0.00467411195859313
+   ],
+   "persistence_last_value_MAE": 1.2074654185126434,
+   "seasonal_6_MAE": 1.6102461156270589,
+   "train_mean_MAE": 1.0878901475025569,
+   "zero_return_MAE": 1.089115890152101
+  },
+  "6": {
+   "intercept_train_mean_MAE": 1.1981448928090557,
+   "intercept_train_mean_value": [
+    -0.0009483652504365578
+   ],
+   "intercept_train_median_MAE": 1.197963802125356,
+   "intercept_train_median_value": [
+    0.005006515420973301
+   ],
+   "persistence_last_value_MAE": 1.3276148539986738,
+   "seasonal_6_MAE": 1.7660616436221797,
+   "train_mean_MAE": 1.1981137747542283,
+   "zero_return_MAE": 1.2002731447829387
+  }
+ },
+ "skill_vs": {
+  "0.8649381021326688": {
+   "intercept_train_mean": 0.00016980919186126986,
+   "intercept_train_median": 0.00014758074983212133,
+   "persistence_last_value": 0.15404385450073388,
+   "train_mean": 0.00015843219272804188,
+   "vs_best_naive": 0.00014758074983212133,
+   "zero_return": 0.0011674456317184445
+  },
+  "0.8657812981101827": {
+   "intercept_train_mean": -0.0008048880645177281,
+   "intercept_train_median": -0.0008271381762281482,
+   "persistence_last_value": 0.15321916332655694,
+   "train_mean": -0.000816276154664175,
+   "vs_best_naive": -0.0008271381762281482,
+   "zero_return": 0.0001937209339896162
+  },
+  "0.8658615561809555": {
+   "intercept_train_mean": -0.0008976628446053514,
+   "intercept_train_median": -0.00091991501890476,
+   "persistence_last_value": 0.1531406666017291,
+   "train_mean": -0.0009090519904295657,
+   "vs_best_naive": -0.00091991501890476,
+   "zero_return": 0.0001010387251229039
+  },
+  "0.8668884876994576": {
+   "intercept_train_mean": -0.0020847502599465884,
+   "intercept_train_median": -0.0021070288258313585,
+   "persistence_last_value": 0.1521362721520665,
+   "train_mean": -0.0020961529135570256,
+   "vs_best_naive": -0.0021070288258313585,
+   "zero_return": -0.0010848642074194892
+  }
+ },
+ "train_rows_for_intercept": 13415,
+ "validation_rows": 2190
+}
