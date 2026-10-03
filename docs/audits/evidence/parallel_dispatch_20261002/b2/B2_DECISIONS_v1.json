@@ -1,0 +1,19 @@
+{
+ "schema": "predictor.b2_decision_record.v1",
+ "table": "B2_SELECTION_TABLE_v1.json",
+ "table_sha256": "b1f5b02cae4e53187304c785b272f8ec89b24ad344d0ba3f68ab4e1bb441eee2",
+ "csv_sha256": "9a2d03b36999448b534a4059b8dfc95598b8cc4e79b8e70cb228c6682b5b5eb4",
+ "producer": "feature-eng branch satoshi/b2-selection-table-20261003, app/b2_selection_table.py",
+ "compute": "worker_b under crispdm-run, cap 2G declared as a generous first probe (no prior peak); the launcher kept no peak record, so no measured peak is claimed",
+ "decisions": [
+  "Thresholds declared in code before any real computation: max_missing_fraction 0.5, max_leading_missing_fraction 0.25 of train rows, redundancy |Spearman| >= 0.95 on pairwise-complete train rows, complete linkage (every cluster member >= 0.95 with every other member, no chaining).",
+  "Representative rule is association-free: most finite train rows, then fewest leading missing, then earliest manifest position. Non-representatives are PENDING P_REDUNDANT with a pointer, never dropped.",
+  "obv is REJECTED R_ORIGIN_DEPENDENT_CUMSUM: it is a cumulative sum from the first row of the file (producer definition), so its level depends on where history starts; obv_delta_20 cancels the origin and is kept.",
+  "vol_regime_high and vol_regime_low are PENDING P_WARMUP_ENCODED_AS_ZERO, not rejected: the producer encodes undefined warm-up as a real 0.0 (semantic census); repairable by masking the warm-up rows.",
+  "No look-ahead: every producer definition is a trailing window or difference; the name screen (future/fwd/forward/lead_/next_/target/label/centered) hits nothing.",
+  "Price/volume-unit level features get flag F_PRICE_SCALE_LEVEL, which never changes status; the redundancy step already collapses the moving-average/band/vwap levels to one representative (sma_10).",
+  "Target/horizon associations h6..h36 are copied as columns only; no status rule reads them (tests prove it).",
+  "The all-83 list is kept as control_list_all.",
+  "Finding: leading_missing is 0 for all 83 features in the model-ready train slice, including 252-bar windows, so warm-up was trimmed or filled upstream; the 0.25 leading-missing rule therefore fires on nothing here."
+ ]
+}
