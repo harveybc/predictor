@@ -1,0 +1,118 @@
+{
+ "batch": "batch_001",
+ "caveats": [
+  "statuses are provisional priority, never a discard; all-admissible control kept",
+  "within-batch ranking only: cross-batch redundancy/synergy is PS5's joint step",
+  "S_ASSOC_ROBUST is broad on 71.7k rows (many features at the p floor 0.01); reason codes split monotone vs MI-only from batch_002 on (commit 9d3f1f5)",
+  "causal_evidence_level NOT_EVALUATED: lane C dossiers pending"
+ ],
+ "code": {
+  "branch": "satoshi/eurusd-ps2-20261003",
+  "commit": "0101ee7",
+  "module_sha256": "b6d65cdd4b6751d0e1d4a1e89b8b905862ffe6dcae5379d672d1578a080f8d49",
+  "repo": "feature-eng"
+ },
+ "cost": {
+  "code_sha256": "b6d65cdd4b6751d0e1d4a1e89b8b905862ffe6dcae5379d672d1578a080f8d49",
+  "hardware": "CPU worker_a, single-thread BLAS",
+  "peak_rss_kb": 492936,
+  "wall_s": 497.2
+ },
+ "denominators": {
+  "admissible_after_technical_screen": 46,
+  "association_tests_bh_counted": 6440,
+  "inner_folds": 5,
+  "lane_a_columns": 84,
+  "model_input_features_ranked": 47,
+  "selector_episode_sources_excluded": 37,
+  "targets": 14,
+  "train_rows": 71734
+ },
+ "exploration_sample": [
+  "cal.dow_cos",
+  "cal.doy_sin",
+  "cal.sess_newyork",
+  "cal.us_dst",
+  "px.logret_24h",
+  "px.zclose_24",
+  "ta.cci_20",
+  "ta.dmn_14",
+  "ta.mom_10_n",
+  "ta.stoch_k",
+  "ta.willr_14"
+ ],
+ "extractor_handoff": {
+  "batch_manifest_sha256": "b0b9c4efd38b5fd97cfcd25ccfa416f18a0ae277a54a73a072ab7d78b0e3e21d",
+  "contract": "ps2_batch.v1",
+  "excluded_calendar_known": [
+   "cal.dow_cos",
+   "cal.dow_sin",
+   "cal.doy_cos",
+   "cal.doy_sin",
+   "cal.hour_cos",
+   "cal.hour_sin",
+   "cal.sess_london",
+   "cal.sess_newyork",
+   "cal.sess_tokyo",
+   "cal.us_dst"
+  ],
+  "features": [
+   "px.close_loc",
+   "px.ewma_vol_168",
+   "px.ewma_vol_24",
+   "px.hours_since_prev_bar",
+   "px.log_close",
+   "px.log_co",
+   "px.log_hl",
+   "px.logret_120h",
+   "px.logret_12h",
+   "px.logret_168h",
+   "px.logret_1h",
+   "px.logret_24h",
+   "px.logret_2h",
+   "px.logret_48h",
+   "px.logret_4h",
+   "px.logret_6h",
+   "px.parkinson_24",
+   "px.rv5",
+   "px.zclose_168",
+   "px.zclose_24",
+   "ta.adx_14",
+   "ta.atr_14_n",
+   "ta.bb_pctb_20",
+   "ta.bb_width_20",
+   "ta.cci_20",
+   "ta.dmn_14",
+   "ta.dmp_14",
+   "ta.ema20_dev",
+   "ta.macd_hist_n",
+   "ta.macd_n",
+   "ta.mom_10_n",
+   "ta.roc_10",
+   "ta.rsi_14",
+   "ta.stoch_d",
+   "ta.stoch_k",
+   "ta.willr_14"
+  ],
+  "n_features": 36,
+  "verified_with_lane_D_reader": "feature-extractor 8987c57 read_ps2_batch + validate_fold for windows 48/168/720: READER_OK (36 features, 5 folds, 102239 grid rows)"
+ },
+ "input": {
+  "lane_a_batch": "batch_001",
+  "lane_a_code_commit": "79bb09d902e092d8ecfda858af881171a7799919",
+  "lane_a_contract_sha256": "a4b1718b84c747d134fd55da4cc789ea541021b5815e0b49df8cfd6635acdcfc",
+  "lane_a_ready_digests_sha256": "449f4c3d5e992ee4f3221c7e6ac3078167fe5e31063a3d659fb2814db1c07eb4",
+  "read_end": "2024-01-01 00:00:00+00:00"
+ },
+ "lane": "B",
+ "not_committed_here_but_digest_pinned": {
+  "ps2_fold_cells.csv": "ef3ca312032ffaddfdfd48aff71419c524a0c23be386b1e6926d0636cf7a7e82",
+  "ps2_groups.csv": "fb48223ee28aa412a6b6e69821a98a91068f65a759154f8cf47736949994a0b4"
+ },
+ "parameter_digest": "e4eeebf4749addc035d4619cbae531b778e243b5a5613d47eb46f710c9bf0d73",
+ "ps2_manifest_canonical_sha256": "8325d8512f017b454ef66c6ca6b61aa850507cc54b42756f34d8047278e86d96",
+ "schema": "laneB_ps2_batch_record.v1",
+ "stage": "PS2",
+ "train_data_digest": "80ff936fcec54777b2d255b4fbb3fbc2415719a6351694a8f581ae035622e615",
+ "worker_role": "worker_a (CPU, crispdm-run cap 1200M, single-thread BLAS)"
+}

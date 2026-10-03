@@ -1,0 +1,2402 @@
+{
+ "batch_id": "batch_001",
+ "code_digest": "b6d65cdd4b6751d0e1d4a1e89b8b905862ffe6dcae5379d672d1578a080f8d49",
+ "control_all_admissible": [
+  "px.logret_1h",
+  "px.logret_2h",
+  "px.logret_4h",
+  "px.logret_6h",
+  "px.logret_12h",
+  "px.logret_24h",
+  "px.logret_48h",
+  "px.logret_120h",
+  "px.logret_168h",
+  "px.log_hl",
+  "px.close_loc",
+  "px.log_co",
+  "px.rv5",
+  "px.ewma_vol_24",
+  "px.ewma_vol_168",
+  "px.parkinson_24",
+  "px.hours_since_prev_bar",
+  "px.zclose_24",
+  "px.zclose_168",
+  "px.log_close",
+  "ta.rsi_14",
+  "ta.macd_n",
+  "ta.macd_hist_n",
+  "ta.ema20_dev",
+  "ta.stoch_k",
+  "ta.stoch_d",
+  "ta.willr_14",
+  "ta.atr_14_n",
+  "ta.adx_14",
+  "ta.dmp_14",
+  "ta.dmn_14",
+  "ta.cci_20",
+  "ta.bb_pctb_20",
+  "ta.bb_width_20",
+  "ta.mom_10_n",
+  "ta.roc_10",
+  "cal.hour_sin",
+  "cal.hour_cos",
+  "cal.dow_sin",
+  "cal.dow_cos",
+  "cal.doy_sin",
+  "cal.doy_cos",
+  "cal.us_dst",
+  "cal.sess_london",
+  "cal.sess_newyork",
+  "cal.sess_tokyo"
+ ],
+ "counts": {
+  "Y_b_l144|h144": {
+   "EXPLORATION": 4,
+   "PROVISIONAL_LOW_PRIORITY": 8,
+   "PROVISIONAL_SURVIVOR": 34,
+   "TECHNICAL_REJECT": 1
+  },
+  "Y_b_s6|h6": {
+   "EXPLORATION": 3,
+   "PROVISIONAL_LOW_PRIORITY": 5,
+   "PROVISIONAL_SURVIVOR": 38,
+   "TECHNICAL_REJECT": 1
+  },
+  "Y_l|h120": {
+   "EXPLORATION": 6,
+   "PROVISIONAL_LOW_PRIORITY": 13,
+   "PROVISIONAL_SURVIVOR": 27,
+   "TECHNICAL_REJECT": 1
+  },
+  "Y_l|h144": {
+   "EXPLORATION": 8,
+   "PROVISIONAL_LOW_PRIORITY": 19,
+   "PROVISIONAL_SURVIVOR": 19,
+   "TECHNICAL_REJECT": 1
+  },
+  "Y_l|h24": {
+   "EXPLORATION": 5,
+   "PROVISIONAL_LOW_PRIORITY": 11,
+   "PROVISIONAL_SURVIVOR": 30,
+   "TECHNICAL_REJECT": 1
+  },
+  "Y_l|h48": {
+   "EXPLORATION": 10,
+   "PROVISIONAL_LOW_PRIORITY": 18,
+   "PROVISIONAL_SURVIVOR": 18,
+   "TECHNICAL_REJECT": 1
+  },
+  "Y_l|h72": {
+   "EXPLORATION": 8,
+   "PROVISIONAL_LOW_PRIORITY": 16,
+   "PROVISIONAL_SURVIVOR": 22,
+   "TECHNICAL_REJECT": 1
+  },
+  "Y_l|h96": {
+   "EXPLORATION": 9,
+   "PROVISIONAL_LOW_PRIORITY": 19,
+   "PROVISIONAL_SURVIVOR": 18,
+   "TECHNICAL_REJECT": 1
+  },
+  "Y_s|h1": {
+   "EXPLORATION": 1,
+   "PROVISIONAL_LOW_PRIORITY": 6,
+   "PROVISIONAL_SURVIVOR": 39,
+   "TECHNICAL_REJECT": 1
+  },
+  "Y_s|h2": {
+   "EXPLORATION": 3,
+   "PROVISIONAL_LOW_PRIORITY": 6,
+   "PROVISIONAL_SURVIVOR": 37,
+   "TECHNICAL_REJECT": 1
+  },
+  "Y_s|h3": {
+   "EXPLORATION": 5,
+   "PROVISIONAL_LOW_PRIORITY": 5,
+   "PROVISIONAL_SURVIVOR": 36,
+   "TECHNICAL_REJECT": 1
+  },
+  "Y_s|h4": {
+   "EXPLORATION": 4,
+   "PROVISIONAL_LOW_PRIORITY": 8,
+   "PROVISIONAL_SURVIVOR": 34,
+   "TECHNICAL_REJECT": 1
+  },
+  "Y_s|h5": {
+   "EXPLORATION": 2,
+   "PROVISIONAL_LOW_PRIORITY": 5,
+   "PROVISIONAL_SURVIVOR": 39,
+   "TECHNICAL_REJECT": 1
+  },
+  "Y_s|h6": {
+   "EXPLORATION": 3,
+   "PROVISIONAL_LOW_PRIORITY": 7,
+   "PROVISIONAL_SURVIVOR": 36,
+   "TECHNICAL_REJECT": 1
+  }
+ },
+ "exploration_sample": [
+  "cal.dow_cos",
+  "cal.doy_sin",
+  "cal.sess_newyork",
+  "cal.us_dst",
+  "px.logret_24h",
+  "px.zclose_24",
+  "ta.cci_20",
+  "ta.dmn_14",
+  "ta.mom_10_n",
+  "ta.stoch_k",
+  "ta.willr_14"
+ ],
+ "extractor_worklist": {
+  "cal.dow_cos": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:EXPLORATION",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "cal.dow_sin": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "cal.doy_cos": [
+   "Y_s_h1:PROVISIONAL_SURVIVOR"
+  ],
+  "cal.doy_sin": [
+   "Y_b_l144_h144:EXPLORATION",
+   "Y_b_s6_h6:EXPLORATION",
+   "Y_l_h24:EXPLORATION",
+   "Y_l_h48:EXPLORATION",
+   "Y_l_h72:EXPLORATION",
+   "Y_l_h96:EXPLORATION",
+   "Y_l_h120:EXPLORATION",
+   "Y_l_h144:EXPLORATION",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:EXPLORATION",
+   "Y_s_h3:EXPLORATION",
+   "Y_s_h4:EXPLORATION",
+   "Y_s_h5:EXPLORATION",
+   "Y_s_h6:EXPLORATION"
+  ],
+  "cal.hour_cos": [
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "cal.hour_sin": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "cal.sess_london": [
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "cal.sess_newyork": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:EXPLORATION",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:EXPLORATION",
+   "Y_s_h3:EXPLORATION",
+   "Y_s_h4:EXPLORATION",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "cal.sess_tokyo": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "cal.us_dst": [
+   "Y_b_l144_h144:EXPLORATION",
+   "Y_b_s6_h6:EXPLORATION",
+   "Y_l_h24:EXPLORATION",
+   "Y_l_h48:EXPLORATION",
+   "Y_l_h72:EXPLORATION",
+   "Y_l_h96:EXPLORATION",
+   "Y_l_h120:EXPLORATION",
+   "Y_l_h144:EXPLORATION",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:EXPLORATION",
+   "Y_s_h3:EXPLORATION",
+   "Y_s_h4:EXPLORATION",
+   "Y_s_h5:EXPLORATION",
+   "Y_s_h6:EXPLORATION"
+  ],
+  "px.close_loc": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.ewma_vol_168": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.ewma_vol_24": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.hours_since_prev_bar": [
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.log_close": [
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR"
+  ],
+  "px.log_co": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.log_hl": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR"
+  ],
+  "px.logret_120h": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.logret_12h": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR"
+  ],
+  "px.logret_168h": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.logret_1h": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.logret_24h": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:EXPLORATION",
+   "Y_l_h72:EXPLORATION",
+   "Y_l_h96:EXPLORATION",
+   "Y_l_h120:EXPLORATION",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.logret_2h": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.logret_48h": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.logret_4h": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.logret_6h": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.parkinson_24": [
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.rv5": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.zclose_168": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "px.zclose_24": [
+   "Y_b_l144_h144:EXPLORATION",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:EXPLORATION",
+   "Y_l_h48:EXPLORATION",
+   "Y_l_h72:EXPLORATION",
+   "Y_l_h96:EXPLORATION",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:EXPLORATION",
+   "Y_s_h1:EXPLORATION",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "ta.adx_14": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR"
+  ],
+  "ta.atr_14_n": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "ta.bb_pctb_20": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "ta.bb_width_20": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR"
+  ],
+  "ta.cci_20": [
+   "Y_b_l144_h144:EXPLORATION",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:EXPLORATION",
+   "Y_l_h72:EXPLORATION",
+   "Y_l_h96:EXPLORATION",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:EXPLORATION",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:EXPLORATION",
+   "Y_s_h4:EXPLORATION",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "ta.dmn_14": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:EXPLORATION",
+   "Y_l_h48:EXPLORATION",
+   "Y_l_h72:EXPLORATION",
+   "Y_l_h96:EXPLORATION",
+   "Y_l_h120:EXPLORATION",
+   "Y_l_h144:EXPLORATION",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "ta.dmp_14": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "ta.ema20_dev": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "ta.macd_hist_n": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "ta.macd_n": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "ta.mom_10_n": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:EXPLORATION",
+   "Y_l_h48:EXPLORATION",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h96:EXPLORATION",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:EXPLORATION"
+  ],
+  "ta.roc_10": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h72:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_l_h144:PROVISIONAL_SURVIVOR",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR"
+  ],
+  "ta.rsi_14": [
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:PROVISIONAL_SURVIVOR",
+   "Y_l_h120:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "ta.stoch_d": [
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "ta.stoch_k": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:EXPLORATION",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:EXPLORATION",
+   "Y_l_h72:EXPLORATION",
+   "Y_l_h96:EXPLORATION",
+   "Y_l_h120:EXPLORATION",
+   "Y_l_h144:EXPLORATION",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:EXPLORATION",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ],
+  "ta.willr_14": [
+   "Y_b_l144_h144:PROVISIONAL_SURVIVOR",
+   "Y_b_s6_h6:PROVISIONAL_SURVIVOR",
+   "Y_l_h24:PROVISIONAL_SURVIVOR",
+   "Y_l_h48:EXPLORATION",
+   "Y_l_h72:EXPLORATION",
+   "Y_l_h96:EXPLORATION",
+   "Y_l_h120:EXPLORATION",
+   "Y_l_h144:EXPLORATION",
+   "Y_s_h1:PROVISIONAL_SURVIVOR",
+   "Y_s_h2:PROVISIONAL_SURVIVOR",
+   "Y_s_h3:PROVISIONAL_SURVIVOR",
+   "Y_s_h4:PROVISIONAL_SURVIVOR",
+   "Y_s_h5:PROVISIONAL_SURVIVOR",
+   "Y_s_h6:PROVISIONAL_SURVIVOR"
+  ]
+ },
+ "fit_scope": "inner chronological TRAIN folds",
+ "fold_clusters": {
+  "inner_2019": {
+   "dependence": [
+    [
+     "cal.dow_cos"
+    ],
+    [
+     "cal.dow_sin"
+    ],
+    [
+     "cal.doy_cos"
+    ],
+    [
+     "cal.doy_sin"
+    ],
+    [
+     "cal.hour_cos"
+    ],
+    [
+     "cal.hour_sin"
+    ],
+    [
+     "cal.sess_london"
+    ],
+    [
+     "cal.sess_newyork"
+    ],
+    [
+     "cal.sess_tokyo"
+    ],
+    [
+     "cal.us_dst"
+    ],
+    [
+     "px.close_loc"
+    ],
+    [
+     "px.ewma_vol_168"
+    ],
+    [
+     "px.ewma_vol_24"
+    ],
+    [
+     "px.hours_since_prev_bar"
+    ],
+    [
+     "px.log_close"
+    ],
+    [
+     "px.log_co",
+     "px.logret_1h"
+    ],
+    [
+     "px.log_hl",
+     "px.rv5"
+    ],
+    [
+     "px.logret_120h"
+    ],
+    [
+     "px.logret_12h"
+    ],
+    [
+     "px.logret_168h"
+    ],
+    [
+     "px.logret_24h"
+    ],
+    [
+     "px.logret_2h"
+    ],
+    [
+     "px.logret_48h"
+    ],
+    [
+     "px.logret_4h"
+    ],
+    [
+     "px.logret_6h"
+    ],
+    [
+     "px.parkinson_24"
+    ],
+    [
+     "px.zclose_168"
+    ],
+    [
+     "px.zclose_24",
+     "ta.bb_pctb_20",
+     "ta.cci_20"
+    ],
+    [
+     "ta.adx_14"
+    ],
+    [
+     "ta.atr_14_n"
+    ],
+    [
+     "ta.bb_width_20"
+    ],
+    [
+     "ta.dmn_14"
+    ],
+    [
+     "ta.dmp_14"
+    ],
+    [
+     "ta.ema20_dev",
+     "ta.rsi_14"
+    ],
+    [
+     "ta.macd_hist_n"
+    ],
+    [
+     "ta.macd_n"
+    ],
+    [
+     "ta.mom_10_n",
+     "ta.roc_10"
+    ],
+    [
+     "ta.stoch_d",
+     "ta.stoch_k"
+    ],
+    [
+     "ta.willr_14"
+    ]
+   ],
+   "profile": [
+    [
+     "cal.dow_cos",
+     "cal.dow_sin"
+    ],
+    [
+     "cal.doy_cos",
+     "cal.doy_sin",
+     "cal.hour_cos",
+     "cal.hour_sin",
+     "px.ewma_vol_168",
+     "px.log_close"
+    ],
+    [
+     "cal.sess_london",
+     "cal.sess_newyork",
+     "cal.sess_tokyo",
+     "cal.us_dst"
+    ],
+    [
+     "px.close_loc",
+     "px.log_co",
+     "px.logret_1h",
+     "px.logret_2h"
+    ],
+    [
+     "px.ewma_vol_24",
+     "px.log_hl",
+     "px.logret_120h",
+     "px.logret_12h",
+     "px.logret_168h",
+     "px.logret_24h",
+     "px.logret_48h",
+     "px.logret_4h",
+     "px.logret_6h",
+     "px.parkinson_24",
+     "px.zclose_168",
+     "px.zclose_24",
+     "ta.adx_14",
+     "ta.atr_14_n",
+     "ta.bb_pctb_20",
+     "ta.bb_width_20",
+     "ta.cci_20",
+     "ta.dmn_14",
+     "ta.dmp_14",
+     "ta.ema20_dev",
+     "ta.macd_hist_n",
+     "ta.macd_n",
+     "ta.mom_10_n",
+     "ta.roc_10",
+     "ta.rsi_14",
+     "ta.stoch_d",
+     "ta.stoch_k",
+     "ta.willr_14"
+    ],
+    [
+     "px.hours_since_prev_bar"
+    ],
+    [
+     "px.rv5"
+    ]
+   ]
+  },
+  "inner_2020": {
+   "dependence": [
+    [
+     "cal.dow_cos"
+    ],
+    [
+     "cal.dow_sin"
+    ],
+    [
+     "cal.doy_cos"
+    ],
+    [
+     "cal.doy_sin"
+    ],
+    [
+     "cal.hour_cos"
+    ],
+    [
+     "cal.hour_sin"
+    ],
+    [
+     "cal.sess_london"
+    ],
+    [
+     "cal.sess_newyork"
+    ],
+    [
+     "cal.sess_tokyo"
+    ],
+    [
+     "cal.us_dst"
+    ],
+    [
+     "px.close_loc"
+    ],
+    [
+     "px.ewma_vol_168"
+    ],
+    [
+     "px.ewma_vol_24"
+    ],
+    [
+     "px.hours_since_prev_bar"
+    ],
+    [
+     "px.log_close"
+    ],
+    [
+     "px.log_co",
+     "px.logret_1h"
+    ],
+    [
+     "px.log_hl",
+     "px.rv5"
+    ],
+    [
+     "px.logret_120h"
+    ],
+    [
+     "px.logret_12h"
+    ],
+    [
+     "px.logret_168h"
+    ],
+    [
+     "px.logret_24h"
+    ],
+    [
+     "px.logret_2h"
+    ],
+    [
+     "px.logret_48h"
+    ],
+    [
+     "px.logret_4h"
+    ],
+    [
+     "px.logret_6h"
+    ],
+    [
+     "px.parkinson_24",
+     "ta.atr_14_n"
+    ],
+    [
+     "px.zclose_168"
+    ],
+    [
+     "px.zclose_24",
+     "ta.bb_pctb_20",
+     "ta.cci_20"
+    ],
+    [
+     "ta.adx_14"
+    ],
+    [
+     "ta.bb_width_20"
+    ],
+    [
+     "ta.dmn_14"
+    ],
+    [
+     "ta.dmp_14"
+    ],
+    [
+     "ta.ema20_dev",
+     "ta.rsi_14"
+    ],
+    [
+     "ta.macd_hist_n"
+    ],
+    [
+     "ta.macd_n"
+    ],
+    [
+     "ta.mom_10_n",
+     "ta.roc_10"
+    ],
+    [
+     "ta.stoch_d",
+     "ta.stoch_k"
+    ],
+    [
+     "ta.willr_14"
+    ]
+   ],
+   "profile": [
+    [
+     "cal.dow_cos",
+     "cal.dow_sin"
+    ],
+    [
+     "cal.doy_cos",
+     "cal.doy_sin",
+     "cal.hour_cos",
+     "cal.hour_sin",
+     "px.ewma_vol_168",
+     "px.log_close"
+    ],
+    [
+     "cal.sess_london",
+     "cal.sess_newyork",
+     "cal.sess_tokyo",
+     "cal.us_dst"
+    ],
+    [
+     "px.close_loc",
+     "px.log_co",
+     "px.logret_1h"
+    ],
+    [
+     "px.ewma_vol_24",
+     "px.log_hl",
+     "px.logret_120h",
+     "px.logret_12h",
+     "px.logret_168h",
+     "px.logret_24h",
+     "px.logret_2h",
+     "px.logret_48h",
+     "px.logret_4h",
+     "px.logret_6h",
+     "px.parkinson_24",
+     "px.zclose_168",
+     "px.zclose_24",
+     "ta.adx_14",
+     "ta.atr_14_n",
+     "ta.bb_pctb_20",
+     "ta.bb_width_20",
+     "ta.cci_20",
+     "ta.dmn_14",
+     "ta.dmp_14",
+     "ta.ema20_dev",
+     "ta.macd_hist_n",
+     "ta.macd_n",
+     "ta.mom_10_n",
+     "ta.roc_10",
+     "ta.rsi_14",
+     "ta.stoch_d",
+     "ta.stoch_k",
+     "ta.willr_14"
+    ],
+    [
+     "px.hours_since_prev_bar"
+    ],
+    [
+     "px.rv5"
+    ]
+   ]
+  },
+  "inner_2021": {
+   "dependence": [
+    [
+     "cal.dow_cos"
+    ],
+    [
+     "cal.dow_sin"
+    ],
+    [
+     "cal.doy_cos"
+    ],
+    [
+     "cal.doy_sin"
+    ],
+    [
+     "cal.hour_cos"
+    ],
+    [
+     "cal.hour_sin"
+    ],
+    [
+     "cal.sess_london"
+    ],
+    [
+     "cal.sess_newyork"
+    ],
+    [
+     "cal.sess_tokyo"
+    ],
+    [
+     "cal.us_dst"
+    ],
+    [
+     "px.close_loc"
+    ],
+    [
+     "px.ewma_vol_168"
+    ],
+    [
+     "px.ewma_vol_24",
+     "px.parkinson_24",
+     "ta.atr_14_n"
+    ],
+    [
+     "px.hours_since_prev_bar"
+    ],
+    [
+     "px.log_close"
+    ],
+    [
+     "px.log_co",
+     "px.logret_1h"
+    ],
+    [
+     "px.log_hl",
+     "px.rv5"
+    ],
+    [
+     "px.logret_120h"
+    ],
+    [
+     "px.logret_12h"
+    ],
+    [
+     "px.logret_168h"
+    ],
+    [
+     "px.logret_24h"
+    ],
+    [
+     "px.logret_2h"
+    ],
+    [
+     "px.logret_48h"
+    ],
+    [
+     "px.logret_4h"
+    ],
+    [
+     "px.logret_6h"
+    ],
+    [
+     "px.zclose_168"
+    ],
+    [
+     "px.zclose_24",
+     "ta.bb_pctb_20",
+     "ta.cci_20"
+    ],
+    [
+     "ta.adx_14"
+    ],
+    [
+     "ta.bb_width_20"
+    ],
+    [
+     "ta.dmn_14"
+    ],
+    [
+     "ta.dmp_14"
+    ],
+    [
+     "ta.ema20_dev",
+     "ta.rsi_14"
+    ],
+    [
+     "ta.macd_hist_n"
+    ],
+    [
+     "ta.macd_n"
+    ],
+    [
+     "ta.mom_10_n",
+     "ta.roc_10"
+    ],
+    [
+     "ta.stoch_d",
+     "ta.stoch_k"
+    ],
+    [
+     "ta.willr_14"
+    ]
+   ],
+   "profile": [
+    [
+     "cal.dow_cos",
+     "cal.dow_sin"
+    ],
+    [
+     "cal.doy_cos",
+     "cal.doy_sin",
+     "cal.hour_cos",
+     "cal.hour_sin",
+     "px.ewma_vol_168",
+     "px.log_close"
+    ],
+    [
+     "cal.sess_london",
+     "cal.sess_newyork",
+     "cal.sess_tokyo",
+     "cal.us_dst"
+    ],
+    [
+     "px.close_loc",
+     "px.log_co",
+     "px.logret_1h"
+    ],
+    [
+     "px.ewma_vol_24",
+     "px.log_hl",
+     "px.logret_120h",
+     "px.logret_12h",
+     "px.logret_168h",
+     "px.logret_24h",
+     "px.logret_2h",
+     "px.logret_48h",
+     "px.logret_4h",
+     "px.logret_6h",
+     "px.parkinson_24",
+     "px.zclose_168",
+     "px.zclose_24",
+     "ta.adx_14",
+     "ta.atr_14_n",
+     "ta.bb_pctb_20",
+     "ta.bb_width_20",
+     "ta.cci_20",
+     "ta.dmn_14",
+     "ta.dmp_14",
+     "ta.ema20_dev",
+     "ta.macd_hist_n",
+     "ta.macd_n",
+     "ta.mom_10_n",
+     "ta.roc_10",
+     "ta.rsi_14",
+     "ta.stoch_d",
+     "ta.stoch_k",
+     "ta.willr_14"
+    ],
+    [
+     "px.hours_since_prev_bar"
+    ],
+    [
+     "px.rv5"
+    ]
+   ]
+  },
+  "inner_2022": {
+   "dependence": [
+    [
+     "cal.dow_cos"
+    ],
+    [
+     "cal.dow_sin"
+    ],
+    [
+     "cal.doy_cos"
+    ],
+    [
+     "cal.doy_sin"
+    ],
+    [
+     "cal.hour_cos"
+    ],
+    [
+     "cal.hour_sin"
+    ],
+    [
+     "cal.sess_london"
+    ],
+    [
+     "cal.sess_newyork"
+    ],
+    [
+     "cal.sess_tokyo"
+    ],
+    [
+     "cal.us_dst"
+    ],
+    [
+     "px.close_loc"
+    ],
+    [
+     "px.ewma_vol_168"
+    ],
+    [
+     "px.ewma_vol_24",
+     "px.parkinson_24",
+     "ta.atr_14_n"
+    ],
+    [
+     "px.hours_since_prev_bar"
+    ],
+    [
+     "px.log_close"
+    ],
+    [
+     "px.log_co",
+     "px.logret_1h"
+    ],
+    [
+     "px.log_hl",
+     "px.rv5"
+    ],
+    [
+     "px.logret_120h"
+    ],
+    [
+     "px.logret_12h"
+    ],
+    [
+     "px.logret_168h"
+    ],
+    [
+     "px.logret_24h"
+    ],
+    [
+     "px.logret_2h"
+    ],
+    [
+     "px.logret_48h"
+    ],
+    [
+     "px.logret_4h"
+    ],
+    [
+     "px.logret_6h"
+    ],
+    [
+     "px.zclose_168"
+    ],
+    [
+     "px.zclose_24",
+     "ta.bb_pctb_20",
+     "ta.cci_20"
+    ],
+    [
+     "ta.adx_14"
+    ],
+    [
+     "ta.bb_width_20"
+    ],
+    [
+     "ta.dmn_14"
+    ],
+    [
+     "ta.dmp_14"
+    ],
+    [
+     "ta.ema20_dev",
+     "ta.rsi_14"
+    ],
+    [
+     "ta.macd_hist_n"
+    ],
+    [
+     "ta.macd_n"
+    ],
+    [
+     "ta.mom_10_n",
+     "ta.roc_10"
+    ],
+    [
+     "ta.stoch_d",
+     "ta.stoch_k"
+    ],
+    [
+     "ta.willr_14"
+    ]
+   ],
+   "profile": [
+    [
+     "cal.dow_cos",
+     "cal.dow_sin"
+    ],
+    [
+     "cal.doy_cos",
+     "cal.doy_sin",
+     "cal.hour_cos",
+     "cal.hour_sin",
+     "px.ewma_vol_168",
+     "px.log_close"
+    ],
+    [
+     "cal.sess_london",
+     "cal.sess_newyork",
+     "cal.sess_tokyo",
+     "cal.us_dst"
+    ],
+    [
+     "px.close_loc",
+     "px.log_co",
+     "px.logret_1h"
+    ],
+    [
+     "px.ewma_vol_24",
+     "px.log_hl",
+     "px.logret_120h",
+     "px.logret_12h",
+     "px.logret_168h",
+     "px.logret_24h",
+     "px.logret_2h",
+     "px.logret_48h",
+     "px.logret_4h",
+     "px.logret_6h",
+     "px.parkinson_24",
+     "px.zclose_168",
+     "px.zclose_24",
+     "ta.adx_14",
+     "ta.atr_14_n",
+     "ta.bb_pctb_20",
+     "ta.bb_width_20",
+     "ta.cci_20",
+     "ta.dmn_14",
+     "ta.dmp_14",
+     "ta.ema20_dev",
+     "ta.macd_hist_n",
+     "ta.macd_n",
+     "ta.mom_10_n",
+     "ta.roc_10",
+     "ta.rsi_14",
+     "ta.stoch_d",
+     "ta.stoch_k",
+     "ta.willr_14"
+    ],
+    [
+     "px.hours_since_prev_bar"
+    ],
+    [
+     "px.rv5"
+    ]
+   ]
+  },
+  "inner_2023": {
+   "dependence": [
+    [
+     "cal.dow_cos"
+    ],
+    [
+     "cal.dow_sin"
+    ],
+    [
+     "cal.doy_cos"
+    ],
+    [
+     "cal.doy_sin"
+    ],
+    [
+     "cal.hour_cos"
+    ],
+    [
+     "cal.hour_sin"
+    ],
+    [
+     "cal.sess_london"
+    ],
+    [
+     "cal.sess_newyork"
+    ],
+    [
+     "cal.sess_tokyo"
+    ],
+    [
+     "cal.us_dst"
+    ],
+    [
+     "px.close_loc"
+    ],
+    [
+     "px.ewma_vol_168"
+    ],
+    [
+     "px.ewma_vol_24",
+     "px.parkinson_24",
+     "ta.atr_14_n"
+    ],
+    [
+     "px.hours_since_prev_bar"
+    ],
+    [
+     "px.log_close"
+    ],
+    [
+     "px.log_co",
+     "px.logret_1h"
+    ],
+    [
+     "px.log_hl",
+     "px.rv5"
+    ],
+    [
+     "px.logret_120h"
+    ],
+    [
+     "px.logret_12h"
+    ],
+    [
+     "px.logret_168h"
+    ],
+    [
+     "px.logret_24h"
+    ],
+    [
+     "px.logret_2h"
+    ],
+    [
+     "px.logret_48h"
+    ],
+    [
+     "px.logret_4h"
+    ],
+    [
+     "px.logret_6h"
+    ],
+    [
+     "px.zclose_168"
+    ],
+    [
+     "px.zclose_24",
+     "ta.bb_pctb_20",
+     "ta.cci_20"
+    ],
+    [
+     "ta.adx_14"
+    ],
+    [
+     "ta.bb_width_20"
+    ],
+    [
+     "ta.dmn_14"
+    ],
+    [
+     "ta.dmp_14"
+    ],
+    [
+     "ta.ema20_dev",
+     "ta.rsi_14"
+    ],
+    [
+     "ta.macd_hist_n"
+    ],
+    [
+     "ta.macd_n"
+    ],
+    [
+     "ta.mom_10_n",
+     "ta.roc_10"
+    ],
+    [
+     "ta.stoch_d",
+     "ta.stoch_k"
+    ],
+    [
+     "ta.willr_14"
+    ]
+   ],
+   "profile": [
+    [
+     "cal.dow_cos",
+     "cal.dow_sin"
+    ],
+    [
+     "cal.doy_cos",
+     "cal.doy_sin",
+     "cal.hour_cos",
+     "cal.hour_sin",
+     "px.ewma_vol_168",
+     "px.log_close"
+    ],
+    [
+     "cal.sess_london",
+     "cal.sess_newyork",
+     "cal.sess_tokyo",
+     "cal.us_dst"
+    ],
+    [
+     "px.close_loc",
+     "px.log_co",
+     "px.logret_1h"
+    ],
+    [
+     "px.ewma_vol_24",
+     "px.log_hl",
+     "px.logret_120h",
+     "px.logret_12h",
+     "px.logret_168h",
+     "px.logret_24h",
+     "px.logret_2h",
+     "px.logret_48h",
+     "px.logret_4h",
+     "px.logret_6h",
+     "px.parkinson_24",
+     "px.zclose_168",
+     "px.zclose_24",
+     "ta.adx_14",
+     "ta.atr_14_n",
+     "ta.bb_pctb_20",
+     "ta.bb_width_20",
+     "ta.cci_20",
+     "ta.dmn_14",
+     "ta.dmp_14",
+     "ta.ema20_dev",
+     "ta.macd_hist_n",
+     "ta.macd_n",
+     "ta.mom_10_n",
+     "ta.roc_10",
+     "ta.rsi_14",
+     "ta.stoch_d",
+     "ta.stoch_k",
+     "ta.willr_14"
+    ],
+    [
+     "px.hours_since_prev_bar"
+    ],
+    [
+     "px.rv5"
+    ]
+   ]
+  }
+ },
+ "folds": [
+  {
+   "eval_end_row": 47637,
+   "eval_end_time": 1577829600,
+   "eval_start_row": 41424,
+   "eval_start_time": 1546383600,
+   "fit_end_row_laneA": 41329,
+   "fit_start_row": 0,
+   "fold": "inner_2019",
+   "label_purge_h_laneA": 144
+  },
+  {
+   "eval_end_row": 53867,
+   "eval_end_time": 1609452000,
+   "eval_start_row": 47637,
+   "eval_start_time": 1577919600,
+   "fit_end_row_laneA": 47542,
+   "fit_start_row": 0,
+   "fold": "inner_2020",
+   "label_purge_h_laneA": 144
+  },
+  {
+   "eval_end_row": 60086,
+   "eval_end_time": 1640988000,
+   "eval_start_row": 53867,
+   "eval_start_time": 1609714800,
+   "fit_end_row_laneA": 53771,
+   "fit_start_row": 0,
+   "fold": "inner_2021",
+   "label_purge_h_laneA": 144
+  },
+  {
+   "eval_end_row": 66325,
+   "eval_end_time": 1672437600,
+   "eval_start_row": 60086,
+   "eval_start_time": 1641164400,
+   "fit_end_row_laneA": 59966,
+   "fit_start_row": 0,
+   "fold": "inner_2022",
+   "label_purge_h_laneA": 144
+  },
+  {
+   "eval_end_row": 71734,
+   "eval_end_time": 1703887200,
+   "eval_start_row": 66325,
+   "eval_start_time": 1672614000,
+   "fit_end_row_laneA": 66206,
+   "fit_start_row": 0,
+   "fold": "inner_2023",
+   "label_purge_h_laneA": 144
+  }
+ ],
+ "multiplicity": {
+  "correction": "Benjamini-Hochberg within family",
+  "families": "target x horizon x fold x statistic",
+  "fdr_q": 0.1,
+  "tests_total": 6440
+ },
+ "n_admissible": 46,
+ "n_features": 47,
+ "output_sha256": {
+  "ps2_exploration.json": "2fc69d76d4f07aedcd8e6b317de4b178c79fc517b18fcd04edd2c855bcf1e627",
+  "ps2_fold_cells.csv": "ef3ca312032ffaddfdfd48aff71419c524a0c23be386b1e6926d0636cf7a7e82",
+  "ps2_groups.csv": "fb48223ee28aa412a6b6e69821a98a91068f65a759154f8cf47736949994a0b4",
+  "ps2_status.csv": "5b370534492651e51d621cbacaed303fe0f3bd98cc313882bcff6dd7e24b06e3",
+  "ps2_synergy.csv": "b6f370df45f2e9375d44ab2b0334a9f9fdf2ca5a4cda470af50279b2e68dc9d6"
+ },
+ "parameter_digest": "e4eeebf4749addc035d4619cbae531b778e243b5a5613d47eb46f710c9bf0d73",
+ "parameters": {
+  "barrier": {
+   "classes": {
+    "-1": "lower first",
+    "0": "timeout",
+    "1": "upper first"
+   },
+   "horizon_hours": 24,
+   "k_sigma": 1.0,
+   "min_vol_returns": 48,
+   "price_rule": "close-only first touch, ties impossible",
+   "vol_window_hours": 168
+  },
+  "bin_shrink": 20.0,
+  "exploration_fraction": 0.2,
+  "exploration_min": 2,
+  "exploration_seed": 20261003,
+  "fdr_q": 0.1,
+  "fold_majority": 3,
+  "fold_source": "supplied by PS0/PS1 batch",
+  "group_drop_one_max": 30,
+  "group_max_members": 200,
+  "inner_eval_frac": 0.15,
+  "label_rule": "log(price_asof(t+h)/price(t)); price_asof = last TRAIN bar at or before t+h elapsed hours; label support ends at t+h",
+  "leak_alarm_abs_spearman": 0.98,
+  "mi_bins": 8,
+  "min_eval_rows": 100,
+  "min_fit_rows": 300,
+  "n_inner_folds": 3,
+  "n_null": 99,
+  "n_util_null": 19,
+  "null_min_shift_rows": 336,
+  "profile_acf_lags": [
+   1,
+   24,
+   168
+  ],
+  "redundancy_min_pairs": 50,
+  "redundancy_threshold": 0.9,
+  "synergy_fold_min": 4,
+  "synergy_max_pairs": 3000,
+  "synergy_min_rel_gain": 0.001,
+  "synergy_null_p": 0.05,
+  "synergy_top_k": 20,
+  "targets": {
+   "Y_b": [
+    24
+   ],
+   "Y_l": [
+    24,
+    48,
+    72,
+    96,
+    120,
+    144
+   ],
+   "Y_s": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ]
+  },
+  "util_bins": 10,
+  "util_null_p": 0.1,
+  "winsor_q": 0.005
+ },
+ "provenance": {
+  "eval_rule": "lane A val rows AND label support end <= last val decision time",
+  "fit_rule": "lane A train rows AND label support end < eval start (per target)",
+  "lane_a_artifacts_sha256": {
+   "admissible_features.csv": "7e0b795e3b23d176d22d0dded55ddf726a9021395e969029dfff4dca3cf55678",
+   "admissible_features.json": "438fb732cb071ded24a5107155baabb662373ed504895984d0d8600198742d2a",
+   "batch_report.json": "11761ccca071f52dc6731935d441f507d70d3587a5ff3b97a3b754a2dfdfe855",
+   "contract.json": "96dd26539b0491e09f14d44f96dd0623d42b96aebc11e294ab56505b47a83f87",
+   "coverage_matrix.csv": "d68146edf2d5b655f2beb51ced783e7a30209df64133c43301032c8f9a160125",
+   "event_sources.json": "c2fff6ce86890ce761db52a9758592f1992fc7abb774bbf5a8c376b06ef22b7d",
+   "features_train.parquet": "bd005701247dc181c81457037cbad6e6142f8171ad8c3595f1cd489986557aa2",
+   "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+   "inventory_columns.csv": "58a2aae135a0748dca89901ecd80d42637b8ceae69be00b84d95e51f1897cfa5",
+   "inventory_sources.csv": "4a0a4a31b5900c617423771065784ff6f187f20125eaab754f2f9b4682bfd0ae",
+   "metric_state_matrix.csv": "c80bc48bdef555070ba59c0b611622ca549bf03e275c3d038d2a8bed77e61b7c",
+   "profile_cells.csv": "b8c5785cab51ea53e30fa61cf265de61b2bab19ec6b5a4fc9cb1dd5b7dc3e7d1",
+   "targets_train.parquet": "a838b81c72a291a45dac70ab4c69415c85d7ec1888691cae38817642188e84e5",
+   "transform_variants.csv": "45fc26ef0cbe5f8fd4211052f601ed1f0c7d561d9f30f6d01abe55ed2838cd68"
+  },
+  "lane_a_batch": "batch_001",
+  "lane_a_code_commit": "79bb09d902e092d8ecfda858af881171a7799919",
+  "lane_a_contract_sha256": "a4b1718b84c747d134fd55da4cc789ea541021b5815e0b49df8cfd6635acdcfc",
+  "lane_a_ready_digests_sha256": "449f4c3d5e992ee4f3221c7e6ac3078167fe5e31063a3d659fb2814db1c07eb4",
+  "read_end": "2024-01-01 00:00:00+00:00",
+  "selector_episode_sources": [
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_calendar",
+    "feature_id": "ev.USD.high.count_24h",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_calendar",
+    "feature_id": "ev.USD.high.hours_since",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise",
+    "feature_id": "ev.USD.high.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise",
+    "feature_id": "ev.USD.high.sum_surprise_z_24h",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise",
+    "feature_id": "ev.USD.high.last_revision_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_calendar",
+    "feature_id": "ev.USD.moderate.count_24h",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_calendar",
+    "feature_id": "ev.USD.moderate.hours_since",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise",
+    "feature_id": "ev.USD.moderate.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise",
+    "feature_id": "ev.USD.moderate.sum_surprise_z_24h",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise",
+    "feature_id": "ev.USD.moderate.last_revision_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_calendar",
+    "feature_id": "ev.USD.low.count_24h",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_calendar",
+    "feature_id": "ev.USD.low.hours_since",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_calendar",
+    "feature_id": "ev.EUR.high.count_24h",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_calendar",
+    "feature_id": "ev.EUR.high.hours_since",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise",
+    "feature_id": "ev.EUR.high.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise",
+    "feature_id": "ev.EUR.high.sum_surprise_z_24h",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise",
+    "feature_id": "ev.EUR.high.last_revision_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_calendar",
+    "feature_id": "ev.EUR.moderate.count_24h",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_calendar",
+    "feature_id": "ev.EUR.moderate.hours_since",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise",
+    "feature_id": "ev.EUR.moderate.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise",
+    "feature_id": "ev.EUR.moderate.sum_surprise_z_24h",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise",
+    "feature_id": "ev.EUR.moderate.last_revision_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_calendar",
+    "feature_id": "ev.EUR.low.count_24h",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_calendar",
+    "feature_id": "ev.EUR.low.hours_since",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise_by_release",
+    "feature_id": "ev.USD.desc.crude_oil_inventories.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise_by_release",
+    "feature_id": "ev.USD.desc.ppi.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise_by_release",
+    "feature_id": "ev.USD.desc.adp_nonfarm_employment_change.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise_by_release",
+    "feature_id": "ev.USD.desc.new_home_sales.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise_by_release",
+    "feature_id": "ev.USD.desc.ism_manufacturing_pmi.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise_by_release",
+    "feature_id": "ev.USD.desc.unemployment_rate.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise_by_release",
+    "feature_id": "ev.USD.desc.nonfarm_payrolls.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise_by_release",
+    "feature_id": "ev.USD.desc.ism_non_manufacturing_pmi.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise_by_release",
+    "feature_id": "ev.EUR.desc.german_manufacturing_pmi.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise_by_release",
+    "feature_id": "ev.EUR.desc.german_ifo_business_climate_index.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise_by_release",
+    "feature_id": "ev.EUR.desc.german_unemployment_change.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise_by_release",
+    "feature_id": "ev.EUR.desc.german_zew_economic_sentiment.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   },
+   {
+    "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+    "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+    "family": "event_surprise_by_release",
+    "feature_id": "ev.EUR.desc.german_gdp.last_surprise_z",
+    "status": "SELECTOR_EPISODE_SOURCE"
+   }
+  ],
+  "target_columns": [
+   "Y_b_l144|144",
+   "Y_b_s6|6",
+   "Y_l|120",
+   "Y_l|144",
+   "Y_l|24",
+   "Y_l|48",
+   "Y_l|72",
+   "Y_l|96",
+   "Y_s|1",
+   "Y_s|2",
+   "Y_s|3",
+   "Y_s|4",
+   "Y_s|5",
+   "Y_s|6"
+  ]
+ },
+ "reincorporation": "re-enters on: PS4/PS5 inner-validation gain alone or as a member of a group or pair, a later exploration draw, a new vintage, a new declared target, or causal/extractibility evidence (PS3-C/PS3-R)",
+ "schema": "feature_eng.ps2_selection.v1",
+ "selector_episode_sources_reported_separately": [
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_calendar",
+   "feature_id": "ev.USD.high.count_24h",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_calendar",
+   "feature_id": "ev.USD.high.hours_since",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise",
+   "feature_id": "ev.USD.high.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise",
+   "feature_id": "ev.USD.high.sum_surprise_z_24h",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise",
+   "feature_id": "ev.USD.high.last_revision_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_calendar",
+   "feature_id": "ev.USD.moderate.count_24h",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_calendar",
+   "feature_id": "ev.USD.moderate.hours_since",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise",
+   "feature_id": "ev.USD.moderate.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise",
+   "feature_id": "ev.USD.moderate.sum_surprise_z_24h",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise",
+   "feature_id": "ev.USD.moderate.last_revision_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_calendar",
+   "feature_id": "ev.USD.low.count_24h",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_calendar",
+   "feature_id": "ev.USD.low.hours_since",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_calendar",
+   "feature_id": "ev.EUR.high.count_24h",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_calendar",
+   "feature_id": "ev.EUR.high.hours_since",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise",
+   "feature_id": "ev.EUR.high.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise",
+   "feature_id": "ev.EUR.high.sum_surprise_z_24h",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise",
+   "feature_id": "ev.EUR.high.last_revision_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_calendar",
+   "feature_id": "ev.EUR.moderate.count_24h",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_calendar",
+   "feature_id": "ev.EUR.moderate.hours_since",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise",
+   "feature_id": "ev.EUR.moderate.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise",
+   "feature_id": "ev.EUR.moderate.sum_surprise_z_24h",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise",
+   "feature_id": "ev.EUR.moderate.last_revision_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_calendar",
+   "feature_id": "ev.EUR.low.count_24h",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_calendar",
+   "feature_id": "ev.EUR.low.hours_since",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise_by_release",
+   "feature_id": "ev.USD.desc.crude_oil_inventories.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise_by_release",
+   "feature_id": "ev.USD.desc.ppi.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise_by_release",
+   "feature_id": "ev.USD.desc.adp_nonfarm_employment_change.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise_by_release",
+   "feature_id": "ev.USD.desc.new_home_sales.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise_by_release",
+   "feature_id": "ev.USD.desc.ism_manufacturing_pmi.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise_by_release",
+   "feature_id": "ev.USD.desc.unemployment_rate.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise_by_release",
+   "feature_id": "ev.USD.desc.nonfarm_payrolls.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise_by_release",
+   "feature_id": "ev.USD.desc.ism_non_manufacturing_pmi.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise_by_release",
+   "feature_id": "ev.EUR.desc.german_manufacturing_pmi.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise_by_release",
+   "feature_id": "ev.EUR.desc.german_ifo_business_climate_index.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise_by_release",
+   "feature_id": "ev.EUR.desc.german_unemployment_change.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise_by_release",
+   "feature_id": "ev.EUR.desc.german_zew_economic_sentiment.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  },
+  {
+   "admissibility": "ADMISSIBLE_WITH_DECLARED_ASSUMPTION (archive clock measured; availability = scheduled+1min; provenance unknown)",
+   "consumer": "lane C PS3-C episode selection; excluded from PS2 model-input ranking and denominators (plan 02434903; calendar as model input is I11)",
+   "family": "event_surprise_by_release",
+   "feature_id": "ev.EUR.desc.german_gdp.last_surprise_z",
+   "status": "SELECTOR_EPISODE_SOURCE"
+  }
+ ],
+ "status_policy": {
+  "EXPLORATION": "a low-priority cell of a feature in the exploration sample",
+  "PROVISIONAL_LOW_PRIORITY": "otherwise, or LP_CONDITIONALLY_REDUNDANT (survivor whose conditional delta within its dependence cluster is <=0 in >=fold_majority folds while a cluster member has a larger median OOF delta). Reversible; kept in the control list.",
+  "PROVISIONAL_SURVIVOR": "any of S_OOF_UTILITY (binned OOF delta>0 in >=fold_majority folds, median>0, and temporal-null p<=util_null_p in >=fold_majority folds), S_ASSOC_ROBUST (Spearman or MI q<=fdr_q in >=fold_majority folds), S_SYNERGY_PAIR, S_GROUP_CONTRIBUTION",
+  "TECHNICAL_REJECT": "declared unavailable/leak/invalid by PS0/PS1, forward-looking name token, no finite TRAIN value, or constant in TRAIN. Never association."
+ },
+ "technical_rejects": {
+  "q.n5": [
+   [
+    "T_INVALID_DECLARED",
+    "lane A admissibility: EXCLUDED_ROLE:quality_excluded"
+   ]
+  ]
+ },
+ "train_data_digest": "80ff936fcec54777b2d255b4fbb3fbc2415719a6351694a8f581ae035622e615",
+ "train_first_time": 1335830400,
+ "train_last_time": 1703887200,
+ "train_rows": 71734
+}

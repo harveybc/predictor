@@ -1,0 +1,6 @@
+{
+ "wall_s": 497.2,
+ "peak_rss_kb": 492936,
+ "hardware": "CPU worker_a, single-thread BLAS",
+ "code_sha256": "b6d65cdd4b6751d0e1d4a1e89b8b905862ffe6dcae5379d672d1578a080f8d49"
+}
