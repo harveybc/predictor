@@ -795,6 +795,8 @@ class Request:
     peak_evidence_sha256: str | None = None
     size_text: str | None = None
     holder_pid: int | None = None   # ADM-STALE-LEASE-01: the launcher wrapper that will arm the lease
+    child_cap_bytes: int | None = None  # ADM-PARENT-CHILD-CAP-01: the declared cap of the child this
+                                        # orchestrator will launch into the SAME slice (enqueue/supervise)
     detached: bool = False      # a fire-and-forget unit: its cgroup, not a holder pid, is the witness,
                                 # so the lease must outlive the process that asked for it
 
@@ -936,6 +938,84 @@ def slice_charged_bytes(res, live, slice_current=None):
     return max(0, cur - dead), min(live_clean, total_clean)
 
 
+def parent_child_fit(parent_cap_bytes: int, child_cap_bytes: int | None, slice_max_bytes: int | None) -> dict:
+    """ADM-PARENT-CHILD-CAP-01 (corrective order 2026-10-03 §6).  An orchestrator that only
+    enqueues and supervises holds its own cap WHILE its scientific child holds the child's cap in
+    the same slice, so the pair must fit the slice ceiling before the parent is launched.  Pure.
+    256M + 6915M = 7171M fits 8G; 1500M + 6915M = 8415M does not (the 2026-10-03 NEAT parent)."""
+    if child_cap_bytes is None or slice_max_bytes is None:
+        return {"fits": True, "checked": False, "total_bytes": None,
+                "reason": "no declared child cap or no slice ceiling: nothing to check"}
+    total = int(parent_cap_bytes) + int(child_cap_bytes)
+    fits = total <= int(slice_max_bytes)
+    return {"fits": fits, "checked": True, "total_bytes": total,
+            "reason": (f"parent {human(parent_cap_bytes)} + declared child {human(child_cap_bytes)} = "
+                       f"{human(total)} {'<=' if fits else '>'} slice ceiling {human(slice_max_bytes)}")}
+
+
+_SEED_FLAGS = ("--seed", "--neat-seed", "--draw-seed", "--campaign-seed")
+
+
+def _argv_has_root_and_seed(argv, root: str, seed: str) -> bool:
+    root = os.path.normpath(os.path.expanduser(root))
+    has_root = has_seed = False
+    for i, w in enumerate(argv):
+        flag, eq, val = w.partition("=")
+        if eq and flag == "--root" and os.path.normpath(os.path.expanduser(val)) == root:
+            has_root = True
+        elif os.path.normpath(os.path.expanduser(w)) == root and i > 0 and argv[i - 1] == "--root":
+            has_root = True
+        if eq and flag in _SEED_FLAGS and val == seed:
+            has_seed = True
+        elif w == seed and i > 0 and argv[i - 1] in _SEED_FLAGS:
+            has_seed = True
+    return has_root and has_seed
+
+
+def find_duplicate_dispatchers(argvs_by_host: dict, root: str, seed, exclude_pids=()) -> list:
+    """ADM-ONE-DISPATCHER-01 (corrective order 2026-10-03 §6): one campaign has one active
+    dispatcher.  argvs_by_host = {host_role: [(pid, argv list), ...]}.  Returns every process on
+    ANY host whose argv names the same `--root` campaign root AND the same seed flag value; a
+    non-empty result means a new dispatcher/waiter must be refused.  Pure."""
+    seed = str(seed)
+    out = []
+    for role, procs in sorted(argvs_by_host.items()):
+        for pid, argv in procs:
+            if (role, pid) in exclude_pids or not argv:
+                continue
+            if _argv_has_root_and_seed(list(argv), root, seed):
+                out.append({"host_role": role, "pid": pid, "argv_head": [os.path.basename(argv[0])] + list(argv[1:4])})
+    return out
+
+
+_PROC_ARGV_READER = (
+    "import json,os\n"
+    "o=[]\n"
+    "for d in os.listdir('/proc'):\n"
+    "  if d.isdigit():\n"
+    "    try: a=[x.decode(errors='replace') for x in open('/proc/%s/cmdline'%d,'rb').read().split(b'\\0') if x]\n"
+    "    except OSError: continue\n"
+    "    if a: o.append([int(d),a])\n"
+    "print(json.dumps(o))\n")
+
+
+def collect_argvs(ssh_hosts=()) -> dict:
+    """{"local": [...], <ssh alias>: [...]} of (pid, argv); an unreachable host is an error the
+    caller must treat as 'cannot prove there is no duplicate'."""
+    import subprocess
+    out = {"local": [(pid, a) for pid, a in json.loads(subprocess.run(
+        [sys.executable, "-c", _PROC_ARGV_READER], capture_output=True, text=True, timeout=30).stdout)]}
+    for spec in ssh_hosts:
+        role, _, h = spec.rpartition("=")      # role=alias keeps host names out of the output
+        role = role or h
+        r = subprocess.run(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", h, "python3", "-"],
+                           input=_PROC_ARGV_READER, capture_output=True, text=True, timeout=60)
+        if r.returncode != 0:
+            raise Refusal("DISPATCHER_CHECK_UNREACHABLE", f"host {role} could not be searched; a duplicate cannot be excluded")
+        out[role] = [(pid, a) for pid, a in json.loads(r.stdout)]
+    return out
+
+
 def evaluate(store: Store, res, req: Request, now: float) -> dict:
     """The decision, with every reading it used.  Pure with respect to the store: writes nothing."""
     swept = reclaim(store, res, now)
@@ -988,6 +1068,14 @@ def evaluate(store: Store, res, req: Request, now: float) -> dict:
     if slice_max is not None and req.cap_bytes > slice_max:
         return {"verdict": REFUSED, "code": "ABOVE_SLICE_CEILING",
                 "reason": f"{human(req.cap_bytes)} exceeds the {req.slice_name} ceiling {human(slice_max)}",
+                "readings": readings}
+    pc = parent_child_fit(req.cap_bytes, req.child_cap_bytes, slice_max)
+    if pc["checked"]:
+        readings["declared_child_cap_bytes"] = req.child_cap_bytes
+        readings["parent_plus_child_bytes"] = pc["total_bytes"]
+    if not pc["fits"]:
+        return {"verdict": REFUSED, "code": "PARENT_PLUS_CHILD_ABOVE_SLICE_CEILING",
+                "reason": pc["reason"] + "; measure the orchestrator and give it a small cap",
                 "readings": readings}
 
     # then what is free now: these are QUEUE conditions, they can change without any retry policy
@@ -1749,7 +1837,14 @@ def build_request(a) -> Request:
                    peak_bytes=peak, peak_scope=peak_scope,
                    peak_evidence_path=str(a.peak_evidence) if a.peak_evidence else None,
                    peak_evidence_sha256=ev_sha, size_text=a.mem, detached=bool(getattr(a, "detached", False)),
-                   holder_pid=getattr(a, "holder_pid", None))
+                   holder_pid=getattr(a, "holder_pid", None),
+                   child_cap_bytes=_child_cap(a))
+
+
+def _child_cap(a):
+    """--child-cap or CRISPDM_CHILD_CAP (so crispdm-run passes it through unchanged)."""
+    text = getattr(a, "child_cap", None) or os.environ.get("CRISPDM_CHILD_CAP") or None
+    return parse_size(text) if text else None
 
 
 # ---- own-scope clean-cache reclaim at scope end (ADM-DEADCACHE-01) ---------------------------
@@ -1872,6 +1967,9 @@ def main(argv=None) -> int:
     acq.add_argument("-n", "--name", required=True)
     acq.add_argument("-m", "--mem", default=None, help="IEC size, e.g. 9G")
     acq.add_argument("--cap-bytes", type=int, default=None)
+    acq.add_argument("--child-cap", default=None,
+                     help="IEC size of the child this orchestrator launches into the same slice; parent + "
+                          "child must fit the slice ceiling (also CRISPDM_CHILD_CAP)")
     acq.add_argument("-t", "--wall", type=int, default=None)
     acq.add_argument("--label", default="")
     acq.add_argument("--slice", default=DEFAULT_SLICE)
@@ -1935,6 +2033,15 @@ def main(argv=None) -> int:
     cn.add_argument("--name", required=True)
     cn.add_argument("--witness-pid", type=int, required=True, help="the waiting acquirer's pid")
     sub.add_parser("state", help="the live reservations and the capacity they leave")
+    pcc = sub.add_parser("parent-child-check", help="pre-launch: parent cap + declared child cap must fit the slice ceiling")
+    pcc.add_argument("--parent", required=True)
+    pcc.add_argument("--child", required=True)
+    pcc.add_argument("--slice-max", default=None, help="IEC size; default: the live slice MemoryMax")
+    dc = sub.add_parser("dispatcher-check", help="pre-launch: refuse when any host already runs a dispatcher "
+                                                 "with the same campaign root and seed")
+    dc.add_argument("--root", required=True)
+    dc.add_argument("--seed", required=True)
+    dc.add_argument("--ssh-host", action="append", default=[], help="ROLE=ALIAS (or ALIAS) of another host to search over ssh (repeatable); the role is what is printed")
     sub.add_parser("reclaim", help="sweep: free only the leases whose witness is dead")
 
     sz = sub.add_parser("size", help="the one integer an IEC size denotes (the launcher's only cap source)")
@@ -1962,6 +2069,21 @@ def main(argv=None) -> int:
         else:
             print(f"crispdm-run: {d.get('verdict')} {d.get('code')} -- {d.get('reason')}")
         return 0
+    if a.cmd == "dispatcher-check":
+        try:
+            found = find_duplicate_dispatchers(collect_argvs(a.ssh_host), a.root, a.seed,
+                                               exclude_pids={("local", os.getpid()), ("local", os.getppid())})
+        except Refusal as e:
+            print(json.dumps({"verdict": REFUSED, "code": e.code, "reason": e.message}))
+            return REFUSED_EXIT
+        print(json.dumps({"verdict": REFUSED if found else ADMITTED,
+                          "code": "DUPLICATE_DISPATCHER" if found else "NO_DUPLICATE", "matches": found}))
+        return REFUSED_EXIT if found else 0
+    if a.cmd == "parent-child-check":
+        sm = parse_size(a.slice_max) if a.slice_max else resources_from_env(getattr(a, "slice", DEFAULT_SLICE)).slice_memory_max()
+        pc = parent_child_fit(parse_size(a.parent), parse_size(a.child), sm)
+        print(json.dumps({"verdict": ADMITTED if pc["fits"] else REFUSED, **pc}))
+        return 0 if pc["fits"] else REFUSED_EXIT
     store = Store(a.store)
     if a.cmd == "scope-exec":
         argv = list(a.argv)

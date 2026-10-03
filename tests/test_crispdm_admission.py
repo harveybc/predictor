@@ -982,3 +982,55 @@ def test_2026_10_01_cancel_end_to_end_stops_a_queued_acquirer_process(host):
     assert p.returncode == A.REFUSED_EXIT
     assert '"CANCELLED"' in out
     assert host.live_lease_ids() == []
+
+
+# ---- ADM-PARENT-CHILD-CAP-01 / ADM-ONE-DISPATCHER-01 (corrective order 2026-10-03 §6) ----------
+
+MIB_ = 1024 * 1024
+
+
+def test_2026_10_03_parent_plus_child_fit_the_8g_slice_at_256m_but_not_at_1500m():
+    ok = A.parent_child_fit(256 * MIB_, 6915 * MIB_, 8 * GIB)
+    assert ok["fits"] and ok["checked"] and ok["total_bytes"] == 7171 * MIB_
+    bad = A.parent_child_fit(1500 * MIB_, 6915 * MIB_, 8 * GIB)
+    assert not bad["fits"] and bad["total_bytes"] == 8415 * MIB_
+    assert A.parent_child_fit(1500 * MIB_, None, 8 * GIB)["checked"] is False
+
+
+def test_2026_10_03_acquire_refuses_an_orchestrator_whose_child_cannot_fit_beside_it(host):
+    host.patch(mem_available_bytes=30 * GIB, mem_total_bytes=64 * GIB, slice_memory_max=8 * GIB)
+    d = host.acquire("neat-orch-old", 1500 * MIB_, child_cap_bytes=6915 * MIB_)
+    assert d["verdict"] == A.REFUSED and d["code"] == "PARENT_PLUS_CHILD_ABOVE_SLICE_CEILING"
+    assert host.live_lease_ids() == []
+    d = host.acquire("neat-orch", 256 * MIB_, child_cap_bytes=6915 * MIB_)
+    assert d["verdict"] == A.ADMITTED
+    assert d["readings"]["parent_plus_child_bytes"] == 7171 * MIB_
+
+
+def test_2026_10_03_parent_child_check_cli_exit_codes(host):
+    host.cli("parent-child-check", "--parent", "256M", "--child", "6915M", "--slice-max", "8G", expect=0)
+    r = host.cli("parent-child-check", "--parent", "1500M", "--child", "6915M", "--slice-max", "8G", expect=75)
+    assert json.loads(r.stdout)["verdict"] == A.REFUSED
+
+
+ROOT = "~/.local/state/campaign_x"
+NEAT = ["python", "-u", "tools/modular_neat_matched_arms.py", "neat", "--root", ROOT, "--neat-seed", "20261003"]
+
+
+def test_2026_10_03_same_campaign_root_and_seed_on_any_host_is_a_duplicate():
+    procs = {"worker_a": [(10, NEAT)], "worker_b": [(20, ["bash", "-c", "sleep 60"])]}
+    found = A.find_duplicate_dispatchers(procs, ROOT, 20261003)
+    assert [(f["host_role"], f["pid"]) for f in found] == [("worker_a", 10)]
+    # the same waiter on the other host is found too
+    procs["worker_b"].append((21, ["python", "w.py", "--root=" + ROOT, "--seed=20261003"]))
+    assert len(A.find_duplicate_dispatchers(procs, ROOT, "20261003")) == 2
+
+
+def test_2026_10_03_other_seed_other_root_or_child_paths_are_not_duplicates():
+    procs = {"worker_a": [(10, NEAT)]}
+    assert A.find_duplicate_dispatchers(procs, ROOT, 2021) == []
+    assert A.find_duplicate_dispatchers(procs, ROOT + "_random", 20261003) == []
+    child = ["python", "-m", "bridge", "--config", ROOT + "/attempts/x/bridge.json", "--seed", "20261003"]
+    assert A.find_duplicate_dispatchers({"worker_a": [(11, child)]}, ROOT, 20261003) == []
+    assert A.find_duplicate_dispatchers({"worker_a": [(10, NEAT)]}, ROOT, 20261003,
+                                        exclude_pids={("worker_a", 10)}) == []
