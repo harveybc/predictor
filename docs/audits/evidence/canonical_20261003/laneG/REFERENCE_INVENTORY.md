@@ -65,7 +65,7 @@ in the replay sense. **No Weather cell is SEALED_NOT_RUN.**
 | T | seeds | ours MSE / MAE | published | naive MSE / MAE | class | state |
 |---|---|---|---|---|---|---|
 | 96 | 2021, 2022, 2023 | 0.375199 / 0.251143 (sd 0.00060 / 0.00028) | 0.375 / 0.251 | 2.7145 / 1.0772 | OPERATIONAL_AGREEMENT | MEASURED_UNVERIFIED: no independent replay; scored with the author's native unchunked `test()`; every seed hit the 30-epoch ceiling with its best epoch the last one |
-| 192 | 2021 | see §3 | 0.395 / 0.262 | see §3 | per-seed difference only | **run by lane G** |
+| 192 | 2021 | 0.396605 / 0.262610 (one seed) | 0.395 / 0.262 | 2.7471 / 1.0851 | per-seed difference only (+0.0016 / +0.0006) | **MEASURED_UNVERIFIED, run by lane G (§3)** |
 | 192 | 2022, 2023 | — | 0.395 / 0.262 | — | — | SEALED_NOT_RUN |
 | 336 | 2021, 2022, 2023 | — | 0.414 / 0.271 | — | — | SEALED_NOT_RUN; the bounded probe at h336 has not been measured |
 | 720 | 2021, 2022, 2023 | — | 0.445 / 0.289 | — | — | SEALED_NOT_RUN; bounded probe `ADMISSIBLE_PARITY_INHERITED`, 3.600 GiB |
@@ -117,7 +117,25 @@ refuses to score Traffic unless a complete-population bounded probe exists for t
 
 ## 3. Result
 
-RESULT_PENDING
+Cell `traffic_L96_h192_s2021`, seed 2021. It ran on worker_b's RTX 4090 from 04:58:02Z to 05:55:59Z on 2026-10-03, and
+the child exited 0. The full record is in `TRAFFIC_L96_h192_s2021_RESULT.json`, with record sha `86b28103…`.
+
+| metric | ours | published (Table 8) | difference | operational tolerance | naive, same rows | skill vs naive |
+|---|---|---|---|---|---|---|
+| MSE | 0.396605 | 0.395 | +0.00161 | 0.0165 | 2.747078 | 0.8556 |
+| MAE | 0.262610 | 0.262 | +0.00061 | 0.0085 | 1.085077 | 0.7580 |
+
+- **Population**: 3 317 × 192 × 862 = 548 976 768 elements. It is complete and finite and matches the sealed count.
+- **Naive pairing**: proved by target digest (`4ddc6290…`).
+- **Metric check**: the author's float32 reduction and an independent float64 reduction agree to 9e-9.
+- **Training**: all 30 sealed epochs ran, with no early stop. The best validation epoch was 28.
+- **Cost**: 3 478 s wall and 3 474 CPU s. The whole-cgroup peak was 5.41 GiB against a 7 GiB cap, and GPU reserved memory
+  was 5.36 GiB. The bounded probe added under 5 min. The heartbeat met the 60 s interval for the whole run.
+- **Reading**: this is **one seed**. It is a per-seed difference, not an agreement class. The class belongs to the three-seed
+  mean once seeds 2022 and 2023 exist.
+- **Evidence state**: MEASURED_UNVERIFIED. No independent replay has been run yet.
+- **Retention**: the predictions and targets (4.2 GB) are kept until a replay recomputes them.
+- **Custody**: declared transport of governed bytes. This is the same class as Traffic h96.
 
 ## 4. TimeFilter Table 9, L512 mapping: why nothing was run, and the proposal
 
@@ -137,4 +155,16 @@ reproduced and verified; Table 9 identity NOT claimed."
 
 ## 5. Next item
 
-NEXT_PENDING
+1. **`traffic_L96_h192_s2022`, then `traffic_L96_h192_s2023`.** Each runs on worker_b's 4090, one at a time, and closes the
+   h192 class.
+   - Same design, executor snapshot and bounded probe.
+   - Cap 7 GiB, which is 1.25 × the 5.41 GiB peak measured in this cell.
+   - About 1 h each.
+2. **h720 × 3.** The bounded probe already exists. A TRAIN-only pilot (2.03 GiB) is measured.
+   - Cap = 1.25 × (pilot + probe 3.60 GiB) ≈ 7 GiB.
+   - About 1.3 h each.
+3. **h336 × 3.** Measure the bounded probe at h336 first. A TRAIN-only pilot exists.
+4. **Independent replays.** Run them from the retained checkpoints for Traffic h96 and h192, with no retraining. Only then
+   delete the 4.2 GB prediction files.
+5. **Table 9.** Send the authors' query in `TABLE9_MAPPING_PROPOSAL.json`. This is owner-level external communication and
+   uses no GPU time.
