@@ -1,0 +1,195 @@
+{
+  "denominators": {
+    "coverage_matrix_rows_by_batch": {
+      "batch_001": 840,
+      "batch_002": 2980,
+      "batch_003": 220
+    },
+    "feature_population_admissible": 366,
+    "feature_population_low_priority_outside_join": 87,
+    "feature_population_ps3c_join": 279,
+    "inventory_source_rows": 388,
+    "inventory_source_rows_are_not_selected_features": true,
+    "transform_variant_rows": 9
+  },
+  "feature_population_note": "366 = 279 + 87 is the retained feature partition. It is not the source denominator and not proof that subscriptions or transform variants were admitted.",
+  "inputs_sha256": {
+    "docs/audits/evidence/canonical_20261003/coverage_reconciliation/coverage_reconciliation.json": "5edaf23c00284001d8b69c268a5a09c05037f2247ccc47ce1dac4d1e22007d02",
+    "docs/audits/evidence/canonical_20261003/laneA/batch_001/batch_report.json": "11761ccca071f52dc6731935d441f507d70d3587a5ff3b97a3b754a2dfdfe855",
+    "docs/audits/evidence/canonical_20261003/laneA/batch_001/contract.json": "96dd26539b0491e09f14d44f96dd0623d42b96aebc11e294ab56505b47a83f87",
+    "docs/audits/evidence/canonical_20261003/laneA/batch_001/coverage_matrix.csv": "d68146edf2d5b655f2beb51ced783e7a30209df64133c43301032c8f9a160125",
+    "docs/audits/evidence/canonical_20261003/laneA/batch_001/digests.json": "449f4c3d5e992ee4f3221c7e6ac3078167fe5e31063a3d659fb2814db1c07eb4",
+    "docs/audits/evidence/canonical_20261003/laneA/batch_001/inventory_columns.csv": "58a2aae135a0748dca89901ecd80d42637b8ceae69be00b84d95e51f1897cfa5",
+    "docs/audits/evidence/canonical_20261003/laneA/batch_001/inventory_sources.csv": "4a0a4a31b5900c617423771065784ff6f187f20125eaab754f2f9b4682bfd0ae",
+    "docs/audits/evidence/canonical_20261003/laneA/batch_001/transform_variants.csv": "45fc26ef0cbe5f8fd4211052f601ed1f0c7d561d9f30f6d01abe55ed2838cd68",
+    "docs/audits/evidence/canonical_20261003/laneA/batch_002/batch_report.json": "4e4d3aeea6ed01aee2cf37fef48a8ee3e7507ec44f656c574aa2c1c94629713d",
+    "docs/audits/evidence/canonical_20261003/laneA/batch_002/coverage_matrix.csv": "3b74e9f3c16dba007e2225554d7dbc30e8ce64e7dec08811e7feb753d6b0287a",
+    "docs/audits/evidence/canonical_20261003/laneA/batch_002/digests.json": "2c573bda714e417ea9c6a008add8b1c58124cb8b52b7faf9574e44c193a64c45",
+    "docs/audits/evidence/canonical_20261003/laneA/batch_002/inventory_columns.csv": "1b643d77d5342f9b7e29736d22140d068bce49ea2424787cd6e3cf6bddb9891a",
+    "docs/audits/evidence/canonical_20261003/laneA/batch_003/batch_report.json": "5750195ca47919010fec0f385b4c60dc0c67daa2078279940fe491b65ace91de",
+    "docs/audits/evidence/canonical_20261003/laneA/batch_003/coverage_matrix.csv": "cb2546ffb7c57a88c05ed393bdd094bced086d5df776b9030faff7ed84de2142",
+    "docs/audits/evidence/canonical_20261003/laneA/batch_003/digests.json": "2d316760324cab4cc385c655161d9cbede1fd75b2f40ec60ed2d500f5ecf6ace",
+    "docs/audits/evidence/canonical_20261003/laneA/batch_003/inventory_columns.csv": "8b6d871409ef4ba031f24e1362181f8b57dcf3b376d4b00b859f71b180b2a4c9"
+  },
+  "measurement_flag": "NO_NEW_MODEL_MEASUREMENT",
+  "resource_contracts": {
+    "alpaca_mentions": 0,
+    "fxmacro_declared_rows": [
+      {
+        "clock": "OBSERVED_ACTUAL_PUBLICATION",
+        "resource": "economic_calendar/release_actuals/fxmacrodata/announcements.parquet",
+        "span": "2024-12-12 \u2192 2026-05-01 (UTC)"
+      },
+      {
+        "clock": "ASSUMED_SCHEDULED_PUBLICATION",
+        "resource": "economic_calendar/scheduled_events/fxmacrodata/release_calendar.parquet",
+        "span": "2026-02-05 \u2192 2027-07-14 (UTC)"
+      }
+    ],
+    "interpretation": "A registry row or an API subscription is not ingested historical bytes.",
+    "relative_path": "data-gov/docs/08_RESOURCE_REGISTRY.md",
+    "repository_commit": "7eec86854e1ccc470265c5c9e0b3ae966b2b7603",
+    "sha256": "da5976e2b0006e5051605419cf0c15c629bcb035da83941e468cb668f2465d91",
+    "status": "LISTING_ONLY",
+    "yahoo_mentions": 0
+  },
+  "schema": "canonical_20261003.source_transform_coverage.v1",
+  "source_status_by_provider": {
+    "Alpaca": {
+      "NOT_INGESTED": 1
+    },
+    "BEA Data API": {
+      "UNKNOWN": 3
+    },
+    "BLS Public API": {
+      "UNKNOWN": 1
+    },
+    "Binance Futures": {
+      "NOT_APPLICABLE": 20
+    },
+    "Binance Spot": {
+      "NOT_APPLICABLE": 32
+    },
+    "Blockchain.com": {
+      "NOT_APPLICABLE": 6
+    },
+    "CFTC": {
+      "DECLARED_ONLY": 1
+    },
+    "CoinMetrics Community": {
+      "NOT_APPLICABLE": 2
+    },
+    "CryptoQuant": {
+      "NOT_APPLICABLE": 1
+    },
+    "DeFiLlama": {
+      "NOT_APPLICABLE": 1
+    },
+    "Etherscan API V2": {
+      "NOT_APPLICABLE": 1
+    },
+    "FINRA Query API consolidatedShortInterest": {
+      "NOT_APPLICABLE": 1
+    },
+    "FINRA Reg SHO Daily Short Sale Volume": {
+      "NOT_APPLICABLE": 3
+    },
+    "FRED": {
+      "DECLARED_ONLY": 41,
+      "UNKNOWN": 104
+    },
+    "FRED-derived release-date proxy": {
+      "UNKNOWN": 1
+    },
+    "FXMacroData": {
+      "NOT_AVAILABLE_FOR_TRAIN": 2
+    },
+    "HistData": {
+      "DECLARED_ONLY": 9,
+      "NOT_APPLICABLE": 1
+    },
+    "OECD SDMX": {
+      "UNKNOWN": 1
+    },
+    "SEC EDGAR": {
+      "NOT_APPLICABLE": 1
+    },
+    "SEC EDGAR submissions API": {
+      "NOT_APPLICABLE": 1
+    },
+    "UNDECLARED": {
+      "DECLARED_ONLY": 9,
+      "MEASURED": 1,
+      "NOT_APPLICABLE": 40
+    },
+    "UNKNOWN (no provenance sidecar)": {
+      "DECLARED_ONLY": 1
+    },
+    "US Treasury FiscalData": {
+      "UNKNOWN": 1
+    },
+    "Yahoo Finance": {
+      "DECLARED_ONLY": 78
+    },
+    "autogenerated_stage13_doc_backfill": {
+      "DECLARED_ONLY": 1,
+      "NOT_APPLICABLE": 9,
+      "UNKNOWN": 1
+    },
+    "fallback calendar generator": {
+      "UNKNOWN": 6
+    },
+    "feature-eng": {
+      "DECLARED_ONLY": 1
+    },
+    "git-pinned EURUSD 1h (UTC bar start)": {
+      "NOT_APPLICABLE": 1
+    },
+    "mempool.space": {
+      "NOT_APPLICABLE": 3
+    },
+    "own collector (receipt clock)": {
+      "NOT_AVAILABLE_FOR_TRAIN": 1
+    },
+    "python-holidays": {
+      "UNKNOWN": 1
+    }
+  },
+  "source_status_counts": {
+    "DECLARED_ONLY": 141,
+    "MEASURED": 1,
+    "NOT_APPLICABLE": 123,
+    "NOT_AVAILABLE_FOR_TRAIN": 3,
+    "NOT_INGESTED": 1,
+    "UNKNOWN": 119
+  },
+  "train_interval": {
+    "end": "2024-01-01 00:00:00+00:00",
+    "end_rule": "exclusive",
+    "source": "laneA/batch_001/contract.json periods.train",
+    "start": "2012-05-01 00:00:00+00:00"
+  },
+  "transform_admissibility_counts": {
+    "ADMISSIBLE_CAUSAL_COMPUTABILITY_ONLY": 5,
+    "NOT_ADMISSIBLE": 4
+  },
+  "transform_class_counts": {
+    "GLOBAL_OR_SMOOTHER": 4,
+    "TRAILING_OR_FILTER": 5
+  },
+  "transform_profile_counts": {
+    "PENDING_PROFILE": 9
+  },
+  "unjoined_column_sources": [
+    "cftc_disaggregated"
+  ],
+  "unresolved_blockers": [
+    "Alpaca remains NOT_INGESTED. No credential search was done.",
+    "Both FXMacroData resources have zero TRAIN rows on this contract interval.",
+    "Yahoo Finance clocks stay declared conservative rules, not measured publication instants.",
+    "Revised macro with an undefined publication clock stays UNKNOWN, even where an observation span meets TRAIN.",
+    "PS1/PS4 profiles of every transform variant stay PENDING_PROFILE.",
+    "Prefix-invariant variants are causal-computability results, not selected features.",
+    "Column sources without a unique inventory path are listed in unjoined_column_sources and are not given a TRAIN admission."
+  ]
+}
