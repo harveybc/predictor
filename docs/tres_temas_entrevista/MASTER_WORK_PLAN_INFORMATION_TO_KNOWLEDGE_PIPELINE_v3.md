@@ -19,6 +19,14 @@ El orden de autoridad es:
 7. [checklist legible por máquina](program_v3/MASTER_CHECKLIST.json), proyección
    del apartado 4 y no un plan alterno.
 
+La vista ejecutiva obligatoria es
+[`MASTER_MILESTONE_PROGRESS.png`](../audits/evidence/canonical_20261003/MASTER_MILESTONE_PROGRESS.png),
+generada desde
+[`MASTER_MILESTONE_STATUS.json`](../audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json).
+Todo retorno de orquestación debe mantener visibles M1-M8, actualizar evidencia,
+próxima compuerta y ETA, y distinguir porcentaje de ingeniería de confianza
+científica. Ningún esquema local de carriles reemplaza estos hitos.
+
 Un documento fechado anterior sigue siendo auditable, pero no puede abrir una
 campaña, cambiar dependencias ni redefinir un componente. Cuando contradiga esta
 lista, prevalece esta lista. Una medición retenida conserva su significado y su

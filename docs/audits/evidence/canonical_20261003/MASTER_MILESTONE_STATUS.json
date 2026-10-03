@@ -1,0 +1,85 @@
+{
+  "schema": "predictor.master_milestones.v1",
+  "as_of": "2026-10-03T22:23:50Z",
+  "critical_path_eta": "3-5 weeks, conditional on continuous GPU lanes and no failed scientific gates",
+  "milestones": [
+    {
+      "id": "M1",
+      "title": "Business-faithful evaluation",
+      "progress": 58,
+      "state": "CORE_IMPLEMENTED",
+      "evidence": "Weekly/monthly/static contracts, four-year as-of windows and test firewall; 176 focused tests",
+      "next": "Bind real TensorFlow, heuristic, SAC and DQN adapters and run one complete weekly validation pilot",
+      "eta": "2-4 development days"
+    },
+    {
+      "id": "M2",
+      "title": "Feature selection",
+      "progress": 38,
+      "state": "IN_PROGRESS",
+      "evidence": "366 candidates; selector campaign implemented; 16 extractibility features complete; causal evidence currently NOT_IDENTIFIED",
+      "next": "Finish PS3-R, execute PS4 profiles, then compare common-K subsets under weekly validation",
+      "eta": "4-6 GPU-days with active lanes"
+    },
+    {
+      "id": "M3",
+      "title": "Exact literature controls",
+      "progress": 78,
+      "state": "MULTIPLE_REPLICATIONS_COMPLETE",
+      "evidence": "TimeFilter ECL A, Weather and Traffic operational replications with paired naive",
+      "next": "Consolidate comparable rows and retain static literature identity separately from business mode",
+      "eta": "1-2 days"
+    },
+    {
+      "id": "M4",
+      "title": "Pretrained branches: R0/R1/R2",
+      "progress": 48,
+      "state": "PARTIAL_MEASUREMENT",
+      "evidence": "Modular engine and donors exist; ECL development contrast found R2 0.694% lower MAE than R0",
+      "next": "Repeat literature baseline vs modular R0/R1/R2 on the selected feature manifest",
+      "eta": "3-6 days after M2"
+    },
+    {
+      "id": "M5",
+      "title": "Pretrained temporal core",
+      "progress": 22,
+      "state": "DESIGNED_NOT_DEFINITIVE",
+      "evidence": "Temporal-preserving fusion/core code and staged donor contracts exist",
+      "next": "Train the core AE from fused selected-branch sequences, then verify R1/R2 transfer",
+      "eta": "3-5 days after M4"
+    },
+    {
+      "id": "M6",
+      "title": "Short/long forecasts + strategy",
+      "progress": 24,
+      "state": "SYNTHETIC_ONLY",
+      "evidence": "Real plugin harness and conditional-noise synthetic experiments; no eligible real predictor yet",
+      "next": "Weekly short/long forecasting; require same-row naive skill before strategy evaluation",
+      "eta": "4-7 days after M5"
+    },
+    {
+      "id": "M7",
+      "title": "RL: SAC and DQN",
+      "progress": 28,
+      "state": "INTEGRATED_NOT_TRAINED_ON_FINAL_DATA",
+      "evidence": "Raw and modular four-arm integration complete; no final selected-data pilot",
+      "next": "Train SAC and DQN with and without frozen/fine-tuned modular representation under weekly updates",
+      "eta": "5-10 days after M5"
+    },
+    {
+      "id": "M8",
+      "title": "Paper/live trading",
+      "progress": 15,
+      "state": "INTERFACES_ONLY",
+      "evidence": "Alpaca paper and MT5 integration work exists; no promoted final model",
+      "next": "Promote only candidates passing validation, naive and risk gates; paper before live",
+      "eta": "2-4 days after M6/M7 finalist"
+    }
+  ],
+  "optional_after_critical_path": [
+    "hierarchical unsupervised market regimes",
+    "economic-calendar causal inputs",
+    "synthetic data generation",
+    "NEAT predictive or policy heads"
+  ]
+}
