@@ -31,7 +31,7 @@ def load_restrict(path):
     return json.loads(Path(path).read_text())["restrict"]
 
 
-def init_campaign(source_root, source_queue, root, seeds, control_flat, campaign_id, note, caps=None):
+def init_campaign(source_root, source_queue, root, seeds, control_flat, campaign_id, note, caps=None, drop_caps=()):
     source = json.loads((Path(source_root) / "CAMPAIGN.json").read_text())
     declaration = copy.deepcopy(source)
     declaration["campaign_id"] = campaign_id
@@ -41,6 +41,8 @@ def init_campaign(source_root, source_queue, root, seeds, control_flat, campaign
         res = declaration.setdefault("hosts", {}).setdefault(role, {}).setdefault("resources", {})
         for kind, cap in (("train", train_cap), ("verify", verify_cap)):
             res[kind] = {**declaration["resources"][kind], **res.get(kind, {}), "cap": cap}
+    for dim in drop_caps:  # declared deviation: the dimension has no measurement path at enqueue time
+        declaration["budget"]["caps"].pop(dim)
     declaration["continues"] = {"campaign": source["campaign_id"], "reason": note,
                                 "search_space_sha256": ss.digest(source["search_space"]),
                                 "base_sha256": ss.digest(source["base"])}
@@ -136,6 +138,7 @@ def main():
     a.add_argument("--control-flat", required=True)
     a.add_argument("--campaign-id", required=True)
     a.add_argument("--note", required=True)
+    a.add_argument("--drop-budget-cap", action="append", default=[])
     a.add_argument("--cap", nargs=3, action="append", metavar=("ROLE", "TRAIN", "VERIFY"), default=[])
     a = sub.add_parser("neat")
     a.add_argument("--root", required=True)
@@ -156,7 +159,7 @@ def main():
     if args.cmd == "init":
         _, imported = init_campaign(args.source_root, args.source_queue, args.root, args.seeds,
                                     json.loads(Path(args.control_flat).read_text()), args.campaign_id, args.note,
-                                    {r: (t, v) for r, t, v in args.cap})
+                                    {r: (t, v) for r, t, v in args.cap}, args.drop_budget_cap)
         print(json.dumps({"created": args.root, "imported_verified": imported}, indent=1))
     elif args.cmd == "neat":
         run_neat(args.root, args.restrict, args.pop, args.gens, args.neat_seed, args.host_role)
