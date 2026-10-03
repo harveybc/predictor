@@ -51,6 +51,24 @@ class PlanChecks(unittest.TestCase):
             state["closure_reporting"]["required_columns"].remove(field)
             self.assertIn("closure reporting contract", " ".join(validate(state, ROOT)))
 
+    def test_business_mode_cannot_be_replaced_by_static(self):
+        self.state["business_evaluation"]["primary_mode"] = "LITERATURE_STATIC"
+        self.assertIn("business weekly evaluation contract", " ".join(validate(self.state, ROOT)))
+
+    def test_business_window_is_four_calendar_years(self):
+        self.state["business_evaluation"]["rolling_train_calendar_years"] = 1
+        self.assertIn("business weekly evaluation contract", " ".join(validate(self.state, ROOT)))
+
+    def test_frozen_artifact_is_procedure_not_checkpoint(self):
+        self.state["business_evaluation"]["frozen_artifact"] = "ONE_STATIC_CHECKPOINT"
+        self.assertIn("business weekly evaluation contract", " ".join(validate(self.state, ROOT)))
+
+    def test_warm_update_cannot_claim_strict_four_year_memory(self):
+        self.state["business_evaluation"]["strict_memory_claim_allowed_for"].append(
+            "WARM_UPDATE_ROLLING_4Y"
+        )
+        self.assertIn("business weekly evaluation contract", " ".join(validate(self.state, ROOT)))
+
     def test_literature_policy_cannot_omit_finance(self):
         self.state["literature_comparability"]["scope"] = "PUBLIC_DATA_ONLY"
         self.assertIn("literature comparability contract", " ".join(validate(self.state, ROOT)))
@@ -73,6 +91,30 @@ class PlanChecks(unittest.TestCase):
     def test_financial_loss_policy_must_exist(self):
         self.state["documents"]["financial_loss_policy"] = "missing.md"
         self.assertIn("missing document financial_loss_policy", " ".join(validate(self.state, ROOT)))
+
+    def test_business_weekly_contract_must_exist(self):
+        self.state["documents"]["business_weekly"] = "missing.md"
+        self.assertIn("missing document business_weekly", " ".join(validate(self.state, ROOT)))
+
+    def test_business_weekly_traceability_must_exist(self):
+        self.state["documents"]["business_weekly_traceability"] = "missing.json"
+        self.assertIn(
+            "missing document business_weekly_traceability",
+            " ".join(validate(self.state, ROOT)),
+        )
+
+    def test_business_weekly_task_cannot_disappear(self):
+        self.state["tasks"] = [
+            t for t in self.state["tasks"] if t["id"] != "BUSINESS-WEEKLY-WALK-FORWARD"
+        ]
+        self.assertIn("unknown task BUSINESS-WEEKLY-WALK-FORWARD", " ".join(validate(self.state, ROOT)))
+
+    def test_business_weekly_requires_business_contract(self):
+        task = next(
+            t for t in self.state["tasks"] if t["id"] == "BUSINESS-WEEKLY-WALK-FORWARD"
+        )
+        task["depends_on"] = []
+        self.assertIn("business weekly prerequisites", " ".join(validate(self.state, ROOT)))
 
     def test_financial_loss_requires_business_contract(self):
         task = next(t for t in self.state["tasks"] if t["id"] == "FIN-LOSS-OPT")

@@ -4,12 +4,13 @@
   "states": ["NOT_STARTED", "DESIGNED", "IN_PROGRESS", "EVIDENCE_PARTIAL", "VERIFIED"],
   "items": [
     {"id": "I0", "name": "business_contract", "state": "DESIGNED", "gate": "EURUSD targets, costs, risk and availability bound"},
+    {"id": "I0-W", "name": "business_weekly_walk_forward", "state": "DESIGNED", "depends_on": ["I0"], "gate": "BW01-BW18 executable across forecasting, heuristic and RL with rolling four-year weekly evaluation"},
     {"id": "I1", "name": "inventory", "state": "IN_PROGRESS", "depends_on": ["I0"], "gate": "all sources and fields have event/availability semantics"},
     {"id": "I2", "name": "basic_profiles", "state": "IN_PROGRESS", "depends_on": ["I1"], "gate": "metric-by-feature coverage matrix"},
     {"id": "I3", "name": "reversible_priority", "state": "EVIDENCE_PARTIAL", "depends_on": ["I2"], "gate": "target-specific provisional survivors plus exploration sample"},
     {"id": "I4-C", "name": "causal_ladder", "state": "EVIDENCE_PARTIAL", "depends_on": ["I1"], "gate": "three-rung EURUSD dossiers or explicit NOT_IDENTIFIED"},
     {"id": "I4-R", "name": "extractibility", "state": "EVIDENCE_PARTIAL", "depends_on": ["I3"], "gate": "raw/random/trained matched evidence across the reconciled candidate population; partial E/F runs do not imply selection"},
-    {"id": "I5", "name": "joint_selection", "state": "NOT_STARTED", "depends_on": ["I4-C", "I4-R"], "gate": "versioned selected/rejected/pending manifest"},
+    {"id": "I5", "name": "joint_selection", "state": "NOT_STARTED", "depends_on": ["I4-C", "I4-R", "I0-W"], "gate": "versioned selected/rejected/pending manifest evaluated under the weekly business contract"},
     {"id": "I6-A", "name": "architecture_controls", "state": "NOT_STARTED", "depends_on": ["I5"], "gate": "matched ARCH result"},
     {"id": "I6-B", "name": "branch_pretraining", "state": "NOT_STARTED", "depends_on": ["I6-A"], "gate": "authenticated branch donors"},
     {"id": "I7", "name": "branch_regimes", "state": "NOT_STARTED", "depends_on": ["I6-B"], "gate": "R0/R1/R2 result and selected prefix"},
@@ -27,6 +28,8 @@
     "NEAT before frozen representation",
     "future target in operational encoder",
     "test used for selection",
+    "static annual checkpoint labeled as BUSINESS weekly evaluation",
+    "warm-update weights labeled as strict four-year memory",
     "strategy evaluation when forecast does not beat same-row naive",
     "economic calendar or causal dossier used as model input before I11"
   ]

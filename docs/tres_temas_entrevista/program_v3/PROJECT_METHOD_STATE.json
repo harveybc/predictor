@@ -10,6 +10,7 @@
   "next_allowed_actions": [
     "Run PS0 and PS1 for the EURUSD business manifest.",
     "Run PS2, PS3-C and PS3-R progressively on ready batches.",
+    "Implement and execute BW01-BW18 before any final EURUSD business verdict.",
     "Implement the fail-closed feature-manifest consumer and univariate temporal extractor contract.",
     "Continue faithful literature controls and paper services independently.",
     "Do not run NEAT before a final frozen representation exists."
@@ -21,6 +22,8 @@
     "queue": "EXPERIMENT_EXECUTION_QUEUE.json",
     "checklist": "MASTER_CHECKLIST.json",
     "feature_selection": "FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md",
+    "business_weekly": "BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md",
+    "business_weekly_traceability": "BUSINESS_WEEKLY_TRACEABILITY.json",
     "modular_stack": "MODULAR_STACK_WORK_PLAN_2026_09_30.md",
     "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
     "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
@@ -75,6 +78,16 @@
       "predictive_causal_plus_extraction",
       "optional_generative_preference"
     ]
+  },
+  "business_evaluation": {
+    "primary_mode": "BUSINESS_WEEKLY_WALK_FORWARD",
+    "sensitivity_mode": "BUSINESS_MONTHLY_WALK_FORWARD",
+    "literature_mode": "LITERATURE_STATIC",
+    "rolling_train_calendar_years": 4,
+    "validation_and_test": "COMPLETE_CONSECUTIVE_ELIGIBLE_WEEKS_WITH_DISPOSITIONS",
+    "frozen_artifact": "UPDATE_AND_DECISION_PROCEDURE_NOT_ONE_STATIC_CHECKPOINT",
+    "update_modes": ["FULL_RETRAIN_ROLLING_4Y", "WARM_UPDATE_ROLLING_4Y"],
+    "strict_memory_claim_allowed_for": ["FULL_RETRAIN_ROLLING_4Y"]
   },
   "literature_comparability": {
     "scope": "ALL_DOMAINS_INCLUDING_FINANCE",
@@ -155,8 +168,17 @@
       "owner": "owner+M05",
       "status": "DESIGNED",
       "depends_on": [],
-      "next_action": "Bind EURUSD targets, costs, risk and point-in-time sources.",
+      "next_action": "Bind EURUSD targets, costs, risk and point-in-time sources to the weekly protocol.",
       "deliverable": "Versioned business task contract.",
+      "evidence": []
+    },
+    {
+      "id": "BUSINESS-WEEKLY-WALK-FORWARD",
+      "owner": "M05+forecast+RL",
+      "status": "DESIGNED",
+      "depends_on": ["BUSINESS-CONTRACT"],
+      "next_action": "Implement BW01-BW18 with calendar, point-in-time window, weekly trainer adapters and validation/test firewall.",
+      "deliverable": "Restartable weekly validation/test runner with one disposition per week.",
       "evidence": []
     },
     {

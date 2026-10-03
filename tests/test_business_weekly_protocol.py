@@ -173,6 +173,25 @@ def test_bw06_weekly_and_monthly_cadences_have_distinct_behavior_and_identity():
     ]
 
 
+def test_bw06_monthly_retrains_at_each_split_boundary_even_in_same_month():
+    monthly = protocol(
+        evaluation_mode=EvaluationMode.BUSINESS_MONTHLY_WALK_FORWARD,
+        update_mode=UpdateMode.FULL_RETRAIN_ROLLING_4Y,
+        validation_start=dt(2024, 1, 1),
+        validation_end=dt(2024, 1, 15),
+        test_start=dt(2024, 1, 22),
+        test_end=dt(2024, 2, 12),
+    )
+
+    assert [week.retrain_due for week in monthly.weeks()] == [
+        True,
+        False,
+        True,
+        False,
+        True,
+    ]
+
+
 def test_bw14_literature_mode_refuses_business_update_and_labels():
     """BW14: a static literature run cannot be relabeled as BUSINESS."""
 

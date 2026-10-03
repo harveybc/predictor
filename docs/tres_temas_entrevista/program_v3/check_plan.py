@@ -59,6 +59,16 @@ ARCHITECTURE_ORDER = [
     "SAC_and_DQN_raw_vs_modular",
     "deferred_causal_calendar_model_input",
 ]
+BUSINESS_EVALUATION = {
+    "primary_mode": "BUSINESS_WEEKLY_WALK_FORWARD",
+    "sensitivity_mode": "BUSINESS_MONTHLY_WALK_FORWARD",
+    "literature_mode": "LITERATURE_STATIC",
+    "rolling_train_calendar_years": 4,
+    "validation_and_test": "COMPLETE_CONSECUTIVE_ELIGIBLE_WEEKS_WITH_DISPOSITIONS",
+    "frozen_artifact": "UPDATE_AND_DECISION_PROCEDURE_NOT_ONE_STATIC_CHECKPOINT",
+    "update_modes": ["FULL_RETRAIN_ROLLING_4Y", "WARM_UPDATE_ROLLING_4Y"],
+    "strict_memory_claim_allowed_for": ["FULL_RETRAIN_ROLLING_4Y"],
+}
 
 
 def validate(state, root):
@@ -77,6 +87,8 @@ def validate(state, root):
         issues.append("literature comparability contract")
     if state.get("closure_reporting") != CLOSURE_REPORTING:
         issues.append("closure reporting contract")
+    if state.get("business_evaluation") != BUSINESS_EVALUATION:
+        issues.append("business weekly evaluation contract")
 
     def exact_list(field, expected, label):
         values = state.get(field, [])
@@ -96,7 +108,8 @@ def validate(state, root):
 
     documents = state.get("documents", {})
     for name in ("master", "metrics", "orders", "queue", "checklist", "feature_selection",
-                 "modular_stack", "core_pretraining", "financial_loss_policy"):
+                 "modular_stack", "core_pretraining", "financial_loss_policy",
+                 "business_weekly", "business_weekly_traceability"):
         path = documents.get(name)
         if not path or not (root / path).is_file():
             issues.append(f"missing document {name}")
@@ -151,7 +164,10 @@ def validate(state, root):
             issues.append(f"{task_id}: unknown status")
         if status in {"EXECUTED", "VERIFIED", "REVIEWED"} and not task.get("evidence"):
             issues.append(f"{task_id}: evidence required")
-    required_tasks = set().union(*REQUIRED.values(), {"BUSINESS-CONTRACT", "BENCHMARK-CONTRACTS"})
+    required_tasks = set().union(
+        *REQUIRED.values(),
+        {"BUSINESS-CONTRACT", "BUSINESS-WEEKLY-WALK-FORWARD", "BENCHMARK-CONTRACTS"},
+    )
     required_tasks.add(state.get("first_experiment"))
     required_tasks.update({"NEWS-ADAPTER", "NEWS-SHADOW", "NEWS-PAPER", "CAL-CAUSAL-INPUT"})
     for task_id in sorted(required_tasks, key=str):
@@ -159,6 +175,7 @@ def validate(state, root):
             issues.append(f"unknown task {task_id}")
 
     required_dependencies = {
+        "BUSINESS-WEEKLY-WALK-FORWARD": ({"BUSINESS-CONTRACT"}, "business weekly prerequisites"),
         "FIN-LOSS-OPT": ({"BUSINESS-CONTRACT", "BENCHMARK-CONTRACTS"}, "financial loss prerequisites"),
         "MOD-E1": ({"MOD-E0-DEV", "MOD-ARCH-COMPARE"}, "E1 prerequisites"),
         "MOD-FROZEN-PREFIX": ({"MOD-E1"}, "prefix prerequisites"),
@@ -215,17 +232,35 @@ def validate(state, root):
     if checklist_path and (root / checklist_path).is_file():
         checklist = json.loads((root / checklist_path).read_text())
         items = {item.get("id"): item for item in checklist.get("items", [])}
-        required_checklist = {"I0", "I1", "I2", "I3", "I4-C", "I4-R", "I5",
+        required_checklist = {"I0", "I0-W", "I1", "I2", "I3", "I4-C", "I4-R", "I5",
                               "I6-A", "I6-B", "I7", "I7-H", "I8", "I9-N",
                               "I9-R", "I10", "I11"}
         if set(items) != required_checklist:
             issues.append("master checklist coverage")
         if "I7" not in items.get("I7-H", {}).get("depends_on", []):
             issues.append("checklist H-CORE sequence")
+        if "I0" not in items.get("I0-W", {}).get("depends_on", []):
+            issues.append("checklist business weekly sequence")
+        if "I0-W" not in items.get("I5", {}).get("depends_on", []):
+            issues.append("checklist selection business sequence")
         if "I7-H" not in items.get("I9-N", {}).get("depends_on", []):
             issues.append("checklist NEAT sequence")
         if not {"I9-N", "I9-R", "I10"}.issubset(items.get("I11", {}).get("depends_on", [])):
             issues.append("checklist calendar input sequence")
+
+    traceability_path = documents.get("business_weekly_traceability")
+    if traceability_path and (root / traceability_path).is_file():
+        traceability = json.loads((root / traceability_path).read_text())
+        requirements = traceability.get("requirements", [])
+        ids = [item.get("id") for item in requirements]
+        if ids != [f"BW{i:02}" for i in range(1, 19)]:
+            issues.append("business weekly traceability coverage")
+        allowed = {"IMPLEMENTED", "PARTIAL", "PLANNED"}
+        if any(item.get("state") not in allowed for item in requirements):
+            issues.append("business weekly traceability state")
+        for item in requirements:
+            if item.get("state") == "IMPLEMENTED" and not item.get("evidence"):
+                issues.append(f"business weekly traceability evidence {item.get('id')}")
     return issues
 
 

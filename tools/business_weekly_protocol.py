@@ -264,6 +264,9 @@ class BusinessWeeklyProtocol:
             (EvaluationSplit.VALIDATION, self.validation_start, self.validation_end),
             (EvaluationSplit.TEST, self.test_start, self.test_end),
         ):
+            # Validation and test are independent traversals. The first scored
+            # week of either split always needs its own contemporaneous release.
+            previous_month = None
             cursor = interval_start
             while cursor < interval_end:
                 month = (cursor.year, cursor.month)

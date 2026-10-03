@@ -61,6 +61,20 @@ class BusinessObjectiveFirewallTests(unittest.TestCase):
                 with self.assertRaisesRegex(FirewallError, "external test material"):
                     firewall.record_selection_payload(actor, validation_payload() | mutation)
 
+    def test_holdout_alias_is_denied_but_latest_checkpoint_is_not_test_data(self) -> None:
+        firewall = BusinessObjectiveFirewall.create(EXPECTED_WEEKS)
+        with self.assertRaisesRegex(FirewallError, "external test material"):
+            firewall.record_selection_payload(
+                Actor.SELECTOR,
+                {"holdout_labels": [0, 1]},
+            )
+
+        updated = firewall.record_selection_payload(
+            Actor.SELECTOR,
+            {"latest_checkpoint": "checkpoint-7"},
+        )
+        self.assertEqual(len(updated.selection_receipts), 1)
+
     def test_callback_requesting_test_metrics_is_rejected(self) -> None:
         firewall = BusinessObjectiveFirewall.create(EXPECTED_WEEKS)
         with self.assertRaises(FirewallError):

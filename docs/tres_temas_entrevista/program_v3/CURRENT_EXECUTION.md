@@ -1,10 +1,18 @@
 # Estado de ejecución vigente
 
-Observado: 2026-10-03 18:04 UTC. La autoridad `codex/workplan-consolidation-20261003@02434903` está integrada en esta rama. Este corte sustituye las observaciones anteriores; no modifica resultados históricos. El `STATUS.json` de las 10:02 UTC es una instantánea anterior, no el estado vivo.
+Observado: 2026-10-03 18:49 UTC. La autoridad `codex/workplan-consolidation-20261003@02434903` está integrada en esta rama. Este corte sustituye las observaciones anteriores; no modifica resultados históricos. El `STATUS.json` de las 10:02 UTC es una instantánea anterior, no el estado vivo.
 
 ## Secuencia vigente
 
 Prioridad crítica: completar el inventario/admisibilidad EURUSD (PS0/PS1), terminar PS2-PS5 sin descartar silenciosamente poblaciones y reanalizar PS3-C bajo su método reparado. El fix PS3-C quedó publicado en `causal-inference@48ae17c`; los expedientes previos siguen preservados y diagnósticos, no son selección. `NOT_IDENTIFIED` no significa rechazado. Ninguna feature está seleccionada.
+
+Prioridad de negocio co-rectora: implementar
+`BUSINESS_WEEKLY_WALK_FORWARD` antes de emitir cualquier veredicto financiero
+final. Validation y test recorren todas sus semanas consecutivas; antes de cada
+semana se ajusta con exactamente los cuatro años calendario anteriores y datos
+disponibles al cutoff. `LITERATURE_STATIC` conserva su uso para réplicas, pero no
+puede etiquetarse como negocio. El procedimiento se congela antes de test; los
+pesos pueden cambiar por semana bajo el update mode declarado.
 
 No ejecutar NEAT ahora. NEAT es un cabezal tardío, después de selección, ARCH, preentrenamiento por ramas, E1 R0/R1/R2, H-CORE, transferencia y representación congelada. DEAP busca configuraciones; DOIN distribuye/evalúa candidatos. NEAT no sustituye a ninguno de los dos.
 
@@ -12,10 +20,10 @@ No ejecutar NEAT ahora. NEAT es un cabezal tardío, después de selección, ARCH
 
 | Host/GPU | Corte observado | Trabajo / disponibilidad |
 |---|---|---|
-| Omega RTX 4070 Laptop | 38%, 1,185 MiB, 50 C | Uso de escritorio/servicios; sin job científico batch. Se protege el escritorio. |
-| Gamma RTX 5090 | 50%, 30,428 MiB, 53 C | Lane E, `tv.kalman_dev`, activo en batch 003; 43 manifiestos de rasgo E retenidos. |
+| Omega RTX 4070 Laptop | 17%, 1,079 MiB, 49 C | Uso de escritorio/servicios; sin job científico batch. Contratos y tests CPU pequeños solamente. |
+| Gamma RTX 5090 | 37%, 30,426 MiB, 53 C | Lane E, `tv.kalman_dev`, activo en batch 003; PS3-R continúa. |
 | Gamma RTX 5070 Ti Laptop | 0%, 14 MiB, 39 C | Lane F tiene 37 manifiestos de rasgo retenidos y espera turno; E/F comparten el slice de 8 GiB. |
-| Dragon RTX 4090 Laptop | 7%, 14 MiB, 29 C | Sin trabajo científico; `lts-mt5-paper` RUNNING y host con 13 GiB disponibles. No hay hoy ruta gobernada completa: faltan contratos de recursos, archivos de reconstrucción exacta y pin de código. No se copió ni lanzó nada. |
+| Dragon RTX 4090 Laptop | 7%, 14 MiB, 29 C | Sin job GPU; 12 GiB disponibles. Repos presentes, pero faltan los tres lotes PS2 exactos. No se lanzó una celda con datos sustitutos. |
 
 La cola F no equivale a trabajo usando la 5070 Ti mientras E ocupa el slice. El driver E/F alterna al terminar una celda; no iniciar un duplicado ni forzar concurrencia.
 
@@ -32,6 +40,7 @@ La cola F no equivale a trabajo usando la 5070 Ti mientras E ocupa el slice. El 
 | Cobertura de features | RECONCILIACIÓN PARCIAL | `coverage_reconciliation/`: 366/366 filas, 279 en join PS3-C + 87 fuera, 137 en cola E, 142 fuera de E = 132 tier-3 + 10 calendario. Ocho pruebas pasan. Proveedores pagados y transformaciones siguen requiriendo su propia reconciliación; no se declara exhaustivo. |
 | PS4/PS5 manifiesto conjunto | PILOTO PARCIAL | PS4: nueve variantes sin perfil ampliado. PS5: un contraste EURUSD Y_l@24h `inner_2019`, una semilla, cuatro brazos, 4,944 orígenes pareados y 429 actualizaciones por brazo. Pareja MAE 0.002228, mejor brazo individual 0.002252, naive pareado 0.002199: reingreso relativo, pero falla el naive. Solo lote 001 presente en el piloto local; no se libera selección ni se prueba en estrategia. Ejecutor y prueba de compuerta en `d5d8d077`. |
 | ARCH/E1/H-CORE/NEAT/RL | AÚN NO ELEGIBLES | Ejecutar en orden canónico solo tras manifiesto final; H-CORE después de E1 y NEAT al final sobre representación congelada. |
+| Walk-forward semanal | IMPLEMENTACIÓN PARCIAL | Contrato BW01-BW18 y núcleo de calendario/modos implementados; faltan resolver población as-of, firewall test completo, adapters de entrenamiento y unión al runtime semanal. Los folds estáticos retenidos no cambian de clase. |
 | Literatura | COLA NO VIVA | No hay runner científico observado en Dragon; el STATUS anterior describía una cola Traffic, no un proceso vivo en este corte. |
 
 ## Trabajo en paralelo y orden inmediato
@@ -39,8 +48,14 @@ La cola F no equivale a trabajo usando la 5070 Ti mientras E ocupa el slice. El 
 1. **Gamma E/F:** E corre `tv.kalman_dev` en 5090; F espera en 5070 Ti. El pico previo de E (≈6.5 GiB) + el consumo de F (≈3.6 GiB) exceden 8 GiB; alternan sin solaparse.
 2. **CPU, causal-inference:** revisión read-only de los tres lotes completada bajo `48ae17c`; preservar originales y mantener los 0 casos identificados como resultado del gate, no como rechazo de features. La siguiente acción es cerrar fuentes/transformaciones y reabrir análisis cuando haya evidencia de assumptions verificable.
 3. **CPU, cobertura de selección:** ledger de fuentes/transformaciones incorporado desde Retsu `749ba6a8` como `292e13cc`, sin diferencia de árbol entre esos dos commits. Continuar las disposiciones de 87 low-priority, 142 fuera de E, transformaciones PS4 y fuentes pagadas/no disponibles. Sin omisiones implícitas.
-4. **Dragon:** auditoría dio NO-GO reproducible para `px.ewma_vol_168`: faltan contratos de disponibilidad, archivos exactos gobernados, pins de feature-eng/feature-extractor y bundle PS2. La 4090 sigue disponible pero no es una colocación válida hoy; no desviar ni copiar bytes por fuera del lago. `lts-mt5-paper` permanece activa.
+4. **Dragon:** repos y entorno base presentes; faltan `batch_001..003`, que pesan
+   aproximadamente 164 MiB en Gamma. Empaquetarlos como recurso derivado con
+   manifiesto/digest y entregarlos por la ruta gobernada; después repartir una
+   cola PS3-R disjunta. No copiar una matriz anónima ni duplicar celdas de Gamma.
 5. **Omega:** mantener solo verificaciones CPU pequeñas y reportes; no ocupar la 4070 de escritorio para un job largo.
+6. **CPU negocio:** completar protocolo semanal, población as-of y firewall de
+   validation/test; luego adaptar forecasting, heurística y RL a una identidad
+   común de semana/cutoff sin detener PS3-R.
 
 ## Resultado/ETA
 

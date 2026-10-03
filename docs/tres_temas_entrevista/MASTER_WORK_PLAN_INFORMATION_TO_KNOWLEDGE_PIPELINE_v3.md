@@ -10,12 +10,13 @@ gobiernan la ejecución.
 El orden de autoridad es:
 
 1. este plan maestro;
-2. [selección progresiva de características y representaciones](program_v3/FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md);
-3. [arquitectura temporal modular](program_v3/MODULAR_STACK_WORK_PLAN_2026_09_30.md);
-4. [estado metodológico](program_v3/PROJECT_METHOD_STATE.json);
-5. [cola actual](program_v3/EXPERIMENT_EXECUTION_QUEUE.json) y
+2. [contrato semanal del negocio](program_v3/BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md);
+3. [selección progresiva de características y representaciones](program_v3/FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md);
+4. [arquitectura temporal modular](program_v3/MODULAR_STACK_WORK_PLAN_2026_09_30.md);
+5. [estado metodológico](program_v3/PROJECT_METHOD_STATE.json);
+6. [cola actual](program_v3/EXPERIMENT_EXECUTION_QUEUE.json) y
    [estado de ejecución](program_v3/CURRENT_EXECUTION.md);
-6. [checklist legible por máquina](program_v3/MASTER_CHECKLIST.json), proyección
+7. [checklist legible por máquina](program_v3/MASTER_CHECKLIST.json), proyección
    del apartado 4 y no un plan alterno.
 
 Un documento fechado anterior sigue siendo auditable, pero no puede abrir una
@@ -66,6 +67,11 @@ en la misma población.
    métricas científicas prueban hipótesis; shadow/paper prueba integración.
 9. **Paralelismo útil.** Un bloqueo local no detiene perfiles, referencias,
    preparación ni entrenamientos independientes y elegibles.
+10. **El negocio gobierna la evaluación financiera.** EURUSD validation y test
+   se recorren por semanas consecutivas. Antes de cada semana se actualiza el
+   modelo con una ventana móvil de cuatro años terminada en el cutoff. Se congela
+   el procedimiento antes del test, no un único juego de pesos para todo el año.
+   `LITERATURE_STATIC` permanece como modo separado para reproducciones fieles.
 
 ## 4. Checklist de control de alto nivel
 
@@ -73,6 +79,7 @@ Este checklist es la vista que debe consultar el orquestador antes de cada
 despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 
 - [ ] I0. Contrato de negocio: targets corto/largo, barrera, RL, costes y riesgo.
+- [ ] I0-W. Walk-forward: cuatro años móviles, actualización semanal, años completos de validation/test y modo literatura separado.
 - [ ] I1. Inventario: fuente, columna, unidad, frecuencia, licencia y disponibilidad.
 - [ ] I2. Perfil básico completo por celda de métrica, no una marca global.
 - [ ] I3. Priorización reversible: redundancia, relevancia y exploración.

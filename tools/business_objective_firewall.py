@@ -147,6 +147,16 @@ def _digest(value: Any) -> str:
 _OPAQUE_TEST_ID_KEYS = {"test_week_id", "test_week_ids", "expected_test_week_ids"}
 
 
+def _key_has_external_scope(key: str) -> bool:
+    """Recognize test/holdout namespace tokens without matching ``latest``."""
+
+    normalized = key.lower()
+    for separator in ("-", ".", " "):
+        normalized = normalized.replace(separator, "_")
+    tokens = tuple(token for token in normalized.split("_") if token)
+    return "test" in tokens or "holdout" in tokens
+
+
 def _is_opaque_identifier_value(value: Any) -> bool:
     if isinstance(value, str):
         return bool(value)
@@ -169,7 +179,7 @@ def _validate_json_value(value: Any, path: str, allow_test_ids: bool | None) -> 
                 raise FirewallError(f"mapping keys must be non-empty strings at {path}")
             key = raw_key.lower()
             child_path = f"{path}.{raw_key}"
-            if allow_test_ids is not None and "test" in key:
+            if allow_test_ids is not None and _key_has_external_scope(key):
                 if not (
                     allow_test_ids
                     and key in _OPAQUE_TEST_ID_KEYS

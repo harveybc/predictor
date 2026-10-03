@@ -132,8 +132,12 @@ Keep an all-admissible-feature control and the reasons for every exclusion.
    actual parameter counts, updates, stop reason, monitor values and identities.
 9. Evaluate on fixed validation rows with paired persistence. Select candidates
    by the declared objective across paired seeds, not their best seed.
-10. Confirm frozen finalists on the untouched test once under its declared design.
-   Export eligible candidates to the LTS paper adapter only after this result.
+10. Confirm frozen finalists under the declared evaluation mode. In
+   `LITERATURE_STATIC`, fit and score exactly as the paper. In
+   `BUSINESS_WEEKLY_WALK_FORWARD`, traverse the untouched test year exactly once
+   with the frozen update procedure, producing one point-in-time checkpoint per
+   eligible week and never selecting from test metrics. Export eligible
+   candidates to the LTS paper adapter only after the applicable result.
 
 AdamW with MAE, Huber and MSE are explicit candidate choices. Huber delta is in
 the target's declared scale; tune on training/inner-validation only. The metric
