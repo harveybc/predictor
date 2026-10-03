@@ -1,6 +1,6 @@
 {
   "schema": "feature_selection_method_state.v1",
-  "updated_at": "2026-10-01T01:56:40Z",
+  "updated_at": "2026-10-03T04:35:00Z",
   "current_stage": "S3_ACCEPTANCE_TEST_DESIGN",
   "plan": "FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md",
   "traceability": "Sections 9 and 10.4: FS01-FS20; section 10.1: PS0-PS7 and UC-FS1-UC-FS5",
@@ -18,11 +18,19 @@
     "S8_UNIT_TEST_DESIGN": "NOT_COMPLETED",
     "S9_UNIT_IMPLEMENTATION": "NOT_STARTED_FOR_THIS_INCREMENT"
   },
-  "accepted_requirements": [],
+  "accepted_requirements": [
+    "EURUSD is the first business manifest; ETH is a separate development manifest",
+    "three-rung causal evidence is prioritized but NOT_IDENTIFIED is not automatic rejection",
+    "extractibility compares raw, random encoder and trained encoder",
+    "future targets never enter the operational encoder",
+    "final selection precedes definitive branches and E1"
+  ],
   "scientific_evidence": [],
   "existing_evidence_scope": "M03 profiles and M02 AE work remain evidence of their original protocols, not completion of FS01-FS20.",
   "next_allowed_actions": [
-    "Satoshi acknowledges orders and reconciles live work",
+    "Execute EURUSD PS0 and PS1 in TRAIN-only chronological folds",
+    "Start PS2, PS3-C and PS3-R progressively on ready batches",
+    "Implement the single-feature temporal extractor interface with seasonal context",
     "Refine S3-S8 per bounded increment, write failing behavioral tests before new implementation",
     "Continue independently authorized profiling, optimization and product work",
     "Preserve and classify old-architecture donors before successor training"
@@ -31,10 +39,12 @@
     "Treat observational matches as intervention or individual counterfactual truth without identification assumptions",
     "Reject every non-reconstructive representation for lacking a decoder",
     "Select features on test or deploy future-target-conditioned operational encoders",
-    "Relabel 12-step branch donors as 24-step branch donors"
+    "Relabel 12-step branch donors as 24-step branch donors",
+    "Treat all 321 ECL or all 83 ETH columns as selected",
+    "Run NEAT before the final representation is frozen"
   ],
   "open_decisions": [
-    "Pilot family shortlist, comparable compute budget and exploratory allocation after cost measurements",
+    "Choose the first masked and past-to-current extractor implementations after license and reference checks",
     "Independent owner decisions for C07 remote code and S07 holdout remain separate"
   ],
   "history": [

@@ -1,75 +1,147 @@
 {
-  "schema": "research_execution_queue.v1",
-  "updated_on": "2026-09-24",
-  "dispatcher": "Satoshi",
-  "policy": "CONCURRENT_EXECUTION_2026_09_23.md",
-  "runtime_enforcement": "Existing runners/admission; this is a persistent ordered manifest, not a newly installed scheduler",
-  "next_orders": "../../handoffs/SATOSHI_RP155_REVIEW_AND_EXECUTION_2026_09_24.md",
-  "latest_return": {
-    "commit": "e36c1c6d",
-    "status": "REPORTED_NOT_FRESHLY_REMEASURED_BY_THIS_UPDATE",
-    "A": "12-cell consolidation reported, MSE0.161962/MAE0.259662; composition audit scoped separately",
-    "B": "RP145 closure reports 12/12 verified, MSE/MAE 0.150307/0.246397, 16167/24000CPU; review retained closure, no duplicate fit queue",
-    "doctoral": "RP158 retained metrics equal RP157; primary design/count fixes pass focused cases. Finish typed elements and derived-metric validation in a pure retained-evidence closure; no routine inference or retraining",
-    "historical_executor_fields_below": "Executor AND cells preserve the last direct RP139 observation, not current dispatch authority; rederive current per-cell state from accepted records before any dispatch"
+  "schema": "experiment_execution_queue.v2",
+  "updated_on": "2026-10-03",
+  "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
+  "policy": {
+    "parallelism": "independent eligible lanes run concurrently",
+    "seed_default": 1,
+    "seed_maximum": 3,
+    "repeat_policy": "no repeat unless evidence is lost, corrupt, scientifically changed, or a matched comparison requires it",
+    "gpu_preference": ["gamma_external_5090", "dragon_4090", "gamma_internal_5070ti", "omega_4070"],
+    "financial_gate": "strictly_better_than_same_row_naive_before_strategy",
+    "test_policy": "one sealed confirmation after selection"
   },
-  "parallel_news_lane": {
-    "orders": "RP147-RP151",
-    "repository": "https://github.com/harveybc/news-signal",
-    "state": "CLASSIFICATION_FIRST_EURUSD_RELEVANCE_ASSIGNED_REAL_SDK_PARITY_NOT_YET_VERIFIED",
-    "current_orders": "../../handoffs/SATOSHI_M5PHET_CLASSIFICATION_FIRST_2026_09_24.md",
-    "first_host_candidate": "External5090 preferred for eligible GPU work; use admitted COORDINATOR4070 only when measuring the planned small-model residency on that device",
-    "blocks_RP135_or_doctoral": false,
-    "modes": ["SHADOW", "MT5_DEMO", "ALPACA_PAPER"],
-    "real_capital_authorized": false,
-    "dispatch": "Separate service/profile/lease, existing broker risk path; no duplicate scientific executor"
+  "superseded": {
+    "neat_hyperparameter_campaigns": "DIAGNOSTIC_ONLY_STOPPED",
+    "all_321_or_all_83_as_selected": false,
+    "dated_handoffs_can_dispatch": false
   },
-  "campaign": "RP135_RELEASED_L512_RECIPE",
-  "state": "REPORTED_CLOSED_TWELVE_CELLS_DO_NOT_REDISPATCH_HISTORICAL_QUEUE",
-  "cells_scope": "HISTORICAL_RP139_SNAPSHOT_NOT_RUNNABLE_QUEUE",
-  "executor": {
-    "kind": "USER_SYSTEMD_NATIVE_BATCH_WITH_FLOCK",
-    "superseded_task_id": "t_28e5c655",
-    "service": "crispdm-rp135-continuation-20260923.service",
-    "observed_status": "RUNNING_L512_h336_s2021_GPU_CHILD_900129_AT_2357Z",
-    "orders_commit": "9d01871a",
-    "dispatch_date": "2026-09-23",
-    "lease": "~/.local/state/crispdm-data-foundation/dispatch/rp135.lock on GPU host",
-    "duplicate_policy": "Satoshi observes the native service/real flock; expired Hermes task remains BLOCKED; never launch another RP135 executor",
-    "gpu_child_receipt": "23:57Z PID900129 H336s2021 external5090; six records/terminal receipts retained; live scope MemoryMax7GiB MemoryHigh6GiB parent8GiB, no restart"
-  },
-  "design_sha256": "bcc7e3d3c09c6744829ca4685e200cdd7c70255097823cf45cd439f3e8145c67",
-  "producer_commit": "9d01871a82d043b016ee4d3bf7c2b622265927b5",
-  "author_revision": "dffde87e",
-  "device_policy": "RP135 stays on its sealed external5090; other GPUs now eligible for independent work after owner cooling confirmation and admission",
-  "continuation_allocation": {"cpu_seconds": 24000, "wall_hours": 8, "prior_costs": "Preserve separately and report cumulative cost; no retroactive cap waiver"},
-  "seq_len": 512,
-  "patch_len": 128,
-  "channels": 321,
-  "cells": [
-    {"horizon": 96, "seed": 2021, "status": "TRAINED_TERMINAL_ACCEPTED_REPLAY_PENDING", "receipt": "9e6c0a80763e860f8051a45de0bb61249da95aa3f0162023d05c45010ce7759f"},
-    {"horizon": 96, "seed": 2022, "status": "TRAINED_TERMINAL_ACCEPTED_REPLAY_PENDING_PROVENANCE_ERRATUM", "receipt": "4d12fafe8bcb79475979f74c89218ee62396342804dc4d38bb7300e14bc09631"},
-    {"horizon": 96, "seed": 2023, "status": "TRAINED_RECEIPT_REPLAY_PENDING", "receipt": "d95f519abb7b74c85eadfea2f218c7e83a9f6418eb1da16e44f70b6930c301b5"},
-    {"horizon": 192, "seed": 2021, "status": "TRAINED_RECEIPT_REPLAY_PENDING", "receipt": "2e6fc3ba14c200c6880e6695b15169c8f95cef0c59f01a024f223f3a0e92a840"},
-    {"horizon": 192, "seed": 2022, "status": "TRAINED_RECEIPT_REPLAY_PENDING", "receipt": "4ad3004501a6e1d8e3a2d849ee0e1c44115724c620ade16bac00a375daff191e"},
-    {"horizon": 192, "seed": 2023, "status": "TRAINED_RECEIPT_REPLAY_PENDING", "receipt": "5631428a7d1b624c89d13f3603da4af5015f0b8b962332faaad126bd94185eac"},
-    {"horizon": 336, "seed": 2021, "status": "RUNNING_OBSERVED_2357Z", "receipt": null},
-    {"horizon": 336, "seed": 2022, "status": "QUEUED", "receipt": null},
-    {"horizon": 336, "seed": 2023, "status": "QUEUED", "receipt": null},
-    {"horizon": 720, "seed": 2021, "status": "QUEUED", "receipt": null},
-    {"horizon": 720, "seed": 2022, "status": "QUEUED", "receipt": null},
-    {"horizon": 720, "seed": 2023, "status": "QUEUED", "receipt": null}
-  ],
-  "independent_repair_lane": {
-    "orders": "RP132-RP134",
-    "status": "RETURN_PUBLISHED_d0fb9acd_NARROW_LINEAGE_REVIEWED_NO_NEW_DELETION_PERMISSION",
-    "cpu_seconds_cap": 1800,
-    "blocks_this_campaign": false,
-    "production_deletions_allowed": false
-  },
-  "upcoming_design_work": [
-    {"task": "Doctoral extractor/pretraining intervention against accepted reference", "status": "RP156_SCORES_RETAINED_AUTHORITY_AND_CHILD_VALIDATION_REQUIRED", "requires": "Revalidate retained results against accepted design and complete typed child contracts; no routine re-inference, only specific missing-evidence repair within budget. RP147 actual Laya pilot independent and due"},
-    {"task": "FIN-LOSS-OPT", "status": "PREPARE_NOT_AUTHORIZED_TO_FIT", "requires": "Financial resource temporal contract, matched financial reference and existing finance design; no heldout access"},
-    {"task": "Weekly forecasting and RL", "status": "PREPARE_NOT_AUTHORIZED_TO_FIT", "requires": "Existing E3 business/data/execution contracts and domain-specific model reference; keep RL separate from forecasting metrics"}
+  "lanes": [
+    {
+      "priority": 1,
+      "id": "FS-EURUSD-PS0-PS1",
+      "resource": "CPU",
+      "state": "READY",
+      "work": "Bind EURUSD sources, availability, targets, folds and basic metric coverage.",
+      "depends_on": [],
+      "produces": "versioned admissible-feature table and coverage matrix"
+    },
+    {
+      "priority": 2,
+      "id": "FS-EURUSD-PS2",
+      "resource": "CPU",
+      "state": "READY_AFTER_FIRST_PS1_BATCH",
+      "work": "Redundancy, target/horizon relevance, provisional groups and exploration sample.",
+      "depends_on": ["FS-EURUSD-PS0-PS1"],
+      "produces": "reversible survivor/reject/pending priorities"
+    },
+    {
+      "priority": 3,
+      "id": "FS-EURUSD-PS3-C",
+      "resource": "CPU",
+      "state": "READY_AFTER_FIRST_PS1_BATCH",
+      "work": "Three-rung causal ladder for economic-event episodes and EURUSD.",
+      "depends_on": ["FS-EURUSD-PS0-PS1"],
+      "produces": "causal dossiers with IDENTIFIED/NOT_IDENTIFIED and sensitivity"
+    },
+    {
+      "priority": 4,
+      "id": "FS-EURUSD-PS3-R",
+      "resource": "gamma_external_5090",
+      "state": "READY_AFTER_FIRST_PS2_BATCH",
+      "work": "Single-feature temporal extractor pilot with seasonal context and raw/random/trained controls.",
+      "depends_on": ["FS-EURUSD-PS2"],
+      "produces": "extractibility matrix, cost envelope and donor candidates"
+    },
+    {
+      "priority": 5,
+      "id": "FS-EXTRACTOR-ALT",
+      "resource": "gamma_internal_5070ti_or_dragon_4090",
+      "state": "READY_AFTER_FIRST_PS2_BATCH",
+      "work": "Alternative masked or past-to-current extractor on exactly the same folds and candidates.",
+      "depends_on": ["FS-EURUSD-PS2"],
+      "produces": "matched alternative-family comparison"
+    },
+    {
+      "priority": 6,
+      "id": "FS-EURUSD-PS4-PS5",
+      "resource": "CPU_plus_DOIN",
+      "state": "WAITING_FOR_PS3_BATCHES",
+      "work": "Expanded metrics, paired set comparisons, ablations with refit and final manifest.",
+      "depends_on": ["FS-EURUSD-PS3-C", "FS-EURUSD-PS3-R"],
+      "produces": "selected/rejected/pending manifest"
+    },
+    {
+      "priority": 7,
+      "id": "MOD-ARCH-E1",
+      "resource": "gamma_external_5090_then_dragon_4090",
+      "state": "WAITING_FOR_FINAL_MANIFEST",
+      "work": "Matched architecture controls, branch donors and R0/R1/R2.",
+      "depends_on": ["FS-EURUSD-PS4-PS5"],
+      "produces": "winning branch architecture and regime"
+    },
+    {
+      "priority": 8,
+      "id": "MOD-HCORE",
+      "resource": "best_admissible_gpu",
+      "state": "WAITING_FOR_MOD_ARCH_E1",
+      "work": "Fix winning branch prefix, materialize fusion, pretrain core and test transfer separately.",
+      "depends_on": ["MOD-ARCH-E1"],
+      "produces": "core donor and transfer result"
+    },
+    {
+      "priority": 9,
+      "id": "MOD-DOIN",
+      "resource": "fleet",
+      "state": "WAITING_FOR_ELIGIBLE_MODEL",
+      "work": "DEAP proposes typed configurations; DOIN evaluates finite candidate batches.",
+      "depends_on": ["MOD-ARCH-E1"],
+      "produces": "verified incumbent and candidate history"
+    },
+    {
+      "priority": 10,
+      "id": "HEAD-DENSE-NEAT",
+      "resource": "best_admissible_gpu",
+      "state": "WAITING_FOR_FROZEN_REPRESENTATION",
+      "work": "Dense control versus true NEAT predictive head on materialized representation.",
+      "depends_on": ["MOD-HCORE"],
+      "produces": "matched head comparison"
+    },
+    {
+      "priority": 11,
+      "id": "RL-RAW-MODULAR",
+      "resource": "dragon_4090_and_gamma_external_5090",
+      "state": "WAITING_FOR_FINAL_REPRESENTATION",
+      "work": "SAC raw/modular and DQN raw/modular, one seed first.",
+      "depends_on": ["MOD-HCORE"],
+      "produces": "matched policy results"
+    },
+    {
+      "priority": 12,
+      "id": "TRADING-PAPER",
+      "resource": "CPU_services",
+      "state": "INDEPENDENT_CONTINUOUS",
+      "work": "Maintain LTS, MT5 demo and Alpaca paper; promote only naive-eligible artifacts.",
+      "depends_on": [],
+      "produces": "shadow/paper receipts, no real capital"
+    },
+    {
+      "priority": 13,
+      "id": "LITERATURE-CONTROLS",
+      "resource": "available_CPU_or_GPU",
+      "state": "INDEPENDENT_READY",
+      "work": "Close faithful ECL, Weather, Traffic and classification references without modifying author recipes.",
+      "depends_on": [],
+      "produces": "comparable metrics and same-row baselines"
+    },
+    {
+      "priority": 14,
+      "id": "M5PHET-E2E",
+      "resource": "CPU_or_small_GPU",
+      "state": "INDEPENDENT_READY",
+      "work": "Next real-provider typed use case end to end.",
+      "depends_on": [],
+      "produces": "validated request/output/evidence path"
+    }
   ]
 }

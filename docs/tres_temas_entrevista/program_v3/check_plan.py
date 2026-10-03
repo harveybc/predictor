@@ -44,6 +44,20 @@ CLOSURE_REPORTING = {
     "missing_comparator": "EXPLICIT_NOT_COMPARABLE_WITH_REASON_NO_INVENTED_VALUE",
     "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT",
 }
+ARCHITECTURE_ORDER = [
+    "dataset_target_split_contract",
+    "dataset_specific_selection",
+    "grouping_and_receptive_fields",
+    "matched_ARCH_controls",
+    "branch_pretraining",
+    "E1_R0_R1_R2",
+    "select_and_fix_branch_prefix",
+    "H_CORE",
+    "core_transfer",
+    "freeze_final_representation",
+    "Dense_vs_NEAT",
+    "SAC_and_DQN_raw_vs_modular",
+]
 
 
 def validate(state, root):
@@ -80,7 +94,8 @@ def validate(state, root):
             issues.append(f"proposal coverage {proposal}")
 
     documents = state.get("documents", {})
-    for name in ("master", "metrics", "orders", "core_pretraining", "financial_loss_policy"):
+    for name in ("master", "metrics", "orders", "queue", "checklist", "feature_selection",
+                 "modular_stack", "core_pretraining", "financial_loss_policy"):
         path = documents.get(name)
         if not path or not (root / path).is_file():
             issues.append(f"missing document {name}")
@@ -92,6 +107,28 @@ def validate(state, root):
         issues.append("news must not block independent science")
     if not documents.get("news_live") or not (root / documents["news_live"]).is_file():
         issues.append("missing news live document")
+
+    architecture = state.get("architecture_comparison", {})
+    if architecture.get("order") != ARCHITECTURE_ORDER:
+        issues.append("architecture sequence")
+    if architecture.get("R3_defined") is not False:
+        issues.append("undefined R3 must remain absent")
+    if architecture.get("NEAT_role") != "LATE_EVOLVED_HEAD_NOT_HYPERPARAMETER_OPTIMIZER":
+        issues.append("NEAT role")
+    if architecture.get("DEAP_role") != "CONFIGURATION_AND_HYPERPARAMETER_SEARCH":
+        issues.append("DEAP role")
+    if architecture.get("DOIN_role") != "DISTRIBUTED_CANDIDATE_EVALUATION":
+        issues.append("DOIN role")
+
+    selection = state.get("feature_selection", {})
+    if selection.get("business_manifest") != "EURUSD_FIRST":
+        issues.append("business feature manifest")
+    if selection.get("not_identified_means_rejected") is not False:
+        issues.append("causal abstention semantics")
+    if selection.get("future_target_in_operational_encoder") is not False:
+        issues.append("operational target leakage")
+    if selection.get("extractibility_controls") != ["raw", "random_encoder", "trained_encoder"]:
+        issues.append("extractibility controls")
 
     tasks = state.get("tasks", [])
     by_id = {}
@@ -148,6 +185,33 @@ def validate(state, root):
 
     for task_id in by_id:
         visit(task_id)
+
+    queue_path = documents.get("queue")
+    if queue_path and (root / queue_path).is_file():
+        queue = json.loads((root / queue_path).read_text())
+        queued = {lane.get("id"): lane for lane in queue.get("lanes", [])}
+        neat = queued.get("HEAD-DENSE-NEAT", {})
+        if "MOD-HCORE" not in neat.get("depends_on", []):
+            issues.append("NEAT queue sequence")
+        hcore = queued.get("MOD-HCORE", {})
+        if "MOD-ARCH-E1" not in hcore.get("depends_on", []):
+            issues.append("H-CORE queue sequence")
+        if queue.get("superseded", {}).get("all_321_or_all_83_as_selected") is not False:
+            issues.append("mechanical inventory cannot equal selection")
+
+    checklist_path = documents.get("checklist")
+    if checklist_path and (root / checklist_path).is_file():
+        checklist = json.loads((root / checklist_path).read_text())
+        items = {item.get("id"): item for item in checklist.get("items", [])}
+        required_checklist = {"I0", "I1", "I2", "I3", "I4-C", "I4-R", "I5",
+                              "I6-A", "I6-B", "I7", "I7-H", "I8", "I9-N",
+                              "I9-R", "I10"}
+        if set(items) != required_checklist:
+            issues.append("master checklist coverage")
+        if "I7" not in items.get("I7-H", {}).get("depends_on", []):
+            issues.append("checklist H-CORE sequence")
+        if "I7-H" not in items.get("I9-N", {}).get("depends_on", []):
+            issues.append("checklist NEAT sequence")
     return issues
 
 

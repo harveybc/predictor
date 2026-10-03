@@ -1,6 +1,6 @@
 {
   "schema": "modular_stack_method_state.v1",
-  "updated_on": "2026-09-30",
+  "updated_on": "2026-10-03",
   "current_stage": "S9_UNIT_IMPLEMENTATION",
   "plan": "MODULAR_STACK_WORK_PLAN_2026_09_30.md",
   "discovery": "Existing composite predictor lacks independent per-branch/core donor contracts; modular pilots and DOIN dry run exist in separate worktrees.",
@@ -13,6 +13,17 @@
     "integration_and_review": "Musashi"
   },
   "verified": ["engine: 24 focused tests", "evaluator: 30 focused tests", "integrated staged pretraining: 6 CPU tests, 13.65 seconds, synthetic inputs", "feature profiles: 15 focused tests, bounded coverage only", "DOIN bridge: 74 targeted tests, real-engine acceptance pending"],
-  "next_allowed_actions": ["implement tested components", "integrate", "bounded CPU smoke", "admitted GPU candidate pilot"],
-  "not_established": ["full inventory profile coverage", "forecast superiority", "DOIN live optimization", "RL policy fit", "live trading"]
+  "next_allowed_actions": [
+    "finish tested component integration without training definitive branches",
+    "consume only a versioned selected-feature manifest",
+    "run matched ARCH and branch R0/R1/R2",
+    "after selecting the branch prefix, run H-CORE as a separate experiment"
+  ],
+  "blocked_actions": [
+    "train definitive branches from mechanically admissible inventories",
+    "run H-CORE before branch architecture and regime selection",
+    "invent R3 without a separate accepted contract",
+    "use NEAT as a hyperparameter optimizer or before final representation freeze"
+  ],
+  "not_established": ["final selected feature manifest", "forecast superiority", "DOIN live optimization of the current design", "H-CORE transfer", "NEAT head result", "RL policy fit", "live trading"]
 }

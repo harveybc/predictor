@@ -171,6 +171,36 @@ class PlanChecks(unittest.TestCase):
         self.state.pop("execution_governance", None)
         self.assertIn("execution governance contract", " ".join(validate(self.state, ROOT)))
 
+    def test_neat_cannot_become_hyperparameter_optimizer(self):
+        self.state["architecture_comparison"]["NEAT_role"] = "HYPERPARAMETER_OPTIMIZER"
+        self.assertIn("NEAT role", " ".join(validate(self.state, ROOT)))
+
+    def test_hcore_cannot_precede_e1(self):
+        order = self.state["architecture_comparison"]["order"]
+        order.remove("H_CORE")
+        order.insert(order.index("E1_R0_R1_R2"), "H_CORE")
+        self.assertIn("architecture sequence", " ".join(validate(self.state, ROOT)))
+
+    def test_undefined_r3_cannot_be_smuggled_in(self):
+        self.state["architecture_comparison"]["R3_defined"] = True
+        self.assertIn("undefined R3", " ".join(validate(self.state, ROOT)))
+
+    def test_not_identified_is_not_automatic_rejection(self):
+        self.state["feature_selection"]["not_identified_means_rejected"] = True
+        self.assertIn("causal abstention semantics", " ".join(validate(self.state, ROOT)))
+
+    def test_future_target_cannot_enter_operational_encoder(self):
+        self.state["feature_selection"]["future_target_in_operational_encoder"] = True
+        self.assertIn("operational target leakage", " ".join(validate(self.state, ROOT)))
+
+    def test_extractibility_needs_three_controls(self):
+        self.state["feature_selection"]["extractibility_controls"].remove("random_encoder")
+        self.assertIn("extractibility controls", " ".join(validate(self.state, ROOT)))
+
+    def test_checklist_is_required(self):
+        self.state["documents"]["checklist"] = "missing.json"
+        self.assertIn("missing document checklist", " ".join(validate(self.state, ROOT)))
+
 
 if __name__ == "__main__":
     unittest.main()

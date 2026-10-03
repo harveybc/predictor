@@ -1,5 +1,9 @@
 # Satoshi: seleccion progresiva y continuacion modular en paralelo
 
+> **HISTÓRICO, NO OPERATIVO.** Sustituido el 3-oct-2026 por
+> SATOSHI_CANONICAL_SELECTION_FIRST_EXECUTION_2026_10_03.md. Se conserva sólo
+> para auditoría y no despacha campañas.
+
 Para Satoshi (orquestacion/ejecucion), Musashi (revision) y el propietario.
 Fecha local 30-sep-2026; inspeccion 01-oct aproximadamente 01:53 UTC.
 

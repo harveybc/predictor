@@ -1,0 +1,31 @@
+{
+  "schema": "master_checklist.v1",
+  "updated_on": "2026-10-03",
+  "states": ["NOT_STARTED", "DESIGNED", "IN_PROGRESS", "EVIDENCE_PARTIAL", "VERIFIED"],
+  "items": [
+    {"id": "I0", "name": "business_contract", "state": "DESIGNED", "gate": "EURUSD targets, costs, risk and availability bound"},
+    {"id": "I1", "name": "inventory", "state": "IN_PROGRESS", "depends_on": ["I0"], "gate": "all sources and fields have event/availability semantics"},
+    {"id": "I2", "name": "basic_profiles", "state": "IN_PROGRESS", "depends_on": ["I1"], "gate": "metric-by-feature coverage matrix"},
+    {"id": "I3", "name": "reversible_priority", "state": "EVIDENCE_PARTIAL", "depends_on": ["I2"], "gate": "target-specific provisional survivors plus exploration sample"},
+    {"id": "I4-C", "name": "causal_ladder", "state": "EVIDENCE_PARTIAL", "depends_on": ["I1"], "gate": "three-rung EURUSD dossiers or explicit NOT_IDENTIFIED"},
+    {"id": "I4-R", "name": "extractibility", "state": "NOT_STARTED", "depends_on": ["I3"], "gate": "raw/random/trained matched evidence"},
+    {"id": "I5", "name": "joint_selection", "state": "NOT_STARTED", "depends_on": ["I4-C", "I4-R"], "gate": "versioned selected/rejected/pending manifest"},
+    {"id": "I6-A", "name": "architecture_controls", "state": "NOT_STARTED", "depends_on": ["I5"], "gate": "matched ARCH result"},
+    {"id": "I6-B", "name": "branch_pretraining", "state": "NOT_STARTED", "depends_on": ["I6-A"], "gate": "authenticated branch donors"},
+    {"id": "I7", "name": "branch_regimes", "state": "NOT_STARTED", "depends_on": ["I6-B"], "gate": "R0/R1/R2 result and selected prefix"},
+    {"id": "I7-H", "name": "hcore", "state": "NOT_STARTED", "depends_on": ["I7"], "gate": "core donor and separate transfer result"},
+    {"id": "I8", "name": "doin_optimization", "state": "NOT_STARTED", "depends_on": ["I7"], "gate": "verified incumbent"},
+    {"id": "I9-N", "name": "dense_vs_neat", "state": "NOT_STARTED", "depends_on": ["I7-H"], "gate": "matched head result"},
+    {"id": "I9-R", "name": "rl_raw_vs_modular", "state": "NOT_STARTED", "depends_on": ["I7-H"], "gate": "SAC and DQN factorial"},
+    {"id": "I10", "name": "paper_operation", "state": "IN_PROGRESS", "depends_on": [], "gate": "only naive-eligible verified artifacts promoted"}
+  ],
+  "forbidden_shortcuts": [
+    "mechanical inventory treated as feature selection",
+    "H-CORE before R0/R1/R2 architecture selection",
+    "NEAT as hyperparameter optimizer",
+    "NEAT before frozen representation",
+    "future target in operational encoder",
+    "test used for selection",
+    "strategy evaluation when forecast does not beat same-row naive"
+  ]
+}

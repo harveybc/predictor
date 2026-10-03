@@ -5,7 +5,8 @@ Versión 3: enfoque aprobado por el propietario e incorporado al plan maestro.
 Plan de implementación, no declaración de pruebas realizadas. Estado metodológico:
 S3_ACCEPTANCE_TEST_DESIGN; las especificaciones de componentes y pruebas unitarias
 se completan por incremento antes de implementar cada componente nuevo.
-Órdenes: [continuación paralela](../../handoffs/SATOSHI_PROGRESSIVE_SELECTION_AND_MODULAR_CONTINUATION_2026_09_30.md).
+La orden fechada de continuación se conserva como historia. La autoridad
+operativa y la secuencia vigente están en el plan maestro y CURRENT_EXECUTION.md.
 
 Original conservado en `seleccion_caracteristicas_musashi.original.md`.
 SHA256 original: `a73e397aac9f72c6a32c8db575c099c26a2bcc8dca8efa0e979db1b26e0e605f`.
@@ -40,8 +41,9 @@ se comparan señal cruda, representación aleatoria y representación entrenada.
 
 Secuencia progresiva: disponibilidad y perfil básico para todas las entradas
 admisibles -> priorización reversible -> extracción y estudios causales en
-paralelo -> perfiles ampliados de variantes prometedoras -> selección conjunta,
-fusión y preentrenamiento del núcleo -> confirmación del finalista.
+paralelo -> perfiles ampliados de variantes prometedoras -> selección conjunta
+y manifiesto final -> comparación arquitectónica y R0/R1/R2 -> prefijo ganador
+fijado -> H-CORE como experimento separado -> confirmación del finalista.
 La sección 10 define incrementos, responsables, dependencias y pruebas.
 
 No esperar a calcular todas las métricas sobre todas las descomposiciones de
@@ -322,6 +324,8 @@ Reutilizar código oficial fijado y comprobar licencia, pesos y protocolo.
 | AE/denoising temporal | Implementación modular existente; DAE [7] | Control reconstruible, no SOTA presumido |
 | Contrastiva temporal | TS2Vec [9] | Referencia reproducible por instante; confirmar soporte temporal al integrarla |
 | Parches/enmascarado | PatchTST auto-supervisado [10] | Reproducir receta nativa; adaptación a ramas es experimento distinto |
+| Pasado-a-presente siamés | TimeSiam (ICML 2024) [13] | Candidato para dependencia temporal; reproducir primero su protocolo |
+| Autoencoder temporal enmascarado | TimeMAE (WSDM 2026) [14] y controles Ti-MAE | Candidato contextual; no declarar SOTA por el nombre |
 | Modelo fundacional | MOMENT [11] | Auditar corpus de preentrenamiento y contaminación antes de comparación |
 | Predicción latente | CF-JEPA [12] | Exploratoria, preprint; comprobar reproducción y salida temporal, no asumir SOTA |
 | Generativa condicionada | CVAE [5], variante VAE-GAN [6] | Secundaria, si aporta generación o utilidad bajo presupuesto |
@@ -335,6 +339,13 @@ su propia identidad y se compara en un contrato emparejado, no contra otra tabla
 No imponer reconstrucción, KL o decoder a familias que no los tengan: NO_APLICA
 es distinto de un fallo. Un generador posterior puede consumir representaciones,
 pero se evalúa por separado y no convierte al encoder en un modelo causal.
+
+El primer plugin nuevo es un extractor **univariado temporal** de interfaz común:
+serie causal, máscara/delta temporal y contexto conocido (hora, día de semana,
+día del año, sesión/feriado cuando aplique). La salida conserva el eje temporal.
+Raw/identidad, encoder aleatorio y encoder entrenado son controles obligatorios.
+El target puede supervisar una sonda o una variante generativa offline; nunca
+entra al encoder operacional.
 
 Solo para la variante CVAE, por característica/grupo: encoder q_phi(Z_i | X_i,c_available), prior
 p_psi(Z_i | c_available) y decoder p_theta(X_i | Z_i,c_available). El objetivo
@@ -450,7 +461,8 @@ por el cribado individual. No imponer simultáneamente todas las puertas de
 significancia, CKA y reconstrucción. Calibrar reglas en TRAIN, no pesos arbitrarios
 como verdades. Estudiar si la calidad de extracción predice utilidad incremental.
 
-Después: encoders seleccionados -> fusión -> preentrenamiento del núcleo -> R0/R1/R2.
+Después: encoders seleccionados -> fusión -> comparación arquitectónica ->
+R0/R1/R2 de ramas -> elección del prefijo -> H-CORE -> transferencia del núcleo.
 AE del núcleo es el control inicial; otros objetivos requieren contraste separado.
 Comparar estrategia heurística y SAC con nuestra arquitectura temporal modular,
 no sustituirla por MLP plano ni DQN. Declarar si los pesos de representación son
@@ -529,8 +541,8 @@ compatible o presupuesto agotado; cada una conserva razón y deja seguir al rest
 | PS3-R Representaciones | M02 + M01 / GPU admitida | Piloto de familias de sección 6, controles crudo/aleatorio/entrenado y utilidad Y_s/Y_l/Y_b. Depende de PS0 y del ensamblaje compatible, no del cierre causal completo. |
 | PS3-C Causalidad | causal-inference / CPU | Expedientes de sección 5 para episodios disponibles; DAG, ajuste, solapamiento, placebos y contrafactuales bajo SCM. Depende de PS0, no de PS3-R. |
 | PS4 Perfil ampliado | M03 + M02 | Métricas costosas/transformaciones sobre candidatos priorizados y muestra de exploración. Identidad del soporte, fuente y coste; no producto cartesiano sin límite. |
-| PS5 Selección conjunta | M01 + M04 | Adición/retirada con reajuste, sinergias, reincorporación, una rama por entrada frente a grupos; R0/R1/R2 de ramas y núcleo. Misma población/presupuesto. |
-| PS6 Confirmación y uso | M04 + M05 + RL | Finalista congelado, evaluación reservada conforme a su contrato, adapter instalado y shadow/paper. SAC y heurística comparados por negocio; no promoción automática a dinero real. |
+| PS5 Selección conjunta | M01 + M04 | Adición/retirada con reajuste, sinergias, reincorporación y manifiesto final; luego arquitectura y R0/R1/R2 de ramas. Misma población/presupuesto. |
+| PS6 Núcleo, confirmación y uso | M01 + M04 + M05 + RL | Elegir y fijar prefijo, probar H-CORE y su transferencia, congelar finalista, evaluar conforme a su contrato y adaptar a shadow/paper. SAC y heurística se comparan por negocio. |
 | PS7 Síntesis opcional | M02 + causal | Real frente a real+sintético; fidelidad y utilidad conjunta; no requisito para PS6. |
 
 PS0/PS1 continúan ampliando cobertura mientras PS2/PS3/PS4 procesan lotes listos.
@@ -644,3 +656,13 @@ Código: https://github.com/moment-timeseries-foundation-model/moment
 
 [12] WDSLab, "CF-JEPA," preprint y código de autores, 2026; candidato exploratorio.
 https://arxiv.org/abs/2606.07031 ; https://github.com/WDSLab/CF-JEPA
+
+[13] J. Dong et al., "TimeSiam: A Pre-Training Framework for Siamese Time-Series
+Modeling," Proc. ICML, PMLR 235, 2024.
+https://proceedings.mlr.press/v235/dong24e.html ;
+https://github.com/thuml/TimeSiam
+
+[14] M. Cheng et al., "TimeMAE: Self-supervised Representations of Time Series
+with Decoupled Masked Autoencoders," Proc. WSDM, 2026.
+https://arxiv.org/abs/2303.00320 ;
+https://github.com/ustc-time-series/TimeMAE
