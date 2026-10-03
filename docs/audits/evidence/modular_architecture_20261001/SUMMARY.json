@@ -11,7 +11,7 @@
       {"label": "R0 per-feature", "mae_z": 0.21849672913461907, "status": "verified"},
       {"label": "R1 frozen", "mae_z": 0.24530096152492972, "status": "verified"},
       {"label": "R2 trainable", "mae_z": 0.21880950897232118, "status": "verified"},
-      {"label": "R3 warm", "mae_z": 0.22174073462105082, "status": "verified"},
+      {"label": "R3 warm", "mae_z": 0.22174073462105082, "status": "measured; replay outside frozen skill tolerance"},
       {"label": "R2 branches only", "mae_z": 0.247931512889847, "status": "verified"}
     ]
   },
@@ -33,7 +33,7 @@
     {"label": "Temporal modular engine", "state": "complete"},
     {"label": "Exact R0 controls", "state": "complete"},
     {"label": "Branch + core donors", "state": "complete"},
-    {"label": "R1 / R2 / R3", "state": "complete"},
+    {"label": "R1 / R2 verified; R3 measured (replay outside tolerance)", "state": "active"},
     {"label": "Financial first contrast", "state": "complete"},
     {"label": "Progressive feature screen", "state": "active"},
     {"label": "Full causal ladder", "state": "pending"},

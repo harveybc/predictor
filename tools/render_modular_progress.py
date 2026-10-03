@@ -11,11 +11,25 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+VERIFIED_COLOR = "#177E89"
+MEASURED_COLOR = "#5C677D"
+OUTSIDE_TOLERANCE_COLOR = "#E76F51"
+
+
+def status_color(status):
+    """Only an exact 'verified' status is teal; replay-outside-tolerance is flagged."""
+    if status == "verified":
+        return VERIFIED_COLOR
+    if "outside" in status:
+        return OUTSIDE_TOLERANCE_COLOR
+    return MEASURED_COLOR
+
+
 def _metric_panel(axis, title, block, naive_key, xlim=None):
     rows = block["rows"]
     labels = [row["label"] for row in rows]
     values = [row["mae_z"] for row in rows]
-    colors = ["#177E89" if row["status"] == "verified" else "#5C677D" for row in rows]
+    colors = [status_color(row["status"]) for row in rows]
     positions = np.arange(len(rows))
     axis.barh(positions, values, color=colors, height=0.62)
     naive = block[naive_key]

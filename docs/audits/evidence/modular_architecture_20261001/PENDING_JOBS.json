@@ -2,45 +2,10 @@
   "schema": "predictor.modular.pending-jobs.v1",
   "generated_at": "2026-10-02T17:30:00Z",
   "jobs": [
-    {
-      "lane": "F2",
-      "owner": "forecast campaign runner",
-      "gpu": "Gamma RTX 5090",
-      "state": "running",
-      "dependency": null,
-      "next_artifact": "accepted financial long-horizon cell receipt"
-    },
-    {
-      "lane": "G2",
-      "owner": "RL temporal queue",
-      "gpu": "Dragon RTX 4090",
-      "state": "running",
-      "dependency": null,
-      "next_artifact": "RL-S0_seed202 terminal receipt"
-    },
-    {
-      "lane": "feature-extractor adapter",
-      "owner": "implementation lane",
-      "gpu": "Gamma RTX 5070 Ti",
-      "state": "ready_after_adapter",
-      "dependency": "typed train-only adapter and focused tests",
-      "next_artifact": "single-seed branch reconstruction receipt"
-    },
-    {
-      "lane": "feature metrics",
-      "owner": "feature-engineering lane",
-      "gpu": null,
-      "state": "queued",
-      "dependency": "train-only materializer",
-      "next_artifact": "83-feature metrics table"
-    },
-    {
-      "lane": "causal ladder feasibility",
-      "owner": "causal-inference lane",
-      "gpu": null,
-      "state": "queued",
-      "dependency": "point-in-time feasibility report",
-      "next_artifact": "association/intervention/counterfactual support report"
-    }
+    {"lane": "F2", "owner": "forecast campaign runner", "gpu": "primary RTX 5090", "state": "running", "dependency": null, "next_artifact": "accepted financial long-horizon cell receipt"},
+    {"lane": "G2", "owner": "RL temporal queue", "gpu": "secondary RTX 4090", "state": "running", "dependency": null, "next_artifact": "RL-S0_seed202 terminal receipt"},
+    {"lane": "feature-extractor adapter", "owner": "implementation lane", "gpu": "worker RTX 5070 Ti", "state": "ready_after_adapter", "dependency": "typed train-only adapter and focused tests", "next_artifact": "single-seed branch reconstruction receipt"},
+    {"lane": "feature metrics", "owner": "feature-engineering lane", "gpu": null, "state": "queued", "dependency": "train-only materializer", "next_artifact": "83-feature metrics table"},
+    {"lane": "causal ladder feasibility", "owner": "causal-inference lane", "gpu": null, "state": "queued", "dependency": "point-in-time feasibility report", "next_artifact": "association/intervention/counterfactual support report"}
   ]
 }
