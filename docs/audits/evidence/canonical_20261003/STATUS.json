@@ -1,6 +1,6 @@
 {
  "schema": "canonical_exec_status.v1",
- "observed_at": "2026-10-03T05:44:50Z",
+ "observed_at": "2026-10-03T06:21:10Z",
  "authority": "codex/workplan-consolidation-20261003@2edc2684 (master plan v3 consolidated)",
  "neat": "no process or unit on any host (verified)",
  "hermes": "not used this round (provider 403 earlier; unverified)",
@@ -19,8 +19,9 @@
    "resource": "CPU worker_a",
    "work": "PS2 redundancy/relevance/exploration (code first, consumes A batch)",
    "declared_state": "DISPATCHED",
-   "observed_state": "NOT_YET_OBSERVED",
-   "next_transition": "code+tests, then first A batch"
+   "observed_state": "BATCHES_1_3_DONE",
+   "next_transition": "next lane A batch; cross-batch redundancy at PS5",
+   "evidence": "feature-eng satoshi/eurusd-ps2-20261003 beef40c (33 tests); ps2_batch.v1 READY x3 (lane D reader OK); 14 targets x 5 folds; to E/F: 36+214+19 features; tiers 1/2/3: 41/1/4, 36/9/154, 17/0/1; exploration 11/52/2; only technical reject q.n5"
   },
   {
    "lane": "C",
@@ -28,7 +29,7 @@
    "work": "PS3-C three-rung causal ladder EURUSD economic events (code first)",
    "declared_state": "DISPATCHED",
    "observed_state": "BATCHES_1_3_DONE",
-   "next_transition": "tag lane B PS2 priorities; multiplicity control + nonlinear adjustment for rung-2 hits",
+   "next_transition": "tag lane B priorities + multiplicity/nonlinear check of 211 rung-2 hits (resumed)",
    "evidence": "causal-inference satoshi/eurusd-causal-ladder-20261003 4604f06 (38 tests); dossiers for all 366 candidates + 15 release types, 5,349 cells; rung1 0 robust after BH; rung2 ESTIMATED 1,076 / NOT_IDENTIFIED 4,133 / NA 140; all 15 release types NOT_IDENTIFIED (assumed clock); 211 uncorrected interval hits pending multiplicity + nonlinear adjustment; coord b35d496e"
   },
   {
@@ -80,17 +81,17 @@
    "lane": "E",
    "resource": "GPU worker_a RTX 5090",
    "work": "PS3-R extractor pilot on survivors",
-   "declared_state": "WAITING",
+   "declared_state": "DISPATCHED",
    "observed_state": "NOT_YET_OBSERVED",
-   "next_transition": "first PS2 batch in ps2_batch.v1 format (lane B)"
+   "next_transition": "measure cap with --max_epochs 1, then batch_001 tier_1 on the 5090"
   },
   {
    "lane": "F",
    "resource": "GPU worker_a RTX 5070 Ti",
    "work": "alternative extractor family, same rows",
-   "declared_state": "WAITING",
+   "declared_state": "DISPATCHED",
    "observed_state": "NOT_YET_OBSERVED",
-   "next_transition": "first PS2 batch in ps2_batch.v1 format (lane B)"
+   "next_transition": "MTAE on batch_001 tier_1 on the 5070 Ti, then P2C"
   }
  ],
  "checklist_ref": "docs/tres_temas_entrevista/program_v3/MASTER_CHECKLIST.json",
@@ -98,6 +99,7 @@
  "checklist_observed": {
   "I1": "IN_PROGRESS (388 sources classified)",
   "I2": "EVIDENCE_PARTIAL (3 batches, 366 candidates)",
-  "I4-C": "EVIDENCE_PARTIAL (three-rung dossiers for batches 1-3)"
+  "I4-C": "EVIDENCE_PARTIAL (three-rung dossiers for batches 1-3)",
+  "I3": "EVIDENCE_PARTIAL (PS2 provisional priorities for batches 1-3)"
  }
 }
