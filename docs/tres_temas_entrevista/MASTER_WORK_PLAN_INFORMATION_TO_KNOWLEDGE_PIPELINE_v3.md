@@ -87,6 +87,7 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 - [ ] I9-N. Representación final congelada: Dense control frente a NEAT.
 - [ ] I9-R. SAC raw/modular y DQN raw/modular.
 - [ ] I10. LTS semanal, shadow, MT5 demo y Alpaca paper.
+- [ ] I11. Extensión final opcional: calendario económico causal como entrada.
 
 Las casillas no implican ejecución serial. I2 de un lote puede coexistir con I4
 de otro; referencias públicas, ingeniería, M5PHET y paper trading pueden avanzar
@@ -139,10 +140,22 @@ Se implementa enteramente con episodios ya observados:
 `NOT_IDENTIFIED` conserva incertidumbre y no equivale automáticamente a rechazo.
 Sí impide afirmar causalidad.
 
-La primera escalera completa se ejecuta sobre eventos económicos y EURUSD. En
-ECL, Weather, Traffic u otro benchmark sólo se exige causalidad cuando exista una
-intervención y estimando identificable; la reproducción de literatura nunca se
-modifica para satisfacer nuestra selección.
+La primera escalera completa se ejecuta durante la **selección** sobre EURUSD.
+Cada candidata priorizada recibe los tres intentos, no sólo asociación:
+
+- si es evento, decisión o fuente exógena, A es su realización histórica;
+- si es un estado endógeno o indicador derivado, se busca una transición o shock
+  histórico bien definido y su mecanismo upstream; no se finge que hacer
+  do(RSI=70) equivale a una acción económica físicamente interpretable;
+- se buscan tratados, controles y niveles alternativos en períodos históricos
+  con soporte; se ejecutan peldaños 2 y 3 o se conserva una negativa explícita
+  de identificación, nunca una excusa para detenerse en correlación.
+
+Usar el calendario para localizar tratamientos/controles del selector **no**
+significa introducir el calendario como feature del predictor. Esa integración
+es I11 y queda aplazada hasta terminar representación, NEAT, RL y la línea
+operativa primaria. En ECL, Weather, Traffic u otro benchmark, la receta de
+literatura nunca se modifica para satisfacer nuestra selección.
 
 ## 6. Extractibilidad por característica
 
@@ -270,7 +283,25 @@ identidades separadas.
 LTS consume sólo artefactos instalados y verificados. Las promociones son offline
 → shadow → MT5 demo/Alpaca paper. No hay autorización de capital real.
 
-## 12. M5PHET
+## 12. Extensión final: calendario causal como entrada
+
+Integrar calendario económico, efectos compuestos o dossiers causales como
+entradas del predictor/política tiene alto riesgo metodológico y queda
+**DEFERRED_FINAL_OPTIONAL**. Sólo puede diseñarse cuando estén cerrados:
+
+1. selección causal/extractiva y manifiesto final;
+2. extractores por rama;
+3. E1 R0/R1/R2 y prefijo elegido;
+4. H-CORE y transferencia;
+5. representación final, Dense frente a NEAT;
+6. SAC/DQN raw frente a modular;
+7. baseline shadow/paper del modelo sin esa extensión.
+
+I11 tendrá su propio control sin calendario, as-of joins, disponibilidad,
+ablación y test de aporte incremental. No bloquea ninguno de los puntos 1-7 ni
+autoriza ahora plugins de entrada, adapters de consumidor o ajuste de modelos.
+
+## 13. M5PHET
 
 M5PHET ofrece una interfaz tipo Laya: datos/contexto y lenguaje natural entran a
 un contrato tipado; un proveedor especializado compatible ejecuta; una salida
@@ -282,7 +313,7 @@ apps de ejemplo. La ruta local funciona sin desplegar el stack. RAG puede ayudar
 a interpretar documentación o contexto point-in-time por encima del proveedor;
 no elige la respuesta ni altera capacidades declaradas.
 
-## 13. Ejecución paralela y recursos
+## 14. Ejecución paralela y recursos
 
 La RTX 5090 externa es primera opción para ajustes GPU largos; 4090, 5070 Ti y
 4070 reciben trabajos independientes cuando memoria, temperatura, compatibilidad
@@ -305,7 +336,7 @@ No se solicita autorización rutinaria. Sólo se eleva una acción humana
 irreducible: credenciales, aceptación de licencia/código remoto, broker, hardware
 físico o capital real.
 
-## 14. Evidencia y almacenamiento
+## 15. Evidencia y almacenamiento
 
 Data-gov gobierna disponibilidad; data-lake conserva datasets y artefactos por
 contenido; warehouse recibe métricas tipadas. DOIN puede usar cadena liviana:
@@ -316,12 +347,14 @@ El cierre guarda configuración efectiva, semilla, versiones, identidad de
 datos/modelo, métricas, naive, coste y recibos. Los arrays grandes se borran sólo
 después de recomputación independiente y recibo por contenido.
 
-## 15. Estado actual
+## 16. Estado actual
 
 El estado observado y la cola se mantienen únicamente en
 `CURRENT_EXECUTION.md` y `EXPERIMENT_EXECUTION_QUEUE.json`. La prioridad
 crítica es PS0-PS5 para EURUSD: causalidad y extractibilidad avanzan en paralelo
-sobre supervivientes provisionales hasta producir el manifiesto final.
+sobre supervivientes provisionales hasta producir el manifiesto final. El
+calendario se usa ahora sólo para construir episodios del selector; su integración
+como entrada permanece en I11.
 
 NEAT queda fuera de la cola hasta que exista representación final congelada.
 Toda orden anterior que lo ejecute sobre entradas crudas o lo use como optimizador

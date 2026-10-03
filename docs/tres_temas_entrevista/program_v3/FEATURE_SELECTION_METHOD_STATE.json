@@ -41,7 +41,8 @@
     "Select features on test or deploy future-target-conditioned operational encoders",
     "Relabel 12-step branch donors as 24-step branch donors",
     "Treat all 321 ECL or all 83 ETH columns as selected",
-    "Run NEAT before the final representation is frozen"
+    "Run NEAT before the final representation is frozen",
+    "Use economic calendar or causal dossier as predictor or policy input before final I11"
   ],
   "open_decisions": [
     "Choose the first masked and past-to-current extractor implementations after license and reference checks",

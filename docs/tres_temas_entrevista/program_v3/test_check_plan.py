@@ -197,6 +197,19 @@ class PlanChecks(unittest.TestCase):
         self.state["feature_selection"]["extractibility_controls"].remove("random_encoder")
         self.assertIn("extractibility controls", " ".join(validate(self.state, ROOT)))
 
+    def test_calendar_now_is_only_evidence_for_selection(self):
+        self.state["feature_selection"]["calendar_episode_use_now"] = "PREDICTOR_INPUT"
+        self.assertIn("calendar episode selection scope", " ".join(validate(self.state, ROOT)))
+
+    def test_calendar_model_input_remains_final_and_optional(self):
+        self.state["feature_selection"]["calendar_as_model_input"] = "RUN_NOW"
+        self.assertIn("calendar model input deferral", " ".join(validate(self.state, ROOT)))
+
+    def test_calendar_task_requires_primary_model_and_paper_baseline(self):
+        task = next(t for t in self.state["tasks"] if t["id"] == "CAL-CAUSAL-INPUT")
+        task["depends_on"] = []
+        self.assertIn("causal calendar input prerequisites", " ".join(validate(self.state, ROOT)))
+
     def test_checklist_is_required(self):
         self.state["documents"]["checklist"] = "missing.json"
         self.assertIn("missing document checklist", " ".join(validate(self.state, ROOT)))

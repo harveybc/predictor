@@ -40,7 +40,7 @@
       "id": "FS-EURUSD-PS3-C",
       "resource": "CPU",
       "state": "READY_AFTER_FIRST_PS1_BATCH",
-      "work": "Three-rung causal ladder for economic-event episodes and EURUSD.",
+      "work": "Three-rung causal ladder for every prioritized candidate: external historical events or defensible endogenous transitions/shocks, with explicit abstention when unsupported.",
       "depends_on": ["FS-EURUSD-PS0-PS1"],
       "produces": "causal dossiers with IDENTIFIED/NOT_IDENTIFIED and sensitivity"
     },
@@ -142,6 +142,15 @@
       "work": "Next real-provider typed use case end to end.",
       "depends_on": [],
       "produces": "validated request/output/evidence path"
+    },
+    {
+      "priority": 99,
+      "id": "CALENDAR-CAUSAL-MODEL-INPUT",
+      "resource": "unassigned",
+      "state": "DEFERRED_FINAL_OPTIONAL",
+      "work": "Test economic-calendar and causal-dossier inputs only after the primary representation, NEAT, RL and paper baseline.",
+      "depends_on": ["HEAD-DENSE-NEAT", "RL-RAW-MODULAR", "TRADING-PAPER"],
+      "produces": "separate incremental-value ablation; not a prerequisite for the primary program"
     }
   ]
 }

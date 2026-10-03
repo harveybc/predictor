@@ -75,7 +75,19 @@ final. Mantén el control de todas las admisibles.
 
 ## 6. Lane C: escalera causal
 
-Primer estudio completo: eventos económicos hacia EURUSD.
+La rama `satoshi/eurusd-causal-ladder-20261003` es trabajo permitido de PS3-C:
+usa el calendario para localizar episodios históricos de tratamiento y control
+del selector. No debe crear adaptadores que inyecten calendario, sorpresa o
+expedientes causales al predictor, al núcleo o a RL. Esa integración pertenece
+a I11, después de Dense/NEAT, SAC/DQN y la línea base paper.
+
+Primer estudio completo de referencia: eventos económicos hacia EURUSD. Después,
+cada candidata priorizada debe producir estado para los tres peldaños, no solo
+una asociación. Para causas externas usa realizaciones históricas. Para RSI,
+VIX, medias y otros indicadores endógenos, define transiciones/shocks históricos
+y su mecanismo ascendente; nunca presentes `do(indicador=valor)` como una acción
+económica física. Si el soporte o la identificación faltan, conserva
+`NOT_IDENTIFIED` con la razón y continúa con las otras candidatas.
 
 Define primero la unidad exacta: episodio histórico anclado en t; tratamiento A
 como tipo/nivel/cambio observado (sorpresa económica, transición de régimen o
@@ -100,6 +112,11 @@ outcome contrafactual individual fue observado.
 
 NOT_IDENTIFIED es una salida válida y no descarta automáticamente una feature.
 No llames causal a una permutación de latente ni a intervenir la red.
+
+Entregable mínimo por candidata priorizada: pregunta, A, Y_s/Y_l/Y_b, historia H,
+DAG, conjunto de ajuste, soporte/overlap, estimador y diagnóstico del peldaño 2;
+SCM, abducción, alternativa histórica soportada, propagación, reconstrucción
+factual, placebos y sensibilidad del peldaño 3; o abstención explícita por campo.
 
 ## 7. Lanes D/E/F: plugin de extractibilidad
 

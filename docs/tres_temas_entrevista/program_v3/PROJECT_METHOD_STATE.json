@@ -46,7 +46,8 @@
       "core_transfer",
       "freeze_final_representation",
       "Dense_vs_NEAT",
-      "SAC_and_DQN_raw_vs_modular"
+      "SAC_and_DQN_raw_vs_modular",
+      "deferred_causal_calendar_model_input"
     ],
     "R3_defined": false,
     "NEAT_role": "LATE_EVOLVED_HEAD_NOT_HYPERPARAMETER_OPTIMIZER",
@@ -63,6 +64,8 @@
       "same_episode_counterfactual"
     ],
     "not_identified_means_rejected": false,
+    "calendar_episode_use_now": "TREATMENT_CONTROL_DISCOVERY_FOR_FEATURE_SELECTION_ONLY",
+    "calendar_as_model_input": "DEFERRED_FINAL_OPTIONAL_AFTER_NEAT_RL_AND_PAPER_BASELINE",
     "extractibility_controls": ["raw", "random_encoder", "trained_encoder"],
     "future_target_in_operational_encoder": false,
     "final_sets": [
@@ -325,6 +328,15 @@
       "depends_on": ["NEWS-SHADOW", "BUSINESS-CONTRACT"],
       "next_action": "Run paper-only after prospective quality and risk gates.",
       "deliverable": "MT5 demo and Alpaca paper receipts.",
+      "evidence": []
+    },
+    {
+      "id": "CAL-CAUSAL-INPUT",
+      "owner": "future causal+M01+RL",
+      "status": "NOT_STARTED",
+      "depends_on": ["MOD-E3", "NEWS-PAPER"],
+      "next_action": "Remain deferred until the primary representation, Dense-versus-NEAT, RL comparison and paper baseline are complete.",
+      "deliverable": "Separate incremental-value ablation for economic-calendar and causal-dossier model inputs.",
       "evidence": []
     }
   ],

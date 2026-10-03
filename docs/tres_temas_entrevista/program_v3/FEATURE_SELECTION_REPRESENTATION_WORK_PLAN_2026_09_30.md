@@ -154,6 +154,24 @@ permitir inferencia interventional y contrafactual sin actuar sobre el mercado
 ni construir un simulador de trading. La identificación depende de la pregunta,
 del soporte y de supuestos causales, no de que nosotros ejecutemos la acción [1,2].
 
+Esta sección pertenece al **selector de características**. El calendario puede
+usarse ahora como registro histórico para localizar tratamientos, controles,
+contextos y tiempos de disponibilidad. Eso no autoriza a emitir el calendario,
+una sorpresa o un expediente causal como entrada del predictor o de la política.
+Esa integración es un experimento final, opcional y separado, posterior a la
+representación final, Dense frente a NEAT, SAC/DQN y la línea base paper.
+
+Cada candidata priorizada recibe un expediente con estado independiente para
+los tres peldaños: `ESTIMATED`, `NOT_IDENTIFIED`, `NOT_APPLICABLE` o `FAILED`,
+con razón y soporte. No basta ejecutar los peldaños solo para el calendario.
+Para una causa externa bien definida, como una publicación macroeconómica, A
+es su realización histórica. Para una variable endógena, como RSI, VIX o una
+media móvil, no se finge que `do(RSI=70)` sea una acción física: A se define
+como una transición o shock histórico predeclarado y se estudia el mecanismo
+ascendente que pudo producirlo. Si no hay variación, soporte o conjunto de
+ajuste defendible, el peldaño queda `NOT_IDENTIFIED`; eso no se convierte ni en
+efecto causal ni en rechazo automático de la característica.
+
 Buscar episodios donde ocurrió una acción es parte del método. Comparar sus
 resultados sin controlar por qué ocurrió esa acción sigue siendo asociación.
 Y otra fecha histórica no es el resultado alternativo observado del mismo
@@ -161,7 +179,7 @@ episodio: puede servir de control, pero ese resultado alternativo se estima.
 
 ### 5.1 Datos y unidad de análisis
 
-Primer estudio: eventos económicos y respuesta del activo financiero que
+Primer estudio de referencia: eventos económicos y respuesta del activo financiero que
 alimenta las cabezas corta/larga. Usar recursos ya contratados/disponibles:
 FXMacroData para calendario/actual/consenso cuando esos campos existan en el
 snapshot, precios FX del lago para EURUSD, y Alpaca/Yahoo Finance para activos
@@ -548,6 +566,10 @@ compatible o presupuesto agotado; cada una conserva razón y deja seguir al rest
 PS0/PS1 continúan ampliando cobertura mientras PS2/PS3/PS4 procesan lotes listos.
 La unidad del lote es recurso/feature/grupo con contrato, no todo el inventario.
 PS5 recibe resultados parciales elegibles sin esperar a todas las familias.
+
+PS3-C usa publicaciones de calendario únicamente como tratamientos históricos
+cuando corresponda. Los adaptadores que conviertan calendario o expedientes
+causales en entradas operativas pertenecen a I11 y quedan fuera de PS3-C y PS5.
 
 ### 10.2 Economía de recursos sin exclusiones silenciosas
 

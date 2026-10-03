@@ -17,7 +17,8 @@
     {"id": "I8", "name": "doin_optimization", "state": "NOT_STARTED", "depends_on": ["I7"], "gate": "verified incumbent"},
     {"id": "I9-N", "name": "dense_vs_neat", "state": "NOT_STARTED", "depends_on": ["I7-H"], "gate": "matched head result"},
     {"id": "I9-R", "name": "rl_raw_vs_modular", "state": "NOT_STARTED", "depends_on": ["I7-H"], "gate": "SAC and DQN factorial"},
-    {"id": "I10", "name": "paper_operation", "state": "IN_PROGRESS", "depends_on": [], "gate": "only naive-eligible verified artifacts promoted"}
+    {"id": "I10", "name": "paper_operation", "state": "IN_PROGRESS", "depends_on": [], "gate": "only naive-eligible verified artifacts promoted"},
+    {"id": "I11", "name": "causal_calendar_model_input", "state": "NOT_STARTED", "depends_on": ["I9-N", "I9-R", "I10"], "gate": "separate incremental-value experiment after primary program"}
   ],
   "forbidden_shortcuts": [
     "mechanical inventory treated as feature selection",
@@ -26,6 +27,7 @@
     "NEAT before frozen representation",
     "future target in operational encoder",
     "test used for selection",
-    "strategy evaluation when forecast does not beat same-row naive"
+    "strategy evaluation when forecast does not beat same-row naive",
+    "economic calendar or causal dossier used as model input before I11"
   ]
 }

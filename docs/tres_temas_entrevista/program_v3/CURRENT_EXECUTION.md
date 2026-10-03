@@ -47,6 +47,7 @@ se infiere rentabilidad ni actividad de órdenes de la existencia de servicios.
 | Literatura | ECL/Weather/Traffic retenidos | verificación CPU o celdas fieles independientes |
 | M5PHET | clasificación/forecasting parcial | siguiente proveedor real E2E independiente |
 | Trading | servicios paper/demo vivos | consumir sólo predictor financiero naive-eligible |
+| Calendario causal como input | DEFERRED_FINAL_OPTIONAL | esperar representación, NEAT, RL y baseline paper |
 
 ## Despacho inmediato paralelo
 
@@ -66,6 +67,10 @@ se infiere rentabilidad ni actividad de órdenes de la existencia de servicios.
 8. **Ingeniería:** compuerta fail-closed del manifiesto, integración
    feature-extractor y contratos de warehouse.
 9. **Operación:** mantener shadow/paper; no promover modelos sin naive positivo.
+
+En PS3-C el calendario sólo localiza episodios, tratamientos y controles
+históricos para seleccionar características. Está prohibido abrir ahora un
+adapter que entregue calendario/dossiers al predictor, la política o M5PHET.
 
 ## Gate siguiente
 
