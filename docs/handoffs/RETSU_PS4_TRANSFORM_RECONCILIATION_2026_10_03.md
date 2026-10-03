@@ -19,15 +19,17 @@ In the predictor repository, run these checks before editing anything:
 ```bash
 git fetch origin satoshi/canonical-exec-20261003
 git rev-parse origin/satoshi/canonical-exec-20261003
+git merge-base --is-ancestor 90866f7c0f5348a36d18fa3cea0516e3a85c29ce origin/satoshi/canonical-exec-20261003
 git merge-base --is-ancestor 292e13cc origin/satoshi/canonical-exec-20261003
 git merge-base --is-ancestor d5d8d077 origin/satoshi/canonical-exec-20261003
 git status --short
 ```
 
-The second command must return `90866f7c0f5348a36d18fa3cea0516e3a85c29ce`
-at the time of dispatch, and both `merge-base` commands must exit zero. If
-origin has advanced, record the new tip and continue only if those two commits
-remain ancestors. If any command fails, return the literal command and output;
+The second command records the actual remote tip; it is **not** required to
+equal a prior tip because publishing this order itself advances the branch.
+All three `merge-base` commands must exit zero. If origin advances again,
+record the new tip and continue only if those commits remain ancestors. If any
+command fails, return the literal command and output;
 do not repair by reset, force-push, or guessing a different base. Make a new
 worktree and branch from the verified remote tip. Preserve existing dirty trees:
 
