@@ -1,6 +1,6 @@
 {
  "schema": "canonical_exec_status.v1",
- "observed_at": "2026-10-03T07:01:53Z",
+ "observed_at": "2026-10-03T10:02:28Z",
  "authority": "codex/workplan-consolidation-20261003@2edc2684 (master plan v3 consolidated)",
  "neat": "no process or unit on any host (verified)",
  "hermes": "not used this round (provider 403 earlier; unverified)",
@@ -65,8 +65,8 @@
    "work": "faithful published reference, only if a sealed cell exists",
    "declared_state": "DISPATCHED",
    "observed_state": "RUNNING_SEALED_QUEUE",
-   "next_transition": "h192 s2022, s2023, h720 x3, h336 probe + x3; owner: send Table 9 question to authors",
-   "evidence": "traffic_L96_h192_s2021 MSE/MAE 0.396605/0.262610 vs published 0.395/0.262 (naive 2.747078/1.085077, skill 0.8556/0.7580), MEASURED_UNVERIFIED; inventory + TABLE9_MAPPING_PROPOSAL 3bdc9b16"
+   "next_transition": "h720 s2021 running (cap 7.25 GiB), then s2022, s2023, h336 probe + x3",
+   "evidence": "Traffic L96 h192 3-seed mean MSE/MAE 0.396509/0.262478 vs 0.395/0.262, OPERATIONAL_AGREEMENT, MEASURED_UNVERIFIED (no replay); naive 2.747078/1.085077; skill 0.8557/0.7581; fa28088e"
   },
   {
    "lane": "H",
