@@ -1,6 +1,6 @@
 {
  "schema": "canonical_exec_status.v1",
- "observed_at": "2026-10-03T05:06:44Z",
+ "observed_at": "2026-10-03T05:16:53Z",
  "authority": "codex/workplan-consolidation-20261003@2edc2684 (master plan v3 consolidated)",
  "neat": "no process or unit on any host (verified)",
  "hermes": "not used this round (provider 403 earlier; unverified)",
@@ -34,8 +34,9 @@
    "resource": "CPU engineering",
    "work": "feature-extractor univariate temporal extractor plugin + controls + tests",
    "declared_state": "DISPATCHED",
-   "observed_state": "NOT_YET_OBSERVED",
-   "next_transition": "plugin contract tests green"
+   "observed_state": "DONE",
+   "next_transition": "E/F run one real feature with --max_epochs 1 to measure cap, then pilot per feature",
+   "evidence": "feature-extractor satoshi/univariate-temporal-extractor-20261003 8987c57; 55 tests; families identity/random/ae/dae + lane F slots wired; ps2_batch.v1 contract; CPU dry-run peak 1.42 GB (1 feature, 4 families, 12k rows)"
   },
   {
    "lane": "D-gate",
@@ -79,7 +80,7 @@
    "work": "PS3-R extractor pilot on survivors",
    "declared_state": "WAITING",
    "observed_state": "NOT_YET_OBSERVED",
-   "next_transition": "first PS2 batch + D plugin"
+   "next_transition": "first PS2 batch in ps2_batch.v1 format (lane B)"
   },
   {
    "lane": "F",
@@ -87,8 +88,9 @@
    "work": "alternative extractor family, same rows",
    "declared_state": "WAITING",
    "observed_state": "NOT_YET_OBSERVED",
-   "next_transition": "first PS2 batch + F-prep"
+   "next_transition": "first PS2 batch in ps2_batch.v1 format (lane B)"
   }
  ],
- "checklist_ref": "docs/tres_temas_entrevista/program_v3/MASTER_CHECKLIST.json"
+ "checklist_ref": "docs/tres_temas_entrevista/program_v3/MASTER_CHECKLIST.json",
+ "plan_authority": "codex/workplan-consolidation-20261003@02434903 (calendar = selector source only; model input deferred to I11)"
 }
