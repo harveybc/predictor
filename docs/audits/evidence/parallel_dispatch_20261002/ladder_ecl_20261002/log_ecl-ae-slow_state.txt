@@ -1,0 +1,8 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790990612.206174 2028497 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1790990613.276887 2028497 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+W0000 00:00:1790990614.556363 2028497 gpu_device.cc:2459] TensorFlow was not built with CUDA kernel binaries compatible with compute capability 12.0a. CUDA kernels will be jit-compiled from PTX, which could take 30 minutes or longer.
+W0000 00:00:1790990614.563937 2028497 gpu_device.cc:2459] TensorFlow was not built with CUDA kernel binaries compatible with compute capability 12.0a. CUDA kernels will be jit-compiled from PTX, which could take 30 minutes or longer.
+{"group": "slow_state", "channels": 61, "seed": 2021, "latent_dim": 8, "recon_mae": 0.32865278879439486, "recon_mse": 0.22993087206449642, "naive_channel_mean_mae": 0.7980795549559534, "naive_channel_mean_mse": 0.9977524463882257, "mae_skill": 0.5881954540076728, "mse_skill": 0.7695511818619684, "weight_sha256": "77bd5372dca916a624b6a8f2426323c2121cfd92def9205f542dacc6cf45ab0f"}
+wall 17.52 s maxrss 2491012 kB
