@@ -512,6 +512,15 @@ def _validate_restored_score(score: WeekScore, contract: ScoringContract) -> Non
         raise ScoreRefusal("SCORE_SCHEMA", "strategy_eligible must be a bool")
     if score.disposition not in {item.value for item in DispositionStatus} | {"INCOMPLETE"}:
         raise ScoreRefusal("SCORE_SCHEMA", "unsupported disposition")
+    if score.reason is not None and (not isinstance(score.reason, str) or not score.reason):
+        raise ScoreRefusal("SCORE_SCHEMA", "reason must be null or non-empty text")
+    completed = score.disposition == DispositionStatus.COMPLETED.value
+    if completed != bool(score.horizons):
+        raise ScoreRefusal("SCORE_SCHEMA", "only completed scores carry horizon metrics")
+    if not completed:
+        if score.strategy_eligible or score.reason is None:
+            raise ScoreRefusal("SCORE_SCHEMA", "terminal/incomplete score requires reason and is ineligible")
+        return
     seen: set[tuple[str, str]] = set()
     for item in score.horizons:
         if item.family not in {family.value for family in ForecastFamily}:
@@ -532,9 +541,17 @@ def _validate_restored_score(score: WeekScore, contract: ScoringContract) -> Non
         naive_mse = _finite_number("naive_mse", item.naive_mse)
         if min(model_mae, model_mse, naive_mae, naive_mse) < 0.0:
             raise ScoreRefusal("SCORE_SCHEMA", "error metrics cannot be negative")
+        if model_mse + 1e-12 < model_mae**2 or naive_mse + 1e-12 < naive_mae**2:
+            raise ScoreRefusal("SCORE_SCHEMA", "MSE cannot be below squared MAE")
         expected_mae_skill = _skill(model_mae, naive_mae)
         expected_mse_skill = _skill(model_mse, naive_mse)
-        if item.skill_mae != expected_mae_skill or item.skill_mse != expected_mse_skill:
+        actual_mae_skill = (
+            None if item.skill_mae is None else _finite_number("skill_mae", item.skill_mae)
+        )
+        actual_mse_skill = (
+            None if item.skill_mse is None else _finite_number("skill_mse", item.skill_mse)
+        )
+        if actual_mae_skill != expected_mae_skill or actual_mse_skill != expected_mse_skill:
             raise ScoreRefusal("SCORE_SCHEMA", "skill is not derived from retained errors")
         expected_beats = (
             model_mae < naive_mae
@@ -569,6 +586,10 @@ def _validate_restored_score(score: WeekScore, contract: ScoringContract) -> Non
     )
     if score.strategy_eligible is not expected_eligible:
         raise ScoreRefusal("SCORE_SCHEMA", "strategy eligibility is not derived from retained metrics")
+    if (score.strategy_eligible and score.reason is not None) or (
+        not score.strategy_eligible and score.reason is None
+    ):
+        raise ScoreRefusal("SCORE_SCHEMA", "reason contradicts completed score eligibility")
 
 
 def _freeze(score: WeekScore) -> WeekScore:

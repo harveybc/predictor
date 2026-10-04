@@ -575,6 +575,47 @@ class WeeklyScoreTests(unittest.TestCase):
                 WeeklyScoreLedger.from_json(json.dumps(payload))
             self.assertEqual(caught.exception.code, "SCORE_SCHEMA")
 
+    def test_terminal_dispositions_round_trip_without_horizons(self) -> None:
+        contract = ScoringContract("mae", (ForecastFamily.SHORT,), ("h1",))
+        for status in (DispositionStatus.FAILED, DispositionStatus.EXCLUDED):
+            ledger = WeeklyScoreLedger((week(0),), contract)
+            ledger.record_terminal(week(0), status, "retained terminal reason")
+            restored = WeeklyScoreLedger.from_json(ledger.to_json())
+            score = restored.close().dispositions[0]
+            self.assertEqual(score.disposition, status.value)
+            self.assertEqual(score.horizons, ())
+
+    def test_restore_rejects_disposition_reason_skill_and_impossible_error_mutations(self) -> None:
+        contract = ScoringContract("mae", (ForecastFamily.SHORT,), ("h1",))
+        ledger = WeeklyScoreLedger((week(0),), contract)
+        release = WeekRelease(
+            week(0),
+            (horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0)),),
+            False,
+        )
+        ledger.submit(release)
+
+        def failed_with_metrics(payload):
+            score = payload["scores"][0]
+            score["disposition"] = "FAILED"
+            score["strategy_eligible"] = False
+            score["reason"] = "invented failure"
+
+        mutations = (
+            failed_with_metrics,
+            lambda payload: payload["scores"][0].__setitem__("reason", "invented failure"),
+            lambda payload: payload["scores"][0]["horizons"][0].__setitem__("skill_mae", True),
+            lambda payload: payload["scores"][0]["horizons"][0].__setitem__("skill_mse", True),
+            lambda payload: payload["scores"][0]["horizons"][0].__setitem__("model_mse", 0.1),
+        )
+        for mutate in mutations:
+            payload = json.loads(ledger.to_json())
+            mutate(payload)
+            reseal(payload)
+            with self.assertRaises(ScoreRefusal) as caught:
+                WeeklyScoreLedger.from_json(json.dumps(payload))
+            self.assertEqual(caught.exception.code, "SCORE_SCHEMA")
+
     def test_restore_rejects_duplicate_scores_and_metric_from_another_contract(self) -> None:
         release = WeekRelease(
             week(0),
