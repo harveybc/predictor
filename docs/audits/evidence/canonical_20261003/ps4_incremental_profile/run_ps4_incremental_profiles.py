@@ -58,8 +58,10 @@ ALREADY_MEASURED_TRANSFORMS = (
 )
 SELECTION_DENOMINATOR = 366
 DATASET_ID = "eurusd_ps4_incremental_profile"
-UNIT_SCHEMA = "ps4_incremental_unit.v1"
-REPORT_SCHEMA = "ps4_incremental_profile.v1"
+UNIT_SCHEMA = "ps4_incremental_unit.v2"
+LEGACY_UNIT_SCHEMA = "ps4_incremental_unit.v1"
+REPORT_SCHEMA = "ps4_incremental_profile.v2"
+TERMINAL_SCHEMA = "ps3r_terminal_identity.v1"
 _SPLIT_WORDS = {"validation", "external_validation", "outer_validation", "val"}
 _TEST_WORDS = {"test", "outer_test"}
 
@@ -183,6 +185,66 @@ def _rows_sha256(rows: list) -> str:
     return hashlib.sha256(body).hexdigest()
 
 
+def _json_sha256(payload: dict) -> str:
+    body = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(body).hexdigest()
+
+
+def _is_sha256(value) -> bool:
+    return isinstance(value, str) and len(value) == 64 and all(
+        character in "0123456789abcdef" for character in value
+    )
+
+
+def load_terminal_identity(path: Path | None, feature_id: str, series_sha256: str) -> dict:
+    """Authenticate the retained PS3-R terminal that made a PS4 unit eligible."""
+    if path is None:
+        raise ProfileRefusal("TERMINAL_MANIFEST_ABSENT", feature_id)
+    path = Path(path)
+    if path.is_symlink() or not path.is_file():
+        raise ProfileRefusal("TERMINAL_MANIFEST_ABSENT", str(path))
+    try:
+        manifest = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as error:
+        raise ProfileRefusal("TERMINAL_MANIFEST_INVALID", str(error)) from error
+    families = manifest.get("families") if isinstance(manifest, dict) else None
+    features = manifest.get("features") if isinstance(manifest, dict) else None
+    seed = manifest.get("seed") if isinstance(manifest, dict) else None
+    required = (
+        manifest.get("schema") == "ut_pilot_run.v1"
+        and manifest.get("status") == "COMPLETED"
+        and features == [feature_id]
+        and isinstance(seed, int) and not isinstance(seed, bool)
+        and isinstance(manifest.get("code_commit"), str) and bool(manifest["code_commit"])
+        and isinstance(families, list) and bool(families)
+        and all(isinstance(family, str) and family for family in families)
+        and len(families) == len(set(families))
+        and _is_sha256(manifest.get("results_sha256"))
+        and manifest.get("series_sha256") == series_sha256
+    )
+    if not required:
+        raise ProfileRefusal("TERMINAL_IDENTITY_MISMATCH", feature_id)
+    return {
+        "schema": TERMINAL_SCHEMA,
+        "results_sha256": manifest["results_sha256"],
+        "seed": seed,
+        "code_revision": manifest["code_commit"],
+        "families": families,
+        "terminal_manifest_sha256": sha256_file(path),
+    }
+
+
+def _identity_payload(payload: dict) -> dict:
+    return {
+        "feature_id": payload.get("feature_id"),
+        "fold_id": payload.get("fold_id"),
+        "train_rows": payload.get("train_rows"),
+        "source_sha256": payload.get("source_sha256"),
+        "terminal_identity": payload.get("terminal_identity"),
+        "rows_sha256": payload.get("rows_sha256"),
+    }
+
+
 def _write_json(path: Path, payload) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -190,7 +252,10 @@ def _write_json(path: Path, payload) -> None:
     os.replace(temporary, path)
 
 
-def classify_unit(path: Path) -> str:
+def classify_unit(path: Path, *, expected_feature_id: str = "", expected_fold_id: str = "",
+                  expected_train_rows: list[int] | None = None,
+                  expected_source_sha256: dict | None = None,
+                  expected_terminal_identity: dict | None = None) -> str:
     """MEASURED only for a complete atomic unit. Partials are PENDING."""
     path = Path(path)
     if path.name.endswith(".tmp"):
@@ -203,31 +268,83 @@ def classify_unit(path: Path) -> str:
         return "PENDING"
     if not isinstance(payload, dict) or payload.get("schema") != UNIT_SCHEMA:
         return "PENDING"
+    feature = payload.get("feature_id")
+    fold = payload.get("fold_id")
+    train_rows = payload.get("train_rows")
+    source = payload.get("source_sha256")
+    terminal = payload.get("terminal_identity")
     rows = payload.get("rows")
     if not isinstance(rows, list) or payload.get("rows_sha256") != _rows_sha256(rows):
         return "PENDING"
+    valid_identity = (
+        isinstance(feature, str) and bool(feature)
+        and fold in INNER_FOLDS
+        and isinstance(train_rows, list) and len(train_rows) == 2
+        and train_rows[0] == 0 and isinstance(train_rows[1], int) and train_rows[1] > 0
+        and isinstance(source, dict) and set(source) == {"series.npz", "folds.json"}
+        and all(_is_sha256(value) for value in source.values())
+        and isinstance(terminal, dict)
+        and terminal.get("schema") == TERMINAL_SCHEMA
+        and _is_sha256(terminal.get("results_sha256"))
+        and isinstance(terminal.get("seed"), int) and not isinstance(terminal.get("seed"), bool)
+        and isinstance(terminal.get("code_revision"), str) and bool(terminal["code_revision"])
+        and isinstance(terminal.get("families"), list) and bool(terminal["families"])
+        and len(terminal["families"]) == len(set(terminal["families"]))
+        and _is_sha256(terminal.get("terminal_manifest_sha256"))
+    )
+    if not valid_identity:
+        return "PENDING"
+    if payload.get("identity_sha256") != _json_sha256(_identity_payload(payload)):
+        return "PENDING"
+    if expected_feature_id and feature != expected_feature_id:
+        return "PENDING"
+    if expected_fold_id and fold != expected_fold_id:
+        return "PENDING"
+    if expected_train_rows is not None and train_rows != expected_train_rows:
+        return "PENDING"
+    if expected_source_sha256 is not None and source != expected_source_sha256:
+        return "PENDING"
+    if expected_terminal_identity is not None and terminal != expected_terminal_identity:
+        return "PENDING"
     status = payload.get("unit_status")
-    if status == "MEASURED" and rows and all(isinstance(row, dict) for row in rows):
+    rows_match = rows and all(
+        isinstance(row, dict)
+        and row.get("feature_id") == feature
+        and row.get("fold") == fold
+        and row.get("train_rows") == train_rows
+        and row.get("source_digests") == source
+        for row in rows
+    )
+    if status == "MEASURED" and rows_match and payload.get("metric_rows") == len(rows):
         return "MEASURED"
-    if status == "FAILED" and rows == [] and payload.get("reason"):
+    if status == "FAILED" and rows == [] and payload.get("reason") and payload.get("metric_rows") == 0:
         return "FAILED"
     return "PENDING"
 
 
-def _unit_body(feature: str, fold: str, train_end: int | None, rows: list, source: dict,
-               status: str, reason: str) -> dict:
-    return {
+def _unit_body(feature: str, fold: str, train_end: int, rows: list, source: dict,
+               terminal_identity: dict, status: str, reason: str) -> dict:
+    payload = {
         "schema": UNIT_SCHEMA,
         "unit_status": status,
         "feature_id": feature,
-        "fold": fold,
-        "train_rows": None if train_end is None else [0, int(train_end)],
+        "fold_id": fold,
+        "train_rows": [0, int(train_end)],
         "reason": reason,
-        "source_sha256": source,
+        "source_sha256": dict(source),
+        "terminal_identity": dict(terminal_identity),
         "rows": rows,
         "rows_sha256": _rows_sha256(rows),
         "metric_rows": len(rows),
     }
+    payload["identity_sha256"] = _json_sha256(_identity_payload(payload))
+    return payload
+
+
+def _requested_train_rows(folds_path: Path, fold_name: str, canonical_bounds: bool) -> list[int]:
+    folds = load_inner_folds(folds_path, 10 ** 18, canonical_bounds=canonical_bounds)
+    chosen = next(item for item in folds if item["name"] == fold_name)
+    return [0, int(chosen["train_end"])]
 
 
 def _thread_env() -> None:
@@ -239,7 +356,8 @@ def _thread_env() -> None:
 
 def execute_unit(series: Path, folds_path: Path, feature_id: str, fold_name: str, out: Path, *,
                  split: str = "train", dataset_id: str = DATASET_ID,
-                 canonical_bounds: bool = False, expected_digest: str = "") -> dict:
+                 canonical_bounds: bool = False, expected_digest: str = "",
+                 terminal_manifest: Path | None = None) -> dict:
     """Profile one feature-fold, or resume when that unit is already MEASURED."""
     _thread_env()
     assert_split(split)
@@ -248,8 +366,23 @@ def execute_unit(series: Path, folds_path: Path, feature_id: str, fold_name: str
     series = Path(series)
     if series.name == "targets.npz":
         raise ProfileRefusal("TARGET_COLUMN", "targets.npz")
+    if series.is_symlink() or not series.is_file():
+        raise ProfileRefusal("SERIES_ABSENT", series.name)
+    actual_digest = sha256_file(series)
+    if expected_digest and actual_digest != expected_digest:
+        raise ProfileRefusal("DIGEST_MISMATCH", "series sha256 does not match the declared digest")
+    terminal_identity = load_terminal_identity(terminal_manifest, feature, actual_digest)
+    train_rows = _requested_train_rows(folds_path, fold_name, canonical_bounds)
+    source = {"series.npz": actual_digest, "folds.json": sha256_file(folds_path)}
     destination = unit_path(out, feature, fold_name)
-    state = classify_unit(destination)
+    state = classify_unit(
+        destination,
+        expected_feature_id=feature,
+        expected_fold_id=fold_name,
+        expected_train_rows=train_rows,
+        expected_source_sha256=source,
+        expected_terminal_identity=terminal_identity,
+    )
     if state in {"MEASURED", "FAILED"}:
         return {
             "resumed": True,
@@ -259,24 +392,38 @@ def execute_unit(series: Path, folds_path: Path, feature_id: str, fold_name: str
             "metric_rows": json.loads(destination.read_text()).get("metric_rows", 0),
             "unit": destination.name,
         }
-    if expected_digest:
-        actual = sha256_file(series) if series.is_file() and not series.is_symlink() else ""
-        if actual != expected_digest:
-            raise ProfileRefusal("DIGEST_MISMATCH", "series sha256 does not match the declared digest")
+    if destination.is_file():
+        try:
+            retained = json.loads(destination.read_text())
+        except (OSError, json.JSONDecodeError):
+            retained = None
+        if (
+            isinstance(retained, dict)
+            and retained.get("schema") == UNIT_SCHEMA
+            and retained.get("unit_status") in {"MEASURED", "FAILED"}
+        ):
+            raise ProfileRefusal(
+                "UNIT_IDENTITY_MISMATCH",
+                "retained terminal unit contradicts the requested source or identity",
+            )
     try:
         column = load_series_column(series, feature)
         folds = load_inner_folds(folds_path, int(column.size), canonical_bounds=canonical_bounds)
         chosen = next(item for item in folds if item["name"] == fold_name)
-        source = {"series.npz": sha256_file(series), "folds.json": sha256_file(folds_path)}
+        if [0, int(chosen["train_end"])] != train_rows:
+            raise ProfileRefusal("FOLD_BOUNDARY_CHANGED", fold_name)
         rows = profile_fold(dataset_id, feature, column, fold_name, chosen["train_end"], source)
-        payload = _unit_body(feature, fold_name, chosen["train_end"], rows, source, "MEASURED", "")
+        payload = _unit_body(
+            feature, fold_name, chosen["train_end"], rows, source,
+            terminal_identity, "MEASURED", "",
+        )
     except ProfileRefusal:
         raise
     except Exception:
-        source = {}
-        if series.is_file() and not series.is_symlink():
-            source["series.npz"] = sha256_file(series)
-        payload = _unit_body(feature, fold_name, None, [], source, "FAILED", "PROFILER_EXCEPTION")
+        payload = _unit_body(
+            feature, fold_name, train_rows[1], [], source,
+            terminal_identity, "FAILED", "PROFILER_EXCEPTION",
+        )
         _write_json(destination, payload)
         return {
             "resumed": False,
@@ -297,9 +444,60 @@ def execute_unit(series: Path, folds_path: Path, feature_id: str, fold_name: str
     }
 
 
+def bind_legacy_unit(path: Path, terminal_manifest: Path) -> dict:
+    """Bind retained v1 scientific rows to a verified PS3-R terminal without recomputing them."""
+    path = Path(path)
+    try:
+        legacy = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as error:
+        raise ProfileRefusal("LEGACY_UNIT_INVALID", str(error)) from error
+    feature = legacy.get("feature_id") if isinstance(legacy, dict) else None
+    fold = legacy.get("fold") if isinstance(legacy, dict) else None
+    train_rows = legacy.get("train_rows") if isinstance(legacy, dict) else None
+    source = legacy.get("source_sha256") if isinstance(legacy, dict) else None
+    rows = legacy.get("rows") if isinstance(legacy, dict) else None
+    valid = (
+        legacy.get("schema") == LEGACY_UNIT_SCHEMA
+        and legacy.get("unit_status") == "MEASURED"
+        and isinstance(feature, str) and bool(feature)
+        and fold in INNER_FOLDS
+        and isinstance(train_rows, list) and len(train_rows) == 2
+        and train_rows[0] == 0 and isinstance(train_rows[1], int) and train_rows[1] > 0
+        and isinstance(source, dict) and set(source) == {"series.npz", "folds.json"}
+        and all(_is_sha256(value) for value in source.values())
+        and isinstance(rows, list) and bool(rows)
+        and legacy.get("rows_sha256") == _rows_sha256(rows)
+        and legacy.get("metric_rows") == len(rows)
+        and all(
+            isinstance(row, dict)
+            and row.get("feature_id") == feature
+            and row.get("fold") == fold
+            and row.get("train_rows") == train_rows
+            and row.get("source_digests") == source
+            for row in rows
+        )
+    )
+    if not valid:
+        raise ProfileRefusal("LEGACY_UNIT_INVALID", path.name)
+    terminal = load_terminal_identity(terminal_manifest, feature, source["series.npz"])
+    rebound = _unit_body(
+        feature, fold, train_rows[1], rows, source, terminal, "MEASURED", "",
+    )
+    _write_json(path, rebound)
+    if classify_unit(path) != "MEASURED":
+        raise ProfileRefusal("LEGACY_BIND_FAILED", path.name)
+    return {
+        "unit": path.name,
+        "unit_status": "MEASURED",
+        "terminal_manifest_sha256": terminal["terminal_manifest_sha256"],
+        "scientific_rows_recomputed": False,
+    }
+
+
 def drive(features: list[str], series: Path, folds_path: Path, out: Path, *,
           fold: str, split: str = "train", dataset_id: str = DATASET_ID,
-          canonical_bounds: bool = False, expected_digest: str = "") -> dict:
+          canonical_bounds: bool = False, expected_digest: str = "",
+          terminal_manifest: Path | None = None) -> dict:
     """Profile features that are not among the ten already measured transforms."""
     skipped = []
     units = []
@@ -311,6 +509,7 @@ def drive(features: list[str], series: Path, folds_path: Path, out: Path, *,
         units.append(execute_unit(
             series, folds_path, name, fold, out, split=split, dataset_id=dataset_id,
             canonical_bounds=canonical_bounds, expected_digest=expected_digest,
+            terminal_manifest=terminal_manifest,
         ))
     return {"skipped_already_measured": skipped, "units": units}
 
@@ -455,10 +654,11 @@ def _opened_units(units_dir: Path) -> list[dict]:
             "unit": path.name,
             "unit_status": status,
             "feature_id": payload.get("feature_id"),
-            "fold": payload.get("fold"),
+            "fold": payload.get("fold_id"),
             "metric_rows": payload.get("metric_rows"),
             "rows_sha256": payload.get("rows_sha256"),
             "series_sha256": source.get("series.npz", ""),
+            "terminal_identity": payload.get("terminal_identity"),
         })
     return opened
 
@@ -497,12 +697,10 @@ def publish_report(evidence: Path, folds_path: Path, units_dir: Path, destinatio
     tallied = count_units(units_dir)
     counts = dict(tallied["counts"])
     opened = _opened_units(units_dir)
-    if not opened and selected["state"] != "READY":
-        counts["PENDING"] += 1
-    elif selected["state"] == "READY" and not opened:
-        counts["PENDING"] += 1
     if opened:
         selected = _next_opened_fold(opened, selected)
+    if selected.get("state") in {"READY", "PENDING"}:
+        counts["PENDING"] += 1
     profiler = Path(__file__).resolve()
     published = evidence / "ps4_transform_profile" / "REPORT.json"
     hashes = {
@@ -551,6 +749,13 @@ def publish_report(evidence: Path, folds_path: Path, units_dir: Path, destinatio
         },
         "missing_series": missing,
         "orphan_series": scan["orphans"],
+        "execution_receipt": {
+            "status": "NOT_RETAINED",
+            "reason": (
+                "No attempt receipt was retained for the original governed VIX execution; "
+                "the report does not infer its command, exit status, wall time, or resource peak."
+            ),
+        },
         "hashes": hashes,
         "flags": [
             "NO_TARGET_READ",
@@ -578,12 +783,16 @@ def main(argv: list[str] | None = None) -> int:
     unit.add_argument("--dataset-id", default=DATASET_ID)
     unit.add_argument("--canonical-bounds", action="store_true")
     unit.add_argument("--expected-digest", default="")
+    unit.add_argument("--terminal-manifest", type=Path, required=True)
     report = sub.add_parser("report", help="write MEASURED/PENDING/FAILED counts without profiling")
     report.add_argument("--evidence", type=Path, required=True)
     report.add_argument("--folds", type=Path, required=True)
     report.add_argument("--units", type=Path, required=True)
     report.add_argument("--out", type=Path, required=True)
     report.add_argument("--canonical-bounds", action="store_true")
+    bind = sub.add_parser("bind-legacy", help="bind retained v1 rows to an authenticated PS3-R terminal")
+    bind.add_argument("--unit", type=Path, required=True)
+    bind.add_argument("--terminal-manifest", type=Path, required=True)
     args = parser.parse_args(argv)
     _thread_env()
     try:
@@ -592,12 +801,15 @@ def main(argv: list[str] | None = None) -> int:
                 args.series, args.folds, args.feature, args.fold, args.out,
                 split=args.split, dataset_id=args.dataset_id,
                 canonical_bounds=args.canonical_bounds, expected_digest=args.expected_digest,
+                terminal_manifest=args.terminal_manifest,
             )
-        else:
+        elif args.command == "report":
             result = publish_report(
                 args.evidence, args.folds, args.units, args.out,
                 canonical_bounds=args.canonical_bounds,
             )
+        else:
+            result = bind_legacy_unit(args.unit, args.terminal_manifest)
     except ProfileRefusal as refusal:
         print(f"{refusal.code}: {refusal.detail}", file=sys.stderr)
         return 2
