@@ -8,7 +8,7 @@ Se auditaron las entregas M1, M2 y PS4 dejadas por Retsu. Las dos colas PS3-R se
 
 | Frente | Resultado | Evidencia |
 |---|---|---|
-| M1 negocio semanal | Reparado; revision final pendiente al publicar este corte | Scorer sin efectos laterales; contrato y WeekSpec completos; diferencias pareadas; MAE financiero; restauracion semantica; entrega `AT_LEAST_ONCE_IDEMPOTENT_SCORE_DIGEST` |
+| M1 negocio semanal | ACEPTADO por revision independiente | 72/72; scorer sin efectos laterales; contrato y WeekSpec completos; diferencias pareadas; MAE financiero; restauracion semantica; entrega `AT_LEAST_ONCE_IDEMPOTENT_SCORE_DIGEST` |
 | M2 readiness | ACEPTADO por revision independiente | 38/38; tres terminales alternativos reales; producto pliegue x familia x target x horizonte x metrica; 279 `NOT_IDENTIFIED` + 87 `OUTSIDE_JOIN_PENDING`; 366 `NOT_READY` |
 | PS4 incremental | ACEPTADO por revision independiente | 20/20; 5 `MEASURED`, 1 `PENDING`; 105 metricas; indice aceptado externo y 441 filas PS3-R retenidas |
 | Integracion combinada | PASA | 130/130 pruebas antes de la ultima reparacion semantica M1; 72/72 del bloque M1 despues de ella |
