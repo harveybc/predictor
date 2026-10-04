@@ -1,12 +1,68 @@
 {
+  "arch_config": {
+    "calendar_dim": 6,
+    "decoder_dilations": [
+      1,
+      2
+    ],
+    "decoder_filters": 16,
+    "dilations": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32
+    ],
+    "filters": 16,
+    "kernel_size": 3,
+    "known_calendar": [],
+    "latent_dim": 8,
+    "window": 168
+  },
+  "args": {
+    "batch_dir": "/home/harveybc/.local/state/canonical_20261003/ps2/batch_003",
+    "batch_size": 64,
+    "dae_sigma": 0.1,
+    "dilations": "1,2,4,8,16,32",
+    "families": "identity,random,past_to_current_siamese",
+    "features": "tv.stl_dev",
+    "filters": 16,
+    "kernel_size": 3,
+    "latent_dim": 8,
+    "learning_rate": 0.001,
+    "max_epochs": 200,
+    "max_fit_windows": 16384,
+    "max_ref_windows": 256,
+    "max_val_windows": 0,
+    "min_delta": 0.0,
+    "out_dir": "/home/harveybc/.local/state/canonical_20261003/ps3r/F/batch_003/tv.stl_dev/pass_p2c",
+    "p2c_max_lag": 0,
+    "p2c_pairs_per_epoch": 512,
+    "patience": 10,
+    "pretext_mask_ratio": 0.5,
+    "probe_lags": "0,1,2,23",
+    "ridge_alpha": 1.0,
+    "seed": 0,
+    "window": 168
+  },
+  "batch_dir": "/home/harveybc/.local/state/canonical_20261003/ps2/batch_003",
   "batch_id": "batch_003",
   "batch_manifest_sha256": "44983c401b804e31e6166ba97f3607687fae47169c0d95354c5a944a43ea1838",
-  "cgroup_peak_bytes": 4697997312,
+  "cgroup_peak_bytes": 5248634880,
   "code_commit": "31add1270439e746edd99e98e20a95ab09c1cf71",
+  "cpu_count": 32,
+  "cuda_visible_devices": "1",
+  "early_stop": {
+    "max_epochs": 200,
+    "min_delta": 0.0,
+    "monitor": "masked_val_mse",
+    "patience": 10
+  },
   "families": [
     "identity",
     "random",
-    "masked_temporal_ae"
+    "past_to_current_siamese"
   ],
   "features": [
     "tv.stl_dev"
@@ -18,12 +74,15 @@
     "inner_2022",
     "inner_2023"
   ],
-  "peak_rss_bytes": 5343498240,
-  "results_sha256": "84399ec705951e485af3d6db0e0b945859b09cfe129208dedae4136dab68d27e",
+  "machine": "x86_64",
+  "peak_rss_bytes": 5713428480,
+  "receptive_field_steps": 255,
+  "results_sha256": "8c182faa5a4c862f49b691545739773a48b37a2b7e21d398c62f1aa6a86ef0af",
   "schema": "ut_pilot_run.v1",
   "seed": 0,
   "series_sha256": "293db083a886a41a6ae719c0bfa274b0513cc2c956b14965dd9a97a37dd69571",
   "status": "COMPLETED",
   "targets_sha256": "7dbb0b9552f27873d0bf58604908cd8f6b46c7daa1ee56cb44cd23c42fa9c209",
-  "wall_seconds": 179.00987789600913
+  "tensorflow": "2.21.0",
+  "wall_seconds": 158.66988383900025
 }

@@ -61,26 +61,6 @@ PS4_METRICS = (
     "temporal_structure_gain_zlib9_raw_float64",
     "temporal_structure_gain_zlib9_symbols",
 )
-VIX_FEATURE = "fred.stress.vixcls.logret_5d"
-VIX_RESULTS_SHA256 = "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a"
-DGS30_FEATURE = "fred.rates.dgs30.level"
-DGS30_RESULTS_SHA256 = "f7763f142b7f02c72ae50e6b93562d6614f0563eb1694c26c21dc0a57e9416d5"
-DPRIME_FEATURE = "fred.rates.dprime.logret_5d"
-DPRIME_RESULTS_SHA256 = "a7b85bd93e2a22e76a85ce90d9d16dc75adc516c8109d11068c1326e0d8f4bb3"
-AUD_EWMA_FEATURE = "fx.audusd.ewma_vol_24"
-AUD_EWMA_RESULTS_SHA256 = "e582170a89d19b244682f44a8b60e722226e97e22ba31e788745bf2e4c4a44e3"
-AUD_LOGRET1H_FEATURE = "fx.audusd.logret_1h"
-AUD_LOGRET1H_RESULTS_SHA256 = "c59cf69c6a211ac5d66c033f6aeb0d3777dc57fd65bcccd6182b8e5ee9de9839"
-AUD_LOGRET24H_FEATURE = "fx.audusd.logret_24h"
-AUD_LOGRET24H_RESULTS_SHA256 = "80a3a6e5686b2bc78f30be5c0126e09c83d7d5aa7dc904e5fba68bbaf8c77590"
-EURGBP_EWMA_FEATURE = "fx.eurgbp.ewma_vol_24"
-EURGBP_EWMA_RESULTS_SHA256 = "2df6a5faffb2e0222aa913de3b11fcb1f380e73b2ffc40aded9fae89fd2018cc"
-EURGBP_LOGRET1H_FEATURE = "fx.eurgbp.logret_1h"
-EURGBP_LOGRET1H_RESULTS_SHA256 = "7195ba2cc42627cfff2bccbf4af9672334a31c00c91e60ecc13195b9cbe6013e"
-EURJPY_EWMA_FEATURE = "fx.eurjpy.ewma_vol_24"
-EURJPY_EWMA_RESULTS_SHA256 = "b9fc80552d48ec655b17a63d626d6b41cbc26debaa3f81926641f1c23d298c0f"
-EURJPY_LOGRET1H_FEATURE = "fx.eurjpy.logret_1h"
-EURJPY_LOGRET1H_RESULTS_SHA256 = "9660aa42fd31d4539d7940f6d7bab3eb2dd410fcf963632e2d12d0c497c0505b"
 SIAMESE_FEATURE = "px.logret_6h"
 SIAMESE_FAMILY = "past_to_current_siamese"
 TRAIN_EXCLUSIVE_END = datetime.fromisoformat("2024-01-01T00:00:00+00:00")
@@ -657,7 +637,7 @@ def build(root):
     outside = sum(1 for row in features if not row["in_ps3c_join"])
     if len(expected_ids) != DENOMINATOR or joined != JOIN_COUNT or outside != OUTSIDE_COUNT:
         raise ReadinessError("DENOMINATOR", f"{len(expected_ids)}={joined}+{outside}")
-    audit = (root / BASE / "RETSU_PS4_PS3R_AUDIT_2026_10_03.md").read_text(encoding="utf-8")
+    audit_path = root / BASE / "RETSU_PS4_PS3R_AUDIT_2026_10_03.md"
     causal_index, causal_hashes = load_causal_joins(root)
     flagged = {row["feature_id"] for row in features if row.get("in_ps3c_join")}
     if flagged != set(causal_index):
@@ -665,25 +645,29 @@ def build(root):
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     import ps3r_manifest_ingestor as ingestor
     discovered = ingestor.discover(root, Path(__file__).resolve().with_name("ps3r_ingest_config.json"))
-    if any(item["reason"] == "CONTRADICTORY_TERMINAL" for item in discovered):
-        raise ReadinessError("PS3R_INGEST", "CONTRADICTORY_TERMINAL")
+    rejected = [item for item in discovered if item["disposition"] == "REJECTED"]
+    if rejected:
+        first = rejected[0]
+        raise ReadinessError(
+            "PS3R_INGEST",
+            f"{first['role']}:{first['feature_id']}:{first['reason']}",
+        )
     baseline = {
         item["feature_id"]: item
         for item in discovered
         if item["role"] == "baseline" and item["disposition"] == "ADOPTED"
     }
-    alternative = [
+    alternative = sorted([
         item for item in discovered
         if item["role"] == "alternative" and item["disposition"] == "ADOPTED"
-    ]
-    if VIX_FEATURE not in baseline or baseline[VIX_FEATURE]["results_sha256"] not in audit:
-        raise ReadinessError("VIX_EVIDENCE", "accepted results digest absent from the audit")
-    require_reconstruction_not_selection({
-        "feature_id": VIX_FEATURE,
-        "selection_decision": "NOT_ISSUED",
-        "reconstruction_selects": False,
-        "utility": "mixed",
-    })
+    ], key=lambda item: item["feature_id"])
+    for item in baseline.values():
+        require_reconstruction_not_selection({
+            "feature_id": item["feature_id"],
+            "selection_decision": "NOT_ISSUED",
+            "reconstruction_selects": False,
+            "utility": item["utility"],
+        })
     require_siamese_not_promoted({
         "feature_id": SIAMESE_FEATURE,
         "family": SIAMESE_FAMILY,
@@ -695,8 +679,9 @@ def build(root):
     ps2 = _load_ps2(root)
     ps1_states, ps1_batch, ps1_digests = _load_ps1(root)
     lane = _lane_e(root)
-    if VIX_FEATURE in lane["done"]:
-        raise ReadinessError("VIX_EVIDENCE", "lane E matrix is not the accepted results file")
+    overlap = sorted(set(baseline) & set(lane["done"]))
+    if overlap:
+        raise ReadinessError("PS3R_EVIDENCE_CONFLICT", overlap[0])
     completed = set(lane["done"]) | set(baseline)
     schedule = schedule_ps4(completed, ps2, set(MEASURED_FEATURES))
     scheduled_features = {row["feature_id"] for row in schedule}
@@ -789,6 +774,24 @@ def build(root):
     by_ps4 = dict(Counter(row["ps4_status"] for row in rows))
     by_ps3r = dict(Counter(row["ps3r_status"] for row in rows))
     by_ps3c = dict(Counter(row["ps3c_status"] for row in rows))
+    verified_terminals = [
+        {
+            "feature_id": item["feature_id"],
+            "role": item["role"],
+            "results_sha256": item["results_sha256"],
+            "families": item["families"],
+            "folds": item["folds"],
+            "seed": item["seed"],
+            "code_commit": item["code_commit"],
+            "input_digest": item["input_digest"],
+            "utility": item["utility"],
+            "locator": item["locator"],
+        }
+        for item in sorted(
+            list(baseline.values()) + alternative,
+            key=lambda candidate: (candidate["role"], candidate["feature_id"]),
+        )
+    ]
     report = {
         "schema": "m2_readiness_ledger.v1",
         "cuerpo": (
@@ -818,49 +821,8 @@ def build(root):
             "lane_e_measured_not_selection": lane["done"],
             "lane_e_matrix_sha256": lane["matrix_sha256"],
             "lane_e_cost_sha256": lane["cost_sha256"],
-            "vix_feature": VIX_FEATURE,
-            "vix_results_sha256": VIX_RESULTS_SHA256,
-            "vix_utility": "mixed",
             "reconstruction_is_selection": False,
-            "dgs30_feature": DGS30_FEATURE,
-            "dgs30_results_sha256": DGS30_RESULTS_SHA256,
-            "dgs30_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
-            "dgs30_utility": "mixed",
-            "dprime_feature": DPRIME_FEATURE,
-            "dprime_results_sha256": DPRIME_RESULTS_SHA256,
-            "dprime_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
-            "aud_ewma_feature": AUD_EWMA_FEATURE,
-            "aud_ewma_results_sha256": AUD_EWMA_RESULTS_SHA256,
-            "aud_ewma_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
-            "aud_ewma_utility": "mixed",
-            "aud_logret_1h_feature": AUD_LOGRET1H_FEATURE,
-            "aud_logret_1h_results_sha256": AUD_LOGRET1H_RESULTS_SHA256,
-            "aud_logret_1h_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
-            "aud_logret_1h_utility": "mixed",
-            "aud_logret_24h_feature": AUD_LOGRET24H_FEATURE,
-            "aud_logret_24h_results_sha256": AUD_LOGRET24H_RESULTS_SHA256,
-            "aud_logret_24h_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
-            "aud_logret_24h_utility": "mixed",
-            "eurgbp_ewma_vol_24_feature": EURGBP_EWMA_FEATURE,
-            "eurgbp_ewma_vol_24_results_sha256": EURGBP_EWMA_RESULTS_SHA256,
-            "eurgbp_ewma_vol_24_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
-            "eurgbp_ewma_vol_24_utility": "mixed",
-            "eurgbp_logret_1h_feature": EURGBP_LOGRET1H_FEATURE,
-            "eurgbp_logret_1h_results_sha256": EURGBP_LOGRET1H_RESULTS_SHA256,
-            "eurgbp_logret_1h_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
-            "eurgbp_logret_1h_utility": "mixed",
-            "eurjpy_ewma_vol_24_feature": EURJPY_EWMA_FEATURE,
-            "eurjpy_ewma_vol_24_results_sha256": EURJPY_EWMA_RESULTS_SHA256,
-            "eurjpy_ewma_vol_24_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
-            "eurjpy_ewma_vol_24_utility": "mixed",
-            "eurjpy_logret_1h_feature": EURJPY_LOGRET1H_FEATURE,
-            "eurjpy_logret_1h_results_sha256": EURJPY_LOGRET1H_RESULTS_SHA256,
-            "eurjpy_logret_1h_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
-            "eurjpy_logret_1h_utility": "mixed",
-            "dprime_utility": "mixed",
-            "siamese_feature": SIAMESE_FEATURE,
-            "siamese_family": SIAMESE_FAMILY,
-            "siamese_promotion": "NOT_PROMOTED_RESULTS_OVERWRITTEN",
+            "verified_terminals": verified_terminals,
         },
         "ps4_schedule": {
             "features": sorted(scheduled_features),
@@ -884,18 +846,23 @@ def build(root):
             {
                 "feature_id": item["feature_id"],
                 "results_sha256": item["results_sha256"],
+                "families": item["families"],
+                "folds": item["folds"],
+                "seed": item["seed"],
+                "code_commit": item["code_commit"],
+                "input_digest": item["input_digest"],
                 "utility": item["utility"],
                 "replaces_baseline": False,
             }
             for item in alternative
         ],
-        "audit_sha256": digest_path(root / BASE / "RETSU_PS4_PS3R_AUDIT_2026_10_03.md"),
+        "audit_sha256": digest_path(audit_path),
         "population_sha256": population_sha,
         "huecos": [
             "PS4 medido cubre 10 de 366. El resto sigue PENDING_PROFILE o solo agendado.",
             "PS3-C vigente: 0 identificadas de 279. NOT_IDENTIFIED no es rechazo. 87 quedan fuera del join.",
             "Las celdas baseline adoptadas por manifiesto tienen utilidad medida y no están seleccionadas.",
-            "px.logret_6h past_to_current_siamese no se promueve.",
+            "La evidencia lane E histórica no se promueve como evidencia de la familia alternativa.",
             "features_train.parquet no está en este árbol; se conserva el digest retenido sin recomputarlo.",
             "El diseño global PS5 está preparado y no entrenado. Cada candidata sin PS3-R y PS4 requeridos queda NOT_READY_EVIDENCE_INCOMPLETE.",
             "Las nueve filas históricas de variantes siguen en PENDING_PROFILE.",

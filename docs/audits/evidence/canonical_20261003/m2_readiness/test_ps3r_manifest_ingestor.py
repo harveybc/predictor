@@ -5,6 +5,8 @@ import json
 import shutil
 from pathlib import Path
 
+import pytest
+
 import ps3r_manifest_ingestor as ingest
 
 
@@ -14,6 +16,11 @@ CONFIG = json.loads((HERE / "ps3r_ingest_config.json").read_text(encoding="utf-8
 BASE_NAME = "fred.stress.vixcls.logret_5d"
 SOURCE = ROOT / "docs/audits/evidence/canonical_20261003/ps3r_ingest/baseline" / BASE_NAME
 ALTERNATIVES = ("tv.hilbert_amp", "tv.kalman_dev", "tv.stl_dev")
+ALTERNATIVE_DIGESTS = {
+    "tv.hilbert_amp": "2cb5445214590c7aa68bb654c1f44828d2e8371c6bf68db6dd2bcc2259309eab",
+    "tv.kalman_dev": "3746ee3effd0ff7c5b9737b5a7da77b0ada34843cd97a36a3fbb14a4f4436cf1",
+    "tv.stl_dev": "8c182faa5a4c862f49b691545739773a48b37a2b7e21d398c62f1aa6a86ef0af",
+}
 
 
 def _place(tmp_path):
@@ -47,6 +54,19 @@ def _only(repo, feature):
 def _manifest(cell):
     path = cell / "run_manifest.json"
     return path, json.loads(path.read_text(encoding="utf-8"))
+
+
+def _mutate_result_and_reseal(cell, mutate):
+    results = cell / "results.jsonl"
+    rows = [json.loads(line) for line in results.read_text(encoding="utf-8").splitlines()]
+    mutate(rows)
+    results.write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+    path, manifest = _manifest(cell)
+    manifest["results_sha256"] = hashlib.sha256(results.read_bytes()).hexdigest()
+    path.write_text(json.dumps(manifest, sort_keys=True), encoding="utf-8")
 
 
 def test_bad_hash_is_rejected(tmp_path):
@@ -87,6 +107,73 @@ def test_different_seed_is_rejected(tmp_path):
     item = _only(repo, BASE_NAME)
     assert item["disposition"] == "REJECTED"
     assert item["reason"] == "SEED"
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "reason"),
+    (
+        ("feature_id", "other.feature", "ROW_FEATURE"),
+        ("family", "other_family", "ROW_FAMILY"),
+        ("seed", 7, "ROW_SEED"),
+        ("fold_id", "other_fold", "ROW_FOLD"),
+    ),
+)
+def test_resealed_result_row_identity_mutations_are_rejected(tmp_path, field, value, reason):
+    repo, cell = _place(tmp_path)
+
+    def mutate(rows):
+        row = next(item for item in rows if (item.get("row_kind") or item.get("kind")) == "fold_family")
+        row[field] = value
+
+    _mutate_result_and_reseal(cell, mutate)
+    item = _only(repo, BASE_NAME)
+    assert item["disposition"] == "REJECTED"
+    assert item["reason"] == reason
+
+
+@pytest.mark.parametrize("kind", ("fold_family", "probe", "probe_delta", "feature_summary"))
+def test_every_result_kind_is_bound_to_manifest_feature(tmp_path, kind):
+    repo, cell = _place(tmp_path)
+
+    def mutate(rows):
+        row = next(item for item in rows if (item.get("row_kind") or item.get("kind")) == kind)
+        row["feature_id"] = "other.feature"
+
+    _mutate_result_and_reseal(cell, mutate)
+    item = _only(repo, BASE_NAME)
+    assert item["disposition"] == "REJECTED"
+    assert item["reason"] == "ROW_FEATURE"
+
+
+@pytest.mark.parametrize(
+    ("kind", "field"),
+    (("fold_family", "family"), ("probe", "representation"), ("probe_delta", "trained")),
+)
+def test_every_family_bearing_result_kind_is_bound_to_allowed_families(tmp_path, kind, field):
+    repo, cell = _place(tmp_path)
+
+    def mutate(rows):
+        row = next(item for item in rows if (item.get("row_kind") or item.get("kind")) == kind)
+        row[field] = "other_family"
+
+    _mutate_result_and_reseal(cell, mutate)
+    item = _only(repo, BASE_NAME)
+    assert item["disposition"] == "REJECTED"
+    assert item["reason"] == "ROW_FAMILY"
+
+
+@pytest.mark.parametrize("kind", ("fold_family", "probe", "probe_delta"))
+def test_every_fold_bearing_result_kind_is_bound_to_expected_folds(tmp_path, kind):
+    repo, cell = _place(tmp_path)
+
+    def mutate(rows):
+        row = next(item for item in rows if (item.get("row_kind") or item.get("kind")) == kind)
+        row["fold_id"] = "other_fold"
+
+    _mutate_result_and_reseal(cell, mutate)
+    item = _only(repo, BASE_NAME)
+    assert item["disposition"] == "REJECTED"
+    assert item["reason"] == "ROW_FOLD"
 
 
 def test_partial_directory_is_not_terminal(tmp_path):
@@ -135,6 +222,8 @@ def test_three_alternative_artifacts_are_adopted_without_replacing_baseline():
     assert set(ALTERNATIVES).isdisjoint(baseline)
     for feature_id in ALTERNATIVES:
         item = adopted[feature_id]
+        assert item["results_sha256"] == ALTERNATIVE_DIGESTS[feature_id]
+        assert item["families"] == ["identity", "random", "past_to_current_siamese"]
         assert item["utility"] == "mixed"
         assert item["ps3r_status"] == ""
         assert item["locator"] == (
