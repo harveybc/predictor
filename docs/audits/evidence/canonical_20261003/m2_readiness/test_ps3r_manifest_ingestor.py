@@ -176,6 +176,64 @@ def test_every_fold_bearing_result_kind_is_bound_to_expected_folds(tmp_path, kin
     assert item["reason"] == "ROW_FOLD"
 
 
+@pytest.mark.parametrize(
+    ("kind", "field", "value", "reason"),
+    (
+        ("probe", "target", "FORGED_TARGET", "ROW_PROBE_COVERAGE"),
+        ("probe", "horizon_index", 999, "ROW_PROBE_COVERAGE"),
+        ("probe_delta", "target", "FORGED_TARGET", "ROW_DELTA_COVERAGE"),
+        ("probe_delta", "horizon_index", 999, "ROW_DELTA_COVERAGE"),
+        ("probe_delta", "loss", "forged_loss", "ROW_DELTA_COVERAGE"),
+    ),
+)
+def test_resealed_probe_domain_mutations_are_rejected(
+    tmp_path, kind, field, value, reason
+):
+    repo, cell = _place(tmp_path)
+
+    def mutate(rows):
+        row = next(item for item in rows if (item.get("row_kind") or item.get("kind")) == kind)
+        row[field] = value
+
+    _mutate_result_and_reseal(cell, mutate)
+    item = _only(repo, BASE_NAME)
+    assert item["disposition"] == "REJECTED"
+    assert item["reason"] == reason
+
+
+@pytest.mark.parametrize(
+    ("target", "missing_metric"),
+    (("Y_s", "mae"), ("Y_b", "log_loss")),
+)
+def test_resealed_probe_missing_required_metric_is_rejected(
+    tmp_path, target, missing_metric
+):
+    repo, cell = _place(tmp_path)
+
+    def mutate(rows):
+        row = next(
+            item
+            for item in rows
+            if (item.get("row_kind") or item.get("kind")) == "probe"
+            and item.get("target") == target
+        )
+        del row[missing_metric]
+
+    _mutate_result_and_reseal(cell, mutate)
+    item = _only(repo, BASE_NAME)
+    assert item["disposition"] == "REJECTED"
+    assert item["reason"] == "ROW_METRIC"
+
+
+def test_probe_contract_is_required_and_not_inferred_from_rows(tmp_path):
+    repo, _ = _place(tmp_path)
+    payload, _ = _config(["cells"])
+    del payload["baseline"]["probe_contract"]
+    item = ingest.discover(repo, _save(repo, payload))[0]
+    assert item["disposition"] == "REJECTED"
+    assert item["reason"] == "PROBE_CONTRACT"
+
+
 def test_partial_directory_is_not_terminal(tmp_path):
     repo, cell = _place(tmp_path)
     (cell / "results.jsonl").unlink()
