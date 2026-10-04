@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import math
 import unittest
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 
 from tools.business_objective_firewall import BusinessObjectiveFirewall, FirewallError, Phase
@@ -111,13 +112,11 @@ class WeeklyScoreTests(unittest.TestCase):
 
     def test_better_than_naive_is_eligible_with_exact_metrics(self) -> None:
         contract = ScoringContract("mae", (ForecastFamily.SHORT, ForecastFamily.LONG), ("h1",))
-        calls: list[str] = []
         release = release_for(
             horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0)),
             horizon(ForecastFamily.LONG, "h1", (1.0, 1.0), (3.0, 3.0)),
         )
-        scored = score_week(release, contract, strategy=lambda item: calls.append(item.digest))
-        self.assertEqual(calls and len(calls), 1)
+        scored = score_week(release, contract)
         short, long = scored.horizons
         self.assertEqual(short.sample_count, 2)
         self.assertEqual(short.model_mae, 1.0)
@@ -131,25 +130,21 @@ class WeeklyScoreTests(unittest.TestCase):
 
     def test_unconfigured_primary_beats_naive_and_stays_closed(self) -> None:
         contract = ScoringContract(repository_primary_error_metric())
-        calls: list[object] = []
         release = release_for(
             horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0)),
             horizon(ForecastFamily.LONG, "h1", (1.0, 1.0), (2.0, 2.0)),
         )
-        scored = score_forecast_release(release, contract, strategy=calls.append)
-        self.assertEqual(calls, [])
+        scored = score_forecast_release(release, contract)
         self.assertFalse(scored.strategy_eligible)
         self.assertIn(NOT_CONFIGURED, scored.reason or "")
 
     def test_tie_or_loss_blocks_the_strategy_callback(self) -> None:
         contract = ScoringContract("mse")
-        calls: list[object] = []
         release = release_for(
             horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0)),
             horizon(ForecastFamily.LONG, "h1", (2.0, 2.0), (2.0, 2.0)),
         )
-        scored = score_week(release, contract, strategy=calls.append)
-        self.assertEqual(calls, [])
+        scored = score_week(release, contract)
         self.assertFalse(scored.strategy_eligible)
 
     def test_duplicate_reordered_or_changed_origin_rejects_before_metrics(self) -> None:
@@ -236,16 +231,14 @@ class WeeklyScoreTests(unittest.TestCase):
         self.assertEqual(caught.exception.code, "IDENTITY_MISMATCH")
 
     def test_missing_family_is_an_incomplete_ineligible_week(self) -> None:
-        calls: list[object] = []
         release = WeekRelease(
             week(0),
             (horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0)),),
             True,
         )
-        scored = score_week(release, ScoringContract("mae"), strategy=calls.append)
+        scored = score_week(release, ScoringContract("mae"))
         self.assertEqual(scored.disposition, "INCOMPLETE")
         self.assertFalse(scored.strategy_eligible)
-        self.assertEqual(calls, [])
         self.assertEqual(scored.horizons, ())
 
     def test_failed_week_is_kept_and_a_reduced_denominator_is_refused(self) -> None:
@@ -293,11 +286,16 @@ class WeeklyScoreTests(unittest.TestCase):
             False,
         )
         calls: list[object] = []
-        first = ledger.submit(release, strategy=calls.append)
+
+        def deliver(score):
+            calls.append(score)
+            return score.digest
+
+        first = ledger.submit(release, strategy=deliver)
         self.assertEqual(ledger.score_events, 1)
         self.assertEqual(len(calls), 1)
         restored = WeeklyScoreLedger.from_json(ledger.to_json())
-        again = restored.submit(release, strategy=calls.append)
+        again = restored.submit(release, strategy=deliver)
         self.assertEqual(again.digest, first.digest)
         self.assertEqual(restored.score_events, 1)
         self.assertEqual(len(calls), 1)
@@ -425,9 +423,7 @@ class WeeklyScoreTests(unittest.TestCase):
                 identified(ForecastFamily.LONG, "h1", prediction, naive, scale="price_level", model_digest="long", task=FINANCIAL_TASK),
             )
 
-        calls: list[object] = []
-        better = score_week(pair((0.0, 5.0), (3.0, 3.0)), contract, strategy=calls.append)
-        self.assertEqual(len(calls), 1)
+        better = score_week(pair((0.0, 5.0), (3.0, 3.0)), contract)
         self.assertTrue(better.strategy_eligible)
         self.assertEqual(better.primary_error_metric, "mae")
         short = better.horizons[0]
@@ -435,9 +431,7 @@ class WeeklyScoreTests(unittest.TestCase):
         self.assertEqual(short.model_mae, 2.5)
         self.assertEqual(short.naive_mae, 3.0)
         self.assertGreater(short.model_mse, short.naive_mse)
-        calls.clear()
-        worse = score_week(pair((5.0, 5.0), (0.0, 9.0)), contract, strategy=calls.append)
-        self.assertEqual(calls, [])
+        worse = score_week(pair((5.0, 5.0), (0.0, 9.0)), contract)
         self.assertFalse(worse.strategy_eligible)
         self.assertGreater(worse.horizons[0].model_mae, worse.horizons[0].naive_mae)
         self.assertLess(worse.horizons[0].model_mse, worse.horizons[0].naive_mse)
@@ -495,6 +489,112 @@ class WeeklyScoreTests(unittest.TestCase):
         scored = score_weekly_forecast_release(release)
         self.assertEqual(scored.primary_error_metric, "mae")
         self.assertTrue(scored.strategy_eligible)
+
+    def test_strategy_delivery_retries_failure_and_is_not_repeated_after_success(self) -> None:
+        contract = ScoringContract("mae", (ForecastFamily.SHORT,), ("h1",))
+        ledger = WeeklyScoreLedger((week(0),), contract)
+        release = WeekRelease(
+            week(0),
+            (horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0)),),
+            False,
+        )
+        calls: list[str] = []
+
+        def flaky(score):
+            calls.append(score.digest)
+            if len(calls) == 1:
+                raise RuntimeError("delivery failed")
+            return score.digest
+
+        with self.assertRaises(RuntimeError):
+            ledger.submit(release, strategy=flaky)
+        restored = WeeklyScoreLedger.from_json(ledger.to_json())
+        restored.submit(release, strategy=flaky)
+        restored.submit(release, strategy=flaky)
+        self.assertEqual(calls, [calls[0], calls[0]])
+
+    def test_stateless_public_entry_rejects_eligible_strategy_delivery(self) -> None:
+        release = release_for(
+            identified(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0), model_digest="short", task=FINANCIAL_TASK),
+            identified(ForecastFamily.LONG, "h1", (1.0, 1.0), (2.0, 2.0), model_digest="long", task=FINANCIAL_TASK),
+        )
+        with self.assertRaises(ScoreRefusal) as caught:
+            score_weekly_forecast_release(release, strategy=lambda score: None)
+        self.assertEqual(caught.exception.code, "CALLBACK_REQUIRES_LEDGER")
+        with self.assertRaises(ScoreRefusal) as caught:
+            score_week(release, financial_task_contract(), strategy=lambda score: score.digest)
+        self.assertEqual(caught.exception.code, "CALLBACK_REQUIRES_LEDGER")
+
+    def test_delivery_state_is_covered_by_the_ledger_digest(self) -> None:
+        contract = ScoringContract("mae", (ForecastFamily.SHORT,), ("h1",))
+        ledger = WeeklyScoreLedger((week(0),), contract)
+        release = WeekRelease(
+            week(0),
+            (horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0)),),
+            False,
+        )
+        ledger.submit(release)
+        payload = json.loads(ledger.to_json())
+        key = "2024-01-01T00:00:00Z|validation"
+        payload["strategy_deliveries"][key] = "DELIVERED"
+        with self.assertRaises(ScoreRefusal) as caught:
+            WeeklyScoreLedger.from_json(json.dumps(payload))
+        self.assertEqual(caught.exception.code, "LEDGER_DIGEST")
+
+    def test_restore_rejects_duplicate_scores_and_metric_from_another_contract(self) -> None:
+        release = WeekRelease(
+            week(0),
+            (horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0)),),
+            False,
+        )
+        mae = WeeklyScoreLedger((week(0),), ScoringContract("mae", (ForecastFamily.SHORT,), ("h1",)))
+        mae.submit(release)
+        duplicate = json.loads(mae.to_json())
+        other = WeeklyScoreLedger((week(0),), ScoringContract("mae", (ForecastFamily.SHORT,), ("h1",)))
+        changed = WeekRelease(
+            week(0),
+            (horizon(ForecastFamily.SHORT, "h1", (0.5, 0.5), (2.0, 2.0)),),
+            False,
+        )
+        other.submit(changed)
+        duplicate["scores"].append(json.loads(other.to_json())["scores"][0])
+        with self.assertRaises(ScoreRefusal) as caught:
+            WeeklyScoreLedger.from_json(json.dumps(duplicate))
+        self.assertEqual(caught.exception.code, "DUPLICATE_SCORE")
+
+        mse = WeeklyScoreLedger((week(0),), ScoringContract("mse", (ForecastFamily.SHORT,), ("h1",)))
+        mse.submit(release)
+        mixed = json.loads(mae.to_json())
+        mixed["scores"] = json.loads(mse.to_json())["scores"]
+        with self.assertRaises(ScoreRefusal) as caught:
+            WeeklyScoreLedger.from_json(json.dumps(mixed))
+        self.assertEqual(caught.exception.code, "CONTRACT_MISMATCH")
+
+        wrong_scope = json.loads(mae.to_json())
+        wrong_scope["required_families"] = ["short", "long"]
+        with self.assertRaises(ScoreRefusal) as caught:
+            WeeklyScoreLedger.from_json(json.dumps(wrong_scope))
+        self.assertEqual(caught.exception.code, "CONTRACT_MISMATCH")
+
+    def test_completed_week_identity_includes_training_window_and_retrain_policy(self) -> None:
+        contract = ScoringContract("mae", (ForecastFamily.SHORT,), ("h1",))
+        original_week = week(0)
+        ledger = WeeklyScoreLedger((original_week,), contract)
+        first = WeekRelease(
+            original_week,
+            (horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0), scored_week=original_week),),
+            False,
+        )
+        ledger.submit(first)
+        altered_week = replace(original_week, ordinal=99, fit_start=original_week.start - timedelta(days=365), retrain_due=True)
+        altered = WeekRelease(
+            altered_week,
+            (horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0), scored_week=altered_week),),
+            False,
+        )
+        with self.assertRaises(ScoreRefusal) as caught:
+            ledger.submit(altered)
+        self.assertEqual(caught.exception.code, "WEEK_IDENTITY_MISMATCH")
 
 
 if __name__ == "__main__":

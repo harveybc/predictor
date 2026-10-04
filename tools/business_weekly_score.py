@@ -131,6 +131,20 @@ class ScoringContract:
         object.__setattr__(self, "required_horizons", tuple(self.required_horizons))
 
 
+def _contract_payload(contract: ScoringContract) -> dict[str, Any]:
+    return {
+        "primary_error_metric": contract.primary_error_metric,
+        "required_families": [item.value for item in contract.required_families],
+        "required_horizons": list(contract.required_horizons),
+        "scale_policy": contract.scale_policy,
+        "task": contract.task,
+    }
+
+
+def _contract_digest(contract: ScoringContract) -> str:
+    return _digest(_contract_payload(contract))
+
+
 @dataclass(frozen=True)
 class HorizonForecast:
     """One horizon bound to ordered origins, the target, the model, and the naive."""
@@ -230,6 +244,8 @@ class WeekScore:
     reason: Optional[str]
     strategy_eligible: bool
     primary_error_metric: str
+    contract_digest: str
+    week_identity_digest: str
     horizons: tuple[HorizonScore, ...]
     digest: str
 
@@ -249,6 +265,22 @@ class AnnualClose:
 
 def _iso(value: datetime) -> str:
     return value.astimezone(tz=value.tzinfo).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _week_payload(week: WeekSpec) -> dict[str, Any]:
+    return {
+        "cutoff": _iso(week.cutoff),
+        "end": _iso(week.end),
+        "fit_start": None if week.fit_start is None else _iso(week.fit_start),
+        "ordinal": week.ordinal,
+        "retrain_due": week.retrain_due,
+        "split": week.split.value,
+        "start": _iso(week.start),
+    }
+
+
+def _week_digest(week: WeekSpec) -> str:
+    return _digest(_week_payload(week))
 
 
 def _guard_firewall(firewall: Optional[BusinessObjectiveFirewall], release: WeekRelease) -> None:
@@ -335,7 +367,7 @@ def _release_digest(forecast: HorizonForecast) -> str:
             "target": list(forecast.target),
             "task": forecast.task,
             "unit": forecast.unit,
-            "week_start": _iso(forecast.week.start),
+            "week": _week_payload(forecast.week),
         }
     )
 
@@ -452,9 +484,11 @@ def _score_payload(score: WeekScore) -> dict[str, Any]:
             for item in score.horizons
         ],
         "primary_error_metric": score.primary_error_metric,
+        "contract_digest": score.contract_digest,
         "reason": score.reason,
         "split": score.split,
         "strategy_eligible": score.strategy_eligible,
+        "week_identity_digest": score.week_identity_digest,
         "week_start": score.week_start,
     }
 
@@ -468,6 +502,8 @@ def _freeze(score: WeekScore) -> WeekScore:
         reason=score.reason,
         strategy_eligible=score.strategy_eligible,
         primary_error_metric=score.primary_error_metric,
+        contract_digest=score.contract_digest,
+        week_identity_digest=score.week_identity_digest,
         horizons=score.horizons,
         digest=digest,
     )
@@ -478,9 +514,15 @@ def score_week(
     contract: ScoringContract,
     *,
     firewall: Optional[BusinessObjectiveFirewall] = None,
-    strategy: Optional[Callable[[WeekScore], None]] = None,
+    strategy: Optional[Callable[[WeekScore], str]] = None,
 ) -> WeekScore:
-    """Score one week. The strategy callback runs only for a strict primary win."""
+    """Score one week without side effects; delivery requires ``WeeklyScoreLedger``."""
+
+    if strategy is not None:
+        raise ScoreRefusal(
+            "CALLBACK_REQUIRES_LEDGER",
+            "strategy delivery requires WeeklyScoreLedger durable idempotency state",
+        )
 
     _guard_firewall(firewall, release)
     for forecast in release.horizons:
@@ -531,6 +573,8 @@ def score_week(
                 reason=f"missing forecast family: {missing}",
                 strategy_eligible=False,
                 primary_error_metric=contract.primary_error_metric,
+                contract_digest=_contract_digest(contract),
+                week_identity_digest=_week_digest(release.week),
                 horizons=(),
                 digest="",
             )
@@ -563,12 +607,12 @@ def score_week(
             reason=reason,
             strategy_eligible=eligible,
             primary_error_metric=contract.primary_error_metric,
+            contract_digest=_contract_digest(contract),
+            week_identity_digest=_week_digest(release.week),
             horizons=horizons,
             digest="",
         )
     )
-    if eligible and strategy is not None:
-        strategy(scored)
     return scored
 
 
@@ -592,6 +636,8 @@ def terminal_week(
             reason=reason,
             strategy_eligible=False,
             primary_error_metric=contract.primary_error_metric,
+            contract_digest=_contract_digest(contract),
+            week_identity_digest=_week_digest(week),
             horizons=(),
             digest="",
         )
@@ -605,6 +651,7 @@ class WeeklyScoreLedger:
     expected_weeks: tuple[WeekSpec, ...]
     contract: ScoringContract
     _scores: dict[str, WeekScore]
+    _strategy_deliveries: dict[str, str]
     score_events: int = 0
 
     def __init__(self, expected_weeks: Sequence[WeekSpec], contract: ScoringContract) -> None:
@@ -617,23 +664,50 @@ class WeeklyScoreLedger:
         self.expected_weeks = weeks
         self.contract = contract
         self._scores = {}
+        self._strategy_deliveries = {}
         self.score_events = 0
 
     def _key(self, week: WeekSpec) -> str:
         key = _iso(week.start) + "|" + week.split.value
-        allowed = {_iso(item.start) + "|" + item.split.value for item in self.expected_weeks}
+        allowed = {
+            _iso(item.start) + "|" + item.split.value: item for item in self.expected_weeks
+        }
         if key not in allowed:
             raise ScoreRefusal("UNKNOWN_WEEK", key)
+        if allowed[key] != week:
+            raise ScoreRefusal("WEEK_IDENTITY_MISMATCH", key)
         return key
 
     def record(self, score: WeekScore, *, counted: bool) -> WeekScore:
         key = score.week_start + "|" + score.split
+        allowed = {_iso(item.start) + "|" + item.split.value for item in self.expected_weeks}
+        if key not in allowed:
+            raise ScoreRefusal("UNKNOWN_WEEK", key)
+        if score.primary_error_metric != self.contract.primary_error_metric or any(
+            item.primary_error_metric != self.contract.primary_error_metric
+            for item in score.horizons
+        ):
+            raise ScoreRefusal("CONTRACT_MISMATCH", key)
+        if score.contract_digest != _contract_digest(self.contract):
+            raise ScoreRefusal("CONTRACT_MISMATCH", key)
+        expected_week = next(
+            item
+            for item in self.expected_weeks
+            if _iso(item.start) + "|" + item.split.value == key
+        )
+        if score.week_identity_digest != _week_digest(expected_week):
+            raise ScoreRefusal("WEEK_IDENTITY_MISMATCH", key)
+        if score.digest != _digest(_score_payload(score)):
+            raise ScoreRefusal("DIGEST", key)
         prior = self._scores.get(key)
         if prior is not None:
             if prior.digest != score.digest:
                 raise ScoreRefusal("CONFLICTING_WEEK", key)
             return prior
         self._scores[key] = score
+        self._strategy_deliveries[key] = (
+            "PENDING" if score.strategy_eligible else "NOT_APPLICABLE"
+        )
         if counted:
             self.score_events += 1
         return score
@@ -651,10 +725,24 @@ class WeeklyScoreLedger:
         if prior is not None:
             if prior.digest != scored.digest:
                 raise ScoreRefusal("CONFLICTING_WEEK", key)
-            return prior
-        stored = self.record(scored, counted=True)
+            stored = prior
+        else:
+            stored = self.record(scored, counted=True)
         if stored.strategy_eligible and strategy is not None:
-            strategy(stored)
+            delivery = self._strategy_deliveries.get(key, "UNKNOWN")
+            if delivery == "UNKNOWN":
+                raise ScoreRefusal(
+                    "DELIVERY_STATE_UNKNOWN",
+                    f"{key} predates durable strategy-delivery receipts",
+                )
+            if delivery != "DELIVERED":
+                acknowledgement = strategy(stored)
+                if acknowledgement != stored.digest:
+                    raise ScoreRefusal(
+                        "DELIVERY_NOT_ACKNOWLEDGED",
+                        f"strategy must acknowledge score digest {stored.digest}",
+                    )
+                self._strategy_deliveries[key] = "DELIVERED"
         return stored
 
     def record_terminal(self, week: WeekSpec, status: DispositionStatus, reason: str) -> WeekScore:
@@ -691,7 +779,7 @@ class WeeklyScoreLedger:
 
     def to_json(self) -> str:
         payload = {
-            "schema": "business_weekly_score_ledger.v1",
+            "schema": "business_weekly_score_ledger.v2",
             "primary_error_metric": self.contract.primary_error_metric,
             "required_families": [item.value for item in self.contract.required_families],
             "required_horizons": list(self.contract.required_horizons),
@@ -711,14 +799,20 @@ class WeeklyScoreLedger:
                 for week in self.expected_weeks
             ],
             "scores": [_score_payload(score) | {"digest": score.digest} for score in self._scores.values()],
+            "strategy_deliveries": dict(self._strategy_deliveries),
         }
+        payload["ledger_digest"] = _digest(payload)
         return _canonical(payload).decode("ascii")
 
     @classmethod
     def from_json(cls, encoded: str) -> "WeeklyScoreLedger":
         payload = json.loads(encoded)
-        if payload.get("schema") != "business_weekly_score_ledger.v1":
+        schema = payload.get("schema")
+        if schema != "business_weekly_score_ledger.v2":
             raise ScoreRefusal("SCHEMA", "unsupported score ledger schema")
+        claimed_ledger_digest = payload.get("ledger_digest")
+        unsigned_payload = dict(payload)
+        unsigned_payload.pop("ledger_digest", None)
         families = tuple(ForecastFamily(item) for item in payload["required_families"])
         contract = ScoringContract(
             primary_error_metric=payload["primary_error_metric"],
@@ -744,6 +838,7 @@ class WeeklyScoreLedger:
             for item in payload["expected_weeks"]
         )
         ledger = cls(weeks, contract)
+        restored_keys: set[str] = set()
         for raw in payload["scores"]:
             horizons = tuple(
                 HorizonScore(
@@ -775,13 +870,37 @@ class WeeklyScoreLedger:
                 reason=raw["reason"],
                 strategy_eligible=raw["strategy_eligible"],
                 primary_error_metric=raw["primary_error_metric"],
+                contract_digest=raw.get("contract_digest", ""),
+                week_identity_digest=raw.get("week_identity_digest", ""),
                 horizons=horizons,
                 digest=raw["digest"],
             )
             if score.digest != _digest(_score_payload(score)):
                 raise ScoreRefusal("DIGEST", score.week_start)
-            ledger._scores[score.week_start + "|" + score.split] = score
-        ledger.score_events = int(payload["score_events"])
+            key = score.week_start + "|" + score.split
+            if key in restored_keys:
+                raise ScoreRefusal("DUPLICATE_SCORE", key)
+            restored_keys.add(key)
+            ledger.record(score, counted=False)
+        deliveries = payload.get("strategy_deliveries")
+        if not isinstance(deliveries, dict) or set(deliveries) != set(ledger._scores):
+            raise ScoreRefusal("DELIVERY_STATE", "strategy delivery keys do not match scores")
+        allowed_states = {"PENDING", "DELIVERED", "NOT_APPLICABLE"}
+        if any(state not in allowed_states for state in deliveries.values()):
+            raise ScoreRefusal("DELIVERY_STATE", "unsupported strategy delivery state")
+        for key, state in deliveries.items():
+            eligible = ledger._scores[key].strategy_eligible
+            if (eligible and state == "NOT_APPLICABLE") or (
+                not eligible and state != "NOT_APPLICABLE"
+            ):
+                raise ScoreRefusal("DELIVERY_STATE", f"state contradicts eligibility for {key}")
+        ledger._strategy_deliveries = dict(deliveries)
+        events = payload["score_events"]
+        if isinstance(events, bool) or not isinstance(events, int) or events != len(ledger._scores):
+            raise ScoreRefusal("SCORE_EVENTS", "score event count does not match retained scores")
+        ledger.score_events = events
+        if claimed_ledger_digest != _digest(unsigned_payload):
+            raise ScoreRefusal("LEDGER_DIGEST", "serialized ledger content changed")
         return ledger
 
 
@@ -801,4 +920,10 @@ def score_weekly_forecast_release(
     """Integration entry used by the weekly business modules. It does not train."""
 
     active = contract if contract is not None else financial_task_contract()
-    return score_week(release, active, firewall=firewall, strategy=strategy)
+    scored = score_week(release, active, firewall=firewall, strategy=None)
+    if scored.strategy_eligible and strategy is not None:
+        raise ScoreRefusal(
+            "CALLBACK_REQUIRES_LEDGER",
+            "strategy delivery requires WeeklyScoreLedger durable idempotency state",
+        )
+    return scored
