@@ -70,6 +70,8 @@ AUD_EWMA_FEATURE = "fx.audusd.ewma_vol_24"
 AUD_EWMA_RESULTS_SHA256 = "e582170a89d19b244682f44a8b60e722226e97e22ba31e788745bf2e4c4a44e3"
 AUD_LOGRET1H_FEATURE = "fx.audusd.logret_1h"
 AUD_LOGRET1H_RESULTS_SHA256 = "c59cf69c6a211ac5d66c033f6aeb0d3777dc57fd65bcccd6182b8e5ee9de9839"
+AUD_LOGRET24H_FEATURE = "fx.audusd.logret_24h"
+AUD_LOGRET24H_RESULTS_SHA256 = "80a3a6e5686b2bc78f30be5c0126e09c83d7d5aa7dc904e5fba68bbaf8c77590"
 SIAMESE_FEATURE = "px.logret_6h"
 SIAMESE_FAMILY = "past_to_current_siamese"
 TRAIN_EXCLUSIVE_END = datetime.fromisoformat("2024-01-01T00:00:00+00:00")
@@ -541,7 +543,7 @@ def _lane_e(root):
 
 
 def _next_action(feature, ps3c, ps3r, ps4, ps1):
-    if feature in {AUD_EWMA_FEATURE, AUD_LOGRET1H_FEATURE, DGS30_FEATURE, DPRIME_FEATURE}:
+    if feature in {AUD_EWMA_FEATURE, AUD_LOGRET1H_FEATURE, AUD_LOGRET24H_FEATURE, DGS30_FEATURE, DPRIME_FEATURE}:
         return "Conservar la medición PS3-R de utilidad mixta. La reconstrucción no selecciona. El perfil PS4 queda solo agendado."
     if feature == SIAMESE_FEATURE:
         return (
@@ -595,6 +597,10 @@ def _evidence(feature, ps4, ps3r, batch, profile, lane, ps1_digests):
             AUD_LOGRET1H_FEATURE: (
                 "ps3r/dragon/runs/batch_002/" + feature + "/results.jsonl",
                 AUD_LOGRET1H_RESULTS_SHA256,
+            ),
+            AUD_LOGRET24H_FEATURE: (
+                "ps3r/dragon/runs/batch_002/" + feature + "/results.jsonl",
+                AUD_LOGRET24H_RESULTS_SHA256,
             ),
         }
         locator, digest = accepted[feature]
@@ -652,6 +658,7 @@ def build(root):
     completed.add(DPRIME_FEATURE)
     completed.add(AUD_EWMA_FEATURE)
     completed.add(AUD_LOGRET1H_FEATURE)
+    completed.add(AUD_LOGRET24H_FEATURE)
     schedule = schedule_ps4(completed, ps2, set(MEASURED_FEATURES))
     scheduled_features = {row["feature_id"] for row in schedule}
     rows = []
@@ -661,7 +668,7 @@ def build(root):
             raise ReadinessError("MISSING_CANDIDATE", feature_id)
         ps1 = ps1_status(ps1_states[feature_id])
         causal = ps3c_status(feature)
-        if feature_id in {AUD_EWMA_FEATURE, AUD_LOGRET1H_FEATURE, DGS30_FEATURE, DPRIME_FEATURE, VIX_FEATURE}:
+        if feature_id in {AUD_EWMA_FEATURE, AUD_LOGRET1H_FEATURE, AUD_LOGRET24H_FEATURE, DGS30_FEATURE, DPRIME_FEATURE, VIX_FEATURE}:
             ps3r = "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
         elif feature_id in lane["done"]:
             ps3r = "LANE_E_MEASURED_NOT_SELECTION"
@@ -774,6 +781,10 @@ def build(root):
             "aud_logret_1h_results_sha256": AUD_LOGRET1H_RESULTS_SHA256,
             "aud_logret_1h_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
             "aud_logret_1h_utility": "mixed",
+            "aud_logret_24h_feature": AUD_LOGRET24H_FEATURE,
+            "aud_logret_24h_results_sha256": AUD_LOGRET24H_RESULTS_SHA256,
+            "aud_logret_24h_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
+            "aud_logret_24h_utility": "mixed",
             "dprime_utility": "mixed",
             "siamese_feature": SIAMESE_FEATURE,
             "siamese_family": SIAMESE_FAMILY,
@@ -792,7 +803,7 @@ def build(root):
         "population_sha256": population_sha,
         "huecos": [
             "PS4 medido cubre 10 de 366. El resto sigue PENDING_PROFILE o solo agendado.",
-            "Las celdas dragon cerradas tienen utilidad mixta y no están seleccionadas. fx.audusd.logret_24h sigue en ejecución.",
+            "Las celdas dragon cerradas, incluida fx.audusd.logret_24h, tienen utilidad mixta y no están seleccionadas.",
             "px.logret_6h past_to_current_siamese no se promueve.",
             "features_train.parquet no está en este árbol; se conserva el digest retenido sin recomputarlo.",
             "PS5 está preparado y no entrenado. No hay manifiesto selected, rejected o pending.",
