@@ -1,0 +1,73 @@
+{
+ "already_measured_transforms_not_rerun": [
+  "tv.hilbert_amp",
+  "tv.kalman_dev",
+  "tv.stl_dev",
+  "tv.stl_seasonal",
+  "tv.wav_d1",
+  "tv.wav_d2",
+  "tv.wav_d3",
+  "tv.wav_d4",
+  "tv.wav_d5",
+  "tv.mt_band_6_48h"
+ ],
+ "candidate": {
+  "feature_id": null,
+  "fold": null,
+  "reason": "NO_LOCAL_TRAIN_SERIES_IN_WORKTREE_EVIDENCE",
+  "state": "PENDING"
+ },
+ "count_scope": "incremental feature-fold units opened or withheld by this profiler; not the selection denominator",
+ "counts": {
+  "FAILED": 0,
+  "MEASURED": 0,
+  "PENDING": 1
+ },
+ "failed_units": [],
+ "flags": [
+  "NO_TARGET_READ",
+  "NO_OUTER_VALIDATION_READ",
+  "NO_TEST_READ",
+  "NO_FEATURE_SELECTION_DECISION",
+  "NO_NEW_MODEL_MEASUREMENT",
+  "SELECTION_DENOMINATOR_NOT_CLOSED"
+ ],
+ "hashes": {
+  "already_measured_names": "df3f09f7dc4eb4d330198805cb014e1ab2115c6f5f73d3ceb693a56f83884dd7",
+  "declared_missing_series": {
+   "laneB/batch_001/series.npz": "3e4404d260d9236ca24fc8561eedbfcc9c47a609d3e64b68870c204a3731f025",
+   "laneB/batch_002/series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+   "laneB/batch_003/series.npz": "293db083a886a41a6ae719c0bfa274b0513cc2c956b14965dd9a97a37dd69571"
+  },
+  "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+  "profiler": "04fe1c4c090eef3f1b09fd91c3474d73678bf1bfdf1b0ce030f179a49bb124a3",
+  "published_transform_profile_report": "3b294c8ef31443db4f5e93800a07660344420ddf42387262ba7259680292f6a0"
+ },
+ "measured_units": [],
+ "missing_series": [
+  {
+   "declared_sha256": "3e4404d260d9236ca24fc8561eedbfcc9c47a609d3e64b68870c204a3731f025",
+   "feature_count": 36,
+   "manifest": "laneB/batch_001/batch_manifest.json",
+   "series": "laneB/batch_001/series.npz"
+  },
+  {
+   "declared_sha256": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+   "feature_count": 214,
+   "manifest": "laneB/batch_002/batch_manifest.json",
+   "series": "laneB/batch_002/series.npz"
+  },
+  {
+   "declared_sha256": "293db083a886a41a6ae719c0bfa274b0513cc2c956b14965dd9a97a37dd69571",
+   "feature_count": 19,
+   "manifest": "laneB/batch_003/batch_manifest.json",
+   "series": "laneB/batch_003/series.npz"
+  }
+ ],
+ "orphan_series": [],
+ "ps4_selects_features": false,
+ "schema": "ps4_incremental_profile.v1",
+ "selection_closed": false,
+ "selection_denominator": 366,
+ "selection_note": "PS4 does not select a feature. The selection denominator is 366 and is not closed."
+}
