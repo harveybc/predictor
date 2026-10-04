@@ -4,7 +4,7 @@
   "denominator": 366,
   "huecos": [
     "PS4 medido cubre 10 de 366. El resto sigue PENDING_PROFILE o solo agendado.",
-    "Las celdas dragon cerradas, incluida fx.eurgbp.ewma_vol_24, tienen utilidad mixta y no están seleccionadas.",
+    "Las celdas dragon cerradas, incluida fx.eurgbp.logret_1h, tienen utilidad mixta y no están seleccionadas.",
     "px.logret_6h past_to_current_siamese no se promueve.",
     "features_train.parquet no está en este árbol; se conserva el digest retenido sin recomputarlo.",
     "PS5 está preparado y no entrenado. No hay manifiesto selected, rejected o pending.",
@@ -84,6 +84,10 @@
     "eurgbp_ewma_vol_24_results_sha256": "2df6a5faffb2e0222aa913de3b11fcb1f380e73b2ffc40aded9fae89fd2018cc",
     "eurgbp_ewma_vol_24_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
     "eurgbp_ewma_vol_24_utility": "mixed",
+    "eurgbp_logret_1h_feature": "fx.eurgbp.logret_1h",
+    "eurgbp_logret_1h_results_sha256": "7195ba2cc42627cfff2bccbf4af9672334a31c00c91e60ecc13195b9cbe6013e",
+    "eurgbp_logret_1h_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
+    "eurgbp_logret_1h_utility": "mixed",
     "lane_e_cost_sha256": "908f0a01b92e02666eafa8f235bd5b1f57f8ca321d4d11e5f1d03940b6ac6b63",
     "lane_e_matrix_sha256": "c7ddecc92823f173be4af12cb6d4ec7e93899267ee1f5c72d4085d56ffdb7f2e",
     "lane_e_measured_not_selection": [
@@ -123,6 +127,7 @@
       "fx.audusd.logret_1h",
       "fx.audusd.logret_24h",
       "fx.eurgbp.ewma_vol_24",
+      "fx.eurgbp.logret_1h",
       "px.close_loc",
       "px.ewma_vol_24",
       "px.log_close",
@@ -171,12 +176,12 @@
       "temporal_structure_gain_zlib9_symbols"
     ],
     "product_bound": "21_metrics_x_5_inner_folds",
-    "rows": 2415
+    "rows": 2520
   },
-  "ps4_schedule_sha256": "e11109b7b70c8bc2b9142f458d86010dfc866dd19ba257eb6a6bf2f32d9cd3b7",
+  "ps4_schedule_sha256": "a9d4bd449fc380651c1cad7f29ecc7599ffe469a431dddbe32923bda3fa94b28",
   "ps5_inputs_sha256": "a541b3c1343559cd3576a3724ef426707afea5d6925b04077947b706398b3d00",
   "ps5_preparation_identity": "897fe3cd79cc1c284f213bb8217065bac436d93d8b2823c06a2557363a23f7ed",
-  "readiness_rows_sha256": "4aed8f491cfb2b08c22313b799a06c6ac2fac67bbe44285a6e7fb6bf7998823d",
+  "readiness_rows_sha256": "a14645750eb121b444af7da11fa5c51184bf0ff96a0562373a278d20d9cbf20b",
   "schema": "m2_readiness_ledger.v1",
   "selection_manifest": "NOT_ISSUED",
   "status_counts": {
@@ -187,15 +192,15 @@
       "NOT_IDENTIFIED": 278
     },
     "ps3r": {
-      "ACCEPTED_PS3R_CELL_MIXED_UTILITY": 7,
+      "ACCEPTED_PS3R_CELL_MIXED_UTILITY": 8,
       "LANE_E_MEASURED_NOT_SELECTION": 16,
       "NOT_SCHEDULED": 229,
-      "NOT_TERMINAL": 114
+      "NOT_TERMINAL": 113
     },
     "ps4": {
       "MEASURED_SUBPOPULATION": 10,
-      "PENDING_PROFILE": 333,
-      "SCHEDULED_NOT_MEASURED": 23
+      "PENDING_PROFILE": 332,
+      "SCHEDULED_NOT_MEASURED": 24
     }
   }
 }
