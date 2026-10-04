@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, timezone
 from tools.business_objective_firewall import BusinessObjectiveFirewall, FirewallError, Phase
 from tools.business_weekly_protocol import DispositionStatus, EvaluationSplit, WeekSpec
 from tools.business_weekly_score import (
+    FINANCIAL_TASK,
     NOT_CONFIGURED,
     PRIMARY_ERROR_METRIC_FIELD,
     ForecastFamily,
@@ -18,8 +19,10 @@ from tools.business_weekly_score import (
     ScoringContract,
     WeekRelease,
     WeeklyScoreLedger,
+    financial_task_contract,
     repository_primary_error_metric,
     score_week,
+    score_weekly_forecast_release,
 )
 from tools.business_weekly_training import score_forecast_release
 
@@ -409,8 +412,6 @@ class WeeklyScoreTests(unittest.TestCase):
         self.assertEqual(caught.exception.code, "DIGEST")
 
     def test_financial_task_contract_primary_error_is_mae_on_the_declared_scale(self) -> None:
-        from tools.business_weekly_score import financial_task_contract
-
         self.assertEqual(repository_primary_error_metric(), NOT_CONFIGURED)
         contract = financial_task_contract(required_horizons=("h1",))
         self.assertEqual(contract.primary_error_metric, "mae")
@@ -420,8 +421,8 @@ class WeeklyScoreTests(unittest.TestCase):
 
         def pair(prediction: tuple[float, float], naive: tuple[float, float]) -> WeekRelease:
             return release_for(
-                horizon(ForecastFamily.SHORT, "h1", prediction, naive, scale="price_level"),
-                horizon(ForecastFamily.LONG, "h1", prediction, naive, scale="price_level"),
+                identified(ForecastFamily.SHORT, "h1", prediction, naive, scale="price_level", model_digest="short", task=FINANCIAL_TASK),
+                identified(ForecastFamily.LONG, "h1", prediction, naive, scale="price_level", model_digest="long", task=FINANCIAL_TASK),
             )
 
         calls: list[object] = []
@@ -440,6 +441,60 @@ class WeeklyScoreTests(unittest.TestCase):
         self.assertFalse(worse.strategy_eligible)
         self.assertGreater(worse.horizons[0].model_mae, worse.horizons[0].naive_mae)
         self.assertLess(worse.horizons[0].model_mse, worse.horizons[0].naive_mse)
+
+    def test_required_horizons_are_required_for_each_family(self) -> None:
+        contract = ScoringContract(
+            "mae",
+            (ForecastFamily.SHORT, ForecastFamily.LONG),
+            ("h1", "h2"),
+        )
+        release = release_for(
+            identified(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0), model_digest="short"),
+            identified(ForecastFamily.LONG, "h2", (1.0, 1.0), (2.0, 2.0), model_digest="long"),
+        )
+        with self.assertRaises(ScoreRefusal) as caught:
+            score_week(release, contract)
+        self.assertEqual(caught.exception.code, "MISSING_HORIZON")
+        self.assertIn("short:h2", caught.exception.detail)
+        self.assertIn("long:h1", caught.exception.detail)
+
+    def test_completed_week_rejects_a_contradictory_resubmission(self) -> None:
+        contract = ScoringContract("mae", (ForecastFamily.SHORT,), ("h1",))
+        ledger = WeeklyScoreLedger((week(0),), contract)
+        first = WeekRelease(
+            week(0),
+            (identified(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0), model_digest="model-a"),),
+            False,
+        )
+        ledger.submit(first)
+        contradictory = WeekRelease(
+            week(0),
+            (identified(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0), model_digest="model-b"),),
+            False,
+        )
+        with self.assertRaises(ScoreRefusal) as caught:
+            ledger.submit(contradictory)
+        self.assertEqual(caught.exception.code, "CONFLICTING_WEEK")
+        self.assertEqual(ledger.score_events, 1)
+
+    def test_financial_contract_rejects_another_task_before_scoring(self) -> None:
+        contract = financial_task_contract(required_horizons=("h1",))
+        release = release_for(
+            identified(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0), model_digest="short", task="other"),
+            identified(ForecastFamily.LONG, "h1", (1.0, 1.0), (2.0, 2.0), model_digest="long", task="other"),
+        )
+        with self.assertRaises(ScoreRefusal) as caught:
+            score_week(release, contract)
+        self.assertEqual(caught.exception.code, "TASK_MISMATCH")
+
+    def test_public_weekly_entry_uses_the_financial_mae_contract_by_default(self) -> None:
+        release = release_for(
+            identified(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0), model_digest="short", task=FINANCIAL_TASK),
+            identified(ForecastFamily.LONG, "h1", (1.0, 1.0), (2.0, 2.0), model_digest="long", task=FINANCIAL_TASK),
+        )
+        scored = score_weekly_forecast_release(release)
+        self.assertEqual(scored.primary_error_metric, "mae")
+        self.assertTrue(scored.strategy_eligible)
 
 
 if __name__ == "__main__":

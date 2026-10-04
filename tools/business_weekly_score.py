@@ -484,6 +484,11 @@ def score_week(
 
     _guard_firewall(firewall, release)
     for forecast in release.horizons:
+        if contract.task and forecast.task != contract.task:
+            raise ScoreRefusal(
+                "TASK_MISMATCH",
+                f"{forecast.family.value} {forecast.horizon} task {forecast.task!r} != {contract.task!r}",
+            )
         if forecast.week != release.week:
             raise ScoreRefusal(
                 "WEEK_MISMATCH",
@@ -515,7 +520,7 @@ def score_week(
                     f"{forecast.family.value} model digest changed inside the forecast",
                 )
     families = {item.family for item in release.horizons}
-    required = set(contract.required_families) if release.consumes_short_and_long else set()
+    required = set(contract.required_families)
     if required - families:
         missing = ",".join(item.value for item in contract.required_families if item not in families)
         scored = _freeze(
@@ -532,9 +537,15 @@ def score_week(
         )
         return scored
     if contract.required_horizons:
-        present = {item.horizon for item in release.horizons}
-        if set(contract.required_horizons) - present:
-            raise ScoreRefusal("MISSING_HORIZON", ",".join(contract.required_horizons))
+        present = {(item.family, item.horizon) for item in release.horizons}
+        missing = [
+            f"{family.value}:{horizon}"
+            for family in contract.required_families
+            for horizon in contract.required_horizons
+            if (family, horizon) not in present
+        ]
+        if missing:
+            raise ScoreRefusal("MISSING_HORIZON", ",".join(missing))
     horizons = tuple(score_horizon(item, contract) for item in release.horizons)
     beats = [item.beats_primary_naive for item in horizons]
     eligible = bool(horizons) and contract.primary_error_metric != NOT_CONFIGURED and all(beats)
@@ -636,10 +647,15 @@ class WeeklyScoreLedger:
     ) -> WeekScore:
         key = self._key(release.week)
         prior = self._scores.get(key)
-        if prior is not None and prior.disposition == DispositionStatus.COMPLETED.value:
+        scored = score_week(release, self.contract, firewall=firewall, strategy=None)
+        if prior is not None:
+            if prior.digest != scored.digest:
+                raise ScoreRefusal("CONFLICTING_WEEK", key)
             return prior
-        scored = score_week(release, self.contract, firewall=firewall, strategy=strategy)
-        return self.record(scored, counted=True)
+        stored = self.record(scored, counted=True)
+        if stored.strategy_eligible and strategy is not None:
+            strategy(stored)
+        return stored
 
     def record_terminal(self, week: WeekSpec, status: DispositionStatus, reason: str) -> WeekScore:
         self._key(week)
@@ -784,5 +800,5 @@ def score_weekly_forecast_release(
 ) -> WeekScore:
     """Integration entry used by the weekly business modules. It does not train."""
 
-    active = contract if contract is not None else ScoringContract(repository_primary_error_metric())
+    active = contract if contract is not None else financial_task_contract()
     return score_week(release, active, firewall=firewall, strategy=strategy)
