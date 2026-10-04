@@ -1,7 +1,7 @@
 {
  "feature_id": "fred.stress.vixcls.logret_5d",
  "fold_id": "inner_2019",
- "identity_sha256": "651356c549c5f6263b639d7c3c4490e63a56ec601f13b7ee11b5df7600d75f24",
+ "identity_sha256": "37f3bee6d880bc62fa53ae928bb18093f2b568c61f14ad2a57dfbd8f7d899eee",
  "metric_rows": 21,
  "reason": "",
  "rows": [
@@ -775,10 +775,11 @@
    "ae",
    "dae"
   ],
+  "results_file": "results.jsonl",
   "results_sha256": "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a",
   "schema": "ps3r_terminal_identity.v1",
   "seed": 0,
-  "terminal_manifest_sha256": "5f4bbd6aed5f456397cc6bdb80f8bb790bd8b8ea14d6d585b5c6c77397a7fdf0"
+  "terminal_manifest_sha256": "af2c6e0c75bceeb51c9c8abf17535d3c31293ddc76e7e59ba9a888afcbcf70a8"
  },
  "train_rows": [
   0,

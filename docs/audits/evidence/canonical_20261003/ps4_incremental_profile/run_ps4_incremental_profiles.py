@@ -62,6 +62,7 @@ UNIT_SCHEMA = "ps4_incremental_unit.v2"
 LEGACY_UNIT_SCHEMA = "ps4_incremental_unit.v1"
 REPORT_SCHEMA = "ps4_incremental_profile.v2"
 TERMINAL_SCHEMA = "ps3r_terminal_identity.v1"
+ACCEPTED_INDEX_SCHEMA = "ps4_accepted_units.v1"
 _SPLIT_WORDS = {"validation", "external_validation", "outer_validation", "val"}
 _TEST_WORDS = {"test", "outer_test"}
 
@@ -210,6 +211,7 @@ def load_terminal_identity(path: Path | None, feature_id: str, series_sha256: st
     families = manifest.get("families") if isinstance(manifest, dict) else None
     features = manifest.get("features") if isinstance(manifest, dict) else None
     seed = manifest.get("seed") if isinstance(manifest, dict) else None
+    results_file = manifest.get("results_file") if isinstance(manifest, dict) else None
     required = (
         manifest.get("schema") == "ut_pilot_run.v1"
         and manifest.get("status") == "COMPLETED"
@@ -220,16 +222,24 @@ def load_terminal_identity(path: Path | None, feature_id: str, series_sha256: st
         and all(isinstance(family, str) and family for family in families)
         and len(families) == len(set(families))
         and _is_sha256(manifest.get("results_sha256"))
+        and isinstance(results_file, str) and results_file == Path(results_file).name
         and manifest.get("series_sha256") == series_sha256
     )
     if not required:
         raise ProfileRefusal("TERMINAL_IDENTITY_MISMATCH", feature_id)
+    retained_results = path.parent / results_file
+    if retained_results.is_symlink() or not retained_results.is_file():
+        raise ProfileRefusal("TERMINAL_RESULTS_ABSENT", str(retained_results))
+    actual_results_sha256 = sha256_file(retained_results)
+    if actual_results_sha256 != manifest["results_sha256"]:
+        raise ProfileRefusal("TERMINAL_RESULTS_DIGEST_MISMATCH", results_file)
     return {
         "schema": TERMINAL_SCHEMA,
         "results_sha256": manifest["results_sha256"],
         "seed": seed,
         "code_revision": manifest["code_commit"],
         "families": families,
+        "results_file": results_file,
         "terminal_manifest_sha256": sha256_file(path),
     }
 
@@ -255,7 +265,8 @@ def _write_json(path: Path, payload) -> None:
 def classify_unit(path: Path, *, expected_feature_id: str = "", expected_fold_id: str = "",
                   expected_train_rows: list[int] | None = None,
                   expected_source_sha256: dict | None = None,
-                  expected_terminal_identity: dict | None = None) -> str:
+                  expected_terminal_identity: dict | None = None,
+                  expected_acceptance: dict | None = None) -> str:
     """MEASURED only for a complete atomic unit. Partials are PENDING."""
     path = Path(path)
     if path.name.endswith(".tmp"):
@@ -268,6 +279,11 @@ def classify_unit(path: Path, *, expected_feature_id: str = "", expected_fold_id
         return "PENDING"
     if not isinstance(payload, dict) or payload.get("schema") != UNIT_SCHEMA:
         return "PENDING"
+    acceptance_valid = (
+        isinstance(expected_acceptance, dict)
+        and expected_acceptance.get("unit") == path.name
+        and expected_acceptance.get("unit_sha256") == sha256_file(path)
+    )
     feature = payload.get("feature_id")
     fold = payload.get("fold_id")
     train_rows = payload.get("train_rows")
@@ -306,6 +322,16 @@ def classify_unit(path: Path, *, expected_feature_id: str = "", expected_fold_id
         return "PENDING"
     if expected_terminal_identity is not None and terminal != expected_terminal_identity:
         return "PENDING"
+    if acceptance_valid:
+        for field, actual in (
+            ("feature_id", feature),
+            ("fold_id", fold),
+            ("source_sha256", source),
+            ("terminal_identity", terminal),
+        ):
+            if expected_acceptance.get(field) != actual:
+                acceptance_valid = False
+                break
     status = payload.get("unit_status")
     rows_match = rows and all(
         isinstance(row, dict)
@@ -315,11 +341,45 @@ def classify_unit(path: Path, *, expected_feature_id: str = "", expected_fold_id
         and row.get("source_digests") == source
         for row in rows
     )
-    if status == "MEASURED" and rows_match and payload.get("metric_rows") == len(rows):
+    if (status == "MEASURED" and acceptance_valid and rows_match
+            and payload.get("metric_rows") == len(rows)):
         return "MEASURED"
     if status == "FAILED" and rows == [] and payload.get("reason") and payload.get("metric_rows") == 0:
         return "FAILED"
     return "PENDING"
+
+
+def load_accepted_index(path: Path, expected_sha256: str) -> dict[str, dict]:
+    """Load an externally retained acceptance index anchored by a caller-owned digest."""
+    path = Path(path)
+    if not _is_sha256(expected_sha256):
+        raise ProfileRefusal("ACCEPTED_INDEX_DIGEST_REQUIRED", str(path))
+    if path.is_symlink() or not path.is_file():
+        raise ProfileRefusal("ACCEPTED_INDEX_ABSENT", str(path))
+    if sha256_file(path) != expected_sha256:
+        raise ProfileRefusal("ACCEPTED_INDEX_DIGEST_MISMATCH", str(path))
+    try:
+        payload = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as error:
+        raise ProfileRefusal("ACCEPTED_INDEX_INVALID", str(error)) from error
+    rows = payload.get("units") if isinstance(payload, dict) else None
+    if payload.get("schema") != ACCEPTED_INDEX_SCHEMA or not isinstance(rows, list):
+        raise ProfileRefusal("ACCEPTED_INDEX_INVALID", str(path))
+    accepted = {}
+    for row in rows:
+        name = row.get("unit") if isinstance(row, dict) else None
+        valid = (
+            isinstance(name, str) and bool(name) and name == Path(name).name
+            and _is_sha256(row.get("unit_sha256"))
+            and isinstance(row.get("feature_id"), str) and bool(row["feature_id"])
+            and row.get("fold_id") in INNER_FOLDS
+            and isinstance(row.get("source_sha256"), dict)
+            and isinstance(row.get("terminal_identity"), dict)
+        )
+        if not valid or name in accepted:
+            raise ProfileRefusal("ACCEPTED_INDEX_INVALID", str(name))
+        accepted[name] = row
+    return accepted
 
 
 def _unit_body(feature: str, fold: str, train_end: int, rows: list, source: dict,
@@ -357,7 +417,8 @@ def _thread_env() -> None:
 def execute_unit(series: Path, folds_path: Path, feature_id: str, fold_name: str, out: Path, *,
                  split: str = "train", dataset_id: str = DATASET_ID,
                  canonical_bounds: bool = False, expected_digest: str = "",
-                 terminal_manifest: Path | None = None) -> dict:
+                 terminal_manifest: Path | None = None,
+                 expected_acceptance: dict | None = None) -> dict:
     """Profile one feature-fold, or resume when that unit is already MEASURED."""
     _thread_env()
     assert_split(split)
@@ -382,6 +443,7 @@ def execute_unit(series: Path, folds_path: Path, feature_id: str, fold_name: str
         expected_train_rows=train_rows,
         expected_source_sha256=source,
         expected_terminal_identity=terminal_identity,
+        expected_acceptance=expected_acceptance,
     )
     if state in {"MEASURED", "FAILED"}:
         return {
@@ -484,7 +546,15 @@ def bind_legacy_unit(path: Path, terminal_manifest: Path) -> dict:
         feature, fold, train_rows[1], rows, source, terminal, "MEASURED", "",
     )
     _write_json(path, rebound)
-    if classify_unit(path) != "MEASURED":
+    generated_acceptance = {
+        "unit": path.name,
+        "unit_sha256": sha256_file(path),
+        "feature_id": feature,
+        "fold_id": fold,
+        "source_sha256": source,
+        "terminal_identity": terminal,
+    }
+    if classify_unit(path, expected_acceptance=generated_acceptance) != "MEASURED":
         raise ProfileRefusal("LEGACY_BIND_FAILED", path.name)
     return {
         "unit": path.name,
@@ -619,15 +689,20 @@ def _names_sha256() -> str:
     return hashlib.sha256(body).hexdigest()
 
 
-def count_units(units_dir: Path) -> dict:
+def count_units(units_dir: Path, *, accepted_index: Path | None = None,
+                expected_accepted_index_sha256: str = "") -> dict:
     counts = {"MEASURED": 0, "PENDING": 0, "FAILED": 0}
     measured = []
     failed = []
     units_dir = Path(units_dir)
     if not units_dir.is_dir():
         return {"counts": counts, "measured": measured, "failed": failed}
+    accepted = (
+        load_accepted_index(accepted_index, expected_accepted_index_sha256)
+        if accepted_index is not None else {}
+    )
     for path in sorted(units_dir.glob("*.json")):
-        status = classify_unit(path)
+        status = classify_unit(path, expected_acceptance=accepted.get(path.name))
         if status not in counts:
             status = "PENDING"
         counts[status] += 1
@@ -639,13 +714,13 @@ def count_units(units_dir: Path) -> dict:
     return {"counts": counts, "measured": measured, "failed": failed}
 
 
-def _opened_units(units_dir: Path) -> list[dict]:
+def _opened_units(units_dir: Path, accepted: dict[str, dict]) -> list[dict]:
     opened = []
     units_dir = Path(units_dir)
     if not units_dir.is_dir():
         return opened
     for path in sorted(units_dir.glob("*.json")):
-        status = classify_unit(path)
+        status = classify_unit(path, expected_acceptance=accepted.get(path.name))
         if status not in {"MEASURED", "FAILED"}:
             continue
         payload = json.loads(path.read_text())
@@ -688,15 +763,23 @@ def _next_opened_fold(opened: list[dict], selected: dict) -> dict:
 
 
 def publish_report(evidence: Path, folds_path: Path, units_dir: Path, destination: Path, *,
-                   canonical_bounds: bool = False) -> dict:
+                   canonical_bounds: bool = False, accepted_index: Path | None = None,
+                   expected_accepted_index_sha256: str = "") -> dict:
     evidence = Path(evidence)
     if canonical_bounds:
         assert_canonical_fold_file(folds_path)
     scan = scan_evidence(evidence)
     selected = select_one_feature_fold(evidence)
-    tallied = count_units(units_dir)
+    accepted = (
+        load_accepted_index(accepted_index, expected_accepted_index_sha256)
+        if accepted_index is not None else {}
+    )
+    tallied = count_units(
+        units_dir, accepted_index=accepted_index,
+        expected_accepted_index_sha256=expected_accepted_index_sha256,
+    )
     counts = dict(tallied["counts"])
-    opened = _opened_units(units_dir)
+    opened = _opened_units(units_dir, accepted)
     if opened:
         selected = _next_opened_fold(opened, selected)
     if selected.get("state") in {"READY", "PENDING"}:
@@ -708,6 +791,8 @@ def publish_report(evidence: Path, folds_path: Path, units_dir: Path, destinatio
         "folds.json": sha256_file(folds_path),
         "profiler": sha256_file(profiler),
     }
+    if accepted_index is not None:
+        hashes["accepted_units.json"] = expected_accepted_index_sha256
     if published.is_file() and not published.is_symlink():
         hashes["published_transform_profile_report"] = sha256_file(published)
     missing = [
@@ -790,6 +875,8 @@ def main(argv: list[str] | None = None) -> int:
     report.add_argument("--units", type=Path, required=True)
     report.add_argument("--out", type=Path, required=True)
     report.add_argument("--canonical-bounds", action="store_true")
+    report.add_argument("--accepted-index", type=Path, required=True)
+    report.add_argument("--accepted-index-sha256", required=True)
     bind = sub.add_parser("bind-legacy", help="bind retained v1 rows to an authenticated PS3-R terminal")
     bind.add_argument("--unit", type=Path, required=True)
     bind.add_argument("--terminal-manifest", type=Path, required=True)
@@ -807,6 +894,8 @@ def main(argv: list[str] | None = None) -> int:
             result = publish_report(
                 args.evidence, args.folds, args.units, args.out,
                 canonical_bounds=args.canonical_bounds,
+                accepted_index=args.accepted_index,
+                expected_accepted_index_sha256=args.accepted_index_sha256,
             )
         else:
             result = bind_legacy_unit(args.unit, args.terminal_manifest)
