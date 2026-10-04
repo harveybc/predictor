@@ -1,13 +1,34 @@
 {
+  "alternative_family_evidence": [
+    {
+      "feature_id": "tv.hilbert_amp",
+      "replaces_baseline": false,
+      "results_sha256": "0e73a32dfead1b1db0acc0b50963f2d843c9e53d4c7294c196fd30f696c67ae7",
+      "utility": "mixed"
+    },
+    {
+      "feature_id": "tv.kalman_dev",
+      "replaces_baseline": false,
+      "results_sha256": "c541415983c28f6166488160229f5eae82910970e7b25be62a58eb431a56a993",
+      "utility": "mixed"
+    },
+    {
+      "feature_id": "tv.stl_dev",
+      "replaces_baseline": false,
+      "results_sha256": "84399ec705951e485af3d6db0e0b945859b09cfe129208dedae4136dab68d27e",
+      "utility": "mixed"
+    }
+  ],
   "audit_sha256": "5152332e5ff8998400d22b9f885a8a9e4fbeb5ad4c1685c28eee7d0dda3ce79e",
   "cuerpo": "El denominador es 366, la partición retenida 279+87, no el inventario de 388 fuentes. Solo diez transformadas emitidas pasan de PENDING_PROFILE a MEASURED. Eso no cierra PS4 ni selecciona ninguna candidata. NOT_IDENTIFIED en PS3-C permanece neutral. La preparación PS5 no autoriza entrenamiento, lectura de test externo ni evaluación de estrategia.",
   "denominator": 366,
   "huecos": [
     "PS4 medido cubre 10 de 366. El resto sigue PENDING_PROFILE o solo agendado.",
-    "Las celdas dragon cerradas, incluida fx.eurjpy.logret_1h, tienen utilidad mixta y no están seleccionadas.",
+    "PS3-C vigente: 0 identificadas de 279. NOT_IDENTIFIED no es rechazo. 87 quedan fuera del join.",
+    "Las celdas baseline adoptadas por manifiesto tienen utilidad medida y no están seleccionadas.",
     "px.logret_6h past_to_current_siamese no se promueve.",
     "features_train.parquet no está en este árbol; se conserva el digest retenido sin recomputarlo.",
-    "PS5 está preparado y no entrenado. No hay manifiesto selected, rejected o pending.",
+    "El diseño global PS5 está preparado y no entrenado. Cada candidata sin PS3-R y PS4 requeridos queda NOT_READY_EVIDENCE_INCOMPLETE.",
     "Las nueve filas históricas de variantes siguen en PENDING_PROFILE."
   ],
   "measured_profile": {
@@ -59,6 +80,18 @@
     "ps3c_join": 279
   },
   "population_sha256": "9f20ddd4a9deddd94baad6d5a4f445e8e064a0e36e33e0586ba76e9f6453cdd6",
+  "ps3c_source": {
+    "identified": 0,
+    "join_sha256": {
+      "batch_001": "0b4f713fa28a94a1eef65b89981c9d9948e496d0beb31970548158e5f3ec4891",
+      "batch_002": "8cf03ab71ce6982feefacb9ca3a17c697b37006ed0ae4db4ed05575f1288aec1",
+      "batch_003": "ed6cfd0701147afad497f58a8a05b0beb74f3acb146c1fdd4066d1f600f822eb"
+    },
+    "not_identified": 279,
+    "not_identified_is_not_rejected": true,
+    "outside_join_pending": 87,
+    "producer_revision": "48ae17c"
+  },
   "ps3r": {
     "aud_ewma_feature": "fx.audusd.ewma_vol_24",
     "aud_ewma_results_sha256": "e582170a89d19b244682f44a8b60e722226e97e22ba31e788745bf2e4c4a44e3",
@@ -189,17 +222,16 @@
     "rows": 2730
   },
   "ps4_schedule_sha256": "c8dcffd867688a9cf684850f51bbdb60a362730aa4934062cce56f7d984069ac",
+  "ps5_design_status": "PREPARED_NOT_TRAINED",
   "ps5_inputs_sha256": "a541b3c1343559cd3576a3724ef426707afea5d6925b04077947b706398b3d00",
   "ps5_preparation_identity": "897fe3cd79cc1c284f213bb8217065bac436d93d8b2823c06a2557363a23f7ed",
-  "readiness_rows_sha256": "0a0bf36f2499a1804c97e4efde121d798a9007bdda0df6d8622547acf8aea5f9",
+  "readiness_rows_sha256": "24ca620d51ba4b23c6d4f5db8a09220e7df6ff28d7be04935d4338e8840fab21",
   "schema": "m2_readiness_ledger.v1",
   "selection_manifest": "NOT_ISSUED",
   "status_counts": {
     "ps3c": {
-      "IDENTIFIED_CONDITIONAL_ON_DECLARED_ASSUMPTIONS": 65,
-      "MIXED_IDENTIFIED_AND_NOT_IDENTIFIED": 13,
-      "NOT_APPLICABLE": 10,
-      "NOT_IDENTIFIED": 278
+      "NOT_IDENTIFIED": 279,
+      "OUTSIDE_JOIN_PENDING": 87
     },
     "ps3r": {
       "ACCEPTED_PS3R_CELL_MIXED_UTILITY": 10,

@@ -9,6 +9,7 @@ selection utility. Preparation of PS5 inputs is not permission to train.
 import csv
 import hashlib
 import json
+import sys
 from collections import Counter
 from datetime import datetime, timedelta
 from io import StringIO
@@ -101,6 +102,8 @@ READINESS_FIELDS = (
     "ps0_ps1_status",
     "ps2_status",
     "ps3c_status",
+    "ps3c_producer_revision",
+    "ps3c_join_sha256",
     "ps3r_status",
     "ps4_status",
     "ps5_status",
@@ -214,6 +217,48 @@ def refuse_false_causal_rejection(status, rung2):
         raise ReadinessError("FALSE_CAUSAL_REJECTION", str(status))
     if neutral and "REJECT" in status:
         raise ReadinessError("FALSE_CAUSAL_REJECTION", status)
+
+
+def load_causal_joins(root):
+    """Authoritative PS3-C source: the three 48ae17c joins, not coverage counts."""
+
+    index = {}
+    hashes = {}
+    base = Path(root) / BASE / "laneC" / "reanalysis_48ae17c"
+    for batch in ("batch_001", "batch_002", "batch_003"):
+        path = base / batch / "ps3c_join.json"
+        blob = path.read_bytes()
+        digest = hashlib.sha256(blob).hexdigest()
+        payload = json.loads(blob)
+        if payload.get("producer_revision") != "48ae17c":
+            raise ReadinessError("PS3C_SOURCE", batch)
+        if payload.get("survivors"):
+            raise ReadinessError("PS3C_SOURCE", "survivors")
+        hashes[batch] = digest
+        for row in payload["join"]:
+            feature_id = row["feature_id"]
+            if feature_id in index:
+                raise ReadinessError("PS3C_SOURCE", feature_id)
+            index[feature_id] = {
+                "producer_revision": "48ae17c",
+                "join_sha256": digest,
+                "batch": batch,
+            }
+    if len(index) != JOIN_COUNT:
+        raise ReadinessError("PS3C_SOURCE", str(len(index)))
+    return index, hashes
+
+
+def coverage_causal_counts(features):
+    """Superseded counter. Retained so the old 65/13 claim stays reproducible."""
+
+    counts = Counter(ps3c_status(feature) for feature in features)
+    return {
+        "identified": counts["IDENTIFIED_CONDITIONAL_ON_DECLARED_ASSUMPTIONS"],
+        "mixed": counts["MIXED_IDENTIFIED_AND_NOT_IDENTIFIED"],
+        "not_identified": counts["NOT_IDENTIFIED"],
+        "not_applicable": counts["NOT_APPLICABLE"],
+    }
 
 
 def ps3c_status(feature):
@@ -551,15 +596,15 @@ def _lane_e(root):
 
 
 def _next_action(feature, ps3c, ps3r, ps4, ps1):
-    if feature in {AUD_EWMA_FEATURE, AUD_LOGRET1H_FEATURE, AUD_LOGRET24H_FEATURE, EURGBP_EWMA_FEATURE, EURGBP_LOGRET1H_FEATURE, EURJPY_EWMA_FEATURE, EURJPY_LOGRET1H_FEATURE, DGS30_FEATURE, DPRIME_FEATURE}:
+    if ps3r == "ACCEPTED_PS3R_CELL_MIXED_UTILITY":
         return "Conservar la medición PS3-R de utilidad mixta. La reconstrucción no selecciona. El perfil PS4 queda solo agendado."
+    if ps3r == "ACCEPTED_PS3R_TERMINAL_NOT_SELECTION":
+        return "Conservar la medición PS3-R terminal. La reconstrucción no selecciona."
     if feature == SIAMESE_FEATURE:
         return (
             "Conservar la medición lane E de identity, random, ae y dae. "
             "No promover past_to_current_siamese: su results.jsonl fue sobrescrito por un duplicado posterior."
         )
-    if feature == VIX_FEATURE:
-        return "Conservar la medición PS3-R de utilidad mixta. La reconstrucción no selecciona. El perfil PS4 queda solo agendado."
     if ps4 == "MEASURED_SUBPOPULATION":
         return "Perfil PS4 medido solo para esta transformada emitida. No es selección ni cierra PS4 de las 366."
     if ps4 == "SCHEDULED_NOT_MEASURED":
@@ -577,58 +622,16 @@ def _next_action(feature, ps3c, ps3r, ps4, ps1):
     return "Falta la medición de la etapa abierta. No emitir un manifiesto de selección."
 
 
-def _evidence(feature, ps4, ps3r, batch, profile, lane, ps1_digests):
+def _evidence(feature, ps4, ps3r, batch, profile, lane, ps1_digests, adoptions):
     if ps4 == "MEASURED_SUBPOPULATION":
         return (
             str(BASE / "ps4_transform_profile" / "profile_rows.jsonl") + "#" + feature,
             profile["feature_digests"][feature],
             "recomputed_profile_rows",
         )
-    if ps3r == "ACCEPTED_PS3R_CELL_MIXED_UTILITY":
-        accepted = {
-            VIX_FEATURE: (
-                str(BASE / "RETSU_PS4_PS3R_AUDIT_2026_10_03.md") + "#batch_002/" + feature,
-                VIX_RESULTS_SHA256,
-            ),
-            DGS30_FEATURE: (
-                "ps3r/dragon/runs/batch_002/" + feature + "/results.jsonl",
-                DGS30_RESULTS_SHA256,
-            ),
-            DPRIME_FEATURE: (
-                "ps3r/dragon/runs/batch_002/" + feature + "/results.jsonl",
-                DPRIME_RESULTS_SHA256,
-            ),
-            AUD_EWMA_FEATURE: (
-                "ps3r/dragon/runs/batch_002/" + feature + "/results.jsonl",
-                AUD_EWMA_RESULTS_SHA256,
-            ),
-            AUD_LOGRET1H_FEATURE: (
-                "ps3r/dragon/runs/batch_002/" + feature + "/results.jsonl",
-                AUD_LOGRET1H_RESULTS_SHA256,
-            ),
-            AUD_LOGRET24H_FEATURE: (
-                "ps3r/dragon/runs/batch_002/" + feature + "/results.jsonl",
-                AUD_LOGRET24H_RESULTS_SHA256,
-            ),
-            EURGBP_EWMA_FEATURE: (
-                "ps3r/dragon/runs/batch_002/" + feature + "/results.jsonl",
-                EURGBP_EWMA_RESULTS_SHA256,
-            ),
-            EURGBP_LOGRET1H_FEATURE: (
-                "ps3r/dragon/runs/batch_002/" + feature + "/results.jsonl",
-                EURGBP_LOGRET1H_RESULTS_SHA256,
-            ),
-            EURJPY_EWMA_FEATURE: (
-                "ps3r/dragon/runs/batch_002/" + feature + "/results.jsonl",
-                EURJPY_EWMA_RESULTS_SHA256,
-            ),
-            EURJPY_LOGRET1H_FEATURE: (
-                "ps3r/dragon/runs/batch_002/" + feature + "/results.jsonl",
-                EURJPY_LOGRET1H_RESULTS_SHA256,
-            ),
-        }
-        locator, digest = accepted[feature]
-        return locator, digest, "accepted_ps3r_results_sha256"
+    if ps3r in {"ACCEPTED_PS3R_CELL_MIXED_UTILITY", "ACCEPTED_PS3R_TERMINAL_NOT_SELECTION"}:
+        adopted = adoptions[feature]
+        return adopted["locator"], adopted["results_sha256"], "recomputed_ps3r_results_sha256"
     if ps3r == "LANE_E_MEASURED_NOT_SELECTION":
         return (
             lane["matrix_locator"] + "#" + feature,
@@ -655,7 +658,25 @@ def build(root):
     if len(expected_ids) != DENOMINATOR or joined != JOIN_COUNT or outside != OUTSIDE_COUNT:
         raise ReadinessError("DENOMINATOR", f"{len(expected_ids)}={joined}+{outside}")
     audit = (root / BASE / "RETSU_PS4_PS3R_AUDIT_2026_10_03.md").read_text(encoding="utf-8")
-    if VIX_RESULTS_SHA256 not in audit:
+    causal_index, causal_hashes = load_causal_joins(root)
+    flagged = {row["feature_id"] for row in features if row.get("in_ps3c_join")}
+    if flagged != set(causal_index):
+        raise ReadinessError("PS3C_SOURCE", "join membership")
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import ps3r_manifest_ingestor as ingestor
+    discovered = ingestor.discover(root, Path(__file__).resolve().with_name("ps3r_ingest_config.json"))
+    if any(item["reason"] == "CONTRADICTORY_TERMINAL" for item in discovered):
+        raise ReadinessError("PS3R_INGEST", "CONTRADICTORY_TERMINAL")
+    baseline = {
+        item["feature_id"]: item
+        for item in discovered
+        if item["role"] == "baseline" and item["disposition"] == "ADOPTED"
+    }
+    alternative = [
+        item for item in discovered
+        if item["role"] == "alternative" and item["disposition"] == "ADOPTED"
+    ]
+    if VIX_FEATURE not in baseline or baseline[VIX_FEATURE]["results_sha256"] not in audit:
         raise ReadinessError("VIX_EVIDENCE", "accepted results digest absent from the audit")
     require_reconstruction_not_selection({
         "feature_id": VIX_FEATURE,
@@ -676,17 +697,7 @@ def build(root):
     lane = _lane_e(root)
     if VIX_FEATURE in lane["done"]:
         raise ReadinessError("VIX_EVIDENCE", "lane E matrix is not the accepted results file")
-    completed = set(lane["done"])
-    completed.add(VIX_FEATURE)
-    completed.add(DGS30_FEATURE)
-    completed.add(DPRIME_FEATURE)
-    completed.add(AUD_EWMA_FEATURE)
-    completed.add(AUD_LOGRET1H_FEATURE)
-    completed.add(AUD_LOGRET24H_FEATURE)
-    completed.add(EURGBP_EWMA_FEATURE)
-    completed.add(EURGBP_LOGRET1H_FEATURE)
-    completed.add(EURJPY_EWMA_FEATURE)
-    completed.add(EURJPY_LOGRET1H_FEATURE)
+    completed = set(lane["done"]) | set(baseline)
     schedule = schedule_ps4(completed, ps2, set(MEASURED_FEATURES))
     scheduled_features = {row["feature_id"] for row in schedule}
     rows = []
@@ -695,9 +706,16 @@ def build(root):
         if feature_id not in ps1_states or feature_id not in ps2:
             raise ReadinessError("MISSING_CANDIDATE", feature_id)
         ps1 = ps1_status(ps1_states[feature_id])
-        causal = ps3c_status(feature)
-        if feature_id in {AUD_EWMA_FEATURE, AUD_LOGRET1H_FEATURE, AUD_LOGRET24H_FEATURE, EURGBP_EWMA_FEATURE, EURGBP_LOGRET1H_FEATURE, EURJPY_EWMA_FEATURE, EURJPY_LOGRET1H_FEATURE, DGS30_FEATURE, DPRIME_FEATURE, VIX_FEATURE}:
-            ps3r = "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
+        if feature_id in causal_index:
+            causal = "NOT_IDENTIFIED"
+            producer_revision = causal_index[feature_id]["producer_revision"]
+            join_sha = causal_index[feature_id]["join_sha256"]
+        else:
+            causal = "OUTSIDE_JOIN_PENDING"
+            producer_revision = ""
+            join_sha = ""
+        if feature_id in baseline:
+            ps3r = baseline[feature_id]["ps3r_status"]
         elif feature_id in lane["done"]:
             ps3r = "LANE_E_MEASURED_NOT_SELECTION"
         elif feature.get("in_extractibility_queue"):
@@ -711,7 +729,7 @@ def build(root):
         else:
             ps4 = "PENDING_PROFILE"
         locator, evidence_digest, kind = _evidence(
-            feature_id, ps4, ps3r, ps1_batch[feature_id], profile, lane, ps1_digests,
+            feature_id, ps4, ps3r, ps1_batch[feature_id], profile, lane, ps1_digests, baseline,
         )
         if ps4 == "MEASURED_SUBPOPULATION" and evidence_digest != profile["feature_digests"][feature_id]:
             raise ReadinessError("STALE_PS4_DIGEST", feature_id)
@@ -721,9 +739,19 @@ def build(root):
             "ps0_ps1_status": ps1,
             "ps2_status": ps2_status(ps2[feature_id]),
             "ps3c_status": causal,
+            "ps3c_producer_revision": producer_revision,
+            "ps3c_join_sha256": join_sha,
             "ps3r_status": ps3r,
             "ps4_status": ps4,
-            "ps5_status": "PREPARED_INPUT_NOT_TRAINED",
+            "ps5_status": (
+                "EVIDENCE_PRESENT_NOT_TRAINED"
+                if ps3r in {
+                    "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
+                    "ACCEPTED_PS3R_TERMINAL_NOT_SELECTION",
+                }
+                and ps4 == "MEASURED_SUBPOPULATION"
+                else "NOT_READY_EVIDENCE_INCOMPLETE"
+            ),
             "evidence_locator": locator,
             "evidence_digest": evidence_digest,
             "evidence_kind": kind,
@@ -843,14 +871,33 @@ def build(root):
         },
         "ps5_preparation_identity": comparison["preparation_identity"],
         "status_counts": {"ps3c": by_ps3c, "ps3r": by_ps3r, "ps4": by_ps4},
+        "ps3c_source": {
+            "producer_revision": "48ae17c",
+            "join_sha256": causal_hashes,
+            "identified": by_ps3c.get("IDENTIFIED_CONDITIONAL_ON_DECLARED_ASSUMPTIONS", 0),
+            "not_identified": by_ps3c.get("NOT_IDENTIFIED", 0),
+            "outside_join_pending": by_ps3c.get("OUTSIDE_JOIN_PENDING", 0),
+            "not_identified_is_not_rejected": True,
+        },
+        "ps5_design_status": "PREPARED_NOT_TRAINED",
+        "alternative_family_evidence": [
+            {
+                "feature_id": item["feature_id"],
+                "results_sha256": item["results_sha256"],
+                "utility": item["utility"],
+                "replaces_baseline": False,
+            }
+            for item in alternative
+        ],
         "audit_sha256": digest_path(root / BASE / "RETSU_PS4_PS3R_AUDIT_2026_10_03.md"),
         "population_sha256": population_sha,
         "huecos": [
             "PS4 medido cubre 10 de 366. El resto sigue PENDING_PROFILE o solo agendado.",
-            "Las celdas dragon cerradas, incluida fx.eurjpy.logret_1h, tienen utilidad mixta y no están seleccionadas.",
+            "PS3-C vigente: 0 identificadas de 279. NOT_IDENTIFIED no es rechazo. 87 quedan fuera del join.",
+            "Las celdas baseline adoptadas por manifiesto tienen utilidad medida y no están seleccionadas.",
             "px.logret_6h past_to_current_siamese no se promueve.",
             "features_train.parquet no está en este árbol; se conserva el digest retenido sin recomputarlo.",
-            "PS5 está preparado y no entrenado. No hay manifiesto selected, rejected o pending.",
+            "El diseño global PS5 está preparado y no entrenado. Cada candidata sin PS3-R y PS4 requeridos queda NOT_READY_EVIDENCE_INCOMPLETE.",
             "Las nueve filas históricas de variantes siguen en PENDING_PROFILE.",
         ],
     }
