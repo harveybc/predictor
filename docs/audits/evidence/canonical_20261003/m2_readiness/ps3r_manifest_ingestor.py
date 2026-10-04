@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import math
 from pathlib import Path
 
 
@@ -72,9 +73,57 @@ def _utility(rows, trained):
     return "mixed" if mixed else "uniform"
 
 
+def _probe_contract(rules):
+    """Return trusted target domains, rejecting incomplete or ambiguous contracts."""
+
+    raw = rules.get("probe_contract")
+    if not isinstance(raw, dict) or not raw:
+        return None
+    contract = {}
+    for target, specification in raw.items():
+        if not isinstance(target, str) or not target or not isinstance(specification, dict):
+            return None
+        horizons = specification.get("horizon_indices")
+        metrics = specification.get("metrics")
+        delta_metric = specification.get("delta_metric")
+        if (
+            not isinstance(horizons, list)
+            or not horizons
+            or any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in horizons)
+            or len(horizons) != len(set(horizons))
+            or not isinstance(metrics, list)
+            or not metrics
+            or any(not isinstance(value, str) or not value for value in metrics)
+            or len(metrics) != len(set(metrics))
+            or delta_metric not in metrics
+        ):
+            return None
+        contract[target] = {
+            "horizons": tuple(horizons),
+            "metrics": tuple(metrics),
+            "delta_metric": delta_metric,
+        }
+
+    families = tuple(rules.get("families") or ())
+    folds = tuple(rules.get("folds") or ())
+    trained = tuple(family for family in families if family not in {"identity", "random"})
+    target_horizon_count = sum(len(item["horizons"]) for item in contract.values())
+    expected_counts = {
+        "probe": len(folds) * len(families) * target_horizon_count,
+        "probe_delta": len(folds) * len(trained) * target_horizon_count,
+    }
+    declared_counts = rules.get("row_kinds") or {}
+    if any(declared_counts.get(kind) != count for kind, count in expected_counts.items()):
+        return None
+    return contract
+
+
 def _validate_rows(rows, feature_id, rules):
     """Bind retained rows to the authenticated manifest identity."""
 
+    contract = _probe_contract(rules)
+    if contract is None:
+        return "PROBE_CONTRACT", "missing_or_invalid"
     families = tuple(rules["families"])
     family_set = set(families)
     folds = tuple(rules["folds"])
@@ -82,7 +131,7 @@ def _validate_rows(rows, feature_id, rules):
     seed = int(rules["seed"])
     trained = family_set - {"identity", "random"}
     fold_families = set()
-    probe_keys = set()
+    probe_metric_keys = set()
     delta_keys = set()
     summaries = 0
     summary_families = set()
@@ -119,10 +168,27 @@ def _validate_rows(rows, feature_id, rules):
                 return "ROW_FAMILY", str(row_number)
             if fold not in fold_set:
                 return "ROW_FOLD", str(row_number)
-            key = (fold, family, row.get("target"), row.get("horizon_index"))
-            if key in probe_keys:
-                return "ROW_DUPLICATE", str(row_number)
-            probe_keys.add(key)
+            target = row.get("target")
+            horizon = row.get("horizon_index")
+            specification = contract.get(target)
+            if (
+                specification is None
+                or isinstance(horizon, bool)
+                or horizon not in specification["horizons"]
+            ):
+                return "ROW_PROBE_COVERAGE", str(row_number)
+            for metric in specification["metrics"]:
+                value = row.get(metric)
+                if (
+                    isinstance(value, bool)
+                    or not isinstance(value, (int, float))
+                    or not math.isfinite(value)
+                ):
+                    return "ROW_METRIC", f"{row_number}:{metric}"
+                key = (fold, family, target, horizon, metric)
+                if key in probe_metric_keys:
+                    return "ROW_DUPLICATE", str(row_number)
+                probe_metric_keys.add(key)
         elif kind == "probe_delta":
             family = row.get("trained")
             fold = row.get("fold_id")
@@ -130,7 +196,18 @@ def _validate_rows(rows, feature_id, rules):
                 return "ROW_FAMILY", str(row_number)
             if fold not in fold_set:
                 return "ROW_FOLD", str(row_number)
-            key = (fold, family, row.get("target"), row.get("horizon_index"), row.get("loss"))
+            target = row.get("target")
+            horizon = row.get("horizon_index")
+            specification = contract.get(target)
+            loss = row.get("loss")
+            if (
+                specification is None
+                or isinstance(horizon, bool)
+                or horizon not in specification["horizons"]
+                or loss != specification["delta_metric"]
+            ):
+                return "ROW_DELTA_COVERAGE", str(row_number)
+            key = (fold, family, target, horizon, loss)
             if key in delta_keys:
                 return "ROW_DUPLICATE", str(row_number)
             delta_keys.add(key)
@@ -149,8 +226,27 @@ def _validate_rows(rows, feature_id, rules):
                     return "ROW_FOLD", str(row_number)
 
     expected_fold_families = {(fold, family) for fold in folds for family in families}
+    expected_probe_metric_keys = {
+        (fold, family, target, horizon, metric)
+        for fold in folds
+        for family in families
+        for target, specification in contract.items()
+        for horizon in specification["horizons"]
+        for metric in specification["metrics"]
+    }
+    expected_delta_keys = {
+        (fold, family, target, horizon, specification["delta_metric"])
+        for fold in folds
+        for family in trained
+        for target, specification in contract.items()
+        for horizon in specification["horizons"]
+    }
     if fold_families != expected_fold_families:
         return "ROW_IDENTITY_COVERAGE", "fold_family"
+    if probe_metric_keys != expected_probe_metric_keys:
+        return "ROW_PROBE_COVERAGE", "missing_or_extra"
+    if delta_keys != expected_delta_keys:
+        return "ROW_DELTA_COVERAGE", "missing_or_extra"
     if summaries != 1:
         return "ROW_IDENTITY_COVERAGE", "feature_summary"
     if summary_families != family_set:
