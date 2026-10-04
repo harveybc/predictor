@@ -36,6 +36,7 @@
   "SELECTION_DENOMINATOR_NOT_CLOSED"
  ],
  "hashes": {
+  "accepted_units.json": "42413a6d3f1757ee79eb7ef1d5e055e8fbc7f4a0a717a03fb41fb9a6ba8760a6",
   "already_measured_names": "df3f09f7dc4eb4d330198805cb014e1ab2115c6f5f73d3ceb693a56f83884dd7",
   "declared_missing_series": {
    "laneB/batch_001/series.npz": "3e4404d260d9236ca24fc8561eedbfcc9c47a609d3e64b68870c204a3731f025",
@@ -43,7 +44,7 @@
    "laneB/batch_003/series.npz": "293db083a886a41a6ae719c0bfa274b0513cc2c956b14965dd9a97a37dd69571"
   },
   "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
-  "profiler": "58a27d7f1c22c5aba1c450dfc131fb7aebab99db7d7c476a3e9d5b90629cc720",
+  "profiler": "4a1406ded3d78dd5347034a97258e38444d29af5c0dc91d0d3b9b6254f5c39b5",
   "published_transform_profile_report": "3b294c8ef31443db4f5e93800a07660344420ddf42387262ba7259680292f6a0"
  },
  "measured_unit_hashes": [
@@ -61,10 +62,11 @@
      "ae",
      "dae"
     ],
+    "results_file": "results.jsonl",
     "results_sha256": "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a",
     "schema": "ps3r_terminal_identity.v1",
     "seed": 0,
-    "terminal_manifest_sha256": "5f4bbd6aed5f456397cc6bdb80f8bb790bd8b8ea14d6d585b5c6c77397a7fdf0"
+    "terminal_manifest_sha256": "af2c6e0c75bceeb51c9c8abf17535d3c31293ddc76e7e59ba9a888afcbcf70a8"
    },
    "unit": "fred.stress.vixcls.logret_5d__inner_2019.json",
    "unit_status": "MEASURED"
@@ -83,10 +85,11 @@
      "ae",
      "dae"
     ],
+    "results_file": "results.jsonl",
     "results_sha256": "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a",
     "schema": "ps3r_terminal_identity.v1",
     "seed": 0,
-    "terminal_manifest_sha256": "5f4bbd6aed5f456397cc6bdb80f8bb790bd8b8ea14d6d585b5c6c77397a7fdf0"
+    "terminal_manifest_sha256": "af2c6e0c75bceeb51c9c8abf17535d3c31293ddc76e7e59ba9a888afcbcf70a8"
    },
    "unit": "fred.stress.vixcls.logret_5d__inner_2020.json",
    "unit_status": "MEASURED"
@@ -105,10 +108,11 @@
      "ae",
      "dae"
     ],
+    "results_file": "results.jsonl",
     "results_sha256": "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a",
     "schema": "ps3r_terminal_identity.v1",
     "seed": 0,
-    "terminal_manifest_sha256": "5f4bbd6aed5f456397cc6bdb80f8bb790bd8b8ea14d6d585b5c6c77397a7fdf0"
+    "terminal_manifest_sha256": "af2c6e0c75bceeb51c9c8abf17535d3c31293ddc76e7e59ba9a888afcbcf70a8"
    },
    "unit": "fred.stress.vixcls.logret_5d__inner_2021.json",
    "unit_status": "MEASURED"
@@ -127,10 +131,11 @@
      "ae",
      "dae"
     ],
+    "results_file": "results.jsonl",
     "results_sha256": "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a",
     "schema": "ps3r_terminal_identity.v1",
     "seed": 0,
-    "terminal_manifest_sha256": "5f4bbd6aed5f456397cc6bdb80f8bb790bd8b8ea14d6d585b5c6c77397a7fdf0"
+    "terminal_manifest_sha256": "af2c6e0c75bceeb51c9c8abf17535d3c31293ddc76e7e59ba9a888afcbcf70a8"
    },
    "unit": "fred.stress.vixcls.logret_5d__inner_2022.json",
    "unit_status": "MEASURED"
@@ -149,10 +154,11 @@
      "ae",
      "dae"
     ],
+    "results_file": "results.jsonl",
     "results_sha256": "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a",
     "schema": "ps3r_terminal_identity.v1",
     "seed": 0,
-    "terminal_manifest_sha256": "5f4bbd6aed5f456397cc6bdb80f8bb790bd8b8ea14d6d585b5c6c77397a7fdf0"
+    "terminal_manifest_sha256": "af2c6e0c75bceeb51c9c8abf17535d3c31293ddc76e7e59ba9a888afcbcf70a8"
    },
    "unit": "fred.stress.vixcls.logret_5d__inner_2023.json",
    "unit_status": "MEASURED"

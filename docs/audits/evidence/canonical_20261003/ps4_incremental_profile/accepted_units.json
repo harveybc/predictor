@@ -1,0 +1,125 @@
+{
+ "schema": "ps4_accepted_units.v1",
+ "units": [
+  {
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold_id": "inner_2019",
+   "source_sha256": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "terminal_identity": {
+    "code_revision": "8987c573bd7e0819a54011e88ec9e7c309229350",
+    "families": [
+     "identity",
+     "random",
+     "ae",
+     "dae"
+    ],
+    "results_file": "results.jsonl",
+    "results_sha256": "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a",
+    "schema": "ps3r_terminal_identity.v1",
+    "seed": 0,
+    "terminal_manifest_sha256": "af2c6e0c75bceeb51c9c8abf17535d3c31293ddc76e7e59ba9a888afcbcf70a8"
+   },
+   "unit": "fred.stress.vixcls.logret_5d__inner_2019.json",
+   "unit_sha256": "37108cd7edb0fe0e3c143af913431f214565e9fc07686ab5c91954715d96d047"
+  },
+  {
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold_id": "inner_2020",
+   "source_sha256": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "terminal_identity": {
+    "code_revision": "8987c573bd7e0819a54011e88ec9e7c309229350",
+    "families": [
+     "identity",
+     "random",
+     "ae",
+     "dae"
+    ],
+    "results_file": "results.jsonl",
+    "results_sha256": "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a",
+    "schema": "ps3r_terminal_identity.v1",
+    "seed": 0,
+    "terminal_manifest_sha256": "af2c6e0c75bceeb51c9c8abf17535d3c31293ddc76e7e59ba9a888afcbcf70a8"
+   },
+   "unit": "fred.stress.vixcls.logret_5d__inner_2020.json",
+   "unit_sha256": "71ea2c689379c3175242e20dd74abe4e17b00a0ea6bda5164ea3899de610dffa"
+  },
+  {
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold_id": "inner_2021",
+   "source_sha256": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "terminal_identity": {
+    "code_revision": "8987c573bd7e0819a54011e88ec9e7c309229350",
+    "families": [
+     "identity",
+     "random",
+     "ae",
+     "dae"
+    ],
+    "results_file": "results.jsonl",
+    "results_sha256": "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a",
+    "schema": "ps3r_terminal_identity.v1",
+    "seed": 0,
+    "terminal_manifest_sha256": "af2c6e0c75bceeb51c9c8abf17535d3c31293ddc76e7e59ba9a888afcbcf70a8"
+   },
+   "unit": "fred.stress.vixcls.logret_5d__inner_2021.json",
+   "unit_sha256": "4c763c5694c97e2456064a0a8b9f054fa65d4ca877fa9738871ca747993c69cf"
+  },
+  {
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold_id": "inner_2022",
+   "source_sha256": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "terminal_identity": {
+    "code_revision": "8987c573bd7e0819a54011e88ec9e7c309229350",
+    "families": [
+     "identity",
+     "random",
+     "ae",
+     "dae"
+    ],
+    "results_file": "results.jsonl",
+    "results_sha256": "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a",
+    "schema": "ps3r_terminal_identity.v1",
+    "seed": 0,
+    "terminal_manifest_sha256": "af2c6e0c75bceeb51c9c8abf17535d3c31293ddc76e7e59ba9a888afcbcf70a8"
+   },
+   "unit": "fred.stress.vixcls.logret_5d__inner_2022.json",
+   "unit_sha256": "246122b036164d9adffc20d8a5aafa4fdea1962d6d0c2f5e05e29222f2140fdf"
+  },
+  {
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold_id": "inner_2023",
+   "source_sha256": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "terminal_identity": {
+    "code_revision": "8987c573bd7e0819a54011e88ec9e7c309229350",
+    "families": [
+     "identity",
+     "random",
+     "ae",
+     "dae"
+    ],
+    "results_file": "results.jsonl",
+    "results_sha256": "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a",
+    "schema": "ps3r_terminal_identity.v1",
+    "seed": 0,
+    "terminal_manifest_sha256": "af2c6e0c75bceeb51c9c8abf17535d3c31293ddc76e7e59ba9a888afcbcf70a8"
+   },
+   "unit": "fred.stress.vixcls.logret_5d__inner_2023.json",
+   "unit_sha256": "7e22badfe5f02ddb5fd3ff1cd63f6e7e31d64df5435bc5cb979b7923d29b60f6"
+  }
+ ]
+}

@@ -33,6 +33,8 @@ def _series(path: Path, columns: dict) -> None:
 
 
 def _terminal(path: Path, series: Path, feature: str, **overrides) -> Path:
+    results = path.with_name(path.stem + ".results.jsonl")
+    results.write_text('{"feature":"' + feature + '","status":"COMPLETED"}\n')
     payload = {
         "schema": "ut_pilot_run.v1",
         "status": "COMPLETED",
@@ -40,12 +42,33 @@ def _terminal(path: Path, series: Path, feature: str, **overrides) -> Path:
         "seed": 0,
         "code_commit": "1" * 40,
         "families": ["identity", "random", "ae", "dae"],
-        "results_sha256": "2" * 64,
+        "results_sha256": inc.sha256_file(results),
+        "results_file": results.name,
         "series_sha256": inc.sha256_file(series),
     }
     payload.update(overrides)
     path.write_text(json.dumps(payload, sort_keys=True))
     return path
+
+
+def _acceptance_for(unit: Path) -> dict:
+    payload = json.loads(unit.read_text())
+    return {
+        "unit": unit.name,
+        "unit_sha256": inc.sha256_file(unit),
+        "feature_id": payload["feature_id"],
+        "fold_id": payload["fold_id"],
+        "source_sha256": payload["source_sha256"],
+        "terminal_identity": payload["terminal_identity"],
+    }
+
+
+def _accepted_index(path: Path, units: list[Path]) -> tuple[Path, str]:
+    path.write_text(json.dumps({
+        "schema": inc.ACCEPTED_INDEX_SCHEMA,
+        "units": [_acceptance_for(unit) for unit in units],
+    }, sort_keys=True))
+    return path, inc.sha256_file(path)
 
 
 def _column(n: int, scale: float) -> np.ndarray:
@@ -95,7 +118,8 @@ def test_fixture_profiles_prefixed_and_bare_columns(tmp_path: Path) -> None:
     assert left["train_rows"] == [0, 120]
     assert right["train_rows"] == [0, 150]
     assert {row["fold"] for row in left["rows"]} == {"inner_2019"}
-    assert inc.classify_unit(inc.unit_path(out, "px.logret_1h", "inner_2019")) == "MEASURED"
+    left_unit = inc.unit_path(out, "px.logret_1h", "inner_2019")
+    assert inc.classify_unit(left_unit, expected_acceptance=_acceptance_for(left_unit)) == "MEASURED"
     assert _metrics(left["rows"]) != _metrics(right["rows"])
 
 
@@ -145,12 +169,14 @@ def test_resume_skips_completed_unit(tmp_path: Path, monkeypatch: pytest.MonkeyP
     )
     assert first["resumed"] is False
     stored = inc.unit_path(out, "px.logret_1h", "inner_2019")
+    accepted = _acceptance_for(stored)
     snapshot = stored.read_bytes()
     monkeypatch.setattr(inc, "profile_fold", _boom)
     monkeypatch.setattr(inc, "load_series_column", _boom)
     second = inc.execute_unit(
         series, folds, "px.logret_1h", "inner_2019", out,
         dataset_id="fixture", expected_digest=digest, terminal_manifest=terminal,
+        expected_acceptance=accepted,
     )
     assert second["resumed"] is True
     assert second["unit_status"] == "MEASURED"
@@ -201,7 +227,7 @@ def test_partial_unit_is_not_measured_and_is_recomputed(tmp_path: Path, monkeypa
                               dataset_id="fixture", terminal_manifest=terminal)
     assert calls["n"] == 1
     assert result["unit_status"] == "MEASURED"
-    assert inc.classify_unit(path) == "MEASURED"
+    assert inc.classify_unit(path, expected_acceptance=_acceptance_for(path)) == "MEASURED"
     assert not leftover.exists()
 
 
@@ -316,7 +342,8 @@ def test_unit_identity_and_terminal_are_authenticated(tmp_path: Path) -> None:
                      terminal_manifest=terminal)
     unit = inc.unit_path(out, "px.logret_1h", "inner_2019")
     original = json.loads(unit.read_text())
-    assert inc.classify_unit(unit) == "MEASURED"
+    accepted = _acceptance_for(unit)
+    assert inc.classify_unit(unit, expected_acceptance=accepted) == "MEASURED"
 
     mutations = {
         "feature_id": "other",
@@ -366,7 +393,7 @@ def test_completed_unit_refuses_a_different_terminal(tmp_path: Path) -> None:
     first = _terminal(tmp_path / "first.json", series, "px.logret_1h")
     second = _terminal(
         tmp_path / "second.json", series, "px.logret_1h",
-        code_commit="3" * 40, results_sha256="4" * 64,
+        code_commit="3" * 40,
     )
     out = tmp_path / "out"
     inc.execute_unit(series, folds, "px.logret_1h", "inner_2019", out,
@@ -400,8 +427,10 @@ def test_legacy_binding_preserves_scientific_rows_and_adds_terminal_identity(tmp
     rebound = json.loads(unit.read_text())
     assert result["scientific_rows_recomputed"] is False
     assert json.dumps(rebound["rows"], sort_keys=True) == rows_before
-    assert rebound["terminal_identity"]["results_sha256"] == "2" * 64
-    assert inc.classify_unit(unit) == "MEASURED"
+    assert rebound["terminal_identity"]["results_sha256"] == inc.sha256_file(
+        tmp_path / "terminal.results.jsonl"
+    )
+    assert inc.classify_unit(unit, expected_acceptance=_acceptance_for(unit)) == "MEASURED"
 
 
 def _evidence_with_terminal(root: Path, *, write_series: bool, features: list[str]) -> None:
@@ -477,8 +506,83 @@ def test_pending_candidate_is_included_in_report_counts(tmp_path: Path) -> None:
     for fold in inc.INNER_FOLDS:
         inc.execute_unit(series, folds, "px.logret_1h", fold, out,
                          terminal_manifest=terminal)
+    units = [inc.unit_path(out, "px.logret_1h", fold) for fold in inc.INNER_FOLDS]
+    accepted_index, accepted_digest = _accepted_index(tmp_path / "accepted.json", units)
     evidence = tmp_path / "evidence"
     _evidence_with_terminal(evidence, write_series=False, features=["other"])
-    report = inc.publish_report(evidence, folds, out / "units", tmp_path / "REPORT.json")
+    report = inc.publish_report(
+        evidence, folds, out / "units", tmp_path / "REPORT.json",
+        accepted_index=accepted_index,
+        expected_accepted_index_sha256=accepted_digest,
+    )
     assert report["counts"] == {"MEASURED": 5, "PENDING": 1, "FAILED": 0}
     assert report["candidate"]["state"] == "PENDING"
+
+
+def test_coherent_metric_rewrite_is_rejected_by_external_acceptance(tmp_path: Path) -> None:
+    series = tmp_path / "series.npz"
+    _series(series, {"x__px.logret_1h": _column(300, 1.0)})
+    folds = tmp_path / "folds.json"
+    _folds(folds)
+    terminal = _terminal(tmp_path / "terminal.json", series, "px.logret_1h")
+    out = tmp_path / "out"
+    inc.execute_unit(series, folds, "px.logret_1h", "inner_2019", out,
+                     terminal_manifest=terminal)
+    unit = inc.unit_path(out, "px.logret_1h", "inner_2019")
+    accepted = _acceptance_for(unit)
+    assert inc.classify_unit(unit, expected_acceptance=accepted) == "MEASURED"
+
+    changed = json.loads(unit.read_text())
+    changed["rows"][0]["value"] = 999.0
+    changed["rows_sha256"] = inc._rows_sha256(changed["rows"])
+    changed["identity_sha256"] = inc._json_sha256(inc._identity_payload(changed))
+    unit.write_text(json.dumps(changed))
+    assert inc.classify_unit(unit, expected_acceptance=accepted) == "PENDING"
+
+
+def test_terminal_manifest_must_hash_retained_results_bytes(tmp_path: Path) -> None:
+    series = tmp_path / "series.npz"
+    _series(series, {"x__px.logret_1h": _column(300, 1.0)})
+    terminal = _terminal(tmp_path / "terminal.json", series, "px.logret_1h")
+    identity = inc.load_terminal_identity(terminal, "px.logret_1h", inc.sha256_file(series))
+    assert identity["results_sha256"] == inc.sha256_file(tmp_path / "terminal.results.jsonl")
+    (tmp_path / "terminal.results.jsonl").write_text("rewritten\n")
+    with pytest.raises(inc.ProfileRefusal) as caught:
+        inc.load_terminal_identity(terminal, "px.logret_1h", inc.sha256_file(series))
+    assert caught.value.code == "TERMINAL_RESULTS_DIGEST_MISMATCH"
+
+
+def test_report_rejects_coherently_rewritten_unit_and_terminal(tmp_path: Path) -> None:
+    series = tmp_path / "series.npz"
+    _series(series, {"x__px.logret_1h": _column(300, 1.0)})
+    folds = tmp_path / "folds.json"
+    _folds(folds)
+    terminal = _terminal(tmp_path / "terminal.json", series, "px.logret_1h")
+    out = tmp_path / "out"
+    inc.execute_unit(series, folds, "px.logret_1h", "inner_2019", out,
+                     terminal_manifest=terminal)
+    unit = inc.unit_path(out, "px.logret_1h", "inner_2019")
+    acceptance = _acceptance_for(unit)
+    index = tmp_path / "accepted_units.json"
+    index.write_text(json.dumps({"schema": inc.ACCEPTED_INDEX_SCHEMA, "units": [acceptance]},
+                                sort_keys=True))
+    index_digest = inc.sha256_file(index)
+
+    evidence = tmp_path / "evidence"
+    _evidence_with_terminal(evidence, write_series=False, features=["other"])
+    report = inc.publish_report(evidence, folds, out / "units", tmp_path / "REPORT.json",
+                                accepted_index=index,
+                                expected_accepted_index_sha256=index_digest)
+    assert report["counts"]["MEASURED"] == 1
+
+    changed = json.loads(unit.read_text())
+    changed["terminal_identity"]["results_sha256"] = "9" * 64
+    changed["terminal_identity"]["code_revision"] = "rewritten"
+    changed["rows_sha256"] = inc._rows_sha256(changed["rows"])
+    changed["identity_sha256"] = inc._json_sha256(inc._identity_payload(changed))
+    unit.write_text(json.dumps(changed))
+    rejected = inc.publish_report(evidence, folds, out / "units", tmp_path / "REJECTED.json",
+                                  accepted_index=index,
+                                  expected_accepted_index_sha256=index_digest)
+    assert rejected["counts"]["MEASURED"] == 0
+    assert rejected["counts"]["PENDING"] >= 1
