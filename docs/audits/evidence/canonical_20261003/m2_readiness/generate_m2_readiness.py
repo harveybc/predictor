@@ -63,6 +63,7 @@ PS4_METRICS = (
 VIX_FEATURE = "fred.stress.vixcls.logret_5d"
 VIX_RESULTS_SHA256 = "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a"
 DGS30_FEATURE = "fred.rates.dgs30.level"
+DGS30_RESULTS_SHA256 = "f7763f142b7f02c72ae50e6b93562d6614f0563eb1694c26c21dc0a57e9416d5"
 SIAMESE_FEATURE = "px.logret_6h"
 SIAMESE_FAMILY = "past_to_current_siamese"
 TRAIN_EXCLUSIVE_END = datetime.fromisoformat("2024-01-01T00:00:00+00:00")
@@ -280,7 +281,7 @@ def schedule_ps4(completed, ps2_counts, already_measured):
     rows = []
     bound = f"{len(PS4_METRICS)}_metrics_x_{len(INNER_FOLDS)}_inner_folds"
     for feature in sorted(completed):
-        if feature in already_measured or feature == DGS30_FEATURE:
+        if feature in already_measured:
             continue
         counts = ps2_counts.get(feature) or {}
         if not prioritized_for_ps4(counts):
@@ -535,7 +536,7 @@ def _lane_e(root):
 
 def _next_action(feature, ps3c, ps3r, ps4, ps1):
     if feature == DGS30_FEATURE:
-        return "La celda PS3-R sigue en ejecución y no es terminal. No marcarla completa ni agendar PS4."
+        return "Conservar la medición PS3-R de utilidad mixta. La reconstrucción no selecciona. El perfil PS4 queda solo agendado."
     if feature == SIAMESE_FEATURE:
         return (
             "Conservar la medición lane E de identity, random, ae y dae. "
@@ -568,11 +569,18 @@ def _evidence(feature, ps4, ps3r, batch, profile, lane, ps1_digests):
             "recomputed_profile_rows",
         )
     if ps3r == "ACCEPTED_PS3R_CELL_MIXED_UTILITY":
-        return (
-            str(BASE / "RETSU_PS4_PS3R_AUDIT_2026_10_03.md") + "#batch_002/" + feature,
-            VIX_RESULTS_SHA256,
-            "accepted_ps3r_results_sha256",
-        )
+        accepted = {
+            VIX_FEATURE: (
+                str(BASE / "RETSU_PS4_PS3R_AUDIT_2026_10_03.md") + "#batch_002/" + feature,
+                VIX_RESULTS_SHA256,
+            ),
+            DGS30_FEATURE: (
+                "ps3r/dragon/runs/batch_002/" + feature + "/results.jsonl",
+                DGS30_RESULTS_SHA256,
+            ),
+        }
+        locator, digest = accepted[feature]
+        return locator, digest, "accepted_ps3r_results_sha256"
     if ps3r == "LANE_E_MEASURED_NOT_SELECTION":
         return (
             lane["matrix_locator"] + "#" + feature,
@@ -618,16 +626,13 @@ def build(root):
     ps2 = _load_ps2(root)
     ps1_states, ps1_batch, ps1_digests = _load_ps1(root)
     lane = _lane_e(root)
-    if DGS30_FEATURE in lane["done"]:
-        raise ReadinessError("DGS30_NOT_TERMINAL", "cost row is DONE")
     if VIX_FEATURE in lane["done"]:
         raise ReadinessError("VIX_EVIDENCE", "lane E matrix is not the accepted results file")
     completed = set(lane["done"])
     completed.add(VIX_FEATURE)
+    completed.add(DGS30_FEATURE)
     schedule = schedule_ps4(completed, ps2, set(MEASURED_FEATURES))
     scheduled_features = {row["feature_id"] for row in schedule}
-    if DGS30_FEATURE in scheduled_features:
-        raise ReadinessError("DGS30_NOT_TERMINAL", "scheduled")
     rows = []
     for feature in features:
         feature_id = feature["feature_id"]
@@ -635,9 +640,7 @@ def build(root):
             raise ReadinessError("MISSING_CANDIDATE", feature_id)
         ps1 = ps1_status(ps1_states[feature_id])
         causal = ps3c_status(feature)
-        if feature_id == DGS30_FEATURE:
-            ps3r = "RUNNING_NOT_TERMINAL"
-        elif feature_id == VIX_FEATURE:
+        if feature_id in {DGS30_FEATURE, VIX_FEATURE}:
             ps3r = "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
         elif feature_id in lane["done"]:
             ps3r = "LANE_E_MEASURED_NOT_SELECTION"
@@ -736,7 +739,9 @@ def build(root):
             "vix_utility": "mixed",
             "reconstruction_is_selection": False,
             "dgs30_feature": DGS30_FEATURE,
-            "dgs30_status": "RUNNING_NOT_TERMINAL",
+            "dgs30_results_sha256": DGS30_RESULTS_SHA256,
+            "dgs30_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
+            "dgs30_utility": "mixed",
             "siamese_feature": SIAMESE_FEATURE,
             "siamese_family": SIAMESE_FAMILY,
             "siamese_promotion": "NOT_PROMOTED_RESULTS_OVERWRITTEN",
@@ -754,7 +759,7 @@ def build(root):
         "population_sha256": population_sha,
         "huecos": [
             "PS4 medido cubre 10 de 366. El resto sigue PENDING_PROFILE o solo agendado.",
-            "fred.rates.dgs30.level no es terminal.",
+            "fred.rates.dgs30.level tiene utilidad mixta y no está seleccionada. dprime sigue en ejecución y no entra como terminal.",
             "px.logret_6h past_to_current_siamese no se promueve.",
             "features_train.parquet no está en este árbol; se conserva el digest retenido sin recomputarlo.",
             "PS5 está preparado y no entrenado. No hay manifiesto selected, rejected o pending.",

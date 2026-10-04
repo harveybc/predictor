@@ -119,13 +119,14 @@ def test_retained_ledger_keeps_366_and_ten_measured_transforms():
     assert vix["ps4_status"] == "SCHEDULED_NOT_MEASURED"
     assert "selecc" not in vix["missing_next_action"].lower() or "no selecciona" in vix["missing_next_action"]
     dgs30 = by_id[ledger.DGS30_FEATURE]
-    assert dgs30["ps3r_status"] == "RUNNING_NOT_TERMINAL"
-    assert dgs30["ps4_status"] == "PENDING_PROFILE"
+    assert dgs30["ps3r_status"] == "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
+    assert dgs30["evidence_digest"] == ledger.DGS30_RESULTS_SHA256
+    assert dgs30["ps4_status"] == "SCHEDULED_NOT_MEASURED"
     siamese = by_id[ledger.SIAMESE_FEATURE]
     assert siamese["ps3r_status"] == "LANE_E_MEASURED_NOT_SELECTION"
     assert "past_to_current_siamese" in siamese["missing_next_action"]
     scheduled = {row["feature_id"] for row in built["schedule"]}
-    assert ledger.DGS30_FEATURE not in scheduled
+    assert ledger.DGS30_FEATURE in scheduled
     assert ledger.VIX_FEATURE in scheduled
     assert ledger.SIAMESE_FEATURE in scheduled
     assert len(built["schedule"]) == len(scheduled) * len(ledger.PS4_METRICS) * len(ledger.INNER_FOLDS)
