@@ -493,6 +493,84 @@ def _score_payload(score: WeekScore) -> dict[str, Any]:
     }
 
 
+def _finite_number(name: str, value: object) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ScoreRefusal("SCORE_SCHEMA", f"{name} must be numeric")
+    number = float(value)
+    if not math.isfinite(number):
+        raise ScoreRefusal("SCORE_SCHEMA", f"{name} must be finite")
+    return number
+
+
+def _validate_restored_score(score: WeekScore, contract: ScoringContract) -> None:
+    if (
+        score.primary_error_metric != contract.primary_error_metric
+        or score.contract_digest != _contract_digest(contract)
+    ):
+        raise ScoreRefusal("CONTRACT_MISMATCH", score.week_start)
+    if type(score.strategy_eligible) is not bool:
+        raise ScoreRefusal("SCORE_SCHEMA", "strategy_eligible must be a bool")
+    if score.disposition not in {item.value for item in DispositionStatus} | {"INCOMPLETE"}:
+        raise ScoreRefusal("SCORE_SCHEMA", "unsupported disposition")
+    seen: set[tuple[str, str]] = set()
+    for item in score.horizons:
+        if item.family not in {family.value for family in ForecastFamily}:
+            raise ScoreRefusal("SCORE_SCHEMA", f"unknown family {item.family!r}")
+        slot = (item.family, item.horizon)
+        if slot in seen:
+            raise ScoreRefusal("SCORE_SCHEMA", f"duplicate horizon {slot}")
+        seen.add(slot)
+        if type(item.sample_count) is not int or item.sample_count <= 0:
+            raise ScoreRefusal("SCORE_SCHEMA", "sample_count must be a positive integer")
+        if item.sample_count != len(item.paired_differences):
+            raise ScoreRefusal("SCORE_SCHEMA", "sample_count differs from paired population")
+        if len({pair.origin for pair in item.paired_differences}) != item.sample_count:
+            raise ScoreRefusal("SCORE_SCHEMA", "paired origins must be unique")
+        model_mae = _finite_number("model_mae", item.model_mae)
+        model_mse = _finite_number("model_mse", item.model_mse)
+        naive_mae = _finite_number("naive_mae", item.naive_mae)
+        naive_mse = _finite_number("naive_mse", item.naive_mse)
+        if min(model_mae, model_mse, naive_mae, naive_mse) < 0.0:
+            raise ScoreRefusal("SCORE_SCHEMA", "error metrics cannot be negative")
+        expected_mae_skill = _skill(model_mae, naive_mae)
+        expected_mse_skill = _skill(model_mse, naive_mse)
+        if item.skill_mae != expected_mae_skill or item.skill_mse != expected_mse_skill:
+            raise ScoreRefusal("SCORE_SCHEMA", "skill is not derived from retained errors")
+        expected_beats = (
+            model_mae < naive_mae
+            if contract.primary_error_metric == "mae"
+            else model_mse < naive_mse
+            if contract.primary_error_metric == "mse"
+            else None
+        )
+        if item.beats_primary_naive is not expected_beats:
+            raise ScoreRefusal("SCORE_SCHEMA", "naive verdict is not derived from retained errors")
+        mean_delta = _mean(
+            tuple(pair.absolute_error_difference for pair in item.paired_differences)
+        )
+        if not math.isclose(mean_delta, model_mae - naive_mae, rel_tol=0.0, abs_tol=1e-12):
+            raise ScoreRefusal("SCORE_SCHEMA", "paired differences contradict retained MAE")
+        for name in ("horizon", "unit", "scale", "model_digest", "dataset_id", "release_digest"):
+            _require_text(name, getattr(item, name))
+        if item.week_start != score.week_start:
+            raise ScoreRefusal("SCORE_SCHEMA", "horizon week differs from score week")
+    required = {
+        (family.value, horizon)
+        for family in contract.required_families
+        for horizon in contract.required_horizons
+    }
+    if required and not required.issubset(seen):
+        raise ScoreRefusal("SCORE_SCHEMA", "retained score omits a required family/horizon")
+    expected_eligible = (
+        bool(score.horizons)
+        and score.disposition == DispositionStatus.COMPLETED.value
+        and contract.primary_error_metric != NOT_CONFIGURED
+        and all(item.beats_primary_naive is True for item in score.horizons)
+    )
+    if score.strategy_eligible is not expected_eligible:
+        raise ScoreRefusal("SCORE_SCHEMA", "strategy eligibility is not derived from retained metrics")
+
+
 def _freeze(score: WeekScore) -> WeekScore:
     digest = _digest(_score_payload(score))
     return WeekScore(
@@ -779,7 +857,8 @@ class WeeklyScoreLedger:
 
     def to_json(self) -> str:
         payload = {
-            "schema": "business_weekly_score_ledger.v2",
+            "schema": "business_weekly_score_ledger.v3",
+            "delivery_semantics": "AT_LEAST_ONCE_IDEMPOTENT_SCORE_DIGEST",
             "primary_error_metric": self.contract.primary_error_metric,
             "required_families": [item.value for item in self.contract.required_families],
             "required_horizons": list(self.contract.required_horizons),
@@ -799,7 +878,6 @@ class WeeklyScoreLedger:
                 for week in self.expected_weeks
             ],
             "scores": [_score_payload(score) | {"digest": score.digest} for score in self._scores.values()],
-            "strategy_deliveries": dict(self._strategy_deliveries),
         }
         payload["ledger_digest"] = _digest(payload)
         return _canonical(payload).decode("ascii")
@@ -808,8 +886,25 @@ class WeeklyScoreLedger:
     def from_json(cls, encoded: str) -> "WeeklyScoreLedger":
         payload = json.loads(encoded)
         schema = payload.get("schema")
-        if schema != "business_weekly_score_ledger.v2":
+        if schema != "business_weekly_score_ledger.v3":
             raise ScoreRefusal("SCHEMA", "unsupported score ledger schema")
+        expected_fields = {
+            "delivery_semantics",
+            "expected_weeks",
+            "ledger_digest",
+            "primary_error_metric",
+            "required_families",
+            "required_horizons",
+            "scale_policy",
+            "schema",
+            "score_events",
+            "scores",
+            "task",
+        }
+        if set(payload) != expected_fields:
+            raise ScoreRefusal("SCHEMA_FIELDS", "score ledger fields differ from schema v3")
+        if payload["delivery_semantics"] != "AT_LEAST_ONCE_IDEMPOTENT_SCORE_DIGEST":
+            raise ScoreRefusal("DELIVERY_SEMANTICS", "unsupported delivery semantics")
         claimed_ledger_digest = payload.get("ledger_digest")
         unsigned_payload = dict(payload)
         unsigned_payload.pop("ledger_digest", None)
@@ -877,24 +972,16 @@ class WeeklyScoreLedger:
             )
             if score.digest != _digest(_score_payload(score)):
                 raise ScoreRefusal("DIGEST", score.week_start)
+            _validate_restored_score(score, contract)
             key = score.week_start + "|" + score.split
             if key in restored_keys:
                 raise ScoreRefusal("DUPLICATE_SCORE", key)
             restored_keys.add(key)
             ledger.record(score, counted=False)
-        deliveries = payload.get("strategy_deliveries")
-        if not isinstance(deliveries, dict) or set(deliveries) != set(ledger._scores):
-            raise ScoreRefusal("DELIVERY_STATE", "strategy delivery keys do not match scores")
-        allowed_states = {"PENDING", "DELIVERED", "NOT_APPLICABLE"}
-        if any(state not in allowed_states for state in deliveries.values()):
-            raise ScoreRefusal("DELIVERY_STATE", "unsupported strategy delivery state")
-        for key, state in deliveries.items():
-            eligible = ledger._scores[key].strategy_eligible
-            if (eligible and state == "NOT_APPLICABLE") or (
-                not eligible and state != "NOT_APPLICABLE"
-            ):
-                raise ScoreRefusal("DELIVERY_STATE", f"state contradicts eligibility for {key}")
-        ledger._strategy_deliveries = dict(deliveries)
+        ledger._strategy_deliveries = {
+            key: "PENDING" if score.strategy_eligible else "NOT_APPLICABLE"
+            for key, score in ledger._scores.items()
+        }
         events = payload["score_events"]
         if isinstance(events, bool) or not isinstance(events, int) or events != len(ledger._scores):
             raise ScoreRefusal("SCORE_EVENTS", "score event count does not match retained scores")

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import math
 import unittest
 from dataclasses import replace
@@ -29,6 +30,19 @@ from tools.business_weekly_training import score_forecast_release
 
 
 UTC = timezone.utc
+
+
+def digest(value) -> str:
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("ascii")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def reseal(payload: dict) -> None:
+    for score in payload["scores"]:
+        score["digest"] = digest({key: value for key, value in score.items() if key != "digest"})
+    payload["ledger_digest"] = digest(
+        {key: value for key, value in payload.items() if key != "ledger_digest"}
+    )
 
 
 class Bomb(tuple):
@@ -277,7 +291,7 @@ class WeeklyScoreTests(unittest.TestCase):
         with self.assertRaises(FirewallError):
             score_week(release, ScoringContract("mae", (ForecastFamily.SHORT,), ()), firewall=firewall)
 
-    def test_restart_does_not_rescore_a_completed_week(self) -> None:
+    def test_restart_does_not_rescore_but_retries_idempotent_delivery(self) -> None:
         contract = ScoringContract("mae", (ForecastFamily.SHORT,), ())
         ledger = WeeklyScoreLedger((week(0),), contract)
         release = WeekRelease(
@@ -298,7 +312,7 @@ class WeeklyScoreTests(unittest.TestCase):
         again = restored.submit(release, strategy=deliver)
         self.assertEqual(again.digest, first.digest)
         self.assertEqual(restored.score_events, 1)
-        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(calls), 2)
 
     def test_overlapping_hours_do_not_increase_the_week_denominator(self) -> None:
         contract = ScoringContract("mae", (ForecastFamily.SHORT,), ())
@@ -535,11 +549,31 @@ class WeeklyScoreTests(unittest.TestCase):
         )
         ledger.submit(release)
         payload = json.loads(ledger.to_json())
-        key = "2024-01-01T00:00:00Z|validation"
-        payload["strategy_deliveries"][key] = "DELIVERED"
+        payload["strategy_deliveries"] = {"2024-01-01T00:00:00Z|validation": "DELIVERED"}
+        reseal(payload)
         with self.assertRaises(ScoreRefusal) as caught:
             WeeklyScoreLedger.from_json(json.dumps(payload))
-        self.assertEqual(caught.exception.code, "LEDGER_DIGEST")
+        self.assertEqual(caught.exception.code, "SCHEMA_FIELDS")
+
+    def test_restore_rejects_non_boolean_eligibility_and_non_finite_metrics(self) -> None:
+        contract = ScoringContract("mae", (ForecastFamily.SHORT,), ("h1",))
+        ledger = WeeklyScoreLedger((week(0),), contract)
+        release = WeekRelease(
+            week(0),
+            (horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0)),),
+            False,
+        )
+        ledger.submit(release)
+        for mutate in (
+            lambda payload: payload["scores"][0].__setitem__("strategy_eligible", "false"),
+            lambda payload: payload["scores"][0]["horizons"][0].__setitem__("model_mae", math.nan),
+        ):
+            payload = json.loads(ledger.to_json())
+            mutate(payload)
+            reseal(payload)
+            with self.assertRaises(ScoreRefusal) as caught:
+                WeeklyScoreLedger.from_json(json.dumps(payload))
+            self.assertEqual(caught.exception.code, "SCORE_SCHEMA")
 
     def test_restore_rejects_duplicate_scores_and_metric_from_another_contract(self) -> None:
         release = WeekRelease(
