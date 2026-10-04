@@ -440,6 +440,53 @@ def count_units(units_dir: Path) -> dict:
     return {"counts": counts, "measured": measured, "failed": failed}
 
 
+def _opened_units(units_dir: Path) -> list[dict]:
+    opened = []
+    units_dir = Path(units_dir)
+    if not units_dir.is_dir():
+        return opened
+    for path in sorted(units_dir.glob("*.json")):
+        status = classify_unit(path)
+        if status not in {"MEASURED", "FAILED"}:
+            continue
+        payload = json.loads(path.read_text())
+        source = payload.get("source_sha256") or {}
+        opened.append({
+            "unit": path.name,
+            "unit_status": status,
+            "feature_id": payload.get("feature_id"),
+            "fold": payload.get("fold"),
+            "metric_rows": payload.get("metric_rows"),
+            "rows_sha256": payload.get("rows_sha256"),
+            "series_sha256": source.get("series.npz", ""),
+        })
+    return opened
+
+
+def _next_opened_fold(opened: list[dict], selected: dict) -> dict:
+    by_feature: dict[str, set[str]] = {}
+    for item in opened:
+        if item["unit_status"] != "MEASURED" or not item.get("feature_id"):
+            continue
+        by_feature.setdefault(item["feature_id"], set()).add(item.get("fold") or "")
+    for feature, folds in by_feature.items():
+        for fold in INNER_FOLDS:
+            if fold not in folds:
+                return {
+                    "state": "PENDING",
+                    "reason": "NEXT_FOLD_OF_OPEN_FEATURE",
+                    "feature_id": feature,
+                    "fold": fold,
+                }
+    return {
+        "state": "PENDING",
+        "reason": "OTHER_TERMINALS_STILL_UNPROFILED",
+        "feature_id": None,
+        "fold": None,
+        "missing_series": selected.get("missing_series", []),
+    }
+
+
 def publish_report(evidence: Path, folds_path: Path, units_dir: Path, destination: Path, *,
                    canonical_bounds: bool = False) -> dict:
     evidence = Path(evidence)
@@ -449,10 +496,13 @@ def publish_report(evidence: Path, folds_path: Path, units_dir: Path, destinatio
     selected = select_one_feature_fold(evidence)
     tallied = count_units(units_dir)
     counts = dict(tallied["counts"])
-    if not tallied["measured"] and not tallied["failed"] and selected["state"] != "READY":
+    opened = _opened_units(units_dir)
+    if not opened and selected["state"] != "READY":
         counts["PENDING"] += 1
-    elif selected["state"] == "READY" and not tallied["measured"] and not tallied["failed"]:
+    elif selected["state"] == "READY" and not opened:
         counts["PENDING"] += 1
+    if opened:
+        selected = _next_opened_fold(opened, selected)
     profiler = Path(__file__).resolve()
     published = evidence / "ps4_transform_profile" / "REPORT.json"
     hashes = {
@@ -489,6 +539,9 @@ def publish_report(evidence: Path, folds_path: Path, units_dir: Path, destinatio
         ),
         "already_measured_transforms_not_rerun": list(ALREADY_MEASURED_TRANSFORMS),
         "measured_units": tallied["measured"],
+        "measured_unit_hashes": [
+            item for item in opened if item["unit_status"] == "MEASURED"
+        ],
         "failed_units": tallied["failed"],
         "candidate": {
             "state": selected["state"],
@@ -504,7 +557,7 @@ def publish_report(evidence: Path, folds_path: Path, units_dir: Path, destinatio
             "NO_OUTER_VALIDATION_READ",
             "NO_TEST_READ",
             "NO_FEATURE_SELECTION_DECISION",
-            "NO_NEW_MODEL_MEASUREMENT",
+            *(["NO_NEW_MODEL_MEASUREMENT"] if not tallied["measured"] else []),
             "SELECTION_DENOMINATOR_NOT_CLOSED",
         ],
     }

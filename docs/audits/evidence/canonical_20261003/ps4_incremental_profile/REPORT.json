@@ -14,14 +14,14 @@
  "candidate": {
   "feature_id": null,
   "fold": null,
-  "reason": "NO_LOCAL_TRAIN_SERIES_IN_WORKTREE_EVIDENCE",
+  "reason": "OTHER_TERMINALS_STILL_UNPROFILED",
   "state": "PENDING"
  },
  "count_scope": "incremental feature-fold units opened or withheld by this profiler; not the selection denominator",
  "counts": {
   "FAILED": 0,
-  "MEASURED": 0,
-  "PENDING": 1
+  "MEASURED": 5,
+  "PENDING": 0
  },
  "failed_units": [],
  "flags": [
@@ -29,7 +29,6 @@
   "NO_OUTER_VALIDATION_READ",
   "NO_TEST_READ",
   "NO_FEATURE_SELECTION_DECISION",
-  "NO_NEW_MODEL_MEASUREMENT",
   "SELECTION_DENOMINATOR_NOT_CLOSED"
  ],
  "hashes": {
@@ -40,10 +39,63 @@
    "laneB/batch_003/series.npz": "293db083a886a41a6ae719c0bfa274b0513cc2c956b14965dd9a97a37dd69571"
   },
   "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
-  "profiler": "04fe1c4c090eef3f1b09fd91c3474d73678bf1bfdf1b0ce030f179a49bb124a3",
+  "profiler": "8725a1fac269dc1c29421a74935f06cc0569df9b3e6bc6329f1b944e7a1fbd6f",
   "published_transform_profile_report": "3b294c8ef31443db4f5e93800a07660344420ddf42387262ba7259680292f6a0"
  },
- "measured_units": [],
+ "measured_unit_hashes": [
+  {
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2019",
+   "metric_rows": 21,
+   "rows_sha256": "d392f3993d85cad45868b114b6a5f3155d12b626c0dea8cf9500453f4b5dd61c",
+   "series_sha256": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+   "unit": "fred.stress.vixcls.logret_5d__inner_2019.json",
+   "unit_status": "MEASURED"
+  },
+  {
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2020",
+   "metric_rows": 21,
+   "rows_sha256": "7c4d2c34eebcdfcb24cba80511f26a56dfd627c5190435ea92e2874636aee478",
+   "series_sha256": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+   "unit": "fred.stress.vixcls.logret_5d__inner_2020.json",
+   "unit_status": "MEASURED"
+  },
+  {
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2021",
+   "metric_rows": 21,
+   "rows_sha256": "bbdf683edcf2e6ffd6cc458d7ea22226545d599a0bd6a31c07bf143227af21b5",
+   "series_sha256": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+   "unit": "fred.stress.vixcls.logret_5d__inner_2021.json",
+   "unit_status": "MEASURED"
+  },
+  {
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric_rows": 21,
+   "rows_sha256": "6d8208bb3f79ec526e6c4d79e42d138eff1123c6a1bc98c240ef464cefa8dd1a",
+   "series_sha256": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+   "unit": "fred.stress.vixcls.logret_5d__inner_2022.json",
+   "unit_status": "MEASURED"
+  },
+  {
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2023",
+   "metric_rows": 21,
+   "rows_sha256": "8c7305df17e7e9b5ab88d539de0552a3cf37ee54dbfec18f20028f58ce8fb674",
+   "series_sha256": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+   "unit": "fred.stress.vixcls.logret_5d__inner_2023.json",
+   "unit_status": "MEASURED"
+  }
+ ],
+ "measured_units": [
+  "fred.stress.vixcls.logret_5d__inner_2019.json",
+  "fred.stress.vixcls.logret_5d__inner_2020.json",
+  "fred.stress.vixcls.logret_5d__inner_2021.json",
+  "fred.stress.vixcls.logret_5d__inner_2022.json",
+  "fred.stress.vixcls.logret_5d__inner_2023.json"
+ ],
  "missing_series": [
   {
    "declared_sha256": "3e4404d260d9236ca24fc8561eedbfcc9c47a609d3e64b68870c204a3731f025",
