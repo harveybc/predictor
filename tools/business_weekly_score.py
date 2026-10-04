@@ -28,6 +28,9 @@ from tools.business_weekly_protocol import DispositionStatus, EvaluationSplit, W
 
 NOT_CONFIGURED = "NOT_CONFIGURED"
 PRIMARY_ERROR_METRIC_FIELD = "primary_error_metric"
+FINANCIAL_TASK = "financial_forecast"
+DECLARED_TARGET_SCALE = "declared_target_scale"
+NOT_ESTABLISHED = "NOT_ESTABLISHED"
 
 
 class ForecastFamily(str, Enum):
@@ -54,6 +57,24 @@ def repository_primary_error_metric() -> str:
     """
 
     return NOT_CONFIGURED
+
+
+def financial_task_contract(
+    required_families: tuple[ForecastFamily, ...] = (ForecastFamily.SHORT, ForecastFamily.LONG),
+    required_horizons: tuple[str, ...] = (),
+) -> "ScoringContract":
+    """MAE on each target's declared scale is primary. MSE stays secondary.
+
+    The repository default stays ``NOT_CONFIGURED`` until a business contract names it.
+    """
+
+    return ScoringContract(
+        primary_error_metric="mae",
+        required_families=required_families,
+        required_horizons=required_horizons,
+        task=FINANCIAL_TASK,
+        scale_policy=DECLARED_TARGET_SCALE,
+    )
 
 
 def _require_text(name: str, value: object) -> str:
@@ -89,6 +110,8 @@ class ScoringContract:
     primary_error_metric: str = NOT_CONFIGURED
     required_families: tuple[ForecastFamily, ...] = (ForecastFamily.SHORT, ForecastFamily.LONG)
     required_horizons: tuple[str, ...] = ()
+    task: str = ""
+    scale_policy: str = DECLARED_TARGET_SCALE
 
     def __post_init__(self) -> None:
         allowed = {NOT_CONFIGURED, "mae", "mse"}
@@ -100,6 +123,10 @@ class ScoringContract:
         families = tuple(self.required_families)
         if not families or any(not isinstance(item, ForecastFamily) for item in families):
             raise ScoreRefusal("FAMILY", "required families must be explicit ForecastFamily values")
+        if not isinstance(self.task, str):
+            raise ScoreRefusal("TASK", "task must be a string")
+        if self.scale_policy != DECLARED_TARGET_SCALE:
+            raise ScoreRefusal("SCALE", "error metrics stay on each target's declared scale")
         object.__setattr__(self, "required_families", families)
         object.__setattr__(self, "required_horizons", tuple(self.required_horizons))
 
@@ -122,6 +149,8 @@ class HorizonForecast:
     target_origins: tuple[str, ...] | None = None
     prediction_origins: tuple[str, ...] | None = None
     naive_origins: tuple[str, ...] | None = None
+    task: str = ""
+    population: str = ""
 
     def __post_init__(self) -> None:
         if not isinstance(self.family, ForecastFamily):
@@ -130,6 +159,8 @@ class HorizonForecast:
             raise ScoreRefusal("WEEK", "week must be a WeekSpec")
         for name in ("horizon", "unit", "scale", "model_digest", "dataset_id"):
             _require_text(name, getattr(self, name))
+        if not isinstance(self.task, str) or not isinstance(self.population, str):
+            raise ScoreRefusal("IDENTITY", "task and population must be strings")
         if not isinstance(self.origins, tuple):
             object.__setattr__(self, "origins", tuple(self.origins))
         if not isinstance(self.target, tuple):
@@ -205,11 +236,12 @@ class WeekScore:
 
 @dataclass(frozen=True)
 class AnnualClose:
-    """Week-level close. The denominator is the sealed week list."""
+    """Sealed weeks are longitudinal units. Their independence is not established."""
 
     expected_weeks: int
     denominator: int
-    independent_replicates: int
+    longitudinal_evaluation_units: int
+    independence_status: str
     origin_rows: int
     eligible_weeks: int
     dispositions: tuple[WeekScore, ...]
@@ -297,9 +329,11 @@ def _release_digest(forecast: HorizonForecast) -> str:
             "model_digest": forecast.model_digest,
             "naive": list(forecast.naive),
             "origins": list(forecast.origins),
+            "population": forecast.population,
             "prediction": list(forecast.prediction),
             "scale": forecast.scale,
             "target": list(forecast.target),
+            "task": forecast.task,
             "unit": forecast.unit,
             "week_start": _iso(forecast.week.start),
         }
@@ -353,8 +387,38 @@ def score_horizon(forecast: HorizonForecast, contract: ScoringContract) -> Horiz
     )
 
 
-def _identity_key(forecast: HorizonForecast) -> tuple[str, str, str, str]:
-    return (forecast.unit, forecast.scale, forecast.model_digest, _iso(forecast.week.start))
+def _identity_key(
+    forecast: HorizonForecast,
+) -> tuple[str, str, str, str, tuple[str, ...], str, str, str]:
+    """Shared week identity. Each forecast keeps its own model digest."""
+
+    return (
+        forecast.task,
+        _iso(forecast.week.cutoff),
+        forecast.week.split.value,
+        forecast.population,
+        forecast.origins,
+        forecast.unit,
+        forecast.scale,
+        _iso(forecast.week.start),
+    )
+
+
+def _paired_differences(raw: object) -> tuple[OriginDifference, ...]:
+    if not isinstance(raw, list):
+        raise ScoreRefusal("PAIRED_DIFFERENCE", "serialized horizon omits paired origin differences")
+    pairs: list[OriginDifference] = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            raise ScoreRefusal("PAIRED_DIFFERENCE", "a paired difference must be an object")
+        origin = entry.get("origin")
+        value = entry.get("absolute_error_difference")
+        if not isinstance(origin, str) or not origin:
+            raise ScoreRefusal("PAIRED_DIFFERENCE", "paired difference origin is missing")
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+            raise ScoreRefusal("PAIRED_DIFFERENCE", f"paired difference at {origin} is not finite")
+        pairs.append(OriginDifference(origin, float(value)))
+    return tuple(pairs)
 
 
 def _score_payload(score: WeekScore) -> dict[str, Any]:
@@ -371,6 +435,13 @@ def _score_payload(score: WeekScore) -> dict[str, Any]:
                 "model_mse": item.model_mse,
                 "naive_mae": item.naive_mae,
                 "naive_mse": item.naive_mse,
+                "paired_differences": [
+                    {
+                        "absolute_error_difference": pair.absolute_error_difference,
+                        "origin": pair.origin,
+                    }
+                    for pair in item.paired_differences
+                ],
                 "release_digest": item.release_digest,
                 "sample_count": item.sample_count,
                 "scale": item.scale,
@@ -420,14 +491,29 @@ def score_week(
             )
     if release.horizons:
         anchor = _identity_key(release.horizons[0])
-        for forecast in release.horizons[1:]:
+        seen_slots: set[tuple[ForecastFamily, str]] = set()
+        family_digest: dict[ForecastFamily, str] = {}
+        for forecast in release.horizons:
             if _identity_key(forecast) != anchor:
                 raise ScoreRefusal(
                     "IDENTITY_MISMATCH",
-                    f"{forecast.horizon} unit, scale, model digest, or week differs",
+                    (
+                        f"{forecast.family.value} {forecast.horizon} task, cutoff, split, "
+                        "population, origins, unit, scale, or week differs"
+                    ),
                 )
-            if forecast.horizon == release.horizons[0].horizon and forecast.family == release.horizons[0].family:
-                raise ScoreRefusal("DUPLICATE_HORIZON", forecast.horizon)
+            slot = (forecast.family, forecast.horizon)
+            if slot in seen_slots:
+                raise ScoreRefusal("DUPLICATE_HORIZON", f"{forecast.family.value} {forecast.horizon}")
+            seen_slots.add(slot)
+            bound = family_digest.get(forecast.family)
+            if bound is None:
+                family_digest[forecast.family] = forecast.model_digest
+            elif bound != forecast.model_digest:
+                raise ScoreRefusal(
+                    "DIGEST_CHANGED",
+                    f"{forecast.family.value} model digest changed inside the forecast",
+                )
     families = {item.family for item in release.horizons}
     required = set(contract.required_families) if release.consumes_short_and_long else set()
     if required - families:
@@ -580,7 +666,8 @@ class WeeklyScoreLedger:
         return AnnualClose(
             expected_weeks=denominator,
             denominator=denominator,
-            independent_replicates=denominator,
+            longitudinal_evaluation_units=denominator,
+            independence_status=NOT_ESTABLISHED,
             origin_rows=origin_rows,
             eligible_weeks=sum(1 for score in ordered if score.strategy_eligible),
             dispositions=tuple(ordered),
@@ -592,6 +679,8 @@ class WeeklyScoreLedger:
             "primary_error_metric": self.contract.primary_error_metric,
             "required_families": [item.value for item in self.contract.required_families],
             "required_horizons": list(self.contract.required_horizons),
+            "scale_policy": self.contract.scale_policy,
+            "task": self.contract.task,
             "score_events": self.score_events,
             "expected_weeks": [
                 {
@@ -619,6 +708,8 @@ class WeeklyScoreLedger:
             primary_error_metric=payload["primary_error_metric"],
             required_families=families,
             required_horizons=tuple(payload["required_horizons"]),
+            task=payload.get("task", ""),
+            scale_policy=payload.get("scale_policy", DECLARED_TARGET_SCALE),
         )
         weeks = tuple(
             WeekSpec(
@@ -653,7 +744,7 @@ class WeeklyScoreLedger:
                     model_digest=item["model_digest"],
                     dataset_id=item["dataset_id"],
                     release_digest=item["release_digest"],
-                    paired_differences=(),
+                    paired_differences=_paired_differences(item.get("paired_differences")),
                     skill_mae=item["skill_mae"],
                     skill_mse=item["skill_mse"],
                     primary_error_metric=raw["primary_error_metric"],
