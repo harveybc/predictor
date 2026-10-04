@@ -1,0 +1,174 @@
+{
+  "audit_sha256": "5152332e5ff8998400d22b9f885a8a9e4fbeb5ad4c1685c28eee7d0dda3ce79e",
+  "cuerpo": "El denominador es 366, la partición retenida 279+87, no el inventario de 388 fuentes. Solo diez transformadas emitidas pasan de PENDING_PROFILE a MEASURED. Eso no cierra PS4 ni selecciona ninguna candidata. NOT_IDENTIFIED en PS3-C permanece neutral. La preparación PS5 no autoriza entrenamiento, lectura de test externo ni evaluación de estrategia.",
+  "denominator": 366,
+  "huecos": [
+    "PS4 medido cubre 10 de 366. El resto sigue PENDING_PROFILE o solo agendado.",
+    "fred.rates.dgs30.level no es terminal.",
+    "px.logret_6h past_to_current_siamese no se promueve.",
+    "features_train.parquet no está en este árbol; se conserva el digest retenido sin recomputarlo.",
+    "PS5 está preparado y no entrenado. No hay manifiesto selected, rejected o pending.",
+    "Las nueve filas históricas de variantes siguen en PENDING_PROFILE."
+  ],
+  "measured_profile": {
+    "feature_fold_units": 50,
+    "feature_row_digests": {
+      "tv.hilbert_amp": "c9fd265fcf9e92e95cccdceb9bcbc512e6fb8461cd99bd968110715b6e0b02c2",
+      "tv.kalman_dev": "86cd33810ed0117b52c6447989f25047a57911d2766c1130a2c385362b0bad15",
+      "tv.mt_band_6_48h": "436524e6c478b498481a06b3dac6a657a29a9f1018360605710b12d544b05a28",
+      "tv.stl_dev": "9d33c670253ac6dc2f6cb153b12feda663dc15e5af3b429ecd856b91505a6bad",
+      "tv.stl_seasonal": "fd93a0d5e1af0a3bc0e8ef9120ebe81eb1f35272b2387e9d9a34939549736245",
+      "tv.wav_d1": "e61f6633e920b60c0ed6302a99ab7a01d4539b8d78e684b619f3862145250299",
+      "tv.wav_d2": "20f0ff9c048d27a102191e3c6487e728df4a5d870e2dbe51d21a7d6f72c24253",
+      "tv.wav_d3": "0ca527b66f3ab7e424fe9260a4f01653491718a6bcf363c332ac45f0893fc476",
+      "tv.wav_d4": "189a6444d797c99ca67eddbefc7cfad8dff1dc4fcbb04c9cdaa0fcc184fb93b7",
+      "tv.wav_d5": "8e7a46cd8ad0c8c6090d7c78806b924f8d35f06fd03fc9ed8c0d837bb18a0a8e"
+    },
+    "file_digests": {
+      "REPORT.json": "3b294c8ef31443db4f5e93800a07660344420ddf42387262ba7259680292f6a0",
+      "input_digests.json": "82b2a45ee41bd36cfb3fe32943960eae0d62fa359ae4e1d763e3e5ba276adcfe",
+      "profile_rows.jsonl": "5efee6a3e93f7118b745650b6365e425c96abc2bd43e54f6d3098a208108dead"
+    },
+    "inputs_recomputed": {
+      "READY": "d597c65dafb24be0c2a5648d49508e7114a7ea2095367836d319a4e4dab5305f",
+      "admissible_features.json": "151f05a39e23f825ae6eac59e70e44a065b6b5c51960045a1110f358de89ea66",
+      "digests.json": "2d316760324cab4cc385c655161d9cbede1fd75b2f40ec60ed2d500f5ecf6ace",
+      "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+      "transform_feature_join.csv": "faa568ceeec60229cb8ee319c25d69f5d0a668af59ff53b4cbcb36ef9499ac16"
+    },
+    "metric_rows": 1050,
+    "not_selection_over_366": true,
+    "parquet_retained_not_in_worktree": "fd0b4423db991cfb05cd4f9357a378648579d4c11552a1cac413ed711c3520bc",
+    "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+    "schema": "ps4_transform_profile.v1"
+  },
+  "measured_transforms": [
+    "tv.wav_d1",
+    "tv.wav_d2",
+    "tv.wav_d3",
+    "tv.wav_d4",
+    "tv.wav_d5",
+    "tv.mt_band_6_48h",
+    "tv.hilbert_amp",
+    "tv.stl_dev",
+    "tv.stl_seasonal",
+    "tv.kalman_dev"
+  ],
+  "partition": {
+    "low_priority_outside_join": 87,
+    "ps3c_join": 279
+  },
+  "population_sha256": "9f20ddd4a9deddd94baad6d5a4f445e8e064a0e36e33e0586ba76e9f6453cdd6",
+  "ps3r": {
+    "dgs30_feature": "fred.rates.dgs30.level",
+    "dgs30_status": "RUNNING_NOT_TERMINAL",
+    "lane_e_cost_sha256": "908f0a01b92e02666eafa8f235bd5b1f57f8ca321d4d11e5f1d03940b6ac6b63",
+    "lane_e_matrix_sha256": "c7ddecc92823f173be4af12cb6d4ec7e93899267ee1f5c72d4085d56ffdb7f2e",
+    "lane_e_measured_not_selection": [
+      "px.close_loc",
+      "px.ewma_vol_24",
+      "px.log_close",
+      "px.log_co",
+      "px.log_hl",
+      "px.logret_120h",
+      "px.logret_12h",
+      "px.logret_168h",
+      "px.logret_1h",
+      "px.logret_24h",
+      "px.logret_2h",
+      "px.logret_48h",
+      "px.logret_4h",
+      "px.logret_6h",
+      "px.rv5",
+      "px.zclose_168"
+    ],
+    "reconstruction_is_selection": false,
+    "siamese_family": "past_to_current_siamese",
+    "siamese_feature": "px.logret_6h",
+    "siamese_promotion": "NOT_PROMOTED_RESULTS_OVERWRITTEN",
+    "vix_feature": "fred.stress.vixcls.logret_5d",
+    "vix_results_sha256": "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a",
+    "vix_utility": "mixed"
+  },
+  "ps4_complete_for_366": false,
+  "ps4_integration_sha256": "c93ca35b184880b440173de0b63f6248b5e8ee6e62fb461aa1e672bedf6258ab",
+  "ps4_schedule": {
+    "features": [
+      "fred.stress.vixcls.logret_5d",
+      "px.close_loc",
+      "px.ewma_vol_24",
+      "px.log_close",
+      "px.log_co",
+      "px.log_hl",
+      "px.logret_120h",
+      "px.logret_12h",
+      "px.logret_168h",
+      "px.logret_1h",
+      "px.logret_24h",
+      "px.logret_2h",
+      "px.logret_48h",
+      "px.logret_4h",
+      "px.logret_6h",
+      "px.rv5",
+      "px.zclose_168"
+    ],
+    "folds": [
+      "inner_2019",
+      "inner_2020",
+      "inner_2021",
+      "inner_2022",
+      "inner_2023"
+    ],
+    "metrics": [
+      "compressed_bits_per_sample_lzma6_raw_float64",
+      "compressed_bits_per_sample_lzma6_symbols",
+      "compressed_bits_per_sample_zlib9_raw_float64",
+      "compressed_bits_per_sample_zlib9_symbols",
+      "compression_gain_vs_uncompressed_lzma6_raw_float64",
+      "compression_gain_vs_uncompressed_lzma6_symbols",
+      "compression_gain_vs_uncompressed_zlib9_raw_float64",
+      "compression_gain_vs_uncompressed_zlib9_symbols",
+      "conditional_redundancy_bits_lag1",
+      "conditional_surprisal_bits_lag1",
+      "discrete_entropy_bits",
+      "permutation_entropy_order_3",
+      "permutation_entropy_order_4",
+      "permutation_entropy_order_5",
+      "spectral_entropy_iqr",
+      "spectral_entropy_median",
+      "spectral_entropy_window_count",
+      "temporal_structure_gain_lzma6_raw_float64",
+      "temporal_structure_gain_lzma6_symbols",
+      "temporal_structure_gain_zlib9_raw_float64",
+      "temporal_structure_gain_zlib9_symbols"
+    ],
+    "product_bound": "21_metrics_x_5_inner_folds",
+    "rows": 1785
+  },
+  "ps4_schedule_sha256": "2514b62106a9ce71c6d4dd4bb3fc69a7a97df0960a623dbcb42f4850c38bd08d",
+  "ps5_inputs_sha256": "a541b3c1343559cd3576a3724ef426707afea5d6925b04077947b706398b3d00",
+  "ps5_preparation_identity": "897fe3cd79cc1c284f213bb8217065bac436d93d8b2823c06a2557363a23f7ed",
+  "readiness_rows_sha256": "bf8a0627293502778021c22e8457520ead4528bc375b1ce0f3e45d57014cb864",
+  "schema": "m2_readiness_ledger.v1",
+  "selection_manifest": "NOT_ISSUED",
+  "status_counts": {
+    "ps3c": {
+      "IDENTIFIED_CONDITIONAL_ON_DECLARED_ASSUMPTIONS": 65,
+      "MIXED_IDENTIFIED_AND_NOT_IDENTIFIED": 13,
+      "NOT_APPLICABLE": 10,
+      "NOT_IDENTIFIED": 278
+    },
+    "ps3r": {
+      "ACCEPTED_PS3R_CELL_MIXED_UTILITY": 1,
+      "LANE_E_MEASURED_NOT_SELECTION": 16,
+      "NOT_SCHEDULED": 229,
+      "NOT_TERMINAL": 119,
+      "RUNNING_NOT_TERMINAL": 1
+    },
+    "ps4": {
+      "MEASURED_SUBPOPULATION": 10,
+      "PENDING_PROFILE": 339,
+      "SCHEDULED_NOT_MEASURED": 17
+    }
+  }
+}
