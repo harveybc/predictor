@@ -616,6 +616,21 @@ class WeeklyScoreTests(unittest.TestCase):
                 WeeklyScoreLedger.from_json(json.dumps(payload))
             self.assertEqual(caught.exception.code, "SCORE_SCHEMA")
 
+        tiny = json.loads(ledger.to_json())
+        horizon_row = tiny["scores"][0]["horizons"][0]
+        horizon_row["model_mae"] = 1e-6
+        horizon_row["model_mse"] = 0.0
+        horizon_row["skill_mae"] = 0.9999995
+        horizon_row["skill_mse"] = 1.0
+        horizon_row["paired_differences"] = [
+            {"origin": "o1", "absolute_error_difference": -1.999999},
+            {"origin": "o2", "absolute_error_difference": -1.999999},
+        ]
+        reseal(tiny)
+        with self.assertRaises(ScoreRefusal) as caught:
+            WeeklyScoreLedger.from_json(json.dumps(tiny))
+        self.assertEqual(caught.exception.code, "SCORE_SCHEMA")
+
     def test_restore_rejects_duplicate_scores_and_metric_from_another_contract(self) -> None:
         release = WeekRelease(
             week(0),

@@ -1,25 +1,25 @@
 {
   "schema": "predictor.master_milestones.v1",
-  "as_of": "2026-10-04T04:32:00Z",
+  "as_of": "2026-10-04T18:33:34Z",
   "critical_path_eta": "3-5 weeks, conditional on continuous GPU lanes and no failed scientific gates",
   "milestones": [
     {
       "id": "M1",
       "title": "Business-faithful evaluation",
-      "progress": 58,
+      "progress": 66,
       "state": "CORE_IMPLEMENTED",
-      "evidence": "Weekly/monthly/static contracts and four-year as-of windows exist; first weekly scorer rejected pending identity, round-trip and dependence repairs",
-      "next": "Repair paired-evidence persistence and short/long model identity, configure MAE, then run one complete weekly validation pilot",
-      "eta": "2-4 development days"
+      "evidence": "Weekly/monthly/static contracts, four-year as-of windows and the durable paired-naive scorer pass 72 focused tests; restored evidence is bound to the full contract and WeekSpec",
+      "next": "Run one complete weekly validation pilot with MAE, short/long horizons and idempotent strategy delivery",
+      "eta": "1-3 development days"
     },
     {
       "id": "M2",
       "title": "Feature selection",
-      "progress": 40,
+      "progress": 43,
       "state": "IN_PROGRESS",
-      "evidence": "366 candidates; ten transforms profiled; two PS3-R lanes live; authoritative causal gate has 0 identified of 279 without rejecting them",
-      "next": "Repair the readiness ledger against causal revision 48ae17c, ingest terminal cells automatically, profile PS4 incrementally, then compare common-K subsets",
-      "eta": "ledger 1-2 days; final manifest 3-5 weeks"
+      "evidence": "366 candidates; accepted ledger: 279 causal abstentions + 87 outside the join; authenticated PS3-R ingestion and first PS4 profile",
+      "next": "Complete PS3-R/PS4 coverage, compare common-K selectors, then issue 366 dispositions",
+      "eta": "current GPU queues 1-3 days; final manifest 2-5 weeks"
     },
     {
       "id": "M3",

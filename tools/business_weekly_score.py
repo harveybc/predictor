@@ -541,7 +541,15 @@ def _validate_restored_score(score: WeekScore, contract: ScoringContract) -> Non
         naive_mse = _finite_number("naive_mse", item.naive_mse)
         if min(model_mae, model_mse, naive_mae, naive_mse) < 0.0:
             raise ScoreRefusal("SCORE_SCHEMA", "error metrics cannot be negative")
-        if model_mse + 1e-12 < model_mae**2 or naive_mse + 1e-12 < naive_mae**2:
+        model_floor = model_mae**2
+        naive_floor = naive_mae**2
+        if (
+            model_mse < model_floor
+            and not math.isclose(model_mse, model_floor, rel_tol=1e-12, abs_tol=0.0)
+        ) or (
+            naive_mse < naive_floor
+            and not math.isclose(naive_mse, naive_floor, rel_tol=1e-12, abs_tol=0.0)
+        ):
             raise ScoreRefusal("SCORE_SCHEMA", "MSE cannot be below squared MAE")
         expected_mae_skill = _skill(model_mae, naive_mae)
         expected_mse_skill = _skill(model_mse, naive_mse)
