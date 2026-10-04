@@ -147,6 +147,11 @@ def test_retained_ledger_keeps_366_and_ten_measured_transforms():
     assert logret24["evidence_digest"] == ledger.AUD_LOGRET24H_RESULTS_SHA256
     assert logret24["ps4_status"] == "SCHEDULED_NOT_MEASURED"
     assert ledger.AUD_LOGRET24H_FEATURE in scheduled
+    eurgbp = by_id[ledger.EURGBP_EWMA_FEATURE]
+    assert eurgbp["ps3r_status"] == "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
+    assert eurgbp["evidence_digest"] == ledger.EURGBP_EWMA_RESULTS_SHA256
+    assert eurgbp["ps4_status"] == "SCHEDULED_NOT_MEASURED"
+    assert ledger.EURGBP_EWMA_FEATURE in scheduled
     assert ledger.VIX_FEATURE in scheduled
     assert ledger.SIAMESE_FEATURE in scheduled
     assert len(built["schedule"]) == len(scheduled) * len(ledger.PS4_METRICS) * len(ledger.INNER_FOLDS)
