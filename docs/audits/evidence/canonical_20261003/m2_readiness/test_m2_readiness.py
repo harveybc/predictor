@@ -1,5 +1,6 @@
 """Counterexamples for the 366-candidate readiness ledger."""
 
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -113,60 +114,25 @@ def test_retained_ledger_keeps_366_and_ten_measured_transforms():
     profile_rows = ledger.digest_path(ROOT / ledger.BASE / "ps4_transform_profile" / "profile_rows.jsonl")
     assert all(row["profile_rows_sha256"] == profile_rows for row in integration)
     by_id = {row["feature_id"]: row for row in rows}
+    scheduled = {row["feature_id"] for row in built["schedule"]}
+    baseline_root = ROOT / ledger.BASE / "ps3r_ingest" / "baseline"
+    adopted = sorted(path.name for path in baseline_root.iterdir() if path.is_dir())
+    assert adopted
+    for feature_id in adopted:
+        row = by_id[feature_id]
+        digest = hashlib.sha256((baseline_root / feature_id / "results.jsonl").read_bytes()).hexdigest()
+        assert row["ps3r_status"] == "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
+        assert row["evidence_digest"] == digest
+        assert row["ps4_status"] == "SCHEDULED_NOT_MEASURED"
+        assert feature_id in scheduled
+        assert row["ps3c_producer_revision"] == "48ae17c"
+        assert len(row["ps3c_join_sha256"]) == 64
+        assert row["ps5_status"] == "NOT_READY_EVIDENCE_INCOMPLETE"
     vix = by_id[ledger.VIX_FEATURE]
-    assert vix["ps3r_status"] == "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
-    assert vix["evidence_digest"] == ledger.VIX_RESULTS_SHA256
-    assert vix["ps4_status"] == "SCHEDULED_NOT_MEASURED"
-    assert "selecc" not in vix["missing_next_action"].lower() or "no selecciona" in vix["missing_next_action"]
-    dgs30 = by_id[ledger.DGS30_FEATURE]
-    assert dgs30["ps3r_status"] == "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
-    assert dgs30["evidence_digest"] == ledger.DGS30_RESULTS_SHA256
-    assert dgs30["ps4_status"] == "SCHEDULED_NOT_MEASURED"
+    assert "no selecciona" in vix["missing_next_action"]
     siamese = by_id[ledger.SIAMESE_FEATURE]
     assert siamese["ps3r_status"] == "LANE_E_MEASURED_NOT_SELECTION"
     assert "past_to_current_siamese" in siamese["missing_next_action"]
-    scheduled = {row["feature_id"] for row in built["schedule"]}
-    assert ledger.DGS30_FEATURE in scheduled
-    dprime = by_id[ledger.DPRIME_FEATURE]
-    assert dprime["ps3r_status"] == "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
-    assert dprime["evidence_digest"] == ledger.DPRIME_RESULTS_SHA256
-    assert dprime["ps4_status"] == "SCHEDULED_NOT_MEASURED"
-    assert ledger.DPRIME_FEATURE in scheduled
-    aud = by_id[ledger.AUD_EWMA_FEATURE]
-    assert aud["ps3r_status"] == "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
-    assert aud["evidence_digest"] == ledger.AUD_EWMA_RESULTS_SHA256
-    assert aud["ps4_status"] == "SCHEDULED_NOT_MEASURED"
-    assert ledger.AUD_EWMA_FEATURE in scheduled
-    logret = by_id[ledger.AUD_LOGRET1H_FEATURE]
-    assert logret["ps3r_status"] == "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
-    assert logret["evidence_digest"] == ledger.AUD_LOGRET1H_RESULTS_SHA256
-    assert logret["ps4_status"] == "SCHEDULED_NOT_MEASURED"
-    assert ledger.AUD_LOGRET1H_FEATURE in scheduled
-    logret24 = by_id[ledger.AUD_LOGRET24H_FEATURE]
-    assert logret24["ps3r_status"] == "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
-    assert logret24["evidence_digest"] == ledger.AUD_LOGRET24H_RESULTS_SHA256
-    assert logret24["ps4_status"] == "SCHEDULED_NOT_MEASURED"
-    assert ledger.AUD_LOGRET24H_FEATURE in scheduled
-    eurgbp = by_id[ledger.EURGBP_EWMA_FEATURE]
-    assert eurgbp["ps3r_status"] == "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
-    assert eurgbp["evidence_digest"] == ledger.EURGBP_EWMA_RESULTS_SHA256
-    assert eurgbp["ps4_status"] == "SCHEDULED_NOT_MEASURED"
-    assert ledger.EURGBP_EWMA_FEATURE in scheduled
-    eurgbp_lr = by_id[ledger.EURGBP_LOGRET1H_FEATURE]
-    assert eurgbp_lr["ps3r_status"] == "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
-    assert eurgbp_lr["evidence_digest"] == ledger.EURGBP_LOGRET1H_RESULTS_SHA256
-    assert eurgbp_lr["ps4_status"] == "SCHEDULED_NOT_MEASURED"
-    assert ledger.EURGBP_LOGRET1H_FEATURE in scheduled
-    eurjpy = by_id[ledger.EURJPY_EWMA_FEATURE]
-    assert eurjpy["ps3r_status"] == "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
-    assert eurjpy["evidence_digest"] == ledger.EURJPY_EWMA_RESULTS_SHA256
-    assert eurjpy["ps4_status"] == "SCHEDULED_NOT_MEASURED"
-    assert ledger.EURJPY_EWMA_FEATURE in scheduled
-    eurjpy_lr = by_id[ledger.EURJPY_LOGRET1H_FEATURE]
-    assert eurjpy_lr["ps3r_status"] == "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
-    assert eurjpy_lr["evidence_digest"] == ledger.EURJPY_LOGRET1H_RESULTS_SHA256
-    assert eurjpy_lr["ps4_status"] == "SCHEDULED_NOT_MEASURED"
-    assert ledger.EURJPY_LOGRET1H_FEATURE in scheduled
     assert ledger.VIX_FEATURE in scheduled
     assert ledger.SIAMESE_FEATURE in scheduled
     assert len(built["schedule"]) == len(scheduled) * len(ledger.PS4_METRICS) * len(ledger.INNER_FOLDS)
@@ -182,9 +148,41 @@ def test_retained_ledger_keeps_366_and_ten_measured_transforms():
     assert comparison["manifesto_final"] == "NO_EMITIDO"
     assert "train" in comparison["forbidden"]
     assert comparison["preparation_identity"] == built["report"]["ps5_preparation_identity"]
-    assert all(row["ps5_status"] == "PREPARED_INPUT_NOT_TRAINED" for row in rows)
+    assert all(row["ps5_status"] == "NOT_READY_EVIDENCE_INCOMPLETE" for row in rows)
+    assert built["report"]["ps5_design_status"] == "PREPARED_NOT_TRAINED"
+    source = built["report"]["ps3c_source"]
+    assert source["identified"] == 0
+    assert source["not_identified"] == 279
+    assert source["outside_join_pending"] == 87
+    assert source["not_identified_is_not_rejected"] is True
+    alternatives = {
+        item["feature_id"]: item for item in built["report"]["alternative_family_evidence"]
+    }
+    for feature_id in ("tv.hilbert_amp", "tv.kalman_dev", "tv.stl_dev"):
+        assert alternatives[feature_id]["replaces_baseline"] is False
+        assert alternatives[feature_id]["utility"] == "mixed"
+        assert by_id[feature_id]["ps3r_status"] not in {
+            "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
+            "ACCEPTED_PS3R_TERMINAL_NOT_SELECTION",
+        }
+        assert by_id[feature_id]["ps4_status"] == "MEASURED_SUBPOPULATION"
     again = ledger.build(ROOT)
     assert ledger.render(built)["readiness_rows.csv"] == ledger.render(again)["readiness_rows.csv"]
     forbidden_path = "/" + "home" + "/"
     assert forbidden_path not in json.dumps(built["report"])
     assert forbidden_path not in json.dumps(comparison)
+
+
+def test_old_coverage_counts_stay_frozen_and_do_not_identify():
+    features = ledger.read_json(
+        ROOT / ledger.BASE / "coverage_reconciliation" / "coverage_reconciliation.json"
+    )["features"]
+    old = ledger.coverage_causal_counts(features)
+    assert old["identified"] == 65
+    assert old["mixed"] == 13
+    built = ledger.build(ROOT)
+    identified = "IDENTIFIED_CONDITIONAL_ON_DECLARED_ASSUMPTIONS"
+    assert sum(row["ps3c_status"] == identified for row in built["rows"]) == 0
+    assert sum(row["ps3c_status"] == "NOT_IDENTIFIED" for row in built["rows"]) == 279
+    assert sum(row["ps3c_status"] == "OUTSIDE_JOIN_PENDING" for row in built["rows"]) == 87
+    assert "REJECTED" not in {row["ps3c_status"] for row in built["rows"]}
