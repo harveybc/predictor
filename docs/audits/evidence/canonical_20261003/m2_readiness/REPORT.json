@@ -171,6 +171,7 @@
       "fx.eurgbp.logret_1h",
       "fx.eurjpy.ewma_vol_24",
       "fx.eurjpy.logret_1h",
+      "fx.gbpjpy.ewma_vol_24",
       "px.close_loc",
       "px.ewma_vol_24",
       "px.log_close",
@@ -219,13 +220,13 @@
       "temporal_structure_gain_zlib9_symbols"
     ],
     "product_bound": "21_metrics_x_5_inner_folds",
-    "rows": 2730
+    "rows": 2835
   },
-  "ps4_schedule_sha256": "c8dcffd867688a9cf684850f51bbdb60a362730aa4934062cce56f7d984069ac",
+  "ps4_schedule_sha256": "7d531319821e9de1d060258e8c776396e2c0bafa4646fa1208903ffb209e5c3c",
   "ps5_design_status": "PREPARED_NOT_TRAINED",
   "ps5_inputs_sha256": "a541b3c1343559cd3576a3724ef426707afea5d6925b04077947b706398b3d00",
   "ps5_preparation_identity": "897fe3cd79cc1c284f213bb8217065bac436d93d8b2823c06a2557363a23f7ed",
-  "readiness_rows_sha256": "24ca620d51ba4b23c6d4f5db8a09220e7df6ff28d7be04935d4338e8840fab21",
+  "readiness_rows_sha256": "445edb86f2be87e3664c3df575a89977ecdfce5d0734b2bbddcba83cee1c13c3",
   "schema": "m2_readiness_ledger.v1",
   "selection_manifest": "NOT_ISSUED",
   "status_counts": {
@@ -234,15 +235,15 @@
       "OUTSIDE_JOIN_PENDING": 87
     },
     "ps3r": {
-      "ACCEPTED_PS3R_CELL_MIXED_UTILITY": 10,
+      "ACCEPTED_PS3R_CELL_MIXED_UTILITY": 11,
       "LANE_E_MEASURED_NOT_SELECTION": 16,
       "NOT_SCHEDULED": 229,
-      "NOT_TERMINAL": 111
+      "NOT_TERMINAL": 110
     },
     "ps4": {
       "MEASURED_SUBPOPULATION": 10,
-      "PENDING_PROFILE": 330,
-      "SCHEDULED_NOT_MEASURED": 26
+      "PENDING_PROFILE": 329,
+      "SCHEDULED_NOT_MEASURED": 27
     }
   }
 }
