@@ -1,6 +1,6 @@
 {
   "schema": "predictor.master_milestones.v1",
-  "as_of": "2026-10-03T23:35:00Z",
+  "as_of": "2026-10-04T04:32:00Z",
   "critical_path_eta": "3-5 weeks, conditional on continuous GPU lanes and no failed scientific gates",
   "milestones": [
     {
@@ -8,18 +8,18 @@
       "title": "Business-faithful evaluation",
       "progress": 58,
       "state": "CORE_IMPLEMENTED",
-      "evidence": "Weekly/monthly/static contracts, four-year as-of windows and test firewall; 176 focused tests",
-      "next": "Bind real TensorFlow, heuristic, SAC and DQN adapters and run one complete weekly validation pilot",
+      "evidence": "Weekly/monthly/static contracts and four-year as-of windows exist; first weekly scorer rejected pending identity, round-trip and dependence repairs",
+      "next": "Repair paired-evidence persistence and short/long model identity, configure MAE, then run one complete weekly validation pilot",
       "eta": "2-4 development days"
     },
     {
       "id": "M2",
       "title": "Feature selection",
-      "progress": 38,
+      "progress": 40,
       "state": "IN_PROGRESS",
-      "evidence": "366 candidates; ten transforms now have 50 PS4 fold units; one new PS3-R cell is authentic but has mixed utility; causal evidence remains NOT_IDENTIFIED",
-      "next": "Run disjoint PS3-R queues, build 366-row readiness ledger, then compare common-K subsets under weekly validation",
-      "eta": "4-6 GPU-days with active lanes"
+      "evidence": "366 candidates; ten transforms profiled; two PS3-R lanes live; authoritative causal gate has 0 identified of 279 without rejecting them",
+      "next": "Repair the readiness ledger against causal revision 48ae17c, ingest terminal cells automatically, profile PS4 incrementally, then compare common-K subsets",
+      "eta": "ledger 1-2 days; final manifest 3-5 weeks"
     },
     {
       "id": "M3",

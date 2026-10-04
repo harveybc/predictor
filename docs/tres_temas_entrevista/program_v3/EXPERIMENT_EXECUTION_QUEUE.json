@@ -1,6 +1,6 @@
 {
   "schema": "experiment_execution_queue.v2",
-  "updated_on": "2026-10-03T23:35:00Z",
+  "updated_on": "2026-10-04T04:32:00Z",
   "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md at 02434903, merged into satoshi/canonical-exec-20261003",
   "policy": {
     "parallelism": "independent eligible lanes run concurrently",
@@ -48,8 +48,8 @@
       "priority": 4,
       "id": "FS-EURUSD-PS3-R",
       "resource": "dragon_4090",
-      "state": "IN_PROGRESS_PLACEMENT_CORRECTED",
-      "work": "Single-feature temporal extractor with seasonal context and identity/random/AE/DAE controls. One batch-002 cell completed on dragon; queued 8,000 MiB Gamma cells move to dragon because Gamma host headroom does not admit them.",
+      "state": "IN_PROGRESS_TWO_GPU_LANES",
+      "work": "Single-feature temporal extractors continue sequentially: baseline identity/random/AE/DAE on dragon and alternative past-to-current controls on gamma 5090. Adopt only terminal manifests with recomputed digests; no hard-coded completed-feature list.",
       "depends_on": ["FS-EURUSD-PS2"],
       "produces": "extractibility matrix, cost envelope and donor candidates"
     },
@@ -57,8 +57,8 @@
       "priority": 5,
       "id": "FS-EXTRACTOR-ALT",
       "resource": "gamma_external_5090",
-      "state": "READY_TO_RESUME_SEQUENTIALLY",
-      "work": "Alternative masked temporal and past-to-current extractors on matched rows, one Gamma child total, using retained measured caps and the external 5090.",
+      "state": "RUNNING_SEQUENTIALLY",
+      "work": "Alternative masked temporal and past-to-current extractors on matched rows, one Gamma child total. Hilbert, Kalman deviation and STL deviation are terminal; the driver continues the sealed plan.",
       "depends_on": ["FS-EURUSD-PS2"],
       "produces": "matched alternative-family comparison"
     },
@@ -66,8 +66,8 @@
       "priority": 6,
       "id": "FS-EURUSD-PS4-PS5",
       "resource": "CPU_plus_DOIN",
-      "state": "PS4_TRANSFORM_SUBPOPULATION_ACCEPTED_WAITING_FOR_PS3_READINESS",
-      "work": "Ten transforms have accepted PS4 profiles. Build the 366-row readiness ledger, then run paired common-K comparisons, ablations with refit and the final manifest only when required evidence is present.",
+      "state": "PS4_SUBPOPULATION_ACCEPTED_LEDGER_REPAIR_REQUIRED",
+      "work": "Ten transforms have accepted PS4 profiles. Repair the 366-row readiness ledger against causal revision 48ae17c, ingest terminal PS3-R evidence automatically, profile new terminals incrementally, then run paired common-K comparisons only when each row is ready.",
       "depends_on": ["FS-EURUSD-PS3-C", "FS-EURUSD-PS3-R"],
       "produces": "selected/rejected/pending manifest"
     },

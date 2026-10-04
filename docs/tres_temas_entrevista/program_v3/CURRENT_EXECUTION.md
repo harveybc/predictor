@@ -1,6 +1,6 @@
 # Estado de ejecución vigente
 
-Observado: 2026-10-03 23:35 UTC. La autoridad `codex/workplan-consolidation-20261003@02434903` está integrada en esta rama. Este corte sustituye las observaciones anteriores; no modifica resultados históricos. Los `STATUS.json` anteriores son instantáneas, no el estado vivo.
+Observado: 2026-10-04 04:32 UTC. La autoridad `codex/workplan-consolidation-20261003@02434903` está integrada en esta rama. Este corte sustituye las observaciones anteriores; no modifica resultados históricos. Los `STATUS.json` anteriores son instantáneas, no el estado vivo.
 
 ## Secuencia vigente
 
@@ -21,9 +21,9 @@ No ejecutar NEAT ahora. NEAT es un cabezal tardío, después de selección, ARCH
 | Host/GPU | Corte observado | Trabajo / disponibilidad |
 |---|---|---|
 | Omega RTX 4070 Laptop | escritorio, sin job batch observado | Contratos y tests CPU pequeños solamente. |
-| Gamma RTX 5090 | 0%, 48 MiB, 36 C | Ociosa. `dprime` está en espera de admisión a 8,000 MiB; no existe hijo de modelo. La nueva orden mueve esa carga a dragon y asigna lane F, que sí cabe, a la 5090. |
+| Gamma RTX 5090 | activa, 19,518 MiB, 50 C | Lane F secuencial; despues de cerrar `tv.hilbert_amp`, `tv.kalman_dev` y `tv.stl_dev`, ejecutaba `tv.stl_seasonal` al corte. |
 | Gamma RTX 5070 Ti Laptop | 0%, 14 MiB, 26 C | Ociosa. No concurre con la 5090 porque ambas comparten 14 GiB de RAM del host. |
-| Dragon RTX 4090 Laptop | 7%, 14 MiB, 30 C | Ociosa tras completar `fred.stress.vixcls.logret_5d`; 11 GiB disponibles y batch 002 autenticado presente. Recibe la cola PS3-R de 8,000 MiB. |
+| Dragon RTX 4090 Laptop | hijo vivo, 14,434 MiB, 40 C | Ejecuta `fx.eurjpy.logret_1h` de la cola baseline PS3-R, una celda a 8,000 MiB. |
 
 La cola F no equivale a trabajo usando la 5070 Ti mientras E ocupa el slice. El driver E/F alterna al terminar una celda; no iniciar un duplicado ni forzar concurrencia.
 
@@ -36,23 +36,21 @@ La cola F no equivale a trabajo usando la 5070 Ti mientras E ocupa el slice. El 
 | Variantes de señal | PERFIL PS4 PARCIAL ACEPTADO | Diez salidas de cinco variantes causales tienen 50 unidades feature-fold y 1,050 métricas PS4 completas. Cuatro variantes globales/smoother siguen rechazadas por usar futuro. Ninguna queda seleccionada por perfilado. |
 | PS2 | PARCIAL | 366 admisibles: 279 pasaron a la shortlist de PS3-C; 87 quedaron con prioridad baja en las 14 celdas. Los conteos de tiers se solapan y no deben sumarse. La cola no expresa aún cómo reconsiderar esas 87; PS5 debe dar estado a cada una. |
 | PS3-C causal | FIX Y REVISIÓN PUBLICADOS | `causal-inference@48ae17c`; 45 pruebas focales pasan. Revisión read-only de los tres lotes guardada en `laneC/reanalysis_48ae17c/`: 279 candidatas, 1,076 filas históricas; 109 con BH local, 0 identificación aceptada, 0 confirmaciones no lineales. La suite general del proveedor deja 6 fallos de entorno (EconML y paquete no instalado en subproceso), 149 pasan y 27 skip. |
-| PS3-R extractibilidad | EN EJECUCIÓN, COLOCACIÓN CORREGIDA | Dragon completó `fred.stress.vixcls.logret_5d` en 1,134.3 s: 441 filas y pico cgroup 7.315 GB. AE/DAE reconstruyen bien, pero su utilidad contra random es mixta y ambos pierden Y_b en 10/10 celdas. Las celdas E de 8,000 MiB pasan a dragon; gamma 5090 ejecuta lane F a sus topes medidos. Reconstrucción no equivale a selección. |
+| PS3-R extractibilidad | EN EJECUCIÓN EN DOS GPU | Dragon continua baseline. Gamma lane F cerro tres celdas past-to-current con hash de resultados igual al manifiesto (`tv.hilbert_amp`, `tv.kalman_dev`, `tv.stl_dev`) y continua secuencialmente. Son mediciones de extractor; reconstruccion/utilidad no equivalen a seleccion. |
 | Cobertura de features | RECONCILIACIÓN PARCIAL | `coverage_reconciliation/`: 366/366 filas, 279 en join PS3-C + 87 fuera, 137 en cola E, 142 fuera de E = 132 tier-3 + 10 calendario. Ocho pruebas pasan. Proveedores pagados y transformaciones siguen requiriendo su propia reconciliación; no se declara exhaustivo. |
-| PS4/PS5 manifiesto conjunto | PILOTO PARCIAL | PS4 acepta solo la subpoblación de diez transformaciones: 50/50 unidades y 1,050 filas. PS5 conserva un contraste EURUSD Y_l@24h que falla el naive pareado (0.002228 frente a 0.002199). Falta ledger de preparación de 366 filas, evidencia PS3-R/PS4 requerida y comparación common-K; no se libera selección ni estrategia. |
+| PS4/PS5 manifiesto conjunto | LEDGER DE RETSU RECHAZADO, PILOTO PARCIAL | PS4 acepta diez transformaciones: 50/50 unidades y 1,050 filas. El ledger `5da79f34` usa estados causales historicos (65 identificadas + 13 mixtas) que contradicen `48ae17c` (0 identificadas), y adopta celdas con constantes. Debe repararse antes de common-K; no se libera seleccion ni estrategia. |
 | ARCH/E1/H-CORE/NEAT/RL | AÚN NO ELEGIBLES | Ejecutar en orden canónico solo tras manifiesto final; H-CORE después de E1 y NEAT al final sobre representación congelada. |
-| Walk-forward semanal | IMPLEMENTACIÓN PARCIAL | Contrato BW01-BW18 y núcleo de calendario/modos implementados; faltan resolver población as-of, firewall test completo, adapters de entrenamiento y unión al runtime semanal. Los folds estáticos retenidos no cambian de clase. |
+| Walk-forward semanal | IMPLEMENTACIÓN PARCIAL, SCORER NO ACEPTADO | Contrato BW01-BW18 y nucleo de calendario/modos implementados. El scorer `39a45e88` pierde diferencias pareadas al recargar, exige indebidamente el mismo modelo corto/largo y cuenta semanas como replicas independientes. Debe repararse antes del piloto semanal. |
 | Literatura | COLA NO VIVA | No hay runner científico observado en Dragon; el STATUS anterior describía una cola Traffic, no un proceso vivo en este corte. |
 
 ## Trabajo en paralelo y orden inmediato
 
-1. **Gamma:** cancelar únicamente el waiter E sin hijo; ejecutar lane F en la 5090 a su tope medido, una celda por vez. No reintentar `dgs30`/`dprime` con un tope reducido.
-2. **CPU, causal-inference:** revisión read-only de los tres lotes completada bajo `48ae17c`; preservar originales y mantener los 0 casos identificados como resultado del gate, no como rechazo de features. La siguiente acción es cerrar fuentes/transformaciones y reabrir análisis cuando haya evidencia de assumptions verificable.
-3. **CPU, cobertura de selección:** ledger de fuentes/transformaciones incorporado desde Retsu `749ba6a8` como `292e13cc`, sin diferencia de árbol entre esos dos commits. Continuar las disposiciones de 87 low-priority, 142 fuera de E, transformaciones PS4 y fuentes pagadas/no disponibles. Sin omisiones implícitas.
-4. **Dragon:** batch 002 autenticado está presente y una celda real terminó. Continuar allí la cola pesada E de 8,000 MiB con claim global y sin duplicar celdas de Gamma.
-5. **Omega:** mantener solo verificaciones CPU pequeñas y reportes; no ocupar la 4070 de escritorio para un job largo.
-6. **CPU negocio:** completar protocolo semanal, población as-of y firewall de
-   validation/test; luego adaptar forecasting, heurística y RL a una identidad
-   común de semana/cutoff sin detener PS3-R.
+1. **Gamma:** no detener lane F; una celda en la 5090, sin concurrencia con la 5070 Ti mientras el host no admita ambas.
+2. **Dragon:** no detener la baseline PS3-R; una celda terminal por vez y sin duplicados.
+3. **CPU causal/ledger:** reconstruir M2 exclusivamente desde `reanalysis_48ae17c`; mantener 0 identificadas como abstencion, no rechazo.
+4. **CPU evidencia:** reemplazar constantes por adopcion automatica de manifiestos terminales verificados, separando baseline y familias alternativas.
+5. **CPU PS4:** perfilar incrementalmente cada feature terminal autentica sin target/test, sin esperar las 366.
+6. **CPU negocio:** reparar persistencia pareada, identidad separada corto/largo y dependencia longitudinal del scorer; fijar MAE primario antes del piloto semanal.
 
 ## Resultado/ETA
 

@@ -76,23 +76,24 @@ def main() -> None:
                                     facecolor="#f8fafc", edgecolor=color, linewidth=2.1))
         ax.text(x + 0.18, y + 1.63, item["id"], fontsize=8.2,
                 fontweight="bold", color=color, va="top")
-        ax.text(x + 0.18, y + 1.39, wrapped(item["title"], 29),
+        ax.text(x + 0.18, y + 1.39, wrapped(item["title"], 36),
                 fontsize=10.0, fontweight="bold", color="#132238", va="top")
         ax.text(x + box_w - 0.16, y + 1.62, f"{item['progress']}%",
                 fontsize=11.2, fontweight="bold", color=color, ha="right", va="top",
                 bbox=dict(boxstyle="round,pad=0.16", facecolor="white",
                           edgecolor=color, linewidth=0.8))
-        ax.add_patch(FancyBboxPatch((x + 0.18, y + 1.02), box_w - 0.36, 0.13,
+        ax.add_patch(FancyBboxPatch((x + 0.18, y + 0.92), box_w - 0.36, 0.13,
                                     boxstyle="round,pad=0,rounding_size=0.04",
                                     facecolor="#dfe5eb", edgecolor="none"))
-        ax.add_patch(FancyBboxPatch((x + 0.18, y + 1.02),
+        ax.add_patch(FancyBboxPatch((x + 0.18, y + 0.92),
                                     (box_w - 0.36) * item["progress"] / 100, 0.13,
                                     boxstyle="round,pad=0,rounding_size=0.04",
                                     facecolor=color, edgecolor="none"))
-        ax.text(x + 0.18, y + 0.82, wrapped(item["evidence"], 53),
-                fontsize=7.6, color="#334155", va="top", linespacing=1.22)
-        ax.text(x + 0.18, y + 0.22, f"ETA: {item['eta']}",
-                fontsize=7.8, fontweight="bold", color=color, va="top")
+        ax.text(x + 0.18, y + 0.73, wrapped(item["evidence"], 53),
+                fontsize=7.35, color="#334155", va="top", linespacing=1.18)
+        ax.text(x + 0.18, y + 0.12, wrapped(f"ETA: {item['eta']}", 48),
+                fontsize=7.35, fontweight="bold", color=color, va="bottom",
+                linespacing=1.05)
 
     ax.text(9.0, 6.42, "CRITICAL PATH CONTINUES BELOW", fontsize=7.8,
             fontweight="bold", color="#7b8794", ha="center")
