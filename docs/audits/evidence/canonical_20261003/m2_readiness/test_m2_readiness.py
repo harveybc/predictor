@@ -132,6 +132,11 @@ def test_retained_ledger_keeps_366_and_ten_measured_transforms():
     assert dprime["evidence_digest"] == ledger.DPRIME_RESULTS_SHA256
     assert dprime["ps4_status"] == "SCHEDULED_NOT_MEASURED"
     assert ledger.DPRIME_FEATURE in scheduled
+    aud = by_id[ledger.AUD_EWMA_FEATURE]
+    assert aud["ps3r_status"] == "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
+    assert aud["evidence_digest"] == ledger.AUD_EWMA_RESULTS_SHA256
+    assert aud["ps4_status"] == "SCHEDULED_NOT_MEASURED"
+    assert ledger.AUD_EWMA_FEATURE in scheduled
     assert ledger.VIX_FEATURE in scheduled
     assert ledger.SIAMESE_FEATURE in scheduled
     assert len(built["schedule"]) == len(scheduled) * len(ledger.PS4_METRICS) * len(ledger.INNER_FOLDS)
