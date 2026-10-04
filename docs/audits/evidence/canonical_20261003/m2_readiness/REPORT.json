@@ -4,7 +4,7 @@
   "denominator": 366,
   "huecos": [
     "PS4 medido cubre 10 de 366. El resto sigue PENDING_PROFILE o solo agendado.",
-    "fred.rates.dgs30.level tiene utilidad mixta y no está seleccionada. dprime sigue en ejecución y no entra como terminal.",
+    "fred.rates.dgs30.level y fred.rates.dprime.logret_5d tienen utilidad mixta y no están seleccionadas. fx.audusd.ewma_vol_24 sigue en ejecución.",
     "px.logret_6h past_to_current_siamese no se promueve.",
     "features_train.parquet no está en este árbol; se conserva el digest retenido sin recomputarlo.",
     "PS5 está preparado y no entrenado. No hay manifiesto selected, rejected o pending.",
@@ -64,6 +64,10 @@
     "dgs30_results_sha256": "f7763f142b7f02c72ae50e6b93562d6614f0563eb1694c26c21dc0a57e9416d5",
     "dgs30_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
     "dgs30_utility": "mixed",
+    "dprime_feature": "fred.rates.dprime.logret_5d",
+    "dprime_results_sha256": "a7b85bd93e2a22e76a85ce90d9d16dc75adc516c8109d11068c1326e0d8f4bb3",
+    "dprime_status": "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
+    "dprime_utility": "mixed",
     "lane_e_cost_sha256": "908f0a01b92e02666eafa8f235bd5b1f57f8ca321d4d11e5f1d03940b6ac6b63",
     "lane_e_matrix_sha256": "c7ddecc92823f173be4af12cb6d4ec7e93899267ee1f5c72d4085d56ffdb7f2e",
     "lane_e_measured_not_selection": [
@@ -97,6 +101,7 @@
   "ps4_schedule": {
     "features": [
       "fred.rates.dgs30.level",
+      "fred.rates.dprime.logret_5d",
       "fred.stress.vixcls.logret_5d",
       "px.close_loc",
       "px.ewma_vol_24",
@@ -146,12 +151,12 @@
       "temporal_structure_gain_zlib9_symbols"
     ],
     "product_bound": "21_metrics_x_5_inner_folds",
-    "rows": 1890
+    "rows": 1995
   },
-  "ps4_schedule_sha256": "793c83d491e938597cceb756d7c386577ae5c7ffb0c2323b781eacf4bd476d48",
+  "ps4_schedule_sha256": "aec675ec86cf71d3cf5746fcfa0e34a1b43867bbad75050032a61e933015295b",
   "ps5_inputs_sha256": "a541b3c1343559cd3576a3724ef426707afea5d6925b04077947b706398b3d00",
   "ps5_preparation_identity": "897fe3cd79cc1c284f213bb8217065bac436d93d8b2823c06a2557363a23f7ed",
-  "readiness_rows_sha256": "b4ac66217bfd9918e8daf909970276ec1d78de1c2b8f01fd374a09df50c60eff",
+  "readiness_rows_sha256": "075a595f23bc74f0fae56d8d20757fc8476995f46e83550a4d632f6bcfc2c9a5",
   "schema": "m2_readiness_ledger.v1",
   "selection_manifest": "NOT_ISSUED",
   "status_counts": {
@@ -162,15 +167,15 @@
       "NOT_IDENTIFIED": 278
     },
     "ps3r": {
-      "ACCEPTED_PS3R_CELL_MIXED_UTILITY": 2,
+      "ACCEPTED_PS3R_CELL_MIXED_UTILITY": 3,
       "LANE_E_MEASURED_NOT_SELECTION": 16,
       "NOT_SCHEDULED": 229,
-      "NOT_TERMINAL": 119
+      "NOT_TERMINAL": 118
     },
     "ps4": {
       "MEASURED_SUBPOPULATION": 10,
-      "PENDING_PROFILE": 338,
-      "SCHEDULED_NOT_MEASURED": 18
+      "PENDING_PROFILE": 337,
+      "SCHEDULED_NOT_MEASURED": 19
     }
   }
 }
