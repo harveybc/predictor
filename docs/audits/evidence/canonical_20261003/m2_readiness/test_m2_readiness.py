@@ -127,6 +127,11 @@ def test_retained_ledger_keeps_366_and_ten_measured_transforms():
     assert "past_to_current_siamese" in siamese["missing_next_action"]
     scheduled = {row["feature_id"] for row in built["schedule"]}
     assert ledger.DGS30_FEATURE in scheduled
+    dprime = by_id[ledger.DPRIME_FEATURE]
+    assert dprime["ps3r_status"] == "ACCEPTED_PS3R_CELL_MIXED_UTILITY"
+    assert dprime["evidence_digest"] == ledger.DPRIME_RESULTS_SHA256
+    assert dprime["ps4_status"] == "SCHEDULED_NOT_MEASURED"
+    assert ledger.DPRIME_FEATURE in scheduled
     assert ledger.VIX_FEATURE in scheduled
     assert ledger.SIAMESE_FEATURE in scheduled
     assert len(built["schedule"]) == len(scheduled) * len(ledger.PS4_METRICS) * len(ledger.INNER_FOLDS)
