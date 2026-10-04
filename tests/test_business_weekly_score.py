@@ -1,0 +1,288 @@
+"""Focused tests for the weekly paired-forecast scoring boundary."""
+
+from __future__ import annotations
+
+import math
+import unittest
+from datetime import datetime, timedelta, timezone
+
+from tools.business_objective_firewall import BusinessObjectiveFirewall, FirewallError, Phase
+from tools.business_weekly_protocol import DispositionStatus, EvaluationSplit, WeekSpec
+from tools.business_weekly_score import (
+    NOT_CONFIGURED,
+    PRIMARY_ERROR_METRIC_FIELD,
+    ForecastFamily,
+    HorizonForecast,
+    ScoreRefusal,
+    ScoringContract,
+    WeekRelease,
+    WeeklyScoreLedger,
+    repository_primary_error_metric,
+    score_week,
+)
+from tools.business_weekly_training import score_forecast_release
+
+
+UTC = timezone.utc
+
+
+class Bomb(tuple):
+    """Row payload that fails if scoring reads it."""
+
+    def __iter__(self):
+        raise AssertionError("rows accessed")
+
+
+def week(ordinal: int, split: EvaluationSplit = EvaluationSplit.VALIDATION) -> WeekSpec:
+    start = datetime(2024, 1, 1, tzinfo=UTC) + timedelta(days=7 * ordinal)
+    return WeekSpec(split, ordinal, start, start + timedelta(days=7), start, None, False)
+
+
+def horizon(
+    family: ForecastFamily,
+    name: str,
+    prediction: tuple[float, ...],
+    naive: tuple[float, ...],
+    *,
+    target: tuple[float, ...] = (0.0, 0.0),
+    origins: tuple[str, ...] = ("o1", "o2"),
+    unit: str = "log_return",
+    scale: str = "raw",
+    model_digest: str = "model-a",
+    scored_week: WeekSpec | None = None,
+) -> HorizonForecast:
+    return HorizonForecast(
+        family=family,
+        horizon=name,
+        origins=origins,
+        target=target,
+        prediction=prediction,
+        naive=naive,
+        unit=unit,
+        scale=scale,
+        model_digest=model_digest,
+        dataset_id="synthetic-week",
+        week=scored_week or week(0),
+    )
+
+
+def release_for(*forecasts: HorizonForecast, scored: WeekSpec | None = None, payload=None) -> WeekRelease:
+    return WeekRelease(scored or week(0), forecasts, True, payload)
+
+
+class WeeklyScoreTests(unittest.TestCase):
+    def test_repository_primary_metric_stays_unconfigured(self) -> None:
+        self.assertEqual(repository_primary_error_metric(), NOT_CONFIGURED)
+        self.assertEqual(PRIMARY_ERROR_METRIC_FIELD, "primary_error_metric")
+
+    def test_better_than_naive_is_eligible_with_exact_metrics(self) -> None:
+        contract = ScoringContract("mae", (ForecastFamily.SHORT, ForecastFamily.LONG), ("h1",))
+        calls: list[str] = []
+        release = release_for(
+            horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0)),
+            horizon(ForecastFamily.LONG, "h1", (1.0, 1.0), (3.0, 3.0)),
+        )
+        scored = score_week(release, contract, strategy=lambda item: calls.append(item.digest))
+        self.assertEqual(calls and len(calls), 1)
+        short, long = scored.horizons
+        self.assertEqual(short.sample_count, 2)
+        self.assertEqual(short.model_mae, 1.0)
+        self.assertEqual(short.naive_mae, 2.0)
+        self.assertEqual(short.model_mse, 1.0)
+        self.assertEqual(short.naive_mse, 4.0)
+        self.assertEqual(short.paired_differences[0].absolute_error_difference, -1.0)
+        self.assertEqual(short.skill_mae, 0.5)
+        self.assertTrue(scored.strategy_eligible)
+        self.assertEqual(long.naive_mae, 3.0)
+
+    def test_unconfigured_primary_beats_naive_and_stays_closed(self) -> None:
+        contract = ScoringContract(repository_primary_error_metric())
+        calls: list[object] = []
+        release = release_for(
+            horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0)),
+            horizon(ForecastFamily.LONG, "h1", (1.0, 1.0), (2.0, 2.0)),
+        )
+        scored = score_forecast_release(release, contract, strategy=calls.append)
+        self.assertEqual(calls, [])
+        self.assertFalse(scored.strategy_eligible)
+        self.assertIn(NOT_CONFIGURED, scored.reason or "")
+
+    def test_tie_or_loss_blocks_the_strategy_callback(self) -> None:
+        contract = ScoringContract("mse")
+        calls: list[object] = []
+        release = release_for(
+            horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0)),
+            horizon(ForecastFamily.LONG, "h1", (2.0, 2.0), (2.0, 2.0)),
+        )
+        scored = score_week(release, contract, strategy=calls.append)
+        self.assertEqual(calls, [])
+        self.assertFalse(scored.strategy_eligible)
+
+    def test_duplicate_reordered_or_changed_origin_rejects_before_metrics(self) -> None:
+        contract = ScoringContract("mae")
+        duplicate = horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0), origins=("o1", "o1"))
+        with self.assertRaises(ScoreRefusal) as caught:
+            score_week(release_for(duplicate, horizon(ForecastFamily.LONG, "h1", (1.0, 1.0), (2.0, 2.0), origins=("o1", "o1"))), contract)
+        self.assertEqual(caught.exception.code, "DUPLICATE_ORIGIN")
+        reordered = horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0), origins=("o2", "o1"))
+        with self.assertRaises(ScoreRefusal) as caught:
+            score_week(release_for(reordered, horizon(ForecastFamily.LONG, "h1", (1.0, 1.0), (2.0, 2.0), origins=("o2", "o1"))), contract)
+        self.assertEqual(caught.exception.code, "REORDERED_ORIGIN")
+        changed = horizon(
+            ForecastFamily.SHORT,
+            "h1",
+            (1.0, 1.0),
+            (2.0, 2.0),
+        )
+        changed = HorizonForecast(
+            changed.family,
+            changed.horizon,
+            changed.origins,
+            changed.target,
+            changed.prediction,
+            changed.naive,
+            changed.unit,
+            changed.scale,
+            changed.model_digest,
+            changed.dataset_id,
+            changed.week,
+            prediction_origins=("o1", "o9"),
+        )
+        solo = ScoringContract("mae", (ForecastFamily.SHORT,), ())
+        with self.assertRaises(ScoreRefusal) as caught:
+            score_week(WeekRelease(week(0), (changed,), False), solo)
+        self.assertEqual(caught.exception.code, "ORIGIN_CHANGED")
+        missing = HorizonForecast(
+            changed.family,
+            changed.horizon,
+            changed.origins,
+            changed.target,
+            changed.prediction,
+            changed.naive,
+            changed.unit,
+            changed.scale,
+            changed.model_digest,
+            changed.dataset_id,
+            changed.week,
+            target_origins=("o1",),
+        )
+        with self.assertRaises(ScoreRefusal) as caught:
+            score_week(WeekRelease(week(0), (missing,), False), solo)
+        self.assertEqual(caught.exception.code, "MISSING_ORIGIN")
+
+    def test_length_mismatch_rejects(self) -> None:
+        broken = horizon(ForecastFamily.SHORT, "h1", (1.0,), (2.0, 2.0))
+        with self.assertRaises(ScoreRefusal) as caught:
+            score_week(
+                WeekRelease(week(0), (broken,), consumes_short_and_long=False),
+                ScoringContract("mae", (ForecastFamily.SHORT,), ()),
+            )
+        self.assertEqual(caught.exception.code, "LENGTH_MISMATCH")
+        self.assertIn("prediction=1", caught.exception.detail)
+
+    def test_non_finite_names_field_and_origin(self) -> None:
+        broken = horizon(ForecastFamily.SHORT, "h1", (1.0, math.inf), (2.0, 2.0))
+        with self.assertRaises(ScoreRefusal) as caught:
+            score_week(
+                WeekRelease(week(0), (broken,), consumes_short_and_long=False),
+                ScoringContract("mae", (ForecastFamily.SHORT,), ()),
+            )
+        self.assertEqual(caught.exception.code, "NON_FINITE")
+        self.assertIn("prediction", caught.exception.detail)
+        self.assertIn("o2", caught.exception.detail)
+
+    def test_identity_mismatch_rejects_before_aggregation(self) -> None:
+        contract = ScoringContract("mae")
+        release = release_for(
+            horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0), unit="price"),
+            horizon(ForecastFamily.LONG, "h1", (1.0, 1.0), (2.0, 2.0), unit="log_return"),
+        )
+        with self.assertRaises(ScoreRefusal) as caught:
+            score_week(release, contract)
+        self.assertEqual(caught.exception.code, "IDENTITY_MISMATCH")
+
+    def test_missing_family_is_an_incomplete_ineligible_week(self) -> None:
+        calls: list[object] = []
+        release = WeekRelease(
+            week(0),
+            (horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0)),),
+            True,
+        )
+        scored = score_week(release, ScoringContract("mae"), strategy=calls.append)
+        self.assertEqual(scored.disposition, "INCOMPLETE")
+        self.assertFalse(scored.strategy_eligible)
+        self.assertEqual(calls, [])
+        self.assertEqual(scored.horizons, ())
+
+    def test_failed_week_is_kept_and_a_reduced_denominator_is_refused(self) -> None:
+        contract = ScoringContract("mae", (ForecastFamily.SHORT,), ())
+        ledger = WeeklyScoreLedger((week(0), week(1)), contract)
+        ledger.record_terminal(week(0), DispositionStatus.EXCLUDED, "source gap")
+        ledger.record_terminal(week(1), DispositionStatus.FAILED, "fit failed")
+        with self.assertRaises(ScoreRefusal) as caught:
+            ledger.close(proposed_denominator=1)
+        self.assertEqual(caught.exception.code, "REDUCED_DENOMINATOR")
+        closed = ledger.close(proposed_denominator=2)
+        self.assertEqual(closed.denominator, 2)
+        self.assertEqual(closed.independent_replicates, 2)
+        self.assertEqual(closed.dispositions[0].disposition, "EXCLUDED")
+        self.assertEqual(closed.dispositions[1].disposition, "FAILED")
+        self.assertEqual(closed.eligible_weeks, 0)
+
+    def test_validation_firewall_rejects_a_test_payload_before_rows(self) -> None:
+        firewall = BusinessObjectiveFirewall.create(("2025-W01",))
+        self.assertIs(firewall.phase, Phase.VALIDATION_SELECTION)
+        forecast = HorizonForecast(
+            ForecastFamily.SHORT,
+            "h1",
+            ("o1", "o2"),
+            Bomb((0.0, 0.0)),
+            Bomb((1.0, 1.0)),
+            Bomb((2.0, 2.0)),
+            "log_return",
+            "raw",
+            "model-a",
+            "synthetic-week",
+            week(0),
+        )
+        release = WeekRelease(week(0), (forecast,), False, {"test_labels": [1.0, 2.0]})
+        with self.assertRaises(FirewallError):
+            score_week(release, ScoringContract("mae", (ForecastFamily.SHORT,), ()), firewall=firewall)
+
+    def test_restart_does_not_rescore_a_completed_week(self) -> None:
+        contract = ScoringContract("mae", (ForecastFamily.SHORT,), ())
+        ledger = WeeklyScoreLedger((week(0),), contract)
+        release = WeekRelease(
+            week(0),
+            (horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0)),),
+            False,
+        )
+        calls: list[object] = []
+        first = ledger.submit(release, strategy=calls.append)
+        self.assertEqual(ledger.score_events, 1)
+        self.assertEqual(len(calls), 1)
+        restored = WeeklyScoreLedger.from_json(ledger.to_json())
+        again = restored.submit(release, strategy=calls.append)
+        self.assertEqual(again.digest, first.digest)
+        self.assertEqual(restored.score_events, 1)
+        self.assertEqual(len(calls), 1)
+
+    def test_overlapping_hours_do_not_increase_the_week_denominator(self) -> None:
+        contract = ScoringContract("mae", (ForecastFamily.SHORT,), ())
+        ledger = WeeklyScoreLedger((week(0), week(1)), contract)
+        for ordinal in (0, 1):
+            scored_week = week(ordinal)
+            release = WeekRelease(
+                scored_week,
+                (horizon(ForecastFamily.SHORT, "h1", (1.0, 1.0), (2.0, 2.0), scored_week=scored_week),),
+                False,
+            )
+            ledger.submit(release)
+        closed = ledger.close()
+        self.assertEqual(closed.denominator, 2)
+        self.assertEqual(closed.origin_rows, 4)
+        self.assertEqual(closed.independent_replicates, closed.denominator)
+
+
+if __name__ == "__main__":
+    unittest.main()
