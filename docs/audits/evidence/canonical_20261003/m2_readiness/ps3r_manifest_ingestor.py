@@ -16,24 +16,30 @@ def _sha256(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _kinds(path):
-    counts = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
+def _rows(path):
+    rows = []
+    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         if not line:
             continue
         row = json.loads(line)
+        if not isinstance(row, dict):
+            raise IngestRefusal("ROW_TYPE", str(line_number))
+        rows.append(row)
+    return rows
+
+
+def _kinds(rows):
+    counts = {}
+    for row in rows:
         kind = row.get("row_kind") or row.get("kind")
         counts[kind] = counts.get(kind, 0) + 1
     return counts
 
 
-def _utility(path, trained):
+def _utility(rows, trained):
     wins = {family: {"Ys": 0, "Yl": 0, "Yb": 0} for family in trained}
     seen = {family: {"Ys": 0, "Yl": 0, "Yb": 0} for family in trained}
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if not line:
-            continue
-        row = json.loads(line)
+    for row in rows:
         if (row.get("row_kind") or row.get("kind")) != "probe_delta":
             continue
         family = row.get("trained")
@@ -66,7 +72,106 @@ def _utility(path, trained):
     return "mixed" if mixed else "uniform"
 
 
-def _decision(feature_id, role, disposition, reason, digest=None, utility=None, locator=""):
+def _validate_rows(rows, feature_id, rules):
+    """Bind retained rows to the authenticated manifest identity."""
+
+    families = tuple(rules["families"])
+    family_set = set(families)
+    folds = tuple(rules["folds"])
+    fold_set = set(folds)
+    seed = int(rules["seed"])
+    trained = family_set - {"identity", "random"}
+    fold_families = set()
+    probe_keys = set()
+    delta_keys = set()
+    summaries = 0
+    summary_families = set()
+
+    for row_number, row in enumerate(rows, 1):
+        kind = row.get("row_kind") or row.get("kind")
+        if row.get("feature_id") != feature_id:
+            return "ROW_FEATURE", str(row_number)
+        if "seed" in row:
+            try:
+                row_seed = int(row["seed"])
+            except (TypeError, ValueError):
+                return "ROW_SEED", str(row_number)
+            if isinstance(row["seed"], bool) or row_seed != seed:
+                return "ROW_SEED", str(row_number)
+
+        if kind == "fold_family":
+            if "seed" not in row:
+                return "ROW_SEED", str(row_number)
+            family = row.get("family")
+            fold = row.get("fold_id")
+            if family not in family_set:
+                return "ROW_FAMILY", str(row_number)
+            if fold not in fold_set:
+                return "ROW_FOLD", str(row_number)
+            key = (fold, family)
+            if key in fold_families:
+                return "ROW_DUPLICATE", str(row_number)
+            fold_families.add(key)
+        elif kind == "probe":
+            family = row.get("representation")
+            fold = row.get("fold_id")
+            if family not in family_set:
+                return "ROW_FAMILY", str(row_number)
+            if fold not in fold_set:
+                return "ROW_FOLD", str(row_number)
+            key = (fold, family, row.get("target"), row.get("horizon_index"))
+            if key in probe_keys:
+                return "ROW_DUPLICATE", str(row_number)
+            probe_keys.add(key)
+        elif kind == "probe_delta":
+            family = row.get("trained")
+            fold = row.get("fold_id")
+            if family not in trained:
+                return "ROW_FAMILY", str(row_number)
+            if fold not in fold_set:
+                return "ROW_FOLD", str(row_number)
+            key = (fold, family, row.get("target"), row.get("horizon_index"), row.get("loss"))
+            if key in delta_keys:
+                return "ROW_DUPLICATE", str(row_number)
+            delta_keys.add(key)
+        elif kind == "feature_summary":
+            summaries += 1
+            for summary in row.get("probe_loss_across_folds") or []:
+                representation = summary.get("representation")
+                if representation not in family_set:
+                    return "ROW_FAMILY", str(row_number)
+                summary_families.add(representation)
+                try:
+                    n_folds = int(summary.get("n_folds", -1))
+                except (TypeError, ValueError):
+                    return "ROW_FOLD", str(row_number)
+                if n_folds != len(folds):
+                    return "ROW_FOLD", str(row_number)
+
+    expected_fold_families = {(fold, family) for fold in folds for family in families}
+    if fold_families != expected_fold_families:
+        return "ROW_IDENTITY_COVERAGE", "fold_family"
+    if summaries != 1:
+        return "ROW_IDENTITY_COVERAGE", "feature_summary"
+    if summary_families != family_set:
+        return "ROW_IDENTITY_COVERAGE", "summary_families"
+    return None, None
+
+
+def _decision(
+    feature_id,
+    role,
+    disposition,
+    reason,
+    digest=None,
+    utility=None,
+    locator="",
+    families=None,
+    folds=None,
+    seed=None,
+    code_commit=None,
+    input_digest=None,
+):
     return {
         "feature_id": feature_id,
         "role": role,
@@ -75,6 +180,11 @@ def _decision(feature_id, role, disposition, reason, digest=None, utility=None, 
         "results_sha256": digest,
         "utility": utility,
         "locator": locator,
+        "families": list(families or []),
+        "folds": list(folds or []),
+        "seed": seed,
+        "code_commit": code_commit,
+        "input_digest": input_digest,
         "ps3r_status": _status(disposition, utility, role),
     }
 
@@ -115,14 +225,40 @@ def examine_directory(directory, role, rules):
         return _decision(feature_id, role, "REJECTED", "REVISION", file_sha)
     if manifest.get("series_sha256") not in set(rules["allowed_input_digests"]):
         return _decision(feature_id, role, "REJECTED", "INPUT_DIGEST", file_sha)
-    kinds = _kinds(results_path)
+    expected = rules.get("expected_results_sha256") or {}
+    if expected:
+        if feature_id not in expected:
+            return _decision(feature_id, role, "REJECTED", "UNDECLARED_TERMINAL", file_sha)
+        if file_sha != expected[feature_id]:
+            return _decision(feature_id, role, "REJECTED", "EXPECTED_RESULTS_HASH", file_sha)
+    try:
+        rows = _rows(results_path)
+    except (json.JSONDecodeError, IngestRefusal) as error:
+        return _decision(feature_id, role, "REJECTED", "ROW_PARSE", file_sha)
+    kinds = _kinds(rows)
     if kinds != dict(rules["row_kinds"]):
         return _decision(feature_id, role, "REJECTED", "ROW_KINDS", file_sha)
+    row_reason, row_detail = _validate_rows(rows, feature_id, rules)
+    if row_reason:
+        return _decision(feature_id, role, "REJECTED", row_reason, file_sha)
     trained = [item for item in rules["families"] if item not in {"identity", "random"}]
-    utility = _utility(results_path, trained)
+    utility = _utility(rows, trained)
     if utility == "UNSCORED":
         return _decision(feature_id, role, "REJECTED", "UNSCORED", file_sha)
-    return _decision(feature_id, role, "ADOPTED", "VERIFIED", file_sha, utility, "")
+    return _decision(
+        feature_id,
+        role,
+        "ADOPTED",
+        "VERIFIED",
+        file_sha,
+        utility,
+        "",
+        rules["families"],
+        rules["folds"],
+        int(rules["seed"]),
+        manifest.get("code_commit"),
+        manifest.get("series_sha256"),
+    )
 
 
 def discover(root, config_path):

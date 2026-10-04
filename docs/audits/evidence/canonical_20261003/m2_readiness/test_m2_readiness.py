@@ -72,7 +72,7 @@ def test_stale_ps4_digest_is_rejected(tmp_path):
 
 def test_reconstruction_is_not_selection_utility():
     mixed = {
-        "feature_id": ledger.VIX_FEATURE,
+        "feature_id": "fred.stress.vixcls.logret_5d",
         "selection_decision": "NOT_ISSUED",
         "reconstruction_selects": False,
         "utility": "mixed",
@@ -128,12 +128,13 @@ def test_retained_ledger_keeps_366_and_ten_measured_transforms():
         assert row["ps3c_producer_revision"] == "48ae17c"
         assert len(row["ps3c_join_sha256"]) == 64
         assert row["ps5_status"] == "NOT_READY_EVIDENCE_INCOMPLETE"
-    vix = by_id[ledger.VIX_FEATURE]
+    vix_feature = "fred.stress.vixcls.logret_5d"
+    vix = by_id[vix_feature]
     assert "no selecciona" in vix["missing_next_action"]
     siamese = by_id[ledger.SIAMESE_FEATURE]
     assert siamese["ps3r_status"] == "LANE_E_MEASURED_NOT_SELECTION"
     assert "past_to_current_siamese" in siamese["missing_next_action"]
-    assert ledger.VIX_FEATURE in scheduled
+    assert vix_feature in scheduled
     assert ledger.SIAMESE_FEATURE in scheduled
     assert len(built["schedule"]) == len(scheduled) * len(ledger.PS4_METRICS) * len(ledger.INNER_FOLDS)
     assert all(set(row) == set(ledger.SCHEDULE_FIELDS) for row in built["schedule"])
@@ -160,6 +161,11 @@ def test_retained_ledger_keeps_366_and_ten_measured_transforms():
     }
     for feature_id in ("tv.hilbert_amp", "tv.kalman_dev", "tv.stl_dev"):
         assert alternatives[feature_id]["replaces_baseline"] is False
+        assert alternatives[feature_id]["families"] == [
+            "identity",
+            "random",
+            "past_to_current_siamese",
+        ]
         assert alternatives[feature_id]["utility"] == "mixed"
         assert by_id[feature_id]["ps3r_status"] not in {
             "ACCEPTED_PS3R_CELL_MIXED_UTILITY",
@@ -171,6 +177,44 @@ def test_retained_ledger_keeps_366_and_ten_measured_transforms():
     forbidden_path = "/" + "home" + "/"
     assert forbidden_path not in json.dumps(built["report"])
     assert forbidden_path not in json.dumps(comparison)
+
+
+def test_report_uses_verified_ingestor_terminals_without_legacy_feature_fields():
+    built = ledger.build(ROOT)
+    report = built["report"]
+    assert "vix_feature" not in report["ps3r"]
+    assert "dgs30_results_sha256" not in report["ps3r"]
+    baseline = {
+        item["feature_id"]: item
+        for item in report["ps3r"]["verified_terminals"]
+        if item["role"] == "baseline"
+    }
+    assert baseline
+    for feature_id, terminal in baseline.items():
+        row = next(item for item in built["rows"] if item["feature_id"] == feature_id)
+        assert terminal["results_sha256"] == row["evidence_digest"]
+
+
+def test_emit_writes_every_declared_artifact(tmp_path):
+    # Exercise the real tree because the ledger inputs are retained evidence. Restore
+    # bytes afterward so this test remains read-only from the caller's perspective.
+    expected = {
+        ROOT / ledger.BASE / "m2_readiness" / "readiness_rows.csv",
+        ROOT / ledger.BASE / "m2_readiness" / "ps4_schedule.csv",
+        ROOT / ledger.BASE / "m2_readiness" / "ps5_comparison_inputs.json",
+        ROOT / ledger.BASE / "m2_readiness" / "REPORT.json",
+        ROOT / ledger.BASE / "source_transform_coverage" / "ps4_emitted_profile_status.csv",
+    }
+    before = {path: path.read_bytes() if path.exists() else None for path in expected}
+    try:
+        ledger.emit(ROOT)
+        assert all(path.is_file() for path in expected)
+    finally:
+        for path, payload in before.items():
+            if payload is None:
+                path.unlink(missing_ok=True)
+            else:
+                path.write_bytes(payload)
 
 
 def test_old_coverage_counts_stay_frozen_and_do_not_identify():
