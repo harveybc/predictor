@@ -1,6 +1,6 @@
 {
   "schema": "business_weekly_traceability.v1",
-  "updated_at": "2026-10-03T19:15:00Z",
+  "updated_at": "2026-10-04T00:35:00Z",
   "contract": "BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md",
   "state_meaning": {
     "IMPLEMENTED": "executable focused tests exist for the complete named requirement",
@@ -20,7 +20,7 @@
     {"id": "BW10", "state": "PARTIAL", "evidence": ["tools/business_weekly_training.py", "tests/test_business_weekly_training.py"]},
     {"id": "BW11", "state": "PARTIAL", "evidence": ["tools/e3_weekly_runtime.py", "tests/test_e3_weekly_runtime.py"]},
     {"id": "BW12", "state": "PARTIAL", "evidence": ["tools/feature_preparation_policy.py", "tests/test_feature_preparation_policy.py"]},
-    {"id": "BW13", "state": "PARTIAL", "evidence": ["preprocessor_plugins/anti_naive_lock.py", "tests/test_anti_naive_lock.py"]},
+    {"id": "BW13", "state": "IMPLEMENTED", "evidence": ["tools/business_weekly_score.py", "tools/business_weekly_training.py", "tests/test_business_weekly_score.py"]},
     {"id": "BW14", "state": "IMPLEMENTED", "evidence": ["tools/business_weekly_protocol.py", "tests/test_business_weekly_protocol.py"]},
     {"id": "BW15", "state": "IMPLEMENTED", "evidence": ["tools/business_weekly_protocol.py", "tests/test_business_weekly_protocol.py"]},
     {"id": "BW16", "state": "PARTIAL", "evidence": ["tools/business_objective_firewall.py", "tests/test_business_objective_firewall.py"]},

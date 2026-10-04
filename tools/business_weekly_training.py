@@ -473,3 +473,13 @@ def run_weekly_training(
                         broken_warm_lineage.add(family)
 
     return TrainingRun(split, tuple(dispositions), active_firewall)
+
+
+def score_forecast_release(release, contract=None, *, firewall=None, strategy=None):
+    """Connect a forecast release to the weekly naive gate. This does not train."""
+
+    from tools.business_weekly_score import score_weekly_forecast_release
+
+    return score_weekly_forecast_release(
+        release, contract, firewall=firewall, strategy=strategy
+    )
