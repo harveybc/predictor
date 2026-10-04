@@ -1,0 +1,774 @@
+{
+ "feature_id": "fred.stress.vixcls.logret_5d",
+ "fold": "inner_2022",
+ "metric_rows": 21,
+ "reason": "",
+ "rows": [
+  {
+   "cpu_seconds": 0.00062,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "plug-in (maximum likelihood) estimate, biased low",
+     "finite values only",
+     "bins fitted on finite train values at quantiles k/16 and applied frozen to every partition",
+     "tied edges collapse, so fewer than 16 symbols may exist"
+    ],
+    "name": "discrete_entropy_plugin",
+    "params": {
+     "bin_rule": "train quantiles k/16",
+     "bins": 16,
+     "unit": "bits"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "discrete_entropy_bits",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 3.9999796040334235
+  },
+  {
+   "cpu_seconds": 0.001079,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "plug-in entropies over consecutive pairs where both samples are finite",
+     "every occurring conditioning state must have at least the minimum count, else INCONCLUSIVE",
+     "bins fitted on finite train values at quantiles k/16 and applied frozen to every partition",
+     "tied edges collapse, so fewer than 16 symbols may exist"
+    ],
+    "name": "conditional_redundancy_lag1",
+    "params": {
+     "bin_rule": "train quantiles k/16",
+     "bins": 16,
+     "definition": "H(X_t) - H(X_t | X_{t-1})",
+     "lag": 1,
+     "min_count_per_conditioning_state": 20,
+     "unit": "bits"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "conditional_redundancy_bits_lag1",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 3.797174066394904
+  },
+  {
+   "cpu_seconds": 0.001079,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "plug-in entropies over consecutive pairs where both samples are finite",
+     "every occurring conditioning state must have at least the minimum count, else INCONCLUSIVE",
+     "bins fitted on finite train values at quantiles k/16 and applied frozen to every partition",
+     "tied edges collapse, so fewer than 16 symbols may exist"
+    ],
+    "name": "conditional_surprisal_lag1",
+    "params": {
+     "bin_rule": "train quantiles k/16",
+     "bins": 16,
+     "definition": "H(X_t | X_{t-1})",
+     "lag": 1,
+     "min_count_per_conditioning_state": 20,
+     "unit": "bits"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "conditional_surprisal_bits_lag1",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.2028025891583347
+  },
+  {
+   "cpu_seconds": 0.004921,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "windows containing any non-finite value are skipped",
+     "ties ranked by position (stable sort)",
+     "windows never cross a partition boundary"
+    ],
+    "name": "permutation_entropy_normalized",
+    "params": {
+     "delay": 1,
+     "min_windows": 60,
+     "normalization": "ln(3!)",
+     "order": 3,
+     "reference": "Bandt & Pompe (2002), Phys. Rev. Lett. 88:174102"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "permutation_entropy_order_3",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.07131722883115654
+  },
+  {
+   "cpu_seconds": 0.006039,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "windows containing any non-finite value are skipped",
+     "ties ranked by position (stable sort)",
+     "windows never cross a partition boundary"
+    ],
+    "name": "permutation_entropy_normalized",
+    "params": {
+     "delay": 1,
+     "min_windows": 240,
+     "normalization": "ln(4!)",
+     "order": 4,
+     "reference": "Bandt & Pompe (2002), Phys. Rev. Lett. 88:174102"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "permutation_entropy_order_4",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.0606456918789851
+  },
+  {
+   "cpu_seconds": 0.007291,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "windows containing any non-finite value are skipped",
+     "ties ranked by position (stable sort)",
+     "windows never cross a partition boundary"
+    ],
+    "name": "permutation_entropy_normalized",
+    "params": {
+     "delay": 1,
+     "min_windows": 1200,
+     "normalization": "ln(5!)",
+     "order": 5,
+     "reference": "Bandt & Pompe (2002), Phys. Rev. Lett. 88:174102"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "permutation_entropy_order_5",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.0539907733517417
+  },
+  {
+   "cpu_seconds": 0.547411,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "only windows fully inside the partition, fully finite and with non-zero power",
+     "the DC bin is excluded",
+     "fs is one cycle per sample"
+    ],
+    "name": "spectral_entropy_valid_window_count",
+    "params": {
+     "hop": 128,
+     "min_windows": 3,
+     "normalization": "ln(number of non-DC frequency bins)",
+     "welch": {
+      "detrend": "constant",
+      "noverlap": 32,
+      "nperseg": 64,
+      "window": "hann"
+     },
+     "window": 256,
+     "window_alignment": "trailing [t - window, t)"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "spectral_entropy_window_count",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.0
+  },
+  {
+   "cpu_seconds": 0.547411,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "only windows fully inside the partition, fully finite and with non-zero power",
+     "the DC bin is excluded",
+     "fs is one cycle per sample"
+    ],
+    "name": "spectral_entropy_trailing_windows_median",
+    "params": {
+     "hop": 128,
+     "min_windows": 3,
+     "normalization": "ln(number of non-DC frequency bins)",
+     "welch": {
+      "detrend": "constant",
+      "noverlap": 32,
+      "nperseg": 64,
+      "window": "hann"
+     },
+     "window": 256,
+     "window_alignment": "trailing [t - window, t)"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "spectral_entropy_median",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "INSUFFICIENT_SAMPLE",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "INCONCLUSIVE",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": null
+  },
+  {
+   "cpu_seconds": 0.547411,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "only windows fully inside the partition, fully finite and with non-zero power",
+     "the DC bin is excluded",
+     "fs is one cycle per sample"
+    ],
+    "name": "spectral_entropy_trailing_windows_iqr",
+    "params": {
+     "hop": 128,
+     "min_windows": 3,
+     "normalization": "ln(number of non-DC frequency bins)",
+     "welch": {
+      "detrend": "constant",
+      "noverlap": 32,
+      "nperseg": 64,
+      "window": "hann"
+     },
+     "window": 256,
+     "window_alignment": "trailing [t - window, t)"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "spectral_entropy_iqr",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "INSUFFICIENT_SAMPLE",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "INCONCLUSIVE",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": null
+  },
+  {
+   "cpu_seconds": 0.005771,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "compressed length is an operational upper-bound descriptor for this compressor only",
+     "container headers are included in the length",
+     "train-frozen symbols as one uint8 per sample; non-finite samples map to reserved symbol 16",
+     "temporal order kept",
+     "bins fitted on finite train values at quantiles k/16 and applied frozen to every partition",
+     "tied edges collapse, so fewer than 16 symbols may exist"
+    ],
+    "name": "compressed_bits_per_sample_zlib9_symbols",
+    "params": {
+     "compressor": "zlib",
+     "level": 9,
+     "stream": "symbols"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "compressed_bits_per_sample_zlib9_symbols",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.29963646066104127
+  },
+  {
+   "cpu_seconds": 0.005771,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "compressed length is an operational upper-bound descriptor for this compressor only",
+     "container headers are included in the length",
+     "train-frozen symbols as one uint8 per sample; non-finite samples map to reserved symbol 16",
+     "temporal order kept",
+     "bins fitted on finite train values at quantiles k/16 and applied frozen to every partition",
+     "tied edges collapse, so fewer than 16 symbols may exist"
+    ],
+    "name": "compression_gain_vs_uncompressed_zlib9_symbols",
+    "params": {
+     "compressor": "zlib",
+     "definition": "1 - compressed_bytes / uncompressed_bytes",
+     "level": 9,
+     "stream": "symbols"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "compression_gain_vs_uncompressed_zlib9_symbols",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.9625454424173698
+  },
+  {
+   "cpu_seconds": 0.016347,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "compressed length is an operational upper-bound descriptor for this compressor only",
+     "container headers are included in the length",
+     "train-frozen symbols as one uint8 per sample; non-finite samples map to reserved symbol 16",
+     "temporal order kept",
+     "bins fitted on finite train values at quantiles k/16 and applied frozen to every partition",
+     "tied edges collapse, so fewer than 16 symbols may exist",
+     "the shuffle keeps the marginal and destroys temporal order; the difference is the operational temporal-structure gain"
+    ],
+    "name": "temporal_structure_gain_zlib9_symbols",
+    "params": {
+     "compressor": "zlib",
+     "definition": "(compressed(shuffled) - compressed(ordered)) / compressed(shuffled)",
+     "level": 9,
+     "shuffle": "numpy.random.default_rng(seed).permutation(n), fresh generator per stream",
+     "shuffle_seed": 20260912,
+     "stream": "symbols"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "temporal_structure_gain_zlib9_symbols",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.9314428741491407
+  },
+  {
+   "cpu_seconds": 0.044012,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "compressed length is an operational upper-bound descriptor for this compressor only",
+     "container headers are included in the length",
+     "train-frozen symbols as one uint8 per sample; non-finite samples map to reserved symbol 16",
+     "temporal order kept",
+     "bins fitted on finite train values at quantiles k/16 and applied frozen to every partition",
+     "tied edges collapse, so fewer than 16 symbols may exist"
+    ],
+    "name": "compressed_bits_per_sample_lzma6_symbols",
+    "params": {
+     "compressor": "lzma",
+     "format": "FORMAT_XZ",
+     "preset": 6,
+     "stream": "symbols"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "compressed_bits_per_sample_lzma6_symbols",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.282293299536404
+  },
+  {
+   "cpu_seconds": 0.044012,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "compressed length is an operational upper-bound descriptor for this compressor only",
+     "container headers are included in the length",
+     "train-frozen symbols as one uint8 per sample; non-finite samples map to reserved symbol 16",
+     "temporal order kept",
+     "bins fitted on finite train values at quantiles k/16 and applied frozen to every partition",
+     "tied edges collapse, so fewer than 16 symbols may exist"
+    ],
+    "name": "compression_gain_vs_uncompressed_lzma6_symbols",
+    "params": {
+     "compressor": "lzma",
+     "definition": "1 - compressed_bytes / uncompressed_bytes",
+     "format": "FORMAT_XZ",
+     "preset": 6,
+     "stream": "symbols"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "compression_gain_vs_uncompressed_lzma6_symbols",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.9647133375579495
+  },
+  {
+   "cpu_seconds": 0.085686,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "compressed length is an operational upper-bound descriptor for this compressor only",
+     "container headers are included in the length",
+     "train-frozen symbols as one uint8 per sample; non-finite samples map to reserved symbol 16",
+     "temporal order kept",
+     "bins fitted on finite train values at quantiles k/16 and applied frozen to every partition",
+     "tied edges collapse, so fewer than 16 symbols may exist",
+     "the shuffle keeps the marginal and destroys temporal order; the difference is the operational temporal-structure gain"
+    ],
+    "name": "temporal_structure_gain_lzma6_symbols",
+    "params": {
+     "compressor": "lzma",
+     "definition": "(compressed(shuffled) - compressed(ordered)) / compressed(shuffled)",
+     "format": "FORMAT_XZ",
+     "preset": 6,
+     "shuffle": "numpy.random.default_rng(seed).permutation(n), fresh generator per stream",
+     "shuffle_seed": 20260912,
+     "stream": "symbols"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "temporal_structure_gain_lzma6_symbols",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.9272652275539667
+  },
+  {
+   "cpu_seconds": 0.040011,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "compressed length is an operational upper-bound descriptor for this compressor only",
+     "container headers are included in the length",
+     "raw little-endian float64 bytes of the partition, NaN bytes kept in place"
+    ],
+    "name": "compressed_bits_per_sample_zlib9_raw_float64",
+    "params": {
+     "compressor": "zlib",
+     "level": 9,
+     "stream": "raw_float64"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "compressed_bits_per_sample_zlib9_raw_float64",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 1.2909982323316547
+  },
+  {
+   "cpu_seconds": 0.040011,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "compressed length is an operational upper-bound descriptor for this compressor only",
+     "container headers are included in the length",
+     "raw little-endian float64 bytes of the partition, NaN bytes kept in place"
+    ],
+    "name": "compression_gain_vs_uncompressed_zlib9_raw_float64",
+    "params": {
+     "compressor": "zlib",
+     "definition": "1 - compressed_bytes / uncompressed_bytes",
+     "level": 9,
+     "stream": "raw_float64"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "compression_gain_vs_uncompressed_zlib9_raw_float64",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.9798281526198179
+  },
+  {
+   "cpu_seconds": 0.35559,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "compressed length is an operational upper-bound descriptor for this compressor only",
+     "container headers are included in the length",
+     "raw little-endian float64 bytes of the partition, NaN bytes kept in place",
+     "the shuffle keeps the marginal and destroys temporal order; the difference is the operational temporal-structure gain"
+    ],
+    "name": "temporal_structure_gain_zlib9_raw_float64",
+    "params": {
+     "compressor": "zlib",
+     "definition": "(compressed(shuffled) - compressed(ordered)) / compressed(shuffled)",
+     "level": 9,
+     "shuffle": "numpy.random.default_rng(seed).permutation(n), fresh generator per stream",
+     "shuffle_seed": 20260912,
+     "stream": "raw_float64"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "temporal_structure_gain_zlib9_raw_float64",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.9224978175731413
+  },
+  {
+   "cpu_seconds": 0.026181,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "compressed length is an operational upper-bound descriptor for this compressor only",
+     "container headers are included in the length",
+     "raw little-endian float64 bytes of the partition, NaN bytes kept in place"
+    ],
+    "name": "compressed_bits_per_sample_lzma6_raw_float64",
+    "params": {
+     "compressor": "lzma",
+     "format": "FORMAT_XZ",
+     "preset": 6,
+     "stream": "raw_float64"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "compressed_bits_per_sample_lzma6_raw_float64",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.9840242804255744
+  },
+  {
+   "cpu_seconds": 0.026181,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "compressed length is an operational upper-bound descriptor for this compressor only",
+     "container headers are included in the length",
+     "raw little-endian float64 bytes of the partition, NaN bytes kept in place"
+    ],
+    "name": "compression_gain_vs_uncompressed_lzma6_raw_float64",
+    "params": {
+     "compressor": "lzma",
+     "definition": "1 - compressed_bytes / uncompressed_bytes",
+     "format": "FORMAT_XZ",
+     "preset": 6,
+     "stream": "raw_float64"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "compression_gain_vs_uncompressed_lzma6_raw_float64",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.9846246206183504
+  },
+  {
+   "cpu_seconds": 0.267956,
+   "dataset_id": "eurusd_ps4_incremental_profile",
+   "estimator": {
+    "assumptions": [
+     "compressed length is an operational upper-bound descriptor for this compressor only",
+     "container headers are included in the length",
+     "raw little-endian float64 bytes of the partition, NaN bytes kept in place",
+     "the shuffle keeps the marginal and destroys temporal order; the difference is the operational temporal-structure gain"
+    ],
+    "name": "temporal_structure_gain_lzma6_raw_float64",
+    "params": {
+     "compressor": "lzma",
+     "definition": "(compressed(shuffled) - compressed(ordered)) / compressed(shuffled)",
+     "format": "FORMAT_XZ",
+     "preset": 6,
+     "shuffle": "numpy.random.default_rng(seed).permutation(n), fresh generator per stream",
+     "shuffle_seed": 20260912,
+     "stream": "raw_float64"
+    }
+   },
+   "feature_id": "fred.stress.vixcls.logret_5d",
+   "fold": "inner_2022",
+   "metric": "temporal_structure_gain_lzma6_raw_float64",
+   "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+   "reason": "",
+   "source_digests": {
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+   },
+   "status": "COMPLETED",
+   "train_rows": [
+    0,
+    59966
+   ],
+   "value": 0.9080757726819542
+  }
+ ],
+ "rows_sha256": "6d8208bb3f79ec526e6c4d79e42d138eff1123c6a1bc98c240ef464cefa8dd1a",
+ "schema": "ps4_incremental_unit.v1",
+ "source_sha256": {
+  "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+  "series.npz": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59"
+ },
+ "train_rows": [
+  0,
+  59966
+ ],
+ "unit_status": "MEASURED"
+}
