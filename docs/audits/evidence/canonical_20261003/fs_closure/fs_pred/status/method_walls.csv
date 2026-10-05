@@ -1,6 +1,7 @@
 method,target,fold,disposition,wall_seconds,implementation,rows,row_digest,plan_digest,k_failures,failure
 ALL_ADMISSIBLE,Y_b_s6,inner_2019,COMPLETE,0.2,deterministic,41257,5ea1196e5b651507,70a51f35f5166046,0,
 CMIM_K,Y_b_s6,inner_2019,COMPLETE,34.38,deterministic,41257,5ea1196e5b651507,70a51f35f5166046,0,
+ELASTIC_NET_K,Y_b_s6,inner_2019,COMPLETE,8764.34,elastic_net,41257,5ea1196e5b651507,70a51f35f5166046,0,
 JMI_K,Y_b_s6,inner_2019,COMPLETE,33.9,deterministic,41257,5ea1196e5b651507,70a51f35f5166046,0,
 MI8_K,Y_b_s6,inner_2019,COMPLETE,1.0,deterministic,41257,5ea1196e5b651507,70a51f35f5166046,0,
 MRMR_K,Y_b_s6,inner_2019,COMPLETE,34.52,deterministic,41257,5ea1196e5b651507,70a51f35f5166046,0,

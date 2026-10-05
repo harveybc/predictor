@@ -49,14 +49,14 @@
   "train_rows": 71734
  },
  "eta": {
-  "basis": "median of 166 POST method walls x 703 remaining method cells, one worker",
-  "eta_utc": "2026-10-05T18:11:50.666227+00:00",
-  "post_cells": 166,
-  "post_median_wall_seconds": 10.84685102693038
+  "basis": "median of 167 POST method walls x 702 remaining method cells, one worker",
+  "eta_utc": "2026-10-05T18:48:07.971837+00:00",
+  "post_cells": 167,
+  "post_median_wall_seconds": 11.266814568894915
  },
  "failures": [],
  "host_role": "worker_b (CPU)",
- "k24_sets": 277,
+ "k24_sets": 278,
  "method_wall_seconds": {
   "ALL_ADMISSIBLE": {
    "max": 0.3280245428904891,
@@ -74,9 +74,9 @@
    "n": 21
   },
   "ELASTIC_NET_K": {
-   "max": 710.0508475590032,
-   "median": 15.03158535953844,
-   "n": 20
+   "max": 8764.33919041697,
+   "median": 15.438249792088754,
+   "n": 21
   },
   "EXTRATREES_TBP_K": {
    "max": 108.86757644696627,
@@ -143,7 +143,7 @@
    "total": 70
   },
   "ELASTIC_NET_K": {
-   "done": 20,
+   "done": 21,
    "total": 70
   },
   "EXTRATREES_TBP_K": {
@@ -193,7 +193,7 @@
    "method_cells_total": 70
   },
   "Y_b_s6": {
-   "method_cells_done": 8,
+   "method_cells_done": 9,
    "method_cells_total": 70
   },
   "Y_l_120h": {
@@ -246,20 +246,20 @@
   }
  },
  "progress": {
-  "done": 1385,
-  "eta_seconds": 7414.107768505346,
-  "eta_utc": "2026-10-05T15:50:46.340418+00:00",
-  "method_cells_done": 277,
+  "done": 1390,
+  "eta_seconds": 7656.432606065297,
+  "eta_utc": "2026-10-05T18:20:53.014216+00:00",
+  "method_cells_done": 278,
   "method_cells_total": 980,
   "n_failures": 0,
-  "observed_median_method_wall_seconds": 10.546383738983423,
-  "observed_p90_method_wall_seconds": 57.055248604970984,
+  "observed_median_method_wall_seconds": 10.906599153939169,
+  "observed_p90_method_wall_seconds": 58.423404323053546,
   "total": 4900,
-  "updated_utc": "2026-10-05T13:47:12.232607+00:00",
+  "updated_utc": "2026-10-05T16:13:16.581570+00:00",
   "workers": 1
  },
- "records": 277,
- "rendered_utc": "2026-10-05T16:04:45.329993+00:00",
+ "records": 278,
+ "rendered_utc": "2026-10-05T16:36:18.668067+00:00",
  "schema": "fs_pred_lane_status.v2",
  "state": "SUSPECT",
  "watchdog": {
@@ -271,16 +271,16 @@
    "memory_events_high": 0,
    "memory_max": "5637144576",
    "memory_peak": 1753509888,
-   "probe_epoch": 1791216284.2765932,
-   "progress_mtime_epoch": 1791208032.2329063,
+   "probe_epoch": 1791218176.5248108,
+   "progress_mtime_epoch": 1791216796.5818918,
    "relaunch_epoch": 1791191214.0,
    "scope_active": true,
    "scopes": [
     "crispdm-fs-pred-v2-Y_b_s6-1791207889-1560383.scope"
    ]
   },
-  "progress_age_seconds": 8252.0,
-  "reason": "progress unchanged for 8252s > 600s without observed memory pressure",
+  "progress_age_seconds": 1379.9,
+  "reason": "progress unchanged for 1380s > 600s without observed memory pressure",
   "state": "SUSPECT",
   "threshold_seconds": 600.0
  }
