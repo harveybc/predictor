@@ -1,40 +1,40 @@
 {
  "schema": "fs_causal_progress.v1",
- "updated_utc": "2026-10-05T05:56:39Z",
+ "updated_utc": "2026-10-05T06:26:48Z",
  "stage": "RUNNING",
  "chunks": {
-  "done": 9,
+  "done": 18,
   "total": 47
  },
  "cells": {
-  "done": 980,
+  "done": 1988,
   "total": 5124,
   "failed_features": 0
  },
  "candidates": {
-  "done": 70,
+  "done": 142,
   "total": 366
  },
  "per_state_provisional_raw": {
   "rung1_raw": {
-   "ASSOCIATION_REPORTED": 980
+   "ASSOCIATION_REPORTED": 1988
   },
   "rung2_raw": {
-   "NOT_IDENTIFIED": 718,
-   "IDENTIFIED_CONDITIONAL_ON_DECLARED_ASSUMPTIONS": 108,
-   "NOT_EVALUATED": 154
+   "NOT_IDENTIFIED": 1591,
+   "IDENTIFIED_CONDITIONAL_ON_DECLARED_ASSUMPTIONS": 117,
+   "NOT_EVALUATED": 280
   },
   "rung3_raw": {
-   "NOT_IDENTIFIED": 718,
-   "COUNTERFACTUAL_UNDER_DECLARED_SCM": 108,
-   "NOT_EVALUATED": 154
+   "NOT_IDENTIFIED": 1591,
+   "COUNTERFACTUAL_UNDER_DECLARED_SCM": 117,
+   "NOT_EVALUATED": 280
   }
  },
  "failures": [],
- "median_chunk_s": 279.89826917648315,
- "mean_s_per_candidate": 34.83966952392033,
- "eta_s": 10312.542179080418,
- "eta_utc": "2026-10-05T08:48:31Z",
+ "median_chunk_s": 260.35489642620087,
+ "mean_s_per_candidate": 29.91217955401246,
+ "eta_s": 6700.3282200987915,
+ "eta_utc": "2026-10-05T08:18:29Z",
  "host_role": "worker_b",
  "hardware": "CPU only, single BLAS thread, crispdm-run capped",
  "seed": 1729,
