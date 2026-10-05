@@ -1,5 +1,15 @@
 # Estado de ejecución vigente
 
+> **Actualizacion vinculante 2026-10-05:** por orden del propietario, el unico
+> frente experimental activo es el cierre de **seleccion de caracteristicas,
+> fase 1**. La orden ejecutable es
+> `docs/handoffs/MUSASHI_TO_SATOSHI_FEATURE_SELECTION_PHASE1_ONLY_2026_10_05.md`.
+> Se pausan PS3-R/extractibilidad, autoencoders, CVAE, arquitectura modular,
+> NEAT, RL y nuevas replicas hasta que el warehouse confirme 366/366 perfiles,
+> la escalera causal EURUSD/ETH finalizada globalmente y
+> `PHASE_1_COMPLETE`. La evidencia ya obtenida se conserva y no se interpreta
+> como seleccion final.
+
 Observado: 2026-10-05 03:06 UTC. La autoridad `codex/workplan-consolidation-20261003@02434903` esta integrada en esta rama. La orden operativa vigente de cierre es `docs/handoffs/SATOSHI_FEATURE_SELECTION_CLOSURE_2026_10_05.md`. Este corte sustituye las observaciones anteriores; no modifica resultados historicos. Los `STATUS.json` anteriores son instantaneas, no el estado vivo.
 
 ## Secuencia vigente
