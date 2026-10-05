@@ -516,7 +516,8 @@ def _write_progress(out_dir, progress, started, done, skipped, failed, final=Fal
 
 
 # ----------------------------------------------------------------------------- closure step (VALIDATION read once)
-CLOSURE_SCHEMA = "fs_close_closure_record.v1"
+STATIC_DIAGNOSTIC_SCHEMA = "fs_close_static_validation_diagnostic.v1"
+STATIC_DIAGNOSTIC_MODE = "LITERATURE_STATIC_VALIDATION_DIAGNOSTIC"
 VALIDATION_START_UTC = "2024-01-01T00:00:00+00:00"
 VALIDATION_END_UTC = "2025-01-01T00:00:00+00:00"
 
@@ -575,12 +576,13 @@ def load_validation(feature_files, targets_file, population):
     return X, row_ids, tdf, digests, bound
 
 
-def run_closure(plan_path: Path, feature_files, targets_file, folds_file, val_feature_files, val_targets_file,
-                out_dir: Path, k_primary: int = 24, head: str = "ridge") -> dict:
-    """Score the frozen K=k_primary candidate sets once on VALIDATION under the declared rule.
+def run_static_validation_diagnostic(plan_path: Path, feature_files, targets_file, folds_file, val_feature_files, val_targets_file,
+                                     out_dir: Path, k_primary: int = 24, head: str = "ridge") -> dict:
+    """LITERATURE_STATIC_VALIDATION_DIAGNOSTIC: one fit on all TRAIN rows, one score over the validation year.
 
-    Fit on ALL TRAIN rows (the union of every fold's rows), score on the 2024 rows, same head, same
-    seed, same naives. Writes closure_record.json with every candidate's cells and the winner.
+    Diagnostic only (Musashi corrections 2026-10-05 section 1): it is NOT business-faithful, cannot choose
+    the EURUSD manifest and never satisfies C9/C11. The business closure is tools/fs_close_weekly.py.
+    Writes static_validation_diagnostic.json, never closure_record.json.
     """
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -639,14 +641,15 @@ def run_closure(plan_path: Path, feature_files, targets_file, folds_file, val_fe
         best = sorted(complete, key=lambda r: (-r["score"], r["n_features"], r["fit_seconds_total"], order.get(r["set_kind"], 9)))[0]
         winner = {"set_id": best["set_id"], "set_kind": best["set_kind"], "set_sha256": best["set_sha256"], "score": best["score"],
                   "k": best["k"], "n_features": best["n_features"]}
-    record = {"schema": CLOSURE_SCHEMA, "head": head, "head_params": HEAD_PARAMS[head], "seed": SEED, "k_primary": k_primary,
+    record = {"schema": STATIC_DIAGNOSTIC_SCHEMA, "evaluation_mode": STATIC_DIAGNOSTIC_MODE, "diagnostic_only": True,
+              "authorises": "nothing: not C9, not C11, not strategy, not promotion", "head": head, "head_params": HEAD_PARAMS[head], "seed": SEED, "k_primary": k_primary,
               "train_bound": bound, "validation_bound": vbound, "validation_read_count": 1,
               "inputs_sha256": {**digests, **vdigests}, "plan_sha256": sha256_file(Path(plan_path)), "code_sha256": code_sha256(),
               "candidates": results, "winner": winner,
               "strategy_eligible": bool(winner) and next(r for r in results if r["set_id"] == winner["set_id"])["beats_naive_every_short_long_cell"],
               "sensitivities": {r["set_id"]: {"score": r["score"], "beats_naive_every_cell": r["beats_naive_every_cell"]} for r in results},
               "finished_utc": _iso(time.time())}
-    (out_dir / "closure_record.json").write_text(json.dumps(record, indent=1, sort_keys=True))
+    (out_dir / "static_validation_diagnostic.json").write_text(json.dumps(record, indent=1, sort_keys=True))
     return record
 
 
@@ -660,13 +663,14 @@ def main(argv=None) -> int:
     ap.add_argument("--heads", default="ridge")
     ap.add_argument("--hgb-max-k", type=int, default=24)
     ap.add_argument("--folds-only", nargs="*", default=None)
-    ap.add_argument("--closure", action="store_true", help="run the VALIDATION closure step instead of the fold refits")
+    ap.add_argument("--static-diagnostic", action="store_true",
+                    help="run the LITERATURE_STATIC_VALIDATION_DIAGNOSTIC (single fit, one score over the validation year); never the business closure")
     ap.add_argument("--val-features", nargs="*", default=None)
     ap.add_argument("--val-targets", default=None)
     a = ap.parse_args(argv)
-    if a.closure:
-        rec = run_closure(Path(a.plan), a.features, a.targets, a.folds, a.val_features, a.val_targets, Path(a.out_dir))
-        print(json.dumps({"winner": rec["winner"], "strategy_eligible": rec["strategy_eligible"]}))
+    if a.static_diagnostic:
+        rec = run_static_validation_diagnostic(Path(a.plan), a.features, a.targets, a.folds, a.val_features, a.val_targets, Path(a.out_dir))
+        print(json.dumps({"diagnostic_winner": rec["winner"], "evaluation_mode": rec["evaluation_mode"], "diagnostic_only": True}))
         return 0
     receipt = run_plan(Path(a.plan), a.features, a.targets, a.folds, Path(a.out_dir),
                        heads=tuple(a.heads.split(",")), hgb_max_k=a.hgb_max_k, fold_names=a.folds_only)

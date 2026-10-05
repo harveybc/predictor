@@ -195,7 +195,8 @@ def test_check_c2_fails_on_mixed_populations():
     ev = _ev(pop)
     plan = _plan(pop, ev)
     rows = M.build_dispositions(pop, ev, plan, None)
-    mixed = _metrics_frame([_metric_row(pop), _metric_row(pop, population_sha256="0" * 64)])
+    sha = next(s["set_sha256"] for s in plan["sets"] if s["set_id"] == "ALL_ADMISSIBLE")
+    mixed = _metrics_frame([_metric_row(pop, set_sha256=sha), _metric_row(pop, set_sha256=sha, population_sha256="0" * 64)])
     checks = M.run_checks(pop, ev, plan, [], rows, mixed, M.refit_coverage(plan, mixed), None, ROOT / "tools/selected_manifest_gate.py")
     assert next(c for c in checks if c["id"] == "C2_SINGLE_POPULATION")["state"] == "FAIL"
 
@@ -362,12 +363,14 @@ def _validation_inputs(tmp_path, n=300, start_s=1_704_067_200, tail_2025=False):
     return [feats], tp
 
 
-def test_closure_reads_validation_once_and_refuses_a_2025_row(tmp_path):
+def test_static_diagnostic_reads_validation_once_and_refuses_a_2025_row(tmp_path):
     pytest.importorskip("sklearn")
     pp, feats, tp, fp = _synthetic_inputs(tmp_path)
     # the plan's K=1 candidate arms: give the signal set the PRED_BEST kind at k=1 (k_primary=1 for the fixture)
     vf, vt = _validation_inputs(tmp_path)
-    rec = R.run_closure(pp, feats, tp, fp, vf, vt, tmp_path / "out", k_primary=1)
+    rec = R.run_static_validation_diagnostic(pp, feats, tp, fp, vf, vt, tmp_path / "out", k_primary=1)
+    assert rec["evaluation_mode"] == "LITERATURE_STATIC_VALIDATION_DIAGNOSTIC" and rec["diagnostic_only"] is True
+    assert not (tmp_path / "out/closure_record.json").exists()
     assert rec["validation_read_count"] == 1
     assert rec["validation_bound"]["min_ts"] >= 1_704_067_200 and rec["validation_bound"]["max_ts"] < 1_735_689_600
     assert rec["train_bound"]["max_ts"] < 1_704_067_200
@@ -379,4 +382,4 @@ def test_closure_reads_validation_once_and_refuses_a_2025_row(tmp_path):
             assert all(np.isfinite(m["naive_value"]) for m in cell["metrics"])
     vf2, vt2 = _validation_inputs(tmp_path, tail_2025=True)
     with pytest.raises(R.RefitError, match="TEST_READ_REFUSED"):
-        R.run_closure(pp, feats, tp, fp, vf2, vt2, tmp_path / "out2", k_primary=1)
+        R.run_static_validation_diagnostic(pp, feats, tp, fp, vf2, vt2, tmp_path / "out2", k_primary=1)

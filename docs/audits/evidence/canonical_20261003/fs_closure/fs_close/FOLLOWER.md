@@ -23,7 +23,7 @@ extended, not duplicated. A second status writer was not added. The block to car
     > "$STATE/fs_close/last_cycle.json" 2> "$STATE/fs_close/last_cycle.err" || true
 ```
 
-## First measurements (pilot, largest inner fold `inner_2023`, seed 0, identical rows per cell)
+## First measurements (pilot, largest inner fold `inner_2023`, seed 0, identical rows per cell; fit population then 366)
 
 `pilot_receipt.json`: 56 cells (ALL_ADMISSIBLE and RANDOM_K:24, heads ridge and hgb), 273 s,
 whole-process peak RSS 972.7 MB; cap for the full run = 1.25 x = 1216 MB (`refit_cap.json`).
@@ -70,14 +70,50 @@ target is marked `strategy_eligible = false` in the manifest.
    `STATUS.json`, `PROGRESS.png`, `MASTER_MILESTONE_STATUS.json` (M2 regenerated; other
    milestones kept verbatim) and `MASTER_MILESTONE_PROGRESS.png`.
 
-## Closure step (declared before any VALIDATION read)
+## Closure step: BUSINESS weekly walk-forward (Musashi corrections 2026-10-05 section 3)
 
-`closure_rule.json`. The frozen K=24 sets are refit on all TRAIN rows and scored once on
-EXTERNAL VALIDATION rows (2024). The winner is the highest mean skill over the 14 cells
-against the stricter paired naive; ties go to parsimony then cost. The loader refuses any row
-at or after 2025-01-01; TEST is never read. The step cannot run until VALIDATION features
-for the 366 candidates and their targets are materialised by the PS1 producer (missing object
-`VALIDATION_2024_FEATURES_AND_TARGETS`), so the manifest stays DRAFT until then.
+`tools/fs_close_weekly.py` is the primary closure; `tools/fs_close_refit.py --static-diagnostic`
+is the former single-fit closure, kept apart as `LITERATURE_STATIC_VALIDATION_DIAGNOSTIC`
+(`static_validation_diagnostic.json`); it authorises nothing (not C9, not C11, not strategy).
+The weekly closure reuses `business_weekly_protocol`, `business_asof_window`,
+`business_weekly_training`, `business_weekly_score` and `business_objective_firewall`; no
+second weekly framework exists.
+
+1. `weekly_contract.json` is sealed BEFORE any 2024 row is read: frozen K=24 sets
+   (ALL_ADMISSIBLE, PRED_BEST, PLUS_CAUSAL, PLUS_EXTRACTIBILITY_EVIDENCE; KNOCKOFF only if
+   calibrated, and arm 5 is EMPTY) consolidated from TRAIN rankings by mean rank per forecast
+   family, heads, supports, naives and the aggregate rule; its digest is the protocol's
+   `procedure_digest`.
+2. Weeks: every complete Monday-aligned week of 2024, derived from the calendar
+   (`build_protocol`), each with its `WeekSpec`, cutoff = week start, `fit_start` exactly four
+   calendar years before the cutoff, a purged as-of fit population with its digest, and fresh
+   weights with their own digest (`FULL_RETRAIN_ROLLING_4Y`). No row at or after the cutoff
+   enters a fit; the resolver refuses rows whose future support crosses it.
+3. Scoring: only the following week, same-row naive (zero return; fit prior), identical origins
+   across the 12 forecast horizons, barrier cells in their own ledger; weekly ledgers are
+   persisted after every week, so a restart restores terminal weeks and never refits or
+   rescores them.
+4. Aggregate per set over ALL weeks (never the best week): MAE/MSE or log-loss/Brier, paired
+   naive, mean and dispersion of weekly skill, eligible weeks, cost, digests; the winner is the
+   highest predeclared aggregate. TEST (2025) is never read: the loader refuses any row at or
+   after 2025-01-01 and the firewall stays in VALIDATION_SELECTION.
+5. The manifest records `selection.evaluation_mode`; `business_gate` refuses any value other
+   than `BUSINESS_WEEKLY_WALK_FORWARD` on top of the c0345f83 gate (check C9/C11).
+
+The step cannot run until VALIDATION features for the candidates and their targets are
+materialised by the PS1 producer (missing object `VALIDATION_2024_FEATURES_AND_TARGETS`); the
+follower probes the refit host every cycle and launches it alone when they appear.
+
+## Absence of TRAIN observations
+
+A candidate whose raw series has no observed TRAIN values (FS-REP decision
+`NOT_AVAILABLE_FOR_TRAIN`, FS-GEN `GENERATOR_FIT_REFUSED: no observed TRAIN values` on every
+fold) is recorded `NOT_AVAILABLE_FOR_TRAIN` with cause `NO_OBSERVED_TRAIN_VALUES`, its
+extractibility `NOT_APPLICABLE` (never RAW, never NO_TRAINED_ADVANTAGE), excluded from every set
+that fits a model (the fit population is 365; the inventory and the manifest keep all 366 with
+the explicit disposition) and its cells are never retried. A candidate whose raw series has
+support and whose trained families merely failed keeps FS-REP's decision. Regression test:
+`test_feature_without_train_observations_is_not_available_and_never_raw`.
 
 ## Memory
 

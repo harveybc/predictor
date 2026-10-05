@@ -74,7 +74,7 @@ TRAIN_END = "2024-01-01T00:00:00+00:00"
 VALIDATION_END = "2025-01-01T00:00:00+00:00"
 STATES = ("SELECTED", "REJECTED", "PENDING")
 GATE_SHA256_C0345F83 = "e86d85abc998319c53dd1ae5e0f6efbf7152170c177e27432b610ff2722e1ab1"  # tools/selected_manifest_gate.py at c0345f83
-REQUIRED_SET_KINDS = ("ALL_ADMISSIBLE", "PRED_BEST", "PLUS_CAUSAL", "PLUS_REP")
+REQUIRED_SET_KINDS = ("ALL_ADMISSIBLE", "PRED_BEST", "PLUS_CAUSAL", "PLUS_EXTRACTIBILITY_EVIDENCE")
 OPTIONAL_SET_KINDS = ("KNOCKOFF",)
 CONTROL_SET_KINDS = ("RANDOM_K",)
 CATALOG_COLUMNS = ("feature", "stage", "target", "horizon", "fold", "metric", "value", "state",
@@ -88,6 +88,37 @@ COLOR = {"good": "#0ca30c", "warning": "#fab219", "serious": "#ec835a", "critica
 
 class ClosureError(RuntimeError):
     """A fail-closed violation that must stop the closure explicitly."""
+
+
+BUSINESS_MODE = "BUSINESS_WEEKLY_WALK_FORWARD"
+BUSINESS_UPDATE_MODE = "FULL_RETRAIN_ROLLING_4Y"
+
+
+def business_closure_or_none(record) -> dict | None:
+    """Only a BUSINESS weekly walk-forward closure record (schema v2, FULL_RETRAIN, with a winner) counts."""
+    if not isinstance(record, dict):
+        return None
+    if record.get("schema") != "fs_close_closure_record.v2" or record.get("evaluation_mode") != BUSINESS_MODE:
+        return None
+    if record.get("update_mode") != BUSINESS_UPDATE_MODE or not record.get("winner"):
+        return None
+    return record
+
+
+def business_gate(manifest, consumed_features, decision_record, *, gate_path: Path | None = None) -> dict:
+    """The c0345f83 gate plus the business rule: evaluation_mode must be BUSINESS_WEEKLY_WALK_FORWARD."""
+    gate = load_gate(gate_path or Path(__file__).resolve().parent / "selected_manifest_gate.py")
+    report = gate.evaluate(manifest, consumed_features, decision_record=decision_record,
+                           expected_dataset_id=(manifest or {}).get("dataset_id") if isinstance(manifest, dict) else None)
+    mode = ((manifest or {}).get("selection") or {}).get("evaluation_mode") if isinstance(manifest, dict) else None
+    if mode != BUSINESS_MODE:
+        report["reasons"].append(f"EVALUATION_MODE_NOT_BUSINESS: {mode!r} != {BUSINESS_MODE}")
+        report["admitted"] = False
+        report["refused_features"] = list(consumed_features or [])
+        report["refused_count"] = len(report["refused_features"])
+        report["manifest_sha256"] = None
+    report["gate"] = "selected_manifest_gate.v1+fs_close_business_mode"
+    return report
 
 
 # ============================================================================ utilities
@@ -634,6 +665,9 @@ class LaneEvidence:
     pred_methods_planned: list[str] = field(default_factory=list)
     causal: dict[str, dict[str, str]] = field(default_factory=dict)              # feature -> target -> state
     causal_counts: dict[str, int] = field(default_factory=dict)
+    causal_conditional_cells: int = 0
+    causal_progress: dict = field(default_factory=dict)
+    not_available: dict[str, str] = field(default_factory=dict)      # feature -> cause (NOT_AVAILABLE_FOR_TRAIN)
     rep: dict[str, dict[str, str]] = field(default_factory=dict)                  # feature -> {decision, flags}
     rep_counts: dict[str, int] = field(default_factory=dict)
     gen_calibrated: bool | None = None
@@ -728,12 +762,30 @@ def _ingest_ranking_table(ev: LaneEvidence, df) -> None:
 
 
 def load_causal(paths: Paths, pop: Population, ev: LaneEvidence) -> None:
-    p = paths.fs_closure / "fs_causal/causal_evidence.jsonl"
+    """FS-CAUSAL per (feature, target) rung states. SUPPORTED/CONTRADICTED only from explicit rung states;
+    IDENTIFIED_CONDITIONAL_ON_DECLARED_ASSUMPTIONS cells are counted as provisional cells, never as features."""
+    import pandas as pd
+
+    root = paths.fs_closure / "fs_causal"
+    p = root / "causal_evidence.jsonl"
+    if not p.is_file():
+        alt = paths.state / "fs_close/fs_causal_mirror/causal_evidence.jsonl"
+        p = alt if alt.is_file() else p
+    ev.causal_progress = read_json(root / "progress.json", {}) or read_json(root / "final_summary.json", {})
+    weighs_against = {}
+    fs = root / "feature_summary.csv"
+    if fs.is_file():
+        df = pd.read_csv(fs)
+        if "weighs_against" in df.columns:
+            weighs_against = {str(f): bool(v) for f, v in zip(df["feature_id"], df["weighs_against"])}
+        ev.digests["fs_causal/feature_summary.csv"] = sha256_file(fs)
     if not p.is_file():
         ev.missing.append("fs_causal/causal_evidence.jsonl")
         return
     ev.digests["fs_causal/causal_evidence.jsonl"] = sha256_file(p)
     counts: dict[str, int] = {}
+    conditional = 0
+    rank = {"CONTRADICTED": 2, "SUPPORTED": 1, "NOT_IDENTIFIED": 0}
     with open(p) as f:
         for line in f:
             try:
@@ -743,18 +795,29 @@ def load_causal(paths: Paths, pop: Population, ev: LaneEvidence) -> None:
             feat = _first_key(r, FEATURE_COLS)
             if feat not in pop.set:
                 continue
-            state = str(_first_key(r, ("state", "verdict", "evidence", "disposition")) or "NOT_IDENTIFIED").upper()
-            robust = bool(r.get("robust", True))
             tgt = str(r.get("target", "*"))
+            states = []
+            for rung in ("rung1", "rung2", "rung3"):
+                body = r.get(rung)
+                st = str((body.get("state") if isinstance(body, dict) else body) or "NOT_IDENTIFIED").upper()
+                raw = r.get(f"{rung}_raw")
+                raw_state = str((raw.get("state") if isinstance(raw, dict) else raw) or "").upper()
+                if "IDENTIFIED_CONDITIONAL" in raw_state or "IDENTIFIED_CONDITIONAL" in st:
+                    conditional += 1
+                if st == "CONTRADICTED" and not weighs_against.get(feat, True):
+                    st = "NOT_IDENTIFIED"                       # a non-robust contradiction never weighs against
+                states.append(st if st in rank else "NOT_IDENTIFIED")
+            top = str(_first_key(r, ("state", "verdict", "evidence", "disposition")) or "").upper()
+            if top in rank:
+                states.append(top)
+            state = max(states, key=lambda x: rank[x]) if states else "NOT_IDENTIFIED"
             cur = ev.causal.setdefault(feat, {})
-            if state == "CONTRADICTED" and not robust:
-                state = "NOT_IDENTIFIED"
             prev = cur.get(tgt)
-            rank = {"CONTRADICTED": 2, "SUPPORTED": 1, "NOT_IDENTIFIED": 0}
-            if prev is None or rank.get(state, 0) > rank.get(prev, 0):
+            if prev is None or rank[state] > rank[prev]:
                 cur[tgt] = state
             counts[state] = counts.get(state, 0) + 1
     ev.causal_counts = counts
+    ev.causal_conditional_cells = conditional
     covered = len(ev.causal)
     if covered < len(pop.names):
         ev.missing.append(f"fs_causal coverage {covered}/{len(pop.names)} features")
@@ -893,6 +956,22 @@ def load_ps3r_ps4(paths: Paths, pop: Population, ev: LaneEvidence) -> None:
     ev.gpu_eta = eta
 
 
+def apply_availability(pop: Population, ev: LaneEvidence) -> None:
+    """NOT_AVAILABLE_FOR_TRAIN (cause NO_OBSERVED_TRAIN_VALUES) from FS-REP's decision or FS-GEN's refusal on every fold.
+
+    Such a feature is excluded from every set that fits a model, keeps its inventory row, and never
+    defaults to RAW. A feature whose raw series has TRAIN support and whose trained families merely
+    failed keeps the FS-REP decision (RAW is then a decision with support, not a default)."""
+    for f, v in ev.rep.items():
+        if str(v.get("decision", "")).upper() == "NOT_AVAILABLE_FOR_TRAIN":
+            cause = str(v.get("flags") or v.get("cause") or "NO_OBSERVED_TRAIN_VALUES").split(";")[0] or "NO_OBSERVED_TRAIN_VALUES"
+            ev.not_available[f] = cause
+    for f, reason in ev.gen_reason.items():
+        if "no observed TRAIN values" in str(reason) or str(reason).startswith("GENERATOR_FIT_REFUSED:no observed"):
+            ev.not_available.setdefault(f, "NO_OBSERVED_TRAIN_VALUES")
+    ev.not_available = {f: c for f, c in ev.not_available.items() if f in pop.set}
+
+
 def load_lanes(paths: Paths, pop: Population) -> LaneEvidence:
     ev = LaneEvidence()
     load_pred(paths, pop, ev)
@@ -901,6 +980,7 @@ def load_lanes(paths: Paths, pop: Population) -> LaneEvidence:
     load_gen(paths, pop, ev)
     load_ps2_status(paths, pop, ev)
     load_ps3r_ps4(paths, pop, ev)
+    apply_availability(pop, ev)
     complete_heavy = [f for f in ev.heavy if {"baseline", "alt_mtae", "alt_p2c"} <= set(ev.ps3r_terminals.get(f, {}))]
     if len(complete_heavy) < len(ev.heavy) or not ev.heavy:
         ev.missing.append(f"PS3-R terminals complete {len(complete_heavy)}/{len(ev.heavy) or HEAVY_CANDIDATES} heavy candidates")
@@ -962,13 +1042,19 @@ def build_plan(pop: Population, ev: LaneEvidence, metrics=None) -> tuple[dict, l
     sensitivities, and the section-8 arms PRED_BEST / PLUS_CAUSAL / PLUS_REP / KNOCKOFF when their
     inputs exist. Returns (plan, missing objects that blocked arms)."""
     missing = []
-    sets = [{"set_id": "ALL_ADMISSIBLE", "set_kind": "ALL_ADMISSIBLE", "k": None, "features": list(pop.names),
-             "source": {"rule": "every model-input candidate", "population_sha256": pop.digest}}]
-    tape = random_k_order(pop, 0)
-    for k in (k for k in K_SENSITIVITIES if k <= len(pop.names)):
+    fit_names = [n for n in pop.names if n not in ev.not_available]
+    fit_digest = names_sha256(fit_names)
+    fit_pop = Population(fit_names, {n: pop.batch_of[n] for n in fit_names}, pop.excluded_selector_sources, pop.excluded_quality, fit_digest, pop.sources)
+    sets = [{"set_id": "ALL_ADMISSIBLE", "set_kind": "ALL_ADMISSIBLE", "k": None, "features": list(fit_names),
+             "source": {"rule": "every model-input candidate with TRAIN observations", "population_sha256": fit_digest,
+                        "excluded_not_available_for_train": sorted(ev.not_available)}}]
+    tape = random_k_order(fit_pop, 0)
+    for k in (k for k in K_SENSITIVITIES if k <= len(fit_names)):
         sets.append({"set_id": f"RANDOM_K:{k}", "set_kind": "RANDOM_K", "k": k, "features": tape[:k],
                      "source": {"rule": "numpy default_rng(0) permutation of the sorted population, first K", "seed": 0}})
-    complete = {m: cells for m, cells in ev.pred_rankings.items() if m not in ev.pred_incomplete}
+    na = set(ev.not_available)
+    complete = {m: {c: [f for f in order if f not in na] for c, order in cells.items()}
+                for m, cells in ev.pred_rankings.items() if m not in ev.pred_incomplete}
     for method, cells in sorted(complete.items()):
         for k in K_SENSITIVITIES:
             sets.append({"set_id": f"PRED_METHOD:{method}:{k}", "set_kind": "PRED_METHOD", "k": k, "method": method,
@@ -990,21 +1076,21 @@ def build_plan(pop: Population, ev: LaneEvidence, metrics=None) -> tuple[dict, l
             missing.append("PLUS_CAUSAL (needs fs_causal/causal_evidence.jsonl)")
         if "PLUS_CAUSAL" in arms:
             if ev.rep and not any(v["decision"] == "PENDING" for v in ev.rep.values()) and len(ev.rep) >= len(ev.heavy or [0] * HEAVY_CANDIDATES):
-                arms["PLUS_REP"] = {c: reorder_rep(order, ev.rep) for c, order in arms["PLUS_CAUSAL"].items()}
+                arms["PLUS_EXTRACTIBILITY_EVIDENCE"] = {c: reorder_rep(order, ev.rep) for c, order in arms["PLUS_CAUSAL"].items()}
             else:
-                missing.append("PLUS_REP (needs complete fs_rep/representation_dispositions.csv)")
-    for kind in ("PRED_BEST", "PLUS_CAUSAL", "PLUS_REP"):
+                missing.append("PLUS_EXTRACTIBILITY_EVIDENCE (needs complete fs_rep/representation_dispositions.csv)")
+    for kind in ("PRED_BEST", "PLUS_CAUSAL", "PLUS_EXTRACTIBILITY_EVIDENCE"):
         if kind in arms:
             for k in K_SENSITIVITIES:
                 sets.append({"set_id": f"{kind}:{k}", "set_kind": kind, "k": k, "method": best,
                              "features_by": {c: order[:k] for c, order in arms[kind].items()},
                              "source": {"rule": {"PRED_BEST": "best predictive/redundancy method by TRAIN inner-fold ridge skill at K=24",
                                                  "PLUS_CAUSAL": "PRED_BEST order; SUPPORTED first, NOT_IDENTIFIED neutral, robust CONTRADICTED last",
-                                                 "PLUS_REP": "PLUS_CAUSAL order; heavy candidates without probe skill in any representation demoted; representation attached from FS-REP"}[kind],
+                                                 "PLUS_EXTRACTIBILITY_EVIDENCE": "PLUS_CAUSAL order; heavy candidates without probe skill in any representation demoted; PROVISIONAL extractibility disposition attached from FS-REP (raw inputs only in the refit; raw-vs-latent belongs to M4)"}[kind],
                                         "digests": ev.digests, "pred_best_scores": scores}})
-    for f in ev.heavy:
+    for f in (h for h in ev.heavy if h not in ev.not_available):
         sets.append({"set_id": f"ALL_MINUS:{f}", "set_kind": "REMOVAL", "k": None, "heads": ["ridge"],
-                     "features": [x for x in pop.names if x != f], "removed": f,
+                     "features": [x for x in fit_names if x != f], "removed": f,
                      "source": {"rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"}})
     if ev.gen_calibrated and ev.gen_selected:
         for k in K_SENSITIVITIES:
@@ -1014,7 +1100,9 @@ def build_plan(pop: Population, ev: LaneEvidence, metrics=None) -> tuple[dict, l
                                     "declared_k": k, "digests": ev.digests}})
     for s in sets:
         s["set_sha256"] = set_digest(s)
-    plan = {"schema": "fs_close_refit_plan.v1", "population": list(pop.names), "population_sha256": pop.digest,
+    plan = {"schema": "fs_close_refit_plan.v1", "population": list(fit_names), "population_sha256": fit_digest,
+            "fit_population_sha256": fit_digest, "denominator": len(pop.names), "inventory_sha256": pop.digest,
+            "not_available_for_train": dict(sorted(ev.not_available.items())),
             "folds": list(FOLDS), "targets": [f"{t}_{h}h" for t, h in TARGET_CELLS], "seed": 0,
             "k_primary": K_PRIMARY, "k_sensitivities": list(K_SENSITIVITIES), "heads": ["ridge", "hgb"],
             "hgb_max_k": K_PRIMARY, "sets": sets, "pred_best_method": best, "generative_state": ev.gen_state}
@@ -1156,11 +1244,13 @@ def write_csv_rows(path: Path, rows: list[dict], cols: list[str]) -> bool:
 CLOSURE_RULE = {
     "schema": "fs_close_closure_rule.v1",
     "declared_before_reading_validation": True,
-    "candidates": "the frozen K=24 sets of ALL_ADMISSIBLE, PRED_BEST, PLUS_CAUSAL, PLUS_REP and KNOCKOFF (only if calibrated)",
-    "refit": "the same ridge head, alpha 1.0, fit on all TRAIN rows (2012-05..2023-12) with fit-row standardisation and median imputation; one seed",
-    "evaluation": "EXTERNAL VALIDATION rows (2024-01-01 <= t < 2025-01-01) read exactly once; MAE per cell against the same-row zero and fit-mean naives; log-loss against the fit prior",
-    "score": "mean over the 14 cells of skill = 1 - loss / stricter paired naive",
-    "winner": "highest score; ties -> fewer features, then lower total fit seconds, then the order above",
+    "evaluation_mode": "BUSINESS_WEEKLY_WALK_FORWARD (primary); LITERATURE_STATIC_VALIDATION_DIAGNOSTIC kept apart, authorises nothing",
+    "update_mode": "FULL_RETRAIN_ROLLING_4Y: every complete Monday-aligned week of 2024 (derived from the calendar) gets a fresh fit on exactly the four calendar years available at its cutoff",
+    "candidates": "the frozen K=24 sets of ALL_ADMISSIBLE, PRED_BEST, PLUS_CAUSAL, PLUS_EXTRACTIBILITY_EVIDENCE and KNOCKOFF (only if calibrated; arm 5 is EMPTY), frozen from TRAIN rankings before any 2024 read",
+    "refit": "the declared ridge head (one 6-output model per forecast family) and logistic head (per barrier) with fit-row standardisation and median imputation; one seed; weekly weights with their own digest",
+    "evaluation": "each week scored only on the following week's rows against the same-row naives (zero return; fit prior); weekly ledger per set (tools/business_weekly_score)",
+    "score": "mean over the 14 cells of the mean weekly skill over ALL weeks (never the best week)",
+    "winner": "highest aggregate; ties -> fewer features, then lower total fit seconds, then the order above",
     "strategy_eligibility": "a set is strategy-eligible only if it beats its paired naive strictly on every short and long horizon cell; otherwise the manifest is FINAL with strategy_eligible = false",
     "test": "EXTERNAL TEST (2025) is never read by this tool; the loader refuses any row at or after 2025-01-01",
 }
@@ -1195,7 +1285,7 @@ def build_dispositions(pop: Population, ev: LaneEvidence, plan: dict, winner: di
                 members_k[s["k"]] = feats
     in_any_k48 = set()
     for s in plan["sets"]:
-        if s["set_kind"] in ("PRED_METHOD", "PRED_BEST", "PLUS_CAUSAL", "PLUS_REP", "KNOCKOFF") and s["k"] is not None and s["k"] <= 48:
+        if s["set_kind"] in ("PRED_METHOD", "PRED_BEST", "PLUS_CAUSAL", "PLUS_EXTRACTIBILITY_EVIDENCE", "KNOCKOFF") and s["k"] is not None and s["k"] <= 48:
             for lst in (s["features_by"].values() if "features_by" in s else [s["features"]]):
                 in_any_k48.update(lst)
     selected = members_k.get(K_PRIMARY, set()) if winner else set()
@@ -1209,7 +1299,14 @@ def build_dispositions(pop: Population, ev: LaneEvidence, plan: dict, winner: di
             digests["causal"] = ev.digests["fs_causal/causal_evidence.jsonl"]
         if ev.digests.get("fs_rep/representation_dispositions.csv"):
             digests["representation"] = ev.digests["fs_rep/representation_dispositions.csv"]
-        if winner is None:
+        availability = "AVAILABLE"
+        if f in ev.not_available:
+            availability = "NOT_AVAILABLE_FOR_TRAIN"
+            state = "REJECTED"
+            reasons.append("NOT_AVAILABLE_FOR_TRAIN")
+            reasons.append(ev.not_available[f])
+            rep = "NOT_APPLICABLE"
+        elif winner is None:
             state = "PENDING"
             reasons.append(REASON["DRAFT"])
         elif f in selected:
@@ -1233,17 +1330,20 @@ def build_dispositions(pop: Population, ev: LaneEvidence, plan: dict, winner: di
                     state = "REJECTED"
                     reasons.append(REASON["CONTRADICTED"])
         if "SUPPORTED" in causal_states:
-            reasons.append(REASON["CAUSAL_SUPPORTED"])
+            reasons.append(REASON["CAUSAL_SUPPORTED"] + "_AT_DECLARED_RUNG")
         elif causal_states <= {"NOT_IDENTIFIED"}:
             reasons.append(REASON["CAUSAL_NEUTRAL"])
         if ev.gen_reason.get(f) == "NO_SERIES_IN_PS2_BATCH":
             reasons.append("NO_SERIES_IN_PS2_BATCH")
-        if f in ev.heavy:
+        if f in ev.not_available:
+            reasons.append("EXTRACTIBILITY_NOT_APPLICABLE")
+        elif f in ev.heavy:
             if rep and rep != "PENDING":
                 reasons.append(REASON["REP"].format(d=rep))
             else:
                 reasons.append(REASON["PS3R_PENDING"])
         rows.append({"feature": f, "batch": pop.batch_of[f], "state": state, "reason_codes": ";".join(reasons),
+                     "availability": availability,
                      "representation": rep or ("RAW" if f not in ev.heavy else "PENDING"),
                      "causal": "/".join(sorted(causal_states)), "heavy_candidate": f in ev.heavy,
                      "in_primary_k24": f in selected,
@@ -1266,10 +1366,15 @@ def run_checks(pop: Population, ev: LaneEvidence, plan: dict, plan_missing: list
     add("C1_DISPOSITIONS_366", "PASS" if ok else "FAIL",
         f"{len(dispositions)} rows, {len(set(states))} states; SELECTED {states.count('SELECTED')} REJECTED {states.count('REJECTED')} PENDING {states.count('PENDING')}")
 
-    pops = set(metrics["population_sha256"].unique()) if metrics is not None and len(metrics) else set()
-    mixed = bool(pops - {pop.digest})
+    fit_digest = plan.get("fit_population_sha256") or plan.get("population_sha256")
+    current_sets = {s["set_sha256"] for s in plan["sets"]}
+    live = metrics[metrics["set_sha256"].isin(current_sets)] if metrics is not None and len(metrics) else None
+    pops = set(live["population_sha256"].unique()) if live is not None and len(live) else set()
+    stale = int(len(metrics) - len(live)) if live is not None else 0
+    mixed = bool(pops - {fit_digest})
     add("C2_SINGLE_POPULATION", "FAIL" if mixed else "PASS",
-        f"population {pop.digest[:12]}; metric populations {sorted(p[:12] for p in pops) or 'none yet'}")
+        f"fit population {fit_digest[:12]} ({len(plan['population'])} of {plan.get('denominator', len(pop.names))}); "
+        f"metric populations {sorted(p[:12] for p in pops) or 'none yet'}; stale rows from superseded sets {stale}")
 
     pred_done = ev.pred_progress.get("method_cells_done")
     pred_total = ev.pred_progress.get("method_cells_total")
@@ -1310,7 +1415,7 @@ def run_checks(pop: Population, ev: LaneEvidence, plan: dict, plan_missing: list
     else:
         add("C6_PAIRED_NAIVE", "PENDING", "no refit metrics yet")
 
-    needed = [f"{kind}:{k}" for kind in ("PRED_BEST", "PLUS_CAUSAL", "PLUS_REP") for k in K_SENSITIVITIES] + ["ALL_ADMISSIBLE"]
+    needed = [f"{kind}:{k}" for kind in ("PRED_BEST", "PLUS_CAUSAL", "PLUS_EXTRACTIBILITY_EVIDENCE") for k in K_SENSITIVITIES] + ["ALL_ADMISSIBLE"]
     if ev.gen_calibrated and any(s["set_kind"] == "KNOCKOFF" for s in plan["sets"]):
         needed += [f"KNOCKOFF:{k}" for k in K_SENSITIVITIES]
     expected = cov["expected_cells_per_set_head"]
@@ -1322,10 +1427,18 @@ def run_checks(pop: Population, ev: LaneEvidence, plan: dict, plan_missing: list
         "; ".join(ev.missing + plan_missing) or "all lane objects present")
 
     if closure:
-        add("C9_VALIDATION_CHOICE", "PASS" if closure.get("winner") else "FAIL",
-            f"winner {closure.get('winner', {}).get('set_id')} score {closure.get('winner', {}).get('score')}; rule {closure.get('rule_sha256', '')[:12]}")
+        business = business_closure_or_none(closure)
+        if business is None:
+            add("C9_VALIDATION_CHOICE", "FAIL", f"closure record evaluation_mode {closure.get('evaluation_mode')!r} is not "
+                f"BUSINESS_WEEKLY_WALK_FORWARD (a static single fit is a diagnostic and cannot choose the manifest)")
+        else:
+            w = business.get("winner") or {}
+            add("C9_VALIDATION_CHOICE", "PASS" if w else "FAIL",
+                f"BUSINESS_WEEKLY_WALK_FORWARD / {business.get('update_mode')}: winner {w.get('set_id')} score {w.get('score')} over "
+                f"{business.get('weeks_in_validation_year')} weeks (eligible {w.get('eligible_weeks')}); contract {business.get('procedure_digest', '')[:12]}")
     else:
-        add("C9_VALIDATION_CHOICE", "PENDING", "closure step not run: candidates not frozen or VALIDATION_2024_FEATURES_AND_TARGETS not materialised on the refit host")
+        add("C9_VALIDATION_CHOICE", "PENDING", "BUSINESS_WEEKLY_WALK_FORWARD closure not run: candidates not frozen or "
+            "VALIDATION_2024_FEATURES_AND_TARGETS not materialised on the refit host")
 
     if gate_path.is_file():
         g = sha256_file(gate_path)
@@ -1352,7 +1465,8 @@ def manifest_features(dispositions: list[dict]) -> list[dict]:
     out = []
     for d in dispositions:
         out.append({"name": d["feature"], "state": d["state"].lower(), "reason_codes": d["reason_codes"].split(";"),
-                    "representation": d["representation"], "causal": d["causal"],
+                    "availability": d.get("availability", "AVAILABLE"),
+                    "provisional_extractibility_disposition": d["representation"], "causal": d["causal"],
                     "in_primary_k24": bool(d["in_primary_k24"]),
                     "sensitivity_k": [int(k) for k in d["in_sensitivity_k"].split(";") if k],
                     "evidence_digests": json.loads(d["evidence_digests"])})
@@ -1384,7 +1498,9 @@ def build_manifest(pop: Population, ev: LaneEvidence, plan: dict, dispositions: 
         "seeds": [0],
         "k_primary": K_PRIMARY,
         "k_sensitivities": list(K_SENSITIVITIES),
-        "selection": {"primary_set": winner, "sensitivities": (closure or {}).get("sensitivities"),
+        "selection": {"primary_set": winner, "evaluation_mode": (closure or {}).get("evaluation_mode"),
+                      "update_mode": (closure or {}).get("update_mode"), "weeks": (closure or {}).get("weeks_in_validation_year"),
+                      "sensitivities": (closure or {}).get("sensitivities"),
                       "closure_rule": CLOSURE_RULE, "strategy_eligible": (closure or {}).get("strategy_eligible"),
                       "train_inner_fold_skill_vs_stricter_naive": skill_summary or {},
                       "arm_5_knockoff": {"state": ev.gen_state, "n_selected_features": len(ev.gen_selected), "calibration_counts": ev.gen_counts},
@@ -1422,7 +1538,8 @@ def lane_coverage(pop: Population, ev: LaneEvidence, cov: dict, dispositions: li
     lanes = {
         "PS1": {"done": n, "total": n, "unit": "candidates profiled"},
         "PS2": {"done": len(ev.ps2_status), "total": n, "unit": "candidates with PS2 status"},
-        "PS3-C": {"done": len([f for f in pop.names if f in _ps3c_features(ev)]), "total": n, "unit": "candidates in PS3-C join"},
+        "PS3-C": {"done": len([f for f in pop.names if f in _ps3c_features(ev)]), "total": n,
+                  "unit": "join coverage only (not identification)"},
         "PS3-R": {"done": ps3r_complete, "total": heavy, "unit": "heavy candidates with 3 terminals",
                   "terminals_done": ps3r_terminals, "terminals_total": heavy * 3},
         "PS4": {"done": len(ev.ps4_profiled & set(ev.heavy)) if ev.heavy else len(ev.ps4_profiled), "total": heavy, "unit": "heavy candidates profiled"},
@@ -1430,7 +1547,10 @@ def lane_coverage(pop: Population, ev: LaneEvidence, cov: dict, dispositions: li
                     "unit": "methods with complete rankings", "eta_utc": ev.pred_progress.get("eta_utc"),
                     "method_cells_done": ev.pred_progress.get("method_cells_done"), "method_cells_total": ev.pred_progress.get("method_cells_total"),
                     "folds_in_progress": ev.pred_progress.get("folds")},
-        "FS-CAUSAL": {"done": len(ev.causal), "total": n, "unit": "candidates with causal evidence"},
+        "FS-CAUSAL": {"done": len(ev.causal), "total": n, "unit": "candidates with final causal measurement",
+                      "chunks": (ev.causal_progress.get("chunks") or {}), "cells_by_state": ev.causal_counts,
+                      "identified_conditional_on_declared_assumptions_cells": ev.causal_conditional_cells,
+                      "note": "cells, not features; conditional identification is provisional, not unconditional causal truth"},
         "FS-REP": {"done": rep_decided, "total": heavy, "unit": "heavy candidates decided"},
         "FS-GEN": {"done": sum(v for k, v in ev.gen_counts.items() if k != "NOT_EVALUATED"), "total": n,
                    "unit": f"candidates with generative evidence (arm 5 {ev.gen_state})"},
@@ -1629,6 +1749,9 @@ def regenerate_master(paths: Paths, status: dict, ev: LaneEvidence) -> bool:
 
 
 # ============================================================================ worker dispatch
+WORKER_MODULES = ("fs_close_refit.py", "fs_close_weekly.py", "business_weekly_protocol.py", "business_asof_window.py",
+                  "business_weekly_training.py", "business_weekly_score.py", "business_objective_firewall.py")
+
 def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list[str]) -> dict:
     """Push plan + engine to the worker, launch the capped sequential refit when idle, pull results."""
     if not paths.worker_alias:
@@ -1639,8 +1762,11 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
     ssh = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=15", alias]
     try:
         subprocess.run(ssh + [f"mkdir -p {remote}/out"], check=True, capture_output=True, timeout=60)
+        subprocess.run(ssh + [f"mkdir -p {remote}/tools && touch {remote}/tools/__init__.py"], check=True, capture_output=True, timeout=60)
         subprocess.run(["rsync", "-q", "--timeout=60", str(plan_path), str(paths.repo / "tools/fs_close_refit.py"),
                         f"{alias}:{remote}/"], check=True, capture_output=True, timeout=120)
+        subprocess.run(["rsync", "-q", "--timeout=60"] + [str(paths.repo / "tools" / m) for m in WORKER_MODULES] + [f"{alias}:{remote}/tools/"],
+                       check=True, capture_output=True, timeout=120)
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
         info["state"] = "WORKER_UNREACHABLE"
         info["detail"] = str(getattr(exc, "stderr", b""))[-300:]
@@ -1665,13 +1791,15 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
             unit_alive = True   # unknown: do not double-launch
     # pull AFTER the liveness check so a run that just finished is seen before any launch decision
     subprocess.run(["rsync", "-qrt", "--timeout=120", "--include=paired_refit_metrics.parquet", "--include=refit_receipt.json",
-                    "--include=progress.json", "--include=closure_record.json", "--exclude=*", f"{alias}:{remote}/out/",
+                    "--include=progress.json", "--include=closure_record.json", "--include=weekly_contract.json", "--include=weekly_ledger_*.json",
+                    "--include=weekly_barrier_*.json", "--include=static_validation_diagnostic.json", "--exclude=*", f"{alias}:{remote}/out/",
                     str(paths.state / "fs_close/")], check=False, capture_output=True, timeout=300)
     local_out = paths.state / "fs_close"
-    for name in ("paired_refit_metrics.parquet", "refit_receipt.json", "progress.json", "closure_record.json"):
-        src = local_out / name
-        if src.is_file():
-            write_atomic(paths.out / name, src.read_bytes())
+    for src in sorted(local_out.glob("*")):
+        if src.is_file() and (src.name in ("paired_refit_metrics.parquet", "refit_receipt.json", "progress.json", "closure_record.json",
+                                           "weekly_contract.json", "static_validation_diagnostic.json")
+                              or src.name.startswith(("weekly_ledger_", "weekly_barrier_"))):
+            write_atomic(paths.out / src.name, src.read_bytes())
     receipt_now = read_json(paths.out / "refit_receipt.json", {})
     if receipt_now.get("peak_rss_bytes"):
         # retain every receipt's peak: the cap is monotone over all measurements ever pulled
@@ -1689,6 +1817,16 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
             running = (dt.datetime.now(dt.timezone.utc) - upd).total_seconds() < 1800
         except (KeyError, ValueError):
             running = False
+    current_plan_sha = sha256_file(plan_path) if Path(plan_path).is_file() else ""
+    if unit_alive and marker.get("plan_sha256") and marker["plan_sha256"] != current_plan_sha and not marker.get("pilot"):
+        # my own refit unit was launched for a superseded plan (e.g. the fit population changed): stop it, relaunch below
+        try:
+            subprocess.run(ssh + [f"export XDG_RUNTIME_DIR=/run/user/$(id -u); systemctl --user stop {marker['unit']}"],
+                           capture_output=True, text=True, timeout=60)
+            info["superseded_unit_stopped"] = marker["unit"]
+            unit_alive, running = False, False
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            pass
     if running or unit_alive:
         info["state"] = "RUNNING" if running else "QUEUED_OR_STARTING"
         info["progress"] = progress
@@ -1753,7 +1891,8 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
         if r.returncode == 0:
             unit = re.search(r"Running as unit: ([^;\s]+)", (r.stderr or "") + (r.stdout or ""))
             write_json(paths.out / "refit_launch_marker.json", {"launched_utc": utc_now(), "pilot": pilot, "cap": cap,
-                                                                 "unit": unit.group(1) if unit else ""})
+                                                                 "unit": unit.group(1) if unit else "",
+                                                                 "plan_sha256": sha256_file(plan_path) if not pilot else ""})
         info["cap"] = cap
         info["queued"] = "crispdm-run -q waits for host headroom up to 4 h before starting"
         info["detail"] = (r.stderr or r.stdout)[-400:]
@@ -1764,7 +1903,8 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
 
 
 def launch_closure(paths: Paths, ssh: list, alias: str, wstate: str, remote: str) -> dict:
-    """The closure step reads VALIDATION once; it runs only when the validation inputs are materialised."""
+    """The BUSINESS weekly walk-forward closure (tools/fs_close_weekly.py) reads VALIDATION once per week under
+    the sealed contract; it runs only when the validation inputs are materialised on the refit host."""
     val = f"{wstate}/validation_2024"
     probe = subprocess.run(ssh + [f"ls {val}/ps1/batch_001/features_train.parquet {val}/ps1/batch_002/features_train.parquet "
                                   f"{val}/ps1/batch_003/features_train.parquet {val}/ps1/batch_001/targets_train.parquet >/dev/null 2>&1 && echo OK || echo MISSING"],
@@ -1774,14 +1914,16 @@ def launch_closure(paths: Paths, ssh: list, alias: str, wstate: str, remote: str
     cap_doc = read_json(paths.out / "refit_cap.json", {})
     cap_mb = int(math.ceil(max(cap_doc.get("cap_bytes", 0), 1) / (1 << 20))) or 1500
     cmd = (f"export XDG_RUNTIME_DIR=/run/user/$(id -u) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus; cd {remote} && "
-           f"systemd-run --user --collect --unit fs-close-closure-$(date +%s) ~/.local/bin/crispdm-run -q -W 14400 -m {cap_mb}M -t 4h -n fs_close_closure_c{cap_mb}m -- "
-           f"{paths.worker_python} {remote}/fs_close_refit.py --closure --plan {remote}/refit_plan.json "
+           f"systemd-run --user --collect --unit fs-close-weekly-$(date +%s) ~/.local/bin/crispdm-run -q -W 14400 -m {cap_mb}M -t 8h -n fs_close_weekly_c{cap_mb}m -- "
+           f"env PYTHONPATH={remote} {paths.worker_python} {remote}/tools/fs_close_weekly.py --plan {remote}/refit_plan.json "
            f"--features {wstate}/fs_pred/input/ps1/batch_001/features_train.parquet {wstate}/fs_pred/input/ps1/batch_002/features_train.parquet "
            f"{wstate}/fs_pred/input/ps1/batch_003/features_train.parquet --targets {wstate}/fs_pred/input/ps1/batch_001/targets_train.parquet "
-           f"--folds {remote}/folds.json --val-features {val}/ps1/batch_001/features_train.parquet {val}/ps1/batch_002/features_train.parquet "
-           f"{val}/ps1/batch_003/features_train.parquet --val-targets {val}/ps1/batch_001/targets_train.parquet --out-dir {remote}/out")
+           f"--val-features {val}/ps1/batch_001/features_train.parquet {val}/ps1/batch_002/features_train.parquet "
+           f"{val}/ps1/batch_003/features_train.parquet --val-targets {val}/ps1/batch_001/targets_train.parquet --out-dir {remote}/out "
+           f"--k-primary {K_PRIMARY} --validation-year 2024")
     r = subprocess.run(ssh + [cmd], capture_output=True, text=True, timeout=90)
-    return {"state": "CLOSURE_LAUNCHED" if r.returncode == 0 else "CLOSURE_LAUNCH_FAILED", "detail": (r.stderr or r.stdout)[-300:]}
+    return {"state": "WEEKLY_CLOSURE_LAUNCHED" if r.returncode == 0 else "CLOSURE_LAUNCH_FAILED", "mode": BUSINESS_MODE,
+            "detail": (r.stderr or r.stdout)[-300:]}
 
 
 # ============================================================================ follow once
@@ -1812,9 +1954,8 @@ def follow_once(paths: Paths, *, dispatch: bool = False, rebuild_catalog: bool |
     skill_summary = summarize_skill(metrics)
     manifest, decision = build_manifest(pop, ev, plan, dispositions, checks, closure, source_digests, final, skill_summary)
     if final:
-        gate = load_gate(paths.gate_module)
         selected = [f["name"] for f in manifest["features"] if f["state"] == "selected"]
-        report = gate.evaluate(manifest, selected, decision_record=decision, expected_dataset_id=DATASET_ID)
+        report = business_gate(manifest, selected, decision, gate_path=paths.gate_module)
         if not report["admitted"]:
             final = False
             checks.append({"id": "C11_GATE_ACCEPTS_MANIFEST", "state": "FAIL", "detail": "; ".join(report["reasons"])[:400]})
@@ -1880,7 +2021,7 @@ def _ps3c_covered(paths: Paths, pop: Population) -> set:
 
 
 def write_dispositions(path: Path, rows: list[dict]) -> bool:
-    cols = ["feature", "batch", "state", "reason_codes", "representation", "causal", "heavy_candidate",
+    cols = ["feature", "batch", "state", "reason_codes", "availability", "representation", "causal", "heavy_candidate",
             "in_primary_k24", "in_sensitivity_k", "evidence_digests"]
     import io
 
