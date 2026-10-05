@@ -1,5 +1,22 @@
 # Estado de ejecución vigente
 
+> **Cierre vinculante 2026-10-05 16:00 America/Bogota:** la fase 1 de
+> selección quedó `PHASE_1_COMPLETE` para las dos poblaciones. EURUSD cerró
+> 366/366 perfiles, 366/366 recibos del warehouse, 5,124 decisiones sobre 14
+> objetivos y tres escalones causales; 34 pares feature-target (`12` features
+> distintas) quedaron `SELECTED`. ETH cerró 83/83 perfiles y 498 decisiones;
+> tres pares quedaron `SELECTED`. Las identidades y conteos fueron leídos de
+> vuelta desde el warehouse. Este corte sustituye todos los estados de
+> ejecución y recursos que aparecen más abajo, que se conservan solo como
+> historia. Phase 2 es ahora elegible, pero **no ha empezado**: su arquitectura
+> CVAE/extractor, entradas de control y comparadores deben congelarse antes de
+> usar GPU.
+>
+> Evidencia local EURUSD:
+> `/home/harveybc/.local/state/predictor/phase1/eurusd-profile-4229a8a/PHASE_1_COMPLETE.json`.
+> Snapshot OLAP publicado:
+> `https://github.com/harveybc/predictor/releases/tag/phase1-feature-selection-20261005`.
+
 > **Actualizacion vinculante 2026-10-05:** por orden del propietario, el unico
 > frente experimental activo es el cierre de **seleccion de caracteristicas,
 > fase 1**. La orden ejecutable es

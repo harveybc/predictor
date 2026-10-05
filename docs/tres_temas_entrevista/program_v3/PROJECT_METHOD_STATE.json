@@ -1,18 +1,21 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-05",
-  "current_stage": "acceptance_test_design",
-  "completed_stages": ["discovery", "requirements"],
+  "current_stage": "feature_selection_phase1_complete_phase2_design_pending",
+  "completed_stages": [
+    "discovery",
+    "requirements"
+  ],
   "program_owner": "Harvey",
   "execution_owner": "Satoshi",
-  "handoff_status": "FEATURE_SELECTION_PHASE1_ONLY_UNTIL_COMPLETE",
+  "handoff_status": "PHASE_1_COMPLETE_PHASE_2_NOT_STARTED",
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [
-    "Complete one-pass PS0/PS1 profiling for every canonical inventory series.",
-    "Adopt existing EURUSD causal evidence by digest and run missing ETH causal cells using the authoritative implementation.",
-    "Finalize BH/FDR separately after EURUSD 366/366 and ETH 83/83 have explicit terminals.",
-    "Load feature-selection envelopes through the warehouse owner API and verify both populations by readback.",
-    "Do not run PS3-R, autoencoders, CVAE, modular architecture, NEAT, RL or new literature experiments before PHASE_1_COMPLETE."
+    "Audit the 12 EURUSD and 3 ETH selected feature-target results by horizon without treating aliases as independent evidence.",
+    "Freeze the Phase-2 single-feature controlled temporal extractor/CVAE design, seasonal controls, reconstruction metrics and raw/random/trained controls before GPU work.",
+    "Run Phase 2 only on the frozen selected and matched control populations; do not silently expand the denominator.",
+    "Continue BUSINESS_WEEKLY_WALK_FORWARD implementation independently; no final financial claim may use LITERATURE_STATIC semantics.",
+    "Keep NEAT, modular branch/core pretraining and RL after dataset-specific selection and Phase-2 extraction closure in the canonical order."
   ],
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
@@ -57,13 +60,26 @@
     "DOIN_role": "DISTRIBUTED_CANDIDATE_EVALUATION"
   },
   "feature_selection": {
-    "active_phase": "PHASE_1_PROFILE_AND_CAUSAL_ONLY",
-    "canonical_denominators": {"EURUSD": 366, "ETH": 83},
-    "phase_1_completion_gate": "WAREHOUSE_READBACK_EURUSD_366_OF_366_ETH_83_OF_83_AND_PER_POPULATION_GLOBAL_FDR_COMPLETE",
-    "phase_2_gpu_allowed": false,
+    "active_phase": "PHASE_1_COMPLETE_PHASE_2_DESIGN_PENDING",
+    "canonical_denominators": {
+      "EURUSD": 366,
+      "ETH": 83
+    },
+    "phase_1_completion_gate": "COMPLETE_EURUSD_366_OF_366_ETH_83_OF_83_WAREHOUSE_READBACK_VERIFIED",
+    "phase_2_gpu_allowed": true,
     "business_manifest": "EURUSD_FIRST",
     "secondary_development_manifest": "ETH_SEPARATE",
-    "stages": ["PS0", "PS1", "PS2", "PS3-C", "PS3-R", "PS4", "PS5", "PS6", "PS7"],
+    "stages": [
+      "PS0",
+      "PS1",
+      "PS2",
+      "PS3-C",
+      "PS3-R",
+      "PS4",
+      "PS5",
+      "PS6",
+      "PS7"
+    ],
     "causal_ladder": [
       "association_and_predictive_relevance",
       "observed_historical_interventions",
@@ -72,7 +88,11 @@
     "not_identified_means_rejected": false,
     "calendar_episode_use_now": "TREATMENT_CONTROL_DISCOVERY_FOR_FEATURE_SELECTION_ONLY",
     "calendar_as_model_input": "DEFERRED_FINAL_OPTIONAL_AFTER_NEAT_RL_AND_PAPER_BASELINE",
-    "extractibility_controls": ["raw", "random_encoder", "trained_encoder"],
+    "extractibility_controls": [
+      "raw",
+      "random_encoder",
+      "trained_encoder"
+    ],
     "future_target_in_operational_encoder": false,
     "final_sets": [
       "all_admissible",
@@ -80,7 +100,27 @@
       "predictive_plus_causal",
       "predictive_causal_plus_extraction",
       "optional_generative_preference"
-    ]
+    ],
+    "phase_2_started": false,
+    "phase_1_results": {
+      "EURUSD": {
+        "features": 366,
+        "targets": 14,
+        "decisions": 5124,
+        "selected_feature_target_pairs": 34,
+        "selected_distinct_features": 12,
+        "warehouse_run_id": "phase1-eurusd-final:94d20c038d55e152"
+      },
+      "ETH": {
+        "features": 83,
+        "targets": 6,
+        "decisions": 498,
+        "selected_feature_target_pairs": 3,
+        "selected_distinct_features": 3,
+        "warehouse_run_id": "phase1-final:ETH:29d2f745f5d9e87c"
+      },
+      "olap_snapshot_release": "https://github.com/harveybc/predictor/releases/tag/phase1-feature-selection-20261005"
+    }
   },
   "business_evaluation": {
     "primary_mode": "BUSINESS_WEEKLY_WALK_FORWARD",
@@ -89,13 +129,21 @@
     "rolling_train_calendar_years": 4,
     "validation_and_test": "COMPLETE_CONSECUTIVE_ELIGIBLE_WEEKS_WITH_DISPOSITIONS",
     "frozen_artifact": "UPDATE_AND_DECISION_PROCEDURE_NOT_ONE_STATIC_CHECKPOINT",
-    "update_modes": ["FULL_RETRAIN_ROLLING_4Y", "WARM_UPDATE_ROLLING_4Y"],
-    "strict_memory_claim_allowed_for": ["FULL_RETRAIN_ROLLING_4Y"]
+    "update_modes": [
+      "FULL_RETRAIN_ROLLING_4Y",
+      "WARM_UPDATE_ROLLING_4Y"
+    ],
+    "strict_memory_claim_allowed_for": [
+      "FULL_RETRAIN_ROLLING_4Y"
+    ]
   },
   "literature_comparability": {
     "scope": "ALL_DOMAINS_INCLUDING_FINANCE",
     "required_before": "NEW_SCIENTIFIC_TRAINING",
-    "modes": ["REPRODUCTION", "MATCHED_DOMAIN_COMPARISON"],
+    "modes": [
+      "REPRODUCTION",
+      "MATCHED_DOMAIN_COMPARISON"
+    ],
     "unmatched_published_scores_are_comparators": false
   },
   "closure_reporting": {
@@ -134,7 +182,11 @@
     "historical_import": "SEPARATE_RETROSPECTIVE_EVIDENCE"
   },
   "news_live_track": {
-    "allowed_modes": ["SHADOW", "MT5_DEMO", "ALPACA_PAPER"],
+    "allowed_modes": [
+      "SHADOW",
+      "MT5_DEMO",
+      "ALPACA_PAPER"
+    ],
     "real_capital_authorized": false,
     "blocks_scientific_experiments": false,
     "provider_quality_must_match_answering_path": true
@@ -150,20 +202,54 @@
       "MOD-E3",
       "FIN-LOSS-OPT"
     ],
-    "P-L2": ["L2-PUBLIC-RL"],
-    "P-CAP": ["CAP-CALIBRATION"],
-    "P-PRE": ["PRE-NOISE"],
-    "P-TRN": ["TRN-TRANSFER"],
-    "P-INC": ["INC-SIMULATION"]
+    "P-L2": [
+      "L2-PUBLIC-RL"
+    ],
+    "P-CAP": [
+      "CAP-CALIBRATION"
+    ],
+    "P-PRE": [
+      "PRE-NOISE"
+    ],
+    "P-TRN": [
+      "TRN-TRANSFER"
+    ],
+    "P-INC": [
+      "INC-SIMULATION"
+    ]
   },
   "signal_steps": [
-    "STEP-01", "STEP-02", "STEP-03", "STEP-04", "STEP-05", "STEP-06",
-    "STEP-07", "STEP-08", "STEP-09", "STEP-10", "STEP-11", "STEP-12",
+    "STEP-01",
+    "STEP-02",
+    "STEP-03",
+    "STEP-04",
+    "STEP-05",
+    "STEP-06",
+    "STEP-07",
+    "STEP-08",
+    "STEP-09",
+    "STEP-10",
+    "STEP-11",
+    "STEP-12",
     "STEP-13"
   ],
-  "compression_lanes": ["C1", "C2", "C3", "C4", "C5", "C6", "C7"],
+  "compression_lanes": [
+    "C1",
+    "C2",
+    "C3",
+    "C4",
+    "C5",
+    "C6",
+    "C7"
+  ],
   "shared_requirements": [
-    "FE", "EVENT", "META", "I-INFO", "H-ES", "GOVERNANCE", "WEEKLY-RL"
+    "FE",
+    "EVENT",
+    "META",
+    "I-INFO",
+    "H-ES",
+    "GOVERNANCE",
+    "WEEKLY-RL"
   ],
   "tasks": [
     {
@@ -179,7 +265,9 @@
       "id": "BUSINESS-WEEKLY-WALK-FORWARD",
       "owner": "M05+forecast+RL",
       "status": "DESIGNED",
-      "depends_on": ["BUSINESS-CONTRACT"],
+      "depends_on": [
+        "BUSINESS-CONTRACT"
+      ],
       "next_action": "Repair paired-evidence persistence, distinct short/long model identity and longitudinal dependence; configure MAE and then close BW01-BW18 adapters.",
       "deliverable": "Restartable weekly validation/test runner with one disposition per week.",
       "evidence": []
@@ -197,7 +285,9 @@
       "id": "SOTA-REPRO",
       "owner": "reference lane",
       "status": "IN_PROGRESS",
-      "depends_on": ["BENCHMARK-CONTRACTS"],
+      "depends_on": [
+        "BENCHMARK-CONTRACTS"
+      ],
       "next_action": "Close remaining faithful reference evidence without changing author inputs.",
       "deliverable": "Comparable literature table with same-row baselines.",
       "evidence": []
@@ -206,7 +296,9 @@
       "id": "FS-PROGRESSIVE",
       "owner": "M03+causal+M02",
       "status": "IN_PROGRESS",
-      "depends_on": ["BUSINESS-CONTRACT"],
+      "depends_on": [
+        "BUSINESS-CONTRACT"
+      ],
       "next_action": "Adopt retained EURUSD evidence, run only missing work plus the independent ETH population, finalize causal multiplicity per population, load the warehouse and verify 366/366 plus 83/83. Keep phase 2 extractibility paused.",
       "deliverable": "Phase-1 feature profile and causal catalog with complete warehouse coverage for EURUSD and ETH.",
       "evidence": []
@@ -218,13 +310,18 @@
       "depends_on": [],
       "next_action": "Retain as historical development evidence only.",
       "deliverable": "Historical modular development result.",
-      "evidence": ["prior RP evidence retained"]
+      "evidence": [
+        "prior RP evidence retained"
+      ]
     },
     {
       "id": "MOD-ARCH-COMPARE",
       "owner": "M01+M04",
       "status": "DESIGNED",
-      "depends_on": ["FS-PROGRESSIVE", "BENCHMARK-CONTRACTS"],
+      "depends_on": [
+        "FS-PROGRESSIVE",
+        "BENCHMARK-CONTRACTS"
+      ],
       "next_action": "Run matched architecture controls after the final manifest.",
       "deliverable": "Selected branch architecture and grouping.",
       "evidence": []
@@ -233,7 +330,10 @@
       "id": "MOD-E1",
       "owner": "M01+M04",
       "status": "DESIGNED",
-      "depends_on": ["MOD-E0-DEV", "MOD-ARCH-COMPARE"],
+      "depends_on": [
+        "MOD-E0-DEV",
+        "MOD-ARCH-COMPARE"
+      ],
       "next_action": "Compare branch R0, R1 and R2 on identical rows.",
       "deliverable": "Branch regime result.",
       "evidence": []
@@ -242,7 +342,9 @@
       "id": "MOD-FROZEN-PREFIX",
       "owner": "M01",
       "status": "NOT_STARTED",
-      "depends_on": ["MOD-E1"],
+      "depends_on": [
+        "MOD-E1"
+      ],
       "next_action": "Freeze the selected identical branch prefix for H-CORE.",
       "deliverable": "Authenticated fused-sequence producer.",
       "evidence": []
@@ -251,7 +353,10 @@
       "id": "MOD-CORE-PRETRAIN",
       "owner": "M01+M02",
       "status": "NOT_STARTED",
-      "depends_on": ["MOD-E1", "MOD-FROZEN-PREFIX"],
+      "depends_on": [
+        "MOD-E1",
+        "MOD-FROZEN-PREFIX"
+      ],
       "next_action": "Pretrain H-CORE and test transfer separately.",
       "deliverable": "Core donor and transfer comparison.",
       "evidence": []
@@ -260,7 +365,9 @@
       "id": "MOD-CONF",
       "owner": "M04",
       "status": "NOT_STARTED",
-      "depends_on": ["MOD-CORE-PRETRAIN"],
+      "depends_on": [
+        "MOD-CORE-PRETRAIN"
+      ],
       "next_action": "Confirm the sealed finalist once on untouched test.",
       "deliverable": "Confirmatory result.",
       "evidence": []
@@ -269,7 +376,9 @@
       "id": "MOD-E3",
       "owner": "M05+RL",
       "status": "NOT_STARTED",
-      "depends_on": ["MOD-CONF"],
+      "depends_on": [
+        "MOD-CONF"
+      ],
       "next_action": "Compare heuristic, SAC and DQN under business costs.",
       "deliverable": "Business and policy comparison.",
       "evidence": []
@@ -278,7 +387,9 @@
       "id": "L2-PUBLIC-RL",
       "owner": "RL lane",
       "status": "DESIGNED",
-      "depends_on": ["BENCHMARK-CONTRACTS"],
+      "depends_on": [
+        "BENCHMARK-CONTRACTS"
+      ],
       "next_action": "Retain public RL control and prepare raw/modular factorial.",
       "deliverable": "Public RL benchmark result.",
       "evidence": []
@@ -296,7 +407,9 @@
       "id": "PRE-NOISE",
       "owner": "M02",
       "status": "DESIGNED",
-      "depends_on": ["FS-PROGRESSIVE"],
+      "depends_on": [
+        "FS-PROGRESSIVE"
+      ],
       "next_action": "Evaluate denoising as one extractor family, not a universal gate.",
       "deliverable": "Matched denoising evidence.",
       "evidence": []
@@ -305,7 +418,9 @@
       "id": "TRN-TRANSFER",
       "owner": "M01+M02",
       "status": "NOT_STARTED",
-      "depends_on": ["MOD-CORE-PRETRAIN"],
+      "depends_on": [
+        "MOD-CORE-PRETRAIN"
+      ],
       "next_action": "Measure donor transfer without changing target support.",
       "deliverable": "Transfer result.",
       "evidence": []
@@ -314,7 +429,9 @@
       "id": "INC-SIMULATION",
       "owner": "M05",
       "status": "DESIGNED",
-      "depends_on": ["BUSINESS-CONTRACT"],
+      "depends_on": [
+        "BUSINESS-CONTRACT"
+      ],
       "next_action": "Keep simulator mechanics separate from financial claims.",
       "deliverable": "Audited strategy simulation.",
       "evidence": []
@@ -323,7 +440,10 @@
       "id": "FIN-LOSS-OPT",
       "owner": "M04",
       "status": "DESIGNED",
-      "depends_on": ["BUSINESS-CONTRACT", "BENCHMARK-CONTRACTS"],
+      "depends_on": [
+        "BUSINESS-CONTRACT",
+        "BENCHMARK-CONTRACTS"
+      ],
       "next_action": "Execute only after the financial data availability contract is satisfied.",
       "deliverable": "Matched financial loss/optimizer result.",
       "evidence": []
@@ -335,13 +455,17 @@
       "depends_on": [],
       "next_action": "Retain wrapper parity and separate it from quality.",
       "deliverable": "Typed classification adapter.",
-      "evidence": ["12/12 wrapper parity retained"]
+      "evidence": [
+        "12/12 wrapper parity retained"
+      ]
     },
     {
       "id": "NEWS-SHADOW",
       "owner": "news-signal",
       "status": "IN_PROGRESS",
-      "depends_on": ["NEWS-ADAPTER"],
+      "depends_on": [
+        "NEWS-ADAPTER"
+      ],
       "next_action": "Collect prospective point-in-time news and abstentions.",
       "deliverable": "Shadow evidence.",
       "evidence": []
@@ -350,7 +474,10 @@
       "id": "NEWS-PAPER",
       "owner": "M05",
       "status": "NOT_STARTED",
-      "depends_on": ["NEWS-SHADOW", "BUSINESS-CONTRACT"],
+      "depends_on": [
+        "NEWS-SHADOW",
+        "BUSINESS-CONTRACT"
+      ],
       "next_action": "Run paper-only after prospective quality and risk gates.",
       "deliverable": "MT5 demo and Alpaca paper receipts.",
       "evidence": []
@@ -359,7 +486,10 @@
       "id": "CAL-CAUSAL-INPUT",
       "owner": "future causal+M01+RL",
       "status": "NOT_STARTED",
-      "depends_on": ["MOD-E3", "NEWS-PAPER"],
+      "depends_on": [
+        "MOD-E3",
+        "NEWS-PAPER"
+      ],
       "next_action": "Remain deferred until the primary representation, Dense-versus-NEAT, RL comparison and paper baseline are complete.",
       "deliverable": "Separate incremental-value ablation for economic-calendar and causal-dossier model inputs.",
       "evidence": []
