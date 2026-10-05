@@ -3723,14 +3723,18 @@
     "yh.lqd.logret_5d": {
       "batch": "batch_002",
       "cause": "",
-      "decision": "PENDING",
+      "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
         "random",
         "masked_temporal_ae",
         "past_to_current_siamese"
       ],
-      "flags": [],
+      "flags": [
+        "DECIDED_WITH_FAILED_FAMILIES",
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_POSITIVE"
+      ],
       "terminals": {
         "alt_mtae": {
           "reason": "",
@@ -3743,9 +3747,9 @@
           "state": "COMPLETED"
         },
         "baseline": {
-          "reason": "NOT_LANDED",
-          "receipt_sha256": "",
-          "state": "PENDING"
+          "reason": "FAILED_RECEIPT",
+          "receipt_sha256": "4441d5d20c2c8520342646190256090e64100e00f13c0297f396524ba1cb467d",
+          "state": "FAILED"
         }
       }
     },
@@ -4592,20 +4596,20 @@
       }
     }
   },
-  "candidates_decided": 132,
+  "candidates_decided": 133,
   "claim_scope": "provisional extractibility/probe disposition; no downstream improvement of latents is claimed while trained-family G4 is NOT_APPLICABLE; raw vs latent belongs to M4",
   "coverage_fraction": 0.8029,
-  "cycle_started_at": "2026-10-05T15:48:02Z",
+  "cycle_started_at": "2026-10-05T15:52:15Z",
   "decisions": {
     "NOT_AVAILABLE_FOR_TRAIN": 1,
-    "NO_TRAINED_ADVANTAGE": 87,
-    "PENDING": 5,
+    "NO_TRAINED_ADVANTAGE": 88,
+    "PENDING": 4,
     "RAW": 44
   },
   "disposition_class": "PROVISIONAL_EXTRACTIBILITY_DISPOSITION",
   "eta": {
     "fs_gpu_eta": {
-      "generated_at_utc": "2026-10-05T15:46:44Z",
+      "generated_at_utc": "2026-10-05T15:51:50Z",
       "queues": {
         "alternatives_5090": {
           "active_roles": [],
@@ -4682,8 +4686,8 @@
           },
           "counts": {
             "done": 59,
-            "failed": 21,
-            "pending": 5,
+            "failed": 23,
+            "pending": 3,
             "running": 1
           },
           "denominator": 86,
@@ -4702,12 +4706,12 @@
                 "worker_b": 1635.7
               }
             },
-            "finish_utc_median": "2026-10-05T17:34:10Z",
-            "finish_utc_p90": "2026-10-05T18:03:03Z",
+            "finish_utc_median": "2026-10-05T16:56:17Z",
+            "finish_utc_p90": "2026-10-05T17:13:37Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 6445,
-            "seconds_p90": 8178
+            "seconds_median": 3867,
+            "seconds_p90": 4907
           },
           "failures": [
             {
@@ -4715,6 +4719,18 @@
               "error": "FAILED_MARKER rc=1",
               "receipt": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/worker_b_base/batch_002/fred.credit.bamlh0a0hym2.logret_1d/FAILED.codex.json",
               "role": "worker_b"
+            },
+            {
+              "cell_id": "batch_002::yh.lqd.logret_5d::baseline",
+              "error": "FAILED_MARKER rc=75",
+              "receipt": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/worker_a_base/batch_002/yh.lqd.logret_5d/FAILED.json",
+              "role": "worker_a"
+            },
+            {
+              "cell_id": "batch_002::yh.rut.logret_5d::baseline",
+              "error": "FAILED_MARKER rc=75",
+              "receipt": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/worker_a_base/batch_002/yh.rut.logret_5d/FAILED.json",
+              "role": "worker_a"
             },
             {
               "cell_id": "batch_002::yh.slv.logret_5d::baseline",
@@ -4842,7 +4858,7 @@
           "running": [
             {
               "cell_id": "batch_002::yh.gc_f.logret_5d::baseline",
-              "elapsed_seconds": 5844,
+              "elapsed_seconds": 6150,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
               "role": "worker_b",
               "stale": false,
@@ -4903,12 +4919,12 @@
         "baselines_batch_002": {
           "denominator": 86,
           "done": 59,
-          "failed": 21
+          "failed": 23
         },
         "baselines_heavy_candidates": {
           "denominator": 137,
           "done": 110,
-          "failed": 21
+          "failed": 23
         }
       }
     },
@@ -4940,7 +4956,7 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "b0a61759609839998bc816c0fbfdecbaf4864ef55a159e850bea5961b6964f06"
+      "sha256": "f32de32f8ba995156dfdfd369dccab4763985078a6f3d31e202cb797f8e012a2"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
@@ -4975,9 +4991,9 @@
     },
     "baseline": {
       "COMPLETED": 110,
-      "FAILED": 22,
-      "PENDING": 5
+      "FAILED": 23,
+      "PENDING": 4
     }
   },
-  "updated_at": "2026-10-05T15:48:07Z"
+  "updated_at": "2026-10-05T15:52:20Z"
 }
