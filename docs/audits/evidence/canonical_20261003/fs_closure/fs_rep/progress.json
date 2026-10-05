@@ -2,6 +2,7 @@
   "candidates": {
     "cot.wti_nymex.mm_net_oi": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -30,6 +31,7 @@
     },
     "fred.credit.aaa.level": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -63,6 +65,7 @@
     },
     "fred.credit.aaa.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -96,28 +99,25 @@
     },
     "fred.credit.bamlh0a0hym2.logret_1d": {
       "batch": "batch_002",
-      "decision": "RAW",
+      "cause": "NO_OBSERVED_TRAIN_VALUES",
+      "decision": "NOT_AVAILABLE_FOR_TRAIN",
       "families_present": [],
       "flags": [
-        "ALL_TRAINED_FAMILIES_FAILED",
-        "DECIDED_WITH_FAILED_FAMILIES",
-        "NO_PROBE_SKILL_VS_NAIVE_ANY_FAMILY",
-        "RAW_NO_PROBE_SKILL",
-        "RAW_REFIT_GAIN_NONPOSITIVE"
+        "TRAIN_SUPPORT_ABSENT"
       ],
       "terminals": {
         "alt_mtae": {
-          "reason": "FAILED_RECEIPT",
+          "reason": "NO_OBSERVED_TRAIN_VALUES",
           "receipt_sha256": "f6dec22eaa8b4222994d9a1ee1c1d6ad8e9551a26123b63cb02661ed862e9fef",
           "state": "FAILED"
         },
         "alt_p2c": {
-          "reason": "FAILED_RECEIPT",
+          "reason": "NO_OBSERVED_TRAIN_VALUES",
           "receipt_sha256": "3ef189e741fbd9798a3dd9da674be262dab1eccc76f5f010a31ca4340af8d783",
           "state": "FAILED"
         },
         "baseline": {
-          "reason": "FAILED_RECEIPT",
+          "reason": "NO_OBSERVED_TRAIN_VALUES",
           "receipt_sha256": "855e622ad5d9c26ea271718266f2eba228fcaa983c510d62de1ed648a5989685",
           "state": "FAILED"
         }
@@ -125,6 +125,7 @@
     },
     "fred.fx_indices.dtwexafegs.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -158,6 +159,7 @@
     },
     "fred.fx_indices.dtwexbgs.level": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -192,6 +194,7 @@
     },
     "fred.fx_indices.dtwexemegs.level": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -226,6 +229,7 @@
     },
     "fred.inflation_expectations.t10yie.level": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -254,6 +258,7 @@
     },
     "fred.rates.dfii10.diff_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -287,6 +292,7 @@
     },
     "fred.rates.dfii10.level": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -320,6 +326,7 @@
     },
     "fred.rates.dgs1.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -353,6 +360,7 @@
     },
     "fred.rates.dgs30.level": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -386,6 +394,7 @@
     },
     "fred.rates.dgs3mo.diff_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -419,6 +428,7 @@
     },
     "fred.rates.dgs5.level": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -452,6 +462,7 @@
     },
     "fred.rates.dgs5.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -485,6 +496,7 @@
     },
     "fred.rates.dprime.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -519,6 +531,7 @@
     },
     "fred.rates.dtb3.diff_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -552,6 +565,7 @@
     },
     "fred.rates.t10y3m.diff_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -585,6 +599,7 @@
     },
     "fred.rates.tb3ms.level": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -613,6 +628,7 @@
     },
     "fred.stress.anfci.diff_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -641,6 +657,7 @@
     },
     "fred.stress.anfci.level": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -669,6 +686,7 @@
     },
     "fred.stress.nfci.diff_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -697,6 +715,7 @@
     },
     "fred.stress.nfci.level": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -725,6 +744,7 @@
     },
     "fred.stress.vixcls.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -758,6 +778,7 @@
     },
     "fx.audusd.ewma_vol_24": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -791,6 +812,7 @@
     },
     "fx.audusd.logret_1h": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -824,6 +846,7 @@
     },
     "fx.audusd.logret_24h": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -857,6 +880,7 @@
     },
     "fx.eurgbp.ewma_vol_24": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -890,6 +914,7 @@
     },
     "fx.eurgbp.logret_1h": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -924,6 +949,7 @@
     },
     "fx.eurjpy.ewma_vol_24": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -957,6 +983,7 @@
     },
     "fx.eurjpy.logret_1h": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -990,6 +1017,7 @@
     },
     "fx.gbpjpy.ewma_vol_24": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1023,6 +1051,7 @@
     },
     "fx.gbpjpy.logret_1h": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1057,6 +1086,7 @@
     },
     "fx.gbpusd.ewma_vol_24": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -1090,6 +1120,7 @@
     },
     "fx.gbpusd.logret_1h": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1124,6 +1155,7 @@
     },
     "fx.gbpusd.logret_24h": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -1152,6 +1184,7 @@
     },
     "fx.nzdusd.ewma_vol_24": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1185,6 +1218,7 @@
     },
     "fx.nzdusd.logret_1h": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -1218,6 +1252,7 @@
     },
     "fx.usdcad.ewma_vol_24": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1251,6 +1286,7 @@
     },
     "fx.usdchf.ewma_vol_24": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1284,6 +1320,7 @@
     },
     "fx.usdchf.logret_1h": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1318,6 +1355,7 @@
     },
     "fx.usdchf.logret_24h": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1351,6 +1389,7 @@
     },
     "fx.usdjpy.ewma_vol_24": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1384,6 +1423,7 @@
     },
     "fx.usdjpy.logret_1h": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1417,6 +1457,7 @@
     },
     "px.close_loc": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -1450,6 +1491,7 @@
     },
     "px.ewma_vol_24": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1483,6 +1525,7 @@
     },
     "px.log_close": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1516,6 +1559,7 @@
     },
     "px.log_co": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1549,6 +1593,7 @@
     },
     "px.log_hl": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1583,6 +1628,7 @@
     },
     "px.logret_120h": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1616,6 +1662,7 @@
     },
     "px.logret_12h": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1649,6 +1696,7 @@
     },
     "px.logret_168h": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1682,6 +1730,7 @@
     },
     "px.logret_1h": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -1715,6 +1764,7 @@
     },
     "px.logret_24h": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1748,6 +1798,7 @@
     },
     "px.logret_2h": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1781,6 +1832,7 @@
     },
     "px.logret_48h": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1815,6 +1867,7 @@
     },
     "px.logret_4h": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -1848,6 +1901,7 @@
     },
     "px.logret_6h": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1881,6 +1935,7 @@
     },
     "px.rv5": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -1915,6 +1970,7 @@
     },
     "px.zclose_168": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -1948,6 +2004,7 @@
     },
     "px.zclose_24": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -1981,6 +2038,7 @@
     },
     "rg.atr_pct": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2009,6 +2067,7 @@
     },
     "rg.atr_ratio": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2037,6 +2096,7 @@
     },
     "rg.bb_width_pct": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2065,6 +2125,7 @@
     },
     "rg.di_spread": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2093,6 +2154,7 @@
     },
     "rg.ema_alignment": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2121,6 +2183,7 @@
     },
     "rg.macd_hist": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2149,6 +2212,7 @@
     },
     "rg.price_vs_ema50": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2177,6 +2241,7 @@
     },
     "rg.roc_12": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2205,6 +2270,7 @@
     },
     "ta.adx_14": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -2238,6 +2304,7 @@
     },
     "ta.atr_14_n": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -2271,6 +2338,7 @@
     },
     "ta.bb_pctb_20": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -2304,6 +2372,7 @@
     },
     "ta.bb_width_20": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -2337,6 +2406,7 @@
     },
     "ta.cci_20": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -2370,6 +2440,7 @@
     },
     "ta.dmn_14": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2398,6 +2469,7 @@
     },
     "ta.dmp_14": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2426,6 +2498,7 @@
     },
     "ta.ema20_dev": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2454,6 +2527,7 @@
     },
     "ta.macd_hist_n": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2482,6 +2556,7 @@
     },
     "ta.macd_n": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2510,6 +2585,7 @@
     },
     "ta.mom_10_n": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2538,6 +2614,7 @@
     },
     "ta.roc_10": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2566,6 +2643,7 @@
     },
     "ta.rsi_14": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2594,6 +2672,7 @@
     },
     "ta.stoch_d": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2622,6 +2701,7 @@
     },
     "ta.stoch_k": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2650,6 +2730,7 @@
     },
     "ta.willr_14": {
       "batch": "batch_001",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2678,6 +2759,7 @@
     },
     "tv.hilbert_amp": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2706,6 +2788,7 @@
     },
     "tv.kalman_dev": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2734,6 +2817,7 @@
     },
     "tv.stl_dev": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2762,6 +2846,7 @@
     },
     "tv.stl_seasonal": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2790,6 +2875,7 @@
     },
     "tv.wav_d1": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2818,6 +2904,7 @@
     },
     "tv.wav_d2": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2846,6 +2933,7 @@
     },
     "tv.wav_d3": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2874,6 +2962,7 @@
     },
     "tv.wav_d4": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2902,6 +2991,7 @@
     },
     "tv.wav_d5": {
       "batch": "batch_003",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2930,6 +3020,7 @@
     },
     "yh.axjo.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -2958,6 +3049,7 @@
     },
     "yh.bsesn.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -2990,6 +3082,7 @@
     },
     "yh.bvsp.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3018,6 +3111,7 @@
     },
     "yh.bz_f.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3046,6 +3140,7 @@
     },
     "yh.cl_f.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3074,6 +3169,7 @@
     },
     "yh.dia.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3102,6 +3198,7 @@
     },
     "yh.eem.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3130,6 +3227,7 @@
     },
     "yh.ftse.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3158,6 +3256,7 @@
     },
     "yh.ftse.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -3190,6 +3289,7 @@
     },
     "yh.gc_f.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3218,6 +3318,7 @@
     },
     "yh.gc_f.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3246,6 +3347,7 @@
     },
     "yh.gld.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -3278,6 +3380,7 @@
     },
     "yh.hyg.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -3310,6 +3413,7 @@
     },
     "yh.ivv.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3338,6 +3442,7 @@
     },
     "yh.ixic.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3366,6 +3471,7 @@
     },
     "yh.kc_f.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3394,6 +3500,7 @@
     },
     "yh.lqd.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3422,6 +3529,7 @@
     },
     "yh.mxx.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -3454,6 +3562,7 @@
     },
     "yh.rut.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3482,6 +3591,7 @@
     },
     "yh.sb_f.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -3514,6 +3624,7 @@
     },
     "yh.sb_f.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3542,6 +3653,7 @@
     },
     "yh.si_f.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -3574,6 +3686,7 @@
     },
     "yh.slv.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -3606,6 +3719,7 @@
     },
     "yh.slv.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3634,6 +3748,7 @@
     },
     "yh.spy.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3662,6 +3777,7 @@
     },
     "yh.spy.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3690,6 +3806,7 @@
     },
     "yh.tlt.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3718,6 +3835,7 @@
     },
     "yh.twii.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3746,6 +3864,7 @@
     },
     "yh.usdbrl_x.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3774,6 +3893,7 @@
     },
     "yh.usdbrl_x.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -3806,6 +3926,7 @@
     },
     "yh.usdclp_x.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3834,6 +3955,7 @@
     },
     "yh.usdcop_x.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3862,6 +3984,7 @@
     },
     "yh.usdidr_x.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3890,6 +4013,7 @@
     },
     "yh.usdmxn_x.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -3918,6 +4042,7 @@
     },
     "yh.usdmxn_x.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -3950,6 +4075,7 @@
     },
     "yh.usdzar_x.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
@@ -3982,6 +4108,7 @@
     },
     "yh.vea.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -4010,6 +4137,7 @@
     },
     "yh.vnq.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -4038,6 +4166,7 @@
     },
     "yh.xlb.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -4066,6 +4195,7 @@
     },
     "yh.xlc.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -4094,6 +4224,7 @@
     },
     "yh.xlp.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -4122,6 +4253,7 @@
     },
     "yh.xlu.logret_1d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "PENDING",
       "families_present": [
         "identity",
@@ -4150,6 +4282,7 @@
     },
     "yh.zs_f.logret_5d": {
       "batch": "batch_002",
+      "cause": "",
       "decision": "RAW",
       "families_present": [
         "identity",
@@ -4182,13 +4315,16 @@
     }
   },
   "candidates_decided": 70,
+  "claim_scope": "provisional extractibility/probe disposition; no downstream improvement of latents is claimed while trained-family G4 is NOT_APPLICABLE; raw vs latent belongs to M4",
   "coverage_fraction": 0.5036,
-  "cycle_started_at": "2026-10-05T09:05:25Z",
+  "cycle_started_at": "2026-10-05T09:07:08Z",
   "decisions": {
+    "NOT_AVAILABLE_FOR_TRAIN": 1,
     "NO_TRAINED_ADVANTAGE": 51,
     "PENDING": 67,
-    "RAW": 19
+    "RAW": 18
   },
+  "disposition_class": "PROVISIONAL_EXTRACTIBILITY_DISPOSITION",
   "eta": {
     "fs_gpu_eta": {
       "cells": {
@@ -7215,27 +7351,27 @@
           }
         ]
       },
-      "generated_at_utc": "2026-10-05T09:04:54Z",
+      "generated_at_utc": "2026-10-05T09:07:01Z",
       "hosts": {
         "coordinator": {
           "gpus": [
-            "0, NVIDIA GeForce RTX 4070 Laptop GPU, 3 %, 1037 MiB, 8188 MiB, 44"
+            "0, NVIDIA GeForce RTX 4070 Laptop GPU, 0 %, 1025 MiB, 8188 MiB, 44"
           ],
-          "memory": "total_mib=31259 used_mib=12015 available_mib=19244",
-          "probed_at_utc": "2026-10-05T09:04:53Z",
+          "memory": "total_mib=31259 used_mib=11933 available_mib=19326",
+          "probed_at_utc": "2026-10-05T09:07:00Z",
           "running": []
         },
         "worker_a": {
           "gpus": [
-            "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 0 %, 14 MiB, 12227 MiB, 38",
-            "1, NVIDIA GeForce RTX 5090, 0 %, 19504 MiB, 32607 MiB, 52"
+            "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 0 %, 14 MiB, 12227 MiB, 39",
+            "1, NVIDIA GeForce RTX 5090, 57 %, 19506 MiB, 32607 MiB, 54"
           ],
-          "memory": "total_mib=14630 used_mib=9339 available_mib=5290",
-          "probed_at_utc": "2026-10-05T09:04:53Z",
+          "memory": "total_mib=14630 used_mib=9904 available_mib=4725",
+          "probed_at_utc": "2026-10-05T09:07:00Z",
           "running": [
             {
               "cell_id": "batch_001::ta.dmn_14::baseline",
-              "elapsed_seconds": 360,
+              "elapsed_seconds": 487,
               "queue": "baselines_5090_batch_001_003",
               "started_at_utc": "2026-10-05T08:58:54Z"
             }
@@ -7243,14 +7379,14 @@
         },
         "worker_b": {
           "gpus": [
-            "0, NVIDIA GeForce RTX 4090 Laptop GPU, 0 %, 14430 MiB, 16376 MiB, 41"
+            "0, NVIDIA GeForce RTX 4090 Laptop GPU, 22 %, 14430 MiB, 16376 MiB, 42"
           ],
-          "memory": "total_mib=31310 used_mib=22944 available_mib=8366",
-          "probed_at_utc": "2026-10-05T09:04:53Z",
+          "memory": "total_mib=31310 used_mib=20961 available_mib=10348",
+          "probed_at_utc": "2026-10-05T09:07:00Z",
           "running": [
             {
               "cell_id": "batch_002::fred.rates.tb3ms.level::baseline",
-              "elapsed_seconds": 507,
+              "elapsed_seconds": 634,
               "queue": "baselines_4090_batch_002",
               "started_at_utc": "2026-10-05T08:56:27Z"
             }
@@ -7357,8 +7493,8 @@
             "finish_utc_p90": "2026-10-06T02:13:17Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 48376,
-            "seconds_p90": 61702
+            "seconds_median": 48249,
+            "seconds_p90": 61575
           },
           "failures": [
             {
@@ -7373,7 +7509,7 @@
           "running": [
             {
               "cell_id": "batch_002::fred.rates.tb3ms.level::baseline",
-              "elapsed_seconds": 507,
+              "elapsed_seconds": 634,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
               "role": "worker_b",
               "stale": false,
@@ -7420,8 +7556,8 @@
             "finish_utc_p90": "2026-10-05T15:34:51Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 19763,
-            "seconds_p90": 23396
+            "seconds_median": 19636,
+            "seconds_p90": 23269
           },
           "failures": [],
           "name": "baselines_5090_batch_001_003",
@@ -7429,7 +7565,7 @@
           "running": [
             {
               "cell_id": "batch_001::ta.dmn_14::baseline",
-              "elapsed_seconds": 360,
+              "elapsed_seconds": 487,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_a/baseline_5090.log",
               "role": "worker_a",
               "stale": false,
@@ -7486,7 +7622,7 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "aca76bfe628d77467b0561626a0f730616c4f7cd59c4c2bcec1caa73b078a9a6"
+      "sha256": "d28149a8a4882db973973e02d8d79d05be18e2814d48b3127243d3c9d5074add"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
@@ -7498,10 +7634,10 @@
     }
   },
   "planned_cells_total": 411,
-  "process_peak_rss_bytes": 154886144,
+  "process_peak_rss_bytes": 154181632,
   "refit_gate_applied": true,
   "refit_input": "docs/audits/evidence/canonical_20261003/fs_closure/fs_close/refit_gain_export.csv",
-  "rule_version": "fs_rep_rule.v2",
+  "rule_version": "fs_rep_rule.v3",
   "safety": {
     "split": "train",
     "targets_read": false,
@@ -7525,5 +7661,5 @@
       "PENDING": 67
     }
   },
-  "updated_at": "2026-10-05T09:05:29Z"
+  "updated_at": "2026-10-05T09:07:16Z"
 }
