@@ -2795,7 +2795,8 @@
       "families_present": [
         "identity",
         "random",
-        "masked_temporal_ae"
+        "masked_temporal_ae",
+        "past_to_current_siamese"
       ],
       "flags": [],
       "terminals": {
@@ -2805,9 +2806,9 @@
           "state": "COMPLETED"
         },
         "alt_p2c": {
-          "reason": "NOT_LANDED",
-          "receipt_sha256": "",
-          "state": "PENDING"
+          "reason": "",
+          "receipt_sha256": "39634c8b28c981f0919ff2163dcaa31c42bca79c26090d1ca42e1d939e38ca1a",
+          "state": "COMPLETED"
         },
         "baseline": {
           "reason": "NOT_LANDED",
@@ -3747,14 +3748,18 @@
     },
     "yh.usdzar_x.logret_1d": {
       "batch": "batch_002",
-      "decision": "PENDING",
+      "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
         "random",
+        "ae",
+        "dae",
         "masked_temporal_ae",
         "past_to_current_siamese"
       ],
-      "flags": [],
+      "flags": [
+        "RAW_HAS_PROBE_SKILL"
+      ],
       "terminals": {
         "alt_mtae": {
           "reason": "",
@@ -3767,9 +3772,9 @@
           "state": "COMPLETED"
         },
         "baseline": {
-          "reason": "NOT_LANDED",
-          "receipt_sha256": "",
-          "state": "PENDING"
+          "reason": "",
+          "receipt_sha256": "86210d8f8099a1e6b1e58d71e2369b7963f65f55d396b68dcf87155c7a48701c",
+          "state": "COMPLETED"
         }
       }
     },
@@ -3969,41 +3974,41 @@
       }
     }
   },
-  "candidates_decided": 34,
-  "coverage_fraction": 0.2482,
-  "cycle_started_at": "2026-10-05T04:23:09Z",
+  "candidates_decided": 35,
+  "coverage_fraction": 0.2555,
+  "cycle_started_at": "2026-10-05T04:27:22Z",
   "decisions": {
-    "NO_TRAINED_ADVANTAGE": 29,
-    "PENDING": 103,
+    "NO_TRAINED_ADVANTAGE": 30,
+    "PENDING": 102,
     "RAW": 5
   },
   "eta": {
-    "full_coverage_eta_median_utc": "2026-10-05T22:50:18Z",
-    "full_coverage_eta_p90_utc": "2026-10-06T04:03:53Z",
+    "full_coverage_eta_median_utc": "2026-10-05T22:52:20Z",
+    "full_coverage_eta_p90_utc": "2026-10-06T04:03:55Z",
     "note": "ETA excludes work the alternatives GPU may steal from the baseline_002 queue after the successor queue; a stolen cell shortens, never lengthens, these dates.",
     "queues": {
       "alternative": {
-        "completed": 267,
-        "eta_median_utc": "2026-10-05T04:45:51Z",
-        "eta_p90_utc": "2026-10-05T04:52:20Z",
+        "completed": 268,
+        "eta_median_utc": "2026-10-05T04:46:52Z",
+        "eta_p90_utc": "2026-10-05T04:52:22Z",
         "failed": 0,
-        "median_seconds": 194.575537,
+        "median_seconds": 194.977228,
         "p90_seconds": 250.115809,
-        "remaining": 7,
-        "sample_size": 267,
+        "remaining": 6,
+        "sample_size": 268,
         "status_updated_from": "alternative_5090_STATUS.json",
         "total": 274,
         "workers": 1
       },
       "baseline_002": {
-        "completed": 34,
-        "eta_median_utc": "2026-10-05T22:48:53Z",
-        "eta_p90_utc": "2026-10-06T04:02:00Z",
+        "completed": 35,
+        "eta_median_utc": "2026-10-05T22:32:50Z",
+        "eta_p90_utc": "2026-10-06T03:38:55Z",
         "failed": 0,
-        "median_seconds": 1275.839077,
+        "median_seconds": 1277.031493,
         "p90_seconds": 1637.127626,
-        "remaining": 52,
-        "sample_size": 34,
+        "remaining": 51,
+        "sample_size": 35,
         "status_updated_from": "baseline_4090_STATUS.json",
         "total": 86,
         "workers": 1
@@ -4011,8 +4016,8 @@
       "baseline_successor": {
         "completed": 0,
         "duration_proxy": "baseline_002 queue durations (other GPU) until the first successor cells close",
-        "eta_median_utc": "2026-10-05T22:50:18Z",
-        "eta_p90_utc": "2026-10-06T04:03:53Z",
+        "eta_median_utc": "2026-10-05T22:52:20Z",
+        "eta_p90_utc": "2026-10-06T04:03:55Z",
         "failed": 0,
         "median_seconds": null,
         "p90_seconds": null,
@@ -4027,11 +4032,11 @@
   },
   "families_present_histogram": {
     "0": 1,
-    "3": 5,
+    "3": 4,
     "4": 97,
-    "6": 34
+    "6": 35
   },
-  "heavy_candidates_covered": 34,
+  "heavy_candidates_covered": 35,
   "heavy_denominator": 137,
   "milestones": {
     "first_table": {
@@ -4046,19 +4051,19 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "a843271f4823cafbaa53a4745a8b1e355cb63b96e5d42d47d4a4d8fd876443e8"
+      "sha256": "f902a1d09e68b41d6c09c4e44d450a1c2ce4592dfb642c5a4e2c35df73a1774b"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
-      "rows": 90936,
-      "sha256": "78cde72b9dfb37c9209c3810799b3f21b0485adbc8376eb50f55e229d1ed2e2c"
+      "rows": 91536,
+      "sha256": "a0245841071ac5b2586d52a411871479719bf4544100418f130e2f69842f86cb"
     },
     "representation_metric_catalog.csv.gz": {
-      "sha256": "17219a21f164658d487b23aa149c7a24e0ace6b149a5927bfbd6983cc0f08d48"
+      "sha256": "8d006501c829c7a92a952bb3d51b5ab2d0004540f61faecd2bd20e0b55da1e07"
     }
   },
   "planned_cells_total": 411,
-  "process_peak_rss_bytes": 136265728,
+  "process_peak_rss_bytes": 136957952,
   "refit_gate_applied": false,
   "refit_input": null,
   "rule_version": "fs_rep_rule.v1",
@@ -4076,14 +4081,14 @@
       "FAILED": 1
     },
     "alt_p2c": {
-      "COMPLETED": 131,
+      "COMPLETED": 132,
       "FAILED": 1,
-      "PENDING": 5
+      "PENDING": 4
     },
     "baseline": {
-      "COMPLETED": 34,
-      "PENDING": 103
+      "COMPLETED": 35,
+      "PENDING": 102
     }
   },
-  "updated_at": "2026-10-05T04:23:16Z"
+  "updated_at": "2026-10-05T04:27:25Z"
 }

@@ -95,7 +95,7 @@ tv.wav_d4,batch_003,PENDING,identity;random;masked_temporal_ae;past_to_current_s
 tv.wav_d5,batch_003,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 yh.axjo.logret_5d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 yh.bsesn.logret_1d,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
-yh.bvsp.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae,
+yh.bvsp.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 yh.bz_f.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae,
 yh.cl_f.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 yh.dia.logret_5d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
@@ -128,7 +128,7 @@ yh.usdcop_x.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_
 yh.usdidr_x.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae,
 yh.usdmxn_x.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 yh.usdmxn_x.logret_5d,batch_002,RAW,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
-yh.usdzar_x.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
+yh.usdzar_x.logret_1d,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
 yh.vea.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 yh.vnq.logret_5d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 yh.xlb.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
