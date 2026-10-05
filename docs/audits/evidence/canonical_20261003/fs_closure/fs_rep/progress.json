@@ -4355,14 +4355,17 @@
     "yh.vnq.logret_5d": {
       "batch": "batch_002",
       "cause": "",
-      "decision": "PENDING",
+      "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
         "random",
         "masked_temporal_ae",
         "past_to_current_siamese"
       ],
-      "flags": [],
+      "flags": [
+        "DECIDED_WITH_FAILED_FAMILIES",
+        "RAW_HAS_PROBE_SKILL"
+      ],
       "terminals": {
         "alt_mtae": {
           "reason": "",
@@ -4375,9 +4378,9 @@
           "state": "COMPLETED"
         },
         "baseline": {
-          "reason": "NOT_LANDED",
-          "receipt_sha256": "",
-          "state": "PENDING"
+          "reason": "FAILED_RECEIPT",
+          "receipt_sha256": "bfd84e75813f8364d6dc0ea01ca7bb69ce702c446545c9f1666782c141d16798",
+          "state": "FAILED"
         }
       }
     },
@@ -4543,20 +4546,20 @@
       }
     }
   },
-  "candidates_decided": 120,
+  "candidates_decided": 121,
   "claim_scope": "provisional extractibility/probe disposition; no downstream improvement of latents is claimed while trained-family G4 is NOT_APPLICABLE; raw vs latent belongs to M4",
   "coverage_fraction": 0.8029,
-  "cycle_started_at": "2026-10-05T15:07:00Z",
+  "cycle_started_at": "2026-10-05T15:11:17Z",
   "decisions": {
     "NOT_AVAILABLE_FOR_TRAIN": 1,
-    "NO_TRAINED_ADVANTAGE": 79,
-    "PENDING": 17,
+    "NO_TRAINED_ADVANTAGE": 80,
+    "PENDING": 16,
     "RAW": 40
   },
   "disposition_class": "PROVISIONAL_EXTRACTIBILITY_DISPOSITION",
   "eta": {
     "fs_gpu_eta": {
-      "generated_at_utc": "2026-10-05T15:06:23Z",
+      "generated_at_utc": "2026-10-05T15:11:21Z",
       "queues": {
         "alternatives_5090": {
           "active_roles": [],
@@ -4633,8 +4636,8 @@
           },
           "counts": {
             "done": 59,
-            "failed": 10,
-            "pending": 16,
+            "failed": 11,
+            "pending": 15,
             "running": 1
           },
           "denominator": 86,
@@ -4653,12 +4656,12 @@
                 "worker_b": 1635.7
               }
             },
-            "finish_utc_median": "2026-10-05T20:50:08Z",
-            "finish_utc_p90": "2026-10-05T22:22:34Z",
+            "finish_utc_median": "2026-10-05T20:33:37Z",
+            "finish_utc_p90": "2026-10-05T22:00:16Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 20625,
-            "seconds_p90": 26171
+            "seconds_median": 19336,
+            "seconds_p90": 24535
           },
           "failures": [
             {
@@ -4666,6 +4669,12 @@
               "error": "FAILED_MARKER rc=1",
               "receipt": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/worker_b_base/batch_002/fred.credit.bamlh0a0hym2.logret_1d/FAILED.codex.json",
               "role": "worker_b"
+            },
+            {
+              "cell_id": "batch_002::yh.vnq.logret_5d::baseline",
+              "error": "FAILED_MARKER rc=75",
+              "receipt": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/worker_a_base/batch_002/yh.vnq.logret_5d/FAILED.json",
+              "role": "worker_a"
             },
             {
               "cell_id": "batch_002::yh.xlb.logret_1d::baseline",
@@ -4727,7 +4736,7 @@
           "running": [
             {
               "cell_id": "batch_002::yh.gc_f.logret_5d::baseline",
-              "elapsed_seconds": 3423,
+              "elapsed_seconds": 3721,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
               "role": "worker_b",
               "stale": false,
@@ -4788,12 +4797,12 @@
         "baselines_batch_002": {
           "denominator": 86,
           "done": 59,
-          "failed": 10
+          "failed": 11
         },
         "baselines_heavy_candidates": {
           "denominator": 137,
           "done": 110,
-          "failed": 10
+          "failed": 11
         }
       }
     },
@@ -4825,7 +4834,7 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "5bb754bec66522519b6c68b5439fb51d43a59a72406f8be22bd57551cc06f5e3"
+      "sha256": "6d12cb29db2c35fd1a91783b147f5e3baaa08fe792e3714be72b8afb64fe85a8"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
@@ -4860,9 +4869,9 @@
     },
     "baseline": {
       "COMPLETED": 110,
-      "FAILED": 10,
-      "PENDING": 17
+      "FAILED": 11,
+      "PENDING": 16
     }
   },
-  "updated_at": "2026-10-05T15:07:05Z"
+  "updated_at": "2026-10-05T15:11:26Z"
 }
