@@ -1641,7 +1641,7 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
             unit_alive = True   # unknown: do not double-launch
     # pull AFTER the liveness check so a run that just finished is seen before any launch decision
-    subprocess.run(["rsync", "-q", "--timeout=120", "--include=paired_refit_metrics.parquet", "--include=refit_receipt.json",
+    subprocess.run(["rsync", "-qrt", "--timeout=120", "--include=paired_refit_metrics.parquet", "--include=refit_receipt.json",
                     "--include=progress.json", "--include=closure_record.json", "--exclude=*", f"{alias}:{remote}/out/",
                     str(paths.state / "fs_close/")], check=False, capture_output=True, timeout=300)
     local_out = paths.state / "fs_close"
