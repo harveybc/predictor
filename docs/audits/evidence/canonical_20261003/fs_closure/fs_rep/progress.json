@@ -1431,7 +1431,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -1464,7 +1465,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -1497,7 +1499,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_POSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -1530,7 +1533,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_POSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -1563,7 +1567,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_POSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -1596,7 +1601,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -1630,6 +1636,7 @@
       ],
       "flags": [
         "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE",
         "UNSTABLE_LATENT(past_to_current_siamese)"
       ],
       "terminals": {
@@ -4412,7 +4419,7 @@
   "candidates_decided": 98,
   "claim_scope": "provisional extractibility/probe disposition; no downstream improvement of latents is claimed while trained-family G4 is NOT_APPLICABLE; raw vs latent belongs to M4",
   "coverage_fraction": 0.708,
-  "cycle_started_at": "2026-10-05T12:45:21Z",
+  "cycle_started_at": "2026-10-05T12:47:33Z",
   "decisions": {
     "NOT_AVAILABLE_FOR_TRAIN": 1,
     "NO_TRAINED_ADVANTAGE": 68,
@@ -4422,7 +4429,7 @@
   "disposition_class": "PROVISIONAL_EXTRACTIBILITY_DISPOSITION",
   "eta": {
     "fs_gpu_eta": {
-      "generated_at_utc": "2026-10-05T12:43:28Z",
+      "generated_at_utc": "2026-10-05T12:45:52Z",
       "queues": {
         "alternatives_5090": {
           "active_roles": [],
@@ -4519,12 +4526,12 @@
                 "worker_b": 1635.7
               }
             },
-            "finish_utc_median": "2026-10-05T23:02:47Z",
+            "finish_utc_median": "2026-10-05T23:03:05Z",
             "finish_utc_p90": "2026-10-06T02:02:08Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 37159,
-            "seconds_p90": 47920
+            "seconds_median": 37033,
+            "seconds_p90": 47776
           },
           "failures": [
             {
@@ -4539,7 +4546,7 @@
           "running": [
             {
               "cell_id": "batch_002::yh.dia.logret_5d::baseline",
-              "elapsed_seconds": 1151,
+              "elapsed_seconds": 1295,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
               "role": "worker_b",
               "stale": false,
@@ -4554,52 +4561,52 @@
           "active_workers": 1,
           "by_role": {
             "worker_a": {
-              "done": 41,
-              "median_seconds": 687.3,
-              "n": 41,
+              "done": 42,
+              "median_seconds": 689.1,
+              "n": 42,
               "p90_seconds": 810.3
             }
           },
           "counts": {
-            "done": 41,
+            "done": 42,
             "failed": 0,
-            "pending": 9,
+            "pending": 8,
             "running": 1
           },
           "denominator": 51,
           "duplicates": [],
           "durations_seconds": {
-            "median": 687.3,
-            "n": 41,
+            "median": 689.1,
+            "n": 42,
             "p90": 810.3
           },
           "eta": {
             "basis": {
               "median_seconds": {
-                "worker_a": 687.3
+                "worker_a": 689.1
               },
               "p90_seconds": {
                 "worker_a": 810.3
               }
             },
-            "finish_utc_median": "2026-10-05T14:26:34Z",
-            "finish_utc_p90": "2026-10-05T14:46:03Z",
+            "finish_utc_median": "2026-10-05T14:27:01Z",
+            "finish_utc_p90": "2026-10-05T14:45:12Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 6185,
-            "seconds_p90": 7355
+            "seconds_median": 6069,
+            "seconds_p90": 7160
           },
           "failures": [],
           "name": "baselines_5090_batch_001_003",
           "plan_cells": 51,
           "running": [
             {
-              "cell_id": "batch_003::tv.hilbert_amp::baseline",
-              "elapsed_seconds": 748,
+              "cell_id": "batch_003::tv.kalman_dev::baseline",
+              "elapsed_seconds": 132,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_a/baseline_5090.log",
               "role": "worker_a",
               "stale": false,
-              "started_at_utc": "2026-10-05T12:31:00Z"
+              "started_at_utc": "2026-10-05T12:43:40Z"
             }
           ]
         }
@@ -4619,7 +4626,7 @@
         },
         "baselines_heavy_candidates": {
           "denominator": 137,
-          "done": 96,
+          "done": 97,
           "failed": 1
         }
       }
@@ -4652,7 +4659,7 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "2eba2b2fa4a897ff07627380d0360d2d0698c851f0757d3b8b55fa44f9471cfd"
+      "sha256": "e19fcfa172a2099ad45a9d8ebb272ce3ff0c0bcb903d3d806254c062a6f9fdc1"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
@@ -4664,7 +4671,7 @@
     }
   },
   "planned_cells_total": 411,
-  "process_peak_rss_bytes": 168251392,
+  "process_peak_rss_bytes": 169148416,
   "refit_gate_applied": true,
   "refit_input": "docs/audits/evidence/canonical_20261003/fs_closure/fs_close/refit_gain_export.csv",
   "rule_version": "fs_rep_rule.v3",
@@ -4691,5 +4698,5 @@
       "PENDING": 39
     }
   },
-  "updated_at": "2026-10-05T12:45:30Z"
+  "updated_at": "2026-10-05T12:47:42Z"
 }
