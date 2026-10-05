@@ -5,7 +5,10 @@ commit that introduces this file; `tools/fs_rep_dispositions.py` implements it
 literally and refuses to run if its embedded `RULE_VERSION` differs from the one
 below. Changing the rule requires a new version here first.
 
-`RULE_VERSION = fs_rep_rule.v1`
+`RULE_VERSION = fs_rep_rule.v2`
+
+v2 (2026-10-05): G4 rewritten for the FS-CLOSE export, which carries
+identity-only refits. No other clause changed.
 
 Roles only. No host names, IPs or GPU identifiers are written by the tool.
 
@@ -92,12 +95,20 @@ cell (`skill_strict > 0`).
 * **G2 preserves/improves** (vs raw): F beats raw on ≥ 7 of 14 cells, and raw
   beats F on ≤ 2 cells.
 * **G3 utility exists**: F has skill vs every same-row naive on ≥ 1 cell.
-* **G4 incremental gain with refit**: applied only when a paired-refit table is
-  available (`refit_input` in the config, CSV/JSON with
-  `feature_id, family, refit_gain`, positive = better after refit, produced by
-  FS-CLOSE/PS4). When applied, `refit_gain > 0` is required. When absent the row
-  states `refit_gate_applied = false` and `refit_gain = NOT_AVAILABLE`; the gate
-  is not silently passed, its non-application is declared.
+* **G4 incremental gain with refit**: applied to a trained family F only when
+  the paired-refit table (`refit_input`, FS-CLOSE export `refit_gain_export.csv`
+  or any CSV/JSON with `feature_id, family, refit_gain`, positive = better after
+  refit) carries a finite row for `(feature, F)`; then `refit_gain > 0` is
+  required. FS-CLOSE's export declares that trained-family refits are not
+  materialised (latents are not available on the refit host), so it carries
+  `family = identity` only: for every trained family G4 is `NOT_APPLICABLE` with
+  `refit_gate_applied = false`, `refit_gain = NOT_AVAILABLE`, and the gate is
+  not silently passed, its non-application is declared per row. The identity
+  row carries the feature-level `refit_gain` (`refit_gate_applied = true` once
+  its row has landed) and the candidate gets flag `RAW_REFIT_GAIN_POSITIVE` or
+  `RAW_REFIT_GAIN_NONPOSITIVE`. That number says whether the feature helps a
+  refit model; it does not compare representations, so it never changes the
+  representation decision here. It is FS-CLOSE's survival input.
 
 Winner among families that pass all gates: largest `(cells beating raw) −
 (cells lost to raw)`; tie → lower total fit cost (sum of `fit_wall_seconds` over
@@ -119,6 +130,8 @@ If `families_failed` is non-empty the decision carries flag
 * `NO_PROBE_SKILL_VS_NAIVE_ANY_FAMILY`: no representation, raw included, has
   skill on any cell. Passed to FS-CLOSE; the representation decision stands.
 * `RAW_HAS_PROBE_SKILL` / `RAW_NO_PROBE_SKILL`.
+* `RAW_REFIT_GAIN_POSITIVE` / `RAW_REFIT_GAIN_NONPOSITIVE`: identity refit gain
+  from the FS-CLOSE export (feature-level; see G4).
 * `UNSTABLE_LATENT(<family>)`: min linear CKA across reference-fold pairs < 0.5.
 * `COLLAPSED_LATENT(<family>)`: `n_components_95 == 1` in every fold for a
   latent of dimension 8.

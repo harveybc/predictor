@@ -44,6 +44,19 @@ worktree is staged or touched.
 the queue STATUS keys to directories on the coordinator, so the repository
 never carries worker directory names.
 
+## Refit input (gate G4)
+
+`refit_input` points at FS-CLOSE's `fs_closure/fs_close/refit_gain_export.csv`
+(repo-relative; it fills as the 137 ALL_MINUS removal refits land on the
+secondary worker). Rows without a finite `refit_gain` are skipped until they
+land. The export is identity-only (trained-family refits are not materialised,
+declared in the file), so per rule v2 the identity row of each candidate shows
+`refit_gate_applied = true` and its `refit_gain` once landed, with flag
+`RAW_REFIT_GAIN_POSITIVE` / `RAW_REFIT_GAIN_NONPOSITIVE`; trained rows keep
+`G4_refit = NOT_APPLICABLE`, `refit_gate_applied = false`. The follower picks
+the file up on its next cycle (it is pulled into the worktree with the rest of
+the branch); no restart is needed.
+
 ## ETA source
 
 `fs_closure/fs_gpu/ps3r_eta.json` when FS-GPU publishes it; until then the
