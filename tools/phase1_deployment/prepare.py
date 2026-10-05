@@ -851,10 +851,16 @@ def run_disposable_fixture(output_root: Path) -> dict[str, Any]:
     )
     finalizer = output_root / "finalizer.py"
     finalizer.write_text(
-        "import argparse,json,pathlib\n"
+        "import argparse,hashlib,json,pathlib\n"
         "p=argparse.ArgumentParser(); p.add_argument('--output'); p.add_argument('--terminals'); a=p.parse_args()\n"
-        "n=len(list(pathlib.Path(a.terminals).glob('*.json')))\n"
-        "pathlib.Path(a.output).write_text(json.dumps({'schema':'phase1.finalizer_result.v1','state':'PHASE_1_COMPLETE','terminal_count':n}))\n",
+        "terminals=[json.loads(p.read_text()) for p in sorted(pathlib.Path(a.terminals).glob('*.json'))]\n"
+        "first=terminals[0]['result']['envelope']['run']\n"
+        "rows={k:[] for k in ('sampling_quality','variable_profiles','information_metrics','pair_relations','causal_evidence','selection_decisions')}\n"
+        "run={'run_id':'fixture-final','campaign_sha256':first['campaign_sha256'],'code_sha256':first['code_sha256'],'input_sha256':first['input_sha256'],'inventory_sha256':first['inventory_sha256'],'created_at':'2026-10-05T00:00:00Z'}\n"
+        "envelope={'schema_version':'feature_selection_envelope.v1','run':run,'rows':rows}\n"
+        "envelope['envelope_sha256']=hashlib.sha256(json.dumps(envelope,sort_keys=True,separators=(',',':')).encode()).hexdigest()\n"
+        "result={'schema':'phase1.finalizer_result.v1','state':'PHASE_1_COMPLETE','terminal_count':len(terminals),'envelope':envelope}\n"
+        "pathlib.Path(a.output).write_text(json.dumps(result))\n",
         encoding="utf-8",
     )
     config_doc = {
