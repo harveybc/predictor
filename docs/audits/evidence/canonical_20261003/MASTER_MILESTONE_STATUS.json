@@ -1,7 +1,7 @@
 {
   "schema": "predictor.master_milestones.v1",
-  "as_of": "2026-10-04T19:57:00Z",
-  "critical_path_eta": "feature-selection manifest in 32-46 hours; later model, strategy and RL milestones remain downstream",
+  "as_of": "2026-10-05T03:06:00Z",
+  "critical_path_eta": "feature-selection manifest in about 28-40 hours; later model, strategy and RL milestones remain downstream",
   "milestones": [
     {
       "id": "M1",
@@ -15,11 +15,11 @@
     {
       "id": "M2",
       "title": "Feature selection",
-      "progress": 52,
+      "progress": 60,
       "state": "IN_PROGRESS",
-      "evidence": "366 candidates; heavy queue 137; causal ladder retained for 279 with 87 explicit outside-join dispositions pending; PS3-R 144/411 family-cells complete; PS4 now 16/137 and follows new baseline terminals automatically",
-      "next": "Finish durable PS3-R queues, profile all 137 automatically, compare common-K selectors, then issue 366 dispositions",
-      "eta": "32-46 hours from measured GPU throughput, including automated PS4 and final common-K closure"
+      "evidence": "Heavy matrix: 244/274 alternatives and 31/137 baselines, zero failures. PS4 accepted 31. Causal: 0/279 identified, neutral",
+      "next": "Finish durable PS3-R queues while common-K predictive, causal, representation and calibrated-generative comparators are built in parallel; then issue 366 dispositions",
+      "eta": "28-40 h to the 366/366 manifest"
     },
     {
       "id": "M3",

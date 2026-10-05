@@ -1,6 +1,6 @@
 # Estado de ejecución vigente
 
-Observado: 2026-10-04 18:33 UTC. La autoridad `codex/workplan-consolidation-20261003@02434903` está integrada en esta rama. Este corte sustituye las observaciones anteriores; no modifica resultados históricos. Los `STATUS.json` anteriores son instantáneas, no el estado vivo.
+Observado: 2026-10-05 03:06 UTC. La autoridad `codex/workplan-consolidation-20261003@02434903` esta integrada en esta rama. La orden operativa vigente de cierre es `docs/handoffs/SATOSHI_FEATURE_SELECTION_CLOSURE_2026_10_05.md`. Este corte sustituye las observaciones anteriores; no modifica resultados historicos. Los `STATUS.json` anteriores son instantaneas, no el estado vivo.
 
 ## Secuencia vigente
 
@@ -21,9 +21,9 @@ No ejecutar NEAT ahora. NEAT es un cabezal tardío, después de selección, ARCH
 | Host/GPU | Corte observado | Trabajo / disponibilidad |
 |---|---|---|
 | Omega RTX 4070 Laptop | escritorio, sin job batch observado | Contratos y tests CPU pequeños solamente. |
-| Gamma RTX 5090 | activa, 19,498 MiB, 50 C | Continuación durable lane F; después de cerrar siete celdas en esta sesión ejecuta `fx.audusd.logret_24h` con `masked_temporal_ae`. |
+| Gamma RTX 5090 | activa, 19,520 MiB, 43 C | Alternativas PS3-R: 244/274 completas, 0 fallos; ejecuta `yh.lqd.logret_5d` con `past_to_current_siamese`. Luego toma 51 baselines declaradas y trabajo pendiente sin duplicar. |
 | Gamma RTX 5070 Ti Laptop | 0%, 14 MiB, 26 C | Ociosa. No concurre con la 5090 porque ambas comparten 14 GiB de RAM del host. |
-| Dragon RTX 4090 Laptop | activa, 14,430 MiB, 41 C | Continuación durable baseline; cerró `fred.credit.aaa.logret_1d` y ejecuta `fred.fx_indices.dtwexemegs.level`, una celda a 8,000 MiB. |
+| Dragon RTX 4090 Laptop | activa, 14,430 MiB, 40 C | Baseline PS3-R: 31/86 completas, 0 fallos; ejecuta `yh.slv.logret_1d`, una celda a 8,000 MiB. |
 
 La cola F no equivale a trabajo usando la 5070 Ti mientras E ocupa el slice. El driver E/F alterna al terminar una celda; no iniciar un duplicado ni forzar concurrencia.
 
@@ -36,7 +36,7 @@ La cola F no equivale a trabajo usando la 5070 Ti mientras E ocupa el slice. El 
 | Variantes de señal | PERFIL PS4 PARCIAL ACEPTADO | Diez salidas de cinco variantes causales tienen 50 unidades feature-fold y 1,050 métricas PS4 completas. Cuatro variantes globales/smoother siguen rechazadas por usar futuro. Ninguna queda seleccionada por perfilado. |
 | PS2 | PARCIAL | 366 admisibles: 279 pasaron a la shortlist de PS3-C; 87 quedaron con prioridad baja en las 14 celdas. Los conteos de tiers se solapan y no deben sumarse. La cola no expresa aún cómo reconsiderar esas 87; PS5 debe dar estado a cada una. |
 | PS3-C causal | FIX Y REVISIÓN PUBLICADOS | `causal-inference@48ae17c`; 45 pruebas focales pasan. Revisión read-only de los tres lotes guardada en `laneC/reanalysis_48ae17c/`: 279 candidatas, 1,076 filas históricas; 109 con BH local, 0 identificación aceptada, 0 confirmaciones no lineales. La suite general del proveedor deja 6 fallos de entorno (EconML y paquete no instalado en subproceso), 149 pasan y 27 skip. |
-| PS3-R extractibilidad | EN EJECUCIÓN EN DOS GPU | Dragon continua baseline. Gamma lane F cerro tres celdas past-to-current con hash de resultados igual al manifiesto (`tv.hilbert_amp`, `tv.kalman_dev`, `tv.stl_dev`) y continua secuencialmente. Son mediciones de extractor; reconstruccion/utilidad no equivalen a seleccion. |
+| PS3-R extractibilidad | EN EJECUCION EN DOS GPU | Alternativas 5090: 244/274; baseline Dragon: 31/86; baseline sucesora 5090: 0/51. No hay fallos terminales. PS4 ha aceptado y perfilado las 31 terminales baseline descubiertas. Son mediciones de extractor; reconstruccion/utilidad no equivalen a seleccion. |
 | Cobertura de features | RECONCILIACIÓN PARCIAL | `coverage_reconciliation/`: 366/366 filas, 279 en join PS3-C + 87 fuera, 137 en cola E, 142 fuera de E = 132 tier-3 + 10 calendario. Ocho pruebas pasan. Proveedores pagados y transformaciones siguen requiriendo su propia reconciliación; no se declara exhaustivo. |
 | PS4/PS5 manifiesto conjunto | LEDGER Y PRIMER PERFIL INCREMENTAL ACEPTADOS | El ledger autentica 14 terminales y su producto pliegue × familia × target × horizonte × metrica; conserva 279 `NOT_IDENTIFIED` + 87 `OUTSIDE_JOIN_PENDING` y 366 `NOT_READY`. El primer perfil incremental conserva 5 unidades VIX `MEASURED`, 1 `PENDING`, 105 metricas y procedencia PS3-R externa. No se libera seleccion ni estrategia. |
 | ARCH/E1/H-CORE/NEAT/RL | AÚN NO ELEGIBLES | Ejecutar en orden canónico solo tras manifiesto final; H-CORE después de E1 y NEAT al final sobre representación congelada. |
@@ -45,15 +45,15 @@ La cola F no equivale a trabajo usando la 5070 Ti mientras E ocupa el slice. El 
 
 ## Trabajo en paralelo y orden inmediato
 
-1. **Gamma:** no detener lane F; una celda en la 5090, sin concurrencia con la 5070 Ti mientras el host no admita ambas.
+1. **Gamma:** cerrar las 30 alternativas, encadenar las 51 baselines y despues ayudar a Dragon con claims exclusivos.
 2. **Dragon:** no detener la baseline PS3-R; una celda terminal por vez y sin duplicados.
-3. **CPU causal/ledger:** incorporar cada nuevo terminal autenticado sin convertir `NOT_IDENTIFIED` en rechazo.
-4. **CPU evidencia:** mantener baseline y familias alternativas separadas y verificar la poblacion cartesiana completa de cada terminal.
-5. **CPU PS4:** perfilar incrementalmente cada feature terminal autentica sin target/test, sin esperar las 366.
-6. **CPU negocio:** ejecutar el primer piloto semanal completo con el scorer aceptado; validation y test conservan recorridos separados.
+3. **CPU selectores:** ejecutar common-K predictivo/redundancia, ChronoEpilogi y controles sobre folds TRAIN identicos.
+4. **CPU causal:** completar la escalera causal con abstencion honesta y comparadores lagged; `NOT_IDENTIFIED` permanece neutral.
+5. **CPU evidencia/PS4:** ingerir cada terminal y decidir representacion raw/random/trained sin confundir reconstruccion con seleccion.
+6. **CPU cierre:** preparar refits emparejados, manifiesto 366/366 y naive de las mismas filas. El piloto semanal sigue independiente, sin retrasar seleccion.
 
 ## Resultado/ETA
 
-Hay un piloto predictivo PS5 de desarrollo, no exactitud financiera ni feature seleccionada: su mejor brazo no supera al naive pareado. La reconciliación reduce incertidumbre de cobertura, pero no decide selección. En esta sesión la 5090 cerró celdas alternativas en 3-4 minutos y la primera baseline nueva de Dragon tomó 15,4 minutos; esos ritmos sirven para las colas actuales, no constituyen todavía una ETA del manifiesto PS5 completo.
+Hay un piloto predictivo PS5 de desarrollo, no exactitud financiera ni feature seleccionada: su mejor brazo no supera al naive pareado. La reconciliacion reduce incertidumbre de cobertura, pero no decide seleccion. Con las tasas autenticadas, las 30 alternativas restantes tienen ETA 1.6-2.1 h y las 55 baselines actuales de Dragon 19.7-25.0 h; la sucesora de 51 celdas medira su ETA tras tres terminales. El cierre common-K se construye en paralelo y no espera ociosamente esas colas.
 
 Progreso visual anterior: [PROGRESS_20261003T1634Z.png](../../audits/evidence/canonical_20261003/PROGRESS_20261003T1634Z.png). Revisión causal: [REPORT](../../audits/evidence/canonical_20261003/laneC/reanalysis_48ae17c/REPORT.md). Cobertura de features: [README](../../audits/evidence/canonical_20261003/coverage_reconciliation/README.md). Fuentes y transformaciones: [REPORT.json](../../audits/evidence/canonical_20261003/source_transform_coverage/REPORT.json).
