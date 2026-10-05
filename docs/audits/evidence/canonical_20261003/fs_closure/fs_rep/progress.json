@@ -1512,14 +1512,18 @@
     },
     "px.logret_120h": {
       "batch": "batch_001",
-      "decision": "PENDING",
+      "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
         "random",
+        "ae",
+        "dae",
         "masked_temporal_ae",
         "past_to_current_siamese"
       ],
-      "flags": [],
+      "flags": [
+        "RAW_HAS_PROBE_SKILL"
+      ],
       "terminals": {
         "alt_mtae": {
           "reason": "",
@@ -1532,9 +1536,9 @@
           "state": "COMPLETED"
         },
         "baseline": {
-          "reason": "NOT_LANDED",
-          "receipt_sha256": "",
-          "state": "PENDING"
+          "reason": "",
+          "receipt_sha256": "cad7ebab85e2ddba1ce91bbbba147fe461c84ae7301f6d48f99b2c8d2f798ee8",
+          "state": "COMPLETED"
         }
       }
     },
@@ -4023,12 +4027,12 @@
       }
     }
   },
-  "candidates_decided": 44,
-  "coverage_fraction": 0.3139,
-  "cycle_started_at": "2026-10-05T05:39:37Z",
+  "candidates_decided": 45,
+  "coverage_fraction": 0.3212,
+  "cycle_started_at": "2026-10-05T05:45:52Z",
   "decisions": {
-    "NO_TRAINED_ADVANTAGE": 35,
-    "PENDING": 93,
+    "NO_TRAINED_ADVANTAGE": 36,
+    "PENDING": 92,
     "RAW": 9
   },
   "eta": {
@@ -6768,12 +6772,16 @@
           },
           {
             "cell_id": "batch_001::px.logret_120h::baseline",
+            "finished_at_utc": "2026-10-05T05:43:17Z",
+            "results_sha256": "cad7ebab85e2ddba1ce91bbbba147fe461c84ae7301f6d48f99b2c8d2f798ee8",
             "role": "worker_a",
-            "state": "running"
+            "state": "done",
+            "wall_seconds": 800.4890889480012
           },
           {
             "cell_id": "batch_001::px.logret_12h::baseline",
-            "state": "pending"
+            "role": "worker_a",
+            "state": "running"
           },
           {
             "cell_id": "batch_001::px.logret_168h::baseline",
@@ -6953,42 +6961,42 @@
           }
         ]
       },
-      "generated_at_utc": "2026-10-05T05:39:19Z",
+      "generated_at_utc": "2026-10-05T05:45:33Z",
       "hosts": {
         "coordinator": {
           "gpus": [
-            "0, NVIDIA GeForce RTX 4070 Laptop GPU, 10 %, 886 MiB, 8188 MiB, 47"
+            "0, NVIDIA GeForce RTX 4070 Laptop GPU, 10 %, 885 MiB, 8188 MiB, 48"
           ],
-          "memory": "total_mib=31259 used_mib=11885 available_mib=19374",
-          "probed_at_utc": "2026-10-05T05:39:18Z",
+          "memory": "total_mib=31259 used_mib=11887 available_mib=19372",
+          "probed_at_utc": "2026-10-05T05:45:32Z",
           "running": []
         },
         "worker_a": {
           "gpus": [
             "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 0 %, 14 MiB, 12227 MiB, 39",
-            "1, NVIDIA GeForce RTX 5090, 56 %, 19506 MiB, 32607 MiB, 55"
+            "1, NVIDIA GeForce RTX 5090, 32 %, 19500 MiB, 32607 MiB, 55"
           ],
-          "memory": "total_mib=14630 used_mib=10042 available_mib=4587",
-          "probed_at_utc": "2026-10-05T05:39:18Z",
+          "memory": "total_mib=14630 used_mib=8245 available_mib=6384",
+          "probed_at_utc": "2026-10-05T05:45:32Z",
           "running": [
             {
-              "cell_id": "batch_001::px.logret_120h::baseline",
-              "elapsed_seconds": 563,
+              "cell_id": "batch_001::px.logret_12h::baseline",
+              "elapsed_seconds": 129,
               "queue": "baselines_5090_batch_001_003",
-              "started_at_utc": "2026-10-05T05:29:56Z"
+              "started_at_utc": "2026-10-05T05:43:24Z"
             }
           ]
         },
         "worker_b": {
           "gpus": [
-            "0, NVIDIA GeForce RTX 4090 Laptop GPU, 28 %, 14428 MiB, 16376 MiB, 43"
+            "0, NVIDIA GeForce RTX 4090 Laptop GPU, 24 %, 14430 MiB, 16376 MiB, 43"
           ],
-          "memory": "total_mib=31310 used_mib=20203 available_mib=11107",
-          "probed_at_utc": "2026-10-05T05:39:18Z",
+          "memory": "total_mib=31310 used_mib=21439 available_mib=9871",
+          "probed_at_utc": "2026-10-05T05:45:32Z",
           "running": [
             {
               "cell_id": "batch_002::fred.fx_indices.dtwexbgs.level::baseline",
-              "elapsed_seconds": 249,
+              "elapsed_seconds": 623,
               "queue": "baselines_4090_batch_002",
               "started_at_utc": "2026-10-05T05:35:10Z"
             }
@@ -7095,8 +7103,8 @@
             "finish_utc_p90": "2026-10-06T02:57:33Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 59990,
-            "seconds_p90": 76694
+            "seconds_median": 59616,
+            "seconds_p90": 76320
           },
           "failures": [
             {
@@ -7111,7 +7119,7 @@
           "running": [
             {
               "cell_id": "batch_002::fred.fx_indices.dtwexbgs.level::baseline",
-              "elapsed_seconds": 249,
+              "elapsed_seconds": 623,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
               "role": "worker_b",
               "stale": false,
@@ -7126,52 +7134,52 @@
           "active_workers": 1,
           "by_role": {
             "worker_a": {
-              "done": 5,
-              "median_seconds": 589.6,
-              "n": 5,
+              "done": 6,
+              "median_seconds": 605.7,
+              "n": 6,
               "p90_seconds": 819.2
             }
           },
           "counts": {
-            "done": 5,
+            "done": 6,
             "failed": 0,
-            "pending": 45,
+            "pending": 44,
             "running": 1
           },
           "denominator": 51,
           "duplicates": [],
           "durations_seconds": {
-            "median": 589.6,
-            "n": 5,
+            "median": 605.7,
+            "n": 6,
             "p90": 819.2
           },
           "eta": {
             "basis": {
               "median_seconds": {
-                "worker_a": 589.6
+                "worker_a": 605.7
               },
               "p90_seconds": {
                 "worker_a": 819.2
               }
             },
-            "finish_utc_median": "2026-10-05T13:01:57Z",
-            "finish_utc_p90": "2026-10-05T15:57:59Z",
+            "finish_utc_median": "2026-10-05T13:17:40Z",
+            "finish_utc_p90": "2026-10-05T15:57:48Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 26558,
-            "seconds_p90": 37120
+            "seconds_median": 27127,
+            "seconds_p90": 36735
           },
           "failures": [],
           "name": "baselines_5090_batch_001_003",
           "plan_cells": 51,
           "running": [
             {
-              "cell_id": "batch_001::px.logret_120h::baseline",
-              "elapsed_seconds": 563,
+              "cell_id": "batch_001::px.logret_12h::baseline",
+              "elapsed_seconds": 129,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_a/baseline_5090.log",
               "role": "worker_a",
               "stale": false,
-              "started_at_utc": "2026-10-05T05:29:56Z"
+              "started_at_utc": "2026-10-05T05:43:24Z"
             }
           ]
         }
@@ -7191,7 +7199,7 @@
         },
         "baselines_heavy_candidates": {
           "denominator": 137,
-          "done": 43,
+          "done": 44,
           "failed": 1
         }
       }
@@ -7201,10 +7209,10 @@
   },
   "families_present_histogram": {
     "0": 1,
-    "4": 93,
-    "6": 43
+    "4": 92,
+    "6": 44
   },
-  "heavy_candidates_covered": 43,
+  "heavy_candidates_covered": 44,
   "heavy_denominator": 137,
   "milestones": {
     "first_table": {
@@ -7219,19 +7227,19 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "c3cfbd74ca021893bf10fcc17116684780056748c7421552d1855b0aa6cefedb"
+      "sha256": "59e78a3d20636a82bcbeadedf14537527ae55baa2e93e9bf4ada2eeab2a44e1d"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
-      "rows": 95536,
-      "sha256": "6f9c12475e8f09cf554912975baa74a1ee52d0c92445773c0a8eb050f38fc34e"
+      "rows": 95936,
+      "sha256": "cb4d6f6fe565f455b55a7fc75c8cb41e9859c50c9be86cdbc5a25b0841897886"
     },
     "representation_metric_catalog.csv.gz": {
-      "sha256": "84235272fc65c0bd8273a97b026efabc906a0b5206586ef8a500f9ae0fcaff75"
+      "sha256": "d974919f69c07e0fb476976839387acfebec4d3c4f9cc194bc5b5a5fe3e9d1e7"
     }
   },
   "planned_cells_total": 411,
-  "process_peak_rss_bytes": 142295040,
+  "process_peak_rss_bytes": 142618624,
   "refit_gate_applied": true,
   "refit_input": "docs/audits/evidence/canonical_20261003/fs_closure/fs_close/refit_gain_export.csv",
   "rule_version": "fs_rep_rule.v2",
@@ -7253,10 +7261,10 @@
       "FAILED": 1
     },
     "baseline": {
-      "COMPLETED": 43,
+      "COMPLETED": 44,
       "FAILED": 1,
-      "PENDING": 93
+      "PENDING": 92
     }
   },
-  "updated_at": "2026-10-05T05:39:41Z"
+  "updated_at": "2026-10-05T05:45:56Z"
 }
