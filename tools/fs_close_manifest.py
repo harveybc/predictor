@@ -1613,29 +1613,74 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
             running = (dt.datetime.now(dt.timezone.utc) - upd).total_seconds() < 1800
         except (KeyError, ValueError):
             running = False
-    if running:
-        info["state"] = "RUNNING"
+    marker = read_json(paths.out / "refit_launch_marker.json", {})
+    try:
+        launched_at = dt.datetime.fromisoformat(marker.get("launched_utc", "1970-01-01T00:00:00+00:00"))
+    except ValueError:
+        launched_at = dt.datetime(1970, 1, 1, tzinfo=dt.timezone.utc)
+    unit_alive = False
+    if marker.get("unit") and (dt.datetime.now(dt.timezone.utc) - launched_at).total_seconds() < 14400:
+        try:
+            r = subprocess.run(ssh + [f"export XDG_RUNTIME_DIR=/run/user/$(id -u); systemctl --user show -p ActiveState --value {marker['unit']}"],
+                               capture_output=True, text=True, timeout=40)
+            unit_alive = r.stdout.strip() in ("active", "activating")
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            unit_alive = True   # unknown: do not double-launch
+    if running or unit_alive:
+        info["state"] = "RUNNING" if running else "QUEUED_OR_STARTING"
         info["progress"] = progress
+        info["launch_marker"] = marker
         return info
     if cov["complete"] >= cov["planned"]:
         info["state"] = "COMPLETE"
         return info
     receipt = read_json(paths.out / "refit_receipt.json", {})
+    cap_file = paths.out / "refit_cap.json"
+    cap_doc = read_json(cap_file, {})
     peak = receipt.get("peak_rss_bytes") if receipt.get("plan_sha256") else None
-    cap = f"{int(math.ceil(peak * 1.25 / (1 << 20)))}M" if peak else "4G"
+    if peak:
+        # the cap is 1.25x the largest whole-process peak ever measured, never lowered
+        cap_bytes = max(int(cap_doc.get("cap_bytes", 0)), int(math.ceil(peak * 1.25)))
+        write_json(cap_file, {"schema": "fs_close_refit_cap.v1", "cap_bytes": cap_bytes, "measured_peak_rss_bytes": max(int(cap_doc.get("measured_peak_rss_bytes", 0)), int(peak)),
+                              "rule": "1.25 x measured whole-process peak RSS from the refit receipt; monotone", "receipt_plan_sha256": receipt.get("plan_sha256")})
+        cap_doc = read_json(cap_file, {})
+    pilot = not cap_doc.get("cap_bytes")
+    if pilot:
+        # first contact: a bounded pilot (largest fold, the two heaviest sets) measures the footprint
+        pilot_plan = {k: v for k, v in read_json(plan_path, {}).items()}
+        pilot_plan["sets"] = [s for s in pilot_plan.get("sets", []) if s["set_id"] in ("ALL_ADMISSIBLE", f"RANDOM_K:{K_PRIMARY}")]
+        pilot_path = paths.out / "refit_plan_pilot.json"
+        write_json(pilot_path, pilot_plan)
+        try:
+            subprocess.run(["rsync", "-q", str(pilot_path), f"{alias}:{remote}/"], check=True, capture_output=True, timeout=60)
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+            info["state"] = "LAUNCH_FAILED"
+            info["detail"] = str(exc)[-300:]
+            return info
+        plan_arg, cap, extra = f"{remote}/refit_plan_pilot.json", "1500M", f" --folds-only {FOLDS[-1]}"
+        job_name = "fs_close_refit_pilot"          # its own name: genuinely smaller work than the full plan
+    else:
+        cap_mb = int(math.ceil(cap_doc["cap_bytes"] / (1 << 20)))
+        plan_arg, cap, extra = f"{remote}/refit_plan.json", f"{cap_mb}M", ""
+        job_name = f"fs_close_refit_c{cap_mb}m"    # the name carries the measured cap: never lowered under one name
     cmd = (f"export XDG_RUNTIME_DIR=/run/user/$(id -u) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus; "
            f"cd {remote} && systemd-run --user --collect --unit fs-close-refit-$(date +%s) "
-           f"~/.local/bin/crispdm-run -m {cap} -t 8h -n fs_close_refit -- {paths.worker_python} {remote}/fs_close_refit.py "
-           f"--plan {remote}/refit_plan.json --features {wstate}/fs_pred/input/ps1/batch_001/features_train.parquet "
+           f"~/.local/bin/crispdm-run -q -W 14400 -m {cap} -t 8h -n {job_name} -- {paths.worker_python} {remote}/fs_close_refit.py "
+           f"--plan {plan_arg} --features {wstate}/fs_pred/input/ps1/batch_001/features_train.parquet "
            f"{wstate}/fs_pred/input/ps1/batch_002/features_train.parquet {wstate}/fs_pred/input/ps1/batch_003/features_train.parquet "
            f"--targets {wstate}/fs_pred/input/ps1/batch_001/targets_train.parquet --folds {remote}/folds.json "
-           f"--out-dir {remote}/out --heads ridge,hgb --hgb-max-k {K_PRIMARY}")
+           f"--out-dir {remote}/out --heads ridge,hgb --hgb-max-k {K_PRIMARY}{extra}")
     try:
         subprocess.run(["rsync", "-q", str(paths.evidence / "laneA/batch_001/folds.json"), f"{alias}:{remote}/folds.json"],
                        check=True, capture_output=True, timeout=60)
         r = subprocess.run(ssh + [cmd], capture_output=True, timeout=90, text=True)
-        info["state"] = "LAUNCHED" if r.returncode == 0 else "LAUNCH_FAILED"
+        info["state"] = ("PILOT_LAUNCHED" if pilot else "LAUNCHED") if r.returncode == 0 else "LAUNCH_FAILED"
+        if r.returncode == 0:
+            unit = re.search(r"Running as unit: (\S+)", (r.stderr or "") + (r.stdout or ""))
+            write_json(paths.out / "refit_launch_marker.json", {"launched_utc": utc_now(), "pilot": pilot, "cap": cap,
+                                                                 "unit": unit.group(1) if unit else ""})
         info["cap"] = cap
+        info["queued"] = "crispdm-run -q waits for host headroom up to 4 h before starting"
         info["detail"] = (r.stderr or r.stdout)[-400:]
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
         info["state"] = "LAUNCH_FAILED"

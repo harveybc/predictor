@@ -112,31 +112,43 @@ def assert_train_only(timestamps_s: np.ndarray, train_end_utc: str = TRAIN_END_U
 
 # ----------------------------------------------------------------------------- loading
 def load_inputs(feature_files, targets_file, folds_file, population):
-    """Join PS1 feature batches and the target file on row_id; return arrays and digests."""
+    """Join PS1 feature batches and the target file on row_id; return arrays and digests.
+
+    Columns are copied one at a time into a preallocated float64 matrix so the peak stays close to
+    one copy of X (declared footprint, measured in the receipt).
+    """
     import pyarrow.parquet as pq
 
     digests = {}
-    frames = []
+    col_index = {name: i for i, name in enumerate(population)}
+    X = None
     row_ids = None
     ts = None
+    seen = set()
     for fp in feature_files:
         fp = Path(fp)
         digests[fp.name + "@" + fp.parent.name] = sha256_file(fp)
-        t = pq.read_table(fp)
-        df = t.to_pandas()
+        pf = pq.ParquetFile(fp)
+        names = pf.schema.names
+        ids = pf.read(columns=["row_id"]).column("row_id").to_numpy()
         if row_ids is None:
-            row_ids = df["row_id"].to_numpy()
-            ts = (df["t_decision_utc"].astype("int64") // 10**9).to_numpy()
-        elif not np.array_equal(df["row_id"].to_numpy(), row_ids):
+            row_ids = ids
+            tcol = pf.read(columns=["t_decision_utc"]).column("t_decision_utc")
+            ts = (tcol.cast("int64").to_numpy() // 10**9) if "ns" in str(tcol.type) else tcol.cast("int64").to_numpy()
+            X = np.empty((len(row_ids), len(population)), dtype="float64")
+        elif not np.array_equal(ids, row_ids):
             raise RefitError(f"ROW_ID_MISMATCH between feature batches: {fp}")
-        frames.append(df.drop(columns=["t_decision_utc", "row_id"]))
-    import pandas as pd
-
-    feats = pd.concat(frames, axis=1)
-    missing = [c for c in population if c not in feats.columns]
+        wanted = [n for n in names if n in col_index]
+        for start in range(0, len(wanted), 32):
+            chunk = wanted[start:start + 32]
+            tbl = pf.read(columns=chunk)
+            for name in chunk:
+                X[:, col_index[name]] = tbl.column(name).to_numpy(zero_copy_only=False).astype("float64", copy=False)
+                seen.add(name)
+            del tbl
+    missing = [c for c in population if c not in seen]
     if missing:
         raise RefitError(f"POPULATION_NOT_IN_INPUTS: {len(missing)} first {missing[:5]}")
-    X = feats[list(population)].to_numpy(dtype="float64")
     tp = Path(targets_file)
     digests[tp.name] = sha256_file(tp)
     tdf = pq.read_table(tp).to_pandas()
@@ -174,17 +186,32 @@ def all_cells():
 
 # ----------------------------------------------------------------------------- heads
 def _standardise(Xf, Xv):
+    """In place on the fold copies (they are already private copies of X)."""
     mu = Xf.mean(axis=0)
     sd = Xf.std(axis=0)
     sd[sd == 0] = 1.0
-    return (Xf - mu) / sd, (Xv - mu) / sd
+    Xf -= mu
+    Xf /= sd
+    Xv -= mu
+    Xv /= sd
+    return Xf, Xv
 
 
 def _impute(Xf, Xv):
-    med = np.nanmedian(Xf, axis=0)
-    med = np.where(np.isfinite(med), med, 0.0)
-    Xf = np.where(np.isfinite(Xf), Xf, med)
-    Xv = np.where(np.isfinite(Xv), Xv, med)
+    """Fit-row median imputation, in place, column by column."""
+    for j in range(Xf.shape[1]):
+        cf = Xf[:, j]
+        bad = ~np.isfinite(cf)
+        if bad.any():
+            med = np.nanmedian(cf) if (~bad).any() else 0.0
+            med = med if np.isfinite(med) else 0.0
+            cf[bad] = med
+        else:
+            med = None
+        cv = Xv[:, j]
+        badv = ~np.isfinite(cv)
+        if badv.any():
+            cv[badv] = med if med is not None else (np.nanmedian(cf) if np.isfinite(np.nanmedian(cf)) else 0.0)
     return Xf, Xv
 
 
