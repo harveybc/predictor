@@ -1,6 +1,6 @@
 {
- "as_of": "2026-10-05T12:15:47+00:00",
- "critical_path_eta": "feature-selection manifest after GPU queues (done/10-05T22:56Z/10-05T14:28Z) and the closure step; later milestones downstream",
+ "as_of": "2026-10-05T12:47:10+00:00",
+ "critical_path_eta": "feature-selection manifest after GPU queues (done/10-05T23:03Z/10-05T14:27Z) and the closure step; later milestones downstream",
  "milestones": [
   {
    "eta": "1-3 development days",
@@ -12,11 +12,11 @@
    "title": "Business-faithful evaluation"
   },
   {
-   "eta": "GPU done/10-05T22:56Z/10-05T14:28Z; then closure",
-   "evidence": "PS3-R 365/411 terminals (93/137 complete); PS4 93/137; FS-PRED 0 methods; causal 366/366; rep 94/137; refits 38/146; manifest DRAFT sel/rej/pend 0/1/365",
+   "eta": "GPU done/10-05T23:03Z/10-05T14:27Z; then closure",
+   "evidence": "PS3-R 369/411 terminals (97/137 complete); PS4 96/137; FS-PRED 0 methods; causal 366/366; rep 98/137; refits 53/146; manifest DRAFT sel/rej/pend 0/1/365",
    "id": "M2",
-   "next": "Blocking: PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits); PS3-R terminals complete 93/137 heavy candidates; PS4 profiles 93/137 heavy candidates",
-   "progress": 61,
+   "next": "Blocking: PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits); PS3-R terminals complete 97/137 heavy candidates; PS4 profiles 96/137 heavy candidates",
+   "progress": 64,
    "state": "IN_PROGRESS",
    "title": "Feature selection"
   },
