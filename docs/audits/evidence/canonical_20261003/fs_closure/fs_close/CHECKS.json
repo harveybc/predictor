@@ -26,7 +26,7 @@
    "state": "PASS"
   },
   {
-   "detail": "0 measured metric rows without a paired naive of 50208",
+   "detail": "0 measured metric rows without a paired naive of 54208",
    "id": "C6_PAIRED_NAIVE",
    "state": "PASS"
   },
@@ -36,7 +36,7 @@
    "state": "PENDING"
   },
   {
-   "detail": "fs_rep decisions 109/137 heavy candidates decided; PS3-R terminals complete 108/137 heavy candidates; PS4 profiles 100/137 heavy candidates; closure_record.json from the BUSINESS weekly walk-forward step (VALIDATION_2024 inputs are present on the refit host, the step is gated on the C7 refits); PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
+   "detail": "fs_rep decisions 115/137 heavy candidates decided; PS3-R terminals complete 110/137 heavy candidates; PS4 profiles 101/137 heavy candidates; closure_record.json from the BUSINESS weekly walk-forward step (VALIDATION_2024 inputs are present on the refit host, the step is gated on the C7 refits); PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
    "id": "C8_INPUT_OBJECTS",
    "state": "PENDING"
   },
@@ -52,6 +52,6 @@
   }
  ],
  "final": false,
- "generated_utc": "2026-10-05T14:19:59+00:00",
+ "generated_utc": "2026-10-05T14:51:51+00:00",
  "schema": "fs_close_checks.v1"
 }
