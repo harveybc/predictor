@@ -18,7 +18,7 @@ export CRISPDM_PYTHON=python3
 echo "$(date -u +%FT%TZ) START cap=$CAP peak_evidence=${PEAK_EVIDENCE:-none} targets=[$TARGETS]" >> "$LOG"
 run_target() {  # $1 target, $2.. extra crispdm flags
   local target=$1; shift
-  "$HOME/.local/bin/crispdm-run" -m "$CAP" -t 20h -n "fs-pred-$target" -q -W 14400 -L "fs-pred-$target" "$@" -- \
+  "$HOME/.local/bin/crispdm-run" -m "$CAP" -t 20h -n "fs-pred-v2-$target" -q -W 14400 -L "fs-pred-v2-$target" "$@" -- \
     env PYTHONPATH="$CODE" OMP_NUM_THREADS=1 "$PY" -m tools.feature_selection_batch_runner \
       --input-root "$ROOT/input/ps1" --input-manifest "$ROOT/input/input_manifest.json" \
       --clusters "$ROOT/input/fold_clusters.json" --output-root "$ROOT/out" \

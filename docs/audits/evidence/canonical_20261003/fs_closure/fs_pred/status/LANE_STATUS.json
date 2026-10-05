@@ -242,17 +242,17 @@
  "progress": {
   "done": 555,
   "eta_seconds": 9164.807469176594,
-  "eta_utc": "2026-10-05T08:44:51.998284+00:00",
+  "eta_utc": "2026-10-05T11:39:45.905669+00:00",
   "method_cells_done": 111,
   "method_cells_total": 980,
   "n_failures": 0,
   "observed_median_method_wall_seconds": 10.546383738983423,
-  "observed_p90_method_wall_seconds": 51.1621571079595,
+  "observed_p90_method_wall_seconds": 49.96995101799257,
   "total": 4900,
-  "updated_utc": "2026-10-05T06:12:07.190790+00:00",
+  "updated_utc": "2026-10-05T09:07:01.098177+00:00",
   "workers": 1
  },
  "records": 111,
- "rendered_utc": "2026-10-05T08:41:52.155533+00:00",
+ "rendered_utc": "2026-10-05T09:07:02.940145+00:00",
  "schema": "fs_pred_lane_status.v1"
 }

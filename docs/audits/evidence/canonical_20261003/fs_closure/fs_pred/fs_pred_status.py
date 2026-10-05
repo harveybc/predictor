@@ -14,6 +14,48 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
+def watchdog_state(progress: dict, progress_age_seconds: float, probe: dict | None, blocked: bool) -> dict:
+    """Decide RUNNING / STALLED / DONE / BLOCKED / IDLE from evidence, never from a live PID.
+
+    STALLED when progress.json has not changed for max(10 min, 3 x p90 method wall) AND the worker
+    process is under memory pressure (any D-state process in its scope, cgroup memory.events high
+    count rising, or cgroup memory pressure); a live PID alone never proves progress.
+    """
+
+    done, total = int(progress.get("done") or 0), int(progress.get("total") or 0)
+    if blocked:
+        return {"state": "BLOCKED", "reason": "BLOCKED_CAP_UNMEASURED present"}
+    if total and done >= total:
+        return {"state": "DONE", "reason": "done == total"}
+    p90 = float(progress.get("observed_p90_method_wall_seconds") or 0.0)
+    threshold = max(600.0, 3.0 * p90)
+    probe = probe or {}
+    pressure = bool(probe.get("d_state_pids")) or bool(probe.get("high_events_rising")) or (
+        float(probe.get("cgroup_some_avg10") or 0.0) > 0.0
+    )
+    stale = progress_age_seconds > threshold
+    if stale and pressure:
+        return {"state": "STALLED", "reason": f"progress unchanged for {progress_age_seconds:.0f}s > {threshold:.0f}s and the worker scope is under memory pressure", "threshold_seconds": threshold}
+    if not probe.get("scope_active"):
+        return {"state": "IDLE", "reason": "no FS-PRED scope active on the worker", "threshold_seconds": threshold}
+    if stale:
+        return {"state": "SUSPECT", "reason": f"progress unchanged for {progress_age_seconds:.0f}s > {threshold:.0f}s without observed memory pressure", "threshold_seconds": threshold}
+    return {"state": "RUNNING", "reason": "progress advanced within the threshold and a scope is active", "threshold_seconds": threshold}
+
+
+def eta_after_post_cells(progress: dict, post_walls: list[float], relaunch_epoch: float | None) -> dict:
+    """ETA is recomputed only from cells terminal AFTER the relaunch; fewer than three -> no ETA."""
+
+    remaining = int(progress.get("method_cells_total") or 0) - int(progress.get("method_cells_done") or 0)
+    if relaunch_epoch is None:
+        return {"eta_utc": progress.get("eta_utc"), "basis": "runner estimate (no relaunch epoch)"}
+    if len(post_walls) < 3:
+        return {"eta_utc": None, "basis": f"{len(post_walls)} POST cells; ETA withheld until three", "post_cells": len(post_walls)}
+    median = statistics.median(post_walls)
+    eta = datetime.now(timezone.utc).timestamp() + remaining * median
+    return {"eta_utc": datetime.fromtimestamp(eta, timezone.utc).isoformat(), "basis": f"median of {len(post_walls)} POST method walls x {remaining} remaining method cells, one worker", "post_cells": len(post_walls), "post_median_wall_seconds": median}
+
+
 def main(out_dir: str, dest_dir: str) -> int:
     out, dest = Path(out_dir), Path(dest_dir)
     dest.mkdir(parents=True, exist_ok=True)
@@ -44,8 +86,31 @@ def main(out_dir: str, dest_dir: str) -> int:
     with (dest / "primary_k24_sets.csv").open("w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=["method", "target", "fold", "K", "selected"])
         writer.writeheader(); writer.writerows(sets)
+    probe = json.loads((out.parent / "worker_probe.json").read_text()) if (out.parent / "worker_probe.json").exists() else None
+    blocked = (out.parent / "BLOCKED_CAP_UNMEASURED").exists() or (out / "BLOCKED_CAP_UNMEASURED").exists()
+    progress_age = (datetime.now(timezone.utc).timestamp() - (out / "progress.json").stat().st_mtime) if (out / "progress.json").exists() else 0.0
+    if probe and probe.get("progress_mtime_epoch"):
+        progress_age = float(probe.get("probe_epoch", datetime.now(timezone.utc).timestamp())) - float(probe["progress_mtime_epoch"])
+    relaunch_epoch = float(probe["relaunch_epoch"]) if probe and probe.get("relaunch_epoch") else None
+    post_walls = []
+    if relaunch_epoch is not None:
+        for record_path in out.glob("cells/*/*/*.json"):
+            if record_path.name == "population.json":
+                continue
+            try:
+                record = json.loads(record_path.read_text())
+            except (OSError, ValueError):
+                continue
+            written = record.get("written_utc")
+            if record.get("disposition") == "COMPLETE" and written and datetime.fromisoformat(written).timestamp() >= relaunch_epoch:
+                post_walls.append(float(record["wall_seconds"]))
+    watchdog = watchdog_state(progress, progress_age, probe, blocked)
+    eta = eta_after_post_cells(progress, post_walls, relaunch_epoch)
     status = {
-        "schema": "fs_pred_lane_status.v1",
+        "schema": "fs_pred_lane_status.v2",
+        "state": watchdog["state"],
+        "watchdog": dict(watchdog, progress_age_seconds=round(progress_age, 1), probe=probe),
+        "eta": eta,
         "rendered_utc": datetime.now(timezone.utc).isoformat(),
         "host_role": "worker_b (CPU)",
         "progress": {k: progress.get(k) for k in ("done", "total", "method_cells_done", "method_cells_total", "n_failures",
