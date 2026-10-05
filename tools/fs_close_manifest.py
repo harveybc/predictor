@@ -1682,7 +1682,14 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
     cap_doc = read_json(cap_file, {})
     peaks_doc = read_json(paths.out / "refit_peaks.json", {"receipts": {}})
     all_peaks = [v["peak_rss_bytes"] for v in peaks_doc.get("receipts", {}).values() if v.get("cells_done")]
-    peak = max(all_peaks) if all_peaks else None    # only receipts that actually fitted cells measure the footprint
+    # every MEASURED metric row carries the whole-process peak RSS observed when that cell was scored:
+    # those are measurements of the same process and count toward the monotone cap
+    metrics_now = load_metrics(paths)
+    if metrics_now is not None and len(metrics_now):
+        measured = metrics_now[metrics_now["state"] == "MEASURED"]
+        if len(measured):
+            all_peaks.append(int(measured["peak_rss_bytes"].max()))
+    peak = max(all_peaks) if all_peaks else None    # only runs that actually fitted cells measure the footprint
     if peak:
         # the cap is 1.25x the largest whole-process peak ever measured, never lowered
         cap_bytes = max(int(cap_doc.get("cap_bytes", 0)), int(math.ceil(peak * 1.25)))
