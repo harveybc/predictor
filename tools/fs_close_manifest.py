@@ -771,9 +771,10 @@ def load_causal(paths: Paths, pop: Population, ev: LaneEvidence) -> None:
     if not p.is_file():
         alt = paths.state / "fs_close/fs_causal_mirror/causal_evidence.jsonl"
         p = alt if alt.is_file() else p
-    ev.causal_progress = read_json(root / "progress.json", {}) or read_json(root / "final_summary.json", {})
+    mirror = paths.state / "fs_close/fs_causal_mirror"
+    ev.causal_progress = read_json(root / "progress.json", {}) or read_json(mirror / "progress.json", {}) or read_json(root / "final_summary.json", {})
     weighs_against = {}
-    fs = root / "feature_summary.csv"
+    fs = root / "feature_summary.csv" if (root / "feature_summary.csv").is_file() else mirror / "feature_summary.csv"
     if fs.is_file():
         df = pd.read_csv(fs)
         if "weighs_against" in df.columns:
@@ -838,7 +839,7 @@ def load_rep(paths: Paths, pop: Population, ev: LaneEvidence) -> None:
     ev.digests["fs_rep/" + p.name] = sha256_file(p)
     df = pd.read_csv(p)
     fcol = next((c for c in FEATURE_COLS if c in df.columns), None)
-    dcol = next((c for c in ("decision", "representation", "disposition") if c in df.columns), None)
+    dcol = next((c for c in ("provisional_extractibility_disposition", "decision", "representation", "disposition") if c in df.columns), None)
     if not fcol or not dcol:
         ev.missing.append("fs_rep/representation_dispositions.csv (no feature/decision columns)")
         return
@@ -849,7 +850,11 @@ def load_rep(paths: Paths, pop: Population, ev: LaneEvidence) -> None:
         if feat not in pop.set:
             continue
         dec = str(r[dcol])
-        ev.rep[feat] = {"decision": dec, "flags": str(r.get(flags_col, "") if flags_col else "")}
+        cause = r.get("cause")
+        flags = str(r.get(flags_col, "") if flags_col else "")
+        if isinstance(cause, str) and cause and cause != "nan":
+            flags = cause + (";" + flags if flags and flags != "nan" else "")
+        ev.rep[feat] = {"decision": dec, "flags": "" if flags == "nan" else flags, "cause": cause if isinstance(cause, str) else ""}
         counts[dec] = counts.get(dec, 0) + 1
     ev.rep_counts = counts
     pending = [f for f, v in ev.rep.items() if v["decision"] == "PENDING"]
@@ -1794,6 +1799,12 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
                     "--include=progress.json", "--include=closure_record.json", "--include=weekly_contract.json", "--include=weekly_ledger_*.json",
                     "--include=weekly_barrier_*.json", "--include=static_validation_diagnostic.json", "--exclude=*", f"{alias}:{remote}/out/",
                     str(paths.state / "fs_close/")], check=False, capture_output=True, timeout=300)
+    # FS-CAUSAL's finalised evidence lives in the worker's run dir until the lane commits it: mirror it read-only
+    cmirror = paths.state / "fs_close/fs_causal_mirror"
+    cmirror.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["rsync", "-qrt", "--timeout=120", "--include=causal_evidence.jsonl", "--include=progress.json", "--include=final_summary.json",
+                    "--include=feature_summary.csv", "--exclude=*", f"{alias}:{wstate}/fs_causal/run/", str(cmirror)],
+                   check=False, capture_output=True, timeout=300)
     local_out = paths.state / "fs_close"
     for src in sorted(local_out.glob("*")):
         if src.is_file() and (src.name in ("paired_refit_metrics.parquet", "refit_receipt.json", "progress.json", "closure_record.json",
