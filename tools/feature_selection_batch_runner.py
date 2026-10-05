@@ -255,8 +255,12 @@ def impute_causal(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     filled = filled[index, np.arange(cols)[None, :]]
     still = ~np.isfinite(filled)
     if still.any():
-        means = np.nanmean(np.where(np.isfinite(matrix), matrix, np.nan), axis=0)
-        means = np.where(np.isfinite(means), means, 0.0)
+        finite = np.isfinite(matrix)
+        counts = finite.sum(axis=0)
+        sums = np.where(finite, matrix, 0.0).sum(axis=0)
+        # A column with no finite value in these rows becomes the constant 0.0;
+        # the caller records it as unavailable in the fit rows.
+        means = np.where(counts > 0, sums / np.maximum(counts, 1), 0.0)
         filled = np.where(still, means[None, :], filled)
     return filled, missing.mean(axis=0)
 
@@ -365,6 +369,36 @@ def write_atomic(path: Path, payload: Any) -> None:
 
 def record_path(output_root: Path, target: str, fold: str, method: str) -> Path:
     return output_root / "cells" / target / fold / f"{method.replace(':', '__')}.json"
+
+
+def population_record(population: CellPopulation, identity: dict[str, str], feature_order: tuple[str, ...]) -> dict[str, Any]:
+    """One per-cell record of the exact population every method of the cell shares."""
+
+    imputed = [(name, fraction) for name, fraction in population.imputed_fraction if fraction > 0.0]
+    unavailable = [name for name, fraction in population.imputed_fraction if fraction >= 1.0]
+    return {
+        "schema": "fs_pred_cell_population.v1",
+        "target": population.target,
+        "fold": population.fold,
+        "identity": identity,
+        "rows": int(population.target_values.shape[0]),
+        "fit_rows": population.n_fit_rows,
+        "dropped_target_nan": population.n_dropped_target_nan,
+        "first_row_id": int(population.row_ids[0]),
+        "last_row_id": int(population.row_ids[-1]),
+        "n_features": len(feature_order),
+        "nested_splits": [_jsonable(split) for split in population.nested_splits],
+        "imputation": "causal forward fill within fit rows, then fit-row mean for leading gaps; a feature with no finite fit-row value becomes a constant (recorded as unavailable)",
+        "n_features_imputed": len(imputed),
+        "imputed_fraction": imputed,
+        "unavailable_in_fit_rows": unavailable,
+        "target_summary": {
+            "mean": float(np.mean(population.target_values)),
+            "std": float(np.std(population.target_values)),
+            "min": float(np.min(population.target_values)),
+            "max": float(np.max(population.target_values)),
+        },
+    }
 
 
 def method_record(
@@ -631,6 +665,8 @@ def run_batch(args: argparse.Namespace) -> int:
                 "group_digest": compute_campaign_group_digest(feature_order),
                 "plan_digest": compute_campaign_plan_digest(plan, population.nested_splits),
             }
+            write_atomic(output_root / "cells" / target / fold.name / "population.json",
+                         population_record(population, identity, feature_order))
             pending = []
             for method in plan.method_ids:
                 path = record_path(output_root, target, fold.name, method)

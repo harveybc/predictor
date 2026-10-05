@@ -16,6 +16,7 @@ from tools.feature_selection_batch_runner import (
     cell_population,
     existing_record_matches,
     impute_causal,
+    population_record,
     load_admissible_feature_order,
     load_folds,
     load_train_population,
@@ -134,6 +135,22 @@ def test_causal_imputation_never_reads_the_future() -> None:
     future_changed[3, 1] = 99.0
     again, _ = impute_causal(future_changed)
     assert np.array_equal(again[:3, 1], filled[:3, 1])
+
+
+def test_fully_missing_column_becomes_constant_and_is_reported_unavailable(tmp_path: Path) -> None:
+    matrix = np.array([[np.nan, 1.0], [np.nan, 2.0], [np.nan, np.nan]])
+    filled, fraction = impute_causal(matrix)
+    assert filled[:, 0].tolist() == [0.0, 0.0, 0.0]
+    assert filled[:, 1].tolist() == [1.0, 2.0, 2.0]
+    assert fraction.tolist() == [1.0, 1.0 / 3.0]
+    _write_inputs(tmp_path)
+    order, _ = load_admissible_feature_order(tmp_path, EXPECTED)
+    matrix, targets, row_ids = load_train_population(tmp_path, order)
+    matrix[:45, 0] = np.nan
+    cell = cell_population(matrix, targets, row_ids, order, "Y_s_1h", OuterFold("inner_b", 0, 45, 47, 60))
+    record = population_record(cell, {"row_digest": "r", "group_digest": "g", "plan_digest": "p"}, order)
+    assert record["unavailable_in_fit_rows"] == ["px.a"]
+    assert record["n_features_imputed"] == 1 and record["rows"] == 45
 
 
 def test_cell_population_is_fit_rows_with_finite_target_and_identical_across_methods(tmp_path: Path) -> None:
