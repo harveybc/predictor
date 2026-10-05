@@ -48,19 +48,25 @@
   "train_end_utc_exclusive": "2024-01-01T00:00:00+00:00",
   "train_rows": 71734
  },
+ "eta": {
+  "basis": "median of 5 POST method walls x 864 remaining method cells, one worker",
+  "eta_utc": "2026-10-05T10:44:19.497205+00:00",
+  "post_cells": 5,
+  "post_median_wall_seconds": 6.557802319061011
+ },
  "failures": [],
  "host_role": "worker_b (CPU)",
- "k24_sets": 111,
+ "k24_sets": 116,
  "method_wall_seconds": {
   "ALL_ADMISSIBLE": {
    "max": 0.3280245428904891,
-   "median": 0.2431850159773603,
-   "n": 8
+   "median": 0.2457683979300782,
+   "n": 9
   },
   "CHRONOEPILOGI_K": {
-   "max": 69.68733984790742,
-   "median": 47.82884680200368,
-   "n": 7
+   "max": 99.18444264796562,
+   "median": 48.80014242749894,
+   "n": 8
   },
   "CMIM_K": {
    "max": 50.96316432009917,
@@ -89,13 +95,13 @@
   },
   "JMI_K": {
    "max": 51.46936559304595,
-   "median": 41.023609394032974,
-   "n": 8
+   "median": 42.577917347080074,
+   "n": 9
   },
   "MI8_K": {
    "max": 1.6207703050458804,
-   "median": 1.211780960438773,
-   "n": 8
+   "median": 1.2403773309197277,
+   "n": 9
   },
   "MRMR_K": {
    "max": 51.1621571079595,
@@ -119,17 +125,17 @@
   },
   "SPEARMAN_K": {
    "max": 20.80476092605386,
-   "median": 5.685057237453293,
-   "n": 8
+   "median": 5.723715618951246,
+   "n": 9
   }
  },
  "per_method": {
   "ALL_ADMISSIBLE": {
-   "done": 8,
+   "done": 9,
    "total": 70
   },
   "CHRONOEPILOGI_K": {
-   "done": 7,
+   "done": 8,
    "total": 70
   },
   "CMIM_K": {
@@ -153,11 +159,11 @@
    "total": 70
   },
   "JMI_K": {
-   "done": 8,
+   "done": 9,
    "total": 70
   },
   "MI8_K": {
-   "done": 8,
+   "done": 9,
    "total": 70
   },
   "MRMR_K": {
@@ -177,7 +183,7 @@
    "total": 70
   },
   "SPEARMAN_K": {
-   "done": 8,
+   "done": 9,
    "total": 70
   }
  },
@@ -219,7 +225,7 @@
    "method_cells_total": 70
   },
   "Y_s_2h": {
-   "method_cells_done": 41,
+   "method_cells_done": 46,
    "method_cells_total": 70
   },
   "Y_s_3h": {
@@ -240,19 +246,42 @@
   }
  },
  "progress": {
-  "done": 555,
-  "eta_seconds": 9164.807469176594,
-  "eta_utc": "2026-10-05T11:39:45.905669+00:00",
-  "method_cells_done": 111,
+  "done": 580,
+  "eta_seconds": 8882.281889028847,
+  "eta_utc": "2026-10-05T11:37:51.241849+00:00",
+  "method_cells_done": 116,
   "method_cells_total": 980,
   "n_failures": 0,
-  "observed_median_method_wall_seconds": 10.546383738983423,
-  "observed_p90_method_wall_seconds": 49.96995101799257,
+  "observed_median_method_wall_seconds": 10.280418853042647,
+  "observed_p90_method_wall_seconds": 51.46936559304595,
   "total": 4900,
-  "updated_utc": "2026-10-05T09:07:01.098177+00:00",
+  "updated_utc": "2026-10-05T09:09:48.959929+00:00",
   "workers": 1
  },
- "records": 111,
- "rendered_utc": "2026-10-05T09:07:02.940145+00:00",
- "schema": "fs_pred_lane_status.v1"
+ "records": 116,
+ "rendered_utc": "2026-10-05T09:09:53.556020+00:00",
+ "schema": "fs_pred_lane_status.v2",
+ "state": "RUNNING",
+ "watchdog": {
+  "probe": {
+   "blocked": false,
+   "cgroup_some_avg10": 0.0,
+   "d_state_pids": [],
+   "high_events_rising": false,
+   "memory_events_high": 0,
+   "memory_max": "5637144576",
+   "memory_peak": 4122132480,
+   "probe_epoch": 1791191392.8296106,
+   "progress_mtime_epoch": 1791191388.9602487,
+   "relaunch_epoch": 1791191214.0,
+   "scope_active": true,
+   "scopes": [
+    "crispdm-fs-pred-v2-Y_s_2h-1791191225-323117.scope"
+   ]
+  },
+  "progress_age_seconds": 3.9,
+  "reason": "progress advanced within the threshold and a scope is active",
+  "state": "RUNNING",
+  "threshold_seconds": 600.0
+ }
 }
