@@ -50,134 +50,134 @@
  },
  "failures": [],
  "host_role": "worker_b (CPU)",
- "k24_sets": 94,
+ "k24_sets": 111,
  "method_wall_seconds": {
   "ALL_ADMISSIBLE": {
    "max": 0.3280245428904891,
-   "median": 0.2457683979300782,
-   "n": 7
+   "median": 0.2431850159773603,
+   "n": 8
   },
   "CHRONOEPILOGI_K": {
-   "max": 57.055248604970984,
-   "median": 45.908918031957,
-   "n": 6
+   "max": 69.68733984790742,
+   "median": 47.82884680200368,
+   "n": 7
   },
   "CMIM_K": {
    "max": 50.96316432009917,
-   "median": 38.968387283035554,
-   "n": 7
+   "median": 40.777175518509466,
+   "n": 8
   },
   "ELASTIC_NET_K": {
    "max": 16.052863162010908,
-   "median": 12.080934640020132,
-   "n": 7
+   "median": 12.520915403496474,
+   "n": 8
   },
   "EXTRATREES_TBP_K": {
    "max": 108.86757644696627,
-   "median": 81.2388502190588,
-   "n": 6
+   "median": 79.49527872999897,
+   "n": 8
   },
   "GROUP_ELASTIC_NET_K": {
    "max": 11.92343748593703,
-   "median": 8.872956369072199,
-   "n": 7
+   "median": 9.379553383041639,
+   "n": 8
   },
   "GROUP_GATE_K": {
    "max": 3.5829775950405747,
-   "median": 2.7037979575106874,
-   "n": 6
+   "median": 2.6190839080372825,
+   "n": 8
   },
   "JMI_K": {
    "max": 51.46936559304595,
-   "median": 39.46930144098587,
-   "n": 7
+   "median": 41.023609394032974,
+   "n": 8
   },
   "MI8_K": {
    "max": 1.6207703050458804,
-   "median": 1.1831845899578184,
-   "n": 7
+   "median": 1.211780960438773,
+   "n": 8
   },
   "MRMR_K": {
    "max": 51.1621571079595,
-   "median": 38.71921795804519,
-   "n": 7
+   "median": 40.633556373475585,
+   "n": 8
   },
   "RANDOM_K:seed0": {
    "max": 0.3303993850713596,
-   "median": 0.24035219906363636,
-   "n": 7
+   "median": 0.22561606403905898,
+   "n": 8
   },
   "REDUNDANCY_K": {
    "max": 3.7124050119891763,
-   "median": 2.6155467479256913,
-   "n": 7
+   "median": 2.747281910444144,
+   "n": 8
   },
   "SEQ_MARGINAL_K": {
    "max": 26.88742278504651,
-   "median": 18.696738121041562,
-   "n": 6
+   "median": 20.54715771303745,
+   "n": 8
   },
   "SPEARMAN_K": {
    "max": 20.80476092605386,
-   "median": 5.723715618951246,
-   "n": 7
+   "median": 5.685057237453293,
+   "n": 8
   }
  },
  "per_method": {
   "ALL_ADMISSIBLE": {
-   "done": 7,
+   "done": 8,
    "total": 70
   },
   "CHRONOEPILOGI_K": {
-   "done": 6,
+   "done": 7,
    "total": 70
   },
   "CMIM_K": {
-   "done": 7,
+   "done": 8,
    "total": 70
   },
   "ELASTIC_NET_K": {
-   "done": 7,
+   "done": 8,
    "total": 70
   },
   "EXTRATREES_TBP_K": {
-   "done": 6,
+   "done": 8,
    "total": 70
   },
   "GROUP_ELASTIC_NET_K": {
-   "done": 7,
+   "done": 8,
    "total": 70
   },
   "GROUP_GATE_K": {
-   "done": 6,
+   "done": 8,
    "total": 70
   },
   "JMI_K": {
-   "done": 7,
+   "done": 8,
    "total": 70
   },
   "MI8_K": {
-   "done": 7,
+   "done": 8,
    "total": 70
   },
   "MRMR_K": {
-   "done": 7,
+   "done": 8,
    "total": 70
   },
   "RANDOM_K:seed0": {
-   "done": 7,
+   "done": 8,
    "total": 70
   },
   "REDUNDANCY_K": {
-   "done": 7,
+   "done": 8,
    "total": 70
   },
   "SEQ_MARGINAL_K": {
-   "done": 6,
+   "done": 8,
    "total": 70
   },
   "SPEARMAN_K": {
-   "done": 7,
+   "done": 8,
    "total": 70
   }
  },
@@ -219,7 +219,7 @@
    "method_cells_total": 70
   },
   "Y_s_2h": {
-   "method_cells_done": 24,
+   "method_cells_done": 41,
    "method_cells_total": 70
   },
   "Y_s_3h": {
@@ -240,19 +240,19 @@
   }
  },
  "progress": {
-  "done": 470,
-  "eta_seconds": 9108.760234901798,
-  "eta_utc": "2026-10-05T08:36:29.243544+00:00",
-  "method_cells_done": 94,
+  "done": 555,
+  "eta_seconds": 9164.807469176594,
+  "eta_utc": "2026-10-05T08:44:51.998284+00:00",
+  "method_cells_done": 111,
   "method_cells_total": 980,
   "n_failures": 0,
-  "observed_median_method_wall_seconds": 10.280767759482842,
-  "observed_p90_method_wall_seconds": 49.96995101799257,
+  "observed_median_method_wall_seconds": 10.546383738983423,
+  "observed_p90_method_wall_seconds": 51.1621571079595,
   "total": 4900,
-  "updated_utc": "2026-10-05T06:04:40.483286+00:00",
+  "updated_utc": "2026-10-05T06:12:07.190790+00:00",
   "workers": 1
  },
- "records": 94,
- "rendered_utc": "2026-10-05T06:05:44.384104+00:00",
+ "records": 111,
+ "rendered_utc": "2026-10-05T06:36:55.071714+00:00",
  "schema": "fs_pred_lane_status.v1"
 }
