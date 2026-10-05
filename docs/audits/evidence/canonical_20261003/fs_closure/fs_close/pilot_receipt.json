@@ -1,0 +1,58 @@
+{
+ "cells_done": 56,
+ "cells_failed": 0,
+ "cells_skipped": 0,
+ "children_peak_rss_bytes": 0,
+ "code_sha256": "cd7976a26e17ba9b870c3d675a7dbc861843c6b150bcd323d4a8a0604879f6d8",
+ "finished_utc": "2026-10-05T04:44:07.833281+00:00",
+ "head_params": {
+  "hgb": {
+   "early_stopping": false,
+   "learning_rate": 0.1,
+   "max_iter": 100,
+   "max_leaf_nodes": 15,
+   "random_state": 0
+  },
+  "ridge": {
+   "alpha": 1.0,
+   "barrier": {
+    "C": 1.0,
+    "estimator": "LogisticRegression",
+    "max_iter": 200,
+    "random_state": 0,
+    "solver": "lbfgs"
+   },
+   "intercept": "fit-row mean",
+   "standardise": "fit-row mean/std"
+  }
+ },
+ "heads": [
+  "ridge",
+  "hgb"
+ ],
+ "hgb_max_k": 24,
+ "imputation": "fit-row median per feature (identical for every set)",
+ "inputs_sha256": {
+  "features_train.parquet@batch_001": "bd005701247dc181c81457037cbad6e6142f8171ad8c3595f1cd489986557aa2",
+  "features_train.parquet@batch_002": "0e6ff8c570804823921227bd6733b185c17e54808364735067953f524f4399f3",
+  "features_train.parquet@batch_003": "fd0b4423db991cfb05cd4f9357a378648579d4c11552a1cac413ed711c3520bc",
+  "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+  "targets_train.parquet": "a838b81c72a291a45dac70ab4c69415c85d7ec1888691cae38817642188e84e5"
+ },
+ "output": "/home/harveybc/.local/state/canonical_20261003/fs_close/out_pilot/paired_refit_metrics.parquet",
+ "output_sha256": "9ef94f3ded875898110c53a1678ffee9f372396a8da1c6c6a69a9fb58041d081",
+ "peak_rss_bytes": 1019940864,
+ "plan_sha256": "dc18976f81b9789c06dc675b571afffac0662cb3f859c58cf21704cfce406cc9",
+ "population_sha256": "7b14a01c3adb6058771ebd9ddf83cec71cb01760b9f0549097877966825b0b13",
+ "rows_rule": "every fold row with a finite target (barrier: supported label); independent of the set",
+ "schema": "fs_close_refit_receipt.v1",
+ "seed": 0,
+ "started_utc": "2026-10-05T04:39:35.011123+00:00",
+ "train_bound": {
+  "max_ts": 1703887200,
+  "min_ts": 1335830400,
+  "rows": 71734,
+  "train_end_utc": "2024-01-01T00:00:00+00:00"
+ },
+ "wall_seconds": 272.8221642971039
+}
