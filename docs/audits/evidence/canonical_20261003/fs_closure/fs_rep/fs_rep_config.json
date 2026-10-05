@@ -1,6 +1,6 @@
 {
   "schema": "fs_rep_config.v1",
-  "rule_version": "fs_rep_rule.v2",
+  "rule_version": "fs_rep_rule.v3",
   "repo_root": "../../../../../..",
   "decision_rule_doc": "docs/audits/evidence/canonical_20261003/fs_closure/fs_rep/DECISION_RULE.md",
   "output_dir": "docs/audits/evidence/canonical_20261003/fs_closure/fs_rep",
@@ -74,6 +74,10 @@
   "local_paths": "~/.local/state/canonical_20261003/fs_rep/local_paths.json",
   "notes": [
     "mirror role keys resolve through the uncommitted local_paths file; the repo never carries worker directory names",
-    "status_files are the queue STATUS keys expected in local_paths"
-  ]
+    "status_files are the queue STATUS keys expected in local_paths",
+    "train_unavailable_causes: Musashi 2026-10-05 mandatory disposition; the receipts' reason text carries the same cause"
+  ],
+  "train_unavailable_causes": {
+    "fred.credit.bamlh0a0hym2.logret_1d": "NO_OBSERVED_TRAIN_VALUES"
+  }
 }

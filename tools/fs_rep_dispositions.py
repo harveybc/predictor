@@ -30,7 +30,9 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-RULE_VERSION = "fs_rep_rule.v2"
+RULE_VERSION = "fs_rep_rule.v3"
+DISPOSITION_CLASS = "PROVISIONAL_EXTRACTIBILITY_DISPOSITION"
+NO_TRAIN_MARKER = "no observed TRAIN values"
 SCHEMA_PROGRESS = "fs_rep_progress.v1"
 SCHEMA_CONFIG = "fs_rep_config.v1"
 
@@ -383,7 +385,14 @@ def examine_cell(cell: dict, roots: list[Path], cfg: dict, cache_dir: Path) -> d
                         payload = json.loads(name.read_text())
                     except (OSError, json.JSONDecodeError):
                         payload = {}
-                    failed.append({"receipt_sha256": sha256_file(name), "rc": payload.get("rc"), "reason": "FAILED_RECEIPT"})
+                    reason_text = ""
+                    for extra in sorted(directory.glob("FAILED*.txt")):
+                        try:
+                            reason_text += extra.read_text(errors="replace")
+                        except OSError:
+                            pass
+                    code = "NO_OBSERVED_TRAIN_VALUES" if NO_TRAIN_MARKER in reason_text else "FAILED_RECEIPT"
+                    failed.append({"receipt_sha256": sha256_file(name), "rc": payload.get("rc"), "reason": code})
     distinct = {c["results_sha256"] for c in completed}
     if len(distinct) > 1:
         return {"state": "FAILED", "reason": "CONTRADICTORY_TERMINAL", "receipt_sha256": ",".join(sorted(distinct))}
@@ -393,7 +402,7 @@ def examine_cell(cell: dict, roots: list[Path], cfg: dict, cache_dir: Path) -> d
         r = rejected[0]
         return {"state": "FAILED", "reason": "REJECTED_" + r["reason"], "receipt_sha256": r.get("results_sha256", "")}
     if failed:
-        return {"state": "FAILED", "reason": "FAILED_RECEIPT", "receipt_sha256": failed[0]["receipt_sha256"], "rc": failed[0].get("rc")}
+        return {"state": "FAILED", "reason": failed[0]["reason"], "receipt_sha256": failed[0]["receipt_sha256"], "rc": failed[0].get("rc")}
     return {"state": "PENDING", "reason": "NOT_LANDED"}
 
 
@@ -468,12 +477,27 @@ def load_refit(path: Path | None) -> dict[tuple[str, str], float] | None:
     return table
 
 
-def decide(feature: str, terminals: dict[str, dict], refit: dict | None) -> dict:
+def states_terminals(terminals: dict[str, dict]) -> list[dict]:
+    return [terminals.get(role, {"state": "PENDING"}) for role in ROLE_FAMILIES]
+
+
+def decide(feature: str, terminals: dict[str, dict], refit: dict | None, train_unavailable: dict | None = None) -> dict:
     """Apply DECISION_RULE §3 to one candidate. ``terminals`` maps role -> examine_cell result."""
     states = {role: t["state"] for role, t in terminals.items()}
     flags: list[str] = []
     if any(s == "PENDING" for s in states.values()) or len(states) < 3:
-        return {"decision": "PENDING", "flags": flags, "winner_scores": {}, "gates": {}}
+        return {"decision": "PENDING", "cause": "", "flags": flags, "winner_scores": {}, "gates": {}}
+    if all(t["state"] == "FAILED" for t in states_terminals(terminals)):
+        # v3: no terminal admitted any representation, raw included; the aggregator may not
+        # default to RAW. The cause is the receipts' declared reason or a config declaration.
+        reasons = {t.get("reason") for t in terminals.values()}
+        declared = (train_unavailable or {}).get(feature)
+        if "NO_OBSERVED_TRAIN_VALUES" in reasons or declared == "NO_OBSERVED_TRAIN_VALUES":
+            cause = "NO_OBSERVED_TRAIN_VALUES"
+        else:
+            cause = declared or "ALL_TERMINALS_FAILED_CAUSE_UNDECLARED"
+        return {"decision": "NOT_AVAILABLE_FOR_TRAIN", "cause": cause, "flags": ["TRAIN_SUPPORT_ABSENT"],
+                "gates": {}, "families_failed": list(TRAINED_ORDER), "raw_refit_gain": None, "refit_table_present": refit is not None}
     measured: dict[str, dict] = {}
     failed_families: list[str] = []
     for role, t in terminals.items():
@@ -550,7 +574,7 @@ def decide(feature: str, terminals: dict[str, dict], refit: dict | None) -> dict
         decision = "RAW"
     else:
         decision = "NO_TRAINED_ADVANTAGE"
-    return {"decision": decision, "flags": sorted(set(flags)), "gates": gates, "families_failed": failed_families,
+    return {"decision": decision, "cause": "", "flags": sorted(set(flags)), "gates": gates, "families_failed": failed_families,
             "raw_refit_gain": raw_refit, "refit_table_present": refit is not None}
 
 
@@ -572,7 +596,7 @@ DISPOSITION_COLUMNS = [
     "cost_status", "cost_fit_wall_seconds_sum", "cost_updates_sum", "cost_params", "cost_encode_latency_ms_mean",
     "terminal_wall_seconds", "terminal_peak_rss_bytes", "terminal_cgroup_peak_bytes",
     "G1_learned", "G2_preserves", "G3_utility", "G4_refit", "passes_all_gates",
-    "candidate_decision", "decision_rule_version", "flags",
+    "disposition_class", "provisional_extractibility_disposition", "cause", "decision_rule_version", "flags",
 ]
 
 
@@ -598,11 +622,14 @@ def disposition_rows(feature: str, batch: str, terminals: dict[str, dict], decis
         row.update({
             "feature_id": feature, "batch": batch, "family": fam, "family_kind": kind, "terminal_role": role,
             "terminal_state": state, "terminal_reason": t.get("reason", ""), "receipt_sha256": t.get("receipt_sha256", ""),
-            "candidate_decision": decision["decision"], "decision_rule_version": RULE_VERSION,
+            "disposition_class": DISPOSITION_CLASS, "provisional_extractibility_disposition": decision["decision"],
+            "cause": decision.get("cause", ""), "decision_rule_version": RULE_VERSION,
             "flags": ";".join(decision.get("flags", [])),
             "refit_gate_applied": "false", "refit_gain": "NOT_AVAILABLE",
         })
         status_default = "FAILED" if state == "FAILED" else "PENDING"
+        if decision["decision"] == "NOT_AVAILABLE_FOR_TRAIN":
+            status_default = "NOT_APPLICABLE"  # representation and extractibility are not defined without TRAIN support
         for col in ("rec_status", "stability_status", "effdim_status", "probe_status", "delta_status", "preservation_status", "cost_status"):
             row[col] = status_default
         for col in ("G1_learned", "G2_preserves", "G3_utility", "G4_refit", "passes_all_gates"):
@@ -833,14 +860,14 @@ def run_cycle(cfg: dict, *, git: bool) -> dict:
         for role in ROLE_FAMILIES:
             terminals.setdefault(role, {"state": "PENDING", "reason": "NOT_PLANNED"})
             role_states[role][terminals[role]["state"]] += 1
-        decision = decide(feature, terminals, refit)
+        decision = decide(feature, terminals, refit, cfg.get("train_unavailable_causes"))
         decisions[decision["decision"]] += 1
         present = [f for f in FAMILY_ORDER if any(t["state"] == "COMPLETED" and f in ROLE_FAMILIES[r] for r, t in terminals.items())]
         families_present_hist[len(present)] += 1
         if all(t["state"] == "COMPLETED" for t in terminals.values()):
             covered += 1
         candidates[feature] = {
-            "batch": heavy[feature], "decision": decision["decision"], "families_present": present,
+            "batch": heavy[feature], "decision": decision["decision"], "cause": decision.get("cause", ""), "families_present": present,
             "terminals": {r: {"state": t["state"], "reason": t.get("reason", ""), "receipt_sha256": t["terminal"]["results_sha256"] if t["state"] == "COMPLETED" else t.get("receipt_sha256", "")} for r, t in terminals.items()},
             "flags": decision.get("flags", []),
         }
@@ -863,11 +890,15 @@ def run_cycle(cfg: dict, *, git: bool) -> dict:
         if any(m in ("first_table", "coverage_100") for m in reached):
             atomic_write(out_dir / "representation_metric_catalog.csv.gz", catalog_gz)
         atomic_json(milestones_path, milestones)
-    decisions_table = [{"feature_id": f, "batch": c["batch"], "decision": c["decision"], "families_present": ";".join(c["families_present"]), "flags": ";".join(c["flags"])} for f, c in candidates.items()]
-    atomic_write(out_dir / "candidate_decisions.csv", csv_bytes(["feature_id", "batch", "decision", "families_present", "flags"], decisions_table))
+    decisions_table = [{"feature_id": f, "batch": c["batch"], "disposition_class": DISPOSITION_CLASS,
+                        "provisional_extractibility_disposition": c["decision"], "PLUS_EXTRACTIBILITY_EVIDENCE": c["decision"],
+                        "cause": c["cause"], "families_present": ";".join(c["families_present"]), "flags": ";".join(c["flags"])} for f, c in candidates.items()]
+    atomic_write(out_dir / "candidate_decisions.csv", csv_bytes(["feature_id", "batch", "disposition_class", "provisional_extractibility_disposition", "PLUS_EXTRACTIBILITY_EVIDENCE", "cause", "families_present", "flags"], decisions_table))
     peak_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
     progress = {
-        "schema": SCHEMA_PROGRESS, "rule_version": RULE_VERSION, "updated_at": iso(utc_now()), "cycle_started_at": iso(started),
+        "schema": SCHEMA_PROGRESS, "rule_version": RULE_VERSION, "disposition_class": DISPOSITION_CLASS,
+        "claim_scope": "provisional extractibility/probe disposition; no downstream improvement of latents is claimed while trained-family G4 is NOT_APPLICABLE; raw vs latent belongs to M4",
+        "updated_at": iso(utc_now()), "cycle_started_at": iso(started),
         "heavy_denominator": len(heavy), "heavy_candidates_covered": covered, "coverage_fraction": round(coverage, 4),
         "candidates_decided": sum(v for k, v in decisions.items() if k != "PENDING"),
         "decisions": dict(decisions),

@@ -28,7 +28,7 @@ caches each admitted terminal's reduction under its `results_sha256`, applies
 | file | content |
 |---|---|
 | `representation_dispositions.csv` | 822 rows = 137 heavy candidates x 6 families; every metric cell MEASURED / FAILED / NOT_APPLICABLE / PENDING with the receipt digest |
-| `candidate_decisions.csv` | one row per candidate: decision, families present, flags |
+| `candidate_decisions.csv` | one row per candidate: `provisional_extractibility_disposition`, `PLUS_EXTRACTIBILITY_EVIDENCE` (the column FS-CLOSE consumes), cause, families present, flags |
 | `progress.json` | coverage over 137, families present per candidate, terminals by role, ETA per GPU queue and for full coverage, output digests, process peak RSS |
 | `representation_metric_catalog.csv.gz` | long-format metric catalog slice for the grouping phase (committed at the first table and at full coverage; the uncompressed copy and its digest live in the state directory and `progress.json`) |
 

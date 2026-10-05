@@ -4183,7 +4183,7 @@
   },
   "candidates_decided": 70,
   "coverage_fraction": 0.5036,
-  "cycle_started_at": "2026-10-05T09:01:13Z",
+  "cycle_started_at": "2026-10-05T09:05:25Z",
   "decisions": {
     "NO_TRAINED_ADVANTAGE": 51,
     "PENDING": 67,
@@ -7215,27 +7215,27 @@
           }
         ]
       },
-      "generated_at_utc": "2026-10-05T09:00:38Z",
+      "generated_at_utc": "2026-10-05T09:04:54Z",
       "hosts": {
         "coordinator": {
           "gpus": [
-            "0, NVIDIA GeForce RTX 4070 Laptop GPU, 0 %, 723 MiB, 8188 MiB, 43"
+            "0, NVIDIA GeForce RTX 4070 Laptop GPU, 3 %, 1037 MiB, 8188 MiB, 44"
           ],
-          "memory": "total_mib=31259 used_mib=11876 available_mib=19383",
-          "probed_at_utc": "2026-10-05T09:00:37Z",
+          "memory": "total_mib=31259 used_mib=12015 available_mib=19244",
+          "probed_at_utc": "2026-10-05T09:04:53Z",
           "running": []
         },
         "worker_a": {
           "gpus": [
-            "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 0 %, 14 MiB, 12227 MiB, 39",
-            "1, NVIDIA GeForce RTX 5090, 56 %, 19502 MiB, 32607 MiB, 54"
+            "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 0 %, 14 MiB, 12227 MiB, 38",
+            "1, NVIDIA GeForce RTX 5090, 0 %, 19504 MiB, 32607 MiB, 52"
           ],
-          "memory": "total_mib=14630 used_mib=8492 available_mib=6137",
-          "probed_at_utc": "2026-10-05T09:00:37Z",
+          "memory": "total_mib=14630 used_mib=9339 available_mib=5290",
+          "probed_at_utc": "2026-10-05T09:04:53Z",
           "running": [
             {
               "cell_id": "batch_001::ta.dmn_14::baseline",
-              "elapsed_seconds": 104,
+              "elapsed_seconds": 360,
               "queue": "baselines_5090_batch_001_003",
               "started_at_utc": "2026-10-05T08:58:54Z"
             }
@@ -7243,14 +7243,14 @@
         },
         "worker_b": {
           "gpus": [
-            "0, NVIDIA GeForce RTX 4090 Laptop GPU, 30 %, 14428 MiB, 16376 MiB, 42"
+            "0, NVIDIA GeForce RTX 4090 Laptop GPU, 0 %, 14430 MiB, 16376 MiB, 41"
           ],
-          "memory": "total_mib=31310 used_mib=22787 available_mib=8523",
-          "probed_at_utc": "2026-10-05T09:00:37Z",
+          "memory": "total_mib=31310 used_mib=22944 available_mib=8366",
+          "probed_at_utc": "2026-10-05T09:04:53Z",
           "running": [
             {
               "cell_id": "batch_002::fred.rates.tb3ms.level::baseline",
-              "elapsed_seconds": 251,
+              "elapsed_seconds": 507,
               "queue": "baselines_4090_batch_002",
               "started_at_utc": "2026-10-05T08:56:27Z"
             }
@@ -7357,8 +7357,8 @@
             "finish_utc_p90": "2026-10-06T02:13:17Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 48632,
-            "seconds_p90": 61958
+            "seconds_median": 48376,
+            "seconds_p90": 61702
           },
           "failures": [
             {
@@ -7373,7 +7373,7 @@
           "running": [
             {
               "cell_id": "batch_002::fred.rates.tb3ms.level::baseline",
-              "elapsed_seconds": 251,
+              "elapsed_seconds": 507,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
               "role": "worker_b",
               "stale": false,
@@ -7420,8 +7420,8 @@
             "finish_utc_p90": "2026-10-05T15:34:51Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 20019,
-            "seconds_p90": 23652
+            "seconds_median": 19763,
+            "seconds_p90": 23396
           },
           "failures": [],
           "name": "baselines_5090_batch_001_003",
@@ -7429,7 +7429,7 @@
           "running": [
             {
               "cell_id": "batch_001::ta.dmn_14::baseline",
-              "elapsed_seconds": 104,
+              "elapsed_seconds": 360,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_a/baseline_5090.log",
               "role": "worker_a",
               "stale": false,
@@ -7498,7 +7498,7 @@
     }
   },
   "planned_cells_total": 411,
-  "process_peak_rss_bytes": 154865664,
+  "process_peak_rss_bytes": 154886144,
   "refit_gate_applied": true,
   "refit_input": "docs/audits/evidence/canonical_20261003/fs_closure/fs_close/refit_gain_export.csv",
   "rule_version": "fs_rep_rule.v2",
@@ -7525,5 +7525,5 @@
       "PENDING": 67
     }
   },
-  "updated_at": "2026-10-05T09:01:18Z"
+  "updated_at": "2026-10-05T09:05:29Z"
 }

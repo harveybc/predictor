@@ -5,7 +5,26 @@ commit that introduces this file; `tools/fs_rep_dispositions.py` implements it
 literally and refuses to run if its embedded `RULE_VERSION` differs from the one
 below. Changing the rule requires a new version here first.
 
-`RULE_VERSION = fs_rep_rule.v2`
+`RULE_VERSION = fs_rep_rule.v3`
+
+v3 (2026-10-05, Musashi correction order §1.4/§4): the output class is
+`PROVISIONAL_EXTRACTIBILITY_DISPOSITION`. Every disposition is an
+extractibility/probe statement that may prioritise RAW or a family for M4; it
+does NOT claim downstream improvement of latents while trained-family G4 is
+`NOT_APPLICABLE` (the real raw-vs-latent comparison is M4, after the
+manifest). The column FS-CLOSE consumes is `PLUS_EXTRACTIBILITY_EVIDENCE`
+(`candidate_decisions.csv`), formerly PLUS_REP. New disposition
+`NOT_AVAILABLE_FOR_TRAIN`: when no terminal of a candidate admitted any
+representation, raw included (all three FAILED), the aggregator may not default
+to `RAW`; the row carries the cause (`NO_OBSERVED_TRAIN_VALUES` when the
+receipts' reason text or the config declares it, else
+`ALL_TERMINALS_FAILED_CAUSE_UNDECLARED`), representation and extractibility
+cells are `NOT_APPLICABLE` with the FAILED receipt digests, and the only flag is
+`TRAIN_SUPPORT_ABSENT` (never `RAW`, `NO_TRAINED_ADVANTAGE` or
+`DECIDED_WITH_FAILED_FAMILIES`). The case where raw has support and only
+trained families fail is unchanged (`RAW` with `DECIDED_WITH_FAILED_FAMILIES`).
+Regression tests cover both. Candidate dispositions do not change the 366/137
+denominators.
 
 v2 (2026-10-05): G4 rewritten for the FS-CLOSE export, which carries
 identity-only refits. No other clause changed.
@@ -24,6 +43,7 @@ survives. One decision per heavy candidate (137 = features with
 | `RAW` | raw/identity strictly dominates every trained family that was measured |
 | `NO_TRAINED_ADVANTAGE` | no trained family passed the gates and raw does not strictly dominate either (trained ≈ raw within fold resolution); raw kept by parsimony and cost |
 | `PENDING` | at least one of the three PS3-R terminals of the candidate is not yet terminal (neither COMPLETED nor FAILED with receipt) |
+| `NOT_AVAILABLE_FOR_TRAIN` | all three terminals FAILED, so no representation (raw included) has TRAIN support; cause column filled; nothing here can train on it |
 
 Reconstruction, ACF/spectrum/extremes/DTW, stability and effective dimension are
 reported in every row and **never enter the decision**. Good reconstruction

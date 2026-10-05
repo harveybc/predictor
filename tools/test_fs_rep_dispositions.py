@@ -97,7 +97,7 @@ def world(tmp_path: Path):
     (rule_dir / "DECISION_RULE.md").write_text(f"# rule\n\n`RULE_VERSION = {fsr.RULE_VERSION}`\n")
     auto = repo / "docs/audits/evidence/canonical_20261003/automation"
     auto.mkdir(parents=True)
-    heavy = ["f.win", "f.raw", "f.tie", "f.pend", "f.fail", "f.contra"]
+    heavy = ["f.win", "f.raw", "f.tie", "f.pend", "f.fail", "f.contra", "f.notrain"]
     cov = {"features": [{"feature_id": f, "batch": "batch_002", "in_extractibility_queue": True} for f in heavy]
            + [{"feature_id": "light.x", "batch": "batch_002", "in_extractibility_queue": False}]}
     (repo / "docs/audits/evidence/canonical_20261003/coverage_reconciliation").mkdir(parents=True)
@@ -173,6 +173,12 @@ def world(tmp_path: Path):
     make_terminal(succ, "batch_002/f.contra", "f.contra", "baseline", "batch_002", losses={"identity": 0.9, "random": 1.0, "ae": 0.94, "dae": 0.97})
     make_terminal(alt, "batch_002/f.contra", "f.contra", "alt_mtae", "batch_002", losses={"identity": 0.9, "random": 1.0, "masked_temporal_ae": 0.85})
     make_terminal(alt, "batch_002/f.contra/pass_p2c", "f.contra", "alt_p2c", "batch_002", losses={"identity": 0.9, "random": 1.0, "past_to_current_siamese": 0.95})
+    # f.notrain: every terminal FAILED because the series has no observed TRAIN values
+    for d in (base / "batch_002/f.notrain", alt / "batch_002/f.notrain", alt / "batch_002/f.notrain/pass_p2c"):
+        d.mkdir(parents=True)
+        (d / "FAILED.codex.json").write_text(json.dumps({"status": "FAILED", "rc": 1}))
+        (d / "FAILED.reason.txt").write_text("ContractError: no observed TRAIN values to fit normalization\n")
+        (d / "results.jsonl").write_bytes(b"")
     return {"cfg_path": cfg_path, "repo": repo, "state": state, "alt": alt, "base": base, "succ": succ}
 
 
@@ -195,7 +201,7 @@ def test_decisions_follow_frozen_rule(world):
     # the contradictory baseline is terminal (FAILED); the alternatives still contest and MTAE wins
     assert c["f.contra"]["decision"] == "masked_temporal_ae" and "DECIDED_WITH_FAILED_FAMILIES" in c["f.contra"]["flags"]
     assert progress["heavy_candidates_covered"] == 3
-    assert progress["decisions"] == {"dae": 1, "RAW": 2, "NO_TRAINED_ADVANTAGE": 1, "PENDING": 1, "masked_temporal_ae": 1}
+    assert progress["decisions"] == {"dae": 1, "RAW": 2, "NO_TRAINED_ADVANTAGE": 1, "PENDING": 1, "masked_temporal_ae": 1, "NOT_AVAILABLE_FOR_TRAIN": 1}
     assert "PROBE_ROWS_DIFFER" not in c["f.win"]["flags"]
     assert progress["safety"]["tensorflow_imported"] is False
 
@@ -215,7 +221,7 @@ def test_every_metric_cell_has_a_status(world):
     cfg, progress = _run(world)
     out = cfg["_output_dir"] / "representation_dispositions.csv"
     rows = list(csv.DictReader(out.open()))
-    assert len(rows) == 6 * 6
+    assert len(rows) == 7 * 6
     allowed = {"MEASURED", "FAILED", "NOT_APPLICABLE", "PENDING"}
     for r in rows:
         for col in ("rec_status", "stability_status", "effdim_status", "probe_status", "delta_status", "preservation_status", "cost_status"):
@@ -273,6 +279,7 @@ def test_identity_only_refit_export_is_feature_level_evidence(world):
     cfg, progress = _run(world)
     c = progress["candidates"]
     assert c["f.win"]["decision"] == "dae"  # trained G4 not applied: no trained refit rows
+    assert c["f.notrain"]["decision"] == "NOT_AVAILABLE_FOR_TRAIN"
     assert "RAW_REFIT_GAIN_POSITIVE" in c["f.win"]["flags"]
     assert not any(f.startswith("RAW_REFIT") for f in c["f.raw"]["flags"])  # empty gain skipped
     rows = {(r["feature_id"], r["family"]): r for r in csv.DictReader((cfg["_output_dir"] / "representation_dispositions.csv").open())}
@@ -317,3 +324,35 @@ def test_eta_from_status_files(world):
     assert eta["queues"]["alternative"]["remaining"] == 2
     assert eta["queues"]["alternative"]["eta_median_utc"] > progress["cycle_started_at"]
     assert eta["full_coverage_eta_median_utc"] == eta["queues"]["alternative"]["eta_median_utc"]
+
+
+def test_no_train_support_never_defaults_to_raw(world):
+    """Musashi 2026-10-05: RAW and every trained family lack TRAIN observations -> NOT_AVAILABLE_FOR_TRAIN."""
+    cfg, progress = _run(world)
+    c = progress["candidates"]["f.notrain"]
+    assert c["decision"] == "NOT_AVAILABLE_FOR_TRAIN" and c["cause"] == "NO_OBSERVED_TRAIN_VALUES"
+    assert c["flags"] == ["TRAIN_SUPPORT_ABSENT"]
+    assert not any(f in c["flags"] for f in ("DECIDED_WITH_FAILED_FAMILIES", "ALL_TRAINED_FAMILIES_FAILED", "RAW_NO_PROBE_SKILL"))
+    rows = [r for r in csv.DictReader((cfg["_output_dir"] / "representation_dispositions.csv").open()) if r["feature_id"] == "f.notrain"]
+    assert len(rows) == 6
+    for r in rows:
+        assert r["provisional_extractibility_disposition"] == "NOT_AVAILABLE_FOR_TRAIN"
+        assert r["disposition_class"] == "PROVISIONAL_EXTRACTIBILITY_DISPOSITION"
+        assert r["terminal_state"] == "FAILED" and len(r["receipt_sha256"]) == 64
+        for col in ("rec_status", "probe_status", "delta_status", "preservation_status", "cost_status"):
+            assert r[col] == "NOT_APPLICABLE"
+    dec = {r["feature_id"]: r for r in csv.DictReader((cfg["_output_dir"] / "candidate_decisions.csv").open())}
+    assert dec["f.notrain"]["PLUS_EXTRACTIBILITY_EVIDENCE"] == "NOT_AVAILABLE_FOR_TRAIN"
+    # the valid case stays separate: raw has support, only trained families failed -> RAW with the flag
+    assert progress["candidates"]["f.fail"]["decision"] == "RAW"
+    assert "DECIDED_WITH_FAILED_FAMILIES" in progress["candidates"]["f.fail"]["flags"]
+    assert dec["f.fail"]["PLUS_EXTRACTIBILITY_EVIDENCE"] == "RAW"
+
+
+def test_all_failed_without_declared_cause_is_still_not_raw(world, tmp_path):
+    cfg = fsr.load_config(world["cfg_path"])
+    terminals = {role: {"state": "FAILED", "reason": "FAILED_RECEIPT", "receipt_sha256": "0" * 64} for role in fsr.ROLE_FAMILIES}
+    d = fsr.decide("x", terminals, None)
+    assert d["decision"] == "NOT_AVAILABLE_FOR_TRAIN" and d["cause"] == "ALL_TERMINALS_FAILED_CAUSE_UNDECLARED"
+    d = fsr.decide("x", terminals, None, {"x": "NO_OBSERVED_TRAIN_VALUES"})
+    assert d["cause"] == "NO_OBSERVED_TRAIN_VALUES"
