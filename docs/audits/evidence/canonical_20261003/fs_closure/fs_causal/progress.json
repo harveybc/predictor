@@ -1,0 +1,40 @@
+{
+ "schema": "fs_causal_progress.v1",
+ "updated_utc": "2026-10-05T05:19:28Z",
+ "stage": "RUNNING",
+ "chunks": {
+  "done": 1,
+  "total": 47
+ },
+ "cells": {
+  "done": 112,
+  "total": 5124,
+  "failed_features": 0
+ },
+ "candidates": {
+  "done": 8,
+  "total": 366
+ },
+ "per_state_provisional_raw": {
+  "rung1_raw": {
+   "ASSOCIATION_REPORTED": 112
+  },
+  "rung2_raw": {
+   "NOT_IDENTIFIED": 102,
+   "IDENTIFIED_CONDITIONAL_ON_DECLARED_ASSUMPTIONS": 10
+  },
+  "rung3_raw": {
+   "NOT_IDENTIFIED": 102,
+   "COUNTERFACTUAL_UNDER_DECLARED_SCM": 10
+  }
+ },
+ "failures": [],
+ "median_chunk_s": 265.10678362846375,
+ "mean_s_per_candidate": 33.13834795355797,
+ "eta_s": 11863.528567373753,
+ "eta_utc": "2026-10-05T08:37:11Z",
+ "host_role": "worker_b",
+ "hardware": "CPU only, single BLAS thread, crispdm-run capped",
+ "seed": 1729,
+ "test_read": false
+}
