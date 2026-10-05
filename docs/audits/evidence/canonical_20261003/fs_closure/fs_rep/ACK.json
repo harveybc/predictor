@@ -1,0 +1,32 @@
+{
+  "lane": "FS-REP",
+  "order": "docs/handoffs/SATOSHI_FEATURE_SELECTION_CLOSURE_2026_10_05.md",
+  "sections_read": [
+    "2",
+    "6",
+    "8",
+    "9",
+    "FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30 \u00a76-\u00a77",
+    "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3 \u00a76"
+  ],
+  "ack_utc": "2026-10-05T03:55:18Z",
+  "branch": "satoshi/canonical-exec-20261003",
+  "tip_at_ack": "45c92a2d",
+  "worktree_role": "canonical-exec worktree",
+  "write_set": [
+    "tools/fs_rep_dispositions.py",
+    "tools/test_fs_rep_dispositions.py",
+    "docs/audits/evidence/canonical_20261003/fs_closure/fs_rep/**"
+  ],
+  "never_touch": [
+    "STATUS.json",
+    "MASTER_MILESTONE_*",
+    "other lanes' directories",
+    "GPU jobs",
+    "worker_b /tmp"
+  ],
+  "first_deliverable": "DECISION_RULE.md frozen before any computation, then representation_dispositions.csv at current coverage with progress.json",
+  "evidence_policy": "TRAIN-only; TEST never read; reconstruction diagnostic; downstream utility decides",
+  "compute_policy": "pure-python aggregation on coordinator <256 MB no TF import; durable follower loop re-emits as PS3-R terminals land",
+  "seed_policy": "one seed, retained per receipt"
+}
