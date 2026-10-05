@@ -3539,14 +3539,19 @@
     "yh.gc_f.logret_5d": {
       "batch": "batch_002",
       "cause": "",
-      "decision": "PENDING",
+      "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
         "random",
+        "ae",
+        "dae",
         "masked_temporal_ae",
         "past_to_current_siamese"
       ],
-      "flags": [],
+      "flags": [
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
+      ],
       "terminals": {
         "alt_mtae": {
           "reason": "",
@@ -3559,9 +3564,9 @@
           "state": "COMPLETED"
         },
         "baseline": {
-          "reason": "NOT_LANDED",
-          "receipt_sha256": "",
-          "state": "PENDING"
+          "reason": "",
+          "receipt_sha256": "57a1d7a83d035badb474cb9dd8f36ca3c29d10afe81667a9d8be1b5ead95a241",
+          "state": "COMPLETED"
         }
       }
     },
@@ -4634,20 +4639,19 @@
       }
     }
   },
-  "candidates_decided": 136,
+  "candidates_decided": 137,
   "claim_scope": "provisional extractibility/probe disposition; no downstream improvement of latents is claimed while trained-family G4 is NOT_APPLICABLE; raw vs latent belongs to M4",
-  "coverage_fraction": 0.8029,
-  "cycle_started_at": "2026-10-05T17:15:38Z",
+  "coverage_fraction": 0.8102,
+  "cycle_started_at": "2026-10-05T17:37:00Z",
   "decisions": {
     "NOT_AVAILABLE_FOR_TRAIN": 1,
-    "NO_TRAINED_ADVANTAGE": 88,
-    "PENDING": 1,
+    "NO_TRAINED_ADVANTAGE": 89,
     "RAW": 47
   },
   "disposition_class": "PROVISIONAL_EXTRACTIBILITY_DISPOSITION",
   "eta": {
     "fs_gpu_eta": {
-      "generated_at_utc": "2026-10-05T17:13:33Z",
+      "generated_at_utc": "2026-10-05T17:35:49Z",
       "queues": {
         "alternatives_5090": {
           "active_roles": [],
@@ -4744,8 +4748,8 @@
                 "worker_b": 1635.7
               }
             },
-            "finish_utc_median": "2026-10-05T17:13:33Z",
-            "finish_utc_p90": "2026-10-05T17:13:33Z",
+            "finish_utc_median": "2026-10-05T17:35:49Z",
+            "finish_utc_p90": "2026-10-05T17:35:49Z",
             "provisional": false,
             "reason": null,
             "seconds_median": 0,
@@ -4914,7 +4918,7 @@
           "running": [
             {
               "cell_id": "batch_002::yh.gc_f.logret_5d::baseline",
-              "elapsed_seconds": 11053,
+              "elapsed_seconds": 12389,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
               "role": "worker_b",
               "stale": false,
@@ -4989,10 +4993,10 @@
   },
   "families_present_histogram": {
     "0": 1,
-    "4": 26,
-    "6": 110
+    "4": 25,
+    "6": 111
   },
-  "heavy_candidates_covered": 110,
+  "heavy_candidates_covered": 111,
   "heavy_denominator": 137,
   "milestones": {
     "coverage_50": {
@@ -5012,19 +5016,19 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "8be3d506145eaa15ee112400ae4cc5e5f092df26915554633d6ebd422ffe5564"
+      "sha256": "97cc45d8b14e54909299169e5cb096ee03e4867aafa1acd567c06fc181af7fdb"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
-      "rows": 122336,
-      "sha256": "741d8855ffee2abcb1204e5b1d64431478aabca865493ca22d19da1e0125cc43"
+      "rows": 122736,
+      "sha256": "10aeab5d6f666151ee2ff57d7bd3cb271a24087827640267d49bb2661d54d668"
     },
     "representation_metric_catalog.csv.gz": {
-      "sha256": "1bbc98d51e62c70b377bf4b2b797796b4230eb68dca1e0e6fd3edf10b2217796"
+      "sha256": "82b2acf691538def3628e7926a521846d72577109472cf4bbdb60d8d41423ea3"
     }
   },
   "planned_cells_total": 411,
-  "process_peak_rss_bytes": 175783936,
+  "process_peak_rss_bytes": 175947776,
   "refit_gate_applied": true,
   "refit_input": "docs/audits/evidence/canonical_20261003/fs_closure/fs_close/refit_gain_export.csv",
   "rule_version": "fs_rep_rule.v3",
@@ -5046,10 +5050,9 @@
       "FAILED": 1
     },
     "baseline": {
-      "COMPLETED": 110,
-      "FAILED": 26,
-      "PENDING": 1
+      "COMPLETED": 111,
+      "FAILED": 26
     }
   },
-  "updated_at": "2026-10-05T17:15:47Z"
+  "updated_at": "2026-10-05T17:37:05Z"
 }
