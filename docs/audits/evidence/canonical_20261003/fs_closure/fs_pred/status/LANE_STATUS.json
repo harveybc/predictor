@@ -50,36 +50,76 @@
  },
  "failures": [],
  "host_role": "worker_b (CPU)",
- "k24_sets": 6,
+ "k24_sets": 14,
  "method_wall_seconds": {
   "ALL_ADMISSIBLE": {
-   "max": 0.20256962603889406,
-   "median": 0.20256962603889406,
+   "max": 0.20536362496204674,
+   "median": 0.20536362496204674,
+   "n": 1
+  },
+  "CHRONOEPILOGI_K": {
+   "max": 21.329175620921887,
+   "median": 21.329175620921887,
    "n": 1
   },
   "CMIM_K": {
-   "max": 35.60689547704533,
-   "median": 35.60689547704533,
+   "max": 33.853630036930554,
+   "median": 33.853630036930554,
+   "n": 1
+  },
+  "ELASTIC_NET_K": {
+   "max": 9.639118716004305,
+   "median": 9.639118716004305,
+   "n": 1
+  },
+  "EXTRATREES_TBP_K": {
+   "max": 66.74763214797713,
+   "median": 66.74763214797713,
+   "n": 1
+  },
+  "GROUP_ELASTIC_NET_K": {
+   "max": 7.3403196319704875,
+   "median": 7.3403196319704875,
+   "n": 1
+  },
+  "GROUP_GATE_K": {
+   "max": 2.4283929970115423,
+   "median": 2.4283929970115423,
    "n": 1
   },
   "JMI_K": {
-   "max": 35.62707195302937,
-   "median": 35.62707195302937,
+   "max": 33.840661981957965,
+   "median": 33.840661981957965,
    "n": 1
   },
   "MI8_K": {
-   "max": 1.0147426620824262,
-   "median": 1.0147426620824262,
+   "max": 1.0151378529844806,
+   "median": 1.0151378529844806,
    "n": 1
   },
   "MRMR_K": {
-   "max": 35.511112637934275,
-   "median": 35.511112637934275,
+   "max": 33.846031661028974,
+   "median": 33.846031661028974,
+   "n": 1
+  },
+  "RANDOM_K:seed0": {
+   "max": 0.2108799290144816,
+   "median": 0.2108799290144816,
+   "n": 1
+  },
+  "REDUNDANCY_K": {
+   "max": 2.2746199620887637,
+   "median": 2.2746199620887637,
+   "n": 1
+  },
+  "SEQ_MARGINAL_K": {
+   "max": 13.32092426798772,
+   "median": 13.32092426798772,
    "n": 1
   },
   "SPEARMAN_K": {
-   "max": 20.789270640932955,
-   "median": 20.789270640932955,
+   "max": 20.80476092605386,
+   "median": 20.80476092605386,
    "n": 1
   }
  },
@@ -89,7 +129,7 @@
    "total": 1
   },
   "CHRONOEPILOGI_K": {
-   "done": 0,
+   "done": 1,
    "total": 1
   },
   "CMIM_K": {
@@ -97,19 +137,19 @@
    "total": 1
   },
   "ELASTIC_NET_K": {
-   "done": 0,
+   "done": 1,
    "total": 1
   },
   "EXTRATREES_TBP_K": {
-   "done": 0,
+   "done": 1,
    "total": 1
   },
   "GROUP_ELASTIC_NET_K": {
-   "done": 0,
+   "done": 1,
    "total": 1
   },
   "GROUP_GATE_K": {
-   "done": 0,
+   "done": 1,
    "total": 1
   },
   "JMI_K": {
@@ -125,15 +165,15 @@
    "total": 1
   },
   "RANDOM_K:seed0": {
-   "done": 0,
+   "done": 1,
    "total": 1
   },
   "REDUNDANCY_K": {
-   "done": 0,
+   "done": 1,
    "total": 1
   },
   "SEQ_MARGINAL_K": {
-   "done": 0,
+   "done": 1,
    "total": 1
   },
   "SPEARMAN_K": {
@@ -143,24 +183,24 @@
  },
  "per_target": {
   "Y_s_1h": {
-   "method_cells_done": 6,
+   "method_cells_done": 14,
    "method_cells_total": 14
   }
  },
  "progress": {
-  "done": 30,
-  "eta_seconds": 225.20153311546892,
-  "eta_utc": "2026-10-05T04:31:38.872516+00:00",
-  "method_cells_done": 6,
+  "done": 70,
+  "eta_seconds": 0.0,
+  "eta_utc": "2026-10-05T05:34:18.090053+00:00",
+  "method_cells_done": 14,
   "method_cells_total": 14,
   "n_failures": 0,
-  "observed_median_method_wall_seconds": 28.150191639433615,
-  "observed_p90_method_wall_seconds": 35.60689547704533,
+  "observed_median_method_wall_seconds": 11.480021491996013,
+  "observed_p90_method_wall_seconds": 21.329175620921887,
   "total": 70,
-  "updated_utc": "2026-10-05T04:27:53.670965+00:00",
+  "updated_utc": "2026-10-05T05:34:18.090034+00:00",
   "workers": 1
  },
- "records": 6,
- "rendered_utc": "2026-10-05T04:52:31.050582+00:00",
+ "records": 14,
+ "rendered_utc": "2026-10-05T05:34:27.875752+00:00",
  "schema": "fs_pred_lane_status.v1"
 }
