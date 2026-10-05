@@ -3992,7 +3992,7 @@
   },
   "candidates_decided": 38,
   "coverage_fraction": 0.2774,
-  "cycle_started_at": "2026-10-05T04:57:04Z",
+  "cycle_started_at": "2026-10-05T04:57:16Z",
   "decisions": {
     "NO_TRAINED_ADVANTAGE": 31,
     "PENDING": 99,
@@ -7153,7 +7153,7 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "6eb90cacf9e26e7aba1f40c2867edddd691ff8c8ca55bc4952ad624ade98823b"
+      "sha256": "2589de86ea812fee5c7b6a3ba149a9fa0d95c798da1f43d9a44e4fbcdaa1f044"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
@@ -7165,10 +7165,10 @@
     }
   },
   "planned_cells_total": 411,
-  "process_peak_rss_bytes": 140640256,
-  "refit_gate_applied": false,
-  "refit_input": null,
-  "rule_version": "fs_rep_rule.v1",
+  "process_peak_rss_bytes": 139743232,
+  "refit_gate_applied": true,
+  "refit_input": "docs/audits/evidence/canonical_20261003/fs_closure/fs_close/refit_gain_export.csv",
+  "rule_version": "fs_rep_rule.v2",
   "safety": {
     "split": "train",
     "targets_read": false,
@@ -7191,5 +7191,5 @@
       "PENDING": 99
     }
   },
-  "updated_at": "2026-10-05T04:57:09Z"
+  "updated_at": "2026-10-05T04:57:23Z"
 }
