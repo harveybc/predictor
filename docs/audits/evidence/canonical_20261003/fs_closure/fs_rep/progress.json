@@ -76,7 +76,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -135,7 +136,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_POSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -169,7 +171,8 @@
       ],
       "flags": [
         "COLLAPSED_LATENT(ae)",
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -203,7 +206,8 @@
       ],
       "flags": [
         "COLLAPSED_LATENT(ae)",
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -265,7 +269,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -298,7 +303,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -331,7 +337,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -4298,7 +4305,7 @@
   "candidates_decided": 79,
   "claim_scope": "provisional extractibility/probe disposition; no downstream improvement of latents is claimed while trained-family G4 is NOT_APPLICABLE; raw vs latent belongs to M4",
   "coverage_fraction": 0.5693,
-  "cycle_started_at": "2026-10-05T10:24:15Z",
+  "cycle_started_at": "2026-10-05T10:26:27Z",
   "decisions": {
     "NOT_AVAILABLE_FOR_TRAIN": 1,
     "NO_TRAINED_ADVANTAGE": 58,
@@ -4308,7 +4315,7 @@
   "disposition_class": "PROVISIONAL_EXTRACTIBILITY_DISPOSITION",
   "eta": {
     "fs_gpu_eta": {
-      "generated_at_utc": "2026-10-05T10:22:41Z",
+      "generated_at_utc": "2026-10-05T10:25:00Z",
       "queues": {
         "alternatives_5090": {
           "active_roles": [],
@@ -4377,40 +4384,40 @@
               "p90_seconds": null
             },
             "worker_b": {
-              "done": 49,
-              "median_seconds": 1277.0,
-              "n": 49,
-              "p90_seconds": 1637.1
+              "done": 50,
+              "median_seconds": 1275.8,
+              "n": 50,
+              "p90_seconds": 1635.7
             }
           },
           "counts": {
-            "done": 49,
+            "done": 50,
             "failed": 1,
-            "pending": 35,
+            "pending": 34,
             "running": 1
           },
           "denominator": 86,
           "duplicates": [],
           "durations_seconds": {
-            "median": 1277.0,
-            "n": 49,
-            "p90": 1637.1
+            "median": 1275.8,
+            "n": 50,
+            "p90": 1635.7
           },
           "eta": {
             "basis": {
               "median_seconds": {
-                "worker_b": 1277.0
+                "worker_b": 1275.8
               },
               "p90_seconds": {
-                "worker_b": 1637.1
+                "worker_b": 1635.7
               }
             },
-            "finish_utc_median": "2026-10-05T22:48:33Z",
-            "finish_utc_p90": "2026-10-06T02:24:37Z",
+            "finish_utc_median": "2026-10-05T22:46:26Z",
+            "finish_utc_p90": "2026-10-06T02:16:23Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 44752,
-            "seconds_p90": 57715
+            "seconds_median": 44485,
+            "seconds_p90": 57082
           },
           "failures": [
             {
@@ -4424,12 +4431,12 @@
           "plan_cells": 86,
           "running": [
             {
-              "cell_id": "batch_002::fred.stress.anfci.level::baseline",
-              "elapsed_seconds": 1220,
+              "cell_id": "batch_002::fred.stress.nfci.diff_1d::baseline",
+              "elapsed_seconds": 167,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
               "role": "worker_b",
               "stale": false,
-              "started_at_utc": "2026-10-05T10:02:21Z"
+              "started_at_utc": "2026-10-05T10:22:13Z"
             }
           ]
         },
@@ -4472,8 +4479,8 @@
             "finish_utc_p90": "2026-10-05T15:27:13Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 15757,
-            "seconds_p90": 18271
+            "seconds_median": 15618,
+            "seconds_p90": 18132
           },
           "failures": [],
           "name": "baselines_5090_batch_001_003",
@@ -4481,7 +4488,7 @@
           "running": [
             {
               "cell_id": "batch_001::ta.roc_10::baseline",
-              "elapsed_seconds": 570,
+              "elapsed_seconds": 709,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_a/baseline_5090.log",
               "role": "worker_a",
               "stale": false,
@@ -4500,12 +4507,12 @@
         },
         "baselines_batch_002": {
           "denominator": 86,
-          "done": 49,
+          "done": 50,
           "failed": 1
         },
         "baselines_heavy_candidates": {
           "denominator": 137,
-          "done": 77,
+          "done": 78,
           "failed": 1
         }
       }
@@ -4538,7 +4545,7 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "32780121dce4ff78c1360524699892d95d95547dc1bf21cc5eec18e4003e4319"
+      "sha256": "06b112bb0c59fba37a62e681447ec46560d4c28f30d05fe1a09b19ed0e3b8eaf"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
@@ -4550,7 +4557,7 @@
     }
   },
   "planned_cells_total": 411,
-  "process_peak_rss_bytes": 158535680,
+  "process_peak_rss_bytes": 159498240,
   "refit_gate_applied": true,
   "refit_input": "docs/audits/evidence/canonical_20261003/fs_closure/fs_close/refit_gain_export.csv",
   "rule_version": "fs_rep_rule.v3",
@@ -4577,5 +4584,5 @@
       "PENDING": 58
     }
   },
-  "updated_at": "2026-10-05T10:24:24Z"
+  "updated_at": "2026-10-05T10:26:36Z"
 }
