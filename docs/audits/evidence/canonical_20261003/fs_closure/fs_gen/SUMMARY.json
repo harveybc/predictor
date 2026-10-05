@@ -1,0 +1,77 @@
+{
+ "by_batch": {
+  "batch_001": {
+   "CALIBRATED": 2,
+   "NOT_CALIBRATED": 34
+  },
+  "batch_002": {
+   "NOT_CALIBRATED": 214
+  },
+  "batch_003": {
+   "NOT_CALIBRATED": 19
+  }
+ },
+ "calibration_state_counts": {
+  "CALIBRATED": 2,
+  "NOT_APPLICABLE": 10,
+  "NOT_CALIBRATED": 267,
+  "NOT_EVALUATED": 87
+ },
+ "cost": {
+  "code_sha256": "0a5345bbef214c13139eb31ceb05faf84ff0a93a7fa35d2bead0fbf4aa500d18",
+  "cost_s": 348.1,
+  "finished_utc": "2026-10-05T04:20:58Z",
+  "outputs": {
+   "generative_evidence.csv": "11b5493af71ec7c6068343010ea58d77d026fec4a806720343ab314a38b4e526",
+   "generative_evidence_features.csv": "448553d0f96a30fe7821438f070085f53d3f06fa39109f48eccb049a34fbb0c7",
+   "generative_evidence_folds.csv": "40e776e1ec84e2d2027a152d308b19d5337004fc9094f58adcb71f33747caea2"
+  },
+  "peak_rss_mb": 427.1,
+  "started_utc": "2026-10-05T04:15:10Z"
+ },
+ "denominator_rows": 366,
+ "failing_gate_frequency_fold_level": {
+  "acf_max_abs_diff_lags_1_48": 782,
+  "fit_error:ContractError": 5,
+  "ks_marginal": 1007,
+  "kurtosis_ratio": 823,
+  "min_val_observed_rows": 18,
+  "psd_log_ratio_rmse": 660,
+  "regime_coverage": 1014,
+  "tail_ratio_q99_abs": 887
+ },
+ "features_with_majority_selection": 0,
+ "fold_generator_states": {
+  "CALIBRATED": 25,
+  "NOT_CALIBRATED": 1320
+ },
+ "fold_knockoff_states": {
+  "NOT_CALIBRATED": 1330,
+  "RUN": 15
+ },
+ "fold_metric_medians": {
+  "acf_max_abs_diff_lags_1_48": 0.1238,
+  "conditional_independence_abs_z_max": 2.555,
+  "ks_marginal": 0.1512,
+  "kurtosis_ratio": 2.3344,
+  "psd_log_ratio_rmse": 0.4855,
+  "regime_coverage": 0.5,
+  "second_moment_gap": 0.0427,
+  "swap_classifier_auc_batch": 0.5,
+  "tail_ratio_q99_abs": 1.3061
+ },
+ "fold_rows": 1345,
+ "knockoff_reasons_fold_level": {
+  "GENERATOR_FIT_REFUSED": 5,
+  "GENERATOR_NOT_CALIBRATED": 1315,
+  "conditional_independence_abs_z": 2,
+  "second_moment_gap": 5,
+  "second_moment_gap;conditional_independence_abs_z": 3
+ },
+ "knockoff_run_features": [],
+ "knockoff_state_counts": {
+  "NOT_APPLICABLE": 10,
+  "NOT_CALIBRATED": 356
+ },
+ "schema": "fs_gen.summary.v1"
+}
