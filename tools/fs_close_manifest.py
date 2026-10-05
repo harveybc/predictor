@@ -1880,6 +1880,8 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
             unit_alive, running = False, False
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
             pass
+    if running and marker.get("unit") and not unit_alive:
+        running = False          # a stale RUNNING progress file from a unit systemd reports as gone
     if running or unit_alive:
         info["state"] = "RUNNING" if running else "QUEUED_OR_STARTING"
         info["progress"] = progress
