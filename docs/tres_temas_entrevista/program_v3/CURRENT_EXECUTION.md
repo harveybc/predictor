@@ -5,16 +5,18 @@
 > fase 1**. La orden ejecutable es
 > `docs/handoffs/MUSASHI_TO_SATOSHI_FEATURE_SELECTION_PHASE1_ONLY_2026_10_05.md`.
 > Se pausan PS3-R/extractibilidad, autoencoders, CVAE, arquitectura modular,
-> NEAT, RL y nuevas replicas hasta que el warehouse confirme 366/366 perfiles,
-> la escalera causal EURUSD/ETH finalizada globalmente y
+> NEAT, RL y nuevas replicas hasta que el warehouse confirme 366/366 perfiles
+> EURUSD y 83/83 perfiles ETH, con sus escaleras causales finalizadas por
+> poblacion, y
 > `PHASE_1_COMPLETE`. La evidencia ya obtenida se conserva y no se interpreta
-> como seleccion final.
+> como seleccion final. La evidencia EURUSD ya retenida se adopta por digesto;
+> no se repite.
 
-Observado: 2026-10-05 03:06 UTC. La autoridad `codex/workplan-consolidation-20261003@02434903` esta integrada en esta rama. La orden operativa vigente de cierre es `docs/handoffs/SATOSHI_FEATURE_SELECTION_CLOSURE_2026_10_05.md`. Este corte sustituye las observaciones anteriores; no modifica resultados historicos. Los `STATUS.json` anteriores son instantaneas, no el estado vivo.
+Observado: 2026-10-05. La autoridad `codex/workplan-consolidation-20261003@02434903` esta integrada en esta rama. La unica orden operativa vigente es `docs/handoffs/MUSASHI_TO_SATOSHI_FEATURE_SELECTION_PHASE1_ONLY_2026_10_05.md`. Este corte sustituye las ordenes anteriores; no modifica resultados historicos. Los `STATUS.json` anteriores son instantaneas, no el estado vivo.
 
 ## Secuencia vigente
 
-Prioridad crítica: completar el inventario/admisibilidad EURUSD (PS0/PS1), terminar PS2-PS5 sin descartar silenciosamente poblaciones y reanalizar PS3-C bajo su método reparado. El fix PS3-C quedó publicado en `causal-inference@48ae17c`; los expedientes previos siguen preservados y diagnósticos, no son selección. `NOT_IDENTIFIED` no significa rechazado. Ninguna feature está seleccionada.
+Prioridad critica unica: completar en CPU los perfiles de 366 candidatas EURUSD y 83 candidatas ETH, cargar perfiles y evidencia causal al warehouse, finalizar BH/FDR por poblacion y verificar 100 % por lectura de vuelta. La escalera EURUSD existente se adopta por digesto; solo se ejecuta trabajo ausente. `NOT_IDENTIFIED` no significa rechazado. Ninguna feature queda seleccionada por esta fase aislada.
 
 Prioridad de negocio co-rectora: implementar
 `BUSINESS_WEEKLY_WALK_FORWARD` antes de emitir cualquier veredicto financiero

@@ -7,8 +7,10 @@ experimentos de literatura. No borra su evidencia. Los pausa hasta que la fase
 
 ## Resultado obligatorio
 
-Entregar una ejecucion automatica y reanudable sobre el denominador canonico de
-366 series. Para cada serie debe existir exactamente un terminal que contenga:
+Entregar una ejecucion automatica y reanudable sobre dos poblaciones separadas:
+366 candidatas EURUSD y 83 candidatas ETH. No mezclar sus denominadores ni sus
+targets. Para cada unidad dataset-feature debe existir exactamente un terminal
+que contenga:
 
 1. Identidad inmutable de recurso, dataset, columna, bytes, intervalo TRAIN,
    calendario/frecuencia, codigo y version de metricas.
@@ -24,10 +26,15 @@ Entregar una ejecucion automatica y reanudable sobre el denominador canonico de
 5. Un `feature_selection_envelope.v1` validado y entregado al propietario del
    warehouse. El worker no abre DuckDB directamente.
 
-Al terminar las 366 unidades, un finalizador automatico debe aplicar BH/FDR
-global por target/horizonte/escalon, publicar decisiones finales y marcar
-`PHASE_1_COMPLETE` solo cuando el warehouse lea de vuelta 366 identidades sin
-contradicciones ni pendientes.
+La escalera EURUSD ya posee evidencia retenida para 366 x 14 = 5.124 celdas por
+escalon. Debe validarse y adoptarse por digesto, no repetirse. ETH es una
+poblacion independiente de 83 features, 18.085 filas y horizontes 1--6 barras
+de 4 horas; requiere su propio manifiesto point-in-time y su propia ejecucion.
+
+Al terminar ambas poblaciones, finalizadores independientes deben aplicar
+BH/FDR global por dataset/target/horizonte/escalon, publicar decisiones finales
+y marcar `PHASE_1_COMPLETE` solo cuando el warehouse lea de vuelta 366/366
+identidades EURUSD y 83/83 identidades ETH sin contradicciones ni pendientes.
 
 ## Dos comandos, ningun codigo por columna
 
@@ -46,7 +53,9 @@ configuracion versionada. Se prohibe crear scripts especiales por feature.
 - CPU solamente durante esta fase. No reservar ni usar GPU.
 - Un proceso de serie por host para que una columna defectuosa no derribe otra.
 - Particion determinista por coste estimado de filas/bytes: las unidades mas
-  pequenas van a omega; las mayores se balancean entre gamma y dragon.
+  pequenas van a omega; las mayores se balancean entre gamma y dragon. Para
+  EURUSD, la particion auditada inicial es 73/146/147; cualquier cambio debe
+  conservar el mismo algoritmo y publicar los tres digestos de membresia.
 - Omega: limite por hijo <= 2 GiB. Gamma/dragon: limite inicial <= 4 GiB salvo
   medicion retenida que justifique otro valor.
 - Claims exclusivos por identidad. Un terminal valido se adopta; nunca se
@@ -78,7 +87,9 @@ manifiesto/digesto y una ubicacion descargable gobernada.
    endpoint del warehouse y orquestador del inventario.
 3. Integrarlos en entorno desechable con tres series pequenas: una completa,
    una con fechas ausentes y una no disponible.
-4. Ejecutar el inventario completo en los tres hosts.
+4. Adoptar por digesto la evidencia causal EURUSD existente y ejecutar solo las
+   unidades o metricas realmente ausentes; ejecutar ETH completo en los tres
+   hosts bajo su manifiesto independiente.
 5. Finalizar BH/FDR, reconciliar contra el warehouse, crear snapshot y verificar
    restauracion en servicio desechable.
 6. Publicar retorno con comandos exactos, commits, pruebas, cobertura 366/366,
@@ -88,13 +99,13 @@ manifiesto/digesto y una ubicacion descargable gobernada.
 
 No declarar fase 1 terminada si falta cualquiera de estas condiciones:
 
-- 366/366 unidades con terminal explicito.
+- EURUSD 366/366 y ETH 83/83 con terminal explicito.
 - Perfiles requeridos completos o abstencion nombrada por metrica.
 - EURUSD y ETH con cobertura causal declarada por target/horizonte.
 - BH/FDR calculado sobre el denominador completo, no por columna aislada.
 - 0 contradicciones de identidad y 0 envelopes pendientes.
 - Warehouse consultado de vuelta y snapshot verificado.
-- Dashboard de cobertura muestra 100 %.
+- Dashboard de cobertura muestra 100 % para cada poblacion por separado.
 
 ## Memoria de omega
 
@@ -103,4 +114,3 @@ El follower `fs-rep-follower.service` sufrio dos OOM confinados por su antiguo
 `MemoryMax=512M`; conservarlo si el servicio sigue vivo durante la transicion.
 No reiniciar omega, gamma ni dragon por este incidente: las tres estan sanas al
 corte de esta orden.
-

@@ -9,9 +9,9 @@
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [
     "Complete one-pass PS0/PS1 profiling for every canonical inventory series.",
-    "Run raw causal-ladder cells for EURUSD and ETH target packs using the existing authoritative implementation.",
-    "Finalize BH/FDR only after all 366 inventory units have explicit terminals.",
-    "Load feature-selection envelopes through the warehouse owner API and verify 366 identities by readback.",
+    "Adopt existing EURUSD causal evidence by digest and run missing ETH causal cells using the authoritative implementation.",
+    "Finalize BH/FDR separately after EURUSD 366/366 and ETH 83/83 have explicit terminals.",
+    "Load feature-selection envelopes through the warehouse owner API and verify both populations by readback.",
     "Do not run PS3-R, autoencoders, CVAE, modular architecture, NEAT, RL or new literature experiments before PHASE_1_COMPLETE."
   ],
   "documents": {
@@ -58,8 +58,8 @@
   },
   "feature_selection": {
     "active_phase": "PHASE_1_PROFILE_AND_CAUSAL_ONLY",
-    "canonical_denominator": 366,
-    "phase_1_completion_gate": "WAREHOUSE_READBACK_366_OF_366_AND_GLOBAL_FDR_COMPLETE",
+    "canonical_denominators": {"EURUSD": 366, "ETH": 83},
+    "phase_1_completion_gate": "WAREHOUSE_READBACK_EURUSD_366_OF_366_ETH_83_OF_83_AND_PER_POPULATION_GLOBAL_FDR_COMPLETE",
     "phase_2_gpu_allowed": false,
     "business_manifest": "EURUSD_FIRST",
     "secondary_development_manifest": "ETH_SEPARATE",
@@ -207,8 +207,8 @@
       "owner": "M03+causal+M02",
       "status": "IN_PROGRESS",
       "depends_on": ["BUSINESS-CONTRACT"],
-      "next_action": "Run the generic CPU per-column worker across all 366 units, finalize global causal multiplicity, load the warehouse and verify complete readback. Keep phase 2 extractibility paused.",
-      "deliverable": "Phase-1 feature profile and causal catalog with warehouse coverage 366/366.",
+      "next_action": "Adopt retained EURUSD evidence, run only missing work plus the independent ETH population, finalize causal multiplicity per population, load the warehouse and verify 366/366 plus 83/83. Keep phase 2 extractibility paused.",
+      "deliverable": "Phase-1 feature profile and causal catalog with complete warehouse coverage for EURUSD and ETH.",
       "evidence": []
     },
     {
