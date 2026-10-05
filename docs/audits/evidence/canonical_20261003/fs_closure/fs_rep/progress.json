@@ -1910,7 +1910,7 @@
       ],
       "flags": [
         "RAW_HAS_PROBE_SKILL",
-        "RAW_REFIT_GAIN_NONPOSITIVE"
+        "RAW_REFIT_GAIN_POSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -1943,7 +1943,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -1977,6 +1978,7 @@
       ],
       "flags": [
         "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE",
         "UNSTABLE_LATENT(past_to_current_siamese)"
       ],
       "terminals": {
@@ -2010,7 +2012,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_POSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -2043,7 +2046,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_POSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -2076,7 +2080,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -2109,7 +2114,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -2142,7 +2148,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -2175,7 +2182,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_POSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -4451,7 +4459,7 @@
   "candidates_decided": 104,
   "claim_scope": "provisional extractibility/probe disposition; no downstream improvement of latents is claimed while trained-family G4 is NOT_APPLICABLE; raw vs latent belongs to M4",
   "coverage_fraction": 0.7518,
-  "cycle_started_at": "2026-10-05T13:38:47Z",
+  "cycle_started_at": "2026-10-05T13:40:58Z",
   "decisions": {
     "NOT_AVAILABLE_FOR_TRAIN": 1,
     "NO_TRAINED_ADVANTAGE": 71,
@@ -4691,7 +4699,7 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "79391c3cbe4d1852cba1d71c6b5ee8058bd459da0e744e14d673407b7727f25f"
+      "sha256": "c459071dc70525790d76108ed1ee286415f6bf17883f039a662ea878180abd10"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
@@ -4730,5 +4738,5 @@
       "PENDING": 33
     }
   },
-  "updated_at": "2026-10-05T13:38:55Z"
+  "updated_at": "2026-10-05T13:41:07Z"
 }
