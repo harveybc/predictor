@@ -50,7 +50,7 @@
  },
  "eta": {
   "basis": "median of 166 POST method walls x 703 remaining method cells, one worker",
-  "eta_utc": "2026-10-05T16:05:03.822242+00:00",
+  "eta_utc": "2026-10-05T16:36:52.585149+00:00",
   "post_cells": 166,
   "post_median_wall_seconds": 10.84685102693038
  },
@@ -259,7 +259,7 @@
   "workers": 1
  },
  "records": 277,
- "rendered_utc": "2026-10-05T13:57:58.486027+00:00",
+ "rendered_utc": "2026-10-05T14:29:47.248936+00:00",
  "schema": "fs_pred_lane_status.v2",
  "state": "SUSPECT",
  "watchdog": {
@@ -271,7 +271,7 @@
    "memory_events_high": 0,
    "memory_max": "5637144576",
    "memory_peak": 1753509888,
-   "probe_epoch": 1791208676.3404312,
+   "probe_epoch": 1791210585.1400378,
    "progress_mtime_epoch": 1791208032.2329063,
    "relaunch_epoch": 1791191214.0,
    "scope_active": true,
@@ -279,8 +279,8 @@
     "crispdm-fs-pred-v2-Y_b_s6-1791207889-1560383.scope"
    ]
   },
-  "progress_age_seconds": 644.1,
-  "reason": "progress unchanged for 644s > 600s without observed memory pressure",
+  "progress_age_seconds": 2552.9,
+  "reason": "progress unchanged for 2553s > 600s without observed memory pressure",
   "state": "SUSPECT",
   "threshold_seconds": 600.0
  }
