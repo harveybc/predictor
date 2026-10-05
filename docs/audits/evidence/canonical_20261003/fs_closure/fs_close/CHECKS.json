@@ -26,7 +26,7 @@
    "state": "PASS"
   },
   {
-   "detail": "0 measured metric rows without a paired naive of 66208",
+   "detail": "0 measured metric rows without a paired naive of 68168",
    "id": "C6_PAIRED_NAIVE",
    "state": "PASS"
   },
@@ -52,6 +52,6 @@
   }
  ],
  "final": false,
- "generated_utc": "2026-10-05T16:58:52+00:00",
+ "generated_utc": "2026-10-05T17:30:43+00:00",
  "schema": "fs_close_checks.v1"
 }

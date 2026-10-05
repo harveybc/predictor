@@ -1,9 +1,9 @@
 {
  "schema": "fs_close_refit_progress.v1",
- "updated_utc": "2026-10-05T16:45:23.230006+00:00",
- "cells_done": 4845,
- "cells_skipped": 4845,
+ "updated_utc": "2026-10-05T17:13:49.171499+00:00",
+ "cells_done": 0,
+ "cells_skipped": 10220,
  "cells_failed": 0,
- "elapsed_seconds": 10756.633301019669,
- "state": "RUNNING"
+ "elapsed_seconds": 0.16775989532470703,
+ "state": "FINISHED"
 }

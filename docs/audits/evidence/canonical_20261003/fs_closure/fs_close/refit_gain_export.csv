@@ -131,4 +131,7 @@ yh.usdzar_x.logret_1d,identity,-0.0007785988538881512,70,33,ridge,"TRAIN inner f
 yh.vea.logret_1d,identity,8.654916140139163e-05,70,46,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
 yh.vnq.logret_5d,identity,-0.00041079712552495097,70,27,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
 yh.xlb.logret_1d,identity,0.0024770795799889445,70,43,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
-yh.xlc.logret_1d,identity,0.00032498353134138646,30,21,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+yh.xlc.logret_1d,identity,0.0006927402860398641,70,44,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+yh.xlp.logret_1d,identity,0.00015402700738176013,70,29,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+yh.xlu.logret_1d,identity,0.0007945516192049717,70,37,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+yh.zs_f.logret_5d,identity,0.006003087757444141,70,39,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST

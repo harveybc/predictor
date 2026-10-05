@@ -1,7 +1,7 @@
 {
- "cap_bytes": 1287285760,
- "measured_peak_rss_bytes": 1029828608,
- "receipt_plan_sha256": "dc18976f81b9789c06dc675b571afffac0662cb3f859c58cf21704cfce406cc9",
+ "cap_bytes": 1287792640,
+ "measured_peak_rss_bytes": 1030234112,
+ "receipt_plan_sha256": "e259f6a32892f9ad1ce48faea869ed2d1080db8c89635f221db1b7d46d1ae7d3",
  "rule": "1.25 x measured whole-process peak RSS from the refit receipt; monotone",
  "schema": "fs_close_refit_cap.v1"
 }
