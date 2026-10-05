@@ -751,13 +751,19 @@ def _chronoepilogi_official(
     )
     if plan.maximal_selected_size is not None:
         kwargs["maximal_selected_size"] = plan.maximal_selected_size
-    try:
-        from chronoepilogi.associations import TemporalSlowAssociation
+    variable_types = {column: "numerical" for column in data.columns}
+    kwargs["variable_types"] = variable_types
+    from chronoepilogi.associations import TemporalSlowAssociation
 
-        kwargs["association_class"] = TemporalSlowAssociation
-        kwargs["association_config"] = {"lags": lag, "n_jobs": 1}
-    except Exception:  # pragma: no cover - depends on the pinned package layout
-        pass
+    # Same association the package would build by default, with the joblib
+    # fan-out pinned to one process so the job stays inside its memory cap.
+    kwargs["association_class"] = TemporalSlowAssociation
+    kwargs["association_config"] = {
+        "lags": lag,
+        "categorical_method": "f_oneway",
+        "variable_types": variable_types,
+        "n_jobs": 1,
+    }
     selector = ChronoEpilogi(data, "__target__", **kwargs)
     selector.fit()
     boundary = [name for name in selector.get_first_markov_boundary() if name != "__target__"]

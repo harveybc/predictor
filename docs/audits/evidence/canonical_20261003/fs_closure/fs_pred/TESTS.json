@@ -1,0 +1,38 @@
+{
+  "schema": "fs_pred_tests.v1",
+  "suites": [
+    "tests/test_feature_selector_comparators.py",
+    "tests/test_feature_selector_elastic_net.py",
+    "tests/test_feature_selector_predictive.py",
+    "tests/test_feature_selection_campaign.py",
+    "tests/test_feature_selection_batch_runner.py"
+  ],
+  "invariants_covered": [
+    "population identity: row digest sealed per cell; mismatch rejected (campaign, comparators, elastic net, predictive)",
+    "fold/target/K/seed identity: plan digest binds folds, sealed Ks, seed, membership and every method setting; chunked and full runs share one digest",
+    "VALIDATION/TEST rejection: input_label != TRAIN rejected in every selector; rows at or after 2024-01-01 refused by the loader; folds validating outside TRAIN refused; file names naming validation/test/holdout/2024/2025 refused",
+    "complete-ranking invariant: every method returns all groups exactly once; a sensitivity K above the group count is retained per K without erasing the ranking",
+    "RANDOM_K reproducibility: seed 0 replays bitwise; a different seed differs; permutation equals numpy default_rng(seed)",
+    "group gate: membership must name every group; signal clusters pass the temporal null, noise clusters do not (4000-row fixture, 5 shifts, mean+3sd rule)",
+    "refit-after-removal: same model recipe recorded; a refit with nothing removed reproduces the baseline MAE and importances exactly; a different seed differs",
+    "temporal block permutation: blocks stay contiguous and in order, shared across features, seeded",
+    "causal imputation: later rows never change earlier imputed values; leading gaps take the fit-row mean",
+    "denominator reconciliation: 46+298+22 per batch and total enforced; selector-episode sources and quality-excluded columns counted separately",
+    "resume: only records with identical identity and COMPLETE disposition are skipped",
+    "progress: done/total at method x target x fold x K, failures retained, ETA from observed median wall"
+  ],
+  "runs": [
+    {"host_role": "coordinator", "launcher": "crispdm-run -m 2G", "python": "conda trading-stack 3.12 (numpy 2.5.1, sklearn 1.9.0)", "result": "82 passed, 1 skipped (official ChronoEpilogi absent)", "utc": "2026-10-05T04:35Z"},
+    {"host_role": "worker_b", "launcher": "crispdm-run -m 3G -n fs-pred-tests", "python": "lane venv (numpy 2.2.6, pandas 2.2.3, sklearn 1.9.1, chronoepilogi 0.0.4.dev3+g7de90758e)", "result": "83 passed (official ChronoEpilogi path included)", "utc": "2026-10-05T04:48Z"}
+  ],
+  "chronoepilogi": {
+    "repository": "https://github.com/ev07/minimal_chronoepilogi",
+    "licence": "Apache-2.0 (LICENSE + NOTICE; Copyright 2026 Etienne Vareille)",
+    "pin": "7de90758e1f232503ae7c29fc76f4e351253369a (main, 2026-09-03; tag v0.0.3 is two commits behind a bug fix)",
+    "install": "lane-owned venv on worker_b, pip from git at the pin; freeze retained beside the venv",
+    "smoke": "synthetic y = 2 f0 - f3 recovered as boundary ['f0','f3'] with phases FBEV",
+    "wrapper": "TemporalSlowAssociation with n_jobs=1 (default association, joblib fan-out pinned); features stored at lag 1 so the package reads the decision-time value; target_type continuous; FBEV",
+    "evidence_class": "predictive multiple-solution selection; never reported as causal",
+    "adapter_fallback": "OLS LR-test forward/backward with partial-correlation equivalence; unreproduced scope recorded in each record when used"
+  }
+}
