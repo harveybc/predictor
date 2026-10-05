@@ -6,7 +6,7 @@
    "state": "PASS"
   },
   {
-   "detail": "fit population f0ff9ec6bf35 (365 of 366); metric populations none yet; stale rows from superseded sets 30208",
+   "detail": "fit population f0ff9ec6bf35 (365 of 366); metric populations ['f0ff9ec6bf35']; stale rows from superseded sets 30208",
    "id": "C2_SINGLE_POPULATION",
    "state": "PASS"
   },
@@ -26,17 +26,17 @@
    "state": "PASS"
   },
   {
-   "detail": "0 measured metric rows without a paired naive of 30208",
+   "detail": "0 measured metric rows without a paired naive of 32208",
    "id": "C6_PAIRED_NAIVE",
    "state": "PASS"
   },
   {
-   "detail": "0/16 required sets complete at ridge; missing ['PRED_BEST:8', 'PRED_BEST:16', 'PRED_BEST:24', 'PRED_BEST:32', 'PRED_BEST:48', 'PLUS_CAUSAL:8']",
+   "detail": "1/16 required sets complete at ridge; missing ['PRED_BEST:8', 'PRED_BEST:16', 'PRED_BEST:24', 'PRED_BEST:32', 'PRED_BEST:48', 'PLUS_CAUSAL:8']",
    "id": "C7_REQUIRED_SETS_REFIT",
    "state": "PENDING"
   },
   {
-   "detail": "fs_rep decisions 75/137 heavy candidates decided; PS3-R terminals complete 74/137 heavy candidates; PS4 profiles 74/137 heavy candidates; closure_record.json from the BUSINESS weekly walk-forward step (VALIDATION_2024 inputs are present on the refit host; the step is gated on the C7 refits); PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
+   "detail": "fs_rep decisions 75/137 heavy candidates decided; PS3-R terminals complete 74/137 heavy candidates; PS4 profiles 74/137 heavy candidates; closure_record.json from the BUSINESS weekly walk-forward step (VALIDATION_2024 inputs are present on the refit host, the step is gated on the C7 refits); PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
    "id": "C8_INPUT_OBJECTS",
    "state": "PENDING"
   },
@@ -52,6 +52,6 @@
   }
  ],
  "final": false,
- "generated_utc": "2026-10-05T09:53:04+00:00",
+ "generated_utc": "2026-10-05T09:55:10+00:00",
  "schema": "fs_close_checks.v1"
 }

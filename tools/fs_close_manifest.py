@@ -2003,7 +2003,7 @@ def follow_once(paths: Paths, *, dispatch: bool = False, rebuild_catalog: bool |
     validation_present = validation_inputs_present(paths)
     if closure is None:
         if validation_present is True:
-            ev.missing.append("closure_record.json from the BUSINESS weekly walk-forward step (VALIDATION_2024 inputs are present on the refit host; the step is gated on the C7 refits)")
+            ev.missing.append("closure_record.json from the BUSINESS weekly walk-forward step (VALIDATION_2024 inputs are present on the refit host, the step is gated on the C7 refits)")
         elif validation_present is False:
             ev.missing.append("VALIDATION_2024_FEATURES_AND_TARGETS on the refit host (PS1 producer, 2024 rows only) -> closure_record.json")
         else:
