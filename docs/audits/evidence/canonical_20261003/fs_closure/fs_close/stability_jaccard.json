@@ -19,11 +19,6 @@
   "mean": 1.0,
   "min": 1.0
  },
- "ALL_MINUS:fred.credit.bamlh0a0hym2.logret_1d": {
-  "fold_invariant": true,
-  "mean": 1.0,
-  "min": 1.0
- },
  "ALL_MINUS:fred.fx_indices.dtwexafegs.logret_5d": {
   "fold_invariant": true,
   "mean": 1.0,

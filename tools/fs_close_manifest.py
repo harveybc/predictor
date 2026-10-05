@@ -1774,7 +1774,10 @@ def regenerate_master(paths: Paths, status: dict, ev: LaneEvidence) -> bool:
     nxt = ("Manifest FINAL; hand the K=24 primary set to ARCH under the gate" if final else
            "Blocking: " + "; ".join(status["manifest"].get("missing_objects", [])[:3] or [c["id"] for c in pending[:3]]))
     eta_lines = eta_text(ev)
-    gpu_eta = "/".join((l.split(", ETA ")[-1].split(" (p90")[0] if ", ETA " in l else "n/a") for l in eta_lines[:3])
+    def _short(x):
+        x = x.split(" (p90")[0]
+        return x[5:16] + "Z" if re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}", x) else x
+    gpu_eta = "/".join((_short(l.split(", ETA ")[-1]) if ", ETA " in l else "n/a") for l in eta_lines[:3])
     for m in doc.get("milestones", []):
         if m.get("id") == "M2":
             m["progress"] = progress

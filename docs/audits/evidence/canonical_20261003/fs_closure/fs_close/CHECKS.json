@@ -1,17 +1,17 @@
 {
  "checks": [
   {
-   "detail": "366 rows, 1 states; SELECTED 0 REJECTED 0 PENDING 366",
+   "detail": "366 rows, 2 states; SELECTED 0 REJECTED 1 PENDING 365",
    "id": "C1_DISPOSITIONS_366",
    "state": "PASS"
   },
   {
-   "detail": "population 7b14a01c3adb; metric populations ['7b14a01c3adb']",
+   "detail": "fit population f0ff9ec6bf35 (365 of 366); metric populations none yet; stale rows from superseded sets 30208",
    "id": "C2_SINGLE_POPULATION",
    "state": "PASS"
   },
   {
-   "detail": "complete methods []; incomplete {'ALL_ADMISSIBLE': 'incomplete ranking: 0 partial, 65 missing cells', 'SPEARMAN_K': 'incomplete ranking: 0 partial, 65 missing cells', 'ELASTIC_NET_K': 'incomplete ranking: 0 partial, 65 missing cells', 'RANDOM_K:seed0': 'incomplete ranking: 0 partial, 65 missing cells', 'GROUP_GATE_K': 'incomplete ranking: 0 partial, 65 missing cells', 'SEQ_MARGINAL_K': 'incomplete ranking: 0 partial, 65 missing cells', 'CHRONOEPILOGI_K': 'incomplete ranking: 0 partial, 65 missing cells', 'REDUNDANCY_K': 'incomplete ranking: 0 partial, 65 missing cells', 'MI8_K': 'incomplete ranking: 0 partial, 65 missing cells', 'EXTRATREES_TBP_K': 'incomplete ranking: 0 partial, 65 missing cells', 'GROUP_ELASTIC_NET_K': 'incomplete ranking: 0 partial, 65 missing cells', 'CMIM_K': 'incomplete ranking: 0 partial, 65 missing cells', 'JMI_K': 'incomplete ranking: 0 partial, 65 missing cells', 'MRMR_K': 'incomplete ranking: 0 partial, 65 missing cells'}; FS-PRED progress 115/980",
+   "detail": "complete methods []; incomplete {'ALL_ADMISSIBLE': 'incomplete ranking: 0 partial, 65 missing cells', 'SPEARMAN_K': 'incomplete ranking: 0 partial, 65 missing cells', 'ELASTIC_NET_K': 'incomplete ranking: 0 partial, 65 missing cells', 'RANDOM_K:seed0': 'incomplete ranking: 0 partial, 65 missing cells', 'GROUP_GATE_K': 'incomplete ranking: 0 partial, 65 missing cells', 'SEQ_MARGINAL_K': 'incomplete ranking: 0 partial, 65 missing cells', 'CHRONOEPILOGI_K': 'incomplete ranking: 0 partial, 65 missing cells', 'REDUNDANCY_K': 'incomplete ranking: 0 partial, 65 missing cells', 'MI8_K': 'incomplete ranking: 0 partial, 65 missing cells', 'EXTRATREES_TBP_K': 'incomplete ranking: 0 partial, 65 missing cells', 'GROUP_ELASTIC_NET_K': 'incomplete ranking: 0 partial, 65 missing cells', 'CMIM_K': 'incomplete ranking: 0 partial, 65 missing cells', 'JMI_K': 'incomplete ranking: 0 partial, 65 missing cells', 'MRMR_K': 'incomplete ranking: 0 partial, 65 missing cells'}; FS-PRED progress 152/980",
    "id": "C3_COMPLETE_RANKINGS",
    "state": "PENDING"
   },
@@ -26,22 +26,22 @@
    "state": "PASS"
   },
   {
-   "detail": "0 measured metric rows without a paired naive of 26208",
+   "detail": "0 measured metric rows without a paired naive of 30208",
    "id": "C6_PAIRED_NAIVE",
    "state": "PASS"
   },
   {
-   "detail": "1/16 required sets complete at ridge; missing ['PRED_BEST:8', 'PRED_BEST:16', 'PRED_BEST:24', 'PRED_BEST:32', 'PRED_BEST:48', 'PLUS_CAUSAL:8']",
+   "detail": "0/16 required sets complete at ridge; missing ['PRED_BEST:8', 'PRED_BEST:16', 'PRED_BEST:24', 'PRED_BEST:32', 'PRED_BEST:48', 'PLUS_CAUSAL:8']",
    "id": "C7_REQUIRED_SETS_REFIT",
    "state": "PENDING"
   },
   {
-   "detail": "fs_causal/causal_evidence.jsonl; fs_rep/representation_dispositions.csv (no feature/decision columns); PS3-R terminals complete 70/137 heavy candidates; PS4 profiles 69/137 heavy candidates; VALIDATION_2024_FEATURES_AND_TARGETS on the refit host (PS1 producer, read_end 2025-01-01, 2024 rows only) -> closure_record.json; PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
+   "detail": "fs_rep decisions 74/137 heavy candidates decided; PS3-R terminals complete 74/137 heavy candidates; PS4 profiles 74/137 heavy candidates; VALIDATION_2024_FEATURES_AND_TARGETS on the refit host (PS1 producer, read_end 2025-01-01, 2024 rows only) -> closure_record.json; PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
    "id": "C8_INPUT_OBJECTS",
    "state": "PENDING"
   },
   {
-   "detail": "closure step not run: candidates not frozen or VALIDATION_2024_FEATURES_AND_TARGETS not materialised on the refit host",
+   "detail": "BUSINESS_WEEKLY_WALK_FORWARD closure not run: candidates not frozen or VALIDATION_2024_FEATURES_AND_TARGETS not materialised on the refit host",
    "id": "C9_VALIDATION_CHOICE",
    "state": "PENDING"
   },
@@ -52,6 +52,6 @@
   }
  ],
  "final": false,
- "generated_utc": "2026-10-05T09:11:18+00:00",
+ "generated_utc": "2026-10-05T09:49:42+00:00",
  "schema": "fs_close_checks.v1"
 }
