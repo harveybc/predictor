@@ -1,7 +1,7 @@
 {
- "cap": "1217M",
- "launched_utc": "2026-10-05T10:43:42+00:00",
+ "cap": "1222M",
+ "launched_utc": "2026-10-05T11:06:55+00:00",
  "pilot": false,
  "plan_sha256": "e259f6a32892f9ad1ce48faea869ed2d1080db8c89635f221db1b7d46d1ae7d3",
- "unit": "fs-close-refit-1791197022.service"
+ "unit": "fs-close-refit-1791198415.service"
 }
