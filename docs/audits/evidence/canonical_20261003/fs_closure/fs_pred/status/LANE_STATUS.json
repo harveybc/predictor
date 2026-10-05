@@ -49,14 +49,14 @@
   "train_rows": 71734
  },
  "eta": {
-  "basis": "median of 5 POST method walls x 864 remaining method cells, one worker",
-  "eta_utc": "2026-10-05T10:44:19.497205+00:00",
-  "post_cells": 5,
-  "post_median_wall_seconds": 6.557802319061011
+  "basis": "median of 11 POST method walls x 858 remaining method cells, one worker",
+  "eta_utc": "2026-10-05T11:54:28.018854+00:00",
+  "post_cells": 11,
+  "post_median_wall_seconds": 11.266814568894915
  },
  "failures": [],
  "host_role": "worker_b (CPU)",
- "k24_sets": 116,
+ "k24_sets": 122,
  "method_wall_seconds": {
   "ALL_ADMISSIBLE": {
    "max": 0.3280245428904891,
@@ -70,13 +70,13 @@
   },
   "CMIM_K": {
    "max": 50.96316432009917,
-   "median": 40.777175518509466,
-   "n": 8
+   "median": 42.58596375398338,
+   "n": 9
   },
   "ELASTIC_NET_K": {
    "max": 16.052863162010908,
-   "median": 12.520915403496474,
-   "n": 8
+   "median": 12.960896166972816,
+   "n": 9
   },
   "EXTRATREES_TBP_K": {
    "max": 108.86757644696627,
@@ -85,8 +85,8 @@
   },
   "GROUP_ELASTIC_NET_K": {
    "max": 11.92343748593703,
-   "median": 9.379553383041639,
-   "n": 8
+   "median": 9.886150397011079,
+   "n": 9
   },
   "GROUP_GATE_K": {
    "max": 3.5829775950405747,
@@ -105,18 +105,18 @@
   },
   "MRMR_K": {
    "max": 51.1621571079595,
-   "median": 40.633556373475585,
-   "n": 8
+   "median": 42.54789478890598,
+   "n": 9
   },
   "RANDOM_K:seed0": {
    "max": 0.3303993850713596,
-   "median": 0.22561606403905898,
-   "n": 8
+   "median": 0.24035219906363636,
+   "n": 9
   },
   "REDUNDANCY_K": {
    "max": 3.7124050119891763,
-   "median": 2.747281910444144,
-   "n": 8
+   "median": 2.879017072962597,
+   "n": 9
   },
   "SEQ_MARGINAL_K": {
    "max": 26.88742278504651,
@@ -139,11 +139,11 @@
    "total": 70
   },
   "CMIM_K": {
-   "done": 8,
+   "done": 9,
    "total": 70
   },
   "ELASTIC_NET_K": {
-   "done": 8,
+   "done": 9,
    "total": 70
   },
   "EXTRATREES_TBP_K": {
@@ -151,7 +151,7 @@
    "total": 70
   },
   "GROUP_ELASTIC_NET_K": {
-   "done": 8,
+   "done": 9,
    "total": 70
   },
   "GROUP_GATE_K": {
@@ -167,15 +167,15 @@
    "total": 70
   },
   "MRMR_K": {
-   "done": 8,
+   "done": 9,
    "total": 70
   },
   "RANDOM_K:seed0": {
-   "done": 8,
+   "done": 9,
    "total": 70
   },
   "REDUNDANCY_K": {
-   "done": 8,
+   "done": 9,
    "total": 70
   },
   "SEQ_MARGINAL_K": {
@@ -225,7 +225,7 @@
    "method_cells_total": 70
   },
   "Y_s_2h": {
-   "method_cells_done": 46,
+   "method_cells_done": 52,
    "method_cells_total": 70
   },
   "Y_s_3h": {
@@ -246,20 +246,20 @@
   }
  },
  "progress": {
-  "done": 580,
-  "eta_seconds": 8882.281889028847,
-  "eta_utc": "2026-10-05T11:37:51.241849+00:00",
-  "method_cells_done": 116,
+  "done": 610,
+  "eta_seconds": 8820.599375910591,
+  "eta_utc": "2026-10-05T11:38:54.664952+00:00",
+  "method_cells_done": 122,
   "method_cells_total": 980,
   "n_failures": 0,
   "observed_median_method_wall_seconds": 10.280418853042647,
-  "observed_p90_method_wall_seconds": 51.46936559304595,
+  "observed_p90_method_wall_seconds": 51.1621571079595,
   "total": 4900,
-  "updated_utc": "2026-10-05T09:09:48.959929+00:00",
+  "updated_utc": "2026-10-05T09:11:54.065542+00:00",
   "workers": 1
  },
- "records": 116,
- "rendered_utc": "2026-10-05T09:09:53.556020+00:00",
+ "records": 122,
+ "rendered_utc": "2026-10-05T09:13:21.092016+00:00",
  "schema": "fs_pred_lane_status.v2",
  "state": "RUNNING",
  "watchdog": {
@@ -271,15 +271,15 @@
    "memory_events_high": 0,
    "memory_max": "5637144576",
    "memory_peak": 4122132480,
-   "probe_epoch": 1791191392.8296106,
-   "progress_mtime_epoch": 1791191388.9602487,
+   "probe_epoch": 1791191599.667034,
+   "progress_mtime_epoch": 1791191514.0658808,
    "relaunch_epoch": 1791191214.0,
    "scope_active": true,
    "scopes": [
     "crispdm-fs-pred-v2-Y_s_2h-1791191225-323117.scope"
    ]
   },
-  "progress_age_seconds": 3.9,
+  "progress_age_seconds": 85.6,
   "reason": "progress advanced within the threshold and a scope is active",
   "state": "RUNNING",
   "threshold_seconds": 600.0
