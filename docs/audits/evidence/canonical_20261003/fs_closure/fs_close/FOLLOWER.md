@@ -6,11 +6,41 @@ Roles only: coordinator, worker_a (RTX 5090 host), worker_b (CPU refit host).
 
 | Unit | Host role | What it does |
 |---|---|---|
-| `feature-selection-status.service` (transient, existing) | coordinator | the existing status loop, extended with one step: `tools/fs_close_manifest.py follow-once --worker <worker_b alias>` under `crispdm-run -m 1G`, every cycle (about 100 s); `--git-commit` is added at most every 30 min |
+| `feature-selection-status-v2.service` (transient; FS-GPU's v2 of the coordinator status loop, which replaced v1 on 2026-10-05) | coordinator | the existing status loop, extended with one step at the end of its cycle: `tools/fs_close_manifest.py follow-once --worker <worker_b alias>` under `crispdm-run -m 1G`, every cycle (about 2 min); `--git-commit` is added at most every 30 min. The same block was first added to v1 (`selection_status_loop.sh`) and must be carried into any later rewrite of the loop (`grep FS-CLOSE` the live script) |
 | `fs-close-refit-<epoch>.service` (transient) | worker_b | `crispdm-run -q -W 14400 -m <cap> -n <job>` around `tools/fs_close_refit.py`; sequential, CPU only, never `/tmp`, never a GPU job |
 
 The loop script lives in the coordinator's state directory (outside the repository); it was
-extended, not duplicated. A second status writer was not added.
+extended, not duplicated. A second status writer was not added. The block to carry over:
+
+```bash
+  # ---- FS-CLOSE closure follower (order 2026-10-05 section 8) -------------------------------
+  FS_CLOSE_STAMP="$STATE/fs_close/last_commit_epoch"; mkdir -p "$STATE/fs_close"; FS_CLOSE_GIT=""
+  if [ ! -f "$FS_CLOSE_STAMP" ] || [ $(( $(date +%s) - $(cat "$FS_CLOSE_STAMP") )) -ge 1800 ]; then
+    FS_CLOSE_GIT="--git-commit"; date +%s > "$FS_CLOSE_STAMP"
+  fi
+  CRISPDM_PYTHON="$PYTHON" "$HOME/.local/bin/crispdm-run" -m 1G -t 30m -n fs_close_follow -- \
+    "$PYTHON" "$REPO/tools/fs_close_manifest.py" follow-once --worker <worker_b ssh alias> $FS_CLOSE_GIT \
+    > "$STATE/fs_close/last_cycle.json" 2> "$STATE/fs_close/last_cycle.err" || true
+```
+
+## First measurements (pilot, largest inner fold `inner_2023`, seed 0, identical rows per cell)
+
+`pilot_receipt.json`: 56 cells (ALL_ADMISSIBLE and RANDOM_K:24, heads ridge and hgb), 273 s,
+whole-process peak RSS 972.7 MB; cap for the full run = 1.25 x = 1216 MB (`refit_cap.json`).
+Skill = 1 - loss / stricter same-row naive (zero return or fit mean for Y_s/Y_l; fit prior for
+Y_b), mean over the fold's cells; every row carries its paired naive.
+
+| set | head | Y_s (6 h) | Y_l (6 h) | Y_b h6 | Y_b h144 |
+|---|---|---:|---:|---:|---:|
+| ALL_ADMISSIBLE (366) | ridge | -0.062 | -0.366 | +0.162 | -0.798 |
+| ALL_ADMISSIBLE (366) | hgb | -0.448 | -0.904 | +0.169 | -0.115 |
+| RANDOM_K:24 | ridge | -0.0017 | -0.019 | +0.002 | +0.021 |
+| RANDOM_K:24 | hgb | -0.0095 | -0.054 | +0.010 | -0.063 |
+
+No raw-input head beats the same-row naive on any Y_s/Y_l cell of this fold; only the 6 h
+barrier cell shows skill (log-loss 0.816 vs prior 0.974). This agrees with FS-REP's finding on
+the PS3-R probes and is reported, not smoothed: a selection that cannot beat its naive on a
+target is marked `strategy_eligible = false` in the manifest.
 
 ## One cycle of the follower
 
