@@ -26,10 +26,14 @@ and missing fact rows reject the request instead of producing a partial response
 
 ## Deployment
 
-Install `predictor-olap-store>=0.1.4` and `predictor-duckdb-store>=0.1.2` in the warehouse host
+Install `predictor-olap-store>=0.1.4` and `predictor-duckdb-store>=0.1.3` in the warehouse host
 environment, then restart the host through the deployment procedure. The backend must advertise
 both `write_feature_selection_envelope` and `reconcile_feature_selection`. No route or credential
 logic is implemented in these packages.
 
 The acceptance tests use temporary DuckDB files only. They do not open the populated warehouse
 or restart a service.
+
+DuckDB startup, discovery, and schema inspection query `information_schema` directly. They do
+not use SQLAlchemy's PostgreSQL-dialect reflection; this is covered by a regression test and was
+verified in a clean environment with SQLAlchemy 2.1.3, duckdb-engine 0.17.0, and DuckDB 1.5.6.

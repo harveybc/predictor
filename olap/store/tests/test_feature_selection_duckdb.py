@@ -16,6 +16,7 @@ import sys
 from pathlib import Path
 
 import pytest
+import sqlalchemy
 from sqlalchemy import text
 
 
@@ -134,6 +135,43 @@ def scalar(store, relation):
         return connection.execute(text(
             f'SELECT count(*) FROM "main"."{relation}"'
         )).scalar()
+
+
+def test_duckdb_startup_migrations_do_not_use_sqlalchemy_dialect_reflection(
+    monkeypatch, tmp_path,
+):
+    def reject_reflection(*_args, **_kwargs):
+        raise AssertionError("DuckDB migrations must query information_schema directly")
+
+    monkeypatch.setattr(sqlalchemy, "inspect", reject_reflection)
+    plugin = PredictorDuckdbStore()
+    plugin.set_params(
+        duckdb_path=str(tmp_path / "no-reflection.duckdb"), schema="main",
+        memory_limit="1GB", threads=1, min_free_bytes=1,
+    )
+    try:
+        plugin.engine()
+        with plugin.engine().connect() as connection:
+            columns = connection.execute(text(
+                "SELECT table_name, column_name, data_type "
+                "FROM information_schema.columns "
+                "WHERE table_schema = 'main' AND table_name IN "
+                "('gov_terminal_dataset', 'gov_terminal_artifact', "
+                "'df_fact_feature_selection_load_receipt')"
+            )).all()
+        by_table = {(table, column): data_type for table, column, data_type in columns}
+        assert ("gov_terminal_dataset", "availability_contract_sha256") in by_table
+        assert ("df_fact_feature_selection_load_receipt", "feature_ids_json") in by_table
+        assert by_table[("gov_terminal_artifact", "bytes")].upper() == "BIGINT"
+        assert any(
+            item["resource_id"] == "df_fact_feature_selection_load_receipt"
+            for item in plugin.discover()
+        )
+        receipt_schema = plugin.schema("df_fact_feature_selection_load_receipt")
+        assert any(column["name"] == "feature_ids_json" for column in receipt_schema["columns"])
+    finally:
+        if plugin._engine is not None:
+            plugin._engine.dispose()
 
 
 def reconciliation_identity(document, *, feature_id="market.eth.close"):
