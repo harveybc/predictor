@@ -47,7 +47,7 @@ px.close_loc,batch_001,RAW,identity;random;ae;dae;masked_temporal_ae;past_to_cur
 px.ewma_vol_24,batch_001,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
 px.log_close,batch_001,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
 px.log_co,batch_001,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
-px.log_hl,batch_001,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
+px.log_hl,batch_001,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;UNSTABLE_LATENT(past_to_current_siamese)
 px.logret_120h,batch_001,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 px.logret_12h,batch_001,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 px.logret_168h,batch_001,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
