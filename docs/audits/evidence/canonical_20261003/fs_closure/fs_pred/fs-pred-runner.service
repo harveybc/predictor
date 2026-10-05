@@ -3,8 +3,8 @@ Description=FS-PRED feature-selection batch runner (CPU, crispdm-run per target,
 
 [Service]
 Type=simple
+EnvironmentFile=-%h/.local/state/canonical_20261003/fs_pred/runner.env
 ExecStart=%h/.local/state/canonical_20261003/fs_pred/fs_pred_driver.sh
-Environment=FS_PRED_CAP=4G
 Restart=on-failure
 RestartSec=120
 # exit 75 = admission refused: do not restart into a lowered cap or a hot loop
