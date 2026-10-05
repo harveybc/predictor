@@ -1,0 +1,26 @@
+{
+ "schema": "fs_causal_discovery_progress.v1",
+ "stage": "pcmci_plus",
+ "updated_utc": "2026-10-05T05:27:57Z",
+ "chunks": {
+  "done": 0,
+  "total": 47
+ },
+ "candidates": {
+  "done": 0,
+  "total": 366
+ },
+ "verdicts": {},
+ "failures": [],
+ "mean_s_per_candidate": null,
+ "eta_s": null,
+ "eta_utc": null,
+ "complete": false,
+ "pin": {
+  "library": "tigramite",
+  "version": "5.2.10.1",
+  "license": "GNU General Public License v3.0",
+  "method": "PCMCI+ (run_pcmciplus) with ParCorr",
+  "reference": "Runge (2020) UAI; Runge et al. (2019) Sci. Adv."
+ }
+}

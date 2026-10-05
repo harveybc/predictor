@@ -1,0 +1,10 @@
+{
+ "peak_scope": "cgroup",
+ "peak_bytes": 332939264,
+ "cgroup_peak_bytes": 332939264,
+ "measured_how": "memory.peak of the crispdm-run scope polled every 3 s during the PCMCI+ pilot (2 candidates, tau_max 6)",
+ "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-fs-causal-pcmci-pilot-1791177697-3417457.scope",
+ "work": "fs_causal_discovery pcmci --max-features 2",
+ "written_utc": "2026-10-05T05:27:59Z",
+ "cap_rule": "1.25x measured cgroup peak"
+}

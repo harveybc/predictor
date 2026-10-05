@@ -1,0 +1,232 @@
+{
+ "schema": "fs_causal_final_summary.v1",
+ "revision": "bd483de",
+ "finalized_utc": "2026-10-05T08:32:02Z",
+ "candidates": 366,
+ "cells": 5124,
+ "targets": 14,
+ "per_state": {
+  "rung1": {
+   "NOT_IDENTIFIED": 5090,
+   "SUPPORTED": 34
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 5124
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 5124
+  }
+ },
+ "per_state_per_target": {
+  "rung1": {
+   "Y_b_l144": {
+    "NOT_IDENTIFIED": 364,
+    "SUPPORTED": 2
+   },
+   "Y_b_s6": {
+    "NOT_IDENTIFIED": 365,
+    "SUPPORTED": 1
+   },
+   "Y_l_120h": {
+    "NOT_IDENTIFIED": 365,
+    "SUPPORTED": 1
+   },
+   "Y_l_144h": {
+    "NOT_IDENTIFIED": 365,
+    "SUPPORTED": 1
+   },
+   "Y_l_24h": {
+    "NOT_IDENTIFIED": 360,
+    "SUPPORTED": 6
+   },
+   "Y_l_48h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_l_72h": {
+    "NOT_IDENTIFIED": 365,
+    "SUPPORTED": 1
+   },
+   "Y_l_96h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_s_1h": {
+    "NOT_IDENTIFIED": 363,
+    "SUPPORTED": 3
+   },
+   "Y_s_2h": {
+    "NOT_IDENTIFIED": 363,
+    "SUPPORTED": 3
+   },
+   "Y_s_3h": {
+    "NOT_IDENTIFIED": 363,
+    "SUPPORTED": 3
+   },
+   "Y_s_4h": {
+    "NOT_IDENTIFIED": 362,
+    "SUPPORTED": 4
+   },
+   "Y_s_5h": {
+    "NOT_IDENTIFIED": 362,
+    "SUPPORTED": 4
+   },
+   "Y_s_6h": {
+    "NOT_IDENTIFIED": 361,
+    "SUPPORTED": 5
+   }
+  },
+  "rung2": {
+   "Y_b_l144": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_b_s6": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_l_120h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_l_144h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_l_24h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_l_48h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_l_72h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_l_96h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_s_1h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_s_2h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_s_3h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_s_4h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_s_5h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_s_6h": {
+    "NOT_IDENTIFIED": 366
+   }
+  },
+  "rung3": {
+   "Y_b_l144": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_b_s6": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_l_120h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_l_144h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_l_24h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_l_48h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_l_72h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_l_96h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_s_1h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_s_2h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_s_3h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_s_4h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_s_5h": {
+    "NOT_IDENTIFIED": 366
+   },
+   "Y_s_6h": {
+    "NOT_IDENTIFIED": 366
+   }
+  }
+ },
+ "abstention_reasons": {
+  "rung1": {
+   "NO_CONDITIONAL_DEPENDENCE_AT_FDR_0.05": 5026,
+   "NO_OOF_GAIN_MAJORITY": 4125,
+   "SIGN_NOT_STABLE_ACROSS_FOLDS": 2315
+  },
+  "rung2": {
+   "OVERLAP_SCREEN_FAILED": 2976,
+   "EFFECT_NOT_SIGNIFICANT_AT_FAMILY_FDR_0.05": 128,
+   "INTERVAL_INCLUDES_ZERO_AND_NOT_PRECISE_NULL": 117,
+   "NONLINEAR_CONFIRMATION_OVERLAP_SCREEN_FAILED": 128,
+   "IMBALANCE": 30,
+   "NO_COMMON_SUPPORT": 1570,
+   "THRESHOLD_BAND_DEGENERATE": 238,
+   "PLACEBO_FAILED": 5,
+   "KNOWN_IN_ADVANCE_CALENDAR_NOT_AN_OBSERVED_INTERVENTION": 140,
+   "ASSUMED_PUBLICATION_CLOCK": 3584,
+   "EMPTY_TREATMENT_STRATUM": 244,
+   "NO_EPISODES": 42
+  },
+  "rung3": {
+   "RUNG2_NOT_IDENTIFIED": 4704,
+   "THRESHOLD_BAND_DEGENERATE": 238,
+   "KNOWN_IN_ADVANCE_CALENDAR_NOT_AN_OBSERVED_INTERVENTION": 140,
+   "NO_EPISODES": 42
+  }
+ },
+ "robust_contradicted_features": [],
+ "supported_features_any_rung": [
+  "cal.hour_sin",
+  "px.close_loc",
+  "rg.roc_12",
+  "yh.gc_f.logret_1d",
+  "yh.iyr.logret_1d",
+  "yh.si_f.logret_1d",
+  "yh.slv.logret_1d",
+  "yh.usdclp_x.logret_1d",
+  "yh.usdtwd_x.logret_1d",
+  "yh.vnq.logret_1d",
+  "yh.xlc.logret_1d",
+  "yh.xlre.logret_1d"
+ ],
+ "rung2_supported_features": [],
+ "rung3_supported_features": [],
+ "sypi": {
+  "SYPI_CONDITION1_FAILED": 4948,
+  "SYPI_CONDITION2_FAILED": 19,
+  "SYPI_CANDIDATE_CAUSE_UNDER_DECLARED_RESTRICTIONS": 157
+ },
+ "pcmci_plus": {
+  "PENDING": 366
+ },
+ "clock_distribution": {
+  "OBSERVED": 81,
+  "KNOWN_IN_ADVANCE": 10,
+  "ASSUMED": 275
+ },
+ "families": {
+  "rung1": "per target: HAC partial-test p over all candidates",
+  "rung2": "per target: p_linear over all cells with an identified estimate",
+  "sypi_condition1": "per target: condition-1 p over all candidates"
+ },
+ "fdr_q": 0.05,
+ "seed": 1729,
+ "test_read": false,
+ "not_rejection": "NOT_IDENTIFIED never eliminates a feature; only robust CONTRADICTED weighs against one"
+}
