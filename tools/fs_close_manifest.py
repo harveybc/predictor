@@ -1618,9 +1618,6 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
         subprocess.run(ssh + [f"mkdir -p {remote}/out"], check=True, capture_output=True, timeout=60)
         subprocess.run(["rsync", "-q", "--timeout=60", str(plan_path), str(paths.repo / "tools/fs_close_refit.py"),
                         f"{alias}:{remote}/"], check=True, capture_output=True, timeout=120)
-        subprocess.run(["rsync", "-q", "--timeout=120", "--include=paired_refit_metrics.parquet", "--include=refit_receipt.json",
-                        "--include=progress.json", "--include=closure_record.json", "--exclude=*", f"{alias}:{remote}/out/",
-                        str(paths.state / "fs_close/")], check=False, capture_output=True, timeout=300)
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
         info["state"] = "WORKER_UNREACHABLE"
         info["detail"] = str(getattr(exc, "stderr", b""))[-300:]
@@ -1630,19 +1627,6 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
     subprocess.run(["rsync", "-q", "-r", "--timeout=120", "--include=tables/", "--include=tables/*.parquet", "--include=selector_sets.json",
                     "--include=progress.json", "--include=run_contract.json", "--exclude=*", f"{alias}:{wstate}/fs_pred/out/", str(mirror)],
                    check=False, capture_output=True, timeout=300)
-    local_out = paths.state / "fs_close"
-    for name in ("paired_refit_metrics.parquet", "refit_receipt.json", "progress.json", "closure_record.json"):
-        src = local_out / name
-        if src.is_file():
-            write_atomic(paths.out / name, src.read_bytes())
-    progress = read_json(local_out / "progress.json", {})
-    running = progress.get("state") == "RUNNING"
-    if running:
-        try:
-            upd = dt.datetime.fromisoformat(progress["updated_utc"])
-            running = (dt.datetime.now(dt.timezone.utc) - upd).total_seconds() < 1800
-        except (KeyError, ValueError):
-            running = False
     marker = read_json(paths.out / "refit_launch_marker.json", {})
     try:
         launched_at = dt.datetime.fromisoformat(marker.get("launched_utc", "1970-01-01T00:00:00+00:00"))
@@ -1656,6 +1640,32 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
             unit_alive = r.stdout.strip() in ("active", "activating")
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
             unit_alive = True   # unknown: do not double-launch
+    # pull AFTER the liveness check so a run that just finished is seen before any launch decision
+    subprocess.run(["rsync", "-q", "--timeout=120", "--include=paired_refit_metrics.parquet", "--include=refit_receipt.json",
+                    "--include=progress.json", "--include=closure_record.json", "--exclude=*", f"{alias}:{remote}/out/",
+                    str(paths.state / "fs_close/")], check=False, capture_output=True, timeout=300)
+    local_out = paths.state / "fs_close"
+    for name in ("paired_refit_metrics.parquet", "refit_receipt.json", "progress.json", "closure_record.json"):
+        src = local_out / name
+        if src.is_file():
+            write_atomic(paths.out / name, src.read_bytes())
+    receipt_now = read_json(paths.out / "refit_receipt.json", {})
+    if receipt_now.get("peak_rss_bytes"):
+        # retain every receipt's peak: the cap is monotone over all measurements ever pulled
+        peaks = read_json(paths.out / "refit_peaks.json", {"schema": "fs_close_refit_peaks.v1", "receipts": {}})
+        key = f"{receipt_now.get('plan_sha256', '')[:12]}:{receipt_now.get('finished_utc', '')}"
+        if key not in peaks["receipts"]:
+            peaks["receipts"][key] = {"peak_rss_bytes": int(receipt_now["peak_rss_bytes"]), "cells_done": receipt_now.get("cells_done"),
+                                      "heads": receipt_now.get("heads"), "plan_sha256": receipt_now.get("plan_sha256")}
+            write_json(paths.out / "refit_peaks.json", peaks)
+    progress = read_json(local_out / "progress.json", {})
+    running = progress.get("state") == "RUNNING"
+    if running:
+        try:
+            upd = dt.datetime.fromisoformat(progress["updated_utc"])
+            running = (dt.datetime.now(dt.timezone.utc) - upd).total_seconds() < 1800
+        except (KeyError, ValueError):
+            running = False
     if running or unit_alive:
         info["state"] = "RUNNING" if running else "QUEUED_OR_STARTING"
         info["progress"] = progress
@@ -1670,7 +1680,9 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
     receipt = read_json(paths.out / "refit_receipt.json", {})
     cap_file = paths.out / "refit_cap.json"
     cap_doc = read_json(cap_file, {})
-    peak = receipt.get("peak_rss_bytes") if receipt.get("plan_sha256") else None
+    peaks_doc = read_json(paths.out / "refit_peaks.json", {"receipts": {}})
+    all_peaks = [v["peak_rss_bytes"] for v in peaks_doc.get("receipts", {}).values() if v.get("cells_done")]
+    peak = max(all_peaks) if all_peaks else None    # only receipts that actually fitted cells measure the footprint
     if peak:
         # the cap is 1.25x the largest whole-process peak ever measured, never lowered
         cap_bytes = max(int(cap_doc.get("cap_bytes", 0)), int(math.ceil(peak * 1.25)))
@@ -1698,7 +1710,7 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
         job_name = f"fs_close_refit_c{cap_mb}m"    # the name carries the measured cap: never lowered under one name
     cmd = (f"export XDG_RUNTIME_DIR=/run/user/$(id -u) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus; "
            f"cd {remote} && systemd-run --user --collect --unit fs-close-refit-$(date +%s) "
-           f"~/.local/bin/crispdm-run -q -W 14400 -m {cap} -t 8h -n {job_name} -- {paths.worker_python} {remote}/fs_close_refit.py "
+           f"~/.local/bin/crispdm-run -q -W 14400 -m {cap} -t 12h -n {job_name} -- {paths.worker_python} {remote}/fs_close_refit.py "
            f"--plan {plan_arg} --features {wstate}/fs_pred/input/ps1/batch_001/features_train.parquet "
            f"{wstate}/fs_pred/input/ps1/batch_002/features_train.parquet {wstate}/fs_pred/input/ps1/batch_003/features_train.parquet "
            f"--targets {wstate}/fs_pred/input/ps1/batch_001/targets_train.parquet --folds {remote}/folds.json "
