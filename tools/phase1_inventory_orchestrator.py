@@ -1066,6 +1066,33 @@ def finalize_if_ready(
             return {"action": "FINALIZER_INCOMPLETE", "result": result}
         if int(result.get("terminal_count", -1)) != plan["inventory_total"]:
             raise Phase1Refusal("finalizer terminal count differs from the plan")
+        final_envelope = result.get("envelope")
+        if not isinstance(final_envelope, dict):
+            raise Phase1Refusal("finalizer result has no warehouse envelope")
+        final_envelope_sha256 = _sha(final_envelope)
+        final_receipt_path = _state_root(config) / "finalizer" / "warehouse_receipt.json"
+        if final_receipt_path.is_file():
+            final_receipt = json.loads(final_receipt_path.read_text(encoding="utf-8"))
+            if final_receipt.get("envelope_sha256") != final_envelope_sha256:
+                raise Phase1Refusal("final warehouse receipt belongs to another envelope")
+        else:
+            try:
+                response = submit(final_envelope, config["warehouse"])
+                _require_accepted_submission(response)
+            except Exception as error:
+                return {
+                    "action": "WAITING_FOR_FINAL_WAREHOUSE_RECEIPT",
+                    "error_type": type(error).__name__,
+                    "reason": str(error)[:500],
+                }
+            final_receipt = {
+                "schema": "phase1.final_warehouse_receipt.v1",
+                "plan_sha256": plan["plan_sha256"],
+                "envelope_sha256": final_envelope_sha256,
+                "response": response,
+            }
+            final_receipt["receipt_sha256"] = _sha(final_receipt)
+            _atomic_json(final_receipt_path, final_receipt, exclusive=True)
         _atomic_json(_state_root(config) / "finalizer" / "result.json", result)
         gate = {
             "schema": GATE_SCHEMA,
@@ -1077,6 +1104,8 @@ def finalize_if_ready(
                 sorted(terminal["terminal_sha256"] for terminal in terminals.values())
             ),
             "finalizer_result_sha256": _sha(result),
+            "final_envelope_sha256": final_envelope_sha256,
+            "final_warehouse_receipt_sha256": _sha(final_receipt),
             "warehouse_identity_set_sha256": _sha(identities),
             "warehouse_receipt_set_sha256": _sha(
                 sorted(
@@ -1144,6 +1173,23 @@ def require_phase1_complete(config: dict[str, Any]) -> dict[str, Any]:
     )
     if gate.get("warehouse_reconciliation_sha256") != _sha(reconciliation):
         raise Phase1Refusal("PHASE_1_COMPLETE warehouse reconciliation changed")
+    finalizer_result_path = _state_root(config) / "finalizer" / "result.json"
+    final_receipt_path = _state_root(config) / "finalizer" / "warehouse_receipt.json"
+    if not finalizer_result_path.is_file() or not final_receipt_path.is_file():
+        raise Phase1Refusal("PHASE_1_COMPLETE has no final warehouse receipt")
+    finalizer_result = json.loads(finalizer_result_path.read_text(encoding="utf-8"))
+    final_envelope = finalizer_result.get("envelope")
+    final_receipt = json.loads(final_receipt_path.read_text(encoding="utf-8"))
+    if not isinstance(final_envelope, dict):
+        raise Phase1Refusal("PHASE_1_COMPLETE finalizer has no warehouse envelope")
+    if gate.get("finalizer_result_sha256") != _sha(finalizer_result):
+        raise Phase1Refusal("PHASE_1_COMPLETE finalizer result changed")
+    if gate.get("final_envelope_sha256") != _sha(final_envelope):
+        raise Phase1Refusal("PHASE_1_COMPLETE final envelope changed")
+    if final_receipt.get("envelope_sha256") != _sha(final_envelope):
+        raise Phase1Refusal("PHASE_1_COMPLETE final receipt identity changed")
+    if gate.get("final_warehouse_receipt_sha256") != _sha(final_receipt):
+        raise Phase1Refusal("PHASE_1_COMPLETE final warehouse receipt changed")
     return gate
 
 

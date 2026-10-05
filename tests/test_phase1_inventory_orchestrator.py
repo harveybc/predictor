@@ -124,6 +124,12 @@ Path(a.output).write_text(json.dumps({
     'schema': 'phase1.finalizer_result.v1',
     'state': 'PHASE_1_COMPLETE',
     'terminal_count': len(list(Path(a.terminals).glob('*.json'))),
+    'envelope': {
+        'schema_version': 'feature_selection_envelope.v1',
+        'run': {'run_id': 'final-fixture'},
+        'rows': {},
+        'envelope_sha256': 'fixture-final-envelope',
+    },
 }, sort_keys=True))
 """,
         encoding="utf-8",
@@ -231,7 +237,7 @@ def _config(
 
 
 def _accepted_submit(document: dict, _warehouse: dict) -> dict:
-    return {"accepted": True, "feature_id": document["feature_id"]}
+    return {"accepted": True, "feature_id": document.get("feature_id")}
 
 
 def _accepted_reconcile(request: dict, _warehouse: dict) -> dict:
@@ -402,7 +408,9 @@ def test_failures_retry_boundedly_and_never_satisfy_closure(
     second = run_host_once(config, "small", submit=_accepted_submit)
     third = run_host_once(config, "small", submit=_accepted_submit)
     status = build_status(config)
-    final = finalize_if_ready(config, reconcile=_accepted_reconcile)
+    final = finalize_if_ready(
+        config, submit=_accepted_submit, reconcile=_accepted_reconcile
+    )
 
     assert first["action"] == "RETRY_SCHEDULED"
     assert second["action"] == "RETRY_EXHAUSTED"
@@ -447,10 +455,20 @@ def test_finalization_waits_for_every_receipt_and_authenticated_readback(
         reconciliations.append(request)
         return _accepted_reconcile(request, warehouse)
 
-    final = finalize_if_ready(config, submit=_accepted_submit, reconcile=reconcile)
+    submissions: list[dict] = []
+
+    def submit(document: dict, warehouse: dict) -> dict:
+        submissions.append(document)
+        return _accepted_submit(document, warehouse)
+
+    final = finalize_if_ready(config, submit=submit, reconcile=reconcile)
     gate = require_phase1_complete(config)
 
     assert final["action"] == "PHASE_1_COMPLETE"
+    assert len(submissions) == 2
+    assert submissions[-1]["run"]["run_id"] == "final-fixture"
+    assert gate["final_envelope_sha256"] == _canonical_sha(submissions[-1])
+    assert gate["final_warehouse_receipt_sha256"]
     assert reconciliations[0]["expected_count"] == 1
     stored = json.loads(
         (Path(config["state_root"]) / "warehouse_reconciliation.json").read_text()
@@ -510,7 +528,9 @@ def test_phase2_gate_requires_complete_population(tmp_path: Path) -> None:
         for host in ("small", "large-a", "large-b"):
             run_host_once(config, host, submit=_accepted_submit)
 
-    final = finalize_if_ready(config, reconcile=_accepted_reconcile)
+    final = finalize_if_ready(
+        config, submit=_accepted_submit, reconcile=_accepted_reconcile
+    )
     status = build_status(config)
     assert final["action"] == "PHASE_1_COMPLETE"
     assert status["phase_state"] == "PHASE_1_COMPLETE"
