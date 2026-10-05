@@ -436,7 +436,10 @@ def method_record(
         payload = _jsonable(result)
         record["implementation"] = payload.get("implementation", payload.get("penalty", "deterministic"))
         record["full_ranking"] = payload["full_ranking"]
-        record["scores"] = payload["scores"]
+        # Elastic-net results carry coefficient norms instead of a scores tuple.
+        record["scores"] = payload.get("scores") or payload.get("coefficient_norms") or [
+            [group, 0.0] for group in payload["full_ranking"]
+        ]
         record["selected_by_k"] = payload.get("selected_by_k", [])
         record["k_failures"] = payload.get("k_failures", [])
         record["result"] = payload

@@ -200,3 +200,18 @@ def test_resume_skips_only_records_with_the_same_identity(tmp_path: Path) -> Non
     assert not existing_record_matches(path, dict(identity, row_digest="other"))
     path.write_text(json.dumps({"schema": "fs_pred_method_record.v1", "identity": identity, "disposition": "FAILED"}))
     assert not existing_record_matches(path, identity)
+
+
+def test_method_record_accepts_elastic_net_results_without_scores_field() -> None:
+    from tools.feature_selection_batch_runner import method_record, CellPopulation
+    from tools.feature_selection_campaign import CampaignDisposition, CampaignMethodOutcome
+    from tools.feature_selector_elastic_net import ChronologicalInnerFold, ElasticNetRunPlan, compute_train_row_digest, run_elastic_net_selector
+    rng = np.random.default_rng(0)
+    x = rng.normal(size=(120, 3)); y = 2 * x[:, 0] + 0.1 * rng.normal(size=120)
+    folds = (ChronologicalInnerFold("f", 0, 80, 85, 120),)
+    plan = ElasticNetRunPlan(subset_k=1, lambda_path=(0.1, 0.01), max_iter=2000, tolerance=1e-6)
+    result = run_elastic_net_selector(x, y, ("a", "b", "c"), folds, plan, expected_row_digest=compute_train_row_digest(x, y))
+    outcome = CampaignMethodOutcome("ELASTIC_NET_K", CampaignDisposition.COMPLETE, result, None, None, 1.0)
+    population = CellPopulation("Y", "f", x, y, np.arange(120), 120, 0, (("a", 0.0), ("b", 0.0), ("c", 0.0)), folds)
+    record = method_record(outcome, identity={"row_digest": "r", "group_digest": "g", "plan_digest": "p"}, population=population, sealed_ks=(1,), seed=0)
+    assert [g for g, _ in record["scores"]] == list(record["full_ranking"])
