@@ -1,2007 +1,535 @@
 {
- "schema": "research_program_method_state.v1",
- "classification_first_20260924": {
-  "public_interface": "Required Laya-like experience across all five families: data/context + natural-language questions -> typed engine answers; not a plugin catalog",
-  "RAG": "Consider bounded documentation retrieval evaluation; market-context RAG separate and point-in-time; optional, not implemented, not a classification prerequisite",
-  "natural_language_design": "M5PHET/docs/NATURAL_LANGUAGE_INTERFACE.md; NL01-NL08 specified, not implemented",
-  "interpreter_candidates": "Reuse configured Hermes/OpenCode language access (owner names DeepSeek Flash); optional admitted small local pretrained model. Verify exact identity/access, no LLM training or broker-role conflation",
-  "orders": "../../handoffs/SATOSHI_M5PHET_CLASSIFICATION_FIRST_2026_09_24.md",
-  "primary_task": "English news relevance to EURUSD via real Laya and M5PHET Registry; direct SDK parity",
-  "status": "REAL_INFERENCE_VERIFIED_CL01_CL07_RETURNED_AWAITING_REVIEW",
-  "provider_owners": {
-   "classification": "news-signal",
-   "forecasting": "predictor/prediction_provider",
-   "hierarchical_regimes": "feature-eng",
-   "causal_inference": "causal-inference",
-   "RL": "agent-multi/gym-fx"
-  },
-  "DOIN": "transversal optional optimization, not RL engine",
-  "implementation_owner": "Satoshi",
-  "parallel_CPU_work": [
-   "forecast and hierarchy adapters",
-   "causal package and calendar",
-   "policy adapter",
-   "remaining pure closure validation"
+  "schema": "research_program_method_state.v1",
+  "updated_on": "2026-10-05",
+  "current_stage": "acceptance_test_design",
+  "completed_stages": [
+    "discovery",
+    "requirements"
   ],
-  "new_training_budget": false,
-  "global_hold": false,
-  "return": "../work_plan/SATOSHI_CL01_CL07_CLASSIFICATION_RETURN_2026_09_24.md",
-  "evidence": "../evidence/CL01_CL07_20260924/",
-  "executed": {
-   "date": "2026-09-24",
-   "device": "external RTX 5090 GPU-a9f35631-d36a-6cc6-c23b-eb0b36d50fb8, MEASURED",
-   "admission": "crispdm-run -m 6G -t 900 -n laya-eurusd-pilot2",
-   "sdk": "laya 0.3.11 @ 1e28ac20c0896b1c37a744cd11f740eb98f8b178",
-   "checkpoint_manifest_sha256": "bd12df887789924672d1c848319caf9866a172183e6959beab369d9e20aaaa89",
-   "task_id": "news_relevance_eurusd.v1",
-   "cl01_parity": "12/12 distinct inputs exactly equal, every SDK decision field, no tolerance",
-   "cl04_process_reload": "12/12 equal in a separate process",
-   "cl06_store": "17 records, 16 identities, 11 actionable, 5 retained refusals, 0 integrity failures, 0 broker calls",
-   "cl07_domain_quality": "SMOKE_TEST_AUTHOR_WRITTEN_LABELS: macro-F1 0.3333, 6/13 correct on a sealed 13-row bank",
-   "latency": "cold load 5.18 s, first inference 0.680 s, warm median 10.8 ms",
-   "memory": "peak VRAM 2.47 GB of 33.7 GB, peak RSS 3.39 GB",
-   "sdk_finding": "predict_batch agrees on all 13 labels but on no probability map; max delta 0.0218 (upstream, not the wrapper)",
-   "defects_repaired": [
-    "GPU uuid compared in two different forms, so the device check could never pass",
-    "a refusal reported the runtime's observation and hid the provider's reason",
-    "a retained refusal was counted as an actionable event",
-    "the parity comparator keyed rows by event_id, dropping a revision"
-   ],
-   "commits": {
-    "news-signal": "bb281cc on satoshi/classification-first-20260924",
-    "m5phet": "3e36396 on satoshi/runtime-p02-20260924"
-   },
-   "not_established": [
-    "live news feed",
-    "calibration",
-    "business quality of the classifier",
-    "any trading claim; no broker call was made"
-   ]
-  },
-  "doctoral_numbers_unchanged": "R0 0.371174 / R1 0.374584 / R2 0.368596 as returned at e36c1c6d"
- },
- "rp158_review": {
-  "candidate": "e36c1c6dd05340f7c3a1b53a575cad69625a5580",
-  "scope": "Source, 30 passed focused tests/6 deselected, retained-child validator probes; no inference or live authority",
-  "status": "RETAINED_METRICS_UNCHANGED_REMAINING_TYPED_ELEMENTS_AND_DERIVED_METRIC_CHECKS",
-  "remaining": [
-   "absent/string elements accepted",
-   "negative loss and incorrect finite skill accepted",
-   "pure retained-evidence closure still absent"
+  "program_owner": "Harvey",
+  "execution_owner": "Satoshi",
+  "handoff_status": "PHASE_1_COMPLETE_PHASE_2_AND_3_AUTHORIZED",
+  "first_experiment": "MOD-E0-DEV",
+  "next_allowed_actions": [
+    "Implement and execute the automated Phase-2 feature-feature dependency and redundancy campaign for the frozen EURUSD and ETH populations.",
+    "Load every Phase-2 metric and disposition into the warehouse, verify readback, and publish a physical DuckDB snapshot with manifest and SHA-256.",
+    "Automatically execute Phase 3 clustering, mRMR and JMI rankings after Phase 2 closes, preserving complete ranking paths and controls.",
+    "Freeze the Phase-4 single-feature extractor design only after PHASE_3_FILTER_COMPLETE; do not start GPU work in this order.",
+    "Continue BUSINESS_WEEKLY_WALK_FORWARD implementation independently; no final financial claim may use LITERATURE_STATIC semantics.",
+    "Keep NEAT, modular branch/core pretraining and RL after dataset-specific selection and Phase-2 extraction closure in the canonical order."
   ],
-  "evidence": "../../audits/evidence/RP158_MUSASHI/results.json",
-  "blocks_M5PHET": false,
-  "retrain_or_routine_replay": false
- },
- "rp157_review": {
-  "candidate": "3c25ecab103163a4face96b6f47ffd8280cb8c67",
-  "status": "RETAINED_RECORDS_CONSISTENT_CANONICAL_AND_POPULATION_VALIDATION_INCOMPLETE",
-  "scope": "Source, published records, six parent-scorer transport-fixture probes and 19 CPU tests; no live authority or model inference",
-  "findings": [
-   "missing or empty identity_covers skips recomputation; declared and dispatched horizon can disagree",
-   "all children can agree on wrong counts; naive nonfiniteness and string identity accepted"
-  ],
-  "retained_results": "Nine RP157 population records equal RP156; expected counts/elements and finite model/naive values checked; R2 relative MAE improvement remains about0.694 percent, development only",
-  "orders_and_review": "../../audits/work_plan/MUSASHI_RP157_REVIEW_2026_09_24.md",
-  "next_action": "Complete contract matrix using retained child evidence without inference, while real Laya setup/pilot and independent CPU application lanes continue",
-  "new_compute_budget": false,
-  "global_hold": false
- },
- "rp156_review": {
-  "candidate": "b3a064d5cdba3fb4dd49087d0516ac4c300cda6b",
-  "status": "CORRECTED_DEVELOPMENT_SCORES_RETAINED_ACCEPTANCE_GAPS_APPLICATIONS_STILL_DUE",
-  "scope": "Source and published arithmetic, CPU support/checkpoint/parent-scorer probes; no original-array reduction or live resources",
-  "accepted_repairs": [
-   "1802 label-disjoint windows derived correctly",
-   "missing expected cell suppresses summary",
-   "mismatched checkpoint refused before model load",
-   "author float32 and float64 named separately"
-  ],
-  "remaining_findings": [
-   "supplied or reconstructed design not authenticated or digest-compared; empty design completes",
-   "missing child population, wrong horizon and nonfinite metric can complete"
-  ],
-  "reported_R2_relative_MAE_improvement": 0.006943847643717471,
-  "next_action": "Validate retained RP156 evidence under actual accepted design; no routine re-inference. Start already assigned real Laya setup/admission/pilot and independent CPU application lanes",
-  "orders_and_review": "../../audits/work_plan/MUSASHI_RP156_REVIEW_2026_09_24.md",
-  "new_compute_budget": false,
-  "global_hold": false
- },
- "rp155_review": {
-  "candidate": "ebe35fb3",
-  "experimental_commit": "99a1630a",
-  "status": "TRAINING_RETAINED_SCORING_SUCCESSOR_REQUIRED_NO_GLOBAL_HOLD",
-  "scope": "Published per-cell arithmetic, source and bounded CPU probes; no checkpoint inference or live warehouse/job inspection",
-  "reported_R2_vs_R0": "-0.002402791 MAE, 0.647 percent relative improvement, favorable in 3/3 published seed pairs; descriptive population has label overlap with selection",
-  "findings": [
-   "95 complement windows share monitor target labels",
-   "scoring aggregates missing cells and identity failures",
-   "float64 scoring differs from declared author float32 reducer"
-  ],
-  "label_disjoint_scoring_origins": "735..2536 inclusive, 1802 windows; infer from saved checkpoints, do not retrain",
-  "orders_not_in_return_ancestry": [
-   "032aaa52",
-   "7e924bf5"
-  ],
-  "review": "../../audits/work_plan/MUSASHI_RP155_REVIEW_2026_09_24.md",
-  "orders": "../../handoffs/SATOSHI_RP155_REVIEW_AND_EXECUTION_2026_09_24.md",
-  "next_application_delivery": "RP147 pinned real Laya SDK/checkpoint -> M5PHET -> news-signal pilot, within existing budget; independent CPU lanes continue",
-  "new_compute_budget": false,
-  "global_hold": false
- },
- "active_assignment_reconciliation_20260924": {
-  "source_branch_tip": "b75097d3",
-  "scope": "Fetched commit ancestry and published returns/evidence; not live process, warehouse or account inspection",
-  "prior_orders_integrated": [
-   "d4bb3353",
-   "32a5467d",
-   "d46d3363",
-   "af8ca197"
-  ],
-  "latest_review_not_yet_ancestor_at_check": "032aaa52",
-  "index": "../../handoffs/SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md",
-  "B": "Closure reports 12/12, MSE/MAE 0.150307/0.246397; do not rerun from stale 10/12 queue",
-  "doctoral": "Corrected successor reported on second seed; refresh lease and budget, continue missing work only",
-  "not_delivered_in_inspected_returns": [
-   "real Laya weights/pilot",
-   "prospective news and shadow",
-   "MT5 demo and Alpaca paper integration",
-   "calendar as-of transforms",
-   "financial resource evidence and matched reference",
-   "real optional governance/DOIN round trips"
-  ],
-  "new_compute_budget": false,
-  "global_hold": false
- },
- "m5phet_review_d9ffc4d": {
-  "revision": "d9ffc4deaf7948d9432597e8c68bcd48e6ceb41c",
-  "status": "REPAIRED_CASES_ACCEPTED_THREE_BOUNDARY_GAPS_NO_GLOBAL_HOLD",
-  "scope": "CPU suite and 15 isolated recording-provider/temporary-evidence cases; no model or live job inspection",
-  "suite": "138 passed, 1 skipped (DuckDB unavailable)",
-  "findings": [
-   "multi-horizon output can omit a horizon with OK",
-   "resume allows new writes onto a torn tail",
-   "original input_schema population declaration is silently ignored"
-  ],
-  "accepted": [
-   "explicit combination refusal",
-   "wrong loaded task refusal",
-   "top-level population binding",
-   "calibration state binding and aware UTC clocks",
-   "nonfinite payload refusal",
-   "manifest identity recomputation",
-   "interior corruption refusal on open",
-   "single-horizon forecast without classification questions"
-  ],
-  "orders_and_review": "../../audits/work_plan/MUSASHI_M5PHET_D9FFC4D_REVIEW_2026_09_24.md",
-  "parallel_delivery": "Actual pinned Laya SDK/checkpoint vertical slice remains required; implementation by Satoshi, not a new mock-only milestone",
-  "reported_experimental_progress": "Owner-supplied second-seed progress 6138/14400 CPU seconds; not live-verified here",
-  "new_compute_budget": false,
-  "blocks_independent_experiments": false
- },
- "m5phet_specialized_review_7385937": {
-  "revision": "7385937",
-  "status": "DISPATCH_BEHAVIOR_ACCEPTED_AT_DOUBLE_SCOPE_INTEGRATION_CHANGES_REQUIRED",
-  "scope": "Actual runtime API, one-factor recording-provider probes and temporary evidence; no live campaign or model inference",
-  "suite": "115 passed, 1 skipped (DuckDB unavailable), reproduced in two interpreters",
-  "remaining": [
-   "calibration identity and timezone checks",
-   "task and actual population binding",
-   "per-output payload validation",
-   "canonical resume integrity and mandatory recovery",
-   "operation-specific inference schemas",
-   "real provider vertical slice"
-  ],
-  "orders_and_review": "../../audits/work_plan/MUSASHI_M5PHET_7385937_REVIEW_2026_09_24.md",
-  "new_compute_budget": false,
-  "blocks_independent_experiments": false
- },
- "laya_upstream_architecture_review": {
-  "current_adapter_pin": "1e28ac20c0896b1c37a744cd11f740eb98f8b178",
-  "reviewed_candidate": "84ca7240348e6fb3b8145d2d9f6266d5125747d8",
-  "status": "SOURCE_CONFIG_AND_CPU_HELPERS_REVIEWED_NOT_ADOPTED_NO_WEIGHTS_TESTED",
-  "reuse": "Agent/tokenizer/decision heads; Router, structured helpers and hooks where needed; no duplicate language model or schema compiler",
-  "fork": "Independent M5PHET plus optional upstream dependency; thin Laya fork only for evidenced necessary internal patch, not a new engine or automatic public fork",
-  "evidence": "../../audits/work_plan/MUSASHI_LAYA_ARCHITECTURE_2026_09_24.md",
-  "implementation_owner": "Satoshi",
-  "blocks_independent_experiments": false
- },
- "m5phet_integration_review_20260924": {
-  "predictor_revision": "5c2dc332",
-  "m5phet_revision": "adba176",
-  "scope": "Candidate source, actual temporary local/runtime APIs and exact regime-check AST; no live campaign inspection or training",
-  "status": "CHANGES_REQUIRED_NO_GLOBAL_HOLD",
-  "suite": "74 passed, 1 skipped here (DuckDB unavailable)",
-  "findings": [
-   "resume identity/open attempts and destructive interior recovery",
-   "truthy denied delivery/profile drift",
-   "unvalidated payload and foreign future calibration certified",
-   "invalid duplicate metrics and unknown attempts",
-   "missing R2 evidence promoted and unexpected cell accepted",
-   "class provider entrypoint cannot instantiate"
-  ],
-  "reported_experimental_progress": "RP145 B table reports 12 verified cells, mean author normalized MSE/MAE 0.1503/0.2464 versus 0.150/0.246; L512 versus paper searched lookback remains qualified; not independently re-reduced in this review",
-  "review": "../../audits/work_plan/MUSASHI_M5PHET_INTEGRATION_REVIEW_2026_09_24.md",
-  "orders": "../../handoffs/SATOSHI_M5PHET_INTEGRATION_CONTINUATION_2026_09_24.md",
-  "new_compute_budget": false
- },
- "rp151_interim_review": {
-  "reviewed_commit": "f8e9e77f9113144563e914883364c25b148407b6",
-  "scope": "Source inspection plus exact extracted AST probes; no live job/cube inspection or new training",
-  "disposition": "CONTRAST_PATH_CHANGES_REQUIRED_NO_GLOBAL_HOLD",
-  "findings": [
-   "Declared checkpoint selection and trained downstream persistence absent in run_contrast",
-   "Empty or R0-only population passes all four regime summary checks",
-   "Unequal design digests pass assert ending in or True",
-   "Requested steps presented without optimizer observations; CPU/wall prescription conflated"
-  ],
-  "reported_progress": "B twelve cells trained, closure running; R0/R1/R2 running; A reported mean preserved; RP147-149 not started",
-  "review": "../../audits/work_plan/MUSASHI_RP144_RP151_INTERIM_REVIEW_2026_09_24.md",
-  "continuation": "../../handoffs/SATOSHI_RP144_RP151_CONTINUATION_2026_09_24.md",
-  "implementation_owner": "Satoshi",
-  "new_compute_budget": false
- },
- "general_ml_program": {
-  "name": "M5PHET",
-  "product_identity": "Typed machine-learning framework; state plus task/schema to structured results, not a generic research program",
-  "repository": "https://github.com/harveybc/M5PHET",
-  "fronts": [
-   "classification",
-   "regression_forecasting",
-   "representation_unsupervised",
-   "reinforcement_learning",
-   "causal_inference"
-  ],
-  "optimization": "DOIN cross-cutting; not a sixth required model",
-  "provider_architecture": "Owner-approved configurable specialized-ML plugins per task family; capability combinations checked explicitly; shared engines may serve multiple tested contracts",
-  "language_model_role": "Optional provider for concrete interpretation/generation/feature use cases, never a required orchestrator or authority for measured outputs or execution",
-  "plugin_acceptance": "No-LLM local execution, explicit selection, incompatible-contract refusal before load, identity-preserving task comparison; no hidden fallback",
-  "selection": "Task-matched reproduced open-source references, license and measured deployment suitability; no universal Laya requirement",
-  "implemented_scope": "Classification contract consumed by news-signal; candidate d9ffc4d repairs independently accepted at recording-provider scope, three coverage/recovery gaps remain; real Laya/governance/DOIN/remaining provider integration not certified by this review",
-  "product_design": "https://github.com/harveybc/M5PHET/blob/master/docs/IMPLEMENTATION_PLAN.md",
-  "product_design_revision": "4508b98",
-  "integration_extension": "M5PHET docs/INTEGRATION_AND_OPTIMIZATION.md; INT01-INT12 pending implementation; example apps local-first with durable trace/metrics, optional embedded DuckDB and independent optional governance/DOIN; existing governed campaigns unchanged",
-  "implementation_owner": "Satoshi",
-  "review_owner": "Musashi",
-  "implementation_assignment_status": "IN_PROGRESS_CANDIDATE_REVIEWED_SCOPED_REPAIRS_ASSIGNED",
-  "implementation_orders": "../../handoffs/SATOSHI_M5PHET_IMPLEMENTATION_2026_09_24.md",
-  "development_method": "Behavioral tests first; top-down design and bottom-up implementation per component; independent lanes parallel",
-  "next_input": "Existing economic dataset: inventory then vintage-aware as-of features; CAL01-CAL12 required before ML consumption",
-  "consumer_cases": [
-   "typed event decisions",
-   "hierarchical market state",
-   "uncertain multi-horizon forecasts",
-   "calendar-aware trading policies",
-   "identified economic-release effects"
-  ],
-  "contract_revision": "bcd65b78c12e53e85adc9f2328cb0c0faccb94e8",
-  "blocks_existing_work": false
- },
- "rp143_external_review": {
-  "reviewed_commit": "07140d03",
-  "disposition": "CHANGES_REQUIRED_COMPOSITION_AND_ML_GATES_NO_GLOBAL_HOLD",
-  "scope": "Source inspection and bounded CPU counterprobes; no new original-array reduction or production custody read",
-  "findings": [
-   "metric-only replay pools without shape check",
-   "absent report/binding identities accepted",
-   "target parity bypasses actual adapter batches",
-   "AE validation masks change on repeated access",
-   "reload parity and gradient-only regime proof too weak"
-  ],
-  "numerical_mean": "Retained mean recomputes; no metric-only histories selected in current composition, so no numerical invalidation inferred from that counterexample",
-  "review": "../../audits/work_plan/MUSASHI_RP140_RP143_REVIEW_2026_09_24.md"
- },
- "news_live_track": {
-  "authority": "Owner approved parallel Laya track and coordinator-hosting investigation, 2026-09-24 UTC",
-  "document": "NEWS_LIVE_PARALLEL_2026_09_24.md",
-  "repository": "https://github.com/harveybc/news-signal",
-  "status": "LAYA_ISOLATED_SDK_AND_SNAPSHOT_SETUP_IN_PROGRESS_REPORTED_REAL_PILOT_AND_BROKERS_PENDING",
-  "setup_observation_scope": "Owner supplied Satoshi report after RP157; not independently inspected live; Hub checkpoint name convaiinnovations/laya, resolved immutable snapshot revision must be recorded",
-  "allowed_modes": [
-   "SHADOW",
-   "MT5_DEMO",
-   "ALPACA_PAPER"
-  ],
-  "real_capital_authorized": false,
-  "blocks_scientific_experiments": false,
-  "resident_host_candidate": "COORDINATOR RTX4070 8GiB after real-weight admission/latency pilot; not measured inference yet",
-  "gpu_training_priority": "WORKER_B external5090 remains first choice; do not evict RP135",
-  "execution_authority": "Existing LTS risk and execution, never the classifier",
-  "orders": "../../handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md"
- },
- "gpu_dispatch_policy": {
-  "authority": "Owner standing instruction, 2026-09-22; persists after travel holds end",
-  "first_choice": "WORKER_B external RTX 5090, identified by physical UUID",
-  "priority": "Individual GPU jobs first; prefer measured time to result rather than equal allocation across devices",
-  "secondary_devices": "Only when eligible and justified by useful parallelism, queue/transfer cost, compatibility, external-device unavailability or required original-device replay",
-  "admission": "Existing thermal, memory, disk and workload guards remain; check actual child UUID",
-  "power_recovery": "Host online is insufficient: verify external UUID, driver health and bounded CUDA execution; no automatic reboot or silent internal-GPU fallback",
-  "running_work": "No interruption or migration of Satoshi's active round for this policy update",
-  "runtime_enforcement": "Documented dispatch requirement, not a new scheduler implementation",
-  "performance_ratios": "Owner-reported expectations; task projections require measured costs",
-  "future_ups": "Not provisioned; not counted as available infrastructure"
- },
- "storage_capacity_assessment": {
-  "date": "2026-09-22",
-  "policy": "STORAGE_BUDGET_2026_09_22.md",
-  "evidence": "../../audits/evidence/STORAGE_CAPACITY_2026_09_22/ASSESSMENT.json",
-  "resources": "existing mounted home filesystems only; no tmpfs, cloud, NAS or assumed deletions",
-  "operating_reserve_GiB_per_filesystem": 50,
-  "sota_primary_12_cells": "DISK_FITS_PLANNING_ENVELOPE: WORKER_A 4 GiB retained + 32 GiB temporary, COORDINATOR 1.5 GiB metrics backup; preflight still required",
-  "full_program_lifetime_requirement": "NOT_IDENTIFIABLE: remaining campaign populations and artifact sizes not fixed",
-  "reservation_enforcement": "REQUIRED_NOT_VERIFIED_IMPLEMENTED",
-  "scientific_artifacts_deleted": 0
- },
- "thermal_and_retention_override": {
-  "date": "2026-09-22",
-  "scope": "Travel thermal hold released by explicit owner all-fans-functional confirmation on 2026-09-23; retention policy unchanged",
-  "cooling_restored_on": "2026-09-23",
-  "coordinator_heavy_cpu_gpu_compression": "CPU/GPU eligible after admission; no compression experiments under unchanged retention policy",
-  "coordinator_role": "orchestration and admitted independent original-device replay/work; protect existing services",
-  "remote_execution": "External5090 first; other GPUs eligible for useful independent work after physical UUID, thermal, memory, disk and workload admission; no silent sealed-cell migration",
-  "owner_thermal_clarification": "2026-09-22: WORKER_A cooling unconfirmed; WORKER_B internal RTX 5070 Ti cooling unconfirmed; coordinator traveling without cooler. External RTX 5090 independently cooled per owner. Expected return tomorrow afternoon is not automatic authorization.",
-  "held_gpu_devices": [],
-  "worker_host_cpu_policy": "Bound CPU preparation, thread counts and concurrency; monitor host temperature independently of eGPU; no unbounded CPU fallback",
-  "local_batch_guard": "Travel marker archived as coordinator-travel-hold.released-20260923 following owner confirmation; regular admission guards remain",
-  "artifact_policy": "THERMAL_AND_ARTIFACT_RETENTION_2026_09_22.md",
-  "deletion_gate": "OWNER_SUPERSEDES_ARCHIVAL: no compression or permanent prediction archive; delete inventoried prediction copies including the last after independent analysis and durable verified metric catalog, with deletion receipts and no active reader/writer",
-  "post_deletion_scope": "historically verified metrics retained; original prediction replay unavailable; never substitute a metrics vault for present-array verification",
-  "future_routing": "STEP-12 is conditional, not a frozen financial experiment; generate dedicated OOS predictions for its eligible model bank when designed; no blanket retention of current pilots",
-  "artifacts_deleted_this_update": 0
- },
- "sota_first_override": {
-  "decision_date": "2026-09-21",
-  "authority": "explicit owner instruction; supersedes historical next actions below",
-  "status": "RP143_REVIEWED_COMPOSITION_AND_ML_FIXES_REQUIRED_B_AND_NEWS_CONTINUE",
-  "benchmark": "Electricity/ECL 321 hourly clients from owner reference; NOT UCI235 household",
-  "selected_model": "TimeFilter (ICML 2025) @ dffde87e, protocol A (Table 8, L=96); protocol B (Table 9, L=512 script) secondary",
-  "historical_dev_disposition": "HISTORICAL_DEV_ONLY; excluded from active selection and recommendations",
-  "runtime_exclusion_implemented": true,
-  "policy": "SOTA_FIRST_2026_09_21.md",
-  "orders": "../../handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md",
-  "suspended_measurements": [
-   "simplified E0/E1 extensions",
-   "household context pilots",
-   "FIN-LOSS-OPT fits"
-  ],
-  "preserved_future_requirements": [
-   "doctoral modular hypotheses",
-   "financial Huber/MAE x Adam/AdamW",
-   "weekly forecasting and RL",
-   "core pretraining"
-  ],
-  "completion_requires": "Per consumed reference: all four horizons x three seeds, accepted recipe, original float32 scoring and scoped independent verification with custody. Preserve failed portability checks and UNKNOWN/inferred device identity. Deletion certification is separate from score acceptance. No retraining to repair closure. Cooling confirmed; regular admission applies. TRAIN-only matched adapter cost pilot authorized under RP142 tests; final scientific comparison needs its accepted reference, not unrelated protocol B or retention completion."
- },
- "rp131_external_review": {
-  "reviewed_commit": "c9dce617a0badc480dc0519e8b94234c555f40f5",
-  "disposition": "CHANGES_REQUIRED_RETENTION_ONLY_NO_GLOBAL_EXPERIMENT_HOLD",
-  "evidence": "../../audits/evidence/RP131_MUSASHI_REVIEW_2026_09_23/",
-  "executed_findings": [
-   "empty or failed field-level comparisons still certify deletion when summaries remain green",
-   "revalidation summary ignores refused custody and copies stale cell-verification status"
-  ],
-  "verification": "New actual-author disposable CPU probe and unchanged prior probe executed; no independent pytest suite, production mutation or new scientific score",
-  "owner_action_required": false,
-  "production_deletions_by_reviewer": 0,
-  "next_orders": "../../handoffs/MUSASHI_SOTA_RP132_RP135_2026_09_23.md"
- },
- "execution_lanes": {
-  "policy": "CONCURRENT_EXECUTION_2026_09_23.md",
-  "queue": "EXPERIMENT_EXECUTION_QUEUE.json",
-  "owner_instruction": "Keep independent eligible experiments running while repairs and analysis proceed in isolated worktrees; use available Hermes/subagents; no routine continue prompts",
-  "reporting": "Every audit leads with new scientific results or identified running work and measured idle cause; never substitute tests or old scores for new measurements",
-  "science": {
-   "task": "SOTA-REPRO",
-   "order": "RP135",
-   "status": "RP143_REPORT_TEN_TRAINING_TERMINALS_H720s2022_RUNNING_RECHECK_LIVE_BEFORE_DISPATCH",
-   "executor_service": "crispdm-rp135-continuation-20260923.service",
-   "superseded_blocked_task": "t_28e5c655",
-   "recipe": "TimeFilter dffde87e released ECL L512 block; 321 channels; four horizons x three seeds",
-   "device": "Only admitted WORKER_B external RTX 5090",
-   "does_not_depend_on": [
-    "RP132-RP134 retention repair",
-    "A original-device replays"
-   ],
-   "still_requires": [
-    "fresh governed admission per remaining unit",
-    "scientific path checks",
-    "thermal/memory/disk/compute admission"
-   ],
-   "continuation_budget": "24000 CPU seconds and 8h wall, declared before continuation, prior costs preserved",
-   "meaning": "Published-recipe reference construction, not isolated context effect, exact Table 9 identity or doctoral hypothesis confirmation"
+  "documents": {
+    "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
+    "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
+    "orders": "CURRENT_EXECUTION.md",
+    "queue": "EXPERIMENT_EXECUTION_QUEUE.json",
+    "checklist": "MASTER_CHECKLIST.json",
+    "feature_selection": "FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md",
+    "feature_selection_phase23": "FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md",
+    "business_weekly": "BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md",
+    "business_weekly_traceability": "BUSINESS_WEEKLY_TRACEABILITY.json",
+    "modular_stack": "MODULAR_STACK_WORK_PLAN_2026_09_30.md",
+    "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
+    "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
+    "news_live": "NEWS_LIVE_PARALLEL_2026_09_24.md"
   },
-  "retention": {
-   "orders": "RP132-RP134",
-   "status": "RETURN_PUBLISHED_RETENTION_GATE_SEPARATE_NO_NEW_DELETION_AUTHORIZATION",
-   "cpu_budget_seconds": 1800,
-   "budget_relation": "Within standing 14400-second round CPU ceiling",
-   "production_deletion": "HELD",
-   "science_blocking": false
+  "authorization_scope": {
+    "engineering_and_offline_experiments": "AUTONOMOUS_WITHIN_RESOURCE_AND_DATA_CONTRACTS",
+    "shadow_mt5_demo_alpaca_paper": true,
+    "real_capital": false,
+    "remote_code_or_new_license": "EXPLICIT_OWNER_DECISION",
+    "credentials_or_physical_hardware": "OWNER_ACTION_WHEN_REQUIRED"
   },
-  "physical_waits": {
-   "scope": "Cooling confirmed. Four original-device-targeted replay reports numerically exact; coordinator custody freshly checked by Musashi. Coordinator training UUID remains UNKNOWN, do not certify measured same-device attribution. Evidence composition pending, not physical authorization.",
-   "science_blocking": false
-  }
- },
- "rp127_external_review": {
-  "reviewed_commit": "a73e55b2dcad1265b7643f49fcfda810fcb7d801",
-  "disposition": "CHANGES_REQUIRED_INTEGRATION_GATES_MEASUREMENTS_PRESERVED",
-  "evidence": "../../audits/evidence/RP127_MUSASHI_REVIEW_2026_09_23/",
-  "executed_findings": [
-   "no-data domain-only catalog acceptance permits normal deletion despite wrong ACF",
-   "foreign design accepted through destructive caller; missing design accepted even with explicit expectation",
-   "boolean false accepted as numeric histogram count zero"
-  ],
-  "focal_suite": "98 passed, 1 skipped, 5 fork warnings; 90.06 seconds; WORKER_B bounded CPU-only",
-  "scope": "Actual-author disposable fixtures and stub warehouse; retained example reports inspected; no fresh production metric reduction or live warehouse query",
-  "retained_progress": "Independent numerical implementation detects prior ACF example; old API flag removed; keep eleven successful numerical comparisons subject to evidence-content checks, no blanket regeneration",
-  "physical_holds": [
-   "H96 original-device replay on WORKER_A requires explicit cooling confirmation and admission",
-   "H192 s2021 original-device inference on COORDINATOR requires explicit cooling confirmation and admission; identical output is not guaranteed"
-  ],
-  "gpu_work_by_reviewer": false,
-  "production_deletions_by_reviewer": 0,
-  "next_orders": "../../handoffs/MUSASHI_SOTA_RP128_RP131_2026_09_23.md",
-  "owner_action": "No new engineering permission. Physical cooling remains unconfirmed; complete software work independently."
- },
- "rp121_external_review": {
-  "reviewed_commit": "316c67af0af317c345c6959681135ba622770584",
-  "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED_NO_BENCHMARK_REFITTING",
-  "evidence": "../../audits/evidence/RP121_MUSASHI_REVIEW_2026_09_23/",
-  "executed_findings": [
-   "plausible wrong ACF and quantiles plus null defined correlation pass independent catalog acceptance",
-   "local registry relabels accepted diagnostic artifact as closure while warehouse is unchanged",
-   "public API require_acceptance=False deletes without accepted warehouse chain"
-  ],
-  "focal_suite": "85 passed, 1 skipped, 5 fork warnings; 75.65 seconds; WORKER_B CPU-only",
-  "scope": "Disposable actual-author fixtures and warehouse stub; no full production-array reduction or live warehouse query this review",
-  "gpu_work_by_reviewer": false,
-  "production_deletions_by_reviewer": 0,
-  "next_orders": "../../handoffs/MUSASHI_SOTA_RP122_RP127_2026_09_23.md",
-  "owner_action": "No new engineering approval; WORKER_A cooling remains unconfirmed, independent repairs continue",
-  "own_erratum": "RP113/RP120 incorrectly assumed A patch24; author script uses patch32: three patches in A, four in B. Satoshi correction accepted.",
-  "history": "Prior returns remain as reported; independent coverage and closure claims are qualified by this review"
- },
- "rp113_external_review": {
-  "reviewed_commit": "e145303cbc5776ee3907d9997a3622e1eab272b8",
-  "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED_NO_NEW_DELETION",
-  "evidence": "../../audits/evidence/RP113_MUSASHI_REVIEW_2026_09_23/",
-  "executed_findings": [
-   "rehashed report and marker accept zero score",
-   "fabricated regeneration overrides score",
-   "deletion without approval or backup",
-   "float32 divisor differs from NumPy at N=16777217",
-   "broken estimator producer accepted with all internal oracles zero"
-  ],
-  "focal_suite": "61 passed, 1 skipped; worker CPU-only; 55.03 seconds; five fork-after-thread warnings",
-  "scope": "Disposable actual-author CPU fixtures; no production-array recomputation or new live warehouse query",
-  "gpu_work_by_reviewer": false,
-  "production_deletions_by_reviewer": 0,
-  "next_orders": "../../handoffs/MUSASHI_SOTA_RP114_RP121_2026_09_23.md",
-  "owner_action": "No new engineering approval. WORKER_A cooling remains unconfirmed; independent blocks continue.",
-  "history": "Prior returns below preserved as reported; this review qualifies their completion claims"
- },
- "rp105_external_review": {
-  "reviewed_commit": "55a339ce0cd3ac28b0495c5ad4bde57736ee9fa1",
-  "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED",
-  "evidence": "../../audits/evidence/RP105_MUSASHI_REVIEW_2026_09_22/",
-  "findings": [
-   "post-deletion metric rewrite accepted",
-   "different-identity extra-root copy deleted",
-   "original float32 scoring incomplete for T336/T720"
-  ],
-  "live_warehouse_requeried_by_auditor": true,
-  "warehouse_bigint": "ADOPTED_VERIFIED; eight governance relations unchanged before resend; one intentional warehouse stop/start",
-  "t720_original_terminals": "3 resent and reconciled; no new generations",
-  "accepted_cell_artifacts": "12/12 record and checkpoint identities match live accepted artifacts",
-  "deleted_cells_retained_custody": "6/6 catalogs match pre-deletion report; metadata backup 14542485 bytes; not array recomputation",
-  "predictions_deleted_by_reviewer": 0,
-  "next_orders": "../../handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md",
-  "owner_information_required": "Cooling explicitly NOT confirmed for WORKER_A or WORKER_B internal GPU; await future confirmation without repeated approval requests; independent admitted external-5090 and lightweight blocks continue",
-  "historical_blocks_below": "Prior Satoshi returns preserved as reported; this review supersedes their pending restart and terminal claims"
- },
- "rp97_external_review": {
-  "reviewed_commit": "fb6ec31e28db6d7dc3434c86f18218ee3e5743f1",
-  "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED",
-  "evidence": "../../audits/evidence/RP97_MUSASHI_REVIEW_2026_09_22/",
-  "findings": [
-   "altered vault accepted",
-   "contradictory replay cache accepted",
-   "short loader halves MAE",
-   "constant correlation reported as zero",
-   "uncertainty aggregation grain"
-  ],
-  "independent_reduction": "four cells; independent indices, targets, MSE/MAE, persistence and seasonal24; no author loader or scorer; recorded hashes match",
-  "extended_metric_catalog": "NOT_CERTIFIED; correction and independent estimator checks required before deletion",
-  "live_warehouse_requeried_by_auditor": false,
-  "predictions_deleted": 0,
-  "next_orders": "../../handoffs/MUSASHI_SOTA_RP98_RP105_2026_09_22.md",
-  "owner_action_required": false
- },
- "rp81_external_review": {
-  "reviewed_commit": "bd6fcf4",
-  "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED",
-  "findings": [
-   "actual closure bypass",
-   "unanchored metric scaler",
-   "reference relabel accepted",
-   "financial populations mixed",
-   "bootstrap population mismatch",
-   "cross-tier training environment confounding"
-  ],
-  "evidence": "../../audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/",
-  "fresh_process_weight_replays": "15/15 within existing atol=rtol=1e-6; no fitting",
-  "live_warehouse_requeried_by_auditor": false,
-  "historical_satoshi_return": "Preserved below as reported; this external review qualifies its closure/comparator/financial guarantees",
-  "owner_action_required": false
- },
- "updated_on": "2026-09-24",
- "current_stage": "system_verification",
- "completed_stages": [
-  "discovery",
-  "requirements"
- ],
- "program_owner": "Musashi",
- "execution_owner": "Satoshi",
- "handoff_status": "RP144_RP151_ISSUED_PARALLEL_EXPERIMENTS_AND_NEWS_DEMO_PAPER",
- "pending_owner_amendment": "Adopted after RP1-RP8 return: ARCH-A/B/C/0 comparison in E0; H-CORE after E1 and verified frozen prefix",
- "architecture_comparison": {
-  "reference": "ARCH-A",
-  "alternatives": [
-   "ARCH-A",
-   "ARCH-B",
-   "ARCH-C",
-   "ARCH-0"
-  ],
-  "selected_winner": null,
-  "adoption": "MEASUREMENTS_PRESERVED_E0_DONOR_EQUIVALENCE_REQUIRES_COMPLETION"
- },
- "first_experiment": "SOTA-REPRO",
- "authorization_scope": "DEVELOPMENT_AND_NEWS_LIVE_DATA_SHADOW_DEMO_PAPER_NO_RESERVED_CONFIRMATION_NO_REAL_CAPITAL",
- "literature_comparability": {
-  "scope": "ALL_DOMAINS_INCLUDING_FINANCE",
-  "required_before": "NEW_SCIENTIFIC_TRAINING",
-  "modes": [
-   "REPRODUCTION",
-   "MATCHED_DOMAIN_COMPARISON"
-  ],
-  "unmatched_published_scores_are_comparators": false
- },
- "closure_reporting": {
-  "scope": "CURRENT_AND_ALL_FUTURE_ORDER_SETS",
-  "required_columns": [
-   "task_horizon_split",
-   "metric_and_scale",
-   "model_error",
-   "naive_error",
-   "skill_vs_naive",
-   "literature_value_and_source",
-   "comparability_status"
-  ],
-  "missing_comparator": "EXPLICIT_NOT_COMPARABLE_WITH_REASON_NO_INVENTED_VALUE",
-  "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
- },
- "next_allowed_actions": [
-  "Read SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md first; reconcile all lanes, not only M5PHET",
-  "RP144-RP145: A retained, B closure reports 12/12; review actual closure evidence, no repeat fit queue from historical status",
-  "RP146/RP156: corrected label-disjoint scores retained; finish design/child-result validation by reusing retained evidence, no routine inference or training repeat; count all scoring costs",
-  "RP147: isolated real Laya checkpoint pilot on admitted coordinator candidate,600CPU/900wall excluding install/download; no silent GPU fallback",
-  "RP148-RP149: prospective governed news and shadow service, then isolated MT5 demo and Alpaca paper through existing LTS risk; do not replace active strategies",
-  "RP150-RP151: financial producer evidence/reference, calendar as-of transforms, M5PHET implementation and real optional integration in parallel; one all-lane return, no routine continue prompts",
-  "No invented availability, private reserve reads, ungoverned scientific fits, broker-risk bypass or real-capital activation"
- ],
- "documents": {
-  "active_assignments": "../../handoffs/SATOSHI_ACTIVE_ASSIGNMENTS_2026_09_24.md",
-  "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
-  "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
-  "orders": "../../handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md",
-  "news_live": "NEWS_LIVE_PARALLEL_2026_09_24.md",
-  "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
-  "concurrent_execution": "CONCURRENT_EXECUTION_2026_09_23.md",
-  "execution_queue": "EXPERIMENT_EXECUTION_QUEUE.json",
-  "core_pretraining": "../CORE_PRETRAINING_HYPOTHESIS_2026_09_18.md",
-  "external_review": "../../audits/work_plan/MUSASHI_RP140_RP143_REVIEW_2026_09_24.md",
-  "business_disposition": "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-  "return": "https://github.com/harveybc/predictor/blob/c9dce617/docs/audits/work_plan/SATOSHI_RP128_RP131_RETURN_2026_09_23.md",
-  "phase2_design": "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json",
-  "benchmark_registry": "../../audits/evidence/d3_k5_20260917/RP65/BENCHMARK_CONTRACT_REGISTRY.json",
-  "fin_loss_opt_design": "FIN_LOSS_OPT_DESIGN_2026_09_21.md",
-  "household_literature_benchmark": "../../audits/evidence/d3_k5_20260917/RP65/HOUSEHOLD_LITERATURE_BENCHMARK.md",
-  "closure_table": "../../audits/evidence/d3_k5_20260917/RP65/CLOSURE_TABLE.md"
- },
- "proposal_coverage": {
-  "P-MOD": [
-   "MOD-E0-DEV",
-   "MOD-ARCH-COMPARE",
-   "MOD-E1",
-   "MOD-FROZEN-PREFIX",
-   "MOD-CORE-PRETRAIN",
-   "MOD-CONF",
-   "FIN-LOSS-OPT",
-   "MOD-E3"
-  ],
-  "P-L2": [
-   "L2-PUBLIC-RL"
-  ],
-  "P-CAP": [
-   "CAP-CALIBRATION"
-  ],
-  "P-PRE": [
-   "PRE-NOISE"
-  ],
-  "P-TRN": [
-   "TRN-TRANSFER"
-  ],
-  "P-INC": [
-   "INC-SIMULATION"
-  ]
- },
- "signal_steps": [
-  "STEP-01",
-  "STEP-02",
-  "STEP-03",
-  "STEP-04",
-  "STEP-05",
-  "STEP-06",
-  "STEP-07",
-  "STEP-08",
-  "STEP-09",
-  "STEP-10",
-  "STEP-11",
-  "STEP-12",
-  "STEP-13"
- ],
- "compression_lanes": [
-  "C1",
-  "C2",
-  "C3",
-  "C4",
-  "C5",
-  "C6",
-  "C7"
- ],
- "shared_requirements": [
-  "FE",
-  "EVENT",
-  "META",
-  "I-INFO",
-  "H-ES",
-  "GOVERNANCE",
-  "WEEKLY-RL"
- ],
- "tasks": [
-  {
-   "id": "M5PHET-CONTRACTS",
-   "owner": "Musashi + Satoshi",
-   "status": "IMPLEMENTED",
-   "depends_on": [],
-   "evidence": [
-    "https://github.com/harveybc/M5PHET/tree/bcd65b78c12e53e85adc9f2328cb0c0faccb94e8"
-   ],
-   "next_action": "Keep first consumer pinned and verified; design each further task family with its consumer and independent oracle before engine implementation",
-   "deliverable": "Task-specific typed results and five-front roadmap; not five completed engines"
+  "architecture_comparison": {
+    "order": [
+      "dataset_target_split_contract",
+      "dataset_specific_selection",
+      "grouping_and_receptive_fields",
+      "matched_ARCH_controls",
+      "branch_pretraining",
+      "E1_R0_R1_R2",
+      "select_and_fix_branch_prefix",
+      "H_CORE",
+      "core_transfer",
+      "freeze_final_representation",
+      "Dense_vs_NEAT",
+      "SAC_and_DQN_raw_vs_modular",
+      "deferred_causal_calendar_model_input"
+    ],
+    "R3_defined": false,
+    "NEAT_role": "LATE_EVOLVED_HEAD_NOT_HYPERPARAMETER_OPTIMIZER",
+    "DEAP_role": "CONFIGURATION_AND_HYPERPARAMETER_SEARCH",
+    "DOIN_role": "DISTRIBUTED_CANDIDATE_EVALUATION"
   },
-  {
-   "id": "NEWS-ADAPTER",
-   "owner": "Musashi + Satoshi",
-   "status": "IMPLEMENTED",
-   "depends_on": [
-    "M5PHET-CONTRACTS"
-   ],
-   "evidence": [
-    "https://github.com/harveybc/news-signal"
-   ],
-   "next_action": "Real frozen-weight smoke, offline/device/provenance checks and measured coordinator resources; prototype tested only with fixture/SDK double",
-   "deliverable": "Typed news features, no model order authority, actual deployment evidence"
-  },
-  {
-   "id": "NEWS-SHADOW",
-   "owner": "Satoshi",
-   "status": "DESIGNED",
-   "depends_on": [
-    "NEWS-ADAPTER"
-   ],
-   "evidence": [],
-   "next_action": "Implement licensed receipt-time collector, governed inputs and bounded resident inference; prospective calibration design",
-   "deliverable": "Working live-data shadow stream and input/model/latency evidence"
-  },
-  {
-   "id": "NEWS-PAPER",
-   "owner": "Satoshi",
-   "status": "DESIGNED",
-   "depends_on": [
-    "NEWS-SHADOW",
-    "BUSINESS-CONTRACT"
-   ],
-   "evidence": [],
-   "next_action": "Implement policy through existing LTS risk and both MT5 demo/Alpaca paper, isolated mandates, idempotency/fill/recovery tests",
-   "deliverable": "Separate end-to-end broker receipts and matched prospective evaluation, no real-capital release"
-  },
-  {
-   "id": "SOTA-REPRO",
-   "owner": "Satoshi",
-   "status": "IN_PROGRESS",
-   "depends_on": [
-    "BENCHMARK-CONTRACTS"
-   ],
-   "evidence": [
-    "rp90_rp97 block",
-    "rp105_external_review block",
-    "rp113_external_review block",
-    "rp121_external_review block",
-    "rp127_external_review block",
-    "rp131_external_review block"
-   ],
-   "next_action": "RP136-RP139: finish L512 on external5090, original-device A checks in parallel after owner cooling confirmation, package existing repairs and reconcile recovered terminal provenance",
-   "deliverable": "Full official benchmark reproduction with published metrics, matched naive, numerical agreement and provenance; not an adapted proxy"
-  },
-  {
-   "id": "MOD-E0-DEV",
-   "owner": "Satoshi",
-   "status": "EXECUTED",
-   "depends_on": [],
-   "evidence": [
-    "docs/audits/work_plan/MUSASHI_RP1_RP8_REVIEW_2026_09_18.md",
-    "docs/audits/evidence/RP_REVIEW_2026_09_18/results.json",
-    "https://github.com/harveybc/predictor/blob/2347c7b/docs/audits/work_plan/SATOSHI_PROGRAM_RP1_RP8_RETURN_2026_09_18.md",
-    "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
-    "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
-    "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
-    "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
-   ],
-   "next_action": "Preserve measurements and factorial results; no blanket restart",
-   "deliverable": "H2 profile/random effects and H3 sequence/summary effects with matched controls and cost"
-  },
-  {
-   "id": "MOD-E0-CLOSURE",
-   "owner": "Satoshi",
-   "status": "EXECUTED",
-   "depends_on": [
-    "MOD-E0-DEV"
-   ],
-   "evidence": [
-    "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
-    "../../audits/evidence/RP16_REVIEW_2026_09_19/results.json",
-    "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md",
-    "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
-    "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
-    "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
-    "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
-   ],
-   "next_action": "Preserve RP34 donor correction and verify historical closure without repeating fits; keep each evidence scope explicit",
-   "deliverable": "Corrected closure, descriptor impact proof and honest metric coverage with preserved history"
-  },
-  {
-   "id": "MOD-ARCH-COMPARE",
-   "owner": "Satoshi",
-   "status": "EXECUTED",
-   "depends_on": [
-    "MOD-E0-DEV",
-    "MOD-E0-CLOSURE"
-   ],
-   "evidence": [
-    "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
-    "../../audits/evidence/RP16_REVIEW_2026_09_19/results.json",
-    "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md",
-    "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
-    "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
-    "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
-    "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md"
-   ],
-   "next_action": "No universal winner; preserve controls and qualify support/convergence; no training just to repair evidence",
-   "deliverable": "Adequacy, H2/H3 effects by architecture and regime, uncertainty, learning curves and total cost; no universal winner presumed"
-  },
-  {
-   "id": "MOD-E1",
-   "owner": "Satoshi",
-   "status": "EXECUTED",
-   "depends_on": [
-    "MOD-E0-DEV",
-    "MOD-ARCH-COMPARE"
-   ],
-   "evidence": [
-    "../../audits/work_plan/MUSASHI_RP9_RP16_REVIEW_2026_09_19.md",
-    "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/tres_temas_entrevista/program_v3/E1_FAMILIES.json",
-    "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
-    "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
-    "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
-    "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md",
-    "../../audits/work_plan/MUSASHI_RP41_RP48_REVIEW_2026_09_20.md",
-    "https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/docs/audits/work_plan/SATOSHI_PROGRAM_RP41_RP48_RETURN_2026_09_20.md",
-    "../../audits/work_plan/MUSASHI_E1_ML_BASELINES_REVIEW_2026_09_20.md",
-    "https://github.com/harveybc/predictor/blob/de88764/docs/audits/work_plan/SATOSHI_PROGRAM_RP49_RP56_RETURN_2026_09_20.md",
-    "../../audits/work_plan/SATOSHI_PROGRAM_RP57_RP64_RETURN_2026_09_21.md",
-    "../../audits/evidence/d3_k5_20260917/RP65/PHASE2_DESIGN_SEALED.json"
-   ],
-   "next_action": "RP82/RP83/RP86/RP87: preserve fifteen independently replayed architecture/calendar cells; bind normalized evidence, qualify tier confounding and conditionally measure inexpensive daily context",
-   "deliverable": "Grouping/context/selection, R0/R1/R2, reference models and precision plan",
-   "adoption": "SUCCESSOR_EXECUTED_LOCAL_METRICS_RECOMPUTED_FULL_GOVERNANCE_REVIEW_NOT_REPEATED"
-  },
-  {
-   "id": "MOD-FROZEN-PREFIX",
-   "owner": "Satoshi",
-   "status": "NOT_STARTED",
-   "depends_on": [
-    "MOD-E1"
-   ],
-   "evidence": [],
-   "next_action": "After extractor regime comparison, fix all preprocessing/grouping/D/I/A/fusion states and verify governed sequence materialization per split",
-   "deliverable": "Versioned derived dataset with direct/cache parity, temporal support and complete prefix lineage"
-  },
-  {
-   "id": "MOD-CORE-PRETRAIN",
-   "owner": "Satoshi",
-   "status": "NOT_STARTED",
-   "depends_on": [
-    "MOD-E1",
-    "MOD-FROZEN-PREFIX"
-   ],
-   "evidence": [],
-   "next_action": "Design H-CORE then compare random, pretrained-finetuned and pretrained-frozen core with actual task heads and full cost; no active-run changes",
-   "deliverable": "Independent H-CORE effects on forecasting, total cost and limitations; RL counterpart in MOD-E3"
-  },
-  {
-   "id": "MOD-CONF",
-   "owner": "Musashi + Satoshi",
-   "status": "NOT_STARTED",
-   "depends_on": [
-    "MOD-E1"
-   ],
-   "evidence": [],
-   "next_action": "Review fixed method before independent E0 synthetic and E2 public reserves",
-   "deliverable": "H1/H2/H3 effects under the proposal's reserved protocol"
-  },
-  {
-   "id": "BUSINESS-CONTRACT",
-   "owner": "Satoshi",
-   "status": "DESIGNED",
-   "depends_on": [],
-   "evidence": [
-    "13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md",
-    "https://github.com/harveybc/predictor/blob/6f6c1a00bf2fe8e285f821dfb72d12505a9049ed/docs/audits/work_plan/SATOSHI_PROGRAM_RP9_RP16_RETURN_2026_09_19.md",
-    "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
-    "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
-    "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
-    "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md",
-    "../../audits/work_plan/MUSASHI_RP41_RP48_REVIEW_2026_09_20.md",
-    "https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/docs/audits/work_plan/SATOSHI_PROGRAM_RP41_RP48_RETURN_2026_09_20.md"
-   ],
-   "next_action": "RP56 reports offline nonfill repair; preserve for external acceptance, not scientific RL. Weekly forecasting/RL remains mandatory after data and E1 prerequisites",
-   "deliverable": "Observations/targets/actions, availability, weekly cycle, cost and data gaps"
-  },
-  {
-   "id": "MOD-E3",
-   "owner": "Satoshi",
-   "status": "NOT_STARTED",
-   "depends_on": [
-    "MOD-E1",
-    "BUSINESS-CONTRACT"
-   ],
-   "evidence": [
-    "../../audits/work_plan/MUSASHI_RP17_RP24_REVIEW_2026_09_19.md",
-    "https://github.com/harveybc/predictor/blob/de8ae34c4d878441e89f60053b13e5c7a71a235d/docs/audits/work_plan/SATOSHI_PROGRAM_RP17_RP24_RETURN_2026_09_19.md",
-    "../../audits/work_plan/MUSASHI_RP25_RP32_REVIEW_2026_09_19.md",
-    "https://github.com/harveybc/predictor/blob/60daac965143d9e9b6c1a357420b54c74f83afaf/docs/audits/work_plan/SATOSHI_PROGRAM_RP25_RP32_RETURN_2026_09_19.md",
-    "../../audits/work_plan/MUSASHI_RP41_RP48_REVIEW_2026_09_20.md",
-    "https://github.com/harveybc/predictor/blob/f83d63566309258b8c0aacddb6aba031c89ab7e0/docs/audits/work_plan/SATOSHI_PROGRAM_RP41_RP48_RETURN_2026_09_20.md"
-   ],
-   "next_action": "RP56 reports offline nonfill repair; preserve for external acceptance, not scientific RL. Weekly forecasting/RL remains mandatory after data and E1 prerequisites",
-   "deliverable": "Weekly-retrained raw/modular comparison with net return, risk, uncertainty and cost"
-  },
-  {
-   "id": "L2-PUBLIC-RL",
-   "owner": "Satoshi",
-   "status": "NOT_STARTED",
-   "depends_on": [],
-   "evidence": [],
-   "next_action": "Map existing B4/selector evidence to the exact POPGym/CARL protocol before new RL development",
-   "deliverable": "H1 cost/regret, H2 risk-coverage and H3 transfer with observed fidelities"
-  },
-  {
-   "id": "CAP-CALIBRATION",
-   "owner": "Satoshi",
-   "status": "NOT_STARTED",
-   "depends_on": [],
-   "evidence": [],
-   "next_action": "Map M3/M4 evidence to random-label capacity and N_min protocol; implement only missing scope",
-   "deliverable": "H1 capacity, H2 bits/generalization and H3 dimensioning with censoring"
-  },
-  {
-   "id": "PRE-NOISE",
-   "owner": "Satoshi",
-   "status": "NOT_STARTED",
-   "depends_on": [],
-   "evidence": [],
-   "next_action": "Reconcile D2 by regime and extend only uncovered task/receiver contrasts with causal noise controls",
-   "deliverable": "H1 degradation, H2 conditional denoising and H3 residual preservation"
-  },
-  {
-   "id": "TRN-TRANSFER",
-   "owner": "Satoshi",
-   "status": "NOT_STARTED",
-   "depends_on": [],
-   "evidence": [],
-   "next_action": "Reuse T0-T2/D3 within scope; design per-variable/public transfer with adequate receivers",
-   "deliverable": "Conditional utility, transfer/cost, abstention and DOIN parity"
-  },
-  {
-   "id": "BENCHMARK-CONTRACTS",
-   "owner": "Satoshi",
-   "status": "DESIGNED",
-   "depends_on": [],
-   "evidence": [
-    "../../audits/evidence/d3_k5_20260917/RP65/BENCHMARK_CONTRACT_REGISTRY.json",
-    "../../audits/evidence/d3_k5_20260917/RP65/ENTRY_POINT_COVERAGE_INVENTORY.json",
-    "tests/test_df_benchmark_contract.py"
-   ],
-   "next_action": "RP82/RP83: reject perfect-prediction substitution, changed reporting sigma and renamed untrained comparator through the actual closures",
-   "deliverable": "Versioned target/transform/metric/split/reference contracts, reproduction or matched-domain comparisons, real-entry-point refusal tests and governed result linkage; documentary adoption is not runtime enforcement",
-   "status_detail": {
-    "IMPLEMENTED": "tools/df_benchmark_contract.py: versioned contract, comparability decided from identity fields, affine re-expression with refusal, require() refusal; registry with four sources read at origin",
-    "ENFORCED_AT_RUNTIME": "Partial implementation; RP73 audit still reproduces a VERIFIED_COMPARATOR without forecasts and a rewritten unanchored historical score passing closure",
-    "NOT_CLAIMED": "all-domain runtime enforcement",
-    "STATUS_WORD": "DESIGNED; RP81 review reproduced remaining normalization, closure and comparator identity gaps"
-   }
-  },
-  {
-   "id": "FIN-LOSS-OPT",
-   "owner": "Satoshi",
-   "status": "DESIGNED",
-   "depends_on": [
-    "BUSINESS-CONTRACT",
-    "BENCHMARK-CONTRACTS"
-   ],
-   "evidence": [
-    "FIN_LOSS_OPT_DESIGN_2026_09_21.md",
-    "../../audits/evidence/d3_k5_20260917/RP65/FIN_LOSS_OPT_DESIGN_SEALED.json",
-    "tests/test_fin_loss_opt_acceptance.py"
-   ],
-   "next_action": "RP84/RP85/RP88: enforce declared factorial in runtime, align uncertainty population, seal v4 and conditionally measure train-only real-data cost; no scientific selection authorized",
-   "deliverable": "Paired normalized error and naive skill by horizon/fold/model, precision for 1e-5/1e-6 effects, tuned and default recipes, temporal uncertainty, cost and full warehouse closure; no profit guarantee",
-   "status_detail": {
-    "DESIGNED": "Executable synthetic runner exists, zero xfails; RP73 audit demonstrates 60 nonfinite consumed windows and a degenerate two-fold interval; repairs required before real data",
-    "NOT_STARTED": "no financial scientific campaign or winning recipe; synthetic fits are software acceptance only"
-   }
-  },
-  {
-   "id": "INC-SIMULATION",
-   "owner": "Satoshi",
-   "status": "NOT_STARTED",
-   "depends_on": [],
-   "evidence": [],
-   "next_action": "Map existing implementation to HPO-B pilot and required training-domain validation",
-   "deliverable": "H1 allocation, H2 learning and H3 manipulation utility in simulation"
-  }
- ],
- "state_semantics": "EXECUTED is not external scientific acceptance. Local metric review confirms same rows/targets and saved errors, not full governed closure. Historical evidence preserved. Documentary PASS grants no scientific approval.",
- "review": {
-  "reviewed_revision": "bd6fcf4",
-  "disposition": "CHANGES_REQUIRED; MEASUREMENTS_PRESERVED",
-  "executed_by": "Satoshi RP82-RP89 (this state)",
-  "counterexamples": "../../audits/evidence/RP81_MUSASHI_REVIEW_2026_09_21/results.json",
-  "post": "../../audits/evidence/d3_k5_20260917/RP82/REVIEW_REPRODUCED_POST.json"
- },
- "review_history": [
-  {
-   "reviewed_revision": "de88764",
-   "disposition": "METRIC_COMPARISON_REPAIRED_ML_CAUSES_REQUIRE_CONTROLLED_DIAGNOSIS",
-   "counterexamples": "../../audits/evidence/ML_BASELINE_REVIEW_2026_09_20/results.json",
-   "scope": "Preserved local DATA/arrays/records and old published CSV; no fresh weights replay, fitting or independent live warehouse reconciliation",
-   "models": 9,
-   "evaluation_origins": 10020,
-   "sources_unchanged": true,
-   "focused_tests": {
-    "passed": 14,
-    "full_suite_rerun": false
-   },
-   "scientific_confirmation": false,
-   "owner_input_required_for_current_order": false
-  },
-  {
-   "reviewed_revision": "f83d63566309258b8c0aacddb6aba031c89ab7e0",
-   "disposition": "CHANGES_REQUIRED_BEFORE_ADOPTION_AND_E1",
-   "counterexamples": "../../audits/evidence/RP48_REVIEW_2026_09_20/results.json",
-   "findings": [
-    "FRESH_CHILD_VERIFICATION_ORDER",
-    "OPEN_POPULATION_REPORTED_GOVERNED",
-    "LOCAL_CLAIMS_AND_CHRONOLOGY",
-    "MISSING_REHEARSAL_AND_PROVIDER_DIVERGENCE",
-    "RL_TERMINAL_NONFILL_STATE",
-    "NOISE_FLOOR_AND_DIAGNOSTIC_PROVENANCE"
-   ],
-   "original_files_checked": 131,
-   "original_files_changed": 0,
-   "focused_tests": {
-    "passed": 74,
-    "seconds": 25.94,
-    "full_suite_rerun": false
-   },
-   "disposable_http_probe": {
-    "registered": 8,
-    "closed": 1,
-    "open": 7,
-    "summary_claims_all_governed": true,
-    "scope": "actual runner/services, failed costly child fixture"
-   },
-   "live_health": {
-    "active_services": 5,
-    "automatic_restarts": 0,
-    "healthz_200": 4,
-    "scope": "health only, not content or progress"
-   },
-   "live_warehouse_rechecked_by_reviewer": false,
-   "catalog_activation_performed": false,
-   "scientific_confirmation": false,
-   "owner_input_required_for_current_order": false,
-   "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D"
-  },
-  {
-   "reviewed_revision": "f588400a9b3cd6d59c4549cc9829f5bb7957e140",
-   "disposition": "REVISIONS_REQUIRED_BEFORE_PUBLIC_LAKE_ADOPTION_AND_E1_RUN",
-   "counterexamples": "../../audits/evidence/RP40_REVIEW_2026_09_19/results.json",
-   "verification": "../../audits/evidence/RP40_REVIEW_2026_09_19/verification.json",
-   "findings": [
-    "ADOPTION_RECOVERY_AND_ROUTE",
-    "RUNNER_GOVERNANCE_WIRING",
-    "EMPTY_RECEIPT_PROMOTION",
-    "RL_SIZE_LATENCY_EVENTS",
-    "ML_DIAGNOSTIC_SCOPE_AND_UPDATES"
-   ],
-   "original_files_checked": 131,
-   "original_files_changed": 0,
-   "focused_tests": {
-    "passed": 56,
-    "warnings": 144,
-    "full_suite_rerun": false
-   },
-   "live_warehouse_rechecked_by_reviewer": false,
-   "catalog_activation_performed": false,
-   "scientific_confirmation": false,
-   "owner_input_required_for_current_order": false,
-   "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D"
-  },
-  {
-   "reviewed_revision": "60daac965143d9e9b6c1a357420b54c74f83afaf",
-   "disposition": "E1_HISTORICAL_PILOT_PRESERVED_REVISE_GOVERNANCE_CLOSURE_MASKED_VALIDATION_AND_RUNTIME",
-   "independent_local_source_checks": {
-    "fits": 10,
-    "scope": "saved arrays against prepared DATA; not raw-panel reconstruction",
-    "mae_mase_max_difference": 0,
-    "original_files": 131,
-    "originals_unchanged": true
-   },
-   "fresh_weight_replay": {
-    "model": "R0_s1",
-    "rows": 64,
-    "max_abs_difference": 8.934663142667887e-08,
-    "scope": "one restored model on first 64 validation windows only"
-   },
-   "counterexamples": "../../audits/evidence/RP32_REVIEW_2026_09_19/results.json",
-   "focused_tests": {
-    "passed": 44,
-    "full_suite_rerun": false
-   },
-   "operational_read": "../../audits/evidence/RP32_REVIEW_2026_09_19/operational_read.json",
-   "active_accounting_exact_campaign_count": 0,
-   "live_warehouse_rechecked_by_reviewer": false,
-   "catalog_activation_performed": false,
-   "scientific_confirmation": false,
-   "owner_input_required_for_current_order": false,
-   "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D"
-  },
-  {
-   "reviewed_revision": "2347c7b",
-   "disposition": "REVISIONS_REQUIRED_PRESERVE_DESCRIPTIVE_PILOT",
-   "independent_local_source_checks": {
-    "cells": 69,
-    "discrepancies": 0,
-    "scope": "rows, labels, naive/oracle, denominators, aggregate MAE/MASE, weights digest"
-   },
-   "counterexamples": "docs/audits/evidence/RP_REVIEW_2026_09_18/results.json",
-   "live_warehouse_rechecked_by_reviewer": false,
-   "inference_replayed_by_reviewer": false,
-   "descriptor_reanalysis": {
-    "partitions": 15,
-    "changed": 0
-   },
-   "original_files": 497,
-   "originals_unchanged": true,
-   "scientific_confirmation": false
-  },
-  {
-   "reviewed_revision": "6f6c1a00bf2fe8e285f821dfb72d12505a9049ed",
-   "disposition": "REVISIONS_REQUIRED_PRESERVE_MEASUREMENTS_CORRECT_ESTIMANDS",
-   "independent_local_source_checks": {
-    "attempts": 120,
-    "scope": "model MASE from saved predictions, labels and denominators",
-    "discrepancies": 0,
-    "max_abs_difference": 7.771561172376096e-16
-   },
-   "counterexamples": "../../audits/evidence/RP16_REVIEW_2026_09_19/results.json",
-   "live_warehouse_rechecked_by_reviewer": false,
-   "fresh_weight_replay_executed_by_reviewer": false,
-   "inference_recomputed_by_reviewer": true,
-   "scientific_confirmation": false,
-   "owner_input_required_for_current_order": false,
-   "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D_REAL_ACCOUNT_UNSPECIFIED"
-  },
-  {
-   "reviewed_revision": "de8ae34c4d878441e89f60053b13e5c7a71a235d",
-   "disposition": "REVISIONS_REQUIRED_PRESERVE_FACTORIAL_MEASUREMENTS_REPAIR_E1_AND_RUNTIME_TESTS",
-   "independent_local_source_checks": {
-    "cells": 16,
-    "scope": "model MASE from saved prediction arrays, labels and denominators; not fresh weight replay",
-    "discrepancies": 0,
-    "max_abs_difference": 4.440892098500626e-16
-   },
-   "factorial_gamma_manual": {
-    "0": -0.02339250545613,
-    "A": -0.02242212366739,
-    "B": -0.0222680652495,
-    "C": -0.02442130309358
-   },
-   "counterexamples": "../../audits/evidence/RP24_REVIEW_2026_09_19/results.json",
-   "focused_tests": {
-    "effects_tasks_metrics_passed": 17,
-    "weekly_environment_passed": 6,
-    "full_suite_rerun": false
-   },
-   "live_warehouse_rechecked_by_reviewer": false,
-   "fresh_weight_replay_executed_by_reviewer": false,
-   "saved_array_metrics_recomputed_by_reviewer": true,
-   "scientific_confirmation": false,
-   "owner_input_required_for_current_order": false,
-   "business_scope": "DEVELOPMENT_SIMULATION_ONLY_PER_13D_REAL_ACCOUNT_UNSPECIFIED"
-  }
- ],
- "learning_regimes": {
-  "R0": {
-   "detector_initialization": "RANDOM",
-   "detector_update": "TRAINABLE",
-   "rest_update": "TRAINABLE"
-  },
-  "R1": {
-   "detector_initialization": "SHARED_PRETRAINED",
-   "detector_update": "FROZEN",
-   "rest_update": "TRAINABLE"
-  },
-  "R2": {
-   "detector_initialization": "SHARED_PRETRAINED",
-   "detector_update": "TRAINABLE",
-   "rest_update": "TRAINABLE"
-  }
- },
- "execution_governance": {
-  "new_runs": "REGISTER_AND_DELIVER_BEFORE_DATA_PREPARATION_OR_FIT",
-  "historical_import": "SEPARATE_RETROSPECTIVE_EVIDENCE"
- },
- "e1_successor_run": {
-  "run_id": "satoshi-e1-successor-20260920",
-  "units_reported_by_producer": 16,
-  "governed_cells_reported_by_producer": 15,
-  "reviewer_local_metrics": {
-   "n": 10020,
-   "R0_MAE_kW": 0.5469291672547817,
-   "naive_MAE_kW": 0.6173720558882235,
-   "ridge_MAE_kW": 0.5454945633272991,
-   "R0_skill_percent": 11.410119386128436
-  },
-  "live_warehouse_rechecked_by_reviewer": false
- },
- "historical_forecasting_notice": {
-  "source": "OWNER_CLARIFICATION_2026_09_20",
-  "owner_report": "One valid improvement in phase 3 after correcting a causal wavelet-input leak; an earlier extraordinarily low MAE around 0.001 was invalid",
-  "exact_run_mapping": "NOT_YET_ESTABLISHED",
-  "previously_cited_tcn_csv_status": "CAUSALITY_UNVERIFIED_NOT_AN_ACCEPTED_BENCHMARK",
-  "required_action": "RP58: reconstruct pre/post correction lineage and end-to-end decision-time causality before reference use; keep numeric summaries without scientific promotion"
- },
- "ml_diagnosis_rp57_rp64": {
-  "objective_alignment": {
-   "status": "DEMONSTRATED",
-   "mae_loss": 0.4978,
-   "mse_loss": 0.5469,
-   "sd": [
-    0.0002,
-    0.0078
-   ],
-   "reading": "training and selecting on the measure the question is judged by is worth 0.049 kW on three paired seeds"
-  },
-  "architecture": {
-   "status": "DEMONSTRATED_SMALL",
-   "reference_tcn": 0.5359,
-   "ours": 0.5469,
-   "reading": "the reference block, parameter-matched at 8061 vs 8127, is worth 0.011 kW at the same objective"
-  },
-  "label_information": {
-   "status": "MEASURED",
-   "scrambled_labels": 0.6015,
-   "true_labels": 0.5525,
-   "reading": "the entire advantage attributable to learning the input-label mapping is 0.049 kW; the R0/R1/R2 differences compared earlier (0.01) live inside that band"
-  },
-  "legacy_benchmarks": {
-   "status": "CAUSALITY_UNVERIFIED",
-   "tables": 167,
-   "unverified": 114,
-   "flagged_over_50_percent_skill": 85,
-   "phase_3_family_skill": "96-97% at 1-6h on an FX price",
-   "lineages": "BOTH UNBOUND: the producer of the decomposed inputs is not in this repository",
-   "leak_signature": {
-    "trailing_wavelet": -5.42,
-    "whole_series_dwt": 6.0,
-    "whole_series_reconstruction": 5.14,
-    "centred_smoother": 46.76,
-    "reading": "wavelet denoising over the whole series does not reproduce the published magnitude; centred filtering is the family that approaches it"
-   },
-   "usable_as_benchmark": false
-  },
-  "transformation_state": {
-   "status": "REPAIRED",
-   "what": "stl_norm decided whether to denormalize by inspecting each prediction's distribution; the space is now declared by the contract"
-  }
- },
- "rp66_rp73": {
-  "return": "../../audits/work_plan/SATOSHI_RP66_RP73_RETURN_2026_09_21.md",
-  "pre": "../../audits/evidence/d3_k5_20260917/RP66_PRE/REVIEW_REPRODUCED_PRE.json",
-  "post": "../../audits/evidence/d3_k5_20260917/RP66/REVIEW_REPRODUCED_POST.json",
-  "closure_table": "../../audits/evidence/d3_k5_20260917/RP66/CLOSURE_TABLE_RP73.json (reported 49/49; RP73 review qualifies unanchored historical rows, independently checked 18 new forecasts)",
-  "blocks": {
-   "DEV_MATCHED": {
-    "state": "EXECUTED_CLOSED_VERIFIED",
-    "design_sha256": "e43380914a276d6288d83fc92ec2007f75c55cb7ffa3e08482bdf509ca6b7344",
-    "run_id": "satoshi-e1-block-devmatched-v2-20260921",
-    "mae_z": {
-     "gru_adapted_w60": 0.5312730733988859,
-     "modular_w60": 0.5680454624284962,
-     "persistence": 0.6765599274892891
+  "feature_selection": {
+    "active_phase": "PHASE_2_DEPENDENCY_REDUNDANCY_THEN_PHASE_3_FILTERS",
+    "canonical_denominators": {
+      "EURUSD": 366,
+      "ETH": 83
     },
-    "paired_modular_minus_gru": [
-     0.032895671490524414,
-     0.036041616334210325,
-     0.04137987926409614
+    "phase_1_completion_gate": "COMPLETE_EURUSD_366_OF_366_ETH_83_OF_83_WAREHOUSE_READBACK_VERIFIED",
+    "phase_2_gpu_allowed": false,
+    "business_manifest": "EURUSD_FIRST",
+    "secondary_development_manifest": "ETH_SEPARATE",
+    "stages": [
+      "PS0",
+      "PS1",
+      "PS2",
+      "PS3-C",
+      "PS3-R",
+      "PS4",
+      "PS5",
+      "PS6",
+      "PS7"
     ],
-    "comparator_state": "VERIFIED_COMPARATOR (adapted GRU re-executed under our contract digest); the article's Table 5 stays PUBLISHED / NOT_COMPARABLE"
-   },
-   "Q1_CALENDAR": {
-    "state": "EXECUTED_CLOSED_VERIFIED",
-    "run_id": "satoshi-e1-block-q1-20260921",
-    "mae_z": {
-     "calendar": 0.4868190602068945,
-     "randomised_calendar_control": 0.5528714748662735,
-     "baseline_modular_w60_reused": 0.5680454624284962
+    "causal_ladder": [
+      "association_and_predictive_relevance",
+      "observed_historical_interventions",
+      "same_episode_counterfactual"
+    ],
+    "not_identified_means_rejected": false,
+    "calendar_episode_use_now": "TREATMENT_CONTROL_DISCOVERY_FOR_FEATURE_SELECTION_ONLY",
+    "calendar_as_model_input": "DEFERRED_FINAL_OPTIONAL_AFTER_NEAT_RL_AND_PAPER_BASELINE",
+    "extractibility_controls": [
+      "raw",
+      "random_encoder",
+      "trained_encoder"
+    ],
+    "future_target_in_operational_encoder": false,
+    "final_sets": [
+      "all_admissible",
+      "predictive_redundancy",
+      "predictive_plus_causal",
+      "predictive_causal_plus_extraction",
+      "optional_generative_preference"
+    ],
+    "phase_2_started": false,
+    "phase_2_expected_pairs": {
+      "EURUSD": 66795,
+      "ETH": 3403
     },
-    "paired_calendar_minus_control": [
-     -0.08931704593430567,
-     -0.06460755069137608,
-     -0.04423264735245497
-    ]
-   },
-   "Q2_CONTEXT": {
-    "state": "NOT_EXECUTED_BUDGET_LIMITED_BEFORE_ANY_OUTCOME",
-    "run_id": "satoshi-e1-block-q2-20260921",
-    "pilot_cpu_seconds": 2259.558384892,
-    "projection_with_headroom_seconds": 159473.84,
-    "w1440_seconds_per_update": [
-     4.88499431543,
-     4.98309256834
+    "phase_2_metrics": [
+      "exact_and_numeric_equivalence",
+      "pearson",
+      "spearman",
+      "kendall_tau",
+      "mutual_information",
+      "distance_correlation",
+      "lagged_cross_correlation",
+      "fold_stability"
     ],
-    "successor": "Historical projection double-counted validation; corrected arithmetic about 111000 CPU s remains over budget. Profile actual components; gather bottleneck not established. No Q2 launch authorized in RP74-RP81"
-   },
-   "Q3_VOLUME": {
-    "state": "EXECUTED_CLOSED_VERIFIED",
-    "run_id": "satoshi-e1-block-q3-20260921",
-    "mae_z": {
-     "volume_112d": 0.5574586765056853,
-     "volume_56d": 0.5607992962676427,
-     "baseline_28d_reused": 0.5680454624284962
+    "phase_3_methods": [
+      "spearman_hierarchical_clustering",
+      "mRMR",
+      "JMI"
+    ],
+    "phase_3_controls": [
+      "ALL_ADMISSIBLE",
+      "UNIVARIATE_MI",
+      "CAUSAL_SUPPORTED",
+      "RANDOM_K"
+    ],
+    "phase_4_started": false,
+    "phase_1_results": {
+      "EURUSD": {
+        "features": 366,
+        "targets": 14,
+        "decisions": 5124,
+        "selected_feature_target_pairs": 34,
+        "selected_distinct_features": 12,
+        "warehouse_run_id": "phase1-eurusd-final:94d20c038d55e152"
+      },
+      "ETH": {
+        "features": 83,
+        "targets": 6,
+        "decisions": 498,
+        "selected_feature_target_pairs": 3,
+        "selected_distinct_features": 3,
+        "warehouse_run_id": "phase1-final:ETH:29d2f745f5d9e87c"
+      },
+      "olap_snapshot_release": "https://github.com/harveybc/predictor/releases/tag/phase1-feature-selection-20261005"
+    }
+  },
+  "business_evaluation": {
+    "primary_mode": "BUSINESS_WEEKLY_WALK_FORWARD",
+    "sensitivity_mode": "BUSINESS_MONTHLY_WALK_FORWARD",
+    "literature_mode": "LITERATURE_STATIC",
+    "rolling_train_calendar_years": 4,
+    "validation_and_test": "COMPLETE_CONSECUTIVE_ELIGIBLE_WEEKS_WITH_DISPOSITIONS",
+    "frozen_artifact": "UPDATE_AND_DECISION_PROCEDURE_NOT_ONE_STATIC_CHECKPOINT",
+    "update_modes": [
+      "FULL_RETRAIN_ROLLING_4Y",
+      "WARM_UPDATE_ROLLING_4Y"
+    ],
+    "strict_memory_claim_allowed_for": [
+      "FULL_RETRAIN_ROLLING_4Y"
+    ]
+  },
+  "literature_comparability": {
+    "scope": "ALL_DOMAINS_INCLUDING_FINANCE",
+    "required_before": "NEW_SCIENTIFIC_TRAINING",
+    "modes": [
+      "REPRODUCTION",
+      "MATCHED_DOMAIN_COMPARISON"
+    ],
+    "unmatched_published_scores_are_comparators": false
+  },
+  "closure_reporting": {
+    "scope": "CURRENT_AND_ALL_FUTURE_ORDER_SETS",
+    "required_columns": [
+      "task_horizon_split",
+      "metric_and_scale",
+      "model_error",
+      "naive_error",
+      "skill_vs_naive",
+      "literature_value_and_source",
+      "comparability_status"
+    ],
+    "missing_comparator": "EXPLICIT_NOT_COMPARABLE_WITH_REASON_NO_INVENTED_VALUE",
+    "no_new_measurement": "LABEL_PRIOR_VERIFIED_RESULT_OR_NO_NEW_MEASUREMENT"
+  },
+  "learning_regimes": {
+    "R0": {
+      "detector_initialization": "RANDOM",
+      "detector_update": "TRAINABLE",
+      "rest_update": "TRAINABLE"
     },
-    "paired_56_minus_112": [
-     0.0063850680940660265,
-     1.741078239747562e-05,
-     0.003619380409408679
-    ],
-    "scaler": "COMMON (28 d source scaler), one sigma"
-   }
+    "R1": {
+      "detector_initialization": "SHARED_PRETRAINED",
+      "detector_update": "FROZEN",
+      "rest_update": "TRAINABLE"
+    },
+    "R2": {
+      "detector_initialization": "SHARED_PRETRAINED",
+      "detector_update": "TRAINABLE",
+      "rest_update": "TRAINABLE"
+    }
   },
-  "cadence_finding": "validation every 200 observed updates with patience 3 events stops modular_w60 at 1 000 updates (best 400): MAE_z 0.568 vs 0.5455/0.5440 under the epoch cadence; reported, not tuned; a predeclared patience tier is the successor",
-  "financial": {
-   "state": "DESIGNED_NOT_STARTED; FL01-FL08 executable on synthetic bars (13 rules, 0 xfail); governed runner proven on the disposable stack",
-   "design": "../../audits/evidence/d3_k5_20260917/RP66/FIN_LOSS_OPT_DESIGN_SEALED_v2.json"
+  "execution_governance": {
+    "new_runs": "REGISTER_AND_DELIVER_BEFORE_DATA_PREPARATION_OR_FIT",
+    "historical_import": "SEPARATE_RETROSPECTIVE_EVIDENCE"
   },
-  "reads_of_reserved_test_rows": 0,
-  "production_reconfiguration": "none"
- },
- "rp73_external_review": {
-  "revision": "1880caa",
-  "disposition": "CHANGES_REQUIRED_MEASUREMENTS_PRESERVED",
-  "findings": [
-   "A1_UNANCHORED_RECORD",
-   "A2_PREPARE_ONLY_REFERENCE",
-   "A3_NONFINITE_FINANCIAL_WINDOW",
-   "A4_SELECTION_AND_UNCERTAINTY",
-   "A5_CEILING_CENSORING",
-   "A6_COST_DOUBLE_COUNT"
-  ],
-  "new_forecasts_independently_checked": 18,
-  "array_check_discrepancies": 0,
-  "live_warehouse_requeried_by_this_review": false,
-  "focused_tests": "85 passed, 2 FL08 deselected; full repository suite not rerun",
-  "evidence": "../../audits/evidence/RP73_MUSASHI_REVIEW_2026_09_21",
-  "publication": "1880caa pushed; isolated checked-out revision on both workers; no running checkout switched"
- },
- "rp74_rp81": {
-  "return": "../../audits/work_plan/SATOSHI_RP74_RP81_RETURN_2026_09_21.md",
-  "pre": "../../audits/evidence/d3_k5_20260917/RP74_PRE/REVIEW_REPRODUCED_PRE.json",
-  "post": "../../audits/evidence/d3_k5_20260917/RP74/REVIEW_REPRODUCED_POST.json",
-  "closure_table": "../../audits/evidence/d3_k5_20260917/RP74/CLOSURE_TABLE_RP81.json (64 rows: 45 ACCEPTED_ARTIFACT_CHAIN verified, 19 METRIC_ANCHORED preserved, 0 problems)",
-  "custody_rule": "verified = clean arrays + accepted artifact chain in the warehouse's canonical payload; history without artifact rows is preserved as METRIC_ANCHORED, never promoted",
-  "comparator_rule": "VERIFIED_COMPARATOR needs a sealed design digest, a named reference arm, every seed accepted and every forecast verified through the closure table",
-  "arch_x_calendar_tier2": {
-   "state": "EXECUTED_CLOSED_VERIFIED_3_HOSTS",
-   "design_sha256": "f4e616f68d707dd08e5835ca9f8e5e83cad330a8c1dcfc0c63b230f88aa34572",
-   "hosts": {
-    "seed1": "omega",
-    "seed2": "dragon",
-    "seed3": "gamma"
-   },
-   "mae_z_mean_sd_ddof1": {
-    "modular_w60": [
-     0.539087465425902,
-     0.0013305335194186557
+  "news_live_track": {
+    "allowed_modes": [
+      "SHADOW",
+      "MT5_DEMO",
+      "ALPACA_PAPER"
     ],
-    "gru_adapted_w60": [
-     0.5289929887869544,
-     0.002374334260668047
+    "real_capital_authorized": false,
+    "blocks_scientific_experiments": false,
+    "provider_quality_must_match_answering_path": true
+  },
+  "proposal_coverage": {
+    "P-MOD": [
+      "MOD-E0-DEV",
+      "MOD-ARCH-COMPARE",
+      "MOD-E1",
+      "MOD-FROZEN-PREFIX",
+      "MOD-CORE-PRETRAIN",
+      "MOD-CONF",
+      "MOD-E3",
+      "FIN-LOSS-OPT"
     ],
-    "calendar": [
-     0.49265368213429894,
-     0.008862015330485024
+    "P-L2": [
+      "L2-PUBLIC-RL"
     ],
-    "gru_calendar_w60": [
-     0.4798379201299228,
-     0.003816481335350469
+    "P-CAP": [
+      "CAP-CALIBRATION"
     ],
-    "randomised_calendar_control": [
-     0.5446140832033518,
-     0.005809784349451513
+    "P-PRE": [
+      "PRE-NOISE"
+    ],
+    "P-TRN": [
+      "TRN-TRANSFER"
+    ],
+    "P-INC": [
+      "INC-SIMULATION"
     ]
-   },
-   "persistence_mae_z": 0.6765599274892891,
-   "sd_train": 0.9125164391265214,
-   "contrasts_mean": {
-    "gru_minus_modular_original": -0.010094476638947655,
-    "gru_minus_modular_calendar": -0.0128157620043761,
-    "calendar_minus_original_modular": -0.046433783291603116,
-    "calendar_minus_original_gru": -0.049155068657031564,
-    "calendar_minus_control_modular": -0.05196040106905283,
-    "control_minus_original_modular": 0.005526617777449709,
-    "interaction_arch_x_calendar": -0.002721285365428446
-   },
-   "censored_fits": 7,
-   "informed_by_prior_dev": true,
-   "confirmatory": false
   },
-  "q2": "BUDGET_LIMITED on retained evidence; recost 111 000 s; forward/backward dominates (gather 0.06 %); no optimization prescribed",
-  "financial": {
-   "state": "DESIGNED_NOT_STARTED; population = consumed tensors; selection configuration-level with paired seeds; block interval with declared support and measured coverage (26-week caveat)",
-   "design": "../../audits/evidence/d3_k5_20260917/RP74/FIN_LOSS_OPT_DESIGN_SEALED_v3.json",
-   "populations": {
-    "A": 4,
-    "B": 12,
-    "C": 4,
-    "D": 6
-   }
-  },
-  "workers": {
-   "dragon": "accounted wrapper installed (user level); RP78 probe and seed-2 block executed and reconciled",
-   "gamma": "same; seed-3 block",
-   "network": "temporary reverse ssh tunnel from the coordinator session; no service touched"
-  },
-  "reads_of_reserved_test_rows": 0,
-  "production_reconfiguration": "none"
- },
- "rp82_rp89": {
-  "return": "../../audits/work_plan/SATOSHI_RP82_RP89_RETURN_2026_09_21.md",
-  "pre": "../../audits/evidence/d3_k5_20260917/RP82_PRE/REVIEW_REPRODUCED_PRE.json",
-  "post": "../../audits/evidence/d3_k5_20260917/RP82/REVIEW_REPRODUCED_POST.json",
-  "closure_table": "../../audits/evidence/d3_k5_20260917/RP82/CLOSURE_TABLE_RP89.json (70 rows: 39 verified with accepted preparation and contract denominator, 31 preserved qualified, 0 problems)",
-  "authority": "tools/df_closure_table.verify_run / verify_fin_run consumed by the table CLI, the block closure and the financial closure; a failed verification emits nothing scientific",
-  "context_daily_lag_tier2": {
-   "state": "EXECUTED_CLOSED_VERIFIED_3_HOSTS_WITH_FRESH_PROCESS_REPLAYS",
-   "design_sha256": "31e71033d93545d1e8b7d205396d08994bcdbfc946fda5222b5ffdbf8e6dab7d",
-   "mae_z_mean_sd_ddof1": {
-    "daily_lag": [
-     0.5338938977417748,
-     0.0042784802247021565
-    ],
-    "modular_w60": [
-     0.5416406091317078,
-     0.00455064877631524
-    ]
-   },
-   "paired_lag_minus_baseline": {
-    "values": [
-     -0.008444534463290299,
-     -0.006810765909777361,
-     -0.007984833796730983
-    ],
-    "mean": -0.007746711389932881,
-    "sd_ddof1": 0.0008425120961009579
-   },
-   "censored_fits": 5,
-   "crop_control": "inherited from modular_w60 by proved training equivalence (30 updates, loss difference 0.0, identical weights)",
-   "informed_by_prior_dev": true,
-   "confirmatory": false
-  },
-  "arch_x_calendar_reclosed": {
-   "verified": true,
-   "replays": "15 adopted from Musashi's RP81 review, not repeated",
-   "cross_tier_caveat": "seeds 2/3 changed host and prefixes; the tier change is not attributed to patience alone"
-  },
-  "financial": {
-   "selector": "v4: A reported, B within each loss x optimizer over the same 3 LRs (configuration level, paired seeds), C/D paired sensitivity contrasts; identity/custody rejections",
-   "uncertainty": "usable-population estimand; isolated weeks = named support limitation; confirmatory intervals only under a predeclared coverage certificate (none at 26 positions / block 2)",
-   "design": "../../audits/evidence/d3_k5_20260917/RP82/FIN_LOSS_OPT_DESIGN_SEALED_v4.json",
-   "cost_pilot": "SEALED (../../audits/evidence/d3_k5_20260917/RP82/fin_cost_pilot/DESIGN.json); NOT_EXECUTED: HTTP 422 'resource availability contract required' on the governed ranged download of the EURUSD 1h resource — the lake declares no resource contract for it (operator metadata); campaign satoshi-fin-cost-pilot-20260921-prepare-data left open without delivery; 0 bytes read"
-  },
-  "reads_of_reserved_test_rows": 0,
-  "dev_weeks_read_by_finance": 0,
-  "production_reconfiguration": "none"
- },
- "rp90_rp97": {
-  "orders": "docs/handoffs/MUSASHI_SOTA_FIRST_RP90_RP97_2026_09_21.md",
-  "base": "832f31b",
-  "updated_on": "2026-09-22",
-  "RP90": {
-   "status": "DONE",
-   "evidence": [
-    "tools/df_benchmark_contract.py disposition()/active_ranking()",
-    "tools/df_closure_table.py active_ranking + dispositions",
-    "tools/df_e1_block.py close (disposition, active_selection None)",
-    "tests: test_RP90_* in contract/closure/block/fin suites",
-    "docs/audits/evidence/d3_k5_20260917/RP90/REVIEW_REPRODUCED_POST.json (Musashi's four RP89 probes now refuse)"
-   ]
-  },
-  "RP89_repairs": {
-   "status": "DONE",
-   "findings": {
-    "1": "checkpoint bytes hashed; replay identity bound (df_e1_block.replay_identity)",
-    "2": "fold population from the accepted preparation record (verify_fin_run)",
-    "3": "cost-pilot refusal closes FAILED, exit non-zero; pending outbox refuses",
-    "4": "HistData producer lineage: UNCHANGED, no metadata invented; financial resource stays undeliverable (deferred stage)"
-   }
-  },
-  "RP91": {
-   "status": "DONE",
-   "evidence": [
-    "docs/tres_temas_entrevista/program_v3/SOTA_REFERENCE_DOSSIER_2026_09_21.md"
-   ],
-   "selected": "TimeFilter L=96 (Table 8); NPMixer code NOT FOUND (unverified, not refuted)"
-  },
-  "RP92": {
-   "status": "DONE",
-   "evidence": [
-    "docs/tres_temas_entrevista/program_v3/SOTA_PROTOCOL_LOCK_2026_09_21.md",
-    "tools/df_sota_repro.py seal (lock in DESIGN.json)",
-    "benchmark lake sota_benchmarks adopted by the tested procedure: docs/audits/evidence/d3_k5_20260917/RP90/SOTA_LAKE_ADOPTION_RECEIPT.json",
-    "tests/test_df_sota_repro.py (20)"
-   ]
-  },
-  "RP93": {
-   "status": "DONE_FOR_THE_TOOL",
-   "evidence": [
-    "tests/test_df_sota_repro.py: scaler fit population, future perturbation, boundary count, shims/alias, substitutions fail the closure, fresh-process reload"
-   ]
-  },
-  "RP94": {
-   "status": "DONE_WITH_NAMED_DEFICIT",
-   "evidence": [
-    "docs/tres_temas_entrevista/program_v3/SOTA_ALLOCATION_RP94_2026_09_22.md",
-    "PREFLIGHT.{omega,dragon}.json, PREFLIGHT_MEMORY.omega.json in the reproduction root"
-   ],
-   "deficit": "T=336 (~12 GiB) and T=720 (~20 GiB) evaluation-path host memory exceed the 14 GiB batch-slice ceiling on omega/dragon (8 GiB gamma); gamma has 5 GiB available"
-  },
-  "RP95": {
-   "status": "PARTIAL",
-   "executed": [
-    "L96_h96_s2021",
-    "L96_h96_s2022",
-    "L96_h96_s2023 (dragon)",
-    "L96_h192_s2021 (omega)"
-   ],
-   "interrupted": "L96_h192_s2022 closed FAILED at the owner's order (omega GPU 87 C while travelling); partial attempt preserved",
-   "pending": {
-    "L96_h192_s2022/s2023": "omega from 2026-09-24 (owner's travel hold: no work on omega before)",
-    "L96_h336_*/L96_h720_*": "no host under the current slice ceilings"
-   }
-  },
-  "RP96": {
-   "status": "DONE_FOR_THE_EXECUTED_CELLS",
-   "where": "dragon (CPU closure; GPU only for the supplementary same-device replay)",
-   "custody": "4 cells ACCEPTED_ARTIFACT_CHAIN (predictions, checkpoint, record digests in the accepted terminals; config digest and tags bound); preparation PREPARATION_ACCEPTED_ARTIFACT; targets re-derived hash-equal; author metric recomputed bitwise; float64 within 1e-6; naive persistence and seasonal-24 on identical windows; metrics vault v2 per cell",
-   "replay": "frozen CPU rule (atol/rtol 1e-4) FAILED on the three T=96 cells (max|delta| 1.9e-3 / 4.0e-4 / 1.0e-2) while the replayed metrics equal the stored ones to <= 1.5e-8; NOT widened. Supplementary same-device GPU replay: max|delta| 0.0, bit-identical, three cells. T=192 replay pending on omega from 2026-09-24",
-   "verdict": "protocol fidelity NOT_ESTABLISHED by the closure's own frozen rule; numerical agreement of the T=96 three-seed mean with the published cell holds by the frozen agreement rule (+0.0025 MSE / +0.0029 MAE) but is reported as unverified"
-  },
-  "RP97": {
-   "status": "RETURNED_PARTIAL",
-   "return": "docs/audits/work_plan/SATOSHI_RP90_RP97_RETURN_2026_09_22.md",
-   "unexecuted": [
-    "L96_h192_s2022",
-    "L96_h192_s2023 (omega from 2026-09-24)",
-    "L96_h336_* and L96_h720_* (no host under the batch-slice ceilings)",
-    "protocol B (L=512)"
-   ],
-   "proposal_for_review": "re-freeze the replay rule as metric-level (<= 1e-5) plus same-device-class prediction equality, before the next round; not applied"
-  },
-  "owner_orders_2026_09_22": [
-   "no work of any kind on omega until 2026-09-24 (travel thermal hold)",
-   "no compression of prediction arrays; exhaustive metrics vault per cell so Musashi can delete the raw predictions after independent analysis"
-  ]
- },
- "rp98_rp105": {
-  "orders": "docs/handoffs/MUSASHI_SOTA_RP98_RP105_2026_09_22.md",
-  "base": "fb6ec31e",
-  "updated_on": "2026-09-22",
-  "RP98": {
-   "status": "DONE",
-   "pre": "Musashi's probe rerun unchanged on dragon at fff9575: 20 leaves, 0 differences (docs/audits/evidence/d3_k5_20260917/RP98_PRE)",
-   "refusals": "altered vault -> VAULT_CHANGED (candidate preserved, successor recomputed and read back); contradictory cached replay -> never adopted (replays re-run and validated); short/extra/reordered/non-finite loaders -> VaultRefusal; constant correlation -> None; aggregation within seed first",
-   "post": "docs/audits/evidence/d3_k5_20260917/RP98/REVIEW_REPRODUCED_POST.json: baseline verifies; altered vault -> VAULT_CHANGED, candidate preserved, successor recomputed and verifies; contradictory cache -> never adopted (max diff 0.0 measured, exact fraction 1.0); short loader -> VaultRefusal INCOMPLETE POPULATION; constant correlation -> None/UNDEFINED; four-horizon average within seed: SD 0.0, n_seeds 3"
-  },
-  "RP99": {
-   "status": "CODE_DONE_TESTED_RECOMPUTE_PENDING_CLOSURE",
-   "catalog": "df_sota_metrics_vault.v3: exact population consumption, identities, catalog states DONE/APPROXIMATE/UNDEFINED/NOT_APPLICABLE with parameters and excluded counts, per-window series, weekly time blocks, mae_relative_to_test_persistence (not MASE), mape_zspace/mspe_zspace labelled; independent numeric oracles per family in tests",
-   "recompute_on_four_cells": "PENDING (dragon closure)"
-  },
-  "RP100": {
-   "status": "DONE_PENDING_FINAL_CLOSURE",
-   "route_trace": "three T=96 cells, nine batches holding the most discrepant windows, CPU vs GPU with identical batching: 0 route flips out of 59,351,616 routes per block, 0 cut-index changes, gating probability differences <= 8e-5, min distance to the top-p threshold ~8e-5; same-device repeat 0.0 on both devices -> classification NUMERICAL_ONLY (kernel-level tensor differences amplified through the network; the top-p routing hypothesis is NOT supported on the traced batches)",
-   "evidence": "docs/audits/evidence/d3_k5_20260917/RP98/ROUTE_TRACE.*.json",
-   "replay_policy": "no cached adoption; outputs validated in full; same-device (GPU UUID a8bd1b2c… for dragon-trained cells) vs cross-device fields; old CPU failures preserved as failures of the original rule"
-  },
-  "RP101": {
-   "status": "DONE",
-   "adapter": "df_sota_bounded_eval.v1 (memmapped predictions/targets, hash-streamed targets, author float32 metric only within a declared budget, float64 always); parity test on the tiny author fixture: identical predictions, targets, population, checkpoint, author metric",
-   "profiles_dragon_8GiB_cap_budget_4GiB": {
-    "h96": "cgroup peak 3.77 GB (anon 1.09, file 1.32), RSS 4.17 GB, disk 1.30 GB, VRAM 0.86 GB, 16.5 s, author metric EXECUTED",
-    "h192": "peak 6.30 GB, disk 2.56 GB, 19.7 s, EXECUTED",
-    "h336": "peak 6.45 GB (file 4.27), disk 4.33 GB, 19.6 s, author metric NOT executed within 4 GiB (needs 6.4 GB temporaries) -> float64 basis",
-    "h720": "peak 7.73 GB = MemoryHigh (file 4.86), disk 8.51 GB, 29 s, NOT executed (needs 12.6 GB) -> float64 basis"
-   },
-   "evidence": "docs/audits/evidence/d3_k5_20260917/RP98/EVAL_PROFILE.h*.dragon.json",
-   "admission": "one cell at a time on dragon within the 8 GiB request (11 GiB available, 3 GiB reserve), 32 GiB temporary disk slot; the author's float32 reduction for T=336/720 is a named residual: it needs ~7/13 GB of temporaries beyond the memmaps"
-  },
-  "RP102": {
-   "status": "ALL_12_CELLS_EXECUTED; 9 terminals accepted; 3 T=720 terminals pending the owner's warehouse restart; consolidated closure RUNNING on gamma",
-   "placement": "gamma rebooted by the owner (kernel memory leak cleared: 11 GiB available; the 5090's phantom 100 % utilization gone); governed preflight on the RTX 5090 (UUID a9f35631…): 55-64 s/epoch, <= 0.27 h per cell, VRAM 4.8 GiB, 49 C after preflight; execute --bounded --author-metric-budget-gib 4, -m 8G, one cell at a time, thermal guard between cells",
-   "cells": [
-    "L96_h192_s2022",
-    "L96_h192_s2023",
-    "L96_h336_s2021",
-    "L96_h336_s2022",
-    "L96_h336_s2023",
-    "L96_h720_s2021",
-    "L96_h720_s2022",
-    "L96_h720_s2023"
-   ],
-   "notes": [
-    "dragon's attempt of L96_h192_s2022 was stopped at the owner's concern (GPU 83-86 C, driver slowdown) and retired as a versioned FAILED attempt",
-    "on gamma the horizon filter first started a duplicate of L96_h192_s2021 (already completed on omega; no receipt on gamma); interrupted at 2 min, closed FAILED, preserved; the loop continued with the pending cells",
-    "reporting crash (a1f2f41f fixed): child() built the terminal metrics from the author's float32 reduction, which is None on the float64 basis (T=336/720) -> TypeError after run_cell had written arrays, record and checkpoint; L96_h336_s2021's terminal was sent from its record by the new `report` subcommand (metric basis tagged on the terminal); the running child of L96_h336_s2022 started under the old code and is reported the same way after it finishes; later children load the fixed tool",
-    "844a8d4a: a worker's REPLAYS*.json travel through merge as REPLAYS_HISTORY.<worker>.* and the table cites them per unit as HISTORICAL_RECORD_ONLY (WORKER_A's bit-identical same-device GPU replays of T=96 are kept without new GPU work on dragon, whose cooler is unconfirmed)",
-    "two T=720 attempts (s2021 after epoch 1, s2022 at start) closed FAILED and retired at 15:11-15:13 local: versioned folders *.failed.1790108044"
-   ],
-   "final_closure_plan": "consolidate on gamma (dragon's T=96 cells and omega's T=192 s2021 staged as verification copies); same-device replays on the 5090 for gamma-trained cells; T=96 same-device replays need ~3 x 22 s on dragon's GPU (owner to confirm cooling); T=192 s2021 same-device replay needs omega (hold)",
-   "completed_on_gamma": {
-    "L96_h192_s2022": "MSE 0.158627 / MAE 0.252429 (author float32), 15/15 epochs, best 15, 15.5 min, RSS 7.1 GiB, 5090 38->55 C",
-    "L96_h192_s2023": "MSE 0.153452 / MAE 0.248072, 15/15 epochs, best 12, 15.6 min, RSS 7.0 GiB, 38->55 C",
-    "L96_h336_s2021": "MSE 0.162594 / MAE 0.260666 (independent float64 basis: the author's float32 reduction needs ~6.4 GB of temporaries, budget 4 GiB), 15/15 epochs, best 10, 15.6 min, RSS 5.3 GiB; reported COMPLETED by the report subcommand after the reporting crash (below)",
-    "L96_h336_s2022": "MSE 0.168175 / MAE 0.267413 (float64 basis), 15/15 epochs, best 13, 15 min, RSS 5.3 GiB; reported from its record by `report` (old-code child)",
-    "L96_h336_s2023": "COMPLETED at 15:05 local (fixed code reported it directly; values in the closure)",
-    "L96_h720_s2021": "MSE 0.187139 / MAE 0.287520 (float64 basis: author reduction needs ~12.6 GB of temporaries), 15/15 epochs, best 12, 20 min, RSS 2.7 GiB (allocator patch; scope peak 2.5 GB), 5090 38->49 C; terminal REFUSED by the warehouse (INT32 bytes) -> re-send with `report` after the owner's restart",
-    "L96_h720_s2022": "MSE 0.198170 / MAE 0.298649 (float64 basis), 15/15 epochs, best 5, 20 min, RSS 2.7 GiB; terminal REFUSED likewise",
-    "L96_h720_s2023": "MSE 0.185368 / MAE 0.285684 (float64 basis), 15/15 epochs, best 11, 20 min, RSS 2.7 GiB; terminal REFUSED likewise (warehouse INT32)"
-   },
-   "oom_event": "L96_h336_s2021 on gamma: scope killed by systemd-oomd at 13:28 local at a 7.1 GB scope peak (host memory pressure from file-backed pages of the bounded evaluation; gamma has 14 GB with another workload); FAILED terminal, attempt retired; fix: predictions/targets streamed through file handles with posix_fadvise(DONTNEED), artifact/digests/float64 streamed from files (commit after 4662ca5); re-profiled before relaunch",
-   "streaming_fix": "bounded evaluation now streams predictions/targets through file handles with posix_fadvise(DONTNEED) and streams the artifact, digests and float64 reduction from the files; a first version re-created the files per batch and was caught by the parity tests (predictions/targets misaligned) — fixed; tool suite 31 passed + 1 skipped on gamma; re-profiles on gamma under an 8 GiB request: T=336 cgroup peak 1.89 GB (file 146 MB), T=720 2.32 GB (file 148 MB), T=96 with dragon's checkpoint 4.15 GB with the author metric executed",
-   "relaunch": "2026-09-22 ~14:05 local: execute --horizons 336 720 on the 5090 (run-id …-gamma2), one cell at a time, thermal guard, watcher",
-   "oom_event_2": "second T=336 attempt on gamma (streamed path): systemd-oomd killed the scope at 14:07 local after a 24-min stall at epoch 2 (scope peak 7 GB, host memory pressure of the user slice > 50 %); FAILED terminal, attempt retired; relaunched with a host+scope memory monitor every 15 s (first samples: scope 2.3 GB, anon 1.9 GB, file 0.4 GB during training; host 8.6 GB available)",
-   "memory_diagnosis": "monitor (host + scope every 15 s): during training the scope oscillated 3.9-5.8 GB and reached 7.1 GB at epoch 7 of T=336 — main process ~4.9 GB plus the DataLoader worker (a fork whose private pages grew to 4.5 GB) — right at MemoryHigh (7.2 GB) with host pressure rising: the pattern that produced the two systemd-oomd kills (stall, then kill). Attempt 3 stopped by the operator at epoch 7 and retired; run 4 launched with the declared operational option num_workers=0 (batch order and contents unchanged, tested; host memory only): scope 2.0 GB at start",
-   "t720_diagnosis": {
-    "symptom": "run 4: L96_h720_s2021 trained epoch 1 (1100 iters, 0.0456 s/iter, 50.7 s) then the main process grew from 2.4 to 7.3 GB anonymous RSS within 15 s at the end-of-epoch validation and sat throttled at the slice ceiling (memory.high 7.73 GB, wchan mem_cgroup_handle_over_high, GPU 0 %, PSI rising toward the oomd threshold); interrupted, FAILED, retired; the loop had already started s2022 (same fate) before the execute loop was stopped",
-    "cause": "the author's vali() moves every batch's outputs and targets to the host (T=720: 14.8 MB each, 120 val + 284 test batches ~ 6 GB in a few seconds); with glibc's dynamic mmap threshold those buffers are carved from the heap and the freed pages stay resident. Confirmed by profile runs on gamma (scratch, nothing kept): default allocator -> RSS jump 2.4 -> 7.6 GB at ~57 s and stall; GLIBC_TUNABLES=glibc.malloc.mmap_threshold=1048576:glibc.malloc.trim_threshold=2097152 -> RSS flat at 2.4 GB through epoch 1 + validation. The CPU loader alone is fine (0.014 s/batch, 0.9 GB). Two profile runs with faulthandler periodic stack dumps segfaulted inside the interpreter (dump-related); the runs without dumps did not",
-    "fix": "8ff2f5e5: child_env() sets GLIBC_TUNABLES for cell and replay processes (execute + closure replays), recorded per cell/replay as an operational patch (host memory only, no arithmetic); --malloc-tunables none switches it off; test added",
-    "relaunch": "run 5 on gamma at 15:32 local (`~/rp102_execute_gamma5.log`, run-id ...-gamma5, horizons 720, bounded, budget 4 GiB, workers 0, allocator patch verified in the child's environment), GPU 43 C at start"
-   },
-   "warehouse_blocker": {
-    "symptom": "run 5: L96_h720_s2021 trained and evaluated in full (arrays 4,198,064,038 bytes, record and checkpoint written, allocator patch held the scope at ~2.1 GB) and its COMPLETED terminal was refused by the warehouse: gov_terminal_artifact.bytes is a 32-bit INTEGER on the DuckDB host (DuckDB ConversionException, value out of range for INT32), relayed by data-gov as http 400",
-    "fix": "93a25d10: predictor-olap-store 0.1.2 / predictor-duckdb-store 0.1.1 — `bytes` BIGINT in the DDL and an in-place widening of an existing 32-bit column at start-up (DuckDB provider: ALTER COLUMN + CHECKPOINT so the write-ahead log never carries DDL; the lake plugin copy carries the same change); store suite 106 passed + 1 skipped on dragon with DuckDB (throwaway venv), incl. the reopen of a migrated file",
-    "deployment": "both packages installed into the DuckDB host's environment on omega (~/.venvs/store-hosts-duckdb-prod) at 16:05 local; the running service (crispdm-data-warehouse-olap.service, PID since 2026-09-17) still executes the old code: my restart of the service was refused by the execution environment (interfere-with-workloads) and is NOT bypassed. OWNER ACTION: `systemctl --user restart crispdm-data-warehouse-olap.service` on omega (optionally copy ~/.local/state/crispdm-duckdb/prod/cube.duckdb* aside first); the migration runs at the service's first engine use",
-    "consequence": "the three T=720 cells finish training/evaluation on gamma (records, arrays, checkpoints on disk) but their terminals stay unaccepted until the restart; then `report --unit L96_h720_s202X` re-sends each COMPLETED terminal from its record; until then their closure rows are custody-UNANCHORED (values shown as executed_unverified, never pooled) and their arrays are retained"
-   }
-  },
-  "RP103": {
-   "status": "DONE_PARTIAL: consolidated closure on WORKER_B (4 runs; final pre-deletion report sha256 fbe2cd4c…), 6 cells verified (T=192 x3, T=336 x3) and their arrays deleted on WORKER_B (7 paths, 11.16 GB) and WORKER_A (2 paths, 2.29 GB) with receipts; T=96 unverified here (cross-GPU pointwise fail 4090->5090, metrics bit-identical; same-device replays on WORKER_A pending the owner), T=720 custody pending the warehouse restart; omega copies untouched (hold)",
-   "agreement": {
-    "192": "OPERATIONAL_AGREEMENT mean 0.157645/0.252163 vs 0.154/0.248 (+0.0036/+0.0042)",
-    "336": "OPERATIONAL_AGREEMENT mean 0.164480/0.262985 vs 0.162/0.261 (+0.0025/+0.0020), float64 basis",
-    "96": "NO_MEASUREMENT in this closure (executed 0.13332/0.14008/0.13309)",
-    "720": "NO_MEASUREMENT (executed 0.18714/0.19817/0.18537; MAE 0.28752/0.29865/0.28568)",
-    "avg": "NOT_COMPUTED"
-   },
-   "closure_fixes": [
-    "memory-bounded closure (StoredArray chunked reads incl. compressed members; targets streamed to closure_work; chunked replay rule) 21d36487/6cdc0818",
-    "device identity = actual CUDA UUID; older records from occupied GPU memory (aceb756d, 7abad9bf)",
-    "worker replay histories carried through merge as HISTORICAL_RECORD_ONLY (844a8d4a)"
-   ],
-   "evidence": "docs/audits/evidence/d3_k5_20260917/RP103/"
-  },
-  "RP104": {
-   "status": "DONE",
-   "suites_at_279a2abd_on_dragon": "sota tool 40 passed + 1 skipped; closure table/benchmark contract/block/financial 117 passed, 2 deselected; lake adopters 4 skipped; olap store 106 passed + 1 skipped on SQLite AND DuckDB (throwaway venv)"
-  },
-  "RP105": {
-   "status": "RETURN_WRITTEN",
-   "return": "docs/audits/work_plan/SATOSHI_RP98_RP105_RETURN_2026_09_22.md",
-   "open_for_owner": [
-    "restart crispdm-data-warehouse-olap.service on omega (T=720 terminals)",
-    "clear WORKER_A's GPU for 3 x 22 s same-device replays (T=96)",
-    "omega deletions after the hold"
-   ]
-  },
-  "placement": "all compute on dragon (cooled WORKER_A, RTX 4090 L, 11 GiB available, 14 GiB slice); omega under the travel hold (marker present); gamma out (4 GiB available, eGPU busy)",
-  "thermal_observation_2026_09_22": "dragon RTX 4090 L during L96_h192_s2022 training: 83-85 C at 98 %, the driver's software thermal slowdown intermittently ACTIVE (target 87 C, clocks 1.77-2.13 GHz); device policy engaged, job not interrupted; a cool-down guard (< 70 C between cells, max 30 min wait) added to execute for the next runs; per-cell records keep gpu_before/gpu_after"
- },
- "rp106_rp113": {
-  "orders": "docs/handoffs/MUSASHI_SOTA_RP106_RP113_2026_09_22.md (c779711; review MUSASHI_RP98_RP105_REVIEW_2026_09_22.md of 55a339ce)",
-  "base": "55a339ce",
-  "updated_on": "2026-09-24",
-  "placement": "owner 22-sep: the ONLY device eligible for new GPU work is WORKER_B's EXTERNAL RTX 5090 (GPU-a9f35631…), admitted by physical UUID before every dispatch; WORKER_B's internal 5070 Ti, WORKER_A's GPU and coordinator heavy work remain held with no automatic release; host CPU bounded and host thermals monitored separately (the external cooler does not cool the laptop)",
-  "RP106": {
-   "status": "DONE",
-   "pre": "docs/audits/evidence/d3_k5_20260917/RP106/PROBE_RESULTS_PRE.json (Musashi's probe unchanged at 55a339ce: different-identity copy deleted, rewritten metrics verified as zero, forged report accepted)",
-   "post": "docs/audits/evidence/d3_k5_20260917/RP106/REVIEW_REPRODUCED_POST.json (corrected paths: conflicting copy REFUSED with nothing unlinked, rewritten record/absent vault/checkpoint DELETED_HISTORY_UNBOUND with no score and NO_MEASUREMENT in the table, unresolvable and wrong-design reports refused; controls: identical copy deleted, valid retained history verified)",
-   "note": "Musashi's probe is preserved unchanged; on the corrected tree its own later steps stop with a KeyError because its first scenario no longer deletes anything, so the POST reproduces his three scenarios on top of a valid deletion"
-  },
-  "RP107": {
-   "status": "DONE_IN_CODE",
-   "what": "historical_verification(): the score of a deleted cell is the ORIGINAL pre-deletion closure's, resolved BY DIGEST from preserved reports (REPORT.json, reports/REPORT.<sha>.json, REPORT*.json), bound to the accepted terminal chain (record and checkpoint digests), the retained catalog (the digest that report recomputed), the targets and the design; typed refusals HISTORY_UNRESOLVED_REPORT / HISTORY_DESIGN_MISMATCH / HISTORY_ROW_UNVERIFIED / HISTORY_CUSTODY_* / HISTORY_RECORD_CHANGED / HISTORY_CHECKPOINT_CHANGED / HISTORY_ARRAYS_IDENTITY / HISTORY_VAULT_MISMATCH / HISTORY_TARGETS_MISMATCH; no field of the current record or marker is trusted; successor evidence is versioned, historic reports are never rewritten"
-  },
-  "RP108": {
-   "status": "DONE_IN_CODE",
-   "what": "deletion_preflight() + delete_predictions() v2: exclusive lock per root, whole-unit inventory before any unlink, every candidate path hashed against the ACCEPTED predictions artifact, refusals for conflicting copies, conflicting attempts, symlink/alias, active readers, unverified catalog, approval mismatch (accepted report digest) and missing backup coverage; identity re-checked at the instant of deletion; per-path status with PARTIAL markers, resumption under the same approval; content-addressed reports preserved under reports/ before REPORT.json is replaced"
-  },
-  "RP109": {
-   "status": "DONE",
-   "exact_scorer": "author_metric_exact() reproduces utils.metrics.metric BIT FOR BIT within ~64 MB of temporaries: element-wise float32 differences chunk by chunk, numpy's pairwise summation tree replicated over the flattened population (leaves >= 128 elements reduced by numpy), mean = float32(sum)/float32(N); verified against np.add.reduce for n = 7 … 6.3e6 and on the real author fixture; the author's own function runs beside it whenever its full-size temporaries fit and must agree bitwise (refusal otherwise)",
-   "regeneration": "T=336 x3 regenerated by INFERENCE from the retained checkpoints on the admitted RTX 5090: all three BIT_IDENTICAL_TO_THE_DELETED_ORIGINAL (pred and true digests equal the record's), author float32 now available: s2021 0.1625940501689911/0.2606664299964905, s2022 0.16817493736743927/0.26741331815719604, s2023 0.16267016530036926/0.26087433099746704 (mean 0.164479718/0.262984693; float64 basis differed by <= 3.6e-8)"
-  },
-  "RP110": {
-   "status": "DONE_IN_CODE",
-   "attribution": "device_attribution(): MEASURED (the process asked its CUDA runtime) / VISIBILITY_MASK (a UUID mask) / INFERRED_GPU_MEMORY (the GPU whose memory grew) / UNKNOWN / CPU; only MEASURED (or CPU on both sides) certifies same_device_repeatability; an equal UUID under inferred attribution is reported NOT_CERTIFIED and UNDETERMINED_ATTRIBUTION, never same-device",
-   "parity": "real-author CPU trajectory over four optimizer steps with num_workers 1 vs 0: batches, loss, weights, optimizer state, torch/numpy RNG states after every step and the validation/test loader inputs identical; the allocator option reaches the child's environment and leaves the child's argument vector identical"
-  },
-  "RP111": {
-   "status": "DONE",
-   "closure": "REPORT sha256 bc9d3388f1f21d28…, replays on the admitted RTX 5090 only (UUID asserted in every child)",
-   "results": {
-    "96": "NO_MEASUREMENT: cross-device replay (4090 L -> 5090) fails the frozen pointwise rule (max|delta| 1.9e-4 / 2.2e-4 / 2.7e-4 > 1e-4); author float32 recomputed 0.13332/0.14008/0.13309; preserved same-device evidence on WORKER_A (max|delta| 0.0) is HISTORICAL_RECORD_ONLY and its GPU stays held",
-    "192": "OPERATIONAL_AGREEMENT mean 0.157645/0.252163 vs 0.154/0.248, three seeds, historically bound to the original closure fbe2cd4c (author float32)",
-    "336": "OPERATIONAL_AGREEMENT mean 0.164480/0.262985 vs 0.162/0.261, three seeds, author float32 from bit-identical regenerations",
-    "720": "OPERATIONAL_AGREEMENT mean 0.190226/0.290617 vs 0.184/0.284, three seeds verified in this closure; replays bit-identical (max|delta| 0.0) but the training device is INFERRED, so same-device repeatability is reported NOT_CERTIFIED",
-    "avg": "NOT_COMPUTED: no seed has all four horizons verified (T=96 open)"
-   },
-   "note": "the three T=720 terminals Musashi resent were reconciled by this closure's custody check (ACCEPTED_ARTIFACT_CHAIN)"
-  },
-  "RP112": {
-   "status": "DONE",
-   "what": "accept_regenerated(): the retained catalog re-derived from the regenerated bytes through the author's loader and compared with the retained METRICS_VAULT.json, numeric oracles (global vs author <= 1e-6, per-step and per-channel means vs global <= 1e-9, float64 vs author <= 1e-6), catalog states and population; all three T=336 cells PASS with catalog_recomputed_equals_retained true; the regenerated temporaries then deleted with per-path receipts (6 files, ~12.7 GB), catalogs/records/checkpoints and the acceptance records retained",
-   "catalog_acceptance": "accept-catalog on all twelve: nine PASS with every oracle exactly 0.0 (per-step/per-channel/per-window/time-block means against the global, skill and rmse identities, denominators, population, required families and states); the three T=96 catalogs are refused only because the current closure does not verify those cells",
-   "deletion": "T=720 x3 deleted under the corrected per-content path with the approval bound to REPORT bc9d3388… and to the metadata backup manifest (84 files, 25.2 MB, metadata only): 12,594,204,672 bytes reclaimed, measured free disk 210.3 GiB afterwards; T=96 arrays retained (unverified), WORKER_A and omega copies untouched"
-  },
-  "RP113": {
-   "status": "RETURNED",
-   "return": "docs/audits/work_plan/SATOSHI_RP106_RP113_RETURN_2026_09_23.md",
-   "head": "74024c0b",
-   "final_closure": "REPORT sha256 b84a7767… (after the authorized T=720 deletion; the nine deleted cells are historically bound, three of them through accepted bit-identical regenerations); the closure that verified T=720 with its arrays is bc9d3388…",
-   "ledger": "19 attempts (12 with records, 7 retired or interrupted with an explicit NONE_RECORDED cost), 5.37 h measured wall time, 210.3 GiB free disk after the cleanup",
-   "open_for_owner": [
-    "cooling confirmation for WORKER_A's GPU: ~66 s of same-device replays would verify T=96 and unlock the four-horizon average",
-    "coordinator and WORKER_A copies of the T=96 arrays stay held under the thermal policy"
-   ],
-   "not_executed": "protocol B (Table 9, L=512): specified and costed (6-16 h on the admitted device), deliberately not run"
-  },
-  "RP104_suites_at_6175c98d_on_dragon": {
-   "sota tool": "61 passed, 1 skipped, 49.4 s, 1.35 GB peak RSS",
-   "closure+contract+block+financial": "117 passed, 2 deselected, 163.5 s, 2.96 GB peak RSS",
-   "olap store (sqlite+duckdb)": "106 passed, 1 skipped, 3.6 s, 0.22 GB peak RSS",
-   "interpreter": "3.12.13; numpy 2.5.1, pandas 3.0.3, torch 2.13.0+cu130, sklearn 1.9.0; store venv duckdb 1.5.5, sqlalchemy 2.0.54"
-  },
-  "protocol_B": "docs/tres_temas_entrevista/program_v3/SOTA_PROTOCOL_B_MAPPING_2026_09_23.md: the author's exact L=512 recipe, the unpublished-L choice mapping stated, cost projected from measured protocol A cells; NOT executed, not completed by protocol A"
- },
- "rp114_rp121": {
-  "orders": "docs/handoffs/MUSASHI_SOTA_RP114_RP121_2026_09_23.md (a8dcbfce; review MUSASHI_RP106_RP113_REVIEW_2026_09_23.md of e145303c)",
-  "base": "e145303c",
-  "updated_on": "2026-09-23",
-  "RP114": {
-   "status": "DONE",
-   "pre": "docs/audits/evidence/d3_k5_20260917/RP114/PROBE_RESULTS_PRE.json (a8dcbfce: rewritten report verified with score 0, fabricated regeneration verified with score 0, deletion without approval COMPLETE, broken-estimator catalog accepted, float32 mismatch at N=16,777,217)",
-   "post": "docs/audits/evidence/d3_k5_20260917/RP114/PROBE_RESULTS_POST.json (repaired head: HISTORY_REPORT_NOT_ACCEPTED, fabrication refused and the original score intact, deletion REFUSED with the array retained, catalog refused on four domain violations, float32 equal)",
-   "tests": "every counterexample also frozen as a test on the real entry points, with domain sweeps (NaN/inf, missing evidence, CPU vs CUDA regeneration) rather than only the probe's exact values"
-  },
-  "RP115": {
-   "status": "DONE_IN_CODE",
-   "what": "publish_acceptance() reports closure, catalog and regeneration evidence as governed COMPLETED terminals (acquire + terminal + ACCEPTED_EVIDENCE registry); accepted_artifact() answers from the receipt and the warehouse row, never from the local registry alone; historical verification requires the resolved report to be accepted evidence; regeneration_evidence() requires both its record and its acceptance to be accepted AND consistent (identity, digests, device, population, finite metric, agreement with the retained catalog); a refused successor is reported and ignored, never used and never destructive",
-   "dated_successor_acceptances": "the two retained closure reports the deletion markers name were given dated successor acceptances on WORKER_B (fbe2cd4c… of 2026-09-22 and bc9d3388… of 2026-09-23), each carrying the explicit scope that acceptance starts at that date and earlier local availability proves nothing"
-  },
-  "RP116": {
-   "status": "DONE_IN_CODE",
-   "what": "deletion prerequisites mandatory through API and CLI: accepted report digest, accepted catalog acceptance of the catalog on disk, verified backup (destination bytes present and equal to the manifest, unit record/catalog/acceptance covered); the unlink boundary hashes through an open descriptor, checks that the path still names that inode, unlinks, and re-hashes the still-open inode so the receipt states what was removed; own descriptor not counted as a competing reader"
-  },
-  "RP117": {
-   "status": "DONE_IN_CODE",
-   "what": "per-family domain checks (sd >= 0 and = sqrt(var), entropy <= log2(bins), MI <= 6 bits on a 64x64 grid, |ACF| <= 1, |corr| <= 1, r2 <= 1, monotone quantiles, histogram counts = population, all reported numbers finite) plus independent_estimators(), a second implementation that recomputes residual moments, entropy, joint MI, correlation, R2, errors and histogram from the arrays without calling the producer; used wherever the arrays exist, with an explicit HISTORICAL LIMIT label where they were deleted",
-   "real_cell_coverage": "six of twelve cells checked on real bytes: the three T=96 cells that still hold their arrays (159,164,640 elements each, every family 0.0) and one cell per deleted horizon regenerated bit-identically from its retained checkpoint (T=192 s2022 2.2e-16, T=336 s2021 1.1e-16, T=720 s2021 4.4e-16), temporaries removed by their own acceptance; the remaining six deleted cells keep domain validation and internal oracles with an explicit historical limit"
-  },
-  "RP118": {
-   "status": "DONE_IN_CODE",
-   "what": "author_metric_exact v2 divides by the element count the way numpy does (int64 scalar -> float64 quotient -> cast), not by float32(N); v1's claim retained as superseded. Cells whose element count is not exactly representable in float32 (T=336: 531,190,800; T=720: 1,049,515,920) must be rescored; T=96 (159,164,640) and T=192 (312,412,608) are exactly representable and unaffected",
-   "measured_impact": "all six affected cells regenerated bit-identically from their retained checkpoints on the admitted 5090 and rescored with route v2; exactly one number changed in the whole population: T=336 seed 2021 MAE 0.2606664299964905 -> 0.2606664001941681 (3.0e-8). Every other T=336/T=720 author value is bit-identical under both routes; T=96 (159,164,640) and T=192 (312,412,608) have exactly representable counts and could not be affected. No horizon mean, agreement verdict or conclusion moves"
-  },
-  "RP119": {
-   "status": "DONE",
-   "reporting": "a horizon measured on the accepted chain without an accepted replay is reported MEASURED_REPLAY_UNVERIFIED with its values explicitly unpooled; the four-horizon average names the horizons missing per seed over a fixed denominator",
-   "catalog_acceptance": "all twelve catalogs accepted and published as governed evidence; worst internal oracle across the population 1.1e-16; the three T=96 acceptances refuse only on the missing accepted replay",
-   "report": "sha256 9c491f38… on WORKER_B (successor; earlier reports retained and accepted)",
-   "results": {
-    "96": "MEASURED_REPLAY_UNVERIFIED: author float32 0.13332/0.14008/0.13309 and 0.23055/0.23778/0.23032, custody accepted, catalog independently recomputed family by family over 159,164,640 elements (all differences 0.0), cross-device replay on the 5090 FAILS the frozen pointwise rule (1.9e-4/2.2e-4/2.7e-4) with bit-identical replayed metrics; values never pooled",
-    "192": "VERIFIED, OPERATIONAL_AGREEMENT: 0.157645 (SD 0.00380) / 0.252163 (SD 0.00396) vs 0.154/0.248; mixed-host dispersion (coordinator + WORKER_B) stated",
-    "336": "VERIFIED, OPERATIONAL_AGREEMENT: 0.164480 (SD 0.00320) / 0.262985 (SD 0.00384) vs 0.162/0.261; author float32 recovered after deletion by bit-identical regeneration",
-    "720": "VERIFIED, OPERATIONAL_AGREEMENT: 0.190226 (SD 0.00694) / 0.290617 (SD 0.00702) vs 0.184/0.284",
-    "avg": "NOT_COMPUTED over a denominator of four; T=96 named as missing for every seed"
-   },
-   "catalogs": "all twelve accepted and published as governed evidence; worst internal oracle 1.1e-16",
-   "ledger": "19 attempts (12 with records, 7 retired/interrupted with NONE_RECORDED cost), 5.37 h measured wall time, 210.3 GiB free disk",
-   "deletions": "none in this round: T=96 arrays retained because unverified; only regenerated temporaries removed by their own acceptance"
-  },
-  "RP120": {
-   "status": "DONE",
-   "corrections": "verified against the pinned loader and model (docs/audits/evidence/d3_k5_20260917/RP114/PROTOCOL_B_PROPERTIES.json): patches per channel 3 (A, L=96/P=32) and 4 (B, L=512/P=128), tokens 963 -> 1284 (x1.33) and mask 2.78M -> 4.95M elements (x1.78), NOT a 5.3x token factor; test windows identical in both protocols at every horizon (5260 - T + 1), only training windows shrink by ~2 %",
-   "cost": "the earlier 2-4x / 6-16 h / VRAM-fit estimate is WITHDRAWN and the runtime marked UNMEASURED; a bounded governed exact-recipe pilot (author model, loaders and optimizer, fixed steps, one bounded validation pass, no test score, no checkpoint, no selection) is implemented and will be run on the admitted external 5090",
-   "pilot": "bounded exact-recipe pilot on the admitted external 5090 (UUID asserted in-process, 20 optimizer steps + 20 validation batches, no test score, no checkpoint, no selection): T=96 median 0.0555 s/step, T=720 0.0602 s/step, peak VRAM 6.60-6.64 GiB, peak host RSS 2.16-2.24 GiB, 1074-1113 steps per epoch; projected 0.32-0.34 h per cell at 15 epochs and about 3.9-4.0 h for twelve cells, comparable to protocol A's measured 3-4 h and NOT 2-4x it. Excluded from the projection and said so: early stopping, the bounded evaluation and catalog work, warm-up variance beyond 20 steps, and the two unmeasured horizons"
-  },
-  "RP121": {
-   "status": "RETURNED",
-   "return": "docs/audits/work_plan/SATOSHI_RP114_RP121_RETURN_2026_09_23.md",
-   "head": "c7ccec6b",
-   "evidence": "docs/audits/evidence/d3_k5_20260917/{RP114,RP119}/",
-   "accepted_evidence_registry": "39 entries (3 closure reports, 18 catalog acceptances, 18 regeneration records)",
-   "suites": "WORKER_A at the final head: sota tool 85 passed + 1 skipped (66 s, 1.37 GB); closure/contract/block/financial 117 passed + 2 deselected (161 s, 2.96 GB); olap store on SQLite and DuckDB 106 passed + 1 skipped (3.6 s); lake adopters 4 skipped",
-   "open_for_owner": [
-    "cooling confirmation for WORKER_A's GPU: ~66 s of same-device replays would verify T=96 and unlock the four-horizon average"
-   ],
-   "not_executed": "protocol B: recipe mapped, properties verified and cost measured by a bounded pilot (~4 h for twelve cells); no cell trained or scored"
-  }
- },
- "rp122_rp127": {
-  "orders": "docs/handoffs/MUSASHI_SOTA_RP122_RP127_2026_09_23.md (37df73b8; review MUSASHI_RP114_RP121_REVIEW_2026_09_23.md of 316c67af)",
-  "base": "316c67af",
-  "updated_on": "2026-09-23",
-  "RP122": {
-   "status": "DONE",
-   "pre": "docs/audits/evidence/d3_k5_20260917/RP122/PROBE_RESULTS_PRE.json (316c67af: plausible-wrong catalog accepted, local relabel turned a diagnostic into a closure acceptance, require_acceptance=False deleted the array)",
-   "post": "docs/audits/evidence/d3_k5_20260917/RP122/REVIEW_REPRODUCED_POST.json (repaired head: catalog refused naming quantiles 2.41, correlation undefined-vs--0.1979 and ACF 0.943; relabel refused before and after with the warehouse untouched; the bypass raises TypeError at the interface and the array remains; positive control passes with 14 families complete and none unchecked)",
-   "tests": "per-family mutation tests (ACF, quantiles, correlation, entropy, per-step, baselines, time blocks), the missing-value semantics, subject/role mismatches and the absence of any public bypass"
-  },
-  "RP123": {
-   "status": "DONE_IN_CODE",
-   "what": "accepted_artifact reads kind, subject, artifact role and design from the accepted terminal (tags and artifact roles), scanning the acceptance units the receipts name; the local registry is only a hint and a contradicting hint is reported and ignored; the regeneration record and its acceptance must come from the same accepted terminal"
-  },
-  "RP124": {
-   "status": "DONE_IN_CODE",
-   "what": "CATALOG_ESTIMATORS declares the finite approved catalog before measurement (population, axis, orientation, reduction, parameters, undefined condition, tolerance per family); independent_estimators implements every declared family on the same population — ACF over window origins per fixed forecast step, quantiles from the declared histogram CDF, baselines from the author's loader inputs — and compare_catalog_to_reference compares field by field under each family's tolerance, treating a value present on one side only as a disagreement and reporting coverage"
-  },
-  "RP125": {
-   "status": "DONE_IN_CODE",
-   "what": "require_acceptance removed from deletion_preflight and delete_predictions; the accepted chain and the verified durable backup are checked in every callable path including resumption; dry runs stay non-destructive and report the same failed prerequisites"
-  },
-  "RP126": {
-   "status": "DONE",
-   "coverage": "11 of 12 cells carry a full independent estimator acceptance (14 declared families, none unchecked, no disagreement): the three retained T=96 catalogs in place and eight deleted cells through bit-identical regeneration on the admitted 5090, temporaries removed with receipts. T=192 seed 2021 (trained on the coordinator's RTX 4070 Laptop) does NOT regenerate identically on the 5090 and its acceptance REFUSES with nine family disagreements; certifying its catalog needs its original device",
-   "largest_disagreement_in_accepted_cells": "3.6e-12 (raw kurtosis)"
-  },
-  "RP127": {
-   "status": "RETURNED",
-   "return": "docs/audits/work_plan/SATOSHI_RP122_RP127_RETURN_2026_09_23.md",
-   "head": "c7c354e9",
-   "closure": "report sha256 211e6231… (successor; scores unchanged: T=192 0.157645/0.252163, T=336 0.164480/0.262985, T=720 0.190226/0.290617 OPERATIONAL_AGREEMENT; T=96 MEASURED_REPLAY_UNVERIFIED; average NOT_COMPUTED over a denominator of four)",
-   "evidence": "docs/audits/evidence/d3_k5_20260917/{RP122,RP127}/",
-   "accepted_evidence_registry": "56 entries (4 closure reports, 18 catalog acceptances, 34 regeneration records)",
-   "errata": "the RP114-RP121 return keeps its text and carries dated errata for its 'every family', 'cannot be skipped' and 'acceptance, not resolution' claims",
-   "suites": "WORKER_A: sota tool 98 passed + 1 skipped (76.5 s, 1.37 GB); closure/contract/block/financial 117 passed + 2 deselected (165 s, 2.96 GB); olap store 106 passed + 1 skipped on SQLite and DuckDB; lake adopters 4 skipped",
-   "open_for_owner": [
-    "cooling confirmation for WORKER_A's GPU (T=96 replay)",
-    "an inference run on the coordinator's GPU would be needed to certify T=192 seed 2021's catalog independently"
-   ]
-  }
- },
- "rp128_rp131": {
-  "orders": "docs/handoffs/MUSASHI_SOTA_RP128_RP131_2026_09_23.md (04022f89; review MUSASHI_RP122_RP127_REVIEW_2026_09_23.md of a73e55b2)",
-  "base": "a73e55b2",
-  "updated_on": "2026-09-23",
-  "RP128": {
-   "status": "DONE_IN_CODE",
-   "what": "a catalog acceptance now carries an explicit CLASS and certificate derived from its own recorded content (FULL_INDEPENDENT_NUMERIC only when every declared family was compared, nothing unchecked and no disagreement; otherwise DOMAIN_AND_INTERNAL_ONLY with a restricted-scope note); the deletion reads that certificate — class, catalog digest, population against the record's shape, inventory version and digest — instead of a bare pass. The catalog acceptance certifies the CATALOG (the closure recomputed and read it back); the cell's own verification is a separate fact the deletion gate enforces",
-   "pre_post": "docs/audits/evidence/d3_k5_20260917/RP128/ (PRE on WORKER_B at a73e55b2: the data-less acceptance authorised a deletion that removed the array; POST at the repaired head: REFUSED with the array intact)"
-  },
-  "RP129": {
-   "status": "DONE_IN_CODE",
-   "what": "the scientific design is mandatory wherever acceptance is consumed (deletion, historical closure, regeneration) and is read from the terminal's own design_sha256 tag; a missing declaration refuses, and a campaign config digest that disagrees with the declared design is a contradiction, not a match"
-  },
-  "RP130": {
-   "status": "DONE_IN_CODE",
-   "what": "booleans are never numeric: False is not the count zero and True is not one, at any depth of a declared numeric field; the real catalog acceptance refuses the producer's boolean count with a typed message"
-  },
-  "RP131": {
-   "status": "RETURNED",
-   "revalidation": "read-only revalidation of all twelve cells under the repaired gates (docs/audits/evidence/d3_k5_20260917/RP131/REVALIDATION.json): 11 of 12 carry FULL_INDEPENDENT_NUMERIC acceptance (T=96 from their catalog certificates, eight deleted cells from their regeneration certificates), T=192 s2021 remains DOMAIN_AND_INTERNAL_ONLY; the three T=96 arrays are the only predictions on disk and NONE is deletion-eligible today, because their replay is not accepted. Nothing was recomputed and no array was read for this pass; the T=96 catalog certificates were re-issued and published only because the contract separating catalog from cell changed",
-   "accepted_evidence": "65 entries (4 closure reports, 24 catalog acceptances, 34 regeneration records, 3 revalidations)",
-   "return": "docs/audits/work_plan/SATOSHI_RP128_RP131_RETURN_2026_09_23.md",
-   "suites": "WORKER_A: sota tool 104 passed + 1 skipped (96.4 s, 1.36 GB); closure/contract/block/financial 117 passed + 2 deselected (163.8 s, 2.95 GB); olap store 106 passed + 1 skipped on SQLite and DuckDB; lake adopters 4 skipped",
-   "cost": "no GPU this round; about 22 minutes of admitted CPU inside the 14,400 CPU-second ceiling; host 20-56 C on WORKER_B and 20-48 C on WORKER_A; one probe run refused by its own thermal guard on WORKER_A after back-to-back suites and was moved to the cooler worker",
-   "open_for_owner": [
-    "cooling confirmation for WORKER_A's GPU (T=96 replay)",
-    "the coordinator's GPU would be needed to certify T=192 seed 2021's catalog"
-   ]
-  }
- },
- "rp132_rp134": {
-  "orders": "docs/handoffs/MUSASHI_SOTA_RP132_RP135_2026_09_23.md (2b3a8531; review MUSASHI_RP128_RP131_REVIEW_2026_09_23.md of c9dce617); delivered under RP136 of MUSASHI_SOTA_RP136_RP139_2026_09_23.md (ba96574e)",
-  "base": "2b3a8531, merged with ba96574e",
-  "branch": "satoshi/rp132-rp134-20260923 (separate repair worktree, preserved as ordered)",
-  "updated_on": "2026-09-23",
-  "RP132": {
-   "status": "DONE_IN_CODE",
-   "what": "acceptance_certificate is derived from independent_comparison.fields validated against the bound estimator inventory (43 fields, 14 families): presence, applicable status, typed finite difference, the family's declared tolerance, the difference within it, the declared undefined case. Coverage and summaries are derived and the recorded ones must agree, so a contradictory record is rejected and never repaired. families_complete, unchecked, disagreements, fully_independent and pass no longer participate. The inventory a record is read under is explicit: BOUND_INVENTORY, FOREIGN_INVENTORY, LEGACY_DEFINITIONS_MATCH, LEGACY_FIELD_DEFINITIONS_MATCH or LEGACY_WITHOUT_DEFINITIONS; family names establish nothing. accept_catalog and accept_regenerated now record the inventory identity, the definitions and the producing tool digest",
-   "pre_post": "docs/audits/evidence/d3_k5_20260917/RP132/ (PRE on WORKER_A at 2b3a8531: an acceptance with zero field results and one with a global.mae DISAGREEMENT both certified FULL_INDEPENDENT_NUMERIC and deleted the array; POST at e473efbe: DOMAIN_AND_INTERNAL_ONLY and REFUSED with the array intact)",
-   "tests": "ten refusal cases through the real deletion consumer plus the positive control, the resumed deletion and the legacy bases"
-  },
-  "RP133": {
-   "status": "DONE_IN_CODE",
-   "what": "revalidate_acceptances schema v2 separates locally recorded numerical evidence from evidence currently accepted under this design, kind, subject and role, with the same validated relationship required of the summary as of the detail row, for catalog and regeneration sources. Without a warehouse the report is HISTORICAL_INSPECTION and asserts nothing about custody. Cell verification is read from the current closure report, and a withdrawn verification is named beside the earlier certificate's flag. deletion_eligible_today is removed: the metadata result is a CONDITIONAL_PREVIEW that lists what it did not check, and the complete gate stays in the deletion path"
-  },
-  "RP134": {
-   "status": "DONE",
-   "what": "the twelve retained records re-checked on WORKER_B against the currently accepted chain, read-only, 0.24 CPU s, no array read. Eleven sources stand: the three T=96 catalog acceptances under BOUND_INVENTORY and eight regeneration acceptances under a dated LEGACY_FIELD_DEFINITIONS_MATCH whose limits are recorded. T=192 s2021 has no numerical evidence and states all four reasons. Nothing is preview-eligible; no production prediction was deleted; the three T=96 arrays remain on disk",
-   "successor_revalidation": "docs/audits/evidence/d3_k5_20260917/RP134/REVALIDATION_2026_09_23.json (the RP131 one is preserved)",
-   "errata": "dated errata appended beside SATOSHI_RP128_RP131_RETURN_2026_09_23.md, correcting four overbroad claims without deleting them",
-   "qualification_standing": "RP136 confirms it: matching field tolerances alone does not establish histogram bins/ranges, quantile lists, MI bins, ACF lags or time-block populations for the eight legacy regeneration records. The limitation is retained unless the definitions can be established from the bound producer revision/configuration; no full-numerical claim is made for missing scientific definitions"
-  },
-  "cost": "393 CPU seconds of the 1,800 reserved for retention repairs, inside the preceding 14,400 total; no GPU seconds by Satoshi; suite 124 passed, 1 skipped",
-  "return": "docs/audits/work_plan/SATOSHI_RP132_RP134_RETURN_2026_09_23.md"
- },
- "rp136_rp139": {
-  "orders": "docs/handoffs/MUSASHI_SOTA_RP136_RP139_2026_09_23.md (ba96574e), after the owner confirmed all cooling restored",
-  "base": "ba96574e merged into satoshi/rp132-rp134-20260923",
-  "updated_on": "2026-09-23",
-  "RP136": {
-   "status": "DONE",
-   "what": "the RP132-RP134 return, its dated errata, the successor revalidation, the final probe output and the plan/state entries are committed and pushed; the experimental section is rebuilt from live receipts. The eight legacy regeneration records stay qualified: matching field tolerances do not establish histogram bins and ranges, quantile lists, mutual-information binning, autocorrelation lags or time-block populations"
-  },
-  "RP137": {
-   "status": "SUPERVISED",
-   "governed_path": "verified by real authenticated responses: four warehouse rows for this campaign's receipts, all COMPLETED, terminal digests matching the receipts, expected artifact roles",
-   "provenance_correction": "additive correction issued for L512_h96_s2022: started_at and finished_at were rebuilt to the reporting moment 22:04:55Z, the measured window is 14:59:01Z to 15:20:09Z from the retained pre-recovery terminal; artifacts, metrics, costs, tags and deliveries identical; nothing rewritten or erased",
-   "cost_ledger": "prior lane 2517.23 CPU s snapshotted separately; continuation lane measured from the scope's cpu.stat; projection about 13100 CPU s for the ten remaining cells plus verification against the declared 24000 s allocation",
-   "risk": "the continuation scope's memory peak reached 5.80 GiB against its 6 GiB limit at H192; not changed under the running process, reported instead"
-  },
-  "RP138": {
-   "status": "DONE_WORKER_A",
-   "implementation_identity": "METRIC_IMPLEMENTATION_LINEAGE declares the retained catalogs' digest 45a8a363 as a predecessor of the current 44086f33, bound to revisions 3f250c16b342..844a8d4ab101 and 21d36487191e onwards. The whole difference is one line, the finiteness guard becoming the memory-bounded all_finite under RP101, which contributes to no accumulator or reduction. The retained catalogs keep their bytes and accepted identity; an undeclared digest still refuses and a declared one never explains a numeric difference",
-   "worker_a_result": "all three retained H96 cells replayed on their ORIGINAL device GPU-a8bd1b2c (RTX 4090 Laptop) and are BIT-EXACT: max_abs_prediction_difference 0.0 and exact_equal_fraction 1.0 over 159,164,640 elements per cell, replayed author metrics equal to the records, custody ACCEPTED_ARTIFACT_CHAIN, rows verified with no problems. The CLI exit 1 is the nine unstaged cells of the sealed design, an incomplete population and not a failed closure",
-   "binding": "the same-device replay history is bound into the root holding the originals by design, record, checkpoint and array identity (SAME_DEVICE_REPLAY_BINDING), additively; per RP100 it is history a closure cites, never an input to its verification",
-   "coordinator": "fresh admission refused once at 22 percent utilization and passed on the second attempt without bypassing the check; the coordinator's ORIGINAL environment is the trading-stack env, not the base interpreter the earlier driver would have used; its governance credentials were not available to this session, so the run is a replay measurement without custody re-verification"
-  },
-  "RP139": {
-   "status": "DONE",
-   "heartbeat": "a user timer on the GPU host writes one JSON line every two minutes with the service state, live training unit, scope CPU ledger, GPU and host thermals, free disk and cell count; read-only about the campaign",
-   "next_intervention": "docs/tres_temas_entrevista/program_v3/NEXT_INTERVENTION_PREPARATION_2026_09_23.md, PREPARED and NOT AUTHORIZED TO FIT: the R0/R1/R2 learning regimes of the modular detector, what is held fixed, the two conflations the plan forbids, matched data/tuning/budget, the unmet prerequisites, a resource plan from measured costs, and the financial lane's two real blockers"
-  }
- },
- "rp140_rp143": {
-  "orders": "docs/handoffs/MUSASHI_SOTA_RP140_RP143_2026_09_23.md (5c9a14d5), after MUSASHI_RP136_RP139_REVIEW_2026_09_23.md",
-  "updated_on": "2026-09-24",
-  "RP140": {
-   "status": "DONE",
-   "what": "compose_evidence binds evidence objects to the authoritative root per cell by design, record, checkpoint, prediction, report and accepted-terminal identity; it reads no array, edits no report and sets no verified flag. Retained replay histories are admitted in all three recorded shapes at two stated binding strengths (IDENTITY_BOUND, METRIC_AND_SHAPE_BOUND); a score absent from a record is taken only from a bound report row, with that row's declared basis",
-   "result": "all twelve protocol-A cells pool. T=96 0.135496/0.232884, T=192 0.157645/0.252163, T=336 0.164480/0.262985, T=720 0.190226/0.290617, every horizon in OPERATIONAL_AGREEMENT, and the four-horizon mean 0.161962/0.259662 against a published 0.158250/0.255750 over a denominator of four",
-   "qualification": "no cell records a MEASURED training-device UUID (UNKNOWN for four, INFERRED_GPU_MEMORY for eight), so every exact replay is REPLAY_EXACT_ON_OBSERVED_DEVICE and never a same-device claim; the earlier wording is corrected in a dated errata",
-   "evidence": "docs/audits/evidence/d3_k5_20260917/RP140/"
-  },
-  "RP141": {
-   "status": "SUPERVISED",
-   "campaign": "ten of twelve L512 cells accepted at 01:34Z; h720 s2022 training, s2023 queued. Measured per cell 1258 s at H96, 1341 at H192, 1362 at H336",
-   "allocation": "continuation scope 11,614 CPU s of the declared 24,000 (48 percent); memory peak 5.40 GiB against the 7 GiB limit with oom and oom_kill zero",
-   "scores": "H96 0.125551/0.125849/0.126375; H192 0.144051/0.142953/0.143947; H336 0.152274/0.152304/0.153511; H720 0.179536 (1 of 3). Recorded, not accepted: no replay, no closure, no verified mean. Table 9's lookback stays unresolved"
-  },
-  "RP142": {
-   "status": "DONE",
-   "what": "tools/df_ecl_modular.py is the matched ECL adapter: the reference's own resolved arguments, 321 channels in the author's order, full [batch, horizon, 321] target and output, the approved architecture with one change (the readout), and R0/R1/R2 applied by the approved regime module",
-   "causality": "proved over row identities on TARGET support, with the author's deliberate input-context overlap declared; the AE's internal validation is a purged chronological tail of the outer TRAIN origins; a future perturbation leaves windows unchanged; split boundaries re-derived with the author's formulas and checked against his own arrays",
-   "corrections": "the preparation's obsolete AE-validation paragraph is corrected in place and 13E gets a dated successor (13E_v3_SUCCESSOR_AE_VALIDATION_2026_09_23.md); nothing erased",
-   "pilot": "TRAIN-ONLY on WORKER_A: 23,797 AE steps (masked loss 0.35999 to 0.14284, purged inner validation 0.25378 to 0.16439) and 23,329 R0 steps (0.44293 to 0.29182), 1,206.1 CPU s and 820.1 s wall inside the declared 1,800/1,800. No test score, no selection, no H1 claim. The first attempt is preserved: it executed one pass instead of its prescription"
-  },
-  "RP143": {
-   "status": "DONE",
-   "financial": "docs/tres_temas_entrevista/program_v3/FINANCIAL_PRODUCER_CONTRACT_INVESTIGATION_2026_09_23.md: the 422 blocker in the service's own words, the six contract fields and the three with no evidence, the producer lineage stated as known and unknown, and what a matched financial reference would have to satisfy. No byte read, reserve untouched",
-   "suite": "146 passed at 87db6944 on WORKER_A, clean worktree, no skips",
-   "return": "docs/audits/work_plan/SATOSHI_RP140_RP143_RETURN_2026_09_24.md"
-  }
- },
- "rp144_rp151": {
-  "orders": "docs/handoffs/MUSASHI_RP144_RP151_NEWS_AND_EXPERIMENTS_2026_09_24.md (d4bb3353), after MUSASHI_RP140_RP143_REVIEW_2026_09_24.md",
-  "updated_on": "2026-09-24",
-  "live_state_checked_first": "RP135's twelve-cell fit queue FINISHED and its service inactive; 14,011 CPU s of 24,000 consumed by the fits",
-  "RP144": {
-   "status": "DONE",
-   "what": "the five composition counterexamples are closed and are tests: metric-only evidence must match the record's population, a digest the root cannot answer for is IDENTITY_UNVERIFIABLE, a report row must present a link on both sides, an empty binding block is NO_COMPARISON, and the donor import is checked against the donor file's own bytes",
-   "also_corrected": "two over-strict rules that destroyed real evidence: historical rows carry no accepted_artifacts and bind through their own replay and regeneration identities; the metric catalog and the regeneration acceptance are derived per closure and are NOT identity keys",
-   "result": "the additive corrected closure pools 12/12 with 15 IDENTITY_BOUND and 3 METRIC_AND_SHAPE_BOUND bindings, no refusals, and the four-horizon mean is unchanged at 0.161962/0.259662",
-   "evidence": "docs/audits/evidence/d3_k5_20260917/RP144/"
-  },
-  "RP145": {
-   "status": "RUNNING",
-   "what": "twelve of twelve L512 cells trained with accepted receipts; the closure with replay on the external 5090 runs under the remaining 9,989 CPU s of the same allocation",
-   "recorded_scores": "H96 mean MSE 0.125925; H192 0.143650; H336 0.152696; H720 seed 2021 0.179536. Recorded terminals, not accepted science: the official reduction, same-row naive, seed dispersion and replay come from the closure"
-  },
-  "RP146": {
-   "status": "RUNNING",
-   "gates_repaired": "an independent oracle checks the DELIVERED batches against the raw CSV and the author's train-only statistics at split boundaries and at H96/H720; validation masks are fixed by window identity; the regime proof is an observed optimizer step with R1 moving by exactly 0.0 and the donor checked against its own bytes",
-   "contrast": "the first development R0/R1/R2 contrast started 03:40Z on WORKER_A under a NEW 14,400 CPU s / 8 h allocation: H96, three paired seeds, full 321-channel target, one measured probe fixing one update allowance for every regime, outer test never read"
-  },
-  "RP147": {
-   "status": "INSPECTED_NOT_EXECUTED",
-   "what": "news-signal cloned and read; its own state says real weights, calibration and latency are NOT measured. Pinned identities recorded: M5PHET bcd65b78c12e53e85adc9f2328cb0c0faccb94e8, Laya SDK 1e28ac20c0896b1c37a744cd11f740eb98f8b178",
-   "why_not_executed": "both workers hold heavy jobs and the coordinator is the machine in use; the checkpoint download and bounded pilot are the named next runnable item"
-  },
-  "RP150": {
-   "status": "CONTRACT_VERIFIED",
-   "what": "the pinned M5PHET installs in an isolated environment and its classification result carries schema m5phet.classification.v1, UNCALIBRATED_CLASS_PROBABILITIES, execution_authorized false, three mandatory identity digests and a canonical result_sha256; four refusals executed (uppercase digest, unnormalised distribution, non-maximal label, incomplete task population). This verifies the CONTRACT, not any trained model",
-   "financial": "the RP143 producer-contract investigation stands; nothing read, reserve untouched"
-  },
-  "RP148_RP149": {
-   "status": "NOT_STARTED",
-   "what": "no feed or broker call was made and no entitlement was tested this round"
-  },
-  "tests": "150 passed on WORKER_A across the reproduction and ECL modules",
-  "return": "docs/audits/work_plan/SATOSHI_RP144_RP151_RETURN_2026_09_24.md"
- },
- "rp158_closure_repair_20260924": {
-  "orders": "RP158 medium-severity acceptance gap plus the requested pure closure",
-  "status": "IMPLEMENTED_AND_TESTED_AWAITING_REVIEW",
-  "inference": "NONE: CPU over retained records only; no model ran and no GPU was used for this repair",
-  "validate_children_gaps_closed": [
-   "an absent or untyped element count now refuses instead of passing because it was only checked WHEN it was an int",
-   "a negative MAE or MSE refuses: a mean of absolute or squared errors is never negative",
-   "the derived skill must follow from the MAE and baseline in its own record, within 1e-9",
-   "a null skill is correct only against a zero baseline, and a number against a zero baseline refuses"
+  "signal_steps": [
+    "STEP-01",
+    "STEP-02",
+    "STEP-03",
+    "STEP-04",
+    "STEP-05",
+    "STEP-06",
+    "STEP-07",
+    "STEP-08",
+    "STEP-09",
+    "STEP-10",
+    "STEP-11",
+    "STEP-12",
+    "STEP-13"
   ],
-  "pure_closure": {
-   "function": "tools/df_ecl_modular.py::close_contrast and close_retained_run",
-   "property": "validates, reconciles and aggregates over retained child records; starts no process and runs no inference",
-   "test": "subprocess.run, subprocess.Popen, subprocess.check_output and score_cell are all replaced with a raising double for the whole closure; the test fails if any of them is reached",
-   "does_not_overwrite": "a re-closure writes CLOSURE.json and leaves the retained SCORING.json byte-identical",
-   "refuses_to_self_agree": "a run whose retained scoring declares no contract window counts is refused rather than recomputing the expectations it would then be checked against"
-  },
-  "named_gap": "ecl-modular-contrast-20260924b cannot be closed purely today: it retained no DESIGN.json beside it, so its design was only ever re-derived from the datasets. score_contrast now retains the design it authenticates, which closes this for every later run; the existing run's numbers are untouched and were not recomputed",
-  "tests": "65 passed: tests/test_df_ecl_contrast_gates.py and tests/test_df_ecl_modular.py, CPU, torch environment",
-  "numbers_unchanged": "R0 0.371174 / R1 0.374584 / R2 0.368596 on the 1,802 label-disjoint windows"
- },
- "natural_language_interface_rag_20260924": {
-  "published": "M5PHET cae6be4, orders c4f2dcba",
-  "standing": "CONSIDERED, NOT IMPLEMENTED, NOT A BLOCKER",
-  "read_and_registered_by": "Satoshi, 2026-09-24, in the same block as the CL01-CL07 delivery",
-  "no_work_started": true,
-  "where_it_would_attach": "the interpretation layer above the provider contract, never inside it",
-  "invariant": "retrieved text is data; the registry's declared combinations remain the only source of what may be asked"
- }
+  "compression_lanes": [
+    "C1",
+    "C2",
+    "C3",
+    "C4",
+    "C5",
+    "C6",
+    "C7"
+  ],
+  "shared_requirements": [
+    "FE",
+    "EVENT",
+    "META",
+    "I-INFO",
+    "H-ES",
+    "GOVERNANCE",
+    "WEEKLY-RL"
+  ],
+  "tasks": [
+    {
+      "id": "BUSINESS-CONTRACT",
+      "owner": "owner+M05",
+      "status": "DESIGNED",
+      "depends_on": [],
+      "next_action": "Bind EURUSD targets, costs, risk and point-in-time sources to the weekly protocol.",
+      "deliverable": "Versioned business task contract.",
+      "evidence": []
+    },
+    {
+      "id": "BUSINESS-WEEKLY-WALK-FORWARD",
+      "owner": "M05+forecast+RL",
+      "status": "DESIGNED",
+      "depends_on": [
+        "BUSINESS-CONTRACT"
+      ],
+      "next_action": "Repair paired-evidence persistence, distinct short/long model identity and longitudinal dependence; configure MAE and then close BW01-BW18 adapters.",
+      "deliverable": "Restartable weekly validation/test runner with one disposition per week.",
+      "evidence": []
+    },
+    {
+      "id": "BENCHMARK-CONTRACTS",
+      "owner": "M06",
+      "status": "IN_PROGRESS",
+      "depends_on": [],
+      "next_action": "Keep exact author recipes and matched intervention contracts separate.",
+      "deliverable": "Per-domain benchmark dossier.",
+      "evidence": []
+    },
+    {
+      "id": "SOTA-REPRO",
+      "owner": "reference lane",
+      "status": "IN_PROGRESS",
+      "depends_on": [
+        "BENCHMARK-CONTRACTS"
+      ],
+      "next_action": "Close remaining faithful reference evidence without changing author inputs.",
+      "deliverable": "Comparable literature table with same-row baselines.",
+      "evidence": []
+    },
+    {
+      "id": "FS-PROGRESSIVE",
+      "owner": "M03+causal+M02",
+      "status": "IN_PROGRESS",
+      "depends_on": [
+        "BUSINESS-CONTRACT"
+      ],
+      "next_action": "Run automated Phase 2 pairwise dependency/redundancy and Phase 3 filter rankings; persist all rows in the warehouse and publish verified snapshots. Keep Phase 4 extractibility paused.",
+      "deliverable": "Complete pairwise metrics, alias/redundancy groups and candidate subset trajectories for EURUSD and ETH.",
+      "evidence": [
+        "Phase 1 completion commit 2a2a386f and warehouse readback receipts"
+      ]
+    },
+    {
+      "id": "MOD-E0-DEV",
+      "owner": "M01",
+      "status": "EXECUTED",
+      "depends_on": [],
+      "next_action": "Retain as historical development evidence only.",
+      "deliverable": "Historical modular development result.",
+      "evidence": [
+        "prior RP evidence retained"
+      ]
+    },
+    {
+      "id": "MOD-ARCH-COMPARE",
+      "owner": "M01+M04",
+      "status": "DESIGNED",
+      "depends_on": [
+        "FS-PROGRESSIVE",
+        "BENCHMARK-CONTRACTS"
+      ],
+      "next_action": "Run matched architecture controls after the final manifest.",
+      "deliverable": "Selected branch architecture and grouping.",
+      "evidence": []
+    },
+    {
+      "id": "MOD-E1",
+      "owner": "M01+M04",
+      "status": "DESIGNED",
+      "depends_on": [
+        "MOD-E0-DEV",
+        "MOD-ARCH-COMPARE"
+      ],
+      "next_action": "Compare branch R0, R1 and R2 on identical rows.",
+      "deliverable": "Branch regime result.",
+      "evidence": []
+    },
+    {
+      "id": "MOD-FROZEN-PREFIX",
+      "owner": "M01",
+      "status": "NOT_STARTED",
+      "depends_on": [
+        "MOD-E1"
+      ],
+      "next_action": "Freeze the selected identical branch prefix for H-CORE.",
+      "deliverable": "Authenticated fused-sequence producer.",
+      "evidence": []
+    },
+    {
+      "id": "MOD-CORE-PRETRAIN",
+      "owner": "M01+M02",
+      "status": "NOT_STARTED",
+      "depends_on": [
+        "MOD-E1",
+        "MOD-FROZEN-PREFIX"
+      ],
+      "next_action": "Pretrain H-CORE and test transfer separately.",
+      "deliverable": "Core donor and transfer comparison.",
+      "evidence": []
+    },
+    {
+      "id": "MOD-CONF",
+      "owner": "M04",
+      "status": "NOT_STARTED",
+      "depends_on": [
+        "MOD-CORE-PRETRAIN"
+      ],
+      "next_action": "Confirm the sealed finalist once on untouched test.",
+      "deliverable": "Confirmatory result.",
+      "evidence": []
+    },
+    {
+      "id": "MOD-E3",
+      "owner": "M05+RL",
+      "status": "NOT_STARTED",
+      "depends_on": [
+        "MOD-CONF"
+      ],
+      "next_action": "Compare heuristic, SAC and DQN under business costs.",
+      "deliverable": "Business and policy comparison.",
+      "evidence": []
+    },
+    {
+      "id": "L2-PUBLIC-RL",
+      "owner": "RL lane",
+      "status": "DESIGNED",
+      "depends_on": [
+        "BENCHMARK-CONTRACTS"
+      ],
+      "next_action": "Retain public RL control and prepare raw/modular factorial.",
+      "deliverable": "Public RL benchmark result.",
+      "evidence": []
+    },
+    {
+      "id": "CAP-CALIBRATION",
+      "owner": "M06",
+      "status": "IN_PROGRESS",
+      "depends_on": [],
+      "next_action": "Measure per-cell resources for each real runner.",
+      "deliverable": "Placement envelope by workload.",
+      "evidence": []
+    },
+    {
+      "id": "PRE-NOISE",
+      "owner": "M02",
+      "status": "DESIGNED",
+      "depends_on": [
+        "FS-PROGRESSIVE"
+      ],
+      "next_action": "Evaluate denoising as one extractor family, not a universal gate.",
+      "deliverable": "Matched denoising evidence.",
+      "evidence": []
+    },
+    {
+      "id": "TRN-TRANSFER",
+      "owner": "M01+M02",
+      "status": "NOT_STARTED",
+      "depends_on": [
+        "MOD-CORE-PRETRAIN"
+      ],
+      "next_action": "Measure donor transfer without changing target support.",
+      "deliverable": "Transfer result.",
+      "evidence": []
+    },
+    {
+      "id": "INC-SIMULATION",
+      "owner": "M05",
+      "status": "DESIGNED",
+      "depends_on": [
+        "BUSINESS-CONTRACT"
+      ],
+      "next_action": "Keep simulator mechanics separate from financial claims.",
+      "deliverable": "Audited strategy simulation.",
+      "evidence": []
+    },
+    {
+      "id": "FIN-LOSS-OPT",
+      "owner": "M04",
+      "status": "DESIGNED",
+      "depends_on": [
+        "BUSINESS-CONTRACT",
+        "BENCHMARK-CONTRACTS"
+      ],
+      "next_action": "Execute only after the financial data availability contract is satisfied.",
+      "deliverable": "Matched financial loss/optimizer result.",
+      "evidence": []
+    },
+    {
+      "id": "NEWS-ADAPTER",
+      "owner": "M5PHET+news-signal",
+      "status": "VERIFIED",
+      "depends_on": [],
+      "next_action": "Retain wrapper parity and separate it from quality.",
+      "deliverable": "Typed classification adapter.",
+      "evidence": [
+        "12/12 wrapper parity retained"
+      ]
+    },
+    {
+      "id": "NEWS-SHADOW",
+      "owner": "news-signal",
+      "status": "IN_PROGRESS",
+      "depends_on": [
+        "NEWS-ADAPTER"
+      ],
+      "next_action": "Collect prospective point-in-time news and abstentions.",
+      "deliverable": "Shadow evidence.",
+      "evidence": []
+    },
+    {
+      "id": "NEWS-PAPER",
+      "owner": "M05",
+      "status": "NOT_STARTED",
+      "depends_on": [
+        "NEWS-SHADOW",
+        "BUSINESS-CONTRACT"
+      ],
+      "next_action": "Run paper-only after prospective quality and risk gates.",
+      "deliverable": "MT5 demo and Alpaca paper receipts.",
+      "evidence": []
+    },
+    {
+      "id": "CAL-CAUSAL-INPUT",
+      "owner": "future causal+M01+RL",
+      "status": "NOT_STARTED",
+      "depends_on": [
+        "MOD-E3",
+        "NEWS-PAPER"
+      ],
+      "next_action": "Remain deferred until the primary representation, Dense-versus-NEAT, RL comparison and paper baseline are complete.",
+      "deliverable": "Separate incremental-value ablation for economic-calendar and causal-dossier model inputs.",
+      "evidence": []
+    }
+  ],
+  "state_semantics": {
+    "DESIGNED": "contract exists; no execution claim",
+    "IN_PROGRESS": "real current work or incomplete evidence",
+    "EXECUTED": "run happened; not automatically verified",
+    "VERIFIED": "evidence was independently checked",
+    "historical_reviews": "stored under docs/audits and handoffs, never embedded here"
+  }
 }

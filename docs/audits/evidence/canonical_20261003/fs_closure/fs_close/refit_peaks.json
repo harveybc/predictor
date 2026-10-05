@@ -1,0 +1,51 @@
+{
+ "receipts": {
+  "dc18976f81b9:2026-10-05T04:39:33.510717+00:00": {
+   "cells_done": 0,
+   "heads": [
+    "ridge",
+    "hgb"
+   ],
+   "peak_rss_bytes": 489152512,
+   "plan_sha256": "dc18976f81b9789c06dc675b571afffac0662cb3f859c58cf21704cfce406cc9"
+  },
+  "dc18976f81b9:2026-10-05T04:44:07.833281+00:00": {
+   "cells_done": 56,
+   "heads": [
+    "ridge",
+    "hgb"
+   ],
+   "peak_rss_bytes": 1019940864,
+   "plan_sha256": "dc18976f81b9789c06dc675b571afffac0662cb3f859c58cf21704cfce406cc9",
+   "retained_as": "fs_close/pilot_receipt.json"
+  },
+  "dc18976f81b9:2026-10-05T04:44:24.781603+00:00": {
+   "cells_done": 0,
+   "heads": [
+    "ridge",
+    "hgb"
+   ],
+   "peak_rss_bytes": 487534592,
+   "plan_sha256": "dc18976f81b9789c06dc675b571afffac0662cb3f859c58cf21704cfce406cc9"
+  },
+  "e259f6a32892:2026-10-05T17:12:54.888997+00:00": {
+   "cells_done": 5375,
+   "heads": [
+    "ridge",
+    "hgb"
+   ],
+   "peak_rss_bytes": 1030234112,
+   "plan_sha256": "e259f6a32892f9ad1ce48faea869ed2d1080db8c89635f221db1b7d46d1ae7d3"
+  },
+  "e259f6a32892:2026-10-05T17:13:49.169298+00:00": {
+   "cells_done": 0,
+   "heads": [
+    "ridge",
+    "hgb"
+   ],
+   "peak_rss_bytes": 494489600,
+   "plan_sha256": "e259f6a32892f9ad1ce48faea869ed2d1080db8c89635f221db1b7d46d1ae7d3"
+  }
+ },
+ "schema": "fs_close_refit_peaks.v1"
+}

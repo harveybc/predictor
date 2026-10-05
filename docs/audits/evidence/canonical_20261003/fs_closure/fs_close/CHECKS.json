@@ -1,0 +1,57 @@
+{
+ "checks": [
+  {
+   "detail": "366 rows, 2 states; SELECTED 0 REJECTED 1 PENDING 365",
+   "id": "C1_DISPOSITIONS_366",
+   "state": "PASS"
+  },
+  {
+   "detail": "fit population f0ff9ec6bf35 (365 of 366); metric populations ['f0ff9ec6bf35']; stale rows from superseded sets 30208",
+   "id": "C2_SINGLE_POPULATION",
+   "state": "PASS"
+  },
+  {
+   "detail": "complete methods []; incomplete {'ALL_ADMISSIBLE': 'incomplete ranking: 0 partial, 65 missing cells', 'SPEARMAN_K': 'incomplete ranking: 0 partial, 65 missing cells', 'ELASTIC_NET_K': 'incomplete ranking: 0 partial, 65 missing cells', 'RANDOM_K:seed0': 'incomplete ranking: 0 partial, 65 missing cells', 'GROUP_GATE_K': 'incomplete ranking: 0 partial, 65 missing cells', 'SEQ_MARGINAL_K': 'incomplete ranking: 0 partial, 65 missing cells', 'CHRONOEPILOGI_K': 'incomplete ranking: 0 partial, 65 missing cells', 'REDUNDANCY_K': 'incomplete ranking: 0 partial, 65 missing cells', 'MI8_K': 'incomplete ranking: 0 partial, 65 missing cells', 'EXTRATREES_TBP_K': 'incomplete ranking: 0 partial, 65 missing cells', 'GROUP_ELASTIC_NET_K': 'incomplete ranking: 0 partial, 65 missing cells', 'CMIM_K': 'incomplete ranking: 0 partial, 65 missing cells', 'JMI_K': 'incomplete ranking: 0 partial, 65 missing cells', 'MRMR_K': 'incomplete ranking: 0 partial, 65 missing cells'}; FS-PRED progress 278/980",
+   "id": "C3_COMPLETE_RANKINGS",
+   "state": "PENDING"
+  },
+  {
+   "detail": "refit loader refuses rows >= 2024-01-01T00:00:00+00:00; validation loader refuses rows >= 2025-01-01T00:00:00+00:00; validation read not yet",
+   "id": "C4_NO_TEST_READ",
+   "state": "PASS"
+  },
+  {
+   "detail": "0 rejections resting on NOT_IDENTIFIED alone",
+   "id": "C5_NOT_IDENTIFIED_NEUTRAL",
+   "state": "PASS"
+  },
+  {
+   "detail": "0 measured metric rows without a paired naive of 68168",
+   "id": "C6_PAIRED_NAIVE",
+   "state": "PASS"
+  },
+  {
+   "detail": "1/16 required sets complete at ridge; missing ['PRED_BEST:8', 'PRED_BEST:16', 'PRED_BEST:24', 'PRED_BEST:32', 'PRED_BEST:48', 'PLUS_CAUSAL:8']",
+   "id": "C7_REQUIRED_SETS_REFIT",
+   "state": "PENDING"
+  },
+  {
+   "detail": "PS3-R terminals complete 111/137 heavy candidates; PS4 profiles 102/137 heavy candidates; closure_record.json from the BUSINESS weekly walk-forward step (VALIDATION_2024 inputs are present on the refit host, the step is gated on the C7 refits); PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
+   "id": "C8_INPUT_OBJECTS",
+   "state": "PENDING"
+  },
+  {
+   "detail": "BUSINESS_WEEKLY_WALK_FORWARD closure not run yet: gated on the C7 refits of the frozen arms (the VALIDATION_2024 inputs' presence is probed every cycle and reported in STATUS)",
+   "id": "C9_VALIDATION_CHOICE",
+   "state": "PENDING"
+  },
+  {
+   "detail": "tools/selected_manifest_gate.py sha256 e86d85abc998319c == c0345f83 contract",
+   "id": "C10_GATE_MODULE",
+   "state": "PASS"
+  }
+ ],
+ "final": false,
+ "generated_utc": "2026-10-05T18:02:43+00:00",
+ "schema": "fs_close_checks.v1"
+}

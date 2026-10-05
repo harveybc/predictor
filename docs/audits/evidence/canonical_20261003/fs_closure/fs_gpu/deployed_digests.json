@@ -1,0 +1,44 @@
+{
+  "generated_at_utc": "2026-10-05T04:38:59Z",
+  "history_note": "commit fc4cff6c carried v1 mirror/file labels that are host names inside tools/fs_gpu/*.sh, the tests and the lane docs; fixed forward in the next commit by reading labels from hosts.env (never rewrite the shared branch).",
+  "installed": {
+    "coordinator": {
+      "services": "feature-selection-sync-v2.service and feature-selection-status-v2.service (transient, Restart=always) run the v2 scripts since 2026-10-05T04:39Z; the v1 units feature-selection-sync/feature-selection-status were stopped (a `systemctl restart` at 04:37Z had resurrected the stale v1 transient definition for the status unit, which is why new unit names were used); v1 scripts kept as *.v1.bak; feature-selection-ps4-follower.service untouched",
+      "~/.local/state/canonical_20261003/fs_gpu/hosts.env": "WORKER_A_SSH, WORKER_B_SSH, WORKER_A_LABEL, WORKER_B_LABEL, COORD_LABEL (ssh aliases and v1 directory labels; never in the repo)",
+      "~/.local/state/canonical_20261003/selection_status_loop_v2.sh": "f5d4216c5036ffd215eb709567a6ba4d48c0211f088a07e60503c16606ccb3be",
+      "~/.local/state/canonical_20261003/selection_sync_loop_v2.sh": "fbe147c39f8a30c7a05750e634f5b370177a95434393b46230e3a824db4fcfe6"
+    },
+    "worker_a": {
+      "service": "feature-selection-steal-5090.service (transient, Restart=on-failure; waits for feature-selection-5090 and feature-selection-baseline-successor-5090 to go inactive)",
+      "~/.local/state/canonical_20261003/ps3r/tools/ps3r_claims.py": "35a448aaa8d2f7c113383ca4e25f2938a944fa61d5429a0c58f691a21cbbaa3e",
+      "~/.local/state/canonical_20261003/selection_successor/steal_batch_002_5090.sh": "a2addb7b216d253041bd6335b4826cb8124a81d4139dd14ce4433a8f8e6dc54c"
+    },
+    "worker_b": {
+      "service": "feature-selection-4090-claims.service (transient, Restart=on-failure; waits for feature-selection-4090 to go inactive; re-created 04:37Z after the label fix while still waiting)",
+      "~/.local/state/canonical_20261003/ps3r/<worker_b_dir>/claim_aware_driver.sh": "ab0ad5af64f1fe2c0d70d58054ddc1caca889676c9a5f90693fbd9cf931743c5",
+      "~/.local/state/canonical_20261003/ps3r/<worker_b_dir>/codex_baseline_plan.txt": "truncated IN PLACE to 36 lines (1016 bytes) at 2026-10-05T04:30Z while cell 36 yh.zs_f.logret_5d was running; full plan kept as codex_baseline_plan.full_86.backup",
+      "~/.local/state/canonical_20261003/ps3r/WORKER_B_DIR_LABEL": "one-line directory label read by the driver (not in the repo)",
+      "~/.local/state/canonical_20261003/ps3r/tools/ps3r_claims.py": "35a448aaa8d2f7c113383ca4e25f2938a944fa61d5429a0c58f691a21cbbaa3e",
+      "~/.local/state/canonical_20261003/ps3r/tools/truncate_plan_at_boundary.py": "e9856dd13ebaba1edd29d6a18b9032ed0a7054d465109de784a6333fdd40219d"
+    }
+  },
+  "repo_files": {
+    "docs/audits/evidence/canonical_20261003/fs_closure/fs_gpu/ps3r_closure_matrix_config.json": "ee613166597af2d6109b7bba2ba4c58439043849eea42887bc6af975dfa6db9a",
+    "docs/audits/evidence/canonical_20261003/fs_closure/fs_gpu/ps3r_eta_config.json": "b7abb9d82b2090827858473b806946942966e2d9c3d299b5dc67defc9a997a2b",
+    "docs/audits/evidence/canonical_20261003/fs_closure/fs_gpu/ps3r_ingest_live_config.json": "b2f2b441b1fde1711ec2e52cc2bda0d553e863c4dad1b0b5ade6f8b4bbad784f",
+    "tools/fs_gpu/claim_aware_driver_4090.sh": "ab0ad5af64f1fe2c0d70d58054ddc1caca889676c9a5f90693fbd9cf931743c5",
+    "tools/fs_gpu/ps3r_claims.py": "35a448aaa8d2f7c113383ca4e25f2938a944fa61d5429a0c58f691a21cbbaa3e",
+    "tools/fs_gpu/ps3r_closure_matrix.py": "2858e7e7b5e0797d3d0c9d8c739d5140d17c50f04df95d77eff5af20964e6559",
+    "tools/fs_gpu/ps3r_eta.py": "af3cce98ea6d6493daf741af46a5811b16cd690813236c0dd318e69cd5bd316d",
+    "tools/fs_gpu/selection_status_loop_v2.sh": "f5d4216c5036ffd215eb709567a6ba4d48c0211f088a07e60503c16606ccb3be",
+    "tools/fs_gpu/selection_sync_loop_v2.sh": "fbe147c39f8a30c7a05750e634f5b370177a95434393b46230e3a824db4fcfe6",
+    "tools/fs_gpu/steal_batch_002_5090.sh": "a2addb7b216d253041bd6335b4826cb8124a81d4139dd14ce4433a8f8e6dc54c",
+    "tools/fs_gpu/test_ps3r_claims.py": "166f9d0b53d21c7c11914d6331aac9369785e7807bff3ccd009f04697262c30b",
+    "tools/fs_gpu/test_ps3r_closure_matrix.py": "ce70bec191ae05a20dd9dd4456b81cec3dd5690ab761efb41076e23ec03599ca",
+    "tools/fs_gpu/test_ps3r_eta.py": "1c5a9672731849b9e9ce199650562d3e8175a7c200f9346119811d507b9ea8cd",
+    "tools/fs_gpu/test_truncate_plan_at_boundary.py": "72407a47dc9a77eac9473563307b9572650085081558eb53787983d90a03dc4a",
+    "tools/fs_gpu/truncate_plan_at_boundary.py": "e9856dd13ebaba1edd29d6a18b9032ed0a7054d465109de784a6333fdd40219d"
+  },
+  "schema": "fs_gpu_deployed_digests.v1",
+  "tests": "python -m pytest tools/fs_gpu/ -q -> 34 passed (claims 15, eta 11, truncation 4, matrix 4)"
+}

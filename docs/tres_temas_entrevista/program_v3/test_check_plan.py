@@ -51,6 +51,24 @@ class PlanChecks(unittest.TestCase):
             state["closure_reporting"]["required_columns"].remove(field)
             self.assertIn("closure reporting contract", " ".join(validate(state, ROOT)))
 
+    def test_business_mode_cannot_be_replaced_by_static(self):
+        self.state["business_evaluation"]["primary_mode"] = "LITERATURE_STATIC"
+        self.assertIn("business weekly evaluation contract", " ".join(validate(self.state, ROOT)))
+
+    def test_business_window_is_four_calendar_years(self):
+        self.state["business_evaluation"]["rolling_train_calendar_years"] = 1
+        self.assertIn("business weekly evaluation contract", " ".join(validate(self.state, ROOT)))
+
+    def test_frozen_artifact_is_procedure_not_checkpoint(self):
+        self.state["business_evaluation"]["frozen_artifact"] = "ONE_STATIC_CHECKPOINT"
+        self.assertIn("business weekly evaluation contract", " ".join(validate(self.state, ROOT)))
+
+    def test_warm_update_cannot_claim_strict_four_year_memory(self):
+        self.state["business_evaluation"]["strict_memory_claim_allowed_for"].append(
+            "WARM_UPDATE_ROLLING_4Y"
+        )
+        self.assertIn("business weekly evaluation contract", " ".join(validate(self.state, ROOT)))
+
     def test_literature_policy_cannot_omit_finance(self):
         self.state["literature_comparability"]["scope"] = "PUBLIC_DATA_ONLY"
         self.assertIn("literature comparability contract", " ".join(validate(self.state, ROOT)))
@@ -73,6 +91,30 @@ class PlanChecks(unittest.TestCase):
     def test_financial_loss_policy_must_exist(self):
         self.state["documents"]["financial_loss_policy"] = "missing.md"
         self.assertIn("missing document financial_loss_policy", " ".join(validate(self.state, ROOT)))
+
+    def test_business_weekly_contract_must_exist(self):
+        self.state["documents"]["business_weekly"] = "missing.md"
+        self.assertIn("missing document business_weekly", " ".join(validate(self.state, ROOT)))
+
+    def test_business_weekly_traceability_must_exist(self):
+        self.state["documents"]["business_weekly_traceability"] = "missing.json"
+        self.assertIn(
+            "missing document business_weekly_traceability",
+            " ".join(validate(self.state, ROOT)),
+        )
+
+    def test_business_weekly_task_cannot_disappear(self):
+        self.state["tasks"] = [
+            t for t in self.state["tasks"] if t["id"] != "BUSINESS-WEEKLY-WALK-FORWARD"
+        ]
+        self.assertIn("unknown task BUSINESS-WEEKLY-WALK-FORWARD", " ".join(validate(self.state, ROOT)))
+
+    def test_business_weekly_requires_business_contract(self):
+        task = next(
+            t for t in self.state["tasks"] if t["id"] == "BUSINESS-WEEKLY-WALK-FORWARD"
+        )
+        task["depends_on"] = []
+        self.assertIn("business weekly prerequisites", " ".join(validate(self.state, ROOT)))
 
     def test_financial_loss_requires_business_contract(self):
         task = next(t for t in self.state["tasks"] if t["id"] == "FIN-LOSS-OPT")
@@ -170,6 +212,56 @@ class PlanChecks(unittest.TestCase):
     def test_governance_prerequisite_cannot_disappear(self):
         self.state.pop("execution_governance", None)
         self.assertIn("execution governance contract", " ".join(validate(self.state, ROOT)))
+
+    def test_neat_cannot_become_hyperparameter_optimizer(self):
+        self.state["architecture_comparison"]["NEAT_role"] = "HYPERPARAMETER_OPTIMIZER"
+        self.assertIn("NEAT role", " ".join(validate(self.state, ROOT)))
+
+    def test_hcore_cannot_precede_e1(self):
+        order = self.state["architecture_comparison"]["order"]
+        order.remove("H_CORE")
+        order.insert(order.index("E1_R0_R1_R2"), "H_CORE")
+        self.assertIn("architecture sequence", " ".join(validate(self.state, ROOT)))
+
+    def test_undefined_r3_cannot_be_smuggled_in(self):
+        self.state["architecture_comparison"]["R3_defined"] = True
+        self.assertIn("undefined R3", " ".join(validate(self.state, ROOT)))
+
+    def test_not_identified_is_not_automatic_rejection(self):
+        self.state["feature_selection"]["not_identified_means_rejected"] = True
+        self.assertIn("causal abstention semantics", " ".join(validate(self.state, ROOT)))
+
+    def test_future_target_cannot_enter_operational_encoder(self):
+        self.state["feature_selection"]["future_target_in_operational_encoder"] = True
+        self.assertIn("operational target leakage", " ".join(validate(self.state, ROOT)))
+
+    def test_extractibility_needs_three_controls(self):
+        self.state["feature_selection"]["extractibility_controls"].remove("random_encoder")
+        self.assertIn("extractibility controls", " ".join(validate(self.state, ROOT)))
+
+    def test_calendar_now_is_only_evidence_for_selection(self):
+        self.state["feature_selection"]["calendar_episode_use_now"] = "PREDICTOR_INPUT"
+        self.assertIn("calendar episode selection scope", " ".join(validate(self.state, ROOT)))
+
+    def test_calendar_model_input_remains_final_and_optional(self):
+        self.state["feature_selection"]["calendar_as_model_input"] = "RUN_NOW"
+        self.assertIn("calendar model input deferral", " ".join(validate(self.state, ROOT)))
+
+    def test_calendar_task_requires_primary_model_and_paper_baseline(self):
+        task = next(t for t in self.state["tasks"] if t["id"] == "CAL-CAUSAL-INPUT")
+        task["depends_on"] = []
+        self.assertIn("causal calendar input prerequisites", " ".join(validate(self.state, ROOT)))
+
+    def test_checklist_is_required(self):
+        self.state["documents"]["checklist"] = "missing.json"
+        self.assertIn("missing document checklist", " ".join(validate(self.state, ROOT)))
+
+    def test_phase23_selection_plan_is_required(self):
+        self.state["documents"]["feature_selection_phase23"] = "missing.md"
+        self.assertIn(
+            "missing document feature_selection_phase23",
+            " ".join(validate(self.state, ROOT)),
+        )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,39 @@
+{
+ "schema": "fs_gen.tests_receipt.v1",
+ "utc": "2026-10-05T04:13:44Z",
+ "repo": "feature-extractor",
+ "branch": "satoshi/fs-gen-knockoffs-20261005",
+ "tip": "353174f09725887b5ae32b5bf68b9d02965f5ac4",
+ "base": "8987c57 (satoshi/univariate-temporal-extractor-20261003)",
+ "command": "crispdm-run -m 1500M -t 20m -n fsgen_tests -- env CUDA_VISIBLE_DEVICES= python3 -m pytest tests/test_fs_gen.py -q",
+ "result": "16 passed in 2.85s",
+ "host_role": "coordinator (tiny synthetic data only, capped 1500M)",
+ "files": {
+  "app/fs_gen/__init__.py": "9380a9d60a9310f98811678173a7042c633786c6784d98e9fbcf8bad68b3c43e",
+  "app/fs_gen/calibration.py": "33af61ce1f203c702ace109b96c060e2773872e31d58ea8950a3ebfd42e7c6c7",
+  "app/fs_gen/contracts.py": "308f7ba7b4c3acec55617b7ad4a044901fcf3c006dd6932b99043976d4a04bad",
+  "app/fs_gen/generator.py": "ad4f6eecd1b83cad2d69e91cf28d2c8ad23a06813b898331b55c3b065870810e",
+  "app/fs_gen/knockoffs.py": "da3b598db3ab4559d5b3ed1379983d244fbaac86fe0c32b6b82d05ae5e22162e",
+  "app/fs_gen/pipeline.py": "683d4e74c1e0ec9bc15c8dba44bcf58ab5b7e5a820783c2f8545e02a4f44c886",
+  "tests/test_fs_gen.py": "13147be41df428fc71c7de5bcf84dec390926e4db92fba94a877c82a62df3eef"
+ },
+ "tests": [
+  "target as generator condition refused",
+  "economic calendar refused as condition",
+  "rows after train_end_ts refused",
+  "SYNTHETIC_OFFLINE declared",
+  "generator fit/synthesis mask preserved",
+  "prefix invariance (future perturbation changes nothing; innovations causal; past is used)",
+  "generator has no target argument",
+  "calibration passes on well-specified AR, fails closed on regime switch",
+  "too few validation rows -> NOT_CALIBRATED",
+  "group equicorrelated S feasible (PSD, 2Sigma-S PSD)",
+  "second-order knockoffs match moments, swap AUC ~0.5",
+  "planted-truth knockoff+ FDR control (12 seeds, q=0.2) with power",
+  "threshold inf when nothing passes",
+  "copula map preserves empirical marginal",
+  "pipeline emits NOT_CALIBRATED + progress.json + resumable",
+  "denominator rows cover missing series and calendar"
+ ],
+ "software_vs_measurement": "this receipt is SOFTWARE/TEST evidence only; no measurement on real data"
+}

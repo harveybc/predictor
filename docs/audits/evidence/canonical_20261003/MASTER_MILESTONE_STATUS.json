@@ -1,0 +1,89 @@
+{
+ "as_of": "2026-10-05T18:03:46+00:00",
+ "critical_path_eta": "feature-selection manifest after GPU queues (done/done/done) and the closure step; later milestones downstream",
+ "milestones": [
+  {
+   "eta": "1-3 development days",
+   "evidence": "Weekly/monthly/static contracts, four-year as-of windows and the durable paired-naive scorer pass 72 focused tests; restored evidence is bound to the full contract and WeekSpec",
+   "id": "M1",
+   "next": "Run one complete weekly validation pilot with MAE, short/long horizons and idempotent strategy delivery",
+   "progress": 66,
+   "state": "CORE_IMPLEMENTED",
+   "title": "Business-faithful evaluation"
+  },
+  {
+   "eta": "GPU done/done/done; then closure",
+   "evidence": "PS3-R 383/411 terminals (111/137 complete); PS4 102/137; FS-PRED 0 methods; causal 366/366; rep 137/137; refits 146/146; manifest DRAFT sel/rej/pend 0/1/365",
+   "id": "M2",
+   "next": "Blocking: PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits); PS3-R terminals complete 111/137 heavy candidates; PS4 profiles 102/137 heavy candidates",
+   "progress": 78,
+   "state": "IN_PROGRESS",
+   "title": "Feature selection"
+  },
+  {
+   "eta": "1-2 days",
+   "evidence": "TimeFilter ECL A, Weather and Traffic operational replications with paired naive",
+   "id": "M3",
+   "next": "Consolidate comparable rows and retain static literature identity separately from business mode",
+   "progress": 78,
+   "state": "MULTIPLE_REPLICATIONS_COMPLETE",
+   "title": "Exact literature controls"
+  },
+  {
+   "eta": "3-6 days after M2",
+   "evidence": "Modular engine and donors exist; ECL development contrast found R2 0.694% lower MAE than R0",
+   "id": "M4",
+   "next": "Repeat literature baseline vs modular R0/R1/R2 on the selected feature manifest",
+   "progress": 48,
+   "state": "PARTIAL_MEASUREMENT",
+   "title": "Pretrained branches: R0/R1/R2"
+  },
+  {
+   "eta": "3-5 days after M4",
+   "evidence": "Temporal-preserving fusion/core code and staged donor contracts exist",
+   "id": "M5",
+   "next": "Train the core AE from fused selected-branch sequences, then verify R1/R2 transfer",
+   "progress": 22,
+   "state": "DESIGNED_NOT_DEFINITIVE",
+   "title": "Pretrained temporal core"
+  },
+  {
+   "eta": "4-7 days after M5",
+   "evidence": "Real plugin harness and conditional-noise synthetic experiments; no eligible real predictor yet",
+   "id": "M6",
+   "next": "Weekly short/long forecasting; require same-row naive skill before strategy evaluation",
+   "progress": 24,
+   "state": "SYNTHETIC_ONLY",
+   "title": "Short/long forecasts + strategy"
+  },
+  {
+   "eta": "5-10 days after M5",
+   "evidence": "Raw and modular four-arm integration complete; no final selected-data pilot",
+   "id": "M7",
+   "next": "Train SAC and DQN with and without frozen/fine-tuned modular representation under weekly updates",
+   "progress": 28,
+   "state": "INTEGRATED_NOT_TRAINED_ON_FINAL_DATA",
+   "title": "RL: SAC and DQN"
+  },
+  {
+   "eta": "2-4 days after M6/M7 finalist",
+   "evidence": "Alpaca paper and MT5 integration work exists; no promoted final model",
+   "id": "M8",
+   "next": "Promote only candidates passing validation, naive and risk gates; paper before live",
+   "progress": 15,
+   "state": "INTERFACES_ONLY",
+   "title": "Paper/live trading"
+  }
+ ],
+ "optional_after_critical_path": [
+  "hierarchical unsupervised market regimes",
+  "economic-calendar causal inputs",
+  "synthetic data generation",
+  "NEAT predictive or policy heads"
+ ],
+ "regenerated_by": {
+  "from": "fs_closure/STATUS.json",
+  "tool": "tools/fs_close_manifest.py"
+ },
+ "schema": "predictor.master_milestones.v1"
+}

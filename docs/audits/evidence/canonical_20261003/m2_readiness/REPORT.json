@@ -1,0 +1,573 @@
+{
+  "alternative_family_evidence": [
+    {
+      "code_commit": "31add1270439e746edd99e98e20a95ab09c1cf71",
+      "families": [
+        "identity",
+        "random",
+        "past_to_current_siamese"
+      ],
+      "feature_id": "tv.hilbert_amp",
+      "folds": [
+        "inner_2019",
+        "inner_2020",
+        "inner_2021",
+        "inner_2022",
+        "inner_2023"
+      ],
+      "input_digest": "293db083a886a41a6ae719c0bfa274b0513cc2c956b14965dd9a97a37dd69571",
+      "replaces_baseline": false,
+      "results_sha256": "2cb5445214590c7aa68bb654c1f44828d2e8371c6bf68db6dd2bcc2259309eab",
+      "seed": 0,
+      "utility": "mixed"
+    },
+    {
+      "code_commit": "31add1270439e746edd99e98e20a95ab09c1cf71",
+      "families": [
+        "identity",
+        "random",
+        "past_to_current_siamese"
+      ],
+      "feature_id": "tv.kalman_dev",
+      "folds": [
+        "inner_2019",
+        "inner_2020",
+        "inner_2021",
+        "inner_2022",
+        "inner_2023"
+      ],
+      "input_digest": "293db083a886a41a6ae719c0bfa274b0513cc2c956b14965dd9a97a37dd69571",
+      "replaces_baseline": false,
+      "results_sha256": "3746ee3effd0ff7c5b9737b5a7da77b0ada34843cd97a36a3fbb14a4f4436cf1",
+      "seed": 0,
+      "utility": "mixed"
+    },
+    {
+      "code_commit": "31add1270439e746edd99e98e20a95ab09c1cf71",
+      "families": [
+        "identity",
+        "random",
+        "past_to_current_siamese"
+      ],
+      "feature_id": "tv.stl_dev",
+      "folds": [
+        "inner_2019",
+        "inner_2020",
+        "inner_2021",
+        "inner_2022",
+        "inner_2023"
+      ],
+      "input_digest": "293db083a886a41a6ae719c0bfa274b0513cc2c956b14965dd9a97a37dd69571",
+      "replaces_baseline": false,
+      "results_sha256": "8c182faa5a4c862f49b691545739773a48b37a2b7e21d398c62f1aa6a86ef0af",
+      "seed": 0,
+      "utility": "mixed"
+    }
+  ],
+  "audit_sha256": "5152332e5ff8998400d22b9f885a8a9e4fbeb5ad4c1685c28eee7d0dda3ce79e",
+  "cuerpo": "El denominador es 366, la partición retenida 279+87, no el inventario de 388 fuentes. Solo diez transformadas emitidas pasan de PENDING_PROFILE a MEASURED. Eso no cierra PS4 ni selecciona ninguna candidata. NOT_IDENTIFIED en PS3-C permanece neutral. La preparación PS5 no autoriza entrenamiento, lectura de test externo ni evaluación de estrategia.",
+  "denominator": 366,
+  "huecos": [
+    "PS4 medido cubre 10 de 366. El resto sigue PENDING_PROFILE o solo agendado.",
+    "PS3-C vigente: 0 identificadas de 279. NOT_IDENTIFIED no es rechazo. 87 quedan fuera del join.",
+    "Las celdas baseline adoptadas por manifiesto tienen utilidad medida y no están seleccionadas.",
+    "La evidencia lane E histórica no se promueve como evidencia de la familia alternativa.",
+    "features_train.parquet no está en este árbol; se conserva el digest retenido sin recomputarlo.",
+    "El diseño global PS5 está preparado y no entrenado. Cada candidata sin PS3-R y PS4 requeridos queda NOT_READY_EVIDENCE_INCOMPLETE.",
+    "Las nueve filas históricas de variantes siguen en PENDING_PROFILE."
+  ],
+  "measured_profile": {
+    "feature_fold_units": 50,
+    "feature_row_digests": {
+      "tv.hilbert_amp": "c9fd265fcf9e92e95cccdceb9bcbc512e6fb8461cd99bd968110715b6e0b02c2",
+      "tv.kalman_dev": "86cd33810ed0117b52c6447989f25047a57911d2766c1130a2c385362b0bad15",
+      "tv.mt_band_6_48h": "436524e6c478b498481a06b3dac6a657a29a9f1018360605710b12d544b05a28",
+      "tv.stl_dev": "9d33c670253ac6dc2f6cb153b12feda663dc15e5af3b429ecd856b91505a6bad",
+      "tv.stl_seasonal": "fd93a0d5e1af0a3bc0e8ef9120ebe81eb1f35272b2387e9d9a34939549736245",
+      "tv.wav_d1": "e61f6633e920b60c0ed6302a99ab7a01d4539b8d78e684b619f3862145250299",
+      "tv.wav_d2": "20f0ff9c048d27a102191e3c6487e728df4a5d870e2dbe51d21a7d6f72c24253",
+      "tv.wav_d3": "0ca527b66f3ab7e424fe9260a4f01653491718a6bcf363c332ac45f0893fc476",
+      "tv.wav_d4": "189a6444d797c99ca67eddbefc7cfad8dff1dc4fcbb04c9cdaa0fcc184fb93b7",
+      "tv.wav_d5": "8e7a46cd8ad0c8c6090d7c78806b924f8d35f06fd03fc9ed8c0d837bb18a0a8e"
+    },
+    "file_digests": {
+      "REPORT.json": "3b294c8ef31443db4f5e93800a07660344420ddf42387262ba7259680292f6a0",
+      "input_digests.json": "82b2a45ee41bd36cfb3fe32943960eae0d62fa359ae4e1d763e3e5ba276adcfe",
+      "profile_rows.jsonl": "5efee6a3e93f7118b745650b6365e425c96abc2bd43e54f6d3098a208108dead"
+    },
+    "inputs_recomputed": {
+      "READY": "d597c65dafb24be0c2a5648d49508e7114a7ea2095367836d319a4e4dab5305f",
+      "admissible_features.json": "151f05a39e23f825ae6eac59e70e44a065b6b5c51960045a1110f358de89ea66",
+      "digests.json": "2d316760324cab4cc385c655161d9cbede1fd75b2f40ec60ed2d500f5ecf6ace",
+      "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+      "transform_feature_join.csv": "faa568ceeec60229cb8ee319c25d69f5d0a668af59ff53b4cbcb36ef9499ac16"
+    },
+    "metric_rows": 1050,
+    "not_selection_over_366": true,
+    "parquet_retained_not_in_worktree": "fd0b4423db991cfb05cd4f9357a378648579d4c11552a1cac413ed711c3520bc",
+    "profiler_code_digest": "68bc686ac8bf5a4679372332c857b869c50ac63228ddc343847fb913596c7f9f",
+    "schema": "ps4_transform_profile.v1"
+  },
+  "measured_transforms": [
+    "tv.wav_d1",
+    "tv.wav_d2",
+    "tv.wav_d3",
+    "tv.wav_d4",
+    "tv.wav_d5",
+    "tv.mt_band_6_48h",
+    "tv.hilbert_amp",
+    "tv.stl_dev",
+    "tv.stl_seasonal",
+    "tv.kalman_dev"
+  ],
+  "partition": {
+    "low_priority_outside_join": 87,
+    "ps3c_join": 279
+  },
+  "population_sha256": "9f20ddd4a9deddd94baad6d5a4f445e8e064a0e36e33e0586ba76e9f6453cdd6",
+  "ps3c_source": {
+    "identified": 0,
+    "join_sha256": {
+      "batch_001": "0b4f713fa28a94a1eef65b89981c9d9948e496d0beb31970548158e5f3ec4891",
+      "batch_002": "8cf03ab71ce6982feefacb9ca3a17c697b37006ed0ae4db4ed05575f1288aec1",
+      "batch_003": "ed6cfd0701147afad497f58a8a05b0beb74f3acb146c1fdd4066d1f600f822eb"
+    },
+    "not_identified": 279,
+    "not_identified_is_not_rejected": true,
+    "outside_join_pending": 87,
+    "producer_revision": "48ae17c"
+  },
+  "ps3r": {
+    "lane_e_cost_sha256": "908f0a01b92e02666eafa8f235bd5b1f57f8ca321d4d11e5f1d03940b6ac6b63",
+    "lane_e_matrix_sha256": "c7ddecc92823f173be4af12cb6d4ec7e93899267ee1f5c72d4085d56ffdb7f2e",
+    "lane_e_measured_not_selection": [
+      "px.close_loc",
+      "px.ewma_vol_24",
+      "px.log_close",
+      "px.log_co",
+      "px.log_hl",
+      "px.logret_120h",
+      "px.logret_12h",
+      "px.logret_168h",
+      "px.logret_1h",
+      "px.logret_24h",
+      "px.logret_2h",
+      "px.logret_48h",
+      "px.logret_4h",
+      "px.logret_6h",
+      "px.rv5",
+      "px.zclose_168"
+    ],
+    "reconstruction_is_selection": false,
+    "verified_terminals": [
+      {
+        "code_commit": "31add1270439e746edd99e98e20a95ab09c1cf71",
+        "families": [
+          "identity",
+          "random",
+          "past_to_current_siamese"
+        ],
+        "feature_id": "tv.hilbert_amp",
+        "folds": [
+          "inner_2019",
+          "inner_2020",
+          "inner_2021",
+          "inner_2022",
+          "inner_2023"
+        ],
+        "input_digest": "293db083a886a41a6ae719c0bfa274b0513cc2c956b14965dd9a97a37dd69571",
+        "locator": "docs/audits/evidence/canonical_20261003/ps3r_ingest/alternative/tv.hilbert_amp/results.jsonl",
+        "results_sha256": "2cb5445214590c7aa68bb654c1f44828d2e8371c6bf68db6dd2bcc2259309eab",
+        "role": "alternative",
+        "seed": 0,
+        "utility": "mixed"
+      },
+      {
+        "code_commit": "31add1270439e746edd99e98e20a95ab09c1cf71",
+        "families": [
+          "identity",
+          "random",
+          "past_to_current_siamese"
+        ],
+        "feature_id": "tv.kalman_dev",
+        "folds": [
+          "inner_2019",
+          "inner_2020",
+          "inner_2021",
+          "inner_2022",
+          "inner_2023"
+        ],
+        "input_digest": "293db083a886a41a6ae719c0bfa274b0513cc2c956b14965dd9a97a37dd69571",
+        "locator": "docs/audits/evidence/canonical_20261003/ps3r_ingest/alternative/tv.kalman_dev/results.jsonl",
+        "results_sha256": "3746ee3effd0ff7c5b9737b5a7da77b0ada34843cd97a36a3fbb14a4f4436cf1",
+        "role": "alternative",
+        "seed": 0,
+        "utility": "mixed"
+      },
+      {
+        "code_commit": "31add1270439e746edd99e98e20a95ab09c1cf71",
+        "families": [
+          "identity",
+          "random",
+          "past_to_current_siamese"
+        ],
+        "feature_id": "tv.stl_dev",
+        "folds": [
+          "inner_2019",
+          "inner_2020",
+          "inner_2021",
+          "inner_2022",
+          "inner_2023"
+        ],
+        "input_digest": "293db083a886a41a6ae719c0bfa274b0513cc2c956b14965dd9a97a37dd69571",
+        "locator": "docs/audits/evidence/canonical_20261003/ps3r_ingest/alternative/tv.stl_dev/results.jsonl",
+        "results_sha256": "8c182faa5a4c862f49b691545739773a48b37a2b7e21d398c62f1aa6a86ef0af",
+        "role": "alternative",
+        "seed": 0,
+        "utility": "mixed"
+      },
+      {
+        "code_commit": "8987c573bd7e0819a54011e88ec9e7c309229350",
+        "families": [
+          "identity",
+          "random",
+          "ae",
+          "dae"
+        ],
+        "feature_id": "fred.rates.dgs30.level",
+        "folds": [
+          "inner_2019",
+          "inner_2020",
+          "inner_2021",
+          "inner_2022",
+          "inner_2023"
+        ],
+        "input_digest": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+        "locator": "docs/audits/evidence/canonical_20261003/ps3r_ingest/baseline/fred.rates.dgs30.level/results.jsonl",
+        "results_sha256": "f7763f142b7f02c72ae50e6b93562d6614f0563eb1694c26c21dc0a57e9416d5",
+        "role": "baseline",
+        "seed": 0,
+        "utility": "mixed"
+      },
+      {
+        "code_commit": "8987c573bd7e0819a54011e88ec9e7c309229350",
+        "families": [
+          "identity",
+          "random",
+          "ae",
+          "dae"
+        ],
+        "feature_id": "fred.rates.dprime.logret_5d",
+        "folds": [
+          "inner_2019",
+          "inner_2020",
+          "inner_2021",
+          "inner_2022",
+          "inner_2023"
+        ],
+        "input_digest": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+        "locator": "docs/audits/evidence/canonical_20261003/ps3r_ingest/baseline/fred.rates.dprime.logret_5d/results.jsonl",
+        "results_sha256": "a7b85bd93e2a22e76a85ce90d9d16dc75adc516c8109d11068c1326e0d8f4bb3",
+        "role": "baseline",
+        "seed": 0,
+        "utility": "mixed"
+      },
+      {
+        "code_commit": "8987c573bd7e0819a54011e88ec9e7c309229350",
+        "families": [
+          "identity",
+          "random",
+          "ae",
+          "dae"
+        ],
+        "feature_id": "fred.stress.vixcls.logret_5d",
+        "folds": [
+          "inner_2019",
+          "inner_2020",
+          "inner_2021",
+          "inner_2022",
+          "inner_2023"
+        ],
+        "input_digest": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+        "locator": "docs/audits/evidence/canonical_20261003/ps3r_ingest/baseline/fred.stress.vixcls.logret_5d/results.jsonl",
+        "results_sha256": "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a",
+        "role": "baseline",
+        "seed": 0,
+        "utility": "mixed"
+      },
+      {
+        "code_commit": "8987c573bd7e0819a54011e88ec9e7c309229350",
+        "families": [
+          "identity",
+          "random",
+          "ae",
+          "dae"
+        ],
+        "feature_id": "fx.audusd.ewma_vol_24",
+        "folds": [
+          "inner_2019",
+          "inner_2020",
+          "inner_2021",
+          "inner_2022",
+          "inner_2023"
+        ],
+        "input_digest": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+        "locator": "docs/audits/evidence/canonical_20261003/ps3r_ingest/baseline/fx.audusd.ewma_vol_24/results.jsonl",
+        "results_sha256": "e582170a89d19b244682f44a8b60e722226e97e22ba31e788745bf2e4c4a44e3",
+        "role": "baseline",
+        "seed": 0,
+        "utility": "mixed"
+      },
+      {
+        "code_commit": "8987c573bd7e0819a54011e88ec9e7c309229350",
+        "families": [
+          "identity",
+          "random",
+          "ae",
+          "dae"
+        ],
+        "feature_id": "fx.audusd.logret_1h",
+        "folds": [
+          "inner_2019",
+          "inner_2020",
+          "inner_2021",
+          "inner_2022",
+          "inner_2023"
+        ],
+        "input_digest": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+        "locator": "docs/audits/evidence/canonical_20261003/ps3r_ingest/baseline/fx.audusd.logret_1h/results.jsonl",
+        "results_sha256": "c59cf69c6a211ac5d66c033f6aeb0d3777dc57fd65bcccd6182b8e5ee9de9839",
+        "role": "baseline",
+        "seed": 0,
+        "utility": "mixed"
+      },
+      {
+        "code_commit": "8987c573bd7e0819a54011e88ec9e7c309229350",
+        "families": [
+          "identity",
+          "random",
+          "ae",
+          "dae"
+        ],
+        "feature_id": "fx.audusd.logret_24h",
+        "folds": [
+          "inner_2019",
+          "inner_2020",
+          "inner_2021",
+          "inner_2022",
+          "inner_2023"
+        ],
+        "input_digest": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+        "locator": "docs/audits/evidence/canonical_20261003/ps3r_ingest/baseline/fx.audusd.logret_24h/results.jsonl",
+        "results_sha256": "80a3a6e5686b2bc78f30be5c0126e09c83d7d5aa7dc904e5fba68bbaf8c77590",
+        "role": "baseline",
+        "seed": 0,
+        "utility": "mixed"
+      },
+      {
+        "code_commit": "8987c573bd7e0819a54011e88ec9e7c309229350",
+        "families": [
+          "identity",
+          "random",
+          "ae",
+          "dae"
+        ],
+        "feature_id": "fx.eurgbp.ewma_vol_24",
+        "folds": [
+          "inner_2019",
+          "inner_2020",
+          "inner_2021",
+          "inner_2022",
+          "inner_2023"
+        ],
+        "input_digest": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+        "locator": "docs/audits/evidence/canonical_20261003/ps3r_ingest/baseline/fx.eurgbp.ewma_vol_24/results.jsonl",
+        "results_sha256": "2df6a5faffb2e0222aa913de3b11fcb1f380e73b2ffc40aded9fae89fd2018cc",
+        "role": "baseline",
+        "seed": 0,
+        "utility": "mixed"
+      },
+      {
+        "code_commit": "8987c573bd7e0819a54011e88ec9e7c309229350",
+        "families": [
+          "identity",
+          "random",
+          "ae",
+          "dae"
+        ],
+        "feature_id": "fx.eurgbp.logret_1h",
+        "folds": [
+          "inner_2019",
+          "inner_2020",
+          "inner_2021",
+          "inner_2022",
+          "inner_2023"
+        ],
+        "input_digest": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+        "locator": "docs/audits/evidence/canonical_20261003/ps3r_ingest/baseline/fx.eurgbp.logret_1h/results.jsonl",
+        "results_sha256": "7195ba2cc42627cfff2bccbf4af9672334a31c00c91e60ecc13195b9cbe6013e",
+        "role": "baseline",
+        "seed": 0,
+        "utility": "mixed"
+      },
+      {
+        "code_commit": "8987c573bd7e0819a54011e88ec9e7c309229350",
+        "families": [
+          "identity",
+          "random",
+          "ae",
+          "dae"
+        ],
+        "feature_id": "fx.eurjpy.ewma_vol_24",
+        "folds": [
+          "inner_2019",
+          "inner_2020",
+          "inner_2021",
+          "inner_2022",
+          "inner_2023"
+        ],
+        "input_digest": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+        "locator": "docs/audits/evidence/canonical_20261003/ps3r_ingest/baseline/fx.eurjpy.ewma_vol_24/results.jsonl",
+        "results_sha256": "b9fc80552d48ec655b17a63d626d6b41cbc26debaa3f81926641f1c23d298c0f",
+        "role": "baseline",
+        "seed": 0,
+        "utility": "mixed"
+      },
+      {
+        "code_commit": "8987c573bd7e0819a54011e88ec9e7c309229350",
+        "families": [
+          "identity",
+          "random",
+          "ae",
+          "dae"
+        ],
+        "feature_id": "fx.eurjpy.logret_1h",
+        "folds": [
+          "inner_2019",
+          "inner_2020",
+          "inner_2021",
+          "inner_2022",
+          "inner_2023"
+        ],
+        "input_digest": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+        "locator": "docs/audits/evidence/canonical_20261003/ps3r_ingest/baseline/fx.eurjpy.logret_1h/results.jsonl",
+        "results_sha256": "9660aa42fd31d4539d7940f6d7bab3eb2dd410fcf963632e2d12d0c497c0505b",
+        "role": "baseline",
+        "seed": 0,
+        "utility": "mixed"
+      },
+      {
+        "code_commit": "8987c573bd7e0819a54011e88ec9e7c309229350",
+        "families": [
+          "identity",
+          "random",
+          "ae",
+          "dae"
+        ],
+        "feature_id": "fx.gbpjpy.ewma_vol_24",
+        "folds": [
+          "inner_2019",
+          "inner_2020",
+          "inner_2021",
+          "inner_2022",
+          "inner_2023"
+        ],
+        "input_digest": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+        "locator": "docs/audits/evidence/canonical_20261003/ps3r_ingest/baseline/fx.gbpjpy.ewma_vol_24/results.jsonl",
+        "results_sha256": "117700b0c2bd6b07bb393eb3136ae9140dda268e287bfa36fc9816bad56c7f06",
+        "role": "baseline",
+        "seed": 0,
+        "utility": "mixed"
+      }
+    ]
+  },
+  "ps4_complete_for_366": false,
+  "ps4_integration_sha256": "c93ca35b184880b440173de0b63f6248b5e8ee6e62fb461aa1e672bedf6258ab",
+  "ps4_schedule": {
+    "features": [
+      "fred.rates.dgs30.level",
+      "fred.rates.dprime.logret_5d",
+      "fred.stress.vixcls.logret_5d",
+      "fx.audusd.ewma_vol_24",
+      "fx.audusd.logret_1h",
+      "fx.audusd.logret_24h",
+      "fx.eurgbp.ewma_vol_24",
+      "fx.eurgbp.logret_1h",
+      "fx.eurjpy.ewma_vol_24",
+      "fx.eurjpy.logret_1h",
+      "fx.gbpjpy.ewma_vol_24",
+      "px.close_loc",
+      "px.ewma_vol_24",
+      "px.log_close",
+      "px.log_co",
+      "px.log_hl",
+      "px.logret_120h",
+      "px.logret_12h",
+      "px.logret_168h",
+      "px.logret_1h",
+      "px.logret_24h",
+      "px.logret_2h",
+      "px.logret_48h",
+      "px.logret_4h",
+      "px.logret_6h",
+      "px.rv5",
+      "px.zclose_168"
+    ],
+    "folds": [
+      "inner_2019",
+      "inner_2020",
+      "inner_2021",
+      "inner_2022",
+      "inner_2023"
+    ],
+    "metrics": [
+      "compressed_bits_per_sample_lzma6_raw_float64",
+      "compressed_bits_per_sample_lzma6_symbols",
+      "compressed_bits_per_sample_zlib9_raw_float64",
+      "compressed_bits_per_sample_zlib9_symbols",
+      "compression_gain_vs_uncompressed_lzma6_raw_float64",
+      "compression_gain_vs_uncompressed_lzma6_symbols",
+      "compression_gain_vs_uncompressed_zlib9_raw_float64",
+      "compression_gain_vs_uncompressed_zlib9_symbols",
+      "conditional_redundancy_bits_lag1",
+      "conditional_surprisal_bits_lag1",
+      "discrete_entropy_bits",
+      "permutation_entropy_order_3",
+      "permutation_entropy_order_4",
+      "permutation_entropy_order_5",
+      "spectral_entropy_iqr",
+      "spectral_entropy_median",
+      "spectral_entropy_window_count",
+      "temporal_structure_gain_lzma6_raw_float64",
+      "temporal_structure_gain_lzma6_symbols",
+      "temporal_structure_gain_zlib9_raw_float64",
+      "temporal_structure_gain_zlib9_symbols"
+    ],
+    "product_bound": "21_metrics_x_5_inner_folds",
+    "rows": 2835
+  },
+  "ps4_schedule_sha256": "7d531319821e9de1d060258e8c776396e2c0bafa4646fa1208903ffb209e5c3c",
+  "ps5_design_status": "PREPARED_NOT_TRAINED",
+  "ps5_inputs_sha256": "a541b3c1343559cd3576a3724ef426707afea5d6925b04077947b706398b3d00",
+  "ps5_preparation_identity": "897fe3cd79cc1c284f213bb8217065bac436d93d8b2823c06a2557363a23f7ed",
+  "readiness_rows_sha256": "445edb86f2be87e3664c3df575a89977ecdfce5d0734b2bbddcba83cee1c13c3",
+  "schema": "m2_readiness_ledger.v1",
+  "selection_manifest": "NOT_ISSUED",
+  "status_counts": {
+    "ps3c": {
+      "NOT_IDENTIFIED": 279,
+      "OUTSIDE_JOIN_PENDING": 87
+    },
+    "ps3r": {
+      "ACCEPTED_PS3R_CELL_MIXED_UTILITY": 11,
+      "LANE_E_MEASURED_NOT_SELECTION": 16,
+      "NOT_SCHEDULED": 229,
+      "NOT_TERMINAL": 110
+    },
+    "ps4": {
+      "MEASURED_SUBPOPULATION": 10,
+      "PENDING_PROFILE": 329,
+      "SCHEDULED_NOT_MEASURED": 27
+    }
+  }
+}

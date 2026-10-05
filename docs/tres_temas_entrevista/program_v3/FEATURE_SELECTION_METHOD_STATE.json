@@ -1,43 +1,66 @@
 {
   "schema": "feature_selection_method_state.v1",
-  "updated_at": "2026-10-01T01:56:40Z",
-  "current_stage": "S3_ACCEPTANCE_TEST_DESIGN",
-  "plan": "FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md",
-  "traceability": "Sections 9 and 10.4: FS01-FS20; section 10.1: PS0-PS7 and UC-FS1-UC-FS5",
-  "owner_approval": "Progressive resource-aware approach approved in conversation; no new financial risk or remote-code grant implied.",
-  "reviewer": "Musashi: documentation and status inspection, not scientific acceptance of new trials",
-  "stages": {
-    "S0_DISCOVERY": "DOCUMENTED: existing M01-M06 lanes, inventory and business targets",
-    "S1_REQUIREMENTS": "DOCUMENTED: progressive selection, full causal study design, temporal encoders, reversible decisions",
-    "S2_USE_CASES": "DOCUMENTED: UC-FS1-UC-FS5, alternate and refusal paths",
-    "S3_ACCEPTANCE_TEST_DESIGN": "DRAFTED: FS01-FS20; not executed",
-    "S4_ARCHITECTURE": "NOT_COMPLETED: component contracts outlined, refine per increment",
-    "S5_SYSTEM_TEST_DESIGN": "NOT_COMPLETED",
-    "S6_COMPONENT_DESIGN": "NOT_COMPLETED",
-    "S7_INTEGRATION_TEST_DESIGN": "NOT_COMPLETED",
-    "S8_UNIT_TEST_DESIGN": "NOT_COMPLETED",
-    "S9_UNIT_IMPLEMENTATION": "NOT_STARTED_FOR_THIS_INCREMENT"
+  "updated_at": "2026-10-05T17:00:00-05:00",
+  "current_stage": "PHASE_2_ACCEPTANCE_AND_IMPLEMENTATION_AUTHORIZED",
+  "plan": "FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md",
+  "owner_approval": "Phase 2 pairwise dependency and Phase 3 filter selection approved; automated CPU execution required.",
+  "completed": {
+    "phase_1": {
+      "status": "VERIFIED",
+      "EURUSD_features": 366,
+      "ETH_features": 83,
+      "warehouse_readback": true,
+      "snapshot_release": "https://github.com/harveybc/predictor/releases/tag/phase1-feature-selection-20261005",
+      "interpretation": "profiles and causal-supported candidates; not final feature selection"
+    }
   },
-  "accepted_requirements": [],
-  "scientific_evidence": [],
-  "existing_evidence_scope": "M03 profiles and M02 AE work remain evidence of their original protocols, not completion of FS01-FS20.",
+  "active": {
+    "phase_2": {
+      "status": "AUTHORIZED_NOT_STARTED",
+      "EURUSD_expected_pairs": 66795,
+      "ETH_expected_pairs": 3403,
+      "resources": "bounded CPU shards on omega gamma and dragon",
+      "gpu_allowed": false,
+      "completion_gate": "PHASE_2_COMPLETE.json plus OLAP readback and physical/public snapshot"
+    },
+    "phase_3": {
+      "status": "WAITING_FOR_PHASE_2",
+      "methods": ["spearman_hierarchical_clustering", "mRMR", "JMI"],
+      "K": [4, 8, 12, 16, 24, 32],
+      "completion_gate": "PHASE_3_FILTER_COMPLETE.json plus complete rankings and OLAP readback"
+    }
+  },
+  "deferred": {
+    "phase_4_extractibility": "DESIGN_AFTER_PHASE_3",
+    "broad_decomposition_sweeps": "AFTER_PRIMARY_SELECTION_UNLESS_PHASE_2_EVIDENCE_JUSTIFIES_EARLIER",
+    "modular_architecture": "AFTER_FINAL_SELECTION",
+    "NEAT": "AFTER_FROZEN_REPRESENTATION",
+    "RL": "AFTER_FROZEN_REPRESENTATION"
+  },
+  "accepted_requirements": [
+    "Every metric disposition ranking cost and identity is stored in OLAP and verified by readback",
+    "Every phase has a physical local DuckDB snapshot and a compressed public release asset",
+    "Git stores snapshot manifests schemas hashes and URLs rather than the large database binary",
+    "Feature-feature statistics use TRAIN only and retain fold stability and support",
+    "NOT_IDENTIFIED is neutral causal evidence and never automatic rejection",
+    "Phase 3 produces candidate subset paths and does not claim predictive victory",
+    "No validation test model training GPU extractor CVAE RL or NEAT work occurs in this order",
+    "One durable controller performs discovery sharding execution resume warehouse delivery status and closure"
+  ],
   "next_allowed_actions": [
-    "Satoshi acknowledges orders and reconciles live work",
-    "Refine S3-S8 per bounded increment, write failing behavioral tests before new implementation",
-    "Continue independently authorized profiling, optimization and product work",
-    "Preserve and classify old-architecture donors before successor training"
+    "Write reviewed red acceptance tests for the Phase-2 and Phase-3 subplan",
+    "Implement the durable pairwise campaign and warehouse migration in a dedicated worktree",
+    "Deploy one pinned build to all three hosts and execute deterministic CPU shards",
+    "Close Phase 2 from readback then let the driver start Phase 3 automatically",
+    "Publish the final return and stop before Phase 4"
   ],
   "blocked_actions": [
-    "Treat observational matches as intervention or individual counterfactual truth without identification assumptions",
-    "Reject every non-reconstructive representation for lacking a decoder",
-    "Select features on test or deploy future-target-conditioned operational encoders",
-    "Relabel 12-step branch donors as 24-step branch donors"
-  ],
-  "open_decisions": [
-    "Pilot family shortlist, comparable compute budget and exploratory allocation after cost measurements",
-    "Independent owner decisions for C07 remote code and S07 holdout remain separate"
-  ],
-  "history": [
-    {"event": "V2 discussion revised to V3 approved progressive subplan", "implementation_claimed": false}
+    "Call Phase-1 causal-supported candidates the final selection",
+    "Drop a feature only because one correlation is high",
+    "Use validation or test in filters",
+    "Mix EURUSD and ETH populations",
+    "Start Phase 4 or downstream training before Phase 3 closes",
+    "Store scientific results only in local JSON files",
+    "Supervise cells manually or repeat accepted terminals"
   ]
 }

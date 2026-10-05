@@ -1,5 +1,15 @@
 # 13C — E3 weekly cycle: contract of the experiment (RP15, amended under RP23 by 13D)
 
+**Amendment (2026-10-03).** For EURUSD BUSINESS evaluation, the controlling
+authority is
+[BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md](BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md).
+It requires a complete validation-year and test-year traversal, a rolling
+four-calendar-year corpus before every scored week, explicit full-retrain versus
+warm-update identity and a separate `LITERATURE_STATIC` mode. This document
+continues to govern E3 execution mechanics, costs, release/fallback and state
+continuity where it does not conflict. Existing tests validate only the scopes
+they name; they do not establish the new end-to-end BUSINESS protocol.
+
 **Amendment (2026-09-19, RP23).** Musashi's [13D](13D_MUSASHI_BUSINESS_DISPOSITION_2026_09_19.md) resolves every
 OWNER_DECISION item below for DEVELOPMENT/SIMULATION and prevails over them: universe = the traced
 BTC/ETH/EURUSD candidates with the cash-spot BTC/ETH scenario first (conditional on data contracts; FX and

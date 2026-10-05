@@ -1,0 +1,3126 @@
+{
+ "schema": "fs_causal_plan.v1",
+ "revision": "bd483de",
+ "created_utc": "2026-10-05T05:14:59Z",
+ "inputs_root": "<worker_b>/.local/state/canonical_20261003/fs_causal/inputs/ps1",
+ "seed": 1729,
+ "block": 8,
+ "batches": [
+  "batch_001",
+  "batch_002",
+  "batch_003"
+ ],
+ "base": "batch_001",
+ "verified": {
+  "batch_001": {
+   "ready": {
+    "batch": "batch_001",
+    "digests_sha256": "449f4c3d5e992ee4f3221c7e6ac3078167fe5e31063a3d659fb2814db1c07eb4",
+    "written_utc": "2026-10-03T05:12:49.084941+00:00"
+   },
+   "artifacts_sha256": {
+    "features_train.parquet": "bd005701247dc181c81457037cbad6e6142f8171ad8c3595f1cd489986557aa2",
+    "targets_train.parquet": "a838b81c72a291a45dac70ab4c69415c85d7ec1888691cae38817642188e84e5",
+    "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+    "contract.json": "96dd26539b0491e09f14d44f96dd0623d42b96aebc11e294ab56505b47a83f87",
+    "admissible_features.json": "438fb732cb071ded24a5107155baabb662373ed504895984d0d8600198742d2a"
+   },
+   "digests_sha256": "449f4c3d5e992ee4f3221c7e6ac3078167fe5e31063a3d659fb2814db1c07eb4",
+   "code_commit": "79bb09d902e092d8ecfda858af881171a7799919"
+  },
+  "batch_002": {
+   "ready": {
+    "batch": "batch_002",
+    "digests_sha256": "2c573bda714e417ea9c6a008add8b1c58124cb8b52b7faf9574e44c193a64c45",
+    "written_utc": "2026-10-03T05:17:51.857648+00:00"
+   },
+   "artifacts_sha256": {
+    "features_train.parquet": "0e6ff8c570804823921227bd6733b185c17e54808364735067953f524f4399f3",
+    "admissible_features.json": "9a6bc52ae308ce8896f3df95d17a0a3c838ebc42e3c02b9364f152aa89486762"
+   },
+   "digests_sha256": "2c573bda714e417ea9c6a008add8b1c58124cb8b52b7faf9574e44c193a64c45",
+   "code_commit": "18cabb583ed5606ec7865658974513af6b66ee95"
+  },
+  "batch_003": {
+   "ready": {
+    "batch": "batch_003",
+    "digests_sha256": "2d316760324cab4cc385c655161d9cbede1fd75b2f40ec60ed2d500f5ecf6ace",
+    "written_utc": "2026-10-03T05:28:50.720091+00:00"
+   },
+   "artifacts_sha256": {
+    "features_train.parquet": "fd0b4423db991cfb05cd4f9357a378648579d4c11552a1cac413ed711c3520bc",
+    "admissible_features.json": "151f05a39e23f825ae6eac59e70e44a065b6b5c51960045a1110f358de89ea66"
+   },
+   "digests_sha256": "2d316760324cab4cc385c655161d9cbede1fd75b2f40ec60ed2d500f5ecf6ace",
+   "code_commit": "42272ad7f288d39d5b9f84c63bb219ef0b9a7b19"
+  }
+ },
+ "overlay_episode_sources": [
+  "ev.EUR.desc.german_gdp.last_surprise_z",
+  "ev.EUR.desc.german_ifo_business_climate_index.last_surprise_z",
+  "ev.EUR.desc.german_manufacturing_pmi.last_surprise_z",
+  "ev.EUR.desc.german_unemployment_change.last_surprise_z",
+  "ev.EUR.desc.german_zew_economic_sentiment.last_surprise_z",
+  "ev.EUR.high.count_24h",
+  "ev.EUR.high.hours_since",
+  "ev.EUR.high.last_revision_z",
+  "ev.EUR.high.last_surprise_z",
+  "ev.EUR.high.sum_surprise_z_24h",
+  "ev.EUR.low.count_24h",
+  "ev.EUR.low.hours_since",
+  "ev.EUR.moderate.count_24h",
+  "ev.EUR.moderate.hours_since",
+  "ev.EUR.moderate.last_revision_z",
+  "ev.EUR.moderate.last_surprise_z",
+  "ev.EUR.moderate.sum_surprise_z_24h",
+  "ev.USD.desc.adp_nonfarm_employment_change.last_surprise_z",
+  "ev.USD.desc.crude_oil_inventories.last_surprise_z",
+  "ev.USD.desc.ism_manufacturing_pmi.last_surprise_z",
+  "ev.USD.desc.ism_non_manufacturing_pmi.last_surprise_z",
+  "ev.USD.desc.new_home_sales.last_surprise_z",
+  "ev.USD.desc.nonfarm_payrolls.last_surprise_z",
+  "ev.USD.desc.ppi.last_surprise_z",
+  "ev.USD.desc.unemployment_rate.last_surprise_z",
+  "ev.USD.high.count_24h",
+  "ev.USD.high.hours_since",
+  "ev.USD.high.last_revision_z",
+  "ev.USD.high.last_surprise_z",
+  "ev.USD.high.sum_surprise_z_24h",
+  "ev.USD.low.count_24h",
+  "ev.USD.low.hours_since",
+  "ev.USD.moderate.count_24h",
+  "ev.USD.moderate.hours_since",
+  "ev.USD.moderate.last_revision_z",
+  "ev.USD.moderate.last_surprise_z",
+  "ev.USD.moderate.sum_surprise_z_24h"
+ ],
+ "denominators": {
+  "batch_001": {
+   "admissible_role_feature": 83,
+   "episode_sources_excluded": 37,
+   "candidates": 46
+  },
+  "batch_002": {
+   "admissible_role_feature": 298,
+   "episode_sources_excluded": 0,
+   "candidates": 298
+  },
+  "batch_003": {
+   "admissible_role_feature": 22,
+   "episode_sources_excluded": 0,
+   "candidates": 22
+  }
+ },
+ "candidates_total": 366,
+ "targets": [
+  "Y_s_1h",
+  "Y_s_2h",
+  "Y_s_3h",
+  "Y_s_4h",
+  "Y_s_5h",
+  "Y_s_6h",
+  "Y_l_24h",
+  "Y_l_48h",
+  "Y_l_72h",
+  "Y_l_96h",
+  "Y_l_120h",
+  "Y_l_144h",
+  "Y_b_s6",
+  "Y_b_l144"
+ ],
+ "cells_total": 5124,
+ "rungs": 3,
+ "chunks": [
+  {
+   "id": "chunk_000",
+   "batch": "batch_001",
+   "base": "batch_001",
+   "features": [
+    "px.logret_1h",
+    "px.logret_2h",
+    "px.logret_4h",
+    "px.logret_6h",
+    "px.logret_12h",
+    "px.logret_24h",
+    "px.logret_48h",
+    "px.logret_120h"
+   ],
+   "meta": {
+    "px.logret_1h": {
+     "family": "returns",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.logret_2h": {
+     "family": "returns",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.logret_4h": {
+     "family": "returns",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.logret_6h": {
+     "family": "returns",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.logret_12h": {
+     "family": "returns",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.logret_24h": {
+     "family": "returns",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.logret_48h": {
+     "family": "returns",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.logret_120h": {
+     "family": "returns",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_001",
+   "batch": "batch_001",
+   "base": "batch_001",
+   "features": [
+    "px.logret_168h",
+    "px.log_hl",
+    "px.close_loc",
+    "px.log_co",
+    "px.rv5",
+    "px.ewma_vol_24",
+    "px.ewma_vol_168",
+    "px.parkinson_24"
+   ],
+   "meta": {
+    "px.logret_168h": {
+     "family": "returns",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.log_hl": {
+     "family": "range",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.close_loc": {
+     "family": "range",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.log_co": {
+     "family": "range",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.rv5": {
+     "family": "volatility",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.ewma_vol_24": {
+     "family": "volatility",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.ewma_vol_168": {
+     "family": "volatility",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.parkinson_24": {
+     "family": "volatility",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_002",
+   "batch": "batch_001",
+   "base": "batch_001",
+   "features": [
+    "px.hours_since_prev_bar",
+    "px.zclose_24",
+    "px.zclose_168",
+    "px.log_close",
+    "ta.rsi_14",
+    "ta.macd_n",
+    "ta.macd_hist_n",
+    "ta.ema20_dev"
+   ],
+   "meta": {
+    "px.hours_since_prev_bar": {
+     "family": "market_state",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.zclose_24": {
+     "family": "returns",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.zclose_168": {
+     "family": "returns",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "px.log_close": {
+     "family": "level",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "ta.rsi_14": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "ta.macd_n": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "ta.macd_hist_n": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "ta.ema20_dev": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_003",
+   "batch": "batch_001",
+   "base": "batch_001",
+   "features": [
+    "ta.stoch_k",
+    "ta.stoch_d",
+    "ta.willr_14",
+    "ta.atr_14_n",
+    "ta.adx_14",
+    "ta.dmp_14",
+    "ta.dmn_14",
+    "ta.cci_20"
+   ],
+   "meta": {
+    "ta.stoch_k": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "ta.stoch_d": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "ta.willr_14": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "ta.atr_14_n": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "ta.adx_14": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "ta.dmp_14": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "ta.dmn_14": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "ta.cci_20": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_004",
+   "batch": "batch_001",
+   "base": "batch_001",
+   "features": [
+    "ta.bb_pctb_20",
+    "ta.bb_width_20",
+    "ta.mom_10_n",
+    "ta.roc_10",
+    "cal.hour_sin",
+    "cal.hour_cos",
+    "cal.dow_sin",
+    "cal.dow_cos"
+   ],
+   "meta": {
+    "ta.bb_pctb_20": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "ta.bb_width_20": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "ta.mom_10_n": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "ta.roc_10": {
+     "family": "technical",
+     "availability_time": "t (bar end)",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "cal.hour_sin": {
+     "family": "calendar_known",
+     "availability_time": "known in advance",
+     "clock": "KNOWN_IN_ADVANCE",
+     "source": "derived:clock"
+    },
+    "cal.hour_cos": {
+     "family": "calendar_known",
+     "availability_time": "known in advance",
+     "clock": "KNOWN_IN_ADVANCE",
+     "source": "derived:clock"
+    },
+    "cal.dow_sin": {
+     "family": "calendar_known",
+     "availability_time": "known in advance",
+     "clock": "KNOWN_IN_ADVANCE",
+     "source": "derived:clock"
+    },
+    "cal.dow_cos": {
+     "family": "calendar_known",
+     "availability_time": "known in advance",
+     "clock": "KNOWN_IN_ADVANCE",
+     "source": "derived:clock"
+    }
+   }
+  },
+  {
+   "id": "chunk_005",
+   "batch": "batch_001",
+   "base": "batch_001",
+   "features": [
+    "cal.doy_sin",
+    "cal.doy_cos",
+    "cal.us_dst",
+    "cal.sess_london",
+    "cal.sess_newyork",
+    "cal.sess_tokyo"
+   ],
+   "meta": {
+    "cal.doy_sin": {
+     "family": "calendar_known",
+     "availability_time": "known in advance",
+     "clock": "KNOWN_IN_ADVANCE",
+     "source": "derived:clock"
+    },
+    "cal.doy_cos": {
+     "family": "calendar_known",
+     "availability_time": "known in advance",
+     "clock": "KNOWN_IN_ADVANCE",
+     "source": "derived:clock"
+    },
+    "cal.us_dst": {
+     "family": "calendar_known",
+     "availability_time": "known in advance",
+     "clock": "KNOWN_IN_ADVANCE",
+     "source": "derived:clock"
+    },
+    "cal.sess_london": {
+     "family": "calendar_known",
+     "availability_time": "known in advance",
+     "clock": "KNOWN_IN_ADVANCE",
+     "source": "derived:clock"
+    },
+    "cal.sess_newyork": {
+     "family": "calendar_known",
+     "availability_time": "known in advance",
+     "clock": "KNOWN_IN_ADVANCE",
+     "source": "derived:clock"
+    },
+    "cal.sess_tokyo": {
+     "family": "calendar_known",
+     "availability_time": "known in advance",
+     "clock": "KNOWN_IN_ADVANCE",
+     "source": "derived:clock"
+    }
+   }
+  },
+  {
+   "id": "chunk_006",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fx.audusd.logret_1h",
+    "fx.audusd.logret_24h",
+    "fx.audusd.ewma_vol_24",
+    "fx.eurgbp.logret_1h",
+    "fx.eurgbp.logret_24h",
+    "fx.eurgbp.ewma_vol_24",
+    "fx.eurjpy.logret_1h",
+    "fx.eurjpy.logret_24h"
+   ],
+   "meta": {
+    "fx.audusd.logret_1h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/audusd/1h.parquet"
+    },
+    "fx.audusd.logret_24h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/audusd/1h.parquet"
+    },
+    "fx.audusd.ewma_vol_24": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/audusd/1h.parquet"
+    },
+    "fx.eurgbp.logret_1h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurgbp/1h.parquet"
+    },
+    "fx.eurgbp.logret_24h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurgbp/1h.parquet"
+    },
+    "fx.eurgbp.ewma_vol_24": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurgbp/1h.parquet"
+    },
+    "fx.eurjpy.logret_1h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurjpy/1h.parquet"
+    },
+    "fx.eurjpy.logret_24h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurjpy/1h.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_007",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fx.eurjpy.ewma_vol_24",
+    "fx.gbpjpy.logret_1h",
+    "fx.gbpjpy.logret_24h",
+    "fx.gbpjpy.ewma_vol_24",
+    "fx.gbpusd.logret_1h",
+    "fx.gbpusd.logret_24h",
+    "fx.gbpusd.ewma_vol_24",
+    "fx.nzdusd.logret_1h"
+   ],
+   "meta": {
+    "fx.eurjpy.ewma_vol_24": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurjpy/1h.parquet"
+    },
+    "fx.gbpjpy.logret_1h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/gbpjpy/1h.parquet"
+    },
+    "fx.gbpjpy.logret_24h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/gbpjpy/1h.parquet"
+    },
+    "fx.gbpjpy.ewma_vol_24": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/gbpjpy/1h.parquet"
+    },
+    "fx.gbpusd.logret_1h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/gbpusd/1h.parquet"
+    },
+    "fx.gbpusd.logret_24h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/gbpusd/1h.parquet"
+    },
+    "fx.gbpusd.ewma_vol_24": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/gbpusd/1h.parquet"
+    },
+    "fx.nzdusd.logret_1h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/nzdusd/1h.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_008",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fx.nzdusd.logret_24h",
+    "fx.nzdusd.ewma_vol_24",
+    "fx.usdcad.logret_1h",
+    "fx.usdcad.logret_24h",
+    "fx.usdcad.ewma_vol_24",
+    "fx.usdchf.logret_1h",
+    "fx.usdchf.logret_24h",
+    "fx.usdchf.ewma_vol_24"
+   ],
+   "meta": {
+    "fx.nzdusd.logret_24h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/nzdusd/1h.parquet"
+    },
+    "fx.nzdusd.ewma_vol_24": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/nzdusd/1h.parquet"
+    },
+    "fx.usdcad.logret_1h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/usdcad/1h.parquet"
+    },
+    "fx.usdcad.logret_24h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/usdcad/1h.parquet"
+    },
+    "fx.usdcad.ewma_vol_24": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/usdcad/1h.parquet"
+    },
+    "fx.usdchf.logret_1h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/usdchf/1h.parquet"
+    },
+    "fx.usdchf.logret_24h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/usdchf/1h.parquet"
+    },
+    "fx.usdchf.ewma_vol_24": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/usdchf/1h.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_009",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fx.usdjpy.logret_1h",
+    "fx.usdjpy.logret_24h",
+    "fx.usdjpy.ewma_vol_24",
+    "fred.credit.aaa.level",
+    "fred.credit.aaa.logret_1d",
+    "fred.credit.aaa.logret_5d",
+    "fred.credit.aaa10y.level",
+    "fred.credit.aaa10y.diff_1d"
+   ],
+   "meta": {
+    "fx.usdjpy.logret_1h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/usdjpy/1h.parquet"
+    },
+    "fx.usdjpy.logret_24h": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/usdjpy/1h.parquet"
+    },
+    "fx.usdjpy.ewma_vol_24": {
+     "family": "fx_cross",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/usdjpy/1h.parquet"
+    },
+    "fred.credit.aaa.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/aaa/observations.parquet"
+    },
+    "fred.credit.aaa.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/aaa/observations.parquet"
+    },
+    "fred.credit.aaa.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/aaa/observations.parquet"
+    },
+    "fred.credit.aaa10y.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/aaa10y/observations.parquet"
+    },
+    "fred.credit.aaa10y.diff_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/aaa10y/observations.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_010",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fred.credit.aaa10y.diff_5d",
+    "fred.credit.baa.level",
+    "fred.credit.baa.logret_1d",
+    "fred.credit.baa.logret_5d",
+    "fred.credit.baa10y.level",
+    "fred.credit.baa10y.logret_1d",
+    "fred.credit.baa10y.logret_5d",
+    "fred.credit.bamlc0a0cm.level"
+   ],
+   "meta": {
+    "fred.credit.aaa10y.diff_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/aaa10y/observations.parquet"
+    },
+    "fred.credit.baa.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/baa/observations.parquet"
+    },
+    "fred.credit.baa.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/baa/observations.parquet"
+    },
+    "fred.credit.baa.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/baa/observations.parquet"
+    },
+    "fred.credit.baa10y.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/baa10y/observations.parquet"
+    },
+    "fred.credit.baa10y.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/baa10y/observations.parquet"
+    },
+    "fred.credit.baa10y.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/baa10y/observations.parquet"
+    },
+    "fred.credit.bamlc0a0cm.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/bamlc0a0cm/observations.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_011",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fred.credit.bamlc0a0cm.logret_1d",
+    "fred.credit.bamlc0a0cm.logret_5d",
+    "fred.credit.bamlc0a0cmey.level",
+    "fred.credit.bamlc0a0cmey.logret_1d",
+    "fred.credit.bamlc0a0cmey.logret_5d",
+    "fred.credit.bamlh0a0hym2.level",
+    "fred.credit.bamlh0a0hym2.logret_1d",
+    "fred.credit.bamlh0a0hym2.logret_5d"
+   ],
+   "meta": {
+    "fred.credit.bamlc0a0cm.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/bamlc0a0cm/observations.parquet"
+    },
+    "fred.credit.bamlc0a0cm.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/bamlc0a0cm/observations.parquet"
+    },
+    "fred.credit.bamlc0a0cmey.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/bamlc0a0cmey/observations.parquet"
+    },
+    "fred.credit.bamlc0a0cmey.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/bamlc0a0cmey/observations.parquet"
+    },
+    "fred.credit.bamlc0a0cmey.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/bamlc0a0cmey/observations.parquet"
+    },
+    "fred.credit.bamlh0a0hym2.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/bamlh0a0hym2/observations.parquet"
+    },
+    "fred.credit.bamlh0a0hym2.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/bamlh0a0hym2/observations.parquet"
+    },
+    "fred.credit.bamlh0a0hym2.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/bamlh0a0hym2/observations.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_012",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fred.credit.bamlh0a0hym2ey.level",
+    "fred.credit.bamlh0a0hym2ey.logret_1d",
+    "fred.credit.bamlh0a0hym2ey.logret_5d",
+    "fred.fx_indices.dtwexafegs.level",
+    "fred.fx_indices.dtwexafegs.logret_1d",
+    "fred.fx_indices.dtwexafegs.logret_5d",
+    "fred.fx_indices.dtwexb.level",
+    "fred.fx_indices.dtwexb.logret_1d"
+   ],
+   "meta": {
+    "fred.credit.bamlh0a0hym2ey.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/bamlh0a0hym2ey/observations.parquet"
+    },
+    "fred.credit.bamlh0a0hym2ey.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/bamlh0a0hym2ey/observations.parquet"
+    },
+    "fred.credit.bamlh0a0hym2ey.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/credit/bamlh0a0hym2ey/observations.parquet"
+    },
+    "fred.fx_indices.dtwexafegs.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/fx_indices/dtwexafegs/observations.parquet"
+    },
+    "fred.fx_indices.dtwexafegs.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/fx_indices/dtwexafegs/observations.parquet"
+    },
+    "fred.fx_indices.dtwexafegs.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/fx_indices/dtwexafegs/observations.parquet"
+    },
+    "fred.fx_indices.dtwexb.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/fx_indices/dtwexb/observations.parquet"
+    },
+    "fred.fx_indices.dtwexb.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/fx_indices/dtwexb/observations.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_013",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fred.fx_indices.dtwexb.logret_5d",
+    "fred.fx_indices.dtwexbgs.level",
+    "fred.fx_indices.dtwexbgs.logret_1d",
+    "fred.fx_indices.dtwexbgs.logret_5d",
+    "fred.fx_indices.dtwexemegs.level",
+    "fred.fx_indices.dtwexemegs.logret_1d",
+    "fred.fx_indices.dtwexemegs.logret_5d",
+    "fred.fx_indices.dtwexm.level"
+   ],
+   "meta": {
+    "fred.fx_indices.dtwexb.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/fx_indices/dtwexb/observations.parquet"
+    },
+    "fred.fx_indices.dtwexbgs.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/fx_indices/dtwexbgs/observations.parquet"
+    },
+    "fred.fx_indices.dtwexbgs.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/fx_indices/dtwexbgs/observations.parquet"
+    },
+    "fred.fx_indices.dtwexbgs.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/fx_indices/dtwexbgs/observations.parquet"
+    },
+    "fred.fx_indices.dtwexemegs.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/fx_indices/dtwexemegs/observations.parquet"
+    },
+    "fred.fx_indices.dtwexemegs.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/fx_indices/dtwexemegs/observations.parquet"
+    },
+    "fred.fx_indices.dtwexemegs.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/fx_indices/dtwexemegs/observations.parquet"
+    },
+    "fred.fx_indices.dtwexm.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/fx_indices/dtwexm/observations.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_014",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fred.fx_indices.dtwexm.logret_1d",
+    "fred.fx_indices.dtwexm.logret_5d",
+    "fred.inflation_expectations.t10yie.level",
+    "fred.inflation_expectations.t10yie.logret_1d",
+    "fred.inflation_expectations.t10yie.logret_5d",
+    "fred.inflation_expectations.t5yie.level",
+    "fred.inflation_expectations.t5yie.diff_1d",
+    "fred.inflation_expectations.t5yie.diff_5d"
+   ],
+   "meta": {
+    "fred.fx_indices.dtwexm.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/fx_indices/dtwexm/observations.parquet"
+    },
+    "fred.fx_indices.dtwexm.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/fx_indices/dtwexm/observations.parquet"
+    },
+    "fred.inflation_expectations.t10yie.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/inflation_expectations/t10yie/observations.parquet"
+    },
+    "fred.inflation_expectations.t10yie.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/inflation_expectations/t10yie/observations.parquet"
+    },
+    "fred.inflation_expectations.t10yie.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/inflation_expectations/t10yie/observations.parquet"
+    },
+    "fred.inflation_expectations.t5yie.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/inflation_expectations/t5yie/observations.parquet"
+    },
+    "fred.inflation_expectations.t5yie.diff_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/inflation_expectations/t5yie/observations.parquet"
+    },
+    "fred.inflation_expectations.t5yie.diff_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/inflation_expectations/t5yie/observations.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_015",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fred.inflation_expectations.t5yifr.level",
+    "fred.inflation_expectations.t5yifr.logret_1d",
+    "fred.inflation_expectations.t5yifr.logret_5d",
+    "fred.rates.dff.level",
+    "fred.rates.dff.logret_1d",
+    "fred.rates.dff.logret_5d",
+    "fred.rates.dfii10.level",
+    "fred.rates.dfii10.diff_1d"
+   ],
+   "meta": {
+    "fred.inflation_expectations.t5yifr.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/inflation_expectations/t5yifr/observations.parquet"
+    },
+    "fred.inflation_expectations.t5yifr.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/inflation_expectations/t5yifr/observations.parquet"
+    },
+    "fred.inflation_expectations.t5yifr.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/inflation_expectations/t5yifr/observations.parquet"
+    },
+    "fred.rates.dff.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dff/observations.parquet"
+    },
+    "fred.rates.dff.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dff/observations.parquet"
+    },
+    "fred.rates.dff.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dff/observations.parquet"
+    },
+    "fred.rates.dfii10.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dfii10/observations.parquet"
+    },
+    "fred.rates.dfii10.diff_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dfii10/observations.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_016",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fred.rates.dfii10.diff_5d",
+    "fred.rates.dfii5.level",
+    "fred.rates.dfii5.diff_1d",
+    "fred.rates.dfii5.diff_5d",
+    "fred.rates.dgs1.level",
+    "fred.rates.dgs1.logret_1d",
+    "fred.rates.dgs1.logret_5d",
+    "fred.rates.dgs10.level"
+   ],
+   "meta": {
+    "fred.rates.dfii10.diff_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dfii10/observations.parquet"
+    },
+    "fred.rates.dfii5.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dfii5/observations.parquet"
+    },
+    "fred.rates.dfii5.diff_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dfii5/observations.parquet"
+    },
+    "fred.rates.dfii5.diff_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dfii5/observations.parquet"
+    },
+    "fred.rates.dgs1.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs1/observations.parquet"
+    },
+    "fred.rates.dgs1.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs1/observations.parquet"
+    },
+    "fred.rates.dgs1.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs1/observations.parquet"
+    },
+    "fred.rates.dgs10.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs10/observations.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_017",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fred.rates.dgs10.logret_1d",
+    "fred.rates.dgs10.logret_5d",
+    "fred.rates.dgs2.level",
+    "fred.rates.dgs2.logret_1d",
+    "fred.rates.dgs2.logret_5d",
+    "fred.rates.dgs20.level",
+    "fred.rates.dgs20.logret_1d",
+    "fred.rates.dgs20.logret_5d"
+   ],
+   "meta": {
+    "fred.rates.dgs10.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs10/observations.parquet"
+    },
+    "fred.rates.dgs10.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs10/observations.parquet"
+    },
+    "fred.rates.dgs2.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs2/observations.parquet"
+    },
+    "fred.rates.dgs2.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs2/observations.parquet"
+    },
+    "fred.rates.dgs2.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs2/observations.parquet"
+    },
+    "fred.rates.dgs20.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs20/observations.parquet"
+    },
+    "fred.rates.dgs20.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs20/observations.parquet"
+    },
+    "fred.rates.dgs20.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs20/observations.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_018",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fred.rates.dgs30.level",
+    "fred.rates.dgs30.logret_1d",
+    "fred.rates.dgs30.logret_5d",
+    "fred.rates.dgs3mo.level",
+    "fred.rates.dgs3mo.diff_1d",
+    "fred.rates.dgs3mo.diff_5d",
+    "fred.rates.dgs5.level",
+    "fred.rates.dgs5.logret_1d"
+   ],
+   "meta": {
+    "fred.rates.dgs30.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs30/observations.parquet"
+    },
+    "fred.rates.dgs30.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs30/observations.parquet"
+    },
+    "fred.rates.dgs30.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs30/observations.parquet"
+    },
+    "fred.rates.dgs3mo.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs3mo/observations.parquet"
+    },
+    "fred.rates.dgs3mo.diff_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs3mo/observations.parquet"
+    },
+    "fred.rates.dgs3mo.diff_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs3mo/observations.parquet"
+    },
+    "fred.rates.dgs5.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs5/observations.parquet"
+    },
+    "fred.rates.dgs5.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs5/observations.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_019",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fred.rates.dgs5.logret_5d",
+    "fred.rates.dgs7.level",
+    "fred.rates.dgs7.logret_1d",
+    "fred.rates.dgs7.logret_5d",
+    "fred.rates.dprime.level",
+    "fred.rates.dprime.logret_1d",
+    "fred.rates.dprime.logret_5d",
+    "fred.rates.dtb3.level"
+   ],
+   "meta": {
+    "fred.rates.dgs5.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs5/observations.parquet"
+    },
+    "fred.rates.dgs7.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs7/observations.parquet"
+    },
+    "fred.rates.dgs7.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs7/observations.parquet"
+    },
+    "fred.rates.dgs7.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dgs7/observations.parquet"
+    },
+    "fred.rates.dprime.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dprime/observations.parquet"
+    },
+    "fred.rates.dprime.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dprime/observations.parquet"
+    },
+    "fred.rates.dprime.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dprime/observations.parquet"
+    },
+    "fred.rates.dtb3.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dtb3/observations.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_020",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fred.rates.dtb3.diff_1d",
+    "fred.rates.dtb3.diff_5d",
+    "fred.rates.fedfunds.level",
+    "fred.rates.fedfunds.logret_1d",
+    "fred.rates.fedfunds.logret_5d",
+    "fred.rates.t10y2y.level",
+    "fred.rates.t10y2y.diff_1d",
+    "fred.rates.t10y2y.diff_5d"
+   ],
+   "meta": {
+    "fred.rates.dtb3.diff_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dtb3/observations.parquet"
+    },
+    "fred.rates.dtb3.diff_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/dtb3/observations.parquet"
+    },
+    "fred.rates.fedfunds.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/fedfunds/observations.parquet"
+    },
+    "fred.rates.fedfunds.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/fedfunds/observations.parquet"
+    },
+    "fred.rates.fedfunds.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/fedfunds/observations.parquet"
+    },
+    "fred.rates.t10y2y.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/t10y2y/observations.parquet"
+    },
+    "fred.rates.t10y2y.diff_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/t10y2y/observations.parquet"
+    },
+    "fred.rates.t10y2y.diff_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/t10y2y/observations.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_021",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fred.rates.t10y3m.level",
+    "fred.rates.t10y3m.diff_1d",
+    "fred.rates.t10y3m.diff_5d",
+    "fred.rates.tb3ms.level",
+    "fred.rates.tb3ms.logret_1d",
+    "fred.rates.tb3ms.logret_5d",
+    "fred.stress.anfci.level",
+    "fred.stress.anfci.diff_1d"
+   ],
+   "meta": {
+    "fred.rates.t10y3m.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/t10y3m/observations.parquet"
+    },
+    "fred.rates.t10y3m.diff_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/t10y3m/observations.parquet"
+    },
+    "fred.rates.t10y3m.diff_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/t10y3m/observations.parquet"
+    },
+    "fred.rates.tb3ms.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/tb3ms/observations.parquet"
+    },
+    "fred.rates.tb3ms.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/tb3ms/observations.parquet"
+    },
+    "fred.rates.tb3ms.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/rates/tb3ms/observations.parquet"
+    },
+    "fred.stress.anfci.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/stress/anfci/observations.parquet"
+    },
+    "fred.stress.anfci.diff_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/stress/anfci/observations.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_022",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fred.stress.anfci.diff_5d",
+    "fred.stress.nfci.level",
+    "fred.stress.nfci.diff_1d",
+    "fred.stress.nfci.diff_5d",
+    "fred.stress.stlfsi4.level",
+    "fred.stress.stlfsi4.diff_1d",
+    "fred.stress.stlfsi4.diff_5d",
+    "fred.stress.tedrate.level"
+   ],
+   "meta": {
+    "fred.stress.anfci.diff_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/stress/anfci/observations.parquet"
+    },
+    "fred.stress.nfci.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/stress/nfci/observations.parquet"
+    },
+    "fred.stress.nfci.diff_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/stress/nfci/observations.parquet"
+    },
+    "fred.stress.nfci.diff_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/stress/nfci/observations.parquet"
+    },
+    "fred.stress.stlfsi4.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/stress/stlfsi4/observations.parquet"
+    },
+    "fred.stress.stlfsi4.diff_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/stress/stlfsi4/observations.parquet"
+    },
+    "fred.stress.stlfsi4.diff_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/stress/stlfsi4/observations.parquet"
+    },
+    "fred.stress.tedrate.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/stress/tedrate/observations.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_023",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "fred.stress.tedrate.logret_1d",
+    "fred.stress.tedrate.logret_5d",
+    "fred.stress.vixcls.level",
+    "fred.stress.vixcls.logret_1d",
+    "fred.stress.vixcls.logret_5d",
+    "yh.ct_f.logret_1d",
+    "yh.ct_f.logret_5d",
+    "yh.kc_f.logret_1d"
+   ],
+   "meta": {
+    "fred.stress.tedrate.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/stress/tedrate/observations.parquet"
+    },
+    "fred.stress.tedrate.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/stress/tedrate/observations.parquet"
+    },
+    "fred.stress.vixcls.level": {
+     "family": "fred_level",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/stress/vixcls/observations.parquet"
+    },
+    "fred.stress.vixcls.logret_1d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/stress/vixcls/observations.parquet"
+    },
+    "fred.stress.vixcls.logret_5d": {
+     "family": "fred_change",
+     "availability_time": "(D+2) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:macro_economic/fred/stress/vixcls/observations.parquet"
+    },
+    "yh.ct_f.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/agriculture/ct_f/daily.parquet"
+    },
+    "yh.ct_f.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/agriculture/ct_f/daily.parquet"
+    },
+    "yh.kc_f.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/agriculture/kc_f/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_024",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.kc_f.logret_5d",
+    "yh.sb_f.logret_1d",
+    "yh.sb_f.logret_5d",
+    "yh.zc_f.logret_1d",
+    "yh.zc_f.logret_5d",
+    "yh.zs_f.logret_1d",
+    "yh.zs_f.logret_5d",
+    "yh.zw_f.logret_1d"
+   ],
+   "meta": {
+    "yh.kc_f.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/agriculture/kc_f/daily.parquet"
+    },
+    "yh.sb_f.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/agriculture/sb_f/daily.parquet"
+    },
+    "yh.sb_f.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/agriculture/sb_f/daily.parquet"
+    },
+    "yh.zc_f.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/agriculture/zc_f/daily.parquet"
+    },
+    "yh.zc_f.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/agriculture/zc_f/daily.parquet"
+    },
+    "yh.zs_f.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/agriculture/zs_f/daily.parquet"
+    },
+    "yh.zs_f.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/agriculture/zs_f/daily.parquet"
+    },
+    "yh.zw_f.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/agriculture/zw_f/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_025",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.zw_f.logret_5d",
+    "yh.bz_f.logret_1d",
+    "yh.bz_f.logret_5d",
+    "yh.cl_f.logret_1d",
+    "yh.cl_f.logret_5d",
+    "yh.ng_f.logret_1d",
+    "yh.ng_f.logret_5d",
+    "yh.rb_f.logret_1d"
+   ],
+   "meta": {
+    "yh.zw_f.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/agriculture/zw_f/daily.parquet"
+    },
+    "yh.bz_f.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/energy/bz_f/daily.parquet"
+    },
+    "yh.bz_f.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/energy/bz_f/daily.parquet"
+    },
+    "yh.cl_f.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/energy/cl_f/daily.parquet"
+    },
+    "yh.cl_f.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/energy/cl_f/daily.parquet"
+    },
+    "yh.ng_f.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/energy/ng_f/daily.parquet"
+    },
+    "yh.ng_f.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/energy/ng_f/daily.parquet"
+    },
+    "yh.rb_f.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/energy/rb_f/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_026",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.rb_f.logret_5d",
+    "yh.gc_f.logret_1d",
+    "yh.gc_f.logret_5d",
+    "yh.pa_f.logret_1d",
+    "yh.pa_f.logret_5d",
+    "yh.pl_f.logret_1d",
+    "yh.pl_f.logret_5d",
+    "yh.si_f.logret_1d"
+   ],
+   "meta": {
+    "yh.rb_f.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/energy/rb_f/daily.parquet"
+    },
+    "yh.gc_f.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/precious_metals/gc_f/daily.parquet"
+    },
+    "yh.gc_f.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/precious_metals/gc_f/daily.parquet"
+    },
+    "yh.pa_f.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/precious_metals/pa_f/daily.parquet"
+    },
+    "yh.pa_f.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/precious_metals/pa_f/daily.parquet"
+    },
+    "yh.pl_f.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/precious_metals/pl_f/daily.parquet"
+    },
+    "yh.pl_f.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/precious_metals/pl_f/daily.parquet"
+    },
+    "yh.si_f.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/precious_metals/si_f/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_027",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.si_f.logret_5d",
+    "yh.agg.logret_1d",
+    "yh.agg.logret_5d",
+    "yh.bnd.logret_1d",
+    "yh.bnd.logret_5d",
+    "yh.dia.logret_1d",
+    "yh.dia.logret_5d",
+    "yh.eem.logret_1d"
+   ],
+   "meta": {
+    "yh.si_f.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/commodities/precious_metals/si_f/daily.parquet"
+    },
+    "yh.agg.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/agg/daily.parquet"
+    },
+    "yh.agg.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/agg/daily.parquet"
+    },
+    "yh.bnd.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/bnd/daily.parquet"
+    },
+    "yh.bnd.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/bnd/daily.parquet"
+    },
+    "yh.dia.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/dia/daily.parquet"
+    },
+    "yh.dia.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/dia/daily.parquet"
+    },
+    "yh.eem.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/eem/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_028",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.eem.logret_5d",
+    "yh.efa.logret_1d",
+    "yh.efa.logret_5d",
+    "yh.gld.logret_1d",
+    "yh.gld.logret_5d",
+    "yh.hyg.logret_1d",
+    "yh.hyg.logret_5d",
+    "yh.ief.logret_1d"
+   ],
+   "meta": {
+    "yh.eem.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/eem/daily.parquet"
+    },
+    "yh.efa.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/efa/daily.parquet"
+    },
+    "yh.efa.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/efa/daily.parquet"
+    },
+    "yh.gld.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/gld/daily.parquet"
+    },
+    "yh.gld.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/gld/daily.parquet"
+    },
+    "yh.hyg.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/hyg/daily.parquet"
+    },
+    "yh.hyg.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/hyg/daily.parquet"
+    },
+    "yh.ief.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/ief/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_029",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.ief.logret_5d",
+    "yh.ivv.logret_1d",
+    "yh.ivv.logret_5d",
+    "yh.iwm.logret_1d",
+    "yh.iwm.logret_5d",
+    "yh.iyr.logret_1d",
+    "yh.iyr.logret_5d",
+    "yh.lqd.logret_1d"
+   ],
+   "meta": {
+    "yh.ief.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/ief/daily.parquet"
+    },
+    "yh.ivv.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/ivv/daily.parquet"
+    },
+    "yh.ivv.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/ivv/daily.parquet"
+    },
+    "yh.iwm.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/iwm/daily.parquet"
+    },
+    "yh.iwm.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/iwm/daily.parquet"
+    },
+    "yh.iyr.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/iyr/daily.parquet"
+    },
+    "yh.iyr.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/iyr/daily.parquet"
+    },
+    "yh.lqd.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/lqd/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_030",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.lqd.logret_5d",
+    "yh.qqq.logret_1d",
+    "yh.qqq.logret_5d",
+    "yh.shy.logret_1d",
+    "yh.shy.logret_5d",
+    "yh.slv.logret_1d",
+    "yh.slv.logret_5d",
+    "yh.spy.logret_1d"
+   ],
+   "meta": {
+    "yh.lqd.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/lqd/daily.parquet"
+    },
+    "yh.qqq.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/qqq/daily.parquet"
+    },
+    "yh.qqq.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/qqq/daily.parquet"
+    },
+    "yh.shy.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/shy/daily.parquet"
+    },
+    "yh.shy.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/shy/daily.parquet"
+    },
+    "yh.slv.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/slv/daily.parquet"
+    },
+    "yh.slv.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/slv/daily.parquet"
+    },
+    "yh.spy.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/spy/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_031",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.spy.logret_5d",
+    "yh.tip.logret_1d",
+    "yh.tip.logret_5d",
+    "yh.tlt.logret_1d",
+    "yh.tlt.logret_5d",
+    "yh.uso.logret_1d",
+    "yh.uso.logret_5d",
+    "yh.vea.logret_1d"
+   ],
+   "meta": {
+    "yh.spy.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/spy/daily.parquet"
+    },
+    "yh.tip.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/tip/daily.parquet"
+    },
+    "yh.tip.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/tip/daily.parquet"
+    },
+    "yh.tlt.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/tlt/daily.parquet"
+    },
+    "yh.tlt.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/tlt/daily.parquet"
+    },
+    "yh.uso.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/uso/daily.parquet"
+    },
+    "yh.uso.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/uso/daily.parquet"
+    },
+    "yh.vea.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/vea/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_032",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.vea.logret_5d",
+    "yh.vnq.logret_1d",
+    "yh.vnq.logret_5d",
+    "yh.voo.logret_1d",
+    "yh.voo.logret_5d",
+    "yh.vti.logret_1d",
+    "yh.vti.logret_5d",
+    "yh.vwo.logret_1d"
+   ],
+   "meta": {
+    "yh.vea.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/vea/daily.parquet"
+    },
+    "yh.vnq.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/vnq/daily.parquet"
+    },
+    "yh.vnq.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/vnq/daily.parquet"
+    },
+    "yh.voo.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/voo/daily.parquet"
+    },
+    "yh.voo.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/voo/daily.parquet"
+    },
+    "yh.vti.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/vti/daily.parquet"
+    },
+    "yh.vti.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/vti/daily.parquet"
+    },
+    "yh.vwo.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/vwo/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_033",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.vwo.logret_5d",
+    "yh.xlb.logret_1d",
+    "yh.xlb.logret_5d",
+    "yh.xlc.logret_1d",
+    "yh.xlc.logret_5d",
+    "yh.xle.logret_1d",
+    "yh.xle.logret_5d",
+    "yh.xlf.logret_1d"
+   ],
+   "meta": {
+    "yh.vwo.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/vwo/daily.parquet"
+    },
+    "yh.xlb.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlb/daily.parquet"
+    },
+    "yh.xlb.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlb/daily.parquet"
+    },
+    "yh.xlc.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlc/daily.parquet"
+    },
+    "yh.xlc.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlc/daily.parquet"
+    },
+    "yh.xle.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xle/daily.parquet"
+    },
+    "yh.xle.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xle/daily.parquet"
+    },
+    "yh.xlf.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlf/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_034",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.xlf.logret_5d",
+    "yh.xli.logret_1d",
+    "yh.xli.logret_5d",
+    "yh.xlk.logret_1d",
+    "yh.xlk.logret_5d",
+    "yh.xlp.logret_1d",
+    "yh.xlp.logret_5d",
+    "yh.xlre.logret_1d"
+   ],
+   "meta": {
+    "yh.xlf.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlf/daily.parquet"
+    },
+    "yh.xli.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xli/daily.parquet"
+    },
+    "yh.xli.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xli/daily.parquet"
+    },
+    "yh.xlk.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlk/daily.parquet"
+    },
+    "yh.xlk.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlk/daily.parquet"
+    },
+    "yh.xlp.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlp/daily.parquet"
+    },
+    "yh.xlp.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlp/daily.parquet"
+    },
+    "yh.xlre.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlre/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_035",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.xlre.logret_5d",
+    "yh.xlu.logret_1d",
+    "yh.xlu.logret_5d",
+    "yh.xlv.logret_1d",
+    "yh.xlv.logret_5d",
+    "yh.xly.logret_1d",
+    "yh.xly.logret_5d",
+    "yh.000001_ss.logret_1d"
+   ],
+   "meta": {
+    "yh.xlre.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlre/daily.parquet"
+    },
+    "yh.xlu.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlu/daily.parquet"
+    },
+    "yh.xlu.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlu/daily.parquet"
+    },
+    "yh.xlv.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlv/daily.parquet"
+    },
+    "yh.xlv.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xlv/daily.parquet"
+    },
+    "yh.xly.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xly/daily.parquet"
+    },
+    "yh.xly.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/etfs/xly/daily.parquet"
+    },
+    "yh.000001_ss.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/000001_ss/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_036",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.000001_ss.logret_5d",
+    "yh.axjo.logret_1d",
+    "yh.axjo.logret_5d",
+    "yh.bsesn.logret_1d",
+    "yh.bsesn.logret_5d",
+    "yh.bvsp.logret_1d",
+    "yh.bvsp.logret_5d",
+    "yh.fchi.logret_1d"
+   ],
+   "meta": {
+    "yh.000001_ss.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/000001_ss/daily.parquet"
+    },
+    "yh.axjo.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/axjo/daily.parquet"
+    },
+    "yh.axjo.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/axjo/daily.parquet"
+    },
+    "yh.bsesn.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/bsesn/daily.parquet"
+    },
+    "yh.bsesn.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/bsesn/daily.parquet"
+    },
+    "yh.bvsp.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/bvsp/daily.parquet"
+    },
+    "yh.bvsp.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/bvsp/daily.parquet"
+    },
+    "yh.fchi.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/fchi/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_037",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.fchi.logret_5d",
+    "yh.ftse.logret_1d",
+    "yh.ftse.logret_5d",
+    "yh.gdaxi.logret_1d",
+    "yh.gdaxi.logret_5d",
+    "yh.gsptse.logret_1d",
+    "yh.gsptse.logret_5d",
+    "yh.hsi.logret_1d"
+   ],
+   "meta": {
+    "yh.fchi.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/fchi/daily.parquet"
+    },
+    "yh.ftse.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/ftse/daily.parquet"
+    },
+    "yh.ftse.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/ftse/daily.parquet"
+    },
+    "yh.gdaxi.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/gdaxi/daily.parquet"
+    },
+    "yh.gdaxi.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/gdaxi/daily.parquet"
+    },
+    "yh.gsptse.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/gsptse/daily.parquet"
+    },
+    "yh.gsptse.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/gsptse/daily.parquet"
+    },
+    "yh.hsi.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/hsi/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_038",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.hsi.logret_5d",
+    "yh.ks11.logret_1d",
+    "yh.ks11.logret_5d",
+    "yh.mxx.logret_1d",
+    "yh.mxx.logret_5d",
+    "yh.n225.logret_1d",
+    "yh.n225.logret_5d",
+    "yh.stoxx50e.logret_1d"
+   ],
+   "meta": {
+    "yh.hsi.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/hsi/daily.parquet"
+    },
+    "yh.ks11.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/ks11/daily.parquet"
+    },
+    "yh.ks11.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/ks11/daily.parquet"
+    },
+    "yh.mxx.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/mxx/daily.parquet"
+    },
+    "yh.mxx.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/mxx/daily.parquet"
+    },
+    "yh.n225.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/n225/daily.parquet"
+    },
+    "yh.n225.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/n225/daily.parquet"
+    },
+    "yh.stoxx50e.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/stoxx50e/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_039",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.stoxx50e.logret_5d",
+    "yh.twii.logret_1d",
+    "yh.twii.logret_5d",
+    "yh.dji.logret_1d",
+    "yh.dji.logret_5d",
+    "yh.gspc.logret_1d",
+    "yh.gspc.logret_5d",
+    "yh.ixic.logret_1d"
+   ],
+   "meta": {
+    "yh.stoxx50e.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/stoxx50e/daily.parquet"
+    },
+    "yh.twii.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/twii/daily.parquet"
+    },
+    "yh.twii.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/global_indices/twii/daily.parquet"
+    },
+    "yh.dji.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/us_indices/dji/daily.parquet"
+    },
+    "yh.dji.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/us_indices/dji/daily.parquet"
+    },
+    "yh.gspc.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/us_indices/gspc/daily.parquet"
+    },
+    "yh.gspc.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/us_indices/gspc/daily.parquet"
+    },
+    "yh.ixic.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/us_indices/ixic/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_040",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.ixic.logret_5d",
+    "yh.rut.logret_1d",
+    "yh.rut.logret_5d",
+    "yh.vix.level",
+    "yh.vix.logret_1d",
+    "yh.vix.logret_5d",
+    "yh.usdbrl_x.logret_1d",
+    "yh.usdbrl_x.logret_5d"
+   ],
+   "meta": {
+    "yh.ixic.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/us_indices/ixic/daily.parquet"
+    },
+    "yh.rut.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/us_indices/rut/daily.parquet"
+    },
+    "yh.rut.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/us_indices/rut/daily.parquet"
+    },
+    "yh.vix.level": {
+     "family": "yahoo_level",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/us_indices/vix/daily.parquet"
+    },
+    "yh.vix.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/us_indices/vix/daily.parquet"
+    },
+    "yh.vix.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/equities/us_indices/vix/daily.parquet"
+    },
+    "yh.usdbrl_x.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdbrl_x/daily.parquet"
+    },
+    "yh.usdbrl_x.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdbrl_x/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_041",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.usdclp_x.logret_1d",
+    "yh.usdclp_x.logret_5d",
+    "yh.usdcop_x.logret_1d",
+    "yh.usdcop_x.logret_5d",
+    "yh.usdidr_x.logret_1d",
+    "yh.usdidr_x.logret_5d",
+    "yh.usdinr_x.logret_1d",
+    "yh.usdinr_x.logret_5d"
+   ],
+   "meta": {
+    "yh.usdclp_x.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdclp_x/daily.parquet"
+    },
+    "yh.usdclp_x.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdclp_x/daily.parquet"
+    },
+    "yh.usdcop_x.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdcop_x/daily.parquet"
+    },
+    "yh.usdcop_x.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdcop_x/daily.parquet"
+    },
+    "yh.usdidr_x.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdidr_x/daily.parquet"
+    },
+    "yh.usdidr_x.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdidr_x/daily.parquet"
+    },
+    "yh.usdinr_x.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdinr_x/daily.parquet"
+    },
+    "yh.usdinr_x.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdinr_x/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_042",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.usdkrw_x.logret_1d",
+    "yh.usdkrw_x.logret_5d",
+    "yh.usdmxn_x.logret_1d",
+    "yh.usdmxn_x.logret_5d",
+    "yh.usdtry_x.logret_1d",
+    "yh.usdtry_x.logret_5d",
+    "yh.usdtwd_x.logret_1d",
+    "yh.usdtwd_x.logret_5d"
+   ],
+   "meta": {
+    "yh.usdkrw_x.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdkrw_x/daily.parquet"
+    },
+    "yh.usdkrw_x.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdkrw_x/daily.parquet"
+    },
+    "yh.usdmxn_x.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdmxn_x/daily.parquet"
+    },
+    "yh.usdmxn_x.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdmxn_x/daily.parquet"
+    },
+    "yh.usdtry_x.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdtry_x/daily.parquet"
+    },
+    "yh.usdtry_x.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdtry_x/daily.parquet"
+    },
+    "yh.usdtwd_x.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdtwd_x/daily.parquet"
+    },
+    "yh.usdtwd_x.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdtwd_x/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_043",
+   "batch": "batch_002",
+   "base": "batch_001",
+   "features": [
+    "yh.usdzar_x.logret_1d",
+    "yh.usdzar_x.logret_5d"
+   ],
+   "meta": {
+    "yh.usdzar_x.logret_1d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdzar_x/daily.parquet"
+    },
+    "yh.usdzar_x.logret_5d": {
+     "family": "yahoo_change",
+     "availability_time": "(D+1) 00:00 UTC",
+     "clock": "ASSUMED",
+     "source": "lake:market_data/forex/emerging_markets/usdzar_x/daily.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_044",
+   "batch": "batch_003",
+   "base": "batch_001",
+   "features": [
+    "rg.atr_pct",
+    "rg.atr_ratio",
+    "rg.bb_width_pct",
+    "rg.price_vs_ema50",
+    "rg.ema_alignment",
+    "rg.di_spread",
+    "rg.macd_hist",
+    "rg.roc_12"
+   ],
+   "meta": {
+    "rg.atr_pct": {
+     "family": "regime_causal",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "rg.atr_ratio": {
+     "family": "regime_causal",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "rg.bb_width_pct": {
+     "family": "regime_causal",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "rg.price_vs_ema50": {
+     "family": "regime_causal",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "rg.ema_alignment": {
+     "family": "regime_causal",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "rg.di_spread": {
+     "family": "regime_causal",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "rg.macd_hist": {
+     "family": "regime_causal",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "rg.roc_12": {
+     "family": "regime_causal",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_045",
+   "batch": "batch_003",
+   "base": "batch_001",
+   "features": [
+    "tv.wav_d1",
+    "tv.wav_d2",
+    "tv.wav_d3",
+    "tv.wav_d4",
+    "tv.wav_d5",
+    "tv.mt_band_6_48h",
+    "tv.hilbert_amp",
+    "tv.stl_dev"
+   ],
+   "meta": {
+    "tv.wav_d1": {
+     "family": "transform_variant",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "tv.wav_d2": {
+     "family": "transform_variant",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "tv.wav_d3": {
+     "family": "transform_variant",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "tv.wav_d4": {
+     "family": "transform_variant",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "tv.wav_d5": {
+     "family": "transform_variant",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "tv.mt_band_6_48h": {
+     "family": "transform_variant",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "tv.hilbert_amp": {
+     "family": "transform_variant",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "tv.stl_dev": {
+     "family": "transform_variant",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    }
+   }
+  },
+  {
+   "id": "chunk_046",
+   "batch": "batch_003",
+   "base": "batch_001",
+   "features": [
+    "tv.stl_seasonal",
+    "tv.kalman_dev",
+    "cot.gold_comex.mm_net_oi",
+    "cot.gold_comex.mm_net_oi_chg_1w",
+    "cot.wti_nymex.mm_net_oi",
+    "cot.wti_nymex.mm_net_oi_chg_1w"
+   ],
+   "meta": {
+    "tv.stl_seasonal": {
+     "family": "transform_variant",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "tv.kalman_dev": {
+     "family": "transform_variant",
+     "availability_time": "bar end",
+     "clock": "OBSERVED",
+     "source": "lake:features/trading_asset_data/eurusd/5m.parquet"
+    },
+    "cot.gold_comex.mm_net_oi": {
+     "family": "cftc_positioning",
+     "availability_time": "as-of + 7 days 00:00 UTC (conservative; nominal release Friday 15:30 ET)",
+     "clock": "ASSUMED",
+     "source": "lake:alternative_data/cot_reports/cftc_disaggregated"
+    },
+    "cot.gold_comex.mm_net_oi_chg_1w": {
+     "family": "cftc_positioning",
+     "availability_time": "as-of + 7 days 00:00 UTC (conservative; nominal release Friday 15:30 ET)",
+     "clock": "ASSUMED",
+     "source": "lake:alternative_data/cot_reports/cftc_disaggregated"
+    },
+    "cot.wti_nymex.mm_net_oi": {
+     "family": "cftc_positioning",
+     "availability_time": "as-of + 7 days 00:00 UTC (conservative; nominal release Friday 15:30 ET)",
+     "clock": "ASSUMED",
+     "source": "lake:alternative_data/cot_reports/cftc_disaggregated"
+    },
+    "cot.wti_nymex.mm_net_oi_chg_1w": {
+     "family": "cftc_positioning",
+     "availability_time": "as-of + 7 days 00:00 UTC (conservative; nominal release Friday 15:30 ET)",
+     "clock": "ASSUMED",
+     "source": "lake:alternative_data/cot_reports/cftc_disaggregated"
+    }
+   }
+  }
+ ],
+ "families": {
+  "rung1": "per target: HAC partial-test p over all candidates",
+  "rung2": "per target: p_linear over all cells with an identified estimate",
+  "sypi_condition1": "per target: condition-1 p over all candidates"
+ },
+ "state_rule": "(declared before any data was read, tested on planted worlds):\n* SUPPORTED      -- the rung's evidence passed every declared gate at the declared FDR.\n* CONTRADICTED   -- the rung's evidence robustly refutes the feature's claimed relevance (rung 1: a\n                    BH-significant dependence whose sign is unstable and whose OOF gain is negative in\n                    every fold; rung 2: an identified effect whose sign is opposite to the stable rung-1\n                    association, or a precise null inside the declared equivalence margin, both confirmed\n                    by the nonlinear estimator; rung 3: a counterfactual whose sign robustly opposes the\n                    identified rung-2 effect). Only ``robust`` CONTRADICTED may weigh against a feature.\n* NOT_IDENTIFIED -- everything else, with a named abstention reason. Never a rejection."
+}

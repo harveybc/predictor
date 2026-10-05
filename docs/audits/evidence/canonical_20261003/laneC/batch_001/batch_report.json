@@ -1,0 +1,1487 @@
+{
+ "schema": "laneC_ps3c_batch_report.v1",
+ "batch": "batch_001",
+ "producer_revision": "4604f06",
+ "lane_a": {
+  "batch_dir": "batch_001",
+  "ready": {
+   "batch": "batch_001",
+   "digests_sha256": "449f4c3d5e992ee4f3221c7e6ac3078167fe5e31063a3d659fb2814db1c07eb4",
+   "written_utc": "2026-10-03T05:12:49.084941+00:00"
+  },
+  "digests_sha256": "449f4c3d5e992ee4f3221c7e6ac3078167fe5e31063a3d659fb2814db1c07eb4",
+  "verified_artifacts": {
+   "features_train.parquet": "bd005701247dc181c81457037cbad6e6142f8171ad8c3595f1cd489986557aa2",
+   "targets_train.parquet": "a838b81c72a291a45dac70ab4c69415c85d7ec1888691cae38817642188e84e5",
+   "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+   "contract.json": "96dd26539b0491e09f14d44f96dd0623d42b96aebc11e294ab56505b47a83f87",
+   "admissible_features.json": "438fb732cb071ded24a5107155baabb662373ed504895984d0d8600198742d2a"
+  },
+  "code_commit": "79bb09d902e092d8ecfda858af881171a7799919"
+ },
+ "train_period": [
+  "2012-05-01 00:00:00+00:00",
+  "2024-01-01 00:00:00+00:00"
+ ],
+ "test_read": false,
+ "base_batch": null,
+ "selector_episode_sources_not_feature_candidates": {
+  "n": 37,
+  "covered_by": "economic-event study (episodes)",
+  "overlay": [
+   "role_overlay_batch_001.json"
+  ],
+  "features": [
+   "ev.EUR.desc.german_gdp.last_surprise_z",
+   "ev.EUR.desc.german_ifo_business_climate_index.last_surprise_z",
+   "ev.EUR.desc.german_manufacturing_pmi.last_surprise_z",
+   "ev.EUR.desc.german_unemployment_change.last_surprise_z",
+   "ev.EUR.desc.german_zew_economic_sentiment.last_surprise_z",
+   "ev.EUR.high.count_24h",
+   "ev.EUR.high.hours_since",
+   "ev.EUR.high.last_revision_z",
+   "ev.EUR.high.last_surprise_z",
+   "ev.EUR.high.sum_surprise_z_24h",
+   "ev.EUR.low.count_24h",
+   "ev.EUR.low.hours_since",
+   "ev.EUR.moderate.count_24h",
+   "ev.EUR.moderate.hours_since",
+   "ev.EUR.moderate.last_revision_z",
+   "ev.EUR.moderate.last_surprise_z",
+   "ev.EUR.moderate.sum_surprise_z_24h",
+   "ev.USD.desc.adp_nonfarm_employment_change.last_surprise_z",
+   "ev.USD.desc.crude_oil_inventories.last_surprise_z",
+   "ev.USD.desc.ism_manufacturing_pmi.last_surprise_z",
+   "ev.USD.desc.ism_non_manufacturing_pmi.last_surprise_z",
+   "ev.USD.desc.new_home_sales.last_surprise_z",
+   "ev.USD.desc.nonfarm_payrolls.last_surprise_z",
+   "ev.USD.desc.ppi.last_surprise_z",
+   "ev.USD.desc.unemployment_rate.last_surprise_z",
+   "ev.USD.high.count_24h",
+   "ev.USD.high.hours_since",
+   "ev.USD.high.last_revision_z",
+   "ev.USD.high.last_surprise_z",
+   "ev.USD.high.sum_surprise_z_24h",
+   "ev.USD.low.count_24h",
+   "ev.USD.low.hours_since",
+   "ev.USD.moderate.count_24h",
+   "ev.USD.moderate.hours_since",
+   "ev.USD.moderate.last_revision_z",
+   "ev.USD.moderate.last_surprise_z",
+   "ev.USD.moderate.sum_surprise_z_24h"
+  ]
+ },
+ "denominators": {
+  "features_admissible_in": 83,
+  "features_role_feature_evaluated": 46,
+  "targets": 14,
+  "event_types": 15,
+  "event_episodes": {
+   "United States|Crude Oil Inventories": 461,
+   "United States|ADP Nonfarm Employment Change": 107,
+   "United States|New Home Sales": 105,
+   "United States|ISM Manufacturing PMI": 105,
+   "United States|ISM Non-Manufacturing PMI": 106,
+   "United States|Nonfarm Payrolls": 106,
+   "United States|Unemployment Rate": 106,
+   "United States|PPI": 106,
+   "Germany|German Manufacturing PMI": 211,
+   "Euro Zone|CPI": 210,
+   "Germany|German Ifo Business Climate Index": 107,
+   "Germany|German Unemployment Change": 106,
+   "Germany|German ZEW Economic Sentiment": 106,
+   "Euro Zone|ECB Interest Rate Decision": 82,
+   "Germany|German GDP": 69
+  },
+  "event_pseudo_episodes": {
+   "United States|Crude Oil Inventories": 123,
+   "United States|ADP Nonfarm Employment Change": 104,
+   "United States|New Home Sales": 105,
+   "United States|ISM Manufacturing PMI": 104,
+   "United States|ISM Non-Manufacturing PMI": 105,
+   "United States|Nonfarm Payrolls": 103,
+   "United States|Unemployment Rate": 103,
+   "United States|PPI": 106,
+   "Germany|German Manufacturing PMI": 202,
+   "Euro Zone|CPI": 207,
+   "Germany|German Ifo Business Climate Index": 106,
+   "Germany|German Unemployment Change": 105,
+   "Germany|German ZEW Economic Sentiment": 106,
+   "Euro Zone|ECB Interest Rate Decision": 81,
+   "Germany|German GDP": 69
+  },
+  "cells": 869,
+  "hourly_rows": 71734,
+  "inner_folds": 5
+ },
+ "events": {
+  "archive_load": {
+   "rows": 121658,
+   "unparseable_local": 0,
+   "excluded_clock_undetermined": 13937,
+   "outside_eras": 0,
+   "kept_rows": 107721,
+   "valid_windows_utc": [
+    [
+     "2012-05-01 05:00:00+00:00",
+     "2018-02-01 04:00:00+00:00"
+    ],
+    [
+     "2018-03-01 05:00:00+00:00",
+     "2018-09-01 04:00:00+00:00"
+    ],
+    [
+     "2018-10-01 05:00:00+00:00",
+     "2021-04-27 03:00:00+00:00"
+    ]
+   ]
+  },
+  "scales_train_mad": {
+   "United States|Crude Oil Inventories": 4.0934586,
+   "United States|ADP Nonfarm Employment Change": 37.065,
+   "United States|New Home Sales": 40.0302,
+   "United States|ISM Manufacturing PMI": 1.7049899999999978,
+   "United States|ISM Non-Manufacturing PMI": 1.8532499999999998,
+   "United States|Nonfarm Payrolls": 60.7866,
+   "United States|Unemployment Rate": 0.14826000000000011,
+   "United States|PPI": 0.29652,
+   "Germany|German Manufacturing PMI": 0.5930399999999979,
+   "Euro Zone|CPI": 0.09910053443942211,
+   "Germany|German Ifo Business Climate Index": 1.1860799999999747,
+   "Germany|German Unemployment Change": 11.8608,
+   "Germany|German ZEW Economic Sentiment": 6.745829999999998,
+   "Euro Zone|ECB Interest Rate Decision": 0.030632448212130136,
+   "Germany|German GDP": 0.20904524569697364
+  },
+  "exclusions": {
+   "NO_CONSENSUS": 956,
+   "NO_ACTUAL": 918,
+   "SAME_TYPE_RELEASE_WITHIN_24H_BEFORE": 2,
+   "NO_ENTRY_ROW_WITHIN_2H": 2
+  },
+  "releases_high_usd_eur_with_consensus": 3470
+ },
+ "crossing": {
+  "px.logret_1h": {
+   "threshold_q": 0.8,
+   "threshold": 0.0005504201322239571,
+   "band_q": 0.6,
+   "band": 0.00014250562944578073,
+   "treated": 2760,
+   "controls": 1853,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.8966738230992437,
+    "standardized_coefficients": {
+     "W_x_prev": -6.394232146105316,
+     "W_cal.hour_cos": -0.4680199305689829,
+     "W_px.ewma_vol_168": 0.25305518150903156,
+     "W_cal.hour_sin": 0.17776011058570215,
+     "W_x_trend_24": 0.17679055423477105,
+     "W_cal.dow_cos": 0.1379022589367613,
+     "W_px.ewma_vol_24": 0.11963745708858424,
+     "W_px.logret_6h": 0.09677385325830988,
+     "W_px.logret_120h": 0.0765493000988066,
+     "W_px.logret_24h": -0.05855695282021955,
+     "W_cal.dow_sin": 0.0002250353004473261
+    },
+    "n": 4613
+   }
+  },
+  "px.logret_2h": {
+   "threshold_q": 0.8,
+   "threshold": 0.0007873879837519983,
+   "band_q": 0.6,
+   "band": 0.00020380209143160092,
+   "treated": 2544,
+   "controls": 1962,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.8566621949108534,
+    "standardized_coefficients": {
+     "W_x_prev": -4.152502865214817,
+     "W_px.logret_1h": 1.194171640107323,
+     "W_cal.hour_cos": -0.35182745545969263,
+     "W_px.logret_6h": 0.20542333188135758,
+     "W_px.ewma_vol_24": 0.20433009825580672,
+     "W_cal.hour_sin": 0.13685655230084895,
+     "W_px.ewma_vol_168": 0.13497218400325206,
+     "W_x_trend_24": 0.11216263932938614,
+     "W_cal.dow_cos": 0.0853044880871818,
+     "W_cal.dow_sin": 0.056039669163813435,
+     "W_px.logret_24h": 0.02700141204194894,
+     "W_px.logret_120h": 0.003208866549344729
+    },
+    "n": 4506
+   }
+  },
+  "px.logret_4h": {
+   "threshold_q": 0.8,
+   "threshold": 0.001139758239380819,
+   "band_q": 0.6,
+   "band": 0.00029982714086224143,
+   "treated": 2217,
+   "controls": 2302,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.7464539278076721,
+    "standardized_coefficients": {
+     "W_x_prev": -1.5546166646650295,
+     "W_cal.hour_cos": -0.4806607165957004,
+     "W_px.logret_6h": 0.3565709755315575,
+     "W_px.ewma_vol_24": 0.25699019448251176,
+     "W_px.logret_1h": 0.19882635130047308,
+     "W_px.ewma_vol_168": 0.1505857256580314,
+     "W_px.logret_24h": -0.09455155196833558,
+     "W_x_trend_24": 0.06492511226078108,
+     "W_cal.dow_cos": 0.06399166852573672,
+     "W_cal.hour_sin": 0.05820789767516633,
+     "W_px.logret_120h": -0.0356335656827028,
+     "W_cal.dow_sin": -0.03056336462162233
+    },
+    "n": 4519
+   }
+  },
+  "px.logret_6h": {
+   "threshold_q": 0.8,
+   "threshold": 0.0014541093824031513,
+   "band_q": 0.6,
+   "band": 0.0003876851035305277,
+   "treated": 1986,
+   "controls": 2333,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.700187424271659,
+    "standardized_coefficients": {
+     "W_x_prev": -0.9005174818960575,
+     "W_cal.hour_cos": -0.47768515515288507,
+     "W_px.ewma_vol_168": 0.24963437631639696,
+     "W_px.ewma_vol_24": 0.15619647981073803,
+     "W_cal.dow_sin": 0.06471958735960422,
+     "W_cal.hour_sin": 0.05220834793563298,
+     "W_cal.dow_cos": -0.037922809494525186,
+     "W_px.logret_1h": 0.0337039180386367,
+     "W_px.logret_120h": -0.010974721619736123,
+     "W_x_trend_24": 0.006946765853475969,
+     "W_px.logret_24h": -0.0032421091869202817
+    },
+    "n": 4319
+   }
+  },
+  "px.logret_12h": {
+   "threshold_q": 0.8,
+   "threshold": 0.00213483257386578,
+   "band_q": 0.6,
+   "band": 0.0005704100961415589,
+   "treated": 1545,
+   "controls": 2541,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.680910479145254,
+    "standardized_coefficients": {
+     "W_px.logret_6h": 0.3877818382771757,
+     "W_px.logret_1h": -0.3574535674896525,
+     "W_cal.hour_cos": -0.33347419046638754,
+     "W_x_prev": -0.2516722520657913,
+     "W_px.ewma_vol_168": 0.2129377805757926,
+     "W_px.ewma_vol_24": 0.2011606202465189,
+     "W_cal.dow_cos": -0.1541434020079738,
+     "W_cal.dow_sin": 0.1426108890491326,
+     "W_cal.hour_sin": -0.07921026086125849,
+     "W_px.logret_120h": 0.02628236653348874,
+     "W_px.logret_24h": 0.021751673076464036,
+     "W_x_trend_24": 0.008908492900173837
+    },
+    "n": 4086
+   }
+  },
+  "px.logret_24h": {
+   "threshold_q": 0.8,
+   "threshold": 0.003149233005397618,
+   "band_q": 0.6,
+   "band": 0.0008223987327699442,
+   "treated": 1111,
+   "controls": 2574,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.6876194612468239,
+    "standardized_coefficients": {
+     "W_cal.hour_cos": -0.3916477459939219,
+     "W_px.logret_6h": 0.38767553519754194,
+     "W_px.ewma_vol_24": 0.34550478799752304,
+     "W_px.logret_1h": -0.3026330920826376,
+     "W_cal.dow_cos": -0.23278223077084678,
+     "W_cal.dow_sin": 0.1568648889647157,
+     "W_x_prev": 0.08135572245414475,
+     "W_px.ewma_vol_168": 0.047584976021720043,
+     "W_x_trend_24": 0.01072759406702887,
+     "W_px.logret_120h": 0.00811733571315664,
+     "W_cal.hour_sin": -0.0005808530759070452
+    },
+    "n": 3685
+   }
+  },
+  "px.logret_48h": {
+   "threshold_q": 0.8,
+   "threshold": 0.004118599861899138,
+   "band_q": 0.6,
+   "band": 0.0010756206837597988,
+   "treated": 807,
+   "controls": 2533,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.7825941683776627,
+    "standardized_coefficients": {
+     "W_x_prev": 0.7046302895116071,
+     "W_cal.hour_cos": -0.41555089014561153,
+     "W_cal.dow_cos": -0.3260200873346677,
+     "W_px.ewma_vol_24": 0.27232392610178224,
+     "W_px.logret_1h": -0.23795537314080437,
+     "W_px.logret_6h": 0.22456547736215418,
+     "W_px.logret_24h": 0.1811994230957975,
+     "W_px.ewma_vol_168": 0.16667676053814992,
+     "W_px.logret_120h": 0.10594013879269353,
+     "W_cal.dow_sin": 0.06606882027302644,
+     "W_cal.hour_sin": 0.05792701984313291,
+     "W_x_trend_24": 0.01092662787251313
+    },
+    "n": 3340
+   }
+  },
+  "px.logret_120h": {
+   "threshold_q": 0.8,
+   "threshold": 0.0065183116577244215,
+   "band_q": 0.6,
+   "band": 0.0017836680135615904,
+   "treated": 544,
+   "controls": 2383,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.8211280578114586,
+    "standardized_coefficients": {
+     "W_x_prev": 1.1687484360762417,
+     "W_cal.hour_cos": -0.440294736832015,
+     "W_px.logret_6h": 0.29298783144623125,
+     "W_px.ewma_vol_168": 0.2851871848900636,
+     "W_px.logret_1h": -0.17931937444122906,
+     "W_px.ewma_vol_24": 0.1454776782500959,
+     "W_x_trend_24": 0.1052977158009464,
+     "W_cal.dow_cos": 0.06125255401309913,
+     "W_cal.hour_sin": -0.059947593724493736,
+     "W_px.logret_24h": 0.020763794424208323,
+     "W_cal.dow_sin": 0.014390801927214234
+    },
+    "n": 2927
+   }
+  },
+  "px.logret_168h": {
+   "threshold_q": 0.8,
+   "threshold": 0.007959547457792152,
+   "band_q": 0.6,
+   "band": 0.0021559695807351503,
+   "treated": 528,
+   "controls": 2267,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.8521591076178637,
+    "standardized_coefficients": {
+     "W_x_prev": 1.507405314650096,
+     "W_cal.hour_cos": -0.378788891114051,
+     "W_px.ewma_vol_168": 0.33214873504992976,
+     "W_px.logret_120h": 0.2004332631680845,
+     "W_px.logret_6h": 0.1927236939106019,
+     "W_x_trend_24": 0.1852468020437582,
+     "W_px.logret_24h": -0.1637485866327465,
+     "W_px.ewma_vol_24": 0.10961163772882011,
+     "W_cal.dow_cos": -0.08128589714802781,
+     "W_px.logret_1h": -0.05289874116068489,
+     "W_cal.hour_sin": 0.046830711972574005,
+     "W_cal.dow_sin": -0.001100903117120722
+    },
+    "n": 2795
+   }
+  },
+  "px.log_hl": {
+   "threshold_q": 0.8,
+   "threshold": 0.0018572107728893274,
+   "band_q": 0.6,
+   "band": 0.0012534676344941908,
+   "treated": 2431,
+   "controls": 1868,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.8150299442338742,
+    "standardized_coefficients": {
+     "W_x_prev": -1.3737366693892392,
+     "W_cal.hour_cos": -0.7130161793661192,
+     "W_px.ewma_vol_168": 0.6262363729637301,
+     "W_cal.hour_sin": 0.13457603101738053,
+     "W_x_trend_24": -0.12971122226231316,
+     "W_px.ewma_vol_24": 0.11405214191500537,
+     "W_px.logret_6h": 0.0814561498140598,
+     "W_cal.dow_sin": 0.05667794860496853,
+     "W_cal.dow_cos": -0.05492482558128191,
+     "W_px.logret_1h": -0.053438082602015415,
+     "W_px.logret_120h": 0.024740046009559195,
+     "W_px.logret_24h": 0.02094685211041878
+    },
+    "n": 4299
+   }
+  },
+  "px.close_loc": {
+   "threshold_q": 0.8,
+   "threshold": 0.8043478260871392,
+   "band_q": 0.6,
+   "band": 0.599999999999926,
+   "treated": 2830,
+   "controls": 1694,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.8873740618520574,
+    "standardized_coefficients": {
+     "W_x_prev": -3.3720230173239254,
+     "W_px.ewma_vol_168": -0.16184738907428672,
+     "W_x_trend_24": 0.14109099438029085,
+     "W_cal.hour_cos": -0.1074023060955996,
+     "W_px.ewma_vol_24": 0.09829362639548439,
+     "W_cal.hour_sin": 0.07464766896655003,
+     "W_px.logret_24h": -0.07314304560980708,
+     "W_px.logret_6h": 0.06854088266824188,
+     "W_cal.dow_cos": 0.0654987225087646,
+     "W_px.logret_1h": -0.03830332753806881,
+     "W_px.logret_120h": -0.015950102853466278,
+     "W_cal.dow_sin": 0.0017748058147789524
+    },
+    "n": 4524
+   }
+  },
+  "px.log_co": {
+   "threshold_q": 0.8,
+   "threshold": 0.0005464565029118507,
+   "band_q": 0.6,
+   "band": 0.00014391767996218817,
+   "treated": 2765,
+   "controls": 1853,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.8912871849471411,
+    "standardized_coefficients": {
+     "W_x_prev": -6.030825662821583,
+     "W_cal.hour_cos": -0.46132471785068346,
+     "W_px.ewma_vol_168": 0.25974149437333943,
+     "W_x_trend_24": 0.17799521400557833,
+     "W_cal.dow_cos": 0.17204938722171073,
+     "W_cal.hour_sin": 0.14285216309187967,
+     "W_px.logret_6h": 0.1244566099995533,
+     "W_px.ewma_vol_24": 0.10569733569196596,
+     "W_px.logret_24h": -0.06585035477183754,
+     "W_cal.dow_sin": -0.045742871634798926,
+     "W_px.logret_1h": 0.00789438906322839,
+     "W_px.logret_120h": -0.006046447569508953
+    },
+    "n": 4618
+   }
+  },
+  "px.rv5": {
+   "threshold_q": 0.8,
+   "threshold": 0.001091273207652554,
+   "band_q": 0.6,
+   "band": 0.0007604274490333109,
+   "treated": 2369,
+   "controls": 1948,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.7957444659109828,
+    "standardized_coefficients": {
+     "W_x_prev": -1.2651763881825433,
+     "W_cal.hour_cos": -0.7315271452102168,
+     "W_px.ewma_vol_168": 0.589282181929841,
+     "W_px.ewma_vol_24": 0.20831556549621197,
+     "W_cal.hour_sin": 0.198862887957644,
+     "W_x_trend_24": -0.14589895167536635,
+     "W_cal.dow_cos": -0.12602283035315104,
+     "W_cal.dow_sin": 0.08473171565497742,
+     "W_px.logret_1h": -0.08149696069358377,
+     "W_px.logret_6h": 0.08108892371665326,
+     "W_px.logret_120h": -0.012444826612826794,
+     "W_px.logret_24h": -0.012145256060069975
+    },
+    "n": 4316
+   }
+  },
+  "px.ewma_vol_24": {
+   "threshold_q": 0.8,
+   "threshold": 0.001210508147524126,
+   "band_q": 0.6,
+   "band": 0.0009736435358124532,
+   "treated": 342,
+   "controls": 2395,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.7193568472329048,
+    "standardized_coefficients": {
+     "W_cal.hour_cos": -0.8245162154861587,
+     "W_cal.dow_cos": -0.2991933075871737,
+     "W_px.ewma_vol_168": 0.29256530109943396,
+     "W_x_trend_24": -0.16443481812150432,
+     "W_x_prev": -0.10786673409568699,
+     "W_cal.hour_sin": -0.04972222766236155,
+     "W_px.logret_120h": 0.04080532284173156,
+     "W_px.logret_24h": 0.012006009758677738,
+     "W_px.logret_6h": 0.0032312839255603967,
+     "W_cal.dow_sin": -0.0024670467205358693,
+     "W_px.logret_1h": 0.0015376340037383327
+    },
+    "n": 2737
+   }
+  },
+  "px.ewma_vol_168": {
+   "threshold_q": 0.8,
+   "threshold": 0.0012493111335493286,
+   "band_q": 0.6,
+   "band": 0.0010119099900144444,
+   "treated": 66,
+   "controls": 2489,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.8856909797046398,
+    "standardized_coefficients": {
+     "W_x_prev": 1.787307630756542,
+     "W_cal.hour_cos": -0.7089405779304453,
+     "W_cal.dow_cos": -0.5045946653679776,
+     "W_px.logret_24h": 0.17101825859407535,
+     "W_px.logret_6h": 0.1507891152952729,
+     "W_px.logret_120h": -0.12875766781555487,
+     "W_cal.hour_sin": -0.10078079871451384,
+     "W_px.ewma_vol_24": 0.08855688561470035,
+     "W_x_trend_24": 0.07983352274840572,
+     "W_px.logret_1h": -0.07299485011970139,
+     "W_cal.dow_sin": -0.06432495230181366
+    },
+    "n": 2555
+   }
+  },
+  "px.parkinson_24": {
+   "threshold_q": 0.8,
+   "threshold": 0.0011926716705535068,
+   "band_q": 0.6,
+   "band": 0.0009564121140844859,
+   "treated": 409,
+   "controls": 2553,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.7384380234385549,
+    "standardized_coefficients": {
+     "W_cal.hour_cos": -0.641712106182036,
+     "W_x_prev": 0.6343026208621544,
+     "W_cal.dow_cos": -0.24073902907850386,
+     "W_px.ewma_vol_168": 0.1806146728279538,
+     "W_x_trend_24": 0.1244467282831171,
+     "W_cal.hour_sin": -0.10735460694728007,
+     "W_cal.dow_sin": 0.0946636587710149,
+     "W_px.logret_24h": 0.07852634691329277,
+     "W_px.logret_6h": -0.03584892030098215,
+     "W_px.logret_120h": 0.012174913093794109,
+     "W_px.ewma_vol_24": -0.011499307657053315,
+     "W_px.logret_1h": -0.004012250781921718
+    },
+    "n": 2962
+   }
+  },
+  "px.hours_since_prev_bar": {
+   "reason": "THRESHOLD_BAND_DEGENERATE",
+   "threshold": 1.0
+  },
+  "px.zclose_24": {
+   "threshold_q": 0.8,
+   "threshold": 1.21178124995864,
+   "band_q": 0.6,
+   "band": 0.44085721673712414,
+   "treated": 1658,
+   "controls": 1827,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.6701339576635945,
+    "standardized_coefficients": {
+     "W_x_prev": -0.5471269421383423,
+     "W_cal.hour_cos": -0.3642655214092977,
+     "W_px.ewma_vol_24": -0.26091932397567313,
+     "W_px.ewma_vol_168": 0.21630624142624646,
+     "W_px.logret_1h": -0.1963567738949038,
+     "W_px.logret_24h": -0.19377651639719815,
+     "W_px.logret_120h": -0.052108304319336704,
+     "W_cal.dow_cos": 0.03223060731114325,
+     "W_x_trend_24": 0.022040890184148905,
+     "W_cal.dow_sin": 0.01913638195885098,
+     "W_cal.hour_sin": 0.004846354639740867,
+     "W_px.logret_6h": 0.0009923978297513734
+    },
+    "n": 3485
+   }
+  },
+  "px.zclose_168": {
+   "threshold_q": 0.8,
+   "threshold": 1.3003844102331332,
+   "band_q": 0.6,
+   "band": 0.43350572116349195,
+   "treated": 680,
+   "controls": 2206,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.7658864860540772,
+    "standardized_coefficients": {
+     "W_x_prev": 0.9740926733091219,
+     "W_cal.hour_cos": -0.42940113836246013,
+     "W_x_trend_24": 0.2776415806093828,
+     "W_px.logret_24h": -0.19383143373331718,
+     "W_px.logret_6h": 0.11971420101696362,
+     "W_px.ewma_vol_24": -0.07212136137671661,
+     "W_px.logret_120h": -0.0660401261133454,
+     "W_cal.hour_sin": -0.015995539249959112,
+     "W_cal.dow_cos": -0.01389477482222893,
+     "W_px.logret_1h": -0.012781267843628565,
+     "W_px.ewma_vol_168": 0.009908675108938777,
+     "W_cal.dow_sin": 0.0010782677053475108
+    },
+    "n": 2886
+   }
+  },
+  "px.log_close": {
+   "threshold_q": 0.8,
+   "threshold": 0.2257880515391179,
+   "band_q": 0.6,
+   "band": 0.1586502558147854,
+   "treated": 24,
+   "controls": 2416,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.6906129277041942,
+    "standardized_coefficients": {
+     "W_x_prev": 27.109763342527224,
+     "W_px.ewma_vol_168": 0.8546206494964494,
+     "W_px.logret_1h": 0.580448371347128,
+     "W_px.logret_6h": -0.35288755997655513,
+     "W_cal.hour_cos": -0.2777899651645614,
+     "W_px.logret_24h": 0.1994452964900565,
+     "W_cal.hour_sin": -0.11328327107415322,
+     "W_px.logret_120h": -0.10836495533517727,
+     "W_px.ewma_vol_24": -0.09194329927729192,
+     "W_cal.dow_sin": -0.0805710344131496,
+     "W_cal.dow_cos": -0.032705693952794934,
+     "W_x_trend_24": -0.030108703786173058
+    },
+    "n": 2440
+   }
+  },
+  "ta.rsi_14": {
+   "threshold_q": 0.8,
+   "threshold": 60.61273299950561,
+   "band_q": 0.6,
+   "band": 52.99597105849571,
+   "treated": 1338,
+   "controls": 2254,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.6401265711977909,
+    "standardized_coefficients": {
+     "W_cal.hour_cos": -0.39555975464991894,
+     "W_px.logret_1h": -0.3625105785582859,
+     "W_px.ewma_vol_24": -0.19362466685247567,
+     "W_px.ewma_vol_168": 0.1316567983333352,
+     "W_px.logret_6h": 0.11872774608194539,
+     "W_cal.hour_sin": 0.09839809803936723,
+     "W_x_prev": 0.0663935501813116,
+     "W_px.logret_120h": 0.032382328502575,
+     "W_cal.dow_sin": 0.02555970106167763,
+     "W_cal.dow_cos": -0.006791467765415508,
+     "W_x_trend_24": -0.003213712770143078,
+     "W_px.logret_24h": 0.0025281693421561943
+    },
+    "n": 3592
+   }
+  },
+  "ta.macd_n": {
+   "threshold_q": 0.8,
+   "threshold": 0.000789073318678679,
+   "band_q": 0.6,
+   "band": 0.0002015021179961005,
+   "treated": 695,
+   "controls": 2546,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.9571159725793599,
+    "standardized_coefficients": {
+     "W_x_prev": 3.040820324789791,
+     "W_px.logret_6h": 1.6459960413696648,
+     "W_px.logret_1h": 0.40350966132129973,
+     "W_cal.hour_cos": -0.30430705573579986,
+     "W_px.logret_24h": 0.28864480826376476,
+     "W_px.ewma_vol_24": 0.175484461643331,
+     "W_x_trend_24": 0.16918193751842875,
+     "W_cal.dow_sin": 0.16855599673971952,
+     "W_px.ewma_vol_168": 0.13399036054961447,
+     "W_cal.dow_cos": -0.11904289747504918,
+     "W_cal.hour_sin": 0.0103707269548975,
+     "W_px.logret_120h": -0.003448555532400295
+    },
+    "n": 3241
+   }
+  },
+  "ta.macd_hist_n": {
+   "threshold_q": 0.8,
+   "threshold": 0.0002350297996598631,
+   "band_q": 0.6,
+   "band": 7.116316019821409e-05,
+   "treated": 1394,
+   "controls": 2503,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.8411988827180698,
+    "standardized_coefficients": {
+     "W_x_prev": 1.0693578998519355,
+     "W_px.logret_6h": 0.5786384295410976,
+     "W_px.logret_24h": -0.49726142100979087,
+     "W_cal.hour_cos": -0.4721792908779331,
+     "W_px.logret_1h": 0.45440351284188957,
+     "W_px.ewma_vol_24": 0.2620007444979705,
+     "W_px.logret_120h": -0.16741959660019934,
+     "W_x_trend_24": 0.15374647474999012,
+     "W_px.ewma_vol_168": 0.13654050611159138,
+     "W_cal.dow_sin": 0.04639665111471023,
+     "W_cal.dow_cos": 0.019050297989509607,
+     "W_cal.hour_sin": -0.003425011574643563
+    },
+    "n": 3897
+   }
+  },
+  "ta.ema20_dev": {
+   "threshold_q": 0.8,
+   "threshold": 0.0013793542401205467,
+   "band_q": 0.6,
+   "band": 0.0003587808656320822,
+   "treated": 1467,
+   "controls": 2263,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.680347825982184,
+    "standardized_coefficients": {
+     "W_cal.hour_cos": -0.501448797961579,
+     "W_x_prev": -0.3991220228433891,
+     "W_px.logret_1h": -0.3431475067937722,
+     "W_px.ewma_vol_168": 0.21507006501799955,
+     "W_px.ewma_vol_24": 0.12220348803610304,
+     "W_px.logret_6h": 0.11593059300567826,
+     "W_cal.dow_sin": 0.03528004485243108,
+     "W_cal.hour_sin": -0.021633370681971114,
+     "W_px.logret_120h": -0.007963422446350973,
+     "W_cal.dow_cos": -0.006792770819313706,
+     "W_px.logret_24h": 0.006149642950895444,
+     "W_x_trend_24": 0.0016038307155371665
+    },
+    "n": 3730
+   }
+  },
+  "ta.stoch_k": {
+   "threshold_q": 0.8,
+   "threshold": 78.01829603123527,
+   "band_q": 0.6,
+   "band": 59.64158286023291,
+   "treated": 1646,
+   "controls": 2083,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.8146331845659096,
+    "standardized_coefficients": {
+     "W_x_prev": 0.9821123933368654,
+     "W_px.logret_6h": 0.8483983209887188,
+     "W_px.logret_1h": 0.5149599863383278,
+     "W_px.ewma_vol_24": -0.2580521812126179,
+     "W_px.logret_24h": -0.2191630243270329,
+     "W_cal.hour_sin": 0.152621349962559,
+     "W_x_trend_24": 0.14222009565147598,
+     "W_cal.hour_cos": -0.0643909001558479,
+     "W_px.ewma_vol_168": -0.06415717289942346,
+     "W_cal.dow_cos": 0.03715087676355821,
+     "W_px.logret_120h": 0.01847795776013071,
+     "W_cal.dow_sin": 0.014873979068024746
+    },
+    "n": 3729
+   }
+  },
+  "ta.stoch_d": {
+   "threshold_q": 0.8,
+   "threshold": 76.97951522618264,
+   "band_q": 0.6,
+   "band": 59.32265317409631,
+   "treated": 1468,
+   "controls": 2307,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.911781345484481,
+    "standardized_coefficients": {
+     "W_px.logret_6h": 2.0355195608707697,
+     "W_x_prev": 1.9528983186983884,
+     "W_px.ewma_vol_24": -0.5081172945477453,
+     "W_px.logret_24h": -0.33794273873460773,
+     "W_cal.hour_sin": 0.238354332174497,
+     "W_x_trend_24": 0.09499447632282972,
+     "W_cal.hour_cos": 0.09293702921966826,
+     "W_cal.dow_sin": 0.07443695982743602,
+     "W_px.ewma_vol_168": -0.061829546055154554,
+     "W_px.logret_120h": -0.03692290381972922,
+     "W_px.logret_1h": 0.031155484069011717,
+     "W_cal.dow_cos": 0.023456765438116027
+    },
+    "n": 3775
+   }
+  },
+  "ta.willr_14": {
+   "threshold_q": 0.8,
+   "threshold": -19.598661458741045,
+   "band_q": 0.6,
+   "band": -39.63012510839073,
+   "treated": 1990,
+   "controls": 1737,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.6218530765514388,
+    "standardized_coefficients": {
+     "W_x_prev": -0.778277534738538,
+     "W_px.logret_6h": 0.1381464826061101,
+     "W_px.logret_1h": -0.11605484759122689,
+     "W_cal.hour_sin": 0.09644837715490047,
+     "W_cal.hour_cos": -0.08652991440932568,
+     "W_px.logret_24h": -0.07224250655676409,
+     "W_x_trend_24": 0.0434322944928349,
+     "W_px.logret_120h": 0.042817157789560266,
+     "W_cal.dow_cos": 0.036226764184622694,
+     "W_px.ewma_vol_24": -0.03219234641022558,
+     "W_px.ewma_vol_168": -0.021267844451229725,
+     "W_cal.dow_sin": -0.0009263439412265843
+    },
+    "n": 3727
+   }
+  },
+  "ta.atr_14_n": {
+   "threshold_q": 0.8,
+   "threshold": 0.0016855212583076248,
+   "band_q": 0.6,
+   "band": 0.0013633987814336507,
+   "treated": 634,
+   "controls": 2337,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.8616320365428459,
+    "standardized_coefficients": {
+     "W_x_prev": 1.5010201672620014,
+     "W_cal.hour_cos": -1.1472049503138615,
+     "W_cal.dow_cos": -0.24490511885572153,
+     "W_px.ewma_vol_168": 0.23450432318723433,
+     "W_px.ewma_vol_24": -0.14734767537272656,
+     "W_cal.hour_sin": 0.14296993892828505,
+     "W_px.logret_24h": 0.12801075115575342,
+     "W_px.logret_6h": -0.07638083082344697,
+     "W_px.logret_1h": 0.05255115622513898,
+     "W_cal.dow_sin": 0.03479023698865946,
+     "W_px.logret_120h": -0.013382487315097738,
+     "W_x_trend_24": 0.0014558944606831534
+    },
+    "n": 2971
+   }
+  },
+  "ta.adx_14": {
+   "threshold_q": 0.8,
+   "threshold": 35.7792009968859,
+   "band_q": 0.6,
+   "band": 27.834315189561092,
+   "treated": 653,
+   "controls": 2630,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.9536313825048475,
+    "standardized_coefficients": {
+     "W_x_prev": 3.943316744866865,
+     "W_x_trend_24": 1.1850562001235578,
+     "W_cal.hour_sin": -0.35805050534643096,
+     "W_cal.hour_cos": -0.3463772782780045,
+     "W_px.ewma_vol_24": 0.315118481066588,
+     "W_cal.dow_cos": -0.25659759065558196,
+     "W_px.ewma_vol_168": -0.232637714946068,
+     "W_cal.dow_sin": 0.1522497284268722,
+     "W_px.logret_24h": -0.058102456025936715,
+     "W_px.logret_120h": -0.01368131830386688,
+     "W_px.logret_6h": -0.009076523735247354,
+     "W_px.logret_1h": 0.0023890628670278457
+    },
+    "n": 3283
+   }
+  },
+  "ta.dmp_14": {
+   "threshold_q": 0.8,
+   "threshold": 27.00223482285242,
+   "band_q": 0.6,
+   "band": 22.075546743357815,
+   "treated": 1298,
+   "controls": 2120,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.6611768468180365,
+    "standardized_coefficients": {
+     "W_x_prev": -0.6730342797314351,
+     "W_cal.hour_cos": -0.30320138283306325,
+     "W_px.logret_6h": 0.2018324189756118,
+     "W_px.ewma_vol_24": -0.1788266519084637,
+     "W_px.logret_24h": 0.13116119705125073,
+     "W_px.logret_120h": 0.12216479216434957,
+     "W_px.logret_1h": 0.08763807417745534,
+     "W_x_trend_24": -0.08050057978473935,
+     "W_px.ewma_vol_168": 0.07224449875227067,
+     "W_cal.hour_sin": 0.06949108978066515,
+     "W_cal.dow_cos": 0.04433986518344531,
+     "W_cal.dow_sin": 0.023222215321901434
+    },
+    "n": 3418
+   }
+  },
+  "ta.dmn_14": {
+   "threshold_q": 0.8,
+   "threshold": 27.040431034886694,
+   "band_q": 0.6,
+   "band": 22.01743158883426,
+   "treated": 1323,
+   "controls": 2154,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.6414949142764503,
+    "standardized_coefficients": {
+     "W_x_prev": -0.6057967542566267,
+     "W_cal.hour_cos": -0.22809694036936584,
+     "W_px.ewma_vol_24": -0.17218635160264498,
+     "W_px.logret_24h": -0.17148382461331046,
+     "W_cal.hour_sin": 0.16921102893910903,
+     "W_px.logret_1h": -0.1364710614778739,
+     "W_x_trend_24": -0.13206036647249458,
+     "W_px.logret_6h": -0.11800698273417272,
+     "W_px.ewma_vol_168": 0.03682960829169809,
+     "W_px.logret_120h": -0.02796209604044355,
+     "W_cal.dow_sin": -0.012367461032098534,
+     "W_cal.dow_cos": -0.007842995268320076
+    },
+    "n": 3477
+   }
+  },
+  "ta.cci_20": {
+   "threshold_q": 0.8,
+   "threshold": 99.94869354123254,
+   "band_q": 0.6,
+   "band": 37.78070012535346,
+   "treated": 1704,
+   "controls": 1746,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.7211664891986512,
+    "standardized_coefficients": {
+     "W_x_prev": -0.5119979273599871,
+     "W_px.logret_1h": 0.4323790352233679,
+     "W_cal.hour_cos": -0.42672074214120437,
+     "W_px.ewma_vol_24": -0.29631905957616955,
+     "W_cal.hour_sin": 0.20977261588723692,
+     "W_px.ewma_vol_168": 0.20301709781528796,
+     "W_px.logret_24h": -0.1244157701531474,
+     "W_x_trend_24": 0.07580389127895928,
+     "W_cal.dow_cos": 0.059290835315483015,
+     "W_px.logret_120h": -0.036148686693613825,
+     "W_px.logret_6h": 0.014731624148229068,
+     "W_cal.dow_sin": -0.005025420326308237
+    },
+    "n": 3450
+   }
+  },
+  "ta.bb_pctb_20": {
+   "threshold_q": 0.8,
+   "threshold": 0.8073588829091835,
+   "band_q": 0.6,
+   "band": 0.6121329789478385,
+   "treated": 1800,
+   "controls": 1761,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.6984797148085052,
+    "standardized_coefficients": {
+     "W_x_prev": -0.7422166908979869,
+     "W_cal.hour_cos": -0.41586455931988237,
+     "W_px.ewma_vol_24": -0.27060392610309253,
+     "W_px.ewma_vol_168": 0.26570224237435575,
+     "W_px.logret_1h": -0.20748193435769277,
+     "W_px.logret_24h": -0.17063475013641594,
+     "W_cal.hour_sin": 0.10882448335949227,
+     "W_x_trend_24": 0.10336564107175045,
+     "W_cal.dow_cos": 0.09743363339994782,
+     "W_px.logret_120h": -0.07346148486056583,
+     "W_cal.dow_sin": 0.0016257135316577415,
+     "W_px.logret_6h": 0.00041132590760001276
+    },
+    "n": 3561
+   }
+  },
+  "ta.bb_width_20": {
+   "threshold_q": 0.8,
+   "threshold": 0.008446323301266757,
+   "band_q": 0.6,
+   "band": 0.0058913694978852335,
+   "treated": 917,
+   "controls": 2663,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.8825121182847789,
+    "standardized_coefficients": {
+     "W_x_prev": 1.6724487117793565,
+     "W_cal.hour_cos": -0.8357266642605886,
+     "W_cal.hour_sin": -0.43708913783958,
+     "W_px.ewma_vol_24": 0.3656418556028182,
+     "W_x_trend_24": 0.3124855373724222,
+     "W_cal.dow_cos": -0.2978537718139638,
+     "W_cal.dow_sin": 0.10412204083092354,
+     "W_px.logret_24h": 0.09678575356052908,
+     "W_px.ewma_vol_168": -0.06087346441529033,
+     "W_px.logret_1h": -0.05367714762375661,
+     "W_px.logret_6h": -0.02494350464246631,
+     "W_px.logret_120h": 0.009982278988711029
+    },
+    "n": 3580
+   }
+  },
+  "ta.mom_10_n": {
+   "threshold_q": 0.8,
+   "threshold": 0.0020008750790705366,
+   "band_q": 0.6,
+   "band": 0.0005434468735342215,
+   "treated": 1679,
+   "controls": 2496,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.6919034719995113,
+    "standardized_coefficients": {
+     "W_px.logret_6h": 0.48932046777168137,
+     "W_x_prev": -0.3658409389216878,
+     "W_px.logret_1h": -0.3519970380229676,
+     "W_cal.hour_cos": -0.33703238046484907,
+     "W_px.ewma_vol_24": 0.2195917149633647,
+     "W_px.ewma_vol_168": 0.2113413646329442,
+     "W_cal.hour_sin": -0.08377544018534952,
+     "W_x_trend_24": 0.04530192130013058,
+     "W_px.logret_24h": 0.033877769930556634,
+     "W_cal.dow_sin": 0.02668059901082985,
+     "W_cal.dow_cos": -0.017370250138711244,
+     "W_px.logret_120h": 0.007026051446612568
+    },
+    "n": 4175
+   }
+  },
+  "ta.roc_10": {
+   "threshold_q": 0.8,
+   "threshold": 0.2004886606718248,
+   "band_q": 0.6,
+   "band": 0.05437423686249329,
+   "treated": 1679,
+   "controls": 2496,
+   "min_gap_h": 24,
+   "control_stride_h": 6,
+   "upstream_mechanism": {
+    "model": "logistic(A ~ standardized W at row t-1), cross-fitted",
+    "auc_crossfit": 0.6918621909408836,
+    "standardized_coefficients": {
+     "W_px.logret_6h": 0.4891293836142232,
+     "W_x_prev": -0.3645055555311151,
+     "W_px.logret_1h": -0.35206026948663666,
+     "W_cal.hour_cos": -0.3371387012722791,
+     "W_px.ewma_vol_24": 0.21995457026783147,
+     "W_px.ewma_vol_168": 0.21125548801439722,
+     "W_cal.hour_sin": -0.08385992173993162,
+     "W_x_trend_24": 0.04578136892098843,
+     "W_px.logret_24h": 0.03365383209425978,
+     "W_cal.dow_sin": 0.026656215031395224,
+     "W_cal.dow_cos": -0.01738237254451008,
+     "W_px.logret_120h": 0.00723424593474785
+    },
+    "n": 4175
+   }
+  },
+  "cal.hour_sin": {
+   "reason": "KNOWN_IN_ADVANCE_CALENDAR_NOT_AN_OBSERVED_INTERVENTION"
+  },
+  "cal.hour_cos": {
+   "reason": "KNOWN_IN_ADVANCE_CALENDAR_NOT_AN_OBSERVED_INTERVENTION"
+  },
+  "cal.dow_sin": {
+   "reason": "KNOWN_IN_ADVANCE_CALENDAR_NOT_AN_OBSERVED_INTERVENTION"
+  },
+  "cal.dow_cos": {
+   "reason": "KNOWN_IN_ADVANCE_CALENDAR_NOT_AN_OBSERVED_INTERVENTION"
+  },
+  "cal.doy_sin": {
+   "reason": "KNOWN_IN_ADVANCE_CALENDAR_NOT_AN_OBSERVED_INTERVENTION"
+  },
+  "cal.doy_cos": {
+   "reason": "KNOWN_IN_ADVANCE_CALENDAR_NOT_AN_OBSERVED_INTERVENTION"
+  },
+  "cal.us_dst": {
+   "reason": "KNOWN_IN_ADVANCE_CALENDAR_NOT_AN_OBSERVED_INTERVENTION"
+  },
+  "cal.sess_london": {
+   "reason": "KNOWN_IN_ADVANCE_CALENDAR_NOT_AN_OBSERVED_INTERVENTION"
+  },
+  "cal.sess_newyork": {
+   "reason": "KNOWN_IN_ADVANCE_CALENDAR_NOT_AN_OBSERVED_INTERVENTION"
+  },
+  "cal.sess_tokyo": {
+   "reason": "KNOWN_IN_ADVANCE_CALENDAR_NOT_AN_OBSERVED_INTERVENTION"
+  }
+ },
+ "per_rung_counts": {
+  "rung1": {
+   "ESTIMATED": 869
+  },
+  "rung2": {
+   "ESTIMATED": 450,
+   "NOT_IDENTIFIED": 279,
+   "NOT_APPLICABLE": 140
+  },
+  "rung3": {
+   "ESTIMATED": 436,
+   "NOT_IDENTIFIED": 293,
+   "NOT_APPLICABLE": 140
+  }
+ },
+ "per_rung_raw_counts": {
+  "rung1": {
+   "ASSOCIATION_REPORTED": 869
+  },
+  "rung2": {
+   "IDENTIFIED_CONDITIONAL_ON_DECLARED_ASSUMPTIONS": 450,
+   "NOT_IDENTIFIED": 265,
+   "NOT_EVALUATED": 154
+  },
+  "rung3": {
+   "COUNTERFACTUAL_UNDER_DECLARED_SCM": 436,
+   "NOT_IDENTIFIED": 279,
+   "NOT_EVALUATED": 154
+  }
+ },
+ "subject_names_per_state": {
+  "rung1": {
+   "ESTIMATED": [
+    "Euro Zone|CPI",
+    "Euro Zone|ECB Interest Rate Decision",
+    "Germany|German GDP",
+    "Germany|German Ifo Business Climate Index",
+    "Germany|German Manufacturing PMI",
+    "Germany|German Unemployment Change",
+    "Germany|German ZEW Economic Sentiment",
+    "United States|ADP Nonfarm Employment Change",
+    "United States|Crude Oil Inventories",
+    "United States|ISM Manufacturing PMI",
+    "United States|ISM Non-Manufacturing PMI",
+    "United States|New Home Sales",
+    "United States|Nonfarm Payrolls",
+    "United States|PPI",
+    "United States|Unemployment Rate",
+    "cal.dow_cos",
+    "cal.dow_sin",
+    "cal.doy_cos",
+    "cal.doy_sin",
+    "cal.hour_cos",
+    "cal.hour_sin",
+    "cal.sess_london",
+    "cal.sess_newyork",
+    "cal.sess_tokyo",
+    "cal.us_dst",
+    "px.close_loc",
+    "px.ewma_vol_168",
+    "px.ewma_vol_24",
+    "px.hours_since_prev_bar",
+    "px.log_close",
+    "px.log_co",
+    "px.log_hl",
+    "px.logret_120h",
+    "px.logret_12h",
+    "px.logret_168h",
+    "px.logret_1h",
+    "px.logret_24h",
+    "px.logret_2h",
+    "px.logret_48h",
+    "px.logret_4h",
+    "px.logret_6h",
+    "px.parkinson_24",
+    "px.rv5",
+    "px.zclose_168",
+    "px.zclose_24",
+    "ta.adx_14",
+    "ta.atr_14_n",
+    "ta.bb_pctb_20",
+    "ta.bb_width_20",
+    "ta.cci_20",
+    "ta.dmn_14",
+    "ta.dmp_14",
+    "ta.ema20_dev",
+    "ta.macd_hist_n",
+    "ta.macd_n",
+    "ta.mom_10_n",
+    "ta.roc_10",
+    "ta.rsi_14",
+    "ta.stoch_d",
+    "ta.stoch_k",
+    "ta.willr_14"
+   ],
+   "NOT_IDENTIFIED": [],
+   "NOT_APPLICABLE": [],
+   "FAILED": [],
+   "PENDING": []
+  },
+  "rung2": {
+   "ESTIMATED": [
+    "px.close_loc",
+    "px.ewma_vol_168",
+    "px.ewma_vol_24",
+    "px.log_co",
+    "px.log_hl",
+    "px.logret_120h",
+    "px.logret_12h",
+    "px.logret_1h",
+    "px.logret_24h",
+    "px.logret_2h",
+    "px.logret_48h",
+    "px.logret_4h",
+    "px.logret_6h",
+    "px.parkinson_24",
+    "px.rv5",
+    "px.zclose_168",
+    "px.zclose_24",
+    "ta.adx_14",
+    "ta.atr_14_n",
+    "ta.bb_pctb_20",
+    "ta.bb_width_20",
+    "ta.cci_20",
+    "ta.dmn_14",
+    "ta.dmp_14",
+    "ta.ema20_dev",
+    "ta.macd_hist_n",
+    "ta.macd_n",
+    "ta.mom_10_n",
+    "ta.roc_10",
+    "ta.rsi_14",
+    "ta.stoch_d",
+    "ta.stoch_k",
+    "ta.willr_14"
+   ],
+   "NOT_IDENTIFIED": [
+    "Euro Zone|CPI",
+    "Euro Zone|ECB Interest Rate Decision",
+    "Germany|German GDP",
+    "Germany|German Ifo Business Climate Index",
+    "Germany|German Manufacturing PMI",
+    "Germany|German Unemployment Change",
+    "Germany|German ZEW Economic Sentiment",
+    "United States|ADP Nonfarm Employment Change",
+    "United States|Crude Oil Inventories",
+    "United States|ISM Manufacturing PMI",
+    "United States|ISM Non-Manufacturing PMI",
+    "United States|New Home Sales",
+    "United States|Nonfarm Payrolls",
+    "United States|PPI",
+    "United States|Unemployment Rate",
+    "px.hours_since_prev_bar",
+    "px.log_close",
+    "px.logret_168h",
+    "px.logret_1h",
+    "px.zclose_168",
+    "ta.rsi_14"
+   ],
+   "NOT_APPLICABLE": [
+    "cal.dow_cos",
+    "cal.dow_sin",
+    "cal.doy_cos",
+    "cal.doy_sin",
+    "cal.hour_cos",
+    "cal.hour_sin",
+    "cal.sess_london",
+    "cal.sess_newyork",
+    "cal.sess_tokyo",
+    "cal.us_dst"
+   ],
+   "FAILED": [],
+   "PENDING": []
+  },
+  "rung3": {
+   "ESTIMATED": [
+    "px.close_loc",
+    "px.ewma_vol_168",
+    "px.ewma_vol_24",
+    "px.log_co",
+    "px.log_hl",
+    "px.logret_120h",
+    "px.logret_12h",
+    "px.logret_1h",
+    "px.logret_24h",
+    "px.logret_2h",
+    "px.logret_48h",
+    "px.logret_4h",
+    "px.logret_6h",
+    "px.parkinson_24",
+    "px.rv5",
+    "px.zclose_168",
+    "px.zclose_24",
+    "ta.adx_14",
+    "ta.atr_14_n",
+    "ta.bb_pctb_20",
+    "ta.bb_width_20",
+    "ta.cci_20",
+    "ta.dmn_14",
+    "ta.dmp_14",
+    "ta.ema20_dev",
+    "ta.macd_hist_n",
+    "ta.macd_n",
+    "ta.mom_10_n",
+    "ta.roc_10",
+    "ta.rsi_14",
+    "ta.stoch_d",
+    "ta.stoch_k",
+    "ta.willr_14"
+   ],
+   "NOT_IDENTIFIED": [
+    "Euro Zone|CPI",
+    "Euro Zone|ECB Interest Rate Decision",
+    "Germany|German GDP",
+    "Germany|German Ifo Business Climate Index",
+    "Germany|German Manufacturing PMI",
+    "Germany|German Unemployment Change",
+    "Germany|German ZEW Economic Sentiment",
+    "United States|ADP Nonfarm Employment Change",
+    "United States|Crude Oil Inventories",
+    "United States|ISM Manufacturing PMI",
+    "United States|ISM Non-Manufacturing PMI",
+    "United States|New Home Sales",
+    "United States|Nonfarm Payrolls",
+    "United States|PPI",
+    "United States|Unemployment Rate",
+    "px.hours_since_prev_bar",
+    "px.log_close",
+    "px.log_co",
+    "px.logret_120h",
+    "px.logret_168h",
+    "px.logret_1h",
+    "px.zclose_168",
+    "ta.rsi_14",
+    "ta.stoch_d"
+   ],
+   "NOT_APPLICABLE": [
+    "cal.dow_cos",
+    "cal.dow_sin",
+    "cal.doy_cos",
+    "cal.doy_sin",
+    "cal.hour_cos",
+    "cal.hour_sin",
+    "cal.sess_london",
+    "cal.sess_newyork",
+    "cal.sess_tokyo",
+    "cal.us_dst"
+   ],
+   "FAILED": [],
+   "PENDING": []
+  },
+  "rung1_robust_association": []
+ },
+ "summary_state_rule": {
+  "rung1": "ESTIMATED = association measured (ASSOCIATION_REPORTED; never causal); robust_association additionally needs batch BH q<=0.05 on the partial correlation given H AND mean OOF MSE gain > 0",
+  "rung2": "ESTIMATED = IDENTIFIED_CONDITIONAL_ON_DECLARED_ASSUMPTIONS",
+  "rung3": "ESTIMATED = COUNTERFACTUAL_UNDER_DECLARED_SCM",
+  "NOT_APPLICABLE": "known-in-advance calendar features are not observed interventions",
+  "FAILED": "execution error or missing inputs (error recorded)",
+  "PENDING": "not run",
+  "note": "NOT_IDENTIFIED is never a rejection and never an effect"
+ },
+ "scope": "selector evidence only (PS3-C); no adapter feeds calendar, surprises or dossiers to the predictor, core, RL or M5PHET (I11, deferred)",
+ "endogenous_indicators": "treatment = predeclared historical transition (first available crossing of the TRAIN q80 threshold), never do(indicator=value); its upstream mechanism is the cross-fitted propensity of the transition on the pre-row W (records + report.crossing)",
+ "schema_validation": {
+  "dossiers": 869,
+  "with_errors": 0,
+  "note": "validated against the vendored causal_dossier.v1 schema plus ONE declared local extension: the asset_appearance branch CONTRACTED_BUSINESS_CONTRACT (lane A EURUSD business contract). The upstream predictor schema only knows the C127 census appearance, so a consumer of the unmodified schema fails closed on these dossiers until the contract owner adds the branch"
+ },
+ "cost": {
+  "load_s": 0.20075464248657227,
+  "features_s": 241.12636423110962,
+  "events_s": 13.453971147537231,
+  "wall_s": 255.96321368217468,
+  "peak_rss_kb_self": 545700
+ },
+ "host_role": "worker_a",
+ "hardware": "CPU only (CUDA_VISIBLE_DEVICES empty)"
+}

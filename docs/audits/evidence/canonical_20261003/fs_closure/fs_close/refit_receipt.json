@@ -1,0 +1,58 @@
+{
+ "cells_done": 0,
+ "cells_failed": 0,
+ "cells_skipped": 10220,
+ "children_peak_rss_bytes": 0,
+ "code_sha256": "1259d7aec979d0c5a45181ac988fa90910f080acee14e450b76655dd184779b9",
+ "finished_utc": "2026-10-05T17:13:49.169298+00:00",
+ "head_params": {
+  "hgb": {
+   "early_stopping": false,
+   "learning_rate": 0.1,
+   "max_iter": 100,
+   "max_leaf_nodes": 15,
+   "random_state": 0
+  },
+  "ridge": {
+   "alpha": 1.0,
+   "barrier": {
+    "C": 1.0,
+    "estimator": "LogisticRegression",
+    "max_iter": 200,
+    "random_state": 0,
+    "solver": "lbfgs"
+   },
+   "intercept": "fit-row mean",
+   "standardise": "fit-row mean/std"
+  }
+ },
+ "heads": [
+  "ridge",
+  "hgb"
+ ],
+ "hgb_max_k": 24,
+ "imputation": "fit-row median per feature (identical for every set)",
+ "inputs_sha256": {
+  "features_train.parquet@batch_001": "bd005701247dc181c81457037cbad6e6142f8171ad8c3595f1cd489986557aa2",
+  "features_train.parquet@batch_002": "0e6ff8c570804823921227bd6733b185c17e54808364735067953f524f4399f3",
+  "features_train.parquet@batch_003": "fd0b4423db991cfb05cd4f9357a378648579d4c11552a1cac413ed711c3520bc",
+  "folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+  "targets_train.parquet": "a838b81c72a291a45dac70ab4c69415c85d7ec1888691cae38817642188e84e5"
+ },
+ "output": "/home/harveybc/.local/state/canonical_20261003/fs_close/out/paired_refit_metrics.parquet",
+ "output_sha256": "87a4e23a091e41fc3f90b80b41c73a5b5418b9d98c63df1f57a250f2ff938b83",
+ "peak_rss_bytes": 494489600,
+ "plan_sha256": "e259f6a32892f9ad1ce48faea869ed2d1080db8c89635f221db1b7d46d1ae7d3",
+ "population_sha256": "f0ff9ec6bf355139ecda400611a01661810f0d770154ecc7821ab59a72309e61",
+ "rows_rule": "every fold row with a finite target (barrier: supported label); independent of the set",
+ "schema": "fs_close_refit_receipt.v1",
+ "seed": 0,
+ "started_utc": "2026-10-05T17:13:49.003753+00:00",
+ "train_bound": {
+  "max_ts": 1703887200,
+  "min_ts": 1335830400,
+  "rows": 71734,
+  "train_end_utc": "2024-01-01T00:00:00+00:00"
+ },
+ "wall_seconds": 0.16554951667785645
+}

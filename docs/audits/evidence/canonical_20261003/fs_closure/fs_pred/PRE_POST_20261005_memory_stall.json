@@ -1,0 +1,88 @@
+{
+ "schema": "fs_pred_pre_post.v1",
+ "order": "MUSASHI_TO_SATOSHI_FS_CLOSURE_CORRECTIONS_2026_10_05.md section 2",
+ "PRE": {
+  "captured_utc": "2026-10-05T09:05:25Z",
+  "job": "fs-pred-Y_s_2h (scope crispdm-fs-pred-Y_s_2h-1791179863-3593182)",
+  "cap": "4096M (MemoryHigh 3,865,470,566 B, MemoryMax 4,294,967,296 B)",
+  "process": {
+   "pid": 3593336,
+   "state": "D",
+   "since": "~06:12Z (mem_cgroup_handle_over_high)"
+  },
+  "memory_events_high": 676071,
+  "memory_peak_bytes": 4120571904,
+  "memory_current_bytes": 4112977920,
+  "progress_json_mtime_utc": "2026-10-05T06:12:07Z",
+  "progress_at_stall": {
+   "k_cells": "555/4900",
+   "method_cells": "111/980",
+   "failures": 0,
+   "p90_method_wall_seconds": 51.16
+  },
+  "interrupted_cell": "Y_s_2h x inner_2021 CHRONOEPILOGI_K (no terminal; restarted by resume)",
+  "slice_before": {
+   "MemoryHigh": 12884901888,
+   "MemoryMax": 15032385536,
+   "MemoryCurrent": 10824519680
+  },
+  "watchdog_verdict_for_this_state": "STALLED (progress age 2h53m > max(600 s, 3 x 51.2 s) and D-state process with rising high events)"
+ },
+ "actions": {
+  "stopped": [
+   "fs-pred-runner.service",
+   "its scope only"
+  ],
+  "untouched": [
+   "feature-selection-4090-claims (active)",
+   "fs-causal-driver (active)",
+   "fs-close-refit (was inactive before and after; not touched)"
+  ],
+  "records_kept": 111,
+  "slice_drop_in": "~/.config/systemd/user/crispdm-batch.slice.d/50-fs-pred-widen-20261005.conf: MemoryHigh=18G MemoryMax=20G; verified live 19,327,352,832 / 21,474,836,480 after daemon-reload",
+  "new_cap": "5376M = practical ceil of 1.25 x 4,120,571,904 B; peak_evidence.json rewritten with that cgroup peak",
+  "relaunch": "fs-pred-runner.service restarted; jobs renamed fs-pred-v2-<target>; first admitted scope crispdm-fs-pred-v2-Y_s_2h-1791191225-323117 at 09:07:05Z with cap_bytes 5,637,144,576",
+  "not_used_for": "no second GPU training; the widening serves CPU batch admission only"
+ },
+ "POST": {
+  "captured_utc": "2026-10-05T09:09Z",
+  "next_terminal_cell": "Y_s_2h x inner_2021 CHRONOEPILOGI_K COMPLETE 99.2 s at 09:08:50Z (the cell interrupted in PRE)",
+  "post_cells_first_three": [
+   "Y_s_2h inner_2021 CHRONOEPILOGI_K 99.2s",
+   "Y_s_2h inner_2022 ALL_ADMISSIBLE 0.3s",
+   "Y_s_2h inner_2022 SPEARMAN_K 6.6s"
+  ],
+  "scope": "crispdm-fs-pred-v2-Y_s_2h-1791191225-323117",
+  "memory_peak_bytes": 4122132480,
+  "memory_max_bytes": 5637144576,
+  "peak_le_max": true,
+  "memory_events_high": 0,
+  "memory_current_bytes": 2485604352,
+  "progress": {
+   "k_cells": "580/4900",
+   "method_cells": "116/980",
+   "failures": 0
+  },
+  "watchdog_state_rendered": "RUNNING",
+  "eta": {
+   "eta_utc": "2026-10-05T14:26:15.100119+00:00",
+   "basis": "sum of per-method median walls over 116 COMPLETE records = 308 s per fold cell x 61.7 remaining fold cells, one worker; the status renderer's own POST-gated estimate is in LANE_STATUS.json",
+   "per_method_median_wall_seconds": {
+    "ALL_ADMISSIBLE": 0.2,
+    "CHRONOEPILOGI_K": 48.8,
+    "CMIM_K": 40.8,
+    "ELASTIC_NET_K": 12.5,
+    "EXTRATREES_TBP_K": 79.5,
+    "GROUP_ELASTIC_NET_K": 9.4,
+    "GROUP_GATE_K": 2.6,
+    "JMI_K": 42.6,
+    "MI8_K": 1.2,
+    "MRMR_K": 40.6,
+    "RANDOM_K:seed0": 0.2,
+    "REDUNDANCY_K": 2.7,
+    "SEQ_MARGINAL_K": 20.5,
+    "SPEARMAN_K": 5.7
+   }
+  }
+ }
+}

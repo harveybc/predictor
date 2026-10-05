@@ -9,7 +9,8 @@ Build one reusable temporal representation for forecasting and future RL heads:
 typed feature selection -> independent branch encoders -> common time grid ->
 fusion -> positional encoding -> full Transformer blocks -> progressive learned
 compression -> task head. Support random, frozen-pretrained and fine-tuned
-initialization independently for every branch and for the core. DOIN searches
+initialization for every branch. Core pretraining is a later, separate experiment
+after architecture and branch regime selection. DOIN searches
 the declared candidate space using validation objectives. predictor owns offline
 forecast fitting, feature-eng owns descriptive feature profiles, feature-extractor
 owns reusable representation producers, and agent-multi/gym-fx own policy fitting.
@@ -117,20 +118,26 @@ Keep an all-admissible-feature control and the reasons for every exclusion.
    subplan with their own validation criterion; no decoder is required for a
    contrastive or latent-prediction encoder. Keep architecture and objective
    separate in configs and evidence.
-3. Freeze those branch encoders during materialization; encode train and internal
-   validation in bounded batches. Fuse with the same plugin/grid used downstream.
-4. For the reconstructive control, train the core AE on the fused sequences; early stop on its own
-   internal validation. Export the core with upstream branch/fusion identities.
-5. Fit forecasting heads under branch/core regimes. Baseline R0 has no donor;
+3. Fit forecasting heads under branch regimes. Baseline R0 has no donor;
    R1 freezes the specified donor; R2 starts from the same donor and fine-tunes.
-   Mixed per-component regimes are allowed and recorded, not conflated with the
-   original three-arm scientific comparison.
-6. Restore selected weights and replay predictions after serialization. Persist
+4. Select the architecture and branch regime on the declared validation support.
+   Fix one identical branch prefix for the H-CORE experiment.
+5. Freeze that prefix during H-CORE materialization; encode train and internal
+   validation in bounded batches and fuse with the downstream plugin/grid.
+6. Train the core AE control on fused sequences, early stop on its own internal
+   validation and export it with upstream branch/fusion identities.
+7. Test transfer of that core in a separate random/frozen/fine-tuned comparison.
+   Do not call these arms a redefinition of the branch R0/R1/R2 experiment.
+8. Restore selected weights and replay predictions after serialization. Persist
    actual parameter counts, updates, stop reason, monitor values and identities.
-7. Evaluate on fixed validation rows with paired persistence. Select candidates
+9. Evaluate on fixed validation rows with paired persistence. Select candidates
    by the declared objective across paired seeds, not their best seed.
-8. Confirm frozen finalists on the untouched test once under its declared design.
-   Export eligible candidates to the LTS paper adapter only after this result.
+10. Confirm frozen finalists under the declared evaluation mode. In
+   `LITERATURE_STATIC`, fit and score exactly as the paper. In
+   `BUSINESS_WEEKLY_WALK_FORWARD`, traverse the untouched test year exactly once
+   with the frozen update procedure, producing one point-in-time checkpoint per
+   eligible week and never selecting from test metrics. Export eligible
+   candidates to the LTS paper adapter only after the applicable result.
 
 AdamW with MAE, Huber and MSE are explicit candidate choices. Huber delta is in
 the target's declared scale; tune on training/inner-validation only. The metric
@@ -169,8 +176,8 @@ without monopolizing the optimization lane. The external 5090 remains preferred
 when host RAM and thermal admission allow it.
 
 Run the following matched ablations, with equal search budgets and paired seeds:
-published reference; modular R0; branch-pretrained R1/R2; core-pretrained R1/R2;
-joint pretraining; one-feature vs grouped branches; selected vs all admissible
+published reference; modular R0; branch-pretrained R1/R2; then, after selecting
+the prefix, core transfer arms; one-feature vs grouped branches; selected vs all admissible
 features; bottleneck width/time/depth; MAE vs tuned Huber. Report configuration
 and optimization cost, including AE cost, with every model metric.
 

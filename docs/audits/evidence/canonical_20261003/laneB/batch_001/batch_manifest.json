@@ -1,0 +1,209 @@
+{
+  "asset": "EURUSD",
+  "batch_id": "batch_001",
+  "decisions": {
+    "Y_b_encoding": {
+      "-1": "no support (censored, ambiguous, no sigma, closed)",
+      "0": "SL first (-1)",
+      "1": "timeout (0)",
+      "2": "TP first (+1)"
+    },
+    "excluded_calendar_known": [
+      "cal.dow_cos",
+      "cal.dow_sin",
+      "cal.doy_cos",
+      "cal.doy_sin",
+      "cal.hour_cos",
+      "cal.hour_sin",
+      "cal.sess_london",
+      "cal.sess_newyork",
+      "cal.sess_tokyo",
+      "cal.us_dst"
+    ],
+    "features_rule": "PS2 PROVISIONAL_SURVIVOR in >=1 target/horizon or EXPLORATION sample; calendar_known excluded (conditioning, not a series); selector episode sources excluded",
+    "fold_gap_h": 720,
+    "fold_rule": "fit anchors [first row + gap, val start - gap - 1h]; val = lane A inner validation year inside TRAIN",
+    "grid": "regular UTC hourly grid from the first to the last TRAIN decision row; NaN where no decision row exists (market closed); targets NaN / -1 there"
+  },
+  "feature_sources": {
+    "px.close_loc": "range",
+    "px.ewma_vol_168": "volatility",
+    "px.ewma_vol_24": "volatility",
+    "px.hours_since_prev_bar": "market_state",
+    "px.log_close": "level",
+    "px.log_co": "range",
+    "px.log_hl": "range",
+    "px.logret_120h": "returns",
+    "px.logret_12h": "returns",
+    "px.logret_168h": "returns",
+    "px.logret_1h": "returns",
+    "px.logret_24h": "returns",
+    "px.logret_2h": "returns",
+    "px.logret_48h": "returns",
+    "px.logret_4h": "returns",
+    "px.logret_6h": "returns",
+    "px.parkinson_24": "volatility",
+    "px.rv5": "volatility",
+    "px.zclose_168": "returns",
+    "px.zclose_24": "returns",
+    "ta.adx_14": "technical",
+    "ta.atr_14_n": "technical",
+    "ta.bb_pctb_20": "technical",
+    "ta.bb_width_20": "technical",
+    "ta.cci_20": "technical",
+    "ta.dmn_14": "technical",
+    "ta.dmp_14": "technical",
+    "ta.ema20_dev": "technical",
+    "ta.macd_hist_n": "technical",
+    "ta.macd_n": "technical",
+    "ta.mom_10_n": "technical",
+    "ta.roc_10": "technical",
+    "ta.rsi_14": "technical",
+    "ta.stoch_d": "technical",
+    "ta.stoch_k": "technical",
+    "ta.willr_14": "technical"
+  },
+  "features": [
+    "px.close_loc",
+    "px.ewma_vol_168",
+    "px.ewma_vol_24",
+    "px.hours_since_prev_bar",
+    "px.log_close",
+    "px.log_co",
+    "px.log_hl",
+    "px.logret_120h",
+    "px.logret_12h",
+    "px.logret_168h",
+    "px.logret_1h",
+    "px.logret_24h",
+    "px.logret_2h",
+    "px.logret_48h",
+    "px.logret_4h",
+    "px.logret_6h",
+    "px.parkinson_24",
+    "px.rv5",
+    "px.zclose_168",
+    "px.zclose_24",
+    "ta.adx_14",
+    "ta.atr_14_n",
+    "ta.bb_pctb_20",
+    "ta.bb_width_20",
+    "ta.cci_20",
+    "ta.dmn_14",
+    "ta.dmp_14",
+    "ta.ema20_dev",
+    "ta.macd_hist_n",
+    "ta.macd_n",
+    "ta.mom_10_n",
+    "ta.roc_10",
+    "ta.rsi_14",
+    "ta.stoch_d",
+    "ta.stoch_k",
+    "ta.willr_14"
+  ],
+  "folds": [
+    {
+      "fit": [
+        1338422400,
+        1543788000
+      ],
+      "fold_id": "inner_2019",
+      "split": "train",
+      "val": [
+        1546383600,
+        1577829600
+      ]
+    },
+    {
+      "fit": [
+        1338422400,
+        1575324000
+      ],
+      "fold_id": "inner_2020",
+      "split": "train",
+      "val": [
+        1577919600,
+        1609452000
+      ]
+    },
+    {
+      "fit": [
+        1338422400,
+        1607119200
+      ],
+      "fold_id": "inner_2021",
+      "split": "train",
+      "val": [
+        1609714800,
+        1640988000
+      ]
+    },
+    {
+      "fit": [
+        1338422400,
+        1638568800
+      ],
+      "fold_id": "inner_2022",
+      "split": "train",
+      "val": [
+        1641164400,
+        1672437600
+      ]
+    },
+    {
+      "fit": [
+        1338422400,
+        1670018400
+      ],
+      "fold_id": "inner_2023",
+      "split": "train",
+      "val": [
+        1672614000,
+        1703887200
+      ]
+    }
+  ],
+  "known_calendar": [],
+  "producer": {
+    "code_sha256": "b6d65cdd4b6751d0e1d4a1e89b8b905862ffe6dcae5379d672d1578a080f8d49",
+    "lane": "B",
+    "lane_a_batch": "batch_001",
+    "lane_a_ready_digests_sha256": "449f4c3d5e992ee4f3221c7e6ac3078167fe5e31063a3d659fb2814db1c07eb4",
+    "parameter_digest": "e4eeebf4749addc035d4619cbae531b778e243b5a5613d47eb46f710c9bf0d73",
+    "schema": "feature_eng.ps2_selection.v1",
+    "train_data_digest": "80ff936fcec54777b2d255b4fbb3fbc2415719a6351694a8f581ae035622e615"
+  },
+  "sampling_period_seconds": 3600,
+  "schema": "ps2_batch.v1",
+  "series": {
+    "file": "series.npz",
+    "sha256": "3e4404d260d9236ca24fc8561eedbfcc9c47a609d3e64b68870c204a3731f025"
+  },
+  "target_columns": {
+    "Y_b": [
+      "Y_b_s6 (timeout 6h)",
+      "Y_b_l144 (timeout 144h)"
+    ],
+    "Y_l": [
+      "Y_l_24h",
+      "Y_l_48h",
+      "Y_l_72h",
+      "Y_l_96h",
+      "Y_l_120h",
+      "Y_l_144h"
+    ],
+    "Y_s": [
+      "Y_s_1h",
+      "Y_s_2h",
+      "Y_s_3h",
+      "Y_s_4h",
+      "Y_s_5h",
+      "Y_s_6h"
+    ]
+  },
+  "targets": {
+    "file": "targets.npz",
+    "sha256": "7dbb0b9552f27873d0bf58604908cd8f6b46c7daa1ee56cb44cd23c42fa9c209"
+  },
+  "train_end_ts": 1703887200
+}

@@ -1,0 +1,4 @@
+{"schema": "laneE_rows_contract.v1", "decided_by": "lane E (PS3-R)", "date": "2026-10-03",
+ "args": {"--window": 168, "--latent_dim": 8, "--seed": 0, "--max_fit_windows": 16384, "--max_val_windows": 0, "--max_ref_windows": 256, "--probe_lags": "0,1,2,23"},
+ "reason": "full-row folds do not fit the shared 8 GiB batch slice: one feature at --max_epochs 1 was pressure-stopped at 5 GiB (tree peak 5.03e9) and again at 7 GiB (tree peak 6.96e9) while still in fold 2 of 5; fit-set size grows with each expanding fold. Evenly spaced fit anchors (pilot _even_subset, deterministic) bound memory; validation rows stay complete. Lane F should pass the same --max_fit_windows/--max_val_windows so the probe rows are identical.",
+ "note": "adjacent hourly windows overlap in 167 of 168 steps; 16384 evenly spaced anchors per fold still cover the whole fit span."}

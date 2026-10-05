@@ -1,0 +1,85 @@
+{
+ "schema": "laneG.faithful_cell_result.v1",
+ "cell_id": "traffic_L96_h192_s2021",
+ "paper": "TimeFilter (ICML 2025, arXiv:2501.13041) Table 8, L=96; margin Table 7 Traffic 0.407+-0.008 / 0.268+-0.004",
+ "author_code": "github.com/TROUBADOUR000/TimeFilter @ dffde87e4fff0fdeeebbacde03dc1e432e15b3a1 (clean, source_drift empty)",
+ "design_sha256": "6cba7e20aa359986482c0dbae7d7bc095b1951df9fdc4db10af5837815285575",
+ "protocol_sha256": "322262e8d78abd1fe0648d8e6f66c31c129d852a7cab97aad47c366311ba5a20",
+ "dataset": {
+  "name": "traffic (TSL official processed)",
+  "sha256": "cb06463d56fa17d87f47027cd9389ceae82a69eddee51cdb61480e120dab0b16",
+  "custody": "DECLARED_TRANSPORT_OF_GOVERNED_BYTES_NOT_A_NEW_GOVERNED_UNIT"
+ },
+ "task": "L96 -> T192 long-term forecast, split 7/1/2, normalized (z_train) space, mean over window x step x channel",
+ "seed": 2021,
+ "population": {
+  "windows": 3317,
+  "channels": 862,
+  "elements": 548976768,
+  "sha256": "4ddc62909fbbfe2033c0b060ce71808fa9a47ae1574c944836522f8a9b7fd569",
+  "complete": true,
+  "all_finite": true
+ },
+ "model_error": {
+  "mse": 0.39660507440567017,
+  "mae": 0.2626103460788727,
+  "route": "author float32 reduction via df_sota_author_metric_exact.v2",
+  "independent_float64": {
+   "mse": 0.3966050739264299,
+   "mae": 0.2626103546489229
+  }
+ },
+ "naive_same_rows": {
+  "mse": 2.747078210964908,
+  "mae": 1.085077268712241,
+  "definition": "persistence, last observed value repeated, same windows; pairing proved by target digest equality"
+ },
+ "skill_vs_naive": {
+  "mse": 0.8556265806984931,
+  "mae": 0.7579800502221044
+ },
+ "published": {
+  "mse": 0.395,
+  "mae": 0.262,
+  "source": "Table 8, Traffic, T=192"
+ },
+ "difference": {
+  "mse": 0.0016050744056701483,
+  "mae": 0.00061034607887267
+ },
+ "operational_tolerance": {
+  "mse": 0.0165,
+  "mae": 0.0085
+ },
+ "comparability": "MATCHED_PUBLISHED_RECIPE_EXECUTED; ONE SEED: a per-seed difference, not a class (the class is assigned to the 3-seed mean)",
+ "evaluation_route": {
+  "path": "df_sota_bounded_eval.v1; df_sota_author_metric_exact.v2",
+  "author_test_native": false,
+  "parity": "ADMISSIBLE_PARITY_INHERITED (reduction bit-equal proven on full real Traffic h96 population; not re-witnessed at h192)",
+  "probe_record_sha256": "3fa2e71618ea068581d5b9da1ff48886d1275d8ff4ffa220da840e5b86189382"
+ },
+ "convergence": {
+  "epochs_sealed": 30,
+  "epochs_run": 30,
+  "early_stopped": false,
+  "best_epoch_by_validation": 28
+ },
+ "checkpoint_sha256": "056121b559260ee752ffeab9097377e0a98799c47f9c50f310905972eebfa6be",
+ "predictions_sha256": "dbf5aad64aee6f26fb4c49b31d802d7b23d1e541a82c60d7b220012f750baa08",
+ "record_sha256": "86b28103629e3e3d6651bfea122213f05c8e933934501cd2ba6fb5734c467804",
+ "cost": {
+  "device_role": "worker_b RTX 4090 (UUID asserted in-child, not recorded here)",
+  "wall_seconds": 3477.65,
+  "cpu_seconds": 3474.13,
+  "whole_cgroup_peak_bytes": 5810642944,
+  "declared_cap_bytes": 7516192768,
+  "cap_basis": "1.25 x (train pilot h192 1.986 GiB + bounded probe h192 3.360 GiB)",
+  "peak_gpu_reserved_bytes": 5756682240,
+  "probe_wall_seconds_approx": "<5 min",
+  "started_at": "2026-10-03T04:58:02Z",
+  "finished_at": "2026-10-03T05:55:59Z"
+ },
+ "evidence_state": "MEASURED_UNVERIFIED (no independent replay yet)",
+ "retention": "record, checkpoint and bounded prediction/target arrays retained in the lane G root on worker_b (4.2 GB) until an independent replay recomputes them; not deleted",
+ "receipt_gate": "tsl_literature_metrics.v1 producer gate passed (14 checks); receipt retained, not submitted"
+}

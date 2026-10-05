@@ -1,5 +1,9 @@
 # Satoshi: reconcile the architecture and continue independent lanes
 
+> **HISTORICAL, NOT OPERATIONAL.** Superseded on 2026-10-03 by the consolidated
+> master plan and SATOSHI_CANONICAL_SELECTION_FIRST_EXECUTION_2026_10_03.md.
+> Retained only as audit evidence.
+
 Written for Satoshi (execution), Musashi (review), and the owner.
 Observed 2026-09-30 23:55Z through 2026-10-01 00:03Z. This is an additive
 correction to SATOSHI_MODULAR_OPTIMIZATION_2026_09_30.md, not a new campaign.

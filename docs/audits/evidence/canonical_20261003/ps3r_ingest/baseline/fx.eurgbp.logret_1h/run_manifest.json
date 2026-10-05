@@ -1,0 +1,30 @@
+{
+  "batch_id": "batch_002",
+  "batch_manifest_sha256": "8d7d2e1a97e44440d134e0a5ca63d9afcaa8be37e6258b0dc4bd00595b48e0f7",
+  "cgroup_peak_bytes": 7380369408,
+  "code_commit": "8987c573bd7e0819a54011e88ec9e7c309229350",
+  "families": [
+    "identity",
+    "random",
+    "ae",
+    "dae"
+  ],
+  "features": [
+    "fx.eurgbp.logret_1h"
+  ],
+  "folds": [
+    "inner_2019",
+    "inner_2020",
+    "inner_2021",
+    "inner_2022",
+    "inner_2023"
+  ],
+  "peak_rss_bytes": 6943649792,
+  "results_sha256": "7195ba2cc42627cfff2bccbf4af9672334a31c00c91e60ecc13195b9cbe6013e",
+  "schema": "ut_pilot_run.v1",
+  "seed": 0,
+  "series_sha256": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+  "status": "COMPLETED",
+  "targets_sha256": "7dbb0b9552f27873d0bf58604908cd8f6b46c7daa1ee56cb44cd23c42fa9c209",
+  "wall_seconds": 1813.2001006699866
+}

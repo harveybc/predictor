@@ -1,0 +1,105 @@
+{
+ "schema": "canonical_exec_status.v1",
+ "observed_at": "2026-10-03T10:02:28Z",
+ "authority": "codex/workplan-consolidation-20261003@2edc2684 (master plan v3 consolidated)",
+ "neat": "no process or unit on any host (verified)",
+ "hermes": "not used this round (provider 403 earlier; unverified)",
+ "lanes": [
+  {
+   "lane": "A",
+   "resource": "CPU worker_a",
+   "work": "EURUSD PS0/PS1 sources, availability, targets, folds, basic coverage matrix",
+   "declared_state": "DISPATCHED",
+   "observed_state": "BATCHES_READY",
+   "next_transition": "remaining sources (archive non-EUR/USD, holidays, TFF); governed replay through data-gov",
+   "evidence": "ps1 batch_001..003 READY; 366 model-input candidates + 37 SELECTOR_EPISODE_SOURCE; 4,444 cells (4,432 MEASURED/10 NA/2 FAILED/0 PENDING); TRAIN 2012-05..2024-01, 5 inner folds, 71,734 rows; feature-eng satoshi/eurusd-ps0-ps1-20261003 1f1abdf"
+  },
+  {
+   "lane": "B",
+   "resource": "CPU worker_a",
+   "work": "PS2 redundancy/relevance/exploration (code first, consumes A batch)",
+   "declared_state": "DISPATCHED",
+   "observed_state": "BATCHES_1_3_DONE",
+   "next_transition": "next lane A batch; cross-batch redundancy at PS5",
+   "evidence": "feature-eng satoshi/eurusd-ps2-20261003 beef40c (33 tests); ps2_batch.v1 READY x3 (lane D reader OK); 14 targets x 5 folds; to E/F: 36+214+19 features; tiers 1/2/3: 41/1/4, 36/9/154, 17/0/1; exploration 11/52/2; only technical reject q.n5"
+  },
+  {
+   "lane": "C",
+   "resource": "CPU worker_a",
+   "work": "PS3-C three-rung causal ladder EURUSD economic events (code first)",
+   "declared_state": "DISPATCHED",
+   "observed_state": "JOIN_AND_REVIEW_DONE",
+   "next_transition": "feeds PS5 decision with extractibility from E/F",
+   "evidence": "causal-inference 3f04f40 (39 tests); join_batch_001..003 for 279 PS2 candidates (coord 6e6ec406); rung-2: 211 uncorrected -> 109 after BH -> 8 survive cross-fitted nonlinear AIPW (weak: RV 0.007-0.048)"
+  },
+  {
+   "lane": "D",
+   "resource": "CPU engineering",
+   "work": "feature-extractor univariate temporal extractor plugin + controls + tests",
+   "declared_state": "DISPATCHED",
+   "observed_state": "DONE",
+   "next_transition": "E/F run one real feature with --max_epochs 1 to measure cap, then pilot per feature",
+   "evidence": "feature-extractor satoshi/univariate-temporal-extractor-20261003 8987c57; 55 tests; families identity/random/ae/dae + lane F slots wired; ps2_batch.v1 contract; CPU dry-run peak 1.42 GB (1 feature, 4 families, 12k rows)"
+  },
+  {
+   "lane": "D-gate",
+   "resource": "CPU engineering",
+   "work": "fail-closed selected-manifest consumer gate (predictor)",
+   "declared_state": "DISPATCHED",
+   "observed_state": "DONE",
+   "next_transition": "wire gate into builders when those lines are integrated",
+   "evidence": "predictor satoshi/selected-manifest-gate-20261003 c0345f83; 45 tests; ECL 321/321 and ETH 83/83 refused; NOT YET WIRED into builders (they live only on unmerged lines)"
+  },
+  {
+   "lane": "F-prep",
+   "resource": "CPU research",
+   "work": "TimeSiam / Ti-MAE official code + license dossier; alternative family implementation",
+   "declared_state": "DISPATCHED",
+   "observed_state": "DONE",
+   "next_transition": "slots wired by lane D; lane F runs MTAE first after first PS2 batch; owner requests R-F1 TS2Vec / R-F2 TimeSiam official code runs (optional)",
+   "evidence": "dossier laneF/EXTRACTOR_FAMILY_DOSSIER.md 3bcd7fb0; feature-extractor satoshi/alt-extractor-families-20261003 1b74f93 (MTAE + P2C clean-room, 21 pass/1 skip)"
+  },
+  {
+   "lane": "G",
+   "resource": "GPU worker_b RTX 4090",
+   "work": "faithful published reference, only if a sealed cell exists",
+   "declared_state": "DISPATCHED",
+   "observed_state": "RUNNING_SEALED_QUEUE",
+   "next_transition": "h720 s2021 running (cap 7.25 GiB), then s2022, s2023, h336 probe + x3",
+   "evidence": "Traffic L96 h192 3-seed mean MSE/MAE 0.396509/0.262478 vs 0.395/0.262, OPERATIONAL_AGREEMENT, MEASURED_UNVERIFIED (no replay); naive 2.747078/1.085077; skill 0.8557/0.7581; fa28088e"
+  },
+  {
+   "lane": "H",
+   "resource": "CPU services",
+   "work": "M5PHET next real-provider E2E; LTS/MT5 demo/Alpaca paper health (read-only)",
+   "declared_state": "DISPATCHED",
+   "observed_state": "DONE",
+   "next_transition": "owner decision on H-D1 (Alpaca runner trades non-eligible model on paper) and H-D4 (MT5 VM running)",
+   "evidence": "M5PHET satoshi/m5phet-e2e-20261003 14d9b05 causal-ATE E2E green; laneH/REPORT.md 61564fb0"
+  },
+  {
+   "lane": "E",
+   "resource": "GPU worker_a RTX 5090",
+   "work": "PS3-R extractor pilot on survivors",
+   "declared_state": "DISPATCHED",
+   "observed_state": "NOT_YET_OBSERVED",
+   "next_transition": "measure cap with --max_epochs 1, then batch_001 tier_1 on the 5090"
+  },
+  {
+   "lane": "F",
+   "resource": "GPU worker_a RTX 5070 Ti",
+   "work": "alternative extractor family, same rows",
+   "declared_state": "DISPATCHED",
+   "observed_state": "NOT_YET_OBSERVED",
+   "next_transition": "MTAE on batch_001 tier_1 on the 5070 Ti, then P2C"
+  }
+ ],
+ "checklist_ref": "docs/tres_temas_entrevista/program_v3/MASTER_CHECKLIST.json",
+ "plan_authority": "codex/workplan-consolidation-20261003@02434903 (calendar = selector source only; model input deferred to I11)",
+ "checklist_observed": {
+  "I1": "IN_PROGRESS (388 sources classified)",
+  "I2": "EVIDENCE_PARTIAL (3 batches, 366 candidates)",
+  "I4-C": "EVIDENCE_PARTIAL (three-rung dossiers for batches 1-3)",
+  "I3": "EVIDENCE_PARTIAL (PS2 provisional priorities for batches 1-3)"
+ }
+}

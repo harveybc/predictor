@@ -1,0 +1,32 @@
+{
+  "lane": "FS-GEN",
+  "order": "docs/handoffs/SATOSHI_FEATURE_SELECTION_CLOSURE_2026_10_05.md",
+  "sections_read": [
+    "2", "7", "8", "9",
+    "FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30 §6.2-§6.3, §7, FS01/FS03/FS08/FS09",
+    "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3 §6"
+  ],
+  "ack_utc": "2026-10-05T04:05:00Z",
+  "branch": "satoshi/canonical-exec-20261003",
+  "tip_at_ack": "45c92a2d",
+  "worktree_role": "canonical-exec worktree (evidence); feature-extractor worktree for code",
+  "code_branch": "feature-extractor satoshi/fs-gen-knockoffs-20261005 from satoshi/univariate-temporal-extractor-20261003 tip 8987c57",
+  "write_set": [
+    "feature-extractor: app/fs_gen/**, tests/test_fs_gen.py",
+    "docs/audits/evidence/canonical_20261003/fs_closure/fs_gen/**",
+    "worker_b: ~/.local/state/canonical_20261003/fs_gen/**"
+  ],
+  "never_touch": [
+    "STATUS.json", "MASTER_MILESTONE_*", "other lanes' directories",
+    "running GPU cells and their recipes", "the 5090 host RAM slice", "coordinator heavy compute", "worker_b /tmp"
+  ],
+  "first_deliverable": "CALIBRATION_RULE.json frozen before any computation; then tests (tiny synthetic) red->green; then unattended batch pipeline on worker_b CPU with progress.json; generative_evidence.csv over the 366 denominator",
+  "priority": "SECONDARY, NON-BLOCKING; fail-closed to NOT_CALIBRATED; never delays the main manifest",
+  "generator_decision": "conditional heteroskedastic AR with empirical (bootstrap) innovations conditioned only on time encodings (sin/cos hour/dow/doy), observed mask, delta time and past values; numpy/scipy/sklearn only; CVAE NOT RUN (CPU cap <= 3 GB, one seed, exchangeability requirement favours an explicit conditional law)",
+  "knockoff_decision": "second-order Gaussian group knockoffs (groups = lane B per-fold dependence clusters) built on the generator's standardized innovations with a Gaussian-copula map back to each feature's empirical innovation law; knockoff+ threshold, declared q = 0.10 (matches lane B fdr_q); run only if calibration passes",
+  "third_party": "knockpy (amspector100) is MIT-licensed (admissible) but is not installed in the worker env and installing into a shared env on a host with a live GPU cell is an environment mutation; implemented in-repo instead",
+  "contract": "SYNTHETIC_OFFLINE declared; target is NOT used as a generator condition in this run (generator conditions only on information available at t); targets enter only the knockoff selection statistic on TRAIN folds; TEST never read (series/targets npz end at train_end_ts, asserted)",
+  "evidence_policy": "TRAIN-only inner folds inner_2019..inner_2023 from ps2_batch.v1; fit on fit range, calibration diagnostics on the inner validation range; one seed = 0",
+  "compute_policy": "worker_b CPU via crispdm-run -m 3G sequential; GPU not requested (5070 Ti shares the 5090 host RAM slice; not needed for a numpy generator)",
+  "denominator": "366 features: 269 with series in the three PS2 batches; 10 calendar conditioning (NOT_APPLICABLE); 87 PROVISIONAL_LOW_PRIORITY outside the PS3-C join with no series in any batch (NOT_EVALUATED, knockoff NOT_CALIBRATED)"
+}

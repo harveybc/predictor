@@ -1,0 +1,11 @@
+{
+ "schema": "fs_pred_input_manifest.v1",
+ "sha256": {
+  "batch_001/features_train.parquet": "bd005701247dc181c81457037cbad6e6142f8171ad8c3595f1cd489986557aa2",
+  "batch_001/folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+  "batch_001/targets_train.parquet": "a838b81c72a291a45dac70ab4c69415c85d7ec1888691cae38817642188e84e5",
+  "batch_002/features_train.parquet": "0e6ff8c570804823921227bd6733b185c17e54808364735067953f524f4399f3",
+  "batch_003/features_train.parquet": "fd0b4423db991cfb05cd4f9357a378648579d4c11552a1cac413ed711c3520bc"
+ },
+ "source": "lane A ps1 batches on worker_a, relayed via the coordinator with ionice -c3; sha256 verified on worker_a, coordinator and worker_b"
+}

@@ -1,0 +1,111 @@
+{
+ "batch": "batch_003",
+ "caveats": [
+  "statuses are provisional priority, never a discard; all-admissible control kept",
+  "within-batch ranking only: cross-batch redundancy/synergy is PS5's joint step",
+  "causal_evidence_level NOT_EVALUATED: lane C dossiers pending"
+ ],
+ "code": {
+  "branch": "satoshi/eurusd-ps2-20261003",
+  "commit": "e1d9b52",
+  "module_sha256": "eeee9936f4443d9328110c2918e5a37f7d2d1e58049cb1739f3fddb8ad95bbf3",
+  "repo": "feature-eng"
+ },
+ "cost": {
+  "code_sha256": "eeee9936f4443d9328110c2918e5a37f7d2d1e58049cb1739f3fddb8ad95bbf3",
+  "hardware": "CPU worker_a, single-thread BLAS",
+  "peak_rss_kb": 340152,
+  "wall_s": 165.4
+ },
+ "denominators": {
+  "admissible_after_technical_screen": 22,
+  "association_tests_bh_counted": 3080,
+  "inner_folds": 5,
+  "model_input_features_ranked": 22,
+  "selector_episode_sources_excluded": 0,
+  "targets": 14,
+  "train_rows": 71734
+ },
+ "exploration_sample": [
+  "cot.wti_nymex.mm_net_oi",
+  "tv.wav_d2"
+ ],
+ "extractor_handoff": {
+  "batch_manifest_sha256": "44983c401b804e31e6166ba97f3607687fae47169c0d95354c5a944a43ea1838",
+  "contract": "ps2_batch.v1",
+  "excluded_calendar_known": [],
+  "features": [
+   "cot.wti_nymex.mm_net_oi",
+   "rg.atr_pct",
+   "rg.atr_ratio",
+   "rg.bb_width_pct",
+   "rg.di_spread",
+   "rg.ema_alignment",
+   "rg.macd_hist",
+   "rg.price_vs_ema50",
+   "rg.roc_12",
+   "tv.hilbert_amp",
+   "tv.kalman_dev",
+   "tv.mt_band_6_48h",
+   "tv.stl_dev",
+   "tv.stl_seasonal",
+   "tv.wav_d1",
+   "tv.wav_d2",
+   "tv.wav_d3",
+   "tv.wav_d4",
+   "tv.wav_d5"
+  ],
+  "n_features": 19,
+  "verified_with_lane_D_reader": "feature-extractor 8987c57 read_ps2_batch + validate_fold windows 48/168/720: READER_OK (19 features, 5 folds, 102239 grid rows)"
+ },
+ "extractor_priority": {
+  "exploration": [
+   "cot.wti_nymex.mm_net_oi",
+   "tv.wav_d2"
+  ],
+  "tier_1": [
+   "rg.atr_pct",
+   "rg.atr_ratio",
+   "rg.bb_width_pct",
+   "rg.di_spread",
+   "rg.ema_alignment",
+   "rg.macd_hist",
+   "rg.price_vs_ema50",
+   "rg.roc_12",
+   "tv.hilbert_amp",
+   "tv.kalman_dev",
+   "tv.stl_dev",
+   "tv.stl_seasonal",
+   "tv.wav_d1",
+   "tv.wav_d2",
+   "tv.wav_d3",
+   "tv.wav_d4",
+   "tv.wav_d5"
+  ],
+  "tier_2": [],
+  "tier_3": [
+   "tv.mt_band_6_48h"
+  ]
+ },
+ "extractor_priority_sha256": "d934581ef3f4d788b0a7bcd3778eabbbbb229446d2ff0d6bedb7571428e7dcc3",
+ "input": {
+  "lane_a_base_batch_digests_sha256": "449f4c3d5e992ee4f3221c7e6ac3078167fe5e31063a3d659fb2814db1c07eb4",
+  "lane_a_batch": "batch_003",
+  "lane_a_code_commit": "42272ad7f288d39d5b9f84c63bb219ef0b9a7b19",
+  "lane_a_contract_sha256": "a4b1718b84c747d134fd55da4cc789ea541021b5815e0b49df8cfd6635acdcfc",
+  "lane_a_ready_digests_sha256": "2d316760324cab4cc385c655161d9cbede1fd75b2f40ec60ed2d500f5ecf6ace",
+  "read_end": "2024-01-01 00:00:00+00:00"
+ },
+ "lane": "B",
+ "not_committed_here_but_digest_pinned": {
+  "ps2_fold_cells.csv": "a2b0acf1b6d2064d8c92fffaf4e0c38668c30515cc694b421aec12de3aafe9e9",
+  "ps2_groups.csv": "4e9133e037cb6e5feae9635b3292ab3170773dc36e37d6c8de1b8061981459eb"
+ },
+ "parameter_digest": "e4eeebf4749addc035d4619cbae531b778e243b5a5613d47eb46f710c9bf0d73",
+ "ps2_manifest_canonical_sha256": "cc8ec10324d927dcc62580dd3ce50612e8e5801f6f871fc82c740c9b9f281289",
+ "schema": "laneB_ps2_batch_record.v1",
+ "stage": "PS2",
+ "technical_rejects": {},
+ "train_data_digest": "efc55817eecb483af2d91cd50ca531a2a9345b5aa5cff629511ca68cbbea5fea",
+ "worker_role": "worker_a (CPU, crispdm-run cap 800M, single-thread BLAS)"
+}

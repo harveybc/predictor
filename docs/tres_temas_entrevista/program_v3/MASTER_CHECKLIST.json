@@ -1,0 +1,36 @@
+{
+  "schema": "master_checklist.v1",
+  "updated_on": "2026-10-05",
+  "states": ["NOT_STARTED", "DESIGNED", "IN_PROGRESS", "EVIDENCE_PARTIAL", "VERIFIED"],
+  "items": [
+    {"id": "I0", "name": "business_contract", "state": "DESIGNED", "gate": "EURUSD targets, costs, risk and availability bound"},
+    {"id": "I0-W", "name": "business_weekly_walk_forward", "state": "DESIGNED", "depends_on": ["I0"], "gate": "BW01-BW18 executable across forecasting, heuristic and RL with rolling four-year weekly evaluation"},
+    {"id": "I1", "name": "inventory", "state": "VERIFIED", "depends_on": ["I0"], "gate": "EURUSD 366 and ETH 83 identities frozen with event/availability semantics"},
+    {"id": "I2", "name": "phase1_profiles_and_causal_inputs", "state": "VERIFIED", "depends_on": ["I1"], "gate": "profile and causal catalogs loaded and read back from OLAP"},
+    {"id": "I3", "name": "phase1_causal_supported_candidates", "state": "VERIFIED", "depends_on": ["I2"], "gate": "causal-supported candidates retained without calling them final selection"},
+    {"id": "I4-C", "name": "phase2_feature_dependencies", "state": "DESIGNED", "depends_on": ["I2"], "gate": "complete pairwise dependency, alias and redundancy dispositions in OLAP"},
+    {"id": "I4-R", "name": "phase3_filter_rankings", "state": "DESIGNED", "depends_on": ["I4-C"], "gate": "clustering, mRMR and JMI complete rankings and K paths with controls"},
+    {"id": "I5", "name": "phase4_extractibility_and_wrapper_selection", "state": "NOT_STARTED", "depends_on": ["I4-C", "I4-R", "I0-W"], "gate": "raw/random/trained extraction plus weekly wrapper validation and final manifest"},
+    {"id": "I6-A", "name": "architecture_controls", "state": "NOT_STARTED", "depends_on": ["I5"], "gate": "matched ARCH result"},
+    {"id": "I6-B", "name": "branch_pretraining", "state": "NOT_STARTED", "depends_on": ["I6-A"], "gate": "authenticated branch donors"},
+    {"id": "I7", "name": "branch_regimes", "state": "NOT_STARTED", "depends_on": ["I6-B"], "gate": "R0/R1/R2 result and selected prefix"},
+    {"id": "I7-H", "name": "hcore", "state": "NOT_STARTED", "depends_on": ["I7"], "gate": "core donor and separate transfer result"},
+    {"id": "I8", "name": "doin_optimization", "state": "NOT_STARTED", "depends_on": ["I7"], "gate": "verified incumbent"},
+    {"id": "I9-N", "name": "dense_vs_neat", "state": "NOT_STARTED", "depends_on": ["I7-H"], "gate": "matched head result"},
+    {"id": "I9-R", "name": "rl_raw_vs_modular", "state": "NOT_STARTED", "depends_on": ["I7-H"], "gate": "SAC and DQN factorial"},
+    {"id": "I10", "name": "paper_operation", "state": "IN_PROGRESS", "depends_on": [], "gate": "only naive-eligible verified artifacts promoted"},
+    {"id": "I11", "name": "causal_calendar_model_input", "state": "NOT_STARTED", "depends_on": ["I9-N", "I9-R", "I10"], "gate": "separate incremental-value experiment after primary program"}
+  ],
+  "forbidden_shortcuts": [
+    "mechanical inventory treated as feature selection",
+    "H-CORE before R0/R1/R2 architecture selection",
+    "NEAT as hyperparameter optimizer",
+    "NEAT before frozen representation",
+    "future target in operational encoder",
+    "test used for selection",
+    "static annual checkpoint labeled as BUSINESS weekly evaluation",
+    "warm-update weights labeled as strict four-year memory",
+    "strategy evaluation when forecast does not beat same-row naive",
+    "economic calendar or causal dossier used as model input before I11"
+  ]
+}

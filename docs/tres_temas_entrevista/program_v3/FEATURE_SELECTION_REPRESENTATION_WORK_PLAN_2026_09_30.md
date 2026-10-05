@@ -5,7 +5,16 @@ Versión 3: enfoque aprobado por el propietario e incorporado al plan maestro.
 Plan de implementación, no declaración de pruebas realizadas. Estado metodológico:
 S3_ACCEPTANCE_TEST_DESIGN; las especificaciones de componentes y pruebas unitarias
 se completan por incremento antes de implementar cada componente nuevo.
-Órdenes: [continuación paralela](../../handoffs/SATOSHI_PROGRESSIVE_SELECTION_AND_MODULAR_CONTINUATION_2026_09_30.md).
+La orden fechada de continuación se conserva como historia. La autoridad
+operativa y la secuencia vigente están en el plan maestro y CURRENT_EXECUTION.md.
+
+> **Enmienda vinculante 2026-10-05:** fase 1 (perfiles individuales y evidencia
+> causal) está completa. La siguiente etapa no es extractibilidad: fase 2 mide
+> dependencia y redundancia feature-feature, y fase 3 produce rankings con
+> clustering, mRMR y JMI. El diseño ejecutable está en
+> `FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md`. La extractibilidad
+> de este documento pasa a fase 4. Los nombres PS0-PS7 inferiores describen la
+> descomposición histórica del trabajo y no alteran esa secuencia.
 
 Original conservado en `seleccion_caracteristicas_musashi.original.md`.
 SHA256 original: `a73e397aac9f72c6a32c8db575c099c26a2bcc8dca8efa0e979db1b26e0e605f`.
@@ -40,8 +49,9 @@ se comparan señal cruda, representación aleatoria y representación entrenada.
 
 Secuencia progresiva: disponibilidad y perfil básico para todas las entradas
 admisibles -> priorización reversible -> extracción y estudios causales en
-paralelo -> perfiles ampliados de variantes prometedoras -> selección conjunta,
-fusión y preentrenamiento del núcleo -> confirmación del finalista.
+paralelo -> perfiles ampliados de variantes prometedoras -> selección conjunta
+y manifiesto final -> comparación arquitectónica y R0/R1/R2 -> prefijo ganador
+fijado -> H-CORE como experimento separado -> confirmación del finalista.
 La sección 10 define incrementos, responsables, dependencias y pruebas.
 
 No esperar a calcular todas las métricas sobre todas las descomposiciones de
@@ -144,6 +154,71 @@ causalidad de emisión: ajustar solo en TRAIN no vuelve operativo un filtro
 centrado o una descomposición global que utiliza observaciones futuras.
 Medir el coste de pares/rezagos y RDC; no asumir que la fase es trivial.
 
+### 4.3 Preprocesamiento específico del selector
+
+No existe una matriz preprocesada universal que sea correcta para todos los
+selectores. La unidad de comparación es una receta completa
+`fuente -> disponibilidad -> transformación -> selector -> subset -> modelo`,
+ajustada únicamente dentro del fold temporal correspondiente.
+
+Orden obligatorio:
+
+1. resolver event/available time, rejilla, vintage, soporte y transformación
+   causal antes de cualquier estadística;
+2. retirar solo imposibles técnicos: fuga demostrada, identidad rota, ausencia
+   total en TRAIN o dato inválido. Faltantes, baja varianza o no estacionariedad
+   son estados, no descartes universales;
+3. conservar la forma semántica cruda para árboles, estudios causales y control
+   `all_admissible`. Retorno, log-retorno, diferencia, nivel y descomposiciones
+   son features distintas con IDs distintos; no reemplazar una por otra;
+4. ajustar imputación, indicadores de missingness, clipping, discretización y
+   escala solo con TRAIN del fold. Aplicar esos parámetros sin reajuste a su
+   validation. El test no participa;
+5. para métodos sensibles a distancia o penalización usar escala robusta o
+   z-score TRAIN-only declarado. Para árboles conservar además el brazo sin
+   escalar. Una diferencia de preprocesamiento forma parte del método y se
+   registra;
+6. seleccionar grupos temporales, no miles de `(feature, lag)` tratados como
+   observaciones independientes. Un grupo incluye fuente/transformación y su
+   ventana causal; la selección fina de lags es una segunda etapa dentro del
+   grupo;
+7. categóricas y calendario usan encoding TRAIN-only y categoría desconocida.
+   Macro revisada usa first-release/vintage disponible, nunca el valor final;
+8. un selector integrado en una red ve secuencias y máscaras, no una tabla que
+   colapsó tiempo. Sus gates son evidencia predictiva dependiente del modelo,
+   no causalidad ni importancia universal.
+
+Para el manifiesto confirmatorio, la selección se ajusta con el TRAIN anterior
+al año de validation y queda fija por defecto. Una selección adaptativa por
+semana es un brazo de negocio separado: algoritmo, presupuesto y reglas se
+congelan antes de test y se recalcula solo con el rolling TRAIN de cuatro años
+del [contrato semanal](BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md).
+
+La política sellada `feature_preparation_policy.v1` asigna cada columna a un
+único rol: `CONTINUOUS`, `BINARY`, `CYCLIC_PAIR`, `CATEGORICAL_GROUP`, `MASK`,
+`DELTA_TIME`, `QUALITY_ONLY` o `SELECTOR_EPISODE_ONLY`. `Raw` significa el valor
+semántico disponible en `t`, con unidad y vintage, antes de clipping, escala o
+imputación aprendida; no significa que los bytes del proveedor entren sin
+contrato al modelo. Los pares seno/coseno y todos los niveles de una categórica
+son grupos atómicos. Calendario conocido es contexto fijo, no consume `K`; el
+calendario económico permanece `SELECTOR_EPISODE_ONLY` hasta I11.
+
+Se comparan como pistas distintas, nunca fundidas después de ver resultados:
+
+- `POINT`: último valor as-of por grupo en el instante de decisión;
+- `LAGGED`: rezagos por horas transcurridas `{0,1,2,6,24,48,168}`, junto con
+  máscara y edad; todos pertenecen a una sola oportunidad de selección;
+- `WINDOW_168`: últimas 168 filas de decisión, con huecos representados por
+  máscara y tiempo transcurrido, nunca por barras horarias ficticias.
+
+No hay forward-fill genérico. Solo se arrastra una observación si el contrato de
+la fuente lo permite y hasta su edad máxima. Selectores escalares/lineales y de
+árbol reciben mediana TRAIN más máscara; modelos temporales reciben valor
+escalado, cero donde falta, máscara y `delta_time` acotado. Continuas usan
+estadísticas TRAIN; `std < 1e-8` se declara constante. Binarias y pares cíclicos
+no se escalan. `TRAIN_Q005_CLIP` es una variante identificada, no el brazo raw,
+y conserva un control sin clipping para regímenes extremos.
+
 ## 5. Los tres peldaños causales con nuestros datos históricos
 
 Los datos fijos NO limitan necesariamente el análisis al primer peldaño.
@@ -152,6 +227,24 @@ permitir inferencia interventional y contrafactual sin actuar sobre el mercado
 ni construir un simulador de trading. La identificación depende de la pregunta,
 del soporte y de supuestos causales, no de que nosotros ejecutemos la acción [1,2].
 
+Esta sección pertenece al **selector de características**. El calendario puede
+usarse ahora como registro histórico para localizar tratamientos, controles,
+contextos y tiempos de disponibilidad. Eso no autoriza a emitir el calendario,
+una sorpresa o un expediente causal como entrada del predictor o de la política.
+Esa integración es un experimento final, opcional y separado, posterior a la
+representación final, Dense frente a NEAT, SAC/DQN y la línea base paper.
+
+Cada candidata priorizada recibe un expediente con estado independiente para
+los tres peldaños: `ESTIMATED`, `NOT_IDENTIFIED`, `NOT_APPLICABLE` o `FAILED`,
+con razón y soporte. No basta ejecutar los peldaños solo para el calendario.
+Para una causa externa bien definida, como una publicación macroeconómica, A
+es su realización histórica. Para una variable endógena, como RSI, VIX o una
+media móvil, no se finge que `do(RSI=70)` sea una acción física: A se define
+como una transición o shock histórico predeclarado y se estudia el mecanismo
+ascendente que pudo producirlo. Si no hay variación, soporte o conjunto de
+ajuste defendible, el peldaño queda `NOT_IDENTIFIED`; eso no se convierte ni en
+efecto causal ni en rechazo automático de la característica.
+
 Buscar episodios donde ocurrió una acción es parte del método. Comparar sus
 resultados sin controlar por qué ocurrió esa acción sigue siendo asociación.
 Y otra fecha histórica no es el resultado alternativo observado del mismo
@@ -159,7 +252,7 @@ episodio: puede servir de control, pero ese resultado alternativo se estima.
 
 ### 5.1 Datos y unidad de análisis
 
-Primer estudio: eventos económicos y respuesta del activo financiero que
+Primer estudio de referencia: eventos económicos y respuesta del activo financiero que
 alimenta las cabezas corta/larga. Usar recursos ya contratados/disponibles:
 FXMacroData para calendario/actual/consenso cuando esos campos existan en el
 snapshot, precios FX del lago para EURUSD, y Alpaca/Yahoo Finance para activos
@@ -322,6 +415,8 @@ Reutilizar código oficial fijado y comprobar licencia, pesos y protocolo.
 | AE/denoising temporal | Implementación modular existente; DAE [7] | Control reconstruible, no SOTA presumido |
 | Contrastiva temporal | TS2Vec [9] | Referencia reproducible por instante; confirmar soporte temporal al integrarla |
 | Parches/enmascarado | PatchTST auto-supervisado [10] | Reproducir receta nativa; adaptación a ramas es experimento distinto |
+| Pasado-a-presente siamés | TimeSiam (ICML 2024) [13] | Candidato para dependencia temporal; reproducir primero su protocolo |
+| Autoencoder temporal enmascarado | TimeMAE (WSDM 2026) [14] y controles Ti-MAE | Candidato contextual; no declarar SOTA por el nombre |
 | Modelo fundacional | MOMENT [11] | Auditar corpus de preentrenamiento y contaminación antes de comparación |
 | Predicción latente | CF-JEPA [12] | Exploratoria, preprint; comprobar reproducción y salida temporal, no asumir SOTA |
 | Generativa condicionada | CVAE [5], variante VAE-GAN [6] | Secundaria, si aporta generación o utilidad bajo presupuesto |
@@ -335,6 +430,13 @@ su propia identidad y se compara en un contrato emparejado, no contra otra tabla
 No imponer reconstrucción, KL o decoder a familias que no los tengan: NO_APLICA
 es distinto de un fallo. Un generador posterior puede consumir representaciones,
 pero se evalúa por separado y no convierte al encoder en un modelo causal.
+
+El primer plugin nuevo es un extractor **univariado temporal** de interfaz común:
+serie causal, máscara/delta temporal y contexto conocido (hora, día de semana,
+día del año, sesión/feriado cuando aplique). La salida conserva el eje temporal.
+Raw/identidad, encoder aleatorio y encoder entrenado son controles obligatorios.
+El target puede supervisar una sonda o una variante generativa offline; nunca
+entra al encoder operacional.
 
 Solo para la variante CVAE, por característica/grupo: encoder q_phi(Z_i | X_i,c_available), prior
 p_psi(Z_i | c_available) y decoder p_theta(X_i | Z_i,c_available). El objetivo
@@ -445,12 +547,51 @@ Comparar con búsqueda y semillas pareadas:
 4. La anterior más diagnóstico de extracción.
 5. Preferencia generativa secundaria como variante explícita.
 
+Comparadores mínimos sobre idénticos folds, targets, horizontes, orígenes,
+presupuesto del predictor y tamaños de subconjunto predeclarados:
+
+1. `ALL_ADMISSIBLE`, sin selección;
+2. filtro de información conjunta `JMI/CMIM` y `mRMR` como sensibilidad de
+   relevancia-redundancia [15,16];
+3. `ElasticNet` o penalización grupal con estabilidad temporal;
+4. árboles con importancia por permutación en bloques temporales y refit del
+   predictor sobre el subset; no usar impurity importance como único veredicto;
+5. selección secuencial marginal bajo presupuesto, que mide el aporte residual
+   de una variable dado el conjunto ya elegido [17];
+6. selector temporal integrado: red de selección de variables/gates sobre la
+   secuencia, con control de arquitectura y dimensión [18];
+7. subsets aleatorios estratificados del mismo tamaño, para calibrar cuánto
+   aporta seleccionar frente a acertar por azar;
+8. nuestra ruta progresiva: predictivo+redundancia, +causal, +extractibilidad,
+   con reincorporación de sinergias.
+
+El tamaño primario inicial es `K=24`, con sensibilidad sellada
+`K={8,16,24,32,48}`. Cada selector emite un ranking completo y se evalúa al
+mismo `K`; `ALL_ADMISSIBLE` es el único techo exento. Si un método no puede
+producir un tamaño, reporta la razón; no se trunca después de mirar resultados.
+`RANDOM_K` usa hasta tres cintas congeladas por `K`, respetando el límite global
+de repeticiones. Una semilla por defecto y hasta tres solo ante variabilidad
+demostrada. Reportar MAE/MSE y skill contra naive,
+coste total de selección+refit, número de features/grupos, estabilidad Jaccard
+entre folds/semanas, estabilidad de ranking y tasa de reincorporación. El ganador
+se decide por utilidad externa pareada y parsimonia/coste predeclarados, no por
+la métrica interna de su propio selector.
+
+Implementaciones mínimas identificadas: `SPEARMAN_K`; `MI8_K` con ocho bins
+derivados solo de TRAIN; `REDUNDANCY_K` con grupos a `|rho| >= 0.90` y ranking
+por ganancia inner-fold; `ELASTIC_NET_K` con `l1_ratio={0.1,0.5,0.9,1.0}`;
+`EXTRA_TREES_K` con 500 árboles e importancia por permutación en inner
+validation; y `GROUP_GATE_K` con un gate por grupo. Los tres últimos vuelven a
+ajustar el predictor canónico desde la misma inicialización después de elegir el
+subset: el ajuste del selector no cuenta como desempeño downstream.
+
 Mantener controles de grupos e interacciones y reincorporar candidatos excluidos
 por el cribado individual. No imponer simultáneamente todas las puertas de
 significancia, CKA y reconstrucción. Calibrar reglas en TRAIN, no pesos arbitrarios
 como verdades. Estudiar si la calidad de extracción predice utilidad incremental.
 
-Después: encoders seleccionados -> fusión -> preentrenamiento del núcleo -> R0/R1/R2.
+Después: encoders seleccionados -> fusión -> comparación arquitectónica ->
+R0/R1/R2 de ramas -> elección del prefijo -> H-CORE -> transferencia del núcleo.
 AE del núcleo es el control inicial; otros objetivos requieren contraste separado.
 Comparar estrategia heurística y SAC con nuestra arquitectura temporal modular,
 no sustituirla por MLP plano ni DQN. Declarar si los pesos de representación son
@@ -546,13 +687,17 @@ compatible o presupuesto agotado; cada una conserva razón y deja seguir al rest
 | PS3-R Representaciones | M02 + M01 / GPU admitida | Piloto de familias de sección 6, controles crudo/aleatorio/entrenado y utilidad Y_s/Y_l/Y_b. Depende de PS0 y del ensamblaje compatible, no del cierre causal completo. |
 | PS3-C Causalidad | causal-inference / CPU | Expedientes de sección 5 para episodios disponibles; DAG, ajuste, solapamiento, placebos y contrafactuales bajo SCM. Depende de PS0, no de PS3-R. |
 | PS4 Perfil ampliado | M03 + M02 | Métricas costosas/transformaciones sobre candidatos priorizados y muestra de exploración. Identidad del soporte, fuente y coste; no producto cartesiano sin límite. |
-| PS5 Selección conjunta | M01 + M04 | Adición/retirada con reajuste, sinergias, reincorporación, una rama por entrada frente a grupos; R0/R1/R2 de ramas y núcleo. Misma población/presupuesto. |
-| PS6 Confirmación y uso | M04 + M05 + RL | Finalista congelado, evaluación reservada conforme a su contrato, adapter instalado y shadow/paper. SAC y heurística comparados por negocio; no promoción automática a dinero real. |
+| PS5 Selección conjunta | M01 + M04 | Adición/retirada con reajuste, sinergias, reincorporación y manifiesto final; luego arquitectura y R0/R1/R2 de ramas. Misma población/presupuesto. |
+| PS6 Núcleo, confirmación y uso | M01 + M04 + M05 + RL | Elegir y fijar prefijo, probar H-CORE y su transferencia, congelar finalista, evaluar conforme a su contrato y adaptar a shadow/paper. SAC y heurística se comparan por negocio. |
 | PS7 Síntesis opcional | M02 + causal | Real frente a real+sintético; fidelidad y utilidad conjunta; no requisito para PS6. |
 
 PS0/PS1 continúan ampliando cobertura mientras PS2/PS3/PS4 procesan lotes listos.
 La unidad del lote es recurso/feature/grupo con contrato, no todo el inventario.
 PS5 recibe resultados parciales elegibles sin esperar a todas las familias.
+
+PS3-C usa publicaciones de calendario únicamente como tratamientos históricos
+cuando corresponda. Los adaptadores que conviertan calendario o expedientes
+causales en entradas operativas pertenecen a I11 y quedan fuera de PS3-C y PS5.
 
 ### 10.2 Economía de recursos sin exclusiones silenciosas
 
@@ -605,6 +750,24 @@ frontera, rechazo, mutación y recuperación; congela prueba roja y después có
 | FS18 | Presupuesto completo y tres órdenes de selección sobre mismos folds; supervivientes no reemplazan el denominador esperado. | M04 / PS2-PS5 |
 | FS19 | Perfil reiniciado es reutilizable solo con mismos bytes/parámetros/fold; cambio de vintage no reutiliza una decisión vieja. | M03+M06 / PS0-PS4 |
 | FS20 | Fin a fin: lago -> perfil/selección -> donante -> DOIN -> resultado en warehouse -> adapter shadow; cambio de rejilla o upstream rechaza antes de cargar. | M01+M04+M05 / PS5-PS6 |
+| FS21 | Toda columna tiene exactamente un rol semántico; rol ausente o múltiple rechaza antes de perfilar. | M03 / PS0-PS1 |
+| FS22 | Perturbar bytes futuros no cambia ninguna transformación, estadística o subset anterior al cutoff. | M03 / PS1-PS2 |
+| FS23 | Imputador, clipping, scaler y vocabulario mutados con validation/test se detectan; solo estado TRAIN es aceptable. | M03 / PS1-PS2 |
+| FS24 | Forward-fill no autorizado y carry mayor a la edad de fuente rechazan; máscara y delta se preservan. | M03 / PS1 |
+| FS25 | Categoría no vista produce `UNKNOWN`; jamás crea retrospectivamente una columna TRAIN. | M03 / PS1 |
+| FS26 | Un par seno/coseno es atómico y contexto fijo no consume una plaza de `K`. | M03 / PS2 |
+| FS27 | Lags por horas transcurridas respetan `{0,1,2,6,24,48,168}` aun con huecos/DST. | M03 / PS1 |
+| FS28 | Una feature semántica tiene una oportunidad: lags, niveles, máscaras y latentes no compiten como features independientes. | M03+M04 / PS2-PS5 |
+| FS29 | Todos los selectores de una pista reciben mismos row digests, `K`, semilla, inicialización y update cap. | M04 / PS5 |
+| FS30 | Hiperparámetros del selector se eligen en inner TRAIN; el bloque externo contiene canarios que fallan al acceso. | M04 / PS5 |
+| FS31 | Selector integrado se descarta tras elegir subset y el predictor se reajusta desde la inicialización común. | M01+M04 / PS5 |
+| FS32 | `POINT`, `LAGGED` y `WINDOW_168` tienen identidades y resultados separados; no se elige representación mirando test. | M03+M04 / PS1-PS5 |
+| FS33 | `RANDOM_K` usa hasta tres cintas selladas del mismo tamaño y exposición; nunca reemplaza filas fallidas. | M04 / PS5 |
+| FS34 | Jaccard, inclusión, ranking y acuerdo de signo se recomputan desde subsets, no se aceptan autodeclarados. | M06 / PS5 |
+| FS35 | `NOT_IDENTIFIED` causal es neutral en membresía, no cero ni rechazo; solo evidencia identificada aplica la regla sellada. | causal+M04 / PS3-C,PS5 |
+| FS36 | Extractor que no supera random o no es no-inferior a raw vuelve a raw; el fallo no elimina la feature. | M02+M04 / PS3-R,PS5 |
+| FS37 | Calendario económico se rechaza como input de modelo antes de I11, aunque pueda definir episodios del selector. | causal+M01 / PS3-C |
+| FS38 | Cada fold semanal satisface BW01-BW18; una matriz estática no puede obtener etiqueta BUSINESS. | M03+M05 / PS5-PS6 |
 
 Etapas S4-S8 se detallan por componente sin frenar código existente ni carriles
 independientes. La aceptación científica exige mediciones reales además de los
@@ -661,3 +824,28 @@ Código: https://github.com/moment-timeseries-foundation-model/moment
 
 [12] WDSLab, "CF-JEPA," preprint y código de autores, 2026; candidato exploratorio.
 https://arxiv.org/abs/2606.07031 ; https://github.com/WDSLab/CF-JEPA
+
+[13] J. Dong et al., "TimeSiam: A Pre-Training Framework for Siamese Time-Series
+Modeling," Proc. ICML, PMLR 235, 2024.
+https://proceedings.mlr.press/v235/dong24e.html ;
+https://github.com/thuml/TimeSiam
+
+[14] M. Cheng et al., "TimeMAE: Self-supervised Representations of Time Series
+with Decoupled Masked Autoencoders," Proc. WSDM, 2026.
+https://arxiv.org/abs/2303.00320 ;
+https://github.com/ustc-time-series/TimeMAE
+
+[15] G. Brown, A. Pocock, M.-J. Zhao and M. Luján, "Conditional Likelihood
+Maximisation: A Unifying Framework for Information Theoretic Feature Selection,"
+JMLR, vol. 13, pp. 27-66, 2012. https://jmlr.org/papers/v13/brown12a.html
+
+[16] F. Fleuret, "Fast Binary Feature Selection with Conditional Mutual
+Information," JMLR, vol. 5, pp. 1531-1555, 2004.
+https://www.jmlr.org/papers/v5/fleuret04a.html
+
+[17] Y. Yasuda et al., "Sequential Attention for Feature Selection," ICLR,
+2023. https://research.google/pubs/sequential-attention-for-feature-selection/
+
+[18] B. Lim, S. Ö. Arık, N. Loeff and T. Pfister, "Temporal Fusion Transformers
+for Interpretable Multi-horizon Time Series Forecasting," International Journal
+of Forecasting, 2021. https://research.google/pubs/temporal-fusion-transformers-for-interpretable-multi-horizon-time-series-forecasting/

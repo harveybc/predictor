@@ -1,0 +1,54 @@
+{
+ "schema": "fs_causal_progress.v1",
+ "updated_utc": "2026-10-05T09:37:25Z",
+ "stage": "FINALIZED",
+ "chunks": {
+  "done": 47,
+  "total": 47
+ },
+ "cells": {
+  "done": 5124,
+  "total": 5124,
+  "failed_features": 0
+ },
+ "candidates": {
+  "done": 366,
+  "total": 366
+ },
+ "per_state_provisional_raw": {
+  "rung1_raw": {
+   "ASSOCIATION_REPORTED": 5124
+  },
+  "rung2_raw": {
+   "NOT_IDENTIFIED": 4576,
+   "IDENTIFIED_CONDITIONAL_ON_DECLARED_ASSUMPTIONS": 128,
+   "NOT_EVALUATED": 420
+  },
+  "rung3_raw": {
+   "NOT_IDENTIFIED": 4576,
+   "COUNTERFACTUAL_UNDER_DECLARED_SCM": 128,
+   "NOT_EVALUATED": 420
+  }
+ },
+ "failures": [],
+ "median_chunk_s": 267.3632445335388,
+ "mean_s_per_candidate": 32.098578801571996,
+ "eta_s": 0.0,
+ "eta_utc": "2026-10-05T09:37:25Z",
+ "host_role": "worker_b",
+ "hardware": "CPU only, single BLAS thread, crispdm-run capped",
+ "seed": 1729,
+ "test_read": false,
+ "per_state_final": {
+  "rung1": {
+   "NOT_IDENTIFIED": 5090,
+   "SUPPORTED": 34
+  },
+  "rung2": {
+   "NOT_IDENTIFIED": 5124
+  },
+  "rung3": {
+   "NOT_IDENTIFIED": 5124
+  }
+ }
+}

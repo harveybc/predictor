@@ -1,0 +1,14 @@
+{
+ "candidates": "the frozen K=24 sets of ALL_ADMISSIBLE, PRED_BEST, PLUS_CAUSAL, PLUS_EXTRACTIBILITY_EVIDENCE and KNOCKOFF (only if calibrated; arm 5 is EMPTY), frozen from TRAIN rankings before any 2024 read",
+ "declared_before_reading_validation": true,
+ "evaluation": "each week scored only on the following week's rows against the same-row naives (zero return; fit prior); weekly ledger per set (tools/business_weekly_score)",
+ "evaluation_mode": "BUSINESS_WEEKLY_WALK_FORWARD (primary); LITERATURE_STATIC_VALIDATION_DIAGNOSTIC kept apart, authorises nothing",
+ "refit": "the declared ridge head (one 6-output model per forecast family) and logistic head (per barrier) with fit-row standardisation and median imputation; one seed; weekly weights with their own digest",
+ "rule_sha256": "9719154810a585c2f3b7f305949b5fc30aaaa21b5af7606634d8498cb4571ab0",
+ "schema": "fs_close_closure_rule.v1",
+ "score": "mean over the 14 cells of the mean weekly skill over ALL weeks (never the best week)",
+ "strategy_eligibility": "a set is strategy-eligible only if it beats its paired naive strictly on every short and long horizon cell; otherwise the manifest is FINAL with strategy_eligible = false",
+ "test": "EXTERNAL TEST (2025) is never read by this tool; the loader refuses any row at or after 2025-01-01",
+ "update_mode": "FULL_RETRAIN_ROLLING_4Y: every complete Monday-aligned week of 2024 (derived from the calendar) gets a fresh fit on exactly the four calendar years available at its cutoff",
+ "winner": "highest aggregate; ties -> fewer features, then lower total fit seconds, then the order above"
+}

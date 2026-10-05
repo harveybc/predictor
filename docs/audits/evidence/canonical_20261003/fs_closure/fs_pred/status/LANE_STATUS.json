@@ -1,0 +1,287 @@
+{
+ "contract": {
+  "chronoepilogi_implementation": "auto",
+  "denominator": {
+   "declared_total": 366,
+   "excluded_role": 1,
+   "per_batch": {
+    "batch_001": 46,
+    "batch_002": 298,
+    "batch_003": 22
+   },
+   "selector_episode_source": 37,
+   "total": 366
+  },
+  "input_sha256": {
+   "batch_001/features_train.parquet": "bd005701247dc181c81457037cbad6e6142f8171ad8c3595f1cd489986557aa2",
+   "batch_001/folds.json": "a376bec1e0614db5d93ca601be1a3d16136a6b29d408e9738b0b9e7667337c2c",
+   "batch_001/targets_train.parquet": "a838b81c72a291a45dac70ab4c69415c85d7ec1888691cae38817642188e84e5",
+   "batch_002/features_train.parquet": "0e6ff8c570804823921227bd6733b185c17e54808364735067953f524f4399f3",
+   "batch_003/features_train.parquet": "fd0b4423db991cfb05cd4f9357a378648579d4c11552a1cac413ed711c3520bc"
+  },
+  "k_primary": 24,
+  "methods": [
+   "ALL_ADMISSIBLE",
+   "SPEARMAN_K",
+   "MI8_K",
+   "JMI_K",
+   "CMIM_K",
+   "MRMR_K",
+   "REDUNDANCY_K",
+   "RANDOM_K:seed0",
+   "ELASTIC_NET_K",
+   "GROUP_ELASTIC_NET_K",
+   "EXTRATREES_TBP_K",
+   "SEQ_MARGINAL_K",
+   "GROUP_GATE_K",
+   "CHRONOEPILOGI_K"
+  ],
+  "n_features": 366,
+  "sealed_ks": [
+   8,
+   16,
+   24,
+   32,
+   48
+  ],
+  "seed": 0,
+  "train_end_utc_exclusive": "2024-01-01T00:00:00+00:00",
+  "train_rows": 71734
+ },
+ "eta": {
+  "basis": "median of 167 POST method walls x 702 remaining method cells, one worker",
+  "eta_utc": "2026-10-05T20:22:39.390236+00:00",
+  "post_cells": 167,
+  "post_median_wall_seconds": 11.266814568894915
+ },
+ "failures": [],
+ "host_role": "worker_b (CPU)",
+ "k24_sets": 278,
+ "method_wall_seconds": {
+  "ALL_ADMISSIBLE": {
+   "max": 0.3280245428904891,
+   "median": 0.20956324692815542,
+   "n": 21
+  },
+  "CHRONOEPILOGI_K": {
+   "max": 118.15960842801724,
+   "median": 49.7714380529942,
+   "n": 9
+  },
+  "CMIM_K": {
+   "max": 54.304969796095975,
+   "median": 34.45776338502765,
+   "n": 21
+  },
+  "ELASTIC_NET_K": {
+   "max": 8764.33919041697,
+   "median": 15.438249792088754,
+   "n": 21
+  },
+  "EXTRATREES_TBP_K": {
+   "max": 108.86757644696627,
+   "median": 61.84899809147464,
+   "n": 20
+  },
+  "GROUP_ELASTIC_NET_K": {
+   "max": 230.15415804903023,
+   "median": 10.413401296013035,
+   "n": 20
+  },
+  "GROUP_GATE_K": {
+   "max": 3.5829775950405747,
+   "median": 2.2382180184940808,
+   "n": 20
+  },
+  "JMI_K": {
+   "max": 54.79486797004938,
+   "median": 34.34603508992586,
+   "n": 21
+  },
+  "MI8_K": {
+   "max": 1.6207703050458804,
+   "median": 1.0335123130353168,
+   "n": 21
+  },
+  "MRMR_K": {
+   "max": 54.05779823800549,
+   "median": 34.54481582308654,
+   "n": 21
+  },
+  "RANDOM_K:seed0": {
+   "max": 0.3303993850713596,
+   "median": 0.20484168000984937,
+   "n": 21
+  },
+  "REDUNDANCY_K": {
+   "max": 3.7124050119891763,
+   "median": 2.2417898640269414,
+   "n": 21
+  },
+  "SEQ_MARGINAL_K": {
+   "max": 26.88742278504651,
+   "median": 13.967504485975951,
+   "n": 20
+  },
+  "SPEARMAN_K": {
+   "max": 20.80476092605386,
+   "median": 4.294901325949468,
+   "n": 21
+  }
+ },
+ "per_method": {
+  "ALL_ADMISSIBLE": {
+   "done": 21,
+   "total": 70
+  },
+  "CHRONOEPILOGI_K": {
+   "done": 9,
+   "total": 70
+  },
+  "CMIM_K": {
+   "done": 21,
+   "total": 70
+  },
+  "ELASTIC_NET_K": {
+   "done": 21,
+   "total": 70
+  },
+  "EXTRATREES_TBP_K": {
+   "done": 20,
+   "total": 70
+  },
+  "GROUP_ELASTIC_NET_K": {
+   "done": 20,
+   "total": 70
+  },
+  "GROUP_GATE_K": {
+   "done": 20,
+   "total": 70
+  },
+  "JMI_K": {
+   "done": 21,
+   "total": 70
+  },
+  "MI8_K": {
+   "done": 21,
+   "total": 70
+  },
+  "MRMR_K": {
+   "done": 21,
+   "total": 70
+  },
+  "RANDOM_K:seed0": {
+   "done": 21,
+   "total": 70
+  },
+  "REDUNDANCY_K": {
+   "done": 21,
+   "total": 70
+  },
+  "SEQ_MARGINAL_K": {
+   "done": 20,
+   "total": 70
+  },
+  "SPEARMAN_K": {
+   "done": 21,
+   "total": 70
+  }
+ },
+ "per_target": {
+  "Y_b_l144": {
+   "method_cells_done": 0,
+   "method_cells_total": 70
+  },
+  "Y_b_s6": {
+   "method_cells_done": 9,
+   "method_cells_total": 70
+  },
+  "Y_l_120h": {
+   "method_cells_done": 13,
+   "method_cells_total": 70
+  },
+  "Y_l_144h": {
+   "method_cells_done": 13,
+   "method_cells_total": 70
+  },
+  "Y_l_24h": {
+   "method_cells_done": 13,
+   "method_cells_total": 70
+  },
+  "Y_l_48h": {
+   "method_cells_done": 13,
+   "method_cells_total": 70
+  },
+  "Y_l_72h": {
+   "method_cells_done": 13,
+   "method_cells_total": 70
+  },
+  "Y_l_96h": {
+   "method_cells_done": 13,
+   "method_cells_total": 70
+  },
+  "Y_s_1h": {
+   "method_cells_done": 70,
+   "method_cells_total": 70
+  },
+  "Y_s_2h": {
+   "method_cells_done": 69,
+   "method_cells_total": 70
+  },
+  "Y_s_3h": {
+   "method_cells_done": 13,
+   "method_cells_total": 70
+  },
+  "Y_s_4h": {
+   "method_cells_done": 13,
+   "method_cells_total": 70
+  },
+  "Y_s_5h": {
+   "method_cells_done": 13,
+   "method_cells_total": 70
+  },
+  "Y_s_6h": {
+   "method_cells_done": 13,
+   "method_cells_total": 70
+  }
+ },
+ "progress": {
+  "done": 1390,
+  "eta_seconds": 7656.432606065297,
+  "eta_utc": "2026-10-05T18:20:53.014216+00:00",
+  "method_cells_done": 278,
+  "method_cells_total": 980,
+  "n_failures": 0,
+  "observed_median_method_wall_seconds": 10.906599153939169,
+  "observed_p90_method_wall_seconds": 58.423404323053546,
+  "total": 4900,
+  "updated_utc": "2026-10-05T16:13:16.581570+00:00",
+  "workers": 1
+ },
+ "records": 278,
+ "rendered_utc": "2026-10-05T18:10:50.086460+00:00",
+ "schema": "fs_pred_lane_status.v2",
+ "state": "SUSPECT",
+ "watchdog": {
+  "probe": {
+   "blocked": false,
+   "cgroup_some_avg10": 0.0,
+   "d_state_pids": [],
+   "high_events_rising": false,
+   "memory_events_high": 0,
+   "memory_max": "5637144576",
+   "memory_peak": 1753509888,
+   "probe_epoch": 1791223849.0184622,
+   "progress_mtime_epoch": 1791216796.5818918,
+   "relaunch_epoch": 1791191214.0,
+   "scope_active": true,
+   "scopes": [
+    "crispdm-fs-pred-v2-Y_b_s6-1791207889-1560383.scope"
+   ]
+  },
+  "progress_age_seconds": 7052.4,
+  "reason": "progress unchanged for 7052s > 600s without observed memory pressure",
+  "state": "SUSPECT",
+  "threshold_seconds": 600.0
+ }
+}

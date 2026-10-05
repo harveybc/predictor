@@ -1,0 +1,10 @@
+{
+ "peak_scope": "cgroup",
+ "peak_bytes": 404779008,
+ "cgroup_peak_bytes": 404779008,
+ "measured_how": "memory.peak of the crispdm-run scope polled every 3 s during the pilot (cumulative max)",
+ "cgroup": "user.slice/user-1000.slice/user@1000.service/crispdm.slice/crispdm-batch.slice/crispdm-fs-causal-pilot-bd483de-1791177301-3385635.scope",
+ "work": "fs_causal_batch run --max-chunks 1 (chunk_000: 8 batch_001 features x 14 targets x 3 rungs + screens, revision bd483de)",
+ "written_utc": "2026-10-05T05:19:32Z",
+ "cap_rule": "1.25x measured cgroup peak"
+}

@@ -1,0 +1,58 @@
+{
+  "schema": "phase1.inventory_orchestrator.v2",
+  "phase": "PHASE_1",
+  "population": {
+    "id": "ETH",
+    "target_pack": "eth-short-long-v1"
+  },
+  "state_root": "<eth-phase1-state-root>",
+  "inventory": {
+    "files": ["<governed-eth-83-feature-inventory.csv>"],
+    "id_field": "feature_id",
+    "row_count_field": "train_rows",
+    "bytes_field": "source_bytes",
+    "availability_field": "input_state",
+    "available_values": ["AVAILABLE"],
+    "include": {
+      "role": "feature",
+      "admissibility": "ADMISSIBLE"
+    },
+    "expected_total": 83,
+    "bytes_per_row": 8,
+    "bytes_per_cost_unit": 8
+  },
+  "assignment": {"smallest_fraction": 0.2},
+  "hosts": [
+    {"id": "small-worker", "size_class": "small", "command_prefix": ["ssh", "<small-host>"]},
+    {"id": "large-worker-a", "size_class": "large", "command_prefix": ["ssh", "<large-host-a>"]},
+    {"id": "large-worker-b", "size_class": "large", "command_prefix": ["ssh", "<large-host-b>"]}
+  ],
+  "worker": {
+    "transport": "stdio-json-v1",
+    "command": ["<phase1-python>", "-m", "<generic-causal-column-module>", "--stdio"],
+    "timeout_seconds": 7200,
+    "environment": {}
+  },
+  "retries": {
+    "max_attempts": 3,
+    "retryable_exit_codes": [75, 137, -9],
+    "retryable_result_states": ["FAILED"],
+    "retryable_failure_classes": ["TIMEOUT", "ADMISSION", "OOM"]
+  },
+  "warehouse": {
+    "submit_url": "<warehouse-api>/api/v2/feature-selection-envelopes",
+    "reconcile_url": "<warehouse-api>/api/v2/feature-selection-reconcile",
+    "timeout_seconds": 30,
+    "token_env": "PHASE1_WAREHOUSE_TOKEN",
+    "auth_profile": "data-gov-service-token"
+  },
+  "finalizer": {
+    "command": [
+      "<phase1-python>", "-m", "<global-causal-finalizer-module>",
+      "--plan", "{plan_path}", "--terminals", "{terminals_dir}",
+      "--output", "{finalizer_output_path}"
+    ],
+    "timeout_seconds": 7200
+  },
+  "claims": {"stale_after_seconds": 900}
+}

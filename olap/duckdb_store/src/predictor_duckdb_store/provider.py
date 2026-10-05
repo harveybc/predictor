@@ -29,7 +29,8 @@ CAPABILITIES = ("describe", "storage", "discover", "schema", "query",
                 "write_metrics", "write_terminal", "terminal_digests",
                 "write_availability_contracts", "resolve_delivery_availability",
                 # E4: the data-foundation ingestion route, owned by this process
-                "write_foundation_envelope")
+                "write_foundation_envelope", "write_feature_selection_envelope",
+                "reconcile_feature_selection")
 
 #: Refuse to open a database on a volume with less free space than this. An OLAP engine that
 #: runs out of disk mid-write leaves a file nobody can explain.
@@ -128,32 +129,53 @@ class PredictorDuckdbStore(_Cube):
         transactions instead, which DuckDB supports; the statements themselves are unchanged,
         so the schema this cube gets is the schema the PostgreSQL cube gets.
         """
-        from sqlalchemy import inspect
-
+        widened_artifact_bytes = False
         with engine.begin() as conn:
             for statement in self._ddl(engine.dialect.name):
                 conn.execute(text(statement))
-        schema = self.params.get("schema") or "main"
-        columns = {column["name"] for column in
-                   inspect(engine).get_columns("gov_terminal_dataset", schema=schema)}
-        if "availability_contract_sha256" not in columns:
-            with engine.begin() as conn:
+            schema = self.params.get("schema") or "main"
+            columns = self._column_types(conn, schema, "gov_terminal_dataset")
+            if "availability_contract_sha256" not in columns:
                 conn.execute(text(
                     f"ALTER TABLE {self._qualified('gov_terminal_dataset')} "
                     "ADD COLUMN availability_contract_sha256 TEXT"))
-        # A cube created with `bytes INTEGER` (32-bit in DuckDB) refused the terminal of a
-        # 4,198,064,038-byte governed artifact (2026-09-22). Widened in place at start-up,
-        # then checkpointed so the write-ahead log never carries the DDL (see `_ddl`).
-        artifact_columns = {column["name"]: str(column["type"]).upper() for column in
-                            inspect(engine).get_columns("gov_terminal_artifact", schema=schema)}
-        if artifact_columns.get("bytes") in ("INTEGER", "INT", "INT4", "INT32"):
-            with engine.begin() as conn:
+            receipt_columns = self._column_types(
+                conn, schema, "df_fact_feature_selection_load_receipt"
+            )
+            if "feature_ids_json" not in receipt_columns:
+                conn.execute(text(
+                    f"ALTER TABLE {self._qualified('df_fact_feature_selection_load_receipt')} "
+                    "ADD COLUMN feature_ids_json TEXT"))
+            # A cube created with `bytes INTEGER` (32-bit in DuckDB) refused the terminal of a
+            # 4,198,064,038-byte governed artifact (2026-09-22). Widen it in place at start-up.
+            artifact_columns = self._column_types(conn, schema, "gov_terminal_artifact")
+            if artifact_columns.get("bytes") in ("INTEGER", "INT", "INT4", "INT32"):
                 conn.execute(text(
                     f"ALTER TABLE {self._qualified('gov_terminal_artifact')} "
                     "ALTER COLUMN bytes TYPE BIGINT"))
+                widened_artifact_bytes = True
+        # Fold migration DDL into the file only after its transaction commits. DuckDB refuses
+        # CHECKPOINT inside an active transaction.
+        if widened_artifact_bytes:
             with engine.connect() as conn:
                 conn.execute(text("CHECKPOINT"))
                 conn.commit()
+
+    @staticmethod
+    def _column_types(connection, schema: str, table: str) -> dict[str, str]:
+        """Read DuckDB's native catalog without PostgreSQL-dialect reflection.
+
+        duckdb-engine intentionally presents a PostgreSQL dialect to SQLAlchemy. Reflection
+        therefore tracks PostgreSQL's evolving catalog queries; SQLAlchemy 2.1.3 asks for
+        pg_collation, which DuckDB 1.5.6 does not expose. information_schema is DuckDB's stable
+        engine-owned interface for these additive migrations.
+        """
+        rows = connection.execute(text(
+            "SELECT column_name, data_type FROM information_schema.columns "
+            "WHERE table_schema = :schema AND table_name = :table "
+            "ORDER BY ordinal_position"
+        ), {"schema": schema, "table": table})
+        return {row[0]: str(row[1]).upper() for row in rows}
 
     # -- write serialisation ---------------------------------------------------
     def write_metrics(self, report):
@@ -168,14 +190,48 @@ class PredictorDuckdbStore(_Cube):
         with self._write_lock:
             return super().write_availability_contracts(contracts)
 
-    def schema(self, resource_id):
-        """The host's console asks for `schema`; the cube implements `resource_schema`.
+    def discover(self):
+        """List DuckDB relations through its native information schema."""
+        schema = self.params.get("schema") or "main"
+        with self.engine().connect() as connection:
+            rows = connection.execute(text(
+                "SELECT table_name, table_type FROM information_schema.tables "
+                "WHERE table_schema = :schema ORDER BY table_name"
+            ), {"schema": schema})
+            return [
+                {
+                    "resource_id": row[0],
+                    "kind": "view" if str(row[1]).upper() == "VIEW" else "table",
+                    "schema": schema,
+                    "rows": None,
+                    "row_count_status": "NOT_SCANNED",
+                }
+                for row in rows
+            ]
 
-        Declared here because this provider offers it: the PostgreSQL provider does not list
-        the capability, so its console page says the store exposes no schema metadata. Same
-        underlying call, one name the host actually looks for.
-        """
-        return self.resource_schema(resource_id)
+    def schema(self, resource_id):
+        """Describe one DuckDB relation without PostgreSQL-dialect reflection."""
+        schema = self.params.get("schema") or "main"
+        inventory = {item["resource_id"]: item for item in self.discover()}
+        if resource_id not in inventory:
+            raise ValueError("resource not in inventory")
+        with self.engine().connect() as connection:
+            rows = connection.execute(text(
+                "SELECT column_name, data_type, is_nullable, column_default "
+                "FROM information_schema.columns "
+                "WHERE table_schema = :schema AND table_name = :table "
+                "ORDER BY ordinal_position"
+            ), {"schema": schema, "table": resource_id})
+            columns = [
+                {
+                    "name": row[0],
+                    "type": str(row[1]),
+                    "nullable": str(row[2]).upper() == "YES",
+                    "default": row[3],
+                }
+                for row in rows
+            ]
+        return {**inventory[resource_id], "columns": columns}
 
     # -- data-foundation ingestion (E4) -----------------------------------------
     def write_foundation_envelope(self, document):

@@ -1,0 +1,691 @@
+{
+ "schema": "laneE_queue.v1",
+ "rule": "tier_1 b1,b3,b2 (cal.* excluded: known calendar is conditioning, not a series); exploration b1,b3,b2; tier_2 b1,b3,b2; duplicates kept at first position",
+ "queue": [
+  {
+   "batch": "batch_001",
+   "feature": "px.close_loc",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.ewma_vol_24",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.log_close",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.log_co",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.log_hl",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.logret_120h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.logret_12h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.logret_168h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.logret_1h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.logret_24h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.logret_2h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.logret_48h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.logret_4h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.logret_6h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.rv5",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.zclose_168",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "px.zclose_24",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.adx_14",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.atr_14_n",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.bb_pctb_20",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.bb_width_20",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.cci_20",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.dmn_14",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.dmp_14",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.ema20_dev",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.macd_hist_n",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.macd_n",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.mom_10_n",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.roc_10",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.rsi_14",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.stoch_d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.stoch_k",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_001",
+   "feature": "ta.willr_14",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "rg.atr_pct",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "rg.atr_ratio",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "rg.bb_width_pct",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "rg.di_spread",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "rg.ema_alignment",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "rg.macd_hist",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "rg.price_vs_ema50",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "rg.roc_12",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "tv.hilbert_amp",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "tv.kalman_dev",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "tv.stl_dev",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "tv.stl_seasonal",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "tv.wav_d1",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "tv.wav_d2",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "tv.wav_d3",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "tv.wav_d4",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "tv.wav_d5",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.credit.aaa.logret_1d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.fx_indices.dtwexemegs.level",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.rates.dgs30.level",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.rates.dprime.logret_5d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.stress.vixcls.logret_5d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.audusd.ewma_vol_24",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.audusd.logret_1h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.audusd.logret_24h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.eurgbp.ewma_vol_24",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.eurgbp.logret_1h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.eurjpy.ewma_vol_24",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.eurjpy.logret_1h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.gbpjpy.ewma_vol_24",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.gbpjpy.logret_1h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.gbpusd.ewma_vol_24",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.gbpusd.logret_1h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.nzdusd.ewma_vol_24",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.nzdusd.logret_1h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.usdcad.ewma_vol_24",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.usdchf.ewma_vol_24",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.usdchf.logret_1h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.usdchf.logret_24h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.usdjpy.ewma_vol_24",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.usdjpy.logret_1h",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.bsesn.logret_1d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.ftse.logret_5d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.gld.logret_1d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.hyg.logret_1d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.mxx.logret_5d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.sb_f.logret_1d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.si_f.logret_1d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.slv.logret_1d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.usdbrl_x.logret_5d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.usdmxn_x.logret_5d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.usdzar_x.logret_1d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.zs_f.logret_5d",
+   "stage": "tier_1"
+  },
+  {
+   "batch": "batch_003",
+   "feature": "cot.wti_nymex.mm_net_oi",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.credit.aaa.level",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.credit.bamlh0a0hym2.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.fx_indices.dtwexafegs.logret_5d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.fx_indices.dtwexbgs.level",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.rates.dfii10.diff_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.rates.dfii10.level",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.rates.dgs1.logret_5d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.rates.dgs3mo.diff_5d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.rates.dgs5.level",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.rates.dgs5.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.rates.dtb3.diff_5d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.rates.t10y3m.diff_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.rates.tb3ms.level",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.stress.anfci.diff_5d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.stress.anfci.level",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.stress.nfci.diff_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.stress.nfci.level",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fx.gbpusd.logret_24h",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.axjo.logret_5d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.cl_f.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.dia.logret_5d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.eem.logret_5d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.ftse.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.gc_f.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.gc_f.logret_5d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.ivv.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.ixic.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.kc_f.logret_5d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.lqd.logret_5d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.rut.logret_5d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.slv.logret_5d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.spy.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.spy.logret_5d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.tlt.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.twii.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.usdbrl_x.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.usdclp_x.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.usdcop_x.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.usdmxn_x.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.vea.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.vnq.logret_5d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.xlb.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.xlc.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.xlu.logret_1d",
+   "stage": "exploration"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "fred.inflation_expectations.t10yie.level",
+   "stage": "tier_2"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.bvsp.logret_1d",
+   "stage": "tier_2"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.bz_f.logret_1d",
+   "stage": "tier_2"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.sb_f.logret_5d",
+   "stage": "tier_2"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.usdidr_x.logret_1d",
+   "stage": "tier_2"
+  },
+  {
+   "batch": "batch_002",
+   "feature": "yh.xlp.logret_1d",
+   "stage": "tier_2"
+  }
+ ]
+}

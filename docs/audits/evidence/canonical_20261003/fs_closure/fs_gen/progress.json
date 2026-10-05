@@ -1,0 +1,63 @@
+{
+ "batches": {
+  "batch_001": {
+   "folds_done": [
+    "inner_2019",
+    "inner_2020",
+    "inner_2021",
+    "inner_2022",
+    "inner_2023"
+   ],
+   "n_features": 36
+  },
+  "batch_002": {
+   "folds_done": [
+    "inner_2019",
+    "inner_2020",
+    "inner_2021",
+    "inner_2022",
+    "inner_2023"
+   ],
+   "n_features": 214
+  },
+  "batch_003": {
+   "folds_done": [
+    "inner_2019",
+    "inner_2020",
+    "inner_2021",
+    "inner_2022",
+    "inner_2023"
+   ],
+   "n_features": 19
+  }
+ },
+ "cells_done": 15,
+ "cells_total": 15,
+ "cost_s": 348.1,
+ "counts": {
+  "calibrated_features": 2,
+  "denominator_rows": 366,
+  "feature_rows": 269,
+  "fold_rows": 1345,
+  "knockoff_run_features": 0
+ },
+ "current": null,
+ "fdr_q": 0.1,
+ "features_total": 269,
+ "generator_states": {
+  "CALIBRATED": 25,
+  "NOT_CALIBRATED": 1320
+ },
+ "knockoff_states": {
+  "NOT_CALIBRATED": 1330,
+  "RUN": 15
+ },
+ "lane": "FS-GEN",
+ "order": 24,
+ "peak_rss_mb": 427.1,
+ "schema": "fs_gen_progress.v1",
+ "seed": 0,
+ "started_utc": "2026-10-05T04:15:10Z",
+ "state": "DONE",
+ "updated_utc": "2026-10-05T04:20:58Z"
+}

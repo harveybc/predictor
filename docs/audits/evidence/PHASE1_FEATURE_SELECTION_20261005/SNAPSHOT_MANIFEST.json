@@ -1,0 +1,19 @@
+{
+  "schema": "olap_snapshot_manifest.v1",
+  "phase": "FEATURE_SELECTION_PHASE_1",
+  "created_on": "2026-10-05",
+  "database": "DuckDB",
+  "local_snapshot": "/home/harveybc/.local/state/crispdm-duckdb/snapshots/phase1-feature-selection-20261005/olap_feature_selection_phase1_20261005.duckdb",
+  "local_size_bytes": 308555776,
+  "local_sha256": "0e9fb23d00168ca682a243d06ef6fa02d01454d36cd1d3b59b6bf2cc02167918",
+  "compressed_asset": "olap_feature_selection_phase1_20261005.duckdb.zst",
+  "compressed_size_bytes": 139511607,
+  "compressed_sha256": "f93c844ca64d3fe4e8e3e2ec4b61fe26539e3592a1fc84d54b4155823c3a7927",
+  "release_url": "https://github.com/harveybc/predictor/releases/tag/phase1-feature-selection-20261005",
+  "asset_url": "https://github.com/harveybc/predictor/releases/download/phase1-feature-selection-20261005/olap_feature_selection_phase1_20261005.duckdb.zst",
+  "warehouse_runs": {
+    "EURUSD": "phase1-eurusd-final:94d20c038d55e152",
+    "ETH": "phase1-final:ETH:29d2f745f5d9e87c"
+  },
+  "custody_policy": "The repository retains this manifest; the large immutable snapshot is a release asset. Restore requires SHA-256 verification before opening the database."
+}

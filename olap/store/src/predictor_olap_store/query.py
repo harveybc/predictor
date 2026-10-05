@@ -527,6 +527,8 @@ class Plugin:
         return f'"{schema}"."{name}"'
 
     def _ddl(self, dialect: str):
+        from predictor_olap_store.feature_selection_store import ddl as feature_selection_ddl
+
         t = self._qualified
         view_select = (
             "SELECT m.report_sha256, m.experiment_key, r.lake_id, r.received_at, m.metric,"
@@ -540,7 +542,7 @@ class Plugin:
         create_view = (
             "CREATE VIEW IF NOT EXISTS" if dialect == "sqlite" else "CREATE OR REPLACE VIEW"
         )
-        return [
+        statements = [
             f"CREATE TABLE IF NOT EXISTS {t('gov_report')} ("
             " report_sha256 TEXT PRIMARY KEY, experiment_key TEXT NOT NULL,"
             " experiment_set_key TEXT, actor TEXT NOT NULL, lake_id TEXT NOT NULL,"
@@ -644,6 +646,8 @@ class Plugin:
             f" FROM {t('gov_terminal_dataset')} d LEFT JOIN {t('gov_availability_contract')} c"
             " ON c.contract_sha256 = d.availability_contract_sha256",
         ]
+        statements.extend(feature_selection_ddl(t, dialect))
+        return statements
 
     def _ensure_schema(self, engine):
         dialect = engine.dialect.name
@@ -662,6 +666,16 @@ class Plugin:
                 conn.execute(text(
                     f"ALTER TABLE {self._qualified('gov_terminal_dataset')} "
                     "ADD COLUMN availability_contract_sha256 TEXT"
+                ))
+            receipt_columns = {
+                column["name"] for column in inspect(engine).get_columns(
+                    "df_fact_feature_selection_load_receipt", schema=schema
+                )
+            }
+            if "feature_ids_json" not in receipt_columns:
+                conn.execute(text(
+                    f"ALTER TABLE {self._qualified('df_fact_feature_selection_load_receipt')} "
+                    "ADD COLUMN feature_ids_json TEXT"
                 ))
             # an existing store created with `bytes INTEGER` (32-bit on DuckDB and Postgres) is
             # widened in place; SQLite's INTEGER is already 64-bit and cannot be altered
@@ -771,6 +785,39 @@ class Plugin:
                 {"h": digest},
             ).scalar()
         return {"stored": False, "already_stored": True, "lineage": stored}
+
+    def write_feature_selection_envelope(self, document: dict):
+        """Validate and atomically retain all phase-1 row families plus one receipt."""
+        from predictor_olap_store.feature_selection import validate_envelope
+        from predictor_olap_store.feature_selection_store import write
+
+        document = validate_envelope(document)
+        if self._engine is None:
+            self.engine()
+        if self._schema_error is not None:
+            raise RuntimeError(f"feature-selection schema not ready: {self._schema_error}")
+        lock = getattr(self, "_write_lock", None)
+        if lock is None:
+            with self.write_engine().begin() as connection:
+                return write(connection, self._qualified, document)
+        with lock:
+            with self.write_engine().begin() as connection:
+                return write(connection, self._qualified, document)
+
+    def reconcile_feature_selection(self, request: dict):
+        """Reconcile an authenticated request against retained phase-1 evidence."""
+        from predictor_olap_store.feature_selection_reconciliation import (
+            validate_reconciliation_request,
+        )
+        from predictor_olap_store.feature_selection_store import reconcile
+
+        request = validate_reconciliation_request(request)
+        if self._engine is None:
+            self.engine()
+        if self._schema_error is not None:
+            raise RuntimeError(f"feature-selection schema not ready: {self._schema_error}")
+        with self.engine().connect() as connection:
+            return reconcile(connection, self._qualified, request)
 
     def write_terminal(self, terminal):
         terminal = _strict_terminal(terminal)

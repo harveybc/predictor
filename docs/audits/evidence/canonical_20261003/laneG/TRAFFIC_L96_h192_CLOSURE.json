@@ -1,0 +1,63 @@
+{
+ "schema": "laneG.horizon_closure.v1",
+ "dataset": "traffic",
+ "protocol": "L96",
+ "horizon": 192,
+ "seeds": [
+  2021,
+  2022,
+  2023
+ ],
+ "per_seed": [
+  {
+   "seed": 2021,
+   "mse": 0.39660507440567017,
+   "mae": 0.2626103460788727,
+   "record_sha256": "86b28103629e3e3d6651bfea122213f05c8e933934501cd2ba6fb5734c467804"
+  },
+  {
+   "seed": 2022,
+   "mse": 0.39657917618751526,
+   "mae": 0.26269859075546265,
+   "record_sha256": "0a049f7421155e1d03d7861fdc4315d5d836353bd977a20fe061eac8ed17f6b5"
+  },
+  {
+   "seed": 2023,
+   "mse": 0.3963419497013092,
+   "mae": 0.2621254622936249,
+   "record_sha256": "560711f29562f27c78214f7a2409a353a022d5156621e7480af43b32fdf438d0"
+  }
+ ],
+ "mean": {
+  "mse": 0.39650873343149823,
+  "mae": 0.2624781330426534
+ },
+ "sd_ddof1": {
+  "mse": 0.0001450182365005141,
+  "mae": 0.000308592406989984
+ },
+ "naive_same_rows": {
+  "mse": 2.747078210964908,
+  "mae": 1.085077268712241,
+  "identical_across_seeds": true
+ },
+ "skill_vs_naive_of_mean": {
+  "mse": 0.8556616510411529,
+  "mae": 0.7581018968776667
+ },
+ "published": {
+  "mse": 0.395,
+  "mae": 0.262,
+  "source": "TimeFilter Table 8 Traffic T=192"
+ },
+ "difference": {
+  "mse": 0.0015087334314982104,
+  "mae": 0.00047813304265337253
+ },
+ "class": {
+  "mse": "OPERATIONAL_AGREEMENT",
+  "mae": "OPERATIONAL_AGREEMENT"
+ },
+ "rule": "|mean - published| <= 2*std_paper+0.0005 AGREEMENT; <= 3*std_paper+0.0005 PARTIAL; std_paper = Traffic Table 7 four-horizon-average SD (0.008 MSE / 0.004 MAE), borrowed per horizon as a predeclared operational margin, not statistical equivalence",
+ "evidence_state": "MEASURED_UNVERIFIED (no independent replay)"
+}
