@@ -2421,14 +2421,18 @@
     "ta.dmp_14": {
       "batch": "batch_001",
       "cause": "",
-      "decision": "PENDING",
+      "decision": "RAW",
       "families_present": [
         "identity",
         "random",
+        "ae",
+        "dae",
         "masked_temporal_ae",
         "past_to_current_siamese"
       ],
-      "flags": [],
+      "flags": [
+        "RAW_HAS_PROBE_SKILL"
+      ],
       "terminals": {
         "alt_mtae": {
           "reason": "",
@@ -2441,9 +2445,9 @@
           "state": "COMPLETED"
         },
         "baseline": {
-          "reason": "NOT_LANDED",
-          "receipt_sha256": "",
-          "state": "PENDING"
+          "reason": "",
+          "receipt_sha256": "4d2aba54c95bb6aa1d2c18065199c8c61b021b42bd4ac9c1869f38e76058ac5f",
+          "state": "COMPLETED"
         }
       }
     },
@@ -4265,20 +4269,20 @@
       }
     }
   },
-  "candidates_decided": 72,
+  "candidates_decided": 73,
   "claim_scope": "provisional extractibility/probe disposition; no downstream improvement of latents is claimed while trained-family G4 is NOT_APPLICABLE; raw vs latent belongs to M4",
-  "coverage_fraction": 0.5182,
-  "cycle_started_at": "2026-10-05T09:19:39Z",
+  "coverage_fraction": 0.5255,
+  "cycle_started_at": "2026-10-05T09:25:54Z",
   "decisions": {
     "NOT_AVAILABLE_FOR_TRAIN": 1,
     "NO_TRAINED_ADVANTAGE": 53,
-    "PENDING": 65,
-    "RAW": 18
+    "PENDING": 64,
+    "RAW": 19
   },
   "disposition_class": "PROVISIONAL_EXTRACTIBILITY_DISPOSITION",
   "eta": {
     "fs_gpu_eta": {
-      "generated_at_utc": "2026-10-05T09:19:35Z",
+      "generated_at_utc": "2026-10-05T09:25:40Z",
       "queues": {
         "alternatives_5090": {
           "active_roles": [],
@@ -4379,8 +4383,8 @@
             "finish_utc_p90": "2026-10-06T02:05:47Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 47221,
-            "seconds_p90": 60371
+            "seconds_median": 46856,
+            "seconds_p90": 60006
           },
           "failures": [
             {
@@ -4395,7 +4399,7 @@
           "running": [
             {
               "cell_id": "batch_002::fred.stress.anfci.diff_5d::baseline",
-              "elapsed_seconds": 201,
+              "elapsed_seconds": 566,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
               "role": "worker_b",
               "stale": false,
@@ -4410,52 +4414,52 @@
           "active_workers": 1,
           "by_role": {
             "worker_a": {
-              "done": 23,
-              "median_seconds": 697.0,
-              "n": 23,
+              "done": 24,
+              "median_seconds": 699.7,
+              "n": 24,
               "p90_seconds": 819.2
             }
           },
           "counts": {
-            "done": 23,
+            "done": 24,
             "failed": 0,
-            "pending": 27,
+            "pending": 26,
             "running": 1
           },
           "denominator": 51,
           "duplicates": [],
           "durations_seconds": {
-            "median": 697.0,
-            "n": 23,
+            "median": 699.7,
+            "n": 24,
             "p90": 819.2
           },
           "eta": {
             "basis": {
               "median_seconds": {
-                "worker_a": 697.0
+                "worker_a": 699.7
               },
               "p90_seconds": {
                 "worker_a": 819.2
               }
             },
-            "finish_utc_median": "2026-10-05T14:35:57Z",
-            "finish_utc_p90": "2026-10-05T15:32:59Z",
+            "finish_utc_median": "2026-10-05T14:38:56Z",
+            "finish_utc_p90": "2026-10-05T15:32:42Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 18982,
-            "seconds_p90": 22403
+            "seconds_median": 18795,
+            "seconds_p90": 22022
           },
           "failures": [],
           "name": "baselines_5090_batch_001_003",
           "plan_cells": 51,
           "running": [
             {
-              "cell_id": "batch_001::ta.dmp_14::baseline",
-              "elapsed_seconds": 534,
+              "cell_id": "batch_001::ta.ema20_dev::baseline",
+              "elapsed_seconds": 96,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_a/baseline_5090.log",
               "role": "worker_a",
               "stale": false,
-              "started_at_utc": "2026-10-05T09:10:41Z"
+              "started_at_utc": "2026-10-05T09:24:04Z"
             }
           ]
         }
@@ -4475,7 +4479,7 @@
         },
         "baselines_heavy_candidates": {
           "denominator": 137,
-          "done": 71,
+          "done": 72,
           "failed": 1
         }
       }
@@ -4485,10 +4489,10 @@
   },
   "families_present_histogram": {
     "0": 1,
-    "4": 65,
-    "6": 71
+    "4": 64,
+    "6": 72
   },
-  "heavy_candidates_covered": 71,
+  "heavy_candidates_covered": 72,
   "heavy_denominator": 137,
   "milestones": {
     "coverage_50": {
@@ -4508,15 +4512,15 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "d5f3b6b3a7b8acf246c1740aca6a9a61a8695fffd408f510a72922c837d93cf9"
+      "sha256": "37d41b757a33ae555eda0b2a2b07f44d2d0b275ba9c5b543e20cea154ef20339"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
-      "rows": 106736,
-      "sha256": "3b9cf797284387d992e070bea66b7de28e573110bad9318234b3b2c4209f2f91"
+      "rows": 107136,
+      "sha256": "d283eb67a7285a4cc439abe95b5b1b439c6e1b2a6ab7c1caf37a91cb40e36439"
     },
     "representation_metric_catalog.csv.gz": {
-      "sha256": "c849af91a1f8293e51ce82f10edac63a05c5795b3661cdb3ae6d583d02640b01"
+      "sha256": "8437155171cbaa322f4d9b320ca05e202bebe9a88ea63717d5cffafc5cff59f8"
     }
   },
   "planned_cells_total": 411,
@@ -4542,10 +4546,10 @@
       "FAILED": 1
     },
     "baseline": {
-      "COMPLETED": 71,
+      "COMPLETED": 72,
       "FAILED": 1,
-      "PENDING": 65
+      "PENDING": 64
     }
   },
-  "updated_at": "2026-10-05T09:19:43Z"
+  "updated_at": "2026-10-05T09:25:59Z"
 }
