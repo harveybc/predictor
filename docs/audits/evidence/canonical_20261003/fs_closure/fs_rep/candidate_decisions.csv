@@ -1,7 +1,7 @@
 feature_id,batch,decision,families_present,flags
 cot.wti_nymex.mm_net_oi,batch_003,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 fred.credit.aaa.level,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
-fred.credit.aaa.logret_1d,batch_002,RAW,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
+fred.credit.aaa.logret_1d,batch_002,RAW,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;RAW_REFIT_GAIN_NONPOSITIVE
 fred.credit.bamlh0a0hym2.logret_1d,batch_002,PENDING,,
 fred.fx_indices.dtwexafegs.logret_5d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 fred.fx_indices.dtwexbgs.level,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
