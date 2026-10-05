@@ -1440,14 +1440,18 @@
     },
     "px.log_co": {
       "batch": "batch_001",
-      "decision": "PENDING",
+      "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
         "random",
+        "ae",
+        "dae",
         "masked_temporal_ae",
         "past_to_current_siamese"
       ],
-      "flags": [],
+      "flags": [
+        "RAW_HAS_PROBE_SKILL"
+      ],
       "terminals": {
         "alt_mtae": {
           "reason": "",
@@ -1460,9 +1464,9 @@
           "state": "COMPLETED"
         },
         "baseline": {
-          "reason": "NOT_LANDED",
-          "receipt_sha256": "",
-          "state": "PENDING"
+          "reason": "",
+          "receipt_sha256": "9a81d66f9f156e739753d9981e0d38ee3fd14661119a1b519b3b0c2b5ef5c9bc",
+          "state": "COMPLETED"
         }
       }
     },
@@ -4007,12 +4011,12 @@
       }
     }
   },
-  "candidates_decided": 41,
-  "coverage_fraction": 0.292,
-  "cycle_started_at": "2026-10-05T05:18:23Z",
+  "candidates_decided": 42,
+  "coverage_fraction": 0.2993,
+  "cycle_started_at": "2026-10-05T05:22:40Z",
   "decisions": {
-    "NO_TRAINED_ADVANTAGE": 32,
-    "PENDING": 96,
+    "NO_TRAINED_ADVANTAGE": 33,
+    "PENDING": 95,
     "RAW": 9
   },
   "eta": {
@@ -6925,27 +6929,27 @@
           }
         ]
       },
-      "generated_at_utc": "2026-10-05T05:17:17Z",
+      "generated_at_utc": "2026-10-05T05:21:11Z",
       "hosts": {
         "coordinator": {
           "gpus": [
-            "0, NVIDIA GeForce RTX 4070 Laptop GPU, 24 %, 886 MiB, 8188 MiB, 48"
+            "0, NVIDIA GeForce RTX 4070 Laptop GPU, 24 %, 888 MiB, 8188 MiB, 47"
           ],
-          "memory": "total_mib=31259 used_mib=11495 available_mib=19764",
-          "probed_at_utc": "2026-10-05T05:17:17Z",
+          "memory": "total_mib=31259 used_mib=11730 available_mib=19529",
+          "probed_at_utc": "2026-10-05T05:21:10Z",
           "running": []
         },
         "worker_a": {
           "gpus": [
             "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 0 %, 14 MiB, 12227 MiB, 39",
-            "1, NVIDIA GeForce RTX 5090, 57 %, 19506 MiB, 32607 MiB, 55"
+            "1, NVIDIA GeForce RTX 5090, 27 %, 19500 MiB, 32607 MiB, 54"
           ],
-          "memory": "total_mib=14630 used_mib=10101 available_mib=4528",
-          "probed_at_utc": "2026-10-05T05:17:17Z",
+          "memory": "total_mib=14630 used_mib=7957 available_mib=6672",
+          "probed_at_utc": "2026-10-05T05:21:10Z",
           "running": [
             {
               "cell_id": "batch_001::px.log_co::baseline",
-              "elapsed_seconds": 668,
+              "elapsed_seconds": 902,
               "queue": "baselines_5090_batch_001_003",
               "started_at_utc": "2026-10-05T05:06:09Z"
             }
@@ -6953,14 +6957,14 @@
         },
         "worker_b": {
           "gpus": [
-            "0, NVIDIA GeForce RTX 4090 Laptop GPU, 27 %, 14428 MiB, 16376 MiB, 43"
+            "0, NVIDIA GeForce RTX 4090 Laptop GPU, 28 %, 14430 MiB, 16376 MiB, 42"
           ],
-          "memory": "total_mib=31310 used_mib=20192 available_mib=11118",
-          "probed_at_utc": "2026-10-05T05:17:17Z",
+          "memory": "total_mib=31310 used_mib=20542 available_mib=10768",
+          "probed_at_utc": "2026-10-05T05:21:10Z",
           "running": [
             {
               "cell_id": "batch_002::fred.fx_indices.dtwexafegs.logret_5d::baseline",
-              "elapsed_seconds": 499,
+              "elapsed_seconds": 733,
               "queue": "baselines_4090_batch_002",
               "started_at_utc": "2026-10-05T05:08:58Z"
             }
@@ -7064,11 +7068,11 @@
               }
             },
             "finish_utc_median": "2026-10-05T22:10:34Z",
-            "finish_utc_p90": "2026-10-06T02:58:39Z",
+            "finish_utc_p90": "2026-10-06T02:58:38Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 60796,
-            "seconds_p90": 78081
+            "seconds_median": 60563,
+            "seconds_p90": 77847
           },
           "failures": [
             {
@@ -7083,7 +7087,7 @@
           "running": [
             {
               "cell_id": "batch_002::fred.fx_indices.dtwexafegs.logret_5d::baseline",
-              "elapsed_seconds": 499,
+              "elapsed_seconds": 733,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
               "role": "worker_b",
               "stale": false,
@@ -7126,8 +7130,8 @@
                 "worker_a": 621.7
               }
             },
-            "finish_utc_median": "2026-10-05T12:59:09Z",
-            "finish_utc_p90": "2026-10-05T13:24:17Z",
+            "finish_utc_median": "2026-10-05T13:03:02Z",
+            "finish_utc_p90": "2026-10-05T13:28:10Z",
             "provisional": false,
             "reason": null,
             "seconds_median": 27711,
@@ -7139,7 +7143,7 @@
           "running": [
             {
               "cell_id": "batch_001::px.log_co::baseline",
-              "elapsed_seconds": 668,
+              "elapsed_seconds": 902,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_a/baseline_5090.log",
               "role": "worker_a",
               "stale": false,
@@ -7173,10 +7177,10 @@
   },
   "families_present_histogram": {
     "0": 1,
-    "4": 96,
-    "6": 40
+    "4": 95,
+    "6": 41
   },
-  "heavy_candidates_covered": 40,
+  "heavy_candidates_covered": 41,
   "heavy_denominator": 137,
   "milestones": {
     "first_table": {
@@ -7191,15 +7195,15 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "eefcaee863628cc6873d18dc3ad7aa9c8fbdc74b2ec47d527d8069fc88205ddc"
+      "sha256": "c8d577b45cc6ead593dae9e623589dc5491aa17407b5705fe3ada3a97e49b0f7"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
-      "rows": 94336,
-      "sha256": "cdab226df1aa1b859d6e7002d7e2812352f8291aa51b490535413e444b27fb31"
+      "rows": 94736,
+      "sha256": "d32f00a93a3ab6e46a40dbc0dc2e2ec384b9661d24551208ba7311c1261cd375"
     },
     "representation_metric_catalog.csv.gz": {
-      "sha256": "df8591dc987bfe0aba56c19b3c1c80b38bdb1cd9f2d9196374d3c4afc953c5bc"
+      "sha256": "664c3d41c023cc1c3b01c99acf21cae18d539d47ccb841c195bef106c4e66847"
     }
   },
   "planned_cells_total": 411,
@@ -7225,10 +7229,10 @@
       "FAILED": 1
     },
     "baseline": {
-      "COMPLETED": 40,
+      "COMPLETED": 41,
       "FAILED": 1,
-      "PENDING": 96
+      "PENDING": 95
     }
   },
-  "updated_at": "2026-10-05T05:18:30Z"
+  "updated_at": "2026-10-05T05:22:48Z"
 }
