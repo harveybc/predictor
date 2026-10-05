@@ -206,7 +206,8 @@
       "families_present": [
         "identity",
         "random",
-        "masked_temporal_ae"
+        "masked_temporal_ae",
+        "past_to_current_siamese"
       ],
       "flags": [],
       "terminals": {
@@ -216,9 +217,9 @@
           "state": "COMPLETED"
         },
         "alt_p2c": {
-          "reason": "NOT_LANDED",
-          "receipt_sha256": "",
-          "state": "PENDING"
+          "reason": "",
+          "receipt_sha256": "b7f49b18e43b21bda63b11bb660f33f84f658d9ba6766f1ea5465224dcb4df0a",
+          "state": "COMPLETED"
         },
         "baseline": {
           "reason": "NOT_LANDED",
@@ -3970,34 +3971,34 @@
   },
   "candidates_decided": 34,
   "coverage_fraction": 0.2482,
-  "cycle_started_at": "2026-10-05T04:18:54Z",
+  "cycle_started_at": "2026-10-05T04:23:09Z",
   "decisions": {
     "NO_TRAINED_ADVANTAGE": 29,
     "PENDING": 103,
     "RAW": 5
   },
   "eta": {
-    "full_coverage_eta_median_utc": "2026-10-05T22:49:21Z",
-    "full_coverage_eta_p90_utc": "2026-10-06T04:03:48Z",
+    "full_coverage_eta_median_utc": "2026-10-05T22:50:18Z",
+    "full_coverage_eta_p90_utc": "2026-10-06T04:03:53Z",
     "note": "ETA excludes work the alternatives GPU may steal from the baseline_002 queue after the successor queue; a stolen cell shortens, never lengthens, these dates.",
     "queues": {
       "alternative": {
-        "completed": 266,
-        "eta_median_utc": "2026-10-05T04:44:54Z",
-        "eta_p90_utc": "2026-10-05T04:52:15Z",
+        "completed": 267,
+        "eta_median_utc": "2026-10-05T04:45:51Z",
+        "eta_p90_utc": "2026-10-05T04:52:20Z",
         "failed": 0,
-        "median_seconds": 194.977228,
+        "median_seconds": 194.575537,
         "p90_seconds": 250.115809,
-        "remaining": 8,
-        "sample_size": 266,
+        "remaining": 7,
+        "sample_size": 267,
         "status_updated_from": "alternative_5090_STATUS.json",
         "total": 274,
         "workers": 1
       },
       "baseline_002": {
         "completed": 34,
-        "eta_median_utc": "2026-10-05T22:44:37Z",
-        "eta_p90_utc": "2026-10-06T03:57:44Z",
+        "eta_median_utc": "2026-10-05T22:48:53Z",
+        "eta_p90_utc": "2026-10-06T04:02:00Z",
         "failed": 0,
         "median_seconds": 1275.839077,
         "p90_seconds": 1637.127626,
@@ -4010,8 +4011,8 @@
       "baseline_successor": {
         "completed": 0,
         "duration_proxy": "baseline_002 queue durations (other GPU) until the first successor cells close",
-        "eta_median_utc": "2026-10-05T22:49:21Z",
-        "eta_p90_utc": "2026-10-06T04:03:48Z",
+        "eta_median_utc": "2026-10-05T22:50:18Z",
+        "eta_p90_utc": "2026-10-06T04:03:53Z",
         "failed": 0,
         "median_seconds": null,
         "p90_seconds": null,
@@ -4026,8 +4027,8 @@
   },
   "families_present_histogram": {
     "0": 1,
-    "3": 6,
-    "4": 96,
+    "3": 5,
+    "4": 97,
     "6": 34
   },
   "heavy_candidates_covered": 34,
@@ -4045,19 +4046,19 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "cbb2fe3770ed0da60053c9fbf95f8a2a7434a36bfcf48fae485533f249aeb8b9"
+      "sha256": "a843271f4823cafbaa53a4745a8b1e355cb63b96e5d42d47d4a4d8fd876443e8"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
-      "rows": 90736,
-      "sha256": "004bc651475f5292c2e2ee9b9e632f71b952125654dfb8b43380e622856d3b2e"
+      "rows": 90936,
+      "sha256": "78cde72b9dfb37c9209c3810799b3f21b0485adbc8376eb50f55e229d1ed2e2c"
     },
     "representation_metric_catalog.csv.gz": {
-      "sha256": "5d4fb6ab6074b73e035f7b8632b1687c0a06cf3e70fbb7c43dd33f0f627c2adc"
+      "sha256": "17219a21f164658d487b23aa149c7a24e0ace6b149a5927bfbd6983cc0f08d48"
     }
   },
   "planned_cells_total": 411,
-  "process_peak_rss_bytes": 136159232,
+  "process_peak_rss_bytes": 136265728,
   "refit_gate_applied": false,
   "refit_input": null,
   "rule_version": "fs_rep_rule.v1",
@@ -4075,14 +4076,14 @@
       "FAILED": 1
     },
     "alt_p2c": {
-      "COMPLETED": 130,
+      "COMPLETED": 131,
       "FAILED": 1,
-      "PENDING": 6
+      "PENDING": 5
     },
     "baseline": {
       "COMPLETED": 34,
       "PENDING": 103
     }
   },
-  "updated_at": "2026-10-05T04:19:00Z"
+  "updated_at": "2026-10-05T04:23:16Z"
 }

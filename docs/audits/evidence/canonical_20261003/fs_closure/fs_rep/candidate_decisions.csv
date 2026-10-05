@@ -6,7 +6,7 @@ fred.credit.bamlh0a0hym2.logret_1d,batch_002,PENDING,,
 fred.fx_indices.dtwexafegs.logret_5d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 fred.fx_indices.dtwexbgs.level,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 fred.fx_indices.dtwexemegs.level,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,COLLAPSED_LATENT(ae);RAW_HAS_PROBE_SKILL
-fred.inflation_expectations.t10yie.level,batch_002,PENDING,identity;random;masked_temporal_ae,
+fred.inflation_expectations.t10yie.level,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 fred.rates.dfii10.diff_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 fred.rates.dfii10.level,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 fred.rates.dgs1.logret_5d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
