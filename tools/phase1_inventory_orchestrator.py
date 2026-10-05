@@ -490,7 +490,12 @@ def _require_accepted_submission(response: dict[str, Any]) -> None:
     payload = response.get("body") if "status" in response else response
     if "status" in response and not 200 <= int(response["status"]) < 300:
         raise Phase1Refusal("warehouse submission was not accepted")
-    if not isinstance(payload, dict) or payload.get("accepted") is not True:
+    accepted = isinstance(payload, dict) and (
+        payload.get("accepted") is True
+        or payload.get("stored") is True
+        or payload.get("already_stored") is True
+    )
+    if not accepted:
         raise Phase1Refusal("warehouse submission returned no accepted receipt")
 
 

@@ -240,6 +240,10 @@ def _accepted_submit(document: dict, _warehouse: dict) -> dict:
     return {"accepted": True, "feature_id": document.get("feature_id")}
 
 
+def _stored_submit(_document: dict, _warehouse: dict) -> dict:
+    return {"status": 201, "body": {"stored": True, "already_stored": False}}
+
+
 def _accepted_reconcile(request: dict, _warehouse: dict) -> dict:
     response = {
         "schema": "phase1.warehouse_reconciliation.v1",
@@ -474,6 +478,16 @@ def test_finalization_waits_for_every_receipt_and_authenticated_readback(
         (Path(config["state_root"]) / "warehouse_reconciliation.json").read_text()
     )
     assert gate["warehouse_reconciliation_sha256"] == _canonical_sha(stored)
+
+
+def test_live_warehouse_stored_receipt_is_accepted(tmp_path: Path) -> None:
+    config = load_config(_config(tmp_path, [_row("a", 10, 80)]))
+    build_plan(config)
+
+    result = run_host_once(config, "small", submit=_stored_submit)
+
+    assert result["action"] == "TERMINAL_WRITTEN"
+    assert len(list((Path(config["state_root"]) / "warehouse_receipts").glob("*.json"))) == 1
 
 
 def test_rejected_warehouse_submission_is_not_a_receipt(tmp_path: Path) -> None:
