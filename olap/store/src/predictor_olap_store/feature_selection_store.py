@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from sqlalchemy import text
 
 from .feature_selection import ROW_FAMILIES, canonical_json, digest, row_identity
@@ -87,6 +89,7 @@ def ddl(qualified, dialect: str) -> list[str]:
         " envelope_sha256 TEXT PRIMARY KEY,"
         f" run_id TEXT NOT NULL REFERENCES {t('df_dim_feature_selection_run')}(run_id),"
         " schema_version TEXT NOT NULL, row_count INTEGER NOT NULL, body_sha256 TEXT NOT NULL,"
+        " feature_ids_json TEXT,"
         " stored_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)",
         f"{create_view} {t('df_feature_profile_current')} AS "
         "SELECT run_id, feature_id, split, metric_name, metric_value, state,"
@@ -198,6 +201,11 @@ def write(connection, qualified, document: dict) -> dict:
     """Commit one already-validated envelope using the caller's single transaction."""
     envelope_sha256 = document["envelope_sha256"]
     row_count = sum(len(document["rows"][name]) for name in ROW_FAMILIES)
+    feature_ids = sorted({
+        row["feature_id"]
+        for family in ROW_FAMILIES
+        for row in document["rows"][family]
+    })
     existing = connection.execute(text(
         f"SELECT body_sha256 FROM {qualified('df_fact_feature_selection_load_receipt')}"
         " WHERE envelope_sha256 = :envelope_sha256"
@@ -215,14 +223,107 @@ def write(connection, qualified, document: dict) -> dict:
             _insert_row(connection, qualified, run["run_id"], family, row)
     connection.execute(text(
         f"INSERT INTO {qualified('df_fact_feature_selection_load_receipt')}"
-        " (envelope_sha256, run_id, schema_version, row_count, body_sha256)"
-        " VALUES (:envelope_sha256, :run_id, :schema_version, :row_count, :body_sha256)"
+        " (envelope_sha256, run_id, schema_version, row_count, body_sha256, feature_ids_json)"
+        " VALUES (:envelope_sha256, :run_id, :schema_version, :row_count, :body_sha256,"
+        " :feature_ids_json)"
     ), {
         "envelope_sha256": envelope_sha256,
         "run_id": run["run_id"],
         "schema_version": document["schema_version"],
         "row_count": row_count,
         "body_sha256": digest(document),
+        "feature_ids_json": canonical_json(feature_ids),
     })
     return {"stored": True, "already_stored": False,
             "envelope_sha256": envelope_sha256, "row_count": row_count}
+
+
+def _retained_features(connection, qualified, run_id: str) -> set[str]:
+    selects = [
+        f"SELECT feature_id FROM {qualified(table)} WHERE run_id = :run_id"
+        for table in FAMILY_TABLES.values()
+    ]
+    rows = connection.execute(text(" UNION ".join(selects)), {"run_id": run_id})
+    return {row[0] for row in rows}
+
+
+def _authenticate_run(connection, qualified, run_id: str) -> None:
+    row = connection.execute(text(
+        f"SELECT run_sha256, campaign_sha256, code_sha256, input_sha256, inventory_sha256,"
+        f" created_at FROM {qualified('df_dim_feature_selection_run')} WHERE run_id = :run_id"
+    ), {"run_id": run_id}).mappings().one_or_none()
+    if row is None:
+        raise ValueError(f"warehouse population contradiction; retained run {run_id!r} is absent")
+    run = {
+        "run_id": run_id,
+        "campaign_sha256": row["campaign_sha256"],
+        "code_sha256": row["code_sha256"],
+        "input_sha256": row["input_sha256"],
+        "inventory_sha256": row["inventory_sha256"],
+        "created_at": row["created_at"],
+    }
+    if digest(run) != row["run_sha256"]:
+        raise ValueError(
+            f"warehouse population contradiction; retained run {run_id!r} changed identity"
+        )
+
+
+def reconcile(connection, qualified, request: dict) -> dict:
+    """Verify a canonical request against retained receipts, runs and fact rows."""
+    from .feature_selection_reconciliation import reconciliation_response
+
+    observed = []
+    missing = []
+    contradictions = []
+    for identity in request["identities"]:
+        if identity["terminal_state"] == "UNAVAILABLE":
+            observed.append(identity)
+            continue
+        receipt = connection.execute(text(
+            f"SELECT run_id, feature_ids_json FROM "
+            f"{qualified('df_fact_feature_selection_load_receipt')}"
+            " WHERE envelope_sha256 = :envelope_sha256"
+        ), {"envelope_sha256": identity["envelope_sha256"]}).mappings().one_or_none()
+        if receipt is None:
+            missing.append(identity["feature_id"])
+            continue
+        _authenticate_run(connection, qualified, receipt["run_id"])
+        retained_features = _retained_features(connection, qualified, receipt["run_id"])
+        if identity["feature_id"] not in retained_features:
+            raise ValueError(
+                "warehouse population contradiction; claimed feature has no retained rows: "
+                f"{identity['feature_id']!r}"
+            )
+        encoded = receipt["feature_ids_json"]
+        if encoded is None:
+            raise ValueError(
+                "warehouse population contradiction; receipt feature identity is absent"
+            )
+        try:
+            receipt_features = json.loads(encoded)
+        except (TypeError, json.JSONDecodeError) as exc:
+            raise ValueError(
+                "warehouse population contradiction; receipt feature identity is invalid"
+            ) from exc
+        if (
+            not isinstance(receipt_features, list)
+            or not all(isinstance(item, str) and item for item in receipt_features)
+            or receipt_features != sorted(set(receipt_features))
+            or not set(receipt_features).issubset(retained_features)
+            or identity["feature_id"] not in receipt_features
+        ):
+            contradictions.append(identity["feature_id"])
+            continue
+        observed.append(identity)
+    if missing:
+        raise ValueError(
+            f"incomplete warehouse population; missing envelopes for {sorted(missing)}"
+        )
+    if contradictions:
+        raise ValueError(
+            "warehouse population contradiction; claimed feature is absent from its envelope: "
+            f"{sorted(contradictions)}"
+        )
+    if len(observed) != request["expected_count"]:
+        raise ValueError("incomplete warehouse population after reconciliation")
+    return reconciliation_response(request, observed)

@@ -19,8 +19,8 @@ from .provider import PredictorOlapStore, backend
 __all__ = ["PredictorOlapStore", "backend", "__version__", "SOURCE_SHA256",
            "SOURCE_REVISION", "SOURCE_PATH", "MODULE_SHA256", "PENDING_REVIEW",
            "ENVELOPE_SOURCE_PATH", "ENVELOPE_SOURCE_SHA256",
-           "FEATURE_SELECTION_CONTRACT_SHA256"]
-__version__ = "0.1.3"
+           "FEATURE_SELECTION_CONTRACT_SHA256", "RECONCILIATION_CONTRACT_SHA256"]
+__version__ = "0.1.4"
 
 #: The digest of the deployed query plugin this module was copied from, and the revision
 #: that holds it. Both are checked by the package's tests. These describe PRODUCTION and are
@@ -41,11 +41,17 @@ FEATURE_SELECTION_CONTRACT_SHA256 = (
     "91fcb4fde495239a4e0a21d3a39f0b66d50bd0a5df4865db7bd720b454f5f75a"
 )
 
+#: Exact bytes of `data_warehouse_service.feature_selection_reconciliation` at
+#: data-warehouse 2d4550d. The host authenticates before invoking this contract.
+RECONCILIATION_CONTRACT_SHA256 = (
+    "b8718cc2879d89ce133474f10f9ab028b5b9b2762c31df617b21dc2ddacd213b"
+)
+
 #: The digest of the module in THIS branch. It differs from SOURCE_SHA256 exactly when a
 #: candidate change is awaiting production review, and PENDING_REVIEW says which one. The
 #: package's tests require the two to be consistent: a divergence without a stated reason is
 #: a failure, and a stated reason without a divergence is one too.
-MODULE_SHA256 = "a12ce38fd6c7cc6efc368b219b44bc8e8acbcf6f3a48fc200db93589ad5326e4"
+MODULE_SHA256 = "d72c67dbb0fb878e48942682b3beb63f373055e9bed0cccf355ec5c2e2186da6"
 PENDING_REVIEW = (
     "S2 availability-contract dimension: additive `gov_availability_contract` table, the "
     "`gov_delivery_availability` view and `write_availability_contracts` / "
@@ -61,5 +67,7 @@ PENDING_REVIEW = (
     "plugin copy carries the same change and is NOT deployed there. Phase-1 feature-selection "
     "adds the exact data-warehouse 50bddf3 validator, six immutable normalized fact families, "
     "run and receipt identities, atomic ingestion and read-only analytical views; proved on a "
-    "throwaway DuckDB file and NOT deployed."
+    "throwaway DuckDB file and NOT deployed. Reconciliation adds the exact data-warehouse "
+    "2d4550d request/response contract and verifies retained receipt, run identity and rows "
+    "before returning a canonical request-bound response; NOT deployed."
 )

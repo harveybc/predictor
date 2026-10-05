@@ -19,7 +19,7 @@ CAPABILITIES = ("describe", "storage", "discover", "query",
                 # It is additive: a caller that does not send contracts is unaffected, and a
                 # delivery whose contract was never sent resolves as UNRESOLVED, not as zero.
                 "write_availability_contracts", "resolve_delivery_availability",
-                "write_feature_selection_envelope")
+                "write_feature_selection_envelope", "reconcile_feature_selection")
 
 
 def _source_commit() -> str | None:

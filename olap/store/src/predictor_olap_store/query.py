@@ -667,6 +667,16 @@ class Plugin:
                     f"ALTER TABLE {self._qualified('gov_terminal_dataset')} "
                     "ADD COLUMN availability_contract_sha256 TEXT"
                 ))
+            receipt_columns = {
+                column["name"] for column in inspect(engine).get_columns(
+                    "df_fact_feature_selection_load_receipt", schema=schema
+                )
+            }
+            if "feature_ids_json" not in receipt_columns:
+                conn.execute(text(
+                    f"ALTER TABLE {self._qualified('df_fact_feature_selection_load_receipt')} "
+                    "ADD COLUMN feature_ids_json TEXT"
+                ))
             # an existing store created with `bytes INTEGER` (32-bit on DuckDB and Postgres) is
             # widened in place; SQLite's INTEGER is already 64-bit and cannot be altered
             if dialect != "sqlite":
@@ -793,6 +803,21 @@ class Plugin:
         with lock:
             with self.write_engine().begin() as connection:
                 return write(connection, self._qualified, document)
+
+    def reconcile_feature_selection(self, request: dict):
+        """Reconcile an authenticated request against retained phase-1 evidence."""
+        from predictor_olap_store.feature_selection_reconciliation import (
+            validate_reconciliation_request,
+        )
+        from predictor_olap_store.feature_selection_store import reconcile
+
+        request = validate_reconciliation_request(request)
+        if self._engine is None:
+            self.engine()
+        if self._schema_error is not None:
+            raise RuntimeError(f"feature-selection schema not ready: {self._schema_error}")
+        with self.engine().connect() as connection:
+            return reconcile(connection, self._qualified, request)
 
     def write_terminal(self, terminal):
         terminal = _strict_terminal(terminal)

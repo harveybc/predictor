@@ -26,6 +26,9 @@ sys.path[:0] = [str(STORE_SRC), str(DUCKDB_SRC)]
 
 from predictor_duckdb_store.provider import PredictorDuckdbStore  # noqa: E402
 from predictor_olap_store.feature_selection import digest  # noqa: E402
+from predictor_olap_store.feature_selection_reconciliation import (  # noqa: E402
+    validate_reconciliation_request,
+)
 
 
 HEX_A = "a" * 64
@@ -52,6 +55,7 @@ VIEWS = (
     "df_feature_selection_dashboard",
 )
 CONTRACT_SHA256 = "91fcb4fde495239a4e0a21d3a39f0b66d50bd0a5df4865db7bd720b454f5f75a"
+RECONCILIATION_CONTRACT_SHA256 = "b8718cc2879d89ce133474f10f9ab028b5b9b2762c31df617b21dc2ddacd213b"
 
 
 def sealed(row: dict) -> dict:
@@ -132,9 +136,155 @@ def scalar(store, relation):
         )).scalar()
 
 
+def reconciliation_identity(document, *, feature_id="market.eth.close"):
+    return {
+        "feature_id": feature_id,
+        "feature_key": feature_id.replace(".", "_"),
+        "terminal_state": "COMPLETED",
+        "terminal_sha256": HEX_C,
+        "envelope_sha256": document["envelope_sha256"],
+        "warehouse_receipt_sha256": HEX_D,
+    }
+
+
+def reconciliation_request(identities):
+    request = {
+        "schema": "phase1.warehouse_reconciliation_request.v1",
+        "population_id": "ETH",
+        "plan_sha256": HEX_A,
+        "expected_count": len(identities),
+        "identities_sha256": digest(identities),
+        "identities": identities,
+        "authentication_profile": "data-gov-service-token",
+    }
+    request["request_sha256"] = digest(request)
+    return request
+
+
 def test_validation_contract_is_the_exact_file_from_data_warehouse_50bddf3():
     contract = STORE_SRC / "predictor_olap_store" / "feature_selection.py"
     assert hashlib.sha256(contract.read_bytes()).hexdigest() == CONTRACT_SHA256
+
+
+def test_reconciliation_contract_is_the_exact_file_from_data_warehouse_2d4550d():
+    contract = STORE_SRC / "predictor_olap_store" / "feature_selection_reconciliation.py"
+    assert hashlib.sha256(contract.read_bytes()).hexdigest() == RECONCILIATION_CONTRACT_SHA256
+
+
+def test_production_provider_exposes_write_and_reconciliation_to_the_host(store):
+    assert "write_feature_selection_envelope" in store.capabilities()
+    assert "reconcile_feature_selection" in store.capabilities()
+    assert callable(store.reconcile_feature_selection)
+
+
+def test_reconciliation_returns_exact_request_bound_identity_and_canonical_digest(store):
+    document = envelope()
+    store.write_feature_selection_envelope(document)
+    request = reconciliation_request([reconciliation_identity(document)])
+
+    result = store.reconcile_feature_selection(request)
+
+    assert result["schema"] == "phase1.warehouse_reconciliation.v1"
+    assert result["state"] == "RECONCILED"
+    for field in (
+        "population_id", "plan_sha256", "expected_count", "identities_sha256",
+        "authentication_profile", "request_sha256",
+    ):
+        assert result[field] == request[field]
+    assert result["observed_count"] == 1
+    assert result["observed_identities"] == request["identities"]
+    assert result["observed_identities_sha256"] == digest(request["identities"])
+    assert result["complete"] is True
+    assert result["contradictions"] == []
+    assert result["reconciliation_sha256"] == digest(
+        {key: value for key, value in result.items() if key != "reconciliation_sha256"}
+    )
+
+
+def test_reconciliation_rejects_missing_envelope_and_wrong_feature_membership(store):
+    document = envelope()
+    missing = reconciliation_request([reconciliation_identity(document)])
+    with pytest.raises(ValueError, match="incomplete warehouse population"):
+        store.reconcile_feature_selection(missing)
+
+    store.write_feature_selection_envelope(document)
+    wrong = reconciliation_request([
+        reconciliation_identity(document, feature_id="market.eur.close")
+    ])
+    with pytest.raises(ValueError, match="warehouse population contradiction"):
+        store.reconcile_feature_selection(wrong)
+
+
+def test_reconciliation_queries_retained_run_receipt_and_rows(store):
+    document = envelope()
+    store.write_feature_selection_envelope(document)
+    request = reconciliation_request([reconciliation_identity(document)])
+
+    with store.engine().begin() as connection:
+        connection.execute(text(
+            'DELETE FROM "main"."df_fact_sampling_quality" WHERE feature_id = :feature_id'
+        ), {"feature_id": "market.eth.close"})
+        connection.execute(text(
+            'DELETE FROM "main"."df_fact_variable_profile" WHERE feature_id = :feature_id'
+        ), {"feature_id": "market.eth.close"})
+        connection.execute(text(
+            'DELETE FROM "main"."df_fact_information_metric" WHERE feature_id = :feature_id'
+        ), {"feature_id": "market.eth.close"})
+        connection.execute(text(
+            'DELETE FROM "main"."df_fact_pair_relation" WHERE feature_id = :feature_id'
+        ), {"feature_id": "market.eth.close"})
+        connection.execute(text(
+            'DELETE FROM "main"."df_fact_feature_causal_evidence" WHERE feature_id = :feature_id'
+        ), {"feature_id": "market.eth.close"})
+        connection.execute(text(
+            'DELETE FROM "main"."df_fact_feature_selection_decision" WHERE feature_id = :feature_id'
+        ), {"feature_id": "market.eth.close"})
+
+    with pytest.raises(ValueError, match="retained rows"):
+        store.reconcile_feature_selection(request)
+
+
+def test_reconciliation_rejects_a_retained_run_whose_identity_changed(store):
+    document = envelope()
+    store.write_feature_selection_envelope(document)
+    request = reconciliation_request([reconciliation_identity(document)])
+    with store.engine().begin() as connection:
+        connection.execute(text(
+            'UPDATE "main"."df_dim_feature_selection_run" '
+            'SET campaign_sha256 = :changed WHERE run_id = :run_id'
+        ), {"changed": HEX_D, "run_id": document["run"]["run_id"]})
+
+    with pytest.raises(ValueError, match="changed identity"):
+        store.reconcile_feature_selection(request)
+
+
+def test_reconciliation_does_not_infer_missing_envelope_membership_from_run_rows(store):
+    document = envelope()
+    store.write_feature_selection_envelope(document)
+    request = reconciliation_request([reconciliation_identity(document)])
+    with store.engine().begin() as connection:
+        connection.execute(text(
+            'UPDATE "main"."df_fact_feature_selection_load_receipt" '
+            'SET feature_ids_json = NULL WHERE envelope_sha256 = :envelope_sha256'
+        ), {"envelope_sha256": document["envelope_sha256"]})
+
+    with pytest.raises(ValueError, match="receipt feature identity is absent"):
+        store.reconcile_feature_selection(request)
+
+
+def test_unavailable_identity_needs_no_warehouse_payload(store):
+    identity = {
+        "feature_id": "fred.unavailable",
+        "feature_key": "fred_unavailable",
+        "terminal_state": "UNAVAILABLE",
+        "terminal_sha256": HEX_C,
+        "envelope_sha256": None,
+        "warehouse_receipt_sha256": None,
+    }
+    request = reconciliation_request([identity])
+
+    assert validate_reconciliation_request(request) == request
+    assert store.reconcile_feature_selection(request)["observed_identities"] == [identity]
 
 
 def test_real_duckdb_provider_atomically_loads_every_family_and_receipt(store):

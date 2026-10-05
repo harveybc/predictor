@@ -29,7 +29,8 @@ CAPABILITIES = ("describe", "storage", "discover", "schema", "query",
                 "write_metrics", "write_terminal", "terminal_digests",
                 "write_availability_contracts", "resolve_delivery_availability",
                 # E4: the data-foundation ingestion route, owned by this process
-                "write_foundation_envelope")
+                "write_foundation_envelope", "write_feature_selection_envelope",
+                "reconcile_feature_selection")
 
 #: Refuse to open a database on a volume with less free space than this. An OLAP engine that
 #: runs out of disk mid-write leaves a file nobody can explain.
@@ -141,6 +142,14 @@ class PredictorDuckdbStore(_Cube):
                 conn.execute(text(
                     f"ALTER TABLE {self._qualified('gov_terminal_dataset')} "
                     "ADD COLUMN availability_contract_sha256 TEXT"))
+        receipt_columns = {column["name"] for column in
+                           inspect(engine).get_columns(
+                               "df_fact_feature_selection_load_receipt", schema=schema)}
+        if "feature_ids_json" not in receipt_columns:
+            with engine.begin() as conn:
+                conn.execute(text(
+                    f"ALTER TABLE {self._qualified('df_fact_feature_selection_load_receipt')} "
+                    "ADD COLUMN feature_ids_json TEXT"))
         # A cube created with `bytes INTEGER` (32-bit in DuckDB) refused the terminal of a
         # 4,198,064,038-byte governed artifact (2026-09-22). Widened in place at start-up,
         # then checkpointed so the write-ahead log never carries the DDL (see `_ddl`).
