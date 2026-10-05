@@ -1,7 +1,7 @@
 {
  "by_stage": {
   "FS-CAUSAL": 532041,
-  "FS-CLOSE": 230621,
+  "FS-CLOSE": 242621,
   "FS-GEN": 20690,
   "FS-REP": 24117,
   "PS1": 21861,
@@ -22,10 +22,10 @@
   "digest",
   "source"
  ],
- "csv_sha256": "1a02c2368ad347edf82d53e4af37f162ab49e39c3166bfd4d09961ce7d86d893",
- "generated_utc": "2026-10-05T15:55:31+00:00",
- "parquet_sha256": "29e2c521d5c60ecfc0ab8a90218cfcd40ebff8dcf2b90a6a9bc98308438fa05e",
- "rows": 4303131,
+ "csv_sha256": "024bb434ef118e340274323f3d396fd915e37fd600a979d5fe4ab68625853bec",
+ "generated_utc": "2026-10-05T16:27:47+00:00",
+ "parquet_sha256": "480ad60eb70c82c80fa0b2e145be75a373235bc311d3e47c7d74eafd3d461822",
+ "rows": 4315131,
  "schema": "feature_metrics_catalog.v1",
- "sources_digest": "b26274653a4d4a3e9067edf1d6abea239671047a38fe98cf26eb868290cf7c51"
+ "sources_digest": "7fe9f551aefae4f8399042209d5c402ac6c35af76b0ae094f67666fafb863859"
 }

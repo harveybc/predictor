@@ -1,9 +1,9 @@
 {
- "aggregation_peak_rss_bytes": 266903552,
+ "aggregation_peak_rss_bytes": 272900096,
  "catalog": {
   "by_stage": {
    "FS-CAUSAL": 532041,
-   "FS-CLOSE": 230621,
+   "FS-CLOSE": 242621,
    "FS-GEN": 20690,
    "FS-REP": 24117,
    "PS1": 21861,
@@ -24,12 +24,12 @@
    "digest",
    "source"
   ],
-  "csv_sha256": "1a02c2368ad347edf82d53e4af37f162ab49e39c3166bfd4d09961ce7d86d893",
-  "generated_utc": "2026-10-05T15:55:31+00:00",
-  "parquet_sha256": "29e2c521d5c60ecfc0ab8a90218cfcd40ebff8dcf2b90a6a9bc98308438fa05e",
-  "rows": 4303131,
+  "csv_sha256": "024bb434ef118e340274323f3d396fd915e37fd600a979d5fe4ab68625853bec",
+  "generated_utc": "2026-10-05T16:27:47+00:00",
+  "parquet_sha256": "480ad60eb70c82c80fa0b2e145be75a373235bc311d3e47c7d74eafd3d461822",
+  "rows": 4315131,
   "schema": "feature_metrics_catalog.v1",
-  "sources_digest": "b26274653a4d4a3e9067edf1d6abea239671047a38fe98cf26eb868290cf7c51"
+  "sources_digest": "7fe9f551aefae4f8399042209d5c402ac6c35af76b0ae094f67666fafb863859"
  },
  "causal_counts": {
   "NOT_IDENTIFIED": 5090,
@@ -53,7 +53,7 @@
    "state": "PASS"
   },
   {
-   "detail": "complete methods []; incomplete {'ALL_ADMISSIBLE': 'incomplete ranking: 0 partial, 65 missing cells', 'SPEARMAN_K': 'incomplete ranking: 0 partial, 65 missing cells', 'ELASTIC_NET_K': 'incomplete ranking: 0 partial, 65 missing cells', 'RANDOM_K:seed0': 'incomplete ranking: 0 partial, 65 missing cells', 'GROUP_GATE_K': 'incomplete ranking: 0 partial, 65 missing cells', 'SEQ_MARGINAL_K': 'incomplete ranking: 0 partial, 65 missing cells', 'CHRONOEPILOGI_K': 'incomplete ranking: 0 partial, 65 missing cells', 'REDUNDANCY_K': 'incomplete ranking: 0 partial, 65 missing cells', 'MI8_K': 'incomplete ranking: 0 partial, 65 missing cells', 'EXTRATREES_TBP_K': 'incomplete ranking: 0 partial, 65 missing cells', 'GROUP_ELASTIC_NET_K': 'incomplete ranking: 0 partial, 65 missing cells', 'CMIM_K': 'incomplete ranking: 0 partial, 65 missing cells', 'JMI_K': 'incomplete ranking: 0 partial, 65 missing cells', 'MRMR_K': 'incomplete ranking: 0 partial, 65 missing cells'}; FS-PRED progress 277/980",
+   "detail": "complete methods []; incomplete {'ALL_ADMISSIBLE': 'incomplete ranking: 0 partial, 65 missing cells', 'SPEARMAN_K': 'incomplete ranking: 0 partial, 65 missing cells', 'ELASTIC_NET_K': 'incomplete ranking: 0 partial, 65 missing cells', 'RANDOM_K:seed0': 'incomplete ranking: 0 partial, 65 missing cells', 'GROUP_GATE_K': 'incomplete ranking: 0 partial, 65 missing cells', 'SEQ_MARGINAL_K': 'incomplete ranking: 0 partial, 65 missing cells', 'CHRONOEPILOGI_K': 'incomplete ranking: 0 partial, 65 missing cells', 'REDUNDANCY_K': 'incomplete ranking: 0 partial, 65 missing cells', 'MI8_K': 'incomplete ranking: 0 partial, 65 missing cells', 'EXTRATREES_TBP_K': 'incomplete ranking: 0 partial, 65 missing cells', 'GROUP_ELASTIC_NET_K': 'incomplete ranking: 0 partial, 65 missing cells', 'CMIM_K': 'incomplete ranking: 0 partial, 65 missing cells', 'JMI_K': 'incomplete ranking: 0 partial, 65 missing cells', 'MRMR_K': 'incomplete ranking: 0 partial, 65 missing cells'}; FS-PRED progress 278/980",
    "id": "C3_COMPLETE_RANKINGS",
    "state": "PENDING"
   },
@@ -68,7 +68,7 @@
    "state": "PASS"
   },
   {
-   "detail": "0 measured metric rows without a paired naive of 60208",
+   "detail": "0 measured metric rows without a paired naive of 64208",
    "id": "C6_PAIRED_NAIVE",
    "state": "PASS"
   },
@@ -78,7 +78,7 @@
    "state": "PENDING"
   },
   {
-   "detail": "fs_rep decisions 133/137 heavy candidates decided; PS3-R terminals complete 110/137 heavy candidates; PS4 profiles 101/137 heavy candidates; closure_record.json from the BUSINESS weekly walk-forward step (VALIDATION_2024 inputs are present on the refit host, the step is gated on the C7 refits); PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
+   "detail": "fs_rep decisions 136/137 heavy candidates decided; PS3-R terminals complete 110/137 heavy candidates; PS4 profiles 101/137 heavy candidates; closure_record.json from the BUSINESS weekly walk-forward step (VALIDATION_2024 inputs are present on the refit host, the step is gated on the C7 refits); PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
    "id": "C8_INPUT_OBJECTS",
    "state": "PENDING"
   },
@@ -93,7 +93,7 @@
    "state": "PASS"
   }
  ],
- "cycle_seconds": 73.86,
+ "cycle_seconds": 68.15,
  "denominator": {
   "candidates": 366,
   "heavy_candidates": 137,
@@ -102,7 +102,7 @@
   ],
   "selector_episode_sources_excluded": 37
  },
- "generated_utc": "2026-10-05T15:55:31+00:00",
+ "generated_utc": "2026-10-05T16:27:47+00:00",
  "generative_state": "NOT_CALIBRATED/EMPTY",
  "gpu_eta": {
   "cells": {
@@ -2782,15 +2782,21 @@
     },
     {
      "cell_id": "batch_002::yh.ivv.logret_1d::baseline",
-     "state": "pending"
+     "error": "FAILED_MARKER rc=75",
+     "role": "worker_a",
+     "state": "failed"
     },
     {
      "cell_id": "batch_002::yh.ixic.logret_1d::baseline",
-     "state": "pending"
+     "error": "FAILED_MARKER rc=75",
+     "role": "worker_a",
+     "state": "failed"
     },
     {
      "cell_id": "batch_002::yh.kc_f.logret_5d::baseline",
-     "state": "pending"
+     "error": "FAILED_MARKER rc=75",
+     "role": "worker_a",
+     "state": "failed"
     },
     {
      "cell_id": "batch_002::yh.lqd.logret_5d::baseline",
@@ -3336,35 +3342,35 @@
     }
    ]
   },
-  "generated_at_utc": "2026-10-05T15:54:12Z",
+  "generated_at_utc": "2026-10-05T16:26:35Z",
   "hosts": {
    "coordinator": {
     "gpus": [
-     "0, NVIDIA GeForce RTX 4070 Laptop GPU, 0 %, 729 MiB, 8188 MiB, 43"
+     "0, NVIDIA GeForce RTX 4070 Laptop GPU, 0 %, 729 MiB, 8188 MiB, 44"
     ],
-    "memory": "total_mib=31259 used_mib=11982 available_mib=19277",
-    "probed_at_utc": "2026-10-05T15:54:10Z",
+    "memory": "total_mib=31259 used_mib=12012 available_mib=19247",
+    "probed_at_utc": "2026-10-05T16:26:34Z",
     "running": []
    },
    "worker_a": {
     "gpus": [
-     "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 0 %, 14 MiB, 12227 MiB, 27",
+     "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 13 %, 14 MiB, 12227 MiB, 28",
      "1, NVIDIA GeForce RTX 5090, 0 %, 48 MiB, 32607 MiB, 36"
     ],
-    "memory": "total_mib=14630 used_mib=4529 available_mib=10100",
-    "probed_at_utc": "2026-10-05T15:54:10Z",
+    "memory": "total_mib=14630 used_mib=4557 available_mib=10073",
+    "probed_at_utc": "2026-10-05T16:26:34Z",
     "running": []
    },
    "worker_b": {
     "gpus": [
-     "0, NVIDIA GeForce RTX 4090 Laptop GPU, 0 %, 14 MiB, 16376 MiB, 31"
+     "0, NVIDIA GeForce RTX 4090 Laptop GPU, 7 %, 14 MiB, 16376 MiB, 33"
     ],
-    "memory": "total_mib=31310 used_mib=16224 available_mib=15086",
-    "probed_at_utc": "2026-10-05T15:54:10Z",
+    "memory": "total_mib=31310 used_mib=16203 available_mib=15107",
+    "probed_at_utc": "2026-10-05T16:26:34Z",
     "running": [
      {
       "cell_id": "batch_002::yh.gc_f.logret_5d::baseline",
-      "elapsed_seconds": 6292,
+      "elapsed_seconds": 8235,
       "queue": "baselines_4090_batch_002",
       "started_at_utc": "2026-10-05T14:09:20Z"
      }
@@ -3447,8 +3453,8 @@
     },
     "counts": {
      "done": 59,
-     "failed": 23,
-     "pending": 3,
+     "failed": 26,
+     "pending": 0,
      "running": 1
     },
     "denominator": 86,
@@ -3467,12 +3473,12 @@
        "worker_b": 1635.7
       }
      },
-     "finish_utc_median": "2026-10-05T16:58:39Z",
-     "finish_utc_p90": "2026-10-05T17:15:59Z",
+     "finish_utc_median": "2026-10-05T16:26:35Z",
+     "finish_utc_p90": "2026-10-05T16:26:35Z",
      "provisional": false,
      "reason": null,
-     "seconds_median": 3867,
-     "seconds_p90": 4907
+     "seconds_median": 0,
+     "seconds_p90": 0
     },
     "failures": [
      {
@@ -3480,6 +3486,24 @@
       "error": "FAILED_MARKER rc=1",
       "receipt": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/worker_b_base/batch_002/fred.credit.bamlh0a0hym2.logret_1d/FAILED.codex.json",
       "role": "worker_b"
+     },
+     {
+      "cell_id": "batch_002::yh.ivv.logret_1d::baseline",
+      "error": "FAILED_MARKER rc=75",
+      "receipt": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/worker_a_base/batch_002/yh.ivv.logret_1d/FAILED.json",
+      "role": "worker_a"
+     },
+     {
+      "cell_id": "batch_002::yh.ixic.logret_1d::baseline",
+      "error": "FAILED_MARKER rc=75",
+      "receipt": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/worker_a_base/batch_002/yh.ixic.logret_1d/FAILED.json",
+      "role": "worker_a"
+     },
+     {
+      "cell_id": "batch_002::yh.kc_f.logret_5d::baseline",
+      "error": "FAILED_MARKER rc=75",
+      "receipt": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/worker_a_base/batch_002/yh.kc_f.logret_5d/FAILED.json",
+      "role": "worker_a"
      },
      {
       "cell_id": "batch_002::yh.lqd.logret_5d::baseline",
@@ -3619,7 +3643,7 @@
     "running": [
      {
       "cell_id": "batch_002::yh.gc_f.logret_5d::baseline",
-      "elapsed_seconds": 6292,
+      "elapsed_seconds": 8235,
       "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
       "role": "worker_b",
       "stale": false,
@@ -3681,12 +3705,12 @@
    "baselines_batch_002": {
     "denominator": 86,
     "done": 59,
-    "failed": 23
+    "failed": 26
    },
    "baselines_heavy_candidates": {
     "denominator": 137,
     "done": 110,
-    "failed": 23
+    "failed": 26
    }
   }
  },
@@ -3696,8 +3720,8 @@
   "fs_gen/generative_evidence.csv": "11b5493af71ec7c6068343010ea58d77d026fec4a806720343ab314a38b4e526",
   "fs_pred/selector_sets.json": "4e5430e6948a8adb927264e6ee38a5db085a1cf5b168299d703193b8e0170374",
   "fs_pred/tables/rankings_Y_s_1h.parquet": "ffae6e9287b64b456827a79ee9e6804943d09f103bcf8a1d9ed0147740875073",
-  "fs_rep/candidate_decisions.csv": "9d8403d2dd80df0ce885798351c202f09b86361b19c7b143ee6480a6b72ffd30",
-  "fs_rep/representation_dispositions.csv": "f32de32f8ba995156dfdfd369dccab4763985078a6f3d31e202cb797f8e012a2",
+  "fs_rep/candidate_decisions.csv": "c685ab6fa491e53de360b7406af9b158618cb2fa40f3f65cc880f88c12cb8271",
+  "fs_rep/representation_dispositions.csv": "4771cf21223df310b354ae1ee5c8064ee51d5ca5b04dd6dc8d9779af57dd91e0",
   "laneA/batch_001/admissible_features.csv": "7e0b795e3b23d176d22d0dded55ddf726a9021395e969029dfff4dca3cf55678",
   "laneA/batch_002/admissible_features.csv": "395d0c468dd08d6707a269e26da8df1e8d3b65b8913f85c37f1298c9aeb1ab12",
   "laneA/batch_002/role_overlay_batch_001.json": "4f1bfb21ad8b163bb355cb0436f671a8955b65c989ec3c04120df63763de3ca3",
@@ -3724,8 +3748,8 @@
    "unit": "candidates with final causal measurement"
   },
   "FS-CLOSE": {
-   "done": 115,
-   "fraction": 0.7877,
+   "done": 130,
+   "fraction": 0.8904,
    "total": 146,
    "unit": "set x head refits complete"
   },
@@ -3737,7 +3761,7 @@
   },
   "FS-PRED": {
    "done": 0,
-   "eta_utc": "2026-10-05T15:50:46.340418+00:00",
+   "eta_utc": "2026-10-05T18:20:53.014216+00:00",
    "folds_in_progress": [
     "inner_2019",
     "inner_2020",
@@ -3746,14 +3770,14 @@
     "inner_2023"
    ],
    "fraction": 0.0,
-   "method_cells_done": 277,
+   "method_cells_done": 278,
    "method_cells_total": 980,
    "total": 14,
    "unit": "methods with complete rankings"
   },
   "FS-REP": {
-   "done": 133,
-   "fraction": 0.9708,
+   "done": 136,
+   "fraction": 0.9927,
    "total": 137,
    "unit": "heavy candidates decided"
   },
@@ -3796,13 +3820,13 @@
    "REJECTED": 1,
    "SELECTED": 0
   },
-  "manifest_sha256": "3824f37444ece7ee70735f3d8586fce4b6a26f14c8a175013d9eb42fbcfb898d",
+  "manifest_sha256": "6ee3634475d8db034a6e833eab397a329820e8e4ff94daf691dbf5827f9d8a3a",
   "missing_objects": [
    "PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
    "PS3-R terminals complete 110/137 heavy candidates",
    "PS4 profiles 101/137 heavy candidates",
    "closure_record.json from the BUSINESS weekly walk-forward step (VALIDATION_2024 inputs are present on the refit host, the step is gated on the C7 refits)",
-   "fs_rep decisions 133/137 heavy candidates decided"
+   "fs_rep decisions 136/137 heavy candidates decided"
   ],
   "schema": "feature_selection.manifest.v1-DRAFT",
   "status": "DRAFT"
@@ -3814,7 +3838,7 @@
    "family",
    "refit_gain"
   ],
-  "features": 110,
+  "features": 125,
   "path": "docs/audits/evidence/canonical_20261003/fs_closure/fs_close/refit_gain_export.csv"
  },
  "refits": {
@@ -3930,22 +3954,22 @@
    "ALL_MINUS:yh.ivv.logret_1d|ridge": 70,
    "ALL_MINUS:yh.ixic.logret_1d|ridge": 70,
    "ALL_MINUS:yh.kc_f.logret_5d|ridge": 70,
-   "ALL_MINUS:yh.lqd.logret_5d|ridge": 25,
-   "ALL_MINUS:yh.mxx.logret_5d|ridge": 0,
-   "ALL_MINUS:yh.rut.logret_5d|ridge": 0,
-   "ALL_MINUS:yh.sb_f.logret_1d|ridge": 0,
-   "ALL_MINUS:yh.sb_f.logret_5d|ridge": 0,
-   "ALL_MINUS:yh.si_f.logret_1d|ridge": 0,
-   "ALL_MINUS:yh.slv.logret_1d|ridge": 0,
-   "ALL_MINUS:yh.slv.logret_5d|ridge": 0,
-   "ALL_MINUS:yh.spy.logret_1d|ridge": 0,
-   "ALL_MINUS:yh.spy.logret_5d|ridge": 0,
-   "ALL_MINUS:yh.tlt.logret_1d|ridge": 0,
-   "ALL_MINUS:yh.twii.logret_1d|ridge": 0,
-   "ALL_MINUS:yh.usdbrl_x.logret_1d|ridge": 0,
-   "ALL_MINUS:yh.usdbrl_x.logret_5d|ridge": 0,
-   "ALL_MINUS:yh.usdclp_x.logret_1d|ridge": 0,
-   "ALL_MINUS:yh.usdcop_x.logret_1d|ridge": 0,
+   "ALL_MINUS:yh.lqd.logret_5d|ridge": 70,
+   "ALL_MINUS:yh.mxx.logret_5d|ridge": 70,
+   "ALL_MINUS:yh.rut.logret_5d|ridge": 70,
+   "ALL_MINUS:yh.sb_f.logret_1d|ridge": 70,
+   "ALL_MINUS:yh.sb_f.logret_5d|ridge": 70,
+   "ALL_MINUS:yh.si_f.logret_1d|ridge": 70,
+   "ALL_MINUS:yh.slv.logret_1d|ridge": 70,
+   "ALL_MINUS:yh.slv.logret_5d|ridge": 70,
+   "ALL_MINUS:yh.spy.logret_1d|ridge": 70,
+   "ALL_MINUS:yh.spy.logret_5d|ridge": 70,
+   "ALL_MINUS:yh.tlt.logret_1d|ridge": 70,
+   "ALL_MINUS:yh.twii.logret_1d|ridge": 70,
+   "ALL_MINUS:yh.usdbrl_x.logret_1d|ridge": 70,
+   "ALL_MINUS:yh.usdbrl_x.logret_5d|ridge": 70,
+   "ALL_MINUS:yh.usdclp_x.logret_1d|ridge": 70,
+   "ALL_MINUS:yh.usdcop_x.logret_1d|ridge": 50,
    "ALL_MINUS:yh.usdidr_x.logret_1d|ridge": 0,
    "ALL_MINUS:yh.usdmxn_x.logret_1d|ridge": 0,
    "ALL_MINUS:yh.usdmxn_x.logret_5d|ridge": 0,
@@ -3966,7 +3990,7 @@
    "RANDOM_K:8|hgb": 0,
    "RANDOM_K:8|ridge": 70
   },
-  "complete_set_heads": 115,
+  "complete_set_heads": 130,
   "planned_set_heads": 146,
   "pred_best_method": null,
   "sets": 142
@@ -3974,8 +3998,8 @@
  "representation_counts": {
   "NOT_AVAILABLE_FOR_TRAIN": 1,
   "NO_TRAINED_ADVANTAGE": 88,
-  "PENDING": 4,
-  "RAW": 44
+  "PENDING": 1,
+  "RAW": 47
  },
  "schema": "fs_closure_status.v1",
  "skill_summary": {
@@ -6892,12 +6916,410 @@
    }
   },
   "ALL_MINUS:yh.lqd.logret_5d|ridge": {
+   "Y_b": {
+    "beats_naive_every_cell": false,
+    "cells": 10,
+    "max": 0.163682074253667,
+    "mean_skill_vs_stricter_naive": -0.6339325785050252,
+    "min": -3.220286292137482,
+    "positive_cells": 3
+   },
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.06354975809620034,
+    "mean_skill_vs_stricter_naive": -1.3407639119547763,
+    "min": -5.818769987959047,
+    "positive_cells": 0
+   },
    "Y_s": {
     "beats_naive_every_cell": false,
-    "cells": 25,
+    "cells": 30,
     "max": -0.009242084385827853,
-    "mean_skill_vs_stricter_naive": -0.26482567538668145,
-    "min": -1.2696936801442509,
+    "mean_skill_vs_stricter_naive": -0.29325001212650537,
+    "min": -1.3914782211932315,
+    "positive_cells": 0
+   }
+  },
+  "ALL_MINUS:yh.mxx.logret_5d|ridge": {
+   "Y_b": {
+    "beats_naive_every_cell": false,
+    "cells": 10,
+    "max": 0.16369743454010444,
+    "mean_skill_vs_stricter_naive": -0.6224878759300524,
+    "min": -3.119850380486752,
+    "positive_cells": 3
+   },
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.05792902044219894,
+    "mean_skill_vs_stricter_naive": -1.3370388881291932,
+    "min": -5.821829654104252,
+    "positive_cells": 0
+   },
+   "Y_s": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.009085719887341082,
+    "mean_skill_vs_stricter_naive": -0.2903106798956623,
+    "min": -1.3745423156704968,
+    "positive_cells": 0
+   }
+  },
+  "ALL_MINUS:yh.rut.logret_5d|ridge": {
+   "Y_b": {
+    "beats_naive_every_cell": false,
+    "cells": 10,
+    "max": 0.16213478741719767,
+    "mean_skill_vs_stricter_naive": -0.6534912725074362,
+    "min": -3.2260834827080673,
+    "positive_cells": 3
+   },
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.06054622410295951,
+    "mean_skill_vs_stricter_naive": -1.3387230665776957,
+    "min": -5.800766499730622,
+    "positive_cells": 0
+   },
+   "Y_s": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.009104055462292537,
+    "mean_skill_vs_stricter_naive": -0.2865157251186553,
+    "min": -1.3561045042052449,
+    "positive_cells": 0
+   }
+  },
+  "ALL_MINUS:yh.sb_f.logret_1d|ridge": {
+   "Y_b": {
+    "beats_naive_every_cell": false,
+    "cells": 10,
+    "max": 0.16394785574264759,
+    "mean_skill_vs_stricter_naive": -0.6049443056050378,
+    "min": -2.9119256822964923,
+    "positive_cells": 3
+   },
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.060931234094043774,
+    "mean_skill_vs_stricter_naive": -1.3451374702670489,
+    "min": -5.87057033688878,
+    "positive_cells": 0
+   },
+   "Y_s": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.009615845061166084,
+    "mean_skill_vs_stricter_naive": -0.29402778431660603,
+    "min": -1.3869380182937077,
+    "positive_cells": 0
+   }
+  },
+  "ALL_MINUS:yh.sb_f.logret_5d|ridge": {
+   "Y_b": {
+    "beats_naive_every_cell": false,
+    "cells": 10,
+    "max": 0.16397776807350817,
+    "mean_skill_vs_stricter_naive": -0.6067563324924379,
+    "min": -3.000987791100971,
+    "positive_cells": 3
+   },
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.05939044641433222,
+    "mean_skill_vs_stricter_naive": -1.3431295516671287,
+    "min": -5.793498726701635,
+    "positive_cells": 0
+   },
+   "Y_s": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.009395946026605095,
+    "mean_skill_vs_stricter_naive": -0.2912899727876531,
+    "min": -1.3767574087839125,
+    "positive_cells": 0
+   }
+  },
+  "ALL_MINUS:yh.si_f.logret_1d|ridge": {
+   "Y_b": {
+    "beats_naive_every_cell": false,
+    "cells": 10,
+    "max": 0.1620908779788437,
+    "mean_skill_vs_stricter_naive": -0.6374836042756707,
+    "min": -3.1825970328057442,
+    "positive_cells": 3
+   },
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.060963932008975874,
+    "mean_skill_vs_stricter_naive": -1.3393626521215742,
+    "min": -5.808466031484059,
+    "positive_cells": 0
+   },
+   "Y_s": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.00953862347014578,
+    "mean_skill_vs_stricter_naive": -0.2911453629331685,
+    "min": -1.373835284339168,
+    "positive_cells": 0
+   }
+  },
+  "ALL_MINUS:yh.slv.logret_1d|ridge": {
+   "Y_b": {
+    "beats_naive_every_cell": false,
+    "cells": 10,
+    "max": 0.15998328686062147,
+    "mean_skill_vs_stricter_naive": -0.6417313504082833,
+    "min": -3.346543417422831,
+    "positive_cells": 3
+   },
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.06111414235046975,
+    "mean_skill_vs_stricter_naive": -1.338074009576151,
+    "min": -5.801498360560642,
+    "positive_cells": 0
+   },
+   "Y_s": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.009734871821314606,
+    "mean_skill_vs_stricter_naive": -0.29004248645525155,
+    "min": -1.365837327643964,
+    "positive_cells": 0
+   }
+  },
+  "ALL_MINUS:yh.slv.logret_5d|ridge": {
+   "Y_b": {
+    "beats_naive_every_cell": false,
+    "cells": 10,
+    "max": 0.16011932247821126,
+    "mean_skill_vs_stricter_naive": -0.641743666354644,
+    "min": -3.223027765362102,
+    "positive_cells": 3
+   },
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.062339143863074487,
+    "mean_skill_vs_stricter_naive": -1.3370455028919888,
+    "min": -5.80856076909858,
+    "positive_cells": 0
+   },
+   "Y_s": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.009592722838110523,
+    "mean_skill_vs_stricter_naive": -0.29020666556337904,
+    "min": -1.3657850311584796,
+    "positive_cells": 0
+   }
+  },
+  "ALL_MINUS:yh.spy.logret_1d|ridge": {
+   "Y_b": {
+    "beats_naive_every_cell": false,
+    "cells": 10,
+    "max": 0.16193020971656602,
+    "mean_skill_vs_stricter_naive": -0.641095664101441,
+    "min": -3.264220858939627,
+    "positive_cells": 3
+   },
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.060188652953631516,
+    "mean_skill_vs_stricter_naive": -1.3377261269104321,
+    "min": -5.81140292571632,
+    "positive_cells": 0
+   },
+   "Y_s": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.009491096433348556,
+    "mean_skill_vs_stricter_naive": -0.290148730989349,
+    "min": -1.3690899954522049,
+    "positive_cells": 0
+   }
+  },
+  "ALL_MINUS:yh.spy.logret_5d|ridge": {
+   "Y_b": {
+    "beats_naive_every_cell": false,
+    "cells": 10,
+    "max": 0.16229420876156442,
+    "mean_skill_vs_stricter_naive": -0.641990544728884,
+    "min": -3.295728936746178,
+    "positive_cells": 3
+   },
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.06074532547756295,
+    "mean_skill_vs_stricter_naive": -1.3597763676247863,
+    "min": -5.9321610378273695,
+    "positive_cells": 0
+   },
+   "Y_s": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.009023319707837985,
+    "mean_skill_vs_stricter_naive": -0.29779244993560083,
+    "min": -1.4289952629149307,
+    "positive_cells": 0
+   }
+  },
+  "ALL_MINUS:yh.tlt.logret_1d|ridge": {
+   "Y_b": {
+    "beats_naive_every_cell": false,
+    "cells": 10,
+    "max": 0.16471247170208236,
+    "mean_skill_vs_stricter_naive": -0.6407637737221321,
+    "min": -3.2635236804836714,
+    "positive_cells": 3
+   },
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.05659686011943954,
+    "mean_skill_vs_stricter_naive": -1.3445538752372916,
+    "min": -5.817168676793194,
+    "positive_cells": 0
+   },
+   "Y_s": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.00920888217715321,
+    "mean_skill_vs_stricter_naive": -0.29530809073923286,
+    "min": -1.3951057660766688,
+    "positive_cells": 0
+   }
+  },
+  "ALL_MINUS:yh.twii.logret_1d|ridge": {
+   "Y_b": {
+    "beats_naive_every_cell": false,
+    "cells": 10,
+    "max": 0.16368698724124986,
+    "mean_skill_vs_stricter_naive": -0.6224194483853982,
+    "min": -3.0499302570757303,
+    "positive_cells": 3
+   },
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.06109391627720129,
+    "mean_skill_vs_stricter_naive": -1.3389183773914248,
+    "min": -5.8071013045328055,
+    "positive_cells": 0
+   },
+   "Y_s": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.009754179665485418,
+    "mean_skill_vs_stricter_naive": -0.2916432633378393,
+    "min": -1.3761060835925387,
+    "positive_cells": 0
+   }
+  },
+  "ALL_MINUS:yh.usdbrl_x.logret_1d|ridge": {
+   "Y_b": {
+    "beats_naive_every_cell": false,
+    "cells": 10,
+    "max": 0.1611440816435008,
+    "mean_skill_vs_stricter_naive": -0.6162669491283006,
+    "min": -3.110125494857857,
+    "positive_cells": 3
+   },
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.0605830178414255,
+    "mean_skill_vs_stricter_naive": -1.344092094941677,
+    "min": -5.818443450788305,
+    "positive_cells": 0
+   },
+   "Y_s": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.009612817134673213,
+    "mean_skill_vs_stricter_naive": -0.2926901862559256,
+    "min": -1.3796220827633872,
+    "positive_cells": 0
+   }
+  },
+  "ALL_MINUS:yh.usdbrl_x.logret_5d|ridge": {
+   "Y_b": {
+    "beats_naive_every_cell": false,
+    "cells": 10,
+    "max": 0.16241734654712459,
+    "mean_skill_vs_stricter_naive": -0.6070767983587826,
+    "min": -2.9646901240818666,
+    "positive_cells": 3
+   },
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.061704733876603246,
+    "mean_skill_vs_stricter_naive": -1.3377565553560464,
+    "min": -5.79287304737847,
+    "positive_cells": 0
+   },
+   "Y_s": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.009521945782495322,
+    "mean_skill_vs_stricter_naive": -0.29243414425221187,
+    "min": -1.3791098405471454,
+    "positive_cells": 0
+   }
+  },
+  "ALL_MINUS:yh.usdclp_x.logret_1d|ridge": {
+   "Y_b": {
+    "beats_naive_every_cell": false,
+    "cells": 10,
+    "max": 0.16232736843445117,
+    "mean_skill_vs_stricter_naive": -0.6277443666707309,
+    "min": -3.0776150833365694,
+    "positive_cells": 3
+   },
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.060881340974047626,
+    "mean_skill_vs_stricter_naive": -1.341148805224021,
+    "min": -5.8132701520928975,
+    "positive_cells": 0
+   },
+   "Y_s": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.009542609404105118,
+    "mean_skill_vs_stricter_naive": -0.2915293234209881,
+    "min": -1.3746825682252632,
+    "positive_cells": 0
+   }
+  },
+  "ALL_MINUS:yh.usdcop_x.logret_1d|ridge": {
+   "Y_l": {
+    "beats_naive_every_cell": false,
+    "cells": 20,
+    "max": -0.06101365554735261,
+    "mean_skill_vs_stricter_naive": -1.2755131163177214,
+    "min": -5.582387235894236,
+    "positive_cells": 0
+   },
+   "Y_s": {
+    "beats_naive_every_cell": false,
+    "cells": 30,
+    "max": -0.009545420796296389,
+    "mean_skill_vs_stricter_naive": -0.2919462901674225,
+    "min": -1.3765823309369667,
     "positive_cells": 0
    }
   },
@@ -7068,13 +7490,13 @@
    "unit": "fs-close-refit-1791207964.service"
   },
   "progress": {
-   "cells_done": 3230,
+   "cells_done": 4305,
    "cells_failed": 0,
    "cells_skipped": 4845,
-   "elapsed_seconds": 7171.823801279068,
+   "elapsed_seconds": 9524.263923168182,
    "schema": "fs_close_refit_progress.v1",
    "state": "RUNNING",
-   "updated_utc": "2026-10-05T15:45:38.420506+00:00"
+   "updated_utc": "2026-10-05T16:24:50.860630+00:00"
   },
   "state": "RUNNING"
  }
