@@ -1,0 +1,36 @@
+{
+  "lane": "FS-CLOSE",
+  "order": "docs/handoffs/SATOSHI_FEATURE_SELECTION_CLOSURE_2026_10_05.md",
+  "sections_read": [
+    "1", "2", "8", "9",
+    "FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30 §7-§9",
+    "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3 §5",
+    "selected-manifest gate contract satoshi/selected-manifest-gate-20261003@c0345f83 (tools/selected_manifest_gate.py, feature_selection.manifest.v1 + feature_selection.decision.v1)"
+  ],
+  "ack_utc": "2026-10-05T04:20:00Z",
+  "branch": "satoshi/canonical-exec-20261003",
+  "tip_at_ack": "c3b78415",
+  "worktree_role": "canonical-exec worktree",
+  "write_set": [
+    "tools/fs_close_manifest.py",
+    "tools/fs_close_refit.py",
+    "tests/test_fs_close_manifest.py",
+    "docs/audits/evidence/canonical_20261003/fs_closure/fs_close/**",
+    "docs/audits/evidence/canonical_20261003/fs_closure/STATUS.json",
+    "docs/audits/evidence/canonical_20261003/fs_closure/PROGRESS.png",
+    "docs/audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json",
+    "docs/audits/evidence/canonical_20261003/MASTER_MILESTONE_PROGRESS.png",
+    "coordinator ~/.local/state/canonical_20261003/selection_status_loop.sh (extended, not duplicated)"
+  ],
+  "never_touch": [
+    "fs_closure/fs_pred, fs_causal, fs_rep, fs_gen, fs_gpu (read-only inputs)",
+    "laneA/laneB/laneC, ps4_incremental_profile, m2_readiness (read-only inputs)",
+    "GPU jobs and their cells",
+    "worker_b /tmp",
+    "external TEST (2025) data; external VALIDATION (2024) read once, only inside the declared closure step"
+  ],
+  "first_deliverable": "tests + tools/fs_close_manifest.py emitting a DRAFT manifest (schema labelled DRAFT, gate-refused by construction) with the missing-object list, feature_dispositions.csv 366/366, FEATURE_METRICS_CATALOG, STATUS.json and PROGRESS.png generated from evidence; then paired refits at common K on worker_b under crispdm-run",
+  "evidence_policy": "TRAIN inner folds for every refit; same rows/target/model/init/updates/naive per paired comparison; NOT_IDENTIFIED is neutral; every metric carries its paired same-row naive",
+  "compute_policy": "coordinator: pure-python aggregation <256 MB; paired refits: CPU on worker_b via ~/.local/bin/crispdm-run, sequential, peak measured first and capped at 1.25x, never /tmp, never touching GPU jobs",
+  "seed_policy": "seed 0; up to 3 seeds only for a declared final tie-break of a stochastic method"
+}
