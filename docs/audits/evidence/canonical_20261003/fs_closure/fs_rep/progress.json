@@ -3245,7 +3245,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -3277,7 +3278,8 @@
       ],
       "flags": [
         "DECIDED_WITH_FAILED_FAMILIES",
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -3309,7 +3311,8 @@
       ],
       "flags": [
         "DECIDED_WITH_FAILED_FAMILIES",
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_POSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -3342,7 +3345,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -3375,7 +3379,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -3408,7 +3413,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_POSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -3441,7 +3447,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -3474,7 +3481,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -4079,14 +4087,17 @@
     "yh.usdbrl_x.logret_1d": {
       "batch": "batch_002",
       "cause": "",
-      "decision": "PENDING",
+      "decision": "RAW",
       "families_present": [
         "identity",
         "random",
         "masked_temporal_ae",
         "past_to_current_siamese"
       ],
-      "flags": [],
+      "flags": [
+        "DECIDED_WITH_FAILED_FAMILIES",
+        "RAW_HAS_PROBE_SKILL"
+      ],
       "terminals": {
         "alt_mtae": {
           "reason": "",
@@ -4099,9 +4110,9 @@
           "state": "COMPLETED"
         },
         "baseline": {
-          "reason": "NOT_LANDED",
-          "receipt_sha256": "",
-          "state": "PENDING"
+          "reason": "FAILED_RECEIPT",
+          "receipt_sha256": "1253c669e144bf38a306b2f3b7c4c3b73eec260d353a1d464263430d64be7782",
+          "state": "FAILED"
         }
       }
     },
@@ -4560,20 +4571,20 @@
       }
     }
   },
-  "candidates_decided": 125,
+  "candidates_decided": 126,
   "claim_scope": "provisional extractibility/probe disposition; no downstream improvement of latents is claimed while trained-family G4 is NOT_APPLICABLE; raw vs latent belongs to M4",
   "coverage_fraction": 0.8029,
-  "cycle_started_at": "2026-10-05T15:24:17Z",
+  "cycle_started_at": "2026-10-05T15:28:34Z",
   "decisions": {
     "NOT_AVAILABLE_FOR_TRAIN": 1,
     "NO_TRAINED_ADVANTAGE": 84,
-    "PENDING": 12,
-    "RAW": 40
+    "PENDING": 11,
+    "RAW": 41
   },
   "disposition_class": "PROVISIONAL_EXTRACTIBILITY_DISPOSITION",
   "eta": {
     "fs_gpu_eta": {
-      "generated_at_utc": "2026-10-05T15:23:44Z",
+      "generated_at_utc": "2026-10-05T15:26:31Z",
       "queues": {
         "alternatives_5090": {
           "active_roles": [],
@@ -4670,8 +4681,8 @@
                 "worker_b": 1635.7
               }
             },
-            "finish_utc_median": "2026-10-05T19:20:04Z",
-            "finish_utc_p90": "2026-10-05T20:23:36Z",
+            "finish_utc_median": "2026-10-05T19:22:51Z",
+            "finish_utc_p90": "2026-10-05T20:26:24Z",
             "provisional": false,
             "reason": null,
             "seconds_median": 14180,
@@ -4774,7 +4785,7 @@
           "running": [
             {
               "cell_id": "batch_002::yh.gc_f.logret_5d::baseline",
-              "elapsed_seconds": 4464,
+              "elapsed_seconds": 4631,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
               "role": "worker_b",
               "stale": false,
@@ -4872,7 +4883,7 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "b7e543f1db605efb8c6984f2c8b289174681c5114b93c2772175788814b00d42"
+      "sha256": "bb3e844a1f696c901fa44c83f3aac13c9817d4ad8a387ebd24707171b56ef73c"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
@@ -4907,9 +4918,9 @@
     },
     "baseline": {
       "COMPLETED": 110,
-      "FAILED": 15,
-      "PENDING": 12
+      "FAILED": 16,
+      "PENDING": 11
     }
   },
-  "updated_at": "2026-10-05T15:24:22Z"
+  "updated_at": "2026-10-05T15:28:44Z"
 }
