@@ -256,6 +256,13 @@ class PlanChecks(unittest.TestCase):
         self.state["documents"]["checklist"] = "missing.json"
         self.assertIn("missing document checklist", " ".join(validate(self.state, ROOT)))
 
+    def test_phase23_selection_plan_is_required(self):
+        self.state["documents"]["feature_selection_phase23"] = "missing.md"
+        self.assertIn(
+            "missing document feature_selection_phase23",
+            " ".join(validate(self.state, ROOT)),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

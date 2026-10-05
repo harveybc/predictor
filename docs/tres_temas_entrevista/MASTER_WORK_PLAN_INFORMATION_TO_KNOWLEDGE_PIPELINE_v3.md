@@ -1,6 +1,6 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-03. Este documento contiene sólo el plan vigente. Los
+Actualizado: 2026-10-05. Este documento contiene sólo el plan vigente. Los
 retornos RP, snapshots de máquinas, restricciones ya levantadas y dictámenes
 superados son evidencia histórica en `docs/audits/` y `docs/handoffs/`; no
 gobiernan la ejecución.
@@ -12,11 +12,12 @@ El orden de autoridad es:
 1. este plan maestro;
 2. [contrato semanal del negocio](program_v3/BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md);
 3. [selección progresiva de características y representaciones](program_v3/FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md);
-4. [arquitectura temporal modular](program_v3/MODULAR_STACK_WORK_PLAN_2026_09_30.md);
-5. [estado metodológico](program_v3/PROJECT_METHOD_STATE.json);
-6. [cola actual](program_v3/EXPERIMENT_EXECUTION_QUEUE.json) y
+4. [fases 2 y 3 de selección](program_v3/FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md);
+5. [arquitectura temporal modular](program_v3/MODULAR_STACK_WORK_PLAN_2026_09_30.md);
+6. [estado metodológico](program_v3/PROJECT_METHOD_STATE.json);
+7. [cola actual](program_v3/EXPERIMENT_EXECUTION_QUEUE.json) y
    [estado de ejecución](program_v3/CURRENT_EXECUTION.md);
-7. [checklist legible por máquina](program_v3/MASTER_CHECKLIST.json), proyección
+8. [checklist legible por máquina](program_v3/MASTER_CHECKLIST.json), proyección
    del apartado 4 y no un plan alterno.
 
 La vista ejecutiva obligatoria es
@@ -90,9 +91,9 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 - [ ] I0-W. Walk-forward: cuatro años móviles, actualización semanal, años completos de validation/test y modo literatura separado.
 - [ ] I1. Inventario: fuente, columna, unidad, frecuencia, licencia y disponibilidad.
 - [ ] I2. Perfil básico completo por celda de métrica, no una marca global.
-- [ ] I3. Priorización reversible: redundancia, relevancia y exploración.
-- [ ] I4-C. Escalera causal de tres peldaños donde sea identificable.
-- [ ] I4-R. Extractibilidad con controles raw/aleatorio/entrenado.
+- [x] I3. Perfil individual y escalera causal por feature-target.
+- [ ] I4-C. Dependencia y redundancia entre características; alias y clusters.
+- [ ] I4-R. Rankings por clustering, mRMR y JMI; trayectorias K reproducibles.
 - [ ] I5. Comparación conjunta de conjuntos y manifiesto final.
 - [ ] I6-A. Agrupación, campos receptivos y controles ARCH emparejados.
 - [ ] I6-B. Preentrenamiento de extractores de ramas seleccionadas.
@@ -117,18 +118,20 @@ aportan covariables donde tengan cobertura point-in-time. ETH puede probar
 mecánica y controles en un manifiesto secundario, pero no reemplaza EURUSD por
 conveniencia ni se mezcla en su denominador.
 
-La selección no empieza entrenando 321 ramas ni calculando el producto cartesiano
-de toda transformación. Sigue PS0-PS7 del subplan:
+La selección no empieza entrenando cientos de ramas. La secuencia vigente es:
 
-1. disponibilidad y perfil barato para todas las entradas admisibles;
-2. redundancia y relevancia por cada target/cabezal;
-3. métricas y transformaciones costosas sobre supervivientes provisionales y
-   una muestra de exploración que permita recuperar interacciones;
-4. en paralelo, escalera causal y evaluación de representaciones;
-5. comparación de conjuntos: todas las admisibles, predictivo/redundancia,
-   más causal, más extracción y preferencia generativa opcional;
-6. manifiesto final con razones, soporte y estados selected/rejected/pending;
-7. grupos/ramas, fusión y downstream.
+1. Fase 1, completa: perfil individual y escalera causal sobre EURUSD y ETH;
+2. Fase 2: matrices feature-feature, alias, redundancia, complementariedad y
+   estabilidad temporal;
+3. Fase 3: clustering por correlación, mRMR, JMI y controles, con rankings y
+   trayectorias K por target/horizonte;
+4. Fase 4: extractibilidad raw/random/trained sobre candidatos y controles;
+5. validación wrapper bajo walk-forward semanal y manifiesto final;
+6. grupos/ramas, fusión y downstream.
+
+Los 34 pares EURUSD y tres pares ETH favorecidos por la regla causal de fase 1
+son **candidatos con respaldo causal**, no la selección final. Las fases 2 y 3
+se rigen por su [subplan específico](program_v3/FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md).
 
 La escalera causal tiene alta prioridad, pero no es una prueba binaria universal.
 Se implementa enteramente con episodios ya observados:
@@ -354,7 +357,12 @@ físico o capital real.
 ## 15. Evidencia y almacenamiento
 
 Data-gov gobierna disponibilidad; data-lake conserva datasets y artefactos por
-contenido; warehouse recibe métricas tipadas. DOIN puede usar cadena liviana:
+contenido; warehouse recibe **todas** las métricas, disposiciones, rankings,
+costes e identidades de cada fase. Ningún cierre científico depende sólo de un
+JSON local. Cada fase exige lectura de vuelta del OLAP, snapshot físico DuckDB
+local y copia pública versionada. El repositorio conserva manifiesto, esquema,
+SHA-256 y URL; el binario comprimido se publica como asset de release para no
+inflar el historial Git. DOIN puede usar cadena liviana:
 persiste el cuerpo completo fuera de cadena y encadena manifiesto, locator y
 hashes. Lectura y ETL verifican hash, esquema, autoridad y continuidad.
 
@@ -365,11 +373,12 @@ después de recomputación independiente y recibo por contenido.
 ## 16. Estado actual
 
 El estado observado y la cola se mantienen únicamente en
-`CURRENT_EXECUTION.md` y `EXPERIMENT_EXECUTION_QUEUE.json`. La prioridad
-crítica es PS0-PS5 para EURUSD: causalidad y extractibilidad avanzan en paralelo
-sobre supervivientes provisionales hasta producir el manifiesto final. El
-calendario se usa ahora sólo para construir episodios del selector; su integración
-como entrada permanece en I11.
+`CURRENT_EXECUTION.md` y `EXPERIMENT_EXECUTION_QUEUE.json`. La fase 1 está
+cerrada. La prioridad crítica única es terminar fase 2 y fase 3:
+dependencia/redundancia entre features y filtros reproducibles. Fase 4,
+extractibilidad, permanece sin iniciar hasta ese cierre. El calendario se usa
+ahora sólo como evidencia histórica del selector; su integración como entrada
+permanece en I11.
 
 NEAT queda fuera de la cola hasta que exista representación final congelada.
 Toda orden anterior que lo ejecute sobre entradas crudas o lo use como optimizador

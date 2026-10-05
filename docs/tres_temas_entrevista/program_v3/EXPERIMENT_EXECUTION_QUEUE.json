@@ -1,92 +1,70 @@
 {
   "schema": "experiment_execution_queue.v2",
-  "updated_on": "2026-10-04T04:32:00Z",
-  "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md at 02434903, merged into satoshi/canonical-exec-20261003",
+  "updated_on": "2026-10-05T17:00:00-05:00",
+  "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md on satoshi/canonical-exec-20261003",
   "policy": {
-    "parallelism": "independent eligible lanes run concurrently",
+    "focus": "FEATURE_SELECTION_PHASE_2_THEN_PHASE_3_ONLY",
+    "parallelism": "one durable controller with exclusive CPU shards across omega gamma and dragon",
     "seed_default": 1,
     "seed_maximum": 3,
-    "repeat_policy": "no repeat unless evidence is lost, corrupt, scientifically changed, or a matched comparison requires it",
+    "repeat_policy": "adopt valid terminals; repeat only lost corrupt or scientifically changed units",
     "gpu_preference": ["gamma_external_5090", "dragon_4090", "gamma_internal_5070ti", "omega_4070"],
+    "gpu_use_now": false,
     "financial_gate": "strictly_better_than_same_row_naive_before_strategy",
-    "test_policy": "one sealed confirmation after selection"
+    "test_policy": "validation and test remain closed during filter selection",
+    "warehouse_policy": "all metrics decisions ranks costs and identities require submit plus readback",
+    "snapshot_policy": "physical local DuckDB plus compressed release asset and git manifest"
   },
   "superseded": {
     "neat_hyperparameter_campaigns": "DIAGNOSTIC_ONLY_STOPPED",
     "all_321_or_all_83_as_selected": false,
+    "phase1_causal_supported_is_final_selection": false,
     "dated_handoffs_can_dispatch": false
   },
   "lanes": [
     {
       "priority": 1,
-      "id": "FS-EURUSD-PS0-PS1",
-      "resource": "CPU",
-      "state": "IN_PROGRESS",
-      "work": "Continue the partial inventory: resolve remaining source/field availability, paid-source scope and pending causal transforms; emit an explicit disposition for every source and transform.",
+      "id": "FS-PHASE2-ENGINEERING",
+      "resource": "CPU_worktree",
+      "state": "AUTHORIZED_NOT_STARTED",
+      "work": "Implement and test the durable pairwise driver, bounded worker, warehouse migration, status writer and restart behavior.",
       "depends_on": [],
-      "produces": "versioned admissible-feature table and coverage matrix; no source is silently omitted"
+      "produces": "one deployable commit and wheel for all hosts"
     },
     {
       "priority": 2,
-      "id": "FS-EURUSD-PS2",
-      "resource": "CPU",
-      "state": "PARTIAL_WITH_REVISIT_REQUIRED",
-      "work": "Redundancy, target/horizon relevance, provisional groups and exploration sample; explicitly revisit 87 low-priority candidates before PS5 and preserve overlapping tier semantics.",
-      "depends_on": ["FS-EURUSD-PS0-PS1"],
-      "produces": "reversible survivor/reject/pending priorities"
+      "id": "FS-PHASE2-PAIRWISE",
+      "resource": "omega_gamma_dragon_CPU",
+      "state": "WAITING_FOR_ENGINEERING",
+      "work": "Compute all EURUSD and ETH feature-feature metrics with exclusive deterministic shards and automatic warehouse delivery.",
+      "depends_on": ["FS-PHASE2-ENGINEERING"],
+      "produces": "PHASE_2_COMPLETE.json plus OLAP tables and verified snapshot"
     },
     {
       "priority": 3,
-      "id": "FS-EURUSD-PS3-C",
-      "resource": "CPU",
-      "state": "METHOD_FIX_AND_READ_ONLY_REVIEW_PUBLISHED",
-      "work": "Three-rung causal ladder for every prioritized candidate: external historical events or defensible endogenous transitions/shocks, with explicit abstention when unsupported.",
-      "depends_on": ["FS-EURUSD-PS0-PS1"],
-      "produces": "protocol-conformant causal dossiers; read-only review is complete under 48ae17c, with 0 of 1,076 historical estimates passing current identification gates"
+      "id": "FS-PHASE3-FILTERS",
+      "resource": "CPU_after_phase2_gate",
+      "state": "WAITING_FOR_PHASE2",
+      "work": "Run Spearman clustering, mRMR and JMI plus controls for every target and horizon; retain full rankings and K paths.",
+      "depends_on": ["FS-PHASE2-PAIRWISE"],
+      "produces": "PHASE_3_FILTER_COMPLETE.json plus candidate subset trajectories"
     },
     {
       "priority": 4,
-      "id": "FS-EURUSD-PS3-R",
-      "resource": "dragon_4090",
-      "state": "IN_PROGRESS_TWO_GPU_LANES",
-      "work": "Single-feature temporal extractors continue sequentially: baseline identity/random/AE/DAE on dragon and alternative past-to-current controls on gamma 5090. Adopt only terminal manifests with recomputed digests; no hard-coded completed-feature list.",
-      "depends_on": ["FS-EURUSD-PS2"],
-      "produces": "extractibility matrix, cost envelope and donor candidates"
-    },
-    {
-      "priority": 5,
-      "id": "FS-EXTRACTOR-ALT",
-      "resource": "gamma_external_5090",
-      "state": "RUNNING_SEQUENTIALLY",
-      "work": "Alternative masked temporal and past-to-current extractors on matched rows, one Gamma child total. Hilbert, Kalman deviation and STL deviation are terminal; the driver continues the sealed plan.",
-      "depends_on": ["FS-EURUSD-PS2"],
-      "produces": "matched alternative-family comparison"
-    },
-    {
-      "priority": 6,
-      "id": "FS-EURUSD-PS4-PS5",
-      "resource": "CPU_plus_DOIN",
-      "state": "PS4_SUBPOPULATION_ACCEPTED_LEDGER_REPAIR_REQUIRED",
-      "work": "Ten transforms have accepted PS4 profiles. Repair the 366-row readiness ledger against causal revision 48ae17c, ingest terminal PS3-R evidence automatically, profile new terminals incrementally, then run paired common-K comparisons only when each row is ready.",
-      "depends_on": ["FS-EURUSD-PS3-C", "FS-EURUSD-PS3-R"],
-      "produces": "selected/rejected/pending manifest"
-    },
-    {
-      "priority": 6,
-      "id": "FS-COVERAGE-RECONCILIATION",
-      "resource": "CPU_omega",
-      "state": "FEATURE_POPULATION_RECONCILED_SOURCE_AND_TRANSFORM_SCOPE_OPEN",
-      "work": "A deterministic ledger now reconciles all 366 admissible features: 279 joined plus 87 low-priority; 137 in E plus 142 outside (132 tier-3, 10 calendar). Continue source/paid-provider and transform-variant dispositions; do not call this global inventory coverage complete.",
-      "depends_on": ["FS-EURUSD-PS0-PS1", "FS-EURUSD-PS2"],
-      "produces": "coverage ledger with per-feature/per-target status, rationale, and next action; zero implicit exclusions"
+      "id": "FS-PHASE4-EXTRACTIBILITY",
+      "resource": "unassigned",
+      "state": "WAITING_FOR_PHASE3_AND_DESIGN",
+      "work": "Freeze and then compare raw random trained AE DAE and temporal alternatives on Phase-3 candidates and matched controls.",
+      "depends_on": ["FS-PHASE3-FILTERS"],
+      "produces": "extractibility evidence for wrapper validation"
     },
     {
       "priority": 7,
       "id": "MOD-ARCH-E1",
-      "resource": "gamma_external_5090_then_dragon_4090",
+      "resource": "best_admissible_gpu",
       "state": "WAITING_FOR_FINAL_MANIFEST",
       "work": "Matched architecture controls, branch donors and R0/R1/R2.",
-      "depends_on": ["FS-EURUSD-PS4-PS5"],
+      "depends_on": ["FS-PHASE4-EXTRACTIBILITY"],
       "produces": "winning branch architecture and regime"
     },
     {
@@ -103,7 +81,7 @@
       "id": "MOD-DOIN",
       "resource": "fleet",
       "state": "WAITING_FOR_ELIGIBLE_MODEL",
-      "work": "DEAP proposes typed configurations; DOIN evaluates finite candidate batches.",
+      "work": "DEAP proposes typed configurations and DOIN evaluates finite candidate batches.",
       "depends_on": ["MOD-ARCH-E1"],
       "produces": "verified incumbent and candidate history"
     },
@@ -112,14 +90,14 @@
       "id": "HEAD-DENSE-NEAT",
       "resource": "best_admissible_gpu",
       "state": "WAITING_FOR_FROZEN_REPRESENTATION",
-      "work": "Dense control versus true NEAT predictive head on materialized representation.",
+      "work": "Dense control versus true NEAT predictive head on the frozen representation.",
       "depends_on": ["MOD-HCORE"],
       "produces": "matched head comparison"
     },
     {
       "priority": 11,
       "id": "RL-RAW-MODULAR",
-      "resource": "dragon_4090_and_gamma_external_5090",
+      "resource": "best_admissible_gpu",
       "state": "WAITING_FOR_FINAL_REPRESENTATION",
       "work": "SAC raw/modular and DQN raw/modular, one seed first.",
       "depends_on": ["MOD-HCORE"],
@@ -129,37 +107,19 @@
       "priority": 12,
       "id": "TRADING-PAPER",
       "resource": "CPU_services",
-      "state": "INDEPENDENT_CONTINUOUS",
-      "work": "Maintain LTS, MT5 demo and Alpaca paper; promote only naive-eligible artifacts.",
+      "state": "PAUSED_DURING_SELECTION_FOCUS",
+      "work": "Resume after the active selection closure; promote only naive-eligible artifacts.",
       "depends_on": [],
-      "produces": "shadow/paper receipts, no real capital"
-    },
-    {
-      "priority": 13,
-      "id": "LITERATURE-CONTROLS",
-      "resource": "available_CPU_or_GPU",
-      "state": "INDEPENDENT_READY",
-      "work": "Close faithful ECL, Weather, Traffic and classification references without modifying author recipes.",
-      "depends_on": [],
-      "produces": "comparable metrics and same-row baselines"
-    },
-    {
-      "priority": 14,
-      "id": "M5PHET-E2E",
-      "resource": "CPU_or_small_GPU",
-      "state": "INDEPENDENT_READY",
-      "work": "Next real-provider typed use case end to end.",
-      "depends_on": [],
-      "produces": "validated request/output/evidence path"
+      "produces": "shadow and paper receipts"
     },
     {
       "priority": 99,
       "id": "CALENDAR-CAUSAL-MODEL-INPUT",
       "resource": "unassigned",
       "state": "DEFERRED_FINAL_OPTIONAL",
-      "work": "Test economic-calendar and causal-dossier inputs only after the primary representation, NEAT, RL and paper baseline.",
+      "work": "Test calendar and causal dossier inputs only after representation, NEAT, RL and paper baseline.",
       "depends_on": ["HEAD-DENSE-NEAT", "RL-RAW-MODULAR", "TRADING-PAPER"],
-      "produces": "separate incremental-value ablation; not a prerequisite for the primary program"
+      "produces": "separate incremental-value ablation"
     }
   ]
 }

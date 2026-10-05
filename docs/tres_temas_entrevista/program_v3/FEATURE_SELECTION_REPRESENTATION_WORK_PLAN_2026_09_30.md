@@ -8,6 +8,14 @@ se completan por incremento antes de implementar cada componente nuevo.
 La orden fechada de continuación se conserva como historia. La autoridad
 operativa y la secuencia vigente están en el plan maestro y CURRENT_EXECUTION.md.
 
+> **Enmienda vinculante 2026-10-05:** fase 1 (perfiles individuales y evidencia
+> causal) está completa. La siguiente etapa no es extractibilidad: fase 2 mide
+> dependencia y redundancia feature-feature, y fase 3 produce rankings con
+> clustering, mRMR y JMI. El diseño ejecutable está en
+> `FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md`. La extractibilidad
+> de este documento pasa a fase 4. Los nombres PS0-PS7 inferiores describen la
+> descomposición histórica del trabajo y no alteran esa secuencia.
+
 Original conservado en `seleccion_caracteristicas_musashi.original.md`.
 SHA256 original: `a73e397aac9f72c6a32c8db575c099c26a2bcc8dca8efa0e979db1b26e0e605f`.
 

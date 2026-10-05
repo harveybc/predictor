@@ -108,7 +108,7 @@ def validate(state, root):
 
     documents = state.get("documents", {})
     for name in ("master", "metrics", "orders", "queue", "checklist", "feature_selection",
-                 "modular_stack", "core_pretraining", "financial_loss_policy",
+                 "feature_selection_phase23", "modular_stack", "core_pretraining", "financial_loss_policy",
                  "business_weekly", "business_weekly_traceability"):
         path = documents.get(name)
         if not path or not (root / path).is_file():

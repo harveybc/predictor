@@ -1,19 +1,20 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-05",
-  "current_stage": "feature_selection_phase1_complete_phase2_design_pending",
+  "current_stage": "acceptance_test_design",
   "completed_stages": [
     "discovery",
     "requirements"
   ],
   "program_owner": "Harvey",
   "execution_owner": "Satoshi",
-  "handoff_status": "PHASE_1_COMPLETE_PHASE_2_NOT_STARTED",
+  "handoff_status": "PHASE_1_COMPLETE_PHASE_2_AND_3_AUTHORIZED",
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [
-    "Audit the 12 EURUSD and 3 ETH selected feature-target results by horizon without treating aliases as independent evidence.",
-    "Freeze the Phase-2 single-feature controlled temporal extractor/CVAE design, seasonal controls, reconstruction metrics and raw/random/trained controls before GPU work.",
-    "Run Phase 2 only on the frozen selected and matched control populations; do not silently expand the denominator.",
+    "Implement and execute the automated Phase-2 feature-feature dependency and redundancy campaign for the frozen EURUSD and ETH populations.",
+    "Load every Phase-2 metric and disposition into the warehouse, verify readback, and publish a physical DuckDB snapshot with manifest and SHA-256.",
+    "Automatically execute Phase 3 clustering, mRMR and JMI rankings after Phase 2 closes, preserving complete ranking paths and controls.",
+    "Freeze the Phase-4 single-feature extractor design only after PHASE_3_FILTER_COMPLETE; do not start GPU work in this order.",
     "Continue BUSINESS_WEEKLY_WALK_FORWARD implementation independently; no final financial claim may use LITERATURE_STATIC semantics.",
     "Keep NEAT, modular branch/core pretraining and RL after dataset-specific selection and Phase-2 extraction closure in the canonical order."
   ],
@@ -24,6 +25,7 @@
     "queue": "EXPERIMENT_EXECUTION_QUEUE.json",
     "checklist": "MASTER_CHECKLIST.json",
     "feature_selection": "FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md",
+    "feature_selection_phase23": "FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md",
     "business_weekly": "BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md",
     "business_weekly_traceability": "BUSINESS_WEEKLY_TRACEABILITY.json",
     "modular_stack": "MODULAR_STACK_WORK_PLAN_2026_09_30.md",
@@ -60,13 +62,13 @@
     "DOIN_role": "DISTRIBUTED_CANDIDATE_EVALUATION"
   },
   "feature_selection": {
-    "active_phase": "PHASE_1_COMPLETE_PHASE_2_DESIGN_PENDING",
+    "active_phase": "PHASE_2_DEPENDENCY_REDUNDANCY_THEN_PHASE_3_FILTERS",
     "canonical_denominators": {
       "EURUSD": 366,
       "ETH": 83
     },
     "phase_1_completion_gate": "COMPLETE_EURUSD_366_OF_366_ETH_83_OF_83_WAREHOUSE_READBACK_VERIFIED",
-    "phase_2_gpu_allowed": true,
+    "phase_2_gpu_allowed": false,
     "business_manifest": "EURUSD_FIRST",
     "secondary_development_manifest": "ETH_SEPARATE",
     "stages": [
@@ -102,6 +104,32 @@
       "optional_generative_preference"
     ],
     "phase_2_started": false,
+    "phase_2_expected_pairs": {
+      "EURUSD": 66795,
+      "ETH": 3403
+    },
+    "phase_2_metrics": [
+      "exact_and_numeric_equivalence",
+      "pearson",
+      "spearman",
+      "kendall_tau",
+      "mutual_information",
+      "distance_correlation",
+      "lagged_cross_correlation",
+      "fold_stability"
+    ],
+    "phase_3_methods": [
+      "spearman_hierarchical_clustering",
+      "mRMR",
+      "JMI"
+    ],
+    "phase_3_controls": [
+      "ALL_ADMISSIBLE",
+      "UNIVARIATE_MI",
+      "CAUSAL_SUPPORTED",
+      "RANDOM_K"
+    ],
+    "phase_4_started": false,
     "phase_1_results": {
       "EURUSD": {
         "features": 366,
@@ -299,9 +327,11 @@
       "depends_on": [
         "BUSINESS-CONTRACT"
       ],
-      "next_action": "Adopt retained EURUSD evidence, run only missing work plus the independent ETH population, finalize causal multiplicity per population, load the warehouse and verify 366/366 plus 83/83. Keep phase 2 extractibility paused.",
-      "deliverable": "Phase-1 feature profile and causal catalog with complete warehouse coverage for EURUSD and ETH.",
-      "evidence": []
+      "next_action": "Run automated Phase 2 pairwise dependency/redundancy and Phase 3 filter rankings; persist all rows in the warehouse and publish verified snapshots. Keep Phase 4 extractibility paused.",
+      "deliverable": "Complete pairwise metrics, alias/redundancy groups and candidate subset trajectories for EURUSD and ETH.",
+      "evidence": [
+        "Phase 1 completion commit 2a2a386f and warehouse readback receipts"
+      ]
     },
     {
       "id": "MOD-E0-DEV",
