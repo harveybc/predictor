@@ -1,13 +1,13 @@
 {
  "by_stage": {
-  "FS-CLOSE": 93123,
+  "FS-CLOSE": 99123,
   "FS-GEN": 20690,
-  "FS-REP": 19447,
+  "FS-REP": 19775,
   "PS1": 21861,
   "PS2": 593984,
   "PS3-C": 52396,
-  "PS3-R": 2253128,
-  "PS4": 5565
+  "PS3-R": 2292430,
+  "PS4": 5985
  },
  "columns": [
   "feature",
@@ -21,10 +21,10 @@
   "digest",
   "source"
  ],
- "csv_sha256": "bdf44c7c5991eb5c910c9ca595a8075d3b491e78cb667aa878d6e32a5a08383e",
- "generated_utc": "2026-10-05T07:07:55+00:00",
- "parquet_sha256": "08fed23ce42781d734ab6ec7608e08534c703f735f792b68148783b461542da0",
- "rows": 3060194,
+ "csv_sha256": "d0821f5b90506f65ac79f195c2aab2685208ed51c0fbeefe303611f0079325f4",
+ "generated_utc": "2026-10-05T07:38:56+00:00",
+ "parquet_sha256": "e87fd5e61a011888c99db5c47d90d936d194110a82b923a1bd61fe4ef34ce36a",
+ "rows": 3106244,
  "schema": "feature_metrics_catalog.v1",
- "sources_digest": "68f51078c1b0018fac2e9200c3d5b243b01886a4918c028a396af36a77f16d65"
+ "sources_digest": "e8239f07112a5c086249ab1420039dfeb5707bee87cd9bd2eca2d721333c5c16"
 }
