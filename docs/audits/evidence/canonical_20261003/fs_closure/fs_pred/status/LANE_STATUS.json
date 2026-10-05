@@ -49,19 +49,19 @@
   "train_rows": 71734
  },
  "eta": {
-  "basis": "median of 54 POST method walls x 815 remaining method cells, one worker",
-  "eta_utc": "2026-10-05T12:35:57.237896+00:00",
-  "post_cells": 54,
-  "post_median_wall_seconds": 10.275566180993337
+  "basis": "median of 80 POST method walls x 789 remaining method cells, one worker",
+  "eta_utc": "2026-10-05T12:51:53.372831+00:00",
+  "post_cells": 80,
+  "post_median_wall_seconds": 9.413907307491172
  },
  "failures": [],
  "host_role": "worker_b (CPU)",
- "k24_sets": 165,
+ "k24_sets": 191,
  "method_wall_seconds": {
   "ALL_ADMISSIBLE": {
    "max": 0.3280245428904891,
-   "median": 0.23752716952003539,
-   "n": 12
+   "median": 0.2246970430132933,
+   "n": 14
   },
   "CHRONOEPILOGI_K": {
    "max": 118.15960842801724,
@@ -70,68 +70,68 @@
   },
   "CMIM_K": {
    "max": 54.304969796095975,
-   "median": 40.777175518509466,
-   "n": 12
+   "median": 38.71477388002677,
+   "n": 14
   },
   "ELASTIC_NET_K": {
-   "max": 16.58013310097158,
-   "median": 12.520915403496474,
-   "n": 12
+   "max": 16.62677424796857,
+   "median": 13.441732267499901,
+   "n": 14
   },
   "EXTRATREES_TBP_K": {
    "max": 108.86757644696627,
-   "median": 79.49527872999897,
-   "n": 12
+   "median": 75.98310302302707,
+   "n": 14
   },
   "GROUP_ELASTIC_NET_K": {
    "max": 12.222659705905244,
-   "median": 9.379553383041639,
-   "n": 12
+   "median": 8.845006706542335,
+   "n": 14
   },
   "GROUP_GATE_K": {
    "max": 3.5829775950405747,
-   "median": 2.6190839080372825,
-   "n": 12
+   "median": 2.4818352715228684,
+   "n": 14
   },
   "JMI_K": {
    "max": 54.79486797004938,
-   "median": 41.023609394032974,
-   "n": 12
+   "median": 38.94992637401447,
+   "n": 14
   },
   "MI8_K": {
    "max": 1.6207703050458804,
-   "median": 1.211780960438773,
-   "n": 12
+   "median": 1.181949338526465,
+   "n": 14
   },
   "MRMR_K": {
    "max": 54.05779823800549,
-   "median": 40.633556373475585,
-   "n": 12
+   "median": 38.57375334604876,
+   "n": 14
   },
   "RANDOM_K:seed0": {
    "max": 0.3303993850713596,
-   "median": 0.22071915946435183,
-   "n": 12
+   "median": 0.21038513799430802,
+   "n": 14
   },
   "REDUNDANCY_K": {
    "max": 3.7124050119891763,
-   "median": 2.747281910444144,
-   "n": 12
+   "median": 2.5875583474407904,
+   "n": 14
   },
   "SEQ_MARGINAL_K": {
    "max": 26.88742278504651,
-   "median": 20.54715771303745,
-   "n": 12
+   "median": 18.181051232037134,
+   "n": 14
   },
   "SPEARMAN_K": {
    "max": 20.80476092605386,
-   "median": 5.685057237453293,
-   "n": 12
+   "median": 5.319444585999008,
+   "n": 14
   }
  },
  "per_method": {
   "ALL_ADMISSIBLE": {
-   "done": 12,
+   "done": 14,
    "total": 70
   },
   "CHRONOEPILOGI_K": {
@@ -139,51 +139,51 @@
    "total": 70
   },
   "CMIM_K": {
-   "done": 12,
+   "done": 14,
    "total": 70
   },
   "ELASTIC_NET_K": {
-   "done": 12,
+   "done": 14,
    "total": 70
   },
   "EXTRATREES_TBP_K": {
-   "done": 12,
+   "done": 14,
    "total": 70
   },
   "GROUP_ELASTIC_NET_K": {
-   "done": 12,
+   "done": 14,
    "total": 70
   },
   "GROUP_GATE_K": {
-   "done": 12,
+   "done": 14,
    "total": 70
   },
   "JMI_K": {
-   "done": 12,
+   "done": 14,
    "total": 70
   },
   "MI8_K": {
-   "done": 12,
+   "done": 14,
    "total": 70
   },
   "MRMR_K": {
-   "done": 12,
+   "done": 14,
    "total": 70
   },
   "RANDOM_K:seed0": {
-   "done": 12,
+   "done": 14,
    "total": 70
   },
   "REDUNDANCY_K": {
-   "done": 12,
+   "done": 14,
    "total": 70
   },
   "SEQ_MARGINAL_K": {
-   "done": 12,
+   "done": 14,
    "total": 70
   },
   "SPEARMAN_K": {
-   "done": 12,
+   "done": 14,
    "total": 70
   }
  },
@@ -237,51 +237,49 @@
    "method_cells_total": 70
   },
   "Y_s_5h": {
-   "method_cells_done": 0,
+   "method_cells_done": 13,
    "method_cells_total": 70
   },
   "Y_s_6h": {
-   "method_cells_done": 0,
+   "method_cells_done": 13,
    "method_cells_total": 70
   }
  },
  "progress": {
-  "done": 825,
-  "eta_seconds": 8497.913300247164,
-  "eta_utc": "2026-10-05T12:28:31.798843+00:00",
-  "method_cells_done": 165,
+  "done": 955,
+  "eta_seconds": 8111.250475050649,
+  "eta_utc": "2026-10-05T13:02:41.335140+00:00",
+  "method_cells_done": 191,
   "method_cells_total": 980,
   "n_failures": 0,
-  "observed_median_method_wall_seconds": 10.426887484965846,
+  "observed_median_method_wall_seconds": 10.280418853042647,
   "observed_p90_method_wall_seconds": 54.304969796095975,
   "total": 4900,
-  "updated_utc": "2026-10-05T10:06:53.885511+00:00",
+  "updated_utc": "2026-10-05T10:47:30.084629+00:00",
   "workers": 1
  },
- "records": 165,
- "rendered_utc": "2026-10-05T10:16:22.651510+00:00",
+ "records": 191,
+ "rendered_utc": "2026-10-05T10:48:05.800047+00:00",
  "schema": "fs_pred_lane_status.v2",
  "state": "RUNNING",
  "watchdog": {
   "probe": {
    "blocked": false,
-   "cgroup_some_avg10": 69.25,
-   "d_state_pids": [
-    "493274"
-   ],
-   "high_events_rising": true,
-   "memory_events_high": 69792,
+   "cgroup_some_avg10": 0.0,
+   "d_state_pids": [],
+   "high_events_rising": false,
+   "memory_events_high": 0,
    "memory_max": "5637144576",
-   "memory_peak": 5355945984,
-   "probe_epoch": 1791195381.8396683,
-   "progress_mtime_epoch": 1791194813.885829,
+   "memory_peak": 4341854208,
+   "probe_epoch": 1791197284.339489,
+   "progress_mtime_epoch": 1791197250.0849519,
    "relaunch_epoch": 1791191214.0,
    "scope_active": true,
    "scopes": [
-    "crispdm-fs-pred-v2-Y_s_4h-1791194578-493123.scope"
+    "crispdm-fs-pred-v2-Y_s_6h-1791197006-686427.scope"
    ]
   },
-  "progress_age_seconds": 568.0,
+  "progress_age_seconds": 34.3,
   "reason": "progress advanced within the threshold and a scope is active",
   "state": "RUNNING",
   "threshold_seconds": 600.0
