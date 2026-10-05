@@ -2,7 +2,7 @@
 
 It owns the star schema, the governed `gov_*` append-only tables and the reporting ETL.
 It owns no HTTP route and no governance decision. Everything it exposes is read-only SQL
-plus the two append-only writes the campaign protocol needs; nothing here can truncate the
+plus append-only writes for governed campaigns; nothing here can truncate the
 cube, and the host has no route that would ask it to.
 """
 
@@ -18,7 +18,8 @@ CAPABILITIES = ("describe", "storage", "discover", "query",
                 # S2: retaining the availability contract a delivery already references.
                 # It is additive: a caller that does not send contracts is unaffected, and a
                 # delivery whose contract was never sent resolves as UNRESOLVED, not as zero.
-                "write_availability_contracts", "resolve_delivery_availability")
+                "write_availability_contracts", "resolve_delivery_availability",
+                "write_feature_selection_envelope")
 
 
 def _source_commit() -> str | None:

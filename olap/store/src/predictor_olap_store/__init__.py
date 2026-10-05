@@ -18,8 +18,9 @@ from .provider import PredictorOlapStore, backend
 
 __all__ = ["PredictorOlapStore", "backend", "__version__", "SOURCE_SHA256",
            "SOURCE_REVISION", "SOURCE_PATH", "MODULE_SHA256", "PENDING_REVIEW",
-           "ENVELOPE_SOURCE_PATH", "ENVELOPE_SOURCE_SHA256"]
-__version__ = "0.1.1"
+           "ENVELOPE_SOURCE_PATH", "ENVELOPE_SOURCE_SHA256",
+           "FEATURE_SELECTION_CONTRACT_SHA256"]
+__version__ = "0.1.3"
 
 #: The digest of the deployed query plugin this module was copied from, and the revision
 #: that holds it. Both are checked by the package's tests. These describe PRODUCTION and are
@@ -35,11 +36,16 @@ SOURCE_PATH = "olap/lake/query_plugins/sql_query.py"
 ENVELOPE_SOURCE_PATH = "olap/campaign_envelope.py"
 ENVELOPE_SOURCE_SHA256 = "d518cedce2617a454fcc49e5be304c0622a5d7a6f9e14f6593844ca1d4f96969"
 
+#: Exact bytes of `data_warehouse_service.feature_selection` at data-warehouse 50bddf3.
+FEATURE_SELECTION_CONTRACT_SHA256 = (
+    "91fcb4fde495239a4e0a21d3a39f0b66d50bd0a5df4865db7bd720b454f5f75a"
+)
+
 #: The digest of the module in THIS branch. It differs from SOURCE_SHA256 exactly when a
 #: candidate change is awaiting production review, and PENDING_REVIEW says which one. The
 #: package's tests require the two to be consistent: a divergence without a stated reason is
 #: a failure, and a stated reason without a divergence is one too.
-MODULE_SHA256 = "841fc4aa9f7955b5ef768db712d2f934d8ce091c2510dd6b6139018474f60ea6"
+MODULE_SHA256 = "a12ce38fd6c7cc6efc368b219b44bc8e8acbcf6f3a48fc200db93589ad5326e4"
 PENDING_REVIEW = (
     "S2 availability-contract dimension: additive `gov_availability_contract` table, the "
     "`gov_delivery_availability` view and `write_availability_contracts` / "
@@ -52,5 +58,8 @@ PENDING_REVIEW = (
     "is widened in place — a governed artifact of 4,198,064,038 bytes (a T=720 prediction "
     "array) had its terminal refused by the DuckDB host; proved on SQLite and DuckDB. The "
     "package was reinstalled into the DuckDB host's environment for that reason; the lake "
-    "plugin copy carries the same change and is NOT deployed there."
+    "plugin copy carries the same change and is NOT deployed there. Phase-1 feature-selection "
+    "adds the exact data-warehouse 50bddf3 validator, six immutable normalized fact families, "
+    "run and receipt identities, atomic ingestion and read-only analytical views; proved on a "
+    "throwaway DuckDB file and NOT deployed."
 )

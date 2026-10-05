@@ -13,8 +13,13 @@ It owns no HTTP route, no console and no governance decision — those belong to
 to [data-gov](https://github.com/harveybc/data-gov).
 
 Capabilities declared: `describe`, `storage`, `discover`, `query` (read-only SQL),
-`write_metrics`, `write_terminal`, `terminal_digests`. There is no download capability, and
-the host answers 422 for one: a warehouse delivers query results, not files.
+`write_metrics`, `write_terminal`, `terminal_digests`, `write_availability_contracts`,
+`resolve_delivery_availability` and `write_feature_selection_envelope`. There is no download
+capability, and the host answers 422 for one: a warehouse delivers query results, not files.
+
+The feature-selection write is inherited by the DuckDB provider and stores all six typed row
+families plus the run and receipt in one owner transaction. See
+[`docs/FEATURE_SELECTION_DUCKDB.md`](docs/FEATURE_SELECTION_DUCKDB.md).
 
 ## Provenance of `predictor_olap_store.query`
 

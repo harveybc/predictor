@@ -44,6 +44,11 @@ def test_the_packaged_module_matches_the_digest_it_declares():
         "calling it a copy")
 
 
+def test_the_feature_selection_contract_is_pinned_to_data_warehouse_50bddf3():
+    contract = SRC / "predictor_olap_store" / "feature_selection.py"
+    assert _sha256(contract.read_bytes()) == pkg.FEATURE_SELECTION_CONTRACT_SHA256
+
+
 def test_a_divergence_from_production_is_stated_and_a_stated_one_is_real():
     """The package may carry a candidate change; it may not carry a silent one.
 

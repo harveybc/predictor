@@ -46,6 +46,29 @@ GOVERNANCE = ("gov_report", "gov_metric", "gov_dataset", "gov_terminal",
               "gov_terminal_metric", "gov_terminal_dataset", "gov_terminal_artifact",
               "gov_availability_contract")
 
+# Phase-1 feature-selection storage is part of the governed cube boundary.  Views are included
+# too: a snapshot with intact facts but a missing or stale interpretation layer is not a usable
+# phase-1 snapshot.
+FEATURE_SELECTION_TABLES = (
+    "df_dim_feature_selection_run",
+    "df_fact_sampling_quality",
+    "df_fact_variable_profile",
+    "df_fact_information_metric",
+    "df_fact_pair_relation",
+    "df_fact_feature_causal_evidence",
+    "df_fact_feature_selection_decision",
+    "df_fact_feature_selection_load_receipt",
+)
+FEATURE_SELECTION_VIEWS = (
+    "df_feature_profile_current",
+    "df_feature_causal_ladder_current",
+    "df_feature_selection_current",
+    "df_feature_selection_coverage",
+    "df_feature_selection_failures",
+    "df_feature_selection_dashboard",
+)
+SNAPSHOT_RELATIONS = GOVERNANCE + FEATURE_SELECTION_TABLES + FEATURE_SELECTION_VIEWS
+
 #: The dependency closure of a governed terminal that lives outside gov_*: the campaign and run
 #: identity the loader records, and the dimensions those rows point at.
 CLOSURE = ("dim_campaign", "dim_campaign_run", "dim_project", "dim_phase", "dim_experiment",
@@ -1168,15 +1191,19 @@ def _copy_files(source_path: Path, target_path: Path) -> list:
 
 
 def _governance_digests(con, schema: str) -> tuple:
-    """Row counts and content digests for the governed relations, from one connection."""
+    """Counts and content digests for the complete governed snapshot boundary."""
     counts, digests = {}, {}
-    for name in GOVERNANCE:
+    for name in SNAPSHOT_RELATIONS:
         try:
             columns = [row[1] for row in con.execute(
                 f'PRAGMA table_info("{schema}"."{name}")').fetchall()]
             counts[name] = con.execute(
                 f'SELECT count(*) FROM "{schema}"."{name}"').fetchone()[0]
             digests[name] = content_digest(con, f'"{schema}"."{name}"', columns)
+            if counts[name] == 0 and digests[name] is None:
+                # An empty relation still has deterministic content.  Keeping NULL for it made
+                # an intact empty view indistinguishable from a digest that could not be made.
+                digests[name] = hashlib.md5(b"").hexdigest()
         except Exception:
             counts[name] = None
             digests[name] = None
@@ -1259,8 +1286,12 @@ def snapshot_database(source: str, target: str, *, schema: str = "main",
         reasons.append(f"the copy differs from the source it was taken from: {differing}")
     if not source_digests:
         reasons.append("the source was never measured under a held boundary")
+    missing_phase1 = [name for name in FEATURE_SELECTION_TABLES + FEATURE_SELECTION_VIEWS
+                      if source_counts.get(name) is None or counts.get(name) is None]
+    if missing_phase1:
+        reasons.append(f"phase-1 feature-selection relations are absent: {missing_phase1}")
 
-    return {"schema": "olap_duckdb_snapshot.v4", "generated_utc": now(),
+    return {"schema": "olap_duckdb_snapshot.v5", "generated_utc": now(),
             "source": source, "target": target, "files_copied": copied,
             "boundary": boundary, "caller_claimed_owner_stopped": owner_stopped,
             "counts_in_snapshot": counts, "content_digests": digests,
