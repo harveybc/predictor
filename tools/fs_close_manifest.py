@@ -1676,7 +1676,7 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
         r = subprocess.run(ssh + [cmd], capture_output=True, timeout=90, text=True)
         info["state"] = ("PILOT_LAUNCHED" if pilot else "LAUNCHED") if r.returncode == 0 else "LAUNCH_FAILED"
         if r.returncode == 0:
-            unit = re.search(r"Running as unit: (\S+)", (r.stderr or "") + (r.stdout or ""))
+            unit = re.search(r"Running as unit: ([^;\s]+)", (r.stderr or "") + (r.stdout or ""))
             write_json(paths.out / "refit_launch_marker.json", {"launched_utc": utc_now(), "pilot": pilot, "cap": cap,
                                                                  "unit": unit.group(1) if unit else ""})
         info["cap"] = cap
