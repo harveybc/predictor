@@ -3745,7 +3745,7 @@
       "flags": [
         "DECIDED_WITH_FAILED_FAMILIES",
         "RAW_HAS_PROBE_SKILL",
-        "RAW_REFIT_GAIN_POSITIVE"
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -3778,7 +3778,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -3810,7 +3811,8 @@
       ],
       "flags": [
         "DECIDED_WITH_FAILED_FAMILIES",
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -3843,7 +3845,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_POSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -3875,7 +3878,8 @@
       ],
       "flags": [
         "DECIDED_WITH_FAILED_FAMILIES",
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -3908,7 +3912,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_POSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -3941,7 +3946,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -3973,7 +3979,8 @@
       ],
       "flags": [
         "DECIDED_WITH_FAILED_FAMILIES",
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -4005,7 +4012,8 @@
       ],
       "flags": [
         "DECIDED_WITH_FAILED_FAMILIES",
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -4611,7 +4619,7 @@
   "candidates_decided": 136,
   "claim_scope": "provisional extractibility/probe disposition; no downstream improvement of latents is claimed while trained-family G4 is NOT_APPLICABLE; raw vs latent belongs to M4",
   "coverage_fraction": 0.8029,
-  "cycle_started_at": "2026-10-05T16:03:05Z",
+  "cycle_started_at": "2026-10-05T16:07:18Z",
   "decisions": {
     "NOT_AVAILABLE_FOR_TRAIN": 1,
     "NO_TRAINED_ADVANTAGE": 88,
@@ -4621,7 +4629,7 @@
   "disposition_class": "PROVISIONAL_EXTRACTIBILITY_DISPOSITION",
   "eta": {
     "fs_gpu_eta": {
-      "generated_at_utc": "2026-10-05T16:01:52Z",
+      "generated_at_utc": "2026-10-05T16:06:37Z",
       "queues": {
         "alternatives_5090": {
           "active_roles": [],
@@ -4718,8 +4726,8 @@
                 "worker_b": 1635.7
               }
             },
-            "finish_utc_median": "2026-10-05T16:01:52Z",
-            "finish_utc_p90": "2026-10-05T16:01:52Z",
+            "finish_utc_median": "2026-10-05T16:06:37Z",
+            "finish_utc_p90": "2026-10-05T16:06:37Z",
             "provisional": false,
             "reason": null,
             "seconds_median": 0,
@@ -4888,7 +4896,7 @@
           "running": [
             {
               "cell_id": "batch_002::yh.gc_f.logret_5d::baseline",
-              "elapsed_seconds": 6752,
+              "elapsed_seconds": 7037,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
               "role": "worker_b",
               "stale": false,
@@ -4986,7 +4994,7 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "ea36a3242706a6d81b8e74e62624591b48c04eb640dce4fbcfc9cd1aaa85522d"
+      "sha256": "4771cf21223df310b354ae1ee5c8064ee51d5ca5b04dd6dc8d9779af57dd91e0"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
@@ -5025,5 +5033,5 @@
       "PENDING": 1
     }
   },
-  "updated_at": "2026-10-05T16:03:10Z"
+  "updated_at": "2026-10-05T16:07:23Z"
 }
