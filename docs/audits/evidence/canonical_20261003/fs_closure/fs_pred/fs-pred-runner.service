@@ -1,0 +1,16 @@
+[Unit]
+Description=FS-PRED feature-selection batch runner (CPU, crispdm-run per target, resumable)
+
+[Service]
+Type=simple
+ExecStart=%h/.local/state/canonical_20261003/fs_pred/fs_pred_driver.sh
+Environment=FS_PRED_CAP=4G
+Restart=on-failure
+RestartSec=120
+# exit 75 = admission refused: do not restart into a lowered cap or a hot loop
+RestartPreventExitStatus=75
+Nice=10
+IOSchedulingClass=idle
+
+[Install]
+WantedBy=default.target

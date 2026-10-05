@@ -25,6 +25,14 @@ class ComparatorMethod(str, Enum):
     MI8_K = "MI8_K"
     REDUNDANCY_K = "REDUNDANCY_K"
     RANDOM_K = "RANDOM_K"
+    JMI_K = "JMI_K"
+    CMIM_K = "CMIM_K"
+    MRMR_K = "MRMR_K"
+
+
+_GREEDY_MI_METHODS = frozenset(
+    {"JMI_K", "CMIM_K", "MRMR_K"}
+)
 
 
 @dataclass(frozen=True)
@@ -45,20 +53,45 @@ class RandomTape:
             raise ValueError("random seed must be non-negative")
 
 
+def validate_sealed_ks(subset_k: Any, sensitivity_ks: Any) -> tuple[int, tuple[int, ...]]:
+    """Validate the primary K and the sealed sensitivity budgets declared with it.
+
+    Sensitivity budgets are part of the plan identity: they are declared before
+    any ranking exists, so truncating one complete ranking at each of them is
+    not a post-hoc change.  Any K absent from this tuple stays forbidden.
+    """
+
+    if isinstance(subset_k, (bool, np.bool_)):
+        raise TypeError("boolean subset K is forbidden")
+    if not isinstance(subset_k, (int, np.integer)):
+        raise TypeError("subset K must be an integer")
+    if int(subset_k) <= 0:
+        raise ValueError("subset K must be positive")
+    ks: list[int] = []
+    for value in tuple(sensitivity_ks):
+        if isinstance(value, (bool, np.bool_)):
+            raise TypeError("boolean sensitivity K is forbidden")
+        if not isinstance(value, (int, np.integer)):
+            raise TypeError("sensitivity K must be an integer")
+        if int(value) <= 0:
+            raise ValueError("sensitivity K must be positive")
+        ks.append(int(value))
+    if len(set(ks)) != len(ks):
+        raise ValueError("duplicate sensitivity K")
+    return int(subset_k), tuple(sorted(ks))
+
+
 @dataclass(frozen=True)
 class ComparatorRunPlan:
-    """Selection budget and at most three predeclared random tapes."""
+    """Selection budget, sealed sensitivity budgets and predeclared random tapes."""
 
     subset_k: int
     random_tapes: tuple[RandomTape, ...] = ()
+    sensitivity_ks: tuple[int, ...] = ()
 
     def __post_init__(self) -> None:
-        if isinstance(self.subset_k, (bool, np.bool_)):
-            raise TypeError("boolean subset K is forbidden")
-        if not isinstance(self.subset_k, (int, np.integer)):
-            raise TypeError("subset K must be an integer")
-        if int(self.subset_k) <= 0:
-            raise ValueError("subset K must be positive")
+        primary, sensitivities = validate_sealed_ks(self.subset_k, self.sensitivity_ks)
+        object.__setattr__(self, "sensitivity_ks", sensitivities)
         tapes = tuple(self.random_tapes)
         if len(tapes) > 3:
             raise ValueError("a run plan permits at most three random tapes")
@@ -66,8 +99,14 @@ class ComparatorRunPlan:
         seeds = [int(tape.seed) for tape in tapes]
         if len(set(ids)) != len(ids) or len(set(seeds)) != len(seeds):
             raise ValueError("duplicate random tape id or seed")
-        object.__setattr__(self, "subset_k", int(self.subset_k))
+        object.__setattr__(self, "subset_k", primary)
         object.__setattr__(self, "random_tapes", tapes)
+
+    @property
+    def sealed_ks(self) -> tuple[int, ...]:
+        """Every budget a complete ranking may be truncated at, primary included."""
+
+        return tuple(sorted(set(self.sensitivity_ks) | {self.subset_k}))
 
 
 class FrozenDetails(Mapping[str, Any]):
@@ -124,15 +163,41 @@ class ComparatorResult:
     scores: tuple[tuple[str, float], ...]
     size_exempt: bool
     details: FrozenDetails
+    selected_by_k: tuple[tuple[int, tuple[str, ...]], ...] = ()
+    k_failures: tuple[tuple[int, str], ...] = ()
 
     def selected_for(self, subset_k: int) -> tuple[str, ...]:
-        """Return the sealed selection and reject post-hoc budget changes."""
+        """Return a selection made under a sealed K; reject any other budget."""
 
         if isinstance(subset_k, (bool, np.bool_)):
             raise TypeError("boolean subset K is forbidden")
-        if subset_k != self.sealed_subset_k:
-            raise ValueError("post-hoc truncation is forbidden")
-        return self.selected_groups
+        if subset_k == self.sealed_subset_k:
+            return self.selected_groups
+        for sealed_k, selection in self.selected_by_k:
+            if sealed_k == subset_k:
+                return selection
+        raise ValueError("post-hoc truncation is forbidden")
+
+
+def truncate_sealed(
+    ranking: tuple[str, ...], run_plan: ComparatorRunPlan, *, size_exempt: bool = False
+) -> tuple[tuple[tuple[int, tuple[str, ...]], ...], tuple[tuple[int, str], ...]]:
+    """Truncate one complete ranking at every sealed K, retaining per-K failures.
+
+    A budget larger than the ranking is a retained failure for that K alone; it
+    never erases the complete ranking or the other sealed budgets.
+    """
+
+    selections: list[tuple[int, tuple[str, ...]]] = []
+    failures: list[tuple[int, str]] = []
+    for sealed_k in run_plan.sealed_ks:
+        if size_exempt:
+            selections.append((sealed_k, tuple(ranking)))
+        elif sealed_k > len(ranking):
+            failures.append((sealed_k, "sealed K exceeds the number of semantic groups"))
+        else:
+            selections.append((sealed_k, tuple(ranking[:sealed_k])))
+    return tuple(selections), tuple(failures)
 
 
 def _canonical_digest(value: Any) -> str:
@@ -280,6 +345,99 @@ def _redundancy_components(
     )
 
 
+def _entropy_from_counts(counts: np.ndarray) -> float:
+    total = float(np.sum(counts))
+    if total <= 0.0:
+        return 0.0
+    probabilities = counts[counts > 0] / total
+    return float(-np.sum(probabilities * np.log(probabilities)))
+
+
+def _pair_terms(
+    code_i: np.ndarray, code_j: np.ndarray, code_y: np.ndarray, bins: int
+) -> tuple[float, float, float]:
+    """Return I(Xi,Xj;Y), I(Xi;Y|Xj) and I(Xi;Xj) from one 3-way count table."""
+
+    joint = np.bincount(
+        (code_i * bins + code_j) * bins + code_y, minlength=bins * bins * bins
+    ).reshape(bins, bins, bins).astype(np.float64)
+    h_ijy = _entropy_from_counts(joint)
+    h_ij = _entropy_from_counts(joint.sum(axis=2))
+    h_jy = _entropy_from_counts(joint.sum(axis=0))
+    h_y = _entropy_from_counts(joint.sum(axis=(0, 1)))
+    h_i = _entropy_from_counts(joint.sum(axis=(1, 2)))
+    h_j = _entropy_from_counts(joint.sum(axis=(0, 2)))
+    joint_mi = h_ij + h_y - h_ijy  # I(Xi,Xj;Y)
+    conditional_mi = h_ij + h_jy - h_j - h_ijy  # I(Xi;Y|Xj)
+    pair_mi = h_i + h_j - h_ij  # I(Xi;Xj)
+    return joint_mi, conditional_mi, pair_mi
+
+
+def _greedy_information_ranking(
+    method: ComparatorMethod,
+    codes: np.ndarray,
+    target_codes: np.ndarray,
+    groups: tuple[str, ...],
+    bins: int,
+) -> tuple[tuple[str, ...], dict[str, float]]:
+    """Greedy forward ordering of every group under JMI, CMIM or mRMR.
+
+    The greedy criterion is applied until every group is ordered, so the result
+    is one complete ranking whose top-K prefix is the method's K-set for any
+    sealed K.  Ties are broken by group id so replays are identical.
+    """
+
+    count = len(groups)
+    relevance = np.asarray(
+        [
+            _mutual_information(codes[:, index], target_codes)
+            for index in range(count)
+        ],
+        dtype=np.float64,
+    )
+    remaining = list(range(count))
+    order: list[int] = []
+    criterion: dict[str, float] = {}
+    if method is ComparatorMethod.JMI_K:
+        accumulator = np.zeros(count, dtype=np.float64)
+    elif method is ComparatorMethod.CMIM_K:
+        accumulator = np.full(count, np.inf, dtype=np.float64)
+    else:
+        accumulator = np.zeros(count, dtype=np.float64)
+
+    while remaining:
+        if not order:
+            scores = relevance[remaining]
+        elif method is ComparatorMethod.JMI_K:
+            scores = accumulator[remaining]
+        elif method is ComparatorMethod.CMIM_K:
+            scores = np.minimum(accumulator[remaining], relevance[remaining])
+        else:
+            scores = relevance[remaining] - accumulator[remaining] / float(len(order))
+        best = min(
+            range(len(remaining)),
+            key=lambda position: (-float(scores[position]), groups[remaining[position]]),
+        )
+        chosen = remaining.pop(best)
+        order.append(chosen)
+        criterion[groups[chosen]] = float(scores[best])
+        if not remaining:
+            break
+        chosen_codes = codes[:, chosen]
+        for index in remaining:
+            joint_mi, conditional_mi, pair_mi = _pair_terms(
+                codes[:, index], chosen_codes, target_codes, bins
+            )
+            if method is ComparatorMethod.JMI_K:
+                accumulator[index] += joint_mi
+            elif method is ComparatorMethod.CMIM_K:
+                accumulator[index] = min(accumulator[index], conditional_mi)
+            else:
+                accumulator[index] += pair_mi
+    ranking = tuple(groups[index] for index in order)
+    return ranking, criterion
+
+
 def run_comparator(
     method: ComparatorMethod | str,
     x: Any,
@@ -359,6 +517,35 @@ def run_comparator(
         size_exempt = False
         details.update(target_edges=target_edges, feature_edges=feature_edges)
         config.update(bin_count=8, edge_fit_partition="TRAIN", edge_rule="quantile")
+    elif selected_method.value in _GREEDY_MI_METHODS:
+        if inner_fold_gains is not None:
+            raise ValueError("inner-fold gains are only valid for REDUNDANCY_K")
+        bins = 8
+        target_edges = _quantile_edges(target)
+        target_bins = _digitize_eight(target, target_edges)
+        codes = np.empty(matrix.shape, dtype=np.int64)
+        feature_edges = {}
+        for index, group in enumerate(groups):
+            edges = _quantile_edges(matrix[:, index])
+            feature_edges[group] = edges
+            codes[:, index] = _digitize_eight(matrix[:, index], edges)
+        ranking, scores = _greedy_information_ranking(
+            selected_method, codes, target_bins, groups, bins
+        )
+        selected = ranking[: run_plan.subset_k]
+        size_exempt = False
+        details.update(target_edges=target_edges, feature_edges=feature_edges)
+        config.update(
+            bin_count=bins,
+            edge_fit_partition="TRAIN",
+            edge_rule="quantile",
+            criterion={
+                "JMI_K": "sum_j I(Xi,Xj;Y)",
+                "CMIM_K": "min(I(Xi;Y), min_j I(Xi;Y|Xj))",
+                "MRMR_K": "I(Xi;Y) - mean_j I(Xi;Xj)",
+            }[selected_method.value],
+            greedy_scope="complete_ordering",
+        )
     elif selected_method is ComparatorMethod.REDUNDANCY_K:
         if inner_fold_gains is None:
             raise ValueError("REDUNDANCY_K requires supplied inner-fold gains")
@@ -419,6 +606,10 @@ def run_comparator(
         config.update(random_tape_id=tape.tape_id, random_seed=int(tape.seed))
 
     ordered_scores = tuple((group, float(scores[group])) for group in ranking)
+    config["sealed_ks"] = run_plan.sealed_ks
+    selected_by_k, k_failures = truncate_sealed(
+        tuple(ranking), run_plan, size_exempt=size_exempt
+    )
     return ComparatorResult(
         method=selected_method,
         row_digest=row_digest,
@@ -430,6 +621,8 @@ def run_comparator(
         scores=ordered_scores,
         size_exempt=size_exempt,
         details=FrozenDetails(details),
+        selected_by_k=selected_by_k,
+        k_failures=k_failures,
     )
 
 
@@ -440,4 +633,6 @@ __all__ = [
     "RandomTape",
     "compute_row_digest",
     "run_comparator",
+    "truncate_sealed",
+    "validate_sealed_ks",
 ]

@@ -259,3 +259,68 @@ def test_group_and_method_config_digests_change_with_identity() -> None:
     assert spearman.method_config_digest != mi.method_config_digest
     assert spearman.group_digest != reordered.group_digest
 
+
+
+def _signal_sample(rows: int = 300, seed: int = 3) -> tuple[np.ndarray, np.ndarray, tuple[str, ...]]:
+    rng = np.random.default_rng(seed)
+    x = rng.normal(size=(rows, 5))
+    x[:, 1] = x[:, 0] + 0.05 * rng.normal(size=rows)
+    y = 2.0 * x[:, 0] + 1.5 * x[:, 3] + 0.2 * rng.normal(size=rows)
+    return x, y, ("sig", "sig_dup", "noise_a", "sig_b", "noise_b")
+
+
+@pytest.mark.parametrize("method", [ComparatorMethod.JMI_K, ComparatorMethod.CMIM_K, ComparatorMethod.MRMR_K])
+def test_greedy_information_methods_return_complete_sealed_rankings(method) -> None:
+    x, y, groups = _signal_sample()
+    plan = ComparatorRunPlan(subset_k=2, sensitivity_ks=(1, 2, 3))
+    digest = compute_row_digest(x, y)
+    first = run_comparator(method, x, y, groups, plan, expected_row_digest=digest)
+    second = run_comparator(method, x.copy(), y.copy(), groups, plan, expected_row_digest=digest)
+
+    assert first == second
+    assert len(first.full_ranking) == len(groups) and set(first.full_ranking) == set(groups)
+    assert first.full_ranking[0] in ("sig", "sig_dup")
+    assert dict(first.selected_by_k)[3] == first.full_ranking[:3]
+    assert first.selected_for(1) == first.full_ranking[:1]
+    with pytest.raises(ValueError, match="post-hoc"):
+        first.selected_for(4)
+    assert first.k_failures == ()
+
+
+def test_redundancy_aware_methods_do_not_pick_the_duplicate_second() -> None:
+    x, y, groups = _signal_sample()
+    plan = ComparatorRunPlan(subset_k=2)
+    digest = compute_row_digest(x, y)
+    for method in (ComparatorMethod.CMIM_K, ComparatorMethod.MRMR_K):
+        result = run_comparator(method, x, y, groups, plan, expected_row_digest=digest)
+        assert "sig_b" in result.selected_groups, method
+
+
+def test_sensitivity_k_larger_than_groups_is_retained_as_failure_not_crash() -> None:
+    x, y, groups = _signal_sample()
+    plan = ComparatorRunPlan(subset_k=2, sensitivity_ks=(8,))
+    result = run_comparator(
+        ComparatorMethod.SPEARMAN_K, x, y, groups, plan, expected_row_digest=compute_row_digest(x, y)
+    )
+    assert len(result.full_ranking) == len(groups)
+    assert result.k_failures == ((8, "sealed K exceeds the number of semantic groups"),)
+    assert dict(result.selected_by_k)[2] == result.selected_groups
+
+
+def test_random_k_seed_zero_is_reproducible_and_seed_specific() -> None:
+    x, y, groups = _signal_sample()
+    plan = ComparatorRunPlan(subset_k=2, random_tapes=(RandomTape("seed0", 0), RandomTape("seed1", 1)))
+    digest = compute_row_digest(x, y)
+    a = run_comparator(ComparatorMethod.RANDOM_K, x, y, groups, plan, expected_row_digest=digest, random_tape_id="seed0")
+    b = run_comparator(ComparatorMethod.RANDOM_K, x.copy(), y.copy(), groups, plan, expected_row_digest=digest, random_tape_id="seed0")
+    c = run_comparator(ComparatorMethod.RANDOM_K, x, y, groups, plan, expected_row_digest=digest, random_tape_id="seed1")
+    assert a == b
+    assert a.full_ranking != c.full_ranking
+    assert a.full_ranking == tuple(groups[int(i)] for i in np.random.default_rng(0).permutation(len(groups)))
+
+
+def test_sealed_ks_reject_booleans_and_duplicates() -> None:
+    with pytest.raises(TypeError):
+        ComparatorRunPlan(subset_k=2, sensitivity_ks=(True,))
+    with pytest.raises(ValueError):
+        ComparatorRunPlan(subset_k=2, sensitivity_ks=(3, 3))

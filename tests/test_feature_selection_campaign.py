@@ -34,10 +34,31 @@ def folds() -> tuple[ChronologicalInnerFold, ...]:
     )
 
 
+EXPECTED_METHODS = (
+    "ALL_ADMISSIBLE",
+    "SPEARMAN_K",
+    "MI8_K",
+    "JMI_K",
+    "CMIM_K",
+    "MRMR_K",
+    "REDUNDANCY_K",
+    "RANDOM_K:random-17",
+    "RANDOM_K:random-29",
+    "ELASTIC_NET_K",
+    "GROUP_ELASTIC_NET_K",
+    "EXTRATREES_TBP_K",
+    "SEQ_MARGINAL_K",
+    "GROUP_GATE_K",
+    "CHRONOEPILOGI_K",
+)
+
+
 def plan(
     groups: tuple[str, ...],
     *,
     redundancy_gains: tuple[tuple[str, float], ...] | None = None,
+    sensitivity_ks: tuple[int, ...] = (1, 3),
+    enabled_methods: tuple[str, ...] | None = None,
 ) -> FeatureSelectionCampaignPlan:
     return FeatureSelectionCampaignPlan(
         subset_k=2,
@@ -51,6 +72,13 @@ def plan(
             (group, "NOT_IDENTIFIED" if index % 2 else "IDENTIFIED")
             for index, group in enumerate(groups)
         ),
+        sensitivity_ks=sensitivity_ks,
+        seed=0,
+        group_membership=tuple((group, "c_sig" if group.startswith("signal") else group) for group in groups),
+        extratrees={"n_estimators": 10, "block_length": 12},
+        group_gate_null_shifts=(20, 30),
+        chronoepilogi={"implementation": "adapter"},
+        enabled_methods=enabled_methods,
     )
 
 
@@ -78,16 +106,11 @@ def test_campaign_is_complete_authenticated_and_retains_full_rankings() -> None:
     assert result.sealed_subset_k == 2
     assert result.causal_not_identified_policy == "NEUTRAL_NOT_A_REJECTION"
     assert result.eligible_groups == groups
-    assert tuple(outcome.outcome_id for outcome in result.outcomes) == (
-        "ALL_ADMISSIBLE",
-        "SPEARMAN_K",
-        "MI8_K",
-        "REDUNDANCY_K",
-        "RANDOM_K:random-17",
-        "RANDOM_K:random-29",
-        "ELASTIC_NET_K",
-    )
-    assert all(outcome.disposition is CampaignDisposition.COMPLETE for outcome in result.outcomes)
+    assert tuple(outcome.outcome_id for outcome in result.outcomes) == EXPECTED_METHODS
+    assert result.sealed_ks == (1, 2, 3)
+    assert result.seed == 0
+    failures = [(o.outcome_id, o.failure_message) for o in result.outcomes if o.disposition is not CampaignDisposition.COMPLETE]
+    assert failures == []
     for outcome in result.outcomes:
         assert outcome.failure_type is None
         assert outcome.failure_message is None
@@ -138,12 +161,73 @@ def test_one_method_failure_is_retained_without_erasing_other_methods() -> None:
     assert failed.result is None
     assert failed.failure_type == "ValueError"
     assert "every semantic group" in failed.failure_message
-    assert len(result.outcomes) == 7
+    assert len(result.outcomes) == len(EXPECTED_METHODS)
     assert all(
         outcome.disposition is CampaignDisposition.COMPLETE
         for outcome in result.outcomes
         if outcome.outcome_id != "REDUNDANCY_K"
     )
+
+
+def test_every_method_carries_a_selection_at_every_sealed_k() -> None:
+    x, y, groups = sample()
+    result = run(x, y, groups)
+    for outcome in result.outcomes:
+        selector = outcome.result
+        assert selector is not None, outcome.outcome_id
+        for sealed_k in result.sealed_ks:
+            selection = selector.selected_for(sealed_k)
+            if outcome.outcome_id == "ALL_ADMISSIBLE":
+                assert set(selection) == set(groups)
+            else:
+                assert selection == selector.full_ranking[:sealed_k], outcome.outcome_id
+        with pytest.raises(ValueError):
+            selector.selected_for(4)
+
+
+def test_sensitivity_k_beyond_groups_is_retained_per_k_without_losing_the_ranking() -> None:
+    x, y, groups = sample()
+    wide = plan(groups, sensitivity_ks=(1, 9))
+    result = run(x, y, groups, wide)
+    for outcome in result.outcomes:
+        assert outcome.disposition is CampaignDisposition.COMPLETE, (outcome.outcome_id, outcome.failure_message)
+        selector = outcome.result
+        assert len(selector.full_ranking) == len(groups)
+        if outcome.outcome_id != "ALL_ADMISSIBLE":
+            assert dict(selector.k_failures)[9].startswith("sealed K exceeds")
+            assert selector.selected_for(1) == selector.full_ranking[:1]
+
+
+def test_enabled_methods_chunk_shares_the_plan_identity_and_reports_progress() -> None:
+    x, y, groups = sample()
+    full = plan(groups)
+    chunk = plan(groups, enabled_methods=("SPEARMAN_K", "SEQ_MARGINAL_K"))
+    assert compute_campaign_plan_digest(full, folds()) == compute_campaign_plan_digest(chunk, folds())
+    seen: list[str] = []
+    result = run_feature_selection_campaign(
+        x, y, groups, folds(), chunk,
+        expected_row_digest=compute_campaign_row_digest(x, y),
+        expected_group_digest=compute_campaign_group_digest(groups),
+        expected_plan_digest=compute_campaign_plan_digest(chunk, folds()),
+        on_outcome=lambda outcome: seen.append(outcome.outcome_id),
+    )
+    assert seen == ["SPEARMAN_K", "SEQ_MARGINAL_K"]
+    assert tuple(o.outcome_id for o in result.outcomes) == ("SPEARMAN_K", "SEQ_MARGINAL_K")
+    assert all(o.wall_seconds >= 0.0 for o in result.outcomes)
+    with pytest.raises(ValueError, match="unknown campaign methods"):
+        plan(groups, enabled_methods=("NOT_A_METHOD",))
+
+
+def test_group_methods_fail_in_isolation_without_membership() -> None:
+    x, y, groups = sample()
+    base = plan(groups)
+    no_groups = replace(base, group_membership=())
+    result = run(x, y, groups, no_groups)
+    for method in ("GROUP_ELASTIC_NET_K", "GROUP_GATE_K"):
+        outcome = result.outcome(method)
+        assert outcome.disposition is CampaignDisposition.FAILED
+        assert "group membership" in outcome.failure_message
+    assert result.outcome("SPEARMAN_K").disposition is CampaignDisposition.COMPLETE
 
 
 def test_not_identified_is_neutral_and_never_removes_a_group() -> None:
