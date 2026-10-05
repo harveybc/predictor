@@ -2823,7 +2823,8 @@
       "families_present": [
         "identity",
         "random",
-        "masked_temporal_ae"
+        "masked_temporal_ae",
+        "past_to_current_siamese"
       ],
       "flags": [],
       "terminals": {
@@ -2833,9 +2834,9 @@
           "state": "COMPLETED"
         },
         "alt_p2c": {
-          "reason": "NOT_LANDED",
-          "receipt_sha256": "",
-          "state": "PENDING"
+          "reason": "",
+          "receipt_sha256": "92639b6e46c127bf15184f16fea1f513ce9c3a0e51e40cc5d71d9b9ba63d9ed0",
+          "state": "COMPLETED"
         },
         "baseline": {
           "reason": "NOT_LANDED",
@@ -3976,64 +3977,3109 @@
   },
   "candidates_decided": 35,
   "coverage_fraction": 0.2555,
-  "cycle_started_at": "2026-10-05T04:27:22Z",
+  "cycle_started_at": "2026-10-05T04:29:27Z",
   "decisions": {
     "NO_TRAINED_ADVANTAGE": 30,
     "PENDING": 102,
     "RAW": 5
   },
   "eta": {
-    "full_coverage_eta_median_utc": "2026-10-05T22:52:20Z",
-    "full_coverage_eta_p90_utc": "2026-10-06T04:03:55Z",
-    "note": "ETA excludes work the alternatives GPU may steal from the baseline_002 queue after the successor queue; a stolen cell shortens, never lengthens, these dates.",
-    "queues": {
-      "alternative": {
-        "completed": 268,
-        "eta_median_utc": "2026-10-05T04:46:52Z",
-        "eta_p90_utc": "2026-10-05T04:52:22Z",
-        "failed": 0,
-        "median_seconds": 194.977228,
-        "p90_seconds": 250.115809,
-        "remaining": 6,
-        "sample_size": 268,
-        "status_updated_from": "alternative_5090_STATUS.json",
-        "total": 274,
-        "workers": 1
+    "fs_gpu_eta": {
+      "cells": {
+        "alternatives_5090": [
+          {
+            "cell_id": "batch_001::px.close_loc::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T08:28:18Z",
+            "results_sha256": "4db00f8b2e75355f42d0433a3d2cf57c794c3c23185c4ed350a9c83f496ed512",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 156.66771329699986
+          },
+          {
+            "cell_id": "batch_001::px.close_loc::past_to_current_siamese",
+            "finished_at_utc": "2026-10-03T17:35:16Z",
+            "results_sha256": "ca3780140cd57de040d7b88b8a5ce5607879e3afddfd29ca46ff65f6da38e5a2",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 139.72633569200116
+          },
+          {
+            "cell_id": "batch_001::px.ewma_vol_24::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T08:47:27Z",
+            "results_sha256": "809ddc89691429a1acb3704c674fbfc3375bca52db1209e52a7537bbdd9690e6",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 284.71005899900047
+          },
+          {
+            "cell_id": "batch_001::px.ewma_vol_24::past_to_current_siamese",
+            "finished_at_utc": "2026-10-03T17:51:42Z",
+            "results_sha256": "b6272afb41704b157519211cf04ef6701e5303c7b58d7cac1e8da1c704a42805",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 181.45524807399488
+          },
+          {
+            "cell_id": "batch_001::px.log_close::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T09:06:34Z",
+            "results_sha256": "08b45b723a31ac2cbd2a78b77400944231ec45f242c0f45f56feacade8595c03",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 222.154343866001
+          },
+          {
+            "cell_id": "batch_001::px.log_close::past_to_current_siamese",
+            "finished_at_utc": "2026-10-03T18:09:20Z",
+            "results_sha256": "60f1079ba12e8785f7be558a1cb151ba97aaecfc35df0366786f7efdbb06defb",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 193.67331625200313
+          },
+          {
+            "cell_id": "batch_001::px.log_co::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T09:23:50Z",
+            "results_sha256": "2ab21c560376c48cdb973333c79bd1b9a653231a7fa93751ba4c98fd79861ab2",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 143.0576642010019
+          },
+          {
+            "cell_id": "batch_001::px.log_co::past_to_current_siamese",
+            "finished_at_utc": "2026-10-03T18:25:35Z",
+            "results_sha256": "969188bb88e3dc8bc952963454566af530eb5790b2a6220b0950a4e3dea9e4ff",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 140.83257377800328
+          },
+          {
+            "cell_id": "batch_001::px.log_hl::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T09:40:13Z",
+            "results_sha256": "24530286d63abb10ecb42a3269f7c3c57ca0a40a6d0abf67cb863d507bf459f5",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 177.39337379000062
+          },
+          {
+            "cell_id": "batch_001::px.log_hl::past_to_current_siamese",
+            "finished_at_utc": "2026-10-03T18:41:22Z",
+            "results_sha256": "0f5fe7caef4b148b3f99653a729fde82141d01306951b4a5656218c913a4c01e",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 172.75937463900482
+          },
+          {
+            "cell_id": "batch_001::px.logret_120h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T09:59:26Z",
+            "results_sha256": "8ea70afa42f0b1077a48993f147ec61661041553f47454a7e690267c36b50d0b",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 260.0670890340007
+          },
+          {
+            "cell_id": "batch_001::px.logret_120h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-03T19:01:57Z",
+            "results_sha256": "c8c4e5d57e9c3b38b681cb17a08d476a16dde319c6fede441809c551f17e8cb7",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 221.25691356899915
+          },
+          {
+            "cell_id": "batch_001::px.logret_12h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T10:16:59Z",
+            "results_sha256": "87995a4e4ecfd938978b62d9d5e3a702c87db84c9ab403e0418b48a9aecfa332",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 307.6867147310004
+          },
+          {
+            "cell_id": "batch_001::px.logret_12h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-03T19:19:17Z",
+            "results_sha256": "e5152fe0253e079b5f6d76779e76872c4aa66acff714244c0a1359e22e8cb93a",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 186.28250075699907
+          },
+          {
+            "cell_id": "batch_001::px.logret_168h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T10:33:23Z",
+            "results_sha256": "7d2fe7e7b15e923e535ee36260d52d8d1f02500bac201c95f618b9815e3fe016",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 278.87383654099904
+          },
+          {
+            "cell_id": "batch_001::px.logret_168h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-03T19:34:11Z",
+            "results_sha256": "80db3694f9285848633ff192cc6e44056eb64be7f8fbf2eed4dcc2a7787382f0",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 208.96815217599942
+          },
+          {
+            "cell_id": "batch_001::px.logret_1h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T10:48:11Z",
+            "results_sha256": "a7f1586ffab186456abeb5f76757e9185957874cdd3149277da1680855ce4c9b",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 142.78230944200186
+          },
+          {
+            "cell_id": "batch_001::px.logret_1h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-03T19:47:56Z",
+            "results_sha256": "65b6671f9dd113b0aac8ebce9eaf38c77b8d2eae28205ed4e664320a0bd590c6",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 140.7850925849998
+          },
+          {
+            "cell_id": "batch_001::px.logret_24h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T11:03:24Z",
+            "results_sha256": "d818f89062e6225f45f2b94a2c775f9551070c1a3cb4d8eb4a031bc833bebec0",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 287.82999745599955
+          },
+          {
+            "cell_id": "batch_001::px.logret_24h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-03T20:02:01Z",
+            "results_sha256": "7fdd6ef1ae9c718a9f364ca953506c386149ce676e77e3631963387ad1d677de",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 190.10807934900367
+          },
+          {
+            "cell_id": "batch_001::px.logret_2h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T11:17:51Z",
+            "results_sha256": "af50568547ac957cbfc6455acba29003570e70d09fce96b141efc203501c48e5",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 152.7520755680016
+          },
+          {
+            "cell_id": "batch_001::px.logret_2h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-03T20:11:55Z",
+            "results_sha256": "930f92555557f7ce9442974c53bdb39d1be0af7ec4184b5e64ac7f43578590dc",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 169.47071708200383
+          },
+          {
+            "cell_id": "batch_001::px.logret_48h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T11:33:39Z",
+            "results_sha256": "82bfe2957a113e54eeadd9dd45e258bb8ba6f5425307e18fa82146c0cc681de8",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 293.0032204499985
+          },
+          {
+            "cell_id": "batch_001::px.logret_48h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-03T20:25:26Z",
+            "results_sha256": "ca974282ea85b09fdedcce3ee03233ce7835ec0c2361901fbcaa18470e463d70",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 217.14849847000005
+          },
+          {
+            "cell_id": "batch_001::px.logret_4h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T11:48:06Z",
+            "results_sha256": "9c08bdfe533b0d874ed7afa2bb81b829965d89aa41b49619dc08280dc62fa5c1",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 183.2139068280012
+          },
+          {
+            "cell_id": "batch_001::px.logret_4h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-03T22:40:54Z",
+            "results_sha256": "3b3af784ae28e7304ca2b9a867927c2d446114da8bb3b8a68efd2b1c9b6bde65",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 174.9915518350026
+          },
+          {
+            "cell_id": "batch_001::px.logret_6h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T12:06:51Z",
+            "results_sha256": "f9f8570509bf737b86fd083fcd013a3b2d3efeed6c492e7e624498e6aeefe9e3",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 260.2183744089998
+          },
+          {
+            "cell_id": "batch_001::px.logret_6h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T18:10:16Z",
+            "results_sha256": "f3d2afd48ef9dbce3ce3ad40c07724cc4d92415610d24de1c8daceada39637fc",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 172.31659484098782
+          },
+          {
+            "cell_id": "batch_001::px.rv5::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T12:22:18Z",
+            "results_sha256": "1a4efc03ddf9e9b0da35caeb69ea7cca11668bece60d397bb27a6247a290779f",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 181.9245785839994
+          },
+          {
+            "cell_id": "batch_001::px.rv5::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T01:25:15Z",
+            "results_sha256": "4f8f200c0e213b6b6e13962f6218a68196aba1da8c7831baf632a82b41615e77",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 158.36894080700586
+          },
+          {
+            "cell_id": "batch_001::px.zclose_168::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T12:38:07Z",
+            "results_sha256": "81340d8ecf7f247bbce5fede758bf1d2f2ca0926cc0a3cde10a5124680553cf3",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 254.88369243200214
+          },
+          {
+            "cell_id": "batch_001::px.zclose_168::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T01:30:23Z",
+            "results_sha256": "05b2a06ce344852f785eaac0b387e872411749216e6bc1f929d485d816d49c15",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 214.4233774600143
+          },
+          {
+            "cell_id": "batch_001::px.zclose_24::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T12:54:15Z",
+            "results_sha256": "41f7b74b67e83e4cdc034a56629e3be55f6261250553462dff959c5581a3ad1f",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 203.45976376799808
+          },
+          {
+            "cell_id": "batch_001::px.zclose_24::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T01:33:31Z",
+            "results_sha256": "bbabbf9548fa72e88aa2015315e2c780e5a7594ddb86b28a042c63307352490e",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 159.34837419399992
+          },
+          {
+            "cell_id": "batch_001::ta.adx_14::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T13:13:51Z",
+            "results_sha256": "f5ad0dbef6572f77ab52bd46d98ada6c258379d0dcf88fb66a6df339e1467f49",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 400.6161049589937
+          },
+          {
+            "cell_id": "batch_001::ta.adx_14::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T01:37:46Z",
+            "results_sha256": "5bbf7406cb8554c612db2b32b29fda4e0f0d7f7f70a65489def475764e67d334",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 242.27825647999998
+          },
+          {
+            "cell_id": "batch_001::ta.atr_14_n::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T13:31:14Z",
+            "results_sha256": "52dd954188a54e1ded6362b66842aa8f4e7302084c0be394eecca75ea1d53e7a",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 258.19307275800384
+          },
+          {
+            "cell_id": "batch_001::ta.atr_14_n::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T01:41:04Z",
+            "results_sha256": "6b3bb135ed0c589176d614a4ca4d55fc5cdf36aa0fc476e1df16a316a66a669e",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 174.70483994499955
+          },
+          {
+            "cell_id": "batch_001::ta.bb_pctb_20::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T13:48:39Z",
+            "results_sha256": "18049d2603d362ed7d0ed05d0d2c872434a02363ccd12f86d244c0b2776b9963",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 209.4634309979956
+          },
+          {
+            "cell_id": "batch_001::ta.bb_pctb_20::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T01:44:11Z",
+            "results_sha256": "9e5c1997ae036f508dd619d521b155b0936ab1c057bc182d6dd94223f5d626cc",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 160.70028300200647
+          },
+          {
+            "cell_id": "batch_001::ta.bb_width_20::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T14:07:50Z",
+            "results_sha256": "b44971729a10b9168de55293de80c5843a1aed35099838edb88d0a821a790337",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 316.2517152750006
+          },
+          {
+            "cell_id": "batch_001::ta.bb_width_20::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T01:47:57Z",
+            "results_sha256": "88913fd39aba9a3e1aa8c42f77797a57323e56c07b9e926cf6c140c7dbc25448",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 194.10871027100075
+          },
+          {
+            "cell_id": "batch_001::ta.cci_20::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T14:24:43Z",
+            "results_sha256": "35109f51fbf65b36d5941bff1b5c6e971712c3089dce6960812d761b9283cb23",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 208.05418450199795
+          },
+          {
+            "cell_id": "batch_001::ta.cci_20::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T01:51:16Z",
+            "results_sha256": "6c0a0953c04f3862b2b9f55707d78caf509d46ba71d035f0dfc6b2741c8d6cba",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 178.54072357200494
+          },
+          {
+            "cell_id": "batch_001::ta.dmn_14::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T14:40:31Z",
+            "results_sha256": "0191ee9be7ca1dfa3c4f5c973fc01af4005d8916a225bed1fa7be69f5ac76d12",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 232.6951857439999
+          },
+          {
+            "cell_id": "batch_001::ta.dmn_14::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T01:55:23Z",
+            "results_sha256": "eefa1a0616c463544a242e8070f694ed1ee7cf7d827a6f80eea1e2cf1d857d07",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 209.74103921199276
+          },
+          {
+            "cell_id": "batch_001::ta.dmp_14::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T14:55:06Z",
+            "results_sha256": "384ac205227145bde0d4e214390639e945207307cb8ef00b0abaf39fffb27492",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 220.6599994700009
+          },
+          {
+            "cell_id": "batch_001::ta.dmp_14::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T01:59:07Z",
+            "results_sha256": "3f0080f6f186e9d19b2d35ca3935b2d062942025df9d025f6798aa1e45351d5c",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 185.90666161599802
+          },
+          {
+            "cell_id": "batch_001::ta.ema20_dev::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T15:11:14Z",
+            "results_sha256": "29469561dd0ab5f53522d8def1f2a2a85e17c29268a3c088a8339d03774e4b8e",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 232.92307748700114
+          },
+          {
+            "cell_id": "batch_001::ta.ema20_dev::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T02:02:39Z",
+            "results_sha256": "aee0a5b249a103daaba31d6e50963b8e8cf3e0e961945a3f4e610c8632552b6a",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 179.97644500000752
+          },
+          {
+            "cell_id": "batch_001::ta.macd_hist_n::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T15:27:47Z",
+            "results_sha256": "5f616cc19abe18d03b5cf7b5039ca9229ffc5b0c7f1e6cc191a3ca599ae02aa4",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 307.16778992699983
+          },
+          {
+            "cell_id": "batch_001::ta.macd_hist_n::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T02:06:31Z",
+            "results_sha256": "c03fb2c5c3b2f59624bee3a2652f1dfead7bd969dbeec1394de580930852b82d",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 188.66308353499335
+          },
+          {
+            "cell_id": "batch_001::ta.macd_n::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T15:44:21Z",
+            "results_sha256": "b72d414ed12a9d7d595b1640560ca6f7057d7405f11b87d1a3b695adc15a535a",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 410.51875059300073
+          },
+          {
+            "cell_id": "batch_001::ta.macd_n::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T02:10:15Z",
+            "results_sha256": "c00e793b5e850bd2683cd655926647a6be42c821c6003c015556c5abb22fa67a",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 195.5816672279907
+          },
+          {
+            "cell_id": "batch_001::ta.mom_10_n::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T16:02:28Z",
+            "results_sha256": "b7d94189173ba6e24e6eacd85e5454967b3d0b12c8ad5265fbe6746532abf0c2",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 292.45544111300114
+          },
+          {
+            "cell_id": "batch_001::ta.mom_10_n::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T02:13:38Z",
+            "results_sha256": "bdcc27de480d7df35dd2f88cec482c0613c82ecdcca0c99d7c6d9daf666e684f",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 170.2352560559957
+          },
+          {
+            "cell_id": "batch_001::ta.roc_10::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T16:18:51Z",
+            "results_sha256": "b7eecf429f2a1f189ac714305f7295f9fd633eb9b672524a43c8c0612cf696bb",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 279.9028505020033
+          },
+          {
+            "cell_id": "batch_001::ta.roc_10::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T02:16:51Z",
+            "results_sha256": "8286dcaf1dbdfef2a9e6bad34d569e609cd2a4d911971b70ff14190fdcd13e8d",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 173.70214586799557
+          },
+          {
+            "cell_id": "batch_001::ta.rsi_14::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T16:33:59Z",
+            "results_sha256": "8054cf47ef5074f4528fb5a89323c6f6d54fa2492848e770cb1d0e09ac3efece",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 222.89357306799502
+          },
+          {
+            "cell_id": "batch_001::ta.rsi_14::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T02:19:59Z",
+            "results_sha256": "a04847d4c5a742a88ba9db0f677ca2d81347c80b280fd348e5b7ad551d6fb27f",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 172.57551315599994
+          },
+          {
+            "cell_id": "batch_001::ta.stoch_d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T16:49:22Z",
+            "results_sha256": "688691a5e82c23b64ddf8bba6f1a724a41a5148b3574491fd5f1ee628547692c",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 367.8443265160022
+          },
+          {
+            "cell_id": "batch_001::ta.stoch_d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T02:24:02Z",
+            "results_sha256": "768296e4719080d0d1282986ab1cd0fb4b1e2cae33b6b9995b1bb9fe2475b804",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 224.86063427598856
+          },
+          {
+            "cell_id": "batch_001::ta.stoch_k::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T17:06:02Z",
+            "results_sha256": "01cb57b174c2f74a57b2690f1e6c30dbaa5d02bc0c1d1ed432486b81f005c832",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 264.534546132003
+          },
+          {
+            "cell_id": "batch_001::ta.stoch_k::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T02:27:36Z",
+            "results_sha256": "412044a0629b4915d9122cb478b258c2c458fb8aecb57d32a64f0bdcd3b17b91",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 190.717806568995
+          },
+          {
+            "cell_id": "batch_001::ta.willr_14::masked_temporal_ae",
+            "finished_at_utc": "2026-10-03T17:20:31Z",
+            "results_sha256": "a83b5f787b5e17498788b318f95d8fa95fba245736043815e18bb55a0b498c28",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 214.31267744999786
+          },
+          {
+            "cell_id": "batch_001::ta.willr_14::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T02:30:44Z",
+            "results_sha256": "4d4a840a428d92151bf1afc7935dcba15c9601d684fc913bbbad23deffef759e",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 163.204287681001
+          },
+          {
+            "cell_id": "batch_003::rg.atr_pct::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T02:38:16Z",
+            "results_sha256": "f0953fc19422b7f9ec54e1b41dd4167f09173b95ec42112c82f6bccb3d5b8434",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 255.8863257030025
+          },
+          {
+            "cell_id": "batch_003::rg.atr_pct::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T03:52:34Z",
+            "results_sha256": "ea228ba25310357eb371e4a9155700b59e0536ce6c54e7fde0d272eb66a2d93e",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 198.84872509799607
+          },
+          {
+            "cell_id": "batch_003::rg.atr_ratio::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T02:43:40Z",
+            "results_sha256": "a28cb81415e1edb88639cc60a47895ac17aa6e778ae81476e2cbc46a967adb74",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 291.446983818998
+          },
+          {
+            "cell_id": "batch_003::rg.atr_ratio::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T03:56:24Z",
+            "results_sha256": "405e574c3503b00eb3b365d2a8664eb4e890dca6f5300daaab6cdb45d410f2ca",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 201.10440785899118
+          },
+          {
+            "cell_id": "batch_003::rg.bb_width_pct::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T02:47:47Z",
+            "results_sha256": "b748621d746f8937a5e0c7472833823adf66d366ff4e52050b58e90ecf1c9f5d",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 222.47386736801127
+          },
+          {
+            "cell_id": "batch_003::rg.bb_width_pct::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T04:00:09Z",
+            "results_sha256": "6f0836db81314c6a1cacfedb60171e5f379d431221dc667e6c06661ed18ad023",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 200.4884598339995
+          },
+          {
+            "cell_id": "batch_003::rg.di_spread::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T02:51:45Z",
+            "results_sha256": "89bd4b1fa6f89f40af3f2c915a7f012261c756692530d94c5ca18e015094a0db",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 200.05103950900957
+          },
+          {
+            "cell_id": "batch_003::rg.di_spread::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T04:03:41Z",
+            "results_sha256": "d2d7346ff6bdd13f7effb45df8879902feed19b884b0f2950744c7990fb4af78",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 187.44722335100232
+          },
+          {
+            "cell_id": "batch_003::rg.ema_alignment::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T02:56:41Z",
+            "results_sha256": "35698dfe269e8c4ba61f543b42b0e5831d763ac4679fc8cf4b13997e6f0b34fc",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 269.4584183499974
+          },
+          {
+            "cell_id": "batch_003::rg.ema_alignment::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T04:08:18Z",
+            "results_sha256": "49fab1ac34590b1fc2b69a9897314f06fc3ee3d148c1d3eaa7638cb919ad52e4",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 208.4670302500017
+          },
+          {
+            "cell_id": "batch_003::rg.macd_hist::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T03:01:44Z",
+            "results_sha256": "93febb90fea4ecb64e2e99c36a596c225f1a6ecbf7d89f5ce6c3260746ea692c",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 266.69892279600026
+          },
+          {
+            "cell_id": "batch_003::rg.macd_hist::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T04:12:30Z",
+            "results_sha256": "3725cef33b4fe549f77435231ab651c2745fdf6ef287f8e4389aa1d9182aa5b6",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 202.52756990899798
+          },
+          {
+            "cell_id": "batch_003::rg.price_vs_ema50::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T03:05:19Z",
+            "results_sha256": "693a80b829aded86c40f52455d9e28e27a84e2f8a93c6a7894bd1ce8df8fd113",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 187.3614162879967
+          },
+          {
+            "cell_id": "batch_003::rg.price_vs_ema50::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T04:16:34Z",
+            "results_sha256": "6ed17b99e621eca0bd2335051ebfb3dcd320b7095b3d298b50de87ffd68f1c69",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 209.38210157200228
+          },
+          {
+            "cell_id": "batch_003::rg.roc_12::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T03:10:15Z",
+            "results_sha256": "b8235c6aece2ad80e9400f04141ddaa9bd4eb4c46250298906f5547fd64b010c",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 245.5878661099996
+          },
+          {
+            "cell_id": "batch_003::rg.roc_12::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T04:19:43Z",
+            "results_sha256": "8d295e7d30a2429532857f8396f3ff218e5bb27c6627512c7a9fa29ba16e04a0",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 161.18399119099195
+          },
+          {
+            "cell_id": "batch_003::tv.hilbert_amp::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T03:14:21Z",
+            "results_sha256": "0e73a32dfead1b1db0acc0b50963f2d843c9e53d4c7294c196fd30f696c67ae7",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 206.8177230979927
+          },
+          {
+            "cell_id": "batch_003::tv.hilbert_amp::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T04:23:32Z",
+            "results_sha256": "2cb5445214590c7aa68bb654c1f44828d2e8371c6bf68db6dd2bcc2259309eab",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 191.80582238000352
+          },
+          {
+            "cell_id": "batch_003::tv.kalman_dev::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T03:17:16Z",
+            "results_sha256": "c541415983c28f6166488160229f5eae82910970e7b25be62a58eb431a56a993",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 128.01749403700524
+          },
+          {
+            "cell_id": "batch_003::tv.kalman_dev::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T04:26:35Z",
+            "results_sha256": "3746ee3effd0ff7c5b9737b5a7da77b0ada34843cd97a36a3fbb14a4f4436cf1",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 143.07197235600324
+          },
+          {
+            "cell_id": "batch_003::tv.stl_dev::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T03:20:50Z",
+            "results_sha256": "84399ec705951e485af3d6db0e0b945859b09cfe129208dedae4136dab68d27e",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 179.00987789600913
+          },
+          {
+            "cell_id": "batch_003::tv.stl_dev::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T04:29:44Z",
+            "results_sha256": "8c182faa5a4c862f49b691545739773a48b37a2b7e21d398c62f1aa6a86ef0af",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 158.66988383900025
+          },
+          {
+            "cell_id": "batch_003::tv.stl_seasonal::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T03:24:47Z",
+            "results_sha256": "65986d9abfc2403cd4e0353eb268839d9ae01654f5fd6473b24b3423e11b8c90",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 190.16918132899445
+          },
+          {
+            "cell_id": "batch_003::tv.stl_seasonal::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T04:33:17Z",
+            "results_sha256": "5b9a02bf75ef76f4a68fdb5051afbe02cd45f3c0a754c2ea2678bba44a11d2ae",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 170.572051790994
+          },
+          {
+            "cell_id": "batch_003::tv.wav_d1::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T03:27:27Z",
+            "results_sha256": "73d0f59be75a49035ad3e65cda4ae0e64ad31ef34ec69f6415df52ecdbf804a3",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 124.94546988498769
+          },
+          {
+            "cell_id": "batch_003::tv.wav_d1::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T04:36:04Z",
+            "results_sha256": "d4849eed14ef52027a33ed1fe38655763bb998a4a4d3441c75544a475ea59e0f",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 136.07719430500583
+          },
+          {
+            "cell_id": "batch_003::tv.wav_d2::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T03:30:49Z",
+            "results_sha256": "bec13e9d1562e6d7627e420b78e9328875ea65eddbd01a09a54c12a8e798c485",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 157.73972942499677
+          },
+          {
+            "cell_id": "batch_003::tv.wav_d2::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T04:39:30Z",
+            "results_sha256": "8e582d1a6d80238747914eab436c76a891d036d7b30be4f26f5fcb5930b8eb62",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 167.17389426800946
+          },
+          {
+            "cell_id": "batch_003::tv.wav_d3::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T03:35:33Z",
+            "results_sha256": "d90ee5cc2265895f8f6a387ae35f040c75e5bd9d94da86752fa19cb754f964bb",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 245.32168903699494
+          },
+          {
+            "cell_id": "batch_003::tv.wav_d3::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T04:43:43Z",
+            "results_sha256": "3f924f3171298cb275d0a47d960e65be6dd0acc9592bf829b83e2f6bb7002a09",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 200.4039673290099
+          },
+          {
+            "cell_id": "batch_003::tv.wav_d4::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T03:41:43Z",
+            "results_sha256": "c516a5f137b773aee15948d5f264a87888de2cdabb782cd378c295eae3d029ed",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 326.2717086689954
+          },
+          {
+            "cell_id": "batch_003::tv.wav_d4::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T04:50:54Z",
+            "results_sha256": "3575a1a32b9ebc1c8f22f7af56b986da1df6b66ca13e123a15ee2cb87075fd39",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 182.8451417890028
+          },
+          {
+            "cell_id": "batch_003::tv.wav_d5::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T03:48:35Z",
+            "results_sha256": "0a6c2e5c30f8cadf3c814b71032cce91226eb6cff69ab56ce0a663dc309038e8",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 375.28063886800373
+          },
+          {
+            "cell_id": "batch_003::tv.wav_d5::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T04:58:13Z",
+            "results_sha256": "fb53f194d210f4c7446c252ef5671b2dd3bbaf4bbe21eedffa426a0ddd613cd3",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 220.02740875699965
+          },
+          {
+            "cell_id": "batch_002::fred.credit.aaa.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T18:13:32Z",
+            "results_sha256": "49ef24c307c4598a961cbb202e416752057cb65fdcfcdde3a7d8beaf84c2f9fc",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 191.00879220099887
+          },
+          {
+            "cell_id": "batch_002::fred.credit.aaa.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T20:20:34Z",
+            "results_sha256": "e27d60629ea89601022bfe71b999edd897bd79846a22c067c157f8e504eac18a",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 171.08711232698988
+          },
+          {
+            "cell_id": "batch_002::fred.fx_indices.dtwexemegs.level::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T18:16:48Z",
+            "results_sha256": "be259b01f9b4f9408f8bd5839d95995f741e9333f88c6023a3f526773caa7f13",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 191.716204655997
+          },
+          {
+            "cell_id": "batch_002::fred.fx_indices.dtwexemegs.level::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T20:23:06Z",
+            "results_sha256": "1e2028b2d1aad60f6453c270d24a3cb47f79ff09ca9c2711880af826a91a0e93",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 147.26401375600835
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dgs30.level::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T18:20:18Z",
+            "results_sha256": "a579b5e6cc8d9e147c758d326ce263740943dd0dd5c3e7087fb3ad5c60dbf528",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 206.38070727299782
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dgs30.level::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T20:25:40Z",
+            "results_sha256": "024c5a37752896a1e13178ff385b1a01a2eecc7cc86eced864c3cae6bbf5b1e7",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 150.83479086498846
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dprime.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T18:23:34Z",
+            "results_sha256": "49d9375ef123986c971ee624d6722986360934e21fd856f2102b84002b265c07",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 191.96956890798174
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dprime.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T20:28:00Z",
+            "results_sha256": "a94f855a023369cf5aec664a192c6580b13fa92f1b4291ffa3565bd4a8c3dfc1",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 135.25920992699685
+          },
+          {
+            "cell_id": "batch_002::fred.stress.vixcls.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T18:27:37Z",
+            "results_sha256": "9dad63fc3e0a81e820fc84244acc0090b266ad9c13a80c900ff70e1ad35e2a9c",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 238.87380983302137
+          },
+          {
+            "cell_id": "batch_002::fred.stress.vixcls.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T20:31:00Z",
+            "results_sha256": "552c34dd6d9c2777e4f94e8d02f78eaa73ed4a685c1ca553fa353e0d4ffc9dda",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 176.15149907500017
+          },
+          {
+            "cell_id": "batch_002::fx.audusd.ewma_vol_24::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T18:31:08Z",
+            "results_sha256": "66f16e47dc3b9aea2af97febc13d9356e3fd4a95d37f21ddfce4d588552b4b9f",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 206.31309592199977
+          },
+          {
+            "cell_id": "batch_002::fx.audusd.ewma_vol_24::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T20:33:54Z",
+            "results_sha256": "8a334a812638c7886ceb9af46f9d6dd761ca11cfbb4e6fa100f0566eb077c802",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 169.62024176100385
+          },
+          {
+            "cell_id": "batch_002::fx.audusd.logret_1h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T18:33:21Z",
+            "results_sha256": "d929adeebc4ad1787346bed001b50b06c981afbe80c1b5cffe14aa2989df58a4",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 128.51033645600546
+          },
+          {
+            "cell_id": "batch_002::fx.audusd.logret_1h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T20:36:15Z",
+            "results_sha256": "3bdf39e86294baf610565a09246a93f763037ddbce4609c2f055e9a50ffda6b5",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 136.4004331830074
+          },
+          {
+            "cell_id": "batch_002::fx.audusd.logret_24h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T18:37:09Z",
+            "results_sha256": "613f26795c92ab392d4ae42f966b4cebfebf80d9ee3b68e351826ba10e77de3b",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 223.56229672700283
+          },
+          {
+            "cell_id": "batch_002::fx.audusd.logret_24h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T20:39:34Z",
+            "results_sha256": "a32f9f1aec12807b31b723797a528d544df16072ea4ea4db73a030af09979e2b",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 194.4315328639932
+          },
+          {
+            "cell_id": "batch_002::fx.eurgbp.ewma_vol_24::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T18:41:18Z",
+            "results_sha256": "bb95aca13552cabe60180de53783ccc6980d902afe8cd1810a86994ebdcda3dd",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 243.91273362500942
+          },
+          {
+            "cell_id": "batch_002::fx.eurgbp.ewma_vol_24::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T20:43:05Z",
+            "results_sha256": "afc51a80e671c433e603a953b92b5bdd8bcd9b593cd09f8954429d7bad44558c",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 176.08865401599905
+          },
+          {
+            "cell_id": "batch_002::fx.eurgbp.logret_1h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T18:43:40Z",
+            "results_sha256": "fe69a65690eff604d876241611c263f8b233e322f70080bacf72a368d621d993",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 137.23000386697822
+          },
+          {
+            "cell_id": "batch_002::fx.eurgbp.logret_1h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T20:45:34Z",
+            "results_sha256": "d3df3d3f487210ef8fa34c99ab67a8e683bbfcd7b81066d7c110469f4f04146d",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 144.75270123200607
+          },
+          {
+            "cell_id": "batch_002::fx.eurjpy.ewma_vol_24::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T18:47:28Z",
+            "results_sha256": "575ad7a5fe38dc7fd15bd0761c6bc7949b9929b0f9a62118bed279f421d2a28b",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 223.89174625999294
+          },
+          {
+            "cell_id": "batch_002::fx.eurjpy.ewma_vol_24::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T20:48:31Z",
+            "results_sha256": "c8641cefaaef5c3954f93072f8d8fe64e259524580bb0b7a1ecf787ab87e6a45",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 172.6479426540027
+          },
+          {
+            "cell_id": "batch_002::fx.eurjpy.logret_1h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T18:49:45Z",
+            "results_sha256": "a7035547e42c781c72bc4ff1fa1629f231bcbd4d22f92602d002c55a850225d6",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 132.37536316699698
+          },
+          {
+            "cell_id": "batch_002::fx.eurjpy.logret_1h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T20:50:46Z",
+            "results_sha256": "759e73426702777aed6d1b01af2080ac0432b722771651d72aee9427bc7172e7",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 131.75136246101465
+          },
+          {
+            "cell_id": "batch_002::fx.gbpjpy.ewma_vol_24::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T18:53:39Z",
+            "results_sha256": "d380096a864baaa8c6dc2252e435a52099f3f8845b9a6ba7bafab15fd53c6fda",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 231.1078260219947
+          },
+          {
+            "cell_id": "batch_002::fx.gbpjpy.ewma_vol_24::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T20:53:23Z",
+            "results_sha256": "431952e82b6fadbd2ef824c8277aca88184c067dfc09ea75144265ac7c4e049f",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 152.77693606799585
+          },
+          {
+            "cell_id": "batch_002::fx.gbpjpy.logret_1h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T18:56:22Z",
+            "results_sha256": "6c552674ded8a3d98d58214902f2d6d97c803776499e0e9f03ffad3a6f5a78f1",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 157.85197370901005
+          },
+          {
+            "cell_id": "batch_002::fx.gbpjpy.logret_1h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T20:55:45Z",
+            "results_sha256": "e7631d8f9e9476f22ace921a6d40a3c47162042f2554b72b48e2fca4c5b1a0e9",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 139.01406605300144
+          },
+          {
+            "cell_id": "batch_002::fx.gbpusd.ewma_vol_24::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:00:25Z",
+            "results_sha256": "92c0067bb183a9255ab4f94329740c8cd4b728ed876607c78732b1b8ec7e651d",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 240.07024804499815
+          },
+          {
+            "cell_id": "batch_002::fx.gbpusd.ewma_vol_24::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T20:58:27Z",
+            "results_sha256": "1061ffb7ee7abe13a9be18269132e4acb61b82b98ccf9bd931c92a2c4ebbf680",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 157.93607837500167
+          },
+          {
+            "cell_id": "batch_002::fx.gbpusd.logret_1h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:02:45Z",
+            "results_sha256": "a88e0783ab12b30eac678d0c64705ece663f9301b8b99880fff4b1538d2d8749",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 134.6990369510022
+          },
+          {
+            "cell_id": "batch_002::fx.gbpusd.logret_1h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:00:43Z",
+            "results_sha256": "4325176eb3333833940264837006840e7e00b2b4b497d01596ea2347639e4282",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 133.02840699101216
+          },
+          {
+            "cell_id": "batch_002::fx.nzdusd.ewma_vol_24::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:06:19Z",
+            "results_sha256": "b45e2c0d39f24576eea2662f015b20b690d1b8c02e68a2d26a54e19dff0066ba",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 209.62594253200223
+          },
+          {
+            "cell_id": "batch_002::fx.nzdusd.ewma_vol_24::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:04:30Z",
+            "results_sha256": "9b3f09f72855a0d28ed959d2cf6987ba18d208f94d273fb538f3ebe8ad787045",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 163.40903909801273
+          },
+          {
+            "cell_id": "batch_002::fx.nzdusd.logret_1h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:08:31Z",
+            "results_sha256": "64e0393d1a9bd98a1055415bdfe54d1659e5109614c2a9be2e0bbcd382571e89",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 127.30756032001227
+          },
+          {
+            "cell_id": "batch_002::fx.nzdusd.logret_1h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:06:54Z",
+            "results_sha256": "757fa2df19541a6fc7f9d0b807d35eb712fb8975ad5f4399bc1f8dcdbf106caf",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 139.80867350497283
+          },
+          {
+            "cell_id": "batch_002::fx.usdcad.ewma_vol_24::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:12:45Z",
+            "results_sha256": "95f20da2553a0aef52b2d9e9a4baf19703e1420d7791788f3b7164c85626ceb9",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 250.70735528200748
+          },
+          {
+            "cell_id": "batch_002::fx.usdcad.ewma_vol_24::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:09:28Z",
+            "results_sha256": "8c3f05f0a6c4f344d271c3fa9ddbc968f089b16f6544099461d44144d860c0f9",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 149.1683025849925
+          },
+          {
+            "cell_id": "batch_002::fx.usdchf.ewma_vol_24::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:17:00Z",
+            "results_sha256": "6ffccef870967acd3909132ad7fd0be875c8bae148a7a475d0c97e3204f31e76",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 250.11580888100434
+          },
+          {
+            "cell_id": "batch_002::fx.usdchf.ewma_vol_24::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:12:08Z",
+            "results_sha256": "7b343e8deff39da12cc03c63cb6ba885ac1db6953697e308c7ad13193a65d7cf",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 155.6476382650144
+          },
+          {
+            "cell_id": "batch_002::fx.usdchf.logret_1h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:19:18Z",
+            "results_sha256": "e446af64d02b72fe5c701d3180884b2af739d6dc64438942b942abad4014061c",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 132.26030750697828
+          },
+          {
+            "cell_id": "batch_002::fx.usdchf.logret_1h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:14:27Z",
+            "results_sha256": "4757996de7e8ef478771c5ab7c787ab1fa747859251a798687c4608166e7d2a3",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 134.65080634498736
+          },
+          {
+            "cell_id": "batch_002::fx.usdchf.logret_24h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:24:00Z",
+            "results_sha256": "94a1e0f329f8dbd19f8e1224fe6ec2589f27cda2208534a659e618388c17b78a",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 279.05083530698903
+          },
+          {
+            "cell_id": "batch_002::fx.usdchf.logret_24h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:17:08Z",
+            "results_sha256": "a0b75c9890d8a1009d4f5b88a8a42a7a87b277cf1bd3235229d71d93c11dd22e",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 156.4647362959804
+          },
+          {
+            "cell_id": "batch_002::fx.usdjpy.ewma_vol_24::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:28:00Z",
+            "results_sha256": "66e05162e045574b6bf84ed4de4f6d329726c9d342e419d312450259ce53c833",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 234.48579152600723
+          },
+          {
+            "cell_id": "batch_002::fx.usdjpy.ewma_vol_24::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:20:18Z",
+            "results_sha256": "02d79803f6ea59fb3ee2e6d3033b72f4e90fa934882b5b80111a702b7db086fc",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 185.432626593014
+          },
+          {
+            "cell_id": "batch_002::fx.usdjpy.logret_1h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:30:10Z",
+            "results_sha256": "e52022bb65d29dc04a3350b8b452df2ac7fb30a61b624136c94f64beeb194d7d",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 126.00482416900923
+          },
+          {
+            "cell_id": "batch_002::fx.usdjpy.logret_1h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:22:37Z",
+            "results_sha256": "1d486a2e55b5c905ce752512d88ed559923270645631bee9f47a3b69804e54a8",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 134.6444076699845
+          },
+          {
+            "cell_id": "batch_002::yh.bsesn.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:33:45Z",
+            "results_sha256": "065c535f64de6514fc69d3dc37be4bf291ef13dfbb44bdb11b63995bae2503a1",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 210.4727230729768
+          },
+          {
+            "cell_id": "batch_002::yh.bsesn.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:25:53Z",
+            "results_sha256": "6813f8333d88937c9041bc03e535dad0fc9e309bc4079129d179ae93298f7b2c",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 192.21510568200029
+          },
+          {
+            "cell_id": "batch_002::yh.ftse.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:37:50Z",
+            "results_sha256": "995210f2254afceff432d1c7232257feb2532070f57801989587d78a32c2f4ac",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 239.3239313759841
+          },
+          {
+            "cell_id": "batch_002::yh.ftse.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:29:14Z",
+            "results_sha256": "3d214a2ac3511fc17157346de99ec4cac77612e7a317b5bd3e6748b605f6176a",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 196.5579528649978
+          },
+          {
+            "cell_id": "batch_002::yh.gld.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:41:06Z",
+            "results_sha256": "c898370f07edc62eca9689c7dc9e2eb8ebd93a3b15c7a18af28d1882e1062657",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 191.37137745899963
+          },
+          {
+            "cell_id": "batch_002::yh.gld.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:32:55Z",
+            "results_sha256": "777628d672872ba542db4a77ab071e15b657e83d190878d76a3d51aeda7a9a4b",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 216.50550166898756
+          },
+          {
+            "cell_id": "batch_002::yh.hyg.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:44:48Z",
+            "results_sha256": "f74598f46873ce9da7f96cf3ee523cb1729c0326320a8cc3a1536c7be9245c16",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 217.9540265990072
+          },
+          {
+            "cell_id": "batch_002::yh.hyg.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:35:45Z",
+            "results_sha256": "b57a960ac2caa16faa0c93ab4a4c16aa423f761bf1deff9ef23cc5700bc4156c",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 165.86915939601022
+          },
+          {
+            "cell_id": "batch_002::yh.mxx.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:52:53Z",
+            "results_sha256": "6df039e1a8e3096b749677446356b21b9e1d93dd1537a8c06567fa90dc9cfc39",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 211.7986866729916
+          },
+          {
+            "cell_id": "batch_002::yh.mxx.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:39:02Z",
+            "results_sha256": "4fed2648ef6e1931b84d433964083079307a03af8898c4635bb8117e9318e4c2",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 192.31576034901082
+          },
+          {
+            "cell_id": "batch_002::yh.sb_f.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:56:14Z",
+            "results_sha256": "8596129394756dff7585449ed5b2a2fb692a07407b04f05d8de7099ae3c229ff",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 196.1645651430008
+          },
+          {
+            "cell_id": "batch_002::yh.sb_f.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:42:09Z",
+            "results_sha256": "1d8b89f04c18ea124479ce67ae3b91297d0268dbf104701cecf33acb1fe31812",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 183.34970394801348
+          },
+          {
+            "cell_id": "batch_002::yh.si_f.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T19:59:30Z",
+            "results_sha256": "3a0d0348b7b01cb79225dd5573a2885624b0b2427b96985e711467a4452c0911",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 191.13212577800732
+          },
+          {
+            "cell_id": "batch_002::yh.si_f.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:45:34Z",
+            "results_sha256": "072d8ac2e6de91fcc12f14604afc66547742e0085b1ea66b4ea1e794ba6251b7",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 202.24088254701928
+          },
+          {
+            "cell_id": "batch_002::yh.slv.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T20:02:49Z",
+            "results_sha256": "531005ec2b8e4993cd9da61d7d44440be6ed3ed940b5d926c8dd664f2b86dea6",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 193.8981601280102
+          },
+          {
+            "cell_id": "batch_002::yh.slv.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:49:04Z",
+            "results_sha256": "dba84e6509ecc8334e0a5bc9ba744227599742b1f7e8ccde69001374697be0e0",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 206.9802058179921
+          },
+          {
+            "cell_id": "batch_002::yh.usdbrl_x.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T20:06:39Z",
+            "results_sha256": "57ad3e491861b360d4cc5a4e491aad20c5fc62ac42d7f6f2804eb0f638cf68ee",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 225.21367975900648
+          },
+          {
+            "cell_id": "batch_002::yh.usdbrl_x.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:52:40Z",
+            "results_sha256": "7085b385e290def71f26716db03783617fb43d701062ea671430951f113f9e4b",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 211.36765239399392
+          },
+          {
+            "cell_id": "batch_002::yh.usdmxn_x.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T20:10:32Z",
+            "results_sha256": "fb8ac3d3270f414076d5d770fa332f737ec735935de85dab8899d135c3f51376",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 228.35312300600344
+          },
+          {
+            "cell_id": "batch_002::yh.usdmxn_x.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T21:55:48Z",
+            "results_sha256": "c3db7a8042a75b50ad6e31a526ba3882cc42246b8f379bbb3273cd4b1fca71d8",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 184.4221666669764
+          },
+          {
+            "cell_id": "batch_002::yh.usdzar_x.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T20:13:38Z",
+            "results_sha256": "2eb02e27f0d45e7117db499864afded8dd1ac47abd315f88c7ccca3697a77ccd",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 181.16628150700126
+          },
+          {
+            "cell_id": "batch_002::yh.usdzar_x.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T22:00:07Z",
+            "results_sha256": "0475ae4923fdf9504b1dcf702e9b8eafaf438a4b55594ad4bf43e0f2fa5806e0",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 224.2863740049943
+          },
+          {
+            "cell_id": "batch_002::yh.zs_f.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T20:17:38Z",
+            "results_sha256": "40071f9abbba732056ee248464354629b5f98cd06e62b42208d1d3ca81b19b0f",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 235.06661908197566
+          },
+          {
+            "cell_id": "batch_002::yh.zs_f.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T22:03:41Z",
+            "results_sha256": "adfe523c78c34524d20a41a1363f018aee71e51883f874e59dd1f43a41aaa748",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 209.28020145499613
+          },
+          {
+            "cell_id": "batch_003::cot.wti_nymex.mm_net_oi::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T22:07:06Z",
+            "results_sha256": "15c0555fb6798047129e137b80ab41512c6e8d79ca48acb5c8490b4e830e68ff",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 200.03133242900367
+          },
+          {
+            "cell_id": "batch_003::cot.wti_nymex.mm_net_oi::past_to_current_siamese",
+            "finished_at_utc": "2026-10-04T22:10:29Z",
+            "results_sha256": "f96d21a49bc44c72c3f7d85dfdc2d1800a379e350f70b0d1fb960642c420e56f",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 198.35970672499388
+          },
+          {
+            "cell_id": "batch_002::fred.credit.aaa.level::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T22:13:07Z",
+            "results_sha256": "9edc7fb98bcac6784ca94a3d128907ff39601d71204b97200414b8f1d923d489",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 155.7286380440055
+          },
+          {
+            "cell_id": "batch_002::fred.credit.aaa.level::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T00:44:36Z",
+            "results_sha256": "4896eebd291f00414451638f140eddece9088333138d9e796cb333c2a624a0e8",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 157.61468085998786
+          },
+          {
+            "cell_id": "batch_002::fred.credit.bamlh0a0hym2.logret_1d::masked_temporal_ae",
+            "error": "FAILED_MARKER rc=1",
+            "role": "worker_a",
+            "state": "failed"
+          },
+          {
+            "cell_id": "batch_002::fred.credit.bamlh0a0hym2.logret_1d::past_to_current_siamese",
+            "error": "FAILED_MARKER rc=1",
+            "role": "worker_a",
+            "state": "failed"
+          },
+          {
+            "cell_id": "batch_002::fred.fx_indices.dtwexafegs.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T22:16:44Z",
+            "results_sha256": "8c1a735d14daec44863878861bd810042d4630c4808976e2ec4cee9800803fe9",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 208.57220000697998
+          },
+          {
+            "cell_id": "batch_002::fred.fx_indices.dtwexafegs.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T00:48:28Z",
+            "results_sha256": "e20e69f707238c56f102fad7b50b56a69c71beafc252a98d487e7c548f8cce81",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 196.3742350449902
+          },
+          {
+            "cell_id": "batch_002::fred.fx_indices.dtwexbgs.level::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T22:20:20Z",
+            "results_sha256": "2a18e228ffa555d3fff22a657bb811f535a73420b642dd4839c496cd2367ae47",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 211.87692528197658
+          },
+          {
+            "cell_id": "batch_002::fred.fx_indices.dtwexbgs.level::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T00:53:28Z",
+            "results_sha256": "96d1403823b0744f7eb96e631db8f59d9402ceefc8ddd9b21b40d97651412ed0",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 145.61075474802055
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dfii10.diff_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T22:23:20Z",
+            "results_sha256": "4919c6d7e61cdfb66417e084ff57a25a7cdc510e4b37212ded2c4642d375ab0f",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 175.92188870499376
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dfii10.diff_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T00:56:53Z",
+            "results_sha256": "990714a2bb35bd686e9f482990f3734b490450d9fb4ba97c98677673674393d1",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 200.27289281599224
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dfii10.level::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T22:27:05Z",
+            "results_sha256": "a9351237910b2b547e4ede8b853e55eb74eca268b2831e300213c487aa41488f",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 219.52972603900707
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dfii10.level::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T00:59:29Z",
+            "results_sha256": "399de732a5b996520f7e1e701bfefd8577b4e98a3fe739b2e7a65a5cb9cf65f8",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 151.01498707500286
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dgs1.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T22:30:41Z",
+            "results_sha256": "18882c86d076aa74aa3afded705094a6e37b00fb3844c7192675b9d9f57866d3",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 210.79385496702162
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dgs1.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T01:02:18Z",
+            "results_sha256": "035934dab216d8ad909d7a048674770d723786de3844f7850db750b5becddb0a",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 164.8973797330109
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dgs3mo.diff_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T22:34:00Z",
+            "results_sha256": "ac2a8db9d61f95ae4dfce12a6ba7e7e47b51bf83faad5fc8a7d93b4cbc4eb1db",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 194.0540279079869
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dgs3mo.diff_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T01:05:04Z",
+            "results_sha256": "e501d0eb2a7d10a18a0af3d2ed1d8d894b995c843710618223d12d953b28239b",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 161.0922584939981
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dgs5.level::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T22:37:29Z",
+            "results_sha256": "a694b674d626954c965536292106964f19d2c9a10deeffc02b5b36985b24ab52",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 204.3490997890185
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dgs5.level::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T01:07:31Z",
+            "results_sha256": "522088b3fd4702996310e61b04dca686f2ff45d9ff1930e2373fc439b0b9c07c",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 142.92535419401247
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dgs5.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T22:41:32Z",
+            "results_sha256": "e265fef7f04cbd1004188c695bc2a6352a076c75e06c30344cec34b01f924caa",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 238.10913720799726
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dgs5.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T01:11:01Z",
+            "results_sha256": "633220192c934cb925d5aa88cd14695eb60e0874c7829dc2101fa9302edaf9cf",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 206.9949659529957
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dtb3.diff_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T22:44:53Z",
+            "results_sha256": "39ee14fb5477a39bd95f079af1966c489a2c04a0ec79c61e41471512e401b712",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 195.8526714539912
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dtb3.diff_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T01:14:37Z",
+            "results_sha256": "cc81c61f9858d10b446ad488d2aa594dd07954c710f44049a9afc13bf8b44a4b",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 152.23340841001482
+          },
+          {
+            "cell_id": "batch_002::fred.rates.t10y3m.diff_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T22:48:09Z",
+            "results_sha256": "18d0c1d7ab8270aefe0f1fb0961696b250fd0d9acc85eeb7ab13bbc218002cb1",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 191.57963397700223
+          },
+          {
+            "cell_id": "batch_002::fred.rates.t10y3m.diff_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T01:17:52Z",
+            "results_sha256": "d1bc6b7b8d182bc8fa81c8d502abcbb64d030aae1fc12a7151ffbc334b8b658e",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 191.42360766002093
+          },
+          {
+            "cell_id": "batch_002::fred.rates.tb3ms.level::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T22:50:59Z",
+            "results_sha256": "abfaab2bbae2a1875685dded0c4f096c070e8da4f42ee7756ce35a7dd87bf6d8",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 164.99179741498665
+          },
+          {
+            "cell_id": "batch_002::fred.rates.tb3ms.level::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T01:20:24Z",
+            "results_sha256": "77f08bb60bc70e81cb24620e0f9b7dd0d5d9f63e3323ae03c754558bb9071465",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 146.81924917301512
+          },
+          {
+            "cell_id": "batch_002::fred.stress.anfci.diff_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T22:54:15Z",
+            "results_sha256": "57443924141370b8829f030ae1be5bf745ca4e4128dde00896d04078d091cfff",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 190.84215441299602
+          },
+          {
+            "cell_id": "batch_002::fred.stress.anfci.diff_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T01:23:43Z",
+            "results_sha256": "ab01a14d56096a3dcd341a3ef924515939e1cfeda3261f4663282d569492ae78",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 195.51384021202102
+          },
+          {
+            "cell_id": "batch_002::fred.stress.anfci.level::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T22:57:35Z",
+            "results_sha256": "61316181a6a7b0791a8c8c94ea3c75b3d502b37cf3e981ecce8d3ca4e5100b92",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 195.37891823099926
+          },
+          {
+            "cell_id": "batch_002::fred.stress.anfci.level::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T01:26:44Z",
+            "results_sha256": "34b8796d5ab78b815cfd2c055c124708a3ace581298fd81828ee9b8ea6c2989d",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 145.90089505902142
+          },
+          {
+            "cell_id": "batch_002::fred.stress.nfci.diff_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:01:19Z",
+            "results_sha256": "2830e98d91f8856e1aae4711f2cae4f2d39f58dc14a4c20584dc1e0984f63606",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 219.66377897001803
+          },
+          {
+            "cell_id": "batch_002::fred.stress.nfci.diff_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T01:29:58Z",
+            "results_sha256": "e48f5406a216f53436eb7ef9161f3b0c8c0936c46cfc0c359e5772577d79507a",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 190.41753397800494
+          },
+          {
+            "cell_id": "batch_002::fred.stress.nfci.level::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:04:18Z",
+            "results_sha256": "e2f9ab2e348da8dfeeeb0684a3ddae86a12e2123d58137a2806a2335180fd27f",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 173.050158936996
+          },
+          {
+            "cell_id": "batch_002::fred.stress.nfci.level::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T01:34:13Z",
+            "results_sha256": "91267eb992d180afb43c958b636eae98ceea9ea5f1820ad651081dc13b0666fa",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 160.24857257198892
+          },
+          {
+            "cell_id": "batch_002::fx.gbpusd.logret_24h::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:08:18Z",
+            "results_sha256": "b9214bfe53c2ced3b56cc1ae983edd6ac57b841c5eff6bb97c5a1e021ee2230e",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 235.01889329499681
+          },
+          {
+            "cell_id": "batch_002::fx.gbpusd.logret_24h::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T01:38:02Z",
+            "results_sha256": "2aec8a440721c0a96670e99ac2e21f139a0077a734a23c6ad16a4a68a6b4f303",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 163.9723439619993
+          },
+          {
+            "cell_id": "batch_002::yh.axjo.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:11:51Z",
+            "results_sha256": "6ae86e719ac7a6341727a4148b6fcf00dbd991f2ee1de71ee159c7e2ff573126",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 208.74412537401076
+          },
+          {
+            "cell_id": "batch_002::yh.axjo.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T01:41:51Z",
+            "results_sha256": "69ad3559dd921a2d4c317ca24dcde956c949361436974b29a9f2e61ac6688b00",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 194.53661694700713
+          },
+          {
+            "cell_id": "batch_002::yh.cl_f.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:15:07Z",
+            "results_sha256": "ab647df99c15e1402d42b97af32043d1b5ca6f2bec178203e5f5c817dfefe7db",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 191.15472888099612
+          },
+          {
+            "cell_id": "batch_002::yh.cl_f.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T01:48:00Z",
+            "results_sha256": "b6c3ff12c7c582dba5f0fb8d98f5bd2b2c6e26599fa693620261967fca6b1d45",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 185.08252316497965
+          },
+          {
+            "cell_id": "batch_002::yh.dia.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:18:51Z",
+            "results_sha256": "c655bb1d993f7dc54c6257bf285c6b924b190c50862fbd5ab2916c667564a056",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 218.71111967301113
+          },
+          {
+            "cell_id": "batch_002::yh.dia.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T01:53:20Z",
+            "results_sha256": "e71b6fe2fad66d4b1879697057809354d5f005cd37bf956579bb82073fe23d08",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 195.52367134700762
+          },
+          {
+            "cell_id": "batch_002::yh.eem.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:22:30Z",
+            "results_sha256": "b112ac7fd24296ca79ba09b364591c80dcf2d614c8e56a5a643bd19e21fcaad2",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 214.25316243400448
+          },
+          {
+            "cell_id": "batch_002::yh.eem.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T02:02:30Z",
+            "results_sha256": "3aee764a31eb774f07a8de5007910691cfeac4bb64e02c37c6953dde43b32500",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 184.70966676599346
+          },
+          {
+            "cell_id": "batch_002::yh.ftse.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:26:03Z",
+            "results_sha256": "66a0c0153466bf2052e40b94a60c125c05d7b3a3d0223c635d7c5d943bda2a47",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 207.3614975840028
+          },
+          {
+            "cell_id": "batch_002::yh.ftse.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T02:06:52Z",
+            "results_sha256": "faacb638171ad16d753c0e8519182b8c1e24cb9d567f6f596e4077b6692ddfc6",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 197.595552186016
+          },
+          {
+            "cell_id": "batch_002::yh.gc_f.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:29:32Z",
+            "results_sha256": "58b9feca22325b8343ee22dc9927baa5e1306ec2cf4cba84e376aa8b2cd4e87b",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 205.26291868300177
+          },
+          {
+            "cell_id": "batch_002::yh.gc_f.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T02:14:12Z",
+            "results_sha256": "19d6c18b85423f0e2133a2e1d996078883ac3df7ab5ac4678d6ef973489a128b",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 196.89769859000808
+          },
+          {
+            "cell_id": "batch_002::yh.gc_f.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:33:17Z",
+            "results_sha256": "bda8afbb5889f579cdebad4b76a6b7a3fc2c1ec0aeea8c0332f95acdf9754ee1",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 219.9259239420062
+          },
+          {
+            "cell_id": "batch_002::yh.gc_f.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T02:17:55Z",
+            "results_sha256": "6c529f3fc978a17d8f5b291c1327a1c2f822369b868f2f760a6f62d3e04e66c3",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 188.61489824700402
+          },
+          {
+            "cell_id": "batch_002::yh.ivv.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:36:58Z",
+            "results_sha256": "3d1b74702760cc7e4c2339a6500914e12f997dd4a721fcf26e49508e4041858d",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 216.96236692299135
+          },
+          {
+            "cell_id": "batch_002::yh.ivv.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T02:22:04Z",
+            "results_sha256": "4f130550e9181c1c9adcd7d4417920eef05a2011542a3f06dbd89bd67813eda9",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 184.43010666698683
+          },
+          {
+            "cell_id": "batch_002::yh.ixic.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:40:40Z",
+            "results_sha256": "b76d27dc6ee82fe0167cdd6549bacc244e462f81489e4b0444477bd9af2e39ce",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 217.23872054400272
+          },
+          {
+            "cell_id": "batch_002::yh.ixic.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T02:26:23Z",
+            "results_sha256": "134c69fa2e0574dba42f6fa5176e8929f7ea04614cbc4e4c8f6681e9cef490ef",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 194.5755370949919
+          },
+          {
+            "cell_id": "batch_002::yh.kc_f.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:44:21Z",
+            "results_sha256": "cc4f047f14916b6d3266e8a4113b45c351dd290ef905b170ba47388fbffde88c",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 217.82745345000876
+          },
+          {
+            "cell_id": "batch_002::yh.kc_f.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T02:30:57Z",
+            "results_sha256": "d08db80ac26beaf47a9e0c083007776b135db3fc15675471044333c6fd539ef1",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 209.5095462600002
+          },
+          {
+            "cell_id": "batch_002::yh.lqd.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:48:31Z",
+            "results_sha256": "eed857ffdc6a49a50c99182d8c5bdc7e06a4390be26829c356e5514ed030486b",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 246.75988615199458
+          },
+          {
+            "cell_id": "batch_002::yh.lqd.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:07:26Z",
+            "results_sha256": "437674287e6dbf04b082480da47102ff386579cddd24a81a48e6e018f385b314",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 174.50437393199536
+          },
+          {
+            "cell_id": "batch_002::yh.rut.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:51:47Z",
+            "results_sha256": "aa790619bef01d94a2bccbedc050e3b697858fcca8abb866bb8667923a930460",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 191.89188326901058
+          },
+          {
+            "cell_id": "batch_002::yh.rut.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:10:45Z",
+            "results_sha256": "f116dd1ff6d07ae3403a18c2446c1d3c5014b3105b30b5eb8c3effdbe9acf3c8",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 193.7443702199962
+          },
+          {
+            "cell_id": "batch_002::yh.slv.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:55:29Z",
+            "results_sha256": "61e3afd0e980731c318dab9f63c63487e7fc46d2ba82f9d8bd40285d7569c611",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 216.9642180579831
+          },
+          {
+            "cell_id": "batch_002::yh.slv.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:13:57Z",
+            "results_sha256": "6e6d2fbc42ff74523fbb0bbf65ef99427606a349787ed9818ba73ec30dd13df0",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 187.94707590399776
+          },
+          {
+            "cell_id": "batch_002::yh.spy.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-04T23:58:58Z",
+            "results_sha256": "9a769b9baf282b3b7800fe791262b5fa63d8ebf54b84e221c858ae1f827c8c7a",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 204.82260151402443
+          },
+          {
+            "cell_id": "batch_002::yh.spy.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:17:12Z",
+            "results_sha256": "262caa5a86d95b669a5dba00e4c14a85052d4603086d37ef62a115117dfb065b",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 192.19819357799133
+          },
+          {
+            "cell_id": "batch_002::yh.spy.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T00:02:35Z",
+            "results_sha256": "053f1b7c4d39621bbce4d51195132c1dc8f3e261a58b9fb63be8cadb15071163",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 212.44070768897654
+          },
+          {
+            "cell_id": "batch_002::yh.spy.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:21:11Z",
+            "results_sha256": "a9fd67da2aef687854b6f1ab820f6d43cab83bacfc7220782e46165efdad49bb",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 204.33753437700216
+          },
+          {
+            "cell_id": "batch_002::yh.tlt.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T00:06:16Z",
+            "results_sha256": "b9e3f22d80273b957edc7f392aa8168ea2237415b5c87cd27c246331f59b8b49",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 217.80266831998597
+          },
+          {
+            "cell_id": "batch_002::yh.tlt.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:24:35Z",
+            "results_sha256": "0ac8f530315bf8a5909edbe0e90444c34834bb7e25cb4588bbee9ff10f65f242",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 199.60112416298944
+          },
+          {
+            "cell_id": "batch_002::yh.twii.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T00:09:48Z",
+            "results_sha256": "a5c9d304e886c440e7e032491016c2084dbcf5f809299abf586dc952bca45bdc",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 208.7687059600139
+          },
+          {
+            "cell_id": "batch_002::yh.twii.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:28:03Z",
+            "results_sha256": "e7deca997a1ce5165f05468478e2e20a36722b443ff0c52115c17c839172e2bb",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 204.19931642300799
+          },
+          {
+            "cell_id": "batch_002::yh.usdbrl_x.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T00:13:13Z",
+            "results_sha256": "1ef8ac98331d4f75f9e54ebfe4f0bd8607929ca2251cc13c44fb2c0c73fc1e47",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 199.99702467999305
+          },
+          {
+            "cell_id": "batch_002::yh.usdbrl_x.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:31:38Z",
+            "results_sha256": "61da0ee2d9664d5f943b13a9127de274b99e0838577bad8b28d871bfe0c38674",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 210.47954042098718
+          },
+          {
+            "cell_id": "batch_002::yh.usdclp_x.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T00:16:11Z",
+            "results_sha256": "57aae79f2b04d4fa2250ba6c38e13e781fbdc3efa615886c77f7d8e576a7d9a9",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 172.79845983700943
+          },
+          {
+            "cell_id": "batch_002::yh.usdclp_x.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:33:50Z",
+            "results_sha256": "e854b9e1b0b7fe63b5cdfbe1831c77f5f7c9fc948b565d4b134e241d90a5a472",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 127.59945009398507
+          },
+          {
+            "cell_id": "batch_002::yh.usdcop_x.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T00:19:37Z",
+            "results_sha256": "46b62a79f3ffbe60967dc46cb1d080e811ad51b6702e08a3e589824c51ef3b7f",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 201.53993863699725
+          },
+          {
+            "cell_id": "batch_002::yh.usdcop_x.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:36:14Z",
+            "results_sha256": "55f4361ed0146ba51cce57ee80d301bd4304e3bfd67f12502373f84245e34b82",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 140.31751787499525
+          },
+          {
+            "cell_id": "batch_002::yh.usdmxn_x.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T00:22:55Z",
+            "results_sha256": "03748c71375530ce069c38335d51296d9b5c1f503c52c46eb772a32a1b3f23ea",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 193.24027281699819
+          },
+          {
+            "cell_id": "batch_002::yh.usdmxn_x.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:39:42Z",
+            "results_sha256": "4d614030671a70945a4cdd644bc5328545ab006a4d910de6a0af59b801bd3844",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 203.33267407497624
+          },
+          {
+            "cell_id": "batch_002::yh.vea.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T00:26:48Z",
+            "results_sha256": "a10e47ac18544881011562b2436af4f42f56f2af75a75276b64811a3f284122f",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 227.92756208998617
+          },
+          {
+            "cell_id": "batch_002::yh.vea.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:42:51Z",
+            "results_sha256": "6924fc6c25bac8c65ad3af2a902e794480eef8a3fd37b70803ee88a8fba33b34",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 184.5418365340156
+          },
+          {
+            "cell_id": "batch_002::yh.vnq.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T00:30:41Z",
+            "results_sha256": "7a34f81308249eafda0f131e507f4d3491a646822a00636a181c5c232d51260e",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 229.57025005400646
+          },
+          {
+            "cell_id": "batch_002::yh.vnq.logret_5d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:46:09Z",
+            "results_sha256": "11497692c3c4cd505e890d2215f46d3022dc9e324b32a72a26ce96ef2d3c4f39",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 193.74804330899497
+          },
+          {
+            "cell_id": "batch_002::yh.xlb.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T00:34:14Z",
+            "results_sha256": "44c24ba09b5bd60a44e788da4596714a8abecbbf282dd701c48a19a3efcad807",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 207.929513451003
+          },
+          {
+            "cell_id": "batch_002::yh.xlb.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:49:30Z",
+            "results_sha256": "9e6ea2dbfecae09e81e42730b7442867ce2a3f1065f2ad0cafc0552ab38072a4",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 196.59241809201194
+          },
+          {
+            "cell_id": "batch_002::yh.xlc.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T00:37:27Z",
+            "results_sha256": "3af213ad809d698646d9c6b6b7a85fdd58d3346be5a9cba760407c79ccd2cb56",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 190.24575785698835
+          },
+          {
+            "cell_id": "batch_002::yh.xlc.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:52:33Z",
+            "results_sha256": "35ed3a53d9b97da2ae15bd7cb4550e903655fd545af117d98301efd40e0003fd",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 178.7937892350019
+          },
+          {
+            "cell_id": "batch_002::yh.xlu.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T00:40:55Z",
+            "results_sha256": "925350c669b68ad3a1c687ac61258b332a46edb51b03d09e2086d35f7a5b5888",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 202.85965453501558
+          },
+          {
+            "cell_id": "batch_002::yh.xlu.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T03:55:29Z",
+            "results_sha256": "6ae8d0a3ab12ef5d967faf4df9dafdea312d8b6f9a1840e3c8d893e0452f2fa5",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 170.95378796901787
+          },
+          {
+            "cell_id": "batch_002::fred.inflation_expectations.t10yie.level::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T03:59:01Z",
+            "results_sha256": "bfebd9b86402360226fdf7c5f5956feb4738e5b8031972a9db7cfcada434a71b",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 207.7724185870029
+          },
+          {
+            "cell_id": "batch_002::fred.inflation_expectations.t10yie.level::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T04:20:55Z",
+            "results_sha256": "b7f49b18e43b21bda63b11bb660f33f84f658d9ba6766f1ea5465224dcb4df0a",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 170.68904638200183
+          },
+          {
+            "cell_id": "batch_002::yh.bvsp.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T04:02:35Z",
+            "results_sha256": "ba3d38c6652bb6c587b3c2ec13e40c55b9b681ee3ef320946ac2724eebf014e8",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 210.97828348202165
+          },
+          {
+            "cell_id": "batch_002::yh.bvsp.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T04:24:32Z",
+            "results_sha256": "39634c8b28c981f0919ff2163dcaa31c42bca79c26090d1ca42e1d939e38ca1a",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 212.46880363399396
+          },
+          {
+            "cell_id": "batch_002::yh.bz_f.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T04:05:54Z",
+            "results_sha256": "dbc8668ef5e2a36155a8f5adfe935949dc2e32e6d29658495558daa0703e4f26",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 193.89476823998848
+          },
+          {
+            "cell_id": "batch_002::yh.bz_f.logret_1d::past_to_current_siamese",
+            "finished_at_utc": "2026-10-05T04:27:50Z",
+            "results_sha256": "92639b6e46c127bf15184f16fea1f513ce9c3a0e51e40cc5d71d9b9ba63d9ed0",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 195.08960791002028
+          },
+          {
+            "cell_id": "batch_002::yh.sb_f.logret_5d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T04:09:40Z",
+            "results_sha256": "a0f55c7f434b9a5525308fc914473897951546d94afc86f9dff1b28387e580f0",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 220.90872536000097
+          },
+          {
+            "cell_id": "batch_002::yh.sb_f.logret_5d::past_to_current_siamese",
+            "role": "worker_a",
+            "state": "running"
+          },
+          {
+            "cell_id": "batch_002::yh.usdidr_x.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T04:14:28Z",
+            "results_sha256": "48443ef950fa3371868977cd00a08ba64175117697728b7056ce10dfbc380e9c",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 283.1674479510111
+          },
+          {
+            "cell_id": "batch_002::yh.usdidr_x.logret_1d::past_to_current_siamese",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.xlp.logret_1d::masked_temporal_ae",
+            "finished_at_utc": "2026-10-05T04:17:59Z",
+            "results_sha256": "ca27415c589dc267fbfa0955d4c92401646193ede33bb9bd5a15d040fc6fc371",
+            "role": "worker_a",
+            "state": "done",
+            "wall_seconds": 208.36738714002422
+          },
+          {
+            "cell_id": "batch_002::yh.xlp.logret_1d::past_to_current_siamese",
+            "state": "pending"
+          }
+        ],
+        "baselines_4090_batch_002": [
+          {
+            "cell_id": "batch_002::fred.credit.aaa.logret_1d::baseline",
+            "finished_at_utc": "2026-10-04T18:22:44Z",
+            "results_sha256": "591fe7935ca4f3bdf536247c83ff7c3aea9f9083c519ca154c950a14dcf865b3",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 919.8790943580098
+          },
+          {
+            "cell_id": "batch_002::fred.fx_indices.dtwexemegs.level::baseline",
+            "finished_at_utc": "2026-10-04T18:42:44Z",
+            "results_sha256": "41c721ade3d4a43dc172de13d678a879f47e4449590cb03690a69044c07ebf3e",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1193.8849348530057
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dgs30.level::baseline",
+            "finished_at_utc": "2026-10-04T00:39:48Z",
+            "results_sha256": "f7763f142b7f02c72ae50e6b93562d6614f0563eb1694c26c21dc0a57e9416d5",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1159.7927204239531
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dprime.logret_5d::baseline",
+            "finished_at_utc": "2026-10-04T01:38:43Z",
+            "results_sha256": "a7b85bd93e2a22e76a85ce90d9d16dc75adc516c8109d11068c1326e0d8f4bb3",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 720.5814833919867
+          },
+          {
+            "cell_id": "batch_002::fred.stress.vixcls.logret_5d::baseline",
+            "finished_at_utc": "2026-10-03T23:02:14Z",
+            "results_sha256": "ec16a107f0ecc2e5c86002e15a2397e214e2d7c0a9df1145048f678e14546f8a",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1134.261394275003
+          },
+          {
+            "cell_id": "batch_002::fx.audusd.ewma_vol_24::baseline",
+            "finished_at_utc": "2026-10-04T01:56:37Z",
+            "results_sha256": "e582170a89d19b244682f44a8b60e722226e97e22ba31e788745bf2e4c4a44e3",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1006.7915178299882
+          },
+          {
+            "cell_id": "batch_002::fx.audusd.logret_1h::baseline",
+            "finished_at_utc": "2026-10-04T02:27:23Z",
+            "results_sha256": "c59cf69c6a211ac5d66c033f6aeb0d3777dc57fd65bcccd6182b8e5ee9de9839",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1801.3355940579786
+          },
+          {
+            "cell_id": "batch_002::fx.audusd.logret_24h::baseline",
+            "finished_at_utc": "2026-10-04T02:47:43Z",
+            "results_sha256": "80a3a6e5686b2bc78f30be5c0126e09c83d7d5aa7dc904e5fba68bbaf8c77590",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1170.2021727229585
+          },
+          {
+            "cell_id": "batch_002::fx.eurgbp.ewma_vol_24::baseline",
+            "finished_at_utc": "2026-10-04T03:08:04Z",
+            "results_sha256": "2df6a5faffb2e0222aa913de3b11fcb1f380e73b2ffc40aded9fae89fd2018cc",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1098.9735420640209
+          },
+          {
+            "cell_id": "batch_002::fx.eurgbp.logret_1h::baseline",
+            "finished_at_utc": "2026-10-04T03:39:45Z",
+            "results_sha256": "7195ba2cc42627cfff2bccbf4af9672334a31c00c91e60ecc13195b9cbe6013e",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1813.2001006699866
+          },
+          {
+            "cell_id": "batch_002::fx.eurjpy.ewma_vol_24::baseline",
+            "finished_at_utc": "2026-10-04T04:01:31Z",
+            "results_sha256": "b9fc80552d48ec655b17a63d626d6b41cbc26debaa3f81926641f1c23d298c0f",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1228.0235399729572
+          },
+          {
+            "cell_id": "batch_002::fx.eurjpy.logret_1h::baseline",
+            "finished_at_utc": "2026-10-04T04:31:14Z",
+            "results_sha256": "9660aa42fd31d4539d7940f6d7bab3eb2dd410fcf963632e2d12d0c497c0505b",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1637.1276260419982
+          },
+          {
+            "cell_id": "batch_002::fx.gbpjpy.ewma_vol_24::baseline",
+            "finished_at_utc": "2026-10-04T04:50:53Z",
+            "results_sha256": "117700b0c2bd6b07bb393eb3136ae9140dda268e287bfa36fc9816bad56c7f06",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1115.583861452993
+          },
+          {
+            "cell_id": "batch_002::fx.gbpjpy.logret_1h::baseline",
+            "finished_at_utc": "2026-10-04T05:20:30Z",
+            "results_sha256": "8a39912979d4ac5774f6a1e7b5f42e83e4a43e8f54153b4f318023e3065f0b4a",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1524.2015671010013
+          },
+          {
+            "cell_id": "batch_002::fx.gbpusd.ewma_vol_24::baseline",
+            "finished_at_utc": "2026-10-04T19:00:53Z",
+            "results_sha256": "350ed11d66855a462fb7b3e925d6d88073d63a0a68226382b6e80e60efc1ff6c",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1082.7238660880248
+          },
+          {
+            "cell_id": "batch_002::fx.gbpusd.logret_1h::baseline",
+            "finished_at_utc": "2026-10-04T19:30:53Z",
+            "results_sha256": "e91a21a012f6478751ce6443513a7be03690313775bcd1d14ce3626c4efa65ef",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1792.6505804330227
+          },
+          {
+            "cell_id": "batch_002::fx.nzdusd.ewma_vol_24::baseline",
+            "finished_at_utc": "2026-10-04T20:10:57Z",
+            "results_sha256": "fd11190d93b28fb27b8735a6595140ce26556f0c62a6e853e1a550283d54b29f",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1296.3317462780396
+          },
+          {
+            "cell_id": "batch_002::fx.nzdusd.logret_1h::baseline",
+            "finished_at_utc": "2026-10-04T20:37:22Z",
+            "results_sha256": "087fb97a62bd51cf05b3d9930ecbe9cf9d30bf3e849ab59cac0c8f2c2841adcf",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1578.8836100270273
+          },
+          {
+            "cell_id": "batch_002::fx.usdcad.ewma_vol_24::baseline",
+            "finished_at_utc": "2026-10-04T20:54:25Z",
+            "results_sha256": "04f8e3b6568311c1661584d18ee9152851ea2933d929c57d256e6f62c7aaa5a2",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1018.2577437570435
+          },
+          {
+            "cell_id": "batch_002::fx.usdchf.ewma_vol_24::baseline",
+            "finished_at_utc": "2026-10-04T21:12:09Z",
+            "results_sha256": "0b4fb81d878786c7117e3c4a6b9d67489953d12a6e21c9c120bb99d33eceb38e",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 997.3437316300115
+          },
+          {
+            "cell_id": "batch_002::fx.usdchf.logret_1h::baseline",
+            "finished_at_utc": "2026-10-04T21:36:35Z",
+            "results_sha256": "1358ba1726fa9490a99e3a8b0ca12e1edf5b00dd5a5261c0028ac8dfab388971",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1461.5176787610399
+          },
+          {
+            "cell_id": "batch_002::fx.usdchf.logret_24h::baseline",
+            "finished_at_utc": "2026-10-04T21:58:11Z",
+            "results_sha256": "45c9bbf87add107756d78d85ba8dcc58ce98538ce4c7dd143060ea77d7590d44",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1289.0586947879638
+          },
+          {
+            "cell_id": "batch_002::fx.usdjpy.ewma_vol_24::baseline",
+            "finished_at_utc": "2026-10-04T22:18:01Z",
+            "results_sha256": "97621f89d592e75220bcdd8e2dcb4c11e3c4bc8a3254a90d4aacf43c8be62db0",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1183.642388124019
+          },
+          {
+            "cell_id": "batch_002::fx.usdjpy.logret_1h::baseline",
+            "finished_at_utc": "2026-10-04T22:44:14Z",
+            "results_sha256": "fe1fa8d9c9e92524b57da77d273ec2eb1f8746c16cbd79f1e4f57c983cea2ce1",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1566.3442832099972
+          },
+          {
+            "cell_id": "batch_002::yh.bsesn.logret_1d::baseline",
+            "finished_at_utc": "2026-10-04T23:06:53Z",
+            "results_sha256": "aa9854d1b9f4259c4b745882f9928d807fa253aaf74a7c119c21fccf89748e6a",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1352.7618469530134
+          },
+          {
+            "cell_id": "batch_002::yh.ftse.logret_5d::baseline",
+            "finished_at_utc": "2026-10-05T01:01:26Z",
+            "results_sha256": "ea60219c0e5c29e78deadd431469c3f3da51c38d2d1162584921cb9ca634a6d4",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1375.9174201160204
+          },
+          {
+            "cell_id": "batch_002::yh.gld.logret_1d::baseline",
+            "finished_at_utc": "2026-10-05T01:23:50Z",
+            "results_sha256": "103867502f111e57ff14403ed930cb4d5cf2b18887db2efb87c12802381639f8",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1337.7006551559316
+          },
+          {
+            "cell_id": "batch_002::yh.hyg.logret_1d::baseline",
+            "finished_at_utc": "2026-10-05T01:46:41Z",
+            "results_sha256": "ce025db9a87d81d77d3f65d0656ae342a1a2705ccf1ea8567ba4fdadc4b01c90",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1364.7747797089396
+          },
+          {
+            "cell_id": "batch_002::yh.mxx.logret_5d::baseline",
+            "finished_at_utc": "2026-10-05T02:08:14Z",
+            "results_sha256": "081981e68abe66a577a401a49474b81d5ce53f55cfcc3a5068f28f1b5697f527",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1286.4168049040018
+          },
+          {
+            "cell_id": "batch_002::yh.sb_f.logret_1d::baseline",
+            "finished_at_utc": "2026-10-05T02:33:50Z",
+            "results_sha256": "067d9e3593c36b18ee3d996d287dab469565f8263dd0597d82b8aa7091d997a1",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1529.6466918039368
+          },
+          {
+            "cell_id": "batch_002::yh.si_f.logret_1d::baseline",
+            "finished_at_utc": "2026-10-05T02:55:13Z",
+            "results_sha256": "02790c7c2a84159ad0ef77289c99ebd168d16a7a485d91f745f10da460ddd476",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1277.03149291093
+          },
+          {
+            "cell_id": "batch_002::yh.slv.logret_1d::baseline",
+            "finished_at_utc": "2026-10-05T03:14:39Z",
+            "results_sha256": "c75ed34b40f43f8a8b87908239e6af29972aea3d3834fbed338aa39528717d26",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1159.5329563490814
+          },
+          {
+            "cell_id": "batch_002::yh.usdbrl_x.logret_5d::baseline",
+            "finished_at_utc": "2026-10-05T03:36:00Z",
+            "results_sha256": "a31c762bb878063dd70c76905b88c69a5328a7c64160195f28eddf965796dc54",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1274.6466603539884
+          },
+          {
+            "cell_id": "batch_002::yh.usdmxn_x.logret_5d::baseline",
+            "finished_at_utc": "2026-10-05T03:57:08Z",
+            "results_sha256": "207703455ac084e646737552dd7a18dbe6075ec8121bd8e52f929d27d33c6618",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1261.2710339799523
+          },
+          {
+            "cell_id": "batch_002::yh.usdzar_x.logret_1d::baseline",
+            "finished_at_utc": "2026-10-05T04:24:30Z",
+            "results_sha256": "86210d8f8099a1e6b1e58d71e2369b7963f65f55d396b68dcf87155c7a48701c",
+            "role": "worker_b",
+            "state": "done",
+            "wall_seconds": 1635.7092878429685
+          },
+          {
+            "cell_id": "batch_002::yh.zs_f.logret_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.credit.aaa.level::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.credit.bamlh0a0hym2.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.fx_indices.dtwexafegs.logret_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.fx_indices.dtwexbgs.level::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dfii10.diff_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dfii10.level::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dgs1.logret_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dgs3mo.diff_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dgs5.level::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dgs5.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.rates.dtb3.diff_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.rates.t10y3m.diff_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.rates.tb3ms.level::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.stress.anfci.diff_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.stress.anfci.level::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.stress.nfci.diff_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.stress.nfci.level::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fx.gbpusd.logret_24h::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.axjo.logret_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.cl_f.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.dia.logret_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.eem.logret_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.ftse.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.gc_f.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.gc_f.logret_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.ivv.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.ixic.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.kc_f.logret_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.lqd.logret_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.rut.logret_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.slv.logret_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.spy.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.spy.logret_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.tlt.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.twii.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.usdbrl_x.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.usdclp_x.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.usdcop_x.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.usdmxn_x.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.vea.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.vnq.logret_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.xlb.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.xlc.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.xlu.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::fred.inflation_expectations.t10yie.level::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.bvsp.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.bz_f.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.sb_f.logret_5d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.usdidr_x.logret_1d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_002::yh.xlp.logret_1d::baseline",
+            "state": "pending"
+          }
+        ],
+        "baselines_5090_batch_001_003": [
+          {
+            "cell_id": "batch_001::px.close_loc::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.ewma_vol_24::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.log_close::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.log_co::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.log_hl::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.logret_120h::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.logret_12h::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.logret_168h::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.logret_1h::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.logret_24h::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.logret_2h::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.logret_48h::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.logret_4h::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.logret_6h::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.rv5::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.zclose_168::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::px.zclose_24::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.adx_14::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.atr_14_n::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.bb_pctb_20::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.bb_width_20::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.cci_20::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.dmn_14::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.dmp_14::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.ema20_dev::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.macd_hist_n::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.macd_n::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.mom_10_n::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.roc_10::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.rsi_14::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.stoch_d::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.stoch_k::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_001::ta.willr_14::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::rg.atr_pct::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::rg.atr_ratio::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::rg.bb_width_pct::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::rg.di_spread::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::rg.ema_alignment::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::rg.macd_hist::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::rg.price_vs_ema50::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::rg.roc_12::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::tv.hilbert_amp::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::tv.kalman_dev::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::tv.stl_dev::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::tv.stl_seasonal::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::tv.wav_d1::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::tv.wav_d2::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::tv.wav_d3::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::tv.wav_d4::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::tv.wav_d5::baseline",
+            "state": "pending"
+          },
+          {
+            "cell_id": "batch_003::cot.wti_nymex.mm_net_oi::baseline",
+            "state": "pending"
+          }
+        ]
       },
-      "baseline_002": {
-        "completed": 35,
-        "eta_median_utc": "2026-10-05T22:32:50Z",
-        "eta_p90_utc": "2026-10-06T03:38:55Z",
-        "failed": 0,
-        "median_seconds": 1277.031493,
-        "p90_seconds": 1637.127626,
-        "remaining": 51,
-        "sample_size": 35,
-        "status_updated_from": "baseline_4090_STATUS.json",
-        "total": 86,
-        "workers": 1
+      "generated_at_utc": "2026-10-05T04:29:02Z",
+      "hosts": {
+        "coordinator": {
+          "gpus": [
+            "0, NVIDIA GeForce RTX 4070 Laptop GPU, 0 %, 730 MiB, 8188 MiB, 44"
+          ],
+          "memory": "total_mib=31259 used_mib=11459 available_mib=19800",
+          "probed_at_utc": "2026-10-05T04:29:02Z",
+          "running": []
+        },
+        "worker_a": {
+          "gpus": [
+            "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 0 %, 14 MiB, 12227 MiB, 37",
+            "1, NVIDIA GeForce RTX 5090, 0 %, 19518 MiB, 32607 MiB, 44"
+          ],
+          "memory": "total_mib=14630 used_mib=8734 available_mib=5895",
+          "probed_at_utc": "2026-10-05T04:29:02Z",
+          "running": [
+            {
+              "cell_id": "batch_002::yh.sb_f.logret_5d::past_to_current_siamese",
+              "elapsed_seconds": 68,
+              "queue": "alternatives_5090",
+              "started_at_utc": "2026-10-05T04:27:54Z"
+            }
+          ]
+        },
+        "worker_b": {
+          "gpus": [
+            "0, NVIDIA GeForce RTX 4090 Laptop GPU, 25 %, 14428 MiB, 16376 MiB, 41"
+          ],
+          "memory": "total_mib=31310 used_mib=19199 available_mib=12111",
+          "probed_at_utc": "2026-10-05T04:29:02Z",
+          "running": []
+        }
       },
-      "baseline_successor": {
-        "completed": 0,
-        "duration_proxy": "baseline_002 queue durations (other GPU) until the first successor cells close",
-        "eta_median_utc": "2026-10-05T22:52:20Z",
-        "eta_p90_utc": "2026-10-06T04:03:55Z",
-        "failed": 0,
-        "median_seconds": null,
-        "p90_seconds": null,
-        "remaining": 51,
-        "sample_size": 0,
-        "status_updated_from": "baseline_successor_5090_STATUS.json",
-        "total": 51,
-        "workers": 1
+      "queues": {
+        "alternatives_5090": {
+          "active_roles": [
+            "worker_a"
+          ],
+          "active_workers": 1,
+          "by_role": {
+            "worker_a": {
+              "done": 269,
+              "median_seconds": 195.1,
+              "n": 269,
+              "p90_seconds": 250.1
+            }
+          },
+          "counts": {
+            "done": 269,
+            "failed": 2,
+            "pending": 2,
+            "running": 1
+          },
+          "denominator": 274,
+          "duplicates": [],
+          "durations_seconds": {
+            "median": 195.1,
+            "n": 269,
+            "p90": 250.1
+          },
+          "eta": {
+            "basis": {
+              "median_seconds": {
+                "worker_a": 195.1
+              },
+              "p90_seconds": {
+                "worker_a": 250.1
+              }
+            },
+            "finish_utc_median": "2026-10-05T04:37:40Z",
+            "finish_utc_p90": "2026-10-05T04:40:25Z",
+            "provisional": false,
+            "reason": null,
+            "seconds_median": 517,
+            "seconds_p90": 682
+          },
+          "failures": [
+            {
+              "cell_id": "batch_002::fred.credit.bamlh0a0hym2.logret_1d::masked_temporal_ae",
+              "error": "FAILED_MARKER rc=1",
+              "receipt": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/worker_a_alt/batch_002/fred.credit.bamlh0a0hym2.logret_1d/FAILED.codex.json",
+              "role": "worker_a"
+            },
+            {
+              "cell_id": "batch_002::fred.credit.bamlh0a0hym2.logret_1d::past_to_current_siamese",
+              "error": "FAILED_MARKER rc=1",
+              "receipt": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/worker_a_alt/batch_002/fred.credit.bamlh0a0hym2.logret_1d/pass_p2c/FAILED.codex.json",
+              "role": "worker_a"
+            }
+          ],
+          "name": "alternatives_5090",
+          "plan_cells": 274,
+          "running": [
+            {
+              "cell_id": "batch_002::yh.sb_f.logret_5d::past_to_current_siamese",
+              "elapsed_seconds": 68,
+              "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_a/alt/codex_continuation.log",
+              "role": "worker_a",
+              "stale": false,
+              "started_at_utc": "2026-10-05T04:27:54Z"
+            }
+          ]
+        },
+        "baselines_4090_batch_002": {
+          "active_roles": [],
+          "active_workers": 0,
+          "by_role": {
+            "worker_a": {
+              "done": 0,
+              "median_seconds": null,
+              "n": 0,
+              "p90_seconds": null
+            },
+            "worker_b": {
+              "done": 35,
+              "median_seconds": 1277.0,
+              "n": 35,
+              "p90_seconds": 1637.1
+            }
+          },
+          "counts": {
+            "done": 35,
+            "failed": 0,
+            "pending": 51,
+            "running": 0
+          },
+          "denominator": 86,
+          "duplicates": [],
+          "durations_seconds": {
+            "median": 1277.0,
+            "n": 35,
+            "p90": 1637.1
+          },
+          "eta": {
+            "basis": {
+              "median_seconds": {},
+              "p90_seconds": {}
+            },
+            "finish_utc_median": null,
+            "finish_utc_p90": null,
+            "provisional": false,
+            "reason": "NO_ACTIVE_WORKER",
+            "seconds_median": null,
+            "seconds_p90": null
+          },
+          "failures": [],
+          "name": "baselines_4090_batch_002",
+          "plan_cells": 86,
+          "running": []
+        },
+        "baselines_5090_batch_001_003": {
+          "active_roles": [],
+          "active_workers": 0,
+          "by_role": {
+            "worker_a": {
+              "done": 0,
+              "median_seconds": null,
+              "n": 0,
+              "p90_seconds": null
+            }
+          },
+          "counts": {
+            "done": 0,
+            "failed": 0,
+            "pending": 51,
+            "running": 0
+          },
+          "denominator": 51,
+          "duplicates": [],
+          "durations_seconds": {
+            "median": null,
+            "n": 0,
+            "p90": null
+          },
+          "eta": {
+            "basis": {
+              "median_seconds": {},
+              "p90_seconds": {}
+            },
+            "finish_utc_median": "2026-10-05T22:43:07Z",
+            "finish_utc_p90": "2026-10-06T03:51:57Z",
+            "provisional": true,
+            "reason": "WAITING_ON_alternatives_5090",
+            "seconds_median": 65644,
+            "seconds_p90": 84174,
+            "waiting_on": "alternatives_5090"
+          },
+          "failures": [],
+          "name": "baselines_5090_batch_001_003",
+          "plan_cells": 51,
+          "running": []
+        }
+      },
+      "rule": "active worker = role with a BEGIN and no END in its driver log; a waiter is not GPU work; ETA = remaining work / sum of active rates; absolute UTC",
+      "schema": "ps3r_eta.v1",
+      "totals": {
+        "alternatives": {
+          "denominator": 274,
+          "done": 269,
+          "failed": 2
+        },
+        "baselines_batch_002": {
+          "denominator": 86,
+          "done": 35,
+          "failed": 0
+        },
+        "baselines_heavy_candidates": {
+          "denominator": 137,
+          "done": 35,
+          "failed": 0
+        }
       }
     },
-    "source": "queue STATUS files (median / nearest-rank p90 of observed wall_seconds, one worker per queue)"
+    "source": "FS-GPU ps3r_eta.json",
+    "source_path": "docs/audits/evidence/canonical_20261003/fs_closure/fs_gpu/ps3r_eta.json"
   },
   "families_present_histogram": {
     "0": 1,
-    "3": 4,
-    "4": 97,
+    "3": 3,
+    "4": 98,
     "6": 35
   },
   "heavy_candidates_covered": 35,
@@ -4051,19 +7097,19 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "f902a1d09e68b41d6c09c4e44d450a1c2ce4592dfb642c5a4e2c35df73a1774b"
+      "sha256": "9af66f40f931766ad0dbeb566a7315cc03a1c627d92b9c312c08941bc71faa78"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
-      "rows": 91536,
-      "sha256": "a0245841071ac5b2586d52a411871479719bf4544100418f130e2f69842f86cb"
+      "rows": 91736,
+      "sha256": "eacc868de8facf1b2186bbaa84e54ed58775ab8ee13e2500a6098cce20f2af52"
     },
     "representation_metric_catalog.csv.gz": {
-      "sha256": "8d006501c829c7a92a952bb3d51b5ab2d0004540f61faecd2bd20e0b55da1e07"
+      "sha256": "3375c723c4332c18bf558bc8bd7c67bf46fcd8c152c636b6842ed1268e1c784b"
     }
   },
   "planned_cells_total": 411,
-  "process_peak_rss_bytes": 136957952,
+  "process_peak_rss_bytes": 138129408,
   "refit_gate_applied": false,
   "refit_input": null,
   "rule_version": "fs_rep_rule.v1",
@@ -4081,14 +7127,14 @@
       "FAILED": 1
     },
     "alt_p2c": {
-      "COMPLETED": 132,
+      "COMPLETED": 133,
       "FAILED": 1,
-      "PENDING": 4
+      "PENDING": 3
     },
     "baseline": {
       "COMPLETED": 35,
       "PENDING": 102
     }
   },
-  "updated_at": "2026-10-05T04:27:25Z"
+  "updated_at": "2026-10-05T04:29:34Z"
 }
