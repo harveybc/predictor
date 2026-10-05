@@ -22,9 +22,9 @@ fred.stress.anfci.diff_5d,batch_002,PENDING,identity;random;masked_temporal_ae;p
 fred.stress.anfci.level,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 fred.stress.nfci.diff_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 fred.stress.nfci.level,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
-fred.stress.vixcls.logret_5d,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
-fx.audusd.ewma_vol_24,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
-fx.audusd.logret_1h,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
+fred.stress.vixcls.logret_5d,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;RAW_REFIT_GAIN_NONPOSITIVE
+fx.audusd.ewma_vol_24,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;RAW_REFIT_GAIN_POSITIVE
+fx.audusd.logret_1h,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;RAW_REFIT_GAIN_NONPOSITIVE
 fx.audusd.logret_24h,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
 fx.eurgbp.ewma_vol_24,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
 fx.eurgbp.logret_1h,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;UNSTABLE_LATENT(masked_temporal_ae)
