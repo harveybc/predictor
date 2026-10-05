@@ -342,7 +342,8 @@
         "past_to_current_siamese"
       ],
       "flags": [
-        "RAW_HAS_PROBE_SKILL"
+        "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_NONPOSITIVE"
       ],
       "terminals": {
         "alt_mtae": {
@@ -459,6 +460,7 @@
       ],
       "flags": [
         "RAW_HAS_PROBE_SKILL",
+        "RAW_REFIT_GAIN_POSITIVE",
         "UNSTABLE_LATENT(past_to_current_siamese)"
       ],
       "terminals": {
@@ -4023,7 +4025,7 @@
   },
   "candidates_decided": 44,
   "coverage_fraction": 0.3139,
-  "cycle_started_at": "2026-10-05T05:37:28Z",
+  "cycle_started_at": "2026-10-05T05:39:37Z",
   "decisions": {
     "NO_TRAINED_ADVANTAGE": 35,
     "PENDING": 93,
@@ -6951,27 +6953,27 @@
           }
         ]
       },
-      "generated_at_utc": "2026-10-05T05:37:17Z",
+      "generated_at_utc": "2026-10-05T05:39:19Z",
       "hosts": {
         "coordinator": {
           "gpus": [
-            "0, NVIDIA GeForce RTX 4070 Laptop GPU, 16 %, 900 MiB, 8188 MiB, 48"
+            "0, NVIDIA GeForce RTX 4070 Laptop GPU, 10 %, 886 MiB, 8188 MiB, 47"
           ],
-          "memory": "total_mib=31259 used_mib=11872 available_mib=19387",
-          "probed_at_utc": "2026-10-05T05:37:15Z",
+          "memory": "total_mib=31259 used_mib=11885 available_mib=19374",
+          "probed_at_utc": "2026-10-05T05:39:18Z",
           "running": []
         },
         "worker_a": {
           "gpus": [
             "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 0 %, 14 MiB, 12227 MiB, 39",
-            "1, NVIDIA GeForce RTX 5090, 59 %, 19504 MiB, 32607 MiB, 55"
+            "1, NVIDIA GeForce RTX 5090, 56 %, 19506 MiB, 32607 MiB, 55"
           ],
-          "memory": "total_mib=14630 used_mib=9588 available_mib=5041",
-          "probed_at_utc": "2026-10-05T05:37:15Z",
+          "memory": "total_mib=14630 used_mib=10042 available_mib=4587",
+          "probed_at_utc": "2026-10-05T05:39:18Z",
           "running": [
             {
               "cell_id": "batch_001::px.logret_120h::baseline",
-              "elapsed_seconds": 441,
+              "elapsed_seconds": 563,
               "queue": "baselines_5090_batch_001_003",
               "started_at_utc": "2026-10-05T05:29:56Z"
             }
@@ -6979,14 +6981,14 @@
         },
         "worker_b": {
           "gpus": [
-            "0, NVIDIA GeForce RTX 4090 Laptop GPU, 18 %, 14426 MiB, 16376 MiB, 42"
+            "0, NVIDIA GeForce RTX 4090 Laptop GPU, 28 %, 14428 MiB, 16376 MiB, 43"
           ],
-          "memory": "total_mib=31310 used_mib=19505 available_mib=11805",
-          "probed_at_utc": "2026-10-05T05:37:15Z",
+          "memory": "total_mib=31310 used_mib=20203 available_mib=11107",
+          "probed_at_utc": "2026-10-05T05:39:18Z",
           "running": [
             {
               "cell_id": "batch_002::fred.fx_indices.dtwexbgs.level::baseline",
-              "elapsed_seconds": 127,
+              "elapsed_seconds": 249,
               "queue": "baselines_4090_batch_002",
               "started_at_utc": "2026-10-05T05:35:10Z"
             }
@@ -7090,11 +7092,11 @@
               }
             },
             "finish_utc_median": "2026-10-05T22:19:10Z",
-            "finish_utc_p90": "2026-10-06T02:57:34Z",
+            "finish_utc_p90": "2026-10-06T02:57:33Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 60112,
-            "seconds_p90": 76816
+            "seconds_median": 59990,
+            "seconds_p90": 76694
           },
           "failures": [
             {
@@ -7109,7 +7111,7 @@
           "running": [
             {
               "cell_id": "batch_002::fred.fx_indices.dtwexbgs.level::baseline",
-              "elapsed_seconds": 127,
+              "elapsed_seconds": 249,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
               "role": "worker_b",
               "stale": false,
@@ -7152,12 +7154,12 @@
                 "worker_a": 819.2
               }
             },
-            "finish_utc_median": "2026-10-05T13:01:58Z",
+            "finish_utc_median": "2026-10-05T13:01:57Z",
             "finish_utc_p90": "2026-10-05T15:57:59Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 26680,
-            "seconds_p90": 37242
+            "seconds_median": 26558,
+            "seconds_p90": 37120
           },
           "failures": [],
           "name": "baselines_5090_batch_001_003",
@@ -7165,7 +7167,7 @@
           "running": [
             {
               "cell_id": "batch_001::px.logret_120h::baseline",
-              "elapsed_seconds": 441,
+              "elapsed_seconds": 563,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_a/baseline_5090.log",
               "role": "worker_a",
               "stale": false,
@@ -7217,7 +7219,7 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "47abccf3320766794ca53e97f7ce0968b795c13b0ae6601238d8f71f8aaa4d2a"
+      "sha256": "c3cfbd74ca021893bf10fcc17116684780056748c7421552d1855b0aa6cefedb"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
@@ -7256,5 +7258,5 @@
       "PENDING": 93
     }
   },
-  "updated_at": "2026-10-05T05:37:34Z"
+  "updated_at": "2026-10-05T05:39:41Z"
 }
