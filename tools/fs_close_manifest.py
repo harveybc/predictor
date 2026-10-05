@@ -629,6 +629,9 @@ class LaneEvidence:
     pred_rankings: dict[str, dict[str, list[str]]] = field(default_factory=dict)   # method -> "target|fold" -> ranking
     pred_incomplete: dict[str, str] = field(default_factory=dict)
     pred_best_method: str | None = None
+    pred_draft: dict = field(default_factory=dict)
+    pred_progress: dict = field(default_factory=dict)
+    pred_methods_planned: list[str] = field(default_factory=list)
     causal: dict[str, dict[str, str]] = field(default_factory=dict)              # feature -> target -> state
     causal_counts: dict[str, int] = field(default_factory=dict)
     rep: dict[str, dict[str, str]] = field(default_factory=dict)                  # feature -> {decision, flags}
@@ -653,8 +656,12 @@ def _first_key(d: dict, keys):
 
 
 def load_pred(paths: Paths, pop: Population, ev: LaneEvidence) -> None:
-    root = paths.fs_closure / "fs_pred"
-    sets_file = next((p for p in sorted(root.glob("selector_sets*.json")) if p.is_file()), None) if root.is_dir() else None
+    roots = [r for r in (paths.fs_closure / "fs_pred", paths.state / "fs_close/fs_pred_mirror") if r.is_dir()]
+    sets_file = None
+    for root in roots:
+        sets_file = next((p for p in sorted(root.rglob("selector_sets*.json")) if p.is_file()), None)
+        if sets_file:
+            break
     if sets_file is None:
         ev.missing.append("fs_pred/selector_sets.json")
     else:
@@ -665,15 +672,22 @@ def load_pred(paths: Paths, pop: Population, ev: LaneEvidence) -> None:
         if isinstance(rankings, dict):
             for method, body in rankings.items():
                 _ingest_ranking(ev, method, body)
-    for p in generic_table_files(root) if root.is_dir() else []:
-        if "ranking" not in p.name.lower():
-            continue
-        try:
-            df = load_table(p)
-        except Exception:
-            continue
-        ev.digests["fs_pred/" + str(p.relative_to(root))] = sha256_file(p)
-        _ingest_ranking_table(ev, df)
+        if isinstance(doc.get("targets"), dict):      # fs_pred_selector_sets_draft.v1: targets -> method -> fold -> selected_by_k
+            ev.pred_draft = doc
+    for root in roots:
+        for p in generic_table_files(root):
+            if "ranking" not in p.name.lower():
+                continue
+            try:
+                df = load_table(p)
+            except Exception:
+                continue
+            ev.digests["fs_pred/" + str(p.relative_to(root))] = sha256_file(p)
+            _ingest_ranking_table(ev, df)
+    prog = next((read_json(r / "progress.json", None) for r in roots if (r / "progress.json").is_file()), None)
+    contract = next((read_json(r / "run_contract.json", None) for r in roots if (r / "run_contract.json").is_file()), None)
+    ev.pred_progress = prog or {}
+    ev.pred_methods_planned = list((contract or {}).get("methods") or [])
     if not ev.pred_rankings:
         ev.missing.append("fs_pred/rankings (method x target x fold complete orderings)")
     for method, cells in list(ev.pred_rankings.items()):
@@ -1402,7 +1416,10 @@ def lane_coverage(pop: Population, ev: LaneEvidence, cov: dict, dispositions: li
         "PS3-R": {"done": ps3r_complete, "total": heavy, "unit": "heavy candidates with 3 terminals",
                   "terminals_done": ps3r_terminals, "terminals_total": heavy * 3},
         "PS4": {"done": len(ev.ps4_profiled & set(ev.heavy)) if ev.heavy else len(ev.ps4_profiled), "total": heavy, "unit": "heavy candidates profiled"},
-        "FS-PRED": {"done": methods_complete, "total": max(len(ev.pred_rankings), 14), "unit": "methods with complete rankings"},
+        "FS-PRED": {"done": methods_complete, "total": max(len(ev.pred_rankings), len(ev.pred_methods_planned), 14),
+                    "unit": "methods with complete rankings", "eta_utc": ev.pred_progress.get("eta_utc"),
+                    "method_cells_done": ev.pred_progress.get("method_cells_done"), "method_cells_total": ev.pred_progress.get("method_cells_total"),
+                    "folds_in_progress": ev.pred_progress.get("folds")},
         "FS-CAUSAL": {"done": len(ev.causal), "total": n, "unit": "candidates with causal evidence"},
         "FS-REP": {"done": rep_decided, "total": heavy, "unit": "heavy candidates decided"},
         "FS-GEN": {"done": sum(v for k, v in ev.gen_counts.items() if k != "NOT_EVALUATED"), "total": n,
@@ -1608,6 +1625,11 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
         info["state"] = "WORKER_UNREACHABLE"
         info["detail"] = str(getattr(exc, "stderr", b""))[-300:]
         return info
+    mirror = paths.state / "fs_close/fs_pred_mirror"
+    mirror.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["rsync", "-q", "-r", "--timeout=120", "--include=tables/", "--include=tables/*.parquet", "--include=selector_sets.json",
+                    "--include=progress.json", "--include=run_contract.json", "--exclude=*", f"{alias}:{wstate}/fs_pred/out/", str(mirror)],
+                   check=False, capture_output=True, timeout=300)
     local_out = paths.state / "fs_close"
     for name in ("paired_refit_metrics.parquet", "refit_receipt.json", "progress.json", "closure_record.json"):
         src = local_out / name
