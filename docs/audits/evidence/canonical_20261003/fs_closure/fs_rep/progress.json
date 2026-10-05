@@ -4294,7 +4294,7 @@
   "candidates_decided": 78,
   "claim_scope": "provisional extractibility/probe disposition; no downstream improvement of latents is claimed while trained-family G4 is NOT_APPLICABLE; raw vs latent belongs to M4",
   "coverage_fraction": 0.562,
-  "cycle_started_at": "2026-10-05T10:14:29Z",
+  "cycle_started_at": "2026-10-05T10:15:38Z",
   "decisions": {
     "NOT_AVAILABLE_FOR_TRAIN": 1,
     "NO_TRAINED_ADVANTAGE": 57,
@@ -4546,7 +4546,7 @@
     }
   },
   "planned_cells_total": 411,
-  "process_peak_rss_bytes": 159059968,
+  "process_peak_rss_bytes": 158535680,
   "refit_gate_applied": true,
   "refit_input": "docs/audits/evidence/canonical_20261003/fs_closure/fs_close/refit_gain_export.csv",
   "rule_version": "fs_rep_rule.v3",
@@ -4573,5 +4573,5 @@
       "PENDING": 59
     }
   },
-  "updated_at": "2026-10-05T10:14:36Z"
+  "updated_at": "2026-10-05T10:15:47Z"
 }
