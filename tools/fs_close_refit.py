@@ -396,6 +396,7 @@ def run_plan(plan_path: Path, feature_files, targets_file, folds_file, out_dir: 
     cells_done = cells_skipped = cells_failed = 0
     fold_list = [f for f in folds["folds"] if not fold_names or f["name"] in fold_names]
     rows_buffer = []
+    _write_progress(out_dir, progress, started, 0, 0, 0)   # RUNNING from the first second, before any fit
     for head, s in [(h, s) for h in heads for s in plan["sets"] if h in (s.get("heads") or heads)]:
         s_digest = set_sha256(s)
         k = s.get("k")
