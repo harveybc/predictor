@@ -125,7 +125,7 @@ yh.usdbrl_x.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_
 yh.usdbrl_x.logret_5d,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
 yh.usdclp_x.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 yh.usdcop_x.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
-yh.usdidr_x.logret_1d,batch_002,PENDING,,
+yh.usdidr_x.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae,
 yh.usdmxn_x.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 yh.usdmxn_x.logret_5d,batch_002,RAW,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
 yh.usdzar_x.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
