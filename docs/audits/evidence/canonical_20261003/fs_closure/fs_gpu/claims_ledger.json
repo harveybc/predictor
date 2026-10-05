@@ -1,0 +1,132 @@
+{
+  "cells": {
+    "batch_002::fred.rates.dgs30.level": {
+      "batch_id": "batch_002",
+      "claims": {},
+      "feature_id": "fred.rates.dgs30.level",
+      "legacy": [
+        "worker_a:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_a/batch_002/fred.rates.dgs30.level/claim.json",
+        "worker_b:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_b/batch_002/fred.rates.dgs30.level/claim.json"
+      ],
+      "winner": null
+    },
+    "batch_002::fred.rates.dprime.logret_5d": {
+      "batch_id": "batch_002",
+      "claims": {},
+      "feature_id": "fred.rates.dprime.logret_5d",
+      "legacy": [
+        "worker_a:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_a/batch_002/fred.rates.dprime.logret_5d/claim.json",
+        "worker_b:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_b/batch_002/fred.rates.dprime.logret_5d/claim.json"
+      ],
+      "winner": null
+    },
+    "batch_002::fred.stress.vixcls.logret_5d": {
+      "batch_id": "batch_002",
+      "claims": {},
+      "feature_id": "fred.stress.vixcls.logret_5d",
+      "legacy": [
+        "worker_a:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_a/batch_002/fred.stress.vixcls.logret_5d/claim.json",
+        "worker_b:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_b/batch_002/fred.stress.vixcls.logret_5d/claim.json"
+      ],
+      "winner": null
+    },
+    "batch_002::fx.audusd.ewma_vol_24": {
+      "batch_id": "batch_002",
+      "claims": {},
+      "feature_id": "fx.audusd.ewma_vol_24",
+      "legacy": [
+        "worker_a:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_a/batch_002/fx.audusd.ewma_vol_24/claim.json",
+        "worker_b:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_b/batch_002/fx.audusd.ewma_vol_24/claim.json"
+      ],
+      "winner": null
+    },
+    "batch_002::fx.audusd.logret_1h": {
+      "batch_id": "batch_002",
+      "claims": {},
+      "feature_id": "fx.audusd.logret_1h",
+      "legacy": [
+        "worker_a:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_a/batch_002/fx.audusd.logret_1h/claim.json",
+        "worker_b:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_b/batch_002/fx.audusd.logret_1h/claim.json"
+      ],
+      "winner": null
+    },
+    "batch_002::fx.audusd.logret_24h": {
+      "batch_id": "batch_002",
+      "claims": {},
+      "feature_id": "fx.audusd.logret_24h",
+      "legacy": [
+        "worker_a:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_a/batch_002/fx.audusd.logret_24h/claim.json",
+        "worker_b:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_b/batch_002/fx.audusd.logret_24h/claim.json"
+      ],
+      "winner": null
+    },
+    "batch_002::fx.eurgbp.ewma_vol_24": {
+      "batch_id": "batch_002",
+      "claims": {},
+      "feature_id": "fx.eurgbp.ewma_vol_24",
+      "legacy": [
+        "worker_a:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_a/batch_002/fx.eurgbp.ewma_vol_24/claim.json",
+        "worker_b:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_b/batch_002/fx.eurgbp.ewma_vol_24/claim.json"
+      ],
+      "winner": null
+    },
+    "batch_002::fx.eurgbp.logret_1h": {
+      "batch_id": "batch_002",
+      "claims": {},
+      "feature_id": "fx.eurgbp.logret_1h",
+      "legacy": [
+        "worker_a:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_a/batch_002/fx.eurgbp.logret_1h/claim.json",
+        "worker_b:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_b/batch_002/fx.eurgbp.logret_1h/claim.json"
+      ],
+      "winner": null
+    },
+    "batch_002::fx.eurjpy.ewma_vol_24": {
+      "batch_id": "batch_002",
+      "claims": {},
+      "feature_id": "fx.eurjpy.ewma_vol_24",
+      "legacy": [
+        "worker_a:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_a/batch_002/fx.eurjpy.ewma_vol_24/claim.json",
+        "worker_b:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_b/batch_002/fx.eurjpy.ewma_vol_24/claim.json"
+      ],
+      "winner": null
+    },
+    "batch_002::fx.eurjpy.logret_1h": {
+      "batch_id": "batch_002",
+      "claims": {},
+      "feature_id": "fx.eurjpy.logret_1h",
+      "legacy": [
+        "worker_a:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_a/batch_002/fx.eurjpy.logret_1h/claim.json",
+        "worker_b:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_b/batch_002/fx.eurjpy.logret_1h/claim.json"
+      ],
+      "winner": null
+    },
+    "batch_002::fx.gbpjpy.ewma_vol_24": {
+      "batch_id": "batch_002",
+      "claims": {},
+      "feature_id": "fx.gbpjpy.ewma_vol_24",
+      "legacy": [
+        "worker_a:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_a/batch_002/fx.gbpjpy.ewma_vol_24/claim.json",
+        "worker_b:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_b/batch_002/fx.gbpjpy.ewma_vol_24/claim.json"
+      ],
+      "winner": null
+    },
+    "batch_002::fx.gbpjpy.logret_1h": {
+      "batch_id": "batch_002",
+      "claims": {},
+      "feature_id": "fx.gbpjpy.logret_1h",
+      "legacy": [
+        "worker_a:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_a/batch_002/fx.gbpjpy.logret_1h/claim.json",
+        "worker_b:/home/harveybc/.local/state/canonical_20261003/selection_mirror/claims_worker_b/batch_002/fx.gbpjpy.logret_1h/claim.json"
+      ],
+      "winner": null
+    }
+  },
+  "contested_cells": [],
+  "counts": {
+    "by_state": {},
+    "cells": 12,
+    "contested": 0
+  },
+  "generated_at_utc": "2026-10-05T04:32:19Z",
+  "schema": "ps3r_claims_ledger.v1"
+}

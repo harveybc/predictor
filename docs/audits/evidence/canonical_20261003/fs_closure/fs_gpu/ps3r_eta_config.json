@@ -1,0 +1,46 @@
+{
+  "schema": "ps3r_eta_config.v1",
+  "note": "Paths starting with ~ are coordinator state outside the repository; relative paths are repository-relative. Roles only: worker_a = RTX 5090 host, worker_b = RTX 4090 host.",
+  "queues": [
+    {
+      "name": "alternatives_5090",
+      "denominator": 274,
+      "plan": "docs/audits/evidence/canonical_20261003/automation/alternative_5090.tsv",
+      "roots": [{"role": "worker_a", "path": "~/.local/state/canonical_20261003/selection_mirror/worker_a_alt"}],
+      "logs": [{"role": "worker_a", "path": "~/.local/state/canonical_20261003/selection_mirror/logs/worker_a/alt/codex_continuation.log"}]
+    },
+    {
+      "name": "baselines_4090_batch_002",
+      "denominator": 86,
+      "plan": "docs/audits/evidence/canonical_20261003/automation/baseline_batch_002_4090.tsv",
+      "roots": [
+        {"role": "worker_b", "path": "~/.local/state/canonical_20261003/selection_mirror/worker_b_base"},
+        {"role": "worker_a", "path": "~/.local/state/canonical_20261003/selection_mirror/worker_a_base"}
+      ],
+      "logs": [
+        {"role": "worker_b", "path": "~/.local/state/canonical_20261003/selection_mirror/logs/worker_b/codex_baseline_driver.log"},
+        {"role": "worker_b", "path": "~/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log"},
+        {"role": "worker_a", "path": "~/.local/state/canonical_20261003/selection_mirror/logs/worker_a/steal_batch_002_5090.log"}
+      ]
+    },
+    {
+      "name": "baselines_5090_batch_001_003",
+      "denominator": 51,
+      "plan": "docs/audits/evidence/canonical_20261003/automation/baseline_batch_001_003_5090.tsv",
+      "roots": [{"role": "worker_a", "path": "~/.local/state/canonical_20261003/selection_mirror/worker_a_base"}],
+      "logs": [{"role": "worker_a", "path": "~/.local/state/canonical_20261003/selection_mirror/logs/worker_a/baseline_5090.log"}],
+      "starts_after": "alternatives_5090",
+      "fallback_median_from": "baselines_4090_batch_002"
+    }
+  ],
+  "totals": {
+    "alternatives": {"queues": ["alternatives_5090"], "denominator": 274},
+    "baselines_heavy_candidates": {"queues": ["baselines_4090_batch_002", "baselines_5090_batch_001_003"], "denominator": 137},
+    "baselines_batch_002": {"queues": ["baselines_4090_batch_002"], "denominator": 86}
+  },
+  "host_probes": {
+    "worker_a": {"gpu_csv": "~/.local/state/canonical_20261003/fs_gpu/worker_a_GPU.csv", "mem_csv": "~/.local/state/canonical_20261003/fs_gpu/worker_a_MEM.csv"},
+    "worker_b": {"gpu_csv": "~/.local/state/canonical_20261003/fs_gpu/worker_b_GPU.csv", "mem_csv": "~/.local/state/canonical_20261003/fs_gpu/worker_b_MEM.csv"},
+    "coordinator": {"gpu_csv": "~/.local/state/canonical_20261003/fs_gpu/coordinator_GPU.csv", "mem_csv": "~/.local/state/canonical_20261003/fs_gpu/coordinator_MEM.csv"}
+  }
+}

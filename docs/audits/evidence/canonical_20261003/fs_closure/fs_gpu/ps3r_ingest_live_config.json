@@ -1,0 +1,231 @@
+{
+  "alternative": {
+    "allowed_input_digests": [
+      "3e4404d260d9236ca24fc8561eedbfcc9c47a609d3e64b68870c204a3731f025",
+      "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+      "293db083a886a41a6ae719c0bfa274b0513cc2c956b14965dd9a97a37dd69571"
+    ],
+    "allowed_revisions": [
+      "31add1270439e746edd99e98e20a95ab09c1cf71"
+    ],
+    "families": [
+      "identity",
+      "random",
+      "past_to_current_siamese"
+    ],
+    "folds": [
+      "inner_2019",
+      "inner_2020",
+      "inner_2021",
+      "inner_2022",
+      "inner_2023"
+    ],
+    "probe_contract": {
+      "Y_b": {
+        "delta_metric": "log_loss",
+        "horizon_indices": [
+          0,
+          1
+        ],
+        "metrics": [
+          "log_loss",
+          "brier"
+        ]
+      },
+      "Y_l": {
+        "delta_metric": "mae",
+        "horizon_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "metrics": [
+          "mae",
+          "mse"
+        ]
+      },
+      "Y_s": {
+        "delta_metric": "mae",
+        "horizon_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "metrics": [
+          "mae",
+          "mse"
+        ]
+      }
+    },
+    "replaces_baseline": false,
+    "roots": [
+      "alternative"
+    ],
+    "row_kinds": {
+      "feature_summary": 1,
+      "fold_family": 15,
+      "probe": 210,
+      "probe_delta": 70
+    },
+    "seed": 0
+  },
+  "alternative_mtae": {
+    "allowed_input_digests": [
+      "3e4404d260d9236ca24fc8561eedbfcc9c47a609d3e64b68870c204a3731f025",
+      "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+      "293db083a886a41a6ae719c0bfa274b0513cc2c956b14965dd9a97a37dd69571"
+    ],
+    "allowed_revisions": [
+      "31add1270439e746edd99e98e20a95ab09c1cf71"
+    ],
+    "families": [
+      "identity",
+      "random",
+      "masked_temporal_ae"
+    ],
+    "folds": [
+      "inner_2019",
+      "inner_2020",
+      "inner_2021",
+      "inner_2022",
+      "inner_2023"
+    ],
+    "probe_contract": {
+      "Y_b": {
+        "delta_metric": "log_loss",
+        "horizon_indices": [
+          0,
+          1
+        ],
+        "metrics": [
+          "log_loss",
+          "brier"
+        ]
+      },
+      "Y_l": {
+        "delta_metric": "mae",
+        "horizon_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "metrics": [
+          "mae",
+          "mse"
+        ]
+      },
+      "Y_s": {
+        "delta_metric": "mae",
+        "horizon_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "metrics": [
+          "mae",
+          "mse"
+        ]
+      }
+    },
+    "replaces_baseline": false,
+    "roots": [
+      "alternative_mtae"
+    ],
+    "row_kinds": {
+      "feature_summary": 1,
+      "fold_family": 15,
+      "probe": 210,
+      "probe_delta": 70
+    },
+    "seed": 0
+  },
+  "baseline": {
+    "allowed_input_digests": [
+      "3e4404d260d9236ca24fc8561eedbfcc9c47a609d3e64b68870c204a3731f025",
+      "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+      "293db083a886a41a6ae719c0bfa274b0513cc2c956b14965dd9a97a37dd69571"
+    ],
+    "allowed_revisions": [
+      "8987c573bd7e0819a54011e88ec9e7c309229350"
+    ],
+    "families": [
+      "identity",
+      "random",
+      "ae",
+      "dae"
+    ],
+    "folds": [
+      "inner_2019",
+      "inner_2020",
+      "inner_2021",
+      "inner_2022",
+      "inner_2023"
+    ],
+    "probe_contract": {
+      "Y_b": {
+        "delta_metric": "log_loss",
+        "horizon_indices": [
+          0,
+          1
+        ],
+        "metrics": [
+          "log_loss",
+          "brier"
+        ]
+      },
+      "Y_l": {
+        "delta_metric": "mae",
+        "horizon_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "metrics": [
+          "mae",
+          "mse"
+        ]
+      },
+      "Y_s": {
+        "delta_metric": "mae",
+        "horizon_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "metrics": [
+          "mae",
+          "mse"
+        ]
+      }
+    },
+    "replaces_baseline": false,
+    "roots": [
+      "baseline"
+    ],
+    "row_kinds": {
+      "feature_summary": 1,
+      "fold_family": 20,
+      "probe": 280,
+      "probe_delta": 140
+    },
+    "seed": 0
+  }
+}

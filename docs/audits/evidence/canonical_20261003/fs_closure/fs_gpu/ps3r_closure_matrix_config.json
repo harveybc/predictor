@@ -1,0 +1,95 @@
+{
+  "claims_ledger": "docs/audits/evidence/canonical_20261003/fs_closure/fs_gpu/claims_ledger.json",
+  "denominator": 137,
+  "ingest": {
+    "ingestor": "docs/audits/evidence/canonical_20261003/m2_readiness/ps3r_manifest_ingestor.py",
+    "live_config": "docs/audits/evidence/canonical_20261003/fs_closure/fs_gpu/ps3r_ingest_live_config.json",
+    "live_config_note": "Live copy of m2_readiness/ps3r_ingest_config.json for the automated consumption of EVERY authenticated terminal: roots are relative to the fs_gpu ingest root (coordinator state), the three PS2 series digests (batch_001/002/003 series.npz) are all allowed, the pilot-only expected_results_sha256 allow-list is dropped, and a masked_temporal_ae role is added. replaces_baseline stays false everywhere: alternatives never replace a baseline.",
+    "roles": [
+      {
+        "family": "baseline",
+        "name": "baseline",
+        "plan_kind": "baseline",
+        "sources": [
+          {
+            "path": "~/.local/state/canonical_20261003/selection_mirror/worker_b_base"
+          },
+          {
+            "path": "~/.local/state/canonical_20261003/selection_mirror/worker_a_base"
+          }
+        ]
+      },
+      {
+        "family": "past_to_current_siamese",
+        "name": "alternative",
+        "plan_kind": "alternative",
+        "sources": [
+          {
+            "path": "~/.local/state/canonical_20261003/selection_mirror/worker_a_alt"
+          }
+        ]
+      },
+      {
+        "family": "masked_temporal_ae",
+        "name": "alternative_mtae",
+        "plan_kind": "alternative",
+        "sources": [
+          {
+            "path": "~/.local/state/canonical_20261003/selection_mirror/worker_a_alt"
+          }
+        ]
+      }
+    ],
+    "root": "~/.local/state/canonical_20261003/fs_gpu/ingest_root"
+  },
+  "logs": [
+    {
+      "path": "~/.local/state/canonical_20261003/selection_mirror/logs/worker_a/alt/codex_continuation.log",
+      "role": "worker_a"
+    },
+    {
+      "path": "~/.local/state/canonical_20261003/selection_mirror/logs/worker_a/baseline_5090.log",
+      "role": "worker_a"
+    },
+    {
+      "path": "~/.local/state/canonical_20261003/selection_mirror/logs/worker_a/steal_batch_002_5090.log",
+      "role": "worker_a"
+    },
+    {
+      "path": "~/.local/state/canonical_20261003/selection_mirror/logs/worker_b/codex_baseline_driver.log",
+      "role": "worker_b"
+    },
+    {
+      "path": "~/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
+      "role": "worker_b"
+    }
+  ],
+  "plans": {
+    "alternative": [
+      "docs/audits/evidence/canonical_20261003/automation/alternative_5090.tsv"
+    ],
+    "baseline": [
+      "docs/audits/evidence/canonical_20261003/automation/baseline_batch_001_003_5090.tsv",
+      "docs/audits/evidence/canonical_20261003/automation/baseline_batch_002_4090.tsv"
+    ]
+  },
+  "roots": {
+    "alternative": [
+      {
+        "path": "~/.local/state/canonical_20261003/selection_mirror/worker_a_alt",
+        "role": "worker_a"
+      }
+    ],
+    "baseline": [
+      {
+        "path": "~/.local/state/canonical_20261003/selection_mirror/worker_b_base",
+        "role": "worker_b"
+      },
+      {
+        "path": "~/.local/state/canonical_20261003/selection_mirror/worker_a_base",
+        "role": "worker_a"
+      }
+    ]
+  },
+  "schema": "ps3r_closure_matrix_config.v1"
+}
