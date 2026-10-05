@@ -12,6 +12,7 @@ from typing import Any
 
 from tools.phase1_inventory_orchestrator import (
     Phase1Refusal,
+    _failure_coverage,
     _read_terminal,
     _state_root,
     _terminal_path,
@@ -21,7 +22,7 @@ from tools.phase1_inventory_orchestrator import (
 )
 
 
-STATUS_SCHEMA = "phase1.inventory_status.v1"
+STATUS_SCHEMA = "phase1.inventory_status.v2"
 
 
 def _active_claims(config: dict[str, Any]) -> dict[str, str | None]:
@@ -45,8 +46,14 @@ def _active_claims(config: dict[str, Any]) -> dict[str, str | None]:
 def _eta(
     plan: dict[str, Any],
     terminals: dict[str, dict[str, Any]],
+    failed_features: set[str],
 ) -> float | None:
-    pending = [item for item in plan["items"] if item["feature_id"] not in terminals]
+    pending = [
+        item
+        for item in plan["items"]
+        if item["feature_id"] not in terminals
+        and item["feature_id"] not in failed_features
+    ]
     if not pending:
         return 0.0
     rates_by_host: dict[str, list[float]] = {}
@@ -75,6 +82,7 @@ def _eta(
 def build_status(config: dict[str, Any]) -> dict[str, Any]:
     plan = load_plan(config)
     current = _active_claims(config)
+    failures = _failure_coverage(config, plan)
     terminals: dict[str, dict[str, Any]] = {}
     integrity_errors: list[dict[str, str]] = []
     occupied_terminal_slots = 0
@@ -92,11 +100,22 @@ def build_status(config: dict[str, Any]) -> dict[str, Any]:
             integrity_errors.append(
                 {"feature_id": item["feature_id"], "reason": str(error)}
             )
-    counts = {state: 0 for state in ("COMPLETED", "FAILED", "UNAVAILABLE")}
+    counts = {state: 0 for state in ("COMPLETED", "UNAVAILABLE")}
     for terminal in terminals.values():
         counts[terminal["state"]] += 1
-    running = {feature_id for feature_id in current.values() if feature_id is not None}
-    pending = plan["inventory_total"] - occupied_terminal_slots - len(running)
+    running = {
+        feature_id
+        for feature_id in current.values()
+        if feature_id is not None
+        and feature_id not in terminals
+        and feature_id not in failures
+    }
+    pending = (
+        plan["inventory_total"]
+        - occupied_terminal_slots
+        - len(failures)
+        - len(running)
+    )
     if pending < 0:
         raise Phase1Refusal("terminal and active populations exceed the plan denominator")
     try:
@@ -112,13 +131,17 @@ def build_status(config: dict[str, Any]) -> dict[str, Any]:
         "inventory_sha256": plan["inventory_sha256"],
         "total": plan["inventory_total"],
         "completed": counts["COMPLETED"],
-        "failed": counts["FAILED"] + len(integrity_errors),
+        "failed": len(failures) + len(integrity_errors),
         "unavailable": counts["UNAVAILABLE"],
         "pending": pending,
         "running": len(running),
         "current": current,
-        "eta_seconds": _eta(plan, terminals),
+        "eta_seconds": _eta(plan, terminals, set(failures)),
         "warehouse_submitted": len(list(receipts.glob("*.json"))) if receipts.is_dir() else 0,
+        "warehouse_reconciled": (
+            _state_root(config) / "warehouse_reconciliation.json"
+        ).is_file(),
+        "closure_eligible": counts["COMPLETED"] + counts["UNAVAILABLE"],
         "integrity_errors": integrity_errors,
     }
     report["denominator_reconciles"] = (

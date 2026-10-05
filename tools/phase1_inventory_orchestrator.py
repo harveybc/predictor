@@ -27,13 +27,15 @@ from pathlib import Path
 from typing import Any, Callable, Iterable
 
 
-CONFIG_SCHEMA = "phase1.inventory_orchestrator.v1"
-PLAN_SCHEMA = "phase1.inventory_plan.v1"
+CONFIG_SCHEMA = "phase1.inventory_orchestrator.v2"
+PLAN_SCHEMA = "phase1.inventory_plan.v2"
+COLUMN_REQUEST_SCHEMA = "phase1.column_request.v1"
 COLUMN_RESULT_SCHEMA = "phase1.column_result.v1"
-TERMINAL_SCHEMA = "phase1.inventory_terminal.v1"
+TERMINAL_SCHEMA = "phase1.inventory_terminal.v2"
 FINALIZER_RESULT_SCHEMA = "phase1.finalizer_result.v1"
-GATE_SCHEMA = "phase1.completion_gate.v1"
-TERMINAL_STATES = frozenset({"COMPLETED", "FAILED", "UNAVAILABLE"})
+GATE_SCHEMA = "phase1.completion_gate.v2"
+RECONCILIATION_SCHEMA = "phase1.warehouse_reconciliation.v1"
+CLOSURE_TERMINAL_STATES = frozenset({"COMPLETED", "UNAVAILABLE"})
 
 
 class Phase1Refusal(RuntimeError):
@@ -93,6 +95,11 @@ def load_config(path: str | Path) -> dict[str, Any]:
         raise Phase1Refusal(f"expected config schema {CONFIG_SCHEMA}")
     if config.get("phase") != "PHASE_1":
         raise Phase1Refusal("this executable accepts PHASE_1 only")
+    population = config.get("population")
+    if not isinstance(population, dict) or not population.get("id"):
+        raise Phase1Refusal("population.id must identify one independent population")
+    if not population.get("target_pack"):
+        raise Phase1Refusal("population.target_pack must be declared")
     base = config_path.parent
     config["_config_path"] = str(config_path)
     config["_config_dir"] = str(base)
@@ -112,6 +119,8 @@ def load_config(path: str | Path) -> dict[str, Any]:
     if not any(host.get("size_class") == "large" for host in hosts):
         raise Phase1Refusal("at least one large host must be declared")
     environment = config.get("worker", {}).get("environment", {})
+    if config.get("worker", {}).get("transport") != "stdio-json-v1":
+        raise Phase1Refusal("worker.transport must be stdio-json-v1")
     if environment.get("CUDA_VISIBLE_DEVICES") not in (None, ""):
         raise Phase1Refusal("phase 1 is CPU-only; CUDA_VISIBLE_DEVICES must be empty")
     if environment.get("NVIDIA_VISIBLE_DEVICES") not in (None, "", "void", "none"):
@@ -122,6 +131,26 @@ def load_config(path: str | Path) -> dict[str, Any]:
             isinstance(token, str) and token for token in command
         ):
             raise Phase1Refusal(f"{section}.command must be a non-empty token list")
+    retries = config.get("retries", {})
+    if int(retries.get("max_attempts", 0)) <= 0:
+        raise Phase1Refusal("retries.max_attempts must be positive")
+    retryable_codes = set(retries.get("retryable_exit_codes", []))
+    retryable_classes = set(retries.get("retryable_failure_classes", []))
+    if (
+        not {75, 137, -9} <= retryable_codes
+        or not {"ADMISSION", "OOM"} <= retryable_classes
+    ):
+        raise Phase1Refusal(
+            "admission/OOM/rc75 must remain retryable (codes 75, 137, -9; "
+            "classes ADMISSION and OOM)"
+        )
+    warehouse = config.get("warehouse", {})
+    if not warehouse.get("submit_url") or not warehouse.get("reconcile_url"):
+        raise Phase1Refusal("warehouse submit_url and reconcile_url are required")
+    if not warehouse.get("token_env") or not warehouse.get("auth_profile"):
+        raise Phase1Refusal(
+            "warehouse token_env and auth_profile are required for authenticated readback"
+        )
     return config
 
 
@@ -210,6 +239,7 @@ def _ensure_layout(config: dict[str, Any]) -> None:
         "warehouse_receipts",
         "warehouse_failures",
         "warehouse_claims",
+        "failures",
         "finalizer",
     ):
         (root / name).mkdir(parents=True, exist_ok=True)
@@ -257,6 +287,8 @@ def build_plan(config: dict[str, Any]) -> dict[str, Any]:
     document: dict[str, Any] = {
         "schema": PLAN_SCHEMA,
         "phase": "PHASE_1",
+        "population_id": config["population"]["id"],
+        "target_pack": config["population"]["target_pack"],
         "inventory_total": len(items),
         "inventory_sha256": _sha(inventory_identity),
         "config_sha256": _sha(
@@ -317,7 +349,7 @@ def _read_terminal(path: Path) -> dict[str, Any]:
     document["terminal_sha256"] = digest
     if document.get("schema") != TERMINAL_SCHEMA or digest != observed:
         raise Phase1Refusal(f"invalid terminal {path}")
-    if document.get("state") not in TERMINAL_STATES:
+    if document.get("state") not in CLOSURE_TERMINAL_STATES:
         raise Phase1Refusal(f"invalid terminal state in {path}")
     return document
 
@@ -412,7 +444,9 @@ def _cpu_environment(config: dict[str, Any]) -> dict[str, str]:
     return environment
 
 
-def _http_submit(document: dict[str, Any], warehouse: dict[str, Any]) -> dict[str, Any]:
+def _http_post(
+    document: dict[str, Any], warehouse: dict[str, Any], *, url_field: str
+) -> dict[str, Any]:
     payload = _canonical_bytes(document)
     headers = {"Content-Type": "application/json"}
     token_env = warehouse.get("token_env")
@@ -422,7 +456,7 @@ def _http_submit(document: dict[str, Any], warehouse: dict[str, Any]) -> dict[st
             raise Phase1Refusal(f"warehouse token environment {token_env!r} is absent")
         headers["Authorization"] = f"Bearer {token}"
     request = urllib.request.Request(
-        warehouse["url"], data=payload, headers=headers, method="POST"
+        warehouse[url_field], data=payload, headers=headers, method="POST"
     )
     with urllib.request.urlopen(
         request, timeout=float(warehouse.get("timeout_seconds", 30))
@@ -434,7 +468,30 @@ def _http_submit(document: dict[str, Any], warehouse: dict[str, Any]) -> dict[st
         }
 
 
+def _http_submit(document: dict[str, Any], warehouse: dict[str, Any]) -> dict[str, Any]:
+    return _http_post(document, warehouse, url_field="submit_url")
+
+
+def _http_reconcile(document: dict[str, Any], warehouse: dict[str, Any]) -> dict[str, Any]:
+    response = _http_post(document, warehouse, url_field="reconcile_url")
+    body = response.get("body")
+    if not isinstance(body, dict):
+        raise Phase1Refusal("warehouse reconciliation returned no JSON object")
+    return body
+
+
 Submitter = Callable[[dict[str, Any], dict[str, Any]], dict[str, Any]]
+Reconciler = Callable[[dict[str, Any], dict[str, Any]], dict[str, Any]]
+
+
+def _require_accepted_submission(response: dict[str, Any]) -> None:
+    if not isinstance(response, dict):
+        raise Phase1Refusal("warehouse submission returned no receipt object")
+    payload = response.get("body") if "status" in response else response
+    if "status" in response and not 200 <= int(response["status"]) < 300:
+        raise Phase1Refusal("warehouse submission was not accepted")
+    if not isinstance(payload, dict) or payload.get("accepted") is not True:
+        raise Phase1Refusal("warehouse submission returned no accepted receipt")
 
 
 def _submit_terminal(
@@ -458,6 +515,7 @@ def _submit_terminal(
         if receipt.is_file():
             return json.loads(receipt.read_text(encoding="utf-8"))
         response = submit(envelope, config["warehouse"])
+        _require_accepted_submission(response)
         document = {
             "schema": "phase1.warehouse_receipt.v1",
             "feature_id": terminal["feature_id"],
@@ -517,6 +575,82 @@ def _write_unavailable_terminal(
     return document
 
 
+def _attempt_directory(config: dict[str, Any], key: str) -> Path:
+    return _state_root(config) / "attempts" / key
+
+
+def _failure_path(config: dict[str, Any], key: str) -> Path:
+    return _state_root(config) / "failures" / f"{key}.json"
+
+
+def _attempt_paths(config: dict[str, Any], key: str) -> list[Path]:
+    directory = _attempt_directory(config, key)
+    return sorted(directory.glob("*.json")) if directory.is_dir() else []
+
+
+def _worker_request(
+    config: dict[str, Any], plan: dict[str, Any], item: dict[str, Any], source: InventoryItem,
+    attempt_number: int,
+) -> dict[str, Any]:
+    request = {
+        "schema": COLUMN_REQUEST_SCHEMA,
+        "feature_id": item["feature_id"],
+        "feature_key": item["key"],
+        "population_id": plan["population_id"],
+        "target_pack": plan["target_pack"],
+        "plan_sha256": plan["plan_sha256"],
+        "inventory_sha256": plan["inventory_sha256"],
+        "inventory_row_sha256": item["inventory_row_sha256"],
+        "inventory_row": source.inventory_row,
+        "attempt_number": attempt_number,
+    }
+    request["request_sha256"] = _sha(request)
+    return request
+
+
+def _parse_worker_result(
+    stdout: str, *, feature_id: str, return_code: int
+) -> dict[str, Any]:
+    if not stdout.strip():
+        raise Phase1Refusal("worker returned no canonical JSON result")
+    try:
+        result = json.loads(stdout)
+    except json.JSONDecodeError as error:
+        raise Phase1Refusal("worker stdout is not one canonical JSON result") from error
+    if not isinstance(result, dict) or result.get("schema") != COLUMN_RESULT_SCHEMA:
+        raise Phase1Refusal("worker returned an unknown result schema")
+    if result.get("feature_id") != feature_id:
+        raise Phase1Refusal("worker result belongs to another feature")
+    if result.get("state") not in {"COMPLETED", "UNAVAILABLE", "FAILED"}:
+        raise Phase1Refusal("worker returned an unknown disposition")
+    if return_code != 0 and result.get("state") in CLOSURE_TERMINAL_STATES:
+        raise Phase1Refusal("worker declared closure evidence with a non-zero return code")
+    if result.get("state") == "COMPLETED" and not isinstance(result.get("envelope"), dict):
+        raise Phase1Refusal("COMPLETED worker result has no warehouse envelope")
+    return result
+
+
+def _failure_record(
+    config: dict[str, Any], plan: dict[str, Any], item: dict[str, Any],
+    host_id: str, attempt_count: int, last_attempt: dict[str, Any],
+) -> dict[str, Any]:
+    document = {
+        "schema": "phase1.retry_exhausted.v1",
+        "feature_id": item["feature_id"],
+        "key": item["key"],
+        "host_id": host_id,
+        "plan_sha256": plan["plan_sha256"],
+        "attempt_count": attempt_count,
+        "state": "RETRY_EXHAUSTED",
+        "last_attempt_sha256": last_attempt["attempt_sha256"],
+    }
+    document["failure_sha256"] = _sha(document)
+    path = _failure_path(config, item["key"])
+    if not path.exists():
+        _atomic_json(path, document, exclusive=True)
+    return document
+
+
 def _run_item(
     config: dict[str, Any], plan: dict[str, Any], item: dict[str, Any], host_id: str
 ) -> dict[str, Any]:
@@ -527,19 +661,22 @@ def _run_item(
             f"{item['feature_id']}: inventory row changed after PLAN.json was frozen"
         )
     if not source.available:
-        return _write_unavailable_terminal(config, plan, item, host_id)
-    input_path = _state_root(config) / "inputs" / f"{item['key']}.json"
-    _atomic_json(input_path, source.inventory_row)
-    attempt_id = uuid.uuid4().hex
-    output_path = _state_root(config) / "attempts" / f"{item['key']}.{attempt_id}.json"
+        terminal = _write_unavailable_terminal(config, plan, item, host_id)
+        return {"kind": "TERMINAL", "terminal": terminal}
+    attempts = _attempt_paths(config, item["key"])
+    max_attempts = int(config["retries"]["max_attempts"])
+    if len(attempts) >= max_attempts:
+        last = json.loads(attempts[-1].read_text(encoding="utf-8"))
+        failure = _failure_record(config, plan, item, host_id, len(attempts), last)
+        return {"kind": "RETRY_EXHAUSTED", "failure": failure}
+    attempt_number = len(attempts) + 1
+    request = _worker_request(config, plan, item, source, attempt_number)
     values = {
         "feature_id": item["feature_id"],
         "feature_key": item["key"],
         "host_id": host_id,
-        "inventory_row_path": str(input_path),
-        "worker_output_path": str(output_path),
-        "state_root": str(_state_root(config)),
-        "plan_path": str(_plan_path(config)),
+        "population_id": plan["population_id"],
+        "target_pack": plan["target_pack"],
     }
     host = _host(config, host_id)
     worker_command = _format_command(config["worker"]["command"], values)
@@ -551,12 +688,27 @@ def _run_item(
         "PHASE2_FORBIDDEN=1",
     ]
     command = list(host.get("command_prefix", [])) + cpu_contract + worker_command
+    attempt_path = _attempt_directory(config, item["key"]) / f"{attempt_number:03d}.json"
+    started_record = {
+        "schema": "phase1.worker_attempt.v1",
+        "feature_id": item["feature_id"],
+        "key": item["key"],
+        "host_id": host_id,
+        "attempt_number": attempt_number,
+        "state": "RUNNING",
+        "request_sha256": request["request_sha256"],
+        "command_sha256": _sha(command),
+    }
+    _atomic_json(attempt_path, started_record, exclusive=True)
     started = time.monotonic()
     return_code: int | None = None
-    reason: str | None = None
+    failure_class: str | None = None
+    stdout = ""
+    stderr = ""
     try:
         process = subprocess.run(
             command,
+            input=json.dumps(request, sort_keys=True),
             check=False,
             timeout=float(config["worker"].get("timeout_seconds", 3600)),
             env=_cpu_environment(config),
@@ -564,33 +716,17 @@ def _run_item(
             text=True,
         )
         return_code = process.returncode
-        if output_path.is_file():
-            result = json.loads(output_path.read_text(encoding="utf-8"))
-            if result.get("schema") != COLUMN_RESULT_SCHEMA:
-                raise Phase1Refusal("worker returned an unknown result schema")
-            if result.get("feature_id") != item["feature_id"]:
-                raise Phase1Refusal("worker result belongs to another feature")
-            if result.get("state") not in TERMINAL_STATES:
-                raise Phase1Refusal("worker returned a non-terminal state")
-            if return_code != 0 and result.get("state") == "COMPLETED":
-                raise Phase1Refusal(
-                    "worker declared COMPLETED with a non-zero return code"
-                )
-        elif return_code in set(config["worker"].get("unavailable_exit_codes", [])):
-            result = {
-                "schema": COLUMN_RESULT_SCHEMA,
-                "feature_id": item["feature_id"],
-                "state": "UNAVAILABLE",
-                "reason": f"worker returned configured unavailable code {return_code}",
-            }
-        else:
-            result = {
-                "schema": COLUMN_RESULT_SCHEMA,
-                "feature_id": item["feature_id"],
-                "state": "FAILED",
-                "reason": "worker did not produce a terminal result",
-                "stderr": process.stderr[-1000:],
-            }
+        stdout, stderr = process.stdout, process.stderr
+        result = _parse_worker_result(
+            stdout, feature_id=item["feature_id"], return_code=return_code
+        )
+        if result["state"] == "FAILED":
+            declared_class = result.get("failure_class")
+            failure_class = (
+                declared_class
+                if isinstance(declared_class, str) and declared_class
+                else "WORKER_FAILED"
+            )
     except subprocess.TimeoutExpired:
         result = {
             "schema": COLUMN_RESULT_SCHEMA,
@@ -598,7 +734,7 @@ def _run_item(
             "state": "FAILED",
             "reason": "worker timeout",
         }
-        reason = "TIMEOUT"
+        failure_class = "TIMEOUT"
     except Exception as error:
         result = {
             "schema": COLUMN_RESULT_SCHEMA,
@@ -607,26 +743,57 @@ def _run_item(
             "reason": str(error)[:1000],
             "error_type": type(error).__name__,
         }
-        reason = type(error).__name__
+        failure_class = type(error).__name__
     duration = max(0.0, time.monotonic() - started)
-    document = {
-        "schema": TERMINAL_SCHEMA,
+    attempt = {
+        "schema": "phase1.worker_attempt.v1",
         "feature_id": item["feature_id"],
         "key": item["key"],
-        "state": result["state"],
         "host_id": host_id,
-        "plan_sha256": plan["plan_sha256"],
-        "inventory_sha256": plan["inventory_sha256"],
-        "estimated_cost": item["estimated_cost"],
+        "attempt_number": attempt_number,
+        "state": result["state"],
+        "request_sha256": request["request_sha256"],
+        "command_sha256": _sha(command),
         "duration_seconds": duration,
         "return_code": return_code,
-        "command_sha256": _sha(command),
-        "failure_class": reason,
+        "failure_class": failure_class,
+        "stdout": stdout,
+        "stderr": stderr,
         "result": result,
     }
-    document["terminal_sha256"] = _sha(document)
-    _atomic_json(_terminal_path(config, item["key"]), document, exclusive=True)
-    return document
+    attempt["attempt_sha256"] = _sha(attempt)
+    _atomic_json(attempt_path, attempt)
+    if result["state"] in CLOSURE_TERMINAL_STATES:
+        terminal = {
+            "schema": TERMINAL_SCHEMA,
+            "feature_id": item["feature_id"],
+            "key": item["key"],
+            "state": result["state"],
+            "host_id": host_id,
+            "plan_sha256": plan["plan_sha256"],
+            "inventory_sha256": plan["inventory_sha256"],
+            "estimated_cost": item["estimated_cost"],
+            "duration_seconds": duration,
+            "return_code": return_code,
+            "attempt_sha256": attempt["attempt_sha256"],
+            "result": result,
+        }
+        terminal["terminal_sha256"] = _sha(terminal)
+        _atomic_json(_terminal_path(config, item["key"]), terminal, exclusive=True)
+        return {"kind": "TERMINAL", "terminal": terminal}
+    retryable = (
+        return_code in set(config["retries"].get("retryable_exit_codes", []))
+        or result["state"]
+        in set(config["retries"].get("retryable_result_states", []))
+        or failure_class
+        in set(config["retries"].get("retryable_failure_classes", []))
+    )
+    if not retryable or attempt_number >= max_attempts:
+        failure = _failure_record(
+            config, plan, item, host_id, attempt_number, attempt
+        )
+        return {"kind": "RETRY_EXHAUSTED", "failure": failure}
+    return {"kind": "RETRY_SCHEDULED", "attempt": attempt}
 
 
 def run_host_once(
@@ -650,6 +817,8 @@ def run_host_once(
             terminal_path = _terminal_path(config, item["key"])
             if terminal_path.is_file():
                 continue
+            if _failure_path(config, item["key"]).is_file():
+                continue
             claim_path = _state_root(config) / "claims" / f"{item['key']}.claim"
             if not _claim(
                 config,
@@ -669,7 +838,20 @@ def run_host_once(
                     config.get("claims", {}).get("stale_after_seconds", 3600)
                 )
                 with _ClaimHeartbeat((host_claim, claim_path), stale_after):
-                    terminal = _run_item(config, plan, item, host_id)
+                    outcome = _run_item(config, plan, item, host_id)
+                if outcome["kind"] == "RETRY_SCHEDULED":
+                    return {
+                        "action": "RETRY_SCHEDULED",
+                        "host_id": host_id,
+                        "feature_id": item["feature_id"],
+                    }
+                if outcome["kind"] == "RETRY_EXHAUSTED":
+                    return {
+                        "action": "RETRY_EXHAUSTED",
+                        "host_id": host_id,
+                        "feature_id": item["feature_id"],
+                    }
+                terminal = outcome["terminal"]
                 _submit_terminal(config, terminal, submit)
                 return {
                     "action": "TERMINAL_WRITTEN",
@@ -699,13 +881,137 @@ def _terminal_coverage(config: dict[str, Any], plan: dict[str, Any]) -> dict[str
     return terminals
 
 
-def finalize_if_ready(config: dict[str, Any]) -> dict[str, Any]:
+def _failure_coverage(config: dict[str, Any], plan: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    failures: dict[str, dict[str, Any]] = {}
+    for item in plan["items"]:
+        path = _failure_path(config, item["key"])
+        if not path.is_file():
+            continue
+        document = json.loads(path.read_text(encoding="utf-8"))
+        digest = document.pop("failure_sha256", None)
+        observed = _sha(document)
+        document["failure_sha256"] = digest
+        if (
+            document.get("schema") != "phase1.retry_exhausted.v1"
+            or digest != observed
+            or document.get("feature_id") != item["feature_id"]
+            or document.get("plan_sha256") != plan["plan_sha256"]
+        ):
+            raise Phase1Refusal(f"invalid retry-exhausted record {path}")
+        failures[item["feature_id"]] = document
+    return failures
+
+
+def _warehouse_identities(
+    config: dict[str, Any], plan: dict[str, Any], terminals: dict[str, dict[str, Any]]
+) -> tuple[list[dict[str, Any]], list[str]]:
+    identities: list[dict[str, Any]] = []
+    missing_receipts: list[str] = []
+    for item in sorted(plan["items"], key=lambda row: row["feature_id"]):
+        terminal = terminals[item["feature_id"]]
+        envelope = terminal.get("result", {}).get("envelope")
+        envelope_sha256 = _sha(envelope) if isinstance(envelope, dict) else None
+        receipt_sha256 = None
+        if terminal["state"] == "COMPLETED":
+            if envelope_sha256 is None:
+                raise Phase1Refusal(
+                    f"{item['feature_id']}: COMPLETED terminal has no envelope"
+                )
+            receipt_path = (
+                _state_root(config) / "warehouse_receipts" / f"{item['key']}.json"
+            )
+            if not receipt_path.is_file():
+                missing_receipts.append(item["feature_id"])
+            else:
+                receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+                if (
+                    receipt.get("feature_id") != item["feature_id"]
+                    or receipt.get("key") != item["key"]
+                    or receipt.get("envelope_sha256") != envelope_sha256
+                ):
+                    raise Phase1Refusal(
+                        f"{item['feature_id']}: warehouse receipt identity mismatch"
+                    )
+                receipt_sha256 = _sha(receipt)
+        identities.append(
+            {
+                "feature_id": item["feature_id"],
+                "feature_key": item["key"],
+                "terminal_state": terminal["state"],
+                "terminal_sha256": terminal["terminal_sha256"],
+                "envelope_sha256": envelope_sha256,
+                "warehouse_receipt_sha256": receipt_sha256,
+            }
+        )
+    return identities, missing_receipts
+
+
+def _validate_reconciliation(
+    response: dict[str, Any], request: dict[str, Any]
+) -> dict[str, Any]:
+    if not isinstance(response, dict):
+        raise Phase1Refusal("warehouse reconciliation is not an object")
+    digest = response.get("reconciliation_sha256")
+    unsigned = {key: value for key, value in response.items() if key != "reconciliation_sha256"}
+    if digest != _sha(unsigned):
+        raise Phase1Refusal("warehouse reconciliation digest is invalid")
+    expected = {
+        "schema": RECONCILIATION_SCHEMA,
+        "state": "RECONCILED",
+        "plan_sha256": request["plan_sha256"],
+        "expected_count": request["expected_count"],
+        "identities_sha256": request["identities_sha256"],
+        "authentication_profile": request["authentication_profile"],
+    }
+    for field, value in expected.items():
+        if response.get(field) != value:
+            raise Phase1Refusal(
+                f"warehouse reconciliation {field} differs from the request"
+            )
+    return response
+
+
+def _warehouse_reconciliation(
+    config: dict[str, Any], plan: dict[str, Any], identities: list[dict[str, Any]],
+    reconcile: Reconciler,
+) -> dict[str, Any]:
+    path = _state_root(config) / "warehouse_reconciliation.json"
+    request = {
+        "schema": "phase1.warehouse_reconciliation_request.v1",
+        "population_id": plan["population_id"],
+        "plan_sha256": plan["plan_sha256"],
+        "expected_count": plan["inventory_total"],
+        "identities_sha256": _sha(identities),
+        "identities": identities,
+        "authentication_profile": config["warehouse"]["auth_profile"],
+    }
+    request["request_sha256"] = _sha(request)
+    if path.is_file():
+        return _validate_reconciliation(
+            json.loads(path.read_text(encoding="utf-8")), request
+        )
+    response = _validate_reconciliation(reconcile(request, config["warehouse"]), request)
+    _atomic_json(path, response, exclusive=True)
+    return response
+
+
+def finalize_if_ready(
+    config: dict[str, Any], *, submit: Submitter = _http_submit,
+    reconcile: Reconciler = _http_reconcile,
+) -> dict[str, Any]:
     _ensure_layout(config)
     plan = load_plan(config)
     gate_path = _state_root(config) / "PHASE_1_COMPLETE.json"
     if gate_path.is_file():
         require_phase1_complete(config)
         return {"action": "PHASE_1_COMPLETE", "already_complete": True}
+    failures = _failure_coverage(config, plan)
+    if failures:
+        return {
+            "action": "BLOCKED_BY_FAILURES",
+            "failed": sorted(failures),
+            "observed": len(failures),
+        }
     terminals = _terminal_coverage(config, plan)
     if len(terminals) != plan["inventory_total"]:
         return {
@@ -713,6 +1019,17 @@ def finalize_if_ready(config: dict[str, Any]) -> dict[str, Any]:
             "expected": plan["inventory_total"],
             "observed": len(terminals),
         }
+    _retry_submissions(config, submit)
+    identities, missing_receipts = _warehouse_identities(config, plan, terminals)
+    if missing_receipts:
+        return {
+            "action": "WAITING_FOR_WAREHOUSE_RECEIPTS",
+            "missing": missing_receipts,
+            "observed": plan["inventory_total"] - len(missing_receipts),
+        }
+    reconciliation = _warehouse_reconciliation(
+        config, plan, identities, reconcile
+    )
     finalizer_lock = _state_root(config) / "finalizer" / "claim"
     if not _claim(config, finalizer_lock, {"kind": "finalizer", "host_id": "coordinator"}):
         return {"action": "FINALIZER_BUSY"}
@@ -760,6 +1077,15 @@ def finalize_if_ready(config: dict[str, Any]) -> dict[str, Any]:
                 sorted(terminal["terminal_sha256"] for terminal in terminals.values())
             ),
             "finalizer_result_sha256": _sha(result),
+            "warehouse_identity_set_sha256": _sha(identities),
+            "warehouse_receipt_set_sha256": _sha(
+                sorted(
+                    identity["warehouse_receipt_sha256"]
+                    for identity in identities
+                    if identity["warehouse_receipt_sha256"] is not None
+                )
+            ),
+            "warehouse_reconciliation_sha256": _sha(reconciliation),
         }
         gate["gate_sha256"] = _sha(gate)
         _atomic_json(gate_path, gate, exclusive=True)
@@ -787,6 +1113,37 @@ def require_phase1_complete(config: dict[str, Any]) -> dict[str, Any]:
     observed_set = _sha(sorted(item["terminal_sha256"] for item in terminals.values()))
     if gate.get("terminal_set_sha256") != observed_set:
         raise Phase1Refusal("PHASE_1_COMPLETE terminal set changed")
+    failures = _failure_coverage(config, plan)
+    if failures:
+        raise Phase1Refusal("PHASE_1_COMPLETE coexists with retry-exhausted failures")
+    identities, missing_receipts = _warehouse_identities(config, plan, terminals)
+    if missing_receipts:
+        raise Phase1Refusal("PHASE_1_COMPLETE has missing warehouse receipts")
+    if gate.get("warehouse_identity_set_sha256") != _sha(identities):
+        raise Phase1Refusal("PHASE_1_COMPLETE warehouse identity set changed")
+    receipt_set_sha256 = _sha(
+        sorted(
+            identity["warehouse_receipt_sha256"]
+            for identity in identities
+            if identity["warehouse_receipt_sha256"] is not None
+        )
+    )
+    if gate.get("warehouse_receipt_set_sha256") != receipt_set_sha256:
+        raise Phase1Refusal("PHASE_1_COMPLETE warehouse receipt set changed")
+    reconciliation_path = _state_root(config) / "warehouse_reconciliation.json"
+    if not reconciliation_path.is_file():
+        raise Phase1Refusal("PHASE_1_COMPLETE has no warehouse reconciliation")
+    request = {
+        "plan_sha256": plan["plan_sha256"],
+        "expected_count": plan["inventory_total"],
+        "identities_sha256": _sha(identities),
+        "authentication_profile": config["warehouse"]["auth_profile"],
+    }
+    reconciliation = _validate_reconciliation(
+        json.loads(reconciliation_path.read_text(encoding="utf-8")), request
+    )
+    if gate.get("warehouse_reconciliation_sha256") != _sha(reconciliation):
+        raise Phase1Refusal("PHASE_1_COMPLETE warehouse reconciliation changed")
     return gate
 
 

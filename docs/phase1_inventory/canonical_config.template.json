@@ -1,7 +1,11 @@
 {
-  "schema": "phase1.inventory_orchestrator.v1",
+  "schema": "phase1.inventory_orchestrator.v2",
   "phase": "PHASE_1",
-  "state_root": "<shared-state-root>",
+  "population": {
+    "id": "EURUSD",
+    "target_pack": "eurusd-short-long-v1"
+  },
+  "state_root": "<eurusd-phase1-state-root>",
   "inventory": {
     "files": [
       "../audits/evidence/canonical_20261003/laneA/batch_001/admissible_features.csv",
@@ -53,25 +57,28 @@
     }
   ],
   "worker": {
+    "transport": "stdio-json-v1",
     "command": [
       "<phase1-python>",
       "-m",
       "<generic-causal-column-module>",
-      "--inventory-row",
-      "{inventory_row_path}",
-      "--output",
-      "{worker_output_path}"
+      "--stdio"
     ],
     "timeout_seconds": 7200,
-    "unavailable_exit_codes": [
-      66
-    ],
     "environment": {}
   },
+  "retries": {
+    "max_attempts": 3,
+    "retryable_exit_codes": [75, 137, -9],
+    "retryable_result_states": ["FAILED"],
+    "retryable_failure_classes": ["TIMEOUT", "ADMISSION", "OOM"]
+  },
   "warehouse": {
-    "url": "<warehouse-api>/api/v2/feature-selection-envelopes",
+    "submit_url": "<warehouse-api>/api/v2/feature-selection-envelopes",
+    "reconcile_url": "<warehouse-api>/api/v2/feature-selection-reconcile",
     "timeout_seconds": 30,
-    "token_env": "PHASE1_WAREHOUSE_TOKEN"
+    "token_env": "PHASE1_WAREHOUSE_TOKEN",
+    "auth_profile": "data-gov-service-token"
   },
   "finalizer": {
     "command": [
