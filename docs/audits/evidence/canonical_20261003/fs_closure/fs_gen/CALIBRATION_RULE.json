@@ -1,0 +1,48 @@
+{
+  "schema": "fs_gen.calibration_rule.v1",
+  "frozen_utc": "2026-10-05T04:12:00Z",
+  "frozen_before_any_computation": true,
+  "contract": "SYNTHETIC_OFFLINE",
+  "generator": {
+    "family": "conditional_heteroskedastic_ar",
+    "conditions": ["calendar sin/cos hour, day-of-week, day-of-year", "observed_mask", "delta_time", "past values (lags 1..24 of the same feature)"],
+    "forbidden_conditions": ["future target Y_s/Y_l/Y_b", "economic calendar events/surprises", "any row after the fold fit range", "any row after train_end_ts"],
+    "innovation_law": "empirical standardized fit residuals (bootstrap); scale model log(e^2) ~ calendar + delta_time",
+    "fit_scope": "fold fit anchors only (inner TRAIN folds inner_2019..inner_2023)",
+    "diagnostic_scope": "fold inner validation range (inside TRAIN, outside the generator fit)",
+    "seed": 0
+  },
+  "generator_calibration_gates": {
+    "acf_max_abs_diff_lags_1_48": {"max": 0.10},
+    "psd_log_ratio_rmse": {"max": 0.50},
+    "ks_marginal": {"max": 0.10},
+    "tail_ratio_q99_abs": {"min": 0.70, "max": 1.40},
+    "kurtosis_ratio": {"min": 0.50, "max": 2.00},
+    "regime_coverage": {"min": 0.80, "definition": "share of real rolling-std (168h) deciles whose synthetic occupancy is within [0.5, 2.0] x the real occupancy"},
+    "prefix_invariance": {"must_be": true, "definition": "perturbing real values at or after the synthesis start changes no synthetic value (FS01-style); innovations at t depend on rows <= t only"},
+    "min_val_observed_rows": 500
+  },
+  "knockoff_exchangeability_gates": {
+    "second_moment_gap_per_feature": {"max": 0.05, "definition": "max_k | corr(X_j,X_k) - corr(X~_j,X_k) | and | corr(X~_j,X~_k) - corr(X_j,X_k) | over k != j on fit rows"},
+    "swap_classifier_auc_batch": {"min": 0.45, "max": 0.55, "definition": "held-out AUC of a logistic classifier told to distinguish [X, X~] rows from rows with a random subset of columns swapped; 0.5 = exchangeable"},
+    "conditional_independence_abs_z": {"max": 4.0, "definition": "partial correlation z of Y with X~_j given X_j on fit rows (leak guard: Y never enters the generator)"}
+  },
+  "decision": {
+    "generator_state": "CALIBRATED if every generator gate passes on the fold, else NOT_CALIBRATED with the failing gate names",
+    "knockoff_state": "RUN only for features whose generator_state is CALIBRATED on the fold AND whose exchangeability gates pass; else NOT_CALIBRATED",
+    "feature_summary_rule": "CALIBRATED when CALIBRATED on >= 3 of 5 folds (lane B fold_majority = 3); otherwise NOT_CALIBRATED",
+    "no_series": "features of the 366 denominator without a series in any PS2 batch: calibration_state NOT_EVALUATED (reason NO_SERIES_IN_PS2_BATCH), knockoff_state NOT_CALIBRATED",
+    "calendar_conditioning": "the 10 cal.* candidates are generator conditions, not series: NOT_APPLICABLE"
+  },
+  "knockoffs": {
+    "method": "second-order Gaussian group knockoffs (Candes et al. 2018; Dai and Barber 2016 group equicorrelated S) on the generator's standardized innovations, Gaussian-copula mapped back to each feature's empirical innovation law; unobserved rows carry innovation 0 in both X and X~ (mask-symmetric)",
+    "groups": "lane B per-fold dependence clusters from ps2_manifest.json fold_clusters[fold].dependence; singletons otherwise",
+    "statistic": "group lasso-coefficient-difference W_g = sum_{j in g}|beta_j| - sum_{j in g}|beta~_j|, Lasso alpha by contiguous 5-fold LassoCV on fit rows; Y_b encoded TP=+1, SL=-1, timeout=0, no support excluded",
+    "threshold": "knockoff+ (offset 1)",
+    "fdr_q": 0.10,
+    "targets": "Y_s h1..h6, Y_l h24..h144, Y_b s6 and l144 (14 cells) x 5 folds",
+    "seed": 0,
+    "licence_check": "knockpy MIT (admissible) not used: not installed in the worker env; in-repo implementation"
+  },
+  "use_of_output": "evidence column only; never substitutes external utility, causal evidence or paired refit; generator reusable for stress tests/negatives even when NOT_CALIBRATED"
+}
