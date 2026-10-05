@@ -1,16 +1,16 @@
 {
- "aggregation_peak_rss_bytes": 263520256,
+ "aggregation_peak_rss_bytes": 259141632,
  "catalog": {
   "by_stage": {
    "FS-CAUSAL": 532041,
-   "FS-CLOSE": 188621,
+   "FS-CLOSE": 194621,
    "FS-GEN": 20690,
-   "FS-REP": 23379,
+   "FS-REP": 23625,
    "PS1": 21861,
    "PS2": 593984,
    "PS3-C": 52396,
-   "PS3-R": 2726616,
-   "PS4": 10290
+   "PS3-R": 2757154,
+   "PS4": 10395
   },
   "columns": [
    "feature",
@@ -24,12 +24,12 @@
    "digest",
    "source"
   ],
-  "csv_sha256": "4583a83a2b825de259f52c974bbce9c2fe279ba6438ddff943751b476c90e2c9",
-  "generated_utc": "2026-10-05T13:18:04+00:00",
-  "parquet_sha256": "1cf57899a35a8fed031e9055e5faf41902ef4c99f65cc2231a75e960de57a8e5",
-  "rows": 4169878,
+  "csv_sha256": "88cec1216e2ed9f217fc0c65c8e599e1eea25be67e6ea84fbebd717ce75758ef",
+  "generated_utc": "2026-10-05T13:49:34+00:00",
+  "parquet_sha256": "36031e9e3cfa42b09556637abb7439d3e8147cd65dadf68194e5840943daed5b",
+  "rows": 4206767,
   "schema": "feature_metrics_catalog.v1",
-  "sources_digest": "69e5330499ea9cef72cafe944117df22611092e9c0c0ae0e325c8824f26ce2dc"
+  "sources_digest": "5453c45e20a41185a8ab5761461e44087e1e2be127818ce5a09aac16d34edae1"
  },
  "causal_counts": {
   "NOT_IDENTIFIED": 5090,
@@ -53,7 +53,7 @@
    "state": "PASS"
   },
   {
-   "detail": "complete methods []; incomplete {'ALL_ADMISSIBLE': 'incomplete ranking: 0 partial, 65 missing cells', 'SPEARMAN_K': 'incomplete ranking: 0 partial, 65 missing cells', 'ELASTIC_NET_K': 'incomplete ranking: 0 partial, 65 missing cells', 'RANDOM_K:seed0': 'incomplete ranking: 0 partial, 65 missing cells', 'GROUP_GATE_K': 'incomplete ranking: 0 partial, 65 missing cells', 'SEQ_MARGINAL_K': 'incomplete ranking: 0 partial, 65 missing cells', 'CHRONOEPILOGI_K': 'incomplete ranking: 0 partial, 65 missing cells', 'REDUNDANCY_K': 'incomplete ranking: 0 partial, 65 missing cells', 'MI8_K': 'incomplete ranking: 0 partial, 65 missing cells', 'EXTRATREES_TBP_K': 'incomplete ranking: 0 partial, 65 missing cells', 'GROUP_ELASTIC_NET_K': 'incomplete ranking: 0 partial, 65 missing cells', 'CMIM_K': 'incomplete ranking: 0 partial, 65 missing cells', 'JMI_K': 'incomplete ranking: 0 partial, 65 missing cells', 'MRMR_K': 'incomplete ranking: 0 partial, 65 missing cells'}; FS-PRED progress 256/980",
+   "detail": "complete methods []; incomplete {'ALL_ADMISSIBLE': 'incomplete ranking: 0 partial, 65 missing cells', 'SPEARMAN_K': 'incomplete ranking: 0 partial, 65 missing cells', 'ELASTIC_NET_K': 'incomplete ranking: 0 partial, 65 missing cells', 'RANDOM_K:seed0': 'incomplete ranking: 0 partial, 65 missing cells', 'GROUP_GATE_K': 'incomplete ranking: 0 partial, 65 missing cells', 'SEQ_MARGINAL_K': 'incomplete ranking: 0 partial, 65 missing cells', 'CHRONOEPILOGI_K': 'incomplete ranking: 0 partial, 65 missing cells', 'REDUNDANCY_K': 'incomplete ranking: 0 partial, 65 missing cells', 'MI8_K': 'incomplete ranking: 0 partial, 65 missing cells', 'EXTRATREES_TBP_K': 'incomplete ranking: 0 partial, 65 missing cells', 'GROUP_ELASTIC_NET_K': 'incomplete ranking: 0 partial, 65 missing cells', 'CMIM_K': 'incomplete ranking: 0 partial, 65 missing cells', 'JMI_K': 'incomplete ranking: 0 partial, 65 missing cells', 'MRMR_K': 'incomplete ranking: 0 partial, 65 missing cells'}; FS-PRED progress 272/980",
    "id": "C3_COMPLETE_RANKINGS",
    "state": "PENDING"
   },
@@ -68,7 +68,7 @@
    "state": "PASS"
   },
   {
-   "detail": "0 measured metric rows without a paired naive of 46208",
+   "detail": "0 measured metric rows without a paired naive of 48208",
    "id": "C6_PAIRED_NAIVE",
    "state": "PASS"
   },
@@ -78,7 +78,7 @@
    "state": "PENDING"
   },
   {
-   "detail": "fs_rep decisions 102/137 heavy candidates decided; PS3-R terminals complete 101/137 heavy candidates; PS4 profiles 98/137 heavy candidates; closure_record.json from the BUSINESS weekly walk-forward step (VALIDATION_2024 inputs are present on the refit host, the step is gated on the C7 refits); PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
+   "detail": "fs_rep decisions 105/137 heavy candidates decided; PS3-R terminals complete 104/137 heavy candidates; PS4 profiles 99/137 heavy candidates; closure_record.json from the BUSINESS weekly walk-forward step (VALIDATION_2024 inputs are present on the refit host, the step is gated on the C7 refits); PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
    "id": "C8_INPUT_OBJECTS",
    "state": "PENDING"
   },
@@ -93,7 +93,7 @@
    "state": "PASS"
   }
  ],
- "cycle_seconds": 74.46,
+ "cycle_seconds": 74.67,
  "denominator": {
   "candidates": 366,
   "heavy_candidates": 137,
@@ -102,7 +102,7 @@
   ],
   "selector_episode_sources_excluded": 37
  },
- "generated_utc": "2026-10-05T13:18:04+00:00",
+ "generated_utc": "2026-10-05T13:49:34+00:00",
  "generative_state": "NOT_CALIBRATED/EMPTY",
  "gpu_eta": {
   "cells": {
@@ -2761,12 +2761,16 @@
     },
     {
      "cell_id": "batch_002::yh.ftse.logret_1d::baseline",
+     "finished_at_utc": "2026-10-05T13:42:34Z",
+     "results_sha256": "9163de73857e1519b0394903b88272e67f5c145f53e3477e4336c95ab13a9179",
      "role": "worker_b",
-     "state": "running"
+     "state": "done",
+     "wall_seconds": 1564.211763408035
     },
     {
      "cell_id": "batch_002::yh.gc_f.logret_1d::baseline",
-     "state": "pending"
+     "role": "worker_b",
+     "state": "running"
     },
     {
      "cell_id": "batch_002::yh.gc_f.logret_5d::baseline",
@@ -3228,16 +3232,24 @@
     },
     {
      "cell_id": "batch_003::tv.stl_seasonal::baseline",
+     "finished_at_utc": "2026-10-05T13:23:37Z",
+     "results_sha256": "c4197cf5ca0bbeadb725b326d6b5a6a10c38c7193492973f04aad44145ba1518",
      "role": "worker_a",
-     "state": "running"
+     "state": "done",
+     "wall_seconds": 794.7890550220036
     },
     {
      "cell_id": "batch_003::tv.wav_d1::baseline",
-     "state": "pending"
+     "finished_at_utc": "2026-10-05T13:37:21Z",
+     "results_sha256": "971ba8a05407c4b1650948d876a12e9c83293ffd15c58df90dc26c1077f042d8",
+     "role": "worker_a",
+     "state": "done",
+     "wall_seconds": 818.3289574189985
     },
     {
      "cell_id": "batch_003::tv.wav_d2::baseline",
-     "state": "pending"
+     "role": "worker_a",
+     "state": "running"
     },
     {
      "cell_id": "batch_003::tv.wav_d3::baseline",
@@ -3257,44 +3269,44 @@
     }
    ]
   },
-  "generated_at_utc": "2026-10-05T13:16:45Z",
+  "generated_at_utc": "2026-10-05T13:48:14Z",
   "hosts": {
    "coordinator": {
     "gpus": [
-     "0, NVIDIA GeForce RTX 4070 Laptop GPU, 0 %, 828 MiB, 8188 MiB, 43"
+     "0, NVIDIA GeForce RTX 4070 Laptop GPU, 0 %, 731 MiB, 8188 MiB, 43"
     ],
-    "memory": "total_mib=31259 used_mib=11874 available_mib=19385",
-    "probed_at_utc": "2026-10-05T13:16:44Z",
+    "memory": "total_mib=31259 used_mib=12054 available_mib=19205",
+    "probed_at_utc": "2026-10-05T13:48:12Z",
     "running": []
    },
    "worker_a": {
     "gpus": [
-     "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 0 %, 14 MiB, 12227 MiB, 38",
-     "1, NVIDIA GeForce RTX 5090, 25 %, 19504 MiB, 32607 MiB, 54"
+     "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 0 %, 14 MiB, 12227 MiB, 39",
+     "1, NVIDIA GeForce RTX 5090, 0 %, 19506 MiB, 32607 MiB, 53"
     ],
-    "memory": "total_mib=14630 used_mib=9415 available_mib=5214",
-    "probed_at_utc": "2026-10-05T13:16:44Z",
+    "memory": "total_mib=14630 used_mib=10069 available_mib=4560",
+    "probed_at_utc": "2026-10-05T13:48:12Z",
     "running": [
      {
-      "cell_id": "batch_003::tv.stl_seasonal::baseline",
-      "elapsed_seconds": 383,
+      "cell_id": "batch_003::tv.wav_d2::baseline",
+      "elapsed_seconds": 649,
       "queue": "baselines_5090_batch_001_003",
-      "started_at_utc": "2026-10-05T13:10:22Z"
+      "started_at_utc": "2026-10-05T13:37:25Z"
      }
     ]
    },
    "worker_b": {
     "gpus": [
-     "0, NVIDIA GeForce RTX 4090 Laptop GPU, 0 %, 14418 MiB, 16376 MiB, 36"
+     "0, NVIDIA GeForce RTX 4090 Laptop GPU, 26 %, 14426 MiB, 16376 MiB, 40"
     ],
-    "memory": "total_mib=31310 used_mib=17525 available_mib=13785",
-    "probed_at_utc": "2026-10-05T13:16:44Z",
+    "memory": "total_mib=31310 used_mib=19418 available_mib=11891",
+    "probed_at_utc": "2026-10-05T13:48:12Z",
     "running": [
      {
-      "cell_id": "batch_002::yh.ftse.logret_1d::baseline",
-      "elapsed_seconds": 106,
+      "cell_id": "batch_002::yh.gc_f.logret_1d::baseline",
+      "elapsed_seconds": 334,
       "queue": "baselines_4090_batch_002",
-      "started_at_utc": "2026-10-05T13:14:59Z"
+      "started_at_utc": "2026-10-05T13:42:40Z"
      }
     ]
    }
@@ -3367,40 +3379,40 @@
       "p90_seconds": null
      },
      "worker_b": {
-      "done": 57,
-      "median_seconds": 1286.4,
-      "n": 57,
+      "done": 58,
+      "median_seconds": 1287.7,
+      "n": 58,
       "p90_seconds": 1635.7
      }
     },
     "counts": {
-     "done": 57,
+     "done": 58,
      "failed": 1,
-     "pending": 27,
+     "pending": 26,
      "running": 1
     },
     "denominator": 86,
     "duplicates": [],
     "durations_seconds": {
-     "median": 1286.4,
-     "n": 57,
+     "median": 1287.7,
+     "n": 58,
      "p90": 1635.7
     },
     "eta": {
      "basis": {
       "median_seconds": {
-       "worker_b": 1286.4
+       "worker_b": 1287.7
       },
       "p90_seconds": {
        "worker_b": 1635.7
       }
      },
-     "finish_utc_median": "2026-10-05T23:15:18Z",
-     "finish_utc_p90": "2026-10-06T01:58:18Z",
+     "finish_utc_median": "2026-10-05T23:22:08Z",
+     "finish_utc_p90": "2026-10-06T01:58:44Z",
      "provisional": false,
      "reason": null,
-     "seconds_median": 35913,
-     "seconds_p90": 45693
+     "seconds_median": 34433,
+     "seconds_p90": 43829
     },
     "failures": [
      {
@@ -3414,12 +3426,12 @@
     "plan_cells": 86,
     "running": [
      {
-      "cell_id": "batch_002::yh.ftse.logret_1d::baseline",
-      "elapsed_seconds": 106,
+      "cell_id": "batch_002::yh.gc_f.logret_1d::baseline",
+      "elapsed_seconds": 334,
       "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
       "role": "worker_b",
       "stale": false,
-      "started_at_utc": "2026-10-05T13:14:59Z"
+      "started_at_utc": "2026-10-05T13:42:40Z"
      }
     ]
    },
@@ -3430,52 +3442,52 @@
     "active_workers": 1,
     "by_role": {
      "worker_a": {
-      "done": 44,
-      "median_seconds": 693.9,
-      "n": 44,
-      "p90_seconds": 810.3
+      "done": 46,
+      "median_seconds": 699.7,
+      "n": 46,
+      "p90_seconds": 818.3
      }
     },
     "counts": {
-     "done": 44,
+     "done": 46,
      "failed": 0,
-     "pending": 6,
+     "pending": 4,
      "running": 1
     },
     "denominator": 51,
     "duplicates": [],
     "durations_seconds": {
-     "median": 693.9,
-     "n": 44,
-     "p90": 810.3
+     "median": 699.7,
+     "n": 46,
+     "p90": 818.3
     },
     "eta": {
      "basis": {
       "median_seconds": {
-       "worker_a": 693.9
+       "worker_a": 699.7
       },
       "p90_seconds": {
-       "worker_a": 810.3
+       "worker_a": 818.3
       }
      },
-     "finish_utc_median": "2026-10-05T14:31:19Z",
-     "finish_utc_p90": "2026-10-05T14:44:54Z",
+     "finish_utc_median": "2026-10-05T14:35:43Z",
+     "finish_utc_p90": "2026-10-05T14:45:36Z",
      "provisional": false,
      "reason": null,
-     "seconds_median": 4474,
-     "seconds_p90": 5289
+     "seconds_median": 2849,
+     "seconds_p90": 3442
     },
     "failures": [],
     "name": "baselines_5090_batch_001_003",
     "plan_cells": 51,
     "running": [
      {
-      "cell_id": "batch_003::tv.stl_seasonal::baseline",
-      "elapsed_seconds": 383,
+      "cell_id": "batch_003::tv.wav_d2::baseline",
+      "elapsed_seconds": 649,
       "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_a/baseline_5090.log",
       "role": "worker_a",
       "stale": false,
-      "started_at_utc": "2026-10-05T13:10:22Z"
+      "started_at_utc": "2026-10-05T13:37:25Z"
      }
     ]
    }
@@ -3491,12 +3503,12 @@
    },
    "baselines_batch_002": {
     "denominator": 86,
-    "done": 57,
+    "done": 58,
     "failed": 1
    },
    "baselines_heavy_candidates": {
     "denominator": 137,
-    "done": 101,
+    "done": 104,
     "failed": 1
    }
   }
@@ -3507,8 +3519,8 @@
   "fs_gen/generative_evidence.csv": "11b5493af71ec7c6068343010ea58d77d026fec4a806720343ab314a38b4e526",
   "fs_pred/selector_sets.json": "4e5430e6948a8adb927264e6ee38a5db085a1cf5b168299d703193b8e0170374",
   "fs_pred/tables/rankings_Y_s_1h.parquet": "ffae6e9287b64b456827a79ee9e6804943d09f103bcf8a1d9ed0147740875073",
-  "fs_rep/candidate_decisions.csv": "1bda608f36e54af88d7b39ab46115af17837ee4f387e2fc6e14ff1b5fa53cc04",
-  "fs_rep/representation_dispositions.csv": "1d41d3bcfe0e52bd3deeeb006fd9b087613bd60f9de52d48624f759f1a3d0bdb",
+  "fs_rep/candidate_decisions.csv": "c9650b43936d91900728e25adcfa3aa81b67f8382b8b03fd3c96ec73442aa2ad",
+  "fs_rep/representation_dispositions.csv": "45f0ca855c83afc6cf45e05d1bcaec3ec3983e969d460a08f234bbb35b6afd3b",
   "laneA/batch_001/admissible_features.csv": "7e0b795e3b23d176d22d0dded55ddf726a9021395e969029dfff4dca3cf55678",
   "laneA/batch_002/admissible_features.csv": "395d0c468dd08d6707a269e26da8df1e8d3b65b8913f85c37f1298c9aeb1ab12",
   "laneA/batch_002/role_overlay_batch_001.json": "4f1bfb21ad8b163bb355cb0436f671a8955b65c989ec3c04120df63763de3ca3",
@@ -3535,8 +3547,8 @@
    "unit": "candidates with final causal measurement"
   },
   "FS-CLOSE": {
-   "done": 61,
-   "fraction": 0.4178,
+   "done": 69,
+   "fraction": 0.4726,
    "total": 146,
    "unit": "set x head refits complete"
   },
@@ -3548,7 +3560,7 @@
   },
   "FS-PRED": {
    "done": 0,
-   "eta_utc": "2026-10-05T15:15:40.323718+00:00",
+   "eta_utc": "2026-10-05T15:49:11.486911+00:00",
    "folds_in_progress": [
     "inner_2019",
     "inner_2020",
@@ -3557,14 +3569,14 @@
     "inner_2023"
    ],
    "fraction": 0.0,
-   "method_cells_done": 256,
+   "method_cells_done": 272,
    "method_cells_total": 980,
    "total": 14,
    "unit": "methods with complete rankings"
   },
   "FS-REP": {
-   "done": 102,
-   "fraction": 0.7445,
+   "done": 105,
+   "fraction": 0.7664,
    "total": 137,
    "unit": "heavy candidates decided"
   },
@@ -3587,16 +3599,16 @@
    "unit": "join coverage only (not identification)"
   },
   "PS3-R": {
-   "done": 101,
-   "fraction": 0.7372,
-   "terminals_done": 373,
+   "done": 104,
+   "fraction": 0.7591,
+   "terminals_done": 376,
    "terminals_total": 411,
    "total": 137,
    "unit": "heavy candidates with 3 terminals"
   },
   "PS4": {
-   "done": 98,
-   "fraction": 0.7153,
+   "done": 99,
+   "fraction": 0.7226,
    "total": 137,
    "unit": "heavy candidates profiled"
   }
@@ -3607,13 +3619,13 @@
    "REJECTED": 1,
    "SELECTED": 0
   },
-  "manifest_sha256": "b86bae26478f47641d0b2cad4a3c447ac3becb5f7e91cb866570fd7b4205c59f",
+  "manifest_sha256": "af7715840f963564d5e1f185f98611ec7ed2d04d7977aa2edaef0c45f9cbc6f9",
   "missing_objects": [
    "PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
-   "PS3-R terminals complete 101/137 heavy candidates",
-   "PS4 profiles 98/137 heavy candidates",
+   "PS3-R terminals complete 104/137 heavy candidates",
+   "PS4 profiles 99/137 heavy candidates",
    "closure_record.json from the BUSINESS weekly walk-forward step (VALIDATION_2024 inputs are present on the refit host, the step is gated on the C7 refits)",
-   "fs_rep decisions 102/137 heavy candidates decided"
+   "fs_rep decisions 105/137 heavy candidates decided"
   ],
   "schema": "feature_selection.manifest.v1-DRAFT",
   "status": "DRAFT"
@@ -3625,7 +3637,7 @@
    "family",
    "refit_gain"
   ],
-  "features": 56,
+  "features": 64,
   "path": "docs/audits/evidence/canonical_20261003/fs_closure/fs_close/refit_gain_export.csv"
  },
  "refits": {
@@ -3687,15 +3699,15 @@
    "ALL_MINUS:px.logret_24h|ridge": 70,
    "ALL_MINUS:px.logret_2h|ridge": 70,
    "ALL_MINUS:px.logret_48h|ridge": 70,
-   "ALL_MINUS:px.logret_4h|ridge": 35,
-   "ALL_MINUS:px.logret_6h|ridge": 0,
-   "ALL_MINUS:px.rv5|ridge": 0,
-   "ALL_MINUS:px.zclose_168|ridge": 0,
-   "ALL_MINUS:px.zclose_24|ridge": 0,
-   "ALL_MINUS:rg.atr_pct|ridge": 0,
-   "ALL_MINUS:rg.atr_ratio|ridge": 0,
-   "ALL_MINUS:rg.bb_width_pct|ridge": 0,
-   "ALL_MINUS:rg.di_spread|ridge": 0,
+   "ALL_MINUS:px.logret_4h|ridge": 70,
+   "ALL_MINUS:px.logret_6h|ridge": 70,
+   "ALL_MINUS:px.rv5|ridge": 70,
+   "ALL_MINUS:px.zclose_168|ridge": 70,
+   "ALL_MINUS:px.zclose_24|ridge": 70,
+   "ALL_MINUS:rg.atr_pct|ridge": 70,
+   "ALL_MINUS:rg.atr_ratio|ridge": 70,
+   "ALL_MINUS:rg.bb_width_pct|ridge": 70,
+   "ALL_MINUS:rg.di_spread|ridge": 15,
    "ALL_MINUS:rg.ema_alignment|ridge": 0,
    "ALL_MINUS:rg.macd_hist|ridge": 0,
    "ALL_MINUS:rg.price_vs_ema50|ridge": 0,
@@ -3777,7 +3789,7 @@
    "RANDOM_K:8|hgb": 0,
    "RANDOM_K:8|ridge": 70
   },
-  "complete_set_heads": 61,
+  "complete_set_heads": 69,
   "planned_set_heads": 146,
   "pred_best_method": null,
   "sets": 142
@@ -3785,8 +3797,8 @@
  "representation_counts": {
   "NOT_AVAILABLE_FOR_TRAIN": 1,
   "NO_TRAINED_ADVANTAGE": 71,
-  "PENDING": 35,
-  "RAW": 30
+  "PENDING": 32,
+  "RAW": 33
  },
  "schema": "fs_closure_status.v1",
  "skill_summary": {
@@ -5302,8 +5314,8 @@
    "Y_b": {
     "beats_naive_every_cell": false,
     "cells": 10,
-    "max": 0.16356253375423402,
-    "mean_skill_vs_stricter_naive": -0.6478193298187919,
+    "max": 0.16288962631478043,
+    "mean_skill_vs_stricter_naive": -0.6537110111501314,
     "min": -3.3481997434421054,
     "positive_cells": 3
    },
@@ -5311,7 +5323,7 @@
     "beats_naive_every_cell": false,
     "cells": 30,
     "max": -0.0609492699159595,
-    "mean_skill_vs_stricter_naive": -1.34020596799726,
+    "mean_skill_vs_stricter_naive": -1.3402059679975193,
     "min": -5.810097891022715,
     "positive_cells": 0
    },
@@ -5328,25 +5340,25 @@
    "Y_b": {
     "beats_naive_every_cell": false,
     "cells": 10,
-    "max": 0.16209178131101742,
-    "mean_skill_vs_stricter_naive": -0.6295373509730564,
-    "min": -3.277700378757813,
+    "max": 0.16207723248104833,
+    "mean_skill_vs_stricter_naive": -0.637661614077722,
+    "min": -3.3276782136520344,
     "positive_cells": 3
    },
    "Y_l": {
     "beats_naive_every_cell": false,
     "cells": 30,
     "max": -0.06088635021491018,
-    "mean_skill_vs_stricter_naive": -1.3405302966351575,
+    "mean_skill_vs_stricter_naive": -1.3405302966354122,
     "min": -5.811229223632907,
     "positive_cells": 0
    },
    "Y_s": {
     "beats_naive_every_cell": false,
     "cells": 30,
-    "max": -0.009526062512653644,
-    "mean_skill_vs_stricter_naive": -0.29206509311977463,
-    "min": -1.3774521851208412,
+    "max": -0.009526062512659639,
+    "mean_skill_vs_stricter_naive": -0.2920650931197893,
+    "min": -1.3774521851209673,
     "positive_cells": 0
    }
   },
@@ -5354,8 +5366,8 @@
    "Y_b": {
     "beats_naive_every_cell": false,
     "cells": 10,
-    "max": 0.16308786255869323,
-    "mean_skill_vs_stricter_naive": -0.6343295130403129,
+    "max": 0.1620041330927795,
+    "mean_skill_vs_stricter_naive": -0.6368294222764839,
     "min": -3.23051622590199,
     "positive_cells": 3
    },
@@ -5363,7 +5375,7 @@
     "beats_naive_every_cell": false,
     "cells": 30,
     "max": -0.06101280395352737,
-    "mean_skill_vs_stricter_naive": -1.339580454569618,
+    "mean_skill_vs_stricter_naive": -1.3395804545698944,
     "min": -5.8066380135738545,
     "positive_cells": 0
    },
@@ -5371,8 +5383,8 @@
     "beats_naive_every_cell": false,
     "cells": 30,
     "max": -0.009064399686320224,
-    "mean_skill_vs_stricter_naive": -0.2901440743004323,
-    "min": -1.3708581734820249,
+    "mean_skill_vs_stricter_naive": -0.29014407430045647,
+    "min": -1.3708581734825085,
     "positive_cells": 0
    }
   },
@@ -5381,7 +5393,7 @@
     "beats_naive_every_cell": false,
     "cells": 10,
     "max": 0.162829034974879,
-    "mean_skill_vs_stricter_naive": -0.64625951319483,
+    "mean_skill_vs_stricter_naive": -0.6488544134026655,
     "min": -3.2990638824441234,
     "positive_cells": 3
    },
@@ -5389,15 +5401,15 @@
     "beats_naive_every_cell": false,
     "cells": 30,
     "max": -0.06203051620946032,
-    "mean_skill_vs_stricter_naive": -1.3413069830025428,
+    "mean_skill_vs_stricter_naive": -1.3413069830028475,
     "min": -5.811248379322903,
     "positive_cells": 0
    },
    "Y_s": {
     "beats_naive_every_cell": false,
     "cells": 30,
-    "max": -0.009322869430416159,
-    "mean_skill_vs_stricter_naive": -0.2915214611137264,
+    "max": -0.009322869430418157,
+    "mean_skill_vs_stricter_naive": -0.2915214611137399,
     "min": -1.3729309509916594,
     "positive_cells": 0
    }
@@ -5406,25 +5418,25 @@
    "Y_b": {
     "beats_naive_every_cell": false,
     "cells": 10,
-    "max": 0.16173329364160804,
-    "mean_skill_vs_stricter_naive": -0.641839045888832,
-    "min": -3.1873011935283575,
+    "max": 0.16137307902436704,
+    "mean_skill_vs_stricter_naive": -0.6503419885083341,
+    "min": -3.252029156426002,
     "positive_cells": 3
    },
    "Y_l": {
     "beats_naive_every_cell": false,
     "cells": 30,
     "max": -0.06106559588369098,
-    "mean_skill_vs_stricter_naive": -1.3430740483972954,
+    "mean_skill_vs_stricter_naive": -1.3430740483976018,
     "min": -5.821649001941846,
     "positive_cells": 0
    },
    "Y_s": {
     "beats_naive_every_cell": false,
     "cells": 30,
-    "max": -0.009427600134361391,
-    "mean_skill_vs_stricter_naive": -0.28931777336529296,
-    "min": -1.361275915150892,
+    "max": -0.009427600134366054,
+    "mean_skill_vs_stricter_naive": -0.28931777336541314,
+    "min": -1.3612759151518974,
     "positive_cells": 0
    }
   },
@@ -5432,16 +5444,16 @@
    "Y_b": {
     "beats_naive_every_cell": false,
     "cells": 10,
-    "max": 0.16247366658798557,
-    "mean_skill_vs_stricter_naive": -0.6209545389296035,
-    "min": -2.9551765827503274,
+    "max": 0.16090075734429554,
+    "mean_skill_vs_stricter_naive": -0.628208683808625,
+    "min": -3.0156381940158976,
     "positive_cells": 3
    },
    "Y_l": {
     "beats_naive_every_cell": false,
     "cells": 30,
     "max": -0.061611999972758014,
-    "mean_skill_vs_stricter_naive": -1.3383589174157609,
+    "mean_skill_vs_stricter_naive": -1.3383589174160804,
     "min": -5.839371175903191,
     "positive_cells": 0
    },
@@ -5449,8 +5461,8 @@
     "beats_naive_every_cell": false,
     "cells": 30,
     "max": -0.009583582972630733,
-    "mean_skill_vs_stricter_naive": -0.2882090374041887,
-    "min": -1.3481287133483804,
+    "mean_skill_vs_stricter_naive": -0.28820903740431636,
+    "min": -1.3481287133488453,
     "positive_cells": 0
    }
   },
@@ -5458,8 +5470,8 @@
    "Y_b": {
     "beats_naive_every_cell": false,
     "cells": 10,
-    "max": 0.16251448301809202,
-    "mean_skill_vs_stricter_naive": -0.617234945633872,
+    "max": 0.16123649912710758,
+    "mean_skill_vs_stricter_naive": -0.6187795171355149,
     "min": -3.1327803581032114,
     "positive_cells": 3
    },
@@ -5467,7 +5479,7 @@
     "beats_naive_every_cell": false,
     "cells": 30,
     "max": -0.06081147629450423,
-    "mean_skill_vs_stricter_naive": -1.3403036649132156,
+    "mean_skill_vs_stricter_naive": -1.3403036649134812,
     "min": -5.79738106657428,
     "positive_cells": 0
    },
@@ -5475,7 +5487,7 @@
     "beats_naive_every_cell": false,
     "cells": 30,
     "max": -0.009511994641711707,
-    "mean_skill_vs_stricter_naive": -0.2894161163387094,
+    "mean_skill_vs_stricter_naive": -0.28941611633875836,
     "min": -1.36291260594744,
     "positive_cells": 0
    }
@@ -5485,7 +5497,7 @@
     "beats_naive_every_cell": false,
     "cells": 10,
     "max": 0.16301834923647007,
-    "mean_skill_vs_stricter_naive": -0.6109177351962294,
+    "mean_skill_vs_stricter_naive": -0.614191812859141,
     "min": -2.938668890323211,
     "positive_cells": 3
    },
@@ -5493,15 +5505,15 @@
     "beats_naive_every_cell": false,
     "cells": 30,
     "max": -0.06083962120794073,
-    "mean_skill_vs_stricter_naive": -1.3370991303694904,
+    "mean_skill_vs_stricter_naive": -1.3370991303697723,
     "min": -5.807672799513507,
     "positive_cells": 0
    },
    "Y_s": {
     "beats_naive_every_cell": false,
     "cells": 30,
-    "max": -0.009470213426193252,
-    "mean_skill_vs_stricter_naive": -0.2899867445695296,
+    "max": -0.009470213426194363,
+    "mean_skill_vs_stricter_naive": -0.28998674456953955,
     "min": -1.3627605335815303,
     "positive_cells": 0
    }
@@ -5526,8 +5538,8 @@
    "Y_s": {
     "beats_naive_every_cell": false,
     "cells": 30,
-    "max": -0.00979927164811456,
-    "mean_skill_vs_stricter_naive": -0.2998709958235401,
+    "max": -0.009799271648117447,
+    "mean_skill_vs_stricter_naive": -0.2998709958235496,
     "min": -1.4148360165353497,
     "positive_cells": 0
    }
@@ -6853,9 +6865,22 @@
  },
  "validation_2024_inputs_present_on_refit_host": true,
  "worker_dispatch": {
-  "cap": "1228M",
-  "detail": "Running as unit: fs-close-refit-1791206222.service; invocation ID: 7f3a3355b9f346a98f70f133f8333a25\n",
-  "queued": "crispdm-run -q waits for host headroom up to 4 h before starting",
-  "state": "LAUNCHED"
+  "launch_marker": {
+   "cap": "1228M",
+   "launched_utc": "2026-10-05T13:46:04+00:00",
+   "pilot": false,
+   "plan_sha256": "e259f6a32892f9ad1ce48faea869ed2d1080db8c89635f221db1b7d46d1ae7d3",
+   "unit": "fs-close-refit-1791207964.service"
+  },
+  "progress": {
+   "cells_done": 0,
+   "cells_failed": 0,
+   "cells_skipped": 0,
+   "elapsed_seconds": 4.482269287109375e-05,
+   "schema": "fs_close_refit_progress.v1",
+   "state": "RUNNING",
+   "updated_utc": "2026-10-05T13:46:06.596745+00:00"
+  },
+  "state": "RUNNING"
  }
 }

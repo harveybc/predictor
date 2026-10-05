@@ -54,4 +54,12 @@ px.logret_1h,identity,0.00032106327376142175,70,20,ridge,"TRAIN inner folds, ide
 px.logret_24h,identity,0.0015170124046484698,70,54,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
 px.logret_2h,identity,-0.0005181042019667203,70,26,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
 px.logret_48h,identity,0.0005972832572330308,70,31,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
-px.logret_4h,identity,-0.0004756593743038497,35,12,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+px.logret_4h,identity,0.0005575347213037333,70,31,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+px.logret_6h,identity,-0.00017617904469313406,70,48,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+px.rv5,identity,-0.0003812061402719312,70,27,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+px.zclose_168,identity,0.00043115587731608893,70,32,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+px.zclose_24,identity,0.000279808333646355,70,32,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+rg.atr_pct,identity,-0.0007803286624986282,70,35,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+rg.atr_ratio,identity,-0.001415591198080126,70,26,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+rg.bb_width_pct,identity,-0.001166840478675422,70,19,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+rg.di_spread,identity,0.0050281599351039465,15,7,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
