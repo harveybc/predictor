@@ -1,0 +1,31 @@
+{
+  "lane": "FS-CAUSAL",
+  "order": "docs/handoffs/SATOSHI_FEATURE_SELECTION_CLOSURE_2026_10_05.md",
+  "sections_read": [
+    "2", "5", "8", "9",
+    "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3 §5",
+    "FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30 §5, FS10-FS12",
+    "laneC/reanalysis_48ae17c/REPORT.md (0/279 IDENTIFIED under repaired gates; neutral, not rejection)"
+  ],
+  "ack_utc": "2026-10-05T04:30:00Z",
+  "branch": "satoshi/canonical-exec-20261003",
+  "tip_at_ack": "c3b78415",
+  "worktree_role": "canonical-exec worktree (evidence) + causal-inference worktree causal-eurusd-ladder-20261003 (code, new branch satoshi/fs-causal-20261005 from 48ae17c)",
+  "start_from": "causal-inference satoshi/eurusd-causal-ladder-20261003 3f04f40 + fail-closed gate repair 48ae17c (ps3c.py, ps3c_batch.py, ps3c_review.py, 39+ tests)",
+  "write_set": [
+    "causal-inference: provider/src/causal_inference_provider/fs_causal.py, fs_causal_batch.py, fs_causal_discovery.py; provider/tests/test_fs_causal*.py",
+    "predictor: docs/audits/evidence/canonical_20261003/fs_closure/fs_causal/**",
+    "worker_b: ~/.local/state/canonical_20261003/fs_causal/** (inputs mirror, chunk outputs, causal_evidence.jsonl, progress.json)"
+  ],
+  "never_touch": [
+    "STATUS.json", "MASTER_MILESTONE_*", "other lanes' directories",
+    "GPU jobs (PS3-R runners on 5090/4090)", "MT5/lts services", "worker_b /tmp", "coordinator heavy compute",
+    "the 1,076 historical rung-2 estimates (never reused as identification)"
+  ],
+  "first_deliverable": "synthetic-world tests RED->GREEN (true cause SUPPORTED, confounded pair NOT_IDENTIFIED, planted anti-effect CONTRADICTED, FS10-FS12, future-timestamp/missing-availability/empty-strata refusals); then the batch runner's first completed target block on worker_b with progress.json",
+  "denominator": "366 model-input candidates (batch_001 83 + batch_002 298 + batch_003 22, role=feature ADMISSIBLE) x 14 targets x 3 rungs; 37 SELECTOR_EPISODE_SOURCE columns are episode locators only (I11 deferred)",
+  "evidence_policy": "TRAIN-only (thresholds, DAGs, windows, SCMs, propensity fitted inside lane-A TRAIN rows; TEST never read); per cell SUPPORTED / CONTRADICTED / NOT_IDENTIFIED with estimand, assumptions+evidence refs, conditioning set, max lag, CI test, BH per declared family, support/overlap/balance, placebos, sensitivity, abstention reason; only robust CONTRADICTED weighs against a feature; NOT_IDENTIFIED never eliminates",
+  "compute_policy": "worker_b CPU only via ~/.local/bin/crispdm-run inside a durable systemd --user unit; sequential chunks by (lane-A batch, feature block); cap = 1.25x measured pilot peak, <= 2 GB per chunk; resumable (chunk READY + digests); progress.json (done/total, per-state counts, failures, ETA)",
+  "seed_policy": "one seed (1729), retained per receipt",
+  "discovery_comparators": "SyPI-style lagged conditional-independence screen under declared graph restrictions; PCMCI+ via tigramite only if licence/pin verifiable on worker_b, else minimal-separating-set CI screen; ARROW only as accelerator, never extra evidence"
+}
