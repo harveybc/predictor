@@ -1,0 +1,56 @@
+{
+  "schema": "fs_closure_lane_ack.v1",
+  "lane": "FS-PRED",
+  "order": "docs/handoffs/SATOSHI_FEATURE_SELECTION_CLOSURE_2026_10_05.md section 4",
+  "acknowledged_utc": "2026-10-04T20:40:00Z",
+  "branch": "satoshi/canonical-exec-20261003",
+  "tip_at_ack": "6da7316b",
+  "coordination_worktree": ".worktrees/predictor-canonical-exec-20261003",
+  "write_set": [
+    "tools/feature_selection_campaign.py",
+    "tools/feature_selector_comparators.py",
+    "tools/feature_selector_elastic_net.py",
+    "tools/feature_selector_predictive.py",
+    "tools/feature_selection_batch_runner.py",
+    "tests/test_feature_selection_campaign.py",
+    "tests/test_feature_selector_comparators.py",
+    "tests/test_feature_selector_elastic_net.py",
+    "tests/test_feature_selector_predictive.py",
+    "tests/test_feature_selection_batch_runner.py",
+    "docs/audits/evidence/canonical_20261003/fs_closure/fs_pred/**"
+  ],
+  "never_touched": [
+    "docs/audits/evidence/canonical_20261003/STATUS.json",
+    "docs/audits/evidence/canonical_20261003/MASTER_MILESTONE_*",
+    "other lanes' directories",
+    "GPU jobs, MT5/lts services, coordinator compute, worker_b /tmp"
+  ],
+  "contract": {
+    "population": "TRAIN only: 71,734 decision rows 2012-05..2023-12 from lane A ps1 batches 001/002/003 joined on row_id; VALIDATION (2024) and TEST (2025) never read; the campaign API has no parameter that accepts them",
+    "folds": "lane A folds.json: inner_2019..inner_2023; selectors fit on each fold's train_rows [0, train_end) only; the fold's inner validation year is left untouched for FS-CLOSE paired refits",
+    "denominator": "366 model-input candidates = 46 (batch_001) + 298 (batch_002) + 22 (batch_003); 37 SELECTOR_EPISODE_SOURCE columns and 1 quality_excluded column excluded; mismatch is reported, never silently reconciled",
+    "targets": "Y_s_1h..Y_s_6h, Y_l_24h..Y_l_144h, Y_b_s6, Y_b_l144 (14); barrier codes decoded to -1/0/+1 with no-support rows dropped; censored labels dropped per target",
+    "k": {"primary": 24, "sensitivities": [8, 16, 24, 32, 48]},
+    "seed": 0,
+    "identity": "row/group/plan digests sealed per target x fold; mismatch rejects the cell"
+  },
+  "methods_planned": [
+    "ALL_ADMISSIBLE", "RANDOM_K:seed0", "SPEARMAN_K", "MI8_K", "JMI_K", "CMIM_K", "MRMR_K",
+    "REDUNDANCY_K", "ELASTIC_NET_K", "GROUP_ELASTIC_NET_K", "EXTRATREES_TBP_K (temporal block permutation + refit-after-removal at primary K)",
+    "SEQ_MARGINAL_K (declared budget)", "GROUP_GATE_K (lane B dependence clusters per fold)",
+    "CHRONOEPILOGI_K (official implementation if licence/pin/API verifiable, else faithful adapter with unreproduced scope marked; never called causal)"
+  ],
+  "compute": {
+    "host_role": "worker_b (CPU only)",
+    "launcher": "~/.local/bin/crispdm-run as a durable systemd --user unit; per-job cap <= 4G until a pilot peak is measured, then 1.25x the measured tree peak, never lowered after a refusal",
+    "chunking": "one job per target, methods sequential inside the job, folds sequential",
+    "inputs": "ps1 features_train.parquet x3 + targets_train.parquet + folds.json relayed worker_a -> coordinator -> worker_b with ionice -c3 and sha256 verified both ends; lane B fold clusters taken from committed evidence",
+    "outputs": "~/.local/state/canonical_20261003/fs_pred/ on worker_b: rankings per method x target x fold x K (parquet/jsonl with digests), selector_sets.json draft, progress.json; small tables + runner + unit files committed under fs_closure/fs_pred/"
+  },
+  "first_deliverable": "tests (pure python, tiny) for identity/rejection/complete-ranking/RANDOM_K/group gate/refit invariants, then the extended campaign and batch runner committed; runner live on worker_b with its first completed method x target reported with counts, progress.json path and ETA",
+  "eta": {
+    "tests_and_code_committed": "2026-10-05T02:00Z",
+    "runner_live_first_cell": "2026-10-05T04:00Z",
+    "completion": "measured from the first completed target; published in progress.json and in the second report"
+  }
+}
