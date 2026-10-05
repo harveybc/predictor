@@ -12,7 +12,7 @@ fred.rates.dfii10.level,batch_002,RAW,identity;random;ae;dae;masked_temporal_ae;
 fred.rates.dgs1.logret_5d,batch_002,RAW,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;RAW_REFIT_GAIN_NONPOSITIVE
 fred.rates.dgs30.level,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;RAW_REFIT_GAIN_NONPOSITIVE
 fred.rates.dgs3mo.diff_5d,batch_002,RAW,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;RAW_REFIT_GAIN_NONPOSITIVE
-fred.rates.dgs5.level,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
+fred.rates.dgs5.level,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;RAW_REFIT_GAIN_NONPOSITIVE
 fred.rates.dgs5.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 fred.rates.dprime.logret_5d,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;RAW_REFIT_GAIN_POSITIVE;UNSTABLE_LATENT(past_to_current_siamese)
 fred.rates.dtb3.diff_5d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
