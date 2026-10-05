@@ -85,4 +85,11 @@ ta.stoch_k,identity,-2.9850982074232494e-05,70,35,ridge,"TRAIN inner folds, iden
 ta.willr_14,identity,-0.00014095278163106238,70,39,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
 tv.hilbert_amp,identity,-0.004005997687790785,70,31,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
 tv.kalman_dev,identity,-0.0004899053900262172,70,21,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
-tv.stl_dev,identity,-0.0005176608775076942,20,10,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+tv.stl_dev,identity,0.0005153981081978277,70,37,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+tv.stl_seasonal,identity,-0.0003321649899170329,70,30,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+tv.wav_d1,identity,0.000592340272306972,70,21,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+tv.wav_d2,identity,0.0001751128247953093,70,25,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+tv.wav_d3,identity,-7.967634315335451e-05,70,34,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+tv.wav_d4,identity,0.000295674299785115,70,33,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+tv.wav_d5,identity,-0.0010131664963170571,70,23,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+yh.axjo.logret_5d,identity,-0.003893152195858529,70,15,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
