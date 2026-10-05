@@ -261,6 +261,27 @@ def test_refit_gate_applies_when_table_present(world):
     assert progress["candidates"]["f.win"]["decision"] == "masked_temporal_ae"
 
 
+def test_identity_only_refit_export_is_feature_level_evidence(world):
+    """FS-CLOSE export: family=identity only, rows fill over time, trained refits not materialised."""
+    refit = world["state"] / "refit_gain_export.csv"
+    refit.write_text("feature_id,family,refit_gain,cells,positive_cells,head,rows,trained_families\n"
+                     "f.win,identity,0.002,14,9,ridge,100,NOT_MATERIALISED\n"
+                     "f.raw,identity,,0,0,ridge,0,NOT_MATERIALISED\n")
+    cfg = json.loads(world["cfg_path"].read_text())
+    cfg["refit_input"] = str(refit)
+    world["cfg_path"].write_text(json.dumps(cfg))
+    cfg, progress = _run(world)
+    c = progress["candidates"]
+    assert c["f.win"]["decision"] == "dae"  # trained G4 not applied: no trained refit rows
+    assert "RAW_REFIT_GAIN_POSITIVE" in c["f.win"]["flags"]
+    assert not any(f.startswith("RAW_REFIT") for f in c["f.raw"]["flags"])  # empty gain skipped
+    rows = {(r["feature_id"], r["family"]): r for r in csv.DictReader((cfg["_output_dir"] / "representation_dispositions.csv").open())}
+    assert rows[("f.win", "identity")]["refit_gate_applied"] == "true" and rows[("f.win", "identity")]["refit_gain"] == "0.002"
+    assert rows[("f.win", "dae")]["refit_gate_applied"] == "false" and rows[("f.win", "dae")]["refit_gain"] == "NOT_AVAILABLE"
+    assert rows[("f.win", "dae")]["G4_refit"] == "NOT_APPLICABLE"
+    assert rows[("f.raw", "identity")]["refit_gate_applied"] == "false"
+
+
 def test_rejections_for_hash_revision_and_digest(world, tmp_path):
     cfg = fsr.load_config(world["cfg_path"])
     cache = tmp_path / "cache"

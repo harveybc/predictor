@@ -30,7 +30,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-RULE_VERSION = "fs_rep_rule.v1"
+RULE_VERSION = "fs_rep_rule.v2"
 SCHEMA_PROGRESS = "fs_rep_progress.v1"
 SCHEMA_CONFIG = "fs_rep_config.v1"
 
@@ -445,16 +445,26 @@ def family_scores(fam_out: dict) -> dict:
 
 
 def load_refit(path: Path | None) -> dict[tuple[str, str], float] | None:
+    """Paired-refit export (FS-CLOSE): feature_id, family, refit_gain (> 0 = better after refit).
+
+    Rows without a finite refit_gain are skipped (the file fills as refits land).  A present
+    file with no rows yet is an applied-but-empty table: every lookup is NOT_AVAILABLE.
+    """
     if path is None or not path.is_file():
         return None
     table: dict[tuple[str, str], float] = {}
     if path.suffix == ".json":
-        for row in json.loads(path.read_text()):
-            table[(row["feature_id"], row["family"])] = float(row["refit_gain"])
+        rows = json.loads(path.read_text())
     else:
         with path.open() as handle:
-            for row in csv.DictReader(handle):
-                table[(row["feature_id"], row["family"])] = float(row["refit_gain"])
+            rows = list(csv.DictReader(handle))
+    for row in rows:
+        try:
+            gain = float(row.get("refit_gain"))
+        except (TypeError, ValueError):
+            continue
+        if math.isfinite(gain) and row.get("feature_id") and row.get("family"):
+            table[(row["feature_id"], row["family"])] = gain
     return table
 
 
@@ -522,6 +532,9 @@ def decide(feature: str, terminals: dict[str, dict], refit: dict | None) -> dict
             break
     raw_skill = family_scores(raw_fam)["skill_cells"] > 0 if raw_fam else False
     flags.append("RAW_HAS_PROBE_SKILL" if raw_skill else "RAW_NO_PROBE_SKILL")
+    raw_refit = refit.get((feature, "identity")) if refit is not None else None
+    if raw_refit is not None:
+        flags.append("RAW_REFIT_GAIN_POSITIVE" if raw_refit > 0 else "RAW_REFIT_GAIN_NONPOSITIVE")
     if not raw_skill and not any_skill:
         flags.append("NO_PROBE_SKILL_VS_NAIVE_ANY_FAMILY")
     if failed_families:
@@ -537,7 +550,8 @@ def decide(feature: str, terminals: dict[str, dict], refit: dict | None) -> dict
         decision = "RAW"
     else:
         decision = "NO_TRAINED_ADVANTAGE"
-    return {"decision": decision, "flags": sorted(set(flags)), "gates": gates, "families_failed": failed_families}
+    return {"decision": decision, "flags": sorted(set(flags)), "gates": gates, "families_failed": failed_families,
+            "raw_refit_gain": raw_refit, "refit_table_present": refit is not None}
 
 
 # --------------------------------------------------------------------------- tables
@@ -638,6 +652,10 @@ def disposition_rows(feature: str, batch: str, terminals: dict[str, dict], decis
         for m, vals in (("cost.fit_wall_seconds", fo["fit_wall_seconds"]), ("cost.updates", [float(v) for v in fo["updates"]]), ("cost.epochs_run", [float(v) for v in fo["epochs_run"]]), ("cost.encode_latency_ms_per_window", fo["encode_latency_ms"])):
             catalog.append(base[:4] + ["", "", m, len(vals), fmean(vals), fstd(vals), min(vals), max(vals), "MEASURED", receipt])
         catalog.append(base[:4] + ["", "", "cost.params", 1, fo["params"], None, fo["params"], fo["params"], "MEASURED", receipt])
+        if fam == "identity" and decision.get("refit_table_present"):
+            gain = decision.get("raw_refit_gain")
+            row["refit_gate_applied"] = "true" if gain is not None else "false"
+            row["refit_gain"] = gain if gain is not None else "NOT_AVAILABLE"
         sc = family_scores(fo)
         row["probe_status"] = "MEASURED"
         row["probe_skill_cells"] = sc["skill_cells"]
@@ -768,9 +786,19 @@ def eta_block(cfg: dict, now: datetime) -> dict:
 
 
 # --------------------------------------------------------------------------- one cycle
+def pull_branch(cfg: dict) -> None:
+    """Best-effort pull so other lanes' committed inputs (e.g. the FS-CLOSE refit export) arrive."""
+    result = subprocess.run(["git", "-C", str(cfg["_repo_root"]), "pull", "--no-rebase", "--no-edit", "-q"], capture_output=True, text=True, timeout=300)
+    with (cfg["_state_dir"] / "git_log.jsonl").open("a") as handle:
+        handle.write(json.dumps({"at": iso(utc_now()), "pull_rc": result.returncode, "stderr": result.stderr[-300:]}, sort_keys=True) + "\n")
+
+
 def run_cycle(cfg: dict, *, git: bool) -> dict:
     started = utc_now()
     out_dir, state_dir = cfg["_output_dir"], cfg["_state_dir"]
+    if git and cfg.get("pull_each_cycle", True):
+        state_dir.mkdir(parents=True, exist_ok=True)
+        pull_branch(cfg)
     cache_dir = state_dir / "terminal_cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
     heavy = load_heavy_candidates(cfg["_heavy"])
