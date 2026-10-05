@@ -1,0 +1,717 @@
+{
+ "ALL_ADMISSIBLE": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:cot.wti_nymex.mm_net_oi": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.credit.aaa.level": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.credit.aaa.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.credit.bamlh0a0hym2.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.fx_indices.dtwexafegs.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.fx_indices.dtwexbgs.level": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.fx_indices.dtwexemegs.level": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.inflation_expectations.t10yie.level": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.rates.dfii10.diff_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.rates.dfii10.level": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.rates.dgs1.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.rates.dgs30.level": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.rates.dgs3mo.diff_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.rates.dgs5.level": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.rates.dgs5.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.rates.dprime.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.rates.dtb3.diff_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.rates.t10y3m.diff_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.rates.tb3ms.level": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.stress.anfci.diff_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.stress.anfci.level": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.stress.nfci.diff_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.stress.nfci.level": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fred.stress.vixcls.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.audusd.ewma_vol_24": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.audusd.logret_1h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.audusd.logret_24h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.eurgbp.ewma_vol_24": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.eurgbp.logret_1h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.eurjpy.ewma_vol_24": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.eurjpy.logret_1h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.gbpjpy.ewma_vol_24": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.gbpjpy.logret_1h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.gbpusd.ewma_vol_24": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.gbpusd.logret_1h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.gbpusd.logret_24h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.nzdusd.ewma_vol_24": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.nzdusd.logret_1h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.usdcad.ewma_vol_24": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.usdchf.ewma_vol_24": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.usdchf.logret_1h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.usdchf.logret_24h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.usdjpy.ewma_vol_24": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:fx.usdjpy.logret_1h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.close_loc": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.ewma_vol_24": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.log_close": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.log_co": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.log_hl": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.logret_120h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.logret_12h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.logret_168h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.logret_1h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.logret_24h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.logret_2h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.logret_48h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.logret_4h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.logret_6h": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.rv5": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.zclose_168": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:px.zclose_24": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:rg.atr_pct": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:rg.atr_ratio": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:rg.bb_width_pct": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:rg.di_spread": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:rg.ema_alignment": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:rg.macd_hist": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:rg.price_vs_ema50": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:rg.roc_12": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.adx_14": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.atr_14_n": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.bb_pctb_20": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.bb_width_20": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.cci_20": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.dmn_14": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.dmp_14": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.ema20_dev": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.macd_hist_n": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.macd_n": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.mom_10_n": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.roc_10": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.rsi_14": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.stoch_d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.stoch_k": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:ta.willr_14": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:tv.hilbert_amp": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:tv.kalman_dev": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:tv.stl_dev": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:tv.stl_seasonal": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:tv.wav_d1": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:tv.wav_d2": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:tv.wav_d3": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:tv.wav_d4": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:tv.wav_d5": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.axjo.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.bsesn.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.bvsp.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.bz_f.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.cl_f.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.dia.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.eem.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.ftse.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.ftse.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.gc_f.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.gc_f.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.gld.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.hyg.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.ivv.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.ixic.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.kc_f.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.lqd.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.mxx.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.rut.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.sb_f.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.sb_f.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.si_f.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.slv.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.slv.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.spy.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.spy.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.tlt.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.twii.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.usdbrl_x.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.usdbrl_x.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.usdclp_x.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.usdcop_x.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.usdidr_x.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.usdmxn_x.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.usdmxn_x.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.usdzar_x.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.vea.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.vnq.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.xlb.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.xlc.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.xlp.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.xlu.logret_1d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "ALL_MINUS:yh.zs_f.logret_5d": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "RANDOM_K:16": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "RANDOM_K:24": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "RANDOM_K:32": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "RANDOM_K:48": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ },
+ "RANDOM_K:8": {
+  "fold_invariant": true,
+  "mean": 1.0,
+  "min": 1.0
+ }
+}

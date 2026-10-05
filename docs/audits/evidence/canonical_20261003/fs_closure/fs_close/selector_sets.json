@@ -1,0 +1,2192 @@
+{
+ "arm_5_knockoff": {
+  "calibration_counts": {
+   "CALIBRATED": 2,
+   "NOT_APPLICABLE": 10,
+   "NOT_CALIBRATED": 267,
+   "NOT_EVALUATED": 87
+  },
+  "n_selected_features": 0,
+  "note": "section 8 set 5 is compared only if calibrated; NOT_CALIBRATED/EMPTY is recorded, never dropped",
+  "state": "NOT_CALIBRATED/EMPTY"
+ },
+ "denominator": 366,
+ "folds": [
+  "inner_2019",
+  "inner_2020",
+  "inner_2021",
+  "inner_2022",
+  "inner_2023"
+ ],
+ "generated_utc": "2026-10-05T04:26:58+00:00",
+ "generative_state": "NOT_CALIBRATED/EMPTY",
+ "incomplete_methods": {},
+ "input_digests": {
+  "fs_gen/generative_evidence.csv": "11b5493af71ec7c6068343010ea58d77d026fec4a806720343ab314a38b4e526",
+  "fs_rep/candidate_decisions.csv": "2f24690ffdff1a5f2c3c90b0dbca1e1564691abafbce13137d7627eab0b7e987",
+  "fs_rep/representation_dispositions.csv": "a843271f4823cafbaa53a4745a8b1e355cb63b96e5d42d47d4a4d8fd876443e8",
+  "laneB/batch_001/ps2_status.csv": "5b370534492651e51d621cbacaed303fe0f3bd98cc313882bcff6dd7e24b06e3",
+  "laneB/batch_002/ps2_status.csv": "ac7ab874f2f84088692e6039ebdb296a7bb9cde2ef84d8c875c0c27843b0192c",
+  "laneB/batch_003/ps2_status.csv": "b2ffaf514b6550bcf746d75b953a6588c48d46c009ae8ba4d403dc3aa6f2478a"
+ },
+ "k_primary": 24,
+ "k_sensitivities": [
+  8,
+  16,
+  24,
+  32,
+  48
+ ],
+ "methods": [],
+ "population_sha256": "7b14a01c3adb6058771ebd9ddf83cec71cb01760b9f0549097877966825b0b13",
+ "pred_best_method": null,
+ "schema": "fs_close_selector_sets.v1",
+ "seeds": [
+  0
+ ],
+ "sets": [
+  {
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "set_id": "ALL_ADMISSIBLE",
+   "set_kind": "ALL_ADMISSIBLE",
+   "set_sha256": "0bcb78b53e48aa954616450d8d4a9da4da25cd442b52aca3ba7891a27c86e344",
+   "source": {
+    "population_sha256": "7b14a01c3adb6058771ebd9ddf83cec71cb01760b9f0549097877966825b0b13",
+    "rule": "every model-input candidate"
+   }
+  },
+  {
+   "k": 8,
+   "k_effective": 8,
+   "n_cells": 1,
+   "set_id": "RANDOM_K:8",
+   "set_kind": "RANDOM_K",
+   "set_sha256": "16879f045bcc08f0a60bb9b4b6c3c0bfe054340e9a1029d49e3570620d0f1cbd",
+   "source": {
+    "rule": "numpy default_rng(0) permutation of the sorted population, first K",
+    "seed": 0
+   }
+  },
+  {
+   "k": 16,
+   "k_effective": 16,
+   "n_cells": 1,
+   "set_id": "RANDOM_K:16",
+   "set_kind": "RANDOM_K",
+   "set_sha256": "e4f74097804688038e6c79a69734ef7ef373b75200e90bcacbeab8616fa0d3cc",
+   "source": {
+    "rule": "numpy default_rng(0) permutation of the sorted population, first K",
+    "seed": 0
+   }
+  },
+  {
+   "k": 24,
+   "k_effective": 24,
+   "n_cells": 1,
+   "set_id": "RANDOM_K:24",
+   "set_kind": "RANDOM_K",
+   "set_sha256": "000a94050a8eed6ce8b7d18ea9535f94fc7f9887b9dcfba521421b3c72529d9a",
+   "source": {
+    "rule": "numpy default_rng(0) permutation of the sorted population, first K",
+    "seed": 0
+   }
+  },
+  {
+   "k": 32,
+   "k_effective": 32,
+   "n_cells": 1,
+   "set_id": "RANDOM_K:32",
+   "set_kind": "RANDOM_K",
+   "set_sha256": "31406fd2ad4becc4424970e78b3206dc8abfc120da85fdbfec9d4900e60279c0",
+   "source": {
+    "rule": "numpy default_rng(0) permutation of the sorted population, first K",
+    "seed": 0
+   }
+  },
+  {
+   "k": 48,
+   "k_effective": 48,
+   "n_cells": 1,
+   "set_id": "RANDOM_K:48",
+   "set_kind": "RANDOM_K",
+   "set_sha256": "c02ec76508e54b38a391de251d8770eb9d3ec28b85035d80c85806118b7ef9c1",
+   "source": {
+    "rule": "numpy default_rng(0) permutation of the sorted population, first K",
+    "seed": 0
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "cot.wti_nymex.mm_net_oi",
+   "set_id": "ALL_MINUS:cot.wti_nymex.mm_net_oi",
+   "set_kind": "REMOVAL",
+   "set_sha256": "950e7e5cad7f711c8a0934e1a844c7b6fe1a65fec9d1a26fc58fb843e36676aa",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.credit.aaa.level",
+   "set_id": "ALL_MINUS:fred.credit.aaa.level",
+   "set_kind": "REMOVAL",
+   "set_sha256": "d6a03385ac94352c0b18083b030c3e02abbdd2844b49865316351adf97edd418",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.credit.aaa.logret_1d",
+   "set_id": "ALL_MINUS:fred.credit.aaa.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "16a59f13b758d3740e4a4d0b1da305afe174ec82d643c154be1fd2ac146e303c",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.credit.bamlh0a0hym2.logret_1d",
+   "set_id": "ALL_MINUS:fred.credit.bamlh0a0hym2.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "1266f79a4ae5a69823bdd14aebe1dc2db9e3d9847a9595feba1c777aa128e7dd",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.fx_indices.dtwexafegs.logret_5d",
+   "set_id": "ALL_MINUS:fred.fx_indices.dtwexafegs.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "20850c1a690378cbafbe5ffa2cca0ef57e4649a5575d9e800d828fa003cf4f61",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.fx_indices.dtwexbgs.level",
+   "set_id": "ALL_MINUS:fred.fx_indices.dtwexbgs.level",
+   "set_kind": "REMOVAL",
+   "set_sha256": "8f48ab08eb40ef1d80138a038e8f81f9c14c152a7362defcf37b4bbe5c904a88",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.fx_indices.dtwexemegs.level",
+   "set_id": "ALL_MINUS:fred.fx_indices.dtwexemegs.level",
+   "set_kind": "REMOVAL",
+   "set_sha256": "f2cdbc0d482d7995d435d6f84436559c0f1625ee3dc13d34d0970edbc90ca599",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.inflation_expectations.t10yie.level",
+   "set_id": "ALL_MINUS:fred.inflation_expectations.t10yie.level",
+   "set_kind": "REMOVAL",
+   "set_sha256": "05e804b282d5e07abeb04da4d4a31260dff30686e7d76205f4f404f5dd139fd6",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.rates.dfii10.diff_1d",
+   "set_id": "ALL_MINUS:fred.rates.dfii10.diff_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "2221e47a13826ce872d470f0994ff172e6bd0c77a8ae228477ff2b959bb66f51",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.rates.dfii10.level",
+   "set_id": "ALL_MINUS:fred.rates.dfii10.level",
+   "set_kind": "REMOVAL",
+   "set_sha256": "78d09d65c96e043bc004b3e7337dbacd9c9efa3368dcdbbbd463c9a3c309900a",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.rates.dgs1.logret_5d",
+   "set_id": "ALL_MINUS:fred.rates.dgs1.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "b8a27f77bc8bebc231f0c9d9ea9491f33713e5b508767048d28ba7d7f8ddf74b",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.rates.dgs30.level",
+   "set_id": "ALL_MINUS:fred.rates.dgs30.level",
+   "set_kind": "REMOVAL",
+   "set_sha256": "22bcc85e42fdb7747079a1fd62dc16c102beb092868131bf48933d6b0946a33d",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.rates.dgs3mo.diff_5d",
+   "set_id": "ALL_MINUS:fred.rates.dgs3mo.diff_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "a55703bc3c223602ff17296c80f3dd8428f19cb45df78cb82f30525dd925a752",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.rates.dgs5.level",
+   "set_id": "ALL_MINUS:fred.rates.dgs5.level",
+   "set_kind": "REMOVAL",
+   "set_sha256": "77d4300d50ab7853072f58ef18641877cb6dfa3498def0c740bedc57d4c7c654",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.rates.dgs5.logret_1d",
+   "set_id": "ALL_MINUS:fred.rates.dgs5.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "a96e2fd40c8620f3d8e4646105d375886a0d7cc01ce9f4a20e1475d227d1905b",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.rates.dprime.logret_5d",
+   "set_id": "ALL_MINUS:fred.rates.dprime.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "048a75e59f31b795b942f470193028e5da42f5bacb18cf304c76b4739bca4f51",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.rates.dtb3.diff_5d",
+   "set_id": "ALL_MINUS:fred.rates.dtb3.diff_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "64ef286b7202433b59ec52ca405ee92c475d6ca632061c92014674dd2b5ab997",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.rates.t10y3m.diff_1d",
+   "set_id": "ALL_MINUS:fred.rates.t10y3m.diff_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "161bdea7f001f5a78d80b7048955c3f2fda4726c849224bce080215b4f3d62a0",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.rates.tb3ms.level",
+   "set_id": "ALL_MINUS:fred.rates.tb3ms.level",
+   "set_kind": "REMOVAL",
+   "set_sha256": "4addacca055925176ad02997cef1d7fe2f198f7b1a63c94000e260cc2046d5b1",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.stress.anfci.diff_5d",
+   "set_id": "ALL_MINUS:fred.stress.anfci.diff_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "746aeeb58d7979f78537d6964c29a10801774ec91c42f335dd33053ad22e0237",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.stress.anfci.level",
+   "set_id": "ALL_MINUS:fred.stress.anfci.level",
+   "set_kind": "REMOVAL",
+   "set_sha256": "d22a73477d9a39600337e53487330e87ae0e6ff49f0079102991bcfc283f29ae",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.stress.nfci.diff_1d",
+   "set_id": "ALL_MINUS:fred.stress.nfci.diff_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "40e6935a196b9d3d3425a91e64f907800459b5141c7a86e30cc74840f4171d0e",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.stress.nfci.level",
+   "set_id": "ALL_MINUS:fred.stress.nfci.level",
+   "set_kind": "REMOVAL",
+   "set_sha256": "268f0d3ee5ceeb7f70d7fff33b5d3f5e230aa5a96fafd96dfcac5b716c751817",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fred.stress.vixcls.logret_5d",
+   "set_id": "ALL_MINUS:fred.stress.vixcls.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "ba6106a4c0ed4bf6df38a5788de52ec08fd7bd686df85b8fd9a87a086b96eb41",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.audusd.ewma_vol_24",
+   "set_id": "ALL_MINUS:fx.audusd.ewma_vol_24",
+   "set_kind": "REMOVAL",
+   "set_sha256": "f6306a2fede73f4f333224ef21b13f89aec07c11aeecc8d6b05c1784596acb19",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.audusd.logret_1h",
+   "set_id": "ALL_MINUS:fx.audusd.logret_1h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "e05e1abc92e78074ca21424ae37d83c8424e5c3b1cd3eb2226d0a276f38923f8",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.audusd.logret_24h",
+   "set_id": "ALL_MINUS:fx.audusd.logret_24h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "a16cfeee41e1cdec5f92ffcdd9ad9eef2a24119171ea2704a8489a1d9ad000ad",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.eurgbp.ewma_vol_24",
+   "set_id": "ALL_MINUS:fx.eurgbp.ewma_vol_24",
+   "set_kind": "REMOVAL",
+   "set_sha256": "16ddf84daec8fb31ae2b62ea7e30ca56068dba84bfacb4a4b06825605702d61f",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.eurgbp.logret_1h",
+   "set_id": "ALL_MINUS:fx.eurgbp.logret_1h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "b826e13f6cc02d62e204adb1002e0333bf360a66c6d14911a3e969b7102dcf66",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.eurjpy.ewma_vol_24",
+   "set_id": "ALL_MINUS:fx.eurjpy.ewma_vol_24",
+   "set_kind": "REMOVAL",
+   "set_sha256": "71d5275d9333cd9eae1752efd8ed81df0201702b59e42f50791e05c688d06381",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.eurjpy.logret_1h",
+   "set_id": "ALL_MINUS:fx.eurjpy.logret_1h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "a2ec75ec4bf93bd704ea370c2f97f5cde14eaa65366bf03245674ceac10d32f8",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.gbpjpy.ewma_vol_24",
+   "set_id": "ALL_MINUS:fx.gbpjpy.ewma_vol_24",
+   "set_kind": "REMOVAL",
+   "set_sha256": "80a43d3af3f3abe070207bec5c23d795a21931a5600b7b49af8e6bc332058f3d",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.gbpjpy.logret_1h",
+   "set_id": "ALL_MINUS:fx.gbpjpy.logret_1h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "26b4e2ac914d7918b7404e25f57c70fbb9dd1a77c954ec9a26921da837a5d1d0",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.gbpusd.ewma_vol_24",
+   "set_id": "ALL_MINUS:fx.gbpusd.ewma_vol_24",
+   "set_kind": "REMOVAL",
+   "set_sha256": "e2475f9bce2bbcc39c5c4304379aaa636a9c781bcf7e0c6427dbebe1c28913e2",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.gbpusd.logret_1h",
+   "set_id": "ALL_MINUS:fx.gbpusd.logret_1h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "12e7d41e5ce74aa114e35c0b0eecef7e74ac64e4bd6dcf7a666e7a5936b6ec8a",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.gbpusd.logret_24h",
+   "set_id": "ALL_MINUS:fx.gbpusd.logret_24h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "41fba27698c638f2a3d5348c42c88af8f5ea891554b5f613909a4c6d6f400668",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.nzdusd.ewma_vol_24",
+   "set_id": "ALL_MINUS:fx.nzdusd.ewma_vol_24",
+   "set_kind": "REMOVAL",
+   "set_sha256": "ec9b19f652e319d0e93a5d48a3891a6660304668d867cf7f941c4d4f33a489a1",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.nzdusd.logret_1h",
+   "set_id": "ALL_MINUS:fx.nzdusd.logret_1h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "911e17548bdccfa499b12356ce0dd46165722625f36369f4edd35e6de17dced5",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.usdcad.ewma_vol_24",
+   "set_id": "ALL_MINUS:fx.usdcad.ewma_vol_24",
+   "set_kind": "REMOVAL",
+   "set_sha256": "7c7253bdd12c89257e27ab2554d114e7140e61fad2ad6cd5de8609736941cbf9",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.usdchf.ewma_vol_24",
+   "set_id": "ALL_MINUS:fx.usdchf.ewma_vol_24",
+   "set_kind": "REMOVAL",
+   "set_sha256": "f0d2ae91b1d44aa192c3113d631729456f63dac8ebe095de3233825f9ee4ba7b",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.usdchf.logret_1h",
+   "set_id": "ALL_MINUS:fx.usdchf.logret_1h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "31aa13a1e7ca1b45edb26de8392249a6c1e0935dd37156e5101e12dcdfe3a125",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.usdchf.logret_24h",
+   "set_id": "ALL_MINUS:fx.usdchf.logret_24h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "996e289f19277a99f2be521bc1e51236bece1b1deca285d4d09197e0ede83ead",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.usdjpy.ewma_vol_24",
+   "set_id": "ALL_MINUS:fx.usdjpy.ewma_vol_24",
+   "set_kind": "REMOVAL",
+   "set_sha256": "d69b6210da617e045100806985ef25f7809d8fd0588820ec94571d476befbc3d",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "fx.usdjpy.logret_1h",
+   "set_id": "ALL_MINUS:fx.usdjpy.logret_1h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "eb4257f4c6bd5540c2ce546b78e12ceeed2e6c488477ca0748f9ca25a7ca2b82",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.close_loc",
+   "set_id": "ALL_MINUS:px.close_loc",
+   "set_kind": "REMOVAL",
+   "set_sha256": "8034c74a11ad077cf2e509a990be2905ebeaf1beb26bd41df339e5db6d0de8db",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.ewma_vol_24",
+   "set_id": "ALL_MINUS:px.ewma_vol_24",
+   "set_kind": "REMOVAL",
+   "set_sha256": "babfc5403106ed3d3ebcda94e8685c0a80ec6051933dd1bd04cdb7a4045649bf",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.log_close",
+   "set_id": "ALL_MINUS:px.log_close",
+   "set_kind": "REMOVAL",
+   "set_sha256": "87a6e1c22c718bda8d37692f687b1cbda1197d6358bb218b9426bdcda008254e",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.log_co",
+   "set_id": "ALL_MINUS:px.log_co",
+   "set_kind": "REMOVAL",
+   "set_sha256": "3523e461f444dc614a4cecc287027e14d3282de5166fab744d9d571253322f12",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.log_hl",
+   "set_id": "ALL_MINUS:px.log_hl",
+   "set_kind": "REMOVAL",
+   "set_sha256": "01dfd8e67db28770436b0ffd3b382b1b1b73a86834148c15b64e695c46d7bc8f",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.logret_120h",
+   "set_id": "ALL_MINUS:px.logret_120h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "88c56c9751a9e05ed40008b2339c2de4553f2e64d2dfe2dd46de9b16c0e5ce9c",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.logret_12h",
+   "set_id": "ALL_MINUS:px.logret_12h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "107e6d9d3bbef4adfaee6dee98ce0f07849f5c95903f2bbc3d4c0328aabe1682",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.logret_168h",
+   "set_id": "ALL_MINUS:px.logret_168h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "e294872afacfeb286537ad5005df2c11684a13562137eb8259278916ef6d5279",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.logret_1h",
+   "set_id": "ALL_MINUS:px.logret_1h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "47ac429b5427f8f65c543aa343120135626045f94a228d5fe4f313f5e28f566d",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.logret_24h",
+   "set_id": "ALL_MINUS:px.logret_24h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "73e956f3aa6ecb0febab9749d3dd202920f3ac53f0f27989d38ff10548c5e4f6",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.logret_2h",
+   "set_id": "ALL_MINUS:px.logret_2h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "704d2c53387a5baef37ef0909a29dde771632309191f0ba43491a529d85a2f14",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.logret_48h",
+   "set_id": "ALL_MINUS:px.logret_48h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "f88f99baa88fedf42065b4e5490507bb08431629a56c0ee1047c0b5c430e08cd",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.logret_4h",
+   "set_id": "ALL_MINUS:px.logret_4h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "b9343238b07f79e9e50a74f2b07e6ded17afb4f8b7bf24f2e1ae481c21bb49d5",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.logret_6h",
+   "set_id": "ALL_MINUS:px.logret_6h",
+   "set_kind": "REMOVAL",
+   "set_sha256": "e87a85c456992bd5db9fe01d041200a404a28d6c850b004b3e96b80e46fa3869",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.rv5",
+   "set_id": "ALL_MINUS:px.rv5",
+   "set_kind": "REMOVAL",
+   "set_sha256": "46a5b82108bdbe2c4da29189c77713d3ed404fa5c11a08d5fba13528c1f519be",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.zclose_168",
+   "set_id": "ALL_MINUS:px.zclose_168",
+   "set_kind": "REMOVAL",
+   "set_sha256": "3c1b8bb2843b81a0f77bbcfee89ba58a7055bb614fa08e54c02f9fdf93ee5d7c",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "px.zclose_24",
+   "set_id": "ALL_MINUS:px.zclose_24",
+   "set_kind": "REMOVAL",
+   "set_sha256": "56ac7f768647630c2badaaf3f5b4e4f319f6f3cdff9b2b4dabfc38712712180d",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "rg.atr_pct",
+   "set_id": "ALL_MINUS:rg.atr_pct",
+   "set_kind": "REMOVAL",
+   "set_sha256": "64c722b16c17e1755c7dc12d13708eaf51c69a4e7cb50bc56eddb813dd4fb71d",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "rg.atr_ratio",
+   "set_id": "ALL_MINUS:rg.atr_ratio",
+   "set_kind": "REMOVAL",
+   "set_sha256": "1da9811c301c092d8ac072abb23ab16af8c6941a352ab216976cefac923e9914",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "rg.bb_width_pct",
+   "set_id": "ALL_MINUS:rg.bb_width_pct",
+   "set_kind": "REMOVAL",
+   "set_sha256": "e5aa0eeaf70317d1195afc66fc598ed27ca292188df63af28bb55572911b0372",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "rg.di_spread",
+   "set_id": "ALL_MINUS:rg.di_spread",
+   "set_kind": "REMOVAL",
+   "set_sha256": "cc65fc60e4d16b1eeae5531d0ab20022803de5b97347b29a1252845ad7f75d1c",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "rg.ema_alignment",
+   "set_id": "ALL_MINUS:rg.ema_alignment",
+   "set_kind": "REMOVAL",
+   "set_sha256": "7c8b278dbb1e91352313c9c3f24bb561bdbcd5b21361be415ad92c46b2c09fc3",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "rg.macd_hist",
+   "set_id": "ALL_MINUS:rg.macd_hist",
+   "set_kind": "REMOVAL",
+   "set_sha256": "6c9ea0aa6723f1fb4fcf29bb3777296f21e2efef306e8ad5936c5912578c9158",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "rg.price_vs_ema50",
+   "set_id": "ALL_MINUS:rg.price_vs_ema50",
+   "set_kind": "REMOVAL",
+   "set_sha256": "afd8b847d28a5a9f21cb0b7af29948fc953a19fd70b1d05eb1c1f31bf2e25394",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "rg.roc_12",
+   "set_id": "ALL_MINUS:rg.roc_12",
+   "set_kind": "REMOVAL",
+   "set_sha256": "2dc604e8fcfa47316325194236140f71972c90a7a68641f0650db521e9972cbb",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.adx_14",
+   "set_id": "ALL_MINUS:ta.adx_14",
+   "set_kind": "REMOVAL",
+   "set_sha256": "45db4f6539679aa89c63bea9d8749f9f13abece26c0ecb61b4bdb917bba52893",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.atr_14_n",
+   "set_id": "ALL_MINUS:ta.atr_14_n",
+   "set_kind": "REMOVAL",
+   "set_sha256": "500d14088e7ab397e1770a76ac2bed833fb2867a5f7fdfdc9dd1c1a0df7403bb",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.bb_pctb_20",
+   "set_id": "ALL_MINUS:ta.bb_pctb_20",
+   "set_kind": "REMOVAL",
+   "set_sha256": "7d3cea55d5faffe9858180aad2b118f3f0518bf4ee23169627d4e794b641e9bf",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.bb_width_20",
+   "set_id": "ALL_MINUS:ta.bb_width_20",
+   "set_kind": "REMOVAL",
+   "set_sha256": "609fb0267d71df172a80df58827fd379f9d47a62ef4fefc98e2d75cb401643c4",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.cci_20",
+   "set_id": "ALL_MINUS:ta.cci_20",
+   "set_kind": "REMOVAL",
+   "set_sha256": "e987ceafef0f89f6d21dabe0b37c06758ac23851ad97b46151219f458e32a9b7",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.dmn_14",
+   "set_id": "ALL_MINUS:ta.dmn_14",
+   "set_kind": "REMOVAL",
+   "set_sha256": "ecfea20b0963da5ba42669baffba2acd99468939fdedf7e8c64bdef4adea6722",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.dmp_14",
+   "set_id": "ALL_MINUS:ta.dmp_14",
+   "set_kind": "REMOVAL",
+   "set_sha256": "7719e3e2c7ed2ed40c7191f8b5455065c595c54d87a4512c50fb4c2cda0b0e9d",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.ema20_dev",
+   "set_id": "ALL_MINUS:ta.ema20_dev",
+   "set_kind": "REMOVAL",
+   "set_sha256": "bddecd6cf46415b429aaa75e13e445eed3c0a212ad9235399a9808d07b9c48cb",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.macd_hist_n",
+   "set_id": "ALL_MINUS:ta.macd_hist_n",
+   "set_kind": "REMOVAL",
+   "set_sha256": "6e21831869a7e8d40b08c3954066b12d5daba1eaba6c8d936bb9af83b2e36196",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.macd_n",
+   "set_id": "ALL_MINUS:ta.macd_n",
+   "set_kind": "REMOVAL",
+   "set_sha256": "81362c93851cd50ceb7154892d682944b101934357d940248ad1780930f8d6b7",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.mom_10_n",
+   "set_id": "ALL_MINUS:ta.mom_10_n",
+   "set_kind": "REMOVAL",
+   "set_sha256": "1668a0e8eaa79823f71fa98d35f7c8ad2110c33b62962035598344ae88fe4056",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.roc_10",
+   "set_id": "ALL_MINUS:ta.roc_10",
+   "set_kind": "REMOVAL",
+   "set_sha256": "71b0fe86ae1c081961a9183c9213c75f378addf8417ea830a6b09167b8b32b6d",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.rsi_14",
+   "set_id": "ALL_MINUS:ta.rsi_14",
+   "set_kind": "REMOVAL",
+   "set_sha256": "d01396b28559b9d1cb6e01384874ae3bc3a10c9bbf0b3933810a59d4a2e43cef",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.stoch_d",
+   "set_id": "ALL_MINUS:ta.stoch_d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "b44188f8bdaaa2eee7d1be9dbb753546f5301d53c3114064ffa11767591051da",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.stoch_k",
+   "set_id": "ALL_MINUS:ta.stoch_k",
+   "set_kind": "REMOVAL",
+   "set_sha256": "a8be6273181a0d1e796567a5e6ed410f39cc723a3eb5681b32ab5f5850adb0c2",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "ta.willr_14",
+   "set_id": "ALL_MINUS:ta.willr_14",
+   "set_kind": "REMOVAL",
+   "set_sha256": "182874c234bd399e71e3920447bf9c0804e72e113bddc4ae86d19d9fab6abee5",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "tv.hilbert_amp",
+   "set_id": "ALL_MINUS:tv.hilbert_amp",
+   "set_kind": "REMOVAL",
+   "set_sha256": "c4e6f122cc7e5662043b06615d99e17135463c3bdadb49f8f3eea45155b670d1",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "tv.kalman_dev",
+   "set_id": "ALL_MINUS:tv.kalman_dev",
+   "set_kind": "REMOVAL",
+   "set_sha256": "1273f076686e390ee124b7f05c0d313f51fa2a5ed97093558d5ab55ea2b95fa3",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "tv.stl_dev",
+   "set_id": "ALL_MINUS:tv.stl_dev",
+   "set_kind": "REMOVAL",
+   "set_sha256": "1abf24e9d2c113f2e37e6ad927c13c1981d1bbfd5af581d4025596e896aa12b4",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "tv.stl_seasonal",
+   "set_id": "ALL_MINUS:tv.stl_seasonal",
+   "set_kind": "REMOVAL",
+   "set_sha256": "cb03cad413d5b07aa191991b18a47034d20ef69217b0ca9aa807e98ec9d9b5b5",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "tv.wav_d1",
+   "set_id": "ALL_MINUS:tv.wav_d1",
+   "set_kind": "REMOVAL",
+   "set_sha256": "342bb3a29e58d315b8783192930f2986428ac2e7f2fe8613b7e5f56be886f9a9",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "tv.wav_d2",
+   "set_id": "ALL_MINUS:tv.wav_d2",
+   "set_kind": "REMOVAL",
+   "set_sha256": "7c707692753cf327e5e745ec94a2633f3c720628ca44d6a23ff55d8dab069c05",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "tv.wav_d3",
+   "set_id": "ALL_MINUS:tv.wav_d3",
+   "set_kind": "REMOVAL",
+   "set_sha256": "67e38b5728e637d127d864ec8ac32bedd3e843cf4ee740f173e9e679b074339d",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "tv.wav_d4",
+   "set_id": "ALL_MINUS:tv.wav_d4",
+   "set_kind": "REMOVAL",
+   "set_sha256": "63982c59f8395cee03f37e8a96f6891a2cb509c98e79bf912e2ee303a31f0553",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "tv.wav_d5",
+   "set_id": "ALL_MINUS:tv.wav_d5",
+   "set_kind": "REMOVAL",
+   "set_sha256": "64455e9d84ef3f260de60a6904c17a1b898eeb16c36c556680f89c89b276f9e3",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.axjo.logret_5d",
+   "set_id": "ALL_MINUS:yh.axjo.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "d2e33a1e288d36871866a1fa5a1d1c4b4c02e56fe23a2fd38289705872b22678",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.bsesn.logret_1d",
+   "set_id": "ALL_MINUS:yh.bsesn.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "700d4d2db99e99d175fb021022aef07a337542fb635e9fdb2446f5693ebbc5c5",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.bvsp.logret_1d",
+   "set_id": "ALL_MINUS:yh.bvsp.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "fab0ae3e959895cb80442363d8c3612dd7c1e633b23bd907e4befe8f84df6f02",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.bz_f.logret_1d",
+   "set_id": "ALL_MINUS:yh.bz_f.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "15cfce4d2797660ca8347aabdc08cca92cf61561b4b8241aee356c9fc4968b7c",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.cl_f.logret_1d",
+   "set_id": "ALL_MINUS:yh.cl_f.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "368f37a46cd09fdaac9d5686b85880c0f5682658e7b5c8b49ba942195798cbc5",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.dia.logret_5d",
+   "set_id": "ALL_MINUS:yh.dia.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "ecebde1df6b3f7170eb5f63168ecbf35e76dadae7fc4f223c87bbce02610da71",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.eem.logret_5d",
+   "set_id": "ALL_MINUS:yh.eem.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "a1a98ae7d8368e1f1d4075aa04a962b5c6ef25e28e3fc6c159b79c3851b89124",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.ftse.logret_1d",
+   "set_id": "ALL_MINUS:yh.ftse.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "2c92e0f7fa7c009b7bb7d833bfff1e8589de8d399d6c84946a69cc58f4cb13ae",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.ftse.logret_5d",
+   "set_id": "ALL_MINUS:yh.ftse.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "eab3cc866623937e9f70c398aa9dea437d43bad3b8c9b3958c4d0050e7297ee9",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.gc_f.logret_1d",
+   "set_id": "ALL_MINUS:yh.gc_f.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "729e41c2b1ff5b6832c6632ee4e63c4e0610f75936640022290727e94f21762a",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.gc_f.logret_5d",
+   "set_id": "ALL_MINUS:yh.gc_f.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "c52bc731b8a0f9cc81d230533a600707669745a290b9a6d6aba4ce5deda75595",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.gld.logret_1d",
+   "set_id": "ALL_MINUS:yh.gld.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "91855a931ce34154d60a77592b5667a22a19c815243a6f197c6e3b012d68f2a8",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.hyg.logret_1d",
+   "set_id": "ALL_MINUS:yh.hyg.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "0d7e4db063b6f25aba80e8bd90b44c30296ccc282ee37a28ef400761bfeccb54",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.ivv.logret_1d",
+   "set_id": "ALL_MINUS:yh.ivv.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "adb6e4b3e7bf509ec5968bc2507fdff1475a5d80360db7baeeeba384e43a0c10",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.ixic.logret_1d",
+   "set_id": "ALL_MINUS:yh.ixic.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "ef9268a20e4f2bc6a2a754760ea736957446b7674f353709d16daa84a70ff41c",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.kc_f.logret_5d",
+   "set_id": "ALL_MINUS:yh.kc_f.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "6c51b0af4f481fce88c0879fa637ffef6e3bdc822dc9d6128a11115739a297ef",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.lqd.logret_5d",
+   "set_id": "ALL_MINUS:yh.lqd.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "ca22d9ef85caa0714e827810409c758315d772d5af35d535458bff3dd2467934",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.mxx.logret_5d",
+   "set_id": "ALL_MINUS:yh.mxx.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "f5030c0bd254d4f4e09491282a887c585512bba48946b7fcd510fb77b2fd2141",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.rut.logret_5d",
+   "set_id": "ALL_MINUS:yh.rut.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "41822154882a801639ebfe93beb2d03aaf073f980afa6b937276bd437a099a7c",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.sb_f.logret_1d",
+   "set_id": "ALL_MINUS:yh.sb_f.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "9e17cf165dfc1734bc605c61987326c21269511df8747b4f0daf371d7979c358",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.sb_f.logret_5d",
+   "set_id": "ALL_MINUS:yh.sb_f.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "baaff83164269fc65aafc76f18c4e63fc710c2643723d431930c2a059ec9dc5d",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.si_f.logret_1d",
+   "set_id": "ALL_MINUS:yh.si_f.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "ce1f4dbdb1eaf8820e11022c6784ca035a68d7de997915c27e90cc830f6edc7f",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.slv.logret_1d",
+   "set_id": "ALL_MINUS:yh.slv.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "48b285025fc7a5203a9d56716e3e35a2783ecabce0959eeee1bb8630e22a600a",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.slv.logret_5d",
+   "set_id": "ALL_MINUS:yh.slv.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "38f2f21c98bf7b6b8742bddaae643bc8dcd4c163cb0f41863b6b413e7b92ad94",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.spy.logret_1d",
+   "set_id": "ALL_MINUS:yh.spy.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "410d2aa1711d402e09c3b763bba06a65d981b782b1ca5c05ba63d8f75634d510",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.spy.logret_5d",
+   "set_id": "ALL_MINUS:yh.spy.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "cbe16161a5903fe58e2f8ad8cf95e47656ff812f151eec02df05fa49e8e6f5a5",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.tlt.logret_1d",
+   "set_id": "ALL_MINUS:yh.tlt.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "bbce6e11ee33c2f0a0dbe22da99d6f0a92d049ced37c2ddcaecab0142cb33c33",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.twii.logret_1d",
+   "set_id": "ALL_MINUS:yh.twii.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "d5b52380df292c1ed58f57132adbbf32dfc54e9efe212ece7ef68ec931b6e77e",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.usdbrl_x.logret_1d",
+   "set_id": "ALL_MINUS:yh.usdbrl_x.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "002d7a47bb96718f1eb2428a47b227079c1c06fabefb5553a5eaa23fc8caa764",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.usdbrl_x.logret_5d",
+   "set_id": "ALL_MINUS:yh.usdbrl_x.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "c0a11231b35b18cd6eb5978ba80d2666231249d4eebf6c4326030c9829cf5ba1",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.usdclp_x.logret_1d",
+   "set_id": "ALL_MINUS:yh.usdclp_x.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "43a95dd776311f8184646f7c13db89bc8ea1f718e0d6679e031ab528ac7d49e8",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.usdcop_x.logret_1d",
+   "set_id": "ALL_MINUS:yh.usdcop_x.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "d01e8c2523a823bf5cadb3257501b9b409b1a173a92f325693d86e258261fd7b",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.usdidr_x.logret_1d",
+   "set_id": "ALL_MINUS:yh.usdidr_x.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "a5d967547cb65266ca64f97f1263c02d14a7e6a064836dd5a1ebb2e0eee0006c",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.usdmxn_x.logret_1d",
+   "set_id": "ALL_MINUS:yh.usdmxn_x.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "d291488180b7058340a6e1808f3ac113d2800eb532541cfcbdb3107764f152bb",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.usdmxn_x.logret_5d",
+   "set_id": "ALL_MINUS:yh.usdmxn_x.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "b853fe067a182d7e5d9a9af613f6e7362103cc37c4a936503579c20909f5dae7",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.usdzar_x.logret_1d",
+   "set_id": "ALL_MINUS:yh.usdzar_x.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "adc2ecb82a71afa836422f42d853a74d88ee43efc1e252c811e7eb2985f72530",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.vea.logret_1d",
+   "set_id": "ALL_MINUS:yh.vea.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "d607d32494056dc9619ddd48e138795f7f2a32c9338a282b607d988056768dad",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.vnq.logret_5d",
+   "set_id": "ALL_MINUS:yh.vnq.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "66fe1e1af6aae10a8d93260cde21d3758526c9350d3206f84181f3accf1e195e",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.xlb.logret_1d",
+   "set_id": "ALL_MINUS:yh.xlb.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "9eed65c8ac3fedd48e6bea1d8129fac65ce64026a45656078ada08e9a300d694",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.xlc.logret_1d",
+   "set_id": "ALL_MINUS:yh.xlc.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "fcd907e63cbb7ebf6a941a28bafcd16ff9f97538ae162d5938cbb9e178e4aa62",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.xlp.logret_1d",
+   "set_id": "ALL_MINUS:yh.xlp.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "04da16c2c32e5100bed650f48d0630b18db4def9f864a2fa2c6b253723fef442",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.xlu.logret_1d",
+   "set_id": "ALL_MINUS:yh.xlu.logret_1d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "4caf96e3886ad4ca13967f5d045f143878b54d475f8e2c45345fa576f2063306",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  },
+  {
+   "heads": [
+    "ridge"
+   ],
+   "k": null,
+   "k_effective": 366,
+   "n_cells": 1,
+   "removed": "yh.zs_f.logret_5d",
+   "set_id": "ALL_MINUS:yh.zs_f.logret_5d",
+   "set_kind": "REMOVAL",
+   "set_sha256": "3e97403433fb46cca812f57f6a94b8acc482370449836946fc4ea187cc625ca4",
+   "source": {
+    "rule": "ALL_ADMISSIBLE without the candidate; refit after removal (raw/identity representation only)"
+   }
+  }
+ ],
+ "targets": [
+  "Y_s_1h",
+  "Y_s_2h",
+  "Y_s_3h",
+  "Y_s_4h",
+  "Y_s_5h",
+  "Y_s_6h",
+  "Y_l_24h",
+  "Y_l_48h",
+  "Y_l_72h",
+  "Y_l_96h",
+  "Y_l_120h",
+  "Y_l_144h",
+  "Y_b_6h",
+  "Y_b_144h"
+ ]
+}

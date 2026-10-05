@@ -1,0 +1,57 @@
+{
+ "checks": [
+  {
+   "detail": "366 rows, 1 states; SELECTED 0 REJECTED 0 PENDING 366",
+   "id": "C1_DISPOSITIONS_366",
+   "state": "PASS"
+  },
+  {
+   "detail": "population 7b14a01c3adb; metric populations none yet",
+   "id": "C2_SINGLE_POPULATION",
+   "state": "PASS"
+  },
+  {
+   "detail": "complete methods []; incomplete {}",
+   "id": "C3_COMPLETE_RANKINGS",
+   "state": "PENDING"
+  },
+  {
+   "detail": "refit loader refuses rows >= 2024-01-01T00:00:00+00:00; validation loader refuses rows >= 2025-01-01T00:00:00+00:00; validation read not yet",
+   "id": "C4_NO_TEST_READ",
+   "state": "PASS"
+  },
+  {
+   "detail": "0 rejections resting on NOT_IDENTIFIED alone",
+   "id": "C5_NOT_IDENTIFIED_NEUTRAL",
+   "state": "PASS"
+  },
+  {
+   "detail": "no refit metrics yet",
+   "id": "C6_PAIRED_NAIVE",
+   "state": "PENDING"
+  },
+  {
+   "detail": "0/16 required sets complete at ridge; missing ['PRED_BEST:8', 'PRED_BEST:16', 'PRED_BEST:24', 'PRED_BEST:32', 'PRED_BEST:48', 'PLUS_CAUSAL:8']",
+   "id": "C7_REQUIRED_SETS_REFIT",
+   "state": "PENDING"
+  },
+  {
+   "detail": "fs_pred/selector_sets.json; fs_pred/rankings (method x target x fold complete orderings); fs_causal/causal_evidence.jsonl; fs_rep decisions 34/137 heavy candidates decided; PS3-R terminals complete 35/137 heavy candidates; PS4 profiles 35/137 heavy candidates; PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
+   "id": "C8_INPUT_OBJECTS",
+   "state": "PENDING"
+  },
+  {
+   "detail": "closure step not run: candidates not frozen or VALIDATION inputs absent",
+   "id": "C9_VALIDATION_CHOICE",
+   "state": "PENDING"
+  },
+  {
+   "detail": "tools/selected_manifest_gate.py sha256 e86d85abc998319c == c0345f83 contract",
+   "id": "C10_GATE_MODULE",
+   "state": "PASS"
+  }
+ ],
+ "final": false,
+ "generated_utc": "2026-10-05T04:26:58+00:00",
+ "schema": "fs_close_checks.v1"
+}

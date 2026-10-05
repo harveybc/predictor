@@ -1,0 +1,12 @@
+{
+ "candidates": "the frozen K=24 sets of ALL_ADMISSIBLE, PRED_BEST, PLUS_CAUSAL, PLUS_REP and KNOCKOFF (only if calibrated)",
+ "declared_before_reading_validation": true,
+ "evaluation": "EXTERNAL VALIDATION rows (2024-01-01 <= t < 2025-01-01) read exactly once; MAE per cell against the same-row zero and fit-mean naives; log-loss against the fit prior",
+ "refit": "the same ridge head, alpha 1.0, fit on all TRAIN rows (2012-05..2023-12) with fit-row standardisation and median imputation; one seed",
+ "rule_sha256": "8f7a1fc13d0ad3bb61286f3d4a8ac4758540dec45adeae2bd1e9884fb1e256d3",
+ "schema": "fs_close_closure_rule.v1",
+ "score": "mean over the 14 cells of skill = 1 - loss / stricter paired naive",
+ "strategy_eligibility": "a set is strategy-eligible only if it beats its paired naive strictly on every short and long horizon cell; otherwise the manifest is FINAL with strategy_eligible = false",
+ "test": "EXTERNAL TEST (2025) is never read by this tool; the loader refuses any row at or after 2025-01-01",
+ "winner": "highest score; ties -> fewer features, then lower total fit seconds, then the order above"
+}

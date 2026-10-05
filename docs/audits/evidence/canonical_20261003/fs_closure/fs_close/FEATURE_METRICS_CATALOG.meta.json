@@ -1,0 +1,29 @@
+{
+ "by_stage": {
+  "FS-GEN": 20690,
+  "FS-REP": 17849,
+  "PS1": 21861,
+  "PS2": 593984,
+  "PS3-C": 52396,
+  "PS3-R": 2047528,
+  "PS4": 3675
+ },
+ "columns": [
+  "feature",
+  "stage",
+  "target",
+  "horizon",
+  "fold",
+  "metric",
+  "value",
+  "state",
+  "digest",
+  "source"
+ ],
+ "csv_sha256": "eefeba3a1359644d83c471a92935ff788ca52bb7a32e7e728f28a0c6f59b3f09",
+ "generated_utc": "2026-10-05T04:27:34+00:00",
+ "parquet_sha256": "eb3a81f4cf3ba222dcc9ac75e3708d2a51548e72de37ec2cf9448e62e40fc01c",
+ "rows": 2757983,
+ "schema": "feature_metrics_catalog.v1",
+ "sources_digest": "c9241cb668e12ef9a5f62517e05c3c0f02780e257969c6f6dbf396a17846d8c3"
+}
