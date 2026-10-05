@@ -1271,8 +1271,18 @@ def run_checks(pop: Population, ev: LaneEvidence, plan: dict, plan_missing: list
     add("C2_SINGLE_POPULATION", "FAIL" if mixed else "PASS",
         f"population {pop.digest[:12]}; metric populations {sorted(p[:12] for p in pops) or 'none yet'}")
 
-    add("C3_COMPLETE_RANKINGS", "FAIL" if ev.pred_incomplete else ("PASS" if ev.pred_rankings else "PENDING"),
-        f"complete methods {sorted(set(ev.pred_rankings) - set(ev.pred_incomplete))}; incomplete {ev.pred_incomplete}")
+    pred_done = ev.pred_progress.get("method_cells_done")
+    pred_total = ev.pred_progress.get("method_cells_total")
+    pred_running = isinstance(pred_done, int) and isinstance(pred_total, int) and pred_done < pred_total
+    if ev.pred_incomplete and not pred_running:
+        c3 = "FAIL"                      # FS-PRED finished and a method still lacks a complete ranking
+    elif ev.pred_rankings and not ev.pred_incomplete:
+        c3 = "PASS"
+    else:
+        c3 = "PENDING"                   # still running, or nothing landed yet
+    add("C3_COMPLETE_RANKINGS", c3,
+        f"complete methods {sorted(set(ev.pred_rankings) - set(ev.pred_incomplete))}; incomplete {ev.pred_incomplete}; "
+        f"FS-PRED progress {pred_done}/{pred_total}")
 
     bounds = []
     if metrics is not None and len(metrics):
