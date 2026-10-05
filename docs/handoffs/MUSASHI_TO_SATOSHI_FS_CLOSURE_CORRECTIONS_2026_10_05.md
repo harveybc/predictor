@@ -106,6 +106,25 @@ Implementacion:
 - `PLUS_REP` pasa a `PLUS_EXTRACTIBILITY_EVIDENCE` en el cierre de features. El
   experimento M4 posterior medira raw versus latente con los extractores reales.
 
+### Disposicion obligatoria para ausencia total de TRAIN
+
+`fred.credit.bamlh0a0hym2.logret_1d` no es una victoria de RAW. Sus tres
+terminales pesados (baseline, MTAE y past-to-current) fallaron porque la serie
+no contiene ninguna observacion util en TRAIN. FS-GEN confirma la misma causa
+en sus cinco pliegues con `GENERATOR_FIT_REFUSED:no observed TRAIN values to
+fit normalization`.
+
+1. No reintentes esas celdas y no reduzcas el denominador de 366 candidatas.
+2. Registra la fuente/feature como `NOT_AVAILABLE_FOR_TRAIN` con la causa
+   `NO_OBSERVED_TRAIN_VALUES`; representacion y extractibilidad quedan
+   `NOT_APPLICABLE`, nunca `RAW` ni `NO_TRAINED_ADVANTAGE`.
+3. Excluyela de todos los conjuntos que entren modelos, conservandola en el
+   inventario y en el manifiesto con su disposicion explicita.
+4. Agrega una regresion: si RAW y todas las familias entrenadas carecen de
+   observaciones TRAIN, el agregador no puede caer por defecto a RAW. Conserva
+   aparte el caso valido donde RAW tiene soporte y solo fallan las familias
+   entrenadas.
+
 ## 5. Reporte y orquestacion
 
 Continua en paralelo:
