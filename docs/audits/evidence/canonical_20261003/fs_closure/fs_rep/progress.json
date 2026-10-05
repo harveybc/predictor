@@ -3899,7 +3899,8 @@
       "families_present": [
         "identity",
         "random",
-        "masked_temporal_ae"
+        "masked_temporal_ae",
+        "past_to_current_siamese"
       ],
       "flags": [],
       "terminals": {
@@ -3909,9 +3910,9 @@
           "state": "COMPLETED"
         },
         "alt_p2c": {
-          "reason": "NOT_LANDED",
-          "receipt_sha256": "",
-          "state": "PENDING"
+          "reason": "",
+          "receipt_sha256": "81331b17c7241af308d61f926766dd60a915c0ff34ac150c5ada5a1350096cbc",
+          "state": "COMPLETED"
         },
         "baseline": {
           "reason": "NOT_LANDED",
@@ -3979,7 +3980,7 @@
   },
   "candidates_decided": 35,
   "coverage_fraction": 0.2555,
-  "cycle_started_at": "2026-10-05T04:35:54Z",
+  "cycle_started_at": "2026-10-05T04:38:03Z",
   "decisions": {
     "NO_TRAINED_ADVANTAGE": 30,
     "PENDING": 102,
@@ -7107,8 +7108,7 @@
   },
   "families_present_histogram": {
     "0": 1,
-    "3": 1,
-    "4": 100,
+    "4": 101,
     "6": 35
   },
   "heavy_candidates_covered": 35,
@@ -7126,19 +7126,19 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "2e662ad2558f033aa5ffd1191e971bcbf46eb1e3e1c43774d16d81e42691fe59"
+      "sha256": "6b6400f5a9bd450cb9f35dd8ed458b8f924e21878cf243ebdbfb18808e3f2dec"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
-      "rows": 92136,
-      "sha256": "903cc580ce3d63404289f4c970fe8602c5a8801d4ceba58e2f40bb85a2b1ae95"
+      "rows": 92336,
+      "sha256": "a427c6100820fa1c057e8eb4dd61e45e95676ee5037f2cd3d92fd4a3d15ac8b3"
     },
     "representation_metric_catalog.csv.gz": {
-      "sha256": "00b175128a5dc3d84810d4e694dfc977e791ce077ead902b44314c3d009ac918"
+      "sha256": "79991918a7cdfffe43bf64a11a07390770d6543c55de37a3eb2fc31944c31c62"
     }
   },
   "planned_cells_total": 411,
-  "process_peak_rss_bytes": 138686464,
+  "process_peak_rss_bytes": 138838016,
   "refit_gate_applied": false,
   "refit_input": null,
   "rule_version": "fs_rep_rule.v1",
@@ -7156,14 +7156,13 @@
       "FAILED": 1
     },
     "alt_p2c": {
-      "COMPLETED": 135,
-      "FAILED": 1,
-      "PENDING": 1
+      "COMPLETED": 136,
+      "FAILED": 1
     },
     "baseline": {
       "COMPLETED": 35,
       "PENDING": 102
     }
   },
-  "updated_at": "2026-10-05T04:36:01Z"
+  "updated_at": "2026-10-05T04:38:06Z"
 }

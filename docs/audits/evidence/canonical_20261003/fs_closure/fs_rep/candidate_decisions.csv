@@ -133,6 +133,6 @@ yh.vea.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_cu
 yh.vnq.logret_5d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 yh.xlb.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 yh.xlc.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
-yh.xlp.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae,
+yh.xlp.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 yh.xlu.logret_1d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 yh.zs_f.logret_5d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
