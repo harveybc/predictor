@@ -4326,14 +4326,17 @@
     "yh.vea.logret_1d": {
       "batch": "batch_002",
       "cause": "",
-      "decision": "PENDING",
+      "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
         "random",
         "masked_temporal_ae",
         "past_to_current_siamese"
       ],
-      "flags": [],
+      "flags": [
+        "DECIDED_WITH_FAILED_FAMILIES",
+        "RAW_HAS_PROBE_SKILL"
+      ],
       "terminals": {
         "alt_mtae": {
           "reason": "",
@@ -4346,9 +4349,9 @@
           "state": "COMPLETED"
         },
         "baseline": {
-          "reason": "NOT_LANDED",
-          "receipt_sha256": "",
-          "state": "PENDING"
+          "reason": "FAILED_RECEIPT",
+          "receipt_sha256": "2fc3c65a6adbd86e19021a89d13c147f86a14b71e1a80d44a7a3ac0806759978",
+          "state": "FAILED"
         }
       }
     },
@@ -4546,14 +4549,14 @@
       }
     }
   },
-  "candidates_decided": 121,
+  "candidates_decided": 122,
   "claim_scope": "provisional extractibility/probe disposition; no downstream improvement of latents is claimed while trained-family G4 is NOT_APPLICABLE; raw vs latent belongs to M4",
   "coverage_fraction": 0.8029,
-  "cycle_started_at": "2026-10-05T15:11:17Z",
+  "cycle_started_at": "2026-10-05T15:13:29Z",
   "decisions": {
     "NOT_AVAILABLE_FOR_TRAIN": 1,
-    "NO_TRAINED_ADVANTAGE": 80,
-    "PENDING": 16,
+    "NO_TRAINED_ADVANTAGE": 81,
+    "PENDING": 15,
     "RAW": 40
   },
   "disposition_class": "PROVISIONAL_EXTRACTIBILITY_DISPOSITION",
@@ -4834,7 +4837,7 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "6d12cb29db2c35fd1a91783b147f5e3baaa08fe792e3714be72b8afb64fe85a8"
+      "sha256": "998301052579b5cf0c5be573bfbab653e73dfa183f8921264fca87256e042787"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
@@ -4869,9 +4872,9 @@
     },
     "baseline": {
       "COMPLETED": 110,
-      "FAILED": 11,
-      "PENDING": 16
+      "FAILED": 12,
+      "PENDING": 15
     }
   },
-  "updated_at": "2026-10-05T15:11:26Z"
+  "updated_at": "2026-10-05T15:13:38Z"
 }
