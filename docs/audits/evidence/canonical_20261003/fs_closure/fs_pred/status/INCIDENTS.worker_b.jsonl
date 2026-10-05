@@ -1,0 +1,1 @@
+{"cap": "4096M", "host_role": "worker_b", "incidents_seen": ["fs-pred-pilot-cell-1791174341-3139605-44ca17.json"], "peak_bytes": 2248560640, "pilot_state": "pilot_complete", "schema": "fs_pred_incident.v1", "stage": "autostart", "utc": "2026-10-05T05:35:15Z", "verdict": "PRODUCTION_STARTED"}
