@@ -1758,6 +1758,8 @@ def follow_once(paths: Paths, *, dispatch: bool = False, rebuild_catalog: bool |
         metrics = load_metrics(paths)
         cov = refit_coverage(plan, metrics)
     closure = read_json(paths.out / "closure_record.json", None)
+    if closure is None:
+        ev.missing.append("VALIDATION_2024_FEATURES_AND_TARGETS on the refit host (PS1 producer, read_end 2025-01-01, 2024 rows only) -> closure_record.json")
     winner = (closure or {}).get("winner")
     dispositions = build_dispositions(pop, ev, plan, winner)
     checks = run_checks(pop, ev, plan, plan_missing, dispositions, metrics, cov, closure, paths.gate_module)
