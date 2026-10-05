@@ -622,19 +622,22 @@ def read_fs_close(paths: Paths, pop: Population, plan: dict | None) -> Iterator:
     if not p.is_file():
         return
     digest = sha256_file(p)
-    df = pd.read_parquet(p)
-    df = df[df["state"] == "MEASURED"]
-    rows = pd.DataFrame({"feature": "set:" + df["set_id"].astype(str), "stage": "FS-CLOSE", "target": df["target"],
-                         "horizon": df["horizon"].astype(int), "fold": df["fold"],
-                         "metric": df["head"] + "." + df["metric"] + ".vs_" + df["naive_kind"],
-                         "value": df["value"], "state": "MEASURED", "digest": digest, "source": "fs_close/paired_refit_metrics.parquet"})
-    naive = rows.copy()
-    naive["metric"] = df["head"] + ".naive_" + df["naive_kind"] + "." + df["metric"]
-    naive["value"] = df["naive_value"]
-    sk = rows.copy()
-    sk["metric"] = df["head"] + ".skill_" + df["metric"] + "_vs_" + df["naive_kind"]
-    sk["value"] = df["skill"]
-    yield pd.concat([rows, naive, sk], ignore_index=True)
+    full = pd.read_parquet(p, columns=["set_id", "target", "horizon", "fold", "head", "metric", "naive_kind", "value", "naive_value", "skill", "state"])
+    full = full[full["state"] == "MEASURED"].reset_index(drop=True)
+    for start in range(0, len(full), 20000):              # bounded chunks: coordinator memory budget
+        df = full.iloc[start:start + 20000]
+        rows = pd.DataFrame({"feature": "set:" + df["set_id"].astype(str), "stage": "FS-CLOSE", "target": df["target"],
+                             "horizon": df["horizon"].astype(int), "fold": df["fold"],
+                             "metric": df["head"] + "." + df["metric"] + ".vs_" + df["naive_kind"],
+                             "value": df["value"], "state": "MEASURED", "digest": digest, "source": "fs_close/paired_refit_metrics.parquet"})
+        naive = rows.copy()
+        naive["metric"] = df["head"] + ".naive_" + df["naive_kind"] + "." + df["metric"]
+        naive["value"] = df["naive_value"].to_numpy()
+        sk = rows.copy()
+        sk["metric"] = df["head"] + ".skill_" + df["metric"] + "_vs_" + df["naive_kind"]
+        sk["value"] = df["skill"].to_numpy()
+        yield pd.concat([rows, naive, sk], ignore_index=True)
+    del full
     if plan:
         mem = []
         for s in plan.get("sets", []):
@@ -1826,7 +1829,7 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
     except ValueError:
         launched_at = dt.datetime(1970, 1, 1, tzinfo=dt.timezone.utc)
     unit_alive = False
-    if marker.get("unit") and (dt.datetime.now(dt.timezone.utc) - launched_at).total_seconds() < 14400:
+    if marker.get("unit"):   # systemd answers definitively, whatever the marker's age
         try:
             r = subprocess.run(ssh + [f"export XDG_RUNTIME_DIR=/run/user/$(id -u); systemctl --user show -p ActiveState --value {marker['unit']}"],
                                capture_output=True, text=True, timeout=40)
