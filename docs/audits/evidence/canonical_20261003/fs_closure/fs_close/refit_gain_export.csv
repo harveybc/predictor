@@ -1,4 +1,11 @@
 feature_id,family,refit_gain,cells,positive_cells,head,rows,trained_families
 cot.wti_nymex.mm_net_oi,identity,-0.01621306501046198,70,27,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
 fred.credit.aaa.level,identity,-0.0004191582095177825,70,46,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
-fred.credit.aaa.logret_1d,identity,-0.006331664676299768,6,1,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.credit.aaa.logret_1d,identity,-0.011625824036002076,70,20,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.credit.bamlh0a0hym2.logret_1d,identity,-0.0002198762617561544,70,29,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.fx_indices.dtwexafegs.logret_5d,identity,0.00048473107694422586,70,36,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.fx_indices.dtwexbgs.level,identity,-0.0033017859492066605,70,27,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.fx_indices.dtwexemegs.level,identity,-0.005491599649957378,70,25,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.inflation_expectations.t10yie.level,identity,-0.00022322881946845402,70,23,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.rates.dfii10.diff_1d,identity,-0.001876810035955607,70,22,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.rates.dfii10.level,identity,-0.0003600728376590074,51,20,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
