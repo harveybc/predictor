@@ -16,4 +16,11 @@ fred.rates.dgs5.logret_1d,identity,-0.0011471505465236423,70,28,ridge,"TRAIN inn
 fred.rates.dprime.logret_5d,identity,0.0063618466787228305,70,48,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
 fred.rates.dtb3.diff_5d,identity,-0.0016389370299722626,70,23,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
 fred.rates.t10y3m.diff_1d,identity,-0.0038998966059573975,70,20,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
-fred.rates.tb3ms.level,identity,0.0014951003446358802,5,1,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.rates.tb3ms.level,identity,-0.00051173734373189,70,19,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.stress.anfci.diff_5d,identity,0.004213188988432405,70,32,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.stress.anfci.level,identity,-0.007103452920555794,70,23,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.stress.nfci.diff_1d,identity,0.04159525775890866,70,50,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.stress.nfci.level,identity,0.021732212653094052,70,27,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.stress.vixcls.logret_5d,identity,-0.0021164469623592263,70,24,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fx.audusd.ewma_vol_24,identity,0.0021463446508482656,70,38,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fx.audusd.logret_1h,identity,-9.402385132083303e-06,50,24,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
