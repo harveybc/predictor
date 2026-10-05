@@ -1,0 +1,79 @@
+{
+  "schema": "fs_rep_config.v1",
+  "rule_version": "fs_rep_rule.v1",
+  "repo_root": "../../../../../..",
+  "decision_rule_doc": "docs/audits/evidence/canonical_20261003/fs_closure/fs_rep/DECISION_RULE.md",
+  "output_dir": "docs/audits/evidence/canonical_20261003/fs_closure/fs_rep",
+  "state_dir": "~/.local/state/canonical_20261003/fs_rep",
+  "heavy_candidates": "docs/audits/evidence/canonical_20261003/coverage_reconciliation/coverage_reconciliation.json",
+  "heavy_denominator": 137,
+  "seed": 0,
+  "plans": {
+    "alternative": {
+      "tsv": "docs/audits/evidence/canonical_20261003/automation/alternative_5090.tsv",
+      "roots": [
+        "mirror_alternatives"
+      ]
+    },
+    "baseline_002": {
+      "tsv": "docs/audits/evidence/canonical_20261003/automation/baseline_batch_002_4090.tsv",
+      "roots": [
+        "mirror_baseline_002",
+        "mirror_baseline_successor"
+      ]
+    },
+    "baseline_001_003": {
+      "tsv": "docs/audits/evidence/canonical_20261003/automation/baseline_batch_001_003_5090.tsv",
+      "roots": [
+        "mirror_baseline_successor",
+        "mirror_baseline_002"
+      ]
+    }
+  },
+  "allowed_revisions": {
+    "baseline": [
+      "8987c573bd7e0819a54011e88ec9e7c309229350"
+    ],
+    "alt_mtae": [
+      "31add1270439e746edd99e98e20a95ab09c1cf71"
+    ],
+    "alt_p2c": [
+      "31add1270439e746edd99e98e20a95ab09c1cf71"
+    ]
+  },
+  "batch_series_sha256": {
+    "batch_001": "3e4404d260d9236ca24fc8561eedbfcc9c47a609d3e64b68870c204a3731f025",
+    "batch_002": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+    "batch_003": "293db083a886a41a6ae719c0bfa274b0513cc2c956b14965dd9a97a37dd69571"
+  },
+  "recipe": {
+    "window": 168,
+    "latent_dim": 8,
+    "max_fit_windows": 16384,
+    "max_val_windows": 0,
+    "max_ref_windows": 256,
+    "probe_lags": "0,1,2,23",
+    "ridge_alpha": 1.0,
+    "max_epochs": 200,
+    "patience": 10,
+    "seed": 0
+  },
+  "refit_input": null,
+  "eta_inputs": {
+    "fs_gpu_eta_candidates": [
+      "docs/audits/evidence/canonical_20261003/fs_closure/fs_gpu/ps3r_eta.json",
+      "docs/audits/evidence/canonical_20261003/fs_closure/ps3r_eta.json"
+    ],
+    "status_files": [
+      "alternative",
+      "baseline_002",
+      "baseline_successor"
+    ]
+  },
+  "poll_interval_seconds": 120,
+  "local_paths": "~/.local/state/canonical_20261003/fs_rep/local_paths.json",
+  "notes": [
+    "mirror role keys resolve through the uncommitted local_paths file; the repo never carries worker directory names",
+    "status_files are the queue STATUS keys expected in local_paths"
+  ]
+}
