@@ -1,1 +1,4 @@
 feature_id,family,refit_gain,cells,positive_cells,head,rows,trained_families
+cot.wti_nymex.mm_net_oi,identity,-0.01621306501046198,70,27,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.credit.aaa.level,identity,-0.0004191582095177825,70,46,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+fred.credit.aaa.logret_1d,identity,-0.006331664676299768,6,1,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST

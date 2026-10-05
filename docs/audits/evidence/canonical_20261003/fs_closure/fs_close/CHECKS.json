@@ -6,12 +6,12 @@
    "state": "PASS"
   },
   {
-   "detail": "population 7b14a01c3adb; metric populations none yet",
+   "detail": "population 7b14a01c3adb; metric populations ['7b14a01c3adb']",
    "id": "C2_SINGLE_POPULATION",
    "state": "PASS"
   },
   {
-   "detail": "complete methods []; incomplete {}",
+   "detail": "complete methods []; incomplete {}; FS-PRED progress 6/14",
    "id": "C3_COMPLETE_RANKINGS",
    "state": "PENDING"
   },
@@ -26,22 +26,22 @@
    "state": "PASS"
   },
   {
-   "detail": "no refit metrics yet",
+   "detail": "0 measured metric rows without a paired naive of 2208",
    "id": "C6_PAIRED_NAIVE",
-   "state": "PENDING"
+   "state": "PASS"
   },
   {
-   "detail": "0/16 required sets complete at ridge; missing ['PRED_BEST:8', 'PRED_BEST:16', 'PRED_BEST:24', 'PRED_BEST:32', 'PRED_BEST:48', 'PLUS_CAUSAL:8']",
+   "detail": "1/16 required sets complete at ridge; missing ['PRED_BEST:8', 'PRED_BEST:16', 'PRED_BEST:24', 'PRED_BEST:32', 'PRED_BEST:48', 'PLUS_CAUSAL:8']",
    "id": "C7_REQUIRED_SETS_REFIT",
    "state": "PENDING"
   },
   {
-   "detail": "fs_pred/selector_sets.json; fs_pred/rankings (method x target x fold complete orderings); fs_causal/causal_evidence.jsonl; fs_rep decisions 35/137 heavy candidates decided; PS3-R terminals complete 35/137 heavy candidates; PS4 profiles 35/137 heavy candidates; PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
+   "detail": "fs_pred/selector_sets.json; fs_pred/rankings (method x target x fold complete orderings); fs_causal/causal_evidence.jsonl; fs_rep decisions 38/137 heavy candidates decided; PS3-R terminals complete 38/137 heavy candidates; PS4 profiles 38/137 heavy candidates; VALIDATION_2024_FEATURES_AND_TARGETS on the refit host (PS1 producer, read_end 2025-01-01, 2024 rows only) -> closure_record.json; PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
    "id": "C8_INPUT_OBJECTS",
    "state": "PENDING"
   },
   {
-   "detail": "closure step not run: candidates not frozen or VALIDATION inputs absent",
+   "detail": "closure step not run: candidates not frozen or VALIDATION_2024_FEATURES_AND_TARGETS not materialised on the refit host",
    "id": "C9_VALIDATION_CHOICE",
    "state": "PENDING"
   },
@@ -52,6 +52,6 @@
   }
  ],
  "final": false,
- "generated_utc": "2026-10-05T04:33:10+00:00",
+ "generated_utc": "2026-10-05T05:03:42+00:00",
  "schema": "fs_close_checks.v1"
 }

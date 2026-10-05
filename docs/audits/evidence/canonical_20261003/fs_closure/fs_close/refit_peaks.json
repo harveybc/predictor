@@ -18,6 +18,15 @@
    "peak_rss_bytes": 1019940864,
    "plan_sha256": "dc18976f81b9789c06dc675b571afffac0662cb3f859c58cf21704cfce406cc9",
    "retained_as": "fs_close/pilot_receipt.json"
+  },
+  "dc18976f81b9:2026-10-05T04:44:24.781603+00:00": {
+   "cells_done": 0,
+   "heads": [
+    "ridge",
+    "hgb"
+   ],
+   "peak_rss_bytes": 487534592,
+   "plan_sha256": "dc18976f81b9789c06dc675b571afffac0662cb3f859c58cf21704cfce406cc9"
   }
  },
  "schema": "fs_close_refit_peaks.v1"
