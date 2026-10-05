@@ -256,16 +256,15 @@ def _validate_groups(group_ids: Any, column_count: int) -> tuple[str, ...]:
 
 
 def _average_ranks(values: np.ndarray) -> np.ndarray:
+    """One-based average ranks with ties averaged (vectorized; same values as the tie loop)."""
+
     order = np.argsort(values, kind="mergesort")
     sorted_values = values[order]
+    _, inverse, counts = np.unique(sorted_values, return_inverse=True, return_counts=True)
+    starts = np.cumsum(counts) - counts
+    average = starts + (counts - 1) / 2.0 + 1.0
     ranks = np.empty(values.size, dtype=np.float64)
-    start = 0
-    while start < values.size:
-        stop = start + 1
-        while stop < values.size and sorted_values[stop] == sorted_values[start]:
-            stop += 1
-        ranks[order[start:stop]] = (start + stop - 1) / 2.0 + 1.0
-        start = stop
+    ranks[order] = average[inverse]
     return ranks
 
 
@@ -332,9 +331,16 @@ def _redundancy_components(
         if left_root != right_root:
             parents[max(left_root, right_root)] = min(left_root, right_root)
 
+    # Spearman of every pair is the Pearson correlation of the per-column
+    # average ranks: rank each column once, then one matrix product.
+    ranks = np.column_stack([_average_ranks(matrix[:, index]) for index in range(len(groups))])
+    centered = ranks - np.mean(ranks, axis=0)
+    norms = np.sqrt(np.sum(centered * centered, axis=0))
+    norms = np.where(norms == 0.0, 1.0, norms)
+    correlation = (centered / norms).T @ (centered / norms)
     for left in range(len(groups)):
         for right in range(left + 1, len(groups)):
-            if abs(_spearman(matrix[:, left], matrix[:, right])) >= threshold:
+            if abs(correlation[left, right]) >= threshold:
                 union(left, right)
 
     components: dict[int, list[str]] = {}
