@@ -56,7 +56,7 @@ px.logret_24h,batch_001,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_tempo
 px.logret_2h,batch_001,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;RAW_REFIT_GAIN_NONPOSITIVE
 px.logret_48h,batch_001,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;RAW_REFIT_GAIN_POSITIVE;UNSTABLE_LATENT(past_to_current_siamese)
 px.logret_4h,batch_001,RAW,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
-px.logret_6h,batch_001,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
+px.logret_6h,batch_001,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
 px.rv5,batch_001,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 px.zclose_168,batch_001,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 px.zclose_24,batch_001,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,

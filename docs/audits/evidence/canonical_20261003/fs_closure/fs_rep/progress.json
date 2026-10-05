@@ -1822,14 +1822,18 @@
     },
     "px.logret_6h": {
       "batch": "batch_001",
-      "decision": "PENDING",
+      "decision": "NO_TRAINED_ADVANTAGE",
       "families_present": [
         "identity",
         "random",
+        "ae",
+        "dae",
         "masked_temporal_ae",
         "past_to_current_siamese"
       ],
-      "flags": [],
+      "flags": [
+        "RAW_HAS_PROBE_SKILL"
+      ],
       "terminals": {
         "alt_mtae": {
           "reason": "",
@@ -1842,9 +1846,9 @@
           "state": "COMPLETED"
         },
         "baseline": {
-          "reason": "NOT_LANDED",
-          "receipt_sha256": "",
-          "state": "PENDING"
+          "reason": "",
+          "receipt_sha256": "babd08fc8bb0db84caebc8dbcd64ca60d4800fa0eb6b48dd4f66e0e90a2a56a5",
+          "state": "COMPLETED"
         }
       }
     },
@@ -4109,12 +4113,12 @@
       }
     }
   },
-  "candidates_decided": 56,
-  "coverage_fraction": 0.4015,
-  "cycle_started_at": "2026-10-05T07:20:22Z",
+  "candidates_decided": 57,
+  "coverage_fraction": 0.4088,
+  "cycle_started_at": "2026-10-05T07:28:41Z",
   "decisions": {
-    "NO_TRAINED_ADVANTAGE": 43,
-    "PENDING": 81,
+    "NO_TRAINED_ADVANTAGE": 44,
+    "PENDING": 80,
     "RAW": 13
   },
   "eta": {
@@ -7087,27 +7091,27 @@
           }
         ]
       },
-      "generated_at_utc": "2026-10-05T07:19:32Z",
+      "generated_at_utc": "2026-10-05T07:27:44Z",
       "hosts": {
         "coordinator": {
           "gpus": [
-            "0, NVIDIA GeForce RTX 4070 Laptop GPU, 15 %, 884 MiB, 8188 MiB, 47"
+            "0, NVIDIA GeForce RTX 4070 Laptop GPU, 20 %, 884 MiB, 8188 MiB, 47"
           ],
-          "memory": "total_mib=31259 used_mib=11728 available_mib=19530",
-          "probed_at_utc": "2026-10-05T07:19:31Z",
+          "memory": "total_mib=31259 used_mib=11773 available_mib=19486",
+          "probed_at_utc": "2026-10-05T07:27:44Z",
           "running": []
         },
         "worker_a": {
           "gpus": [
-            "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 0 %, 14 MiB, 12227 MiB, 39",
-            "1, NVIDIA GeForce RTX 5090, 57 %, 19502 MiB, 32607 MiB, 55"
+            "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 0 %, 14 MiB, 12227 MiB, 38",
+            "1, NVIDIA GeForce RTX 5090, 56 %, 19500 MiB, 32607 MiB, 55"
           ],
-          "memory": "total_mib=14630 used_mib=8740 available_mib=5889",
-          "probed_at_utc": "2026-10-05T07:19:31Z",
+          "memory": "total_mib=14630 used_mib=7898 available_mib=6731",
+          "probed_at_utc": "2026-10-05T07:27:44Z",
           "running": [
             {
               "cell_id": "batch_001::px.logret_6h::baseline",
-              "elapsed_seconds": 212,
+              "elapsed_seconds": 704,
               "queue": "baselines_5090_batch_001_003",
               "started_at_utc": "2026-10-05T07:16:00Z"
             }
@@ -7115,14 +7119,14 @@
         },
         "worker_b": {
           "gpus": [
-            "0, NVIDIA GeForce RTX 4090 Laptop GPU, 34 %, 14430 MiB, 16376 MiB, 42"
+            "0, NVIDIA GeForce RTX 4090 Laptop GPU, 0 %, 14434 MiB, 16376 MiB, 41"
           ],
-          "memory": "total_mib=31310 used_mib=23358 available_mib=7952",
-          "probed_at_utc": "2026-10-05T07:19:31Z",
+          "memory": "total_mib=31310 used_mib=24183 available_mib=7127",
+          "probed_at_utc": "2026-10-05T07:27:44Z",
           "running": [
             {
               "cell_id": "batch_002::fred.rates.dgs3mo.diff_5d::baseline",
-              "elapsed_seconds": 574,
+              "elapsed_seconds": 1066,
               "queue": "baselines_4090_batch_002",
               "started_at_utc": "2026-10-05T07:09:58Z"
             }
@@ -7225,12 +7229,12 @@
                 "worker_b": 1637.1
               }
             },
-            "finish_utc_median": "2026-10-05T22:32:50Z",
+            "finish_utc_median": "2026-10-05T22:32:49Z",
             "finish_utc_p90": "2026-10-06T02:43:14Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 54797,
-            "seconds_p90": 69821
+            "seconds_median": 54305,
+            "seconds_p90": 69329
           },
           "failures": [
             {
@@ -7245,7 +7249,7 @@
           "running": [
             {
               "cell_id": "batch_002::fred.rates.dgs3mo.diff_5d::baseline",
-              "elapsed_seconds": 574,
+              "elapsed_seconds": 1066,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/claim_aware_driver.log",
               "role": "worker_b",
               "stale": false,
@@ -7292,8 +7296,8 @@
             "finish_utc_p90": "2026-10-05T16:06:41Z",
             "provisional": false,
             "reason": null,
-            "seconds_median": 29181,
-            "seconds_p90": 31628
+            "seconds_median": 28689,
+            "seconds_p90": 31136
           },
           "failures": [],
           "name": "baselines_5090_batch_001_003",
@@ -7301,7 +7305,7 @@
           "running": [
             {
               "cell_id": "batch_001::px.logret_6h::baseline",
-              "elapsed_seconds": 212,
+              "elapsed_seconds": 704,
               "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_a/baseline_5090.log",
               "role": "worker_a",
               "stale": false,
@@ -7335,10 +7339,10 @@
   },
   "families_present_histogram": {
     "0": 1,
-    "4": 81,
-    "6": 55
+    "4": 80,
+    "6": 56
   },
-  "heavy_candidates_covered": 55,
+  "heavy_candidates_covered": 56,
   "heavy_denominator": 137,
   "milestones": {
     "first_table": {
@@ -7353,19 +7357,19 @@
     },
     "representation_dispositions.csv": {
       "rows": 822,
-      "sha256": "b4a9a80c147a7b0fdc36f35135a4d029ef482aae67982a644935920e0e39ad2b"
+      "sha256": "6c2b7cb2c00de373b56b54d3611c9a7862b6bb87f41412fb368addea2372f19a"
     },
     "representation_metric_catalog.csv": {
       "location": "state_dir; committed as .csv.gz at the first table and at full coverage",
-      "rows": 100336,
-      "sha256": "79657423d3a7df138f4f50037be59ac28118e16c6d469e69ad9cc5d14a44a61c"
+      "rows": 100736,
+      "sha256": "dd63600dc80305c0d1655dd9ad04c1ef108ef2901b84b1634f2ad6e6d1c538c1"
     },
     "representation_metric_catalog.csv.gz": {
-      "sha256": "bc4853dd3e3d44f899f2e76c5bd05d517166e9aceef9e0cf19f0948c66e48ca2"
+      "sha256": "c1a7af2d0d4566c071b4f98430bad4e00ee79a323a7807fdbbb9a17c57720e41"
     }
   },
   "planned_cells_total": 411,
-  "process_peak_rss_bytes": 148443136,
+  "process_peak_rss_bytes": 148672512,
   "refit_gate_applied": true,
   "refit_input": "docs/audits/evidence/canonical_20261003/fs_closure/fs_close/refit_gain_export.csv",
   "rule_version": "fs_rep_rule.v2",
@@ -7387,10 +7391,10 @@
       "FAILED": 1
     },
     "baseline": {
-      "COMPLETED": 55,
+      "COMPLETED": 56,
       "FAILED": 1,
-      "PENDING": 81
+      "PENDING": 80
     }
   },
-  "updated_at": "2026-10-05T07:20:26Z"
+  "updated_at": "2026-10-05T07:28:48Z"
 }
