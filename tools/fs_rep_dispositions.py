@@ -764,6 +764,8 @@ def eta_block(cfg: dict, now: datetime) -> dict:
         if candidate.is_file():
             try:
                 payload = json.loads(candidate.read_text())
+                if isinstance(payload, dict):  # keep the queue summaries; the per-cell ledger lives in FS-GPU's own file
+                    payload = {k: v for k, v in payload.items() if k not in ("cells", "hosts")}
                 return {"source": "FS-GPU ps3r_eta.json", "source_path": str(candidate.relative_to(cfg["_repo_root"])) if str(candidate).startswith(str(cfg["_repo_root"])) else candidate.name, "fs_gpu_eta": payload}
             except (OSError, json.JSONDecodeError, ValueError):
                 pass
