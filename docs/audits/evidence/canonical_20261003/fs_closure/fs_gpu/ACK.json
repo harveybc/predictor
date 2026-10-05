@@ -1,0 +1,51 @@
+{
+  "acked_at_utc": "2026-10-05T04:02:29Z",
+  "branch": "satoshi/canonical-exec-20261003",
+  "eta_first_deliverable_utc": "2026-10-05T06:02:29Z",
+  "eta_publisher_live_utc": "2026-10-05T07:02:29Z",
+  "first_deliverable": "atomic shared claim protocol (module + tests) and claim-aware drivers installed on both workers as waiting successors",
+  "lane": "FS-GPU",
+  "live_state_verified_at_ack": {
+    "inputs": "batch_002 batch_manifest.json sha256 identical on worker_a ps2 and worker_b input (8d7d2e1a\u2026)",
+    "recipe_parity": "worker_a successor passes --batch_size 64 explicitly; code 8987c57 default is 64, so the recipe is identical",
+    "worker_a": {
+      "alternatives": "260/274 completed, 0 failed, cell running (cap 6670M)",
+      "baseline_successor": "waiting on feature-selection-5090.service, 0/51"
+    },
+    "worker_b": {
+      "baselines_batch_002": "34/86 completed (COMPLETED+digest), 0 failed, cell yh.usdzar_x.logret_1d running since 03:57:13Z, cap 8000M, max cgroup peak 7547281408 B"
+    }
+  },
+  "never_touched": [
+    "STATUS.json",
+    "MASTER_MILESTONE_*",
+    "other lanes' dirs",
+    "running cells",
+    "m2_readiness/* (gaps reported, live ingest run from a separate config)"
+  ],
+  "order": "docs/handoffs/SATOSHI_FEATURE_SELECTION_CLOSURE_2026_10_05.md \u00a73",
+  "schema": "fs_lane_ack.v1",
+  "tip_at_ack": "f4f4398656a7fdcbd1eb7b239e6c96b56e50361a",
+  "worktree": ".worktrees/predictor-canonical-exec-20261003",
+  "writes": {
+    "coordinator_state_not_in_repo": [
+      "~/.local/state/canonical_20261003/selection_sync_loop.sh (replaced atomically: adds claim relay both ways, driver-log pull, peer-terminal push)",
+      "~/.local/state/canonical_20261003/selection_status_loop.sh (replaced atomically: adds ETA publisher + closure matrix + live ingest)",
+      "~/.local/state/canonical_20261003/fs_gpu/** (ingest_root, relay heartbeat)"
+    ],
+    "repo": [
+      "docs/audits/evidence/canonical_20261003/fs_closure/fs_gpu/** (ACK.json, ps3r_eta.json, ps3r_progress.csv, closure_matrix.{json,csv}, ps3r_ingest_live.json, claims_ledger.json, RETURN_*.md, deployed_digests.json)",
+      "tools/fs_gpu/** (ps3r_claims.py, ps3r_eta.py, ps3r_closure_matrix.py, ps3r_ingest_feeder.py, steal_batch_002_5090.sh, dragon_claim_aware_driver.sh, relay/status loop templates, tests)"
+    ],
+    "worker_a_state": [
+      "~/.local/state/canonical_20261003/ps3r/tools/ps3r_claims.py",
+      "~/.local/state/canonical_20261003/selection_successor/steal_batch_002_5090.sh (new service feature-selection-steal-5090.service, waits for the successor service)",
+      "~/.local/state/canonical_20261003/ps3r/claims/batch_002/<feature>/claim.worker_a.json"
+    ],
+    "worker_b_state": [
+      "~/.local/state/canonical_20261003/ps3r/tools/ps3r_claims.py",
+      "~/.local/state/canonical_20261003/ps3r/dragon/claim_aware_driver.sh (new service feature-selection-4090-claims.service, waits for the running driver service)",
+      "~/.local/state/canonical_20261003/ps3r/dragon/codex_baseline_plan.txt truncated IN PLACE to its consumed prefix at a cell boundary (ends the legacy loop after the current cell; the running cell is untouched)"
+    ]
+  }
+}
