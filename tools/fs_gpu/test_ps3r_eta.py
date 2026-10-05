@@ -25,7 +25,7 @@ def test_cell_id_from_log_handles_both_driver_formats():
     assert E.cell_id_from_log("rc=0 exploration batch_002 past_to_current_siamese yh.xlu.logret_1d") == "batch_002::yh.xlu.logret_1d::past_to_current_siamese"
     assert E.cell_id_from_log("cap=8000M tier_1 batch_002 yh.usdzar_x.logret_1d") == "batch_002::yh.usdzar_x.logret_1d::baseline"
     assert E.cell_id_from_log("tier_1 batch_001 px.close_loc") == "batch_001::px.close_loc::baseline"
-    assert E.cell_id_from_log("START gamma external UUID=x") is None
+    assert E.cell_id_from_log("START worker_a external UUID=x") is None
 
 
 def test_parse_log_running_is_begin_without_end():

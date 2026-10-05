@@ -21,14 +21,20 @@ STATUS="$DEST/SYNC_STATUS.json"
 CYCLE_FILE="$FS/relay_cycle"
 PERIOD="${RELAY_PERIOD_SECONDS:-60}"
 # shellcheck disable=SC1091
-source "$FS/hosts.env"   # defines WORKER_A_SSH and WORKER_B_SSH (ssh aliases, not in the repo)
-: "${WORKER_A_SSH:?}" "${WORKER_B_SSH:?}"
+# hosts.env (outside the repo) defines the ssh aliases WORKER_A_SSH / WORKER_B_SSH and the
+# pre-existing mirror/worker directory labels WORKER_A_LABEL / WORKER_B_LABEL (v1 layout).
+source "$FS/hosts.env"
+: "${WORKER_A_SSH:?}" "${WORKER_B_SSH:?}" "${WORKER_A_LABEL:?}" "${WORKER_B_LABEL:?}"
 
 A_PS3R=".local/state/canonical_20261003/ps3r"
 A_SUCC=".local/state/canonical_20261003/selection_successor"
-B_ROOT=".local/state/canonical_20261003/ps3r/dragon"
+B_ROOT=".local/state/canonical_20261003/ps3r/$WORKER_B_LABEL"
+MIRROR_A_ALT="$DEST/$WORKER_A_LABEL"
+MIRROR_A_BASE="$DEST/${WORKER_A_LABEL}_baseline"
+MIRROR_B_BASE="$DEST/$WORKER_B_LABEL"
 
-mkdir -p "$DEST/gamma" "$DEST/gamma_baseline" "$DEST/dragon" "$DEST/claims_worker_a" "$DEST/claims_worker_b" "$DEST/logs/worker_a" "$DEST/logs/worker_b" "$FS"
+mkdir -p "$MIRROR_A_ALT" "$MIRROR_A_BASE" "$MIRROR_B_BASE" "$DEST/claims_worker_a" "$DEST/claims_worker_b" "$DEST/logs/worker_a" "$DEST/logs/worker_b" "$FS"
+ln -sfn "$WORKER_A_LABEL" "$DEST/worker_a_alt"; ln -sfn "${WORKER_A_LABEL}_baseline" "$DEST/worker_a_base"; ln -sfn "$WORKER_B_LABEL" "$DEST/worker_b_base"
 [[ -f "$CYCLE_FILE" ]] || echo 0 > "$CYCLE_FILE"
 
 TERMINAL_FILTER=(--include='*/' --include='run_manifest.json' --include='results.jsonl' --include='FAILED.codex.json' --include='FAILED.json' --include='FAILED.reason.txt' --exclude='*')
@@ -45,9 +51,9 @@ while true; do
   ssh -o ConnectTimeout=20 "$WORKER_B_SSH" "bash -c '$REASON_CMD' _ $B_ROOT/runs" 2>/dev/null; rc[reason_b]=$?
 
   # 1. terminals + logs (pull)
-  "${RS[@]}" "${TERMINAL_FILTER[@]}" "$WORKER_A_SSH:$A_PS3R/F/" "$DEST/gamma/";                      rc[pull_a_alt]=$?
-  "${RS[@]}" "${TERMINAL_FILTER[@]}" "$WORKER_A_SSH:$A_SUCC/baseline/" "$DEST/gamma_baseline/";     rc[pull_a_base]=$?
-  "${RS[@]}" "${TERMINAL_FILTER[@]}" "$WORKER_B_SSH:$B_ROOT/runs/" "$DEST/dragon/";                 rc[pull_b_base]=$?
+  "${RS[@]}" "${TERMINAL_FILTER[@]}" "$WORKER_A_SSH:$A_PS3R/F/" "$MIRROR_A_ALT/";                      rc[pull_a_alt]=$?
+  "${RS[@]}" "${TERMINAL_FILTER[@]}" "$WORKER_A_SSH:$A_SUCC/baseline/" "$MIRROR_A_BASE/";     rc[pull_a_base]=$?
+  "${RS[@]}" "${TERMINAL_FILTER[@]}" "$WORKER_B_SSH:$B_ROOT/runs/" "$MIRROR_B_BASE/";                 rc[pull_b_base]=$?
   rsync -a --timeout=60 --include='*.log' --exclude='*' "$WORKER_A_SSH:$A_PS3R/F/" "$DEST/logs/worker_a/alt/" 2>/dev/null; rc[pull_a_log_alt]=$?
   rsync -a --timeout=60 --include='*.log' --exclude='*' "$WORKER_A_SSH:$A_SUCC/" "$DEST/logs/worker_a/" 2>/dev/null;       rc[pull_a_log_succ]=$?
   rsync -a --timeout=60 --include='*.log' --exclude='*' "$WORKER_B_SSH:$B_ROOT/" "$DEST/logs/worker_b/" 2>/dev/null;       rc[pull_b_log]=$?
@@ -58,10 +64,10 @@ while true; do
 
   # 3. claims (push, cross)   4. peer terminals (push, cross)
   rsync -a --timeout=60 --prune-empty-dirs --include='*/' --include='claim.worker_b.json' --exclude='*' "$DEST/claims_worker_b/" "$WORKER_A_SSH:$A_PS3R/claims/";  rc[push_a_claims]=$?
-  "${RS[@]}" "${TERMINAL_FILTER[@]}" "$DEST/dragon/batch_002/" "$WORKER_A_SSH:$A_PS3R/peer_terminals/batch_002/";                                                   rc[push_a_terminals]=$?
+  "${RS[@]}" "${TERMINAL_FILTER[@]}" "$MIRROR_B_BASE/batch_002/" "$WORKER_A_SSH:$A_PS3R/peer_terminals/batch_002/";                                                   rc[push_a_terminals]=$?
   rsync -a --timeout=60 --prune-empty-dirs --include='*/' --include='claim.worker_a.json' --exclude='*' "$DEST/claims_worker_a/" "$WORKER_B_SSH:$B_ROOT/claims/";   rc[push_b_claims]=$?
-  if [[ -d "$DEST/gamma_baseline/batch_002" ]]; then
-    "${RS[@]}" "${TERMINAL_FILTER[@]}" "$DEST/gamma_baseline/batch_002/" "$WORKER_B_SSH:$B_ROOT/peer_terminals/batch_002/";                                        rc[push_b_terminals]=$?
+  if [[ -d "$MIRROR_A_BASE/batch_002" ]]; then
+    "${RS[@]}" "${TERMINAL_FILTER[@]}" "$MIRROR_A_BASE/batch_002/" "$WORKER_B_SSH:$B_ROOT/peer_terminals/batch_002/";                                        rc[push_b_terminals]=$?
   else
     rc[push_b_terminals]=0
   fi
@@ -82,10 +88,11 @@ while true; do
     rc[hb_a]=99; rc[hb_b]=99
   fi
 
-  python3 - "$STATUS" "$started" "$cycle" "$pushes_ok" "$(for k in "${!rc[@]}"; do printf '%s=%s ' "$k" "${rc[$k]}"; done)" <<'PY'
+  python3 - "$STATUS" "$started" "$cycle" "$pushes_ok" "$(for k in "${!rc[@]}"; do printf '%s=%s ' "$k" "${rc[$k]}"; done)" "$WORKER_A_LABEL" "$WORKER_B_LABEL" <<'PY'
 import datetime, json, os, pathlib, sys, tempfile
 path = pathlib.Path(sys.argv[1])
 rcs = dict(item.split("=") for item in sys.argv[5].split())
+label_a, label_b = sys.argv[6], sys.argv[7]
 payload = {
     "schema": "feature_selection_sync.v2",
     "started_at": sys.argv[2],
@@ -93,10 +100,10 @@ payload = {
     "cycle": int(sys.argv[3]),
     "pushes_ok": sys.argv[4] == "true",
     "rc": {k: int(v) for k, v in sorted(rcs.items())},
-    # v1 fields kept for existing consumers
-    "gamma_rc": max(int(rcs.get("pull_a_alt", 0)), int(rcs.get("pull_a_base", 0))),
-    "dragon_rc": int(rcs.get("pull_b_base", 0)),
 }
+# v1 fields (<label>_rc) kept for existing consumers
+payload[f"{label_a}_rc"] = max(int(rcs.get("pull_a_alt", 0)), int(rcs.get("pull_a_base", 0)))
+payload[f"{label_b}_rc"] = int(rcs.get("pull_b_base", 0))
 fd, name = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".", text=True)
 try:
     with os.fdopen(fd, "w") as stream:

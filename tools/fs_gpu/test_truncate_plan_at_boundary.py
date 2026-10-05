@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import truncate_plan_at_boundary as T  # noqa: E402
 
 LOG = [
-    "2026-10-05T00:00:00Z START dragon UUID=x",
+    "2026-10-05T00:00:00Z START worker_b UUID=x",
     "2026-10-05T00:00:01Z BEGIN cap=8000M tier_1 batch_002 a.one",
     "2026-10-05T00:10:00Z END rc=0 tier_1 batch_002 a.one",
     "2026-10-05T00:10:00Z BEGIN cap=8000M tier_1 batch_002 b.two",

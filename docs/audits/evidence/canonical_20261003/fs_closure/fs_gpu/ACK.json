@@ -35,7 +35,7 @@
     ],
     "repo": [
       "docs/audits/evidence/canonical_20261003/fs_closure/fs_gpu/** (ACK.json, ps3r_eta.json, ps3r_progress.csv, closure_matrix.{json,csv}, ps3r_ingest_live.json, claims_ledger.json, RETURN_*.md, deployed_digests.json)",
-      "tools/fs_gpu/** (ps3r_claims.py, ps3r_eta.py, ps3r_closure_matrix.py, ps3r_ingest_feeder.py, steal_batch_002_5090.sh, dragon_claim_aware_driver.sh, relay/status loop templates, tests)"
+      "tools/fs_gpu/** (ps3r_claims.py, ps3r_eta.py, ps3r_closure_matrix.py, ps3r_ingest_feeder.py, steal_batch_002_5090.sh, worker_b_claim_aware_driver.sh, relay/status loop templates, tests)"
     ],
     "worker_a_state": [
       "~/.local/state/canonical_20261003/ps3r/tools/ps3r_claims.py",
@@ -44,8 +44,8 @@
     ],
     "worker_b_state": [
       "~/.local/state/canonical_20261003/ps3r/tools/ps3r_claims.py",
-      "~/.local/state/canonical_20261003/ps3r/dragon/claim_aware_driver.sh (new service feature-selection-4090-claims.service, waits for the running driver service)",
-      "~/.local/state/canonical_20261003/ps3r/dragon/codex_baseline_plan.txt truncated IN PLACE to its consumed prefix at a cell boundary (ends the legacy loop after the current cell; the running cell is untouched)"
+      "~/.local/state/canonical_20261003/ps3r/<worker_b_dir>/claim_aware_driver.sh (new service feature-selection-4090-claims.service, waits for the running driver service)",
+      "~/.local/state/canonical_20261003/ps3r/<worker_b_dir>/codex_baseline_plan.txt truncated IN PLACE to its consumed prefix at a cell boundary (ends the legacy loop after the current cell; the running cell is untouched)"
     ]
   }
 }

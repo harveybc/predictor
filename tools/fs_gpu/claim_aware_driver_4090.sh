@@ -14,7 +14,8 @@
 # families identity,random,ae,dae, seed 0, window 168, latent 8, 16384 fit windows.
 set -uo pipefail
 
-ROOT="$HOME/.local/state/canonical_20261003/ps3r/dragon"
+# the worker's pre-existing PS3-R directory label lives in a one-line file outside the repo
+ROOT="$HOME/.local/state/canonical_20261003/ps3r/$(cat "$HOME/.local/state/canonical_20261003/ps3r/WORKER_B_DIR_LABEL")"
 INPUT="$ROOT/input/batch_002"
 BATCH="batch_002"
 OUT="$ROOT/runs/$BATCH"
