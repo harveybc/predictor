@@ -1,6 +1,6 @@
 {
  "schema": "fs_causal_progress.v1",
- "updated_utc": "2026-10-05T08:32:02Z",
+ "updated_utc": "2026-10-05T09:37:25Z",
  "stage": "FINALIZED",
  "chunks": {
   "done": 47,
@@ -34,7 +34,7 @@
  "median_chunk_s": 267.3632445335388,
  "mean_s_per_candidate": 32.098578801571996,
  "eta_s": 0.0,
- "eta_utc": "2026-10-05T08:32:02Z",
+ "eta_utc": "2026-10-05T09:37:25Z",
  "host_role": "worker_b",
  "hardware": "CPU only, single BLAS thread, crispdm-run capped",
  "seed": 1729,

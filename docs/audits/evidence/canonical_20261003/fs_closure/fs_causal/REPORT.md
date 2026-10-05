@@ -1,6 +1,6 @@
 # FS-CAUSAL closure report
 
-Generated 2026-10-05T08:32:02Z from the worker_b run directory (CPU only, crispdm-run capped, seed 1729, TEST never read).
+Generated 2026-10-05T09:37:25Z from the worker_b run directory (CPU only, crispdm-run capped, seed 1729, TEST never read).
 Code: causal-inference `bd483de` (`fs_causal.py`, `fs_causal_batch.py`, `fs_causal_discovery.py`).
 
 ## Denominators
@@ -13,12 +13,12 @@ Code: causal-inference `bd483de` (`fs_causal.py`, `fs_causal_batch.py`, `fs_caus
 ## Progress
 
 - stage: **FINALIZED**; chunks 47/47; cells 5124/5124; candidates 366/366; failed features 0
-- median chunk 267 s; 32.1 s per candidate; ETA 2026-10-05T08:32:02Z
+- median chunk 267 s; 32.1 s per candidate; ETA 2026-10-05T09:37:25Z
 - provisional raw states (before family BH): {"rung1_raw": {"ASSOCIATION_REPORTED": 5124}, "rung2_raw": {"NOT_IDENTIFIED": 4576, "IDENTIFIED_CONDITIONAL_ON_DECLARED_ASSUMPTIONS": 128, "NOT_EVALUATED": 420}, "rung3_raw": {"NOT_IDENTIFIED": 4576, "COUNTERFACTUAL_UNDER_DECLARED_SCM": 128, "NOT_EVALUATED": 420}}
 
 ## Discovery comparator (PCMCI+, screening only)
 
-- pcmci_plus: candidates {'done': 0, 'total': 366}, verdicts {}, ETA None, pin {"library": "tigramite", "version": "5.2.10.1", "license": "GNU General Public License v3.0", "method": "PCMCI+ (run_pcmciplus) with ParCorr", "reference": "Runge (2020) UAI; Runge et al. (2019) Sci. Adv."}
+- pcmci_plus: candidates {'done': 366, 'total': 366}, verdicts {"PCMCI_PLUS_NO_LINK_X_TO_R": 341, "PCMCI_PLUS_UNDIRECTED_OR_CONFLICTING_LINK": 14, "PCMCI_PLUS_DIRECTED_LINK_X_TO_R": 11}, ETA 2026-10-05T09:37:19Z, pin {"library": "tigramite", "version": "5.2.10.1", "license": "GNU General Public License v3.0", "method": "PCMCI+ (run_pcmciplus) with ParCorr", "reference": "Runge (2020) UAI; Runge et al. (2019) Sci. Adv."}
 
 ## Final states per rung (all targets)
 
@@ -46,6 +46,14 @@ Code: causal-inference `bd483de` (`fs_causal.py`, `fs_causal_batch.py`, `fs_caus
 | Y_l_144h | 1/0/365 | 0/0/366 | 0/0/366 |
 | Y_b_s6 | 1/0/365 | 0/0/366 | 0/0/366 |
 | Y_b_l144 | 2/0/364 | 0/0/366 | 0/0/366 |
+
+## Findings the reader must not misread
+
+- Rung 2 reached an identified estimate (repaired gate: declared DAG, support, overlap without trimming, balance <= 0.1, placebo battery, four evidenced assumptions) in **128** cells of 20 features; the smallest family-BH q among them is 0.0695, so none is SUPPORTED at FDR 0.05, and none is a precise null inside the 0.1 SD equivalence margin. An identified-but-not-significant effect is NOT_IDENTIFIED here, not a rejection.
+- The TRAIN-only nonlinear confirmation (HistGradientBoosting AIPW, ps3c_review) failed the no-trim overlap screen in 128/128 identified cells: a boosted propensity leaves at least one episode outside [0.05, 0.95] on every real episode set, so under the frozen screen this confirmation can never agree. This is a structural property of that confirmation design, recorded for the auditor, not a finding about any feature.
+- 275 candidates carry an ASSUMED availability clock (D+1 / D+2 macro and cross-asset daily series): the dossier contract makes rung 2 abstain by name (ASSUMED_PUBLICATION_CLOCK) for all of them until lane A measures a receipt clock. Their rung-1 association evidence stands.
+- 10 calendar candidates are known in advance and are not observed interventions (NOT_APPLICABLE recorded inside NOT_IDENTIFIED).
+- Rung 1 is association given the pre-decision history only; its SUPPORTED cells are evidence of predictive relevance, never of causation.
 
 ## SUPPORTED / CONTRADICTED cells
 
@@ -128,7 +136,7 @@ Rung 1 (association only, HAC partial test + OOF gain + BH per target): 34 cells
 - features SUPPORTED at rung 2: []
 - features SUPPORTED at rung 3: []
 - features SUPPORTED at any rung: 12
-- SyPI screen verdicts: {"SYPI_CONDITION1_FAILED": 4948, "SYPI_CONDITION2_FAILED": 19, "SYPI_CANDIDATE_CAUSE_UNDER_DECLARED_RESTRICTIONS": 157}; PCMCI+: {"PENDING": 366}
+- SyPI screen verdicts: {"SYPI_CONDITION1_FAILED": 4948, "SYPI_CONDITION2_FAILED": 19, "SYPI_CANDIDATE_CAUSE_UNDER_DECLARED_RESTRICTIONS": 157}; PCMCI+: {"PCMCI_PLUS_UNDIRECTED_OR_CONFLICTING_LINK": 14, "PCMCI_PLUS_NO_LINK_X_TO_R": 341, "PCMCI_PLUS_DIRECTED_LINK_X_TO_R": 11}
 - clock distribution of candidates: {"OBSERVED": 81, "KNOWN_IN_ADVANCE": 10, "ASSUMED": 275}
 
 ## Rules honoured
@@ -144,14 +152,15 @@ Rung 1 (association only, HAC partial test + OOF gain + BH per target): 34 cells
 
 ```json
 {
- "progress.json": "e7307786c8b98e2ff0c46535c26b55bb62c045b226dc92a0b7fac9517e4059e6",
+ "progress.json": "36d524ccb302822f55801b06663098a857ceca268d4bf869cccf95190ef7b97a",
  "plan.json": "b5f4825c6b53ab4697f49029700b677cad661e9dc70053b1344828c3fd131a95",
- "final_summary.json": "ece610f614d95cfa6ea3a3c43b64ccb3515fbddcb04e6381d18c1d0ddc607f6f",
+ "final_summary.json": "caec7a7b84fa24400597639b07b86081b24eda183a675e756baa00d8c54a876f",
  "cells_summary.csv": "a1b0ff6225c8e4944a13ae46b44aac491a31de88ecee0af31d928a80df433fcc",
  "feature_summary.csv": "e2b0421e4e763ca806a795701c92406d49c039ea6bb34752a5b5e8dc162c5871",
  "supported_contradicted_cells.csv": "e93c272598141f2ec1f07b12c14484dc5575fb0be56edf168e19d4b49c56cd0a",
- "digests.json": "f6c157cb1d6128aa45a2c349c5af8010d5104519e2afe4b2c6e5b697f4d62cd9",
- "READY": "bcf93c8217c16846d3de94e7952354880e65f320eb3a7f207ae1a6b148414484",
- "progress_discovery.json": "e7a21bc7a0c234e223f6eff6edecacc14dcb1d74c6b53130380edaa81ed0804a"
+ "digests.json": "cf82cf4a36bd9c10baeeac217c8ff91275afa149ac781aca86ec24bc3498a369",
+ "READY": "fc001f07e7f5ad4a62c001c74c82710fe1526786595eb02829140b0cbf725637",
+ "progress_discovery.json": "6ce2e38c9db4b1b35e3b96f1d66a2186dcc48626d80c2c12c34dfc86ba3c5e13",
+ "READY_PCMCI": "d15976172cc02513640da18ee9be24985e837661702fbee2fcdc7295e08f8efe"
 }
 ```

@@ -1,7 +1,7 @@
 {
  "schema": "fs_causal_final_summary.v1",
  "revision": "bd483de",
- "finalized_utc": "2026-10-05T08:32:02Z",
+ "finalized_utc": "2026-10-05T09:37:24Z",
  "candidates": 366,
  "cells": 5124,
  "targets": 14,
@@ -213,7 +213,9 @@
   "SYPI_CANDIDATE_CAUSE_UNDER_DECLARED_RESTRICTIONS": 157
  },
  "pcmci_plus": {
-  "PENDING": 366
+  "PCMCI_PLUS_UNDIRECTED_OR_CONFLICTING_LINK": 14,
+  "PCMCI_PLUS_NO_LINK_X_TO_R": 341,
+  "PCMCI_PLUS_DIRECTED_LINK_X_TO_R": 11
  },
  "clock_distribution": {
   "OBSERVED": 81,
