@@ -113,7 +113,7 @@ yh.lqd.logret_5d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_cu
 yh.mxx.logret_5d,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
 yh.rut.logret_5d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 yh.sb_f.logret_1d,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
-yh.sb_f.logret_5d,batch_002,PENDING,identity;random;masked_temporal_ae,
+yh.sb_f.logret_5d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 yh.si_f.logret_1d,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
 yh.slv.logret_1d,batch_002,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL
 yh.slv.logret_5d,batch_002,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
