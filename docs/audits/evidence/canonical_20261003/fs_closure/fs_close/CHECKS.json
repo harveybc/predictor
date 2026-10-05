@@ -36,7 +36,7 @@
    "state": "PENDING"
   },
   {
-   "detail": "fs_pred/selector_sets.json; fs_pred/rankings (method x target x fold complete orderings); fs_causal/causal_evidence.jsonl; fs_rep decisions 34/137 heavy candidates decided; PS3-R terminals complete 35/137 heavy candidates; PS4 profiles 35/137 heavy candidates; PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
+   "detail": "fs_pred/selector_sets.json; fs_pred/rankings (method x target x fold complete orderings); fs_causal/causal_evidence.jsonl; fs_rep decisions 35/137 heavy candidates decided; PS3-R terminals complete 35/137 heavy candidates; PS4 profiles 35/137 heavy candidates; PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
    "id": "C8_INPUT_OBJECTS",
    "state": "PENDING"
   },
@@ -52,6 +52,6 @@
   }
  ],
  "final": false,
- "generated_utc": "2026-10-05T04:26:58+00:00",
+ "generated_utc": "2026-10-05T04:33:10+00:00",
  "schema": "fs_close_checks.v1"
 }
