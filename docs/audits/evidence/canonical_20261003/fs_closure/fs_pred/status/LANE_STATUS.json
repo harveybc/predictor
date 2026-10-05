@@ -49,19 +49,19 @@
   "train_rows": 71734
  },
  "eta": {
-  "basis": "median of 80 POST method walls x 789 remaining method cells, one worker",
-  "eta_utc": "2026-10-05T12:51:53.372831+00:00",
-  "post_cells": 80,
-  "post_median_wall_seconds": 9.413907307491172
+  "basis": "median of 93 POST method walls x 776 remaining method cells, one worker",
+  "eta_utc": "2026-10-05T13:30:41.183844+00:00",
+  "post_cells": 93,
+  "post_median_wall_seconds": 10.124244877020828
  },
  "failures": [],
  "host_role": "worker_b (CPU)",
- "k24_sets": 191,
+ "k24_sets": 204,
  "method_wall_seconds": {
   "ALL_ADMISSIBLE": {
    "max": 0.3280245428904891,
-   "median": 0.2246970430132933,
-   "n": 14
+   "median": 0.21494138101115823,
+   "n": 15
   },
   "CHRONOEPILOGI_K": {
    "max": 118.15960842801724,
@@ -70,68 +70,68 @@
   },
   "CMIM_K": {
    "max": 54.304969796095975,
-   "median": 38.71477388002677,
-   "n": 14
+   "median": 38.461160477017984,
+   "n": 15
   },
   "ELASTIC_NET_K": {
-   "max": 16.62677424796857,
-   "median": 13.441732267499901,
-   "n": 14
+   "max": 61.55710303597152,
+   "median": 13.922568368026987,
+   "n": 15
   },
   "EXTRATREES_TBP_K": {
    "max": 108.86757644696627,
-   "median": 75.98310302302707,
-   "n": 14
+   "median": 74.58444780600257,
+   "n": 15
   },
   "GROUP_ELASTIC_NET_K": {
-   "max": 12.222659705905244,
-   "median": 8.845006706542335,
-   "n": 14
+   "max": 29.236340238014236,
+   "median": 8.872956369072199,
+   "n": 15
   },
   "GROUP_GATE_K": {
    "max": 3.5829775950405747,
-   "median": 2.4818352715228684,
-   "n": 14
+   "median": 2.4283929970115423,
+   "n": 15
   },
   "JMI_K": {
    "max": 54.79486797004938,
-   "median": 38.94992637401447,
-   "n": 14
+   "median": 38.43055130704306,
+   "n": 15
   },
   "MI8_K": {
    "max": 1.6207703050458804,
-   "median": 1.181949338526465,
-   "n": 14
+   "median": 1.1807140870951116,
+   "n": 15
   },
   "MRMR_K": {
    "max": 54.05779823800549,
-   "median": 38.57375334604876,
-   "n": 14
+   "median": 38.42828873405233,
+   "n": 15
   },
   "RANDOM_K:seed0": {
    "max": 0.3303993850713596,
-   "median": 0.21038513799430802,
-   "n": 14
+   "median": 0.20989034697413445,
+   "n": 15
   },
   "REDUNDANCY_K": {
    "max": 3.7124050119891763,
-   "median": 2.5875583474407904,
-   "n": 14
+   "median": 2.5595699469558895,
+   "n": 15
   },
   "SEQ_MARGINAL_K": {
    "max": 26.88742278504651,
-   "median": 18.181051232037134,
-   "n": 14
+   "median": 16.330631640041247,
+   "n": 15
   },
   "SPEARMAN_K": {
    "max": 20.80476092605386,
-   "median": 5.319444585999008,
-   "n": 14
+   "median": 4.992490316042677,
+   "n": 15
   }
  },
  "per_method": {
   "ALL_ADMISSIBLE": {
-   "done": 14,
+   "done": 15,
    "total": 70
   },
   "CHRONOEPILOGI_K": {
@@ -139,51 +139,51 @@
    "total": 70
   },
   "CMIM_K": {
-   "done": 14,
+   "done": 15,
    "total": 70
   },
   "ELASTIC_NET_K": {
-   "done": 14,
+   "done": 15,
    "total": 70
   },
   "EXTRATREES_TBP_K": {
-   "done": 14,
+   "done": 15,
    "total": 70
   },
   "GROUP_ELASTIC_NET_K": {
-   "done": 14,
+   "done": 15,
    "total": 70
   },
   "GROUP_GATE_K": {
-   "done": 14,
+   "done": 15,
    "total": 70
   },
   "JMI_K": {
-   "done": 14,
+   "done": 15,
    "total": 70
   },
   "MI8_K": {
-   "done": 14,
+   "done": 15,
    "total": 70
   },
   "MRMR_K": {
-   "done": 14,
+   "done": 15,
    "total": 70
   },
   "RANDOM_K:seed0": {
-   "done": 14,
+   "done": 15,
    "total": 70
   },
   "REDUNDANCY_K": {
-   "done": 14,
+   "done": 15,
    "total": 70
   },
   "SEQ_MARGINAL_K": {
-   "done": 14,
+   "done": 15,
    "total": 70
   },
   "SPEARMAN_K": {
-   "done": 14,
+   "done": 15,
    "total": 70
   }
  },
@@ -205,7 +205,7 @@
    "method_cells_total": 70
   },
   "Y_l_24h": {
-   "method_cells_done": 0,
+   "method_cells_done": 13,
    "method_cells_total": 70
   },
   "Y_l_48h": {
@@ -246,40 +246,42 @@
   }
  },
  "progress": {
-  "done": 955,
-  "eta_seconds": 8111.250475050649,
-  "eta_utc": "2026-10-05T13:02:41.335140+00:00",
-  "method_cells_done": 191,
+  "done": 1020,
+  "eta_seconds": 8034.434859147295,
+  "eta_utc": "2026-10-05T13:23:57.407824+00:00",
+  "method_cells_done": 204,
   "method_cells_total": 980,
   "n_failures": 0,
-  "observed_median_method_wall_seconds": 10.280418853042647,
+  "observed_median_method_wall_seconds": 10.353653169004247,
   "observed_p90_method_wall_seconds": 54.304969796095975,
   "total": 4900,
-  "updated_utc": "2026-10-05T10:47:30.084629+00:00",
+  "updated_utc": "2026-10-05T11:10:02.972932+00:00",
   "workers": 1
  },
- "records": 191,
- "rendered_utc": "2026-10-05T10:48:05.800047+00:00",
+ "records": 204,
+ "rendered_utc": "2026-10-05T11:19:44.769904+00:00",
  "schema": "fs_pred_lane_status.v2",
  "state": "RUNNING",
  "watchdog": {
   "probe": {
    "blocked": false,
-   "cgroup_some_avg10": 0.0,
-   "d_state_pids": [],
-   "high_events_rising": false,
-   "memory_events_high": 0,
+   "cgroup_some_avg10": 52.37,
+   "d_state_pids": [
+    "785952"
+   ],
+   "high_events_rising": true,
+   "memory_events_high": 78700,
    "memory_max": "5637144576",
-   "memory_peak": 4341854208,
-   "probe_epoch": 1791197284.339489,
-   "progress_mtime_epoch": 1791197250.0849519,
+   "memory_peak": 5368434688,
+   "probe_epoch": 1791199182.9935386,
+   "progress_mtime_epoch": 1791198602.9732494,
    "relaunch_epoch": 1791191214.0,
    "scope_active": true,
    "scopes": [
-    "crispdm-fs-pred-v2-Y_s_6h-1791197006-686427.scope"
+    "crispdm-fs-pred-v2-Y_l_24h-1791198299-784847.scope"
    ]
   },
-  "progress_age_seconds": 34.3,
+  "progress_age_seconds": 580.0,
   "reason": "progress advanced within the threshold and a scope is active",
   "state": "RUNNING",
   "threshold_seconds": 600.0
