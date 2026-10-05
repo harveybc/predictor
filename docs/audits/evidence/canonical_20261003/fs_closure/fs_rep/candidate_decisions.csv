@@ -72,7 +72,7 @@ ta.adx_14,batch_001,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_
 ta.atr_14_n,batch_001,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;RAW_REFIT_GAIN_NONPOSITIVE
 ta.bb_pctb_20,batch_001,RAW,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;RAW_REFIT_GAIN_NONPOSITIVE
 ta.bb_width_20,batch_001,NO_TRAINED_ADVANTAGE,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;RAW_REFIT_GAIN_NONPOSITIVE
-ta.cci_20,batch_001,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
+ta.cci_20,batch_001,RAW,identity;random;ae;dae;masked_temporal_ae;past_to_current_siamese,RAW_HAS_PROBE_SKILL;RAW_REFIT_GAIN_NONPOSITIVE
 ta.dmn_14,batch_001,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 ta.dmp_14,batch_001,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
 ta.ema20_dev,batch_001,PENDING,identity;random;masked_temporal_ae;past_to_current_siamese,
