@@ -3962,21 +3962,21 @@
   },
   "candidates_decided": 34,
   "coverage_fraction": 0.2482,
-  "cycle_started_at": "2026-10-05T04:11:30Z",
+  "cycle_started_at": "2026-10-05T04:12:57Z",
   "decisions": {
     "NO_TRAINED_ADVANTAGE": 29,
     "PENDING": 103,
     "RAW": 5
   },
   "eta": {
-    "full_coverage_eta_median_utc": "2026-10-05T22:48:22Z",
-    "full_coverage_eta_p90_utc": "2026-10-06T04:04:10Z",
+    "full_coverage_eta_median_utc": "2026-10-05T22:49:49Z",
+    "full_coverage_eta_p90_utc": "2026-10-06T04:05:37Z",
     "note": "ETA excludes work the alternatives GPU may steal from the baseline_002 queue after the successor queue; a stolen cell shortens, never lengthens, these dates.",
     "queues": {
       "alternative": {
         "completed": 264,
-        "eta_median_utc": "2026-10-05T04:43:55Z",
-        "eta_p90_utc": "2026-10-05T04:52:37Z",
+        "eta_median_utc": "2026-10-05T04:45:22Z",
+        "eta_p90_utc": "2026-10-05T04:54:04Z",
         "failed": 0,
         "median_seconds": 194.556077,
         "p90_seconds": 246.759886,
@@ -3988,8 +3988,8 @@
       },
       "baseline_002": {
         "completed": 34,
-        "eta_median_utc": "2026-10-05T22:37:13Z",
-        "eta_p90_utc": "2026-10-06T03:50:20Z",
+        "eta_median_utc": "2026-10-05T22:38:41Z",
+        "eta_p90_utc": "2026-10-06T03:51:48Z",
         "failed": 0,
         "median_seconds": 1275.839077,
         "p90_seconds": 1637.127626,
@@ -4002,8 +4002,8 @@
       "baseline_successor": {
         "completed": 0,
         "duration_proxy": "baseline_002 queue durations (other GPU) until the first successor cells close",
-        "eta_median_utc": "2026-10-05T22:48:22Z",
-        "eta_p90_utc": "2026-10-06T04:04:10Z",
+        "eta_median_utc": "2026-10-05T22:49:49Z",
+        "eta_p90_utc": "2026-10-06T04:05:37Z",
         "failed": 0,
         "median_seconds": null,
         "p90_seconds": null,
@@ -4049,7 +4049,7 @@
     }
   },
   "planned_cells_total": 411,
-  "process_peak_rss_bytes": 134438912,
+  "process_peak_rss_bytes": 135442432,
   "refit_gate_applied": false,
   "refit_input": null,
   "rule_version": "fs_rep_rule.v1",
@@ -4077,5 +4077,5 @@
       "PENDING": 103
     }
   },
-  "updated_at": "2026-10-05T04:11:37Z"
+  "updated_at": "2026-10-05T04:13:03Z"
 }
