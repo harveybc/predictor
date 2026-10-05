@@ -1,0 +1,7 @@
+method,target,fold,disposition,wall_seconds,implementation,rows,row_digest,plan_digest,k_failures,failure
+ALL_ADMISSIBLE,Y_s_1h,inner_2019,COMPLETE,0.2,deterministic,41329,0eebdc50a0062451,48f515788c6d0860,0,
+CMIM_K,Y_s_1h,inner_2019,COMPLETE,35.61,deterministic,41329,0eebdc50a0062451,48f515788c6d0860,0,
+JMI_K,Y_s_1h,inner_2019,COMPLETE,35.63,deterministic,41329,0eebdc50a0062451,48f515788c6d0860,0,
+MI8_K,Y_s_1h,inner_2019,COMPLETE,1.01,deterministic,41329,0eebdc50a0062451,48f515788c6d0860,0,
+MRMR_K,Y_s_1h,inner_2019,COMPLETE,35.51,deterministic,41329,0eebdc50a0062451,48f515788c6d0860,0,
+SPEARMAN_K,Y_s_1h,inner_2019,COMPLETE,20.79,deterministic,41329,0eebdc50a0062451,48f515788c6d0860,0,
