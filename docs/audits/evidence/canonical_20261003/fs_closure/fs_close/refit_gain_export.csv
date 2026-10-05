@@ -70,4 +70,12 @@ rg.price_vs_ema50,identity,0.00012004950540940172,70,31,ridge,"TRAIN inner folds
 rg.roc_12,identity,0.0007429515036691935,70,43,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
 ta.adx_14,identity,-9.65090423784188e-05,70,44,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
 ta.atr_14_n,identity,-0.0005937417418130922,70,35,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
-ta.bb_pctb_20,identity,-0.0014422863547115879,21,8,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+ta.bb_pctb_20,identity,-0.0012187169959555762,70,37,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+ta.bb_width_20,identity,-0.0014884982957865472,70,19,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+ta.cci_20,identity,-0.0009042286459765048,70,37,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+ta.dmn_14,identity,0.0020521402610569916,70,40,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+ta.dmp_14,identity,0.0016279258874572636,70,50,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+ta.ema20_dev,identity,-7.396385681221686e-05,70,36,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+ta.macd_hist_n,identity,-0.0010303368918760563,70,27,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+ta.macd_n,identity,-0.0004626602748201889,70,28,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
+ta.mom_10_n,identity,0.0006601796130480876,1,1,ridge,"TRAIN inner folds, identical rows",NOT_AVAILABLE_ON_REFIT_HOST
