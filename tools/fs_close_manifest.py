@@ -1484,8 +1484,8 @@ def run_checks(pop: Population, ev: LaneEvidence, plan: dict, plan_missing: list
                 f"BUSINESS_WEEKLY_WALK_FORWARD / {business.get('update_mode')}: winner {w.get('set_id')} score {w.get('score')} over "
                 f"{business.get('weeks_in_validation_year')} weeks (eligible {w.get('eligible_weeks')}); contract {business.get('procedure_digest', '')[:12]}")
     else:
-        add("C9_VALIDATION_CHOICE", "PENDING", "BUSINESS_WEEKLY_WALK_FORWARD closure not run: candidates not frozen or "
-            "VALIDATION_2024_FEATURES_AND_TARGETS not materialised on the refit host")
+        add("C9_VALIDATION_CHOICE", "PENDING", "BUSINESS_WEEKLY_WALK_FORWARD closure not run yet: gated on the C7 refits of the frozen arms "
+            "(the VALIDATION_2024 inputs' presence is probed every cycle and reported in STATUS)")
 
     if gate_path.is_file():
         g = sha256_file(gate_path)
@@ -2000,8 +2000,14 @@ def follow_once(paths: Paths, *, dispatch: bool = False, rebuild_catalog: bool |
         metrics = load_metrics(paths)
         cov = refit_coverage(plan, metrics)
     closure = read_json(paths.out / "closure_record.json", None)
+    validation_present = validation_inputs_present(paths)
     if closure is None:
-        ev.missing.append("VALIDATION_2024_FEATURES_AND_TARGETS on the refit host (PS1 producer, read_end 2025-01-01, 2024 rows only) -> closure_record.json")
+        if validation_present is True:
+            ev.missing.append("closure_record.json from the BUSINESS weekly walk-forward step (VALIDATION_2024 inputs are present on the refit host; the step is gated on the C7 refits)")
+        elif validation_present is False:
+            ev.missing.append("VALIDATION_2024_FEATURES_AND_TARGETS on the refit host (PS1 producer, 2024 rows only) -> closure_record.json")
+        else:
+            ev.missing.append("closure_record.json (refit host not probed this cycle: validation input presence unknown)")
     winner = (closure or {}).get("winner")
     dispositions = build_dispositions(pop, ev, plan, winner)
     checks = run_checks(pop, ev, plan, plan_missing, dispositions, metrics, cov, closure, paths.gate_module)
@@ -2055,6 +2061,7 @@ def follow_once(paths: Paths, *, dispatch: bool = False, rebuild_catalog: bool |
     lanes = lane_coverage(pop, ev, cov, dispositions, cat_meta)
     status = build_status(pop, ev, lanes, checks, manifest, cov, cat_meta, dispositions, peak, plan)
     status["worker_dispatch"] = dispatch_info
+    status["validation_2024_inputs_present_on_refit_host"] = validation_present
     status["skill_summary"] = skill_summary
     status["refit_gain_export"] = {"path": "docs/audits/evidence/canonical_20261003/fs_closure/fs_close/refit_gain_export.csv",
                                    "columns": ["feature_id", "family", "refit_gain"], "features": len(gains)}
@@ -2064,6 +2071,21 @@ def follow_once(paths: Paths, *, dispatch: bool = False, rebuild_catalog: bool |
         render_progress(status, paths.fs_closure / "PROGRESS.png", ev)
         regenerate_master(paths, status, ev)
     return status
+
+
+def validation_inputs_present(paths: Paths):
+    """Presence of the 2024 validation inputs on the refit host, probed every cycle; None when unprobed."""
+    if not paths.worker_alias:
+        return None
+    val = f"{paths.worker_state}/validation_2024/ps1"
+    try:
+        r = subprocess.run(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=15", paths.worker_alias,
+                            f"ls {val}/batch_001/features_train.parquet {val}/batch_002/features_train.parquet {val}/batch_003/features_train.parquet "
+                            f"{val}/batch_001/targets_train.parquet {val}/batch_001/READY >/dev/null 2>&1 && echo OK || echo MISSING"],
+                           capture_output=True, text=True, timeout=40)
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        return None
+    return True if "OK" in r.stdout else (False if "MISSING" in r.stdout else None)
 
 
 def _ps3c_covered(paths: Paths, pop: Population) -> set:

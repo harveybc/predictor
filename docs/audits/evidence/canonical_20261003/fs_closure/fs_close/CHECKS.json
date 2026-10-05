@@ -36,12 +36,12 @@
    "state": "PENDING"
   },
   {
-   "detail": "fs_rep decisions 74/137 heavy candidates decided; PS3-R terminals complete 74/137 heavy candidates; PS4 profiles 74/137 heavy candidates; VALIDATION_2024_FEATURES_AND_TARGETS on the refit host (PS1 producer, read_end 2025-01-01, 2024 rows only) -> closure_record.json; PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
+   "detail": "fs_rep decisions 75/137 heavy candidates decided; PS3-R terminals complete 74/137 heavy candidates; PS4 profiles 74/137 heavy candidates; closure_record.json from the BUSINESS weekly walk-forward step (VALIDATION_2024 inputs are present on the refit host; the step is gated on the C7 refits); PRED_BEST (needs FS-PRED complete rankings and their K=24 ridge refits)",
    "id": "C8_INPUT_OBJECTS",
    "state": "PENDING"
   },
   {
-   "detail": "BUSINESS_WEEKLY_WALK_FORWARD closure not run: candidates not frozen or VALIDATION_2024_FEATURES_AND_TARGETS not materialised on the refit host",
+   "detail": "BUSINESS_WEEKLY_WALK_FORWARD closure not run yet: gated on the C7 refits of the frozen arms (the VALIDATION_2024 inputs' presence is probed every cycle and reported in STATUS)",
    "id": "C9_VALIDATION_CHOICE",
    "state": "PENDING"
   },
@@ -52,6 +52,6 @@
   }
  ],
  "final": false,
- "generated_utc": "2026-10-05T09:49:42+00:00",
+ "generated_utc": "2026-10-05T09:53:04+00:00",
  "schema": "fs_close_checks.v1"
 }

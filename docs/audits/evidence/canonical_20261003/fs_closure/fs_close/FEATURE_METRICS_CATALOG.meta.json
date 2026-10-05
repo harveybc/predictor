@@ -3,7 +3,7 @@
   "FS-CAUSAL": 532041,
   "FS-CLOSE": 140621,
   "FS-GEN": 20690,
-  "FS-REP": 21087,
+  "FS-REP": 21169,
   "PS1": 21861,
   "PS2": 593984,
   "PS3-C": 52396,
@@ -22,10 +22,10 @@
   "digest",
   "source"
  ],
- "csv_sha256": "844d569320da6c5d7b01dad97ddc16c8fe0ac2682b6e49f569f085c4df8533c8",
- "generated_utc": "2026-10-05T09:50:37+00:00",
- "parquet_sha256": "38a702004a87b248b7b93573170a7c21f380ae7fb3a00d02f1dcbce23b2fb963",
- "rows": 3851156,
+ "csv_sha256": "c8cf838b2e4db4bce4b224103f700255a5901c25e4e3cfd27fcd5748d6aead03",
+ "generated_utc": "2026-10-05T09:53:45+00:00",
+ "parquet_sha256": "ceb046fcbb23d22197ca476ef1b94ffe3f0493a24e960989e9a78143ec602ddd",
+ "rows": 3851238,
  "schema": "feature_metrics_catalog.v1",
- "sources_digest": "79fa5b305e96612240e0d567d7571b9681e2ddbda7c2c78fd4785d2627663da5"
+ "sources_digest": "edeb354a1a3f43538fe548f11a6c390166153ae3e9db5553229e4136ce5d4a1a"
 }
