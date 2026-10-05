@@ -324,3 +324,14 @@ def test_sealed_ks_reject_booleans_and_duplicates() -> None:
         ComparatorRunPlan(subset_k=2, sensitivity_ks=(True,))
     with pytest.raises(ValueError):
         ComparatorRunPlan(subset_k=2, sensitivity_ks=(3, 3))
+
+
+@pytest.mark.parametrize("method", [ComparatorMethod.JMI_K, ComparatorMethod.CMIM_K, ComparatorMethod.MRMR_K])
+def test_constant_column_is_ranked_last_by_greedy_information_methods(method) -> None:
+    x, y, groups = _signal_sample()
+    x = np.column_stack([x, np.zeros(x.shape[0])])
+    groups = groups + ("unavailable",)
+    result = run_comparator(method, x, y, groups, ComparatorRunPlan(subset_k=2), expected_row_digest=compute_row_digest(x, y))
+    assert result.full_ranking[-1] == "unavailable"
+    assert result.scores[-1][1] < min(score for _, score in result.scores[:-1])
+    assert len(result.full_ranking) == len(groups)

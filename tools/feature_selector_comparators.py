@@ -395,7 +395,11 @@ def _greedy_information_ranking(
         ],
         dtype=np.float64,
     )
-    remaining = list(range(count))
+    # A column with a single code carries no information about anything.  Under a
+    # difference criterion (mRMR) its score 0 - 0 = 0 would outrank informative
+    # but redundant groups, so constant columns are ordered last by name.
+    constant = [index for index in range(count) if np.all(codes[:, index] == codes[0, index])]
+    remaining = [index for index in range(count) if index not in constant]
     order: list[int] = []
     criterion: dict[str, float] = {}
     if method is ComparatorMethod.JMI_K:
@@ -434,6 +438,10 @@ def _greedy_information_ranking(
                 accumulator[index] = min(accumulator[index], conditional_mi)
             else:
                 accumulator[index] += pair_mi
+    floor = min(criterion.values()) if criterion else 0.0
+    for position, index in enumerate(sorted(constant, key=lambda idx: groups[idx])):
+        order.append(index)
+        criterion[groups[index]] = floor - 1.0 - position
     ranking = tuple(groups[index] for index in order)
     return ranking, criterion
 
@@ -545,6 +553,8 @@ def run_comparator(
                 "MRMR_K": "I(Xi;Y) - mean_j I(Xi;Xj)",
             }[selected_method.value],
             greedy_scope="complete_ordering",
+            constant_columns="ordered_last_by_name",
+            greedy_version=2,
         )
     elif selected_method is ComparatorMethod.REDUNDANCY_K:
         if inner_fold_gains is None:

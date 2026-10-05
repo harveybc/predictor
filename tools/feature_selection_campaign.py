@@ -49,7 +49,7 @@ from tools.feature_selector_predictive import (
 )
 
 
-_CAMPAIGN_VERSION = 2
+_CAMPAIGN_VERSION = 3
 _COMPARATOR_ORDER = (
     ComparatorMethod.ALL_ADMISSIBLE,
     ComparatorMethod.SPEARMAN_K,
