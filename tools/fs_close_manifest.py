@@ -565,6 +565,8 @@ def table_to_catalog(df, stage: str, digest: str, src: str, pop: Population):
 def read_lane_tables(paths: Paths, pop: Population, lane_dir: str, stage: str) -> Iterator:
     root = paths.fs_closure / lane_dir
     for p in generic_table_files(root):
+        if p.stat().st_size > 16 * (1 << 20):
+            continue   # large files are streamed by a dedicated reader (causal_evidence.jsonl) or are not catalog tables
         try:
             df = load_table(p)
         except Exception:
@@ -577,6 +579,40 @@ def read_lane_tables(paths: Paths, pop: Population, lane_dir: str, stage: str) -
             out = None
         if out is not None and len(out):
             yield out
+
+
+def read_fs_causal_jsonl(paths: Paths, pop: Population) -> Iterator:
+    """Every numeric leaf of FS-CAUSAL's per-cell evidence (rung1/2/3, discovery), streamed line by line."""
+    p = paths.fs_closure / "fs_causal/causal_evidence.jsonl"
+    if not p.is_file():
+        p = paths.state / "fs_close/fs_causal_mirror/causal_evidence.jsonl"
+    if not p.is_file():
+        return
+    digest, src = sha256_file(p), "fs_causal/causal_evidence.jsonl"
+    rows = []
+    skip = {"feature_id", "batch", "family", "clock", "target", "target_family", "head", "horizon_h", "seed"}
+    with open(p) as f:
+        for line in f:
+            try:
+                r = json.loads(line)
+            except ValueError:
+                continue
+            feat = r.get("feature_id")
+            if feat not in pop.set:
+                continue
+            tgt, hz = parse_target(str(r.get("target", "")))
+            for rung in ("rung1", "rung2", "rung3", "rung1_raw", "rung2_raw", "rung3_raw"):
+                body = r.get(rung)
+                if isinstance(body, dict):
+                    rows.append(dict(feature=feat, stage="FS-CAUSAL", target=tgt, horizon=hz, fold="TRAIN", metric=f"{rung}.state",
+                                     value=float("nan"), state=str(body.get("state", "")), digest=digest, source=src))
+            for leaf, val in numeric_leaves({k: v for k, v in r.items() if k not in skip}):
+                rows.append(dict(feature=feat, stage="FS-CAUSAL", target=tgt, horizon=hz, fold="TRAIN", metric=leaf, value=val,
+                                 state="MEASURED", digest=digest, source=src))
+            if len(rows) >= 40000:
+                yield _frame(rows)
+                rows = []
+    yield _frame(rows)
 
 
 def read_fs_close(paths: Paths, pop: Population, plan: dict | None) -> Iterator:
@@ -619,6 +655,7 @@ def build_catalog(paths: Paths, pop: Population, plan: dict | None) -> dict:
                ("PS3-R", read_ps3r(paths, pop)), ("PS4", read_ps4(paths, pop)),
                ("FS-PRED", read_lane_tables(paths, pop, "fs_pred", "FS-PRED")),
                ("FS-CAUSAL", read_lane_tables(paths, pop, "fs_causal", "FS-CAUSAL")),
+               ("FS-CAUSAL", read_fs_causal_jsonl(paths, pop)),
                ("FS-REP", read_lane_tables(paths, pop, "fs_rep", "FS-REP")),
                ("FS-GEN", read_lane_tables(paths, pop, "fs_gen", "FS-GEN")),
                ("FS-CLOSE", read_fs_close(paths, pop, plan)))
@@ -638,6 +675,7 @@ def catalog_sources_digest(paths: Paths) -> str:
     roots = [paths.evidence / "laneA", paths.evidence / "laneC", paths.state / "ps2", paths.state / "selection_mirror",
              paths.state / "selection_ps4/units", paths.fs_closure / "fs_pred", paths.fs_closure / "fs_causal",
              paths.fs_closure / "fs_rep", paths.fs_closure / "fs_gen", paths.out / "paired_refit_metrics.parquet",
+             paths.state / "fs_close/fs_causal_mirror/causal_evidence.jsonl",
              paths.out / "refit_plan.json"]
     for r in roots:
         if r.is_file():
@@ -1409,8 +1447,9 @@ def run_checks(pop: Population, ev: LaneEvidence, plan: dict, plan_missing: list
             detail += "; closure record bounds violate the windows"
     add("C4_NO_TEST_READ", c4, detail)
 
+    positive = (REASON["REDUNDANT"], REASON["NO_UTILITY"], "NOT_AVAILABLE_FOR_TRAIN")
     bad = [d for d in dispositions if d["state"] == "REJECTED" and "CAUSAL_NOT_IDENTIFIED_NEUTRAL" in d["reason_codes"]
-           and not any(code in d["reason_codes"] for code in (REASON["REDUNDANT"], REASON["NO_UTILITY"]))]
+           and not any(code in d["reason_codes"] for code in positive)]
     add("C5_NOT_IDENTIFIED_NEUTRAL", "FAIL" if bad else "PASS", f"{len(bad)} rejections resting on NOT_IDENTIFIED alone")
 
     if metrics is not None and len(metrics):
@@ -1829,7 +1868,7 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
         except (KeyError, ValueError):
             running = False
     current_plan_sha = sha256_file(plan_path) if Path(plan_path).is_file() else ""
-    if unit_alive and marker.get("plan_sha256") and marker["plan_sha256"] != current_plan_sha and not marker.get("pilot"):
+    if unit_alive and not marker.get("pilot") and marker.get("plan_sha256", "") != current_plan_sha:
         # my own refit unit was launched for a superseded plan (e.g. the fit population changed): stop it, relaunch below
         try:
             subprocess.run(ssh + [f"export XDG_RUNTIME_DIR=/run/user/$(id -u); systemctl --user stop {marker['unit']}"],
