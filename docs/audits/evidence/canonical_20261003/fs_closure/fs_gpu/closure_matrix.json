@@ -10,24 +10,24 @@
       "DONE": 35,
       "FAILED": 0,
       "NOT_APPLICABLE": 0,
-      "PENDING": 101,
-      "RUNNING": 1
+      "PENDING": 100,
+      "RUNNING": 2
     },
     "dae": {
       "CLAIMED": 0,
       "DONE": 35,
       "FAILED": 0,
       "NOT_APPLICABLE": 0,
-      "PENDING": 101,
-      "RUNNING": 1
+      "PENDING": 100,
+      "RUNNING": 2
     },
     "identity": {
       "CLAIMED": 0,
       "DONE": 35,
       "FAILED": 0,
       "NOT_APPLICABLE": 0,
-      "PENDING": 101,
-      "RUNNING": 1
+      "PENDING": 100,
+      "RUNNING": 2
     },
     "masked_temporal_ae": {
       "CLAIMED": 0,
@@ -39,22 +39,22 @@
     },
     "past_to_current_siamese": {
       "CLAIMED": 0,
-      "DONE": 134,
+      "DONE": 136,
       "FAILED": 1,
       "NOT_APPLICABLE": 0,
-      "PENDING": 1,
-      "RUNNING": 1
+      "PENDING": 0,
+      "RUNNING": 0
     },
     "random": {
       "CLAIMED": 0,
       "DONE": 35,
       "FAILED": 0,
       "NOT_APPLICABLE": 0,
-      "PENDING": 101,
-      "RUNNING": 1
+      "PENDING": 100,
+      "RUNNING": 2
     }
   },
-  "generated_at_utc": "2026-10-05T04:32:20Z",
+  "generated_at_utc": "2026-10-05T04:41:00Z",
   "heavy_candidates": 137,
   "rows": [
     {
@@ -2345,15 +2345,24 @@
       "families": {
         "ae": {
           "cell_id": "batch_001::px.close_loc::baseline",
-          "state": "PENDING"
+          "elapsed_seconds": 215,
+          "role": "worker_a",
+          "started_at_utc": "2026-10-05T04:37:25Z",
+          "state": "RUNNING"
         },
         "dae": {
           "cell_id": "batch_001::px.close_loc::baseline",
-          "state": "PENDING"
+          "elapsed_seconds": 215,
+          "role": "worker_a",
+          "started_at_utc": "2026-10-05T04:37:25Z",
+          "state": "RUNNING"
         },
         "identity": {
           "cell_id": "batch_001::px.close_loc::baseline",
-          "state": "PENDING"
+          "elapsed_seconds": 215,
+          "role": "worker_a",
+          "started_at_utc": "2026-10-05T04:37:25Z",
+          "state": "RUNNING"
         },
         "masked_temporal_ae": {
           "cell_id": "batch_001::px.close_loc::masked_temporal_ae",
@@ -2375,7 +2384,10 @@
         },
         "random": {
           "cell_id": "batch_001::px.close_loc::baseline",
-          "state": "PENDING"
+          "elapsed_seconds": 215,
+          "role": "worker_a",
+          "started_at_utc": "2026-10-05T04:37:25Z",
+          "state": "RUNNING"
         }
       },
       "feature_id": "px.close_loc"
@@ -5908,10 +5920,12 @@
         },
         "past_to_current_siamese": {
           "cell_id": "batch_002::yh.usdidr_x.logret_1d::past_to_current_siamese",
-          "elapsed_seconds": 68,
+          "finished_at_utc": "2026-10-05T04:33:34Z",
+          "receipt": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/worker_a_alt/batch_002/yh.usdidr_x.logret_1d/pass_p2c/run_manifest.json",
+          "results_sha256": "68a834cf2ab2a92251adb9f5ee4223182ea0172979708aeb2a0f695769e7b4ee",
           "role": "worker_a",
-          "started_at_utc": "2026-10-05T04:31:12Z",
-          "state": "RUNNING"
+          "state": "DONE",
+          "wall_seconds": 140.868841745978
         },
         "random": {
           "cell_id": "batch_002::yh.usdidr_x.logret_1d::baseline",
@@ -6274,7 +6288,12 @@
         },
         "past_to_current_siamese": {
           "cell_id": "batch_002::yh.xlp.logret_1d::past_to_current_siamese",
-          "state": "PENDING"
+          "finished_at_utc": "2026-10-05T04:36:51Z",
+          "receipt": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/worker_a_alt/batch_002/yh.xlp.logret_1d/pass_p2c/run_manifest.json",
+          "results_sha256": "81331b17c7241af308d61f926766dd60a915c0ff34ac150c5ada5a1350096cbc",
+          "role": "worker_a",
+          "state": "DONE",
+          "wall_seconds": 192.54319132800447
         },
         "random": {
           "cell_id": "batch_002::yh.xlp.logret_1d::baseline",
@@ -6330,21 +6349,21 @@
       "families": {
         "ae": {
           "cell_id": "batch_002::yh.zs_f.logret_5d::baseline",
-          "elapsed_seconds": 465,
+          "elapsed_seconds": 985,
           "role": "worker_b",
           "started_at_utc": "2026-10-05T04:24:35Z",
           "state": "RUNNING"
         },
         "dae": {
           "cell_id": "batch_002::yh.zs_f.logret_5d::baseline",
-          "elapsed_seconds": 465,
+          "elapsed_seconds": 985,
           "role": "worker_b",
           "started_at_utc": "2026-10-05T04:24:35Z",
           "state": "RUNNING"
         },
         "identity": {
           "cell_id": "batch_002::yh.zs_f.logret_5d::baseline",
-          "elapsed_seconds": 465,
+          "elapsed_seconds": 985,
           "role": "worker_b",
           "started_at_utc": "2026-10-05T04:24:35Z",
           "state": "RUNNING"
@@ -6369,7 +6388,7 @@
         },
         "random": {
           "cell_id": "batch_002::yh.zs_f.logret_5d::baseline",
-          "elapsed_seconds": 465,
+          "elapsed_seconds": 985,
           "role": "worker_b",
           "started_at_utc": "2026-10-05T04:24:35Z",
           "state": "RUNNING"

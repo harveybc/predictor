@@ -2167,8 +2167,11 @@
       },
       {
         "cell_id": "batch_002::yh.usdidr_x.logret_1d::past_to_current_siamese",
+        "finished_at_utc": "2026-10-05T04:33:34Z",
+        "results_sha256": "68a834cf2ab2a92251adb9f5ee4223182ea0172979708aeb2a0f695769e7b4ee",
         "role": "worker_a",
-        "state": "running"
+        "state": "done",
+        "wall_seconds": 140.868841745978
       },
       {
         "cell_id": "batch_002::yh.xlp.logret_1d::masked_temporal_ae",
@@ -2180,7 +2183,11 @@
       },
       {
         "cell_id": "batch_002::yh.xlp.logret_1d::past_to_current_siamese",
-        "state": "pending"
+        "finished_at_utc": "2026-10-05T04:36:51Z",
+        "results_sha256": "81331b17c7241af308d61f926766dd60a915c0ff34ac150c5ada5a1350096cbc",
+        "role": "worker_a",
+        "state": "done",
+        "wall_seconds": 192.54319132800447
       }
     ],
     "baselines_4090_batch_002": [
@@ -2673,7 +2680,8 @@
     "baselines_5090_batch_001_003": [
       {
         "cell_id": "batch_001::px.close_loc::baseline",
-        "state": "pending"
+        "role": "worker_a",
+        "state": "running"
       },
       {
         "cell_id": "batch_001::px.ewma_vol_24::baseline",
@@ -2877,42 +2885,42 @@
       }
     ]
   },
-  "generated_at_utc": "2026-10-05T04:32:19Z",
+  "generated_at_utc": "2026-10-05T04:41:00Z",
   "hosts": {
     "coordinator": {
       "gpus": [
-        "0, NVIDIA GeForce RTX 4070 Laptop GPU, 0 %, 729 MiB, 8188 MiB, 43"
+        "0, NVIDIA GeForce RTX 4070 Laptop GPU, 0 %, 730 MiB, 8188 MiB, 43"
       ],
-      "memory": "total_mib=31259 used_mib=11380 available_mib=19879",
-      "probed_at_utc": "2026-10-05T04:32:18Z",
+      "memory": "total_mib=31259 used_mib=11425 available_mib=19834",
+      "probed_at_utc": "2026-10-05T04:40:59Z",
       "running": []
     },
     "worker_a": {
       "gpus": [
-        "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 0 %, 14 MiB, 12227 MiB, 37",
-        "1, NVIDIA GeForce RTX 5090, 0 %, 19520 MiB, 32607 MiB, 44"
+        "0, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 0 %, 14 MiB, 12227 MiB, 38",
+        "1, NVIDIA GeForce RTX 5090, 54 %, 19504 MiB, 32607 MiB, 50"
       ],
-      "memory": "total_mib=14630 used_mib=8343 available_mib=6286",
-      "probed_at_utc": "2026-10-05T04:32:18Z",
+      "memory": "total_mib=14630 used_mib=9208 available_mib=5422",
+      "probed_at_utc": "2026-10-05T04:40:59Z",
       "running": [
         {
-          "cell_id": "batch_002::yh.usdidr_x.logret_1d::past_to_current_siamese",
-          "elapsed_seconds": 67,
-          "queue": "alternatives_5090",
-          "started_at_utc": "2026-10-05T04:31:12Z"
+          "cell_id": "batch_001::px.close_loc::baseline",
+          "elapsed_seconds": 215,
+          "queue": "baselines_5090_batch_001_003",
+          "started_at_utc": "2026-10-05T04:37:25Z"
         }
       ]
     },
     "worker_b": {
       "gpus": [
-        "0, NVIDIA GeForce RTX 4090 Laptop GPU, 0 %, 14428 MiB, 16376 MiB, 41"
+        "0, NVIDIA GeForce RTX 4090 Laptop GPU, 28 %, 14432 MiB, 16376 MiB, 42"
       ],
-      "memory": "total_mib=31310 used_mib=19571 available_mib=11739",
-      "probed_at_utc": "2026-10-05T04:32:18Z",
+      "memory": "total_mib=31310 used_mib=21108 available_mib=10202",
+      "probed_at_utc": "2026-10-05T04:40:59Z",
       "running": [
         {
           "cell_id": "batch_002::yh.zs_f.logret_5d::baseline",
-          "elapsed_seconds": 464,
+          "elapsed_seconds": 985,
           "queue": "baselines_4090_batch_002",
           "started_at_utc": "2026-10-05T04:24:35Z"
         }
@@ -2921,46 +2929,40 @@
   },
   "queues": {
     "alternatives_5090": {
-      "active_roles": [
-        "worker_a"
-      ],
-      "active_workers": 1,
+      "active_roles": [],
+      "active_workers": 0,
       "by_role": {
         "worker_a": {
-          "done": 270,
-          "median_seconds": 194.8,
-          "n": 270,
+          "done": 272,
+          "median_seconds": 194.6,
+          "n": 272,
           "p90_seconds": 246.8
         }
       },
       "counts": {
-        "done": 270,
+        "done": 272,
         "failed": 2,
-        "pending": 1,
-        "running": 1
+        "pending": 0,
+        "running": 0
       },
       "denominator": 274,
       "duplicates": [],
       "durations_seconds": {
-        "median": 194.8,
-        "n": 270,
+        "median": 194.6,
+        "n": 272,
         "p90": 246.8
       },
       "eta": {
         "basis": {
-          "median_seconds": {
-            "worker_a": 194.8
-          },
-          "p90_seconds": {
-            "worker_a": 246.8
-          }
+          "median_seconds": {},
+          "p90_seconds": {}
         },
-        "finish_utc_median": "2026-10-05T04:37:42Z",
-        "finish_utc_p90": "2026-10-05T04:39:26Z",
+        "finish_utc_median": null,
+        "finish_utc_p90": null,
         "provisional": false,
-        "reason": null,
-        "seconds_median": 322,
-        "seconds_p90": 426
+        "reason": "NO_ACTIVE_WORKER",
+        "seconds_median": null,
+        "seconds_p90": null
       },
       "failures": [
         {
@@ -2978,16 +2980,7 @@
       ],
       "name": "alternatives_5090",
       "plan_cells": 274,
-      "running": [
-        {
-          "cell_id": "batch_002::yh.usdidr_x.logret_1d::past_to_current_siamese",
-          "elapsed_seconds": 67,
-          "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_a/alt/codex_continuation.log",
-          "role": "worker_a",
-          "stale": false,
-          "started_at_utc": "2026-10-05T04:31:12Z"
-        }
-      ]
+      "running": []
     },
     "baselines_4090_batch_002": {
       "active_roles": [
@@ -3034,8 +3027,8 @@
         "finish_utc_p90": "2026-10-06T03:36:07Z",
         "provisional": false,
         "reason": null,
-        "seconds_median": 64663,
-        "seconds_p90": 83028
+        "seconds_median": 64141,
+        "seconds_p90": 82507
       },
       "failures": [],
       "name": "baselines_4090_batch_002",
@@ -3043,7 +3036,7 @@
       "running": [
         {
           "cell_id": "batch_002::yh.zs_f.logret_5d::baseline",
-          "elapsed_seconds": 464,
+          "elapsed_seconds": 985,
           "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_b/codex_baseline_driver.log",
           "role": "worker_b",
           "stale": false,
@@ -3052,8 +3045,10 @@
       ]
     },
     "baselines_5090_batch_001_003": {
-      "active_roles": [],
-      "active_workers": 0,
+      "active_roles": [
+        "worker_a"
+      ],
+      "active_workers": 1,
       "by_role": {
         "worker_a": {
           "done": 0,
@@ -3065,8 +3060,8 @@
       "counts": {
         "done": 0,
         "failed": 0,
-        "pending": 51,
-        "running": 0
+        "pending": 50,
+        "running": 1
       },
       "denominator": 51,
       "duplicates": [],
@@ -3077,21 +3072,33 @@
       },
       "eta": {
         "basis": {
-          "median_seconds": {},
-          "p90_seconds": {}
+          "median_seconds": {
+            "worker_a": 1277.0
+          },
+          "p90_seconds": {
+            "worker_a": 1637.1
+          }
         },
-        "finish_utc_median": "2026-10-05T22:43:09Z",
-        "finish_utc_p90": "2026-10-06T03:50:58Z",
+        "finish_utc_median": "2026-10-05T22:42:52Z",
+        "finish_utc_p90": "2026-10-06T03:48:57Z",
         "provisional": true,
-        "reason": "WAITING_ON_alternatives_5090",
-        "seconds_median": 65449,
-        "seconds_p90": 83918,
-        "waiting_on": "alternatives_5090"
+        "reason": null,
+        "seconds_median": 64912,
+        "seconds_p90": 83277
       },
       "failures": [],
       "name": "baselines_5090_batch_001_003",
       "plan_cells": 51,
-      "running": []
+      "running": [
+        {
+          "cell_id": "batch_001::px.close_loc::baseline",
+          "elapsed_seconds": 215,
+          "log": "/home/harveybc/.local/state/canonical_20261003/selection_mirror/logs/worker_a/baseline_5090.log",
+          "role": "worker_a",
+          "stale": false,
+          "started_at_utc": "2026-10-05T04:37:25Z"
+        }
+      ]
     }
   },
   "rule": "active worker = role with a BEGIN and no END in its driver log; a waiter is not GPU work; ETA = remaining work / sum of active rates; absolute UTC",
@@ -3099,7 +3106,7 @@
   "totals": {
     "alternatives": {
       "denominator": 274,
-      "done": 270,
+      "done": 272,
       "failed": 2
     },
     "baselines_batch_002": {

@@ -1002,6 +1002,14 @@
     },
     {
       "code_commit": "31add1270439e746edd99e98e20a95ab09c1cf71",
+      "feature_id": "yh.usdidr_x.logret_1d",
+      "input_digest": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+      "results_sha256": "68a834cf2ab2a92251adb9f5ee4223182ea0172979708aeb2a0f695769e7b4ee",
+      "role": "alternative",
+      "utility": "mixed"
+    },
+    {
+      "code_commit": "31add1270439e746edd99e98e20a95ab09c1cf71",
       "feature_id": "yh.usdmxn_x.logret_1d",
       "input_digest": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
       "results_sha256": "4d614030671a70945a4cdd644bc5328545ab006a4d910de6a0af59b801bd3844",
@@ -1053,6 +1061,14 @@
       "feature_id": "yh.xlc.logret_1d",
       "input_digest": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
       "results_sha256": "35ed3a53d9b97da2ae15bd7cb4550e903655fd545af117d98301efd40e0003fd",
+      "role": "alternative",
+      "utility": "mixed"
+    },
+    {
+      "code_commit": "31add1270439e746edd99e98e20a95ab09c1cf71",
+      "feature_id": "yh.xlp.logret_1d",
+      "input_digest": "1502e0f8f823570de0e702774e48983218a1fea03c0b5d8e7be5e984a98ebc59",
+      "results_sha256": "81331b17c7241af308d61f926766dd60a915c0ff34ac150c5ada5a1350096cbc",
       "role": "alternative",
       "utility": "mixed"
     },
@@ -2443,7 +2459,7 @@
   ],
   "counts": {
     "alternative": {
-      "ADOPTED": 134
+      "ADOPTED": 136
     },
     "alternative_mtae": {
       "ADOPTED": 136
@@ -2452,7 +2468,7 @@
       "ADOPTED": 35
     }
   },
-  "generated_at_utc": "2026-10-05T04:32:22Z",
+  "generated_at_utc": "2026-10-05T04:41:02Z",
   "ingestor_sha256": "d7f22ef0f70e3a5cac72e48ecbbfcdc220936651e34e994de1bf49aed2e3d164",
   "live_config_sha256": "b2f2b441b1fde1711ec2e52cc2bda0d553e863c4dad1b0b5ade6f8b4bbad784f",
   "not_adopted": [],
@@ -2460,11 +2476,11 @@
   "staged": {
     "copied": 0,
     "roles": {
-      "alternative": 134,
+      "alternative": 136,
       "alternative_mtae": 136,
       "baseline": 35
     },
     "skipped_unverified": 2,
-    "unchanged": 305
+    "unchanged": 307
   }
 }
