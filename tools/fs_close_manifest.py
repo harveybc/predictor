@@ -1462,24 +1462,37 @@ def build_status(pop: Population, ev: LaneEvidence, lanes: dict, checks: list[di
 
 
 def eta_text(ev: LaneEvidence) -> list[str]:
+    """One line per GPU queue from either ps3r_eta.v1 (FS-GPU) or the live queue status."""
     lines = []
     queues = (ev.gpu_eta or {}).get("queues") or {}
     for name, q in queues.items():
         counts = q.get("counts") or {}
-        if not counts.get("total"):
+        total = q.get("denominator") or counts.get("total") or 0
+        if not total:
             continue
-        eta = q.get("eta_seconds") or {}
-        med = (q.get("durations_seconds") or {}).get("median")
+        done = counts.get("completed", counts.get("done", 0))
         remaining = counts.get("pending", 0) + counts.get("running", 0)
-        eta_s = eta.get("median") if isinstance(eta, dict) else eta
-        eta_txt = f"{eta_s / 3600:.1f} h" if isinstance(eta_s, (int, float)) and eta_s else ("done" if remaining == 0 else "n/a")
-        lines.append(f"{name}: {counts.get('completed', 0)}/{counts.get('total', 0)} done, {remaining} remaining, "
-                     f"median {med:.0f} s, ETA {eta_txt}" if isinstance(med, (int, float)) else
-                     f"{name}: {counts.get('completed', 0)}/{counts.get('total', 0)} done, {remaining} remaining, ETA {eta_txt}")
-    if isinstance(ev.gpu_eta, dict) and "queues" not in ev.gpu_eta:
-        for k, v in ev.gpu_eta.items():
-            if k != "source" and isinstance(v, (str, int, float)):
-                lines.append(f"{k}: {v}")
+        failed = counts.get("failed", 0)
+        dur = q.get("durations_seconds") or {}
+        med = dur.get("median")
+        eta = q.get("eta") or q.get("eta_seconds") or {}
+        if isinstance(eta, dict):
+            finish = eta.get("finish_utc_median")
+            secs = eta.get("seconds_median", eta.get("median"))
+            reason = eta.get("reason")
+        else:
+            finish, secs, reason = None, eta, None
+        if remaining == 0:
+            eta_txt = "done"
+        elif finish:
+            eta_txt = f"{finish} (p90 {eta.get('finish_utc_p90') or 'n/a'})"
+        elif isinstance(secs, (int, float)) and secs:
+            eta_txt = f"{secs / 3600:.1f} h"
+        else:
+            eta_txt = reason or "n/a"
+        med_txt = f", median {med:.0f} s" if isinstance(med, (int, float)) else ""
+        fail_txt = f", {failed} failed" if failed else ""
+        lines.append(f"{name}: {done}/{total} done{fail_txt}, {remaining} remaining{med_txt}, ETA {eta_txt}")
     return lines or ["no GPU queue status available"]
 
 
@@ -1584,7 +1597,7 @@ def regenerate_master(paths: Paths, status: dict, ev: LaneEvidence) -> bool:
     nxt = ("Manifest FINAL; hand the K=24 primary set to ARCH under the gate" if final else
            "Blocking: " + "; ".join(status["manifest"].get("missing_objects", [])[:3] or [c["id"] for c in pending[:3]]))
     eta_lines = eta_text(ev)
-    gpu_eta = "/".join(l.split(", ETA ")[-1] if ", ETA " in l else "n/a" for l in eta_lines[:3])
+    gpu_eta = "/".join((l.split(", ETA ")[-1].split(" (p90")[0] if ", ETA " in l else "n/a") for l in eta_lines[:3])
     for m in doc.get("milestones", []):
         if m.get("id") == "M2":
             m["progress"] = progress
