@@ -1264,8 +1264,16 @@ def run_checks(pop: Population, ev: LaneEvidence, plan: dict, plan_missing: list
     if metrics is not None and len(metrics):
         receipt = None  # receipts hold the bound; the plan loader also refused any row >= TRAIN_END
     rec = None
-    add("C4_NO_TEST_READ", "PASS", f"refit loader refuses rows >= {TRAIN_END}; validation loader refuses rows >= {VALIDATION_END}; "
-        f"validation read {'once' if closure else 'not yet'}")
+    c4 = "PASS"
+    detail = f"refit loader refuses rows >= {TRAIN_END}; validation loader refuses rows >= {VALIDATION_END}; validation read {'once' if closure else 'not yet'}"
+    if closure:
+        vb = closure.get("validation_bound") or {}
+        tb = closure.get("train_bound") or {}
+        if not (vb.get("max_ts", 10**12) < 1735689600 and vb.get("min_ts", 0) >= 1704067200 and tb.get("max_ts", 10**12) < 1704067200
+                and closure.get("validation_read_count") == 1):
+            c4 = "FAIL"
+            detail += "; closure record bounds violate the windows"
+    add("C4_NO_TEST_READ", c4, detail)
 
     bad = [d for d in dispositions if d["state"] == "REJECTED" and "CAUSAL_NOT_IDENTIFIED_NEUTRAL" in d["reason_codes"]
            and not any(code in d["reason_codes"] for code in (REASON["REDUNDANT"], REASON["NO_UTILITY"]))]
@@ -1293,7 +1301,7 @@ def run_checks(pop: Population, ev: LaneEvidence, plan: dict, plan_missing: list
         add("C9_VALIDATION_CHOICE", "PASS" if closure.get("winner") else "FAIL",
             f"winner {closure.get('winner', {}).get('set_id')} score {closure.get('winner', {}).get('score')}; rule {closure.get('rule_sha256', '')[:12]}")
     else:
-        add("C9_VALIDATION_CHOICE", "PENDING", "closure step not run: candidates not frozen or VALIDATION inputs absent")
+        add("C9_VALIDATION_CHOICE", "PENDING", "closure step not run: candidates not frozen or VALIDATION_2024_FEATURES_AND_TARGETS not materialised on the refit host")
 
     if gate_path.is_file():
         g = sha256_file(gate_path)
@@ -1594,14 +1602,14 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
         subprocess.run(["rsync", "-q", "--timeout=60", str(plan_path), str(paths.repo / "tools/fs_close_refit.py"),
                         f"{alias}:{remote}/"], check=True, capture_output=True, timeout=120)
         subprocess.run(["rsync", "-q", "--timeout=120", "--include=paired_refit_metrics.parquet", "--include=refit_receipt.json",
-                        "--include=progress.json", "--include=pilot_cap.json", "--exclude=*", f"{alias}:{remote}/out/",
+                        "--include=progress.json", "--include=closure_record.json", "--exclude=*", f"{alias}:{remote}/out/",
                         str(paths.state / "fs_close/")], check=False, capture_output=True, timeout=300)
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
         info["state"] = "WORKER_UNREACHABLE"
         info["detail"] = str(getattr(exc, "stderr", b""))[-300:]
         return info
     local_out = paths.state / "fs_close"
-    for name in ("paired_refit_metrics.parquet", "refit_receipt.json", "progress.json"):
+    for name in ("paired_refit_metrics.parquet", "refit_receipt.json", "progress.json", "closure_record.json"):
         src = local_out / name
         if src.is_file():
             write_atomic(paths.out / name, src.read_bytes())
@@ -1633,6 +1641,9 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
         return info
     if cov["complete"] >= cov["planned"]:
         info["state"] = "COMPLETE"
+        closure_rec = paths.out / "closure_record.json"
+        if not closure_rec.is_file():
+            info["closure"] = launch_closure(paths, ssh, alias, wstate, remote)
         return info
     receipt = read_json(paths.out / "refit_receipt.json", {})
     cap_file = paths.out / "refit_cap.json"
@@ -1686,6 +1697,27 @@ def worker_dispatch(paths: Paths, plan_path: Path, cov: dict, status_notes: list
         info["state"] = "LAUNCH_FAILED"
         info["detail"] = str(exc)[-300:]
     return info
+
+
+def launch_closure(paths: Paths, ssh: list, alias: str, wstate: str, remote: str) -> dict:
+    """The closure step reads VALIDATION once; it runs only when the validation inputs are materialised."""
+    val = f"{wstate}/validation_2024"
+    probe = subprocess.run(ssh + [f"ls {val}/ps1/batch_001/features_train.parquet {val}/ps1/batch_002/features_train.parquet "
+                                  f"{val}/ps1/batch_003/features_train.parquet {val}/ps1/batch_001/targets_train.parquet >/dev/null 2>&1 && echo OK || echo MISSING"],
+                           capture_output=True, text=True, timeout=40)
+    if "OK" not in probe.stdout:
+        return {"state": "VALIDATION_INPUTS_MISSING", "expected": f"{val}/ps1/batch_00{{1,2,3}}/features_train.parquet + batch_001/targets_train.parquet (2024 rows only)"}
+    cap_doc = read_json(paths.out / "refit_cap.json", {})
+    cap_mb = int(math.ceil(max(cap_doc.get("cap_bytes", 0), 1) / (1 << 20))) or 1500
+    cmd = (f"export XDG_RUNTIME_DIR=/run/user/$(id -u) DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u)/bus; cd {remote} && "
+           f"systemd-run --user --collect --unit fs-close-closure-$(date +%s) ~/.local/bin/crispdm-run -q -W 14400 -m {cap_mb}M -t 4h -n fs_close_closure_c{cap_mb}m -- "
+           f"{paths.worker_python} {remote}/fs_close_refit.py --closure --plan {remote}/refit_plan.json "
+           f"--features {wstate}/fs_pred/input/ps1/batch_001/features_train.parquet {wstate}/fs_pred/input/ps1/batch_002/features_train.parquet "
+           f"{wstate}/fs_pred/input/ps1/batch_003/features_train.parquet --targets {wstate}/fs_pred/input/ps1/batch_001/targets_train.parquet "
+           f"--folds {remote}/folds.json --val-features {val}/ps1/batch_001/features_train.parquet {val}/ps1/batch_002/features_train.parquet "
+           f"{val}/ps1/batch_003/features_train.parquet --val-targets {val}/ps1/batch_001/targets_train.parquet --out-dir {remote}/out")
+    r = subprocess.run(ssh + [cmd], capture_output=True, text=True, timeout=90)
+    return {"state": "CLOSURE_LAUNCHED" if r.returncode == 0 else "CLOSURE_LAUNCH_FAILED", "detail": (r.stderr or r.stdout)[-300:]}
 
 
 # ============================================================================ follow once

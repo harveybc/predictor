@@ -514,6 +514,141 @@ def _write_progress(out_dir, progress, started, done, skipped, failed, final=Fal
     os.replace(tmp, p)
 
 
+# ----------------------------------------------------------------------------- closure step (VALIDATION read once)
+CLOSURE_SCHEMA = "fs_close_closure_record.v1"
+VALIDATION_START_UTC = "2024-01-01T00:00:00+00:00"
+VALIDATION_END_UTC = "2025-01-01T00:00:00+00:00"
+
+
+def assert_validation_window(timestamps_s: np.ndarray) -> dict:
+    """Refuse any row outside [VALIDATION_START, VALIDATION_END): TEST (2025) is never read."""
+    import datetime as dt
+
+    lo = dt.datetime.fromisoformat(VALIDATION_START_UTC).timestamp()
+    hi = dt.datetime.fromisoformat(VALIDATION_END_UTC).timestamp()
+    ts = np.asarray(timestamps_s, dtype="int64")
+    if ts.size == 0:
+        raise RefitError("NO_VALIDATION_ROWS")
+    if int(ts.max()) >= hi:
+        raise RefitError(f"TEST_READ_REFUSED: max validation decision time {int(ts.max())} >= {VALIDATION_END_UTC}")
+    if int(ts.min()) < lo:
+        raise RefitError(f"VALIDATION_WINDOW_VIOLATED: min decision time {int(ts.min())} < {VALIDATION_START_UTC}")
+    return {"rows": int(ts.size), "min_ts": int(ts.min()), "max_ts": int(ts.max()),
+            "window": [VALIDATION_START_UTC, VALIDATION_END_UTC]}
+
+
+def load_validation(feature_files, targets_file, population):
+    """Same layout as the TRAIN inputs, bounded to the external validation year."""
+    import pyarrow.parquet as pq
+
+    col_index = {name: i for i, name in enumerate(population)}
+    X = None
+    row_ids = None
+    ts = None
+    digests = {}
+    seen = set()
+    for fp in feature_files:
+        fp = Path(fp)
+        digests["validation:" + fp.name + "@" + fp.parent.name] = sha256_file(fp)
+        pf = pq.ParquetFile(fp)
+        ids = pf.read(columns=["row_id"]).column("row_id").to_numpy()
+        if row_ids is None:
+            row_ids = ids
+            tcol = pf.read(columns=["t_decision_utc"]).column("t_decision_utc")
+            ts = (tcol.cast("int64").to_numpy() // 10**9) if "ns" in str(tcol.type) else tcol.cast("int64").to_numpy()
+            X = np.empty((len(row_ids), len(population)), dtype="float64")
+        elif not np.array_equal(ids, row_ids):
+            raise RefitError(f"ROW_ID_MISMATCH between validation feature batches: {fp}")
+        for name in [n for n in pf.schema.names if n in col_index]:
+            X[:, col_index[name]] = pf.read(columns=[name]).column(name).to_numpy(zero_copy_only=False).astype("float64", copy=False)
+            seen.add(name)
+    missing = [c for c in population if c not in seen]
+    if missing:
+        raise RefitError(f"VALIDATION_POPULATION_NOT_IN_INPUTS: {len(missing)} first {missing[:5]}")
+    tp = Path(targets_file)
+    digests["validation:" + tp.name] = sha256_file(tp)
+    tdf = pq.read_table(tp).to_pandas()
+    if not np.array_equal(tdf["row_id"].to_numpy(), row_ids):
+        raise RefitError("ROW_ID_MISMATCH between validation features and targets")
+    bound = assert_validation_window(ts)
+    return X, row_ids, tdf, digests, bound
+
+
+def run_closure(plan_path: Path, feature_files, targets_file, folds_file, val_feature_files, val_targets_file,
+                out_dir: Path, k_primary: int = 24, head: str = "ridge") -> dict:
+    """Score the frozen K=k_primary candidate sets once on VALIDATION under the declared rule.
+
+    Fit on ALL TRAIN rows (the union of every fold's rows), score on the 2024 rows, same head, same
+    seed, same naives. Writes closure_record.json with every candidate's cells and the winner.
+    """
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    plan = load_plan(plan_path)
+    population = list(plan["population"])
+    X, row_ids, tdf, folds, digests, bound = load_inputs(feature_files, targets_file, folds_file, population)
+    Xv, vrow_ids, vdf, vdigests, vbound = load_validation(val_feature_files, val_targets_file, population)
+    col = {name: i for i, name in enumerate(population)}
+    candidates = [s for s in plan["sets"] if s["set_kind"] in ("ALL_ADMISSIBLE", "PRED_BEST", "PLUS_CAUSAL", "PLUS_REP", "KNOCKOFF")
+                  and (s.get("k") in (None, k_primary))]
+    results = []
+    for s in candidates:
+        cells = []
+        for target, horizon in all_cells():
+            y_all, kind = target_vector(tdf, target, horizon)
+            yv_all, _ = target_vector(vdf, target, horizon)
+            target_key = f"{target}_{horizon}h"
+            feats = resolve_features(s, target_key, "*") or resolve_features(s, target_key, folds["folds"][-1]["name"])
+            if feats is None:
+                # per-fold sets: the union order of the last fold is the frozen candidate for the closure
+                by = s.get("features_by", {})
+                feats = next((v for k, v in by.items() if k.startswith(target_key)), None)
+            if feats is None:
+                cells.append({"target": target, "horizon": horizon, "state": "FAILED", "reason": "NO_FEATURE_LIST"})
+                continue
+            idx = [col[f] for f in feats]
+            fit_idx = np.where(np.isfinite(y_all))[0]
+            val_idx = np.where(np.isfinite(yv_all))[0]
+            Xf, Xvv = X[np.ix_(fit_idx, idx)], Xv[np.ix_(val_idx, idx)]
+            yf, yv = y_all[fit_idx], yv_all[val_idx]
+            pred, fit_s, pred_s = fit_predict(head, kind, Xf, yf, Xvv)
+            if kind == "regression":
+                metrics = regression_metrics(yv, pred, float(yf.mean()))
+            else:
+                prior = np.bincount(yf.astype(int), minlength=3) / yf.size
+                metrics = barrier_metrics(yv, pred, prior)
+            primary = [m for m in metrics if m[0] in ("mae", "log_loss")]
+            stricter = min(skill(v, nv) for _, v, _, nv in primary)
+            cells.append({"target": target, "horizon": horizon, "state": "MEASURED", "n_fit": int(fit_idx.size),
+                          "n_rows": int(val_idx.size), "rows_sha256": sha256_bytes(vrow_ids[val_idx].astype("int64").tobytes()),
+                          "metrics": [{"metric": m, "value": v, "naive_kind": nk, "naive_value": nv, "skill": skill(v, nv)} for m, v, nk, nv in metrics],
+                          "skill_vs_stricter_naive": stricter, "fit_seconds": fit_s, "n_features": len(feats)})
+        measured = [c for c in cells if c["state"] == "MEASURED"]
+        score = float(np.mean([c["skill_vs_stricter_naive"] for c in measured])) if measured else float("nan")
+        short_long = [c for c in measured if c["target"] in ("Y_s", "Y_l")]
+        results.append({"set_id": s["set_id"], "set_kind": s["set_kind"], "set_sha256": set_sha256(s), "k": s.get("k"),
+                        "score": score, "cells_measured": len(measured), "cells": cells,
+                        "n_features": max((c.get("n_features", 0) for c in measured), default=0),
+                        "fit_seconds_total": float(sum(c.get("fit_seconds", 0.0) for c in measured)),
+                        "beats_naive_every_short_long_cell": bool(short_long) and all(c["skill_vs_stricter_naive"] > 0 for c in short_long),
+                        "beats_naive_every_cell": bool(measured) and all(c["skill_vs_stricter_naive"] > 0 for c in measured)})
+    order = {"ALL_ADMISSIBLE": 0, "PRED_BEST": 1, "PLUS_CAUSAL": 2, "PLUS_REP": 3, "KNOCKOFF": 4}
+    complete = [r for r in results if r["cells_measured"] == len(list(all_cells()))]
+    winner = None
+    if complete:
+        best = sorted(complete, key=lambda r: (-r["score"], r["n_features"], r["fit_seconds_total"], order.get(r["set_kind"], 9)))[0]
+        winner = {"set_id": best["set_id"], "set_kind": best["set_kind"], "set_sha256": best["set_sha256"], "score": best["score"],
+                  "k": best["k"], "n_features": best["n_features"]}
+    record = {"schema": CLOSURE_SCHEMA, "head": head, "head_params": HEAD_PARAMS[head], "seed": SEED, "k_primary": k_primary,
+              "train_bound": bound, "validation_bound": vbound, "validation_read_count": 1,
+              "inputs_sha256": {**digests, **vdigests}, "plan_sha256": sha256_file(Path(plan_path)), "code_sha256": code_sha256(),
+              "candidates": results, "winner": winner,
+              "strategy_eligible": bool(winner) and next(r for r in results if r["set_id"] == winner["set_id"])["beats_naive_every_short_long_cell"],
+              "sensitivities": {r["set_id"]: {"score": r["score"], "beats_naive_every_cell": r["beats_naive_every_cell"]} for r in results},
+              "finished_utc": _iso(time.time())}
+    (out_dir / "closure_record.json").write_text(json.dumps(record, indent=1, sort_keys=True))
+    return record
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--plan", required=True)
@@ -524,7 +659,14 @@ def main(argv=None) -> int:
     ap.add_argument("--heads", default="ridge")
     ap.add_argument("--hgb-max-k", type=int, default=24)
     ap.add_argument("--folds-only", nargs="*", default=None)
+    ap.add_argument("--closure", action="store_true", help="run the VALIDATION closure step instead of the fold refits")
+    ap.add_argument("--val-features", nargs="*", default=None)
+    ap.add_argument("--val-targets", default=None)
     a = ap.parse_args(argv)
+    if a.closure:
+        rec = run_closure(Path(a.plan), a.features, a.targets, a.folds, a.val_features, a.val_targets, Path(a.out_dir))
+        print(json.dumps({"winner": rec["winner"], "strategy_eligible": rec["strategy_eligible"]}))
+        return 0
     receipt = run_plan(Path(a.plan), a.features, a.targets, a.folds, Path(a.out_dir),
                        heads=tuple(a.heads.split(",")), hgb_max_k=a.hgb_max_k, fold_names=a.folds_only)
     print(json.dumps({k: receipt[k] for k in ("cells_done", "cells_skipped", "cells_failed",

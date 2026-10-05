@@ -329,3 +329,54 @@ def test_status_and_checklist_are_computed_from_coverage():
     cl = M.checklist(lanes, final=False)
     assert cl["I5_joint_comparison_and_manifest"] == "NOT_STARTED"
     assert M.checklist(lanes, final=True)["I5_joint_comparison_and_manifest"] == "DONE"
+
+
+# ----------------------------------------------------------------------------- closure step (VALIDATION once, TEST never)
+def _validation_inputs(tmp_path, n=300, start_s=1_704_067_200, tail_2025=False):
+    import pandas as pd
+
+    rng = np.random.default_rng(1)
+    ts = np.arange(n) * 3600 + start_s                      # 2024-01-01 onwards
+    if tail_2025:
+        ts[-1] = 1_735_689_600                              # one 2025 row
+    X = rng.normal(size=(n, 4))
+    y = 0.8 * X[:, 0] + rng.normal(scale=0.3, size=n)
+    names = ["f_signal", "f_noise1", "f_noise2", "f_noise3"]
+    df = pd.DataFrame(X, columns=names)
+    df.insert(0, "row_id", np.arange(n))
+    df.insert(0, "t_decision_utc", pd.to_datetime(ts, unit="s", utc=True))
+    vdir = tmp_path / "val"
+    vdir.mkdir(exist_ok=True)
+    feats = vdir / "features_validation.parquet"
+    df.to_parquet(feats)
+    t = pd.DataFrame({"t_decision_utc": df["t_decision_utc"], "row_id": df["row_id"]})
+    for h in (1, 2, 3, 4, 5, 6):
+        t[f"Y_s_{h}h"] = y
+    for h in (24, 48, 72, 96, 120, 144):
+        t[f"Y_l_{h}h"] = y * 0.5
+    bar = np.where(y > 0.5, 1.0, np.where(y < -0.5, -1.0, 0.0))
+    t["Y_b_s6"] = bar
+    t["Y_b_l144"] = bar
+    tp = vdir / "targets_validation.parquet"
+    t.to_parquet(tp)
+    return [feats], tp
+
+
+def test_closure_reads_validation_once_and_refuses_a_2025_row(tmp_path):
+    pytest.importorskip("sklearn")
+    pp, feats, tp, fp = _synthetic_inputs(tmp_path)
+    # the plan's K=1 candidate arms: give the signal set the PRED_BEST kind at k=1 (k_primary=1 for the fixture)
+    vf, vt = _validation_inputs(tmp_path)
+    rec = R.run_closure(pp, feats, tp, fp, vf, vt, tmp_path / "out", k_primary=1)
+    assert rec["validation_read_count"] == 1
+    assert rec["validation_bound"]["min_ts"] >= 1_704_067_200 and rec["validation_bound"]["max_ts"] < 1_735_689_600
+    assert rec["train_bound"]["max_ts"] < 1_704_067_200
+    ids = {c["set_id"] for c in rec["candidates"]}
+    assert ids == {"ALL_ADMISSIBLE", "SIGNAL:1"}            # RANDOM_K control is not a closure candidate
+    assert rec["winner"]["set_id"] in ids and all(len(c["cells"]) == 14 for c in rec["candidates"])
+    for c in rec["candidates"]:
+        for cell in c["cells"]:
+            assert all(np.isfinite(m["naive_value"]) for m in cell["metrics"])
+    vf2, vt2 = _validation_inputs(tmp_path, tail_2025=True)
+    with pytest.raises(R.RefitError, match="TEST_READ_REFUSED"):
+        R.run_closure(pp, feats, tp, fp, vf2, vt2, tmp_path / "out2", k_primary=1)
