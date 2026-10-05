@@ -100,6 +100,13 @@ def load_config(path: str | Path) -> dict[str, Any]:
         raise Phase1Refusal("population.id must identify one independent population")
     if not population.get("target_pack"):
         raise Phase1Refusal("population.target_pack must be declared")
+    mode = population.get("mode", "CAUSAL")
+    if mode not in {"CAUSAL", "PROFILE_ONLY"}:
+        raise Phase1Refusal("population.mode must be CAUSAL or PROFILE_ONLY")
+    if mode == "PROFILE_ONLY":
+        campaign = population.get("campaign_sha256")
+        if not isinstance(campaign, str) or len(campaign) != 64:
+            raise Phase1Refusal("PROFILE_ONLY population requires campaign_sha256")
     base = config_path.parent
     config["_config_path"] = str(config_path)
     config["_config_dir"] = str(base)
@@ -289,6 +296,7 @@ def build_plan(config: dict[str, Any]) -> dict[str, Any]:
         "phase": "PHASE_1",
         "population_id": config["population"]["id"],
         "target_pack": config["population"]["target_pack"],
+        "mode": config["population"].get("mode", "CAUSAL"),
         "inventory_total": len(items),
         "inventory_sha256": _sha(inventory_identity),
         "config_sha256": _sha(
@@ -307,6 +315,8 @@ def build_plan(config: dict[str, Any]) -> dict[str, Any]:
             for identity in inventory_identity
         ],
     }
+    if document["mode"] == "PROFILE_ONLY":
+        document["campaign_sha256"] = config["population"]["campaign_sha256"]
     document["plan_sha256"] = _sha(document)
     path = _plan_path(config)
     if path.is_file():

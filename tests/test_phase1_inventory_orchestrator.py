@@ -280,6 +280,20 @@ def test_assignment_is_deterministic_and_keeps_smallest_on_small_host(
     assert first["population_id"] == "EURUSD"
 
 
+def test_profile_only_plan_seals_mode_and_campaign(tmp_path: Path) -> None:
+    path = _config(tmp_path, [_row("a", 10, 80)])
+    document = json.loads(path.read_text(encoding="utf-8"))
+    document["population"].update(
+        mode="PROFILE_ONLY", campaign_sha256="a" * 64
+    )
+    path.write_text(json.dumps(document), encoding="utf-8")
+
+    plan = build_plan(load_config(path))
+
+    assert plan["mode"] == "PROFILE_ONLY"
+    assert plan["campaign_sha256"] == "a" * 64
+
+
 def test_denominator_mismatch_is_refused(tmp_path: Path) -> None:
     config = load_config(_config(tmp_path, [_row("a", 10, 80)], expected_total=2))
     with pytest.raises(Phase1Refusal, match="expected 2.*observed 1"):
