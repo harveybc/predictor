@@ -499,6 +499,19 @@ def _require_accepted_submission(response: dict[str, Any]) -> None:
         raise Phase1Refusal("warehouse submission returned no accepted receipt")
 
 
+def _envelope_identity(envelope: dict[str, Any]) -> str:
+    """Use the warehouse contract identity, retaining legacy fixture support."""
+    claimed = envelope.get("envelope_sha256")
+    if isinstance(claimed, str) and len(claimed) == 64:
+        try:
+            int(claimed, 16)
+        except ValueError:
+            pass
+        else:
+            return claimed
+    return _sha(envelope)
+
+
 def _submit_terminal(
     config: dict[str, Any], terminal: dict[str, Any], submit: Submitter
 ) -> dict[str, Any] | None:
@@ -525,7 +538,7 @@ def _submit_terminal(
             "schema": "phase1.warehouse_receipt.v1",
             "feature_id": terminal["feature_id"],
             "key": key,
-            "envelope_sha256": _sha(envelope),
+            "envelope_sha256": _envelope_identity(envelope),
             "response": response,
         }
         _atomic_json(receipt, document, exclusive=True)
@@ -915,7 +928,7 @@ def _warehouse_identities(
     for item in sorted(plan["items"], key=lambda row: row["feature_id"]):
         terminal = terminals[item["feature_id"]]
         envelope = terminal.get("result", {}).get("envelope")
-        envelope_sha256 = _sha(envelope) if isinstance(envelope, dict) else None
+        envelope_sha256 = _envelope_identity(envelope) if isinstance(envelope, dict) else None
         receipt_sha256 = None
         if terminal["state"] == "COMPLETED":
             if envelope_sha256 is None:
