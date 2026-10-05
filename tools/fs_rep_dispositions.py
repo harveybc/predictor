@@ -862,11 +862,36 @@ def run_cycle(cfg: dict, *, git: bool) -> dict:
     }
     atomic_json(out_dir / "progress.json", progress)
     if git:
-        publish(cfg, progress, reached)
+        maybe_publish(cfg, progress, reached)
     return progress
 
 
-def publish(cfg: dict, progress: dict, reached: list[str]) -> None:
+def maybe_publish(cfg: dict, progress: dict, reached: list[str]) -> None:
+    """Commit only on substantive change (table digest, decisions, milestone) or hourly refresh."""
+    marker_path = cfg["_state_dir"] / "publish_state.json"
+    try:
+        marker = json.loads(marker_path.read_text()) if marker_path.is_file() else {}
+    except (OSError, json.JSONDecodeError):
+        marker = {}
+    fingerprint = {
+        "dispositions_sha256": progress["outputs"]["representation_dispositions.csv"]["sha256"],
+        "decisions": progress["decisions"],
+        "covered": progress["heavy_candidates_covered"],
+    }
+    last_at = marker.get("published_at")
+    stale = True
+    if last_at:
+        try:
+            stale = (utc_now() - datetime.strptime(last_at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)) >= timedelta(seconds=cfg.get("publish_refresh_seconds", 3600))
+        except ValueError:
+            stale = True
+    if marker.get("fingerprint") == fingerprint and not reached and not stale:
+        return
+    if publish(cfg, progress, reached):
+        atomic_json(marker_path, {"published_at": iso(utc_now()), "fingerprint": fingerprint})
+
+
+def publish(cfg: dict, progress: dict, reached: list[str]) -> bool:
     repo, out_dir = cfg["_repo_root"], cfg["_output_dir"]
     rel = str(out_dir.relative_to(repo))
     log_path = cfg["_state_dir"] / "git_log.jsonl"
@@ -876,7 +901,7 @@ def publish(cfg: dict, progress: dict, reached: list[str]) -> None:
 
     status = run("status", "--porcelain", "--", rel)
     if not status.stdout.strip():
-        return
+        return True
     message = (
         f"FS-REP: dispositions {progress['heavy_candidates_covered']}/{progress['heavy_denominator']} covered, "
         f"{progress['candidates_decided']} decided"
@@ -884,11 +909,13 @@ def publish(cfg: dict, progress: dict, reached: list[str]) -> None:
         + "\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
     )
     record = {"at": iso(utc_now()), "steps": []}
+    committed = False
     for attempt in range(3):
         add = run("add", "--", rel)
         commit = run("commit", "-q", "-m", message, "--", rel)
         record["steps"].append({"attempt": attempt, "add_rc": add.returncode, "commit_rc": commit.returncode, "stderr": (add.stderr + commit.stderr)[-400:]})
         if commit.returncode == 0:
+            committed = True
             pull = run("pull", "--no-rebase", "--no-edit", "-q")
             push = run("push", "-q")
             record["steps"].append({"pull_rc": pull.returncode, "push_rc": push.returncode, "stderr": (pull.stderr + push.stderr)[-400:]})
@@ -899,6 +926,7 @@ def publish(cfg: dict, progress: dict, reached: list[str]) -> None:
         break
     with log_path.open("a") as handle:
         handle.write(json.dumps(record, sort_keys=True) + "\n")
+    return committed
 
 
 def main(argv: list[str] | None = None) -> int:
