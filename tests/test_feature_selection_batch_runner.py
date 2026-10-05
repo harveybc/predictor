@@ -215,3 +215,17 @@ def test_method_record_accepts_elastic_net_results_without_scores_field() -> Non
     population = CellPopulation("Y", "f", x, y, np.arange(120), 120, 0, (("a", 0.0), ("b", 0.0), ("c", 0.0)), folds)
     record = method_record(outcome, identity={"row_digest": "r", "group_digest": "g", "plan_digest": "p"}, population=population, sealed_ks=(1,), seed=0)
     assert [g for g, _ in record["scores"]] == list(record["full_ranking"])
+
+
+def test_progress_preload_counts_records_of_the_whole_plan(tmp_path: Path) -> None:
+    progress = Progress(tmp_path / "progress.json", ("M1",), ("T1", "T2"), ("f1",), (24,))
+    for target in ("T1", "T2"):
+        path = record_path(tmp_path, target, "f1", "M1")
+        path.parent.mkdir(parents=True)
+        path.write_text(json.dumps({"schema": "fs_pred_method_record.v1", "method": "M1", "target": target, "fold": "f1",
+                                    "disposition": "COMPLETE", "wall_seconds": 3.0, "selected_by_k": [[24, ["a"]]],
+                                    "k_failures": [], "failure_type": None, "failure_message": None}))
+    assert progress.preload(tmp_path) == 2
+    snap = json.loads((tmp_path / "progress.json").read_text())
+    assert snap["done"] == 2 and snap["total"] == 2 and snap["method_cells_done"] == 2
+    assert snap["observed_median_method_wall_seconds"] == 3.0 and snap["eta_seconds"] == 0.0

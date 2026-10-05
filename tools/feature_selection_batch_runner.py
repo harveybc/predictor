@@ -475,6 +475,26 @@ class Progress:
         self.walls: list[float] = []
         self.started = time.time()
 
+    def preload(self, output_root: Path) -> int:
+        """Count every record already on disk for the whole plan, so chunked runs report one progress."""
+
+        loaded = 0
+        for path in sorted(output_root.glob("cells/*/*/*.json")):
+            if path.name == "population.json":
+                continue
+            try:
+                record = json.loads(path.read_text())
+            except (OSError, ValueError):
+                continue
+            if record.get("schema") != SCHEMA_RECORD or record.get("method") not in self.methods:
+                continue
+            if record.get("target") not in self.targets or record.get("fold") not in self.folds:
+                continue
+            self._mark(record, skipped=True, write=False)
+            loaded += 1
+        self.write()
+        return loaded
+
     @property
     def total_method_cells(self) -> int:
         return len(self.methods) * len(self.targets) * len(self.folds)
@@ -484,11 +504,18 @@ class Progress:
         return self.total_method_cells * len(self.ks)
 
     def mark(self, record: dict[str, Any], *, skipped: bool = False) -> None:
+        self._mark(record, skipped=skipped, write=True)
+
+    def _mark(self, record: dict[str, Any], *, skipped: bool, write: bool) -> None:
         key = f"{record['method']}|{record['target']}|{record['fold']}"
         complete = record["disposition"] == CampaignDisposition.COMPLETE.value
         k_done = [int(k) for k, _ in record.get("selected_by_k", [])] if complete else []
+        if key in self.done:
+            # a re-run of a cell replaces its earlier failure entries
+            self.failures = [f for f in self.failures if (f["method"], f["target"], f["fold"]) != (record["method"], record["target"], record["fold"])]
         self.done[key] = {"complete": complete, "ks_done": k_done, "skipped": skipped}
-        if not skipped and complete:
+        if complete and "wall_seconds" in record:
+            # observed walls from every record (skipped ones were real runs too)
             self.walls.append(float(record["wall_seconds"]))
         if not complete:
             self.failures.append({
@@ -500,7 +527,8 @@ class Progress:
                 "method": record["method"], "target": record["target"], "fold": record["fold"],
                 "failure_type": "K_SENSITIVITY", "failure_message": f"K={k}: {reason}",
             })
-        self.write()
+        if write:
+            self.write()
 
     def snapshot(self) -> dict[str, Any]:
         done_cells = sum(len(item["ks_done"]) for item in self.done.values())
@@ -622,6 +650,9 @@ def run_batch(args: argparse.Namespace) -> int:
     clusters = load_fold_clusters(Path(args.clusters), feature_order)
     target_names = tuple(args.targets.split(",")) if args.targets else DEFAULT_TARGETS
     fold_names = tuple(args.folds.split(",")) if args.folds else tuple(fold.name for fold in outer_folds)
+    # progress denominators always cover the WHOLE plan (every target, every fold), not this chunk
+    plan_targets = tuple(args.plan_targets.split(",")) if args.plan_targets else DEFAULT_TARGETS
+    plan_folds = tuple(fold.name for fold in outer_folds)
     sensitivity_ks = tuple(int(k) for k in args.sensitivity_ks.split(",")) if args.sensitivity_ks else ()
     methods = tuple(args.methods.split(",")) if args.methods else None
     probe_plan = build_plan(
@@ -630,8 +661,11 @@ def run_batch(args: argparse.Namespace) -> int:
         chronoepilogi_implementation=args.chronoepilogi,
     )
     method_ids = probe_plan.method_ids
-    progress = Progress(output_root / "progress.json", method_ids, target_names, fold_names, probe_plan.sealed_ks)
+    progress = Progress(output_root / "progress.json", method_ids, plan_targets, plan_folds, probe_plan.sealed_ks)
+    progress.preload(output_root)
     write_atomic(output_root / "run_contract.json", {
+        "plan_method_cells": len(method_ids) * len(plan_targets) * len(plan_folds),
+        "plan_k_cells": len(method_ids) * len(plan_targets) * len(plan_folds) * len(probe_plan.sealed_ks),
         "schema": "fs_pred_run_contract.v1",
         "input_sha256": observed,
         "denominator": denominator,
@@ -639,8 +673,9 @@ def run_batch(args: argparse.Namespace) -> int:
         "n_features": len(feature_order),
         "train_rows": int(matrix.shape[0]),
         "train_end_utc_exclusive": TRAIN_END_UTC.isoformat(),
-        "targets": list(target_names),
-        "folds": [asdict(fold) for fold in outer_folds if fold.name in fold_names],
+        "targets": list(plan_targets),
+        "chunk_targets": list(target_names),
+        "folds": [asdict(fold) for fold in outer_folds],
         "k_primary": args.k,
         "sealed_ks": list(probe_plan.sealed_ks),
         "seed": args.seed,
@@ -709,7 +744,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--input-manifest", required=True, help="JSON {sha256: {relative_path: digest}} from the relay")
     parser.add_argument("--clusters", required=True, help="fold_clusters.json built from lane B evidence")
     parser.add_argument("--output-root", required=True)
-    parser.add_argument("--targets", default="", help="comma list; default all 14")
+    parser.add_argument("--targets", default="", help="comma list for THIS chunk; default all 14")
+    parser.add_argument("--plan-targets", default="", help="comma list defining progress denominators; default all 14")
     parser.add_argument("--folds", default="", help="comma list of inner fold names; default all 5")
     parser.add_argument("--methods", default="", help="comma list of outcome ids; default every method")
     parser.add_argument("--k", type=int, default=24)
