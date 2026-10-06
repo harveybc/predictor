@@ -30,6 +30,19 @@ def _cap(name: str):
         raise
 
 
+def test_campaign_preserves_service_url_when_opening_warehouse(monkeypatch):
+    """A live warehouse URL must reach the DATA client as a URL, not a DuckDB path."""
+    camp = _cap("feature_pairwise_campaign")
+    warehouse = _cap("fs_phase23_warehouse")
+    observed = []
+
+    monkeypatch.setattr(warehouse, "open_warehouse", lambda target: observed.append(target) or target)
+
+    target = "http://127.0.0.1:5057"
+    assert camp.open_warehouse(target) == target
+    assert observed == [target]
+
+
 # --------------------------------------------------------------------------- fixtures
 
 FEATURES = ["f_alpha", "f_beta", "f_gamma", "f_delta", "f_eps", "f_zeta"]

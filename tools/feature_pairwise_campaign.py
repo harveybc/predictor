@@ -58,12 +58,14 @@ class CampaignError(RuntimeError):
 
 # ----------------------------------------------------------------------------- warehouse resolution
 
-def open_warehouse(path: Path):
+def open_warehouse(path: str | Path):
     """The DATA agent's module when present, else the marked-for-replacement adapter."""
     try:
         module = importlib.import_module("tools.fs_phase23_warehouse")
         if hasattr(module, "open_warehouse"):
-            return module.open_warehouse(Path(path))
+            # Preserve service URLs. Path("http://...") collapses the second slash and
+            # makes the warehouse client try to open the URL as a DuckDB filename.
+            return module.open_warehouse(path)
     except ModuleNotFoundError as exc:
         if not exc.name.endswith("fs_phase23_warehouse"):
             raise
