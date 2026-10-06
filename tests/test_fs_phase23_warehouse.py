@@ -357,12 +357,16 @@ def test_rows_without_a_receipt_are_detected(wh_file):
     assert report["tables"]["feature_pair_metrics"]["receipts_cover_store"] is False and not report["complete"]
 
 
-def test_sql_digest_equals_python_digest(wh_file):
+def test_streamed_store_digest_equals_sql_and_python_digests(wh_file):
     rows = [metric_row("a", "b"), metric_row("a", "c"), metric_row("b", "c")]
     receipt = wh_file.submit_rows(RUN, "feature_pair_metrics", rows)
     sha = wh_file.conn.execute("SELECT sha256(string_agg(row_sha256, '' ORDER BY row_sha256)) "
                                "FROM feature_pair_metrics").fetchone()[0]
-    assert sha == receipt["rows_sha256"] == core.rows_sha256(rows) == adapter_rows_digest(rows)
+    count, streamed_sha = core.stored_summary(
+        wh_file.conn, "feature_pair_metrics", RUN, fetch_size=2
+    )
+    assert count == 3
+    assert streamed_sha == sha == receipt["rows_sha256"] == core.rows_sha256(rows) == adapter_rows_digest(rows)
 
 
 def test_database_unique_keys_block_a_duplicate_by_any_path(wh_file):

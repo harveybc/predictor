@@ -575,6 +575,39 @@ def stored_summary_sql(table: str, run_id: str, qualified: Callable[[str], str] 
             f" '{EMPTY_DIGEST}') AS rows_sha256 FROM {qualified(table)} WHERE run_id = '{rid}' LIMIT 1")
 
 
+def stored_summary(conn, table: str, run_id: str,
+                   qualified: Callable[[str], str] = lambda n: n,
+                   fetch_size: int = 8192) -> tuple[int, str]:
+    """Return the stored row count and canonical digest with bounded Python memory.
+
+    The digest contract is SHA-256 over the sorted concatenation of the stored
+    row digests. ``sha256(string_agg(... ORDER BY ...))`` is equivalent, but it
+    materializes hundreds of megabytes for large campaigns before hashing and
+    exhausted the production warehouse during the EURUSD phase-2 closure.
+    Fetching the ordered values in chunks preserves the exact bytes while the
+    database may spill its sort and Python retains only one chunk.
+    """
+    if table not in FACT_TABLES:
+        raise Refusal(f"unknown table {table!r}")
+    if fetch_size < 1:
+        raise ValueError("fetch_size must be positive")
+    sql = f"SELECT row_sha256 FROM {qualified(table)} WHERE run_id = ? ORDER BY row_sha256"
+    if _is_sqlalchemy(conn):
+        result = conn.exec_driver_sql(sql, (run_id,))
+    else:
+        result = conn.execute(sql, [run_id])
+    count = 0
+    hasher = hashlib.sha256()
+    while True:
+        batch = result.fetchmany(fetch_size)
+        if not batch:
+            break
+        for row in batch:
+            hasher.update(row[0].encode("ascii"))
+        count += len(batch)
+    return count, hasher.hexdigest()
+
+
 def reconcile(conn, run_id: str, receipts: list[dict] | None = None, expected: dict | None = None,
               *, backend: str = "duckdb", qualified: Callable[[str], str] = lambda n: n) -> dict:
     """Stored counts and digests per table for one run, against declared expectations and receipts."""
@@ -585,7 +618,7 @@ def reconcile(conn, run_id: str, receipts: list[dict] | None = None, expected: d
     tables = {}
     complete = True
     for table in FACT_TABLES:
-        n, sha = _run(conn, stored_summary_sql(table, run_id, qualified))[0]
+        n, sha = stored_summary(conn, table, run_id, qualified)
         issued = _run(conn, f"SELECT count(*), coalesce(sum(inserted), 0) FROM {qualified(RECEIPT_TABLE)}"
                             " WHERE run_id = ? AND table_name = ?", [run_id, table])[0]
         entry = {"count": int(n), "rows_sha256": sha, "receipts": int(issued[0]),
