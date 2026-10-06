@@ -1,0 +1,14 @@
+{
+  "active_shards": 0,
+  "complete_shards": 2,
+  "contested_shards": [],
+  "eta_utc": null,
+  "expected_shards": 3,
+  "failed_shards": 1,
+  "free_shards": 0,
+  "host_role": "coordinator",
+  "schema": "fs_phase23_status.fallback_from_ledger.v1",
+  "source": "CLAIMS_LEDGER.json (driver status module not installed yet)",
+  "speed_shards_per_hour": null,
+  "written_at_utc": "2026-10-06T00:56:12Z"
+}

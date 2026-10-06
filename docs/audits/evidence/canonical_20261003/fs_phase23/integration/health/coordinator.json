@@ -1,0 +1,74 @@
+{
+ "admission": {
+  "desktop_reserve_bytes": 3221225472,
+  "host_free_for_new_bytes": 18537508864,
+  "live_lease_count": 0,
+  "live_leases": [],
+  "mem_available_bytes": 21758734336,
+  "pressure_admit_max": 25.0,
+  "pressure_full_avg10": 0.0,
+  "pressure_some_avg10": 0.0
+ },
+ "cpu": {
+  "cores": 16,
+  "loadavg_1_5_15": [
+   1.1162109375,
+   0.7890625,
+   0.7431640625
+  ]
+ },
+ "crispdm_batch_slice": {
+  "active": "active",
+  "memory_current_bytes": 42033152,
+  "memory_high_bytes": 12884901888,
+  "memory_max_bytes": 15032385536,
+  "scopes": []
+ },
+ "crispdm_run_installed": true,
+ "gpus_read_only": [
+  {
+   "index": 0,
+   "memory_total_mib": 8188,
+   "memory_used_mib": 706,
+   "utilization_pct": 0
+  }
+ ],
+ "measured_at_utc": "2026-10-06T00:55:28Z",
+ "memory": {
+  "available_bytes": 21769187328,
+  "cached_bytes": 15029444608,
+  "free_bytes": 1833041920,
+  "slab_unreclaim_bytes": 795439104,
+  "swap_free_bytes": 6317903872,
+  "swap_total_bytes": 8589930496,
+  "total_bytes": 32778358784
+ },
+ "python_envs": {
+  "~/.local/state/canonical_20261003/fs_phase23/venv/bin/python": {
+   "executable": "~/.local/state/canonical_20261003/fs_phase23/venv/bin/python",
+   "packages": {
+    "duckdb": "1.5.6",
+    "numpy": "2.4.3",
+    "pandas": "3.0.1",
+    "pyarrow": "23.0.1",
+    "scipy": "1.17.1",
+    "sklearn": "1.8.0"
+   },
+   "python": "3.12.7"
+  },
+  "python3": {
+   "executable": "~/anaconda3/bin/python3",
+   "packages": {
+    "duckdb": "MISSING:ModuleNotFoundError",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "pyarrow": "16.1.0",
+    "scipy": "1.13.1",
+    "sklearn": "1.5.1"
+   },
+   "python": "3.12.7"
+  }
+ },
+ "role": "coordinator",
+ "schema": "fs_phase23_host_health.v1"
+}
