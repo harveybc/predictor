@@ -2,14 +2,18 @@
   "already_present": [],
   "destructive_statements": 0,
   "migration_id": "fs_phase23_0001",
-  "sql_sha256": "207379ff49b777e9a69c9e7e8645e4b9c42952d28e4c0fbfa332af75bb1d6473",
-  "statements": 7,
+  "sql_sha256": "e77ba756af82adc5d0dd85cf72568eab62cc798cb1d17d833e30f8be2698b452",
+  "statements": 10,
   "would_create": [
     "fs_phase23_run",
     "fs_phase23_load_receipt",
     "feature_pair_metrics",
+    "feature_pair_stability",
+    "feature_pair_gate",
     "feature_alias_groups",
     "feature_redundancy_clusters",
-    "feature_filter_rankings"
+    "feature_filter_rankings",
+    "feature_filter_subsets",
+    "fs_phase23_coverage"
   ]
 }

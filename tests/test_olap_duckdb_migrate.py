@@ -305,3 +305,29 @@ def test_catch_up_carries_children_of_a_new_parent(tmp_path):
     assert con.execute(
         "SELECT count(*) FROM main.gov_terminal_artifact").fetchone()[0] == 3
     con.close()
+
+
+# --- phase-2/3 feature-selection relations belong to the snapshot boundary -------------
+
+def test_phase23_relations_are_in_the_snapshot_boundary_and_their_absence_is_named(tmp_path):
+    for name in ("fs_phase23_run", "fs_phase23_load_receipt", "feature_pair_metrics",
+                 "feature_pair_stability", "feature_pair_gate", "feature_alias_groups",
+                 "feature_redundancy_clusters", "feature_filter_rankings", "feature_filter_subsets",
+                 "fs_phase23_coverage"):
+        assert name in migrate.SNAPSHOT_RELATIONS, name
+    source = str(tmp_path / "live.duckdb")
+    migrate.build_fixture_cube(source, terminals=2)
+    report = migrate.snapshot_database(source, str(tmp_path / "copy.duckdb"),
+                                       schema="main", expect_terminals=2, owner_stopped=True)
+    assert report["verified"] is True, report.get("reasons")
+    assert report["counts_in_snapshot"]["feature_pair_metrics"] == 0
+    assert report["content_digests"]["feature_filter_subsets"] is not None
+    # a cube from before the migration is a copy, not a verified phase-2 snapshot
+    con = duckdb.connect(source)
+    con.execute("DROP VIEW fs_phase23_coverage")
+    con.execute("DROP TABLE feature_filter_subsets")
+    con.close()
+    report = migrate.snapshot_database(source, str(tmp_path / "copy2.duckdb"),
+                                       schema="main", expect_terminals=2, owner_stopped=True)
+    assert report["verified"] is False
+    assert "phase-2/3 feature-selection relations are absent" in json.dumps(report)

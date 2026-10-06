@@ -28,7 +28,7 @@ python tools/fs_phase23_warehouse.py snapshot \
 Refuses a source with a non-empty `.wal` beside it (a live store). Writes
 `<name>.duckdb.zst`, `<name>.duckdb.zst.sha256` and `SNAPSHOT_MANIFEST.json`
 (`olap_snapshot_manifest.v2`: both sizes and SHA-256s, per-relation row counts and
-content digests for the six fs_phase23 relations, release and asset URLs, the exact publish
+content digests for the ten fs_phase23 relations, release and asset URLs, the exact publish
 commands). Copy the manifest into `docs/audits/evidence/.../fs_phase23/` and commit it.
 
 ## 3. Publish

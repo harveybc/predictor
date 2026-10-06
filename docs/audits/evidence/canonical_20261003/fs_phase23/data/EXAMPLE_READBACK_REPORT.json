@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-06T00:44:32Z",
-  "report_sha256": "de93a898910b9d3eab008137006563023c99ff66a095cec2a5cae712fd95b791",
+  "generated_at": "2026-10-06T01:31:38Z",
+  "report_sha256": "2996c73a412bb4c3486bdd385fa72a0dc4e7063431ad323c7ab635cb73b9f660",
   "run_id": null,
   "schema": "fs_phase23_readback_report.v1",
   "source": "local",
@@ -21,6 +21,52 @@
       "table_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "total": 0
     },
+    "feature_filter_subsets": {
+      "by_asset": {},
+      "by_host_role": {},
+      "by_method": {},
+      "groups": [],
+      "table_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "total": 0
+    },
+    "feature_pair_gate": {
+      "by_asset": {
+        "ETH": 3,
+        "EURUSD": 3
+      },
+      "by_host_role": {
+        "worker_b": 6
+      },
+      "by_method": {
+        "pairwise_v1": 6
+      },
+      "groups": [
+        {
+          "failed": null,
+          "fold": "TRAIN",
+          "host_role": "worker_b",
+          "insufficient_support": null,
+          "measured": null,
+          "method": "pairwise_v1",
+          "n": 3,
+          "population_id": "ETH",
+          "rows_sha256": "6cb5fa314ab6a26fd86dbdccb0e9bb4267b3e61db99e35c959054cfe6b0e1726"
+        },
+        {
+          "failed": null,
+          "fold": "TRAIN",
+          "host_role": "worker_b",
+          "insufficient_support": null,
+          "measured": null,
+          "method": "pairwise_v1",
+          "n": 3,
+          "population_id": "EURUSD",
+          "rows_sha256": "a424edb34b7aca847285f718d99552a3798c3d67ffd5d064d39e0f28427b6775"
+        }
+      ],
+      "table_rows_sha256": "091055ba7dc57af0c98b8a22bcd80e97ff465c47e9d756cd1ca6ba1a69d79fd9",
+      "total": 6
+    },
     "feature_pair_metrics": {
       "by_asset": {
         "ETH": 6,
@@ -31,8 +77,7 @@
         "worker_b": 6
       },
       "by_method": {
-        "mutual_information": 6,
-        "spearman": 6
+        "pairwise_v1": 12
       },
       "groups": [
         {
@@ -40,92 +85,56 @@
           "fold": "inner_1",
           "host_role": "worker_a",
           "insufficient_support": 0,
-          "measured": 1,
-          "method": "mutual_information",
-          "n": 1,
+          "measured": 3,
+          "method": "pairwise_v1",
+          "n": 3,
           "population_id": "ETH",
-          "rows_sha256": "f113ce4219e79d68e743d4c602fa7ef2f2d06c4e93f9128d4eff62ecf566e60e"
+          "rows_sha256": "637e874ba33432b2dca20e943c765e06a0e9874f6905099585c14ffd82c6cdbf"
         },
         {
           "failed": 0,
           "fold": "inner_1",
           "host_role": "worker_b",
           "insufficient_support": 0,
-          "measured": 2,
-          "method": "mutual_information",
-          "n": 2,
+          "measured": 3,
+          "method": "pairwise_v1",
+          "n": 3,
           "population_id": "ETH",
-          "rows_sha256": "7989aca9c142e0cd5c42e06f57035333e3fb55b60d06785cb70d2db493afff15"
+          "rows_sha256": "2ae2f8e7a888e6fd755b1dcd07e299db446e9d1dace31b18cff8ac5861101d6c"
         },
         {
           "failed": 0,
           "fold": "inner_1",
           "host_role": "worker_a",
           "insufficient_support": 0,
-          "measured": 2,
-          "method": "spearman",
-          "n": 2,
-          "population_id": "ETH",
-          "rows_sha256": "93b740a3086981c70d96f9da03385434293f5e0ce9196f361a1e896690defa37"
+          "measured": 3,
+          "method": "pairwise_v1",
+          "n": 3,
+          "population_id": "EURUSD",
+          "rows_sha256": "6bbd139e335a0e9c2a0fc5c1ce0447d3bd388e17c742f2e0ce454b992b2450d3"
         },
         {
           "failed": 0,
           "fold": "inner_1",
           "host_role": "worker_b",
           "insufficient_support": 0,
-          "measured": 1,
-          "method": "spearman",
-          "n": 1,
-          "population_id": "ETH",
-          "rows_sha256": "f179a8ebbf6175be5dfb998d4ab2ab7afb0480cb8ecbce1fbcfdfed8165f1ee4"
-        },
-        {
-          "failed": 0,
-          "fold": "inner_1",
-          "host_role": "worker_a",
-          "insufficient_support": 0,
-          "measured": 1,
-          "method": "mutual_information",
-          "n": 1,
+          "measured": 3,
+          "method": "pairwise_v1",
+          "n": 3,
           "population_id": "EURUSD",
-          "rows_sha256": "b15ccb35f47b2221d4392a60e80b119972a457a7e55939532a46f6d0b5bef5ee"
-        },
-        {
-          "failed": 0,
-          "fold": "inner_1",
-          "host_role": "worker_b",
-          "insufficient_support": 0,
-          "measured": 2,
-          "method": "mutual_information",
-          "n": 2,
-          "population_id": "EURUSD",
-          "rows_sha256": "cf480f0a269ff80f2d053db890287ff2aa5c1aa04c963b886b0bec2024a5534d"
-        },
-        {
-          "failed": 0,
-          "fold": "inner_1",
-          "host_role": "worker_a",
-          "insufficient_support": 0,
-          "measured": 2,
-          "method": "spearman",
-          "n": 2,
-          "population_id": "EURUSD",
-          "rows_sha256": "44d53ae4294a778cbd1dc7833c2a2dcf4469c62a0f40ef59f2fdab338eed1ce9"
-        },
-        {
-          "failed": 0,
-          "fold": "inner_1",
-          "host_role": "worker_b",
-          "insufficient_support": 0,
-          "measured": 1,
-          "method": "spearman",
-          "n": 1,
-          "population_id": "EURUSD",
-          "rows_sha256": "b6dd1f635807d62f7af2764493ee8170b2dcaac3aae3a887ccc9cc584e491bbe"
+          "rows_sha256": "d470228cf37a4f4aed08c56bf7c270b0e73bc709293de468d222ed950f368182"
         }
       ],
-      "table_rows_sha256": "ac63f2485f40e444dd9850da9191fc2374727918b09171811026052bba59c620",
+      "table_rows_sha256": "810f5179ad1e602a2a4dbf7478b596e0fceb410ef0924b8bf0e1e6f1cfa75837",
       "total": 12
+    },
+    "feature_pair_stability": {
+      "by_asset": {},
+      "by_host_role": {},
+      "by_method": {},
+      "groups": [],
+      "table_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "total": 0
     },
     "feature_redundancy_clusters": {
       "by_asset": {},

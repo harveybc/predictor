@@ -1,16 +1,18 @@
 {
-  "already_stored": 0,
+  "backend": "duckdb",
   "distinct_identities": 3,
+  "duplicates_ignored": 0,
   "host_role": "worker_a",
+  "inserted": 3,
   "population_id": "ETH",
-  "receipt_sha256": "8188e93d506ff00f865ecdefaa7b71640e3325c4bdfbe2b1b569e69f8137b6ff",
-  "rows_sha256": "71096c27b58a302def22368182f1710c5cc24aa54dcd9a63c03d36ec08db53c5",
+  "receipt_sha256": "f10945a79fe913254df3823406386ffc1db843e38792d657749d8251ed2d60fc",
+  "row_count": 3,
+  "rows_sha256": "637e874ba33432b2dca20e943c765e06a0e9874f6905099585c14ffd82c6cdbf",
   "run_id": "phase2-eth:EXAMPLE",
-  "run_sha256": "4c2fc1bb9322ec7b368ff673b39b11fe5b1b27d002641024675f923f948879d2",
-  "schema": "fs_phase23_load_receipt.v1",
+  "run_sha256": "f6524cb23bc91c39d32ffd8554c222687be158729a9e10ef0e79e4789ee7d467",
+  "schema": "fs_phase23.warehouse_receipt.v2",
   "shard_id": "shard-000",
-  "stored_new": 3,
-  "submitted": 3,
-  "submitted_at": "2026-10-06T00:44:32Z",
-  "table": "feature_pair_metrics"
+  "submitted_at": "2026-10-06T01:31:38Z",
+  "table": "feature_pair_metrics",
+  "unit_id": "unit-eth-0"
 }

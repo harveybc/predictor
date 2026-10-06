@@ -5,32 +5,24 @@ Subplan: ``docs/tres_temas_entrevista/program_v3/FEATURE_SELECTION_PHASE2_PHASE3
 (§2 identities, §3.3 closure, §6 acceptance) and the order
 ``docs/handoffs/MUSASHI_TO_SATOSHI_FS_PHASE2_PHASE3_AUTOMATED_2026_10_05.md`` (§B, §D, §F, §G).
 
-What this module owns, and what it refuses to own:
+The storage semantics live in ONE place, ``predictor_olap_store.fs_phase23_store`` (the
+packaged backend the warehouse service loads); this module imports them, so the local file
+path used by tests and the follower, and the service path behind ``/api/v2/fs-phase23/*``,
+are the same code. What this module adds:
 
-* **the frozen populations.** ``contract`` derives ``CONTRACT.json`` from the phase-1 closure
-  artifacts (plan, final envelope, fold files, frozen TRAIN parquet files). Nothing in the
-  contract is typed by hand: feature lists, targets, folds and digests are read, and the pair
-  denominators ``n*(n-1)/2`` are computed and asserted against the declared 66,795 and 3,403.
-* **the additive schema.** ``olap/migrations/fs_phase23/0001_fs_phase23_additive.sql`` is the
-  single source of DDL. ``DDL`` below is parsed from that file, so the tool and any backend
-  that applies the file cannot drift apart. Every statement is ``CREATE ... IF NOT EXISTS``;
-  nothing is dropped, altered or rewritten.
-* **the write semantics.** ``submit_rows`` stores rows keyed by a content-derived identity with
-  a UNIQUE key over every identity column of subplan §2. An identical replay is a no-op; the
-  same identity with different content rejects the whole batch; a row or receipt carrying a
-  run or population identity other than the registered one is refused before any write.
-* **readback.** ``read_run``, ``reconcile`` and ``readback_report`` compute order-independent
-  digests with the same SQL expression locally and through the live service's read-only
-  ``/api/v1/query`` route, so a local terminal and the warehouse are compared by the same
-  arithmetic.
-* **the physical snapshot.** ``snapshot`` compresses a *copy* of the cube to ``.duckdb.zst``,
-  records SHA-256 of both forms, and writes the release-asset manifest the repository keeps.
-  It refuses a path that looks like a live store (a sibling write-ahead log) because the live
-  cube has exactly one owner, the warehouse service.
+* ``open_warehouse(path_or_url)`` — the driver's entry point
+  (``tools/feature_pairwise_campaign.py``): a DuckDB file (migration applied on open) or an
+  ``http(s)://`` service URL (token from ``WAREHOUSE_TOKEN``, never an argument). Both return
+  an object with ``submit_rows(run_id, table, rows)``, ``read_run(run_id, table, unit_id=None)``
+  and ``reconcile(run_id)``.
+* ``contract`` — derives ``CONTRACT.json`` from the phase-1 closure artifacts and asserts the
+  pair denominators n(n-1)/2 = 66,795 (EURUSD) and 3,403 (ETH).
+* ``migrate`` (with ``--dry-run``), ``readback`` (counts/digests per asset x method x host
+  role x fold, same SQL locally and through the service), ``reconcile``, ``compare-readback``.
+* ``snapshot`` / ``verify-snapshot`` — ``.duckdb.zst`` + SHA-256 + release-asset manifest;
+  refuses a live store (non-empty write-ahead log beside the file).
 
-This module never opens the configured production cube. Tests use temporary files only.
-All host references are roles (``coordinator``, ``worker_a``, ``worker_b``); no host name,
-address, credential or private path is written into any artifact this module produces.
+This module never opens the configured production cube. Host references are roles only.
 """
 
 from __future__ import annotations
@@ -39,7 +31,6 @@ import argparse
 import hashlib
 import json
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -49,104 +40,32 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
-SCHEMA_CONTRACT = "fs_phase23_contract.v1"
-SCHEMA_RECEIPT = "fs_phase23_load_receipt.v1"
-SCHEMA_RECONCILIATION = "fs_phase23_reconciliation.v1"
-SCHEMA_READBACK = "fs_phase23_readback_report.v1"
-SCHEMA_SNAPSHOT = "olap_snapshot_manifest.v2"
-MIGRATION_ID = "fs_phase23_0001"
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MIGRATION_SQL = REPO_ROOT / "olap" / "migrations" / "fs_phase23" / "0001_fs_phase23_additive.sql"
 
-_HEX64 = re.compile(r"^[0-9a-f]{64}$")
-_HOST_ROLES = ("coordinator", "worker_a", "worker_b")
+try:
+    from predictor_olap_store import fs_phase23_store as core
+except ImportError:  # a checkout without the package installed: the source tree is the package
+    sys.path.insert(0, str(REPO_ROOT / "olap" / "store" / "src"))
+    from predictor_olap_store import fs_phase23_store as core
 
-STATES = ("MEASURED", "INSUFFICIENT_SUPPORT", "NOT_APPLICABLE", "FAILED")
-ALIAS_DISPOSITIONS = ("ALIAS_BYTE_EXACT", "ALIAS_NUMERIC_TOLERANCE", "AFFINE_EXACT",
-                      "MONOTONE_NEAR_PERFECT", "DISTINCT")
-FILTER_METHODS = ("clustering_spearman", "mrmr_mi", "jmi",
-                  "ALL_ADMISSIBLE", "univariate_mi", "CAUSAL_SUPPORTED", "RANDOM_K")
+Refusal = core.Refusal
+FACT_TABLES = core.FACT_TABLES
+ALL_TABLES = core.ALL_TABLES
+ALL_RELATIONS = core.ALL_RELATIONS
+MIGRATION_ID = core.MIGRATION_ID
+STATES = core.STATES
+canonical_bytes = core.canonical_bytes
+digest = core.digest
+rows_digest = core.rows_digest
+rows_sha256 = core.rows_sha256
+pair_denominator = core.pair_denominator
+order_pair = core.order_pair
+prepare_row = core.prepare_row
 
-#: Run dimension and receipt table, then the four fact families of subplan §3.3 / §4.
-RUN_TABLE = "fs_phase23_run"
-RECEIPT_TABLE = "fs_phase23_load_receipt"
-FACT_TABLES = ("feature_pair_metrics", "feature_alias_groups",
-               "feature_redundancy_clusters", "feature_filter_rankings")
-ALL_TABLES = (RUN_TABLE, RECEIPT_TABLE, *FACT_TABLES)
-
-#: Identity columns per table: the UNIQUE key of subplan §2. ``row_identity_sha256`` is the
-#: digest of exactly these columns, in this order, and the table also carries a UNIQUE
-#: constraint over them so a second row with the same identity cannot be inserted by any path.
-IDENTITY = {
-    "feature_pair_metrics": (
-        "run_id", "population_id", "feature_left", "feature_right", "fold", "lag",
-        "method", "params_sha256", "code_sha256", "input_sha256"),
-    "feature_alias_groups": (
-        "run_id", "population_id", "group_id", "feature_id", "fold", "method",
-        "params_sha256", "code_sha256", "input_sha256"),
-    "feature_redundancy_clusters": (
-        "run_id", "population_id", "fold", "method", "params_sha256", "code_sha256",
-        "input_sha256", "cluster_id", "feature_id"),
-    "feature_filter_rankings": (
-        "run_id", "population_id", "target_id", "horizon", "fold", "method",
-        "params_sha256", "code_sha256", "input_sha256", "feature_id"),
-}
-
-#: Every stored column, in table order. ``row_sha256`` digests these (minus itself and
-#: ``row_identity_sha256``); ``stored_at`` is never part of a digest.
-COLUMNS = {
-    "feature_pair_metrics": (
-        "row_identity_sha256", "row_sha256", "run_id", "population_id", "feature_left",
-        "feature_right", "split", "fold", "lag", "method", "params_sha256", "code_sha256",
-        "input_sha256", "shared_support", "metric_value", "state", "host_role", "shard_id",
-        "terminal_sha256", "extra_json"),
-    "feature_alias_groups": (
-        "row_identity_sha256", "row_sha256", "run_id", "population_id", "group_id",
-        "feature_id", "split", "fold", "method", "params_sha256", "code_sha256",
-        "input_sha256", "disposition", "representative", "shared_support", "host_role",
-        "shard_id", "terminal_sha256", "extra_json"),
-    "feature_redundancy_clusters": (
-        "row_identity_sha256", "row_sha256", "run_id", "population_id", "split", "fold",
-        "method", "params_sha256", "code_sha256", "input_sha256", "cluster_id", "feature_id",
-        "representative", "linkage_distance", "threshold", "host_role", "shard_id",
-        "terminal_sha256", "extra_json"),
-    "feature_filter_rankings": (
-        "row_identity_sha256", "row_sha256", "run_id", "population_id", "target_id",
-        "horizon", "split", "fold", "method", "params_sha256", "code_sha256", "input_sha256",
-        "feature_id", "rank", "score", "relevance_term", "redundancy_term",
-        "complementarity_term", "causal_term", "cost_term", "k_membership_json", "state",
-        "host_role", "shard_id", "terminal_sha256", "extra_json"),
-}
-
-REQUIRED = {
-    "feature_pair_metrics": ("run_id", "population_id", "feature_left", "feature_right",
-                             "fold", "lag", "method", "params_sha256", "code_sha256",
-                             "input_sha256", "shared_support", "state"),
-    "feature_alias_groups": ("run_id", "population_id", "group_id", "feature_id", "fold",
-                             "method", "params_sha256", "code_sha256", "input_sha256",
-                             "disposition", "representative"),
-    "feature_redundancy_clusters": ("run_id", "population_id", "fold", "method",
-                                    "params_sha256", "code_sha256", "input_sha256",
-                                    "cluster_id", "feature_id", "representative"),
-    "feature_filter_rankings": ("run_id", "population_id", "target_id", "horizon", "fold",
-                                "method", "params_sha256", "code_sha256", "input_sha256",
-                                "feature_id", "rank", "state"),
-}
-
-
-class Refusal(ValueError):
-    """A typed refusal: the request is wrong, not the store."""
-
-
-# --------------------------------------------------------------------------- canonical bytes
-def canonical_bytes(value: Any) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
-                      allow_nan=False).encode("ascii")
-
-
-def digest(value: Any) -> str:
-    return hashlib.sha256(canonical_bytes(value)).hexdigest()
+SCHEMA_CONTRACT = "fs_phase23_contract.v1"
+SCHEMA_READBACK = "fs_phase23_readback_report.v1"
+SCHEMA_SNAPSHOT = "olap_snapshot_manifest.v2"
 
 
 def file_sha256(path: Path) -> str:
@@ -158,392 +77,186 @@ def file_sha256(path: Path) -> str:
 
 
 def now() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    return core.now()
 
 
-def pair_denominator(n: int) -> int:
-    """Unique unordered pairs of ``n`` features: n(n-1)/2."""
-    if n < 2:
-        raise Refusal(f"a population of {n} features has no pairs")
-    return n * (n - 1) // 2
-
-
-def order_pair(a: str, b: str) -> tuple[str, str]:
-    """The ordered (left, right) identity of a pair. Equal names are not a pair."""
-    if a == b:
-        raise Refusal(f"{a!r} paired with itself is not a pair")
-    return (a, b) if a < b else (b, a)
-
-
-# --------------------------------------------------------------------------- the DDL
+# --------------------------------------------------------------------------- migration file
 def load_ddl(path: Path = MIGRATION_SQL) -> list[str]:
-    """Statements of the migration file, in order, comments stripped."""
+    """Statements of the migration file, comments stripped. Must equal ``core.ddl()``."""
     text = Path(path).read_text(encoding="utf-8")
     lines = [line for line in text.splitlines() if not line.strip().startswith("--")]
-    statements = [s.strip() for s in "\n".join(lines).split(";")]
-    return [s for s in statements if s]
+    return [s.strip() for s in "\n".join(lines).split(";") if s.strip()]
+
+
+def write_migration_file(path: Path = MIGRATION_SQL) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(core.render_sql(), encoding="utf-8")
+    return file_sha256(path)
+
+
+def migration_file_matches_code(path: Path = MIGRATION_SQL) -> bool:
+    norm = lambda s: " ".join(s.split())  # noqa: E731
+    return [norm(s) for s in load_ddl(path)] == [norm(s) for s in core.ddl()]
 
 
 def apply_migration(conn, path: Path = MIGRATION_SQL) -> dict:
-    """Apply the additive migration. Idempotent: a second application changes nothing."""
-    before = set(list_tables(conn))
-    for statement in load_ddl(path):
-        if not statement.upper().startswith(("CREATE TABLE IF NOT EXISTS",
-                                             "CREATE INDEX IF NOT EXISTS",
-                                             "CREATE OR REPLACE VIEW")):
-            raise Refusal(f"migration {MIGRATION_ID} is additive only; refusing: "
-                          f"{statement[:60]!r}")
-        conn.execute(statement)
-    after = set(list_tables(conn))
-    missing = [t for t in ALL_TABLES if t not in after]
-    if missing:
-        raise RuntimeError(f"migration applied but tables missing: {missing}")
-    return {"migration_id": MIGRATION_ID, "sql_sha256": file_sha256(path),
-            "created": sorted(after - before), "already_present": sorted(before & set(ALL_TABLES)),
-            "tables": list(ALL_TABLES)}
-
-
-def list_tables(conn) -> list[str]:
-    rows = conn.execute(
-        "SELECT table_name FROM information_schema.tables "
-        "WHERE table_schema = current_schema() ORDER BY 1").fetchall()
-    return [r[0] for r in rows]
+    """Apply the additive migration from the code (the file is checked to match it)."""
+    if path.exists() and not migration_file_matches_code(path):
+        raise Refusal(f"{path.name} does not match fs_phase23_store.ddl(); regenerate it with "
+                      "`fs_phase23_warehouse.py render-migration`")
+    result = core.apply_migration(conn)
+    result["sql_sha256"] = file_sha256(path) if path.exists() else None
+    return result
 
 
 def migration_plan(conn) -> dict:
-    """What applying the migration WOULD do, without doing it (the dry run)."""
-    present = set(list_tables(conn))
-    return {"migration_id": MIGRATION_ID, "sql_sha256": file_sha256(MIGRATION_SQL),
-            "would_create": [t for t in ALL_TABLES if t not in present],
-            "already_present": [t for t in ALL_TABLES if t in present],
-            "statements": len(load_ddl()), "destructive_statements": 0}
+    present = set(core.list_relations(conn))
+    return {"migration_id": MIGRATION_ID,
+            "sql_sha256": file_sha256(MIGRATION_SQL) if MIGRATION_SQL.exists() else None,
+            "would_create": [t for t in ALL_RELATIONS if t not in present],
+            "already_present": [t for t in ALL_RELATIONS if t in present],
+            "statements": len(core.ddl()), "destructive_statements": 0}
 
 
-# --------------------------------------------------------------------------- rows
-def _check_hex(name: str, value: Any) -> str:
-    if not isinstance(value, str) or not _HEX64.match(value):
-        raise Refusal(f"{name} must be a 64-hex SHA-256, got {value!r}")
-    return value
+# --------------------------------------------------------------------------- warehouses
+class Warehouse:
+    """A DuckDB file. The driver's interface plus the explicit binding and readback helpers."""
+
+    backend = "duckdb"
+
+    def __init__(self, path: Path, *, read_only: bool = False, memory_limit: str = "256MB"):
+        import duckdb
+        self.path = Path(path).expanduser()
+        if not read_only:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.conn = duckdb.connect(str(self.path), read_only=read_only,
+                                   config={"memory_limit": memory_limit, "threads": 1})
+        if not read_only:
+            self.migration = apply_migration(self.conn)
+
+    def register_run(self, run: dict) -> dict:
+        return core.register_run(self.conn, run)
+
+    def submit_rows(self, run_id: str, table: str, rows: list[dict], *, host_role: str | None = None,
+                    shard_id: str | None = None) -> dict:
+        return core.submit_rows(self.conn, run_id, table, rows, host_role=host_role, shard_id=shard_id,
+                                backend=self.backend)
+
+    def read_run(self, run_id: str, table: str, unit_id: str | None = None) -> list[dict]:
+        return core.read_run(self.conn, run_id, table, unit_id)
+
+    def reconcile(self, run_id: str, receipts: list[dict] | None = None, expected: dict | None = None) -> dict:
+        return core.reconcile(self.conn, run_id, receipts, expected, backend=self.backend)
+
+    def verify_receipt(self, receipt: dict) -> dict:
+        return core.verify_receipt(self.conn, receipt)
+
+    def query(self, sql: str) -> list[dict]:
+        cursor = self.conn.execute(sql)
+        names = [d[0] for d in cursor.description]
+        return [dict(zip(names, row)) for row in cursor.fetchall()]
+
+    def close(self) -> None:
+        self.conn.close()
 
 
-def normalise_row(table: str, row: dict) -> dict:
-    """Validate one row and return it with identity and content digests attached.
+class ServiceWarehouse:
+    """The running warehouse through its host routes. The token comes from the environment."""
 
-    Column order of the input is irrelevant: digests are computed over canonical JSON with
-    sorted keys, so two producers that emit the same values in a different order agree.
-    """
-    if table not in FACT_TABLES:
-        raise Refusal(f"unknown table {table!r}; expected one of {FACT_TABLES}")
-    if not isinstance(row, dict):
-        raise Refusal("a row must be a mapping")
-    unknown = sorted(set(row) - set(COLUMNS[table]))
-    if unknown:
-        raise Refusal(f"{table}: unknown columns {unknown}")
-    for column in REQUIRED[table]:
-        if row.get(column) is None:
-            raise Refusal(f"{table}: {column} is required")
-    for column in ("params_sha256", "code_sha256", "input_sha256"):
-        _check_hex(column, row[column])
-    if row.get("terminal_sha256") is not None:
-        _check_hex("terminal_sha256", row["terminal_sha256"])
-    split = row.get("split", "train")
-    if split != "train":
-        raise Refusal(f"{table}: split must be 'train' (validation/test stay closed), "
-                      f"got {split!r}")
-    if row.get("host_role") is not None and row["host_role"] not in _HOST_ROLES:
-        raise Refusal(f"{table}: host_role must be a role {list(_HOST_ROLES)}, "
-                      f"got {row['host_role']!r}: no host names enter the warehouse")
-    if table == "feature_pair_metrics":
-        if not row["feature_left"] < row["feature_right"]:
-            raise Refusal(f"{table}: pair must be ordered feature_left < feature_right, got "
-                          f"({row['feature_left']!r}, {row['feature_right']!r}); use order_pair()")
-        if row["state"] not in STATES:
-            raise Refusal(f"{table}: state {row['state']!r} not in {STATES}")
-        if int(row["shared_support"]) < 0 or int(row["lag"]) < 0:
-            raise Refusal(f"{table}: shared_support and lag must be non-negative")
-        if row["state"] == "MEASURED" and row.get("metric_value") is None:
-            raise Refusal(f"{table}: a MEASURED row carries a metric_value")
-    if table == "feature_alias_groups" and row["disposition"] not in ALIAS_DISPOSITIONS:
-        raise Refusal(f"{table}: disposition {row['disposition']!r} not in {ALIAS_DISPOSITIONS}")
-    if table == "feature_filter_rankings":
-        if row["method"] not in FILTER_METHODS:
-            raise Refusal(f"{table}: method {row['method']!r} not in {FILTER_METHODS}")
-        if row["state"] not in STATES:
-            raise Refusal(f"{table}: state {row['state']!r} not in {STATES}")
-        if int(row["rank"]) < 1:
-            raise Refusal(f"{table}: rank is 1-based")
-    out = {column: row.get(column) for column in COLUMNS[table]}
-    out["split"] = "train"
-    for json_column in ("extra_json", "k_membership_json"):
-        if json_column in out and out[json_column] is not None and not isinstance(out[json_column], str):
-            out[json_column] = canonical_bytes(out[json_column]).decode("ascii")
-    identity = {column: out[column] for column in IDENTITY[table]}
-    out["row_identity_sha256"] = digest(identity)
-    body = {column: out[column] for column in COLUMNS[table]
-            if column not in ("row_identity_sha256", "row_sha256")}
-    out["row_sha256"] = digest(body)
-    return out
+    backend = "service"
 
+    def __init__(self, url: str, token_env: str = "WAREHOUSE_TOKEN", *, page: int = 5000):
+        self.url = url.rstrip("/")
+        self.token = os.environ.get(token_env)
+        if not self.token:
+            raise Refusal(f"{token_env} is not set: the service token comes from the environment, "
+                          "never from an argument or a file in the repository")
+        self.page = page
 
-def rows_digest(row_digests: Iterable[str]) -> str:
-    """Order-independent digest of a set of row digests: sha256 of the sorted concatenation.
+    def _call(self, method: str, path: str, body: dict | None = None, params: dict | None = None) -> dict:
+        url = f"{self.url}{path}"
+        if params:
+            url += "?" + urllib.parse.urlencode({k: v for k, v in params.items() if v is not None})
+        data = None if body is None else canonical_bytes(body)
+        request = urllib.request.Request(url, data=data, method=method,
+                                         headers={"Authorization": f"Bearer {self.token}",
+                                                  "Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(request, timeout=600) as handle:
+                return json.load(handle)
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", "replace")[:300]
+            if exc.code in (400, 422):
+                raise Refusal(f"service refused ({exc.code}): {detail}") from None
+            raise
 
-    The SQL twin is ``sha256(string_agg(row_sha256, '' ORDER BY row_sha256))`` and the two must
-    agree; ``test_fs_phase23_warehouse`` checks that they do.
-    """
-    return hashlib.sha256("".join(sorted(row_digests)).encode("ascii")).hexdigest()
+    def submit_rows(self, run_id: str, table: str, rows: list[dict], *, host_role: str | None = None,
+                    shard_id: str | None = None) -> dict:
+        document = {"run_id": run_id, "table": table, "rows": rows}
+        if host_role:
+            document["host_role"] = host_role
+        if shard_id:
+            document["shard_id"] = shard_id
+        return self._call("POST", "/api/v2/fs-phase23/rows", document)
 
+    def read_run(self, run_id: str, table: str, unit_id: str | None = None) -> list[dict]:
+        out: list[dict] = []
+        after = None
+        while True:
+            page = self._call("GET", "/api/v2/fs-phase23/rows",
+                              params={"run_id": run_id, "table": table, "unit_id": unit_id,
+                                      "after": after, "limit": self.page})
+            out.extend(page.get("rows") or [])
+            after = page.get("next_after")
+            if not after:
+                return out
 
-# --------------------------------------------------------------------------- runs
-def register_run(conn, run: dict) -> dict:
-    """Register a run (population identity bound) before any row may be submitted.
+    def reconcile(self, run_id: str, receipts: list[dict] | None = None, expected: dict | None = None) -> dict:
+        document: dict[str, Any] = {"run_id": run_id}
+        if receipts:
+            document["receipts"] = receipts
+        if expected:
+            document["expected"] = expected
+        return self._call("POST", "/api/v2/fs-phase23/reconcile", document)
 
-    ``run`` carries: run_id, population_id, phase ('PHASE_2' | 'PHASE_3'), contract_sha256,
-    campaign_sha256, code_sha256, input_sha256, expected_json (declared expected counts per
-    table, used by ``reconcile``). Re-registering an identical run is a no-op; a different
-    document under the same run_id is refused.
-    """
-    for key in ("run_id", "population_id", "phase", "contract_sha256", "campaign_sha256",
-                "code_sha256", "input_sha256"):
-        if not run.get(key):
-            raise Refusal(f"run.{key} is required")
-    if run["phase"] not in ("PHASE_2", "PHASE_3"):
-        raise Refusal("run.phase must be PHASE_2 or PHASE_3")
-    for key in ("contract_sha256", "campaign_sha256", "code_sha256", "input_sha256"):
-        _check_hex(key, run[key])
-    expected = run.get("expected_json") or {}
-    if not isinstance(expected, dict):
-        raise Refusal("run.expected_json must be a mapping table -> expected row count")
-    body = {k: run[k] for k in ("run_id", "population_id", "phase", "contract_sha256",
-                                "campaign_sha256", "code_sha256", "input_sha256")}
-    body["expected_json"] = canonical_bytes(expected).decode("ascii")
-    run_sha = digest(body)
-    stored = conn.execute(
-        f"SELECT run_sha256 FROM {RUN_TABLE} WHERE run_id = ?", [run["run_id"]]).fetchone()
-    if stored:
-        if stored[0] != run_sha:
-            raise Refusal(f"run {run['run_id']!r} is already registered with a different "
-                          f"identity ({stored[0][:12]}… vs {run_sha[:12]}…)")
-        return {"run_id": run["run_id"], "run_sha256": run_sha, "already_registered": True}
-    conn.execute(
-        f"INSERT INTO {RUN_TABLE} (run_id, run_sha256, population_id, phase, contract_sha256, "
-        "campaign_sha256, code_sha256, input_sha256, expected_json, created_at) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        [run["run_id"], run_sha, run["population_id"], run["phase"], run["contract_sha256"],
-         run["campaign_sha256"], run["code_sha256"], run["input_sha256"], body["expected_json"],
-         now()])
-    return {"run_id": run["run_id"], "run_sha256": run_sha, "already_registered": False}
+    def query(self, sql: str) -> list[dict]:
+        body = self._call("GET", "/api/v1/query", params={"sql": sql})
+        return body.get("rows") or []
+
+    def close(self) -> None:
+        return None
 
 
-def get_run(conn, run_id: str) -> dict:
-    row = conn.execute(
-        f"SELECT run_id, run_sha256, population_id, phase, contract_sha256, campaign_sha256, "
-        f"code_sha256, input_sha256, expected_json, created_at FROM {RUN_TABLE} WHERE run_id = ?",
-        [run_id]).fetchone()
-    if not row:
-        raise Refusal(f"run {run_id!r} is not registered; register_run first")
-    keys = ("run_id", "run_sha256", "population_id", "phase", "contract_sha256",
-            "campaign_sha256", "code_sha256", "input_sha256", "expected_json", "created_at")
-    out = dict(zip(keys, row))
-    out["expected_json"] = json.loads(out["expected_json"] or "{}")
-    return out
+def open_warehouse(path_or_url, *, token_env: str = "WAREHOUSE_TOKEN"):
+    """The driver's entry point: a DuckDB file path or an http(s) service URL."""
+    target = str(path_or_url)
+    if target.startswith(("http://", "https://")):
+        return ServiceWarehouse(target, token_env)
+    return Warehouse(Path(target))
 
 
-# --------------------------------------------------------------------------- submit
-def submit_rows(conn, run_id: str, table: str, rows: list[dict], *, host_role: str | None = None,
-                shard_id: str | None = None) -> dict:
-    """Store rows for a registered run and return a receipt with counts and digests.
-
-    Refuses, before writing anything: an unregistered run; a row whose ``run_id`` or
-    ``population_id`` differs from the registered run (a foreign identity); a malformed row;
-    two rows with one identity and different content inside the batch; and a row whose
-    identity is already stored with different content. Identical rows already stored are
-    counted as ``already_stored`` and not written again. The write is one transaction.
-    """
-    run = get_run(conn, run_id)
-    if table not in FACT_TABLES:
-        raise Refusal(f"unknown table {table!r}")
-    if not rows:
-        raise Refusal("submit_rows received no rows")
-    prepared: dict[str, dict] = {}
-    for raw in rows:
-        row = dict(raw)
-        if host_role is not None:
-            row.setdefault("host_role", host_role)
-        if shard_id is not None:
-            row.setdefault("shard_id", shard_id)
-        row = normalise_row(table, row)
-        if row["run_id"] != run_id:
-            raise Refusal(f"foreign run identity: row carries run_id {row['run_id']!r}, "
-                          f"submission is for {run_id!r}")
-        if row["population_id"] != run["population_id"]:
-            raise Refusal(f"foreign population identity: row carries {row['population_id']!r}, "
-                          f"run {run_id!r} is bound to {run['population_id']!r}")
-        prior = prepared.get(row["row_identity_sha256"])
-        if prior is not None and prior["row_sha256"] != row["row_sha256"]:
-            raise Refusal("the batch carries one identity with two different contents: "
-                          f"{row['row_identity_sha256'][:12]}…")
-        prepared[row["row_identity_sha256"]] = row
-    identities = list(prepared)
-    stored = {}
-    for i in range(0, len(identities), 1000):
-        chunk = identities[i:i + 1000]
-        placeholders = ",".join("?" * len(chunk))
-        for ident, sha in conn.execute(
-                f"SELECT row_identity_sha256, row_sha256 FROM {table} "
-                f"WHERE row_identity_sha256 IN ({placeholders})", chunk).fetchall():
-            stored[ident] = sha
-    conflicts = [ident for ident, sha in stored.items() if prepared[ident]["row_sha256"] != sha]
-    if conflicts:
-        raise Refusal(f"{len(conflicts)} identities already stored with different content; "
-                      f"first {conflicts[0][:12]}…; nothing written")
-    new = [prepared[ident] for ident in identities if ident not in stored]
-    columns = COLUMNS[table]
-    conn.execute("BEGIN TRANSACTION")
-    try:
-        if new:
-            conn.executemany(
-                f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({', '.join('?' * len(columns))})",
-                [[row[c] for c in columns] for row in new])
-        receipt = {
-            "schema": SCHEMA_RECEIPT, "run_id": run_id, "run_sha256": run["run_sha256"],
-            "population_id": run["population_id"], "table": table,
-            "submitted": len(rows), "distinct_identities": len(identities),
-            "stored_new": len(new), "already_stored": len(identities) - len(new),
-            "rows_sha256": rows_digest(row["row_sha256"] for row in prepared.values()),
-            "host_role": host_role, "shard_id": shard_id, "submitted_at": now(),
-        }
-        receipt["receipt_sha256"] = digest({k: v for k, v in receipt.items() if k != "submitted_at"})
-        conn.execute(
-            f"INSERT INTO {RECEIPT_TABLE} (receipt_sha256, run_id, population_id, table_name, "
-            "submitted, distinct_identities, stored_new, already_stored, rows_sha256, host_role, "
-            "shard_id, submitted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            [receipt["receipt_sha256"], run_id, run["population_id"], table, receipt["submitted"],
-             receipt["distinct_identities"], receipt["stored_new"], receipt["already_stored"],
-             receipt["rows_sha256"], host_role, shard_id, receipt["submitted_at"]])
-        conn.execute("COMMIT")
-    except Exception:
-        conn.execute("ROLLBACK")
-        raise
-    return receipt
-
-
-def verify_receipt(conn, receipt: dict) -> dict:
-    """A receipt is accepted only if its run, population and digest match the store."""
-    if not isinstance(receipt, dict) or receipt.get("schema") != SCHEMA_RECEIPT:
-        raise Refusal("not a phase-2/3 load receipt")
-    body = {k: v for k, v in receipt.items() if k not in ("submitted_at", "receipt_sha256")}
-    if digest(body) != receipt.get("receipt_sha256"):
-        raise Refusal("receipt digest does not match its body")
-    run = get_run(conn, receipt["run_id"])
-    if receipt.get("population_id") != run["population_id"]:
-        raise Refusal(f"receipt carries foreign population {receipt.get('population_id')!r}; "
-                      f"run {run['run_id']!r} is bound to {run['population_id']!r}")
-    if receipt.get("run_sha256") != run["run_sha256"]:
-        raise Refusal("receipt carries a run identity digest the store does not hold")
-    row = conn.execute(
-        f"SELECT rows_sha256 FROM {RECEIPT_TABLE} WHERE receipt_sha256 = ?",
-        [receipt["receipt_sha256"]]).fetchone()
-    if not row:
-        raise Refusal("the store holds no such receipt")
-    if row[0] != receipt["rows_sha256"]:
-        raise Refusal("stored receipt digest differs from the presented one")
-    return {"accepted": True, "receipt_sha256": receipt["receipt_sha256"]}
-
-
-# --------------------------------------------------------------------------- readback
-def read_run(conn, run_id: str, table: str) -> list[dict]:
-    if table not in FACT_TABLES:
-        raise Refusal(f"unknown table {table!r}")
-    get_run(conn, run_id)
-    columns = COLUMNS[table]
-    rows = conn.execute(
-        f"SELECT {', '.join(columns)} FROM {table} WHERE run_id = ? ORDER BY row_identity_sha256",
-        [run_id]).fetchall()
-    return [dict(zip(columns, row)) for row in rows]
-
-
-def _stored_summary_sql(table: str, run_id: str) -> str:
-    rid = run_id.replace("'", "''")
-    return (f"SELECT count(*) AS n, "
-            f"coalesce(sha256(string_agg(row_sha256, '' ORDER BY row_sha256)), '') AS rows_sha256 "
-            f"FROM {table} WHERE run_id = '{rid}' LIMIT 1")
-
-
-def reconcile(conn, run_id: str, receipts: list[dict] | None = None,
-              expected: dict[str, int] | None = None) -> dict:
-    """Expected versus stored counts and digests, per table.
-
-    ``expected`` counts default to the run's declared ``expected_json``. When receipts are
-    given, each is verified and its digest is compared with the store; the union of receipt
-    identities is also required to equal the stored population of the table (a receipt that
-    was never issued, or rows that arrived without a receipt, both fail).
-    """
-    run = get_run(conn, run_id)
-    expected = dict(run["expected_json"]) if expected is None else dict(expected)
-    tables = {}
-    complete = True
-    for table in FACT_TABLES:
-        n, sha = conn.execute(_stored_summary_sql(table, run_id)).fetchone()
-        rows_sha = sha if n else rows_digest([])
-        issued = conn.execute(
-            f"SELECT count(*), coalesce(sum(stored_new), 0) FROM {RECEIPT_TABLE} "
-            f"WHERE run_id = ? AND table_name = ?", [run_id, table]).fetchone()
-        entry = {"stored": int(n), "stored_rows_sha256": rows_sha,
-                 "receipts": int(issued[0]), "receipted_new_rows": int(issued[1]),
-                 "expected": expected.get(table)}
-        if expected.get(table) is not None:
-            entry["count_matches_expected"] = int(n) == int(expected[table])
-            complete &= entry["count_matches_expected"]
-        entry["receipts_cover_store"] = int(issued[1]) == int(n)
-        complete &= entry["receipts_cover_store"]
-        tables[table] = entry
-    verified = []
-    if receipts:
-        for receipt in receipts:
-            verified.append(verify_receipt(conn, receipt))
-    report = {"schema": SCHEMA_RECONCILIATION, "run_id": run_id, "run_sha256": run["run_sha256"],
-              "population_id": run["population_id"], "phase": run["phase"],
-              "tables": tables, "receipts_verified": len(verified), "complete": complete,
-              "generated_at": now()}
-    report["reconciliation_sha256"] = digest({k: v for k, v in report.items() if k != "generated_at"})
-    return report
-
-
+# --------------------------------------------------------------------------- readback report
 def _readback_sql(table: str, run_id: str | None) -> str:
-    where = f"WHERE run_id = '{run_id.replace(chr(39), chr(39)*2)}'" if run_id else ""
-    return (f"SELECT population_id, method, coalesce(host_role, 'UNDECLARED') AS host_role, "
-            f"fold, count(*) AS n, "
-            f"sha256(string_agg(row_sha256, '' ORDER BY row_sha256)) AS rows_sha256, "
-            f"sum(CASE WHEN state = 'MEASURED' THEN 1 ELSE 0 END) AS measured, "
-            f"sum(CASE WHEN state = 'INSUFFICIENT_SUPPORT' THEN 1 ELSE 0 END) AS insufficient, "
-            f"sum(CASE WHEN state = 'FAILED' THEN 1 ELSE 0 END) AS failed "
-            f"FROM {table} {where} GROUP BY 1, 2, 3, 4 ORDER BY 1, 2, 3, 4 LIMIT 100000")
-
-
-def _readback_sql_no_state(table: str, run_id: str | None) -> str:
-    where = f"WHERE run_id = '{run_id.replace(chr(39), chr(39)*2)}'" if run_id else ""
-    return (f"SELECT population_id, method, coalesce(host_role, 'UNDECLARED') AS host_role, "
-            f"fold, count(*) AS n, "
-            f"sha256(string_agg(row_sha256, '' ORDER BY row_sha256)) AS rows_sha256, "
-            f"NULL AS measured, NULL AS insufficient, NULL AS failed "
-            f"FROM {table} {where} GROUP BY 1, 2, 3, 4 ORDER BY 1, 2, 3, 4 LIMIT 100000")
+    where = f"WHERE run_id = '{run_id.replace(chr(39), chr(39) * 2)}'" if run_id else ""
+    has_state = "state" in core.VALUES[table]
+    state_cols = (" sum(CASE WHEN state = 'MEASURED' THEN 1 ELSE 0 END) AS measured,"
+                  " sum(CASE WHEN state = 'INSUFFICIENT_SUPPORT' THEN 1 ELSE 0 END) AS insufficient,"
+                  " sum(CASE WHEN state = 'FAILED' THEN 1 ELSE 0 END) AS failed"
+                  if has_state else " NULL AS measured, NULL AS insufficient, NULL AS failed")
+    method = "method" if "method" in core.IDENTITY[table] else "'-'"
+    fold = "fold" if "fold" in core.IDENTITY[table] else "'-'"
+    return (f"SELECT population_id, {method} AS method, coalesce(host_role, 'UNDECLARED') AS host_role,"
+            f" {fold} AS fold, count(*) AS n,"
+            f" sha256(string_agg(row_sha256, '' ORDER BY row_sha256)) AS rows_sha256,{state_cols}"
+            f" FROM {table} {where} GROUP BY 1, 2, 3, 4 ORDER BY 1, 2, 3, 4 LIMIT 100000")
 
 
 def readback_report(query, run_id: str | None = None, *, source: str = "local") -> dict:
-    """Counts and digests per asset (population) × method × host role × fold, per table.
-
-    ``query`` is any callable ``sql -> list[dict]``: ``local_query(conn)`` for a file, or
-    ``Service.query`` for the live read-only route. The SQL is identical in both cases, so a
-    terminal and the warehouse are compared by one expression. This is the document that
-    ``close-phase2`` / ``close-phase3`` consume.
-    """
+    """Counts and digests per asset x method x host role x fold, per table (closure input)."""
     tables = {}
     for table in FACT_TABLES:
-        sql = _readback_sql(table, run_id) if table in ("feature_pair_metrics", "feature_filter_rankings") \
-            else _readback_sql_no_state(table, run_id)
         groups = []
-        for row in query(sql):
+        for row in query(_readback_sql(table, run_id)):
             groups.append({"population_id": row["population_id"], "method": row["method"],
                            "host_role": row["host_role"], "fold": row["fold"], "n": int(row["n"]),
                            "rows_sha256": row["rows_sha256"],
@@ -567,13 +280,12 @@ def readback_report(query, run_id: str | None = None, *, source: str = "local") 
 
 
 def compare_readback(local: dict, remote: dict) -> dict:
-    """Two readback reports agree when every (table, group) has the same n and digest."""
     differences = []
     for table in FACT_TABLES:
         left = {(g["population_id"], g["method"], g["host_role"], g["fold"]): g
-                for g in local["tables"][table]["groups"]}
+                for g in local["tables"].get(table, {}).get("groups", [])}
         right = {(g["population_id"], g["method"], g["host_role"], g["fold"]): g
-                 for g in remote["tables"][table]["groups"]}
+                 for g in remote["tables"].get(table, {}).get("groups", [])}
         for key in sorted(set(left) | set(right)):
             a, b = left.get(key), right.get(key)
             if a is None or b is None or a["n"] != b["n"] or a["rows_sha256"] != b["rows_sha256"]:
@@ -581,33 +293,6 @@ def compare_readback(local: dict, remote: dict) -> dict:
                                     "local": None if a is None else {"n": a["n"], "rows_sha256": a["rows_sha256"]},
                                     "remote": None if b is None else {"n": b["n"], "rows_sha256": b["rows_sha256"]}})
     return {"agree": not differences, "differences": differences}
-
-
-def local_query(conn):
-    def run(sql: str) -> list[dict]:
-        cursor = conn.execute(sql)
-        names = [d[0] for d in cursor.description]
-        return [dict(zip(names, row)) for row in cursor.fetchall()]
-    return run
-
-
-class Service:
-    """Read-only access to the running warehouse through its query route. No write method."""
-
-    def __init__(self, url: str, token_env: str = "WAREHOUSE_TOKEN"):
-        self.url = url.rstrip("/")
-        self.token = os.environ.get(token_env)
-        if not self.token:
-            raise Refusal(f"{token_env} is not set: the service token comes from the "
-                          "environment, never from an argument or a file in the repository")
-
-    def query(self, sql: str) -> list[dict]:
-        request = urllib.request.Request(
-            f"{self.url}/api/v1/query?" + urllib.parse.urlencode({"sql": sql}),
-            headers={"Authorization": f"Bearer {self.token}"})
-        with urllib.request.urlopen(request, timeout=300) as handle:
-            body = json.load(handle)
-        return body.get("rows") or []
 
 
 # --------------------------------------------------------------------------- the contract
@@ -732,20 +417,23 @@ def build_contract(args) -> dict:
         ],
         "populations": {"EURUSD": eurusd, "ETH": eth},
         "rules": {
-            "pair_identity": "feature_left < feature_right (lexicographic); a pair is stored once; "
-                             "lagged relations carry lag >= 0 under the same ordered identity",
+            "pair_identity": "left < right (lexicographic); a pair is stored once; lagged relations "
+                             "carry lag_hours >= 0 under the same ordered identity",
             "alias_evidence": "an alias group contributes ONE independent observation; aliases never "
                               "count as independent evidence in any pair denominator, cluster, ranking "
                               "or stability statistic; the disposition and representative are stored, "
                               "no column is deleted",
-            "splits": "only split='train' rows exist; validation and test remain closed; fitting, "
-                      "discretisation, scaling and estimators resolve inside each TRAIN fold",
+            "splits": "only TRAIN rows exist (fold_id = TRAIN or an inner fold); validation and test "
+                      "remain closed; fitting, discretisation, scaling and estimators resolve inside "
+                      "each TRAIN fold",
             "causal_supported": "the 12 EURUSD and 3 ETH phase-1 features are CAUSAL_SUPPORTED candidates "
                                 "feeding a declared ranking variant and the CAUSAL_SUPPORTED control; "
                                 "they are not the final selection; NOT_IDENTIFIED is zero causal "
                                 "evidence, not rejection",
-            "row_identity": "run_id, population_id, ordered pair (or feature), fold, lag, method, "
-                            "params_sha256, code_sha256, input_sha256 -> row_identity_sha256; UNIQUE",
+            "row_identity": "UNIQUE (run_id, row_key) AND UNIQUE over the typed identity columns per "
+                            "table (predictor_olap_store.fs_phase23_store.IDENTITY); "
+                            "row_sha256 = sha256(canonical JSON of the submitted row); "
+                            "rows_sha256 = sha256(sorted row_sha256 concatenated)",
             "lags_hours": [0, 1, 2, 6, 24, 48, 168],
             "k_path": [4, 8, 12, 16, 24, 32],
             "states": list(STATES),
@@ -755,7 +443,8 @@ def build_contract(args) -> dict:
             "migration_id": MIGRATION_ID,
             "migration_sql": str(MIGRATION_SQL.relative_to(REPO_ROOT)),
             "migration_sql_sha256": file_sha256(MIGRATION_SQL) if MIGRATION_SQL.exists() else None,
-            "tables": list(ALL_TABLES),
+            "tables": list(ALL_TABLES), "views": list(core.VIEWS),
+            "identity_columns": {t: list(c) for t, c in core.IDENTITY.items()},
         },
     }
     contract["contract_sha256"] = digest({k: v for k, v in contract.items() if k != "contract_sha256"})
@@ -763,7 +452,6 @@ def build_contract(args) -> dict:
 
 
 def verify_contract(contract: dict) -> dict:
-    """Re-check the arithmetic and labels of a contract document (used by tests and closures)."""
     body = {k: v for k, v in contract.items() if k != "contract_sha256"}
     if digest(body) != contract.get("contract_sha256"):
         raise Refusal("contract digest does not match its body")
@@ -800,14 +488,14 @@ def _zstd_compress(source: Path, target: Path, zstd_bin: str | None, level: int)
     binary = zstd_bin or shutil.which("zstd")
     if not binary:
         raise Refusal("neither the zstandard module nor a zstd binary is available")
-    subprocess.run([binary, "-q", f"-{level}", "-T1", "--force", "-o", str(target), str(source)],
-                   check=True)
+    subprocess.run([binary, "-q", f"-{level}", "-T1", "--force", "-o", str(target), str(source)], check=True)
     version = subprocess.run([binary, "--version"], capture_output=True, text=True, check=False).stdout.strip()
     return version or "zstd"
 
 
 def snapshot(source: Path, out_dir: Path, *, tag: str, repo: str, phase: str, zstd_bin: str | None,
-             level: int = 19, warehouse_runs: dict | None = None, expected_tables: Iterable[str] = ALL_TABLES) -> dict:
+             level: int = 19, warehouse_runs: dict | None = None,
+             expected_tables: Iterable[str] = ALL_TABLES) -> dict:
     """Compress a cube COPY to .duckdb.zst, digest both forms, write the release-asset manifest."""
     source = Path(source).expanduser().resolve()
     if not source.exists():
@@ -817,19 +505,19 @@ def snapshot(source: Path, out_dir: Path, *, tag: str, repo: str, phase: str, zs
         raise Refusal("the source has a non-empty write-ahead log beside it: that is a live store, "
                       "not a snapshot copy. Take the copy with tools/olap_duckdb_migrate.py snapshot "
                       "(it CHECKPOINTs the copy) and point this command at the copy")
-    import duckdb  # local import: the contract subcommand must not need it
+    import duckdb
     conn = duckdb.connect(str(source), read_only=True)
     try:
-        present = set(list_tables(conn))
+        present = set(core.list_relations(conn))
         counts = {}
         for table in expected_tables:
             if table in present:
                 counts[table] = {"rows": int(conn.execute(f"SELECT count(*) FROM {table}").fetchone()[0])}
                 if table in FACT_TABLES:
                     n, sha = conn.execute(
-                        f"SELECT count(*), coalesce(sha256(string_agg(row_sha256, '' ORDER BY row_sha256)), '') "
-                        f"FROM {table}").fetchone()
-                    counts[table]["rows_sha256"] = sha if n else rows_digest([])
+                        f"SELECT count(*), coalesce(sha256(string_agg(row_sha256, '' ORDER BY row_sha256)), "
+                        f"'{core.EMPTY_DIGEST}') FROM {table}").fetchone()
+                    counts[table]["rows_sha256"] = sha
             else:
                 counts[table] = {"rows": None, "missing": True}
     finally:
@@ -854,7 +542,7 @@ def snapshot(source: Path, out_dir: Path, *, tag: str, repo: str, phase: str, zs
                           "verification of the asset and of the decompressed file before opening.",
         "publish_commands": [
             f"gh release create {tag} --repo {repo} --title '{phase} OLAP snapshot' --notes-file RELEASE_NOTES.md",
-            f"gh release upload {tag} {asset.name} --repo {repo} --clobber",
+            f"gh release upload {tag} {asset.name} {asset.name}.sha256 --repo {repo} --clobber",
         ],
     }
     manifest["manifest_sha256"] = digest({k: v for k, v in manifest.items() if k != "manifest_sha256"})
@@ -866,7 +554,6 @@ def snapshot(source: Path, out_dir: Path, *, tag: str, repo: str, phase: str, zs
 
 
 def verify_snapshot_asset(asset: Path, manifest: dict, *, zstd_bin: str | None, work_dir: Path) -> dict:
-    """Check the asset digest, decompress, check the file digest, open read-only, count rows."""
     asset = Path(asset)
     if file_sha256(asset) != manifest["compressed_sha256"]:
         raise Refusal("asset SHA-256 does not match the manifest; refusing to open")
@@ -900,12 +587,6 @@ def verify_snapshot_asset(asset: Path, manifest: dict, *, zstd_bin: str | None, 
 
 
 # --------------------------------------------------------------------------- CLI
-def _connect(path: str, read_only: bool = False):
-    import duckdb
-    return duckdb.connect(str(Path(path).expanduser()), read_only=read_only,
-                          config={"memory_limit": "256MB", "threads": 1})
-
-
 def _dump(document: dict, out: str | None) -> None:
     text = json.dumps(document, indent=2, sort_keys=True) + "\n"
     if out:
@@ -927,20 +608,24 @@ def main(argv=None) -> int:
     verify = sub.add_parser("verify-contract", help="re-check a contract's arithmetic and labels")
     verify.add_argument("contract", type=Path)
 
+    sub.add_parser("render-migration", help="write the migration .sql from fs_phase23_store.ddl()")
+
     migrate = sub.add_parser("migrate", help="apply (or plan) the additive migration on a DuckDB file")
     migrate.add_argument("--duckdb", required=True)
     migrate.add_argument("--dry-run", action="store_true", help="report the plan; write nothing")
     migrate.add_argument("--out")
 
-    rb = sub.add_parser("readback", help="counts/digests per asset x method x host role")
+    rb = sub.add_parser("readback", help="counts/digests per asset x method x host role x fold")
     rb.add_argument("--duckdb", help="a local file (opened read-only)")
-    rb.add_argument("--service-url", help="the live store's read-only query route")
+    rb.add_argument("--service-url", help="the live store's routes (token from the environment)")
     rb.add_argument("--token-env", default="WAREHOUSE_TOKEN")
     rb.add_argument("--run-id")
     rb.add_argument("--out")
 
-    rc = sub.add_parser("reconcile", help="expected vs stored counts and digests for one run")
-    rc.add_argument("--duckdb", required=True)
+    rc = sub.add_parser("reconcile", help="stored counts/digests for one run vs expectations and receipts")
+    rc.add_argument("--duckdb")
+    rc.add_argument("--service-url")
+    rc.add_argument("--token-env", default="WAREHOUSE_TOKEN")
     rc.add_argument("--run-id", required=True)
     rc.add_argument("--receipts", nargs="*", type=Path, default=[])
     rc.add_argument("--out")
@@ -973,37 +658,41 @@ def main(argv=None) -> int:
             _dump(document, args.out)
         elif args.command == "verify-contract":
             _dump(verify_contract(json.loads(args.contract.read_text(encoding="utf-8"))), None)
+        elif args.command == "render-migration":
+            _dump({"migration_sql": str(MIGRATION_SQL.relative_to(REPO_ROOT)),
+                   "sql_sha256": write_migration_file()}, None)
         elif args.command == "migrate":
-            if args.dry_run and not Path(args.duckdb).expanduser().exists():
+            target = Path(args.duckdb).expanduser()
+            if args.dry_run and not target.exists():
                 _dump({"migration_id": MIGRATION_ID, "sql_sha256": file_sha256(MIGRATION_SQL),
-                       "would_create": list(ALL_TABLES), "already_present": [],
-                       "statements": len(load_ddl()), "destructive_statements": 0,
+                       "would_create": list(ALL_RELATIONS), "already_present": [],
+                       "statements": len(core.ddl()), "destructive_statements": 0,
                        "note": "target file does not exist; a dry run creates nothing"}, args.out)
-            else:
-                conn = _connect(args.duckdb, read_only=args.dry_run)
+            elif args.dry_run:
+                wh = Warehouse(target, read_only=True)
                 try:
-                    _dump(migration_plan(conn) if args.dry_run else apply_migration(conn), args.out)
+                    _dump(migration_plan(wh.conn), args.out)
                 finally:
-                    conn.close()
-        elif args.command == "readback":
+                    wh.close()
+            else:
+                wh = Warehouse(target)
+                try:
+                    _dump(wh.migration, args.out)
+                finally:
+                    wh.close()
+        elif args.command in ("readback", "reconcile"):
             if bool(args.duckdb) == bool(args.service_url):
                 raise Refusal("give exactly one of --duckdb or --service-url")
-            if args.duckdb:
-                conn = _connect(args.duckdb, read_only=True)
-                try:
-                    _dump(readback_report(local_query(conn), args.run_id, source="local"), args.out)
-                finally:
-                    conn.close()
-            else:
-                service = Service(args.service_url, args.token_env)
-                _dump(readback_report(service.query, args.run_id, source="service"), args.out)
-        elif args.command == "reconcile":
-            conn = _connect(args.duckdb, read_only=True)
+            wh = Warehouse(Path(args.duckdb), read_only=True) if args.duckdb \
+                else ServiceWarehouse(args.service_url, args.token_env)
             try:
-                receipts = [json.loads(p.read_text(encoding="utf-8")) for p in args.receipts]
-                _dump(reconcile(conn, args.run_id, receipts or None), args.out)
+                if args.command == "readback":
+                    _dump(readback_report(wh.query, args.run_id, source=wh.backend), args.out)
+                else:
+                    receipts = [json.loads(p.read_text(encoding="utf-8")) for p in args.receipts]
+                    _dump(wh.reconcile(args.run_id, receipts or None), args.out)
             finally:
-                conn.close()
+                wh.close()
         elif args.command == "compare-readback":
             result = compare_readback(json.loads(args.local.read_text()), json.loads(args.remote.read_text()))
             _dump(result, None)

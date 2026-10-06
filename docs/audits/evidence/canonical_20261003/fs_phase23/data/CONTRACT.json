@@ -3,7 +3,7 @@
     "docs/tres_temas_entrevista/program_v3/FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md",
     "docs/handoffs/MUSASHI_TO_SATOSHI_FS_PHASE2_PHASE3_AUTOMATED_2026_10_05.md"
   ],
-  "contract_sha256": "7cb3e84c5652753c414c1060df9872802442406d47c88a2f702c2a2134cac5dd",
+  "contract_sha256": "b859cbe95302c37815e1cd2e8610df8bc992e36bc9e06dbea3c5896ea2cd154d",
   "frozen_on": "2026-10-05",
   "populations": {
     "ETH": {
@@ -1237,9 +1237,9 @@
       48,
       168
     ],
-    "pair_identity": "feature_left < feature_right (lexicographic); a pair is stored once; lagged relations carry lag >= 0 under the same ordered identity",
-    "row_identity": "run_id, population_id, ordered pair (or feature), fold, lag, method, params_sha256, code_sha256, input_sha256 -> row_identity_sha256; UNIQUE",
-    "splits": "only split='train' rows exist; validation and test remain closed; fitting, discretisation, scaling and estimators resolve inside each TRAIN fold",
+    "pair_identity": "left < right (lexicographic); a pair is stored once; lagged relations carry lag_hours >= 0 under the same ordered identity",
+    "row_identity": "UNIQUE (run_id, row_key) AND UNIQUE over the typed identity columns per table (predictor_olap_store.fs_phase23_store.IDENTITY); row_sha256 = sha256(canonical JSON of the submitted row); rows_sha256 = sha256(sorted row_sha256 concatenated)",
+    "splits": "only TRAIN rows exist (fold_id = TRAIN or an inner fold); validation and test remain closed; fitting, discretisation, scaling and estimators resolve inside each TRAIN fold",
     "states": [
       "MEASURED",
       "INSUFFICIENT_SUPPORT",
@@ -1249,16 +1249,85 @@
   },
   "schema": "fs_phase23_contract.v1",
   "warehouse": {
+    "identity_columns": {
+      "feature_alias_groups": [
+        "run_id",
+        "population_id",
+        "group_id"
+      ],
+      "feature_filter_rankings": [
+        "run_id",
+        "population_id",
+        "target_id",
+        "horizon",
+        "method",
+        "params_sha256",
+        "feature_id"
+      ],
+      "feature_filter_subsets": [
+        "run_id",
+        "population_id",
+        "target_id",
+        "horizon",
+        "method",
+        "params_sha256",
+        "k"
+      ],
+      "feature_pair_gate": [
+        "run_id",
+        "population_id",
+        "feature_left",
+        "feature_right",
+        "fold",
+        "method",
+        "params_sha256",
+        "code_sha256"
+      ],
+      "feature_pair_metrics": [
+        "run_id",
+        "population_id",
+        "feature_left",
+        "feature_right",
+        "fold",
+        "metric",
+        "lag",
+        "method",
+        "params_sha256",
+        "code_sha256"
+      ],
+      "feature_pair_stability": [
+        "run_id",
+        "population_id",
+        "feature_left",
+        "feature_right",
+        "metric",
+        "lag",
+        "method",
+        "params_sha256",
+        "code_sha256"
+      ],
+      "feature_redundancy_clusters": [
+        "run_id",
+        "population_id",
+        "cluster_id"
+      ]
+    },
     "migration_id": "fs_phase23_0001",
     "migration_sql": "olap/migrations/fs_phase23/0001_fs_phase23_additive.sql",
-    "migration_sql_sha256": "207379ff49b777e9a69c9e7e8645e4b9c42952d28e4c0fbfa332af75bb1d6473",
+    "migration_sql_sha256": "e77ba756af82adc5d0dd85cf72568eab62cc798cb1d17d833e30f8be2698b452",
     "tables": [
       "fs_phase23_run",
       "fs_phase23_load_receipt",
       "feature_pair_metrics",
+      "feature_pair_stability",
+      "feature_pair_gate",
       "feature_alias_groups",
       "feature_redundancy_clusters",
-      "feature_filter_rankings"
+      "feature_filter_rankings",
+      "feature_filter_subsets"
+    ],
+    "views": [
+      "fs_phase23_coverage"
     ]
   }
 }
