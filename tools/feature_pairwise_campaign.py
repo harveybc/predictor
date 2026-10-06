@@ -31,6 +31,7 @@ import importlib
 import json
 import os
 import shutil
+import signal
 import socket
 import sys
 import time
@@ -457,15 +458,21 @@ def follow_once(*, plan_path: Path, state_root: Path, terminal_dirs: list[Path],
     receipts_dir.mkdir(exist_ok=True)
     res["submitted"] = 0
     res["submit_errors"] = []
+    failures_dir = state_root / "submit_failures"
     for path in sorted((state_root / "adopted").glob("*.json.gz")):
+        if _STOP.is_set():
+            break
         uid = path.name[: -len(".json.gz")]
         if (receipts_dir / f"{uid}.json").exists():
             continue
         try:
             _submit_terminal(wh, plan_doc, load_terminal(path), receipts_dir)
             res["submitted"] += 1
-        except CampaignError as exc:
-            res["submit_errors"].append({"unit_id": uid, "reason": str(exc)})
+            (failures_dir / f"{uid}.json").unlink(missing_ok=True)
+        except Exception as exc:  # noqa: BLE001 - a store refusal/engine error on one unit never stops the follower
+            reason = f"{type(exc).__name__}: {exc}"
+            res["submit_errors"].append({"unit_id": uid, "reason": reason})
+            _write_json_atomic(failures_dir / f"{uid}.json", {"unit_id": uid, "reason": reason, "at": _now(), "stage": "submit"})
     res["phase2_closed"] = (state_root / "PHASE_2_COMPLETE.json").exists()
     res["closure_error"] = None
     receipted = {p.name[:-5] for p in receipts_dir.glob("*.json")}
@@ -492,12 +499,42 @@ def follow_once(*, plan_path: Path, state_root: Path, terminal_dirs: list[Path],
     return res
 
 
+class _StopFlag:
+    def __init__(self) -> None:
+        self._set = False
+
+    def set(self, *_: Any) -> None:
+        self._set = True
+
+    def is_set(self) -> bool:
+        return self._set
+
+
+_STOP = _StopFlag()
+
+
 def follow(*, every: float = 60.0, once: bool = False, **kwargs) -> None:
+    """Durable loop: a failed pass is reported on stderr and retried next cycle; SIGTERM finishes the
+    unit in flight (no transaction is cut mid-write) and then returns."""
+    try:
+        signal.signal(signal.SIGTERM, _STOP.set)
+    except (ValueError, OSError):  # not the main thread
+        pass
     while True:
-        res = follow_once(**kwargs)
-        if once or res.get("phase3_closed"):
+        try:
+            res = follow_once(**kwargs)
+        except Exception as exc:  # noqa: BLE001 - never crash-loop on one bad pass
+            import traceback
+            print(json.dumps({"follow_pass_error": f"{type(exc).__name__}: {exc}", "at": _ts()}), file=sys.stderr)
+            traceback.print_exc()
+            res = {"phase3_closed": False}
+        if once or res.get("phase3_closed") or _STOP.is_set():
             return
-        time.sleep(max(1.0, every))
+        deadline = time.time() + max(1.0, every)
+        while time.time() < deadline and not _STOP.is_set():
+            time.sleep(1.0)
+        if _STOP.is_set():
+            return
 
 
 # ----------------------------------------------------------------------------- alias groups and clusters
@@ -724,6 +761,15 @@ def _phase3_target(args: tuple) -> dict:
     return sel.run_filter_methods(manifest, mats, feats, X, y, target_id=target_id, seed=seed, k_grid=tuple(plan_doc["k_grid"]))
 
 
+def _phase3_terminal_valid(path: Path) -> bool:
+    try:
+        doc = load_terminal(path)
+        return _digest({k: v for k, v in doc.items() if k != "terminal_sha256"}) == doc.get("terminal_sha256") \
+            and _digest(doc["rows"]) == doc.get("rows_sha256")
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def run_phase3(*, plan_path: Path, state_root: Path, data_root: Path, warehouse_path: Path, workers: int = 1,
                seed: int = 20261005, warehouse=None) -> dict:
     from tools import feature_filter_selection as sel
@@ -741,9 +787,20 @@ def run_phase3(*, plan_path: Path, state_root: Path, data_root: Path, warehouse_
     for target_id in plan_doc["targets"]:
         uid = _phase3_unit_id(plan_doc, target_id, params_sha)
         summary["units"][target_id] = uid
-        if (p3 / "terminals" / f"{uid}.json.gz").exists():
+        existing = p3 / "terminals" / f"{uid}.json.gz"
+        if existing.exists() and _phase3_terminal_valid(existing):
             summary["existing"] += 1
         else:
+            if existing.exists():   # sealed under a digest that does not verify: quarantine and recompute (cheap)
+                qdir = p3 / "quarantine"
+                qdir.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(existing), qdir / f"{uid}.{_ts()}.json.gz")
+                meta = existing.with_name(existing.name.replace(".json.gz", ".meta.json"))
+                if meta.exists():
+                    meta.unlink()
+                (p3 / "receipts" / f"{uid}.json").unlink(missing_ok=True)
+                summary.setdefault("quarantined", 0)
+                summary["quarantined"] += 1
             todo.append((plan_doc, str(state_root), str(data_root), target_id, seed))
     results = []
     if todo:

@@ -276,7 +276,7 @@ def run_filter_methods(manifest: dict, mats: dict, feats: list[str], X: np.ndarr
         cluster_order = list(adm_feats)
     ranking = [{"rank": r + 1, "feature_id": f, "score": float(relevance[adm_feats.index(f)]), "base_score": None,
                 "terms": dict(terms(adm_feats.index(f), []), complementarity=None)} for r, f in enumerate(cluster_order)]
-    methods["SPEARMAN_CLUSTER"] = {"ranking": ranking, "subsets": {K: cluster_subsets[K] for K in k_list if K in cluster_subsets},
+    methods["SPEARMAN_CLUSTER"] = {"ranking": ranking, "subsets": {str(K): cluster_subsets[K] for K in k_list if K in cluster_subsets},
                                    "subset_rule": "cut tree into K clusters; representative per cluster"}
     methods["MRMR"] = {"ranking": greedy("MRMR", False), "subset_rule": "ranking prefix"}
     methods["JMI"] = {"ranking": greedy("JMI", False), "subset_rule": "ranking prefix"}
@@ -303,9 +303,9 @@ def run_filter_methods(manifest: dict, mats: dict, feats: list[str], X: np.ndarr
         if "subsets" not in m:
             order = [r["feature_id"] for r in m["ranking"]]
             if name == "ALL_ADMISSIBLE":
-                m["subsets"] = {p: list(adm_feats)}
+                m["subsets"] = {str(p): list(adm_feats)}
             else:
-                m["subsets"] = {K: sorted(order[:K]) for K in k_list}
+                m["subsets"] = {str(K): sorted(order[:K]) for K in k_list}
     # --- rows
     rank_rows, subset_rows = [], []
     for name, m in methods.items():

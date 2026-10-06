@@ -492,3 +492,99 @@ def test_status_reports_expected_complete_failed_active_rate_and_eta(tmp_path):
     assert cell["failures"][0]["reason"] == "synthetic failure"
     assert status["generated_at"] and status["schema"].startswith("fs_phase23")
     assert json.loads((state / "STATUS.json").read_text())["populations"]["SYN"]["pairwise_v1"]["complete"] == 1
+
+
+# --------------------------------------------------------------------------- regressions 2026-10-06 (follower incident)
+
+def test_phase3_terminal_digest_survives_write_read_with_multi_k_subsets(tmp_path):
+    """Integer K keys sorted differently in memory and after JSON reload made every phase-3 terminal 'corrupt'."""
+    camp = _cap("feature_pairwise_campaign")
+    doc = {"schema": "fs_phase23.filter_terminal.v1", "unit_id": "u" * 64, "target_id": "Y",
+           "methods": {"MRMR": {"subsets": {4: ["a"], 8: ["b"], 12: ["c"], 16: ["d"], 24: ["e"], 32: ["f"]}}},
+           "rows": {"feature_filter_rankings": [{"row_key": "k1", "terms": {}}], "feature_filter_subsets": [{"row_key": "k2", "k": 12}]}}
+    sealed = camp.seal_terminal(doc)
+    path = tmp_path / "t.json.gz"
+    camp.write_terminal(path, sealed)
+    back = camp.load_terminal(path)
+    assert camp._digest({k: v for k, v in back.items() if k != "terminal_sha256"}) == back["terminal_sha256"]
+    assert camp._phase3_terminal_valid(path)
+
+
+def test_follow_survives_store_exception_on_one_unit(tmp_path):
+    """A store/engine exception while submitting one unit is recorded and the other units still get receipts."""
+    camp = _cap("feature_pairwise_campaign")
+    manifest_path, data = _population(tmp_path)
+    _, state, plan, _ = _plan_and_run(tmp_path, manifest_path, data)
+    victim = plan["shards"][1]["unit_id"]
+
+    class Flaky:
+        def __init__(self, inner):
+            self.inner = inner
+
+        def submit_rows(self, run_id, table, rows, **kw):
+            if rows and rows[0].get("unit_id") == victim:
+                raise RuntimeError('Constraint Error: Duplicate key "row_identity_sha256: deadbeef" violates primary key constraint.')
+            return self.inner.submit_rows(run_id, table, rows)
+
+        def read_run(self, *a, **k):
+            return self.inner.read_run(*a, **k)
+
+        def reconcile(self, *a, **k):
+            return self.inner.reconcile(*a, **k)
+
+    healthy = camp.open_warehouse(tmp_path / "wh.db")
+    coord = tmp_path / "coord"
+    res = camp.follow_once(plan_path=state / "PLAN.json", state_root=coord, terminal_dirs=[state / "terminals"],
+                           warehouse_path=tmp_path / "wh.db", data_root=data, warehouse=Flaky(healthy))
+    assert res["submitted"] == len(plan["shards"]) - 1
+    assert [e["unit_id"] for e in res["submit_errors"]] == [victim] and "Duplicate key" in res["submit_errors"][0]["reason"]
+    assert (coord / "submit_failures" / f"{victim}.json").exists()
+    assert res["phase2_closed"] is False and res["closure_error"] is None
+    # the store recovers: the next pass submits only the failed unit and closes both phases
+    res2 = camp.follow_once(plan_path=state / "PLAN.json", state_root=coord, terminal_dirs=[state / "terminals"],
+                            warehouse_path=tmp_path / "wh.db", data_root=data, warehouse=healthy)
+    assert res2["submitted"] == 1 and res2["submit_errors"] == [] and res2["phase2_closed"] and res2["phase3_closed"]
+    assert not (coord / "submit_failures" / f"{victim}.json").exists()
+
+
+def test_run_phase3_quarantines_and_recomputes_a_corrupt_phase3_terminal(tmp_path):
+    camp, manifest_path, data, state, plan, coord = _closed_phase2(tmp_path)
+    camp.run_phase3(plan_path=state / "PLAN.json", state_root=coord, data_root=data, warehouse_path=tmp_path / "wh.db")
+    path = sorted((coord / "phase3" / "terminals").glob("*.json.gz"))[0]
+    doc = camp.load_terminal(path)
+    doc["admissible_count"] = doc["admissible_count"] + 1          # content no longer matches its digest
+    with gzip.open(path, "wt", encoding="utf-8") as fh:
+        json.dump(doc, fh)
+    with pytest.raises(camp.CampaignError, match="corrupt"):
+        camp.close_phase3(plan_path=state / "PLAN.json", state_root=coord, warehouse_path=tmp_path / "wh.db")
+    res = camp.run_phase3(plan_path=state / "PLAN.json", state_root=coord, data_root=data, warehouse_path=tmp_path / "wh.db")
+    assert res["quarantined"] == 1 and res["computed"] == 1 and res["existing"] == len(plan["targets"]) - 1
+    assert list((coord / "phase3" / "quarantine").glob("*.json.gz"))
+    assert camp.close_phase3(plan_path=state / "PLAN.json", state_root=coord, warehouse_path=tmp_path / "wh.db")["targets"] == 2
+
+
+def test_rebuild_pk_index_preserves_rows_and_digests(tmp_path):
+    pytest.importorskip("duckdb")
+    try:
+        from tools import fs_phase23_warehouse as wh_mod
+    except ImportError:
+        pytest.skip("DATA warehouse module not present")
+    camp = _cap("feature_pairwise_campaign")
+    rebuild = _cap("fs_phase23_deploy.rebuild_duckdb_pk_index")
+    manifest_path, data = _population(tmp_path)
+    _, state, plan, _ = _plan_and_run(tmp_path, manifest_path, data)
+    db = tmp_path / "store.duckdb"
+    wh = wh_mod.open_warehouse(db)
+    unit = plan["shards"][0]["unit_id"]
+    t = camp.load_terminal(state / "terminals" / f"{unit}.json.gz")
+    for table, rows in t["rows"].items():
+        wh.submit_rows(plan["identity"], table, rows, host_role="coordinator")
+    before = wh.reconcile(plan["identity"])["tables"]
+    wh.close()
+    assert rebuild.main(["--warehouse", str(db)]) == 0
+    wh = wh_mod.open_warehouse(db)
+    after = wh.reconcile(plan["identity"])["tables"]
+    assert {k: (v["count"], v["rows_sha256"]) for k, v in before.items()} == {k: (v["count"], v["rows_sha256"]) for k, v in after.items()}
+    receipt = wh.submit_rows(plan["identity"], "feature_pair_gate", t["rows"]["feature_pair_gate"], host_role="coordinator")
+    assert receipt["inserted"] == 0 and receipt["duplicates_ignored"] == len(t["rows"]["feature_pair_gate"])
+    wh.close()

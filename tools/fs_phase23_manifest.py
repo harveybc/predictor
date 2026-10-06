@@ -42,7 +42,15 @@ class ManifestError(RuntimeError):
 
 
 def canonical_bytes(value: Any) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False).encode("utf-8")
+    """Canonical JSON of the JSON form of ``value``.
+
+    The value is first round-tripped through JSON so that non-string mapping keys (for
+    example integer K in phase-3 subsets) are stringified BEFORE keys are sorted; otherwise a
+    document digested in memory and the same document re-read from disk sort their keys
+    differently and the digest does not survive a write/read cycle.
+    """
+    text = json.dumps(value, separators=(",", ":"), ensure_ascii=True, allow_nan=False)
+    return json.dumps(json.loads(text), sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False).encode("utf-8")
 
 
 def digest(value: Any) -> str:
