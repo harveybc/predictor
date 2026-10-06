@@ -385,7 +385,10 @@ def accept_receipt(plan_doc: dict, terminal: dict, receipt: dict) -> dict:
             "duplicates_ignored": receipt.get("duplicates_ignored"), "backend": receipt.get("backend")}
 
 
-SUBMIT_BATCH_ROWS = int(os.environ.get("FS23_SUBMIT_BATCH_ROWS", "2000"))
+# Keep service submissions below the request size that exhausted the production
+# DuckDB host on 2026-10-06. Deployments may tune this downward, but an omitted
+# environment variable must remain safe for the governed service route.
+SUBMIT_BATCH_ROWS = int(os.environ.get("FS23_SUBMIT_BATCH_ROWS", "250"))
 
 
 def _readback_matches(wh, run_id: str, table: str, unit_id: str | None, rows: list[dict], expected_digest: str) -> int:

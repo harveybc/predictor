@@ -100,6 +100,7 @@ unit_src_digest="$(cd "$UNITS_SRC" && sha256sum fs-phase23-worker@.service fs-ph
   echo "FS23_FOLLOW_CAP=$FOLLOW_CAP"
   echo "FS23_FOLLOW_EVERY=60"
   echo "FS23_PHASE3_WORKERS=2"
+  echo "FS23_SUBMIT_BATCH_ROWS=250"
   echo "FS23_ADMIT_WAIT=86400"
   echo "FS23_IDLE_SLEEP=300"
   for kv in "${EXTRA_ENV[@]}"; do echo "$kv"; done

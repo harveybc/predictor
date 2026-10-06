@@ -686,6 +686,11 @@ def test_submission_is_batched_with_per_batch_receipts_and_summary_readback(tmp_
     assert all(b["rows_sha256"] and b["row_count"] <= 7 for b in metrics["batches"])
 
 
+def test_default_service_submission_batch_is_bounded():
+    camp = _cap("feature_pairwise_campaign")
+    assert camp.SUBMIT_BATCH_ROWS == 250
+
+
 def test_status_phase_comes_only_from_own_valid_closures_and_flags_stalled_followers(tmp_path):
     st = _cap("feature_selection_phase23_status")
     camp = _cap("feature_pairwise_campaign")
