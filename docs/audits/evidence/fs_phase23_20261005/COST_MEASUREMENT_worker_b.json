@@ -1,0 +1,41 @@
+{
+ "build_seconds": 4.014309883117676,
+ "estimated_core_hours_all_pairs": 12.633943708852357,
+ "expected_pairs": 66795,
+ "features": 366,
+ "folds": 5,
+ "n_shards": 67,
+ "peak_rss_bytes": 1556455424,
+ "peak_rss_gib": 1.4495620727539062,
+ "phase3_one_target_seconds": 15.000413656234741,
+ "phase3_peak_rss_bytes": 1644601344,
+ "phase3_rows": {
+  "feature_filter_rankings": 3294,
+  "feature_filter_subsets": 49
+ },
+ "rows": 71734,
+ "rss_before_worker_bytes": 1419853824,
+ "schema": "fs_phase23.cost_measurement.v1",
+ "seconds_per_1000_pairs": 680.922185071764,
+ "shard_pairs": 979,
+ "shard_wall_seconds": 666.622819185257,
+ "worker": {
+  "adopted_existing": 0,
+  "computed": 1,
+  "failed": 0,
+  "host_id": "measure",
+  "pairs_computed": 979,
+  "peak_rss_bytes": 1556455424,
+  "quarantined": 0,
+  "skipped_claimed": 0,
+  "units": [
+   {
+    "pairs": 979,
+    "unit_id": "2f036c1cd0de86831e0d2742e4c60eea27f98459d47f618bf846dc7783207a94",
+    "wall_seconds": 666.622819185257
+   }
+  ],
+  "wall_seconds": 676.0831623077393
+ },
+ "worker_wall_seconds_including_load": 676.1146042346954
+}
