@@ -386,7 +386,7 @@ def _submit_terminal(wh, plan_doc: dict, terminal: dict, receipts_dir: Path) -> 
     uid = terminal["unit_id"]
     out = {"unit_id": uid, "tables": {}}
     for table, rows in terminal["rows"].items():
-        receipt = wh.submit_rows(plan_doc["identity"], table, rows)
+        receipt = wh.submit_rows(plan_doc["identity"], table, rows, host_role=terminal.get("host_id"))
         accepted = accept_receipt(plan_doc, terminal, receipt)
         back = None
         try:
@@ -664,7 +664,7 @@ def close_phase2(*, plan_path: Path, state_root: Path, warehouse_path: Path, dat
     wh = warehouse or open_warehouse(warehouse_path)
     extra_receipts = {}
     for table, rows in (("feature_alias_groups", aliases), ("feature_redundancy_clusters", clusters)):
-        receipt = wh.submit_rows(plan_doc["identity"], table, rows)
+        receipt = wh.submit_rows(plan_doc["identity"], table, rows, host_role="coordinator")
         if receipt.get("run_id") != plan_doc["identity"] or receipt.get("rows_sha256") != rows_digest(rows):
             raise CampaignError(f"warehouse receipt for {table} rejected (identity or digest)")
         extra_receipts[table] = {"rows_sha256": receipt["rows_sha256"], "row_count": len(rows), "receipt_sha256": receipt.get("receipt_sha256")}
@@ -769,7 +769,7 @@ def run_phase3(*, plan_path: Path, state_root: Path, data_root: Path, warehouse_
         doc = load_terminal(p3 / "terminals" / f"{uid}.json.gz")
         out = {"unit_id": uid, "target_id": target_id, "tables": {}}
         for table, rows in doc["rows"].items():
-            receipt = wh.submit_rows(plan_doc["identity"], table, rows)
+            receipt = wh.submit_rows(plan_doc["identity"], table, rows, host_role="coordinator")
             if receipt.get("run_id") != plan_doc["identity"] or receipt.get("rows_sha256") != rows_digest(rows):
                 raise CampaignError(f"phase-3 receipt for {table}/{target_id} rejected")
             try:

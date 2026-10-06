@@ -58,10 +58,11 @@ lock_sha="$(sha256sum "$LOCK" | cut -d' ' -f1)"
 if [[ ! -x "$VENV/bin/python" ]]; then
   "$BASE_PY" -m venv "$VENV"
 fi
-"$VENV/bin/python" -m pip install -q --disable-pip-version-check --require-virtualenv -r "$LOCK"
+(cd "$CODE" && "$VENV/bin/python" -m pip install -q --disable-pip-version-check --require-virtualenv -r "$LOCK")
 py_version="$("$VENV/bin/python" -c 'import platform; print(platform.python_version())')"
 pkgs="$(grep -vE '^\s*(#|$)' "$LOCK" | cut -d= -f1 | tr 'A-Z_' 'a-z-' | sort)"
-freeze="$("$VENV/bin/python" -m pip freeze --disable-pip-version-check 2>/dev/null | tr 'A-Z_' 'a-z-' | grep -E "^($(echo "$pkgs" | paste -sd'|'))==" | sort)"
+pkgs="$(printf '%s\n' "$pkgs" | grep -v '/' ; echo predictor-olap-store; echo predictor-duckdb-store)"
+freeze="$("$VENV/bin/python" -m pip freeze --disable-pip-version-check 2>/dev/null | tr 'A-Z_' 'a-z-' | sed 's/ @ .*//' | grep -E "^($(echo "$pkgs" | paste -sd'|'))(==|$)" | sort)"
 freeze_sha="$(printf '%s\n' "$freeze" | sha256sum | cut -d' ' -f1)"
 numeric="$("$VENV/bin/python" -c 'import json,numpy,scipy,sklearn,pandas,pyarrow,duckdb; print(json.dumps({"numpy":numpy.__version__,"scipy":scipy.__version__,"sklearn":sklearn.__version__,"pandas":pandas.__version__,"pyarrow":pyarrow.__version__,"duckdb":duckdb.__version__}))')"
 

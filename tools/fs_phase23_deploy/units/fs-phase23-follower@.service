@@ -6,6 +6,8 @@ Wants=fs-phase23-relay.service
 [Service]
 Type=simple
 EnvironmentFile=%h/.local/state/canonical_20261003/fs_phase23/runner.env
+# optional, untracked, mode 0600: WAREHOUSE_TOKEN=... for the live warehouse (never in the repository)
+EnvironmentFile=-%h/.local/state/canonical_20261003/fs_phase23/follower.secret.env
 ExecStart=/bin/bash ${FS23_CODE}/tools/fs_phase23_deploy/follower_loop.sh %i
 WorkingDirectory=%h/.local/state/canonical_20261003/fs_phase23
 Restart=on-failure

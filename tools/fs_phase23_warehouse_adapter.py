@@ -88,7 +88,7 @@ class WarehouseAdapter:
             self._con.commit()
 
     # ----------------------------------------------------------------- interface
-    def submit_rows(self, run_id: str, table: str, rows: list[dict]) -> dict:
+    def submit_rows(self, run_id: str, table: str, rows: list[dict], *, host_role: str | None = None, **_ignored) -> dict:
         if table not in TABLES:
             raise ValueError(f"unknown table {table}")
         if not run_id:
