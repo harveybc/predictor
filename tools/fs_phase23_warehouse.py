@@ -145,6 +145,14 @@ class Warehouse:
     def read_run(self, run_id: str, table: str, unit_id: str | None = None) -> list[dict]:
         return core.read_run(self.conn, run_id, table, unit_id)
 
+    def readback_summary(self, run_id: str, table: str, unit_id: str | None = None) -> dict:
+        if table not in core.FACT_TABLES:
+            raise Refusal(f"unknown table {table!r}")
+        where = "run_id = ? AND unit_id = ?" if unit_id is not None else "run_id = ? AND unit_id IS NULL"
+        params = [run_id, unit_id] if unit_id is not None else [run_id]
+        n, d = self.conn.execute(f"SELECT count(*), sha256(string_agg(row_sha256, '' ORDER BY row_sha256)) FROM {table} WHERE {where}", params).fetchone()
+        return {"count": int(n), "rows_sha256": (d if n else rows_digest([]))}
+
     def reconcile(self, run_id: str, receipts: list[dict] | None = None, expected: dict | None = None) -> dict:
         return core.reconcile(self.conn, run_id, receipts, expected, backend=self.backend)
 
@@ -165,15 +173,33 @@ class ServiceWarehouse:
 
     backend = "service"
 
-    def __init__(self, url: str, token_env: str = "WAREHOUSE_TOKEN", *, page: int = 5000):
+    # Incident 2026-10-06: the host was OOM-killed on large submissions and the client had a single
+    # 600 s socket timeout and no retry, so one dead host meant one lost pass per unit.  Every request
+    # now has a bounded timeout and transport failures (connection refused/reset, 5xx, timeouts) are
+    # retried with backoff inside a declared budget, after the host answers /healthz again.  A 400/422
+    # refusal is a verdict about the bytes and is never retried.
+    def __init__(self, url: str, token_env: str = "WAREHOUSE_TOKEN", *, page: int = 5000, timeout: float = 300.0,
+                 retries: int = 6, backoff: float = 5.0, max_backoff: float = 60.0):
         self.url = url.rstrip("/")
         self.token = os.environ.get(token_env)
         if not self.token:
             raise Refusal(f"{token_env} is not set: the service token comes from the environment, "
                           "never from an argument or a file in the repository")
         self.page = page
+        self.timeout = float(timeout)
+        self.retries = int(retries)
+        self.backoff = float(backoff)
+        self.max_backoff = float(max_backoff)
+        self.transport_log: list[dict] = []
 
-    def _call(self, method: str, path: str, body: dict | None = None, params: dict | None = None) -> dict:
+    def healthy(self, timeout: float = 10.0) -> bool:
+        try:
+            with urllib.request.urlopen(urllib.request.Request(f"{self.url}/healthz"), timeout=timeout) as handle:
+                return 200 <= handle.status < 300
+        except Exception:  # noqa: BLE001
+            return False
+
+    def _once(self, method: str, path: str, body: dict | None, params: dict | None) -> dict:
         url = f"{self.url}{path}"
         if params:
             url += "?" + urllib.parse.urlencode({k: v for k, v in params.items() if v is not None})
@@ -181,14 +207,50 @@ class ServiceWarehouse:
         request = urllib.request.Request(url, data=data, method=method,
                                          headers={"Authorization": f"Bearer {self.token}",
                                                   "Content-Type": "application/json"})
-        try:
-            with urllib.request.urlopen(request, timeout=600) as handle:
-                return json.load(handle)
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", "replace")[:300]
-            if exc.code in (400, 422):
-                raise Refusal(f"service refused ({exc.code}): {detail}") from None
-            raise
+        with urllib.request.urlopen(request, timeout=self.timeout) as handle:
+            return json.load(handle)
+
+    def _call(self, method: str, path: str, body: dict | None = None, params: dict | None = None) -> dict:
+        import socket
+        import time
+        attempt = 0
+        while True:
+            attempt += 1
+            try:
+                return self._once(method, path, body, params)
+            except urllib.error.HTTPError as exc:
+                detail = exc.read().decode("utf-8", "replace")[:300]
+                if exc.code in (400, 422):
+                    raise Refusal(f"service refused ({exc.code}): {detail}") from None
+                if exc.code in (401, 403, 404, 405, 413, 414):
+                    raise
+                failure = f"http {exc.code}: {detail[:120]}"
+            except (urllib.error.URLError, ConnectionError, socket.timeout, TimeoutError, OSError) as exc:
+                failure = f"{type(exc).__name__}: {str(exc)[:160]}"
+            except Exception as exc:  # noqa: BLE001 - http.client.RemoteDisconnected and friends
+                if exc.__class__.__module__.startswith("http"):
+                    failure = f"{type(exc).__name__}: {str(exc)[:160]}"
+                else:
+                    raise
+            self.transport_log.append({"method": method, "path": path, "attempt": attempt, "failure": failure})
+            if attempt > self.retries:
+                raise ConnectionError(f"{method} {path} failed after {attempt} attempts; last: {failure}")
+            wait = min(self.backoff * (2 ** (attempt - 1)), self.max_backoff)
+            time.sleep(wait)
+            deadline = time.time() + self.max_backoff * 2
+            while not self.healthy() and time.time() < deadline:
+                time.sleep(self.backoff)
+
+    def readback_summary(self, run_id: str, table: str, unit_id: str | None = None) -> dict:
+        """Stored (count, rows_sha256) for one unit, computed inside the database: the same digest rule
+        as receipts and reconcile (sha256 of the sorted concatenation of row_sha256), without paging
+        the payloads back through the host."""
+        q = lambda v: v.replace("'", "''")
+        where = f"run_id = '{q(run_id)}'" + (f" AND unit_id = '{q(unit_id)}'" if unit_id is not None else " AND unit_id IS NULL")
+        rows = self.query(f"SELECT count(*) AS n, sha256(string_agg(row_sha256, '' ORDER BY row_sha256)) AS d "
+                          f"FROM {table} WHERE {where} LIMIT 1")
+        n = int(rows[0]["n"]) if rows else 0
+        return {"count": n, "rows_sha256": (rows[0]["d"] if n else rows_digest([]))}
 
     def submit_rows(self, run_id: str, table: str, rows: list[dict], *, host_role: str | None = None,
                     shard_id: str | None = None) -> dict:

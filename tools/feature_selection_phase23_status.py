@@ -75,6 +75,37 @@ def _records(roots: list[Path], sub: str) -> dict[str, dict]:
     return out
 
 
+def _root_belongs_to(root: Path, plan: dict) -> bool:
+    own = _read(root / "PLAN.json")
+    return bool(own) and own.get("identity") == plan.get("identity") and own.get("plan_sha256") == plan.get("plan_sha256")
+
+
+def _valid_closure(path: Path, plan: dict, schema: str) -> dict | None:
+    """A closure artifact counts only when it exists, names this plan/identity and its digest verifies."""
+    doc = _read(path)
+    if not doc or doc.get("schema") != schema or doc.get("identity") != plan.get("identity") or doc.get("plan_sha256") != plan.get("plan_sha256"):
+        return None
+    body = {k: v for k, v in doc.items() if k != "closure_sha256"}
+    text = json.dumps(body, separators=(",", ":"), ensure_ascii=True)
+    import hashlib
+    expected = hashlib.sha256(json.dumps(json.loads(text), sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()).hexdigest()
+    return doc if expected == doc.get("closure_sha256") else None
+
+
+STALL_MIN_SECONDS = 600.0
+
+
+def _follower_heartbeat(root: Path, now: float, every: float = 60.0) -> dict | None:
+    """Age of the follower's own STATUS.json (written once per pass); stalled past max(10 min, 3 passes)."""
+    path = root / "STATUS.json"
+    if not path.exists():
+        return None
+    doc = _read(path) or {}
+    stamp = doc.get("generated_epoch") or path.stat().st_mtime
+    age = max(0.0, now - float(stamp))
+    return {"age_seconds": age, "stalled": age > max(STALL_MIN_SECONDS, 3.0 * every)}
+
+
 def _cell() -> dict:
     return {"expected": 0, "complete": 0, "failed": 0, "active": 0, "pending": 0, "expected_cost": 0.0, "complete_cost": 0.0,
             "rate_units_per_hour": None, "rate_cost_per_second": None, "eta_seconds": None, "failures": [], "by_host": {}}
@@ -151,20 +182,30 @@ def build_status(*, plan_paths: list[Path], terminal_dirs: list[Path], state_roo
         cell["pairs_complete"] = sum(s["pair_count"] for s in plan["shards"] if s["unit_id"] in metas)
         pop_status = status["populations"].setdefault(pop, {})
         pop_status[plan.get("method", "pairwise_v1")] = cell
-        # phase 3 cell from the state roots
+        # phase 3 cell and the phase: ONLY from closure artifacts that belong to this population's plan
+        # and whose digest verifies (incident 2026-10-06: a sibling population's closure file and raw
+        # terminal counts used to promote a population to PHASE_3_COMPLETE)
         p3 = {"expected": len(plan.get("targets", [])), "complete": 0, "failed": 0, "active": 0, "eta_seconds": None}
         phase = "PHASE_2_RUNNING"
-        for root in state_roots:
-            root = Path(root)
-            if (root / "PHASE_2_COMPLETE.json").exists():
+        own_roots = [Path(r) for r in state_roots if _root_belongs_to(Path(r), plan)]
+        for root in own_roots:
+            closure2 = _valid_closure(root / "PHASE_2_COMPLETE.json", plan, "fs_phase23.phase2_complete.v1")
+            closure3 = _valid_closure(root / "PHASE_3_FILTER_COMPLETE.json", plan, "fs_phase23.phase3_filter_complete.v1")
+            if closure2:
                 phase = "PHASE_2_COMPLETE"
-            if (root / "PHASE_3_FILTER_COMPLETE.json").exists():
+            if closure2 and closure3:
                 phase = "PHASE_3_COMPLETE"
             t3 = root / "phase3" / "terminals"
             if t3.exists():
                 p3["complete"] = max(p3["complete"], len(list(t3.glob("*.json.gz"))))
-                if phase == "PHASE_2_COMPLETE" and 0 < p3["complete"] < p3["expected"]:
+                if phase == "PHASE_2_COMPLETE" and p3["complete"] > 0:
                     phase = "PHASE_3_RUNNING"
+            hb = _follower_heartbeat(root, now)
+            if hb is not None:
+                cell["follower_heartbeat_age_seconds"] = hb["age_seconds"]
+                cell["follower_state"] = "CLOSED" if phase == "PHASE_3_COMPLETE" else ("STALLED" if hb["stalled"] else "RUNNING")
+        if not own_roots:
+            cell["follower_state"] = "NO_STATE_ROOT"
         if follower_result and follower_result.get("phase3_error"):
             p3["failed"] = 1
             p3["error"] = follower_result["phase3_error"]

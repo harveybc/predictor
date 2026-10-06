@@ -385,20 +385,69 @@ def accept_receipt(plan_doc: dict, terminal: dict, receipt: dict) -> dict:
             "duplicates_ignored": receipt.get("duplicates_ignored"), "backend": receipt.get("backend")}
 
 
-def _submit_terminal(wh, plan_doc: dict, terminal: dict, receipts_dir: Path) -> dict:
+SUBMIT_BATCH_ROWS = int(os.environ.get("FS23_SUBMIT_BATCH_ROWS", "2000"))
+
+
+def _readback_matches(wh, run_id: str, table: str, unit_id: str | None, rows: list[dict], expected_digest: str) -> int:
+    """Readback of one unit: (count, digest) computed in the store when the handle offers it, else the
+    rows themselves.  Returns the stored count; raises CampaignError on any disagreement."""
+    summary = getattr(wh, "readback_summary", None)
+    if callable(summary):
+        got = summary(run_id, table, unit_id)
+        if int(got.get("count", -1)) != len(rows) or got.get("rows_sha256") != expected_digest:
+            raise CampaignError(f"readback of {table} for unit {str(unit_id)[:12]} does not match the submitted rows "
+                                f"(stored {got.get('count')} rows, digest {str(got.get('rows_sha256'))[:12]})")
+        return int(got["count"])
+    try:
+        back = wh.read_run(run_id, table, unit_id)
+    except TypeError:
+        back = [r for r in wh.read_run(run_id, table) if r.get("unit_id") == unit_id]
+    if rows_digest(back) != expected_digest or len(back) != len(rows):
+        raise CampaignError(f"readback of {table} for unit {str(unit_id)[:12]} does not match the submitted rows")
+    return len(back)
+
+
+def submit_rows_batched(wh, run_id: str, table: str, rows: list[dict], *, host_role: str | None, batch_rows: int | None = None) -> dict:
+    """Submit one table of one unit in bounded batches (incident 2026-10-06: a 26k-row POST drove the
+    host over its memory cap).  Every batch receipt must carry the run identity and the digest of
+    exactly that batch; the table-level record carries the digest of all rows."""
+    batch_rows = batch_rows or SUBMIT_BATCH_ROWS
+    receipts = []
+    inserted = duplicates = 0
+    for start in range(0, len(rows), max(1, batch_rows)):
+        batch = rows[start:start + batch_rows]
+        receipt = wh.submit_rows(run_id, table, batch, host_role=host_role)
+        if receipt.get("run_id") != run_id:
+            raise CampaignError(f"receipt identity {receipt.get('run_id')!r} is foreign to {run_id!r}")
+        expected = rows_digest(batch)
+        if receipt.get("rows_sha256") != expected:
+            raise CampaignError(f"receipt digest {str(receipt.get('rows_sha256'))[:16]} != submitted batch digest {expected[:16]}")
+        if int(receipt.get("row_count", -1)) != len(batch):
+            raise CampaignError("receipt row count differs from submitted batch")
+        inserted += int(receipt.get("inserted") or 0)
+        duplicates += int(receipt.get("duplicates_ignored") or 0)
+        receipts.append({"receipt_sha256": receipt.get("receipt_sha256"), "rows_sha256": expected, "row_count": len(batch),
+                         "inserted": receipt.get("inserted"), "duplicates_ignored": receipt.get("duplicates_ignored")})
+    return {"table": table, "rows_sha256": rows_digest(rows), "row_count": len(rows), "batches": receipts,
+            "batch_rows": batch_rows, "inserted": inserted, "duplicates_ignored": duplicates,
+            "backend": getattr(wh, "backend", None)}
+
+
+def _reconcile(wh, run_id: str, expected: dict) -> dict:
+    """reconcile(run_id, expected=...) when the handle accepts expectations (the DATA store), else reconcile(run_id)."""
+    try:
+        return wh.reconcile(run_id, expected=expected)
+    except TypeError:
+        return wh.reconcile(run_id)
+
+
+def _submit_terminal(wh, plan_doc: dict, terminal: dict, receipts_dir: Path, batch_rows: int | None = None) -> dict:
     uid = terminal["unit_id"]
     out = {"unit_id": uid, "tables": {}}
     for table, rows in terminal["rows"].items():
-        receipt = wh.submit_rows(plan_doc["identity"], table, rows, host_role=terminal.get("host_id"))
-        accepted = accept_receipt(plan_doc, terminal, receipt)
-        back = None
-        try:
-            back = wh.read_run(plan_doc["identity"], table, uid)
-        except TypeError:
-            back = [r for r in wh.read_run(plan_doc["identity"], table) if r.get("unit_id") == uid]
-        if rows_digest(back) != accepted["rows_sha256"] or len(back) != len(rows):
-            raise CampaignError(f"readback of {table} for unit {uid[:12]} does not match the submitted rows")
-        accepted["readback_count"] = len(back)
+        accepted = submit_rows_batched(wh, plan_doc["identity"], table, rows, host_role=terminal.get("host_id"), batch_rows=batch_rows)
+        accepted["unit_id"] = uid
+        accepted["readback_count"] = _readback_matches(wh, plan_doc["identity"], table, uid, rows, accepted["rows_sha256"])
         out["tables"][table] = accepted
     out["accepted_at"] = _now()
     _write_json_atomic(receipts_dir / f"{uid}.json", out)
@@ -703,14 +752,15 @@ def close_phase2(*, plan_path: Path, state_root: Path, warehouse_path: Path, dat
     wh = warehouse or open_warehouse(warehouse_path)
     extra_receipts = {}
     for table, rows in (("feature_alias_groups", aliases), ("feature_redundancy_clusters", clusters)):
-        receipt = wh.submit_rows(plan_doc["identity"], table, rows, host_role="coordinator")
-        if receipt.get("run_id") != plan_doc["identity"] or receipt.get("rows_sha256") != rows_digest(rows):
-            raise CampaignError(f"warehouse receipt for {table} rejected (identity or digest)")
-        extra_receipts[table] = {"rows_sha256": receipt["rows_sha256"], "row_count": len(rows), "receipt_sha256": receipt.get("receipt_sha256")}
+        if rows:
+            extra_receipts[table] = submit_rows_batched(wh, plan_doc["identity"], table, rows, host_role="coordinator")
+            extra_receipts[table]["readback_count"] = _readback_matches(wh, plan_doc["identity"], table, None, rows, extra_receipts[table]["rows_sha256"])
+        else:
+            extra_receipts[table] = {"rows_sha256": rows_digest(rows), "row_count": 0, "batches": [], "note": "no rows"}
         table_digests[table] = [hashlib.sha256(man.canonical_bytes(r)).hexdigest() for r in rows]
         table_counts[table] = len(rows)
     # readback reconciliation
-    recon = wh.reconcile(plan_doc["identity"])
+    recon = _reconcile(wh, plan_doc["identity"], {t: n for t, n in table_counts.items()})
     if recon.get("run_id") != plan_doc["identity"]:
         raise CampaignError("warehouse reconcile answered for a foreign identity")
     mismatches = []
@@ -828,16 +878,9 @@ def run_phase3(*, plan_path: Path, state_root: Path, data_root: Path, warehouse_
         doc = load_terminal(p3 / "terminals" / f"{uid}.json.gz")
         out = {"unit_id": uid, "target_id": target_id, "tables": {}}
         for table, rows in doc["rows"].items():
-            receipt = wh.submit_rows(plan_doc["identity"], table, rows, host_role="coordinator")
-            if receipt.get("run_id") != plan_doc["identity"] or receipt.get("rows_sha256") != rows_digest(rows):
-                raise CampaignError(f"phase-3 receipt for {table}/{target_id} rejected")
-            try:
-                back = wh.read_run(plan_doc["identity"], table, uid)
-            except TypeError:
-                back = [r for r in wh.read_run(plan_doc["identity"], table) if r.get("unit_id") == uid]
-            if rows_digest(back) != receipt["rows_sha256"]:
-                raise CampaignError(f"phase-3 readback mismatch for {table}/{target_id}")
-            out["tables"][table] = {"rows_sha256": receipt["rows_sha256"], "row_count": len(rows), "receipt_sha256": receipt.get("receipt_sha256")}
+            accepted = submit_rows_batched(wh, plan_doc["identity"], table, rows, host_role="coordinator")
+            accepted["readback_count"] = _readback_matches(wh, plan_doc["identity"], table, uid, rows, accepted["rows_sha256"])
+            out["tables"][table] = accepted
         _write_json_atomic(rpath, out)
         summary["submitted"] += 1
     return summary
@@ -880,7 +923,7 @@ def close_phase3(*, plan_path: Path, state_root: Path, warehouse_path: Path, war
             counts[table] += len(rows)
         units.append({"target_id": target_id, "unit_id": uid, "wall_seconds": doc.get("wall_seconds")})
     wh = warehouse or open_warehouse(warehouse_path)
-    recon = wh.reconcile(plan_doc["identity"])
+    recon = _reconcile(wh, plan_doc["identity"], dict(counts))
     for table, shas in table_digests.items():
         expected = hashlib.sha256("".join(sorted(shas)).encode()).hexdigest()
         got = recon["tables"].get(table, {})

@@ -7,6 +7,7 @@ is one test.  Capabilities are loaded lazily through ``_cap`` so that a PRE run 
 from __future__ import annotations
 
 import gzip
+import time
 import importlib
 import json
 import sys
@@ -607,3 +608,116 @@ def test_rebuild_pk_index_preserves_rows_and_digests(tmp_path):
     receipt = wh.submit_rows(plan["identity"], "feature_pair_gate", t["rows"]["feature_pair_gate"], host_role="coordinator")
     assert receipt["inserted"] == 0 and receipt["duplicates_ignored"] == len(t["rows"]["feature_pair_gate"])
     wh.close()
+
+
+# --------------------------------------------------------------------------- regressions 2026-10-06 (service route / status)
+
+def test_service_client_retries_transport_failures_with_timeouts_and_never_retries_refusals(monkeypatch):
+    import http.server
+    import threading
+    wh_mod = _cap("fs_phase23_warehouse")
+    hits = {"n": 0}
+
+    class H(http.server.BaseHTTPRequestHandler):
+        def log_message(self, *a):
+            pass
+
+        def do_GET(self):
+            if self.path == "/healthz":
+                self.send_response(200); self.end_headers(); self.wfile.write(b"{}"); return
+            self.send_response(400); self.end_headers(); self.wfile.write(b'{"error":"LIMIT n is required"}')
+
+        def do_POST(self):
+            hits["n"] += 1
+            length = int(self.headers.get("Content-Length", 0))
+            self.rfile.read(length)
+            if hits["n"] == 1:
+                self.connection.close()            # host died mid-request
+                return
+            self.send_response(200); self.end_headers(); self.wfile.write(b'{"ok": true, "attempt": %d}' % hits["n"])
+
+    server = http.server.HTTPServer(("127.0.0.1", 0), H)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        monkeypatch.setenv("WAREHOUSE_TOKEN", "t")
+        svc = wh_mod.ServiceWarehouse(f"http://127.0.0.1:{server.server_port}", timeout=5, retries=3, backoff=0.01, max_backoff=0.02)
+        assert svc._call("POST", "/api/v2/fs-phase23/rows", {"x": 1}) == {"ok": True, "attempt": 2}
+        assert svc.transport_log and svc.transport_log[0]["attempt"] == 1
+        with pytest.raises(wh_mod.Refusal):
+            svc._call("GET", "/api/v1/query", params={"sql": "SELECT 1"})
+        dead = wh_mod.ServiceWarehouse("http://127.0.0.1:9", timeout=1, retries=1, backoff=0.01, max_backoff=0.02)
+        with pytest.raises(ConnectionError, match="after 2 attempts"):
+            dead._call("GET", "/api/v2/fs-phase23/rows", params={"run_id": "r"})
+    finally:
+        server.shutdown()
+
+
+def test_submission_is_batched_with_per_batch_receipts_and_summary_readback(tmp_path):
+    camp = _cap("feature_pairwise_campaign")
+    manifest_path, data = _population(tmp_path)
+    _, state, plan, _ = _plan_and_run(tmp_path, manifest_path, data)
+    inner = camp.open_warehouse(tmp_path / "wh.db")
+    sizes = []
+
+    class Spy:
+        backend = "spy"
+
+        def submit_rows(self, run_id, table, rows, **kw):
+            sizes.append(len(rows))
+            return inner.submit_rows(run_id, table, rows)
+
+        def readback_summary(self, run_id, table, unit_id=None):
+            rows = [r for r in inner.read_run(run_id, table) if r.get("unit_id") == unit_id]
+            return {"count": len(rows), "rows_sha256": camp.rows_digest(rows)}
+
+        def read_run(self, *a, **k):
+            raise AssertionError("payload readback must not be used when a summary is available")
+
+        def reconcile(self, run_id, expected=None):
+            return inner.reconcile(run_id)
+
+    unit = plan["shards"][0]["unit_id"]
+    terminal = camp.load_terminal(state / "terminals" / f"{unit}.json.gz")
+    rec = camp._submit_terminal(Spy(), plan, terminal, tmp_path / "receipts", batch_rows=7)
+    metrics = rec["tables"]["feature_pair_metrics"]
+    assert max(sizes) <= 7 and len(metrics["batches"]) == -(-len(terminal["rows"]["feature_pair_metrics"]) // 7)
+    assert metrics["rows_sha256"] == camp.rows_digest(terminal["rows"]["feature_pair_metrics"])
+    assert metrics["readback_count"] == len(terminal["rows"]["feature_pair_metrics"])
+    assert all(b["rows_sha256"] and b["row_count"] <= 7 for b in metrics["batches"])
+
+
+def test_status_phase_comes_only_from_own_valid_closures_and_flags_stalled_followers(tmp_path):
+    st = _cap("feature_selection_phase23_status")
+    camp = _cap("feature_pairwise_campaign")
+    # population A fully closed; population B (different identity) has the same number of phase-3 terminals but no closure
+    pa, da = _population(tmp_path, name="A")
+    _, sa, plan_a, _ = _plan_and_run(tmp_path, pa, da, name="A")
+    coord_a = tmp_path / "coord_a"
+    camp.follow_once(plan_path=sa / "PLAN.json", state_root=coord_a, terminal_dirs=[sa / "terminals"], warehouse_path=tmp_path / "a.db", data_root=da)
+    man = _cap("fs_phase23_manifest")
+    pb, db = _population(tmp_path, name="B")
+    m = man.load_manifest(pb); m["identity"] = "phase1-final:SYN:" + "ef" * 8; man.write_manifest(m, pb)
+    _, sb, plan_b, _ = _plan_and_run(tmp_path, pb, db, name="B")
+    coord_b = tmp_path / "coord_b"
+    camp.follow_once(plan_path=sb / "PLAN.json", state_root=coord_b, terminal_dirs=[sb / "terminals"], warehouse_path=tmp_path / "b.db", data_root=db, chain_phase3=False)
+    camp.run_phase3(plan_path=sb / "PLAN.json", state_root=coord_b, data_root=db, warehouse_path=tmp_path / "b.db")
+    (coord_b / "PHASE_2_COMPLETE.json").unlink()        # terminals exist, closure does not
+    now = time.time()
+    # population B (no closure) seen together with population A's closed root: the sibling's closure must not promote B
+    status = st.build_status(plan_paths=[sb / "PLAN.json"], terminal_dirs=[], state_roots=[coord_a, coord_b], out_path=tmp_path / "SB.json", now=now)
+    assert status["populations"]["SYN"]["phase"] in ("PHASE_2_RUNNING",) and status["phase"] == "PHASE_2_RUNNING"
+    assert status["populations"]["SYN"]["filter_v1"]["complete"] == len(plan_b["targets"])   # terminals alone never close
+    # population A alone: its own, digest-valid closures
+    status = st.build_status(plan_paths=[sa / "PLAN.json"], terminal_dirs=[], state_roots=[coord_a, coord_b], out_path=tmp_path / "SA.json", now=now)
+    assert status["populations"]["SYN"]["phase"] == "PHASE_3_COMPLETE"
+    # a closure whose digest does not verify is not a closure
+    doc = json.loads((coord_a / "PHASE_3_FILTER_COMPLETE.json").read_text()); doc["targets"] = 99
+    (coord_a / "PHASE_3_FILTER_COMPLETE.json").write_text(json.dumps(doc))
+    status = st.build_status(plan_paths=[sa / "PLAN.json"], terminal_dirs=[], state_roots=[coord_a], out_path=tmp_path / "S2.json", now=now)
+    assert status["populations"]["SYN"]["phase"] in ("PHASE_2_COMPLETE", "PHASE_3_RUNNING")
+    # stalled follower: its own STATUS.json is older than max(10 min, 3 passes)
+    status = st.build_status(plan_paths=[sa / "PLAN.json"], terminal_dirs=[], state_roots=[coord_a], out_path=tmp_path / "S3.json", now=now + 2000)
+    cell = status["populations"]["SYN"]["pairwise_v1"]
+    assert cell["follower_state"] == "STALLED" and cell["follower_heartbeat_age_seconds"] >= 2000
+    status = st.build_status(plan_paths=[sa / "PLAN.json"], terminal_dirs=[], state_roots=[coord_a], out_path=tmp_path / "S4.json", now=now + 30)
+    assert status["populations"]["SYN"]["pairwise_v1"]["follower_state"] in ("RUNNING", "CLOSED")
