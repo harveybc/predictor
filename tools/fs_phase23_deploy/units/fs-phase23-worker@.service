@@ -1,0 +1,21 @@
+[Unit]
+Description=Phase 2/3 feature-selection worker slot %i (CPU only, crispdm-run per shard, exclusive claims, resumable)
+# Installed by tools/fs_phase23_deploy/deploy.sh on every role; the instance is the slot number.
+# The per-role nice/IO/CPU weight comes from the drop-in fs-phase23-worker@.service.d/role.conf.
+
+[Service]
+Type=simple
+EnvironmentFile=%h/.local/state/canonical_20261003/fs_phase23/runner.env
+ExecStart=/bin/bash ${FS23_CODE}/tools/fs_phase23_deploy/worker_loop.sh %i
+WorkingDirectory=%h/.local/state/canonical_20261003/fs_phase23
+Restart=on-failure
+RestartSec=120
+# 75 = admission refused (terminal: never restart into a hot loop or a lowered cap)
+RestartPreventExitStatus=75
+# 13 = every shard terminal (success); 0 = loop ended normally
+SuccessExitStatus=0 13
+KillMode=mixed
+TimeoutStopSec=90
+
+[Install]
+WantedBy=default.target
