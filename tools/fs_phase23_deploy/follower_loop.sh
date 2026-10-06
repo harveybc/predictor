@@ -30,6 +30,8 @@ if [[ -f "$FS23_STATE/$POP/PHASE_3_FILTER_COMPLETE.json" ]]; then log "PHASE_3_F
 terminals=(--terminals "$FS23_STATE/$POP/terminals")
 for role in worker_a worker_b; do terminals+=(--terminals "$FS23_STATE/peer_terminals/$role/$POP/terminals"); mkdir -p "$FS23_STATE/peer_terminals/$role/$POP/terminals"; done
 log "BEGIN cap=$FS23_FOLLOW_CAP every=${FS23_FOLLOW_EVERY}s warehouse=$FS23_WAREHOUSE phase3_workers=$FS23_PHASE3_WORKERS"
+# register the run with its expected counts (idempotent) so the store's reconcile can judge completeness
+( cd "$FS23_CODE" && "$FS23_PYTHON" tools/fs_phase23_deploy/register_run.py --plan "$plan" --warehouse "$FS23_WAREHOUSE" ) >> "$LOG" 2>&1 || log "REGISTER_RUN_FAILED (see above; follow continues, the store registers on first submission)"
 "$HOME/.local/bin/crispdm-run" -q -W 3600 -m "$FS23_FOLLOW_CAP" -t "$FS23_FOLLOW_WALL" -n "fs23-follower-$POP" -L "fs23:follow:$POP" -- \
   bash -c "cd '$FS23_CODE' && exec '$FS23_PYTHON' tools/feature_pairwise_campaign.py follow --plan '$plan' --state-root '$FS23_STATE/$POP' \
     $(printf "%q " "${terminals[@]}") --warehouse '$FS23_WAREHOUSE' --data-root '$FS23_DATA' --every '$FS23_FOLLOW_EVERY' --phase3-workers '$FS23_PHASE3_WORKERS'" \
