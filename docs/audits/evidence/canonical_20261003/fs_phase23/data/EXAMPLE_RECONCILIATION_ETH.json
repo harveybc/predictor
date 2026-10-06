@@ -1,46 +1,73 @@
 {
+  "backend": "duckdb",
   "complete": true,
-  "generated_at": "2026-10-06T00:44:32Z",
-  "phase": "PHASE_2",
+  "phase": "PHASE_2_3",
   "population_id": "ETH",
-  "receipts_verified": 2,
-  "reconciliation_sha256": "607fd84f8e1bcbdc532d41a02f15b37ba27c3adc8624a5bff512955d46c10146",
+  "receipts_verified": 3,
+  "reconciled_at": "2026-10-06T01:31:38Z",
+  "reconciliation_sha256": "3ced84483b9b63915b50f264f2e17c236c2e0d521ef6f7b8c95f4b769d7e38c6",
+  "registration": "CONTRACT_BOUND",
   "run_id": "phase2-eth:EXAMPLE",
-  "run_sha256": "4c2fc1bb9322ec7b368ff673b39b11fe5b1b27d002641024675f923f948879d2",
-  "schema": "fs_phase23_reconciliation.v1",
+  "run_sha256": "f6524cb23bc91c39d32ffd8554c222687be158729a9e10ef0e79e4789ee7d467",
+  "schema": "fs_phase23.warehouse_reconcile.v2",
   "tables": {
     "feature_alias_groups": {
+      "count": 0,
       "expected": null,
-      "receipted_new_rows": 0,
+      "receipted_inserted": 0,
       "receipts": 0,
       "receipts_cover_store": true,
-      "stored": 0,
-      "stored_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      "rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "feature_filter_rankings": {
+      "count": 0,
       "expected": null,
-      "receipted_new_rows": 0,
+      "receipted_inserted": 0,
       "receipts": 0,
       "receipts_cover_store": true,
-      "stored": 0,
-      "stored_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      "rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "feature_filter_subsets": {
+      "count": 0,
+      "expected": null,
+      "receipted_inserted": 0,
+      "receipts": 0,
+      "receipts_cover_store": true,
+      "rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "feature_pair_gate": {
+      "count": 3,
+      "count_matches_expected": true,
+      "expected": 3,
+      "receipted_inserted": 3,
+      "receipts": 1,
+      "receipts_cover_store": true,
+      "rows_sha256": "6cb5fa314ab6a26fd86dbdccb0e9bb4267b3e61db99e35c959054cfe6b0e1726"
     },
     "feature_pair_metrics": {
+      "count": 6,
       "count_matches_expected": true,
       "expected": 6,
-      "receipted_new_rows": 6,
+      "receipted_inserted": 6,
       "receipts": 2,
       "receipts_cover_store": true,
-      "stored": 6,
-      "stored_rows_sha256": "5a9e762047267473ca2d70bd98ef86e31c5ee9a8c7bde21668aa1ee6c8689ab8"
+      "rows_sha256": "5148bb3a185046887849e4297de81ae03cb1368c28468f3367d713123ea637da"
     },
-    "feature_redundancy_clusters": {
+    "feature_pair_stability": {
+      "count": 0,
       "expected": null,
-      "receipted_new_rows": 0,
+      "receipted_inserted": 0,
       "receipts": 0,
       "receipts_cover_store": true,
-      "stored": 0,
-      "stored_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      "rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "feature_redundancy_clusters": {
+      "count": 0,
+      "expected": null,
+      "receipted_inserted": 0,
+      "receipts": 0,
+      "receipts_cover_store": true,
+      "rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
   }
 }

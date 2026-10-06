@@ -647,6 +647,8 @@ class Plugin:
             " ON c.contract_sha256 = d.availability_contract_sha256",
         ]
         statements.extend(feature_selection_ddl(t, dialect))
+        from predictor_olap_store.fs_phase23_store import ddl as fs_phase23_ddl
+        statements.extend(fs_phase23_ddl(t, dialect))
         return statements
 
     def _ensure_schema(self, engine):
@@ -803,6 +805,48 @@ class Plugin:
         with lock:
             with self.write_engine().begin() as connection:
                 return write(connection, self._qualified, document)
+
+    # -- phase-2/3 feature-selection rows (one implementation: fs_phase23_store) -----------
+    def _fs_phase23_backend_name(self) -> str:
+        return str(self.params.get("kind") or "olap")
+
+    def write_fs_phase23_rows(self, document: dict):
+        """Store one submission ({run_id, table, rows, ...}) atomically through the owner."""
+        from predictor_olap_store import fs_phase23_store as fs
+        if self._engine is None:
+            self.engine()
+        if self._schema_error is not None:
+            raise RuntimeError(f"fs_phase23 schema not ready: {self._schema_error}")
+        lock = getattr(self, "_write_lock", None)
+        if lock is None:
+            with self.write_engine().begin() as connection:
+                return fs.write_document(connection, document, backend=self._fs_phase23_backend_name(),
+                                         qualified=self._qualified)
+        with lock:
+            with self.write_engine().begin() as connection:
+                return fs.write_document(connection, document, backend=self._fs_phase23_backend_name(),
+                                         qualified=self._qualified)
+
+    def read_fs_phase23_rows(self, document: dict):
+        """Rows exactly as submitted, paged by row_key ({run_id, table, unit_id?, after?, limit?})."""
+        from predictor_olap_store import fs_phase23_store as fs
+        if self._engine is None:
+            self.engine()
+        if self._schema_error is not None:
+            raise RuntimeError(f"fs_phase23 schema not ready: {self._schema_error}")
+        with self.engine().connect() as connection:
+            return fs.read_document(connection, document, qualified=self._qualified)
+
+    def reconcile_fs_phase23(self, document: dict):
+        """Stored counts and digests per table for one run ({run_id, receipts?, expected?})."""
+        from predictor_olap_store import fs_phase23_store as fs
+        if self._engine is None:
+            self.engine()
+        if self._schema_error is not None:
+            raise RuntimeError(f"fs_phase23 schema not ready: {self._schema_error}")
+        with self.engine().connect() as connection:
+            return fs.reconcile_document(connection, document, backend=self._fs_phase23_backend_name(),
+                                         qualified=self._qualified)
 
     def reconcile_feature_selection(self, request: dict):
         """Reconcile an authenticated request against retained phase-1 evidence."""

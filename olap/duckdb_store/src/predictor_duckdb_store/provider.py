@@ -30,7 +30,10 @@ CAPABILITIES = ("describe", "storage", "discover", "schema", "query",
                 "write_availability_contracts", "resolve_delivery_availability",
                 # E4: the data-foundation ingestion route, owned by this process
                 "write_foundation_envelope", "write_feature_selection_envelope",
-                "reconcile_feature_selection")
+                "reconcile_feature_selection",
+                # Phase-2/3 feature-selection rows: one owned write route, paged readback and
+                # reconciliation; workers never receive the database path.
+                "write_fs_phase23_rows", "read_fs_phase23_rows", "reconcile_fs_phase23")
 
 #: Refuse to open a database on a volume with less free space than this. An OLAP engine that
 #: runs out of disk mid-write leaves a file nobody can explain.

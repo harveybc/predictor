@@ -6,8 +6,11 @@ Subplan §6 points covered here (the engineering agent covers the numerical ones
   * column order does not change identity or digests;
   * the closure reconciliation fails when one expected disposition is missing;
   * the 12 EURUSD and 3 ETH phase-1 features are labelled CAUSAL_SUPPORTED, not selected;
-  * the migration is additive and idempotent; the SQL file is the only DDL source;
-  * local and SQL digests agree, so a terminal and the warehouse share one arithmetic;
+  * the migration is additive and idempotent; the code is the single DDL source and the
+    checked-in .sql file must equal it;
+  * local and SQL digests agree, and they equal the driver adapter's rule;
+  * the driver's interface (open_warehouse / submit_rows / read_run / reconcile) holds;
+  * the packaged backend (SQLAlchemy over DuckDB) stores and reads the same rows;
   * the snapshot procedure refuses a live store and verifies its own asset.
 
 No test opens the configured warehouse, contacts the service or restarts anything.
@@ -15,6 +18,7 @@ No test opens the configured warehouse, contacts the service or restarts anythin
 
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
 import sys
@@ -26,37 +30,60 @@ duckdb = pytest.importorskip("duckdb")
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
+sys.path.insert(0, str(ROOT / "olap" / "store" / "src"))
+sys.path.insert(0, str(ROOT / "olap" / "duckdb_store" / "src"))
 
 import fs_phase23_warehouse as wh  # noqa: E402
+from predictor_olap_store import fs_phase23_store as core  # noqa: E402
 
 CONTRACT = ROOT / "docs/audits/evidence/canonical_20261003/fs_phase23/data/CONTRACT.json"
 HEX = "a" * 64
 HEX_B = "b" * 64
+RUN = "phase2-eurusd:test"
+
+
+def row_key(run_id, *parts):  # the driver's rule, tools/feature_pairwise_worker.py
+    return hashlib.sha256("|".join([run_id, *[str(p) for p in parts]]).encode()).hexdigest()
+
+
+def adapter_rows_digest(rows):  # the driver adapter's rule, verbatim
+    parts = sorted(hashlib.sha256(json.dumps(r, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+                                             allow_nan=False).encode()).hexdigest() for r in rows)
+    return hashlib.sha256("".join(parts).encode()).hexdigest()
+
+
+def metric_row(left, right, *, run_id=RUN, population="EURUSD", fold="inner_2019", metric="spearman",
+               lag=0, value=0.5, state="MEASURED", support=1000, unit="unit-0", **extra):
+    row = {"run_id": run_id, "population_id": population, "unit_id": unit, "method": "pairwise_v1",
+           "params_sha256": HEX, "code_sha256": HEX, "left": left, "right": right, "fold_id": fold,
+           "metric": metric, "lag_hours": lag, "value": value, "support_n": support, "state": state,
+           "reason": None, "estimator": "pearson_r", "params": {"bins": 16},
+           "row_key": row_key(run_id, "metric", left, right, fold, metric, lag)}
+    row.update(extra)
+    return row
+
+
+def stability_row(left, right, *, run_id=RUN, metric="spearman", lag=0, unit="unit-0"):
+    return {"run_id": run_id, "population_id": "EURUSD", "unit_id": unit, "method": "pairwise_v1",
+            "params_sha256": HEX, "code_sha256": HEX, "left": left, "right": right, "metric": metric,
+            "lag_hours": lag, "fold_count": 5, "mean": 0.4, "sd": 0.1, "sign_consistent": True,
+            "min": 0.3, "max": 0.5, "valid_folds": 5, "state": "MEASURED",
+            "fold_states": {"inner_2019": "MEASURED"},
+            "row_key": row_key(run_id, "stability", left, right, metric, lag)}
+
+
+def gate_row(left, right, *, run_id=RUN, unit="unit-0", gate_state="DISTINCT"):
+    return {"run_id": run_id, "population_id": "EURUSD", "unit_id": unit, "method": "pairwise_v1",
+            "params_sha256": HEX, "code_sha256": HEX, "left": left, "right": right, "fold_id": "TRAIN",
+            "gate_state": gate_state, "shared_support": 7000, "byte_identical": False,
+            "row_key": row_key(run_id, "gate", left, right)}
 
 
 @pytest.fixture
-def conn(tmp_path):
-    connection = duckdb.connect(str(tmp_path / "throwaway.duckdb"),
-                                config={"memory_limit": "128MB", "threads": 1})
-    wh.apply_migration(connection)
-    yield connection
-    connection.close()
-
-
-def run_doc(run_id="phase2-eurusd:test", population="EURUSD", **expected):
-    return {"run_id": run_id, "population_id": population, "phase": "PHASE_2",
-            "contract_sha256": HEX, "campaign_sha256": HEX, "code_sha256": HEX,
-            "input_sha256": HEX, "expected_json": expected}
-
-
-def pair_row(left, right, *, run_id="phase2-eurusd:test", population="EURUSD", fold="inner_2019",
-             lag=0, method="spearman", value=0.5, state="MEASURED", support=1000, **extra):
-    row = {"run_id": run_id, "population_id": population, "feature_left": left,
-           "feature_right": right, "fold": fold, "lag": lag, "method": method,
-           "params_sha256": HEX, "code_sha256": HEX, "input_sha256": HEX,
-           "shared_support": support, "metric_value": value, "state": state}
-    row.update(extra)
-    return row
+def wh_file(tmp_path):
+    store = wh.open_warehouse(tmp_path / "throwaway.duckdb")
+    yield store
+    store.close()
 
 
 # ----------------------------------------------------------------------------- denominators
@@ -93,6 +120,8 @@ def test_contract_is_frozen_with_phase1_identities_and_arithmetic():
     assert t["phase1_identity"]["plan_sha256"].startswith("29d2f745f5d9e87c")
     assert sorted(t["causal_supported"]["distinct_features"]) == [
         "log_return_1", "return_1", "statistical__log_return_1"]
+    assert contract["warehouse"]["tables"] == list(core.ALL_TABLES)
+    assert contract["warehouse"]["migration_sql_sha256"] == wh.file_sha256(wh.MIGRATION_SQL)
 
 
 def test_contract_labels_causal_features_as_candidates_not_selection():
@@ -114,232 +143,260 @@ def test_contract_digest_is_load_bearing():
 
 
 # ----------------------------------------------------------------------------- migration
-def test_migration_is_additive_idempotent_and_sourced_from_the_sql_file(tmp_path):
+def test_migration_is_additive_idempotent_and_the_sql_file_equals_the_code(tmp_path):
+    assert wh.migration_file_matches_code(), "regenerate with `fs_phase23_warehouse.py render-migration`"
     connection = duckdb.connect(str(tmp_path / "m.duckdb"))
     first = wh.apply_migration(connection)
-    assert set(wh.ALL_TABLES) <= set(first["created"])
+    assert set(core.ALL_RELATIONS) <= set(first["created"])
     second = wh.apply_migration(connection)
     assert second["created"] == []
-    assert sorted(second["already_present"]) == sorted(wh.ALL_TABLES)
+    assert sorted(second["already_present"]) == sorted(core.ALL_RELATIONS)
     plan = wh.migration_plan(connection)
     assert plan["would_create"] == [] and plan["destructive_statements"] == 0
-    for statement in wh.load_ddl():
+    for statement in core.ddl():
         assert statement.upper().startswith(("CREATE TABLE IF NOT EXISTS", "CREATE OR REPLACE VIEW"))
         assert "DROP" not in statement.upper() and "ALTER" not in statement.upper()
     connection.close()
 
 
-def test_migration_refuses_a_non_additive_statement(tmp_path):
-    bad = tmp_path / "bad.sql"
-    bad.write_text(wh.MIGRATION_SQL.read_text() + "\nDROP TABLE feature_pair_metrics;\n")
-    connection = duckdb.connect(str(tmp_path / "m.duckdb"))
-    with pytest.raises(wh.Refusal, match="additive only"):
-        wh.apply_migration(connection, bad)
-    connection.close()
+def test_a_stale_sql_file_is_refused(tmp_path):
+    stale = tmp_path / "stale.sql"
+    stale.write_text(core.render_sql().replace("UNIQUE (run_id, row_key)", "UNIQUE (row_key)"))
+    with pytest.raises(wh.Refusal, match="does not match"):
+        wh.apply_migration(duckdb.connect(str(tmp_path / "m.duckdb")), stale)
 
 
-def test_unique_key_in_the_schema_covers_every_identity_column():
-    sql = wh.MIGRATION_SQL.read_text()
-    for table, identity in wh.IDENTITY.items():
-        block = sql.split(f"CREATE TABLE IF NOT EXISTS {table} (")[1].split(");")[0]
-        unique = block.split("UNIQUE (")[1].split(")")[0]
-        assert {c.strip() for c in unique.split(",")} == set(identity), table
+def test_every_fact_table_has_both_unique_keys():
+    for table in core.FACT_TABLES:
+        statement = next(s for s in core.ddl() if f"EXISTS {table} (" in s)
+        assert "UNIQUE (run_id, row_key)" in statement
+        assert f"UNIQUE ({', '.join(core.IDENTITY[table])})" in statement
+        assert "row_identity_sha256 TEXT PRIMARY KEY" in statement
 
 
-# ----------------------------------------------------------------------------- submit / receipts
-def test_submit_returns_receipt_and_readback_matches(conn):
-    wh.register_run(conn, run_doc(feature_pair_metrics=2))
-    rows = [pair_row("a", "b"), pair_row("a", "c", value=0.1)]
-    receipt = wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics", rows,
-                             host_role="worker_b", shard_id="shard-000")
-    assert receipt["stored_new"] == 2 and receipt["already_stored"] == 0
-    assert receipt["population_id"] == "EURUSD" and receipt["host_role"] == "worker_b"
-    back = wh.read_run(conn, "phase2-eurusd:test", "feature_pair_metrics")
-    assert [(r["feature_left"], r["feature_right"]) for r in back] == sorted(
-        [(r["feature_left"], r["feature_right"]) for r in back])
-    assert len(back) == 2 and all(r["host_role"] == "worker_b" for r in back)
-    assert wh.verify_receipt(conn, receipt)["accepted"]
-    report = wh.reconcile(conn, "phase2-eurusd:test", [receipt])
-    assert report["complete"] and report["tables"]["feature_pair_metrics"]["stored"] == 2
-    assert report["tables"]["feature_pair_metrics"]["stored_rows_sha256"] == receipt["rows_sha256"]
+# ----------------------------------------------------------------------------- the driver interface
+def test_open_warehouse_submit_read_reconcile_hold_the_driver_contract(wh_file):
+    rows = [metric_row("a", "b"), metric_row("a", "c", value=0.1), metric_row("a", "b", metric="pearson")]
+    receipt = wh_file.submit_rows(RUN, "feature_pair_metrics", rows)
+    for key in ("run_id", "table", "row_count", "rows_sha256", "receipt_sha256", "inserted",
+                "duplicates_ignored", "backend", "unit_id", "population_id"):
+        assert key in receipt, key
+    assert receipt["run_id"] == RUN and receipt["table"] == "feature_pair_metrics"
+    assert receipt["row_count"] == 3 and receipt["inserted"] == 3 and receipt["duplicates_ignored"] == 0
+    assert receipt["unit_id"] == "unit-0" and receipt["population_id"] == "EURUSD"
+    assert receipt["rows_sha256"] == adapter_rows_digest(rows), "digest rule must equal the driver's"
+    back = wh_file.read_run(RUN, "feature_pair_metrics", "unit-0")
+    assert len(back) == 3 and adapter_rows_digest(back) == receipt["rows_sha256"]
+    assert sorted(json.dumps(r, sort_keys=True) for r in back) == sorted(json.dumps(r, sort_keys=True) for r in rows)
+    assert [r["row_key"] for r in back] == sorted(r["row_key"] for r in rows)
+    assert wh_file.read_run(RUN, "feature_pair_metrics", "other-unit") == []
+    assert len(wh_file.read_run(RUN, "feature_pair_metrics")) == 3
+    recon = wh_file.reconcile(RUN)
+    assert recon["run_id"] == RUN
+    assert recon["tables"]["feature_pair_metrics"] == dict(
+        recon["tables"]["feature_pair_metrics"], count=3, rows_sha256=receipt["rows_sha256"])
+    for table in core.FACT_TABLES:
+        assert set(recon["tables"][table]) >= {"count", "rows_sha256"}
+    assert recon["tables"]["feature_pair_gate"]["rows_sha256"] == core.EMPTY_DIGEST
 
 
-def test_restart_replay_is_a_no_op_with_the_same_digest(conn):
-    wh.register_run(conn, run_doc())
-    rows = [pair_row("a", "b"), pair_row("a", "c")]
-    first = wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics", rows)
-    second = wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics", rows)
-    assert second["stored_new"] == 0 and second["already_stored"] == 2
-    assert second["rows_sha256"] == first["rows_sha256"]
-    assert conn.execute("SELECT count(*) FROM feature_pair_metrics").fetchone()[0] == 2
+def test_all_seven_driver_tables_accept_their_row_shapes(wh_file):
+    submissions = {
+        "feature_pair_metrics": [metric_row("a", "b")],
+        "feature_pair_stability": [stability_row("a", "b")],
+        "feature_pair_gate": [gate_row("a", "b", gate_state="BYTE_IDENTICAL")],
+        "feature_alias_groups": [{"run_id": RUN, "population_id": "EURUSD", "alias_group_id": HEX_B,
+                                  "members": ["a", "b"], "representative": "a",
+                                  "representative_rule": "clock OBSERVED, coverage desc",
+                                  "evidence": [{"left": "a", "right": "b", "gate_state": "BYTE_IDENTICAL"}],
+                                  "disposition": "ALIAS_GROUP", "dropped_columns": [],
+                                  "row_key": row_key(RUN, "alias", HEX_B)}],
+        "feature_redundancy_clusters": [{"run_id": RUN, "population_id": "EURUSD", "cluster_id": HEX_B,
+                                         "members": ["a", "c"], "size": 2, "representative": "a",
+                                         "rule": "average-linkage on 1-|spearman_TRAIN|",
+                                         "row_key": row_key(RUN, "cluster", HEX_B)}],
+        "feature_filter_rankings": [{"run_id": RUN, "population_id": "EURUSD", "target_id": "Y_s_1h",
+                                     "horizon_hours": 1, "method": "mrmr_mi", "rank": 1, "feature_id": "a",
+                                     "score": 0.9, "base_score": 0.8, "terms": {"relevance": 0.9},
+                                     "causal_label": "NOT_IDENTIFIED", "params_sha256": HEX,
+                                     "unit_id": "p3-unit", "row_key": row_key(RUN, "rank", "Y_s_1h", "mrmr_mi", 1)}],
+        "feature_filter_subsets": [{"run_id": RUN, "population_id": "EURUSD", "target_id": "Y_s_1h",
+                                    "horizon_hours": 1, "method": "mrmr_mi", "k": 4, "members": ["a", "c"],
+                                    "subset_sha256": HEX_B, "label": "FILTER_CANDIDATE",
+                                    "is_final_selection": False, "params_sha256": HEX, "unit_id": "p3-unit",
+                                    "row_key": row_key(RUN, "subset", "Y_s_1h", "mrmr_mi", 4)}],
+    }
+    for table, rows in submissions.items():
+        receipt = wh_file.submit_rows(RUN, table, rows)
+        assert receipt["inserted"] == 1 and receipt["rows_sha256"] == adapter_rows_digest(rows), table
+        assert wh_file.read_run(RUN, table) == rows, table
+    recon = wh_file.reconcile(RUN)
+    assert all(recon["tables"][t]["count"] == 1 for t in core.FACT_TABLES)
+    stored = wh_file.query("SELECT representative, members_json FROM feature_alias_groups")
+    assert stored == [{"representative": "a", "members_json": '["a","b"]'}]
+    assert wh_file.query("SELECT k, label FROM feature_filter_subsets") == [{"k": 4, "label": "FILTER_CANDIDATE"}]
+
+
+def test_restart_replay_is_a_no_op_with_the_same_digest(wh_file):
+    rows = [metric_row("a", "b"), metric_row("a", "c")]
+    first = wh_file.submit_rows(RUN, "feature_pair_metrics", rows)
+    second = wh_file.submit_rows(RUN, "feature_pair_metrics", rows)
+    assert second["inserted"] == 0 and second["duplicates_ignored"] == 2
+    assert second["rows_sha256"] == first["rows_sha256"] and second["row_count"] == 2
+    assert wh_file.query("SELECT count(*) AS n FROM feature_pair_metrics") == [{"n": 2}]
 
 
 def test_column_order_does_not_change_identity_or_digest():
-    row = pair_row("a", "b")
+    row = metric_row("a", "b")
     shuffled = dict(reversed(list(row.items())))
-    a, b = wh.normalise_row("feature_pair_metrics", row), wh.normalise_row("feature_pair_metrics", shuffled)
-    assert a["row_identity_sha256"] == b["row_identity_sha256"]
-    assert a["row_sha256"] == b["row_sha256"]
+    a, b = core.prepare_row("feature_pair_metrics", row), core.prepare_row("feature_pair_metrics", shuffled)
+    assert a["row_identity_sha256"] == b["row_identity_sha256"] and a["row_sha256"] == b["row_sha256"]
 
 
-def test_same_identity_different_content_rejects_the_whole_batch(conn):
-    wh.register_run(conn, run_doc())
-    wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics", [pair_row("a", "b", value=0.5)])
+def test_same_identity_different_content_rejects_the_whole_batch(wh_file):
+    wh_file.submit_rows(RUN, "feature_pair_metrics", [metric_row("a", "b", value=0.5)])
     with pytest.raises(wh.Refusal, match="different content"):
-        wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics",
-                       [pair_row("a", "c"), pair_row("a", "b", value=0.6)])
-    assert conn.execute("SELECT count(*) FROM feature_pair_metrics").fetchone()[0] == 1
-    assert conn.execute("SELECT count(*) FROM fs_phase23_load_receipt").fetchone()[0] == 1
+        wh_file.submit_rows(RUN, "feature_pair_metrics", [metric_row("a", "c"), metric_row("a", "b", value=0.6)])
+    assert wh_file.query("SELECT count(*) AS n FROM feature_pair_metrics") == [{"n": 1}]
+    assert wh_file.query("SELECT count(*) AS n FROM fs_phase23_load_receipt") == [{"n": 1}]
     with pytest.raises(wh.Refusal, match="one identity with two different contents"):
-        wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics",
-                       [pair_row("x", "y", value=0.1), pair_row("x", "y", value=0.2)])
+        wh_file.submit_rows(RUN, "feature_pair_metrics", [metric_row("x", "y", value=0.1), metric_row("x", "y", value=0.2)])
+    # the same row_key under a different typed identity is refused as well
+    forged = metric_row("a", "d")
+    forged["row_key"] = metric_row("a", "b")["row_key"]
+    with pytest.raises(wh.Refusal, match="row_key"):
+        wh_file.submit_rows(RUN, "feature_pair_metrics", [forged])
 
 
-def test_foreign_run_and_population_identities_are_rejected(conn):
-    wh.register_run(conn, run_doc())
+def test_foreign_run_and_population_identities_are_rejected(wh_file):
+    wh_file.submit_rows(RUN, "feature_pair_metrics", [metric_row("a", "b")])
     with pytest.raises(wh.Refusal, match="foreign run identity"):
-        wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics",
-                       [pair_row("a", "b", run_id="phase2-eurusd:other")])
+        wh_file.submit_rows(RUN, "feature_pair_metrics", [metric_row("a", "c", run_id="phase2-eurusd:other")])
     with pytest.raises(wh.Refusal, match="foreign population identity"):
-        wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics",
-                       [pair_row("a", "b", population="ETH")])
+        wh_file.submit_rows(RUN, "feature_pair_metrics", [metric_row("a", "c", population="ETH")])
+    with pytest.raises(wh.Refusal, match="one population"):
+        wh_file.submit_rows("phase2-mixed:test", "feature_pair_metrics",
+                            [metric_row("a", "b", run_id="phase2-mixed:test"),
+                             metric_row("a", "c", run_id="phase2-mixed:test", population="ETH")])
+    assert wh_file.query("SELECT count(*) AS n FROM feature_pair_metrics") == [{"n": 1}]
     with pytest.raises(wh.Refusal, match="not registered"):
-        wh.submit_rows(conn, "phase2-eth:unregistered", "feature_pair_metrics",
-                       [pair_row("a", "b", run_id="phase2-eth:unregistered", population="ETH")])
-    assert conn.execute("SELECT count(*) FROM feature_pair_metrics").fetchone()[0] == 0
+        wh_file.reconcile("phase2-never:seen")
 
 
-def test_a_receipt_carrying_a_foreign_identity_is_rejected(conn):
-    wh.register_run(conn, run_doc())
-    receipt = wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics", [pair_row("a", "b")])
-    foreign = dict(receipt, population_id="ETH")
-    foreign["receipt_sha256"] = wh.digest({k: v for k, v in foreign.items()
-                                           if k not in ("submitted_at", "receipt_sha256")})
+def test_a_receipt_carrying_a_foreign_identity_is_rejected(wh_file):
+    receipt = wh_file.submit_rows(RUN, "feature_pair_metrics", [metric_row("a", "b")])
+    assert wh_file.verify_receipt(receipt)["accepted"]
+
+    def resign(doc):
+        doc = dict(doc)
+        doc["receipt_sha256"] = core.digest({k: v for k, v in doc.items() if k != "receipt_sha256"})
+        return doc
     with pytest.raises(wh.Refusal, match="foreign population"):
-        wh.verify_receipt(conn, foreign)
-    tampered = dict(receipt, rows_sha256=HEX_B)
+        wh_file.verify_receipt(resign(dict(receipt, population_id="ETH")))
     with pytest.raises(wh.Refusal, match="digest does not match"):
-        wh.verify_receipt(conn, tampered)
-    wh.register_run(conn, run_doc(run_id="phase2-eth:test", population="ETH"))
-    other_run = dict(receipt, run_id="phase2-eth:test")
-    other_run["receipt_sha256"] = wh.digest({k: v for k, v in other_run.items()
-                                             if k not in ("submitted_at", "receipt_sha256")})
-    with pytest.raises(wh.Refusal):
-        wh.verify_receipt(conn, other_run)
+        wh_file.verify_receipt(dict(receipt, rows_sha256=HEX_B))
+    with pytest.raises(wh.Refusal, match="unknown run"):
+        wh_file.verify_receipt(resign(dict(receipt, run_id="phase2-eth:test")))
+    with pytest.raises(wh.Refusal, match="no such receipt"):
+        wh_file.verify_receipt(resign(dict(receipt, submitted_at="2020-01-01T00:00:00Z")))
 
 
-def test_run_registration_is_immutable(conn):
-    wh.register_run(conn, run_doc())
-    assert wh.register_run(conn, run_doc())["already_registered"]
+def test_contract_binding_upgrades_a_first_submission_run_but_never_its_population(wh_file):
+    wh_file.submit_rows(RUN, "feature_pair_metrics", [metric_row("a", "b")])
+    run = core.get_run(wh_file.conn, RUN)
+    assert run["registration"] == "FIRST_SUBMISSION" and run["population_id"] == "EURUSD"
+    bound = {"run_id": RUN, "population_id": "EURUSD", "phase": "PHASE_2", "contract_sha256": HEX,
+             "campaign_sha256": HEX, "code_sha256": HEX, "input_sha256": HEX,
+             "expected_json": {"feature_pair_metrics": 2}}
+    assert wh_file.register_run(bound)["upgraded"]
+    assert wh_file.register_run(bound)["already_registered"]
     with pytest.raises(wh.Refusal, match="different identity"):
-        wh.register_run(conn, run_doc(feature_pair_metrics=5))
+        wh_file.register_run(dict(bound, population_id="ETH"))
+    wh_file.submit_rows(RUN, "feature_pair_metrics", [metric_row("a", "c")])
+    assert wh_file.reconcile(RUN)["complete"]
+    assert wh_file.read_run(RUN, "feature_pair_metrics")[0]["run_id"] == RUN
 
 
 # ----------------------------------------------------------------------------- row validation
-def test_unordered_pair_wrong_split_and_host_names_are_refused():
+def test_unordered_pair_closed_splits_and_host_names_are_refused():
     with pytest.raises(wh.Refusal, match="ordered"):
-        wh.normalise_row("feature_pair_metrics", pair_row("b", "a"))
-    with pytest.raises(wh.Refusal, match="split"):
-        wh.normalise_row("feature_pair_metrics", pair_row("a", "b", split="validation"))
+        core.prepare_row("feature_pair_metrics", metric_row("b", "a"))
+    with pytest.raises(wh.Refusal, match="closed"):
+        core.prepare_row("feature_pair_metrics", metric_row("a", "b", fold="validation"))
     with pytest.raises(wh.Refusal, match="role"):
-        wh.normalise_row("feature_pair_metrics", pair_row("a", "b", host_role="some-host-name"))
-    with pytest.raises(wh.Refusal, match="MEASURED"):
-        wh.normalise_row("feature_pair_metrics", pair_row("a", "b", value=None))
-    with pytest.raises(wh.Refusal, match="unknown columns"):
-        wh.normalise_row("feature_pair_metrics", pair_row("a", "b", hostname="x"))
-    abstained = wh.normalise_row("feature_pair_metrics",
-                                 pair_row("a", "b", value=None, state="INSUFFICIENT_SUPPORT", support=3))
+        core.prepare_row("feature_pair_metrics", metric_row("a", "b", host_role="some-host-name"))
+    with pytest.raises(wh.Refusal, match="row_key"):
+        core.prepare_row("feature_pair_metrics", dict(metric_row("a", "b"), row_key=None))
+    with pytest.raises(wh.Refusal, match="state"):
+        core.prepare_row("feature_pair_metrics", metric_row("a", "b", state="GUESSED"))
+    with pytest.raises(wh.Refusal, match="required"):
+        core.prepare_row("feature_pair_metrics", dict(metric_row("a", "b"), params_sha256=None))
+    abstained = core.prepare_row("feature_pair_metrics",
+                                 metric_row("a", "b", value=None, state="INSUFFICIENT_SUPPORT", support=3))
     assert abstained["state"] == "INSUFFICIENT_SUPPORT" and abstained["metric_value"] is None
-
-
-def test_other_families_validate_their_vocabularies(conn):
-    wh.register_run(conn, run_doc())
-    base = {"run_id": "phase2-eurusd:test", "population_id": "EURUSD", "fold": "ALL_TRAIN",
-            "method": "identity_gate", "params_sha256": HEX, "code_sha256": HEX, "input_sha256": HEX}
-    alias = dict(base, group_id="g1", feature_id="a", disposition="ALIAS_BYTE_EXACT", representative=True)
-    wh.submit_rows(conn, "phase2-eurusd:test", "feature_alias_groups", [alias])
-    with pytest.raises(wh.Refusal, match="disposition"):
-        wh.normalise_row("feature_alias_groups", dict(alias, disposition="DELETED"))
-    cluster = dict(base, method="hierarchical_spearman_abs", cluster_id="c1", feature_id="a",
-                   representative=False, linkage_distance=0.2, threshold=0.3)
-    wh.submit_rows(conn, "phase2-eurusd:test", "feature_redundancy_clusters", [cluster])
-    rank = dict(base, method="mrmr_mi", target_id="Y_s_1h", horizon=1, feature_id="a", rank=1,
-                score=0.9, state="MEASURED", k_membership_json=[4, 8])
-    stored = wh.normalise_row("feature_filter_rankings", rank)
-    assert stored["k_membership_json"] == "[4,8]"
-    wh.submit_rows(conn, "phase2-eurusd:test", "feature_filter_rankings", [rank])
-    with pytest.raises(wh.Refusal, match="method"):
-        wh.normalise_row("feature_filter_rankings", dict(rank, method="winner"))
-    with pytest.raises(wh.Refusal, match="1-based"):
-        wh.normalise_row("feature_filter_rankings", dict(rank, rank=0))
+    assert abstained["shared_support"] == 3
 
 
 # ----------------------------------------------------------------------------- reconciliation
-def test_closure_reconciliation_fails_on_one_missing_disposition(conn):
-    wh.register_run(conn, run_doc(feature_pair_metrics=3))
-    wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics", [pair_row("a", "b"), pair_row("a", "c")])
-    report = wh.reconcile(conn, "phase2-eurusd:test")
+def test_closure_reconciliation_fails_on_one_missing_disposition(wh_file):
+    wh_file.submit_rows(RUN, "feature_pair_metrics", [metric_row("a", "b"), metric_row("a", "c")])
+    report = wh_file.reconcile(RUN, expected={"feature_pair_metrics": 3})
     assert not report["complete"]
-    assert report["tables"]["feature_pair_metrics"]["expected"] == 3
     assert report["tables"]["feature_pair_metrics"]["count_matches_expected"] is False
-    wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics", [pair_row("b", "c")])
-    assert wh.reconcile(conn, "phase2-eurusd:test")["complete"]
+    wh_file.submit_rows(RUN, "feature_pair_metrics", [metric_row("b", "c")])
+    assert wh_file.reconcile(RUN, expected={"feature_pair_metrics": 3})["complete"]
 
 
-def test_rows_without_a_receipt_are_detected(conn):
-    wh.register_run(conn, run_doc(feature_pair_metrics=2))
-    wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics", [pair_row("a", "b")])
-    smuggled = wh.normalise_row("feature_pair_metrics", pair_row("a", "c"))
-    cols = wh.COLUMNS["feature_pair_metrics"]
-    conn.execute(f"INSERT INTO feature_pair_metrics ({', '.join(cols)}) VALUES ({', '.join('?' * len(cols))})",
-                 [smuggled[c] for c in cols])
-    report = wh.reconcile(conn, "phase2-eurusd:test")
-    assert report["tables"]["feature_pair_metrics"]["count_matches_expected"] is True
-    assert report["tables"]["feature_pair_metrics"]["receipts_cover_store"] is False
-    assert not report["complete"]
+def test_rows_without_a_receipt_are_detected(wh_file):
+    wh_file.submit_rows(RUN, "feature_pair_metrics", [metric_row("a", "b")])
+    smuggled = core.prepare_row("feature_pair_metrics", metric_row("a", "c"))
+    cols = core.columns("feature_pair_metrics")
+    wh_file.conn.execute(f"INSERT INTO feature_pair_metrics ({', '.join(cols)}) VALUES ({', '.join('?' * len(cols))})",
+                         [smuggled[c] for c in cols])
+    report = wh_file.reconcile(RUN)
+    assert report["tables"]["feature_pair_metrics"]["receipts_cover_store"] is False and not report["complete"]
 
 
-def test_sql_digest_equals_python_digest(conn):
-    wh.register_run(conn, run_doc())
-    receipt = wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics",
-                             [pair_row("a", "b"), pair_row("a", "c"), pair_row("b", "c")])
-    sha = conn.execute("SELECT sha256(string_agg(row_sha256, '' ORDER BY row_sha256)) "
-                       "FROM feature_pair_metrics").fetchone()[0]
-    assert sha == receipt["rows_sha256"]
-    rows = conn.execute("SELECT row_sha256 FROM feature_pair_metrics").fetchall()
-    assert wh.rows_digest(r[0] for r in rows) == sha
+def test_sql_digest_equals_python_digest(wh_file):
+    rows = [metric_row("a", "b"), metric_row("a", "c"), metric_row("b", "c")]
+    receipt = wh_file.submit_rows(RUN, "feature_pair_metrics", rows)
+    sha = wh_file.conn.execute("SELECT sha256(string_agg(row_sha256, '' ORDER BY row_sha256)) "
+                               "FROM feature_pair_metrics").fetchone()[0]
+    assert sha == receipt["rows_sha256"] == core.rows_sha256(rows) == adapter_rows_digest(rows)
 
 
-def test_database_unique_key_blocks_a_duplicate_identity_by_any_path(conn):
-    wh.register_run(conn, run_doc())
-    wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics", [pair_row("a", "b")])
-    row = wh.normalise_row("feature_pair_metrics", pair_row("a", "b", value=0.9))
-    row["row_identity_sha256"] = HEX_B  # even with a forged primary key the UNIQUE key holds
-    cols = wh.COLUMNS["feature_pair_metrics"]
+def test_database_unique_keys_block_a_duplicate_by_any_path(wh_file):
+    wh_file.submit_rows(RUN, "feature_pair_metrics", [metric_row("a", "b")])
+    cols = core.columns("feature_pair_metrics")
+    rec = core.prepare_row("feature_pair_metrics", metric_row("a", "b", value=0.9))
+    rec["row_identity_sha256"] = HEX_B  # forged PK: the typed UNIQUE key still holds
     with pytest.raises(duckdb.ConstraintException):
-        conn.execute(f"INSERT INTO feature_pair_metrics ({', '.join(cols)}) VALUES ({', '.join('?' * len(cols))})",
-                     [row[c] for c in cols])
+        wh_file.conn.execute(f"INSERT INTO feature_pair_metrics ({', '.join(cols)}) VALUES ({', '.join('?' * len(cols))})",
+                             [rec[c] for c in cols])
+    rec = core.prepare_row("feature_pair_metrics", metric_row("a", "d"))
+    rec["row_key"] = metric_row("a", "b")["row_key"]  # same driver key: UNIQUE (run_id, row_key)
+    with pytest.raises(duckdb.ConstraintException):
+        wh_file.conn.execute(f"INSERT INTO feature_pair_metrics ({', '.join(cols)}) VALUES ({', '.join('?' * len(cols))})",
+                             [rec[c] for c in cols])
 
 
 # ----------------------------------------------------------------------------- readback report
-def test_readback_report_groups_by_asset_method_and_host_role(conn):
-    wh.register_run(conn, run_doc())
-    wh.register_run(conn, run_doc(run_id="phase2-eth:test", population="ETH"))
-    wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics",
-                   [pair_row("a", "b"), pair_row("a", "c", method="pearson")], host_role="worker_a")
-    wh.submit_rows(conn, "phase2-eurusd:test", "feature_pair_metrics",
-                   [pair_row("b", "c", state="INSUFFICIENT_SUPPORT", value=None, support=2)], host_role="worker_b")
-    wh.submit_rows(conn, "phase2-eth:test", "feature_pair_metrics",
-                   [pair_row("x", "y", run_id="phase2-eth:test", population="ETH")], host_role="coordinator")
-    report = wh.readback_report(wh.local_query(conn))
+def test_readback_report_groups_by_asset_method_and_host_role(wh_file):
+    wh_file.submit_rows(RUN, "feature_pair_metrics", [metric_row("a", "b"), metric_row("a", "c", metric="pearson")],
+                        host_role="worker_a")
+    wh_file.submit_rows(RUN, "feature_pair_metrics",
+                        [metric_row("b", "c", state="INSUFFICIENT_SUPPORT", value=None, support=2)], host_role="worker_b")
+    wh_file.submit_rows("phase2-eth:test", "feature_pair_metrics",
+                        [metric_row("x", "y", run_id="phase2-eth:test", population="ETH")], host_role="coordinator")
+    report = wh.readback_report(wh_file.query)
     pm = report["tables"]["feature_pair_metrics"]
     assert pm["total"] == 4
     assert pm["by_asset"] == {"ETH": 1, "EURUSD": 3}
-    assert pm["by_method"] == {"pearson": 1, "spearman": 3}
+    assert pm["by_method"] == {"pairwise_v1": 4}
     assert pm["by_host_role"] == {"coordinator": 1, "worker_a": 2, "worker_b": 1}
     group = next(g for g in pm["groups"] if g["host_role"] == "worker_b")
     assert group["insufficient_support"] == 1 and group["measured"] == 0
-    only_eth = wh.readback_report(wh.local_query(conn), "phase2-eth:test")
+    only_eth = wh.readback_report(wh_file.query, "phase2-eth:test")
     assert only_eth["tables"]["feature_pair_metrics"]["by_asset"] == {"ETH": 1}
     assert wh.compare_readback(report, report)["agree"]
     other = json.loads(json.dumps(report))
@@ -351,7 +408,40 @@ def test_readback_report_groups_by_asset_method_and_host_role(conn):
 def test_service_transport_needs_a_token_from_the_environment(monkeypatch):
     monkeypatch.delenv("WAREHOUSE_TOKEN", raising=False)
     with pytest.raises(wh.Refusal, match="never from an argument"):
-        wh.Service("http://127.0.0.1:1")
+        wh.open_warehouse("http://127.0.0.1:1")
+
+
+# ----------------------------------------------------------------------------- the packaged backend
+def test_the_packaged_duckdb_backend_serves_the_same_semantics(tmp_path):
+    pytest.importorskip("sqlalchemy")
+    pytest.importorskip("duckdb_engine")
+    from predictor_duckdb_store.provider import PredictorDuckdbStore
+    store = PredictorDuckdbStore()
+    store.set_params(duckdb_path=str(tmp_path / "backend.duckdb"), schema="main", min_free_bytes=0)
+    for capability in ("write_fs_phase23_rows", "read_fs_phase23_rows", "reconcile_fs_phase23"):
+        assert capability in store.capabilities()
+    rows = [metric_row("a", "b"), metric_row("a", "c")]
+    receipt = store.write_fs_phase23_rows({"run_id": RUN, "table": "feature_pair_metrics", "rows": rows,
+                                           "host_role": "coordinator"})
+    assert receipt["inserted"] == 2 and receipt["rows_sha256"] == adapter_rows_digest(rows)
+    again = store.write_fs_phase23_rows({"run_id": RUN, "table": "feature_pair_metrics", "rows": rows})
+    assert again["inserted"] == 0 and again["duplicates_ignored"] == 2
+    with pytest.raises(ValueError, match="foreign population"):
+        store.write_fs_phase23_rows({"run_id": RUN, "table": "feature_pair_metrics",
+                                     "rows": [metric_row("a", "d", population="ETH")]})
+    page = store.read_fs_phase23_rows({"run_id": RUN, "table": "feature_pair_metrics", "limit": 1})
+    assert page["count"] == 1 and page["next_after"] == page["rows"][0]["row_key"]
+    rest = store.read_fs_phase23_rows({"run_id": RUN, "table": "feature_pair_metrics", "after": page["next_after"]})
+    assert rest["next_after"] is None and adapter_rows_digest(page["rows"] + rest["rows"]) == receipt["rows_sha256"]
+    recon = store.reconcile_fs_phase23({"run_id": RUN, "receipts": [receipt]})
+    assert recon["tables"]["feature_pair_metrics"]["count"] == 2
+    assert recon["tables"]["feature_pair_metrics"]["rows_sha256"] == receipt["rows_sha256"]
+    assert recon["receipts_verified"] == 1
+    store.engine().dispose()
+    # the file written by the backend is readable by the local tool with identical digests
+    local = wh.Warehouse(tmp_path / "backend.duckdb", read_only=True)
+    assert local.reconcile(RUN)["tables"]["feature_pair_metrics"]["rows_sha256"] == receipt["rows_sha256"]
+    local.close()
 
 
 # ----------------------------------------------------------------------------- snapshot
@@ -366,18 +456,15 @@ def _have_zstd():
 @pytest.mark.skipif(not _have_zstd(), reason="no zstd available")
 def test_snapshot_writes_manifest_and_verifies_its_own_asset(tmp_path):
     source = tmp_path / "copy.duckdb"
-    connection = duckdb.connect(str(source))
-    wh.apply_migration(connection)
-    wh.register_run(connection, run_doc())
-    wh.submit_rows(connection, "phase2-eurusd:test", "feature_pair_metrics", [pair_row("a", "b")])
-    connection.execute("CHECKPOINT")
-    connection.close()
+    store = wh.open_warehouse(source)
+    store.submit_rows(RUN, "feature_pair_metrics", [metric_row("a", "b")])
+    store.conn.execute("CHECKPOINT")
+    store.close()
     manifest = wh.snapshot(source, tmp_path / "out", tag="t-test", repo="owner/repo", phase="TEST",
                            zstd_bin=None, level=3)
     assert manifest["relations"]["feature_pair_metrics"]["rows"] == 1
     assert manifest["missing_relations"] == []
     assert manifest["asset_url"] == "https://github.com/owner/repo/releases/download/t-test/copy.duckdb.zst"
-    assert (tmp_path / "out" / "SNAPSHOT_MANIFEST.json").exists()
     asset = tmp_path / "out" / "copy.duckdb.zst"
     assert wh.file_sha256(asset) == manifest["compressed_sha256"]
     result = wh.verify_snapshot_asset(asset, manifest, zstd_bin=None, work_dir=tmp_path / "restore")
