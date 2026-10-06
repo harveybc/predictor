@@ -4,7 +4,7 @@
 #
 #   deploy.sh --commit SHA --hosts-env FILE --receipt-dir DIR
 #             [--roles coordinator,worker_a,worker_b] [--assignment assignment.json]
-#             [--cap-coordinator 1G] [--cap-worker 2G] [--threads 2] [--wall 6h]
+#             [--cap-coordinator 1G] [--cap-worker 2G] [--threads 1] [--wall 12h] [--follow-cap 2G]
 #             [--start] [--repo PATH]
 #
 # hosts.env is UNTRACKED (lives in the state directory) and defines the ssh aliases
@@ -17,18 +17,18 @@
 # -> receipts compared: archive, tree, lock, locked-freeze and unit digests must be equal on
 # every role or the script exits 4. Slots per role come from --assignment when given (the shard
 # policy's output), else 1. With --start the units are enabled and started (phase B only):
-# the relay first, then the status timer and the worker slots, then the follower.
+# the relay first, then the status timer and the worker slots, then one follower per population.
 set -euo pipefail
 HERE="$(cd -- "$(dirname -- "$(readlink -f -- "$0")")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
 COMMIT=""; HOSTS_ENV=""; RECEIPT_DIR=""; ROLES="coordinator,worker_a,worker_b"; ASSIGNMENT=""
-CAP_COORD="1G"; CAP_WORKER="2G"; THREADS="2"; WALL="6h"; START=0
+CAP_COORD="1G"; CAP_WORKER="2G"; THREADS="1"; WALL="12h"; FOLLOW_CAP="2G"; START=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --commit) COMMIT="$2"; shift 2 ;; --hosts-env) HOSTS_ENV="$2"; shift 2 ;; --receipt-dir) RECEIPT_DIR="$2"; shift 2 ;;
     --roles) ROLES="$2"; shift 2 ;; --assignment) ASSIGNMENT="$2"; shift 2 ;; --cap-coordinator) CAP_COORD="$2"; shift 2 ;;
     --cap-worker) CAP_WORKER="$2"; shift 2 ;; --threads) THREADS="$2"; shift 2 ;; --wall) WALL="$2"; shift 2 ;;
-    --start) START=1; shift ;; --repo) REPO="$2"; shift 2 ;;
+    --start) START=1; shift ;; --repo) REPO="$2"; shift 2 ;; --follow-cap) FOLLOW_CAP="$2"; shift 2 ;;
     *) echo "unknown argument $1" >&2; exit 2 ;;
   esac
 done
@@ -61,7 +61,7 @@ for role in "${ROLE_LIST[@]}"; do
     *) echo "unknown role $role" >&2; exit 2 ;;
   esac
   slots="$(slots_for "$role")"
-  args=(--role "$role" --commit "$COMMIT" --tar-sha256 "$TAR_SHA" --base-python "$base_py" --cap "$cap" --slots "$slots" --threads "$THREADS" --steal "$steal" --wall "$WALL" --follow-cap "$CAP_COORD")
+  args=(--role "$role" --commit "$COMMIT" --tar-sha256 "$TAR_SHA" --base-python "$base_py" --cap "$cap" --slots "$slots" --threads "$THREADS" --steal "$steal" --wall "$WALL" --follow-cap "$FOLLOW_CAP")
   echo "== $role: placing archive and running the host step" >&2
   if [[ -z "$ssh_alias" ]]; then
     cp "$WORK/code.tar" "$STATE/code/incoming.$COMMIT.tar"
@@ -119,7 +119,7 @@ if [[ $START -eq 1 ]]; then
     for ((i = 1; i <= slots; i++)); do units="$units fs-phase23-worker@$i.service"; done
     cmd="systemctl --user daemon-reload && systemctl --user enable --now $units"
     case "$role" in
-      coordinator) systemctl --user daemon-reload && systemctl --user enable --now fs-phase23-relay.service && eval "$cmd" && systemctl --user enable --now fs-phase23-follower.service ;;
+      coordinator) systemctl --user daemon-reload && systemctl --user enable --now fs-phase23-relay.service && eval "$cmd" && systemctl --user enable --now fs-phase23-follower@eurusd.service fs-phase23-follower@eth.service ;;
       worker_a) ssh -o ConnectTimeout=20 "$WORKER_A_SSH" "$cmd" ;;
       worker_b) ssh -o ConnectTimeout=20 "$WORKER_B_SSH" "$cmd" ;;
     esac

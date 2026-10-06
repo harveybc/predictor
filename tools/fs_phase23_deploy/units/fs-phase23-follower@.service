@@ -1,0 +1,22 @@
+[Unit]
+Description=Phase 2/3 feature-selection follower for population %i: adopt terminals, submit to the warehouse, verify readback, close phase 2, chain phase 3 (coordinator only)
+After=fs-phase23-relay.service
+Wants=fs-phase23-relay.service
+
+[Service]
+Type=simple
+EnvironmentFile=%h/.local/state/canonical_20261003/fs_phase23/runner.env
+ExecStart=/bin/bash ${FS23_CODE}/tools/fs_phase23_deploy/follower_loop.sh %i
+WorkingDirectory=%h/.local/state/canonical_20261003/fs_phase23
+Restart=on-failure
+RestartSec=120
+RestartPreventExitStatus=75
+Nice=15
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+CPUWeight=30
+KillMode=mixed
+TimeoutStopSec=120
+
+[Install]
+WantedBy=default.target

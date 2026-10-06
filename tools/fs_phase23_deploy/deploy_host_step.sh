@@ -4,8 +4,9 @@
 # bash, coreutils, tar, systemd --user and one python 3.12 interpreter on the host.
 #
 #   deploy_host_step.sh --role ROLE --commit SHA --tar-sha256 HEX --base-python PY
-#                       [--cap 2G] [--slots N] [--threads N] [--steal 0|1] [--wall 6h]
-#                       [--follow-cap 1G] [--env KEY=VALUE ...]
+#                       [--cap 2G] [--slots N] [--threads 1] [--steal 0|1] [--wall 12h]
+#                       [--follow-cap 2G] [--env KEY=VALUE ...]   (KEY=VALUE appended to runner.env;
+#                       FS23_WAREHOUSE_OVERRIDE=... in the environment points the follower elsewhere)
 #
 # The archive must already be at $STATE/code/incoming.<SHA>.tar. Steps, all idempotent:
 #   1. verify the archive digest, extract into code/<SHA>/ (once), point code/CURRENT at it,
@@ -19,7 +20,7 @@
 #   4. write runner.env (absolute paths, this role's cap/slots/threads) and the directory tree.
 # Prints ONE JSON receipt on stdout with the home directory written as "~" (roles only).
 set -euo pipefail
-ROLE=""; COMMIT=""; TAR_SHA=""; BASE_PY="python3"; CAP="2G"; SLOTS="1"; THREADS="2"; STEAL="1"; WALL="6h"; FOLLOW_CAP="1G"
+ROLE=""; COMMIT=""; TAR_SHA=""; BASE_PY="python3"; CAP="2G"; SLOTS="1"; THREADS="1"; STEAL="1"; WALL="12h"; FOLLOW_CAP="2G"
 EXTRA_ENV=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -34,7 +35,7 @@ done
 BASE_PY="${BASE_PY/#\~/$HOME}"
 STATE="$HOME/.local/state/canonical_20261003/fs_phase23"
 CODE_ROOT="$STATE/code"; CODE="$CODE_ROOT/$COMMIT"; VENV="$STATE/venv"
-mkdir -p "$CODE_ROOT" "$STATE"/{plan,claims,peer_claims,terminals,peer_terminals,peer_status,logs,campaign}
+mkdir -p "$CODE_ROOT" "$STATE"/{eurusd,eth,data,peer_terminals,peer_status,logs,warehouse}
 
 # 1. code
 TAR="$CODE_ROOT/incoming.$COMMIT.tar"
@@ -70,14 +71,14 @@ UNITS_DST="$HOME/.config/systemd/user"
 mkdir -p "$UNITS_DST/fs-phase23-worker@.service.d"
 install -m 0644 "$UNITS_SRC/fs-phase23-worker@.service" "$UNITS_SRC/fs-phase23-status.service" "$UNITS_SRC/fs-phase23-status.timer" "$UNITS_DST/"
 if [[ "$ROLE" == "coordinator" ]]; then
-  install -m 0644 "$UNITS_SRC/fs-phase23-follower.service" "$UNITS_SRC/fs-phase23-relay.service" "$UNITS_DST/"
+  install -m 0644 "$UNITS_SRC/fs-phase23-follower@.service" "$UNITS_SRC/fs-phase23-relay.service" "$UNITS_DST/"
   install -m 0644 "$UNITS_SRC/role-coordinator.conf" "$UNITS_DST/fs-phase23-worker@.service.d/role.conf"
 else
   install -m 0644 "$UNITS_SRC/role-worker.conf" "$UNITS_DST/fs-phase23-worker@.service.d/role.conf"
 fi
 systemctl --user daemon-reload
-units_digest="$(cd "$UNITS_DST" && sha256sum fs-phase23-worker@.service fs-phase23-status.service fs-phase23-status.timer fs-phase23-worker@.service.d/role.conf $( [[ "$ROLE" == coordinator ]] && echo fs-phase23-follower.service fs-phase23-relay.service ) | sha256sum | cut -d' ' -f1)"
-unit_src_digest="$(cd "$UNITS_SRC" && sha256sum fs-phase23-worker@.service fs-phase23-status.service fs-phase23-status.timer fs-phase23-follower.service fs-phase23-relay.service role-coordinator.conf role-worker.conf | sha256sum | cut -d' ' -f1)"
+units_digest="$(cd "$UNITS_DST" && sha256sum fs-phase23-worker@.service fs-phase23-status.service fs-phase23-status.timer fs-phase23-worker@.service.d/role.conf $( [[ "$ROLE" == coordinator ]] && echo fs-phase23-follower@.service fs-phase23-relay.service ) | sha256sum | cut -d' ' -f1)"
+unit_src_digest="$(cd "$UNITS_SRC" && sha256sum fs-phase23-worker@.service fs-phase23-status.service fs-phase23-status.timer fs-phase23-follower@.service fs-phase23-relay.service role-coordinator.conf role-worker.conf | sha256sum | cut -d' ' -f1)"
 
 # 4. runner.env (absolute paths: systemd EnvironmentFile does not expand variables)
 {
@@ -87,18 +88,19 @@ unit_src_digest="$(cd "$UNITS_SRC" && sha256sum fs-phase23-worker@.service fs-ph
   echo "FS23_CODE=$CODE_ROOT/CURRENT"
   echo "FS23_CODE_COMMIT=$COMMIT"
   echo "FS23_PYTHON=$VENV/bin/python"
-  echo "FS23_PLAN=$STATE/plan/plan.json"
-  echo "FS23_ASSIGNMENT=$STATE/assignment.json"
-  echo "FS23_CAMPAIGN_ROOT=$STATE/campaign"
+  echo "FS23_DATA=$STATE/data"
+  echo "FS23_POPULATIONS=eurusd eth"
+  echo "FS23_WAREHOUSE=${FS23_WAREHOUSE_OVERRIDE:-$STATE/warehouse/fs_phase23_adapter.duckdb}"
   echo "FS23_CAP=$CAP"
   echo "FS23_WALL=$WALL"
   echo "FS23_THREADS=$THREADS"
   echo "FS23_SLOTS=$SLOTS"
   echo "FS23_STEAL=$STEAL"
   echo "FS23_FOLLOW_CAP=$FOLLOW_CAP"
-  echo "FS23_STALE_AFTER=14400"
+  echo "FS23_FOLLOW_EVERY=60"
+  echo "FS23_PHASE3_WORKERS=2"
   echo "FS23_ADMIT_WAIT=86400"
-  echo "FS23_SETTLE_MAX_WAIT=1800"
+  echo "FS23_IDLE_SLEEP=300"
   for kv in "${EXTRA_ENV[@]}"; do echo "$kv"; done
 } > "$STATE/runner.env.tmp" && mv -f "$STATE/runner.env.tmp" "$STATE/runner.env"
 chmod +x "$CODE"/tools/fs_phase23_deploy/*.sh 2>/dev/null || true

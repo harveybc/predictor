@@ -20,7 +20,10 @@ Rules (all documented in the output so the receipt explains itself):
   ``slots = min(floor(free_cores / threads_per_slot), floor(headroom * headroom_safety / cap))``
   with headroom = the admission monitor's ``host_free_for_new_bytes`` (what it would admit
   now), never raw MemAvailable. A host whose slots come out at zero gets nothing.
-* Costs are whatever the plan declares (``est_cost``); when absent, the pair count is the cost.
+* Costs are whatever the plan declares (``est_cost`` / ``estimated_cost``); when absent, the pair
+  count is the cost. The driver's PLAN.json (``unit_id``, ``estimated_cost``, ``host_id``) is accepted
+  as is: in this deployment the DRIVER's plan assigns shards (same rule: cheapest third to the
+  small host) and this policy supplies the per-role SLOT counts from measured admission headroom.
 
 Only the standard library is used so the module runs on every host's venv or system python.
 """
@@ -61,7 +64,7 @@ def shard_cost(shard: Dict[str, Any]) -> float:
 
 
 def shard_id(shard: Dict[str, Any]) -> str:
-    for key in ("shard_id", "id", "shard"):
+    for key in ("shard_id", "unit_id", "id", "shard"):
         if key in shard and shard[key] is not None:
             return str(shard[key])
     raise ValueError("shard without shard_id")
