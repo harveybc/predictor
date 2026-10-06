@@ -25,18 +25,31 @@ mkdir -p "$FS23_STATE/logs" "$(dirname "$FS23_WAREHOUSE")" 2>/dev/null
 LOG="$FS23_STATE/logs/follower_${POP}.log"
 log() { printf '%s follower %s %s\n' "$(date -u +%FT%TZ)" "$POP" "$*" >> "$LOG"; }
 plan="$FS23_STATE/$POP/PLAN.json"
+# a DuckDB FILE takes one writer: each population's follower gets its own file (<base>_<pop>.duckdb);
+# a service URL (http/https) is shared as is
+case "$FS23_WAREHOUSE" in
+  http://*|https://*) WAREHOUSE="$FS23_WAREHOUSE" ;;
+  *.duckdb) WAREHOUSE="${FS23_WAREHOUSE%.duckdb}_${POP}.duckdb" ;;
+  *) WAREHOUSE="${FS23_WAREHOUSE}_${POP}" ;;
+esac
 [[ -f "$plan" ]] || { log "NO_PLAN $plan"; exit 2; }
 if [[ -f "$FS23_STATE/$POP/PHASE_3_FILTER_COMPLETE.json" ]]; then log "PHASE_3_FILTER_COMPLETE.json present; exit 0"; exit 0; fi
 terminals=(--terminals "$FS23_STATE/$POP/terminals")
 for role in worker_a worker_b; do terminals+=(--terminals "$FS23_STATE/peer_terminals/$role/$POP/terminals"); mkdir -p "$FS23_STATE/peer_terminals/$role/$POP/terminals"; done
-log "BEGIN cap=$FS23_FOLLOW_CAP every=${FS23_FOLLOW_EVERY}s warehouse=$FS23_WAREHOUSE phase3_workers=$FS23_PHASE3_WORKERS"
+log "BEGIN cap=$FS23_FOLLOW_CAP every=${FS23_FOLLOW_EVERY}s warehouse=$WAREHOUSE phase3_workers=$FS23_PHASE3_WORKERS"
 # register the run with its expected counts (idempotent) so the store's reconcile can judge completeness
-( cd "$FS23_CODE" && "$FS23_PYTHON" tools/fs_phase23_deploy/register_run.py --plan "$plan" --warehouse "$FS23_WAREHOUSE" ) >> "$LOG" 2>&1 || log "REGISTER_RUN_FAILED (see above; follow continues, the store registers on first submission)"
+( cd "$FS23_CODE" && "$FS23_PYTHON" tools/fs_phase23_deploy/register_run.py --plan "$plan" --warehouse "$WAREHOUSE" ) >> "$LOG" 2>&1 || log "REGISTER_RUN_FAILED (see above; follow continues, the store registers on first submission)"
+# background + wait so a `systemctl stop` (SIGTERM to this shell) is forwarded to the crispdm-run child,
+# whose scope lives outside the unit's cgroup and would otherwise survive the stop
+child=""
+forward() { [[ -n "$child" ]] && kill -TERM "$child" 2>/dev/null; }
+trap forward TERM INT
 "$HOME/.local/bin/crispdm-run" -q -W 3600 -m "$FS23_FOLLOW_CAP" -t "$FS23_FOLLOW_WALL" -n "fs23-follower-$POP" -L "fs23:follow:$POP" -- \
   bash -c "cd '$FS23_CODE' && exec '$FS23_PYTHON' tools/feature_pairwise_campaign.py follow --plan '$plan' --state-root '$FS23_STATE/$POP' \
-    $(printf "%q " "${terminals[@]}") --warehouse '$FS23_WAREHOUSE' --data-root '$FS23_DATA' --every '$FS23_FOLLOW_EVERY' --phase3-workers '$FS23_PHASE3_WORKERS'" \
-  >> "$FS23_STATE/logs/follow_${POP}.log" 2>&1
-rc=$?
+    $(printf "%q " "${terminals[@]}") --warehouse '$WAREHOUSE' --data-root '$FS23_DATA' --every '$FS23_FOLLOW_EVERY' --phase3-workers '$FS23_PHASE3_WORKERS'" \
+  >> "$FS23_STATE/logs/follow_${POP}.log" 2>&1 &
+child=$!
+wait "$child"; rc=$?
 if [[ $rc -eq 75 ]]; then log "ADMISSION_REFUSED (exit 75, no restart)"; exit 75; fi
 if [[ $rc -ne 0 ]]; then log "FOLLOW_EXITED rc=$rc (systemd restarts after RestartSec)"; exit "$rc"; fi
 log "FOLLOW_RETURNED 0 (phase 3 closed)"; exit 0

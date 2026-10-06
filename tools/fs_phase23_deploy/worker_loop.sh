@@ -47,6 +47,10 @@ print(len(missing)); sys.exit(0 if not missing else 1)
 PY
 }
 
+# background + wait so a `systemctl stop` (SIGTERM) reaches the crispdm-run child, whose scope is outside the unit cgroup
+child=""
+forward() { [[ -n "$child" ]] && kill -TERM "$child" 2>/dev/null; }
+trap forward TERM INT
 log "BEGIN loop cap=$FS23_CAP wall=$FS23_WALL threads=$FS23_THREADS steal=$FS23_STEAL commit=${FS23_CODE_COMMIT:-?} populations=[$FS23_POPULATIONS]"
 while true; do
   all_done=1
@@ -64,8 +68,9 @@ while true; do
     "$HOME/.local/bin/crispdm-run" -q -W "$FS23_ADMIT_WAIT" -m "$FS23_CAP" -t "$FS23_WALL" -n "fs23-${pop}-${FS23_ROLE}-${SLOT}" \
         -L "fs23:$pop:slot$SLOT" -- bash -c "cd '$FS23_CODE' && exec '$FS23_PYTHON' tools/feature_pairwise_campaign.py run-worker \
           --plan '$plan' --state-root '$FS23_STATE/$pop' --data-root '$FS23_DATA' --host-id '$FS23_ROLE' --threads '$FS23_THREADS' ${steal_flag[*]:-}" \
-        >> "$LOGS/run_worker_${pop}_slot${SLOT}.log" 2>&1
-    rc=$?
+        >> "$LOGS/run_worker_${pop}_slot${SLOT}.log" 2>&1 &
+    child=$!
+    wait "$child"; rc=$?
     wall=$(( $(date +%s) - start ))
     if [[ $rc -eq 75 ]]; then log "ADMISSION_REFUSED $pop (exit 75, slot stops, no restart)"; exit 75; fi
     # 137 = the cgroup ceiling (FS23_CAP) or the admission monitor stopped the pass: terminal for this
