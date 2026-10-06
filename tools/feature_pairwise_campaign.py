@@ -939,7 +939,7 @@ def _parser() -> argparse.ArgumentParser:
     s.add_argument("--plan", required=True, type=Path)
     s.add_argument("--state-root", required=True, type=Path)
     s.add_argument("--terminals", action="append", required=True, type=Path)
-    s.add_argument("--warehouse", required=True, type=Path)
+    s.add_argument("--warehouse", required=True)
     s.add_argument("--data-root", required=True, type=Path)
     s.add_argument("--every", type=float, default=60.0)
     s.add_argument("--once", action="store_true")
@@ -949,7 +949,7 @@ def _parser() -> argparse.ArgumentParser:
         s = sub.add_parser(verb)
         s.add_argument("--plan", required=True, type=Path)
         s.add_argument("--state-root", required=True, type=Path)
-        s.add_argument("--warehouse", required=True, type=Path)
+        s.add_argument("--warehouse", required=True)
         if verb != "close-phase3":
             s.add_argument("--data-root", required=True, type=Path)
         if verb == "run-phase3":

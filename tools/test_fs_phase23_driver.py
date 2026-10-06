@@ -42,6 +42,12 @@ def test_campaign_preserves_service_url_when_opening_warehouse(monkeypatch):
     assert camp.open_warehouse(target) == target
     assert observed == [target]
 
+    parsed = camp._parser().parse_args([
+        "follow", "--plan", "PLAN.json", "--state-root", "state",
+        "--terminals", "terminals", "--warehouse", target, "--data-root", "data",
+    ])
+    assert parsed.warehouse == target
+
 
 # --------------------------------------------------------------------------- fixtures
 
