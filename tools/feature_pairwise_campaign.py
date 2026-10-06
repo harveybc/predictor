@@ -433,6 +433,16 @@ def submit_rows_batched(wh, run_id: str, table: str, rows: list[dict], *, host_r
             "backend": getattr(wh, "backend", None)}
 
 
+def _transport_summary(wh) -> dict | None:
+    """What the service client saw: attempts that failed, last failure, host health (service route only)."""
+    log = getattr(wh, "transport_log", None)
+    if log is None:
+        return None
+    healthy = getattr(wh, "healthy", None)
+    return {"failed_attempts": len(log), "last_failure": (log[-1] if log else None),
+            "host_healthy_now": bool(healthy()) if callable(healthy) else None}
+
+
 def _reconcile(wh, run_id: str, expected: dict) -> dict:
     """reconcile(run_id, expected=...) when the handle accepts expectations (the DATA store), else reconcile(run_id)."""
     try:
@@ -510,6 +520,9 @@ def follow_once(*, plan_path: Path, state_root: Path, terminal_dirs: list[Path],
     res["submitted"] = 0
     res["submit_errors"] = []
     failures_dir = state_root / "submit_failures"
+    from tools import feature_selection_phase23_status as st
+    last_beat = _now()
+    res["warehouse_transport"] = None
     for path in sorted((state_root / "adopted").glob("*.json.gz")):
         if _STOP.is_set():
             break
@@ -524,6 +537,13 @@ def follow_once(*, plan_path: Path, state_root: Path, terminal_dirs: list[Path],
             reason = f"{type(exc).__name__}: {exc}"
             res["submit_errors"].append({"unit_id": uid, "reason": reason})
             _write_json_atomic(failures_dir / f"{uid}.json", {"unit_id": uid, "reason": reason, "at": _now(), "stage": "submit"})
+        # heartbeat: a long submission pass still reports every minute (incident 2026-10-06: one pass took hours)
+        if _now() - last_beat >= 60.0:
+            res["warehouse_transport"] = _transport_summary(wh)
+            st.build_status(plan_paths=[plan_path], terminal_dirs=[state_root / "adopted"], state_roots=[state_root],
+                            out_path=state_root / "STATUS.json", follower_result=dict(res, in_progress=True))
+            last_beat = _now()
+    res["warehouse_transport"] = _transport_summary(wh)
     res["phase2_closed"] = (state_root / "PHASE_2_COMPLETE.json").exists()
     res["closure_error"] = None
     receipted = {p.name[:-5] for p in receipts_dir.glob("*.json")}

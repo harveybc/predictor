@@ -721,3 +721,42 @@ def test_status_phase_comes_only_from_own_valid_closures_and_flags_stalled_follo
     assert cell["follower_state"] == "STALLED" and cell["follower_heartbeat_age_seconds"] >= 2000
     status = st.build_status(plan_paths=[sa / "PLAN.json"], terminal_dirs=[], state_roots=[coord_a], out_path=tmp_path / "S4.json", now=now + 30)
     assert status["populations"]["SYN"]["pairwise_v1"]["follower_state"] in ("RUNNING", "CLOSED")
+
+
+def test_follower_heartbeats_status_during_a_long_submission_pass(tmp_path, monkeypatch):
+    camp = _cap("feature_pairwise_campaign")
+    manifest_path, data = _population(tmp_path)
+    _, state, plan, _ = _plan_and_run(tmp_path, manifest_path, data)
+    inner = camp.open_warehouse(tmp_path / "wh.db")
+    clock = {"t": 1_000_000.0}
+    monkeypatch.setattr(camp, "_now", lambda: clock["t"])
+    beats = []
+    real_build = camp.importlib.import_module("tools.feature_selection_phase23_status").build_status
+
+    def spy(**kw):
+        if kw.get("follower_result", {}).get("in_progress"):
+            beats.append(kw["follower_result"]["submitted"])
+        return real_build(**kw)
+    monkeypatch.setattr(camp.importlib.import_module("tools.feature_selection_phase23_status"), "build_status", spy)
+
+    class Slow:
+        backend = "slow"
+        transport_log = [{"attempt": 1, "failure": "simulated"}]
+
+        def healthy(self):
+            return True
+
+        def submit_rows(self, run_id, table, rows, **kw):
+            clock["t"] += 25.0          # each table takes 25 "seconds": a unit takes 75 s, beyond the 60 s heartbeat
+            return inner.submit_rows(run_id, table, rows)
+
+        def read_run(self, *a, **k):
+            return inner.read_run(*a, **k)
+
+        def reconcile(self, run_id, expected=None):
+            return inner.reconcile(run_id)
+
+    res = camp.follow_once(plan_path=state / "PLAN.json", state_root=tmp_path / "coord", terminal_dirs=[state / "terminals"],
+                           warehouse_path=tmp_path / "wh.db", data_root=data, warehouse=Slow(), chain_phase3=False)
+    assert res["submitted"] == len(plan["shards"]) and len(beats) >= len(plan["shards"]) - 1
+    assert res["warehouse_transport"] == {"failed_attempts": 1, "last_failure": {"attempt": 1, "failure": "simulated"}, "host_healthy_now": True}
