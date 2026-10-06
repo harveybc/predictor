@@ -38,6 +38,8 @@ while true; do
   declare -A rc=()
   for role in worker_a worker_b; do
     h="${SSH[$role]}"
+    # the driver creates failures/ claims/ quarantine/ lazily; create them so a pull is never a partial transfer (rc 23)
+    ssh -o ConnectTimeout=20 "$h" "for p in $FS23_POPULATIONS; do mkdir -p $REMOTE_STATE/\$p/terminals $REMOTE_STATE/\$p/failures $REMOTE_STATE/\$p/claims $REMOTE_STATE/\$p/quarantine; done" 2>/dev/null
     for pop in $FS23_POPULATIONS; do
       m="$FS23_STATE/peer_terminals/$role/$pop"; mkdir -p "$m/terminals" "$m/failures" "$m/claims" "$m/quarantine"
       "${RS[@]}" "${TERM_FILTER[@]}" "$h:$REMOTE_STATE/$pop/terminals/" "$m/terminals/" 2>/dev/null; rc[pull_terminals_${role}_$pop]=$?
