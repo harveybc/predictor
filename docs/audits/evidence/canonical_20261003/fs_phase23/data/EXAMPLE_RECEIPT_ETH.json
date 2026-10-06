@@ -1,0 +1,16 @@
+{
+  "already_stored": 0,
+  "distinct_identities": 3,
+  "host_role": "worker_a",
+  "population_id": "ETH",
+  "receipt_sha256": "8188e93d506ff00f865ecdefaa7b71640e3325c4bdfbe2b1b569e69f8137b6ff",
+  "rows_sha256": "71096c27b58a302def22368182f1710c5cc24aa54dcd9a63c03d36ec08db53c5",
+  "run_id": "phase2-eth:EXAMPLE",
+  "run_sha256": "4c2fc1bb9322ec7b368ff673b39b11fe5b1b27d002641024675f923f948879d2",
+  "schema": "fs_phase23_load_receipt.v1",
+  "shard_id": "shard-000",
+  "stored_new": 3,
+  "submitted": 3,
+  "submitted_at": "2026-10-06T00:44:32Z",
+  "table": "feature_pair_metrics"
+}

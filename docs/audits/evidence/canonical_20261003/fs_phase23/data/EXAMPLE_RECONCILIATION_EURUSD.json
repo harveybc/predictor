@@ -1,0 +1,46 @@
+{
+  "complete": true,
+  "generated_at": "2026-10-06T00:44:31Z",
+  "phase": "PHASE_2",
+  "population_id": "EURUSD",
+  "receipts_verified": 2,
+  "reconciliation_sha256": "5a18f3c08ce3cc7e73eeb9ed157420101bd6663aef5787eb868963a9e96f7aef",
+  "run_id": "phase2-eurusd:EXAMPLE",
+  "run_sha256": "f239c85379924972f6563c19581130bbccdcbe5cc22c93b09e20deb0d16c24c4",
+  "schema": "fs_phase23_reconciliation.v1",
+  "tables": {
+    "feature_alias_groups": {
+      "expected": null,
+      "receipted_new_rows": 0,
+      "receipts": 0,
+      "receipts_cover_store": true,
+      "stored": 0,
+      "stored_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "feature_filter_rankings": {
+      "expected": null,
+      "receipted_new_rows": 0,
+      "receipts": 0,
+      "receipts_cover_store": true,
+      "stored": 0,
+      "stored_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "feature_pair_metrics": {
+      "count_matches_expected": true,
+      "expected": 6,
+      "receipted_new_rows": 6,
+      "receipts": 2,
+      "receipts_cover_store": true,
+      "stored": 6,
+      "stored_rows_sha256": "b94d4a1f767319b2429c1031839bb2195c7c1124a9da9a8d1998636bb6268602"
+    },
+    "feature_redundancy_clusters": {
+      "expected": null,
+      "receipted_new_rows": 0,
+      "receipts": 0,
+      "receipts_cover_store": true,
+      "stored": 0,
+      "stored_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  }
+}
