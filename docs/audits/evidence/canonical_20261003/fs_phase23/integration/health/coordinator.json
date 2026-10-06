@@ -1,10 +1,10 @@
 {
  "admission": {
   "desktop_reserve_bytes": 3221225472,
-  "host_free_for_new_bytes": 18537508864,
+  "host_free_for_new_bytes": 18489192448,
   "live_lease_count": 0,
   "live_leases": [],
-  "mem_available_bytes": 21758734336,
+  "mem_available_bytes": 21710417920,
   "pressure_admit_max": 25.0,
   "pressure_full_avg10": 0.0,
   "pressure_some_avg10": 0.0
@@ -12,14 +12,14 @@
  "cpu": {
   "cores": 16,
   "loadavg_1_5_15": [
-   1.1162109375,
-   0.7890625,
-   0.7431640625
+   0.92041015625,
+   0.78515625,
+   0.748046875
   ]
  },
  "crispdm_batch_slice": {
   "active": "active",
-  "memory_current_bytes": 42033152,
+  "memory_current_bytes": 124108800,
   "memory_high_bytes": 12884901888,
   "memory_max_bytes": 15032385536,
   "scopes": []
@@ -29,17 +29,17 @@
   {
    "index": 0,
    "memory_total_mib": 8188,
-   "memory_used_mib": 706,
+   "memory_used_mib": 835,
    "utilization_pct": 0
   }
  ],
- "measured_at_utc": "2026-10-06T00:55:28Z",
+ "measured_at_utc": "2026-10-06T01:23:53Z",
  "memory": {
-  "available_bytes": 21769187328,
-  "cached_bytes": 15029444608,
-  "free_bytes": 1833041920,
-  "slab_unreclaim_bytes": 795439104,
-  "swap_free_bytes": 6317903872,
+  "available_bytes": 21695893504,
+  "cached_bytes": 15493980160,
+  "free_bytes": 1240801280,
+  "slab_unreclaim_bytes": 797741056,
+  "swap_free_bytes": 6318120960,
   "swap_total_bytes": 8589930496,
   "total_bytes": 32778358784
  },

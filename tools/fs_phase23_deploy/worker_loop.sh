@@ -68,6 +68,9 @@ while true; do
     rc=$?
     wall=$(( $(date +%s) - start ))
     if [[ $rc -eq 75 ]]; then log "ADMISSION_REFUSED $pop (exit 75, slot stops, no restart)"; exit 75; fi
+    # 137 = the cgroup ceiling (FS23_CAP) or the admission monitor stopped the pass: terminal for this
+    # slot (a restart would hit the same cap every RestartSec); the other hosts steal its shards
+    if [[ $rc -eq 137 ]]; then log "OOM_OR_PRESSURE_KILLED $pop under cap=$FS23_CAP wall=${wall}s (exit 75: slot stops, no restart; peers steal)"; exit 75; fi
     if [[ $rc -ne 0 ]]; then log "PASS_FAILED $pop rc=$rc wall=${wall}s (systemd restarts after RestartSec)"; exit "$rc"; fi
     log "PASS_OK $pop wall=${wall}s"
   done

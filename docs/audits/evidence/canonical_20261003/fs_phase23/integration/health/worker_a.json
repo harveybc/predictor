@@ -1,10 +1,10 @@
 {
  "admission": {
   "desktop_reserve_bytes": 3221225472,
-  "host_free_for_new_bytes": 6624649216,
+  "host_free_for_new_bytes": 6599602176,
   "live_lease_count": 0,
   "live_leases": [],
-  "mem_available_bytes": 9845874688,
+  "mem_available_bytes": 9820827648,
   "pressure_admit_max": 25.0,
   "pressure_full_avg10": 0.0,
   "pressure_some_avg10": 0.0
@@ -12,9 +12,9 @@
  "cpu": {
   "cores": 32,
   "loadavg_1_5_15": [
-   0.2783203125,
-   0.09423828125,
-   0.01708984375
+   2.60986328125,
+   0.5595703125,
+   0.17626953125
   ]
  },
  "crispdm_batch_slice": {
@@ -39,13 +39,13 @@
    "utilization_pct": 0
   }
  ],
- "measured_at_utc": "2026-10-06T00:55:32Z",
+ "measured_at_utc": "2026-10-06T01:23:56Z",
  "memory": {
-  "available_bytes": 10187878400,
-  "cached_bytes": 5943128064,
-  "free_bytes": 2922774528,
-  "slab_unreclaim_bytes": 1445871616,
-  "swap_free_bytes": 4288892928,
+  "available_bytes": 10169180160,
+  "cached_bytes": 6632624128,
+  "free_bytes": 2163929088,
+  "slab_unreclaim_bytes": 1459666944,
+  "swap_free_bytes": 4289044480,
   "swap_total_bytes": 4294963200,
   "total_bytes": 15340732416
  },
@@ -54,18 +54,6 @@
    "executable": "~/.local/state/canonical_20261003/fs_phase23/venv/bin/python",
    "packages": {
     "duckdb": "1.5.6",
-    "numpy": "2.4.3",
-    "pandas": "3.0.1",
-    "pyarrow": "23.0.1",
-    "scipy": "1.17.1",
-    "sklearn": "1.8.0"
-   },
-   "python": "3.12.13"
-  },
-  "~/anaconda3/envs/tensorflow/bin/python": {
-   "executable": "~/anaconda3/envs/tensorflow/bin/python",
-   "packages": {
-    "duckdb": "MISSING:ModuleNotFoundError",
     "numpy": "2.4.3",
     "pandas": "3.0.1",
     "pyarrow": "23.0.1",
