@@ -1,0 +1,124 @@
+{
+  "archive_sha256": "7d26773fd6c97af9ce9d35edd708e25624560e9603311c794e6604f41ab49300",
+  "commit": "631be7f443646b69d27e3572cf63820c3ab312ae",
+  "deployed_at_utc": "2026-10-06T08:59:00Z",
+  "failures": {},
+  "note": "python_version may differ at patch level across roles (same minor 3.12); the locked numeric stack must be identical",
+  "parity": {
+    "archive_sha256": true,
+    "numeric_stack_equal": true,
+    "pip_freeze_locked_sha256": true,
+    "python_version_equal": false,
+    "requirements_lock_sha256": true,
+    "tree_sha256": true,
+    "unit_sources_sha256": true
+  },
+  "parity_ok": true,
+  "parity_required": [
+    "archive_sha256",
+    "tree_sha256",
+    "requirements_lock_sha256",
+    "pip_freeze_locked_sha256",
+    "unit_sources_sha256",
+    "numeric_stack_equal"
+  ],
+  "roles": {
+    "coordinator": {
+      "archive_sha256": "7d26773fd6c97af9ce9d35edd708e25624560e9603311c794e6604f41ab49300",
+      "base_python": "python3",
+      "commit": "631be7f443646b69d27e3572cf63820c3ab312ae",
+      "cpu_cores": 16,
+      "installed_at_utc": "2026-10-06T08:58:15Z",
+      "installed_units_sha256": "0fc110f77e9d8e7c39e47290f43c9d66d98c5d3010dd996162ea0eb5f1292c02",
+      "kernel": "7.0.0-34-generic",
+      "numeric_stack": {
+        "duckdb": "1.5.6",
+        "numpy": "2.4.3",
+        "pandas": "3.0.1",
+        "pyarrow": "23.0.1",
+        "scipy": "1.17.1",
+        "sklearn": "1.8.0"
+      },
+      "pip_freeze_locked_sha256": "2325c7775a6121e23c80703c565a23b538c7bf774bc20b534e2ae74eccedf602",
+      "python_version": "3.12.7",
+      "requirements_lock_sha256": "48647495f0f3e796afc6098d1e33353a3df20a04fb3190dc032609c79fb7fb42",
+      "role": "coordinator",
+      "runner": {
+        "cap": "1G",
+        "follow_cap": "2G",
+        "slots": 1,
+        "steal": false,
+        "threads": 1
+      },
+      "schema": "fs_phase23_host_deploy_receipt.v1",
+      "state_dir": "~/.local/state/canonical_20261003/fs_phase23",
+      "tree_sha256": "6df229f4dbbfc88f637089eb7931dfc24b7c8a489c0784d87c389e69cb15041a",
+      "unit_sources_sha256": "361539b600695faaa6c4357743a3f76ee8f08e906199804d20871f4898eb44d5"
+    },
+    "worker_a": {
+      "archive_sha256": "7d26773fd6c97af9ce9d35edd708e25624560e9603311c794e6604f41ab49300",
+      "base_python": "~/anaconda3/envs/tensorflow/bin/python",
+      "commit": "631be7f443646b69d27e3572cf63820c3ab312ae",
+      "cpu_cores": 32,
+      "installed_at_utc": "2026-10-06T08:58:25Z",
+      "installed_units_sha256": "a806f4a2f6871934a390aa1dfd3addd4e213b60e65c570242c8075ff827568a7",
+      "kernel": "7.0.0-34-generic",
+      "numeric_stack": {
+        "duckdb": "1.5.6",
+        "numpy": "2.4.3",
+        "pandas": "3.0.1",
+        "pyarrow": "23.0.1",
+        "scipy": "1.17.1",
+        "sklearn": "1.8.0"
+      },
+      "pip_freeze_locked_sha256": "2325c7775a6121e23c80703c565a23b538c7bf774bc20b534e2ae74eccedf602",
+      "python_version": "3.12.13",
+      "requirements_lock_sha256": "48647495f0f3e796afc6098d1e33353a3df20a04fb3190dc032609c79fb7fb42",
+      "role": "worker_a",
+      "runner": {
+        "cap": "2G",
+        "follow_cap": "2G",
+        "slots": 1,
+        "steal": true,
+        "threads": 1
+      },
+      "schema": "fs_phase23_host_deploy_receipt.v1",
+      "state_dir": "~/.local/state/canonical_20261003/fs_phase23",
+      "tree_sha256": "6df229f4dbbfc88f637089eb7931dfc24b7c8a489c0784d87c389e69cb15041a",
+      "unit_sources_sha256": "361539b600695faaa6c4357743a3f76ee8f08e906199804d20871f4898eb44d5"
+    },
+    "worker_b": {
+      "archive_sha256": "7d26773fd6c97af9ce9d35edd708e25624560e9603311c794e6604f41ab49300",
+      "base_python": "~/anaconda3/envs/tensorflow/bin/python",
+      "commit": "631be7f443646b69d27e3572cf63820c3ab312ae",
+      "cpu_cores": 32,
+      "installed_at_utc": "2026-10-06T08:59:00Z",
+      "installed_units_sha256": "a806f4a2f6871934a390aa1dfd3addd4e213b60e65c570242c8075ff827568a7",
+      "kernel": "7.0.0-34-generic",
+      "numeric_stack": {
+        "duckdb": "1.5.6",
+        "numpy": "2.4.3",
+        "pandas": "3.0.1",
+        "pyarrow": "23.0.1",
+        "scipy": "1.17.1",
+        "sklearn": "1.8.0"
+      },
+      "pip_freeze_locked_sha256": "2325c7775a6121e23c80703c565a23b538c7bf774bc20b534e2ae74eccedf602",
+      "python_version": "3.12.13",
+      "requirements_lock_sha256": "48647495f0f3e796afc6098d1e33353a3df20a04fb3190dc032609c79fb7fb42",
+      "role": "worker_b",
+      "runner": {
+        "cap": "2G",
+        "follow_cap": "2G",
+        "slots": 3,
+        "steal": true,
+        "threads": 1
+      },
+      "schema": "fs_phase23_host_deploy_receipt.v1",
+      "state_dir": "~/.local/state/canonical_20261003/fs_phase23",
+      "tree_sha256": "6df229f4dbbfc88f637089eb7931dfc24b7c8a489c0784d87c389e69cb15041a",
+      "unit_sources_sha256": "361539b600695faaa6c4357743a3f76ee8f08e906199804d20871f4898eb44d5"
+    }
+  },
+  "schema": "fs_phase23_deploy_receipt.v1"
+}
