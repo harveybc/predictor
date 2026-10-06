@@ -1,0 +1,44 @@
+{
+ "schema": "fs_phase23.test_receipt.v1",
+ "stage": "POST",
+ "recorded_at": "2026-10-06T01:14:20.225288+00:00",
+ "commit_under_test": "06a8f153af3b566a3a0fcc9e582da74c236ae761",
+ "test_file": "tools/test_fs_phase23_driver.py",
+ "test_file_sha256": "f57f77f607ad68180ba01e01d6c7a6e88b8b9c6ab13988c99b517e0aa6bc5901",
+ "collected": 19,
+ "runs": [
+  {
+   "file": "POST_pytest_output_coordinator.txt",
+   "passed": 19,
+   "failed": 0,
+   "output_sha256": "20cd4bc13fae88c2167ef7589462910a9889d8078af5f6adcfbb4ce9f2601a14",
+   "host_role": "coordinator",
+   "env": "python 3.12.7 numpy 1.26.4 pandas 2.2.2",
+   "cap": "crispdm-run -m 2G"
+  },
+  {
+   "file": "POST_pytest_output_worker_b.txt",
+   "passed": 19,
+   "failed": 0,
+   "output_sha256": "c8d56c120e9245d20d29c90329da65e25c0d641fb43991885d4cc4babc30e833",
+   "host_role": "worker_b (CPU, no GPU, basetemp under the user state dir, not /tmp)",
+   "env": "python 3.13.9 numpy 2.4.4 pandas 3.0.2 scipy 1.17.1",
+   "cap": "crispdm-run -m 3G"
+  }
+ ],
+ "cost_measurement": {
+  "host_role": "worker_b",
+  "cap": "crispdm-run -m 4G",
+  "rows": 71734,
+  "features": 366,
+  "folds": 5,
+  "pairs_in_measured_shard": 979,
+  "seconds_per_1000_pairs": 680.922185071764,
+  "process_peak_rss_bytes": 1556455424,
+  "process_rss_before_worker_bytes": 1419853824,
+  "note": "process peak includes the synthetic-population builder's frames (1.42 GB resident before the worker started); the worker increment over that baseline was 0.13 GB; a standalone worker on the real EURUSD matrix holds ~0.21 GB (366 x 71,734 float64) plus ~0.1 GB fold ranks",
+  "estimated_core_hours_eurusd": 12.633943708852357,
+  "phase3_one_target_seconds": 15.000413656234741,
+  "phase3_process_peak_rss_bytes": 1644601344
+ }
+}
