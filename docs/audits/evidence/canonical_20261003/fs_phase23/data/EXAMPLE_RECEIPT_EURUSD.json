@@ -1,0 +1,16 @@
+{
+  "already_stored": 0,
+  "distinct_identities": 3,
+  "host_role": "worker_a",
+  "population_id": "EURUSD",
+  "receipt_sha256": "fe0ad2483623cb6265a4a0b3b59fbae346f04f6b8c742986fed84f6be5208682",
+  "rows_sha256": "5bdf918426e00401254138e05dd9e6831ada4dd1433cdf4b2b22009a7c62dbb7",
+  "run_id": "phase2-eurusd:EXAMPLE",
+  "run_sha256": "f239c85379924972f6563c19581130bbccdcbe5cc22c93b09e20deb0d16c24c4",
+  "schema": "fs_phase23_load_receipt.v1",
+  "shard_id": "shard-000",
+  "stored_new": 3,
+  "submitted": 3,
+  "submitted_at": "2026-10-06T00:44:31Z",
+  "table": "feature_pair_metrics"
+}
