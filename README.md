@@ -12,7 +12,7 @@ reproducible sweep over architectures, dataset sizes and horizons.
 ## Feature selection and reusable analysis
 
 The public entry point is
-**[dataset_selection](https://github.com/harveybc/dataset_selection)**: a tested
+**[feature_selector](https://github.com/harveybc/feature_selector)**: a tested
 CPU example, JSON configuration, data-source guide, local DuckDB results and
 instructions for adapting the selection stages to another dataset. It uses
 the existing engines at a pinned revision, without duplicating their code or
@@ -26,7 +26,7 @@ This revision contains the [phase-1 inventory scheduler](docs/phase1_inventory/R
 and rankings accept manifest-configured populations. The causal worker lives
 in `causal-inference` and currently validates EURUSD/ETH target packs; the
 complete workflow is not yet a universal entry-point plugin package. See the
-[portability audit](https://github.com/harveybc/dataset_selection/blob/main/docs/PORTABILITY.md)
+[portability audit](https://github.com/harveybc/feature_selector/blob/main/docs/PORTABILITY.md)
 for exact interfaces and limitations.
 
 Phases 1-3 of the retained financial campaign are complete for their declared

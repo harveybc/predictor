@@ -31,7 +31,7 @@ interfaces without access to it.
 | Signal preparation | [preprocessor](https://github.com/harveybc/preprocessor) | Configured transforms, train-only fitting and dataset partitions; causal-transform research is versioned separately |
 | Feature engineering | [feature-eng](https://github.com/harveybc/feature-eng) | Technical indicators and supervised labels; target construction is distinct from an input feature |
 | Learned features | [feature-extractor](https://github.com/harveybc/feature-extractor) | Autoencoder training and encoder/decoder artifacts |
-| Feature selection | [dataset_selection](https://github.com/harveybc/dataset_selection) | Public guide and executable example over pinned selection engines; profiles, causal evidence, pairwise metrics, candidate subsets and validation, with documented portability limits |
+| Feature selection | [feature_selector](https://github.com/harveybc/feature_selector) | Public guide and executable example over pinned selection engines; profiles, causal evidence, pairwise metrics, candidate subsets and validation, with documented portability limits |
 | Forecasting | [predictor](https://github.com/harveybc/predictor) | Configurable Keras/TensorFlow training and evaluation |
 | RL experiments | [agent-multi](https://github.com/harveybc/agent-multi) / [gym-fx](https://github.com/harveybc/gym-fx) | Agents, optimizers, environments and offline evaluation |
 | Distributed research | [doin-core](https://github.com/harveybc/doin-core) / [doin-node](https://github.com/harveybc/doin-node) | Shared protocol and participant runtime |
