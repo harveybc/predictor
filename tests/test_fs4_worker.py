@@ -181,6 +181,8 @@ def test_declared_typed_refusal_is_terminal_not_technical(tmp_path, monkeypatch,
     runner = script(tmp_path, f"cat >/dev/null; echo '{typed_stdout(code)}'; echo '{code} no rows' >&2; exit 3")
     out = worker.run_one(make_args(tmp_path, runner), task())
     assert out["typed_refusal"] is True and out["reason"].startswith(code)
+    assert (out.get("state") == "NOT_AVAILABLE_FOR_TRAIN") == (code != "REFUSED_UNKNOWN_FEATURE")
+    assert (tmp_path / "out" / f"{TASK_ID}.refused.json").exists()
     action, extra, _ = fake.calls[-1]
     assert action == "fail" and "--technical" not in extra
 
@@ -215,11 +217,16 @@ def test_closure_reads_worker_reasons_as_typed_or_technical():
     def typed(reason):
         return closure.is_typed_refusal({"state": "FAILED", "result": {"reason": reason}}, pattern)
 
-    for code in ("NO_TRAIN_OBSERVATIONS", "INSUFFICIENT_TRAIN_ES_WINDOWS", "REFUSED_UNKNOWN_FEATURE"):
-        assert typed(worker.classify_exit(typed_stdout(code), 3, "")[1])
+    def not_available(reason):
+        return closure.is_not_available({"state": "FAILED", "result": {"reason": reason}})
+
+    for code in ("NO_TRAIN_OBSERVATIONS", "INSUFFICIENT_TRAIN_ES_WINDOWS"):
+        reason = worker.classify_exit(typed_stdout(code), 3, "")[1]
+        assert not_available(reason) and not typed(reason)  # its own terminal disposition
+    assert typed(worker.classify_exit(typed_stdout("REFUSED_UNKNOWN_FEATURE"), 3, "")[1])
     for rc, out in ((4, typed_stdout("REFUSED_GPU_NOT_VERIFIED", "GPU_NOT_VERIFIED")), (3, typed_stdout("REFUSED_MemoryError", "REFUSED")), (139, "")):
         kind, reason = worker.classify_exit(out, rc, "REFUSED_GPU_NOT_VERIFIED tail")
-        assert kind == "technical" and not typed(reason)
+        assert kind == "technical" and not typed(reason) and not not_available(reason)
 
 
 def test_remote_words_are_quoted_so_a_reason_stays_one_argument(tmp_path):

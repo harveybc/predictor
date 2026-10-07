@@ -225,15 +225,17 @@ def test_fs4_07_a_leased_task_never_becomes_a_stored_result_and_blocks_closure(t
 
 def test_fs4_13_a_technical_failure_blocks_and_a_typed_refusal_is_a_disposition(tmp_path):
     db = make_queue(tmp_path)
-    complete_all(db, fail=lambda t: ("runner rc=1: NO_TRAIN_OBSERVATIONS for x/f1"
+    complete_all(db, fail=lambda t: ("NO_TRAIN_OBSERVATIONS for x/f1"
                                      if t["feature_id"] == "x" else None))
     args = args_for(db, tmp_path)
     status = closure.tick(args, now=3000.0)
-    assert status["failed"] == {"total": 3, "technical": 0, "typed_refused": 3}
+    assert status["failed"] == {"total": 0, "technical": 0, "typed_refused": 0}
+    assert status["not_available_for_train"]["total"] == 3
     assert status["state"] == "EXTRACTIBILITY_COMPLETE"
     closed = json.loads((tmp_path / "state" / "EXTRACTIBILITY_COMPLETE.json").read_text())
-    assert closed["complete"] == 9 and closed["typed_refused"] == 3
-    assert {r["feature_id"] for r in closed["typed_refusals"]} == {"x"}
+    assert closed["complete"] == 9 and closed["typed_refused"] == 0 and closed["not_available_for_train"] == 3
+    assert closed["denominator"] == {"admitted": 12, "complete": 9, "not_available_for_train": 3,
+                                     "typed_refused": 0, "sum_equals_admitted": True}
     assert closed["complete_by_population"] == {"EURUSD": 9}
     assert closed["reconciliation"]["expected"] == {"total": 9, "by_population": {"EURUSD": 9}}
     # a technical failure (lease exhausted / runner crash) is not a disposition
@@ -241,6 +243,7 @@ def test_fs4_13_a_technical_failure_blocks_and_a_typed_refusal_is_a_disposition(
     complete_all(db2, fail=lambda t: "runner rc=137: Killed" if t["feature_id"] == "x" else None)
     status2 = closure.tick(args_for(db2, tmp_path / "two"), now=3000.0)
     assert status2["failed"] == {"total": 3, "technical": 3, "typed_refused": 0}
+    assert status2["not_available_for_train"]["total"] == 0
     assert status2["state"] == "BLOCKED" and not (tmp_path / "two" / "state" / "EXTRACTIBILITY_COMPLETE.json").exists()
     assert any("technical failures" in r for r in status2["closure"]["reasons"])
     assert status2["validation"]["technical_failures"][0]["reason"].startswith("runner rc=137")
@@ -308,3 +311,43 @@ def test_cli_expected_and_status_print_json(tmp_path, capsys):
                          "--state-root", str(tmp_path / "s"), "status"]) == 0
     assert json.loads(capsys.readouterr().out)["state"] == "PENDING_DISPATCH"
     assert not (tmp_path / "w.duckdb").exists()
+
+
+def test_not_available_for_train_cells_are_terminal_counted_and_recorded_per_feature(tmp_path):
+    db = make_queue(tmp_path, folds=("f1", "f2"))
+
+    def refuse(task):  # EURUSD feature "c": no TRAIN rows in both folds; "b": only in f1; ETH measured
+        if task["population_id"] == "EURUSD" and (task["feature_id"] == "c" or (task["feature_id"] == "b" and task["fold_id"] == "f1")):
+            return "NO_TRAIN_OBSERVATIONS no fit origins before the fold"
+        return None
+    # complete_all uses campaign.fail, which now maps the code to the explicit state
+    complete_all(db, fail=refuse)
+    status = closure.tick(args_for(db, tmp_path), now=5000.0)
+    assert status["state"] == "EXTRACTIBILITY_COMPLETE"
+    assert status["failed"] == {"total": 0, "technical": 0, "typed_refused": 0}
+    assert status["not_available_for_train"] == {"total": 9, "by_population": {"ETH": 0, "EURUSD": 9}}
+    assert status["expected"]["total"] == 24
+    closed = json.loads((tmp_path / "state" / "EXTRACTIBILITY_COMPLETE.json").read_text())
+    assert closed["schema"] == "fs4.extractibility_complete.v1" and closed["state"] == "EXTRACTIBILITY_COMPLETE"
+    assert closed["denominator"] == {"admitted": 24, "complete": 15, "not_available_for_train": 9,
+                                     "typed_refused": 0, "sum_equals_admitted": True}
+    eur = closed["populations"]["EURUSD"]["features"]
+    assert eur["c"] == {"status": "NOT_AVAILABLE_FOR_TRAIN"}
+    assert eur["a"]["status"] == "MEASURED" and set(eur["a"]["folds"]) == {"f1", "f2"}
+    assert eur["a"]["folds"]["f1"]["RAW"] == 0.1 and eur["a"]["folds"]["f1"]["TRAINED_ENCODER"] == 0.1
+    assert eur["b"]["status"] == "MEASURED" and eur["b"]["folds"]["f1"]["status"] == "NOT_AVAILABLE_FOR_TRAIN"
+    assert eur["b"]["folds"]["f2"]["RAW"] == 0.1
+    assert closed["populations"]["EURUSD"]["not_available_for_train"] == 1
+    assert closed["populations"]["ETH"]["features"]["x"]["status"] == "MEASURED"
+    body = {k: v for k, v in closed.items() if k not in ("generated_at", "closure_sha256")}
+    assert closed["closure_sha256"] == closure.digest(body)
+    # the warehouse holds only measured terminals; reconcile is against that count
+    assert closed["reconciliation"]["expected"]["total"] == 15
+
+
+def test_a_cell_measured_for_one_arm_and_not_available_for_another_blocks_closure(tmp_path):
+    db = make_queue(tmp_path)
+    complete_all(db, fail=lambda t: "NO_TRAIN_OBSERVATIONS x" if t["feature_id"] == "a" and t["arm"] == "RAW" else None)
+    status = closure.tick(args_for(db, tmp_path), now=5000.0)
+    assert status["state"] == "BLOCKED" and not (tmp_path / "state" / "EXTRACTIBILITY_COMPLETE.json").exists()
+    assert any("arm triples disagree" in r for r in status["closure"]["reasons"])

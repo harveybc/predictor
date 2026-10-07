@@ -28,6 +28,9 @@ from pathlib import Path
 #: REFUSED_MemoryError) are technical and retried by the controller up to MAX_ATTEMPTS.
 TYPED_CODE_RE = re.compile(r"^(NO_TRAIN_OBSERVATIONS|INSUFFICIENT_TRAIN_[A-Z0-9_]+|REFUSED_[A-Z0-9_]+)$")
 NOT_TYPED_CODES = {"REFUSED_GPU_NOT_VERIFIED"}
+#: Typed refusals that mean "no usable TRAIN rows": the controller records them as the terminal state
+#: NOT_AVAILABLE_FOR_TRAIN (inside the denominator, never retried, never dropped).
+NAFT_RE = re.compile(r"^(NO_TRAIN_OBSERVATIONS|INSUFFICIENT_TRAIN_[A-Z0-9_]+)\b")
 UUID_RE = re.compile(r"^GPU-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 DESKTOP_RESERVE_BYTES = 3 * 1024 ** 3
 UNITS = {"": 1, "K": 1024, "M": 1024 ** 2, "G": 1024 ** 3, "T": 1024 ** 4}
@@ -232,7 +235,13 @@ def run_one(args, task):
         raise RuntimeError(f"LEASE_HEARTBEAT_FAILED: {errors[0]}")
     if process.returncode:
         kind, reason = classify_exit(stdout, process.returncode, error_tail)
+        naft = kind == "typed" and bool(NAFT_RE.match(reason))
+        if kind == "typed":  # the refusal is retained locally before it is delivered, like a COMPLETE terminal
+            atomic_json(terminal.with_name(f"{task_id}.refused.json"), {"task_id": task_id, "arm": task["arm"],
+                        "status": "NOT_AVAILABLE_FOR_TRAIN" if naft else "REFUSED", "reason": reason})
         controller(args, "fail", ["--task-id", task_id, "--reason", reason] + (["--technical"] if kind == "technical" else []))
+        if naft:
+            return {"task_id": task_id, "state": "NOT_AVAILABLE_FOR_TRAIN", "typed_refusal": True, "reason": reason}
         return {"task_id": task_id, "failed": True, "typed_refusal": kind == "typed", "reason": reason}
     try:
         result = json.loads(stdout)

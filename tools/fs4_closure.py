@@ -120,14 +120,31 @@ class TaskStore:
         self.con.close()
 
 
+NAFT = "NOT_AVAILABLE_FOR_TRAIN"
+NAFT_CODE_RE = re.compile(r"^(NO_TRAIN_OBSERVATIONS|INSUFFICIENT_TRAIN_[A-Z0-9_]+)\b")
+
+
+def is_not_available(task: dict) -> bool:
+    """A terminal NOT_AVAILABLE_FOR_TRAIN disposition: the explicit state, or a FAILED row from before
+    the explicit state existed whose stored reason starts with a no-TRAIN-rows code."""
+    if task["state"] == NAFT:
+        return True
+    reason = str((task.get("result") or {}).get("reason") or "") if isinstance(task.get("result"), dict) else ""
+    return task["state"] == "FAILED" and bool(NAFT_CODE_RE.match(reason))
+
+
 def effective_state(task: dict, now: float) -> str:
     """The controller's own reading (``fs4_campaign.status``): an expired lease is pending again."""
+    if is_not_available(task):
+        return "not_available_for_train"
     if task["state"] == "LEASED":
         return "running" if (task["lease_until"] or 0) >= now else "pending"
     return task["state"].lower()
 
 
 def is_typed_refusal(task: dict, pattern: re.Pattern) -> bool:
+    if is_not_available(task):
+        return False  # a NOT_AVAILABLE_FOR_TRAIN cell is its own terminal state, not a generic refusal
     if task["state"] != "FAILED" or not isinstance(task.get("result"), dict):
         return False
     reason = str(task["result"].get("reason") or "")
@@ -183,6 +200,49 @@ def triple_check(tasks: list[dict]) -> list[dict]:
             bad.append({"population_id": key[0], "identity": key[1], "feature_id": key[2], "fold_id": key[3],
                         "arms": sorted(arms)})
     return bad
+
+
+def mixed_not_available(tasks: list[dict]) -> list[dict]:
+    """The three arms of a feature-fold share their rows, so they must share the disposition: a cell that is
+    NOT_AVAILABLE_FOR_TRAIN for one arm and measured for another is a defect, not a result."""
+    groups: dict[tuple, set[str]] = {}
+    for task in tasks:
+        p = task["payload"]
+        kind = "NAFT" if is_not_available(task) else ("COMPLETE" if task["state"] == "COMPLETE" else None)
+        if kind:
+            groups.setdefault((p["population_id"], p["identity"], p["feature_id"], p["fold_id"]), set()).add(kind)
+    return [{"population_id": k[0], "identity": k[1], "feature_id": k[2], "fold_id": k[3],
+             "arms": ["MIXED_NOT_AVAILABLE_AND_MEASURED"]} for k, kinds in sorted(groups.items()) if len(kinds) > 1]
+
+
+def build_populations(tasks: list[dict]) -> dict:
+    """populations.<POP>.features.<feature> for the weekly campaign: MEASURED with folds -> arm -> MAE, or
+    NOT_AVAILABLE_FOR_TRAIN when no fold of the feature has TRAIN rows. A feature that is available only in
+    some folds is MEASURED and carries {status: NOT_AVAILABLE_FOR_TRAIN} in the folds that are not."""
+    cells: dict[str, dict[str, dict[str, dict]]] = {}
+    for task in tasks:
+        p = task["payload"]
+        fold = cells.setdefault(p["population_id"], {}).setdefault(p["feature_id"], {}).setdefault(p["fold_id"], {})
+        if is_not_available(task):
+            fold["status"] = NAFT
+            fold["code"] = (task["result"] or {}).get("code") or NAFT_CODE_RE.match(str((task["result"] or {}).get("reason") or "")).group(1)
+        elif task["state"] == "COMPLETE":
+            fold[p["arm"]] = task["result"]["metrics"]["mae"]
+            fold["naive_mae"] = task["result"]["metrics"]["naive_mae"]
+            fold["population_n"] = task["result"]["population_n"]
+    out: dict[str, Any] = {}
+    for pop, features in sorted(cells.items()):
+        record: dict[str, Any] = {}
+        for feature, folds in sorted(features.items()):
+            if folds and all(f.get("status") == NAFT for f in folds.values()):
+                record[feature] = {"status": NAFT}
+            else:
+                record[feature] = {"status": "MEASURED", "folds": dict(sorted(folds.items()))}
+        out[pop] = {"features": record,
+                    "feature_count": len(record),
+                    "measured": sum(1 for v in record.values() if v["status"] == "MEASURED"),
+                    "not_available_for_train": sum(1 for v in record.values() if v["status"] == NAFT)}
+    return out
 
 
 # --------------------------------------------------------------------------- receipts on disk
@@ -293,7 +353,7 @@ def build_status(tasks: list[dict], plan_sha256: str, plan: dict, receipts: Rece
                  rate_window: float, refusal_pattern: re.Pattern, warehouse: dict | None = None,
                  closure_path: Path | None = None) -> dict:
     expected = expected_counts(tasks, plan)
-    counts = {"pending": 0, "running": 0, "complete": 0, "failed": 0}
+    counts = {"pending": 0, "running": 0, "complete": 0, "failed": 0, "not_available_for_train": 0}
     by_population: dict[str, dict] = {}
     workers: set[str] = set()
     heartbeats: list[float] = []
@@ -306,7 +366,7 @@ def build_status(tasks: list[dict], plan_sha256: str, plan: dict, receipts: Rece
         counts[state] += 1
         pop = by_population.setdefault(task["payload"]["population_id"],
                                        {"expected": 0, "pending": 0, "running": 0, "complete": 0, "failed": 0,
-                                        "typed_refused": 0, "technical_failed": 0})
+                                        "not_available_for_train": 0, "typed_refused": 0, "technical_failed": 0})
         pop["expected"] += 1
         pop[state] += 1
         if state == "running":
@@ -345,7 +405,7 @@ def build_status(tasks: list[dict], plan_sha256: str, plan: dict, receipts: Rece
         eta, eta_reason = None, "no completed task with measured duration yet"
     else:
         eta, eta_reason = None, "no active worker holds a live lease"
-    triples_bad = triple_check(tasks)
+    triples_bad = triple_check(tasks) + mixed_not_available(tasks)
     reasons = []
     if remaining:
         reasons.append(f"{remaining} tasks pending or running")
@@ -365,7 +425,8 @@ def build_status(tasks: list[dict], plan_sha256: str, plan: dict, receipts: Rece
     closed = closure_path is not None and closure_path.is_file()
     if closed:
         state = "EXTRACTIBILITY_COMPLETE"
-    elif counts["complete"] == 0 and counts["running"] == 0 and counts["failed"] == 0:
+    elif counts["complete"] == 0 and counts["running"] == 0 and counts["failed"] == 0 \
+            and counts["not_available_for_train"] == 0:
         state = "PENDING_DISPATCH"
     elif technical or invalid or triples_bad or quarantined:
         state = "BLOCKED"
@@ -380,6 +441,8 @@ def build_status(tasks: list[dict], plan_sha256: str, plan: dict, receipts: Rece
         "state": state, "plan_sha256": plan_sha256, "expected": expected,
         "complete": counts["complete"], "pending": counts["pending"], "active": counts["running"],
         "failed": {"total": counts["failed"], "technical": len(technical), "typed_refused": len(typed)},
+        "not_available_for_train": {"total": counts["not_available_for_train"],
+                                    "by_population": {p: v["not_available_for_train"] for p, v in sorted(by_population.items())}},
         "by_population": by_population, "workers": sorted(w for w in workers if w),
         "last_heartbeat": iso(max(heartbeats)) if heartbeats else None,
         "rate_tasks_per_hour": rate, "rate_window_seconds": rate_window,
@@ -404,7 +467,8 @@ def attempt_close(store: Any, tasks: list[dict], plan_sha256: str, plan: dict, r
         return None
     complete = [t for t in tasks if t["state"] == "COMPLETE"]
     typed = [t for t in tasks if is_typed_refusal(t, refusal_pattern)]
-    if len(complete) + len(typed) != len(tasks):
+    naft = [t for t in tasks if is_not_available(t)]
+    if len(complete) + len(typed) + len(naft) != len(tasks):
         return None
     expected_store = {"total": len(complete), "by_population": {}}
     for t in complete:
@@ -427,6 +491,10 @@ def attempt_close(store: Any, tasks: list[dict], plan_sha256: str, plan: dict, r
         "schema": SCHEMA_CLOSURE, "state": "EXTRACTIBILITY_COMPLETE", "plan_sha256": plan_sha256, "plan": plan,
         "admitted": status["expected"], "complete": len(complete),
         "typed_refused": len(typed),
+        "not_available_for_train": len(naft),
+        "denominator": {"admitted": len(tasks), "complete": len(complete), "not_available_for_train": len(naft),
+                        "typed_refused": len(typed), "sum_equals_admitted": len(complete) + len(naft) + len(typed) == len(tasks)},
+        "populations": build_populations(tasks),
         "typed_refusals": [{"task_id": t["task_id"], **{k: t["payload"][k] for k in ("population_id", "feature_id", "fold_id", "arm")},
                             "reason": (t["result"] or {}).get("reason")} for t in typed],
         "complete_by_population": expected_store["by_population"],

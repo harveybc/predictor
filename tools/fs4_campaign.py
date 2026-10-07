@@ -10,6 +10,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 import sqlite3
 import statistics
 import sys
@@ -20,6 +21,10 @@ SCHEMA = "fs4.extractibility.task.v1"
 ARMS = ("RAW", "RANDOM_ENCODER", "TRAINED_ENCODER")
 LEASE_SECONDS = 3600
 MAX_ATTEMPTS = 3
+NAFT = "NOT_AVAILABLE_FOR_TRAIN"
+#: Refusal codes that mean "this feature has no usable TRAIN rows in this fold": a terminal disposition
+#: that stays INSIDE the denominator, never retried and never dropped.
+NAFT_CODE_RE = re.compile(r"^(NO_TRAIN_OBSERVATIONS|INSUFFICIENT_TRAIN_[A-Z0-9_]+)\b")
 
 
 class Refusal(ValueError):
@@ -209,6 +214,12 @@ def fail(path, owner, task_id, reason, now=None, technical=False):
             con.execute("""UPDATE tasks SET state='PENDING',owner=NULL,lease_until=NULL,result=?
                 WHERE task_id=?""", (_canonical({"last_technical_failure": reason, "attempt": row["attempt"]}), task_id))
             return {"task_id": task_id, "failed": True, "retry": True, "attempt": row["attempt"]}
+        if not technical and NAFT_CODE_RE.match(reason):
+            code = NAFT_CODE_RE.match(reason).group(1)
+            con.execute("UPDATE tasks SET state=?,finished_at=?,result=? WHERE task_id=?",
+                        (NAFT, now, _canonical({"status": NAFT, "code": code, "reason": reason,
+                                                "attempt": row["attempt"]}), task_id))
+            return {"task_id": task_id, "failed": False, "state": NAFT, "retry": False}
         con.execute("UPDATE tasks SET state='FAILED',finished_at=?,result=? WHERE task_id=?",
                     (now, _canonical({"reason": reason, "attempt": row["attempt"]}), task_id))
     return {"task_id": task_id, "failed": True, "retry": False}
@@ -220,8 +231,8 @@ def status(path, now=None, population=None, feature=None, fold=None, arm=None, o
         plan = con.execute("SELECT value FROM campaign WHERE key='plan'").fetchone()
         if not plan:
             raise Refusal("NO_PLAN")
-        rows = con.execute("SELECT state,owner,lease_until,started_at,finished_at,payload FROM tasks").fetchall()
-    states = {"pending": 0, "running": 0, "complete": 0, "failed": 0}
+        rows = con.execute("SELECT state,owner,lease_until,started_at,finished_at,payload,result FROM tasks").fetchall()
+    states = {"pending": 0, "running": 0, "complete": 0, "failed": 0, "not_available_for_train": 0}
     by_population = {}
     active_owners = set()
     durations = []
@@ -236,6 +247,8 @@ def status(path, now=None, population=None, feature=None, fold=None, arm=None, o
         group = by_population.setdefault(payload["population_id"], {key: 0 for key in states})
         state = "pending" if row["state"] == "LEASED" and row["lease_until"] < now else row["state"].lower()
         state = "running" if state == "leased" else state
+        if state == "failed" and row["result"] and NAFT_CODE_RE.match(str(json.loads(row["result"]).get("reason") or "")):
+            state = "not_available_for_train"  # a refusal recorded before the explicit state existed
         states[state] += 1
         group[state] += 1
         if state == "running":
