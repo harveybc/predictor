@@ -74,14 +74,14 @@
     {
       "id": "I5",
       "name": "phase4_extractibility_and_wrapper_selection",
-      "state": "DESIGNED",
+      "state": "IN_PROGRESS",
       "depends_on": [
         "I4-C",
         "I4-R",
         "I0-W"
       ],
       "gate": "raw/random/trained extraction plus weekly wrapper validation and final manifest",
-      "evidence": "FEATURE_SELECTION_PHASE4_WORK_PLAN_2026_10_06.md; fs4_campaign controller and behavioral tests; runner training and weekly winner pending"
+      "evidence": "Two scoped TRAIN extractibility waves closed with retained readback receipts; 40 target-specific sets entered the 2024 weekly RAW queue. The full 6495-task parent closure and final feature manifest are not claimed. Live count comes from weekly_queue.sqlite via tools.fs4_weekly_campaign status; the older STATUS.json is stale."
     },
     {
       "id": "I6-A",
@@ -91,6 +91,16 @@
         "I5"
       ],
       "gate": "matched ARCH result"
+    },
+    {
+      "id": "I6-D",
+      "name": "per_feature_dense_architecture_controls",
+      "state": "NOT_STARTED",
+      "depends_on": [
+        "I5",
+        "I6-A"
+      ],
+      "gate": "faithful historical per-feature Dense ANN replay or typed NOT_REPRODUCIBLE, plus matched causal-window Dense versus Conv1D branch result on final features and weekly rows"
     },
     {
       "id": "I6-B",
@@ -106,7 +116,8 @@
       "name": "branch_regimes",
       "state": "NOT_STARTED",
       "depends_on": [
-        "I6-B"
+        "I6-B",
+        "I6-D"
       ],
       "gate": "R0/R1/R2 result and selected prefix"
     },
@@ -175,6 +186,7 @@
     "static annual checkpoint labeled as BUSINESS weekly evaluation",
     "warm-update weights labeled as strict four-year memory",
     "strategy evaluation when forecast does not beat same-row naive",
+    "flattened Dense output size or reshape claimed to preserve chronological positions",
     "economic calendar or causal dossier used as model input before I11"
   ]
 }

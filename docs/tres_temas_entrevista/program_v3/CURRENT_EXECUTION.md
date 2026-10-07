@@ -1,6 +1,6 @@
 # Estado de ejecución vigente
 
-Observado: 2026-10-07T01:44Z. Este archivo sustituye estados operativos anteriores.
+Observado: 2026-10-07T19:15Z. Este archivo sustituye estados operativos anteriores.
 
 ## Cierre de fase 1
 
@@ -42,15 +42,27 @@ plan `FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md`. Retorno único:
 ## Frente activo
 
 Fase 4 de extractibilidad y seleccion predictiva, definida en
-`FEATURE_SELECTION_PHASE4_WORK_PLAN_2026_10_06.md`. El controlador de tareas
-y sus pruebas ya existen; el piloto de coste `px.rv5` esta corriendo en la
-4090 bajo `fs4-cost-pilot-20261007.service` (4 GiB, 30 min). El runner
-cientifico integrado y los recibos de la cola siguen pendientes. No hay
-ganador final. La
-validacion del wrapper usa `BUSINESS_WEEKLY_WALK_FORWARD`.
+`FEATURE_SELECTION_PHASE4_WORK_PLAN_2026_10_06.md`. La ola acotada de 134
+caracteristicas TRAIN cerro sus tareas de extractibilidad con disposiciones
+tipadas; el plan padre de 6495 tareas no se declara completo. Ninguna
+caracteristica esta seleccionada definitivamente.
 
-Arquitectura modular, DOIN, NEAT, RL, referencias, M5PHET y nuevas corridas siguen
-pausadas hasta que ese diseño quede congelado y aprobado.
+Corre la etapa 1 RAW del banco `BUSINESS_WEEKLY_WALK_FORWARD`: 40 conjuntos
+target-especificos por 52 semanas consecutivas de VALIDATION-2024, 2080 tareas
+en total. A las 19:15Z habia 233 completas, cero fallidas y un worker activo
+en la instantanea; los slots de gamma y dragon trabajan en CPU. TEST sigue
+cerrado. El estado vivo **no** es el `STATUS.json` de wave2: consultar
+`python3 -m tools.fs4_weekly_campaign --db
+/home/harveybc/.local/state/canonical_20261003/fs4_weekly/wave2/weekly_queue.sqlite
+status` desde el checkout con el codigo del campaign. La etapa 2 de encoders
+y el manifiesto final esperan el resultado sellado de RAW. La 5090 y la 4090
+no hacen computo de este banco RAW; necesitaran admision fresca para etapa 2.
+
+I6-D queda planificado despues del manifiesto final: ANN densa historica por
+caracteristica como control no temporal y nuevo contraste Dense de rama causal
+contra Conv1D con fusion/nucleo/cabezal identicos. Se ejecuta en paralelo con
+el preentrenamiento de ramas; no reabre la seleccion ni suplanta el eje temporal.
+DOIN, NEAT, RL y nuevas pruebas de estrategia no forman parte de la cola actual.
 
 ## Almacenamiento obligatorio
 
@@ -61,5 +73,7 @@ analiticos grandes quedan fuera de GitHub.
 
 ## Siguiente compuerta
 
-Integrar el runner real de extractibilidad, medir una celda piloto y
-despachar la cola automatica; despues, wrapper semanal y manifiesto final.
+Cerrar RAW sobre las 2080 semanas-conjunto, sellar los ganadores sin TEST,
+ejecutar los brazos de encoder emparejados y emitir el manifiesto final de
+seleccion. Entonces arrancan los controles de arquitectura y el preentrenamiento
+de ramas segun el plan maestro.

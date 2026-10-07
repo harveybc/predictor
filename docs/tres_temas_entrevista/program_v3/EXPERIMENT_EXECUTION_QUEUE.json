@@ -1,10 +1,10 @@
 {
   "schema": "experiment_execution_queue.v2",
-  "updated_on": "2026-10-07T00:19:00Z",
-  "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md on satoshi/canonical-exec-20261003",
+  "updated_on": "2026-10-07T19:13:49Z",
+  "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md and its program_v3 subplans",
   "policy": {
-    "focus": "PHASE_4_EXTRACTIBILITY_RUNNER_AND_WEEKLY_WRAPPER",
-    "parallelism": "one durable coordinator queue; CPU raw/random and admitted GPU trained slots",
+    "focus": "PHASE_4_WEEKLY_RAW_ON_SCOPED_FRONTIER",
+    "parallelism": "one durable coordinator queue; four admitted CPU weekly RAW slots across gamma and dragon; stage 2 waits for the sealed stage-1 result",
     "seed_default": 0,
     "seed_maximum": 3,
     "repeat_policy": "adopt valid terminals; repeat only lost corrupt or scientifically changed units",
@@ -14,7 +14,7 @@
       "gamma_internal_5070ti",
       "omega_4070"
     ],
-    "gpu_use_now": "after runner parity and measured cap; 5090 only after device identity recovers",
+    "gpu_use_now": "no GPU in weekly RAW; the 5090 and 4090 completed the scoped TRAIN extractibility wave; encoder comparisons need stage-2 selection and fresh admission",
     "financial_gate": "strictly_better_than_same_row_naive_before_strategy",
     "test_policy": "validation and test remain closed during filter selection",
     "warehouse_policy": "all metrics decisions ranks costs and identities require submit plus readback",
@@ -65,33 +65,45 @@
       "priority": 4,
       "id": "FS-PHASE4-EXTRACTIBILITY",
       "resource": "CPU_raw_random_GPU_trained_after_admission",
-      "state": "CONTROLLER_READY_RUNNER_PENDING",
-      "work": "Integrate the real raw/random/trained runner, measure its cap, then drain the 6495-task deduplicated five-fold queue and submit metrics to OLAP.",
+      "state": "SCOPED_WAVE_COMPLETE_PARENT_OPEN",
+      "work": "Retain the authenticated 134-feature TRAIN wave across five folds and three arms. Defer the unused parent-plan tasks by identity; do not claim the 6495-task parent closure or launch them blindly.",
       "depends_on": [
         "FS-PHASE3-FILTERS"
       ],
       "produces": "extractibility evidence for wrapper validation",
-      "evidence": "FEATURE_SELECTION_PHASE4_WORK_PLAN_2026_10_06.md; tools/fs4_campaign.py; queue_v2.sqlite plan 2b51180811e2e3ac03814d9bd1adc16a09c7b9cd122f949c1d9d024f70afcc; zero model results at initialization"
+      "evidence": "fs4/preliminary/wave2_successor/EXTRACTIBILITY_PARTIAL_COMPLETE.json, digest d9bf5effb0a5b410c6961255cb9fe22e244b1f552d3af5818e0ea06c254169eb; 670/670 task dispositions per arm, 589 measured and 81 typed NO_TRAIN_OBSERVATIONS per arm; final selection false"
     },
     {
       "priority": 5,
       "id": "FS-PHASE4-WEEKLY-WRAPPER",
-      "resource": "admitted_GPU_and_CPU",
-      "state": "WAITING_FOR_EXTRACTIBILITY_AND_WEEKLY_RUNNER",
-      "work": "Deduplicate candidate subsets, compare raw/random/trained temporal predictors on identical origins in all eligible validation weeks, and seal the final manifest with same-row naive.",
+      "resource": "gamma_and_dragon_CPU_RAW_then_admitted_GPU_encoder",
+      "state": "RUNNING_RAW_STAGE1",
+      "work": "Complete all 52 consecutive 2024 validation weeks for 40 target-specific sets under four-year rolling weekly retraining and same-row target naive. Then apply the sealed stage-2 list and compare random/trained encoders before closing the final manifest. TEST remains sealed.",
       "depends_on": [
         "FS-PHASE4-EXTRACTIBILITY"
       ],
-      "produces": "BUSINESS_WEEKLY_WALK_FORWARD winner and final selection manifest"
+      "produces": "BUSINESS_WEEKLY_WALK_FORWARD winner and final selection manifest",
+      "evidence": "Plan ef7ffd580084c6fd09689e345a5b5c3bf1ae805604e36dd42f815b1bdec3c3f4 has 2080 RAW tasks, 40 sets x 52 weeks. Live counts must be queried from the weekly_queue.sqlite task store with tools.fs4_weekly_campaign status; the older STATUS.json is stale."
+    },
+    {
+      "priority": 6,
+      "id": "MOD-PER-FEATURE-DENSE-CONTROLS",
+      "resource": "CPU_design_then_admitted_compute",
+      "state": "WAITING_FOR_FINAL_MANIFEST",
+      "work": "After final feature selection and I6-A design, replay the authenticated historical per-feature Dense ANN on its original inputs and protocol, or mark it NOT_REPRODUCIBLE; refit on selected features as a new whole-model control; separately compare a new causal-window Dense branch against Conv1D under identical temporal fusion/core/head and weekly rows. Do not treat flattened latent units as timestamps.",
+      "depends_on": [
+        "FS-PHASE4-WEEKLY-WRAPPER"
+      ],
+      "produces": "I6-D paired historical and branch-only Dense control evidence"
     },
     {
       "priority": 7,
       "id": "MOD-ARCH-E1",
       "resource": "best_admissible_gpu",
       "state": "WAITING_FOR_FINAL_MANIFEST",
-      "work": "Matched architecture controls, branch donors and R0/R1/R2.",
+      "work": "Matched architecture controls, branch donors and R0/R1/R2; run I6-D alongside branch pretraining and account for it before declaring a winning branch family.",
       "depends_on": [
-        "FS-PHASE4-EXTRACTIBILITY"
+        "FS-PHASE4-WEEKLY-WRAPPER"
       ],
       "produces": "winning branch architecture and regime"
     },

@@ -42,6 +42,8 @@ Construir y comprobar un sistema de aprendizaje para trading algorítmico que:
 - seleccione características por utilidad predictiva y de negocio, evidencia
   causal, calidad de representación, complementariedad y coste;
 - preserve la dimensión temporal desde cada entrada hasta el cabezal;
+- mantenga una ANN densa ramificada por característica como control explícito
+  no temporal, aunque contradiga nuestra hipótesis arquitectónica;
 - permita preentrenar extractores por rama y, después, el núcleo fusionado;
 - compare pronóstico supervisado, estrategia heurística y políticas RL;
 - optimice configuraciones con DEAP/DOIN sin confundir búsqueda con el modelo;
@@ -97,6 +99,8 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 - [ ] I4-R. Rankings por clustering, mRMR y JMI; trayectorias K reproducibles.
 - [ ] I5. Comparación conjunta de conjuntos y manifiesto final.
 - [ ] I6-A. Agrupación, campos receptivos y controles ARCH emparejados.
+- [ ] I6-D. ANN histórica por característica y contraste Dense de ramas,
+  después de I5; resultado emparejado, sin atribuir tiempo a neuronas latentes.
 - [ ] I6-B. Preentrenamiento de extractores de ramas seleccionadas.
 - [ ] I7. E1: R0 frente a R1 frente a R2, mismo diseño y población.
 - [ ] I7-H. Fijar prefijo ganador y probar H-CORE por separado.
@@ -229,8 +233,10 @@ en un diagrama son ilustrativas, no un límite.
 
 1. Cada rama recibe `(batch, time, channels)` y usa un extractor configurable.
    El default es Conv1D causal con ventana física mínima de 24 h y salida temporal.
-2. Las ramas se alinean causalmente a una rejilla común y se concatenan sólo en
-   canales. Ninguna Dense/Flatten/Pooling colapsa tiempo antes del cabezal.
+2. Las ramas temporales se alinean causalmente a una rejilla común y se
+   concatenan sólo en canales. En esta arquitectura ninguna Dense/Flatten/
+   Pooling colapsa tiempo antes del cabezal. I6-D es un control no temporal
+   separado; igualar tamaños o aplicar `Reshape` no crea pasos cronológicos.
 3. La codificación posicional se aplica inmediatamente después de la fusión.
 4. El núcleo default proyecta por instante, usa dos bloques Transformer completos
    y tres etapas Conv1D residuales que llevan tiempo 24→12→6→6 y canales
@@ -253,6 +259,23 @@ La secuencia canónica después del manifiesto final es:
 6. materializar secuencias fusionadas y preentrenar H-CORE;
 7. ejecutar un experimento separado de transferencia del núcleo;
 8. congelar/materializar la representación final para cabezales tardíos.
+
+I6-D arranca tras I5 y la definición de controles I6-A, en paralelo con I6-B.
+Primero se identifica el código, configuración y población de la ANN histórica:
+ventana por característica -> Flatten -> capas Dense propias -> concatenación
+vectorial -> su fusión/cabezal original. Una réplica usa sus entradas y
+preprocesamiento originales; un reajuste con los rasgos seleccionados se
+etiqueta como control nuevo. Si esa identidad no se recupera, se declara
+`NOT_REPRODUCIBLE` y no se atribuyen resultados nuevos a la tesis. El segundo
+brazo es una **nueva** rama Dense causal de ventana local con salida
+anclada a cada instante, compatible con la misma fusión, núcleo y cabezal
+temporales que Conv1D. No se presenta como la ANN histórica. Ambos controles
+usan los rasgos finalmente seleccionados, idénticas filas, targets, horizontes,
+naive y protocolo semanal para los controles nuevos; la réplica conserva su
+protocolo original, con presupuestos y parámetros reportados. Una semilla
+inicial; hasta tres sólo si la variabilidad obliga. El resultado puede favorecer
+Dense sin ser descartado por no encajar en la explicación temporal. I6-D no
+reabre I5 ni autoriza consultar TEST para elegir arquitectura.
 
 - **R0:** extractores aleatorios y entrenables.
 - **R1:** mismos donantes preentrenados, congelados.
