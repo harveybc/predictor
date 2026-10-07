@@ -101,7 +101,7 @@ def _insert_tasks(con, tasks):
 
 
 def initialize(db, consolidated_paths, seal_paths, extractibility_path, *, out_dir, validation_year: int,
-               input_modes=("RAW",), bar_hours: dict | None = None) -> dict:
+               input_modes=("RAW",), bar_hours: dict | None = None, alignment_cert_path=None) -> dict:
     extractibility_path = Path(extractibility_path)
     if not extractibility_path.is_file():
         raise Refusal(f"MISSING_EXTRACTIBILITY: {extractibility_path} (EXTRACTIBILITY_COMPLETE.json must exist before the weekly campaign)")
@@ -120,10 +120,17 @@ def initialize(db, consolidated_paths, seal_paths, extractibility_path, *, out_d
             raise Refusal(f"FRONTIER_SEAL_WITHOUT_EXTRACTIBILITY: the {seal['population_id']} seal was sealed without (or with another) "
                           "extractibility closure; re-seal with --extractibility before initialising the weekly campaign")
     bar_hours = dict(DEFAULT_BAR_HOURS) | dict(bar_hours or {})
+    cert = None
+    if alignment_cert_path is not None:
+        from tools import fs4_encoder_alignment as AL
+        try:
+            cert = AL.load_cert(alignment_cert_path, WW.stage2_rule_sha256())
+        except AL.Refusal as exc:
+            raise Refusal(str(exc)) from exc
     try:
         plan = WW.build_plan(consolidated, seals, validation_year=validation_year, input_modes=tuple(input_modes),
                              bar_hours={c["population_id"]: bar_hours.get(c["population_id"], 1) for c in consolidated},
-                             extractibility_sha256=ext["closure_sha256"])
+                             extractibility_sha256=ext["closure_sha256"], alignment_cert=cert)
     except WW.Refusal as exc:
         raise Refusal(str(exc)) from exc
     tasks = WW.enumerate_tasks(plan, "validation")
@@ -199,6 +206,8 @@ def _validate_result(result: dict, payload: dict) -> None:
         raise Refusal("DISPOSITION_INVALID")
     if not _hex64(result.get("rows_sha256")):
         raise Refusal("INVALID_ROWS_SHA256")
+    if type(result.get("row_id_offset")) is not int or result["row_id_offset"] < 0:
+        raise Refusal("INVALID_ROW_ID_OFFSET")
     if type(result.get("n_scored")) is not int or result["n_scored"] < 0:
         raise Refusal("INVALID_N_SCORED")
     cost = result.get("cost")
@@ -233,6 +242,9 @@ def complete(db, owner, result: dict, now=None):
         _validate_result(result, payload)
         peers = con.execute("""SELECT result FROM tasks WHERE state='COMPLETE' AND split=? AND population_id=? AND set_id=? AND week_start=?""",
                             (payload["split"], payload["population_id"], payload["set_id"], payload["week"]["start"])).fetchall()
+        same_pop = con.execute("SELECT result FROM tasks WHERE state='COMPLETE' AND population_id=? LIMIT 1", (payload["population_id"],)).fetchone()
+        if same_pop and json.loads(same_pop["result"]).get("row_id_offset") != result["row_id_offset"]:
+            raise Refusal("ROW_ID_OFFSET_MISMATCH: every result of one population must use the same validation row-id namespace offset")
         for peer in peers:
             prior = json.loads(peer["result"])
             if prior["rows_sha256"] != result["rows_sha256"] or prior.get("n_scored") != result.get("n_scored"):
@@ -323,6 +335,9 @@ def status(db, now=None, *, write=False, population=None, input_mode=None, split
            "closure_sha256": closure.get("closure_sha256") if closure else None,
            "freeze_sha256": freeze.get("freeze_sha256") if freeze else None, "test_opened_utc": test_opened,
            "scope": {"population": population, "input_mode": input_mode, "split": split},
+           "eta_scope": "this weekly queue's own tasks only (measured median task duration / active workers); NOT the selection-campaign ETA",
+           "projection_note": "docs/fs4/WEEKLY_COST_TABLE.json projects weekly RAW stage 1 only; it is not an ETA for the selection campaign",
+           "encoder_alignment": plan["encoder_alignment"]["status"],
            "generated_from": "task_store", "generated_at_epoch": now, "generated_utc": WW._now(), "final_selection": False}
     if write:
         write_atomic(out_dir / "STATUS.json", doc)
@@ -350,7 +365,8 @@ def _warehouse_rows(plan: dict, results: list[dict]) -> list[dict]:
                      "population_id": r["population_id"], "identity": r.get("identity"), "set_id": r["set_id"], "target_id": r["target_id"],
                      "input_mode": r["input_mode"], "split": r["split"], "week_start": r["week_start"], "disposition": r["disposition"],
                      "reason": r.get("reason"), "n_scored": r.get("n_scored"), "rows_sha256": r["rows_sha256"],
-                     "fit_population_digest": r.get("fit_population_digest"), "n_features": r.get("n_features"),
+                     "fit_population_digest": r.get("fit_population_digest"), "row_id_offset": r.get("row_id_offset"),
+                     "week_rows_target_censored": (r.get("censoring") or {}).get("week_rows_target_censored"), "n_features": r.get("n_features"),
                      "mae": (r.get("metrics") or {}).get("mae"), "mse": (r.get("metrics") or {}).get("mse"),
                      "naive_mae": (r.get("metrics") or {}).get("naive_mae"), "naive_mse": (r.get("metrics") or {}).get("naive_mse"),
                      "skill_mae": r.get("skill_mae"), "model_sha256": r.get("model_sha256"), "input_sha256": r.get("input_sha256"),
@@ -398,6 +414,9 @@ def stage2(db, now=None) -> dict:
         prior = _get(con, "stage2")
         rows = con.execute("SELECT state, result FROM tasks WHERE split='validation' AND input_mode IN (%s)"
                            % ",".join("?" * len(plan["input_modes"])), list(plan["input_modes"])).fetchall()
+    if plan["encoder_alignment"]["status"] != "CERTIFIED":
+        raise Refusal("ENCODER_ALIGNMENT_NOT_CERTIFIED: stage 2 (RANDOM_ENCODER, TRAINED_ENCODER) is refused until a certificate for "
+                      "the encoder origin support is part of the sealed plan; RAW is unaffected")
     if WW.stage2_rule_sha256() != plan["stage2_rule_sha256"]:
         raise Refusal("STAGE2_RULE_CHANGED: docs/fs4/STAGE2_RULE.md differs from the digest sealed in the plan")
     pending = [r for r in rows if r["state"] != "COMPLETE"]
@@ -560,6 +579,7 @@ def main(argv=None):
     init.add_argument("--extractibility", type=Path, required=True)
     init.add_argument("--out-dir", type=Path, required=True)
     init.add_argument("--validation-year", type=int, default=2024)
+    init.add_argument("--alignment-cert", type=Path, help="ENCODER_ALIGNMENT_CERT.json (tools/fs4_encoder_alignment.py); without it stage 2 is refused")
     init.add_argument("--input-mode", action="append", choices=list(MODE_ORDER), default=None)
     st = sub.add_parser("status")
     st.add_argument("--write", action="store_true", help="also write STATUS.json in the campaign out dir")
@@ -598,7 +618,8 @@ def main(argv=None):
     try:
         if args.action == "init":
             out = initialize(args.db, args.consolidated, args.frontier_seal, args.extractibility, out_dir=args.out_dir,
-                             validation_year=args.validation_year, input_modes=tuple(args.input_mode or ("RAW",)))
+                             validation_year=args.validation_year, input_modes=tuple(args.input_mode or ("RAW",)),
+                             alignment_cert_path=args.alignment_cert)
         elif args.action == "status":
             out = status(args.db, write=args.write, population=args.population, input_mode=args.input_mode, split=args.split)
         elif args.action == "list":

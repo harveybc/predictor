@@ -6,6 +6,7 @@ coordinator; the TensorFlow fits run only where FS4_TF_TESTS=1 (a worker under c
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 
 import numpy as np
@@ -303,3 +304,116 @@ def test_grouped_layer_matches_independent_causal_convs():
         assert np.allclose(np.asarray(ref(x[:, :, g:g + 1])), y[:, :, 2 * g:2 * g + 2], atol=1e-5)
     strided = np.asarray(G(3, 2, 3, 2, None, name="s")(x))
     assert strided.shape == (4, 12, 6)
+
+
+# ----------------------------------------------------------------------------- origin support of the frozen encoder (owner order 2026-10-07)
+from tools import fs4_encoder_alignment as AL
+
+
+def test_analytic_support_of_both_alignments_is_exact():
+    even = AL.summarize_reads(AL.analytic_reads(AL.ALIGNMENT_AS_TRAINED))
+    odd = AL.summarize_reads(AL.analytic_reads(AL.ALIGNMENT_ORIGIN_COVERING))
+    assert [e["max_position"] for e in even] == [0, 4, 8, 12, 16, 20]                 # EVEN: the last step stops 3 rows before the origin
+    assert even[-1]["lag_rows_vs_origin"] == 3 and even[-1]["min_position"] == 12
+    assert [o["max_position"] for o in odd] == [3, 7, 11, 15, 19, 23] and odd[-1]["lag_rows_vs_origin"] == 0
+    assert all(e["max_position"] <= 23 for e in even + odd)                            # neither reads a row after the origin
+    assert P.RunnerEncoderBank.alignment == AL.ALIGNMENT_AS_TRAINED and P.RunnerEncoderBank.last_step_lag_rows == 3
+
+
+def _evidence(leak_free=True, matches=True, odd_worse=2, n=4):
+    structure = {"as_trained": {"last_step_reads_no_future": leak_free, "empirical_matches_analytic": [True] * 6,
+                                "last_step_lag_rows": 3, "last_step_lag_hours": 3}}
+    replays = [{"terminal_matches_replay": matches, "replay_even_mae": 1.0, "replay_odd_mae": 2.0 if i < odd_worse else 0.5} for i in range(n)]
+    return structure, replays
+
+
+def test_choice_rule_is_structural_and_never_silent():
+    ok = AL.choose_alignment(*_evidence())
+    assert ok["status"] == "CERTIFIED" and ok["alignment"] == AL.ALIGNMENT_AS_TRAINED and ok["caveats"]
+    assert ok["evidence_not_a_gate"]["odd_phase_better_terminals"] == 2                     # mixed MAE evidence does not decide soundness
+    assert AL.choose_alignment(*_evidence(odd_worse=0))["status"] == "CERTIFIED"             # even if the untrained phase reconstructs better everywhere
+    assert AL.choose_alignment(*_evidence(matches=False))["status"] == "NOT_CERTIFIED"       # the replay is not the runner's score
+    assert AL.choose_alignment(*_evidence(leak_free=False))["status"] == "NOT_CERTIFIED"
+    s, r = _evidence()
+    s["as_trained"]["empirical_matches_analytic"][2] = False
+    assert AL.choose_alignment(s, r)["status"] == "NOT_CERTIFIED"                             # derived support differs from the measured model
+    assert AL.choose_alignment(_evidence()[0], [])["status"] == "NOT_CERTIFIED"                # no replayed terminal, no certificate
+
+
+def test_certificate_is_bound_to_the_rule_digest_and_tamper_evident(tmp_path):
+    structure, replays = _evidence()
+    structure["as_trained"]["last_step_lag_hours"] = 3
+    replays = [dict(r, population_id="EURUSD", probe_r2_last_latent_to_row_at_lag={AL.ALIGNMENT_AS_TRAINED: {"0": 0.5, "3": 0.9}, AL.ALIGNMENT_ORIGIN_COVERING: {"0": 0.9}}, terminal_mae=1.0, naive_mae=0.5, odd_over_even_mae=1.0) for r in replays]
+    cert = AL.write_cert(tmp_path / "c.json", structure, replays, AL.choose_alignment(structure, replays), "a" * 64, "deffa53")
+    assert AL.load_cert(tmp_path / "c.json", "a" * 64)["cert_sha256"] == cert["cert_sha256"]
+    with pytest.raises(AL.Refusal, match="RULE_MISMATCH"):
+        AL.load_cert(tmp_path / "c.json", "b" * 64)
+    import json as _json
+    d = _json.loads((tmp_path / "c.json").read_text())
+    d["alignment"] = AL.ALIGNMENT_ORIGIN_COVERING
+    (tmp_path / "c.json").write_text(_json.dumps(d))
+    with pytest.raises(AL.Refusal, match="CORRUPT"):
+        AL.load_cert(tmp_path / "c.json")
+
+
+@needs_runner
+def test_real_runner_encoder_reads_exactly_what_the_analysis_states(runner_root):
+    rr = runner_root
+    X, U = P.load_extractor(EXTRACTOR)
+    hp = X.Hyper(**next(iter(P.index_runner_results(rr["root"]).values()))[0]["hyper"])
+    encoder, decoder, training = X.build_models(hp, calendar_dim=len(U.CALENDAR_SPEC))
+    rec, directory = P.index_runner_results(rr["root"])[("SYN", IDENTITY, "feat_a", "inner_2019", "TRAINED_ENCODER")]
+    training.load_weights(str(directory / "chosen.weights.h5"))                                   # the REAL trained weights
+    odd = AL.odd_phase_encoder(X, U, hp, encoder)
+    for model, phase in ((encoder, AL.ALIGNMENT_AS_TRAINED), (odd, AL.ALIGNMENT_ORIGIN_COVERING)):
+        emp = AL.empirical_reads(model, len(U.CALENDAR_SPEC))
+        ana = AL.analytic_reads(phase)
+        assert [sorted(e) for e in emp] == [sorted(a) for a in ana], phase                        # measured on the Keras model == derived
+        assert max(max(e) for e in emp) <= 23                                                      # no future read at the origin
+    assert max(AL.empirical_reads(encoder, len(U.CALENDAR_SPEC))[-1]) == 20                       # trained phase: lag 3 h at the last step
+    assert max(AL.empirical_reads(odd, len(U.CALENDAR_SPEC))[-1]) == 23                           # origin-covering: lag 0
+    # the odd-phase model really is the same weights: same shapes and a different (phase-shifted) function
+    x = {k: np.random.default_rng(0).normal(size=(3, 24, c)).astype("float32") for k, c in
+         (("signal", 1), ("observed_mask", 1), ("delta_time", 1), ("calendar", len(U.CALENDAR_SPEC)))}
+    assert encoder.predict(x, verbose=0).shape == odd.predict(x, verbose=0).shape == (3, 6, 8)
+    assert not np.allclose(encoder.predict(x, verbose=0), odd.predict(x, verbose=0))
+
+
+@needs_runner
+def test_bank_last_latent_step_never_reads_the_last_three_rows_and_the_origin(runner_root):
+    rr = runner_root
+    ts = rr["ts"]
+    hours = (ts - ts[0]) // 3600
+    contiguous = np.where(np.isin(hours[:-1] + 1, hours) & (np.diff(ts) == 3600))[0]
+    origin = next(int(i) for i in range(6000, 7000) if np.all(hours[i - 24:i + 1] == hours[i] - np.arange(24, -1, -1)))
+    base_cols = rr["cols"]
+    bank = _bank(rr, "TRAINED_ENCODER")
+    z0, _ = bank.latents(np.array([origin]))
+    changed = {}
+    for lag in range(0, 8):                                                           # perturb the value `lag` rows before the origin
+        r = origin - lag
+        cols = {k: v.copy() for k, v in base_cols.items()}
+        for k in cols:
+            if np.isfinite(cols[k][r]):
+                cols[k][r] += 10.0
+        z1, _ = _bank(rr, "TRAINED_ENCODER", cols=cols).latents(np.array([origin]))
+        D = 8
+        last = [not np.array_equal(z0[0, 5, f * D:(f + 1) * D], z1[0, 5, f * D:(f + 1) * D]) for f in range(2)]
+        changed[lag] = any(last)
+    assert [changed[l] for l in (0, 1, 2)] == [False, False, False]                   # the last step ignores origin, origin-1, origin-2
+    assert changed[3] is True                                                          # ... and starts reading at origin-3 (lag 3 h)
+    assert bank.alignment == AL.ALIGNMENT_AS_TRAINED and bank.last_step_lag_rows == 3
+
+
+@needs_runner
+def test_replay_on_a_real_runner_terminal_reproduces_its_score_under_the_trained_alignment(runner_root, tmp_path):
+    rr = runner_root
+    import json as _json
+    rec, directory = P.index_runner_results(rr["root"])[("SYN", IDENTITY, "feat_a", "inner_2019", "TRAINED_ENCODER")]
+    path = next(iter(rr["root"].parent.glob("train.parquet")))
+    registry = _json.loads((rr["root"].parent / "registry.json").read_text())
+    out = AL.replay_terminal(EXTRACTOR, {ROLE: str(path)}, directory, registry=registry)
+    assert out["terminal_matches_replay"] is True and abs(out["replay_even_mae"] - rec["metrics"]["mae"]) < 1e-6 * rec["metrics"]["mae"]
+    assert np.isfinite(out["replay_odd_mae"]) and out["odd_over_even_mae"] > 0
+    p = out["probe_r2_last_latent_to_row_at_lag"]
+    assert set(p) == {AL.ALIGNMENT_AS_TRAINED, AL.ALIGNMENT_ORIGIN_COVERING} and "0" in p[AL.ALIGNMENT_AS_TRAINED]

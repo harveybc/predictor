@@ -58,13 +58,16 @@ def _rankings():
 
 
 def _extractibility(good=FEATURES[-4:]):
+    """The closure schema of tools/fs4_closure.py (deploy branch 0799a7e2): MEASURED with folds -> arm MAE, or typed NAFT."""
     feats = {}
     for f in FEATURES:
-        feats[f] = {"status": "MEASURED", "folds": {"inner_2023": {"RAW": 1.0, "RANDOM_ENCODER": 1.0,
-                                                                   "TRAINED_ENCODER": 0.2 if f in good else 0.95}}}
-    feats["f05"] = {"status": "NOT_AVAILABLE_FOR_TRAIN", "folds": {}}
-    body = {"schema": F.EXTRACTIBILITY_SCHEMA, "state": "EXTRACTIBILITY_COMPLETE",
-            "populations": {POP: {"features": feats}}}
+        folds = {fold: {"RAW": 1.0, "RANDOM_ENCODER": 1.0, "TRAINED_ENCODER": 0.2 if f in good else 0.95, "naive_mae": 0.9, "population_n": 100}
+                 for fold in ("inner_2022", "inner_2023")}
+        feats[f] = {"status": "MEASURED", "folds": folds}
+    feats["f05"] = {"status": "NOT_AVAILABLE_FOR_TRAIN"}                                       # no fold has TRAIN rows
+    feats["f06"]["folds"]["inner_2022"] = {"status": "NOT_AVAILABLE_FOR_TRAIN", "code": "NO_TRAIN_OBSERVATIONS"}   # only some folds
+    body = {"schema": F.EXTRACTIBILITY_SCHEMA, "state": "EXTRACTIBILITY_COMPLETE", "populations": {POP: {"features": feats}},
+            "denominator": {"admitted": 36, "complete": 34, "not_available_for_train": 2, "typed_refused": 0, "sum_equals_admitted": True}}
     body["closure_sha256"] = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
     return body
 
@@ -110,7 +113,10 @@ def test_extractibility_evidence_enters_only_when_available_and_never_selects_al
     assert seal["inputs"]["extractibility"]["closure_sha256"] == ext["closure_sha256"]
     jmi8 = next(d for d in seal["dispositions"] if d["target_id"] == "Y_s_1h" and "JMI" in d["methods"] and d["k"] == 8)
     assert 0.0 < jmi8["priority"]["extractibility"] <= 1.0
-    assert jmi8["priority"]["features_without_extractibility"] == 1          # f05 counted as zero, never dropped
+    assert jmi8["priority"]["members_not_available_for_train"] == ["f05"]    # typed, listed, counted
+    assert jmi8["priority"]["members_measured"] == 7 and jmi8["priority"]["extractibility_basis"] == "MEAN_OF_MEASURED_MEMBERS"
+    assert seal["inputs"]["extractibility"]["denominator"]["sum_equals_admitted"] is True
+    assert seal["inputs"]["extractibility"]["admissible_features_by_status"]["not_available_for_train"] == ["f05"]
     # FS4-10: a frontier disposition is a prioritisation; no set is SELECTED by the seal
     assert all(d["disposition"] in ("IN_FRONTIER", "DEFERRED_BY_FRONTIER_RULE") for d in seal["dispositions"])
     assert "SELECTED" not in json.dumps(seal["dispositions"])
@@ -146,3 +152,26 @@ def test_rankings_loader_uses_univariate_mi_rows_only(tmp_path):
     assert ranks == {"Y_s_1h": {f: i + 1 for i, f in enumerate(FEATURES)}}
     with pytest.raises(F.Refusal, match="MISSING_TERMINAL"):
         F.load_rankings_from_terminals(d, [{"target_id": "Y_s_2h", "unit_id": "v" * 64}])
+
+
+def test_naft_is_its_own_disposition_not_zero_skill_and_never_dropped(tmp_path):
+    ext = _extractibility(good=FEATURES)                       # every measured member improves by 0.8
+    by = F.feature_extractibility(ext, POP)
+    assert by["f05"]["status"] == "NOT_AVAILABLE_FOR_TRAIN" and by["f05"]["value"] is None
+    assert by["f06"]["status"] == "MEASURED" and by["f06"]["folds_used"] == 1 and by["f06"]["folds_naft"] == 1   # partial-fold NAFT: kept, not zero
+    assert by["f06"]["value"] == pytest.approx(0.8) and by["f00"]["value"] == pytest.approx(0.8)
+    t_all = F.priority_terms(["f00", "f05"], {}, 12, by, True)
+    t_one = F.priority_terms(["f00"], {}, 12, by, True)
+    assert t_all["extractibility"] == pytest.approx(0.8) == t_one["extractibility"]            # NAFT does not drag the mean toward zero
+    assert t_all["members_not_available_for_train"] == ["f05"]
+    only_naft = F.priority_terms(["f05"], {}, 12, by, True)
+    assert only_naft["extractibility"] is None and only_naft["extractibility_basis"] == "NO_MEASURED_MEMBER"
+    assert only_naft["priority"] == only_naft["relevance"]                                      # no extractibility term, not "zero skill"
+    absent = F.priority_terms(["fzz"], {}, 12, by, True)
+    assert absent["members_not_in_closure"] == ["fzz"]
+    seal = F.seal_frontier(_consolidated(), _rankings(), ext, tmp_path / "S.json")
+    assert seal["denominator"]["sets"] == len(_consolidated()["sets"])                         # nothing dropped from the set denominator
+    bad = _extractibility()
+    bad["denominator"]["sum_equals_admitted"] = False
+    with pytest.raises(F.Refusal, match="MALFORMED_EXTRACTIBILITY"):
+        F.seal_frontier(_consolidated(), _rankings(), bad, tmp_path / "B.json")

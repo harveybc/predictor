@@ -246,3 +246,98 @@ def test_validation_batches_are_aligned_by_name_with_the_train_file(tmp_path):
     ref = _store(paths)
     assert store.names == ref.names and np.array_equal(store.X, ref.X)
 
+
+
+def test_encoder_arm_task_is_refused_without_a_certified_alignment(tmp_path):
+    plan = _plan(tmp_path)
+    assert plan["encoder_alignment"]["status"] == "NOT_CERTIFIED"
+    store = _store(_inputs(tmp_path))
+    t = WW.enumerate_tasks(plan, "validation", modes=("RANDOM_ENCODER",))[5]
+    assert t["encoder_alignment"] is None and t["encoder_alignment_cert_sha256"] is None
+    with pytest.raises(WW.Refusal, match="ENCODER_ALIGNMENT_NOT_CERTIFIED"):
+        WW.run_task(t, store, trainer=LinearStandIn)
+    raw = WW.enumerate_tasks(plan, "validation")[5]
+    assert "encoder_alignment" not in raw                                      # RAW task identity carries no encoder fields
+
+
+def _overlapping_ids_inputs(tmp_path, nan_tail=0):
+    """EURUSD-like layout: VALIDATION row_id restarts at 0 and collides with TRAIN row ids; optional censored (NaN target) tail."""
+    import pandas as pd
+
+    paths = _inputs(tmp_path)
+    vf = pd.read_parquet(paths["val_features"])
+    vt = pd.read_parquet(paths["val_targets"])
+    vf["row_id"] = np.arange(len(vf))
+    vt["row_id"] = np.arange(len(vt))
+    if nan_tail:
+        vt.loc[vt.index[-nan_tail:], ["Y_s_1h", "Y_s_2h"]] = np.nan
+    vf.to_parquet(paths["val_features"])
+    vt.to_parquet(paths["val_targets"])
+    return paths
+
+
+def test_overlapping_validation_row_ids_get_one_recorded_namespace_offset_and_sources_are_untouched(tmp_path):
+    import pandas as pd
+
+    paths = _overlapping_ids_inputs(tmp_path)
+    before = {k: p.read_bytes() for k, p in paths.items()}
+    train_max = int(pd.read_parquet(paths["train_features"])["row_id"].max())
+    store = _store(paths)
+    assert store.row_id_offset == train_max + 1 and len(set(store.row_ids.tolist())) == len(store.row_ids)
+    assert {k: p.read_bytes() for k, p in paths.items()} == before                           # source files never altered
+    plan = _plan(tmp_path)
+    assert plan["validation_row_id_namespace"] == WW.VALIDATION_ROW_ID_NAMESPACE and plan["plan_sha256"] == WW.plan_digest(plan)
+    task = [t for t in WW.enumerate_tasks(plan) if t["week"]["ordinal"] == 4 and t["target_id"] == "Y_s_1h"][0]
+    res = WW.run_task(task, store, trainer=LinearStandIn)
+    assert res["disposition"] == "COMPLETED" and res["row_id_offset"] == train_max + 1
+    ids = [str(r) for r in store.record_ids[store.range_idx(task["week"]["start"], task["week"]["end"])]]
+    assert res["rows_sha256"] == WW.rows_digest(ids) and all(int(i) > train_max for i in ids)   # score rows live in the namespaced range
+    again = WW.run_task(task, _store(paths), trainer=LinearStandIn)
+    assert again["row_id_offset"] == res["row_id_offset"] and again["input_sha256"] == res["input_sha256"]
+    # continuing ids (ETH-like) need no shift
+    assert _store(_inputs(tmp_path / "other")).row_id_offset == 0
+
+
+def test_censored_target_tail_is_counted_and_never_scored_or_silently_dropped(tmp_path):
+    paths = _overlapping_ids_inputs(tmp_path, nan_tail=0)
+    import pandas as pd
+
+    vt = pd.read_parquet(paths["val_targets"])
+    last_week_start = "2024-12-23T00:00:00Z"
+    in_week = (vt["t_decision_utc"] >= pd.Timestamp(last_week_start)) & (vt["t_decision_utc"] < pd.Timestamp("2024-12-30", tz="UTC"))
+    idx = vt.index[in_week][-4:]                                                          # the last four rows of the last validation week
+    vt.loc[idx, ["Y_s_1h", "Y_s_2h"]] = np.nan
+    vt.to_parquet(paths["val_targets"])
+    store = _store(paths)
+    plan = _plan(tmp_path)
+    task = [t for t in WW.enumerate_tasks(plan) if t["week"]["start"] == last_week_start and t["target_id"] == "Y_s_1h"][0]
+    res = WW.run_task(task, store, trainer=LinearStandIn)
+    assert res["disposition"] == "COMPLETED"
+    c = res["censoring"]
+    assert c["week_rows_target_censored"] == 4 and res["n_scored"] == res["n_rows_in_week"] - 4
+    ids = [str(r) for r in store.record_ids[store.range_idx(task["week"]["start"], task["week"]["end"])]]
+    scored_ids = ids[:-4]
+    assert res["rows_sha256"] == WW.rows_digest(scored_ids) and c["week_censored_row_ids_sha256"] == WW.rows_digest(ids[-4:])
+    # a week made only of censored rows is a typed FAILED disposition, not a missing week
+    vt2 = pd.read_parquet(paths["val_targets"])
+    wk = (vt2["t_decision_utc"] >= pd.Timestamp("2024-01-08", tz="UTC")) & (vt2["t_decision_utc"] < pd.Timestamp("2024-01-15", tz="UTC"))
+    vt2.loc[wk, ["Y_s_1h", "Y_s_2h"]] = np.nan
+    vt2.to_parquet(paths["val_targets"])
+    task2 = [t for t in WW.enumerate_tasks(plan) if t["week"]["start"].startswith("2024-01-08") and t["target_id"] == "Y_s_1h"][0]
+    res2 = WW.run_task(task2, _store(paths), trainer=LinearStandIn)
+    assert res2["disposition"] == "FAILED" and "no scored row" in res2["reason"] and res2["censoring"]["week_rows_target_censored"] > 0
+
+
+def test_rows_after_the_last_validation_week_are_not_validation_rows_even_when_censored(tmp_path):
+    """The real ETH file ends 2024-12-31 with 1-6 censored rows: they fall after the last Monday-aligned week (belong to TEST week 0)."""
+    import pandas as pd
+
+    paths = _overlapping_ids_inputs(tmp_path, nan_tail=3)
+    store = _store(paths)
+    plan = _plan(tmp_path)
+    assert plan["weeks"][-1]["end"] == "2024-12-30T00:00:00Z"
+    tail = store.range_idx("2024-12-30T00:00:00Z", "2025-01-02T00:00:00Z")
+    assert len(tail) >= 3 and not np.isfinite(store.targets["Y_s_1h"][tail[-3:]]).any()
+    last = [t for t in WW.enumerate_tasks(plan) if t["week"]["start"] == plan["weeks"][-1]["start"] and t["target_id"] == "Y_s_1h"][0]
+    res = WW.run_task(last, store, trainer=LinearStandIn)
+    assert res["censoring"]["week_rows_target_censored"] == 0 and res["n_scored"] == res["n_rows_in_week"]

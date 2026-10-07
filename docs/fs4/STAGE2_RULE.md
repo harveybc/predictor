@@ -34,6 +34,34 @@ exactly when it is in the top 3 of one of its families or is ALL_ADMISSIBLE. The
 it is written to `STAGE2_LIST.json` with its digest and the digest of the stage-1 aggregates it came from.
 A set that fails stage 1 on any week is not eligible for a top-3 place and stays in the stage-1 denominator.
 
+## Encoder alignment (certified before stage 2 may run; owner order 2026-10-07)
+
+What each alignment reads, derived from the layers and checked by perturbing the real Keras models
+(`tools/fs4_encoder_alignment.py`, `tests/test_fs4_temporal_predictor.py`). A window has 24 hourly grid rows, position 23 is the
+origin row. The runner (feature-extractor @deffa53, pinned and unchanged) trains the strided causal encoder 24 -> 12 -> 6 at the
+EVEN phase (output j of a stride-2 layer reads rows 2j-2 .. 2j):
+
+| latent step | 0 | 1 | 2 | 3 | 4 | 5 (last) |
+|---|---|---|---|---|---|---|
+| EVEN_AS_TRAINED, last row read | 0 | 4 | 8 | 12 | 16 | **20** |
+| ODD_PHASE_ORIGIN_COVERING, last row read | 3 | 7 | 11 | 15 | 19 | 23 |
+
+- **Chosen: `EVEN_AS_TRAINED`.** The frozen encoder is the runner's own network applied to a window that ends at the origin, so
+  the weights are used at exactly the phase they were trained at. No latent step reads a row after the origin (no future leak), and
+  the LAST latent step reads rows up to origin-3: a lag of **3 hours** on the hourly grid, for every population (ETH bars are
+  4 hours apart but the encoder grid is hourly, so the lag is 3 grid hours there as well). The origin row, origin-1 and origin-2 do
+  not reach the last latent step (checked through the bank end to end).
+- **Not chosen: `ODD_PHASE_ORIGIN_COVERING`.** Its last step reads the origin row (lag 0), but it applies the same weights at an
+  untrained phase. It is never certified, whatever its reconstruction score. A TRAINED origin-covering encoder needs retraining and
+  is a separate versioned arm (`docs/fs4/ENCODER_ORIGIN_COVERING_ARM_V2.md`) that the owner decides.
+- **The predictor's own branches** (RAW input) are trained from scratch inside each weekly fit, with their strided layers sampled so
+  the last step covers the origin; no pretrained weights are applied at another phase there.
+- **Comparison caveat that every encoder report carries:** RAW sees the origin row, encoder arms see rows <= origin-3. The
+  TRAINED-minus-RAW difference is therefore conservative for the encoder, most of all at the 1-6 hour targets.
+- **Gate:** the plan carries `encoder_alignment` (certificate digest, alignment name, lag). `stage2` and the encoder `run-task` refuse
+  the encoder arms unless the status is CERTIFIED for this alignment and the certificate was issued for the digest of THIS file.
+  RAW is unaffected.
+
 ## Guarantees
 
 - The encoder arms CANNOT change the stage-1 winner choice. `close` selects winners from the RAW arm only; encoder

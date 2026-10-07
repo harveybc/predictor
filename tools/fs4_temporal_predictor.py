@@ -344,6 +344,10 @@ class RunnerEncoderBank:
     """
 
     optimizer_steps = 0
+    # the runner's own strided layers applied to a window that ends at the origin: weights are used at the phase they were trained at
+    # (EVEN: output j reads rows 2j-(k-1)..2j). The LAST latent step reads rows <= origin-3: it never reads the origin row.
+    alignment = "EVEN_AS_TRAINED"
+    last_step_lag_rows = 3
 
     def __init__(self, spec: EncoderSpec, features, ts_rows, X_raw, *, arm: str, population_id: str, identity: str,
                  results_root, code_dir, seed: int = 0):

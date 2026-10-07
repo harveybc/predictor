@@ -38,7 +38,8 @@ def _consolidated(tmp_path):
 
 
 def _extractibility(tmp_path, state="EXTRACTIBILITY_COMPLETE", name="EXTRACTIBILITY_COMPLETE.json"):
-    body = {"schema": F.EXTRACTIBILITY_SCHEMA, "state": state, "populations": {POP: {"features": {}}}}
+    body = {"schema": F.EXTRACTIBILITY_SCHEMA, "state": state, "populations": {POP: {"features": {}}},
+            "denominator": {"admitted": 0, "complete": 0, "not_available_for_train": 0, "typed_refused": 0, "sum_equals_admitted": True}}
     body["closure_sha256"] = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
     p = tmp_path / name
     p.write_text(json.dumps(body))
@@ -52,12 +53,24 @@ def _seal(tmp_path, cons_path, ext_path):
     return tmp_path / "FRONTIER_SEAL.json"
 
 
-def _campaign(tmp_path, modes=("RAW",)):
+def _cert(tmp_path, rule_sha=None, status_ok=True):
+    from tools import fs4_encoder_alignment as AL
+    structure = {"as_trained": {"last_step_reads_no_future": True, "empirical_matches_analytic": [True] * 6, "last_step_lag_rows": 3, "last_step_lag_hours": 3}}
+    replays = [{"terminal_matches_replay": status_ok, "replay_even_mae": 1.0, "replay_odd_mae": 2.0, "population_id": "EURUSD",
+                "terminal_mae": 1.0, "naive_mae": 0.5, "odd_over_even_mae": 2.0,
+                "probe_r2_last_latent_to_row_at_lag": {AL.ALIGNMENT_AS_TRAINED: {"0": 0.5}, AL.ALIGNMENT_ORIGIN_COVERING: {"0": 0.9}}}]
+    choice = AL.choose_alignment(structure, replays)
+    AL.write_cert(tmp_path / "cert.json", structure, replays, choice, rule_sha or WW.stage2_rule_sha256(), "deffa53")
+    return tmp_path / "cert.json"
+
+
+def _campaign(tmp_path, modes=("RAW",), cert=True):
     cons = _consolidated(tmp_path)
     ext = _extractibility(tmp_path)
     seal = _seal(tmp_path, cons, ext)
     db = tmp_path / "weekly.sqlite"
-    out = K.initialize(db, [cons], [seal], ext, out_dir=tmp_path / "out", validation_year=2024, input_modes=modes)
+    out = K.initialize(db, [cons], [seal], ext, out_dir=tmp_path / "out", validation_year=2024, input_modes=modes,
+                       alignment_cert_path=_cert(tmp_path) if cert else None)
     return db, out
 
 
@@ -65,7 +78,7 @@ def _result(task, mae=0.5, naive=1.0, rows="e" * 64, disposition="COMPLETED"):
     r = {"schema": WW.RESULT_SCHEMA, "status": "COMPLETE", "task_id": task["task_id"], "disposition": disposition,
          "set_id": task["set_id"], "week_start": task["week"]["start"], "input_mode": task["input_mode"],
          "population_id": POP, "target_id": task["target_id"], "seed": 0, "split": task["split"],
-         "rows_sha256": rows, "n_scored": 10, "n_features": len(task["members"]), "fit_population_digest": "f" * 64,
+         "rows_sha256": rows, "n_scored": 10, "row_id_offset": 0, "n_features": len(task["members"]), "fit_population_digest": "f" * 64,
          "model_sha256": "a" * 64, "input_sha256": "b" * 64, "code_sha256": "c" * 64,
          "cost": {"fit_seconds": 1.0, "wall_seconds": 1.5, "epochs": 2, "best_epoch": 1, "updates": 10, "peak_rss_bytes": 1, "n_params": 5}}
     if disposition == "COMPLETED":
@@ -115,7 +128,8 @@ def test_plan_is_sealed_tasks_are_sets_times_weeks_times_modes_and_init_is_idemp
     plan_file = json.loads((tmp_path / "out" / "WEEKLY_PLAN.json").read_text())
     assert plan_file["plan_sha256"] == out["plan_sha256"]
     again = K.initialize(db, [tmp_path / "CONSOLIDATED_CANDIDATES.json"], [tmp_path / "FRONTIER_SEAL.json"],
-                         tmp_path / "EXTRACTIBILITY_COMPLETE.json", out_dir=tmp_path / "out", validation_year=2024, input_modes=("RAW",))
+                         tmp_path / "EXTRACTIBILITY_COMPLETE.json", out_dir=tmp_path / "out", validation_year=2024, input_modes=("RAW",),
+                         alignment_cert_path=tmp_path / "cert.json")
     assert again["plan_sha256"] == out["plan_sha256"] and K.status(db)["total"] == 156
     with pytest.raises(K.Refusal, match="PLAN_CHANGED"):
         K.initialize(db, [tmp_path / "CONSOLIDATED_CANDIDATES.json"], [tmp_path / "FRONTIER_SEAL.json"],
@@ -204,6 +218,33 @@ def test_status_json_is_generated_from_the_store_and_eta_is_null_without_through
     assert isinstance(s["eta_seconds"], int) and s["rate_tasks_per_hour"] > 0
 
 
+def test_stage2_refuses_the_encoder_arms_without_a_certified_alignment_and_raw_is_unaffected(tmp_path):
+    db, out = _campaign(tmp_path, cert=False)
+    plan = json.loads((tmp_path / "out" / "WEEKLY_PLAN.json").read_text())
+    assert plan["encoder_alignment"]["status"] == "NOT_CERTIFIED" and "refuses" in plan["encoder_alignment"]["reason"]
+    _finish(db, 1000, _mae)                                                    # stage 1 (RAW) runs and completes normally
+    assert K.status(db)["complete"] == 156
+    with pytest.raises(K.Refusal, match="ENCODER_ALIGNMENT_NOT_CERTIFIED"):
+        K.stage2(db)
+    assert K.status(db)["total"] == 156                                        # nothing was enqueued
+    assert K.status(db)["encoder_alignment"] == "NOT_CERTIFIED"
+    for bad, match in ((_cert(tmp_path, rule_sha="f" * 64), "RULE_MISMATCH"),):
+        with pytest.raises(K.Refusal, match=match):
+            K.initialize(tmp_path / "x.sqlite", [tmp_path / "CONSOLIDATED_CANDIDATES.json"], [tmp_path / "FRONTIER_SEAL.json"],
+                         tmp_path / "EXTRACTIBILITY_COMPLETE.json", out_dir=tmp_path / "ox", validation_year=2024, alignment_cert_path=bad)
+    uncertified = _cert(tmp_path, status_ok=False)
+    with pytest.raises(K.Refusal, match="ENCODER_ALIGNMENT_NOT_CERTIFIED"):
+        K.initialize(tmp_path / "y.sqlite", [tmp_path / "CONSOLIDATED_CANDIDATES.json"], [tmp_path / "FRONTIER_SEAL.json"],
+                     tmp_path / "EXTRACTIBILITY_COMPLETE.json", out_dir=tmp_path / "oy", validation_year=2024, alignment_cert_path=uncertified)
+
+
+def test_status_labels_its_eta_and_the_projection_scope(tmp_path):
+    db, _ = _campaign(tmp_path)
+    s = K.status(db)
+    assert "weekly queue" in s["eta_scope"] and "NOT the selection-campaign ETA" in s["eta_scope"]
+    assert "weekly RAW stage 1 only" in s["projection_note"]
+
+
 def test_stage2_list_is_mechanical_sealed_and_encoders_never_choose_the_winner(tmp_path):
     db, out = _campaign(tmp_path)
     plan = json.loads((tmp_path / "out" / "WEEKLY_PLAN.json").read_text())
@@ -283,3 +324,15 @@ def test_claim_filters_by_population_and_size_class(tmp_path):
     small = K.claim(db, "w", max_features=1, now=3)
     assert len(small["members"]) == 1
     assert K.claim(db, "w", min_features=4, now=4) is None and K.claim(db, "w", max_features=0, now=5) is None
+
+
+def test_results_of_one_population_must_share_the_row_id_offset(tmp_path):
+    db, _ = _campaign(tmp_path)
+    a = K.claim(db, "w", now=1)
+    K.complete(db, "w", _result(a), now=2)
+    b = K.claim(db, "w", now=3)
+    with pytest.raises(K.Refusal, match="ROW_ID_OFFSET_MISMATCH"):
+        K.complete(db, "w", {**_result(b), "row_id_offset": 71734}, now=4)
+    with pytest.raises(K.Refusal, match="INVALID_ROW_ID_OFFSET"):
+        K.complete(db, "w", {k: v for k, v in _result(b).items() if k != "row_id_offset"}, now=4)
+    K.complete(db, "w", _result(b), now=5)

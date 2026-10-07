@@ -1,5 +1,7 @@
 # FS4 weekly campaign: cost, caps and shard/priority plan (measured 2026-10-07, TRAIN only)
 
+**Scope label: every projection in this document is the WEEKLY RAW STAGE-1 projection derived from the cost pilot. It is not an ETA for the selection campaign, for weekly stage 2 (encoder arms) or for extractibility.**
+
 Pilot: three December-2023 weeks (4, 11, 18 Dec; each scored week ends before the TRAIN cut), one small, one median and one
 large set per population, each fit its own `crispdm-run` job through `fs4_weekly_wrapper.py run-task --pilot-train-only`
 on dragon (CPU only, `CUDA_VISIBLE_DEVICES=""`). No VALIDATION byte was opened. Raw rows: `WEEKLY_COST_PILOT_*.json`;
@@ -20,7 +22,7 @@ about 963 core-hours and 41.6 h of single-slot wall time (each such fit keeps ab
 Hosts that may take compute: dragon (32 cores, about 12 GiB available) and gamma (32 cores, about 7 GiB available); the
 coordinator takes none. Memory (cap + 3 GiB desktop reserve) allows about 5 small slots on dragon, 2 on gamma and one large
 slot on dragon. Core-bound estimate on 64 cores at 75 % utilisation: stage 1 is about 36-43 h, i.e. close to the 48 h line,
-so the frontier is NOT reduced; the work is sharded by size class and ordered by priority instead.
+so the frontier is NOT reduced (the 36-43 h is the weekly RAW stage-1 projection only); the work is sharded by size class and ordered by priority instead.
 
 ## Slots (workers pull with `claim`; nothing is assigned by hand)
 
@@ -31,3 +33,9 @@ so the frontier is NOT reduced; the work is sharded by size class and ordered by
   slot because they dominate wall time; (3) stage 2 (RANDOM_ENCODER, TRAINED_ENCODER) only after `stage2` computes the list.
 - Stage 2 cost is NOT measured (it needs the runner's TRAINED_ENCODER terminals); upper bound per encoder mode is the RAW
   cost of the stage-2 list (its core is smaller on 6 latent steps, plus one encoder forward pass per feature).
+
+## Coordinator gate (owner action, one extra line per worker key)
+`tools/fs4_deploy/controller_gate.py` pins one controller and one queue per forced command. The weekly queue needs its own line with
+`--controller <state>/code/PREDICTOR_CURRENT/tools/fs4_weekly_campaign.py --db <state>/fs4_weekly/weekly_queue.sqlite`; the verbs the
+weekly worker uses (claim, heartbeat, complete, fail, status) are all in the gate's list and the owner prefix `worker_b-weekly-...` passes
+the role check. Nothing was installed by this work.

@@ -39,9 +39,12 @@ Universe: the consolidated candidate sets of one population (identical member se
    The first {FRONTIER_WIDTH} are IN_FRONTIER; the rest are DEFERRED_BY_FRONTIER_RULE (kept in the denominator).
    relevance = mean over members of (1 - (rank - 1) / (n_admissible - 1)) using the phase-3 UNIVARIATE_MI TRAIN rank of the
    member for that target (rank 1 = most relevant); a member without a rank contributes 0.
-   extractibility = mean over members of clip((RAW_mae - TRAINED_ENCODER_mae) / RAW_mae, 0, 1) averaged over the TRAIN folds
-   of the extractibility closure; a member that is NOT_AVAILABLE_FOR_TRAIN or unmeasured contributes 0 and is counted, never
-   dropped. When no extractibility closure exists at sealing time, extractibility = 0 for every set and the seal records it.
+   extractibility = mean over the MEASURED members of clip((RAW_mae - TRAINED_ENCODER_mae) / RAW_mae, 0, 1), each member averaged over its TRAIN
+   folds that carry numeric RAW and TRAINED_ENCODER values of the extractibility closure. A member that is NOT_AVAILABLE_FOR_TRAIN (or
+   absent from the closure, or without a usable fold) is a typed disposition of its own: it is listed and counted in the seal and in the
+   set's disposition, it is excluded from the mean (it is NOT zero skill), and it is never dropped from the denominator. A set with no
+   measured member has no extractibility term (priority = relevance, basis recorded). When no extractibility closure exists at sealing
+   time, no set has an extractibility term and the seal records it.
 3. A set is IN_FRONTIER if any of its methods qualifies under 1 or 2.
 4. The seal is a prioritisation of the weekly comparison budget, not a selection: no reconstruction score and no ranking
    chooses a feature set; the winner comes only from the sealed weekly predictive rule over ALL VALIDATION weeks."""
@@ -95,29 +98,52 @@ def _validate_extractibility(ext: dict | None) -> None:
         raise Refusal("MALFORMED_EXTRACTIBILITY: closure_sha256")
     if not isinstance(ext.get("populations"), dict):
         raise Refusal("MALFORMED_EXTRACTIBILITY: populations")
+    den = ext.get("denominator")
+    if not isinstance(den, dict) or den.get("sum_equals_admitted") is not True:
+        raise Refusal("MALFORMED_EXTRACTIBILITY: denominator block missing or admitted != complete + not_available_for_train + typed_refused")
 
 
-def feature_extractibility(ext: dict | None, population: str) -> dict[str, float | None]:
-    """feature -> mean fold improvement of TRAINED over RAW, clipped to [0, 1]; None when unmeasured."""
+NAFT = "NOT_AVAILABLE_FOR_TRAIN"
+
+
+def feature_extractibility(ext: dict | None, population: str) -> dict[str, dict]:
+    """feature -> {status, value, folds_used, folds_naft}. status: MEASURED (value set), MEASURED_NO_USABLE_FOLD (value None),
+    NOT_AVAILABLE_FOR_TRAIN (typed, own disposition), NOT_IN_CLOSURE (typed). Value = mean fold improvement of TRAINED over RAW in [0, 1]."""
     if ext is None:
         return {}
     feats = ext.get("populations", {}).get(population, {}).get("features", {})
-    out: dict[str, float | None] = {}
+    out: dict[str, dict] = {}
     for fid, rec in feats.items():
-        if rec.get("status") != "MEASURED":
-            out[fid] = None
+        if rec.get("status") == NAFT:
+            out[fid] = {"status": NAFT, "value": None, "folds_used": 0, "folds_naft": None}
             continue
-        vals = []
+        vals, naft = [], 0
         for fold in rec.get("folds", {}).values():
+            if fold.get("status") == NAFT:
+                naft += 1
+                continue
             raw, trained = fold.get("RAW"), fold.get("TRAINED_ENCODER")
             if isinstance(raw, (int, float)) and isinstance(trained, (int, float)) and raw > 0:
                 vals.append(min(1.0, max(0.0, (raw - trained) / raw)))
-        out[fid] = (sum(vals) / len(vals)) if vals else None
+        out[fid] = {"status": "MEASURED" if vals else "MEASURED_NO_USABLE_FOLD", "value": (sum(vals) / len(vals)) if vals else None,
+                    "folds_used": len(vals), "folds_naft": naft}
     return out
 
 
+def extractibility_status_counts(ext: dict | None, population: str, admissible) -> dict:
+    by = feature_extractibility(ext, population)
+    counts: dict[str, int] = {}
+    naft = []
+    for f in sorted(admissible):
+        st = by.get(f, {}).get("status", "NOT_IN_CLOSURE")
+        counts[st] = counts.get(st, 0) + 1
+        if st == NAFT:
+            naft.append(f)
+    return {"features": len(set(admissible)), "by_status": dict(sorted(counts.items())), "not_available_for_train": naft}
+
+
 # ----------------------------------------------------------------------------- rule
-def priority_terms(members, ranks: dict[str, int], n_admissible: int, ext_by_feature: dict[str, float | None]) -> dict:
+def priority_terms(members, ranks: dict[str, int], n_admissible: int, ext_by_feature: dict[str, dict], has_extractibility: bool = False) -> dict:
     rel = []
     missing_rank = 0
     for m in members:
@@ -127,20 +153,18 @@ def priority_terms(members, ranks: dict[str, int], n_admissible: int, ext_by_fea
             rel.append(0.0)
         else:
             rel.append(1.0 - (r - 1) / (n_admissible - 1) if n_admissible > 1 else 1.0)
-    ext = []
-    missing_ext = 0
-    for m in members:
-        v = ext_by_feature.get(m)
-        if v is None:
-            missing_ext += 1
-            ext.append(0.0)
-        else:
-            ext.append(float(v))
+    measured = [ext_by_feature[m]["value"] for m in members if m in ext_by_feature and ext_by_feature[m]["value"] is not None]
+    naft = sorted(m for m in members if ext_by_feature.get(m, {}).get("status") == NAFT)
+    not_in = sorted(m for m in members if has_extractibility and m not in ext_by_feature)
+    no_value = sorted(m for m in members if m in ext_by_feature and ext_by_feature[m]["value"] is None and m not in naft)
     relevance = sum(rel) / len(rel)
-    extractibility = sum(ext) / len(ext)
-    return {"relevance": relevance, "extractibility": extractibility,
-            "priority": relevance + EXTRACTIBILITY_WEIGHT * extractibility,
-            "features_without_rank": missing_rank, "features_without_extractibility": missing_ext}
+    extractibility = (sum(measured) / len(measured)) if measured else None
+    basis = ("NO_EXTRACTIBILITY_CLOSURE" if not has_extractibility else
+             "MEAN_OF_MEASURED_MEMBERS" if measured else "NO_MEASURED_MEMBER")
+    return {"relevance": relevance, "extractibility": extractibility, "extractibility_basis": basis,
+            "priority": relevance + (EXTRACTIBILITY_WEIGHT * extractibility if extractibility is not None else 0.0),
+            "features_without_rank": missing_rank, "members_measured": len(measured), "members_not_available_for_train": naft,
+            "members_not_in_closure": not_in, "members_without_usable_fold": no_value}
 
 
 def apply_rule(consolidated: dict, rankings: dict[str, dict[str, int]], ext: dict | None) -> list[dict]:
@@ -151,7 +175,7 @@ def apply_rule(consolidated: dict, rankings: dict[str, dict[str, int]], ext: dic
     for s in sets:
         ranks = rankings.get(s["target_id"], {})
         n_adm = max(len(ranks), max(ranks.values()) if ranks else 0)
-        terms = priority_terms(s["members"], ranks, n_adm, ext_by_feature)
+        terms = priority_terms(s["members"], ranks, n_adm, ext_by_feature, ext is not None)
         dispositions[s["set_id"]] = {
             "set_id": s["set_id"], "target_id": s["target_id"], "horizon_hours": s["horizon_hours"], "k": s["k"],
             "n_features": s["n_features"], "methods": list(s["methods"]), "control_methods": list(s["control_methods"]),
@@ -199,8 +223,10 @@ def build_seal(consolidated: dict, rankings: dict[str, dict[str, int]], ext: dic
             "consolidated_sha256": consolidated["consolidated_sha256"],
             "phase3_closure_sha256": consolidated.get("phase3_closure_sha256"),
             "rankings_sha256": digest({t: dict(sorted(r.items())) for t, r in sorted(rankings.items())}),
-            "extractibility": ({"closure_sha256": ext["closure_sha256"], "reason": None} if ext is not None
-                               else {"closure_sha256": None, "reason": "NOT_AVAILABLE_AT_SEAL"}),
+            "extractibility": ({"closure_sha256": ext["closure_sha256"], "reason": None, "denominator": ext["denominator"],
+                                "admissible_features_by_status": extractibility_status_counts(
+                                    ext, consolidated["population_id"], {m for s in consolidated["sets"] for m in s["members"]})}
+                               if ext is not None else {"closure_sha256": None, "reason": "NOT_AVAILABLE_AT_SEAL"}),
         },
         "validation_read": {"count": 0, "statement": NO_VALIDATION_STATEMENT},
         "dispositions": dispositions, "frontier_set_ids": in_frontier,

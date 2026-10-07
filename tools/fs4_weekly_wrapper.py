@@ -41,11 +41,15 @@ from tools import fs4_temporal_predictor as P  # noqa: E402
 from tools import fs_close_weekly as W  # noqa: E402
 from tools.business_asof_window import AsOfRow, SupportSpec, resolve_asof_window  # noqa: E402
 from tools.business_weekly_protocol import EvaluationSplit  # noqa: E402
+from tools import fs4_encoder_alignment as AL  # noqa: E402
 from tools.fs4_candidates import canonical, digest  # noqa: E402
 
 UTC = dt.timezone.utc
 PLAN_SCHEMA = "fs4.weekly_plan.v1"
 TASK_SCHEMA = "fs4.weekly_task.v1"
+VALIDATION_ROW_ID_NAMESPACE = ("VALIDATION record ids = validation row_id + offset, offset = max(0, max(TRAIN row_id) + 1 - min(VALIDATION row_id)): the "
+                               "minimal shift that makes them disjoint from TRAIN; computed from the data, identical in every task, recorded in every "
+                               "result as row_id_offset and bound into input_sha256; source files are never altered")
 RESULT_SCHEMA = "fs4.weekly_task_result.v1"
 PRODUCTION_TRAINER = "R0_TEMPORAL_CONV1D"
 BUSINESS_MODE = W.BUSINESS_MODE
@@ -134,7 +138,7 @@ def plan_digest(plan: dict) -> str:
 def build_plan(consolidated: list[dict], seals: list[dict], *, validation_year: int, input_modes=("RAW",),
                bar_hours: dict, spec: P.PredictorSpec | None = None, encoder_spec: P.EncoderSpec | None = None,
                evaluation_mode: str = BUSINESS_MODE, extractibility_sha256: str | None = None,
-               stage2_modes=STAGE2_MODES) -> dict:
+               stage2_modes=STAGE2_MODES, alignment_cert: dict | None = None) -> dict:
     if evaluation_mode != BUSINESS_MODE:
         raise Refusal(f"EVALUATION_MODE_NOT_BUSINESS: {evaluation_mode!r}; LITERATURE_STATIC and monthly modes keep their "
                       "own identity (tools/fs_close_refit.py static diagnostic) and never enter this wrapper")
@@ -169,11 +173,20 @@ def build_plan(consolidated: list[dict], seals: list[dict], *, validation_year: 
     protocol = W.build_protocol(validation_year, "0" * 64)
     weeks = [_week_dict(w) for w in protocol.weeks() if w.split is EvaluationSplit.VALIDATION]
     test_weeks = [_week_dict(w) for w in protocol.weeks() if w.split is EvaluationSplit.TEST]
+    alignment = {"status": "NOT_CERTIFIED", "alignment": None, "cert_sha256": None, "last_step_lag_hours": None,
+                 "reason": "no encoder alignment certificate was supplied: stage 2 refuses the encoder arms"}
+    if alignment_cert is not None:
+        if alignment_cert.get("status") != "CERTIFIED" or alignment_cert.get("alignment") != P.RunnerEncoderBank.alignment:
+            raise Refusal("ENCODER_ALIGNMENT_NOT_CERTIFIED: the certificate does not certify the alignment the bank implements")
+        if alignment_cert.get("stage2_rule_sha256") != stage2_rule_sha256():
+            raise Refusal("ENCODER_ALIGNMENT_CERT_RULE_MISMATCH: the certificate was issued for another STAGE2_RULE.md")
+        alignment = {"status": "CERTIFIED", "alignment": alignment_cert["alignment"], "cert_sha256": alignment_cert["cert_sha256"],
+                     "last_step_lag_hours": alignment_cert["last_step_lag_hours_as_trained"], "reason": None}
     plan = {
         "schema": PLAN_SCHEMA, "evaluation_mode": BUSINESS_MODE, "update_mode": UPDATE_MODE,
         "validation_year": validation_year, "rolling_calendar_years": 4, "seed": SEED,
         "input_modes": list(input_modes), "stage2_modes": list(stage2_modes), "stage2_rule_sha256": stage2_rule_sha256(),
-        "stage2_families": list(STAGE2_FAMILIES), "stage2_top_n": STAGE2_TOP_N, "trainer": PRODUCTION_TRAINER,
+        "encoder_alignment": alignment, "stage2_families": list(STAGE2_FAMILIES), "stage2_top_n": STAGE2_TOP_N, "trainer": PRODUCTION_TRAINER,
         "predictor_spec": spec.to_dict(), "predictor_spec_sha256": spec.sha256(), "budget_sha256": P.budget_sha256(spec),
         "encoder_spec": encoder_spec.to_dict(), "encoder_spec_sha256": encoder_spec.sha256(),
         "populations": populations, "denominator": denominator,
@@ -181,7 +194,7 @@ def build_plan(consolidated: list[dict], seals: list[dict], *, validation_year: 
         "weeks": weeks, "test_weeks": test_weeks, "weeks_in_validation_year": len(weeks), "test_weeks_sealed": len(test_weeks),
         "support": {"purge": "target horizon hours", "input_lookback": f"{spec.window} rows; a fit origin needs all {spec.window} rows at or after fit_start", "inner_validation_weeks": 1,
                     "availability": "features available at the bar end (as-of columns from PS1); available_time == decision time"},
-        "preprocessing": "fit-row median imputation and fit-row z-score per feature, refit every week",
+        "validation_row_id_namespace": VALIDATION_ROW_ID_NAMESPACE, "preprocessing": "fit-row median imputation and fit-row z-score per feature, refit every week",
         "naive": NAIVE_RULE, "scored_rows": SCORED_ROWS_RULE, "aggregate_rule": AGGREGATE_RULE, "tie_rule": TIE_RULE,
         "selection_arm": "RAW",
         "test": "EXTERNAL TEST (the following year) is sealed; opened once by the controller after TEST_FREEZE.json",
@@ -212,6 +225,9 @@ def enumerate_tasks(plan: dict, split: str = "validation", *, set_ids=None, test
                            "input_mode": mode, "stage": 1 if mode in plan["input_modes"] else 2, "split": split, "validation_year": plan["validation_year"],
                            "week": {k: w[k] for k in ("ordinal", "start", "end", "cutoff", "fit_start")}, "seed": plan["seed"],
                            "predictor_spec_sha256": plan["predictor_spec_sha256"], "encoder_spec_sha256": plan["encoder_spec_sha256"]}
+                if mode != "RAW":
+                    payload["encoder_alignment"] = plan["encoder_alignment"]["alignment"]
+                    payload["encoder_alignment_cert_sha256"] = plan["encoder_alignment"]["cert_sha256"]
                 if split == "test":
                     payload["test_authorization"] = test_authorization
                 payload["task_id"] = digest(payload)
@@ -239,6 +255,7 @@ class DataStore:
         self.digests = digests
         self.bar_hours = bar_hours
         self.validation_first_read_utc = validation_first_read_utc
+        self.row_id_offset = 0
 
     @staticmethod
     def _read(feature_files, targets_file, label):
@@ -298,13 +315,20 @@ class DataStore:
         names_t = common
         X = np.vstack([Xt, Xv])
         ts = np.concatenate([ts_t, ts_v])
+        # VALIDATION row ids are namespaced by ONE recorded offset (VALIDATION_ROW_ID_NAMESPACE): the minimal shift that makes them
+        # disjoint from TRAIN. Source files are never altered; the offset is a function of the data, identical in every task, and is
+        # bound into every task's input digest and result (the controller refuses results of one population that disagree).
+        offset = max(0, int(ids_t.max()) + 1 - int(ids_v.min()))
+        ids_v = ids_v + offset
         row_ids = np.concatenate([ids_t, ids_v])
         targets = {n: np.concatenate([tg_t[n], tg_v[n]]) for n in tg_t}
         if len(set(row_ids.tolist())) != len(row_ids):
-            raise Refusal("DUPLICATE_ROW_IDS across TRAIN and VALIDATION inputs")
+            raise Refusal("DUPLICATE_ROW_IDS across TRAIN and VALIDATION inputs even after the recorded namespace offset")
         order = np.argsort(ts, kind="stable")
-        return cls(population, names_t, X[order], ts[order], row_ids[order], {n: v[order] for n, v in targets.items()},
-                   {**dig_t, **dig_v}, bar_hours, validation_first_read_utc)
+        store = cls(population, names_t, X[order], ts[order], row_ids[order], {n: v[order] for n, v in targets.items()},
+                    {**dig_t, **dig_v}, bar_hours, validation_first_read_utc)
+        store.row_id_offset = offset
+        return store
 
     @classmethod
     def from_train_only(cls, population: str, train_features, train_targets, *, bar_hours: int) -> "DataStore":
@@ -383,6 +407,10 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
     week = next((w for w in protocol.weeks() if w.split is want and _iso(w.start) == task["week"]["start"]), None)
     if week is None or _week_dict(week) != {**task["week"], "split": split}:
         raise Refusal("WEEK_NOT_IN_CALENDAR")
+    if task["input_mode"] != "RAW" and (task.get("encoder_alignment") != P.RunnerEncoderBank.alignment
+                                        or not task.get("encoder_alignment_cert_sha256")):
+        raise Refusal("ENCODER_ALIGNMENT_NOT_CERTIFIED: an encoder arm needs a certified alignment equal to "
+                      f"{P.RunnerEncoderBank.alignment} (tools/fs4_encoder_alignment.py)")
     target = task["target_id"]
     if target not in store.targets:
         raise Refusal(f"TARGET_NOT_IN_INPUTS: {target}")
@@ -416,7 +444,9 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
         "fit_start": task["week"]["fit_start"], "seed": SEED, "evaluation_mode": BUSINESS_MODE, "update_mode": UPDATE_MODE,
         "trainer": PRODUCTION_TRAINER if trainer is None else "INJECTED_STAND_IN_TEST_ONLY",
         "predictor_spec_sha256": spec.sha256(), "budget_sha256": P.budget_sha256(spec), "encoder_spec_sha256": encoder_spec.sha256(),
-        "input_sha256": digest({"files": store.digests, "members": list(members), "target": target, "input_mode": task["input_mode"]}),
+        "input_sha256": digest({"files": store.digests, "members": list(members), "target": target, "input_mode": task["input_mode"],
+                             "row_id_offset": store.row_id_offset}),
+        "row_id_offset": store.row_id_offset,
         "code_sha256": code_sha256(), "validation_first_read_utc": store.validation_first_read_utc,
         "naive": {"rule": NAIVE_RULE, "scale": "raw_log_return", "unit": "log_return"},
     }
@@ -435,6 +465,11 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
                  "inner_validation_end": _iso(window.inner_validation_end)})
     scored_all = store.range_idx(task["week"]["start"], task["week"]["end"])
     scored = scored_all[finite[scored_all]]
+    # typed censoring: rows of the week whose target is non-finite (the series' last rows have no realised horizon) are COUNTED and
+    # digested, never scored and never silently dropped; fit rows with a non-finite target are likewise counted
+    censored = scored_all[~finite[scored_all]]
+    base["censoring"] = {"week_rows_target_censored": int(censored.size), "week_censored_row_ids_sha256": rows_digest([str(r) for r in store.record_ids[censored]]),
+                         "fit_candidate_rows_target_censored": int(np.sum(~finite[lo:hi])), "rule": "non-finite target = censored; excluded from fit and score, counted here"}
     scored_ids = [str(r) for r in store.record_ids[scored]]
     base.update({"n_scored": int(scored.size), "rows_sha256": rows_digest(scored_ids), "n_rows_in_week": int(scored_all.size)})
     base["naive"]["rows_sha256"] = base["rows_sha256"]
