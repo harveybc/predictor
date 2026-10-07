@@ -31,6 +31,7 @@ Desde el checkout de predictor en la rama base:
 ```bash
 FS4_DB="$HOME/.local/state/canonical_20261003/fs4/queue_v2.sqlite"
 python tools/fs4_campaign.py --db "$FS4_DB" status
+python tools/fs4_campaign.py --db "$FS4_DB" status --population EURUSD --feature px.rv5 --fold inner_2023 --arm TRAINED_ENCODER
 python -m pytest -q tests/test_fs4_campaign.py
 python tools/fs4_campaign.py --db "$FS4_DB" list --feature px.rv5 --fold inner_2023 --arm TRAINED_ENCODER
 ```

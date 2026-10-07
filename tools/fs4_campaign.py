@@ -207,7 +207,7 @@ def fail(path, owner, task_id, reason, now=None):
     return {"task_id": task_id, "failed": True}
 
 
-def status(path, now=None):
+def status(path, now=None, population=None, feature=None, fold=None, arm=None, owner=None):
     now = time.time() if now is None else now
     with _open(path) as con:
         plan = con.execute("SELECT value FROM campaign WHERE key='plan'").fetchone()
@@ -219,8 +219,14 @@ def status(path, now=None):
     active_owners = set()
     durations = []
     for row in rows:
-        population = json.loads(row["payload"])["population_id"]
-        group = by_population.setdefault(population, {key: 0 for key in states})
+        payload = json.loads(row["payload"])
+        if (population is not None and payload["population_id"] != population or
+                feature is not None and payload["feature_id"] != feature or
+                fold is not None and payload["fold_id"] != fold or
+                arm is not None and payload["arm"] != arm or
+                owner is not None and row["owner"] != owner):
+            continue
+        group = by_population.setdefault(payload["population_id"], {key: 0 for key in states})
         state = "pending" if row["state"] == "LEASED" and row["lease_until"] < now else row["state"].lower()
         state = "running" if state == "leased" else state
         states[state] += 1
@@ -231,10 +237,14 @@ def status(path, now=None):
             durations.append(row["finished_at"] - row["started_at"])
     remaining = states["pending"] + states["running"]
     eta = (round(statistics.median(durations) * remaining / len(active_owners))
-           if durations and active_owners else None)
-    return {"schema": "fs4.status.v1", "plan": json.loads(plan[0]), "total": len(rows),
+           if durations and active_owners else (0 if remaining == 0 else None))
+    return {"schema": "fs4.status.v1", "plan": json.loads(plan[0]), "total": sum(states.values()),
             **states, "by_population": by_population, "workers": sorted(active_owners),
-            "eta_seconds": eta, "eta_basis": "observed median task duration / active workers" if eta is not None else "insufficient measured throughput",
+            "scope": {"population": population, "feature": feature, "fold": fold,
+                      "arm": arm, "owner": owner},
+            "eta_seconds": eta, "eta_basis": ("complete" if remaining == 0 else
+                "observed median task duration / active workers" if eta is not None else
+                "insufficient measured throughput"),
             "final_selection": False}
 
 
@@ -258,7 +268,12 @@ def main():
     init = sub.add_parser("init")
     init.add_argument("--candidates", type=Path, action="append", required=True)
     init.add_argument("--fold", action="append", required=True)
-    sub.add_parser("status")
+    scoped = sub.add_parser("status")
+    scoped.add_argument("--population")
+    scoped.add_argument("--feature")
+    scoped.add_argument("--fold")
+    scoped.add_argument("--arm", choices=ARMS)
+    scoped.add_argument("--owner")
     listing = sub.add_parser("list")
     listing.add_argument("--feature")
     listing.add_argument("--fold")
@@ -281,7 +296,8 @@ def main():
         if args.action == "init":
             out = initialize(args.db, args.candidates, args.fold)
         elif args.action == "status":
-            out = status(args.db)
+            out = status(args.db, population=args.population, feature=args.feature,
+                         fold=args.fold, arm=args.arm, owner=args.owner)
         elif args.action == "list":
             out = list_tasks(args.db, args.feature, args.fold, args.arm)
         elif args.action == "claim":

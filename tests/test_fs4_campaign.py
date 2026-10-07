@@ -33,6 +33,18 @@ def test_unique_feature_tasks_and_claim_resume(tmp_path):
     assert first["task_id"] in {task["task_id"] for task in recovered if task}
 
 
+def test_status_can_scope_to_each_task_layer(tmp_path):
+    source = tmp_path / "candidates.json"
+    candidate_file(source)
+    db = tmp_path / "queue.sqlite"
+    campaign.initialize(db, [source], ["f1", "f2"])
+    scoped = campaign.status(db, population="EURUSD", feature="b", fold="f1", arm="RAW")
+    assert scoped["total"] == 1
+    assert scoped["pending"] == 1
+    assert scoped["eta_seconds"] is None
+    assert campaign.status(db, population="ETH")["total"] == 0
+
+
 def test_terminal_must_match_task_and_be_finite(tmp_path):
     source = tmp_path / "candidates.json"
     candidate_file(source)
