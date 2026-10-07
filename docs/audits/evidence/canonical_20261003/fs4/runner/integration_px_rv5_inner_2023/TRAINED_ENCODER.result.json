@@ -1,0 +1,317 @@
+{
+ "architecture": {
+  "calendar_context": [
+   "sin_hour",
+   "cos_hour",
+   "sin_dow",
+   "cos_dow",
+   "sin_doy",
+   "cos_doy"
+  ],
+  "id": "fs4_causal_conv_24_12_6_v1",
+  "latent_shape": [
+   6,
+   8
+  ],
+  "target_input": false
+ },
+ "arm": "TRAINED_ENCODER",
+ "artifacts": {
+  "chosen_weights_file": "4f5c6a96b92b1ee4aa73aa06d6484da0c5a2390d1f2d5f4aab2fe817198f6e57/chosen.weights.h5",
+  "chosen_weights_file_sha256": "2b8c77d229a7a498a484901c721318c9fb06977e55857fcf4598737aad812116"
+ },
+ "by_hour_utc": [
+  {
+   "hour": 0,
+   "mae": 0.28879607028685583,
+   "n": 1143
+  },
+  {
+   "hour": 1,
+   "mae": 0.2584465449089942,
+   "n": 1254
+  },
+  {
+   "hour": 2,
+   "mae": 0.2695682792462663,
+   "n": 1287
+  },
+  {
+   "hour": 3,
+   "mae": 0.2234154807187735,
+   "n": 1324
+  },
+  {
+   "hour": 4,
+   "mae": 0.17103630617530083,
+   "n": 1218
+  },
+  {
+   "hour": 5,
+   "mae": 0.1744257804035671,
+   "n": 1270
+  },
+  {
+   "hour": 6,
+   "mae": 0.23897332482295794,
+   "n": 1223
+  },
+  {
+   "hour": 7,
+   "mae": 0.324966140594571,
+   "n": 1225
+  },
+  {
+   "hour": 8,
+   "mae": 0.4875478311775275,
+   "n": 1203
+  },
+  {
+   "hour": 9,
+   "mae": 0.4306236374393217,
+   "n": 1188
+  },
+  {
+   "hour": 10,
+   "mae": 0.36363235867158483,
+   "n": 1123
+  },
+  {
+   "hour": 11,
+   "mae": 0.3155369977186415,
+   "n": 980
+  },
+  {
+   "hour": 12,
+   "mae": 0.42995970663854605,
+   "n": 970
+  },
+  {
+   "hour": 13,
+   "mae": 0.7218655663642579,
+   "n": 965
+  },
+  {
+   "hour": 14,
+   "mae": 0.7156619881672965,
+   "n": 980
+  },
+  {
+   "hour": 15,
+   "mae": 0.5777312136796942,
+   "n": 961
+  },
+  {
+   "hour": 16,
+   "mae": 0.4966454470534082,
+   "n": 948
+  },
+  {
+   "hour": 17,
+   "mae": 0.3792787183587034,
+   "n": 906
+  },
+  {
+   "hour": 18,
+   "mae": 0.3872584577848708,
+   "n": 960
+  },
+  {
+   "hour": 19,
+   "mae": 0.38309068129982204,
+   "n": 899
+  },
+  {
+   "hour": 20,
+   "mae": 0.3971766896657184,
+   "n": 887
+  },
+  {
+   "hour": 21,
+   "mae": 0.3016263700360377,
+   "n": 845
+  },
+  {
+   "hour": 22,
+   "mae": 0.27441035641919176,
+   "n": 968
+  },
+  {
+   "hour": 23,
+   "mae": 0.28433247759724184,
+   "n": 1079
+  }
+ ],
+ "code_commit": "deffa53f722ce27696489de73820d32e0f00ccc5",
+ "code_sha256": "ef66f6027598f2b148f892216afa74e40d13ff1e1b42f35c4f30db3fdea27c0d",
+ "corruption": {
+  "derived_from": "feature/fold identity (arm excluded)",
+  "fraction": 0.25,
+  "type": "hide_observed_points"
+ },
+ "cost": {
+  "cpu_s": 223.57770399999998,
+  "peak_cgroup_bytes": 2757996544,
+  "peak_ram_bytes": 2757996544,
+  "peak_rss_bytes": 2549673984,
+  "peak_vram_bytes": 355991296,
+  "wall_s": 159.00016112299636
+ },
+ "device": {
+  "cuda_visible_devices": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+  "gpu": {
+   "compute_capability": [
+    8,
+    9
+   ],
+   "nvidia_smi_name": "NVIDIA GeForce RTX 4090 Laptop GPU",
+   "probe_device": "/job:localhost/replica:0/task:0/device:GPU:0",
+   "tensorflow_device_name": "NVIDIA GeForce RTX 4090 Laptop GPU",
+   "uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9"
+  },
+  "variables": "/job:localhost/replica:0/task:0/device:GPU:0"
+ },
+ "feature_id": "px.rv5",
+ "fold": {
+  "availability_rule": "window rows have timestamp <= origin; origin is an observed TRAIN decision row",
+  "fit": [
+   1338422400,
+   1670018400
+  ],
+  "fold_id": "inner_2023",
+  "scoring_first_ts": 1672624800,
+  "scoring_last_ts": 1703887200,
+  "val": [
+   1672614000,
+   1703887200
+  ]
+ },
+ "fold_id": "inner_2023",
+ "host": "worker_b",
+ "hyper": {
+  "batch_size": 64,
+  "es_purge_hours": 168,
+  "es_tail_fraction": 0.1,
+  "filters": 16,
+  "hide_fraction": 0.25,
+  "kernel_size": 3,
+  "latent_dim": 8,
+  "latent_steps": 6,
+  "learning_rate": 0.001,
+  "max_epochs": 100,
+  "max_fit_windows": 0,
+  "min_fit_windows": 256,
+  "min_observed_per_window": 4,
+  "min_scoring_windows": 64,
+  "patience": 10,
+  "window": 24
+ },
+ "identity": "phase1-eurusd-final:94d20c038d55e152",
+ "input_sha256": "ac0e9fbdb6463c96c1582d56e622d264b65d79bbff9701bbefea6d604da9affe",
+ "mask_sha256": "e343f5c9f02b42fd67aaf2c455c1d36fae039cdb9e304b9cfc5ec991493df502",
+ "metrics": {
+  "hidden_points": 25806,
+  "mae": 0.3608934425273572,
+  "mae_orig": 0.00021889530241600642,
+  "mse": 0.37417168290236735,
+  "naive_mae": 0.5062720907693224,
+  "naive_mae_orig": 0.0003070728623874456,
+  "naive_mse": 0.6843802619199695
+ },
+ "model_sha256": "bdfa2a86845596121407dd3e0bbbdc6929f64bbf4723bb6c0a0ad1d4a00bbd2b",
+ "normalization": {
+  "constant": false,
+  "fitted_on": "fold fit range only",
+  "mean": 0.0007923720590472021,
+  "n": 65336,
+  "std": 0.0006065372118791359
+ },
+ "population_id": "EURUSD",
+ "population_n": 5253,
+ "python": "3.12.13",
+ "rows_sha256": "367a5a4db19464b88c971322c408034e0cf2ac5cefdb59e4ad01bdce6db8afb5",
+ "schema": "fs4.extractibility.result.v1",
+ "seed": 0,
+ "source": {
+  "bar_seconds": 3600,
+  "column_sha256": "0200b6a97b878bc8aa441842f18f2fdbf30abeaa3e40165a3efe61fba73a3d3d",
+  "file_sha256": {
+   "eurusd_ps1_batch_001": "bd005701247dc181c81457037cbad6e6142f8171ad8c3595f1cd489986557aa2",
+   "eurusd_ps1_batch_002": "0e6ff8c570804823921227bd6733b185c17e54808364735067953f524f4399f3",
+   "eurusd_ps1_batch_003": "fd0b4423db991cfb05cd4f9357a378648579d4c11552a1cac413ed711c3520bc"
+  },
+  "grid_seconds": 3600,
+  "role": "eurusd_ps1_batch_001",
+  "train_end_ts": 1703887200
+ },
+ "status": "COMPLETE",
+ "task_id": "4f5c6a96b92b1ee4aa73aa06d6484da0c5a2390d1f2d5f4aab2fe817198f6e57",
+ "training": {
+  "best_es_hidden_mse": 0.9151245925242041,
+  "chosen_epoch": 28,
+  "chosen_weights_sha256": "bdfa2a86845596121407dd3e0bbbdc6929f64bbf4723bb6c0a0ad1d4a00bbd2b",
+  "epochs_run": 39,
+  "es_hidden_mse_history": [
+   1.0146851105046957,
+   0.9973519829175529,
+   0.9584112257168954,
+   0.9549368724546003,
+   0.9358898367725927,
+   0.9475868534022204,
+   0.9529046116530083,
+   0.9400928955691192,
+   0.9422803825015058,
+   0.9464793705839794,
+   0.9312047698067034,
+   0.9460992173152916,
+   0.945908303320491,
+   0.9372182961709227,
+   0.9399698884072832,
+   0.9273041187733476,
+   0.9291484752021106,
+   0.9299704113729418,
+   0.9530370914487052,
+   0.9199291209871919,
+   0.9443307424610718,
+   0.9333540544100893,
+   0.9267143864770953,
+   0.9275251849999009,
+   0.9261990839027566,
+   0.9269260213873061,
+   0.9457454172722739,
+   0.9365268081175838,
+   0.9151245925242041,
+   0.9296158799033662,
+   0.9319133251372624,
+   0.9348807755287486,
+   0.9248050220199283,
+   0.931866835829612,
+   0.9298480616896927,
+   0.9187421733345799,
+   0.9282150436369686,
+   0.9323744123597398,
+   0.9330242943501179
+  ],
+  "es_mask_sha256": "fc054fc1d2e146638c8cb055272d73846ca08f2d8a3790fed2737276b666a7e7",
+  "es_tail_first_ts": 1637190000,
+  "es_tail_last_ts": 1670018400,
+  "final_weights_sha256": "1faecf16a1a5d8c7b13acbfac84a79a99984ba588d4cd5818aefcaf8eeb06122",
+  "fit_last_ts": 1636585200,
+  "fit_wall_seconds": 150.82105155999307,
+  "monitor": "hidden-point MSE on the purged TRAIN early-stopping tail (fixed mask)",
+  "n_es_windows": 6365,
+  "n_fit_windows": 57165,
+  "optimizer_device": "/job:localhost/replica:0/task:0/device:GPU:0",
+  "restored_best_checkpoint": true,
+  "stop_reason": "patience",
+  "updates": 34866,
+  "updates_at_chosen": 25926
+ },
+ "weights": {
+  "chosen_epoch": 28,
+  "chosen_weights_sha256": "bdfa2a86845596121407dd3e0bbbdc6929f64bbf4723bb6c0a0ad1d4a00bbd2b",
+  "final_weights_sha256": "1faecf16a1a5d8c7b13acbfac84a79a99984ba588d4cd5818aefcaf8eeb06122",
+  "initial_weights_sha256": "d09b68f16cf552f0d32742d3d6509cd044b92c72c2b16f546fddf694c71fa8d4",
+  "updates": 34866
+ }
+}

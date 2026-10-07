@@ -1,0 +1,941 @@
+{
+ "folds": [
+  "inner_2019",
+  "inner_2020",
+  "inner_2021",
+  "inner_2022",
+  "inner_2023"
+ ],
+ "generated_by": "python -m app.fs4_task_runner --coverage",
+ "hyper_thresholds": {
+  "min_fit_windows": 256,
+  "min_scoring_windows": 64
+ },
+ "populations": {
+  "ETH": {
+   "available_features": [
+    "atr_14",
+    "autocorr_lag1_100",
+    "autocorr_lag5_100",
+    "bb_lower",
+    "bb_middle",
+    "bb_pct_b",
+    "bb_upper",
+    "bb_width",
+    "cci_14",
+    "close_sma_ratio_10",
+    "close_sma_ratio_100",
+    "close_sma_ratio_20",
+    "close_sma_ratio_200",
+    "close_sma_ratio_50",
+    "ema_10",
+    "ema_100",
+    "ema_20",
+    "ema_200",
+    "ema_50",
+    "ema_cross_10_50",
+    "ema_cross_20_100",
+    "hist_vol_10",
+    "hist_vol_20",
+    "hist_vol_60",
+    "hurst_proxy_200",
+    "log_return_1",
+    "log_return_10",
+    "log_return_20",
+    "log_return_5",
+    "log_return_60",
+    "macd",
+    "macd_hist",
+    "macd_signal",
+    "mfi_14",
+    "mom_10",
+    "mom_20",
+    "natr_14",
+    "obv",
+    "obv_delta_20",
+    "realized_var_12",
+    "realized_var_48",
+    "return_1",
+    "return_10",
+    "return_20",
+    "return_5",
+    "return_60",
+    "roll_kurt_ret_20",
+    "roll_kurt_ret_252",
+    "roll_kurt_ret_60",
+    "roll_mean_ret_20",
+    "roll_mean_ret_252",
+    "roll_mean_ret_60",
+    "roll_skew_ret_20",
+    "roll_skew_ret_252",
+    "roll_skew_ret_60",
+    "roll_std_ret_20",
+    "roll_std_ret_252",
+    "roll_std_ret_60",
+    "rsi_14",
+    "rsi_21",
+    "rsi_7",
+    "sma_10",
+    "sma_100",
+    "sma_200",
+    "sma_50",
+    "sqret_autocorr_lag1_100",
+    "stoch_d",
+    "stoch_k",
+    "trend_slope_50",
+    "trend_strength_50",
+    "vol_regime_high",
+    "vol_regime_low",
+    "volume_ratio_20",
+    "volume_sma_10",
+    "volume_sma_20",
+    "vwap_60",
+    "williams_r_14",
+    "zscore_close_100"
+   ],
+   "file_sha256": {
+    "eth_train": "641c371af53ad8c3d03fb6833d7c794a11e0b37bde95c4daee5efb0b5516b30c"
+   },
+   "identity": "phase1-final:ETH:29d2f745f5d9e87c",
+   "not_available": {}
+  },
+  "EURUSD": {
+   "available_features": [
+    "cot.gold_comex.mm_net_oi",
+    "cot.gold_comex.mm_net_oi_chg_1w",
+    "cot.wti_nymex.mm_net_oi",
+    "cot.wti_nymex.mm_net_oi_chg_1w",
+    "fred.credit.aaa.level",
+    "fred.credit.aaa.logret_1d",
+    "fred.credit.aaa.logret_5d",
+    "fred.credit.aaa10y.diff_1d",
+    "fred.credit.aaa10y.diff_5d",
+    "fred.credit.aaa10y.level",
+    "fred.credit.baa.level",
+    "fred.credit.baa.logret_1d",
+    "fred.credit.baa.logret_5d",
+    "fred.credit.baa10y.level",
+    "fred.credit.baa10y.logret_1d",
+    "fred.credit.baa10y.logret_5d",
+    "fred.fx_indices.dtwexafegs.level",
+    "fred.fx_indices.dtwexafegs.logret_1d",
+    "fred.fx_indices.dtwexafegs.logret_5d",
+    "fred.fx_indices.dtwexbgs.level",
+    "fred.fx_indices.dtwexbgs.logret_1d",
+    "fred.fx_indices.dtwexbgs.logret_5d",
+    "fred.fx_indices.dtwexemegs.level",
+    "fred.fx_indices.dtwexemegs.logret_1d",
+    "fred.fx_indices.dtwexemegs.logret_5d",
+    "fred.inflation_expectations.t10yie.level",
+    "fred.inflation_expectations.t10yie.logret_1d",
+    "fred.inflation_expectations.t10yie.logret_5d",
+    "fred.inflation_expectations.t5yie.diff_1d",
+    "fred.inflation_expectations.t5yie.diff_5d",
+    "fred.inflation_expectations.t5yie.level",
+    "fred.inflation_expectations.t5yifr.level",
+    "fred.inflation_expectations.t5yifr.logret_1d",
+    "fred.inflation_expectations.t5yifr.logret_5d",
+    "fred.rates.dff.level",
+    "fred.rates.dff.logret_1d",
+    "fred.rates.dff.logret_5d",
+    "fred.rates.dfii10.diff_1d",
+    "fred.rates.dfii10.diff_5d",
+    "fred.rates.dfii10.level",
+    "fred.rates.dfii5.diff_1d",
+    "fred.rates.dfii5.diff_5d",
+    "fred.rates.dfii5.level",
+    "fred.rates.dgs1.level",
+    "fred.rates.dgs1.logret_1d",
+    "fred.rates.dgs1.logret_5d",
+    "fred.rates.dgs10.level",
+    "fred.rates.dgs10.logret_1d",
+    "fred.rates.dgs10.logret_5d",
+    "fred.rates.dgs2.level",
+    "fred.rates.dgs2.logret_1d",
+    "fred.rates.dgs2.logret_5d",
+    "fred.rates.dgs20.level",
+    "fred.rates.dgs20.logret_1d",
+    "fred.rates.dgs20.logret_5d",
+    "fred.rates.dgs30.level",
+    "fred.rates.dgs30.logret_1d",
+    "fred.rates.dgs30.logret_5d",
+    "fred.rates.dgs3mo.diff_1d",
+    "fred.rates.dgs3mo.diff_5d",
+    "fred.rates.dgs3mo.level",
+    "fred.rates.dgs5.level",
+    "fred.rates.dgs5.logret_1d",
+    "fred.rates.dgs5.logret_5d",
+    "fred.rates.dgs7.level",
+    "fred.rates.dgs7.logret_1d",
+    "fred.rates.dgs7.logret_5d",
+    "fred.rates.dprime.level",
+    "fred.rates.dprime.logret_1d",
+    "fred.rates.dprime.logret_5d",
+    "fred.rates.dtb3.diff_1d",
+    "fred.rates.dtb3.diff_5d",
+    "fred.rates.dtb3.level",
+    "fred.rates.fedfunds.level",
+    "fred.rates.fedfunds.logret_1d",
+    "fred.rates.fedfunds.logret_5d",
+    "fred.rates.t10y2y.diff_1d",
+    "fred.rates.t10y2y.diff_5d",
+    "fred.rates.t10y2y.level",
+    "fred.rates.t10y3m.diff_1d",
+    "fred.rates.t10y3m.diff_5d",
+    "fred.rates.t10y3m.level",
+    "fred.rates.tb3ms.level",
+    "fred.rates.tb3ms.logret_1d",
+    "fred.rates.tb3ms.logret_5d",
+    "fred.stress.anfci.diff_1d",
+    "fred.stress.anfci.diff_5d",
+    "fred.stress.anfci.level",
+    "fred.stress.nfci.diff_1d",
+    "fred.stress.nfci.diff_5d",
+    "fred.stress.nfci.level",
+    "fred.stress.stlfsi4.diff_1d",
+    "fred.stress.stlfsi4.diff_5d",
+    "fred.stress.stlfsi4.level",
+    "fred.stress.vixcls.level",
+    "fred.stress.vixcls.logret_1d",
+    "fred.stress.vixcls.logret_5d",
+    "fx.audusd.ewma_vol_24",
+    "fx.audusd.logret_1h",
+    "fx.audusd.logret_24h",
+    "fx.eurgbp.ewma_vol_24",
+    "fx.eurgbp.logret_1h",
+    "fx.eurgbp.logret_24h",
+    "fx.eurjpy.ewma_vol_24",
+    "fx.eurjpy.logret_1h",
+    "fx.eurjpy.logret_24h",
+    "fx.gbpjpy.ewma_vol_24",
+    "fx.gbpjpy.logret_1h",
+    "fx.gbpjpy.logret_24h",
+    "fx.gbpusd.ewma_vol_24",
+    "fx.gbpusd.logret_1h",
+    "fx.gbpusd.logret_24h",
+    "fx.nzdusd.ewma_vol_24",
+    "fx.nzdusd.logret_1h",
+    "fx.nzdusd.logret_24h",
+    "fx.usdcad.ewma_vol_24",
+    "fx.usdcad.logret_1h",
+    "fx.usdcad.logret_24h",
+    "fx.usdchf.ewma_vol_24",
+    "fx.usdchf.logret_1h",
+    "fx.usdchf.logret_24h",
+    "fx.usdjpy.ewma_vol_24",
+    "fx.usdjpy.logret_1h",
+    "fx.usdjpy.logret_24h",
+    "px.close_loc",
+    "px.ewma_vol_168",
+    "px.ewma_vol_24",
+    "px.hours_since_prev_bar",
+    "px.log_close",
+    "px.log_co",
+    "px.log_hl",
+    "px.logret_120h",
+    "px.logret_12h",
+    "px.logret_168h",
+    "px.logret_1h",
+    "px.logret_24h",
+    "px.logret_2h",
+    "px.logret_48h",
+    "px.logret_4h",
+    "px.logret_6h",
+    "px.parkinson_24",
+    "px.rv5",
+    "px.zclose_168",
+    "px.zclose_24",
+    "rg.atr_pct",
+    "rg.atr_ratio",
+    "rg.bb_width_pct",
+    "rg.di_spread",
+    "rg.ema_alignment",
+    "rg.macd_hist",
+    "rg.price_vs_ema50",
+    "rg.roc_12",
+    "ta.adx_14",
+    "ta.atr_14_n",
+    "ta.bb_pctb_20",
+    "ta.bb_width_20",
+    "ta.cci_20",
+    "ta.dmn_14",
+    "ta.dmp_14",
+    "ta.ema20_dev",
+    "ta.macd_hist_n",
+    "ta.macd_n",
+    "ta.mom_10_n",
+    "ta.roc_10",
+    "ta.rsi_14",
+    "ta.stoch_d",
+    "ta.stoch_k",
+    "ta.willr_14",
+    "tv.hilbert_amp",
+    "tv.kalman_dev",
+    "tv.mt_band_6_48h",
+    "tv.stl_dev",
+    "tv.stl_seasonal",
+    "tv.wav_d2",
+    "tv.wav_d3",
+    "tv.wav_d4",
+    "tv.wav_d5",
+    "yh.000001_ss.logret_1d",
+    "yh.000001_ss.logret_5d",
+    "yh.agg.logret_1d",
+    "yh.agg.logret_5d",
+    "yh.axjo.logret_1d",
+    "yh.axjo.logret_5d",
+    "yh.bnd.logret_1d",
+    "yh.bnd.logret_5d",
+    "yh.bsesn.logret_1d",
+    "yh.bsesn.logret_5d",
+    "yh.bvsp.logret_1d",
+    "yh.bvsp.logret_5d",
+    "yh.bz_f.logret_1d",
+    "yh.bz_f.logret_5d",
+    "yh.cl_f.logret_1d",
+    "yh.cl_f.logret_5d",
+    "yh.ct_f.logret_1d",
+    "yh.ct_f.logret_5d",
+    "yh.dia.logret_1d",
+    "yh.dia.logret_5d",
+    "yh.dji.logret_1d",
+    "yh.dji.logret_5d",
+    "yh.eem.logret_1d",
+    "yh.eem.logret_5d",
+    "yh.efa.logret_1d",
+    "yh.efa.logret_5d",
+    "yh.fchi.logret_1d",
+    "yh.fchi.logret_5d",
+    "yh.ftse.logret_1d",
+    "yh.ftse.logret_5d",
+    "yh.gc_f.logret_1d",
+    "yh.gc_f.logret_5d",
+    "yh.gdaxi.logret_1d",
+    "yh.gdaxi.logret_5d",
+    "yh.gld.logret_1d",
+    "yh.gld.logret_5d",
+    "yh.gspc.logret_1d",
+    "yh.gspc.logret_5d",
+    "yh.gsptse.logret_1d",
+    "yh.gsptse.logret_5d",
+    "yh.hsi.logret_1d",
+    "yh.hsi.logret_5d",
+    "yh.hyg.logret_1d",
+    "yh.hyg.logret_5d",
+    "yh.ief.logret_1d",
+    "yh.ief.logret_5d",
+    "yh.ivv.logret_1d",
+    "yh.ivv.logret_5d",
+    "yh.iwm.logret_1d",
+    "yh.iwm.logret_5d",
+    "yh.ixic.logret_1d",
+    "yh.ixic.logret_5d",
+    "yh.iyr.logret_1d",
+    "yh.iyr.logret_5d",
+    "yh.kc_f.logret_1d",
+    "yh.kc_f.logret_5d",
+    "yh.ks11.logret_1d",
+    "yh.ks11.logret_5d",
+    "yh.lqd.logret_1d",
+    "yh.lqd.logret_5d",
+    "yh.mxx.logret_1d",
+    "yh.mxx.logret_5d",
+    "yh.n225.logret_1d",
+    "yh.n225.logret_5d",
+    "yh.ng_f.logret_1d",
+    "yh.ng_f.logret_5d",
+    "yh.pa_f.logret_1d",
+    "yh.pa_f.logret_5d",
+    "yh.pl_f.logret_1d",
+    "yh.pl_f.logret_5d",
+    "yh.qqq.logret_1d",
+    "yh.qqq.logret_5d",
+    "yh.rb_f.logret_1d",
+    "yh.rb_f.logret_5d",
+    "yh.rut.logret_1d",
+    "yh.rut.logret_5d",
+    "yh.sb_f.logret_1d",
+    "yh.sb_f.logret_5d",
+    "yh.shy.logret_1d",
+    "yh.shy.logret_5d",
+    "yh.si_f.logret_1d",
+    "yh.si_f.logret_5d",
+    "yh.slv.logret_1d",
+    "yh.slv.logret_5d",
+    "yh.spy.logret_1d",
+    "yh.spy.logret_5d",
+    "yh.stoxx50e.logret_1d",
+    "yh.stoxx50e.logret_5d",
+    "yh.tip.logret_1d",
+    "yh.tip.logret_5d",
+    "yh.tlt.logret_1d",
+    "yh.tlt.logret_5d",
+    "yh.twii.logret_1d",
+    "yh.twii.logret_5d",
+    "yh.usdbrl_x.logret_1d",
+    "yh.usdbrl_x.logret_5d",
+    "yh.usdclp_x.logret_1d",
+    "yh.usdclp_x.logret_5d",
+    "yh.usdcop_x.logret_1d",
+    "yh.usdcop_x.logret_5d",
+    "yh.usdidr_x.logret_1d",
+    "yh.usdidr_x.logret_5d",
+    "yh.usdinr_x.logret_1d",
+    "yh.usdinr_x.logret_5d",
+    "yh.usdkrw_x.logret_1d",
+    "yh.usdkrw_x.logret_5d",
+    "yh.usdmxn_x.logret_1d",
+    "yh.usdmxn_x.logret_5d",
+    "yh.usdtry_x.logret_1d",
+    "yh.usdtry_x.logret_5d",
+    "yh.usdtwd_x.logret_1d",
+    "yh.usdtwd_x.logret_5d",
+    "yh.usdzar_x.logret_1d",
+    "yh.usdzar_x.logret_5d",
+    "yh.uso.logret_1d",
+    "yh.uso.logret_5d",
+    "yh.vea.logret_1d",
+    "yh.vea.logret_5d",
+    "yh.vix.level",
+    "yh.vix.logret_1d",
+    "yh.vix.logret_5d",
+    "yh.vnq.logret_1d",
+    "yh.vnq.logret_5d",
+    "yh.voo.logret_1d",
+    "yh.voo.logret_5d",
+    "yh.vti.logret_1d",
+    "yh.vti.logret_5d",
+    "yh.vwo.logret_1d",
+    "yh.vwo.logret_5d",
+    "yh.xlb.logret_1d",
+    "yh.xlb.logret_5d",
+    "yh.xlc.logret_1d",
+    "yh.xlc.logret_5d",
+    "yh.xle.logret_1d",
+    "yh.xle.logret_5d",
+    "yh.xlf.logret_1d",
+    "yh.xlf.logret_5d",
+    "yh.xli.logret_1d",
+    "yh.xli.logret_5d",
+    "yh.xlk.logret_1d",
+    "yh.xlk.logret_5d",
+    "yh.xlp.logret_1d",
+    "yh.xlp.logret_5d",
+    "yh.xlre.logret_1d",
+    "yh.xlre.logret_5d",
+    "yh.xlu.logret_1d",
+    "yh.xlu.logret_5d",
+    "yh.xlv.logret_1d",
+    "yh.xlv.logret_5d",
+    "yh.xly.logret_1d",
+    "yh.xly.logret_5d",
+    "yh.zc_f.logret_1d",
+    "yh.zc_f.logret_5d",
+    "yh.zs_f.logret_1d",
+    "yh.zs_f.logret_5d",
+    "yh.zw_f.logret_1d",
+    "yh.zw_f.logret_5d"
+   ],
+   "file_sha256": {
+    "eurusd_ps1_batch_001": "bd005701247dc181c81457037cbad6e6142f8171ad8c3595f1cd489986557aa2",
+    "eurusd_ps1_batch_002": "0e6ff8c570804823921227bd6733b185c17e54808364735067953f524f4399f3",
+    "eurusd_ps1_batch_003": "fd0b4423db991cfb05cd4f9357a378648579d4c11552a1cac413ed711c3520bc"
+   },
+   "identity": "phase1-eurusd-final:94d20c038d55e152",
+   "not_available": {
+    "fred.credit.bamlc0a0cm.level": {
+     "inner_2019": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2020": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 3570
+     }
+    },
+    "fred.credit.bamlc0a0cm.logret_1d": {
+     "inner_2019": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2020": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 3553
+     }
+    },
+    "fred.credit.bamlc0a0cm.logret_5d": {
+     "inner_2019": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2020": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 3489
+     }
+    },
+    "fred.credit.bamlc0a0cmey.level": {
+     "inner_2019": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2020": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 3570
+     }
+    },
+    "fred.credit.bamlc0a0cmey.logret_1d": {
+     "inner_2019": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2020": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 3553
+     }
+    },
+    "fred.credit.bamlc0a0cmey.logret_5d": {
+     "inner_2019": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2020": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 3489
+     }
+    },
+    "fred.credit.bamlh0a0hym2.level": {
+     "inner_2019": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2020": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 3570
+     }
+    },
+    "fred.credit.bamlh0a0hym2.logret_1d": {
+     "inner_2019": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2020": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 3553
+     }
+    },
+    "fred.credit.bamlh0a0hym2.logret_5d": {
+     "inner_2019": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2020": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 3489
+     }
+    },
+    "fred.credit.bamlh0a0hym2ey.level": {
+     "inner_2019": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2020": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 3570
+     }
+    },
+    "fred.credit.bamlh0a0hym2ey.logret_1d": {
+     "inner_2019": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2020": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 3553
+     }
+    },
+    "fred.credit.bamlh0a0hym2ey.logret_5d": {
+     "inner_2019": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2020": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 0,
+      "n_scoring_rows": 3489
+     }
+    },
+    "fred.fx_indices.dtwexb.level": {
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     }
+    },
+    "fred.fx_indices.dtwexb.logret_1d": {
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     }
+    },
+    "fred.fx_indices.dtwexb.logret_5d": {
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     }
+    },
+    "fred.fx_indices.dtwexm.level": {
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     }
+    },
+    "fred.fx_indices.dtwexm.logret_1d": {
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     }
+    },
+    "fred.fx_indices.dtwexm.logret_5d": {
+     "inner_2021": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     },
+     "inner_2022": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     },
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 46018,
+      "n_scoring_rows": 0
+     }
+    },
+    "fred.stress.tedrate.level": {
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 58504,
+      "n_scoring_rows": 0
+     }
+    },
+    "fred.stress.tedrate.logret_1d": {
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 58504,
+      "n_scoring_rows": 0
+     }
+    },
+    "fred.stress.tedrate.logret_5d": {
+     "inner_2023": {
+      "code": "NO_TRAIN_OBSERVATIONS",
+      "n_fit_origins": 58504,
+      "n_scoring_rows": 0
+     }
+    }
+   }
+  }
+ },
+ "runner_commit": "deffa53f722ce27696489de73820d32e0f00ccc5",
+ "schema": "fs4.runner.coverage.v1",
+ "source": "governed PS1 TRAIN parquets (EURUSD, sha256 pinned) and phase-1 ETH TRAIN parquet; PS2 batches not read",
+ "verdict": {
+  "ETH": {
+   "available_all_five_folds": 78,
+   "counts": {
+    "AVAILABLE": 78,
+    "FEATURE_NOT_IN_CORPUS": 0,
+    "NOT_AVAILABLE_FOR_TRAIN": 0,
+    "REFUSED": 0
+   },
+   "features_in_queue": 78,
+   "file_sha256": {
+    "eth_train": "641c371af53ad8c3d03fb6833d7c794a11e0b37bde95c4daee5efb0b5516b30c"
+   },
+   "identity": "phase1-final:ETH:29d2f745f5d9e87c",
+   "not_available_feature_fold_pairs": 0,
+   "not_available_features": 0,
+   "queue_tasks_that_will_be_typed_refusals": 0,
+   "resolved_in_corpus": 78,
+   "statement": "78/78 resolved and AVAILABLE on all five folds"
+  },
+  "EURUSD": {
+   "available_all_five_folds": 334,
+   "counts": {
+    "AVAILABLE": 334,
+    "FEATURE_NOT_IN_CORPUS": 0,
+    "NOT_AVAILABLE_FOR_TRAIN": 21,
+    "REFUSED": 0
+   },
+   "features_in_queue": 355,
+   "file_sha256": {
+    "eurusd_ps1_batch_001": "bd005701247dc181c81457037cbad6e6142f8171ad8c3595f1cd489986557aa2",
+    "eurusd_ps1_batch_002": "0e6ff8c570804823921227bd6733b185c17e54808364735067953f524f4399f3",
+    "eurusd_ps1_batch_003": "fd0b4423db991cfb05cd4f9357a378648579d4c11552a1cac413ed711c3520bc"
+   },
+   "identity": "phase1-eurusd-final:94d20c038d55e152",
+   "not_available_feature_fold_pairs": 81,
+   "not_available_features": 21,
+   "queue_tasks_that_will_be_typed_refusals": 243,
+   "resolved_in_corpus": 355,
+   "statement": "355/355 resolved from PS1 TRAIN parquets; 334 AVAILABLE on all folds; 21 carry per-feature NOT_AVAILABLE_FOR_TRAIN states with typed codes (no TRAIN observations or insufficient windows); no fake zeros"
+  }
+ }
+}
