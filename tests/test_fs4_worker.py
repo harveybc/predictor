@@ -205,3 +205,18 @@ def test_typed_refusal_recovered_from_last_stderr_line_when_stdout_is_lost():
     assert kind == "typed" and reason == "INSUFFICIENT_TRAIN_SCORING_WINDOWS 12 < 30"
     assert worker.classify_exit("", 3, "REFUSED_GPU_NOT_VERIFIED x")[0] == "technical"
     assert worker.classify_exit("", 1, "NO_TRAIN_OBSERVATIONS x")[0] == "technical"
+
+
+def test_closure_reads_worker_reasons_as_typed_or_technical():
+    import re
+    from tools import fs4_closure as closure
+    pattern = re.compile(closure.DEFAULT_REFUSAL_PATTERN)
+
+    def typed(reason):
+        return closure.is_typed_refusal({"state": "FAILED", "result": {"reason": reason}}, pattern)
+
+    for code in ("NO_TRAIN_OBSERVATIONS", "INSUFFICIENT_TRAIN_ES_WINDOWS", "REFUSED_UNKNOWN_FEATURE"):
+        assert typed(worker.classify_exit(typed_stdout(code), 3, "")[1])
+    for rc, out in ((4, typed_stdout("REFUSED_GPU_NOT_VERIFIED", "GPU_NOT_VERIFIED")), (3, typed_stdout("REFUSED_MemoryError", "REFUSED")), (139, "")):
+        kind, reason = worker.classify_exit(out, rc, "REFUSED_GPU_NOT_VERIFIED tail")
+        assert kind == "technical" and not typed(reason)
