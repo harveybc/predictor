@@ -9,6 +9,32 @@ plugins are selected by name from JSON configs. Experiments are organized as
 numbered phases under [`examples/config/`](examples/config/), each phase a
 reproducible sweep over architectures, dataset sizes and horizons.
 
+## Feature selection and reusable analysis
+
+The public entry point is
+**[dataset_selection](https://github.com/harveybc/dataset_selection)**: a tested
+CPU example, JSON configuration, data-source guide, local DuckDB results and
+instructions for adapting the selection stages to another dataset. It uses
+the existing engines at a pinned revision, without duplicating their code or
+publishing large datasets/databases.
+
+This revision contains the [phase-1 inventory scheduler](docs/phase1_inventory/README.md),
+[pairwise campaign](tools/feature_pairwise_campaign.py),
+[filter methods](tools/feature_filter_selection.py),
+[warehouse adapter](tools/fs_phase23_warehouse.py) and
+[weekly validation campaign](tools/fs4_weekly_campaign.py). Pairwise analysis
+and rankings accept manifest-configured populations. The causal worker lives
+in `causal-inference` and currently validates EURUSD/ETH target packs; the
+complete workflow is not yet a universal entry-point plugin package. See the
+[portability audit](https://github.com/harveybc/dataset_selection/blob/main/docs/PORTABILITY.md)
+for exact interfaces and limitations.
+
+Phases 1-3 of the retained financial campaign are complete for their declared
+populations; phase 4 and the final selected-feature manifest remain in progress.
+For live progress use the campaign's status command and the
+[current execution guide](docs/tres_temas_entrevista/program_v3/CURRENT_EXECUTION.md),
+not a historical README snapshot.
+
 ## Research and current development
 
 This project supports a data-centric research program: characterize the inputs,

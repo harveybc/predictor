@@ -19,6 +19,13 @@ The new assembly is a usable implementation, not evidence that it beats the
 published reference. Existing TimeFilter cells keep their exact author recipe.
 No scientific conclusion is based on a small plumbing fixture.
 
+Public reuse entry point: [dataset_selection](https://github.com/harveybc/dataset_selection).
+Its synthetic CPU example and portability guide document existing selection
+engines. The universal selection-plugin API and a second real nonfinancial
+adapter are follow-up packaging work after I5; they do not add a prerequisite
+to the running feature-selection campaign. Scientific engines retain their
+current repository owners.
+
 ## Requirements and acceptance matrix
 
 | ID | Requirement | Observable acceptance |
