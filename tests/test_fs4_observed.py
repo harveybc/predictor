@@ -51,3 +51,8 @@ def test_hosts_env_aliases_are_read_without_being_stored(tmp_path):
     path = tmp_path / "hosts.env"
     path.write_text("WORKER_A_SSH=alias-a\nWORKER_B_SSH='alias-b'\nCOORD_PYTHON=python3\n")
     assert observed.read_hosts(path) == {"worker_a": "alias-a", "worker_b": "alias-b"}
+
+
+def test_worker_script_protects_its_own_stdin_from_the_children():
+    # the script is fed to `bash -s` on stdin; a child that read stdin (ssh does) would swallow the rest of it
+    assert "--status </dev/null" in observed.WORKER_STATUS_SCRIPT

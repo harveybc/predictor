@@ -35,7 +35,7 @@ f=$(ls "$HOME"/.config/fs4/*.env 2>/dev/null | grep -v AUTHORIZE | head -1)
 set -a; . "$f"; set +a
 "$FS4_PYTHON" "$FS4_CODE/tools/fs4_worker.py" --coordinator "$FS4_COORDINATOR" --controller "$FS4_CONTROLLER" \
   --python "${FS4_COORDINATOR_PYTHON:-python3}" --db "$FS4_DB" --owner "$FS4_OWNER" --runner "$FS4_RUNNER" \
-  --cap "$FS4_CAP" --output-root "$FS4_OUTPUT_ROOT" --status
+  --cap "$FS4_CAP" --output-root "$FS4_OUTPUT_ROOT" --status </dev/null
 echo "---TIMERS---"
 systemctl --user list-timers 'fs4-worker@*' --no-legend --no-pager 2>/dev/null | grep -o 'fs4-worker@[^.]*' | sort -u
 """
