@@ -375,13 +375,64 @@ def _warehouse_submit_and_readback(plan: dict, results: list[dict], warehouse_pa
             "store_rows_sha256": local_digest}
 
 
+def _aggregates(plan: dict, results: list[dict], modes) -> dict:
+    """population -> target -> mode -> {set_id: aggregate}."""
+    weeks = [w["start"] for w in plan["weeks"]]
+    n_features = {s["set_id"]: s["n_features"] for s in plan["sets"]}
+    out: dict = {}
+    for pop in sorted({s["population_id"] for s in plan["sets"]}):
+        for target in sorted({s["target_id"] for s in plan["sets"] if s["population_id"] == pop}):
+            for mode in modes:
+                subset = [r for r in results if r["population_id"] == pop and r["target_id"] == target and r["input_mode"] == mode]
+                if subset:
+                    out.setdefault(pop, {}).setdefault(target, {})[mode] = WW.aggregate_results(subset, weeks, sets_n_features=n_features)
+    return out
+
+
+def stage2(db, now=None) -> dict:
+    """Compute the stage-2 list mechanically from the stage-1 aggregates (docs/fs4/STAGE2_RULE.md) and enqueue it."""
+    with _open(db) as con:
+        plan = _plan(con)
+        out_dir = _out_dir(con)
+        prior = _get(con, "stage2")
+        rows = con.execute("SELECT state, result FROM tasks WHERE split='validation' AND input_mode IN (%s)"
+                           % ",".join("?" * len(plan["input_modes"])), list(plan["input_modes"])).fetchall()
+    if WW.stage2_rule_sha256() != plan["stage2_rule_sha256"]:
+        raise Refusal("STAGE2_RULE_CHANGED: docs/fs4/STAGE2_RULE.md differs from the digest sealed in the plan")
+    pending = [r for r in rows if r["state"] != "COMPLETE"]
+    if pending:
+        raise Refusal(f"STAGE1_INCOMPLETE: {len(pending)} stage-1 validation tasks are not terminal")
+    results = [json.loads(r["result"]) for r in rows]
+    raw = {pop: {t: modes[plan["selection_arm"]] for t, modes in tt.items() if plan["selection_arm"] in modes}
+           for pop, tt in _aggregates(plan, [r for r in results if r["input_mode"] in plan["input_modes"]], plan["input_modes"]).items()}
+    body = WW.stage2_set_ids(plan, raw)
+    if prior:
+        if prior["list_sha256"] != body["list_sha256"]:
+            raise Refusal("STAGE2_LIST_CHANGED: a different stage-2 list was already enqueued")
+        return prior
+    tasks = WW.enumerate_tasks(plan, "validation", set_ids=set(body["set_ids"]), modes=plan["stage2_modes"])
+    body["tasks"] = len(tasks)
+    body["computed_utc"] = WW._now()
+    with _open(db) as con:
+        con.execute("BEGIN IMMEDIATE")
+        if _get(con, "stage2"):
+            raise Refusal("STAGE2_ALREADY_COMPUTED")
+        _insert_tasks(con, tasks)
+        _set(con, "stage2", body)
+    write_atomic(out_dir / "STAGE2_LIST.json", body)
+    return body
+
+
 def close(db, *, warehouse_path, now=None) -> dict:
     now = time.time() if now is None else now
     with _open(db) as con:
         plan = _plan(con)
         out_dir = _out_dir(con)
         prior = _get(con, "closure")
+        stage2_done = _get(con, "stage2")
         rows = con.execute("SELECT task_id, state, payload, result FROM tasks WHERE split='validation'").fetchall()
+    if not stage2_done:
+        raise Refusal("STAGE2_NOT_COMPUTED: run `stage2` once stage 1 is terminal; close needs the full denominator")
     not_terminal = [r["task_id"] for r in rows if r["state"] != "COMPLETE"]
     if not_terminal:
         raise Refusal(f"DENOMINATOR_INCOMPLETE: {len(not_terminal)} of {len(rows)} validation tasks are not terminal "
@@ -389,28 +440,34 @@ def close(db, *, warehouse_path, now=None) -> dict:
     results = [json.loads(r["result"]) for r in rows]
     weeks = [w["start"] for w in plan["weeks"]]
     sets = {s["set_id"]: s for s in plan["sets"]}
+    all_modes = list(plan["input_modes"]) + list(plan["stage2_modes"])
+    by = _aggregates(plan, results, all_modes)
     aggregates: dict = {}
     winners: dict = {}
-    for pop in sorted({s["population_id"] for s in plan["sets"]}):
-        for target in sorted({s["target_id"] for s in plan["sets"] if s["population_id"] == pop}):
-            for mode in plan["input_modes"]:
-                subset = [r for r in results if r["population_id"] == pop and r["target_id"] == target and r["input_mode"] == mode]
-                agg = WW.aggregate_results(subset, weeks, sets_n_features={k: v["n_features"] for k, v in sets.items()})
-                aggregates.setdefault(pop, {}).setdefault(target, {})[mode] = agg
-                win = WW.choose_winner(agg)
-                if win is not None:
-                    win = win | {"members": sets[win["set_id"]]["members"], "methods": sets[win["set_id"]]["methods"]}
-                winners.setdefault(pop, {}).setdefault(target, {})[mode] = win
+    comparison: dict = {}
+    for pop, tt in by.items():
+        for target, modes in tt.items():
+            aggregates.setdefault(pop, {})[target] = modes
+            arm = plan["selection_arm"]          # encoder arms never choose a winner (STAGE2_RULE.md)
+            win = WW.choose_winner(modes[arm]) if arm in modes else None
+            if win is not None:
+                win = win | {"members": sets[win["set_id"]]["members"], "methods": sets[win["set_id"]]["methods"]}
+            winners.setdefault(pop, {}).setdefault(target, {})[arm] = win
+            cmp_ = WW.encoder_comparison(modes, arm)
+            if cmp_:
+                comparison.setdefault(pop, {})[target] = cmp_
     warehouse = _warehouse_submit_and_readback(plan, results, warehouse_path)
     if not warehouse["readback"]["matches_store"]:
         raise Refusal("WAREHOUSE_READBACK_MISMATCH")
     body = {"schema": CLOSURE_SCHEMA, "state": "WEEKLY_SELECTION_COMPLETE", "plan_sha256": plan["plan_sha256"],
             "evaluation_mode": WW.BUSINESS_MODE, "update_mode": WW.UPDATE_MODE, "validation_year": plan["validation_year"],
-            "denominator": {"tasks": len(rows), "terminal": len(rows), "weeks": len(weeks), "sets": len(sets), "input_modes": plan["input_modes"],
+            "denominator": {"tasks": len(rows), "terminal": len(rows), "weeks": len(weeks), "sets": len(sets), "input_modes": all_modes,
                             "frontier": plan["denominator"]},
             "weeks_failed": sum(1 for r in results if r["disposition"] == "FAILED"),
             "aggregate_rule": WW.AGGREGATE_RULE, "tie_rule": WW.TIE_RULE, "selection_arm": plan["selection_arm"],
-            "aggregates": aggregates, "winners": winners, "test_opened": False, "final_selection": False,
+            "aggregates": aggregates, "winners": winners, "encoder_comparison": comparison,
+            "stage2": {"list_sha256": stage2_done["list_sha256"], "sets": len(stage2_done["set_ids"]), "rule_sha256": stage2_done["stage2_rule_sha256"]},
+            "test_opened": False, "final_selection": False,
             "warehouse": {k: v for k, v in warehouse.items() if k != "receipt"}}
     body["closure_sha256"] = digest({k: v for k, v in body.items() if k not in ("warehouse",)})
     if prior and prior.get("closure_sha256") == body["closure_sha256"]:
@@ -530,6 +587,7 @@ def main(argv=None):
     pulse.add_argument("--task-id", required=True)
     cl = sub.add_parser("close")
     cl.add_argument("--warehouse", type=Path, required=True, help="local warehouse file (DuckDB when available, else SQLite)")
+    sub.add_parser("stage2", help="compute and enqueue the stage-2 list from the stage-1 RAW aggregates (docs/fs4/STAGE2_RULE.md)")
     sub.add_parser("freeze")
     sub.add_parser("open-test")
     args = parser.parse_args(argv)
@@ -549,6 +607,8 @@ def main(argv=None):
             out = heartbeat(args.db, args.owner, args.task_id)
         elif args.action == "fail":
             out = fail(args.db, args.owner, args.task_id, args.reason)
+        elif args.action == "stage2":
+            out = stage2(args.db)
         elif args.action == "close":
             out = close(args.db, warehouse_path=args.warehouse)
         elif args.action == "freeze":

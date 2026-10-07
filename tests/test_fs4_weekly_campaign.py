@@ -13,6 +13,7 @@ import pytest
 from tools import fs4_candidates as C
 from tools import fs4_frontier as F
 from tools import fs4_weekly_campaign as K
+from pathlib import Path
 from tools import fs4_weekly_wrapper as WW
 
 POP = "EURUSD"
@@ -51,7 +52,7 @@ def _seal(tmp_path, cons_path, ext_path):
     return tmp_path / "FRONTIER_SEAL.json"
 
 
-def _campaign(tmp_path, modes=("RAW", "RANDOM_ENCODER")):
+def _campaign(tmp_path, modes=("RAW",)):
     cons = _consolidated(tmp_path)
     ext = _extractibility(tmp_path)
     seal = _seal(tmp_path, cons, ext)
@@ -75,6 +76,20 @@ def _result(task, mae=0.5, naive=1.0, rows="e" * 64, disposition="COMPLETED"):
     return r
 
 
+def _finish(db, now0, mae_for, rows="e" * 64):
+    """Claim and complete every claimable task (RAW first)."""
+    i = 0
+    while (t := K.claim(db, "w", now=now0 + i)) is not None:
+        K.complete(db, "w", _result(t, mae=mae_for(t), rows=rows), now=now0 + i + 0.5)
+        i += 1
+    return i
+
+
+def _mae(t):
+    base = 0.3 if t["members"] == ["f_a"] else (0.5 if len(t["members"]) == 3 else 0.9)
+    return base * (0.9 if t["input_mode"] == "TRAINED_ENCODER" else 1.0)
+
+
 def test_init_requires_extractibility_closure_and_matching_seal(tmp_path):
     cons = _consolidated(tmp_path)
     running = _extractibility(tmp_path, state="RUNNING", name="RUNNING.json")
@@ -96,12 +111,12 @@ def test_init_requires_extractibility_closure_and_matching_seal(tmp_path):
 
 def test_plan_is_sealed_tasks_are_sets_times_weeks_times_modes_and_init_is_idempotent(tmp_path):
     db, out = _campaign(tmp_path)
-    assert out["tasks"] == 3 * 52 * 2 and out["plan_sha256"] == K.status(db)["plan"]["plan_sha256"]
+    assert out["tasks"] == 3 * 52 and out["plan_sha256"] == K.status(db)["plan"]["plan_sha256"]
     plan_file = json.loads((tmp_path / "out" / "WEEKLY_PLAN.json").read_text())
     assert plan_file["plan_sha256"] == out["plan_sha256"]
     again = K.initialize(db, [tmp_path / "CONSOLIDATED_CANDIDATES.json"], [tmp_path / "FRONTIER_SEAL.json"],
-                         tmp_path / "EXTRACTIBILITY_COMPLETE.json", out_dir=tmp_path / "out", validation_year=2024, input_modes=("RAW", "RANDOM_ENCODER"))
-    assert again["plan_sha256"] == out["plan_sha256"] and K.status(db)["total"] == 312
+                         tmp_path / "EXTRACTIBILITY_COMPLETE.json", out_dir=tmp_path / "out", validation_year=2024, input_modes=("RAW",))
+    assert again["plan_sha256"] == out["plan_sha256"] and K.status(db)["total"] == 156
     with pytest.raises(K.Refusal, match="PLAN_CHANGED"):
         K.initialize(db, [tmp_path / "CONSOLIDATED_CANDIDATES.json"], [tmp_path / "FRONTIER_SEAL.json"],
                      tmp_path / "EXTRACTIBILITY_COMPLETE.json", out_dir=tmp_path / "out", validation_year=2023, input_modes=("RAW",))
@@ -124,7 +139,7 @@ def test_claim_orders_raw_first_then_week_and_a_terminal_is_never_repeated(tmp_p
         if t is None:
             break
         seen.add(t["task_id"])
-    assert first["task_id"] not in seen and len(seen) == 312 - 2
+    assert first["task_id"] not in seen and len(seen) == 156 - 2
 
 
 def test_complete_validates_identity_finite_metrics_and_paired_rows_across_input_modes(tmp_path):
@@ -139,16 +154,22 @@ def test_complete_validates_identity_finite_metrics_and_paired_rows_across_input
     with pytest.raises(K.Refusal, match="MISSING_COST"):
         K.complete(db, "w", {k: v for k, v in _result(raw).items() if k != "cost"}, now=101)
     K.complete(db, "w", _result(raw, rows="a" * 64), now=102)
-    peer = K.claim(db, "w", task_id=[t["task_id"] for t in K.list_tasks(db, set_id=raw["set_id"], week_start=raw["week"]["start"])
-                                     if t["input_mode"] == "RANDOM_ENCODER"][0], now=103)
+    with pytest.raises(K.Refusal, match="STAGE1_INCOMPLETE"):
+        K.stage2(db)                                                          # stage 2 needs every stage-1 task terminal
+    _finish(db, 1000, _mae, rows="a" * 64)
+    out = K.stage2(db)
+    assert out["tasks"] == 3 * 52 * 2
+    peer_id = [t["task_id"] for t in K.list_tasks(db, set_id=raw["set_id"], week_start=raw["week"]["start"])
+               if t["input_mode"] == "RANDOM_ENCODER"][0]
+    peer = K.claim(db, "w", task_id=peer_id, now=5000)
     with pytest.raises(K.Refusal, match="PAIRED_ROWS_OR_NAIVE_MISMATCH"):
-        K.complete(db, "w", _result(peer, rows="b" * 64), now=104)
+        K.complete(db, "w", _result(peer, rows="b" * 64), now=5001)
     with pytest.raises(K.Refusal, match="PAIRED_ROWS_OR_NAIVE_MISMATCH"):
-        K.complete(db, "w", _result(peer, rows="a" * 64, naive=2.0), now=104)
-    K.complete(db, "w", _result(peer, rows="a" * 64, mae=0.9), now=105)
-    failed = K.claim(db, "w", now=106)
-    K.complete(db, "w", _result(failed, disposition="FAILED"), now=107)       # a failed WEEK is a terminal disposition
-    assert K.status(db)["complete"] == 3 and K.status(db)["failed"] == 0
+        K.complete(db, "w", _result(peer, rows="a" * 64, naive=2.0), now=5002)
+    K.complete(db, "w", _result(peer, rows="a" * 64, mae=0.9), now=5003)
+    failed = K.claim(db, "w", now=5004)
+    K.complete(db, "w", _result(failed, disposition="FAILED", rows="a" * 64), now=5005)      # a failed WEEK is a terminal disposition
+    assert K.status(db)["failed"] == 0
 
 
 def test_technical_failures_retry_three_times_then_stop(tmp_path):
@@ -183,30 +204,49 @@ def test_status_json_is_generated_from_the_store_and_eta_is_null_without_through
     assert isinstance(s["eta_seconds"], int) and s["rate_tasks_per_hour"] > 0
 
 
-def test_close_refuses_until_every_task_is_terminal_then_selects_and_reads_back(tmp_path):
-    db, _ = _campaign(tmp_path, modes=("RAW",))
+def test_stage2_list_is_mechanical_sealed_and_encoders_never_choose_the_winner(tmp_path):
+    db, out = _campaign(tmp_path)
+    plan = json.loads((tmp_path / "out" / "WEEKLY_PLAN.json").read_text())
+    import hashlib
+    assert plan["stage2_rule_sha256"] == hashlib.sha256(Path(WW.STAGE2_RULE_PATH).read_bytes()).hexdigest()
+    assert plan["stage2_modes"] == ["RANDOM_ENCODER", "TRAINED_ENCODER"] and plan["input_modes"] == ["RAW"]
+    with pytest.raises(K.Refusal, match="STAGE2_NOT_COMPUTED"):
+        K.close(db, warehouse_path=tmp_path / "wh.duckdb")
+    _finish(db, 1000, _mae)
+    s2 = K.stage2(db)
+    assert sorted(s2["set_ids"]) == sorted(s["set_id"] for s in plan["sets"])          # all three are top-3 or ALL_ADMISSIBLE
+    assert s2["stage2_rule_sha256"] == plan["stage2_rule_sha256"] and s2["list_sha256"]
+    assert any(r.get("family") == "ALL_ADMISSIBLE" and r["rank"] == 0 for v in s2["reasons"].values() for r in v)
+    assert K.stage2(db)["list_sha256"] == s2["list_sha256"] and K.status(db)["total"] == 156 + 312   # idempotent
     with pytest.raises(K.Refusal, match="DENOMINATOR_INCOMPLETE"):
         K.close(db, warehouse_path=tmp_path / "wh.duckdb")
-    i = 0
-    while True:
-        t = K.claim(db, "w", now=1000 + i)
-        if t is None:
-            break
-        members = t["members"]
-        mae = 0.3 if members == ["f_a"] else (0.5 if len(members) == 3 else 0.9)
-        K.complete(db, "w", _result(t, mae=mae), now=1001 + i)
-        i += 1
+    # the TRAINED arm is better than RAW everywhere, yet the winner is the RAW winner
+    _finish(db, 9000, _mae)
+    closure = K.close(db, warehouse_path=tmp_path / "wh.duckdb")
+    assert list(closure["winners"][POP]["Y_s_1h"]) == ["RAW"] and closure["winners"][POP]["Y_s_1h"]["RAW"]["members"] == ["f_a"]
+    cmp_ = closure["encoder_comparison"][POP]["Y_s_1h"]
+    assert all(v["trained_minus_raw"] > 0 and abs(v["trained_minus_random"] - v["trained_minus_raw"]) < 1e-9 for v in cmp_.values())
+    assert closure["stage2"]["list_sha256"] == s2["list_sha256"]
+
+
+def test_close_refuses_until_every_task_is_terminal_then_selects_and_reads_back(tmp_path):
+    db, _ = _campaign(tmp_path)
+    with pytest.raises(K.Refusal, match="STAGE2_NOT_COMPUTED|DENOMINATOR_INCOMPLETE"):
+        K.close(db, warehouse_path=tmp_path / "wh.duckdb")
+    _finish(db, 1000, _mae)
+    K.stage2(db)
+    _finish(db, 9000, _mae)
     closure = K.close(db, warehouse_path=tmp_path / "wh.duckdb")
     assert closure["state"] == "WEEKLY_SELECTION_COMPLETE" and closure["test_opened"] is False
     win = closure["winners"][POP]["Y_s_1h"]["RAW"]
     assert win["members"] == ["f_a"] and win["weeks"] == 52
-    assert closure["denominator"]["tasks"] == 156 and closure["denominator"]["terminal"] == 156
-    assert closure["warehouse"]["table"] == K.WAREHOUSE_TABLE and closure["warehouse"]["readback"]["count"] == 156
+    assert closure["denominator"]["tasks"] == 468 and closure["denominator"]["terminal"] == 468
+    assert closure["warehouse"]["table"] == K.WAREHOUSE_TABLE and closure["warehouse"]["readback"]["count"] == 468
     assert closure["warehouse"]["readback"]["matches_store"] is True
     doc = json.loads((tmp_path / "out" / "WEEKLY_SELECTION_COMPLETE.json").read_text())
     assert doc["closure_sha256"] == closure["closure_sha256"] and doc["final_selection"] is False
     again = K.close(db, warehouse_path=tmp_path / "wh.duckdb")                       # idempotent, no double writes
-    assert again["closure_sha256"] == closure["closure_sha256"] and again["warehouse"]["readback"]["count"] == 156
+    assert again["closure_sha256"] == closure["closure_sha256"] and again["warehouse"]["readback"]["count"] == 468
 
 
 def test_test_opens_once_only_after_the_freeze(tmp_path):
@@ -215,10 +255,9 @@ def test_test_opens_once_only_after_the_freeze(tmp_path):
         K.freeze(db)
     with pytest.raises(K.Refusal, match="NOT_FROZEN"):
         K.open_test(db)
-    i = 0
-    while (t := K.claim(db, "w", now=1000 + i)) is not None:
-        K.complete(db, "w", _result(t, mae=0.3 if t["members"] == ["f_a"] else 0.6), now=1001 + i)
-        i += 1
+    _finish(db, 1000, _mae)
+    K.stage2(db)
+    _finish(db, 9000, _mae)
     K.close(db, warehouse_path=tmp_path / "wh.duckdb")
     frozen = K.freeze(db)
     doc = json.loads((tmp_path / "out" / "TEST_FREEZE.json").read_text())

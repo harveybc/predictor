@@ -7,9 +7,10 @@ with residual connections, and a head that reads ONLY the last valid position. T
 that flattens time before fusion (no Flatten, no global pooling, no MLP over the window).
 
 Inputs are either RAW standardised feature windows ``(B, 24, F)`` or FROZEN encoder latents
-``(B, 6, F * D)`` produced per feature by ``FrozenEncoder`` (the phase-4 runner's chosen weights
-for TRAINED_ENCODER, or a seed-0 initialisation that is never updated for RANDOM_ENCODER). The
-encoder is applied as a numpy preprocessing step: it cannot receive gradients.
+``(B, 6, F * D)`` produced per feature by ``RunnerEncoderBank``: the phase-4 runner's own
+``build_models`` loaded with its ``chosen.weights.h5`` (TRAINED_ENCODER) or re-initialised with
+``seed_weights(0)`` and never updated (RANDOM_ENCODER), each checked against the digests the runner
+recorded. The encoder is applied as a numpy preprocessing step: it cannot receive gradients.
 
 The architecture and the training budget are identical for every subset; only the number of
 branches follows the subset size. Feature names are sorted before any tensor is built, so a column
@@ -32,7 +33,6 @@ INPUT_MODES = ("RAW", "TRAINED_ENCODER", "RANDOM_ENCODER")
 FAMILY = "R0_TEMPORAL_CONV1D"
 CORE_OUTPUT_NAME = "core_out"
 HEAD_INPUT_NAME = "last_valid_position"
-ENCODER_WEIGHT_KEYS = ("down1_kernel", "down1_bias", "down2_kernel", "down2_bias", "latent_kernel", "latent_bias")
 
 
 class Refusal(ValueError):
@@ -96,14 +96,22 @@ class PredictorSpec:
 
 @dataclass(frozen=True)
 class EncoderSpec:
+    """Identity of the frozen per-feature encoder: it MUST equal the phase-4 runner's architecture.
+
+    The runner (feature-extractor ``app/fs4_task_runner.py``, ``app.fs4_extractibility.build_models``)
+    is the only builder: causal Conv1D 24 -> 12 -> 6, latent_dim 8, fed by (signal, observed_mask,
+    delta_time, calendar) windows on an hourly grid. ``fold_id`` names the TRAIN fold whose chosen
+    weights are frozen for every weekly fit (inner_2023: fitted on TRAIN rows before 2023 only)."""
     window: int = 24
     latent_steps: int = 6
     latent_dim: int = 8
-    filters: int = 8
+    filters: int = 16
     kernel: int = 3
+    fold_id: str = "inner_2023"
+    architecture_id: str = "fs4_causal_conv_24_12_6_v1"
 
     def to_dict(self) -> dict:
-        return asdict(self) | {"family": "CAUSAL_CONV1D_24_12_6"}
+        return asdict(self)
 
     def sha256(self) -> str:
         return digest(self.to_dict())
@@ -253,111 +261,128 @@ def model_weights_sha256(model) -> str:
 
 
 # ----------------------------------------------------------------------------- frozen encoder
-class FrozenEncoder:
-    """Per-feature causal Conv1D encoder 24 -> 12 -> 6 with a D-dimensional temporal latent.
+_EXTRACTOR_MODS = None
 
-    Weights come either from a seed-0 initialisation that is never updated (RANDOM_ENCODER control)
-    or from a saved ``.npz`` of chosen weights (TRAINED_ENCODER: the phase-4 runner's chosen weights,
-    one key set per feature ``f{i}_<name>``). The encoder is only ever applied with numpy inputs
-    through ``transform``; it has no optimizer and ``optimizer_steps`` stays 0 by construction.
+
+def load_extractor(code_dir):
+    """Import the PINNED feature-extractor code (the runner's own model builders). The process must not
+    have another top-level ``app`` package loaded."""
+    global _EXTRACTOR_MODS
+    if _EXTRACTOR_MODS is None:
+        import importlib
+        import sys
+
+        code_dir = Path(code_dir)
+        if not (code_dir / "app" / "fs4_extractibility.py").is_file():
+            raise Refusal(f"EXTRACTOR_CODE_MISSING: {code_dir} has no app/fs4_extractibility.py")
+        if "app" in sys.modules and not str(getattr(sys.modules["app"], "__file__", "")).startswith(str(code_dir)):
+            raise Refusal("EXTRACTOR_APP_PACKAGE_CONFLICT: another top-level 'app' package is already imported")
+        sys.path.insert(0, str(code_dir))
+        _EXTRACTOR_MODS = (importlib.import_module("app.fs4_extractibility"), importlib.import_module("app.univariate_temporal"))
+    return _EXTRACTOR_MODS
+
+
+def index_runner_results(results_root) -> dict:
+    """(population_id, identity, feature_id, fold_id, arm) -> (result dict, task directory) for every
+    ``<root>/<task_id>/result.json`` the phase-4 runner retained."""
+    out = {}
+    for path in sorted(Path(results_root).glob("*/result.json")):
+        rec = json.loads(path.read_text())
+        if rec.get("status") != "COMPLETE" or rec.get("schema") != "fs4.extractibility.result.v1":
+            continue
+        key = (rec["population_id"], rec["identity"], rec["feature_id"], rec["fold_id"], rec["arm"])
+        if key in out:
+            raise Refusal(f"DUPLICATE_RUNNER_RESULT: {key}")
+        out[key] = (rec, path.parent)
+    return out
+
+
+class RunnerEncoderBank:
+    """Per-feature frozen encoders, built by the runner's own code and verified against its recorded digests.
+
+    TRAINED_ENCODER: ``chosen.weights.h5`` of the runner's TRAINED task for (feature, fold) is loaded into
+    ``build_models`` and its file digest and weights digest must equal the terminal's.
+    RANDOM_ENCODER: the same architecture re-initialised with ``seed_weights(seed)`` and NEVER updated; the
+    weights digest must equal the RANDOM terminal's (so it is the same control the extractibility run used).
+    The bank is bound to one (ts, raw columns) pair in canonical (sorted) feature order and cannot be trained.
     """
 
-    def __init__(self, spec: EncoderSpec, n_features: int, weights: dict[str, np.ndarray], source: str):
-        self.spec = spec
-        self.n_features = n_features
-        self.weights = {k: np.ascontiguousarray(v, dtype="float32") for k, v in weights.items()}
-        self.source = source
-        self.optimizer_steps = 0
-        for i in range(n_features):
-            for key in ENCODER_WEIGHT_KEYS:
-                if f"f{i}_{key}" not in self.weights:
-                    raise Refusal(f"ENCODER_WEIGHTS_INCOMPLETE: f{i}_{key}")
-        self._model = None
+    optimizer_steps = 0
 
-    @property
-    def weights_sha256(self) -> str:
-        return arrays_sha256([self.weights[k] for k in sorted(self.weights)])
+    def __init__(self, spec: EncoderSpec, features, ts_rows, X_raw, *, arm: str, population_id: str, identity: str,
+                 results_root, code_dir, seed: int = 0):
+        if arm not in ("TRAINED_ENCODER", "RANDOM_ENCODER"):
+            raise Refusal(f"UNKNOWN_INPUT_MODE: {arm}")
+        self.spec, self.arm, self.seed = spec, arm, int(seed)
+        self.features = canonical_features(features)
+        X_raw = np.asarray(X_raw, dtype="float64")
+        if X_raw.shape[1] != len(self.features):
+            raise Refusal("ENCODER_COLUMNS_MUST_FOLLOW_SORTED_FEATURES")
+        self.n_features = len(self.features)
+        self.latent_dim = spec.latent_dim
+        self._X, self._U = load_extractor(code_dir)
+        self._ts = np.asarray(ts_rows, dtype="int64")
+        self._raw = X_raw
+        self._grid = {}
+        self._parts = []
+        index = index_runner_results(results_root)
+        self._enc = []
+        for i, name in enumerate(self.features):
+            rec_key = (population_id, identity, name, spec.fold_id, arm)
+            if rec_key not in index:
+                raise Refusal(f"RUNNER_RESULT_MISSING: {rec_key}")
+            rec, directory = index[rec_key]
+            self._enc.append(self._build_one(name, i, rec, directory))
+        self.weights_sha256 = digest({"arm": arm, "fold": spec.fold_id, "spec": spec.to_dict(), "features": [
+            [n, p] for n, p in zip(self.features, self._parts)]})
 
-    @property
-    def latent_dim(self) -> int:
-        return self.spec.latent_dim
+    def _build_one(self, name, i, rec, directory):
+        X, U = self._X, self._U
+        if rec["hyper"]["window"] != self.spec.window or rec["hyper"]["latent_dim"] != self.spec.latent_dim \
+                or rec["architecture"]["id"] != self.spec.architecture_id:
+            raise Refusal(f"ENCODER_ARCHITECTURE_MISMATCH: {name}")
+        hp = X.Hyper(**rec["hyper"])
+        encoder, decoder, training = X.build_models(hp, calendar_dim=len(U.CALENDAR_SPEC))
+        want = rec["weights"]["chosen_weights_sha256"]
+        if self.arm == "TRAINED_ENCODER":
+            h5 = Path(directory) / "chosen.weights.h5"
+            if not h5.is_file():
+                raise Refusal(f"CHOSEN_WEIGHTS_FILE_MISSING: {h5}")
+            if U.sha256_file(str(h5)) != rec["artifacts"].get("chosen_weights_file_sha256"):
+                raise Refusal(f"ENCODER_FILE_IDENTITY_MISMATCH: {name}")
+            training.load_weights(str(h5))
+        else:
+            X.seed_weights([encoder, decoder], self.seed)
+        if X.weights_digest([encoder, decoder]) != want:
+            raise Refusal(f"ENCODER_IDENTITY_MISMATCH: {name} weights digest differs from the runner terminal")
+        encoder.trainable = False
+        nm = rec["normalization"]
+        norm = U.Normalization(float(nm["mean"]), float(nm["std"]), int(nm["n"]), bool(nm["constant"]))
+        self._parts.append(want)
+        return {"encoder": encoder, "norm": norm, "col": i}
 
-    @classmethod
-    def from_random(cls, spec: EncoderSpec, n_features: int, seed: int = 0) -> "FrozenEncoder":
-        rng = np.random.default_rng(seed)
-        k, F, D = spec.kernel, spec.filters, spec.latent_dim
+    def _feature_grid(self, i):
+        if i not in self._grid:
+            self._grid[i] = self._X.to_grid(self._ts, self._raw[:, i])
+        return self._grid[i]
 
-        def glorot(shape):
-            fan_in, fan_out = np.prod(shape[:-1]), shape[-1] * (shape[0] if len(shape) == 3 else 1)
-            lim = math.sqrt(6.0 / (fan_in + fan_out))
-            return rng.uniform(-lim, lim, size=shape)
-
-        weights = {}
-        for i in range(n_features):
-            weights[f"f{i}_down1_kernel"] = glorot((k, 1, F))
-            weights[f"f{i}_down1_bias"] = np.zeros(F)
-            weights[f"f{i}_down2_kernel"] = glorot((k, F, F))
-            weights[f"f{i}_down2_bias"] = np.zeros(F)
-            weights[f"f{i}_latent_kernel"] = glorot((1, F, D))
-            weights[f"f{i}_latent_bias"] = np.zeros(D)
-        return cls(spec, n_features, weights, source=f"RANDOM_SEED_{seed}")
-
-    @classmethod
-    def from_npz(cls, spec: EncoderSpec, path, expected_sha256: str | None = None) -> "FrozenEncoder":
-        with np.load(Path(path)) as z:
-            weights = {k: z[k] for k in z.files}
-        n = len({k.split("_", 1)[0] for k in weights if k.startswith("f")})
-        enc = cls(spec, n, weights, source=f"NPZ:{Path(path).name}")
-        if expected_sha256 is not None and enc.weights_sha256 != expected_sha256:
-            raise Refusal("ENCODER_IDENTITY_MISMATCH: the chosen weights do not match the declared digest")
-        return enc
-
-    @classmethod
-    def from_feature_files(cls, spec: EncoderSpec, feature_paths: dict[str, Path], features) -> "FrozenEncoder":
-        """Assemble one bank from per-feature chosen-weight files (keys = ENCODER_WEIGHT_KEYS)."""
-        weights = {}
-        for i, f in enumerate(canonical_features(features)):
-            if f not in feature_paths:
-                raise Refusal(f"ENCODER_WEIGHTS_MISSING_FOR_FEATURE: {f}")
-            with np.load(Path(feature_paths[f])) as z:
-                for key in ENCODER_WEIGHT_KEYS:
-                    if key not in z.files:
-                        raise Refusal(f"ENCODER_WEIGHTS_INCOMPLETE: {f} {key}")
-                    weights[f"f{i}_{key}"] = z[key]
-        return cls(spec, len(feature_paths), weights, source="FEATURE_FILES")
-
-    def save(self, path) -> str:
-        np.savez(Path(path), **self.weights)
-        return self.weights_sha256
-
-    def _build(self):
-        keras = _keras()
-        L = keras.layers
-        s = self.spec
-        inp = keras.Input((s.window, self.n_features))
+    def latents(self, idx):
+        """(latents (n, 6, F*D) float32, kept row indices). Only rows <= each origin enter its window."""
+        idx = np.asarray(idx, dtype="int64")
+        W = self.spec.window
+        g0 = self._feature_grid(0)
+        anchors = g0.row_index[idx]
+        keep = anchors >= W - 1
+        kept = idx[keep]
+        if kept.size == 0:
+            return np.empty((0, self.spec.latent_steps, self.n_features * self.latent_dim), dtype="float32"), kept
+        cal = self._U.calendar_features(g0.ts)
         outs = []
-        for i in range(self.n_features):
-            xi = L.Lambda(lambda t, i=i: t[:, :, i:i + 1], output_shape=(s.window, 1))(inp)
-            h = L.Conv1D(s.filters, s.kernel, strides=2, padding="causal", activation="relu", name=f"f{i}_down1")(xi)
-            h = L.Conv1D(s.filters, s.kernel, strides=2, padding="causal", activation="relu", name=f"f{i}_down2")(h)
-            outs.append(L.Conv1D(s.latent_dim, 1, padding="causal", name=f"f{i}_latent")(h))
-        out = outs[0] if len(outs) == 1 else L.Concatenate()(outs)
-        model = keras.Model(inp, out)
-        for i in range(self.n_features):
-            for layer in ("down1", "down2", "latent"):
-                model.get_layer(f"f{i}_{layer}").set_weights([self.weights[f"f{i}_{layer}_kernel"], self.weights[f"f{i}_{layer}_bias"]])
-        model.trainable = False
-        return model
-
-    def transform(self, windows: np.ndarray) -> np.ndarray:
-        windows = np.asarray(windows, dtype="float32")
-        if windows.ndim != 3 or windows.shape[1] != self.spec.window or windows.shape[2] != self.n_features:
-            raise Refusal(f"ENCODER_INPUT_SHAPE: expected (B, {self.spec.window}, {self.n_features}), got {windows.shape}")
-        if windows.shape[0] == 0:
-            return np.empty((0, self.spec.latent_steps, self.n_features * self.spec.latent_dim), dtype="float32")
-        if self._model is None:
-            self._model = self._build()
-        return np.asarray(self._model.predict(windows, batch_size=1024, verbose=0), dtype="float32")
+        for i, e in enumerate(self._enc):
+            g = self._feature_grid(i)
+            batch = self._U.make_windows(g.ts, g.x, g.observed, anchors[keep], W, e["norm"], calendar=cal)
+            outs.append(np.asarray(e["encoder"].predict(batch.as_inputs(), batch_size=512, verbose=0), dtype="float32"))
+        return np.concatenate(outs, axis=-1), kept
 
 
 # ----------------------------------------------------------------------------- fit / predict
@@ -367,7 +392,7 @@ class FitReport:
     input_mode: str
     features: tuple
     standardiser: Standardiser
-    encoder: FrozenEncoder | None
+    encoder: object
     model: object
     weights_sha256: str
     initial_weights_sha256: str
@@ -390,15 +415,16 @@ class FitReport:
         return predict(self, X, idx)
 
 
-def _inputs_for(rep_or_mode, spec: PredictorSpec, encoder: FrozenEncoder | None, Z: np.ndarray, idx):
-    windows, kept = make_windows(Z, idx, spec.window)
+def _inputs_for(spec: PredictorSpec, encoder, Z: np.ndarray, idx):
     if encoder is not None:
-        windows = encoder.transform(windows)
+        windows, kept = encoder.latents(idx)
+        return np.asarray(windows, dtype="float32"), kept
+    windows, kept = make_windows(Z, idx, spec.window)
     return np.asarray(windows, dtype="float32"), kept
 
 
 def fit_predictor(spec: PredictorSpec, X: np.ndarray, y: np.ndarray, fit_idx, inner_idx, *, input_mode: str,
-                  encoder: FrozenEncoder | None, seed: int, features=None) -> FitReport:
+                  encoder, seed: int, features=None) -> FitReport:
     if input_mode not in INPUT_MODES:
         raise Refusal(f"UNKNOWN_INPUT_MODE: {input_mode}")
     if (input_mode == "RAW") != (encoder is None):
@@ -414,8 +440,8 @@ def fit_predictor(spec: PredictorSpec, X: np.ndarray, y: np.ndarray, fit_idx, in
     encoder_sha = encoder.weights_sha256 if encoder is not None else None
     standardiser = Standardiser.fit(X[fit_idx])
     Z = standardiser.apply(X)
-    Wf, kept_f = _inputs_for(None, spec, encoder, Z, fit_idx)
-    Wi, kept_i = _inputs_for(None, spec, encoder, Z, inner_idx)
+    Wf, kept_f = _inputs_for(spec, encoder, Z, fit_idx)
+    Wi, kept_i = _inputs_for(spec, encoder, Z, inner_idx)
     if kept_f.size < spec.batch_size or kept_i.size == 0:
         raise Refusal(f"TOO_FEW_WINDOWS: fit {kept_f.size} inner {kept_i.size}")
     yf = y[kept_f].astype("float32")
@@ -449,7 +475,7 @@ def fit_predictor(spec: PredictorSpec, X: np.ndarray, y: np.ndarray, fit_idx, in
 
 
 def fit_named(spec: PredictorSpec, X: np.ndarray, names, y, fit_idx, inner_idx, *, input_mode: str,
-              encoder: FrozenEncoder | None, seed: int) -> FitReport:
+              encoder, seed: int) -> FitReport:
     """Sort the columns by feature name before anything is built (FS4-02)."""
     names = list(names)
     if len(names) != X.shape[1]:
@@ -466,7 +492,7 @@ def predict(rep: FitReport, X: np.ndarray, idx) -> np.ndarray:
     """Predictions for origins ``idx`` (NaN where an origin lacks a full window history)."""
     idx = np.asarray(idx, dtype="int64")
     Z = rep.standardiser.apply(np.asarray(X, dtype="float64"))
-    W, kept = _inputs_for(None, rep.spec, rep.encoder, Z, idx)
+    W, kept = _inputs_for(rep.spec, rep.encoder, Z, idx)
     out = np.full(idx.shape, np.nan, dtype="float64")
     if kept.size:
         pred = np.asarray(rep.model.predict(W, batch_size=1024, verbose=0), dtype="float64").reshape(-1)

@@ -51,6 +51,12 @@ PRODUCTION_TRAINER = "R0_TEMPORAL_CONV1D"
 BUSINESS_MODE = W.BUSINESS_MODE
 UPDATE_MODE = W.UPDATE_MODE.value
 SEED = 0
+STAGE1_MODES = ("RAW",)
+STAGE2_MODES = ("RANDOM_ENCODER", "TRAINED_ENCODER")
+STAGE2_FAMILIES = ("SPEARMAN_CLUSTER", "MRMR", "JMI", "MRMR_CAUSAL", "JMI_CAUSAL", "UNIVARIATE_MI", "CAUSAL_SUPPORTED", "RANDOM_K",
+                   "ALL_ADMISSIBLE")
+STAGE2_TOP_N = 3
+STAGE2_RULE_PATH = HERE.parent / "docs" / "fs4" / "STAGE2_RULE.md"
 MIN_FIT_ROWS = 100
 NAIVE_RULE = "zero log-return (prediction 0) on the identical scored rows, same target and raw_log_return scale"
 SCORED_ROWS_RULE = ("rows whose decision time lies in [week.start, week.end) and whose bound target is finite; "
@@ -81,6 +87,21 @@ def _now() -> str:
     return W._now()
 
 
+def cgroup_peak_bytes() -> int | None:
+    """Peak memory of this process's cgroup (the crispdm-run scope); None when unreadable."""
+    try:
+        rel = Path("/proc/self/cgroup").read_text().strip().split("::", 1)[1]
+        return int((Path("/sys/fs/cgroup") / rel.lstrip("/") / "memory.peak").read_text())
+    except (OSError, IndexError, ValueError):
+        return None
+
+
+def _cpu_seconds() -> float:
+    r = resource.getrusage(resource.RUSAGE_SELF)
+    c = resource.getrusage(resource.RUSAGE_CHILDREN)
+    return float(r.ru_utime + r.ru_stime + c.ru_utime + c.ru_stime)
+
+
 def _hex(d: str) -> str:
     return d.split(":", 1)[1] if d.startswith("sha256:") else d
 
@@ -101,6 +122,10 @@ def _week_dict(w) -> dict:
             "cutoff": _iso(w.cutoff), "fit_start": _iso(w.fit_start)}
 
 
+def stage2_rule_sha256() -> str:
+    return hashlib.sha256(STAGE2_RULE_PATH.read_bytes()).hexdigest()
+
+
 def plan_digest(plan: dict) -> str:
     return digest({k: v for k, v in plan.items() if k not in ("plan_sha256", "built_utc")})
 
@@ -108,7 +133,8 @@ def plan_digest(plan: dict) -> str:
 # ----------------------------------------------------------------------------- plan
 def build_plan(consolidated: list[dict], seals: list[dict], *, validation_year: int, input_modes=("RAW",),
                bar_hours: dict, spec: P.PredictorSpec | None = None, encoder_spec: P.EncoderSpec | None = None,
-               evaluation_mode: str = BUSINESS_MODE, extractibility_sha256: str | None = None) -> dict:
+               evaluation_mode: str = BUSINESS_MODE, extractibility_sha256: str | None = None,
+               stage2_modes=STAGE2_MODES) -> dict:
     if evaluation_mode != BUSINESS_MODE:
         raise Refusal(f"EVALUATION_MODE_NOT_BUSINESS: {evaluation_mode!r}; LITERATURE_STATIC and monthly modes keep their "
                       "own identity (tools/fs_close_refit.py static diagnostic) and never enter this wrapper")
@@ -146,7 +172,8 @@ def build_plan(consolidated: list[dict], seals: list[dict], *, validation_year: 
     plan = {
         "schema": PLAN_SCHEMA, "evaluation_mode": BUSINESS_MODE, "update_mode": UPDATE_MODE,
         "validation_year": validation_year, "rolling_calendar_years": 4, "seed": SEED,
-        "input_modes": list(input_modes), "trainer": PRODUCTION_TRAINER,
+        "input_modes": list(input_modes), "stage2_modes": list(stage2_modes), "stage2_rule_sha256": stage2_rule_sha256(),
+        "stage2_families": list(STAGE2_FAMILIES), "stage2_top_n": STAGE2_TOP_N, "trainer": PRODUCTION_TRAINER,
         "predictor_spec": spec.to_dict(), "predictor_spec_sha256": spec.sha256(), "budget_sha256": P.budget_sha256(spec),
         "encoder_spec": encoder_spec.to_dict(), "encoder_spec_sha256": encoder_spec.sha256(),
         "populations": populations, "denominator": denominator,
@@ -166,7 +193,8 @@ def build_plan(consolidated: list[dict], seals: list[dict], *, validation_year: 
     return plan
 
 
-def enumerate_tasks(plan: dict, split: str = "validation", *, set_ids=None, test_authorization: str | None = None) -> list[dict]:
+def enumerate_tasks(plan: dict, split: str = "validation", *, set_ids=None, test_authorization: str | None = None,
+                    modes=None) -> list[dict]:
     if split not in ("validation", "test"):
         raise Refusal("SPLIT_INVALID")
     weeks = plan["weeks"] if split == "validation" else plan["test_weeks"]
@@ -176,12 +204,12 @@ def enumerate_tasks(plan: dict, split: str = "validation", *, set_ids=None, test
     for s in plan["sets"]:
         if set_ids is not None and s["set_id"] not in set_ids:
             continue
-        for mode in plan["input_modes"]:
+        for mode in (plan["input_modes"] if modes is None else modes):
             for w in weeks:
                 payload = {"schema": TASK_SCHEMA, "plan_sha256": plan["plan_sha256"], "population_id": s["population_id"],
                            "identity": s["identity"], "set_id": s["set_id"], "target_id": s["target_id"],
                            "horizon_hours": s["horizon_hours"], "members": list(s["members"]), "n_features": s["n_features"],
-                           "input_mode": mode, "split": split, "validation_year": plan["validation_year"],
+                           "input_mode": mode, "stage": 1 if mode in plan["input_modes"] else 2, "split": split, "validation_year": plan["validation_year"],
                            "week": {k: w[k] for k in ("ordinal", "start", "end", "cutoff", "fit_start")}, "seed": plan["seed"],
                            "predictor_spec_sha256": plan["predictor_spec_sha256"], "encoder_spec_sha256": plan["encoder_spec_sha256"]}
                 if split == "test":
@@ -256,8 +284,9 @@ class DataStore:
         names_t, Xt, ts_t, ids_t, tg_t, dig_t = cls._read(train_features, train_targets, "train")
         validation_first_read_utc = _now()
         names_v, Xv, ts_v, ids_v, tg_v, dig_v = cls._read(val_features, val_targets, "validation")
-        if names_v != names_t or set(tg_v) != set(tg_t):
+        if set(names_v) != set(names_t) or len(names_v) != len(names_t) or set(tg_v) != set(tg_t):
             raise Refusal("TRAIN_AND_VALIDATION_SCHEMAS_DIFFER")
+        Xv = Xv[:, [names_v.index(n) for n in names_t]]      # validation batches may be split differently: align by name
         X = np.vstack([Xt, Xv])
         ts = np.concatenate([ts_t, ts_v])
         row_ids = np.concatenate([ids_t, ids_v])
@@ -267,6 +296,17 @@ class DataStore:
         order = np.argsort(ts, kind="stable")
         return cls(population, names_t, X[order], ts[order], row_ids[order], {n: v[order] for n, v in targets.items()},
                    {**dig_t, **dig_v}, bar_hours, validation_first_read_utc)
+
+    @classmethod
+    def from_train_only(cls, population: str, train_features, train_targets, *, bar_hours: int) -> "DataStore":
+        """Cost-pilot store: TRAIN files only, no VALIDATION byte is opened."""
+        names, X, ts, ids, tg, dig = cls._read(train_features, train_targets, "train")
+        order = np.argsort(ts, kind="stable")
+        return cls(population, names, X[order], ts[order], ids[order], {n: v[order] for n, v in tg.items()}, dig, bar_hours, "NOT_READ_TRAIN_ONLY_PILOT")
+
+    @property
+    def max_ts(self) -> int:
+        return int(self.ts[-1])
 
     def range_idx(self, start_iso: str, end_iso: str) -> np.ndarray:
         lo = np.searchsorted(self.ts, int(_parse(start_iso).timestamp()), side="left")
@@ -287,19 +327,16 @@ def r0_trainer_factory(names, encoder_spec: P.EncoderSpec):
     return trainer
 
 
-def _encoder_for(input_mode: str, members, encoder_spec: P.EncoderSpec, seed: int, encoder_weights_dir):
+def _encoder_for(input_mode: str, members, Xsub, store, task, encoder_spec: P.EncoderSpec, seed: int, results_root, extractor_code):
     if input_mode == "RAW":
         return None
-    feats = P.canonical_features(members)
-    if input_mode == "RANDOM_ENCODER":
-        return P.FrozenEncoder.from_random(encoder_spec, len(feats), seed=seed)
-    if encoder_weights_dir is None:
-        raise Refusal("ENCODER_WEIGHTS_DIR_REQUIRED for TRAINED_ENCODER (the phase-4 runner's chosen weights)")
-    paths = {f: Path(encoder_weights_dir) / f"{f}.npz" for f in feats}
-    missing = [f for f, p in paths.items() if not p.is_file()]
-    if missing:
-        raise Refusal(f"ENCODER_WEIGHTS_MISSING_FOR_FEATURE: {missing[:5]}")
-    return P.FrozenEncoder.from_feature_files(encoder_spec, paths, feats)
+    if results_root is None or extractor_code is None:
+        raise Refusal("ENCODER_ARMS_NEED --runner-results and --extractor-code (the runner's retained terminals and pinned code)")
+    try:
+        return P.RunnerEncoderBank(encoder_spec, members, store.ts, Xsub, arm=input_mode, population_id=store.population,
+                                   identity=task["identity"], results_root=results_root, code_dir=extractor_code, seed=seed)
+    except P.Refusal as exc:
+        raise Refusal(str(exc)) from exc
 
 
 # ----------------------------------------------------------------------------- one task
@@ -307,13 +344,13 @@ def _failed(base: dict, reason: str, started: float) -> dict:
     out = dict(base)
     out.update({"disposition": "FAILED", "reason": reason, "metrics_absent_reason": reason,
                 "cost": out.get("cost") or {"fit_seconds": 0.0, "wall_seconds": time.time() - started, "epochs": 0, "best_epoch": 0,
-                                            "updates": 0, "peak_rss_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024,
+                                            "updates": 0, "peak_rss_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024, "peak_cgroup_bytes": cgroup_peak_bytes(), "cpu_seconds": _cpu_seconds(),
                                             "n_params": 0}})
     out["result_sha256"] = digest({k: v for k, v in out.items() if k != "result_sha256"})
     return out
 
 
-def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | None = None, encoder_weights_dir=None,
+def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | None = None, results_root=None, extractor_code=None,
              spec: P.PredictorSpec | None = None, encoder_spec: P.EncoderSpec | None = None) -> dict:
     started = time.time()
     if task.get("schema") != TASK_SCHEMA or not task.get("task_id"):
@@ -399,8 +436,10 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
     standardiser = P.Standardiser.fit(Xsub[fit_idx])
     base["standardiser_sha256"] = standardiser.sha256()
     try:
-        encoder = _encoder_for(task["input_mode"], members, encoder_spec, SEED, encoder_weights_dir)
-    except Refusal:
+        encoder = _encoder_for(task["input_mode"], members, Xsub, store, task, encoder_spec, SEED, results_root, extractor_code)
+    except Refusal as exc:
+        if "RUNNER_RESULT_MISSING" in str(exc):     # a member without a runner terminal: a typed disposition, never dropped
+            return _failed(base, f"ENCODER_NOT_AVAILABLE: {exc}", started)
         raise
     fit = trainer or r0_trainer_factory(list(members), encoder_spec)
     t0 = time.time()
@@ -413,7 +452,7 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
     yt = y[scored]
     cost = {"fit_seconds": float(fit_seconds), "wall_seconds": float(time.time() - started), "epochs": int(rep.epochs_run),
             "best_epoch": int(rep.best_epoch), "updates": int(rep.updates), "peak_rss_bytes": int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024),
-            "n_params": int(rep.n_params)}
+            "peak_cgroup_bytes": cgroup_peak_bytes(), "cpu_seconds": _cpu_seconds(), "n_params": int(rep.n_params)}
     base.update({"model_sha256": rep.weights_sha256, "architecture_sha256": rep.architecture_sha256,
                  "encoder_sha256": rep.encoder_sha256, "trainer_budget_sha256": rep.budget_sha256, "cost": cost})
     if not np.all(np.isfinite(pred)):
@@ -491,6 +530,52 @@ def choose_winner(aggregates: dict) -> dict | None:
             "aggregate_rule": AGGREGATE_RULE, "tie_rule": TIE_RULE, "ranked": [a["set_id"] for a in ranked]}
 
 
+def stage2_set_ids(plan: dict, raw_aggregates: dict) -> dict:
+    """The stage-2 list, computed mechanically from the stage-1 RAW aggregates (STAGE2_RULE.md).
+
+    raw_aggregates: population -> target -> {set_id: aggregate} as produced by ``aggregate_results``.
+    """
+    sets = {s["set_id"]: s for s in plan["sets"]}
+    chosen: dict[str, list] = {}
+    for pop, targets in sorted(raw_aggregates.items()):
+        for target, agg in sorted(targets.items()):
+            for fam in plan["stage2_families"]:
+                cand = [a for a in agg.values() if fam in sets[a["set_id"]]["methods"] and a["eligible"]
+                        and a["mean_weekly_skill_mae"] is not None and np.isfinite(a["mean_weekly_skill_mae"])]
+                cand.sort(key=lambda a: (-a["mean_weekly_skill_mae"], a["n_features"], a["fit_seconds_total"], a["set_id"]))
+                for rank, a in enumerate(cand[:plan["stage2_top_n"]], 1):
+                    chosen.setdefault(a["set_id"], []).append({"population_id": pop, "target_id": target, "family": fam, "rank": rank})
+    for sid, s in sets.items():
+        if "ALL_ADMISSIBLE" in s["methods"]:
+            chosen.setdefault(sid, []).append({"population_id": s["population_id"], "target_id": s["target_id"],
+                                               "family": "ALL_ADMISSIBLE", "rank": 0, "reason": "reference arm, always included"})
+    body = {"stage2_rule_sha256": plan["stage2_rule_sha256"], "plan_sha256": plan["plan_sha256"],
+            "set_ids": sorted(chosen), "reasons": {k: chosen[k] for k in sorted(chosen)},
+            "source_aggregates_sha256": digest({p: {t: {k: {x: v[x] for x in ("mean_weekly_skill_mae", "weeks_completed", "eligible", "n_features", "fit_seconds_total")}
+                                                        for k, v in a.items()} for t, a in tt.items()} for p, tt in raw_aggregates.items()})}
+    body["list_sha256"] = digest(body)
+    return body
+
+
+def encoder_comparison(aggregates_by_mode: dict, raw_mode: str = "RAW") -> dict:
+    """Per set: RAW vs TRAINED vs RANDOM mean weekly skill on identical weeks; RANDOM is the control."""
+    out = {}
+    raw = aggregates_by_mode.get(raw_mode, {})
+    for sid, a_raw in raw.items():
+        row = {"raw": a_raw["mean_weekly_skill_mae"]}
+        for mode in STAGE2_MODES:
+            a = aggregates_by_mode.get(mode, {}).get(sid)
+            row[mode.lower()] = a["mean_weekly_skill_mae"] if a else None
+            row[mode.lower() + "_weeks_completed"] = a["weeks_completed"] if a else None
+        if row.get("trained_encoder") is not None and row["raw"] is not None:
+            row["trained_minus_raw"] = row["trained_encoder"] - row["raw"]
+        if row.get("trained_encoder") is not None and row.get("random_encoder") is not None:
+            row["trained_minus_random"] = row["trained_encoder"] - row["random_encoder"]
+        if len(row) > 1 and any(k in row for k in ("trained_minus_raw", "trained_minus_random")):
+            out[sid] = row
+    return out
+
+
 # ----------------------------------------------------------------------------- CLI
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -499,18 +584,29 @@ def main(argv=None) -> int:
     run.add_argument("--population", required=True)
     run.add_argument("--train-features", nargs="+", required=True)
     run.add_argument("--train-targets", required=True)
-    run.add_argument("--val-features", nargs="+", required=True)
-    run.add_argument("--val-targets", required=True)
+    run.add_argument("--val-features", nargs="+")
+    run.add_argument("--val-targets")
     run.add_argument("--bar-hours", type=int, required=True)
     run.add_argument("--trainer", choices=(PRODUCTION_TRAINER,), default=PRODUCTION_TRAINER)
-    run.add_argument("--encoder-weights-dir", help="per-feature <feature>.npz chosen weights (TRAINED_ENCODER only)")
+    run.add_argument("--runner-results", help="directory of the phase-4 runner's retained <task_id>/result.json + chosen.weights.h5 (encoder arms)")
+    run.add_argument("--extractor-code", help="pinned feature-extractor checkout (the runner's builders), encoder arms only")
+    run.add_argument("--pilot-train-only", action="store_true", help="cost pilot: read TRAIN only; refuses any week ending after TRAIN")
     run.add_argument("--test-freeze", help="TEST_FREEZE.json; required only for test-split tasks")
     a = ap.parse_args(argv)
     task = json.load(sys.stdin)
-    store = DataStore.from_paths(a.population, a.train_features, a.train_targets, a.val_features, a.val_targets, bar_hours=a.bar_hours)
+    if a.pilot_train_only:
+        store = DataStore.from_train_only(a.population, a.train_features, a.train_targets, bar_hours=a.bar_hours)
+        if _parse(task["week"]["end"]).timestamp() > store.max_ts:
+            print(canonical({"error": "PILOT_WEEK_ENDS_AFTER_TRAIN", "task_id": task.get("task_id")}), file=sys.stderr)
+            return 2
+    elif not (a.val_features and a.val_targets):
+        print(canonical({"error": "VALIDATION_FILES_REQUIRED unless --pilot-train-only"}), file=sys.stderr)
+        return 2
+    else:
+        store = DataStore.from_paths(a.population, a.train_features, a.train_targets, a.val_features, a.val_targets, bar_hours=a.bar_hours)
     freeze = json.loads(Path(a.test_freeze).read_text()) if a.test_freeze else None
     try:
-        result = run_task(task, store, test_freeze=freeze, encoder_weights_dir=a.encoder_weights_dir)
+        result = run_task(task, store, test_freeze=freeze, results_root=a.runner_results, extractor_code=a.extractor_code)
     except Refusal as exc:
         print(canonical({"error": str(exc), "task_id": task.get("task_id")}), file=sys.stderr)
         return 2
