@@ -15,4 +15,4 @@ the day it did not, and the whole point of the dimension is that two readers can
 from .provider import PredictorDuckdbStore, backend
 
 __all__ = ["PredictorDuckdbStore", "backend", "__version__"]
-__version__ = "0.1.4"
+__version__ = "0.1.5"

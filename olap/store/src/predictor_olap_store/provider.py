@@ -22,7 +22,10 @@ CAPABILITIES = ("describe", "storage", "discover", "query",
                 "write_feature_selection_envelope", "reconcile_feature_selection",
                 # Phase-2/3 feature-selection rows: one owned write route, paged readback and
                 # reconciliation; workers never receive the database path.
-                "write_fs_phase23_rows", "read_fs_phase23_rows", "reconcile_fs_phase23")
+                "write_fs_phase23_rows", "read_fs_phase23_rows", "reconcile_fs_phase23",
+                # Phase-4 extractibility terminals: one owned write route keyed by task_id, paged
+                # readback and reconciliation against the controller's expected counts (FS4-13).
+                "write_fs4_terminals", "read_fs4_terminals", "reconcile_fs4")
 
 
 def _source_commit() -> str | None:

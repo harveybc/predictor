@@ -649,6 +649,8 @@ class Plugin:
         statements.extend(feature_selection_ddl(t, dialect))
         from predictor_olap_store.fs_phase23_store import ddl as fs_phase23_ddl
         statements.extend(fs_phase23_ddl(t, dialect))
+        from predictor_olap_store.fs4_store import ddl as fs4_ddl
+        statements.extend(fs4_ddl(t, dialect))
         return statements
 
     def _ensure_schema(self, engine):
@@ -846,6 +848,45 @@ class Plugin:
             raise RuntimeError(f"fs_phase23 schema not ready: {self._schema_error}")
         with self.engine().connect() as connection:
             return fs.reconcile_document(connection, document, backend=self._fs_phase23_backend_name(),
+                                         qualified=self._qualified)
+
+    # -- phase-4 extractibility terminals (one implementation: fs4_store) ------------------
+    def write_fs4_terminals(self, document: dict):
+        """Store one submission ({plan_sha256, terminals, host_role?}) atomically through the owner."""
+        from predictor_olap_store import fs4_store as fs4
+        if self._engine is None:
+            self.engine()
+        if self._schema_error is not None:
+            raise RuntimeError(f"fs4 schema not ready: {self._schema_error}")
+        lock = getattr(self, "_write_lock", None)
+        if lock is None:
+            with self.write_engine().begin() as connection:
+                return fs4.write_document(connection, document, backend=self._fs_phase23_backend_name(),
+                                         qualified=self._qualified)
+        with lock:
+            with self.write_engine().begin() as connection:
+                return fs4.write_document(connection, document, backend=self._fs_phase23_backend_name(),
+                                         qualified=self._qualified)
+
+    def read_fs4_terminals(self, document: dict):
+        """Terminals exactly as submitted, paged by task_id ({plan_sha256, task_id?, population_id?, ...})."""
+        from predictor_olap_store import fs4_store as fs4
+        if self._engine is None:
+            self.engine()
+        if self._schema_error is not None:
+            raise RuntimeError(f"fs4 schema not ready: {self._schema_error}")
+        with self.engine().connect() as connection:
+            return fs4.read_document(connection, document, qualified=self._qualified)
+
+    def reconcile_fs4(self, document: dict):
+        """Stored counts, triple agreement and receipt coverage for one plan ({plan_sha256, expected?, receipts?})."""
+        from predictor_olap_store import fs4_store as fs4
+        if self._engine is None:
+            self.engine()
+        if self._schema_error is not None:
+            raise RuntimeError(f"fs4 schema not ready: {self._schema_error}")
+        with self.engine().connect() as connection:
+            return fs4.reconcile_document(connection, document, backend=self._fs_phase23_backend_name(),
                                          qualified=self._qualified)
 
     def reconcile_feature_selection(self, request: dict):

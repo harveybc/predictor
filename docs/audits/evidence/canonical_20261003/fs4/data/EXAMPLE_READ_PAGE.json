@@ -1,0 +1,52 @@
+{
+  "count": 1,
+  "next_after": "3b1c16c380dae2e99760d8b7603b77d7026d6ae75da1f0e8b0dd3d7b649bcbf4",
+  "terminals": [
+    {
+      "attempt": 1,
+      "finished_at": 1759800014.0,
+      "host_role": "coordinator",
+      "owner": "worker_a-cpu1",
+      "plan_sha256": "2b51180811e2e3ac03814d9bd1adc16a09c7b9cd122f949c1d9d024f70afcc00",
+      "result": {
+        "code_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "cost": {
+          "cpu_s": 12.5,
+          "peak_ram_bytes": 900000000,
+          "peak_vram_bytes": 0,
+          "wall_s": 14.0
+        },
+        "input_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "mask_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "metrics": {
+          "mae": 0.1,
+          "mse": 0.02,
+          "naive_mae": 0.2
+        },
+        "model_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "population_n": 20,
+        "rows_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "seed": 0,
+        "status": "COMPLETE",
+        "task_id": "3b1c16c380dae2e99760d8b7603b77d7026d6ae75da1f0e8b0dd3d7b649bcbf4",
+        "training": {
+          "chosen_epoch": 7,
+          "updates": 1400
+        }
+      },
+      "schema": "fs4.extractibility.terminal.v1",
+      "started_at": 1759800000.0,
+      "task": {
+        "arm": "RAW",
+        "feature_id": "px.rv5",
+        "fold_id": "inner_2023",
+        "identity": "train-v1",
+        "population_id": "EURUSD",
+        "schema": "fs4.extractibility.task.v1",
+        "seed": 0,
+        "task_id": "3b1c16c380dae2e99760d8b7603b77d7026d6ae75da1f0e8b0dd3d7b649bcbf4"
+      },
+      "terminal_sha256": "886d48398cade815e69aa60baa93f3eefaa9d99c6b660cde48a6711fc57699c2"
+    }
+  ]
+}

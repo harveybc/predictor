@@ -20,7 +20,7 @@ __all__ = ["PredictorOlapStore", "backend", "__version__", "SOURCE_SHA256",
            "SOURCE_REVISION", "SOURCE_PATH", "MODULE_SHA256", "PENDING_REVIEW",
            "ENVELOPE_SOURCE_PATH", "ENVELOPE_SOURCE_SHA256",
            "FEATURE_SELECTION_CONTRACT_SHA256", "RECONCILIATION_CONTRACT_SHA256"]
-__version__ = "0.1.5"
+__version__ = "0.1.6"
 
 #: The digest of the deployed query plugin this module was copied from, and the revision
 #: that holds it. Both are checked by the package's tests. These describe PRODUCTION and are
@@ -51,7 +51,7 @@ RECONCILIATION_CONTRACT_SHA256 = (
 #: candidate change is awaiting production review, and PENDING_REVIEW says which one. The
 #: package's tests require the two to be consistent: a divergence without a stated reason is
 #: a failure, and a stated reason without a divergence is one too.
-MODULE_SHA256 = "cb06ab57e82f8fc6c23fe64b6ddf4a0a90068b57d69e450e9fd59810d7e352f9"
+MODULE_SHA256 = "98489130b33bec26ff704374df0a111b27e51e877ab28655385ddd7c89736df1"
 PENDING_REVIEW = (
     "S2 availability-contract dimension: additive `gov_availability_contract` table, the "
     "`gov_delivery_availability` view and `write_availability_contracts` / "
@@ -74,5 +74,10 @@ PENDING_REVIEW = (
     "tables with UNIQUE (run_id, row_key) and a typed identity key, one coverage view) appended "
     "to the start-up DDL, and `write_fs_phase23_rows` / `read_fs_phase23_rows` / "
     "`reconcile_fs_phase23` for the host's /api/v2/fs-phase23 routes; proved on a throwaway "
-    "DuckDB file and NOT deployed."
+    "DuckDB file and NOT deployed. Phase-4 extractibility (2026-10-07): additive fs4 relations "
+    "(feature_extractibility_v1 keyed by task_id with UNIQUE over the typed identity and CHECKs "
+    "on arm, seed = 0 and finite metrics; fs4_load_receipt, fs4_load_receipt_task; two views) "
+    "appended to the start-up DDL, and `write_fs4_terminals` / `read_fs4_terminals` / "
+    "`reconcile_fs4` for the host's /api/v2/fs4 routes; proved on a throwaway DuckDB file "
+    "and NOT deployed."
 )

@@ -81,9 +81,13 @@ FS_PHASE23_TABLES = (
     "feature_filter_subsets",
 )
 FS_PHASE23_VIEWS = ("fs_phase23_coverage",)
+# Phase-4 extractibility terminals (feature x fold x arm) and their receipts are part of the
+# boundary too: a phase-4 snapshot without them is an UNVERIFIED_COPY.
+FS4_TABLES = ("feature_extractibility_v1", "fs4_load_receipt", "fs4_load_receipt_task")
+FS4_VIEWS = ("fs4_extractibility_coverage", "fs4_extractibility_triples")
 
 SNAPSHOT_RELATIONS = (GOVERNANCE + FEATURE_SELECTION_TABLES + FEATURE_SELECTION_VIEWS
-                      + FS_PHASE23_TABLES + FS_PHASE23_VIEWS)
+                      + FS_PHASE23_TABLES + FS_PHASE23_VIEWS + FS4_TABLES + FS4_VIEWS)
 
 #: The dependency closure of a governed terminal that lives outside gov_*: the campaign and run
 #: identity the loader records, and the dimensions those rows point at.
