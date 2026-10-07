@@ -193,7 +193,10 @@ def complete(path, owner, result, now=None):
     return {"task_id": result["task_id"], "accepted": True}
 
 
-def fail(path, owner, task_id, reason, now=None):
+def fail(path, owner, task_id, reason, now=None, technical=False):
+    """Record a failure. A typed (scientific) refusal is terminal on the first call. A technical
+    failure returns the task to PENDING while attempts remain (MAX_ATTEMPTS in total) and becomes
+    terminal FAILED only when they are exhausted; the last reason is kept either way."""
     now = time.time() if now is None else now
     if not reason or len(reason) > 1000:
         raise Refusal("INVALID_REASON")
@@ -202,9 +205,13 @@ def fail(path, owner, task_id, reason, now=None):
         row = con.execute("SELECT * FROM tasks WHERE task_id=?", (task_id,)).fetchone()
         if row is None or row["state"] != "LEASED" or row["owner"] != owner:
             raise Refusal("NO_LEASE_FOR_FAILURE")
+        if technical and row["attempt"] < MAX_ATTEMPTS:
+            con.execute("""UPDATE tasks SET state='PENDING',owner=NULL,lease_until=NULL,result=?
+                WHERE task_id=?""", (_canonical({"last_technical_failure": reason, "attempt": row["attempt"]}), task_id))
+            return {"task_id": task_id, "failed": True, "retry": True, "attempt": row["attempt"]}
         con.execute("UPDATE tasks SET state='FAILED',finished_at=?,result=? WHERE task_id=?",
-                    (now, _canonical({"reason": reason}), task_id))
-    return {"task_id": task_id, "failed": True}
+                    (now, _canonical({"reason": reason, "attempt": row["attempt"]}), task_id))
+    return {"task_id": task_id, "failed": True, "retry": False}
 
 
 def status(path, now=None, population=None, feature=None, fold=None, arm=None, owner=None):
@@ -288,6 +295,8 @@ def main():
     bad.add_argument("--owner", required=True)
     bad.add_argument("--task-id", required=True)
     bad.add_argument("--reason", required=True)
+    bad.add_argument("--technical", action="store_true",
+                     help="technical failure: retry up to MAX_ATTEMPTS; without it the failure is a terminal typed refusal")
     pulse = sub.add_parser("heartbeat")
     pulse.add_argument("--owner", required=True)
     pulse.add_argument("--task-id", required=True)
@@ -307,7 +316,7 @@ def main():
         elif args.action == "heartbeat":
             out = heartbeat(args.db, args.owner, args.task_id)
         else:
-            out = fail(args.db, args.owner, args.task_id, args.reason)
+            out = fail(args.db, args.owner, args.task_id, args.reason, technical=args.technical)
     except (Refusal, OSError, sqlite3.Error, json.JSONDecodeError) as exc:
         print(_canonical({"error": str(exc)}), file=sys.stderr)
         raise SystemExit(2) from exc

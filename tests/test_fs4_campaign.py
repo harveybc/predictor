@@ -101,3 +101,26 @@ def test_calendar_is_context_and_arms_require_identical_rows(tmp_path):
     with pytest.raises(campaign.Refusal, match="PAIRED_INPUT_ROWS_MASK_OR_NAIVE_MISMATCH"):
         campaign.complete(db, "worker", {**result, "task_id": random["task_id"],
                                          "metrics": {"mae": 0.1, "naive_mae": 0.3}}, now=104)
+
+
+def test_typed_refusal_is_terminal_and_technical_failure_retries_three_times(tmp_path):
+    source = tmp_path / "candidates.json"
+    candidate_file(source)
+    db = tmp_path / "queue.sqlite"
+    campaign.initialize(db, [source], ["f1"])
+    only = campaign.list_tasks(db, feature="a", fold="f1", arm="RAW")[0]["task_id"]
+    task = campaign.claim(db, "w", task_id=only, now=100)
+    out = campaign.fail(db, "w", only, "NO_TRAIN_OBSERVATIONS no rows", now=101)
+    assert out["retry"] is False
+    assert campaign.claim(db, "w", task_id=only, now=102) is None  # terminal: never claimed again
+    assert campaign.status(db, feature="a", fold="f1", arm="RAW")["failed"] == 1
+    other = campaign.list_tasks(db, feature="b", fold="f1", arm="RAW")[0]["task_id"]
+    for attempt in (1, 2):
+        assert campaign.claim(db, "w", task_id=other, now=200 + attempt)["attempt"] == attempt
+        assert campaign.fail(db, "w", other, "TECHNICAL_FAILURE rc=1", now=210 + attempt, technical=True)["retry"] is True
+        assert campaign.status(db, feature="b", fold="f1", arm="RAW")["pending"] == 1
+    assert campaign.claim(db, "w", task_id=other, now=300)["attempt"] == 3
+    last = campaign.fail(db, "w", other, "TECHNICAL_FAILURE rc=1", now=301, technical=True)
+    assert last["retry"] is False
+    assert campaign.status(db, feature="b", fold="f1", arm="RAW")["failed"] == 1
+    assert campaign.claim(db, "w", task_id=other, now=302) is None

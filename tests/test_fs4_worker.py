@@ -38,6 +38,10 @@ def good_result():
     return {"task_id": TASK_ID, "status": "COMPLETE", "seed": 0, "metrics": {"mae": 0.1, "naive_mae": 0.2}}
 
 
+def typed_stdout(code="NO_TRAIN_OBSERVATIONS", status="NOT_AVAILABLE_FOR_TRAIN"):
+    return json.dumps({"status": status, "code": code, "task_id": TASK_ID, "reason": "no rows before the fold"})
+
+
 class FakeController:
     def __init__(self, reject_complete=False):
         self.calls = []
@@ -154,3 +158,50 @@ def test_cap_parsing():
     assert worker.cap_bytes("4650M") == 4650 * 1024 ** 2
     with pytest.raises(ValueError):
         worker.cap_bytes("four")
+
+
+def test_claim_travels_in_environment_because_crispdm_run_gives_devnull_stdin(tmp_path, monkeypatch):
+    fake = FakeController()
+    monkeypatch.setattr(worker, "controller", fake)
+    seen = tmp_path / "seen.json"
+    runner = script(tmp_path, f"cat >/dev/null; printf '%s' \"$FS4_CLAIM_JSON\" > {seen}; echo '{json.dumps(good_result())}'")
+    args = make_args(tmp_path, runner)
+    # the stand-in launcher gives its child /dev/null exactly like crispdm-run
+    launcher = Path(args.crispdm_run)
+    launcher.write_text("#!/usr/bin/env bash\nwhile [[ $1 != -- ]]; do shift; done; shift; exec \"$@\" </dev/null\n")
+    worker.run_one(args, task())
+    assert json.loads(seen.read_text())["task_id"] == TASK_ID
+    assert json.loads(seen.read_text())["arm"] == "RAW"
+
+
+@pytest.mark.parametrize("code", ["NO_TRAIN_OBSERVATIONS", "INSUFFICIENT_TRAIN_FIT_WINDOWS", "REFUSED_UNKNOWN_FEATURE"])
+def test_declared_typed_refusal_is_terminal_not_technical(tmp_path, monkeypatch, code):
+    fake = FakeController()
+    monkeypatch.setattr(worker, "controller", fake)
+    runner = script(tmp_path, f"cat >/dev/null; echo '{typed_stdout(code)}'; echo '{code} no rows' >&2; exit 3")
+    out = worker.run_one(make_args(tmp_path, runner), task())
+    assert out["typed_refusal"] is True and out["reason"].startswith(code)
+    action, extra, _ = fake.calls[-1]
+    assert action == "fail" and "--technical" not in extra
+
+
+def test_gpu_not_verified_and_unknown_exceptions_are_technical(tmp_path, monkeypatch):
+    fake = FakeController()
+    monkeypatch.setattr(worker, "controller", fake)
+    gpu = script(tmp_path, f"cat >/dev/null; echo '{typed_stdout('REFUSED_GPU_NOT_VERIFIED', 'GPU_NOT_VERIFIED')}'; echo 'REFUSED_GPU_NOT_VERIFIED no device' >&2; exit 4")
+    out = worker.run_one(make_args(tmp_path, gpu), task())
+    assert out["typed_refusal"] is False and "REFUSED_" not in out["reason"]
+    assert fake.calls[-1][2] is None and "--technical" in fake.calls[-1][1]
+    crash = script(tmp_path, f"cat >/dev/null; echo '{typed_stdout('REFUSED_MemoryError', 'REFUSED')}'; exit 3")
+    out = worker.run_one(make_args(tmp_path, crash), task())
+    assert out["typed_refusal"] is False and "--technical" in fake.calls[-1][1]
+    segv = script(tmp_path, "cat >/dev/null; echo boom >&2; exit 139")
+    out = worker.run_one(make_args(tmp_path, segv), task())
+    assert out["typed_refusal"] is False and out["reason"].startswith("TECHNICAL_FAILURE rc=139")
+
+
+def test_typed_refusal_recovered_from_last_stderr_line_when_stdout_is_lost():
+    kind, reason = worker.classify_exit("", 3, "noise\nINSUFFICIENT_TRAIN_SCORING_WINDOWS 12 < 30")
+    assert kind == "typed" and reason == "INSUFFICIENT_TRAIN_SCORING_WINDOWS 12 < 30"
+    assert worker.classify_exit("", 3, "REFUSED_GPU_NOT_VERIFIED x")[0] == "technical"
+    assert worker.classify_exit("", 1, "NO_TRAIN_OBSERVATIONS x")[0] == "technical"
