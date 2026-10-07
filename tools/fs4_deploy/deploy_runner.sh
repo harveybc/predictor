@@ -4,7 +4,7 @@
 #   deploy_runner.sh --ssh ALIAS --predictor-commit SHA --fe-commit FULL_SHA --python PY
 #                    [--ld-file FILE] --input ROLE=PATH ... [--state ~/.local/state/canonical_20261003/fs4]
 #
-# The feature-extractor checkout <state>/code/fe_<first8 of FE_COMMIT> must already exist on the worker as a
+# The feature-extractor checkout <state>/code/fe_<first 7 of FE_COMMIT> must already exist on the worker as a
 # git clone whose HEAD is exactly FE_COMMIT and whose tree is clean (so the runner's code_commit is real).
 # Steps (idempotent): `git archive` of the predictor commit -> <state>/code/predictor-<SHA>/ (tree digest),
 # PREDICTOR_CURRENT symlink; <state>/bin/fs4-runner written: it answers `--self-check` with JSON naming the
@@ -32,7 +32,7 @@ ssh -o BatchMode=yes -o ConnectTimeout=20 "$SSH" "mkdir -p $STATE/code && cat > 
 ssh -o BatchMode=yes -o ConnectTimeout=20 "$SSH" bash -s -- "$FE_COMMIT" "$PRED_COMMIT" "$PRED_SHA" "$PY" "$LD_FILE" "$STATE" "${INPUTS[@]}" <<'REMOTE'
 set -euo pipefail
 FE="$1"; PRED="$2"; PRED_SHA="$3"; PY="${4/#\~/$HOME}"; LDF="${5/#\~/$HOME}"; STATE="${6/#\~/$HOME}"; shift 6
-CODE="$STATE/code"; BIN="$STATE/bin"; FEDIR="$CODE/fe_${FE:0:8}"
+CODE="$STATE/code"; BIN="$STATE/bin"; FEDIR="$CODE/fe_${FE:0:7}"
 mkdir -p "$BIN" "$STATE/terminals" "$STATE/logs"
 [[ "$(git -C "$FEDIR" rev-parse HEAD)" == "$FE" ]] || { echo "feature-extractor checkout is not at $FE" >&2; exit 3; }
 [[ -z "$(git -C "$FEDIR" status --porcelain --untracked-files=no)" ]] || { echo "feature-extractor checkout is not clean" >&2; exit 3; }
