@@ -204,11 +204,55 @@ def _keras():
     return keras
 
 
+def _grouped_layer_class():
+    """GroupedCausalConv1D: per-group causal temporal convolution as ONE batched matmul over groups.
+
+    ``groups`` independent branches (group g sees only its own ``cin`` channels), kernel ``k`` over time, strictly causal
+    (left zero padding). With ``strides > 1`` the outputs are taken at t = strides-1, 2*strides-1, ... so the LAST output
+    always covers the newest input row (the origin): 24 -> 12 -> 6 never discards the most recent observation.
+    Equivalent to Conv1D(groups=G) but without the slow CPU grouped-convolution kernel."""
+    keras = _keras()
+    tf = _tf()
+
+    class GroupedCausalConv1D(keras.layers.Layer):
+        def __init__(self, groups, filters_per_group, kernel_size, strides=1, activation=None, **kw):
+            super().__init__(**kw)
+            self.groups, self.fpg, self.k, self.strides = groups, filters_per_group, kernel_size, strides
+            self.act = keras.activations.get(activation)
+
+        def build(self, input_shape):
+            c = int(input_shape[-1])
+            if c % self.groups:
+                raise Refusal("GROUPS_MUST_DIVIDE_CHANNELS")
+            self.cin = c // self.groups
+            fan_in, fan_out = self.k * self.cin, self.fpg
+            self.w = self.add_weight(name="kernel", shape=(self.groups, self.k * self.cin, self.fpg), initializer=keras.initializers.GlorotUniform())
+            self.b = self.add_weight(name="bias", shape=(self.groups, self.fpg), initializer="zeros")
+
+        def call(self, x):
+            t = tf.shape(x)[1]
+            x = tf.reshape(x, (-1, x.shape[1], self.groups, self.cin))
+            xp = tf.pad(x, [[0, 0], [self.k - 1, 0], [0, 0], [0, 0]])
+            cols = tf.concat([xp[:, i:i + x.shape[1]] for i in range(self.k)], axis=-1)        # (B, T, G, k*cin)
+            if self.strides > 1:
+                cols = cols[:, self.strides - 1::self.strides]
+            y = tf.einsum("btgi,gio->btgo", cols, self.w) + self.b
+            y = tf.reshape(y, (-1, y.shape[1], self.groups * self.fpg))
+            return self.act(y)
+
+        def compute_output_shape(self, input_shape):
+            t = input_shape[1]
+            t = None if t is None else (t // self.strides)
+            return (input_shape[0], t, self.groups * self.fpg)
+
+    return GroupedCausalConv1D
+
+
 def build_predictor(spec: PredictorSpec, n_features: int, input_mode: str, latent_dim: int | None):
-    """One causal temporal branch per feature, implemented as GROUPED causal Conv1D (``groups=F``): group i sees only
-    channel/latent block i, so each feature has its own filters and the time axis is preserved (24 -> 12 -> 6), exactly
-    the per-feature branch of the design, in a graph whose size does not grow with F (365 separate slice layers
-    exhausted an 8G cap in the cost pilot)."""
+    """One causal temporal branch per feature as a grouped causal convolution (``GroupedCausalConv1D``, G = F): group i sees
+    only channel/latent block i, so each feature has its own filters and the time axis is preserved (24 -> 12 -> 6). Two
+    measured alternatives were refused: 365 separate slice+Conv1D branches exhausted an 8G cap, and Conv1D(groups=F) was
+    over 25 minutes per fit on CPU."""
     if input_mode not in INPUT_MODES:
         raise Refusal(f"UNKNOWN_INPUT_MODE: {input_mode}")
     if n_features < 1:
@@ -218,14 +262,15 @@ def build_predictor(spec: PredictorSpec, n_features: int, input_mode: str, laten
     F, bf = n_features, spec.branch_filters
     if input_mode == "RAW":
         inp = keras.Input((spec.window, F), name="raw_windows")
-        h = L.Conv1D(F * bf, spec.branch_kernel, padding="causal", groups=F, activation="relu", name="branch_stem")(inp)
-        h = L.Conv1D(F * bf, spec.branch_kernel, strides=2, padding="causal", groups=F, activation="relu", name="branch_down1")(h)
-        h = L.Conv1D(F * bf, spec.branch_kernel, strides=2, padding="causal", groups=F, activation="relu", name="branch_down2")(h)
+        G = _grouped_layer_class()
+        h = G(F, bf, spec.branch_kernel, 1, "relu", name="branch_stem")(inp)
+        h = G(F, bf, spec.branch_kernel, 2, "relu", name="branch_down1")(h)
+        h = G(F, bf, spec.branch_kernel, 2, "relu", name="branch_down2")(h)
     else:
         if not latent_dim:
             raise Refusal("LATENT_DIM_REQUIRED for encoder input modes")
         inp = keras.Input((spec.latent_steps, F * latent_dim), name="latent_windows")
-        h = L.Conv1D(F * bf, 1, padding="causal", groups=F, activation="relu", name="branch_proj")(inp)
+        h = _grouped_layer_class()(F, bf, 1, 1, "relu", name="branch_proj")(inp)
     h = L.Conv1D(spec.fuse_filters, 1, padding="causal", activation="relu", name="channel_fusion")(h)
     for j, d in enumerate(spec.core_dilations):
         u = L.Conv1D(spec.core_filters, spec.core_kernel, padding="causal", dilation_rate=d, activation="relu", name=f"core{j}_a")(h)

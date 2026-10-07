@@ -85,8 +85,8 @@ def test_architecture_keeps_time_until_the_head_and_fuses_channels():
     assert tuple(core.output.shape[1:]) == (spec.latent_steps, spec.core_filters)   # rank-3 until the head
     assert model.get_layer(P.HEAD_INPUT_NAME).output.shape[1:] == (spec.core_filters,)
     stem = model.get_layer("branch_stem")
-    assert stem.groups == 3 and stem.filters == 3 * spec.branch_filters                   # one causal branch per feature (grouped)
-    assert model.get_layer("branch_down2").groups == 3 and model.get_layer("channel_fusion").groups == 1
+    assert stem.groups == 3 and stem.fpg == spec.branch_filters                           # one causal branch per feature (grouped)
+    assert model.get_layer("branch_down2").groups == 3 and model.get_layer("channel_fusion").filters == spec.fuse_filters
     assert all(getattr(l, "padding", "causal") == "causal" for l in model.layers if type(l).__name__ == "Conv1D")
     other = P.build_predictor(spec, n_features=7, input_mode="RAW", latent_dim=None)
     assert P.architecture_sha256(model) == P.architecture_sha256(other)          # identical architecture family
@@ -284,4 +284,22 @@ def test_each_feature_has_its_own_branch_and_branches_do_not_mix_before_fusion()
     x2 = x.copy()
     x2[:, -1, 0] += 5.0                                                                      # causal: only the last step moves
     z2 = np.asarray(branches.predict(x2, verbose=0))
-    assert np.array_equal(z0[:, :-1, :bf], z2[:, :-1, :bf]) or np.allclose(z0[:, :-2, :bf], z2[:, :-2, :bf])
+    assert np.array_equal(z0[:, :-1, :bf], z2[:, :-1, :bf]) and not np.allclose(z0[:, -1, :bf], z2[:, -1, :bf])   # the newest row reaches the last latent step
+
+
+@needs_tf
+def test_grouped_layer_matches_independent_causal_convs():
+    keras = P._keras()
+    G = P._grouped_layer_class()
+    rng = np.random.default_rng(1)
+    x = rng.normal(size=(4, 24, 3)).astype("float32")
+    layer = G(3, 2, 3, 1, None, name="g")
+    y = np.asarray(layer(x))
+    w, b = layer.get_weights()
+    for g in range(3):                                                    # reference: group g is its own causal Conv1D on channel g
+        ref = keras.layers.Conv1D(2, 3, padding="causal")
+        ref.build((None, 24, 1))
+        ref.set_weights([w[g].reshape(3, 1, 2), b[g]])
+        assert np.allclose(np.asarray(ref(x[:, :, g:g + 1])), y[:, :, 2 * g:2 * g + 2], atol=1e-5)
+    strided = np.asarray(G(3, 2, 3, 2, None, name="s")(x))
+    assert strided.shape == (4, 12, 6)
