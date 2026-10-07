@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pytest
 
@@ -61,3 +63,14 @@ def test_predictor_raw_input_uses_elapsed_hours_not_dataset_rows():
     with pytest.raises(ValueError, match="HOURLY_GRID_MISALIGNED"):
         predictor._inputs_for(predictor.PredictorSpec(), None, x, scaler, [7],
                               timestamps=ts + np.arange(9), min_timestamp=0)
+
+
+@pytest.mark.skipif(os.environ.get("FS4_TF_TESTS") != "1", reason="TensorFlow worker only")
+def test_elapsed_hour_tensor_runs_through_real_grouped_keras_model():
+    ts = np.arange(9, dtype=np.int64) * 4 * HOUR
+    x = np.arange(9, dtype=np.float64).reshape(-1, 1)
+    scaler = predictor.Standardiser.fit(x[:6])
+    windows, _ = predictor._inputs_for(predictor.PredictorSpec(), None, x, scaler, [7], timestamps=ts)
+    model = predictor.build_predictor(predictor.PredictorSpec(), 1, "RAW", None)
+    assert tuple(model.input.shape[1:]) == (24, 2)
+    assert tuple(model(windows).shape) == (1, 1)
