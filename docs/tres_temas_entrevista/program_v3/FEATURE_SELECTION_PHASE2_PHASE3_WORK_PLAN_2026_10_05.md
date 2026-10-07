@@ -77,7 +77,8 @@ La fase 2 termina solo con:
 - tablas OLAP `feature_pair_metrics`, `feature_alias_groups` y
   `feature_redundancy_clusters`, o sus equivalentes versionados;
 - lectura de vuelta que reconcilia conteos y digests;
-- snapshot DuckDB comprimido, SHA-256 y release recuperable;
+- snapshot DuckDB comprimido en dos maquinas, SHA-256 y procedimiento de
+  reconstruccion verificable en Git (politica de almacenamiento 2026-10-06);
 - `PHASE_2_COMPLETE.json` generado desde evidencia, nunca escrito a mano.
 
 ## 4. Fase 3: metodos de seleccion por filtros

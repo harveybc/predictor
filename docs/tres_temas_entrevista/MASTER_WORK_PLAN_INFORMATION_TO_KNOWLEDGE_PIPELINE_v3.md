@@ -1,6 +1,6 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-05. Este documento contiene sólo el plan vigente. Los
+Actualizado: 2026-10-07. Este documento contiene sólo el plan vigente. Los
 retornos RP, snapshots de máquinas, restricciones ya levantadas y dictámenes
 superados son evidencia histórica en `docs/audits/` y `docs/handoffs/`; no
 gobiernan la ejecución.
@@ -13,11 +13,12 @@ El orden de autoridad es:
 2. [contrato semanal del negocio](program_v3/BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md);
 3. [selección progresiva de características y representaciones](program_v3/FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md);
 4. [fases 2 y 3 de selección](program_v3/FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md);
-5. [arquitectura temporal modular](program_v3/MODULAR_STACK_WORK_PLAN_2026_09_30.md);
-6. [estado metodológico](program_v3/PROJECT_METHOD_STATE.json);
-7. [cola actual](program_v3/EXPERIMENT_EXECUTION_QUEUE.json) y
+5. [fase 4 de extractibilidad y validación](program_v3/FEATURE_SELECTION_PHASE4_WORK_PLAN_2026_10_06.md);
+6. [arquitectura temporal modular](program_v3/MODULAR_STACK_WORK_PLAN_2026_09_30.md);
+7. [estado metodológico](program_v3/PROJECT_METHOD_STATE.json);
+8. [cola actual](program_v3/EXPERIMENT_EXECUTION_QUEUE.json) y
    [estado de ejecución](program_v3/CURRENT_EXECUTION.md);
-8. [checklist legible por máquina](program_v3/MASTER_CHECKLIST.json), proyección
+9. [checklist legible por máquina](program_v3/MASTER_CHECKLIST.json), proyección
    del apartado 4 y no un plan alterno.
 
 La vista ejecutiva obligatoria es
@@ -377,7 +378,9 @@ El estado observado y la cola se mantienen únicamente en
 están cerradas (2026-10-07: `PHASE_2_COMPLETE.json` y
 `PHASE_3_FILTER_COMPLETE.json` para EURUSD y ETH, cubo vivo reconciliado,
 snapshot `phase2-3-feature-selection-20261007`; sin ganador predictivo). El
-único objeto siguiente es el DISEÑO de fase 4, extractibilidad, sin ejecutarlo. El calendario se usa
+objeto siguiente es integrar el runner real de fase 4, medir su costo y ejecutar
+la cola automatica. El snapshot binario se conserva en dos maquinas, con
+manifiesto y SHA-256 en Git; la subida a GitHub fue cancelada. El calendario se usa
 ahora sólo como evidencia histórica del selector; su integración como entrada
 permanece en I11.
 

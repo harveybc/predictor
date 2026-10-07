@@ -59,7 +59,7 @@
         "I2"
       ],
       "gate": "complete pairwise dependency, alias and redundancy dispositions in OLAP",
-      "evidence": "PHASE_2_COMPLETE.json for EURUSD and ETH; feature_pair_metrics 7,213,860 + 245,016, feature_pair_stability 1,202,310 + 61,254, feature_pair_gate 66,795 + 3,403, alias groups 1 + 5, redundancy clusters 277 + 38 on the live cube, reconcile complete, digests equal to the closures; snapshot https://github.com/harveybc/predictor/releases/tag/phase2-3-feature-selection-20261007"
+      "evidence": "PHASE_2_COMPLETE.json for EURUSD and ETH; feature_pair_metrics 7,213,860 + 245,016, feature_pair_stability 1,202,310 + 61,254, feature_pair_gate 66,795 + 3,403, alias groups 1 + 5, redundancy clusters 277 + 38 on the live cube, reconcile complete, digests equal to the closures; physical snapshots on coordinator and worker_b with SHA-256 manifest; GitHub binary upload cancelled by owner"
     },
     {
       "id": "I4-R",
@@ -74,13 +74,14 @@
     {
       "id": "I5",
       "name": "phase4_extractibility_and_wrapper_selection",
-      "state": "NOT_STARTED",
+      "state": "DESIGNED",
       "depends_on": [
         "I4-C",
         "I4-R",
         "I0-W"
       ],
-      "gate": "raw/random/trained extraction plus weekly wrapper validation and final manifest"
+      "gate": "raw/random/trained extraction plus weekly wrapper validation and final manifest",
+      "evidence": "FEATURE_SELECTION_PHASE4_WORK_PLAN_2026_10_06.md; fs4_campaign controller and behavioral tests; runner training and weekly winner pending"
     },
     {
       "id": "I6-A",

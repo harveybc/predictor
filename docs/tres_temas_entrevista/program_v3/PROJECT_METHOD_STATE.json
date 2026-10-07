@@ -8,15 +8,13 @@
   ],
   "program_owner": "Harvey",
   "execution_owner": "Satoshi",
-  "handoff_status": "PHASE_2_AND_3_COMPLETE_PHASE_4_DESIGN_AUTHORIZED",
+  "handoff_status": "PHASE_2_AND_3_COMPLETE_PHASE_4_CONTROLLER_READY_RUNNER_PENDING",
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [
-    "Implement and execute the automated Phase-2 feature-feature dependency and redundancy campaign for the frozen EURUSD and ETH populations.",
-    "Load every Phase-2 metric and disposition into the warehouse, verify readback, and publish a physical DuckDB snapshot with manifest and SHA-256.",
-    "Automatically execute Phase 3 clustering, mRMR and JMI rankings after Phase 2 closes, preserving complete ranking paths and controls.",
-    "Freeze the Phase-4 single-feature extractor design only after PHASE_3_FILTER_COMPLETE; do not start GPU work in this order.",
-    "Continue BUSINESS_WEEKLY_WALK_FORWARD implementation independently; no final financial claim may use LITERATURE_STATIC semantics.",
-    "Keep NEAT, modular branch/core pretraining and RL after dataset-specific selection and Phase-2 extraction closure in the canonical order."
+    "Integrate the real Phase-4 raw/random/trained runner with fs4_campaign and fs4_worker, verify row/mask parity and pilot cost, then dispatch the durable queue.",
+    "Use the complete Phase-2/3 warehouse evidence and frozen candidate identities; submit Phase-4 metrics and verify readback.",
+    "Complete BUSINESS_WEEKLY_WALK_FORWARD and the candidate wrapper before declaring final feature selection.",
+    "Keep modular branch/core pretraining, NEAT and RL after dataset-specific final selection in canonical order."
   ],
   "documents": {
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
@@ -26,6 +24,7 @@
     "checklist": "MASTER_CHECKLIST.json",
     "feature_selection": "FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md",
     "feature_selection_phase23": "FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md",
+    "feature_selection_phase4": "FEATURE_SELECTION_PHASE4_WORK_PLAN_2026_10_06.md",
     "business_weekly": "BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md",
     "business_weekly_traceability": "BUSINESS_WEEKLY_TRACEABILITY.json",
     "modular_stack": "MODULAR_STACK_WORK_PLAN_2026_09_30.md",
@@ -62,7 +61,7 @@
     "DOIN_role": "DISTRIBUTED_CANDIDATE_EVALUATION"
   },
   "feature_selection": {
-    "active_phase": "PHASE_4_EXTRACTIBILITY_DESIGN",
+    "active_phase": "PHASE_4_RUNNER_INTEGRATION",
     "canonical_denominators": {
       "EURUSD": 366,
       "ETH": 83
@@ -129,7 +128,7 @@
       "CAUSAL_SUPPORTED",
       "RANDOM_K"
     ],
-    "phase_4_started": false,
+    "phase_4_started": true,
     "phase_1_results": {
       "EURUSD": {
         "features": 366,
@@ -214,7 +213,7 @@
       "predictive_winner": null,
       "uses_test_split": false,
       "live_warehouse_reconcile_complete": true,
-      "olap_snapshot_release": "https://github.com/harveybc/predictor/releases/tag/phase2-3-feature-selection-20261007",
+      "olap_snapshot_storage": "verified physical copies on coordinator and worker_b; binary GitHub release cancelled by owner",
       "evidence": "docs/audits/evidence/canonical_20261003/fs_phase23/RETURN.md"
     }
   },
@@ -395,8 +394,8 @@
       "depends_on": [
         "BUSINESS-CONTRACT"
       ],
-      "next_action": "Run automated Phase 2 pairwise dependency/redundancy and Phase 3 filter rankings; persist all rows in the warehouse and publish verified snapshots. Keep Phase 4 extractibility paused.",
-      "deliverable": "Complete pairwise metrics, alias/redundancy groups and candidate subset trajectories for EURUSD and ETH.",
+      "next_action": "Integrate and pilot the Phase-4 runner, execute raw/random/trained extractibility once per feature/fold, then run the weekly candidate wrapper.",
+      "deliverable": "Extractibility evidence, weekly validation winner and final feature manifest for EURUSD and ETH.",
       "evidence": [
         "Phase 1 completion commit 2a2a386f and warehouse readback receipts"
       ]

@@ -3,9 +3,9 @@
   "updated_on": "2026-10-07T00:19:00Z",
   "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md on satoshi/canonical-exec-20261003",
   "policy": {
-    "focus": "PHASE_4_EXTRACTIBILITY_DESIGN_ONLY_AFTER_PHASE_2_3_CLOSURE",
-    "parallelism": "one durable controller with exclusive CPU shards across omega gamma and dragon",
-    "seed_default": 1,
+    "focus": "PHASE_4_EXTRACTIBILITY_RUNNER_AND_WEEKLY_WRAPPER",
+    "parallelism": "one durable coordinator queue; CPU raw/random and admitted GPU trained slots",
+    "seed_default": 0,
     "seed_maximum": 3,
     "repeat_policy": "adopt valid terminals; repeat only lost corrupt or scientifically changed units",
     "gpu_preference": [
@@ -14,11 +14,11 @@
       "gamma_internal_5070ti",
       "omega_4070"
     ],
-    "gpu_use_now": false,
+    "gpu_use_now": "after runner parity and measured cap; 5090 only after device identity recovers",
     "financial_gate": "strictly_better_than_same_row_naive_before_strategy",
     "test_policy": "validation and test remain closed during filter selection",
     "warehouse_policy": "all metrics decisions ranks costs and identities require submit plus readback",
-    "snapshot_policy": "physical local DuckDB plus compressed release asset and git manifest"
+    "snapshot_policy": "verified physical DuckDB copies on coordinator and worker_b; Git contains code, manifest and SHA-256, never the 3.4 GiB binary"
   },
   "superseded": {
     "neat_hyperparameter_campaigns": "DIAGNOSTIC_ONLY_STOPPED",
@@ -47,7 +47,7 @@
         "FS-PHASE2-ENGINEERING"
       ],
       "produces": "PHASE_2_COMPLETE.json plus OLAP tables and verified snapshot",
-      "evidence": "PHASE_2_COMPLETE.json EURUSD (2026-10-06T23:54:40Z, 66,795 pairs, 256 units, 0 failed) and ETH (09:30Z, 3,403 pairs, 32 units, 0 failed); live warehouse reconcile complete for both runs; snapshot https://github.com/harveybc/predictor/releases/tag/phase2-3-feature-selection-20261007"
+      "evidence": "PHASE_2_COMPLETE.json EURUSD (2026-10-06T23:54:40Z, 66,795 pairs, 256 units, 0 failed) and ETH (09:30Z, 3,403 pairs, 32 units, 0 failed); live warehouse reconcile complete for both runs; verified physical snapshots and SHA-256 manifest"
     },
     {
       "priority": 3,
@@ -64,13 +64,25 @@
     {
       "priority": 4,
       "id": "FS-PHASE4-EXTRACTIBILITY",
-      "resource": "unassigned",
-      "state": "DESIGN_AUTHORIZED_NOT_STARTED",
-      "work": "Freeze the extractibility DESIGN (raw / random / trained encoders on the phase-3 candidate subsets with matched controls); execution not started.",
+      "resource": "CPU_raw_random_GPU_trained_after_admission",
+      "state": "CONTROLLER_READY_RUNNER_PENDING",
+      "work": "Integrate the real raw/random/trained runner, measure its cap, then drain the 6495-task deduplicated five-fold queue and submit metrics to OLAP.",
       "depends_on": [
         "FS-PHASE3-FILTERS"
       ],
-      "produces": "extractibility evidence for wrapper validation"
+      "produces": "extractibility evidence for wrapper validation",
+      "evidence": "FEATURE_SELECTION_PHASE4_WORK_PLAN_2026_10_06.md; tools/fs4_campaign.py; queue_v2.sqlite plan 2b51180811e2e3ac03814d9bd1adc16a09c7b9cd122f949c1d9d024f70afcc; zero model results at initialization"
+    },
+    {
+      "priority": 5,
+      "id": "FS-PHASE4-WEEKLY-WRAPPER",
+      "resource": "admitted_GPU_and_CPU",
+      "state": "WAITING_FOR_EXTRACTIBILITY_AND_WEEKLY_RUNNER",
+      "work": "Deduplicate candidate subsets, compare raw/random/trained temporal predictors on identical origins in all eligible validation weeks, and seal the final manifest with same-row naive.",
+      "depends_on": [
+        "FS-PHASE4-EXTRACTIBILITY"
+      ],
+      "produces": "BUSINESS_WEEKLY_WALK_FORWARD winner and final selection manifest"
     },
     {
       "priority": 7,

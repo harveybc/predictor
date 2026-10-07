@@ -1,6 +1,6 @@
 # Estado de ejecución vigente
 
-Observado: 2026-10-07T00:19Z. Este archivo sustituye estados operativos anteriores.
+Observado: 2026-10-07T01:44Z. Este archivo sustituye estados operativos anteriores.
 
 ## Cierre de fase 1
 
@@ -31,19 +31,23 @@ plan `FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md`. Retorno único:
   métodos (SPEARMAN_CLUSTER, MRMR, JMI, MRMR_CAUSAL, JMI_CAUSAL y controles
   ALL_ADMISSIBLE, UNIVARIATE_MI, CAUSAL_SUPPORTED, RANDOM_K), K={4,8,12,16,24,32}.
   `CANDIDATES_FOR_VALIDATION.json`: `predictive_winner: null`, `uses_test_split: false`.
-- Snapshot publicado:
-  `https://github.com/harveybc/predictor/releases/tag/phase2-3-feature-selection-20261007`
-  (SHA-256 y manifiesto en el RETURN).
+- Snapshot fisico verificado en coordinator y worker_b; manifiesto y SHA-256
+  retenidos en Git. La publicacion del binario en GitHub fue cancelada por
+  decision del propietario; el enlace de release del retorno historico no
+  identifica un asset publicado.
 - Recursos usados: CPU en tres roles (coordinator 1 slot/1 GiB, worker_a 1/2 GiB,
   worker_b 3/2 GiB), sin GPU; tiempo de cómputo de pares 32,909 s EURUSD y 1,001 s ETH
   (0.49 y 0.29 s/par), RSS pico por proceso 0.76 GiB.
 
-## Único frente activo
+## Frente activo
 
-Diseño de fase 4 (extractibilidad raw/random/trained sobre los subconjuntos candidatos de
-fase 3 con controles emparejados). Sólo el diseño: no se ejecuta ninguna celda, no se
-entrena ningún extractor, no se usa GPU. La elección final sigue siendo del wrapper bajo
-`BUSINESS_WEEKLY_WALK_FORWARD`.
+Fase 4 de extractibilidad y seleccion predictiva, definida en
+`FEATURE_SELECTION_PHASE4_WORK_PLAN_2026_10_06.md`. El controlador de tareas
+y sus pruebas ya existen; el piloto de coste `px.rv5` esta corriendo en la
+4090 bajo `fs4-cost-pilot-20261007.service` (4 GiB, 30 min). El runner
+cientifico integrado y los recibos de la cola siguen pendientes. No hay
+ganador final. La
+validacion del wrapper usa `BUSINESS_WEEKLY_WALK_FORWARD`.
 
 Arquitectura modular, DOIN, NEAT, RL, referencias, M5PHET y nuevas corridas siguen
 pausadas hasta que ese diseño quede congelado y aprobado.
@@ -51,10 +55,11 @@ pausadas hasta que ese diseño quede congelado y aprobado.
 ## Almacenamiento obligatorio
 
 Cada métrica y disposición se carga al OLAP y se verifica por lectura de vuelta.
-Cada cierre produce snapshot DuckDB físico local y asset de release comprimido.
-Git conserva manifiesto, esquema, SHA-256 y URL, no una copia binaria duplicada
-dentro del historial.
+Cada cierre produce snapshot DuckDB fisico verificado en dos maquinas. Git
+conserva el procedimiento, esquema, manifiesto y SHA-256; los binarios
+analiticos grandes quedan fuera de GitHub.
 
 ## Siguiente compuerta
 
-Diseño de fase 4 congelado y revisado; después, su ejecución bajo orden nueva.
+Integrar el runner real de extractibilidad, medir una celda piloto y
+despachar la cola automatica; despues, wrapper semanal y manifiesto final.
