@@ -1,0 +1,48 @@
+{
+  "by_arm": {
+    "RANDOM_ENCODER": 1,
+    "RAW": 1,
+    "TRAINED_ENCODER": 1
+  },
+  "by_host_role": {
+    "coordinator": 3
+  },
+  "by_population": {
+    "EURUSD": 3
+  },
+  "generated_at": "2026-10-07T02:15:36Z",
+  "groups": [
+    {
+      "arm": "RANDOM_ENCODER",
+      "host_role": "coordinator",
+      "n": 1,
+      "population_id": "EURUSD",
+      "terminals_sha256": "f8563488c62b026b97e5e83ee8c4614fe2d076999b9e1f709a49c3d48c58a9e9"
+    },
+    {
+      "arm": "RAW",
+      "host_role": "coordinator",
+      "n": 1,
+      "population_id": "EURUSD",
+      "terminals_sha256": "e8853341cea56575d8e50e4e1d2e9235d40dcb362f63f04d829755d4c3e0a7a2"
+    },
+    {
+      "arm": "TRAINED_ENCODER",
+      "host_role": "coordinator",
+      "n": 1,
+      "population_id": "EURUSD",
+      "terminals_sha256": "22cec05b97839a7326fa08c6259ca356f4e9a1154cb99ebc604b8fa18ee47af2"
+    }
+  ],
+  "plan_sha256": "2b51180811e2e3ac03814d9bd1adc16a09c7b9cd122f949c1d9d024f70afcc00",
+  "report_sha256": "643cc20fb1d77d6bd76426e0ab047bb4cbdc9bf69c7a71beeee895d4090285eb",
+  "schema": "fs4_readback_report.v1",
+  "source": "local",
+  "table_terminals_sha256": "9da727f863e482f181ad460363acf8d2c675ece6857fdc42612bc0344da449f6",
+  "total": 3,
+  "triples": {
+    "complete": 1,
+    "inconsistent": 0,
+    "total": 1
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "backend": "duckdb",
+  "complete": true,
+  "count_matches_expected": true,
+  "expected": {
+    "by_population": {
+      "EURUSD": 3
+    },
+    "total": 3
+  },
+  "plan_sha256": "2b51180811e2e3ac03814d9bd1adc16a09c7b9cd122f949c1d9d024f70afcc00",
+  "receipts": {
+    "issued": 1,
+    "receipted_inserted": 3,
+    "receipts_cover_store": true,
+    "tasks_without_receipt": 0
+  },
+  "receipts_verified": 1,
+  "reconciled_at": "2026-10-07T02:15:36Z",
+  "reconciliation_sha256": "a51381ee387c47f420496677b1df5c78f72f23ed53017551d5a76da1c97708ff",
+  "schema": "fs4.warehouse_reconcile.v1",
+  "stored": {
+    "by_arm": {
+      "RANDOM_ENCODER": 1,
+      "RAW": 1,
+      "TRAINED_ENCODER": 1
+    },
+    "by_population": {
+      "EURUSD": 3
+    },
+    "by_population_arm": {
+      "EURUSD": {
+        "RANDOM_ENCODER": 1,
+        "RAW": 1,
+        "TRAINED_ENCODER": 1
+      }
+    },
+    "terminals_sha256": "7d41995952c0e9cff587ad4041f5e860c7f0627a539806472cf93d0f92a4913c",
+    "total": 3
+  },
+  "triples": {
+    "complete": 1,
+    "inconsistent": 0,
+    "inconsistent_examples": [],
+    "partial": 0
+  }
+}

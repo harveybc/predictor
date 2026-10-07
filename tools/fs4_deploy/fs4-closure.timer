@@ -1,0 +1,12 @@
+[Unit]
+Description=Fire the FS4 closure follower every two minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=2min
+AccuracySec=10s
+Unit=fs4-closure.service
+Persistent=false
+
+[Install]
+WantedBy=timers.target

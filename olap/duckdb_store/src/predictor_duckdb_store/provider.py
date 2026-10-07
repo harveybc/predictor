@@ -33,7 +33,10 @@ CAPABILITIES = ("describe", "storage", "discover", "schema", "query",
                 "reconcile_feature_selection",
                 # Phase-2/3 feature-selection rows: one owned write route, paged readback and
                 # reconciliation; workers never receive the database path.
-                "write_fs_phase23_rows", "read_fs_phase23_rows", "reconcile_fs_phase23")
+                "write_fs_phase23_rows", "read_fs_phase23_rows", "reconcile_fs_phase23",
+                # Phase-4 extractibility terminals: one owned write route keyed by task_id, paged
+                # readback and reconciliation against the controller's expected counts (FS4-13).
+                "write_fs4_terminals", "read_fs4_terminals", "reconcile_fs4")
 
 #: Refuse to open a database on a volume with less free space than this. An OLAP engine that
 #: runs out of disk mid-write leaves a file nobody can explain.
