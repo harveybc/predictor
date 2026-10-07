@@ -33,11 +33,16 @@ def test_spec_is_fixed_and_budget_is_identical_for_every_subset():
 
 def test_input_modes_and_encoder_identity_bind_the_latent_source():
     spec = P.PredictorSpec()
-    assert P.INPUT_MODES == ("RAW", "TRAINED_ENCODER", "RANDOM_ENCODER")
+    assert P.INPUT_MODES == ("RAW", "RAW_LAG3", "TRAINED_ENCODER", "RANDOM_ENCODER") and P.RAW_MODES == ("RAW", "RAW_LAG3")
     with pytest.raises(P.Refusal, match="ENCODER_IDENTITY_REQUIRED"):
         P.input_identity(spec, ["f_a"], "TRAINED_ENCODER", None)
     with pytest.raises(P.Refusal, match="UNKNOWN_INPUT_MODE"):
         P.input_identity(spec, ["f_a"], "MLP", None)
+    with pytest.raises(P.Refusal, match="SUPPORT_LAG_HOURS_REQUIRED"):
+        P.input_identity(spec, ["f_a"], "RAW_LAG3", None)
+    assert P.input_identity(spec, ["f_a"], "RAW_LAG3", None, 3) != P.input_identity(spec, ["f_a"], "RAW", None)
+    assert P.input_identity(spec, ["f_a"], "RAW_LAG3", None, 3) != P.input_identity(spec, ["f_a"], "RAW_LAG3", None, 4)
+    assert P.architecture_identity(spec, "RAW_LAG3", None) == P.architecture_identity(spec, "RAW", None)
     assert P.input_identity(spec, ["f_a"], "RANDOM_ENCODER", "e" * 64) != P.input_identity(spec, ["f_a"], "TRAINED_ENCODER", "e" * 64)
 
 
@@ -141,9 +146,8 @@ def _ts(y, m, d):
     return int(dt.datetime(y, m, d, tzinfo=dt.timezone.utc).timestamp())
 
 
-@pytest.fixture(scope="module")
-def runner_root(tmp_path_factory):
-    """Retained terminals of the REAL phase-4 runner (feature-extractor app/fs4_task_runner.py) on a tiny corpus."""
+def _build_runner_corpus(tmp_path_factory, step_hours: int, population: str, identity: str):
+    """Retained terminals of the REAL phase-4 runner (feature-extractor app/fs4_task_runner.py) on a tiny corpus with rows ``step_hours`` apart."""
     import io
     import json
 
@@ -155,10 +159,11 @@ def runner_root(tmp_path_factory):
     from app import fs4_task_runner as R
     from app import univariate_temporal as U
 
-    d = tmp_path_factory.mktemp("runner")
+    d = tmp_path_factory.mktemp(f"runner{step_hours}")
     rng = np.random.default_rng(0)
-    ts = np.arange(_ts(2018, 1, 1), _ts(2020, 3, 1), 3600, dtype=np.int64)
-    ts = ts[((ts // 86400 + 3) % 7) != 6]
+    ts = np.arange(_ts(2018, 1, 1), _ts(2020, 3, 1), 3600 * step_hours, dtype=np.int64)
+    if step_hours == 1:
+        ts = ts[((ts // 86400 + 3) % 7) != 6]
     n = ts.size
     cols = {}
     for name in ("feat_a", "feat_b"):
@@ -172,11 +177,11 @@ def runner_root(tmp_path_factory):
     pq.write_table(pa.table({"t_decision_utc": pa.array(ts * 10 ** 9, pa.timestamp("ns", tz="UTC")),
                              "row_id": np.arange(n, dtype=np.int64), **cols}), path)
     reg = d / "registry.json"
-    reg.write_text(json.dumps({IDENTITY: {"population_id": "SYN", "bar_seconds": 3600, "files": {ROLE: U.sha256_file(path)}}}))
+    reg.write_text(json.dumps({identity: {"population_id": population, "bar_seconds": 3600 * step_hours, "files": {ROLE: U.sha256_file(path)}}}))
     out = d / "out"
     for feat in cols:
         for arm in ("RANDOM_ENCODER", "TRAINED_ENCODER"):
-            payload = {"schema": R.TASK_SCHEMA, "population_id": "SYN", "identity": IDENTITY, "feature_id": feat,
+            payload = {"schema": R.TASK_SCHEMA, "population_id": population, "identity": identity, "feature_id": feat,
                        "fold_id": "inner_2019", "arm": arm, "seed": 0}
             claim = {**payload, "task_id": X.task_digest(payload), "attempt": 1, "lease_until": 0}
             buf = io.StringIO()
@@ -184,13 +189,26 @@ def runner_root(tmp_path_factory):
                          "--patience", "1", "--max-fit-windows", "256", "--min-fit-windows", "64", "--min-scoring-windows", "16",
                          "--output-root", str(out)], stdin=io.StringIO(json.dumps(claim)), stdout=buf)
             assert rc == 0, buf.getvalue()
-    return {"root": out, "ts": ts, "cols": cols, "spec": P.EncoderSpec(fold_id="inner_2019")}
+    return {"root": out, "ts": ts, "cols": cols, "spec": P.EncoderSpec(fold_id="inner_2019"), "population": population, "identity": identity,
+            "bar_hours": step_hours, "registry": reg, "corpus_path": path}
+
+
+@pytest.fixture(scope="module")
+def runner_root(tmp_path_factory):
+    """EURUSD-like population: hourly rows, no Sundays."""
+    return _build_runner_corpus(tmp_path_factory, 1, "SYN", IDENTITY)
+
+
+@pytest.fixture(scope="module")
+def runner_root_4h(tmp_path_factory):
+    """ETH-like population: 4-hour bars."""
+    return _build_runner_corpus(tmp_path_factory, 4, "SYN4", "synthetic-train4:v1")
 
 
 def _bank(rr, arm, ts=None, cols=None, root=None, features=("feat_a", "feat_b")):
     ts = rr["ts"] if ts is None else ts
     X = np.column_stack([(rr["cols"] if cols is None else cols)[f] for f in features])
-    return P.RunnerEncoderBank(rr["spec"], features, ts, X, arm=arm, population_id="SYN", identity=IDENTITY,
+    return P.RunnerEncoderBank(rr["spec"], features, ts, X, arm=arm, population_id=rr["population"], identity=rr["identity"],
                                results_root=rr["root"] if root is None else root, code_dir=EXTRACTOR)
 
 
@@ -417,3 +435,92 @@ def test_replay_on_a_real_runner_terminal_reproduces_its_score_under_the_trained
     assert np.isfinite(out["replay_odd_mae"]) and out["odd_over_even_mae"] > 0
     p = out["probe_r2_last_latent_to_row_at_lag"]
     assert set(p) == {AL.ALIGNMENT_AS_TRAINED, AL.ALIGNMENT_ORIGIN_COVERING} and "0" in p[AL.ALIGNMENT_AS_TRAINED]
+
+
+# ----------------------------------------------------------------------------- RAW_LAG3: like-with-like support, EURUSD (1 h bars) and ETH (4 h bars)
+def test_support_lag_is_derived_from_bar_hours_not_assumed():
+    assert AL.support_lag(1, 3) == {"bar_hours": 1, "lag_grid_hours": 3, "lag_bars": 3, "latest_visible_offset_hours": 3,
+                                    "rule": "RAW_LAG3 window ends at the last row with ts <= origin_ts - lag_grid_hours (time based)"}
+    eth = AL.support_lag(4, 3)
+    assert eth["lag_bars"] == 1 and eth["latest_visible_offset_hours"] == 4                  # 3 h < one 4 h bar: the previous bar is the newest visible
+    assert AL.support_lag(2, 3)["lag_bars"] == 2 and AL.support_lag(4, 8)["lag_bars"] == 2
+    for bad in ((0, 3), (1, -1), (1.5, 3)):
+        with pytest.raises(AL.Refusal):
+            AL.support_lag(*bad)
+
+
+def _window_end(ts, lag_hours):
+    return np.searchsorted(ts, ts - lag_hours * 3600, side="right").astype("int64") - 1
+
+
+def _last_step_support_row(rr, origin, back=40):
+    """Newest row whose value reaches the bank's LAST latent step at `origin` (measured by perturbation, real runner weights)."""
+    bank = _bank(rr, "TRAINED_ENCODER")
+    z0, _ = bank.latents(np.array([origin]))
+    D = rr["spec"].latent_dim
+    reached = []
+    for r in range(origin - back, origin + 1):
+        if not np.isfinite(rr["cols"]["feat_a"][r]) or not np.isfinite(rr["cols"]["feat_b"][r]):
+            continue
+        bank._raw[r, :] += 10.0
+        bank._grid.clear()
+        z1, _ = bank.latents(np.array([origin]))
+        bank._raw[r, :] -= 10.0
+        bank._grid.clear()
+        if not np.array_equal(z0[0, 5], z1[0, 5]):
+            reached.append(r)
+    return max(reached)
+
+
+def _origin_with_history(rr, start=1500):
+    ts = rr["ts"]
+    for i in range(start, len(ts) - 1):
+        if np.all(np.isfinite([rr["cols"]["feat_a"][i - 12:i + 1], rr["cols"]["feat_b"][i - 12:i + 1]])):
+            return i
+    raise AssertionError("no origin")
+
+
+@needs_runner
+@pytest.mark.parametrize("fixture,bars", [("runner_root", 3), ("runner_root_4h", 1)])
+def test_raw_lag3_sees_exactly_what_the_encoders_last_latent_step_sees(request, fixture, bars):
+    rr = request.getfixturevalue(fixture)
+    ts = rr["ts"]
+    lag = AL.support_lag(rr["bar_hours"], 3)
+    assert lag["lag_bars"] == bars
+    end = _window_end(ts, lag["lag_grid_hours"])
+    for origin in (_origin_with_history(rr, 1500), _origin_with_history(rr, 2200)):
+        if rr["bar_hours"] == 1 and not np.all(np.diff(ts[origin - 5:origin + 1]) == 3600):
+            continue                                                                         # keep the contiguous-hours case exact
+        seen = _last_step_support_row(rr, origin)
+        assert seen == end[origin] == origin - bars                                          # the encoder's newest row == RAW_LAG3's newest row
+        assert (ts[origin] - ts[end[origin]]) / 3600 == lag["latest_visible_offset_hours"]
+        assert ts[end[origin]] <= ts[origin] - 3 * 3600                                      # never inside the lag, no future row
+
+
+@needs_runner
+@pytest.mark.parametrize("fixture", ["runner_root", "runner_root_4h"])
+def test_raw_lag3_predictor_ignores_rows_inside_the_lag_while_raw_uses_them(request, fixture):
+    rr = request.getfixturevalue(fixture)
+    ts = rr["ts"]
+    X = np.column_stack([rr["cols"]["feat_a"], rr["cols"]["feat_b"]])
+    y = np.nan_to_num(np.roll(X[:, 0], 1))
+    spec = P.PredictorSpec(max_epochs=1, batch_size=64, patience=1)
+    end = _window_end(ts, 3)
+    fit_idx, inner_idx = np.arange(100, 1500), np.arange(1500, 1800)
+    lag_rep = P.fit_predictor(spec, X, y, fit_idx, inner_idx, input_mode="RAW_LAG3", encoder=None, seed=0, window_end=end, support_lag_hours=3)
+    raw_rep = P.fit_predictor(spec, X, y, fit_idx, inner_idx, input_mode="RAW", encoder=None, seed=0)
+    assert lag_rep.architecture_sha256 == raw_rep.architecture_sha256 and lag_rep.budget_sha256 == raw_rep.budget_sha256   # same model, same budget
+    origins = np.arange(1900, 1960)
+    # strict form: perturb only the rows strictly inside the lag of ONE origin
+    o = int(origins[10])
+    Xq = X.copy()
+    Xq[end[o] + 1:o + 1] += 7.0
+    assert np.array_equal(P.predict(lag_rep, X, [o]), P.predict(lag_rep, Xq, [o]))           # RAW_LAG3 never reads them
+    assert not np.array_equal(P.predict(raw_rep, X, [o]), P.predict(raw_rep, Xq, [o]))       # RAW does: that is the lag cost being isolated
+    with pytest.raises(P.Refusal, match="WINDOW_END"):
+        P.fit_predictor(spec, X, y, fit_idx, inner_idx, input_mode="RAW_LAG3", encoder=None, seed=0)
+    with pytest.raises(P.Refusal, match="WINDOW_END"):
+        P.fit_predictor(spec, X, y, fit_idx, inner_idx, input_mode="RAW", encoder=None, seed=0, window_end=end)
+    with pytest.raises(P.Refusal, match="WINDOW_END_AFTER_ORIGIN"):
+        P.fit_predictor(spec, X, y, fit_idx, inner_idx, input_mode="RAW_LAG3", encoder=None, seed=0, window_end=np.arange(len(ts)) + 1,
+                        support_lag_hours=3)

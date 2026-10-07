@@ -29,7 +29,8 @@ from pathlib import Path
 
 import numpy as np
 
-INPUT_MODES = ("RAW", "TRAINED_ENCODER", "RANDOM_ENCODER")
+INPUT_MODES = ("RAW", "RAW_LAG3", "TRAINED_ENCODER", "RANDOM_ENCODER")
+RAW_MODES = ("RAW", "RAW_LAG3")        # same architecture and inputs; RAW_LAG3 only ends its window earlier (the encoder's own support)
 FAMILY = "R0_TEMPORAL_CONV1D"
 CORE_OUTPUT_NAME = "core_out"
 HEAD_INPUT_NAME = "last_valid_position"
@@ -128,18 +129,22 @@ def canonical_features(features) -> tuple:
     return feats
 
 
-def input_identity(spec: PredictorSpec, features, input_mode: str, encoder_sha256: str | None) -> str:
+def input_identity(spec: PredictorSpec, features, input_mode: str, encoder_sha256: str | None, support_lag_hours: int | None = None) -> str:
     if input_mode not in INPUT_MODES:
         raise Refusal(f"UNKNOWN_INPUT_MODE: {input_mode}")
-    if input_mode != "RAW" and not (isinstance(encoder_sha256, str) and len(encoder_sha256) == 64):
+    if input_mode == "RAW_LAG3" and not (type(support_lag_hours) is int and support_lag_hours >= 1):
+        raise Refusal("SUPPORT_LAG_HOURS_REQUIRED for RAW_LAG3")
+    if input_mode not in RAW_MODES and not (isinstance(encoder_sha256, str) and len(encoder_sha256) == 64):
         raise Refusal("ENCODER_IDENTITY_REQUIRED for encoder input modes")
     return digest({"spec": spec.to_dict(), "features": list(canonical_features(features)), "input_mode": input_mode,
-                   "encoder_sha256": encoder_sha256 if input_mode != "RAW" else None})
+                   "encoder_sha256": encoder_sha256 if input_mode not in RAW_MODES else None,
+                   "support_lag_hours": support_lag_hours if input_mode == "RAW_LAG3" else None})
 
 
 def architecture_identity(spec: PredictorSpec, input_mode: str, latent_dim: int | None) -> str:
-    return digest({"family": FAMILY, "spec": spec.to_dict(), "input_mode": input_mode,
-                   "latent_dim": latent_dim if input_mode != "RAW" else None})
+    # the NETWORK is the same for RAW and RAW_LAG3 (only the window's last row differs), so they share one architecture identity
+    return digest({"family": FAMILY, "spec": spec.to_dict(), "input_mode": "RAW" if input_mode in RAW_MODES else input_mode,
+                   "latent_dim": latent_dim if input_mode not in RAW_MODES else None})
 
 
 # ----------------------------------------------------------------------------- windows and scaling
@@ -260,7 +265,7 @@ def build_predictor(spec: PredictorSpec, n_features: int, input_mode: str, laten
     keras = _keras()
     L = keras.layers
     F, bf = n_features, spec.branch_filters
-    if input_mode == "RAW":
+    if input_mode in RAW_MODES:
         inp = keras.Input((spec.window, F), name="raw_windows")
         G = _grouped_layer_class()
         h = G(F, bf, spec.branch_kernel, 1, "relu", name="branch_stem")(inp)
@@ -450,25 +455,36 @@ class FitReport:
     inner_windows: int
     seed: int
     history: dict = field(default_factory=dict)
+    window_end: object = None
+    support_lag_hours: int | None = None
 
     def predict(self, X: np.ndarray, idx) -> np.ndarray:
         return predict(self, X, idx)
 
 
-def _inputs_for(spec: PredictorSpec, encoder, Z: np.ndarray, idx):
+def _inputs_for(spec: PredictorSpec, encoder, Z: np.ndarray, idx, window_end=None):
+    """(windows, kept origin rows). ``window_end[row]`` is the last row a window may contain for an origin at ``row`` (RAW_LAG3: the last
+    row at or before origin minus the support lag; -1 when none); None means the window ends at the origin itself (RAW)."""
     if encoder is not None:
         windows, kept = encoder.latents(idx)
         return np.asarray(windows, dtype="float32"), kept
-    windows, kept = make_windows(Z, idx, spec.window)
-    return np.asarray(windows, dtype="float32"), kept
+    idx = np.asarray(idx, dtype="int64")
+    end = idx if window_end is None else np.asarray(window_end, dtype="int64")[idx]
+    if np.any(end > idx):
+        raise Refusal("WINDOW_END_AFTER_ORIGIN")
+    ok = end >= spec.window - 1
+    windows, _ = make_windows(Z, end[ok], spec.window)
+    return np.asarray(windows, dtype="float32"), idx[ok]
 
 
 def fit_predictor(spec: PredictorSpec, X: np.ndarray, y: np.ndarray, fit_idx, inner_idx, *, input_mode: str,
-                  encoder, seed: int, features=None) -> FitReport:
+                  encoder, seed: int, features=None, window_end=None, support_lag_hours: int | None = None) -> FitReport:
     if input_mode not in INPUT_MODES:
         raise Refusal(f"UNKNOWN_INPUT_MODE: {input_mode}")
-    if (input_mode == "RAW") != (encoder is None):
+    if (input_mode in RAW_MODES) != (encoder is None):
         raise Refusal("ENCODER_PRESENCE_MUST_MATCH_INPUT_MODE")
+    if (input_mode == "RAW_LAG3") != (window_end is not None):
+        raise Refusal("WINDOW_END_IS_REQUIRED_FOR_RAW_LAG3_AND_FORBIDDEN_OTHERWISE")
     X = np.asarray(X, dtype="float64")
     y = np.asarray(y, dtype="float64")
     fit_idx = np.asarray(fit_idx, dtype="int64")
@@ -480,8 +496,8 @@ def fit_predictor(spec: PredictorSpec, X: np.ndarray, y: np.ndarray, fit_idx, in
     encoder_sha = encoder.weights_sha256 if encoder is not None else None
     standardiser = Standardiser.fit(X[fit_idx])
     Z = standardiser.apply(X)
-    Wf, kept_f = _inputs_for(spec, encoder, Z, fit_idx)
-    Wi, kept_i = _inputs_for(spec, encoder, Z, inner_idx)
+    Wf, kept_f = _inputs_for(spec, encoder, Z, fit_idx, window_end)
+    Wi, kept_i = _inputs_for(spec, encoder, Z, inner_idx, window_end)
     if kept_f.size < spec.batch_size or kept_i.size == 0:
         raise Refusal(f"TOO_FEW_WINDOWS: fit {kept_f.size} inner {kept_i.size}")
     yf = y[kept_f].astype("float32")
@@ -511,11 +527,12 @@ def fit_predictor(spec: PredictorSpec, X: np.ndarray, y: np.ndarray, fit_idx, in
         budget_sha256=budget_sha256(spec), architecture_sha256=architecture_sha256(model), encoder_sha256=encoder_sha,
         input_identity=None, fit_windows=int(kept_f.size), inner_windows=int(kept_i.size), seed=int(seed),
         history={"loss": [float(v) for v in hist.history.get("loss", [])], "val_loss": val},
+        window_end=None if window_end is None else np.asarray(window_end, dtype="int64"), support_lag_hours=support_lag_hours,
     )
 
 
 def fit_named(spec: PredictorSpec, X: np.ndarray, names, y, fit_idx, inner_idx, *, input_mode: str,
-              encoder, seed: int) -> FitReport:
+              encoder, seed: int, window_end=None, support_lag_hours: int | None = None) -> FitReport:
     """Sort the columns by feature name before anything is built (FS4-02)."""
     names = list(names)
     if len(names) != X.shape[1]:
@@ -523,8 +540,8 @@ def fit_named(spec: PredictorSpec, X: np.ndarray, names, y, fit_idx, inner_idx, 
     order = sorted(range(len(names)), key=lambda i: names[i])
     feats = canonical_features(names)
     rep = fit_predictor(spec, np.asarray(X)[:, order], y, fit_idx, inner_idx, input_mode=input_mode, encoder=encoder,
-                        seed=seed, features=feats)
-    rep.input_identity = input_identity(spec, feats, input_mode, rep.encoder_sha256)
+                        seed=seed, features=feats, window_end=window_end, support_lag_hours=support_lag_hours)
+    rep.input_identity = input_identity(spec, feats, input_mode, rep.encoder_sha256, support_lag_hours)
     return rep
 
 
@@ -532,7 +549,7 @@ def predict(rep: FitReport, X: np.ndarray, idx) -> np.ndarray:
     """Predictions for origins ``idx`` (NaN where an origin lacks a full window history)."""
     idx = np.asarray(idx, dtype="int64")
     Z = rep.standardiser.apply(np.asarray(X, dtype="float64"))
-    W, kept = _inputs_for(rep.spec, rep.encoder, Z, idx)
+    W, kept = _inputs_for(rep.spec, rep.encoder, Z, idx, rep.window_end)
     out = np.full(idx.shape, np.nan, dtype="float64")
     if kept.size:
         pred = np.asarray(rep.model.predict(W, batch_size=1024, verbose=0), dtype="float64").reshape(-1)

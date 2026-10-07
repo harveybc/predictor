@@ -9,9 +9,9 @@
 #   - the cap is not a size, or the output root is under /tmp or /dev/shm;
 #   - FS4_CODE has no tools/fs4_weekly_worker.py / fs4_weekly_wrapper.py, or FS4_PYTHON cannot import tensorflow;
 #   - the TRAIN (and, for validation slots, VALIDATION) input files named by the slot do not exist (existence only, never read);
-#   - an encoder slot has no runner-results directory or no pinned extractor checkout;
+#   - an encoder slot (RANDOM_ENCODER, TRAINED_ENCODER) has no runner-results directory or no pinned extractor checkout;
 #   - a GPU UUID is set but is not physical, not listed by nvidia-smi -L, or TensorFlow does not see exactly one device;
-#   - FS4_GPU_UUID is set on a RAW slot (RAW is CPU only);
+#   - FS4_GPU_UUID is set on a RAW or RAW_LAG3 slot (both are CPU only);
 #   - the coordinator's weekly controller does not answer `status` over SSH for the configured DB;
 #   - this host fails the health check (memory available >= cap + desktop reserve).
 set -euo pipefail
@@ -35,7 +35,7 @@ for var in FS4_PYTHON FS4_CODE FS4_COORDINATOR FS4_CONTROLLER FS4_DB FS4_OWNER F
   [[ -n "${!var:-}" ]] || refuse "$var is empty in $config"
   [[ "${!var}" == PENDING* ]] && refuse "$var is still a placeholder (${!var})"
 done
-case "$FS4_INPUT_MODE" in RAW|RANDOM_ENCODER|TRAINED_ENCODER) ;; *) refuse "FS4_INPUT_MODE must be RAW, RANDOM_ENCODER or TRAINED_ENCODER" ;; esac
+case "$FS4_INPUT_MODE" in RAW|RAW_LAG3|RANDOM_ENCODER|TRAINED_ENCODER) ;; *) refuse "FS4_INPUT_MODE must be RAW, RAW_LAG3, RANDOM_ENCODER or TRAINED_ENCODER" ;; esac
 [[ "$FS4_OWNER" =~ ^(worker_a|worker_b|coordinator)-[a-z0-9-]+$ ]] || refuse "FS4_OWNER must be <role>-<slot> with role worker_a|worker_b|coordinator"
 [[ "$FS4_CAP" =~ ^[0-9]+[KMGT]?$ ]] || refuse "FS4_CAP must be a size such as 2G (is $FS4_CAP)"
 [[ "$FS4_BAR_HOURS" =~ ^[0-9]+$ ]] || refuse "FS4_BAR_HOURS must be an integer (is $FS4_BAR_HOURS)"
@@ -53,12 +53,12 @@ if [[ "${FS4_SPLIT:-validation}" == validation ]]; then
   # shellcheck disable=SC2086
   for f in $FS4_VAL_FEATURES "$FS4_VAL_TARGETS"; do test -f "$f" || refuse "VALIDATION input missing (existence checked, content never read): $f"; done
 fi
-if [[ "$FS4_INPUT_MODE" != RAW ]]; then
+if [[ "$FS4_INPUT_MODE" == RANDOM_ENCODER || "$FS4_INPUT_MODE" == TRAINED_ENCODER ]]; then
   test -d "${FS4_RUNNER_RESULTS:-/nonexistent}" || refuse "encoder slot needs FS4_RUNNER_RESULTS (the runner's retained terminals)"
   test -f "${FS4_EXTRACTOR_CODE:-/nonexistent}/app/fs4_extractibility.py" || refuse "encoder slot needs FS4_EXTRACTOR_CODE (pinned feature-extractor checkout)"
 fi
 if [[ -n "${FS4_GPU_UUID:-}" ]]; then
-  [[ "$FS4_INPUT_MODE" != RAW ]] || refuse "RAW slots are CPU only; unset FS4_GPU_UUID"
+  [[ "$FS4_INPUT_MODE" == RANDOM_ENCODER || "$FS4_INPUT_MODE" == TRAINED_ENCODER ]] || refuse "RAW and RAW_LAG3 slots are CPU only; unset FS4_GPU_UUID"
   [[ "$FS4_GPU_UUID" =~ ^GPU-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]] || refuse "FS4_GPU_UUID is not a physical UUID: $FS4_GPU_UUID"
   nvidia-smi -L 2>/dev/null | grep -F "(UUID: $FS4_GPU_UUID)" >/dev/null || refuse "nvidia-smi -L does not list $FS4_GPU_UUID"
   "$HOME/.local/bin/crispdm-run" -m 3G -t 5m -n "fs4-weekly-probe-$slot" -- \
@@ -70,7 +70,7 @@ common=(--coordinator "$FS4_COORDINATOR" --controller "$FS4_CONTROLLER" --python
         --owner "$FS4_OWNER" --cap "$FS4_CAP" --output-root "$FS4_OUTPUT_ROOT" --population "$FS4_POPULATION" --bar-hours "$FS4_BAR_HOURS"
         --input-mode "$FS4_INPUT_MODE" --train-features $FS4_TRAIN_FEATURES --train-targets "$FS4_TRAIN_TARGETS")
 [[ -n "${FS4_VAL_FEATURES:-}" ]] && common+=(--val-features $FS4_VAL_FEATURES --val-targets "$FS4_VAL_TARGETS")
-[[ "$FS4_INPUT_MODE" != RAW ]] && common+=(--runner-results "$FS4_RUNNER_RESULTS" --extractor-code "$FS4_EXTRACTOR_CODE")
+[[ "$FS4_INPUT_MODE" == RANDOM_ENCODER || "$FS4_INPUT_MODE" == TRAINED_ENCODER ]] && common+=(--runner-results "$FS4_RUNNER_RESULTS" --extractor-code "$FS4_EXTRACTOR_CODE")
 "$FS4_PYTHON" "$FS4_CODE/tools/fs4_weekly_worker.py" "${common[@]}" --status \
   | "$FS4_PYTHON" -c 'import json,sys; d=json.load(sys.stdin); assert d["schema"]=="fs4.weekly_status.v1" and d["expected"]>0' \
   || refuse "coordinator weekly controller did not answer status for $FS4_DB"

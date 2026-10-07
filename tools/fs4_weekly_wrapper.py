@@ -56,7 +56,7 @@ BUSINESS_MODE = W.BUSINESS_MODE
 UPDATE_MODE = W.UPDATE_MODE.value
 SEED = 0
 STAGE1_MODES = ("RAW",)
-STAGE2_MODES = ("RANDOM_ENCODER", "TRAINED_ENCODER")
+STAGE2_MODES = ("RAW_LAG3", "RANDOM_ENCODER", "TRAINED_ENCODER")
 STAGE2_FAMILIES = ("SPEARMAN_CLUSTER", "MRMR", "JMI", "MRMR_CAUSAL", "JMI_CAUSAL", "UNIVARIATE_MI", "CAUSAL_SUPPORTED", "RANDOM_K",
                    "ALL_ADMISSIBLE")
 STAGE2_TOP_N = 3
@@ -182,11 +182,16 @@ def build_plan(consolidated: list[dict], seals: list[dict], *, validation_year: 
             raise Refusal("ENCODER_ALIGNMENT_CERT_RULE_MISMATCH: the certificate was issued for another STAGE2_RULE.md")
         alignment = {"status": "CERTIFIED", "alignment": alignment_cert["alignment"], "cert_sha256": alignment_cert["cert_sha256"],
                      "last_step_lag_hours": alignment_cert["last_step_lag_hours_as_trained"], "reason": None}
+    support_lag = None
+    if alignment["status"] == "CERTIFIED":
+        support_lag = {pop: AL.support_lag(bar_hours[pop], int(alignment["last_step_lag_hours"])) for pop in sorted(populations)}
     plan = {
         "schema": PLAN_SCHEMA, "evaluation_mode": BUSINESS_MODE, "update_mode": UPDATE_MODE,
         "validation_year": validation_year, "rolling_calendar_years": 4, "seed": SEED,
         "input_modes": list(input_modes), "stage2_modes": list(stage2_modes), "stage2_rule_sha256": stage2_rule_sha256(),
-        "encoder_alignment": alignment, "stage2_families": list(STAGE2_FAMILIES), "stage2_top_n": STAGE2_TOP_N, "trainer": PRODUCTION_TRAINER,
+        "encoder_alignment": alignment, "support_lag": support_lag,
+        "comparison": ("TRAINED_ENCODER and RANDOM_ENCODER are compared with RAW_LAG3 (RAW inputs with the encoder's own support, like with "
+                       "like) and with RAW (the lag cost); only RAW chooses winners"), "stage2_families": list(STAGE2_FAMILIES), "stage2_top_n": STAGE2_TOP_N, "trainer": PRODUCTION_TRAINER,
         "predictor_spec": spec.to_dict(), "predictor_spec_sha256": spec.sha256(), "budget_sha256": P.budget_sha256(spec),
         "encoder_spec": encoder_spec.to_dict(), "encoder_spec_sha256": encoder_spec.sha256(),
         "populations": populations, "denominator": denominator,
@@ -228,6 +233,10 @@ def enumerate_tasks(plan: dict, split: str = "validation", *, set_ids=None, test
                 if mode != "RAW":
                     payload["encoder_alignment"] = plan["encoder_alignment"]["alignment"]
                     payload["encoder_alignment_cert_sha256"] = plan["encoder_alignment"]["cert_sha256"]
+                if mode == "RAW_LAG3":
+                    lag = (plan.get("support_lag") or {}).get(s["population_id"])
+                    payload["support_lag_hours"] = lag["lag_grid_hours"] if lag else None
+                    payload["support_lag_bars"] = lag["lag_bars"] if lag else None
                 if split == "test":
                     payload["test_authorization"] = test_authorization
                 payload["task_id"] = digest(payload)
@@ -355,13 +364,13 @@ class DataStore:
 
 # ----------------------------------------------------------------------------- trainer
 def r0_trainer_factory(names, encoder_spec: P.EncoderSpec):
-    def trainer(spec, X, y, fit_idx, inner_idx, input_mode, encoder, seed):
-        return P.fit_named(spec, X, names, y, fit_idx, inner_idx, input_mode=input_mode, encoder=encoder, seed=seed)
+    def trainer(spec, X, y, fit_idx, inner_idx, input_mode, encoder, seed, **kw):
+        return P.fit_named(spec, X, names, y, fit_idx, inner_idx, input_mode=input_mode, encoder=encoder, seed=seed, **kw)
     return trainer
 
 
 def _encoder_for(input_mode: str, members, Xsub, store, task, encoder_spec: P.EncoderSpec, seed: int, results_root, extractor_code):
-    if input_mode == "RAW":
+    if input_mode in P.RAW_MODES:
         return None
     if results_root is None or extractor_code is None:
         raise Refusal("ENCODER_ARMS_NEED --runner-results and --extractor-code (the runner's retained terminals and pinned code)")
@@ -411,6 +420,12 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
                                         or not task.get("encoder_alignment_cert_sha256")):
         raise Refusal("ENCODER_ALIGNMENT_NOT_CERTIFIED: an encoder arm needs a certified alignment equal to "
                       f"{P.RunnerEncoderBank.alignment} (tools/fs4_encoder_alignment.py)")
+    lag_hours = None
+    if task["input_mode"] == "RAW_LAG3":
+        lag_hours = task.get("support_lag_hours")
+        if type(lag_hours) is not int or lag_hours < 1 or task.get("support_lag_bars") != AL.support_lag(store.bar_hours, lag_hours)["lag_bars"]:
+            raise Refusal("SUPPORT_LAG_INCONSISTENT: RAW_LAG3 needs support_lag_hours from the certified alignment and lag_bars derived "
+                          "from this population's bar_hours")
     target = task["target_id"]
     if target not in store.targets:
         raise Refusal(f"TARGET_NOT_IN_INPUTS: {target}")
@@ -428,9 +443,14 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
     hi = np.searchsorted(store.ts, int((week.cutoff - purge).timestamp()), side="right")
     rows = []
     # an origin needs a full window of `spec.window` rows inside the rolling four years: no input row predates fit_start
+    window_end = None
+    if lag_hours is not None:       # RAW_LAG3: a window ends at the last row with ts <= origin_ts - lag (time based, like the encoder grid)
+        window_end = np.searchsorted(store.ts, store.ts - lag_hours * 3600, side="right").astype("int64") - 1
     for i in range(lo + spec.window - 1, hi):
         if not finite[i]:
             continue
+        if window_end is not None and window_end[i] - (spec.window - 1) < lo:
+            continue                                          # the lagged window would start before fit_start
         et = dt.datetime.fromtimestamp(int(store.ts[i]), UTC)
         rows.append(AsOfRow(record_id=str(store.record_ids[i]), event_time=et, available_time=et, target_available_time=et + purge,
                             row_digest=hashlib.sha256(f"{store.record_ids[i]}|{int(store.ts[i])}".encode()).hexdigest()))
@@ -445,7 +465,7 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
         "trainer": PRODUCTION_TRAINER if trainer is None else "INJECTED_STAND_IN_TEST_ONLY",
         "predictor_spec_sha256": spec.sha256(), "budget_sha256": P.budget_sha256(spec), "encoder_spec_sha256": encoder_spec.sha256(),
         "input_sha256": digest({"files": store.digests, "members": list(members), "target": target, "input_mode": task["input_mode"],
-                             "row_id_offset": store.row_id_offset}),
+                             "row_id_offset": store.row_id_offset, "support_lag_hours": lag_hours}),
         "row_id_offset": store.row_id_offset,
         "code_sha256": code_sha256(), "validation_first_read_utc": store.validation_first_read_utc,
         "naive": {"rule": NAIVE_RULE, "scale": "raw_log_return", "unit": "log_return"},
@@ -488,11 +508,17 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
     fit = trainer or r0_trainer_factory(list(members), encoder_spec)
     t0 = time.time()
     try:
-        rep = fit(spec, Xsub, y, fit_idx, inner_idx, task["input_mode"], encoder, SEED)
+        extra = {} if window_end is None else {"window_end": window_end, "support_lag_hours": lag_hours}
+        rep = fit(spec, Xsub, y, fit_idx, inner_idx, task["input_mode"], encoder, SEED, **extra)
     except P.Refusal as exc:
         return _failed(base, f"trainer refused: {exc}", started)
     fit_seconds = time.time() - t0
     pred = np.asarray(rep.predict(Xsub, scored), dtype="float64").reshape(-1)
+    if window_end is not None:
+        offs = (store.ts[scored] - store.ts[np.maximum(window_end[scored], 0)]) / 3600.0
+        base["observed_support_offset_hours"] = {"min": float(offs.min()), "max": float(offs.max()),
+                                                 "lag_bars_min": int((scored - window_end[scored]).min()), "lag_bars_max": int((scored - window_end[scored]).max())}
+        base["support_lag_hours"] = lag_hours
     yt = y[scored]
     cost = {"fit_seconds": float(fit_seconds), "wall_seconds": float(time.time() - started), "epochs": int(rep.epochs_run),
             "best_epoch": int(rep.best_epoch), "updates": int(rep.updates), "peak_rss_bytes": int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024),
@@ -602,7 +628,8 @@ def stage2_set_ids(plan: dict, raw_aggregates: dict) -> dict:
 
 
 def encoder_comparison(aggregates_by_mode: dict, raw_mode: str = "RAW") -> dict:
-    """Per set: RAW vs TRAINED vs RANDOM mean weekly skill on identical weeks; RANDOM is the control."""
+    """Per set, on identical weeks and rows. The like-with-like contrasts use RAW_LAG3 (RAW inputs with the encoder's own support);
+    RAW is kept for the lag cost; RANDOM_ENCODER is the control. Differences are of mean weekly skill (positive = first arm better)."""
     out = {}
     raw = aggregates_by_mode.get(raw_mode, {})
     for sid, a_raw in raw.items():
@@ -611,11 +638,16 @@ def encoder_comparison(aggregates_by_mode: dict, raw_mode: str = "RAW") -> dict:
             a = aggregates_by_mode.get(mode, {}).get(sid)
             row[mode.lower()] = a["mean_weekly_skill_mae"] if a else None
             row[mode.lower() + "_weeks_completed"] = a["weeks_completed"] if a else None
-        if row.get("trained_encoder") is not None and row["raw"] is not None:
-            row["trained_minus_raw"] = row["trained_encoder"] - row["raw"]
-        if row.get("trained_encoder") is not None and row.get("random_encoder") is not None:
-            row["trained_minus_random"] = row["trained_encoder"] - row["random_encoder"]
-        if len(row) > 1 and any(k in row for k in ("trained_minus_raw", "trained_minus_random")):
+
+        def diff(name, x, y):
+            if row.get(x) is not None and row.get(y) is not None:
+                row[name] = row[x] - row[y]
+        diff("trained_minus_raw_lag3", "trained_encoder", "raw_lag3")           # like with like: same support
+        diff("random_minus_raw_lag3", "random_encoder", "raw_lag3")
+        diff("trained_minus_random", "trained_encoder", "random_encoder")        # the control
+        diff("trained_minus_raw", "trained_encoder", "raw")                      # total, includes the lag cost
+        diff("raw_lag3_minus_raw", "raw_lag3", "raw")                            # the cost of the encoder's support lag alone
+        if any(k in row for k in ("trained_minus_raw_lag3", "random_minus_raw_lag3", "trained_minus_random", "trained_minus_raw", "raw_lag3_minus_raw")):
             out[sid] = row
     return out
 

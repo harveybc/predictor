@@ -56,6 +56,20 @@ def digest(value) -> str:
     return hashlib.sha256(canonical(value).encode()).hexdigest()
 
 
+# ----------------------------------------------------------------------------- support lag of the RAW_LAG3 control
+def support_lag(bar_hours: int, lag_grid_hours: int) -> dict:
+    """The encoder's last latent step reads grid hours <= origin - lag_grid_hours (3 on the hourly encoder grid). A population whose rows
+    are ``bar_hours`` apart can therefore see, at best, the last bar at or before origin - lag: ``ceil(lag / bar_hours)`` bars back, i.e.
+    ``lag_bars * bar_hours`` hours before the origin when the origin is on the bar grid. EURUSD (1 h bars) = 3 bars / 3 h; ETH (4 h
+    bars) = 1 bar / 4 h. The wrapper applies the same rule by TIME (last row with ts <= origin_ts - lag), not by counting rows, so
+    weekend gaps behave exactly as the encoder's hourly grid does."""
+    if type(bar_hours) is not int or bar_hours < 1 or type(lag_grid_hours) is not int or lag_grid_hours < 0:
+        raise Refusal("SUPPORT_LAG_INPUTS")
+    lag_bars = -(-lag_grid_hours // bar_hours)
+    return {"bar_hours": bar_hours, "lag_grid_hours": lag_grid_hours, "lag_bars": lag_bars, "latest_visible_offset_hours": lag_bars * bar_hours,
+            "rule": "RAW_LAG3 window ends at the last row with ts <= origin_ts - lag_grid_hours (time based)"}
+
+
 # ----------------------------------------------------------------------------- analytic support
 def layer_specs(window: int = WINDOW):
     """(name, kernel, stride, dilation) of the runner encoder's temporal layers, in order. calendar_proj/fuse/latent are 1x1."""
@@ -285,15 +299,37 @@ def load_cert(path, expected_rule_sha256: str | None = None) -> dict:
     return cert
 
 
+def reissue_cert(old_path, out_path, rule_sha256: str, reason: str) -> dict:
+    """Bind the SAME evidence (structure and replays of the old certificate: same runner code, same terminals) to a new STAGE2_RULE.md
+    digest. Used when the rule text changes without any change to the encoder, the runner or its terminals."""
+    old = load_cert(old_path)
+    if old.get("status") != "CERTIFIED":
+        raise Refusal("ONLY_A_CERTIFIED_CERT_CAN_BE_REISSUED")
+    body = {k: v for k, v in old.items() if k not in ("cert_sha256", "stage2_rule_sha256")}
+    body.update({"stage2_rule_sha256": rule_sha256, "supersedes_cert_sha256": old["cert_sha256"], "reissue_reason": reason})
+    body["cert_sha256"] = digest({k: v for k, v in body.items() if k != "cert_sha256"})
+    Path(out_path).write_text(json.dumps(body, indent=1, sort_keys=True, default=str))
+    return body
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--extractor-code", required=True)
-    ap.add_argument("--terminals", required=True, help="directory of the runner's <task_id>/result.json + chosen.weights.h5 (read only)")
+    ap.add_argument("--reissue-from", help="re-bind an existing CERTIFIED certificate's evidence to the current STAGE2_RULE.md digest (no replay)")
+    ap.add_argument("--reason", default="STAGE2_RULE.md changed; encoder, runner and terminals unchanged")
+    ap.add_argument("--extractor-code")
+    ap.add_argument("--terminals", help="directory of the runner's <task_id>/result.json + chosen.weights.h5 (read only)")
     ap.add_argument("--input", action="append", default=[], help="ROLE=PATH of the pinned TRAIN corpus files (runner roles)")
     ap.add_argument("--max-terminals", type=int, default=12)
     ap.add_argument("--out", required=True)
     a = ap.parse_args(argv)
     from tools import fs4_weekly_wrapper as WW
+    if a.reissue_from:
+        cert = reissue_cert(a.reissue_from, a.out, WW.stage2_rule_sha256(), a.reason)
+        print(canonical({"status": cert["status"], "alignment": cert["alignment"], "cert_sha256": cert["cert_sha256"],
+                         "supersedes": cert["supersedes_cert_sha256"], "stage2_rule_sha256": cert["stage2_rule_sha256"]}))
+        return 0
+    if not (a.extractor_code and a.terminals):
+        ap.error("--extractor-code and --terminals are required unless --reissue-from is given")
     inputs = {r.split("=", 1)[0].lower(): r.split("=", 1)[1] for r in a.input}
     structure = structure_report(a.extractor_code)
     dirs = []

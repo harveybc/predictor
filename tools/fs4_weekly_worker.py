@@ -28,7 +28,8 @@ if str(HERE.parent) not in sys.path:
 
 from tools import fs4_worker as BASE  # noqa: E402  (health, controller, deliver, atomic_json are reused as they are)
 
-MODES = ("RAW", "RANDOM_ENCODER", "TRAINED_ENCODER")
+MODES = ("RAW", "RAW_LAG3", "RANDOM_ENCODER", "TRAINED_ENCODER")
+ENCODER_MODES = ("RANDOM_ENCODER", "TRAINED_ENCODER")      # RAW and RAW_LAG3 need no runner weights and no GPU
 
 
 def wrapper_command(args, task_file: Path) -> list[str]:
@@ -37,7 +38,7 @@ def wrapper_command(args, task_file: Path) -> list[str]:
            "--task-file", str(task_file)]
     if args.val_features:
         cmd += ["--val-features", *args.val_features, "--val-targets", args.val_targets]
-    if args.input_mode != "RAW":
+    if args.input_mode in ENCODER_MODES:
         cmd += ["--runner-results", args.runner_results, "--extractor-code", args.extractor_code]
     if args.test_freeze:
         cmd += ["--test-freeze", args.test_freeze]
@@ -169,12 +170,14 @@ def main(argv=None):
             raise SystemExit(r.stderr)
         print(r.stdout.strip())
         return
-    if args.input_mode != "RAW" and not (args.runner_results and args.extractor_code):
+    if args.input_mode in ENCODER_MODES and not (args.runner_results and args.extractor_code):
         parser.error("encoder input modes need --runner-results and --extractor-code")
     if bool(args.val_features) != bool(args.val_targets):
         parser.error("--val-features and --val-targets go together")
     if args.split == "validation" and not args.val_features:
         parser.error("validation slots need --val-features/--val-targets")
+    if args.gpu_uuid and args.input_mode in ("RAW", "RAW_LAG3"):
+        parser.error("RAW and RAW_LAG3 slots are CPU only; --gpu-uuid is refused")
     if args.gpu_uuid and not BASE.UUID_RE.match(args.gpu_uuid):
         parser.error("--gpu-uuid must be a physical GPU-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx identifier")
     if args.health:

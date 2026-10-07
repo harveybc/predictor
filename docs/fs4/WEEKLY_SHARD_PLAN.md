@@ -31,7 +31,11 @@ so the frontier is NOT reduced (the 36-43 h is the weekly RAW stage-1 projection
   small cap's neighbour, so ETH slots use `FS4_CAP=1200M` with no feature filter.
 - Priority: (1) stage 1 RAW week-major so every week closes early; (2) ALL_ADMISSIBLE large sets start at once on their own
   slot because they dominate wall time; (3) stage 2 (RANDOM_ENCODER, TRAINED_ENCODER) only after `stage2` computes the list.
-- Stage 2 cost is NOT measured (it needs the runner's TRAINED_ENCODER terminals); upper bound per encoder mode is the RAW
+- Stage 2 now has three modes on the stage-2 list: `RAW_LAG3`, `RANDOM_ENCODER`, `TRAINED_ENCODER`. `RAW_LAG3` needs NO new cost
+  measurement: it trains the identical network with the identical budget on identically sized windows (only the last row of each window
+  differs, and `lag_rows` fewer fit origins at the rolling window's start), CPU only, so its cost per fit is the RAW cost of the pilot
+  table. The weekly RAW stage-1 projection above is unchanged and remains the weekly RAW stage-1 projection only.
+- Encoder-arm stage-2 cost is NOT measured (it needs the runner's TRAINED_ENCODER terminals); upper bound per encoder mode is the RAW
   cost of the stage-2 list (its core is smaller on 6 latent steps, plus one encoder forward pass per feature).
 
 ## Coordinator gate (owner action, one extra line per worker key)

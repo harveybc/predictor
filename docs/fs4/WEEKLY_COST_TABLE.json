@@ -91,6 +91,7 @@
   }
  },
  "projection_scope": "WEEKLY_RAW_STAGE1_ONLY: a projection of the weekly RAW stage-1 fits from the TRAIN-only pilot; it is NOT an ETA for the selection campaign, for stage 2, or for extractibility",
+ "raw_lag3_cost_note": "RAW_LAG3 = identical network, budget and window size as RAW (CPU); per-fit cost equals the RAW pilot rows; no new measurement was needed. projection_scope is unchanged.",
  "schema": "fs4.weekly_cost_table.v1",
  "validation_read": 0
 }

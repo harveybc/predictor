@@ -40,10 +40,10 @@ def _frame(start, end, rng, row_id_start=0, freq="6h"):
     return feats, t
 
 
-def _inputs(tmp_path, val_end=datetime(2025, 1, 1, tzinfo=UTC), gap=False):
+def _inputs(tmp_path, val_end=datetime(2025, 1, 1, tzinfo=UTC), gap=False, freq="6h"):
     rng = np.random.default_rng(0)
-    tf, tt = _frame(datetime(2019, 6, 1, tzinfo=UTC), datetime(2024, 1, 1, tzinfo=UTC), rng)
-    vf, vt = _frame(datetime(2024, 1, 1, tzinfo=UTC), val_end, rng, row_id_start=len(tf))
+    tf, tt = _frame(datetime(2019, 6, 1, tzinfo=UTC), datetime(2024, 1, 1, tzinfo=UTC), rng, freq=freq)
+    vf, vt = _frame(datetime(2024, 1, 1, tzinfo=UTC), val_end, rng, row_id_start=len(tf), freq=freq)
     if gap:   # the third validation week has no rows at all
         keep = ~((vf["t_decision_utc"] >= "2024-01-15") & (vf["t_decision_utc"] < "2024-01-22"))
         vf, vt = vf[keep].reset_index(drop=True), vt[keep].reset_index(drop=True)
@@ -91,8 +91,9 @@ def _plan(tmp_path, **kw):
 class LinearStandIn:
     """TEST-ONLY deterministic trainer: least squares on the last window step. Not an MLP, not production."""
 
-    def __init__(self, spec, X, y, fit_idx, inner_idx, input_mode, encoder, seed):
-        Xf = np.column_stack([X[fit_idx], np.ones(len(fit_idx))])
+    def __init__(self, spec, X, y, fit_idx, inner_idx, input_mode, encoder, seed, window_end=None, support_lag_hours=None):
+        self.window_end = None if window_end is None else np.asarray(window_end)
+        Xf = np.column_stack([self._rows(X, fit_idx), np.ones(len(fit_idx))])
         self.W = np.linalg.lstsq(Xf, y[fit_idx], rcond=None)[0]
         self.weights_sha256 = hashlib.sha256(self.W.tobytes()).hexdigest()
         self.epochs_run, self.best_epoch, self.updates, self.fit_seconds = 1, 1, 1, 0.0
@@ -100,8 +101,12 @@ class LinearStandIn:
         self.budget_sha256, self.architecture_sha256 = "b" * 64, "a" * 64
         self.encoder_sha256, self.input_identity = None, "i" * 64
 
+    def _rows(self, X, idx):
+        idx = np.asarray(idx)
+        return X[idx] if self.window_end is None else X[self.window_end[idx]]       # the newest row a window may contain
+
     def predict(self, X, idx):
-        return np.column_stack([X[idx], np.ones(len(idx))]) @ self.W
+        return np.column_stack([self._rows(X, idx), np.ones(len(idx))]) @ self.W
 
 
 def _store(paths):
@@ -341,3 +346,59 @@ def test_rows_after_the_last_validation_week_are_not_validation_rows_even_when_c
     last = [t for t in WW.enumerate_tasks(plan) if t["week"]["start"] == plan["weeks"][-1]["start"] and t["target_id"] == "Y_s_1h"][0]
     res = WW.run_task(last, store, trainer=LinearStandIn)
     assert res["censoring"]["week_rows_target_censored"] == 0 and res["n_scored"] == res["n_rows_in_week"]
+
+
+def _cert(tmp_path):
+    from tools import fs4_encoder_alignment as AL
+    structure = {"as_trained": {"last_step_reads_no_future": True, "empirical_matches_analytic": [True] * 6, "last_step_lag_rows": 3, "last_step_lag_hours": 3}}
+    replays = [{"terminal_matches_replay": True, "replay_even_mae": 1.0, "replay_odd_mae": 2.0, "population_id": "EURUSD", "terminal_mae": 1.0,
+                "naive_mae": 0.5, "odd_over_even_mae": 2.0,
+                "probe_r2_last_latent_to_row_at_lag": {AL.ALIGNMENT_AS_TRAINED: {"0": 0.5}, AL.ALIGNMENT_ORIGIN_COVERING: {"0": 0.9}}}]
+    AL.write_cert(tmp_path / "cert.json", structure, replays, AL.choose_alignment(structure, replays), WW.stage2_rule_sha256(), "deffa53")
+    return AL.load_cert(tmp_path / "cert.json", WW.stage2_rule_sha256())
+
+
+@pytest.mark.parametrize("bar_hours,freq,lag_bars,offset", [(1, "1h", 3, 3.0), (4, "4h", 1, 4.0)])
+def test_raw_lag3_plan_fields_and_support_per_population(tmp_path, bar_hours, freq, lag_bars, offset):
+    cons = _consolidated()
+    plan = WW.build_plan([cons], [_seal(tmp_path, cons)], validation_year=2024, input_modes=("RAW",), bar_hours={POP: bar_hours},
+                         alignment_cert=_cert(tmp_path))
+    assert plan["stage2_modes"] == ["RAW_LAG3", "RANDOM_ENCODER", "TRAINED_ENCODER"]
+    sl = plan["support_lag"][POP]
+    assert sl["bar_hours"] == bar_hours and sl["lag_grid_hours"] == 3 and sl["lag_bars"] == lag_bars and sl["latest_visible_offset_hours"] == offset
+    assert "like with like" in plan["comparison"] and plan["plan_sha256"] == WW.plan_digest(plan)
+    t = WW.enumerate_tasks(plan, "validation", modes=("RAW_LAG3",))[7]
+    assert t["support_lag_hours"] == 3 and t["support_lag_bars"] == lag_bars and t["stage"] == 2 and t["encoder_alignment_cert_sha256"]
+    store = WW.DataStore.from_paths(POP, *_paths(tmp_path, freq), bar_hours=bar_hours)
+    res = WW.run_task([x for x in WW.enumerate_tasks(plan, "validation", modes=("RAW_LAG3",)) if x["week"]["ordinal"] == 6 and x["target_id"] == "Y_s_2h"][0],
+                      store, trainer=LinearStandIn)
+    assert res["disposition"] == "COMPLETED" and res["support_lag_hours"] == 3
+    o = res["observed_support_offset_hours"]
+    assert o["min"] == o["max"] == offset and o["lag_bars_min"] == o["lag_bars_max"] == lag_bars        # measured on the real scored rows
+    assert res["rows_sha256"] == WW.rows_digest([str(r) for r in store.record_ids[store.range_idx(res["week_start"], res["week_end"])]])
+
+
+def _paths(tmp_path, freq):
+    p = _inputs(tmp_path / f"in_{freq}", freq=freq)
+    return [p["train_features"]], p["train_targets"], [p["val_features"]], p["val_targets"]
+
+
+def test_raw_lag3_fits_only_on_rows_whose_lagged_window_stays_inside_the_rolling_window_and_refuses_inconsistent_lag(tmp_path):
+    cons = _consolidated()
+    plan = WW.build_plan([cons], [_seal(tmp_path, cons)], validation_year=2024, input_modes=("RAW",), bar_hours={POP: 1}, alignment_cert=_cert(tmp_path))
+    store = WW.DataStore.from_paths(POP, *_paths(tmp_path, "1h"), bar_hours=1)
+    base = [x for x in WW.enumerate_tasks(plan, "validation", modes=("RAW_LAG3",)) if x["week"]["ordinal"] == 3 and x["target_id"] == "Y_s_1h"][0]
+    raw = [x for x in WW.enumerate_tasks(plan, "validation") if x["week"]["ordinal"] == 3 and x["target_id"] == "Y_s_1h" and x["set_id"] == base["set_id"]][0]
+    r_lag, r_raw = WW.run_task(base, store, trainer=LinearStandIn), WW.run_task(raw, store, trainer=LinearStandIn)
+    assert r_lag["fit_rows"] == r_raw["fit_rows"] - 3 and r_lag["rows_sha256"] == r_raw["rows_sha256"]   # three fewer origins, identical scored rows
+    assert r_lag["task_id"] != r_raw["task_id"] and r_lag["input_sha256"] != r_raw["input_sha256"]
+    with pytest.raises(WW.Refusal, match="SUPPORT_LAG_INCONSISTENT"):
+        WW.run_task(dict(base, support_lag_bars=2), store, trainer=LinearStandIn)
+    with pytest.raises(WW.Refusal, match="SUPPORT_LAG_INCONSISTENT"):
+        WW.run_task(dict(base, support_lag_hours=None), store, trainer=LinearStandIn)
+    plain = _plan(tmp_path)                                                                     # no certificate: the lag has no source
+    assert plain["support_lag"] is None
+    t = WW.enumerate_tasks(plain, "validation", modes=("RAW_LAG3",))[0]
+    assert t["support_lag_hours"] is None
+    with pytest.raises(WW.Refusal, match="ENCODER_ALIGNMENT_NOT_CERTIFIED"):
+        WW.run_task(t, store, trainer=LinearStandIn)

@@ -100,7 +100,7 @@ def _finish(db, now0, mae_for, rows="e" * 64):
 
 def _mae(t):
     base = 0.3 if t["members"] == ["f_a"] else (0.5 if len(t["members"]) == 3 else 0.9)
-    return base * (0.9 if t["input_mode"] == "TRAINED_ENCODER" else 1.0)
+    return base * {"TRAINED_ENCODER": 0.9, "RAW_LAG3": 1.1, "RANDOM_ENCODER": 1.2}.get(t["input_mode"], 1.0)
 
 
 def test_init_requires_extractibility_closure_and_matching_seal(tmp_path):
@@ -172,7 +172,7 @@ def test_complete_validates_identity_finite_metrics_and_paired_rows_across_input
         K.stage2(db)                                                          # stage 2 needs every stage-1 task terminal
     _finish(db, 1000, _mae, rows="a" * 64)
     out = K.stage2(db)
-    assert out["tasks"] == 3 * 52 * 2
+    assert out["tasks"] == 3 * 52 * 3
     peer_id = [t["task_id"] for t in K.list_tasks(db, set_id=raw["set_id"], week_start=raw["week"]["start"])
                if t["input_mode"] == "RANDOM_ENCODER"][0]
     peer = K.claim(db, "w", task_id=peer_id, now=5000)
@@ -250,7 +250,7 @@ def test_stage2_list_is_mechanical_sealed_and_encoders_never_choose_the_winner(t
     plan = json.loads((tmp_path / "out" / "WEEKLY_PLAN.json").read_text())
     import hashlib
     assert plan["stage2_rule_sha256"] == hashlib.sha256(Path(WW.STAGE2_RULE_PATH).read_bytes()).hexdigest()
-    assert plan["stage2_modes"] == ["RANDOM_ENCODER", "TRAINED_ENCODER"] and plan["input_modes"] == ["RAW"]
+    assert plan["stage2_modes"] == ["RAW_LAG3", "RANDOM_ENCODER", "TRAINED_ENCODER"] and plan["input_modes"] == ["RAW"]
     with pytest.raises(K.Refusal, match="STAGE2_NOT_COMPUTED"):
         K.close(db, warehouse_path=tmp_path / "wh.duckdb")
     _finish(db, 1000, _mae)
@@ -258,7 +258,7 @@ def test_stage2_list_is_mechanical_sealed_and_encoders_never_choose_the_winner(t
     assert sorted(s2["set_ids"]) == sorted(s["set_id"] for s in plan["sets"])          # all three are top-3 or ALL_ADMISSIBLE
     assert s2["stage2_rule_sha256"] == plan["stage2_rule_sha256"] and s2["list_sha256"]
     assert any(r.get("family") == "ALL_ADMISSIBLE" and r["rank"] == 0 for v in s2["reasons"].values() for r in v)
-    assert K.stage2(db)["list_sha256"] == s2["list_sha256"] and K.status(db)["total"] == 156 + 312   # idempotent
+    assert K.stage2(db)["list_sha256"] == s2["list_sha256"] and K.status(db)["total"] == 156 + 468   # idempotent
     with pytest.raises(K.Refusal, match="DENOMINATOR_INCOMPLETE"):
         K.close(db, warehouse_path=tmp_path / "wh.duckdb")
     # the TRAINED arm is better than RAW everywhere, yet the winner is the RAW winner
@@ -266,7 +266,9 @@ def test_stage2_list_is_mechanical_sealed_and_encoders_never_choose_the_winner(t
     closure = K.close(db, warehouse_path=tmp_path / "wh.duckdb")
     assert list(closure["winners"][POP]["Y_s_1h"]) == ["RAW"] and closure["winners"][POP]["Y_s_1h"]["RAW"]["members"] == ["f_a"]
     cmp_ = closure["encoder_comparison"][POP]["Y_s_1h"]
-    assert all(v["trained_minus_raw"] > 0 and abs(v["trained_minus_random"] - v["trained_minus_raw"]) < 1e-9 for v in cmp_.values())
+    for v in cmp_.values():          # like with like first: TRAINED vs RAW_LAG3 (same support); the lag cost is RAW_LAG3 minus RAW
+        assert v["trained_minus_raw_lag3"] > 0 and v["trained_minus_raw"] > 0 and v["raw_lag3_minus_raw"] < 0 and v["trained_minus_random"] > 0
+        assert abs((v["trained_minus_raw"]) - (v["trained_minus_raw_lag3"] + v["raw_lag3_minus_raw"])) < 1e-9
     assert closure["stage2"]["list_sha256"] == s2["list_sha256"]
 
 
@@ -281,13 +283,13 @@ def test_close_refuses_until_every_task_is_terminal_then_selects_and_reads_back(
     assert closure["state"] == "WEEKLY_SELECTION_COMPLETE" and closure["test_opened"] is False
     win = closure["winners"][POP]["Y_s_1h"]["RAW"]
     assert win["members"] == ["f_a"] and win["weeks"] == 52
-    assert closure["denominator"]["tasks"] == 468 and closure["denominator"]["terminal"] == 468
-    assert closure["warehouse"]["table"] == K.WAREHOUSE_TABLE and closure["warehouse"]["readback"]["count"] == 468
+    assert closure["denominator"]["tasks"] == 624 and closure["denominator"]["terminal"] == 624
+    assert closure["warehouse"]["table"] == K.WAREHOUSE_TABLE and closure["warehouse"]["readback"]["count"] == 624
     assert closure["warehouse"]["readback"]["matches_store"] is True
     doc = json.loads((tmp_path / "out" / "WEEKLY_SELECTION_COMPLETE.json").read_text())
     assert doc["closure_sha256"] == closure["closure_sha256"] and doc["final_selection"] is False
     again = K.close(db, warehouse_path=tmp_path / "wh.duckdb")                       # idempotent, no double writes
-    assert again["closure_sha256"] == closure["closure_sha256"] and again["warehouse"]["readback"]["count"] == 468
+    assert again["closure_sha256"] == closure["closure_sha256"] and again["warehouse"]["readback"]["count"] == 624
 
 
 def test_test_opens_once_only_after_the_freeze(tmp_path):

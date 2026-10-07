@@ -41,7 +41,7 @@ WAREHOUSE_TABLE = "feature_weekly_selection_v1"
 LEASE_SECONDS = 7200
 MAX_ATTEMPTS = 3
 DEFAULT_BAR_HOURS = {"EURUSD": 1, "ETH": 4}
-MODE_ORDER = {m: i for i, m in enumerate(("RAW", "RANDOM_ENCODER", "TRAINED_ENCODER"))}
+MODE_ORDER = {m: i for i, m in enumerate(("RAW", "RAW_LAG3", "RANDOM_ENCODER", "TRAINED_ENCODER"))}
 
 
 class Refusal(ValueError):
@@ -168,7 +168,7 @@ def claim(db, owner, *, now=None, task_id=None, input_mode=None, split=None, pop
             AND (? IS NULL OR json_extract(payload,'$.n_features')>=?) AND (? IS NULL OR json_extract(payload,'$.n_features')<=?)
             AND (state='PENDING' OR (state='LEASED' AND lease_until<? AND attempt<?))
             ORDER BY CASE split WHEN 'validation' THEN 0 ELSE 1 END,
-                     CASE input_mode WHEN 'RAW' THEN 0 WHEN 'RANDOM_ENCODER' THEN 1 ELSE 2 END, ordinal, set_id LIMIT 1""",
+                     CASE input_mode WHEN 'RAW' THEN 0 WHEN 'RAW_LAG3' THEN 1 WHEN 'RANDOM_ENCODER' THEN 2 ELSE 3 END, ordinal, set_id LIMIT 1""",
                           (task_id, task_id, input_mode, input_mode, split, split, population, population, min_features, min_features, max_features, max_features, now, MAX_ATTEMPTS)).fetchone()
         if row is None:
             return None

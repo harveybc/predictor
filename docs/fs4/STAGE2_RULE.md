@@ -11,8 +11,9 @@ mechanically in `tools/fs4_weekly_wrapper.py::stage2_set_ids`; nobody edits the 
    the sealed frontier (`FRONTIER_SEAL_EXT.json`) on EVERY eligible VALIDATION-2024 week, under
    `BUSINESS_WEEKLY_WALK_FORWARD` / `FULL_RETRAIN_ROLLING_4Y`. The winner per population and target is chosen only from
    stage 1, by the aggregate rule and tie rule in the plan.
-2. **Stage 2** runs the encoder input modes `RANDOM_ENCODER` (control) and `TRAINED_ENCODER` on a subset of the stage-1
-   sets, on the same weeks, with the same predictor, budget and seed.
+2. **Stage 2** runs three more input modes on a subset of the stage-1 sets, on the same weeks, with the same predictor, budget and
+   seed: `RAW_LAG3` (the RAW predictor with the encoder's own temporal support, see below), `RANDOM_ENCODER` (control) and
+   `TRAINED_ENCODER`.
 
 ## The stage-2 list (computed by the controller once every stage-1 task is terminal)
 
@@ -56,17 +57,37 @@ EVEN phase (output j of a stride-2 layer reads rows 2j-2 .. 2j):
   is a separate versioned arm (`docs/fs4/ENCODER_ORIGIN_COVERING_ARM_V2.md`) that the owner decides.
 - **The predictor's own branches** (RAW input) are trained from scratch inside each weekly fit, with their strided layers sampled so
   the last step covers the origin; no pretrained weights are applied at another phase there.
-- **Comparison caveat that every encoder report carries:** RAW sees the origin row, encoder arms see rows <= origin-3. The
-  TRAINED-minus-RAW difference is therefore conservative for the encoder, most of all at the 1-6 hour targets.
+- **Comparison caveat that every encoder report carries:** RAW sees the origin row, encoder arms see rows <= origin-3, so
+  TRAINED-minus-RAW is conservative for the encoder; the claim about the encoder is read from TRAINED-minus-RAW_LAG3.
 - **Gate:** the plan carries `encoder_alignment` (certificate digest, alignment name, lag). `stage2` and the encoder `run-task` refuse
   the encoder arms unless the status is CERTIFIED for this alignment and the certificate was issued for the digest of THIS file.
   RAW is unaffected.
 
+## RAW_LAG3: RAW with the encoder's own support (like with like)
+
+The encoder's last latent step reads grid hours <= origin - 3 (lag certified above). `RAW_LAG3` trains the SAME RAW network with
+the SAME budget, seed and rows, but each 24-row window ends at the last row whose timestamp is <= origin_ts - lag, not at the origin.
+No retraining of anything pretrained; the runner and its terminals are untouched. The lag in bars is DERIVED per population from
+`bar_hours`, never assumed: `lag_bars = ceil(lag_grid_hours / bar_hours)` and the window is cut by TIME, so weekend gaps behave as on
+the encoder's hourly grid.
+
+| population | bar_hours | lag_bars | newest visible row (origin on the bar grid) |
+|---|---|---|---|
+| EURUSD | 1 | 3 | origin - 3 h |
+| ETH | 4 | 1 | origin - 4 h (the bar at origin - 3 h does not exist; the previous bar is the newest the encoder sees) |
+
+`WEEKLY_PLAN.json` carries `support_lag` per population (and the task payload carries `support_lag_hours`, `support_lag_bars`); every
+RAW_LAG3 result records the offsets actually observed on its scored rows (`observed_support_offset_hours`). RAW_LAG3 is gated by the
+same alignment certificate as the encoder arms (its lag comes from it); RAW is unaffected. A fit origin is used only if its lagged
+window starts inside the rolling four years, so RAW_LAG3 has `lag_rows` fewer fit origins than RAW at the window's start; the scored
+rows are identical.
+
 ## Guarantees
 
-- The encoder arms CANNOT change the stage-1 winner choice. `close` selects winners from the RAW arm only; encoder
-  aggregates are reported as the raw-versus-encoder comparison (TRAINED minus RAW and TRAINED minus RANDOM, per set,
-  on identical weekly rows), with RANDOM_ENCODER as the control. Neither a reconstruction score nor an encoder skill
+- The stage-2 arms (RAW_LAG3 and the encoder arms) CANNOT change the stage-1 winner choice. `close` selects winners from the RAW arm
+  only. The comparison is reported per set on identical weekly rows: the like-with-like contrasts are TRAINED minus RAW_LAG3 and
+  RANDOM minus RAW_LAG3 (same temporal support), TRAINED minus RANDOM is the control, RAW_LAG3 minus RAW is the cost of the
+  support lag alone, and TRAINED minus RAW is the total (it contains that cost). Neither a reconstruction score nor an encoder skill
   chooses a feature set (FS4-10).
 - The encoder weights are the phase-4 runner's retained terminals for TRAIN fold `inner_2023` (fitted on TRAIN rows
   before 2023 only), frozen for all weeks; they are verified against the digests the runner recorded. A member with

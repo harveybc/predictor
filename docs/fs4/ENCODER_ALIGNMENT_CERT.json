@@ -4,7 +4,7 @@
   "the last latent step reads rows <= origin-3: a lag of 3 hour(s) on the hourly grid; RAW sees the origin row, so encoder arms are handicapped for short horizons",
   "the origin-covering alignment is not certified (untrained phase); removing the lag needs retraining arm v2"
  ],
- "cert_sha256": "0dd143cea05ce692adc2fb1b199da373451bb746a4e44db11485037be9daa281",
+ "cert_sha256": "1c97d11a12907d60d5c36a9a9a5092eb08400f17786d49df11cb2a980cb3416c",
  "choice_rule": "v2 (structural). Certify EVEN_AS_TRAINED, the runner's own phase, when (1) no latent step reads a row after the origin (analytic and empirical support agree), and (2) its replayed reconstruction MAE equals the runner terminal's MAE on every replayed terminal (relative error < 1e-4), i.e. the weights are applied exactly as trained and the instrument is the runner's. ODD_PHASE_ORIGIN_COVERING applies the same weights at a phase they were not trained at and is never certified whatever its reconstruction MAE; removing the 3-row lag of the last latent step needs a RETRAINED origin-covering arm v2 (docs/fs4/ENCODER_ORIGIN_COVERING_ARM_V2.md), which the owner decides. Reconstruction MAE and the linear probe under both alignments are reported as evidence of the cost of the lag, not as a gate. History: a first draft of this rule also required the untrained phase to be worse on >= 75 % of terminals; the replay showed it better on 7 of 9 EURUSD terminals and worse on 4 of 4 ETH terminals, so MAE cannot decide soundness and the gate was replaced by the structural rule above.",
  "criteria": {
   "as_trained_reads_no_row_after_origin": true,
@@ -38,6 +38,7 @@
  },
  "extractor_code_commit": "deffa53f722ce27696489de73820d32e0f00ccc5",
  "last_step_lag_hours_as_trained": 3,
+ "reissue_reason": "STAGE2_RULE.md gained RAW_LAG3 and the like-with-like comparison; encoder, runner (deffa53) and terminals unchanged, evidence reused",
  "replays": [
   {
    "feature_id": "roll_std_ret_252",
@@ -521,7 +522,7 @@
   }
  ],
  "schema": "fs4.encoder_alignment_cert.v1",
- "stage2_rule_sha256": "1417f2ca7636b3daf8757641c9d2a35f9af2d2e99538e20d208db6078f34c7cd",
+ "stage2_rule_sha256": "67c9af665f73cde89c0d68ee88e93def5244f9b3b25299742a22f17c50354c91",
  "status": "CERTIFIED",
  "structure": {
   "as_trained": {
@@ -635,6 +636,7 @@
    "last_step_reads_no_future": true
   }
  },
+ "supersedes_cert_sha256": "0dd143cea05ce692adc2fb1b199da373451bb746a4e44db11485037be9daa281",
  "test_read": 0,
  "validation_read": 0
 }
