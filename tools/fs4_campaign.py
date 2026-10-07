@@ -214,11 +214,14 @@ def fail(path, owner, task_id, reason, now=None, technical=False):
             con.execute("""UPDATE tasks SET state='PENDING',owner=NULL,lease_until=NULL,result=?
                 WHERE task_id=?""", (_canonical({"last_technical_failure": reason, "attempt": row["attempt"]}), task_id))
             return {"task_id": task_id, "failed": True, "retry": True, "attempt": row["attempt"]}
+        stored = {"reason": reason, "attempt": row["attempt"]}
         if not technical and NAFT_CODE_RE.match(reason):
-            code = NAFT_CODE_RE.match(reason).group(1)
-            con.execute("UPDATE tasks SET state=?,finished_at=?,result=? WHERE task_id=?",
-                        (NAFT, now, _canonical({"status": NAFT, "code": code, "reason": reason,
-                                                "attempt": row["attempt"]}), task_id))
+            # The row stays FAILED in the store (an older closure follower reads FAILED + a declared code as
+            # a typed refusal, so deployment order cannot break it); the disposition is carried by result.status
+            # and counted apart from failures by status() here and in the closure follower.
+            stored = {"status": NAFT, "code": NAFT_CODE_RE.match(reason).group(1), **stored}
+            con.execute("UPDATE tasks SET state='FAILED',finished_at=?,result=? WHERE task_id=?",
+                        (now, _canonical(stored), task_id))
             return {"task_id": task_id, "failed": False, "state": NAFT, "retry": False}
         con.execute("UPDATE tasks SET state='FAILED',finished_at=?,result=? WHERE task_id=?",
                     (now, _canonical({"reason": reason, "attempt": row["attempt"]}), task_id))

@@ -125,9 +125,11 @@ NAFT_CODE_RE = re.compile(r"^(NO_TRAIN_OBSERVATIONS|INSUFFICIENT_TRAIN_[A-Z0-9_]
 
 
 def is_not_available(task: dict) -> bool:
-    """A terminal NOT_AVAILABLE_FOR_TRAIN disposition: the explicit state, or a FAILED row from before
-    the explicit state existed whose stored reason starts with a no-TRAIN-rows code."""
+    """A terminal NOT_AVAILABLE_FOR_TRAIN disposition: a FAILED row whose stored result says so (the controller's
+    record), or whose reason starts with a no-TRAIN-rows code (rows written before the status was stored)."""
     if task["state"] == NAFT:
+        return True
+    if task["state"] == "FAILED" and isinstance(task.get("result"), dict) and task["result"].get("status") == NAFT:
         return True
     reason = str((task.get("result") or {}).get("reason") or "") if isinstance(task.get("result"), dict) else ""
     return task["state"] == "FAILED" and bool(NAFT_CODE_RE.match(reason))
