@@ -220,3 +220,28 @@ def test_closure_reads_worker_reasons_as_typed_or_technical():
     for rc, out in ((4, typed_stdout("REFUSED_GPU_NOT_VERIFIED", "GPU_NOT_VERIFIED")), (3, typed_stdout("REFUSED_MemoryError", "REFUSED")), (139, "")):
         kind, reason = worker.classify_exit(out, rc, "REFUSED_GPU_NOT_VERIFIED tail")
         assert kind == "technical" and not typed(reason)
+
+
+def test_remote_words_are_quoted_so_a_reason_stays_one_argument(tmp_path):
+    import shlex
+    args = make_args(tmp_path, "/bin/true")
+    reason = "TECHNICAL_FAILURE rc=1: a (b) 'c' $HOME; rm -rf x"
+    command = worker.ssh_command(args, ["python3", args.controller, "--db", args.db, "fail", "--owner", args.owner,
+                                        "--task-id", TASK_ID, "--reason", reason])
+    assert command[-2] == "coord"
+    assert shlex.split(command[-1])[-1] == reason and len(shlex.split(command[-1])) == 11
+
+
+def test_controller_gate_allows_only_the_controller_verbs_for_the_role():
+    from tools.fs4_deploy import controller_gate as gate
+    py, ctl, db = "python3", "/s/tools/fs4_campaign.py", "/s/queue_v2.sqlite"
+    ok = f"{py} {ctl} --db {db} fail --owner worker_b-cpu-raw --task-id {TASK_ID} --reason 'TECHNICAL_FAILURE x (y)' --technical"
+    assert gate.validate(ok, "worker_b", py, ctl, db)[4] == "fail"
+    assert gate.validate(f"{py} {ctl} --db {db} status", "worker_b", py, ctl, db)[-1] == "status"
+    for bad in (f"{py} {ctl} --db /other.sqlite status",
+                f"{py} {ctl} --db {db} init --candidates x --fold f",
+                f"{py} {ctl} --db {db} claim --owner worker_a-cpu-raw",
+                f"{py} {ctl} --db {db} status; rm -rf ~",
+                f"bash -c id", "", "python3 'unterminated"):
+        with pytest.raises(PermissionError):
+            gate.validate(bad, "worker_b", py, ctl, db)

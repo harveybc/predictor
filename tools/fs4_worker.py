@@ -15,6 +15,7 @@ import argparse
 import json
 import os
 import re
+import shlex
 import signal
 import subprocess
 import tempfile
@@ -109,11 +110,16 @@ def host_health(args, meminfo=None, gpu=None) -> dict:
     return report
 
 
+def ssh_command(args, remote_argv: list[str]) -> list[str]:
+    """ssh joins its arguments with spaces for the remote shell, so every word is quoted: a failure
+    reason such as 'runner rc=1: a (b) c' must reach the controller as ONE argument."""
+    return ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", args.coordinator,
+            " ".join(shlex.quote(word) for word in remote_argv)]
+
+
 def controller(args, action: str, extra: list[str] | None = None, input_value=None):
-    command = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10",
-               args.coordinator, args.python, args.controller, "--db", args.db,
-               action, "--owner", args.owner]
-    command.extend(extra or [])
+    command = ssh_command(args, [args.python, args.controller, "--db", args.db, action, "--owner", args.owner]
+                          + list(extra or []))
     result = subprocess.run(command, input=json.dumps(input_value) if input_value is not None else None,
                             text=True, capture_output=True, timeout=90, check=False)
     if result.returncode:
@@ -272,8 +278,7 @@ def main(argv=None):
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.status:
-        command = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10",
-                   args.coordinator, args.python, args.controller, "--db", args.db, "status"]
+        command = ssh_command(args, [args.python, args.controller, "--db", args.db, "status"])
         result = subprocess.run(command, text=True, capture_output=True, timeout=90, check=False)
         if result.returncode:
             raise SystemExit(result.stderr)
