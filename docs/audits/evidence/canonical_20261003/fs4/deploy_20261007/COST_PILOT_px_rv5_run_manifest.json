@@ -1,0 +1,89 @@
+{
+  "arch_config": {
+    "calendar_dim": 6,
+    "decoder_dilations": [
+      1,
+      2
+    ],
+    "decoder_filters": 16,
+    "dilations": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32
+    ],
+    "filters": 16,
+    "kernel_size": 3,
+    "known_calendar": [],
+    "latent_dim": 8,
+    "window": 24
+  },
+  "args": {
+    "batch_dir": "~/.local/state/canonical_20261003/ps2/batch_001",
+    "batch_size": 64,
+    "dae_sigma": 0.1,
+    "dilations": "1,2,4,8,16,32",
+    "families": "identity,random,ae,dae",
+    "features": "px.rv5",
+    "filters": 16,
+    "kernel_size": 3,
+    "latent_dim": 8,
+    "learning_rate": 0.001,
+    "max_epochs": 200,
+    "max_fit_windows": 4096,
+    "max_ref_windows": 256,
+    "max_val_windows": 512,
+    "min_delta": 0.0,
+    "out_dir": "~/.local/state/canonical_20261003/fs4/cost_pilot_px_rv5_20261007",
+    "p2c_max_lag": 0,
+    "p2c_pairs_per_epoch": 512,
+    "patience": 10,
+    "pretext_mask_ratio": 0.5,
+    "probe_lags": "0,1,2,23",
+    "ridge_alpha": 1.0,
+    "seed": 0,
+    "window": 24
+  },
+  "batch_dir": "~/.local/state/canonical_20261003/ps2/batch_001",
+  "batch_id": "batch_001",
+  "batch_manifest_sha256": "b0b9c4efd38b5fd97cfcd25ccfa416f18a0ae277a54a73a072ab7d78b0e3e21d",
+  "cgroup_peak_bytes": 3722018816,
+  "code_commit": null,
+  "cpu_count": 32,
+  "cuda_visible_devices": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+  "early_stop": {
+    "max_epochs": 200,
+    "min_delta": 0.0,
+    "monitor": "masked_val_mse",
+    "patience": 10
+  },
+  "families": [
+    "identity",
+    "random",
+    "ae",
+    "dae"
+  ],
+  "features": [
+    "px.rv5"
+  ],
+  "folds": [
+    "inner_2019",
+    "inner_2020",
+    "inner_2021",
+    "inner_2022",
+    "inner_2023"
+  ],
+  "machine": "x86_64",
+  "peak_rss_bytes": 3445207040,
+  "receptive_field_steps": 255,
+  "results_sha256": "df0f879e48984f58ab3dca366979aa589e50153574561c1f4da643a6bf097db4",
+  "schema": "ut_pilot_run.v1",
+  "seed": 0,
+  "series_sha256": "3e4404d260d9236ca24fc8561eedbfcc9c47a609d3e64b68870c204a3731f025",
+  "status": "COMPLETED",
+  "targets_sha256": "7dbb0b9552f27873d0bf58604908cd8f6b46c7daa1ee56cb44cd23c42fa9c209",
+  "tensorflow": "2.21.0",
+  "wall_seconds": 504.1523871809477
+}

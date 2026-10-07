@@ -1,0 +1,44 @@
+{
+ "bogus": {
+  "build": {
+   "cuda_version": "12.5.1",
+   "cudnn_version": "9",
+   "is_cuda_build": "True"
+  },
+  "cuda_device_order": "PCI_BUS_ID",
+  "cuda_visible_devices": "GPU-00000000-0000-0000-0000-000000000000",
+  "gpu_count": 0,
+  "gpus": [],
+  "ok": true,
+  "schema": "fs4.tf_probe.v1",
+  "tensorflow": "2.21.0"
+ },
+ "bogus_rc": 0,
+ "expected": {
+  "build": {
+   "cuda_version": "12.5.1",
+   "cudnn_version": "9",
+   "is_cuda_build": "True"
+  },
+  "cuda_device_order": "PCI_BUS_ID",
+  "cuda_visible_devices": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+  "expect_uuid": "GPU-a8bd1b2c-26c4-f3a9-0fc0-fc3dfc6780f9",
+  "gpu_count": 1,
+  "gpus": [
+   {
+    "details": {
+     "compute_capability": "(8, 9)",
+     "device_name": "NVIDIA GeForce RTX 4090 Laptop GPU"
+    },
+    "name": "/physical_device:GPU:0"
+   }
+  ],
+  "matmul_device": "/job:localhost/replica:0/task:0/device:GPU:0",
+  "ok": true,
+  "schema": "fs4.tf_probe.v1",
+  "tensorflow": "2.21.0"
+ },
+ "expected_rc": 0,
+ "interpreter": "conda tensorflow env (pre-venv)",
+ "role": "worker_b"
+}

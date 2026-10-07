@@ -1,0 +1,5 @@
+GPU 0: NVIDIA GeForce RTX 5070 Ti Laptop GPU (UUID: GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519)
+Unable to determine the device handle for gpu 0000:0A:00.0: Unknown Error
+Unable to determine the device handle for GPU1: 0000:0A:00.0: Unknown Error
+uuid, name, memory.total [MiB], temperature.gpu
+GPU-b77fc3ad-db77-b648-dc15-ec79b65e2519, NVIDIA GeForce RTX 5070 Ti Laptop GPU, 12227 MiB, 55
