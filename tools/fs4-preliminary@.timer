@@ -1,9 +1,9 @@
 [Unit]
-Description=Dispatch one preliminary FS4 %i task every two minutes
+Description=Dispatch one preliminary FS4 %i task after a short cooldown
 
 [Timer]
 OnBootSec=30s
-OnUnitInactiveSec=2min
+OnUnitInactiveSec=15s
 Unit=fs4-preliminary@%i.service
 Persistent=true
 

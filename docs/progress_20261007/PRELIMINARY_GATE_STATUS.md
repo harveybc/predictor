@@ -26,20 +26,22 @@ This is a computational triage, **not final selection**. A feature with
 overlap and limited power remain explicit. The deferred set is preserved by
 identity for expansion after the paired weekly comparison, rather than deleted.
 
-The deployed priority dispatcher reads the original coordinator task store,
-checks the pinned manifest digest, chooses only a pending `TRAINED_ENCODER`
-task in this first wave, and hands its exact task ID to the existing FS4
-worker. The controller still owns leases and completion. The original plan and
-warehouse receipts remain unchanged. Its global 6,495-task closure cannot be
-claimed from the first wave; the successor needs a separately named partial
-wave closure or a reviewed, versioned successor plan. Do not mark the existing
-`EXTRACTIBILITY_COMPLETE` gate true on partial evidence.
+The deployed priority dispatchers read the original coordinator task store,
+check the pinned manifest digest, and choose pending `RAW`, `RANDOM_ENCODER`,
+and `TRAINED_ENCODER` tasks from this same first wave. They hand exact task IDs
+to the existing FS4 workers. The controller still owns leases and completion.
+The original plan and warehouse receipts remain unchanged. Its global
+6,495-task closure cannot be claimed from the first wave; the successor needs
+a separately named partial-wave closure or a reviewed, versioned successor
+plan. Do not mark the existing `EXTRACTIBILITY_COMPLETE` gate true on partial
+evidence.
 
-The current FS4 runner stops on the fixed masked MSE of a purged TRAIN tail.
-It does **not** yet implement the requested average of comparable fit-TRAIN
-and purged-TRAIN validation MSE for patience. That runner change needs a new
-code pin and replay before a first-wave result is promoted from diagnostic to
-selection evidence. The outer 2024 validation remains unopened. Likewise,
+The first-wave FS4 runner is pinned to feature-extractor commit `76719bd7`.
+Its patience monitor is the equal-weight mean of fixed-mask fit-TRAIN and
+purged-TRAIN-tail reconstruction MSE, and it restores the selected checkpoint.
+The prior runner used only the purged TRAIN tail; receipts must retain their
+runner identity rather than being combined silently. The outer 2024 validation
+remains unopened. Likewise,
 reconstruction against observed values is not proof of a noise-free signal:
 SNR requires a defined reference or injected noise with retained identity.
 The FS4 `naive_mae` is persistence for the feature being reconstructed on the

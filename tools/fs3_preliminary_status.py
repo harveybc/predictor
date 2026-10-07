@@ -52,7 +52,7 @@ def summarize(queue: Path, manifest_path: Path) -> dict:
     trained_done = sum(counts["TRAINED_ENCODER"][state] for state in TERMINAL) + typed_refused["TRAINED_ENCODER"]
     eta = None
     if len(recent_gpu_durations) >= 5:
-        eta = round((expected - trained_done) * (statistics.median(recent_gpu_durations) + 120) / 2)
+        eta = round((expected - trained_done) * (statistics.median(recent_gpu_durations) + 15) / 2)
     return {"schema": "fs3.preliminary_wave_status.v1",
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "manifest": str(manifest_path), "queue": str(queue),
@@ -62,7 +62,7 @@ def summarize(queue: Path, manifest_path: Path) -> dict:
                              for arm in ARMS},
             "typed_refused_per_arm": typed_refused,
             "gpu_eta_seconds": eta,
-            "gpu_eta_basis": "last-hour median task duration + 120s timer, two uninterrupted GPU slots",
+            "gpu_eta_basis": "last-hour median task duration + 15s timer, two uninterrupted GPU slots",
             "by_population_tasks": by_population, "final_selection": False}
 
 
