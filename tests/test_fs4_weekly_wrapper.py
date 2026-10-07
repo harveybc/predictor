@@ -48,7 +48,7 @@ def _inputs(tmp_path, val_end=datetime(2025, 1, 1, tzinfo=UTC), gap=False):
         keep = ~((vf["t_decision_utc"] >= "2024-01-15") & (vf["t_decision_utc"] < "2024-01-22"))
         vf, vt = vf[keep].reset_index(drop=True), vt[keep].reset_index(drop=True)
     d = tmp_path / "in"
-    d.mkdir(exist_ok=True)
+    d.mkdir(parents=True, exist_ok=True)
     paths = {}
     for name, df in (("train_features", tf), ("train_targets", tt), ("val_features", vf), ("val_targets", vt)):
         p = d / f"{name}.parquet"

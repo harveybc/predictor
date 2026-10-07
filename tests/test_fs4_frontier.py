@@ -34,10 +34,10 @@ def _consolidated():
         for k in (2, 4, 6, 8):
             sets.append(_set(target, ["MRMR"], FEATURES[:k]))                 # best-ranked prefix
             sets.append(_set(target, ["JMI"], FEATURES[-k:]))                 # worst-ranked suffix
-            sets.append(_set(target, ["UNIVARIATE_MI"], FEATURES[:k]) | {"set_id": "dup"})  # fixed below
+            sets.append(_set(target, ["UNIVARIATE_MI"], FEATURES[3:k + 3]))
             sets.append(_set(target, ["CAUSAL_SUPPORTED"], FEATURES[1:k + 1]))
             sets.append(_set(target, ["RANDOM_K"], FEATURES[2:k + 2]))
-    # UNIVARIATE_MI shares members with MRMR -> in a real consolidation they are one set with two methods
+    # sets with identical members merge into one set carrying every method (as consolidation does)
     merged = {}
     for s in sets:
         key = (s["target_id"], tuple(s["members"]))

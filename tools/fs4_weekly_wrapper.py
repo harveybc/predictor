@@ -81,6 +81,10 @@ def _now() -> str:
     return W._now()
 
 
+def _hex(d: str) -> str:
+    return d.split(":", 1)[1] if d.startswith("sha256:") else d
+
+
 def rows_digest(record_ids) -> str:
     return hashlib.sha256("|".join(str(r) for r in record_ids).encode()).hexdigest()
 
@@ -148,7 +152,7 @@ def build_plan(consolidated: list[dict], seals: list[dict], *, validation_year: 
         "populations": populations, "denominator": denominator,
         "sets": sorted(sets, key=lambda s: (s["population_id"], s["target_id"], s["set_id"])),
         "weeks": weeks, "test_weeks": test_weeks, "weeks_in_validation_year": len(weeks), "test_weeks_sealed": len(test_weeks),
-        "support": {"purge": "target horizon hours", "input_lookback": f"{spec.window} bars x bar_hours", "inner_validation_weeks": 1,
+        "support": {"purge": "target horizon hours", "input_lookback": f"{spec.window} rows; a fit origin needs all {spec.window} rows at or after fit_start", "inner_validation_weeks": 1,
                     "availability": "features available at the bar end (as-of columns from PS1); available_time == decision time"},
         "preprocessing": "fit-row median imputation and fit-row z-score per feature, refit every week",
         "naive": NAIVE_RULE, "scored_rows": SCORED_ROWS_RULE, "aggregate_rule": AGGREGATE_RULE, "tie_rule": TIE_RULE,
@@ -342,14 +346,15 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
         raise Refusal(f"MEMBERS_NOT_IN_INPUTS: {missing[:5]}")
     horizon = int(task["horizon_hours"])
     purge = dt.timedelta(hours=horizon)
-    support = SupportSpec(input_lookback=dt.timedelta(hours=spec.window * store.bar_hours), target_horizon=purge,
+    support = SupportSpec(input_lookback=dt.timedelta(0), target_horizon=purge,
                           maximum_holding_support=dt.timedelta(0), inner_validation_weeks=1)
     y = store.targets[target]
     finite = np.isfinite(y)
     lo = np.searchsorted(store.ts, int(week.fit_start.timestamp()), side="left")
     hi = np.searchsorted(store.ts, int((week.cutoff - purge).timestamp()), side="right")
     rows = []
-    for i in range(lo, hi):
+    # an origin needs a full window of `spec.window` rows inside the rolling four years: no input row predates fit_start
+    for i in range(lo + spec.window - 1, hi):
         if not finite[i]:
             continue
         et = dt.datetime.fromtimestamp(int(store.ts[i]), UTC)
@@ -378,7 +383,7 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
     fit_idx = np.array([store.rid_index[r.record_id] for r in window.fit_rows], dtype="int64")
     inner_idx = np.array([store.rid_index[r.record_id] for r in window.inner_validation_rows], dtype="int64")
     base.update({"fit_rows": int(fit_idx.size), "inner_rows": int(inner_idx.size), "purged_rows": int(window.purged_count),
-                 "fit_population_digest": window.fit_population_digest, "inner_population_digest": window.inner_validation_population_digest,
+                 "fit_population_digest": _hex(window.fit_population_digest), "inner_population_digest": _hex(window.inner_validation_population_digest),
                  "fit_max_event_time": _iso(max(r.event_time for r in window.fit_rows)) if window.fit_rows else task["week"]["cutoff"],
                  "fit_end": _iso(window.fit_end), "inner_validation_start": _iso(window.inner_validation_start),
                  "inner_validation_end": _iso(window.inner_validation_end)})

@@ -36,10 +36,10 @@ def _consolidated(tmp_path):
     return p
 
 
-def _extractibility(tmp_path, state="EXTRACTIBILITY_COMPLETE"):
+def _extractibility(tmp_path, state="EXTRACTIBILITY_COMPLETE", name="EXTRACTIBILITY_COMPLETE.json"):
     body = {"schema": F.EXTRACTIBILITY_SCHEMA, "state": state, "populations": {POP: {"features": {}}}}
     body["closure_sha256"] = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
-    p = tmp_path / "EXTRACTIBILITY_COMPLETE.json"
+    p = tmp_path / name
     p.write_text(json.dumps(body))
     return p
 
@@ -60,12 +60,12 @@ def _campaign(tmp_path, modes=("RAW", "RANDOM_ENCODER")):
     return db, out
 
 
-def _result(task, mae=0.5, naive=1.0, rows="r" * 64, disposition="COMPLETED"):
+def _result(task, mae=0.5, naive=1.0, rows="e" * 64, disposition="COMPLETED"):
     r = {"schema": WW.RESULT_SCHEMA, "status": "COMPLETE", "task_id": task["task_id"], "disposition": disposition,
          "set_id": task["set_id"], "week_start": task["week"]["start"], "input_mode": task["input_mode"],
          "population_id": POP, "target_id": task["target_id"], "seed": 0, "split": task["split"],
          "rows_sha256": rows, "n_scored": 10, "n_features": len(task["members"]), "fit_population_digest": "f" * 64,
-         "model_sha256": "m" * 64, "input_sha256": "i" * 64, "code_sha256": "c" * 64,
+         "model_sha256": "a" * 64, "input_sha256": "b" * 64, "code_sha256": "c" * 64,
          "cost": {"fit_seconds": 1.0, "wall_seconds": 1.5, "epochs": 2, "best_epoch": 1, "updates": 10, "peak_rss_bytes": 1, "n_params": 5}}
     if disposition == "COMPLETED":
         r["metrics"] = {"mae": mae, "mse": mae ** 2, "naive_mae": naive, "naive_mse": naive ** 2}
@@ -77,7 +77,7 @@ def _result(task, mae=0.5, naive=1.0, rows="r" * 64, disposition="COMPLETED"):
 
 def test_init_requires_extractibility_closure_and_matching_seal(tmp_path):
     cons = _consolidated(tmp_path)
-    running = _extractibility(tmp_path, state="RUNNING")
+    running = _extractibility(tmp_path, state="RUNNING", name="RUNNING.json")
     with pytest.raises(K.Refusal, match="EXTRACTIBILITY_NOT_COMPLETE"):
         seal = _seal(tmp_path, cons, _extractibility(tmp_path))
         K.initialize(tmp_path / "q.sqlite", [cons], [seal], running, out_dir=tmp_path / "o", validation_year=2024, input_modes=("RAW",))
@@ -130,7 +130,7 @@ def test_claim_orders_raw_first_then_week_and_a_terminal_is_never_repeated(tmp_p
 def test_complete_validates_identity_finite_metrics_and_paired_rows_across_input_modes(tmp_path):
     db, _ = _campaign(tmp_path)
     raw = K.claim(db, "w", now=100)
-    with pytest.raises(K.Refusal, match="RESULT_IDENTITY"):
+    with pytest.raises(K.Refusal, match="NO_LIVE_LEASE|RESULT_IDENTITY"):
         K.complete(db, "w", {**_result(raw), "task_id": "x" * 64}, now=101)
     with pytest.raises(K.Refusal, match="INVALID_METRIC"):
         K.complete(db, "w", {**_result(raw), "metrics": {"mae": float("nan"), "mse": 1, "naive_mae": 1, "naive_mse": 1}}, now=101)

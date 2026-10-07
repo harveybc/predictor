@@ -16,6 +16,7 @@ IDENTITY = "phase1-synthetic:0000000000000000"
 
 
 def _closure(path: Path, candidates: list, population="EURUSD", alias=None):
+    path.mkdir(parents=True, exist_ok=True)
     body = {"state": "PHASE_3_FILTER_COMPLETE", "population_id": population, "identity": IDENTITY,
             "closure_sha256": "", "units": [{"target_id": t, "unit_id": hashlib.sha256(t.encode()).hexdigest()}
                                             for t in sorted({c["target_id"] for c in candidates})],
@@ -34,7 +35,7 @@ def _closure(path: Path, candidates: list, population="EURUSD", alias=None):
 def _cand(target, method, k, members, horizon=1):
     body = {"target_id": target, "method": method, "k": k, "members": list(members), "horizon_hours": horizon,
             "label": "FILTER_CANDIDATE", "population_id": "EURUSD", "identity": IDENTITY, "is_final_selection": False}
-    body["subset_sha256"] = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
+    body["subset_sha256"] = hashlib.sha256(json.dumps([target, method, k, sorted(members)]).encode()).hexdigest()
     return body
 
 

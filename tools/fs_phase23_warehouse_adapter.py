@@ -38,6 +38,7 @@ TABLES = (
     "feature_pair_metrics", "feature_pair_stability", "feature_pair_gate",
     "feature_alias_groups", "feature_redundancy_clusters",
     "feature_filter_rankings", "feature_filter_subsets",
+    "feature_weekly_selection_v1",   # phase 4: one row per set x week x input mode (additive)
 )
 
 
