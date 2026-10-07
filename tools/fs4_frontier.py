@@ -19,6 +19,10 @@ import os
 import sys
 from pathlib import Path
 
+HERE = Path(__file__).resolve().parent
+if str(HERE.parent) not in sys.path:
+    sys.path.insert(0, str(HERE.parent))
+
 from tools.fs4_candidates import CONTROL_METHODS, FILTER_METHODS, Refusal, canonical, digest, write_atomic
 
 FRONTIER_SCHEMA = "fs4.frontier_seal.v1"

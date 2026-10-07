@@ -115,6 +115,10 @@ def initialize(db, consolidated_paths, seal_paths, extractibility_path, *, out_d
             raise Refusal(f"CONSOLIDATED_SCHEMA_INVALID: {p}")
         consolidated.append(c)
     seals = [F.load_seal(p) for p in seal_paths]
+    for seal in seals:
+        if seal["inputs"]["extractibility"]["closure_sha256"] != ext["closure_sha256"]:
+            raise Refusal(f"FRONTIER_SEAL_WITHOUT_EXTRACTIBILITY: the {seal['population_id']} seal was sealed without (or with another) "
+                          "extractibility closure; re-seal with --extractibility before initialising the weekly campaign")
     bar_hours = dict(DEFAULT_BAR_HOURS) | dict(bar_hours or {})
     try:
         plan = WW.build_plan(consolidated, seals, validation_year=validation_year, input_modes=tuple(input_modes),
