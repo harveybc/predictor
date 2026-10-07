@@ -127,21 +127,137 @@ def test_column_permutation_gives_identical_fit_and_budget_is_the_same_for_any_s
     assert small.budget_sha256 == rep.budget_sha256 and small.architecture_sha256 == rep.architecture_sha256
 
 
-@needs_tf
-def test_random_encoder_never_updates_and_trained_encoder_loads_chosen_weights(tmp_path):
-    X, y = _synthetic(f=2)
-    enc_spec = P.EncoderSpec()
-    rnd = P.FrozenEncoder.from_random(enc_spec, n_features=2, seed=0)
-    before = rnd.weights_sha256
-    lat = rnd.transform(P.make_windows(X, np.arange(24, 100), window=enc_spec.window)[0])
-    assert lat.shape == (76, enc_spec.latent_steps, 2 * enc_spec.latent_dim)              # (B, 6, F*D) time kept
-    assert rnd.weights_sha256 == before and rnd.optimizer_steps == 0                         # FS4-05
-    spec = P.PredictorSpec(max_epochs=2, batch_size=64)
-    rep = P.fit_predictor(spec, X, y, np.arange(24, 400), np.arange(400, 480), input_mode="RANDOM_ENCODER", encoder=rnd, seed=0)
-    assert rnd.weights_sha256 == before and rep.encoder_sha256 == before
-    path = tmp_path / "chosen.npz"
-    rnd.save(path)
-    loaded = P.FrozenEncoder.from_npz(enc_spec, path, expected_sha256=before)
-    assert loaded.weights_sha256 == before
+EXTRACTOR = os.environ.get("FS4_EXTRACTOR_CODE")
+needs_runner = pytest.mark.skipif(not (TF and EXTRACTOR), reason="needs FS4_TF_TESTS=1 and FS4_EXTRACTOR_CODE (pinned feature-extractor checkout)")
+IDENTITY = "synthetic-train:v1"
+ROLE = "synthetic_train"
+
+
+def _ts(y, m, d):
+    import datetime as dt
+    return int(dt.datetime(y, m, d, tzinfo=dt.timezone.utc).timestamp())
+
+
+@pytest.fixture(scope="module")
+def runner_root(tmp_path_factory):
+    """Retained terminals of the REAL phase-4 runner (feature-extractor app/fs4_task_runner.py) on a tiny corpus."""
+    import io
+    import json
+
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    P.load_extractor(EXTRACTOR)
+    from app import fs4_extractibility as X
+    from app import fs4_task_runner as R
+    from app import univariate_temporal as U
+
+    d = tmp_path_factory.mktemp("runner")
+    rng = np.random.default_rng(0)
+    ts = np.arange(_ts(2018, 1, 1), _ts(2020, 3, 1), 3600, dtype=np.int64)
+    ts = ts[((ts // 86400 + 3) % 7) != 6]
+    n = ts.size
+    cols = {}
+    for name in ("feat_a", "feat_b"):
+        e = rng.normal(size=n)
+        v = np.zeros(n)
+        for t in range(1, n):
+            v[t] = 0.9 * v[t - 1] + e[t]
+        v[rng.random(n) < 0.05] = np.nan
+        cols[name] = v
+    path = str(d / "train.parquet")
+    pq.write_table(pa.table({"t_decision_utc": pa.array(ts * 10 ** 9, pa.timestamp("ns", tz="UTC")),
+                             "row_id": np.arange(n, dtype=np.int64), **cols}), path)
+    reg = d / "registry.json"
+    reg.write_text(json.dumps({IDENTITY: {"population_id": "SYN", "bar_seconds": 3600, "files": {ROLE: U.sha256_file(path)}}}))
+    out = d / "out"
+    for feat in cols:
+        for arm in ("RANDOM_ENCODER", "TRAINED_ENCODER"):
+            payload = {"schema": R.TASK_SCHEMA, "population_id": "SYN", "identity": IDENTITY, "feature_id": feat,
+                       "fold_id": "inner_2019", "arm": arm, "seed": 0}
+            claim = {**payload, "task_id": X.task_digest(payload), "attempt": 1, "lease_until": 0}
+            buf = io.StringIO()
+            rc = R.main(["--input", f"{ROLE}={path}", "--corpus-registry", str(reg), "--allow-cpu-training", "--max-epochs", "2",
+                         "--patience", "1", "--max-fit-windows", "256", "--min-fit-windows", "64", "--min-scoring-windows", "16",
+                         "--output-root", str(out)], stdin=io.StringIO(json.dumps(claim)), stdout=buf)
+            assert rc == 0, buf.getvalue()
+    return {"root": out, "ts": ts, "cols": cols, "spec": P.EncoderSpec(fold_id="inner_2019")}
+
+
+def _bank(rr, arm, ts=None, cols=None, root=None, features=("feat_a", "feat_b")):
+    ts = rr["ts"] if ts is None else ts
+    X = np.column_stack([(rr["cols"] if cols is None else cols)[f] for f in features])
+    return P.RunnerEncoderBank(rr["spec"], features, ts, X, arm=arm, population_id="SYN", identity=IDENTITY,
+                               results_root=rr["root"] if root is None else root, code_dir=EXTRACTOR)
+
+
+@needs_runner
+def test_bank_loads_real_runner_files_and_verifies_their_digests(runner_root):
+    rr = runner_root
+    trained, rnd = _bank(rr, "TRAINED_ENCODER"), _bank(rr, "RANDOM_ENCODER")
+    idx = np.arange(5000, 5100)
+    zt, kept = trained.latents(idx)
+    zr, _ = rnd.latents(idx)
+    assert zt.shape == (100, 6, 16) and kept.tolist() == idx.tolist() and np.all(np.isfinite(zt))      # (B, 6, F*D): time preserved
+    assert not np.allclose(zt, zr) and trained.weights_sha256 != rnd.weights_sha256
+    assert trained.optimizer_steps == 0 and rnd.optimizer_steps == 0 and trained.n_features == 2 and trained.latent_dim == 8
+    short, kshort = trained.latents(np.array([3, 5000]))                      # an origin without a 24-hour history is dropped
+    assert kshort.tolist() == [5000] and short.shape[0] == 1
+
+
+@needs_runner
+def test_bank_refuses_a_tampered_or_missing_runner_terminal(runner_root, tmp_path):
+    import json
+    import shutil
+
+    rr = runner_root
+    root = tmp_path / "copy"
+    shutil.copytree(rr["root"], root)
+    victim = sorted(root.glob("*/result.json"))
+    rec = [json.loads(p.read_text()) for p in victim]
+    target = next(p for p, r in zip(victim, rec) if r["arm"] == "TRAINED_ENCODER" and r["feature_id"] == "feat_a")
+    r = json.loads(target.read_text())
+    r["weights"]["chosen_weights_sha256"] = "0" * 64
+    target.write_text(json.dumps(r))
     with pytest.raises(P.Refusal, match="ENCODER_IDENTITY_MISMATCH"):
-        P.FrozenEncoder.from_npz(enc_spec, path, expected_sha256="0" * 64)
+        _bank(rr, "TRAINED_ENCODER", root=root)
+    with pytest.raises(P.Refusal, match="RUNNER_RESULT_MISSING"):
+        _bank(rr, "TRAINED_ENCODER", cols={**rr["cols"], "feat_missing": rr["cols"]["feat_a"]}, features=("feat_a", "feat_missing"))
+    h5 = next(root.glob("*/chosen.weights.h5"))
+    h5.write_bytes(h5.read_bytes() + b"x")
+    with pytest.raises(P.Refusal, match="ENCODER_FILE_IDENTITY_MISMATCH|ENCODER_IDENTITY_MISMATCH"):
+        for arm_bank in ("TRAINED_ENCODER",):
+            _bank(rr, arm_bank, root=root, features=("feat_a",))
+            _bank(rr, arm_bank, root=root, features=("feat_b",))
+
+
+@needs_runner
+def test_latents_never_see_rows_after_the_origin(runner_root):
+    rr = runner_root
+    base = _bank(rr, "TRAINED_ENCODER")
+    idx = np.arange(6000, 6040)
+    z0, _ = base.latents(idx)
+    cols = {k: v.copy() for k, v in rr["cols"].items()}
+    for k in cols:
+        cols[k][6040:] = 1e6
+    z1, _ = _bank(rr, "TRAINED_ENCODER", cols=cols).latents(idx)
+    assert np.array_equal(z0, z1)                                             # FS4-03
+
+
+@needs_runner
+def test_encoder_arms_fit_with_a_frozen_bank_and_the_same_budget(runner_root):
+    rr = runner_root
+    X = np.column_stack([rr["cols"]["feat_a"], rr["cols"]["feat_b"]])
+    y = np.nan_to_num(np.roll(X[:, 0], 1))
+    spec = P.PredictorSpec(max_epochs=2, batch_size=64, patience=1)
+    fit_idx, inner_idx = np.arange(100, 6000), np.arange(6000, 6600)
+    reps = {}
+    for arm in ("RANDOM_ENCODER", "TRAINED_ENCODER"):
+        bank = _bank(rr, arm)
+        reps[arm] = P.fit_predictor(spec, X, y, fit_idx, inner_idx, input_mode=arm, encoder=bank, seed=0, features=("feat_a", "feat_b"))
+        assert reps[arm].encoder_sha256 == bank.weights_sha256 and bank.optimizer_steps == 0
+        pred = P.predict(reps[arm], X, np.arange(6600, 6700))
+        assert pred.shape == (100,) and np.all(np.isfinite(pred))
+    raw = P.fit_predictor(spec, X, y, fit_idx, inner_idx, input_mode="RAW", encoder=None, seed=0)
+    assert len({r.budget_sha256 for r in reps.values()} | {raw.budget_sha256}) == 1
+    assert reps["RANDOM_ENCODER"].weights_sha256 != reps["TRAINED_ENCODER"].weights_sha256
