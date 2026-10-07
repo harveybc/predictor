@@ -1,0 +1,8 @@
+[Unit]
+Description=One durable FS4 weekly-wrapper task (%i)
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash %h/.local/bin/fs4-weekly-once %i
+TimeoutStartSec=4h

@@ -149,7 +149,7 @@ def initialize(db, consolidated_paths, seal_paths, extractibility_path, *, out_d
 
 
 # ----------------------------------------------------------------------------- lease
-def claim(db, owner, *, now=None, task_id=None, input_mode=None, split=None):
+def claim(db, owner, *, now=None, task_id=None, input_mode=None, split=None, population=None):
     if not owner or any(ch.isspace() for ch in owner):
         raise Refusal("INVALID_OWNER")
     now = time.time() if now is None else now
@@ -157,11 +157,11 @@ def claim(db, owner, *, now=None, task_id=None, input_mode=None, split=None):
         con.execute("BEGIN IMMEDIATE")
         con.execute("""UPDATE tasks SET state='FAILED', finished_at=?, result=? WHERE state='LEASED' AND lease_until<? AND attempt>=?""",
                     (now, canonical({"reason": "LEASE_EXPIRED_MAX_ATTEMPTS"}), now, MAX_ATTEMPTS))
-        row = con.execute("""SELECT * FROM tasks WHERE (? IS NULL OR task_id=?) AND (? IS NULL OR input_mode=?) AND (? IS NULL OR split=?)
+        row = con.execute("""SELECT * FROM tasks WHERE (? IS NULL OR task_id=?) AND (? IS NULL OR input_mode=?) AND (? IS NULL OR split=?) AND (? IS NULL OR population_id=?)
             AND (state='PENDING' OR (state='LEASED' AND lease_until<? AND attempt<?))
             ORDER BY CASE split WHEN 'validation' THEN 0 ELSE 1 END,
                      CASE input_mode WHEN 'RAW' THEN 0 WHEN 'RANDOM_ENCODER' THEN 1 ELSE 2 END, ordinal, set_id LIMIT 1""",
-                          (task_id, task_id, input_mode, input_mode, split, split, now, MAX_ATTEMPTS)).fetchone()
+                          (task_id, task_id, input_mode, input_mode, split, split, population, population, now, MAX_ATTEMPTS)).fetchone()
         if row is None:
             return None
         con.execute("UPDATE tasks SET state='LEASED', owner=?, lease_until=?, started_at=?, attempt=attempt+1 WHERE task_id=?",
@@ -576,6 +576,7 @@ def main(argv=None):
     take.add_argument("--task-id")
     take.add_argument("--input-mode", choices=list(MODE_ORDER))
     take.add_argument("--split", choices=("validation", "test"))
+    take.add_argument("--population")
     done = sub.add_parser("complete")
     done.add_argument("--owner", required=True)
     bad = sub.add_parser("fail")
@@ -600,7 +601,7 @@ def main(argv=None):
         elif args.action == "list":
             out = list_tasks(args.db, set_id=args.set_id, week_start=args.week_start, input_mode=args.input_mode, split=args.split, state=args.state)
         elif args.action == "claim":
-            out = claim(args.db, args.owner, task_id=args.task_id, input_mode=args.input_mode, split=args.split)
+            out = claim(args.db, args.owner, task_id=args.task_id, input_mode=args.input_mode, split=args.split, population=args.population)
         elif args.action == "complete":
             out = complete(args.db, args.owner, json.load(sys.stdin))
         elif args.action == "heartbeat":
