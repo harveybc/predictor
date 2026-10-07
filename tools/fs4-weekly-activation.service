@@ -1,0 +1,8 @@
+[Unit]
+Description=Admit pinned weekly RAW slots after the scoped successor closes
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/fs4-weekly-activate
+MemoryMax=2G
+TimeoutStartSec=600
