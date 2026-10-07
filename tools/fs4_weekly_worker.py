@@ -151,6 +151,8 @@ def build_parser():
     p.add_argument("--gpu-uuid")
     p.add_argument("--max-gpu-temp", type=int, default=75)
     p.add_argument("--task-id")
+    p.add_argument("--min-features", type=int, help="size-class slot (cap is measured per class)")
+    p.add_argument("--max-features", type=int)
     p.add_argument("--status", action="store_true")
     p.add_argument("--health", action="store_true")
     return p
@@ -188,7 +190,9 @@ def main(argv=None):
         except BASE.Unhealthy as exc:
             print(json.dumps({"skipped": True, "reason": str(exc)}, sort_keys=True), flush=True)
             break
-        filters = ["--input-mode", args.input_mode, "--split", args.split, "--population", args.population] + (["--task-id", args.task_id] if args.task_id else [])
+        filters = ["--input-mode", args.input_mode, "--split", args.split, "--population", args.population] + (["--task-id", args.task_id] if args.task_id else []) \
+            + (["--min-features", str(args.min_features)] if args.min_features is not None else []) \
+            + (["--max-features", str(args.max_features)] if args.max_features is not None else [])
         task = BASE.controller(args, "claim", filters)
         if task is None:
             print(json.dumps({"idle": True, "input_mode": args.input_mode, "population": args.population}, sort_keys=True), flush=True)

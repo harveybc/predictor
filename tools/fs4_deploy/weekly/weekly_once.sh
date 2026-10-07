@@ -27,6 +27,8 @@ args=(
 )
 [[ -n "${FS4_VAL_FEATURES:-}" ]] && args+=(--val-features $FS4_VAL_FEATURES --val-targets "${FS4_VAL_TARGETS:?FS4_VAL_TARGETS}")
 [[ -n "${FS4_RUNNER_RESULTS:-}" ]] && args+=(--runner-results "$FS4_RUNNER_RESULTS" --extractor-code "${FS4_EXTRACTOR_CODE:?FS4_EXTRACTOR_CODE}")
+[[ -n "${FS4_MIN_FEATURES:-}" ]] && args+=(--min-features "$FS4_MIN_FEATURES")
+[[ -n "${FS4_MAX_FEATURES:-}" ]] && args+=(--max-features "$FS4_MAX_FEATURES")
 [[ -n "${FS4_TEST_FREEZE:-}" ]] && args+=(--test-freeze "$FS4_TEST_FREEZE")
 [[ -n "${FS4_GPU_UUID:-}" ]] && args+=(--gpu-uuid "$FS4_GPU_UUID" --max-gpu-temp "${FS4_MAX_GPU_TEMP:-75}")
 mkdir -p "$FS4_OUTPUT_ROOT/logs"

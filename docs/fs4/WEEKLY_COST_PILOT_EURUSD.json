@@ -1,0 +1,233 @@
+{
+ "fits": [
+  {
+   "cost": {
+    "best_epoch": 9,
+    "cpu_seconds": 104.93981899999999,
+    "epochs": 14,
+    "fit_seconds": 21.247928857803345,
+    "n_params": 3905,
+    "peak_cgroup_bytes": 1277255680,
+    "peak_rss_bytes": 1474641920,
+    "updates": 1316,
+    "wall_seconds": 21.85406517982483
+   },
+   "disposition": "COMPLETED",
+   "fit_rows": 23954,
+   "launcher_wall_seconds": 175.90850400924683,
+   "n_features": 4,
+   "n_scored": 120,
+   "pilot_size_class": "small",
+   "reason": null,
+   "skill_mae": -0.01481249214735259,
+   "terminal_failure": null,
+   "week_start": "2023-12-04T00:00:00Z"
+  },
+  {
+   "cost": {
+    "best_epoch": 11,
+    "cpu_seconds": 117.85155400000001,
+    "epochs": 16,
+    "fit_seconds": 23.48499369621277,
+    "n_params": 3905,
+    "peak_cgroup_bytes": 1263513600,
+    "peak_rss_bytes": 1460793344,
+    "updates": 1504,
+    "wall_seconds": 24.099515199661255
+   },
+   "disposition": "COMPLETED",
+   "fit_rows": 23954,
+   "launcher_wall_seconds": 28.743802070617676,
+   "n_features": 4,
+   "n_scored": 120,
+   "pilot_size_class": "small",
+   "reason": null,
+   "skill_mae": 0.0008651693597106622,
+   "terminal_failure": null,
+   "week_start": "2023-12-11T00:00:00Z"
+  },
+  {
+   "cost": {
+    "best_epoch": 4,
+    "cpu_seconds": 71.00503300000001,
+    "epochs": 9,
+    "fit_seconds": 16.689110279083252,
+    "n_params": 3905,
+    "peak_cgroup_bytes": 1270013952,
+    "peak_rss_bytes": 1467633664,
+    "updates": 846,
+    "wall_seconds": 17.296961784362793
+   },
+   "disposition": "COMPLETED",
+   "fit_rows": 23954,
+   "launcher_wall_seconds": 50.84239172935486,
+   "n_features": 4,
+   "n_scored": 119,
+   "pilot_size_class": "small",
+   "reason": null,
+   "skill_mae": -0.09298293983482823,
+   "terminal_failure": null,
+   "week_start": "2023-12-18T00:00:00Z"
+  },
+  {
+   "cost": {
+    "best_epoch": 1,
+    "cpu_seconds": 2604.450019,
+    "epochs": 6,
+    "fit_seconds": 114.6390027999878,
+    "n_params": 70329,
+    "peak_cgroup_bytes": 4781457408,
+    "peak_rss_bytes": 4972101632,
+    "updates": 564,
+    "wall_seconds": 115.70936870574951
+   },
+   "disposition": "COMPLETED",
+   "fit_rows": 23954,
+   "launcher_wall_seconds": 300.48192954063416,
+   "n_features": 365,
+   "n_scored": 120,
+   "pilot_size_class": "large",
+   "reason": null,
+   "skill_mae": 0.02150577048953248,
+   "terminal_failure": null,
+   "week_start": "2023-12-04T00:00:00Z"
+  },
+  {
+   "cost": {
+    "best_epoch": 2,
+    "cpu_seconds": 3039.657372,
+    "epochs": 7,
+    "fit_seconds": 134.51472306251526,
+    "n_params": 70329,
+    "peak_cgroup_bytes": 4786249728,
+    "peak_rss_bytes": 4976943104,
+    "updates": 658,
+    "wall_seconds": 135.5928807258606
+   },
+   "disposition": "COMPLETED",
+   "fit_rows": 23954,
+   "launcher_wall_seconds": 200.31091833114624,
+   "n_features": 365,
+   "n_scored": 120,
+   "pilot_size_class": "large",
+   "reason": null,
+   "skill_mae": -0.017306218417187255,
+   "terminal_failure": null,
+   "week_start": "2023-12-11T00:00:00Z"
+  },
+  {
+   "cost": {
+    "best_epoch": 15,
+    "cpu_seconds": 8650.456534,
+    "epochs": 20,
+    "fit_seconds": 364.8081257343292,
+    "n_params": 70329,
+    "peak_cgroup_bytes": 4814352384,
+    "peak_rss_bytes": 5006278656,
+    "updates": 1880,
+    "wall_seconds": 365.88722109794617
+   },
+   "disposition": "COMPLETED",
+   "fit_rows": 23954,
+   "launcher_wall_seconds": 370.6265206336975,
+   "n_features": 365,
+   "n_scored": 119,
+   "pilot_size_class": "large",
+   "reason": null,
+   "skill_mae": -0.13015316114859554,
+   "terminal_failure": null,
+   "week_start": "2023-12-18T00:00:00Z"
+  },
+  {
+   "cost": {
+    "best_epoch": 2,
+    "cpu_seconds": 116.919723,
+    "epochs": 7,
+    "fit_seconds": 16.79771900177002,
+    "n_params": 5377,
+    "peak_cgroup_bytes": 1337135104,
+    "peak_rss_bytes": 1530867712,
+    "updates": 658,
+    "wall_seconds": 17.425294399261475
+   },
+   "disposition": "COMPLETED",
+   "fit_rows": 23954,
+   "launcher_wall_seconds": 20.821513652801514,
+   "n_features": 12,
+   "n_scored": 120,
+   "pilot_size_class": "median",
+   "reason": null,
+   "skill_mae": -0.040820330835944524,
+   "terminal_failure": null,
+   "week_start": "2023-12-04T00:00:00Z"
+  },
+  {
+   "cost": {
+    "best_epoch": 6,
+    "cpu_seconds": 175.76829999999998,
+    "epochs": 11,
+    "fit_seconds": 19.771634101867676,
+    "n_params": 5377,
+    "peak_cgroup_bytes": 1341575168,
+    "peak_rss_bytes": 1535860736,
+    "updates": 1034,
+    "wall_seconds": 20.402889490127563
+   },
+   "disposition": "COMPLETED",
+   "fit_rows": 23954,
+   "launcher_wall_seconds": 25.034724950790405,
+   "n_features": 12,
+   "n_scored": 120,
+   "pilot_size_class": "median",
+   "reason": null,
+   "skill_mae": 0.0011177843174885523,
+   "terminal_failure": null,
+   "week_start": "2023-12-11T00:00:00Z"
+  },
+  {
+   "cost": {
+    "best_epoch": 4,
+    "cpu_seconds": 146.93545899999998,
+    "epochs": 9,
+    "fit_seconds": 19.193529844284058,
+    "n_params": 5377,
+    "peak_cgroup_bytes": 1335758848,
+    "peak_rss_bytes": 1529475072,
+    "updates": 846,
+    "wall_seconds": 19.826889276504517
+   },
+   "disposition": "COMPLETED",
+   "fit_rows": 23954,
+   "launcher_wall_seconds": 24.44741463661194,
+   "n_features": 12,
+   "n_scored": 119,
+   "pilot_size_class": "median",
+   "reason": null,
+   "skill_mae": 0.025090283607133976,
+   "terminal_failure": null,
+   "week_start": "2023-12-18T00:00:00Z"
+  }
+ ],
+ "frontier_seal_sha256": "34607ca9d591f824deb927e831224efb88b5b4722a4d1a17673a15e3b7b8d36c",
+ "population": "EURUSD",
+ "schema": "fs4.weekly_cost_pilot.v1",
+ "summary": {
+  "frontier_sets": 350,
+  "mean_wall_seconds_by_n_features": {
+   "4": 21.08351405461629,
+   "12": 19.21835772196452,
+   "365": 205.72982350985208
+  },
+  "measured_cap_bytes": 6017940480,
+  "measured_peak_bytes": 4814352384,
+  "projected_fit_seconds_stage1_raw": 537875.2251185669,
+  "projected_fits_stage1_raw": 18200,
+  "weeks": 52
+ },
+ "validation_read": 0,
+ "weeks_pilot": [
+  "2023-12-04T00:00:00Z",
+  "2023-12-11T00:00:00Z",
+  "2023-12-18T00:00:00Z"
+ ]
+}

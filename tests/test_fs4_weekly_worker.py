@@ -118,6 +118,11 @@ def test_main_idles_skips_unhealthy_hosts_and_filters_by_slot(tmp_path, monkeypa
     assert json.loads(capsys.readouterr().out)["idle"] is True
     action, extra, _ = rec.calls[0]
     assert action == "claim" and extra[extra.index("--input-mode") + 1] == "RAW" and extra[extra.index("--population") + 1] == "EURUSD"
+    assert "--min-features" not in extra
+    rec.calls.clear()
+    WK.main(argv + ["--max-features", "32"])
+    capsys.readouterr()
+    assert rec.calls[0][1][rec.calls[0][1].index("--max-features") + 1] == "32"
 
     def unhealthy(args, **k):
         raise WK.BASE.Unhealthy("MEM_AVAILABLE_BELOW_CAP_PLUS_RESERVE: 1 < 2")

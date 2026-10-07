@@ -149,7 +149,7 @@ def initialize(db, consolidated_paths, seal_paths, extractibility_path, *, out_d
 
 
 # ----------------------------------------------------------------------------- lease
-def claim(db, owner, *, now=None, task_id=None, input_mode=None, split=None, population=None):
+def claim(db, owner, *, now=None, task_id=None, input_mode=None, split=None, population=None, min_features=None, max_features=None):
     if not owner or any(ch.isspace() for ch in owner):
         raise Refusal("INVALID_OWNER")
     now = time.time() if now is None else now
@@ -158,10 +158,11 @@ def claim(db, owner, *, now=None, task_id=None, input_mode=None, split=None, pop
         con.execute("""UPDATE tasks SET state='FAILED', finished_at=?, result=? WHERE state='LEASED' AND lease_until<? AND attempt>=?""",
                     (now, canonical({"reason": "LEASE_EXPIRED_MAX_ATTEMPTS"}), now, MAX_ATTEMPTS))
         row = con.execute("""SELECT * FROM tasks WHERE (? IS NULL OR task_id=?) AND (? IS NULL OR input_mode=?) AND (? IS NULL OR split=?) AND (? IS NULL OR population_id=?)
+            AND (? IS NULL OR json_extract(payload,'$.n_features')>=?) AND (? IS NULL OR json_extract(payload,'$.n_features')<=?)
             AND (state='PENDING' OR (state='LEASED' AND lease_until<? AND attempt<?))
             ORDER BY CASE split WHEN 'validation' THEN 0 ELSE 1 END,
                      CASE input_mode WHEN 'RAW' THEN 0 WHEN 'RANDOM_ENCODER' THEN 1 ELSE 2 END, ordinal, set_id LIMIT 1""",
-                          (task_id, task_id, input_mode, input_mode, split, split, population, population, now, MAX_ATTEMPTS)).fetchone()
+                          (task_id, task_id, input_mode, input_mode, split, split, population, population, min_features, min_features, max_features, max_features, now, MAX_ATTEMPTS)).fetchone()
         if row is None:
             return None
         con.execute("UPDATE tasks SET state='LEASED', owner=?, lease_until=?, started_at=?, attempt=attempt+1 WHERE task_id=?",
@@ -577,6 +578,8 @@ def main(argv=None):
     take.add_argument("--input-mode", choices=list(MODE_ORDER))
     take.add_argument("--split", choices=("validation", "test"))
     take.add_argument("--population")
+    take.add_argument("--min-features", type=int, help="size-class slot: only sets with at least this many features")
+    take.add_argument("--max-features", type=int, help="size-class slot: only sets with at most this many features")
     done = sub.add_parser("complete")
     done.add_argument("--owner", required=True)
     bad = sub.add_parser("fail")
@@ -601,7 +604,7 @@ def main(argv=None):
         elif args.action == "list":
             out = list_tasks(args.db, set_id=args.set_id, week_start=args.week_start, input_mode=args.input_mode, split=args.split, state=args.state)
         elif args.action == "claim":
-            out = claim(args.db, args.owner, task_id=args.task_id, input_mode=args.input_mode, split=args.split, population=args.population)
+            out = claim(args.db, args.owner, task_id=args.task_id, input_mode=args.input_mode, split=args.split, population=args.population, min_features=args.min_features, max_features=args.max_features)
         elif args.action == "complete":
             out = complete(args.db, args.owner, json.load(sys.stdin))
         elif args.action == "heartbeat":

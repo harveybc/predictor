@@ -1,0 +1,95 @@
+{
+ "schema": "fs4.weekly_cost_table.v1",
+ "validation_read": 0,
+ "hosts": {
+  "dragon": {
+   "cores": 32,
+   "ram_available_gib": 12
+  },
+  "gamma": {
+   "cores": 32,
+   "ram_available_gib": 7
+  }
+ },
+ "desktop_reserve_gib": 3,
+ "populations": {
+  "EURUSD": {
+   "frontier_sets": 350,
+   "fits_stage1_raw": 18200,
+   "sets_by_n_features": {
+    "4": 86,
+    "8": 82,
+    "12": 44,
+    "16": 44,
+    "24": 40,
+    "32": 40,
+    "365": 14
+   },
+   "measured_by_n_features": {
+    "4": {
+     "mean_wall_s": 21.08351405461629,
+     "mean_cpu_s": 97.93213533333333,
+     "peak_bytes": 1277255680
+    },
+    "12": {
+     "mean_wall_s": 19.21835772196452,
+     "mean_cpu_s": 146.54116066666666,
+     "peak_bytes": 1341575168
+    },
+    "365": {
+     "mean_wall_s": 205.72982350985208,
+     "mean_cpu_s": 4764.854641666667,
+     "peak_bytes": 4814352384
+    }
+   },
+   "large_sets": 14,
+   "large_fit_wall_s_total": 149771.3115151723,
+   "large_fit_cpu_s_total": 3468814.1791333333,
+   "stage1_wall_s_sum_lower_flat": 501848.46335538226,
+   "stage1_wall_s_sum_upper_interp": 537875.2251185668,
+   "stage1_cpu_s_lower_flat": 5604532.892989334,
+   "stage1_cpu_s_upper_interp": 6698710.536907853,
+   "cap_small_bytes": 1676968960,
+   "cap_large_bytes": 6017940480
+  },
+  "ETH": {
+   "frontier_sets": 124,
+   "fits_stage1_raw": 6448,
+   "sets_by_n_features": {
+    "4": 24,
+    "8": 18,
+    "12": 18,
+    "16": 16,
+    "24": 16,
+    "32": 26,
+    "78": 6
+   },
+   "measured_by_n_features": {
+    "4": {
+     "mean_wall_s": 9.537235418955484,
+     "mean_cpu_s": 28.23565933333333,
+     "peak_bytes": 540844032
+    },
+    "16": {
+     "mean_wall_s": 15.934102455774942,
+     "mean_cpu_s": 116.04721266666667,
+     "peak_bytes": 707522560
+    },
+    "78": {
+     "mean_wall_s": 28.34132218360901,
+     "mean_cpu_s": 369.3591686666667,
+     "peak_bytes": 928968704
+    }
+   },
+   "large_sets": 6,
+   "large_fit_wall_s_total": 8842.49252128601,
+   "large_fit_cpu_s_total": 115240.060624,
+   "stage1_wall_s_sum_lower_flat": 86655.92003504434,
+   "stage1_wall_s_sum_upper_interp": 98304.28164055527,
+   "stage1_cpu_s_lower_flat": 553333.7111466667,
+   "stage1_cpu_s_upper_interp": 751100.9478300215,
+   "cap_small_bytes": 884403200,
+   "cap_large_bytes": 1161210880
+  }
+ }
+}

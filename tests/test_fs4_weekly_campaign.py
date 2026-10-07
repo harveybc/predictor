@@ -273,3 +273,13 @@ def test_test_opens_once_only_after_the_freeze(tmp_path):
     assert t["split"] == "test" and t["test_authorization"] == frozen["freeze_sha256"]
     with pytest.raises(K.Refusal, match="FROZEN"):
         K.freeze(db)
+
+
+def test_claim_filters_by_population_and_size_class(tmp_path):
+    db, _ = _campaign(tmp_path)
+    assert K.claim(db, "w", population="ETH", now=1) is None
+    big = K.claim(db, "w", min_features=3, now=2)
+    assert len(big["members"]) == 3 and big["population_id"] == POP
+    small = K.claim(db, "w", max_features=1, now=3)
+    assert len(small["members"]) == 1
+    assert K.claim(db, "w", min_features=4, now=4) is None and K.claim(db, "w", max_features=0, now=5) is None
