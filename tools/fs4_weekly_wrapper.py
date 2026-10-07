@@ -354,9 +354,10 @@ class DataStore:
 
 
 # ----------------------------------------------------------------------------- trainer
-def r0_trainer_factory(names, encoder_spec: P.EncoderSpec):
+def r0_trainer_factory(names, encoder_spec: P.EncoderSpec, timestamps, min_timestamp):
     def trainer(spec, X, y, fit_idx, inner_idx, input_mode, encoder, seed):
-        return P.fit_named(spec, X, names, y, fit_idx, inner_idx, input_mode=input_mode, encoder=encoder, seed=seed)
+        return P.fit_named(spec, X, names, y, fit_idx, inner_idx, input_mode=input_mode, encoder=encoder, seed=seed,
+                           timestamps=timestamps, min_timestamp=min_timestamp)
     return trainer
 
 
@@ -427,8 +428,11 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
     lo = np.searchsorted(store.ts, int(week.fit_start.timestamp()), side="left")
     hi = np.searchsorted(store.ts, int((week.cutoff - purge).timestamp()), side="right")
     rows = []
-    # an origin needs a full window of `spec.window` rows inside the rolling four years: no input row predates fit_start
-    for i in range(lo + spec.window - 1, hi):
+    # Every input window needs 24 elapsed hours inside the rolling four years.
+    first_input_time = int(week.fit_start.timestamp()) + (spec.window - 1) * 3600
+    for i in range(lo, hi):
+        if store.ts[i] < first_input_time:
+            continue
         if not finite[i]:
             continue
         et = dt.datetime.fromtimestamp(int(store.ts[i]), UTC)
@@ -485,7 +489,7 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
         if "RUNNER_RESULT_MISSING" in str(exc):     # a member without a runner terminal: a typed disposition, never dropped
             return _failed(base, f"ENCODER_NOT_AVAILABLE: {exc}", started)
         raise
-    fit = trainer or r0_trainer_factory(list(members), encoder_spec)
+    fit = trainer or r0_trainer_factory(list(members), encoder_spec, store.ts, int(week.fit_start.timestamp()))
     t0 = time.time()
     try:
         rep = fit(spec, Xsub, y, fit_idx, inner_idx, task["input_mode"], encoder, SEED)

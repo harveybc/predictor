@@ -29,6 +29,8 @@ from pathlib import Path
 
 import numpy as np
 
+from tools.fs4_hourly_support import hourly_windows
+
 INPUT_MODES = ("RAW", "TRAINED_ENCODER", "RANDOM_ENCODER")
 FAMILY = "R0_TEMPORAL_CONV1D"
 CORE_OUTPUT_NAME = "core_out"
@@ -60,6 +62,7 @@ def arrays_sha256(arrays) -> str:
 @dataclass(frozen=True)
 class PredictorSpec:
     window: int = 24
+    raw_support: str = "elapsed_hour_grid_value_mask_v1"
     latent_steps: int = 6
     branch_filters: int = 4
     branch_kernel: int = 3
@@ -261,7 +264,7 @@ def build_predictor(spec: PredictorSpec, n_features: int, input_mode: str, laten
     L = keras.layers
     F, bf = n_features, spec.branch_filters
     if input_mode == "RAW":
-        inp = keras.Input((spec.window, F), name="raw_windows")
+        inp = keras.Input((spec.window, 2 * F), name="raw_windows")
         G = _grouped_layer_class()
         h = G(F, bf, spec.branch_kernel, 1, "relu", name="branch_stem")(inp)
         h = G(F, bf, spec.branch_kernel, 2, "relu", name="branch_down1")(h)
@@ -450,21 +453,31 @@ class FitReport:
     inner_windows: int
     seed: int
     history: dict = field(default_factory=dict)
+    timestamps: np.ndarray | None = None
+    min_timestamp: int | None = None
 
     def predict(self, X: np.ndarray, idx) -> np.ndarray:
         return predict(self, X, idx)
 
 
-def _inputs_for(spec: PredictorSpec, encoder, Z: np.ndarray, idx):
+def _inputs_for(spec: PredictorSpec, encoder, X: np.ndarray, standardiser: Standardiser, idx,
+                timestamps=None, min_timestamp=None):
     if encoder is not None:
         windows, kept = encoder.latents(idx)
         return np.asarray(windows, dtype="float32"), kept
-    windows, kept = make_windows(Z, idx, spec.window)
-    return np.asarray(windows, dtype="float32"), kept
+    if timestamps is not None:
+        return hourly_windows(X, timestamps, idx, mean=standardiser.mean, sd=standardiser.sd,
+                              window_hours=spec.window, min_timestamp=min_timestamp)
+    windows, kept = make_windows(standardiser.apply(X), idx, spec.window)
+    observed, _ = make_windows(np.isfinite(X).astype("float32"), idx, spec.window)
+    paired = np.empty((*windows.shape[:2], 2 * X.shape[1]), dtype="float32")
+    paired[:, :, 0::2] = windows
+    paired[:, :, 1::2] = observed
+    return paired, kept
 
 
 def fit_predictor(spec: PredictorSpec, X: np.ndarray, y: np.ndarray, fit_idx, inner_idx, *, input_mode: str,
-                  encoder, seed: int, features=None) -> FitReport:
+                  encoder, seed: int, features=None, timestamps=None, min_timestamp=None) -> FitReport:
     if input_mode not in INPUT_MODES:
         raise Refusal(f"UNKNOWN_INPUT_MODE: {input_mode}")
     if (input_mode == "RAW") != (encoder is None):
@@ -479,9 +492,8 @@ def fit_predictor(spec: PredictorSpec, X: np.ndarray, y: np.ndarray, fit_idx, in
         raise Refusal("ENCODER_FEATURE_COUNT_MISMATCH")
     encoder_sha = encoder.weights_sha256 if encoder is not None else None
     standardiser = Standardiser.fit(X[fit_idx])
-    Z = standardiser.apply(X)
-    Wf, kept_f = _inputs_for(spec, encoder, Z, fit_idx)
-    Wi, kept_i = _inputs_for(spec, encoder, Z, inner_idx)
+    Wf, kept_f = _inputs_for(spec, encoder, X, standardiser, fit_idx, timestamps, min_timestamp)
+    Wi, kept_i = _inputs_for(spec, encoder, X, standardiser, inner_idx, timestamps, min_timestamp)
     if kept_f.size < spec.batch_size or kept_i.size == 0:
         raise Refusal(f"TOO_FEW_WINDOWS: fit {kept_f.size} inner {kept_i.size}")
     yf = y[kept_f].astype("float32")
@@ -511,11 +523,12 @@ def fit_predictor(spec: PredictorSpec, X: np.ndarray, y: np.ndarray, fit_idx, in
         budget_sha256=budget_sha256(spec), architecture_sha256=architecture_sha256(model), encoder_sha256=encoder_sha,
         input_identity=None, fit_windows=int(kept_f.size), inner_windows=int(kept_i.size), seed=int(seed),
         history={"loss": [float(v) for v in hist.history.get("loss", [])], "val_loss": val},
+        timestamps=None if timestamps is None else np.asarray(timestamps, dtype="int64"), min_timestamp=min_timestamp,
     )
 
 
 def fit_named(spec: PredictorSpec, X: np.ndarray, names, y, fit_idx, inner_idx, *, input_mode: str,
-              encoder, seed: int) -> FitReport:
+              encoder, seed: int, timestamps=None, min_timestamp=None) -> FitReport:
     """Sort the columns by feature name before anything is built (FS4-02)."""
     names = list(names)
     if len(names) != X.shape[1]:
@@ -523,7 +536,7 @@ def fit_named(spec: PredictorSpec, X: np.ndarray, names, y, fit_idx, inner_idx, 
     order = sorted(range(len(names)), key=lambda i: names[i])
     feats = canonical_features(names)
     rep = fit_predictor(spec, np.asarray(X)[:, order], y, fit_idx, inner_idx, input_mode=input_mode, encoder=encoder,
-                        seed=seed, features=feats)
+                        seed=seed, features=feats, timestamps=timestamps, min_timestamp=min_timestamp)
     rep.input_identity = input_identity(spec, feats, input_mode, rep.encoder_sha256)
     return rep
 
@@ -531,8 +544,8 @@ def fit_named(spec: PredictorSpec, X: np.ndarray, names, y, fit_idx, inner_idx, 
 def predict(rep: FitReport, X: np.ndarray, idx) -> np.ndarray:
     """Predictions for origins ``idx`` (NaN where an origin lacks a full window history)."""
     idx = np.asarray(idx, dtype="int64")
-    Z = rep.standardiser.apply(np.asarray(X, dtype="float64"))
-    W, kept = _inputs_for(rep.spec, rep.encoder, Z, idx)
+    W, kept = _inputs_for(rep.spec, rep.encoder, np.asarray(X, dtype="float64"), rep.standardiser, idx,
+                          rep.timestamps, rep.min_timestamp)
     out = np.full(idx.shape, np.nan, dtype="float64")
     if kept.size:
         pred = np.asarray(rep.model.predict(W, batch_size=1024, verbose=0), dtype="float64").reshape(-1)
