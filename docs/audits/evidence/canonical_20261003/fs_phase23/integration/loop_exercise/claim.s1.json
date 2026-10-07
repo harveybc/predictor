@@ -1,0 +1,28 @@
+{
+  "cap": "256M",
+  "claimed_at_utc": "2026-10-06T00:56:08Z",
+  "code_commit": "stub",
+  "completed_at_utc": "2026-10-06T00:56:09Z",
+  "heartbeat_cycle_at_claim": null,
+  "history": [
+    {
+      "state": "CLAIMED",
+      "until_utc": "2026-10-06T00:56:08Z"
+    },
+    {
+      "state": "RUNNING",
+      "until_utc": "2026-10-06T00:56:09Z"
+    }
+  ],
+  "home_role": "coordinator",
+  "host_role": "coordinator",
+  "pid": 584043,
+  "results_sha256": "7db3bc3138a55a307e58b804d2df3471b0838b45ac4510763a91f452fe23f0c4",
+  "running_at_utc": "2026-10-06T00:56:08Z",
+  "schema": "fs_phase23_shard_claim.v1",
+  "shard_id": "s1",
+  "slot": "1",
+  "state": "COMPLETED",
+  "threads": 1,
+  "wall_seconds": 1
+}

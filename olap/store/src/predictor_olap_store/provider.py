@@ -19,7 +19,10 @@ CAPABILITIES = ("describe", "storage", "discover", "query",
                 # It is additive: a caller that does not send contracts is unaffected, and a
                 # delivery whose contract was never sent resolves as UNRESOLVED, not as zero.
                 "write_availability_contracts", "resolve_delivery_availability",
-                "write_feature_selection_envelope", "reconcile_feature_selection")
+                "write_feature_selection_envelope", "reconcile_feature_selection",
+                # Phase-2/3 feature-selection rows: one owned write route, paged readback and
+                # reconciliation; workers never receive the database path.
+                "write_fs_phase23_rows", "read_fs_phase23_rows", "reconcile_fs_phase23")
 
 
 def _source_commit() -> str | None:

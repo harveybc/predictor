@@ -1,0 +1,18 @@
+{
+  "backend": "duckdb",
+  "distinct_identities": 3,
+  "duplicates_ignored": 0,
+  "host_role": "worker_a",
+  "inserted": 3,
+  "population_id": "ETH",
+  "receipt_sha256": "f10945a79fe913254df3823406386ffc1db843e38792d657749d8251ed2d60fc",
+  "row_count": 3,
+  "rows_sha256": "637e874ba33432b2dca20e943c765e06a0e9874f6905099585c14ffd82c6cdbf",
+  "run_id": "phase2-eth:EXAMPLE",
+  "run_sha256": "f6524cb23bc91c39d32ffd8554c222687be158729a9e10ef0e79e4789ee7d467",
+  "schema": "fs_phase23.warehouse_receipt.v2",
+  "shard_id": "shard-000",
+  "submitted_at": "2026-10-06T01:31:38Z",
+  "table": "feature_pair_metrics",
+  "unit_id": "unit-eth-0"
+}

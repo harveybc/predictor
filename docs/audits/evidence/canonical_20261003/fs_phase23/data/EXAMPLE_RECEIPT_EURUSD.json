@@ -1,0 +1,18 @@
+{
+  "backend": "duckdb",
+  "distinct_identities": 3,
+  "duplicates_ignored": 0,
+  "host_role": "worker_a",
+  "inserted": 3,
+  "population_id": "EURUSD",
+  "receipt_sha256": "dbf71d0c7139225e9fdd2ee091695a5c7f102f172668b56a69afd1b97ff37f57",
+  "row_count": 3,
+  "rows_sha256": "6bbd139e335a0e9c2a0fc5c1ce0447d3bd388e17c742f2e0ce454b992b2450d3",
+  "run_id": "phase2-eurusd:EXAMPLE",
+  "run_sha256": "200b2728a561b33e91ec90dfe0448b093f98bb5e6c654ac170a946600d070986",
+  "schema": "fs_phase23.warehouse_receipt.v2",
+  "shard_id": "shard-000",
+  "submitted_at": "2026-10-06T01:31:38Z",
+  "table": "feature_pair_metrics",
+  "unit_id": "unit-eurusd-0"
+}

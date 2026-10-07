@@ -20,7 +20,7 @@ __all__ = ["PredictorOlapStore", "backend", "__version__", "SOURCE_SHA256",
            "SOURCE_REVISION", "SOURCE_PATH", "MODULE_SHA256", "PENDING_REVIEW",
            "ENVELOPE_SOURCE_PATH", "ENVELOPE_SOURCE_SHA256",
            "FEATURE_SELECTION_CONTRACT_SHA256", "RECONCILIATION_CONTRACT_SHA256"]
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 #: The digest of the deployed query plugin this module was copied from, and the revision
 #: that holds it. Both are checked by the package's tests. These describe PRODUCTION and are
@@ -51,7 +51,7 @@ RECONCILIATION_CONTRACT_SHA256 = (
 #: candidate change is awaiting production review, and PENDING_REVIEW says which one. The
 #: package's tests require the two to be consistent: a divergence without a stated reason is
 #: a failure, and a stated reason without a divergence is one too.
-MODULE_SHA256 = "d72c67dbb0fb878e48942682b3beb63f373055e9bed0cccf355ec5c2e2186da6"
+MODULE_SHA256 = "cb06ab57e82f8fc6c23fe64b6ddf4a0a90068b57d69e450e9fd59810d7e352f9"
 PENDING_REVIEW = (
     "S2 availability-contract dimension: additive `gov_availability_contract` table, the "
     "`gov_delivery_availability` view and `write_availability_contracts` / "
@@ -69,5 +69,10 @@ PENDING_REVIEW = (
     "run and receipt identities, atomic ingestion and read-only analytical views; proved on a "
     "throwaway DuckDB file and NOT deployed. Reconciliation adds the exact data-warehouse "
     "2d4550d request/response contract and verifies retained receipt, run identity and rows "
-    "before returning a canonical request-bound response; NOT deployed."
+    "before returning a canonical request-bound response; NOT deployed. Phase-2/3 "
+    "feature-selection (2026-10-06): additive fs_phase23 relations (run, receipt, seven fact "
+    "tables with UNIQUE (run_id, row_key) and a typed identity key, one coverage view) appended "
+    "to the start-up DDL, and `write_fs_phase23_rows` / `read_fs_phase23_rows` / "
+    "`reconcile_fs_phase23` for the host's /api/v2/fs-phase23 routes; proved on a throwaway "
+    "DuckDB file and NOT deployed."
 )
