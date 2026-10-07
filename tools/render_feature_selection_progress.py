@@ -60,8 +60,8 @@ def render(status_path: Path, output_path: Path, wave_status_path: Path | None =
         weekly_detail = (f"{weekly_done:,}/{weekly_total:,} semanas-conjunto resueltas; "
                          f"{weekly['failed']} fallidas; seleccion final pendiente")
         if weekly["eta_seconds"] is not None and weekly["active"] > 0:
-            footer = (f"ETA banco RAW ~{weekly['eta_seconds'] / 3600:.1f} h, estimacion inicial; "
-                      "no es ETA de seleccion final.")
+            footer = (f"ETA computo RAW ~{weekly['eta_seconds'] / 3600:.1f} h; "
+                      "no incluye pausas de timer ni la etapa 2.")
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     ink = "#182b36"
