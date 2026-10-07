@@ -1,7 +1,8 @@
 # FS4 elapsed-hour support: integration order
 
-Published helper: `tools/fs4_hourly_support.py` with `tests/test_fs4_hourly_support.py`.
-This is a pure TRAIN-safe component, not a deployed weekly campaign.
+Published implementation: `tools/fs4_hourly_support.py`, predictor and weekly
+wrapper integration, and `tests/test_fs4_hourly_support.py`. This is TRAIN-safe
+code on `codex/fs4-hourly-grid-20261007`, not a deployed weekly campaign.
 
 ## Observed defect
 
@@ -12,10 +13,14 @@ before `origin - 3 hours` does not repair the difference in receptive field.
 
 ## Required integration before VALIDATION
 
-1. Cherry-pick the helper commit into the weekly branch after preserving its
-   live edits. Route weekly RAW and RAW_LAG3 through `hourly_windows` using the
+1. Merge this branch into the weekly branch after preserving its live edits.
+   The active weekly branch already has uncommitted `RAW_LAG3` changes in the
+   predictor and wrapper; do not overwrite either side. Route both RAW and
+   RAW_LAG3 through `hourly_windows` using the
    sorted decision timestamps. RAW ends at the origin; RAW_LAG3 ends at
-   `origin - 3 * 3600`. Neither mode counts bars to construct its window.
+   `origin - 3 * 3600`. The weekly branch's current `window_end` uses time for
+   the endpoint but still takes 24 preceding rows: remove that row-count
+   windowing. Neither mode counts bars to construct its window.
 2. Bind the TRAIN-fitted mean and scale, the 3600-second grid, 24 elapsed-hour
    steps and interleaved value/observed-mask channels into the predictor's
    architecture and input identities. The grouped branch has two input
@@ -36,3 +41,8 @@ before `origin - 3 hours` does not repair the difference in receptive field.
 
 The 24-row contract is useful for old predictor tests and may remain as a
 separate legacy helper; it must not be used by FS4's hourly comparison.
+
+Verification on this branch: 38 CPU tests pass; a Keras forward smoke and
+two determinism/permutation training tests passed in dragon's TensorFlow
+environment with GPU disabled and governed memory caps. No VALIDATION or TEST
+data was opened for this correction.
