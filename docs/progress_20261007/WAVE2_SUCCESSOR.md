@@ -56,6 +56,10 @@ runs the existing weekly host installer; it retries admission without reducing
 caps. EURUSD small slots use the measured 1,700 MiB cap and ETH slots use
 1,200 MiB. GPU FS4 work and weekly RAW work have separate code paths and
 queues. Weekly activation is not evidence of a completed weekly fit.
+The installed weekly timer override starts once after installation and then
+uses a 15-second cooldown. The EURUSD worker configuration quotes its three
+validation parquet paths as one shell value; the worker splits that value
+into path arguments after loading the configuration.
 
 ## Next steps
 
@@ -83,4 +87,8 @@ python3 -m pytest -q \
   tests/test_fs4_wave_frontier.py tests/test_fs4_wave_successor.py \
   tests/test_fs4_weekly_campaign.py tests/test_fs4_frontier.py
 systemctl --user is-active fs4-wave-successor.timer
+python3 -m tools.fs4_weekly_campaign --db <weekly_queue.sqlite> status --write
+python3 tools/render_feature_selection_progress.py \
+  --status <fs4_closure_STATUS.json> --wave-status <wave_STATUS.json> \
+  --weekly-status <weekly_STATUS.json> --output <progress.png>
 ```

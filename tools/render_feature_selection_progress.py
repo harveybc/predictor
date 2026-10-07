@@ -15,7 +15,8 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, FancyBboxPatch
 
 
-def render(status_path: Path, output_path: Path, wave_status_path: Path | None = None) -> None:
+def render(status_path: Path, output_path: Path, wave_status_path: Path | None = None,
+           weekly_status_path: Path | None = None) -> None:
     status = json.loads(status_path.read_text())
     not_available = status.get("not_available_for_train", 0)
     if isinstance(not_available, dict):
@@ -34,7 +35,7 @@ def render(status_path: Path, output_path: Path, wave_status_path: Path | None =
                        f"{trained_measured} medidos, {trained_unavailable} sin TRAIN")
         wave_progress = wave_done / wave_total
         if wave_done == wave_total:
-            footer = "Primera ola cerrada; faltan cierre parcial y comparacion semanal para seleccionar."
+            footer = "Ola admitida cerrada; la seleccion final requiere comparacion semanal completa."
         elif wave.get("gpu_eta_seconds") is not None:
             eta_hours = wave["gpu_eta_seconds"] / 3600
             footer = (f"ETA ola GPU ~{eta_hours:.0f} h si ambos workers siguen sanos; "
@@ -45,6 +46,22 @@ def render(status_path: Path, output_path: Path, wave_status_path: Path | None =
         wave_detail = f"{done:,}/{total:,} tareas del plan amplio; no es seleccion final"
         wave_progress = done / total
         footer = "ETA de seleccion final: sin base fiable hasta medir la comparacion semanal."
+    weekly_detail = "Sin cierre comparativo ni manifiesto de seleccion"
+    weekly_progress = 0.0
+    if weekly_status_path is not None:
+        weekly = json.loads(weekly_status_path.read_text())
+        if weekly.get("schema") != "fs4.weekly_status.v1" or weekly.get("test_opened_utc") is not None:
+            raise ValueError("Weekly status is invalid or TEST is open")
+        weekly_total = weekly["expected"]
+        weekly_done = weekly["complete"] + weekly["failed"]
+        if weekly_total <= 0 or not 0 <= weekly_done <= weekly_total:
+            raise ValueError("Invalid weekly denominator")
+        weekly_progress = weekly_done / weekly_total
+        weekly_detail = (f"{weekly_done:,}/{weekly_total:,} semanas-conjunto resueltas; "
+                         f"{weekly['failed']} fallidas; seleccion final pendiente")
+        if weekly["eta_seconds"] is not None and weekly["active"] > 0:
+            footer = (f"ETA banco RAW ~{weekly['eta_seconds'] / 3600:.1f} h, estimacion inicial; "
+                      "no es ETA de seleccion final.")
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     ink = "#182b36"
@@ -54,7 +71,7 @@ def render(status_path: Path, output_path: Path, wave_status_path: Path | None =
     light = "#e5ebed"
     muted = "#61727b"
     rows = [
-        ("01", "Conocimiento del negocio", "Contrato semanal definido; ejecucion walk-forward pendiente", None, blue),
+        ("01", "Conocimiento del negocio", "Reentrenamiento semanal 2024 activo; ventana movil de cuatro anos", None, blue),
         ("02", "Perfil individual y causal", "Fase 1 cerrada para EURUSD y ETH", 1.0, teal),
         ("03", "Matriz entre caracteristicas", "70 198 pares; 7 458 876 metricas cruzadas", 1.0, teal),
         ("04", "Rankings por objetivo", "20/20 objetivos; 980 subconjuntos candidatos", 1.0, teal),
@@ -62,7 +79,7 @@ def render(status_path: Path, output_path: Path, wave_status_path: Path | None =
          f"{sum(wave['features'].values()) if wave_status_path else 126} rasgos en ola actual; despacho ligado al manifiesto",
          1.0, teal),
         ("06", "Extractibilidad / reconstruccion", wave_detail, wave_progress, orange),
-        ("07", "Validacion semanal y seleccion", "Sin cierre comparativo ni manifiesto de seleccion", 0.0, muted),
+        ("07", "Validacion semanal y seleccion", weekly_detail, weekly_progress, muted),
         ("08", "Representacion modular y trading", "Depende del manifiesto seleccionado y del walk-forward", None, muted),
     ]
 
@@ -109,6 +126,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--status", type=Path, required=True)
     parser.add_argument("--wave-status", type=Path)
+    parser.add_argument("--weekly-status", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    render(args.status, args.output, args.wave_status)
+    render(args.status, args.output, args.wave_status, args.weekly_status)
