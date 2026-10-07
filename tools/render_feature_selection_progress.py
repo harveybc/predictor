@@ -17,7 +17,10 @@ from matplotlib.patches import Circle, FancyBboxPatch
 
 def render(status_path: Path, output_path: Path, wave_status_path: Path | None = None) -> None:
     status = json.loads(status_path.read_text())
-    done = status["complete"] + status.get("not_available_for_train", 0)
+    not_available = status.get("not_available_for_train", 0)
+    if isinstance(not_available, dict):
+        not_available = not_available["total"]
+    done = status["complete"] + not_available
     total = status.get("total", status.get("expected", {}).get("total"))
     if not 0 <= done <= total or total <= 0:
         raise ValueError("Invalid FS4 denominator")
@@ -25,11 +28,14 @@ def render(status_path: Path, output_path: Path, wave_status_path: Path | None =
         wave = json.loads(wave_status_path.read_text())
         wave_total = wave["tasks_per_arm"] * 3
         wave_done = sum(wave["done_per_arm"].values())
-        trained_done = wave["done_per_arm"]["TRAINED_ENCODER"]
-        wave_detail = (f"{wave_done:,}/{wave_total:,} tareas de primera ola; "
-                       f"GPU entrenada {trained_done}/{wave['tasks_per_arm']}")
+        trained_measured = wave["counts"]["TRAINED_ENCODER"]["COMPLETE"]
+        trained_unavailable = wave["typed_refused_per_arm"]["TRAINED_ENCODER"]
+        wave_detail = (f"{wave_done:,}/{wave_total:,} tareas resueltas; encoder: "
+                       f"{trained_measured} medidos, {trained_unavailable} sin TRAIN")
         wave_progress = wave_done / wave_total
-        if wave.get("gpu_eta_seconds") is not None:
+        if wave_done == wave_total:
+            footer = "Primera ola cerrada; faltan cierre parcial y comparacion semanal para seleccionar."
+        elif wave.get("gpu_eta_seconds") is not None:
             eta_hours = wave["gpu_eta_seconds"] / 3600
             footer = (f"ETA ola GPU ~{eta_hours:.0f} h si ambos workers siguen sanos; "
                       "la seleccion final requiere walk-forward semanal.")
