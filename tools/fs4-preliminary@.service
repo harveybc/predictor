@@ -1,0 +1,8 @@
+[Unit]
+Description=One FS4 preliminary GPU task on %i
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash %h/.local/bin/fs4-preliminary-once %i
+TimeoutStartSec=3h

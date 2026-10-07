@@ -1,0 +1,11 @@
+[Unit]
+Description=Dispatch one preliminary FS4 %i task every two minutes
+
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=2min
+Unit=fs4-preliminary@%i.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

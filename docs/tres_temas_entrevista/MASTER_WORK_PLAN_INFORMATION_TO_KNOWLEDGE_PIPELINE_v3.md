@@ -126,9 +126,23 @@ La selección no empieza entrenando cientos de ramas. La secuencia vigente es:
    estabilidad temporal;
 3. Fase 3: clustering por correlación, mRMR, JMI y controles, con rankings y
    trayectorias K por target/horizonte;
-4. Fase 4: extractibilidad raw/random/trained sobre candidatos y controles;
-5. validación wrapper bajo walk-forward semanal y manifiesto final;
-6. grupos/ramas, fusión y downstream.
+4. Puerta preliminar entre las fases 3 y 4: congelar una primera ola de
+   candidatos por target/horizonte a partir de los rankings TRAIN y la
+   evidencia causal. Separar los controles `ALL_ADMISSIBLE` y `RANDOM_K` de
+   la union de rasgos que requiere extractores GPU. Conservar por identidad
+   los rasgos diferidos: ausencia de identificacion causal no prueba ausencia
+   de efecto. Ninguna decision usa VALIDATION ni TEST. La cola GPU debe leer
+   el manifiesto de esta puerta, no la union del control amplio.
+5. Fase 4: extractibilidad raw/random/trained sobre la primera ola y controles
+   de costo acotado; expansion a rasgos diferidos solo si el contraste semanal
+   justifica su valor incremental;
+6. validación wrapper bajo walk-forward semanal y manifiesto final;
+7. grupos/ramas, fusión y downstream.
+
+Despues de los hitos principales, estudiar el error de reconstruccion de
+extractores como posible detector de anomalias y de transiciones de regimen.
+No usar esa idea para retrasar la preseleccion, la validacion semanal ni la
+representacion modular.
 
 Los 34 pares EURUSD y tres pares ETH favorecidos por la regla causal de fase 1
 son **candidatos con respaldo causal**, no la selección final. Las fases 2 y 3
