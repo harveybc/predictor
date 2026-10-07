@@ -273,8 +273,10 @@ class DataStore:
         unit = str(tcol.type)
         raw = tcol.cast("int64").to_numpy()
         ts = raw // (10**9 if "ns" in unit else 10**6 if "us" in unit else 10**3 if "ms" in unit else 1)
-        targets = {n: tt.column(n).to_numpy(zero_copy_only=False).astype("float64") for n in tt.schema.names
-                   if n not in DataStore.META and n.startswith("Y")}
+        import pyarrow as pa
+        targets = {f.name: tt.column(f.name).to_numpy(zero_copy_only=False).astype("float64") for f in tt.schema
+                   if f.name not in DataStore.META and f.name.startswith("Y")
+                   and (pa.types.is_floating(f.type) or pa.types.is_integer(f.type))}
         if len(set(names)) != len(names):
             raise Refusal("DUPLICATE_FEATURE_COLUMNS")
         return names, X, ts.astype("int64"), row_ids.astype("int64"), targets, digests
@@ -584,6 +586,7 @@ def main(argv=None) -> int:
     run.add_argument("--population", required=True)
     run.add_argument("--train-features", nargs="+", required=True)
     run.add_argument("--train-targets", required=True)
+    run.add_argument("--task-file", help="claim JSON file (else $FS4_CLAIM_JSON, else stdin)")
     run.add_argument("--val-features", nargs="+")
     run.add_argument("--val-targets")
     run.add_argument("--bar-hours", type=int, required=True)
@@ -593,7 +596,14 @@ def main(argv=None) -> int:
     run.add_argument("--pilot-train-only", action="store_true", help="cost pilot: read TRAIN only; refuses any week ending after TRAIN")
     run.add_argument("--test-freeze", help="TEST_FREEZE.json; required only for test-split tasks")
     a = ap.parse_args(argv)
-    task = json.load(sys.stdin)
+    # crispdm-run gives its child /dev/null as stdin: the claim also comes from --task-file or $FS4_CLAIM_JSON
+    import os
+    if a.task_file:
+        task = json.loads(Path(a.task_file).read_text())
+    elif os.environ.get("FS4_CLAIM_JSON"):
+        task = json.loads(os.environ["FS4_CLAIM_JSON"])
+    else:
+        task = json.load(sys.stdin)
     if a.pilot_train_only:
         store = DataStore.from_train_only(a.population, a.train_features, a.train_targets, bar_hours=a.bar_hours)
         if _parse(task["week"]["end"]).timestamp() > store.max_ts:
