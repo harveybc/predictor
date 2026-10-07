@@ -286,9 +286,16 @@ class DataStore:
         names_t, Xt, ts_t, ids_t, tg_t, dig_t = cls._read(train_features, train_targets, "train")
         validation_first_read_utc = _now()
         names_v, Xv, ts_v, ids_v, tg_v, dig_v = cls._read(val_features, val_targets, "validation")
-        if set(names_v) != set(names_t) or len(names_v) != len(names_t) or set(tg_v) != set(tg_t):
-            raise Refusal("TRAIN_AND_VALIDATION_SCHEMAS_DIFFER")
-        Xv = Xv[:, [names_v.index(n) for n in names_t]]      # validation batches may be split differently: align by name
+        if set(tg_v) != set(tg_t):
+            raise Refusal("TRAIN_AND_VALIDATION_TARGETS_DIFFER")
+        # validation batches are split differently from the TRAIN file: align by NAME on the columns both hold; a plan member
+        # missing from either side is refused per task (MEMBERS_NOT_IN_INPUTS), never silently dropped
+        common = [n for n in names_t if n in set(names_v)]
+        if not common:
+            raise Refusal("TRAIN_AND_VALIDATION_SHARE_NO_FEATURE_COLUMNS")
+        Xt = Xt[:, [names_t.index(n) for n in common]]
+        Xv = Xv[:, [names_v.index(n) for n in common]]
+        names_t = common
         X = np.vstack([Xt, Xv])
         ts = np.concatenate([ts_t, ts_v])
         row_ids = np.concatenate([ids_t, ids_v])

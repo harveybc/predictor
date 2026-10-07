@@ -84,7 +84,9 @@ def test_architecture_keeps_time_until_the_head_and_fuses_channels():
     core = model.get_layer(P.CORE_OUTPUT_NAME)
     assert tuple(core.output.shape[1:]) == (spec.latent_steps, spec.core_filters)   # rank-3 until the head
     assert model.get_layer(P.HEAD_INPUT_NAME).output.shape[1:] == (spec.core_filters,)
-    assert len([l for l in model.layers if l.name.startswith("branch_")]) >= 3          # one causal branch per feature
+    stem = model.get_layer("branch_stem")
+    assert stem.groups == 3 and stem.filters == 3 * spec.branch_filters                   # one causal branch per feature (grouped)
+    assert model.get_layer("branch_down2").groups == 3 and model.get_layer("channel_fusion").groups == 1
     assert all(getattr(l, "padding", "causal") == "causal" for l in model.layers if type(l).__name__ == "Conv1D")
     other = P.build_predictor(spec, n_features=7, input_mode="RAW", latent_dim=None)
     assert P.architecture_sha256(model) == P.architecture_sha256(other)          # identical architecture family
@@ -261,3 +263,25 @@ def test_encoder_arms_fit_with_a_frozen_bank_and_the_same_budget(runner_root):
     raw = P.fit_predictor(spec, X, y, fit_idx, inner_idx, input_mode="RAW", encoder=None, seed=0)
     assert len({r.budget_sha256 for r in reps.values()} | {raw.budget_sha256}) == 1
     assert reps["RANDOM_ENCODER"].weights_sha256 != reps["TRAINED_ENCODER"].weights_sha256
+
+
+@needs_tf
+def test_each_feature_has_its_own_branch_and_branches_do_not_mix_before_fusion():
+    keras = P._keras()
+    spec = P.PredictorSpec(max_epochs=1)
+    model = P.build_predictor(spec, n_features=3, input_mode="RAW", latent_dim=None)
+    branches = keras.Model(model.input, model.get_layer("branch_down2").output)
+    rng = np.random.default_rng(0)
+    x = rng.normal(size=(5, spec.window, 3)).astype("float32")
+    z0 = np.asarray(branches.predict(x, verbose=0))
+    assert z0.shape == (5, spec.latent_steps, 3 * spec.branch_filters)                       # time axis kept: 24 -> 6
+    x1 = x.copy()
+    x1[:, :, 1] += 5.0                                                                       # perturb feature 1 only
+    z1 = np.asarray(branches.predict(x1, verbose=0))
+    bf = spec.branch_filters
+    assert np.array_equal(z0[..., :bf], z1[..., :bf]) and np.array_equal(z0[..., 2 * bf:], z1[..., 2 * bf:])
+    assert not np.allclose(z0[..., bf:2 * bf], z1[..., bf:2 * bf])
+    x2 = x.copy()
+    x2[:, -1, 0] += 5.0                                                                      # causal: only the last step moves
+    z2 = np.asarray(branches.predict(x2, verbose=0))
+    assert np.array_equal(z0[:, :-1, :bf], z2[:, :-1, :bf]) or np.allclose(z0[:, :-2, :bf], z2[:, :-2, :bf])

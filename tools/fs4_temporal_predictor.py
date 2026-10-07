@@ -204,38 +204,29 @@ def _keras():
     return keras
 
 
-def _branch(L, x, spec: PredictorSpec, name: str):
-    """Causal temporal branch of one feature: (B, 24, 1) -> (B, 6, branch_filters), time preserved."""
-    h = L.Conv1D(spec.branch_filters, spec.branch_kernel, padding="causal", activation="relu", name=f"{name}_stem")(x)
-    h = L.Conv1D(spec.branch_filters, spec.branch_kernel, strides=2, padding="causal", activation="relu", name=f"{name}_down1")(h)
-    h = L.Conv1D(spec.branch_filters, spec.branch_kernel, strides=2, padding="causal", activation="relu", name=f"{name}_down2")(h)
-    return h
-
-
 def build_predictor(spec: PredictorSpec, n_features: int, input_mode: str, latent_dim: int | None):
+    """One causal temporal branch per feature, implemented as GROUPED causal Conv1D (``groups=F``): group i sees only
+    channel/latent block i, so each feature has its own filters and the time axis is preserved (24 -> 12 -> 6), exactly
+    the per-feature branch of the design, in a graph whose size does not grow with F (365 separate slice layers
+    exhausted an 8G cap in the cost pilot)."""
     if input_mode not in INPUT_MODES:
         raise Refusal(f"UNKNOWN_INPUT_MODE: {input_mode}")
     if n_features < 1:
         raise Refusal("AT_LEAST_ONE_FEATURE")
     keras = _keras()
     L = keras.layers
+    F, bf = n_features, spec.branch_filters
     if input_mode == "RAW":
-        inp = keras.Input((spec.window, n_features), name="raw_windows")
-        branches = []
-        for i in range(n_features):
-            xi = L.Lambda(lambda t, i=i: t[:, :, i:i + 1], output_shape=(spec.window, 1), name=f"branch_{i}_slice")(inp)
-            branches.append(_branch(L, xi, spec, f"branch_{i}"))
+        inp = keras.Input((spec.window, F), name="raw_windows")
+        h = L.Conv1D(F * bf, spec.branch_kernel, padding="causal", groups=F, activation="relu", name="branch_stem")(inp)
+        h = L.Conv1D(F * bf, spec.branch_kernel, strides=2, padding="causal", groups=F, activation="relu", name="branch_down1")(h)
+        h = L.Conv1D(F * bf, spec.branch_kernel, strides=2, padding="causal", groups=F, activation="relu", name="branch_down2")(h)
     else:
         if not latent_dim:
             raise Refusal("LATENT_DIM_REQUIRED for encoder input modes")
-        inp = keras.Input((spec.latent_steps, n_features * latent_dim), name="latent_windows")
-        branches = []
-        for i in range(n_features):
-            xi = L.Lambda(lambda t, i=i: t[:, :, i * latent_dim:(i + 1) * latent_dim], output_shape=(spec.latent_steps, latent_dim),
-                          name=f"branch_{i}_slice")(inp)
-            branches.append(L.Conv1D(spec.branch_filters, 1, padding="causal", activation="relu", name=f"branch_{i}_proj")(xi))
-    fused = branches[0] if len(branches) == 1 else L.Concatenate(name="channel_fusion")(branches)
-    h = L.Conv1D(spec.fuse_filters, 1, padding="causal", activation="relu", name="fuse")(fused)
+        inp = keras.Input((spec.latent_steps, F * latent_dim), name="latent_windows")
+        h = L.Conv1D(F * bf, 1, padding="causal", groups=F, activation="relu", name="branch_proj")(inp)
+    h = L.Conv1D(spec.fuse_filters, 1, padding="causal", activation="relu", name="channel_fusion")(h)
     for j, d in enumerate(spec.core_dilations):
         u = L.Conv1D(spec.core_filters, spec.core_kernel, padding="causal", dilation_rate=d, activation="relu", name=f"core{j}_a")(h)
         u = L.Conv1D(spec.core_filters, spec.core_kernel, padding="causal", dilation_rate=d, name=f"core{j}_b")(u)

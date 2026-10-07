@@ -230,3 +230,19 @@ def test_winner_uses_the_mean_over_all_weeks_then_fewer_features_then_cost():
     assert WW.choose_winner(agg2)["set_id"] == "B" and WW.choose_winner(agg2)["tie_break"] == "lower_cost"
     assert WW.choose_winner({"D": agg["D"]}) is None
     assert "mean" in WW.AGGREGATE_RULE and "ALL" in WW.AGGREGATE_RULE and "fewer features" in WW.TIE_RULE
+
+
+def test_validation_batches_are_aligned_by_name_with_the_train_file(tmp_path):
+    import pandas as pd
+
+    paths = _inputs(tmp_path)
+    vf = pd.read_parquet(paths["val_features"])
+    ts_row = vf[["t_decision_utc", "row_id"]]
+    # split the validation features in two batches, in another column order, as the PS1 batches are
+    pd.concat([ts_row, vf[["f_signal"]]], axis=1).to_parquet(tmp_path / "in" / "vb1.parquet")
+    pd.concat([ts_row, vf[["f_noise2", "f_noise1"]]], axis=1).to_parquet(tmp_path / "in" / "vb2.parquet")
+    store = WW.DataStore.from_paths(POP, [paths["train_features"]], paths["train_targets"],
+                                    [tmp_path / "in" / "vb1.parquet", tmp_path / "in" / "vb2.parquet"], paths["val_targets"], bar_hours=1)
+    ref = _store(paths)
+    assert store.names == ref.names and np.array_equal(store.X, ref.X)
+
