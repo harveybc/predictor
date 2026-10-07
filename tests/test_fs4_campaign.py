@@ -101,3 +101,55 @@ def test_calendar_is_context_and_arms_require_identical_rows(tmp_path):
     with pytest.raises(campaign.Refusal, match="PAIRED_INPUT_ROWS_MASK_OR_NAIVE_MISMATCH"):
         campaign.complete(db, "worker", {**result, "task_id": random["task_id"],
                                          "metrics": {"mae": 0.1, "naive_mae": 0.3}}, now=104)
+
+
+def test_typed_refusal_is_terminal_and_technical_failure_retries_three_times(tmp_path):
+    source = tmp_path / "candidates.json"
+    candidate_file(source)
+    db = tmp_path / "queue.sqlite"
+    campaign.initialize(db, [source], ["f1"])
+    only = campaign.list_tasks(db, feature="a", fold="f1", arm="RAW")[0]["task_id"]
+    task = campaign.claim(db, "w", task_id=only, now=100)
+    out = campaign.fail(db, "w", only, "NO_TRAIN_OBSERVATIONS no rows", now=101)
+    assert out["retry"] is False
+    assert campaign.claim(db, "w", task_id=only, now=102) is None  # terminal: never claimed again
+    assert campaign.status(db, feature="a", fold="f1", arm="RAW")["not_available_for_train"] == 1
+    other = campaign.list_tasks(db, feature="b", fold="f1", arm="RAW")[0]["task_id"]
+    for attempt in (1, 2):
+        assert campaign.claim(db, "w", task_id=other, now=200 + attempt)["attempt"] == attempt
+        assert campaign.fail(db, "w", other, "TECHNICAL_FAILURE rc=1", now=210 + attempt, technical=True)["retry"] is True
+        assert campaign.status(db, feature="b", fold="f1", arm="RAW")["pending"] == 1
+    assert campaign.claim(db, "w", task_id=other, now=300)["attempt"] == 3
+    last = campaign.fail(db, "w", other, "TECHNICAL_FAILURE rc=1", now=301, technical=True)
+    assert last["retry"] is False
+    assert campaign.status(db, feature="b", fold="f1", arm="RAW")["failed"] == 1
+    assert campaign.claim(db, "w", task_id=other, now=302) is None
+
+
+def test_no_train_refusal_is_a_terminal_state_inside_the_denominator(tmp_path):
+    source = tmp_path / "candidates.json"
+    candidate_file(source)
+    db = tmp_path / "queue.sqlite"
+    campaign.initialize(db, [source], ["f1"])
+    task_id = campaign.list_tasks(db, feature="a", fold="f1", arm="RAW")[0]["task_id"]
+    campaign.claim(db, "w", task_id=task_id, now=100)
+    out = campaign.fail(db, "w", task_id, "NO_TRAIN_OBSERVATIONS fit origins 0", now=101)
+    assert out["state"] == "NOT_AVAILABLE_FOR_TRAIN" and out["failed"] is False
+    status = campaign.status(db)
+    assert status["not_available_for_train"] == 1 and status["failed"] == 0
+    assert status["total"] == 9 and sum(status[k] for k in ("pending", "running", "complete", "failed", "not_available_for_train")) == 9
+    assert campaign.claim(db, "w", task_id=task_id, now=102) is None
+    # another declared refusal is a typed FAILED, not a NOT_AVAILABLE_FOR_TRAIN cell
+    other = campaign.list_tasks(db, feature="b", fold="f1", arm="RAW")[0]["task_id"]
+    campaign.claim(db, "w", task_id=other, now=103)
+    assert campaign.fail(db, "w", other, "REFUSED_UNKNOWN_FEATURE x", now=104)["failed"] is True
+    assert campaign.status(db)["failed"] == 1
+    # a refusal stored as FAILED before the explicit state existed is still counted as NOT_AVAILABLE_FOR_TRAIN
+    legacy = campaign.list_tasks(db, feature="c", fold="f1", arm="RAW")[0]["task_id"]
+    campaign.claim(db, "w", task_id=legacy, now=105)
+    import sqlite3
+    con = sqlite3.connect(db)
+    con.execute("UPDATE tasks SET state='FAILED', result=? WHERE task_id=?",
+                (json.dumps({"reason": "NO_TRAIN_OBSERVATIONS legacy"}), legacy))
+    con.commit(); con.close()
+    assert campaign.status(db)["not_available_for_train"] == 2

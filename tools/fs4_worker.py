@@ -15,6 +15,7 @@ import argparse
 import json
 import os
 import re
+import shlex
 import signal
 import subprocess
 import tempfile
@@ -22,6 +23,14 @@ import threading
 import time
 from pathlib import Path
 
+#: Declared scientific refusals a runner may return with exit 3: terminal on the first occurrence.
+#: REFUSED_GPU_NOT_VERIFIED (exit 4) and anything unrecognised (a Python exception name such as
+#: REFUSED_MemoryError) are technical and retried by the controller up to MAX_ATTEMPTS.
+TYPED_CODE_RE = re.compile(r"^(NO_TRAIN_OBSERVATIONS|INSUFFICIENT_TRAIN_[A-Z0-9_]+|REFUSED_[A-Z0-9_]+)$")
+NOT_TYPED_CODES = {"REFUSED_GPU_NOT_VERIFIED"}
+#: Typed refusals that mean "no usable TRAIN rows": the controller records them as the terminal state
+#: NOT_AVAILABLE_FOR_TRAIN (inside the denominator, never retried, never dropped).
+NAFT_RE = re.compile(r"^(NO_TRAIN_OBSERVATIONS|INSUFFICIENT_TRAIN_[A-Z0-9_]+)\b")
 UUID_RE = re.compile(r"^GPU-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 DESKTOP_RESERVE_BYTES = 3 * 1024 ** 3
 UNITS = {"": 1, "K": 1024, "M": 1024 ** 2, "G": 1024 ** 3, "T": 1024 ** 4}
@@ -104,11 +113,16 @@ def host_health(args, meminfo=None, gpu=None) -> dict:
     return report
 
 
+def ssh_command(args, remote_argv: list[str]) -> list[str]:
+    """ssh joins its arguments with spaces for the remote shell, so every word is quoted: a failure
+    reason such as 'runner rc=1: a (b) c' must reach the controller as ONE argument."""
+    return ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", args.coordinator,
+            " ".join(shlex.quote(word) for word in remote_argv)]
+
+
 def controller(args, action: str, extra: list[str] | None = None, input_value=None):
-    command = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10",
-               args.coordinator, args.python, args.controller, "--db", args.db,
-               action, "--owner", args.owner]
-    command.extend(extra or [])
+    command = ssh_command(args, [args.python, args.controller, "--db", args.db, action, "--owner", args.owner]
+                          + list(extra or []))
     result = subprocess.run(command, input=json.dumps(input_value) if input_value is not None else None,
                             text=True, capture_output=True, timeout=90, check=False)
     if result.returncode:
@@ -121,17 +135,42 @@ def deliver(args, task_id: str, terminal: Path, result: dict):
     try:
         return controller(args, "complete", input_value=result)
     except RuntimeError as exc:
-        reason = f"DELIVERY_REJECTED: {exc}"[:1000]
+        reason = f"DELIVERY_REJECTED: {exc}".replace("REFUSED_", "REFUSED-")[:1000]
         rejected = terminal.with_name(f"{terminal.name}.rejected.{int(time.time())}")
         os.replace(terminal, rejected)
         controller(args, "fail", ["--task-id", task_id, "--reason", reason])
         return {"task_id": task_id, "failed": True, "reason": reason, "rejected_terminal": str(rejected)}
 
 
+def classify_exit(stdout: str, returncode: int, error_tail: str):
+    """Return ("typed", reason) for a declared refusal, ("technical", reason) otherwise."""
+    result = None
+    try:
+        parsed = json.loads(stdout) if stdout and stdout.strip() else None
+        result = parsed if isinstance(parsed, dict) else None
+    except json.JSONDecodeError:
+        result = None
+    code = str((result or {}).get("code") or "")
+    if (returncode == 3 and result is not None and code not in NOT_TYPED_CODES and TYPED_CODE_RE.match(code)
+            and result.get("status") in ("NOT_AVAILABLE_FOR_TRAIN", "REFUSED")):
+        detail = str(result.get("reason") or "").replace("\n", " ")[:200]
+        return "typed", f"{code} {detail}".strip()[:1000]
+    if returncode == 3 and result is None:  # stdout lost: the contract's last stderr line is "<CODE> <detail>"
+        lines = [x for x in error_tail.strip().splitlines() if x.strip()]
+        head, _, detail = (lines[-1] if lines else "").partition(" ")
+        if TYPED_CODE_RE.match(head) and head not in NOT_TYPED_CODES:
+            return "typed", f"{head} {detail}".strip()[:1000]
+    # a technical reason must never carry a declared refusal token or the closure would read it as one
+    text = f"TECHNICAL_FAILURE rc={returncode}: {code} {error_tail}".replace("REFUSED_", "REFUSED-")
+    return "technical", text[:1000]
+
+
 def child_env(args, task) -> dict:
     env = os.environ.copy()
     env["FS4_TASK_ID"] = task["task_id"]
     env["FS4_ARM"] = task["arm"]
+    # crispdm-run hands its child /dev/null as stdin, so the claim also travels in the environment
+    env["FS4_CLAIM_JSON"] = json.dumps(task, sort_keys=True)
     if args.gpu_uuid:
         env["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
         env["CUDA_VISIBLE_DEVICES"] = args.gpu_uuid
@@ -195,21 +234,27 @@ def run_one(args, task):
     if errors:
         raise RuntimeError(f"LEASE_HEARTBEAT_FAILED: {errors[0]}")
     if process.returncode:
-        reason = f"runner rc={process.returncode}: {error_tail}"[:1000]
-        controller(args, "fail", ["--task-id", task_id, "--reason", reason])
-        return {"task_id": task_id, "failed": True, "reason": reason}
+        kind, reason = classify_exit(stdout, process.returncode, error_tail)
+        naft = kind == "typed" and bool(NAFT_RE.match(reason))
+        if kind == "typed":  # the refusal is retained locally before it is delivered, like a COMPLETE terminal
+            atomic_json(terminal.with_name(f"{task_id}.refused.json"), {"task_id": task_id, "arm": task["arm"],
+                        "status": "NOT_AVAILABLE_FOR_TRAIN" if naft else "REFUSED", "reason": reason})
+        controller(args, "fail", ["--task-id", task_id, "--reason", reason] + (["--technical"] if kind == "technical" else []))
+        if naft:
+            return {"task_id": task_id, "state": "NOT_AVAILABLE_FOR_TRAIN", "typed_refusal": True, "reason": reason}
+        return {"task_id": task_id, "failed": True, "typed_refusal": kind == "typed", "reason": reason}
     try:
         result = json.loads(stdout)
     except json.JSONDecodeError:
-        controller(args, "fail", ["--task-id", task_id, "--reason", "runner did not emit one JSON result"])
+        controller(args, "fail", ["--task-id", task_id, "--reason", "TECHNICAL_FAILURE: runner did not emit one JSON result", "--technical"])
         return {"task_id": task_id, "failed": True, "reason": "INVALID_RUNNER_RESULT"}
     if result.get("task_id") != task_id:
-        controller(args, "fail", ["--task-id", task_id, "--reason", "RUNNER_RETURNED_WRONG_TASK"])
+        controller(args, "fail", ["--task-id", task_id, "--reason", "TECHNICAL_FAILURE: RUNNER_RETURNED_WRONG_TASK", "--technical"])
         return {"task_id": task_id, "failed": True, "reason": "RUNNER_RETURNED_WRONG_TASK"}
     if result.get("status") != "COMPLETE":
-        reason = f"RUNNER_STATUS_{result.get('status')}: {result.get('reason', '')}"[:1000]
+        reason = f"TECHNICAL_FAILURE: RUNNER_STATUS_{result.get('status')}: {result.get('reason', '')}".replace("REFUSED_", "REFUSED-")[:1000]
         atomic_json(terminal.with_name(f"{terminal.name}.refusal"), result)
-        controller(args, "fail", ["--task-id", task_id, "--reason", reason])
+        controller(args, "fail", ["--task-id", task_id, "--reason", reason, "--technical"])
         return {"task_id": task_id, "failed": True, "reason": reason}
     atomic_json(terminal, result)
     return deliver(args, task_id, terminal, result)
@@ -242,8 +287,7 @@ def main(argv=None):
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.status:
-        command = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10",
-                   args.coordinator, args.python, args.controller, "--db", args.db, "status"]
+        command = ssh_command(args, [args.python, args.controller, "--db", args.db, "status"])
         result = subprocess.run(command, text=True, capture_output=True, timeout=90, check=False)
         if result.returncode:
             raise SystemExit(result.stderr)

@@ -54,11 +54,12 @@ if [[ "$FS4_ARM" == TRAINED_ENCODER ]]; then
   [[ "$FS4_GPU_UUID" =~ ^GPU-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]] || refuse "FS4_GPU_UUID is not a physical UUID: $FS4_GPU_UUID"
   nvidia-smi -L 2>/dev/null | grep -F "(UUID: $FS4_GPU_UUID)" >/dev/null || refuse "nvidia-smi -L does not list $FS4_GPU_UUID"
   probe="$source_dir/tf_probe.py"
+  ldp="${LD_LIBRARY_PATH:-}"; [[ -n "${FS4_LD_LIBRARY_PATH_FILE:-}" && -f "$FS4_LD_LIBRARY_PATH_FILE" ]] && ldp="$(< "$FS4_LD_LIBRARY_PATH_FILE")"
   "$HOME/.local/bin/crispdm-run" -m 3G -t 5m -n "fs4-install-probe-$slot" -- \
-    env CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES="$FS4_GPU_UUID" "$FS4_PYTHON" "$probe" --expect-uuid "$FS4_GPU_UUID" >/dev/null \
+    env CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES="$FS4_GPU_UUID" LD_LIBRARY_PATH="$ldp" "$FS4_PYTHON" "$probe" --expect-uuid "$FS4_GPU_UUID" >/dev/null \
     || refuse "TensorFlow does not see exactly one device under CUDA_VISIBLE_DEVICES=$FS4_GPU_UUID"
   "$HOME/.local/bin/crispdm-run" -m 3G -t 5m -n "fs4-install-probe-none-$slot" -- \
-    env CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=GPU-00000000-0000-0000-0000-000000000000 "$FS4_PYTHON" "$probe" --expect-none >/dev/null \
+    env CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=GPU-00000000-0000-0000-0000-000000000000 LD_LIBRARY_PATH="$ldp" "$FS4_PYTHON" "$probe" --expect-none >/dev/null \
     || refuse "TensorFlow still sees a device under a bogus UUID: a fallback would be possible"
 else
   [[ -z "${FS4_GPU_UUID:-}" ]] || refuse "CPU arm $FS4_ARM must not set FS4_GPU_UUID"

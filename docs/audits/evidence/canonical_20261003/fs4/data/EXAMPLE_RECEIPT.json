@@ -1,0 +1,18 @@
+{
+  "backend": "duckdb",
+  "distinct_tasks": 3,
+  "duplicates_ignored": 0,
+  "host_role": "coordinator",
+  "inserted": 3,
+  "plan_sha256": "2b51180811e2e3ac03814d9bd1adc16a09c7b9cd122f949c1d9d024f70afcc00",
+  "receipt_sha256": "087d171ea373789d700e601c604181478f50c5b99979b656b9bb7c7af3963dc1",
+  "schema": "fs4.warehouse_receipt.v1",
+  "submitted_at": "2026-10-07T02:15:36Z",
+  "task_ids": [
+    "3b1c16c380dae2e99760d8b7603b77d7026d6ae75da1f0e8b0dd3d7b649bcbf4",
+    "b2c1d32b4745a039cb57991d66d53c13bd4e23687a0c1760b0c1eb4b1731f07d",
+    "bdc38607b5e7daeab315a3495de4a8e2a5dd5ab537e36ff4c6ccc55c5478adf7"
+  ],
+  "terminal_count": 3,
+  "terminals_sha256": "7d41995952c0e9cff587ad4041f5e860c7f0627a539806472cf93d0f92a4913c"
+}

@@ -10,6 +10,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 import sqlite3
 import statistics
 import sys
@@ -20,6 +21,10 @@ SCHEMA = "fs4.extractibility.task.v1"
 ARMS = ("RAW", "RANDOM_ENCODER", "TRAINED_ENCODER")
 LEASE_SECONDS = 3600
 MAX_ATTEMPTS = 3
+NAFT = "NOT_AVAILABLE_FOR_TRAIN"
+#: Refusal codes that mean "this feature has no usable TRAIN rows in this fold": a terminal disposition
+#: that stays INSIDE the denominator, never retried and never dropped.
+NAFT_CODE_RE = re.compile(r"^(NO_TRAIN_OBSERVATIONS|INSUFFICIENT_TRAIN_[A-Z0-9_]+)\b")
 
 
 class Refusal(ValueError):
@@ -193,7 +198,10 @@ def complete(path, owner, result, now=None):
     return {"task_id": result["task_id"], "accepted": True}
 
 
-def fail(path, owner, task_id, reason, now=None):
+def fail(path, owner, task_id, reason, now=None, technical=False):
+    """Record a failure. A typed (scientific) refusal is terminal on the first call. A technical
+    failure returns the task to PENDING while attempts remain (MAX_ATTEMPTS in total) and becomes
+    terminal FAILED only when they are exhausted; the last reason is kept either way."""
     now = time.time() if now is None else now
     if not reason or len(reason) > 1000:
         raise Refusal("INVALID_REASON")
@@ -202,9 +210,22 @@ def fail(path, owner, task_id, reason, now=None):
         row = con.execute("SELECT * FROM tasks WHERE task_id=?", (task_id,)).fetchone()
         if row is None or row["state"] != "LEASED" or row["owner"] != owner:
             raise Refusal("NO_LEASE_FOR_FAILURE")
+        if technical and row["attempt"] < MAX_ATTEMPTS:
+            con.execute("""UPDATE tasks SET state='PENDING',owner=NULL,lease_until=NULL,result=?
+                WHERE task_id=?""", (_canonical({"last_technical_failure": reason, "attempt": row["attempt"]}), task_id))
+            return {"task_id": task_id, "failed": True, "retry": True, "attempt": row["attempt"]}
+        stored = {"reason": reason, "attempt": row["attempt"]}
+        if not technical and NAFT_CODE_RE.match(reason):
+            # The row stays FAILED in the store (an older closure follower reads FAILED + a declared code as
+            # a typed refusal, so deployment order cannot break it); the disposition is carried by result.status
+            # and counted apart from failures by status() here and in the closure follower.
+            stored = {"status": NAFT, "code": NAFT_CODE_RE.match(reason).group(1), **stored}
+            con.execute("UPDATE tasks SET state='FAILED',finished_at=?,result=? WHERE task_id=?",
+                        (now, _canonical(stored), task_id))
+            return {"task_id": task_id, "failed": False, "state": NAFT, "retry": False}
         con.execute("UPDATE tasks SET state='FAILED',finished_at=?,result=? WHERE task_id=?",
-                    (now, _canonical({"reason": reason}), task_id))
-    return {"task_id": task_id, "failed": True}
+                    (now, _canonical({"reason": reason, "attempt": row["attempt"]}), task_id))
+    return {"task_id": task_id, "failed": True, "retry": False}
 
 
 def status(path, now=None, population=None, feature=None, fold=None, arm=None, owner=None):
@@ -213,8 +234,8 @@ def status(path, now=None, population=None, feature=None, fold=None, arm=None, o
         plan = con.execute("SELECT value FROM campaign WHERE key='plan'").fetchone()
         if not plan:
             raise Refusal("NO_PLAN")
-        rows = con.execute("SELECT state,owner,lease_until,started_at,finished_at,payload FROM tasks").fetchall()
-    states = {"pending": 0, "running": 0, "complete": 0, "failed": 0}
+        rows = con.execute("SELECT state,owner,lease_until,started_at,finished_at,payload,result FROM tasks").fetchall()
+    states = {"pending": 0, "running": 0, "complete": 0, "failed": 0, "not_available_for_train": 0}
     by_population = {}
     active_owners = set()
     durations = []
@@ -229,6 +250,8 @@ def status(path, now=None, population=None, feature=None, fold=None, arm=None, o
         group = by_population.setdefault(payload["population_id"], {key: 0 for key in states})
         state = "pending" if row["state"] == "LEASED" and row["lease_until"] < now else row["state"].lower()
         state = "running" if state == "leased" else state
+        if state == "failed" and row["result"] and NAFT_CODE_RE.match(str(json.loads(row["result"]).get("reason") or "")):
+            state = "not_available_for_train"  # a refusal recorded before the explicit state existed
         states[state] += 1
         group[state] += 1
         if state == "running":
@@ -288,6 +311,8 @@ def main():
     bad.add_argument("--owner", required=True)
     bad.add_argument("--task-id", required=True)
     bad.add_argument("--reason", required=True)
+    bad.add_argument("--technical", action="store_true",
+                     help="technical failure: retry up to MAX_ATTEMPTS; without it the failure is a terminal typed refusal")
     pulse = sub.add_parser("heartbeat")
     pulse.add_argument("--owner", required=True)
     pulse.add_argument("--task-id", required=True)
@@ -307,7 +332,7 @@ def main():
         elif args.action == "heartbeat":
             out = heartbeat(args.db, args.owner, args.task_id)
         else:
-            out = fail(args.db, args.owner, args.task_id, args.reason)
+            out = fail(args.db, args.owner, args.task_id, args.reason, technical=args.technical)
     except (Refusal, OSError, sqlite3.Error, json.JSONDecodeError) as exc:
         print(_canonical({"error": str(exc)}), file=sys.stderr)
         raise SystemExit(2) from exc

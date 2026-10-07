@@ -1,0 +1,7 @@
+Run 2026-10-07T02:16:53Z under crispdm-run -m 1G on the coordinator (role); throwaway DuckDB files and a throwaway SQLite queue only; no service contacted.
+predictor (satoshi/fs4-warehouse-20261007), phase-2/3 venv python 3.12 (duckdb 1.5.6, sqlalchemy 2.0.54, duckdb_engine 0.17.0):
+  tests/test_fs4_warehouse.py tests/test_fs4_closure.py -> 45 passed in 2.74s
+  tests/test_fs_phase23_warehouse.py tests/test_olap_duckdb_migrate.py olap/store/tests tests/test_migration_cli_contract.py tests/test_fs4_campaign.py -> 147 passed, 2 skipped in 14.38s
+data-warehouse (satoshi/fs4-write-route-20261007 on master 5ca5937), store-hosts venv python 3.12 (flask 3.1.3):
+  tests -m 'not packaging' -> 85 passed, 1 deselected in 1.18s (tests/test_fs4_routes.py: 10 new)
+Live controller, read-only: tools/fs4_closure.py expected -> EXPECTED_COUNTS_live_controller.json = {"total": 6495, "by_population": {"EURUSD": 5325, "ETH": 1170}}

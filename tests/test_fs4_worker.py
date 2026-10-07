@@ -38,6 +38,10 @@ def good_result():
     return {"task_id": TASK_ID, "status": "COMPLETE", "seed": 0, "metrics": {"mae": 0.1, "naive_mae": 0.2}}
 
 
+def typed_stdout(code="NO_TRAIN_OBSERVATIONS", status="NOT_AVAILABLE_FOR_TRAIN"):
+    return json.dumps({"status": status, "code": code, "task_id": TASK_ID, "reason": "no rows before the fold"})
+
+
 class FakeController:
     def __init__(self, reject_complete=False):
         self.calls = []
@@ -154,3 +158,97 @@ def test_cap_parsing():
     assert worker.cap_bytes("4650M") == 4650 * 1024 ** 2
     with pytest.raises(ValueError):
         worker.cap_bytes("four")
+
+
+def test_claim_travels_in_environment_because_crispdm_run_gives_devnull_stdin(tmp_path, monkeypatch):
+    fake = FakeController()
+    monkeypatch.setattr(worker, "controller", fake)
+    seen = tmp_path / "seen.json"
+    runner = script(tmp_path, f"cat >/dev/null; printf '%s' \"$FS4_CLAIM_JSON\" > {seen}; echo '{json.dumps(good_result())}'")
+    args = make_args(tmp_path, runner)
+    # the stand-in launcher gives its child /dev/null exactly like crispdm-run
+    launcher = Path(args.crispdm_run)
+    launcher.write_text("#!/usr/bin/env bash\nwhile [[ $1 != -- ]]; do shift; done; shift; exec \"$@\" </dev/null\n")
+    worker.run_one(args, task())
+    assert json.loads(seen.read_text())["task_id"] == TASK_ID
+    assert json.loads(seen.read_text())["arm"] == "RAW"
+
+
+@pytest.mark.parametrize("code", ["NO_TRAIN_OBSERVATIONS", "INSUFFICIENT_TRAIN_FIT_WINDOWS", "REFUSED_UNKNOWN_FEATURE"])
+def test_declared_typed_refusal_is_terminal_not_technical(tmp_path, monkeypatch, code):
+    fake = FakeController()
+    monkeypatch.setattr(worker, "controller", fake)
+    runner = script(tmp_path, f"cat >/dev/null; echo '{typed_stdout(code)}'; echo '{code} no rows' >&2; exit 3")
+    out = worker.run_one(make_args(tmp_path, runner), task())
+    assert out["typed_refusal"] is True and out["reason"].startswith(code)
+    assert (out.get("state") == "NOT_AVAILABLE_FOR_TRAIN") == (code != "REFUSED_UNKNOWN_FEATURE")
+    assert (tmp_path / "out" / f"{TASK_ID}.refused.json").exists()
+    action, extra, _ = fake.calls[-1]
+    assert action == "fail" and "--technical" not in extra
+
+
+def test_gpu_not_verified_and_unknown_exceptions_are_technical(tmp_path, monkeypatch):
+    fake = FakeController()
+    monkeypatch.setattr(worker, "controller", fake)
+    gpu = script(tmp_path, f"cat >/dev/null; echo '{typed_stdout('REFUSED_GPU_NOT_VERIFIED', 'GPU_NOT_VERIFIED')}'; echo 'REFUSED_GPU_NOT_VERIFIED no device' >&2; exit 4")
+    out = worker.run_one(make_args(tmp_path, gpu), task())
+    assert out["typed_refusal"] is False and "REFUSED_" not in out["reason"]
+    assert fake.calls[-1][2] is None and "--technical" in fake.calls[-1][1]
+    crash = script(tmp_path, f"cat >/dev/null; echo '{typed_stdout('REFUSED_MemoryError', 'REFUSED')}'; exit 3")
+    out = worker.run_one(make_args(tmp_path, crash), task())
+    assert out["typed_refusal"] is False and "--technical" in fake.calls[-1][1]
+    segv = script(tmp_path, "cat >/dev/null; echo boom >&2; exit 139")
+    out = worker.run_one(make_args(tmp_path, segv), task())
+    assert out["typed_refusal"] is False and out["reason"].startswith("TECHNICAL_FAILURE rc=139")
+
+
+def test_typed_refusal_recovered_from_last_stderr_line_when_stdout_is_lost():
+    kind, reason = worker.classify_exit("", 3, "noise\nINSUFFICIENT_TRAIN_SCORING_WINDOWS 12 < 30")
+    assert kind == "typed" and reason == "INSUFFICIENT_TRAIN_SCORING_WINDOWS 12 < 30"
+    assert worker.classify_exit("", 3, "REFUSED_GPU_NOT_VERIFIED x")[0] == "technical"
+    assert worker.classify_exit("", 1, "NO_TRAIN_OBSERVATIONS x")[0] == "technical"
+
+
+def test_closure_reads_worker_reasons_as_typed_or_technical():
+    import re
+    from tools import fs4_closure as closure
+    pattern = re.compile(closure.DEFAULT_REFUSAL_PATTERN)
+
+    def typed(reason):
+        return closure.is_typed_refusal({"state": "FAILED", "result": {"reason": reason}}, pattern)
+
+    def not_available(reason):
+        return closure.is_not_available({"state": "FAILED", "result": {"reason": reason}})
+
+    for code in ("NO_TRAIN_OBSERVATIONS", "INSUFFICIENT_TRAIN_ES_WINDOWS"):
+        reason = worker.classify_exit(typed_stdout(code), 3, "")[1]
+        assert not_available(reason) and not typed(reason)  # its own terminal disposition
+    assert typed(worker.classify_exit(typed_stdout("REFUSED_UNKNOWN_FEATURE"), 3, "")[1])
+    for rc, out in ((4, typed_stdout("REFUSED_GPU_NOT_VERIFIED", "GPU_NOT_VERIFIED")), (3, typed_stdout("REFUSED_MemoryError", "REFUSED")), (139, "")):
+        kind, reason = worker.classify_exit(out, rc, "REFUSED_GPU_NOT_VERIFIED tail")
+        assert kind == "technical" and not typed(reason) and not not_available(reason)
+
+
+def test_remote_words_are_quoted_so_a_reason_stays_one_argument(tmp_path):
+    import shlex
+    args = make_args(tmp_path, "/bin/true")
+    reason = "TECHNICAL_FAILURE rc=1: a (b) 'c' $HOME; rm -rf x"
+    command = worker.ssh_command(args, ["python3", args.controller, "--db", args.db, "fail", "--owner", args.owner,
+                                        "--task-id", TASK_ID, "--reason", reason])
+    assert command[-2] == "coord"
+    assert shlex.split(command[-1])[-1] == reason and len(shlex.split(command[-1])) == 11
+
+
+def test_controller_gate_allows_only_the_controller_verbs_for_the_role():
+    from tools.fs4_deploy import controller_gate as gate
+    py, ctl, db = "python3", "/s/tools/fs4_campaign.py", "/s/queue_v2.sqlite"
+    ok = f"{py} {ctl} --db {db} fail --owner worker_b-cpu-raw --task-id {TASK_ID} --reason 'TECHNICAL_FAILURE x (y)' --technical"
+    assert gate.validate(ok, "worker_b", py, ctl, db)[4] == "fail"
+    assert gate.validate(f"{py} {ctl} --db {db} status", "worker_b", py, ctl, db)[-1] == "status"
+    for bad in (f"{py} {ctl} --db /other.sqlite status",
+                f"{py} {ctl} --db {db} init --candidates x --fold f",
+                f"{py} {ctl} --db {db} claim --owner worker_a-cpu-raw",
+                f"{py} {ctl} --db {db} status; rm -rf ~",
+                f"bash -c id", "", "python3 'unterminated"):
+        with pytest.raises(PermissionError):
+            gate.validate(bad, "worker_b", py, ctl, db)
