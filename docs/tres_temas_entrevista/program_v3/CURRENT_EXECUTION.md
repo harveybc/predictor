@@ -1,6 +1,6 @@
 # Estado de ejecución vigente
 
-Observado: 2026-10-05. Este archivo sustituye estados operativos anteriores.
+Observado: 2026-10-07T00:19Z. Este archivo sustituye estados operativos anteriores.
 
 ## Cierre de fase 1
 
@@ -14,22 +14,39 @@ Evidencia EURUSD:
 Snapshot publicado:
 `https://github.com/harveybc/predictor/releases/tag/phase1-feature-selection-20261005`.
 
+## Cierre de fases 2 y 3 (2026-10-06, verificado desde artefactos)
+
+Orden `docs/handoffs/MUSASHI_TO_SATOSHI_FS_PHASE2_PHASE3_AUTOMATED_2026_10_05.md`,
+plan `FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md`. Retorno único:
+`docs/audits/evidence/canonical_20261003/fs_phase23/RETURN.md`.
+
+- Fase 2 cerrada: EURUSD `PHASE_2_COMPLETE.json` 2026-10-06T23:54:40Z (66,795 pares,
+  256 unidades, 0 fallidas; 7,213,860 filas de métricas, 1,202,310 de estabilidad,
+  66,795 de compuerta; 1 grupo alias, 277 clusters de redundancia) y ETH
+  2026-10-06T04:30:18Z (3,403 pares, 32 unidades, 0 fallidas; 245,016 / 61,254 /
+  3,403; 5 alias, 38 clusters). Cubo vivo reconciliado `complete: true` para ambos
+  runs; los 14 digests por tabla del cubo vivo son iguales a los sellados en los cierres.
+- Fase 3 cerrada: EURUSD `PHASE_3_FILTER_COMPLETE.json` 23:57:02Z (14 targets, 45,990
+  filas de ranking, 686 subconjuntos) y ETH 04:30:59Z (6 targets, 4,212 / 294). Nueve
+  métodos (SPEARMAN_CLUSTER, MRMR, JMI, MRMR_CAUSAL, JMI_CAUSAL y controles
+  ALL_ADMISSIBLE, UNIVARIATE_MI, CAUSAL_SUPPORTED, RANDOM_K), K={4,8,12,16,24,32}.
+  `CANDIDATES_FOR_VALIDATION.json`: `predictive_winner: null`, `uses_test_split: false`.
+- Snapshot publicado:
+  `https://github.com/harveybc/predictor/releases/tag/phase2-3-feature-selection-20261007`
+  (SHA-256 y manifiesto en el RETURN).
+- Recursos usados: CPU en tres roles (coordinator 1 slot/1 GiB, worker_a 1/2 GiB,
+  worker_b 3/2 GiB), sin GPU; tiempo de cómputo de pares 32,909 s EURUSD y 1,001 s ETH
+  (0.49 y 0.29 s/par), RSS pico por proceso 0.76 GiB.
+
 ## Único frente activo
 
-Fases 2 y 3 de selección, bajo
-`FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md` y la orden
-`docs/handoffs/MUSASHI_TO_SATOSHI_FS_PHASE2_PHASE3_AUTOMATED_2026_10_05.md`.
+Diseño de fase 4 (extractibilidad raw/random/trained sobre los subconjuntos candidatos de
+fase 3 con controles emparejados). Sólo el diseño: no se ejecuta ninguna celda, no se
+entrena ningún extractor, no se usa GPU. La elección final sigue siendo del wrapper bajo
+`BUSINESS_WEEKLY_WALK_FORWARD`.
 
-- Fase 2: 66,795 pares EURUSD y 3,403 ETH; alias, Pearson, Spearman, Kendall,
-  información mutua, distance correlation, lags y estabilidad temporal.
-- Fase 3: clustering-Spearman, mRMR y JMI, con controles y trayectorias
-  `K={4,8,12,16,24,32}` por target/horizonte.
-- Recursos: CPU distribuida entre omega, gamma y dragon. Sin GPU.
-- Operación: driver durable, shards exclusivos, terminales atómicos, follower
-  de warehouse, `STATUS.json` y continuidad automática entre fases.
-
-Fase 4 (extractibilidad/AE/DAE), arquitectura modular, DOIN, NEAT, RL,
-referencias, M5PHET y nuevas corridas quedan pausadas durante este cierre.
+Arquitectura modular, DOIN, NEAT, RL, referencias, M5PHET y nuevas corridas siguen
+pausadas hasta que ese diseño quede congelado y aprobado.
 
 ## Almacenamiento obligatorio
 
@@ -40,6 +57,4 @@ dentro del historial.
 
 ## Siguiente compuerta
 
-`PHASE_2_COMPLETE.json`, seguido automáticamente por
-`PHASE_3_FILTER_COMPLETE.json`. El siguiente trabajo permitido después es
-congelar el diseño de fase 4; no empezarlo dentro de esta orden.
+Diseño de fase 4 congelado y revisado; después, su ejecución bajo orden nueva.

@@ -1,6 +1,6 @@
 {
   "schema": "research_program_method_state.v1",
-  "updated_on": "2026-10-05",
+  "updated_on": "2026-10-07",
   "current_stage": "acceptance_test_design",
   "completed_stages": [
     "discovery",
@@ -8,7 +8,7 @@
   ],
   "program_owner": "Harvey",
   "execution_owner": "Satoshi",
-  "handoff_status": "PHASE_1_COMPLETE_PHASE_2_AND_3_AUTHORIZED",
+  "handoff_status": "PHASE_2_AND_3_COMPLETE_PHASE_4_DESIGN_AUTHORIZED",
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [
     "Implement and execute the automated Phase-2 feature-feature dependency and redundancy campaign for the frozen EURUSD and ETH populations.",
@@ -62,7 +62,7 @@
     "DOIN_role": "DISTRIBUTED_CANDIDATE_EVALUATION"
   },
   "feature_selection": {
-    "active_phase": "PHASE_2_DEPENDENCY_REDUNDANCY_THEN_PHASE_3_FILTERS",
+    "active_phase": "PHASE_4_EXTRACTIBILITY_DESIGN",
     "canonical_denominators": {
       "EURUSD": 366,
       "ETH": 83
@@ -103,7 +103,7 @@
       "predictive_causal_plus_extraction",
       "optional_generative_preference"
     ],
-    "phase_2_started": false,
+    "phase_2_started": true,
     "phase_2_expected_pairs": {
       "EURUSD": 66795,
       "ETH": 3403
@@ -148,6 +148,74 @@
         "warehouse_run_id": "phase1-final:ETH:29d2f745f5d9e87c"
       },
       "olap_snapshot_release": "https://github.com/harveybc/predictor/releases/tag/phase1-feature-selection-20261005"
+    },
+    "phase_2_complete": true,
+    "phase_3_complete": true,
+    "phase_2_3_results": {
+      "EURUSD": {
+        "identity": "phase1-eurusd-final:94d20c038d55e152",
+        "pairs": 66795,
+        "units": 256,
+        "failed_units": 0,
+        "admissible_features": 365,
+        "alias_groups": 1,
+        "redundancy_clusters": 277,
+        "rows": {
+          "feature_pair_metrics": 7213860,
+          "feature_pair_stability": 1202310,
+          "feature_pair_gate": 66795,
+          "feature_filter_rankings": 45990,
+          "feature_filter_subsets": 686
+        },
+        "targets": 14,
+        "candidates": 686,
+        "phase_2_closed_utc": "2026-10-06T23:54:40Z",
+        "phase_3_closed_utc": "2026-10-06T23:57:02Z"
+      },
+      "ETH": {
+        "identity": "phase1-final:ETH:29d2f745f5d9e87c",
+        "pairs": 3403,
+        "units": 32,
+        "failed_units": 0,
+        "admissible_features": 78,
+        "alias_groups": 5,
+        "redundancy_clusters": 38,
+        "rows": {
+          "feature_pair_metrics": 245016,
+          "feature_pair_stability": 61254,
+          "feature_pair_gate": 3403,
+          "feature_filter_rankings": 4212,
+          "feature_filter_subsets": 294
+        },
+        "targets": 6,
+        "candidates": 294,
+        "phase_2_closed_utc": "2026-10-06T04:30:18Z",
+        "phase_3_closed_utc": "2026-10-06T04:30:59Z"
+      },
+      "methods": [
+        "SPEARMAN_CLUSTER",
+        "MRMR",
+        "JMI",
+        "MRMR_CAUSAL",
+        "JMI_CAUSAL",
+        "ALL_ADMISSIBLE",
+        "UNIVARIATE_MI",
+        "CAUSAL_SUPPORTED",
+        "RANDOM_K"
+      ],
+      "k_grid": [
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "predictive_winner": null,
+      "uses_test_split": false,
+      "live_warehouse_reconcile_complete": true,
+      "olap_snapshot_release": "https://github.com/harveybc/predictor/releases/tag/phase2-3-feature-selection-20261007",
+      "evidence": "docs/audits/evidence/canonical_20261003/fs_phase23/RETURN.md"
     }
   },
   "business_evaluation": {

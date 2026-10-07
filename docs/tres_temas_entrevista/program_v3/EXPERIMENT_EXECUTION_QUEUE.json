@@ -1,14 +1,19 @@
 {
   "schema": "experiment_execution_queue.v2",
-  "updated_on": "2026-10-05T17:00:00-05:00",
+  "updated_on": "2026-10-07T00:19:00Z",
   "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md on satoshi/canonical-exec-20261003",
   "policy": {
-    "focus": "FEATURE_SELECTION_PHASE_2_THEN_PHASE_3_ONLY",
+    "focus": "PHASE_4_EXTRACTIBILITY_DESIGN_ONLY_AFTER_PHASE_2_3_CLOSURE",
     "parallelism": "one durable controller with exclusive CPU shards across omega gamma and dragon",
     "seed_default": 1,
     "seed_maximum": 3,
     "repeat_policy": "adopt valid terminals; repeat only lost corrupt or scientifically changed units",
-    "gpu_preference": ["gamma_external_5090", "dragon_4090", "gamma_internal_5070ti", "omega_4070"],
+    "gpu_preference": [
+      "gamma_external_5090",
+      "dragon_4090",
+      "gamma_internal_5070ti",
+      "omega_4070"
+    ],
     "gpu_use_now": false,
     "financial_gate": "strictly_better_than_same_row_naive_before_strategy",
     "test_policy": "validation and test remain closed during filter selection",
@@ -26,36 +31,45 @@
       "priority": 1,
       "id": "FS-PHASE2-ENGINEERING",
       "resource": "CPU_worktree",
-      "state": "AUTHORIZED_NOT_STARTED",
+      "state": "COMPLETE",
       "work": "Implement and test the durable pairwise driver, bounded worker, warehouse migration, status writer and restart behavior.",
       "depends_on": [],
-      "produces": "one deployable commit and wheel for all hosts"
+      "produces": "one deployable commit and wheel for all hosts",
+      "evidence": "driver fc026d04 (branch satoshi/fs-phase23-driver-20261005), data 18865d4c (satoshi/fs-phase23-data-20261005), integrated branch satoshi/fs-phase23-integrated-20261006; one commit deployed on all three roles with digest parity"
     },
     {
       "priority": 2,
       "id": "FS-PHASE2-PAIRWISE",
       "resource": "omega_gamma_dragon_CPU",
-      "state": "WAITING_FOR_ENGINEERING",
+      "state": "COMPLETE",
       "work": "Compute all EURUSD and ETH feature-feature metrics with exclusive deterministic shards and automatic warehouse delivery.",
-      "depends_on": ["FS-PHASE2-ENGINEERING"],
-      "produces": "PHASE_2_COMPLETE.json plus OLAP tables and verified snapshot"
+      "depends_on": [
+        "FS-PHASE2-ENGINEERING"
+      ],
+      "produces": "PHASE_2_COMPLETE.json plus OLAP tables and verified snapshot",
+      "evidence": "PHASE_2_COMPLETE.json EURUSD (2026-10-06T23:54:40Z, 66,795 pairs, 256 units, 0 failed) and ETH (09:30Z, 3,403 pairs, 32 units, 0 failed); live warehouse reconcile complete for both runs; snapshot https://github.com/harveybc/predictor/releases/tag/phase2-3-feature-selection-20261007"
     },
     {
       "priority": 3,
       "id": "FS-PHASE3-FILTERS",
       "resource": "CPU_after_phase2_gate",
-      "state": "WAITING_FOR_PHASE2",
+      "state": "COMPLETE",
       "work": "Run Spearman clustering, mRMR and JMI plus controls for every target and horizon; retain full rankings and K paths.",
-      "depends_on": ["FS-PHASE2-PAIRWISE"],
-      "produces": "PHASE_3_FILTER_COMPLETE.json plus candidate subset trajectories"
+      "depends_on": [
+        "FS-PHASE2-PAIRWISE"
+      ],
+      "produces": "PHASE_3_FILTER_COMPLETE.json plus candidate subset trajectories",
+      "evidence": "PHASE_3_FILTER_COMPLETE.json EURUSD (23:57:02Z, 14 targets, 45,990 ranking rows, 686 subsets) and ETH (09:30:59Z, 6 targets, 4,212 / 294); CANDIDATES_FOR_VALIDATION.json per population, predictive_winner null, uses_test_split false"
     },
     {
       "priority": 4,
       "id": "FS-PHASE4-EXTRACTIBILITY",
       "resource": "unassigned",
-      "state": "WAITING_FOR_PHASE3_AND_DESIGN",
-      "work": "Freeze and then compare raw random trained AE DAE and temporal alternatives on Phase-3 candidates and matched controls.",
-      "depends_on": ["FS-PHASE3-FILTERS"],
+      "state": "DESIGN_AUTHORIZED_NOT_STARTED",
+      "work": "Freeze the extractibility DESIGN (raw / random / trained encoders on the phase-3 candidate subsets with matched controls); execution not started.",
+      "depends_on": [
+        "FS-PHASE3-FILTERS"
+      ],
       "produces": "extractibility evidence for wrapper validation"
     },
     {
@@ -64,7 +78,9 @@
       "resource": "best_admissible_gpu",
       "state": "WAITING_FOR_FINAL_MANIFEST",
       "work": "Matched architecture controls, branch donors and R0/R1/R2.",
-      "depends_on": ["FS-PHASE4-EXTRACTIBILITY"],
+      "depends_on": [
+        "FS-PHASE4-EXTRACTIBILITY"
+      ],
       "produces": "winning branch architecture and regime"
     },
     {
@@ -73,7 +89,9 @@
       "resource": "best_admissible_gpu",
       "state": "WAITING_FOR_MOD_ARCH_E1",
       "work": "Fix winning branch prefix, materialize fusion, pretrain core and test transfer separately.",
-      "depends_on": ["MOD-ARCH-E1"],
+      "depends_on": [
+        "MOD-ARCH-E1"
+      ],
       "produces": "core donor and transfer result"
     },
     {
@@ -82,7 +100,9 @@
       "resource": "fleet",
       "state": "WAITING_FOR_ELIGIBLE_MODEL",
       "work": "DEAP proposes typed configurations and DOIN evaluates finite candidate batches.",
-      "depends_on": ["MOD-ARCH-E1"],
+      "depends_on": [
+        "MOD-ARCH-E1"
+      ],
       "produces": "verified incumbent and candidate history"
     },
     {
@@ -91,7 +111,9 @@
       "resource": "best_admissible_gpu",
       "state": "WAITING_FOR_FROZEN_REPRESENTATION",
       "work": "Dense control versus true NEAT predictive head on the frozen representation.",
-      "depends_on": ["MOD-HCORE"],
+      "depends_on": [
+        "MOD-HCORE"
+      ],
       "produces": "matched head comparison"
     },
     {
@@ -100,7 +122,9 @@
       "resource": "best_admissible_gpu",
       "state": "WAITING_FOR_FINAL_REPRESENTATION",
       "work": "SAC raw/modular and DQN raw/modular, one seed first.",
-      "depends_on": ["MOD-HCORE"],
+      "depends_on": [
+        "MOD-HCORE"
+      ],
       "produces": "matched policy results"
     },
     {
@@ -118,7 +142,11 @@
       "resource": "unassigned",
       "state": "DEFERRED_FINAL_OPTIONAL",
       "work": "Test calendar and causal dossier inputs only after representation, NEAT, RL and paper baseline.",
-      "depends_on": ["HEAD-DENSE-NEAT", "RL-RAW-MODULAR", "TRADING-PAPER"],
+      "depends_on": [
+        "HEAD-DENSE-NEAT",
+        "RL-RAW-MODULAR",
+        "TRADING-PAPER"
+      ],
       "produces": "separate incremental-value ablation"
     }
   ]

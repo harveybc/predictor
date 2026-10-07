@@ -373,10 +373,11 @@ después de recomputación independiente y recibo por contenido.
 ## 16. Estado actual
 
 El estado observado y la cola se mantienen únicamente en
-`CURRENT_EXECUTION.md` y `EXPERIMENT_EXECUTION_QUEUE.json`. La fase 1 está
-cerrada. La prioridad crítica única es terminar fase 2 y fase 3:
-dependencia/redundancia entre features y filtros reproducibles. Fase 4,
-extractibilidad, permanece sin iniciar hasta ese cierre. El calendario se usa
+`CURRENT_EXECUTION.md` y `EXPERIMENT_EXECUTION_QUEUE.json`. Las fases 1, 2 y 3
+están cerradas (2026-10-07: `PHASE_2_COMPLETE.json` y
+`PHASE_3_FILTER_COMPLETE.json` para EURUSD y ETH, cubo vivo reconciliado,
+snapshot `phase2-3-feature-selection-20261007`; sin ganador predictivo). El
+único objeto siguiente es el DISEÑO de fase 4, extractibilidad, sin ejecutarlo. El calendario se usa
 ahora sólo como evidencia histórica del selector; su integración como entrada
 permanece en I11.
 
