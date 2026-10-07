@@ -109,6 +109,7 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 - [ ] I9-R. SAC raw/modular y DQN raw/modular.
 - [ ] I10. LTS semanal, shadow, MT5 demo y Alpaca paper.
 - [ ] I11. Extensión final opcional: calendario económico causal como entrada.
+- [ ] I12. Posprograma: configurar `feature-selector` desde el chat de M5PHET.
 
 Las casillas no implican ejecución serial. I2 de un lote puede coexistir con I4
 de otro; referencias públicas, ingeniería, M5PHET y paper trading pueden avanzar
@@ -424,3 +425,34 @@ permanece en I11.
 NEAT queda fuera de la cola hasta que exista representación final congelada.
 Toda orden anterior que lo ejecute sobre entradas crudas o lo use como optimizador
 de hiperparámetros está superada.
+
+## 17. Posprograma: feature-selector desde M5PHET
+
+I12 queda **DEFERRED_POST_PROGRAM**: empieza después de cerrar I0-I11 y los
+trabajos futuros ya comprometidos, nunca como requisito de I5 ni como desvío
+de la selección actual. `feature-selector` será el punto de entrada reusable;
+M5PHET sólo interpretará la solicitud y coordinará proveedores declarados.
+No se implementa en la campaña vigente.
+
+La conversación podrá nombrar un data lake, uno o varios datasets (o todos los
+admisibles) y un data warehouse para las métricas. Si el usuario no indica
+warehouse, se usará sólo un perfil previamente configurado y autorizado: el
+chat no inventa credenciales, destinos, targets ni permisos. El intérprete
+producirá primero un plan tipado y revisable: población y columnas,
+disponibilidad point-in-time, target/horizonte, split y calendario de
+reentrenamiento, técnicas de perfil/causalidad/redundancia/extractibilidad,
+presupuesto y destino analítico. Data-gov resolverá autoridad; data-lake
+entregará bytes con identidad; `feature-selector` ejecutará los motores
+versionados; warehouse recibirá métricas, disposiciones y recibos con lectura
+de vuelta. Ningún texto recuperado por RAG sustituirá identidad o evidencia.
+
+La interfaz ofrecerá estado, ETA medido, reanudación idempotente y resultados
+en lenguaje natural enlazados a métricas y manifiestos tipados. Rechazará un
+dataset sin acceso, un target ambiguo, una combinación proveedor/salida no
+declarada y cualquier intento de llamar causal a `NOT_IDENTIFIED`. Antes de
+ejecutar, mostrará el alcance y costo estimado; trabajos costosos requerirán
+confirmación en el producto. Un ejemplo local sin stack desplegado seguirá
+siendo posible. La aceptación exige pruebas de extremo a extremo con dataset
+propio y ajeno, reinicio, aislamiento de credenciales y paridad con la CLI de
+`feature-selector` sobre idénticos bytes y configuración. El chat no adelanta
+ni altera el manifiesto financiero final de I5.

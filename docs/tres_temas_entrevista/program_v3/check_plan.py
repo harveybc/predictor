@@ -233,8 +233,8 @@ def validate(state, root):
         checklist = json.loads((root / checklist_path).read_text())
         items = {item.get("id"): item for item in checklist.get("items", [])}
         required_checklist = {"I0", "I0-W", "I1", "I2", "I3", "I4-C", "I4-R", "I5",
-                              "I6-A", "I6-B", "I7", "I7-H", "I8", "I9-N",
-                              "I9-R", "I10", "I11"}
+                              "I6-A", "I6-D", "I6-B", "I7", "I7-H", "I8", "I9-N",
+                              "I9-R", "I10", "I11", "I12"}
         if set(items) != required_checklist:
             issues.append("master checklist coverage")
         if "I7" not in items.get("I7-H", {}).get("depends_on", []):
@@ -247,6 +247,9 @@ def validate(state, root):
             issues.append("checklist NEAT sequence")
         if not {"I9-N", "I9-R", "I10"}.issubset(items.get("I11", {}).get("depends_on", [])):
             issues.append("checklist calendar input sequence")
+        if not {"I5", "I6-B", "I7-H", "I8", "I9-N", "I9-R", "I10", "I11"}.issubset(
+                items.get("I12", {}).get("depends_on", [])):
+            issues.append("checklist feature-selector chat post-program sequence")
 
     traceability_path = documents.get("business_weekly_traceability")
     if traceability_path and (root / traceability_path).is_file():

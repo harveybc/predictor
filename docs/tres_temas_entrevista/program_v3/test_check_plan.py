@@ -18,6 +18,14 @@ class PlanChecks(unittest.TestCase):
     def test_actual_state(self):
         self.assertEqual(validate(self.state, ROOT), [])
 
+    def test_feature_selector_chat_stays_after_program(self):
+        checklist_path = ROOT / "MASTER_CHECKLIST.json"
+        checklist = json.loads(checklist_path.read_text())
+        item = next(item for item in checklist["items"] if item["id"] == "I12")
+        self.assertEqual(item["state"], "NOT_STARTED")
+        self.assertIn("I11", item["depends_on"])
+        self.assertNotIn("I12", next(i for i in checklist["items"] if i["id"] == "I5").get("depends_on", []))
+
     def test_news_cannot_authorize_real_capital(self):
         self.state["news_live_track"]["real_capital_authorized"] = True
         self.assertIn("news live scope", validate(self.state, ROOT))
