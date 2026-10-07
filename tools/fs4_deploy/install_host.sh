@@ -52,7 +52,9 @@ commit="$(printf '%s' "$self_check" | python3 -c 'import json,sys; d=json.load(s
 if [[ "$FS4_ARM" == TRAINED_ENCODER ]]; then
   [[ -n "${FS4_GPU_UUID:-}" ]] || refuse "TRAINED_ENCODER needs FS4_GPU_UUID"
   [[ "$FS4_GPU_UUID" =~ ^GPU-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]] || refuse "FS4_GPU_UUID is not a physical UUID: $FS4_GPU_UUID"
-  nvidia-smi -L 2>/dev/null | grep -F "(UUID: $FS4_GPU_UUID)" >/dev/null || refuse "nvidia-smi -L does not list $FS4_GPU_UUID"
+  # A fault on another GPU can make nvidia-smi exit nonzero after listing this one.
+  gpu_listing="$(nvidia-smi -L 2>/dev/null || true)"
+  grep -F "(UUID: $FS4_GPU_UUID)" <<<"$gpu_listing" >/dev/null || refuse "nvidia-smi -L does not list $FS4_GPU_UUID"
   probe="$source_dir/tf_probe.py"
   ldp="${LD_LIBRARY_PATH:-}"; [[ -n "${FS4_LD_LIBRARY_PATH_FILE:-}" && -f "$FS4_LD_LIBRARY_PATH_FILE" ]] && ldp="$(< "$FS4_LD_LIBRARY_PATH_FILE")"
   "$HOME/.local/bin/crispdm-run" -m 3G -t 5m -n "fs4-install-probe-$slot" -- \
