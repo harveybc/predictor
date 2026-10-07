@@ -5,6 +5,7 @@ import pytest
 
 from tools.fs4_hourly_support import hourly_windows
 from tools import fs4_temporal_predictor as predictor
+from tools import fs4_weekly_wrapper as weekly
 
 
 HOUR = 3600
@@ -63,6 +64,21 @@ def test_predictor_raw_input_uses_elapsed_hours_not_dataset_rows():
     with pytest.raises(ValueError, match="HOURLY_GRID_MISALIGNED"):
         predictor._inputs_for(predictor.PredictorSpec(), None, x, scaler, [7],
                               timestamps=ts + np.arange(9), min_timestamp=0)
+
+
+def test_weekly_trainer_passes_timestamps_and_rolling_fit_boundary(monkeypatch):
+    seen = {}
+
+    def fake_fit(*args, **kwargs):
+        seen.update(kwargs)
+        return object()
+
+    monkeypatch.setattr(predictor, "fit_named", fake_fit)
+    ts = np.arange(9, dtype=np.int64) * 4 * HOUR
+    trainer = weekly.r0_trainer_factory(["eth"], predictor.EncoderSpec(), ts, 4 * HOUR)
+    trainer(predictor.PredictorSpec(), np.zeros((9, 1)), np.zeros(9), [4], [5], "RAW", None, 0)
+    assert np.array_equal(seen["timestamps"], ts)
+    assert seen["min_timestamp"] == 4 * HOUR
 
 
 @pytest.mark.skipif(os.environ.get("FS4_TF_TESTS") != "1", reason="TensorFlow worker only")
