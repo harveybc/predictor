@@ -103,7 +103,7 @@ def main(argv=None) -> int:
         if rf.is_file():
             rows.append(json.loads(rf.read_text()) | {"pilot_size_class": t["pilot_size_class"]})
             continue
-        cmd = [a.crispdm_run, "-q", "-m", a.cap, "-t", a.wall, "-n", f"fs4-pilot-{t['pilot_size_class']}", "--",
+        cmd = [a.crispdm_run, "-q", "-m", a.cap, "-t", a.wall, "-n", f"fs4-pilot-{a.population.lower()}-{t['pilot_size_class']}-{t['task_id'][:8]}", "--",
                a.python, str(HERE / "fs4_weekly_wrapper.py"), "run-task", "--population", a.population,
                "--train-features", *a.train_features, "--train-targets", a.train_targets, "--bar-hours", str(a.bar_hours),
                "--pilot-train-only", "--task-file", str(tf)]
