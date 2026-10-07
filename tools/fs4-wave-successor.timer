@@ -1,0 +1,11 @@
+[Unit]
+Description=Poll the pinned FS4 successor without agent intervention
+
+[Timer]
+OnBootSec=1min
+OnUnitInactiveSec=1min
+Unit=fs4-wave-successor.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

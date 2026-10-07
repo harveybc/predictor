@@ -1,0 +1,8 @@
+[Unit]
+Description=Close a pinned FS4 wave and initialize the weekly successor
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/fs4-wave-successor-once
+MemoryMax=2G
+TimeoutStartSec=600

@@ -28,6 +28,7 @@ if str(HERE.parent) not in sys.path:
     sys.path.insert(0, str(HERE.parent))
 
 from tools import fs4_frontier as F  # noqa: E402
+from tools import fs4_wave_frontier as WF  # noqa: E402
 from tools import fs4_weekly_wrapper as WW  # noqa: E402
 from tools.business_objective_firewall import BusinessObjectiveFirewall  # noqa: E402
 from tools.fs4_candidates import SCHEMA as CONSOLIDATED_SCHEMA  # noqa: E402
@@ -106,7 +107,15 @@ def initialize(db, consolidated_paths, seal_paths, extractibility_path, *, out_d
     if not extractibility_path.is_file():
         raise Refusal(f"MISSING_EXTRACTIBILITY: {extractibility_path} (EXTRACTIBILITY_COMPLETE.json must exist before the weekly campaign)")
     ext = json.loads(extractibility_path.read_text())
-    if ext.get("state") != "EXTRACTIBILITY_COMPLETE" or not ext.get("closure_sha256"):
+    partial_wave = ext.get("state") == "EXTRACTIBILITY_PARTIAL_COMPLETE"
+    if partial_wave:
+        if ext.get("schema") != "fs4.extractibility_partial_complete.v1" \
+                or ext.get("scope") != "PINNED_PRELIMINARY_FIRST_WAVE_ONLY" \
+                or ext.get("final_selection") is not False \
+                or ext.get("denominator", {}).get("sum_equals_admitted") is not True \
+                or digest({k: v for k, v in ext.items() if k != "closure_sha256"}) != ext.get("closure_sha256"):
+            raise Refusal("PARTIAL_EXTRACTIBILITY_INVALID")
+    elif ext.get("state") != "EXTRACTIBILITY_COMPLETE" or not ext.get("closure_sha256"):
         raise Refusal("EXTRACTIBILITY_NOT_COMPLETE")
     consolidated = []
     for p in consolidated_paths:
@@ -114,8 +123,10 @@ def initialize(db, consolidated_paths, seal_paths, extractibility_path, *, out_d
         if c.get("schema") != CONSOLIDATED_SCHEMA:
             raise Refusal(f"CONSOLIDATED_SCHEMA_INVALID: {p}")
         consolidated.append(c)
-    seals = [F.load_seal(p) for p in seal_paths]
+    seals = [WF.load_seal(p) if partial_wave else F.load_seal(p) for p in seal_paths]
     for seal in seals:
+        if partial_wave and seal["inputs"]["extractibility"].get("schema") != ext["schema"]:
+            raise Refusal("FRONTIER_SEAL_PARTIAL_SCHEMA_MISMATCH")
         if seal["inputs"]["extractibility"]["closure_sha256"] != ext["closure_sha256"]:
             raise Refusal(f"FRONTIER_SEAL_WITHOUT_EXTRACTIBILITY: the {seal['population_id']} seal was sealed without (or with another) "
                           "extractibility closure; re-seal with --extractibility before initialising the weekly campaign")

@@ -12,6 +12,7 @@ import pytest
 
 from tools import fs4_candidates as C
 from tools import fs4_frontier as F
+from tools import fs4_wave_frontier as WF
 from tools import fs4_weekly_campaign as K
 from pathlib import Path
 from tools import fs4_weekly_wrapper as WW
@@ -120,6 +121,33 @@ def test_init_requires_extractibility_closure_and_matching_seal(tmp_path):
         K.initialize(tmp_path / "q2.sqlite", [other], [seal], ext, out_dir=tmp_path / "o2", validation_year=2024, input_modes=("RAW",))
     with pytest.raises(K.Refusal, match="MISSING_EXTRACTIBILITY"):
         K.initialize(tmp_path / "q3.sqlite", [cons], [seal], tmp_path / "nope.json", out_dir=tmp_path / "o3", validation_year=2024, input_modes=("RAW",))
+
+
+def test_partial_wave_requires_matching_scoped_seal(tmp_path):
+    cons_path = _consolidated(tmp_path)
+    cons = json.loads(cons_path.read_text())
+    folds = {f"fold-{i}": {"RAW": 0.2, "RANDOM_ENCODER": 0.3, "TRAINED_ENCODER": 0.1}
+             for i in range(5)}
+    ext = {"schema": "fs4.extractibility_partial_complete.v1", "state": "EXTRACTIBILITY_PARTIAL_COMPLETE",
+           "scope": "PINNED_PRELIMINARY_FIRST_WAVE_ONLY", "final_selection": False,
+           "denominator": {"admitted": 30, "complete": 30, "not_available_for_train": 0,
+                           "sum_equals_admitted": True},
+           "populations": {POP: {"features": {f: {"status": "MEASURED", "folds": folds} for f in NAMES}}}}
+    ext["closure_sha256"] = C.digest(ext)
+    ext_path = tmp_path / "partial.json"
+    ext_path.write_text(json.dumps(ext))
+    target_sets = {"Y_s_1h": [cons["sets"][0]["set_id"], cons["sets"][1]["set_id"]]}
+    seal = WF.build_seal(cons, ext, target_sets)
+    seal_path = tmp_path / "wave_seal.json"
+    seal_path.write_text(json.dumps(seal))
+    result = K.initialize(tmp_path / "wave.sqlite", [cons_path], [seal_path], ext_path,
+                          out_dir=tmp_path / "wave_out", validation_year=2024, input_modes=("RAW",))
+    assert result["sets"] == 2 and result["tasks"] == 104
+    ext["denominator"]["complete"] = 29
+    ext_path.write_text(json.dumps(ext))
+    with pytest.raises(K.Refusal, match="PARTIAL_EXTRACTIBILITY_INVALID"):
+        K.initialize(tmp_path / "wrong.sqlite", [cons_path], [seal_path], ext_path,
+                     out_dir=tmp_path / "wrong_out", validation_year=2024, input_modes=("RAW",))
 
 
 def test_plan_is_sealed_tasks_are_sets_times_weeks_times_modes_and_init_is_idempotent(tmp_path):
