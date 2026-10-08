@@ -1,7 +1,7 @@
 # I5-P: reconstrucción causal de entradas seleccionadas
 
-Estado: `PILOT_RUNNING`. El manifiesto final de I5 está congelado y el primer
-piloto de arquitectura terminó; falta la comparación predictiva semanal. Precede al
+Estado: `PILOT_COMPLETE_WEEKLY_ABLATION_PENDING`. El manifiesto final de I5 está
+congelado y el piloto del conjunto seleccionado terminó; falta la comparación predictiva semanal. Precede al
 contraste de arquitectura I6-A. No cambia la campaña semanal RAW/encoder que
 ya corre, no reabre selección y no lee TEST.
 
@@ -84,7 +84,17 @@ Entrada, filas y mascara tienen los mismos digestos que v1. Tiempo de pared
 103.8 s, pico cgroup 1.88 GB, VRAM 0.42 GB. Es un piloto de soporte y coste,
 no evidencia de beneficio predictivo ni de limpieza de ruido economico.
 
-El siguiente cierre requiere checkpoints v2 para todos los rasgos del conjunto
-seleccionado que se contraste, entradas reconstruidas emitidas causalmente
-por origen, y la comparacion semanal pareada contra RAW (y RAW_LAG3 para v1)
-con target y naive intactos. Si el beneficio no aparece, avanza RAW.
+Los cuatro checkpoints v2 del conjunto RAW ganador para EURUSD/Y_s_1h
+(`px.close_loc`, `px.rv5`, `yh.slv.logret_1d`, `yh.xlc.logret_1d`) ya estan
+retenidos. Un probe de 128 origenes TRAIN del pliegue 2023 reconstruyo
+causalmente las cuatro entradas desde esos pesos, con soporte, target y naive
+invariantes. Cambio absoluto medio frente al dato observado: 0.009322; esto
+solo prueba que el adaptador transforma datos reales, no que elimina ruido.
+Recibo fisico:
+`~/.local/state/canonical_20261003/i5p/real_train_probe_128.json`, digesto
+de contenido `0ee5098feb3c8d53291957bce84f09a3e982930a71e62610a262a56008363028`.
+
+El siguiente cierre requiere la comparacion semanal pareada de pronosticos
+contra RAW (y RAW_LAG3 para v1), con target y naive intactos. No se abre TEST
+ni se declara mejora por los numeros de reconstruccion. Si el beneficio no
+aparece, avanza RAW.
