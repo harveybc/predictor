@@ -119,7 +119,10 @@ ni TEST. Las celdas son semanas distintas, no repeticiones de una semilla.
 La reconstruccion empeoro el MAE en 3/3 semanas. En diciembre ambos brazos
 superan levemente al naive; en enero y julio ninguno. Esto no demuestra
 inutilidad general del denoiser ni es una estimacion anual: son 309 filas
-puntuadas de TRAIN y un solo target. Por coste/beneficio, **RAW sigue como
+puntuadas de TRAIN y un solo target. Ademas, el conjunto de rasgos fue
+seleccionado posteriormente usando VALIDATION-2024: estas semanas anteriores
+son solo un diagnostico retrospectivo de la ruta y del coste, no una prueba
+independiente de calidad. Por coste/beneficio, **RAW sigue como
 entrada principal para I6-A**; I5-P no se promociona sin contraste anual
 positivo. Recibos locales versionados en
 `~/.local/state/canonical_20261003/i5p/train_week_pair_2023w{00,26,51}.json`.
