@@ -1,19 +1,19 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-08",
-  "current_stage": "I6A_MATCHED_WEEKLY_ARCHITECTURE_CAMPAIGN",
+  "current_stage": "I6A_SELECTED_INPUT_BUSINESS_CONTROL_CLOSED",
   "completed_stages": [
     "discovery",
     "requirements"
   ],
   "program_owner": "Harvey",
   "execution_owner": "Satoshi",
-  "handoff_status": "I5_RAW_MAINLINE_I6A_WEEKLY_VALIDATION_RUNNING",
+  "handoff_status": "I5_RAW_MAINLINE_I6A_SCOPED_WEEKLY_VALIDATION_COMPLETE_NO_NAIVE_PASS",
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [
-    "Close the I6-A four-arm weekly 2024 validation campaign and verify complete paired week populations before interpreting architecture differences.",
+    "Use the complete I6-A 208/208-cell EURUSD Y_s_1h business adaptation as development evidence only: ARCH-B is the strongest arm relative to ARCH-A, but none beats the same-row naive on the mean.",
     "Retain RAW as the mainline selected input; the reconstructed-input TRAIN diagnostic was worse in all three paired weeks and does not authorize denoising the target.",
-    "After I6-A closure, proceed to authenticated branch pretraining and the R0/R1/R2 comparison; keep H-CORE, NEAT and RL in canonical order.",
+    "Complete the remaining general E0 H2/H3, literature-model and target/horizon controls before calling I6-A globally verified; then pretrain authenticated branches and compare R0/R1/R2 on matched weekly rows.",
     "Do not open TEST or promote a trading model until the selected architecture and same-row naive gates pass."
   ],
   "documents": {
@@ -61,7 +61,7 @@
     "DOIN_role": "DISTRIBUTED_CANDIDATE_EVALUATION"
   },
   "feature_selection": {
-    "active_phase": "I5_RAW_DECISION_I6A_ARCHITECTURE_COMPARISON",
+    "active_phase": "I5_RAW_DECISION_I6A_SCOPED_BUSINESS_COMPARISON_COMPLETE",
     "weekly_validation": {
       "status": "COMPLETE",
       "tasks_completed": 6240,

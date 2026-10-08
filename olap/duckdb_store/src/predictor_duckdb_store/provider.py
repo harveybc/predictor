@@ -185,7 +185,19 @@ class PredictorDuckdbStore(_Cube):
 
     # -- write serialisation ---------------------------------------------------
     def write_metrics(self, report):
+        from predictor_olap_store.query import normalise_report, report_sha256
+
+        normalise_report(report)
+        digest = report_sha256(report)
+        if not isinstance(report.get("report_sha256"), str) or report["report_sha256"].lower() != digest:
+            raise ValueError("report_sha256 mismatch")
         with self._write_lock:
+            with self.engine().connect() as connection:
+                existing = connection.execute(text(
+                    f"SELECT lineage FROM {self._qualified('gov_report')} WHERE report_sha256 = :digest"
+                ), {"digest": digest}).first()
+            if existing is not None:
+                return {"stored": False, "already_stored": True, "lineage": existing[0]}
             return super().write_metrics(report)
 
     def write_terminal(self, terminal):

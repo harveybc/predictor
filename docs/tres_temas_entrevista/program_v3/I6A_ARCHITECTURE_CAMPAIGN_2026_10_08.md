@@ -1,6 +1,7 @@
 # I6-A: matched temporal architecture controls
 
-Status: RUNNING. This document is not an architecture verdict.
+Status: COMPLETE for the selected-input EURUSD `Y_s_1h` business adaptation;
+the general E0 architecture acceptance gate remains open.
 
 Origin-alignment correction: the first ARCH-C code used Keras `Conv1D` with
 stride 2, which sampled positions 0,2,...,22 and dropped the origin at 23.
@@ -71,3 +72,43 @@ paired population is missing. Its final table compares each arm with ARCH-A
 and the same-row naive over the full weekly validation population. The
 selected feature set was chosen on this validation year, so the comparison is
 development evidence; TEST remains sealed for a single later confirmation.
+
+## Complete 2024 validation result
+
+Closure `d25425393ae537288b09cdeb21382cc7ea253292cc161bff0866be039ccc0b0b`
+accepted 208/208 current-revision cells and all 52 matched weeks. The 27
+superseded ARCH-C cells remain separately archived and do not enter this
+denominator. Mean weekly naive MAE is 0.000492891 for every arm.
+
+| Arm | Mean weekly MAE | Mean weekly skill vs naive | Weeks beating naive | Parameters | Fit seconds, 52 weeks |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| ARCH_0 | 0.005474226 | -10.4003 | 0 | 3,297 | 793 |
+| ARCH_A | 0.000511972 | -0.0413 | 7 | 3,953 | 606 |
+| ARCH_B | 0.000500321 | -0.0151 | 12 | 4,785 | 646 |
+| ARCH_C, origin-aligned | 0.000677526 | -0.3960 | 0 | 4,225 | 1,635 |
+
+ARCH-B's mean paired difference from ARCH-A is -0.000011651 MAE (-2.28 %
+relative to ARCH-A's mean); B is better in 34/52 weeks. This is descriptive,
+not a significance or generalization claim. ARCH-B remains 0.000007430 MAE
+above the same-row naive mean. Therefore no arm from this bank is eligible for
+strategy testing or trading. ARCH_0 also removes three quarters of the input
+times by design, so its poor result does not by itself measure the value of
+learned branches.
+
+The deployed warehouse read back 208 idempotent reports and 1,664 metric rows.
+Their lineage is explicitly `UNVERIFIED` because these cells consumed retained
+local parquets, not a data-gov delivery. Physical cell receipts, both source
+archives, the closure and the freeze remain retained outside Git. The source
+architecture file hash agreed across both workers:
+`ac2165aef9926c1859b53ad1ca2d30b687e5ce5b62bf9aa512d79951c98ab876`.
+
+Warehouse correction: a replay exposed a DuckDB-specific false `rowcount` on
+`INSERT ... ON CONFLICT DO NOTHING`. The same 208 report rows acquired a second
+copy of each of their 1,664 child metrics. With the service stopped, a
+byte-matched physical backup was retained outside Git. All 1,664 duplicate
+pairs had identical content; only their second I6-A metric row was removed.
+The DuckDB backend now checks report identity under its write lock before the
+insert, and the publisher requires both report and metric counts on readback.
+The restarted service returned `already_stored` for a retained report without
+adding a row; readback was again 208 reports and 1,664 metrics. No model was
+rerun for this repair.

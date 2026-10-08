@@ -94,12 +94,12 @@
     {
       "id": "I6-A",
       "name": "architecture_controls",
-      "state": "IN_PROGRESS",
+      "state": "EVIDENCE_PARTIAL",
       "depends_on": [
         "I5-P"
       ],
       "gate": "matched ARCH result",
-      "evidence": "The first ARCH-C implementation dropped the origin row under Keras stride-2 convolution; its receipts are superseded and retained. The origin-aligned successor has a temporal-support regression test and a new architecture identity. The 2024 weekly validation campaign resumes complete weeks assigned by host, two thirds to the 5090 and one third to the 4090. No architecture winner or test result is declared."
+      "evidence": "The selected-input EURUSD Y_s_1h business adaptation completed 208/208 cells over 52 weekly 2024 validation weeks, one seed, with same-row naive and paired populations; closure d25425393ae537288b09cdeb21382cc7ea253292cc161bff0866be039ccc0b0b. ARCH-B mean MAE 0.000500321 versus ARCH-A 0.000511972 and naive 0.000492891, so no arm passes the trading eligibility gate. The first ARCH-C implementation omitted the origin; its receipts are archived and only that arm was rerun with a new architecture identity. Warehouse readback: 208 reports and 1664 metrics, lineage UNVERIFIED for retained local parquets. General E0 mechanism H2/H3, literature-model and other target/horizon controls remain open; no TEST was read."
     },
     {
       "id": "I6-D",

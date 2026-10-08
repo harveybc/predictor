@@ -113,10 +113,14 @@ def main(argv=None):
             raise ValueError("WAREHOUSE_RECEIPT_IDENTITY_MISMATCH")
         stored += int(receipt.get("stored") is True)
         already += int(receipt.get("already_stored") is True)
-    sql = "SELECT COUNT(*) AS n FROM gov_report WHERE experiment_set_key = 'i6a:2024:EURUSD:Y_s_1h' LIMIT 1"
+    sql = ("SELECT COUNT(DISTINCT r.report_sha256) AS n, COUNT(m.report_sha256) AS metrics "
+           "FROM gov_report r LEFT JOIN gov_metric m ON m.report_sha256 = r.report_sha256 "
+           "WHERE r.experiment_set_key = 'i6a:2024:EURUSD:Y_s_1h' LIMIT 1")
     readback = request_json(endpoint + "/api/v1/query?" + urllib.parse.urlencode({"sql": sql}), token, "GET")
     rows = readback.get("rows") if isinstance(readback, dict) else None
-    if not isinstance(rows, list) or len(rows) != 1 or int(rows[0].get("n", -1)) != len(reports):
+    if (not isinstance(rows, list) or len(rows) != 1
+            or int(rows[0].get("n", -1)) != len(reports)
+            or int(rows[0].get("metrics", -1)) != sum(len(r["metrics"]) for r in reports)):
         raise ValueError("WAREHOUSE_READBACK_COUNT_MISMATCH")
     print(json.dumps({"state": "PUBLISHED", "reports": len(reports), "stored": stored,
                       "already_stored": already, "readback": readback, "closure_sha256": closure["sha256"]}))
