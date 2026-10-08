@@ -86,18 +86,20 @@
     {
       "id": "I5-P",
       "name": "selected_input_denoising_ablation",
-      "state": "NOT_STARTED",
+      "state": "EVIDENCE_PARTIAL",
       "depends_on": ["I5"],
-      "gate": "paired RAW, causal reconstruction and latent inputs on selected features; target and naive unchanged; verified temporal support and RAW fallback"
+      "gate": "paired RAW, causal reconstruction and latent inputs on selected features; target and naive unchanged; verified temporal support and RAW fallback",
+      "evidence": "Four selected-feature origin-covering donors and a real TRAIN probe are retained. Three paired TRAIN-2023 weeks found reconstruction worse than RAW on the same target, rows and naive; RAW remains the mainline input. The latent arm and full acceptance gate are not complete."
     },
     {
       "id": "I6-A",
       "name": "architecture_controls",
-      "state": "NOT_STARTED",
+      "state": "IN_PROGRESS",
       "depends_on": [
         "I5-P"
       ],
-      "gate": "matched ARCH result"
+      "gate": "matched ARCH result",
+      "evidence": "ARCH_0/A/B/C model forms and paired-week checks pass five tests. A four-arm TRAIN-2023 week-0 diagnostic completed on the 5090; the 2024 weekly validation campaign is running with complete weeks assigned by host, two thirds to the 5090 and one third to the 4090. No architecture winner or test result is declared."
     },
     {
       "id": "I6-D",
