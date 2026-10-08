@@ -99,7 +99,7 @@
         "I5-P"
       ],
       "gate": "matched ARCH result",
-      "evidence": "ARCH_0/A/B/C model forms and paired-week checks pass five tests. A four-arm TRAIN-2023 week-0 diagnostic completed on the 5090; the 2024 weekly validation campaign is running with complete weeks assigned by host, two thirds to the 5090 and one third to the 4090. No architecture winner or test result is declared."
+      "evidence": "The first ARCH-C implementation dropped the origin row under Keras stride-2 convolution; its receipts are superseded and retained. The origin-aligned successor has a temporal-support regression test and a new architecture identity. The 2024 weekly validation campaign resumes complete weeks assigned by host, two thirds to the 5090 and one third to the 4090. No architecture winner or test result is declared."
     },
     {
       "id": "I6-D",

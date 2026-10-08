@@ -4,15 +4,17 @@ import pytest
 
 from tools import fs4_weekly_wrapper as W
 from tools.i6a_campaign import atomic_json, paired_week, verify_result
-from tools.i6a_architectures import ARMS
+from tools.i6a_architectures import ARMS, architecture_identity
+from tools.fs4_temporal_predictor import PredictorSpec
 
 
 def _record(arm):
     result = {"disposition": "COMPLETED", "rows_sha256": "rows", "n_scored": 120,
               "fit_population_digest": "fit", "inner_population_digest": "inner", "fit_rows": 1000,
-              "inner_rows": 100, "naive": {"rows_sha256": "rows"}}
+              "inner_rows": 100, "naive": {"rows_sha256": "rows"},
+              "architecture_sha256": architecture_identity(PredictorSpec(), 4, arm)}
     result["result_sha256"] = W.digest(result)
-    record = {"arm": arm, "task": {"task_id": "same"}, "result": result}
+    record = {"arm": arm, "task": {"task_id": "same", "members": ["a", "b", "c", "d"]}, "result": result}
     record["sha256"] = W.digest(record)
     return record
 
@@ -39,3 +41,14 @@ def test_result_digest_and_task_identity_reject_mutation(tmp_path):
     atomic_json(path, rec)
     with pytest.raises(ValueError, match="RESULT_DIGEST_MISMATCH"):
         verify_result(path, "ARCH_A", rec["task"])
+
+
+def test_old_arch_c_digest_is_rejected_even_when_resealed(tmp_path):
+    rec = _record("ARCH_C")
+    rec["result"]["architecture_sha256"] = "d" * 64
+    rec["result"]["result_sha256"] = W.digest({k: v for k, v in rec["result"].items() if k != "result_sha256"})
+    rec["sha256"] = W.digest({k: v for k, v in rec.items() if k != "sha256"})
+    path = tmp_path / "cell.json"
+    atomic_json(path, rec)
+    with pytest.raises(ValueError, match="ARCHITECTURE_IDENTITY_MISMATCH"):
+        verify_result(path, "ARCH_C", rec["task"])

@@ -15,7 +15,8 @@ import time
 from pathlib import Path
 
 from tools import fs4_weekly_wrapper as W
-from tools.i6a_architectures import ARMS
+from tools.i6a_architectures import ARMS, architecture_identity
+from tools.fs4_temporal_predictor import PredictorSpec
 from tools.i6a_weekly_arch_pilot import make_task
 
 
@@ -35,6 +36,9 @@ def verify_result(path: Path, arm: str, task: dict):
     if record.get("arm") != arm or record.get("task") != task or record.get("result", {}).get("disposition") != "COMPLETED":
         raise ValueError(f"RESULT_IDENTITY_MISMATCH: {path}")
     result = record["result"]
+    expected_architecture = architecture_identity(PredictorSpec(), len(task["members"]), arm)
+    if result.get("architecture_sha256") != expected_architecture:
+        raise ValueError(f"ARCHITECTURE_IDENTITY_MISMATCH: {path}")
     if result.get("result_sha256") != W.digest({k: v for k, v in result.items() if k != "result_sha256"}):
         raise ValueError(f"INNER_RESULT_DIGEST_MISMATCH: {path}")
     return record

@@ -2,6 +2,25 @@
 
 Status: RUNNING. This document is not an architecture verdict.
 
+Origin-alignment correction: the first ARCH-C code used Keras `Conv1D` with
+stride 2, which sampled positions 0,2,...,22 and dropped the origin at 23.
+The old ARCH-C cell bytes and logs are preserved under an archive manifest and
+are excluded from closure. The corrected branch applies a causal stride-1
+convolution followed by indices 1,3,...,23 at each halving. A test now proves
+that both the earliest input and the origin can influence the last core step,
+and that the origin cannot influence the first fused step. ARCH-A/B and ARCH_0
+are unchanged. Only ARCH-C cells are repeated; its architecture digest changed.
+
+Scope: this is the selected-input BUSINESS adaptation of the ARCH controls,
+not the general E0 mechanism study. In particular ARCH-A retains the existing
+FS4 three-convolution 24-to-12-to-6 branch, whereas the original E0 design
+sheet names a one- or two-layer local detector. H2/H3, contextual sensitivity,
+the literature models and R0/R1/R2 remain separate acceptance work. The common
+core's causal residual dilations give its last position access to the full
+24-hour window in the learned-branch arms; ARCH_0 deliberately sees only six
+sampled positions, so its deficit cannot isolate "learning" from information
+loss. Do not call this bank the full ARCH acceptance gate by itself.
+
 The frozen EURUSD `Y_s_1h` RAW winner supplies four selected inputs. The
 business protocol fits a new model before each 2024 validation week from the
 preceding four years, with a purged chronological inner-validation tail. Every
@@ -36,13 +55,14 @@ are **not** prospective model quality evidence:
 | ARCH_0 | 0.007030384 | 0.000921990 | 3,297 |
 | ARCH_A | 0.000924921 | 0.000921990 | 3,953 |
 | ARCH_B | 0.000946530 | 0.000921990 | 4,785 |
-| ARCH_C | 0.001052032 | 0.000921990 | 4,225 |
+| ARCH_C | withdrawn: origin omitted | 0.000921990 | 4,225 |
 
 The first 2024 validation week also used identical rows (97) and naive MAE
 0.000612503. It is one of 52 weeks and cannot order the arms: ARCH_0
-0.004883628; ARCH_A 0.000617189; ARCH_B 0.000614759; ARCH_C 0.000664281.
-None beats the naive in that week. No strategy simulation or TEST score follows
-from it.
+0.004883628; ARCH_A 0.000617189; ARCH_B 0.000614759. The original ARCH-C
+value 0.000664281 is withdrawn because it omitted the origin; the successor
+will replace it. The remaining three did not beat the naive in that week. No
+strategy simulation or TEST score follows from it.
 
 `tools/i6a_campaign.py` deterministically partitions complete weeks and
 resumes from verified cell receipts. `tools/i6a_close.py` recomputes outer and
