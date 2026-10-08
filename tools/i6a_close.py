@@ -48,6 +48,13 @@ def close(freeze: dict, roots):
         base["state"] = "INCOMPLETE_EVIDENCE"
         base["sha256"] = W.digest(base)
         return base
+    core_code = {r["result"]["code_sha256"] for r in records.values()}
+    if len(core_code) != 1:
+        base["state"] = "INCOMPLETE_EVIDENCE"
+        base["problems"] = [{"reason": "MIXED_CORE_CODE_IDENTITIES"}]
+        base["sha256"] = W.digest(base)
+        return base
+    base["core_code_sha256"] = next(iter(core_code))
     by_arm = {}
     ref = np.array([records[(i, "ARCH_A")]["result"]["metrics"]["mae"] for i in range(len(weeks))])
     for arm in ARMS:
@@ -55,7 +62,8 @@ def close(freeze: dict, roots):
         mae = np.array([r["metrics"]["mae"] for r in results])
         naive = np.array([r["metrics"]["naive_mae"] for r in results])
         params = sorted(set(r["cost"]["n_params"] for r in results))
-        if len(params) != 1 or not np.isfinite(mae).all() or not np.isfinite(naive).all() or not np.all(naive > 0):
+        architecture_ids = sorted(set(r["architecture_sha256"] for r in results))
+        if len(params) != 1 or len(architecture_ids) != 1 or not np.isfinite(mae).all() or not np.isfinite(naive).all() or not np.all(naive > 0):
             base["state"] = "INCOMPLETE_EVIDENCE"
             base["problems"] = [{"arm": arm, "reason": "INVALID_METRIC_OR_PARAMETER_CONTRACT"}]
             base["sha256"] = W.digest(base)
@@ -65,6 +73,7 @@ def close(freeze: dict, roots):
                        "weeks_better_than_naive": int(np.sum(mae < naive)),
                        "mean_paired_delta_mae_vs_arch_a": float(np.mean(mae - ref)),
                        "n_params": params[0],
+                       "architecture_sha256": architecture_ids[0],
                        "fit_seconds_total": float(sum(r["cost"]["fit_seconds"] for r in results)),
                        "cell_digests": [records[(i, arm)]["sha256"] for i in range(len(weeks))]}
     base.update({"state": "COMPLETE", "arms": by_arm,
