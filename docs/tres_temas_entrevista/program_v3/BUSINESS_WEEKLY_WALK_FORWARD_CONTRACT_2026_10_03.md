@@ -50,6 +50,14 @@ se reemplaza una semana fallida por otra ni se promedia solo lo que terminó.
 No hay fallback silencioso entre modos. Una tabla que los compare conserva dos
 columnas de protocolo y no promedia sus filas.
 
+La extensión de cadencias e historias se diseña en el
+[subplan de estrategias y regímenes](TRADING_POLICY_REGIMES_AND_REFRESH_WORK_PLAN_2026_10_08.md).
+El diario no es un modo implementado por declarar este documento: necesita
+piloto de coste y runner con las mismas garantías temporales. Cuatro años
+siguen siendo la referencia. Ventanas distintas son candidatos identificados
+por separado; no se etiquetan `ROLLING_4Y`. Inferir un estado cada barra,
+decidir una orden y actualizar pesos tienen calendarios distintos.
+
 `update_mode` también es obligatorio:
 
 - `FULL_RETRAIN_ROLLING_4Y`: inicia cada semana desde la inicialización sellada
@@ -80,8 +88,12 @@ se congelan antes del test, y cada conjunto semanal se deriva únicamente del
 rolling TRAIN correspondiente. No se comparan un manifiesto fijo y uno
 adaptativo como si fueran el mismo tratamiento.
 
-En RL, equity, posiciones, órdenes pendientes, costes y financiación continúan
-entre semanas; cambia la política disponible, no se reinicia el negocio. En
+En RL, la contabilidad de equity, posiciones, órdenes, costes y financiación
+continúa entre semanas; cambia la política disponible, no se reinicia el
+negocio. El cierre obligatorio antes de la pausa semanal se ejecuta con fills
+y costes reales del simulador, cancela las órdenes pendientes y deja la
+posición plana; no borra pérdidas ni devuelve la equity al capital inicial.
+Un cierre no ejecutable conserva su fallo de ejecución, no fabrica un fill. En
 forecasting y estrategia heurística, cada predicción registra el modelo semanal
 que la produjo. Solo pronósticos que superen estrictamente su naive pareado en
 el protocolo de validation elegible pueden entrar a la estrategia.
@@ -146,6 +158,13 @@ ese piloto como año de validation o test.
 | BW16 | Reinicio y reanudación no repiten una semana completada y preservan checkpoint, semilla, datos y recibos. |
 | BW17 | Full retrain y warm update reciben mismos orígenes y presupuesto declarado; toda diferencia restante queda atribuible al estado inicial/modo. |
 | BW18 | La frecuencia de actualización y el coste completo se reportan; un modo mensual no se promociona como semanal por economía. |
+| BW19 | Cash y pasivo semanal comparten instrumento, reloj, costes y riesgo; buy-and-hold continuo queda rotulado como referencia de otro calendario. |
+| BW20 | Cierre semanal ejecutado y continuidad de equity/costes sobreviven al relevo de checkpoint, sin fills ni resets ficticios. |
+| BW21 | Estado y selección de política por régimen no cambian al perturbar datos futuros; no se usa el mejor experto conocido a posteriori. |
+| BW22 | Historia, cadencia y presupuesto tienen identidad propia; una variante diaria o de otra ventana no puede hacerse pasar por semanal/cuatro años. |
+
+BW19-BW22 son requisitos nuevos `PLANNED`; su documentación no certifica
+implementación ni reabre campañas anteriores. El subplan detalla sus contrastes.
 
 ## 6. Evidencia mínima por semana y cierre
 

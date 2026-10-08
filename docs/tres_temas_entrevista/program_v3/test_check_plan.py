@@ -4,6 +4,7 @@ import copy
 import json
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 from check_plan import validate
 
@@ -118,6 +119,24 @@ class PlanChecks(unittest.TestCase):
             "missing document business_weekly_traceability",
             " ".join(validate(self.state, ROOT)),
         )
+
+    def test_trading_policy_subplan_cannot_disappear(self):
+        self.state["documents"].pop("trading_policy_regimes", None)
+        self.assertIn("missing document trading_policy_regimes", validate(self.state, ROOT))
+
+    def test_legacy_traceability_cannot_omit_baselines_and_regimes(self):
+        trace_path = ROOT / "BUSINESS_WEEKLY_TRACEABILITY.json"
+        trace = json.loads(trace_path.read_text())
+        trace["requirements"] = trace["requirements"][:18]
+        original_read_text = Path.read_text
+
+        def read_text(path, *args, **kwargs):
+            if path == trace_path:
+                return json.dumps(trace)
+            return original_read_text(path, *args, **kwargs)
+
+        with patch.object(Path, "read_text", read_text):
+            self.assertIn("business weekly traceability coverage", validate(self.state, ROOT))
 
     def test_business_weekly_task_cannot_disappear(self):
         self.state["tasks"] = [

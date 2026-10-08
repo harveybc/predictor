@@ -22,7 +22,7 @@
       "depends_on": [
         "I0"
       ],
-      "gate": "BW01-BW18 executable across forecasting, heuristic and RL with rolling four-year weekly evaluation"
+      "gate": "BW01-BW22 executable across forecasting, heuristic and RL: rolling four-year weekly evaluation, passive baselines, funded weekly close, causal regime routing and separately identified cadence/history variants"
     },
     {
       "id": "I1",
@@ -164,7 +164,8 @@
       "depends_on": [
         "I7-H"
       ],
-      "gate": "SAC and DQN factorial"
+      "gate": "SAC and DQN raw/modular factorial against cash and weekly passive controls with net return/drawdown; subsequent matched policy-by-market-regime and refresh-cadence contrasts",
+      "subplan": "TRADING_POLICY_REGIMES_AND_REFRESH_WORK_PLAN_2026_10_08.md"
     },
     {
       "id": "I10",

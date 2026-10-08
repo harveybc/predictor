@@ -109,7 +109,7 @@ def validate(state, root):
     documents = state.get("documents", {})
     for name in ("master", "metrics", "orders", "queue", "checklist", "feature_selection",
                  "feature_selection_phase23", "modular_stack", "core_pretraining", "financial_loss_policy",
-                 "business_weekly", "business_weekly_traceability"):
+                 "business_weekly", "business_weekly_traceability", "trading_policy_regimes"):
         path = documents.get(name)
         if not path or not (root / path).is_file():
             issues.append(f"missing document {name}")
@@ -260,7 +260,7 @@ def validate(state, root):
         traceability = json.loads((root / traceability_path).read_text())
         requirements = traceability.get("requirements", [])
         ids = [item.get("id") for item in requirements]
-        if ids != [f"BW{i:02}" for i in range(1, 19)]:
+        if ids != [f"BW{i:02}" for i in range(1, 23)]:
             issues.append("business weekly traceability coverage")
         allowed = {"IMPLEMENTED", "PARTIAL", "PLANNED"}
         if any(item.get("state") not in allowed for item in requirements):

@@ -1,6 +1,6 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-07. Este documento contiene sólo el plan vigente. Los
+Actualizado: 2026-10-08. Este documento contiene sólo el plan vigente. Los
 retornos RP, snapshots de máquinas, restricciones ya levantadas y dictámenes
 superados son evidencia histórica en `docs/audits/` y `docs/handoffs/`; no
 gobiernan la ejecución.
@@ -16,10 +16,11 @@ El orden de autoridad es:
 5. [fase 4 de extractibilidad y validación](program_v3/FEATURE_SELECTION_PHASE4_WORK_PLAN_2026_10_06.md);
 6. [ablación de reconstrucción causal de entradas](program_v3/SELECTED_INPUT_DENOISING_ABLATION_2026_10_08.md);
 7. [arquitectura temporal modular](program_v3/MODULAR_STACK_WORK_PLAN_2026_09_30.md);
-8. [estado metodológico](program_v3/PROJECT_METHOD_STATE.json);
-9. [cola actual](program_v3/EXPERIMENT_EXECUTION_QUEUE.json) y
+8. [baselines, estrategias por régimen y cadencia de actualización](program_v3/TRADING_POLICY_REGIMES_AND_REFRESH_WORK_PLAN_2026_10_08.md);
+9. [estado metodológico](program_v3/PROJECT_METHOD_STATE.json);
+10. [cola actual](program_v3/EXPERIMENT_EXECUTION_QUEUE.json) y
    [estado de ejecución](program_v3/CURRENT_EXECUTION.md);
-10. [checklist legible por máquina](program_v3/MASTER_CHECKLIST.json), proyección
+11. [checklist legible por máquina](program_v3/MASTER_CHECKLIST.json), proyección
    del apartado 4 y no un plan alterno.
 
 La vista ejecutiva obligatoria es
@@ -89,6 +90,16 @@ en la misma población.
    modelo con una ventana móvil de cuatro años terminada en el cutoff. Se congela
    el procedimiento antes del test, no un único juego de pesos para todo el año.
    `LITERATURE_STATIC` permanece como modo separado para reproducciones fieles.
+   Mensual es un brazo de sensibilidad declarado; diario es una extensión
+   experimental posterior a medir coste y utilidad. Más reajustes no garantizan
+   mayor precisión ni rentabilidad. Cambiar cadencia o historia cambia la
+   identidad del experimento, no la receta de campañas ya iniciadas.
+11. **Baselines de política.** RL y heurística se comparan con efectivo y
+   exposición pasiva bajo el mismo contrato de ejecución y riesgo. Buy-and-hold
+   continuo es referencia externa si incumple el cierre semanal; el control
+   operativo cierra y reabre según ese calendario. Drawdown, Sharpe y retorno
+   neto son métricas, no estrategias. RL sin salida predictiva no recibe un
+   MAE/naive ficticio ni queda exento de comparación económica.
 
 ## 4. Checklist de control de alto nivel
 
@@ -96,7 +107,7 @@ Este checklist es la vista que debe consultar el orquestador antes de cada
 despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 
 - [ ] I0. Contrato de negocio: targets corto/largo, barrera, RL, costes y riesgo.
-- [ ] I0-W. Walk-forward: cuatro años móviles, actualización semanal, años completos de validation/test y modo literatura separado.
+- [ ] I0-W. Walk-forward: cuatro años móviles, actualización semanal, años completos de validation/test, controles pasivos y modo literatura separado; sensibilidad mensual y diseño diario costeado.
 - [ ] I1. Inventario: fuente, columna, unidad, frecuencia, licencia y disponibilidad.
 - [ ] I2. Perfil básico completo por celda de métrica, no una marca global.
 - [x] I3. Perfil individual y escalera causal por feature-target.
@@ -113,7 +124,7 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 - [ ] I7-H. Fijar prefijo ganador y probar H-CORE por separado.
 - [ ] I8. Optimización DEAP distribuida por DOIN del modelo elegible.
 - [ ] I9-N. Representación final congelada: Dense control frente a NEAT.
-- [ ] I9-R. SAC raw/modular y DQN raw/modular.
+- [ ] I9-R. SAC raw/modular y DQN raw/modular con baselines económicos; después, comparación de políticas por régimen y cadencia.
 - [ ] I10. LTS semanal, shadow, MT5 demo y Alpaca paper.
 - [ ] I11. Extensión final opcional: calendario económico causal como entrada.
 - [ ] I12. Posprograma: configurar `feature-selector` desde el chat de M5PHET.
@@ -352,6 +363,26 @@ RL compara `SAC raw` frente a `SAC modular` y `DQN raw` frente a
 `DQN modular`. No se llama “cabezal” al actor/crítico ni se exige que SAC y DQN
 compartan red. Reward, costes, episodios, early stopping y mejor checkpoint son
 identidades separadas.
+
+El [subplan de políticas y regímenes](program_v3/TRADING_POLICY_REGIMES_AND_REFRESH_WORK_PLAN_2026_10_08.md)
+concreta I0/I0-W, I8, I9-R e I10 sin crear otro hito previo a I6/I7. Primero
+se fijan baselines y riesgo; al llegar al banco de estrategias se conserva el
+orden MPC con costes, contexto de régimen y contraste aislado de salidas.
+Antes de entrenar expertos especializados se compara qué políticas simples
+aportan utilidad neta en estados inferibles online. No se declara un régimen
+"explotable" por su apariencia ni usando el ganador retrospectivo de TEST.
+
+DEAP/DOIN podrá buscar historia, cadencia, parámetros de política y presupuesto
+de actualización en un espacio acotado y validación temporal. La referencia
+sigue siendo cuatro años/semanal. Primero sensibilidad mensual; sólo después
+un piloto diario de candidatos finalistas. Los costes se estiman por modelo y
+modo de actualización, no multiplicando todos los factores sin límite. Las
+secuencias warm-start y el estado financiero respetan su dependencia temporal.
+Regímenes de mercado no son los regímenes de entrenamiento R0/R1/R2.
+
+Esta ampliación no cambia las colas activas ni adelanta NEAT o el calendario
+causal de I11. El paralelismo se aplica dentro de los hitos elegibles; la vieja
+lista de carriles A-D no constituye una orden para reabrir campañas históricas.
 
 LTS consume sólo artefactos instalados y verificados. Las promociones son offline
 → shadow → MT5 demo/Alpaca paper. No hay autorización de capital real.
