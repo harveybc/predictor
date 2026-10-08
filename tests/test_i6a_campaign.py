@@ -23,6 +23,11 @@ def test_paired_week_rejects_changed_support():
     records[2]["result"]["n_scored"] = 119
     with pytest.raises(ValueError, match="PAIRED_WEEK_MISMATCH"):
         paired_week(records)
+    records[2]["result"]["n_scored"] = 120
+    records[2]["result"]["metrics"] = {"naive_mae": 0.2}
+    records[1]["result"]["metrics"] = {"naive_mae": 0.1}
+    with pytest.raises(ValueError, match="PAIRED_WEEK_MISMATCH: naive_mae"):
+        paired_week(records)
 
 
 def test_result_digest_and_task_identity_reject_mutation(tmp_path):

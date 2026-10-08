@@ -44,10 +44,15 @@ def paired_week(records):
     if len(records) != len(ARMS):
         raise ValueError("INCOMPLETE_PAIRED_WEEK")
     results = [r["result"] for r in records]
-    keys = ("rows_sha256", "n_scored", "fit_population_digest", "inner_population_digest", "fit_rows", "inner_rows", "naive")
+    keys = ("rows_sha256", "n_scored", "fit_population_digest", "inner_population_digest",
+            "fit_rows", "inner_rows", "naive", "input_sha256", "standardiser_sha256", "row_id_offset")
     for key in keys:
         if any(r.get(key) != results[0].get(key) for r in results[1:]):
             raise ValueError(f"PAIRED_WEEK_MISMATCH: {key}")
+    for metric in ("naive_mae", "naive_mse"):
+        if any(r.get("metrics", {}).get(metric) != results[0].get("metrics", {}).get(metric)
+               for r in results[1:]):
+            raise ValueError(f"PAIRED_WEEK_MISMATCH: {metric}")
 
 
 def main(argv=None):
