@@ -1,0 +1,3 @@
+# Y_s_1h: I6-A validation
+
+EURUSD Y_s_1h, 2024 weekly validation: 52/52 weeks and 208/208 matched cells (one seed, four-year rolling refits). Best learned arm ARCH_B has mean weekly MAE 0.000500321 versus same-row naive 0.000492891 (delta +0.000007430; 12/52 weeks beat naive). All-arm mean weekly MAE: ARCH_0 0.005474226, ARCH_A 0.000511972, ARCH_B 0.000500321, ARCH_C 0.000677526. It does not pass the strict annual naive gate. Feature selection used this validation year, so this is development evidence, not an external confirmation; TEST was not read. Closure `d25425393ae537288b09cdeb21382cc7ea253292cc161bff0866be039ccc0b0b`; warehouse readback 208 reports and 1,664 metric rows in `i6a:2024:EURUSD:Y_s_1h`.

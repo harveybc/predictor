@@ -15,7 +15,9 @@ from pathlib import Path
 
 from tools.i6a_campaign import atomic_json
 from tools.i6a_close import close
-from tools.i6a_publish_olap import main as publish
+from tools.i6a_publish_olap import experiment_set_key, main as publish
+from tools.i6a_result_catalog import record, warehouse_publication
+from tools.i6a_weekly_arch_pilot import target_horizon_hours
 
 
 def source_spec(value):
@@ -59,6 +61,7 @@ def collect(argv=None):
     ap.add_argument("--warehouse-url", required=True)
     ap.add_argument("--token-file", required=True)
     ap.add_argument("--code-commit", required=True)
+    ap.add_argument("--catalog-root", type=Path)
     ap.add_argument("--poll-seconds", type=int, default=60)
     ap.add_argument("--timeout-seconds", type=int, default=7200)
     args = ap.parse_args(argv)
@@ -107,8 +110,15 @@ def collect(argv=None):
     for root in roots:
         publish_args += ["--result-dir", str(root)]
     publish(publish_args)
-    atomic_json(status_file, {"state": "PUBLISHED", "target": args.target,
-                              "closure_sha256": closure["sha256"], "reports": 208})
+    publication = {"state": "PUBLISHED", "target": args.target,
+                   "closure_sha256": closure["sha256"], "reports": 208,
+                   "experiment_set_key": experiment_set_key(args.target),
+                   "metric_horizon": target_horizon_hours(args.target)}
+    atomic_json(status_file, publication)
+    if args.catalog_root:
+        # This second readback is the catalog's proof, not a claim copied from the POST loop.
+        readback = warehouse_publication(closure, args.warehouse_url, Path(args.token_file))
+        record(args.catalog_root, closure, readback)
     return 0
 
 

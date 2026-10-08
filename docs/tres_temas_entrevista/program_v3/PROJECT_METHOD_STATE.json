@@ -8,10 +8,10 @@
   ],
   "program_owner": "Harvey",
   "execution_owner": "Satoshi",
-  "handoff_status": "I5_RAW_MAINLINE_I6A_SCOPED_WEEKLY_VALIDATION_COMPLETE_NO_NAIVE_PASS",
+  "handoff_status": "I5_RAW_MAINLINE_I6A_1H_24H_COMPLETE_2H_48H_RUNNING",
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [
-    "Use the complete I6-A 208/208-cell EURUSD Y_s_1h business adaptation as development evidence only: ARCH-B is the strongest arm relative to ARCH-A, but none beats the same-row naive on the mean.",
+    "Use the complete I6-A EURUSD Y_s_1h and Y_l_24h business adaptations as development evidence only: ARCH-B is the strongest learned arm in each, but neither beats the same-row naive on the annual mean. Y_s_2h and Y_l_48h run independently with full-population closure and verified OLAP readback.",
     "Retain RAW as the mainline selected input; the reconstructed-input TRAIN diagnostic was worse in all three paired weeks and does not authorize denoising the target.",
     "Complete the remaining general E0 H2/H3, literature-model and target/horizon controls before calling I6-A globally verified; then pretrain authenticated branches and compare R0/R1/R2 on matched weekly rows.",
     "Do not open TEST or promote a trading model until the selected architecture and same-row naive gates pass."

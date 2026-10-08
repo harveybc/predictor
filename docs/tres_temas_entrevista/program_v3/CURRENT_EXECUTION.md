@@ -1,6 +1,26 @@
 # Estado de ejecución vigente
 
-Observado: 2026-10-07T19:15Z. Este archivo sustituye estados operativos anteriores.
+## Actualización 2026-10-08: I6-A
+
+La selección I5 está congelada por target en `TEST_FREEZE.json`; RAW sigue
+como entrada principal. El contraste de arquitectura I6-A, con cuatro brazos
+y reentrenamiento semanal durante 52 semanas de VALIDATION-2024, cerró para
+`Y_s_1h` y `Y_l_24h`: ARCH-B tuvo MAE 0.000500321 frente al naive 0.000492891
+y 0.002568483 frente a 0.002516863, respectivamente. Ninguno autoriza la
+estrategia. Las campañas independientes `Y_s_2h` (4090) y `Y_l_48h` (5090)
+corren con colectores que cierran, publican al OLAP y actualizan el
+[`índice de resultados`](../../results/INDEX.md) al terminar. Sus estados
+vivos son los `STATUS_*.json` de cada worker y los `STATUS.json` de cada
+colector; no se infiere un ETA desde este documento. TEST permanece cerrado.
+Las colas de continuación tomarán luego `Y_s_3h`–`Y_s_6h` en dragon y
+`Y_l_72h`–`Y_l_144h` en gamma, cada target con cierre y publicación propios.
+El set OLAP original de 24 h tenía una dimensión de horizonte errónea y está
+reemplazado para consultas por `i6a:2024:EURUSD:Y_l_24h:metric-horizon-v2`.
+
+## Instantánea anterior
+
+Observado: 2026-10-07T19:15Z. Lo siguiente es un registro histórico, no el
+estado operativo vigente.
 
 ## Cierre de fase 1
 

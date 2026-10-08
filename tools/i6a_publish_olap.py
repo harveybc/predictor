@@ -42,8 +42,13 @@ def token_from_file(path: Path) -> str:
     return token
 
 
-def metric(name, value, unit):
-    return {"metric": name, "value": value, "split": "validation", "horizon": 1, "unit": unit}
+def experiment_set_key(target):
+    base = f"i6a:2024:EURUSD:{target}"
+    return base if target == "Y_s_1h" else base + ":metric-horizon-v2"
+
+
+def metric(name, value, unit, horizon):
+    return {"metric": name, "value": value, "split": "validation", "horizon": horizon, "unit": unit}
 
 
 def make_report(arm, week, record, code_commit, target="Y_s_1h"):
@@ -52,24 +57,27 @@ def make_report(arm, week, record, code_commit, target="Y_s_1h"):
         raise ValueError("REPORT_TARGET_MISMATCH")
     values = result["metrics"]
     cost = result["cost"]
+    horizon = target_horizon_hours(target)
     experiment_key = (f"i6a:2024:w{week:03d}:{arm}" if target == "Y_s_1h"
-                      else f"i6a:2024:{target}:w{week:03d}:{arm}")
+                      else f"i6a:2024:{target}:metric-horizon-v2:w{week:03d}:{arm}")
     report = {"experiment_key": experiment_key,
-              "experiment_set_key": f"i6a:2024:EURUSD:{target}", "actor": "predictor",
+              "experiment_set_key": experiment_set_key(target), "actor": "predictor",
               "lake": "LOCAL_RETAINED", "lineage": "UNVERIFIED",
               "config_sha256": result["plan_sha256"], "code_commit": code_commit,
               "project": "predictor", "phase": "I6A",
               "tags": {"arm": arm, "week": str(week), "population": "EURUSD", "target": target,
                        "selected_set_conditioned_on_validation": "true", "test_read": "false",
                        "cell_sha256": record["sha256"], "rows_sha256": result["rows_sha256"]},
-              "metrics": [metric("MAE", values["mae"], "log_return"),
-                          metric("MSE", values["mse"], "log_return_squared"),
-                          metric("Naive_MAE", values["naive_mae"], "log_return"),
-                          metric("Naive_MSE", values["naive_mse"], "log_return_squared"),
-                          metric("Skill_MAE", result["skill_mae"], "ratio"),
-                          metric("Fit_Seconds", cost["fit_seconds"], "seconds"),
-                          metric("Parameters", cost["n_params"], "count"),
-                          metric("Scored_Rows", result["n_scored"], "count")]}
+              "metrics": [metric("MAE", values["mae"], "log_return", horizon),
+                          metric("MSE", values["mse"], "log_return_squared", horizon),
+                          metric("Naive_MAE", values["naive_mae"], "log_return", horizon),
+                          metric("Naive_MSE", values["naive_mse"], "log_return_squared", horizon),
+                          metric("Skill_MAE", result["skill_mae"], "ratio", horizon),
+                          metric("Fit_Seconds", cost["fit_seconds"], "seconds", horizon),
+                          metric("Parameters", cost["n_params"], "count", horizon),
+                          metric("Scored_Rows", result["n_scored"], "count", horizon)]}
+    if target != "Y_s_1h":
+        report["tags"]["metric_horizon_binding"] = "v2"
     report["report_sha256"] = report_sha256(report)
     return report
 
@@ -118,10 +126,10 @@ def main(argv=None):
             raise ValueError("WAREHOUSE_RECEIPT_IDENTITY_MISMATCH")
         stored += int(receipt.get("stored") is True)
         already += int(receipt.get("already_stored") is True)
-    set_key = f"i6a:2024:EURUSD:{args.target}"
+    set_key = experiment_set_key(args.target)
     sql = ("SELECT COUNT(DISTINCT r.report_sha256) AS n, COUNT(m.report_sha256) AS metrics "
            "FROM gov_report r LEFT JOIN gov_metric m ON m.report_sha256 = r.report_sha256 "
-           f"WHERE r.experiment_set_key = '{set_key}' LIMIT 1")
+           f"WHERE r.experiment_set_key = '{set_key}' AND m.horizon = {target_horizon_hours(args.target)} LIMIT 1")
     readback = request_json(endpoint + "/api/v1/query?" + urllib.parse.urlencode({"sql": sql}), token, "GET")
     rows = readback.get("rows") if isinstance(readback, dict) else None
     if (not isinstance(rows, list) or len(rows) != 1

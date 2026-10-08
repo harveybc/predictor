@@ -26,6 +26,10 @@ La vista ejecutiva obligatoria es
 [`MASTER_MILESTONE_PROGRESS.png`](../audits/evidence/canonical_20261003/MASTER_MILESTONE_PROGRESS.png),
 generada desde
 [`MASTER_MILESTONE_STATUS.json`](../audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json).
+Los resultados compactos por hito, subhito, población y target se consultan en
+[`docs/results/INDEX.md`](../results/INDEX.md). Cada párrafo se regenera
+desde un cierre completo con lectura de vuelta del OLAP; los recibos de celda
+quedan fuera de Git.
 Todo retorno de orquestación debe mantener visibles M1-M8, actualizar evidencia,
 próxima compuerta y ETA, y distinguir porcentaje de ingeniería de confianza
 científica. Ningún esquema local de carriles reemplaza estos hitos.

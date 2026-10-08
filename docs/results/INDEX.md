@@ -1,0 +1,8 @@
+# Results
+
+## I6-A / EURUSD / 2024 validation
+
+Development evidence only; TEST remains sealed. Each page is generated from a complete, warehouse-published closure.
+
+- [Y_l_24h](I6A/EURUSD/2024_validation/Y_l_24h.md): EURUSD Y_l_24h, 2024 weekly validation: 52/52 weeks and 208/208 matched cells (one seed, four-year rolling refits). Best learned arm ARCH_B has mean weekly MAE 0.002568483 versus same-row naive 0.002516863 (delta +0.000051620; 16/52 weeks beat naive). All-arm mean weekly MAE: ARCH_0 0.010082880, ARCH_A 0.002596691, ARCH_B 0.002568483, ARCH_C 0.002780527. Row-pooled MAE 0.002570567 versus paired naive 0.002519108 over 6196 rows. It does not pass the strict annual naive gate. Feature selection used this validation year, so this is development evidence, not an external confirmation; TEST was not read. Closure `4b90854e5877c934fccccb907cdc43c18b95b645eb7c791f0f4d9f303bad14e6`; warehouse readback 208 reports and 1,664 metric rows in `i6a:2024:EURUSD:Y_l_24h:metric-horizon-v2`.
+- [Y_s_1h](I6A/EURUSD/2024_validation/Y_s_1h.md): EURUSD Y_s_1h, 2024 weekly validation: 52/52 weeks and 208/208 matched cells (one seed, four-year rolling refits). Best learned arm ARCH_B has mean weekly MAE 0.000500321 versus same-row naive 0.000492891 (delta +0.000007430; 12/52 weeks beat naive). All-arm mean weekly MAE: ARCH_0 0.005474226, ARCH_A 0.000511972, ARCH_B 0.000500321, ARCH_C 0.000677526. It does not pass the strict annual naive gate. Feature selection used this validation year, so this is development evidence, not an external confirmation; TEST was not read. Closure `d25425393ae537288b09cdeb21382cc7ea253292cc161bff0866be039ccc0b0b`; warehouse readback 208 reports and 1,664 metric rows in `i6a:2024:EURUSD:Y_s_1h`.
