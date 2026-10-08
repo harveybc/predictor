@@ -87,6 +87,16 @@ def close(freeze: dict, roots, target="Y_s_1h"):
                        "architecture_sha256": architecture_ids[0],
                        "fit_seconds_total": float(sum(r["cost"]["fit_seconds"] for r in results)),
                        "cell_digests": [records[(i, arm)]["sha256"] for i in range(len(weeks))]}
+        if target != "Y_s_1h":
+            counts = np.array([r["n_scored"] for r in results], dtype="int64")
+            if np.any(counts <= 0):
+                base["state"] = "INCOMPLETE_EVIDENCE"
+                base["problems"] = [{"arm": arm, "reason": "INVALID_SCORED_ROW_COUNT"}]
+                base["sha256"] = W.digest(base)
+                return base
+            by_arm[arm].update({"pooled_scored_rows": int(counts.sum()),
+                                "pooled_mae": float(np.average(mae, weights=counts)),
+                                "pooled_naive_mae": float(np.average(naive, weights=counts))})
     base.update({"state": "COMPLETE", "arms": by_arm,
                  "paired_naive_row_population": [records[(i, "ARCH_A")]["result"]["rows_sha256"]
                                                 for i in range(len(weeks))]})

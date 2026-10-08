@@ -21,6 +21,8 @@ and are reused by digest rather than trained again.
 
 `tools/i6a_close.py --target Y_l_24h` requires all 208 cells, paired row
 populations, a single input identity and a single core-code identity before
-publishing any architecture means. While the workers run, their own `STATUS`
+publishing any architecture means. It reports both the predeclared equal-week
+summary and an additional row-weighted pooled MAE and paired naive MAE. While
+the workers run, their own `STATUS`
 files report completed cells, current cell and ETA. Do not interpret the
 one-week pilot or open TEST before the full closure.
