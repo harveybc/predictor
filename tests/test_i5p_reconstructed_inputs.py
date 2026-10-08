@@ -99,6 +99,21 @@ def test_missing_historical_value_uses_mask_but_missing_origin_refuses(case):
         I.reconstruct_selected_inputs(**with_gap)
 
 
+def test_producer_commit_may_change_when_scientific_code_digest_is_identical(case):
+    args, rec, terminal = case
+    changed = {**rec, "code_commit": "8" * 40}
+    terminal.write_text(json.dumps(changed))
+    args = {**args, "checkpoints": {args["columns"][0]: {
+        "terminal": terminal, "sha256": I.sha256_file(terminal)}}}
+    out = I.reconstruct_selected_inputs(**args)
+    assert out.receipt["models"][0]["producer_commit"] == "8" * 40
+    changed["code_sha256"] = "0" * 64
+    terminal.write_text(json.dumps(changed))
+    args["checkpoints"][args["columns"][0]]["sha256"] = I.sha256_file(terminal)
+    with pytest.raises(I.Refusal, match="EXTRACTOR_CODE_MISMATCH"):
+        I.reconstruct_selected_inputs(**args)
+
+
 def test_each_selected_column_uses_its_own_authenticated_terminal(case, tmp_path):
     args, first, terminal = case
     second_name = "tech.rsi"

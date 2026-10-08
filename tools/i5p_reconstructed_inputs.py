@@ -98,7 +98,8 @@ def _terminal(path: Path, expected_sha: str, feature: str, X, code_sha: str) -> 
     if rec.get("schema") != RESULT_SCHEMA or rec.get("status") != "COMPLETE" or \
             rec.get("arm") != "TRAINED_ENCODER_V2":
         raise Refusal(f"TERMINAL_CONTRACT_MISMATCH: {feature}")
-    if rec.get("code_commit") != PINNED_EXTRACTOR_COMMIT or rec.get("code_sha256") != code_sha:
+    commit = rec.get("code_commit")
+    if not isinstance(commit, str) or len(commit) != 40 or rec.get("code_sha256") != code_sha:
         raise Refusal(f"EXTRACTOR_CODE_MISMATCH: {feature}")
     claim = {k: rec.get(k) for k in ("population_id", "identity", "feature_id", "fold_id", "arm", "seed")}
     claim["schema"] = TASK_SCHEMA
@@ -199,7 +200,7 @@ def reconstruct_selected_inputs(*, timestamps, row_ids, values, columns, scored_
         reconstructed[:, col] = prediction[:, -1, 0] * norm.std + norm.mean
         identities.append({"feature_id": feature, "terminal_sha256": ref["sha256"],
                            "weights_file_sha256": file_sha, "model_sha256": model_sha,
-                           "task_id": rec["task_id"]})
+                           "task_id": rec["task_id"], "producer_commit": rec["code_commit"]})
     receipt = {"schema": DIAGNOSTIC_SCHEMA, "diagnostic_only": True,
                "input_sha256": actual_sha, "selected_features": list(names),
                "rows": len(rows), "extractor_commit": PINNED_EXTRACTOR_COMMIT,
