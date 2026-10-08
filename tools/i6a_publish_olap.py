@@ -19,7 +19,7 @@ from tools import fs4_weekly_wrapper as W
 from tools.i6a_architectures import ARMS
 from tools.i6a_campaign import verify_result
 from tools.i6a_close import close
-from tools.i6a_weekly_arch_pilot import make_task
+from tools.i6a_weekly_arch_pilot import make_task, target_horizon_hours
 
 STORE_SRC = Path(__file__).resolve().parent.parent / "olap" / "store" / "src"
 sys.path.insert(0, str(STORE_SRC))
@@ -46,16 +46,20 @@ def metric(name, value, unit):
     return {"metric": name, "value": value, "split": "validation", "horizon": 1, "unit": unit}
 
 
-def make_report(arm, week, record, code_commit):
+def make_report(arm, week, record, code_commit, target="Y_s_1h"):
     result = record["result"]
+    if result.get("target_id") != target or result.get("horizon_hours") != target_horizon_hours(target):
+        raise ValueError("REPORT_TARGET_MISMATCH")
     values = result["metrics"]
     cost = result["cost"]
-    report = {"experiment_key": f"i6a:2024:w{week:03d}:{arm}",
-              "experiment_set_key": "i6a:2024:EURUSD:Y_s_1h", "actor": "predictor",
+    experiment_key = (f"i6a:2024:w{week:03d}:{arm}" if target == "Y_s_1h"
+                      else f"i6a:2024:{target}:w{week:03d}:{arm}")
+    report = {"experiment_key": experiment_key,
+              "experiment_set_key": f"i6a:2024:EURUSD:{target}", "actor": "predictor",
               "lake": "LOCAL_RETAINED", "lineage": "UNVERIFIED",
               "config_sha256": result["plan_sha256"], "code_commit": code_commit,
               "project": "predictor", "phase": "I6A",
-              "tags": {"arm": arm, "week": str(week), "population": "EURUSD", "target": "Y_s_1h",
+              "tags": {"arm": arm, "week": str(week), "population": "EURUSD", "target": target,
                        "selected_set_conditioned_on_validation": "true", "test_read": "false",
                        "cell_sha256": record["sha256"], "rows_sha256": result["rows_sha256"]},
               "metrics": [metric("MAE", values["mae"], "log_return"),
@@ -84,6 +88,7 @@ def request_json(url, token, method, body=None):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--freeze", required=True, type=Path)
+    ap.add_argument("--target", default="Y_s_1h")
     ap.add_argument("--result-dir", action="append", required=True, type=Path)
     ap.add_argument("--url", required=True)
     ap.add_argument("--token-file", required=True, type=Path)
@@ -91,16 +96,16 @@ def main(argv=None):
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
     freeze = json.loads(args.freeze.read_text())
-    closure = close(freeze, args.result_dir)
+    closure = close(freeze, args.result_dir, args.target)
     if closure["state"] != "COMPLETE":
         raise ValueError(f"INCOMPLETE_EVIDENCE: {closure['verified_cells']}/{closure['expected_cells']}")
     reports = []
     for week in range(closure["expected_weeks"]):
-        task = make_task(freeze, "Y_s_1h", week, 2024)
+        task = make_task(freeze, args.target, week, 2024)
         for arm in ARMS:
             paths = [root / f"{arm}_val2024_week{week}.json" for root in args.result_dir]
             path = next(p for p in paths if p.is_file())
-            reports.append(make_report(arm, week, verify_result(path, arm, task), args.code_commit))
+            reports.append(make_report(arm, week, verify_result(path, arm, task), args.code_commit, args.target))
     if args.dry_run:
         print(json.dumps({"state": "READY", "reports": len(reports), "closure_sha256": closure["sha256"]}))
         return 0
@@ -113,9 +118,10 @@ def main(argv=None):
             raise ValueError("WAREHOUSE_RECEIPT_IDENTITY_MISMATCH")
         stored += int(receipt.get("stored") is True)
         already += int(receipt.get("already_stored") is True)
+    set_key = f"i6a:2024:EURUSD:{args.target}"
     sql = ("SELECT COUNT(DISTINCT r.report_sha256) AS n, COUNT(m.report_sha256) AS metrics "
            "FROM gov_report r LEFT JOIN gov_metric m ON m.report_sha256 = r.report_sha256 "
-           "WHERE r.experiment_set_key = 'i6a:2024:EURUSD:Y_s_1h' LIMIT 1")
+           f"WHERE r.experiment_set_key = '{set_key}' LIMIT 1")
     readback = request_json(endpoint + "/api/v1/query?" + urllib.parse.urlencode({"sql": sql}), token, "GET")
     rows = readback.get("rows") if isinstance(readback, dict) else None
     if (not isinstance(rows, list) or len(rows) != 1
