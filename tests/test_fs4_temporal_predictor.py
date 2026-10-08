@@ -68,12 +68,159 @@ def test_standardiser_fits_on_fit_rows_only():
     assert st.sha256() == P.Standardiser.fit(X[:10]).sha256()
 
 
+def test_raw_lag3_uses_elapsed_hours_and_keeps_raw_support():
+    ts = np.array([3600 * i for i in range(50) if i != 30], dtype="int64")
+    X = ts[:, None].astype("float64") / 3600
+    st = P.Standardiser.fit(X[:28])
+    origins = np.array([23, 24, 30, 32], dtype="int64")
+    raw, raw_kept = P._inputs_for(P.PredictorSpec(), None, X, st, origins, ts, 0)
+    lag, lag_kept = P.raw_lag3_windows(P.PredictorSpec(), X, st, origins, ts, 0)
+    assert np.array_equal(raw_kept, lag_kept)
+    assert lag.shape == raw.shape
+    assert lag[0, :3, 1].tolist() == [0, 0, 0]  # no pre-fit history
+    assert lag[0, -1, 0] == pytest.approx((20 - st.mean[0]) / st.sd[0])
+    assert lag[2, -1, 0] == pytest.approx((28 - st.mean[0]) / st.sd[0])  # hour 31 minus 3 elapsed hours
+    assert lag[3, -1, 1] == 0  # hour 33 minus 3 is the missing grid slot
+    changed = X.copy()
+    changed[ts > ts[32] - 3 * 3600] = 1e8
+    lag_changed, _ = P.raw_lag3_windows(P.PredictorSpec(), changed, st, [32], ts, 0)
+    assert np.array_equal(lag[3:4], lag_changed)
+
+
+def test_raw_lag3_refuses_missing_grid_or_shifted_support():
+    X = np.arange(40, dtype="float64")[:, None]
+    st = P.Standardiser.fit(X)
+    with pytest.raises(P.Refusal, match="HOURLY_TIMESTAMPS_REQUIRED"):
+        P.raw_lag3_windows(P.PredictorSpec(), X, st, [30], None, 0)
+    with pytest.raises(P.Refusal, match="RAW_LAG3_SUPPORT_MISMATCH"):
+        P.require_same_support([30, 31], [31, 30])
+
+
+def test_raw_lag3_diagnostic_identity_is_versioned_and_distinct():
+    spec = P.PredictorSpec()
+    raw = P.input_identity(spec, ["a", "b"], "RAW", None)
+    lag = P.raw_lag3_identity(spec, ["b", "a"], "f" * 64)
+    assert lag == P.raw_lag3_identity(spec, ["a", "b"], "f" * 64)
+    assert lag != raw
+    assert lag != P.raw_lag3_identity(spec, ["a", "b"], "0" * 64)
+
+
+def _diagnostic_fixture():
+    from types import SimpleNamespace
+    from tools import fs4_weekly_wrapper as W
+
+    y = np.linspace(-0.2, 0.2, 5)
+    store = SimpleNamespace(population="EURUSD", digests={"train": "abc"}, row_id_offset=0,
+                            targets={"return_h1": y}, col={"a": 0}, record_ids=np.array(["0", "1", "2", "3", "4"]),
+                            range_idx=lambda start, end: np.arange(5))
+    task = {"schema": W.TASK_SCHEMA, "task_id": "task1", "plan_sha256": "plan1", "population_id": "EURUSD",
+            "split": "validation", "input_mode": "RAW", "target_id": "return_h1", "horizon_hours": 1,
+            "set_id": "set1", "members": ["a"], "seed": W.SEED, "predictor_spec_sha256": P.PredictorSpec().sha256(),
+            "week": {"start": "2024-01-01T00:00:00Z", "end": "2024-01-08T00:00:00Z"}}
+    reference = {"schema": W.RESULT_SCHEMA, "task_id": "task1", "plan_sha256": "plan1", "population_id": "EURUSD",
+                 "disposition": "COMPLETED", "input_mode": "RAW", "split": "validation", "target_id": "return_h1",
+                 "seed": W.SEED, "predictor_spec_sha256": P.PredictorSpec().sha256(),
+                 "horizon_hours": 1, "set_id": "set1", "members": ["a"], "week_start": task["week"]["start"],
+                 "week_end": task["week"]["end"], "n_scored": 5, "rows_sha256": W.rows_digest(store.record_ids),
+                 "naive": {"rows_sha256": W.rows_digest(store.record_ids)},
+                 "metrics": {"mae": 0.3, "mse": 0.4, "naive_mae": float(np.mean(np.abs(y))),
+                             "naive_mse": float(np.mean(y ** 2))},
+                 "input_sha256": W.digest({"files": store.digests, "members": ["a"], "target": "return_h1",
+                                           "input_mode": "RAW", "row_id_offset": 0})}
+    reference["result_sha256"] = W.digest(reference)
+    return task, reference, store
+
+
+def test_raw_lag3_reference_rejects_wrong_rows_target_naive_or_source():
+    task, reference, store = _diagnostic_fixture()
+    assert P.validate_raw_lag3_reference(task, reference, store).tolist() == list(range(5))
+    for field, value in (("rows_sha256", "0" * 64), ("target_id", "other"),
+                         ("seed", 99), ("predictor_spec_sha256", "2" * 64),
+                         ("input_sha256", "1" * 64)):
+        changed = {**reference, field: value}
+        changed["result_sha256"] = P.digest({k: v for k, v in changed.items() if k != "result_sha256"})
+        with pytest.raises(P.Refusal, match="RAW_LAG3_REFERENCE_MISMATCH"):
+            P.validate_raw_lag3_reference(task, changed, store)
+    changed = {**reference, "metrics": {**reference["metrics"], "naive_mae": 999.0}}
+    changed["result_sha256"] = P.digest({k: v for k, v in changed.items() if k != "result_sha256"})
+    with pytest.raises(P.Refusal, match="RAW_LAG3_REFERENCE_MISMATCH"):
+        P.validate_raw_lag3_reference(task, changed, store)
+    with pytest.raises(P.Refusal, match="RAW_LAG3_REFERENCE_MISMATCH"):
+        P.validate_raw_lag3_reference(task, reference | {"result_sha256": "0" * 64}, store)
+
+
+def test_raw_lag3_diagnostic_refuses_score_support_before_training(monkeypatch):
+    from tools import fs4_weekly_wrapper as W
+
+    task, reference, store = _diagnostic_fixture()
+    task["week"]["fit_start"] = "2024-01-01T00:00:00Z"
+    store.X = np.arange(40, dtype="float64")[:, None]
+    store.ts = np.arange(40, dtype="int64") * 3600
+    store.targets["return_h1"] = np.r_[np.full(5, 0.1), np.zeros(35)]
+    store.record_ids = np.arange(40).astype(str)
+    store.range_idx = lambda start, end: np.arange(5)
+    reference["metrics"]["naive_mae"] = float(np.mean(np.abs(store.targets["return_h1"][:5])))
+    reference["metrics"]["naive_mse"] = float(np.mean(store.targets["return_h1"][:5] ** 2))
+    reference["result_sha256"] = P.digest({k: v for k, v in reference.items() if k != "result_sha256"})
+    monkeypatch.setattr(W, "run_task", lambda *args, **kw: pytest.fail("training must not run"))
+    with pytest.raises(P.Refusal, match="RAW_LAG3_SUPPORT_MISMATCH"):
+        P.run_raw_lag3_diagnostic(task, reference, store)
+
+
+def test_raw_lag3_receipt_is_distinct_and_rejects_postfit_row_drift(monkeypatch):
+    from tools import fs4_weekly_wrapper as W
+
+    task, reference, store = _diagnostic_fixture()
+    task["week"]["fit_start"] = "1970-01-01T00:00:00Z"
+    store.X = np.arange(50, dtype="float64")[:, None]
+    store.ts = np.arange(50, dtype="int64") * 3600
+    store.targets["return_h1"] = np.linspace(-0.1, 0.1, 50)
+    store.record_ids = np.arange(50).astype(str)
+    store.range_idx = lambda start, end: np.arange(30, 35)
+    scored = store.range_idx(None, None)
+    reference["rows_sha256"] = W.rows_digest(store.record_ids[scored])
+    reference["naive"]["rows_sha256"] = reference["rows_sha256"]
+    reference["metrics"]["naive_mae"] = float(np.mean(np.abs(store.targets["return_h1"][scored])))
+    reference["metrics"]["naive_mse"] = float(np.mean(store.targets["return_h1"][scored] ** 2))
+    reference.update(fit_population_digest="fit", inner_population_digest="inner", fit_rows=30, inner_rows=5,
+                     standardiser_sha256="st", seed=0)
+    reference["result_sha256"] = P.digest({k: v for k, v in reference.items() if k != "result_sha256"})
+    fitted = {**reference, "metrics": {**reference["metrics"], "mae": 0.3, "mse": 0.4},
+              "model_sha256": "m", "cost": {"fit_seconds": 1.0}}
+    monkeypatch.setattr(W, "run_task", lambda *args, **kw: fitted)
+    record = P.run_raw_lag3_diagnostic(task, reference, store)
+    assert record["schema"] == P.RAW_LAG3_SCHEMA and record["input_mode"] == "RAW_LAG3_DIAGNOSTIC"
+    assert record["identity"] != P.input_identity(P.PredictorSpec(), ["a"], "RAW", None)
+    assert record["raw_reference_sha256"] == reference["result_sha256"]
+    assert record["result_sha256"] == P.digest({k: v for k, v in record.items() if k != "result_sha256"})
+    monkeypatch.setattr(W, "run_task", lambda *args, **kw: {**fitted, "rows_sha256": "0" * 64})
+    with pytest.raises(P.Refusal, match="RAW_LAG3_SUPPORT_MISMATCH"):
+        P.run_raw_lag3_diagnostic(task, reference, store)
+
+
 # ----------------------------------------------------------------------------- tensorflow
 def _synthetic(n=600, f=3, window=24, seed=0):
     rng = np.random.default_rng(seed)
     X = rng.normal(size=(n, f))
     y = 0.6 * np.roll(X[:, 0], 1) - 0.3 * np.roll(X[:, 1], 2) + 0.05 * rng.normal(size=n)
     return X, y
+
+
+@needs_tf
+def test_raw_lag3_fits_real_cpu_model_without_changing_target_rows():
+    X, y = _synthetic(n=360, f=2)
+    ts = np.arange(360, dtype="int64") * 3600
+    spec = P.PredictorSpec(max_epochs=1, batch_size=32)
+    rep = P.fit_named(spec, X, ["a", "b"], y, np.arange(23, 230), np.arange(230, 280),
+                      input_mode="RAW", encoder=None, seed=0, timestamps=ts, min_timestamp=0,
+                      raw_lag_hours=3)
+    assert rep.fit_windows == 207 and rep.inner_windows == 50
+    assert rep.raw_lag_hours == 3 and rep.input_identity != P.input_identity(spec, ["a", "b"], "RAW", None)
+    scored = np.arange(280, 300)
+    pred = rep.predict(X, scored)
+    changed = X.copy()
+    changed[297:] = 1e6
+    assert np.array_equal(pred, rep.predict(changed, scored))
 
 
 @needs_tf

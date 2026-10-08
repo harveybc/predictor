@@ -23,18 +23,20 @@ import hashlib
 import json
 import math
 import resource
+import sys
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 import numpy as np
 
-from tools.fs4_hourly_support import hourly_windows
+from tools.fs4_hourly_support import HOUR, hourly_windows
 
 INPUT_MODES = ("RAW", "TRAINED_ENCODER", "RANDOM_ENCODER")
 FAMILY = "R0_TEMPORAL_CONV1D"
 CORE_OUTPUT_NAME = "core_out"
 HEAD_INPUT_NAME = "last_valid_position"
+RAW_LAG3_SCHEMA = "fs4.raw_lag3_diagnostic.v1"
 
 
 class Refusal(ValueError):
@@ -143,6 +145,47 @@ def input_identity(spec: PredictorSpec, features, input_mode: str, encoder_sha25
 def architecture_identity(spec: PredictorSpec, input_mode: str, latent_dim: int | None) -> str:
     return digest({"family": FAMILY, "spec": spec.to_dict(), "input_mode": input_mode,
                    "latent_dim": latent_dim if input_mode != "RAW" else None})
+
+
+def raw_lag3_identity(spec: PredictorSpec, features, raw_result_sha256: str) -> str:
+    if not isinstance(raw_result_sha256, str) or len(raw_result_sha256) != 64:
+        raise Refusal("RAW_RESULT_IDENTITY_REQUIRED")
+    return digest({"schema": RAW_LAG3_SCHEMA, "spec": spec.to_dict(),
+                   "features": list(canonical_features(features)), "lag_hours": 3,
+                   "raw_result_sha256": raw_result_sha256})
+
+
+def require_same_support(expected, actual) -> None:
+    a, b = np.asarray(expected), np.asarray(actual)
+    if a.ndim != 1 or b.ndim != 1 or not np.array_equal(a, b):
+        raise Refusal("RAW_LAG3_SUPPORT_MISMATCH")
+
+
+def raw_lag3_windows(spec: PredictorSpec, X: np.ndarray, standardiser: Standardiser,
+                     idx, timestamps, min_timestamp):
+    """Elapsed-hour RAW control, ending at origin-3; missing pre-fit slots are masked.
+
+    Padding preserves the original RAW origin population without reading values before
+    the rolling fit boundary. This is a new diagnostic input, not a RAW task identity.
+    """
+    if timestamps is None or min_timestamp is None:
+        raise Refusal("HOURLY_TIMESTAMPS_REQUIRED")
+    X = np.asarray(X, dtype="float64")
+    ts = np.asarray(timestamps, dtype="int64")
+    raw, kept = hourly_windows(X, ts, idx, mean=standardiser.mean, sd=standardiser.sd,
+                               window_hours=spec.window, min_timestamp=min_timestamp)
+    prefix_ts = ts[0] - np.arange(3, 0, -1, dtype="int64") * HOUR
+    padded_ts = np.concatenate((prefix_ts, ts))
+    padded_X = np.concatenate((np.full((3, X.shape[1]), np.nan), X))
+    lagged, lag_kept = hourly_windows(padded_X, padded_ts, np.asarray(idx, dtype="int64") + 3,
+                                      mean=standardiser.mean, sd=standardiser.sd, window_hours=spec.window,
+                                      lag_hours=3, min_timestamp=int(min_timestamp) - 3 * HOUR)
+    require_same_support(kept, lag_kept - 3)
+    if kept.size:
+        end = ts[kept] - 3 * HOUR
+        slots = end[:, None] - np.arange(spec.window - 1, -1, -1)[None, :] * HOUR
+        lagged[slots < int(min_timestamp)] = 0.0
+    return lagged, kept
 
 
 # ----------------------------------------------------------------------------- windows and scaling
@@ -455,13 +498,18 @@ class FitReport:
     history: dict = field(default_factory=dict)
     timestamps: np.ndarray | None = None
     min_timestamp: int | None = None
+    raw_lag_hours: int = 0
 
     def predict(self, X: np.ndarray, idx) -> np.ndarray:
         return predict(self, X, idx)
 
 
 def _inputs_for(spec: PredictorSpec, encoder, X: np.ndarray, standardiser: Standardiser, idx,
-                timestamps=None, min_timestamp=None):
+                timestamps=None, min_timestamp=None, raw_lag_hours=0):
+    if raw_lag_hours:
+        if raw_lag_hours != 3 or encoder is not None:
+            raise Refusal("RAW_LAG3_ONLY")
+        return raw_lag3_windows(spec, X, standardiser, idx, timestamps, min_timestamp)
     if encoder is not None:
         windows, kept = encoder.latents(idx)
         return np.asarray(windows, dtype="float32"), kept
@@ -477,11 +525,14 @@ def _inputs_for(spec: PredictorSpec, encoder, X: np.ndarray, standardiser: Stand
 
 
 def fit_predictor(spec: PredictorSpec, X: np.ndarray, y: np.ndarray, fit_idx, inner_idx, *, input_mode: str,
-                  encoder, seed: int, features=None, timestamps=None, min_timestamp=None) -> FitReport:
+                  encoder, seed: int, features=None, timestamps=None, min_timestamp=None,
+                  raw_lag_hours: int = 0) -> FitReport:
     if input_mode not in INPUT_MODES:
         raise Refusal(f"UNKNOWN_INPUT_MODE: {input_mode}")
     if (input_mode == "RAW") != (encoder is None):
         raise Refusal("ENCODER_PRESENCE_MUST_MATCH_INPUT_MODE")
+    if raw_lag_hours not in (0, 3) or (raw_lag_hours and (input_mode != "RAW" or timestamps is None or min_timestamp is None)):
+        raise Refusal("RAW_LAG3_ONLY_WITH_HOURLY_RAW")
     X = np.asarray(X, dtype="float64")
     y = np.asarray(y, dtype="float64")
     fit_idx = np.asarray(fit_idx, dtype="int64")
@@ -492,8 +543,8 @@ def fit_predictor(spec: PredictorSpec, X: np.ndarray, y: np.ndarray, fit_idx, in
         raise Refusal("ENCODER_FEATURE_COUNT_MISMATCH")
     encoder_sha = encoder.weights_sha256 if encoder is not None else None
     standardiser = Standardiser.fit(X[fit_idx])
-    Wf, kept_f = _inputs_for(spec, encoder, X, standardiser, fit_idx, timestamps, min_timestamp)
-    Wi, kept_i = _inputs_for(spec, encoder, X, standardiser, inner_idx, timestamps, min_timestamp)
+    Wf, kept_f = _inputs_for(spec, encoder, X, standardiser, fit_idx, timestamps, min_timestamp, raw_lag_hours)
+    Wi, kept_i = _inputs_for(spec, encoder, X, standardiser, inner_idx, timestamps, min_timestamp, raw_lag_hours)
     if kept_f.size < spec.batch_size or kept_i.size == 0:
         raise Refusal(f"TOO_FEW_WINDOWS: fit {kept_f.size} inner {kept_i.size}")
     yf = y[kept_f].astype("float32")
@@ -524,11 +575,12 @@ def fit_predictor(spec: PredictorSpec, X: np.ndarray, y: np.ndarray, fit_idx, in
         input_identity=None, fit_windows=int(kept_f.size), inner_windows=int(kept_i.size), seed=int(seed),
         history={"loss": [float(v) for v in hist.history.get("loss", [])], "val_loss": val},
         timestamps=None if timestamps is None else np.asarray(timestamps, dtype="int64"), min_timestamp=min_timestamp,
+        raw_lag_hours=raw_lag_hours,
     )
 
 
 def fit_named(spec: PredictorSpec, X: np.ndarray, names, y, fit_idx, inner_idx, *, input_mode: str,
-              encoder, seed: int, timestamps=None, min_timestamp=None) -> FitReport:
+              encoder, seed: int, timestamps=None, min_timestamp=None, raw_lag_hours: int = 0) -> FitReport:
     """Sort the columns by feature name before anything is built (FS4-02)."""
     names = list(names)
     if len(names) != X.shape[1]:
@@ -536,8 +588,10 @@ def fit_named(spec: PredictorSpec, X: np.ndarray, names, y, fit_idx, inner_idx, 
     order = sorted(range(len(names)), key=lambda i: names[i])
     feats = canonical_features(names)
     rep = fit_predictor(spec, np.asarray(X)[:, order], y, fit_idx, inner_idx, input_mode=input_mode, encoder=encoder,
-                        seed=seed, features=feats, timestamps=timestamps, min_timestamp=min_timestamp)
-    rep.input_identity = input_identity(spec, feats, input_mode, rep.encoder_sha256)
+                        seed=seed, features=feats, timestamps=timestamps, min_timestamp=min_timestamp,
+                        raw_lag_hours=raw_lag_hours)
+    rep.input_identity = (digest({"schema": RAW_LAG3_SCHEMA, "features": feats, "lag_hours": 3, "spec": spec.to_dict()})
+                          if raw_lag_hours else input_identity(spec, feats, input_mode, rep.encoder_sha256))
     return rep
 
 
@@ -545,7 +599,7 @@ def predict(rep: FitReport, X: np.ndarray, idx) -> np.ndarray:
     """Predictions for origins ``idx`` (NaN where an origin lacks a full window history)."""
     idx = np.asarray(idx, dtype="int64")
     W, kept = _inputs_for(rep.spec, rep.encoder, np.asarray(X, dtype="float64"), rep.standardiser, idx,
-                          rep.timestamps, rep.min_timestamp)
+                          rep.timestamps, rep.min_timestamp, rep.raw_lag_hours)
     out = np.full(idx.shape, np.nan, dtype="float64")
     if kept.size:
         pred = np.asarray(rep.model.predict(W, batch_size=1024, verbose=0), dtype="float64").reshape(-1)
@@ -553,3 +607,119 @@ def predict(rep: FitReport, X: np.ndarray, idx) -> np.ndarray:
         for k, p in zip(kept, pred):
             out[pos[int(k)]] = p
     return out
+
+
+def validate_raw_lag3_reference(task: dict, reference: dict, store):
+    """Bind a completed RAW weekly result to this exact validation task and source."""
+    from tools import fs4_weekly_wrapper as W
+
+    if task.get("input_mode") != "RAW" or task.get("split") != "validation":
+        raise Refusal("RAW_LAG3_VALIDATION_RAW_ONLY")
+    if reference.get("result_sha256") != W.digest({k: v for k, v in reference.items() if k != "result_sha256"}):
+        raise Refusal("RAW_LAG3_REFERENCE_MISMATCH: result digest")
+    members = list(canonical_features(task["members"]))
+    expected_input = W.digest({"files": store.digests, "members": members, "target": task["target_id"],
+                               "input_mode": "RAW", "row_id_offset": store.row_id_offset})
+    checks = {"schema": W.RESULT_SCHEMA, "disposition": "COMPLETED", "input_mode": "RAW", "split": "validation",
+              "task_id": task["task_id"], "plan_sha256": task["plan_sha256"], "population_id": store.population,
+              "set_id": task["set_id"], "target_id": task["target_id"], "horizon_hours": task["horizon_hours"],
+              "members": members, "week_start": task["week"]["start"], "week_end": task["week"]["end"],
+              "input_sha256": expected_input, "seed": task["seed"],
+              "predictor_spec_sha256": task["predictor_spec_sha256"]}
+    for key, value in checks.items():
+        if reference.get(key) != value:
+            raise Refusal(f"RAW_LAG3_REFERENCE_MISMATCH: {key}")
+    if task["target_id"] not in store.targets:
+        raise Refusal("RAW_LAG3_REFERENCE_MISMATCH: target absent")
+    y = store.targets[task["target_id"]]
+    all_idx = store.range_idx(task["week"]["start"], task["week"]["end"])
+    scored = all_idx[np.isfinite(y[all_idx])]
+    ids = W.rows_digest([str(r) for r in store.record_ids[scored]])
+    metrics = reference.get("metrics") or {}
+    naive = reference.get("naive") or {}
+    if not scored.size or reference.get("n_scored") != int(scored.size) or reference.get("rows_sha256") != ids \
+            or naive.get("rows_sha256") != ids or metrics.get("naive_mae") != float(np.mean(np.abs(y[scored]))) \
+            or metrics.get("naive_mse") != float(np.mean(y[scored] ** 2)):
+        raise Refusal("RAW_LAG3_REFERENCE_MISMATCH: scored rows or naive")
+    return scored
+
+
+def run_raw_lag3_diagnostic(task: dict, reference: dict, store, *, spec: PredictorSpec | None = None) -> dict:
+    """Offline validation-only diagnostic. Never submits a result to the weekly controller."""
+    from tools import fs4_weekly_wrapper as W
+
+    spec = spec or PredictorSpec()
+    scored = validate_raw_lag3_reference(task, reference, store)
+    if task["predictor_spec_sha256"] != spec.sha256():
+        raise Refusal("RAW_LAG3_REFERENCE_MISMATCH: predictor spec")
+    members = canonical_features(task["members"])
+    Xsub = store.X[:, [store.col[m] for m in members]]
+    standardiser = Standardiser(np.zeros(len(members)), np.zeros(len(members)), np.ones(len(members)))
+    _, kept = raw_lag3_windows(spec, Xsub, standardiser, scored, store.ts,
+                               int(W._parse(task["week"]["fit_start"]).timestamp()))
+    require_same_support(scored, kept)
+
+    def trainer(model_spec, X, y, fit_idx, inner_idx, input_mode, encoder, seed):
+        if input_mode != "RAW" or encoder is not None:
+            raise Refusal("RAW_LAG3_VALIDATION_RAW_ONLY")
+        return fit_named(model_spec, X, members, y, fit_idx, inner_idx, input_mode="RAW", encoder=None, seed=seed,
+                         timestamps=store.ts, min_timestamp=int(W._parse(task["week"]["fit_start"]).timestamp()),
+                         raw_lag_hours=3)
+
+    result = W.run_task(task, store, trainer=trainer, spec=spec)
+    if result.get("disposition") != "COMPLETED":
+        raise Refusal(f"RAW_LAG3_EVALUATION_FAILED: {result.get('reason')}")
+    for key in ("rows_sha256", "n_scored", "fit_population_digest", "inner_population_digest",
+                "fit_rows", "inner_rows", "standardiser_sha256", "input_sha256"):
+        if result.get(key) != reference.get(key):
+            raise Refusal(f"RAW_LAG3_SUPPORT_MISMATCH: {key}")
+    for key in ("naive_mae", "naive_mse"):
+        if result["metrics"][key] != reference["metrics"][key]:
+            raise Refusal(f"RAW_LAG3_REFERENCE_MISMATCH: {key}")
+    if result.get("naive") != reference.get("naive"):
+        raise Refusal("RAW_LAG3_REFERENCE_MISMATCH: naive contract")
+    out = {"schema": RAW_LAG3_SCHEMA, "identity": raw_lag3_identity(spec, members, reference["result_sha256"]),
+           "raw_reference_sha256": reference["result_sha256"], "raw_task_id": task["task_id"],
+           "input_mode": "RAW_LAG3_DIAGNOSTIC", "lag_hours": 3, "split": "validation",
+           "population_id": store.population, "set_id": task["set_id"], "target_id": task["target_id"],
+           "week_start": task["week"]["start"], "members": list(members), "seed": result["seed"],
+           "rows_sha256": result["rows_sha256"], "n_scored": result["n_scored"],
+           "fit_population_digest": result["fit_population_digest"],
+           "inner_population_digest": result["inner_population_digest"],
+           "input_sha256": result["input_sha256"], "standardiser_sha256": result["standardiser_sha256"],
+           "model_sha256": result["model_sha256"], "metrics": result["metrics"], "cost": result["cost"],
+           "disposition": "COMPLETED", "baseline_mae": reference["metrics"]["mae"]}
+    out["result_sha256"] = digest(out)
+    return out
+
+
+def main(argv=None) -> int:
+    import argparse
+
+    ap = argparse.ArgumentParser(description="Offline FS4 RAW_LAG3 validation diagnostic; never touches the weekly queue")
+    ap.add_argument("raw-lag3-diagnostic", choices=("raw-lag3-diagnostic",))
+    ap.add_argument("--task-file", required=True)
+    ap.add_argument("--raw-result", required=True)
+    ap.add_argument("--population", required=True)
+    ap.add_argument("--train-features", nargs="+", required=True)
+    ap.add_argument("--train-targets", required=True)
+    ap.add_argument("--val-features", nargs="+", required=True)
+    ap.add_argument("--val-targets", required=True)
+    ap.add_argument("--bar-hours", type=int, required=True)
+    args = ap.parse_args(argv)
+    from tools.fs4_weekly_wrapper import DataStore
+
+    try:
+        task = json.loads(Path(args.task_file).read_text())
+        reference = json.loads(Path(args.raw_result).read_text())
+        store = DataStore.from_paths(args.population, args.train_features, args.train_targets,
+                                     args.val_features, args.val_targets, bar_hours=args.bar_hours)
+        print(canonical(run_raw_lag3_diagnostic(task, reference, store)))
+    except (Refusal, ValueError) as exc:
+        print(canonical({"error": str(exc)}), file=sys.stderr)
+        return 2
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
