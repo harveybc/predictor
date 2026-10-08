@@ -261,9 +261,11 @@ def _grouped_layer_class():
     tf = _tf()
 
     class GroupedCausalConv1D(keras.layers.Layer):
-        def __init__(self, groups, filters_per_group, kernel_size, strides=1, activation=None, **kw):
+        def __init__(self, groups, filters_per_group, kernel_size, strides=1, activation=None,
+                     dilation_rate=1, **kw):
             super().__init__(**kw)
             self.groups, self.fpg, self.k, self.strides = groups, filters_per_group, kernel_size, strides
+            self.dilation_rate = dilation_rate
             self.act = keras.activations.get(activation)
 
         def build(self, input_shape):
@@ -278,8 +280,9 @@ def _grouped_layer_class():
         def call(self, x):
             t = tf.shape(x)[1]
             x = tf.reshape(x, (-1, x.shape[1], self.groups, self.cin))
-            xp = tf.pad(x, [[0, 0], [self.k - 1, 0], [0, 0], [0, 0]])
-            cols = tf.concat([xp[:, i:i + x.shape[1]] for i in range(self.k)], axis=-1)        # (B, T, G, k*cin)
+            xp = tf.pad(x, [[0, 0], [(self.k - 1) * self.dilation_rate, 0], [0, 0], [0, 0]])
+            cols = tf.concat([xp[:, i * self.dilation_rate:i * self.dilation_rate + x.shape[1]]
+                              for i in range(self.k)], axis=-1)        # (B, T, G, k*cin)
             if self.strides > 1:
                 cols = cols[:, self.strides - 1::self.strides]
             y = tf.einsum("btgi,gio->btgo", cols, self.w) + self.b
@@ -526,7 +529,7 @@ def _inputs_for(spec: PredictorSpec, encoder, X: np.ndarray, standardiser: Stand
 
 def fit_predictor(spec: PredictorSpec, X: np.ndarray, y: np.ndarray, fit_idx, inner_idx, *, input_mode: str,
                   encoder, seed: int, features=None, timestamps=None, min_timestamp=None,
-                  raw_lag_hours: int = 0) -> FitReport:
+                  raw_lag_hours: int = 0, model_builder=None) -> FitReport:
     if input_mode not in INPUT_MODES:
         raise Refusal(f"UNKNOWN_INPUT_MODE: {input_mode}")
     if (input_mode == "RAW") != (encoder is None):
@@ -553,7 +556,8 @@ def fit_predictor(spec: PredictorSpec, X: np.ndarray, y: np.ndarray, fit_idx, in
         raise Refusal("TARGET_NOT_FINITE_ON_FIT_OR_INNER_ROWS")
     keras = _keras()
     keras.utils.set_random_seed(int(seed))
-    model = build_predictor(spec, X.shape[1], input_mode, encoder.latent_dim if encoder is not None else None)
+    builder = model_builder or build_predictor
+    model = builder(spec, X.shape[1], input_mode, encoder.latent_dim if encoder is not None else None)
     initial_sha = model_weights_sha256(model)
     model.compile(optimizer=keras.optimizers.Adam(learning_rate=spec.learning_rate), loss=spec.loss)
     stop = keras.callbacks.EarlyStopping(monitor="val_loss", patience=spec.patience, restore_best_weights=True)
@@ -580,7 +584,8 @@ def fit_predictor(spec: PredictorSpec, X: np.ndarray, y: np.ndarray, fit_idx, in
 
 
 def fit_named(spec: PredictorSpec, X: np.ndarray, names, y, fit_idx, inner_idx, *, input_mode: str,
-              encoder, seed: int, timestamps=None, min_timestamp=None, raw_lag_hours: int = 0) -> FitReport:
+              encoder, seed: int, timestamps=None, min_timestamp=None, raw_lag_hours: int = 0,
+              model_builder=None) -> FitReport:
     """Sort the columns by feature name before anything is built (FS4-02)."""
     names = list(names)
     if len(names) != X.shape[1]:
@@ -589,7 +594,7 @@ def fit_named(spec: PredictorSpec, X: np.ndarray, names, y, fit_idx, inner_idx, 
     feats = canonical_features(names)
     rep = fit_predictor(spec, np.asarray(X)[:, order], y, fit_idx, inner_idx, input_mode=input_mode, encoder=encoder,
                         seed=seed, features=feats, timestamps=timestamps, min_timestamp=min_timestamp,
-                        raw_lag_hours=raw_lag_hours)
+                        raw_lag_hours=raw_lag_hours, model_builder=model_builder)
     rep.input_identity = (digest({"schema": RAW_LAG3_SCHEMA, "features": feats, "lag_hours": 3, "spec": spec.to_dict()})
                           if raw_lag_hours else input_identity(spec, feats, input_mode, rep.encoder_sha256))
     return rep
