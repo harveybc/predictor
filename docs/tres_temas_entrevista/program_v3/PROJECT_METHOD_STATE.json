@@ -1,6 +1,6 @@
 {
   "schema": "research_program_method_state.v1",
-  "updated_on": "2026-10-07",
+  "updated_on": "2026-10-08",
   "current_stage": "acceptance_test_design",
   "completed_stages": [
     "discovery",
@@ -61,7 +61,25 @@
     "DOIN_role": "DISTRIBUTED_CANDIDATE_EVALUATION"
   },
   "feature_selection": {
-    "active_phase": "PHASE_4_RUNNER_INTEGRATION",
+    "active_phase": "I5_COMPLETE_I5P_ORIGIN_COVERING_PILOT",
+    "weekly_validation": {
+      "status": "COMPLETE",
+      "tasks_completed": 6240,
+      "tasks_expected": 6240,
+      "test_sealed": true,
+      "freeze_file": "/home/harveybc/.local/state/canonical_20261003/fs4/preliminary/wave2_successor/weekly/TEST_FREEZE.json"
+    },
+    "selected_input_denoising": {
+      "status": "PILOT_ONLY",
+      "origin_covering_architecture": "fs4_causal_conv_24_12_6_oc_v2",
+      "pilot_feature": "px.close_loc",
+      "pilot_fold": "inner_2023",
+      "pilot_seed": 0,
+      "pilot_reconstruction_mae": 0.9052658718104074,
+      "paired_raw_reconstruction_mae": 0.9037874914233048,
+      "paired_naive_reconstruction_mae": 1.1824973618178696,
+      "predictive_gain_measured": false
+    },
     "canonical_denominators": {
       "EURUSD": 366,
       "ETH": 83
