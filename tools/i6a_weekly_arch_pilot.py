@@ -5,6 +5,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
+import subprocess
 from pathlib import Path
 
 from tools import fs4_temporal_predictor as P
@@ -12,9 +14,43 @@ from tools import fs4_weekly_wrapper as W
 from tools.i6a_architectures import ARMS, build_model
 
 
+def target_horizon_hours(target):
+    match = re.fullmatch(r"Y_(s|l)_(\d+)h", target)
+    if match is None:
+        raise ValueError(f"UNSUPPORTED_REGRESSION_TARGET: {target}")
+    horizon = int(match.group(2))
+    allowed = range(1, 7) if match.group(1) == "s" else (24, 48, 72, 96, 120, 144)
+    if horizon not in allowed:
+        raise ValueError(f"UNSUPPORTED_REGRESSION_HORIZON: {target}")
+    return horizon
+
+
+def observed_gpu(expected_uuid):
+    if not expected_uuid:
+        return None
+    if os.environ.get("CUDA_VISIBLE_DEVICES") != expected_uuid:
+        raise ValueError("GPU_UUID_NOT_PINNED")
+    inventory = subprocess.check_output(
+        ["nvidia-smi", "--query-gpu=uuid,name", "--format=csv,noheader"], text=True
+    )
+    names = dict(line.split(", ", 1) for line in inventory.splitlines())
+    if expected_uuid not in names:
+        raise ValueError("GPU_UUID_NOT_IN_HOST_INVENTORY")
+    import tensorflow as tf
+
+    devices = tf.config.list_physical_devices("GPU")
+    if len(devices) != 1:
+        raise ValueError("EXPECTED_ONE_VISIBLE_GPU")
+    observed_name = tf.config.experimental.get_device_details(devices[0]).get("device_name")
+    if observed_name != names[expected_uuid]:
+        raise ValueError("GPU_DEVICE_NAME_MISMATCH")
+    return {"uuid": expected_uuid, "name": observed_name}
+
+
 def make_task(freeze, target, week_ordinal, validation_year):
     if W.digest({k: v for k, v in freeze.items() if k not in ("freeze_sha256", "frozen_utc")}) != freeze.get("freeze_sha256"):
         raise ValueError("FREEZE_DIGEST_MISMATCH")
+    horizon = target_horizon_hours(target)
     winner = freeze["winners"]["EURUSD"][target]["RAW"]
     members = P.canonical_features(winner["members"])
     plan_sha = W.digest({"schema": "i6a.train_week_arch.v1", "freeze_sha256": freeze["freeze_sha256"],
@@ -27,7 +63,7 @@ def make_task(freeze, target, week_ordinal, validation_year):
     week = weeks[week_ordinal]
     task = {"schema": W.TASK_SCHEMA, "plan_sha256": plan_sha, "population_id": "EURUSD",
             "identity": "phase1-eurusd-final:94d20c038d55e152", "set_id": winner["set_id"],
-            "target_id": target, "horizon_hours": 1, "members": list(members), "n_features": len(members),
+            "target_id": target, "horizon_hours": horizon, "members": list(members), "n_features": len(members),
             "input_mode": "RAW", "stage": 1, "split": "validation", "validation_year": validation_year,
             "week": {k: v for k, v in W._week_dict(week).items() if k != "split"}, "seed": W.SEED,
             "predictor_spec_sha256": P.PredictorSpec().sha256(), "encoder_spec_sha256": P.EncoderSpec().sha256()}
@@ -56,6 +92,7 @@ def run(arm, task, store):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--arm", choices=ARMS, required=True)
+    ap.add_argument("--target", default="Y_s_1h")
     ap.add_argument("--freeze", required=True)
     ap.add_argument("--feature-parquet", action="append", required=True)
     ap.add_argument("--target-parquet", required=True)
@@ -64,10 +101,12 @@ def main(argv=None):
     ap.add_argument("--validation-year", type=int, default=2023)
     ap.add_argument("--week-ordinal", type=int, default=0)
     ap.add_argument("--output", required=True)
+    ap.add_argument("--expected-gpu-uuid")
     args = ap.parse_args(argv)
     if args.validation_year not in (2023, 2024):
         raise ValueError("ONLY_TRAIN_2023_OR_VALIDATION_2024; TEST_IS_SEALED")
-    task = make_task(json.loads(Path(args.freeze).read_text()), "Y_s_1h", args.week_ordinal, args.validation_year)
+    gpu = observed_gpu(args.expected_gpu_uuid)
+    task = make_task(json.loads(Path(args.freeze).read_text()), args.target, args.week_ordinal, args.validation_year)
     if args.validation_year == 2023:
         if args.val_feature_parquet or args.val_target_parquet:
             raise ValueError("TRAIN_PILOT_MUST_NOT_READ_VALIDATION")
@@ -80,6 +119,8 @@ def main(argv=None):
     result = run(args.arm, task, store)
     out = {"schema": "i6a.weekly_arch_cell.v1", "diagnostic_only": args.validation_year == 2023,
            "selection_conditioned_on_validation_2024": True, "arm": args.arm, "task": task, "result": result}
+    if gpu is not None:
+        out["gpu"] = gpu
     out["sha256"] = W.digest(out)
     path = Path(args.output)
     path.parent.mkdir(parents=True, exist_ok=True)

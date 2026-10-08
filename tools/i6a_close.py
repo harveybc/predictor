@@ -14,14 +14,14 @@ from tools.i6a_campaign import atomic_json, paired_week, verify_result
 from tools.i6a_weekly_arch_pilot import make_task
 
 
-def close(freeze: dict, roots):
-    first = make_task(freeze, "Y_s_1h", 0, 2024)
+def close(freeze: dict, roots, target="Y_s_1h"):
+    first = make_task(freeze, target, 0, 2024)
     weeks = [w for w in W.W.build_protocol(2024, first["plan_sha256"]).weeks()
              if w.split is W.EvaluationSplit.VALIDATION]
     records = {}
     problems = []
     for i in range(len(weeks)):
-        task = make_task(freeze, "Y_s_1h", i, 2024)
+        task = make_task(freeze, target, i, 2024)
         for arm in ARMS:
             paths = [root / f"{arm}_val2024_week{i}.json" for root in roots]
             present = [p for p in paths if p.is_file()]
@@ -44,6 +44,9 @@ def close(freeze: dict, roots):
             "expected_weeks": len(weeks), "expected_cells": len(weeks) * len(ARMS),
             "verified_cells": len(records), "problems": problems, "test_read": False,
             "selected_set_conditioned_on_validation": True, "seed": W.SEED}
+    if target != "Y_s_1h":
+        base.update({"schema": "i6a.architecture_closure.v2", "target_id": target,
+                     "horizon_hours": first["horizon_hours"]})
     if problems:
         base["state"] = "INCOMPLETE_EVIDENCE"
         base["sha256"] = W.digest(base)
@@ -54,7 +57,15 @@ def close(freeze: dict, roots):
         base["problems"] = [{"reason": "MIXED_CORE_CODE_IDENTITIES"}]
         base["sha256"] = W.digest(base)
         return base
+    input_ids = {r["result"]["input_sha256"] for r in records.values()}
+    if len(input_ids) != 1:
+        base["state"] = "INCOMPLETE_EVIDENCE"
+        base["problems"] = [{"reason": "MIXED_INPUT_IDENTITIES"}]
+        base["sha256"] = W.digest(base)
+        return base
     base["core_code_sha256"] = next(iter(core_code))
+    if target != "Y_s_1h":
+        base["input_sha256"] = next(iter(input_ids))
     by_arm = {}
     ref = np.array([records[(i, "ARCH_A")]["result"]["metrics"]["mae"] for i in range(len(weeks))])
     for arm in ARMS:
@@ -86,10 +97,11 @@ def close(freeze: dict, roots):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--freeze", required=True)
+    ap.add_argument("--target", default="Y_s_1h")
     ap.add_argument("--result-dir", action="append", type=Path, required=True)
     ap.add_argument("--output", type=Path, required=True)
     args = ap.parse_args(argv)
-    result = close(json.loads(Path(args.freeze).read_text()), args.result_dir)
+    result = close(json.loads(Path(args.freeze).read_text()), args.result_dir, args.target)
     atomic_json(args.output, result)
     print(json.dumps({k: result[k] for k in ("state", "verified_cells", "expected_cells", "sha256")}))
     return 0 if result["state"] == "COMPLETE" else 2

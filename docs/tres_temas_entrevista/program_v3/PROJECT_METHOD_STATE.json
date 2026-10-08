@@ -1,7 +1,7 @@
 {
   "schema": "research_program_method_state.v1",
   "updated_on": "2026-10-08",
-  "current_stage": "I6A_SELECTED_INPUT_BUSINESS_CONTROL_CLOSED",
+  "current_stage": "integration_verification",
   "completed_stages": [
     "discovery",
     "requirements"

@@ -62,6 +62,7 @@ def paired_week(records):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--freeze", required=True)
+    ap.add_argument("--target", default="Y_s_1h")
     ap.add_argument("--feature-parquet", action="append", required=True)
     ap.add_argument("--target-parquet", required=True)
     ap.add_argument("--val-feature-parquet", action="append", required=True)
@@ -70,21 +71,24 @@ def main(argv=None):
     ap.add_argument("--week-modulus", type=int, default=1)
     ap.add_argument("--week-remainder", type=int, action="append", required=True)
     ap.add_argument("--host-label", required=True)
+    ap.add_argument("--expected-gpu-uuid")
     args = ap.parse_args(argv)
     if args.week_modulus <= 0 or len(set(args.week_remainder)) != len(args.week_remainder) or any(
             not 0 <= r < args.week_modulus for r in args.week_remainder):
         raise ValueError("INVALID_WEEK_PARTITION")
     freeze = json.loads(Path(args.freeze).read_text())
-    probe = make_task(freeze, "Y_s_1h", 0, 2024)
+    probe = make_task(freeze, args.target, 0, 2024)
     weeks = [w for w in W.W.build_protocol(2024, probe["plan_sha256"]).weeks()
              if w.split is W.EvaluationSplit.VALIDATION]
     assigned = [i for i in range(len(weeks)) if i % args.week_modulus in args.week_remainder]
-    tasks = [(i, arm, make_task(freeze, "Y_s_1h", i, 2024)) for i in assigned for arm in ARMS]
+    tasks = [(i, arm, make_task(freeze, args.target, i, 2024)) for i in assigned for arm in ARMS]
     root = Path(args.results_dir)
     status_file = root / f"STATUS_{args.host_label}.json"
     durations = []
-    base_args = ["--freeze", args.freeze, "--target-parquet", args.target_parquet,
+    base_args = ["--freeze", args.freeze, "--target", args.target, "--target-parquet", args.target_parquet,
                  "--val-target-parquet", args.val_target_parquet]
+    if args.expected_gpu_uuid:
+        base_args += ["--expected-gpu-uuid", args.expected_gpu_uuid]
     for p in args.feature_parquet:
         base_args += ["--feature-parquet", p]
     for p in args.val_feature_parquet:
@@ -110,7 +114,7 @@ def main(argv=None):
         verify_result(path, arm, task)
         durations.append(time.monotonic() - start)
         if arm == ARMS[-1]:
-            paired_week([verify_result(root / f"{a}_val2024_week{week}.json", a, make_task(freeze, "Y_s_1h", week, 2024))
+            paired_week([verify_result(root / f"{a}_val2024_week{week}.json", a, make_task(freeze, args.target, week, 2024))
                          for a in ARMS])
         atomic_json(status_file, {"schema": "i6a.campaign_status.v1", "host": args.host_label,
                                   "completed": position + 1, "total": total, "last": {"week": week, "arm": arm},

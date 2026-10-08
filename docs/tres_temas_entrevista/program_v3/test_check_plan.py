@@ -29,7 +29,7 @@ class PlanChecks(unittest.TestCase):
     def test_denoising_inputs_precedes_architecture_and_not_targets(self):
         checklist = json.loads((ROOT / "MASTER_CHECKLIST.json").read_text())
         items = {item["id"]: item for item in checklist["items"]}
-        self.assertEqual(items["I5-P"]["state"], "NOT_STARTED")
+        self.assertEqual(items["I5-P"]["state"], "EVIDENCE_PARTIAL")
         self.assertIn("I5", items["I5-P"]["depends_on"])
         self.assertIn("I5-P", items["I6-A"]["depends_on"])
         self.assertIn("denoising the predictive target or naive during I5-P", checklist["forbidden_shortcuts"])
