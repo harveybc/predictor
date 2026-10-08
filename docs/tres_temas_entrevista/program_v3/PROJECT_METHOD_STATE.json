@@ -70,7 +70,7 @@
       "freeze_file": "/home/harveybc/.local/state/canonical_20261003/fs4/preliminary/wave2_successor/weekly/TEST_FREEZE.json"
     },
     "selected_input_denoising": {
-      "status": "PILOT_ONLY",
+      "status": "PILOT_COMPLETE_NO_PROMOTION",
       "origin_covering_architecture": "fs4_causal_conv_24_12_6_oc_v2",
       "pilot_feature": "px.close_loc",
       "pilot_fold": "inner_2023",
@@ -79,6 +79,10 @@
       "selected_set_donors_expected": 4,
       "real_train_probe_rows": 128,
       "real_train_probe_receipt": "/home/harveybc/.local/state/canonical_20261003/i5p/real_train_probe_128.json",
+      "paired_train_weeks_2023": [0, 26, 51],
+      "paired_scored_rows_total": 309,
+      "reconstructed_worse_mae_weeks": 3,
+      "mainline_input": "RAW",
       "pilot_reconstruction_mae": 0.9052658718104074,
       "paired_raw_reconstruction_mae": 0.9037874914233048,
       "paired_naive_reconstruction_mae": 1.1824973618178696,

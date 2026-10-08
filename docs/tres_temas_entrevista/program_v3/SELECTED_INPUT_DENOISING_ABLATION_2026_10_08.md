@@ -1,7 +1,8 @@
 # I5-P: reconstrucción causal de entradas seleccionadas
 
-Estado: `PILOT_COMPLETE_WEEKLY_ABLATION_PENDING`. El manifiesto final de I5 está
-congelado y el piloto del conjunto seleccionado terminó; falta la comparación predictiva semanal. Precede al
+Estado: `PILOT_COMPLETE_NO_PROMOTION`. El manifiesto final de I5 está
+congelado y el piloto del conjunto seleccionado terminó; falta el contraste
+completo en VALIDATION. Precede al
 contraste de arquitectura I6-A. No cambia la campaña semanal RAW/encoder que
 ya corre, no reabre selección y no lee TEST.
 
@@ -98,3 +99,27 @@ El siguiente cierre requiere la comparacion semanal pareada de pronosticos
 contra RAW (y RAW_LAG3 para v1), con target y naive intactos. No se abre TEST
 ni se declara mejora por los numeros de reconstruccion. Si el beneficio no
 aparece, avanza RAW.
+
+### Piloto predictivo pareado, TRAIN 2023
+
+El mismo conjunto ganador `EURUSD/Y_s_1h` se probo en tres semanas separadas
+del TRAIN retenido de 2023. El donante v2 solo ajusto pesos antes de 2023;
+cada brazo del pronosticador se ajusto con la ventana movil de cuatro anos,
+la misma semilla 0, el mismo presupuesto, las mismas filas y el mismo naive
+de retorno cero. Las cuatro ramas temporales, fusion y nucleo Conv1D del
+pronosticador se conservaron; no se uso MLP plano. No se leyo VALIDATION-2024
+ni TEST. Las celdas son semanas distintas, no repeticiones de una semilla.
+
+| Semana 2023 | Filas | RAW MAE | Reconstruido MAE | Naive MAE |
+|---|---:|---:|---:|---:|
+| 0 (enero) | 120 | 0.000924406 | 0.000940756 | 0.000921990 |
+| 26 (julio) | 84 | 0.000389000 | 0.000397805 | 0.000376610 |
+| 51 (diciembre) | 105 | 0.000549770 | 0.000557311 | 0.000560102 |
+
+La reconstruccion empeoro el MAE en 3/3 semanas. En diciembre ambos brazos
+superan levemente al naive; en enero y julio ninguno. Esto no demuestra
+inutilidad general del denoiser ni es una estimacion anual: son 309 filas
+puntuadas de TRAIN y un solo target. Por coste/beneficio, **RAW sigue como
+entrada principal para I6-A**; I5-P no se promociona sin contraste anual
+positivo. Recibos locales versionados en
+`~/.local/state/canonical_20261003/i5p/train_week_pair_2023w{00,26,51}.json`.
