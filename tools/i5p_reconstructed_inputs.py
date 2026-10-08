@@ -160,7 +160,7 @@ def reconstruct_selected_inputs(*, timestamps, row_ids, values, columns, scored_
             rows.ndim != 1 or not len(rows) or np.any(np.diff(rows) <= 0) or \
             rows[0] < 0 or rows[-1] >= len(ts) or target.shape != rows.shape or naive.shape != rows.shape:
         raise Refusal("ROW_SUPPORT_MISMATCH")
-    if not np.isfinite(raw).all() or not np.isfinite(target).all() or not np.isfinite(naive).all():
+    if not np.isfinite(target).all() or not np.isfinite(naive).all():
         raise Refusal("NONFINITE_INPUT")
     actual_sha = data_sha256(ts, ids, raw, names, rows, target, naive)
     if actual_sha != expected_data_sha256:

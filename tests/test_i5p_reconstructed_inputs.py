@@ -83,6 +83,22 @@ def test_reconstruction_is_causal_origin_covering_and_preserves_support(case):
     assert out.values[1, 0] != I.reconstruct_selected_inputs(**changed_origin).values[1, 0]
 
 
+def test_missing_historical_value_uses_mask_but_missing_origin_refuses(case):
+    args, _, _ = case
+    with_gap = dict(args, values=args["values"].copy())
+    with_gap["values"][5, 0] = np.nan
+    with_gap["expected_data_sha256"] = I.data_sha256(
+        args["timestamps"], args["row_ids"], with_gap["values"], args["columns"],
+        args["scored_rows"], args["target"], args["naive"])
+    assert np.isfinite(I.reconstruct_selected_inputs(**with_gap).values).all()
+    with_gap["values"][30, 0] = np.nan
+    with_gap["expected_data_sha256"] = I.data_sha256(
+        args["timestamps"], args["row_ids"], with_gap["values"], args["columns"],
+        args["scored_rows"], args["target"], args["naive"])
+    with pytest.raises(I.Refusal, match="ORIGIN_SUPPORT_MISMATCH"):
+        I.reconstruct_selected_inputs(**with_gap)
+
+
 def test_each_selected_column_uses_its_own_authenticated_terminal(case, tmp_path):
     args, first, terminal = case
     second_name = "tech.rsi"
@@ -139,8 +155,8 @@ def test_fail_closed(case, mutation, code):
     elif mutation == "bad_weights":
         (terminal.parent / "chosen.weights.h5").write_bytes(b"not h5")
     elif mutation == "nonfinite":
-        args["values"] = args["values"].copy()
-        args["values"][0, 0] = np.nan
+        args["target"] = args["target"].copy()
+        args["target"][0] = np.nan
     elif mutation == "wrong_data":
         args["expected_data_sha256"] = "b" * 64
     elif mutation == "short_history":
