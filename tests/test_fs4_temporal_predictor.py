@@ -420,11 +420,12 @@ def test_each_feature_has_its_own_branch_and_branches_do_not_mix_before_fusion()
     model = P.build_predictor(spec, n_features=3, input_mode="RAW", latent_dim=None)
     branches = keras.Model(model.input, model.get_layer("branch_down2").output)
     rng = np.random.default_rng(0)
-    x = rng.normal(size=(5, spec.window, 3)).astype("float32")
+    x = np.ones((5, spec.window, 6), dtype="float32")
+    x[:, :, 0::2] = rng.normal(size=(5, spec.window, 3)).astype("float32")
     z0 = np.asarray(branches.predict(x, verbose=0))
     assert z0.shape == (5, spec.latent_steps, 3 * spec.branch_filters)                       # time axis kept: 24 -> 6
     x1 = x.copy()
-    x1[:, :, 1] += 5.0                                                                       # perturb feature 1 only
+    x1[:, :, 2] += 5.0                                                                       # perturb feature 1 only
     z1 = np.asarray(branches.predict(x1, verbose=0))
     bf = spec.branch_filters
     assert np.array_equal(z0[..., :bf], z1[..., :bf]) and np.array_equal(z0[..., 2 * bf:], z1[..., 2 * bf:])

@@ -1,6 +1,7 @@
 # I5-P: reconstrucción causal de entradas seleccionadas
 
-Estado: `NOT_STARTED`. Depende del manifiesto final de I5 y precede al
+Estado: `PILOT_RUNNING`. El manifiesto final de I5 está congelado y el primer
+piloto de arquitectura terminó; falta la comparación predictiva semanal. Precede al
 contraste de arquitectura I6-A. No cambia la campaña semanal RAW/encoder que
 ya corre, no reabre selección y no lee TEST.
 
@@ -63,3 +64,27 @@ perturbación de x_t para comprobar si realmente alcanza la salida en t;
 invariancia de bytes del target/naive; misma población semanal entre brazos;
 rechazo de decoder/checkpoint ajeno; y un resultado RAW válido cuando el
 denoiser no sea admisible o no aporte valor.
+
+## Avance verificado, 2026-10-08
+
+El encoder v1 tiene tres horas de rezago efectivo en su ultimo estado. El
+control `RAW_LAG3_DIAGNOSTIC` ya esta implementado fuera de la cola semanal:
+exige una referencia RAW retenida, conserva sus filas, target y naive, y usa
+un corte de tres horas transcurridas. Sus 20 pruebas con TensorFlow real pasan;
+no hay todavia una medicion predictiva real de este control.
+
+El brazo versionado `fs4_causal_conv_24_12_6_oc_v2` aplica padding causal
+izquierdo antes de cada reduccion temporal. Conserva 24 horas de entrada y
+latente 6x8. Una perturbacion de la hora de origen alcanza tanto el ultimo
+latente como la reconstruccion de esa hora; la v1 no la alcanza. La primera
+celda TRAIN real, `px.close_loc`/`inner_2023`/semilla 0, termino en la 4070
+de omega con MAE de reconstruccion 0.905266, contra 0.904511 para v1,
+0.903787 para RAW y 1.182497 para persistencia, sobre 25 806 puntos ocultos.
+Entrada, filas y mascara tienen los mismos digestos que v1. Tiempo de pared
+103.8 s, pico cgroup 1.88 GB, VRAM 0.42 GB. Es un piloto de soporte y coste,
+no evidencia de beneficio predictivo ni de limpieza de ruido economico.
+
+El siguiente cierre requiere checkpoints v2 para todos los rasgos del conjunto
+seleccionado que se contraste, entradas reconstruidas emitidas causalmente
+por origen, y la comparacion semanal pareada contra RAW (y RAW_LAG3 para v1)
+con target y naive intactos. Si el beneficio no aparece, avanza RAW.
