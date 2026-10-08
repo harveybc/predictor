@@ -59,17 +59,27 @@ def main(argv=None):
     ap.add_argument("--freeze", required=True)
     ap.add_argument("--feature-parquet", action="append", required=True)
     ap.add_argument("--target-parquet", required=True)
+    ap.add_argument("--val-feature-parquet", action="append")
+    ap.add_argument("--val-target-parquet")
     ap.add_argument("--validation-year", type=int, default=2023)
     ap.add_argument("--week-ordinal", type=int, default=0)
     ap.add_argument("--output", required=True)
     args = ap.parse_args(argv)
-    if args.validation_year != 2023:
-        raise ValueError("PILOT_TRAIN_YEAR_ONLY: 2024 requires the sealed full campaign")
+    if args.validation_year not in (2023, 2024):
+        raise ValueError("ONLY_TRAIN_2023_OR_VALIDATION_2024; TEST_IS_SEALED")
     task = make_task(json.loads(Path(args.freeze).read_text()), "Y_s_1h", args.week_ordinal, args.validation_year)
-    store = W.DataStore.from_train_only("EURUSD", args.feature_parquet, args.target_parquet, bar_hours=1)
+    if args.validation_year == 2023:
+        if args.val_feature_parquet or args.val_target_parquet:
+            raise ValueError("TRAIN_PILOT_MUST_NOT_READ_VALIDATION")
+        store = W.DataStore.from_train_only("EURUSD", args.feature_parquet, args.target_parquet, bar_hours=1)
+    else:
+        if not args.val_feature_parquet or not args.val_target_parquet:
+            raise ValueError("VALIDATION_INPUTS_REQUIRED")
+        store = W.DataStore.from_paths("EURUSD", args.feature_parquet, args.target_parquet,
+                                      args.val_feature_parquet, args.val_target_parquet, bar_hours=1)
     result = run(args.arm, task, store)
-    out = {"schema": "i6a.train_week_arch_pilot.v1", "diagnostic_only": True,
-           "selection_uses_later_validation": True, "arm": args.arm, "task": task, "result": result}
+    out = {"schema": "i6a.weekly_arch_cell.v1", "diagnostic_only": args.validation_year == 2023,
+           "selection_conditioned_on_validation_2024": True, "arm": args.arm, "task": task, "result": result}
     out["sha256"] = W.digest(out)
     path = Path(args.output)
     path.parent.mkdir(parents=True, exist_ok=True)
