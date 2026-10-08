@@ -1,6 +1,6 @@
 {
   "schema": "master_checklist.v1",
-  "updated_on": "2026-10-07",
+  "updated_on": "2026-10-08",
   "states": [
     "NOT_STARTED",
     "DESIGNED",
@@ -74,14 +74,14 @@
     {
       "id": "I5",
       "name": "phase4_extractibility_and_wrapper_selection",
-      "state": "IN_PROGRESS",
+      "state": "EVIDENCE_PARTIAL",
       "depends_on": [
         "I4-C",
         "I4-R",
         "I0-W"
       ],
       "gate": "raw/random/trained extraction plus weekly wrapper validation and final manifest",
-      "evidence": "Two scoped TRAIN extractibility waves closed with retained readback receipts; 40 target-specific sets entered the 2024 weekly RAW queue. The full 6495-task parent closure and final feature manifest are not claimed. Live count comes from weekly_queue.sqlite via tools.fs4_weekly_campaign status; the older STATUS.json is stale."
+      "evidence": "The scoped TRAIN extractibility successor closed; the 2024 weekly wrapper completed 6240/6240 tasks across RAW, RANDOM_ENCODER and TRAINED_ENCODER with zero technical task failures. Warehouse readback reconciled, 20 target-specific RAW winners were chosen and the procedure was frozen without opening TEST. Winner unions are 20 EURUSD and 9 ETH features, but all 20 mean weekly skill scores are negative against the paired naive, so no trading-ready feature set is claimed. The older 6495-task parent closure is superseded for this scoped wave and must not be counted as the current queue."
     },
     {
       "id": "I5-P",
