@@ -135,6 +135,7 @@ cerrado hasta que el ganador y la regla estén sellados. FS4-13: cada métrica
 se escribe en el OLAP y se coteja por lectura de vuelta; el repositorio
 guarda código, esquema, manifiesto y digestos, no el snapshot binario.
 
-Hito posterior: formar ramas con las características finalmente elegidas;
-después comparar R0/R1/R2 y preentrenar el núcleo. NEAT, RL y calendario
+Hito posterior: I5-P compara RAW con reconstrucción causal de las entradas
+finalmente elegidas, sin alterar el target; RAW sigue si no hay ganancia.
+Después formar ramas, comparar R0/R1/R2 y preentrenar el núcleo. NEAT, RL y calendario
 económico siguen en el orden del plan maestro.

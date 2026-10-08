@@ -84,11 +84,18 @@
       "evidence": "Two scoped TRAIN extractibility waves closed with retained readback receipts; 40 target-specific sets entered the 2024 weekly RAW queue. The full 6495-task parent closure and final feature manifest are not claimed. Live count comes from weekly_queue.sqlite via tools.fs4_weekly_campaign status; the older STATUS.json is stale."
     },
     {
+      "id": "I5-P",
+      "name": "selected_input_denoising_ablation",
+      "state": "NOT_STARTED",
+      "depends_on": ["I5"],
+      "gate": "paired RAW, causal reconstruction and latent inputs on selected features; target and naive unchanged; verified temporal support and RAW fallback"
+    },
+    {
       "id": "I6-A",
       "name": "architecture_controls",
       "state": "NOT_STARTED",
       "depends_on": [
-        "I5"
+        "I5-P"
       ],
       "gate": "matched ARCH result"
     },
@@ -203,6 +210,7 @@
     "warm-update weights labeled as strict four-year memory",
     "strategy evaluation when forecast does not beat same-row naive",
     "flattened Dense output size or reshape claimed to preserve chronological positions",
-    "economic calendar or causal dossier used as model input before I11"
+    "economic calendar or causal dossier used as model input before I11",
+    "denoising the predictive target or naive during I5-P"
   ]
 }

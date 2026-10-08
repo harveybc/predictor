@@ -232,7 +232,7 @@ def validate(state, root):
     if checklist_path and (root / checklist_path).is_file():
         checklist = json.loads((root / checklist_path).read_text())
         items = {item.get("id"): item for item in checklist.get("items", [])}
-        required_checklist = {"I0", "I0-W", "I1", "I2", "I3", "I4-C", "I4-R", "I5",
+        required_checklist = {"I0", "I0-W", "I1", "I2", "I3", "I4-C", "I4-R", "I5", "I5-P",
                               "I6-A", "I6-D", "I6-B", "I7", "I7-H", "I8", "I9-N",
                               "I9-R", "I10", "I11", "I12"}
         if set(items) != required_checklist:
@@ -243,6 +243,10 @@ def validate(state, root):
             issues.append("checklist business weekly sequence")
         if "I0-W" not in items.get("I5", {}).get("depends_on", []):
             issues.append("checklist selection business sequence")
+        if "I5" not in items.get("I5-P", {}).get("depends_on", []):
+            issues.append("checklist input denoising sequence")
+        if "I5-P" not in items.get("I6-A", {}).get("depends_on", []):
+            issues.append("checklist architecture preprocessing sequence")
         if "I7-H" not in items.get("I9-N", {}).get("depends_on", []):
             issues.append("checklist NEAT sequence")
         if not {"I9-N", "I9-R", "I10"}.issubset(items.get("I11", {}).get("depends_on", [])):

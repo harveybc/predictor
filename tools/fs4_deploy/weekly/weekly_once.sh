@@ -21,7 +21,7 @@ case "$FS4_OUTPUT_ROOT" in /tmp|/tmp/*|/dev/shm*) echo "FS4_OUTPUT_ROOT is not d
 args=(
   --coordinator "$FS4_COORDINATOR" --controller "$FS4_CONTROLLER" --python "${FS4_COORDINATOR_PYTHON:-python3}"
   --python-local "$FS4_PYTHON" --wrapper "$FS4_CODE/tools/fs4_weekly_wrapper.py" --db "$FS4_DB" --owner "$FS4_OWNER"
-  --cap "$FS4_CAP" --wall "${FS4_WALL:-3h}" --timeout "${FS4_TIMEOUT:-10500}" --output-root "$FS4_OUTPUT_ROOT" --max-tasks 1
+  --cap "$FS4_CAP" --wall "${FS4_WALL:-3h}" --timeout "${FS4_TIMEOUT:-10500}" --output-root "$FS4_OUTPUT_ROOT" --max-tasks "${FS4_MAX_TASKS:-1}"
   --population "$FS4_POPULATION" --bar-hours "$FS4_BAR_HOURS" --input-mode "$FS4_INPUT_MODE" --split "${FS4_SPLIT:-validation}"
   --train-features $FS4_TRAIN_FEATURES --train-targets "$FS4_TRAIN_TARGETS"
 )

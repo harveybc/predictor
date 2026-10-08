@@ -14,11 +14,12 @@ El orden de autoridad es:
 3. [selección progresiva de características y representaciones](program_v3/FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md);
 4. [fases 2 y 3 de selección](program_v3/FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md);
 5. [fase 4 de extractibilidad y validación](program_v3/FEATURE_SELECTION_PHASE4_WORK_PLAN_2026_10_06.md);
-6. [arquitectura temporal modular](program_v3/MODULAR_STACK_WORK_PLAN_2026_09_30.md);
-7. [estado metodológico](program_v3/PROJECT_METHOD_STATE.json);
-8. [cola actual](program_v3/EXPERIMENT_EXECUTION_QUEUE.json) y
+6. [ablación de reconstrucción causal de entradas](program_v3/SELECTED_INPUT_DENOISING_ABLATION_2026_10_08.md);
+7. [arquitectura temporal modular](program_v3/MODULAR_STACK_WORK_PLAN_2026_09_30.md);
+8. [estado metodológico](program_v3/PROJECT_METHOD_STATE.json);
+9. [cola actual](program_v3/EXPERIMENT_EXECUTION_QUEUE.json) y
    [estado de ejecución](program_v3/CURRENT_EXECUTION.md);
-9. [checklist legible por máquina](program_v3/MASTER_CHECKLIST.json), proyección
+10. [checklist legible por máquina](program_v3/MASTER_CHECKLIST.json), proyección
    del apartado 4 y no un plan alterno.
 
 La vista ejecutiva obligatoria es
@@ -98,6 +99,8 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 - [ ] I4-C. Dependencia y redundancia entre características; alias y clusters.
 - [ ] I4-R. Rankings por clustering, mRMR y JMI; trayectorias K reproducibles.
 - [ ] I5. Comparación conjunta de conjuntos y manifiesto final.
+- [ ] I5-P. Ablación RAW/reconstrucción/latente sobre los rasgos seleccionados;
+  el target y el naive permanecen intactos.
 - [ ] I6-A. Agrupación, campos receptivos y controles ARCH emparejados.
 - [ ] I6-D. ANN histórica por característica y contraste Dense de ramas,
   después de I5; resultado emparejado, sin atribuir tiempo a neuronas latentes.
@@ -142,7 +145,8 @@ La selección no empieza entrenando cientos de ramas. La secuencia vigente es:
    de costo acotado; expansion a rasgos diferidos solo si el contraste semanal
    justifica su valor incremental;
 6. validación wrapper bajo walk-forward semanal y manifiesto final;
-7. grupos/ramas, fusión y downstream.
+7. ablación I5-P de preprocesamiento sobre rasgos ya seleccionados;
+8. grupos/ramas, fusión y downstream.
 
 Despues de los hitos principales, estudiar el error de reconstruccion de
 extractores como posible detector de anomalias y de transiciones de regimen.
@@ -226,6 +230,14 @@ estabilidad entre folds, preservación de probes hacia targets corto/largo/barre
 ganancia incremental y ablación con reajuste, coste y sensibilidad al contexto
 estacional. Buena reconstrucción sin utilidad no selecciona; mala reconstrucción
 no rechaza sin el resto de evidencias. La capacidad generativa se evalúa aparte.
+
+La reconstrucción como *entrada* operativa se comprueba después del
+manifiesto final de I5 y antes de comparar arquitecturas en I6-A. Su
+[subplan](program_v3/SELECTED_INPUT_DENOISING_ABLATION_2026_10_08.md) separa
+entrada RAW, reconstrucción y latente, exige probar el soporte temporal real
+del decoder y conserva **sin cambios** el target y el naive. El encoder actual
+tiene un rezago informativo certificado de tres horas en su último estado:
+emitir una muestra etiquetada en t no demuestra retraso cero.
 
 ## 7. Representación temporal modular
 

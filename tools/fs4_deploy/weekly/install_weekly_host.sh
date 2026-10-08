@@ -38,6 +38,7 @@ done
 case "$FS4_INPUT_MODE" in RAW|RANDOM_ENCODER|TRAINED_ENCODER) ;; *) refuse "FS4_INPUT_MODE must be RAW, RANDOM_ENCODER or TRAINED_ENCODER" ;; esac
 [[ "$FS4_OWNER" =~ ^(worker_a|worker_b|coordinator)-[a-z0-9-]+$ ]] || refuse "FS4_OWNER must be <role>-<slot> with role worker_a|worker_b|coordinator"
 [[ "$FS4_CAP" =~ ^[0-9]+[KMGT]?$ ]] || refuse "FS4_CAP must be a size such as 2G (is $FS4_CAP)"
+[[ "${FS4_MAX_TASKS:-1}" =~ ^[1-9][0-9]*$ ]] || refuse "FS4_MAX_TASKS must be a positive integer"
 [[ "$FS4_BAR_HOURS" =~ ^[0-9]+$ ]] || refuse "FS4_BAR_HOURS must be an integer (is $FS4_BAR_HOURS)"
 case "$FS4_OUTPUT_ROOT" in /tmp|/tmp/*|/dev/shm*) refuse "FS4_OUTPUT_ROOT is not durable: $FS4_OUTPUT_ROOT" ;; esac
 test -x "$FS4_PYTHON" || refuse "FS4_PYTHON is not executable: $FS4_PYTHON"

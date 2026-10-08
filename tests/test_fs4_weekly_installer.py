@@ -35,6 +35,8 @@ def _env(**over):
     (_env(), 0o644, "must be mode 0600"),
     (_env(FS4_CAP="PENDING_MEASURED_CAP"), 0o600, "placeholder"),
     (_env(FS4_CAP="lots"), 0o600, "FS4_CAP must be a size"),
+    (_env(FS4_MAX_TASKS="0"), 0o600, "FS4_MAX_TASKS must be a positive integer"),
+    (_env(FS4_MAX_TASKS="many"), 0o600, "FS4_MAX_TASKS must be a positive integer"),
     (_env(FS4_OWNER="somebody"), 0o600, "FS4_OWNER must be"),
     (_env(FS4_OUTPUT_ROOT="/tmp/x"), 0o600, "not durable"),
     (_env(FS4_INPUT_MODE="MLP"), 0o600, "FS4_INPUT_MODE"),
