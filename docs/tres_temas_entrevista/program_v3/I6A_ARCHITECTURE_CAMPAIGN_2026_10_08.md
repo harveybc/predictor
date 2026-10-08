@@ -55,13 +55,13 @@ are **not** prospective model quality evidence:
 | ARCH_0 | 0.007030384 | 0.000921990 | 3,297 |
 | ARCH_A | 0.000924921 | 0.000921990 | 3,953 |
 | ARCH_B | 0.000946530 | 0.000921990 | 4,785 |
-| ARCH_C | withdrawn: origin omitted | 0.000921990 | 4,225 |
+| ARCH_C, corrected | 0.001092393 | 0.000921990 | 4,225 |
 
 The first 2024 validation week also used identical rows (97) and naive MAE
 0.000612503. It is one of 52 weeks and cannot order the arms: ARCH_0
-0.004883628; ARCH_A 0.000617189; ARCH_B 0.000614759. The original ARCH-C
-value 0.000664281 is withdrawn because it omitted the origin; the successor
-will replace it. The remaining three did not beat the naive in that week. No
+0.004883628; ARCH_A 0.000617189; ARCH_B 0.000614759; corrected ARCH-C
+0.000693208. The original ARCH-C value 0.000664281 is withdrawn because it
+omitted the origin. None of the four beats the naive in that week. No
 strategy simulation or TEST score follows from it.
 
 `tools/i6a_campaign.py` deterministically partitions complete weeks and
