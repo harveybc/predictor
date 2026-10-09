@@ -77,9 +77,10 @@ def _effective_params(params):
 
 @component(
     "control_branch",
-    "1.0.0",
+    "1.1.0",
     {"hidden_units", "latent_units", "activation", "use_bias"},
-    "(batch, 24 hourly observations, 1 feature) -> (batch, latent units); "
+    "(batch, 24 hourly observations, channels of one semantic feature) -> "
+    "(batch, latent units); "
     "unordered latent vector with causal support through the window right edge; "
     "no temporal-preservation claim",
     defaults={"hidden_units": [16, 8], "latent_units": 8,
@@ -91,11 +92,13 @@ def causal_window_dense(*, input_shape, support_grid, name, params):
     Flattening is valid here precisely because this is the non-temporal I6-D
     control. The output is never passed to sequence fusion or the temporal core.
     """
-    if tuple(input_shape) != (24, 1):
+    if (not isinstance(input_shape, (tuple, list)) or len(input_shape) != 2
+            or input_shape[0] != 24 or isinstance(input_shape[1], bool)
+            or not isinstance(input_shape[1], int) or input_shape[1] <= 0):
         raise ValueError("Dense control requires one exact 24-hour per-feature window")
     grid = _support_grid(support_grid)
     effective = _effective_params(params)
-    inputs = keras.Input(shape=(24, 1), name=f"{name}_window")
+    inputs = keras.Input(shape=tuple(input_shape), name=f"{name}_window")
     values = keras.layers.Flatten(name=f"{name}_ordered_window")(inputs)
     for index, units in enumerate(effective["hidden_units"]):
         values = keras.layers.Dense(
