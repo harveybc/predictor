@@ -55,6 +55,15 @@ then computes annual MAE/MSE and the zero-return persistence naive by weighting
 weekly values by their scored-row counts. No partial annual summary is emitted.
 There is deliberately no TEST argument or TEST path.
 
+The optional `--target-transform ROBUST_Z_FIT` changes only the numerical
+coordinate used during fitting. For every week it estimates the target median
+and robust scale from that week's fitting rows, applies them to fitting and
+inner-validation targets, then inverts predictions before calculating metrics.
+The raw target is neither denoised nor replaced, and the same-row naive remains
+in raw log-return units. The transform and its fitted values are retained in
+each result. It has a distinct campaign/task identity; legacy RAW campaigns
+remain readable under their original schema.
+
 ```bash
 PYTHONPATH=. python tools/i6d_matched_control.py weekly-plan \
   --config examples/config/i6d/i6d_eurusd_y_s_1h_matched_control.json \
@@ -62,7 +71,8 @@ PYTHONPATH=. python tools/i6d_matched_control.py weekly-plan \
 
 PYTHONPATH=. python tools/i6d_matched_control.py weekly-init \
   --config examples/config/i6d/i6d_eurusd_y_s_1h_matched_control.json \
-  --validation-year 2024 --output <weekly-campaign-dir>
+  --validation-year 2024 --output <weekly-campaign-dir> \
+  --target-transform ROBUST_Z_FIT
 
 # Run one independently schedulable cell. Repeat over sealed weeks and both arms.
 PYTHONPATH=. python tools/i6d_matched_control.py weekly-run-cell \
