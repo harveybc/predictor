@@ -28,7 +28,9 @@ from tools.i6a_weekly_arch_pilot import target_horizon_hours
 
 
 ARMS = ("DENSE", "CONV")
-DESIGN_SCHEMA = "predictor.i6d.weekly_campaign.v1"
+TARGET_TRANSFORMS = ("RAW", "ROBUST_Z_FIT")
+LEGACY_DESIGN_SCHEMA = "predictor.i6d.weekly_campaign.v1"
+DESIGN_SCHEMA = "predictor.i6d.weekly_campaign.v2"
 CELL_SCHEMA = "predictor.i6d.weekly_cell.v1"
 CLOSURE_SCHEMA = "predictor.i6d.weekly_closure.v1"
 STATUS_SCHEMA = "predictor.i6d.weekly_status.v1"
@@ -92,9 +94,11 @@ def _predictor_spec(config):
     )
 
 
-def build_weekly_design(config, validation_year, *, seeds=None):
+def build_weekly_design(config, validation_year, *, seeds=None, target_transform="RAW"):
     """Seal the annual validation population without reading any split bytes."""
     normalized = normalize_matched_config(config)
+    if target_transform not in TARGET_TRANSFORMS:
+        raise ValueError(f"target_transform must be one of {TARGET_TRANSFORMS}")
     if isinstance(validation_year, bool) or not isinstance(validation_year, int):
         raise ValueError("validation_year must be an integer")
     if len(normalized["horizons"]) != 1 or len(normalized["target_names"]) != 1:
@@ -116,6 +120,7 @@ def build_weekly_design(config, validation_year, *, seeds=None):
         "evaluation_mode": EVALUATION_MODE,
         "update_mode": UPDATE_MODE,
         "rolling_calendar_years": 4,
+        "target_transform": target_transform,
     }
     procedure_sha = canonical_sha256(identity)
     protocol = weekly_contract.W.build_protocol(validation_year, procedure_sha)
@@ -144,7 +149,7 @@ def build_weekly_design(config, validation_year, *, seeds=None):
 
 
 def verify_weekly_design(design):
-    if design.get("schema") != DESIGN_SCHEMA:
+    if design.get("schema") not in (LEGACY_DESIGN_SCHEMA, DESIGN_SCHEMA):
         raise ValueError("weekly design schema mismatch")
     _verify_seal(design, "design_sha256")
     if design.get("test_paths") is not None or design.get("test_read") is not False:
@@ -153,6 +158,10 @@ def verify_weekly_design(design):
         raise ValueError("weekly BUSINESS protocol mismatch")
     if design.get("rolling_calendar_years") != 4:
         raise ValueError("weekly BUSINESS protocol requires four rolling calendar years")
+    if design.get("schema") == LEGACY_DESIGN_SCHEMA and "target_transform" in design:
+        raise ValueError("legacy weekly design cannot declare a target transform")
+    if design.get("schema") == DESIGN_SCHEMA and design.get("target_transform") not in TARGET_TRANSFORMS:
+        raise ValueError("weekly target transform is missing or unsupported")
     _plain_seeds(design["config"]["seed"], design.get("seeds"))
     return design
 
@@ -189,6 +198,8 @@ def make_weekly_task(design, week_ordinal, seed, *, split="validation"):
         "predictor_spec_sha256": design["predictor_spec_sha256"],
         "encoder_spec_sha256": design["encoder_spec_sha256"],
     }
+    if design["schema"] == DESIGN_SCHEMA:
+        task["target_transform"] = design["target_transform"]
     task["task_id"] = weekly_contract.digest(task)
     return task
 
@@ -247,10 +258,23 @@ def _trainer(design, arm, store, seed, task):
             raise predictor_contract.Refusal(
                 f"TOO_FEW_WINDOWS: fit {kept_fit.size} inner {kept_inner.size}"
             )
-        fit_targets = targets[kept_fit].astype("float32").reshape(-1, 1)
-        inner_targets = targets[kept_inner].astype("float32").reshape(-1, 1)
+        fit_targets = targets[kept_fit].astype("float64").reshape(-1, 1)
+        inner_targets = targets[kept_inner].astype("float64").reshape(-1, 1)
         if not (np.all(np.isfinite(fit_targets)) and np.all(np.isfinite(inner_targets))):
             raise predictor_contract.Refusal("TARGET_NOT_FINITE_ON_FIT_OR_INNER_ROWS")
+        center, scale = 0.0, 1.0
+        target_transform = design.get("target_transform", "RAW")
+        if target_transform == "ROBUST_Z_FIT":
+            center = float(np.median(fit_targets))
+            scale = float(1.4826 * np.median(np.abs(fit_targets - center)))
+            if not np.isfinite(scale) or scale <= np.finfo("float32").eps:
+                scale = float(np.std(fit_targets))
+            if not np.isfinite(scale) or scale <= np.finfo("float32").eps:
+                raise predictor_contract.Refusal("TARGET_SCALE_DEGENERATE")
+            fit_targets = (fit_targets - center) / scale
+            inner_targets = (inner_targets - center) / scale
+        fit_targets = fit_targets.astype("float32")
+        inner_targets = inner_targets.astype("float32")
         keras = predictor_contract._keras()
         keras.utils.set_random_seed(actual_seed)
         model = _model_builder(config, arm, seed)(model_spec, len(members), "RAW", None)
@@ -260,7 +284,7 @@ def _trainer(design, arm, store, seed, task):
             model, fit_windows, fit_targets, inner_windows, inner_targets,
             {**config["fit"], "seed": actual_seed},
         )
-        return predictor_contract.FitReport(
+        report = predictor_contract.FitReport(
             spec=model_spec,
             input_mode="RAW",
             features=ordered_members,
@@ -289,7 +313,17 @@ def _trainer(design, arm, store, seed, task):
             history=training,
             timestamps=np.asarray(store.ts, dtype="int64"),
             min_timestamp=minimum,
+            target_center=center,
+            target_scale=scale,
         )
+        train.target_transform_metadata = {
+            "method": target_transform,
+            "center": center,
+            "scale": scale,
+            "fit_rows_sha256": canonical_sha256(kept_fit.tolist()),
+        }
+        return report
+    train.target_transform_metadata = None
     return spec, train
 
 
@@ -329,6 +363,13 @@ def run_weekly_cell(design, arm, week_ordinal, seed, store):
     )
     result["trainer"] = "I6D_MATCHED_CONTROL_REAL_KERAS"
     result["architecture_arm"] = arm
+    metadata = trainer.target_transform_metadata
+    if metadata is None and design.get("target_transform", "RAW") == "RAW":
+        metadata = {"method": "RAW", "center": 0.0, "scale": 1.0,
+                    "fit_rows_sha256": result.get("fit_population_digest")}
+    if metadata is None:
+        raise ValueError("target transform metadata was not produced")
+    result["target_transform"] = metadata
     result["result_sha256"] = weekly_contract.digest(
         {key: value for key, value in result.items() if key != "result_sha256"}
     )
@@ -348,6 +389,8 @@ def _parity_problem(left, right):
     for metric in ("naive_mae", "naive_mse"):
         if left.get("metrics", {}).get(metric) != right.get("metrics", {}).get(metric):
             return f"ARM_PARITY_MISMATCH:metrics.{metric}"
+    if left.get("target_transform") != right.get("target_transform"):
+        return "ARM_PARITY_MISMATCH:target_transform"
     return None
 
 
@@ -495,11 +538,13 @@ def close_weekly_cells(design, cells):
     return _seal(body, "closure_sha256")
 
 
-def initialize_weekly_campaign(config, output, validation_year, *, seeds=None):
+def initialize_weekly_campaign(config, output, validation_year, *, seeds=None,
+                               target_transform="RAW"):
     root = Path(output)
     if root.exists():
         raise ValueError("weekly campaign output already exists")
-    design = build_weekly_design(config, validation_year, seeds=seeds)
+    design = build_weekly_design(config, validation_year, seeds=seeds,
+                                 target_transform=target_transform)
     root.mkdir(parents=True)
     _atomic_json(root / "WEEKLY_DESIGN.json", design)
     _atomic_json(root / "WEEKLY_STATUS.json", weekly_status(root))
@@ -571,11 +616,13 @@ def add_cli_commands(commands):
     plan.add_argument("--config", required=True)
     plan.add_argument("--validation-year", type=int, required=True)
     plan.add_argument("--seed", type=int, action="append")
+    plan.add_argument("--target-transform", choices=TARGET_TRANSFORMS, default="RAW")
     init = commands.add_parser("weekly-init")
     init.add_argument("--config", required=True)
     init.add_argument("--output", required=True)
     init.add_argument("--validation-year", type=int, required=True)
     init.add_argument("--seed", type=int, action="append")
+    init.add_argument("--target-transform", choices=TARGET_TRANSFORMS, default="RAW")
     run = commands.add_parser("weekly-run-cell")
     run.add_argument("--output", required=True)
     run.add_argument("--arm", choices=ARMS, required=True)
@@ -594,11 +641,13 @@ def add_cli_commands(commands):
 def run_cli(args):
     if args.command == "weekly-plan":
         return build_weekly_design(json.loads(Path(args.config).read_text()),
-                                   args.validation_year, seeds=args.seed)
+                                   args.validation_year, seeds=args.seed,
+                                   target_transform=args.target_transform)
     if args.command == "weekly-init":
         return initialize_weekly_campaign(json.loads(Path(args.config).read_text()),
                                           args.output, args.validation_year,
-                                          seeds=args.seed)
+                                          seeds=args.seed,
+                                          target_transform=args.target_transform)
     if args.command == "weekly-status":
         return weekly_status(args.output)
     if args.command == "weekly-close":

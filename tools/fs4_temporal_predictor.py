@@ -502,6 +502,8 @@ class FitReport:
     timestamps: np.ndarray | None = None
     min_timestamp: int | None = None
     raw_lag_hours: int = 0
+    target_center: float = 0.0
+    target_scale: float = 1.0
 
     def predict(self, X: np.ndarray, idx) -> np.ndarray:
         return predict(self, X, idx)
@@ -608,6 +610,7 @@ def predict(rep: FitReport, X: np.ndarray, idx) -> np.ndarray:
     out = np.full(idx.shape, np.nan, dtype="float64")
     if kept.size:
         pred = np.asarray(rep.model.predict(W, batch_size=1024, verbose=0), dtype="float64").reshape(-1)
+        pred = pred * float(rep.target_scale) + float(rep.target_center)
         pos = {int(k): i for i, k in enumerate(idx)}
         for k, p in zip(kept, pred):
             out[pos[int(k)]] = p

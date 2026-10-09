@@ -84,6 +84,7 @@ def test_default_is_one_seed_and_every_validation_week_has_exact_rolling_four_ye
     assert design["update_mode"] == "FULL_RETRAIN_ROLLING_4Y"
     assert design["test_read"] is False
     assert design["test_paths"] is None
+    assert design["target_transform"] == "RAW"
     assert len(design["weeks"]) == 52
     for ordinal, item in enumerate(design["weeks"]):
         task = weekly.make_weekly_task(design, ordinal, 7)
@@ -103,6 +104,55 @@ def test_seed_population_defaults_to_one_and_refuses_more_than_three_or_implicit
     with pytest.raises(ValueError, match="TEST_IS_SEALED"):
         weekly.make_weekly_task(weekly.build_weekly_design(config(), 2024), 0, 7,
                                 split="test")
+    with pytest.raises(ValueError, match="target_transform"):
+        weekly.build_weekly_design(config(), 2024, target_transform="UNKNOWN")
+
+
+def test_robust_target_transform_is_part_of_design_and_task_identity():
+    raw = weekly.build_weekly_design(config(), 2024)
+    scaled = weekly.build_weekly_design(config(), 2024, target_transform="ROBUST_Z_FIT")
+
+    assert raw["design_sha256"] != scaled["design_sha256"]
+    task = weekly.make_weekly_task(scaled, 0, 7)
+    assert task["target_transform"] == "ROBUST_Z_FIT"
+    assert task["task_id"] != weekly.make_weekly_task(raw, 0, 7)["task_id"]
+
+
+def test_legacy_raw_design_remains_readable_without_changing_its_task_identity():
+    legacy = weekly.build_weekly_design(config(), 2024)
+    legacy["schema"] = weekly.LEGACY_DESIGN_SCHEMA
+    legacy.pop("target_transform")
+    legacy = weekly._seal(legacy, "design_sha256")
+
+    verified = weekly.verify_weekly_design(legacy)
+    task = weekly.make_weekly_task(verified, 0, 7)
+
+    assert "target_transform" not in task
+
+
+def test_fit_report_inverts_target_training_coordinates(monkeypatch):
+    class Model:
+        def predict(self, windows, batch_size, verbose):
+            import numpy as np
+            return np.full((len(windows), 1), 2.0)
+
+    import numpy as np
+    from tools import fs4_temporal_predictor as predictor
+
+    spec = predictor.PredictorSpec(window=24)
+    values = np.arange(50.0).reshape(25, 2)
+    standardiser = predictor.Standardiser.fit(values)
+    report = predictor.FitReport(
+        spec=spec, input_mode="RAW", features=("a", "b"), standardiser=standardiser,
+        encoder=None, model=Model(), weights_sha256="w", initial_weights_sha256="i",
+        epochs_run=1, best_epoch=1, updates=1, fit_seconds=1.0, peak_rss_bytes=1,
+        n_params=1, budget_sha256="b", architecture_sha256="a", encoder_sha256=None,
+        input_identity="x", fit_windows=1, inner_windows=1, seed=0,
+        target_center=0.25, target_scale=0.5,
+    )
+
+    prediction = report.predict(values, np.array([23, 24]))
+    assert prediction.tolist() == [1.25, 1.25]
 
 
 def test_run_cell_delegates_week_population_to_existing_weekly_contract(monkeypatch):
