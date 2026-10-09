@@ -92,6 +92,7 @@ def merge_shards(destination, sources, *, close=False):
         closure = weekly.close_weekly_campaign(destination)
         result["closure_state"] = closure["state"]
         result["closure_sha256"] = closure["closure_sha256"]
+        result["complete"] = result["complete"] and closure["state"] == "COMPLETE"
     return result
 
 

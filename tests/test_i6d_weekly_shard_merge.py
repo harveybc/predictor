@@ -113,3 +113,17 @@ def test_cross_source_conflict_is_rejected_before_any_copy(tmp_path):
     with pytest.raises(ValueError, match="conflicting cell across sources"):
         merger.merge_shards(destination, [source_a, source_b])
     assert not weekly._cell_path(destination, 0, 0, "DENSE").exists()
+
+
+def test_close_does_not_report_complete_when_full_population_fails_scientific_gates(tmp_path):
+    design = _design()
+    destination = tmp_path / "destination"
+    source = tmp_path / "source"
+    _campaign(destination, design)
+    _campaign(source, design, [_cell(design, "DENSE"), _cell(design, "CONV")])
+
+    result = merger.merge_shards(destination, [source], close=True)
+
+    assert result["complete_cells"] == result["expected_cells"] == 2
+    assert result["closure_state"] == "INCOMPLETE_EVIDENCE"
+    assert result["complete"] is False
