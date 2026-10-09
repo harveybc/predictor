@@ -210,6 +210,14 @@ def build_weekly_design(config, validation_year, *, seeds=None, target_transform
     return _seal(body, "design_sha256")
 
 
+def design_control_kind(design):
+    """Map pre-v3 absent/null control identity to its historical whole-model scope."""
+    value = design.get("control_kind")
+    if design.get("schema") in (LEGACY_DESIGN_SCHEMA, DESIGN_SCHEMA_V2) and value is None:
+        return "WHOLE_MODEL"
+    return value
+
+
 def verify_weekly_design(design):
     if design.get("schema") not in (LEGACY_DESIGN_SCHEMA, DESIGN_SCHEMA_V2, DESIGN_SCHEMA):
         raise ValueError("weekly design schema mismatch")
@@ -224,7 +232,7 @@ def verify_weekly_design(design):
         raise ValueError("legacy weekly design cannot declare a target transform")
     if design.get("schema") != LEGACY_DESIGN_SCHEMA and design.get("target_transform") not in TARGET_TRANSFORMS:
         raise ValueError("weekly target transform is missing or unsupported")
-    control_kind = design.get("control_kind", "WHOLE_MODEL")
+    control_kind = design_control_kind(design)
     if control_kind not in CONTROL_KINDS:
         raise ValueError("weekly control kind is missing or unsupported")
     if control_kind == "BRANCH_ONLY" and not isinstance(
@@ -363,7 +371,7 @@ def _trainer(design, arm, store, seed, task):
         keras = predictor_contract._keras()
         keras.utils.set_random_seed(actual_seed)
         model = _model_builder(
-            config, arm, seed, control_kind=design.get("control_kind", "WHOLE_MODEL")
+            config, arm, seed, control_kind=design_control_kind(design)
         )(model_spec, len(members), "RAW", None)
         initial_sha = predictor_contract.model_weights_sha256(model)
         from tools.modular_candidate_evaluator import fit_with_early_stopping
@@ -449,7 +457,7 @@ def run_weekly_cell(design, arm, week_ordinal, seed, store):
         task, store, trainer=trainer, spec=spec, expected_seed=seed
     )
     result["trainer"] = "I6D_MATCHED_CONTROL_REAL_KERAS"
-    result["control_kind"] = design.get("control_kind", "WHOLE_MODEL")
+    result["control_kind"] = design_control_kind(design)
     result["architecture_arm"] = arm
     metadata = trainer.target_transform_metadata
     if metadata is None and design.get("target_transform", "RAW") == "RAW":

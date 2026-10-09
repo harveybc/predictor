@@ -156,6 +156,18 @@ def test_legacy_raw_design_remains_readable_without_changing_its_task_identity()
     assert "target_transform" not in task
 
 
+def test_retained_v2_design_with_null_control_kind_is_whole_model_compatible():
+    retained = weekly.build_weekly_design(config(), 2024)
+    retained["schema"] = weekly.DESIGN_SCHEMA_V2
+    retained["control_kind"] = None
+    retained.pop("branch_only_contract", None)
+    retained = weekly._seal(retained, "design_sha256")
+
+    verified = weekly.verify_weekly_design(retained)
+
+    assert weekly.design_control_kind(verified) == "WHOLE_MODEL"
+
+
 def test_fit_report_inverts_target_training_coordinates(monkeypatch):
     class Model:
         def predict(self, windows, batch_size, verbose):
