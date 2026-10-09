@@ -1,0 +1,8 @@
+{
+  "closure_sha256": "596b9e548b36edcd745b3a643f14b9a37d924b813d5178f39a714013f06218d7",
+  "paragraph": "EURUSD Y_s_4h, 2024 weekly validation: 52/52 weeks and 208/208 matched cells (one seed, four-year rolling refits). Best learned arm ARCH_B has mean weekly MAE 0.001012016 versus same-row naive 0.000999360 (delta +0.000012656; 13/52 weeks beat naive). All-arm mean weekly MAE: ARCH_0 0.005604496, ARCH_A 0.001026747, ARCH_B 0.001012016, ARCH_C 0.001053651. Row-pooled MAE 0.001011351 versus paired naive 0.000998698 over 6196 rows. It does not pass the strict annual naive gate. Feature selection used this validation year, so this is development evidence, not an external confirmation; TEST was not read. Closure `596b9e548b36edcd745b3a643f14b9a37d924b813d5178f39a714013f06218d7`; warehouse readback 208 reports and 1,664 metric rows in `i6a:2024:EURUSD:Y_s_4h:metric-horizon-v2`.",
+  "schema": "i6a.result_catalog.v1",
+  "status": "PUBLISHED",
+  "target": "Y_s_4h",
+  "test_read": false
+}

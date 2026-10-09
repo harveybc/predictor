@@ -1,6 +1,6 @@
 {
   "schema": "research_program_method_state.v1",
-  "updated_on": "2026-10-08",
+  "updated_on": "2026-10-09",
   "current_stage": "integration_verification",
   "completed_stages": [
     "discovery",
@@ -8,12 +8,12 @@
   ],
   "program_owner": "Harvey",
   "execution_owner": "Satoshi",
-  "handoff_status": "I5_RAW_MAINLINE_I6A_1H_24H_COMPLETE_2H_48H_RUNNING",
+  "handoff_status": "I5_RAW_MAINLINE_I6A_12_HORIZONS_COMPLETE_I6B_20_BRANCH_DONORS_COMPLETE_I6D_NEXT",
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [
-    "Use the complete I6-A EURUSD Y_s_1h and Y_l_24h business adaptations as development evidence only: ARCH-B is the strongest learned arm in each, but neither beats the same-row naive on the annual mean. Y_s_2h and Y_l_48h run independently with full-population closure and verified OLAP readback.",
+    "Use the complete I6-A EURUSD 12-horizon business adaptations as development evidence only: 2496/2496 cells and 624 week-horizon populations closed, but no best learned arm beats the annual same-row naive.",
     "Retain RAW as the mainline selected input; the reconstructed-input TRAIN diagnostic was worse in all three paired weeks and does not authorize denoising the target.",
-    "Complete the remaining general E0 H2/H3, literature-model and target/horizon controls before calling I6-A globally verified; then pretrain authenticated branches and compare R0/R1/R2 on matched weekly rows.",
+    "Use the authenticated 20-branch TRAIN-only I6-B donor population; run I6-D historical and causal-window Dense controls next, then compare R0/R1/R2 on matched weekly rows.",
     "Do not open TEST or promote a trading model until the selected architecture and same-row naive gates pass."
   ],
   "documents": {
@@ -62,7 +62,7 @@
     "DOIN_role": "DISTRIBUTED_CANDIDATE_EVALUATION"
   },
   "feature_selection": {
-    "active_phase": "I5_RAW_DECISION_I6A_SCOPED_BUSINESS_COMPARISON_COMPLETE",
+    "active_phase": "I6B_BRANCH_DONORS_COMPLETE_I6D_DENSE_CONTROLS_NEXT",
     "weekly_validation": {
       "status": "COMPLETE",
       "tasks_completed": 6240,

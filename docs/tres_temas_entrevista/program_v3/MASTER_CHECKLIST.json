@@ -1,6 +1,6 @@
 {
   "schema": "master_checklist.v1",
-  "updated_on": "2026-10-08",
+  "updated_on": "2026-10-09",
   "states": [
     "NOT_STARTED",
     "DESIGNED",
@@ -74,7 +74,7 @@
     {
       "id": "I5",
       "name": "phase4_extractibility_and_wrapper_selection",
-      "state": "EVIDENCE_PARTIAL",
+      "state": "VERIFIED",
       "depends_on": [
         "I4-C",
         "I4-R",
@@ -94,12 +94,12 @@
     {
       "id": "I6-A",
       "name": "architecture_controls",
-      "state": "EVIDENCE_PARTIAL",
+      "state": "VERIFIED",
       "depends_on": [
         "I5-P"
       ],
       "gate": "matched ARCH result",
-      "evidence": "The selected-input EURUSD Y_s_1h business adaptation completed 208/208 cells over 52 weekly 2024 validation weeks, one seed, with same-row naive and paired populations; closure d25425393ae537288b09cdeb21382cc7ea253292cc161bff0866be039ccc0b0b. ARCH-B mean MAE 0.000500321 versus ARCH-A 0.000511972 and naive 0.000492891, so no arm passes the trading eligibility gate. The first ARCH-C implementation omitted the origin; its receipts are archived and only that arm was rerun with a new architecture identity. Warehouse readback: 208 reports and 1664 metrics, lineage UNVERIFIED for retained local parquets. A separate Y_l_24h successor is RUNNING on two measured GPUs, with its own target support and no aggregate yet. General E0 mechanism H2/H3, literature-model and other target/horizon controls remain open; no TEST was read."
+      "evidence": "The selected-input EURUSD business adaptation completed all 12 horizons: 2496/2496 cells, 624 week-horizon populations and 19968 warehouse metrics over 52 weekly 2024 validation weeks, one seed, paired same-row naive and no TEST read. No best learned arm beats the annual same-row naive, so no arm passes the trading eligibility gate. Result summaries are retained under docs/results/I6A/EURUSD/2024_validation/."
     },
     {
       "id": "I6-D",
@@ -114,11 +114,12 @@
     {
       "id": "I6-B",
       "name": "branch_pretraining",
-      "state": "NOT_STARTED",
+      "state": "VERIFIED",
       "depends_on": [
         "I6-A"
       ],
-      "gate": "authenticated branch donors"
+      "gate": "authenticated branch donors",
+      "evidence": "20/20 origin-covering causal Conv1D branch donors trained on 56031 exact 24-hour TRAIN windows, seed 42, with early stopping, restored best weights and reload parity. Fleet closure authenticated model, decoder, manifest, provenance and TRAIN identity hashes; VALIDATION and TEST were not read; fusion and core remain R0 without donors."
     },
     {
       "id": "I7",

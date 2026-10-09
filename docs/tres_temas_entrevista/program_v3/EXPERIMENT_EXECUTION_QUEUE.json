@@ -1,10 +1,10 @@
 {
   "schema": "experiment_execution_queue.v2",
-  "updated_on": "2026-10-07T19:13:49Z",
+  "updated_on": "2026-10-09T02:25:00Z",
   "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md and its program_v3 subplans",
   "policy": {
-    "focus": "PHASE_4_WEEKLY_RAW_ON_SCOPED_FRONTIER",
-    "parallelism": "one durable coordinator queue; four admitted CPU weekly RAW slots across gamma and dragon; stage 2 waits for the sealed stage-1 result",
+    "focus": "I6D_DENSE_CONTROLS_THEN_I7_BRANCH_REGIMES",
+    "parallelism": "I6-D historical replay/authentication and causal-window Dense control proceed next; I7 waits for I6-D because I6-B branch donors are complete",
     "seed_default": 0,
     "seed_maximum": 3,
     "repeat_policy": "adopt valid terminals; repeat only lost corrupt or scientifically changed units",
@@ -14,7 +14,7 @@
       "gamma_internal_5070ti",
       "omega_4070"
     ],
-    "gpu_use_now": "no GPU in weekly RAW; the 5090 and 4090 completed the scoped TRAIN extractibility wave; encoder comparisons need stage-2 selection and fresh admission",
+    "gpu_use_now": "I6-B completed 20 authenticated branch donors on the 5090 and 4090; next admitted GPU work is the matched I6-D branch control, followed by I7 R0/R1/R2",
     "financial_gate": "strictly_better_than_same_row_naive_before_strategy",
     "test_policy": "validation and test remain closed during filter selection",
     "warehouse_policy": "all metrics decisions ranks costs and identities require submit plus readback",
@@ -77,19 +77,19 @@
       "priority": 5,
       "id": "FS-PHASE4-WEEKLY-WRAPPER",
       "resource": "gamma_and_dragon_CPU_RAW_then_admitted_GPU_encoder",
-      "state": "RUNNING_RAW_STAGE1",
+      "state": "COMPLETE",
       "work": "Complete all 52 consecutive 2024 validation weeks for 40 target-specific sets under four-year rolling weekly retraining and same-row target naive. Then apply the sealed stage-2 list and compare random/trained encoders before closing the final manifest. TEST remains sealed.",
       "depends_on": [
         "FS-PHASE4-EXTRACTIBILITY"
       ],
       "produces": "BUSINESS_WEEKLY_WALK_FORWARD winner and final selection manifest",
-      "evidence": "Plan ef7ffd580084c6fd09689e345a5b5c3bf1ae805604e36dd42f815b1bdec3c3f4 has 2080 RAW tasks, 40 sets x 52 weeks. Live counts must be queried from the weekly_queue.sqlite task store with tools.fs4_weekly_campaign status; the older STATUS.json is stale."
+      "evidence": "6240/6240 weekly tasks closed; 20 target-specific RAW winners frozen without reading TEST. Winner unions are 20 EURUSD and 9 ETH features; all annual mean skills remain negative against paired naive, so no trading-ready model is claimed."
     },
     {
       "priority": 6,
       "id": "MOD-PER-FEATURE-DENSE-CONTROLS",
       "resource": "CPU_design_then_admitted_compute",
-      "state": "WAITING_FOR_FINAL_MANIFEST",
+      "state": "READY_NEXT",
       "work": "After final feature selection and I6-A design, replay the authenticated historical per-feature Dense ANN on its original inputs and protocol, or mark it NOT_REPRODUCIBLE; refit on selected features as a new whole-model control; separately compare a new causal-window Dense branch against Conv1D under identical temporal fusion/core/head and weekly rows. Do not treat flattened latent units as timestamps.",
       "depends_on": [
         "FS-PHASE4-WEEKLY-WRAPPER"
@@ -100,7 +100,7 @@
       "priority": 7,
       "id": "MOD-ARCH-E1",
       "resource": "best_admissible_gpu",
-      "state": "WAITING_FOR_FINAL_MANIFEST",
+      "state": "BRANCH_DONORS_COMPLETE_WAITING_FOR_I6D",
       "work": "Matched architecture controls, branch donors and R0/R1/R2; run I6-D alongside branch pretraining and account for it before declaring a winning branch family.",
       "depends_on": [
         "FS-PHASE4-WEEKLY-WRAPPER"
