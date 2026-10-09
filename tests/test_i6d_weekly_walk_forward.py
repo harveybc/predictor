@@ -119,6 +119,31 @@ def test_robust_target_transform_is_part_of_design_and_task_identity():
     assert task["task_id"] != weekly.make_weekly_task(raw, 0, 7)["task_id"]
 
 
+def test_branch_only_design_is_separately_identified_and_uses_shared_downstream():
+    whole = weekly.build_weekly_design(config(), 2024)
+    branch = weekly.build_weekly_design(
+        config(), 2024, control_kind="BRANCH_ONLY"
+    )
+
+    assert whole["control_kind"] == "WHOLE_MODEL"
+    assert branch["control_kind"] == "BRANCH_ONLY"
+    assert whole["design_sha256"] != branch["design_sha256"]
+    assert whole["procedure_sha256"] != branch["procedure_sha256"]
+    assert branch["branch_only_contract"]["only_branch_configuration_differs"] is True
+    assert branch["branch_only_contract"]["shared"]["core_config_sha256"]
+
+    spec = weekly._predictor_spec(config())
+    dense = weekly._model_builder(
+        config(), "DENSE", 7, control_kind="BRANCH_ONLY"
+    )(spec, 2, "RAW", None)
+    conv = weekly._model_builder(
+        config(), "CONV", 7, control_kind="BRANCH_ONLY"
+    )(spec, 2, "RAW", None)
+    assert dense.input_shape == conv.input_shape == (None, 24, 4)
+    assert dense.output_shape == conv.output_shape == (None, 1)
+    assert dense.fs4_control_kind == conv.fs4_control_kind == "BRANCH_ONLY"
+
+
 def test_legacy_raw_design_remains_readable_without_changing_its_task_identity():
     legacy = weekly.build_weekly_design(config(), 2024)
     legacy["schema"] = weekly.LEGACY_DESIGN_SCHEMA

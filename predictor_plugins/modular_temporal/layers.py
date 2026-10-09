@@ -3,6 +3,43 @@
 import tensorflow as tf
 
 keras = tf.keras
+
+
+@keras.utils.register_keras_serializable(package="modular_temporal")
+class CausalFrames(keras.layers.Layer):
+    """Expose a fixed trailing context at every input time step.
+
+    The output has shape ``(batch, steps, context, channels)``. Missing history
+    before the first sample is left-padded with zeros; output step ``t`` can
+    therefore depend only on input steps ``<= t``. The layer has no weights.
+
+    Parameters
+    ----------
+    context : int
+        Number of current-and-past samples in each frame.
+    **kwargs
+        Standard Keras layer options.
+    """
+
+    def __init__(self, context, **kwargs):
+        super().__init__(**kwargs)
+        if type(context) is not int or context <= 0:
+            raise ValueError("context must be a positive integer")
+        self.context = context
+
+    def call(self, inputs):
+        padded = tf.pad(inputs, [[0, 0], [self.context - 1, 0], [0, 0]])
+        return tf.signal.frame(
+            padded, frame_length=self.context, frame_step=1, axis=1
+        )
+
+    def compute_output_shape(self, input_shape):
+        return (*input_shape[:-1], self.context, input_shape[-1])
+
+    def get_config(self):
+        return {**super().get_config(), "context": self.context}
+
+
 @keras.utils.register_keras_serializable(package="modular_temporal")
 class FeatureSelect(keras.layers.Layer):
     """Fixed column routing: gather declared input channels for one branch.
@@ -55,4 +92,3 @@ class PositionalEncoding(keras.layers.Layer):
         angle = position * rates
         encoding = tf.where(channel % 2 == 0, tf.sin(angle), tf.cos(angle))
         return inputs + tf.cast(encoding[None, :, :], inputs.dtype)
-

@@ -1,5 +1,12 @@
 # I6-D weekly BUSINESS result, 2026-10-09
 
+> Scope: these retained numbers are the `WHOLE_MODEL` comparison. They do not
+> answer the branch-only question. The additive `BRANCH_ONLY` successor uses
+> `causal_dense_sequence` versus `causal_conv1d` with identical sequence fusion,
+> temporal core, forecast head, rows, seed, fitting contract, and synchronized
+> downstream initial weights. Its weekly validation population is separate and
+> has no result in this document.
+
 Scope: EURUSD `Y_s_1h`, 20 selected features, 52 validation weeks in 2024,
 6,196 scored rows, seed 0, and a fresh full retrain over the preceding four
 calendar years before every week. TEST was not read. Both arms use the same

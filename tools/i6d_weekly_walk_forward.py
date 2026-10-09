@@ -21,6 +21,7 @@ from predictor_plugins.modular_temporal.matched_control import (
     canonical_sha256,
     normalize_matched_config,
 )
+from predictor_plugins.modular_temporal.branch_control import build_branch_only_control
 from tools import business_weekly_training as business_training
 from tools import fs4_temporal_predictor as predictor_contract
 from tools import fs4_weekly_wrapper as weekly_contract
@@ -28,9 +29,11 @@ from tools.i6a_weekly_arch_pilot import target_horizon_hours
 
 
 ARMS = ("DENSE", "CONV")
+CONTROL_KINDS = ("WHOLE_MODEL", "BRANCH_ONLY")
 TARGET_TRANSFORMS = ("RAW", "ROBUST_Z_FIT")
 LEGACY_DESIGN_SCHEMA = "predictor.i6d.weekly_campaign.v1"
-DESIGN_SCHEMA = "predictor.i6d.weekly_campaign.v2"
+DESIGN_SCHEMA_V2 = "predictor.i6d.weekly_campaign.v2"
+DESIGN_SCHEMA = "predictor.i6d.weekly_campaign.v3"
 CELL_SCHEMA = "predictor.i6d.weekly_cell.v1"
 CLOSURE_SCHEMA = "predictor.i6d.weekly_closure.v1"
 STATUS_SCHEMA = "predictor.i6d.weekly_status.v1"
@@ -94,9 +97,61 @@ def _predictor_spec(config):
     )
 
 
-def build_weekly_design(config, validation_year, *, seeds=None, target_transform="RAW"):
+def _branch_only_base_config(config):
+    """Translate the retained I6-D contract into the shared modular graph."""
+    return {
+        "window": 24,
+        "sample_hours": 1,
+        "feature_names": list(config["feature_names"]),
+        "branches": [
+            {
+                "name": f"branch_{index:03d}",
+                "features": list(group["channels"]),
+                "plugin": "causal_conv1d",
+                "params": dict(config["branch"]["conv"]),
+                "regime": "R0",
+                "donor": None,
+            }
+            for index, group in enumerate(config["feature_groups"])
+        ],
+        "branch_steps": 24,
+        "fusion": {"plugin": "sequence_concat", "params": {}},
+        "core": {
+            "plugin": "transformer_conv",
+            "params": dict(config["core"]["conv"]),
+            "regime": "R0",
+            "donor": None,
+        },
+        "head": {"plugin": "forecast", "params": {}},
+        "output_steps": config["core"]["conv_output_steps"],
+        "output_channels": config["core"]["conv_output_channels"],
+        "horizons": list(config["horizons"]),
+        "target_count": len(config["target_names"]),
+        "alignment_probe": False,
+    }
+
+
+def _branch_only_params(config):
+    dense = config["branch"]["dense"]
+    conv = config["branch"]["conv"]
+    return {
+        "conv_params": dict(conv),
+        "dense_params": {
+            "context": conv["kernel_size"],
+            "hidden_units": list(dense["hidden_units"]),
+            "channels": conv["channels"],
+            "activation": dense["activation"],
+            "use_bias": dense["use_bias"],
+        },
+    }
+
+
+def build_weekly_design(config, validation_year, *, seeds=None, target_transform="RAW",
+                        control_kind="WHOLE_MODEL"):
     """Seal the annual validation population without reading any split bytes."""
     normalized = normalize_matched_config(config)
+    if control_kind not in CONTROL_KINDS:
+        raise ValueError(f"control_kind must be one of {CONTROL_KINDS}")
     if target_transform not in TARGET_TRANSFORMS:
         raise ValueError(f"target_transform must be one of {TARGET_TRANSFORMS}")
     if isinstance(validation_year, bool) or not isinstance(validation_year, int):
@@ -121,6 +176,7 @@ def build_weekly_design(config, validation_year, *, seeds=None, target_transform
         "update_mode": UPDATE_MODE,
         "rolling_calendar_years": 4,
         "target_transform": target_transform,
+        "control_kind": control_kind,
     }
     procedure_sha = canonical_sha256(identity)
     protocol = weekly_contract.W.build_protocol(validation_year, procedure_sha)
@@ -145,11 +201,17 @@ def build_weekly_design(config, validation_year, *, seeds=None, target_transform
         "test_paths": None,
         "test_read": False,
     }
+    if control_kind == "BRANCH_ONLY":
+        params = _branch_only_params(normalized)
+        control = build_branch_only_control(
+            _branch_only_base_config(normalized), seed=normalized["seed"], **params
+        )
+        body["branch_only_contract"] = control.report
     return _seal(body, "design_sha256")
 
 
 def verify_weekly_design(design):
-    if design.get("schema") not in (LEGACY_DESIGN_SCHEMA, DESIGN_SCHEMA):
+    if design.get("schema") not in (LEGACY_DESIGN_SCHEMA, DESIGN_SCHEMA_V2, DESIGN_SCHEMA):
         raise ValueError("weekly design schema mismatch")
     _verify_seal(design, "design_sha256")
     if design.get("test_paths") is not None or design.get("test_read") is not False:
@@ -160,8 +222,14 @@ def verify_weekly_design(design):
         raise ValueError("weekly BUSINESS protocol requires four rolling calendar years")
     if design.get("schema") == LEGACY_DESIGN_SCHEMA and "target_transform" in design:
         raise ValueError("legacy weekly design cannot declare a target transform")
-    if design.get("schema") == DESIGN_SCHEMA and design.get("target_transform") not in TARGET_TRANSFORMS:
+    if design.get("schema") != LEGACY_DESIGN_SCHEMA and design.get("target_transform") not in TARGET_TRANSFORMS:
         raise ValueError("weekly target transform is missing or unsupported")
+    control_kind = design.get("control_kind", "WHOLE_MODEL")
+    if control_kind not in CONTROL_KINDS:
+        raise ValueError("weekly control kind is missing or unsupported")
+    if control_kind == "BRANCH_ONLY" and not isinstance(
+            design.get("branch_only_contract"), dict):
+        raise ValueError("branch-only design lacks its architecture contract")
     _plain_seeds(design["config"]["seed"], design.get("seeds"))
     return design
 
@@ -198,13 +266,13 @@ def make_weekly_task(design, week_ordinal, seed, *, split="validation"):
         "predictor_spec_sha256": design["predictor_spec_sha256"],
         "encoder_spec_sha256": design["encoder_spec_sha256"],
     }
-    if design["schema"] == DESIGN_SCHEMA:
+    if design["schema"] != LEGACY_DESIGN_SCHEMA:
         task["target_transform"] = design["target_transform"]
     task["task_id"] = weekly_contract.digest(task)
     return task
 
 
-def _model_builder(config, arm, seed):
+def _model_builder(config, arm, seed, *, control_kind="WHOLE_MODEL"):
     def build(spec, n_features, input_mode, latent_dim):
         if input_mode != "RAW" or latent_dim is not None:
             raise predictor_contract.Refusal("I6D_WEEKLY_RAW_ONLY")
@@ -212,20 +280,37 @@ def _model_builder(config, arm, seed):
             raise predictor_contract.Refusal("I6D_WEEKLY_FEATURE_COUNT_MISMATCH")
         seeded = copy.deepcopy(config)
         seeded["seed"] = seed
-        harness = build_matched_control(seeded)
-        selected = harness.dense if arm == "DENSE" else harness.conv
+        if control_kind == "BRANCH_ONLY":
+            harness = build_branch_only_control(
+                _branch_only_base_config(seeded), seed=seed,
+                **_branch_only_params(seeded),
+            )
+            selected = harness.dense if arm == "DENSE" else harness.conv
+            selected_model = selected.forecast_model
+            architecture = harness.report["arms"][
+                "DENSE_SEQUENCE" if arm == "DENSE" else "CONV"
+            ]
+        elif control_kind == "WHOLE_MODEL":
+            harness = build_matched_control(seeded)
+            selected = harness.dense if arm == "DENSE" else harness.conv
+            selected_model = selected.model
+            architecture = harness.report["arms"][arm]
+        else:
+            raise predictor_contract.Refusal("I6D_WEEKLY_CONTROL_KIND_INVALID")
         keras = predictor_contract._keras()
         scalar = keras.layers.Reshape(
             (1,), name="weekly_scalar_target"
-        )(selected.model.output)
-        model = keras.Model(selected.model.input, scalar,
+        )(selected_model.output)
+        model = keras.Model(selected_model.input, scalar,
                             name=f"i6d_weekly_{arm.lower()}")
         model.fs4_architecture = canonical_sha256({
-            "schema": "predictor.i6d.weekly_architecture.v1",
+            "schema": "predictor.i6d.weekly_architecture.v2",
             "arm": arm,
+            "control_kind": control_kind,
             "config_sha256": canonical_sha256(seeded),
-            "architecture": harness.report["arms"][arm],
+            "architecture": architecture,
         })
+        model.fs4_control_kind = control_kind
         return model
     return build
 
@@ -277,7 +362,9 @@ def _trainer(design, arm, store, seed, task):
         inner_targets = inner_targets.astype("float32")
         keras = predictor_contract._keras()
         keras.utils.set_random_seed(actual_seed)
-        model = _model_builder(config, arm, seed)(model_spec, len(members), "RAW", None)
+        model = _model_builder(
+            config, arm, seed, control_kind=design.get("control_kind", "WHOLE_MODEL")
+        )(model_spec, len(members), "RAW", None)
         initial_sha = predictor_contract.model_weights_sha256(model)
         from tools.modular_candidate_evaluator import fit_with_early_stopping
         training = fit_with_early_stopping(
@@ -362,6 +449,7 @@ def run_weekly_cell(design, arm, week_ordinal, seed, store):
         task, store, trainer=trainer, spec=spec, expected_seed=seed
     )
     result["trainer"] = "I6D_MATCHED_CONTROL_REAL_KERAS"
+    result["control_kind"] = design.get("control_kind", "WHOLE_MODEL")
     result["architecture_arm"] = arm
     metadata = trainer.target_transform_metadata
     if metadata is None and design.get("target_transform", "RAW") == "RAW":
@@ -543,12 +631,13 @@ def close_weekly_cells(design, cells):
 
 
 def initialize_weekly_campaign(config, output, validation_year, *, seeds=None,
-                               target_transform="RAW"):
+                               target_transform="RAW", control_kind="WHOLE_MODEL"):
     root = Path(output)
     if root.exists():
         raise ValueError("weekly campaign output already exists")
     design = build_weekly_design(config, validation_year, seeds=seeds,
-                                 target_transform=target_transform)
+                                 target_transform=target_transform,
+                                 control_kind=control_kind)
     root.mkdir(parents=True)
     _atomic_json(root / "WEEKLY_DESIGN.json", design)
     _atomic_json(root / "WEEKLY_STATUS.json", weekly_status(root))
@@ -621,12 +710,14 @@ def add_cli_commands(commands):
     plan.add_argument("--validation-year", type=int, required=True)
     plan.add_argument("--seed", type=int, action="append")
     plan.add_argument("--target-transform", choices=TARGET_TRANSFORMS, default="RAW")
+    plan.add_argument("--control-kind", choices=CONTROL_KINDS, default="WHOLE_MODEL")
     init = commands.add_parser("weekly-init")
     init.add_argument("--config", required=True)
     init.add_argument("--output", required=True)
     init.add_argument("--validation-year", type=int, required=True)
     init.add_argument("--seed", type=int, action="append")
     init.add_argument("--target-transform", choices=TARGET_TRANSFORMS, default="RAW")
+    init.add_argument("--control-kind", choices=CONTROL_KINDS, default="WHOLE_MODEL")
     run = commands.add_parser("weekly-run-cell")
     run.add_argument("--output", required=True)
     run.add_argument("--arm", choices=ARMS, required=True)
@@ -646,12 +737,14 @@ def run_cli(args):
     if args.command == "weekly-plan":
         return build_weekly_design(json.loads(Path(args.config).read_text()),
                                    args.validation_year, seeds=args.seed,
-                                   target_transform=args.target_transform)
+                                   target_transform=args.target_transform,
+                                   control_kind=args.control_kind)
     if args.command == "weekly-init":
         return initialize_weekly_campaign(json.loads(Path(args.config).read_text()),
                                           args.output, args.validation_year,
                                           seeds=args.seed,
-                                          target_transform=args.target_transform)
+                                          target_transform=args.target_transform,
+                                          control_kind=args.control_kind)
     if args.command == "weekly-status":
         return weekly_status(args.output)
     if args.command == "weekly-close":

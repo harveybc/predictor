@@ -47,7 +47,10 @@ setup(
             'direction_logistic=predictor_plugins.direction.predictor_plugin_direction_logistic:Plugin',
         ],
         # Modular components resolved by the modular_temporal predictor (each carries a version/contract)
-        'modular.branch': ['causal_conv1d=predictor_plugins.modular_temporal:causal_conv1d'],
+        'modular.branch': [
+            'causal_conv1d=predictor_plugins.modular_temporal:causal_conv1d',
+            'causal_dense_sequence=predictor_plugins.modular_temporal:causal_dense_sequence',
+        ],
         'modular.control_branch': [
             'causal_window_dense=predictor_plugins.modular_temporal:causal_window_dense'
         ],

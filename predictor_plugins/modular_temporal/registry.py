@@ -2,7 +2,13 @@
 
 from importlib.metadata import entry_points
 
-from .components import causal_conv1d, forecast, sequence_concat, transformer_conv
+from .components import (
+    causal_conv1d,
+    causal_dense_sequence,
+    forecast,
+    sequence_concat,
+    transformer_conv,
+)
 from .dense_control import causal_window_dense
 
 DEFAULTS = {"modular.branch": "causal_conv1d", "modular.core": "transformer_conv",
@@ -10,7 +16,8 @@ DEFAULTS = {"modular.branch": "causal_conv1d", "modular.core": "transformer_conv
             "modular.control_branch": "causal_window_dense"}
 
 
-BUILTINS = {"modular.branch": {"causal_conv1d": causal_conv1d},
+BUILTINS = {"modular.branch": {"causal_conv1d": causal_conv1d,
+                                "causal_dense_sequence": causal_dense_sequence},
             "modular.control_branch": {"causal_window_dense": causal_window_dense},
             "modular.core": {"transformer_conv": transformer_conv},
             "modular.fusion": {"sequence_concat": sequence_concat},

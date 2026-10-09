@@ -43,6 +43,15 @@ model search. The doctoral proposal investigates modular temporal representation
 for forecasting and reinforcement learning. It is a proposal, not a claim that
 its hypotheses have already been confirmed.
 
+The modular model exposes two distinct Dense comparisons. The retained I6-D
+whole-model control compares an unordered Dense representation with the complete
+temporal architecture. The newer `causal_dense_sequence` branch plugin is the
+strict branch-only control: it applies a shared MLP to causal trailing frames,
+keeps every time step, and can replace `causal_conv1d` while fusion, temporal
+core, forecast head, rows, fitting contract, and downstream initial weights stay
+identical. Weekly designs record `control_kind` as `WHOLE_MODEL` or
+`BRANCH_ONLY`; their evidence is never pooled.
+
 - **[Current doctoral proposal (PDF)](docs/propuesta_doctoral_representaciones_temporales_modulares.pdf)**
   and [editable LaTeX](docs/propuesta_doctoral_representaciones_temporales_modulares.tex).
 - [Research repository map](docs/RESEARCH_STACK.md): data, preprocessing,

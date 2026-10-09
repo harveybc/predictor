@@ -7,7 +7,7 @@ import re
 import tensorflow as tf
 
 from .common import _keys, _partition, _positive_int
-from .layers import PositionalEncoding
+from .layers import CausalFrames, PositionalEncoding
 
 keras = tf.keras
 
@@ -104,6 +104,84 @@ def causal_conv1d(*, input_shape, time_grid, output_steps, name, params):
         raise ValueError("Branch extractors must preserve the full temporal grid")
     inputs = keras.Input(input_shape)
     x = keras.layers.Conv1D(channels, kernel, padding="causal", activation="gelu")(inputs)
+    return TemporalComponent(keras.Model(inputs, x, name=name), tuple(time_grid))
+
+
+@component(
+    "branch",
+    "1.0.0",
+    {"context", "hidden_units", "channels", "activation", "use_bias"},
+    "(batch, window, features) -> (batch, window, channels); shared Dense "
+    "processing over causal trailing frames; preserves every input time step",
+    defaults={
+        "context": 3,
+        "hidden_units": [16],
+        "channels": 16,
+        "activation": "gelu",
+        "use_bias": True,
+    },
+)
+def causal_dense_sequence(*, input_shape, time_grid, output_steps, name, params):
+    """Build a causal Dense branch while retaining an explicit time axis.
+
+    At each output time step, the same MLP processes a flattened trailing
+    context ending at that step. Dense output coordinates are channels, never
+    reinterpreted as timestamps. This makes the branch a valid branch-only
+    control for temporal Conv1D while leaving fusion, core, and head unchanged.
+
+    Parameters
+    ----------
+    input_shape : tuple[int, int]
+        Window length and feature count for this branch.
+    time_grid : tuple
+        Input timestamps represented by the window.
+    output_steps : int
+        Must equal the input-grid length.
+    name : str
+        Stable Keras model name.
+    params : dict
+        Trailing ``context``, per-step ``hidden_units``, output ``channels``,
+        activation name, and whether Dense layers use a bias.
+
+    Returns
+    -------
+    TemporalComponent
+        Branch model and the unchanged output time grid.
+    """
+    allowed = {"context", "hidden_units", "channels", "activation", "use_bias"}
+    _keys(params, allowed, "branch params")
+    context = _positive_int(params.get("context", 3), "context")
+    channels = _positive_int(params.get("channels", 16), "channels")
+    hidden_units = params.get("hidden_units", [16])
+    activation = params.get("activation", "gelu")
+    use_bias = params.get("use_bias", True)
+    if not isinstance(hidden_units, (list, tuple)):
+        raise ValueError("hidden_units must be a list or tuple")
+    hidden_units = [_positive_int(value, "hidden_units") for value in hidden_units]
+    if not isinstance(activation, str) or type(use_bias) is not bool:
+        raise ValueError("activation must be a string and use_bias must be boolean")
+    keras.activations.get(activation)
+    if output_steps != len(time_grid) or input_shape[0] != len(time_grid):
+        raise ValueError("Branch extractors must preserve the full temporal grid")
+
+    inputs = keras.Input(input_shape)
+    x = CausalFrames(context, name="causal_frames")(inputs)
+    x = keras.layers.Reshape(
+        (input_shape[0], context * input_shape[1]), name="flatten_causal_frames"
+    )(x)
+    for index, units in enumerate(hidden_units):
+        x = keras.layers.Dense(
+            units,
+            activation=activation,
+            use_bias=use_bias,
+            name=f"dense_{index}",
+        )(x)
+    x = keras.layers.Dense(
+        channels,
+        activation=activation,
+        use_bias=use_bias,
+        name="output_channels",
+    )(x)
     return TemporalComponent(keras.Model(inputs, x, name=name), tuple(time_grid))
 
 
