@@ -105,10 +105,12 @@ ETA under `<weekly-campaign-dir>/shard_status/`, resumes completed cells, and
 records a failed cell once without retrying it or stopping independent cells:
 
 ```bash
-CUDA_VISIBLE_DEVICES=<gpu-index> PYTHONPATH=. \
+LD_LIBRARY_PATH="<tensorflow-cuda-library-path>" \
+CUDA_VISIBLE_DEVICES=<gpu-uuid> PYTHONPATH=. \
 python tools/i6d_weekly_shard_runner.py \
   --output <weekly-campaign-dir> --worker-id <stable-worker-id> \
   --shard-index <zero-based-index> --shard-count <worker-count> \
+  --require-gpu \
   --feature-parquet <train-features-1.parquet> \
   --feature-parquet <train-features-2.parquet> \
   --target-parquet <train-targets.parquet> \
@@ -116,7 +118,20 @@ python tools/i6d_weekly_shard_runner.py \
   --validation-target-parquet <validation-targets.parquet>
 ```
 
-Every host must receive the identical sealed `WEEKLY_DESIGN.json`. Results from
-separate host-local campaign directories must be reconciled by cell identity
-before `weekly-close`; copying files without verifying the design and cell seals
-is not a scientific merge.
+`--require-gpu` rejects before loading data unless TensorFlow sees exactly one
+GPU, preventing silent CPU fallback and ambiguous placement. Every host must
+receive the identical sealed `WEEKLY_DESIGN.json`. Reconcile host-local results
+only through the authenticated merge, which preflights every design, seal and
+conflict before writing any cell:
+
+```bash
+PYTHONPATH=. python tools/i6d_weekly_shard_merge.py \
+  --destination <coordinator-campaign-dir> \
+  --source <worker-a-campaign-dir> \
+  --source <worker-b-campaign-dir> \
+  --close
+```
+
+Copying cells directly is not a scientific merge. `--close` may produce an
+`INCOMPLETE_EVIDENCE` closure if any assigned cell failed; it never manufactures
+or retries missing evidence.

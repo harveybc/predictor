@@ -13,6 +13,18 @@ from tools import fs4_weekly_wrapper as weekly_data
 from tools import i6d_weekly_walk_forward as weekly
 
 
+def gpu_preflight(tf_module=None):
+    """Require one unambiguous TensorFlow GPU; CPU fallback is not admissible."""
+    if tf_module is None:
+        import tensorflow as tf_module
+    devices = [str(device) for device in tf_module.config.list_physical_devices("GPU")]
+    if len(devices) != 1:
+        raise RuntimeError(
+            f"worker requires exactly one visible GPU; observed {len(devices)}: {devices}"
+        )
+    return devices
+
+
 def enumerate_cells(design):
     """Return the complete sealed cell population in stable execution order."""
     return [
@@ -86,8 +98,10 @@ def _failure_key(failure):
 
 def run_shard(*, output, worker_id, shard_index, shard_count,
               feature_parquets, target_parquet, validation_feature_parquets,
-              validation_target_parquet):
+              validation_target_parquet, require_gpu=False):
     """Run every assigned cell once, retaining failures and resumable progress."""
+    if require_gpu:
+        gpu_preflight()
     design = weekly.read_weekly_design(output)
     assigned_cells = shard_cells(design, shard_index, shard_count)
     status_path = _status_path(output, worker_id)
@@ -155,6 +169,10 @@ def _parser():
     parser.add_argument("--target-parquet", required=True)
     parser.add_argument("--validation-feature-parquet", action="append", required=True)
     parser.add_argument("--validation-target-parquet", required=True)
+    parser.add_argument(
+        "--require-gpu", action="store_true",
+        help="reject before reading data unless TensorFlow sees exactly one GPU",
+    )
     return parser
 
 
@@ -169,6 +187,7 @@ def main(argv=None):
         target_parquet=args.target_parquet,
         validation_feature_parquets=args.validation_feature_parquet,
         validation_target_parquet=args.validation_target_parquet,
+        require_gpu=args.require_gpu,
     )
     print(json.dumps(result, sort_keys=True))
     return 0 if result["state"] == "COMPLETE" else 1

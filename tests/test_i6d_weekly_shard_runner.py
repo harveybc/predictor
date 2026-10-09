@@ -1,5 +1,7 @@
 """Tests for unattended deterministic I6-D weekly shard execution."""
 
+import pytest
+
 from tools import i6d_weekly_shard_runner as runner
 
 
@@ -45,3 +47,28 @@ def test_failed_cells_are_terminal_for_the_worker_and_not_counted_complete():
     assert status["failed"] == 1
     assert status["pending"] == 0
     assert status["failures"] == [failure]
+
+
+class _FakeTensorFlow:
+    class config:
+        @staticmethod
+        def list_physical_devices(kind):
+            assert kind == "GPU"
+            return ["/physical_device:GPU:0"]
+
+
+def test_gpu_preflight_accepts_exactly_one_visible_device():
+    assert runner.gpu_preflight(_FakeTensorFlow) == ["/physical_device:GPU:0"]
+
+
+@pytest.mark.parametrize("devices", [[], ["GPU:0", "GPU:1"]])
+def test_gpu_preflight_rejects_cpu_fallback_and_ambiguous_placement(devices):
+    class FakeTensorFlow:
+        class config:
+            @staticmethod
+            def list_physical_devices(kind):
+                assert kind == "GPU"
+                return devices
+
+    with pytest.raises(RuntimeError, match="exactly one visible GPU"):
+        runner.gpu_preflight(FakeTensorFlow)
