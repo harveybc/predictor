@@ -172,6 +172,7 @@ def test_public_training_interface_cannot_receive_validation_or_test_and_bundle_
             corpus={"dataset_id": "eurusd.train", "support": "train"},
             settings=_settings(),
         )
+    assert list(tmp_path.iterdir()) == []
 
 
 def test_nonfinite_train_input_fails_before_writing_artifacts(tmp_path):
@@ -187,3 +188,31 @@ def test_nonfinite_train_input_fails_before_writing_artifacts(tmp_path):
             settings=_settings(),
         )
     assert list(tmp_path.iterdir()) == []
+
+
+def test_completed_branch_terminal_is_reused_after_process_interruption(tmp_path, monkeypatch):
+    bundle = _bundle()
+    first = I6B.train_branch_donors(
+        bundle=bundle,
+        train_windows={"signal_branch": _windows()},
+        output_dir=tmp_path,
+        corpus={"dataset_id": "eurusd.train", "support": "train"},
+        settings=_settings(),
+    )
+    (tmp_path / "REPORT.json").unlink()
+    (tmp_path / "STATUS.json").unlink()
+    terminal = tmp_path / "signal_branch.terminal.json"
+    assert terminal.is_file()
+
+    def must_not_fit(*args, **kwargs):
+        raise AssertionError("a committed branch must not be trained twice")
+
+    monkeypatch.setattr(I6B, "_fit_branch", must_not_fit)
+    resumed = I6B.train_branch_donors(
+        bundle=_bundle(),
+        train_windows={"signal_branch": _windows()},
+        output_dir=tmp_path,
+        corpus={"dataset_id": "eurusd.train", "support": "train"},
+        settings=_settings(),
+    )
+    assert resumed["branches"] == first["branches"]

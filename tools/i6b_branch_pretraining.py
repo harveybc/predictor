@@ -24,6 +24,7 @@ from predictor_plugins.modular_temporal.pretraining import branch_autoencoder
 keras = tf.keras
 REPORT_SCHEMA = "predictor.i6b.branch_pretraining.v1"
 STATUS_SCHEMA = "predictor.i6b.branch_pretraining.status.v1"
+TERMINAL_SCHEMA = "predictor.i6b.branch_pretraining.terminal.v1"
 _PLUGIN = ("causal_conv1d", "2.0.0")
 _INPUT_SHAPE = (24, 2)
 _OUTPUT_SHAPE = (24, 16)
@@ -74,6 +75,11 @@ def _atomic_json(path, document):
     temporary = path.with_name(path.name + ".tmp")
     temporary.write_text(payload, encoding="utf-8")
     os.replace(temporary, path)
+
+
+def _canonical_digest(document):
+    payload = json.dumps(document, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    return hashlib.sha256(payload.encode()).hexdigest()
 
 
 def _array_digest(array):
@@ -266,6 +272,48 @@ def _fit_branch(bundle, name, array, destination, corpus, settings, index):
     }
 
 
+def _write_terminal(destination, row, settings, corpus):
+    body = {"schema": TERMINAL_SCHEMA, "status": "COMPLETE", "branch": row["branch"],
+            "settings": settings, "corpus": corpus, "result": row}
+    terminal = {**body, "terminal_sha256": _canonical_digest(body)}
+    _atomic_json(destination / f"{row['branch']}.terminal.json", terminal)
+    return terminal
+
+
+def _load_terminal(destination, name, manifest, array, settings, corpus, branch):
+    path = destination / f"{name}.terminal.json"
+    if not path.is_file():
+        return None
+    terminal = json.loads(path.read_text(encoding="utf-8"))
+    digest = terminal.pop("terminal_sha256", None)
+    if digest != _canonical_digest(terminal):
+        raise ValueError(f"{name} terminal digest mismatch")
+    row = terminal.get("result", {})
+    if (terminal.get("schema") != TERMINAL_SCHEMA or terminal.get("status") != "COMPLETE"
+            or terminal.get("branch") != name or terminal.get("settings") != settings
+            or terminal.get("corpus") != corpus or row.get("branch") != name
+            or row.get("data_sha256") != _array_digest(array)):
+        raise ValueError(f"{name} terminal identity mismatch")
+    loaded = load_donor(destination / row["artifact"], manifest, require_contract="OPERATIONAL")
+    branch.set_weights(loaded.get_weights())
+    return row
+
+
+def _quarantine_interrupted(destination, name):
+    candidates = [destination / f"{name}.keras", destination / f"{name}.manifest.json"]
+    present = [path for path in candidates if path.exists()]
+    if not present:
+        return
+    root = destination / "_interrupted"
+    index = 1
+    while (root / f"{name}.attempt_{index:03d}").exists():
+        index += 1
+    target = root / f"{name}.attempt_{index:03d}"
+    target.mkdir(parents=True)
+    for path in present:
+        os.replace(path, target / path.name)
+
+
 def train_branch_donors(bundle, train_windows, output_dir, corpus, settings=None):
     """Pretrain and save every exact production branch from TRAIN arrays only.
 
@@ -278,12 +326,22 @@ def train_branch_donors(bundle, train_windows, output_dir, corpus, settings=None
     arrays = _train_arrays(train_windows, manifests)
     corpus = _corpus(corpus)
     destination = Path(output_dir)
-    if destination.exists() and any(destination.iterdir()):
-        raise ValueError("output_dir must be absent or empty; donors are never overwritten")
     destination.mkdir(parents=True, exist_ok=True)
     branches = []
     for index, name in enumerate(manifests):
-        branches.append(_fit_branch(bundle, name, arrays[name], destination, corpus, resolved, index))
+        row = _load_terminal(
+            destination, name, manifests[name], arrays[name], resolved, corpus,
+            bundle.branch_models[name],
+        )
+        if row is None:
+            _quarantine_interrupted(destination, name)
+            row = _fit_branch(bundle, name, arrays[name], destination, corpus, resolved, index)
+            _write_terminal(destination, row, resolved, corpus)
+        branches.append(row)
+        _atomic_json(destination / "STATUS.json", {
+            "schema": STATUS_SCHEMA, "status": "RUNNING",
+            "completed": len(branches), "total": len(manifests),
+        })
     report = {"schema": REPORT_SCHEMA, "status": "COMPLETE", "learned_corpus": "TRAIN_ONLY",
               "branch_count": len(branches), "settings": resolved, "branches": branches}
     _atomic_json(destination / "REPORT.json", report)
