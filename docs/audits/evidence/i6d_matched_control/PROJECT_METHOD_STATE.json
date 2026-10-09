@@ -1,7 +1,7 @@
 {
   "schema": "project_method_state.v1",
   "initiative": "I6-D matched Dense versus temporal Conv control",
-  "current_stage": "S13_ANNUAL_VALIDATION_CONTROL_COMPLETE",
+  "current_stage": "S13_BRANCH_ONLY_ANNUAL_VALIDATION_COMPLETE",
   "requirements": {
     "I6D-01": "Same selected EURUSD feature union and exact causal 24-hour support",
     "I6D-02": "Same target/horizon rows, seed, fit budget and predictive head",
@@ -22,7 +22,33 @@
     "executable_config": "examples/config/i6d/i6d_eurusd_y_s_1h_matched_control.json",
     "annual_result": "docs/audits/evidence/i6d_matched_control/WEEKLY_RESULT_20261009.md",
     "raw_closure_sha256": "bf6d0bd304ee56a17bd6fe70506e143c984002a6b1fa74360ec3670e73d3b2b9",
-    "robust_coordinate_closure_sha256": "46c84b3f256b993ba0b206ac0f90efe3d006c3589f3f422a7bae1ee6a4bacd67"
+    "robust_coordinate_closure_sha256": "46c84b3f256b993ba0b206ac0f90efe3d006c3589f3f422a7bae1ee6a4bacd67",
+    "s13_branch_only_annual_validation": {
+      "status": "COMPLETE",
+      "closure_sha256": "4859717b732eb2795b038452e53e6ebb6e469912d5aef060637863b14ab33eb7",
+      "population": {
+        "validation_weeks": 52,
+        "same_row_observations": 6196,
+        "seeds": [0]
+      },
+      "metrics": {
+        "conv_mae": 0.0004929022094170449,
+        "dense_mae": 0.0004932410575596166,
+        "paired_naive_mae": 0.000492597963923194
+      },
+      "strategy_eligible": false,
+      "test_eligible": false,
+      "reason": "Neither arm beats the paired annual validation naive."
+    },
+    "i6b_exact_branch_donor_audit": {
+      "status": "COMPLETE",
+      "selected_features": 20,
+      "expected_feature_folds": 100,
+      "verified_fs4_extractibility_artifacts": 99,
+      "missing_feature_fold": "px.rv5/inner_2023",
+      "compatible_modular_branch_donors": 0,
+      "incompatibility": "FS4 artifacts are 24->12->6, latent 6x8 HDF5 models; the production branch is 24x16 and requires a sealed .keras sidecar."
+    }
   },
   "traceability": {
     "I6D-07": "test_default_is_one_seed_and_every_validation_week_has_exact_rolling_four_year_boundary",
@@ -35,15 +61,21 @@
   "data_access": {"train": true, "validation": true, "test": false},
   "result_scope": {
     "population": "EURUSD Y_s_1h, selected 20-feature union, 52 validation weeks, 6196 same-row observations, seed 0",
-    "ordering": "fit-only robust coordinate: Conv MAE 0.000493193 < Dense MAE 0.000502364",
+    "historical_whole_model_ordering": "fit-only robust coordinate: Conv MAE 0.000493193 < Dense MAE 0.000502364",
+    "s13_branch_only_ordering": "Conv MAE 0.0004929022094170449 < Dense MAE 0.0004932410575596166",
     "naive_gate": "neither arm beats annual same-row naive MAE 0.000492598",
-    "interpretation": "whole-model temporal Conv control versus non-temporal Dense control; not the later branch-only swap"
+    "interpretation": "S13 isolates the branch-only causal Conv versus Dense swap while retaining the shared temporal fusion, core and head. The historical whole-model control remains preserved separately."
   },
   "next_allowed_actions": [
     "publish the retained annual metrics through the governed warehouse path without opening TEST",
-    "implement the branch-only Dense-versus-Conv swap with an otherwise identical temporal fusion core and head",
+    "execute I6-B exact modular branch donor pretraining with a production-compatible 24x16 architecture and sealed .keras sidecars",
+    "execute I7 R1-B and R2-B only after authenticating the exact I6-B donors",
     "authenticate the historical ANN recipe or retain NOT_REPRODUCIBLE",
     "prepare a bounded TRAIN-only optimization design for the Conv incumbent; another annual validation traversal requires a newly sealed procedure"
   ],
-  "blocked_claims": ["beats naive", "trading eligibility", "branch-only attribution", "historical ANN reproduction", "TEST performance"]
+  "blocked_claims": ["beats naive", "trading eligibility", "compatible pretrained branch donors", "historical ANN reproduction", "TEST performance"],
+  "broad_fs4_closure": {
+    "status": "NOT_CLAIMED_COMPLETE",
+    "note": "The exact 20-feature donor audit does not establish completion of the broader FS4 campaign."
+  }
 }

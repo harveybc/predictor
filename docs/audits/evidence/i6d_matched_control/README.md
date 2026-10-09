@@ -1,7 +1,33 @@
 # I6-D matched control harness
 
-Status: implementation and one real annual VALIDATION control are complete;
-TEST remains unread. See `WEEKLY_RESULT_20261009.md` for its exact scope.
+Status: implementation, the historical whole-model control and the S13
+branch-only annual VALIDATION control are complete; TEST remains unread. See
+`WEEKLY_RESULT_20261009.md` for the historical control's exact scope and
+`PROJECT_METHOD_STATE.json` for the current method state.
+
+## Current result and next stage
+
+S13 branch-only annual validation is `COMPLETE`, authenticated by closure SHA-256
+`4859717b732eb2795b038452e53e6ebb6e469912d5aef060637863b14ab33eb7`.
+Its decision population is 52 validation weeks, 6,196 same-row observations and
+seed 0. The causal Conv branch records MAE `0.0004929022094170449`; the Dense
+branch records MAE `0.0004932410575596166`; and their paired annual naive is
+`0.000492597963923194`. Conv therefore improves slightly on Dense, but neither
+arm beats the paired naive. Neither is eligible for the trading strategy or
+TEST.
+
+The next stage is **I6-B exact branch donor pretraining**, followed by **I7
+R1-B/R2-B** after donor authentication. The donor audit covers 20 selected
+features and 100 expected feature-fold artifacts. It verifies 99 FS4
+extractibility artifacts; `px.rv5/inner_2023` is missing. None of the 99 is a
+compatible modular branch donor: FS4 uses a `24 -> 12 -> 6` encoder with a
+`6x8` latent represented in HDF5, whereas the production branch emits `24x16`
+and requires a sealed `.keras` sidecar. Extractibility evidence is not silently
+promoted to production donor evidence.
+
+This audit is scoped to the selected 20 features. It does **not** claim that the
+broader FS4 campaign or closure is complete. Historical results and all method
+requirements below remain in force.
 
 The executable comparison has two intentionally different representation
 paths over the same selected EURUSD feature union and exact causal 24-hour
