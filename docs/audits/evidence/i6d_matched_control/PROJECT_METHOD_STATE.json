@@ -1,0 +1,21 @@
+{
+  "schema": "project_method_state.v1",
+  "initiative": "I6-D matched Dense versus temporal Conv control",
+  "current_stage": "S12_IMPLEMENTATION_VERIFIED",
+  "requirements": {
+    "I6D-01": "Same selected EURUSD feature union and exact causal 24-hour support",
+    "I6D-02": "Same target/horizon rows, seed, fit budget and predictive head",
+    "I6D-03": "Dense latents remain explicitly non-temporal",
+    "I6D-04": "Conv preserves time through branches, fusion and temporal core",
+    "I6D-05": "Architecture and parameter differences are reported, not hidden",
+    "I6D-06": "Fleet CLI is resumable and status-capable"
+  },
+  "evidence": {
+    "tests": ["tests/test_i6d_dense_control.py", "tests/test_i6d_matched_control.py"],
+    "implementation": ["predictor_plugins/modular_temporal/dense_control.py", "predictor_plugins/modular_temporal/matched_control.py", "tools/i6d_matched_control.py"],
+    "executable_config": "examples/config/i6d/i6d_eurusd_y_s_1h_matched_control.json"
+  },
+  "data_access": {"train": "synthetic plumbing only", "validation": false, "test": false},
+  "next_allowed_actions": ["prepare authenticated matched TRAIN/VALIDATION NPZ rows", "run cost pilot", "dispatch one arm per admitted GPU", "close matched evidence"],
+  "blocked_claims": ["real model quality", "arm ordering", "TEST performance"]
+}

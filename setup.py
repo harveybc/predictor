@@ -6,7 +6,8 @@ setup(
     packages=find_packages(),
     entry_points={
         'console_scripts': [
-            'predictor=app.main:main'
+            'predictor=app.main:main',
+            'predictor-i6d-control=tools.i6d_matched_control:main'
         ],
         # Plugins para el Predictor
         'predictor.plugins': [

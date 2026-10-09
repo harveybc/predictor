@@ -40,6 +40,18 @@ def test_dense_control_consumes_one_24_hour_window_and_emits_a_vector():
     assert component.available_at == 0
 
 
+def test_dense_control_can_keep_one_semantic_feature_with_value_and_observation_channels():
+    component = mt.causal_window_dense(
+        input_shape=(24, 2),
+        support_grid=tuple(range(-23, 1)),
+        name="dense_control_with_mask",
+        params={"hidden_units": [8], "latent_units": 4},
+    )
+    assert component.model.input_shape == (None, 24, 2)
+    assert component.model.output_shape == (None, 4)
+    assert component.semantics == mt.UNORDERED_LATENT_VECTOR
+
+
 def test_dense_control_has_exact_causal_support_and_uses_every_window_position():
     component = mt.causal_window_dense(
         input_shape=(24, 1),
@@ -125,6 +137,6 @@ def test_non_temporal_latents_cannot_claim_or_enter_a_temporal_path():
 
 def test_dense_control_is_a_declared_plugin_not_the_temporal_branch_default():
     declared = mt.describe_component("control_branch", "causal_window_dense")
-    assert declared["version"] == "1.0.0"
+    assert declared["version"] == "1.1.0"
     assert "unordered latent vector" in declared["contract"]
     assert mt.registry.DEFAULTS["modular.branch"] == "causal_conv1d"

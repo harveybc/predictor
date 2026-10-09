@@ -21,6 +21,10 @@ from .dense_control import (CONFIG_SCHEMA as DENSE_CONTROL_CONFIG_SCHEMA,
                             load_dense_control_config)
 from .config import CONFIG_SCHEMA, _normalize, default_config, regime_summary
 from .layers import FeatureSelect, PositionalEncoding
+from .matched_control import (CONFIG_SCHEMA as MATCHED_CONTROL_CONFIG_SCHEMA,
+                              TEMPORAL_SEQUENCE, MatchedArm, MatchedControl,
+                              build_matched_control, normalize_matched_config,
+                              train_only_plumbing)
 from .pretraining import (
     branch_autoencoder,
     build_autoencoder,
@@ -38,6 +42,8 @@ __all__ = [
     "DENSE_CONTROL_CONFIG_SCHEMA", "UNORDERED_LATENT_VECTOR", "DenseControlAdapter",
     "DenseLatentComponent", "canonical_dense_control_json", "causal_window_dense",
     "dense_control_config", "load_dense_control_config",
+    "MATCHED_CONTROL_CONFIG_SCHEMA", "TEMPORAL_SEQUENCE", "MatchedArm", "MatchedControl",
+    "build_matched_control", "normalize_matched_config", "train_only_plumbing",
     "effective_params", "forecast", "keras_version", "load_bundle", "probe_alignment",
     "regime_summary", "save_bundle", "sequence_concat", "transformer_conv",
     "branch_autoencoder", "build_autoencoder", "build_decoder", "build_modular",
