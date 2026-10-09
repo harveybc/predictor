@@ -15,6 +15,8 @@ import json
 import os
 from pathlib import Path
 import resource
+import subprocess
+import sys
 
 import numpy as np
 
@@ -804,15 +806,22 @@ def _parser():
     init.add_argument("--parent-design", required=True)
     init.add_argument("--donor-index", required=True)
     init.add_argument("--output", required=True)
+    def data_arguments(command):
+        command.add_argument("--output", required=True)
+        command.add_argument("--feature-parquet", action="append", required=True)
+        command.add_argument("--target-parquet", required=True)
+        command.add_argument("--validation-feature-parquet", action="append", required=True)
+        command.add_argument("--validation-target-parquet", required=True)
+
     run = commands.add_parser("run-cell")
-    run.add_argument("--output", required=True)
+    data_arguments(run)
     run.add_argument("--arm", choices=ARMS, required=True)
     run.add_argument("--week-ordinal", type=int, required=True)
     run.add_argument("--seed", type=int, required=True)
-    run.add_argument("--feature-parquet", action="append", required=True)
-    run.add_argument("--target-parquet", required=True)
-    run.add_argument("--validation-feature-parquet", action="append", required=True)
-    run.add_argument("--validation-target-parquet", required=True)
+    worker = commands.add_parser("worker")
+    data_arguments(worker)
+    worker.add_argument("--shard-index", type=int, required=True)
+    worker.add_argument("--shard-count", type=int, required=True)
     status = commands.add_parser("status")
     status.add_argument("--output", required=True)
     close = commands.add_parser("close")
@@ -827,6 +836,30 @@ def run_cli(args):
         return campaign_status(args.output)
     if args.command == "close":
         return close_campaign(args.output)
+    if args.command == "worker":
+        if args.shard_count < 1 or not 0 <= args.shard_index < args.shard_count:
+            raise ValueError("invalid shard index/count")
+        design = read_design(args.output)
+        tasks = [(seed, week, arm) for seed in design["seeds"]
+                 for week in range(len(design["weeks"])) for arm in ARMS]
+        common = [
+            "--output", args.output, "--target-parquet", args.target_parquet,
+            "--validation-target-parquet", args.validation_target_parquet,
+        ]
+        for path in args.feature_parquet:
+            common.extend(["--feature-parquet", path])
+        for path in args.validation_feature_parquet:
+            common.extend(["--validation-feature-parquet", path])
+        for index in range(args.shard_index, len(tasks), args.shard_count):
+            seed, week, arm = tasks[index]
+            if _cell_path(args.output, seed, week, arm).is_file():
+                continue
+            subprocess.run([
+                sys.executable, str(Path(__file__).resolve()), "run-cell",
+                "--arm", arm, "--week-ordinal", str(week), "--seed", str(seed),
+                *common,
+            ], check=True)
+        return campaign_status(args.output)
     store = weekly_contract.DataStore.from_paths(
         "EURUSD", args.feature_parquet, args.target_parquet,
         args.validation_feature_parquet, args.validation_target_parquet,
