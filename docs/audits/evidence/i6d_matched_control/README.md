@@ -91,3 +91,32 @@ PYTHONPATH=. python tools/i6d_matched_control.py weekly-run-cell \
 PYTHONPATH=. python tools/i6d_matched_control.py weekly-status --output <weekly-campaign-dir>
 PYTHONPATH=. python tools/i6d_matched_control.py weekly-close --output <weekly-campaign-dir>
 ```
+
+For the strict branch-only successor, add `--control-kind BRANCH_ONLY` to
+`weekly-plan` or `weekly-init`. This changes only the per-feature branch plugin:
+`causal_conv1d` versus `causal_dense_sequence`; both arms retain the same
+fusion, temporal core, forecasting head and synchronized downstream initial
+weights. It creates a distinct design identity and never adopts cells from a
+`WHOLE_MODEL` campaign.
+
+An initialized campaign can run unattended in deterministic non-overlapping
+shards. Each worker loads the data once, writes atomic progress with a measured
+ETA under `<weekly-campaign-dir>/shard_status/`, resumes completed cells, and
+records a failed cell once without retrying it or stopping independent cells:
+
+```bash
+CUDA_VISIBLE_DEVICES=<gpu-index> PYTHONPATH=. \
+python tools/i6d_weekly_shard_runner.py \
+  --output <weekly-campaign-dir> --worker-id <stable-worker-id> \
+  --shard-index <zero-based-index> --shard-count <worker-count> \
+  --feature-parquet <train-features-1.parquet> \
+  --feature-parquet <train-features-2.parquet> \
+  --target-parquet <train-targets.parquet> \
+  --validation-feature-parquet <validation-features-1.parquet> \
+  --validation-target-parquet <validation-targets.parquet>
+```
+
+Every host must receive the identical sealed `WEEKLY_DESIGN.json`. Results from
+separate host-local campaign directories must be reconciled by cell identity
+before `weekly-close`; copying files without verifying the design and cell seals
+is not a scientific merge.
