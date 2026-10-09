@@ -95,6 +95,37 @@ def test_status_is_incomplete_when_any_week_is_missing(tmp_path):
     assert status["pending_weeks"] == [0, 1]
 
 
+def test_complete_campaign_projects_exact_i7_donor_index(tmp_path):
+    design = _design()
+    root = tmp_path / "campaign"
+    week = root / "week_000"
+    week.mkdir(parents=True)
+    branches = []
+    for index, branch in enumerate(("branch_000", "branch_001")):
+        payload = f"model-{index}".encode()
+        (week / f"{branch}.keras").write_bytes(payload)
+        branches.append({
+            "branch": branch, "artifact": f"{branch}.keras",
+            "manifest": f"{branch}.manifest.json",
+            "manifest_sha256": str(index + 2) * 64,
+            "model_sha256": C.hashlib.sha256(payload).hexdigest(),
+            "weights_sha256": str(index + 4) * 64,
+            "data_sha256": str(index + 6) * 64,
+        })
+    report = {
+        "schema": "predictor.i6b.branch_pretraining.v1", "status": "COMPLETE",
+        "branch_count": 2, "branches": branches,
+    }
+    (week / "REPORT.json").write_text(json.dumps(report))
+    C.write_week_receipt(root, design, 0, {"branch_000": "a", "branch_001": "b"}, report)
+
+    index = C.build_donor_index(root, design)
+    assert index["schema"] == "predictor.i7.weekly_branch_donor_index.v1"
+    assert list(index["weeks"]["0"]) == ["a", "b"]
+    assert index["weeks"]["0"]["a"]["path"].endswith("branch_000.keras")
+    assert len(index["index_sha256"]) == 64
+
+
 def test_cli_has_no_test_split_or_test_paths():
     parser = C.build_parser()
     help_text = parser.format_help().lower()
