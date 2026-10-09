@@ -1,7 +1,7 @@
 {
   "schema": "project_method_state.v1",
   "initiative": "I6-D matched Dense versus temporal Conv control",
-  "current_stage": "S12_WEEKLY_SUCCESSOR_IMPLEMENTATION_VERIFIED",
+  "current_stage": "S13_ANNUAL_VALIDATION_CONTROL_COMPLETE",
   "requirements": {
     "I6D-01": "Same selected EURUSD feature union and exact causal 24-hour support",
     "I6D-02": "Same target/horizon rows, seed, fit budget and predictive head",
@@ -13,21 +13,37 @@
     "I6D-08": "Dense and Conv score identical weekly rows against the same-row zero-return persistence naive",
     "I6D-09": "The decision population is the complete row-weighted annual validation aggregate",
     "I6D-10": "One seed is the default; an explicitly sealed campaign may use at most three",
-    "I6D-11": "TEST has no path or execution command before a later frozen-procedure traversal"
+    "I6D-11": "TEST has no path or execution command before a later frozen-procedure traversal",
+    "I6D-12": "Future scored cells retain mergeable prediction diagnostics without retaining prediction arrays"
   },
   "evidence": {
     "tests": ["tests/test_i6d_dense_control.py", "tests/test_i6d_matched_control.py", "tests/test_i6d_weekly_walk_forward.py"],
     "implementation": ["predictor_plugins/modular_temporal/dense_control.py", "predictor_plugins/modular_temporal/matched_control.py", "tools/i6d_matched_control.py", "tools/i6d_weekly_walk_forward.py"],
-    "executable_config": "examples/config/i6d/i6d_eurusd_y_s_1h_matched_control.json"
+    "executable_config": "examples/config/i6d/i6d_eurusd_y_s_1h_matched_control.json",
+    "annual_result": "docs/audits/evidence/i6d_matched_control/WEEKLY_RESULT_20261009.md",
+    "raw_closure_sha256": "bf6d0bd304ee56a17bd6fe70506e143c984002a6b1fa74360ec3670e73d3b2b9",
+    "robust_coordinate_closure_sha256": "46c84b3f256b993ba0b206ac0f90efe3d006c3589f3f422a7bae1ee6a4bacd67"
   },
   "traceability": {
     "I6D-07": "test_default_is_one_seed_and_every_validation_week_has_exact_rolling_four_year_boundary",
     "I6D-08": "test_closure_requires_same_rows_for_both_arms_and_suppresses_aggregate_on_mismatch",
     "I6D-09": "test_annual_decision_population_is_row_weighted_and_uses_same_row_naive",
     "I6D-10": "test_seed_population_defaults_to_one_and_refuses_more_than_three_or_implicit_test",
-    "I6D-11": "test_seed_population_defaults_to_one_and_refuses_more_than_three_or_implicit_test"
+    "I6D-11": "test_seed_population_defaults_to_one_and_refuses_more_than_three_or_implicit_test",
+    "I6D-12": "test_prediction_diagnostics_retain_aggregable_moments_without_prediction_rows and test_annual_prediction_diagnostics_are_reduced_from_sufficient_statistics"
   },
-  "data_access": {"train": "synthetic plumbing only", "validation": false, "test": false},
-  "next_allowed_actions": ["initialize the sealed weekly validation design", "dispatch independent arm-week cells", "close the complete paired annual validation population"],
-  "blocked_claims": ["real model quality", "arm ordering", "TEST performance"]
+  "data_access": {"train": true, "validation": true, "test": false},
+  "result_scope": {
+    "population": "EURUSD Y_s_1h, selected 20-feature union, 52 validation weeks, 6196 same-row observations, seed 0",
+    "ordering": "fit-only robust coordinate: Conv MAE 0.000493193 < Dense MAE 0.000502364",
+    "naive_gate": "neither arm beats annual same-row naive MAE 0.000492598",
+    "interpretation": "whole-model temporal Conv control versus non-temporal Dense control; not the later branch-only swap"
+  },
+  "next_allowed_actions": [
+    "publish the retained annual metrics through the governed warehouse path without opening TEST",
+    "implement the branch-only Dense-versus-Conv swap with an otherwise identical temporal fusion core and head",
+    "authenticate the historical ANN recipe or retain NOT_REPRODUCIBLE",
+    "prepare a bounded TRAIN-only optimization design for the Conv incumbent; another annual validation traversal requires a newly sealed procedure"
+  ],
+  "blocked_claims": ["beats naive", "trading eligibility", "branch-only attribution", "historical ANN reproduction", "TEST performance"]
 }

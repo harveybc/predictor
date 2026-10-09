@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 from datetime import datetime, timezone
 
+import numpy as np
 import pytest
 
 from tools import fs4_weekly_wrapper as weekly_contract
@@ -252,6 +253,32 @@ def test_annual_decision_population_is_row_weighted_and_uses_same_row_naive():
     assert closure["annual"]["DENSE"]["same_row_naive"] is True
     assert closure["decision_population"]["split"] == "validation"
     assert closure["test_read"] is False
+
+
+def test_annual_prediction_diagnostics_are_reduced_from_sufficient_statistics():
+    first = weekly_contract.prediction_diagnostics(
+        np.array([-2.0, 0.0]), np.array([-1.0, 1.0]))
+    second = weekly_contract.prediction_diagnostics(
+        np.array([4.0]), np.array([2.0]))
+    records = [
+        {"n_scored": 2, "metrics": {"mae": 1.0, "mse": 1.0,
+                                      "naive_mae": 1.0, "naive_mse": 1.0},
+         "prediction_diagnostics": first,
+         "cost": {"fit_seconds": 1.0, "epochs": 1}},
+        {"n_scored": 1, "metrics": {"mae": 2.0, "mse": 4.0,
+                                      "naive_mae": 2.0, "naive_mse": 4.0},
+         "prediction_diagnostics": second,
+         "cost": {"fit_seconds": 1.0, "epochs": 1}},
+    ]
+
+    annual = weekly._annual_for_seed(records)
+
+    diagnostics = annual["prediction_diagnostics"]
+    assert diagnostics["n"] == 3
+    assert diagnostics["prediction_mean"] == pytest.approx(2.0 / 3.0)
+    assert diagnostics["target_mean"] == pytest.approx(2.0 / 3.0)
+    assert diagnostics["directional_accuracy_with_zero"] == pytest.approx(2.0 / 3.0)
+    assert diagnostics["pearson_r"] == pytest.approx(0.9285714285714288)
 
 
 def test_static_i6d_cli_commands_remain_available():

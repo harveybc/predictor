@@ -114,6 +114,81 @@ def rows_digest(record_ids) -> str:
     return hashlib.sha256("|".join(str(r) for r in record_ids).encode()).hexdigest()
 
 
+def prediction_diagnostics(prediction, target) -> dict:
+    """Retain exact, mergeable diagnostics without retaining scored arrays."""
+    pred = np.asarray(prediction, dtype="float64").reshape(-1)
+    truth = np.asarray(target, dtype="float64").reshape(-1)
+    if pred.shape != truth.shape or pred.size == 0:
+        raise Refusal("PREDICTION_DIAGNOSTICS_SHAPE_INVALID")
+    if not np.all(np.isfinite(pred)) or not np.all(np.isfinite(truth)):
+        raise Refusal("PREDICTION_DIAGNOSTICS_NONFINITE")
+    error = pred - truth
+    stats = {
+        "prediction_sum": float(np.sum(pred)),
+        "prediction_sum_squares": float(np.sum(pred * pred)),
+        "target_sum": float(np.sum(truth)),
+        "target_sum_squares": float(np.sum(truth * truth)),
+        "cross_sum": float(np.sum(pred * truth)),
+        "absolute_prediction_sum": float(np.sum(np.abs(pred))),
+        "absolute_target_sum": float(np.sum(np.abs(truth))),
+        "error_sum": float(np.sum(error)),
+        "error_sum_squares": float(np.sum(error * error)),
+        "direction_matches": int(np.sum(np.sign(pred) == np.sign(truth))),
+    }
+    return aggregate_prediction_diagnostics([{
+        "schema": "prediction_diagnostics.v1",
+        "unit": "raw_log_return",
+        "n": int(pred.size),
+        "sufficient_statistics": stats,
+    }])
+
+
+def aggregate_prediction_diagnostics(reports) -> dict:
+    """Merge per-cell sufficient statistics into one population report."""
+    reports = list(reports)
+    if not reports:
+        raise Refusal("PREDICTION_DIAGNOSTICS_EMPTY")
+    if any(report.get("schema") != "prediction_diagnostics.v1"
+           or report.get("unit") != "raw_log_return" for report in reports):
+        raise Refusal("PREDICTION_DIAGNOSTICS_SCHEMA_INVALID")
+    n = sum(int(report["n"]) for report in reports)
+    if n <= 0:
+        raise Refusal("PREDICTION_DIAGNOSTICS_EMPTY")
+    names = (
+        "prediction_sum", "prediction_sum_squares", "target_sum",
+        "target_sum_squares", "cross_sum", "absolute_prediction_sum",
+        "absolute_target_sum", "error_sum", "error_sum_squares",
+        "direction_matches",
+    )
+    totals = {name: sum(float(report["sufficient_statistics"][name])
+                        for report in reports) for name in names}
+    totals["direction_matches"] = int(totals["direction_matches"])
+    pred_mean = totals["prediction_sum"] / n
+    target_mean = totals["target_sum"] / n
+    error_mean = totals["error_sum"] / n
+    pred_var = max(0.0, totals["prediction_sum_squares"] / n - pred_mean ** 2)
+    target_var = max(0.0, totals["target_sum_squares"] / n - target_mean ** 2)
+    error_var = max(0.0, totals["error_sum_squares"] / n - error_mean ** 2)
+    covariance = totals["cross_sum"] / n - pred_mean * target_mean
+    denominator = (pred_var * target_var) ** 0.5
+    return {
+        "schema": "prediction_diagnostics.v1",
+        "unit": "raw_log_return",
+        "n": n,
+        "prediction_mean": float(pred_mean),
+        "prediction_std": float(pred_var ** 0.5),
+        "prediction_abs_mean": float(totals["absolute_prediction_sum"] / n),
+        "target_mean": float(target_mean),
+        "target_std": float(target_var ** 0.5),
+        "target_abs_mean": float(totals["absolute_target_sum"] / n),
+        "error_mean": float(error_mean),
+        "error_std": float(error_var ** 0.5),
+        "pearson_r": float(covariance / denominator) if denominator > 0 else None,
+        "directional_accuracy_with_zero": float(totals["direction_matches"] / n),
+        "sufficient_statistics": totals,
+    }
+
+
 def code_sha256() -> str:
     h = hashlib.sha256()
     for f in (Path(__file__), HERE / "fs4_temporal_predictor.py", HERE / "fs_close_weekly.py", HERE / "business_asof_window.py"):
@@ -512,6 +587,7 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
     naive_mae = float(np.mean(np.abs(yt)))
     metrics = {"mae": float(np.mean(np.abs(err))), "mse": float(np.mean(err ** 2)), "naive_mae": naive_mae, "naive_mse": float(np.mean(yt ** 2))}
     base.update({"disposition": "COMPLETED", "reason": None, "metrics": metrics,
+                 "prediction_diagnostics": prediction_diagnostics(pred, yt),
                  "skill_mae": (naive_mae - metrics["mae"]) / naive_mae if naive_mae > 0 else None,
                  "beats_naive": metrics["mae"] < naive_mae})
     base["result_sha256"] = digest({k: v for k, v in base.items() if k != "result_sha256"})

@@ -104,12 +104,13 @@
     {
       "id": "I6-D",
       "name": "per_feature_dense_architecture_controls",
-      "state": "NOT_STARTED",
+      "state": "EVIDENCE_PARTIAL",
       "depends_on": [
         "I5",
         "I6-A"
       ],
-      "gate": "faithful historical per-feature Dense ANN replay or typed NOT_REPRODUCIBLE, plus matched causal-window Dense versus Conv1D branch result on final features and weekly rows"
+      "gate": "faithful historical per-feature Dense ANN replay or typed NOT_REPRODUCIBLE, plus matched causal-window Dense versus Conv1D branch result on final features and weekly rows",
+      "evidence": "A whole-model control completed 104/104 cells over EURUSD Y_s_1h, the selected 20-feature union, 52 weekly 2024 validation weeks, 6196 same-row observations and seed 0. With a fit-only robust target coordinate, temporal Conv MAE was 0.000493193 versus non-temporal Dense 0.000502364 and paired naive 0.000492598; neither arm is trading-eligible. Closure 46c84b3f256b993ba0b206ac0f90efe3d006c3589f3f422a7bae1ee6a4bacd67; TEST unread. This orders the two whole-model controls but does not complete the branch-only swap or the historical ANN authentication required by the gate."
     },
     {
       "id": "I6-B",

@@ -1,7 +1,7 @@
 # I6-D matched control harness
 
-Status: implementation verified; no real training or VALIDATION/TEST read in
-this delivery.
+Status: implementation and one real annual VALIDATION control are complete;
+TEST remains unread. See `WEEKLY_RESULT_20261009.md` for its exact scope.
 
 The executable comparison has two intentionally different representation
 paths over the same selected EURUSD feature union and exact causal 24-hour
@@ -63,6 +63,13 @@ The raw target is neither denoised nor replaced, and the same-row naive remains
 in raw log-return units. The transform and its fitted values are retained in
 each result. It has a distinct campaign/task identity; legacy RAW campaigns
 remain readable under their original schema.
+
+New scored cells also retain `prediction_diagnostics.v1`: mergeable moments,
+prediction/target scale, Pearson correlation and directional agreement. The
+vectors themselves remain ephemeral. This distinguishes a useful forecast from
+a model that approaches the naive merely by shrinking its output toward zero.
+Closures produced before this addition remain valid but cannot acquire these
+diagnostics retrospectively without rerunning inference.
 
 ```bash
 PYTHONPATH=. python tools/i6d_matched_control.py weekly-plan \

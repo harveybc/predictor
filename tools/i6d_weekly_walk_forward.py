@@ -401,7 +401,7 @@ def _annual_for_seed(records):
     metric = lambda name: float(sum(float(result["metrics"][name]) * int(result["n_scored"])
                                     for result in records) / total)
     mae, naive_mae = metric("mae"), metric("naive_mae")
-    return {
+    annual = {
         "n_scored": total,
         "mae": mae,
         "mse": metric("mse"),
@@ -414,6 +414,10 @@ def _annual_for_seed(records):
         "fit_seconds_total": float(sum(float(result["cost"]["fit_seconds"])
                                        for result in records)),
     }
+    diagnostics = [result.get("prediction_diagnostics") for result in records]
+    if all(report is not None for report in diagnostics):
+        annual["prediction_diagnostics"] = weekly_contract.aggregate_prediction_diagnostics(diagnostics)
+    return annual
 
 
 def close_weekly_cells(design, cells):

@@ -152,6 +152,30 @@ def test_task_fits_only_available_rows_before_the_cutoff_and_scores_the_week_wit
     assert res["seed"] == 0 and res["input_mode"] == "RAW" and res["update_mode"] == "FULL_RETRAIN_ROLLING_4Y"
 
 
+def test_prediction_diagnostics_retain_aggregable_moments_without_prediction_rows():
+    pred = np.array([-2.0, 0.0, 4.0])
+    target = np.array([-1.0, 1.0, 2.0])
+
+    report = WW.prediction_diagnostics(pred, target)
+
+    assert report["schema"] == "prediction_diagnostics.v1"
+    assert report["unit"] == "raw_log_return"
+    assert report["n"] == 3
+    assert report["prediction_mean"] == pytest.approx(2.0 / 3.0)
+    assert report["prediction_abs_mean"] == pytest.approx(2.0)
+    assert report["target_mean"] == pytest.approx(2.0 / 3.0)
+    assert report["error_mean"] == pytest.approx(0.0)
+    assert report["directional_accuracy_with_zero"] == pytest.approx(2.0 / 3.0)
+    assert report["pearson_r"] == pytest.approx(0.9285714285714288)
+    assert set(report["sufficient_statistics"]) == {
+        "prediction_sum", "prediction_sum_squares", "target_sum",
+        "target_sum_squares", "cross_sum", "absolute_prediction_sum",
+        "absolute_target_sum", "error_sum", "error_sum_squares",
+        "direction_matches",
+    }
+    assert "predictions" not in report and "targets" not in report
+
+
 def test_bytes_after_the_cutoff_do_not_change_the_week(tmp_path):
     plan = _plan(tmp_path)
     task = [t for t in WW.enumerate_tasks(plan) if t["week"]["ordinal"] == 3 and t["target_id"] == "Y_s_1h"][0]
