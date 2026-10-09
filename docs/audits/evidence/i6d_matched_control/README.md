@@ -40,3 +40,37 @@ PYTHONPATH=. python tools/i6d_matched_control.py close --output <campaign-dir>
 Each arm is protected by a process lock, writes heartbeat/status files, adopts
 an existing authenticated terminal, and saves a reload-checked Keras model.
 Closure refuses different design, data-row identity, fitting budget or seed.
+
+## BUSINESS weekly successor
+
+The additive `weekly-*` commands reuse the I6-A/FS4 weekly calendar, as-of
+resolver and row contract. They do not reuse one model across the validation
+year. Each complete validation week receives a fresh fit over exactly the four
+calendar years ending before its cutoff, with an internal chronological tail
+for early stopping. DENSE and CONV then score the same finite rows of that week.
+
+The campaign defaults to one seed. `--seed` may explicitly seal two or three
+unique seeds, never more. The closure first requires arm parity for every week,
+then computes annual MAE/MSE and the zero-return persistence naive by weighting
+weekly values by their scored-row counts. No partial annual summary is emitted.
+There is deliberately no TEST argument or TEST path.
+
+```bash
+PYTHONPATH=. python tools/i6d_matched_control.py weekly-plan \
+  --config examples/config/i6d/i6d_eurusd_y_s_1h_matched_control.json \
+  --validation-year 2024
+
+PYTHONPATH=. python tools/i6d_matched_control.py weekly-init \
+  --config examples/config/i6d/i6d_eurusd_y_s_1h_matched_control.json \
+  --validation-year 2024 --output <weekly-campaign-dir>
+
+# Run one independently schedulable cell. Repeat over sealed weeks and both arms.
+PYTHONPATH=. python tools/i6d_matched_control.py weekly-run-cell \
+  --output <weekly-campaign-dir> --arm DENSE --week-ordinal 0 --seed 0 \
+  --feature-parquet <train-features.parquet> --target-parquet <train-targets.parquet> \
+  --validation-feature-parquet <validation-features.parquet> \
+  --validation-target-parquet <validation-targets.parquet>
+
+PYTHONPATH=. python tools/i6d_matched_control.py weekly-status --output <weekly-campaign-dir>
+PYTHONPATH=. python tools/i6d_matched_control.py weekly-close --output <weekly-campaign-dir>
+```

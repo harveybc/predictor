@@ -385,13 +385,15 @@ def _failed(base: dict, reason: str, started: float) -> dict:
 
 
 def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | None = None, results_root=None, extractor_code=None,
-             spec: P.PredictorSpec | None = None, encoder_spec: P.EncoderSpec | None = None) -> dict:
+             spec: P.PredictorSpec | None = None, encoder_spec: P.EncoderSpec | None = None,
+             expected_seed: int = SEED) -> dict:
     started = time.time()
     if task.get("schema") != TASK_SCHEMA or not task.get("task_id"):
         raise Refusal("TASK_SCHEMA_INVALID")
     if task.get("population_id") != store.population:
         raise Refusal(f"POPULATION_MISMATCH: task {task.get('population_id')} store {store.population}")
-    if task.get("seed") != SEED:
+    if (isinstance(expected_seed, bool) or not isinstance(expected_seed, int)
+            or expected_seed < 0 or task.get("seed") != expected_seed):
         raise Refusal("SEED_MISMATCH")
     split = task.get("split")
     if split == "test":
@@ -445,7 +447,8 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
         "population_id": store.population, "identity": task["identity"], "set_id": task["set_id"], "target_id": target,
         "horizon_hours": horizon, "members": list(members), "n_features": len(members), "input_mode": task["input_mode"],
         "split": split, "week_start": task["week"]["start"], "week_end": task["week"]["end"], "cutoff": task["week"]["cutoff"],
-        "fit_start": task["week"]["fit_start"], "seed": SEED, "evaluation_mode": BUSINESS_MODE, "update_mode": UPDATE_MODE,
+        "fit_start": task["week"]["fit_start"], "seed": expected_seed,
+        "evaluation_mode": BUSINESS_MODE, "update_mode": UPDATE_MODE,
         "trainer": PRODUCTION_TRAINER if trainer is None else "INJECTED_STAND_IN_TEST_ONLY",
         "predictor_spec_sha256": spec.sha256(), "budget_sha256": P.budget_sha256(spec), "encoder_spec_sha256": encoder_spec.sha256(),
         "input_sha256": digest({"files": store.digests, "members": list(members), "target": target, "input_mode": task["input_mode"],
@@ -484,7 +487,7 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
     standardiser = P.Standardiser.fit(Xsub[fit_idx])
     base["standardiser_sha256"] = standardiser.sha256()
     try:
-        encoder = _encoder_for(task["input_mode"], members, Xsub, store, task, encoder_spec, SEED, results_root, extractor_code)
+        encoder = _encoder_for(task["input_mode"], members, Xsub, store, task, encoder_spec, expected_seed, results_root, extractor_code)
     except Refusal as exc:
         if "RUNNER_RESULT_MISSING" in str(exc):     # a member without a runner terminal: a typed disposition, never dropped
             return _failed(base, f"ENCODER_NOT_AVAILABLE: {exc}", started)
@@ -492,7 +495,7 @@ def run_task(task: dict, store: DataStore, *, trainer=None, test_freeze: dict | 
     fit = trainer or r0_trainer_factory(list(members), encoder_spec, store.ts, int(week.fit_start.timestamp()))
     t0 = time.time()
     try:
-        rep = fit(spec, Xsub, y, fit_idx, inner_idx, task["input_mode"], encoder, SEED)
+        rep = fit(spec, Xsub, y, fit_idx, inner_idx, task["input_mode"], encoder, expected_seed)
     except P.Refusal as exc:
         return _failed(base, f"trainer refused: {exc}", started)
     fit_seconds = time.time() - t0

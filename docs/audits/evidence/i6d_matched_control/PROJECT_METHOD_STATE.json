@@ -1,21 +1,33 @@
 {
   "schema": "project_method_state.v1",
   "initiative": "I6-D matched Dense versus temporal Conv control",
-  "current_stage": "S12_IMPLEMENTATION_VERIFIED",
+  "current_stage": "S12_WEEKLY_SUCCESSOR_IMPLEMENTATION_VERIFIED",
   "requirements": {
     "I6D-01": "Same selected EURUSD feature union and exact causal 24-hour support",
     "I6D-02": "Same target/horizon rows, seed, fit budget and predictive head",
     "I6D-03": "Dense latents remain explicitly non-temporal",
     "I6D-04": "Conv preserves time through branches, fusion and temporal core",
     "I6D-05": "Architecture and parameter differences are reported, not hidden",
-    "I6D-06": "Fleet CLI is resumable and status-capable"
+    "I6D-06": "Fleet CLI is resumable and status-capable",
+    "I6D-07": "Every validation week is fitted independently on the rolling four calendar years ending before its cutoff",
+    "I6D-08": "Dense and Conv score identical weekly rows against the same-row zero-return persistence naive",
+    "I6D-09": "The decision population is the complete row-weighted annual validation aggregate",
+    "I6D-10": "One seed is the default; an explicitly sealed campaign may use at most three",
+    "I6D-11": "TEST has no path or execution command before a later frozen-procedure traversal"
   },
   "evidence": {
-    "tests": ["tests/test_i6d_dense_control.py", "tests/test_i6d_matched_control.py"],
-    "implementation": ["predictor_plugins/modular_temporal/dense_control.py", "predictor_plugins/modular_temporal/matched_control.py", "tools/i6d_matched_control.py"],
+    "tests": ["tests/test_i6d_dense_control.py", "tests/test_i6d_matched_control.py", "tests/test_i6d_weekly_walk_forward.py"],
+    "implementation": ["predictor_plugins/modular_temporal/dense_control.py", "predictor_plugins/modular_temporal/matched_control.py", "tools/i6d_matched_control.py", "tools/i6d_weekly_walk_forward.py"],
     "executable_config": "examples/config/i6d/i6d_eurusd_y_s_1h_matched_control.json"
   },
+  "traceability": {
+    "I6D-07": "test_default_is_one_seed_and_every_validation_week_has_exact_rolling_four_year_boundary",
+    "I6D-08": "test_closure_requires_same_rows_for_both_arms_and_suppresses_aggregate_on_mismatch",
+    "I6D-09": "test_annual_decision_population_is_row_weighted_and_uses_same_row_naive",
+    "I6D-10": "test_seed_population_defaults_to_one_and_refuses_more_than_three_or_implicit_test",
+    "I6D-11": "test_seed_population_defaults_to_one_and_refuses_more_than_three_or_implicit_test"
+  },
   "data_access": {"train": "synthetic plumbing only", "validation": false, "test": false},
-  "next_allowed_actions": ["prepare authenticated matched TRAIN/VALIDATION NPZ rows", "run cost pilot", "dispatch one arm per admitted GPU", "close matched evidence"],
+  "next_allowed_actions": ["initialize the sealed weekly validation design", "dispatch independent arm-week cells", "close the complete paired annual validation population"],
   "blocked_claims": ["real model quality", "arm ordering", "TEST performance"]
 }

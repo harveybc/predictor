@@ -311,12 +311,17 @@ def _parser():
     status.add_argument("--output", required=True)
     close = commands.add_parser("close")
     close.add_argument("--output", required=True)
+    from tools.i6d_weekly_walk_forward import add_cli_commands
+    add_cli_commands(commands)
     return parser
 
 
 def main(argv=None):
     args = _parser().parse_args(argv)
-    if args.command == "plan":
+    if args.command.startswith("weekly-"):
+        from tools.i6d_weekly_walk_forward import run_cli
+        result = run_cli(args)
+    elif args.command == "plan":
         result = build_matched_control(_read_json(args.config)).report
     elif args.command == "init":
         result = initialize_campaign(_read_json(args.config), args.output,
