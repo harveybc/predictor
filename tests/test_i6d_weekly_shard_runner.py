@@ -72,3 +72,18 @@ def test_gpu_preflight_rejects_cpu_fallback_and_ambiguous_placement(devices):
 
     with pytest.raises(RuntimeError, match="exactly one visible GPU"):
         runner.gpu_preflight(FakeTensorFlow)
+
+
+def test_tensorflow_runtime_is_released_between_cells():
+    calls = []
+
+    class FakeTensorFlow:
+        class keras:
+            class backend:
+                @staticmethod
+                def clear_session(*, free_memory):
+                    calls.append(free_memory)
+
+    runner.release_tensorflow_runtime(FakeTensorFlow)
+
+    assert calls == [True]

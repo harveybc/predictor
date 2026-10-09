@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import gc
 import json
 import statistics
 import time
@@ -23,6 +24,17 @@ def gpu_preflight(tf_module=None):
             f"worker requires exactly one visible GPU; observed {len(devices)}: {devices}"
         )
     return devices
+
+
+def release_tensorflow_runtime(tf_module=None):
+    """Release per-cell Keras graphs before constructing the next model."""
+    if tf_module is None:
+        import tensorflow as tf_module
+    try:
+        tf_module.keras.backend.clear_session(free_memory=True)
+    except TypeError:  # TensorFlow/Keras versions before the free_memory argument
+        tf_module.keras.backend.clear_session()
+    gc.collect()
 
 
 def enumerate_cells(design):
@@ -144,6 +156,8 @@ def run_shard(*, output, worker_id, shard_index, shard_count,
             }
             failures.append(failure)
             failed_keys.add(cell)
+        finally:
+            release_tensorflow_runtime()
         weekly._atomic_json(status_path, progress_report(
             worker_id=worker_id, assigned=len(assigned_cells),
             completed=completed_count(), failures=failures,
