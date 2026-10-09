@@ -14,6 +14,11 @@ from .bundle import BUNDLE_SCHEMA, load_bundle, save_bundle
 from .common import _copy, _digest, _file_hash, _json, keras_version, weights_hash
 from .components import (ROLES, TemporalComponent, causal_conv1d, component, effective_params,
                          forecast, sequence_concat, transformer_conv)
+from .dense_control import (CONFIG_SCHEMA as DENSE_CONTROL_CONFIG_SCHEMA,
+                            UNORDERED_LATENT_VECTOR, DenseControlAdapter,
+                            DenseLatentComponent, canonical_dense_control_json,
+                            causal_window_dense, dense_control_config,
+                            load_dense_control_config)
 from .config import CONFIG_SCHEMA, _normalize, default_config, regime_summary
 from .layers import FeatureSelect, PositionalEncoding
 from .pretraining import (
@@ -30,6 +35,9 @@ __all__ = [
     "FeatureSelect", "ModularBundle", "PositionalEncoding", "TemporalComponent",
     "BUILTINS", "DEFAULTS", "BUNDLE_SCHEMA", "CONFIG_SCHEMA", "ROLES", "BudgetExceeded", "measure_budget",
     "canonical_config_json", "causal_conv1d", "component", "config_digest", "describe_component",
+    "DENSE_CONTROL_CONFIG_SCHEMA", "UNORDERED_LATENT_VECTOR", "DenseControlAdapter",
+    "DenseLatentComponent", "canonical_dense_control_json", "causal_window_dense",
+    "dense_control_config", "load_dense_control_config",
     "effective_params", "forecast", "keras_version", "load_bundle", "probe_alignment",
     "regime_summary", "save_bundle", "sequence_concat", "transformer_conv",
     "branch_autoencoder", "build_autoencoder", "build_decoder", "build_modular",

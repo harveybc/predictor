@@ -49,6 +49,9 @@ setup(
         ],
         # Modular components resolved by the modular_temporal predictor (each carries a version/contract)
         'modular.branch': ['causal_conv1d=predictor_plugins.modular_temporal:causal_conv1d'],
+        'modular.control_branch': [
+            'causal_window_dense=predictor_plugins.modular_temporal:causal_window_dense'
+        ],
         'modular.fusion': ['sequence_concat=predictor_plugins.modular_temporal:sequence_concat'],
         'modular.core': ['transformer_conv=predictor_plugins.modular_temporal:transformer_conv'],
         'modular.head': ['forecast=predictor_plugins.modular_temporal:forecast'],

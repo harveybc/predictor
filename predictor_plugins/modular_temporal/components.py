@@ -27,7 +27,7 @@ class TemporalComponent:
     time_grid: tuple
 
 
-ROLES = ("branch", "core", "fusion", "head")
+ROLES = ("branch", "control_branch", "core", "fusion", "head")
 
 
 def component(role, version, parameters, contract, defaults=None):
