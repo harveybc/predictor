@@ -374,6 +374,12 @@ def _trainer(design, arm, store, seed, task):
         )
         model = keras.Model(bundle.forecast_model.input, scalar,
                             name=f"i7_weekly_{arm.lower()}")
+        model.fs4_architecture = digest({
+            "schema": "predictor.i7.weekly_architecture.v1",
+            "design_sha256": design["design_sha256"], "arm": arm,
+            "seed": seed, "week_ordinal": task["week"]["ordinal"],
+            "model_json": model.to_json(),
+        })
         before = _component_hashes(bundle)
         initial_sha = predictor_contract.model_weights_sha256(model)
         from tools.modular_candidate_evaluator import fit_with_early_stopping

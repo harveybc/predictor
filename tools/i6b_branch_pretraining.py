@@ -251,6 +251,7 @@ def _fit_branch(bundle, name, array, destination, corpus, settings, index):
         "branch": name,
         "artifact": path.name,
         "manifest": path.with_suffix(".manifest.json").name,
+        "manifest_sha256": document["manifest_sha256"],
         "model_sha256": document["model_sha256"],
         "weights_sha256": document["weights_sha256"],
         "data_sha256": learned_corpus["data_sha256"],

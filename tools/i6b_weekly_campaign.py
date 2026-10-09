@@ -31,6 +31,7 @@ from tools import i6d_weekly_walk_forward as I6D
 UTC = dt.timezone.utc
 RECEIPT_SCHEMA = "predictor.i6b.weekly_donor_receipt.v1"
 STATUS_SCHEMA = "predictor.i6b.weekly_donor_campaign.status.v1"
+DONOR_INDEX_SCHEMA = "predictor.i7.weekly_branch_donor_index.v1"
 
 
 def canonical_sha256(value):
@@ -118,6 +119,7 @@ def _receipt_body(design, ordinal, mapping, report):
         row = by_name[branch]
         rows.append({
             "branch": branch, "feature": feature,
+            "donor_manifest_sha256": row.get("manifest_sha256"),
             "model_sha256": row["model_sha256"],
             "weights_sha256": row.get("weights_sha256"),
             "data_sha256": row.get("data_sha256"),
@@ -178,6 +180,46 @@ def campaign_status(root, design):
     if root.exists():
         _atomic_json(root / "CAMPAIGN_STATUS.json", body)
     return body
+
+
+def build_donor_index(root, design):
+    """Project a complete I6-B campaign into the exact immutable I7 contract."""
+    root = Path(root).resolve()
+    status = campaign_status(root, design)
+    if status["status"] != "COMPLETE":
+        raise ValueError("weekly donor campaign is incomplete")
+    weeks = {}
+    for ordinal in range(len(design["weeks"])):
+        receipt = _load_receipt(
+            root / f"week_{ordinal:03d}" / "WEEK_RECEIPT.json", design, ordinal
+        )
+        entries = {}
+        for row in receipt["donors"]:
+            for field in ("donor_manifest_sha256", "model_sha256", "weights_sha256"):
+                if not isinstance(row.get(field), str) or len(row[field]) != 64:
+                    raise ValueError(f"weekly donor receipt lacks {field}")
+            path = root / f"week_{ordinal:03d}" / row["artifact"]
+            if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != row["model_sha256"]:
+                raise ValueError("weekly donor artifact digest mismatch")
+            entries[row["feature"]] = {
+                "week_ordinal": ordinal,
+                "member": row["feature"],
+                "parent_design_sha256": design["design_sha256"],
+                "path": str(path),
+                "donor_manifest_sha256": row["donor_manifest_sha256"],
+                "model_sha256": row["model_sha256"],
+                "weights_sha256": row["weights_sha256"],
+            }
+        weeks[str(ordinal)] = entries
+    body = {
+        "schema": DONOR_INDEX_SCHEMA,
+        "parent_design_sha256": design["design_sha256"],
+        "members": list(design["members"]),
+        "weeks": weeks,
+    }
+    index = {**body, "index_sha256": canonical_sha256(body)}
+    _atomic_json(root / "I7_DONOR_INDEX.json", index)
+    return index
 
 
 def _feature_store(paths, population, members, fit_start, cutoff):
