@@ -504,8 +504,13 @@ def _fit_branch_in_child(job, train_x, validation_x, columns, beat, stage):
 def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
                         train_population, validation_population, *,
                         stage_fit_configs=None, seed=None, heartbeat=None, resume=False,
-                        branch_isolation="process"):
+                        branch_isolation="process", stop_after_branches=False):
     """Run branch AE -> fixed-donor fused materialization -> core AE.
+
+    With ``stop_after_branches=True`` the function exports and reload-verifies
+    only branch donors, then writes ``BRANCH_PRETRAIN.json``. This is the I6-B
+    boundary: core materialization/pretraining belongs to the later H-CORE
+    experiment and must not happen implicitly.
 
     ``resume=True`` reuses every branch whose ``<name>.record.json`` completion
     marker exists and whose config sha, TRAIN/internal-validation input shas and
@@ -603,6 +608,37 @@ def pretrain_components(config, train_x, validation_x, output_dir, fit_config,
                     resume_point={"completed_branches": len(records), "last_completed": name,
                                   "resumed_total": len(resumed)})
         spec.update(regime="R2", donor=str(donor))
+
+    if stop_after_branches:
+        resolved["core"].update(regime="R0", donor=None)
+        result = {
+            "schema": "modular.branch_pretrain.v1",
+            "status": "COMPLETE",
+            "scope": "I6-B branch donors only; fusion and core were not materialized or trained",
+            "next_stage": "R0_R1_R2_BRANCH_REGIMES",
+            "provenance": train_population.get("provenance", "undeclared"),
+            "donor_contract_declared": (
+                "UNKNOWN (inputs unbound)" if input_binding(train_population) is None
+                else "OPERATIONAL/TRAIN_ONLY"
+            ),
+            "branches": records,
+            "branch_regime_config": resolved,
+            "grids": grids,
+            "seed": seed,
+            "runtime": runtime_versions(),
+            "resumed_branches": resumed,
+            "source_config_sha256": source_sha,
+            "train_population": train_population,
+            "validation_population": validation_population,
+            "train_input": train_identity,
+            "validation_input": validation_identity,
+            "fusion_materialized": False,
+            "core_trained": False,
+        }
+        (out / "BRANCH_PRETRAIN.json").write_text(
+            json.dumps(result, indent=2, allow_nan=False) + "\n"
+        )
+        return result
 
     # ---- stage 2: fused materialization from FIXED exported branch donors -------------
     tf.keras.backend.clear_session()
@@ -767,7 +803,8 @@ def internal_split(timestamps, window, sample_hours, fraction=0.8):
 
 def pretrain_from_train_npz(train_npz, output_dir, fit_config, *, provenance, config=None,
                             seed=None, heartbeat=None, fraction=0.8, stage_fit_configs=None,
-                            manifest_sha256=None, declaration_sha256=None, resume=False):
+                            manifest_sha256=None, declaration_sha256=None, resume=False,
+                            stop_after_branches=False):
     """Input swap: pretrain from an evaluator-format TRAIN NPZ (split must be 'train').
 
     Uses only the windows of that file; the outer validation, test and holdout
@@ -808,7 +845,7 @@ def pretrain_from_train_npz(train_npz, output_dir, fit_config, *, provenance, co
     validation_view = windows[va[0]:va[-1] + 1]
     return pretrain_components(base, train_view, validation_view, output_dir, fit_config, *pops,
                                seed=seed, heartbeat=heartbeat, stage_fit_configs=stage_fit_configs,
-                               resume=resume)
+                               resume=resume, stop_after_branches=stop_after_branches)
 
 
 def run_cost_pilot(train_npz, declaration_path, out, *, n_branches, fit, seed=7,

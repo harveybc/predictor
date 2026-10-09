@@ -83,6 +83,31 @@ def test_all_stages_export_reload_and_real_updates(pretrained):
     assert result["fused_train"]["shape"] == [8, 24, 32]  # 24 retained steps, 2 branches x 16
 
 
+def test_branch_only_pretraining_stops_before_fusion_and_core(tmp_path):
+    from predictor_plugins.modular_temporal import default_config
+
+    rng = np.random.default_rng(117)
+    train = rng.normal(size=(8, 24, 2)).astype("float32")
+    validation = rng.normal(size=(4, 24, 2)).astype("float32")
+    t, v = populations()
+    out = tmp_path / "branches"
+
+    result = pretrain_components(
+        default_config(["a", "b"]), train, validation, out, FIT, t, v,
+        seed=5, stop_after_branches=True, branch_isolation="session",
+    )
+
+    assert result["schema"] == "modular.branch_pretrain.v1"
+    assert result["status"] == "COMPLETE"
+    assert len(result["branches"]) == 2
+    assert result["next_stage"] == "R0_R1_R2_BRANCH_REGIMES"
+    assert (out / "BRANCH_PRETRAIN.json").is_file()
+    assert not (out / "FUSION.json").exists()
+    assert not (out / "core.keras").exists()
+    assert not (out / "PRETRAIN.json").exists()
+    assert all(Path(row["donor"]).is_file() for row in result["branches"])
+
+
 def test_right_edge_grids_and_materialized_row_alignment(pretrained):
     from predictor_plugins.modular_temporal import build_modular
     result, train = pretrained["result"], pretrained["train"]
