@@ -42,8 +42,9 @@ def main(argv=None):
     fit = {"max_epochs": args.max_epochs, "patience": args.patience, "min_delta": 1e-4,
            "monitor_every": 1, "max_updates": args.max_updates, "max_seconds": args.max_seconds,
            "batch_size": args.batch_size, "learning_rate": args.learning_rate, "loss": "mse"}
-    output.mkdir(parents=True, exist_ok=args.resume)
-    with Heartbeat(output / "heartbeat.jsonl", 30.0) as heartbeat:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    heartbeat_path = output.with_name(output.name + ".heartbeat.jsonl")
+    with Heartbeat(heartbeat_path, 30.0) as heartbeat:
         result = pretrain_from_train_npz(
             args.train_npz, output, fit, provenance="local_file", config=config,
             seed=args.seed, heartbeat=heartbeat, resume=args.resume,

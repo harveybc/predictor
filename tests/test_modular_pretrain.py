@@ -108,6 +108,12 @@ def test_branch_only_pretraining_stops_before_fusion_and_core(tmp_path):
     assert all(Path(row["donor"]).is_file() for row in result["branches"])
 
 
+def test_i6b_wrapper_keeps_heartbeat_outside_the_empty_output_contract():
+    source = Path("tools/i6b_branch_pretrain.py").read_text()
+    assert 'output.with_name(output.name + ".heartbeat.jsonl")' in source
+    assert 'Heartbeat(output / "heartbeat.jsonl"' not in source
+
+
 def test_right_edge_grids_and_materialized_row_alignment(pretrained):
     from predictor_plugins.modular_temporal import build_modular
     result, train = pretrained["result"], pretrained["train"]
