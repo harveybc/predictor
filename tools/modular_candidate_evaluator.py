@@ -100,8 +100,8 @@ def _settings(config):
         _number(settings[name], name, 0)
     if settings["loss"] not in ("huber", "mae", "mse"):
         raise ValueError("loss must be huber, mae or mse")
-    if settings["monitor"] != "validation_loss":
-        raise ValueError("monitor must be validation_loss (the held-out split's training loss)")
+    if settings["monitor"] not in ("validation_loss", "train_validation_mean"):
+        raise ValueError("monitor must be validation_loss or train_validation_mean")
     return settings
 
 
@@ -318,12 +318,14 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
     _weight_digest(model.get_weights())
     history, best_weights, best_digest = [], None, None
     best_loss, stale, updates, best_epoch, selected_updates = float("inf"), 0, 0, 0, 0
+    selected_validation_loss = None
     monitor_every, monitor_count = settings["monitor_every"], 0
 
     def report(**fields):
         if progress is not None:
             progress(dict(updates=updates, best_epoch=best_epoch,
-                          best_validation_loss=None if best_weights is None else best_loss,
+                          best_validation_loss=selected_validation_loss,
+                          best_monitored_loss=None if best_weights is None else best_loss,
                           max_epochs=settings["max_epochs"], max_updates=settings["max_updates"],
                           max_seconds=settings["max_seconds"],
                           elapsed_seconds=time.monotonic() - started, **fields))
@@ -381,10 +383,14 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
             break
         val_loss /= len(vx)
         monitor_count += 1
+        monitored_loss = (val_loss if settings["monitor"] == "validation_loss"
+                          else 0.5 * (train_loss / len(x) + val_loss))
         history.append(dict(epoch=epoch, train_loss=train_loss / len(x), validation_loss=val_loss,
+                            monitored_loss=monitored_loss,
                             monitored=True, updates=updates, weights_sha256=epoch_digest))
-        if val_loss < best_loss - settings["min_delta"]:
-            best_loss, best_epoch, stale = val_loss, epoch, 0
+        if monitored_loss < best_loss - settings["min_delta"]:
+            best_loss, best_epoch, stale = monitored_loss, epoch, 0
+            selected_validation_loss = val_loss
             best_weights = [v.copy() for v in model.get_weights()]
             best_digest, selected_updates = epoch_digest, updates
         else:
@@ -411,7 +417,8 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
     return dict(settings=settings, history=history, epochs_completed=len(history),
                 monitor_evaluations=monitor_count,
                 selected_epoch=best_epoch, best_epoch=best_epoch, selected_updates=selected_updates,
-                best_validation_loss=best_loss, observed_updates=updates,
+                best_validation_loss=selected_validation_loss,
+                best_monitored_loss=best_loss, observed_updates=updates,
                 initial_optimizer_iterations=initial_iterations,
                 optimizer_iterations=final_iterations, stop_reason=stop_reason,
                 stop_class="no_improvement" if stop_reason == "patience" else "budget",
