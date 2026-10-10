@@ -210,6 +210,21 @@ and resource limits. A dry-run contract is not an optimization result. Keep the
 incumbent, candidate history and independent verification result in the existing
 warehouse path when that adapter is exercised; local smoke metrics remain local.
 
+## Predictive information diagnostic
+
+After the active architecture contrast, follow
+[Predictive Information and Window Diagnostic](PREDICTIVE_INFORMATION_WINDOW_DIAGNOSTIC.md).
+Reuse retained TRAIN diagnostics first; no new fit is launched by this addition.
+It tests horizon/window information saturation, not a universal Nyquist bound.
+
+**I6-E:** the first concrete resolution experiment is specified in
+[Origin-Anchored Resolution Work Plan](I6E_ORIGIN_ANCHORED_RESOLUTION_WORK_PLAN.md).
+It compares hourly, 72-hour, 36-hour and 18-hour inputs for hourly-issued 72-hour predictions,
+with a shared modular R0 model, weekly refits and statistical controls. The
+extension selects spacing and input count within TRAIN for each authenticated
+strategy horizon, then evaluates frozen choices over all validation weeks. Prepare
+on CPU alongside existing work; GPU fits follow the active I6-B/I7 contrast.
+
 ## Test order and release evidence
 
 Write behavior tests before implementation: shape/time coverage; prefix

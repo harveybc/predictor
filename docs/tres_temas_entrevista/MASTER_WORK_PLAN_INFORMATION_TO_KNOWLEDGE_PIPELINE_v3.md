@@ -1,6 +1,6 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-07. Este documento contiene sólo el plan vigente. Los
+Actualizado: 2026-10-10. Este documento contiene sólo el plan vigente. Los
 retornos RP, snapshots de máquinas, restricciones ya levantadas y dictámenes
 superados son evidencia histórica en `docs/audits/` y `docs/handoffs/`; no
 gobiernan la ejecución.
@@ -106,6 +106,10 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
   después de I5; resultado emparejado, sin atribuir tiempo a neuronas latentes.
 - [ ] I6-B. Preentrenamiento de extractores de ramas seleccionadas.
 - [ ] I7. E1: R0 frente a R1 frente a R2, mismo diseño y población.
+- [ ] I6-E. Viabilidad de doble pronostico: resoluciones h, h/2 y h/4,
+  ventanas ancladas al origen horario, sin suavizado, naive anual pareado.
+  [Subplan de ejecucion](program_v3/I6E_ORIGIN_ANCHORED_RESOLUTION_WORK_PLAN.md).
+  Preparacion CPU independiente; ajustes GPU despues del contraste I6-B/I7 activo.
 - [ ] I7-H. Fijar prefijo ganador y probar H-CORE por separado.
 - [ ] I8. Optimización DEAP distribuida por DOIN del modelo elegible.
 - [ ] I9-N. Representación final congelada: Dense control frente a NEAT.
@@ -119,6 +123,28 @@ de otro; referencias públicas, ingeniería, M5PHET y paper trading pueden avanz
 si no consumen artefactos que todavía no existen.
 
 ## 5. Datos y selección progresiva
+
+### Decision de negocio sobre los predictores
+
+I6-E debe producir una decision explicita sobre continuar la estrategia de
+pronosticos cortos/largos. Informar habilidad por horizonte y por funcion:
+cierre temprano frente a apertura/TP/SL. La compuerta es mejora estricta del
+MAE anual sobre el naive en las mismas filas, no mejora obligatoria cada semana.
+No exigir que todos los horizontes ganen: conservar los elegibles y comprobar
+si bastan para ambas funciones mediante la interfaz real de heuristic-strategy.
+Un subconjunto distinto exige su propia configuracion e identidad, no sustituir
+silenciosamente horizontes que el plugin requiere. No ensayar configuraciones
+inelegibles en trading. Ganar al naive no demuestra rentabilidad: despues medir
+costes, riesgo, Sharpe y utilidad pareada con el plugin existente.
+
+Si el ensayo finito no aporta senales elegibles para ambas funciones, registrar
+que la formulacion probada no justifica mas optimizacion, no una imposibilidad
+matematica universal. Priorizar entonces los carriles existentes de politicas
+SAC/DQN y definir por separado objetivos de eventos, direccion, barreras o
+parametros de orden. No lanzar automaticamente una busqueda ilimitada de
+predictores ni convertir el resultado negativo en una afirmacion sobre RL.
+
+### Secuencia de datos
 
 La primera selección financiera de negocio es **EURUSD**, con targets de retorno
 1-6 h, 24-144 h, barreras de orden y objetivo de política. FXMacroData aporta
