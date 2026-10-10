@@ -167,6 +167,7 @@ def initialize(parent_path, root):
         operating_horizons=list(OPERATING_HORIZONS), target_names=list(target_names()),
         arm="R2_B", seed=0, expected_cells=len(parent["weeks"]),
         monitor="train_validation_mean", test_read=False, code_sha256=code_digest(),
+        inner_validation_weeks=4,
         feature_policy="fixed selected20 transfer set; not horizon-specific selection",
         label_policy="missing endpoints zero-weighted; loss equalized per horizon",
     ), "design_sha256")
@@ -211,7 +212,8 @@ def run_cell(root, ordinal, args):
                     if w.split is weekly.EvaluationSplit.VALIDATION
                     and weekly._iso(w.start) == week_dict["start"])
         purge = dt.timedelta(hours=max(HORIZONS))
-        support = weekly.SupportSpec(dt.timedelta(0), purge, dt.timedelta(0), 1)
+        support = weekly.SupportSpec(dt.timedelta(0), purge, dt.timedelta(0),
+                                     design["inner_validation_weeks"])
         minimum = int(week.fit_start.timestamp())
         fit_start = minimum + 23 * 3600
         cutoff = int(week.cutoff.timestamp())

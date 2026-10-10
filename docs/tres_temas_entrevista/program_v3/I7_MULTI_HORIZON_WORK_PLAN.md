@@ -20,7 +20,7 @@ from scratch: this experiment does not claim core pretraining.
 
 Seed 0 is retained. Each of the 52 validation weeks of the inherited 2024
 calendar gets exactly one fit on the preceding four calendar years. Purge
-labels by the maximum 120h support, with chronological inner validation;
+labels by the maximum 120h support, with four chronological inner-validation weeks;
 do not use outer-week outcomes for early stopping. Input normalization and
 each output's robust scale are fitted on the fit population alone.
 Missing physical future timestamps and stale long-target endpoints are
@@ -30,6 +30,10 @@ Fit rows therefore need at least one finite label. Missing labels have zero
 sample weight; each horizon's weights sum to its population's row count, so
 the loss is the equally weighted mean of per-horizon mean losses. Fit and
 inner-validation counts are retained separately for every horizon.
+The preliminary one-week inner-validation pilot was retired after a holiday
+week left a horizon with no labels. Four inner weeks provide the same fixed
+selection rule for all weekly fits; preliminary cells are not mixed into the
+annual result. This is a support repair, not selection based on forecast skill.
 
 Early stopping monitors half the sum of sample-weighted batch training loss
 and inner-validation loss, using the inherited patience/budgets. Batch training
