@@ -227,6 +227,14 @@ def run_cell(root, ordinal, args):
             raise ValueError("insufficient multi-horizon fit/inner windows")
         center, scale = target_scaler(targets[kf])
         keras = predictor._keras()
+        import tensorflow as tf
+        devices = tf.config.list_physical_devices("GPU")
+        if len(devices) != 1:
+            raise ValueError("exactly one visible GPU required; CPU fallback prohibited")
+        with tf.device("/GPU:0"):
+            probe = tf.linalg.matmul(tf.ones((2, 2)), tf.ones((2, 2)))
+        if "GPU:0" not in probe.device or not np.isfinite(probe.numpy()).all():
+            raise ValueError("GPU execution probe failed")
         keras.utils.set_random_seed(design["seed"])
         config = base._arm_config(parent, "R2_B", donors)
         config["horizons"] = list(HORIZONS)
@@ -274,6 +282,7 @@ def run_cell(root, ordinal, args):
         body = dict(schema=SCHEMA, status="COMPLETED", design_sha256=design["design_sha256"],
                     week_ordinal=ordinal, week=week_dict, horizons=list(HORIZONS),
                     seed=design["seed"], regime="R2_B", test_read=False,
+                    device=probe.device, gpu_details=tf.config.experimental.get_device_details(devices[0]),
                     input_digests=store.digests, row_id_offset=store.row_id_offset,
                     target_center=center.tolist(), target_scale=scale.tolist(),
                     standardiser_sha256=scaler.sha256(),
