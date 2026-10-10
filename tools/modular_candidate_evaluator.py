@@ -282,6 +282,8 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
     compile_model = raw.pop("compile", True)
     custom_optimizer = raw.pop("optimizer", None)
     progress = raw.pop("progress", None)
+    train_sample_weight = raw.pop("train_sample_weight", None)
+    validation_sample_weight = raw.pop("validation_sample_weight", None)
     if progress is not None and not callable(progress):
         raise ValueError("progress must be callable")
     custom_loss = raw.get("loss")
@@ -301,6 +303,11 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
     if (len(x) != len(y) or len(vx) != len(vy) or x.shape[1:] != vx.shape[1:] or
             y.shape[1:] != vy.shape[1:]):
         raise ValueError("training/validation array dimensions disagree")
+    for weights, target in ((train_sample_weight, y), (validation_sample_weight, vy)):
+        if weights is not None:
+            if weights.shape != target.shape[:-1] or np.any(weights < 0):
+                raise ValueError("sample weights must match batch/horizon axes and be nonnegative")
+            _finite(weights, "sample weights")
     if compile_model:
         losses = {"huber": lambda: tf.keras.losses.Huber(delta=settings["huber_delta"]),
                   "mae": tf.keras.losses.MeanAbsoluteError,
@@ -350,7 +357,8 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
             model.reset_metrics()
             before = int(optimizer.iterations.numpy())
             xb, yb = _batch(x, start, batch, "x_train"), _batch(y, start, batch, "y_train")
-            value = model.train_on_batch(xb, yb)
+            wb = None if train_sample_weight is None else _batch(train_sample_weight, start, batch, "train weights")
+            value = model.train_on_batch(xb, yb, sample_weight=wb)
             _finite(value, "training loss")
             delta = int(optimizer.iterations.numpy()) - before
             if delta != 1:
@@ -376,7 +384,8 @@ def fit_with_early_stopping(model, x_train, y_train, x_val, y_val, fit_config):
                 break
             model.reset_metrics()
             xb, yb = _batch(vx, start, batch, "x_val"), _batch(vy, start, batch, "y_val")
-            value = model.test_on_batch(xb, yb)
+            wb = None if validation_sample_weight is None else _batch(validation_sample_weight, start, batch, "validation weights")
+            value = model.test_on_batch(xb, yb, sample_weight=wb)
             _finite(value, "validation loss")
             val_loss += float(np.asarray(value).reshape(-1)[0]) * len(xb)
         if interrupted:

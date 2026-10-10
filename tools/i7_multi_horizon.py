@@ -50,12 +50,23 @@ def exact_targets(timestamps, targets):
 
 def target_scaler(y):
     """Fit robust scales independently per output, using fit rows only."""
-    center = np.median(y, axis=0)
-    scale = 1.4826 * np.median(np.abs(y - center), axis=0)
-    scale = np.where(scale > np.finfo("float32").eps, scale, np.std(y, axis=0))
+    center = np.nanmedian(y, axis=0)
+    scale = 1.4826 * np.nanmedian(np.abs(y - center), axis=0)
+    scale = np.where(scale > np.finfo("float32").eps, scale, np.nanstd(y, axis=0))
     if not np.all(np.isfinite(center)) or not np.all(np.isfinite(scale)) or np.any(scale <= 0):
         raise ValueError("target scale degenerate")
     return center, scale
+
+
+def masked_training_targets(y, center, scale):
+    """Zero-weight unavailable labels; equalize each horizon's mean loss."""
+    valid = np.isfinite(y)
+    counts = valid.sum(axis=0)
+    if np.any(counts == 0) or np.any(valid.sum(axis=1) == 0):
+        raise ValueError("empty training horizon or origin")
+    values = np.where(valid, (y - center) / scale, 0).astype("float32")
+    weights = (valid * (len(y) / counts)).astype("float32")
+    return values[:, :, None], weights
 
 
 def check_prediction(prediction, n):
@@ -157,6 +168,7 @@ def initialize(parent_path, root):
         arm="R2_B", seed=0, expected_cells=len(parent["weeks"]),
         monitor="train_validation_mean", test_read=False, code_sha256=code_digest(),
         feature_policy="fixed selected20 transfer set; not horizon-specific selection",
+        label_policy="missing endpoints zero-weighted; loss equalized per horizon",
     ), "design_sha256")
     destination = Path(root) / "SWEEP_DESIGN.json"
     if destination.exists():
@@ -203,7 +215,7 @@ def run_cell(root, ordinal, args):
         minimum = int(week.fit_start.timestamp())
         fit_start = minimum + 23 * 3600
         cutoff = int(week.cutoff.timestamp())
-        finite = np.isfinite(targets).all(axis=1)
+        finite = np.isfinite(targets).any(axis=1)
         eligible = np.flatnonzero(finite & (store.ts >= fit_start)
                                   & (store.ts + max(HORIZONS) * 3600 <= cutoff))
         rows = [weekly.AsOfRow(
@@ -253,9 +265,11 @@ def run_cell(root, ordinal, args):
 
         fit = dict(parent["parent_design"]["config"]["fit"],
                    monitor=design["monitor"], seed=design["seed"], progress=progress)
+        yf, wf = masked_training_targets(targets[kf], center, scale)
+        yv, wv = masked_training_targets(targets[kv], center, scale)
+        fit.update(train_sample_weight=wf, validation_sample_weight=wv)
         training = fit_with_early_stopping(
-            bundle.forecast_model, xf, ((targets[kf]-center)/scale).astype("float32")[:, :, None],
-            xv, ((targets[kv]-center)/scale).astype("float32")[:, :, None], fit)
+            bundle.forecast_model, xf, yf, xv, yv, fit)
         after = base._component_hashes(bundle)
         changed = sum(before["branches"][name] != after["branches"][name]
                       for name in before["branches"])
@@ -287,6 +301,8 @@ def run_cell(root, ordinal, args):
                     target_center=center.tolist(), target_scale=scale.tolist(),
                     standardiser_sha256=scaler.sha256(),
                     fit_rows=len(kf), inner_rows=len(kv),
+                    fit_labels_per_horizon=np.isfinite(targets[kf]).sum(axis=0).tolist(),
+                    inner_labels_per_horizon=np.isfinite(targets[kv]).sum(axis=0).tolist(),
                     fit_population_digest=resolved.fit_population_digest,
                     inner_population_digest=resolved.inner_validation_population_digest,
                     training=training, branch_changed_count=changed,

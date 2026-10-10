@@ -63,3 +63,14 @@ def test_horizon_support_is_physical_hours_not_rows():
     y = sweep.exact_targets(ts, targets)
     assert np.isnan(y[0, 0])
     assert np.isfinite(y[0, 1])
+
+
+def test_masked_labels_do_not_require_all_horizons_at_once():
+    y = np.array([[1., np.nan], [np.nan, 100.], [2., 200.]])
+    center, scale = sweep.target_scaler(y)
+    targets, weights = sweep.masked_training_targets(y, center, scale)
+    assert np.isfinite(targets).all()
+    np.testing.assert_array_equal(weights == 0, ~np.isfinite(y))
+    np.testing.assert_allclose(weights.sum(axis=0), [3., 3.])
+    with pytest.raises(ValueError, match="empty"):
+        sweep.masked_training_targets(np.array([[np.nan, 1.]]), np.zeros(2), np.ones(2))

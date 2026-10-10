@@ -106,10 +106,15 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
   después de I5; resultado emparejado, sin atribuir tiempo a neuronas latentes.
 - [ ] I6-B. Preentrenamiento de extractores de ramas seleccionadas.
 - [ ] I7. E1: R0 frente a R1 frente a R2, mismo diseño y población.
+  El contraste semanal de 1 h cerro sus 156 celdas; ninguno supero al naive.
+  Esto no cierra la viabilidad de la estrategia. Sigue I7-M: un cabezal directo
+  con 11 salidas (1-6, 24, 48, 72, 96 y 120 h), ramas preentrenadas en R2,
+  cuatro anos moviles y 52 semanas de VALIDATION. 1 h es solo diagnostico.
+  [Contrato y ejecucion](program_v3/I7_MULTI_HORIZON_WORK_PLAN.md).
 - [ ] I6-E. Viabilidad de doble pronostico: resoluciones h, h/2 y h/4,
   ventanas ancladas al origen horario, sin suavizado, naive anual pareado.
   [Subplan de ejecucion](program_v3/I6E_ORIGIN_ANCHORED_RESOLUTION_WORK_PLAN.md).
-  Preparacion CPU independiente; ajustes GPU despues del contraste I6-B/I7 activo.
+  Preparacion CPU independiente; contraste de remuestreo despues de I7-M.
 - [ ] I7-H. Fijar prefijo ganador y probar H-CORE por separado.
 - [ ] I8. Optimización DEAP distribuida por DOIN del modelo elegible.
 - [ ] I9-N. Representación final congelada: Dense control frente a NEAT.
