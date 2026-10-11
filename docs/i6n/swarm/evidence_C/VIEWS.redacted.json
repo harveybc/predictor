@@ -3,33 +3,60 @@
   "12": [
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q1_DCA_h12.json",
+     "sha256": "c4e2a91f2f33017dc2de65a228e29a5428ca019426f2b8eb6d5cbc1c9bd93522"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-03-31T21:00:00+00:00",
-    "fold_id": "2023Q1",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q1",
-    "unit_sha256": "469389a302a6c50b48cdeedacce7a109e2b94d1658a1d713413fc396f894c614"
+    "fold_id": "2023Q1_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q1",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q1_DCA",
+    "unit_sha256": "c58d2e5a16a3b794eaf6142aea0b7f17eed445a7cabc2de29ff1f5ba1bc3c11e"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q2_DCA_h12.json",
+     "sha256": "cf4bc983f06fe43e5ea32ade1cd29f9fbf2c497ad119013b0fbdf0d15b65e26f"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-06-30T21:00:00+00:00",
-    "fold_id": "2023Q2",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q2",
-    "unit_sha256": "91d71a2c5d3aadfb77252b97a689063f10b362ec504f6c770f6b930aa983268b"
+    "fold_id": "2023Q2_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q2",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q2_DCA",
+    "unit_sha256": "2c4eede19332ee1aabd43aa284eb34ac14476c5c286b868791602c7cfc8e8cfc"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q3_DCA_h12.json",
+     "sha256": "2c400d76b50385f6c1bc72e2f5c21319081eff919f685fe4e6217c1f59e3c213"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-09-29T21:00:00+00:00",
-    "fold_id": "2023Q3",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q3",
-    "unit_sha256": "0231cdca6a2d1d2f427b8384c05291cf047db6f4cd17444a0b022f76ca9c5d64"
+    "fold_id": "2023Q3_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q3",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q3_DCA",
+    "unit_sha256": "9e046b70b06129bef1e3e881e2d271baab6e7092a37fd719b0198a07dc8923be"
    },
    {
     "binding": null,
@@ -38,43 +65,73 @@
      "path": "<private>/2023Q4_h12.json",
      "sha256": "745acb720d39c1a14822884d68a2b28f77e996860482ad7309f1f5eb945acb0e"
     },
+    "clock_assumption": null,
     "cutoff_utc": "2023-12-29T22:00:00+00:00",
     "fold_id": "2023Q4",
+    "outer_scoring": "never",
+    "quarter": "2023Q4",
     "state": "READY",
     "unit_id": "2023Q4",
-    "unit_sha256": "f25bca0c7095ede4b8692834f261791d0f9e9b61c3d0e5bf2df25e3b3b1301cd"
+    "unit_sha256": "e1a71a7f8da375720b62e89270a8e98b8e7126c1daf6e13d05c34818181021e5"
    }
   ],
   "18": [
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q1_DCA_h18.json",
+     "sha256": "4832a2d610e066a5ed4dccd4df55e916b2046893b13ba659d2bb33cbe2ff74db"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-03-31T21:00:00+00:00",
-    "fold_id": "2023Q1",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q1",
-    "unit_sha256": "469389a302a6c50b48cdeedacce7a109e2b94d1658a1d713413fc396f894c614"
+    "fold_id": "2023Q1_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q1",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q1_DCA",
+    "unit_sha256": "c58d2e5a16a3b794eaf6142aea0b7f17eed445a7cabc2de29ff1f5ba1bc3c11e"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q2_DCA_h18.json",
+     "sha256": "189fe08b4b4c9d014109dba287ea96ee1abe2cb22354704995c3f730a599695d"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-06-30T21:00:00+00:00",
-    "fold_id": "2023Q2",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q2",
-    "unit_sha256": "91d71a2c5d3aadfb77252b97a689063f10b362ec504f6c770f6b930aa983268b"
+    "fold_id": "2023Q2_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q2",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q2_DCA",
+    "unit_sha256": "2c4eede19332ee1aabd43aa284eb34ac14476c5c286b868791602c7cfc8e8cfc"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q3_DCA_h18.json",
+     "sha256": "1fa56cb7c7e6b77d915eaa599a7acee00e3271aa8c3e753ec40923760ede0883"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-09-29T21:00:00+00:00",
-    "fold_id": "2023Q3",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q3",
-    "unit_sha256": "0231cdca6a2d1d2f427b8384c05291cf047db6f4cd17444a0b022f76ca9c5d64"
+    "fold_id": "2023Q3_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q3",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q3_DCA",
+    "unit_sha256": "9e046b70b06129bef1e3e881e2d271baab6e7092a37fd719b0198a07dc8923be"
    },
    {
     "binding": null,
@@ -83,43 +140,73 @@
      "path": "<private>/2023Q4_h18.json",
      "sha256": "f76d112b870fa045ec178e0f89c1c1e4ce67b9efa77f717eccfcf1432b540359"
     },
+    "clock_assumption": null,
     "cutoff_utc": "2023-12-29T22:00:00+00:00",
     "fold_id": "2023Q4",
+    "outer_scoring": "never",
+    "quarter": "2023Q4",
     "state": "READY",
     "unit_id": "2023Q4",
-    "unit_sha256": "f25bca0c7095ede4b8692834f261791d0f9e9b61c3d0e5bf2df25e3b3b1301cd"
+    "unit_sha256": "e1a71a7f8da375720b62e89270a8e98b8e7126c1daf6e13d05c34818181021e5"
    }
   ],
   "2": [
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q1_DCA_h2.json",
+     "sha256": "fc6b6a7b5fb2f9a580de0e71823d227404e97eea88b51903f86cb20373f62376"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-03-31T21:00:00+00:00",
-    "fold_id": "2023Q1",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q1",
-    "unit_sha256": "469389a302a6c50b48cdeedacce7a109e2b94d1658a1d713413fc396f894c614"
+    "fold_id": "2023Q1_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q1",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q1_DCA",
+    "unit_sha256": "c58d2e5a16a3b794eaf6142aea0b7f17eed445a7cabc2de29ff1f5ba1bc3c11e"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q2_DCA_h2.json",
+     "sha256": "d9926830978f53c5ab7e75c3fe0c411612a53ab0c15b28fe72d9c7796625ab17"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-06-30T21:00:00+00:00",
-    "fold_id": "2023Q2",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q2",
-    "unit_sha256": "91d71a2c5d3aadfb77252b97a689063f10b362ec504f6c770f6b930aa983268b"
+    "fold_id": "2023Q2_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q2",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q2_DCA",
+    "unit_sha256": "2c4eede19332ee1aabd43aa284eb34ac14476c5c286b868791602c7cfc8e8cfc"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q3_DCA_h2.json",
+     "sha256": "9c049c6aa4c79cca9e01bc8599caaac511c92d4f282889298c89f9be26391a33"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-09-29T21:00:00+00:00",
-    "fold_id": "2023Q3",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q3",
-    "unit_sha256": "0231cdca6a2d1d2f427b8384c05291cf047db6f4cd17444a0b022f76ca9c5d64"
+    "fold_id": "2023Q3_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q3",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q3_DCA",
+    "unit_sha256": "9e046b70b06129bef1e3e881e2d271baab6e7092a37fd719b0198a07dc8923be"
    },
    {
     "binding": null,
@@ -128,43 +215,73 @@
      "path": "<private>/2023Q4_h2.json",
      "sha256": "b1febb04219a9363bb3f09d1b9e801f7244909d5681133cf816460ab8378ccc4"
     },
+    "clock_assumption": null,
     "cutoff_utc": "2023-12-29T22:00:00+00:00",
     "fold_id": "2023Q4",
+    "outer_scoring": "never",
+    "quarter": "2023Q4",
     "state": "READY",
     "unit_id": "2023Q4",
-    "unit_sha256": "f25bca0c7095ede4b8692834f261791d0f9e9b61c3d0e5bf2df25e3b3b1301cd"
+    "unit_sha256": "e1a71a7f8da375720b62e89270a8e98b8e7126c1daf6e13d05c34818181021e5"
    }
   ],
   "24": [
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q1_DCA_h24.json",
+     "sha256": "b0d891d58543ed7023a8db606ad7a5c178869bbf7004ff546c948380e0e43c04"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-03-31T21:00:00+00:00",
-    "fold_id": "2023Q1",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q1",
-    "unit_sha256": "469389a302a6c50b48cdeedacce7a109e2b94d1658a1d713413fc396f894c614"
+    "fold_id": "2023Q1_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q1",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q1_DCA",
+    "unit_sha256": "c58d2e5a16a3b794eaf6142aea0b7f17eed445a7cabc2de29ff1f5ba1bc3c11e"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q2_DCA_h24.json",
+     "sha256": "c91540f6d1320ea2d8cd1e27a4dea2f6255eec0d1cbf8e563f8f7444a76dc234"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-06-30T21:00:00+00:00",
-    "fold_id": "2023Q2",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q2",
-    "unit_sha256": "91d71a2c5d3aadfb77252b97a689063f10b362ec504f6c770f6b930aa983268b"
+    "fold_id": "2023Q2_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q2",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q2_DCA",
+    "unit_sha256": "2c4eede19332ee1aabd43aa284eb34ac14476c5c286b868791602c7cfc8e8cfc"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q3_DCA_h24.json",
+     "sha256": "bbbe0b2a54d8da941aa5f08531bd5d9aa79a2fcf7276d7f111503c2b109ba8be"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-09-29T21:00:00+00:00",
-    "fold_id": "2023Q3",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q3",
-    "unit_sha256": "0231cdca6a2d1d2f427b8384c05291cf047db6f4cd17444a0b022f76ca9c5d64"
+    "fold_id": "2023Q3_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q3",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q3_DCA",
+    "unit_sha256": "9e046b70b06129bef1e3e881e2d271baab6e7092a37fd719b0198a07dc8923be"
    },
    {
     "binding": null,
@@ -173,43 +290,73 @@
      "path": "<private>/2023Q4_h24.json",
      "sha256": "29a93615ad86aa078edbdfdf14f680ed62a5c34719d075c179a0f67a833bf8e2"
     },
+    "clock_assumption": null,
     "cutoff_utc": "2023-12-29T22:00:00+00:00",
     "fold_id": "2023Q4",
+    "outer_scoring": "never",
+    "quarter": "2023Q4",
     "state": "READY",
     "unit_id": "2023Q4",
-    "unit_sha256": "f25bca0c7095ede4b8692834f261791d0f9e9b61c3d0e5bf2df25e3b3b1301cd"
+    "unit_sha256": "e1a71a7f8da375720b62e89270a8e98b8e7126c1daf6e13d05c34818181021e5"
    }
   ],
   "3": [
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q1_DCA_h3.json",
+     "sha256": "8e761c62b9dfa03e1f611f63da814de2892196fccac1343fff61f1b74cff6a6f"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-03-31T21:00:00+00:00",
-    "fold_id": "2023Q1",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q1",
-    "unit_sha256": "469389a302a6c50b48cdeedacce7a109e2b94d1658a1d713413fc396f894c614"
+    "fold_id": "2023Q1_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q1",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q1_DCA",
+    "unit_sha256": "c58d2e5a16a3b794eaf6142aea0b7f17eed445a7cabc2de29ff1f5ba1bc3c11e"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q2_DCA_h3.json",
+     "sha256": "421a372e578a14797e31efc3a2cd9a43ebf7f4edf653b1e160008db6590e0420"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-06-30T21:00:00+00:00",
-    "fold_id": "2023Q2",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q2",
-    "unit_sha256": "91d71a2c5d3aadfb77252b97a689063f10b362ec504f6c770f6b930aa983268b"
+    "fold_id": "2023Q2_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q2",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q2_DCA",
+    "unit_sha256": "2c4eede19332ee1aabd43aa284eb34ac14476c5c286b868791602c7cfc8e8cfc"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q3_DCA_h3.json",
+     "sha256": "3f5359779d97da3cc1d2cd7fbc7c0be2c07ea843fa53b770650ba9677c2a5205"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-09-29T21:00:00+00:00",
-    "fold_id": "2023Q3",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q3",
-    "unit_sha256": "0231cdca6a2d1d2f427b8384c05291cf047db6f4cd17444a0b022f76ca9c5d64"
+    "fold_id": "2023Q3_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q3",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q3_DCA",
+    "unit_sha256": "9e046b70b06129bef1e3e881e2d271baab6e7092a37fd719b0198a07dc8923be"
    },
    {
     "binding": null,
@@ -218,43 +365,73 @@
      "path": "<private>/2023Q4_h3.json",
      "sha256": "a73f38ff0993c6db5f8d956d8917a36a71ad5ff5fdc6be69c62958b236fe6397"
     },
+    "clock_assumption": null,
     "cutoff_utc": "2023-12-29T22:00:00+00:00",
     "fold_id": "2023Q4",
+    "outer_scoring": "never",
+    "quarter": "2023Q4",
     "state": "READY",
     "unit_id": "2023Q4",
-    "unit_sha256": "f25bca0c7095ede4b8692834f261791d0f9e9b61c3d0e5bf2df25e3b3b1301cd"
+    "unit_sha256": "e1a71a7f8da375720b62e89270a8e98b8e7126c1daf6e13d05c34818181021e5"
    }
   ],
   "36": [
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q1_DCA_h36.json",
+     "sha256": "fba88e5efa108c3b15e8ddd09c0ba1f2bd21039d601f7630a4e7537ae16e5236"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-03-31T21:00:00+00:00",
-    "fold_id": "2023Q1",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q1",
-    "unit_sha256": "469389a302a6c50b48cdeedacce7a109e2b94d1658a1d713413fc396f894c614"
+    "fold_id": "2023Q1_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q1",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q1_DCA",
+    "unit_sha256": "c58d2e5a16a3b794eaf6142aea0b7f17eed445a7cabc2de29ff1f5ba1bc3c11e"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q2_DCA_h36.json",
+     "sha256": "869f196e06a0e290b5df45114c01ed7bd535bf780d4a915d18200813d50ae258"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-06-30T21:00:00+00:00",
-    "fold_id": "2023Q2",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q2",
-    "unit_sha256": "91d71a2c5d3aadfb77252b97a689063f10b362ec504f6c770f6b930aa983268b"
+    "fold_id": "2023Q2_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q2",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q2_DCA",
+    "unit_sha256": "2c4eede19332ee1aabd43aa284eb34ac14476c5c286b868791602c7cfc8e8cfc"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q3_DCA_h36.json",
+     "sha256": "23f0e0a72762ca56f7200690ac94f82ed7c4a15e3ea892ec3a666be7bd0cc160"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-09-29T21:00:00+00:00",
-    "fold_id": "2023Q3",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q3",
-    "unit_sha256": "0231cdca6a2d1d2f427b8384c05291cf047db6f4cd17444a0b022f76ca9c5d64"
+    "fold_id": "2023Q3_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q3",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q3_DCA",
+    "unit_sha256": "9e046b70b06129bef1e3e881e2d271baab6e7092a37fd719b0198a07dc8923be"
    },
    {
     "binding": null,
@@ -263,43 +440,73 @@
      "path": "<private>/2023Q4_h36.json",
      "sha256": "da7cd8aeeb398a2fbf4de30767a74de747b16b920bc324a292308bd3a6417b55"
     },
+    "clock_assumption": null,
     "cutoff_utc": "2023-12-29T22:00:00+00:00",
     "fold_id": "2023Q4",
+    "outer_scoring": "never",
+    "quarter": "2023Q4",
     "state": "READY",
     "unit_id": "2023Q4",
-    "unit_sha256": "f25bca0c7095ede4b8692834f261791d0f9e9b61c3d0e5bf2df25e3b3b1301cd"
+    "unit_sha256": "e1a71a7f8da375720b62e89270a8e98b8e7126c1daf6e13d05c34818181021e5"
    }
   ],
   "4": [
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q1_DCA_h4.json",
+     "sha256": "216108c6b5e7c852fd8cf86aff08aab8535250476fc25db9b883be31c164b61c"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-03-31T21:00:00+00:00",
-    "fold_id": "2023Q1",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q1",
-    "unit_sha256": "469389a302a6c50b48cdeedacce7a109e2b94d1658a1d713413fc396f894c614"
+    "fold_id": "2023Q1_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q1",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q1_DCA",
+    "unit_sha256": "c58d2e5a16a3b794eaf6142aea0b7f17eed445a7cabc2de29ff1f5ba1bc3c11e"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q2_DCA_h4.json",
+     "sha256": "a2068206e24232ad9777716fb6762eafdb083aead52e948d896064d6946a319d"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-06-30T21:00:00+00:00",
-    "fold_id": "2023Q2",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q2",
-    "unit_sha256": "91d71a2c5d3aadfb77252b97a689063f10b362ec504f6c770f6b930aa983268b"
+    "fold_id": "2023Q2_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q2",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q2_DCA",
+    "unit_sha256": "2c4eede19332ee1aabd43aa284eb34ac14476c5c286b868791602c7cfc8e8cfc"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q3_DCA_h4.json",
+     "sha256": "54a2604ad4e045b051bc42f4824c36c74a55fe5d104d23d337a394d7d13cb3d9"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-09-29T21:00:00+00:00",
-    "fold_id": "2023Q3",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q3",
-    "unit_sha256": "0231cdca6a2d1d2f427b8384c05291cf047db6f4cd17444a0b022f76ca9c5d64"
+    "fold_id": "2023Q3_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q3",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q3_DCA",
+    "unit_sha256": "9e046b70b06129bef1e3e881e2d271baab6e7092a37fd719b0198a07dc8923be"
    },
    {
     "binding": null,
@@ -308,43 +515,73 @@
      "path": "<private>/2023Q4_h4.json",
      "sha256": "d397f98e457c421a4c3b8d6c177652803042cddabf2479fc6b57463b4a08a31e"
     },
+    "clock_assumption": null,
     "cutoff_utc": "2023-12-29T22:00:00+00:00",
     "fold_id": "2023Q4",
+    "outer_scoring": "never",
+    "quarter": "2023Q4",
     "state": "READY",
     "unit_id": "2023Q4",
-    "unit_sha256": "f25bca0c7095ede4b8692834f261791d0f9e9b61c3d0e5bf2df25e3b3b1301cd"
+    "unit_sha256": "e1a71a7f8da375720b62e89270a8e98b8e7126c1daf6e13d05c34818181021e5"
    }
   ],
   "48": [
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q1_DCA_h48.json",
+     "sha256": "e985c5f2e628d8d3171d520a78a48b88e7a3081c0376b14500d80c84ddd46155"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-03-31T21:00:00+00:00",
-    "fold_id": "2023Q1",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q1",
-    "unit_sha256": "469389a302a6c50b48cdeedacce7a109e2b94d1658a1d713413fc396f894c614"
+    "fold_id": "2023Q1_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q1",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q1_DCA",
+    "unit_sha256": "c58d2e5a16a3b794eaf6142aea0b7f17eed445a7cabc2de29ff1f5ba1bc3c11e"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q2_DCA_h48.json",
+     "sha256": "453abe9a09ca59bbd7e43e40c48b6d6078ef76c6ce3b70107b888813e56a5008"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-06-30T21:00:00+00:00",
-    "fold_id": "2023Q2",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q2",
-    "unit_sha256": "91d71a2c5d3aadfb77252b97a689063f10b362ec504f6c770f6b930aa983268b"
+    "fold_id": "2023Q2_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q2",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q2_DCA",
+    "unit_sha256": "2c4eede19332ee1aabd43aa284eb34ac14476c5c286b868791602c7cfc8e8cfc"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q3_DCA_h48.json",
+     "sha256": "3f1e9389d5663a6f9c01ce9c89c9daa72ae3e3c8c65b3845b2eb4f534fe465e3"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-09-29T21:00:00+00:00",
-    "fold_id": "2023Q3",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q3",
-    "unit_sha256": "0231cdca6a2d1d2f427b8384c05291cf047db6f4cd17444a0b022f76ca9c5d64"
+    "fold_id": "2023Q3_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q3",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q3_DCA",
+    "unit_sha256": "9e046b70b06129bef1e3e881e2d271baab6e7092a37fd719b0198a07dc8923be"
    },
    {
     "binding": null,
@@ -353,43 +590,73 @@
      "path": "<private>/2023Q4_h48.json",
      "sha256": "70a6640a8439b8cd858b6aafcbd490bf531e2e04ad990dde3803e75155bf65aa"
     },
+    "clock_assumption": null,
     "cutoff_utc": "2023-12-29T22:00:00+00:00",
     "fold_id": "2023Q4",
+    "outer_scoring": "never",
+    "quarter": "2023Q4",
     "state": "READY",
     "unit_id": "2023Q4",
-    "unit_sha256": "f25bca0c7095ede4b8692834f261791d0f9e9b61c3d0e5bf2df25e3b3b1301cd"
+    "unit_sha256": "e1a71a7f8da375720b62e89270a8e98b8e7126c1daf6e13d05c34818181021e5"
    }
   ],
   "5": [
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q1_DCA_h5.json",
+     "sha256": "49f56f85e07b8f5689a8a0d62e902164468b9892e88c1ea96b133f9cf513086b"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-03-31T21:00:00+00:00",
-    "fold_id": "2023Q1",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q1",
-    "unit_sha256": "469389a302a6c50b48cdeedacce7a109e2b94d1658a1d713413fc396f894c614"
+    "fold_id": "2023Q1_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q1",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q1_DCA",
+    "unit_sha256": "c58d2e5a16a3b794eaf6142aea0b7f17eed445a7cabc2de29ff1f5ba1bc3c11e"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q2_DCA_h5.json",
+     "sha256": "7ef3876bfe8f1d7cc94acd181d39a74a0ac13c7e99a45e0a485dc97bf404a49a"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-06-30T21:00:00+00:00",
-    "fold_id": "2023Q2",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q2",
-    "unit_sha256": "91d71a2c5d3aadfb77252b97a689063f10b362ec504f6c770f6b930aa983268b"
+    "fold_id": "2023Q2_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q2",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q2_DCA",
+    "unit_sha256": "2c4eede19332ee1aabd43aa284eb34ac14476c5c286b868791602c7cfc8e8cfc"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q3_DCA_h5.json",
+     "sha256": "b833084e225c25fd271424541ac51651450be318eb9e044ebdd764e33203c1cb"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-09-29T21:00:00+00:00",
-    "fold_id": "2023Q3",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q3",
-    "unit_sha256": "0231cdca6a2d1d2f427b8384c05291cf047db6f4cd17444a0b022f76ca9c5d64"
+    "fold_id": "2023Q3_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q3",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q3_DCA",
+    "unit_sha256": "9e046b70b06129bef1e3e881e2d271baab6e7092a37fd719b0198a07dc8923be"
    },
    {
     "binding": null,
@@ -398,43 +665,73 @@
      "path": "<private>/2023Q4_h5.json",
      "sha256": "c5ae2aafa05084b6daa47fd55e6b9517d71246a4e4dbd4181f854c4694015f09"
     },
+    "clock_assumption": null,
     "cutoff_utc": "2023-12-29T22:00:00+00:00",
     "fold_id": "2023Q4",
+    "outer_scoring": "never",
+    "quarter": "2023Q4",
     "state": "READY",
     "unit_id": "2023Q4",
-    "unit_sha256": "f25bca0c7095ede4b8692834f261791d0f9e9b61c3d0e5bf2df25e3b3b1301cd"
+    "unit_sha256": "e1a71a7f8da375720b62e89270a8e98b8e7126c1daf6e13d05c34818181021e5"
    }
   ],
   "6": [
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q1_DCA_h6.json",
+     "sha256": "a3dca986cc8a42f3b011a87d189e4cd62defc0209b46055332aec7b0328fd42f"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-03-31T21:00:00+00:00",
-    "fold_id": "2023Q1",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q1",
-    "unit_sha256": "469389a302a6c50b48cdeedacce7a109e2b94d1658a1d713413fc396f894c614"
+    "fold_id": "2023Q1_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q1",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q1_DCA",
+    "unit_sha256": "c58d2e5a16a3b794eaf6142aea0b7f17eed445a7cabc2de29ff1f5ba1bc3c11e"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q2_DCA_h6.json",
+     "sha256": "0b91c0c1864574911edc6df623d17d2ae5225b5b74a2e6f814c690942507a2b4"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-06-30T21:00:00+00:00",
-    "fold_id": "2023Q2",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q2",
-    "unit_sha256": "91d71a2c5d3aadfb77252b97a689063f10b362ec504f6c770f6b930aa983268b"
+    "fold_id": "2023Q2_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q2",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q2_DCA",
+    "unit_sha256": "2c4eede19332ee1aabd43aa284eb34ac14476c5c286b868791602c7cfc8e8cfc"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q3_DCA_h6.json",
+     "sha256": "75feb540c3e3a2c921beff87099b2a9ecb3eeca1e8736e741954c42552cf28e0"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-09-29T21:00:00+00:00",
-    "fold_id": "2023Q3",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q3",
-    "unit_sha256": "0231cdca6a2d1d2f427b8384c05291cf047db6f4cd17444a0b022f76ca9c5d64"
+    "fold_id": "2023Q3_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q3",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q3_DCA",
+    "unit_sha256": "9e046b70b06129bef1e3e881e2d271baab6e7092a37fd719b0198a07dc8923be"
    },
    {
     "binding": null,
@@ -443,43 +740,73 @@
      "path": "<private>/2023Q4_h6.json",
      "sha256": "06fe41436d5bb20df2fdb231a679318914873c7039d13217babf3d638d0c7cb6"
     },
+    "clock_assumption": null,
     "cutoff_utc": "2023-12-29T22:00:00+00:00",
     "fold_id": "2023Q4",
+    "outer_scoring": "never",
+    "quarter": "2023Q4",
     "state": "READY",
     "unit_id": "2023Q4",
-    "unit_sha256": "f25bca0c7095ede4b8692834f261791d0f9e9b61c3d0e5bf2df25e3b3b1301cd"
+    "unit_sha256": "e1a71a7f8da375720b62e89270a8e98b8e7126c1daf6e13d05c34818181021e5"
    }
   ],
   "60": [
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q1_DCA_h60.json",
+     "sha256": "b616cdf3530be8214ec5205ea1dd687d893490c629be7cc471d2bccd507f3736"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-03-31T21:00:00+00:00",
-    "fold_id": "2023Q1",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q1",
-    "unit_sha256": "469389a302a6c50b48cdeedacce7a109e2b94d1658a1d713413fc396f894c614"
+    "fold_id": "2023Q1_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q1",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q1_DCA",
+    "unit_sha256": "c58d2e5a16a3b794eaf6142aea0b7f17eed445a7cabc2de29ff1f5ba1bc3c11e"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q2_DCA_h60.json",
+     "sha256": "ef1dc9cfe5472432e3133ab8a24091b4f6ed198b5ca00172fac4ad18584bc512"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-06-30T21:00:00+00:00",
-    "fold_id": "2023Q2",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q2",
-    "unit_sha256": "91d71a2c5d3aadfb77252b97a689063f10b362ec504f6c770f6b930aa983268b"
+    "fold_id": "2023Q2_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q2",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q2_DCA",
+    "unit_sha256": "2c4eede19332ee1aabd43aa284eb34ac14476c5c286b868791602c7cfc8e8cfc"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q3_DCA_h60.json",
+     "sha256": "ca8dcf49f4ae6fcd916a635dacbfea4bc2a1bc05353780a70fe631969d561699"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-09-29T21:00:00+00:00",
-    "fold_id": "2023Q3",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q3",
-    "unit_sha256": "0231cdca6a2d1d2f427b8384c05291cf047db6f4cd17444a0b022f76ca9c5d64"
+    "fold_id": "2023Q3_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q3",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q3_DCA",
+    "unit_sha256": "9e046b70b06129bef1e3e881e2d271baab6e7092a37fd719b0198a07dc8923be"
    },
    {
     "binding": null,
@@ -488,43 +815,73 @@
      "path": "<private>/2023Q4_h60.json",
      "sha256": "57bfe49c1b051a69c1074d70d51e8ef08d6e92599a04629d75f7fd775ec2e6a0"
     },
+    "clock_assumption": null,
     "cutoff_utc": "2023-12-29T22:00:00+00:00",
     "fold_id": "2023Q4",
+    "outer_scoring": "never",
+    "quarter": "2023Q4",
     "state": "READY",
     "unit_id": "2023Q4",
-    "unit_sha256": "f25bca0c7095ede4b8692834f261791d0f9e9b61c3d0e5bf2df25e3b3b1301cd"
+    "unit_sha256": "e1a71a7f8da375720b62e89270a8e98b8e7126c1daf6e13d05c34818181021e5"
    }
   ],
   "72": [
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q1_DCA_h72.json",
+     "sha256": "7c37ceb291e8af7ac1c4f8707e75931e6872f4dedac76b8962818051c66f64b1"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-03-31T21:00:00+00:00",
-    "fold_id": "2023Q1",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q1",
-    "unit_sha256": "469389a302a6c50b48cdeedacce7a109e2b94d1658a1d713413fc396f894c614"
+    "fold_id": "2023Q1_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q1",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q1_DCA",
+    "unit_sha256": "c58d2e5a16a3b794eaf6142aea0b7f17eed445a7cabc2de29ff1f5ba1bc3c11e"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q2_DCA_h72.json",
+     "sha256": "97c0a44d4ec90fc67aa322d4f4807a304934b50361f494f378328d3b0edfa059"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-06-30T21:00:00+00:00",
-    "fold_id": "2023Q2",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q2",
-    "unit_sha256": "91d71a2c5d3aadfb77252b97a689063f10b362ec504f6c770f6b930aa983268b"
+    "fold_id": "2023Q2_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q2",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q2_DCA",
+    "unit_sha256": "2c4eede19332ee1aabd43aa284eb34ac14476c5c286b868791602c7cfc8e8cfc"
    },
    {
     "binding": null,
-    "cause": "SUCCESSOR_INPUT_ROWS; CLOCK_SCOPE_CERTIFICATE",
-    "cell_config": null,
+    "cause": null,
+    "cell_config": {
+     "path": "<private>/2023Q3_DCA_h72.json",
+     "sha256": "d4215dd8bf1b95ad0410b06c66e2e3fd32d21c5b434eb8414e55526af3ce9125"
+    },
+    "clock_assumption": {
+     "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+     "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a"
+    },
     "cutoff_utc": "2023-09-29T21:00:00+00:00",
-    "fold_id": "2023Q3",
-    "state": "WAIT_DEPENDENCY",
-    "unit_id": "2023Q3",
-    "unit_sha256": "0231cdca6a2d1d2f427b8384c05291cf047db6f4cd17444a0b022f76ca9c5d64"
+    "fold_id": "2023Q3_DCA",
+    "outer_scoring": "never",
+    "quarter": "2023Q3",
+    "state": "READY_WITH_DECLARED_CLOCK_ASSUMPTION",
+    "unit_id": "2023Q3_DCA",
+    "unit_sha256": "9e046b70b06129bef1e3e881e2d271baab6e7092a37fd719b0198a07dc8923be"
    },
    {
     "binding": null,
@@ -533,15 +890,18 @@
      "path": "<private>/2023Q4_h72.json",
      "sha256": "d2c2750927bc7eb73e77624c7c68370289f6819227c0c624a0b7d48315a4eec0"
     },
+    "clock_assumption": null,
     "cutoff_utc": "2023-12-29T22:00:00+00:00",
     "fold_id": "2023Q4",
+    "outer_scoring": "never",
+    "quarter": "2023Q4",
     "state": "READY",
     "unit_id": "2023Q4",
-    "unit_sha256": "f25bca0c7095ede4b8692834f261791d0f9e9b61c3d0e5bf2df25e3b3b1301cd"
+    "unit_sha256": "e1a71a7f8da375720b62e89270a8e98b8e7126c1daf6e13d05c34818181021e5"
    }
   ]
  },
- "plan_sha256": "dd34986a46be92a0b3986be1be9b52081e922f266d22f5dde1f8f037b10ce9e7",
+ "plan_sha256": "be5750da0177ecd3a47d73b2682a22964e45d1a5c42b6209903022215bc9169f",
  "schema": "i6n.weekly_campaign.views.v1",
  "weeks": [
   {
@@ -613,9 +973,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2023-12-31T22:00:00+00:00",
    "unit_id": "W2023-12-31",
-   "unit_sha256": "21a5a1b8254e31b5b63b523307328a7de21558bbd727478a555cd1d0a976de5d",
+   "unit_sha256": "8a44d35b2f27bb8be70345148f9dff90cc806c7259da5bcd003cba19a16af503",
    "week_id": "2023-12-31"
   },
   {
@@ -687,9 +1048,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-01-07T22:00:00+00:00",
    "unit_id": "W2024-01-07",
-   "unit_sha256": "9cc80d958f62b8133a5c9fb88390b76c530a9591afa871ffb7d0e74a102420f8",
+   "unit_sha256": "700146570a3f31de3fa5a1745128e68c83522d5e14d54c87a32a7b256429b5d8",
    "week_id": "2024-01-07"
   },
   {
@@ -761,9 +1123,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-01-14T22:00:00+00:00",
    "unit_id": "W2024-01-14",
-   "unit_sha256": "357485774265a2480ecd7e4d6fc97752d5b2365e9e8b3afb84a5f43919f7c9fe",
+   "unit_sha256": "71bc7f0dad6b1e6ea96b7a00a4cccaec6c3d0cad2a8add9c06aa1d745795635e",
    "week_id": "2024-01-14"
   },
   {
@@ -835,9 +1198,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-01-21T22:00:00+00:00",
    "unit_id": "W2024-01-21",
-   "unit_sha256": "8c024a34f889d88a92eff7ca7acf4cf16aaa2aa105e67e8e1f0d2c5cb39b2572",
+   "unit_sha256": "edd3d9a9865e44409436463a62a4c7520da11c1457962ac0159657c89fe82de8",
    "week_id": "2024-01-21"
   },
   {
@@ -909,9 +1273,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-01-28T22:00:00+00:00",
    "unit_id": "W2024-01-28",
-   "unit_sha256": "10b1ef2aba664410a8912029c954aeb0de46ce827bb24690794f8ae162ab1631",
+   "unit_sha256": "3bc0d1517319b4f609774a99b72605773957a55dc742e8398e13ec4520639bbc",
    "week_id": "2024-01-28"
   },
   {
@@ -983,9 +1348,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-02-04T22:00:00+00:00",
    "unit_id": "W2024-02-04",
-   "unit_sha256": "cfb498dbd28b1c710b67c4cb64ea10dcc1ee8de550c3c66e21a1e47cf09b9cc2",
+   "unit_sha256": "cef08541a29b79e639ec3e666a6d8da95fa67fade73780b4a85b4ebf9d0402b7",
    "week_id": "2024-02-04"
   },
   {
@@ -1057,9 +1423,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-02-11T22:00:00+00:00",
    "unit_id": "W2024-02-11",
-   "unit_sha256": "a69e30e5e0c8258139dfdc46f7a6cf4556f9c10fcfbe1d13d6f9087123e122bd",
+   "unit_sha256": "5027e9919349dbc3d64864fcf8a467e9a8317d985de437091df6ed3481ffdb7b",
    "week_id": "2024-02-11"
   },
   {
@@ -1131,9 +1498,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-02-18T22:00:00+00:00",
    "unit_id": "W2024-02-18",
-   "unit_sha256": "e102a1cbb4ac2940c531747246bc8812b0857c1160611aba714d52e8935b808d",
+   "unit_sha256": "532636d10caa5720e9c03fc1c2869c653aa6844e9f702ddc34a7f639dc2d30da",
    "week_id": "2024-02-18"
   },
   {
@@ -1205,9 +1573,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-02-25T22:00:00+00:00",
    "unit_id": "W2024-02-25",
-   "unit_sha256": "a2678b4d926df8eab487d1c34f949101a391af8e8b47c6538c6583b935dc35db",
+   "unit_sha256": "051b901de81ee8ffc0104e88c521c4acf7f1674021e337e135ebee7f6d1cbd64",
    "week_id": "2024-02-25"
   },
   {
@@ -1279,9 +1648,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-03-03T22:00:00+00:00",
    "unit_id": "W2024-03-03",
-   "unit_sha256": "237a95577bad0b8caca4252276be3733eddf5c85af6ff6341d428684969b98f4",
+   "unit_sha256": "4a5cac8f4d02009a9081bf5da650365654f2bf64efdbcefba4d6c065a5fb9f64",
    "week_id": "2024-03-03"
   },
   {
@@ -1353,9 +1723,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-03-10T21:00:00+00:00",
    "unit_id": "W2024-03-10",
-   "unit_sha256": "240f72d5ec087cbafd3d4df3aa8263cad3773180097623efcf559f428d28992b",
+   "unit_sha256": "4d18306c029697a30f6dfb3bb9c99887cbedaad28b16e92f982b1762118c7b89",
    "week_id": "2024-03-10"
   },
   {
@@ -1427,9 +1798,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-03-17T21:00:00+00:00",
    "unit_id": "W2024-03-17",
-   "unit_sha256": "b698883e39fa3c090706860c58142dda9f2192174376fa5a403935d9b5b82602",
+   "unit_sha256": "0f78effb731a00be66fc251ebf866bdcb63094fe9e67b4e2bde99f10f1b32e1b",
    "week_id": "2024-03-17"
   },
   {
@@ -1501,9 +1873,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-03-24T21:00:00+00:00",
    "unit_id": "W2024-03-24",
-   "unit_sha256": "121629d2cffc23213aee2186ffd5b567c0ae96f74b233b1aa24e39437c24e019",
+   "unit_sha256": "255f6802fca82efa0e04f220fe1a42a0a553096f7384225cc8bef9d942c04368",
    "week_id": "2024-03-24"
   },
   {
@@ -1575,9 +1948,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-03-31T21:00:00+00:00",
    "unit_id": "W2024-03-31",
-   "unit_sha256": "e2baaa4d6f745b9434735699ca502fac9a47036d13997a18dcddb8f98db00688",
+   "unit_sha256": "cc477de6df9d70916a608256ae1bceb55ef96d55c674cae57e2f4613f48f6a0b",
    "week_id": "2024-03-31"
   },
   {
@@ -1649,9 +2023,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-04-07T21:00:00+00:00",
    "unit_id": "W2024-04-07",
-   "unit_sha256": "7835ee8fa171394612155a2911d53b42b7cade7802077ec3263c195c4e332f9a",
+   "unit_sha256": "93f3ed2116ec81924e75c512f12d8be296dddf882a3f4123f794d99c6aa29854",
    "week_id": "2024-04-07"
   },
   {
@@ -1723,9 +2098,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-04-14T21:00:00+00:00",
    "unit_id": "W2024-04-14",
-   "unit_sha256": "ee91f23a2f32c5ed35e6cf86f0ef241bf38146817d2e5d4ea502127a2f0a5e78",
+   "unit_sha256": "d1a79fefc5099809849eb65795b54d6797409f21d788b3a1c6265ae30187f883",
    "week_id": "2024-04-14"
   },
   {
@@ -1797,9 +2173,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-04-21T21:00:00+00:00",
    "unit_id": "W2024-04-21",
-   "unit_sha256": "3643593d177c760ac4c37ca49a80b1aad2a71b39d47225a11b84d21f5f6b63d2",
+   "unit_sha256": "2784c85d9b9d72f32b867c36b7a74a17a9e663c97d60259a8e50a00a0d699116",
    "week_id": "2024-04-21"
   },
   {
@@ -1871,9 +2248,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-04-28T21:00:00+00:00",
    "unit_id": "W2024-04-28",
-   "unit_sha256": "3c6bc22cf791353e3117d9fa4b9cf7163202b2acc2406b8cc842c060ef7e0b95",
+   "unit_sha256": "2a1686c76393db22cf17c9cdb04cd033bc8f78641de6a35931ddc1e8b36d0361",
    "week_id": "2024-04-28"
   },
   {
@@ -1945,9 +2323,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-05-05T21:00:00+00:00",
    "unit_id": "W2024-05-05",
-   "unit_sha256": "042a6d677654bad30a3f40f9f1aaec17200ab1c57cae1d2c3404f8c0b4e2906b",
+   "unit_sha256": "c83e9efa50204fadd509e9cf8ca6fb3916ba80c271420a22223f4ec7f88b0503",
    "week_id": "2024-05-05"
   },
   {
@@ -2019,9 +2398,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-05-12T21:00:00+00:00",
    "unit_id": "W2024-05-12",
-   "unit_sha256": "5972aa3b534d34fa8d3a119c097c6f3cd45b43f11bdc713d9a723de30e634071",
+   "unit_sha256": "c246b14d020e622378769bdc9bf4b23ac6f9a8a2a66e05ac90df08db07055900",
    "week_id": "2024-05-12"
   },
   {
@@ -2093,9 +2473,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-05-19T21:00:00+00:00",
    "unit_id": "W2024-05-19",
-   "unit_sha256": "3c28d636efac0b74fb67af4a5482167eb2f0e47461d4a3f4e7f3966322d5c8fe",
+   "unit_sha256": "17fce0dff75bd6b8973bea622380291e7541e7653b1b59556d4b7b0f5580f2ec",
    "week_id": "2024-05-19"
   },
   {
@@ -2167,9 +2548,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-05-26T21:00:00+00:00",
    "unit_id": "W2024-05-26",
-   "unit_sha256": "71e03b078ca90aaa0ecf538875d77d3578486aa9066a287a951b8495827eaa5d",
+   "unit_sha256": "889bdbaec64410bd2e4acf98944df6a5666519efd9e8b2178c72e791fda47e94",
    "week_id": "2024-05-26"
   },
   {
@@ -2241,9 +2623,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-06-02T21:00:00+00:00",
    "unit_id": "W2024-06-02",
-   "unit_sha256": "3e7252e67de0d9a634c8fadb6642b6f9bfe3667ae19cdc87dfc52b0f09c0a0d1",
+   "unit_sha256": "bc24b50e460d31e3072c38933a963993039d571ca937bf3d12bdccd7c6775776",
    "week_id": "2024-06-02"
   },
   {
@@ -2315,9 +2698,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-06-09T21:00:00+00:00",
    "unit_id": "W2024-06-09",
-   "unit_sha256": "5efd7d47b940c587024c273906e2f3db5b4c2883547fe68024ecd57677d6a30d",
+   "unit_sha256": "cd0dcf20dae8ff5059a594c7cac57ea72ac8b5e06dbfbca3bf354548583253de",
    "week_id": "2024-06-09"
   },
   {
@@ -2389,9 +2773,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-06-16T21:00:00+00:00",
    "unit_id": "W2024-06-16",
-   "unit_sha256": "6bf695adf4c65afd58de3773f382f96fde9b9d3a811633c37def739fe64b430e",
+   "unit_sha256": "5b09de93f44a55e245c487229304bef1a2d5dbd91087bdfb51632ec043223a4a",
    "week_id": "2024-06-16"
   },
   {
@@ -2463,9 +2848,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-06-23T21:00:00+00:00",
    "unit_id": "W2024-06-23",
-   "unit_sha256": "aa6c575ced512766636fc4a3a4d998e30ab86084325a1034657f703aad5e21b7",
+   "unit_sha256": "fb4d304b5a46293c2538741a888d1de32a17e5e10481c76928cfa5845b21135c",
    "week_id": "2024-06-23"
   },
   {
@@ -2537,9 +2923,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-06-30T21:00:00+00:00",
    "unit_id": "W2024-06-30",
-   "unit_sha256": "43af4ec1f6dec26b083d468cdd5d3b74fee464f9b917cc733e2eef3d5f93f003",
+   "unit_sha256": "6537d423195054467fd2b5ab5048cab50b2c84f728a68339a3dd6d8f82e857d9",
    "week_id": "2024-06-30"
   },
   {
@@ -2611,9 +2998,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-07-07T21:00:00+00:00",
    "unit_id": "W2024-07-07",
-   "unit_sha256": "011b73d6ef0cd7534ea7beec7a5d49da2f37dbed7390d884bf33879461b29cd8",
+   "unit_sha256": "679960d6500c6701ad0ece60c4202fd8a2c5c0ab5df63541a55019007ae29abf",
    "week_id": "2024-07-07"
   },
   {
@@ -2685,9 +3073,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-07-14T21:00:00+00:00",
    "unit_id": "W2024-07-14",
-   "unit_sha256": "8bee7b882f4a9f6cf72c38b726b85660764e5806367bfc6448fc48ea9a14007a",
+   "unit_sha256": "8cef72685e353a520640b26b389129fbe66c3765ff7b10d682756f69866267b8",
    "week_id": "2024-07-14"
   },
   {
@@ -2759,9 +3148,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-07-21T21:00:00+00:00",
    "unit_id": "W2024-07-21",
-   "unit_sha256": "e1cc42cd00cae370fb9749831ef94faf73d14e60b25124044dfb16c974a2967d",
+   "unit_sha256": "cee9aea5c2b2300573aa9096e3b141cbc1f3d80f5ed7cb42e0e5988190a97163",
    "week_id": "2024-07-21"
   },
   {
@@ -2833,9 +3223,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-07-28T21:00:00+00:00",
    "unit_id": "W2024-07-28",
-   "unit_sha256": "6c9aa9f8511b5568420821db64fd57bc21b1fa999d899163cef7f2107fba5202",
+   "unit_sha256": "1c7f00102c27875ed3c5140a114ac7212203fe0cc7fd051fe715bf05ad760b26",
    "week_id": "2024-07-28"
   },
   {
@@ -2907,9 +3298,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-08-04T21:00:00+00:00",
    "unit_id": "W2024-08-04",
-   "unit_sha256": "892a306585a7ac3e52b4b3573af4cfb3fad06f379f228b733eb96c24dac385b1",
+   "unit_sha256": "39923f341051f0b237feb835e6d8cdf936771b216e6c57703fe0872ccb4bb79d",
    "week_id": "2024-08-04"
   },
   {
@@ -2981,9 +3373,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-08-11T21:00:00+00:00",
    "unit_id": "W2024-08-11",
-   "unit_sha256": "4d1ce9d2f89266205bda4a51fc5c191dc165d624b669a25d1e46e6740ffbab63",
+   "unit_sha256": "9a6febda7efe6a9da685f7db45767d362379a92f455a2d3745a95bcae96feefb",
    "week_id": "2024-08-11"
   },
   {
@@ -3055,9 +3448,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-08-18T21:00:00+00:00",
    "unit_id": "W2024-08-18",
-   "unit_sha256": "c6b767de1f48487e586846dcd8a8e82497a9f3cd202ee696828fd8d735057625",
+   "unit_sha256": "00d3625bc6382b2a9c88b21d8d22b12e300bfbdf9b8f8ced8e4f6a6cf40945df",
    "week_id": "2024-08-18"
   },
   {
@@ -3129,9 +3523,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-08-25T21:00:00+00:00",
    "unit_id": "W2024-08-25",
-   "unit_sha256": "f5b074874dfb3f5025d507a9e35adb5012b03643a80776ddfeae21450de6f3d3",
+   "unit_sha256": "0542a3cdd7a9f937f2811953b3d215e6a3f62f841f1514608be3239b0ef202e9",
    "week_id": "2024-08-25"
   },
   {
@@ -3203,9 +3598,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-09-01T21:00:00+00:00",
    "unit_id": "W2024-09-01",
-   "unit_sha256": "3f88f8dc7556b48dbd0f9cfb95fa8e02d4eae65e3fc07c15dd89e5835994ae29",
+   "unit_sha256": "96d398791d6824685d67eba16b8c69f508a0c980d47b7d1bcbcb8dd09e3beade",
    "week_id": "2024-09-01"
   },
   {
@@ -3277,9 +3673,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-09-08T21:00:00+00:00",
    "unit_id": "W2024-09-08",
-   "unit_sha256": "a56fa8f3f236bb79e9d0808a944469906b953b39eeb908f81ee8ff044b7c516c",
+   "unit_sha256": "105d44cdcf095f9fcb0065905f237082793a880632fe97daa60eba2064cefbb3",
    "week_id": "2024-09-08"
   },
   {
@@ -3351,9 +3748,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-09-15T21:00:00+00:00",
    "unit_id": "W2024-09-15",
-   "unit_sha256": "e9ff999abf5a5e088ccddfbda1e633fb8ef0dd6e163a0a325af8d168d95230d7",
+   "unit_sha256": "edd8f251680fffff6722275cafd947b9249106cc21e44ef936fa9bb2381d7161",
    "week_id": "2024-09-15"
   },
   {
@@ -3425,9 +3823,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-09-22T21:00:00+00:00",
    "unit_id": "W2024-09-22",
-   "unit_sha256": "bc48ae9ecede70e65f822a02a312465acf3006afc631b9410e9412ea02fe8070",
+   "unit_sha256": "362f9170d9aac09c944ecbdaec1f4fcbb0b19231e15374fc57618a10467c9e23",
    "week_id": "2024-09-22"
   },
   {
@@ -3499,9 +3898,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-09-29T21:00:00+00:00",
    "unit_id": "W2024-09-29",
-   "unit_sha256": "68887b75624aa092f76de724e6743fa6c411df5dc7b05170150068c7a9555b0e",
+   "unit_sha256": "4b9e5091ad7555be729ed3ec2bdcbe90be02455b7d4f1e3bfe7faab85b59b332",
    "week_id": "2024-09-29"
   },
   {
@@ -3573,9 +3973,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-10-06T21:00:00+00:00",
    "unit_id": "W2024-10-06",
-   "unit_sha256": "1e34cff90f064fa07a8a2bcb13efed7b0132c45178ecb25032676b27c5936972",
+   "unit_sha256": "cb1a00236536400439397aa81146d0c401c4832e0807997a864e3e36339b19b0",
    "week_id": "2024-10-06"
   },
   {
@@ -3647,9 +4048,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-10-13T21:00:00+00:00",
    "unit_id": "W2024-10-13",
-   "unit_sha256": "a3dd4ab9b05c47f985dd8ccbdce919db3acf53c2feeea95f8de9ce6733ef2a06",
+   "unit_sha256": "4284f95bb260f4a3818230c4bcb7e8bac49cf24b1ec9b88df904fc21129eb37d",
    "week_id": "2024-10-13"
   },
   {
@@ -3721,9 +4123,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-10-20T21:00:00+00:00",
    "unit_id": "W2024-10-20",
-   "unit_sha256": "71066766e1a235af51f8944dd05acc377b9023b764a7d291cf744003fff0e9d8",
+   "unit_sha256": "9e0af7fb752d7b2e0fa0fc4f59e5fca9df8305a52778e9ab19d2b32f52d28cea",
    "week_id": "2024-10-20"
   },
   {
@@ -3795,9 +4198,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-10-27T21:00:00+00:00",
    "unit_id": "W2024-10-27",
-   "unit_sha256": "c7c493ecd64e2d7d38c04929664430bd7e35e0b481339bdae825c3e3c9cdb14b",
+   "unit_sha256": "f6f8b882a91aeb588e71d59e913450c10f611939fa0e097f9fd12ce164b2cadf",
    "week_id": "2024-10-27"
   },
   {
@@ -3869,9 +4273,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-11-03T22:00:00+00:00",
    "unit_id": "W2024-11-03",
-   "unit_sha256": "3b314238d2c03af942585eca47228ab7bc226a37a9c8cc29832f3f700685385a",
+   "unit_sha256": "bf8cc5a04bb491abe86d709ec4f4bed5fd3fde85ac37caa19c109385ed69242b",
    "week_id": "2024-11-03"
   },
   {
@@ -3943,9 +4348,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-11-10T22:00:00+00:00",
    "unit_id": "W2024-11-10",
-   "unit_sha256": "014364a1686396265b8bc50b3229652330acbbeb27b0e86992b42cee1084003b",
+   "unit_sha256": "1fd656b9a18f050701b20326a5259841b2b72642b072f499e9f395df77acf5af",
    "week_id": "2024-11-10"
   },
   {
@@ -4017,9 +4423,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-11-17T22:00:00+00:00",
    "unit_id": "W2024-11-17",
-   "unit_sha256": "7b7f7d8b5f2ba6b9a7e8af6930a5b47ac3dea91654aa67e17a3e4e4a94c12bf6",
+   "unit_sha256": "ebd9b4224da8fd00e7d09281b5a0f3c404f5e53c84086677fafa05b378d94e90",
    "week_id": "2024-11-17"
   },
   {
@@ -4091,9 +4498,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-11-24T22:00:00+00:00",
    "unit_id": "W2024-11-24",
-   "unit_sha256": "d1dd4488bdd792178313540c09ede89037f7e34a219ec00484af5fa60fce3bca",
+   "unit_sha256": "c30daa051f80dcbd96f2cb165d7ed804e65b3003b35bb9a1ce4f360e00434b16",
    "week_id": "2024-11-24"
   },
   {
@@ -4165,9 +4573,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-12-01T22:00:00+00:00",
    "unit_id": "W2024-12-01",
-   "unit_sha256": "a744a382e2ddfebe218282d6433801508eb4576f416f5b7903e2c5d8b72cdda4",
+   "unit_sha256": "2d1633a8377b2fa468101d8f23d0ba2a9d434539ff1e3c04a28b444300b5b786",
    "week_id": "2024-12-01"
   },
   {
@@ -4239,9 +4648,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-12-08T22:00:00+00:00",
    "unit_id": "W2024-12-08",
-   "unit_sha256": "7b9cd8ae91b9a6e3c5749507f3b7fd7467b48bb6b9efb79843eb5069d7d896ff",
+   "unit_sha256": "64e8897c690bd46423eb87fd29e2eb2681cf6b9c4674de89459d63290d78fda5",
    "week_id": "2024-12-08"
   },
   {
@@ -4313,9 +4723,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-12-15T22:00:00+00:00",
    "unit_id": "W2024-12-15",
-   "unit_sha256": "1b7f82728cdcfd526673bda25ab3ce713f096d337c7543fee119311f0bd3bbf1",
+   "unit_sha256": "0e08f6626a54d07b259c04c019984cfe3101a955f1b257fcf9e67f8f507393ed",
    "week_id": "2024-12-15"
   },
   {
@@ -4387,9 +4798,10 @@
     60,
     72
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-12-22T22:00:00+00:00",
    "unit_id": "W2024-12-22",
-   "unit_sha256": "ffe4adddb722e74655195881b5bc015eb76caf31813cd7858c8ea2166df32146",
+   "unit_sha256": "5324bb463f0c7912b4518881fc1d9d107a0db45cd65b141a95e9480ad7707ad6",
    "week_id": "2024-12-22"
   },
   {
@@ -4450,9 +4862,10 @@
     24,
     36
    ],
+   "outer_scoring": "freeze --score-outer",
    "release_at_utc": "2024-12-29T22:00:00+00:00",
    "unit_id": "W2024-12-29",
-   "unit_sha256": "44ce39f65f26943f419eedd1b4a3261418a6904a5d2dc33bd4a3c5d35e4ea1bc",
+   "unit_sha256": "ca54b99f323e63f587ad1550e9bb1559069acc9db13f6942640508693f802720",
    "week_id": "2024-12-29"
   }
  ]

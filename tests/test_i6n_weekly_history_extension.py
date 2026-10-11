@@ -63,3 +63,39 @@ def test_feature_availability_reports_fractions_not_values():
     x = np.array([[1.0, np.nan], [2.0, np.inf], [3.0, 4.0]])
     out = ext.feature_availability(x, ["a", "b"])
     assert out == {"a": 1.0, "b": pytest.approx(1 / 3)}
+
+
+def test_successor_suffix_must_be_byte_identical():
+    full_ts = np.array([10, 20, 30, 40], dtype=np.int64) * 3600
+    full_x = np.arange(8, dtype=float).reshape(4, 2)
+    full_p = np.array([1.0, 1.1, 1.2, 1.3])
+    k = ext.successor_suffix_index(full_ts, full_x, full_p, full_ts[2:], full_x[2:], full_p[2:])
+    assert k == 2
+    bad = full_x[2:].copy()
+    bad[0, 1] = 99.0
+    with pytest.raises(ext.ExtensionError) as e:
+        ext.successor_suffix_index(full_ts, full_x, full_p, full_ts[2:], bad, full_p[2:])
+    assert e.value.code == "SUCCESSOR_SUFFIX_MISMATCH"
+    with pytest.raises(ext.ExtensionError):
+        ext.successor_suffix_index(full_ts, full_x, full_p, full_ts[1:3], full_x[1:3], full_p[1:3])
+    nan_x = full_x.copy()
+    nan_x[3, 0] = np.nan
+    assert ext.successor_suffix_index(full_ts, nan_x, full_p, full_ts[2:], nan_x[2:], full_p[2:]) == 2
+
+
+def test_declared_assumption_names_limitation_and_evidence():
+    cases = [case("2019-03-18", "PASS"), case("2019-07-15", "PASS"),
+             case("2019-10-28", "INCONCLUSIVE", "ValueError: HTTP 429; no retry")]
+    replay = [{"date": "2019-03-18", "status": "PASS", "matches_retained_case": True},
+              {"date": "2019-07-15", "status": "PASS", "matches_retained_case": True}]
+    a = ext.declared_assumption(cases, replay, START, END, attempts=["r1", "r2"])
+    assert a["status"] == "DECLARED_ASSUMPTION"
+    assert a["unverified_case"]["date"] == "2019-10-28"
+    assert [c["date"] for c in a["passing_cases"]] == ["2019-03-18", "2019-07-15"]
+    assert a["limitation"].startswith("NOT independently quote-verified")
+    assert len(a["assumption_sha256"]) == 64
+    with pytest.raises(ext.ExtensionError):
+        ext.declared_assumption(cases, replay[:1], START, END, attempts=["r1"])
+    with pytest.raises(ext.ExtensionError):
+        ext.declared_assumption([case("2019-03-18", "PASS"), case("2019-07-15", "PASS")],
+                                replay, START, END, attempts=[])

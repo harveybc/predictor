@@ -72,6 +72,11 @@ UTC = timezone.utc
 HOUR = timedelta(hours=1)
 TEST_START = datetime(2025, 1, 1, tzinfo=UTC)
 SPLITS = ("TRAIN", "INNER", "VALIDATION")
+DECLARED_READY = "READY_WITH_DECLARED_CLOCK_ASSUMPTION"
+DECLARED_SUFFIX = "_DCA"
+RUNNABLE = ("READY", DECLARED_READY)
+#: Plan section 2 stopping and seed every emitted cell config must carry.
+PLAN_STOPPING = {"max_epochs": 50, "patience": 5, "min_delta": 1e-6, "seed": 6102026}
 TEST_CLOSED = "TARGET_IN_TEST_CLOSED"
 BEFORE_SPLIT = c1.LabelReason.TARGET_BEFORE_SPLIT_START.value
 AFTER_SPLIT = c1.LabelReason.TARGET_AT_OR_AFTER_SPLIT_END.value
@@ -361,6 +366,7 @@ def build_plan(*, calendar_config: Mapping[str, Any], observed_seconds: Sequence
                development_split: c1.SplitBounds, fold_year: Optional[int] = 2023,
                test_start: datetime = TEST_START, min_support: Optional[Mapping[str, int]] = None,
                experiment: str, arms_per_week: int = 2,
+               extended_source: Optional[Mapping[str, Any]] = None,
                provenance: Optional[Mapping[str, Any]] = None) -> Dict[str, Any]:
     """Return the sealed, JSON-ready campaign plan (no I/O)."""
     ref, weeks = c1.load_calendar(calendar_config)
@@ -404,6 +410,17 @@ def build_plan(*, calendar_config: Mapping[str, Any], observed_seconds: Sequence
                                       inner_days=inner_days, max_context_hours=max_context_hours,
                                       validation=None, structural=structural, quarter=fid))
     index = SupportIndex(weeks, obs, roles=role_objs, offsets=offsets, test_start=test_start)
+    ext, ext_index = None, None
+    if extended_source is not None:
+        ext_obs = sorted(int(t) for t in extended_source["observed_seconds"])
+        if not ext_obs or len(set(ext_obs)) != len(ext_obs) or ext_obs[-1] >= _epoch(test_start):
+            raise CampaignError("EXTENDED_SOURCE_INVALID", "empty, duplicated or TEST timestamps")
+        ext = {"obs": ext_obs, "data_start": _at(ext_obs[0]),
+               "assumption": {"assumption_id": str(extended_source["assumption_id"]),
+                              "assumption_sha256": str(extended_source["assumption_sha256"])},
+               "scope": {"scope_id": str(extended_source["clock_scope"]["scope_id"]),
+                         "start": c1.utc_instant("ext.start", extended_source["clock_scope"]["start"]),
+                         "end": c1.utc_instant("ext.end", extended_source["clock_scope"]["end"])}}
     by_h = {str(h): 0 for h in hs}
     units = []
     for u in frames:
@@ -411,7 +428,22 @@ def build_plan(*, calendar_config: Mapping[str, Any], observed_seconds: Sequence
         # Scored or structural, the cell reads the unit's week (never past TEST).
         needed_end = min(week_close, test_start)
         u["data"] = _coverage(u, data_start=data_start, scope=scope, needed_end=needed_end)
-        labels = u["data"]["state"] == "READY"
+        u["data_source"], u["clock_assumption"], u["primary_data"] = "PRIMARY", None, None
+        source_index = index
+        if u["data"]["state"] != "READY" and ext is not None:
+            alt = _coverage(u, data_start=ext["data_start"], scope=ext["scope"], needed_end=needed_end)
+            if alt["state"] == "READY":
+                # Declared assumption: carried in the fold identity, never silent.
+                u["primary_data"], u["data"] = u["data"], dict(alt, state=DECLARED_READY)
+                u["data_source"], u["clock_assumption"] = "EXTENDED", dict(ext["assumption"])
+                u["unit_id"] = u["fold_id"] = u["unit_id"] + DECLARED_SUFFIX
+                if ext_index is None:
+                    ext_index = SupportIndex(weeks, ext["obs"], roles=role_objs, offsets=offsets,
+                                             test_start=test_start)
+                source_index = ext_index
+            else:
+                u["extended_data"] = alt
+        labels = u["data"]["state"] in RUNNABLE
         support = {}
         for r in roles:
             support[r] = {}
@@ -421,7 +453,7 @@ def build_plan(*, calendar_config: Mapping[str, Any], observed_seconds: Sequence
                     sp = u["splits"][name]
                     if sp is None:
                         continue
-                    entry[name] = index.count(r, o, *(_epoch(datetime.fromisoformat(sp[k])) for k in
+                    entry[name] = source_index.count(r, o, *(_epoch(datetime.fromisoformat(sp[k])) for k in
                                                       ("origin_start", "origin_end", "target_start", "target_end")),
                                               labels=labels)
                 support[r][str(o)] = entry
@@ -433,7 +465,7 @@ def build_plan(*, calendar_config: Mapping[str, Any], observed_seconds: Sequence
             else:
                 short = [s for s in SPLITS if u["splits"][s] is not None
                          and support[fit_role][str(h)][s]["n"] < minimum[s]]
-                state = "NO_ELIGIBLE_ROWS" if short else "READY"
+                state = "NO_ELIGIBLE_ROWS" if short else u["data"]["state"]
                 cause = None if not short else "below minimum label support in " + ",".join(short)
             u["horizons"][str(h)] = {"state": state, "cause": cause,
                                      "head_offsets": list(offsets_by_h[h])}
@@ -471,13 +503,21 @@ def build_plan(*, calendar_config: Mapping[str, Any], observed_seconds: Sequence
                  "values_read": False, "test_rows_read": False,
                  "week_coverage": coverage,
                  "weeks_without_bars": [x["week_id"] for x in coverage if x["observed_bars"] == 0]},
+        "extended_data": None if ext is None else {
+            "first_timestamp": _iso(ext["data_start"]), "last_timestamp": _iso(_at(ext["obs"][-1])),
+            "rows": len(ext["obs"]), "timestamps_sha256": c1.canonical_digest(ext["obs"]),
+            "clock_scope": {"scope_id": ext["scope"]["scope_id"], "start": _iso(ext["scope"]["start"]),
+                            "end": _iso(ext["scope"]["end"])},
+            **ext["assumption"], "used_by": [u["unit_id"] for u in units if u["data_source"] == "EXTENDED"]},
         "provenance": dict(provenance or {}),
         "units": units,
         "summary": {
             "weekly_units": len(weekly), "fold_units": len(folds),
             "weekly_units_ready": sum(u["data"]["state"] == "READY" for u in weekly),
             "fold_units_ready": [u["fold_id"] for u in folds if u["data"]["state"] == "READY"],
-            "fold_units_waiting": [u["fold_id"] for u in folds if u["data"]["state"] != "READY"],
+            "fold_units_ready_with_declared_clock_assumption":
+                [u["fold_id"] for u in folds if u["data"]["state"] == DECLARED_READY],
+            "fold_units_waiting": [u["fold_id"] for u in folds if u["data"]["state"] not in RUNNABLE],
         },
         "dispositions": {"by_horizon": by_h, "weekly_fits_per_arm": sum(by_h.values()),
                          "arms_per_week": arms_per_week,
@@ -501,10 +541,12 @@ def fold_view(plan: Mapping[str, Any], cells: Optional[Mapping[str, Mapping[str,
     cells = cells or {}
     out: Dict[str, List[dict]] = {}
     for h in plan["horizons_hours"]:
-        out[str(h)] = [{"fold_id": u["fold_id"], "unit_id": u["unit_id"], "cutoff_utc": u["fit_cutoff"],
+        out[str(h)] = [{"fold_id": u["fold_id"], "unit_id": u["unit_id"], "quarter": u["quarter"],
+                        "cutoff_utc": u["fit_cutoff"], "clock_assumption": u["clock_assumption"],
                         "state": u["horizons"][str(h)]["state"], "cause": u["horizons"][str(h)]["cause"],
                         "unit_sha256": u["unit_sha256"],
-                        "cell_config": cells.get(u["unit_id"], {}).get(str(h)), "binding": None}
+                        "cell_config": cells.get(u["unit_id"], {}).get(str(h)), "binding": None,
+                        "outer_scoring": "never"}
                        for u in plan["units"] if u["kind"] == "INNER_FOLD"]
     return out
 
@@ -516,19 +558,20 @@ def week_view(plan: Mapping[str, Any], cells: Optional[Mapping[str, Mapping[str,
     for u in plan["units"]:
         if u["kind"] != "WEEKLY_REFIT":
             continue
-        ready = [int(h) for h, v in u["horizons"].items() if v["state"] == "READY"]
+        ready = [int(h) for h, v in u["horizons"].items() if v["state"] in RUNNABLE]
         rows.append({"week_id": u["week_id"], "unit_id": u["unit_id"], "cutoff_utc": u["fit_cutoff"],
                      "release_at_utc": u["release_at"], "horizons": ready, "eligible": bool(ready),
-                     "cause": {h: v["cause"] for h, v in u["horizons"].items() if v["state"] != "READY"},
+                     "cause": {h: v["cause"] for h, v in u["horizons"].items() if v["state"] not in RUNNABLE},
                      "unit_sha256": u["unit_sha256"],
                      "cell_configs": {str(h): cells.get(u["unit_id"], {}).get(str(h)) for h in ready},
+                     "outer_scoring": "freeze --score-outer",
                      "binding": None})
     return rows
 
 
 def cell_overlay(plan: Mapping[str, Any], unit: Mapping[str, Any], h: int) -> Dict[str, Any]:
     """Keys of an ``i6n.historical_cell.v1`` config fixed by the unit (calendar added by caller)."""
-    if unit["horizons"][str(h)]["state"] != "READY":
+    if unit["horizons"][str(h)]["state"] not in RUNNABLE:
         raise CampaignError("UNIT_NOT_READY", f"{unit['unit_id']} h={h}")
     split = (plan["development_split"] if unit["scored_outer"]
              else unit["structural_evaluation_split"])
@@ -619,7 +662,27 @@ def run_plan(config_path: Path, output: Path) -> Dict[str, Any]:
     scope = {"scope_id": scope_doc.get("status", "") + ":" + d["clock_scope_sha256"][:12],
              "start": c1.parse_instant("scope.start", scope_doc["data_start"]),
              "end": c1.parse_instant("scope.end", scope_doc["data_end"])}
+    extended, ext_pins = None, None
+    if cfg.get("extended_data"):
+        e = cfg["extended_data"]
+        e_clock = _load_json(Path(e["clock_path"]), e["clock_sha256"])
+        e_scope = _load_json(Path(e["clock_scope_path"]), e["clock_scope_sha256"])
+        if e_clock.get("status") != "RESOLVED" or e_clock.get("input_sha256") != e["input_sha256"]:
+            raise CampaignError("EXTENDED_CLOCK_NOT_BOUND")
+        if e_clock.get("calendar_sha256") != clock["calendar_sha256"]:
+            raise CampaignError("EXTENDED_CALENDAR_DIFFERS")
+        if not e_scope.get("assumption_id") or len(str(e_scope.get("assumption_sha256", ""))) != 64:
+            raise CampaignError("EXTENDED_ASSUMPTION_UNDECLARED")
+        extended = {"observed_seconds": load_timestamps(Path(e["input_path"]), e["input_sha256"]),
+                    "assumption_id": e_scope["assumption_id"],
+                    "assumption_sha256": e_scope["assumption_sha256"],
+                    "clock_scope": {"scope_id": e_scope["status"] + ":" + e["clock_scope_sha256"][:12],
+                                    "start": c1.parse_instant("ext.start", e_scope["data_start"]),
+                                    "end": c1.parse_instant("ext.end", e_scope["data_end"])}}
+        ext_pins = {"input": {"path": e["input_path"], "sha256": e["input_sha256"]},
+                    "source_clock": {"path": e["clock_path"], "sha256": e["clock_sha256"]}}
     plan = build_plan(calendar_config=calendar, observed_seconds=ts, clock_scope=scope,
+                      extended_source=extended,
                       horizons=cfg.get("horizons_hours", BUSINESS_HORIZONS),
                       roles=cfg.get("roles", ["MANAGEMENT", "ENTRY"]),
                       fit_role=cfg.get("fit_role", "MANAGEMENT"),
@@ -632,6 +695,10 @@ def run_plan(config_path: Path, output: Path) -> Dict[str, Any]:
                                   "calendar_file_sha256": cfg["calendar_sha256"],
                                   "clock_scope_status": scope_doc.get("status"),
                                   "full_clock_audit_status": scope_doc.get("full_audit_status"),
+                                  "extended_input_sha256": (cfg.get("extended_data") or {}).get("input_sha256"),
+                                  "extended_clock_sha256": (cfg.get("extended_data") or {}).get("clock_sha256"),
+                                  "extended_clock_scope_sha256":
+                                      (cfg.get("extended_data") or {}).get("clock_scope_sha256"),
                                   "inherited_limits": cfg.get("inherited_limits", [])})
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
@@ -641,6 +708,11 @@ def run_plan(config_path: Path, output: Path) -> Dict[str, Any]:
         template = _load_json(Path(template_path), cfg["cell_template_sha256"])
         if template.get("schema") != "i6n.historical_cell.v1":
             raise CampaignError("CELL_TEMPLATE_INVALID")
+        training = template.get("training", {})
+        if (any(training.get(k) != v for k, v in PLAN_STOPPING.items())
+                or template.get("model", {}).get("n_horizons") != 1):
+            raise CampaignError("CELL_TEMPLATE_NOT_PLAN_CONFORMANT",
+                                "stopping/seed or endpoint base model differ from plan section 2")
         if (template["input"]["sha256"] != d["input_sha256"]
                 or template["source_clock"]["sha256"] != d["clock_sha256"]
                 or c1.canonical_digest(template["calendar"]) != clock["calendar_sha256"]):
@@ -648,9 +720,11 @@ def run_plan(config_path: Path, output: Path) -> Dict[str, Any]:
         (output / "cells").mkdir()
         for u in plan["units"]:
             for h, v in u["horizons"].items():
-                if v["state"] != "READY":
+                if v["state"] not in RUNNABLE:
                     continue
                 cell = dict(template, **cell_overlay(plan, u, int(h)))
+                if u["data_source"] == "EXTENDED":
+                    cell.update(ext_pins)
                 path = output / "cells" / f"{u['unit_id']}_h{h}.json"
                 _write(path, cell)
                 cells.setdefault(u["unit_id"], {})[h] = {"path": str(path), "sha256": file_sha256(path)}

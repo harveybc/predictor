@@ -315,6 +315,7 @@ def test_file_cli_plan_verify_export_redacts_private_paths(tmp_path):
                                                      "data_start": "2019-12-01T00:00:00Z",
                                                      "data_end": "2025-01-01T00:00:00Z"}))
     template = {"schema": "i6n.historical_cell.v1", "calendar": cal, "horizon_hours": 12,
+                "training": dict(wc.PLAN_STOPPING, batch_size=256), "model": {"n_horizons": 1},
                 "input": {"path": str(tmp_path / "INPUT.npz"), "sha256": clock["input_sha256"]},
                 "source_clock": {"path": str(tmp_path / "CLOCK.json"), "sha256": sha(tmp_path / "CLOCK.json")}}
     (tmp_path / "CELL.json").write_text(json.dumps(template))
@@ -350,8 +351,48 @@ def test_file_cli_plan_verify_export_redacts_private_paths(tmp_path):
     with (out / "SUPPORT.csv").open("a") as stream:
         stream.write("tamper\n")
     assert wc.verify(out)["state"] == "DAMAGED"
+    assert cell["training"]["max_epochs"] == 50 and cell["training"]["seed"] == 6102026
+    assert views["weeks"][0]["outer_scoring"] == "freeze --score-outer"
+    loose = dict(template, training=dict(template["training"], patience=7))
+    (tmp_path / "LOOSE.json").write_text(json.dumps(loose))
+    (tmp_path / "C2.json").write_text(json.dumps(dict(cfg, cell_template_path=str(tmp_path / "LOOSE.json"),
+                                                      cell_template_sha256=sha(tmp_path / "LOOSE.json"))))
+    with pytest.raises(wc.CampaignError) as e:
+        wc.run_plan(tmp_path / "C2.json", tmp_path / "plan3")
+    assert e.value.code == "CELL_TEMPLATE_NOT_PLAN_CONFORMANT"
     bad = dict(cfg, calendar_sha256="0" * 64)
     (tmp_path / "BAD.json").write_text(json.dumps(bad))
     with pytest.raises(wc.CampaignError) as e:
         wc.run_plan(tmp_path / "BAD.json", tmp_path / "plan2")
     assert e.value.code == "DIGEST_MISMATCH"
+
+
+def test_declared_clock_assumption_source_is_carried_in_fold_identity():
+    cal = calendar(date(2018, 12, 30))
+    obs = full_observed(cal)
+    primary = [t for t in obs if t >= int(utc(2019, 12, 1).timestamp())]
+    extended = {"observed_seconds": obs, "assumption_id": "DCA_TEST",
+                "assumption_sha256": "e" * 64,
+                "clock_scope": {"scope_id": "EXT", "start": utc(2018, 12, 1), "end": utc(2025, 1, 1)}}
+    p = plan(cal=cal, observed=primary, history_years=4, fold_year=2023, extended_source=extended)
+    folds = {u["quarter"]: u for u in p["units"] if u["kind"] == "INNER_FOLD"}
+    assert folds["2023Q4"]["fold_id"] == "2023Q4" and folds["2023Q4"]["data"]["state"] == "READY"
+    assert folds["2023Q4"]["data_source"] == "PRIMARY" and folds["2023Q4"]["clock_assumption"] is None
+    for q in ("2023Q1", "2023Q2", "2023Q3"):
+        f = folds[q]
+        assert f["fold_id"] == f"{q}_DCA" == f["unit_id"]
+        assert f["data"]["state"] == "READY_WITH_DECLARED_CLOCK_ASSUMPTION"
+        assert f["data_source"] == "EXTENDED"
+        assert f["clock_assumption"] == {"assumption_id": "DCA_TEST", "assumption_sha256": "e" * 64}
+        assert f["horizons"]["12"]["state"] == "READY_WITH_DECLARED_CLOCK_ASSUMPTION"
+        assert f["support"]["MANAGEMENT"]["12"]["TRAIN"]["n"] > 10000
+        assert f["primary_data"]["state"] == "WAIT_DEPENDENCY"
+    assert all(u["data_source"] == "PRIMARY" for u in p["units"] if u["kind"] == "WEEKLY_REFIT")
+    same = plan(cal=cal, observed=primary, history_years=4, fold_year=2023)
+    a = {u["unit_id"]: u["support"] for u in p["units"] if u["kind"] == "WEEKLY_REFIT"}
+    b = {u["unit_id"]: u["support"] for u in same["units"] if u["kind"] == "WEEKLY_REFIT"}
+    assert a == b  # weekly support unchanged by the extension
+    narrow = dict(extended, clock_scope={"scope_id": "EXT", "start": utc(2019, 7, 1), "end": utc(2025, 1, 1)})
+    q = plan(cal=cal, observed=primary, history_years=4, fold_year=2023, extended_source=narrow)
+    states = {u["quarter"]: u["data"]["state"] for u in q["units"] if u["kind"] == "INNER_FOLD"}
+    assert states["2023Q1"] == "WAIT_DEPENDENCY" and states["2023Q3"] == "READY_WITH_DECLARED_CLOCK_ASSUMPTION"

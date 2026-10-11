@@ -1,9 +1,51 @@
 # Lane C return: complete weekly units, 2023 folds, support and data
 
-Branch `satoshi/i6n-swarm-C-weekly-20261011`, base `5c383d17`. Real plan
-`plan_sha256 dd34986a46be92a0b3986be1be9b52081e922f266d22f5dde1f8f037b10ce9e7`
-(PLAN.json file `2424c6a9...`), VERIFIED. No fit, no price read for the plan,
-no TEST row, no download, no service.
+Branch `satoshi/i6n-swarm-C-weekly-20261011`, base `5c383d17`. Current plan
+`plan-v3`, `plan_sha256 be5750da0177ecd3a47d73b2682a22964e45d1a5c42b6209903022215bc9169f`
+(PLAN.json file `8f2aef32...`), VERIFIED. It supersedes `plan-v2`
+(`dd34986a...`); the support of all 54 units that were READY there is
+unchanged. No fit, no price read for the plan, and no TEST row. There was
+one authorized single-case download (below). No service was started.
+
+## Update C.2: clock ruling outcome
+
+The authorized single attempt for planned case 2019-10-28 used the existing
+governed resume tool. That tool gained a minimal admission rule, with tests:
+an exact `HTTP 429` reason counts as a transport failure and may be retried
+only as an explicitly named single `--only-date`. The attempt returned
+**HTTP 429 again (INCONCLUSIVE, report `7e1e34cb...`)**. I made no further
+retry. Per the ruling, the span 2019-03-11..2019-12-01 is now a **declared
+assumption** `DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01` (`f851cea1...`),
+declared the same way as December 2019. The record names the limitation and
+cites the four inconclusive attempt reports, the two in-span passing cases
+(2019-03-18 and 2019-07-15) and their exact replay, and the five passing
+October holdouts of 2020-2024. A new extended successor was materialized with
+35,398 rows (4,544 new). Every row reconciles with its annual archive, and the
+old successor is a byte-identical suffix. Its pins are input `bf8587b1...`,
+CLOCK `43103443...` and scope `2d81f654...`; the clock_policy text carries the
+assumption.
+
+In `plan-v3`, **2023Q1_DCA, 2023Q2_DCA and 2023Q3_DCA are
+READY_WITH_DECLARED_CLOCK_ASSUMPTION** on that source. The `_DCA` suffix is in
+the fold id and therefore in every receipt row. The assumption also enters
+`unit_sha256` and, through the cell's source clock, A's candidate identity.
+**2023Q4 stays READY** on the certified source, and so do the 53 weekly units.
+History was not shortened. On real timestamps the counts of the three DCA folds
+equal `build_weekly_partitions` for both roles. All 681 cell configs pass
+`authenticated` and carry the plan stopping rule, seed 6102026 and the endpoint
+base model (A.2). Weekly units are marked `freeze --score-outer`; folds never.
+
+| Fold (MANAGEMENT) | h2 TRAIN/INNER | h12 | h72 |
+| --- | --- | --- | --- |
+| 2023Q1_DCA | 19114/219 | 17023/161 | 4857/51 |
+| 2023Q2_DCA | 18613/224 | 16457/157 | 4716/51 |
+| 2023Q3_DCA | 18304/376 | 16096/336 | 4629/96 |
+| 2023Q4 | 18320/363 | 16122/323 | 4629/83 |
+
+Q1/Q2 inner support is low because 2023 February-July has many missing bars.
+
+The C.1 narrative below is kept as history. Its WAIT_DEPENDENCY statements for
+Q1-Q3 are superseded by this section.
 
 ## Narrative
 
@@ -83,11 +125,15 @@ per week: `evidence_C/WEEK_COVERAGE.csv`. 2023 has 86.6% of calendar bars
 | Accumulated state | `test_accumulated_state_survives_restart_and_duplicates` | PASS |
 | Missing week means no annual score | `test_missing_week_is_incomplete_not_annual` | PASS |
 | 70-row inner never compared with h12 annual | `test_inner_fold_score_never_compared_with_annual` | PASS |
-| 2019 extension decision | `tests/test_i6n_weekly_history_extension.py` (4) | PASS |
+| 2019 extension decision, exact successor suffix, declared assumption | `tests/test_i6n_weekly_history_extension.py` (6) | PASS |
+| Declared assumption carried in fold identity; weekly support unchanged | `test_declared_clock_assumption_source_is_carried_in_fold_identity` | PASS |
+| Cell configs carry plan stopping/seed/endpoint model | `test_file_cli_plan_verify_export_redacts_private_paths` | PASS |
+| Single named 429 case only | 3 new tests in `test_i6n_external_clock_audit_v2_resume.py` | PASS |
 
-PRE: collection ImportError (modules absent). POST: **73 passed in 33.93 s**,
-including the existing `test_i6n_weekly_data.py`, under
-`crispdm-run -m 2G -t 120s`, CPU-only.
+PRE: collection ImportError (modules absent). For C.2, the 3 new tests failed
+before implementation. POST C.2, under `crispdm-run -m 2G -t 120s`, CPU-only:
+`test_i6n_weekly_campaign.py` **18 passed in 43.19 s**. The rollup, extension,
+weekly_data and all external_clock_audit suites: **122 passed in 1.90 s**.
 
 ## Risks
 
@@ -103,8 +149,5 @@ including the existing `test_i6n_weekly_data.py`, under
 
 ## Next artifact
 
-An owner or parent decision on the 2019-10-28 clock case: either admit one
-transport successor for that case, or accept a declared assumption. After
-that, issue a certificate, materialize the extension and replan as `plan-v3`.
-B then runs A's `freeze` on the READY cell configs. Lane D review is pending
-on request.
+B runs A's `freeze` on the `plan-v3` cell configs: four folds per h, and the
+weekly units with `--score-outer`. The lane D review is in `REVIEW_C_OF_D.md`.

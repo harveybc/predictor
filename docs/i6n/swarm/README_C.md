@@ -15,6 +15,7 @@ reads prices for the plan, opens TEST rows, downloads, or starts a service.
 | Real counts per unit/role/h/split | `evidence_C/SUPPORT_BUSINESS.csv` | yes |
 | Observed bars per calendar week | `evidence_C/WEEK_COVERAGE.csv` | yes |
 | 2019 extension feasibility | `evidence_C/HISTORY_EXTENSION_2019.json` | yes |
+| Declared-assumption extended successor (INPUT.npz, CLOCK*.json) | `<campaign root>/successor-dca-v1/` | no; record in `evidence_C/DECLARED_CLOCK_ASSUMPTION_2019.json` |
 
 ## Commands
 
@@ -37,10 +38,21 @@ CUDA_VISIBLE_DEVICES="" crispdm-run -m 2G -t 180s -- \
     --design <statistical72 DESIGN.json> --successor-input <successor INPUT.npz> \
     --successor-sha256 <sha> --start 2019-03-12T21:00:00+00:00 --output <new dir>
 
+# Declared-assumption extended successor (local files only; new output dir)
+CUDA_VISIBLE_DEVICES="" crispdm-run -m 2G -t 300s -- \
+  python -m tools.i6n_weekly_history_extension materialize \
+    --source <statistical72 INPUT.npz> --source-sha256 <sha> \
+    --archives <annual verified archive dir> --clock-audit <latest v2 REPORT.json> \
+    --attempt-report <each 2019-10-28 attempt REPORT.json> ... \
+    --design <statistical72 DESIGN.json> --successor <base successor dir> \
+    --start 2019-03-11T00:00:00+00:00 --output <new dir>
+
 # Tests
 CUDA_VISIBLE_DEVICES="" crispdm-run -m 2G -t 120s -- python -m pytest -q \
-  tests/test_i6n_weekly_campaign.py tests/test_i6n_weekly_rollup.py \
-  tests/test_i6n_weekly_history_extension.py tests/test_i6n_weekly_data.py
+  tests/test_i6n_weekly_campaign.py
+CUDA_VISIBLE_DEVICES="" crispdm-run -m 2G -t 120s -- python -m pytest -q \
+  tests/test_i6n_weekly_rollup.py tests/test_i6n_weekly_history_extension.py \
+  tests/test_i6n_weekly_data.py tests/test_i6n_external_clock_audit*.py
 ```
 
 The private config (`i6n.weekly_campaign.config.v1`) pins the nominal
@@ -50,11 +62,12 @@ write a new `plan-vN` instead of editing one.
 
 ## Status
 
-- `plan_sha256 dd34986a...`: VERIFIED. 53/53 weekly units READY; 633
-  (week, h) dispositions per arm, 1,266 for two arms (ceiling 1,272).
-- 2023Q4 READY. 2023Q1-Q3 WAIT_DEPENDENCY: retained successor rows start
-  2019-12-01 and the clock scope certificate starts 2019-12-01. The 2019
-  rows reconcile exactly with the local annual archive, but the planned
-  independent clock case 2019-10-28 is INCONCLUSIVE (HTTP 429), so no
-  certificate may be extended. See `C_RETURN.md`.
+- Current plan `plan-v3`, `plan_sha256 be5750da...`: VERIFIED. It supersedes
+  `plan-v2` (`dd34986a...`); the support of its 54 READY units is unchanged.
+- 53/53 weekly units READY: 633 (week, h) dispositions per arm, 1,266 for
+  two arms (ceiling 1,272).
+- 2023Q4 READY on the certified primary source. 2023Q1_DCA, 2023Q2_DCA and
+  2023Q3_DCA are READY_WITH_DECLARED_CLOCK_ASSUMPTION on the extended
+  successor; no fold waits.
+- 681 cell configs, all accepted by `i6n_historical_cell.authenticated`.
 - Calendar `FX_NY_17_ASSUMED_NOT_BROKER` / `i6n-v1`, nominal, not certified.
