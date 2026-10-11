@@ -1,6 +1,7 @@
 # I6-E-M: horizontes de negocio, primero downsampling y despues horario
 
-Actualizado: 2026-10-11. Estado: PLANIFICADO; no entrenamiento nuevo ejecutado.
+Actualizado: 2026-10-11. Estado: EJECUTOR IMPLEMENTADO Y PROBADO; despliegue
+y medicion de coste registrados separadamente en el estado operativo.
 Este es el subplan vigente para la extension de I6-E. Sustituye la grilla
 historica de dieciocho brazos a 72 h como siguiente despacho, sin borrar sus
 registros ni modificar los ejecutores/checkpoints sellados.
@@ -29,6 +30,12 @@ Ambos MAE estan en USD/EUR original. MSE esta en (USD/EUR)^2. Si el modelo
 entrena con log-return, deshacer su normalizacion y reconstruir el precio
 como P(t)*exp(retorno_predicho) ANTES del calculo. Los errores en log-return
 se guardan aparte y nunca se comparan con un naive en precio.
+
+Convencion vigente del Maestro: `skill = (MAE_h - naive_h) / naive_h`.
+Un valor NEGATIVO mejora; positivo empeora; cero iguala. El porcentaje es
+100*skill. Conservar la formula en cada resultado y en el OLAP. La convencion
+historica `1-MAE/naive` permanece solo como diagnostico explicitamente distinto;
+no cambiar retroactivamente sus registros. La elegibilidad usa MAE_h < naive_h.
 
 Tambien guardar el naive para cada horizonte j*delta, j=1..k, de la trayectoria
 downsampled, con su propio soporte exacto y conteo. Por ejemplo, delta=24 h y
@@ -140,8 +147,9 @@ los controles o los pilotos como repeticiones de semilla del modelo primario.
 
 ## 5. Automatizacion sin ninera
 
-Esta seccion es el CONTRATO del ejecutor a implementar; no afirma que el
-ejecutor completo este desplegado. El generador de grilla y sus pruebas existen.
+Esta seccion es el CONTRATO del ejecutor `tools/i6m_*`. La prueba del software
+no sustituye el coste y las mediciones de produccion. Estado live: `STATUS.json`
+del directorio de campana; instrucciones completas: `I6M_OPERATOR_GUIDE.md`.
 
 1. Un comando maestro autentica grilla, codigo, fuentes, manifest de features,
    ventanas, calendarios y filas por h; inicializa cola durable y outbox.
@@ -189,9 +197,9 @@ MH08: WAL/outbox y readback OLAP, error de entrega no vuelve a entrenar.
 MH09: costo/memoria medidos por clase; un hijo por host preferido.
 MH10: estado/ETA consultable y cierre autonomo de las DOS etapas.
 
-Siguiente accion: implementar MH05-MH10 sobre el diseno generado, probar el
-ejecutor completo y sus pilotos antes de despacharlo. MH01-MH04 y el calendario
-ya tienen pruebas puras; NO son una campana cientifica ni una prueba del runtime.
+Siguiente accion: desplegar el pin del ejecutor con `tools.i6m_deploy`; el primer
+fit de semana cero de cada clase/host mide TRAIN y se adopta sin reentrenar.
+No convertir las pruebas de software en afirmaciones de exactitud financiera.
 
 ```bash
 python -m tools.i6e_horizon_plan plan --output <nuevo-plan.json>

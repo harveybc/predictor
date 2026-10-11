@@ -23,9 +23,9 @@
     "next_action": "Retain complete 72h controls and typed ARIMAX failures. Implement the new multihorizon downsampling-then-hourly plan without modifying sealed engines."
   },
   "i6e_multihorizon": {
-    "status": "PLANNED_NOT_EXECUTED",
-    "execution_ready": false,
-    "current_stage": "unit_test_verification",
+    "status": "RUNTIME_TESTED_RESOURCE_PILOTS_PENDING",
+    "execution_ready": true,
+    "current_stage": "deployment_verification",
     "work_plan": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
     "generated_design": "I6E_MULTI_HORIZON_PLAN.json",
     "horizons_hours": [2, 3, 4, 5, 6, 24, 48, 72, 96, 120],
@@ -41,8 +41,10 @@
     "naive_name": "naive para el horizonte de X horas",
     "test_read": false,
     "pure_contract_tests_passed": 15,
-    "runtime_verified": false,
-    "next_action": "Generalized model and input populations, MH05-MH10 worker/outbox/restart tests, TRAIN-only resource pilots, then automatic D->H deployment."
+    "runtime_verified": "SOFTWARE_ONLY_36_TESTS_OPERATIONAL_CLOSURE_PENDING",
+    "skill_formula": "(MAE_h - naive_h) / naive_h",
+    "skill_negative_is_better": true,
+    "next_action": "Deploy i6m runtime; measure and reuse first-week TRAIN fits per shape/host; automatically complete D then H, publish verified metrics without TEST."
   },
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [
