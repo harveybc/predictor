@@ -1,0 +1,168 @@
+{
+  "schema_version": "i6n.paired_metrics.input.v1",
+  "contract": {
+    "description": "Synthetic example only: invented prices, no broker calendar, no real data.",
+    "unit": "SYNTHETIC_PRICE_UNIT",
+    "scale": "ORIGINAL_PRICE",
+    "roles": [
+      "entry_origin",
+      "management_origin"
+    ],
+    "horizons_hours": [
+      2,
+      72
+    ],
+    "protocol_id": "SYNTHETIC_BUSINESS_WEEKLY_PROTOCOL",
+    "calendar_id": "SYNTHETIC_CALENDAR_V1",
+    "config_id": "synthetic-config-a"
+  },
+  "forecasts": [
+    {
+      "asset": "SYNTHETIC_PAIR",
+      "origin": "2030-01-07T12:00:00Z",
+      "horizon_hours": 2,
+      "target_timestamp": "2030-01-07T14:00:00Z",
+      "role": "entry_origin",
+      "price_origin": 1.0,
+      "price_target": 1.25,
+      "prediction": 1.125,
+      "checkpoint": "synthetic-weekly-checkpoint-1",
+      "unit": "SYNTHETIC_PRICE_UNIT",
+      "scale": "ORIGINAL_PRICE"
+    },
+    {
+      "asset": "SYNTHETIC_PAIR",
+      "origin": "2030-01-07T13:00:00Z",
+      "horizon_hours": 2,
+      "target_timestamp": "2030-01-07T15:00:00Z",
+      "role": "entry_origin",
+      "price_origin": 1.0,
+      "price_target": 0.75,
+      "prediction": 1.0,
+      "checkpoint": "synthetic-weekly-checkpoint-1",
+      "unit": "SYNTHETIC_PRICE_UNIT",
+      "scale": "ORIGINAL_PRICE"
+    },
+    {
+      "asset": "SYNTHETIC_PAIR",
+      "origin": "2030-01-07T13:00:00Z",
+      "horizon_hours": 2,
+      "target_timestamp": "2030-01-07T15:00:00Z",
+      "role": "management_origin",
+      "price_origin": 1.0,
+      "price_target": 0.75,
+      "prediction": 1.0,
+      "checkpoint": "synthetic-weekly-checkpoint-1",
+      "unit": "SYNTHETIC_PRICE_UNIT",
+      "scale": "ORIGINAL_PRICE"
+    },
+    {
+      "asset": "SYNTHETIC_PAIR",
+      "origin": "2030-01-07T12:00:00Z",
+      "horizon_hours": 72,
+      "target_timestamp": "2030-01-10T12:00:00Z",
+      "role": "entry_origin",
+      "price_origin": 1.0,
+      "price_target": 1.5,
+      "prediction": 1.25,
+      "checkpoint": "synthetic-weekly-checkpoint-1",
+      "unit": "SYNTHETIC_PRICE_UNIT",
+      "scale": "ORIGINAL_PRICE"
+    },
+    {
+      "asset": "SYNTHETIC_PAIR",
+      "origin": "2030-01-08T18:00:00Z",
+      "horizon_hours": 72,
+      "target_timestamp": "2030-01-11T18:00:00Z",
+      "role": "management_origin",
+      "price_origin": 1.25,
+      "price_target": 1.0,
+      "prediction": 1.125,
+      "checkpoint": "synthetic-weekly-checkpoint-1",
+      "unit": "SYNTHETIC_PRICE_UNIT",
+      "scale": "ORIGINAL_PRICE"
+    }
+  ],
+  "forecast_failures": [],
+  "opportunity_population": {
+    "population_id": "synthetic-opportunity-support-1",
+    "sealed_at": "2029-12-31T12:00:00Z",
+    "keys": [
+      {
+        "asset": "SYNTHETIC_PAIR",
+        "origin": "2030-01-07T12:00:00Z",
+        "horizon_hours": 2,
+        "role": "entry_origin"
+      },
+      {
+        "asset": "SYNTHETIC_PAIR",
+        "origin": "2030-01-07T13:00:00Z",
+        "horizon_hours": 2,
+        "role": "entry_origin"
+      },
+      {
+        "asset": "SYNTHETIC_PAIR",
+        "origin": "2030-01-07T13:00:00Z",
+        "horizon_hours": 2,
+        "role": "management_origin"
+      },
+      {
+        "asset": "SYNTHETIC_PAIR",
+        "origin": "2030-01-07T12:00:00Z",
+        "horizon_hours": 72,
+        "role": "entry_origin"
+      },
+      {
+        "asset": "SYNTHETIC_PAIR",
+        "origin": "2030-01-08T18:00:00Z",
+        "horizon_hours": 72,
+        "role": "management_origin"
+      }
+    ],
+    "exclusions": [
+      {
+        "horizon_hours": 72,
+        "role": "entry_origin",
+        "reason": "TARGET_AT_OR_AFTER_B",
+        "count": 3
+      },
+      {
+        "horizon_hours": 2,
+        "role": "entry_origin",
+        "reason": "ORIGIN_OUTSIDE_ENTRY_WINDOW",
+        "count": 2
+      }
+    ],
+    "sha256": "89e6ba506754dfe99f02d24c6e329095d505884a1aace529b5f5b08fd1b93540"
+  },
+  "usage_receipts": [
+    {
+      "receipt_id": "synthetic-receipt-1",
+      "asset": "SYNTHETIC_PAIR",
+      "origin": "2030-01-07T12:00:00Z",
+      "horizon_hours": 2,
+      "role": "entry_origin",
+      "target_timestamp": "2030-01-07T14:00:00Z",
+      "checkpoint": "synthetic-weekly-checkpoint-1",
+      "calendar_id": "SYNTHETIC_CALENDAR_V1",
+      "protocol_id": "SYNTHETIC_BUSINESS_WEEKLY_PROTOCOL",
+      "recorded_at": "2030-01-07T12:01:00Z",
+      "action": "NO_ORDER",
+      "forecast_sha256": "99187faf57668b1b7747f5abd34ba06a072b2a5364dd503cbb165711505a0f81"
+    },
+    {
+      "receipt_id": "synthetic-receipt-2",
+      "asset": "SYNTHETIC_PAIR",
+      "origin": "2030-01-07T12:00:00Z",
+      "horizon_hours": 72,
+      "role": "entry_origin",
+      "target_timestamp": "2030-01-10T12:00:00Z",
+      "checkpoint": "synthetic-weekly-checkpoint-1",
+      "calendar_id": "SYNTHETIC_CALENDAR_V1",
+      "protocol_id": "SYNTHETIC_BUSINESS_WEEKLY_PROTOCOL",
+      "recorded_at": "2030-01-07T12:01:00Z",
+      "action": "OPEN",
+      "forecast_sha256": "a643a2a4b9fdf3fd96402c25581032edac44c1614e0e79830a6d137a1569cdc0"
+    }
+  ]
+}
