@@ -19,6 +19,9 @@ H = (2, 3, 4, 5, 6, 12, 18, 24, 36, 48, 60, 72)
 def raw(h=12, **changes):
     g = space.seed_genotype(h)
     g = dict(g)
+    if "reducer_filters" in changes and "reducer_strides" not in changes and isinstance(
+            changes["reducer_filters"], list):
+        changes["reducer_strides"] = [1] * len(changes["reducer_filters"])  # test helper default only
     g.update(changes)
     return g
 
@@ -65,7 +68,7 @@ def test_samples_include_t(h):
     for L in space.history_domain(h):
         for dx in space.delta_x_domain(h, L):
             g = space.canonicalize(raw(h, history_hours=L, delta_x_hours=dx,
-                                       reducer_filters=[4], stride_pattern="none"))
+                                       reducer_filters=[4], reducer_strides=[1]))
             d = space.derived(g)
             assert d["n_samples"] == 1 + L // dx
             assert d["input_offsets_hours"][0] == -L
@@ -77,7 +80,7 @@ def test_samples_include_t(h):
 
 def test_max_samples_is_433_not_truncated_to_241():
     g = space.canonicalize(raw(72, history_hours=432, delta_x_hours=1, width=128,
-                               reducer_filters=[128], stride_pattern="none"))
+                               reducer_filters=[128], reducer_strides=[1]))
     assert space.derived(g)["n_samples"] == 433
     assert space.class_of(g) == "S3"
 
@@ -214,15 +217,22 @@ def test_stride_patterns_right_anchored():
     assert space.stride_list("final", 1) == [2]
 
 
-def test_single_reducer_progressive_equals_final_alias():
-    a = space.canonicalize(raw(12, reducer_filters=[4], stride_pattern="progressive"))
-    b = space.canonicalize(raw(12, reducer_filters=[4], stride_pattern="final"))
-    assert a == b and a["stride_pattern"] == "final"
+def test_plan_v1_1_free_per_layer_strides_with_named_labels():
+    # Ruling 2026-10-11: per-layer 1|2 is the domain; named patterns are labels/seeds.
+    mixed = space.canonicalize(raw(12, history_hours=48, delta_x_hours=3, width=16,
+                                   reducer_filters=[16, 16, 8], reducer_strides=[1, 2, 1]))
+    assert mixed["reducer_strides"] == [1, 2, 1]
+    assert space.derived(mixed)["stride_pattern"] == "mixed"
+    assert space.derived(space.canonicalize(raw(12, reducer_filters=[8, 4], reducer_strides=[2, 1])))["stride_pattern"] == "mixed"
+    assert space.derived(space.canonicalize(raw(12, reducer_filters=[4], reducer_strides=[2])))["stride_pattern"] == "final"
+    assert space.derived(space.canonicalize(raw(12, width=16, reducer_filters=[8, 4], reducer_strides=[2, 2])))["stride_pattern"] == "progressive"
+    assert space.derived(space.seed_genotype(12))["stride_pattern"] == "none"
+    assert space.REDUCER_STRIDES == (1, 2)
 
 
 def test_right_anchored_steps_and_t_survives():
     g = space.canonicalize(raw(12, history_hours=24, delta_x_hours=2, width=16,
-                               reducer_filters=[16, 8, 4], stride_pattern="progressive"))
+                               reducer_filters=[16, 8, 4], reducer_strides=[2, 2, 2]))
     d = space.derived(g)
     # 13 -> 7 -> 4 -> 2, ceil division keeps the right-most (t) slot.
     assert d["steps_per_stage"] == [13, 7, 4, 2]
@@ -233,15 +243,28 @@ def test_right_anchored_steps_and_t_survives():
 def test_reduction_that_empties_temporal_core_is_typed():
     # h72 L72 dx72 -> 2 samples; a stride-2 reduction leaves one step.
     r = space.check(raw(72, history_hours=72, delta_x_hours=72, reducer_filters=[4],
-                        stride_pattern="final"))
+                        reducer_strides=[2]))
     assert r["status"] == "INFEASIBLE"
     assert "FINAL_STEPS_BELOW_MINIMUM" in codes(r)
     assert space.check(raw(72, history_hours=72, delta_x_hours=72, reducer_filters=[4],
-                           stride_pattern="none"))["status"] == "FEASIBLE"
+                           reducer_strides=[1]))["status"] == "FEASIBLE"
 
 
-def test_stride_pattern_unknown_typed():
-    assert "STRIDE_PATTERN_NOT_IN_DOMAIN" in codes(space.check(raw(12, stride_pattern="middle")))
+def test_reducer_strides_outside_domain_typed():
+    assert "REDUCER_STRIDES_NOT_IN_DOMAIN" in codes(space.check(raw(12, reducer_filters=[4], reducer_strides=[3])))
+    assert "REDUCER_STRIDES_NOT_IN_DOMAIN" in codes(space.check(raw(12, reducer_filters=[4], reducer_strides=[True])))
+    assert "REDUCER_STRIDES_LENGTH_MISMATCH" in codes(space.check(raw(12, reducer_filters=[8, 4], reducer_strides=[1])))
+    assert "REDUCER_STRIDES_NOT_IN_DOMAIN" in codes(space.check(raw(12, reducer_strides="final")))
+
+
+def test_mixed_strides_that_empty_the_core_still_rejected():
+    # h72 L72 dx36 -> 3 samples; [2,2] -> 2 -> 1 step: rejected, [1,2] -> 3 -> 2 kept.
+    bad = space.check(raw(72, history_hours=72, delta_x_hours=36, width=16, reducer_filters=[8, 4],
+                          reducer_strides=[2, 2]))
+    assert "FINAL_STEPS_BELOW_MINIMUM" in codes(bad)
+    ok = space.canonicalize(raw(72, history_hours=72, delta_x_hours=36, width=16, reducer_filters=[8, 4],
+                                reducer_strides=[1, 2]))
+    assert space.derived(ok)["steps_per_stage"] == [3, 3, 2]
 
 
 # --- adapter ---------------------------------------------------------------
@@ -274,13 +297,13 @@ def test_all_reasons_reported_and_input_never_mutated():
 def test_identity_is_stable_and_covers_every_active_gene():
     base = space.canonicalize(raw(12, history_hours=48, delta_x_hours=3, entrance="conv_transformer",
                                   transformer_blocks=1, width=32, reducer_filters=[16, 8],
-                                  stride_pattern="final", adapter="lstm", adapter_width=16,
+                                  reducer_strides=[1, 2], adapter="lstm", adapter_width=16,
                                   supervision="trajectory", trajectory_k=3,
                                   input_transform="difference"))
     ident = space.genotype_sha256(base)
     assert len(ident) == 64
     changes = dict(history_hours=72, delta_x_hours=4, entrance="transformer", transformer_blocks=2,
-                   width=64, reducer_filters=[16, 4], stride_pattern="none", adapter="causalconv",
+                   width=64, reducer_filters=[16, 4], reducer_strides=[2, 1], adapter="causalconv",
                    adapter_width=32, trajectory_k=2, input_transform="identity")
     for key, value in changes.items():
         other = space.canonicalize(dict(base, **{key: value}))
@@ -375,7 +398,7 @@ def test_class_of_examples():
 def test_minimal_seed_conv8_conv4(h):
     g = space.seed_genotype(h)
     assert space.canonicalize(g) == g
-    assert (g["entrance"], g["width"], g["reducer_filters"], g["stride_pattern"]) == ("conv", 8, [4], "none")
+    assert (g["entrance"], g["width"], g["reducer_filters"], g["reducer_strides"]) == ("conv", 8, [4], [1])
     assert g["adapter"] == "none" and g["transformer_blocks"] == 0
     assert g["supervision"] == "endpoint" and g["input_transform"] == "identity"
     assert space.class_of(g) == "S1"
@@ -484,20 +507,28 @@ def test_legacy_identity_recomputed_with_frozen_v1_code():
     assert v1.effective_identity(LEGACY_H72_BEST) == "0d0d98b60032004eced32f36ea703eae73510f18eddba042dced8c49254fad34"
 
 
-def test_legacy_mapping_types_out_of_domain_stride_pattern():
+def test_legacy_mixed_strides_map_with_their_own_identity_in_v1_1():
     rec = space.legacy_map(LEGACY_H12_BEST)
     assert rec["v1_identity"] == "b17caa522cd45a5c4454657b80aa4d5da99880c3cec740f010eea08caeea9b6a"
-    assert rec["genotype_status"] == "OUT_OF_V2_DOMAIN"
-    assert "STRIDE_PATTERN_NOT_IN_DOMAIN" in {r["code"] for r in rec["reasons"]}
-    assert rec["genotype_canonical_sha256"] is None
+    assert rec["genotype_status"] == "MAPPED"
+    assert rec["v2_genotype"]["reducer_strides"] == [1, 2, 1]
+    assert rec["genotype_canonical_sha256"] == rec["v1_identity"]
     assert rec["fold_score_reuse"] == "NONE"
+
+
+def test_legacy_out_of_domain_still_typed():
+    genome = dict(LEGACY_H72_BEST, core=dict(LEGACY_H72_BEST["core"], adapter_width=128))
+    rec = space.legacy_map(genome)
+    assert rec["genotype_status"] == "OUT_OF_V2_DOMAIN"
+    assert "ADAPTER_WIDTH_NOT_IN_DOMAIN" in {r["code"] for r in rec["reasons"]}
+    assert rec["genotype_canonical_sha256"] is None
 
 
 def test_legacy_mapping_in_domain_genotype_but_fold_context_non_equivalent():
     rec = space.legacy_map(LEGACY_H72_BEST)
     assert rec["genotype_status"] == "MAPPED"
     g = rec["v2_genotype"]
-    assert (g["history_hours"], g["delta_x_hours"], g["stride_pattern"]) == (72, 72, "none")
+    assert (g["history_hours"], g["delta_x_hours"], g["reducer_strides"]) == (72, 72, [1])
     # In-domain legacy genotypes keep the SAME canonical identity (single source).
     assert rec["genotype_canonical_sha256"] == space.genotype_sha256(g) == rec["v1_identity"]
     assert rec["fold_score_reuse"] == "NONE"
@@ -543,5 +574,5 @@ def test_effective_config_carries_evaluator_request_config_and_v1_identity():
 
 def test_from_evaluator_genome_roundtrip_and_typed_outside():
     g = space.canonicalize(raw(24, history_hours=96, delta_x_hours=4, width=32,
-                               reducer_filters=[16, 8], stride_pattern="final"))
+                               reducer_filters=[16, 8], reducer_strides=[1, 2]))
     assert space.canonicalize(space.from_evaluator_genome(space.to_evaluator_genome(g))) == g

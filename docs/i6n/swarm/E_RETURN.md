@@ -2,7 +2,7 @@
 
 Branch `satoshi/i6n-swarm-E-search-20261011`, base `5c383d17`. Plan
 `af0c3570` (sha `da51723a...`), orders sha `ac77366a...`. Sealed plan
-`docs/i6n/swarm/I6N_SEARCH_PLAN_v1.json`, `plan_sha256 8d8865f1...a77d3`.
+`docs/i6n/swarm/I6N_SEARCH_PLAN_v1_1.json`, `plan_sha256 e7de41f04c8f188606dcaa71baa497e224303bdceaa8c802e71db63045ab788c` (v1.1, supersedes v1.0.0 `8d8865f1...a77d3`, under which no fit ran).
 No fits, no data reads beyond the private legacy controller STATE files, no
 GPU, no services, no TEST rows.
 
@@ -18,7 +18,7 @@ GPU, no services, no TEST rows.
 | endpoint or trajectory dy=h/k, k in {2,3,4}; endpoint alias null | `test_trajectory_*`, `test_endpoint_alias_k1_is_null_not_another_fit` | PASS |
 | Conv/Transformer/Conv+Transformer, widths, blocks 0 vs 1-2 | `test_core_entry_and_width_domains`, `test_transformer_blocks_*` | PASS |
 | reducers 1-3 non-increasing in {4..128} | `test_reducers_one_to_three_nonincreasing_in_domain` | PASS |
-| strides 1/2 right-anchored none/progressive/final; t kept; no emptying | `test_stride_patterns_right_anchored`, `test_right_anchored_steps_and_t_survives`, `test_reduction_that_empties_temporal_core_is_typed` | PASS |
+| strides free 1/2 per layer (v1.1 ruling), right-anchored; named patterns as labels; t kept; no emptying | `test_plan_v1_1_free_per_layer_strides_with_named_labels`, `test_reducer_strides_outside_domain_typed`, `test_mixed_strides_that_empty_the_core_still_rejected`, `test_right_anchored_steps_and_t_survives`, `test_reduction_that_empties_temporal_core_is_typed` | PASS |
 | adapter none/causal Conv/LSTM width {8..64} | `test_adapter_domain_and_inactive_width` | PASS |
 | inactive genes canonicalized; identity covers all active genes | `test_identity_is_stable_and_covers_every_active_gene`, `test_active_and_inactive_genes_recorded_in_effective_config` | PASS |
 | infeasible typed with all reasons, never repaired | `test_all_reasons_reported_and_input_never_mutated` + per-gene typed tests | PASS |
@@ -31,19 +31,20 @@ GPU, no services, no TEST rows.
 | cache by full identity; failures have dispositions; no duplicate filler | `test_cache_hit_by_full_identity_is_not_a_new_fit`, `test_failed_candidates_have_disposition_not_fitness`, `test_mutation_exhausted_returns_none_not_duplicate` | PASS |
 | tolerance 1e-4, patience 3 | `test_patience_and_tolerance` | PASS |
 | finalists best + minimal control / small alternative; not "optimal" | `test_finalists_*` | PASS |
-| 48 legacy candidates mapped or typed | `test_legacy_*`, `E_LEGACY_MAPPING_v1.json` | 48/48 v1 ids recomputed; 30 MAPPED (same id), 18 OUT_OF_V2_DOMAIN (stride); 0 fold-score reuse; 0 refits |
+| 48 legacy candidates mapped or typed | `test_legacy_*`, `E_LEGACY_MAPPING_v1.json` | 48/48 v1 ids recomputed; 48 MAPPED with their own identity (v1.1); 0 fold-score reuse; 0 refits |
 | legacy v1 path unchanged | `tests/test_i6n_search.py`, `test_i6n_optimizer.py`, `test_i6n_search_controller.py` | 163 PASS |
 
 ## Commands and evidence
 
 - PRE (RED, modules absent): `docs/i6n/swarm/evidence_E/PRE_pytest.txt` (3 collection errors).
 - POST: `CUDA_VISIBLE_DEVICES="" crispdm-run -m 2G -t 120s -- python -m pytest -q -p no:cacheprovider tests/test_i6n_search_space_v2.py tests/test_i6n_search_plan.py tests/test_i6n_optimizer_v2.py` -> 177 passed (`evidence_E/POST_pytest_E.txt`); legacy regression 163 passed (`evidence_E/POST_pytest_legacy_regression.txt`).
+- v1.1 round: PRE `evidence_E/PRE_pytest_v1_1.txt` (39 failed / 134 passed before the change), POST `evidence_E/POST_pytest_v1_1.txt` (179 passed, same three suites, run once). Legacy suites not re-run: `tools/i6n_search.py` and the v1 plugin path were not touched in this round.
 - Generation-0 configs generated for all 12 horizons (8 S1 candidates each, seed first), private scratch only.
 
 ## Risks / open interpretations
 
-1. **INT-STRIDE** (flagged for A/Musashi): three named patterns, not free per-layer mixes; excludes 18 legacy genotypes including the h12 legacy best. A free reading is a v1.1 superset with unchanged identities.
-2. S1 requires dx>=2; class width counts adapter width; reducers non-increasing from entrance width.
+1. **INT-STRIDE RULED** (Satoshi, 2026-10-11): free per-layer 1|2 strides. Plan re-sealed as v1.1 (strict superset; every v1.0.0 identity unchanged); the 18 mixed-stride legacy genotypes now map with their own identity.
+2. Accepted as recorded: S1 requires dx>=2; class width counts adapter width; reducers non-increasing from entrance width.
 3. A must emit `effective_config_sha256` exactly as E defines; C role vocabulary (MANAGEMENT vs management_origin) is not bound by E's plan.
 4. Measured class caps are not in the sealed plan; they come from B's pilot receipts.
 
@@ -56,4 +57,4 @@ B and C is pending their implementation commits.
 
 ## Next artifact
 
-E code review of B/C deliverables; plan v1.1 only if INT-STRIDE is overruled.
+E code review of B/C deliverables when their code lands.

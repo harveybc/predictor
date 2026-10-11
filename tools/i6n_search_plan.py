@@ -4,7 +4,7 @@ Lane E, plan af0c3570 section 4. Pure functions over JSON state so that the
 swarm ledger (lane B) can persist and replay them. No data, TensorFlow,
 devices, services or fits. CLI subcommands only write files the caller names.
 
-    python -m tools.i6n_search_plan plan --output <plan.json>
+    python -m tools.i6n_search_plan plan --output <plan.json>   # committed: PLAN_PATH
     python -m tools.i6n_search_plan verify --plan <plan.json>
     python -m tools.i6n_search_plan initial-configs --plan <plan.json> --output <dir>
     python -m tools.i6n_search_plan fit-specs --plan <plan.json> --horizon H \
@@ -28,11 +28,13 @@ from tools import i6n_search_space as space
 
 PLAN_SCHEMA = "i6n.search_plan.v1"
 STATE_SCHEMA = "i6n.search_state.v1"
-PLAN_VERSION = "1.0.0"
+PLAN_VERSION = "1.1.0"
+PLAN_PATH = "docs/i6n/swarm/I6N_SEARCH_PLAN_v1_1.json"
+SUPERSEDED_PLAN_SHA256 = "8d8865f1343c6b0efa80edf711393425c3445b953cbb76a4f841a5a1994a77d3"
 FOLD_IDS = ("2023Q1", "2023Q2", "2023Q3", "2023Q4")
 LEGACY_MAPPING_PATH = "docs/i6n/swarm/E_LEGACY_MAPPING_v1.json"
 # sha256 of the committed legacy mapping artifact (48 endpoint candidates).
-LEGACY_MAPPING_SHA256 = "9849acfa5fb53f47e6f8b2cf67985cfdc7aababd57f263ceec01256b58295c90"
+LEGACY_MAPPING_SHA256 = "e3254dd63fa4654dadf5c72b1bcdb2a8a0708dd9540202363e303d3e85c77b3f"
 
 STOP_REASONS = ("generation_budget", "candidate_budget", "patience",
                 "admissible_generation_exhausted", "attempt_budget")
@@ -67,6 +69,9 @@ def build_plan():
     per_h_class = {"S1": 24, "S2": 16, "S3": 8}
     plan = {
         "schema": PLAN_SCHEMA, "plan_version": PLAN_VERSION,
+        "supersedes": {"plan_version": "1.0.0", "plan_sha256": SUPERSEDED_PLAN_SHA256,
+                       "reason": "INT-STRIDE ruling: free per-layer strides (superset, identities unchanged)",
+                       "fits_under_superseded_plan": 0},
         "governing": {
             "orders_path": "docs/handoffs/SATOSHI_I6N_SWARM_WEEKLY_2026_10_11.md",
             "orders_sha256": "ac77366af24bcaf4fb9454a51c94ab1f6d5230bb1de4ff14521f76cc0a3f8b9c",
@@ -107,7 +112,11 @@ def build_plan():
             "reducer_counts": list(space.REDUCER_COUNTS),
             "reducer_filters": list(space.REDUCER_FILTERS),
             "reducer_order": "entrance width then reducers non-increasing",
-            "stride_patterns": {"none": "all 1", "progressive": "all 2", "final": "last reducer 2, others 1"},
+            "reducer_strides": {"per_layer": [1, 2],
+                                "named_patterns": {"none": "all 1", "progressive": "all 2",
+                                                   "final": "last reducer 2, others 1",
+                                                   "mixed": "any other per-layer 1|2 list"},
+                                "patterns_role": "derived labels and seed choices, not the admissible domain"},
             "stride_anchor": "right-anchored (keeps t); steps = ceil(steps/stride) per reducer",
             "min_final_steps": space.MIN_FINAL_STEPS,
             "adapters": list(space.ADAPTERS),
@@ -117,7 +126,7 @@ def build_plan():
             "infeasibility": "typed reasons (INTERFACE_E); never repaired into another experiment",
         },
         "interpretations": [
-            {"id": "INT-STRIDE", "text": "'ninguna/progresiva/final' read as three named patterns: none=all 1, progressive=all 2, final=only the last reducer 2. Other per-layer mixes (e.g. [1,2,1]) are outside v2 and typed STRIDE_PATTERN_NOT_IN_DOMAIN. Impact: 18 of the 48 legacy genotypes (incl. the h12 legacy best) fall outside v2. Reading '1 o 2 por capa' as a free per-layer choice would be plan v1.1, a strict superset; genotype_canonical_sha256 of every in-domain genotype is unchanged by that choice.", "review": "flagged for lane A review and Musashi"},
+            {"id": "INT-STRIDE", "text": "RULED 2026-10-11 (Satoshi): '1 o 2 por capa' is the domain, a free per-reducer 1|2 list; none/progressive/final are named patterns used as labels and seeds. Combinations that lose t or leave fewer than min_final_steps are still rejected (FINAL_STEPS_BELOW_MINIMUM). Plan v1.1 is a strict superset of v1.0.0; every v1.0.0 in-domain genotype_canonical_sha256 is unchanged.", "status": "RULED"},
             {"id": "INT-REDUCER-ORDER", "text": "non-increasing includes the entrance width (inherited search contract; legacy candidates obey it)."},
             {"id": "INT-S1-DOWNSAMPLED", "text": "S1 requires dx>=2 ('primero downsampling, despues horario'); hourly grids start at S2."},
             {"id": "INT-CLASS-WIDTH", "text": "class width limit applies to entrance, reducer and adapter widths."},
@@ -209,7 +218,7 @@ def build_plan():
             "transfer_claim": "the search recipe is NOT transferred as an optimum; each week refits",
         },
         "prior_mapping": {"artifact": LEGACY_MAPPING_PATH, "sha256": LEGACY_MAPPING_SHA256,
-                          "verdict": "fold_score_reuse NONE for all 48; in-domain genotypes keep genotype_canonical_sha256; no refit of the legacy context"},
+                          "verdict": "48/48 genotypes MAPPED with their own v1 identity; fold_score_reuse NONE for all 48; no refit of the legacy context"},
         "stop_reasons": list(STOP_REASONS),
         "dispositions": list(DISPOSITIONS),
     }

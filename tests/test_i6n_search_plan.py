@@ -77,7 +77,10 @@ def test_plan_domain_matches_space(plan):
     assert d["entrance_widths"] == [8, 16, 32, 64, 128]
     assert d["reducer_filters"] == [4, 8, 16, 32, 64, 128]
     assert d["adapter_widths"] == [8, 16, 32, 64]
-    assert d["stride_patterns"] == {"none": "all 1", "progressive": "all 2", "final": "last reducer 2, others 1"}
+    assert d["reducer_strides"]["per_layer"] == [1, 2]
+    assert d["reducer_strides"]["named_patterns"] == {"none": "all 1", "progressive": "all 2", "final": "last reducer 2, others 1", "mixed": "any other per-layer 1|2 list"}
+    assert plan["plan_version"] == "1.1.0"
+    assert plan["supersedes"]["plan_sha256"] == "8d8865f1343c6b0efa80edf711393425c3445b953cbb76a4f841a5a1994a77d3"
     assert plan["seed"] == 6102026 and plan["replicas"] == 1
 
 
@@ -384,7 +387,7 @@ def test_committed_plan_and_legacy_artifact_match_builder(plan):
     import hashlib
     from pathlib import Path
     root = Path(__file__).resolve().parents[1]
-    committed = json.loads((root / "docs/i6n/swarm/I6N_SEARCH_PLAN_v1.json").read_text())
+    committed = json.loads((root / sp.PLAN_PATH).read_text())
     assert committed == plan
     raw = (root / sp.LEGACY_MAPPING_PATH).read_bytes()
     assert hashlib.sha256(raw).hexdigest() == sp.LEGACY_MAPPING_SHA256 == plan["prior_mapping"]["sha256"]
@@ -392,7 +395,7 @@ def test_committed_plan_and_legacy_artifact_match_builder(plan):
     assert legacy["summary"]["n"] == 48 and legacy["summary"]["completed"] == 48
     assert legacy["summary"]["v1_identity_recomputed_all"] is True
     assert legacy["summary"]["refits_scheduled"] == 0
-    assert legacy["summary"]["mapped"] + legacy["summary"]["out_of_v2_domain"] == 48
+    assert legacy["summary"]["mapped"] == 48 and legacy["summary"]["out_of_v2_domain"] == 0
     for c in legacy["candidates"]:
         assert c["fold_score_reuse"] == "NONE"
         if c["genotype_status"] == "MAPPED":

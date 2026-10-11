@@ -6,8 +6,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "05fe0baf2cfd06a0c19d28d080ef2f41c8f6108b2608f507e645c88bcf62c3b1",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 1.0008193135551027,
@@ -39,18 +39,35 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_2_1_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "05fe0baf2cfd06a0c19d28d080ef2f41c8f6108b2608f507e645c88bcf62c3b1",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 12,
+    "entrance": "conv_transformer",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     4,
+     4,
+     4
+    ],
+    "reducer_strides": [
+     2,
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 32
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -103,8 +120,10 @@
     "reducer_filters": [
      16
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 1,
@@ -117,8 +136,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "221bd92f308cba161ceb615a4669c1e77fbbf4b5725c2b43171a88c3f68493ce",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 1.0020814802613573,
@@ -150,18 +169,35 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_1_2_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "221bd92f308cba161ceb615a4669c1e77fbbf4b5725c2b43171a88c3f68493ce",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 16,
+    "delta_x_hours": 12,
+    "entrance": "transformer",
+    "history_hours": 24,
+    "horizon_hours": 12,
+    "input_transform": "identity",
+    "reducer_filters": [
+     16,
+     8,
+     8
+    ],
+    "reducer_strides": [
+     1,
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 16
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -169,8 +205,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "25cd5ac4d47f34054a3f63736e62f305a4c13cdf7cf52f87d340e50d0cf192e1",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 0.9996633665183041,
@@ -200,18 +236,33 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_2_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "25cd5ac4d47f34054a3f63736e62f305a4c13cdf7cf52f87d340e50d0cf192e1",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -219,8 +270,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "329c90d34c4e1a4fa9881d6e3ceb4dceb7ab3d8939cc71a0579208746fe3ff37",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 1.0019243321192728,
@@ -252,18 +303,35 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_2_1_2'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "329c90d34c4e1a4fa9881d6e3ceb4dceb7ab3d8939cc71a0579208746fe3ff37",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 8,
+    "delta_x_hours": 3,
+    "entrance": "conv_transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16,
+     8
+    ],
+    "reducer_strides": [
+     2,
+     1,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -322,8 +390,12 @@
      16,
      8
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "progressive",
+    "reducer_strides": [
+     2,
+     2,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 1,
@@ -336,8 +408,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "3753dbba8e04866aa33fa1d967347415aab2172f6b19486b4873f6987c7d62a6",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 1.0010850519045849,
@@ -367,18 +439,33 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_2_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "3753dbba8e04866aa33fa1d967347415aab2172f6b19486b4873f6987c7d62a6",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 3,
+    "entrance": "conv",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 32
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -434,8 +521,11 @@
      4,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "final",
+    "reducer_strides": [
+     1,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -448,8 +538,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "5cc7915de98b64e1bcc027ee8f9d5eafb616376fa3812ca907e9f43b147b0bc1",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 1.0012233532901433,
@@ -481,18 +571,35 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_1_2_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "5cc7915de98b64e1bcc027ee8f9d5eafb616376fa3812ca907e9f43b147b0bc1",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 16,
+    "delta_x_hours": 3,
+    "entrance": "transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16,
+     8
+    ],
+    "reducer_strides": [
+     1,
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -500,8 +607,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "68b7047a6d3ca51339cc89959f111191b3c559d23b99cbbecbc89e26660630f9",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 0.9996519338826555,
@@ -531,18 +638,33 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_2_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "68b7047a6d3ca51339cc89959f111191b3c559d23b99cbbecbc89e26660630f9",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 12,
+    "entrance": "conv_transformer",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     32,
+     8
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 32
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -550,8 +672,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "77c2aa6534a83be5ce95c01a1d1b4f1ad8cfb7fe4c256e6eab5f7bde7d49049e",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 1.003490965604409,
@@ -581,18 +703,33 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_2_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "77c2aa6534a83be5ce95c01a1d1b4f1ad8cfb7fe4c256e6eab5f7bde7d49049e",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 12,
+    "entrance": "conv_transformer",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     32,
+     8
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 32
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -600,8 +737,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "80c20454b05236ff192ca40ba4c4d43f6f643b77d97e6926f78fa8774cdd0f82",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 0.9986823945608347,
@@ -631,18 +768,33 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_2_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "80c20454b05236ff192ca40ba4c4d43f6f643b77d97e6926f78fa8774cdd0f82",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 3,
+    "entrance": "conv_transformer",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "identity",
+    "reducer_filters": [
+     16,
+     16
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 32
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -701,8 +853,12 @@
      16,
      8
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 1,
@@ -715,8 +871,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "905306c938e70480caad45a4ca7f9f60d3af0a38242ebc3e1da85f227af2b8d3",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 1.002091607636756,
@@ -748,18 +904,35 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_2_1_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "905306c938e70480caad45a4ca7f9f60d3af0a38242ebc3e1da85f227af2b8d3",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 12,
+    "entrance": "conv_transformer",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     4,
+     4,
+     4
+    ],
+    "reducer_strides": [
+     2,
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 32
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -767,8 +940,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "90de38c31ae0ff2d0ebb3b0c5c217e118837cbd6ccba0f68d66272d7efd39b80",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 1.0019629514546007,
@@ -798,18 +971,33 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_2_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "90de38c31ae0ff2d0ebb3b0c5c217e118837cbd6ccba0f68d66272d7efd39b80",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "lstm",
+    "adapter_width": 8,
+    "delta_x_hours": 3,
+    "entrance": "conv_transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     4,
+     4
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -865,8 +1053,11 @@
      4,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "progressive",
+    "reducer_strides": [
+     2,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -879,8 +1070,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "b17caa522cd45a5c4454657b80aa4d5da99880c3cec740f010eea08caeea9b6a",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 0.9941249436999559,
@@ -912,18 +1103,35 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_1_2_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "b17caa522cd45a5c4454657b80aa4d5da99880c3cec740f010eea08caeea9b6a",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 8,
+    "delta_x_hours": 3,
+    "entrance": "transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16,
+     8
+    ],
+    "reducer_strides": [
+     1,
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -976,8 +1184,10 @@
     "reducer_filters": [
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "final",
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 1,
@@ -990,8 +1200,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "bfcd26bc1c683c10b5a199f70048a69e8997c2d3a13c51dcb4823dfca9fbc87f",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 1.0012060752707066,
@@ -1023,18 +1233,35 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_1_2_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "bfcd26bc1c683c10b5a199f70048a69e8997c2d3a13c51dcb4823dfca9fbc87f",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 8,
+    "delta_x_hours": 3,
+    "entrance": "transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16,
+     8
+    ],
+    "reducer_strides": [
+     1,
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 16
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -1090,8 +1317,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 1,
@@ -1152,8 +1382,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "final",
+    "reducer_strides": [
+     1,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 1,
@@ -1166,8 +1399,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "df67434af496394d58547211f9f9123e4a51332b18eea25b5ef3da2f03ab31b2",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 0.9972006989872957,
@@ -1197,18 +1430,33 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_2_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "df67434af496394d58547211f9f9123e4a51332b18eea25b5ef3da2f03ab31b2",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 3,
+    "entrance": "conv_transformer",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "identity",
+    "reducer_filters": [
+     32,
+     16
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 32
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -1216,8 +1464,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "ed84d7bcb9cf06527096ab29665037e0d910ca8d992ffdda724e49f2bbaf2a38",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 1.00167013080857,
@@ -1249,18 +1497,35 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_2_1_2'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "ed84d7bcb9cf06527096ab29665037e0d910ca8d992ffdda724e49f2bbaf2a38",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 8,
+    "delta_x_hours": 3,
+    "entrance": "transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16,
+     8
+    ],
+    "reducer_strides": [
+     2,
+     1,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -1268,8 +1533,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "f07be979a15f82da7f9843654900b6475cb17ca2f29bc93b15733fc3b28d372f",
+   "genotype_status": "MAPPED",
    "horizon_hours": 12,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 1.0007281483977577,
@@ -1299,18 +1564,33 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_2_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "f07be979a15f82da7f9843654900b6475cb17ca2f29bc93b15733fc3b28d372f",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 3,
+    "entrance": "conv",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "identity",
+    "reducer_filters": [
+     16,
+     16
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 32
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -1363,8 +1643,10 @@
     "reducer_filters": [
      16
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 2,
@@ -1425,8 +1707,11 @@
      4,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "progressive",
+    "reducer_strides": [
+     2,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -1484,8 +1769,10 @@
     "reducer_filters": [
      8
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -1543,8 +1830,10 @@
     "reducer_filters": [
      8
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "final",
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -1602,8 +1891,10 @@
     "reducer_filters": [
      8
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "final",
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 2,
@@ -1667,8 +1958,12 @@
      4,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 2,
@@ -1726,8 +2021,10 @@
     "reducer_filters": [
      8
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "final",
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -1785,8 +2082,10 @@
     "reducer_filters": [
      8
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "final",
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 2,
@@ -1847,8 +2146,11 @@
      32,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "final",
+    "reducer_strides": [
+     1,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 1,
@@ -1906,8 +2208,10 @@
     "reducer_filters": [
      16
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 1,
@@ -1971,8 +2275,12 @@
      4,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 2,
@@ -2030,8 +2338,10 @@
     "reducer_filters": [
      8
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "final",
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -2089,8 +2399,10 @@
     "reducer_filters": [
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "final",
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 2,
@@ -2103,8 +2415,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "89142369b88f809752cf0f1fae7a2505d15002fa54c3235748d999202cece4e9",
+   "genotype_status": "MAPPED",
    "horizon_hours": 72,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 1.0091005382408966,
@@ -2134,18 +2446,33 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_2_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "89142369b88f809752cf0f1fae7a2505d15002fa54c3235748d999202cece4e9",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 36,
+    "entrance": "conv_transformer",
+    "history_hours": 432,
+    "horizon_hours": 72,
+    "input_transform": "difference",
+    "reducer_filters": [
+     32,
+     8
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 32
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -2198,8 +2525,10 @@
     "reducer_filters": [
      8
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "final",
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -2257,8 +2586,10 @@
     "reducer_filters": [
      8
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -2316,8 +2647,10 @@
     "reducer_filters": [
      16
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 2,
@@ -2378,8 +2711,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 2,
@@ -2437,8 +2773,10 @@
     "reducer_filters": [
      8
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "final",
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 2,
@@ -2496,8 +2834,10 @@
     "reducer_filters": [
      8
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -2555,8 +2895,10 @@
     "reducer_filters": [
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "final",
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 1,
@@ -2617,8 +2959,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "progressive",
+    "reducer_strides": [
+     2,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 2,
@@ -2631,8 +2976,8 @@
     "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
    ],
    "fold_score_reuse": "NONE",
-   "genotype_canonical_sha256": null,
-   "genotype_status": "OUT_OF_V2_DOMAIN",
+   "genotype_canonical_sha256": "e0e254164442103432c3a56026e8be1f020022c041ccd07b213dd83aba92a01e",
+   "genotype_status": "MAPPED",
    "horizon_hours": 72,
    "legacy_evaluation_week_id": "2024-01-07",
    "legacy_fitness": 1.0112657709846378,
@@ -2664,18 +3009,35 @@
    },
    "legacy_state": "COMPLETED",
    "legacy_wire_identity_matches": true,
-   "reasons": [
-    {
-     "code": "STRIDE_PATTERN_NOT_IN_DOMAIN",
-     "detail": "'UNMAPPED_STRIDES_2_1_1'",
-     "gene": "stride_pattern"
-    }
-   ],
+   "reasons": [],
    "refit_of_legacy_context": "FORBIDDEN",
-   "size_class": null,
+   "size_class": "S1",
    "v1_identity": "e0e254164442103432c3a56026e8be1f020022c041ccd07b213dd83aba92a01e",
    "v1_identity_recomputed": true,
-   "v2_genotype": null
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 9,
+    "entrance": "conv",
+    "history_hours": 144,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4,
+     4,
+     4
+    ],
+    "reducer_strides": [
+     2,
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 32
+   }
   },
   {
    "fold_reuse_reasons": [
@@ -2728,8 +3090,10 @@
     "reducer_filters": [
      8
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 2,
@@ -2741,12 +3105,10 @@
  "summary": {
   "completed": 48,
   "fold_score_reuse_none": 48,
-  "mapped": 30,
+  "mapped": 48,
   "n": 48,
-  "out_of_domain_reasons": {
-   "STRIDE_PATTERN_NOT_IN_DOMAIN": 18
-  },
-  "out_of_v2_domain": 18,
+  "out_of_domain_reasons": {},
+  "out_of_v2_domain": 0,
   "refits_scheduled": 0,
   "v1_identity_recomputed_all": true
  }

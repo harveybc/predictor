@@ -1,8 +1,8 @@
 {
   "schema": "i6n.swarm_weekly.interface.v1",
   "lane": "E",
-  "interface_version": "E.1.1",
-  "status": "PUBLISHED_EARLY; identity and genotype schema stable; plan JSON keys stable, values sealed in I6N_SEARCH_PLAN_v1.json",
+  "interface_version": "E.2",
+  "status": "STABLE; plan v1.1 sealed (INT-STRIDE ruled: free per-layer strides)",
   "branch": "satoshi/i6n-swarm-E-search-20261011",
   "consumes": {
     "A": "INTERFACE_A A.1 @b9eb6929: evaluator request.config == tools.i6n_search.effective_config(genome) (v1 keys). E keeps that boundary: v2 genotype -> exact v1 evaluator genome.",
@@ -15,7 +15,7 @@
     "shared_plugin": "optimizer_plugins.i6n_optimizer.Plugin: v2 path when opt_config has i6n_plan; v1 path (legacy) unchanged otherwise"
   },
   "genotype": {
-    "schema": "i6n.genotype.v2",
+    "schema": "i6n.genotype.v2.1",
     "keys": [
       "schema",
       "horizon_hours",
@@ -28,7 +28,7 @@
       "width",
       "transformer_blocks",
       "reducer_filters",
-      "stride_pattern",
+      "reducer_strides",
       "adapter",
       "adapter_width"
     ],
@@ -73,19 +73,15 @@
       ],
       "transformer_blocks": "0 for conv (inactive, canonicalized); 1|2 for transformer routes",
       "reducer_filters": "1..3 values in [4,8,16,32,64,128]; [width, *filters] non-increasing",
-      "stride_pattern": {
-        "none": "all 1",
-        "progressive": "all 2",
-        "final": "last reducer 2, others 1"
-      },
-      "stride_alias": "one reducer: progressive == final -> canonical final",
       "adapter": [
         "none",
         "causalconv",
         "lstm"
       ],
       "adapter_width": "[8,16,32,64]; null (inactive) for none",
-      "min_final_steps": 2
+      "min_final_steps": 2,
+      "reducer_strides": "list with one value in [1,2] per reducer (len == len(reducer_filters)), right-anchored; rejected only if steps end below min_final_steps (t is always kept)",
+      "stride_label": "derived.stride_pattern in {none, progressive, final, mixed}; labels/seeds only (one reducer [2] is 'final')"
     },
     "canonicalizer": "tools.i6n_search_space.canonicalize(raw) -> canonical | raise Infeasible(reasons=[{code,gene,detail}]); check(raw) is the non-raising form. Never repairs active genes.",
     "infeasibility_codes": [
@@ -103,7 +99,8 @@
       "REDUCER_COUNT_NOT_IN_DOMAIN",
       "REDUCER_FILTER_NOT_IN_DOMAIN",
       "REDUCER_FILTERS_INCREASING",
-      "STRIDE_PATTERN_NOT_IN_DOMAIN",
+      "REDUCER_STRIDES_NOT_IN_DOMAIN",
+      "REDUCER_STRIDES_LENGTH_MISMATCH",
       "ADAPTER_NOT_IN_DOMAIN",
       "ADAPTER_WIDTH_NOT_IN_DOMAIN",
       "FINAL_STEPS_BELOW_MINIMUM",
@@ -152,8 +149,8 @@
   ],
   "class_rule": "class_of(g): first class with n_samples<=max_samples, max(width, reducers, adapter_width)<=max_width and dx>=min_delta_x_hours",
   "seeds": {
-    "seed_genotype(h)": "Conv8 -> Conv4, stride none, no Transformer/LSTM, identity input, endpoint; smallest history with a downsampled S1 grid, finest such dx",
-    "alternative_genotype(h)": "Conv16 -> Conv8 -> Conv4, same window (small, non-equivalent, not Transformer)"
+    "seed_genotype(h)": "Conv8 -> Conv4, reducer_strides [1], no Transformer/LSTM, identity input, endpoint; smallest history with a downsampled S1 grid, finest such dx",
+    "alternative_genotype(h)": "Conv16 -> Conv8 -> Conv4, reducer_strides [1,1], same window (small, non-equivalent, not Transformer)"
   },
   "shared_wire_v2": {
     "schema": "i6n-shared-deap-v2",
@@ -161,7 +158,7 @@
     "note": "B may keep using wire.genome with tools.i6n_search for result binding; hyper_dict == evaluator_config(genotype)"
   },
   "plan_json": {
-    "path": "docs/i6n/swarm/I6N_SEARCH_PLAN_v1.json",
+    "path": "docs/i6n/swarm/I6N_SEARCH_PLAN_v1_1.json",
     "schema": "i6n.search_plan.v1",
     "keys": {
       "plan_sha256": "== seal.sha256; sha256 of canonical plan without the keys plan_sha256 and seal",
@@ -179,15 +176,20 @@
       "initial_genotypes": "{<h>: {seed, seed_evaluator_genome, seed_genotype_canonical_sha256, alternative, alternative_genotype_canonical_sha256}}",
       "finalists": "best complete fitness + minimal control (seed), or small alternative when the seed is best/unavailable",
       "weekly_rollout": "finalist arms rolled out with weekly refit; recipe transfer is NOT claimed optimal",
-      "prior_mapping": "{artifact: docs/i6n/swarm/E_LEGACY_MAPPING_v1.json, sha256, verdict}"
+      "prior_mapping": "{artifact: docs/i6n/swarm/E_LEGACY_MAPPING_v1.json, sha256, verdict}: 48/48 MAPPED with their own v1 identity, fold_score_reuse NONE, no refit"
     },
     "differences_from_B_assumptions": [
       "minimal_seed_genome is provided as initial_genotypes[h].seed (v2) plus seed_evaluator_genome (v1)",
       "classes carry child_memory_bytes/child_wall_seconds = null in the sealed plan; B fills them from admitted pilot receipts, never from the plan",
-      "prior_mapping is a separate committed artifact referenced by sha256; verdict per candidate is fold_score_reuse NONE (all 48 are NOT_EQUIVALENT as fold receipts); in-domain genotypes keep the same genotype_canonical_sha256"
+      "prior_mapping is a separate committed artifact referenced by sha256; all 48 genotypes MAPPED (same genotype_canonical_sha256) but their scores are NOT_EQUIVALENT as fold receipts (fold_score_reuse NONE)"
     ],
-    "sealed_plan_sha256": "8d8865f1343c6b0efa80edf711393425c3445b953cbb76a4f841a5a1994a77d3",
+    "sealed_plan_sha256": "e7de41f04c8f188606dcaa71baa497e224303bdceaa8c802e71db63045ab788c",
     "sealed_at_commit_note": "sealed before any fit; committed with tools/i6n_search_plan.py (drift test compares builder vs committed file)",
-    "legacy_mapping_sha256": "9849acfa5fb53f47e6f8b2cf67985cfdc7aababd57f263ceec01256b58295c90"
+    "legacy_mapping_sha256": "e3254dd63fa4654dadf5c72b1bcdb2a8a0708dd9540202363e303d3e85c77b3f",
+    "supersedes": {
+      "plan_version": "1.0.0",
+      "plan_sha256": "8d8865f1343c6b0efa80edf711393425c3445b953cbb76a4f841a5a1994a77d3",
+      "fits_under_it": 0
+    }
   }
 }

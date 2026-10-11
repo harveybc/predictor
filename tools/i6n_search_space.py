@@ -15,21 +15,22 @@ is deliberately left byte-identical so that hash stays reproducible.
 
 Infeasible genotypes raise :class:`Infeasible` with every typed reason found.
 Nothing is repaired into a different experiment; only inactive genes and the
-two documented aliases (endpoint k=1, one-reducer progressive==final) are
-canonicalized.
+endpoint alias (trajectory k=1 == endpoint) are canonicalized. Plan v1.1:
+strides are a free per-layer 1|2 list; none/progressive/final/mixed are
+derived labels (and seed choices), not the admissible domain.
 """
 
 from collections.abc import Mapping
 from copy import deepcopy
 import hashlib
-from itertools import combinations_with_replacement
+from itertools import combinations_with_replacement, product
 import json
 
 from tools import i6n_model
 from tools import i6n_search as _v1
 
 
-GENOTYPE_SCHEMA = "i6n.genotype.v2"
+GENOTYPE_SCHEMA = "i6n.genotype.v2.1"  # plan v1.1: per-layer reducer_strides gene
 EFFECTIVE_SCHEMA = "i6n.effective_config.v2"
 
 SHORT_HORIZONS = (2, 3, 4, 5, 6, 12)
@@ -45,7 +46,8 @@ ENTRANCE_WIDTHS = (8, 16, 32, 64, 128)
 TRANSFORMER_BLOCKS = (1, 2)
 REDUCER_COUNTS = (1, 2, 3)
 REDUCER_FILTERS = (4, 8, 16, 32, 64, 128)
-STRIDE_PATTERNS = ("none", "progressive", "final")
+STRIDE_PATTERNS = ("none", "progressive", "final")  # named labels/seeds, not the domain
+REDUCER_STRIDES = (1, 2)  # per reducer layer (plan v1.1 ruling)
 ADAPTERS = ("none", "causalconv", "lstm")
 ADAPTER_WIDTHS = (8, 16, 32, 64)
 MIN_FINAL_STEPS = 2  # inherited model rule: the temporal core keeps t and >=1 past step
@@ -53,7 +55,7 @@ MIN_FINAL_STEPS = 2  # inherited model rule: the temporal core keeps t and >=1 p
 GENE_KEYS = (
     "schema", "horizon_hours", "history_hours", "delta_x_hours", "input_transform",
     "supervision", "trajectory_k", "entrance", "width", "transformer_blocks",
-    "reducer_filters", "stride_pattern", "adapter", "adapter_width",
+    "reducer_filters", "reducer_strides", "adapter", "adapter_width",
 )
 
 SIZE_CLASSES = (
@@ -78,7 +80,8 @@ REASON_CODES = (
     "DELTA_X_NOT_COMMON_DIVISOR", "INPUT_TRANSFORM_NOT_IN_DOMAIN", "SUPERVISION_NOT_IN_DOMAIN",
     "TRAJECTORY_K_NOT_IN_DOMAIN", "TRAJECTORY_DY_NOT_INTEGER", "ENTRANCE_NOT_IN_DOMAIN",
     "WIDTH_NOT_IN_DOMAIN", "TRANSFORMER_BLOCKS_NOT_IN_DOMAIN", "REDUCER_COUNT_NOT_IN_DOMAIN",
-    "REDUCER_FILTER_NOT_IN_DOMAIN", "REDUCER_FILTERS_INCREASING", "STRIDE_PATTERN_NOT_IN_DOMAIN",
+    "REDUCER_FILTER_NOT_IN_DOMAIN", "REDUCER_FILTERS_INCREASING", "REDUCER_STRIDES_NOT_IN_DOMAIN",
+    "REDUCER_STRIDES_LENGTH_MISMATCH",
     "ADAPTER_NOT_IN_DOMAIN", "ADAPTER_WIDTH_NOT_IN_DOMAIN", "FINAL_STEPS_BELOW_MINIMUM",
     "MODEL_CONTRACT_REJECTED", "EVALUATOR_CONTRACT_REJECTED",
 )
@@ -139,6 +142,18 @@ def stride_list(pattern, n_reducers):
     if pattern == "final":
         return [1] * (n_reducers - 1) + [2]
     raise ValueError(f"unknown stride pattern {pattern!r}")
+
+
+def stride_label(strides):
+    """Derived label: none / progressive / final / mixed (one reducer [2] is final)."""
+    n = len(strides)
+    if strides == [1] * n:
+        return "none"
+    if strides == [1] * (n - 1) + [2]:
+        return "final"
+    if strides == [2] * n:
+        return "progressive"
+    return "mixed"
 
 
 def _steps(samples, strides):
@@ -221,12 +236,14 @@ def canonicalize(raw):
             if chain != sorted(chain, reverse=True):
                 bad("REDUCER_FILTERS_INCREASING", "reducer_filters",
                     f"entrance width then reducers must be non-increasing: {chain}")
-    pattern = g["stride_pattern"]
-    pattern_ok = isinstance(pattern, str) and pattern in STRIDE_PATTERNS
-    if not pattern_ok:
-        bad("STRIDE_PATTERN_NOT_IN_DOMAIN", "stride_pattern", repr(pattern))
-    elif filters_ok and len(filters) == 1 and pattern == "progressive":
-        g["stride_pattern"] = "final"  # identical strides [2]
+    strides = g["reducer_strides"]
+    if not isinstance(strides, (list, tuple)) or not all(_is_int(x) and x in REDUCER_STRIDES for x in strides):
+        bad("REDUCER_STRIDES_NOT_IN_DOMAIN", "reducer_strides", f"{strides!r}: each layer 1 or 2")
+    else:
+        g["reducer_strides"] = strides = list(strides)
+        if isinstance(filters, list) and len(filters) in REDUCER_COUNTS and len(strides) != len(filters):
+            bad("REDUCER_STRIDES_LENGTH_MISMATCH", "reducer_strides",
+                f"{len(strides)} strides for {len(filters)} reducers")
 
     adapter = g["adapter"]
     if not (isinstance(adapter, str) and adapter in ADAPTERS):
@@ -237,9 +254,9 @@ def canonicalize(raw):
         bad("ADAPTER_WIDTH_NOT_IN_DOMAIN", "adapter_width", f"{g['adapter_width']!r} not in {ADAPTER_WIDTHS}")
 
     if not reasons:
-        steps = _steps(1 + L // dx, stride_list(g["stride_pattern"], len(filters)))
+        steps = _steps(1 + L // dx, g["reducer_strides"])
         if steps[-1] < MIN_FINAL_STEPS:
-            bad("FINAL_STEPS_BELOW_MINIMUM", "stride_pattern",
+            bad("FINAL_STEPS_BELOW_MINIMUM", "reducer_strides",
                 f"right-anchored steps {steps} end below {MIN_FINAL_STEPS}")
     if not reasons:
         try:
@@ -272,7 +289,7 @@ def check(raw):
 def derived(genotype):
     g = canonicalize(genotype)
     h, L, dx = g["horizon_hours"], g["history_hours"], g["delta_x_hours"]
-    strides = stride_list(g["stride_pattern"], len(g["reducer_filters"]))
+    strides = list(g["reducer_strides"])
     steps = _steps(1 + L // dx, strides)
     dy = None if g["supervision"] == "endpoint" else h // g["trajectory_k"]
     outputs = [h] if dy is None else list(range(dy, h + 1, dy))
@@ -280,7 +297,8 @@ def derived(genotype):
         "horizon_hours": h, "history_hours": L, "delta_x_hours": dx,
         "n_samples": 1 + L // dx, "input_offsets_hours": list(range(-L, 1, dx)),
         "delta_y_hours": dy, "output_offsets_hours": outputs, "n_heads": len(outputs),
-        "reducer_strides": strides, "steps_per_stage": steps, "final_steps": steps[-1],
+        "reducer_strides": strides, "stride_pattern": stride_label(strides),
+        "steps_per_stage": steps, "final_steps": steps[-1],
         "t_retained": True,
     }
 
@@ -293,7 +311,7 @@ def model_core(genotype, _checked=False):
         "entrance": g["entrance"], "width": g["width"],
         "transformer_blocks": g["transformer_blocks"],
         "reducer_filters": list(g["reducer_filters"]),
-        "reducer_strides": stride_list(g["stride_pattern"], len(g["reducer_filters"])),
+        "reducer_strides": list(g["reducer_strides"]),
         "adapter": g["adapter"], "adapter_width": g["adapter_width"],
         "n_horizons": 1 if k is None else k,
     }
@@ -314,15 +332,6 @@ def to_evaluator_genome(genotype, _checked=False):
     }
 
 
-def _pattern_name(strides):
-    n = len(strides)
-    if strides == [1] * n:
-        return "none"
-    if n > 1 and strides == [2] * n:
-        return "progressive"
-    if strides == [1] * (n - 1) + [2]:
-        return "final"
-    return "UNMAPPED_STRIDES_" + "_".join(map(str, strides))
 
 
 def from_evaluator_genome(genome):
@@ -339,7 +348,7 @@ def from_evaluator_genome(genome):
         "entrance": core["entrance"], "width": core["width"],
         "transformer_blocks": core["transformer_blocks"],
         "reducer_filters": list(core["reducer_filters"]),
-        "stride_pattern": _pattern_name(list(core["reducer_strides"])),
+        "reducer_strides": list(core["reducer_strides"]),
         "adapter": core["adapter"], "adapter_width": core["adapter_width"],
     }
 
@@ -442,7 +451,7 @@ def _base(h, L, dx, **changes):
     g = {"schema": GENOTYPE_SCHEMA, "horizon_hours": h, "history_hours": L, "delta_x_hours": dx,
          "input_transform": "identity", "supervision": "endpoint", "trajectory_k": None,
          "entrance": "conv", "width": 8, "transformer_blocks": 0, "reducer_filters": [4],
-         "stride_pattern": "none", "adapter": "none", "adapter_width": None}
+         "reducer_strides": [1], "adapter": "none", "adapter_width": None}
     g.update(changes)
     return canonicalize(g)
 
@@ -461,7 +470,8 @@ def seed_genotype(h):
 def alternative_genotype(h):
     """Small non-equivalent alternative: Conv16 -> Conv8 -> Conv4, same window."""
     seed = seed_genotype(h)
-    return _base(h, seed["history_hours"], seed["delta_x_hours"], width=16, reducer_filters=[8, 4])
+    return _base(h, seed["history_hours"], seed["delta_x_hours"], width=16, reducer_filters=[8, 4],
+                 reducer_strides=[1, 1])
 
 
 # --- sampling and mutation ----------------------------------------------------------------------
@@ -506,7 +516,8 @@ def sample_genotype(h, rng, max_class=None, *, classes=None, max_tries=2000):
                "trajectory_k": rng.choice(ks) if trajectory else None,
                "entrance": entrance, "width": width,
                "transformer_blocks": 0 if entrance == "conv" else rng.choice(TRANSFORMER_BLOCKS),
-               "reducer_filters": filters, "stride_pattern": rng.choice(STRIDE_PATTERNS),
+               "reducer_filters": filters,
+               "reducer_strides": [rng.choice(REDUCER_STRIDES) for _ in filters],
                "adapter": adapter,
                "adapter_width": None if adapter == "none" else rng.choice(
                    [w for w in ADAPTER_WIDTHS if w <= max_width])}
@@ -549,12 +560,15 @@ def _variants(g, group):
             yield changed(width=w, reducer_filters=[min(w, f) for f in g["reducer_filters"]])
     elif group == "reducers":
         options = [f for f in REDUCER_FILTERS if f <= g["width"]]
+        old = g["reducer_strides"]
         for count in REDUCER_COUNTS:
+            # keep existing per-layer strides where layers survive; new layers stride 1
+            strides = (old + [1] * count)[:count]
             for combo in combinations_with_replacement(options, count):
-                yield changed(reducer_filters=sorted(combo, reverse=True))
+                yield changed(reducer_filters=sorted(combo, reverse=True), reducer_strides=list(strides))
     elif group == "strides":
-        for p in STRIDE_PATTERNS:
-            yield changed(stride_pattern=p)
+        for strides in product(REDUCER_STRIDES, repeat=len(g["reducer_filters"])):
+            yield changed(reducer_strides=list(strides))
     elif group == "adapter":
         yield changed(adapter="none", adapter_width=None)
         for a in ADAPTERS[1:]:

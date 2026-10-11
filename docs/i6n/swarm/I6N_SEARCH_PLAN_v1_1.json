@@ -192,17 +192,25 @@
    128
   ],
   "reducer_order": "entrance width then reducers non-increasing",
+  "reducer_strides": {
+   "named_patterns": {
+    "final": "last reducer 2, others 1",
+    "mixed": "any other per-layer 1|2 list",
+    "none": "all 1",
+    "progressive": "all 2"
+   },
+   "patterns_role": "derived labels and seed choices, not the admissible domain",
+   "per_layer": [
+    1,
+    2
+   ]
+  },
   "samples": {
    "max": 433,
    "rule": "n = 1 + L/dx, including t",
    "truncation": "none (no 241 cap)"
   },
   "stride_anchor": "right-anchored (keeps t); steps = ceil(steps/stride) per reducer",
-  "stride_patterns": {
-   "final": "last reducer 2, others 1",
-   "none": "all 1",
-   "progressive": "all 2"
-  },
   "supervision": {
    "comparison": "endpoint h on frozen fold support; intermediates are diagnostics",
    "dy": "h/k when integer, independent of dx",
@@ -318,7 +326,7 @@
   "train_calendar_years": 4,
   "unit_states": "INTERFACE_C C.1 per (fold unit, h): READY -> fit; WAIT_DEPENDENCY -> the horizon waits (no ranking on fewer folds); NO_ELIGIBLE_ROWS -> the horizon closes typed NO_FOLD_SUPPORT, never ranked on 3 folds"
  },
- "genotype_schema": "i6n.genotype.v2",
+ "genotype_schema": "i6n.genotype.v2.1",
  "governing": {
   "orders_path": "docs/handoffs/SATOSHI_I6N_SWARM_WEEKLY_2026_10_11.md",
   "orders_sha256": "ac77366af24bcaf4fb9454a51c94ab1f6d5230bb1de4ff14521f76cc0a3f8b9c",
@@ -366,8 +374,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -385,8 +396,10 @@
     "reducer_filters": [
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -429,8 +442,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -448,8 +464,10 @@
     "reducer_filters": [
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -492,8 +510,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -511,8 +532,10 @@
     "reducer_filters": [
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -555,8 +578,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -574,8 +600,10 @@
     "reducer_filters": [
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -618,8 +646,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -637,8 +668,10 @@
     "reducer_filters": [
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -681,8 +714,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -700,8 +736,10 @@
     "reducer_filters": [
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -744,8 +782,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -763,8 +804,10 @@
     "reducer_filters": [
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -807,8 +850,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -826,8 +872,10 @@
     "reducer_filters": [
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -870,8 +918,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -889,8 +940,10 @@
     "reducer_filters": [
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -933,8 +986,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -952,8 +1008,10 @@
     "reducer_filters": [
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -996,8 +1054,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -1015,8 +1076,10 @@
     "reducer_filters": [
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -1059,8 +1122,11 @@
      8,
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -1078,8 +1144,10 @@
     "reducer_filters": [
      4
     ],
-    "schema": "i6n.genotype.v2",
-    "stride_pattern": "none",
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
     "supervision": "endpoint",
     "trajectory_k": null,
     "transformer_blocks": 0,
@@ -1113,8 +1181,8 @@
  "interpretations": [
   {
    "id": "INT-STRIDE",
-   "review": "flagged for lane A review and Musashi",
-   "text": "'ninguna/progresiva/final' read as three named patterns: none=all 1, progressive=all 2, final=only the last reducer 2. Other per-layer mixes (e.g. [1,2,1]) are outside v2 and typed STRIDE_PATTERN_NOT_IN_DOMAIN. Impact: 18 of the 48 legacy genotypes (incl. the h12 legacy best) fall outside v2. Reading '1 o 2 por capa' as a free per-layer choice would be plan v1.1, a strict superset; genotype_canonical_sha256 of every in-domain genotype is unchanged by that choice."
+   "status": "RULED",
+   "text": "RULED 2026-10-11 (Satoshi): '1 o 2 por capa' is the domain, a free per-reducer 1|2 list; none/progressive/final are named patterns used as labels and seeds. Combinations that lose t or leave fewer than min_final_steps are still rejected (FINAL_STEPS_BELOW_MINIMUM). Plan v1.1 is a strict superset of v1.0.0; every v1.0.0 in-domain genotype_canonical_sha256 is unchanged."
   },
   {
    "id": "INT-REDUCER-ORDER",
@@ -1157,12 +1225,12 @@
   60,
   72
  ],
- "plan_sha256": "8d8865f1343c6b0efa80edf711393425c3445b953cbb76a4f841a5a1994a77d3",
- "plan_version": "1.0.0",
+ "plan_sha256": "e7de41f04c8f188606dcaa71baa497e224303bdceaa8c802e71db63045ab788c",
+ "plan_version": "1.1.0",
  "prior_mapping": {
   "artifact": "docs/i6n/swarm/E_LEGACY_MAPPING_v1.json",
-  "sha256": "9849acfa5fb53f47e6f8b2cf67985cfdc7aababd57f263ceec01256b58295c90",
-  "verdict": "fold_score_reuse NONE for all 48; in-domain genotypes keep genotype_canonical_sha256; no refit of the legacy context"
+  "sha256": "e3254dd63fa4654dadf5c72b1bcdb2a8a0708dd9540202363e303d3e85c77b3f",
+  "verdict": "48/48 genotypes MAPPED with their own v1 identity; fold_score_reuse NONE for all 48; no refit of the legacy context"
  },
  "promotion": [
   {
@@ -1196,7 +1264,7 @@
  "seal": {
   "algorithm": "sha256",
   "canonical": "json sort_keys, separators (',',':'), allow_nan=False, UTF-8; keys plan_sha256 and seal excluded",
-  "sha256": "8d8865f1343c6b0efa80edf711393425c3445b953cbb76a4f841a5a1994a77d3"
+  "sha256": "e7de41f04c8f188606dcaa71baa497e224303bdceaa8c802e71db63045ab788c"
  },
  "search": {
   "algorithm": "DEAP generational, conditional mutation + immigrants",
@@ -1230,6 +1298,12 @@
   "admissible_generation_exhausted",
   "attempt_budget"
  ],
+ "supersedes": {
+  "fits_under_superseded_plan": 0,
+  "plan_sha256": "8d8865f1343c6b0efa80edf711393425c3445b953cbb76a4f841a5a1994a77d3",
+  "plan_version": "1.0.0",
+  "reason": "INT-STRIDE ruling: free per-layer strides (superset, identities unchanged)"
+ },
  "training": {
   "max_epochs": 50,
   "min_delta": 1e-06,
