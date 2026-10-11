@@ -9,29 +9,46 @@ Usage::
 (see ``tools/i6n_contracts/examples/paired_metrics_synthetic.json``).
 ``OUT_DIR`` receives ``STATUS.json`` and, on success, ``RESULT.json``; both are
 replaced atomically (temporary file + ``os.replace`` through the reused
-``tools.i6e_compact_run.atomic_json``).
+``tools.i6e_compact_run.atomic_json``). A failed write removes its temporary
+file before the failure is reported.
 
 * An output directory is bound to one identity (config file, input, contract
   and code digests). Identical input with an intact terminal ``RESULT.json`` is
   reused without writing; a different identity is refused with
   ``OUTPUT_IDENTITY_MISMATCH`` and nothing is overwritten.
-* ``--status`` reads ``STATUS.json`` once, prints it and exits. It never
-  creates, starts or resumes work.
-* Every failure is typed: a validation refusal keeps its own code, any other
-  exception while scoring is recorded as ``FAILED`` / ``UNEXPECTED_ERROR``
-  (exception type and message), and an interrupt (``KeyboardInterrupt``,
-  ``SystemExit``) is recorded as ``FAILED`` / ``INTERRUPTED`` and re-raised.
-  Only a process killed without running Python code (e.g. SIGKILL, power
-  loss) can leave ``RUNNING`` behind. There is no lease, so ``--status``
-  cannot tell a live run from such a crash: it reports ``RUNNING`` with a
-  nonzero exit and the ``last_progress_at`` time. Rerunning the same input
-  recomputes from scratch (scoring is finite and pure).
+  A reused or recovered ``RESULT.json`` is re-verified semantically
+  (``paired_metrics.verify_result``), not only by its digests.
+* ``--status`` reads once, prints and exits; it never creates, starts, resumes
+  or rewrites anything. It reports success (0, or 4 for INCOMPLETE) ONLY after
+  verifying that ``RESULT.json`` exists, parses, has an intact wrapper digest,
+  carries the same identity as ``STATUS.json``, passes ``verify_result`` and
+  matches the recorded file and result digests. Otherwise it reports
+  ``RESULT_INVALID`` with a typed ``disposition`` (``RESULT_MISSING``,
+  ``RESULT_UNREADABLE``, ``RESULT_SEAL_INVALID``, ``RESULT_IDENTITY_MISMATCH``,
+  ``RESULT_INVALID``, ``RESULT_HASH_MISMATCH``) and exit 6.
+* Every failure is typed: a validation refusal keeps its own code; a write
+  failure (scoring progress, ``RESULT.json`` or the terminal status) is
+  ``OUTPUT_WRITE_FAILED``; any other exception is ``UNEXPECTED_ERROR``; each
+  carries the ``phase`` it happened in. An interrupt (``KeyboardInterrupt``,
+  ``SystemExit``) is recorded as ``FAILED`` / ``INTERRUPTED`` when the status
+  can be written, and is re-raised either way. When the failure itself cannot
+  be recorded the run returns a non-success payload with ``durable: false``
+  and never claims a durable ``FAILED``; the last status on disk stays what it
+  was (``RUNNING`` or absent), which ``--status`` reports as non-success.
+  Only a process killed without running Python code (SIGKILL, power loss) or
+  such an unrecordable failure can leave ``RUNNING`` behind. There is no
+  lease, so ``--status`` cannot tell a live run from a dead one: it reports
+  ``RUNNING`` with exit 5 and the ``last_progress_at`` time. Rerunning the
+  same input recomputes from scratch (scoring is finite and pure), or
+  recovers the status from an intact verified result of the same identity.
 * No network, database, lease, remote worker, pandas or TensorFlow. The
   reused atomic writer module imports numpy, but neither sqlite3 nor pandas.
 
-Exit codes: 0 complete, 2 refused/failed (typed error, also an unreadable or
-unknown status), 3 status absent, 4 terminal result whose scoring state is
-``INCOMPLETE`` (never an approval), 5 status ``RUNNING`` (live or crashed).
+Exit codes: 0 verified terminal COMPLETE result, 2 refused/failed (typed
+error), 3 status absent, 4 verified terminal result whose scoring state is
+``INCOMPLETE`` (never an approval), 5 status ``RUNNING`` (live or crashed),
+6 damaged (status unreadable or unknown, or a COMPLETED status whose
+``RESULT.json`` is missing, damaged or does not match it).
 """
 
 from __future__ import annotations
@@ -57,6 +74,7 @@ EXIT_REFUSED = 2
 EXIT_STATUS_ABSENT = 3
 EXIT_INCOMPLETE = 4
 EXIT_RUNNING = 5
+EXIT_DAMAGED = 6
 
 _CODE_FILES = (
     Path(pm.__file__),
@@ -84,6 +102,18 @@ def _reject_constant(token: str) -> Any:
 
 def _read_json(path: Path) -> Any:
     return json.loads(path.read_text(), parse_constant=_reject_constant)
+
+
+def _write(path: Path, value: dict) -> None:
+    """``atomic_json`` that removes its temporary file when the write fails."""
+    try:
+        atomic_json(path, value)
+    except BaseException:
+        try:
+            path.with_suffix(".tmp").unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
 
 
 def _read_object(path: Path) -> Optional[dict]:
@@ -154,7 +184,7 @@ class _Status:
             "error": error,
             "claims": dict(pm.CLAIMS),
         }
-        atomic_json(self.path, status)
+        _write(self.path, status)
         return status
 
     def progress(self, done: int, total: int) -> None:
@@ -177,6 +207,36 @@ def _result_summary(result: dict, result_file_sha256: str) -> dict:
 
 def _refusal(code: str, detail: str) -> tuple:
     return EXIT_REFUSED, {"state": "REFUSED", "error": {"code": code, "detail": detail}}
+
+
+def _error(code: str, error: BaseException, phase: Optional[str] = None) -> dict:
+    typed = {"code": code, "detail": f"{type(error).__name__}: {error}"[:500]}
+    if phase is not None:
+        typed["phase"] = phase
+    return typed
+
+
+def _verify_stored(stored: Any) -> dict:
+    """Wrapper digest, schema and semantic verification of a stored result file.
+
+    Raises ``PairedMetricsError``: ``RESULT_SEAL_INVALID`` for the wrapper, or
+    any typed code of ``paired_metrics.verify_result`` for the inner result.
+    """
+    if (not isinstance(stored, dict) or stored.get("schema_version") != RESULT_FILE_SCHEMA_VERSION
+            or stored.get("sha256") != pm.canonical_sha256({k: v for k, v in stored.items() if k != "sha256"})):
+        raise pm.PairedMetricsError("RESULT_SEAL_INVALID", "result file digest or schema does not verify")
+    pm.verify_result(stored.get("result"))
+    return stored["result"]
+
+
+def _fail(status: "_Status", typed: dict) -> tuple:
+    """Record a typed FAILED status; if even that cannot be written, say so (not durable)."""
+    try:
+        status.write("FAILED", error=typed)
+    except Exception as error:  # noqa: BLE001 - the failure is reported, never claimed durable
+        return EXIT_REFUSED, {"state": "FAILED_UNRECORDED", "reused": False, "durable": False,
+                              "error": typed, "status_write_error": _error("STATUS_WRITE_FAILED", error)}
+    return EXIT_REFUSED, {"state": "FAILED", "reused": False, "durable": True, "error": typed}
 
 
 def _exit_for(result: dict) -> int:
@@ -214,51 +274,96 @@ def run(config_path: Path, output_dir: Path) -> tuple:
         if stored.get("identity") != identity:
             return _refusal("OUTPUT_IDENTITY_MISMATCH", "RESULT.json belongs to a different identity")
         try:
-            pm.verify_result(stored.get("result"))
-            if stored.get("sha256") != pm.canonical_sha256({k: v for k, v in stored.items() if k != "sha256"}):
-                raise pm.PairedMetricsError("RESULT_SEAL_INVALID", "result file digest does not verify")
+            result = _verify_stored(stored)
+            summary = _result_summary(result, file_hash(result_path))
         except pm.PairedMetricsError as error:
             return _refusal("OUTPUT_CORRUPT", str(error))
-        result = stored["result"]
-        summary = _result_summary(result, file_hash(result_path))
+        except OSError as error:
+            return _refusal("OUTPUT_CORRUPT", f"existing result cannot be hashed: {type(error).__name__}")
         if previous is None or previous.get("state") != "COMPLETED" or previous.get("result") != summary:
+            # Explicit recovery of the status of an intact, verified result of THIS identity.
             status = _Status(status_path, identity, started, started_clock)
             status.done = status.total = len(result["groups"])
-            status.write("COMPLETED", result=summary, reused=True)
+            try:
+                status.write("COMPLETED", result=summary, reused=True)
+            except Exception as error:  # noqa: BLE001 - verified result, status not recorded
+                return EXIT_REFUSED, {"state": "REUSE_UNRECORDED", "reused": True, "durable": False,
+                                      "result": summary, "error": _error("STATUS_WRITE_FAILED", error)}
         return _exit_for(result), {"state": "COMPLETED", "reused": True, "result": summary}
 
     status = _Status(status_path, identity, started, started_clock)
     if parse_error is not None:
-        status.write("FAILED", error=parse_error)
-        return EXIT_REFUSED, {"state": "FAILED", "reused": False, "error": parse_error}
-    status.write("RUNNING")
+        return _fail(status, parse_error)
+    try:
+        status.write("RUNNING")
+    except Exception as error:  # noqa: BLE001 - nothing started, nothing claimed
+        return EXIT_REFUSED, {"state": "NOT_STARTED", "reused": False, "durable": False,
+                              "error": _error("STATUS_WRITE_FAILED", error, "STARTING")}
+    phase = "SCORING"
     try:
         result = pm.score(document, progress=status.progress)
+        phase = "WRITING_RESULT"
+        wrapped = {"schema_version": RESULT_FILE_SCHEMA_VERSION, "identity": identity, "result": result}
+        wrapped["sha256"] = pm.canonical_sha256(wrapped)
+        _write(result_path, wrapped)
+        summary = _result_summary(result, file_hash(result_path))
+        phase = "WRITING_STATUS"
+        status.write("COMPLETED", result=summary)
     except pm.PairedMetricsError as error:
-        typed = {"code": error.code, "detail": error.detail}
+        typed = {"code": error.code, "detail": error.detail, "phase": phase}
+    except OSError as error:
+        typed = _error("OUTPUT_WRITE_FAILED", error, phase)
     except Exception as error:  # noqa: BLE001 - every other failure becomes a typed FAILED status
-        typed = {"code": "UNEXPECTED_ERROR", "detail": f"{type(error).__name__}: {error}"[:500]}
+        typed = _error("UNEXPECTED_ERROR", error, phase)
     except BaseException as error:
-        status.write("FAILED", error={"code": "INTERRUPTED", "detail": type(error).__name__})
+        try:
+            status.write("FAILED", error={"code": "INTERRUPTED", "detail": type(error).__name__, "phase": phase})
+        except Exception:  # noqa: BLE001 - the interrupt itself must propagate
+            pass
         raise
     else:
-        typed = None
-    if typed is not None:
-        status.write("FAILED", error=typed)
-        return EXIT_REFUSED, {"state": "FAILED", "reused": False, "error": typed}
-    wrapped = {"schema_version": RESULT_FILE_SCHEMA_VERSION, "identity": identity, "result": result}
-    wrapped["sha256"] = pm.canonical_sha256(wrapped)
-    atomic_json(result_path, wrapped)
-    summary = _result_summary(result, file_hash(result_path))
-    status.write("COMPLETED", result=summary)
-    return _exit_for(result), {"state": "COMPLETED", "reused": False, "result": summary}
+        return _exit_for(result), {"state": "COMPLETED", "reused": False, "result": summary}
+    return _fail(status, typed)
+
+
+def _check_completed(output_dir: Path, recorded: dict) -> Optional[tuple]:
+    """Verify the RESULT.json behind a COMPLETED status; ``None`` or (disposition, detail)."""
+    path = output_dir / RESULT_NAME
+    if not path.is_file():
+        return "RESULT_MISSING", "STATUS.json says COMPLETED but RESULT.json does not exist"
+    try:
+        stored = _read_json(path)
+    except (OSError, ValueError, RecursionError) as error:
+        return "RESULT_UNREADABLE", f"{type(error).__name__}: {error}"[:300]
+    if not isinstance(stored, dict):
+        return "RESULT_UNREADABLE", "RESULT.json is not a JSON object"
+    try:
+        body = pm.canonical_sha256({k: v for k, v in stored.items() if k != "sha256"})
+    except pm.PairedMetricsError as error:
+        return "RESULT_SEAL_INVALID", str(error)[:300]
+    if stored.get("schema_version") != RESULT_FILE_SCHEMA_VERSION or stored.get("sha256") != body:
+        return "RESULT_SEAL_INVALID", "the result file digest or schema does not verify"
+    if stored.get("identity") != recorded.get("identity"):
+        return "RESULT_IDENTITY_MISMATCH", "RESULT.json belongs to a different identity than STATUS.json"
+    try:
+        result = _verify_stored(stored)
+    except pm.PairedMetricsError as error:
+        return "RESULT_INVALID", str(error)[:300]
+    try:
+        summary = _result_summary(result, file_hash(path))
+    except OSError as error:
+        return "RESULT_UNREADABLE", f"{type(error).__name__}: {error}"[:300]
+    if summary != recorded.get("result"):
+        return "RESULT_HASH_MISMATCH", "RESULT.json differs from the result recorded in STATUS.json"
+    return None
 
 
 def status(output_dir: Path) -> tuple:
-    """Read STATUS.json once without creating or changing anything."""
+    """Read STATUS.json once and verify its result; never creates or changes anything."""
     path = output_dir / STATUS_NAME
     if not path.is_file():
         return EXIT_STATUS_ABSENT, {"schema_version": STATUS_SCHEMA_VERSION, "state": "ABSENT",
+                                    "disposition": "STATUS_ABSENT",
                                     "error": {"code": "STATUS_ABSENT", "detail": "no STATUS.json"}}
     try:
         value = _read_json(path)
@@ -270,13 +375,27 @@ def status(output_dir: Path) -> tuple:
                 state == "COMPLETED" and result_state not in ("COMPLETE", "INCOMPLETE")):
             raise ValueError(f"unknown status state {state!r}/{result_state!r}")
     except (OSError, ValueError, RecursionError, AttributeError) as error:
-        return EXIT_REFUSED, {"schema_version": STATUS_SCHEMA_VERSION, "state": "UNREADABLE",
+        return EXIT_DAMAGED, {"schema_version": STATUS_SCHEMA_VERSION, "state": "UNREADABLE",
+                              "disposition": "STATUS_UNREADABLE",
                               "error": {"code": "STATUS_UNREADABLE", "detail": str(error)}}
     if state == "RUNNING":
-        return EXIT_RUNNING, value
+        return EXIT_RUNNING, dict(value, disposition="RUNNING_OR_DEAD_NO_LEASE")
     if state == "FAILED":
-        return EXIT_REFUSED, value
-    return (EXIT_INCOMPLETE if result_state == "INCOMPLETE" else EXIT_COMPLETE), value
+        return EXIT_REFUSED, dict(value, disposition="FAILED")
+    problem = _check_completed(output_dir, value)
+    if problem is not None:
+        disposition, detail = problem
+        return EXIT_DAMAGED, {
+            "schema_version": STATUS_SCHEMA_VERSION, "state": "RESULT_INVALID", "disposition": disposition,
+            "recorded_state": state, "identity": value.get("identity"),
+            "result": {"verified": False, "result_state": None, "recorded": value.get("result")},
+            "error": {"code": disposition, "detail": detail}}
+    verification = {"verified": True, "result_file": RESULT_NAME,
+                    "result_file_sha256": value["result"]["result_file_sha256"],
+                    "result_sha256": value["result"]["result_sha256"]}
+    if result_state == "INCOMPLETE":
+        return EXIT_INCOMPLETE, dict(value, disposition="INCOMPLETE_VERIFIED", result_verification=verification)
+    return EXIT_COMPLETE, dict(value, disposition="COMPLETE_VERIFIED", result_verification=verification)
 
 
 def main(argv: Optional[list] = None) -> int:

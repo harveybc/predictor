@@ -395,7 +395,9 @@ def test_empty_population_has_no_score_but_keeps_exclusion_counts():
     assert g["state"] == "NO_ELIGIBLE_ROWS" and g["n"] == 0
     assert g["mae"] is None and g["naive_mae"] is None and g["skill_mae"] is None
     assert g["score_unavailable_reason"] == "EMPTY_POPULATION"
-    assert g["exclusions"] == {"TARGET_AT_OR_AFTER_B": 5}
+    # CR02: upstream (sealed) exclusions are kept apart from C2's own exclusions.
+    assert g["upstream_exclusions"] == {"TARGET_AT_OR_AFTER_B": 5}
+    assert g["exclusions"] == {} and g["n_excluded"] == 0 and g["n_declared"] == 0
 
 
 # --- output records ---------------------------------------------------------------
@@ -501,7 +503,11 @@ def test_cli_status_is_read_only_and_returns_once(tmp_path, capsys):
     capsys.readouterr()
     before = {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in out.iterdir()}
     assert cli.main(["--status", "--output", str(out)]) == cli.EXIT_COMPLETE
-    assert json.loads(capsys.readouterr().out) == json.loads((out / cli.STATUS_NAME).read_text())
+    printed = json.loads(capsys.readouterr().out)
+    # CR03: success is printed only after RESULT.json was verified.
+    assert printed.pop("result_verification")["verified"] is True
+    assert printed.pop("disposition") == "COMPLETE_VERIFIED"
+    assert printed == json.loads((out / cli.STATUS_NAME).read_text())
     assert {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in out.iterdir()} == before
 
 
@@ -631,8 +637,10 @@ def test_all_roles_group_reports_the_sealed_exclusions_per_role():
         ENTRY: {"ORIGIN_OUTSIDE_ENTRY_WINDOW": 5}, MANAGEMENT: {"ORIGIN_OUTSIDE_ENTRY_WINDOW": 3}}
     assert every["exclusions_scope"] == "C2_ONLY_UPSTREAM_REPORTED_PER_ROLE"
     entry = group(result, "S", 2, ENTRY)
-    assert entry["exclusions_scope"] == "UPSTREAM_AND_C2"
-    assert entry["exclusions"] == {"ORIGIN_OUTSIDE_ENTRY_WINDOW": 5}
+    # CR02: per-role groups keep the sealed upstream counts in their own field.
+    assert entry["exclusions_scope"] == "C2_ONLY_UPSTREAM_SEPARATE"
+    assert entry["upstream_exclusions"] == {"ORIGIN_OUTSIDE_ENTRY_WINDOW": 5}
+    assert entry["exclusions"] == {}
     assert group(result, "U", 2, pm.ALL_ROLES)["upstream_exclusions_by_role"] == {ENTRY: {}, MANAGEMENT: {}}
 
 
@@ -797,7 +805,8 @@ def test_cli_status_on_a_non_object_or_unknown_state_is_typed(tmp_path, capsys, 
     out = tmp_path / "out"
     out.mkdir()
     (out / cli.STATUS_NAME).write_text(text)
-    assert cli.main(["--status", "--output", str(out)]) == cli.EXIT_REFUSED
+    # CR03: a damaged status has its own non-success exit, distinct from FAILED.
+    assert cli.main(["--status", "--output", str(out)]) == cli.EXIT_DAMAGED
     assert json.loads(capsys.readouterr().out)["error"]["code"] == "STATUS_UNREADABLE"
 
 
@@ -871,3 +880,387 @@ def test_cli_result_only_identity_guard_refuses_a_different_input(tmp_path, caps
     assert cli.main(["--config", str(second), "--output", str(out)]) == cli.EXIT_REFUSED
     assert json.loads(capsys.readouterr().out)["error"]["code"] == "OUTPUT_IDENTITY_MISMATCH"
     assert (out / cli.RESULT_NAME).read_bytes() == before and not (out / cli.STATUS_NAME).exists()
+
+
+# =====================================================================================
+# Correction round 2: independent review I6N_CANDIDATE_REVIEW_20261011 (CR02-CR05).
+# Each test demands REJECTION, NO OVERWRITE or NON-SUCCESS; none freezes the defective
+# behaviour the review probe observed on the audited commit.
+# =====================================================================================
+
+def _agg_refused(code, groups):
+    with pytest.raises(pm.PairedMetricsError) as caught:
+        pm.aggregate_groups(groups)
+    assert caught.value.code == code, caught.value
+    return caught.value
+
+
+def _incomplete_group():
+    """S group with n=1, n_declared=2 and one MISSING_FORECAST failure."""
+    records = [rec(0, 2), rec(1, 2)]
+    return group(pm.score(document(records[:1], keys=[key(r) for r in records])), "S", 2)
+
+
+def _forge_result(result, edit):
+    """Edit groups, regenerate the OLAP rows and reseal: a self-consistent digest forgery."""
+    body = {k: v for k, v in result.items() if k != "sha256"}
+    body["groups"] = [edit(g) for g in body["groups"]]
+    body["olap_records"] = pm.olap_records(body)
+    return dict(body, sha256=pm.canonical_sha256(body))
+
+
+def _is(g, kind, h, role=ENTRY):
+    return g["population_kind"] == kind and g["horizon_hours"] == h and g["role"] == role
+
+
+def _phantom(g):
+    return _resealed(g, n_declared=5, coverage_denominator=5, coverage=0.2)
+
+
+# --- CR02: populations and errors must be arithmetically possible --------------------
+
+def test_cr02_phantom_declared_members_are_refused():
+    g = group(pm.score(document([rec(0, 2)])), "S", 2)
+    _agg_refused("GROUP_INCONSISTENT", [_phantom(g)])
+    _agg_refused("GROUP_INCONSISTENT", [_resealed(g, n_declared=5)])
+    assert pm.aggregate_groups([g])["state"] == "COMPLETE"  # control: the honest group pools
+
+
+def test_cr02_negative_error_sums_are_refused_even_with_recomputed_means():
+    g = group(pm.score(document([rec(0, 2)])), "S", 2)
+    every = {f: -abs(g[f]) for f in pm._SUM_FIELDS}
+    _agg_refused("GROUP_INCONSISTENT", [_resealed(g, **every, **pm._metrics(g["n"], every))])
+    for field in pm._SUM_FIELDS:
+        sums = {f: g[f] for f in pm._SUM_FIELDS}
+        sums[field] = -abs(sums[field])
+        _agg_refused("GROUP_INCONSISTENT", [_resealed(g, **sums, **pm._metrics(g["n"], sums))])
+
+
+def test_cr02_error_sums_must_be_mutually_possible():
+    g = group(pm.score(document([rec(0, 2)])), "S", 2)   # one row: |e| = 0.25, e^2 = 0.0625
+    for over in ({"sum_squared_error": 1.0}, {"sum_squared_error": 0.0},
+                 {"naive_sum_squared_error": 1.0}, {"naive_sum_abs_error": 0.0}):
+        sums = dict({f: g[f] for f in pm._SUM_FIELDS}, **over)
+        _agg_refused("GROUP_INCONSISTENT", [_resealed(g, **sums, **pm._metrics(g["n"], sums))])
+
+
+def test_cr02_zero_rows_require_zero_error_sums():
+    u = group(pm.score(document([rec(0, 2)])), "U", 2)
+    assert (u["n"], u["state"]) == (0, "NO_RECEIPTS")
+    for field in pm._SUM_FIELDS:
+        _agg_refused("GROUP_INCONSISTENT", [_resealed(u, **{field: 0.5})])
+    assert pm.aggregate_groups([u])["state"] == "NO_RECEIPTS"  # control
+
+
+@pytest.mark.parametrize("field", ["n", "n_declared", "n_excluded"])
+@pytest.mark.parametrize("value", [True, False, -1, 1.0, "1", None])
+def test_cr02_counts_must_be_non_bool_non_negative_integers(field, value):
+    g1, g2 = _two_weeks()
+    _agg_refused("SCHEMA_INVALID", [g1, _resealed(g2, **{field: value})])
+
+
+@pytest.mark.parametrize("field", ["failures", "exclusions", "upstream_exclusions"])
+@pytest.mark.parametrize("value", [["MISSING_FORECAST"], {"X": -1}, {"X": True}, {"X": 1.0},
+                                   {"": 1}, {" X": 1}, "X", None])
+def test_cr02_reason_count_maps_are_typed(field, value):
+    g1, g2 = _two_weeks()
+    _agg_refused("SCHEMA_INVALID", [g1, _resealed(g2, **{field: value})])
+
+
+def test_cr02_declared_must_equal_rows_plus_exclusions_plus_failures():
+    inc = _incomplete_group()
+    assert inc["n_declared"] == inc["n"] + inc["n_excluded"] + sum(inc["failures"].values()) == 2
+    for over in ({"failures": {}}, {"failures": {"MISSING_FORECAST": 2}}, {"n_declared": 3},
+                 {"n_excluded": 1, "exclusions": {"LABEL_NOT_OBSERVABLE": 1}}):
+        _agg_refused("GROUP_INCONSISTENT", [_resealed(inc, **over)])
+    assert pm.aggregate_groups([inc])["state"] == "INCOMPLETE"  # control
+
+
+def test_cr02_n_excluded_must_match_the_c2_exclusion_counts():
+    open_label = rec(0, 2, p1=None)
+    u = group(pm.score(document([open_label], keys=[], receipts=[receipt(open_label, "r-1")])), "U", 2)
+    assert (u["n_excluded"], u["exclusions"]) == (1, {"LABEL_NOT_OBSERVABLE": 1})
+    _agg_refused("GROUP_INCONSISTENT", [_resealed(u, exclusions={})])
+    _agg_refused("GROUP_INCONSISTENT", [_resealed(u, exclusions={"LABEL_NOT_OBSERVABLE": 2})])
+
+
+def test_cr02_state_coverage_and_reason_are_derived_never_trusted():
+    inc = _incomplete_group()
+    full = group(pm.score(document([rec(5, 2)])), "S", 2)
+    for g, over in ((inc, {"state": "COMPLETE"}), (inc, {"coverage": 1.0}),
+                    (inc, {"coverage_denominator": 1}), (inc, {"coverage_numerator": 2}),
+                    (inc, {"score_unavailable_reason": "NO_SCORED_ROWS"}),
+                    (full, {"state": "INCOMPLETE"}), (full, {"state": "NO_OBSERVABLE_LABELS"}),
+                    (full, {"exclusions_scope": pm.EXCLUSIONS_C2_ONLY}),
+                    (full, {"skill_mae_undefined_reason": "NAIVE_MAE_ZERO"}),
+                    (full, {"skill_mse_undefined_reason": "NAIVE_MSE_ZERO"})):
+        _agg_refused("GROUP_INCONSISTENT", [_resealed(g, **over)])
+
+
+def test_cr02_row_keys_must_belong_to_the_group_horizon_and_role():
+    g1, g2 = _two_weeks()
+    origin = g2["row_keys"][0][1]
+    for rows in ([["SYNTHETIC_PAIR", origin, 72, ENTRY]], [["SYNTHETIC_PAIR", origin, 2, MANAGEMENT]],
+                 [["SYNTHETIC_PAIR", origin, 2]], [["SYNTHETIC_PAIR", origin, 2, ENTRY, "extra"]]):
+        _agg_refused("GROUP_INCONSISTENT", [g1, _resealed(g2, row_keys=rows, row_keys_sha256=pm.canonical_sha256(rows))])
+
+
+@pytest.mark.parametrize("over", [{"config_id": ["a"]}, {"population_sha256": {"x": 1}},
+                                  {"horizon_hours": "2"}, {"role": 7}, {"population_kind": "X"},
+                                  {"row_keys": [[["nested"]]], "row_keys_sha256": pm.canonical_sha256([[["nested"]]])}])
+def test_cr02_untyped_fields_are_typed_refusals_never_type_errors(over):
+    g1, g2 = _two_weeks()
+    _agg_refused("SCHEMA_INVALID", [g1, _resealed(g2, **over)])
+
+
+def test_cr02_non_json_values_are_typed_refusals_never_type_errors():
+    g1, g2 = _two_weeks()
+    _agg_refused("SCHEMA_INVALID", [g1, dict(g2, n={1, 2})])
+
+
+def test_cr02_upstream_exclusions_stay_out_of_the_c2_denominator_and_are_published_once():
+    exclusions = [{"horizon_hours": 2, "role": ENTRY, "reason": "ORIGIN_OUTSIDE_ENTRY_WINDOW", "count": 5},
+                  {"horizon_hours": 2, "role": MANAGEMENT, "reason": "ORIGIN_OUTSIDE_ENTRY_WINDOW", "count": 3}]
+    result = pm.score(document([rec(0, 2), rec(0, 2, role=MANAGEMENT)], exclusions=exclusions))
+    entry = group(result, "S", 2, ENTRY)
+    assert entry["exclusions"] == {}
+    assert entry["upstream_exclusions"] == {"ORIGIN_OUTSIDE_ENTRY_WINDOW": 5}
+    assert (entry["n_declared"], entry["n"], entry["n_excluded"], entry["coverage"]) == (1, 1, 0, 1.0)
+    every = group(result, "S", 2, pm.ALL_ROLES)
+    assert every["exclusions"] == {} and "upstream_exclusions" not in every
+    upstream = [r for r in result["olap_records"] if r["record_type"] == "I6N_POPULATION_COUNT"
+                and r["category"] == "UPSTREAM_EXCLUSION" and r["population_kind"] == "S"
+                and r["horizon_hours"] == 2]
+    assert sorted((r["role"], r["count"]) for r in upstream) == [(ENTRY, 5), (MANAGEMENT, 3)]
+    assert not [r for r in result["olap_records"] if r["record_type"] == "I6N_POPULATION_COUNT"
+                and r["category"] == "EXCLUSION" and r["population_kind"] == "S"]
+
+
+def test_cr02_results_with_an_impossible_group_are_refused_by_verify_and_compare():
+    records = [rec(i, 2) for i in range(2)]
+    a = pm.score(document(records))
+    b = pm.score(document(records, config_id="synthetic-config-b"))
+    forged = _forge_result(b, lambda g: _phantom(g) if _is(g, "S", 2) else g)
+    with pytest.raises(pm.PairedMetricsError) as caught:
+        pm.verify_result(forged)
+    assert caught.value.code == "GROUP_INCONSISTENT"
+    with pytest.raises(pm.PairedMetricsError) as caught:
+        pm.compare_configs(a, forged)
+    assert caught.value.code == "GROUP_INCONSISTENT"
+    assert pm.compare_configs(a, b)["state"] == "COMPARABLE"  # control
+
+
+def test_cr02_result_state_is_derived_from_its_groups():
+    result = pm.score(document([rec(0, 2)]))
+    body = {k: v for k, v in result.items() if k != "sha256"}
+    lie = dict(body, state="INCOMPLETE")
+    with pytest.raises(pm.PairedMetricsError) as caught:
+        pm.verify_result(dict(lie, sha256=pm.canonical_sha256(lie)))
+    assert caught.value.code == "RESULT_INCONSISTENT"
+
+
+# --- focused coverage: ALL_ROLES scope, S/U identity, every mean ---------------------
+
+def test_all_roles_counts_a_c2_exclusion_of_a_shared_forecast_once():
+    open_entry = rec(0, 2, p1=None)
+    open_management = dict(open_entry, role=MANAGEMENT)
+    result = pm.score(document([open_entry, open_management], keys=[], receipts=[
+        receipt(open_entry, "r-1"), receipt(open_management, "r-2")]))
+    every = group(result, "U", 2, pm.ALL_ROLES)
+    assert every["exclusions"] == {"LABEL_NOT_OBSERVABLE": 1}
+    assert (every["n_declared"], every["n_excluded"], every["n"]) == (1, 1, 0)
+    assert every["exclusions_scope"] == pm.EXCLUSIONS_C2_ONLY
+    for role in (ENTRY, MANAGEMENT):
+        assert group(result, "U", 2, role)["exclusions"] == {"LABEL_NOT_OBSERVABLE": 1}
+
+
+def test_all_roles_aggregate_pools_upstream_per_role_and_keeps_the_c2_scope():
+    reason = "ORIGIN_OUTSIDE_ENTRY_WINDOW"
+    r1 = pm.score(document([rec(0, 2)], exclusions=[
+        {"horizon_hours": 2, "role": ENTRY, "reason": reason, "count": 5}]))
+    r2 = pm.score(document([rec(5, 2, role=MANAGEMENT)], exclusions=[
+        {"horizon_hours": 2, "role": ENTRY, "reason": reason, "count": 2},
+        {"horizon_hours": 2, "role": MANAGEMENT, "reason": reason, "count": 1}]))
+    a1, a2 = group(r1, "S", 2, pm.ALL_ROLES), group(r2, "S", 2, pm.ALL_ROLES)
+    pooled = pm.aggregate_groups([a1, a2])
+    assert pooled["upstream_exclusions_by_role"] == {ENTRY: {reason: 7}, MANAGEMENT: {reason: 1}}
+    assert pooled["exclusions"] == {} and pooled["exclusions_scope"] == pm.EXCLUSIONS_C2_ONLY
+    assert pooled["constituent_group_sha256"] == sorted([a1["sha256"], a2["sha256"]])
+    assert (pooled["n_declared"], pooled["n"], pooled["state"]) == (2, 2, "COMPLETE")
+    per_role = pm.aggregate_groups([group(r1, "S", 2, ENTRY), group(r2, "S", 2, ENTRY)])
+    assert per_role["upstream_exclusions"] == {reason: 7} and per_role["exclusions"] == {}
+    assert per_role["exclusions_scope"] == pm.EXCLUSIONS_C2_ONLY_UPSTREAM_SEPARATE
+    metric_rows = [r for r in r1["olap_records"] if r["record_type"] == "I6N_PAIRED_METRIC"]
+    assert metric_rows and all(r["exclusions_scope"] in (pm.EXCLUSIONS_C2_ONLY,
+                                                         pm.EXCLUSIONS_C2_ONLY_UPSTREAM_SEPARATE)
+                               for r in metric_rows)
+
+
+def test_aggregation_refuses_to_pool_opportunity_with_usage():
+    a, b = rec(0, 2), rec(1, 2)
+    result = pm.score(document([a, b], keys=[key(a)], receipts=[receipt(b, "r-b")]))
+    s, u = group(result, "S", 2), group(result, "U", 2)
+    assert {k: s[k] for k in pm._IDENTITY_FIELDS if k != "population_kind"} == \
+        {k: u[k] for k in pm._IDENTITY_FIELDS if k != "population_kind"}
+    _agg_refused("AGGREGATE_MISMATCH", [s, u])
+
+
+@pytest.mark.parametrize("field", ["mae", "mse", "naive_mae", "naive_mse", "skill_mae", "skill_mse"])
+def test_means_check_covers_each_mean_and_skill_alone(field):
+    g1, g2 = _two_weeks()
+    _agg_refused("GROUP_INCONSISTENT", [g1, _resealed(g2, **{field: g2[field] + 0.5})])
+
+
+def test_cli_recursion_in_the_config_is_a_typed_config_invalid(tmp_path, capsys):
+    config = tmp_path / "deep.json"
+    config.write_text("[" * 100000 + "]" * 100000)
+    assert cli.main(["--config", str(config), "--output", str(tmp_path / "o")]) == cli.EXIT_REFUSED
+    assert json.loads(capsys.readouterr().out)["error"]["code"] == "CONFIG_INVALID"
+
+
+# --- CR03: status announces success only for a verified terminal result --------------
+
+def _status(out, capsys):
+    capsys.readouterr()
+    code = cli.main(["--status", "--output", str(out)])
+    return code, json.loads(capsys.readouterr().out)
+
+
+def _snapshot(out):
+    return {p.name: (p.read_bytes(), p.stat().st_mtime_ns) for p in out.iterdir()}
+
+
+def test_cr03_status_with_a_missing_result_is_not_success_and_writes_nothing(tmp_path, capsys):
+    _, out = _completed(tmp_path, document([rec(0, 2)]))
+    (out / cli.RESULT_NAME).unlink()
+    before = _snapshot(out)
+    code, payload = _status(out, capsys)
+    assert code == cli.EXIT_DAMAGED
+    assert payload["disposition"] == "RESULT_MISSING" and payload["result"]["verified"] is False
+    assert _snapshot(out) == before
+
+
+def test_cr03_status_with_a_corrupt_result_is_not_success(tmp_path, capsys):
+    _, out = _completed(tmp_path, document([rec(0, 2)]))
+    (out / cli.RESULT_NAME).write_text("corrupt")
+    code, payload = _status(out, capsys)
+    assert (code, payload["disposition"]) == (cli.EXIT_DAMAGED, "RESULT_UNREADABLE")
+
+
+def test_cr03_status_with_the_result_of_another_identity_is_not_success(tmp_path, capsys):
+    _, out = _completed(tmp_path, document([rec(0, 2)]))
+    other = _write_config(tmp_path / "b.json", document([rec(0, 2, pred=1.5)]))
+    assert cli.main(["--config", str(other), "--output", str(tmp_path / "other")]) == cli.EXIT_COMPLETE
+    (out / cli.RESULT_NAME).write_bytes((tmp_path / "other" / cli.RESULT_NAME).read_bytes())
+    code, payload = _status(out, capsys)
+    assert (code, payload["disposition"]) == (cli.EXIT_DAMAGED, "RESULT_IDENTITY_MISMATCH")
+
+
+def test_cr03_status_with_changed_result_bytes_is_not_success(tmp_path, capsys):
+    _, out = _completed(tmp_path, document([rec(0, 2)]))
+    wrapped = json.loads((out / cli.RESULT_NAME).read_text())
+    (out / cli.RESULT_NAME).write_text(json.dumps(wrapped, indent=4))
+    code, payload = _status(out, capsys)
+    assert (code, payload["disposition"]) == (cli.EXIT_DAMAGED, "RESULT_HASH_MISMATCH")
+
+
+def test_cr03_incomplete_status_also_requires_a_verified_result(tmp_path, capsys):
+    records = [rec(0, 2), rec(1, 2)]
+    config = _write_config(tmp_path / "config.json", document(records[:1], keys=[key(r) for r in records]))
+    out = tmp_path / "out"
+    assert cli.main(["--config", str(config), "--output", str(out)]) == cli.EXIT_INCOMPLETE
+    assert _status(out, capsys)[0] == cli.EXIT_INCOMPLETE  # control
+    (out / cli.RESULT_NAME).unlink()
+    assert _status(out, capsys)[0] == cli.EXIT_DAMAGED
+
+
+def test_cr02_cr03_a_forged_self_consistent_result_is_neither_reused_nor_reported_as_success(tmp_path, capsys):
+    config, out = _completed(tmp_path, document([rec(0, 2)]))
+    wrapped = json.loads((out / cli.RESULT_NAME).read_text())
+    wrapped["result"] = _forge_result(wrapped["result"], lambda g: _phantom(g) if _is(g, "S", 2) else g)
+    wrapped = _resealed(wrapped)
+    (out / cli.RESULT_NAME).write_text(json.dumps(wrapped, indent=2))
+    status = json.loads((out / cli.STATUS_NAME).read_text())
+    status["result"] = cli._result_summary(wrapped["result"], cli.file_hash(out / cli.RESULT_NAME))
+    (out / cli.STATUS_NAME).write_text(json.dumps(status, indent=2))
+    before = _snapshot(out)
+    code, payload = _status(out, capsys)
+    assert (code, payload["disposition"]) == (cli.EXIT_DAMAGED, "RESULT_INVALID")
+    assert cli.main(["--config", str(config), "--output", str(out)]) == cli.EXIT_REFUSED
+    assert json.loads(capsys.readouterr().out)["error"]["code"] == "OUTPUT_CORRUPT"
+    assert _snapshot(out) == before
+
+
+# --- CR04 semantics in C2: no path leaves RUNNING or raises an untyped failure -------
+
+def test_cr04_result_write_failure_is_a_typed_failed_status_without_leftovers(tmp_path, capsys, monkeypatch):
+    config = _write_config(tmp_path / "config.json", document([rec(0, 2)]))
+    out = tmp_path / "out"
+    real = cli.atomic_json
+
+    def full_disk(path, value):
+        if Path(path).name == cli.RESULT_NAME:
+            Path(path).with_suffix(".tmp").write_text("partial")
+            raise OSError(28, "No space left on device")
+        real(path, value)
+
+    monkeypatch.setattr(cli, "atomic_json", full_disk)
+    assert cli.main(["--config", str(config), "--output", str(out)]) == cli.EXIT_REFUSED
+    printed = json.loads(capsys.readouterr().out)
+    assert printed["state"] == "FAILED" and printed["durable"] is True
+    status = json.loads((out / cli.STATUS_NAME).read_text())
+    assert status["state"] == "FAILED" and status["error"]["code"] == "OUTPUT_WRITE_FAILED"
+    assert not (out / cli.RESULT_NAME).exists() and not list(out.glob("*.tmp"))
+    assert _status(out, capsys)[0] == cli.EXIT_REFUSED
+
+
+def test_cr04_unrecordable_failure_is_non_success_without_claiming_a_durable_failed(tmp_path, capsys, monkeypatch):
+    config = _write_config(tmp_path / "config.json", document([rec(0, 2)]))
+    out = tmp_path / "out"
+    real = cli.atomic_json
+
+    def only_running(path, value):
+        if Path(path).name == cli.STATUS_NAME and value.get("state") == "RUNNING":
+            return real(path, value)
+        raise OSError(5, "Input/output error")
+
+    monkeypatch.setattr(cli, "atomic_json", only_running)
+    assert cli.main(["--config", str(config), "--output", str(out)]) == cli.EXIT_REFUSED
+    printed = json.loads(capsys.readouterr().out)
+    assert printed["durable"] is False and printed["state"] != "FAILED"
+    assert json.loads((out / cli.STATUS_NAME).read_text())["state"] == "RUNNING"
+    assert _status(out, capsys)[0] == cli.EXIT_RUNNING
+
+
+def test_cr04_unwritable_status_before_start_is_a_typed_non_success(tmp_path, capsys, monkeypatch):
+    config = _write_config(tmp_path / "config.json", document([rec(0, 2)]))
+    out = tmp_path / "out"
+
+    def broken(path, value):
+        raise OSError(30, "Read-only file system")
+
+    monkeypatch.setattr(cli, "atomic_json", broken)
+    assert cli.main(["--config", str(config), "--output", str(out)]) == cli.EXIT_REFUSED
+    printed = json.loads(capsys.readouterr().out)
+    assert printed["durable"] is False and printed["error"]["code"] == "STATUS_WRITE_FAILED"
+    assert _status(out, capsys)[0] == cli.EXIT_STATUS_ABSENT
+
+
+def test_cr04_interrupt_still_propagates_when_its_status_cannot_be_written(tmp_path, capsys, monkeypatch):
+    config = _write_config(tmp_path / "config.json", document([rec(0, 2)]))
+    out = tmp_path / "out"
+    real = cli.atomic_json
+
+    def no_failed(path, value):
+        if value.get("state") == "FAILED":
+            raise OSError(5, "Input/output error")
+        real(path, value)
+
+    def interrupt(document, progress=None):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(cli, "atomic_json", no_failed)
+    monkeypatch.setattr(cli.pm, "score", interrupt)
+    with pytest.raises(KeyboardInterrupt):
+        cli.main(["--config", str(config), "--output", str(out)])
+    assert _status(out, capsys)[0] == cli.EXIT_RUNNING

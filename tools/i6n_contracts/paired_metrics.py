@@ -47,25 +47,40 @@ Rules implemented (see the tests for the executable form):
   records cover exactly the same rows; ``model_rows_sha256`` and
   ``naive_rows_sha256`` digest the inputs of each side on those rows.
 * An empty population has no score but keeps exclusion and failure counts.
-  The sealed upstream exclusion counts are per (h, role) and carry no row
-  identities, so they cannot be de-duplicated across roles: an ``ALL_ROLES``
-  group reports them unpooled in ``upstream_exclusions_by_role`` and its
-  ``exclusions`` hold only exclusions made here (``exclusions_scope``).
+* Two kinds of exclusion are kept apart. ``exclusions`` holds ONLY exclusions
+  made here (``LABEL_NOT_OBSERVABLE``), each a declared member of C2's
+  population, so ``n_excluded == sum(exclusions)``. The sealed upstream counts
+  (made before C2, e.g. by eligibility) are NOT members of C2's declared
+  population: a per-role group carries them in ``upstream_exclusions``; they
+  carry no row identities and cannot be de-duplicated across roles, so an
+  ``ALL_ROLES`` group reports them unpooled in ``upstream_exclusions_by_role``
+  and its OLAP rows never repeat them (``exclusions_scope`` says which).
 * A declared member without a verifiable forecast is a failure: the group is
   ``INCOMPLETE`` with explicit coverage. It is never silently dropped.
+  Every group satisfies ``n_declared == n + n_excluded + sum(failures)``;
   ``coverage = n / (n_declared - n_excluded)``; failures stay in the
-  denominator, exclusions made here (``LABEL_NOT_OBSERVABLE``) do not.
+  denominator, exclusions made here do not. State, coverage and the
+  unavailable-score reason are DERIVED from those counts by one function, used
+  both when scoring and when a sealed group is read back.
 * Every group carries its identity (config, protocol, calendar, contract
   digest) and its own ``sha256``.
 * ``compare_configs`` requires the identical previously sealed S support and
   refuses (``NOT_COMPARABLE_INCOMPLETE``) instead of building an intersection.
-* ``aggregate_groups`` pools sums and counts, never means of weeks, only across
-  groups with the same identity, after verifying each group seal and its
-  internal consistency.
+* ``aggregate_groups``, ``verify_result`` and ``compare_configs`` never trust a
+  sealed field: they re-verify every group's types (non-bool non-negative
+  integer counts, typed reason->count maps, scalar row keys of the group's own
+  h/role), the count identity above, finite non-negative error sums that are
+  zero for zero rows and mutually possible (sqrt(sum e^2) <= sum |e| <=
+  sqrt(n * sum e^2), with a rounding/underflow tolerance), and every derived
+  field (state, coverage, means, skills and their reasons). Every refusal is a
+  typed ``PairedMetricsError``, never a ``TypeError``. Pooling uses sums and
+  counts, never means of weeks, only across groups with the same identity.
 
 Limit: digests are unkeyed SHA-256. They detect corruption and unilateral
-edits, not an adversary who recomputes a digest after editing; a reseal with
-self-consistent but false sums is not detectable without the rows themselves.
+edits, not an adversary who recomputes a digest after editing. Arithmetic
+contradictions are refused without any key; a forgery that is plausible AND
+self-consistent (false but possible counts and sums) is not detectable without
+the rows themselves and external custody.
 
 The canonical digest is byte-identical to ``tools.i6m_queue.digest``; it is
 re-implemented here only to avoid importing a module that loads ``sqlite3``.
@@ -81,7 +96,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Mapping, Optional, Sequence
 
 INPUT_SCHEMA_VERSION = "i6n.paired_metrics.input.v1"
-RESULT_SCHEMA_VERSION = "i6n.paired_metrics.result.v1"
+RESULT_SCHEMA_VERSION = "i6n.paired_metrics.result.v2"
 COMPARISON_SCHEMA_VERSION = "i6n.paired_metrics.comparison.v1"
 COMPONENT = "I6N_C2_PAIRED_METRICS"
 
@@ -93,8 +108,9 @@ MISSING_FORECAST = "MISSING_FORECAST"
 LABEL_NOT_OBSERVABLE = "LABEL_NOT_OBSERVABLE"
 EMPTY_POPULATION = "EMPTY_POPULATION"
 NO_SCORED_ROWS = "NO_SCORED_ROWS"
-EXCLUSIONS_UPSTREAM_AND_C2 = "UPSTREAM_AND_C2"
+EXCLUSIONS_C2_ONLY_UPSTREAM_SEPARATE = "C2_ONLY_UPSTREAM_SEPARATE"
 EXCLUSIONS_C2_ONLY = "C2_ONLY_UPSTREAM_REPORTED_PER_ROLE"
+EMPTY_STATE = {OPPORTUNITY: "NO_ELIGIBLE_ROWS", USAGE: "NO_RECEIPTS"}
 
 CLAIMS = {
     "candidate_implementation": True,
@@ -157,6 +173,9 @@ def canonical_json(value: Any) -> bytes:
         return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
     except ValueError as error:
         raise PairedMetricsError("NONFINITE_VALUE", f"not canonically serialisable: {error}") from error
+    except (TypeError, RecursionError) as error:
+        raise PairedMetricsError("SCHEMA_INVALID", f"not a JSON value: {type(error).__name__}: "
+                                 f"{str(error)[:200]}") from error
 
 
 def canonical_sha256(value: Any) -> str:
@@ -176,13 +195,6 @@ def _seal_holds(value: Mapping[str, Any]) -> bool:
 def seal_population(population: Mapping[str, Any]) -> dict:
     """Seal an S support before any error is seen; the digest covers every other field."""
     return _sealed(population)
-
-
-def verify_result(result: Mapping[str, Any]) -> Mapping[str, Any]:
-    """Raise ``RESULT_SEAL_INVALID`` unless the result digest verifies."""
-    if not isinstance(result, Mapping) or not _seal_holds(result):
-        raise PairedMetricsError("RESULT_SEAL_INVALID", "result digest does not verify")
-    return result
 
 
 # --- primitive validation ---------------------------------------------------------
@@ -487,8 +499,29 @@ def _row_key(key: tuple) -> list:
     return list(key)
 
 
-def _group(kind: str, population: dict, h: int, role: str, entries: list, exclusions: dict,
-           contract: dict, empty_state: str, prices: dict, identity: dict,
+def _derived(kind: str, n_declared: int, n: int, n_excluded: int, n_failed: int, where: str) -> dict:
+    """State, coverage and unavailable-score reason derived from the counts alone.
+
+    Raises ``GROUP_INCONSISTENT`` unless ``n_declared == n + n_excluded + n_failed``.
+    """
+    if n_declared != n + n_excluded + n_failed:
+        raise PairedMetricsError("GROUP_INCONSISTENT", f"{where}: n_declared {n_declared} != n {n} + "
+                                 f"n_excluded {n_excluded} + failures {n_failed}")
+    if n_declared == 0:
+        state, unavailable = EMPTY_STATE[kind], EMPTY_POPULATION
+    elif n_failed:
+        state, unavailable = "INCOMPLETE", (None if n else NO_SCORED_ROWS)
+    elif n:
+        state, unavailable = "COMPLETE", None
+    else:
+        state, unavailable = "NO_OBSERVABLE_LABELS", NO_SCORED_ROWS
+    denominator = n_declared - n_excluded
+    return {"state": state, "score_unavailable_reason": unavailable, "coverage_numerator": n,
+            "coverage_denominator": denominator, "coverage": (n / denominator) if denominator else None}
+
+
+def _group(kind: str, population: dict, h: int, role: str, entries: list, upstream: Optional[dict],
+           contract: dict, prices: dict, identity: dict,
            upstream_by_role: Optional[dict] = None) -> dict:
     """Score one population slice; ``entries`` are (row_key, status, record_or_reason).
 
@@ -515,18 +548,7 @@ def _group(kind: str, population: dict, h: int, role: str, entries: list, exclus
             "naive_sum_abs_error": _fsum(naive_abs), "naive_sum_squared_error": _fsum(naive_sq)}
     n_declared = len(entries)
     n_excluded = sum(excluded.values())
-    denominator = n_declared - n_excluded
-    if not entries:
-        state, unavailable = empty_state, EMPTY_POPULATION
-    elif failures:
-        state, unavailable = "INCOMPLETE", (None if n else NO_SCORED_ROWS)
-    elif n:
-        state, unavailable = "COMPLETE", None
-    else:
-        state, unavailable = "NO_OBSERVABLE_LABELS", NO_SCORED_ROWS
-    merged_exclusions = dict(exclusions)
-    for reason, count in excluded.items():
-        merged_exclusions[reason] = merged_exclusions.get(reason, 0) + count
+    derived = _derived(kind, n_declared, n, n_excluded, sum(failures.values()), f"{kind}/h{h}/{role}")
     group = {
         "population_kind": kind,
         "population_id": population["population_id"],
@@ -534,19 +556,15 @@ def _group(kind: str, population: dict, h: int, role: str, entries: list, exclus
         **identity,
         "horizon_hours": h,
         "role": role,
-        "state": state,
         "unit": contract["unit"],
         "scale": contract["scale"],
         "n_declared": n_declared,
         "n_excluded": n_excluded,
         "n": n,
-        "coverage_numerator": n,
-        "coverage_denominator": denominator,
-        "coverage": (n / denominator) if denominator else None,
+        **derived,
         "failures": dict(sorted(failures.items())),
-        "exclusions": dict(sorted(merged_exclusions.items())),
-        "exclusions_scope": EXCLUSIONS_UPSTREAM_AND_C2 if upstream_by_role is None else EXCLUSIONS_C2_ONLY,
-        "score_unavailable_reason": unavailable,
+        "exclusions": dict(sorted(excluded.items())),
+        "exclusions_scope": EXCLUSIONS_C2_ONLY_UPSTREAM_SEPARATE if upstream_by_role is None else EXCLUSIONS_C2_ONLY,
         **sums,
         **_metrics(n, sums),
         "row_keys": row_keys,
@@ -558,7 +576,9 @@ def _group(kind: str, population: dict, h: int, role: str, entries: list, exclus
             [_row_key(k), r["target_timestamp"], prices[(r["asset"], r["target_timestamp"])],
              r["prediction"], r["checkpoint"]] for k, r in rows]),
     }
-    if upstream_by_role is not None:
+    if upstream_by_role is None:
+        group["upstream_exclusions"] = dict(upstream or {})
+    else:
         group["upstream_exclusions_by_role"] = upstream_by_role
     return _sealed(group)
 
@@ -647,18 +667,17 @@ def score(document: Mapping[str, Any],
     for done, (kind, h, role) in enumerate(plan, start=1):
         entries = s_entries if kind == OPPORTUNITY else u_entries
         meta = population if kind == OPPORTUNITY else usage
-        empty_state = "NO_ELIGIBLE_ROWS" if kind == OPPORTUNITY else "NO_RECEIPTS"
         same_h = [e for e in entries if e[0][2] == h]
 
         def upstream(r):
             return dict(sorted(population["exclusions"].get((h, r), {}).items())) if kind == OPPORTUNITY else {}
 
         if role == ALL_ROLES:
-            selected, exclusions = _all_roles(same_h), {}
+            selected, upstream_counts = _all_roles(same_h), None
             by_role = {r: upstream(r) for r in contract["roles"]}
         else:
-            selected, exclusions, by_role = [e for e in same_h if e[0][3] == role], upstream(role), None
-        groups.append(_group(kind, meta, h, role, selected, exclusions, contract, empty_state,
+            selected, upstream_counts, by_role = [e for e in same_h if e[0][3] == role], upstream(role), None
+        groups.append(_group(kind, meta, h, role, selected, upstream_counts, contract,
                              parts["prices"], identity, by_role))
         if progress is not None:
             progress(done, len(plan))
@@ -708,7 +727,12 @@ def olap_records(result: Mapping[str, Any]) -> list:
     for group in result["groups"]:
         rows.append({"record_type": "I6N_PAIRED_METRIC", **common,
                      **{f: group[f] for f in _OLAP_METRIC_FIELDS}, "group_sha256": group["sha256"]})
-        for category, counts in (("FAILURE", group["failures"]), ("EXCLUSION", group["exclusions"])):
+        # Upstream counts are published once, from the per-role groups; an ALL_ROLES
+        # group never repeats them (roles can overlap, the counts carry no row identity).
+        categories = [("FAILURE", group["failures"]), ("EXCLUSION", group["exclusions"])]
+        if "upstream_exclusions" in group:
+            categories.append(("UPSTREAM_EXCLUSION", group["upstream_exclusions"]))
+        for category, counts in categories:
             for reason, count in counts.items():
                 rows.append({"record_type": "I6N_POPULATION_COUNT", **common,
                              "population_kind": group["population_kind"],
@@ -721,53 +745,183 @@ def olap_records(result: Mapping[str, Any]) -> list:
 # --- aggregation and comparison ---------------------------------------------------
 
 _SUM_FIELDS = ("sum_abs_error", "sum_squared_error", "naive_sum_abs_error", "naive_sum_squared_error")
-
+_MEAN_FIELDS = ("mae", "mse", "naive_mae", "naive_mse", "skill_mae", "skill_mse",
+                "skill_mae_undefined_reason", "skill_mse_undefined_reason")
+_DERIVED_FIELDS = ("state", "score_unavailable_reason", "coverage_numerator", "coverage_denominator", "coverage")
+_COUNT_FIELDS = ("n", "n_declared", "n_excluded")
+_DIGEST_FIELDS = ("population_sha256", "row_keys_sha256", "naive_rows_sha256", "model_rows_sha256",
+                  "contract_sha256")
 
 _IDENTITY_FIELDS = ("population_kind", "horizon_hours", "role", "unit", "scale", "config_id",
                     "protocol_id", "calendar_id", "contract_sha256")
-_GROUP_REQUIRED = _IDENTITY_FIELDS + _SUM_FIELDS + (
-    "sha256", "state", "n", "n_declared", "n_excluded", "failures", "exclusions", "row_keys",
-    "row_keys_sha256", "population_sha256", "naive_rows_sha256", "model_rows_sha256",
-    "mae", "mse", "naive_mae", "naive_mse", "skill_mae", "skill_mse")
+_GROUP_REQUIRED = tuple(dict.fromkeys(
+    _IDENTITY_FIELDS + _SUM_FIELDS + _MEAN_FIELDS + _DERIVED_FIELDS + _COUNT_FIELDS + _DIGEST_FIELDS
+    + ("sha256", "failures", "exclusions", "exclusions_scope", "row_keys")))
+
+# Relative and absolute slack for the necessary sum relations; squares of errors
+# below ~1.5e-154 underflow, so each row may lose up to that much of sqrt(sum e^2).
+_REL_TOLERANCE = 1e-9
+_UNDERFLOW_SLACK = 1.5e-154
 
 
-def _verified_group(g: Any, index: int) -> Mapping[str, Any]:
-    """Seal, row digest and internal consistency of one scored group."""
+def _schema(where: str, detail: str) -> PairedMetricsError:
+    return PairedMetricsError("SCHEMA_INVALID", f"{where}: {detail}")
+
+
+def _inconsistent(where: str, detail: str) -> PairedMetricsError:
+    return PairedMetricsError("GROUP_INCONSISTENT", f"{where}: {detail}")
+
+
+def _count(where: str, value: Any) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise _schema(where, f"must be a non-negative integer (not a boolean), got {value!r:.60}")
+    return value
+
+
+def _reason(where: str, value: Any) -> str:
+    if not isinstance(value, str) or not value or value != value.strip():
+        raise _schema(where, f"reason must be a non-empty trimmed string, got {value!r:.60}")
+    return value
+
+
+def _count_map(where: str, value: Any) -> dict:
+    """A typed reason -> non-negative integer count map."""
+    if not isinstance(value, Mapping):
+        raise _schema(where, "must be a reason -> count object")
+    return {_reason(where, reason): _count(f"{where}[{reason!r}]", count) for reason, count in value.items()}
+
+
+def _check_sums(where: str, n: int, sums: dict) -> None:
+    """Necessary conditions on error sums: finite, non-negative, zero for zero rows, possible."""
+    for field, value in sums.items():
+        if value < 0.0:
+            raise _inconsistent(where, f"{field} is negative ({value!r})")
+        if n == 0 and value != 0.0:
+            raise _inconsistent(where, f"{field} is {value!r} with zero rows")
+    for abs_field, sq_field in (("sum_abs_error", "sum_squared_error"),
+                                ("naive_sum_abs_error", "naive_sum_squared_error")):
+        total, squares = sums[abs_field], sums[sq_field]
+        # sqrt(sum e^2) <= sum |e| <= sqrt(n * sum e^2) holds for every real row set.
+        low = math.sqrt(squares) * (1.0 - _REL_TOLERANCE)
+        high = math.sqrt(n * squares) * (1.0 + _REL_TOLERANCE) + n * _UNDERFLOW_SLACK
+        if not low <= total <= high:
+            raise _inconsistent(where, f"{abs_field}={total!r} is impossible with {sq_field}={squares!r} "
+                                f"over n={n}")
+
+
+def _verified_group(g: Any, index: Any) -> Mapping[str, Any]:
+    """Re-derive and check everything a scored group asserts; never trust a sealed field.
+
+    Types first (typed ``SCHEMA_INVALID``, never ``TypeError``), then the seal
+    (``GROUP_SEAL_INVALID``) and the row digest (``ROW_DIGEST_INVALID``), then
+    arithmetic consistency (``GROUP_INCONSISTENT``).
+    """
+    where = f"groups[{index}]"
     if not isinstance(g, Mapping) or any(f not in g for f in _GROUP_REQUIRED):
-        raise PairedMetricsError("SCHEMA_INVALID", f"groups[{index}] is not a scored group")
+        raise _schema(where, "is not a scored group")
     if not _seal_holds(g):
-        raise PairedMetricsError("GROUP_SEAL_INVALID", f"groups[{index}] digest does not verify")
-    if not isinstance(g["row_keys"], list) or canonical_sha256(g["row_keys"]) != g["row_keys_sha256"]:
-        raise PairedMetricsError("ROW_DIGEST_INVALID", f"groups[{index}] row_keys do not match their digest")
-    n = g["n"]
-    if (isinstance(n, bool) or not isinstance(n, int) or n != len(g["row_keys"])
-            or g["n_declared"] - g["n_excluded"] < n):
-        raise PairedMetricsError("GROUP_INCONSISTENT", f"groups[{index}] n disagrees with its rows/declared")
-    sums = {f: _finite(f"groups[{index}].{f}", g[f]) for f in _SUM_FIELDS}
+        raise PairedMetricsError("GROUP_SEAL_INVALID", f"{where} digest does not verify")
+    kind, role = g["population_kind"], g["role"]
+    if kind not in EMPTY_STATE:
+        raise _schema(where, f"population_kind must be {sorted(EMPTY_STATE)}")
+    h = g["horizon_hours"]
+    if isinstance(h, bool) or not isinstance(h, int) or h <= 0:
+        raise _schema(where, "horizon_hours must be a positive integer")
+    for field in ("role", "unit", "scale", "config_id", "protocol_id", "calendar_id") + _DIGEST_FIELDS:
+        if not isinstance(g[field], str) or not g[field]:
+            raise _schema(where, f"{field} must be a non-empty string")
+    all_roles = role == ALL_ROLES
+    if all_roles:
+        by_role = g.get("upstream_exclusions_by_role")
+        if not isinstance(by_role, Mapping) or "upstream_exclusions" in g:
+            raise _schema(where, "an ALL_ROLES group carries only upstream_exclusions_by_role")
+        upstream = {_reason(where, r): _count_map(f"{where}.upstream_exclusions_by_role", c)
+                    for r, c in by_role.items()}
+    else:
+        if "upstream_exclusions_by_role" in g or "upstream_exclusions" not in g:
+            raise _schema(where, "a per-role group carries only upstream_exclusions")
+        upstream = _count_map(f"{where}.upstream_exclusions", g["upstream_exclusions"])
+    rows = g["row_keys"]
+    if not isinstance(rows, list) or any(
+            not isinstance(row, list) or any(isinstance(v, bool) or not isinstance(v, (str, int)) for v in row)
+            for row in rows):
+        raise _schema(where, "row_keys must be a list of scalar keys")
+    if canonical_sha256(rows) != g["row_keys_sha256"]:
+        raise PairedMetricsError("ROW_DIGEST_INVALID", f"{where} row_keys do not match their digest")
+    for row in rows:
+        expected_len = 3 if all_roles else 4
+        if (len(row) != expected_len or not isinstance(row[0], str) or not isinstance(row[1], str)
+                or row[2] != h or (not all_roles and row[3] != role)):
+            raise _inconsistent(where, f"row {row} does not belong to h={h} role={role}")
+    if len({tuple(row) for row in rows}) != len(rows):
+        raise PairedMetricsError("DOUBLE_COUNT", f"{where} lists a row twice")
+    n, n_declared, n_excluded = (_count(f"{where}.{f}", g[f]) for f in _COUNT_FIELDS)
+    failures = _count_map(f"{where}.failures", g["failures"])
+    exclusions = _count_map(f"{where}.exclusions", g["exclusions"])
+    if n != len(rows):
+        raise _inconsistent(where, f"n={n} but {len(rows)} row keys")
+    if n_excluded != sum(exclusions.values()):
+        raise _inconsistent(where, f"n_excluded={n_excluded} but exclusions sum to {sum(exclusions.values())}")
+    derived = _derived(kind, n_declared, n, n_excluded, sum(failures.values()), where)
+    derived["exclusions_scope"] = EXCLUSIONS_C2_ONLY if all_roles else EXCLUSIONS_C2_ONLY_UPSTREAM_SEPARATE
+    for field, value in derived.items():
+        if g[field] != value or type(g[field]) is not type(value):
+            raise _inconsistent(where, f"{field}={g[field]!r:.60} but the counts give {value!r}")
+    sums = {f: _finite(f"{where}.{f}", g[f]) for f in _SUM_FIELDS}
+    _check_sums(where, n, sums)
     metrics = _metrics(n, sums)
-    if any(g[f] != metrics[f] for f in ("mae", "mse", "naive_mae", "naive_mse", "skill_mae", "skill_mse")):
-        raise PairedMetricsError("GROUP_INCONSISTENT", f"groups[{index}] means disagree with its sums and n")
-    return g
+    for field in _MEAN_FIELDS:
+        if g[field] != metrics[field] or type(g[field]) is not type(metrics[field]):
+            raise _inconsistent(where, f"{field}={g[field]!r:.60} disagrees with its sums and n")
+    return {"group": g, "failures": failures, "exclusions": exclusions, "upstream": upstream}
+
+
+def verify_result(result: Mapping[str, Any]) -> Mapping[str, Any]:
+    """Verify a scored result's seal AND the semantics of every group; returns the result.
+
+    ``RESULT_SEAL_INVALID`` when the digest does not verify, the typed group
+    codes of ``aggregate_groups`` for an impossible group, and
+    ``RESULT_INCONSISTENT`` when the result-level state or identity disagree
+    with its groups.
+    """
+    if not isinstance(result, Mapping) or not _seal_holds(result):
+        raise PairedMetricsError("RESULT_SEAL_INVALID", "result digest does not verify")
+    if result.get("schema_version") != RESULT_SCHEMA_VERSION or not isinstance(result.get("groups"), list):
+        raise _schema("result", f"schema_version must be {RESULT_SCHEMA_VERSION} with a groups list")
+    populations = {OPPORTUNITY: result.get("opportunity_support_sha256"), USAGE: result.get("usage_receipts_sha256")}
+    for index, g in enumerate(result["groups"]):
+        g = _verified_group(g, index)["group"]
+        if (g["contract_sha256"] != result.get("contract_sha256")
+                or g["population_sha256"] != populations[g["population_kind"]]):
+            raise PairedMetricsError("RESULT_INCONSISTENT", f"groups[{index}] identity differs from the result")
+    state = "INCOMPLETE" if any(g["state"] == "INCOMPLETE" for g in result["groups"]) else "COMPLETE"
+    if result.get("state") != state:
+        raise PairedMetricsError("RESULT_INCONSISTENT", f"result state {result.get('state')!r} but groups give {state}")
+    return result
 
 
 def aggregate_groups(groups: Sequence[Mapping[str, Any]]) -> dict:
     """Pool scored groups (e.g. weeks) by sums and counts; returns a sealed aggregate.
 
-    Every group must verify its own ``sha256``, its row-key digest and the
-    consistency of n, sums and means; all groups must share one identity
-    (population kind, h, role, unit, scale, config, protocol, calendar and
-    contract digest) or ``AGGREGATE_MISMATCH`` is raised, so different configs,
-    protocols or calendars never pool silently. A row in two groups raises
-    ``DOUBLE_COUNT``. The aggregate is an end product: it is sealed but is not
+    Every group is re-verified by ``_verified_group`` (types, seal, row digest,
+    count identity, possible sums, derived state/coverage/means); all groups
+    must share one identity (population kind, h, role, unit, scale, config,
+    protocol, calendar and contract digest) or ``AGGREGATE_MISMATCH`` is raised,
+    so S never pools with U and different configs, protocols or calendars never
+    pool silently. A row in two groups raises ``DOUBLE_COUNT``. Upstream
+    exclusions are pooled apart from C2's exclusions (per role for
+    ``ALL_ROLES``). The aggregate is an end product: it is sealed but is not
     itself accepted as an input of another aggregation.
     """
-    if not groups:
+    if not isinstance(groups, Sequence) or isinstance(groups, (str, bytes)) or not groups:
         raise PairedMetricsError("EMPTY_AGGREGATE", "nothing to aggregate")
-    groups = [_verified_group(g, i) for i, g in enumerate(groups)]
+    checked = [_verified_group(g, i) for i, g in enumerate(groups)]
+    groups = [c["group"] for c in checked]
     shape = {tuple(g[f] for f in _IDENTITY_FIELDS) for g in groups}
     if len(shape) != 1:
         raise PairedMetricsError("AGGREGATE_MISMATCH", f"groups differ in identity {_IDENTITY_FIELDS}: {sorted(shape)}")
     identity = dict(zip(_IDENTITY_FIELDS, shape.pop()))
+    all_roles = identity["role"] == ALL_ROLES
     seen = set()
     for g in groups:
         for row in g["row_keys"]:
@@ -777,33 +931,27 @@ def aggregate_groups(groups: Sequence[Mapping[str, Any]]) -> dict:
             seen.add(marker)
     n = sum(g["n"] for g in groups)
     sums = {f: _fsum([g[f] for g in groups]) for f in _SUM_FIELDS}
-    failures, exclusions = Counter(), Counter()
+    failures, exclusions, upstream = Counter(), Counter(), Counter()
     upstream_by_role: dict = {}
-    for g in groups:
-        failures.update(g["failures"])
-        exclusions.update(g["exclusions"])
-        for r, counts in (g.get("upstream_exclusions_by_role") or {}).items():
-            upstream_by_role.setdefault(r, Counter()).update(counts)
+    for c in checked:
+        failures.update(c["failures"])
+        exclusions.update(c["exclusions"])
+        if all_roles:
+            for r, counts in c["upstream"].items():
+                upstream_by_role.setdefault(r, Counter()).update(counts)
+        else:
+            upstream.update(c["upstream"])
     n_declared = sum(g["n_declared"] for g in groups)
     n_excluded = sum(g["n_excluded"] for g in groups)
-    denominator = n_declared - n_excluded
-    if any(g["state"] == "INCOMPLETE" for g in groups) or failures:
-        state = "INCOMPLETE"
-    elif n:
-        state = "COMPLETE"
-    else:
-        state = groups[0]["state"] if n_declared == 0 else "NO_OBSERVABLE_LABELS"
+    derived = _derived(identity["population_kind"], n_declared, n, n_excluded, sum(failures.values()), "aggregate")
     row_keys = [list(r) for r in sorted(seen)]
     aggregate = {
         **identity, "population_id": "AGGREGATE",
         "population_sha256": canonical_sha256(sorted(g["population_sha256"] for g in groups)),
-        "state": state,
         "n_declared": n_declared, "n_excluded": n_excluded, "n": n,
-        "coverage_numerator": n, "coverage_denominator": denominator,
-        "coverage": (n / denominator) if denominator else None,
+        **derived,
         "failures": dict(sorted(failures.items())), "exclusions": dict(sorted(exclusions.items())),
-        "exclusions_scope": (EXCLUSIONS_C2_ONLY if identity["role"] == ALL_ROLES else EXCLUSIONS_UPSTREAM_AND_C2),
-        "score_unavailable_reason": None if n else (EMPTY_POPULATION if n_declared == 0 else NO_SCORED_ROWS),
+        "exclusions_scope": EXCLUSIONS_C2_ONLY if all_roles else EXCLUSIONS_C2_ONLY_UPSTREAM_SEPARATE,
         **sums, **_metrics(n, sums),
         "row_keys": row_keys, "row_keys_sha256": canonical_sha256(row_keys),
         "constituent_group_sha256": sorted(g["sha256"] for g in groups),
@@ -811,9 +959,11 @@ def aggregate_groups(groups: Sequence[Mapping[str, Any]]) -> dict:
         "constituent_model_rows_sha256": canonical_sha256(sorted(g["model_rows_sha256"] for g in groups)),
         "constituents": len(groups),
     }
-    if identity["role"] == ALL_ROLES:
+    if all_roles:
         aggregate["upstream_exclusions_by_role"] = {r: dict(sorted(c.items()))
                                                     for r, c in sorted(upstream_by_role.items())}
+    else:
+        aggregate["upstream_exclusions"] = dict(sorted(upstream.items()))
     return _sealed(aggregate)
 
 
@@ -869,7 +1019,8 @@ def compare_configs(result_a: Mapping[str, Any], result_b: Mapping[str, Any]) ->
 
 
 __all__ = [
-    "ALL_ROLES", "CLAIMS", "COMPONENT", "DESIGN_BASIS", "INPUT_SCHEMA_VERSION", "OPPORTUNITY", "RESULT_SCHEMA_VERSION",
+    "ALL_ROLES", "CLAIMS", "COMPONENT", "DESIGN_BASIS", "EMPTY_STATE", "EXCLUSIONS_C2_ONLY",
+    "EXCLUSIONS_C2_ONLY_UPSTREAM_SEPARATE", "INPUT_SCHEMA_VERSION", "OPPORTUNITY", "RESULT_SCHEMA_VERSION",
     "USAGE", "PairedMetricsError", "aggregate_groups", "canonical_json", "canonical_sha256",
     "compare_configs", "forecast_digest", "input_digests", "iso_utc", "olap_records", "parse_utc",
     "score", "seal_population", "validate", "verify_result",
