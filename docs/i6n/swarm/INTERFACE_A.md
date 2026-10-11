@@ -1,4 +1,4 @@
-# Lane A interface (A.1, published early)
+# Lane A interface (A.2, implemented at 298619e4)
 
 Machine-readable contract: `INTERFACE_A.json`. Summary for B, C, D and E:
 
@@ -25,3 +25,21 @@ Machine-readable contract: `INTERFACE_A.json`. Summary for B, C, D and E:
   diagnostics with their own naive.
 - Fold aggregation (mean over four 2023 folds) belongs to the caller (B/E);
   the receipt is per fold.
+
+## A.2 changes (implemented)
+
+- **Role value change:** `rows.role` is C1's canonical `MANAGEMENT`/`ENTRY`;
+  the C2 name moves to the additive `rows.c2_role`. A.1 rows were never
+  produced, so no alias for old receipts exists or is needed.
+- **Outer week:** `freeze --score-outer` (WEEKLY_REFIT units only) seals the
+  outer week's endpoint S, count and naive before any fit. The receipt gains
+  `split=VALIDATION` rows per head and `metadata.outer_metrics`; fitness,
+  `error_sums` and early stopping stay TRAIN/inner. INNER_FOLD units must not
+  pass `--score-outer`.
+- **Additive:** `rows.support_sha256` (lane C origins digest).
+- **Confirmed with E.1:** `effective_config_sha256` and
+  `genotype_canonical_sha256` definitions are identical to lane E's.
+- **Confirmed with C.1:** C's per-(unit, h) `historical_cell.v1` configs go
+  straight to `freeze --config`; they must carry plan stopping (50/5/1e-6,
+  seed 6102026) and an endpoint base model. See
+  `cell_config_requirements_for_C` in the JSON.
