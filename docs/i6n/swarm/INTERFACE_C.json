@@ -1,0 +1,66 @@
+{
+  "schema": "i6n.swarm_weekly.interface.v1",
+  "lane": "C",
+  "interface_version": "C.1",
+  "status": "PUBLISHED_EARLY",
+  "branch": "satoshi/i6n-swarm-C-weekly-20261011",
+  "aligned_with": {"A": "INTERFACE_A A.1 @b9eb6929 (freeze --experiment/--fold; candidate_receipt v1 rows)", "B": "INTERFACE_B B.1 @6a77d424 ASSUMED C shapes; differences listed below"},
+  "builder": {
+    "module": "tools.i6n_weekly_campaign",
+    "plan": ["<python>", "-m", "tools.i6n_weekly_campaign", "plan", "--config", "<private config.json>", "--output", "<new dir>"],
+    "verify": ["<python>", "-m", "tools.i6n_weekly_campaign", "verify", "--output", "<dir>"],
+    "reads": "calendar JSON, CLOCK.json, CLOCK_SCOPE.json, cell template (all digest-pinned) and ONLY the ts member of the retained INPUT.npz; never prices/features; refuses any ts >= 2025-01-01",
+    "writes": "PLAN.json (sealed plan_sha256, per-unit unit_sha256), VIEWS.private.json, VIEWS.redacted.json, SUPPORT.csv, cells/<unit_id>_h<h>.json (historical_cell.v1 per READY unit x h), ARTIFACTS.json; output dir must not exist",
+    "config_schema": "i6n.weekly_campaign.config.v1 {schema, experiment, calendar_path, calendar_sha256, data:{input_path,input_sha256,clock_path,clock_sha256,clock_scope_path,clock_scope_sha256}, development_split, horizons_hours?, roles?, fit_role?, history_years?=4, inner_days?=28, max_context_hours?=432, fold_year?=2023, arms_per_week?=2, cell_template_path?, cell_template_sha256?, inherited_limits?}"
+  },
+  "unit": {
+    "schema": "i6n.weekly_unit.v1",
+    "kinds": {
+      "WEEKLY_REFIT": "one per calendar week whose [A,B) meets DEVELOPMENT 2024; fold_id = unit_id = 'W<week_id>' (e.g. W2024-01-07); scored_outer=true",
+      "INNER_FOLD": "one per 2023 quarter; fold_id = unit_id = '2023Q1'..'2023Q4'; cutoff = close of the last calendar week entirely inside the quarter; scored_outer=false; structural_evaluation_split names the next week only because historical_cell needs it to locate the cutoff (never scored)"
+    },
+    "fields": {
+      "fit_cutoff": "close C of the preceding calendar week (UTC ISO)",
+      "refit_window": "{start: fit_cutoff, end: release_at}; the fit belongs to the market closure",
+      "release_at": "market open O of the unit's week; the model may not be used before it",
+      "history_start": "fit_cutoff minus history_years calendar years (Feb 29 -> Feb 28 only when the target year is not leap)",
+      "inner_start": "fit_cutoff minus inner_days (elapsed days)",
+      "context_start": "history_start minus max_context_hours (432 = 6*72)",
+      "splits": "{TRAIN, INNER, VALIDATION|null}: {split_id, origin_start, origin_end, target_start, target_end, label_available_by, membership: ORIGIN_AND_TARGET_INTERVAL}; TRAIN=[history_start, inner_start), INNER=[inner_start, fit_cutoff), VALIDATION=origin in the week, target in DEVELOPMENT",
+      "data": "{state: READY|WAIT_DEPENDENCY, missing:[{object: SUCCESSOR_INPUT_ROWS|CLOCK_SCOPE_CERTIFICATE, start, end, detail}], needed_start, needed_end}",
+      "support": "support[role][head_offset][split] = {label_state: EVALUATED|WAIT_DEPENDENCY, n, n_operational, origins_enumerated, status: SUPPORTED|NO_ELIGIBLE_ROWS|WAIT_DEPENDENCY, exclusions{primary reason: count}, origins_sha256 (canonical sha256 of the sorted epoch-second origin list), first/last_eligible_origin, last_eligible_target}; head offsets = endpoint h plus every j*h/k, k in {2,3,4}",
+      "horizons": "horizons[h] = {state: READY|NO_ELIGIBLE_ROWS|WAIT_DEPENDENCY, cause, head_offsets}",
+      "unit_sha256": "canonical sha256 of the unit without this field"
+    },
+    "invariants": [
+      "origins_enumerated == n + sum(exclusions) for every evaluated split",
+      "counts equal tools.i6n_weekly_data.build_weekly_partitions per head (test)",
+      "targets >= 2025-01-01 are typed TARGET_IN_TEST_CLOSED and never looked up",
+      "a WAIT_DEPENDENCY unit keeps its full history bounds; it is never shortened, skipped or replaced by a 2024 week"
+    ]
+  },
+  "views_for_B": {
+    "folds": "folds[str(h)] = [{fold_id, unit_id, cutoff_utc, state, cause, unit_sha256, cell_config:{path,sha256}|null, binding:null}]",
+    "weeks": "weeks = [{week_id, unit_id, cutoff_utc, release_at_utc, horizons:[h READY], eligible, cause:{h: cause}, unit_sha256, cell_configs:{h:{path,sha256}}, binding:null}]",
+    "differences_from_B_assumption": [
+      "binding is null: C emits a historical_cell.v1 config per READY (unit, h); B obtains BINDING.json by running A's freeze --config <cell_config> --experiment <experiment> --fold <fold_id> (C does not run A's code)",
+      "weeks carry cell_configs per horizon (one refit per week AND horizon), not one binding per week",
+      "per-(unit,h) state READY|NO_ELIGIBLE_ROWS|WAIT_DEPENDENCY: B maps READY->QUEUED, NO_ELIGIBLE_ROWS->terminal typed disposition without fit, WAIT_DEPENDENCY->WAIT_DEPENDENCY with cause",
+      "multi_output_arms are NOT produced by C; families are SHORT=[2,3,4,5,6,12], LONG=[18,24,36,48,60,72] over the same weekly units",
+      "role vocabulary: plan uses C1 'MANAGEMENT'/'ENTRY'; A receipt rows use 'management_origin'/'entry_origin'"
+    ]
+  },
+  "annual_rollup": {
+    "module": "tools.i6n_weekly_rollup",
+    "accumulator": "AnnualAccumulator(experiment, candidate_identity_sha256, horizon_hours, role, expected={unit_id: {n, origins_sha256}} from PLAN units support[fit_role][h]['VALIDATION'], split='VALIDATION', population='S')",
+    "row_requirements": "A candidate_receipt.v1 row (row_identity_keys) with fold=unit_id, split=VALIDATION, n equal to the frozen support, plus support_sha256 = the unit's origins_sha256; zero-support weeks only as status NO_SPLIT_SUPPORT",
+    "metric": "MAE = sum(sum_abs_error)/sum(n); naive pooled over identical rows; weekly mean only as weekly_mean_mae_diagnostic; INCOMPLETE (no score) while any supported week is missing",
+    "compare": "compare_annual(a, b) requires identical per-week n and naive sums (NAIVE_MISMATCH otherwise)",
+    "scope_guard": "assert_comparable refuses INNER_FOLD vs ANNUAL_WEEKLY_REFIT and cross-horizon comparisons",
+    "state": "to_json()/from_json() sealed state for restart; duplicates idempotent, conflicting duplicates refused"
+  },
+  "dependencies_declared": [
+    "Weekly VALIDATION (outer-week) scoring: A.1 freeze/evaluate seals and scores TRAIN/INNER only; outer-week rows (split=VALIDATION) need historical_cell run or an A extension",
+    "2023Q1-Q3 inner folds: WAIT_DEPENDENCY until a clock scope certificate covers their context (see C_RETURN.md); B's rule 'no fitness with any non-COMPLETE fold' then blocks ranking"
+  ]
+}
