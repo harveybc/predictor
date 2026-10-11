@@ -2,6 +2,84 @@
 
 Observado: 2026-10-11. Este archivo sustituye estados operativos anteriores.
 
+Orden vigente posterior: I6N_SWARM_WEEKLY_OFFCHAIN_EXECUTION.md. Satoshi recibe
+cinco carriles de implementacion paralelos (trayectorias, swarm, semanas/datos,
+archivo/OLAP, busqueda/verificacion); despues los scripts continuan etapas sin
+agentes monitoreando. El paquete esta preparado, no hay acuse de despacho aun.
+No afirmar que el swarm o el archivo externo estan activos por tener la orden.
+La opcion de usar 5070 Ti simultanea requiere admision agregada medida y
+reserva para 5090; no se fuerza concurrencia ni se espera un OOM para decidir.
+
+Actualizacion posterior al corte, 21:54 UTC: las busquedas endpoint h12/h72
+terminaron antes del corte, 24/24 candidatos cada una, cero fallos. No hay
+entrenamientos activos ni ajustes interrumpidos pendientes en estas colas.
+Lectura nueva del OLAP: 51 terminales, 396 informes y 3,015 filas de metricas
+verificados contra los archivos retenidos. El candidato elegido por fitness
+TRAIN/inner tiene error relativo inner +0.4506788% en h12 y -6.8473431% en h72;
+son 310 y 70 observaciones internas, no evaluacion anual independiente.
+El preferido y el coordinador reiniciaron; el secundario no (casi 13 dias).
+Se recomienda reiniciar el secundario por errores NVIDIA NV_ERR_NO_MEMORY
+recientes y memoria kernel no recuperable elevada, pese a pasar una operacion
+GPU pequena. No se recomienda otro reinicio en los otros dos hosts.
+Ver `docs/i6n/POST_POWER_RETURN_20261011.md` en la rama de integracion.
+Pendientes: trayectorias, swarm DOIN y relevo durable, evaluacion semanal
+completa. La actualizacion de las 18:01 UTC abajo queda como historial.
+
+Actualizacion operativa 18:01 UTC: I6-N ejecuta busqueda conjunta endpoint h12
+en la GPU preferida y h72 en el obrero secundario, codigo `6f36f16e`.
+H12 tiene dos candidatos terminados sin fallos; h72 registra actualizaciones
+del primer ajuste. Maximo 24 candidatos distintos por busqueda, una semilla;
+el observador y la entrega OLAP funcionan por timer sin agentes. Primera
+entrega nueva verificada a las 18:00:53 UTC, sin errores. Los tres pilotos
+historicos h2/h3/h72 ya terminaron, con 12 informes OLAP y lectura de vuelta.
+Ninguno supera su naive en esa unica semana; no es resultado anual.
+La ETA h12 tras dos candidatos era 44 minutos, provisional; h72 aun sin ETA
+medida. Ver `docs/i6n/SEARCH_EXECUTION_RETURN_20261011.md` en integracion.
+El puente historico ya existe. Siguen pendientes supervision de trayectoria,
+swarm DOIN completo y evaluacion semanal completa. La pausa mencionada abajo
+corresponde a I6-E-M; no a estas dos busquedas sucesoras activas.
+
+Precision posterior del negocio: rige BUSINESS_MARKET_WEEK_CONTRACT_2026_10_11.md.
+Reajuste durante cierre; plano cierre-12 h, entradas desde apertura+12 h;
+targets TRAIN/score dentro de la misma semana operativa. Largos propuestos
+18,24,36,48,60,72 h. Campana pausada; no hay afirmacion de implementacion o
+revalidacion de los resultados anteriores bajo estas nuevas mascaras.
+Aceptacion del propietario: elegibilidad dinamica t+h<B por horizonte,
+mascara por salida en TRAIN y parejas MAE/naive con filas identicas, tanto
+para oportunidades como para consumo real de la estrategia.
+
+Actualizacion 2026-10-11: el propietario autoriza implementacion y ejecucion
+autonomas; no se espera otra aprobacion para los pasos de ingenieria. C1/C2
+aceptados como componentes y ahora integrados en `codex/i6n-integration-20261011`,
+codigo base `3a9c575e`, sucesor historico `ecc94a49`. Ver `docs/i6n/INTEGRATION_EXECUTION.md` y
+`docs/i6n/WEEKLY_INTEGRATION.md` en esa rama.
+Verificacion automatizada: 721 pruebas CPU, 10 etapas, 71.33 segundos.
+Incluye puente C1/C2, reduccion anclada en t, entrenador enmascarado,
+particiones semanales con cobertura estricta, fabrica configurable y busqueda
+DEAP local conjunta. El ensayo completo calendario->fit->C2 es SINTETICO.
+El primer entrenamiento historico I6-N termino y fue publicado en OLAP;
+DOIN distribuido no esta operativo todavia.
+La auditoria del plan no se convierte en aprobacion de un runner inexistente.
+El adaptador historico semanal y el plugin compartido DEAP ya estan escritos;
+el segundo aun necesita el puente de evaluacion historica y despliegue del swarm.
+Se recuperaron los archivos anuales 2019-2024: 36,553 cierres horarios coinciden
+exactamente con los precios retenidos. La hipotesis EST fijo fue refutada por
+cotizaciones UTC independientes; el candidato de reloj europeo desplaza 2,448
+filas una hora hacia adelante y ninguna hacia atras. No sustituir un cierre de
+auditoria INCONCLUSIVE por VERIFIED: el informe independiente es la autoridad.
+El calendario NY nominal queda identificado como supuesto, no como calendario
+verificado de broker. Las limitaciones de vintages y de seleccion retrospectiva
+2024 se conservan. Piloto historico h2, semana 2024-01-07: 18,346 TRAIN,
+350 inner, 94 pares de evaluacion; MAE 0.0008196087246374458 frente al naive
+de 2 horas 0.000818191489361712, skill +0.1732156% (peor). Un ajuste,
+23 epocas, 295.599 s en GPU preferida. Cuatro informes OLAP con lectura de
+vuelta. No es una evaluacion anual ni habilita trading. Ver
+`docs/i6n/HISTORICAL_PILOT_RETURN.md` en la rama de integracion.
+TEST cerrado. La cola antigua permanece pausada; no sustituye al sucesor.
+Se retiraron solo los ocho dispatchers FS4 terminados del obrero secundario y
+su activador. La presion de RAM de ese host se debe principalmente a slab
+no atribuida; no se promete recuperarla al retirar procesos pequenos.
+
 ## Cierre de fase 1
 
 `PHASE_1_COMPLETE` está verificado para EURUSD 366/366 y ETH 83/83, con
@@ -60,7 +138,7 @@ disposiciones: 121 exitosas y 35 fallos numericos. El recibo de publicacion
 registra 312 informes / 2,910 metricas con readback. No atribuir promedio
 cientifico a un brazo ARIMAX incompleto. TEST sigue cerrado.
 
-El frente EN EJECUCION es I6-E-M. Plan y grilla:
+El frente I6-E-M esta PAUSADO por solicitud de replanteamiento. Plan y grilla:
 `I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md` y `I6E_MULTI_HORIZON_PLAN.json`.
 Horizontes 2,3,4,5,6,24,48,72,96,120 h; 28 brazos downsampled primero (k=1..4
 cuando h/k sea entero) y 10 horarios despues, contexto 2h, de menor a mayor
@@ -107,5 +185,14 @@ Para nuevas clases, medicion inicial conservadora 6 GiB en preferido y 4 GiB
 en secundario; el lanzador exige margen vivo y vigila memoria durante el hijo.
 La ETA de clases nuevas no se extrapola del score-only de fits adoptados:
 consultar `tools.horizon_campaign_monitor --root <campana> --live`.
-Siguiente compuerta: cierre autonomo D->H y readback de ambas etapas. Ningun
-agente ni nueva visita del usuario es requisito. No promover semanas parciales.
+Actualizacion 2026-10-11 05:25 America/Bogota: despachador detenido y
+deshabilitado; asignaciones ya hechas terminadas y recogidas sin nuevos claims.
+NEURAL: 138 COMPLETED. ARIMA: 82 COMPLETED, 46 FAILED. Cero RUNNING,
+3,762 QUEUED; 266/266 disposiciones publicadas con readback. Follower y
+observador siguen disponibles. Las afirmaciones de ejecucion y transicion
+automatica anteriores describen la campana antes de esta pausa explicita.
+Siguiente accion autorizada: completar el sucesor I6-N mediante la secuencia
+de `docs/i6n/INTEGRATION_EXECUTION.md`; no se necesita otra aprobacion del
+propietario para implementacion, pilotos admitidos o etapas ya especificadas.
+No reanudar I6-E-M como sustituto, promover semanas parciales a resultado anual
+ni modificar ejecutores/checkpoints sellados.

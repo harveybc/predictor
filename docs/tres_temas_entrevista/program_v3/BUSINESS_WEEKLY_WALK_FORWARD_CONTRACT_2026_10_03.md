@@ -3,6 +3,12 @@
 Estado metodológico: `S3_ACCEPTANCE_TEST_DESIGN`. Este documento define el
 comportamiento exigido; no afirma que todos los runners ya lo implementen.
 
+Enmienda de negocio 2026-10-11: el
+[contrato de semana de mercado](BUSINESS_MARKET_WEEK_CONTRACT_2026_10_11.md)
+es obligatorio para este modo. Define reajuste durante cierre, offsets 12 h,
+liquidacion forzosa, corte de entradas, supervision por horizonte y contexto
+historico disponible. Sus pruebas WMC01-WMC10 complementan BW01-BW18.
+
 ## 1. Regla de negocio
 
 El artefacto final no es un modelo estático sino un **procedimiento de
@@ -80,8 +86,9 @@ se congelan antes del test, y cada conjunto semanal se deriva únicamente del
 rolling TRAIN correspondiente. No se comparan un manifiesto fijo y uno
 adaptativo como si fueran el mismo tratamiento.
 
-En RL, equity, posiciones, órdenes pendientes, costes y financiación continúan
-entre semanas; cambia la política disponible, no se reinicia el negocio. En
+En RL, equity, caja, costes y financiación acumulada continúan entre semanas;
+posiciones y órdenes pendientes deben quedar a cero antes del plazo de cierre
+forzoso. Cambia la política disponible, no se reinicia el capital. En
 forecasting y estrategia heurística, cada predicción registra el modelo semanal
 que la produjo. Solo pronósticos que superen estrictamente su naive pareado en
 el protocolo de validation elegible pueden entrar a la estrategia.

@@ -8,7 +8,61 @@
   ],
   "program_owner": "Harvey",
   "execution_owner": "Musashi",
-  "handoff_status": "I6E_STATISTICAL_DISPOSITIONS_CLOSED_MULTI_HORIZON_PLAN_AND_PURE_TESTS_READY",
+  "handoff_status": "I6N_ENDPOINT_SEARCH_COMPLETE_SWARM_WEEKLY_HANDOFF_READY",
+  "i6n_successor": {
+    "owner_authorized_autonomous_execution": true,
+    "component_branch": "codex/i6n-integration-20261011",
+    "component_commit": "259e94df",
+    "active_execution_plan": "I6N_SWARM_WEEKLY_OFFCHAIN_EXECUTION.md",
+    "satoshi_handoff": "docs/handoffs/SATOSHI_I6N_SWARM_WEEKLY_2026_10_11.md",
+    "satoshi_dispatch_state": "READY_NOT_ACKNOWLEDGED",
+    "completed_endpoint_search": {
+      "code_commit": "6f36f16e",
+      "horizons_hours": [12, 72],
+      "completed_candidates": 48,
+      "failed_candidates": 0,
+      "annual_result": false,
+      "reports_readback_verified_including_pilots": 396,
+      "metric_rows_readback_verified_including_pilots": 3015
+    },
+    "offchain_mode_deployed_verified": false,
+    "verification_tests_passed": 721,
+    "verification_stages_completed": 10,
+    "weekly_components_verified": true,
+    "historical_weekly_adapter_integrated": true,
+    "historical_adapter_and_shared_plugin_regression_tests": 90,
+    "source_annual_prices_reconciled": 36553,
+    "source_clock_candidate_shifted_rows": 2448,
+    "source_clock_policy": "EU_DST_OFFSET_MINUS5_BASE_BAR_START",
+    "source_clock_acceptance": "READ_SEALED_EXTERNAL_AUDIT_NOT_THIS_STATE",
+    "clock_scope_sha256": "376f0001be4b129a5a2d247a521ae379569deb03ed451ee62249f9a58260becf",
+    "clock_scope": "2019-12-01_TO_2025-01-01_CONDITIONAL_RETROSPECTIVE",
+    "historical_pilot": {
+      "state": "COMPLETED_OLAP_READBACK_VERIFIED",
+      "code_commit": "ecc94a49",
+      "horizon_hours": 2,
+      "evaluation_week": "2024-01-07",
+      "train_rows": 18346,
+      "inner_rows": 350,
+      "evaluation_pairs": 94,
+      "mae": 0.0008196087246374458,
+      "naive_mae": 0.000818191489361712,
+      "skill": 0.0017321559734622643,
+      "elapsed_seconds": 295.5985400950012,
+      "admission_sampled_peak_bytes": 1310998528,
+      "reports_readback_verified": 4,
+      "annual_result": false,
+      "result_sha256": "00fc4e017b2ca40a6310d97bf304b188d2e28a078b0263d5af4447e305b22e28"
+    },
+    "broker_calendar_verified": false,
+    "shared_optimizer_plugin_registered": true,
+    "local_joint_search_verified_with_stubs": true,
+    "historical_campaign_running": false,
+    "doin_swarm_running": false,
+    "test_read": false,
+    "next_action": "Execute the authorized five-lane Satoshi handoff: trajectories, joint minimal-to-expanded search, durable DOIN swarm, complete weekly evaluation and deployed offchain custody. Retain all 48 completed endpoint candidates; no duplicate fits. No further routine approval. Never reactivate I6E-M as I6N.",
+    "missing_objects": ["independent trajectory supervision", "hierarchical distributed DOIN evaluator deployment", "complete weekly development evaluation", "strategy chronological SL/TP repair for U_h"]
+  },
   "i6e_compact": {
     "neural_cells_complete": 156,
     "neural_cells_expected": 156,
@@ -23,9 +77,10 @@
     "next_action": "Retain complete 72h controls and typed ARIMAX failures. Implement the new multihorizon downsampling-then-hourly plan without modifying sealed engines."
   },
   "i6e_multihorizon": {
-    "status": "RUNNING_DOWNSAMPLING_OLAP_READBACK_VERIFIED",
-    "execution_ready": true,
-    "current_stage": "production_observation",
+    "status": "PAUSED_FOR_USER_REQUESTED_REPLAN",
+    "execution_ready": false,
+    "current_stage": "successor_implementation_authorized_not_campaign_ready",
+    "pending_proposal": "I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md",
     "work_plan": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
     "generated_design": "I6E_MULTI_HORIZON_PLAN.json",
     "horizons_hours": [2, 3, 4, 5, 6, 24, 48, 72, 96, 120],
@@ -47,17 +102,18 @@
     "runtime_pin": "48c55ac075ecb503c1f2da58c5ec333c99da9afc",
     "live_root_suffix": "i6e/multihorizon_2024_v2",
     "live_design_sha256": "f57b9b92d4b2a2188ab49b9acaf10df655bde18f10c7b92e8bb26b63258859c1",
-    "next_action": "Scheduler automatically completes D then H. Observer and OLAP follower run without agents. Preserve typed ARIMA failures and original receipt-defect history; do not repeat adopted fits or open TEST."
+    "next_action": "User requested replan before further experiments. Dispatcher stopped and disabled; assigned fits drained, 266 terminals published/readback, no RUNNING. Resolve I6N DRAFT before resuming; preserve all terminals and TEST isolation."
   },
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [
-    "Implement I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md MH05-MH10; execute downsampling before hourly controls only after model/rows/resource verification. Never require another owner visit between stages.",
+    "Owner authorized autonomous I6N implementation/execution. Resolve audit defects and technical prerequisites, then dispatch the successor automatically; do not request repeated approval. Preserve sealed I6E runtime and data, and keep TEST closed.",
     "Use the complete I6-A 208/208-cell EURUSD Y_s_1h business adaptation as development evidence only: ARCH-B is the strongest arm relative to ARCH-A, but none beats the same-row naive on the mean.",
     "Retain RAW as the mainline selected input; the reconstructed-input TRAIN diagnostic was worse in all three paired weeks and does not authorize denoising the target.",
     "Complete the remaining general E0 H2/H3, literature-model and target/horizon controls before calling I6-A globally verified; then pretrain authenticated branches and compare R0/R1/R2 on matched weekly rows.",
     "Do not open TEST or promote a trading model until the selected architecture and same-row naive gates pass."
   ],
   "documents": {
+    "i6n_swarm_weekly_offchain": "I6N_SWARM_WEEKLY_OFFCHAIN_EXECUTION.md",
     "horizon_resolution": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
     "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
@@ -80,6 +136,19 @@
     "real_capital": false,
     "remote_code_or_new_license": "EXPLICIT_OWNER_DECISION",
     "credentials_or_physical_hardware": "OWNER_ACTION_WHEN_REQUIRED"
+  },
+  "market_week_contract": {
+    "document": "BUSINESS_MARKET_WEEK_CONTRACT_2026_10_11.md",
+    "status": "REQUIREMENTS_UPDATED_IMPLEMENTATION_NOT_VERIFIED",
+    "weekly_retrain_during_market_closure": true,
+    "force_flat_before_close_hours": 12,
+    "entry_delay_after_open_hours": 12,
+    "new_entry_cutoff_proposal": "THURSDAY_00_00_MARKET_CALENDAR_TIMEZONE",
+    "target_policy": "SAME_OPERATIONAL_WEEK",
+    "input_history_policy": "ALL_PAST_AVAILABLE_OBSERVATIONS",
+    "short_horizons_hours": [2, 3, 4, 5, 6, 12],
+    "proposed_long_horizons_hours": [18, 24, 36, 48, 60, 72],
+    "applies_to_existing_results_retroactively": false
   },
   "architecture_comparison": {
     "order": [

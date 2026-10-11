@@ -6,6 +6,12 @@ Este es el subplan vigente para la extension de I6-E. Sustituye la grilla
 historica de dieciocho brazos a 72 h como siguiente despacho, sin borrar sus
 registros ni modificar los ejecutores/checkpoints sellados.
 
+Nota operativa 2026-10-11: campana PAUSADA por solicitud de replanteamiento.
+Despachador detenido y deshabilitado; terminales y lectura OLAP conservados.
+El [sucesor I6-N](I6N_SWARM_WEEKLY_OFFCHAIN_EXECUTION.md) tiene implementacion
+y ejecucion autorizadas. Este diseno permanece como control historico;
+sus instrucciones de continuacion no autorizan reanudar durante la pausa.
+
 ## 1. Pregunta, alcance y nombres
 
 EURUSD, entradas horarias y prediccion emitida en cada origen horario elegible.

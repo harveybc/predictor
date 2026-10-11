@@ -10,6 +10,8 @@ gobiernan la ejecución.
 El orden de autoridad es:
 
 1. este plan maestro;
+   para I6-N rige el [subplan de ejecucion swarm/semanal/archivo externo](program_v3/I6N_SWARM_WEEKLY_OFFCHAIN_EXECUTION.md),
+   autorizado 2026-10-11, y el [calendario operativo](program_v3/BUSINESS_MARKET_WEEK_CONTRACT_2026_10_11.md);
 2. [contrato semanal del negocio](program_v3/BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md);
 3. [selección progresiva de características y representaciones](program_v3/FEATURE_SELECTION_REPRESENTATION_WORK_PLAN_2026_09_30.md);
 4. [fases 2 y 3 de selección](program_v3/FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md);
@@ -85,6 +87,21 @@ en la misma población.
    modelo con una ventana móvil de cuatro años terminada en el cutoff. Se congela
    el procedimiento antes del test, no un único juego de pesos para todo el año.
    `LITERATURE_STATIC` permanece como modo separado para reproducciones fieles.
+   El [contrato de semana de mercado](program_v3/BUSINESS_MARKET_WEEK_CONTRACT_2026_10_11.md)
+   exige reajustar durante el cierre, quedar plano 12 h antes del cierre y
+   abrir desde 12 h despues de reapertura (offsets configurables). Corte de
+   entradas propuesto: jueves 00:00 del calendario del instrumento. TRAIN y
+   scoring solo usan targets operativos de la misma semana; las entradas
+   conservan historia pasada disponible incluso durante horas sin operar.
+   La adecuacion de horizontes y sus mascaras precede a cualquier busqueda.
+   En cada origen t, un horizonte fijo h solo es operativo si t+h<B, con
+   B=cierre forzoso de esa misma semana. La elegibilidad conocida en t no
+   consulta labels futuras. TRAIN aplica la mascara por salida antes de
+   calcular la loss; perder un largo no elimina cortos validos del ejemplo.
+   Por horizonte, MAE y naive usan identicas filas y escala. Publicar por
+   separado oportunidades elegibles y predicciones realmente consultadas
+   por la estrategia, cada una con su naive, conteos y digest en OLAP.
+   Estas reglas estan aprobadas como requisitos, no certificadas en el runner.
 
 ## 4. Checklist de control de alto nivel
 
@@ -123,9 +140,24 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
   ningun brazo supera al naive. Precio original reconciliado y 2,184 metricas
   verificadas en OLAP. Controles CPU: 312 disposiciones cerradas, 35 fallos
   ARIMAX retenidos; 312 informes / 2,910 metricas con recibo de readback.
-  La grilla nueva esta EN EJECUCION: runtime `48c55ac0`, 38 pruebas y
-  observador automatizado; 5090/4090 con memoria medida, control ARIMA CPU,
-  cola de 2014 disposiciones por modelo, outbox con lectura exacta verificada.
+  La grilla esta PAUSADA por solicitud de replanteamiento del 2026-10-11:
+  runtime `48c55ac0`, terminales conservados y outbox con lectura exacta;
+  despachador detenido y deshabilitado, asignaciones recogidas sin repetir fits.
+  [I6-N: ejecucion autonoma swarm/semanal/archivo externo](program_v3/I6N_SWARM_WEEKLY_OFFCHAIN_EXECUTION.md):
+  busqueda conjunta de ventana, resoluciones de entrada/salida y capacidad,
+  desde nucleos pequenos; screening interno antes de evaluacion anual.
+  Implementacion y ejecucion autorizadas; no reanudar la grilla anterior.
+  Auditoria y addendum recibidos. C1/C2 y entrenador semanal integrados en
+  `3a9c575e`, con 721 pruebas CPU, 10 etapas; no equivale a campana aceptada.
+  Ensayo SINTETICO calendario->fit->C2 en 5090: 3 epocas, 12 actualizaciones,
+  8.97 s, checkpoint recargado; no es medicion financiera ni piloto de coste.
+  El adaptador historico ya completo 48 candidatos endpoint (24 h12 y 24 h72),
+  cero fallos; hay 396 informes/3015 metricas con lectura OLAP, incluyendo tres
+  pilotos. No es evaluacion anual. Prioridad inmediata: supervision real de
+  trayectorias, busqueda conjunta desde valores minimos, swarm DOIN con relevo
+  durable, semanas completas y custodia externa verificada. Ver
+  `docs/i6n/INTEGRATION_EXECUTION.md` en `codex/i6n-integration-20261011`.
+  No esperar otra autorizacion para ejecutar las etapas tecnicamente listas.
   No reutilizar ciegamente donantes ni confundir el barrido R2 de ventana fija
   24 con el contraste de ventanas. TEST cerrado. Skill vigente:
   `(MAE_h-naive_h)/naive_h`, negativo mejora; etiquetas y OLAP lo explicitan.
@@ -455,10 +487,12 @@ físico o capital real.
 Data-gov gobierna disponibilidad; data-lake conserva datasets y artefactos por
 contenido; warehouse recibe **todas** las métricas, disposiciones, rankings,
 costes e identidades de cada fase. Ningún cierre científico depende sólo de un
-JSON local. Cada fase exige lectura de vuelta del OLAP, snapshot físico DuckDB
-local y copia pública versionada. El repositorio conserva manifiesto, esquema,
-SHA-256 y URL; el binario comprimido se publica como asset de release para no
-inflar el historial Git. DOIN puede usar cadena liviana:
+JSON local. Cada fase exige lectura de vuelta del OLAP, snapshot fisico local
+y copia verificada en otro host. El repositorio conserva codigo, procedimiento,
+manifiesto, esquema y SHA-256; NO publicar los binarios grandes como release
+ni incorporarlos a Git. La anterior orden de subida queda sustituida por la
+decision del propietario de conservar los datos localmente. DOIN usa como
+objetivo de despliegue el modo de cadena liviana, no declarado activo aun:
 persiste el cuerpo completo fuera de cadena y encadena manifiesto, locator y
 hashes. Lectura y ETL verifican hash, esquema, autoridad y continuidad.
 
@@ -473,7 +507,7 @@ El estado observado y la cola se mantienen únicamente en
 están cerradas (2026-10-07: `PHASE_2_COMPLETE.json` y
 `PHASE_3_FILTER_COMPLETE.json` para EURUSD y ETH, cubo vivo reconciliado,
 snapshot `phase2-3-feature-selection-20261007`; sin ganador predictivo). El
-frente vigente es I6-E compacto y sus controles estadisticos, no reabrir la
+frente vigente es I6-N swarm/semanal/archivo externo, no reabrir la
 antigua cola de fase 4. El snapshot binario se conserva en dos maquinas, con
 manifiesto y SHA-256 en Git; la subida a GitHub fue cancelada. El calendario se usa
 ahora sólo como evidencia histórica del selector; su integración como entrada

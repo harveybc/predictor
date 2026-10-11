@@ -3,8 +3,8 @@
   "updated_on": "2026-10-11",
   "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md and its program_v3 subplans",
   "policy": {
-    "focus": "I6E_MULTI_HORIZON_DOWNSAMPLING_THEN_HOURLY_RUNNING",
-    "parallelism": "Two GPU slots and one 1-GiB ARIMA CPU slot. Per-model coarse stage precedes hourly stage. Only preferred GPU on preferred host; secondary <=9 samples. Durable scheduler and OLAP follower need no agent intervention.",
+    "focus": "I6N_SWARM_WEEKLY_OFFCHAIN_IMPLEMENTATION_AND_EXECUTION",
+    "parallelism": "Five independent implementation lanes, then durable DAG execution. Prefer 5090; 4090 after fresh healthy admission. Coordinator GPU only with desktop reserve. Concurrent shared-host GPUs require measured aggregate admission, never OOM-driven trial.",
     "seed_default": 6102026,
     "seed_maximum": 3,
     "repeat_policy": "adopt valid terminals; repeat only lost corrupt or scientifically changed units",
@@ -13,7 +13,7 @@
       "dragon_4090",
       "omega_4070"
     ],
-    "gpu_use_now": "Real weekly fits running on 5090 and 4090 under measured reservations. Never run 5070 Ti concurrently. TEST remains closed.",
+    "gpu_use_now": "48 endpoint candidates completed before power failure. Successor implementation and execution authorized; handoff ready, no Satoshi ACK yet. Do not call uninstalled swarm active. TEST remains closed.",
     "financial_gate": "MAE in original price must beat naive para el horizonte de X horas on identical rows before strategy evaluation",
     "test_policy": "2025 TEST reserved; no selection on TEST; 2024 validation only after sealing grid and per-horizon input populations",
     "warehouse_policy": "all metrics decisions ranks costs and identities require submit plus readback",
@@ -26,6 +26,17 @@
     "dated_handoffs_can_dispatch": false
   },
   "lanes": [
+    {
+      "priority": -2,
+      "id": "I6N-SWARM-WEEKLY-OFFCHAIN",
+      "resource": "five_engineering_lanes_then_measured_GPU_CPU_slots",
+      "state": "HANDOFF_READY_NOT_ACKNOWLEDGED",
+      "work_plan": "I6N_SWARM_WEEKLY_OFFCHAIN_EXECUTION.md",
+      "work": "Implement trajectories, joint minimal-to-expanded search, durable DOIN runtime, complete weekly evaluation and verified external archive/OLAP. Scripts continue stages; agents never poll training.",
+      "depends_on": [],
+      "produces": "deployable swarm campaign CLI, sealed twelve-horizon configs, automatic metrics and status/ETA, full weekly development results",
+      "evidence": "48 completed endpoint candidates, zero failures; 396 reports and 3015 metrics including pilots re-read from deployed OLAP. No annual or live trading claim."
+    },
     {
       "priority": -1,
       "id": "I6E-STATISTICAL72",
@@ -40,12 +51,13 @@
       "priority": 0,
       "id": "I6E-MULTIHORIZON",
       "resource": "CPU_design_and_tests_then_measured_5090_and_4090",
-      "state": "RUNNING_DOWNSAMPLING",
+      "state": "PAUSED_FOR_USER_REQUESTED_REPLAN",
       "work": "Complete 28 downsampled arms then 10 hourly arms automatically, per model. Horizons 2,3,4,5,6,24,48,72,96,120; context 2h; coarse steps 1/2/3/4 where divisible. No permissions or user visits between stages.",
       "depends_on": [],
       "produces": "per-horizon original-price metrics and naive, complete stage dispositions, unattended status/ETA and exact OLAP readback",
       "design": "I6E_MULTI_HORIZON_PLAN.json",
       "work_plan": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
+      "pending_proposal": "I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md",
       "evidence": "Runtime pin 48c55ac0, 38 contract/model tests and 2 observer tests. Live root i6e/multihorizon_2024_v2: sealed 2014 dispositions per NEURAL/ARIMA, real fits and exact OLAP readback. Receipt defects in predecessor retained; authenticated fits adopted without repeat. Live counters/ETA in STATUS.json and MONITOR_STATUS.json."
     },
     {
