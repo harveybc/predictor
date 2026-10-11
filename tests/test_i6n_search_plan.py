@@ -24,10 +24,11 @@ def plan():
     return sp.build_plan()
 
 
-def support(n_train=100, n_inner=20, naive_train=10.0, naive_inner=4.0, tag="a"):
+def support(n_train=100, n_inner=20, naive_train=10.0, naive_inner=4.0, i=0):
+    # distinct digests per fold: folds are distinct periods, not replicas
     return {"counts": {"train": n_train, "inner": n_inner},
             "naive_sums": {"train": naive_train, "inner": naive_inner},
-            "support_digest": {"train": tag * 64, "inner": ("b" if tag == "a" else "c") * 64}}
+            "support_digest": {"train": format(i + 1, "x") * 64, "inner": format(i + 6, "x") * 64}}
 
 
 def receipt(sup, err_train, err_inner):
@@ -107,6 +108,7 @@ def test_folds_are_distinct_quarter_periods_not_replicas(plan):
     assert f["distinct_periods"] is True and f["replicas_of_one_fit"] is False
     assert f["inner_days"] == 28 and f["train_calendar_years"] == 4 and f["purged"] is True
     assert f["all_folds_required_before_ranking"] is True
+    assert "NO_FOLD_SUPPORT" in f["unit_states"] and "WAIT_DEPENDENCY" in f["unit_states"]
 
 
 def test_promotion_rules(plan):
@@ -151,7 +153,7 @@ def test_initial_population_refuses_without_admitted_class(plan):
 # --- fold fitness ---------------------------------------------------------------------
 
 def test_fold_fitness_is_unweighted_mean_of_sum_ratios(plan):
-    sups = {f: support(n_train=100 * (i + 1), naive_train=10.0 * (i + 1), tag="a") for i, f in enumerate(FOLDS)}
+    sups = {f: support(n_train=100 * (i + 1), naive_train=10.0 * (i + 1), i=i) for i, f in enumerate(FOLDS)}
     recs = {f: receipt(sups[f], 9.0 * (i + 1), 3.0 + i) for i, f in enumerate(FOLDS)}
     fit = sp.score_folds(plan, recs, sups)
     expected = sum(0.5 * (9.0 / 10.0 + (3.0 + i) / 4.0) for i in range(4)) / 4
@@ -161,14 +163,14 @@ def test_fold_fitness_is_unweighted_mean_of_sum_ratios(plan):
 
 
 def test_fold_fitness_refuses_before_four_folds(plan):
-    sups = {f: support() for f in FOLDS}
+    sups = {f: support(i=i) for i, f in enumerate(FOLDS)}
     recs = {f: receipt(sups[f], 9.0, 3.0) for f in FOLDS[:3]}
     with pytest.raises(sp.Incomplete):
         sp.score_folds(plan, recs, sups)
 
 
 def test_fold_fitness_refuses_support_mismatch_and_failed(plan):
-    sups = {f: support() for f in FOLDS}
+    sups = {f: support(i=i) for i, f in enumerate(FOLDS)}
     recs = {f: receipt(sups[f], 9.0, 3.0) for f in FOLDS}
     bad = copy.deepcopy(recs)
     bad["2023Q3"]["counts"]["inner"] = 19
@@ -183,10 +185,10 @@ def test_fold_fitness_refuses_support_mismatch_and_failed(plan):
 
 
 def test_folds_with_identical_support_digests_are_rejected_as_replicas(plan):
-    sups = {f: support(tag="a") for f in FOLDS}
+    sups = {f: support(i=0) for f in FOLDS}
     recs = {f: receipt(sups[f], 9.0, 3.0) for f in FOLDS}
     with pytest.raises(ValueError, match="distinct"):
-        sp.score_folds(plan, recs, sups, require_distinct_support=True)
+        sp.score_folds(plan, recs, sups)
 
 
 # --- horizon search state machine -------------------------------------------------------
@@ -204,10 +206,10 @@ def run_horizon(plan, h, admitted, fitness=fake_fitness, fail=lambda g: False):
             break
         for cand in batch:
             if fail(cand["genotype"]):
-                state = sp.record_disposition(plan, state, cand["genotype_sha256"], "FAILED",
+                state = sp.record_disposition(plan, state, cand["genotype_canonical_sha256"], "FAILED",
                                               reason="stub failure after 3 attempts")
             else:
-                state = sp.record_fitness(plan, state, cand["genotype_sha256"], fitness(cand["genotype"]))
+                state = sp.record_fitness(plan, state, cand["genotype_canonical_sha256"], fitness(cand["genotype"]))
         state = sp.close_generation(plan, state)
         if state["stop_reason"]:
             break
@@ -218,7 +220,7 @@ def test_search_respects_budgets_and_class_caps(plan):
     state = run_horizon(plan, 72, {"S1", "S2", "S3"})
     recs = state["candidates"]
     assert len(recs) == 24
-    assert len({r["genotype_sha256"] for r in recs}) == 24
+    assert len({r["genotype_canonical_sha256"] for r in recs}) == 24
     by_class = {}
     for r in recs:
         by_class[r["size_class"]] = by_class.get(r["size_class"], 0) + 1
@@ -255,7 +257,7 @@ def test_records_keep_active_inactive_and_effective_config(plan):
 def test_search_is_reproducible(plan):
     a = run_horizon(plan, 36, {"S1", "S2"})
     b = run_horizon(plan, 36, {"S1", "S2"})
-    assert [r["genotype_sha256"] for r in a["candidates"]] == [r["genotype_sha256"] for r in b["candidates"]]
+    assert [r["genotype_canonical_sha256"] for r in a["candidates"]] == [r["genotype_canonical_sha256"] for r in b["candidates"]]
 
 
 def test_cache_hit_by_full_identity_is_not_a_new_fit(plan):
@@ -263,9 +265,9 @@ def test_cache_hit_by_full_identity_is_not_a_new_fit(plan):
     seed_id = space.genotype_sha256(space.seed_genotype(12))
     state = sp.register_cache(plan, state, {seed_id: 0.97})
     state, batch = sp.propose_generation(plan, state, {"S1"})
-    seed_rec = next(r for r in state["candidates"] if r["genotype_sha256"] == seed_id)
+    seed_rec = next(r for r in state["candidates"] if r["genotype_canonical_sha256"] == seed_id)
     assert seed_rec["disposition"] == "CACHED_VERIFIED" and seed_rec["fitness"] == 0.97
-    assert seed_id not in {c["genotype_sha256"] for c in batch}
+    assert seed_id not in {c["genotype_canonical_sha256"] for c in batch}
     assert state["new_fits_reserved"] == 4 * len(batch)
 
 
@@ -290,12 +292,12 @@ def test_finalists_best_plus_minimal_control(plan):
     state = run_horizon(plan, 12, {"S1"})
     fin = sp.select_finalists(plan, state)
     complete = [r for r in state["candidates"] if r["fitness"] is not None]
-    best = min(complete, key=lambda r: (r["fitness"], r["genotype_sha256"]))
-    assert fin[0]["role"] == "BEST" and fin[0]["genotype_sha256"] == best["genotype_sha256"]
+    best = min(complete, key=lambda r: (r["fitness"], r["genotype_canonical_sha256"]))
+    assert fin[0]["role"] == "BEST" and fin[0]["genotype_canonical_sha256"] == best["genotype_canonical_sha256"]
     seed_id = space.genotype_sha256(space.seed_genotype(12))
     assert fin[1]["role"] in {"MINIMAL_CONTROL", "SMALL_ALTERNATIVE"}
-    if best["genotype_sha256"] != seed_id:
-        assert fin[1]["genotype_sha256"] == seed_id
+    if best["genotype_canonical_sha256"] != seed_id:
+        assert fin[1]["genotype_canonical_sha256"] == seed_id
     assert fin[0]["claim"] == "SELECTED_BY_INNER_FOLD_SEARCH_NOT_PROVEN_OPTIMAL"
 
 
@@ -376,3 +378,22 @@ def test_legacy_state_mapping_cli(tmp_path):
     assert result["candidates"][0]["genotype_status"] == "MAPPED"
     assert result["candidates"][0]["fold_score_reuse"] == "NONE"
     assert result["summary"]["refits_scheduled"] == 0
+
+
+def test_committed_plan_and_legacy_artifact_match_builder(plan):
+    import hashlib
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[1]
+    committed = json.loads((root / "docs/i6n/swarm/I6N_SEARCH_PLAN_v1.json").read_text())
+    assert committed == plan
+    raw = (root / sp.LEGACY_MAPPING_PATH).read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == sp.LEGACY_MAPPING_SHA256 == plan["prior_mapping"]["sha256"]
+    legacy = json.loads(raw)
+    assert legacy["summary"]["n"] == 48 and legacy["summary"]["completed"] == 48
+    assert legacy["summary"]["v1_identity_recomputed_all"] is True
+    assert legacy["summary"]["refits_scheduled"] == 0
+    assert legacy["summary"]["mapped"] + legacy["summary"]["out_of_v2_domain"] == 48
+    for c in legacy["candidates"]:
+        assert c["fold_score_reuse"] == "NONE"
+        if c["genotype_status"] == "MAPPED":
+            assert c["genotype_canonical_sha256"] == c["v1_identity"]

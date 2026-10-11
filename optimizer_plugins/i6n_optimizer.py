@@ -16,9 +16,12 @@ import subprocess
 from deap import base, tools
 
 from tools import i6n_search as search
+from tools import i6n_search_plan as plan_v2
+from tools import i6n_search_space as space
 
 
 SCHEMA = "i6n-shared-deap-v1"
+SCHEMA_V2 = "i6n-shared-deap-v2"
 
 
 def _int(value, name, minimum=0):
@@ -145,6 +148,8 @@ class Plugin:
 
     def create_shared_population(self, population_size, opt_config, seed=6102026):
         cfg = self._config(opt_config)
+        if "i6n_plan" in cfg:
+            return _V2(self).create(population_size, cfg, seed)
         contract = self._contract(cfg)
         settings = self._settings(cfg, population_size)
         _int(seed, "seed")
@@ -189,6 +194,8 @@ class Plugin:
 
     def evaluate_single_genome(self, genome_serialized, generation, opt_config):
         cfg = self._config(opt_config)
+        if "i6n_plan" in cfg:
+            return _V2(self).evaluate(genome_serialized, generation, cfg)
         contract = self._contract(cfg)
         _int(generation, "generation")
         genome = self._decode(genome_serialized, _digest(contract), generation,
@@ -213,6 +220,10 @@ class Plugin:
                          current_stage_idx=0, no_improve_count=0):
         """Exact positional interface called by PredictorOptimizer.reproduce_shared."""
         cfg = self._config(opt_config)
+        if "i6n_plan" in cfg:
+            return _V2(self).reproduce(evaluated_pop, generation, seed, cfg, innovation_tracker_data,
+                                       stage_schedule, param_defaults, current_stage_idx,
+                                       no_improve_count)
         contract = self._contract(cfg)
         _int(generation, "generation")
         _int(seed, "seed")
@@ -278,3 +289,185 @@ class Plugin:
                              param_defaults=settings, stage_idx=0, stage_advanced=False,
                              no_improve_count=no_improve_count, patience=settings["patience"],
                              converged=reason is not None, stop_reason=reason))
+
+
+class _V2:
+    """Plan-v2 path: sealed plan, four folds per candidate, staged size classes.
+
+    Proposal/selection state lives in tools.i6n_search_plan (JSON, replayable);
+    this adapter only binds it to the DOIN shared-mode positional interface.
+    Admitted classes come from opt_config (pilot receipts owned by lane B) and
+    are deliberately excluded from the context digest: admission can change
+    during a run without changing what a fitness means.
+    """
+
+    def __init__(self, plugin):
+        self.plugin = plugin
+
+    def _contract(self, cfg):
+        plan = plan_v2.verify_plan(deepcopy(cfg["i6n_plan"]))
+        horizon = cfg.get("i6n_horizon")
+        if horizon not in plan["horizons_hours"]:
+            raise ValueError("i6n_horizon outside the plan")
+        folds = cfg.get("i6n_folds")
+        if not isinstance(folds, Mapping) or set(folds) != set(plan["folds"]["fold_ids"]):
+            raise ValueError("i6n_folds must bind exactly the plan folds")
+        bound = {}
+        for fold in plan["folds"]["fold_ids"]:
+            item = folds[fold]
+            context = item.get("i6n_evaluation_context") if isinstance(item, Mapping) else None
+            if not isinstance(context, Mapping) or not context:
+                raise ValueError(f"fold {fold} requires a nonempty i6n_evaluation_context")
+            bound[fold] = dict(support=search._support(item.get("i6n_support")),
+                               evaluation_context=deepcopy(dict(context)))
+        contract = dict(schema=SCHEMA_V2, plan_sha256=plan["plan_sha256"], horizon=horizon,
+                        folds=bound, objective="mean_over_folds_train_inner_endpoint_mae_ratio",
+                        higher_is_better=False)
+        _json(contract)
+        return plan, contract
+
+    @staticmethod
+    def _admitted(cfg):
+        admitted = cfg.get("i6n_admitted_classes", [])
+        if not isinstance(admitted, (list, tuple)) or set(admitted) - set(space.CLASS_IDS):
+            raise ValueError("i6n_admitted_classes must list size class ids")
+        return set(admitted)
+
+    @staticmethod
+    def _settings(plan):
+        s = plan["search"]
+        return dict(population_size=s["population_size"], n_generations=s["generations"],
+                    budget=plan["budgets"]["new_candidates_per_horizon_max"],
+                    patience=s["patience"], tolerance=s["tolerance"])
+
+    @staticmethod
+    def _schedule(plan, contract):
+        return [dict(name=f"i6n-v2-h{contract['horizon']}", start_gen=0,
+                     end_gen=plan["search"]["generations"], patience=plan["search"]["patience"])]
+
+    @staticmethod
+    def _wire(genotype, context, generation):
+        g = space.canonicalize(genotype)
+        return dict(schema=SCHEMA_V2, genotype=g, genome=space.to_evaluator_genome(g),
+                    identity=space.genotype_sha256(g), context=context, generation=generation)
+
+    @staticmethod
+    def _decode(item, context, generation, horizon):
+        required = {"schema", "genotype", "genome", "identity", "context", "generation"}
+        if (not isinstance(item, Mapping) or not required <= set(item)
+                or set(item) - required - {"fitness"} or item["schema"] != SCHEMA_V2):
+            raise ValueError("invalid I6N v2 shared genome schema")
+        if item["context"] != context:
+            raise ValueError("genome evaluation context mismatch")
+        if _int(item["generation"], "genome generation") != generation:
+            raise ValueError("genome generation mismatch")
+        g = space.canonicalize(item["genotype"])
+        if g != item["genotype"] or g["horizon_hours"] != horizon:
+            raise ValueError("genotype not canonical or wrong horizon")
+        if item["genome"] != space.to_evaluator_genome(g) or item["identity"] != space.genotype_sha256(g):
+            raise ValueError("genome identity mismatch")
+        return g
+
+    def _population(self, state, context):
+        current = [r for r in state["candidates"]
+                   if r["generation"] == state["generation"] and r["disposition"] == "PENDING"]
+        return [self._wire(r["genotype"], context, state["generation"]) for r in current]
+
+    def create(self, population_size, cfg, seed):
+        plan, contract = self._contract(cfg)
+        if _int(seed, "seed") != plan["seed"]:
+            raise ValueError("shared population seed must equal the plan seed")
+        if _int(population_size, "population_size", 1) != plan["search"]["population_size"]:
+            raise ValueError("population_size must equal the plan population size")
+        context = _digest(contract)
+        state = plan_v2.new_horizon_state(plan, contract["horizon"])
+        state, batch = plan_v2.propose_generation(plan, state, self._admitted(cfg))
+        if not batch:
+            raise RuntimeError(f"no initial candidates: {state['status']} {state['stop_reason']}")
+        settings = self._settings(plan)
+        tracker = dict(schema=SCHEMA_V2, context=context, state=state)
+        return deepcopy(dict(population=self._population(state, context), innovation_tracker=tracker,
+                             stage_schedule=self._schedule(plan, contract), param_defaults=settings,
+                             config_snapshot=dict(contract, plan_sha256=plan["plan_sha256"]),
+                             generation=0, stage_idx=0, no_improve_count=0))
+
+    def evaluate(self, genome_serialized, generation, cfg):
+        plan, contract = self._contract(cfg)
+        _int(generation, "generation")
+        g = self._decode(genome_serialized, _digest(contract), generation, contract["horizon"])
+        config = space.evaluator_config(g)
+        receipts, supports = {}, {}
+        try:
+            for fold in plan["folds"]["fold_ids"]:
+                bound = contract["folds"][fold]
+                fold_cfg = dict(cfg)
+                fold_cfg.update({k: v for k, v in cfg["i6n_folds"][fold].items()
+                                 if k in ("i6n_evaluator_command", "i6n_evaluator_timeout")})
+                request = dict(config=deepcopy(config), generation=generation,
+                               context=deepcopy(bound["evaluation_context"]),
+                               support=deepcopy(bound["support"]))
+                receipts[fold] = self.plugin._evaluate(fold_cfg, request)
+                supports[fold] = bound["support"]
+            scored = plan_v2.score_folds(plan, receipts, supports)
+        except Exception as exc:
+            raise search.ScoreRejected(f"I6N v2 evaluator rejected candidate: {exc}") from exc
+        metrics = json.loads(_json(dict(per_fold=scored["per_fold"], receipts=receipts,
+                                        aggregation=scored["aggregation"])))
+        result = dict(fitness=scored["fitness"], metrics=metrics, hyper_dict=config,
+                      genotype_canonical_sha256=space.genotype_sha256(g))
+        # Dashboard fields pool sums over folds; INNER is reported as val_*, never outer/TEST.
+        for split, prefix in (("train", "train"), ("inner", "val")):
+            n = sum(r["counts"][split] for r in receipts.values())
+            result[f"{prefix}_mae"] = math.fsum(r["error_sums"][split] for r in receipts.values()) / n
+            result[f"{prefix}_naive_mae"] = math.fsum(r["naive_sums"][split] for r in receipts.values()) / n
+        return result
+
+    def reproduce(self, evaluated_pop, generation, seed, cfg, tracker_data, stage_schedule,
+                  param_defaults, current_stage_idx, no_improve_count):
+        plan, contract = self._contract(cfg)
+        if _int(seed, "seed") != plan["seed"] or _int(current_stage_idx, "current_stage_idx") != 0:
+            raise ValueError("v2 requires the plan seed and a single stage")
+        _int(no_improve_count, "no_improve_count")
+        if dict(param_defaults) != self._settings(plan) or stage_schedule != self._schedule(plan, contract):
+            raise ValueError("shared settings/stage schedule changed")
+        tracker = deepcopy(tracker_data)
+        if (not isinstance(tracker, dict) or set(tracker) != {"schema", "context", "state"}
+                or tracker["schema"] != SCHEMA_V2 or tracker["context"] != _digest(contract)):
+            raise ValueError("invalid I6N v2 innovation_tracker state")
+        state = tracker["state"]
+        if state.get("plan_sha256") != plan["plan_sha256"] or state["generation"] != _int(generation, "generation"):
+            raise ValueError("shared generation/plan mismatch")
+        pending = [r["genotype_canonical_sha256"] for r in state["candidates"]
+                   if r["generation"] == generation and r["disposition"] == "PENDING"]
+        if not isinstance(evaluated_pop, list):
+            raise ValueError("expected evaluated population")
+        identities = []
+        for item in evaluated_pop:
+            g = self._decode(item, tracker["context"], generation, contract["horizon"])
+            ident = space.genotype_sha256(g)
+            identities.append(ident)
+            fitness = item.get("fitness")
+            if type(fitness) in (int, float) and math.isfinite(fitness) and fitness >= 0:
+                state = plan_v2.record_fitness(plan, state, ident, fitness)
+            else:
+                state = plan_v2.record_disposition(plan, state, ident, "FAILED",
+                                                   "no admissible four-fold fitness from the swarm")
+        if sorted(identities) != sorted(pending) or len(set(identities)) != len(identities):
+            raise ValueError("population does not match reserved identities")
+        if state["phase"] == "EVALUATE":
+            state = plan_v2.close_generation(plan, state)
+        # phase PROPOSE here means a previous WAIT_RESOURCE: re-propose, never close twice
+        population = []
+        if not state["stop_reason"]:
+            state, batch = plan_v2.propose_generation(plan, state, self._admitted(cfg))
+            population = self._population(state, tracker["context"]) if batch else []
+        tracker["state"] = state
+        converged = bool(state["stop_reason"])
+        out = dict(population=population, generation=state["generation"], innovation_tracker=tracker,
+                   stage_schedule=stage_schedule, param_defaults=self._settings(plan), stage_idx=0,
+                   stage_advanced=False, no_improve_count=plan_v2.no_improve_count(plan, state),
+                   patience=plan["search"]["patience"], converged=converged,
+                   stop_reason=state["stop_reason"], status=state["status"])
+        if converged:
+            out["finalists"] = plan_v2.select_finalists(plan, state)
+        return deepcopy(out)

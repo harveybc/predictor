@@ -104,3 +104,19 @@ def test_v1_path_unchanged_without_plan():
     from tests.test_i6n_optimizer import config as v1_config
     pop = Plugin().create_shared_population(8, v1_config(), seed=6102026)
     assert pop["population"][0]["schema"] == "i6n-shared-deap-v1"
+
+
+def test_wait_resource_then_resume_without_closing_twice():
+    p = Plugin()
+    cfg = opt(admitted=("S1",))
+    st = p.create_shared_population(8, cfg, seed=6102026)
+    evaluated = [dict(i, fitness=p.evaluate_single_genome(i, 0, cfg)["fitness"]) for i in st["population"]]
+    # all pilots revoked: nothing may be proposed, generation 0 is closed once
+    st2 = p.reproduce_shared(evaluated, 0, 6102026, opt(admitted=()), st["innovation_tracker"],
+                             st["stage_schedule"], st["param_defaults"], 0, 0)
+    assert st2["population"] == [] and st2["status"] == "WAIT_RESOURCE" and not st2["converged"]
+    assert st2["generation"] == 1
+    st3 = p.reproduce_shared([], 1, 6102026, cfg, st2["innovation_tracker"],
+                             st2["stage_schedule"], st2["param_defaults"], 0, 0)
+    assert len(st3["population"]) == 8 and st3["generation"] == 1
+    assert all(i["generation"] == 1 for i in st3["population"])
