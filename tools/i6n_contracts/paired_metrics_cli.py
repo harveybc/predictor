@@ -17,10 +17,21 @@ replaced atomically (temporary file + ``os.replace`` through the reused
   ``OUTPUT_IDENTITY_MISMATCH`` and nothing is overwritten.
 * ``--status`` reads ``STATUS.json`` once, prints it and exits. It never
   creates, starts or resumes work.
-* No network, database, lease, remote worker, pandas or TensorFlow.
+* Every failure is typed: a validation refusal keeps its own code, any other
+  exception while scoring is recorded as ``FAILED`` / ``UNEXPECTED_ERROR``
+  (exception type and message), and an interrupt (``KeyboardInterrupt``,
+  ``SystemExit``) is recorded as ``FAILED`` / ``INTERRUPTED`` and re-raised.
+  Only a process killed without running Python code (e.g. SIGKILL, power
+  loss) can leave ``RUNNING`` behind. There is no lease, so ``--status``
+  cannot tell a live run from such a crash: it reports ``RUNNING`` with a
+  nonzero exit and the ``last_progress_at`` time. Rerunning the same input
+  recomputes from scratch (scoring is finite and pure).
+* No network, database, lease, remote worker, pandas or TensorFlow. The
+  reused atomic writer module imports numpy, but neither sqlite3 nor pandas.
 
-Exit codes: 0 complete, 2 refused/failed (typed error), 3 status absent,
-4 terminal result whose scoring state is ``INCOMPLETE`` (never an approval).
+Exit codes: 0 complete, 2 refused/failed (typed error, also an unreadable or
+unknown status), 3 status absent, 4 terminal result whose scoring state is
+``INCOMPLETE`` (never an approval), 5 status ``RUNNING`` (live or crashed).
 """
 
 from __future__ import annotations
@@ -45,6 +56,7 @@ EXIT_COMPLETE = 0
 EXIT_REFUSED = 2
 EXIT_STATUS_ABSENT = 3
 EXIT_INCOMPLETE = 4
+EXIT_RUNNING = 5
 
 _CODE_FILES = (
     Path(pm.__file__),
@@ -72,6 +84,33 @@ def _reject_constant(token: str) -> Any:
 
 def _read_json(path: Path) -> Any:
     return json.loads(path.read_text(), parse_constant=_reject_constant)
+
+
+def _read_object(path: Path) -> Optional[dict]:
+    """Read an existing JSON object, ``None`` when absent; ValueError when not an object."""
+    if not path.exists():
+        return None
+    value = _read_json(path)
+    if not isinstance(value, dict):
+        raise ValueError(f"{path.name} is not a JSON object")
+    return value
+
+
+def identity_for(raw: bytes) -> dict:
+    """Identity bound to an output directory: config file, input, contract and code digests.
+
+    ``input_sha256``/``config_sha256`` stay ``None`` when the bytes are not a
+    JSON object; the config file digest still binds the directory.
+    """
+    identity = {"config_file_sha256": hashlib.sha256(raw).hexdigest(),
+                "input_sha256": None, "config_sha256": None, "code_sha256": code_sha256()}
+    try:
+        document = json.loads(raw, parse_constant=_reject_constant)
+        if isinstance(document, dict):
+            identity.update(pm.input_digests(document))
+    except (ValueError, RecursionError, pm.PairedMetricsError):
+        pass
+    return identity
 
 
 class _Status:
@@ -147,28 +186,32 @@ def _exit_for(result: dict) -> int:
 def run(config_path: Path, output_dir: Path) -> tuple:
     """Score one input into ``output_dir``; returns (exit_code, printed payload)."""
     started, started_clock = _now(), time.monotonic()
-    raw = Path(config_path).read_bytes()
-    identity = {"config_file_sha256": hashlib.sha256(raw).hexdigest(),
-                "input_sha256": None, "config_sha256": None, "code_sha256": code_sha256()}
+    try:
+        raw = Path(config_path).read_bytes()
+    except OSError as error:
+        # Nothing to bind an output directory to: refuse without creating anything.
+        return _refusal("CONFIG_UNREADABLE", f"{type(error).__name__}: {error.strerror or error}")
+    identity = identity_for(raw)
     parse_error = None
     try:
         document = json.loads(raw, parse_constant=_reject_constant)
         if not isinstance(document, dict):
             raise ValueError("the config must be a JSON object")
-        identity.update(pm.input_digests(document))
-    except (ValueError, pm.PairedMetricsError) as error:
-        document, parse_error = None, {"code": "CONFIG_INVALID", "detail": str(error)}
+    except (ValueError, RecursionError) as error:
+        document, parse_error = None, {"code": "CONFIG_INVALID", "detail": f"{type(error).__name__}: {error}"}
+    if document is not None and identity["input_sha256"] is None:
+        document, parse_error = None, {"code": "CONFIG_INVALID", "detail": "the input has no canonical digest"}
 
     status_path, result_path = output_dir / STATUS_NAME, output_dir / RESULT_NAME
     try:
-        previous = _read_json(status_path) if status_path.exists() else None
-        stored = _read_json(result_path) if result_path.exists() else None
-    except (OSError, ValueError) as error:
+        previous = _read_object(status_path)
+        stored = _read_object(result_path)
+    except (OSError, ValueError, RecursionError) as error:
         return _refusal("OUTPUT_CORRUPT", f"existing output cannot be read: {error}")
     if previous is not None and previous.get("identity") != identity:
         return _refusal("OUTPUT_IDENTITY_MISMATCH", "the output directory holds a different identity")
     if stored is not None:
-        if not isinstance(stored, dict) or stored.get("identity") != identity:
+        if stored.get("identity") != identity:
             return _refusal("OUTPUT_IDENTITY_MISMATCH", "RESULT.json belongs to a different identity")
         try:
             pm.verify_result(stored.get("result"))
@@ -193,6 +236,14 @@ def run(config_path: Path, output_dir: Path) -> tuple:
         result = pm.score(document, progress=status.progress)
     except pm.PairedMetricsError as error:
         typed = {"code": error.code, "detail": error.detail}
+    except Exception as error:  # noqa: BLE001 - every other failure becomes a typed FAILED status
+        typed = {"code": "UNEXPECTED_ERROR", "detail": f"{type(error).__name__}: {error}"[:500]}
+    except BaseException as error:
+        status.write("FAILED", error={"code": "INTERRUPTED", "detail": type(error).__name__})
+        raise
+    else:
+        typed = None
+    if typed is not None:
         status.write("FAILED", error=typed)
         return EXIT_REFUSED, {"state": "FAILED", "reused": False, "error": typed}
     wrapped = {"schema_version": RESULT_FILE_SCHEMA_VERSION, "identity": identity, "result": result}
@@ -211,14 +262,21 @@ def status(output_dir: Path) -> tuple:
                                     "error": {"code": "STATUS_ABSENT", "detail": "no STATUS.json"}}
     try:
         value = _read_json(path)
-    except (OSError, ValueError) as error:
+        if not isinstance(value, dict):
+            raise ValueError("STATUS.json is not a JSON object")
+        state = value.get("state")
+        result_state = (value.get("result") or {}).get("result_state") if state == "COMPLETED" else None
+        if state not in ("RUNNING", "FAILED", "COMPLETED") or (
+                state == "COMPLETED" and result_state not in ("COMPLETE", "INCOMPLETE")):
+            raise ValueError(f"unknown status state {state!r}/{result_state!r}")
+    except (OSError, ValueError, RecursionError, AttributeError) as error:
         return EXIT_REFUSED, {"schema_version": STATUS_SCHEMA_VERSION, "state": "UNREADABLE",
                               "error": {"code": "STATUS_UNREADABLE", "detail": str(error)}}
-    if value.get("state") == "FAILED":
+    if state == "RUNNING":
+        return EXIT_RUNNING, value
+    if state == "FAILED":
         return EXIT_REFUSED, value
-    if value.get("state") == "COMPLETED" and (value.get("result") or {}).get("result_state") == "INCOMPLETE":
-        return EXIT_INCOMPLETE, value
-    return EXIT_COMPLETE, value
+    return (EXIT_INCOMPLETE if result_state == "INCOMPLETE" else EXIT_COMPLETE), value
 
 
 def main(argv: Optional[list] = None) -> int:

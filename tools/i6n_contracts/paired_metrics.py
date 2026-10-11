@@ -24,22 +24,48 @@ Input document (``INPUT_SCHEMA_VERSION``), all timestamps zone-aware ISO-8601::
 
 Rules implemented (see the tests for the executable form):
 
-* Everything is validated before any error is computed: zone-aware instants,
-  ``target_timestamp == origin + h`` as UTC instants, non-empty identities,
-  finite numbers (booleans are not numbers), declared unit/scale/role/horizon,
-  duplicates and conflicting values for one forecast.
+* Everything is validated before any error is computed: zone-aware instants
+  inside the representable calendar, ``target_timestamp == origin + h`` as UTC
+  instants, non-empty identities, finite numbers (booleans are not numbers,
+  integers too large for a float are refused), declared unit/scale/role/horizon,
+  duplicates and conflicting values for one forecast, and ONE observed price
+  per (asset, instant): ``price_origin`` at the origin and ``price_target`` at
+  the target instant of every record form a single price series, and two rows
+  that disagree about the price (or about whether it was observed) at the same
+  instant are refused with ``PRICE_CONFLICT``.
 * For each population kind (S, U), horizon and role, plus a role-deduplicated
   ``ALL_ROLES`` group: n, sums of absolute and squared errors, model and naive
-  MAE/MSE, both over exactly the same rows. Naive uses ``price_origin`` on the
-  same declared scale as target and prediction.
-  ``skill = (model - naive) / naive``; negative improves. A zero naive leaves
-  the skill ``None`` with a typed reason; JSON never carries NaN or Infinity.
+  MAE/MSE, both over exactly the same rows. The naive error of a row is read
+  from the validated price series, ``price(asset, origin) - price(asset,
+  target)``, on the same declared scale as target and prediction.
+  ``skill = (model - naive) / naive``; negative improves. A zero naive, or a
+  skill that is not a finite float, leaves the skill ``None`` with a typed
+  reason; JSON never carries NaN or Infinity.
+* Pairing is structural: ONE sorted row list feeds both the model and the naive
+  sums, so there is no in-process model/naive pairing check (it could never
+  fail). ``row_keys_sha256`` lets an external reader check that two published
+  records cover exactly the same rows; ``model_rows_sha256`` and
+  ``naive_rows_sha256`` digest the inputs of each side on those rows.
 * An empty population has no score but keeps exclusion and failure counts.
+  The sealed upstream exclusion counts are per (h, role) and carry no row
+  identities, so they cannot be de-duplicated across roles: an ``ALL_ROLES``
+  group reports them unpooled in ``upstream_exclusions_by_role`` and its
+  ``exclusions`` hold only exclusions made here (``exclusions_scope``).
 * A declared member without a verifiable forecast is a failure: the group is
   ``INCOMPLETE`` with explicit coverage. It is never silently dropped.
+  ``coverage = n / (n_declared - n_excluded)``; failures stay in the
+  denominator, exclusions made here (``LABEL_NOT_OBSERVABLE``) do not.
+* Every group carries its identity (config, protocol, calendar, contract
+  digest) and its own ``sha256``.
 * ``compare_configs`` requires the identical previously sealed S support and
   refuses (``NOT_COMPARABLE_INCOMPLETE``) instead of building an intersection.
-* ``aggregate_groups`` pools sums and counts, never means of weeks.
+* ``aggregate_groups`` pools sums and counts, never means of weeks, only across
+  groups with the same identity, after verifying each group seal and its
+  internal consistency.
+
+Limit: digests are unkeyed SHA-256. They detect corruption and unilateral
+edits, not an adversary who recomputes a digest after editing; a reseal with
+self-consistent but false sums is not detectable without the rows themselves.
 
 The canonical digest is byte-identical to ``tools.i6m_queue.digest``; it is
 re-implemented here only to avoid importing a module that loads ``sqlite3``.
@@ -67,6 +93,8 @@ MISSING_FORECAST = "MISSING_FORECAST"
 LABEL_NOT_OBSERVABLE = "LABEL_NOT_OBSERVABLE"
 EMPTY_POPULATION = "EMPTY_POPULATION"
 NO_SCORED_ROWS = "NO_SCORED_ROWS"
+EXCLUSIONS_UPSTREAM_AND_C2 = "UPSTREAM_AND_C2"
+EXCLUSIONS_C2_ONLY = "C2_ONLY_UPSTREAM_REPORTED_PER_ROLE"
 
 CLAIMS = {
     "candidate_implementation": True,
@@ -172,9 +200,22 @@ def _horizon(value: Any) -> int:
 
 
 def _finite(name: str, value: Any) -> float:
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise PairedMetricsError("NONFINITE_VALUE", f"{name} must be a finite number, got {value!r}")
-    return float(value)
+    try:
+        number = float(value)
+    except OverflowError:
+        number = math.inf
+    if not math.isfinite(number):
+        raise PairedMetricsError("NONFINITE_VALUE", f"{name} must be a finite float, got {str(value)[:40]}")
+    return number
+
+
+def _fsum(values: list) -> float:
+    try:
+        return math.fsum(values)
+    except (OverflowError, ValueError) as error:
+        raise PairedMetricsError("NONFINITE_RESULT", f"an error sum overflowed: {error}") from error
 
 
 def parse_utc(name: str, value: Any) -> datetime:
@@ -187,7 +228,10 @@ def parse_utc(name: str, value: Any) -> datetime:
         raise PairedMetricsError("TIMESTAMP_INVALID", f"{name}: {error}") from error
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise PairedMetricsError("TIMESTAMP_NOT_AWARE", f"{name} has no zone: {value!r}")
-    return parsed.astimezone(timezone.utc)
+    try:
+        return parsed.astimezone(timezone.utc)
+    except OverflowError as error:
+        raise PairedMetricsError("TIMESTAMP_OUT_OF_RANGE", f"{name} {value!r}: {error}") from error
 
 
 def iso_utc(value: datetime) -> str:
@@ -243,7 +287,12 @@ def _role(contract: dict, raw: Mapping, where: str) -> str:
 
 def _target(raw: Mapping, origin: datetime, h: int, where: str) -> datetime:
     target = parse_utc(f"{where}.target_timestamp", raw["target_timestamp"])
-    if target != origin + timedelta(hours=h):
+    try:
+        expected = origin + timedelta(hours=h)
+    except OverflowError as error:
+        raise PairedMetricsError("TIMESTAMP_OUT_OF_RANGE",
+                                 f"{where}: origin + {h}h is outside the calendar: {error}") from error
+    if target != expected:
         raise PairedMetricsError("TARGET_TIMESTAMP_MISMATCH",
                                  f"{where}: target {iso_utc(target)} != origin + {h}h")
     return target
@@ -269,9 +318,19 @@ def forecast_digest(record: Mapping[str, Any]) -> str:
     })
 
 
-def _forecasts(contract: dict, raws: list) -> dict:
+def _observe(prices: dict, asset: str, instant: str, price: Optional[float], where: str) -> None:
+    """Record one observation of the price series; ``None`` means not observable."""
+    previous = prices.setdefault((asset, instant), price)
+    if previous != price:
+        raise PairedMetricsError("PRICE_CONFLICT", f"{where}: price of {asset} at {instant} is "
+                                 f"{price!r} here but {previous!r} in another row")
+
+
+def _forecasts(contract: dict, raws: list) -> tuple:
+    """Validate forecast records; returns (records by key, one price per (asset, instant))."""
     by_key: dict = {}
     by_identity: dict = {}
+    prices: dict = {}
     for index, raw in enumerate(raws):
         where = f"forecasts[{index}]"
         raw = _fields(where, raw, _RECORD_FIELDS)
@@ -298,8 +357,10 @@ def _forecasts(contract: dict, raws: list) -> dict:
         previous = by_identity.setdefault(identity, shared)
         if previous != shared:
             raise PairedMetricsError("FORECAST_CONFLICT", f"{where}: conflicting values for forecast {identity}")
+        _observe(prices, asset, value["origin"], price_origin, f"{where}.price_origin")
+        _observe(prices, asset, value["target_timestamp"], price_target, f"{where}.price_target")
         by_key[identity + (role,)] = value
-    return by_key
+    return by_key, prices
 
 
 def _failures(contract: dict, raws: list, forecasts: dict) -> dict:
@@ -401,7 +462,13 @@ def _skill(model: Optional[float], naive: Optional[float], label: str) -> tuple:
         return None, None
     if naive == 0.0:
         return None, f"NAIVE_{label}_ZERO"
-    return (model - naive) / naive, None
+    try:
+        skill = (model - naive) / naive
+    except (OverflowError, ZeroDivisionError):
+        skill = math.inf
+    if not math.isfinite(skill):
+        return None, f"SKILL_{label}_NOT_FINITE"
+    return skill, None
 
 
 def _metrics(n: int, sums: dict) -> dict:
@@ -421,29 +488,31 @@ def _row_key(key: tuple) -> list:
 
 
 def _group(kind: str, population: dict, h: int, role: str, entries: list, exclusions: dict,
-           contract: dict, empty_state: str) -> dict:
-    """Score one population slice; ``entries`` are (row_key, status, record_or_reason)."""
+           contract: dict, empty_state: str, prices: dict, identity: dict,
+           upstream_by_role: Optional[dict] = None) -> dict:
+    """Score one population slice; ``entries`` are (row_key, status, record_or_reason).
+
+    One sorted row list feeds both sides. The model error uses the record's
+    prediction; the naive error uses only the validated price series at the
+    row's origin and target instants.
+    """
     rows = sorted((k, r) for k, status, r in entries if status == "ROW")
     failures = Counter(r for _, status, r in entries if status == "FAILURE")
     excluded = Counter(r for _, status, r in entries if status == "EXCLUDED")
-    model_keys, model_abs, model_sq = [], [], []
+    row_keys, model_abs, model_sq, naive_abs, naive_sq = [], [], [], [], []
     for row_key, record in rows:
-        error = record["prediction"] - record["price_target"]
-        model_keys.append(_row_key(row_key))
-        model_abs.append(abs(error))
-        model_sq.append(error * error)
-    naive_keys, naive_abs, naive_sq = [], [], []
-    for row_key, record in rows:
-        error = record["price_origin"] - record["price_target"]
-        naive_keys.append(_row_key(row_key))
-        naive_abs.append(abs(error))
-        naive_sq.append(error * error)
-    model_digest, naive_digest = canonical_sha256(model_keys), canonical_sha256(naive_keys)
-    if model_digest != naive_digest:
-        raise PairedMetricsError("PAIRING_BROKEN", "model and naive rows differ")
+        asset = record["asset"]
+        observed_target = prices[(asset, record["target_timestamp"])]
+        model_error = record["prediction"] - observed_target
+        naive_error = prices[(asset, record["origin"])] - observed_target
+        row_keys.append(_row_key(row_key))
+        model_abs.append(abs(model_error))
+        model_sq.append(model_error * model_error)
+        naive_abs.append(abs(naive_error))
+        naive_sq.append(naive_error * naive_error)
     n = len(rows)
-    sums = {"sum_abs_error": math.fsum(model_abs), "sum_squared_error": math.fsum(model_sq),
-            "naive_sum_abs_error": math.fsum(naive_abs), "naive_sum_squared_error": math.fsum(naive_sq)}
+    sums = {"sum_abs_error": _fsum(model_abs), "sum_squared_error": _fsum(model_sq),
+            "naive_sum_abs_error": _fsum(naive_abs), "naive_sum_squared_error": _fsum(naive_sq)}
     n_declared = len(entries)
     n_excluded = sum(excluded.values())
     denominator = n_declared - n_excluded
@@ -462,6 +531,7 @@ def _group(kind: str, population: dict, h: int, role: str, entries: list, exclus
         "population_kind": kind,
         "population_id": population["population_id"],
         "population_sha256": population["sha256"],
+        **identity,
         "horizon_hours": h,
         "role": role,
         "state": state,
@@ -475,20 +545,22 @@ def _group(kind: str, population: dict, h: int, role: str, entries: list, exclus
         "coverage": (n / denominator) if denominator else None,
         "failures": dict(sorted(failures.items())),
         "exclusions": dict(sorted(merged_exclusions.items())),
+        "exclusions_scope": EXCLUSIONS_UPSTREAM_AND_C2 if upstream_by_role is None else EXCLUSIONS_C2_ONLY,
         "score_unavailable_reason": unavailable,
         **sums,
         **_metrics(n, sums),
-        "row_keys": model_keys,
-        "row_keys_sha256": model_digest,
-        "model_row_keys_sha256": model_digest,
-        "naive_row_keys_sha256": naive_digest,
+        "row_keys": row_keys,
+        "row_keys_sha256": canonical_sha256(row_keys),
         "naive_rows_sha256": canonical_sha256([
-            [_row_key(k), r["target_timestamp"], r["price_origin"], r["price_target"]] for k, r in rows]),
+            [_row_key(k), r["target_timestamp"], prices[(r["asset"], r["origin"])],
+             prices[(r["asset"], r["target_timestamp"])]] for k, r in rows]),
         "model_rows_sha256": canonical_sha256([
-            [_row_key(k), r["target_timestamp"], r["price_target"], r["prediction"], r["checkpoint"]]
-            for k, r in rows]),
+            [_row_key(k), r["target_timestamp"], prices[(r["asset"], r["target_timestamp"])],
+             r["prediction"], r["checkpoint"]] for k, r in rows]),
     }
-    return group
+    if upstream_by_role is not None:
+        group["upstream_exclusions_by_role"] = upstream_by_role
+    return _sealed(group)
 
 
 def _entry(key: tuple, forecasts: dict, failures: dict, kind: str) -> tuple:
@@ -530,14 +602,14 @@ def validate(document: Mapping[str, Any]) -> dict:
     if document["schema_version"] != INPUT_SCHEMA_VERSION:
         raise PairedMetricsError("SCHEMA_INVALID", f"schema_version must be {INPUT_SCHEMA_VERSION}")
     contract = _contract(document["contract"])
-    forecasts = _forecasts(contract, _list("forecasts", document["forecasts"]))
+    forecasts, prices = _forecasts(contract, _list("forecasts", document["forecasts"]))
     failures = _failures(contract, _list("forecast_failures", document["forecast_failures"]), forecasts)
     population = _population(contract, document["opportunity_population"])
     receipts = _receipts(contract, _list("usage_receipts", document["usage_receipts"]), forecasts, failures)
     for key in population["keys"]:
         _entry(key, forecasts, failures, OPPORTUNITY)
     return {"contract": contract, "forecasts": forecasts, "failures": failures,
-            "population": population, "receipts": receipts}
+            "population": population, "receipts": receipts, "prices": prices}
 
 
 def input_digests(document: Mapping[str, Any]) -> dict:
@@ -562,6 +634,9 @@ def score(document: Mapping[str, Any],
              "sha256": canonical_sha256(sorted(
                  [[*r["key"]], r["receipt_id"], r["recorded_at"], r["action"], r["forecast_sha256"]]
                  for r in parts["receipts"]))}
+    digests = input_digests(document)
+    identity = {"config_id": contract["config_id"], "protocol_id": contract["protocol_id"],
+                "calendar_id": contract["calendar_id"], "contract_sha256": digests["config_sha256"]}
     s_entries = [_entry(k, forecasts, failures, OPPORTUNITY) for k in population["keys"]]
     u_entries = [_entry(r["key"], forecasts, failures, USAGE) for r in parts["receipts"]]
     plan = [(kind, h, role)
@@ -574,16 +649,20 @@ def score(document: Mapping[str, Any],
         meta = population if kind == OPPORTUNITY else usage
         empty_state = "NO_ELIGIBLE_ROWS" if kind == OPPORTUNITY else "NO_RECEIPTS"
         same_h = [e for e in entries if e[0][2] == h]
+
+        def upstream(r):
+            return dict(sorted(population["exclusions"].get((h, r), {}).items())) if kind == OPPORTUNITY else {}
+
         if role == ALL_ROLES:
             selected, exclusions = _all_roles(same_h), {}
+            by_role = {r: upstream(r) for r in contract["roles"]}
         else:
-            selected = [e for e in same_h if e[0][3] == role]
-            exclusions = population["exclusions"].get((h, role), {}) if kind == OPPORTUNITY else {}
-        groups.append(_group(kind, meta, h, role, selected, exclusions, contract, empty_state))
+            selected, exclusions, by_role = [e for e in same_h if e[0][3] == role], upstream(role), None
+        groups.append(_group(kind, meta, h, role, selected, exclusions, contract, empty_state,
+                             parts["prices"], identity, by_role))
         if progress is not None:
             progress(done, len(plan))
     used = {e[0] for e in s_entries + u_entries if e[1] != "FAILURE"}
-    digests = input_digests(document)
     result = {
         "schema_version": RESULT_SCHEMA_VERSION,
         "component": COMPONENT,
@@ -614,8 +693,8 @@ _OLAP_METRIC_FIELDS = (
     "unit", "scale", "n_declared", "n_excluded", "n", "coverage_numerator", "coverage_denominator",
     "coverage", "sum_abs_error", "sum_squared_error", "naive_sum_abs_error", "naive_sum_squared_error",
     "mae", "mse", "naive_mae", "naive_mse", "skill_mae", "skill_mae_undefined_reason", "skill_mse",
-    "skill_mse_undefined_reason", "score_unavailable_reason", "row_keys_sha256",
-    "model_row_keys_sha256", "naive_row_keys_sha256", "naive_rows_sha256", "model_rows_sha256")
+    "skill_mse_undefined_reason", "score_unavailable_reason", "exclusions_scope", "row_keys_sha256",
+    "naive_rows_sha256", "model_rows_sha256")
 
 
 def olap_records(result: Mapping[str, Any]) -> list:
@@ -628,7 +707,7 @@ def olap_records(result: Mapping[str, Any]) -> list:
     rows = []
     for group in result["groups"]:
         rows.append({"record_type": "I6N_PAIRED_METRIC", **common,
-                     **{f: group[f] for f in _OLAP_METRIC_FIELDS}})
+                     **{f: group[f] for f in _OLAP_METRIC_FIELDS}, "group_sha256": group["sha256"]})
         for category, counts in (("FAILURE", group["failures"]), ("EXCLUSION", group["exclusions"])):
             for reason, count in counts.items():
                 rows.append({"record_type": "I6N_POPULATION_COUNT", **common,
@@ -644,29 +723,67 @@ def olap_records(result: Mapping[str, Any]) -> list:
 _SUM_FIELDS = ("sum_abs_error", "sum_squared_error", "naive_sum_abs_error", "naive_sum_squared_error")
 
 
+_IDENTITY_FIELDS = ("population_kind", "horizon_hours", "role", "unit", "scale", "config_id",
+                    "protocol_id", "calendar_id", "contract_sha256")
+_GROUP_REQUIRED = _IDENTITY_FIELDS + _SUM_FIELDS + (
+    "sha256", "state", "n", "n_declared", "n_excluded", "failures", "exclusions", "row_keys",
+    "row_keys_sha256", "population_sha256", "naive_rows_sha256", "model_rows_sha256",
+    "mae", "mse", "naive_mae", "naive_mse", "skill_mae", "skill_mse")
+
+
+def _verified_group(g: Any, index: int) -> Mapping[str, Any]:
+    """Seal, row digest and internal consistency of one scored group."""
+    if not isinstance(g, Mapping) or any(f not in g for f in _GROUP_REQUIRED):
+        raise PairedMetricsError("SCHEMA_INVALID", f"groups[{index}] is not a scored group")
+    if not _seal_holds(g):
+        raise PairedMetricsError("GROUP_SEAL_INVALID", f"groups[{index}] digest does not verify")
+    if not isinstance(g["row_keys"], list) or canonical_sha256(g["row_keys"]) != g["row_keys_sha256"]:
+        raise PairedMetricsError("ROW_DIGEST_INVALID", f"groups[{index}] row_keys do not match their digest")
+    n = g["n"]
+    if (isinstance(n, bool) or not isinstance(n, int) or n != len(g["row_keys"])
+            or g["n_declared"] - g["n_excluded"] < n):
+        raise PairedMetricsError("GROUP_INCONSISTENT", f"groups[{index}] n disagrees with its rows/declared")
+    sums = {f: _finite(f"groups[{index}].{f}", g[f]) for f in _SUM_FIELDS}
+    metrics = _metrics(n, sums)
+    if any(g[f] != metrics[f] for f in ("mae", "mse", "naive_mae", "naive_mse", "skill_mae", "skill_mse")):
+        raise PairedMetricsError("GROUP_INCONSISTENT", f"groups[{index}] means disagree with its sums and n")
+    return g
+
+
 def aggregate_groups(groups: Sequence[Mapping[str, Any]]) -> dict:
-    """Pool groups (e.g. weeks) by sums and counts; refuse any row counted twice."""
+    """Pool scored groups (e.g. weeks) by sums and counts; returns a sealed aggregate.
+
+    Every group must verify its own ``sha256``, its row-key digest and the
+    consistency of n, sums and means; all groups must share one identity
+    (population kind, h, role, unit, scale, config, protocol, calendar and
+    contract digest) or ``AGGREGATE_MISMATCH`` is raised, so different configs,
+    protocols or calendars never pool silently. A row in two groups raises
+    ``DOUBLE_COUNT``. The aggregate is an end product: it is sealed but is not
+    itself accepted as an input of another aggregation.
+    """
     if not groups:
         raise PairedMetricsError("EMPTY_AGGREGATE", "nothing to aggregate")
-    shape = {(g["population_kind"], g["horizon_hours"], g["role"], g["unit"], g["scale"]) for g in groups}
+    groups = [_verified_group(g, i) for i, g in enumerate(groups)]
+    shape = {tuple(g[f] for f in _IDENTITY_FIELDS) for g in groups}
     if len(shape) != 1:
-        raise PairedMetricsError("AGGREGATE_MISMATCH", f"groups differ in kind/h/role/unit/scale: {sorted(shape)}")
-    kind, h, role, unit, scale = shape.pop()
+        raise PairedMetricsError("AGGREGATE_MISMATCH", f"groups differ in identity {_IDENTITY_FIELDS}: {sorted(shape)}")
+    identity = dict(zip(_IDENTITY_FIELDS, shape.pop()))
     seen = set()
     for g in groups:
-        if canonical_sha256(g["row_keys"]) != g["row_keys_sha256"]:
-            raise PairedMetricsError("ROW_DIGEST_INVALID", "row_keys do not match their digest")
         for row in g["row_keys"]:
             marker = tuple(row)
             if marker in seen:
                 raise PairedMetricsError("DOUBLE_COUNT", f"row {row} appears in more than one group")
             seen.add(marker)
     n = sum(g["n"] for g in groups)
-    sums = {f: math.fsum(g[f] for g in groups) for f in _SUM_FIELDS}
+    sums = {f: _fsum([g[f] for g in groups]) for f in _SUM_FIELDS}
     failures, exclusions = Counter(), Counter()
+    upstream_by_role: dict = {}
     for g in groups:
         failures.update(g["failures"])
         exclusions.update(g["exclusions"])
+        for r, counts in (g.get("upstream_exclusions_by_role") or {}).items():
+            upstream_by_role.setdefault(r, Counter()).update(counts)
     n_declared = sum(g["n_declared"] for g in groups)
     n_excluded = sum(g["n_excluded"] for g in groups)
     denominator = n_declared - n_excluded
@@ -676,25 +793,28 @@ def aggregate_groups(groups: Sequence[Mapping[str, Any]]) -> dict:
         state = "COMPLETE"
     else:
         state = groups[0]["state"] if n_declared == 0 else "NO_OBSERVABLE_LABELS"
-    row_keys = sorted(seen)
-    row_keys = [list(r) for r in row_keys]
-    digest = canonical_sha256(row_keys)
-    return {
-        "population_kind": kind, "population_id": "AGGREGATE",
+    row_keys = [list(r) for r in sorted(seen)]
+    aggregate = {
+        **identity, "population_id": "AGGREGATE",
         "population_sha256": canonical_sha256(sorted(g["population_sha256"] for g in groups)),
-        "horizon_hours": h, "role": role, "state": state, "unit": unit, "scale": scale,
+        "state": state,
         "n_declared": n_declared, "n_excluded": n_excluded, "n": n,
         "coverage_numerator": n, "coverage_denominator": denominator,
         "coverage": (n / denominator) if denominator else None,
         "failures": dict(sorted(failures.items())), "exclusions": dict(sorted(exclusions.items())),
+        "exclusions_scope": (EXCLUSIONS_C2_ONLY if identity["role"] == ALL_ROLES else EXCLUSIONS_UPSTREAM_AND_C2),
         "score_unavailable_reason": None if n else (EMPTY_POPULATION if n_declared == 0 else NO_SCORED_ROWS),
         **sums, **_metrics(n, sums),
-        "row_keys": row_keys, "row_keys_sha256": digest,
-        "model_row_keys_sha256": digest, "naive_row_keys_sha256": digest,
+        "row_keys": row_keys, "row_keys_sha256": canonical_sha256(row_keys),
+        "constituent_group_sha256": sorted(g["sha256"] for g in groups),
         "constituent_naive_rows_sha256": canonical_sha256(sorted(g["naive_rows_sha256"] for g in groups)),
         "constituent_model_rows_sha256": canonical_sha256(sorted(g["model_rows_sha256"] for g in groups)),
         "constituents": len(groups),
     }
+    if identity["role"] == ALL_ROLES:
+        aggregate["upstream_exclusions_by_role"] = {r: dict(sorted(c.items()))
+                                                    for r, c in sorted(upstream_by_role.items())}
+    return _sealed(aggregate)
 
 
 def compare_configs(result_a: Mapping[str, Any], result_b: Mapping[str, Any]) -> dict:
