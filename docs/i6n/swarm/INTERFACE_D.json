@@ -1,0 +1,64 @@
+{
+  "schema": "i6n.swarm_weekly.interface.v1",
+  "lane": "D",
+  "interface_version": "D.1",
+  "status": "PUBLISHED_EARLY_SUBJECT_TO_A_B_C_AGREEMENT",
+  "branch": "satoshi/i6n-swarm-D-archive-20261011",
+  "consumes": {
+    "A": "INTERFACE_A.json A.1 @b9eb6929: metadata.candidate_receipt (schema i6n.candidate_receipt.v1), one per (candidate, fold); rows per head x split with sums+counts+naive",
+    "B": "calls the publisher API below when a candidate reaches a terminal disposition (COMPLETE or not); B's scheduler is not modified by D",
+    "E": "genotype/effective config and their canonical sha256 (genotype_canonical_sha256, effective_config_sha256)"
+  },
+  "publisher_api": {
+    "module": "tools.i6n_archive.publisher",
+    "open": "ArchivePublisher(root=<campaign-root>/archive, store_id=<str>, domain_id=<str>, producer_peer_id=<str>, mode='external_payload'|'full_payload')",
+    "record_candidate": {
+      "call": "publisher.record_candidate(candidate: dict, fold_receipts: list[dict]) -> dict",
+      "effect": "validates, builds canonical body bytes (content-addressed), writes one outbox item; state LOCAL_COMPLETE. Idempotent: same body -> same item_id, no new row. Never trains, never touches the scheduler.",
+      "returns": {"item_id": "sha256 = body_digest", "body_digest": "sha256", "manifest_digest": "sha256", "states": "{LOCAL_COMPLETE, OBJECT_DURABLE, CHAIN_FINALIZED, OLAP_READBACK_VERIFIED} each null or an evidence object"}
+    },
+    "pump": "publisher.pump(store, submitter) -> dict: for LOCAL_COMPLETE items PUT body+manifest, GET exact bytes, compare digest -> OBJECT_DURABLE; only then submits the reference transaction. A failed PUT/GET leaves the item LOCAL_COMPLETE and submits nothing (retryable).",
+    "etl": "tools.i6n_archive.etl.ArchiveETL(outbox, stores, sink, confirmation_depth).run(chain_blocks) -> dict: verifies chain links, finality, reference tx id binding, bytes, digests, schema; projects into the warehouse; reads back; then marks CHAIN_FINALIZED and OLAP_READBACK_VERIFIED (ACK). Reorg: canonical projection revoked by an appended event, history kept.",
+    "status": "publisher.status() -> {items, per_state_counts, green (all four states), missing: [...]} ; read-only",
+    "cli": "python -m tools.i6n_archive {status|pump|etl} --root <archive-root> --config <private.json>"
+  },
+  "candidate_document": {
+    "schema": "i6n.archive.candidate.v1",
+    "required": {
+      "experiment": "str key [A-Za-z0-9._:-]{1,96}",
+      "search_candidate_sha256": "sha256: B/E global identity of (plan, horizon, canonical genotype); fold-independent",
+      "horizon_hours": "int",
+      "plan_sha256": "sha256 of the versioned plan JSON (E)",
+      "plan_metadata": "object (stage/class/budget class/generation budget...)",
+      "genotype": "object: {active:{...}, inactive:{...}} canonical (E)",
+      "genotype_canonical_sha256": "sha256 (E: tools.i6n_search.effective_identity)",
+      "effective_config": "object",
+      "effective_config_sha256": "sha256 of canonical effective_config (verified by D)",
+      "disposition": "COMPLETE|ADOPTED_CACHE|FAILED|INFEASIBLE|INTERRUPTED|NOT_ADMITTED",
+      "fitness": "number for COMPLETE/ADOPTED_CACHE only; null otherwise (never an invented score)",
+      "won": "bool",
+      "seed": "int (6102026)",
+      "lineage": "{generation:int, population_index:int, operator:str, parents:[sha256]}",
+      "attempts": "[{fold:str, index:1..3, state:str, parent_status_sha256:sha256|null, fencing_token:str|null, reason:str|null}] (max 3 per fold)",
+      "costs": "object of finite numbers or null (elapsed_seconds, fit_seconds, peak_rss_bytes, ...)"
+    },
+    "optional": {"disposition_reason": "str", "provenance": "object"}
+  },
+  "fold_receipt": "A's candidate_receipt (i6n.candidate_receipt.v1) unchanged; rows with split TEST or a 2025+ fold are refused",
+  "projection": {
+    "row_identity_keys": ["experiment", "candidate_identity_sha256", "fold", "horizon_hours", "head_offset_hours", "role", "population", "split", "metric", "unit", "schema_version"],
+    "derived_metrics_per_receipt_row": {"n": "count", "sum_abs_error": "PRICE", "sum_sq_error": "PRICE_SQUARED", "naive_sum_abs_error": "PRICE", "naive_sum_sq_error": "PRICE_SQUARED", "mae": "PRICE", "naive_mae": "PRICE", "mse": "PRICE_SQUARED", "naive_mse": "PRICE_SQUARED", "skill_mae": "RATIO (only when naive_mae>0; undefined otherwise, never zero)"},
+    "rows_with_n_zero": "only n (count) projected; no means",
+    "idempotency_key": "sha256(canonical(row identity with derived metric/unit)) + block_hash + finality_state",
+    "warehouse": "gov_report/gov_metric (one report per receipt row; gov_metric.horizon = head_offset_hours) + additive gov_doin_projection, gov_doin_projection_event, view gov_doin_metric_canonical (doin metadata schema i6n.doin_projection.v1)"
+  },
+  "archive": {
+    "body": "doin.external_payload_body.v1 (doin-core doin_core.archive.external): canonical UTF-8 JSON {schema, domain_id, producer_peer_id, payload_schema, payload}; contains no manifest digest and no block hash",
+    "manifest": "doin.external_payload_manifest.v1: {schema, body_digest, body_size, body_schema, payload_schema, domain_id}",
+    "reference_tx": "CANDIDATE_EVALUATED transaction payload doin.external_payload_ref.v1 {archive_mode, body_digest, manifest_digest, body_size, payload_schema, locator} (external) or the same plus body (full_payload); tx.id must equal compute_id",
+    "locator": "doin-cas://<store_id>/sha256/<body_digest>",
+    "hash_identities": "body_digest = sha256(body bytes); manifest_digest = sha256(manifest bytes); block hash = header hash. Three distinct values, none an input of its own computation."
+  },
+  "states": ["LOCAL_COMPLETE", "OBJECT_DURABLE", "CHAIN_FINALIZED", "OLAP_READBACK_VERIFIED"],
+  "state_rule": "each state is set only by the step that verified it; a missing state is never reported green"
+}
