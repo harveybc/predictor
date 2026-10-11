@@ -54,6 +54,29 @@ of prospective deployability. No TEST data was read.
 
 ## Continuation
 
+Two additional cost pilots completed on the same development week and code,
+without repeating h2. Each result was copied and delivered automatically:
+
+| Horizon | Inputs (samples / spacing / span) | TRAIN / inner / evaluation | MAE | Naive for this horizon | Owner skill |
+| --- | --- | --- | --- | --- | --- |
+| 3 h | 9 / 3 h / 24 h | 17,873 / 346 / 93 | 0.0009720544473832989 | 0.0009698924731182897 | +0.2229087% |
+| 72 h | 5 / 36 h / 144 h | 4,629 / 70 / 24 | 0.0024206369962948746 | 0.002183750000000003 | +10.8477159% |
+
+H3 ran on the secondary GPU: 16 epochs, best 11, 1,120 updates, 464.702 s;
+admission sampled peak 1,177,051,136 bytes under 3 GiB. H72 ran on the
+preferred GPU: 8 epochs, best 3, 152 updates, 33.282 s; sampled peak
+1,405,149,184 bytes under 6 GiB. These are sampled whole-scope observations,
+not exact final peaks or guarantees for unmeasured architectures. Both used
+seed 6102026, the same small 18,113-parameter family, and four calendar years.
+
+Result digests:
+- H3: `44e745e2b15833032d5897a62a0bfc339f50cdc6cd985ea5461ce0c0e562792b`.
+- H72: `b27d74c17cdac79cb59cd8640c85316359469cbe600049ec44cbe2ac94808ad0`.
+
+There are now 12 OLAP reports with readback across three pilots. None beats
+its horizon's naive in this week. Different horizons have different targets,
+support and naive values; do not average these into one common naive.
+
 Continue the joint context/resolution/core search on frozen TRAIN/inner
 support, then evaluate the fixed procedure across all eligible development
 weeks. Do not reuse this outer week as the candidate fitness or refit this

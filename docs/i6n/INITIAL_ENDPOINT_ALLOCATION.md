@@ -7,7 +7,9 @@ an annual result, or a substitute for independent output-grid supervision.
 ## Order and scope
 
 1. Retain the single-week h2, h3 and h72 cost pilots without repeating them.
-2. First search h12; next search h72 on the preferred GPU, sequentially.
+2. Search h12 on the preferred GPU and h72 independently on the secondary
+   GPU when both hosts admit their explicit cost classes. With only one
+   admitted host, execute them sequentially, h12 first, never duplicate them.
    Each has at most 24 distinct candidate attempts, population 8, at most
    3 generations and one model seed 6102026. No repeated fits or extra seeds.
 3. Every search uses the existing four-calendar-year history and purged 28-day
@@ -36,6 +38,11 @@ There is no claim that twice the horizon is the optimum window.
 - One child at a time on the preferred GPU; no simultaneous secondary GPU
   on that host. New child ceiling 5 GiB, wall 3600 s, host reserve 3 GiB,
   controller ceiling 512 MiB. The ceiling is not a measured production need.
+- The separate secondary host's initial search ceiling is 3 GiB with at
+  least 6 GiB MemAvailable before admission and a 512 MiB controller. Its h3
+  historical pilot sampled 1,177,051,136 bytes under 3 GiB. This supports
+  trying the bounded class, not a guarantee that every architecture fits.
+  A memory refusal or stop does not authorize reducing this ceiling.
 - Record admission-sampled peaks separately from exact internally retained
   cgroup peaks. Never substitute RSS, trim a refused cap, or retry a failed fit.
 - Each stage's total wall ceiling is 24 hours plus setup allowance. A bounded
