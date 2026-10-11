@@ -1,0 +1,25 @@
+{
+  "schema": "i6n.swarm_weekly.lane_ack.v1",
+  "lane": "B",
+  "state": "ACKNOWLEDGED",
+  "date": "2026-10-11",
+  "predictor_branch": "satoshi/i6n-swarm-B-doin-20261011",
+  "predictor_base": "5c383d17",
+  "other_branches": {
+    "doin-plugins": {"branch": "satoshi/i6n-swarm-B-doin-20261011", "base": "2654ecf", "base_note": "origin/master tip at ACK time (default branch)"},
+    "doin-node": {"branch": "satoshi/i6n-swarm-B-runtime-20261011", "note": "created only if a runtime change outside archive is needed"}
+  },
+  "orders_sha256": "ac77366af24bcaf4fb9454a51c94ab1f6d5230bb1de4ff14521f76cc0a3f8b9c",
+  "plan_sha256": "da51723a08a8ee3f0a94ffaded8b35fd480b72d80f314a812a176cb43c6355df",
+  "deliverables": [
+    "doin-plugins/src/doin_plugins/predictor/optimizer.py: shared swarm wrapper (seed 6102026, minimization, admitted subprocess evaluator, no SIGALRM in node threads, no CPU fallback)",
+    "tools/i6n_swarm/ durable state: global identity, leases with fencing tokens, attempts (max 3 physical per identity/fold), recovery policy, outbox",
+    "tools/i6n_swarm_campaign: CLI plan/preflight/install/start/status/collect",
+    "durable systemd user unit templates for this campaign only (generated, not installed by the agent)",
+    "docs/i6n/swarm/INTERFACE_B.json + .md",
+    "docs/i6n/swarm/B_RETURN.md, docs/i6n/swarm/README_B.md"
+  ],
+  "publishes": ["INTERFACE_B: campaign root layout, state/ETA schema, claim/lease/fencing API, evaluator invocation contract"],
+  "consumes": ["INTERFACE_A (evaluator entry/receipts)", "INTERFACE_C (weekly units/folds)", "INTERFACE_E (genotype/plan JSON)", "INTERFACE_D (publisher/outbox)"],
+  "reviews": "A (later, on request)"
+}
