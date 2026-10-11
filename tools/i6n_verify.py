@@ -29,6 +29,11 @@ STEPS = (
     ("population_bridge", ("tests/test_i6n_business_metrics.py",)),
     ("temporal", ("tests/test_i6n_temporal_ops.py",)),
     ("model_factory", ("tests/test_i6n_model.py",)),
+    ("weekly_data", ("tests/test_i6n_weekly_data.py",)),
+    ("masked_training", ("tests/test_i6n_training.py",)),
+    ("joint_search", ("tests/test_i6n_search.py",)),
+    ("source_recovery", ("tests/test_i6n_source_recovery.py",)),
+    ("weekly_integration", ("tests/test_i6n_weekly_smoke.py",)),
     ("automation", ("tests/test_i6n_verify.py",)),
 )
 SCOPE = "INTEGRATED_CANDIDATE_COMPONENTS_ONLY"
@@ -44,11 +49,15 @@ def identity():
     """Bind direct code, reused helpers, tests and installed package versions."""
     paths = {Path(__file__), BASE / "tools/i6m_queue.py", BASE / "tools/i6e_compact_run.py",
              BASE / "tools/i6e_masked_model.py", BASE / "tools/i6n_model.py"}
+    paths.update(BASE / "tools" / name for name in (
+        "i6n_weekly_data.py", "i6n_training.py", "i6n_search.py",
+        "i6n_source_recovery.py", "i6n_weekly_smoke.py", "i6e_clock_windows.py",
+        "modular_candidate_evaluator.py"))
     paths.update((BASE / "tools/i6n_contracts").glob("*.py"))
     paths.update((BASE / "predictor_plugins/modular_temporal").glob("*.py"))
     paths.update(BASE / name for _, tests in STEPS for name in tests)
     versions = {}
-    for package in ("numpy", "tensorflow", "keras", "pytest"):
+    for package in ("numpy", "tensorflow", "keras", "pytest", "deap"):
         try:
             versions[package] = importlib.metadata.version(package)
         except importlib.metadata.PackageNotFoundError:

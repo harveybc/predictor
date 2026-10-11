@@ -17,6 +17,10 @@ Do not resume the paused I6-E-M queue as a substitute for I6-N.
 | Configurable small branches, fusion, core, temporal head interface | `i6n_model.py` | `test_i6n_model.py` |
 | Finite unattended verification and read-only status | `i6n_verify.py` | `test_i6n_verify.py` |
 | Real GPU execution, weight updates, reload parity | `i6n_device_probe.py` | synthetic device probe; not historical cost evidence |
+| Weekly partitions and purged per-head labels | `i6n_weekly_data.py` | `test_i6n_weekly_data.py` |
+| Exact masked epoch metrics and owner early stopping | `i6n_training.py` | `test_i6n_training.py` |
+| Calendar -> model fit -> original-price C2 scores | `i6n_weekly_smoke.py` | `test_i6n_weekly_smoke.py`, synthetic only |
+| Joint hierarchical candidate search | `i6n_search.py` | `test_i6n_search.py`, local stub scoring only |
 
 The core factory is additive: existing factories and audited modules remain
 unchanged. It accepts Conv-only, Transformer and combined entrances, 1-3
@@ -24,10 +28,13 @@ Conv reducers with independent filters and temporal factors, and an optional
 sequence-valued LSTM or Conv final adapter. Positional encoding follows fusion.
 Reduction is right-anchored, not a left-anchored stride that can omit t.
 
-`masked_huber` is a batch primitive, not yet the complete trainer. Empty-label
-batches must skip optimizer updates, including weight decay. Epoch metrics
-must aggregate per-head sums and counts. Use the owner's TRAIN/inner average
-for early stopping and restore the best weights; never use outer validation.
+`masked_huber` is now consumed by the additive `fit_masked` trainer. Empty-label
+batches skip optimizer updates, including weight decay. Epoch metrics aggregate
+per-head sums and counts. The owner's TRAIN/inner average controls stopping and
+the best weights are restored; outer validation is not passed to this helper.
+See [Weekly Integration](WEEKLY_INTEGRATION.md) for the finite commands and
+remaining historical-data/runtime connections. The local DEAP component is
+not a deployed shared DOIN optimizer.
 
 ## Repeatable finite verification
 
@@ -91,7 +98,7 @@ TensorFlow environment/library paths must be provided by the host inventory.
 These are implementation dependencies, not requests for repeated approval.
 The previous draft's incomplete search and transfer budget is not silently
 promoted to a runnable config. Historical fitting remains unstarted until
-the missing data-clock and trainer/search integration objects exist.
+the missing data-clock and historical-adapter/shared-search objects exist.
 
 ## Resource policy
 
