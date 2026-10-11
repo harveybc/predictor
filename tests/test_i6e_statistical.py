@@ -94,3 +94,12 @@ def test_interrupted_claim_is_not_a_fresh_experiment(tmp_path):
     (folder/"CLAIM").write_text("old")
     with pytest.raises(ValueError,match="interrupted"):
         list(next_cells(tmp_path,"ARIMAX"))
+
+
+def test_two_workers_partition_weeks_without_repetition(tmp_path):
+    from tools.i6e_statistical_dispatch import next_cells
+    even=set(next_cells(tmp_path,"ARIMAX",0))
+    odd=set(next_cells(tmp_path,"ARIMAX",1))
+    assert len(even)==len(odd)==78
+    assert not even.intersection(odd)
+    assert len(even.union(odd))==156

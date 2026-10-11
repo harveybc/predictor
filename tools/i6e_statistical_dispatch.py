@@ -15,9 +15,11 @@ from tools.i6e_statistical_campaign import MODELS, SPACINGS, code_digest, cell_p
 from tools.i6e_compact_run import atomic_json, file_hash
 
 
-def next_cells(root, model):
+def next_cells(root, model, week_parity=None):
     """Only absent cells are runnable; numerical failures remain in the denominator."""
     for week in range(52):
+        if week_parity is not None and week%2!=week_parity:
+            continue
         for spacing in SPACINGS:
             directory=cell_path(root,model,week,spacing)
             if (directory/"CELL.json").exists():
@@ -30,14 +32,14 @@ def next_cells(root, model):
             yield week,spacing
 
 
-def run(root,model):
+def run(root,model,week_parity=None):
     pilot=json.loads((root/f"cost_{model}"/"PILOT.json").read_text())
     if pilot["status"]!="COMPLETED" or pilot["code_sha256"]!=code_digest():
         raise ValueError("verified TRAIN cost required")
     cap=pilot["production_memory_bytes"]
     if cap>2147483648:
         raise ValueError("measured envelope exceeds declared reservation")
-    for week,spacing in next_cells(root,model):
+    for week,spacing in next_cells(root,model,week_parity):
         command=[str(Path.home()/".local/bin/crispdm-run"),"-m",str(cap),"-t","3600",
             "-n",f"i6e-stat-{model.lower()}-w{week:03d}-d{spacing}","--",sys.executable,
             "-m","tools.i6e_statistical_campaign","cell","--output",str(root),"--model",model,
@@ -101,8 +103,9 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output",type=Path,required=True)
     parser.add_argument("--model",choices=MODELS,required=True)
+    parser.add_argument("--week-parity",type=int,choices=(0,1))
     args=parser.parse_args()
-    run(args.output,args.model)
+    run(args.output,args.model,args.week_parity)
 
 
 if __name__=="__main__":

@@ -48,3 +48,10 @@ At finalization all 312 dispositions must exist; each arm needs all 52
 successful weeks and identical origins before receiving aggregate metrics.
 Failure counts and costs are published too; failure never becomes naive MAE.
 The progress timer refreshes a PNG and ETA without an agent watching logs.
+
+ARIMA subsequently completed all 156 cells without numerical failures. Its CPU
+worker can therefore be reassigned to ARIMAX: even weeks on one host and odd
+weeks on the other, with a disjoint 78/78 partition. The current child finishes
+before changing the original supervisor; completed/failing terminals transfer
+with their digests and are adopted, never refit. The collector/finalizer timers
+remain independent of the initial coordinator's all-success closure rule.

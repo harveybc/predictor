@@ -36,11 +36,15 @@ def progress(root):
                   next(r["elapsed_seconds"]*spacing for r in pilot["records"] if r["spacing"]==spacing))
             projected+=(52-len(records))*unit
         remaining[model]=None if runtime_failure else projected
-    measured=[v for v in remaining.values() if v is not None]
+    placement=root/"PLACEMENT.json"
+    slots=json.loads(placement.read_text())["model_parallel_slots"] if placement.exists() else {}
+    wall={model:None if value is None else value/slots.get(model,1) for model,value in remaining.items()}
+    measured=[v for v in wall.values() if v is not None]
     eta=max(measured) if len(measured)==2 else None
     state.update(observed_utc=dt.datetime.now(dt.timezone.utc).isoformat(),
         estimated_remaining_seconds_by_model=remaining,estimated_parallel_remaining_seconds=eta,
-        eta_note="Projection, not deadline. Before enough cells: TRAIN phase cost; afterwards: same-resolution cell means. Delivery excluded.")
+        model_parallel_slots=slots,
+        eta_note="Projection, not deadline. Assumes declared slots remain healthy. TRAIN phase cost then same-resolution cell means; delivery excluded.")
     atomic_json(root/"PROGRESS_STATUS.json",state)
     return state
 
