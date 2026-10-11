@@ -194,6 +194,11 @@ the node already updates it. State, callbacks and results are detached.
    installed metadata, otherwise parses this checkout's setup declarations,
    and refuses repository plugins resolved outside this checkout. Use the
    shared checkout as `predictor_root` and ensure its `app` package is loaded.
+   **Subsequent parent update:** parent added the entry point. A fresh bounded
+   call to the real `load_plugin("optimizer.plugins", "i6n_optimizer")`
+   successfully returned this exact `Plugin` class without training imports.
+   Registration is therefore resolved in this shared checkout; the warning
+   above remains relevant to other environments and full wrapper configure.
 2. Full `PredictorOptimizer.configure` eagerly loads predictor/preprocessor/
    target plugins before this adapter. Those imports, their configuration and
    a full runtime startup were not exercised. Shared-only operation is required;

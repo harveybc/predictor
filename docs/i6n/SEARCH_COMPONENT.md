@@ -1,5 +1,11 @@
 # I6N Search Component
 
+Integration update: the component record below is historical. The registered
+shared adapter is documented in [DOIN Adapter](DOIN_ADAPTER.md), the historical
+callback in [Historical Evaluator](HISTORICAL_EVALUATOR.md), and the bounded
+initial execution scope in [Initial Allocation](INITIAL_ENDPOINT_ALLOCATION.md).
+These additions do not establish a running distributed swarm.
+
 Status, 2026-10-11: local component verified with **stub scores only**. No
 historical measurements, TensorFlow training, GPU, TEST, deployment, commit,
 or DOIN runtime execution. This is not production-ready or the final approved

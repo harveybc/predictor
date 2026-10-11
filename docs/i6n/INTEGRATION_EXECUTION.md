@@ -1,5 +1,10 @@
 # I6-N integration and execution
 
+Latest measured update: [Historical Pilot Return](HISTORICAL_PILOT_RETURN.md).
+Historical fitting and live OLAP readback now have pilot evidence. The
+unstarted-fitting statements in the original component account below are
+superseded by that return, not by a claim of annual or swarm completion.
+
 Date: 2026-10-11. Owner authorized autonomous implementation and execution.
 The C1/C2 component acceptance is NOT acceptance of the historical campaign.
 No further owner approval is required for ordinary engineering steps below.

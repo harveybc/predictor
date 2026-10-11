@@ -1,5 +1,10 @@
 # Historical Single-Week Cell
 
+Execution update: real historical pilots now exist. See
+[Historical Pilot Return](HISTORICAL_PILOT_RETURN.md). Statements below about
+no fitting during implementation describe that implementation's scope, not
+the latest execution state.
+
 Engineering adapter, not campaign authorization. No historical fit has been
 executed during implementation. TEST remains closed. This is one supplied
 development week, one physical-hour horizon, one core and one input spacing;

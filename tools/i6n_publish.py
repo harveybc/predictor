@@ -75,7 +75,8 @@ def publish(root, pin, url=None, token_file=None):
         verify_readback([body], rows)
         atomic_json(out/(sha+'.json'), dict(state='PUBLISHED_READBACK_VERIFIED', report_sha256=sha,
                     terminal_sha256=file_hash(terminal), rows=len(rows)))
-    state = dict(state='PUBLISHED_READBACK_VERIFIED', reports=len(bodies), terminal_sha256=file_hash(terminal))
+    state = dict(state='PUBLISHED_READBACK_VERIFIED', reports=len(bodies), terminal_sha256=file_hash(terminal),
+                 destination=url.rstrip('/'), code_commit=pin)
     atomic_json(out/'STATUS.json', state)
     return state
 
