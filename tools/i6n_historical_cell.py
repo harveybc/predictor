@@ -22,7 +22,7 @@ from tools.i6e_compact_run import scaled_inputs
 from tools.i6n_contracts import business_metrics as bm, eligibility as c1, paired_metrics as c2
 from tools.i6n_model import normalize_config
 from tools.i6n_training import _settings
-from tools.i6n_weekly_data import build_weekly_partitions
+from tools.i6n_weekly_data import WeeklyDataError, build_weekly_partitions
 
 BASE = Path(__file__).resolve().parents[1]
 KEYS = set("schema input source_clock calendar evaluation_week_id evaluation_split coverage_mode role horizon_hours samples spacing_hours features model training resources device asset unit".split())
@@ -34,8 +34,26 @@ def stamp(seconds):
     return datetime.fromtimestamp(int(seconds), timezone.utc)
 
 
-def authenticated(cfg):
-    """Validate explicit configuration and clock attestation without decoding NPZ."""
+def output_offsets(cfg):
+    """Exact elapsed-hour head offsets [dy, 2dy, ..., h] implied by n_horizons.
+
+    One head is the endpoint h. n heads require dy = h / n to be an integer;
+    dy and the input spacing are independent (no coupling to spacing_hours).
+    """
+    h, n = cfg["horizon_hours"], cfg["model"]["n_horizons"]
+    if type(n) is not int or n < 1 or h % n:
+        raise ValueError("trajectory heads must split the horizon into equal whole hours")
+    dy = h // n
+    return tuple(dy * k for k in range(1, n + 1))
+
+
+def authenticated(cfg, trajectory=False):
+    """Validate explicit configuration and clock attestation without decoding NPZ.
+
+    ``trajectory=False`` (single-week cell, base configs) keeps exactly one
+    endpoint head. The historical evaluator passes ``trajectory=True`` for a
+    candidate with heads [dy, ..., h] and equal per-head loss weights.
+    """
     if not isinstance(cfg, dict) or set(cfg) != KEYS or cfg["schema"] != "i6n.historical_cell.v1":
         raise ValueError("historical cell config schema mismatch")
     if cfg["coverage_mode"] != "complete":
@@ -56,8 +74,18 @@ def authenticated(cfg):
         raise ValueError("exactly 20 unique selected features required")
     normalize_config(cfg["model"])
     _settings(cfg["training"])
-    if cfg["model"]["n_horizons"] != 1 or len(cfg["training"]["head_weights"]) != 1:
-        raise ValueError("exactly one horizon required")
+    if not trajectory:
+        if cfg["model"]["n_horizons"] != 1 or len(cfg["training"]["head_weights"]) != 1:
+            raise ValueError("exactly one horizon required")
+    else:
+        offsets = output_offsets(cfg)
+        weights = cfg["training"]["head_weights"]
+        if len(weights) != len(offsets):
+            raise ValueError("head_weights must match trajectory heads")
+        if len(set(weights)) != 1:
+            raise ValueError("trajectory heads require equal loss weights")
+        for offset in offsets:
+            c1.validate_horizon(offset)
     limits = cfg["resources"]
     if set(limits) != LIMITS or any(type(v) is not int or v < 1 for v in limits.values()):
         raise ValueError("explicit positive integer resource limits required")
@@ -86,9 +114,30 @@ def authenticated(cfg):
     return weeks, split
 
 
-def prepare(cfg):
-    """Build complete support and TRAIN-only transforms; never fit a model."""
-    weeks, split = authenticated(cfg)
+def _head_labels(ts, price, origins, offset):
+    """Exact elapsed-hour log-returns; ``found`` marks an observed t and t+o."""
+    origins = np.asarray(origins, np.int64)
+    oi = np.searchsorted(ts, origins)
+    ti = np.searchsorted(ts, origins + offset * 3600)
+    found = ((oi < len(ts)) & (ti < len(ts))
+             & (ts[np.minimum(oi, len(ts)-1)] == origins)
+             & (ts[np.minimum(ti, len(ts)-1)] == origins + offset * 3600))
+    labels = np.zeros(len(origins), np.float64)
+    labels[found] = np.log(price[ti[found]]) - np.log(price[oi[found]])
+    return labels, found
+
+
+def prepare(cfg, trajectory=False):
+    """Build complete support and TRAIN-only transforms; never fit a model.
+
+    Heads are ``output_offsets(cfg)``; each keeps its own C1 mask and TRAIN-only
+    target center/scale. Feature scaling and the governing support use the
+    endpoint column only, so endpoint rows are identical with or without
+    intermediate heads. An intermediate head without TRAIN support (or with a
+    degenerate scale) is marked untrainable, never scored as zero error.
+    """
+    weeks, split = authenticated(cfg, trajectory)
+    offsets = output_offsets(cfg)
     limits, source = cfg["resources"], cfg["input"]
     with zipfile.ZipFile(source["path"]) as archive:
         if max(Path(source["path"]).stat().st_size, sum(i.file_size for i in archive.infolist())) > limits["max_input_bytes"]:
@@ -105,13 +154,16 @@ def prepare(cfg):
     span = (cfg["samples"]-1)*cfg["spacing_hours"]
     available = {t: t for t in observed if t.timestamp() >= ts[0]+span*3600}
     parts = build_weekly_partitions(origins=origins, weeks=weeks, observed_targets=observed,
-        input_available_at=available, horizons=[cfg["horizon_hours"]],
+        input_available_at=available, horizons=list(offsets),
         evaluation_week_id=cfg["evaluation_week_id"], evaluation_split=split,
         source_coverage_start=stamp(ts[0]), history_years=4, inner_days=28,
         history_span_hours=span, role=c1.Role(cfg["role"]), coverage_mode="complete")
+    for name, part in (("TRAIN", parts.train), ("INNER", parts.inner)):
+        if not any(m[-1] for m in part.mask):
+            raise WeeklyDataError(f"NO_ELIGIBLE_ENDPOINT_{name}")
     populations = (parts.train, parts.inner, parts.evaluation)
-    rows = [p.n_eligible for p in populations]
-    row_bytes = cfg["samples"]*41*4 + 8 + 1 + 8
+    rows = [sum(1 for m in p.mask if any(m)) for p in populations]
+    row_bytes = cfg["samples"]*41*4 + 8 + len(offsets)*(1 + 8)
     batch = cfg["training"]["batch_size"]
     if sum(rows)*row_bytes > limits["max_materialized_bytes"]:
         raise ValueError("materialized bytes exceed resource limit")
@@ -120,16 +172,31 @@ def prepare(cfg):
         raise ValueError("window batch bytes exceed resource limit")
     if math.ceil(rows[0]/batch)*cfg["training"]["max_epochs"] > limits["max_updates"]:
         raise ValueError("optimizer updates exceed resource limit")
-    fit = np.searchsorted(ts, [t.timestamp() for t, m in zip(parts.train.origins, parts.train.mask) if any(m)])
+    # Feature scaler rows: the endpoint TRAIN support only (identical to endpoint mode).
+    fit = np.searchsorted(ts, [t.timestamp() for t, m in zip(parts.train.origins, parts.train.mask) if m[-1]])
     scaled, scaler = scaled_inputs(np.where(np.isfinite(raw), raw, np.nan), fit)
-    end = np.searchsorted(ts, ts[fit]+cfg["horizon_hours"]*3600)
-    labels = np.log(price[end])-np.log(price[fit])
-    center, scale = np.array([labels.mean()]), np.array([labels.std()])
-    if not np.isfinite(scale).all() or np.any(scale <= 0):
+    center, scale = np.zeros(len(offsets)), np.ones(len(offsets))
+    status, trainable = [], np.zeros(len(offsets), bool)
+    train_mask = np.asarray(parts.train.mask, bool)
+    train_origins = np.array([int(t.timestamp()) for t in parts.train.origins], np.int64)
+    for j, offset in enumerate(offsets):
+        selected = train_origins[train_mask[:, j]]
+        labels, found = _head_labels(ts, price, selected, offset)
+        if not found.all():
+            raise ValueError("eligible TRAIN label without exact observed bars")
+        if not len(labels):
+            status.append("NO_TRAIN_SUPPORT")
+        elif not np.isfinite(labels.std()) or labels.std() <= 0:
+            status.append("DEGENERATE_TRAIN_SCALE")
+        else:
+            center[j], scale[j], trainable[j] = labels.mean(), labels.std(), True
+            status.append("TRAINED")
+    if not trainable[-1]:
         raise ValueError("degenerate TRAIN target scale")
     return dict(ts=ts, price=price, scaled=scaled, scaler=scaler, fit_indices=fit,
                 target_center=center, target_scale=scale, parts=parts, available=available,
-                observed=observed, weeks=weeks, materialized_bytes=sum(rows)*row_bytes)
+                observed=observed, weeks=weeks, materialized_bytes=sum(rows)*row_bytes,
+                offsets=offsets, head_status=status, head_trainable=trainable)
 
 
 def windows(ts, scaled, origins, spacing_hours, samples):
@@ -144,17 +211,30 @@ def windows(ts, scaled, origins, spacing_hours, samples):
 
 
 def materialize(data, part, cfg):
-    mask = np.asarray(part.mask, bool)
+    """Rows with at least one trainable eligible head; labels per head.
+
+    Untrainable heads are masked out everywhere. Invalid labels are finite
+    zeros under a False mask (selected away before residuals), never NaN.
+    Every True mask entry must have exact observed t and t+offset bars.
+    """
+    offsets = data.get("offsets", (cfg["horizon_hours"],))
+    trainable = data.get("head_trainable", np.ones(len(offsets), bool))
+    mask = np.asarray(part.mask, bool).reshape(len(part.origins), len(offsets)) & trainable[None, :]
     selected = mask.any(axis=1)
     origins = np.array([int(t.timestamp()) for t in part.origins], np.int64)[selected]
+    mask = mask[selected]
     x = np.empty((len(origins), cfg["samples"], 41), np.float32)
     batch = cfg["training"]["batch_size"]
     for i in range(0, len(origins), batch):
         x[i:i+batch] = windows(data["ts"], data["scaled"], origins[i:i+batch], cfg["spacing_hours"], cfg["samples"])
-    oi = np.searchsorted(data["ts"], origins)
-    ti = np.searchsorted(data["ts"], origins+cfg["horizon_hours"]*3600)
-    labels = (np.log(data["price"][ti])-np.log(data["price"][oi]))[:, None]
-    return x, ((labels-data["target_center"])/data["target_scale"]).astype(np.float32), mask[selected], origins
+    labels = np.zeros(mask.shape, np.float64)
+    for j, offset in enumerate(offsets):
+        values, found = _head_labels(data["ts"], data["price"], origins, offset)
+        if (mask[:, j] & ~found).any():
+            raise ValueError("eligible label without exact observed bars at t and t+offset")
+        labels[:, j] = values
+    y = np.where(mask, (labels-data["target_center"])/data["target_scale"], 0.).astype(np.float32)
+    return x, y, mask, origins
 
 
 def evaluation_support(data, cfg):

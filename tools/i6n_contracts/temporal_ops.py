@@ -27,6 +27,32 @@ def retained_indices(length, factor):
     return tuple(range((length - 1) % factor, length, factor))
 
 
+ALLOWED_REDUCTION_FACTORS = (1, 2)
+
+
+def reduction_plan(samples, strides):
+    """Return original sample indices kept after each right-anchored stage.
+
+    One to three stages with factors 1 or 2 (plan section 3). Every stage
+    must be nonempty and must still contain the current tick ``samples - 1``;
+    a cascade that would lose t or empty the sequence is rejected, never
+    repaired. Odd lengths keep t because the anchor is the last position.
+    """
+    samples = _positive_int("samples", samples)
+    if not isinstance(strides, (list, tuple)) or not 1 <= len(strides) <= 3:
+        raise ValueError("reduction plan requires 1..3 stages")
+    kept, plan = tuple(range(samples)), []
+    for stage, factor in enumerate(strides):
+        _positive_int(f"strides[{stage}]", factor)
+        if factor not in ALLOWED_REDUCTION_FACTORS:
+            raise ValueError(f"strides[{stage}] must be one of {ALLOWED_REDUCTION_FACTORS}")
+        kept = tuple(kept[i] for i in retained_indices(len(kept), factor))
+        if not kept or kept[-1] != samples - 1:
+            raise ValueError("REDUCTION_LOSES_CURRENT_TICK")
+        plan.append(kept)
+    return tuple(plan)
+
+
 @tf.keras.utils.register_keras_serializable(package="predictor_i6n")
 class I6NAttentionMask(tf.keras.layers.Layer):
     """Causal query/key presence without an integer MatrixBandPart kernel."""
