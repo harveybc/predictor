@@ -43,7 +43,7 @@ el maximo de los picos retenidos de ajuste y carga/lectura del checkpoint.
 
 Runtime `48c55ac0`; diseno sucesor
 `f57b9b92d4b2a2188ab49b9acaf10df655bde18f10c7b92e8bb26b63258859c1`.
-4038 no: el denominador correcto es **4028** disposiciones (2014 por modelo).
+Denominador: **4028** disposiciones (2014 por modelo).
 Instantanea de operacion: 24 NEURAL COMPLETED, 14 ARIMA COMPLETED, cuatro
 ARIMA FAILED_CONVERGENCE; los 42 terminales publicados y verificados por
 lectura exacta. Dos ajustes GPU y un CPU activos; la cola avanza sola.
