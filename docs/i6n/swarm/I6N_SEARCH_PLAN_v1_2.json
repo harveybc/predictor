@@ -305,6 +305,7 @@
   "naive": "same origins and masks per horizon, original price",
   "outer_week_or_test": "never used for stopping or fitness",
   "per_fold": "0.5 * (sum_abs_error_TRAIN / naive_sum_abs_error_TRAIN + sum_abs_error_INNER / naive_sum_abs_error_INNER), endpoint h, original price, sums/counts within each split (tools.i6n_search._score)",
+  "receipt_binding": "per fold: candidate_receipt.genotype_canonical_sha256 == candidate, candidate_receipt.fold == fold id, candidate_receipt.horizon_hours == h, support_digest == frozen support; endpoint rows.support_sha256 == lane C origins_sha256 when supplied; typed RECEIPT_* refusals (lane A review E-A1)",
   "requires": "all 4 folds COMPLETE with support equal to the frozen fold support"
  },
  "folds": {
@@ -312,15 +313,17 @@
   "cutoff_source": "INTERFACE_C C.1 INNER_FOLD unit: close of the last calendar week entirely inside the quarter",
   "definition_owner": "lane C (exact cutoffs, support digests); A freezes support per (h, fold)",
   "distinct_periods": true,
-  "fold_ids": [
+  "fold_id_rule": "^(2023Q[1-4])(_[A-Z0-9]+)?$; exactly one fold id per quarter",
+  "fold_id_source": "lane C plan INNER_FOLD unit_id (INTERFACE_C.2: '2023Qn' on the certified source, '2023Qn_DCA' under a declared clock assumption); the suffix/assumption is bound in the fold context and therefore in fit_id",
+  "inner_days": 28,
+  "missing_history": "materialize/contrast before the fold; never shorten years, substitute a 2024 week or skip",
+  "purged": true,
+  "quarters": [
    "2023Q1",
    "2023Q2",
    "2023Q3",
    "2023Q4"
   ],
-  "inner_days": 28,
-  "missing_history": "materialize/contrast before the fold; never shorten years, substitute a 2024 week or skip",
-  "purged": true,
   "replicas_of_one_fit": false,
   "rule": "last complete market cutoff of each 2023 calendar quarter; 28 inner days before the cutoff, purged; TRAIN = 4 calendar years before the fold cutoff; refit per fold",
   "train_calendar_years": 4,
@@ -1198,11 +1201,11 @@
   },
   {
    "id": "INT-MIN-STEPS",
-   "text": "a reduction may not leave fewer than 2 temporal steps (inherited model rule)."
+   "text": "a reduction may not leave fewer than 2 temporal steps. Inherited from the v1 search contract; stricter than lane A's model rule (t retained, sequence nonempty), i.e. an interpretation of 'vaciar la secuencia', not its literal minimum (lane A review E-A2)."
   },
   {
    "id": "INT-SEED-WINDOW",
-   "text": "seed window = smallest history with a downsampled S1 grid, then its finest dx."
+   "text": "seed window = smallest history with a downsampled S1 grid, then its finest dx. Consequence: h=5 seeds at L=30, dx=5 (n=7) because no dx>=2 divides both 5 and 24; see initial_genotypes (lane A review E-A3)."
   },
   {
    "id": "INT-ALTERNATIVE",
@@ -1225,8 +1228,8 @@
   60,
   72
  ],
- "plan_sha256": "e7de41f04c8f188606dcaa71baa497e224303bdceaa8c802e71db63045ab788c",
- "plan_version": "1.1.0",
+ "plan_sha256": "606a355567257ff76810cec2dba3cd2952b0b6c3fe4ad592ea568402d8feda3c",
+ "plan_version": "1.2.0",
  "prior_mapping": {
   "artifact": "docs/i6n/swarm/E_LEGACY_MAPPING_v1.json",
   "sha256": "e3254dd63fa4654dadf5c72b1bcdb2a8a0708dd9540202363e303d3e85c77b3f",
@@ -1264,7 +1267,7 @@
  "seal": {
   "algorithm": "sha256",
   "canonical": "json sort_keys, separators (',',':'), allow_nan=False, UTF-8; keys plan_sha256 and seal excluded",
-  "sha256": "e7de41f04c8f188606dcaa71baa497e224303bdceaa8c802e71db63045ab788c"
+  "sha256": "606a355567257ff76810cec2dba3cd2952b0b6c3fe4ad592ea568402d8feda3c"
  },
  "search": {
   "algorithm": "DEAP generational, conditional mutation + immigrants",
@@ -1298,12 +1301,20 @@
   "admissible_generation_exhausted",
   "attempt_budget"
  ],
- "supersedes": {
-  "fits_under_superseded_plan": 0,
-  "plan_sha256": "8d8865f1343c6b0efa80edf711393425c3445b953cbb76a4f841a5a1994a77d3",
-  "plan_version": "1.0.0",
-  "reason": "INT-STRIDE ruling: free per-layer strides (superset, identities unchanged)"
- },
+ "supersedes": [
+  {
+   "fits_under_superseded_plan": 0,
+   "plan_sha256": "8d8865f1343c6b0efa80edf711393425c3445b953cbb76a4f841a5a1994a77d3",
+   "plan_version": "1.0.0",
+   "reason": "INT-STRIDE ruling: free per-layer strides (superset, identities unchanged)"
+  },
+  {
+   "fits_under_superseded_plan": 0,
+   "plan_sha256": "e7de41f04c8f188606dcaa71baa497e224303bdceaa8c802e71db63045ab788c",
+   "plan_version": "1.1.0",
+   "reason": "INTERFACE_C.2 fold ids carry a clock-state suffix (2023Q1_DCA..2023Q3_DCA, 2023Q4); the plan binds the four 2023 quarters and accepts exactly one lane-C fold id per quarter instead of four literal ids. Distinctness and all-four-complete rules unchanged; no genotype or identity change. Same revision also records the fold-receipt binding (lane A review E-A1) and the E-A2/E-A3 interpretation notes"
+  }
+ ],
  "training": {
   "max_epochs": 50,
   "min_delta": 1e-06,

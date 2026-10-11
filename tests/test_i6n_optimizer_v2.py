@@ -27,8 +27,11 @@ def evaluator(request):
     assert set(request) == {"config", "generation", "context", "support"}
     r = copy.deepcopy(request["support"])
     width = request["config"]["core"]["width"]
+    genome = {k: request["config"][k] for k in v1._GENOME_KEYS}  # A's receipt formula
     r.update(status="ok", error_sums={"train": 9.0 - width / 100, "inner": 3.9},
-             metadata={"evidence_kind": "stub"})
+             metadata={"evidence_kind": "stub", "candidate_receipt": {
+                 "genotype_canonical_sha256": v1.effective_identity(genome),
+                 "fold": request["context"]["fold"], "horizon_hours": request["config"]["horizon"]}})
     return r
 
 
@@ -120,3 +123,31 @@ def test_wait_resource_then_resume_without_closing_twice():
                              st2["stage_schedule"], st2["param_defaults"], 0, 0)
     assert len(st3["population"]) == 8 and st3["generation"] == 1
     assert all(i["generation"] == 1 for i in st3["population"])
+
+
+
+def test_v2_plugin_accepts_c2_fold_ids():
+    c2 = ("2023Q1_DCA", "2023Q2_DCA", "2023Q3_DCA", "2023Q4")
+    cfg = opt(i6n_folds={f: {"i6n_support": fold_support(i),
+                             "i6n_evaluation_context": {"fold": f, "fixture": "unit-v2"}}
+                         for i, f in enumerate(c2)})
+    p = Plugin()
+    pop = p.create_shared_population(8, cfg, seed=6102026)
+    res = p.evaluate_single_genome(pop["population"][0], 0, cfg)
+    assert list(res["metrics"]["per_fold"]) == list(c2)
+    bad = opt(i6n_folds={f: cfg["i6n_folds"][f] for f in c2[:3]})
+    with pytest.raises(ValueError):
+        p.create_shared_population(8, bad, seed=6102026)
+
+
+
+def test_v2_plugin_refuses_receipt_of_another_candidate():
+    def wrong(request):
+        r = evaluator(request)
+        r["metadata"]["candidate_receipt"]["genotype_canonical_sha256"] = "b" * 64
+        return r
+    p = Plugin()
+    cfg = opt(i6n_evaluator=wrong)
+    pop = p.create_shared_population(8, cfg, seed=6102026)
+    with pytest.raises(v1.ScoreRejected, match="RECEIPT_CANDIDATE_MISMATCH"):
+        p.evaluate_single_genome(pop["population"][0], 0, cfg)

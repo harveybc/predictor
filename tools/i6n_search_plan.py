@@ -28,10 +28,10 @@ from tools import i6n_search_space as space
 
 PLAN_SCHEMA = "i6n.search_plan.v1"
 STATE_SCHEMA = "i6n.search_state.v1"
-PLAN_VERSION = "1.1.0"
-PLAN_PATH = "docs/i6n/swarm/I6N_SEARCH_PLAN_v1_1.json"
-SUPERSEDED_PLAN_SHA256 = "8d8865f1343c6b0efa80edf711393425c3445b953cbb76a4f841a5a1994a77d3"
-FOLD_IDS = ("2023Q1", "2023Q2", "2023Q3", "2023Q4")
+PLAN_VERSION = "1.2.0"
+PLAN_PATH = "docs/i6n/swarm/I6N_SEARCH_PLAN_v1_2.json"
+FOLD_QUARTERS = ("2023Q1", "2023Q2", "2023Q3", "2023Q4")
+FOLD_ID_PATTERN = r"^(2023Q[1-4])(_[A-Z0-9]+)?$"
 LEGACY_MAPPING_PATH = "docs/i6n/swarm/E_LEGACY_MAPPING_v1.json"
 # sha256 of the committed legacy mapping artifact (48 endpoint candidates).
 LEGACY_MAPPING_SHA256 = "e3254dd63fa4654dadf5c72b1bcdb2a8a0708dd9540202363e303d3e85c77b3f"
@@ -69,9 +69,14 @@ def build_plan():
     per_h_class = {"S1": 24, "S2": 16, "S3": 8}
     plan = {
         "schema": PLAN_SCHEMA, "plan_version": PLAN_VERSION,
-        "supersedes": {"plan_version": "1.0.0", "plan_sha256": SUPERSEDED_PLAN_SHA256,
-                       "reason": "INT-STRIDE ruling: free per-layer strides (superset, identities unchanged)",
-                       "fits_under_superseded_plan": 0},
+        "supersedes": [
+            {"plan_version": "1.0.0", "plan_sha256": "8d8865f1343c6b0efa80edf711393425c3445b953cbb76a4f841a5a1994a77d3",
+             "reason": "INT-STRIDE ruling: free per-layer strides (superset, identities unchanged)",
+             "fits_under_superseded_plan": 0},
+            {"plan_version": "1.1.0", "plan_sha256": "e7de41f04c8f188606dcaa71baa497e224303bdceaa8c802e71db63045ab788c",
+             "reason": "INTERFACE_C.2 fold ids carry a clock-state suffix (2023Q1_DCA..2023Q3_DCA, 2023Q4); the plan binds the four 2023 quarters and accepts exactly one lane-C fold id per quarter instead of four literal ids. Distinctness and all-four-complete rules unchanged; no genotype or identity change. Same revision also records the fold-receipt binding (lane A review E-A1) and the E-A2/E-A3 interpretation notes",
+             "fits_under_superseded_plan": 0},
+        ],
         "governing": {
             "orders_path": "docs/handoffs/SATOSHI_I6N_SWARM_WEEKLY_2026_10_11.md",
             "orders_sha256": "ac77366af24bcaf4fb9454a51c94ab1f6d5230bb1de4ff14521f76cc0a3f8b9c",
@@ -130,8 +135,8 @@ def build_plan():
             {"id": "INT-REDUCER-ORDER", "text": "non-increasing includes the entrance width (inherited search contract; legacy candidates obey it)."},
             {"id": "INT-S1-DOWNSAMPLED", "text": "S1 requires dx>=2 ('primero downsampling, despues horario'); hourly grids start at S2."},
             {"id": "INT-CLASS-WIDTH", "text": "class width limit applies to entrance, reducer and adapter widths."},
-            {"id": "INT-MIN-STEPS", "text": "a reduction may not leave fewer than 2 temporal steps (inherited model rule)."},
-            {"id": "INT-SEED-WINDOW", "text": "seed window = smallest history with a downsampled S1 grid, then its finest dx."},
+            {"id": "INT-MIN-STEPS", "text": "a reduction may not leave fewer than 2 temporal steps. Inherited from the v1 search contract; stricter than lane A's model rule (t retained, sequence nonempty), i.e. an interpretation of 'vaciar la secuencia', not its literal minimum (lane A review E-A2)."},
+            {"id": "INT-SEED-WINDOW", "text": "seed window = smallest history with a downsampled S1 grid, then its finest dx. Consequence: h=5 seeds at L=30, dx=5 (n=7) because no dx>=2 divides both 5 and 24; see initial_genotypes (lane A review E-A3)."},
             {"id": "INT-ALTERNATIVE", "text": "small alternative = Conv16 -> Conv8 -> Conv4, same window, no Transformer."},
             {"id": "INT-CACHE-SLOT", "text": "a verified cache hit occupies a population slot and acts as parent but is not a new candidate or fit."},
             {"id": "INT-LEGACY", "text": "the 48 legacy endpoint candidates are not injected into the population: their scores come from one inner interval before week 2024-01-07, which overlaps the 2023Q4 inner period."},
@@ -156,7 +161,9 @@ def build_plan():
             "never": ["learn the bound by provoking OOM", "retry an OOM with a lower cap", "fall back from GPU to CPU"],
         },
         "folds": {
-            "fold_ids": list(FOLD_IDS),
+            "quarters": list(FOLD_QUARTERS),
+            "fold_id_rule": FOLD_ID_PATTERN + "; exactly one fold id per quarter",
+            "fold_id_source": "lane C plan INNER_FOLD unit_id (INTERFACE_C.2: '2023Qn' on the certified source, '2023Qn_DCA' under a declared clock assumption); the suffix/assumption is bound in the fold context and therefore in fit_id",
             "rule": "last complete market cutoff of each 2023 calendar quarter; 28 inner days before the cutoff, purged; TRAIN = 4 calendar years before the fold cutoff; refit per fold",
             "inner_days": 28, "train_calendar_years": 4, "purged": True,
             "distinct_periods": True, "replicas_of_one_fit": False,
@@ -180,6 +187,7 @@ def build_plan():
             "per_fold": "0.5 * (sum_abs_error_TRAIN / naive_sum_abs_error_TRAIN + sum_abs_error_INNER / naive_sum_abs_error_INNER), endpoint h, original price, sums/counts within each split (tools.i6n_search._score)",
             "aggregation": "unweighted mean over the 4 folds",
             "requires": "all 4 folds COMPLETE with support equal to the frozen fold support",
+            "receipt_binding": "per fold: candidate_receipt.genotype_canonical_sha256 == candidate, candidate_receipt.fold == fold id, candidate_receipt.horizon_hours == h, support_digest == frozen support; endpoint rows.support_sha256 == lane C origins_sha256 when supplied; typed RECEIPT_* refusals (lane A review E-A1)",
             "naive": "same origins and masks per horizon, original price",
             "outer_week_or_test": "never used for stopping or fitness",
             "failed": "disposition with reason, no fitness",
@@ -275,25 +283,112 @@ def initial_population(plan, h, open_class_ids):
 
 # --- fold fitness ----------------------------------------------------------------------------
 
-def score_folds(plan, receipts, supports, require_distinct_support=True):
-    """Unweighted mean over the plan folds of the per-fold TRAIN/inner ratio fitness."""
-    folds = set(plan["folds"]["fold_ids"])
-    if set(supports) != folds:
-        raise ValueError(f"frozen support must cover exactly {sorted(folds)}")
+def resolve_fold_ids(plan, fold_ids):
+    """Validate lane C fold ids against the plan quarters; return them in quarter order.
+
+    Exactly one id per plan quarter. A missing quarter raises Incomplete (a
+    ValueError); duplicates, malformed or non-plan ids raise ValueError.
+    """
+    import re
+    ids = list(fold_ids)
+    if any(not isinstance(i, str) for i in ids) or len(set(ids)) != len(ids):
+        raise ValueError("fold ids must be distinct strings")
+    by_quarter = {}
+    for fold in ids:
+        m = re.fullmatch(FOLD_ID_PATTERN, fold)
+        if m is None or m.group(1) not in plan["folds"]["quarters"]:
+            raise ValueError(f"fold id {fold!r} is not a plan quarter fold")
+        if m.group(1) in by_quarter:
+            raise ValueError(f"two fold ids for quarter {m.group(1)}: {by_quarter[m.group(1)]!r}, {fold!r}")
+        by_quarter[m.group(1)] = fold
+    missing = [q for q in plan["folds"]["quarters"] if q not in by_quarter]
+    if missing:
+        raise Incomplete(f"no fold for quarters {missing}: all four folds are required")
+    return [by_quarter[q] for q in plan["folds"]["quarters"]]
+
+
+class ReceiptRefused(ValueError):
+    """Typed refusal: a fold receipt is not bound to this candidate/fold/horizon/support."""
+
+    def __init__(self, code, fold, detail):
+        self.code, self.fold, self.detail = code, fold, detail
+        super().__init__(f"{code} [{fold}]: {detail}")
+
+
+RECEIPT_REFUSAL_CODES = ("RECEIPT_BINDING_MISSING", "RECEIPT_CANDIDATE_MISMATCH", "RECEIPT_FOLD_MISMATCH",
+                         "RECEIPT_HORIZON_MISMATCH", "RECEIPT_SUPPORT_MISMATCH",
+                         "RECEIPT_ENDPOINT_ROW_MISSING", "RECEIPT_ORIGINS_MISMATCH")
+
+
+def _bind_receipt(receipt, fold, frozen, genotype_id, h, origins):
+    meta = receipt.get("metadata") if isinstance(receipt, dict) else None
+    cand = meta.get("candidate_receipt") if isinstance(meta, dict) else None
+    if not isinstance(cand, dict):
+        raise ReceiptRefused("RECEIPT_BINDING_MISSING", fold, "metadata.candidate_receipt absent")
+    if cand.get("genotype_canonical_sha256") != genotype_id:
+        raise ReceiptRefused("RECEIPT_CANDIDATE_MISMATCH", fold,
+                             f"{cand.get('genotype_canonical_sha256')!r} != expected {genotype_id}")
+    if cand.get("fold") != fold:
+        raise ReceiptRefused("RECEIPT_FOLD_MISMATCH", fold, f"receipt fold {cand.get('fold')!r}")
+    if type(cand.get("horizon_hours")) is not int or cand["horizon_hours"] != h:
+        raise ReceiptRefused("RECEIPT_HORIZON_MISMATCH", fold, f"receipt horizon {cand.get('horizon_hours')!r} != {h}")
+    if receipt.get("support_digest") != frozen["support_digest"]:
+        raise ReceiptRefused("RECEIPT_SUPPORT_MISMATCH", fold, "support_digest differs from the frozen fold support")
+    if origins is None:
+        return
+    rows = cand.get("rows")
+    for split in ("train", "inner"):
+        endpoint = [r for r in (rows if isinstance(rows, list) else [])
+                    if isinstance(r, dict) and r.get("head_offset_hours") == h and r.get("head_role") == "ENDPOINT"
+                    and r.get("comparison") is True and r.get("split") == split.upper()]
+        if len(endpoint) != 1:
+            raise ReceiptRefused("RECEIPT_ENDPOINT_ROW_MISSING", fold, f"{len(endpoint)} endpoint {split} rows")
+        if endpoint[0].get("support_sha256") != origins[split]:
+            raise ReceiptRefused("RECEIPT_ORIGINS_MISMATCH", fold,
+                                 f"{split} rows.support_sha256 != lane C origins_sha256")
+
+
+def score_folds(plan, receipts, supports, *, genotype_canonical_sha256, horizon_hours,
+                origins_sha256=None, require_distinct_support=True):
+    """Unweighted mean over the plan folds of the per-fold TRAIN/inner ratio fitness.
+
+    Every fold receipt must be bound (lane A INTERFACE A.2 candidate_receipt) to
+    the expected candidate identity, its own fold key, the horizon and the frozen
+    fold support; optionally (``origins_sha256`` = {fold: {train, inner}} from
+    lane C's plan) its endpoint rows' support_sha256 must equal C's origins
+    digest. Violations raise :class:`ReceiptRefused` with a typed code (E-A1).
+    """
+    space._hex64(genotype_canonical_sha256, "genotype_canonical_sha256")
+    if horizon_hours not in plan["horizons_hours"]:
+        raise ValueError("horizon outside plan")
+    order = resolve_fold_ids(plan, supports)
+    folds = set(order)
     if set(receipts) - folds:
-        raise ValueError(f"receipt for a fold outside the plan: {sorted(set(receipts) - folds)}")
+        raise ValueError(f"receipt for a fold outside the frozen supports: {sorted(set(receipts) - folds)}")
     if set(receipts) != folds:
         raise Incomplete(f"missing folds {sorted(folds - set(receipts))}: no fitness before all folds")
+    if origins_sha256 is not None:
+        if set(origins_sha256) != folds or any(
+                not isinstance(origins_sha256[f], dict) or set(origins_sha256[f]) != {"train", "inner"}
+                for f in folds):
+            raise ValueError("origins_sha256 must map every fold to {train, inner}")
+        for f in folds:
+            for split in ("train", "inner"):
+                space._hex64(origins_sha256[f][split], "origins_sha256")
     per_fold = {}
     digests = set()
-    for fold in plan["folds"]["fold_ids"]:
+    for fold in order:
         frozen = _v1._support(supports[fold])
+        _bind_receipt(receipts[fold], fold, frozen, genotype_canonical_sha256, horizon_hours,
+                      None if origins_sha256 is None else origins_sha256[fold])
         per_fold[fold] = _v1._score(receipts[fold], frozen)[0]
         digests.add((frozen["support_digest"]["train"], frozen["support_digest"]["inner"]))
     if require_distinct_support and len(digests) != len(folds):
         raise ValueError("fold supports are not distinct periods (identical support digests)")
     fitness = math.fsum(per_fold.values()) / len(per_fold)
     return {"status": "COMPLETE", "fitness": fitness, "per_fold": per_fold,
+            "genotype_canonical_sha256": genotype_canonical_sha256, "horizon_hours": horizon_hours,
+            "origins_binding": "NOT_CHECKED" if origins_sha256 is None else "VERIFIED",
             "aggregation": plan["fitness"]["aggregation"]}
 
 
@@ -512,9 +607,7 @@ def select_finalists(plan, state):
 def fit_specs(plan, h, genotypes, bindings):
     """One spec per (candidate, fold), carrying active/inactive genes and effective config."""
     verify_plan(plan)
-    folds = plan["folds"]["fold_ids"]
-    if set(bindings) != set(folds):
-        raise ValueError(f"bindings must cover exactly {folds}")
+    folds = resolve_fold_ids(plan, bindings)
     specs = []
     for g in genotypes:
         g = space.canonicalize(g)

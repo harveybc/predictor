@@ -1,7 +1,7 @@
 # Lane E: search space, sealed plan, identities (execution and status)
 
 Status 2026-10-11: code and contracts only. **No fit was run, no data read,
-no service installed.** Plan v1.1 is sealed before any fit (v1.0.0 superseded; no fit ran under it).
+no service installed.** Plan v1.2.0 is sealed before any fit (v1.0.0 and v1.1.0 superseded; no fit ran under them).
 
 ## What lane E owns
 
@@ -10,7 +10,7 @@ no service installed.** Plan v1.1 is sealed before any fit (v1.0.0 superseded; n
 | `tools/i6n_search_space.py` | v2 genotype, exact plan domain, canonicalizer with typed infeasibility, identities, size classes, seed/alternative, sampling, joint conditional mutation, legacy v1 mapping |
 | `tools/i6n_search_plan.py` | sealed plan JSON, promotion, four-fold fitness, per-horizon search state (JSON, replayable), finalists, fit specs per h/class/fold, CLI |
 | `optimizer_plugins/i6n_optimizer.py` | DOIN shared plugin: v2 path when `opt_config["i6n_plan"]` exists; v1 path unchanged |
-| `docs/i6n/swarm/I6N_SEARCH_PLAN_v1_1.json` | sealed plan, `plan_sha256 = e7de41f04c8f188606dcaa71baa497e224303bdceaa8c802e71db63045ab788c` (v1.1) |
+| `docs/i6n/swarm/I6N_SEARCH_PLAN_v1_2.json` | sealed plan, `plan_sha256 = 606a355567257ff76810cec2dba3cd2952b0b6c3fe4ad592ea568402d8feda3c` (v1.2.0) |
 | `docs/i6n/swarm/E_LEGACY_MAPPING_v1.json` | 48 completed endpoint candidates mapped to v2 (sha256 `e3254dd6...7b3f`) |
 | `docs/i6n/swarm/INTERFACE_E.json/.md` | published contract for A/B/C/D |
 | `tests/test_i6n_search_space_v2.py`, `tests/test_i6n_search_plan.py`, `tests/test_i6n_optimizer_v2.py` | identity and domain tests |
@@ -22,8 +22,8 @@ is the source of the canonical identity hash used by A, B and the legacy runs.
 
 ```bash
 # seal / verify the plan (no fits)
-python -m tools.i6n_search_plan plan --output docs/i6n/swarm/I6N_SEARCH_PLAN_v1_1.json
-python -m tools.i6n_search_plan verify --plan docs/i6n/swarm/I6N_SEARCH_PLAN_v1_1.json
+python -m tools.i6n_search_plan plan --output docs/i6n/swarm/I6N_SEARCH_PLAN_v1_2.json
+python -m tools.i6n_search_plan verify --plan docs/i6n/swarm/I6N_SEARCH_PLAN_v1_2.json
 # generation-0 configs for the 12 horizons (S1 admitted), with MANIFEST.json
 python -m tools.i6n_search_plan initial-configs --plan <plan> --output <dir>
 # one fit spec per candidate x fold, after C's units and A's freeze give bindings
@@ -44,7 +44,11 @@ Either through the shared plugin (`create_shared_population` /
 `i6n_admitted_classes`), or directly with the JSON state functions
 `new_horizon_state -> propose_generation -> record_fitness|record_disposition
 -> close_generation -> select_finalists`, and `score_folds` for the four-fold
-fitness. `WAIT_RESOURCE` (no admitted class) re-proposes later without
+fitness. Fold ids come from lane C's plan (one per 2023 quarter, e.g.
+`2023Q1_DCA`); `score_folds` must receive the candidate's
+`genotype_canonical_sha256`, `horizon_hours` and, for VERIFIED origins, C's
+`origins_sha256` per fold; any unbound receipt is refused with a typed
+`RECEIPT_*` code. `WAIT_RESOURCE` (no admitted class) re-proposes later without
 closing a generation twice. Exhaustion closes with a reason, never duplicates.
 
 ## Status of the 48 completed candidates

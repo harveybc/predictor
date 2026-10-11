@@ -310,18 +310,21 @@ class _V2:
         if horizon not in plan["horizons_hours"]:
             raise ValueError("i6n_horizon outside the plan")
         folds = cfg.get("i6n_folds")
-        if not isinstance(folds, Mapping) or set(folds) != set(plan["folds"]["fold_ids"]):
+        if not isinstance(folds, Mapping):
             raise ValueError("i6n_folds must bind exactly the plan folds")
+        order = plan_v2.resolve_fold_ids(plan, folds)  # one lane-C fold id per plan quarter
         bound = {}
-        for fold in plan["folds"]["fold_ids"]:
+        for fold in order:
             item = folds[fold]
             context = item.get("i6n_evaluation_context") if isinstance(item, Mapping) else None
             if not isinstance(context, Mapping) or not context:
                 raise ValueError(f"fold {fold} requires a nonempty i6n_evaluation_context")
             bound[fold] = dict(support=search._support(item.get("i6n_support")),
                                evaluation_context=deepcopy(dict(context)))
+            if "i6n_origins_sha256" in item:  # lane C origins per split for the endpoint rows
+                bound[fold]["origins_sha256"] = deepcopy(item["i6n_origins_sha256"])
         contract = dict(schema=SCHEMA_V2, plan_sha256=plan["plan_sha256"], horizon=horizon,
-                        folds=bound, objective="mean_over_folds_train_inner_endpoint_mae_ratio",
+                        fold_order=order, folds=bound, objective="mean_over_folds_train_inner_endpoint_mae_ratio",
                         higher_is_better=False)
         _json(contract)
         return plan, contract
@@ -398,7 +401,7 @@ class _V2:
         config = space.evaluator_config(g)
         receipts, supports = {}, {}
         try:
-            for fold in plan["folds"]["fold_ids"]:
+            for fold in contract["fold_order"]:
                 bound = contract["folds"][fold]
                 fold_cfg = dict(cfg)
                 fold_cfg.update({k: v for k, v in cfg["i6n_folds"][fold].items()
@@ -408,10 +411,18 @@ class _V2:
                                support=deepcopy(bound["support"]))
                 receipts[fold] = self.plugin._evaluate(fold_cfg, request)
                 supports[fold] = bound["support"]
-            scored = plan_v2.score_folds(plan, receipts, supports)
+            origins = {f: contract["folds"][f]["origins_sha256"] for f in contract["fold_order"]
+                       if "origins_sha256" in contract["folds"][f]}
+            if origins and len(origins) != len(contract["fold_order"]):
+                raise ValueError("i6n_origins_sha256 must be given for every fold or none")
+            scored = plan_v2.score_folds(plan, receipts, supports,
+                                         genotype_canonical_sha256=space.genotype_sha256(g),
+                                         horizon_hours=contract["horizon"],
+                                         origins_sha256=origins or None)
         except Exception as exc:
             raise search.ScoreRejected(f"I6N v2 evaluator rejected candidate: {exc}") from exc
         metrics = json.loads(_json(dict(per_fold=scored["per_fold"], receipts=receipts,
+                                        origins_binding=scored["origins_binding"],
                                         aggregation=scored["aggregation"])))
         result = dict(fitness=scored["fitness"], metrics=metrics, hyper_dict=config,
                       genotype_canonical_sha256=space.genotype_sha256(g))

@@ -418,7 +418,8 @@ def class_of(genotype):
     for c in SIZE_CLASSES:
         if n <= c["max_samples"] and widest <= c["max_width"] and g["delta_x_hours"] >= c["min_delta_x_hours"]:
             return c["class_id"]
-    raise Infeasible([{"code": "WIDTH_NOT_IN_DOMAIN", "gene": "*", "detail": "outside every size class"}])
+    # Unreachable for canonical genotypes: S3 admits every domain value (lane A review E-A4).
+    raise AssertionError("domain genotype outside every size class")
 
 
 def effective_config(genotype):

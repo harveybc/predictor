@@ -1,4 +1,4 @@
-# Lane E interface (E.2, plan v1.1)
+# Lane E interface (E.3, plan v1.2.0)
 
 Machine-readable: `INTERFACE_E.json`. Summary for A, B, C, D:
 
@@ -16,9 +16,16 @@ Machine-readable: `INTERFACE_E.json`. Summary for A, B, C, D:
   the canonical-JSON sha256 of that config (A must emit this value).
 - **B's fit_id:** `fit_id(g, {experiment, fold_id, context_sha256, support_sha256})`,
   B.1 formula verbatim. `search_candidate_sha256(g, plan_sha256)` likewise.
-- **Plan JSON:** `docs/i6n/swarm/I6N_SEARCH_PLAN_v1_1.json`, sealed
-  (`plan_sha256 e7de41f0...788c`, supersedes v1.0.0 `8d8865f1...`), with domain, classes, promotion, folds, search, fitness,
+- **Plan JSON:** `docs/i6n/swarm/I6N_SEARCH_PLAN_v1_2.json`, sealed
+  (`plan_sha256 606a3555...a3c`, supersedes v1.0.0 `8d8865f1...` and v1.1.0 `e7de41f0...`), with domain, classes, promotion, folds, search, fitness,
   budgets, initial genotypes, finalists, rollout and prior mapping.
 - **Shared plugin:** `optimizer_plugins.i6n_optimizer.Plugin` takes the v2 path
   when `opt_config["i6n_plan"]` is present (wire `i6n-shared-deap-v2`); the v1
   path is unchanged.
+- **Folds:** the plan binds the four 2023 quarters; fold ids come from lane C
+  (`2023Q1_DCA..2023Q3_DCA, 2023Q4` in C.2), one per quarter
+  (`resolve_fold_ids`).
+- **Fold fitness:** `score_folds(..., genotype_canonical_sha256=, horizon_hours=,
+  origins_sha256=)` refuses (typed `RECEIPT_*`) any receipt not bound to the
+  candidate, its fold, h and the frozen support (lane A review E-A1). B ranks
+  only through it and passes C's origins digests.

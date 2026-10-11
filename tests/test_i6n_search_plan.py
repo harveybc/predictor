@@ -31,11 +31,24 @@ def support(n_train=100, n_inner=20, naive_train=10.0, naive_inner=4.0, i=0):
             "support_digest": {"train": format(i + 1, "x") * 64, "inner": format(i + 6, "x") * 64}}
 
 
-def receipt(sup, err_train, err_inner):
+GID = "a" * 64  # expected candidate identity in fold-scoring tests
+H = 12
+
+
+def receipt(sup, err_train, err_inner, fold=None, geno=GID, horizon=H):
     r = copy.deepcopy(sup)
     r.update(status="ok", error_sums={"train": err_train, "inner": err_inner},
-             metadata={"evidence_kind": "stub"})
+             metadata={"evidence_kind": "stub", "candidate_receipt": {
+                 "genotype_canonical_sha256": geno, "fold": fold, "horizon_hours": horizon}})
     return r
+
+
+def recs_for(sups, err_train=9.0, err_inner=3.0, **kw):
+    return {f: receipt(sups[f], err_train, err_inner, fold=f, **kw) for f in sups}
+
+
+def score(plan, recs, sups, **kw):
+    return sp.score_folds(plan, recs, sups, genotype_canonical_sha256=GID, horizon_hours=H, **kw)
 
 
 # --- plan JSON and seal --------------------------------------------------------------
@@ -79,8 +92,9 @@ def test_plan_domain_matches_space(plan):
     assert d["adapter_widths"] == [8, 16, 32, 64]
     assert d["reducer_strides"]["per_layer"] == [1, 2]
     assert d["reducer_strides"]["named_patterns"] == {"none": "all 1", "progressive": "all 2", "final": "last reducer 2, others 1", "mixed": "any other per-layer 1|2 list"}
-    assert plan["plan_version"] == "1.1.0"
-    assert plan["supersedes"]["plan_sha256"] == "8d8865f1343c6b0efa80edf711393425c3445b953cbb76a4f841a5a1994a77d3"
+    assert plan["plan_version"] == "1.2.0"
+    assert [x["plan_sha256"][:8] for x in plan["supersedes"]] == ["8d8865f1", "e7de41f0"]
+    assert all(x["fits_under_superseded_plan"] == 0 for x in plan["supersedes"])
     assert plan["seed"] == 6102026 and plan["replicas"] == 1
 
 
@@ -107,7 +121,9 @@ def test_budgets(plan):
 
 def test_folds_are_distinct_quarter_periods_not_replicas(plan):
     f = plan["folds"]
-    assert f["fold_ids"] == list(FOLDS)
+    assert f["quarters"] == list(FOLDS)
+    assert "fold_ids" not in f  # ids come from lane C's plan, bound per quarter
+    assert f["fold_id_rule"] == "^(2023Q[1-4])(_[A-Z0-9]+)?$; exactly one fold id per quarter"
     assert f["distinct_periods"] is True and f["replicas_of_one_fit"] is False
     assert f["inner_days"] == 28 and f["train_calendar_years"] == 4 and f["purged"] is True
     assert f["all_folds_required_before_ranking"] is True
@@ -157,8 +173,8 @@ def test_initial_population_refuses_without_admitted_class(plan):
 
 def test_fold_fitness_is_unweighted_mean_of_sum_ratios(plan):
     sups = {f: support(n_train=100 * (i + 1), naive_train=10.0 * (i + 1), i=i) for i, f in enumerate(FOLDS)}
-    recs = {f: receipt(sups[f], 9.0 * (i + 1), 3.0 + i) for i, f in enumerate(FOLDS)}
-    fit = sp.score_folds(plan, recs, sups)
+    recs = {f: receipt(sups[f], 9.0 * (i + 1), 3.0 + i, fold=f) for i, f in enumerate(FOLDS)}
+    fit = score(plan, recs, sups)
     expected = sum(0.5 * (9.0 / 10.0 + (3.0 + i) / 4.0) for i in range(4)) / 4
     assert fit["fitness"] == pytest.approx(expected, abs=1e-15)
     assert fit["per_fold"]["2023Q2"] == pytest.approx(0.5 * (0.9 + 1.0))
@@ -167,31 +183,31 @@ def test_fold_fitness_is_unweighted_mean_of_sum_ratios(plan):
 
 def test_fold_fitness_refuses_before_four_folds(plan):
     sups = {f: support(i=i) for i, f in enumerate(FOLDS)}
-    recs = {f: receipt(sups[f], 9.0, 3.0) for f in FOLDS[:3]}
+    recs = {f: receipt(sups[f], 9.0, 3.0, fold=f) for f in FOLDS[:3]}
     with pytest.raises(sp.Incomplete):
-        sp.score_folds(plan, recs, sups)
+        score(plan, recs, sups)
 
 
 def test_fold_fitness_refuses_support_mismatch_and_failed(plan):
     sups = {f: support(i=i) for i, f in enumerate(FOLDS)}
-    recs = {f: receipt(sups[f], 9.0, 3.0) for f in FOLDS}
+    recs = recs_for(sups)
     bad = copy.deepcopy(recs)
     bad["2023Q3"]["counts"]["inner"] = 19
     with pytest.raises(ValueError):
-        sp.score_folds(plan, bad, sups)
+        score(plan, bad, sups)
     bad = copy.deepcopy(recs)
     bad["2023Q1"]["status"] = "failed"
     with pytest.raises(ValueError):
-        sp.score_folds(plan, bad, sups)
+        score(plan, bad, sups)
     with pytest.raises(ValueError):
-        sp.score_folds(plan, dict(recs, **{"2024Q1": recs["2023Q1"]}), sups)
+        score(plan, dict(recs, **{"2024Q1": recs["2023Q1"]}), sups)
 
 
 def test_folds_with_identical_support_digests_are_rejected_as_replicas(plan):
     sups = {f: support(i=0) for f in FOLDS}
-    recs = {f: receipt(sups[f], 9.0, 3.0) for f in FOLDS}
+    recs = recs_for(sups)
     with pytest.raises(ValueError, match="distinct"):
-        sp.score_folds(plan, recs, sups)
+        score(plan, recs, sups)
 
 
 # --- horizon search state machine -------------------------------------------------------
@@ -400,3 +416,121 @@ def test_committed_plan_and_legacy_artifact_match_builder(plan):
         assert c["fold_score_reuse"] == "NONE"
         if c["genotype_status"] == "MAPPED":
             assert c["genotype_canonical_sha256"] == c["v1_identity"]
+
+
+
+# --- fold ids from lane C's plan (INTERFACE_C.2: 2023Q1_DCA..2023Q3_DCA, 2023Q4) ----------
+
+C2_FOLDS = ("2023Q1_DCA", "2023Q2_DCA", "2023Q3_DCA", "2023Q4")
+
+
+def test_resolve_fold_ids_accepts_c2_ids_in_quarter_order(plan):
+    assert sp.resolve_fold_ids(plan, ["2023Q4", "2023Q2_DCA", "2023Q1_DCA", "2023Q3_DCA"]) == list(C2_FOLDS)
+    assert sp.resolve_fold_ids(plan, FOLDS) == list(FOLDS)
+
+
+@pytest.mark.parametrize("ids", [
+    ("2023Q1", "2023Q1_DCA", "2023Q3_DCA", "2023Q4"),      # two ids for one quarter, Q2 missing
+    ("2023Q1_DCA", "2023Q2_DCA", "2023Q3_DCA", "2024Q1"),   # outside 2023
+    ("2023Q1_dca", "2023Q2_DCA", "2023Q3_DCA", "2023Q4"),   # malformed suffix
+    ("W2024-01-07", "2023Q2_DCA", "2023Q3_DCA", "2023Q4"),  # weekly unit is not a fold
+])
+def test_resolve_fold_ids_rejects_non_quarter_sets(plan, ids):
+    with pytest.raises(ValueError):
+        sp.resolve_fold_ids(plan, ids)
+
+
+def test_score_folds_with_c2_ids_and_completeness(plan):
+    sups = {f: support(i=i) for i, f in enumerate(C2_FOLDS)}
+    recs = recs_for(sups)
+    fit = score(plan, recs, sups)
+    assert set(fit["per_fold"]) == set(C2_FOLDS)
+    with pytest.raises(sp.Incomplete):
+        score(plan, {f: recs[f] for f in C2_FOLDS[:3]}, sups)
+    with pytest.raises(ValueError):
+        score(plan, dict(recs, **{"2023Q1": recs["2023Q1_DCA"]}), sups)
+    with pytest.raises(sp.Incomplete):
+        score(plan, recs, {f: sups[f] for f in C2_FOLDS[:3]})
+    same = {f: support(i=0) for f in C2_FOLDS}
+    with pytest.raises(ValueError, match="distinct"):
+        score(plan, recs_for(same), same)
+
+
+def test_fit_specs_with_c2_ids(plan):
+    pop = sp.initial_population(plan, 12, open_class_ids=["S1"])
+    b = {f: {"experiment": "x", "fold_id": f, "support_sha256": format(i + 1, "x") * 64,
+             "context_sha256": "e" * 64} for i, f in enumerate(C2_FOLDS)}
+    specs = sp.fit_specs(plan, 12, pop[:1], b)
+    assert [s["fold_id"] for s in specs] == list(C2_FOLDS)
+
+
+
+# --- E-A1 (lane A review): receipts must be bound to candidate, fold, horizon, support -------
+
+def test_e_a1_reproducer_mixed_candidates_and_rotated_fold_labels_refused(plan):
+    # lane A reproducer: two candidate identities and fold labels rotated by one key
+    sups = {f: support(i=i) for i, f in enumerate(FOLDS)}
+    mixed = {f: receipt(sups[f], 9.0, 3.0, geno=("a" if i else "b") * 64, fold=FOLDS[(i + 1) % 4])
+             for i, f in enumerate(FOLDS)}
+    with pytest.raises(sp.ReceiptRefused):
+        score(plan, mixed, sups)
+
+
+@pytest.mark.parametrize("field,value,code", [
+    ("genotype_canonical_sha256", "b" * 64, "RECEIPT_CANDIDATE_MISMATCH"),
+    ("fold", "2023Q3", "RECEIPT_FOLD_MISMATCH"),
+    ("horizon_hours", 24, "RECEIPT_HORIZON_MISMATCH"),
+])
+def test_e_a1_each_binding_field_typed(plan, field, value, code):
+    sups = {f: support(i=i) for i, f in enumerate(FOLDS)}
+    recs = recs_for(sups)
+    recs["2023Q2"]["metadata"]["candidate_receipt"][field] = value
+    with pytest.raises(sp.ReceiptRefused) as e:
+        score(plan, recs, sups)
+    assert e.value.code == code and e.value.fold == "2023Q2"
+
+
+def test_e_a1_missing_candidate_receipt_and_support_digest_typed(plan):
+    sups = {f: support(i=i) for i, f in enumerate(FOLDS)}
+    recs = recs_for(sups)
+    del recs["2023Q4"]["metadata"]["candidate_receipt"]
+    with pytest.raises(sp.ReceiptRefused) as e:
+        score(plan, recs, sups)
+    assert e.value.code == "RECEIPT_BINDING_MISSING"
+    recs = recs_for(sups)
+    recs["2023Q1"]["support_digest"]["train"] = "f" * 64
+    with pytest.raises(sp.ReceiptRefused) as e:
+        score(plan, recs, sups)
+    assert e.value.code == "RECEIPT_SUPPORT_MISMATCH"
+
+
+def test_e_a1_endpoint_row_origins_bound_to_lane_c_support(plan):
+    sups = {f: support(i=i) for i, f in enumerate(C2_FOLDS)}
+    origins = {f: {"train": format(i + 1, "x") * 64, "inner": format(i + 9, "x") * 64}
+               for i, f in enumerate(C2_FOLDS)}
+    recs = recs_for(sups)
+    for f in C2_FOLDS:
+        recs[f]["metadata"]["candidate_receipt"]["rows"] = [
+            {"head_offset_hours": H, "head_role": "ENDPOINT", "comparison": True, "split": split.upper(),
+             "support_sha256": origins[f][split]} for split in ("train", "inner")] + [
+            {"head_offset_hours": 6, "head_role": "INTERMEDIATE", "comparison": False, "split": "TRAIN",
+             "support_sha256": "0" * 64}]
+    fit = score(plan, recs, sups, origins_sha256=origins)
+    assert fit["origins_binding"] == "VERIFIED"
+    bad = copy.deepcopy(recs)
+    bad["2023Q3_DCA"]["metadata"]["candidate_receipt"]["rows"][1]["support_sha256"] = "e" * 64
+    with pytest.raises(sp.ReceiptRefused) as e:
+        score(plan, bad, sups, origins_sha256=origins)
+    assert e.value.code == "RECEIPT_ORIGINS_MISMATCH"
+    bad = copy.deepcopy(recs)
+    bad["2023Q4"]["metadata"]["candidate_receipt"]["rows"] = bad["2023Q4"]["metadata"]["candidate_receipt"]["rows"][2:]
+    with pytest.raises(sp.ReceiptRefused) as e:
+        score(plan, bad, sups, origins_sha256=origins)
+    assert e.value.code == "RECEIPT_ENDPOINT_ROW_MISSING"
+    assert score(plan, recs, sups)["origins_binding"] == "NOT_CHECKED"
+
+
+def test_e_a1_expected_identity_is_required(plan):
+    sups = {f: support(i=i) for i, f in enumerate(FOLDS)}
+    with pytest.raises(TypeError):
+        sp.score_folds(plan, recs_for(sups), sups)
