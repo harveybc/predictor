@@ -97,6 +97,42 @@ genome against the COMPLETED pilot's input SHA, model, sample count, spacing,
 horizon, training settings and evaluation week. This is conservative exclusion,
 not checkpoint adoption or incorporation of the pilot's outer score.
 
+### Interrupted Predecessor Exclusions
+
+An `external_pilots` item may additionally contain
+`"reason": "ABORTED_AFTER_DISPATCH"`. Its `receipt.path` must point to the old
+controller's retained `STATE.json`, with `receipt.sha256` pinning that entire
+file; `genome` is the complete genome from the corresponding record's `wire`.
+The item has exactly these three keys: `reason`, `receipt`, and `genome`.
+Omitting `reason` retains the existing COMPLETED single-cell pilot contract.
+
+The controller verifies the state's `payload`/`sha256` envelope, top-level
+`INTERRUPTED` disposition, same-horizon scope, and a matching canonical record
+identity whose record state is `RUNNING` or `FAILED`. Dataset and source-clock
+SHA pins, calendar, features, asset, units, role, horizon, training settings,
+evaluation week/split and coverage must match the successor's actual base cell
+config. Code, device/resource settings, binding paths and base model/window
+defaults may change; these do not authorize repeating the excluded genome.
+
+This is exclusion only, regardless of recorded progress or fitness. It imports
+no scores, checkpoint, champion or completed-budget credit. The canonical genome
+and aliases are filtered before reservation, consuming proposal attempts but
+not the successor's fit budget. The retained filter label remains
+`EXTERNAL_PILOT_EXCLUDED`; the pinned private config records the aborted reason.
+
+Use separate successor output/binding directories and preserve predecessors
+unchanged. Exclude both partially trained and unknown-progress interrupted
+genomes. This mechanism neither certifies other failures as zero-update nor
+automatically retries them: any separately authorized pre-fit retry still needs
+the bug fix and independent evidence that the prior attempt made no updates.
+
+Exclusion regression on 2026-10-11: **19 passed, 1 deselected in 25.11 seconds**,
+CPU-only under `crispdm-run -m 512M -t 120s`, selecting controller tests except
+`real_isolated_worker_adapter_bridge_cpu`. Coverage includes file/envelope pins,
+RUNNING/FAILED admission, context and wire mismatches, unknown reason refusal,
+canonical aliases, filtering before reservation, and absence of adopted fitness.
+No fits or runtime artifact edits were performed for this change.
+
 Explicit secondary admission is also supported: GPU name
 `NVIDIA GeForce RTX 4090 Laptop GPU`, its own UUID, child memory `3221225472`
 (3 GiB), and fresh host minimum `6442450944` (6 GiB). This is a separate declared

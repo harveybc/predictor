@@ -28,6 +28,17 @@ def retained_indices(length, factor):
 
 
 @tf.keras.utils.register_keras_serializable(package="predictor_i6n")
+class I6NAttentionMask(tf.keras.layers.Layer):
+    """Causal query/key presence without an integer MatrixBandPart kernel."""
+
+    def call(self, inputs):
+        mask = inputs[:, :, 0]
+        positions = tf.range(tf.shape(mask)[1])
+        causal = positions[:, None] >= positions[None, :]
+        return mask[:, :, None] & mask[:, None, :] & causal[None, :, :]
+
+
+@tf.keras.utils.register_keras_serializable(package="predictor_i6n")
 class RightAnchoredSubsample(tf.keras.layers.Layer):
     """Select sequence positions from the right; supports features and masks.
 

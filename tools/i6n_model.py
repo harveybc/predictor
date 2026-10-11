@@ -103,7 +103,7 @@ def build_model(samples, n_features, spacing_hours, config):
     import tensorflow as tf
     from predictor_plugins.modular_temporal.components import causal_conv1d
     from tools.i6e_masked_model import ClockView
-    from tools.i6n_contracts.temporal_ops import RightAnchoredSubsample
+    from tools.i6n_contracts.temporal_ops import I6NAttentionMask, RightAnchoredSubsample
 
     K = tf.keras
     inp = K.Input((samples, 2 * n_features + 1), name="clock_input")
@@ -133,7 +133,7 @@ def build_model(samples, n_features, spacing_hours, config):
     )(x)
     x = ClockView("gate", name="core_entry_mask")([x, mask])
     if cfg["transformer_blocks"]:
-        attention_mask = ClockView("attention", name="causal_market_attention")(mask)
+        attention_mask = I6NAttentionMask(name="causal_market_attention")(mask)
     for block in range(cfg["transformer_blocks"]):
         attention = K.layers.MultiHeadAttention(
             num_heads=2, key_dim=width // 2, dropout=0., name=f"attention_{block}",

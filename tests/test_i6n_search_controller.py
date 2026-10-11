@@ -100,6 +100,109 @@ def test_filters_before_fit_and_pilot_alias_exclusion(config):
     assert len({w["identity"] for w in state["population"]}) == 2
 
 
+@pytest.fixture
+def aborted(config, prepared, tmp_path):
+    _, cfg = config
+    base, _, _, request = prepared
+    genome = {k: deepcopy(request["config"][k]) for k in ctl.search._GENOME_KEYS}
+    genome["input_transform"] = "difference"
+    key = ctl.search.effective_identity(genome)
+    wire = ctl.adapter.Plugin()._wire(genome, "old-context", 0)
+    payload = dict(state="INTERRUPTED", scope=cfg["scope"],
+                   identity=dict(cell=dict(config=deepcopy(base))),
+                   records={key: dict(state="RUNNING", wire=wire, progress=None)})
+    envelope = dict(payload=payload, sha256=ctl.digest(payload))
+    receipt = tmp_path / "old-STATE.json"
+    write_json(receipt, envelope)
+    item = dict(reason="ABORTED_AFTER_DISPATCH", receipt=pin(receipt), genome=genome)
+    return envelope, item, key, base
+
+
+def test_aborted_exclusion_pins_state_and_filters_before_reservation(config, aborted, monkeypatch):
+    path, cfg = config
+    envelope, item, key, _ = aborted
+    old_bytes = Path(item["receipt"]["path"]).read_bytes()
+    cfg["external_pilots"].append(item)
+    write_json(path, cfg)
+    _, opt, excluded, _ = ctl.load_config(path)
+    assert key in excluded and len(excluded) == 2
+    plugin = ctl.EndpointPlugin(cfg["admission"], excluded)
+    alias = deepcopy(item["genome"])
+    alias["multiplier"] = 6
+    assert plugin.reason(alias) == "EXTERNAL_PILOT_EXCLUDED"
+    assert plugin.reason(item["genome"]) == "EXTERNAL_PILOT_EXCLUDED"
+    allowed = deepcopy(item["genome"])
+    allowed["core"]["width"] = 32
+    proposals = iter([alias, item["genome"], allowed])
+    monkeypatch.setattr(ctl.search, "sample_genome", lambda *a: next(proposals))
+    shared = plugin.create_shared_population(1, opt, seed=cfg["seed"])
+    tracker = shared["innovation_tracker"]
+    assert tracker["attempts"] == 3 and len(tracker["seen"]) == 1
+    assert key not in tracker["seen"] and key not in tracker["pending"]
+    assert all("fitness" not in wire for wire in shared["population"])
+    assert Path(item["receipt"]["path"]).read_bytes() == old_bytes
+    Path(item["receipt"]["path"]).write_text(json.dumps(envelope)+" ")
+    with pytest.raises(ValueError, match="digest"):
+        ctl.load_config(path)
+
+
+def test_aborted_exclusion_accepts_running_or_failed_never_metrics(aborted):
+    envelope, item, key, base = aborted
+    for status in ("RUNNING", "FAILED"):
+        for progress in (None, {"progress": {"updates": 32}}):
+            changed = deepcopy(envelope)
+            changed["payload"]["records"][key].update(state=status, progress=progress, fitness=-999)
+            changed["sha256"] = ctl.digest(changed["payload"])
+            assert ctl.aborted_exclusion(changed, item["genome"], base) == key
+
+
+def test_aborted_exclusion_rejects_bad_envelope_record_and_context(aborted):
+    envelope, item, key, base = aborted
+    bad = deepcopy(envelope)
+    bad["sha256"] = "0"*64
+    with pytest.raises(ValueError, match="digest"):
+        ctl.aborted_exclusion(bad, item["genome"], base)
+    mutations = [
+        lambda p: p.update(state="RUNNING"),
+        lambda p: p.update(scope="ENDPOINT_ONLY_ENGINEERING_H72"),
+        lambda p: p["records"].clear(),
+        lambda p: p["records"][key].update(state="COMPLETED"),
+        lambda p: p["records"][key]["wire"].update(identity="0"*64),
+        lambda p: p["records"][key]["wire"].update(schema="wrong"),
+        lambda p: p["records"][key]["wire"].update(generation=-1),
+        lambda p: p["records"][key]["wire"]["genome"].update(input_transform="identity"),
+    ]
+    for change in mutations:
+        bad = deepcopy(envelope)
+        change(bad["payload"])
+        bad["sha256"] = ctl.digest(bad["payload"])
+        with pytest.raises(ValueError):
+            ctl.aborted_exclusion(bad, item["genome"], base)
+    for field in ("schema", "calendar", "features", "asset", "unit", "role", "horizon_hours",
+                  "training", "evaluation_week_id", "evaluation_split", "coverage_mode"):
+        bad = deepcopy(envelope)
+        bad["payload"]["identity"]["cell"]["config"][field] = "different"
+        bad["sha256"] = ctl.digest(bad["payload"])
+        with pytest.raises(ValueError, match="context"):
+            ctl.aborted_exclusion(bad, item["genome"], base)
+    for field in ("input", "source_clock"):
+        bad = deepcopy(envelope)
+        bad["payload"]["identity"]["cell"]["config"][field]["sha256"] = "0"*64
+        bad["sha256"] = ctl.digest(bad["payload"])
+        with pytest.raises(ValueError, match="context"):
+            ctl.aborted_exclusion(bad, item["genome"], base)
+
+
+def test_aborted_exclusion_reason_is_exact(config, aborted):
+    path, cfg = config
+    _, item, _, _ = aborted
+    item["reason"] = "RETRY_ALLOWED"
+    cfg["external_pilots"].append(item)
+    write_json(path, cfg)
+    with pytest.raises(ValueError, match="reason"):
+        ctl.load_config(path)
+
+
 def test_full_bounded_adapter_loop_and_terminal_resume(config, simulated):
     path, cfg = config
     status = ctl.run(path)

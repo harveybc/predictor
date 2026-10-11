@@ -45,6 +45,36 @@ def device_environment(cfg):
                 TF_NUM_INTEROP_THREADS="1", PYTHONDONTWRITEBYTECODE="1")
 
 
+def aborted_exclusion(envelope, genome, base):
+    """Exclude a dispatched predecessor; never import its fitness or authorize retry."""
+    exact(envelope, "payload sha256")
+    old = envelope["payload"]
+    if digest(old) != envelope["sha256"]:
+        raise ValueError("aborted controller state digest mismatch")
+    if (old["state"] != "INTERRUPTED"
+            or old["scope"] != f"ENDPOINT_ONLY_ENGINEERING_H{base['horizon_hours']}"):
+        raise ValueError("aborted exclusion requires an interrupted same-horizon controller")
+    previous = old["identity"]["cell"]["config"]
+    fields = ("schema", "calendar", "features", "asset", "unit", "role", "horizon_hours",
+              "training", "evaluation_week_id", "evaluation_split", "coverage_mode")
+    if (any(previous[k] != base[k] for k in fields)
+            or any(previous[k]["sha256"] != base[k]["sha256"] for k in ("input", "source_clock"))):
+        raise ValueError("aborted exclusion historical context mismatch")
+    bridge.candidate_config(base, search.effective_config(genome))
+    key = search.effective_identity(genome)
+    record = old["records"].get(key)
+    if not isinstance(record, dict) or record.get("state") not in ("RUNNING", "FAILED"):
+        raise ValueError("aborted exclusion requires a dispatched RUNNING or FAILED record")
+    wire = record["wire"]
+    exact(wire, "schema genome identity context generation")
+    if (wire["schema"] != adapter.SCHEMA or wire["identity"] != key
+            or type(wire["generation"]) is not int or wire["generation"] < 0
+            or search.normalize_genome(wire["genome"]) != wire["genome"]
+            or search.effective_identity(wire["genome"]) != key):
+        raise ValueError("aborted record canonical genome identity mismatch")
+    return key
+
+
 def load_config(path):
     cfg = json.loads(Path(path).read_text())
     exact(cfg, "schema scope binding plan external_pilots output_root seed budget admission resources device")
@@ -91,6 +121,12 @@ def load_config(path):
     if not isinstance(cfg["external_pilots"], list):
         raise ValueError("explicit external pilot exclusions required")
     for item in cfg["external_pilots"]:
+        if "reason" in item:
+            exact(item, "receipt genome reason")
+            if item["reason"] != "ABORTED_AFTER_DISPATCH":
+                raise ValueError("unsupported external exclusion reason")
+            excluded.add(aborted_exclusion(json.loads(pinned(item["receipt"])), item["genome"], base))
+            continue
         exact(item, "receipt genome")
         pilot = json.loads(pinned(item["receipt"]))
         pc, effective = pilot["identity"]["config"], search.effective_config(item["genome"])
