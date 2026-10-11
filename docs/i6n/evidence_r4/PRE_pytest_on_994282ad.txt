@@ -1,0 +1,44 @@
+.FF                                                                      [100%]
+=================================== FAILURES ===================================
+_ test_r4_status_and_rerun_refuse_a_result_not_bound_to_the_config_identity[contract_narrowed] _
+
+name = 'contract_narrowed'
+tmp_path = PosixPath('/tmp/pytest-of-<user>/pytest-286/test_r4_status_and_rerun_refus0')
+capsys = <_pytest.capture.CaptureFixture object at 0x711a4bbae240>
+
+    @pytest.mark.parametrize("name", sorted(FORGERIES))
+    def test_r4_status_and_rerun_refuse_a_result_not_bound_to_the_config_identity(name, tmp_path, capsys):
+        config, out = _completed(tmp_path, document([rec(0, 2)]))
+        assert _status(out, capsys)[0] == cli.EXIT_COMPLETE  # control before the forgery
+        _forge_output(out, FORGERIES[name])
+        before = _snapshot(out)
+        exit_code, payload = _status(out, capsys)
+>       assert exit_code == cli.EXIT_DAMAGED
+E       assert 0 == 6
+E        +  where 6 = cli.EXIT_DAMAGED
+
+tests/test_i6n_paired_metrics_r4.py:51: AssertionError
+_ test_r4_status_and_rerun_refuse_a_result_not_bound_to_the_config_identity[input_digest_replaced] _
+
+name = 'input_digest_replaced'
+tmp_path = PosixPath('/tmp/pytest-of-<user>/pytest-286/test_r4_status_and_rerun_refus1')
+capsys = <_pytest.capture.CaptureFixture object at 0x711a4218d430>
+
+    @pytest.mark.parametrize("name", sorted(FORGERIES))
+    def test_r4_status_and_rerun_refuse_a_result_not_bound_to_the_config_identity(name, tmp_path, capsys):
+        config, out = _completed(tmp_path, document([rec(0, 2)]))
+        assert _status(out, capsys)[0] == cli.EXIT_COMPLETE  # control before the forgery
+        _forge_output(out, FORGERIES[name])
+        before = _snapshot(out)
+        exit_code, payload = _status(out, capsys)
+>       assert exit_code == cli.EXIT_DAMAGED
+E       assert 0 == 6
+E        +  where 6 = cli.EXIT_DAMAGED
+
+tests/test_i6n_paired_metrics_r4.py:51: AssertionError
+==================================== PASSES ====================================
+=========================== short test summary info ============================
+PASSED tests/test_i6n_paired_metrics_r4.py::test_r4_forgeries_verify_in_isolation_so_only_the_identity_binding_can_refuse_them
+FAILED tests/test_i6n_paired_metrics_r4.py::test_r4_status_and_rerun_refuse_a_result_not_bound_to_the_config_identity[contract_narrowed]
+FAILED tests/test_i6n_paired_metrics_r4.py::test_r4_status_and_rerun_refuse_a_result_not_bound_to_the_config_identity[input_digest_replaced]
+2 failed, 1 passed in 0.21s
