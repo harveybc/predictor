@@ -41,7 +41,7 @@ def report(cell, design, pin):
     for naive in cell.get("diagnostic_naives", []):
         items.append(dict(metric=f"Diagnostic_Naive_MAE_H{naive['horizon_hours']}", value=naive["naive_mae"],
                           horizon=naive["horizon_hours"], split="validation", unit="USD_per_EUR"))
-    result = dict(experiment_key="i6m:2024:EURUSD:"+cell["job_id"],
+    result = dict(experiment_key="i6m:"+design["sha256"][:12]+":2024:EURUSD:"+cell["job_id"],
                   experiment_set_key="i6m:2024:EURUSD:"+design["sha256"][:12],
                   actor="predictor", lake="LOCAL_RETAINED", lineage="UNVERIFIED",
                   config_sha256=design["sha256"], code_commit=pin, project="predictor", phase="I6E_MULTI_HORIZON",

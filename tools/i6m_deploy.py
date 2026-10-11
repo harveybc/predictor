@@ -22,7 +22,7 @@ def deploy(a):
     pin = shell(["git", "-C", str(base), "rev-parse", "HEAD"]).stdout.strip()
     if shell(["git", "-C", str(base), "status", "--porcelain"]).stdout:
         raise ValueError("deployment requires a clean, committed worktree")
-    prepare(a.parent, a.root)
+    prepare(a.parent, a.root, a.predecessor)
     workers = []
     for role, host, device, max_samples in (("preferred", a.preferred_host, "RTX 5090", 241),
                                             ("secondary", a.secondary_host, "RTX 4090", 9)):
@@ -40,9 +40,11 @@ def deploy(a):
             raise ValueError(f"{role}: required device unavailable or ambiguous")
         tf = home+"/anaconda3/envs/tensorflow"
         ld = shell(["ssh", host, "cat", home+"/.local/state/scratch/m07/ld_library_path.txt"]).stdout.strip()
-        remote_root = home+"/.local/state/canonical_20261003/i6e/multihorizon_2024_v1"
+        remote_root = home+"/.local/state/canonical_20261003/i6e/"+a.root.name
         shell(["ssh", host, "mkdir", "-p", remote_root+"/jobs", remote_root+"/cells", remote_root+"/cost"])
         shell(["rsync", "-a", str(a.root/"DESIGN.json"), str(a.root/"TRAIN.npz"), str(a.root/"INPUT.npz"), host+":"+remote_root+"/"], timeout=180)
+        if (a.root/"cells").exists():
+            shell(["rsync", "-a", str(a.root/"cells")+"/", host+":"+remote_root+"/cells/"], timeout=180)
         workers.append(dict(role=role, host=host, root=remote_root, worktree=worktree, model="NEURAL",
                             max_samples=max_samples, light_python=home+"/anaconda3/bin/python", fit_python=tf+"/bin/python",
                             admission=home+"/.local/bin/crispdm-run", pilot_cap=4*1024**3,
@@ -79,6 +81,7 @@ def main():
     p.add_argument("--secondary-host", required=True)
     p.add_argument("--url", default="http://127.0.0.1:5057")
     p.add_argument("--token-file", type=Path, required=True)
+    p.add_argument("--predecessor", type=Path)
     deploy(p.parse_args())
 
 

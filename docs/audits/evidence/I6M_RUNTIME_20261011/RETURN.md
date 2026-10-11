@@ -19,3 +19,22 @@ MH01-MH06 cubiertos por pruebas de contrato/modelo; MH07 cola/restart unitario
 y MH08 esquema/outbox necesitan observacion operativa; MH09 pilotos reales y
 MH10 cierre total se registran en el directorio privado de campana. No se
 declaran completos anticipadamente. No se editaron motores sellados.
+
+## Incidente operativo y sucesor
+
+El primer despacho b0e2d366 encontro dos TypeError por claves duplicadas al
+montar diccionarios de terminal/naives. NO eran fallos de ajuste ni de GPU.
+Las pruebas originales no recorrian ese escritor real, brecha corregida con
+dos regresiones que lo ejecutan sobre un fit sintético declarado. POST: 38
+pruebas pasan bajo el mismo cap CPU, 19.03 s.
+
+Los dos ajustes reales dejaron FIT.json y MODEL.keras autenticos (1980
+updates, 22 epocas para h2; early stop promedio TRAIN/inner, mejor epoca 17).
+El sucesor adopta esos pesos solo si escala, poblacion, parametros, seed,
+TRAIN y contrato de ajuste coinciden exactamente con la identidad anterior;
+registra ambos digests de codigo. Se conserva el FAILED original, sin editarlo
+y SIN otro fit. Tambien se recuperan pronosticos ARIMA completos cuando sus
+precios/timestamps y el fichero de parametros retenido pasan la verificacion.
+El nuevo diseno y los nuevos recibos tienen otra identidad; no se sustituyen
+resultados del experimento anterior en el OLAP. El pico de coste adoptado es
+el maximo de los picos retenidos de ajuste y carga/lectura del checkpoint.

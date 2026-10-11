@@ -129,6 +129,39 @@ def test_sha_includes_order_and_scientific_contract():
     assert digest(dict(h=2)) != digest(dict(h=3))
 
 
+@pytest.mark.parametrize("pilot", [False, True])
+def test_child_terminal_assembly_and_all_diagnostics(tmp_path, monkeypatch, pilot):
+    from argparse import Namespace
+    from tools import i6m_cell as cell
+    from tools.i6m_prepare import code_identity
+    # Deliberately synthetic arrays/fit, testing the REAL terminal writer rather
+    # than duplicating its dictionary assembly in the test.
+    ts = np.arange(epoch("2020-01-01T00:00:00Z"), epoch("2024-01-10T00:00:00Z"), 3600)
+    if pilot:
+        ts = ts[ts < epoch("2024-01-01T00:00:00Z")]
+    arrays = (ts, np.ones((len(ts), 20)), np.exp(np.arange(len(ts))*1e-6))
+    monkeypatch.setattr(cell, "load_input", lambda *a: arrays)
+    monkeypatch.setattr(cell, "peak_bytes", lambda: 101)
+    d = seal(dict(code_sha256=code_identity(), train_sha256="a"*64, input_sha256="b"*64))
+    arm = next(a for a in experiment_grid()[0] if a["arm_id"] == "h006_d002")
+    job = seal(dict(id="test", model="NEURAL", arm=arm, week=weekly_schedule(2024)[0], seed=6102026, lease="lease", design_sha256=d["sha256"]))
+    (tmp_path/"DESIGN.json").write_text(json.dumps(d))
+    (tmp_path/"JOB.json").write_text(json.dumps(job))
+    def fake_fit(args, job, design, ts, x, p, y, ep, fi, vi, si):
+        if pilot:
+            return dict(status="PILOT_COMPLETED", cgroup_peak_bytes=200)
+        return dict(prediction=p[ep[si]])
+    monkeypatch.setattr(cell, "neural", fake_fit)
+    out = tmp_path/"out"
+    cell.run(Namespace(job=tmp_path/"JOB.json", design=tmp_path/"DESIGN.json", input=tmp_path/"input.npz", output=out, pilot=pilot))
+    result = verify(json.loads((out/("PILOT.json" if pilot else "CELL.json")).read_text()))
+    if pilot:
+        assert result["cgroup_peak_bytes"] == 200 and result["own_cgroup_peak_bytes"] == 101
+    else:
+        assert result["metrics"]["mae"] == 0
+        assert [m["horizon_hours"] for m in result["diagnostic_naives"]] == [2,4,6]
+
+
 @pytest.mark.parametrize("samples", [3, 5, 7, 9, 13, 49, 241])
 def test_real_model_shapes_masks_reload_and_causal_prefix(samples, tmp_path):
     tf = pytest.importorskip("tensorflow")

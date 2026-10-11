@@ -55,11 +55,12 @@ def neural(args, job, design, ts, x, price, y, endpoint, fi, vi, si):
     if scale <= 0 or not np.isfinite(scale):
         raise ValueError("degenerate target scale")
     settings = design["fit"]
-    fit_identity = digest(dict(arm=job["arm"], week=job["week"], seed=job["seed"],
+    fit_contract = dict(arm=job["arm"], week=job["week"], seed=job["seed"],
                                fit_ts=digest(ts[fi].tolist()), inner_ts=digest(ts[vi].tolist()),
                                scaler=scaler.sha256(), center=center, scale=scale,
                                settings=settings, code_sha256=design["code_sha256"],
-                               train_sha256=design["train_sha256"], members=design["members"]))
+                               train_sha256=design["train_sha256"], members=design["members"])
+    fit_identity = digest(fit_contract)
     fit_path = args.output / "FIT.json"
     model = build_model(job["arm"]["samples"], 20, job["arm"]["spacing_hours"])
     if model.count_params() != 34921:
@@ -67,7 +68,10 @@ def neural(args, job, design, ts, x, price, y, endpoint, fi, vi, si):
     reused = False
     if fit_path.exists():
         fit = verify(json.loads(fit_path.read_text()))
-        if fit["fit_identity"] != fit_identity or file_hash(args.output/"MODEL.keras") != fit["model_sha256"]:
+        allowed = [fit_identity]
+        if design.get("receipt_only_predecessor_code_sha256"):
+            allowed.append(digest(dict(fit_contract, code_sha256=design["receipt_only_predecessor_code_sha256"])))
+        if fit["fit_identity"] not in allowed or file_hash(args.output/"MODEL.keras") != fit["model_sha256"]:
             raise ValueError("retained pilot/checkpoint identity mismatch")
         model = tf.keras.models.load_model(args.output/"MODEL.keras")
         training = fit["training"]
@@ -113,6 +117,19 @@ def statistical(args, job, design, ts, price, si):
     remain NaN on the physical clock, not compressed away.
     """
     from statsmodels.tsa.statespace.sarimax import SARIMAX
+    retained = args.output/"PREDICTIONS.npz"
+    if retained.exists() and design.get("receipt_only_predecessor_code_sha256"):
+        with np.load(retained, allow_pickle=False) as previous:
+            _, endpoints = targets(ts, price, job["arm"]["horizon_hours"])
+            for key, expected in (("timestamps", ts[si]), ("target_timestamps", ts[endpoints[si]]),
+                                  ("current", price[si]), ("actual", price[endpoints[si]])):
+                if not np.array_equal(previous[key], expected):
+                    raise ValueError("retained ARIMA population mismatch")
+            prediction = previous["prediction"].copy()
+        if not np.isfinite(prediction).all() or not (args.output/"ARIMA_FITS.json").exists():
+            raise ValueError("retained ARIMA fit/predictions incomplete")
+        return dict(prediction=prediction, parameters=2, device="CPU", reused_fit=True,
+                    phase_fits=len(json.loads((args.output/"ARIMA_FITS.json").read_text())))
     h, delta = job["arm"]["horizon_hours"], job["arm"]["spacing_hours"]
     start, cutoff = epoch(job["week"]["fit_start"]), epoch(job["week"]["fit_cutoff"])
     predictions = np.full(len(si), np.nan)
@@ -183,10 +200,13 @@ def run(args):
                     _, ei = targets(ts, price, horizon)
                     oi = si[ei[si] >= 0]
                     if len(oi):
-                        diagnostics.append(dict(horizon_hours=horizon, **metrics(price[oi], price[ei[oi]], price[oi], horizon)))
+                        diagnostics.append(metrics(price[oi], price[ei[oi]], price[oi], horizon))
                 result["diagnostic_naives"] = diagnostics
-        result = seal(dict(state, **{k:v for k,v in result.items() if k != "sha256"},
-                           elapsed_seconds=time.monotonic()-start, cgroup_peak_bytes=peak_bytes()))
+        current_peak = peak_bytes()
+        result = seal({**state, **{k:v for k,v in result.items() if k != "sha256"},
+                       "elapsed_seconds": time.monotonic()-start,
+                       "own_cgroup_peak_bytes": current_peak,
+                       "cgroup_peak_bytes": max(result.get("cgroup_peak_bytes") or 0, current_peak or 0) or None})
         atomic_json(terminal, result)
         atomic_json(args.output/"STATUS.json", result)
     except Exception as exc:

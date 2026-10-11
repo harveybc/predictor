@@ -24,7 +24,7 @@ def code_identity():
     return digest({str(p.relative_to(base)): file_hash(p) for p in sorted(files)})
 
 
-def prepare(parent, output):
+def prepare(parent, output, predecessor=None):
     source = parent / "INPUT.npz"
     expected = "897caee164286bedea61c4caab361213cf703d3f50e60ba12cee543d9bfa28c9"
     if file_hash(source) != expected:
@@ -63,6 +63,34 @@ def prepare(parent, output):
     fit = dict(batch_size=256, huber_delta=1., learning_rate=.001, loss="huber", max_epochs=50,
                max_seconds=3600., max_updates=100000, min_delta=0., monitor="train_validation_mean",
                monitor_every=1, patience=5, weight_decay=.0001)
+    predecessor_sha = None
+    if predecessor:
+        import shutil
+        from tools.i6m_queue import verify
+        old = verify(json.loads((predecessor/"DESIGN.json").read_text()))
+        if old["parent_input_sha256"] != expected or old["members"] != members or old["fit"] != fit:
+            raise ValueError("receipt-only predecessor scientific contract differs")
+        for name in ("INPUT.npz", "TRAIN.npz"):
+            if file_hash(predecessor/name) != old[name.split(".")[0].lower()+"_sha256"]:
+                raise ValueError("predecessor input digest mismatch")
+            shutil.copyfile(predecessor/name, output/name)
+        predecessor_sha = old["code_sha256"]
+        for cell in (predecessor/"cells").iterdir():
+            terminal = cell/"CELL.json"
+            if not terminal.exists():
+                continue
+            record = verify(json.loads(terminal.read_text()))
+            if record["status"] != "FAILED":
+                continue
+            if not any(s in record.get("reason", "") for s in ("TRAIN_COST_FAILED", "multiple values for keyword")):
+                continue
+            destination = output/"cells"/cell.name
+            destination.mkdir(parents=True, exist_ok=True)
+            # Preserve original failed records separately; never relabel history.
+            shutil.copyfile(terminal, destination/"PREDECESSOR_FAILED.json")
+            for name in ("FIT.json", "MODEL.keras", "ARIMA_FITS.json", "PREDICTIONS.npz"):
+                if (cell/name).exists():
+                    shutil.copyfile(cell/name, destination/name)
     design = seal(dict(schema="predictor.i6m.execution.v1", arms=plan["arms"], weeks=plan["validation_weeks"],
                        seed=plan["seed"], models=["NEURAL", "ARIMA"], fit=fit, members=members,
                        plan_sha256=plan["plan_sha256"], code_sha256=code_identity(),
@@ -70,7 +98,8 @@ def prepare(parent, output):
                        parent_input_sha256=expected, parent_design_sha256=prior["design_sha256"],
                        population=population, test_read=False, lineage="LOCAL_RETAINED_UNVERIFIED",
                        skill_formula="(MAE_h - naive_h) / naive_h", skill_negative_is_better=True,
-                       repetitions=1, cost_pilot="exact first-week TRAIN fit adopted without repeat"))
+                       repetitions=1, cost_pilot="exact first-week TRAIN fit adopted without repeat",
+                       receipt_only_predecessor_code_sha256=predecessor_sha))
     atomic_json(output/"DESIGN.json", design)
     Queue(output/"QUEUE.db", design)
     atomic_json(output/"STATUS.json", Queue(output/"QUEUE.db", design).status())
@@ -81,8 +110,9 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--parent", type=Path, required=True)
     p.add_argument("--output", type=Path, required=True)
+    p.add_argument("--predecessor", type=Path)
     a = p.parse_args()
-    print(json.dumps(dict(status="PREPARED", design_sha256=prepare(a.parent, a.output)["sha256"])))
+    print(json.dumps(dict(status="PREPARED", design_sha256=prepare(a.parent, a.output, a.predecessor)["sha256"])))
 
 
 if __name__ == "__main__":

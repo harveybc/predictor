@@ -124,6 +124,9 @@ def cycle(root, workers, q, arrays):
     with q.connect() as conn:
         status["published"] = conn.execute("SELECT count(*) FROM jobs WHERE published=1").fetchone()[0]
     atomic_json(root/"STATUS.json", status)
+    if not (root/"PROGRESS.png").exists() or time.time()-(root/"PROGRESS.png").stat().st_mtime > 300:
+        from tools.i6m_results import plot
+        plot(root, q)
     return status
 
 
