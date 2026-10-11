@@ -1,7 +1,13 @@
 # I6-E: origin-anchored resolution experiment
 
-Status: NEURAL_156_COMPLETE / PRICE_RECONCILED / LIVE_OLAP_VERIFIED / STATISTICAL_RUNNING.
+Status: NEURAL_156_COMPLETE / PRICE_RECONCILED / LIVE_OLAP_VERIFIED / STATISTICAL_DISPOSITIONS_COMPLETE.
 Updated 2026-10-11.
+
+The active NEXT design is [I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md](I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md).
+It covers ten business horizons, coarse steps 1/2/3/4 and then matched hourly
+controls in ascending window size. This document retains the sealed 72h
+campaign and its design history; neither its old eighteen-arm grid nor its
+compact three-arm grid is authority to dispatch the new multihorizon campaign.
 
 ## Verified compact result and current continuation
 
@@ -24,7 +30,9 @@ ARIMA then completed 156/156 cells. Pooled price MAE for 72/36/18h spacing:
 0.004425168, 0.004383068, 0.004394994 versus 0.004403521 paired naive.
 MAE skill: -0.491589%, +0.464463%, +0.193648%. The three independent complete
 arms have 18 additional pooled metrics published with exact readback.
-ARIMAX remains open; its workers now partition even/odd weeks across both hosts.
+ARIMAX closed 156 dispositions: 121 successful and 35 numerical failures.
+All 312 statistical reports / 2910 metrics have a retained exact-readback
+publication receipt. This is disposition closure, not complete ARIMAX science.
 These validation gains do not establish profitability or a sampling theorem.
 
 Next: `tools/i6e_statistical_campaign.py` exports verified common origins,
@@ -60,8 +68,8 @@ PREFERRED_HOST=<worker-a> SECONDARY_HOST=<worker-b> PIN=<immutable-commit> \
 python -m tools.i6e_progress --root <statistical-directory> --png <progress.png>
 ```
 
-The longer-horizon extension below remains a separate TRAIN-selected design;
-do not choose its configuration from these outer-validation results. Core
+The extension is governed by the new linked multihorizon subplan. Its finite
+grid must be fixed before validation and TEST remains reserved. Core
 pretraining, NEAT, real trading and TEST are not automatic shortcuts around the
 same-row eligibility gate.
 

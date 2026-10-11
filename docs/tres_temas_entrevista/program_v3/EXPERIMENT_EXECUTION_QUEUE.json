@@ -3,8 +3,8 @@
   "updated_on": "2026-10-11",
   "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md and its program_v3 subplans",
   "policy": {
-    "focus": "I6E_COMPACT72_STATISTICAL_CONTROLS_AFTER_NEURAL_CLOSURE",
-    "parallelism": "one CPU model worker per compute host; TRAIN cost pilot first; one admitted cell child per worker; coordinator collects and closes unattended",
+    "focus": "I6E_MULTI_HORIZON_DOWNSAMPLING_THEN_HOURLY_IMPLEMENTATION",
+    "parallelism": "Plan only so far. Implement and verify durable workers first; coarse stage before hourly stage, one GPU child on preferred host, secondary worker if measured memory fits; coordinator CPU light only.",
     "seed_default": 6102026,
     "seed_maximum": 3,
     "repeat_policy": "adopt valid terminals; repeat only lost corrupt or scientifically changed units",
@@ -13,9 +13,9 @@
       "dragon_4090",
       "omega_4070"
     ],
-    "gpu_use_now": "compact neural cells are complete; ARIMA/ARIMAX controls are CPU work; no concurrent 5070 Ti job on gamma",
-    "financial_gate": "strictly_better_than_same_row_naive_before_strategy",
-    "test_policy": "validation and test remain closed during filter selection",
+    "gpu_use_now": "No new multihorizon training launched by the plan update; use 5090 first at deployment, never concurrent 5070 Ti on the preferred host.",
+    "financial_gate": "MAE in original price must beat naive para el horizonte de X horas on identical rows before strategy evaluation",
+    "test_policy": "2025 TEST reserved; no selection on TEST; 2024 validation only after sealing grid and per-horizon input populations",
     "warehouse_policy": "all metrics decisions ranks costs and identities require submit plus readback",
     "snapshot_policy": "verified physical DuckDB copies on coordinator and worker_b; Git contains code, manifest and SHA-256, never the 3.4 GiB binary"
   },
@@ -27,14 +27,26 @@
   },
   "lanes": [
     {
-      "priority": 0,
+      "priority": -1,
       "id": "I6E-STATISTICAL72",
       "resource": "two_bounded_CPU_workers",
-      "state": "RUNNING",
+      "state": "COMPLETE_DISPOSITIONS_SCIENTIFIC_ARIMAX_INCOMPLETE",
       "work": "TRAIN-only cost, 312 weekly-resolution cells, 6552 phase fits per model, common-row closure and automatic live OLAP publication/readback.",
       "depends_on": [],
       "produces": "STATISTICAL_CLOSURE.json and olap/PUBLICATION.json",
-      "evidence": "Neural 156/156 and original-price reconciliation complete; 156 reports / 2184 metrics readback verified. Both statistical TRAIN cost pilots passed. Typed numerical failures stay in the denominator; independent cells continue without repeats."
+      "evidence": "ARIMA 156 successful; ARIMAX 121 successful and 35 numerical failures. Retained publication receipt: 312 reports / 2910 metrics PUBLISHED_READBACK_VERIFIED; failed arms have no aggregate."
+    },
+    {
+      "priority": 0,
+      "id": "I6E-MULTIHORIZON",
+      "resource": "CPU_design_and_tests_then_measured_5090_and_4090",
+      "state": "PLANNED_NOT_EXECUTED",
+      "work": "Implement MH05-MH10, authenticate inputs and costs, then complete 28 downsampled arms and 10 hourly arms automatically. Horizons 2,3,4,5,6,24,48,72,96,120; context 2h; coarse steps 1/2/3/4 where divisible. No permissions or user visits between stages.",
+      "depends_on": [],
+      "produces": "per-horizon original-price metrics and naive, complete stage dispositions, unattended status/ETA and exact OLAP readback",
+      "design": "I6E_MULTI_HORIZON_PLAN.json",
+      "work_plan": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
+      "evidence": "15 pure grid/calendar/metric tests passed; no new datasets read or fits run. Generalized model, workers, outbox and monitored deployment not yet implemented."
     },
     {
       "priority": 1,

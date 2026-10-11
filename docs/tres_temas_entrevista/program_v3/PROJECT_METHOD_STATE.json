@@ -8,7 +8,7 @@
   ],
   "program_owner": "Harvey",
   "execution_owner": "Musashi",
-  "handoff_status": "I6E_NEURAL_COMPLETE_PRICE_RECONCILED_OLAP_VERIFIED_STATISTICAL_CONTROLS_NEXT",
+  "handoff_status": "I6E_STATISTICAL_DISPOSITIONS_CLOSED_MULTI_HORIZON_PLAN_AND_PURE_TESTS_READY",
   "i6e_compact": {
     "neural_cells_complete": 156,
     "neural_cells_expected": 156,
@@ -20,16 +20,40 @@
     "warehouse_metrics_readback_verified": 2184,
     "naive_eligible_arms": 0,
     "test_read": false,
-    "next_action": "TRAIN-only statistical cost pilots, then automatic weekly ARIMA/ARIMAX controls, exact common-row closure and live publication."
+    "next_action": "Retain complete 72h controls and typed ARIMAX failures. Implement the new multihorizon downsampling-then-hourly plan without modifying sealed engines."
+  },
+  "i6e_multihorizon": {
+    "status": "PLANNED_NOT_EXECUTED",
+    "execution_ready": false,
+    "current_stage": "unit_test_verification",
+    "work_plan": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
+    "generated_design": "I6E_MULTI_HORIZON_PLAN.json",
+    "horizons_hours": [2, 3, 4, 5, 6, 24, 48, 72, 96, 120],
+    "coarse_forecast_steps": [1, 2, 3, 4],
+    "stage_order": ["DOWNSAMPLING", "HOURLY"],
+    "unique_arms": 38,
+    "downsampled_arms": 28,
+    "hourly_arms": 10,
+    "validation_week_segments": 53,
+    "seed": 6102026,
+    "repetitions": 1,
+    "metric_scale": "original_price_USD_per_EUR",
+    "naive_name": "naive para el horizonte de X horas",
+    "test_read": false,
+    "pure_contract_tests_passed": 15,
+    "runtime_verified": false,
+    "next_action": "Generalized model and input populations, MH05-MH10 worker/outbox/restart tests, TRAIN-only resource pilots, then automatic D->H deployment."
   },
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [
+    "Implement I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md MH05-MH10; execute downsampling before hourly controls only after model/rows/resource verification. Never require another owner visit between stages.",
     "Use the complete I6-A 208/208-cell EURUSD Y_s_1h business adaptation as development evidence only: ARCH-B is the strongest arm relative to ARCH-A, but none beats the same-row naive on the mean.",
     "Retain RAW as the mainline selected input; the reconstructed-input TRAIN diagnostic was worse in all three paired weeks and does not authorize denoising the target.",
     "Complete the remaining general E0 H2/H3, literature-model and target/horizon controls before calling I6-A globally verified; then pretrain authenticated branches and compare R0/R1/R2 on matched weekly rows.",
     "Do not open TEST or promote a trading model until the selected architecture and same-row naive gates pass."
   ],
   "documents": {
+    "horizon_resolution": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
     "master": "../MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md",
     "metrics": "../PROGRAM_METRICS_CONTRACT_v1.md",
     "orders": "CURRENT_EXECUTION.md",

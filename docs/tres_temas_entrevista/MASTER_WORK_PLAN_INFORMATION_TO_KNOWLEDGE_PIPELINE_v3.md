@@ -111,13 +111,21 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
   con 11 salidas (1-6, 24, 48, 72, 96 y 120 h), ramas preentrenadas en R2,
   cuatro anos moviles y 52 semanas de VALIDATION. 1 h es solo diagnostico.
   [Contrato y ejecucion](program_v3/I7_MULTI_HORIZON_WORK_PLAN.md).
-- [ ] I6-E. Viabilidad de doble pronostico: resoluciones h, h/2 y h/4,
-  ventanas ancladas al origen horario, sin suavizado, naive anual pareado.
-  [Subplan de ejecucion](program_v3/I6E_ORIGIN_ANCHORED_RESOLUTION_WORK_PLAN.md).
+- [ ] I6-E. Viabilidad de doble pronostico: h=2,3,4,5,6,24,48,72,96,120 h.
+  Primero downsampling a 1/2/3/4 ticks cuando h/k sea una hora entera;
+  despues controles horarios de menor a mayor ventana; contexto 2h en ambos.
+  **Naive para el horizonte de X horas**, recalculado por h sobre las mismas
+  filas que su MAE, ambos en precio original. Sin suavizado ni target limpio.
+  [Subplan vigente](program_v3/I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md):
+  28 brazos downsampled y 10 horarios unicos, sin repetir tres alias; transicion
+  automatica entre etapas, status/ETA y outbox OLAP, no visitas del usuario.
   Contraste compacto de 72 h cerrado: 156 celdas / 3,712 filas por brazo;
   ningun brazo supera al naive. Precio original reconciliado y 2,184 metricas
-  verificadas en OLAP. Siguen controles ARIMA/ARIMAX automatizados en CPU;
-  la extension multihorizonte conserva seleccion de configuracion solo en TRAIN.
+  verificadas en OLAP. Controles CPU: 312 disposiciones cerradas, 35 fallos
+  ARIMAX retenidos; 312 informes / 2,910 metricas con recibo de readback.
+  La grilla nueva esta planificada, NO ejecutada: requiere adapter n=7 y
+  horario, workers y aceptaciones autonomas; no reutilizar ciegamente donantes
+  ni confundir el barrido R2 de ventana fija 24 con el contraste de ventanas.
 - [ ] I7-H. Fijar prefijo ganador y probar H-CORE por separado.
 - [ ] I8. Optimización DEAP distribuida por DOIN del modelo elegible.
 - [ ] I9-N. Representación final congelada: Dense control frente a NEAT.

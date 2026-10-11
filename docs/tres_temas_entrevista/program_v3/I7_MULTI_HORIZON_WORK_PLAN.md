@@ -1,5 +1,12 @@
 # I7-M: direct multi-output strategy horizon sweep
 
+Retained historical experiment, not the next dispatch. The 52-week R2 sweep
+with a fixed 24-sample hourly window is complete, with a separately computed
+naive for each horizon in raw log-return units. It does NOT test context
+adapted to h or matched downsampling/hourly resolution. Preserve its artifacts;
+do not infer general strategy impossibility from it. The next design is
+[I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md](I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md).
+
 ## Purpose and priority
 
 The completed 1h comparison does not answer whether the prediction-based

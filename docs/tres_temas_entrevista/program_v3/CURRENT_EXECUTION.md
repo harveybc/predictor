@@ -39,7 +39,7 @@ plan `FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md`. Retorno único:
   worker_b 3/2 GiB), sin GPU; tiempo de cómputo de pares 32,909 s EURUSD y 1,001 s ETH
   (0.49 y 0.29 s/par), RSS pico por proceso 0.76 GiB.
 
-## Frente activo
+## Ultimo frente ejecutado y siguiente trabajo
 
 I6-E compacto a 72 h: 156/156 celdas neuronales, 52 semanas por brazo,
 cuatro anos anteriores para cada ajuste, seed 6102026, 20 rasgos RAW heredados
@@ -53,23 +53,33 @@ exacta verificada; copia fisica `i6e/weekly_compact72_v1/olap/REPORTS.json`.
 
 El control ARIMA cerro 156/156 celdas sin fallos. Con separacion de 36 h y
 18 h, su MAE anual en precio mejora 0.464463% y 0.193648% frente al mismo
-naive; la separacion de 72 h empeora 0.491589%. Son pronosticos a 72 h sobre
+naive para el horizonte de 72 horas; la separacion de 72 h empeora 0.491589%. Son pronosticos a 72 h sobre
 3,712 filas, no rentabilidad. Tres informes agregados / 18 metricas adicionales
-estan publicados y verificados por lectura de vuelta. ARIMAX sigue en dos
-workers, semanas pares/impares sin duplicacion, con fallos numericos retenidos.
-La coleccion, el PNG, ETA y publicacion de disposiciones se actualizan con timers.
+estan publicados y verificados por lectura de vuelta. ARIMAX tiene sus 156
+disposiciones: 121 exitosas y 35 fallos numericos. El recibo de publicacion
+registra 312 informes / 2,910 metricas con readback. No atribuir promedio
+cientifico a un brazo ARIMAX incompleto. TEST sigue cerrado.
 
-Sigue `i6e/statistical72_v1`: controles ARIMA y ARIMAX (1,1,0), sin drift,
-remuestreo al origen, parametros semanales fijos y actualizacion de estado
-horaria por fase. El ejecutor mide TRAIN primero y continua automaticamente
-con 312 celdas semanales-resolucion, conservando fallos y evitando repeticiones.
-Estado consultable con `python -m tools.i6e_statistical_campaign status
---output <statistical-directory>`. La cola antigua de fase 4 no es el frente
-vivo y sus instrucciones de arranque estan superadas.
+El siguiente frente es I6-E-M. Plan y grilla:
+`I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md` y `I6E_MULTI_HORIZON_PLAN.json`.
+Horizontes 2,3,4,5,6,24,48,72,96,120 h; 28 brazos downsampled primero (k=1..4
+cuando h/k sea entero) y 10 horarios despues, contexto 2h, de menor a mayor
+ventana. Las tres configuraciones equivalentes se ejecutan una sola vez.
+Cada MAE en precio se compara con el naive para SU horizonte en precio.
 
-Despues del cierre estadistico sigue la extension multihorizonte descrita en
-`I6E_ORIGIN_ANCHORED_RESOLUTION_WORK_PLAN.md`, con seleccion de configuracion
-solo en TRAIN. No saltar a NEAT ni atribuir utilidad financiera a un MAE.
+La grilla y el calculo de metricas tienen 15 pruebas puras; el adapter generico,
+workers, outbox, status/ETA y continuacion entre etapas siguen por implementar
+y verificar. No hay nuevo entrenamiento ejecutado ni despliegue atribuido.
+El barrido R2 anterior de 24 muestras queda conservado como configuracion fija,
+no como prueba de ventanas adaptadas. No borrar ni reescribir sus artefactos.
+
+La cola antigua de fase 4 no es el frente vivo y sus instrucciones de arranque
+estan superadas. No saltar a NEAT, core pretraining, TEST o trading.
+
+El contrato nuevo exige transicion D->H sin visita del usuario, continuacion
+de unidades independientes ante fallos tipados, y entrega OLAP reintentable
+sin reentrenar. La memoria se mide por hijo+envoltorio antes de produccion;
+el host preferido solo usa su GPU preferida, un job a la vez.
 
 ## Almacenamiento obligatorio
 
@@ -80,7 +90,7 @@ analiticos grandes quedan fuera de GitHub.
 
 ## Siguiente compuerta
 
-Cerrar los controles estadisticos en la misma poblacion y publicar con lectura
-de vuelta. Si faltan celdas, informar evidencia incompleta sin promediar las
-sobrevivientes ni reemplazar un fallo por naive. La extension por horizonte
-conserva su propio diseno, costo y compuerta antes de cualquier ensayo de trading.
+Implementar y verificar MH05-MH10 del subplan multihorizonte sobre la grilla
+sellada. Autenticar poblaciones por h, probar modelo real en todas las longitudes,
+medir costo/memoria, y desplegar el coordinador durable que termina D y H.
+No confundir PLANNED_NOT_EXECUTED con un proceso que ya esta corriendo.

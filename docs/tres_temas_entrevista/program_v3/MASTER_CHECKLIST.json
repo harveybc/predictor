@@ -1,6 +1,6 @@
 {
   "schema": "master_checklist.v1",
-  "updated_on": "2026-10-08",
+  "updated_on": "2026-10-11",
   "states": [
     "NOT_STARTED",
     "DESIGNED",
@@ -130,6 +130,15 @@
         "I6-D"
       ],
       "gate": "R0/R1/R2 result and selected prefix"
+    },
+    {
+      "id": "I6-E",
+      "name": "multihorizon_downsampling_then_hourly",
+      "state": "DESIGNED",
+      "depends_on": ["I5"],
+      "gate": "28 downsampled then 10 hourly unique arms, original-price MAE against naive para el horizonte de X horas on authenticated rows, autonomous stage completion and live OLAP readback",
+      "work_plan": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
+      "evidence": "Generated grid and 15 pure tests; execution_ready false, no new training. Historical 72h controls have 312 terminal dispositions and exact publication receipt."
     },
     {
       "id": "I7-H",

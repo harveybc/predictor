@@ -1,0 +1,1685 @@
+{
+  "schema": "predictor.i6e.multihorizon.plan.v1",
+  "status": "PLANNED_NOT_EXECUTED",
+  "execution_ready": false,
+  "test_read": false,
+  "horizons_hours": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    24,
+    48,
+    72,
+    96,
+    120
+  ],
+  "seed": 6102026,
+  "repetitions": 1,
+  "arms": [
+    {
+      "arm_id": "h002_d002",
+      "horizon_hours": 2,
+      "spacing_hours": 2,
+      "forecast_steps": 1,
+      "samples": 3,
+      "context_hours": 4,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 2 horas",
+      "naive_horizon_hours": 2,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        2
+      ]
+    },
+    {
+      "arm_id": "h003_d003",
+      "horizon_hours": 3,
+      "spacing_hours": 3,
+      "forecast_steps": 1,
+      "samples": 3,
+      "context_hours": 6,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 3 horas",
+      "naive_horizon_hours": 3,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        3
+      ]
+    },
+    {
+      "arm_id": "h004_d004",
+      "horizon_hours": 4,
+      "spacing_hours": 4,
+      "forecast_steps": 1,
+      "samples": 3,
+      "context_hours": 8,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 4 horas",
+      "naive_horizon_hours": 4,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        4
+      ]
+    },
+    {
+      "arm_id": "h005_d005",
+      "horizon_hours": 5,
+      "spacing_hours": 5,
+      "forecast_steps": 1,
+      "samples": 3,
+      "context_hours": 10,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 5 horas",
+      "naive_horizon_hours": 5,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        5
+      ]
+    },
+    {
+      "arm_id": "h006_d006",
+      "horizon_hours": 6,
+      "spacing_hours": 6,
+      "forecast_steps": 1,
+      "samples": 3,
+      "context_hours": 12,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 6 horas",
+      "naive_horizon_hours": 6,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        6
+      ]
+    },
+    {
+      "arm_id": "h024_d024",
+      "horizon_hours": 24,
+      "spacing_hours": 24,
+      "forecast_steps": 1,
+      "samples": 3,
+      "context_hours": 48,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 24 horas",
+      "naive_horizon_hours": 24,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        24
+      ]
+    },
+    {
+      "arm_id": "h048_d048",
+      "horizon_hours": 48,
+      "spacing_hours": 48,
+      "forecast_steps": 1,
+      "samples": 3,
+      "context_hours": 96,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 48 horas",
+      "naive_horizon_hours": 48,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        48
+      ]
+    },
+    {
+      "arm_id": "h072_d072",
+      "horizon_hours": 72,
+      "spacing_hours": 72,
+      "forecast_steps": 1,
+      "samples": 3,
+      "context_hours": 144,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 72 horas",
+      "naive_horizon_hours": 72,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        72
+      ]
+    },
+    {
+      "arm_id": "h096_d096",
+      "horizon_hours": 96,
+      "spacing_hours": 96,
+      "forecast_steps": 1,
+      "samples": 3,
+      "context_hours": 192,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 96 horas",
+      "naive_horizon_hours": 96,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        96
+      ]
+    },
+    {
+      "arm_id": "h120_d120",
+      "horizon_hours": 120,
+      "spacing_hours": 120,
+      "forecast_steps": 1,
+      "samples": 3,
+      "context_hours": 240,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 120 horas",
+      "naive_horizon_hours": 120,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        120
+      ]
+    },
+    {
+      "arm_id": "h004_d002",
+      "horizon_hours": 4,
+      "spacing_hours": 2,
+      "forecast_steps": 2,
+      "samples": 5,
+      "context_hours": 8,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 4 horas",
+      "naive_horizon_hours": 4,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        2,
+        4
+      ]
+    },
+    {
+      "arm_id": "h006_d003",
+      "horizon_hours": 6,
+      "spacing_hours": 3,
+      "forecast_steps": 2,
+      "samples": 5,
+      "context_hours": 12,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 6 horas",
+      "naive_horizon_hours": 6,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        3,
+        6
+      ]
+    },
+    {
+      "arm_id": "h024_d012",
+      "horizon_hours": 24,
+      "spacing_hours": 12,
+      "forecast_steps": 2,
+      "samples": 5,
+      "context_hours": 48,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 24 horas",
+      "naive_horizon_hours": 24,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        12,
+        24
+      ]
+    },
+    {
+      "arm_id": "h048_d024",
+      "horizon_hours": 48,
+      "spacing_hours": 24,
+      "forecast_steps": 2,
+      "samples": 5,
+      "context_hours": 96,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 48 horas",
+      "naive_horizon_hours": 48,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        24,
+        48
+      ]
+    },
+    {
+      "arm_id": "h072_d036",
+      "horizon_hours": 72,
+      "spacing_hours": 36,
+      "forecast_steps": 2,
+      "samples": 5,
+      "context_hours": 144,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 72 horas",
+      "naive_horizon_hours": 72,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        36,
+        72
+      ]
+    },
+    {
+      "arm_id": "h096_d048",
+      "horizon_hours": 96,
+      "spacing_hours": 48,
+      "forecast_steps": 2,
+      "samples": 5,
+      "context_hours": 192,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 96 horas",
+      "naive_horizon_hours": 96,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        48,
+        96
+      ]
+    },
+    {
+      "arm_id": "h120_d060",
+      "horizon_hours": 120,
+      "spacing_hours": 60,
+      "forecast_steps": 2,
+      "samples": 5,
+      "context_hours": 240,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 120 horas",
+      "naive_horizon_hours": 120,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        60,
+        120
+      ]
+    },
+    {
+      "arm_id": "h006_d002",
+      "horizon_hours": 6,
+      "spacing_hours": 2,
+      "forecast_steps": 3,
+      "samples": 7,
+      "context_hours": 12,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 6 horas",
+      "naive_horizon_hours": 6,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        2,
+        4,
+        6
+      ]
+    },
+    {
+      "arm_id": "h024_d008",
+      "horizon_hours": 24,
+      "spacing_hours": 8,
+      "forecast_steps": 3,
+      "samples": 7,
+      "context_hours": 48,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 24 horas",
+      "naive_horizon_hours": 24,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        8,
+        16,
+        24
+      ]
+    },
+    {
+      "arm_id": "h048_d016",
+      "horizon_hours": 48,
+      "spacing_hours": 16,
+      "forecast_steps": 3,
+      "samples": 7,
+      "context_hours": 96,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 48 horas",
+      "naive_horizon_hours": 48,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        16,
+        32,
+        48
+      ]
+    },
+    {
+      "arm_id": "h072_d024",
+      "horizon_hours": 72,
+      "spacing_hours": 24,
+      "forecast_steps": 3,
+      "samples": 7,
+      "context_hours": 144,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 72 horas",
+      "naive_horizon_hours": 72,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        24,
+        48,
+        72
+      ]
+    },
+    {
+      "arm_id": "h096_d032",
+      "horizon_hours": 96,
+      "spacing_hours": 32,
+      "forecast_steps": 3,
+      "samples": 7,
+      "context_hours": 192,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 96 horas",
+      "naive_horizon_hours": 96,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        32,
+        64,
+        96
+      ]
+    },
+    {
+      "arm_id": "h120_d040",
+      "horizon_hours": 120,
+      "spacing_hours": 40,
+      "forecast_steps": 3,
+      "samples": 7,
+      "context_hours": 240,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 120 horas",
+      "naive_horizon_hours": 120,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        40,
+        80,
+        120
+      ]
+    },
+    {
+      "arm_id": "h024_d006",
+      "horizon_hours": 24,
+      "spacing_hours": 6,
+      "forecast_steps": 4,
+      "samples": 9,
+      "context_hours": 48,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 24 horas",
+      "naive_horizon_hours": 24,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        6,
+        12,
+        18,
+        24
+      ]
+    },
+    {
+      "arm_id": "h048_d012",
+      "horizon_hours": 48,
+      "spacing_hours": 12,
+      "forecast_steps": 4,
+      "samples": 9,
+      "context_hours": 96,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 48 horas",
+      "naive_horizon_hours": 48,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        12,
+        24,
+        36,
+        48
+      ]
+    },
+    {
+      "arm_id": "h072_d018",
+      "horizon_hours": 72,
+      "spacing_hours": 18,
+      "forecast_steps": 4,
+      "samples": 9,
+      "context_hours": 144,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 72 horas",
+      "naive_horizon_hours": 72,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        18,
+        36,
+        54,
+        72
+      ]
+    },
+    {
+      "arm_id": "h096_d024",
+      "horizon_hours": 96,
+      "spacing_hours": 24,
+      "forecast_steps": 4,
+      "samples": 9,
+      "context_hours": 192,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 96 horas",
+      "naive_horizon_hours": 96,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        24,
+        48,
+        72,
+        96
+      ]
+    },
+    {
+      "arm_id": "h120_d030",
+      "horizon_hours": 120,
+      "spacing_hours": 30,
+      "forecast_steps": 4,
+      "samples": 9,
+      "context_hours": 240,
+      "stage": "DOWNSAMPLING",
+      "naive_label": "naive para el horizonte de 120 horas",
+      "naive_horizon_hours": 120,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        30,
+        60,
+        90,
+        120
+      ]
+    },
+    {
+      "arm_id": "h002_d001",
+      "horizon_hours": 2,
+      "spacing_hours": 1,
+      "forecast_steps": 2,
+      "samples": 5,
+      "context_hours": 4,
+      "stage": "HOURLY",
+      "naive_label": "naive para el horizonte de 2 horas",
+      "naive_horizon_hours": 2,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        1,
+        2
+      ]
+    },
+    {
+      "arm_id": "h003_d001",
+      "horizon_hours": 3,
+      "spacing_hours": 1,
+      "forecast_steps": 3,
+      "samples": 7,
+      "context_hours": 6,
+      "stage": "HOURLY",
+      "naive_label": "naive para el horizonte de 3 horas",
+      "naive_horizon_hours": 3,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "arm_id": "h004_d001",
+      "horizon_hours": 4,
+      "spacing_hours": 1,
+      "forecast_steps": 4,
+      "samples": 9,
+      "context_hours": 8,
+      "stage": "HOURLY",
+      "naive_label": "naive para el horizonte de 4 horas",
+      "naive_horizon_hours": 4,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "arm_id": "h005_d001",
+      "horizon_hours": 5,
+      "spacing_hours": 1,
+      "forecast_steps": 5,
+      "samples": 11,
+      "context_hours": 10,
+      "stage": "HOURLY",
+      "naive_label": "naive para el horizonte de 5 horas",
+      "naive_horizon_hours": 5,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        5
+      ]
+    },
+    {
+      "arm_id": "h006_d001",
+      "horizon_hours": 6,
+      "spacing_hours": 1,
+      "forecast_steps": 6,
+      "samples": 13,
+      "context_hours": 12,
+      "stage": "HOURLY",
+      "naive_label": "naive para el horizonte de 6 horas",
+      "naive_horizon_hours": 6,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        6
+      ]
+    },
+    {
+      "arm_id": "h024_d001",
+      "horizon_hours": 24,
+      "spacing_hours": 1,
+      "forecast_steps": 24,
+      "samples": 49,
+      "context_hours": 48,
+      "stage": "HOURLY",
+      "naive_label": "naive para el horizonte de 24 horas",
+      "naive_horizon_hours": 24,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        24
+      ]
+    },
+    {
+      "arm_id": "h048_d001",
+      "horizon_hours": 48,
+      "spacing_hours": 1,
+      "forecast_steps": 48,
+      "samples": 97,
+      "context_hours": 96,
+      "stage": "HOURLY",
+      "naive_label": "naive para el horizonte de 48 horas",
+      "naive_horizon_hours": 48,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        48
+      ]
+    },
+    {
+      "arm_id": "h072_d001",
+      "horizon_hours": 72,
+      "spacing_hours": 1,
+      "forecast_steps": 72,
+      "samples": 145,
+      "context_hours": 144,
+      "stage": "HOURLY",
+      "naive_label": "naive para el horizonte de 72 horas",
+      "naive_horizon_hours": 72,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        72
+      ]
+    },
+    {
+      "arm_id": "h096_d001",
+      "horizon_hours": 96,
+      "spacing_hours": 1,
+      "forecast_steps": 96,
+      "samples": 193,
+      "context_hours": 192,
+      "stage": "HOURLY",
+      "naive_label": "naive para el horizonte de 96 horas",
+      "naive_horizon_hours": 96,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        96
+      ]
+    },
+    {
+      "arm_id": "h120_d001",
+      "horizon_hours": 120,
+      "spacing_hours": 1,
+      "forecast_steps": 120,
+      "samples": 241,
+      "context_hours": 240,
+      "stage": "HOURLY",
+      "naive_label": "naive para el horizonte de 120 horas",
+      "naive_horizon_hours": 120,
+      "metric_unit": "USD_per_EUR",
+      "diagnostic_naive_horizons_hours": [
+        120
+      ]
+    }
+  ],
+  "comparison_requests": [
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 1,
+      "horizon_hours": 2,
+      "arm_id": "h002_d002"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 2,
+      "horizon_hours": 2,
+      "arm_id": "h002_d001"
+    },
+    {
+      "mode": "HOURLY",
+      "requested_steps": 2,
+      "horizon_hours": 2,
+      "arm_id": "h002_d001"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 1,
+      "horizon_hours": 3,
+      "arm_id": "h003_d003"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 3,
+      "horizon_hours": 3,
+      "arm_id": "h003_d001"
+    },
+    {
+      "mode": "HOURLY",
+      "requested_steps": 3,
+      "horizon_hours": 3,
+      "arm_id": "h003_d001"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 1,
+      "horizon_hours": 4,
+      "arm_id": "h004_d004"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 2,
+      "horizon_hours": 4,
+      "arm_id": "h004_d002"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 4,
+      "horizon_hours": 4,
+      "arm_id": "h004_d001"
+    },
+    {
+      "mode": "HOURLY",
+      "requested_steps": 4,
+      "horizon_hours": 4,
+      "arm_id": "h004_d001"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 1,
+      "horizon_hours": 5,
+      "arm_id": "h005_d005"
+    },
+    {
+      "mode": "HOURLY",
+      "requested_steps": 5,
+      "horizon_hours": 5,
+      "arm_id": "h005_d001"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 1,
+      "horizon_hours": 6,
+      "arm_id": "h006_d006"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 2,
+      "horizon_hours": 6,
+      "arm_id": "h006_d003"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 3,
+      "horizon_hours": 6,
+      "arm_id": "h006_d002"
+    },
+    {
+      "mode": "HOURLY",
+      "requested_steps": 6,
+      "horizon_hours": 6,
+      "arm_id": "h006_d001"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 1,
+      "horizon_hours": 24,
+      "arm_id": "h024_d024"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 2,
+      "horizon_hours": 24,
+      "arm_id": "h024_d012"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 3,
+      "horizon_hours": 24,
+      "arm_id": "h024_d008"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 4,
+      "horizon_hours": 24,
+      "arm_id": "h024_d006"
+    },
+    {
+      "mode": "HOURLY",
+      "requested_steps": 24,
+      "horizon_hours": 24,
+      "arm_id": "h024_d001"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 1,
+      "horizon_hours": 48,
+      "arm_id": "h048_d048"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 2,
+      "horizon_hours": 48,
+      "arm_id": "h048_d024"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 3,
+      "horizon_hours": 48,
+      "arm_id": "h048_d016"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 4,
+      "horizon_hours": 48,
+      "arm_id": "h048_d012"
+    },
+    {
+      "mode": "HOURLY",
+      "requested_steps": 48,
+      "horizon_hours": 48,
+      "arm_id": "h048_d001"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 1,
+      "horizon_hours": 72,
+      "arm_id": "h072_d072"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 2,
+      "horizon_hours": 72,
+      "arm_id": "h072_d036"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 3,
+      "horizon_hours": 72,
+      "arm_id": "h072_d024"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 4,
+      "horizon_hours": 72,
+      "arm_id": "h072_d018"
+    },
+    {
+      "mode": "HOURLY",
+      "requested_steps": 72,
+      "horizon_hours": 72,
+      "arm_id": "h072_d001"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 1,
+      "horizon_hours": 96,
+      "arm_id": "h096_d096"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 2,
+      "horizon_hours": 96,
+      "arm_id": "h096_d048"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 3,
+      "horizon_hours": 96,
+      "arm_id": "h096_d032"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 4,
+      "horizon_hours": 96,
+      "arm_id": "h096_d024"
+    },
+    {
+      "mode": "HOURLY",
+      "requested_steps": 96,
+      "horizon_hours": 96,
+      "arm_id": "h096_d001"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 1,
+      "horizon_hours": 120,
+      "arm_id": "h120_d120"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 2,
+      "horizon_hours": 120,
+      "arm_id": "h120_d060"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 3,
+      "horizon_hours": 120,
+      "arm_id": "h120_d040"
+    },
+    {
+      "mode": "DOWNSAMPLED",
+      "requested_steps": 4,
+      "horizon_hours": 120,
+      "arm_id": "h120_d030"
+    },
+    {
+      "mode": "HOURLY",
+      "requested_steps": 120,
+      "horizon_hours": 120,
+      "arm_id": "h120_d001"
+    }
+  ],
+  "stage_order": [
+    "DOWNSAMPLING",
+    "HOURLY"
+  ],
+  "unique_arms": 38,
+  "downsampled_arms": 28,
+  "hourly_arms": 10,
+  "validation_weeks": [
+    {
+      "ordinal": 0,
+      "fit_start": "2020-01-01T00:00:00Z",
+      "fit_cutoff": "2024-01-01T00:00:00Z",
+      "score_start": "2024-01-01T00:00:00Z",
+      "score_end": "2024-01-08T00:00:00Z"
+    },
+    {
+      "ordinal": 1,
+      "fit_start": "2020-01-08T00:00:00Z",
+      "fit_cutoff": "2024-01-08T00:00:00Z",
+      "score_start": "2024-01-08T00:00:00Z",
+      "score_end": "2024-01-15T00:00:00Z"
+    },
+    {
+      "ordinal": 2,
+      "fit_start": "2020-01-15T00:00:00Z",
+      "fit_cutoff": "2024-01-15T00:00:00Z",
+      "score_start": "2024-01-15T00:00:00Z",
+      "score_end": "2024-01-22T00:00:00Z"
+    },
+    {
+      "ordinal": 3,
+      "fit_start": "2020-01-22T00:00:00Z",
+      "fit_cutoff": "2024-01-22T00:00:00Z",
+      "score_start": "2024-01-22T00:00:00Z",
+      "score_end": "2024-01-29T00:00:00Z"
+    },
+    {
+      "ordinal": 4,
+      "fit_start": "2020-01-29T00:00:00Z",
+      "fit_cutoff": "2024-01-29T00:00:00Z",
+      "score_start": "2024-01-29T00:00:00Z",
+      "score_end": "2024-02-05T00:00:00Z"
+    },
+    {
+      "ordinal": 5,
+      "fit_start": "2020-02-05T00:00:00Z",
+      "fit_cutoff": "2024-02-05T00:00:00Z",
+      "score_start": "2024-02-05T00:00:00Z",
+      "score_end": "2024-02-12T00:00:00Z"
+    },
+    {
+      "ordinal": 6,
+      "fit_start": "2020-02-12T00:00:00Z",
+      "fit_cutoff": "2024-02-12T00:00:00Z",
+      "score_start": "2024-02-12T00:00:00Z",
+      "score_end": "2024-02-19T00:00:00Z"
+    },
+    {
+      "ordinal": 7,
+      "fit_start": "2020-02-19T00:00:00Z",
+      "fit_cutoff": "2024-02-19T00:00:00Z",
+      "score_start": "2024-02-19T00:00:00Z",
+      "score_end": "2024-02-26T00:00:00Z"
+    },
+    {
+      "ordinal": 8,
+      "fit_start": "2020-02-26T00:00:00Z",
+      "fit_cutoff": "2024-02-26T00:00:00Z",
+      "score_start": "2024-02-26T00:00:00Z",
+      "score_end": "2024-03-04T00:00:00Z"
+    },
+    {
+      "ordinal": 9,
+      "fit_start": "2020-03-04T00:00:00Z",
+      "fit_cutoff": "2024-03-04T00:00:00Z",
+      "score_start": "2024-03-04T00:00:00Z",
+      "score_end": "2024-03-11T00:00:00Z"
+    },
+    {
+      "ordinal": 10,
+      "fit_start": "2020-03-11T00:00:00Z",
+      "fit_cutoff": "2024-03-11T00:00:00Z",
+      "score_start": "2024-03-11T00:00:00Z",
+      "score_end": "2024-03-18T00:00:00Z"
+    },
+    {
+      "ordinal": 11,
+      "fit_start": "2020-03-18T00:00:00Z",
+      "fit_cutoff": "2024-03-18T00:00:00Z",
+      "score_start": "2024-03-18T00:00:00Z",
+      "score_end": "2024-03-25T00:00:00Z"
+    },
+    {
+      "ordinal": 12,
+      "fit_start": "2020-03-25T00:00:00Z",
+      "fit_cutoff": "2024-03-25T00:00:00Z",
+      "score_start": "2024-03-25T00:00:00Z",
+      "score_end": "2024-04-01T00:00:00Z"
+    },
+    {
+      "ordinal": 13,
+      "fit_start": "2020-04-01T00:00:00Z",
+      "fit_cutoff": "2024-04-01T00:00:00Z",
+      "score_start": "2024-04-01T00:00:00Z",
+      "score_end": "2024-04-08T00:00:00Z"
+    },
+    {
+      "ordinal": 14,
+      "fit_start": "2020-04-08T00:00:00Z",
+      "fit_cutoff": "2024-04-08T00:00:00Z",
+      "score_start": "2024-04-08T00:00:00Z",
+      "score_end": "2024-04-15T00:00:00Z"
+    },
+    {
+      "ordinal": 15,
+      "fit_start": "2020-04-15T00:00:00Z",
+      "fit_cutoff": "2024-04-15T00:00:00Z",
+      "score_start": "2024-04-15T00:00:00Z",
+      "score_end": "2024-04-22T00:00:00Z"
+    },
+    {
+      "ordinal": 16,
+      "fit_start": "2020-04-22T00:00:00Z",
+      "fit_cutoff": "2024-04-22T00:00:00Z",
+      "score_start": "2024-04-22T00:00:00Z",
+      "score_end": "2024-04-29T00:00:00Z"
+    },
+    {
+      "ordinal": 17,
+      "fit_start": "2020-04-29T00:00:00Z",
+      "fit_cutoff": "2024-04-29T00:00:00Z",
+      "score_start": "2024-04-29T00:00:00Z",
+      "score_end": "2024-05-06T00:00:00Z"
+    },
+    {
+      "ordinal": 18,
+      "fit_start": "2020-05-06T00:00:00Z",
+      "fit_cutoff": "2024-05-06T00:00:00Z",
+      "score_start": "2024-05-06T00:00:00Z",
+      "score_end": "2024-05-13T00:00:00Z"
+    },
+    {
+      "ordinal": 19,
+      "fit_start": "2020-05-13T00:00:00Z",
+      "fit_cutoff": "2024-05-13T00:00:00Z",
+      "score_start": "2024-05-13T00:00:00Z",
+      "score_end": "2024-05-20T00:00:00Z"
+    },
+    {
+      "ordinal": 20,
+      "fit_start": "2020-05-20T00:00:00Z",
+      "fit_cutoff": "2024-05-20T00:00:00Z",
+      "score_start": "2024-05-20T00:00:00Z",
+      "score_end": "2024-05-27T00:00:00Z"
+    },
+    {
+      "ordinal": 21,
+      "fit_start": "2020-05-27T00:00:00Z",
+      "fit_cutoff": "2024-05-27T00:00:00Z",
+      "score_start": "2024-05-27T00:00:00Z",
+      "score_end": "2024-06-03T00:00:00Z"
+    },
+    {
+      "ordinal": 22,
+      "fit_start": "2020-06-03T00:00:00Z",
+      "fit_cutoff": "2024-06-03T00:00:00Z",
+      "score_start": "2024-06-03T00:00:00Z",
+      "score_end": "2024-06-10T00:00:00Z"
+    },
+    {
+      "ordinal": 23,
+      "fit_start": "2020-06-10T00:00:00Z",
+      "fit_cutoff": "2024-06-10T00:00:00Z",
+      "score_start": "2024-06-10T00:00:00Z",
+      "score_end": "2024-06-17T00:00:00Z"
+    },
+    {
+      "ordinal": 24,
+      "fit_start": "2020-06-17T00:00:00Z",
+      "fit_cutoff": "2024-06-17T00:00:00Z",
+      "score_start": "2024-06-17T00:00:00Z",
+      "score_end": "2024-06-24T00:00:00Z"
+    },
+    {
+      "ordinal": 25,
+      "fit_start": "2020-06-24T00:00:00Z",
+      "fit_cutoff": "2024-06-24T00:00:00Z",
+      "score_start": "2024-06-24T00:00:00Z",
+      "score_end": "2024-07-01T00:00:00Z"
+    },
+    {
+      "ordinal": 26,
+      "fit_start": "2020-07-01T00:00:00Z",
+      "fit_cutoff": "2024-07-01T00:00:00Z",
+      "score_start": "2024-07-01T00:00:00Z",
+      "score_end": "2024-07-08T00:00:00Z"
+    },
+    {
+      "ordinal": 27,
+      "fit_start": "2020-07-08T00:00:00Z",
+      "fit_cutoff": "2024-07-08T00:00:00Z",
+      "score_start": "2024-07-08T00:00:00Z",
+      "score_end": "2024-07-15T00:00:00Z"
+    },
+    {
+      "ordinal": 28,
+      "fit_start": "2020-07-15T00:00:00Z",
+      "fit_cutoff": "2024-07-15T00:00:00Z",
+      "score_start": "2024-07-15T00:00:00Z",
+      "score_end": "2024-07-22T00:00:00Z"
+    },
+    {
+      "ordinal": 29,
+      "fit_start": "2020-07-22T00:00:00Z",
+      "fit_cutoff": "2024-07-22T00:00:00Z",
+      "score_start": "2024-07-22T00:00:00Z",
+      "score_end": "2024-07-29T00:00:00Z"
+    },
+    {
+      "ordinal": 30,
+      "fit_start": "2020-07-29T00:00:00Z",
+      "fit_cutoff": "2024-07-29T00:00:00Z",
+      "score_start": "2024-07-29T00:00:00Z",
+      "score_end": "2024-08-05T00:00:00Z"
+    },
+    {
+      "ordinal": 31,
+      "fit_start": "2020-08-05T00:00:00Z",
+      "fit_cutoff": "2024-08-05T00:00:00Z",
+      "score_start": "2024-08-05T00:00:00Z",
+      "score_end": "2024-08-12T00:00:00Z"
+    },
+    {
+      "ordinal": 32,
+      "fit_start": "2020-08-12T00:00:00Z",
+      "fit_cutoff": "2024-08-12T00:00:00Z",
+      "score_start": "2024-08-12T00:00:00Z",
+      "score_end": "2024-08-19T00:00:00Z"
+    },
+    {
+      "ordinal": 33,
+      "fit_start": "2020-08-19T00:00:00Z",
+      "fit_cutoff": "2024-08-19T00:00:00Z",
+      "score_start": "2024-08-19T00:00:00Z",
+      "score_end": "2024-08-26T00:00:00Z"
+    },
+    {
+      "ordinal": 34,
+      "fit_start": "2020-08-26T00:00:00Z",
+      "fit_cutoff": "2024-08-26T00:00:00Z",
+      "score_start": "2024-08-26T00:00:00Z",
+      "score_end": "2024-09-02T00:00:00Z"
+    },
+    {
+      "ordinal": 35,
+      "fit_start": "2020-09-02T00:00:00Z",
+      "fit_cutoff": "2024-09-02T00:00:00Z",
+      "score_start": "2024-09-02T00:00:00Z",
+      "score_end": "2024-09-09T00:00:00Z"
+    },
+    {
+      "ordinal": 36,
+      "fit_start": "2020-09-09T00:00:00Z",
+      "fit_cutoff": "2024-09-09T00:00:00Z",
+      "score_start": "2024-09-09T00:00:00Z",
+      "score_end": "2024-09-16T00:00:00Z"
+    },
+    {
+      "ordinal": 37,
+      "fit_start": "2020-09-16T00:00:00Z",
+      "fit_cutoff": "2024-09-16T00:00:00Z",
+      "score_start": "2024-09-16T00:00:00Z",
+      "score_end": "2024-09-23T00:00:00Z"
+    },
+    {
+      "ordinal": 38,
+      "fit_start": "2020-09-23T00:00:00Z",
+      "fit_cutoff": "2024-09-23T00:00:00Z",
+      "score_start": "2024-09-23T00:00:00Z",
+      "score_end": "2024-09-30T00:00:00Z"
+    },
+    {
+      "ordinal": 39,
+      "fit_start": "2020-09-30T00:00:00Z",
+      "fit_cutoff": "2024-09-30T00:00:00Z",
+      "score_start": "2024-09-30T00:00:00Z",
+      "score_end": "2024-10-07T00:00:00Z"
+    },
+    {
+      "ordinal": 40,
+      "fit_start": "2020-10-07T00:00:00Z",
+      "fit_cutoff": "2024-10-07T00:00:00Z",
+      "score_start": "2024-10-07T00:00:00Z",
+      "score_end": "2024-10-14T00:00:00Z"
+    },
+    {
+      "ordinal": 41,
+      "fit_start": "2020-10-14T00:00:00Z",
+      "fit_cutoff": "2024-10-14T00:00:00Z",
+      "score_start": "2024-10-14T00:00:00Z",
+      "score_end": "2024-10-21T00:00:00Z"
+    },
+    {
+      "ordinal": 42,
+      "fit_start": "2020-10-21T00:00:00Z",
+      "fit_cutoff": "2024-10-21T00:00:00Z",
+      "score_start": "2024-10-21T00:00:00Z",
+      "score_end": "2024-10-28T00:00:00Z"
+    },
+    {
+      "ordinal": 43,
+      "fit_start": "2020-10-28T00:00:00Z",
+      "fit_cutoff": "2024-10-28T00:00:00Z",
+      "score_start": "2024-10-28T00:00:00Z",
+      "score_end": "2024-11-04T00:00:00Z"
+    },
+    {
+      "ordinal": 44,
+      "fit_start": "2020-11-04T00:00:00Z",
+      "fit_cutoff": "2024-11-04T00:00:00Z",
+      "score_start": "2024-11-04T00:00:00Z",
+      "score_end": "2024-11-11T00:00:00Z"
+    },
+    {
+      "ordinal": 45,
+      "fit_start": "2020-11-11T00:00:00Z",
+      "fit_cutoff": "2024-11-11T00:00:00Z",
+      "score_start": "2024-11-11T00:00:00Z",
+      "score_end": "2024-11-18T00:00:00Z"
+    },
+    {
+      "ordinal": 46,
+      "fit_start": "2020-11-18T00:00:00Z",
+      "fit_cutoff": "2024-11-18T00:00:00Z",
+      "score_start": "2024-11-18T00:00:00Z",
+      "score_end": "2024-11-25T00:00:00Z"
+    },
+    {
+      "ordinal": 47,
+      "fit_start": "2020-11-25T00:00:00Z",
+      "fit_cutoff": "2024-11-25T00:00:00Z",
+      "score_start": "2024-11-25T00:00:00Z",
+      "score_end": "2024-12-02T00:00:00Z"
+    },
+    {
+      "ordinal": 48,
+      "fit_start": "2020-12-02T00:00:00Z",
+      "fit_cutoff": "2024-12-02T00:00:00Z",
+      "score_start": "2024-12-02T00:00:00Z",
+      "score_end": "2024-12-09T00:00:00Z"
+    },
+    {
+      "ordinal": 49,
+      "fit_start": "2020-12-09T00:00:00Z",
+      "fit_cutoff": "2024-12-09T00:00:00Z",
+      "score_start": "2024-12-09T00:00:00Z",
+      "score_end": "2024-12-16T00:00:00Z"
+    },
+    {
+      "ordinal": 50,
+      "fit_start": "2020-12-16T00:00:00Z",
+      "fit_cutoff": "2024-12-16T00:00:00Z",
+      "score_start": "2024-12-16T00:00:00Z",
+      "score_end": "2024-12-23T00:00:00Z"
+    },
+    {
+      "ordinal": 51,
+      "fit_start": "2020-12-23T00:00:00Z",
+      "fit_cutoff": "2024-12-23T00:00:00Z",
+      "score_start": "2024-12-23T00:00:00Z",
+      "score_end": "2024-12-30T00:00:00Z"
+    },
+    {
+      "ordinal": 52,
+      "fit_start": "2020-12-30T00:00:00Z",
+      "fit_cutoff": "2024-12-30T00:00:00Z",
+      "score_start": "2024-12-30T00:00:00Z",
+      "score_end": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "validation_cell_dispositions_expected": 2014,
+  "measured_scored_rows": null,
+  "test_weeks_reserved": [
+    {
+      "ordinal": 0,
+      "fit_start": "2020-12-30T00:00:00Z",
+      "fit_cutoff": "2024-12-30T00:00:00Z",
+      "score_start": "2025-01-01T00:00:00Z",
+      "score_end": "2025-01-06T00:00:00Z"
+    },
+    {
+      "ordinal": 1,
+      "fit_start": "2021-01-06T00:00:00Z",
+      "fit_cutoff": "2025-01-06T00:00:00Z",
+      "score_start": "2025-01-06T00:00:00Z",
+      "score_end": "2025-01-13T00:00:00Z"
+    },
+    {
+      "ordinal": 2,
+      "fit_start": "2021-01-13T00:00:00Z",
+      "fit_cutoff": "2025-01-13T00:00:00Z",
+      "score_start": "2025-01-13T00:00:00Z",
+      "score_end": "2025-01-20T00:00:00Z"
+    },
+    {
+      "ordinal": 3,
+      "fit_start": "2021-01-20T00:00:00Z",
+      "fit_cutoff": "2025-01-20T00:00:00Z",
+      "score_start": "2025-01-20T00:00:00Z",
+      "score_end": "2025-01-27T00:00:00Z"
+    },
+    {
+      "ordinal": 4,
+      "fit_start": "2021-01-27T00:00:00Z",
+      "fit_cutoff": "2025-01-27T00:00:00Z",
+      "score_start": "2025-01-27T00:00:00Z",
+      "score_end": "2025-02-03T00:00:00Z"
+    },
+    {
+      "ordinal": 5,
+      "fit_start": "2021-02-03T00:00:00Z",
+      "fit_cutoff": "2025-02-03T00:00:00Z",
+      "score_start": "2025-02-03T00:00:00Z",
+      "score_end": "2025-02-10T00:00:00Z"
+    },
+    {
+      "ordinal": 6,
+      "fit_start": "2021-02-10T00:00:00Z",
+      "fit_cutoff": "2025-02-10T00:00:00Z",
+      "score_start": "2025-02-10T00:00:00Z",
+      "score_end": "2025-02-17T00:00:00Z"
+    },
+    {
+      "ordinal": 7,
+      "fit_start": "2021-02-17T00:00:00Z",
+      "fit_cutoff": "2025-02-17T00:00:00Z",
+      "score_start": "2025-02-17T00:00:00Z",
+      "score_end": "2025-02-24T00:00:00Z"
+    },
+    {
+      "ordinal": 8,
+      "fit_start": "2021-02-24T00:00:00Z",
+      "fit_cutoff": "2025-02-24T00:00:00Z",
+      "score_start": "2025-02-24T00:00:00Z",
+      "score_end": "2025-03-03T00:00:00Z"
+    },
+    {
+      "ordinal": 9,
+      "fit_start": "2021-03-03T00:00:00Z",
+      "fit_cutoff": "2025-03-03T00:00:00Z",
+      "score_start": "2025-03-03T00:00:00Z",
+      "score_end": "2025-03-10T00:00:00Z"
+    },
+    {
+      "ordinal": 10,
+      "fit_start": "2021-03-10T00:00:00Z",
+      "fit_cutoff": "2025-03-10T00:00:00Z",
+      "score_start": "2025-03-10T00:00:00Z",
+      "score_end": "2025-03-17T00:00:00Z"
+    },
+    {
+      "ordinal": 11,
+      "fit_start": "2021-03-17T00:00:00Z",
+      "fit_cutoff": "2025-03-17T00:00:00Z",
+      "score_start": "2025-03-17T00:00:00Z",
+      "score_end": "2025-03-24T00:00:00Z"
+    },
+    {
+      "ordinal": 12,
+      "fit_start": "2021-03-24T00:00:00Z",
+      "fit_cutoff": "2025-03-24T00:00:00Z",
+      "score_start": "2025-03-24T00:00:00Z",
+      "score_end": "2025-03-31T00:00:00Z"
+    },
+    {
+      "ordinal": 13,
+      "fit_start": "2021-03-31T00:00:00Z",
+      "fit_cutoff": "2025-03-31T00:00:00Z",
+      "score_start": "2025-03-31T00:00:00Z",
+      "score_end": "2025-04-07T00:00:00Z"
+    },
+    {
+      "ordinal": 14,
+      "fit_start": "2021-04-07T00:00:00Z",
+      "fit_cutoff": "2025-04-07T00:00:00Z",
+      "score_start": "2025-04-07T00:00:00Z",
+      "score_end": "2025-04-14T00:00:00Z"
+    },
+    {
+      "ordinal": 15,
+      "fit_start": "2021-04-14T00:00:00Z",
+      "fit_cutoff": "2025-04-14T00:00:00Z",
+      "score_start": "2025-04-14T00:00:00Z",
+      "score_end": "2025-04-21T00:00:00Z"
+    },
+    {
+      "ordinal": 16,
+      "fit_start": "2021-04-21T00:00:00Z",
+      "fit_cutoff": "2025-04-21T00:00:00Z",
+      "score_start": "2025-04-21T00:00:00Z",
+      "score_end": "2025-04-28T00:00:00Z"
+    },
+    {
+      "ordinal": 17,
+      "fit_start": "2021-04-28T00:00:00Z",
+      "fit_cutoff": "2025-04-28T00:00:00Z",
+      "score_start": "2025-04-28T00:00:00Z",
+      "score_end": "2025-05-05T00:00:00Z"
+    },
+    {
+      "ordinal": 18,
+      "fit_start": "2021-05-05T00:00:00Z",
+      "fit_cutoff": "2025-05-05T00:00:00Z",
+      "score_start": "2025-05-05T00:00:00Z",
+      "score_end": "2025-05-12T00:00:00Z"
+    },
+    {
+      "ordinal": 19,
+      "fit_start": "2021-05-12T00:00:00Z",
+      "fit_cutoff": "2025-05-12T00:00:00Z",
+      "score_start": "2025-05-12T00:00:00Z",
+      "score_end": "2025-05-19T00:00:00Z"
+    },
+    {
+      "ordinal": 20,
+      "fit_start": "2021-05-19T00:00:00Z",
+      "fit_cutoff": "2025-05-19T00:00:00Z",
+      "score_start": "2025-05-19T00:00:00Z",
+      "score_end": "2025-05-26T00:00:00Z"
+    },
+    {
+      "ordinal": 21,
+      "fit_start": "2021-05-26T00:00:00Z",
+      "fit_cutoff": "2025-05-26T00:00:00Z",
+      "score_start": "2025-05-26T00:00:00Z",
+      "score_end": "2025-06-02T00:00:00Z"
+    },
+    {
+      "ordinal": 22,
+      "fit_start": "2021-06-02T00:00:00Z",
+      "fit_cutoff": "2025-06-02T00:00:00Z",
+      "score_start": "2025-06-02T00:00:00Z",
+      "score_end": "2025-06-09T00:00:00Z"
+    },
+    {
+      "ordinal": 23,
+      "fit_start": "2021-06-09T00:00:00Z",
+      "fit_cutoff": "2025-06-09T00:00:00Z",
+      "score_start": "2025-06-09T00:00:00Z",
+      "score_end": "2025-06-16T00:00:00Z"
+    },
+    {
+      "ordinal": 24,
+      "fit_start": "2021-06-16T00:00:00Z",
+      "fit_cutoff": "2025-06-16T00:00:00Z",
+      "score_start": "2025-06-16T00:00:00Z",
+      "score_end": "2025-06-23T00:00:00Z"
+    },
+    {
+      "ordinal": 25,
+      "fit_start": "2021-06-23T00:00:00Z",
+      "fit_cutoff": "2025-06-23T00:00:00Z",
+      "score_start": "2025-06-23T00:00:00Z",
+      "score_end": "2025-06-30T00:00:00Z"
+    },
+    {
+      "ordinal": 26,
+      "fit_start": "2021-06-30T00:00:00Z",
+      "fit_cutoff": "2025-06-30T00:00:00Z",
+      "score_start": "2025-06-30T00:00:00Z",
+      "score_end": "2025-07-07T00:00:00Z"
+    },
+    {
+      "ordinal": 27,
+      "fit_start": "2021-07-07T00:00:00Z",
+      "fit_cutoff": "2025-07-07T00:00:00Z",
+      "score_start": "2025-07-07T00:00:00Z",
+      "score_end": "2025-07-14T00:00:00Z"
+    },
+    {
+      "ordinal": 28,
+      "fit_start": "2021-07-14T00:00:00Z",
+      "fit_cutoff": "2025-07-14T00:00:00Z",
+      "score_start": "2025-07-14T00:00:00Z",
+      "score_end": "2025-07-21T00:00:00Z"
+    },
+    {
+      "ordinal": 29,
+      "fit_start": "2021-07-21T00:00:00Z",
+      "fit_cutoff": "2025-07-21T00:00:00Z",
+      "score_start": "2025-07-21T00:00:00Z",
+      "score_end": "2025-07-28T00:00:00Z"
+    },
+    {
+      "ordinal": 30,
+      "fit_start": "2021-07-28T00:00:00Z",
+      "fit_cutoff": "2025-07-28T00:00:00Z",
+      "score_start": "2025-07-28T00:00:00Z",
+      "score_end": "2025-08-04T00:00:00Z"
+    },
+    {
+      "ordinal": 31,
+      "fit_start": "2021-08-04T00:00:00Z",
+      "fit_cutoff": "2025-08-04T00:00:00Z",
+      "score_start": "2025-08-04T00:00:00Z",
+      "score_end": "2025-08-11T00:00:00Z"
+    },
+    {
+      "ordinal": 32,
+      "fit_start": "2021-08-11T00:00:00Z",
+      "fit_cutoff": "2025-08-11T00:00:00Z",
+      "score_start": "2025-08-11T00:00:00Z",
+      "score_end": "2025-08-18T00:00:00Z"
+    },
+    {
+      "ordinal": 33,
+      "fit_start": "2021-08-18T00:00:00Z",
+      "fit_cutoff": "2025-08-18T00:00:00Z",
+      "score_start": "2025-08-18T00:00:00Z",
+      "score_end": "2025-08-25T00:00:00Z"
+    },
+    {
+      "ordinal": 34,
+      "fit_start": "2021-08-25T00:00:00Z",
+      "fit_cutoff": "2025-08-25T00:00:00Z",
+      "score_start": "2025-08-25T00:00:00Z",
+      "score_end": "2025-09-01T00:00:00Z"
+    },
+    {
+      "ordinal": 35,
+      "fit_start": "2021-09-01T00:00:00Z",
+      "fit_cutoff": "2025-09-01T00:00:00Z",
+      "score_start": "2025-09-01T00:00:00Z",
+      "score_end": "2025-09-08T00:00:00Z"
+    },
+    {
+      "ordinal": 36,
+      "fit_start": "2021-09-08T00:00:00Z",
+      "fit_cutoff": "2025-09-08T00:00:00Z",
+      "score_start": "2025-09-08T00:00:00Z",
+      "score_end": "2025-09-15T00:00:00Z"
+    },
+    {
+      "ordinal": 37,
+      "fit_start": "2021-09-15T00:00:00Z",
+      "fit_cutoff": "2025-09-15T00:00:00Z",
+      "score_start": "2025-09-15T00:00:00Z",
+      "score_end": "2025-09-22T00:00:00Z"
+    },
+    {
+      "ordinal": 38,
+      "fit_start": "2021-09-22T00:00:00Z",
+      "fit_cutoff": "2025-09-22T00:00:00Z",
+      "score_start": "2025-09-22T00:00:00Z",
+      "score_end": "2025-09-29T00:00:00Z"
+    },
+    {
+      "ordinal": 39,
+      "fit_start": "2021-09-29T00:00:00Z",
+      "fit_cutoff": "2025-09-29T00:00:00Z",
+      "score_start": "2025-09-29T00:00:00Z",
+      "score_end": "2025-10-06T00:00:00Z"
+    },
+    {
+      "ordinal": 40,
+      "fit_start": "2021-10-06T00:00:00Z",
+      "fit_cutoff": "2025-10-06T00:00:00Z",
+      "score_start": "2025-10-06T00:00:00Z",
+      "score_end": "2025-10-13T00:00:00Z"
+    },
+    {
+      "ordinal": 41,
+      "fit_start": "2021-10-13T00:00:00Z",
+      "fit_cutoff": "2025-10-13T00:00:00Z",
+      "score_start": "2025-10-13T00:00:00Z",
+      "score_end": "2025-10-20T00:00:00Z"
+    },
+    {
+      "ordinal": 42,
+      "fit_start": "2021-10-20T00:00:00Z",
+      "fit_cutoff": "2025-10-20T00:00:00Z",
+      "score_start": "2025-10-20T00:00:00Z",
+      "score_end": "2025-10-27T00:00:00Z"
+    },
+    {
+      "ordinal": 43,
+      "fit_start": "2021-10-27T00:00:00Z",
+      "fit_cutoff": "2025-10-27T00:00:00Z",
+      "score_start": "2025-10-27T00:00:00Z",
+      "score_end": "2025-11-03T00:00:00Z"
+    },
+    {
+      "ordinal": 44,
+      "fit_start": "2021-11-03T00:00:00Z",
+      "fit_cutoff": "2025-11-03T00:00:00Z",
+      "score_start": "2025-11-03T00:00:00Z",
+      "score_end": "2025-11-10T00:00:00Z"
+    },
+    {
+      "ordinal": 45,
+      "fit_start": "2021-11-10T00:00:00Z",
+      "fit_cutoff": "2025-11-10T00:00:00Z",
+      "score_start": "2025-11-10T00:00:00Z",
+      "score_end": "2025-11-17T00:00:00Z"
+    },
+    {
+      "ordinal": 46,
+      "fit_start": "2021-11-17T00:00:00Z",
+      "fit_cutoff": "2025-11-17T00:00:00Z",
+      "score_start": "2025-11-17T00:00:00Z",
+      "score_end": "2025-11-24T00:00:00Z"
+    },
+    {
+      "ordinal": 47,
+      "fit_start": "2021-11-24T00:00:00Z",
+      "fit_cutoff": "2025-11-24T00:00:00Z",
+      "score_start": "2025-11-24T00:00:00Z",
+      "score_end": "2025-12-01T00:00:00Z"
+    },
+    {
+      "ordinal": 48,
+      "fit_start": "2021-12-01T00:00:00Z",
+      "fit_cutoff": "2025-12-01T00:00:00Z",
+      "score_start": "2025-12-01T00:00:00Z",
+      "score_end": "2025-12-08T00:00:00Z"
+    },
+    {
+      "ordinal": 49,
+      "fit_start": "2021-12-08T00:00:00Z",
+      "fit_cutoff": "2025-12-08T00:00:00Z",
+      "score_start": "2025-12-08T00:00:00Z",
+      "score_end": "2025-12-15T00:00:00Z"
+    },
+    {
+      "ordinal": 50,
+      "fit_start": "2021-12-15T00:00:00Z",
+      "fit_cutoff": "2025-12-15T00:00:00Z",
+      "score_start": "2025-12-15T00:00:00Z",
+      "score_end": "2025-12-22T00:00:00Z"
+    },
+    {
+      "ordinal": 51,
+      "fit_start": "2021-12-22T00:00:00Z",
+      "fit_cutoff": "2025-12-22T00:00:00Z",
+      "score_start": "2025-12-22T00:00:00Z",
+      "score_end": "2025-12-29T00:00:00Z"
+    },
+    {
+      "ordinal": 52,
+      "fit_start": "2021-12-29T00:00:00Z",
+      "fit_cutoff": "2025-12-29T00:00:00Z",
+      "score_start": "2025-12-29T00:00:00Z",
+      "score_end": "2026-01-01T00:00:00Z"
+    }
+  ],
+  "model": {
+    "regime": "R0",
+    "features": 20,
+    "branch_channels": 16,
+    "branch_kernel": 3,
+    "positional_encoding": "physical_hours_immediately_after_fusion",
+    "projection_channels": 32,
+    "transformer_blocks": 2,
+    "heads": 2,
+    "ff_dim": 64,
+    "core_channels": [
+      24,
+      16,
+      8
+    ],
+    "core_strides": [
+      1,
+      1,
+      1
+    ],
+    "scalar_head": "last_temporal_position",
+    "expected_parameters": 34921,
+    "parameter_count_status": "VERIFIED_COMPACT_ONLY_GENERALIZATION_PENDING"
+  },
+  "training": {
+    "train_calendar_years": 4,
+    "refit": "weekly",
+    "inner_weeks": 4,
+    "max_epochs": 50,
+    "patience": 5,
+    "batch_size": 256,
+    "learning_rate": 0.001,
+    "monitor": "train_validation_mean"
+  },
+  "automation": {
+    "transition": "automatic_after_all_stage_compute_dispositions",
+    "warehouse_delivery": "durable_idempotent_outbox_with_exact_readback",
+    "prior_terminal_reuse": "exact_full_contract_and_population_match_only",
+    "peak_memory_margin": 1.25,
+    "preferred_gpu_role": "preferred_worker",
+    "preferred_worker_gpu_jobs": 1,
+    "use_secondary_preferred_worker_gpu": false
+  },
+  "pending_implementation": [
+    "Generalize the model adapter for 7 and 2h+1 hourly samples without editing sealed I6E code.",
+    "Authenticate per-horizon input manifests, price endpoints and origin populations.",
+    "Implement and test the leased workers, stage follower, OLAP outbox and measured-cost status.",
+    "Measure full child/supervisor memory and actual parameter counts before production placement."
+  ],
+  "plan_sha256": "81222e3626c3da30fa4956aed63a8c104e7ca251392db9def6336d1958410e1f"
+}
