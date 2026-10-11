@@ -36,7 +36,10 @@ CAPABILITIES = ("describe", "storage", "discover", "schema", "query",
                 "write_fs_phase23_rows", "read_fs_phase23_rows", "reconcile_fs_phase23",
                 # Phase-4 extractibility terminals: one owned write route keyed by task_id, paged
                 # readback and reconciliation against the controller's expected counts (FS4-13).
-                "write_fs4_terminals", "read_fs4_terminals", "reconcile_fs4")
+                "write_fs4_terminals", "read_fs4_terminals", "reconcile_fs4",
+                # DOIN archive projection: gov_metric rows plus versioned DOIN metadata,
+                # append-only events (reorg revokes, never deletes) and readback.
+                "write_doin_projection", "read_doin_projection", "revoke_doin_projection")
 
 #: Refuse to open a database on a volume with less free space than this. An OLAP engine that
 #: runs out of disk mid-write leaves a file nobody can explain.

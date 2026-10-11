@@ -651,6 +651,8 @@ class Plugin:
         statements.extend(fs_phase23_ddl(t, dialect))
         from predictor_olap_store.fs4_store import ddl as fs4_ddl
         statements.extend(fs4_ddl(t, dialect))
+        from predictor_olap_store.doin_projection_store import ddl as doin_projection_ddl
+        statements.extend(doin_projection_ddl(t, dialect))
         return statements
 
     def _ensure_schema(self, engine):
@@ -888,6 +890,40 @@ class Plugin:
         with self.engine().connect() as connection:
             return fs4.reconcile_document(connection, document, backend=self._fs_phase23_backend_name(),
                                          qualified=self._qualified)
+
+    # -- DOIN archive projection (one implementation: doin_projection_store) ---------------
+    def _doin_write(self, operation, document):
+        from predictor_olap_store import doin_projection_store as dps
+        if self._engine is None:
+            self.engine()
+        if self._schema_error is not None:
+            raise RuntimeError(f"doin projection schema not ready: {self._schema_error}")
+        call = getattr(dps, operation)
+        lock = getattr(self, "_write_lock", None)
+        if lock is None:
+            with self.write_engine().begin() as connection:
+                return call(connection, document, qualified=self._qualified)
+        with lock:
+            with self.write_engine().begin() as connection:
+                return call(connection, document, qualified=self._qualified)
+
+    def write_doin_projection(self, document: dict):
+        """Project one verified, FINALIZED receipt row: report once, projection row, event."""
+        return self._doin_write("write_document", document)
+
+    def revoke_doin_projection(self, document: dict):
+        """Append REVOKED events for one non-canonical block; history is kept."""
+        return self._doin_write("revoke_document", document)
+
+    def read_doin_projection(self, document: dict):
+        """Projections with their current state, events and gov_metric rows, for readback."""
+        from predictor_olap_store import doin_projection_store as dps
+        if self._engine is None:
+            self.engine()
+        if self._schema_error is not None:
+            raise RuntimeError(f"doin projection schema not ready: {self._schema_error}")
+        with self.engine().connect() as connection:
+            return dps.read_document(connection, document, qualified=self._qualified)
 
     def reconcile_feature_selection(self, request: dict):
         """Reconcile an authenticated request against retained phase-1 evidence."""
