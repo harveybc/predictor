@@ -150,4 +150,4 @@ weekly_data and all external_clock_audit suites: **122 passed in 1.90 s**.
 ## Next artifact
 
 B runs A's `freeze` on the `plan-v3` cell configs: four folds per h, and the
-weekly units with `--score-outer`. The lane D review is in `REVIEW_C_OF_D.md`.
+weekly units with `--score-outer`. The lane D review is in `REVIEW_C_OF_D.md`: FIX_REQUIRED (F1 the winner flag cannot be recorded after the first projection, F2 two attempts of one fold are accepted but never projected, F3 the deploy steps read token files).
