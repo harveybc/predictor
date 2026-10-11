@@ -751,7 +751,9 @@ def test_comparison_refuses_different_group_sets():
     body["groups"] = [g for g in body["groups"] if not (g["population_kind"] == "S" and g["horizon_hours"] == 72)]
     with pytest.raises(pm.PairedMetricsError) as caught:
         pm.compare_configs(a, dict(body, sha256=pm.canonical_sha256(body)))
-    assert caught.value.code == "CONTRACT_MISMATCH"
+    # R3: a result missing groups its own contract declares is refused by
+    # verify_result before any comparison (was CONTRACT_MISMATCH from compare).
+    assert caught.value.code == "GROUP_MISSING"
 
 
 # --- fix round 1: CLI typed failures, status exit codes, identity guards ----------
@@ -905,7 +907,8 @@ def _forge_result(result, edit):
     """Edit groups, regenerate the OLAP rows and reseal: a self-consistent digest forgery."""
     body = {k: v for k, v in result.items() if k != "sha256"}
     body["groups"] = [edit(g) for g in body["groups"]]
-    body["olap_records"] = pm.olap_records(body)
+    # The unverified builder: the public olap_records verifies its (still unsealed) input.
+    body["olap_records"] = pm._olap_rows(body)
     return dict(body, sha256=pm.canonical_sha256(body))
 
 

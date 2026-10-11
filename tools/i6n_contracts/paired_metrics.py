@@ -66,6 +66,13 @@ Rules implemented (see the tests for the executable form):
   digest) and its own ``sha256``.
 * ``compare_configs`` requires the identical previously sealed S support and
   refuses (``NOT_COMPARABLE_INCOMPLETE``) instead of building an intersection.
+* ``verify_result`` also checks the result against its contract: the
+  ``contract`` field is required and re-validated, ``contract_sha256`` must be
+  the digest of that body, and the result must hold EXACTLY one group per
+  (population kind in {S, U}) x declared horizon x (declared roles +
+  ``ALL_ROLES``), see ``expected_group_keys``; a missing, duplicate or
+  undeclared group is a typed refusal, and so are group identities or embedded
+  OLAP rows that disagree. ``compare_configs`` and ``olap_records`` verify first.
 * ``aggregate_groups``, ``verify_result`` and ``compare_configs`` never trust a
   sealed field: they re-verify every group's types (non-bool non-negative
   integer counts, typed reason->count maps, scalar row keys of the group's own
@@ -278,6 +285,10 @@ def _contract(raw: Any) -> dict:
     if not horizons or len(set(horizons)) != len(horizons):
         raise PairedMetricsError("CONTRACT_INVALID", "horizons_hours must be unique and non-empty")
     result.update(roles=roles, horizons_hours=horizons)
+    if "description" in raw:
+        # Kept verbatim: the normalised contract must hash to the declared contract
+        # body, so ``contract_sha256`` can be recomputed from a result's contract.
+        result["description"] = raw["description"]
     return result
 
 
@@ -655,14 +666,13 @@ def score(document: Mapping[str, Any],
                  [[*r["key"]], r["receipt_id"], r["recorded_at"], r["action"], r["forecast_sha256"]]
                  for r in parts["receipts"]))}
     digests = input_digests(document)
+    if canonical_sha256(contract) != digests["config_sha256"]:
+        raise PairedMetricsError("CONTRACT_INVALID", "the normalised contract differs from the declared one")
     identity = {"config_id": contract["config_id"], "protocol_id": contract["protocol_id"],
                 "calendar_id": contract["calendar_id"], "contract_sha256": digests["config_sha256"]}
     s_entries = [_entry(k, forecasts, failures, OPPORTUNITY) for k in population["keys"]]
     u_entries = [_entry(r["key"], forecasts, failures, USAGE) for r in parts["receipts"]]
-    plan = [(kind, h, role)
-            for kind in (OPPORTUNITY, USAGE)
-            for h in sorted(contract["horizons_hours"])
-            for role in [*contract["roles"], ALL_ROLES]]
+    plan = expected_group_keys(contract)
     groups = []
     for done, (kind, h, role) in enumerate(plan, start=1):
         entries = s_entries if kind == OPPORTUNITY else u_entries
@@ -703,7 +713,7 @@ def score(document: Mapping[str, Any],
         "claims": dict(CLAIMS),
         "design_basis": DESIGN_BASIS,
     }
-    result["olap_records"] = olap_records(result)
+    result["olap_records"] = _olap_rows(result)
     return _sealed(result)
 
 
@@ -717,7 +727,17 @@ _OLAP_METRIC_FIELDS = (
 
 
 def olap_records(result: Mapping[str, Any]) -> list:
-    """Flat, scalar-only rows for a FUTURE publication; nothing is written anywhere."""
+    """Flat, scalar-only rows for a FUTURE publication; nothing is written anywhere.
+
+    The result is verified first (``verify_result``): a result whose group set
+    differs from its contract, or that lacks its contract, is a typed refusal,
+    so no group is ever published twice and no ``KeyError`` escapes.
+    """
+    return _olap_rows(verify_result(result))
+
+
+def _olap_rows(result: Mapping[str, Any]) -> list:
+    """Unverified row builder, used while scoring and inside ``verify_result``."""
     contract = result["contract"]
     common = {"schema_version": RESULT_SCHEMA_VERSION, "component": COMPONENT,
               "config_id": contract["config_id"], "protocol_id": contract["protocol_id"],
@@ -876,27 +896,80 @@ def _verified_group(g: Any, index: Any) -> Mapping[str, Any]:
     return {"group": g, "failures": failures, "exclusions": exclusions, "upstream": upstream}
 
 
-def verify_result(result: Mapping[str, Any]) -> Mapping[str, Any]:
-    """Verify a scored result's seal AND the semantics of every group; returns the result.
+_RESULT_DIGESTS = ("contract_sha256", "input_sha256", "opportunity_support_sha256", "usage_receipts_sha256")
+_RESULT_REQUIRED = ("contract", "state", "olap_records") + _RESULT_DIGESTS
+_GROUP_CONTRACT_FIELDS = ("unit", "scale", "config_id", "protocol_id", "calendar_id")
 
-    ``RESULT_SEAL_INVALID`` when the digest does not verify, the typed group
-    codes of ``aggregate_groups`` for an impossible group, and
-    ``RESULT_INCONSISTENT`` when the result-level state or identity disagree
-    with its groups.
+
+def expected_group_keys(contract: Mapping[str, Any]) -> list:
+    """The exact group set a contract declares: (population_kind, horizon_hours, role).
+
+    One group per population kind in {S, U}, per declared horizon and per
+    declared role plus ``ALL_ROLES``. Both kinds are always present: an empty S
+    support or a run without receipts still yields its groups, in state
+    ``NO_ELIGIBLE_ROWS`` / ``NO_RECEIPTS``. A contract cannot omit a kind, and
+    its roles and horizons are non-empty, so the set is never empty. This is
+    the order in which ``score`` emits the groups; a reader must not depend on
+    that order.
+    """
+    return [(kind, h, role)
+            for kind in (OPPORTUNITY, USAGE)
+            for h in sorted(contract["horizons_hours"])
+            for role in [*contract["roles"], ALL_ROLES]]
+
+
+def verify_result(result: Mapping[str, Any]) -> Mapping[str, Any]:
+    """Verify a scored result's seal, its contract AND every group; returns the result.
+
+    Typed refusals: ``RESULT_SEAL_INVALID`` when the digest does not verify;
+    ``SCHEMA_INVALID`` / ``CONTRACT_INVALID`` / ``IDENTITY_INVALID`` /
+    ``INVALID_HORIZON`` when a required field (including ``contract``) is
+    missing or malformed; ``CONTRACT_DIGEST_INVALID`` when ``contract_sha256``
+    is not the digest of the contract body; the typed group codes of
+    ``aggregate_groups`` for an impossible group; ``GROUP_UNDECLARED``,
+    ``DUPLICATE_GROUP`` and ``GROUP_MISSING`` unless the result holds exactly
+    one group per key of ``expected_group_keys(contract)``; and
+    ``RESULT_INCONSISTENT`` when a group's identity, the result state or the
+    embedded ``olap_records`` disagree with the groups and the contract.
     """
     if not isinstance(result, Mapping) or not _seal_holds(result):
         raise PairedMetricsError("RESULT_SEAL_INVALID", "result digest does not verify")
     if result.get("schema_version") != RESULT_SCHEMA_VERSION or not isinstance(result.get("groups"), list):
         raise _schema("result", f"schema_version must be {RESULT_SCHEMA_VERSION} with a groups list")
-    populations = {OPPORTUNITY: result.get("opportunity_support_sha256"), USAGE: result.get("usage_receipts_sha256")}
+    missing = [f for f in _RESULT_REQUIRED if f not in result]
+    if missing:
+        raise _schema("result", f"missing {missing}")
+    for field in _RESULT_DIGESTS:
+        if not isinstance(result[field], str) or not result[field]:
+            raise _schema("result", f"{field} must be a non-empty string")
+    contract = _contract(result["contract"])
+    if contract != result["contract"]:
+        raise _schema("result", "contract is not in its normalised form")
+    if canonical_sha256(contract) != result["contract_sha256"]:
+        raise PairedMetricsError("CONTRACT_DIGEST_INVALID", "contract_sha256 does not match the contract body")
+    expected = set(expected_group_keys(contract))
+    populations = {OPPORTUNITY: result["opportunity_support_sha256"], USAGE: result["usage_receipts_sha256"]}
+    seen: set = set()
     for index, g in enumerate(result["groups"]):
         g = _verified_group(g, index)["group"]
-        if (g["contract_sha256"] != result.get("contract_sha256")
-                or g["population_sha256"] != populations[g["population_kind"]]):
+        group_key = (g["population_kind"], g["horizon_hours"], g["role"])
+        if group_key not in expected:
+            raise PairedMetricsError("GROUP_UNDECLARED", f"groups[{index}] {group_key} is not declared by the contract")
+        if group_key in seen:
+            raise PairedMetricsError("DUPLICATE_GROUP", f"groups[{index}] {group_key} is listed twice")
+        seen.add(group_key)
+        if (g["contract_sha256"] != result["contract_sha256"]
+                or g["population_sha256"] != populations[g["population_kind"]]
+                or any(g[f] != contract[f] for f in _GROUP_CONTRACT_FIELDS)):
             raise PairedMetricsError("RESULT_INCONSISTENT", f"groups[{index}] identity differs from the result")
+    if seen != expected:
+        raise PairedMetricsError("GROUP_MISSING", f"the contract declares {sorted(expected - seen)} "
+                                 f"but the result has no such group")
     state = "INCOMPLETE" if any(g["state"] == "INCOMPLETE" for g in result["groups"]) else "COMPLETE"
-    if result.get("state") != state:
-        raise PairedMetricsError("RESULT_INCONSISTENT", f"result state {result.get('state')!r} but groups give {state}")
+    if result["state"] != state:
+        raise PairedMetricsError("RESULT_INCONSISTENT", f"result state {result['state']!r} but groups give {state}")
+    if result["olap_records"] != _olap_rows(result):
+        raise PairedMetricsError("RESULT_INCONSISTENT", "olap_records differ from the rows its groups give")
     return result
 
 
@@ -974,6 +1047,9 @@ def compare_configs(result_a: Mapping[str, Any], result_b: Mapping[str, Any]) ->
     ``SUPPORT_MISMATCH``; any incomplete group returns
     ``NOT_COMPARABLE_INCOMPLETE`` with coverage and no metric differences.
     U populations depend on each strategy's own decisions and are not compared.
+    Both results go through ``verify_result`` first, so a result without its
+    contract, with a group set that differs from its contract or with a
+    contract that does not match its digest is a typed refusal.
     """
     verify_result(result_a)
     verify_result(result_b)
@@ -1022,6 +1098,6 @@ __all__ = [
     "ALL_ROLES", "CLAIMS", "COMPONENT", "DESIGN_BASIS", "EMPTY_STATE", "EXCLUSIONS_C2_ONLY",
     "EXCLUSIONS_C2_ONLY_UPSTREAM_SEPARATE", "INPUT_SCHEMA_VERSION", "OPPORTUNITY", "RESULT_SCHEMA_VERSION",
     "USAGE", "PairedMetricsError", "aggregate_groups", "canonical_json", "canonical_sha256",
-    "compare_configs", "forecast_digest", "input_digests", "iso_utc", "olap_records", "parse_utc",
+    "compare_configs", "expected_group_keys", "forecast_digest", "input_digests", "iso_utc", "olap_records", "parse_utc",
     "score", "seal_population", "validate", "verify_result",
 ]
