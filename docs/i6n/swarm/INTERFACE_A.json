@@ -1,0 +1,90 @@
+{
+  "schema": "i6n.swarm_weekly.interface.v1",
+  "lane": "A",
+  "interface_version": "A.1",
+  "status": "PUBLISHED_EARLY_SUBJECT_TO_C_D_E_AGREEMENT",
+  "branch": "satoshi/i6n-swarm-A-trajectory-20261011",
+  "evaluator": {
+    "module": "tools.i6n_historical_evaluator",
+    "context_schema": "i6n.historical_evaluator.v2",
+    "freeze": {
+      "argv": ["<python>", "-m", "tools.i6n_historical_evaluator", "freeze", "--config", "<abs cell.json>", "--output", "<abs new dir>", "--experiment", "<experiment id>", "--fold", "<fold id>"],
+      "effect": "prepares data (no fit), seals endpoint-h TRAIN/inner support for ONE (horizon, fold); writes FROZEN.json and BINDING.json; output dir must not exist",
+      "requires": "cell config training block equal to plan section 2 stopping: max_epochs=50, patience=5, min_delta=1e-6, seed=6102026; endpoint base model (n_horizons=1)",
+      "stdout": "BINDING.json content (i6n_horizon, i6n_support, i6n_evaluation_context, i6n_evaluator_command, i6n_evaluator_timeout)"
+    },
+    "evaluate": {
+      "argv": "BINDING.i6n_evaluator_command == [<python>, -m, tools.i6n_historical_evaluator, evaluate]",
+      "stdin": {
+        "config": "canonical effective genome = tools.i6n_search.effective_config(genome) (search schema v1; E must keep a mapping if v2 changes keys)",
+        "generation": "int >= 0 (excluded from identity)",
+        "context": "BINDING.i6n_evaluation_context, unchanged",
+        "support": "BINDING.i6n_support, unchanged",
+        "attempt": "OPTIONAL {index: 1..3, parent_status_sha256: null|sha256, fencing_token: str}. Omitted == index 1. index>1 requires the previous attempt's terminal non-COMPLETED STATUS digest (FAILED, or RUNNING whose lock is free = INTERRUPTED). Any COMPLETED attempt of the identity is adopted (no refit)."
+      },
+      "stdout": "one JSON shared receipt (below)",
+      "timeout_seconds": "BINDING.i6n_evaluator_timeout (= resources.max_seconds + 120)",
+      "thread_rule": "must be a subprocess main thread; in-thread call or existing ITIMER_REAL refuses before any output",
+      "device_rule": "cell config device cpu|gpu; gpu requires exactly one visible GPU, soft placement disabled, all variables (incl. attention) and outputs on that device; no CPU fallback",
+      "exit": "0 + receipt on success; nonzero with traceback on refusal/failure (STATUS.json FAILED retained)"
+    },
+    "status_files": "output_root/candidates/<candidate_identity_sha256>[.attempt<k>]/STATUS.json: RUNNING|COMPLETED|FAILED, progress, elapsed_seconds, eta_seconds (null before first epoch); a RUNNING status whose RUN.lock is free is INTERRUPTED"
+  },
+  "shared_receipt": {
+    "compatible_with": "tools.i6n_search._score (unchanged keys)",
+    "keys": {
+      "status": "ok",
+      "counts": {"train": "int endpoint-h S rows", "inner": "int"},
+      "naive_sums": {"train": "float endpoint naive sum |p_t - p_{t+h}| original price", "inner": "float"},
+      "support_digest": {"train": "sha256", "inner": "sha256"},
+      "error_sums": {"train": "float endpoint sum |p_hat - p_{t+h}|", "inner": "float"},
+      "fitness": "0.5*(err_train/naive_train + err_inner/naive_inner), endpoint h only, this fold only",
+      "metadata": "object; metadata.candidate_receipt is the per-candidate receipt below"
+    }
+  },
+  "candidate_receipt": {
+    "schema_version": "i6n.candidate_receipt.v1",
+    "fields": {
+      "experiment": "str (freeze --experiment)",
+      "fold": "str (freeze --fold)",
+      "candidate_identity_sha256": "sha256 of full evaluator identity (cell config incl. data/clock pins and code digests, effective config, context, support); attempt excluded",
+      "genotype_canonical_sha256": "tools.i6n_search.effective_identity(genome)",
+      "effective_config_sha256": "canonical sha256 of request.config",
+      "cell_config_sha256": "canonical sha256 of the derived cell config actually fitted",
+      "horizon_hours": "int h",
+      "output_mode": "endpoint|trajectory",
+      "delta_x_hours": "int dx",
+      "delta_y_hours": "int dy or null for endpoint",
+      "history_hours": "int L",
+      "samples": "int n = 1 + L/dx (includes t)",
+      "final_steps": "int temporal length after all right-anchored reductions (contains t)",
+      "role": "MANAGEMENT|ENTRY (C1 role of the cell)",
+      "heads": [{"offset_hours": "int", "head_role": "ENDPOINT|INTERMEDIATE", "status": "TRAINED|NO_TRAIN_SUPPORT|DEGENERATE_TRAIN_SCALE", "train_target_center": "float|null", "train_target_scale": "float|null", "loss_weight": "1.0 for TRAINED else 0.0"}],
+      "rows": [{
+        "schema_version": "i6n.candidate_receipt.v1",
+        "experiment": "str", "candidate_identity_sha256": "sha256", "fold": "str",
+        "horizon_hours": "int (candidate endpoint h)", "head_offset_hours": "int", "head_role": "ENDPOINT|INTERMEDIATE",
+        "comparison": "true only for ENDPOINT (search/selection metric); INTERMEDIATE rows are diagnostics",
+        "role": "management_origin|entry_origin", "population": "S", "split": "TRAIN|INNER",
+        "metric": "ABS_AND_SQUARED_ERROR_SUMS", "unit": "PRICE", "scale": "ORIGINAL_PRICE",
+        "n": "int eligible C1 M pairs of this head/split", "sum_abs_error": "float|null", "sum_sq_error": "float|null",
+        "naive_sum_abs_error": "float|null", "naive_sum_sq_error": "float|null",
+        "c2_receipt_sha256": "sha256|null (null when n==0 or head untrained)",
+        "status": "SCORED|NO_SPLIT_SUPPORT|HEAD_NOT_TRAINED"
+      }],
+      "stopping": {"rule_sha256": "sha256", "monitor": "train_inner_mean", "max_epochs": 50, "patience": 5, "min_delta": 1e-06, "restore": "lowest_finite_epoch_first_tie", "plan_conformant": "bool", "epochs_completed": "int", "best_epoch": "int", "stop_reason": "patience|max_epochs", "restored_weights_sha256": "sha256"},
+      "seed": 6102026,
+      "cost": {"elapsed_seconds": "float wall in evaluator", "fit_seconds": "float", "parameters": "int", "observed_updates": "int", "train_rows": "int", "inner_rows": "int", "materialized_bytes": "int (cell estimate)", "process_peak_rss_bytes": "int ru_maxrss of evaluator process (not cgroup)", "device": "/CPU:0|/GPU:0"},
+      "attempt": {"index": "1..3", "parent_status_sha256": "sha256|null", "fencing_token": "str|null", "lineage_note": "recovery attempts are linked, counted, never independent replicas"},
+      "placement": {"soft_device_placement": false, "variables_on_device": "bool", "attention_variables_on_device": "bool", "output_device": "str"}
+    },
+    "row_identity_keys": ["experiment", "candidate_identity_sha256", "fold", "horizon_hours", "head_offset_hours", "role", "population", "split", "metric", "unit", "schema_version"]
+  },
+  "scientific_rules": [
+    "comparison metric is the endpoint h on the frozen fold support; intermediates never change endpoint rows, counts or naive",
+    "each head: own C1 mask (exact elapsed hours t+o), own TRAIN-only target scale, own naive; equal loss weights among TRAINED heads",
+    "an endpoint row is never filtered because an intermediate head is missing; an intermediate-only row may train intermediates but is not an endpoint row",
+    "invalid labels are selected away before residuals: no NaN, no gradient",
+    "TEST (2025+) never opened"
+  ]
+}
