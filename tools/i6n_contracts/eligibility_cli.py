@@ -23,10 +23,11 @@ Rules:
 Exit codes: 0 completed/reused/status, 1 typed contract failure (FAILED
 recorded), 2 refusal or usage error (nothing written).
 
-Reuses ``tools.i6m_queue.digest`` (canonical JSON SHA-256) and
-``tools.i6m_queue.atomic_json`` (unique temp + fsync + ``os.replace``).
-That module also imports the standard ``sqlite3`` module, but no database is
-opened by this CLI.
+Standard library only, and no database module: the canonical JSON digest
+(``eligibility.canonical_digest``) and the atomic writer (:func:`atomic_json`:
+unique temp file in the same directory, fsync, ``os.replace``) follow the
+formulas of ``tools.i6m_queue.digest``/``atomic_json`` but are implemented
+locally, because importing ``tools.i6m_queue`` would import ``sqlite3``.
 """
 
 from __future__ import annotations
@@ -34,14 +35,17 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import sys
 import time
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
-from tools.i6m_queue import atomic_json, digest
 from tools.i6n_contracts import eligibility as elig
+
+digest = elig.canonical_digest
 
 STATUS_SCHEMA = "i6n.eligibility.cli_status.v1"
 STATUS_NAME = "STATUS.json"
@@ -52,12 +56,32 @@ _CODE_FILES = (
     ("tools/i6n_contracts/eligibility.py", _HERE / "eligibility.py"),
     ("tools/i6n_contracts/eligibility_cli.py", _HERE / "eligibility_cli.py"),
     ("tools/business_weekly_protocol.py", _HERE.parent / "business_weekly_protocol.py"),
-    ("tools/i6m_queue.py", _HERE.parent / "i6m_queue.py"),
 )
 
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def atomic_json(path: Path, value: Any) -> None:
+    """Replace ``path`` atomically: unique temp beside it, fsync, ``os.replace``.
+
+    A reader sees either the previous complete file or the new complete file;
+    a failure before the replace leaves the previous file and removes the temp.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(f"{path.name}.{uuid.uuid4().hex}.tmp")
+    try:
+        with tmp.open("x") as stream:
+            json.dump(value, stream, indent=2, allow_nan=False)
+            stream.write("\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(tmp, path)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
 
 
 def _sha256_bytes(data: bytes) -> str:

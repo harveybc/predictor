@@ -10,11 +10,15 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import pytest
 
+from tools.i6n_contracts import eligibility as elig_mod
 from tools.i6n_contracts import eligibility_cli
 from tools.i6n_contracts.eligibility import (
     CalendarRef,
@@ -523,3 +527,172 @@ def test_cli_missing_calendar_fails_typed_without_result(tmp_path, capsys):
     assert status["error"]["code"] == "CALENDAR_REQUIRED"
     assert status["result"] is None
     assert status["eta_seconds"] is None and status["eta_unavailable_reason"]
+
+
+# ------------------------------------------------- review round 1 (FIX_REQUIRED)
+
+
+def test_label_path_never_drops_valid_heads():
+    """Never-drop rule on the M path: invalid long heads stay reported."""
+    origin = B1 - 48 * H
+    heads = evaluate_heads(origin, ALL, Role.MANAGEMENT, W1, input_available=True,
+                           observed_targets=_observed(), split=TRAIN)
+    assert [d.horizon_hours for d in heads] == list(ALL)
+    assert all(d.label_evaluated for d in heads)
+    assert {d.horizon_hours for d in heads if d.label_eligible} == set(SHORT) | {18, 24, 36}
+    for d in heads:
+        assert d.target_timestamp == origin + d.horizon_hours * H
+        if d.horizon_hours in (48, 60, 72):
+            assert d.operational_eligible is False and d.label_eligible is False
+            assert d.label_reasons[0] is LabelReason.OPERATIONALLY_INELIGIBLE
+
+
+def test_dst_end_with_real_zoneinfo_uses_elapsed_hours():
+    # Timezone RULE only (US DST ends 2026-11-01 02:00 local); the week itself
+    # is a synthetic fixture and is not a broker or exchange calendar.
+    ny = ZoneInfo("America/New_York")
+    o = datetime(2026, 10, 31, 12, tzinfo=ny)            # EDT, 16:00Z
+    c = datetime(2026, 11, 5, 12, tzinfo=ny)             # EST, 17:00Z
+    assert c.replace(tzinfo=None) - o.replace(tzinfo=None) == 120 * H   # wall clock
+    assert c.astimezone(UTC) - o.astimezone(UTC) == 121 * H             # elapsed
+    week = _week(o, c, datetime(2026, 11, 4, 0, tzinfo=ny), "WNY")
+    assert week.operational_start == datetime(2026, 11, 1, 4, tzinfo=UTC)
+    assert week.force_flat == datetime(2026, 11, 5, 5, tzinfo=UTC)
+    origin = datetime(2026, 11, 1, 0, tzinfo=ny)         # = A, before the 02:00 change
+    # Wall clock: 96 h to B (00:00 -> 00:00). Elapsed: 97 h, so h=96 is valid.
+    (h96,) = evaluate_heads(origin, (96,), Role.MANAGEMENT, week)
+    assert h96.operational_eligible is True and h96.operational_reasons == ()
+    assert h96.remaining_seconds_to_force_flat == 97 * 3600
+    assert h96.target_timestamp == datetime(2026, 11, 5, 4, tzinfo=UTC)
+    assert h96.to_json()["target_timestamp"] == "2026-11-05T04:00:00+00:00"
+    ok, reasons = operational_eligibility(origin, 97, Role.MANAGEMENT, week)
+    assert not ok and reasons == (OperationalReason.TARGET_AT_OR_AFTER_FORCE_FLAT,)
+
+
+def test_per_head_available_is_explicit_input_driven_and_separate_from_E_and_M():
+    reason = elig_mod.AvailabilityReason
+    origin = B1 - 48 * H
+    for d in evaluate_heads(origin, (2, 72), Role.MANAGEMENT, W1):
+        assert d.availability_evaluated is False and d.available is None
+        assert d.to_json()["available"] is None            # never a default True/False
+    h2, h72 = evaluate_heads(origin, (2, 72), Role.MANAGEMENT, W1, prediction_available=True)
+    assert (h2.available, h2.availability_reasons) == (True, ())
+    assert (h72.available, h72.availability_reasons) == (
+        False, (reason.OPERATIONALLY_INELIGIBLE,))
+    h2, h72 = evaluate_heads(origin, (2, 72), Role.MANAGEMENT, W1,
+                             input_available=True, observed_targets=_observed(),
+                             split=TRAIN, prediction_available={2: False, 72: True})
+    assert h2.operational_eligible is True and h2.label_eligible is True   # E, M unchanged
+    assert (h2.available, h2.availability_reasons) == (False, (reason.PREDICTION_UNAVAILABLE,))
+    assert h2.to_json()["available"] is False
+    assert h2.to_json()["availability_reasons"] == ["PREDICTION_UNAVAILABLE"]
+    assert (h72.available, h72.availability_reasons) == (
+        False, (reason.OPERATIONALLY_INELIGIBLE,))
+    for bad in (1, "yes", {2: True}, {2: True, 72: True, 3: True}, {2: True, 72: 1},
+                {True: True, 72: True}):
+        with pytest.raises(EligibilityError) as err:
+            evaluate_heads(origin, (2, 72), Role.MANAGEMENT, W1, prediction_available=bad)
+        assert err.value.code is ErrorCode.PREDICTION_AVAILABILITY_INVALID
+
+
+def test_input_unavailable_origins_must_match_an_enumerated_origin():
+    cfg = _table_config(label=True, horizons=(24,))
+    for bad in (["2030-01-01T00:00:00+00:00"],                        # matches nothing
+                [_iso(A1), _iso(A1)],                                 # duplicate
+                [_iso(datetime(2026, 1, 10, 3, tzinfo=UTC))]):        # weekend, no week
+        cfg["input_unavailable_origins"] = bad
+        with pytest.raises(EligibilityError) as err:
+            build_support_table(cfg)
+        assert err.value.code is ErrorCode.INPUT_AVAILABILITY_INVALID
+    cfg["input_unavailable_origins"] = [_iso(A1)]
+    table = build_support_table(cfg)
+    assert table["input_unavailable_origins_applied"] == 1
+    no_label = _table_config(horizons=(24,))
+    no_label["input_unavailable_origins"] = [_iso(A1)]       # would have no effect at all
+    with pytest.raises(EligibilityError) as err:
+        build_support_table(no_label)
+    assert err.value.code is ErrorCode.INPUT_AVAILABILITY_INVALID
+
+
+@pytest.mark.parametrize("span", [24, 20])
+def test_week_with_empty_operational_window_is_a_typed_error(span):
+    # 12 h + 12 h offsets: span 24 gives A == B, span 20 gives A > B.
+    with pytest.raises(EligibilityError) as err:
+        _week(o=O1, c=O1 + span * H, cut=O1 + H, wid="WSHORT")
+    assert err.value.code is ErrorCode.OPERATIONAL_WINDOW_EMPTY
+    with pytest.raises(EligibilityError) as err:
+        build_support_table(_table_config(weeks=((O1, O1 + span * H, O1 + H, "WSHORT"),)))
+    assert err.value.code is ErrorCode.OPERATIONAL_WINDOW_EMPTY
+
+
+def test_cli_imports_no_database_dataframe_or_tensor_library():
+    root = Path(__file__).resolve().parents[1]
+    probe = ("import sys, tools.i6n_contracts.eligibility_cli; "
+             "bad = sorted({'sqlite3', '_sqlite3', 'pandas', 'tensorflow', 'numpy'} "
+             "& set(sys.modules)); print(bad); sys.exit(1 if bad else 0)")
+    done = subprocess.run([sys.executable, "-c", probe], cwd=root, capture_output=True,
+                          text=True, timeout=60)
+    assert done.returncode == 0, done.stdout + done.stderr
+    names = {name for name, _ in eligibility_cli._CODE_FILES}
+    assert "tools/i6m_queue.py" not in names
+
+
+def test_cli_refuses_a_damaged_completed_result(tmp_path, capsys):
+    out = tmp_path / "out"
+    cfg = _write(tmp_path / "a.json", _table_config())
+    assert eligibility_cli.main(["--config", str(cfg), "--output", str(out)]) == 0
+    capsys.readouterr()
+    result = out / "SUPPORT_TABLE.json"
+    damaged = result.read_bytes() + b" "
+    result.write_bytes(damaged)
+    status_bytes = (out / "STATUS.json").read_bytes()
+    assert eligibility_cli.main(["--config", str(cfg), "--output", str(out)]) == 2
+    assert "TERMINAL_OUTPUT_DAMAGED" in capsys.readouterr().out
+    assert result.read_bytes() == damaged                      # never silently rewritten
+    assert (out / "STATUS.json").read_bytes() == status_bytes
+    assert eligibility_cli.main(["--status", "--output", str(out)]) == 0
+    assert json.loads(capsys.readouterr().out)["result_intact"] is False
+
+
+def test_code_digest_tracks_code_bytes_and_refuses_different_code(tmp_path, monkeypatch,
+                                                                  capsys):
+    copies = []
+    for name, path in eligibility_cli._CODE_FILES:
+        dst = tmp_path / "code" / name
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_bytes(path.read_bytes())
+        copies.append((name, dst))
+    monkeypatch.setattr(eligibility_cli, "_CODE_FILES", tuple(copies))
+    before = eligibility_cli.code_sha256()
+    out = tmp_path / "out"
+    cfg = _write(tmp_path / "a.json", _table_config())
+    assert eligibility_cli.main(["--config", str(cfg), "--output", str(out)]) == 0
+    capsys.readouterr()
+    status_bytes = (out / "STATUS.json").read_bytes()
+    assert json.loads(status_bytes)["code_sha256"] == before
+    with copies[0][1].open("ab") as stream:
+        stream.write(b"\n# one changed byte sequence\n")
+    assert eligibility_cli.code_sha256() != before
+    assert eligibility_cli.main(["--config", str(cfg), "--output", str(out)]) == 2
+    assert "OUTPUT_HOLDS_DIFFERENT_CODE" in capsys.readouterr().out
+    assert (out / "STATUS.json").read_bytes() == status_bytes
+
+
+def test_status_and_result_are_replaced_atomically(tmp_path, monkeypatch):
+    real_replace = os.replace
+    swapped = []
+
+    def spy(src, dst):
+        src, dst = Path(src), Path(dst)
+        assert src.parent == dst.parent and src.name != dst.name
+        json.loads(src.read_text())                      # staged copy complete first
+        swapped.append(dst.name)
+        return real_replace(src, dst)
+
+    monkeypatch.setattr(os, "replace", spy)
+    out = tmp_path / "out"
+    cfg = _write(tmp_path / "a.json", _table_config())
+    assert eligibility_cli.main(["--config", str(cfg), "--output", str(out)]) == 0
+    assert swapped.count("STATUS.json") >= 3
+    assert swapped.count("SUPPORT_TABLE.json") == 1
+    assert sorted(p.name for p in out.iterdir()) == ["STATUS.json", "SUPPORT_TABLE.json"]

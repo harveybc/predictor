@@ -30,6 +30,14 @@ horizon ``h`` (elapsed hours, so ``q = t + h`` is a UTC instant):
     contract section 2: the objective must belong to the split); the end is
     exclusive. A later missing bar changes ``M`` and never ``E``.
 
+``available`` per prediction (market-week contract section 3): an explicit,
+    input-driven field. The caller supplies ``prediction_available`` (inputs,
+    checkpoint and execution correct for that head); ``available = E AND
+    prediction_available`` with typed :class:`AvailabilityReason`. Not supplied
+    => ``available is None`` (never a default True/False). It is recorded apart
+    from ``M`` and never changes ``E`` or ``M``; this module does not decide
+    whether a model actually produced a prediction.
+
 What this module never does: infer O/C from gaps in prices, choose a broker
 or a time zone, fall back to a default (e.g. New York) calendar, fill a value,
 move or truncate an endpoint, convert ``h`` into "hours remaining", or drop
@@ -41,7 +49,20 @@ hourly grid, a half-open interval, integer durations and no other cuts or
 absences; it is deliberately not emitted.
 
 Dependencies: standard library only (no pandas, TensorFlow, network or
-database). ``_require_plain_int`` is reused from the sealed weekly protocol.
+database module; ``sqlite3`` is not imported, directly or through helpers).
+``_require_plain_int`` is reused from the sealed weekly protocol.
+
+Limits (candidate implementation, not deployed, not a measurement):
+
+* ``prediction_available`` is a caller-supplied fact. Deciding it from real
+  inputs, checkpoints and execution belongs to a later adapter.
+* A week with ``A >= B`` is rejected (``OPERATIONAL_WINDOW_EMPTY``); a cutoff
+  ``K <= A`` is accepted as a week without new entries.
+* ``input_unavailable_origins`` must each equal one enumerated in-calendar
+  origin and requires label evidence. An origin that matches but is never
+  operationally eligible for a head does not change that head's counts,
+  because input availability only acts on ``M`` and ``M`` implies ``E``.
+* Keras masking is not exercised or validated here.
 """
 
 from __future__ import annotations
@@ -110,6 +131,8 @@ class ErrorCode(str, Enum):
     LABEL_EVIDENCE_INVALID = "LABEL_EVIDENCE_INVALID"
     ORIGIN_GRID_INVALID = "ORIGIN_GRID_INVALID"
     CONFIG_INVALID = "CONFIG_INVALID"
+    OPERATIONAL_WINDOW_EMPTY = "OPERATIONAL_WINDOW_EMPTY"
+    PREDICTION_AVAILABILITY_INVALID = "PREDICTION_AVAILABILITY_INVALID"
 
 
 class EligibilityError(ValueError):
@@ -145,6 +168,13 @@ class LabelReason(str, Enum):
     TARGET_BEFORE_SPLIT_START = "TARGET_BEFORE_SPLIT_START"
     TARGET_AT_OR_AFTER_SPLIT_END = "TARGET_AT_OR_AFTER_SPLIT_END"
     TARGET_OUTSIDE_DECLARED_SPLITS = "TARGET_OUTSIDE_DECLARED_SPLITS"
+
+
+class AvailabilityReason(str, Enum):
+    """Why a head's prediction is not ``available`` to the strategy adapter."""
+
+    OPERATIONALLY_INELIGIBLE = "OPERATIONALLY_INELIGIBLE"
+    PREDICTION_UNAVAILABLE = "PREDICTION_UNAVAILABLE"
 
 
 class InputReason(str, Enum):
@@ -211,8 +241,13 @@ def _role(value: Any) -> Role:
     return value
 
 
-def _digest(value: Any) -> str:
-    """Canonical JSON SHA-256 (same formula as ``tools.i6m_queue.digest``)."""
+def canonical_digest(value: Any) -> str:
+    """Canonical JSON SHA-256 (same formula as ``tools.i6m_queue.digest``).
+
+    Reimplemented here (five lines) instead of imported, because
+    ``tools.i6m_queue`` imports ``sqlite3`` and this component must not
+    depend on a database module.
+    """
     text = json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
     return hashlib.sha256(text.encode()).hexdigest()
 
@@ -241,7 +276,11 @@ class OperationalWeek:
     """One operational week; all instants are stored in UTC.
 
     Build with :meth:`derive`. ``__post_init__`` re-checks every invariant so
-    a directly constructed instance cannot bypass the offsets.
+    a directly constructed instance cannot bypass the offsets. A week whose
+    offsets leave ``A >= B`` is ``OPERATIONAL_WINDOW_EMPTY`` (a calendar/offset
+    error, not a horizon incompatibility). A cutoff ``K <= A`` is accepted: it
+    declares a week without new entries, and ENTRY rows then carry typed
+    exclusion reasons for every origin.
     """
 
     week_id: str
@@ -275,6 +314,10 @@ class OperationalWeek:
         if self.force_flat != self.market_close - flat * HOUR:
             raise EligibilityError(ErrorCode.CALENDAR_OFFSET_MISMATCH,
                                    f"{self.week_id}: B != C - {flat} h")
+        if not self.operational_start < self.force_flat:
+            raise EligibilityError(ErrorCode.OPERATIONAL_WINDOW_EMPTY,
+                                   f"{self.week_id}: A must precede B (O + {delay} h >= "
+                                   f"C - {flat} h); the week has no operational origin")
         if not self.market_open <= self.entry_cutoff <= self.market_close:
             raise EligibilityError(ErrorCode.CALENDAR_INVALID,
                                    f"{self.week_id}: entry_cutoff outside [O, C]")
@@ -389,7 +432,8 @@ class ObservedTargets:
 @dataclass(frozen=True)
 class HeadDecision:
     """Per-head decision. ``label_*`` fields are ``None``/empty when ``M`` was
-    not evaluated (no label evidence supplied); that is never a False."""
+    not evaluated (no label evidence supplied); that is never a False. The
+    same holds for ``available`` when ``prediction_available`` was not given."""
 
     origin: datetime
     role: Role
@@ -406,6 +450,10 @@ class HeadDecision:
     label_eligible: Optional[bool]
     label_reasons: Tuple[LabelReason, ...]
     split_id: Optional[str]
+    availability_evaluated: bool = False
+    prediction_available: Optional[bool] = None
+    available: Optional[bool] = None
+    availability_reasons: Tuple[AvailabilityReason, ...] = ()
 
     def to_json(self) -> Dict[str, Any]:
         """JSON-ready record with typed reasons."""
@@ -421,7 +469,11 @@ class HeadDecision:
                 "label_evaluated": self.label_evaluated,
                 "label_eligible": self.label_eligible,
                 "label_reasons": [r.value for r in self.label_reasons],
-                "split_id": self.split_id}
+                "split_id": self.split_id,
+                "availability_evaluated": self.availability_evaluated,
+                "prediction_available": self.prediction_available,
+                "available": self.available,
+                "availability_reasons": [r.value for r in self.availability_reasons]}
 
 
 # --------------------------------------------------------------------------
@@ -456,9 +508,42 @@ def operational_eligibility(origin: datetime, horizon_hours: int, role: Role,
     return (not reasons, tuple(reasons))
 
 
+def _prediction_availability(value: Any, heads: Sequence[int]) -> Dict[int, Optional[bool]]:
+    """Normalize ``prediction_available``: None, one bool, or {head: bool}.
+
+    A mapping must name exactly the requested heads with plain-int keys and
+    bool values; anything else is ``PREDICTION_AVAILABILITY_INVALID``.
+    """
+    if value is None:
+        return {h: None for h in heads}
+    if isinstance(value, bool):
+        return {h: value for h in heads}
+    if not isinstance(value, Mapping):
+        raise EligibilityError(ErrorCode.PREDICTION_AVAILABILITY_INVALID,
+                               "prediction_available must be None, a bool or {head: bool}")
+    keys = list(value)
+    if any(type(k) is not int for k in keys) or set(keys) != set(heads):
+        raise EligibilityError(ErrorCode.PREDICTION_AVAILABILITY_INVALID,
+                               f"prediction_available keys {keys!r} must equal heads {list(heads)}")
+    if any(not isinstance(v, bool) for v in value.values()):
+        raise EligibilityError(ErrorCode.PREDICTION_AVAILABILITY_INVALID,
+                               "prediction_available values must be bool")
+    return {h: value[h] for h in heads}
+
+
 def _decision(t: datetime, h: int, role: Role, week: OperationalWeek,
               e: Tuple[bool, Tuple[OperationalReason, ...]],
-              label: Optional[Tuple[bool, Tuple[LabelReason, ...], Optional[str]]]) -> HeadDecision:
+              label: Optional[Tuple[bool, Tuple[LabelReason, ...], Optional[str]]],
+              prediction_available: Optional[bool] = None) -> HeadDecision:
+    if prediction_available is None:
+        available, a_reasons = None, ()
+    else:
+        found: List[AvailabilityReason] = []
+        if not e[0]:
+            found.append(AvailabilityReason.OPERATIONALLY_INELIGIBLE)
+        if not prediction_available:
+            found.append(AvailabilityReason.PREDICTION_UNAVAILABLE)
+        available, a_reasons = not found, tuple(found)
     return HeadDecision(
         origin=t, role=role, horizon_hours=h, target_timestamp=t + h * HOUR,
         eligible_until=week.force_flat - h * HOUR,
@@ -469,7 +554,10 @@ def _decision(t: datetime, h: int, role: Role, week: OperationalWeek,
         label_evaluated=label is not None,
         label_eligible=None if label is None else label[0],
         label_reasons=() if label is None else label[1],
-        split_id=None if label is None else label[2])
+        split_id=None if label is None else label[2],
+        availability_evaluated=prediction_available is not None,
+        prediction_available=prediction_available, available=available,
+        availability_reasons=a_reasons)
 
 
 def _label_reasons(t: datetime, h: int, e_ok: bool, input_available: Any,
@@ -499,28 +587,35 @@ def _label_reasons(t: datetime, h: int, e_ok: bool, input_available: Any,
 
 def historical_label_eligibility(origin: datetime, horizon_hours: int, role: Role,
                                  week: OperationalWeek, *, input_available: bool,
-                                 observed_targets: Any, split: SplitBounds) -> HeadDecision:
+                                 observed_targets: Any, split: SplitBounds,
+                                 prediction_available: Optional[bool] = None) -> HeadDecision:
     """Return one :class:`HeadDecision` with both ``E`` and ``M``.
 
     ``E`` is computed exactly as :func:`operational_eligibility`; label
     evidence can only turn ``M`` false and never alters ``E``.
+    ``prediction_available`` (optional bool) only fills ``available``.
     """
     t = utc_instant("origin", origin)
     h = validate_horizon(horizon_hours)
     e = operational_eligibility(t, h, role, week)
     observed = ObservedTargets.coerce(observed_targets)
     ok, reasons = _label_reasons(t, h, e[0], input_available, observed, split)
-    return _decision(t, h, role, week, e, (ok, reasons, split.split_id))
+    pa = _prediction_availability(prediction_available, (h,))[h]
+    return _decision(t, h, role, week, e, (ok, reasons, split.split_id), pa)
 
 
 def evaluate_heads(origin: datetime, horizons_hours: Sequence[int], role: Role,
                    week: OperationalWeek, *, input_available: Optional[bool] = None,
                    observed_targets: Any = None,
-                   split: Optional[SplitBounds] = None) -> Tuple[HeadDecision, ...]:
+                   split: Optional[SplitBounds] = None,
+                   prediction_available: Any = None) -> Tuple[HeadDecision, ...]:
     """Evaluate every head of one origin; one decision per requested head.
 
     Label arguments are all-or-nothing: with none, only ``E`` is evaluated;
     with all three, ``M`` too. Ineligible heads are reported, never removed.
+    ``prediction_available`` is independent of both: ``None`` (not supplied,
+    ``available`` stays ``None``), one bool for every head, or a mapping
+    ``{head: bool}`` naming exactly the requested heads.
     """
     t = utc_instant("origin", origin)
     hs = [validate_horizon(h) for h in horizons_hours]
@@ -528,16 +623,19 @@ def evaluate_heads(origin: datetime, horizons_hours: Sequence[int], role: Role,
         raise EligibilityError(ErrorCode.INVALID_HORIZON, "at least one head is required")
     if len(set(hs)) != len(hs):
         raise EligibilityError(ErrorCode.DUPLICATE_HORIZON, f"duplicate heads in {hs}")
+    pa = _prediction_availability(prediction_available, hs)
     supplied = [x is not None for x in (input_available, observed_targets, split)]
     if any(supplied) and not all(supplied):
         raise EligibilityError(ErrorCode.LABEL_EVIDENCE_INVALID,
                                "input_available, observed_targets and split go together")
     if not any(supplied):
-        return tuple(_decision(t, h, role, week, operational_eligibility(t, h, role, week), None)
+        return tuple(_decision(t, h, role, week, operational_eligibility(t, h, role, week),
+                               None, pa[h])
                      for h in hs)
     observed = ObservedTargets.coerce(observed_targets)
     return tuple(historical_label_eligibility(t, h, role, week, input_available=input_available,
-                                              observed_targets=observed, split=split)
+                                              observed_targets=observed, split=split,
+                                              prediction_available=pa[h])
                  for h in hs)
 
 
@@ -685,12 +783,18 @@ def _origin_grid(raw: Any, weeks: Sequence[OperationalWeek]):
         else:
             outside += 1
     summary = {"kind": "EXPLICIT", "timestamps_count": len(stamps),
-               "timestamps_sha256": _digest([iso(t) for t in stamps])}
+               "timestamps_sha256": canonical_digest([iso(t) for t in stamps])}
     return summary, {k: tuple(v) for k, v in by_week.items()}, outside
 
 
 def prepare_support_plan(config: Mapping[str, Any]) -> SupportPlan:
-    """Validate a support-table config (schema ``i6n.eligibility.config.v1``)."""
+    """Validate a support-table config (schema ``i6n.eligibility.config.v1``).
+
+    ``input_unavailable_origins`` is applied, never merely counted: every
+    entry must be unique and equal one enumerated in-calendar origin, and a
+    non-empty list requires ``label_evidence`` (input availability acts only
+    on ``M``). Otherwise ``INPUT_AVAILABILITY_INVALID``.
+    """
     ref, weeks = load_calendar(config)
     unknown = set(config) - _CONFIG_KEYS
     missing = _CONFIG_KEYS - {"description"} - set(config)
@@ -717,8 +821,23 @@ def prepare_support_plan(config: Mapping[str, Any]) -> SupportPlan:
     if not isinstance(config["input_unavailable_origins"], list):
         raise EligibilityError(ErrorCode.INPUT_AVAILABILITY_INVALID,
                                "input_unavailable_origins must be an explicit list")
-    unavailable = frozenset(parse_instant("input_unavailable_origin", s)
-                            for s in config["input_unavailable_origins"])
+    declared = [parse_instant("input_unavailable_origin", s)
+                for s in config["input_unavailable_origins"]]
+    unavailable = frozenset(declared)
+    if len(unavailable) != len(declared):
+        raise EligibilityError(ErrorCode.INPUT_AVAILABILITY_INVALID,
+                               "duplicate input_unavailable_origins")
+    enumerated = {t for ts in by_week.values() for t in ts}
+    unmatched = sorted(unavailable - enumerated)
+    if unmatched:
+        raise EligibilityError(
+            ErrorCode.INPUT_AVAILABILITY_INVALID,
+            f"{len(unmatched)} input_unavailable_origins match no enumerated in-calendar "
+            f"origin and would have no effect (first: {iso(unmatched[0])})")
+    if unavailable and config["label_evidence"] is None:
+        raise EligibilityError(ErrorCode.INPUT_AVAILABILITY_INVALID,
+                               "input_unavailable_origins only act on M; without "
+                               "label_evidence they would have no effect")
     if not isinstance(config["splits"], list):
         raise EligibilityError(ErrorCode.SPLIT_INVALID, "splits must be a list")
     splits = tuple(sorted((_split(s) for s in config["splits"]), key=lambda s: s.start))
@@ -795,7 +914,7 @@ def iter_support_rows(plan: SupportPlan) -> Iterator[Dict[str, Any]]:
                     "operational_exclusions": dict(sorted(exclusions.items())),
                     "first_eligible_origin": iso(eligible[0]) if eligible else None,
                     "last_eligible_origin": iso(eligible[-1]) if eligible else None,
-                    "eligible_origins_sha256": _digest([iso(t) for t in eligible]),
+                    "eligible_origins_sha256": canonical_digest([iso(t) for t in eligible]),
                 }
                 if plan.observed is None:
                     row["label_status"] = "LABEL_EVIDENCE_NOT_SUPPLIED"
@@ -821,7 +940,7 @@ def iter_support_rows(plan: SupportPlan) -> Iterator[Dict[str, Any]]:
                     row["label"] = {
                         "label_eligible": len(label_origins), "by_split": by_split,
                         "exclusions_among_operational": dict(sorted(label_excl.items())),
-                        "label_origins_sha256": _digest(label_origins)}
+                        "label_origins_sha256": canonical_digest(label_origins)}
                 yield row
 
 
@@ -839,7 +958,7 @@ def assemble_support_table(plan: SupportPlan, rows: Sequence[Mapping[str, Any]])
         "horizons_hours": list(plan.horizons),
         "origin_grid": dict(plan.origin_grid),
         "origins_outside_calendar_weeks": plan.origins_outside_calendar_weeks,
-        "input_unavailable_origins_count": len(plan.input_unavailable),
+        "input_unavailable_origins_applied": len(plan.input_unavailable),
         "splits": [s.to_json() for s in plan.splits],
         "label_evidence_supplied": plan.observed is not None,
         "units_total": plan.units_total,
