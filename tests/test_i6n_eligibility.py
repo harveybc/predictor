@@ -8,6 +8,8 @@ owner order section 4. Nothing is trained and Keras masking is not exercised.
 
 from __future__ import annotations
 
+import errno
+import hashlib
 import json
 import os
 import subprocess
@@ -500,10 +502,10 @@ def test_cli_runs_reuses_and_refuses_a_different_input(tmp_path, capsys):
 
 def test_cli_status_is_read_only_and_returns_once(tmp_path, capsys):
     out = tmp_path / "never"
-    assert eligibility_cli.main(["--status", "--output", str(out)]) == 0
+    # CR03: an absent output is a distinguishable NON-success (10), never 0.
+    assert eligibility_cli.main(["--status", "--output", str(out)]) == 10
     printed = json.loads(capsys.readouterr().out)
-    assert printed["state"] == "NOT_STARTED"
-    assert printed["error"]["code"] == "STATUS_ABSENT"
+    assert printed["disposition"] == "ABSENT" and printed["result_intact"] is False
     assert not out.exists()
     cfg = _write(tmp_path / "a.json", _table_config())
     done = tmp_path / "done"
@@ -650,8 +652,10 @@ def test_cli_refuses_a_damaged_completed_result(tmp_path, capsys):
     assert "TERMINAL_OUTPUT_DAMAGED" in capsys.readouterr().out
     assert result.read_bytes() == damaged                      # never silently rewritten
     assert (out / "STATUS.json").read_bytes() == status_bytes
-    assert eligibility_cli.main(["--status", "--output", str(out)]) == 0
-    assert json.loads(capsys.readouterr().out)["result_intact"] is False
+    # CR03: a damaged terminal result is never reported with exit 0.
+    assert eligibility_cli.main(["--status", "--output", str(out)]) == 16
+    printed = json.loads(capsys.readouterr().out)
+    assert printed["disposition"] == "DAMAGED" and printed["result_intact"] is False
 
 
 def test_code_digest_tracks_code_bytes_and_refuses_different_code(tmp_path, monkeypatch,
@@ -678,9 +682,19 @@ def test_code_digest_tracks_code_bytes_and_refuses_different_code(tmp_path, monk
     assert (out / "STATUS.json").read_bytes() == status_bytes
 
 
-def test_status_and_result_are_replaced_atomically(tmp_path, monkeypatch):
-    real_replace = os.replace
-    swapped = []
+def test_status_is_replaced_atomically_and_result_is_created_never_replaced(tmp_path,
+                                                                           monkeypatch):
+    # CR01 (structural): STATUS.json is swapped atomically; SUPPORT_TABLE.json
+    # is created from a complete temp file with os.link, which cannot clobber.
+    real_replace, real_link = os.replace, os.link
+    swapped, linked = [], []
+
+    def link_spy(src, dst):
+        src, dst = Path(src), Path(dst)
+        assert src.parent == dst.parent and not dst.exists()
+        json.loads(src.read_text())
+        linked.append(dst.name)
+        return real_link(src, dst)
 
     def spy(src, dst):
         src, dst = Path(src), Path(dst)
@@ -690,9 +704,418 @@ def test_status_and_result_are_replaced_atomically(tmp_path, monkeypatch):
         return real_replace(src, dst)
 
     monkeypatch.setattr(os, "replace", spy)
+    monkeypatch.setattr(os, "link", link_spy)
     out = tmp_path / "out"
     cfg = _write(tmp_path / "a.json", _table_config())
     assert eligibility_cli.main(["--config", str(cfg), "--output", str(out)]) == 0
     assert swapped.count("STATUS.json") >= 3
-    assert swapped.count("SUPPORT_TABLE.json") == 1
+    assert "SUPPORT_TABLE.json" not in swapped
+    assert linked == ["SUPPORT_TABLE.json"]
     assert sorted(p.name for p in out.iterdir()) == ["STATUS.json", "SUPPORT_TABLE.json"]
+
+
+# ------------------------------------- review round 2 (Musashi CR01-CR04)
+# Every test below demands REJECTION, NO OVERWRITE or NON-SUCCESS. None of
+# them freezes the behaviour the review probe observed on the audited commit
+# a1e64e4c; they were run there first (PRE) and failed.
+
+STATUS_EXIT = {"COMPLETE_INTACT": 0, "ABSENT": 10, "RUNNING": 11, "INCOMPLETE": 12,
+               "RUNNING_UNVERIFIED": 13, "FAILED": 14, "INTERRUPTED": 15,
+               "DAMAGED": 16, "ORPHAN_RESULT": 17}
+
+
+def _cli(*args):
+    try:
+        return eligibility_cli.main([str(a) for a in args])
+    except SystemExit as exc:                # argparse usage error (unknown flag)
+        return exc.code
+
+
+def _lines(capsys):
+    return [json.loads(line) for line in capsys.readouterr().out.splitlines() if line.strip()]
+
+
+def _snapshot(directory):
+    if not directory.exists():
+        return None
+    return {p.name: p.read_bytes() for p in sorted(directory.iterdir())}
+
+
+def _sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _completed(tmp_path, capsys, name="out", **cfg_kw):
+    out = tmp_path / name
+    cfg = _write(tmp_path / f"{name}.json", _table_config(**cfg_kw))
+    assert _cli("--config", cfg, "--output", out) == 0
+    capsys.readouterr()
+    return cfg, out
+
+
+def _status_of(out, capsys):
+    code = _cli("--status", "--output", out)
+    (printed,) = _lines(capsys)
+    return code, printed
+
+
+def _raiser(exc):
+    def raise_it(*_args, **_kwargs):
+        raise exc
+    return raise_it
+
+
+def _copy_code(tmp_path, monkeypatch):
+    copies = []
+    for name, path in eligibility_cli._CODE_FILES:
+        dst = tmp_path / "code" / name
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_bytes(path.read_bytes())
+        copies.append((name, dst))
+    monkeypatch.setattr(eligibility_cli, "_CODE_FILES", tuple(copies))
+    return copies
+
+
+def _no_temp_files(out):
+    return not [p.name for p in out.iterdir() if p.name.endswith(".tmp")]
+
+
+# ---- CR01: result identity is verified independently of STATUS.json
+
+
+def test_cr01_orphan_result_of_another_input_is_refused_without_writing(tmp_path, capsys):
+    _, out = _completed(tmp_path, capsys)
+    (out / "STATUS.json").unlink()
+    before = _snapshot(out)
+    other = _write(tmp_path / "other.json", _table_config(horizons=(2,)))
+    for extra in ((), ("--recover",)):
+        assert _cli("--config", other, "--output", out, *extra) == 2
+        assert "OUTPUT_HOLDS_DIFFERENT_INPUT" in capsys.readouterr().out
+        assert _snapshot(out) == before          # result kept, no STATUS written
+
+
+def test_cr01_orphan_result_of_other_code_is_refused_without_writing(tmp_path, monkeypatch,
+                                                                    capsys):
+    copies = _copy_code(tmp_path, monkeypatch)
+    cfg, out = _completed(tmp_path, capsys)
+    (out / "STATUS.json").unlink()
+    with copies[0][1].open("ab") as stream:
+        stream.write(b"\n# one changed byte sequence\n")
+    before = _snapshot(out)
+    assert _cli("--config", cfg, "--output", out) == 2
+    assert "OUTPUT_HOLDS_DIFFERENT_CODE" in capsys.readouterr().out
+    assert _snapshot(out) == before
+
+
+@pytest.mark.parametrize("damage", ["garbage", "truncated", "edited_content"])
+def test_cr01_damaged_orphan_result_is_refused_without_writing(tmp_path, capsys, damage):
+    cfg, out = _completed(tmp_path, capsys)
+    (out / "STATUS.json").unlink()
+    result = out / "SUPPORT_TABLE.json"
+    data = result.read_bytes()
+    if damage == "garbage":
+        result.write_bytes(b"corrupt")
+    elif damage == "truncated":
+        result.write_bytes(data[: len(data) // 2])
+    else:
+        table = json.loads(data)
+        table["rows"][0]["operational_eligible"] += 1
+        result.write_text(json.dumps(table, indent=2) + "\n")
+    before = _snapshot(out)
+    for extra in ((), ("--recover",)):
+        assert _cli("--config", cfg, "--output", out, *extra) == 2
+        assert "RESULT_DAMAGED" in capsys.readouterr().out
+        assert _snapshot(out) == before
+
+
+def test_cr01_identical_orphan_result_needs_explicit_recovery_never_adoption(tmp_path,
+                                                                           capsys):
+    cfg, out = _completed(tmp_path, capsys)
+    original = json.loads((out / "STATUS.json").read_text())
+    (out / "STATUS.json").unlink()
+    result = out / "SUPPORT_TABLE.json"
+    before = _snapshot(out)
+    stat = os.stat(result)
+    assert _cli("--config", cfg, "--output", out) == 2      # existence is not adoption
+    (event,) = _lines(capsys)
+    assert event["event"] == "REFUSED"
+    assert event["error"]["code"] == "RECOVERY_REQUIRED"
+    assert _snapshot(out) == before
+    assert _cli("--config", cfg, "--output", out, "--recover") == 0
+    (event,) = _lines(capsys)
+    assert event["event"] == "RECOVERED"
+    after = os.stat(result)
+    assert (after.st_ino, after.st_mtime_ns) == (stat.st_ino, stat.st_mtime_ns)
+    assert result.read_bytes() == before["SUPPORT_TABLE.json"]
+    status = json.loads((out / "STATUS.json").read_text())
+    assert status["state"] == "COMPLETED" and status["recovered"] is True
+    assert status["identity_sha256"] == original["identity_sha256"]
+    assert status["result"]["sha256"] == original["result"]["sha256"]
+    assert _status_of(out, capsys)[0] == 0
+
+
+def test_cr01_recovery_refuses_bytes_that_differ_from_the_recomputation(tmp_path, capsys):
+    cfg, out = _completed(tmp_path, capsys)
+    (out / "STATUS.json").unlink()
+    result = out / "SUPPORT_TABLE.json"
+    result.write_bytes(result.read_bytes() + b" ")          # same JSON, other bytes
+    before = _snapshot(out)
+    assert _cli("--config", cfg, "--output", out, "--recover") == 2
+    assert "RECOVERY_MISMATCH" in capsys.readouterr().out
+    assert _snapshot(out) == before
+
+
+def test_cr01_failed_status_beside_an_intact_result_is_not_adopted(tmp_path, capsys):
+    cfg, out = _completed(tmp_path, capsys)
+    status_path = out / "STATUS.json"
+    record = json.loads(status_path.read_text())
+    record.update(state="FAILED", result=None,
+                  error={"code": "UNEXPECTED_ERROR", "message": "fixture"})
+    status_path.write_text(json.dumps(record))
+    before = _snapshot(out)
+    assert _cli("--config", cfg, "--output", out) == 2
+    assert "RECOVERY_REQUIRED" in capsys.readouterr().out
+    assert _snapshot(out) == before
+
+
+# ---- CR03: --status is read-only and exits 0 only for an intact terminal
+
+
+def _scenario(kind, tmp_path, capsys):
+    out = tmp_path / kind
+    if kind == "absent":
+        return out
+    cfg = _write(tmp_path / f"{kind}.json", _table_config())
+    if kind == "failed":
+        bad = _table_config()
+        del bad["market_calendar"]
+        _write(cfg, bad)
+        assert _cli("--config", cfg, "--output", out) == 1
+        capsys.readouterr()
+        return out
+    assert _cli("--config", cfg, "--output", out) == 0
+    capsys.readouterr()
+    status_path, result = out / "STATUS.json", out / "SUPPORT_TABLE.json"
+    if kind == "result_garbage":
+        result.write_text("corrupt")
+    elif kind == "result_extra_byte":
+        result.write_bytes(result.read_bytes() + b" ")
+    elif kind == "result_missing":
+        result.unlink()
+    elif kind == "status_missing":
+        status_path.unlink()
+    elif kind == "status_garbage":
+        status_path.write_text("{")
+    elif kind in ("result_edited_status_resealed", "result_of_other_identity_resealed"):
+        if kind == "result_edited_status_resealed":
+            table = json.loads(result.read_text())
+            del table["rows"][-1]
+            table["units_total"] -= 1
+            result.write_text(json.dumps(table, indent=2) + "\n")
+        else:
+            other_cfg = _write(tmp_path / "other.json", _table_config(horizons=(2,)))
+            other = tmp_path / "other_out"
+            assert _cli("--config", other_cfg, "--output", other) == 0
+            capsys.readouterr()
+            result.write_bytes((other / "SUPPORT_TABLE.json").read_bytes())
+        record = json.loads(status_path.read_text())
+        record["result"]["sha256"] = _sha(result)                  # status resealed
+        status_path.write_text(json.dumps(record))
+    return out
+
+
+@pytest.mark.parametrize("kind, disposition", [
+    ("complete", "COMPLETE_INTACT"),
+    ("absent", "ABSENT"),
+    ("failed", "FAILED"),
+    ("result_garbage", "DAMAGED"),
+    ("result_extra_byte", "DAMAGED"),
+    ("result_missing", "DAMAGED"),
+    ("status_garbage", "DAMAGED"),
+    ("result_edited_status_resealed", "DAMAGED"),
+    ("result_of_other_identity_resealed", "DAMAGED"),
+    ("status_missing", "ORPHAN_RESULT"),
+])
+def test_cr03_status_exit_zero_only_for_an_intact_complete_terminal(tmp_path, capsys, kind,
+                                                                   disposition):
+    out = _scenario(kind, tmp_path, capsys)
+    before = _snapshot(out)
+    code, printed = _status_of(out, capsys)
+    assert printed["disposition"] == disposition
+    assert code == STATUS_EXIT[disposition]
+    assert printed["read_only"] is True
+    assert printed["result_intact"] is (disposition == "COMPLETE_INTACT")
+    assert _snapshot(out) == before                       # nothing created or rewritten
+
+
+def test_cr03_status_exit_codes_are_distinct_and_only_success_is_zero():
+    assert eligibility_cli.STATUS_EXIT_CODES == STATUS_EXIT
+    assert len(set(STATUS_EXIT.values())) == len(STATUS_EXIT)
+    assert [k for k, v in STATUS_EXIT.items() if v == 0] == ["COMPLETE_INTACT"]
+
+
+# ---- CR04: ordinary failures become typed FAILED; interrupts are recorded
+
+
+def test_cr04_ordinary_exception_is_recorded_as_typed_failed(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(elig_mod, "assemble_support_table",
+                        _raiser(RuntimeError("injected")))
+    out = tmp_path / "out"
+    cfg = _write(tmp_path / "a.json", _table_config())
+    assert _cli("--config", cfg, "--output", out) == 1
+    assert [e["event"] for e in _lines(capsys)] == ["FAILED"]
+    status = json.loads((out / "STATUS.json").read_text())
+    assert status["state"] == "FAILED" and status["result"] is None
+    assert status["error"]["code"] == "UNEXPECTED_ERROR"
+    assert status["error"]["exception_type"] == "RuntimeError"
+    assert sorted(p.name for p in out.iterdir()) == ["STATUS.json"]
+    code, printed = _status_of(out, capsys)
+    assert (code, printed["disposition"]) == (14, "FAILED")
+    direct = tmp_path / "direct"           # the library call re-raises after recording
+    with pytest.raises(RuntimeError):
+        eligibility_cli.run_command(cfg, direct)
+    assert json.loads((direct / "STATUS.json").read_text())["state"] == "FAILED"
+    capsys.readouterr()
+    monkeypatch.undo()                                  # control: FAILED is retried
+    assert _cli("--config", cfg, "--output", out) == 0
+    capsys.readouterr()
+    assert _status_of(out, capsys)[0] == 0
+
+
+@pytest.mark.skipif(not Path("/proc/self/fd").is_dir(), reason="needs /proc fd links")
+def test_cr04_failure_while_writing_the_result_is_failed_without_result_or_temp(
+        tmp_path, monkeypatch, capsys):
+    real_fsync = os.fsync
+
+    def fsync(fd):
+        if "SUPPORT_TABLE" in os.readlink(f"/proc/self/fd/{fd}"):
+            raise OSError(errno.ENOSPC, "injected: no space left on device")
+        return real_fsync(fd)
+
+    monkeypatch.setattr(os, "fsync", fsync)
+    out = tmp_path / "out"
+    cfg = _write(tmp_path / "a.json", _table_config())
+    assert _cli("--config", cfg, "--output", out) == 1
+    status = json.loads((out / "STATUS.json").read_text())
+    assert status["state"] == "FAILED"
+    assert status["error"]["exception_type"] == "OSError"
+    assert sorted(p.name for p in out.iterdir()) == ["STATUS.json"]
+
+
+def test_cr04_interrupt_is_recorded_and_propagated(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(elig_mod, "assemble_support_table", _raiser(KeyboardInterrupt()))
+    out = tmp_path / "out"
+    cfg = _write(tmp_path / "a.json", _table_config())
+    with pytest.raises(KeyboardInterrupt):
+        eligibility_cli.main(["--config", str(cfg), "--output", str(out)])
+    status = json.loads((out / "STATUS.json").read_text())
+    assert status["state"] == "INTERRUPTED" and status["error"]["code"] == "INTERRUPTED"
+    capsys.readouterr()
+    code, printed = _status_of(out, capsys)
+    assert (code, printed["disposition"]) == (15, "INTERRUPTED")
+    monkeypatch.undo()                                   # control: recomputed once
+    assert _cli("--config", cfg, "--output", out) == 0
+
+
+def _persisted_running(tmp_path, monkeypatch, capsys):
+    """A genuine RUNNING record: the run fails and its terminal write fails too."""
+    monkeypatch.setattr(elig_mod, "assemble_support_table",
+                        _raiser(RuntimeError("injected")))
+    real_replace = os.replace
+
+    def replace(src, dst):
+        if (Path(dst).name == "STATUS.json"
+                and json.loads(Path(src).read_text())["state"] != "RUNNING"):
+            raise OSError(errno.EIO, "injected: status cannot be recorded")
+        return real_replace(src, dst)
+
+    monkeypatch.setattr(os, "replace", replace)
+    out = tmp_path / "out"
+    cfg = _write(tmp_path / "a.json", _table_config())
+    code = _cli("--config", cfg, "--output", out)
+    events = _lines(capsys)
+    monkeypatch.undo()
+    return cfg, out, code, events
+
+
+def test_cr04_unrecordable_terminal_status_exits_nonzero_without_claiming_failed(
+        tmp_path, monkeypatch, capsys):
+    _, out, code, events = _persisted_running(tmp_path, monkeypatch, capsys)
+    assert code == 3
+    assert not [e for e in events if e["event"] in ("FAILED", "COMPLETED")]
+    (event,) = [e for e in events if e["event"] == "STATUS_NOT_RECORDED"]
+    assert event["durable"] is False and event["attempted_state"] == "FAILED"
+    assert json.loads((out / "STATUS.json").read_text())["state"] == "RUNNING"
+    assert sorted(p.name for p in out.iterdir()) == ["STATUS.json"] and _no_temp_files(out)
+
+
+def test_cr04_unwritable_output_exits_nonzero_without_status(tmp_path, capsys):
+    out = tmp_path / "is_a_file"
+    out.write_text("x")
+    cfg = _write(tmp_path / "a.json", _table_config())
+    assert _cli("--config", cfg, "--output", out) == 3
+    assert "STATUS_NOT_RECORDED" in capsys.readouterr().out
+    assert out.read_text() == "x"
+
+
+@pytest.mark.skipif(not Path("/proc/self/stat").is_file(), reason="needs /proc")
+def test_cr04_persisted_running_is_distinguished_from_a_live_writer(tmp_path, monkeypatch,
+                                                                   capsys):
+    cfg, out, _, _ = _persisted_running(tmp_path, monkeypatch, capsys)
+    status_path = out / "STATUS.json"
+    record = json.loads(status_path.read_text())
+    assert record["state"] == "RUNNING" and record["writer"]["pid"] == os.getpid()
+
+    # Writer alive (this very process): RUNNING, and a second writer is refused.
+    code, printed = _status_of(out, capsys)
+    assert (code, printed["disposition"], printed["writer_liveness"]) == (
+        11, "RUNNING", "ALIVE")
+    before = _snapshot(out)
+    assert _cli("--config", cfg, "--output", out) == 2
+    assert "RUN_IN_PROGRESS" in capsys.readouterr().out
+    assert _snapshot(out) == before
+
+    # Same pid number, another process start (pid reuse): not the writer.
+    reused = dict(record, writer=dict(record["writer"],
+                                      process_start_ticks=record["writer"]
+                                      ["process_start_ticks"] + 1))
+    status_path.write_text(json.dumps(reused))
+    code, printed = _status_of(out, capsys)
+    assert (code, printed["disposition"], printed["writer_liveness"]) == (
+        12, "INCOMPLETE", "NOT_FOUND")
+
+    # Liveness that cannot be checked is not success and is not taken over.
+    status_path.write_text(json.dumps(dict(record, writer={"pid": None})))
+    code, printed = _status_of(out, capsys)
+    assert (code, printed["disposition"]) == (13, "RUNNING_UNVERIFIED")
+    assert _cli("--config", cfg, "--output", out) == 2
+    capsys.readouterr()
+
+    # Writer gone (SIGKILL or power loss): INCOMPLETE, then recomputed once.
+    child = subprocess.Popen([sys.executable, "-c", "pass"])
+    child.wait()
+    status_path.write_text(json.dumps(dict(record, writer=dict(record["writer"],
+                                                                pid=child.pid))))
+    code, printed = _status_of(out, capsys)
+    assert (code, printed["disposition"], printed["writer_liveness"]) == (
+        12, "INCOMPLETE", "NOT_FOUND")
+    assert _cli("--config", cfg, "--output", out) == 0
+    capsys.readouterr()
+    final = json.loads(status_path.read_text())
+    assert final["state"] == "COMPLETED" and final["previous_disposition"] == "INCOMPLETE"
+
+
+# ---- atomic writer: cleanup on failure (re-review test gap, mutant N10)
+
+
+def test_atomic_writer_removes_its_temp_file_on_failure(tmp_path, monkeypatch):
+    target = tmp_path / "STATUS.json"
+    target.write_text('{"previous": true}\n')
+    with pytest.raises(ValueError):
+        eligibility_cli.atomic_json(target, {"x": float("nan")})
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["STATUS.json"]
+    monkeypatch.setattr(os, "replace", _raiser(OSError(errno.EIO, "injected")))
+    with pytest.raises(OSError):
+        eligibility_cli.atomic_json(target, {"ok": 1})
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["STATUS.json"]
+    assert target.read_text() == '{"previous": true}\n'
