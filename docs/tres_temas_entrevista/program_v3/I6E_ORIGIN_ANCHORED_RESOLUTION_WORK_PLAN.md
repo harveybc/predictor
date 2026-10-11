@@ -1,6 +1,6 @@
 # I6-E: origin-anchored resolution experiment
 
-Status: NEURAL_156_COMPLETE / PRICE_RECONCILED / LIVE_OLAP_VERIFIED / STATISTICAL_DISPATCH_READY.
+Status: NEURAL_156_COMPLETE / PRICE_RECONCILED / LIVE_OLAP_VERIFIED / STATISTICAL_RUNNING.
 Updated 2026-10-11.
 
 ## Verified compact result and current continuation
@@ -32,7 +32,15 @@ TRAIN-only scaling and a retained QR basis remove constant/linearly dependent
 columns without consulting future data. The basis is recorded per fit.
 Calendar gaps are NaN endogenous observations, never carried-forward quotes.
 Nonconvergence is a failure, never a substituted naive. An interrupted or failed
-fit is retained and not silently repeated. These are CPU controls: GPU idleness
+fit is retained and not silently repeated. The TRAIN cost pilots passed on both
+workers. In the first ARIMAX 72h cell, phase 23 exhausted 100 iterations while
+the other 71 converged. `i6e_statistical_dispatch` continues independent cells
+without repeating that fit or changing the sealed numerical budget. A numerical
+failure is not a reason to abandon the remaining independent cells.
+`i6e_statistical_finalize` closes all 312 dispositions and publishes them;
+only arms with all 52 successful weeks receive an aggregate. An incomplete arm
+has no MAE average. This supersedes the initial launcher's stop-on-nonconvergence
+behavior, not the sealed statistical engine. These are CPU controls: GPU idleness
 during them is not disguised as GPU computation.
 
 Commands, with host names and secrets supplied privately:
@@ -42,6 +50,7 @@ python -m tools.i6e_statistical_campaign status --output <statistical-directory>
 PREFERRED_HOST=<worker-a> SECONDARY_HOST=<worker-b> PIN=<immutable-commit> \
   WAREHOUSE_URL=<warehouse-url> WAREHOUSE_TOKEN_FILE=<private-file> \
   bash tools/i6e_statistical_coordinate.sh
+python -m tools.i6e_progress --root <statistical-directory> --png <progress.png>
 ```
 
 The longer-horizon extension below remains a separate TRAIN-selected design;

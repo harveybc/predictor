@@ -30,11 +30,11 @@
       "priority": 0,
       "id": "I6E-STATISTICAL72",
       "resource": "two_bounded_CPU_workers",
-      "state": "DISPATCH_READY",
+      "state": "RUNNING",
       "work": "TRAIN-only cost, 312 weekly-resolution cells, 6552 phase fits per model, common-row closure and automatic live OLAP publication/readback.",
       "depends_on": [],
       "produces": "STATISTICAL_CLOSURE.json and olap/PUBLICATION.json",
-      "evidence": "Neural 156/156 and original-price reconciliation complete; 156 reports / 2184 metrics readback verified."
+      "evidence": "Neural 156/156 and original-price reconciliation complete; 156 reports / 2184 metrics readback verified. Both statistical TRAIN cost pilots passed. Typed numerical failures stay in the denominator; independent cells continue without repeats."
     },
     {
       "priority": 1,

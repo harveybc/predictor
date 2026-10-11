@@ -66,10 +66,14 @@ def verify_readback(reports, rows):
         raise ValueError("warehouse metric identity/value mismatch")
 
 
-def statistical_reports(root, code_commit):
+def statistical_reports(root, code_commit, allow_dispositions=False):
     """Publish only complete independently reconciled statistical terminals."""
     from tools.i6e_statistical_campaign import close as stat_close, read_design, validate as stat_validate
-    stat_close(root)
+    if allow_dispositions:
+        from tools.i6e_statistical_dispatch import close_dispositions
+        close_dispositions(root)
+    else:
+        stat_close(root)
     design = read_design(root)
     reports = []
     for model in ("ARIMA","ARIMAX"):
@@ -79,20 +83,23 @@ def statistical_reports(root, code_commit):
                 folder=root/"cells"/f"{model}_w{week:03d}_d{spacing}"
                 phases=[json.loads((folder/f"PHASE_{p:02d}.json").read_text()) for p in range(spacing)]
                 values=cell["metrics"]
-                metrics=[dict(metric="Price_"+name,value=values[key],split="validation",horizon=72,unit=unit)
+                metrics=[] if values is None else [dict(metric="Price_"+name,value=values[key],split="validation",horizon=72,unit=unit)
                     for name,key,unit in (("MAE","mae","USD_per_EUR"),("MSE","mse","USD_per_EUR_squared"),
                         ("Naive_MAE","naive_mae","USD_per_EUR"),("Naive_MSE","naive_mse","USD_per_EUR_squared"),
                         ("Skill_MAE","skill_mae","ratio"))]
+                if values is not None:
+                    metrics.append(dict(metric="Scored_Rows",value=values["n"],split="validation",horizon=72,unit="count"))
                 metrics.extend(dict(metric=name,value=value,split="validation",horizon=72,unit=unit)
-                    for name,value,unit in (("Scored_Rows",values["n"],"count"),
-                        ("Phase_Fits",spacing,"count"),("Fit_Seconds",cell["elapsed_seconds"],"seconds"),
+                    for name,value,unit in (("Phase_Fits",spacing,"count"),("Fit_Seconds",cell["elapsed_seconds"],"seconds"),
+                        ("Failed_Phases",sum(not p["converged"] for p in phases),"count"),
                         ("Cgroup_Peak",cell["cgroup_peak_bytes"],"bytes")))
                 report=dict(experiment_key=f"i6e:stat72:2024:EURUSD:{model}:w{week:03d}:d{spacing}",
                     experiment_set_key="i6e:stat72:2024:EURUSD",actor="predictor",lake="LOCAL_RETAINED",
                     lineage="UNVERIFIED",config_sha256=design["design_sha256"],code_commit=code_commit,
                     project="predictor",phase="I6E_STATISTICAL",tags=dict(model=model,week=str(week),
                         spacing_hours=str(spacing),seed=str(design["seed"]),test_read="false",
-                        cell_sha256=file_hash(folder/"CELL.json"),converged=str(all(p["converged"] for p in phases)).lower()),
+                        cell_sha256=file_hash(folder/"CELL.json"),status=cell["status"],
+                        converged=str(all(p["converged"] for p in phases)).lower()),
                     metrics=metrics)
                 report["report_sha256"]=report_sha256(report)
                 reports.append(report)
@@ -132,6 +139,7 @@ def main():
     parser.add_argument("--campaign", type=Path)
     parser.add_argument("--price-report", type=Path)
     parser.add_argument("--statistical-root", type=Path)
+    parser.add_argument("--allow-dispositions", action="store_true")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--url")
     parser.add_argument("--token-file", type=Path)
@@ -139,7 +147,7 @@ def main():
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     if args.statistical_root:
-        publish(statistical_reports(args.statistical_root,args.code_commit),args)
+        publish(statistical_reports(args.statistical_root,args.code_commit,args.allow_dispositions),args)
         return
     if args.campaign is None or args.price_report is None:
         parser.error("neural publication requires campaign and price report")

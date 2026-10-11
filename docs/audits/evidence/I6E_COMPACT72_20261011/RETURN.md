@@ -35,3 +35,16 @@ one TRAIN-only cost pilot followed by 156 weekly-resolution cells per model.
 The controller collects artifacts and closes/publishes only complete evidence.
 Nonconverged/interrupted cells are retained; no naive replacement or automatic
 repeat confers a successful terminal. No real trading or TEST is launched.
+
+## Numerical continuation amendment
+
+Both TRAIN cost pilots passed. The first ARIMAX 72-hour cell completed its
+72 phase fits, with phase 23 not converged at 100 optimizer iterations.
+Its whole-week performance is unavailable, not averaged over 71 phases.
+The initial dispatcher's stop-on-nonconvergence rule was too broad. The
+independent dispatcher now preserves that disposition and continues only
+absent cells, without changing the scientific engine or repeating valid fits.
+At finalization all 312 dispositions must exist; each arm needs all 52
+successful weeks and identical origins before receiving aggregate metrics.
+Failure counts and costs are published too; failure never becomes naive MAE.
+The progress timer refreshes a PNG and ETA without an agent watching logs.

@@ -74,3 +74,23 @@ def test_unknown_future_exog_is_not_used_by_dynamic_forecast():
     changed=x.copy()
     changed[146:]+=100000
     assert np.array_equal(first,forecast_origins(fitted,y,changed,np.array([141]),4))
+
+
+def test_numerical_failure_does_not_repeat_or_block_independent_cells(tmp_path,monkeypatch):
+    from tools import i6e_statistical_dispatch as dispatch
+    folder=tmp_path/"cells/ARIMAX_w000_d72"
+    folder.mkdir(parents=True)
+    (folder/"CELL.json").write_text("{}")
+    monkeypatch.setattr(dispatch,"validate",lambda *a:dict(status="FAILED_CONVERGENCE"))
+    pending=list(dispatch.next_cells(tmp_path,"ARIMAX"))
+    assert len(pending)==155 and (0,72) not in pending
+    assert pending[0]==(0,36)
+
+
+def test_interrupted_claim_is_not_a_fresh_experiment(tmp_path):
+    from tools.i6e_statistical_dispatch import next_cells
+    folder=tmp_path/"cells/ARIMAX_w000_d72"
+    folder.mkdir(parents=True)
+    (folder/"CLAIM").write_text("old")
+    with pytest.raises(ValueError,match="interrupted"):
+        list(next_cells(tmp_path,"ARIMAX"))
