@@ -101,3 +101,30 @@ def verify_snapshot(src: str | Path, restore_to: str | Path | None = None) -> di
             if _sha(target) != entry["sha256"]:
                 raise ValueError("RESTORE_DIGEST_MISMATCH: " + entry["path"])
     return manifest
+
+
+def main(argv=None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Take or verify a lane D physical snapshot.")
+    sub = parser.add_subparsers(dest="command", required=True)
+    take = sub.add_parser("take")
+    take.add_argument("--source", action="append", required=True, help="name=path (dir or file)")
+    take.add_argument("--dest", type=Path, required=True)
+    verify = sub.add_parser("verify")
+    verify.add_argument("--dest", type=Path, required=True)
+    verify.add_argument("--restore-to", type=Path)
+    args = parser.parse_args(argv)
+    if args.command == "take":
+        sources = dict(item.split("=", 1) for item in args.source)
+        manifest = take_snapshot(sources, args.dest)
+    else:
+        manifest = verify_snapshot(args.dest, restore_to=args.restore_to)
+    print(json.dumps({"schema": manifest["schema"], "files": len(manifest["files"]),
+                      "bytes": sum(f["size"] for f in manifest["files"]),
+                      "files_sha256": manifest["files_sha256"], "verified": True}, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

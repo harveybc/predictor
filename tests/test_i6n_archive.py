@@ -71,11 +71,15 @@ def receipt(cand, fold="2023Q1", scale=1.0):
                 "schema_version": "i6n.candidate_receipt.v1", "experiment": cand["experiment"],
                 "candidate_identity_sha256": hashlib.sha256((cand["search_candidate_sha256"] + fold).encode()).hexdigest(),
                 "fold": fold, "horizon_hours": 12, "head_offset_hours": offset, "head_role": role,
-                "comparison": role == "ENDPOINT", "role": "management_origin", "population": "S",
+                "comparison": role == "ENDPOINT", "role": "MANAGEMENT", "c2_role": "management_origin",
+                "population": "S", "support_sha256": hashlib.sha256((fold + split).encode()).hexdigest(),
                 "split": split, "metric": "ABS_AND_SQUARED_ERROR_SUMS", "unit": "PRICE",
                 "scale": "ORIGINAL_PRICE", "n": n, "sum_abs_error": 0.05 * n * scale,
                 "sum_sq_error": 0.0001 * n * scale, "naive_sum_abs_error": 0.06 * n,
                 "naive_sum_sq_error": 0.00012 * n, "c2_receipt_sha256": "c" * 64, "status": "SCORED"})
+    if fold.startswith("W"):  # weekly refit unit: outer-week VALIDATION rows (never in fitness)
+        rows.append(dict(rows[-1], split="VALIDATION", n=7, sum_abs_error=0.4, sum_sq_error=0.001,
+                         naive_sum_abs_error=0.35, naive_sum_sq_error=0.0009, comparison=False))
     rows.append(dict(rows[0], head_offset_hours=3, n=0, sum_abs_error=None, sum_sq_error=None,
                      naive_sum_abs_error=None, naive_sum_sq_error=None, c2_receipt_sha256=None,
                      status="NO_SPLIT_SUPPORT"))
@@ -519,3 +523,39 @@ def test_cli_status_is_read_only_and_spool_is_idempotent(tmp_path, capsys):
     assert main(["status", "--config", str(config)]) == 0
     status = json.loads(capsys.readouterr().out)
     assert status["items"] == 2 and status["green"] == 0 and status["submitted_unfinalized"] == 2
+
+
+def test_snapshot_cli_take_and_verify(tmp_path, capsys):
+    from tools.i6n_archive.snapshot import main
+
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src" / "a.bin").write_bytes(b"abc")
+    assert main(["take", "--source", f"cas={tmp_path / 'src'}", "--dest", str(tmp_path / "snap")]) == 0
+    took = json.loads(capsys.readouterr().out)
+    assert main(["verify", "--dest", str(tmp_path / "snap"), "--restore-to", str(tmp_path / "back")]) == 0
+    checked = json.loads(capsys.readouterr().out)
+    assert took["files_sha256"] == checked["files_sha256"] and (tmp_path / "back/cas/a.bin").read_bytes() == b"abc"
+    manifest = (tmp_path / "snap" / "MANIFEST.json").read_text()
+    assert str(tmp_path) not in manifest               # no absolute source paths in the manifest
+
+
+def test_interface_a2_roles_weekly_validation_rows_and_support_digest(tmp_path):
+    pub, archive, etl, wh, _ = _rig(tmp_path)
+    cand = candidate(5)
+    weekly = receipt(cand, fold="W2024-01-07")
+    pub.record_candidate(cand, [receipt(cand), weekly])
+    chain = LocalChain()
+    pub.pump(archive, chain.submit)
+    chain.mint()
+    assert etl.run(chain.blocks)["errors"] == []
+    splits = {(r[2], r[7]) for r in _canonical(wh)}
+    assert ("W2024-01-07", "VALIDATION") in splits and ("2023Q1", "VALIDATION") not in splits
+    with wh.engine().connect() as c:
+        tags = [json.loads(r[0]) for r in c.exec_driver_sql(
+            "SELECT tags_json FROM gov_report WHERE phase = 'I6N_SWARM_DOIN'").fetchall()]
+    assert {t["role"] for t in tags} == {"MANAGEMENT"} and {t["c2_role"] for t in tags} == {"management_origin"}
+    assert all(len(t["support_sha256"]) == 64 for t in tags if t["status"] == "SCORED")
+    old_role = receipt(candidate(6))
+    old_role["rows"][0]["role"] = "management_origin"
+    with pytest.raises(records.ArchiveRecordError, match="MANAGEMENT or ENTRY"):
+        pub.record_candidate(candidate(6), [old_role])

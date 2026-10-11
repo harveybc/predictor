@@ -10,7 +10,8 @@ Identity definitions are lane E's (INTERFACE_E E.1):
 ``effective_config_sha256 = sha256(json.dumps(config, sort_keys=True, separators=(',',':'),
 allow_nan=False).encode('utf-8'))`` and ``search_candidate_sha256 = sha256(canonical
 {plan_sha256, horizon_hours, genotype_canonical_sha256})``. Receipt rows follow lane A's
-``i6n.candidate_receipt.v1`` (INTERFACE_A A.1) and its row identity keys.
+``i6n.candidate_receipt.v1`` (INTERFACE_A A.2: role = C1 MANAGEMENT|ENTRY, additive c2_role,
+support_sha256, outer-week VALIDATION rows) and its row identity keys.
 """
 
 from __future__ import annotations
@@ -29,6 +30,7 @@ SEED = 6102026
 DISPOSITIONS = ("COMPLETE", "ADOPTED_CACHE", "FAILED", "INFEASIBLE", "INTERRUPTED", "NOT_ADMITTED")
 SCORED_DISPOSITIONS = ("COMPLETE", "ADOPTED_CACHE")
 SPLITS = ("TRAIN", "INNER", "VALIDATION")
+ROLES = ("MANAGEMENT", "ENTRY")  # INTERFACE_A A.2: C1 canonical; the C2 name is rows.c2_role
 ROW_IDENTITY = ("experiment", "candidate_identity_sha256", "fold", "horizon_hours", "head_offset_hours",
                 "role", "population", "split", "metric", "unit", "schema_version")
 _SUMS = ("sum_abs_error", "sum_sq_error", "naive_sum_abs_error", "naive_sum_sq_error")
@@ -178,6 +180,10 @@ def validate_receipt(receipt: Any, candidate: Mapping) -> dict:
             _fail(f"receipt row split {row['split']!r} refused (TEST is never opened)")
         if row["population"] not in ("S", "U"):
             _fail("population must be S or U")
+        if row["role"] not in ROLES:
+            _fail("role must be the C1 canonical MANAGEMENT or ENTRY (INTERFACE_A A.2)")
+        if row.get("support_sha256") is not None:
+            _hex(row, "support_sha256")
         if row["fold"] != r["fold"] or row["experiment"] != r["experiment"] \
                 or row["candidate_identity_sha256"] != r["candidate_identity_sha256"] \
                 or row["schema_version"] != RECEIPT_SCHEMA or row["horizon_hours"] != r["horizon_hours"]:
@@ -274,7 +280,8 @@ def projection_units(payload: Mapping) -> list[dict]:
             tags = dict(common, row_key_sha256=key, **{k: row[k] for k in ROW_IDENTITY},
                         head_role=row.get("head_role"), comparison=str(bool(row.get("comparison"))).lower(),
                         scale=row.get("scale"), status=row.get("status"),
-                        c2_receipt_sha256=row.get("c2_receipt_sha256"), attempt_index=attempt)
+                        c2_receipt_sha256=row.get("c2_receipt_sha256"), c2_role=row.get("c2_role"),
+                        support_sha256=row.get("support_sha256"), attempt_index=attempt)
             units.append({"identity": identity,
                           "extra": {"search_candidate_sha256": c["search_candidate_sha256"],
                                     "head_role": row.get("head_role"), "comparison": bool(row.get("comparison")),
