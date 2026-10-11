@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import resource
+import re
 import signal
 import time
 from urllib.parse import urljoin
@@ -17,6 +18,16 @@ ROOT = Path('/var/tmp/i6n-source-clock-recovery')
 BASE = 'https://www.histdata.com'
 MONTHS = ('202403', '201803', '201903')
 MAX_BYTES = 30_000_000
+
+
+def period_page(period):
+    """Closed years use annual archives; explicitly reject TEST downloads."""
+    if not re.fullmatch(r'\d{4}(?:\d{2})?', period) or not 2000 <= int(period[:4]) < 2025:
+        raise ValueError('only pre-2025 source periods permitted')
+    if len(period) == 6 and not 1 <= int(period[4:]) <= 12:
+        raise ValueError('invalid source month')
+    suffix = period[:4] + ('/' + str(int(period[4:])) if len(period) == 6 else '')
+    return BASE + '/download-free-forex-historical-data/?/ascii/1-minute-bar-quotes/eurusd/' + suffix
 
 
 def digest(data):
@@ -30,6 +41,7 @@ def save_json(path, value):
 
 
 def public_form(html, month):
+    period_page(month)
     from bs4 import BeautifulSoup
     soup = BeautifulSoup(html, 'html.parser')
     if soup.select('[class*="captcha"], [id*="captcha"], input[type="password"]'):
@@ -61,22 +73,27 @@ def bounded_body(response, budget, deadline):
     return bytes(data)
 
 
-def download():
+def download(periods=None):
     import requests
     os.umask(0o077)
     ROOT.mkdir(mode=0o700, exist_ok=True)
     if ROOT.stat().st_mode & 0o077:
         raise ValueError('private directory permissions required')
     # An exclusive marker prevents accidental retries across invocations.
-    save_json(ROOT / 'ATTEMPT.json', {'months': MONTHS, 'max_zip_bytes': MAX_BYTES})
+    periods = tuple(periods or MONTHS)
+    if len(set(periods)) != len(periods):
+        raise ValueError('duplicate periods')
+    for period in periods:
+        period_page(period)
+    save_json(ROOT / 'ATTEMPT.json', {'months': periods, 'max_zip_bytes': MAX_BYTES})
     manifest = dict(status='STARTED', attempts=[], zip_bytes=0,
                     policy='one GET and one normal form POST per month; no retries or redirects')
     with requests.Session() as session:
-        for month in MONTHS:
+        for month in periods:
             item = dict(month=month, post_attempted=False)
             manifest['attempts'].append(item)
             try:
-                page = BASE + '/download-free-forex-historical-data/?/ascii/1-minute-bar-quotes/eurusd/' + month[:4] + '/3'
+                page = period_page(month)
                 item['page_url'] = page
                 with session.get(page, timeout=(10, 20), stream=True, allow_redirects=False) as response:
                     item['page_status'] = response.status_code
@@ -123,14 +140,20 @@ def hourly_closes(data, month):
         with archive.open(members[0]) as stream:
             frame = pd.read_csv(stream, sep=';', header=None, usecols=[0, 4], names=['wall', 'close'])
     wall = pd.DatetimeIndex(pd.to_datetime(frame.wall, format='%Y%m%d %H%M%S', errors='raise'))
-    if not len(wall) or not (wall.strftime('%Y%m') == month).all() or wall.has_duplicates:
-        raise ValueError('unexpected month or duplicate minute rows')
+    period_page(month)
+    if not len(wall) or not (wall.strftime('%Y' if len(month) == 4 else '%Y%m') == month).all():
+        raise ValueError('unexpected source period')
     price = frame.close.to_numpy(dtype=float)
     if not np.isfinite(price).all() or (price <= 0).any():
         raise ValueError('invalid source prices')
-    series = pd.Series(price, index=wall).sort_index()
+    series = pd.Series(price, index=wall)
+    duplicates = int(series.index.duplicated().sum())
+    if duplicates and (series.groupby(level=0).nunique() > 1).any():
+        raise ValueError('conflicting duplicate minute closes')
+    series = series[~series.index.duplicated(keep='first')].sort_index()
     result = series.groupby(series.index.floor('h')).last()
-    return result, dict(member=members[0].filename, minute_rows=len(series), hourly_rows=len(result))
+    return result, dict(member=members[0].filename, minute_rows=len(series), hourly_rows=len(result),
+                       duplicate_minutes_removed=duplicates)
 
 
 def clock_series(hourly, policy):
@@ -185,7 +208,8 @@ def compare(path):
         if item.get('status') != 'DOWNLOADED':
             continue
         month = item['month']
-        if month not in MONTHS or item['file'] != 'HISTDATA_COM_ASCII_EURUSD_M1_' + month + '.zip':
+        period_page(month)
+        if item['file'] != 'HISTDATA_COM_ASCII_EURUSD_M1_' + month + '.zip':
             raise ValueError('unexpected recovery manifest scope')
         data = (ROOT / item['file']).read_bytes()
         if digest(data) != item['zip_sha256']:
@@ -208,12 +232,16 @@ def compare(path):
 
 
 def main():
+    global ROOT
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=['download', 'compare'])
     parser.add_argument('--retained', type=Path)
+    parser.add_argument('--root', type=Path, default=ROOT)
+    parser.add_argument('--periods', nargs='+', help='Pre-2025 years or YYYYMM periods')
     args = parser.parse_args()
+    ROOT = args.root
     if args.action == 'download':
-        download()
+        download(args.periods)
     elif args.retained is None:
         parser.error('--retained is required for comparison')
     else:

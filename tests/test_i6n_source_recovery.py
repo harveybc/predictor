@@ -23,6 +23,37 @@ def test_empty_public_token_is_preserved():
     assert fields['tk'] == ''
 
 
+def test_annual_public_form_and_closes():
+    html = form().replace('202403', '2024')
+    assert public_form(html, '2024')[1]['datemonth'] == '2024'
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w') as archive:
+        archive.writestr('year.csv', '20240301 125900;1;1;1;1.2;0\n20240401 125900;1;1;1;1.3;0\n')
+    result, info = hourly_closes(buffer.getvalue(), '2024')
+    assert len(result) == info['hourly_rows'] == 2
+    with pytest.raises(ValueError):
+        hourly_closes(buffer.getvalue(), '2023')
+
+
+@pytest.mark.parametrize('second,accepted', [('1.2', True), ('1.3', False)])
+def test_duplicate_minute_close_must_agree(second, accepted):
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w') as archive:
+        archive.writestr('year.csv', f'20240301 125900;1;1;1;1.2;0\n20240301 125900;1;1;1;{second};0\n')
+    if accepted:
+        result, info = hourly_closes(buffer.getvalue(), '2024')
+        assert len(result) == 1 and info['duplicate_minutes_removed'] == 1
+    else:
+        with pytest.raises(ValueError, match='conflicting'):
+            hourly_closes(buffer.getvalue(), '2024')
+
+
+@pytest.mark.parametrize('period', ['2025', '202501', '202413', '20240', '../2024'])
+def test_bad_or_test_download_period_rejected(period):
+    with pytest.raises(ValueError):
+        recovery.period_page(period)
+
+
 @pytest.mark.parametrize('html', [form('<input type="password">'), form('<div class="g-recaptcha"></div>'),
                                        form().replace('/get.php', 'https://example.com/get.php')])
 def test_access_controls_and_changed_action_stop(html):
