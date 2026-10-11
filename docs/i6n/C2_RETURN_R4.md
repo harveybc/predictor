@@ -59,19 +59,19 @@ tools/i6n_contracts/paired_metrics_cli.py sha256 590b10a6374522df443c83503c36645
   while keeping counts, signs, group set, contract and identity consistent is
   still undetectable without the rows and external custody; only rescoring on
   reuse would catch it. No signatures, leases or calendar were added.
-- \`--status\` alone cannot detect a directory rewritten consistently: if the
+- `--status` alone cannot detect a directory rewritten consistently: if the
   forged result and BOTH the RESULT.json and STATUS.json identities are set to
-  the forged digests (wrapper and STATUS summary resealed), \`--status\` reports
+  the forged digests (wrapper and STATUS summary resealed), `--status` reports
   COMPLETE_VERIFIED with exit 0, because it has no config to recompute the
   identity from and the digests are unkeyed. Only a rerun with the real config
   refuses it (OUTPUT_IDENTITY_MISMATCH, nothing written). An orchestrator that
   must not trust the directory should rerun with its config instead of relying
-  on \`--status\`.
+  on `--status`.
 - Independent verification of this round (separate reviewer, one finite run on
   efce4b63): forgeries (a) inner input digest replaced and (b) contract
-  narrowed -> \`--status\` 6 RESULT_IDENTITY_BINDING_INVALID, rerun 2
+  narrowed -> `--status` 6 RESULT_IDENTITY_BINDING_INVALID, rerun 2
   OUTPUT_CORRUPT; (c) wrapper identity forged with honest STATUS -> 6
-  RESULT_IDENTITY_MISMATCH, rerun 2; (d) both identities forged -> \`--status\`
+  RESULT_IDENTITY_MISMATCH, rerun 2; (d) both identities forged -> `--status`
   0, rerun 2 OUTPUT_IDENTITY_MISMATCH; honest control 0/0; bytes unchanged in
   every case; suite 212 passed; pins matched. The reviewer required only the
   two documentation corrections applied in the commit after efce4b63.
