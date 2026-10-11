@@ -16,6 +16,13 @@ from tools import i6n_search as search
 from tools.i6n_swarm import bridge as B, collect as C, common, coordinator as K, plan as P
 from tools.i6n_swarm import status as S, units as U, ledger as L
 
+@pytest.fixture(autouse=True)
+def _reference_aggregator(monkeypatch):
+    """These tests exercise B; E's score_folds is exercised by E's suite and the integration check."""
+    from tools.i6n_swarm import bridge as _b
+    monkeypatch.setattr(_b, "resolve_score_folds", lambda: _b._reference_score_folds)
+
+
 
 @pytest.fixture
 def root(tmp_path):
@@ -400,3 +407,46 @@ def test_declared_clock_assumption_folds_are_runnable_and_keep_their_ids(tmp_pat
     node = {n["node_id"]: n for n in led.dag_nodes()}["search:h12"]
     assert node["state"] == "COMPLETE" and node["summary"]["finalists"][0]["fitness"] == pytest.approx(0.8)
     assert {u["fold"] for u in led.units(dag_node="search:h12")} == {"2023Q1_DCA", "2023Q2"}
+
+
+def test_c_origins_travel_to_the_aggregator(tmp_path, monkeypatch):
+    cfg_path = F.private_config(tmp_path)
+    cfg = json.loads(Path(cfg_path).read_text())
+    units = [dict(unit_id=f, support={"MANAGEMENT": {str(h): {"TRAIN": {"origins_sha256": common.sha256_json([f, h, "T"])},
+                                                           "INNER": {"origins_sha256": common.sha256_json([f, h, "I"])}}
+                                          for h in (12, 72)}}) for f in ("2023Q1", "2023Q2")]
+    cfg["weekly_plan"] = F.pin(tmp_path / "inputs" / "c_plan.json", dict(fit_role="MANAGEMENT", units=units))
+    out = tmp_path / "campaign"
+    P.build(F.pin(cfg_path, cfg)["path"], out)
+    K.start(out, roles=[], systemctl=Recorder())
+    swarm = K.swarm_context(out, 12)
+    assert swarm["folds"][0]["origins_sha256"] == dict(train=common.sha256_json(["2023Q1", 12, "T"]),
+                                                       inner=common.sha256_json(["2023Q1", 12, "I"]))
+    seen = []
+
+    def spy(plan, receipts, supports, **kw):
+        seen.append(kw)
+        return B._reference_score_folds(plan, receipts, supports, **kw)
+    monkeypatch.setattr(B, "resolve_score_folds", lambda: spy)
+    complete_candidate(out, 12, search.default_genome(12), 0.9)
+    L.Ledger(out / "state" / "ledger.sqlite3").dag_event("search:h12", "SEARCH_TERMINAL", {"stop_reason": "patience"})
+    K.tick(out, now=3000.0)
+    assert seen and seen[0]["origins_sha256"]["2023Q2"]["inner"] == common.sha256_json(["2023Q2", 12, "I"])
+    assert seen[0]["genotype_canonical_sha256"] == search.effective_identity(search.default_genome(12))
+    assert seen[0]["horizon_hours"] == 12
+
+
+def test_production_plan_requires_c_plan_for_origins(tmp_path):
+    cfg = F.private_config(tmp_path, mode="production", launcher=dict(crispdm_run="/usr/bin/true"))
+    with pytest.raises(ValueError, match="origins"):
+        P.build(cfg, tmp_path / "c")
+
+
+def test_e_score_folds_signature_when_installed():
+    try:
+        from tools.i6n_search_plan import score_folds
+    except ImportError:
+        pytest.skip("lane E module not merged in this checkout")
+    import inspect
+    params = inspect.signature(score_folds).parameters
+    assert {"genotype_canonical_sha256", "horizon_hours", "origins_sha256"} <= set(params)

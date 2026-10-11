@@ -134,7 +134,12 @@ def _candidate_fitness(units, terminals, context, e_plan, score_folds):
                       size_class=items[0]["spec"].get("size_class"), fitness=None,
                       search_candidate_sha256=items[0]["search_candidate"])
         if set(receipts) == set(supports):
-            record["fitness"] = score_folds(e_plan, receipts, supports)["fitness"]
+            from tools.i6n_swarm.bridge import score_candidate
+            origins = {f["fold"]: f["origins_sha256"] for f in context["folds"] if f.get("origins_sha256")}
+            scored = score_candidate(score_folds, e_plan, receipts, supports, genotype, context["horizon"],
+                                     origins if len(origins) == len(supports) else None)
+            record.update(fitness=scored["fitness"], origins_binding=scored.get("origins_binding"),
+                          aggregator=scored.get("aggregator"))
         out.append(record)
     return out
 

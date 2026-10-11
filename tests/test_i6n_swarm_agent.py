@@ -13,6 +13,13 @@ from tests.test_i6n_swarm_campaign import Recorder, complete_candidate, other_ge
 from tools import i6n_search as search
 from tools.i6n_swarm import agent as A, common, coordinator as K, ledger as L, plan as P
 
+@pytest.fixture(autouse=True)
+def _reference_aggregator(monkeypatch):
+    """These tests exercise B; E's score_folds is exercised by E's suite and the integration check."""
+    from tools.i6n_swarm import bridge as _b
+    monkeypatch.setattr(_b, "resolve_score_folds", lambda: _b._reference_score_folds)
+
+
 FAKE_FREEZE = r'''
 import json, sys, os, hashlib
 args = sys.argv[1:]

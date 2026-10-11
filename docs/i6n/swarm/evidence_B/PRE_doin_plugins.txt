@@ -1,0 +1,6 @@
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ImportError: cannot import name 'I6N_SEED' from 'doin_plugins.predictor.optimizer' (/var/tmp/satoshi-i6n-B-doinplugins-20261011/src/doin_plugins/predictor/optimizer.py)
+=========================== short test summary info ============================
+ERROR tests/test_i6n_swarm_wrapper.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.40s

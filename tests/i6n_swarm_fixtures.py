@@ -46,7 +46,7 @@ def build_inputs(tmp_path, horizons=(12, 72), folds=("2023Q1", "2023Q2"), weeks=
                          dict(class_id="S3", max_samples=433, max_width=128, min_delta_x_hours=1,
                               child_memory_bytes=None, child_wall_seconds=None,
                               admission="FROM_ADMITTED_COST_PILOT_RECEIPT")],
-                folds=dict(fold_ids=list(folds), all_folds_required_before_ranking=True),
+                folds=dict(fold_ids=list(folds), quarters=list(folds), all_folds_required_before_ranking=True),
                 initial_genotypes={str(h): dict(seed_genotype_canonical_sha256=search.effective_identity(search.default_genome(h)),
                                                 alternative_genotype_canonical_sha256=None) for h in horizons},
                 finalists=dict(rule="best complete fitness + minimal control (seed), or small alternative"),

@@ -34,14 +34,32 @@ class WaitExceeded(RuntimeError):
     pass
 
 
-def _reference_score_folds(plan, receipts, supports):
-    """Same formula as lane E's score_folds; used only when E's module is absent."""
-    folds = list(plan["folds"]["fold_ids"])
-    if set(receipts) != set(folds) or set(supports) != set(folds):
+def _reference_score_folds(plan, receipts, supports, *, genotype_canonical_sha256, horizon_hours,
+                           origins_sha256=None, require_distinct_support=True):
+    """Same formula and call signature as lane E's score_folds (E.3); used only when E's module is absent.
+
+    It does not verify C origins digests, so it reports origins_binding NOT_CHECKED; production ranking
+    must run with E's implementation (status/collect record which aggregator was used).
+    """
+    folds = list(supports)
+    if set(receipts) != set(folds):
         raise ValueError("no fitness before all plan folds are complete")
     per_fold = {f: search._score(receipts[f], search._support(supports[f]))[0] for f in folds}
+    digests = {(supports[f]["support_digest"]["train"], supports[f]["support_digest"]["inner"]) for f in folds}
+    if require_distinct_support and len(digests) != len(folds):
+        raise ValueError("fold supports are not distinct periods (identical support digests)")
     return dict(status="COMPLETE", fitness=math.fsum(per_fold.values()) / len(per_fold), per_fold=per_fold,
-                aggregation="unweighted_mean_over_folds", aggregator="B_REFERENCE_PENDING_E_MERGE")
+                genotype_canonical_sha256=genotype_canonical_sha256, horizon_hours=horizon_hours,
+                origins_binding="NOT_CHECKED", aggregation="unweighted_mean_over_folds",
+                aggregator="B_REFERENCE_PENDING_E_MERGE")
+
+
+def score_candidate(score_folds, plan, receipts, supports, genotype, horizon, origins=None):
+    """Rank only through E's score_folds; C origins digests are passed whenever the plan has them."""
+    result = score_folds(plan, receipts, supports, genotype_canonical_sha256=genotype, horizon_hours=horizon,
+                         origins_sha256=origins)
+    result.setdefault("aggregator", "E.score_folds")
+    return result
 
 
 def resolve_score_folds():
@@ -260,13 +278,18 @@ class Bridge:
         if causes:
             raise search.ScoreRejected(f"I6N folds not complete, no fitness: {causes}")
         plan = self.plan or dict(folds=dict(fold_ids=[f["fold"] for f in swarm["folds"]]),
-                                 fitness=dict(aggregation="unweighted_mean_over_folds"))
+                                 fitness=dict(aggregation="unweighted_mean_over_folds"),
+                                 horizons_hours=[swarm["horizon"]])
+        origins = {f["fold"]: f["origins_sha256"] for f in swarm["folds"] if f.get("origins_sha256")}
         try:
-            scored = self.score_folds(plan, receipts, supports)
+            scored = score_candidate(self.score_folds, plan, receipts, supports, wire["identity"], swarm["horizon"],
+                                     origins if len(origins) == len(swarm["folds"]) else None)
         except Exception as exc:
             raise search.ScoreRejected(f"I6N fold aggregation refused: {exc}") from exc
         result = dict(fitness=scored["fitness"], metrics=dict(folds=receipts, per_fold=scored["per_fold"],
-                                                              aggregation=scored.get("aggregation")),
+                                                              aggregation=scored.get("aggregation"),
+                                                              aggregator=scored.get("aggregator"),
+                                                              origins_binding=scored.get("origins_binding")),
                       hyper_dict=config, candidate_identity=wire["identity"], seed=common.SEED,
                       direction=common.DIRECTION)
         # Dashboard fields: pooled sums across folds; val_* means INNER, never outer/TEST.

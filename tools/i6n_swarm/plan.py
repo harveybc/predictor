@@ -42,13 +42,30 @@ def _check_search(plan):
         raise ValueError("E search settings differ from plan section 4")
 
 
+def e_fold_ids(e_plan):
+    folds = e_plan["folds"]
+    return list(folds.get("quarters") or folds["fold_ids"])
+
+
+def origins_from_c_plan(c_plan, unit_id, horizon):
+    """C's per-split origins digests for (unit, h) on the fit role: E binds receipts to them."""
+    unit = next((u for u in c_plan["units"] if u["unit_id"] == unit_id), None)
+    if unit is None:
+        raise ValueError(f"C plan lacks unit {unit_id}")
+    if "support" in unit:
+        split = unit["support"][c_plan["fit_role"]][str(horizon)]
+    else:
+        split = unit["support_fit_role_business"][str(horizon)]
+    return dict(train=split["TRAIN"]["origins_sha256"], inner=split["INNER"]["origins_sha256"])
+
+
 def _fold_map(e_plan, views, horizons):
     """E fold id -> C fold id. C may suffix a declared assumption (e.g. 2023Q1_DCA); never invent ids."""
     c_ids = set()
     for h in horizons:
         c_ids.update(e["fold_id"] for e in views["folds"].get(str(h), []))
     mapping = {}
-    for e_id in e_plan["folds"]["fold_ids"]:
+    for e_id in e_fold_ids(e_plan):
         match = [c for c in c_ids if c == e_id or c.startswith(e_id + "_")]
         if len(match) != 1:
             raise ValueError(f"E fold {e_id} has {len(match)} matching C fold ids")
@@ -111,8 +128,9 @@ def fold_set_support(folds):
 
 def swarm_context(payload, horizon, frozen):
     """frozen: ordered list of (fold_id, binding body, binding sha256)."""
+    origins = payload.get("fold_origins", {}).get(str(horizon), {})
     folds = [dict(fold=fold_id, context=body["i6n_evaluation_context"], support=body["i6n_support"],
-                  binding_sha256=sha) for fold_id, body, sha in frozen]
+                  binding_sha256=sha, origins_sha256=origins.get(fold_id)) for fold_id, body, sha in frozen]
     # The search plan's aggregator keys folds by the campaign (C) fold ids, which carry any declared assumption.
     return dict(schema=CONTEXT_SCHEMA, experiment=payload["experiment"], plan_sha256=payload["e_plan_sha256"],
                 horizon=horizon, dag_node=f"search:h{horizon}", fixture=payload["mode"] == "fixture",
@@ -211,7 +229,11 @@ def build(config_path, output_root):
     multi = common.read_pinned(cfg["multi_output"], "multi-output arms") if cfg.get("multi_output") else None
     horizons = list(e_plan["horizons_hours"])
     fold_map = _fold_map(e_plan, views, horizons)
-    fold_ids = [fold_map[e_id] for e_id in e_plan["folds"]["fold_ids"]]
+    fold_ids = [fold_map[e_id] for e_id in e_fold_ids(e_plan)]
+    c_plan = common.read_pinned(cfg["weekly_plan"], "C weekly plan") if cfg.get("weekly_plan") else None
+    if cfg["mode"] == "production" and c_plan is None:
+        raise ValueError("production ranking requires C's plan so E can verify origins bindings")
+    origins = {}
     classes = [dict(class_id=c["class_id"], max_samples=c["max_samples"], max_width=c["max_width"],
                     min_delta_x_hours=c.get("min_delta_x_hours", 1)) for c in e_plan["classes"]]
     caps = _class_caps(cfg, e_plan["classes"])
@@ -229,6 +251,9 @@ def build(config_path, output_root):
             item = dict(fold_id=e["fold_id"], state=state, cause=e.get("cause"), unit_sha256=e.get("unit_sha256"),
                         binding=e.get("binding"), cell_config=e.get("cell_config"), c_state=e["state"],
                         declared_assumption=e.get("declared_assumption"))
+            if c_plan is not None and state == "READY":
+                origins[(str(h), e["fold_id"])] = origins_from_c_plan(c_plan, e.get("unit_id", e["fold_id"]), h)
+            item["origins_sha256"] = origins.get((str(h), e["fold_id"]))
             if state == "READY" and e.get("binding"):
                 frozen.append((e["fold_id"], _binding(e["binding"], h, f"fold {e['fold_id']} h{h}"), e["binding"]["sha256"]))
             elif state == "READY" and not e.get("cell_config"):
@@ -278,11 +303,12 @@ def build(config_path, output_root):
                     new_candidates_per_horizon=s["new_candidates_per_horizon"], mutation=s["mutation"],
                     immigration=s["immigration"], tolerance=s["tolerance"], patience=s["patience"]),
         horizons=horizons, folds=fold_ids, fold_map=fold_map, classes=classes, class_caps=caps,
+        fold_origins={h: {f: o for (hh, f), o in origins.items() if hh == h} for h in {k[0] for k in origins}},
         initial_genotypes=e_plan.get("initial_genotypes", {}),
         budget=dict(search_new_fits_max=s["new_candidates_per_horizon"] * len(fold_ids) * len(horizons),
                     max_physical_attempts_per_fit=3, annual_dispositions_max=2 * len(horizons) * 53,
                     multi_output_dispositions_max=212, multi_output_arms=n_arms),
-        inputs=dict(search_plan=cfg["search_plan"], weekly_views=cfg["weekly_views"],
+        inputs=dict(search_plan=cfg["search_plan"], weekly_views=cfg["weekly_views"], weekly_plan=cfg.get("weekly_plan"),
                     multi_output=cfg.get("multi_output"), prior_candidates=cfg.get("prior_candidates")),
         evaluator_capabilities=sorted(cfg.get("evaluator_capabilities", [])),
         dag=dag, destinations=dict(ledger="state/ledger.sqlite3", status="status/STATUS.json",

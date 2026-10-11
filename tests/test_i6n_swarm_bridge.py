@@ -12,6 +12,13 @@ import pytest
 from tools import i6n_search as search
 from tools.i6n_swarm import bridge as B, common, ledger as L
 
+@pytest.fixture(autouse=True)
+def _reference_aggregator(monkeypatch):
+    """These tests exercise B; E's score_folds is exercised by E's suite and the integration check."""
+    from tools.i6n_swarm import bridge as _b
+    monkeypatch.setattr(_b, "resolve_score_folds", lambda: _b._reference_score_folds)
+
+
 FAKE = r'''
 import json, os, sys, hashlib
 req = json.load(sys.stdin)
@@ -36,7 +43,7 @@ print(json.dumps(receipt))
 
 def support(scale):
     return dict(counts=dict(train=100, inner=10), naive_sums=dict(train=1.0 * scale, inner=0.1 * scale),
-                support_digest=dict(train="1" * 64, inner="2" * 64))
+                support_digest=dict(train=common.sha256_json(["t", scale]), inner=common.sha256_json(["i", scale])))
 
 
 @pytest.fixture

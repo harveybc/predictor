@@ -108,7 +108,10 @@ def collect(root, publisher="auto", now=None, score_folds=None):
                 context = swarm_context(root, h, ledger=led)
                 supports = {f["fold"]: f["support"] for f in context["folds"]}
                 receipts = {u["fold"]: terminals[u["fit_id"]]["receipt"]["shared_receipt"] for u in key_units}
-                fitness = score_folds(e_plan, receipts, supports)["fitness"]
+                from tools.i6n_swarm.bridge import score_candidate
+                origins = {f["fold"]: f["origins_sha256"] for f in context["folds"] if f.get("origins_sha256")}
+                fitness = score_candidate(score_folds, e_plan, receipts, supports, key_units[0]["genotype"], h,
+                                          origins if len(origins) == len(supports) else None)["fitness"]
             except (LookupError, ValueError, KeyError):
                 fitness = None
         for u in key_units:
