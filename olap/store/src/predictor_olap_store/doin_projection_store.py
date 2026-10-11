@@ -51,7 +51,7 @@ IDENTITY_FIELDS = ("experiment", "candidate_identity_sha256", "fold", "horizon_h
 EXTRA_FIELDS = ("search_candidate_sha256", "head_role", "comparison", "status")
 CHAIN_FIELDS = ("block_hash", "block_height", "tx_id", "body_digest", "manifest_digest", "locator",
                 "archive_mode", "finality_state", "confirmation_depth", "depth")
-SPLITS = ("TRAIN", "INNER", "VALIDATION")
+SPLITS = ("TRAIN", "INNER", "VALIDATION", "SEARCH")  # SEARCH: candidate-level row (fitness, costs); TEST never
 POPULATIONS = ("S", "U")
 ARCHIVE_MODES = ("external_payload", "full_payload")
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
@@ -100,7 +100,7 @@ def ddl(qualified: Callable[[str], str] = lambda n: n, dialect: str = "duckdb") 
                                   "status", "depth") else " NOT NULL"
         cols.append(f" {name} {kind}{nullable}")
     cols += [" doin_metadata_schema TEXT NOT NULL", " created_at TEXT NOT NULL",
-             " CHECK (split IN ('TRAIN','INNER','VALIDATION'))",
+             " CHECK (split IN ('TRAIN','INNER','VALIDATION','SEARCH'))",
              " CHECK (population IN ('S','U'))",
              " CHECK (archive_mode IN ('external_payload','full_payload'))",
              " CHECK (finality_state = 'FINALIZED')",
