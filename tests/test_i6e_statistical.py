@@ -103,3 +103,26 @@ def test_two_workers_partition_weeks_without_repetition(tmp_path):
     assert len(even)==len(odd)==78
     assert not even.intersection(odd)
     assert len(even.union(odd))==156
+
+
+def test_arima_summary_refuses_failed_week(tmp_path,monkeypatch):
+    from tools import i6e_arima_summary as summary
+    monkeypatch.setattr(summary,"read_input",lambda root:({},{}))
+    monkeypatch.setattr(summary,"validate",lambda *a:dict(status="FAILED_CONVERGENCE"))
+    with pytest.raises(ValueError,match="not complete"):
+        summary.summarize(tmp_path)
+    assert not (tmp_path/"ARIMA_CLOSURE.json").exists()
+
+
+def test_arima_summary_rejects_relabelled_scoring_rows(tmp_path,monkeypatch):
+    from tools import i6e_arima_summary as summary
+    data=dict(ts=np.array([3600]),price=np.array([1.]),weeks=np.array([0]),
+              origins=np.array([3600]),future=np.array([1.01]))
+    monkeypatch.setattr(summary,"read_input",lambda root:({},data))
+    monkeypatch.setattr(summary,"validate",lambda *a:dict(status="COMPLETED"))
+    folder=tmp_path/"cells/ARIMA_w000_d72"
+    folder.mkdir(parents=True)
+    (folder/"CELL.json").write_text("{}")
+    np.savez_compressed(folder/"PREDICTIONS.npz",timestamps=[7200],current=[1.],future=[1.01],prediction=[1.])
+    with pytest.raises(ValueError,match="population changed"):
+        summary.summarize(tmp_path)

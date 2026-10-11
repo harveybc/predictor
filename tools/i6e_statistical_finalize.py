@@ -1,6 +1,7 @@
 """Automatically publish all 312 dispositions, preserving incomplete scientific arms."""
 
 import argparse
+import fcntl
 import json
 import subprocess
 import sys
@@ -17,6 +18,8 @@ def main():
     p.add_argument("--token-file",type=Path,required=True)
     p.add_argument("--code-commit",required=True)
     args=p.parse_args()
+    lock=(args.output/"COORDINATOR.lock").open("a")
+    fcntl.flock(lock,fcntl.LOCK_EX)
     if (args.output/"olap/PUBLICATION.json").exists():
         print("already published")
         return

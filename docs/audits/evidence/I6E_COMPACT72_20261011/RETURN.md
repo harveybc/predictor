@@ -55,3 +55,15 @@ weeks on the other, with a disjoint 78/78 partition. The current child finishes
 before changing the original supervisor; completed/failing terminals transfer
 with their digests and are adopted, never refit. The collector/finalizer timers
 remain independent of the initial coordinator's all-success closure rule.
+
+## Complete ARIMA results
+
+All three independent ARIMA arms completed 52/52 weeks on the same 3,712
+origins. Price MAE (USD/EUR): 72h spacing 0.0044251682269812525, 36h spacing
+0.004383068279920052, 18h spacing 0.004394993694026118, with paired naive
+0.004403521012931035. Annual MAE skill is -0.491589%, +0.464463% and
++0.193648%, respectively. The two positive values are descriptive validation
+forecast skill at horizon 72h, not financial utility, not TEST confirmation
+and not a proof of a sampling theorem. `tools/i6e_arima_summary.py` reproduces
+the complete-arm join and publishes the three pooled reports independently
+of unfinished ARIMAX. The combined experiment remains open.

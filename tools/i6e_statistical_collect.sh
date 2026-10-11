@@ -5,6 +5,8 @@ set -euo pipefail
 ROOT=${ROOT:-$HOME/.local/state/canonical_20261003}
 OUT=$ROOT/i6e/statistical72_v1
 WT=$(cd "$(dirname "$0")/.." && pwd)
+exec 9>"$OUT/COORDINATOR.lock"
+flock 9
 if [[ -f "$OUT/olap/PUBLICATION.json" ]]; then exit 0; fi
 for host in "$PREFERRED_HOST" "$SECONDARY_HOST"; do
   rsync -a --include='cells/***' --include='cost_*/***' --exclude='*' "$host:$OUT/" "$OUT/"
