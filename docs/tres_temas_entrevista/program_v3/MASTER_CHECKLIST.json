@@ -134,11 +134,11 @@
     {
       "id": "I6-E",
       "name": "multihorizon_downsampling_then_hourly",
-      "state": "DESIGNED",
+      "state": "IN_PROGRESS",
       "depends_on": ["I5"],
       "gate": "28 downsampled then 10 hourly unique arms, original-price MAE against naive para el horizonte de X horas on authenticated rows, autonomous stage completion and live OLAP readback",
       "work_plan": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
-      "evidence": "Generated grid and 15 pure tests; execution_ready false, no new training. Historical 72h controls have 312 terminal dispositions and exact publication receipt."
+      "evidence": "Runtime 48c55ac0 deployed with 38 contract/model tests plus 2 monitor tests. Real 5090/4090 weekly fits, 1-GiB CPU ARIMA, persistent coordinator/outbox/status timer, exact OLAP readback and automatic D->H queue. Live counters in multihorizon_2024_v2, no annual conclusion yet, TEST closed."
     },
     {
       "id": "I7-H",

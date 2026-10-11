@@ -38,3 +38,25 @@ precios/timestamps y el fichero de parametros retenido pasan la verificacion.
 El nuevo diseno y los nuevos recibos tienen otra identidad; no se sustituyen
 resultados del experimento anterior en el OLAP. El pico de coste adoptado es
 el maximo de los picos retenidos de ajuste y carga/lectura del checkpoint.
+
+## Despliegue verificado
+
+Runtime `48c55ac0`; diseno sucesor
+`f57b9b92d4b2a2188ab49b9acaf10df655bde18f10c7b92e8bb26b63258859c1`.
+4038 no: el denominador correcto es **4028** disposiciones (2014 por modelo).
+Instantanea de operacion: 24 NEURAL COMPLETED, 14 ARIMA COMPLETED, cuatro
+ARIMA FAILED_CONVERGENCE; los 42 terminales publicados y verificados por
+lectura exacta. Dos ajustes GPU y un CPU activos; la cola avanza sola.
+No resultado anual ni TEST abiertos. Los snapshots live siguientes reemplazan
+solo el estado, no esta observacion fechada ni los terminales inmutables.
+
+Coordinador/outbox instalados como servicios persistentes enabled, memoria
+observada 112/53 MB; monitor cada minuto con pico observado 19 MB. El CPU
+ARIMA tiene cap 1 GiB y cada GPU usa admision y vigilancia. Default runtime
+maximo por hijo 7936 MiB; nuevas clases miden bajo 6 GiB en el preferido y
+4 GiB en secundario. Produccion: margen 1.25 del pico medido, sin reducirlo.
+Solo GPU preferida en su host; secundario <=9 muestras; no brokers tocados.
+
+Suite final: 40 passed, 19.47 s, CPU bajo 3 GiB/180 s. La suite heredada
+completa no se uso. El observador excluye score-only adoptado de la ETA de
+ajuste, separa clases no medidas y conserva scope PARTIAL_YEAR_NOT_ELIGIBLE.

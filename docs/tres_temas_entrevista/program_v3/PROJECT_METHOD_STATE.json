@@ -23,9 +23,9 @@
     "next_action": "Retain complete 72h controls and typed ARIMAX failures. Implement the new multihorizon downsampling-then-hourly plan without modifying sealed engines."
   },
   "i6e_multihorizon": {
-    "status": "RUNTIME_TESTED_RESOURCE_PILOTS_PENDING",
+    "status": "RUNNING_DOWNSAMPLING_OLAP_READBACK_VERIFIED",
     "execution_ready": true,
-    "current_stage": "deployment_verification",
+    "current_stage": "production_observation",
     "work_plan": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
     "generated_design": "I6E_MULTI_HORIZON_PLAN.json",
     "horizons_hours": [2, 3, 4, 5, 6, 24, 48, 72, 96, 120],
@@ -44,7 +44,10 @@
     "runtime_verified": "SOFTWARE_ONLY_36_TESTS_OPERATIONAL_CLOSURE_PENDING",
     "skill_formula": "(MAE_h - naive_h) / naive_h",
     "skill_negative_is_better": true,
-    "next_action": "Deploy i6m runtime; measure and reuse first-week TRAIN fits per shape/host; automatically complete D then H, publish verified metrics without TEST."
+    "runtime_pin": "48c55ac075ecb503c1f2da58c5ec333c99da9afc",
+    "live_root_suffix": "i6e/multihorizon_2024_v2",
+    "live_design_sha256": "f57b9b92d4b2a2188ab49b9acaf10df655bde18f10c7b92e8bb26b63258859c1",
+    "next_action": "Scheduler automatically completes D then H. Observer and OLAP follower run without agents. Preserve typed ARIMA failures and original receipt-defect history; do not repeat adopted fits or open TEST."
   },
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [

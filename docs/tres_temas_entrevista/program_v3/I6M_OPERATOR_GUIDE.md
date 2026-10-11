@@ -7,7 +7,7 @@ el token locales, nunca poner sus valores en Git. No hay acceso SSH inverso
 desde workers al coordinador ni nuevas authorized_keys.
 
 ```bash
-ROOT="$HOME/.local/state/canonical_20261003/i6e/multihorizon_2024_v1"
+ROOT="$HOME/.local/state/canonical_20261003/i6e/multihorizon_2024_v2"
 python -m tools.i6m_deploy \
   --root "$ROOT" \
   --parent "$HOME/.local/state/canonical_20261003/i6e/statistical72_v1" \
@@ -32,8 +32,11 @@ supervisores son pequenos y separados. No se paran servicios de trading.
 
 ```bash
 python -m tools.i6m_coordinator status --root "$ROOT"
+python -m tools.horizon_campaign_monitor --root "$ROOT" --live
+python -m tools.horizon_campaign_monitor --root "$ROOT" --model NEURAL --horizon 72
 python -m json.tool "$ROOT/STATUS.json"
 python -m json.tool "$ROOT/OLAP_STATUS.json"
+python -m json.tool "$ROOT/MONITOR_STATUS.json"
 python -m json.tool "$ROOT/cells/<model>_h<h>_d<delta>_w<week>/STATUS.json"
 journalctl --user -u predictor-i6m-coordinator.service -n 20 --no-pager
 ```
@@ -44,6 +47,17 @@ inicial queda nula hasta observar un terminal; una proyeccion de coste igual
 NO es la ETA medida de modelos largos todavia no perfilados.
 
 ## 3. Reanudar y cerrar
+
+En el despliegue vigente, coordinador y outbox estan instalados como servicios
+persistentes enabled; `predictor-i6m-status.timer` actualiza MONITOR_STATUS cada
+minuto con sondeos remotos acotados. La version inicial del comando usa unidades
+transient: si se replica en otra instalacion, instalar sus unidades persistentes
+antes de contar con reanudacion tras apagado. No confundir Restart=on-failure
+dentro del boot con persistencia de una unidad transient entre boots.
+
+Override conservador vigente para futuros pilotos de formas nuevas: 6 GiB en
+preferido, 4 GiB en secundario. La reserva de produccion sigue siendo 1.25*pico
+medido; el lanzador puede rechazar por margen vivo sin alterar los limites.
 
 Los supervisores systemd reinician ante fallo. Un supervisor que encuentra un
 hijo superviviente espera su terminal; no crea otro ajuste. Una interrupcion

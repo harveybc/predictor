@@ -107,7 +107,7 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 - [ ] I6-B. Preentrenamiento de extractores de ramas seleccionadas.
 - [ ] I7. E1: R0 frente a R1 frente a R2, mismo diseño y población.
   El contraste semanal de 1 h cerro sus 156 celdas; ninguno supero al naive.
-  Esto no cierra la viabilidad de la estrategia. Sigue I7-M: un cabezal directo
+  Esto no cierra la viabilidad de la estrategia. I7-M historico: un cabezal directo
   con 11 salidas (1-6, 24, 48, 72, 96 y 120 h), ramas preentrenadas en R2,
   cuatro anos moviles y 52 semanas de VALIDATION. 1 h es solo diagnostico.
   [Contrato y ejecucion](program_v3/I7_MULTI_HORIZON_WORK_PLAN.md).
@@ -123,9 +123,12 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
   ningun brazo supera al naive. Precio original reconciliado y 2,184 metricas
   verificadas en OLAP. Controles CPU: 312 disposiciones cerradas, 35 fallos
   ARIMAX retenidos; 312 informes / 2,910 metricas con recibo de readback.
-  La grilla nueva esta planificada, NO ejecutada: requiere adapter n=7 y
-  horario, workers y aceptaciones autonomas; no reutilizar ciegamente donantes
-  ni confundir el barrido R2 de ventana fija 24 con el contraste de ventanas.
+  La grilla nueva esta EN EJECUCION: runtime `48c55ac0`, 38 pruebas y
+  observador automatizado; 5090/4090 con memoria medida, control ARIMA CPU,
+  cola de 2014 disposiciones por modelo, outbox con lectura exacta verificada.
+  No reutilizar ciegamente donantes ni confundir el barrido R2 de ventana fija
+  24 con el contraste de ventanas. TEST cerrado. Skill vigente:
+  `(MAE_h-naive_h)/naive_h`, negativo mejora; etiquetas y OLAP lo explicitan.
 - [ ] I7-H. Fijar prefijo ganador y probar H-CORE por separado.
 - [ ] I8. Optimización DEAP distribuida por DOIN del modelo elegible.
 - [ ] I9-N. Representación final congelada: Dense control frente a NEAT.

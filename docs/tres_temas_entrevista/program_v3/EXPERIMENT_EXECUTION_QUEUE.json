@@ -3,8 +3,8 @@
   "updated_on": "2026-10-11",
   "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md and its program_v3 subplans",
   "policy": {
-    "focus": "I6E_MULTI_HORIZON_DOWNSAMPLING_THEN_HOURLY_IMPLEMENTATION",
-    "parallelism": "Plan only so far. Implement and verify durable workers first; coarse stage before hourly stage, one GPU child on preferred host, secondary worker if measured memory fits; coordinator CPU light only.",
+    "focus": "I6E_MULTI_HORIZON_DOWNSAMPLING_THEN_HOURLY_RUNNING",
+    "parallelism": "Two GPU slots and one 1-GiB ARIMA CPU slot. Per-model coarse stage precedes hourly stage. Only preferred GPU on preferred host; secondary <=9 samples. Durable scheduler and OLAP follower need no agent intervention.",
     "seed_default": 6102026,
     "seed_maximum": 3,
     "repeat_policy": "adopt valid terminals; repeat only lost corrupt or scientifically changed units",
@@ -13,7 +13,7 @@
       "dragon_4090",
       "omega_4070"
     ],
-    "gpu_use_now": "No new multihorizon training launched by the plan update; use 5090 first at deployment, never concurrent 5070 Ti on the preferred host.",
+    "gpu_use_now": "Real weekly fits running on 5090 and 4090 under measured reservations. Never run 5070 Ti concurrently. TEST remains closed.",
     "financial_gate": "MAE in original price must beat naive para el horizonte de X horas on identical rows before strategy evaluation",
     "test_policy": "2025 TEST reserved; no selection on TEST; 2024 validation only after sealing grid and per-horizon input populations",
     "warehouse_policy": "all metrics decisions ranks costs and identities require submit plus readback",
@@ -40,13 +40,13 @@
       "priority": 0,
       "id": "I6E-MULTIHORIZON",
       "resource": "CPU_design_and_tests_then_measured_5090_and_4090",
-      "state": "PLANNED_NOT_EXECUTED",
-      "work": "Implement MH05-MH10, authenticate inputs and costs, then complete 28 downsampled arms and 10 hourly arms automatically. Horizons 2,3,4,5,6,24,48,72,96,120; context 2h; coarse steps 1/2/3/4 where divisible. No permissions or user visits between stages.",
+      "state": "RUNNING_DOWNSAMPLING",
+      "work": "Complete 28 downsampled arms then 10 hourly arms automatically, per model. Horizons 2,3,4,5,6,24,48,72,96,120; context 2h; coarse steps 1/2/3/4 where divisible. No permissions or user visits between stages.",
       "depends_on": [],
       "produces": "per-horizon original-price metrics and naive, complete stage dispositions, unattended status/ETA and exact OLAP readback",
       "design": "I6E_MULTI_HORIZON_PLAN.json",
       "work_plan": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
-      "evidence": "15 pure grid/calendar/metric tests passed; no new datasets read or fits run. Generalized model, workers, outbox and monitored deployment not yet implemented."
+      "evidence": "Runtime pin 48c55ac0, 38 contract/model tests and 2 observer tests. Live root i6e/multihorizon_2024_v2: sealed 2014 dispositions per NEURAL/ARIMA, real fits and exact OLAP readback. Receipt defects in predecessor retained; authenticated fits adopted without repeat. Live counters/ETA in STATUS.json and MONITOR_STATUS.json."
     },
     {
       "priority": 1,
