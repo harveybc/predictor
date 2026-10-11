@@ -1,0 +1,12 @@
+input=$STATE/canonical_20261003/i6e/statistical72_v1/INPUT.npz
+  archive_sha256=897caee164286bedea61c4caab361213cf703d3f50e60ba12cee543d9bfa28c9 members=['future.npy', 'origins.npy', 'price.npy', 'ts.npy', 'weeks.npy', 'x.npy']
+  ts.npy_member_sha256=a094d14130df31233ac6e4d7546e565bf7392e26ceded16b11e8442584e190bf dtype=int64 rows=77977 first=2012-05-01 00:00 UTC last=2024-12-31 22:00 UTC
+  matches_bar_clock_out_signature=True
+input=$STATE/canonical_20261003/i6e/multihorizon_2024_v1/INPUT.npz
+  archive_sha256=d9015867fcd8911ecc155adf26510d343fba45a7c06d6738ee7a3eae100a750d members=['price.npy', 'ts.npy', 'x.npy']
+  ts.npy_member_sha256=a094d14130df31233ac6e4d7546e565bf7392e26ceded16b11e8442584e190bf dtype=int64 rows=77977 first=2012-05-01 00:00 UTC last=2024-12-31 22:00 UTC
+  matches_bar_clock_out_signature=True
+input=$STATE/canonical_20261003/i6e/multihorizon_2024_v2/INPUT.npz
+  archive_sha256=d9015867fcd8911ecc155adf26510d343fba45a7c06d6738ee7a3eae100a750d members=['price.npy', 'ts.npy', 'x.npy']
+  ts.npy_member_sha256=a094d14130df31233ac6e4d7546e565bf7392e26ceded16b11e8442584e190bf dtype=int64 rows=77977 first=2012-05-01 00:00 UTC last=2024-12-31 22:00 UTC
+  matches_bar_clock_out_signature=True

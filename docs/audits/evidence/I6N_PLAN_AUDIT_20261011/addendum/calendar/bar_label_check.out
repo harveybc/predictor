@@ -1,0 +1,99 @@
+## 1a. Weekly first/last bar label (America/New_York), counts by era and DST alignment (only classes with >=1 week)
+2012-2018	US/EU-DST-gap	first=Sun 18:00 last=Fri 17:00	22
+2012-2018	aligned	first=Mon 03:00 last=Fri 17:00	1
+2012-2018	aligned	first=Mon 16:00 last=Fri 17:00	1
+2012-2018	aligned	first=Mon 18:00 last=Fri 17:00	2
+2012-2018	aligned	first=Mon 20:00 last=Fri 17:00	1
+2012-2018	aligned	first=Sun 18:00 last=Fri 17:00	319
+2012-2018	aligned	first=Sun 18:00 last=Thu 14:00	1
+2012-2018	aligned	first=Sun 18:00 last=Thu 17:00	1
+2019-2024	US/EU-DST-gap	first=Sun 17:00 last=Fri 16:00	19
+2019-2024	US/EU-DST-gap	first=Sun 18:00 last=Fri 15:00	1
+2019-2024	US/EU-DST-gap	first=Sun 18:00 last=Fri 16:00	1
+2019-2024	aligned	first=Mon 00:00 last=Fri 17:00	1
+2019-2024	aligned	first=Mon 18:00 last=Fri 17:00	1
+2019-2024	aligned	first=Sun 18:00 last=Fri 03:00	1
+2019-2024	aligned	first=Sun 18:00 last=Fri 16:00	4
+2019-2024	aligned	first=Sun 18:00 last=Fri 17:00	272
+2019-2024	aligned	first=Sun 18:00 last=Thu 17:00	1
+2019-2024	aligned	first=Sun 18:00 last=Thu 20:00	1
+2019-2024	aligned	first=Sun 18:00 last=Tue 17:00	1
+2019-2024	aligned	first=Sun 19:00 last=Fri 14:00	1
+2019-2024	aligned	first=Sun 19:00 last=Fri 15:00	1
+2019-2024	aligned	first=Sun 19:00 last=Fri 16:00	4
+2019-2024	aligned	first=Sun 19:00 last=Fri 17:00	4
+2019-2024	aligned	first=Sun 20:00 last=Fri 15:00	1
+
+## 1b. Every US/EU DST-gap week: Wednesday date, first label NY, last label NY, bars
+2012-10-31	Sun 2012-10-28 18:00 EDT	Fri 2012-11-02 17:00 EDT	120
+2013-03-13	Sun 2013-03-10 18:00 EDT	Fri 2013-03-15 17:00 EDT	120
+2013-03-20	Sun 2013-03-17 18:00 EDT	Fri 2013-03-22 17:00 EDT	120
+2013-03-27	Sun 2013-03-24 18:00 EDT	Fri 2013-03-29 17:00 EDT	120
+2013-10-30	Sun 2013-10-27 18:00 EDT	Fri 2013-11-01 17:00 EDT	120
+2014-03-12	Sun 2014-03-09 18:00 EDT	Fri 2014-03-14 17:00 EDT	120
+2014-03-19	Sun 2014-03-16 18:00 EDT	Fri 2014-03-21 17:00 EDT	120
+2014-03-26	Sun 2014-03-23 18:00 EDT	Fri 2014-03-28 17:00 EDT	120
+2014-10-29	Sun 2014-10-26 18:00 EDT	Fri 2014-10-31 17:00 EDT	120
+2015-03-11	Sun 2015-03-08 18:00 EDT	Fri 2015-03-13 17:00 EDT	120
+2015-03-18	Sun 2015-03-15 18:00 EDT	Fri 2015-03-20 17:00 EDT	120
+2015-03-25	Sun 2015-03-22 18:00 EDT	Fri 2015-03-27 17:00 EDT	120
+2015-10-28	Sun 2015-10-25 18:00 EDT	Fri 2015-10-30 17:00 EDT	120
+2016-03-16	Sun 2016-03-13 18:00 EDT	Fri 2016-03-18 17:00 EDT	120
+2016-03-23	Sun 2016-03-20 18:00 EDT	Fri 2016-03-25 17:00 EDT	120
+2016-11-02	Sun 2016-10-30 18:00 EDT	Fri 2016-11-04 17:00 EDT	120
+2017-03-15	Sun 2017-03-12 18:00 EDT	Fri 2017-03-17 17:00 EDT	120
+2017-03-22	Sun 2017-03-19 18:00 EDT	Fri 2017-03-24 17:00 EDT	120
+2017-11-01	Sun 2017-10-29 18:00 EDT	Fri 2017-11-03 17:00 EDT	120
+2018-03-14	Sun 2018-03-11 18:00 EDT	Fri 2018-03-16 17:00 EDT	120
+2018-03-21	Sun 2018-03-18 18:00 EDT	Fri 2018-03-23 17:00 EDT	120
+2018-10-31	Sun 2018-10-28 18:00 EDT	Fri 2018-11-02 17:00 EDT	120
+2019-03-13	Sun 2019-03-10 17:00 EDT	Fri 2019-03-15 16:00 EDT	120
+2019-03-20	Sun 2019-03-17 17:00 EDT	Fri 2019-03-22 16:00 EDT	120
+2019-03-27	Sun 2019-03-24 17:00 EDT	Fri 2019-03-29 16:00 EDT	120
+2019-10-30	Sun 2019-10-27 17:00 EDT	Fri 2019-11-01 16:00 EDT	120
+2020-03-11	Sun 2020-03-08 17:00 EDT	Fri 2020-03-13 16:00 EDT	120
+2020-03-18	Sun 2020-03-15 17:00 EDT	Fri 2020-03-20 16:00 EDT	120
+2020-03-25	Sun 2020-03-22 17:00 EDT	Fri 2020-03-27 16:00 EDT	120
+2020-10-28	Sun 2020-10-25 17:00 EDT	Fri 2020-10-30 16:00 EDT	120
+2021-03-17	Sun 2021-03-14 17:00 EDT	Fri 2021-03-19 16:00 EDT	120
+2021-03-24	Sun 2021-03-21 17:00 EDT	Fri 2021-03-26 16:00 EDT	120
+2021-11-03	Sun 2021-10-31 17:00 EDT	Fri 2021-11-05 16:00 EDT	120
+2022-03-16	Sun 2022-03-13 17:00 EDT	Fri 2022-03-18 16:00 EDT	120
+2022-03-23	Sun 2022-03-20 17:00 EDT	Fri 2022-03-25 16:00 EDT	120
+2022-11-02	Sun 2022-10-30 17:00 EDT	Fri 2022-11-04 16:00 EDT	120
+2023-03-15	Sun 2023-03-12 17:00 EDT	Fri 2023-03-17 16:00 EDT	85
+2023-03-22	Sun 2023-03-19 18:00 EDT	Fri 2023-03-24 15:00 EDT	84
+2023-11-01	Sun 2023-10-29 17:00 EDT	Fri 2023-11-03 16:00 EDT	120
+2024-03-13	Sun 2024-03-10 17:00 EDT	Fri 2024-03-15 16:00 EDT	120
+2024-03-20	Sun 2024-03-17 17:00 EDT	Fri 2024-03-22 16:00 EDT	120
+2024-03-27	Sun 2024-03-24 17:00 EDT	Fri 2024-03-29 16:00 EDT	120
+2024-10-30	Sun 2024-10-27 18:00 EDT	Fri 2024-11-01 16:00 EDT	119
+
+## 1c. Exact rows (timestamps only) around four 2024 weekend reopenings
+week of Sunday 2024-03-03:
+  ts=1709326800  Fri 2024-03-01 21:00 UTC  = Fri 16:00 EST NY; END-label interval NY [15:00, 16:00)
+  ts=1709330400  Fri 2024-03-01 22:00 UTC  = Fri 17:00 EST NY; END-label interval NY [16:00, 17:00)   <- 49 h gap follows
+  ts=1709506800  Sun 2024-03-03 23:00 UTC  = Sun 18:00 EST NY; END-label interval NY [17:00, 18:00)
+week of Sunday 2024-03-10:
+  ts=1709931600  Fri 2024-03-08 21:00 UTC  = Fri 16:00 EST NY; END-label interval NY [15:00, 16:00)
+  ts=1709935200  Fri 2024-03-08 22:00 UTC  = Fri 17:00 EST NY; END-label interval NY [16:00, 17:00)   <- 47 h gap follows
+  ts=1710104400  Sun 2024-03-10 21:00 UTC  = Sun 17:00 EDT NY; END-label interval NY [16:00, 17:00)
+  ts=1710108000  Sun 2024-03-10 22:00 UTC  = Sun 18:00 EDT NY; END-label interval NY [17:00, 18:00)
+  ts=1710111600  Sun 2024-03-10 23:00 UTC  = Sun 19:00 EDT NY; END-label interval NY [18:00, 19:00)
+week of Sunday 2024-03-24:
+  ts=1711134000  Fri 2024-03-22 19:00 UTC  = Fri 15:00 EDT NY; END-label interval NY [14:00, 15:00)
+  ts=1711137600  Fri 2024-03-22 20:00 UTC  = Fri 16:00 EDT NY; END-label interval NY [15:00, 16:00)   <- 49 h gap follows
+  ts=1711314000  Sun 2024-03-24 21:00 UTC  = Sun 17:00 EDT NY; END-label interval NY [16:00, 17:00)
+  ts=1711317600  Sun 2024-03-24 22:00 UTC  = Sun 18:00 EDT NY; END-label interval NY [17:00, 18:00)
+  ts=1711321200  Sun 2024-03-24 23:00 UTC  = Sun 19:00 EDT NY; END-label interval NY [18:00, 19:00)
+week of Sunday 2024-03-31:
+  ts=1711738800  Fri 2024-03-29 19:00 UTC  = Fri 15:00 EDT NY; END-label interval NY [14:00, 15:00)
+  ts=1711742400  Fri 2024-03-29 20:00 UTC  = Fri 16:00 EDT NY; END-label interval NY [15:00, 16:00)   <- 50 h gap follows
+  ts=1711922400  Sun 2024-03-31 22:00 UTC  = Sun 18:00 EDT NY; END-label interval NY [17:00, 18:00)
+  ts=1711926000  Sun 2024-03-31 23:00 UTC  = Sun 19:00 EDT NY; END-label interval NY [18:00, 19:00)
+
+## 2. CONTROL: synthetic 5m source stamps through tools/i6e_price_metrics.py:hourly_close (no market data)
+normal summer week, source opens 17:00 NY: first source stamp 2024-06-09 17:00 (naive, read as America/New_York BAR_START) -> hourly END labels ['Sun 2024-06-09 22:00 UTC', 'Sun 2024-06-09 23:00 UTC']
+DST-start Sunday, US-DST source opens 17:00 EDT: first source stamp 2024-03-10 17:00 (naive, read as America/New_York BAR_START) -> hourly END labels ['Sun 2024-03-10 22:00 UTC', 'Sun 2024-03-10 23:00 UTC']
+DST-start Sunday, EU-DST-dated source stamps the same instant as 16:00: first source stamp 2024-03-10 16:00 (naive, read as America/New_York BAR_START) -> hourly END labels ['Sun 2024-03-10 21:00 UTC', 'Sun 2024-03-10 22:00 UTC']
+normal winter week, source opens 17:00 NY: first source stamp 2024-01-07 17:00 (naive, read as America/New_York BAR_START) -> hourly END labels ['Sun 2024-01-07 23:00 UTC', 'Mon 2024-01-08 00:00 UTC']

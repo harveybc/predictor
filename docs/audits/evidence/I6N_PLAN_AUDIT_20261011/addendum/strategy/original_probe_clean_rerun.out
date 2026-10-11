@@ -1,0 +1,20 @@
+LONG position, entry 1.1000 TP 1.1010 SL 1.0980
+  variant A: TP@2h/SL@12h -> close=True; SL@2h/TP@12h -> close=True; identical=True
+  variant B: TP@2h/SL@12h -> close=False; SL@2h/TP@12h -> close=False; identical=True
+  variant C: TP@2h/SL@12h -> close=True; SL@2h/TP@12h -> close=True; identical=True
+  variant D: TP@2h/SL@12h -> close=False; SL@2h/TP@12h -> close=False; identical=True
+  variant E: TP@2h/SL@12h -> close=False; SL@2h/TP@12h -> close=False; identical=True
+  variant F: TP@2h/SL@12h -> close=False; SL@2h/TP@12h -> close=False; identical=True
+  variant G: TP@2h/SL@12h -> close=False; SL@2h/TP@12h -> close=False; identical=True
+SHORT position, entry 1.1000 TP 1.0990 SL 1.1020
+  variant A: TP@2h/SL@12h -> close=True; SL@2h/TP@12h -> close=True; identical=True
+  variant B: TP@2h/SL@12h -> close=False; SL@2h/TP@12h -> close=False; identical=True
+  variant C: TP@2h/SL@12h -> close=True; SL@2h/TP@12h -> close=True; identical=True
+  variant D: TP@2h/SL@12h -> close=False; SL@2h/TP@12h -> close=False; identical=True
+  variant E: TP@2h/SL@12h -> close=False; SL@2h/TP@12h -> close=False; identical=True
+  variant F: TP@2h/SL@12h -> close=False; SL@2h/TP@12h -> close=False; identical=True
+  variant G: TP@2h/SL@12h -> close=False; SL@2h/TP@12h -> close=False; identical=True
+variant A over 200 random horizon permutations: distinct decisions = {True}
+entry with ONE finite long (others NaN): ('long', 1.1045, 1.0998, 50.0)
+entry is order-blind across long horizons: True
+calculate_entry_geometry parameters: ('current_price', 'long_horizon_predictions', 'params')

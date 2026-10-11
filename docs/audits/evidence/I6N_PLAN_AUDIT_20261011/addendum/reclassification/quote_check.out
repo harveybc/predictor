@@ -1,0 +1,335 @@
+# sha256 of quoted inputs
+d4341e72f4fc05531cfcffd5036c1968d522a105fa534d2add0ae2d10eb56487  docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md
+604f94809c41613e7346ed630d698591fadd7ecc9961b9e3cb04fcad00c01c76  docs/tres_temas_entrevista/program_v3/BUSINESS_MARKET_WEEK_CONTRACT_2026_10_11.md
+d64206b875462c913087ccba387b98422ae51c0ab88c6f490362532867b5a4c1  docs/tres_temas_entrevista/program_v3/BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md
+5032acc642e680fa6c41a4ed58b729a1904de464ef1178a455a8636ba96ca068  docs/tres_temas_entrevista/program_v3/FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md
+ee8a23f202e26912bdbbaa811d1e5e56d1921aa6af65517227b1a09dedd60ec4  docs/tres_temas_entrevista/program_v3/PROJECT_METHOD_STATE.json
+129cea8c0f2608926919579c1ce5e0d76f3c0370bb1bd06c28b6b2178fee1234  docs/tres_temas_entrevista/program_v3/I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md
+3cb2cebc9bdd7bf97d94cbafec070c79c57a3fc84e1b8c4f7c66396f47208bd5  docs/tres_temas_entrevista/program_v3/I6A_ARCHITECTURE_CAMPAIGN_2026_10_08.md
+c0fc85c3d5e44aa58af4567974c914119450e89552dd8cce8e481a26792a4e59  docs/tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md
+b77374c860ce0518cd5a11c196aa1e897f29678278d4e6c2e3d315081cbcbfbf  tools/modular_candidate_evaluator.py
+e4ed00fca63d29109aa57ce239c77499e0d230ea3989ff25b0a0d87bf2f1ffdf  tools/i6m_data.py
+e55d48dbb2eb4831d9ad95d593acf9dfeff5113adc423c7c98f22a176c1ebcff  tools/i6m_prepare.py
+1904ae56effc87aa7bab8a568c1e58b5d829840ff728e6c2ed81ca8aaa958922  FINDINGS.json
+708e6771216cf88ea11161a1ff61d5cb72325c06c5ca0d237875d3ab95263f51  DICTAMEN.md
+5325d833f9758117dbc8658b4b37a101c1bf9970ac9f19e3ff0e9e95d89fa563  CORRECTIONS_REQUIRED.md
+56a5d34e2b91dd16d36537b4afe6b86ccb241a6226e7cccd5abab80782fa4c2d  EVIDENCE_MANIFEST.json
+0920698dd1df955edd752eb3b456f973fb945d00089d23b278da1bd33ce4106d  PARAMETER_AUDIT.csv
+6ef6db8b393c64a22b2f5e8b3d7194ae368395badb0919a84bd9db7a09ec2f77  INTERACTION_AUDIT.csv
+15970757c03e39864b9abfde77588aaff4f6b6c8497129e237b328db8d6fab78  probes/a/strategy_counterexample.py
+d9e1399f7dc862e09e9445217796b5c968ef67356e3b7c1865a4d696b134a2a7  probes/a/strategy_counterexample.out
+170157540fa705387d950654a8ef89f73110c6c805eef2fb5d252be43edce3bc  probes/a/wmc_calendar.out
+ea521a732ab4a3cbe949fd2cfd4b20d4570d7075631e98340f80476de415f637  probes/cde/check.py
+42e7cdcbe4eea2b9636cc098901db03148b8ab26d9c8099f501857db18517b0b  probes/cde/out.json
+
+# proposal (owner contract choices and self-imposed sealing)
+
+=== docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md :6-6
+     6	Lugar propuesto: dentro de I6-E, antes de ampliar R1/R2, fijar H-CORE o TEST.
+
+=== docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md :21-21
+    21	- EURUSD primero, 20 features RAW retenidas; no llamarlas optimas para cada h.
+
+=== docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md :40-46
+    40	- TRAIN movil de cuatro anos calendario antes del cutoff de cierre; ajustes
+    41	  semanales durante cierre; inner cronologica
+    42	  purgada por h; escaladores TRAIN-only. Target nunca limpiado.
+    43	- VALIDATION 2024 completa, 53 segmentos. TEST 2025 reservado.
+    44	- MAE y naive para el horizonte de X horas: precio USD/EUR, mismos origenes.
+    45	  Skill=(MAE_h-naive_h)/naive_h; negativo mejora. Naives intermedios separados.
+    46	- Seed 6102026 inicialmente, sin repetir unidades identicas. Nunca diez seeds.
+
+=== docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md :68-69
+    68	Sellar soporte comun por h para la mayor historia candidata y recalcular sus
+    69	conteos/naives. No copiar cifras anteriores cuando cambie la poblacion.
+
+=== docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md :103-108
+   103	Cuatro semanas internas de 2023, predefinidas por trimestre, cuatro anos
+   104	anteriores por ajuste: 9*2*4=72 fits maximos. Sellar calendario antes de correr.
+   105	Es screening, no resultado anual. Conservar hasta tres alternativas de error
+   106	y coste, incluida una pequena. Son puntos iniciales de la busqueda DEAP/DOIN,
+   107	no una seleccion irreversible de familia o ventana. No excluir para siempre
+   108	capacidades grandes: pueden rescatarse cuando cambie la ventana/resolucion.
+
+=== docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md :112-116
+   112	DEAP propone, DOIN distribuye; no NEAT ni producto cartesiano exhaustivo.
+   113	Hasta 24 configuraciones NUEVAS por representante x cuatro folds: 192 fits.
+   114	
+   115	- Historia L={1,2,4,6}*h; entrada horaria o delta_x=h/k, k={1,2,3,4,8,9}.
+   116	  Solo horas enteras; n=1+L/delta_x. No periodicidades fabricadas.
+
+=== docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md :128-143
+   128	- Reduccion temporal: ninguna, progresiva o solo al final. Toda ruta declara
+   129	  soporte y cubre t, nunca reproduce el rezago origin-3 del encoder historico.
+   130	  Reduccion progresiva factor 2 solo si quedan al menos dos posiciones.
+   131	
+   132	Genes de filters y de stride temporal son independientes; cambios de familia,
+   133	profundidad, ancho, historia y resolucion se proponen conjuntamente. Mutacion
+   134	y cruce deben respetar el esquema jerarquico y excluir combinaciones inactivas
+   135	de la identidad, para no evaluar dos genotipos del mismo modelo efectivo.
+   136	No hay una capa que garantice reduccion sin perdida: comprobar beneficio por
+   137	pronostico pareado y coste, y reconstruccion solo como diagnostico separado.
+   138	
+   139	Ranking por error agregado de los folds y coste medido, no por la mejor semana.
+   140	La parada tras configuraciones mayores sin mejora describe una meseta explorada,
+   141	no demuestra optimo global. Se sella la tolerancia y regla de parada antes del
+   142	fit; early stopping usa promedio TRAIN/inner, patience=5, best-weight restore.
+   143	Batch=256, max_epochs=50, AdamW/Huber segun contrato heredado inicialmente.
+
+=== docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md :163-168
+   163	Transferir hasta dos recetas TRAIN a los 12 h, con ventanas/formas explicitas;
+   164	no llamarlas optimas en horizontes no estudiados. Maximo 2*12*53=1,272
+   165	disposiciones neuronales en VALIDATION. ARIMA: una resolucion elegida en TRAIN
+   166	por h, hasta 12*53=636 disposiciones CPU. Fallos tipados no reciben MAE anual.
+   167	MAE anual por suma de errores/conteos de todo el ano, no media sin pesos de
+   168	semanas. VALIDATION escoge; TEST confirma el procedimiento congelado.
+
+# weekly walk-forward contract (selection year, update mode, checkpoint tail, fixed manifest)
+
+=== docs/tres_temas_entrevista/program_v3/BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md :45-47
+    45	- `BUSINESS_WEEKLY_WALK_FORWARD`: modo primario EURUSD. Actualiza antes de cada
+    46	  semana y puntúa esa semana. El procedimiento se selecciona sobre el año de
+    47	  validation y se congela antes de recorrer una única vez el año de test.
+
+=== docs/tres_temas_entrevista/program_v3/BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md :59-73
+    59	`update_mode` también es obligatorio:
+    60	
+    61	- `FULL_RETRAIN_ROLLING_4Y`: inicia cada semana desde la inicialización sellada
+    62	  y ajusta sobre la ventana móvil. Es el único brazo cuya memoria aprendida se
+    63	  limita estrictamente al corpus declarado.
+    64	- `WARM_UPDATE_ROLLING_4Y`: parte del checkpoint anterior y refresca con la
+    65	  ventana móvil, opcionalmente con un presupuesto menor. Los pesos pueden
+    66	  conservar memoria anterior a cuatro años; esa herencia se declara y este
+    67	  brazo no recibe la etiqueta de memoria estricta.
+    68	
+    69	La selección de checkpoint usa una cola cronológica interna al corpus de cuatro
+    70	años. Tras fijar época/actualizaciones, `FULL_RETRAIN_ROLLING_4Y` puede reajustar
+    71	desde la misma inicialización sobre toda la ventana con ese presupuesto. El
+    72	procedimiento exacto queda sellado; no se elige retrospectivamente por el score
+    73	de la semana externa.
+
+=== docs/tres_temas_entrevista/program_v3/BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md :83-87
+    83	El manifiesto de características del experimento confirmatorio es fijo por
+    84	defecto. Un selector adaptativo semanal es otro brazo: su algoritmo y presupuesto
+    85	se congelan antes del test, y cada conjunto semanal se deriva únicamente del
+    86	rolling TRAIN correspondiente. No se comparan un manifiesto fijo y uno
+    87	adaptativo como si fueran el mismo tratamiento.
+
+=== docs/tres_temas_entrevista/program_v3/BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md :159-166
+   159	Cada unidad conserva `week_id`, fronteras UTC, cutoff y release; modo de
+   160	evaluación/actualización; cuatro años resueltos; datasets y disponibilidades por
+   161	digesto; filas de fit/inner-validation/score; purga; manifiesto de features;
+   162	scalers; checkpoint padre e inicial; semilla; actualizaciones, early stopping y
+   163	checkpoint elegido; predicciones temporales hasta verificar el catálogo;
+   164	métricas y naive pareados; costes de cómputo; y estado financiero de entrada y
+   165	salida. El cierre agrega primero por semana y luego por año, sin tratar barras
+   166	autocorrelacionadas como réplicas independientes.
+
+# market-week contract
+
+=== docs/tres_temas_entrevista/program_v3/BUSINESS_MARKET_WEEK_CONTRACT_2026_10_11.md :14-19
+    14	- Reajustar cada semana durante el cierre del mercado, antes de la reapertura.
+    15	  TRAIN: cuatro anos calendario anteriores al cutoff de informacion, con
+    16	  disponibilidades verificadas y targets ya realizados. El cutoff ordinario
+    17	  es el cierre de mercado C de la semana anterior; el fit ocurre entre C y O
+    18	  siguientes. No usar un cutoff del lunes posterior a la reapertura como si
+    19	  ese modelo hubiera sido entrenado durante el cierre.
+
+=== docs/tres_temas_entrevista/program_v3/BUSINESS_MARKET_WEEK_CONTRACT_2026_10_11.md :76-79
+    76	**Objetivos:** para cada h, q=t+h debe existir exactamente, estar disponible
+    77	cuando corresponda y quedar en la MISMA semana operativa: A<=q<B. Tambien
+    78	debe pertenecer al split y cumplir purga/cutoff. Un q de la semana siguiente
+    79	no se acepta por caer otra vez dentro de horario operativo.
+
+=== docs/tres_temas_entrevista/program_v3/BUSINESS_MARKET_WEEK_CONTRACT_2026_10_11.md :96-104
+    96	Aplicar M en TRAIN, inner-validation, VALIDATION y TEST. En direct multi-output
+    97	la mascara es por cabezal: un target largo invalido no borra targets cortos
+    98	validos. Un ejemplo sin ninguna label elegible no contribuye al fit. Un h sin
+    99	soporte no se entrena/puntua como si tuviera error cero. Escalado de target y
+   100	pesos de loss por h se ajustan exclusivamente sobre labels TRAIN elegibles.
+   101	Recalcular la mascara con la semana historica de cada ejemplo, no con la
+   102	semana del ajuste. Seleccionar labels validas ANTES de calcular residuos:
+   103	multiplicar NaN por cero no es enmascaramiento correcto. Normalizar cada loss
+   104	por su numero de labels elegibles y declarar los pesos entre horizontes.
+
+=== docs/tres_temas_entrevista/program_v3/BUSINESS_MARKET_WEEK_CONTRACT_2026_10_11.md :199-201
+   199	calendario y protocolo. U_h es ese conjunto con label observable al puntuar.
+   200	Calcular otra pareja MAE_h/Naive_h con la misma formula y exactamente U_h.
+   201	Persistir conteos, exclusiones y digest de filas de S_h y U_h en el OLAP.
+
+=== docs/tres_temas_entrevista/program_v3/BUSINESS_MARKET_WEEK_CONTRACT_2026_10_11.md :209-213
+   209	Todas las decisiones, calendarios, mascaras/digests, conteos por h, modelo
+   210	semanal, costes y metricas al OLAP con readback y copia fisica. Incluir este
+   211	contrato en la identidad de config/donantes/cache/DEAP/DOIN y resultados.
+   212	El calendario y sus restricciones son condiciones de negocio, no genes que
+   213	el optimizador pueda desactivar para mejorar fitness.
+
+# financial loss/optimizer policy and its registration
+
+=== docs/tres_temas_entrevista/program_v3/FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md :3-12
+     3	Estado: REQUERIMIENTO APROBADO; diseno de aceptacion pendiente de Satoshi.
+     4	Fecha: 2026-09-21. Responsable de ejecucion: Satoshi; revision: Musashi.
+     5	
+     6	## 1. Decision del owner y alcance
+     7	
+     8	Comparar MAE/Huber y Adam/AdamW es OBLIGATORIO en los experimentos de forecasting
+     9	financiero. El piloto electrico no elige ni excluye una receta para trading.
+    10	La propuesta anterior de MAE+AdamW como referencia general queda supersedida:
+    11	no hay ganador financiero. MAE+Adam permanece solo como control de continuidad
+    12	del diagnostico electrico, sin cambiar corridas ya selladas.
+
+=== docs/tres_temas_entrevista/program_v3/FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md :23-28
+    23	Ubicacion: disenar en paralelo a la preparacion E1, ejecutar al disponer de
+    24	datos financieros gobernados y causalmente admisibles, ANTES de fijar la receta
+    25	de las comparaciones financieras de representacion/preentrenamiento. No esperar
+    26	a un supuesto ganador electrico ni sustituir esta tarea por otro piloto publico.
+    27	Esta orden prepara diseno y tests; no lanza entrenamiento cientifico sin el
+    28	protocolo, poblacion y presupuesto previamente fijados y revisados.
+
+=== docs/tres_temas_entrevista/program_v3/FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md :50-52
+    50	- Primero comparar recetas con informacion/arquitectura fijas. Solo despues,
+    51	  congelar la receta por familia de tareas para los contrastes R0/R1/R2 y de
+    52	  representaciones, aplicandola igual al metodo y sus controles.
+
+=== docs/tres_temas_entrevista/program_v3/FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md :77-103
+    77	## 4. Ajuste fino sin usar la reserva
+    78	
+    79	1. Conservar un brazo de defaults EXPLICITOS de la version instalada; no afirmar
+    80	   que reproduce los defaults historicos desconocidos del owner. Registrar
+    81	   delta, learning_rate, decay, betas, epsilon, clipping y politica de precision.
+    82	2. Disenar una busqueda acotada por familia de loss, con presupuesto comparable
+    83	   y declarado. Ajustar LR/decay para ambas perdidas, delta para Huber, usando
+    84	   solo train y validacion temporal interna. No dar mas busqueda oculta a Huber.
+    85	3. Justificar candidatos delta por una escala de residuos obtenida causalmente
+    86	   dentro de train (origenes rodantes), no por residuos del test. Registrar
+    87	   conversion a escala original y fraccion de residuos por debajo de delta.
+    88	   Un unico delta=1 no descarta Huber. Cambiar la escala del target cambia el
+    89	   umbral fisico: controlarlo al variar volumen, transformacion o horizonte.
+    90	4. AdamW: declarar grupos de pesos regularizados y exclusion de bias/norm si
+    91	   aplica; registrar LR schedule y numero observado de updates. El producto
+    92	   acumulado de factores (1 - lr_t * decay) describe la contraccion debida SOLO
+    93	   al decay, no los pesos finales ni el decay optimo. Puede orientar candidatos
+    94	   de regularizacion junto con anchura, datos y duracion, no decidir el ganador.
+    95	   Reglas de escalamiento bajo muP no se trasladan a redes sin esa parametrizacion.
+    96	5. Adecuacion: curvas train/val, paciencia y min_delta en unidades declaradas,
+    97	   checkpoint mejor/restaurado, motivo de parada y actualizaciones reales.
+    98	   No elegir una tolerancia de stopping que haga invisible la mejora buscada;
+    99	   no exigir que cada epoch mejore 1e-6. Un techo alcanzado no prueba convergencia.
+   100	6. Validacion externa walk-forward y reserva sin consultas de seleccion; busqueda
+   101	   anidada y costo total incluidos. No reutilizar como intacto un test historico
+   102	   que ya influyo en decisiones. No descartar colas/extremos reales como ruido
+   103	   para mejorar el score. Preprocesamiento y disponibilidad se prueban antes.
+
+=== docs/tres_temas_entrevista/program_v3/FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md :118-122
+   118	Analisis pareado por semana/origen y semilla, con intervalos que respeten bloques
+   119	temporales; no tratar ventanas solapadas como replicas independientes. Declarar
+   120	busqueda/multiplicidad. Una diferencia pequena incierta queda MEDIDA con su
+   121	intervalo, no eliminada ni promovida como ganancia. Estimar precision/costo desde
+   122	desarrollo antes de fijar replicas; no aumentar muestras hasta obtener un pase.
+75:    "financial_loss_policy": "FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md",
+619:      "id": "FIN-LOSS-OPT",
+
+=== docs/tres_temas_entrevista/program_v3/PROJECT_METHOD_STATE.json :618-628
+   618	    {
+   619	      "id": "FIN-LOSS-OPT",
+   620	      "owner": "M04",
+   621	      "status": "DESIGNED",
+   622	      "depends_on": [
+   623	        "BUSINESS-CONTRACT",
+   624	        "BENCHMARK-CONTRACTS"
+   625	      ],
+   626	      "next_action": "Execute only after the financial data availability contract is satisfied.",
+   627	      "deliverable": "Matched financial loss/optimizer result.",
+   628	      "evidence": []
+
+# inherited fit recipe and inner definition
+
+=== docs/tres_temas_entrevista/program_v3/I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md :117-121
+   117	TRAIN movil de cuatro anos calendario antes del cutoff semanal; inner cuatro
+   118	semanas cronologicas, con purga real de etiquetas por h. AdamW, learning_rate
+   119	0.001, weight_decay 0.0001, Huber segun contrato heredado, batch 256, max_epochs
+   120	50, patience 5, monitor promedio TRAIN/inner-validation, restaurar mejor peso.
+   121	No early stopping con la semana externa. Pesos iniciales iguales entre brazos
+
+=== docs/tres_temas_entrevista/program_v3/I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md :131-136
+   131	VALIDATION es el ano calendario 2024 completo. El calendario nuevo incluye
+   132	**53 segmentos semanales**, con el fragmento final de dos dias; no llamar ano
+   133	completo a los 52 segmentos historicos que terminan el 30 de diciembre.
+   134	TEST 2025 permanece reservado, con sus 53 segmentos y reajustes semanales;
+   135	no se despacha para escoger configuraciones. El primer segmento parcial de
+   136	2025 usa cutoff del lunes anterior, no datos entre ese cutoff y el origen.
+
+=== tools/i6m_prepare.py :63-65
+    63	    fit = dict(batch_size=256, huber_delta=1., learning_rate=.001, loss="huber", max_epochs=50,
+    64	               max_seconds=3600., max_updates=100000, min_delta=0., monitor="train_validation_mean",
+    65	               monitor_every=1, patience=5, weight_decay=.0001)
+
+=== tools/i6m_data.py :48-55
+    48	def partitions(ts, y, week, horizon, require_fit=True):
+    49	    """Purge label endpoints and require all physical input support inside TRAIN."""
+    50	    start, cut = epoch(week["fit_start"]), epoch(week["fit_cutoff"])
+    51	    inner = cut-28*86400
+    52	    valid = np.isfinite(y)
+    53	    support = ts-2*horizon*3600 >= start
+    54	    fit = np.flatnonzero(valid & support & (ts+horizon*3600 < inner))
+    55	    vi = np.flatnonzero(valid & support & (ts >= inner) & (ts+horizon*3600 < cut))
+
+=== tools/modular_candidate_evaluator.py :393-396
+   393	        val_loss /= len(vx)
+   394	        monitor_count += 1
+   395	        monitored_loss = (val_loss if settings["monitor"] == "validation_loss"
+   396	                          else 0.5 * (train_loss / len(x) + val_loss))
+
+# master window default; I6A admission
+
+=== docs/tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md :314-315
+   314	1. Cada rama recibe `(batch, time, channels)` y usa un extractor configurable.
+   315	   El default es Conv1D causal con ventana física mínima de 24 h y salida temporal.
+
+=== docs/tres_temas_entrevista/program_v3/I6A_ARCHITECTURE_CAMPAIGN_2026_10_08.md :50-52
+    50	The TRAIN-2023 week-0 implementation diagnostic completed on 120 identical
+    51	rows. The feature set was selected using later validation, so these numbers
+    52	are **not** prospective model quality evidence:
+
+# original-audit evidence retention facts
+X-A5 entry in EVIDENCE_MANIFEST.json:
+50:   "id": "X-A5",
+51-   "what": "20 features == union of 14 EURUSD FS4 weekly winners (set equality True)",
+52-   "script": "sub-auditor A inline check",
+53-   "output": "reported in DICTAMEN AUD-01",
+54-   "limit": "source manifests are in the local state directory, not in git"
+X-F1 entry in EVIDENCE_MANIFEST.json:
+64:   "id": "X-F1",
+65-   "what": "one read-only resource snapshot per host role; QUEUE.db read-only counts; 266 seal and receipt digests",
+66-   "script": "sub-auditor F inline commands",
+67-   "output": "reported in AUD-23, AUD-32"
+68-  }
+occurrences of '1.6e6' in retained probe outputs: 0
+strategy .out lines: 24
+strategy .out duplicated lines (count>1):
+  entry is order-blind across long horizons: True
+  entry with ONE finite long (others NaN): ('long', 1.1045, 1.0998, 50.0)
+  variant A over 200 random horizon permutations: distinct decisions = {True}
+    variant A: TP@2h/SL@12h -> close=True; SL@2h/TP@12h -> close=True; identical=True
+    variant B: TP@2h/SL@12h -> close=False; SL@2h/TP@12h -> close=False; identical=True
+    variant C: TP@2h/SL@12h -> close=True; SL@2h/TP@12h -> close=True; identical=True
+    variant D: TP@2h/SL@12h -> close=False; SL@2h/TP@12h -> close=False; identical=True
+    variant E: TP@2h/SL@12h -> close=False; SL@2h/TP@12h -> close=False; identical=True
+    variant F: TP@2h/SL@12h -> close=False; SL@2h/TP@12h -> close=False; identical=True
+    variant G: TP@2h/SL@12h -> close=False; SL@2h/TP@12h -> close=False; identical=True
+string 'has no short argument' in retained script: 0
+string 'has no short argument' in retained output: 1
+variants with close=True in BOTH scenarios (informative for time order):
+    variant A: TP@2h/SL@12h -> close=True; SL@2h/TP@12h -> close=True; identical=True
+    variant C: TP@2h/SL@12h -> close=True; SL@2h/TP@12h -> close=True; identical=True
+    variant A: TP@2h/SL@12h -> close=True; SL@2h/TP@12h -> close=True; identical=True
+    variant C: TP@2h/SL@12h -> close=True; SL@2h/TP@12h -> close=True; identical=True
+variants with close=False in BOTH scenarios (no early close triggered, uninformative):
+10
+cde probe: weights are random (seeded) in stride probe:
+20:tf.keras.utils.set_random_seed(0)
+22:    return K.layers.Conv1D(4, k, strides=2, padding=kind)(x)
+cde probe: ClockView origin position is arithmetic, not a call into the model code:
+52:def pos_t(n, spacing): return (n - 1) * spacing
+market weeks with A in 2024 (assumed calendar):
+152:## VALIDATION-2024 market weeks with A in 2024: 53

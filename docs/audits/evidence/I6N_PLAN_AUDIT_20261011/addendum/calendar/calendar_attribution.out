@@ -1,0 +1,166 @@
+# calendar_attribution.py
+input_archive_sha256=897caee164286bedea61c4caab361213cf703d3f50e60ba12cee543d9bfa28c9 ts_member_sha256=a094d14130df31233ac6e4d7546e565bf7392e26ceded16b11e8442584e190bf rows=77977 first=Tue 2012-05-01 00:00 UTC last=Tue 2024-12-31 22:00 UTC
+audited_module tools/i6e_horizon_plan.py sha256=5f6a06d490462d70c70d972a1a0bad575587008f9a2141ed40ea9890a8837ff2
+audited_module tools/i6m_data.py sha256=e4ed00fca63d29109aa57ce239c77499e0d230ea3989ff25b0a0d87bf2f1ffdf
+i6em_design_sha256=c58e9223d9849d59b882991eeb6f7e56564625ce4dfdfdbeeff36096601d0b03
+
+## 1. Calendar-independent identities (checked on every week of every calendar)
+management_E == max(0,(B-A)-h); entry_E == max(0,min(cut-A,(B-A)-h)); last origin has R(t)=B-t=h+1 (strict h<R); min #longs over entry origins == #{h in LONG: h < (B-cut)+1}: 19 calendars, 2014 week-instances, 12 h, violations=0
+
+## 2. Primary calendars: VALIDATION 2024 (weeks with A in 2024)
+
+### NY_f12_e12_THU_0000: weeks=53 B-A hist={96: 53} A->entry_end hist={67: 53}
+h72 management slot (NY local, first..last origin) hist={'Mon 05:00..Tue 04:00': 53}
+h	mgmt_E	mgmt_M	entry_E	entry_M	mgmt_E_t+h>=2025	entry_E_t+h>=2025	weeks_mgmt_M=0
+2	4982	4885	3551	3481	58	31	0
+3	4929	4830	3551	3478	58	32	0
+4	4876	4777	3551	3477	58	33	0
+5	4823	4723	3551	3475	58	34	0
+6	4770	4669	3551	3473	58	35	0
+12	4452	4345	3551	3461	58	41	0
+18	4134	4025	3551	3453	58	47	0
+24	3816	3707	3551	3447	58	53	0
+36	3180	3073	3180	3073	58	58	0
+48	2544	2464	2544	2464	48	48	1
+60	1908	1856	1908	1856	36	36	1
+72	1272	1234	1272	1234	24	24	1
+normal week 2024-06-09: A=Mon 2024-06-10 05:00 EDT cut=Thu 2024-06-13 00:00 EDT B=Fri 2024-06-14 05:00 EDT; mgmt_E per h=2:94,3:93,4:92,5:91,6:90,12:84,18:78,24:72,36:60,48:48,60:36,72:24; entry_E per h=2:67,3:67,4:67,5:67,6:67,12:67,18:67,24:67,36:60,48:48,60:36,72:24
+normal week entry-origin count by #valid longs={2: 7, 3: 12, 4: 12, 5: 12, 6: 24}; VALIDATION entry long availability={'min': 2, 'origins_with_lt2_longs': 0, 'origins_with_0_longs': 0}
+first VALIDATION week sunday=2023-12-31 O=Sun 2023-12-31 17:00 EST A=Mon 2024-01-01 05:00 EST B=Fri 2024-01-05 05:00 EST: h72 mgmt E/M=24/11; h60 E/M=36/23
+last VALIDATION week sunday=2024-12-29 A=Mon 2024-12-30 05:00 EST B=Fri 2025-01-03 05:00 EST C=Fri 2025-01-03 17:00 EST hybrid_C_from_NY=False: mgmt_E (t+h>=2025) per h=2:94(58),3:93(58),4:92(58),5:91(58),6:90(58),12:84(58),18:78(58),24:72(58),36:60(58),48:48(48),60:36(36),72:24(24)
+  decomposition of the straddling week, management role, per h: origin2024&target2024 / origin2024&target2025 (straddle) / origin2025 (TEST time)
+  2:36/2/56; 3:35/3/55; 4:34/4/54; 5:33/5/53; 6:32/6/52; 12:26/12/46; 18:20/18/40; 24:14/24/34; 36:2/36/22; 48:0/38/10; 60:0/36/0; 72:0/24/0
+  same, entry role: 2:36/2/29; 3:35/3/29; 4:34/4/29; 5:33/5/29; 6:32/6/29; 12:26/12/29; 18:20/18/29; 24:14/24/29; 36:2/36/22; 48:0/38/10; 60:0/36/0; 72:0/24/0
+illustrative 2023 inner weeks ['2023-02-12', '2023-05-14', '2023-08-13', '2023-11-12'] (found 4): h72 mgmt E=96 M=87
+
+### OBS-END_f12_e12_THU_0000: weeks=53 B-A hist={72: 1, 95: 1, 96: 51} A->entry_end hist={43: 1, 67: 49, 68: 3}
+h72 management slot (NY local, first..last origin) hist={'Mon 04:00..Tue 03:00': 3, 'Mon 05:00..Tue 03:00': 1, 'Mon 05:00..Tue 04:00': 48}
+h	mgmt_E	mgmt_M	entry_E	entry_M	mgmt_E_t+h>=2025	entry_E_t+h>=2025	weeks_mgmt_M=0
+2	4957	4873	3530	3473	58	31	0
+3	4904	4818	3530	3470	58	32	0
+4	4851	4765	3530	3469	58	33	0
+5	4798	4711	3530	3467	58	34	0
+6	4745	4657	3530	3465	58	35	0
+12	4427	4333	3530	3453	58	41	0
+18	4109	4013	3530	3445	58	47	0
+24	3791	3695	3530	3439	58	53	0
+36	3155	3061	3155	3061	58	58	0
+48	2519	2452	2519	2452	48	48	1
+60	1883	1844	1883	1844	36	36	1
+72	1247	1222	1247	1222	24	24	2
+normal week 2024-06-09: A=Mon 2024-06-10 05:00 EDT cut=Thu 2024-06-13 00:00 EDT B=Fri 2024-06-14 05:00 EDT; mgmt_E per h=2:94,3:93,4:92,5:91,6:90,12:84,18:78,24:72,36:60,48:48,60:36,72:24; entry_E per h=2:67,3:67,4:67,5:67,6:67,12:67,18:67,24:67,36:60,48:48,60:36,72:24
+normal week entry-origin count by #valid longs={2: 7, 3: 12, 4: 12, 5: 12, 6: 24}; VALIDATION entry long availability={'min': 2, 'origins_with_lt2_longs': 0, 'origins_with_0_longs': 0}
+first VALIDATION week sunday=2023-12-31 O=Mon 2024-01-01 17:00 EST A=Tue 2024-01-02 05:00 EST B=Fri 2024-01-05 05:00 EST: h72 mgmt E/M=0/0; h60 E/M=12/12
+  week deviating from this calendar's modal (B-A, A->entry_end)=(96, 67): {'sunday': '2023-12-31', 'O': 'Mon 2024-01-01 17:00 EST', 'C': 'Fri 2024-01-05 17:00 EST', 'B_minus_A': 72, 'A_to_entry_end': 43, 'hybrid': False, 'n_bars': 96}
+  week deviating from this calendar's modal (B-A, A->entry_end)=(96, 67): {'sunday': '2024-03-10', 'O': 'Sun 2024-03-10 16:00 EDT', 'C': 'Fri 2024-03-15 16:00 EDT', 'B_minus_A': 96, 'A_to_entry_end': 68, 'hybrid': False, 'n_bars': 120}
+  week deviating from this calendar's modal (B-A, A->entry_end)=(96, 67): {'sunday': '2024-03-17', 'O': 'Sun 2024-03-17 16:00 EDT', 'C': 'Fri 2024-03-22 16:00 EDT', 'B_minus_A': 96, 'A_to_entry_end': 68, 'hybrid': False, 'n_bars': 120}
+  week deviating from this calendar's modal (B-A, A->entry_end)=(96, 67): {'sunday': '2024-03-24', 'O': 'Sun 2024-03-24 16:00 EDT', 'C': 'Fri 2024-03-29 16:00 EDT', 'B_minus_A': 96, 'A_to_entry_end': 68, 'hybrid': False, 'n_bars': 120}
+  week deviating from this calendar's modal (B-A, A->entry_end)=(96, 67): {'sunday': '2024-10-27', 'O': 'Sun 2024-10-27 17:00 EDT', 'C': 'Fri 2024-11-01 16:00 EDT', 'B_minus_A': 95, 'A_to_entry_end': 67, 'hybrid': False, 'n_bars': 119}
+last VALIDATION week sunday=2024-12-29 A=Mon 2024-12-30 05:00 EST B=Fri 2025-01-03 05:00 EST C=Fri 2025-01-03 17:00 EST hybrid_C_from_NY=True: mgmt_E (t+h>=2025) per h=2:94(58),3:93(58),4:92(58),5:91(58),6:90(58),12:84(58),18:78(58),24:72(58),36:60(58),48:48(48),60:36(36),72:24(24)
+  decomposition of the straddling week, management role, per h: origin2024&target2024 / origin2024&target2025 (straddle) / origin2025 (TEST time)
+  2:36/2/56; 3:35/3/55; 4:34/4/54; 5:33/5/53; 6:32/6/52; 12:26/12/46; 18:20/18/40; 24:14/24/34; 36:2/36/22; 48:0/38/10; 60:0/36/0; 72:0/24/0
+  same, entry role: 2:36/2/29; 3:35/3/29; 4:34/4/29; 5:33/5/29; 6:32/6/29; 12:26/12/29; 18:20/18/29; 24:14/24/29; 36:2/36/22; 48:0/38/10; 60:0/36/0; 72:0/24/0
+illustrative 2023 inner weeks ['2023-02-12', '2023-05-14', '2023-08-13', '2023-11-12'] (found 4): h72 mgmt E=96 M=87
+
+### OBS-OPEN_f12_e12_THU_0000: weeks=53 B-A hist={72: 1, 95: 2, 96: 50} A->entry_end hist={42: 1, 66: 49, 67: 3}
+h72 management slot (NY local, first..last origin) hist={'Mon 05:00..Tue 04:00': 3, 'Mon 06:00..Tue 04:00': 2, 'Mon 06:00..Tue 05:00': 47}
+h	mgmt_E	mgmt_M	entry_E	entry_M	mgmt_E_t+h>=2025	entry_E_t+h>=2025	weeks_mgmt_M=0
+2	4956	4872	3477	3420	58	31	0
+3	4903	4817	3477	3417	58	32	0
+4	4850	4764	3477	3416	58	33	0
+5	4797	4710	3477	3414	58	34	0
+6	4744	4656	3477	3412	58	35	0
+12	4426	4332	3477	3400	58	41	0
+18	4108	4012	3477	3392	58	47	0
+24	3790	3694	3477	3386	58	53	0
+36	3154	3060	3154	3060	58	58	1
+48	2518	2452	2518	2452	47	47	1
+60	1882	1844	1882	1844	35	35	1
+72	1246	1222	1246	1222	23	23	2
+normal week 2024-06-09: A=Mon 2024-06-10 06:00 EDT cut=Thu 2024-06-13 00:00 EDT B=Fri 2024-06-14 06:00 EDT; mgmt_E per h=2:94,3:93,4:92,5:91,6:90,12:84,18:78,24:72,36:60,48:48,60:36,72:24; entry_E per h=2:66,3:66,4:66,5:66,6:66,12:66,18:66,24:66,36:60,48:48,60:36,72:24
+normal week entry-origin count by #valid longs={2: 6, 3: 12, 4: 12, 5: 12, 6: 24}; VALIDATION entry long availability={'min': 2, 'origins_with_lt2_longs': 0, 'origins_with_0_longs': 0}
+first VALIDATION week sunday=2023-12-31 O=Mon 2024-01-01 18:00 EST A=Tue 2024-01-02 06:00 EST B=Fri 2024-01-05 06:00 EST: h72 mgmt E/M=0/0; h60 E/M=12/12
+  week deviating from this calendar's modal (B-A, A->entry_end)=(96, 66): {'sunday': '2023-12-31', 'O': 'Mon 2024-01-01 18:00 EST', 'C': 'Fri 2024-01-05 18:00 EST', 'B_minus_A': 72, 'A_to_entry_end': 42, 'hybrid': False, 'n_bars': 96}
+  week deviating from this calendar's modal (B-A, A->entry_end)=(96, 66): {'sunday': '2024-03-10', 'O': 'Sun 2024-03-10 17:00 EDT', 'C': 'Fri 2024-03-15 17:00 EDT', 'B_minus_A': 96, 'A_to_entry_end': 67, 'hybrid': False, 'n_bars': 120}
+  week deviating from this calendar's modal (B-A, A->entry_end)=(96, 66): {'sunday': '2024-03-17', 'O': 'Sun 2024-03-17 17:00 EDT', 'C': 'Fri 2024-03-22 17:00 EDT', 'B_minus_A': 96, 'A_to_entry_end': 67, 'hybrid': False, 'n_bars': 120}
+  week deviating from this calendar's modal (B-A, A->entry_end)=(96, 66): {'sunday': '2024-03-24', 'O': 'Sun 2024-03-24 17:00 EDT', 'C': 'Fri 2024-03-29 17:00 EDT', 'B_minus_A': 96, 'A_to_entry_end': 67, 'hybrid': False, 'n_bars': 120}
+  week deviating from this calendar's modal (B-A, A->entry_end)=(96, 66): {'sunday': '2024-10-27', 'O': 'Sun 2024-10-27 18:00 EDT', 'C': 'Fri 2024-11-01 17:00 EDT', 'B_minus_A': 95, 'A_to_entry_end': 66, 'hybrid': False, 'n_bars': 119}
+  week deviating from this calendar's modal (B-A, A->entry_end)=(96, 66): {'sunday': '2024-12-29', 'O': 'Sun 2024-12-29 18:00 EST', 'C': 'Fri 2025-01-03 17:00 EST', 'B_minus_A': 95, 'A_to_entry_end': 66, 'hybrid': True, 'n_bars': 48}
+last VALIDATION week sunday=2024-12-29 A=Mon 2024-12-30 06:00 EST B=Fri 2025-01-03 05:00 EST C=Fri 2025-01-03 17:00 EST hybrid_C_from_NY=True: mgmt_E (t+h>=2025) per h=2:93(58),3:92(58),4:91(58),5:90(58),6:89(58),12:83(58),18:77(58),24:71(58),36:59(58),48:47(47),60:35(35),72:23(23)
+  decomposition of the straddling week, management role, per h: origin2024&target2024 / origin2024&target2025 (straddle) / origin2025 (TEST time)
+  2:35/2/56; 3:34/3/55; 4:33/4/54; 5:32/5/53; 6:31/6/52; 12:25/12/46; 18:19/18/40; 24:13/24/34; 36:1/36/22; 48:0/37/10; 60:0/35/0; 72:0/23/0
+  same, entry role: 2:35/2/29; 3:34/3/29; 4:33/4/29; 5:32/5/29; 6:31/6/29; 12:25/12/29; 18:19/18/29; 24:13/24/29; 36:1/36/22; 48:0/37/10; 60:0/35/0; 72:0/23/0
+illustrative 2023 inner weeks ['2023-02-12', '2023-05-14', '2023-08-13', '2023-11-12'] (found 4): h72 mgmt E=96 M=87
+
+## 3. Sensitivity grid (offsets f=e in {6,12,18}, entry cut in {WED_1200,THU_0000,THU_1200} NY)
+calendar	val_weeks	B-A_hist	A->entry_end_hist	B-entry_end_hist	mgmt_E_h72	mgmt_M_h72	mgmt_M_h48	mgmt_M_h18	entry_M_h18	min_longs_entry	entry_origins_<2_longs	entry_origins_0_longs	h72_t+h>=2025	h2_t+h>=2025	inner2023_h72_E/M	first_week_h72_E
+NY_f6_e6_WED_1200	53	{108: 53}	{61: 53}	{47: 53}	1908	1852	3075	4649	3147	3	0	0	36	64	144/131	36
+OBS-END_f6_e6_WED_1200	53	{84: 1, 107: 1, 108: 51}	{37: 1, 61: 49, 62: 3}	{46: 4, 47: 49}	1883	1846	3069	4643	3145	3	0	0	36	64	144/131	12
+NY_f6_e6_THU_0000	53	{108: 53}	{73: 53}	{35: 53}	1908	1852	3075	4649	3765	2	0	0	36	64	144/131	36
+OBS-END_f6_e6_THU_0000	53	{84: 1, 107: 1, 108: 51}	{49: 1, 73: 49, 74: 3}	{34: 4, 35: 49}	1883	1846	3069	4643	3763	2	0	0	36	64	144/131	12
+NY_f6_e6_THU_1200	53	{108: 53}	{85: 53}	{23: 53}	1908	1852	3075	4649	4389	1	53	0	36	64	144/131	36
+OBS-END_f6_e6_THU_1200	53	{84: 1, 107: 1, 108: 51}	{61: 1, 85: 49, 86: 3}	{22: 4, 23: 49}	1883	1846	3069	4643	4387	1	57	0	36	64	144/131	12
+NY_f12_e12_WED_1200	53	{96: 53}	{55: 53}	{41: 53}	1272	1234	2464	4025	2835	3	0	0	24	58	96/87	24
+OBS-END_f12_e12_WED_1200	53	{72: 1, 95: 1, 96: 51}	{31: 1, 55: 49, 56: 3}	{40: 4, 41: 49}	1247	1222	2452	4013	2827	3	0	0	24	58	96/87	0
+NY_f12_e12_THU_0000	53	{96: 53}	{67: 53}	{29: 53}	1272	1234	2464	4025	3453	2	0	0	24	58	96/87	24
+OBS-END_f12_e12_THU_0000	53	{72: 1, 95: 1, 96: 51}	{43: 1, 67: 49, 68: 3}	{28: 4, 29: 49}	1247	1222	2452	4013	3445	2	0	0	24	58	96/87	0
+NY_f12_e12_THU_1200	53	{96: 53}	{79: 53}	{17: 53}	1272	1234	2464	4025	4025	0	371	53	24	58	96/87	24
+OBS-END_f12_e12_THU_1200	53	{72: 1, 95: 1, 96: 51}	{55: 1, 79: 49, 80: 3}	{16: 4, 17: 49}	1247	1222	2452	4013	4013	0	375	57	24	58	96/87	0
+NY_f18_e18_WED_1200	53	{84: 53}	{49: 53}	{35: 53}	636	616	1853	3401	2523	2	0	0	12	52	48/42	12
+OBS-END_f18_e18_WED_1200	53	{60: 1, 83: 1, 84: 51}	{25: 1, 49: 49, 50: 3}	{34: 4, 35: 49}	623	610	1835	3383	2509	2	0	0	12	52	48/42	0
+NY_f18_e18_THU_0000	53	{84: 53}	{61: 53}	{23: 53}	636	616	1853	3401	3141	1	53	0	12	52	48/42	12
+OBS-END_f18_e18_THU_0000	53	{60: 1, 83: 1, 84: 51}	{37: 1, 61: 49, 62: 3}	{22: 4, 23: 49}	623	610	1835	3383	3127	1	57	0	12	52	48/42	0
+NY_f18_e18_THU_1200	53	{84: 53}	{73: 53}	{11: 53}	636	616	1853	3401	3401	0	689	371	12	52	48/42	12
+OBS-END_f18_e18_THU_1200	53	{60: 1, 83: 1, 84: 51}	{49: 1, 73: 49, 74: 3}	{10: 4, 11: 49}	623	610	1835	3383	3383	0	693	375	12	52	48/42	0
+OBS-OPEN_f12_e12_THU_0000	53	{72: 1, 95: 2, 96: 50}	{42: 1, 66: 49, 67: 3}	{29: 5, 30: 48}	1246	1222	2452	4012	3392	2	0	0	23	58	96/87	0
+
+## 4. I6-E segments (tools/i6e_horizon_plan.py weekly_schedule(2024)) and scoring rows (tools/i6m_data.py partitions)
+n_segments=53 first={'ordinal': 0, 'fit_start': '2020-01-01T00:00:00Z', 'fit_cutoff': '2024-01-01T00:00:00Z', 'score_start': '2024-01-01T00:00:00Z', 'score_end': '2024-01-08T00:00:00Z'} last={'ordinal': 52, 'fit_start': '2020-12-30T00:00:00Z', 'fit_cutoff': '2024-12-30T00:00:00Z', 'score_start': '2024-12-30T00:00:00Z', 'score_end': '2025-01-01T00:00:00Z'} DESIGN.json weeks identical=True
+h	I6E_rows(recomputed)	DESIGN_n	rows_sha256_match	last_segment_rows	segments_with_0_rows
+2	6130	6130	True	45	0
+3	6076	6076	True	44	0
+4	6023	6023	True	43	0
+5	5969	5969	True	42	0
+6	5915	5915	True	41	0
+24	4953	4953	True	23	0
+48	3685	3685	True	0	1
+72	3712	3712	True	0	1
+
+### NY_f12_e12_THU_0000: segments whose fit_cutoff (Mon 00:00 UTC) is after market O = 53 of 53; observed bars with O < label < fit_cutoff summed over segments = 86
+h	I6E_rows	of_which_WMC_mgmt_eligible	of_which_NOT_eligible
+2	6130	4885	1245
+3	6076	4830	1246
+4	6023	4777	1246
+5	5969	4723	1246
+6	5915	4669	1246
+24	4953	3707	1246
+48	3685	2464	1221
+72	3712	1234	2478
+last I6-E segment (2-day fragment) vs straddling market week(s) ['2024-12-29']: h: week_mgmt_E / origins inside the fragment / t+h>=2025
+  2:94/38/58; 3:93/38/58; 4:92/38/58; 5:91/38/58; 6:90/38/58; 12:84/38/58; 18:78/38/58; 24:72/38/58; 36:60/38/58; 48:48/38/48; 60:36/36/36; 72:24/24/24
+
+### OBS-END_f12_e12_THU_0000: segments whose fit_cutoff (Mon 00:00 UTC) is after market O = 52 of 53; observed bars with O < label < fit_cutoff summed over segments = 89
+h	I6E_rows	of_which_WMC_mgmt_eligible	of_which_NOT_eligible
+2	6130	4873	1257
+3	6076	4818	1258
+4	6023	4765	1258
+5	5969	4711	1258
+6	5915	4657	1258
+24	4953	3695	1258
+48	3685	2452	1233
+72	3712	1222	2490
+last I6-E segment (2-day fragment) vs straddling market week(s) ['2024-12-29']: h: week_mgmt_E / origins inside the fragment / t+h>=2025
+  2:94/38/58; 3:93/38/58; 4:92/38/58; 5:91/38/58; 6:90/38/58; 12:84/38/58; 18:78/38/58; 24:72/38/58; 36:60/38/58; 48:48/38/48; 60:36/36/36; 72:24/24/24
+
+### OBS-OPEN_f12_e12_THU_0000: segments whose fit_cutoff (Mon 00:00 UTC) is after market O = 52 of 53; observed bars with O < label < fit_cutoff summed over segments = 89
+h	I6E_rows	of_which_WMC_mgmt_eligible	of_which_NOT_eligible
+2	6130	4872	1258
+3	6076	4817	1259
+4	6023	4764	1259
+5	5969	4710	1259
+6	5915	4656	1259
+24	4953	3694	1259
+48	3685	2452	1233
+72	3712	1222	2490
+last I6-E segment (2-day fragment) vs straddling market week(s) ['2024-12-29']: h: week_mgmt_E / origins inside the fragment / t+h>=2025
+  2:93/37/58; 3:92/37/58; 4:91/37/58; 5:90/37/58; 6:89/37/58; 12:83/37/58; 18:77/37/58; 24:71/37/58; 36:59/37/58; 48:47/37/47; 60:35/35/35; 72:23/23/23

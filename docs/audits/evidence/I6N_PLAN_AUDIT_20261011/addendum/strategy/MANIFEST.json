@@ -1,0 +1,98 @@
+{
+ "command": "bash run_strategy_addendum.sh  (from this directory; each python step wrapped in crispdm-run -q -m 1G -t 10m -n i6n-add-strategy)",
+ "cpu_only": true,
+ "files": {
+  "README.md": "a854d0066f65fbedbbfdf95d5d37933a0469f0db06a3c12fcdeb682a9b7fbfe7",
+  "counterexample_v2.py": "017838c233adafb19072b0debb6347aa4f383e84212577197e9633f3630d5489",
+  "cx_v2_hs_plugin_checkout.out": "0f88445f0adea0804f8dda4481842f73c70d04169034321b48cb796b8aa4340d",
+  "cx_v2_hs_policy_checkout.out": "266bf85af0553e48db7ea585607731342503651c5c5274c2b704ebf27c3a5fa5",
+  "cx_v2_legacy_plugin_base_site_packages.out": "8d07bf2e032fa4aef12a5b0f73b512b98b9d00b578380a026790bf3e9f42ffd8",
+  "cx_v2_lts_copy.out": "242239e2a4c506f4de5470663e428750d199ba6dcca49a89ec1f3c126e9082c5",
+  "inspect_sources_and_executors.out": "1c9388e1c4f21f8a39b421e693963453da76ba242ec7427d09a571c44a2eed37",
+  "inspect_sources_and_executors.sh": "367b4a786461abc1f685015dd39a5a4d2b4aac4c5682225506c7ab08fead9620",
+  "original_probe_clean_rerun.out": "be7eb63df1be57df06a9b8df06a256d457cd4d99b5651ffe20fb90d080414035",
+  "reconcile_original_out.out": "6a16f8add5347b82b17d8d6c0b841e6f21b7001b91b2024ec69aec575996739b",
+  "reconcile_original_out.sh": "889205a78da9e32268af3d500d461b762b81e56dad041951ace45093df7bae9a",
+  "resolve_effective_plugin.out": "2e40804a4b934dc60a6ef148a030edfe79bd478254d801c18b337a18f8048a16",
+  "resolve_effective_plugin.py": "8a4648e554814836e8068e10bdf87b973a740353ea88dd8ad29698968e1905a5",
+  "run_strategy_addendum.sh": "9820a25613c6ee60b4b659621ff0fa6683f0f7e501d09107ffee233188badc2a",
+  "stub/trading_contracts.py": "9e208a30cf9a3ec5169539b41eb81701bf533f070ea28f6ae500c878047ee538"
+ },
+ "finding": "I6N-AUD-02",
+ "host_role": "coordinator",
+ "inputs": [
+  {
+   "blob": "094058959bd50b2947a0bbefd014d3bf6da5fb11",
+   "commit": "79977b2197a5cc6cec2801032054341e3c88e5ca",
+   "path": "$GH/heuristic-strategy/app/policies/prediction_entry_exit.py",
+   "repo": "heuristic-strategy",
+   "role": "inspected policy (identical blob at master a213b65 and origin/master 5c87a25)",
+   "sha256": "16394e2f0d6e358d2acc60e8e2f4ce221224adc452524316dfcaa3d9e6bff9d7"
+  },
+  {
+   "blob": "3a19b3f73917a9714d496d10a719135c9810c3ce",
+   "commit": "79977b2197a5cc6cec2801032054341e3c88e5ca",
+   "path": "$GH/heuristic-strategy/app/plugins/plugin_long_short_predictions.py",
+   "repo": "heuristic-strategy",
+   "role": "inspected plugin",
+   "sha256": "1a835feeceffc6b38ddf6613fe1c76e11dda1ab6fdb641928fe319d29e8975a1"
+  },
+  {
+   "path": "$CONDA_BASE/lib/python3.12/site-packages/app/plugins/plugin_long_short_predictions.py",
+   "role": "base-env installed copy (heuristic_strategy 0.1.0, mtime 2025-03-14)",
+   "sha256": "3e1ebec1e7cececbcf9b05c475e671d20438fc29ed6384adfdb1bcf4a896aa92"
+  },
+  {
+   "blob": "b8aee0ddd9f6561f7a23627d790e606b6622d2b7",
+   "commit": "12bce5f2c4fe2ab0e6a7433d7208d9e05a9cffaa",
+   "path": "$GH/lts/plugins_strategy/heuristic_strategy.py",
+   "repo": "lts",
+   "role": "lts copied logic",
+   "sha256": "954318e832fa890cdc146fc35f894d485b02bcde4d691a83eef439785658f7d4"
+  },
+  {
+   "path": "docs/handoffs/I6N_STRICT_INDEPENDENT_PLAN_AUDIT_REQUEST_2026_10_11.md",
+   "repo": "predictor worktree predictor-i6d-weekly (uncommitted over 269c2d13)",
+   "role": "owner requirement 3.1",
+   "sha256": "2e060f7d27b4ee74ead00e3f7987269892f0fa57490dcd8b55530c9cde5c605f"
+  },
+  {
+   "path": "docs/tres_temas_entrevista/program_v3/BUSINESS_MARKET_WEEK_CONTRACT_2026_10_11.md",
+   "repo": "predictor worktree predictor-i6d-weekly (uncommitted over 269c2d13)",
+   "role": "MWC (no fill :127, masks, two-long proposal :150-151, executor liquidation section 4)",
+   "sha256": "604f94809c41613e7346ed630d698591fadd7ecc9961b9e3cb04fcad00c01c76"
+  },
+  {
+   "path": "docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md",
+   "repo": "predictor worktree predictor-i6d-weekly (uncommitted over 269c2d13)",
+   "role": "audited proposal",
+   "sha256": "d4341e72f4fc05531cfcffd5036c1968d522a105fa534d2add0ae2d10eb56487"
+  },
+  {
+   "commit": "4d3af09d",
+   "path": "docs/audits/evidence/I6N_PLAN_AUDIT_20261011/probes/a/strategy_counterexample.py",
+   "repo": "predictor branch satoshi/i6n-plan-audit-20261011",
+   "role": "original probe (unchanged)",
+   "sha256": "15970757c03e39864b9abfde77588aaff4f6b6c8497129e237b328db8d6fab78"
+  },
+  {
+   "commit": "4d3af09d",
+   "path": "docs/audits/evidence/I6N_PLAN_AUDIT_20261011/probes/a/strategy_counterexample.out",
+   "repo": "predictor branch satoshi/i6n-plan-audit-20261011",
+   "role": "original output (unchanged)",
+   "sha256": "d9e1399f7dc862e09e9445217796b5c968ef67356e3b7c1865a4d696b134a2a7"
+  }
+ ],
+ "interpreters": {
+  "base": "$CONDA_BASE/bin/python3 (3.12.7)",
+  "trading-stack": "$CONDA_BASE/envs/trading-stack/bin/python (3.12.13)",
+  "venvs": "~/.venvs/{feature-eng,feature-extractor,store-hosts}/bin/python"
+ },
+ "lane": "strategy",
+ "market_data_read": "none (synthetic prices only; no TEST rows, no dataset rows)",
+ "owner_point": "6b",
+ "run_window_utc": [
+  "2026-10-11T12:16:04Z",
+  "2026-10-11T12:16:24Z"
+ ]
+}

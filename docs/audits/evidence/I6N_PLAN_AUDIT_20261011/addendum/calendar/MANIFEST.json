@@ -1,0 +1,30 @@
+{
+ "schema": "i6n.plan_audit.addendum.calendar.manifest.v1",
+ "run_date": "2026-10-11",
+ "base_audit_commit": "4d3af09d0bb1e45691388e02dc0ab77d96257da7",
+ "files_sha256": {
+  "ADDENDUM_CALENDAR.md": "8870d4ffa04d069106fb59c1a52c07b6cb33258ceb4f2df17d7dbef80c8972ab",
+  "COMMANDS.sh": "24ce18644343e38cb09691ec29b05701ee1fb22f80527b89711dfd34bd3ca781",
+  "INPUTS.json": "eb4cd5dafec82007d404f7f96562de2f918d325d65a158111b78d89ae5869be3",
+  "bar_label_check.out": "fc37e15f05684af6581aa7d063cb4aac033db382f87894acdd194241c924f026",
+  "bar_label_check.py": "a88d30bb7334eb71f50077b36b223588f8d9c579263d21a82f7e9ff48977bc3f",
+  "calendar_attribution.json": "170b6cd4696e330c7b88a00d7a4243dbeb7e4fb3ed3d8dffae5c65bd8e4c5ea7",
+  "calendar_attribution.out": "4cdd97b0c11c1de65fb2fee8ce9ce476d9e48d2f0df300058129e790ff2d65b2",
+  "calendar_attribution.py": "490b32efcf7e45127d5e50135904ebf6be2f998e1efd15cb2f5958639f0934df",
+  "identify_input.out": "6a04686d0f32fa7b1e4e242e683fd36544f5a3a400fd876d0d477d3b70a61226",
+  "identify_input.py": "6355a0f91e556e7e924ce327470bd837db2f60637f14a4a021fac5b77e678d20",
+  "rerun_bar_clock.out": "14090efab42a344f60435ecf69bfec59a1678d032701e664e8b6b7a889cc1f8d",
+  "rerun_gaps_2024.out": "fe3b12a9f38017df451718e4afa914ccf7c2514c364bf48575d11fbe7bbc1afb",
+  "rerun_wmc_calendar.json": "f7e7e23daa4f28091459090ec5ee97d57c790feeaf6fe65d06c8685e026f1113",
+  "rerun_wmc_calendar.out": "170157540fa705387d950654a8ef89f73110c6c805eef2fb5d252be43edce3bc"
+ },
+ "reproduction": {
+  "rerun_bar_clock.out": "byte-identical to probes/a/bar_clock.out",
+  "rerun_gaps_2024.out": "byte-identical to probes/a/gaps_2024.out",
+  "rerun_wmc_calendar.out": "byte-identical to probes/a/wmc_calendar.out",
+  "rerun_wmc_calendar.json": "byte-identical to probes/a/wmc_calendar.json",
+  "calendar_attribution.out/.json": "second run byte-identical",
+  "bar_label_check.out": "second run byte-identical",
+  "identify_input.out": "second run byte-identical"
+ }
+}

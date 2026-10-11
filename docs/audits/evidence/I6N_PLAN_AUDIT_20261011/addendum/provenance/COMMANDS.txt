@@ -1,0 +1,43 @@
+I6N-AUD-01 addendum, lane provenance (owner points 1 and 2)
+Run date (UTC): 2026-10-11T12:11:55Z (the run_utc line of provenance_check.out)
+Branch satoshi/i6n-plan-audit-20261011, on top of 4d3af09d. The audited code and docs are at commit 269c2d13.
+Runtime: CPU only, python 3.12.7, numpy 1.26.4, pyarrow 16.1.0. No model was trained and no service was started or stopped.
+
+Command, run from the root of the audit worktree.
+STATE is ~/.local/state. DRAFT is the audited draft worktree, which holds uncommitted edits over 269c2d13.
+
+  D=docs/audits/evidence/I6N_PLAN_AUDIT_20261011/addendum/provenance
+  CUDA_VISIBLE_DEVICES="" STATE=~/.local/state \
+  crispdm-run -q -m 2G -t 15m -n i6n-add-provenance -- \
+    python3 $D/provenance_check.py --draft "$DRAFT" --commit 269c2d13 --write-inputs $D/INPUTS.json \
+    > $D/provenance_check.out
+
+Exit code: 0. stderr: empty.
+provenance_check.out is the script's unedited stdout. INPUTS.json is written by the script itself.
+
+Retained files (sha256):
+  d7999aaea1f2cabf352683805c5a680a8a678b5d37057ba0dc33fe8e6ce8321c  provenance_check.py
+  d32292a5f84fc3b9200aeab40b57a808e0e2cc40b99eb89b79d77fc9346e5d7b  provenance_check.out
+  383a6e9c0e28d0629ab92707a3add95fab8940fee47e7d13bb71166a54cd543f  INPUTS.json
+
+Reproducibility notes:
+- Something rewrites $STATE/canonical_20261003/fs4/preliminary/wave2_successor/weekly/WEEKLY_PLAN.json in place and
+  changes only built_utc. Its file sha256 was d398d9b0... at about 12:05Z and 9729e873... at 12:11Z on 2026-10-11.
+  The file digest therefore changes between runs. Its content identity is
+  plan_sha256 = ef7ffd580084c6fd09689e345a5b5c3bf1ae805604e36dd42f815b1bdec3c3f4, which the script recomputes and matches.
+  A rerun reproduces every line of provenance_check.out except run_utc, the built_utc value and that file's sha256.
+- Data read limits: TEST rows (decision time >= 2025-01-01) are never read. From the parquet, the script reads
+  t_decision_utc and isfinite masks of four target columns, restricted to rows before 2025. It prints no label value.
+  From each npz, it reads only the ts array.
+- Scope: the TEST-untouched statement covers only the files listed in INPUTS.json. It is not a scan of every file under $STATE.
+
+--- Revision v2 (2026-10-11, integrator) ---
+Verifier found line 57 of provenance_check.out non-deterministic: ties in sorted(..., key=horizon) followed
+PYTHONHASHSEED. Fix: provenance_check.py line 161 key=(horizon, target). v1 output and INPUTS.json are kept as
+history and are superseded. Same command as above, writing provenance_check_v2.out and INPUTS_v2.json, run
+twice with PYTHONHASHSEED=1 and 2: exit 0 both; the two outputs differ only in run_utc.
+  7a372e8d0c5aa90d686954036fb7b2c1ba6d20b25bda2cf42a0f0eea188cefb8  provenance_check.py (v2)
+  74b3e015d1fa17818117286c9e5181aaa1024f9cca53e856523cc8160e95a37a  provenance_check_v2.out
+  0b733cfa8637df3790e28b4b6807cc762be5a5a3a2ef30bc83adcde9d06f2b3e  INPUTS_v2.json
+Lines expected to differ on any rerun: run_utc, WEEKLY_PLAN built_utc and that file's sha256 (rewritten in place
+by an FS4 timer; content identity plan_sha256 is recomputed and checked).

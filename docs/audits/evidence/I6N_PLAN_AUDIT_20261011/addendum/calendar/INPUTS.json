@@ -1,0 +1,49 @@
+{
+ "schema": "i6n.plan_audit.addendum.calendar.inputs.v1",
+ "run_date": "2026-10-11",
+ "data": [
+  {
+   "path": "$STATE/canonical_20261003/i6e/statistical72_v1/INPUT.npz",
+   "archive_sha256": "897caee164286bedea61c4caab361213cf703d3f50e60ba12cee543d9bfa28c9",
+   "member_read": "ts.npy only (calendar_attribution.py, bar_label_check.py, identify_input.py); the retained probes/a/bar_clock.py also loads price.npy of the same rows and does not use it",
+   "ts_member_sha256": "a094d14130df31233ac6e4d7546e565bf7392e26ceded16b11e8442584e190bf",
+   "rows": 77977,
+   "range_utc": "2012-05-01 00:00 .. 2024-12-31 22:00",
+   "test_rows": 0,
+   "role": "the archive named by WMC_COUNTEREXAMPLES.md (sha 897caee1) and read by the original probes; signature of probes/a/bar_clock.out matches"
+  },
+  {
+   "path": "$STATE/canonical_20261003/i6e/multihorizon_2024_v2/INPUT.npz (and _v1, same bytes)",
+   "archive_sha256": "d9015867fcd8911ecc155adf26510d343fba45a7c06d6738ee7a3eae100a750d",
+   "member_read": "ts.npy only, for identification",
+   "ts_member_sha256": "a094d14130df31233ac6e4d7546e565bf7392e26ceded16b11e8442584e190bf",
+   "role": "I6-E-M input; its ts array is byte-identical to the one above, so every count applies to I6-E-M too"
+  },
+  {
+   "path": "$STATE/canonical_20261003/i6e/multihorizon_2024_v2/DESIGN.json",
+   "sha256": "c58e9223d9849d59b882991eeb6f7e56564625ce4dfdfdbeeff36096601d0b03",
+   "fields_read": ["weeks", "population"]
+  }
+ ],
+ "audited_code_imported_read_only": {
+  "object": "codex/i6d-weekly-walk-forward-20261009 HEAD 269c2d132b21a55e59cd6faa8242b1ac74f0f7ae (modules committed, unmodified in the draft)",
+  "tools/i6e_horizon_plan.py": "5f6a06d490462d70c70d972a1a0bad575587008f9a2141ed40ea9890a8837ff2",
+  "tools/i6m_data.py": "e4ed00fca63d29109aa57ce239c77499e0d230ea3989ff25b0a0d87bf2f1ffdf",
+  "tools/i6e_price_metrics.py": "7fcaad67a0270c48581ae9df6531fa47a7a81fafd5e605ccc1d1ba2b28991ca2",
+  "tools/i6e_compact_run.py (imported by i6e_price_metrics)": "656275b760b9a602304c6d649dd94f103a326326df08d027ac80c506740ae058"
+ },
+ "audited_documents_cited": {
+  "program_v3/BUSINESS_MARKET_WEEK_CONTRACT_2026_10_11.md (MWC)": "604f94809c41613e7346ed630d698591fadd7ecc9961b9e3cb04fcad00c01c76",
+  "program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md (PROP)": "d4341e72f4fc05531cfcffd5036c1968d522a105fa534d2add0ae2d10eb56487",
+  "program_v3/I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md (I6E)": "129cea8c0f2608926919579c1ce5e0d76f3c0370bb1bd06c28b6b2178fee1234",
+  "tools/fs4_weekly_wrapper.py": "d33b4936201f6a282c1423f81f1dc4b6691017b99b7fef0a2b97af8fea3d3b61",
+  "tools/i6m_prepare.py": "e55d48dbb2eb4831d9ad95d593acf9dfeff5113adc423c7c98f22a176c1ebcff",
+  "tools/i6m_queue.py": "273215be30058f00c96a03a3b4bb877d6360dfecfd731335f3d2e92c739c8b63"
+ },
+ "retained_original_probes_rerun_unmodified": {
+  "probes/a/bar_clock.py": "20f54499e1d15ccdbb4f35ff43c2a6d32d05c8fbcc03ebcfce22703c37306792",
+  "probes/a/gaps_2024.py": "2eecc3db8f0734489719dc19066991fa34e90ea8795b1b40388f7f4d1b090a24",
+  "probes/a/wmc_calendar.py": "5a2e69345e155322e9a66175520ae6fa7ad466bc01c094cee7251fddd2713e65"
+ },
+ "not_read": ["any row dated 2025-01-01 or later", "x.npy, origins.npy, weeks.npy, future.npy", "credentials, tokens, broker calendar"]
+}

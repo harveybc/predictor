@@ -1,0 +1,11 @@
+I6N-AUD-06/-09/-16/-17 addendum, lane alignment. Added by the integrator (the verifier noted the command
+lived only inside ALIGNMENT_ADDENDUM.md). CPU only; no training on real data; synthetic tensors and known weights.
+AUDITED = checkout of the audited object at HEAD 269c2d13 (all imported modules committed and unmodified there).
+
+  cd docs/audits/evidence/I6N_PLAN_AUDIT_20261011/addendum/alignment
+  CUDA_VISIBLE_DEVICES="" crispdm-run -q -m 2G -t 15m -n i6n-add-alignment -- \
+    python3 alignment_known_weights.py --repo "$AUDITED" --original-out ../../probes/cde/out.json > out.json
+
+Verifier rerun (2026-10-11): exit 0, out.json byte-identical.
+  67c44afacf24a7ae591e88b43f9bdfeedff1b60b9ea97631bad680ba8317a21e  alignment_known_weights.py
+  cdd25c09de2f0b01b176808d494159c751eac868f64e2ca33ede0ce631c8665b  out.json

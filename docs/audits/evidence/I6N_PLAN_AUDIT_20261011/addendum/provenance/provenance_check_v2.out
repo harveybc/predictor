@@ -1,0 +1,148 @@
+provenance_check.py  I6N-AUD-01 addendum  run_utc=2026-10-11T12:28:04Z  commit=269c2d13
+
+======== A. Authoritative 20-member list as read by the I6-E-M preparer
+  tools/i6m_prepare.py:29:     expected = "897caee164286bedea61c4caab361213cf703d3f50e60ba12cee543d9bfa28c9"
+  tools/i6m_prepare.py:30:     if file_hash(source) != expected:
+  tools/i6m_prepare.py:31:         raise ValueError("retained source differs from authenticated statistical input")
+  tools/i6m_prepare.py:32:     from tools.i7_weekly_branch_regimes import _verify_seal
+  tools/i6m_prepare.py:33:     prior = json.loads((parent/"DESIGN.json").read_text())
+  tools/i6m_prepare.py:34:     _verify_seal(prior, "design_sha256")
+  tools/i6m_prepare.py:35:     members = prior["members"]
+  tools/i6m_prepare.py:36:     if len(members) != 20 or len(set(members)) != 20:
+  tools/i6m_prepare.py:37:         raise ValueError("selected feature order mismatch")
+  pinned parent INPUT sha256 = 897caee164286bedea61c4caab361213cf703d3f50e60ba12cee543d9bfa28c9 ; $STATE/canonical_20261003/i6e/statistical72_v1/INPUT.npz sha256 = 897caee164286bedea61c4caab361213cf703d3f50e60ba12cee543d9bfa28c9 ; match=True
+  parent design_sha256=e2e86e07aea66632a645e305b64efa281b8babd8efebad3b44da9b645e9dfa78 seal_recomputed_ok=True test_read=False train_years=4
+  multihorizon_2024_v1: sha256=00ff500279e7f4b8d63c73c6c993d1eb90c0da8e3a417a6e5352ebb8ec2d5f07 seal_ok=True parent_design_sha256==parent=True parent_input_sha256==pinned=True members==parent(order)=True lineage=LOCAL_RETAINED_UNVERIFIED test_read=False
+  multihorizon_2024_v2: sha256=f57b9b92d4b2a2188ab49b9acaf10df655bde18f10c7b92e8bb26b63258859c1 seal_ok=True parent_design_sha256==parent=True parent_input_sha256==pinned=True members==parent(order)=True lineage=LOCAL_RETAINED_UNVERIFIED test_read=False
+  I6-B manifest schema=i6b.eurusd.train.v1 freeze_sha256=e1449779d8c33a7d2914b4c0f7cf589ade7b2b7422e88514fee9fa255d07b5a2 selected_features==parent(order)=True train_end_exclusive=2024-01-01T00:00:00+00:00 validation_read=False test_read=False
+  NOTE: the manifest has no field naming how its selected_features were chosen; validation_read=false describes the bytes this build read, not the selection.
+  20 members (parent order): ['fred.inflation_expectations.t5yie.level', 'fred.rates.dgs3mo.diff_5d', 'fred.rates.dgs5.level', 'fred.rates.dgs7.logret_5d', 'fred.rates.dprime.logret_5d', 'fred.stress.stlfsi4.level', 'fx.gbpusd.logret_1h', 'px.close_loc', 'px.log_co', 'px.rv5', 'rg.atr_ratio', 'yh.eem.logret_5d', 'yh.iyr.logret_1d', 'yh.kc_f.logret_1d', 'yh.n225.logret_1d', 'yh.si_f.logret_1d', 'yh.slv.logret_1d', 'yh.vnq.logret_1d', 'yh.xlc.logret_1d', 'yh.xlre.logret_1d']
+
+======== B. FS4 weekly selection records (rule fields verbatim)
+  TEST_FREEZE freeze_sha256=e1449779d8c33a7d2914b4c0f7cf589ade7b2b7422e88514fee9fa255d07b5a2 recomputed_ok=True frozen_utc=2026-10-08T15:03:22Z firewall_phase=PROCEDURE_SEALED test_weeks_sealed=52
+  I6-B manifest freeze_sha256 == TEST_FREEZE.freeze_sha256: True
+  TEST_FREEZE.evaluation_mode = "BUSINESS_WEEKLY_WALK_FORWARD"
+  TEST_FREEZE.update_mode = "FULL_RETRAIN_ROLLING_4Y"
+  TEST_FREEZE.tie_rule = "ties -> fewer features, then lower total fit seconds over all weeks, then set_id"
+  TEST_FREEZE.selector.aggregate_rule = "score(set, input_mode) = mean over ALL sealed VALIDATION weeks of the weekly skill_mae = (naive_mae - mae) / naive_mae with the zero-return naive on the identical scored rows and scale; never the best week; a set with any week not COMPLETED is ineligible and its dispositions stay in the denominator; the feature-set winner per target is chosen on the RAW arm; the frozen encoder arms (TRAINED_ENCODER, RANDOM_ENCODER control) are paired contrasts on identical rows and never substitute the later R0/R1/R2 comparison"
+  TEST_FREEZE.selector.selection_arm = "RAW"
+  NOTE: WEEKLY_PLAN.json is rewritten in place (built_utc changes), so its FILE sha256 differs between runs; its content identity is plan_sha256.
+  WEEKLY_PLAN plan_sha256=ef7ffd580084c6fd09689e345a5b5c3bf1ae805604e36dd42f815b1bdec3c3f4 recomputed_ok=True ==TEST_FREEZE.plan_sha256=True built_utc=2026-10-11T12:27:38Z (built_utc is outside the plan digest)
+  WEEKLY_PLAN.validation_year = 2024
+  WEEKLY_PLAN.weeks_in_validation_year = 52
+  WEEKLY_PLAN.rolling_calendar_years = 4
+  WEEKLY_PLAN.input_modes = ["RAW"]
+  WEEKLY_PLAN.selection_arm = "RAW"
+  WEEKLY_PLAN.scored_rows = "rows whose decision time lies in [week.start, week.end) and whose bound target is finite; every origin needs a full window history, otherwise the week FAILS with the count"
+  WEEKLY_PLAN.support = {"availability": "features available at the bar end (as-of columns from PS1); available_time == decision time", "inner_validation_weeks": 1, "input_lookback": "24 rows; a fit origin needs all 24 rows at or after fit_start", "purge": "target horizon hours"}
+  WEEKLY_PLAN.test = "EXTERNAL TEST (the following year) is sealed; opened once by the controller after TEST_FREEZE.json"
+  WEEKLY_PLAN.weeks: n=52 first={"cutoff": "2024-01-01T00:00:00Z", "end": "2024-01-08T00:00:00Z", "fit_start": "2020-01-01T00:00:00Z", "ordinal": 0, "split": "validation", "start": "2024-01-01T00:00:00Z"} last={"cutoff": "2024-12-23T00:00:00Z", "end": "2024-12-30T00:00:00Z", "fit_start": "2020-12-23T00:00:00Z", "ordinal": 51, "split": "validation", "start": "2024-12-23T00:00:00Z"}
+  WEEKLY_PLAN.test_weeks: n=52 first={"cutoff": "2024-12-30T00:00:00Z", "end": "2025-01-06T00:00:00Z", "fit_start": "2020-12-30T00:00:00Z", "ordinal": 52, "split": "test", "start": "2024-12-30T00:00:00Z"}
+  folds of the selection: one fit per VALIDATION week, fit rows = [fit_start, cutoff - horizon] (rolling 4 calendar years), scored rows = [week.start, week.end); inner_validation_weeks=1
+  EURUSD winners (target, horizon_hours, winner set_id[:12], methods, n_features, score, beats_naive, candidates on VALIDATION):
+    Y_b_s6    h=6   faa5c82cce9f RANDOM_K                       k=12 score=-0.04448 beats_naive=False weeks_completed=52 candidates=2 ['5827cf3c8218:RANDOM_K:k=8', 'faa5c82cce9f:RANDOM_K:k=12']
+    Y_b_l144  h=144 1715050329e0 RANDOM_K                       k=8  score=-0.30895 beats_naive=False weeks_completed=52 candidates=2 ['1715050329e0:RANDOM_K:k=8', 'e24c62ffb646:RANDOM_K:k=12']
+    Y_l_24h   h=24  6e3096d4417c CAUSAL_SUPPORTED               k=4  score=-0.04880 beats_naive=False weeks_completed=52 candidates=2 ['5089a2c20ac3:RANDOM_K:k=8', '6e3096d4417c:CAUSAL_SUPPORTED:k=4']
+    Y_l_48h   h=48  ea908c257b51 RANDOM_K                       k=12 score=-0.14874 beats_naive=False weeks_completed=52 candidates=2 ['e7be4b6177fb:RANDOM_K:k=8', 'ea908c257b51:RANDOM_K:k=12']
+    Y_l_72h   h=72  e9e9164755e7 RANDOM_K                       k=8  score=-0.19803 beats_naive=False weeks_completed=52 candidates=2 ['bccfb068439b:RANDOM_K:k=12', 'e9e9164755e7:RANDOM_K:k=8']
+    Y_l_96h   h=96  21ed2c529f47 RANDOM_K                       k=12 score=-0.12759 beats_naive=False weeks_completed=52 candidates=2 ['21ed2c529f47:RANDOM_K:k=12', 'd682e2e1069d:RANDOM_K:k=8']
+    Y_l_120h  h=120 76f40f10c2fd RANDOM_K                       k=12 score=-0.06729 beats_naive=False weeks_completed=52 candidates=2 ['480c8b0ce7d5:RANDOM_K:k=8', '76f40f10c2fd:RANDOM_K:k=12']
+    Y_l_144h  h=144 4fb32a3bff7a RANDOM_K                       k=12 score=-0.04218 beats_naive=False weeks_completed=52 candidates=2 ['4fb32a3bff7a:RANDOM_K:k=12', '824c85387c33:RANDOM_K:k=8']
+    Y_s_1h    h=1   539a1e50ece6 CAUSAL_SUPPORTED+MRMR_CAUSAL   k=4  score=-0.03682 beats_naive=False weeks_completed=52 candidates=2 ['539a1e50ece6:CAUSAL_SUPPORTED+MRMR_CAUSAL:k=4', 'ffa68733e3fc:RANDOM_K:k=12']
+    Y_s_2h    h=2   a7bcf5bc3ea3 CAUSAL_SUPPORTED+MRMR_CAUSAL   k=4  score=-0.02553 beats_naive=False weeks_completed=52 candidates=2 ['30386e8cf39c:RANDOM_K:k=12', 'a7bcf5bc3ea3:CAUSAL_SUPPORTED+MRMR_CAUSAL:k=4']
+    Y_s_3h    h=3   289b9a480e98 CAUSAL_SUPPORTED+MRMR_CAUSAL   k=4  score=-0.02818 beats_naive=False weeks_completed=52 candidates=2 ['289b9a480e98:CAUSAL_SUPPORTED+MRMR_CAUSAL:k=4', 'a3c93b675589:RANDOM_K:k=12']
+    Y_s_4h    h=4   8235d16f9a1c RANDOM_K                       k=12 score=-0.03016 beats_naive=False weeks_completed=52 candidates=2 ['8235d16f9a1c:RANDOM_K:k=12', 'f72e00a52540:RANDOM_K:k=8']
+    Y_s_5h    h=5   90023d952f64 RANDOM_K                       k=12 score=-0.02919 beats_naive=False weeks_completed=52 candidates=2 ['20843c37b32c:RANDOM_K:k=8', '90023d952f64:RANDOM_K:k=12']
+    Y_s_6h    h=6   27e7745d559a RANDOM_K                       k=12 score=-0.02539 beats_naive=False weeks_completed=52 candidates=2 ['27e7745d559a:RANDOM_K:k=12', 'a2b4680dac14:RANDOM_K:k=8']
+  selection targets/horizons: [('Y_s_1h', 1), ('Y_s_2h', 2), ('Y_s_3h', 3), ('Y_s_4h', 4), ('Y_s_5h', 5), ('Y_b_s6', 6), ('Y_s_6h', 6), ('Y_l_24h', 24), ('Y_l_48h', 48), ('Y_l_72h', 72), ('Y_l_96h', 96), ('Y_l_120h', 120), ('Y_b_l144', 144), ('Y_l_144h', 144)]
+
+======== C. Set equality: 20 runner members vs union of the 14 EURUSD RAW winners
+  runner members sorted (20): ['fred.inflation_expectations.t5yie.level', 'fred.rates.dgs3mo.diff_5d', 'fred.rates.dgs5.level', 'fred.rates.dgs7.logret_5d', 'fred.rates.dprime.logret_5d', 'fred.stress.stlfsi4.level', 'fx.gbpusd.logret_1h', 'px.close_loc', 'px.log_co', 'px.rv5', 'rg.atr_ratio', 'yh.eem.logret_5d', 'yh.iyr.logret_1d', 'yh.kc_f.logret_1d', 'yh.n225.logret_1d', 'yh.si_f.logret_1d', 'yh.slv.logret_1d', 'yh.vnq.logret_1d', 'yh.xlc.logret_1d', 'yh.xlre.logret_1d']
+  winner union sorted   (20): ['fred.inflation_expectations.t5yie.level', 'fred.rates.dgs3mo.diff_5d', 'fred.rates.dgs5.level', 'fred.rates.dgs7.logret_5d', 'fred.rates.dprime.logret_5d', 'fred.stress.stlfsi4.level', 'fx.gbpusd.logret_1h', 'px.close_loc', 'px.log_co', 'px.rv5', 'rg.atr_ratio', 'yh.eem.logret_5d', 'yh.iyr.logret_1d', 'yh.kc_f.logret_1d', 'yh.n225.logret_1d', 'yh.si_f.logret_1d', 'yh.slv.logret_1d', 'yh.vnq.logret_1d', 'yh.xlc.logret_1d', 'yh.xlre.logret_1d']
+  set_equal=True  symmetric_difference=[]
+  per-feature winner sets containing it:
+    fred.inflation_expectations.t5yie.level    10 targets: Y_b_s6(h=6,RANDOM_K), Y_b_l144(h=144,RANDOM_K), Y_l_48h(h=48,RANDOM_K), Y_l_72h(h=72,RANDOM_K), Y_l_96h(h=96,RANDOM_K), Y_l_120h(h=120,RANDOM_K), Y_l_144h(h=144,RANDOM_K), Y_s_4h(h=4,RANDOM_K), Y_s_5h(h=5,RANDOM_K), Y_s_6h(h=6,RANDOM_K)
+    fred.rates.dgs3mo.diff_5d                  10 targets: Y_b_s6(h=6,RANDOM_K), Y_b_l144(h=144,RANDOM_K), Y_l_48h(h=48,RANDOM_K), Y_l_72h(h=72,RANDOM_K), Y_l_96h(h=96,RANDOM_K), Y_l_120h(h=120,RANDOM_K), Y_l_144h(h=144,RANDOM_K), Y_s_4h(h=4,RANDOM_K), Y_s_5h(h=5,RANDOM_K), Y_s_6h(h=6,RANDOM_K)
+    fred.rates.dgs5.level                       8 targets: Y_b_s6(h=6,RANDOM_K), Y_l_48h(h=48,RANDOM_K), Y_l_96h(h=96,RANDOM_K), Y_l_120h(h=120,RANDOM_K), Y_l_144h(h=144,RANDOM_K), Y_s_4h(h=4,RANDOM_K), Y_s_5h(h=5,RANDOM_K), Y_s_6h(h=6,RANDOM_K)
+    fred.rates.dgs7.logret_5d                  10 targets: Y_b_s6(h=6,RANDOM_K), Y_b_l144(h=144,RANDOM_K), Y_l_48h(h=48,RANDOM_K), Y_l_72h(h=72,RANDOM_K), Y_l_96h(h=96,RANDOM_K), Y_l_120h(h=120,RANDOM_K), Y_l_144h(h=144,RANDOM_K), Y_s_4h(h=4,RANDOM_K), Y_s_5h(h=5,RANDOM_K), Y_s_6h(h=6,RANDOM_K)
+    fred.rates.dprime.logret_5d                 8 targets: Y_b_s6(h=6,RANDOM_K), Y_l_48h(h=48,RANDOM_K), Y_l_96h(h=96,RANDOM_K), Y_l_120h(h=120,RANDOM_K), Y_l_144h(h=144,RANDOM_K), Y_s_4h(h=4,RANDOM_K), Y_s_5h(h=5,RANDOM_K), Y_s_6h(h=6,RANDOM_K)
+    fred.stress.stlfsi4.level                   8 targets: Y_b_s6(h=6,RANDOM_K), Y_l_48h(h=48,RANDOM_K), Y_l_96h(h=96,RANDOM_K), Y_l_120h(h=120,RANDOM_K), Y_l_144h(h=144,RANDOM_K), Y_s_4h(h=4,RANDOM_K), Y_s_5h(h=5,RANDOM_K), Y_s_6h(h=6,RANDOM_K)
+    fx.gbpusd.logret_1h                         8 targets: Y_b_s6(h=6,RANDOM_K), Y_l_48h(h=48,RANDOM_K), Y_l_96h(h=96,RANDOM_K), Y_l_120h(h=120,RANDOM_K), Y_l_144h(h=144,RANDOM_K), Y_s_4h(h=4,RANDOM_K), Y_s_5h(h=5,RANDOM_K), Y_s_6h(h=6,RANDOM_K)
+    px.close_loc                                3 targets: Y_s_1h(h=1,CAUSAL_SUPPORTED+MRMR_CAUSAL), Y_s_2h(h=2,CAUSAL_SUPPORTED+MRMR_CAUSAL), Y_s_3h(h=3,CAUSAL_SUPPORTED+MRMR_CAUSAL)
+    px.log_co                                  10 targets: Y_b_s6(h=6,RANDOM_K), Y_b_l144(h=144,RANDOM_K), Y_l_48h(h=48,RANDOM_K), Y_l_72h(h=72,RANDOM_K), Y_l_96h(h=96,RANDOM_K), Y_l_120h(h=120,RANDOM_K), Y_l_144h(h=144,RANDOM_K), Y_s_4h(h=4,RANDOM_K), Y_s_5h(h=5,RANDOM_K), Y_s_6h(h=6,RANDOM_K)
+    px.rv5                                      3 targets: Y_s_1h(h=1,CAUSAL_SUPPORTED+MRMR_CAUSAL), Y_s_2h(h=2,CAUSAL_SUPPORTED+MRMR_CAUSAL), Y_s_3h(h=3,CAUSAL_SUPPORTED+MRMR_CAUSAL)
+    rg.atr_ratio                               10 targets: Y_b_s6(h=6,RANDOM_K), Y_b_l144(h=144,RANDOM_K), Y_l_48h(h=48,RANDOM_K), Y_l_72h(h=72,RANDOM_K), Y_l_96h(h=96,RANDOM_K), Y_l_120h(h=120,RANDOM_K), Y_l_144h(h=144,RANDOM_K), Y_s_4h(h=4,RANDOM_K), Y_s_5h(h=5,RANDOM_K), Y_s_6h(h=6,RANDOM_K)
+    yh.eem.logret_5d                           10 targets: Y_b_s6(h=6,RANDOM_K), Y_b_l144(h=144,RANDOM_K), Y_l_48h(h=48,RANDOM_K), Y_l_72h(h=72,RANDOM_K), Y_l_96h(h=96,RANDOM_K), Y_l_120h(h=120,RANDOM_K), Y_l_144h(h=144,RANDOM_K), Y_s_4h(h=4,RANDOM_K), Y_s_5h(h=5,RANDOM_K), Y_s_6h(h=6,RANDOM_K)
+    yh.iyr.logret_1d                            1 targets: Y_l_24h(h=24,CAUSAL_SUPPORTED)
+    yh.kc_f.logret_1d                          10 targets: Y_b_s6(h=6,RANDOM_K), Y_b_l144(h=144,RANDOM_K), Y_l_48h(h=48,RANDOM_K), Y_l_72h(h=72,RANDOM_K), Y_l_96h(h=96,RANDOM_K), Y_l_120h(h=120,RANDOM_K), Y_l_144h(h=144,RANDOM_K), Y_s_4h(h=4,RANDOM_K), Y_s_5h(h=5,RANDOM_K), Y_s_6h(h=6,RANDOM_K)
+    yh.n225.logret_1d                          10 targets: Y_b_s6(h=6,RANDOM_K), Y_b_l144(h=144,RANDOM_K), Y_l_48h(h=48,RANDOM_K), Y_l_72h(h=72,RANDOM_K), Y_l_96h(h=96,RANDOM_K), Y_l_120h(h=120,RANDOM_K), Y_l_144h(h=144,RANDOM_K), Y_s_4h(h=4,RANDOM_K), Y_s_5h(h=5,RANDOM_K), Y_s_6h(h=6,RANDOM_K)
+    yh.si_f.logret_1d                           1 targets: Y_l_24h(h=24,CAUSAL_SUPPORTED)
+    yh.slv.logret_1d                            3 targets: Y_s_1h(h=1,CAUSAL_SUPPORTED+MRMR_CAUSAL), Y_s_2h(h=2,CAUSAL_SUPPORTED+MRMR_CAUSAL), Y_s_3h(h=3,CAUSAL_SUPPORTED+MRMR_CAUSAL)
+    yh.vnq.logret_1d                            1 targets: Y_l_24h(h=24,CAUSAL_SUPPORTED)
+    yh.xlc.logret_1d                            3 targets: Y_s_1h(h=1,CAUSAL_SUPPORTED+MRMR_CAUSAL), Y_s_2h(h=2,CAUSAL_SUPPORTED+MRMR_CAUSAL), Y_s_3h(h=3,CAUSAL_SUPPORTED+MRMR_CAUSAL)
+    yh.xlre.logret_1d                           1 targets: Y_l_24h(h=24,CAUSAL_SUPPORTED)
+  features that enter only through RANDOM_K-method winner sets: 12 ['fred.inflation_expectations.t5yie.level', 'fred.rates.dgs3mo.diff_5d', 'fred.rates.dgs5.level', 'fred.rates.dgs7.logret_5d', 'fred.rates.dprime.logret_5d', 'fred.stress.stlfsi4.level', 'fx.gbpusd.logret_1h', 'px.log_co', 'rg.atr_ratio', 'yh.eem.logret_5d', 'yh.kc_f.logret_1d', 'yh.n225.logret_1d']
+  I6-N horizons (proposal section 2) without a selection target of that horizon: [12, 18, 36, 60]
+  selection-target horizons outside I6-N grid: [1, 96, 120, 144]
+
+======== D. Pre-VALIDATION stages (frontier, TRAIN rankings) and timeline
+  FRONTIER_SEAL seal_sha256=5a0edbfb8150c079abe7c5dc3f9fe40dbad37301ec1b8b607c16f246bb14abbf ==WEEKLY_PLAN.populations.EURUSD.frontier_seal_sha256=True denominator={'deferred': 540, 'in_frontier': 28, 'sets': 568} validation_read={"count": 0, "statement": "TRAIN-only target coverage and extractibility"}
+  FRONTIER_SEAL.rule_text = "FS4 wave frontier v1, TRAIN only. Exactly two predeclared phase-3 sets per target from the pinned target-coverage report enter the weekly RAW comparison. Every member must have paired RAW, RANDOM_ENCODER and TRAINED_ENCODER extractibility on all five TRAIN folds in the successor partial closure. All other consolidated sets remain explicitly deferred. No VALIDATION or TEST data choose a set; weekly outcomes decide predictive utility."
+  frontier set_ids == WEEKLY_PLAN EURUSD set_ids: True
+  FINAL_SELECTION_MANIFEST dataset_id=eurusd_1h.business_contract.v1.train_2012-05_2023-12 folds=['inner_2019', 'inner_2020', 'inner_2021', 'inner_2022', 'inner_2023'] generated_utc=2026-10-05T18:02:43+00:00 closure_rule.declared_before_reading_validation=True
+  task store: splits=validation week_start range=[2024-01-01T00:00:00Z, 2024-12-23T00:00:00Z] tasks=6240 validation_first_read_utc range=[2026-10-07T18:36:39Z, 2026-10-08T12:20:25Z]
+  timeline: first VALIDATION read 2026-10-07T18:36:39Z -> stage2 computed 2026-10-08T05:53:22Z -> selection closed 2026-10-08T15:02:08Z -> TEST_FREEZE 2026-10-08T15:03:22Z
+  closure: state=WEEKLY_SELECTION_COMPLETE validation_year=2024 test_opened=False final_selection=False ; FIREWALL phase=PROCEDURE_SEALED test_observations=0 selection_receipts=0
+
+======== E. TEST 2025 touch check (timestamps and finiteness masks only)
+  $STATE/canonical_20261003/i6e/statistical72_v1/INPUT.npz rows=77977 ts=[2012-05-01T00:00:00Z, 2024-12-31T22:00:00Z] rows_ge_2025=0
+  $STATE/canonical_20261003/i6e/statistical72_v1/TRAIN.npz rows=71734 ts=[2012-05-01T00:00:00Z, 2023-12-29T22:00:00Z] rows_ge_2025=0
+  $STATE/canonical_20261003/i6e/multihorizon_2024_v1/INPUT.npz rows=77977 ts=[2012-05-01T00:00:00Z, 2024-12-31T22:00:00Z] rows_ge_2025=0
+  $STATE/canonical_20261003/i6e/multihorizon_2024_v1/TRAIN.npz rows=71734 ts=[2012-05-01T00:00:00Z, 2023-12-29T22:00:00Z] rows_ge_2025=0
+  $STATE/canonical_20261003/i6e/multihorizon_2024_v2/INPUT.npz rows=77977 ts=[2012-05-01T00:00:00Z, 2024-12-31T22:00:00Z] rows_ge_2025=0
+  $STATE/canonical_20261003/i6e/multihorizon_2024_v2/TRAIN.npz rows=71734 ts=[2012-05-01T00:00:00Z, 2023-12-29T22:00:00Z] rows_ge_2025=0
+  validation targets sha256 in statistical72 source_digests: True
+  rows=6243 t_decision=[2024-01-01T23:00:00Z, 2024-12-31T22:00:00Z] rows_ge_2025=0
+  Y_s_6h    finite=6238 censored(non-finite)=5 last finite decision=2024-12-31T17:00:00Z -> its label time t+h=2024-12-31T23:00:00Z (last row of file 2024-12-31T22:00:00Z) ; label_time_in_2025=False
+  Y_l_24h   finite=6220 censored(non-finite)=23 last finite decision=2024-12-30T23:00:00Z -> its label time t+h=2024-12-31T23:00:00Z (last row of file 2024-12-31T22:00:00Z) ; label_time_in_2025=False
+  Y_l_72h   finite=6195 censored(non-finite)=48 last finite decision=2024-12-27T22:00:00Z -> its label time t+h=2024-12-30T22:00:00Z (last row of file 2024-12-31T22:00:00Z) ; label_time_in_2025=False
+  Y_l_144h  finite=6148 censored(non-finite)=95 last finite decision=2024-12-25T23:00:00Z -> its label time t+h=2024-12-31T23:00:00Z (last row of file 2024-12-31T22:00:00Z) ; label_time_in_2025=False
+  I6-E-M (multihorizon_2024_v2) segments=53 last={"ordinal": 52, "fit_start": "2020-12-30T00:00:00Z", "fit_cutoff": "2024-12-30T00:00:00Z", "score_start": "2024-12-30T00:00:00Z", "score_end": "2025-01-01T00:00:00Z"}
+  FS4 sealed TEST week 0 = {"cutoff": "2024-12-30T00:00:00Z", "end": "2025-01-06T00:00:00Z", "fit_start": "2020-12-30T00:00:00Z", "ordinal": 52, "split": "test", "start": "2024-12-30T00:00:00Z"} ; FIREWALL expected_test_week_ids[0]=test:2024-12-30T00:00:00Z
+  overlap: I6-E-M scores [2024-12-30, 2025-01-01) which FS4 assigns to its sealed TEST week starting 2024-12-30: True
+
+======== F. Declarations in git-tracked docs and in the audited draft
+  269c2d13:docs/tres_temas_entrevista/program_v3/13B_NEXT_STEPS_E1_E3_AND_LANES_2026_09_18.md:130:development results. R0/R1/R2 compared in development; context and groups selected on validation only;
+  269c2d13:docs/tres_temas_entrevista/program_v3/CURRENT_EXECUTION.md:45:cuatro anos anteriores para cada ajuste, seed 6102026, 20 rasgos RAW heredados
+  269c2d13:docs/tres_temas_entrevista/program_v3/I6A_ARCHITECTURE_CAMPAIGN_2026_10_08.md:51:rows. The feature set was selected using later validation, so these numbers
+  269c2d13:docs/tres_temas_entrevista/program_v3/I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md:84:Primario NEURAL R0: 20 rasgos RAW del manifiesto seleccionado retenido, mismas
+  269c2d13:docs/tres_temas_entrevista/program_v3/MASTER_CHECKLIST.json:84:      "evidence": "The scoped TRAIN extractibility successor closed; the 2024 weekly wrapper completed 6240/6240 tasks across RAW, RANDOM_ENCODER and TRAINED_ENCODER with zero technical ta
+  draft:docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md:21: - EURUSD primero, 20 features RAW retenidas; no llamarlas optimas para cada h.
+  draft:docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md:43: - VALIDATION 2024 completa, 53 segmentos. TEST 2025 reservado.
+  draft:docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md:103: Cuatro semanas internas de 2023, predefinidas por trimestre, cuatro anos
+  draft:docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md:168: semanas. VALIDATION escoge; TEST confirma el procedimiento congelado.
+  draft mentions FS4/TEST_FREEZE/freeze digest/selection year for the 20 features: False
+
+======== INPUTS
+  e55d48dbb2eb4831d9ad95d593acf9dfeff5113adc423c7c98f22a176c1ebcff  tools/i6m_prepare.py@269c2d13  | I6-E-M preparer; lines 29-37 read parent/INPUT.npz (pinned sha) and parent/DESIGN.json['members']
+  897caee164286bedea61c4caab361213cf703d3f50e60ba12cee543d9bfa28c9  $STATE/canonical_20261003/i6e/statistical72_v1/INPUT.npz  | parent INPUT.npz of I6-E-M (matches the constant pinned in i6m_prepare.py:30)
+  f2cd28cd50ce2bf8cf03c7cce67c5bf0eecca9e6a9f53d500646858cd79df8d6  $STATE/canonical_20261003/i6e/statistical72_v1/DESIGN.json  | parent DESIGN.json read by i6m_prepare.py:33-35 (members)
+  76f78a1cc82532e7f23a65adc985706e88eaa5a88c4f047f6ba26b8f4759cc0e  $STATE/canonical_20261003/i6e/multihorizon_2024_v1/DESIGN.json  | I6-E-M runner design multihorizon_2024_v1 (sealed with sha256)
+  c58e9223d9849d59b882991eeb6f7e56564625ce4dfdfdbeeff36096601d0b03  $STATE/canonical_20261003/i6e/multihorizon_2024_v2/DESIGN.json  | I6-E-M runner design multihorizon_2024_v2 (sealed with sha256)
+  6cf2ba57b48ee71197f7d2cbb353aaa5b70f3431386d2eecd31820b1ebac8725  $STATE/canonical_20261003/i6b/eurusd/train_selected20.manifest.json  | I6-B EURUSD TRAIN manifest; binds the 20 selected_features to the FS4 TEST_FREEZE digest
+  f9ac48790f66d66151fe4cf061219d5e78d882d1d4f4043b84f13cf376feb234  $STATE/canonical_20261003/fs4/preliminary/wave2_successor/weekly/TEST_FREEZE.json  | FS4 TEST_FREEZE: winners per population/target and the frozen selection rule
+  e9c5aa4d97112a309891734ec665b2e72623a407a724b33834c58cbb4afe836d  $STATE/canonical_20261003/fs4/preliminary/wave2_successor/weekly/WEEKLY_PLAN.json  | FS4 WEEKLY_PLAN: validation year, weeks, candidate sets per target
+  450ab29794334378e9e65f28f6a3605a1a2b36d27c094d43859b325469a8076e  $STATE/canonical_20261003/fs4/preliminary/wave2_successor/EURUSD/FRONTIER_SEAL.json  | FS4 EURUSD frontier seal: which candidate sets entered the VALIDATION comparison (TRAIN only)
+  7eca0c1d8667f9cccb9d58bc08f3ce69d27a4be64567686c213d8c4d36f3178d  docs/audits/evidence/canonical_20261003/fs_closure/fs_close/FINAL_SELECTION_MANIFEST.json@269c2d13  | FS-CLOSE TRAIN manifest (inner folds of the TRAIN rankings that fed phase 3)
+  ed48484d0fd65fa322227fac50b7b93a3eb7c03d5a3a8dd6ebe75b0442bb0213  $STATE/canonical_20261003/fs4/preliminary/wave2_successor/weekly/STAGE2_LIST.json  | FS4 stage-2 list (computed from stage-1 VALIDATION RAW aggregates)
+  a4d1b11d2cebcfdc2f3cb65fd7528650a664cc3effba157162133e8f0eb31591  $STATE/canonical_20261003/fs4/preliminary/wave2_successor/weekly/WEEKLY_SELECTION_COMPLETE.json  | FS4 weekly selection closure
+  6d3d28720551f1203e5dc9608a2cf7d4bd53be0f6de5ed6d2d1fd2d6de5262d1  $STATE/canonical_20261003/fs4/preliminary/wave2_successor/weekly/FIREWALL.json  | FS4 TEST firewall
+  d074d2554038feef8dcb783b63fb8d7efbcc5f679dca8d605b4e8f8be7c1d225  $STATE/canonical_20261003/fs4_weekly/wave2/weekly_queue.sqlite  | FS4 weekly task store (read-only: split, week_start, validation_first_read_utc)
+  897caee164286bedea61c4caab361213cf703d3f50e60ba12cee543d9bfa28c9  $STATE/canonical_20261003/i6e/statistical72_v1/INPUT.npz  | I6-E statistical72_v1 INPUT.npz (only the ts array is read)
+  77bd5b8b35759747984785469c0aef5cd6f461db11c5165a71b40d0d91151819  $STATE/canonical_20261003/i6e/statistical72_v1/TRAIN.npz  | I6-E statistical72_v1 TRAIN.npz (only the ts array is read)
+  d9015867fcd8911ecc155adf26510d343fba45a7c06d6738ee7a3eae100a750d  $STATE/canonical_20261003/i6e/multihorizon_2024_v1/INPUT.npz  | I6-E multihorizon_2024_v1 INPUT.npz (only the ts array is read)
+  77bd5b8b35759747984785469c0aef5cd6f461db11c5165a71b40d0d91151819  $STATE/canonical_20261003/i6e/multihorizon_2024_v1/TRAIN.npz  | I6-E multihorizon_2024_v1 TRAIN.npz (only the ts array is read)
+  d9015867fcd8911ecc155adf26510d343fba45a7c06d6738ee7a3eae100a750d  $STATE/canonical_20261003/i6e/multihorizon_2024_v2/INPUT.npz  | I6-E multihorizon_2024_v2 INPUT.npz (only the ts array is read)
+  77bd5b8b35759747984785469c0aef5cd6f461db11c5165a71b40d0d91151819  $STATE/canonical_20261003/i6e/multihorizon_2024_v2/TRAIN.npz  | I6-E multihorizon_2024_v2 TRAIN.npz (only the ts array is read)
+  9f6827bf5b90ffd4b52c6ad204bb00b6aa25bf7f30eeccb0c3d213f8c7454989  $STATE/canonical_20261003/i6a/validation_2024/batch_001/targets_train.parquet  | VALIDATION 2024 targets (sha listed in I6-E source_digests and in lane A validation digests); only t_decision_utc and isfinite masks
+  d4341e72f4fc05531cfcffd5036c1968d522a105fa534d2add0ae2d10eb56487  <audited draft worktree over 269c2d13>/docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md  | audited I6-N proposal draft (uncommitted)

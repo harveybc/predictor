@@ -1,0 +1,112 @@
+[
+ {
+  "path": "tools/i6m_prepare.py@269c2d13",
+  "sha256": "e55d48dbb2eb4831d9ad95d593acf9dfeff5113adc423c7c98f22a176c1ebcff",
+  "role": "I6-E-M preparer; lines 29-37 read parent/INPUT.npz (pinned sha) and parent/DESIGN.json['members']"
+ },
+ {
+  "path": "$STATE/canonical_20261003/i6e/statistical72_v1/INPUT.npz",
+  "sha256": "897caee164286bedea61c4caab361213cf703d3f50e60ba12cee543d9bfa28c9",
+  "role": "parent INPUT.npz of I6-E-M (matches the constant pinned in i6m_prepare.py:30)"
+ },
+ {
+  "path": "$STATE/canonical_20261003/i6e/statistical72_v1/DESIGN.json",
+  "sha256": "f2cd28cd50ce2bf8cf03c7cce67c5bf0eecca9e6a9f53d500646858cd79df8d6",
+  "role": "parent DESIGN.json read by i6m_prepare.py:33-35 (members)"
+ },
+ {
+  "path": "$STATE/canonical_20261003/i6e/multihorizon_2024_v1/DESIGN.json",
+  "sha256": "76f78a1cc82532e7f23a65adc985706e88eaa5a88c4f047f6ba26b8f4759cc0e",
+  "role": "I6-E-M runner design multihorizon_2024_v1 (sealed with sha256)"
+ },
+ {
+  "path": "$STATE/canonical_20261003/i6e/multihorizon_2024_v2/DESIGN.json",
+  "sha256": "c58e9223d9849d59b882991eeb6f7e56564625ce4dfdfdbeeff36096601d0b03",
+  "role": "I6-E-M runner design multihorizon_2024_v2 (sealed with sha256)"
+ },
+ {
+  "path": "$STATE/canonical_20261003/i6b/eurusd/train_selected20.manifest.json",
+  "sha256": "6cf2ba57b48ee71197f7d2cbb353aaa5b70f3431386d2eecd31820b1ebac8725",
+  "role": "I6-B EURUSD TRAIN manifest; binds the 20 selected_features to the FS4 TEST_FREEZE digest"
+ },
+ {
+  "path": "$STATE/canonical_20261003/fs4/preliminary/wave2_successor/weekly/TEST_FREEZE.json",
+  "sha256": "f9ac48790f66d66151fe4cf061219d5e78d882d1d4f4043b84f13cf376feb234",
+  "role": "FS4 TEST_FREEZE: winners per population/target and the frozen selection rule"
+ },
+ {
+  "path": "$STATE/canonical_20261003/fs4/preliminary/wave2_successor/weekly/WEEKLY_PLAN.json",
+  "sha256": "9729e873724f798ec31a987caa2bbf69ee1674eca7c7ea2048856ab269abe069",
+  "role": "FS4 WEEKLY_PLAN: validation year, weeks, candidate sets per target"
+ },
+ {
+  "path": "$STATE/canonical_20261003/fs4/preliminary/wave2_successor/EURUSD/FRONTIER_SEAL.json",
+  "sha256": "450ab29794334378e9e65f28f6a3605a1a2b36d27c094d43859b325469a8076e",
+  "role": "FS4 EURUSD frontier seal: which candidate sets entered the VALIDATION comparison (TRAIN only)"
+ },
+ {
+  "path": "docs/audits/evidence/canonical_20261003/fs_closure/fs_close/FINAL_SELECTION_MANIFEST.json@269c2d13",
+  "sha256": "7eca0c1d8667f9cccb9d58bc08f3ce69d27a4be64567686c213d8c4d36f3178d",
+  "role": "FS-CLOSE TRAIN manifest (inner folds of the TRAIN rankings that fed phase 3)"
+ },
+ {
+  "path": "$STATE/canonical_20261003/fs4/preliminary/wave2_successor/weekly/STAGE2_LIST.json",
+  "sha256": "ed48484d0fd65fa322227fac50b7b93a3eb7c03d5a3a8dd6ebe75b0442bb0213",
+  "role": "FS4 stage-2 list (computed from stage-1 VALIDATION RAW aggregates)"
+ },
+ {
+  "path": "$STATE/canonical_20261003/fs4/preliminary/wave2_successor/weekly/WEEKLY_SELECTION_COMPLETE.json",
+  "sha256": "a4d1b11d2cebcfdc2f3cb65fd7528650a664cc3effba157162133e8f0eb31591",
+  "role": "FS4 weekly selection closure"
+ },
+ {
+  "path": "$STATE/canonical_20261003/fs4/preliminary/wave2_successor/weekly/FIREWALL.json",
+  "sha256": "6d3d28720551f1203e5dc9608a2cf7d4bd53be0f6de5ed6d2d1fd2d6de5262d1",
+  "role": "FS4 TEST firewall"
+ },
+ {
+  "path": "$STATE/canonical_20261003/fs4_weekly/wave2/weekly_queue.sqlite",
+  "sha256": "d074d2554038feef8dcb783b63fb8d7efbcc5f679dca8d605b4e8f8be7c1d225",
+  "role": "FS4 weekly task store (read-only: split, week_start, validation_first_read_utc)"
+ },
+ {
+  "path": "$STATE/canonical_20261003/i6e/statistical72_v1/INPUT.npz",
+  "sha256": "897caee164286bedea61c4caab361213cf703d3f50e60ba12cee543d9bfa28c9",
+  "role": "I6-E statistical72_v1 INPUT.npz (only the ts array is read)"
+ },
+ {
+  "path": "$STATE/canonical_20261003/i6e/statistical72_v1/TRAIN.npz",
+  "sha256": "77bd5b8b35759747984785469c0aef5cd6f461db11c5165a71b40d0d91151819",
+  "role": "I6-E statistical72_v1 TRAIN.npz (only the ts array is read)"
+ },
+ {
+  "path": "$STATE/canonical_20261003/i6e/multihorizon_2024_v1/INPUT.npz",
+  "sha256": "d9015867fcd8911ecc155adf26510d343fba45a7c06d6738ee7a3eae100a750d",
+  "role": "I6-E multihorizon_2024_v1 INPUT.npz (only the ts array is read)"
+ },
+ {
+  "path": "$STATE/canonical_20261003/i6e/multihorizon_2024_v1/TRAIN.npz",
+  "sha256": "77bd5b8b35759747984785469c0aef5cd6f461db11c5165a71b40d0d91151819",
+  "role": "I6-E multihorizon_2024_v1 TRAIN.npz (only the ts array is read)"
+ },
+ {
+  "path": "$STATE/canonical_20261003/i6e/multihorizon_2024_v2/INPUT.npz",
+  "sha256": "d9015867fcd8911ecc155adf26510d343fba45a7c06d6738ee7a3eae100a750d",
+  "role": "I6-E multihorizon_2024_v2 INPUT.npz (only the ts array is read)"
+ },
+ {
+  "path": "$STATE/canonical_20261003/i6e/multihorizon_2024_v2/TRAIN.npz",
+  "sha256": "77bd5b8b35759747984785469c0aef5cd6f461db11c5165a71b40d0d91151819",
+  "role": "I6-E multihorizon_2024_v2 TRAIN.npz (only the ts array is read)"
+ },
+ {
+  "path": "$STATE/canonical_20261003/i6a/validation_2024/batch_001/targets_train.parquet",
+  "sha256": "9f6827bf5b90ffd4b52c6ad204bb00b6aa25bf7f30eeccb0c3d213f8c7454989",
+  "role": "VALIDATION 2024 targets (sha listed in I6-E source_digests and in lane A validation digests); only t_decision_utc and isfinite masks"
+ },
+ {
+  "path": "<audited draft worktree over 269c2d13>/docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md",
+  "sha256": "d4341e72f4fc05531cfcffd5036c1968d522a105fa534d2add0ae2d10eb56487",
+  "role": "audited I6-N proposal draft (uncommitted)"
+ }
+]

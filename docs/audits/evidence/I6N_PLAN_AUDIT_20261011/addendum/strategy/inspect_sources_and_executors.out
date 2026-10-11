@@ -1,0 +1,96 @@
+== (i) inspected checkout
+HEAD 79977b2197a5cc6cec2801032054341e3c88e5ca branch docs/agent-onboarding-20260816
+origin/master 5c87a25da0a89341d0109d0d49fe1899d01630fc  master a213b65e1b2de4f7385e5304523af52a975b4a3c
+HEAD is an ancestor of origin/master
+blob@HEAD policy=094058959bd50b2947a0bbefd014d3bf6da5fb11 plugin=3a19b3f73917a9714d496d10a719135c9810c3ce
+blob@master policy=094058959bd50b2947a0bbefd014d3bf6da5fb11 plugin=3a19b3f73917a9714d496d10a719135c9810c3ce
+blob@origin/master policy=094058959bd50b2947a0bbefd014d3bf6da5fb11 plugin=3a19b3f73917a9714d496d10a719135c9810c3ce
+worktree status of the two files (empty = clean): []
+16394e2f0d6e358d2acc60e8e2f4ce221224adc452524316dfcaa3d9e6bff9d7  $GH/heuristic-strategy/app/policies/prediction_entry_exit.py
+1a835feeceffc6b38ddf6613fe1c76e11dda1ab6fdb641928fe319d29e8975a1  $GH/heuristic-strategy/app/plugins/plugin_long_short_predictions.py
+-- blob ids at every local branch / remote-tracking ref (policy plugin ref)
+094058959b 3a19b3f739 docs/agent-onboarding-20260816
+094058959b 3a19b3f739 master
+094058959b 3a19b3f739 musashi/presentation-sources-20260927
+094058959b 3a19b3f739 musashi/publication-20260914
+094058959b 3a19b3f739 origin
+094058959b 3a19b3f739 origin/docs/agent-onboarding-20260816
+094058959b 3a19b3f739 origin/master
+094058959b 3a19b3f739 origin/musashi/presentation-sources-20260927
+094058959b 3a19b3f739 origin/satoshi/s08-backtest-naive-gate-20261001
+094058959b 3a19b3f739 origin/satoshi/strategy-experiment-design-20260929
+094058959b 3a19b3f739 satoshi/s08-backtest-naive-gate-20261001
+094058959b 3a19b3f739 satoshi/strategy-experiment-design-20260929
+094058959b 4e3618e3bf codex/continuous-synthetic-20260930
+094058959b 4e3618e3bf origin/codex/continuous-synthetic-20260930
+094058959b 4e3618e3bf origin/satoshi/strategy-support-20260930
+094058959b 4e3618e3bf satoshi/strategy-support-20260930
+094058959b 7802dd3fd7 origin/satoshi/s07-strategy-support-20260930
+094058959b 7802dd3fd7 satoshi/s07-strategy-support-20260930
+== (ii) other copies on this host
+3e1ebec1e7cececbcf9b05c475e671d20438fc29ed6384adfdb1bcf4a896aa92  $CONDA_BASE/lib/python3.12/site-packages/app/plugins/plugin_long_short_predictions.py
+2025-03-14 12:52:34.230308066 -0500 $CONDA_BASE/lib/python3.12/site-packages/app/plugins/plugin_long_short_predictions.py
+base-env dist: $CONDA_BASE/lib/python3.12/site-packages/heuristic_strategy-0.1.0.dist-info
+direct_url: {"dir_info": {}, "url": "file://~/heuristic-strategy"}
+base-env install has app/policies: no
+1:[console_scripts]
+2:heuristic_strategy = app.main:main
+4:[heuristic_strategy.plugins]
+5:default = app.plugins.plugin_long_short_predictions:Plugin
+6:ls_pred_strategy = app.plugins.plugin_long_short_predictions:Plugin
+lts HEAD 12bce5f2c4fe2ab0e6a7433d7208d9e05a9cffaa blob plugins_strategy/heuristic_strategy.py=b8aee0ddd9f6561f7a23627d790e606b6622d2b7 status=[]
+954318e832fa890cdc146fc35f894d485b02bcde4d691a83eef439785658f7d4  $GH/lts/plugins_strategy/heuristic_strategy.py
+== (iii) executors: who resolves or calls a heuristic strategy
+-- predictor audited worktree 269c2d13 (tracked files only; draft docs excluded)
+app/config.py:71:    "use_strategy": False,
+app/config.py:72:    "strategy_plugin_group": "heuristic_strategy.plugins",
+app/config.py:73:    "strategy_plugin_name": "ls_pred_strategy",
+app/data_processor copy.py:709:            # carga el plugin usando strategy_plugin_group y strategy_plugin_name
+app/data_processor copy.py:710:            strategy_plugin_group = config.get("strategy_plugin_group", None)
+app/data_processor copy.py:711:            strategy_plugin_name = config.get("strategy_plugin_name", None)
+app/data_processor copy.py:712:            if strategy_plugin_group is None or strategy_plugin_name is None:
+app/data_processor copy.py:713:                raise ValueError("strategy_plugin_group and strategy_plugin_name must be defined in the configuration.")
+app/data_processor copy.py:714:            plugin_class, _ = load_plugin(strategy_plugin_group, strategy_plugin_name)
+app/data_processor copy.py:913:            result = strategy_plugin.evaluate_candidate(individual, base_df, hourly_df, daily_df, config)
+app/data_processor copy.py:926:            raise ValueError("Both strategy_plugin_group and strategy_plugin_name must be True.")            
+app/optimizer_ga.py:13:from heuristic_strategy import HeuristicStrategy
+generate_binary_configs.py:41:    "use_strategy": False,
+olap/etl_migrate_v2.py:340:        "use_strategy": cfg.get("use_strategy"),
+pipeline_plugins/binary_pipeline.py:77:        "use_strategy": False,
+pipeline_plugins/default_pipeline.py:39:        "use_strategy": False  # Si se activa, se guardan estadísticas extendidas.
+pipeline_plugins/prophet_pipeline.py:64:        "use_strategy": False,
+pipeline_plugins/stl_decomposition_pipeline.py:45:        "use_strategy": False,
+pipeline_plugins/stl_pipeline.py:64:        "use_strategy": False,
+pipeline_plugins/stl_pipeline_old.py:100:        "plot_points": 480, "plotted_horizon": 6, "use_strategy": False,
+-- predictor importers of the two files above (empty = none)
+-- lts: callers of the copied heuristic logic
+app/heartbeat.py:105:            signal = _compute_heuristic_signal(
+app/heartbeat.py:134:def _compute_heuristic_signal(asset, predictions, config) -> Dict[str, Any]:
+app/heartbeat.py:139:    from plugins_strategy.heuristic_strategy import compute_signal
+app/heartbeat.py:180:async def heartbeat_loop(config: Dict[str, Any], db: Database, plugins: Dict = None):
+app/heartbeat.py:193:def start_heartbeat(config: Dict[str, Any], db: Database, plugins: Dict = None):
+app/heartbeat.py:197:    _heartbeat_task = loop.create_task(heartbeat_loop(config, db, plugins))
+tests/test_web_ui.py:81:        from plugins_strategy.heuristic_strategy import compute_signal
+tests/test_web_ui.py:86:        from plugins_strategy.heuristic_strategy import compute_signal
+tests/test_web_ui.py:98:        from plugins_strategy.heuristic_strategy import compute_signal
+tests/test_web_ui.py:107:        from plugins_strategy.heuristic_strategy import should_early_close
+tests/test_web_ui.py:120:        from plugins_strategy.heuristic_strategy import should_early_close
+tests/test_web_ui.py:129:        from plugins_strategy.heuristic_strategy import should_early_close
+tests/test_web_ui.py:139:        from plugins_strategy.heuristic_strategy import _compute_size, DEFAULT_PARAMS
+-- lts entry-point group plugins_strategy (setup.py)
+setup.py:31:        'plugins_strategy': [
+setup.py-32-            'default_strategy=plugins_strategy.default_strategy:DefaultStrategy',
+setup.py-33-            'prediction_strategy=plugins_strategy.prediction_strategy:PredictionBasedStrategy',
+setup.py-34-            'eurusd_mr_strategy=plugins_strategy.eurusd_mr_strategy:EurUsdMrStrategy',
+setup.py-35-            'usdjpy_tsmom_strategy=plugins_strategy.usdjpy_tsmom_strategy:UsdJpyTsmomStrategy',
+setup.py-36-            'usdjpy_dual_momentum_strategy=plugins_strategy.usdjpy_dual_momentum_strategy:UsdJpyDualMomentumStrategy'
+setup.py-37-        ],
+setup.py-38-        # Broker plugins - Connection and execution with brokers
+-- user systemd units mentioning heuristic / prediction_entry_exit (unit names)
+none
+-- agent-multi / gym-fx: strategy.plugins names declared (none is a heuristic forecast strategy)
+setup.py:19:            "default_strategy=strategy_plugins.default_strategy:Plugin",
+setup.py:20:            "direct_fixed_sltp=strategy_plugins.direct_fixed_sltp:Plugin",
+setup.py:21:            "direct_atr_sltp=strategy_plugins.direct_atr_sltp:Plugin",
+setup.py:22:            "shared_execution_envelope=strategy_plugins.shared_execution_envelope:Plugin",
+agent-multi: no reference

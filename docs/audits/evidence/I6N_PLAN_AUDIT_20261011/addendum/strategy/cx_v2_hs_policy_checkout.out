@@ -1,0 +1,78 @@
+api=hs_policy
+module=$GH/heuristic-strategy/app/policies/prediction_entry_exit.py
+module_sha256=16394e2f0d6e358d2acc60e8e2f4ce221224adc452524316dfcaa3d9e6bff9d7
+python=3.12.13 executable_prefix=$CONDA_BASE/envs/trading-stack
+
+[A] scenario construction (verified independently of the module under test)
+  LONG position: entry 1.10000 TP 1.10100 SL 1.09800; long family 1.10020 at [18, 24, 36, 48, 60, 72] h
+    S1: short path 2h=1.10120, 3h=1.10060, 4h=1.10040, 5h=1.10020, 6h=1.10000, 12h=1.09750
+        first TP crossing at 2 h, first SL crossing at 12 h -> owner-expected early_close=False
+    S2: short path 2h=1.09750, 3h=1.10000, 4h=1.10020, 5h=1.10040, 6h=1.10060, 12h=1.10120
+        first TP crossing at 12 h, first SL crossing at 2 h -> owner-expected early_close=True
+  SHORT position: entry 1.10000 TP 1.09900 SL 1.10200; long family 1.09980 at [18, 24, 36, 48, 60, 72] h
+    S1: short path 2h=1.09880, 3h=1.09940, 4h=1.09960, 5h=1.09980, 6h=1.10000, 12h=1.10250
+        first TP crossing at 2 h, first SL crossing at 12 h -> owner-expected early_close=False
+    S2: short path 2h=1.10250, 3h=1.10000, 4h=1.09980, 5h=1.09960, 6h=1.09940, 12h=1.09880
+        first TP crossing at 12 h, first SL crossing at 2 h -> owner-expected early_close=True
+  assertions passed: S1 = (TP@2h, SL@12h), S2 = (TP@12h, SL@2h), S2 is a time permutation of S1
+
+[B] early close, TP-first (S1) vs SL-first (S2); owner-expected (S1, S2) = (False, True)
+  long  variant A: S1 close=True  S2 close=True  identical=True  conforms=False
+  long  variant B: S1 close=False  S2 close=False  identical=True  conforms=False
+  long  variant C: S1 close=True  S2 close=True  identical=True  conforms=False
+  long  variant D: S1 close=False  S2 close=False  identical=True  conforms=False
+  long  variant E: S1 close=False  S2 close=False  identical=True  conforms=False
+  long  variant F: S1 close=False  S2 close=False  identical=True  conforms=False
+  long  variant G: S1 close=False  S2 close=False  identical=True  conforms=False
+  short variant A: S1 close=True  S2 close=True  identical=True  conforms=False
+  short variant B: S1 close=False  S2 close=False  identical=True  conforms=False
+  short variant C: S1 close=True  S2 close=True  identical=True  conforms=False
+  short variant D: S1 close=False  S2 close=False  identical=True  conforms=False
+  short variant E: S1 close=False  S2 close=False  identical=True  conforms=False
+  short variant F: S1 close=False  S2 close=False  identical=True  conforms=False
+  short variant G: S1 close=False  S2 close=False  identical=True  conforms=False
+  should_early_close parameters: ('direction', 'variant', 'short_horizon_predictions', 'long_horizon_predictions', 'stop_loss_price', 'entry_price')  (no take-profit argument)
+
+[C] 200 random within-family permutations of the short S1 path (seed 20261011)
+  long  variant A: distinct decisions = ['True']
+  long  variant B: distinct decisions = ['False']
+  long  variant C: distinct decisions = ['True']
+  long  variant D: distinct decisions = ['False']
+  long  variant E: distinct decisions = ['False']
+  long  variant F: distinct decisions = ['False']
+  long  variant G: distinct decisions = ['False']
+  short variant A: distinct decisions = ['True']
+  short variant B: distinct decisions = ['False']
+  short variant C: distinct decisions = ['True']
+  short variant D: distinct decisions = ['False']
+  short variant E: distinct decisions = ['False']
+  short variant F: distinct decisions = ['False']
+  short variant G: distinct decisions = ['False']
+
+[D] entry (no open position), current price 1.10000
+  D1 short changed, long fixed: entry(short_a)=('long', 1.10072, 1.0998)  entry(short_b)=('long', 1.10072, 1.0998)  unchanged=True  (owner 3.1: must be unchanged)
+     calculate_entry_geometry parameters: ('current_price', 'long_horizon_predictions', 'params')
+  D2 exactly ONE finite long (five NaN): NaN-first order -> ('long', 1.1045, 1.0998); NaN-last order -> ('long', 1.1045, 1.0998); order-independent=True
+  D3 long values permuted across horizons: ('long', 1.10072, 1.0998)  equal_to_D1=True  (owner 3.1 entry uses the min/max of the longs, so order-blind entry CONFORMS)
+
+[E] ordering of horizon keys when 12 heads are present
+  _path() with hours-named keys path_<h>: returned chronological ranks [6, 7, 1, 8, 2, 9, 3, 10, 4, 5, 11, 12]  numeric_order=False
+  _path() with index-named keys path_<1..12>: returned chronological ranks [1, 10, 11, 12, 2, 3, 4, 5, 6, 7, 8, 9]  numeric_order=False
+
+[F] missing head handling (long position, SL 1.09800, TP 1.10100, current price 1.09850)
+  variant A: head 2 filled with current price -> close=True; head 2 as NaN -> close=True; differ=False
+  variant B: head 2 filled with current price -> close=True; head 2 as NaN -> close=True; differ=False
+  variant C: head 2 filled with current price -> close=False; head 2 as NaN -> close=False; differ=False
+  variant D: head 2 filled with current price -> close=False; head 2 as NaN -> close=False; differ=False
+  variant E: head 2 filled with current price -> close=True; head 2 as NaN -> close=False; differ=True
+  variant F: head 2 filled with current price -> close=True; head 2 as NaN -> close=True; differ=False
+  variant G: head 2 filled with current price -> close=False; head 2 as NaN -> close=False; differ=False
+
+[G] source occurrences of the contract vocabulary (request 3.1 / market-week contract)
+  horizon_hours: 0
+  target_timestamp: 0
+  eligible_until: 0
+  available: 2
+  mask: 0
+  isfinite: 3
+  isna: 0

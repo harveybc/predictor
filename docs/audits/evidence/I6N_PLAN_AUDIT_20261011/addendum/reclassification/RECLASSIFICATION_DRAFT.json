@@ -1,0 +1,637 @@
+{
+ "schema": "i6n.plan_audit.addendum.reclassification.v1",
+ "lane": "reclassification",
+ "date": "2026-10-11",
+ "state": "DRAFT_FOR_INTEGRATOR",
+ "original_audit": {
+  "dir": "docs/audits/evidence/I6N_PLAN_AUDIT_20261011",
+  "commit": "4d3af09d",
+  "branch": "satoshi/i6n-plan-audit-20261011",
+  "findings_sha256": "1904ae56effc87aa7bab8a568c1e58b5d829840ff728e6c2ed81ca8aaa958922",
+  "dictamen_sha256": "708e6771216cf88ea11161a1ff61d5cb72325c06c5ca0d237875d3ab95263f51",
+  "corrections_sha256": "5325d833f9758117dbc8658b4b37a101c1bf9970ac9f19e3ff0e9e95d89fa563",
+  "modified_by_this_lane": false
+ },
+ "verdict_after_review": "REVISE_BEFORE_IMPLEMENTATION (unchanged; proposed solutions are not accepted automatically)",
+ "vocabulary": {
+  "DEMONSTRATED_DEFECT": "shown by retained, reproducible evidence on the concrete object",
+  "RISK": "plausible failure not yet tied to the concrete route/object, or evidence not retained",
+  "OWNER_REQUIREMENT": "the owner's written contract requires it; an omission is non-compliance",
+  "METHODOLOGICAL_ALTERNATIVE": "a recommendation the owner may decline; never a compliance failure",
+  "AMBIGUITY_FOR_OWNER": "genuine contract ambiguity; the audit records it and proposes no replacement",
+  "RETRACTED": "an earlier audit claim that was wrong or overstated"
+ },
+ "inputs": {
+  "object": "audited worktree on codex/i6d-weekly-walk-forward-20261009, uncommitted draft over 269c2d13; paths below are relative to its root",
+  "proposal": {"path": "docs/tres_temas_entrevista/program_v3/I6N_JOINT_CONTEXT_CAPACITY_PROPOSAL.md", "sha256": "d4341e72f4fc05531cfcffd5036c1968d522a105fa534d2add0ae2d10eb56487", "alias": "P"},
+  "market_week_contract": {"path": "docs/tres_temas_entrevista/program_v3/BUSINESS_MARKET_WEEK_CONTRACT_2026_10_11.md", "sha256": "604f94809c41613e7346ed630d698591fadd7ecc9961b9e3cb04fcad00c01c76", "alias": "WMC"},
+  "weekly_contract": {"path": "docs/tres_temas_entrevista/program_v3/BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md", "sha256": "d64206b875462c913087ccba387b98422ae51c0ab88c6f490362532867b5a4c1", "alias": "BWC"},
+  "financial_loss_policy": {"path": "docs/tres_temas_entrevista/program_v3/FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md", "sha256": "5032acc642e680fa6c41a4ed58b729a1904de464ef1178a455a8636ba96ca068", "alias": "FLP", "committed_in": "053e318b"},
+  "method_state": {"path": "docs/tres_temas_entrevista/program_v3/PROJECT_METHOD_STATE.json", "sha256": "ee8a23f202e26912bdbbaa811d1e5e56d1921aa6af65517227b1a09dedd60ec4", "alias": "PMS"},
+  "i6e_plan": {"path": "docs/tres_temas_entrevista/program_v3/I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md", "sha256": "129cea8c0f2608926919579c1ce5e0d76f3c0370bb1bd06c28b6b2178fee1234", "alias": "I6E"},
+  "i6a_campaign": {"path": "docs/tres_temas_entrevista/program_v3/I6A_ARCHITECTURE_CAMPAIGN_2026_10_08.md", "sha256": "3cb2cebc9bdd7bf97d94cbafec070c79c57a3fc84e1b8c4f7c66396f47208bd5", "alias": "I6A"},
+  "master": {"path": "docs/tres_temas_entrevista/MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md", "sha256": "c0fc85c3d5e44aa58af4567974c914119450e89552dd8cce8e481a26792a4e59", "alias": "MASTER"},
+  "evaluator": {"path": "tools/modular_candidate_evaluator.py", "sha256": "b77374c860ce0518cd5a11c196aa1e897f29678278d4e6c2e3d315081cbcbfbf"},
+  "i6m_data": {"path": "tools/i6m_data.py", "sha256": "e4ed00fca63d29109aa57ce239c77499e0d230ea3989ff25b0a0d87bf2f1ffdf"},
+  "i6m_prepare": {"path": "tools/i6m_prepare.py", "sha256": "e55d48dbb2eb4831d9ad95d593acf9dfeff5113adc423c7c98f22a176c1ebcff"},
+  "deap_docs": {
+   "status": "FETCHED_2026-10-11",
+   "urls": ["https://deap.readthedocs.io/en/master/", "https://deap.readthedocs.io/en/master/api/algo.html"],
+   "quotes": [
+    "DEAP is a novel evolutionary computation framework for rapid prototyping and testing of ideas. It seeks to make algorithms explicit and data structures transparent.",
+    "deap.algorithms.eaSimple(population, toolbox, cxpb, mutpb, ngen[, stats, halloffame, verbose])",
+    "population - A list of individuals. toolbox - A Toolbox that contains the evolution operators. cxpb - The probability of mating two individuals. mutpb - The probability of mutating an individual. ngen - The number of generation.",
+    "First, it evaluates the individuals with an invalid fitness. Second, it enters the generational loop where the selection procedure is applied to entirely replace the parental population.",
+    "evaluate(population) / for g in range(ngen): population = select(population, len(population)); offspring = varAnd(population, toolbox, cxpb, mutpb); evaluate(offspring); population = offspring"
+   ],
+   "note": "Quotes are the text returned by the fetch tool for those pages; re-check against the live pages before citing externally."
+  }
+ },
+ "retained_check": {
+  "script": "addendum/reclassification/quote_check.sh",
+  "script_sha256": "a4935ed0b5dd78ee3c394f886d00708cf4c404235d8d51f1e3da69fc8bea0590",
+  "command": "CUDA_VISIBLE_DEVICES=\"\" crispdm-run -q -m 512M -t 5m -n i6n-add-reclassification -- bash -c 'bash ./quote_check.sh \"$0\" \"$1\" > quote_check.out' <OBJ> <AUD>   (run from addendum/reclassification; OBJ = audited worktree root, AUD = original audit dir)",
+  "output": "addendum/reclassification/quote_check.out",
+  "output_sha256": "5b0a6796cb4565d1289ed16b5d9e239417fb68393f091a86b18d1ec5e37570e6",
+  "run_date": "2026-10-11",
+  "reads": "documents and probe files only; no market data, no TEST rows, no credentials",
+  "note": "A first run that redirected crispdm-run's own stdout produced a truncated file (ended inside the X-A5 block); it was discarded. The retained output was produced with the redirection inside the scope and is byte-identical to a direct run."
+ },
+ "findings": [
+  {
+   "id": "I6N-AUD-01",
+   "original": {"severity": "CRITICAL", "status": "CONTRADICTION"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": "feature provenance lane (exact equality 20 features == union of FS4 weekly winners; selection data and dates)",
+   "split": {
+    "DEMONSTRATED_DEFECT": ["P:21 names the 20 features only as 'RAW retenidas' and does not state what data selected them, while the repository itself states the set 'was selected using later validation' (I6A:51-52). The plan carries no provenance field into identity or result labels."],
+    "RISK": ["Exact provenance (union of 14 EURUSD FS4 weekly winners chosen by mean over all sealed 2024 VALIDATION weeks; candidate rankings including fold inner_2023) rests on an inline sub-auditor check with no retained script or output (EVIDENCE_MANIFEST X-A5: script 'sub-auditor A inline check'). Pending provenance lane.", "The FS4 selection targeted horizons (1,96,120,144 h) partly outside the new grid; P:21 already disclaims per-h optimality, so this is a relevance risk, not a defect."],
+    "OWNER_REQUIREMENT": ["BWC:45-47: the procedure is selected on the validation year and frozen before test; using VALIDATION 2024 for development/selection is allowed.", "BWC BW12 (line 149): selection never fits on the scored external week. I6-N VALIDATION 2024 dispositions computed with a manifest selected on those same weeks therefore cannot be presented as an independent weekly walk-forward evaluation.", "FLP:101-102: a historical period that influenced decisions is not reused as untouched.", "TEST 2025 stays sealed and is the confirmation (P:43, P:168, BWC:46-47)."],
+    "METHODOLOGICAL_ALTERNATIVE": ["A TRAIN-only manifest per fold cutoff, as a separate identified arm. Not required; no automatic redo of the selection."],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [
+    {"quote": "contains one methodological contradiction (I6N-AUD-01)", "where": "DICTAMEN.md verdict paragraph", "correction": "Development use of VALIDATION 2024 is allowed by BWC:45-47. The defect is undeclared provenance, plus the consequences: VALIDATION 2024 cannot be called independent, and the 2023 screens are not a point-in-time simulation."},
+    {"quote": "Executed set-equality: the 20 members equal the union of the 14 EURUSD FS4 weekly winners", "where": "FINDINGS.json AUD-01 evidence", "correction": "This was an inline check, not retained. It is CRITICAL evidence and must be retained with script, inputs and output (provenance lane)."},
+    {"quote": "Future-informed selection: confirmed", "where": "DICTAMEN.md answers item 3", "correction": "Validation-informed selection: declared development use. It is not an independent result."}
+   ],
+   "minimal_correction": "Add one provenance line to P section 2 with the manifest digest, the selection data (VALIDATION 2024 weekly winners; rankings including inner_2023) and the latest label date used. Carry feature_selection_used=VALIDATION_2024 into identity. Label I6-N VALIDATION 2024 outputs DEVELOPMENT_VALIDATION_INFORMED_FEATURES and the 2023 screening outputs NOT_POINT_IN_TIME. Keep TEST 2025 untouched as the only confirmation. Do not order a redo of the selection."
+  },
+  {
+   "id": "I6N-AUD-02",
+   "original": {"severity": "CRITICAL", "status": "NO_IMPLEMENTADO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "CRITICAL for U_h and strategy results only; does not block S_h forecasting stages",
+   "pending_lane_evidence": "strategy / effective-plugin lane",
+   "split": {
+    "DEMONSTRATED_DEFECT": ["Retained probe output, variants A and C only: for the inspected policy file (blob 0940589, heuristic-strategy origin/master 5c87a25), TP-first and SL-first give the same early-close decision, for buy and for sell (strategy_counterexample.out lines 2,4,10,12). Whether this is the plugin the executor loads is pending."],
+    "RISK": ["Static code citations (positional Prediction_h mapping, lexicographic key sort at >=10 horizons, missing column filled with current price, no masks/abstention/calendar). These are tied to the inspected commit, not yet to the plugin the executor loads.", "'Installed site-packages copy differs and uses short+long for entry': no retained evidence."],
+    "OWNER_REQUIREMENT": ["P:34-35 'Verificar el plugin efectivo: min/max sin orden temporal no certifica esta regla' (the owner's own requirement).", "WMC:127-129: unusable heads are never filled with the current price; the adapter must consume masks.", "WMC:149-155: entry from valid longs; early close orders shorts and longs and looks for SL before TP."],
+    "METHODOLOGICAL_ALTERNATIVE": ["The detailed repair design (index->horizon_hours->target_timestamp map, tie and no-crossing rules) is one implementation option."],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [
+    {"quote": "executed counterexample TP@2h/SL@12h vs SL@2h/TP@12h gives identical decisions for all seven variants, buy and sell", "where": "FINDINGS.json AUD-02", "correction": "Only variants A and C trigger an early close in either scenario. B, D, E, F and G close in neither, so their 'identical=True' says nothing about time order."},
+    {"quote": "probes/a/strategy_counterexample.out (sha256 d9e1399f...)", "where": "retained output", "correction": "The output is not what the retained script prints. Lines 17-19 repeat as 21-23. Line 20 ('calculate_entry_geometry signature has no short argument: False') is printed by no line of the retained script (quote_check.out). The file concatenates at least two runs of two script versions and must be regenerated by the strategy lane."},
+    {"quote": "Installed site-packages copy differs and uses short+long for entry.", "where": "FINDINGS.json AUD-02", "correction": "Unretained. Tie the claim to the import path the executor resolves at run time (strategy lane)."}
+   ],
+   "minimal_correction": "Before any U_h or strategy result, add a DAG node that resolves and pins the plugin the executor actually imports (commit, blob and import path recorded at run time) and runs the TP-first/SL-first test, plus the mask and numeric-order tests, against that import. S_h forecasting stages do not wait for this node."
+  },
+  {
+   "id": "I6N-AUD-03",
+   "original": {"severity": "CRITICAL", "status": "NO_ESPECIFICADO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": ["Retained grid (probes/cde/out.json): with L={1,2,4,6}*h, an absolute 24 h context is reachable only for h in {4,6,12,24} and 168 h for no h. This is a fact about the declared grid; whether it matters is a design question."],
+    "RISK": ["The sequential N2->N3 order may miss interactions between transform, supervision and window. The IA-06/IA-07 counterexamples are hypothetical; nothing was executed."],
+    "OWNER_REQUIREMENT": ["P:148-149 already requires controlled contrasts that separate the transform effect from the supervision effect; the audit adds nothing mandatory here."],
+    "METHODOLOGICAL_ALTERNATIVE": ["Input transform and output mode as N2 genes, or each evaluated at >=2 windows.", "Absolute L candidates {24,72,168} h where support allows."],
+    "AMBIGUITY_FOR_OWNER": ["MASTER:315 states a branch-extractor default 'ventana fisica minima de 24 h'. Does that default bind the I6-N window grid for h=2,3,5?"]
+   },
+   "overclaims": [
+    {"quote": "Contradicts request 'do not infer 2*h is a law'.", "where": "FINDINGS.json AUD-03", "correction": "Retracted. The grid {1,2,4,6}*h is not a 2*h law. It ties L to h, which is a design choice."},
+    {"quote": "h=2,3 never reach the master's 24 h minimum window", "where": "FINDINGS.json AUD-03", "correction": "MASTER:315 states a default, not a minimum for every experiment. Reclassified as AMBIGUITY_FOR_OWNER."}
+   ],
+   "minimal_correction": "Declare in P section 5 that L is h-proportional by design and that absolute contexts are out of scope (or add them). State which conclusions N3 can support given the sequential order."
+  },
+  {
+   "id": "I6N-AUD-04",
+   "original": {"severity": "CRITICAL", "status": "NO_ESPECIFICADO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": "calendar lane (for the h=72 support part only)",
+   "split": {
+    "DEMONSTRATED_DEFECT": ["The N4 transfer rule is undefined. The admissible delta_x set differs by h (retained grid: h=2 {2,1}, h=3 {3,1}, h=5 {5,1}; k=9 only for h in {18,36,72}), so 'transferir hasta dos recetas' (P:163) does not determine a model for every h."],
+    "RISK": ["h=72 has the least within-week support (calendar-conditional; see AUD-07)."],
+    "OWNER_REQUIREMENT": ["P:163-164 itself requires explicit windows and shapes ('con ventanas/formas explicitas'), so the 12 triples are the plan's own requirement."],
+    "METHODOLOGICAL_ALTERNATIVE": ["Per-family extreme representatives (2/12 and 18/72); a per-h TRAIN-inner check of the top recipes."],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [
+    {"quote": "Optimizing only h=4 and h=72 and transferring <=2 recipes is not per-horizon optimization", "where": "FINDINGS.json AUD-04", "correction": "Retracted as a defect. P:163-164 does not claim per-h optimization ('no llamarlas optimas en horizontes no estudiados'). It is a declared scope."},
+    {"quote": "delta_x=h/2 is fractional for h=3,5", "where": "FINDINGS.json AUD-04", "correction": "The N1 anchor applies only to h=4 and h=72, which are both even. The point matters only if N4 transfers relative rules."}
+   ],
+   "minimal_correction": "Before N4, publish the transfer rule (relative or absolute, with a fallback for an inadmissible k) and the resulting 12 (L, delta_x, n) triples."
+  },
+  {
+   "id": "I6N-AUD-05",
+   "original": {"severity": "CRITICAL", "status": "NO_ESPECIFICADO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": ["The plan names tolerance and stopping rule but gives no values (P:140-141 'Se sella la tolerancia y regla de parada antes del fit'). Fitness combination, population, generations, selection, crossover/mutation rates, repair and DEAP RNG seed are absent (PARAMETER_AUDIT rows 75-85). DEAP cannot run reproducibly without them."],
+    "RISK": ["With 24 new evaluations per representative and one training seed, rank differences may fall within seed and fold noise, so the search is likely inconclusive. P:140-141 already concedes it 'describe una meseta explorada, no demuestra optimo global'."],
+    "OWNER_REQUIREMENT": ["P:140-142: tolerance and stopping rule sealed before any fit.", "P:133-135: mutation and crossover respect the hierarchical schema and exclude inactive combinations from identity.", "P:139: ranking by aggregated fold error and measured cost (components named; combination not).", "Owner review 2026-10-11 endorses requiring explicit fitness, population, operators and stopping.", "P:46: seed 6102026, no repetition of identical units (owner rule; not a defect)."],
+    "METHODOLOGICAL_ALTERNATIVE": ["Seed-noise calibration of 3 seeds x 3 configs x 4 folds = 36 fits per representative (72 for h=4 and h=72), i.e. 12.2% or 24.3% of the 296-fit N1-N3 ceiling. Optional. Justification: only needed if the tolerance is meant to be read as exceeding training-seed noise. Zero-fit options: base the tolerance on paired between-fold dispersion of the N1 configs, or declare it as a practical resolution in price units (cf. FLP:107-110)."],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [
+    {"quote": "24 evaluations from <=3 N1 survivors = one or two seeded generations, i.e. local screening.", "where": "FINDINGS.json AUD-05", "correction": "Retracted as a universal claim. DEAP defines the algorithm by its operators and loop (eaSimple: evaluate; for g in range(ngen): select, varAnd, evaluate), with population size and ngen as free parameters and no minimum number of evaluations. With 24 evaluations it is a small, budgeted genetic search seeded by N1 survivors, likely inconclusive. The generation count depends on the unspecified population size."},
+    {"quote": "Either name N2 'seeded local screening' or give a real GA budget", "where": "FINDINGS.json AUD-05 remediation", "correction": "Retracted. Neither renaming nor a larger budget is required. Required: explicit numeric fitness, population, operators, repair, tolerance and stopping."},
+    {"quote": "h=72 space ~1.6e6 configs", "where": "FINDINGS.json AUD-05", "correction": "Not retained in any probe output (quote_check.out: 0 occurrences). Withdraw the figure or retain its computation."},
+    {"quote": "calibrate seed noise (3 seeds x 3 configs x 4 folds) and set tolerance >= 2 SD", "where": "FINDINGS.json AUD-05; CORRECTIONS_REQUIRED step 5", "correction": "Recast as METHODOLOGICAL_ALTERNATIVE with its cost. Required only: seal the tolerance and state its basis."},
+    {"quote": "single seed with no seed-noise estimate", "where": "FINDINGS.json AUD-05", "correction": "Retracted as a defect. Single seed is the owner's rule (P:46)."}
+   ],
+   "minimal_correction": "Before N2, seal numerically: fitness (how error and cost combine; aggregation across folds), population size and generations (pop x gens <= 24 new), selection, crossover and mutation operators and rates on the hierarchical genotype, repair/canonicalization, DEAP RNG seed, tolerance with its stated basis, and the stopping rule. Name N2 'small budgeted genetic search seeded by N1'."
+  },
+  {
+   "id": "I6N-AUD-06",
+   "original": {"severity": "CRITICAL", "status": "NO_ESPECIFICADO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": "architecture/temporal-alignment lane (known-weight controls on the concrete reducer route)",
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["The probes used synthetic Conv1D(filters=4, kernel=2, strides=2) layers with random seeded weights (check.py:20,22), not the reducer route the plan will implement; the plan's reducer kernel is unspecified and the existing stage uses kernel 3. A perturbation that leaves the last output unchanged may be caused by the weights, not by temporal disconnection; known-weight or receptive-field-index controls are needed. 'True' results show connectivity for those synthetic layers only.", "Static: the existing _residual_temporal_stage raises on odd n (components.py:294-295), so a route reusing it cannot run at odd n."],
+    "OWNER_REQUIREMENT": ["P:128-130: every route declares its support and covers t, and never reproduces the origin-3 lag. The plan states the requirement but no padding/alignment rule that guarantees it."],
+    "METHODOLOGICAL_ALTERNATIVE": ["Origin-anchored left-pad to a multiple of the factor with kernel=stride=factor is one option. Odd-length enforcement with right-aligned causal stages is another."],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [
+    {"quote": "Executed probe: stride-2 causal conv covers t only for odd length; 55->28 keeps t, 28->14 loses it", "where": "FINDINGS.json AUD-06", "correction": "Shown for synthetic kernel-2 stride-2 layers with random weights, not for the concrete route. Recast as RISK until the architecture lane reruns it with known weights on the route to be implemented."},
+    {"quote": "Same defect class as the FS4 origin-3 lag", "where": "FINDINGS.json AUD-06", "correction": "An analogy, not evidence."}
+   ],
+   "minimal_correction": "For each reduction mode (none, progressive, final only), state the padding/alignment rule and the admissible n per stage. Make the acceptance test use known weights on that route."
+  },
+  {
+   "id": "I6N-AUD-07",
+   "original": {"severity": "MAJOR", "status": "AMBIGUO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": "calendar lane",
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["Structural, from the contract's own example (WMC:115, B-A about 96 h): a full week has about (B-A)-h management origins, so about 24 for h=72. Exact counts (87 scorable in four ILLUSTRATIVE 2023 weeks the plan does not name; 1,272 VALIDATION h=72 eligible; zero support in a holiday-aware first week) depend on an ASSUMED calendar (NY 17:00, offsets 12+12, Thursday 00:00 cut)."],
+    "OWNER_REQUIREMENT": ["WMC:122 and P:65-68: a support table by h/week/role before training. This is already in the plan; the audit adds nothing mandatory."],
+    "METHODOLOGICAL_ALTERNATIVE": ["Another long representative, more screening weeks, a power statement."],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [
+    {"quote": "h=72 is a poor representative", "where": "FINDINGS.json AUD-07", "correction": "A judgement, recast as RISK. Every count must carry its calendar id."}
+   ],
+   "minimal_correction": "Produce the N0 support table (already required) from the versioned calendar. Report per-representative support before N1."
+  },
+  {
+   "id": "I6N-AUD-08",
+   "original": {"severity": "MAJOR", "status": "AMBIGUO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": "calendar lane (bar label convention)",
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["The DST-start week anomaly is judged against an assumed open time (probes/a/bar_clock). With open-labelled bars, input and target would shift by one hour."],
+    "OWNER_REQUIREMENT": ["WMC:53-55: O/C come from a versioned instrument calendar. The bar label convention must be fixed in that artifact for WMC:131-133 (h<R(t)) to be checkable."],
+    "METHODOLOGICAL_ALTERNATIVE": [],
+    "AMBIGUITY_FOR_OWNER": ["Whether source bars are open- or end-labelled."]
+   },
+   "overclaims": [],
+   "minimal_correction": "Declare the bar label convention in the calendar artifact and test it."
+  },
+  {
+   "id": "I6N-AUD-09",
+   "original": {"severity": "MAJOR", "status": "NO_ESPECIFICADO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": "calendar / temporal-alignment lane",
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["Missing-slot fractions (29.4%, 33.7%, 33.2%) are computed on origins from the assumed calendar. Conv1D and LSTM read zero placeholders in the inherited code (static citation)."],
+    "OWNER_REQUIREMENT": ["WMC:61-67: keep timestamps, temporal distance, market and availability masks; do not stitch Friday to Monday; do not invent prices. P:37 says only 'Sin suavizado/interpolacion', so the placeholder/mask rule must be stated."],
+    "METHODOLOGICAL_ALTERNATIVE": ["Bit-identical placeholder invariance on every route (strong). Alternative: zero placeholder plus presence channel with declared semantics, as inherited."],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [],
+   "minimal_correction": "State in P section 2 the placeholder value, presence channel and per-route masking rule."
+  },
+  {
+   "id": "I6N-AUD-10",
+   "original": {"severity": "MAJOR", "status": "NO_ESPECIFICADO"},
+   "status_after_review": "CONFIRMED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": "calendar lane (counts)",
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["The counts of 2025-target rows in the last 2024 market week come from calendar timestamps only; no 2025 price was read."],
+    "OWNER_REQUIREMENT": ["TEST 2025 sealed (P:43; BWC:123-125 ObjectiveFirewall), so VALIDATION scoring may not read a 2025 price."],
+    "METHODOLOGICAL_ALTERNATIVE": [],
+    "AMBIGUITY_FOR_OWNER": ["WMC:77-78 'debe pertenecer al split' does not say whether the origin or the target timestamp decides membership."]
+   },
+   "overclaims": [],
+   "minimal_correction": "Declare the split-membership rule at every boundary (TRAIN/inner, VALIDATION/TEST) and type the excluded rows."
+  },
+  {
+   "id": "I6N-AUD-11",
+   "original": {"severity": "MAJOR", "status": "CONTRADICTION"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": "calendar lane",
+   "split": {
+    "DEMONSTRATED_DEFECT": ["P:43 copies '53 segmentos' from I6E:131-136, whose segmentation is Monday-based with a two-day final fragment and a 'cutoff del lunes anterior'. The plan does not derive the count from the market calendar."],
+    "RISK": ["If the I6-E segmenter or executor is reused, fit cutoffs would violate WMC:14-19 / WMC06. Under the assumed market calendar there are also 53 market weeks with A in 2024 (wmc_calendar.out:152), so the count may coincide while its basis differs."],
+    "OWNER_REQUIREMENT": ["WMC:14-19 (cutoff = close C of the previous week; fit between C and O) and WMC:53-55 (holidays and early closes from a versioned calendar)."],
+    "METHODOLOGICAL_ALTERNATIVE": [],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [
+    {"quote": "'53 segments' and the Monday 00:00 UTC cutoff inherited from I6-E contradict the market-week contract (WMC06).", "where": "FINDINGS.json AUD-11", "correction": "The proposal text adopts the closure cutoff (P:26-27, P:40-41). The inconsistency is the inherited segment term and its undeclared basis, not a contradiction in the proposal's own cutoff rule."}
+   ],
+   "minimal_correction": "Derive the VALIDATION segment list and the 2023 screening weeks from the versioned calendar. State the cutoff and release of each."
+  },
+  {
+   "id": "I6N-AUD-12",
+   "original": {"severity": "MAJOR", "status": "AMBIGUO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": ["P does not declare update_mode, which BWC:59 makes mandatory.", "P:103-104 requires the calendar sealed before running but does not name the four 2023 screening weeks."],
+    "RISK": [],
+    "OWNER_REQUIREMENT": ["Early-stopping monitor = TRAIN/inner average, patience 5, best-weight restore (P:142; I6E:120). This is the owner's contract and the audit does not replace it.", "update_mode FULL_RETRAIN_ROLLING_4Y or WARM_UPDATE_ROLLING_4Y declared (BWC:59-67); checkpoint-selection procedure sealed (BWC:69-73).", "Per-unit evidence of updates, early stopping and chosen checkpoint (BWC:159-163)."],
+    "METHODOLOGICAL_ALTERNATIVE": ["Inner-only monitor as an OPTIONAL contrast, not a replacement. Zero-fit diagnostic: the evaluator history already logs train_loss and validation_loss per epoch, so the epoch an inner-only monitor would pick, and its inner-loss gap, can be reported without refits. Optional paired refit with monitor='validation_loss' (supported at evaluator:395): 2 configs x 2 representatives x 4 folds = 16 fits (5.4% of 296)."],
+    "AMBIGUITY_FOR_OWNER": ["'promedio TRAIN/inner': the implementation is the unweighted 0.5*(epoch-running TRAIN loss + end-of-epoch inner loss) (evaluator:395-396). Confirm unweighted, running (not end-of-epoch) TRAIN term.", "'inner' names two sets: the per-fit four-week chronological tail (I6E:117-118; i6m_data.py:51, 28 days) and the 2023 screening weeks ('Cuatro semanas internas de 2023', P:103).", "BWC:69 'La seleccion de checkpoint usa una cola cronologica interna' vs a monitor that also includes the TRAIN term. The owner's explicit choice (P:142) stands; recorded only."]
+   },
+   "overclaims": [
+    {"quote": "Name the four weeks; monitor inner-only loss; declare FULL_RETRAIN and init rule.", "where": "FINDINGS.json AUD-12 remediation", "correction": "'monitor inner-only loss' is withdrawn as a required correction and recast as an optional METHODOLOGICAL_ALTERNATIVE. Naming the weeks and declaring update_mode remain owner requirements."},
+    {"quote": "inner-only monitor", "where": "CORRECTIONS_REQUIRED step 5", "correction": "Same as above."}
+   ],
+   "minimal_correction": "Name the four 2023 screening weeks. Declare update_mode and init rule. Confirm the monitor exactly as the owner wrote it, with its two ambiguities resolved in words. Optionally add the zero-fit inner-only diagnostic."
+  },
+  {
+   "id": "I6N-AUD-13",
+   "original": {"severity": "MAJOR", "status": "NO_ESPECIFICADO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["A forecast failure inside the common support would unpair compared configs unless a rule says how it enters fitness."],
+    "OWNER_REQUIREMENT": ["WMC:182-193: S_h, coverage over all eligible rows, and failures published. WMC:195-205: U_h separately named.", "P:68-69: common support per h sealed for the largest candidate history (pairing is already required)."],
+    "METHODOLOGICAL_ALTERNATIVE": ["Fitness = S_h only. Forecast failure as disqualifying, or a coverage threshold."],
+    "AMBIGUITY_FOR_OWNER": ["'error agregado de los folds' (P:139): pooled errors/counts, or mean of fold MAEs? (P:167 fixes pooling only for the annual MAE.)", "Which recipe the strategy consumes when N4 keeps two recipes per h (P:163)."]
+   },
+   "overclaims": [
+    {"quote": "S_h unpaired across configs ... no intersection/coverage rule", "where": "FINDINGS.json AUD-13", "correction": "Retracted in part. P:68-69 seals a common support per h, and P:64 requires coverage and failures. What remains is the failure rule inside that support."}
+   ],
+   "minimal_correction": "State the fold aggregation of the fitness error, the treatment of forecast failures inside the sealed common support, and the recipe-per-h map that U_h uses."
+  },
+  {
+   "id": "I6N-AUD-14",
+   "original": {"severity": "MAJOR", "status": "NO_ESPECIFICADO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": ["Values used by the inherited code but stated in no governing document: huber_delta=1.0 (MAD units), min_delta=0, max_seconds=3600, max_updates=1e5 (i6m_prepare.py:63-65)."],
+    "RISK": ["Fits truncated by max_seconds are scored like ordinary fits (static citation, evaluator:343-348,433), which can confound capacity with budget.", "A monitor including the TRAIN term may delay stopping for high-capacity configs (hypothesis IA-09; not measured)."],
+    "OWNER_REQUIREMENT": ["FLP is registered as the program's financial_loss_policy (PMS documents.financial_loss_policy). FIN-LOSS-OPT is a separate DESIGNED task (PMS: owner M04). FLP:8 makes the MAE/Huber x Adam/AdamW comparison mandatory in financial forecasting. FLP:23-25 places it before fixing the recipe of financial representation/pretraining comparisons. FLP:50-52 compares recipes first and only then freezes the recipe for R0/R1/R2. FLP:83-84 tunes LR/decay (and delta for Huber) using only train and inner temporal validation. Consequence for I6-N: the inherited Huber/AdamW/lr=1e-3 recipe (P:143 'inicialmente'; I6E:118-120) must be declared provisional and must not be frozen for R0/R1/R2 or presented as the financial recipe before FIN-LOSS-OPT.", "BWC:159-163: record updates, early stopping and chosen checkpoint per unit (stop reason, selected epoch, observed updates)."],
+    "METHODOLOGICAL_ALTERNATIVE": ["LR check {3e-4,1e-3,3e-3} on the smallest and largest configs: 2 extra LR x 2 configs x 2 representatives x 4 folds = 32 extra fits (10.8% of 296).", "Type budget-stopped fits as RESOURCE rather than scoring them as inferior."],
+    "AMBIGUITY_FOR_OWNER": ["Does FLP:8 require the 4-recipe factorial inside I6-N's own search, or only before the recipe is frozen for R0/R1/R2 (FLP:23-25, 50-52)?"]
+   },
+   "overclaims": [
+    {"quote": "Fit hyperparameters absent from the proposal", "where": "FINDINGS.json AUD-14", "correction": "P:143 defers to the inherited contract written at I6E:117-120 (AdamW, lr 0.001, wd 0.0001, Huber, batch 256, max_epochs 50, patience 5, monitor), so these are specified by reference. Only the four code-only values are unstated."},
+    {"quote": "monitor favours high capacity", "where": "FINDINGS.json AUD-14", "correction": "Not measured. Recast as RISK."},
+    {"quote": "Contradicts FINANCIAL_LOSS_OPTIMIZER_POLICY_2026_09_21.md:8,83-88", "where": "FINDINGS.json AUD-14", "correction": "There is no direct contradiction: P uses the recipe 'inicialmente' and FIN-LOSS-OPT is a separate task. The owner requirement is ordering and labelling (provisional recipe, not frozen before FIN-LOSS-OPT). The LR grid is a recommendation."}
+   ],
+   "minimal_correction": "In P section 5, list every fit value, including the four code-only ones, or cite I6E:117-120 for the rest. Declare the recipe PROVISIONAL_PENDING_FIN_LOSS_OPT. Record stop reason, selected epoch and observed updates per fit."
+  },
+  {
+   "id": "I6N-AUD-15",
+   "original": {"severity": "MAJOR", "status": "NO_ESPECIFICADO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR (blocks N4-M only)",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["About 3x more gradient mass for h=18 than h=72 if heads are unweighted. Derived from calendar-conditional counts (78 vs 24)."],
+    "OWNER_REQUIREMENT": ["WMC:100,104: per-h target scales and loss weights fitted only on eligible TRAIN labels, normalized by label count, and declared. P:175-176 promises this but gives no values; they must be sealed before N4-M."],
+    "METHODOLOGICAL_ALTERNATIVE": ["Report each head's share of the gradient norm."],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [],
+   "minimal_correction": "Seal w_h and s_h (rule and values from TRAIN eligible labels) before N4-M. N1-N3 do not wait for this."
+  },
+  {
+   "id": "I6N-AUD-16",
+   "original": {"severity": "MAJOR", "status": "AMBIGUO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": "architecture lane (positional code on the concrete route, known inputs)",
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["If ClockView (i6e_masked_model.py:40-47) is reused, t's positional code varies with L. The retained probe only computes (n-1)*spacing arithmetic (check.py:52) and does not execute the model code. The aliasing for delta_x>=7 h is unretained."],
+    "OWNER_REQUIREMENT": [],
+    "METHODOLOGICAL_ALTERNATIVE": ["Origin-anchored lag-hour encoding; explicit pre/post-LN and warmup."],
+    "AMBIGUITY_FOR_OWNER": ["Family label 'Transformer + Conv1D' (P:86) vs entry 'Conv1D+Transformer' (P:119). Read with P:89 (1x1 Conv1D projects to d_model) and P:99-100 (position before any Transformer), the order is probably Conv1D projection -> Transformer -> Conv1D reducers, but this is not written as one rule.", "Repair for family=Transformer with blocks=0."]
+   },
+   "overclaims": [
+    {"quote": "ClockView counts hours from window start (i6e_masked_model.py:40-47) so t's code varies with L and aliases for delta_x>=7 h", "where": "FINDINGS.json AUD-16", "correction": "The variation with L is a static reading; the aliasing is not retained. Pending the architecture lane."}
+   ],
+   "minimal_correction": "Write the layer order and norm placement as one rule, and state the positional encoding formula and its origin."
+  },
+  {
+   "id": "I6N-AUD-17",
+   "original": {"severity": "MAJOR", "status": "AMBIGUO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MINOR",
+   "pending_lane_evidence": "architecture lane (link to concrete adapter route)",
+   "split": {
+    "DEMONSTRATED_DEFECT": ["Retained (probes/cde/out.json lstm_last_vs_nosequence_maxabs = 0.0; weights copied between the two layers, so a known-weight control by construction): with the stated head 'ultimo estado -> Dense(1)' (P:92), LSTM return_sequences=True followed by last-step read equals return_sequences=False. The flag is inert under the stated head."],
+    "RISK": [],
+    "OWNER_REQUIREMENT": [],
+    "METHODOLOGICAL_ALTERNATIVE": ["A readout gene {last, masked mean, attention pool}."],
+    "AMBIGUITY_FOR_OWNER": ["P:100-101 says the head decides how to read the sequence, but P:92 fixes last-state."]
+   },
+   "overclaims": [
+    {"quote": "[MAJOR]", "where": "severity", "correction": "An inert flag with no effect on the model is MINOR."}
+   ],
+   "minimal_correction": "Either declare the readout options or state that last-state readout makes return_sequences=True equivalent."
+  },
+  {
+   "id": "I6N-AUD-18",
+   "original": {"severity": "MAJOR", "status": "NO_ESPECIFICADO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": ["P:133-135 sets no canonicalization rule for inactive genes, although it requires excluding them from identity."],
+    "RISK": ["Static citations show existing components (DEAP plugin with flat bounded scalars, DOIN wrapper {param:[low,high]}, I6 identity hashing the full arm dict) cannot consume a hierarchical genotype. Under the audit's own rule, the absence of the new executor is not a defect in itself."],
+    "OWNER_REQUIREMENT": ["P:133-135: hierarchical operators; inactive genes excluded from identity."],
+    "METHODOLOGICAL_ALTERNATIVE": [],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [
+    {"quote": "Nothing can consume the hierarchical genotype", "where": "FINDINGS.json AUD-18", "correction": "Change to: no existing component consumes it."}
+   ],
+   "minimal_correction": "Specify the genotype schema and the canonicalizer, and name the components still to be built."
+  },
+  {
+   "id": "I6N-AUD-19",
+   "original": {"severity": "MAJOR", "status": "NO_ESPECIFICADO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": ["P:165 'una resolucion elegida en TRAIN por h' gives no selection criterion."],
+    "RISK": ["Failures of the I6-E-M ARIMA arms (46/128; QUEUE.db inline read X-F1, not retained) suggest that, under P:166 'Fallos tipados no reciben MAE anual', an h may end with no annual ARIMA control. The new N4 arms differ, so this is not demonstrated for them."],
+    "OWNER_REQUIREMENT": ["ARIMA(1,1,0) is the owner's sealed control order (I6E:111), not a defect.", "P:166: typed failures get no annual MAE."],
+    "METHODOLOGICAL_ALTERNATIVE": ["TRAIN failure disqualifies a resolution; NOT_COMPARABLE per h."],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [
+    {"quote": "cannot produce an annual result under current failure rules", "where": "FINDINGS.json AUD-19", "correction": "This holds for the I6-E-M arms observed. For N4 it is a RISK."},
+    {"quote": "Fixed order (1,1,0)", "where": "FINDINGS.json AUD-19", "correction": "This is the owner's design choice (I6E:111), not underspecification."}
+   ],
+   "minimal_correction": "State the TRAIN resolution-selection criterion and the convergence-failure policy before N4."
+  },
+  {
+   "id": "I6N-AUD-20",
+   "original": {"severity": "MAJOR", "status": "NO_IMPLEMENTADO"},
+   "status_after_review": "CONFIRMED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["Operational, from static citations: claim() has no pause check, and re-running the deploy restarts the coordinator. The 'run --once on a copy' test was proposed, not executed."],
+    "OWNER_REQUIREMENT": ["P:12-17 records the pause and forbids deleting or relabelling terminals."],
+    "METHODOLOGICAL_ALTERNATIVE": ["A sealed PAUSED/SUPERSEDED state checked by claim()."],
+    "AMBIGUITY_FOR_OWNER": ["Fate of the 3,762 QUEUED jobs."]
+   },
+   "overclaims": [],
+   "minimal_correction": "State the fate of the QUEUED jobs, and either make the pause durable or forbid redeploying the old campaign in writing."
+  },
+  {
+   "id": "I6N-AUD-21",
+   "original": {"severity": "MAJOR", "status": "AMBIGUO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["Two placement authorities disagree (static citations). The '85 fits on worker_a' and enumeration snapshot come from inline commands (X-F1, not retained)."],
+    "OWNER_REQUIREMENT": [],
+    "METHODOLOGICAL_ALTERNATIVE": ["Name a single placement authority."],
+    "AMBIGUITY_FOR_OWNER": ["Which placement authority governs."]
+   },
+   "overclaims": [],
+   "minimal_correction": "Name one versioned placement authority."
+  },
+  {
+   "id": "I6N-AUD-22",
+   "original": {"severity": "MAJOR", "status": "NO_ESPECIFICADO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["GPU.lock is per campaign root (static citation). 'FS4 timers live on both workers' is an inline observation, not retained."],
+    "OWNER_REQUIREMENT": ["P:197: one child per host on the preferred GPU host."],
+    "METHODOLOGICAL_ALTERNATIVE": ["A host-level lease shared by all campaigns."],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [],
+   "minimal_correction": "State how 'one child per host' is enforced across campaigns."
+  },
+  {
+   "id": "I6N-AUD-23",
+   "original": {"severity": "MAJOR", "status": "VERIFIED"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["About 7.3 GB available on worker_b in one snapshot; time-varying; inline command not retained (X-F1)."],
+    "OWNER_REQUIREMENT": ["P:72: reserve 1.25 x the measured peak; never trim the margin."],
+    "METHODOLOGICAL_ALTERNATIVE": [],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [
+    {"quote": "[MAJOR, VERIFIED]", "where": "status", "correction": "Change to OBSERVED_SNAPSHOT_NOT_RETAINED: a single read at audit time, not a retained, reproducible check."}
+   ],
+   "minimal_correction": "Admit work against live available memory at dispatch."
+  },
+  {
+   "id": "I6N-AUD-24",
+   "original": {"severity": "MAJOR", "status": "NOT_MEASURED"},
+   "status_after_review": "CONFIRMED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["The n<=241 cap is real (static citation). The memory estimate is unmeasured."],
+    "OWNER_REQUIREMENT": ["P:72 and P:207: pilots per class; measure TRAIN cost before ETA."],
+    "METHODOLOGICAL_ALTERNATIVE": ["Stream windows per batch."],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [],
+   "minimal_correction": "Run a pilot class before N2 admits n>241; type inadmissible configs RESOURCE_NOT_ADMISSIBLE."
+  },
+  {
+   "id": "I6N-AUD-25",
+   "original": {"severity": "MAJOR", "status": "NO_IMPLEMENTADO"},
+   "status_after_review": "CONFIRMED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["Existing components lack stop-drain, a progress watchdog and DEAP intake (static citations)."],
+    "OWNER_REQUIREMENT": ["P:192-194: init/run/status/stop-drain, durable queue, stage/h/config/fold levels.", "P:166: typed failures, so the failure classes must be defined."],
+    "METHODOLOGICAL_ALTERNATIVE": ["The watchdog design."],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [],
+   "minimal_correction": "Define the failure classes (RESOURCE / QUALITY / DATA) in the plan."
+  },
+  {
+   "id": "I6N-AUD-26",
+   "original": {"severity": "MAJOR", "status": "NO_IMPLEMENTADO"},
+   "status_after_review": "CONFIRMED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": ["P:56-57 and P:194-195 do not list the identity fields."],
+    "RISK": ["The 266 old terminals could be adopted under the new protocol, because the existing fit_identity lacks protocol fields (static citation)."],
+    "OWNER_REQUIREMENT": ["WMC:210-211 (contract in the identity of config/cache/DEAP/DOIN/results) and WMC10 (line 240)."],
+    "METHODOLOGICAL_ALTERNATIVE": [],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [],
+   "minimal_correction": "List the identity fields: contract version, calendar id, offsets, cut, bar convention, mask-function digest, feature-manifest digest and provenance (AUD-01), and row digests."
+  },
+  {
+   "id": "I6N-AUD-27",
+   "original": {"severity": "MAJOR", "status": "NO_ESPECIFICADO"},
+   "status_after_review": "CONFIRMED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["The current gov_metric and publisher carry no S_h/U_h population fields (static citations)."],
+    "OWNER_REQUIREMENT": ["WMC:201 (counts, exclusions and row digests of S_h and U_h in the OLAP) and WMC:209-210."],
+    "METHODOLOGICAL_ALTERNATIVE": ["The specific population fact-table design."],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [],
+   "minimal_correction": "Specify where the S_h/U_h counts, exclusions and digests are stored, and read them back."
+  },
+  {
+   "id": "I6N-AUD-28",
+   "original": {"severity": "MAJOR", "status": "AMBIGUO"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MAJOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": ["Class pilots, the annual control under the new labels, the ARIMA TRAIN resolution choice and recounts are not budgeted (P:204-208)."],
+    "RISK": [],
+    "OWNER_REQUIREMENT": ["P:207-208: ETA after pilots per class; no extrapolation."],
+    "METHODOLOGICAL_ALTERNATIVE": [],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [
+    {"quote": "seed calibration (none planned)", "where": "FINDINGS.json AUD-28 evidence", "correction": "Retracted as an unbudgeted cost. Seed calibration is optional (AUD-05) and need not be budgeted unless adopted."}
+   ],
+   "minimal_correction": "Itemize the remaining classes with a measured or NOT_MEASURED cost."
+  },
+  {
+   "id": "I6N-AUD-29",
+   "original": {"severity": "MINOR", "status": "VERIFIED"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "MINOR",
+   "pending_lane_evidence": "calendar lane",
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": ["Under the default offsets and a cut 67 h after A (assumed calendar), every entry origin has R>=30 h, so h=18 and h=24 are always available and the proposed two-long minimum (WMC:150-151) never binds. This depends on the calendar's A->cut distance."],
+    "OWNER_REQUIREMENT": ["WMC:150-152: the rule is proposed for audit; no hidden partiality rule."],
+    "METHODOLOGICAL_ALTERNATIVE": [],
+    "AMBIGUITY_FOR_OWNER": ["How TP/SL use partial long vectors at entry."]
+   },
+   "overclaims": [
+    {"quote": "[MINOR, VERIFIED]", "where": "status", "correction": "VERIFIED only under the assumed calendar."}
+   ],
+   "minimal_correction": "Declare that entry geometry varies by origin."
+  },
+  {
+   "id": "I6N-AUD-30",
+   "original": {"severity": "MINOR", "status": "NO_ESPECIFICADO"},
+   "status_after_review": "CONFIRMED",
+   "severity_after_review_provisional": "MINOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": ["Inherited values (reducer/adapter kernel, residual, norm, mask channels, branch sharing, feature order, inner length) are unstated in P (PARAMETER_AUDIT)."],
+    "RISK": [],
+    "OWNER_REQUIREMENT": [],
+    "METHODOLOGICAL_ALTERNATIVE": [],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [],
+   "minimal_correction": "State the inherited values in P or cite where they are written."
+  },
+  {
+   "id": "I6N-AUD-31",
+   "original": {"severity": "MINOR", "status": "AMBIGUO"},
+   "status_after_review": "CONFIRMED",
+   "severity_after_review_provisional": "MINOR",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": [],
+    "OWNER_REQUIREMENT": [],
+    "METHODOLOGICAL_ALTERNATIVE": [],
+    "AMBIGUITY_FOR_OWNER": ["Copy rule: local copy (P:200-201) vs copies verified on two machines (CURRENT_EXECUTION.md:106-108)."]
+   },
+   "overclaims": [],
+   "minimal_correction": "Align the copy rule."
+  },
+  {
+   "id": "I6N-AUD-32",
+   "original": {"severity": "INFO", "status": "VERIFIED"},
+   "status_after_review": "QUALIFIED",
+   "severity_after_review_provisional": "INFO",
+   "pending_lane_evidence": null,
+   "split": {
+    "DEMONSTRATED_DEFECT": [],
+    "RISK": [],
+    "OWNER_REQUIREMENT": [],
+    "METHODOLOGICAL_ALTERNATIVE": [],
+    "AMBIGUITY_FOR_OWNER": []
+   },
+   "overclaims": [
+    {"quote": "[INFO, VERIFIED] ... QUEUE.db read-only: NEURAL 138 COMPLETED; ARIMA 82 COMPLETED, 46 FAILED; 3,762 QUEUED; 0 RUNNING; 266/266", "where": "FINDINGS.json AUD-32", "correction": "Verified at audit time by inline commands (X-F1), with no retained script or output. Change to VERIFIED_AT_AUDIT_TIME_NOT_RETAINED. The counts agree with P:14-16."}
+   ],
+   "minimal_correction": "None to the plan. Retain the read-only query and its output if the counts are cited again."
+  }
+ ],
+ "other_overclaims": [
+  "EVIDENCE_MANIFEST X-A5 and X-F1 are inline checks with no script or output, but AUD-01 (CRITICAL), AUD-19, AUD-21, AUD-22, AUD-23 and AUD-32 rest on them.",
+  "AUD-02 (CRITICAL) rests on an output file that the retained script does not reproduce.",
+  "AUD-05 (CRITICAL) cites '~1.6e6 configs', which appears in no retained output.",
+  "AUD-06 (CRITICAL) rests on synthetic random-weight kernel-2 layers, not the concrete route.",
+  "AUD-16 cites aliasing, but the probe only computed arithmetic.",
+  "CORRECTIONS_REQUIRED step 3 lists the TRAIN-only manifest first; step 5 lists seed-noise calibration, the inner-only monitor and an LR check as required. All are recommendations except the declaration of provenance and of the tolerance basis.",
+  "DICTAMEN answers item 5 groups 'tolerance, stop rule' (owner-required by P:140-141) with recommendations, without distinguishing them.",
+  "Six CRITICAL severities: after review only AUD-02 stays CRITICAL, and only for U_h/strategy results (provisional, pending the strategy lane)."
+ ]
+}

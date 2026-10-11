@@ -1,0 +1,1171 @@
+{
+ "normal_2024-06-09": {
+  "week": {
+   "O": "Sun 2024-06-09 21:00 UTC",
+   "C": "Fri 2024-06-14 21:00 UTC",
+   "A": "Mon 2024-06-10 09:00 UTC",
+   "B": "Fri 2024-06-14 09:00 UTC",
+   "cut": "Thu 2024-06-13 04:00 UTC"
+  },
+  "counts": {
+   "2": {
+    "management_E": 94,
+    "management_E_targets_in_2025": 0,
+    "management_M": 94,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "3": {
+    "management_E": 93,
+    "management_E_targets_in_2025": 0,
+    "management_M": 93,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "4": {
+    "management_E": 92,
+    "management_E_targets_in_2025": 0,
+    "management_M": 92,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "5": {
+    "management_E": 91,
+    "management_E_targets_in_2025": 0,
+    "management_M": 91,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "6": {
+    "management_E": 90,
+    "management_E_targets_in_2025": 0,
+    "management_M": 90,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "12": {
+    "management_E": 84,
+    "management_E_targets_in_2025": 0,
+    "management_M": 84,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "18": {
+    "management_E": 78,
+    "management_E_targets_in_2025": 0,
+    "management_M": 78,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "24": {
+    "management_E": 72,
+    "management_E_targets_in_2025": 0,
+    "management_M": 72,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "36": {
+    "management_E": 60,
+    "management_E_targets_in_2025": 0,
+    "management_M": 60,
+    "entry_E": 60,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 60
+   },
+   "48": {
+    "management_E": 48,
+    "management_E_targets_in_2025": 0,
+    "management_M": 48,
+    "entry_E": 48,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 48
+   },
+   "60": {
+    "management_E": 36,
+    "management_E_targets_in_2025": 0,
+    "management_M": 36,
+    "entry_E": 36,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 36
+   },
+   "72": {
+    "management_E": 24,
+    "management_E_targets_in_2025": 0,
+    "management_M": 24,
+    "entry_E": 24,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 24
+   }
+  }
+ },
+ "dst_start_2024-03-10": {
+  "week": {
+   "O": "Sun 2024-03-10 21:00 UTC",
+   "C": "Fri 2024-03-15 21:00 UTC",
+   "A": "Mon 2024-03-11 09:00 UTC",
+   "B": "Fri 2024-03-15 09:00 UTC",
+   "cut": "Thu 2024-03-14 04:00 UTC"
+  },
+  "counts": {
+   "2": {
+    "management_E": 94,
+    "management_E_targets_in_2025": 0,
+    "management_M": 94,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "3": {
+    "management_E": 93,
+    "management_E_targets_in_2025": 0,
+    "management_M": 93,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "4": {
+    "management_E": 92,
+    "management_E_targets_in_2025": 0,
+    "management_M": 92,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "5": {
+    "management_E": 91,
+    "management_E_targets_in_2025": 0,
+    "management_M": 91,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "6": {
+    "management_E": 90,
+    "management_E_targets_in_2025": 0,
+    "management_M": 90,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "12": {
+    "management_E": 84,
+    "management_E_targets_in_2025": 0,
+    "management_M": 84,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "18": {
+    "management_E": 78,
+    "management_E_targets_in_2025": 0,
+    "management_M": 78,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "24": {
+    "management_E": 72,
+    "management_E_targets_in_2025": 0,
+    "management_M": 72,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "36": {
+    "management_E": 60,
+    "management_E_targets_in_2025": 0,
+    "management_M": 60,
+    "entry_E": 60,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 60
+   },
+   "48": {
+    "management_E": 48,
+    "management_E_targets_in_2025": 0,
+    "management_M": 48,
+    "entry_E": 48,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 48
+   },
+   "60": {
+    "management_E": 36,
+    "management_E_targets_in_2025": 0,
+    "management_M": 36,
+    "entry_E": 36,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 36
+   },
+   "72": {
+    "management_E": 24,
+    "management_E_targets_in_2025": 0,
+    "management_M": 24,
+    "entry_E": 24,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 24
+   }
+  }
+ },
+ "dst_end_2024-11-03": {
+  "week": {
+   "O": "Sun 2024-11-03 22:00 UTC",
+   "C": "Fri 2024-11-08 22:00 UTC",
+   "A": "Mon 2024-11-04 10:00 UTC",
+   "B": "Fri 2024-11-08 10:00 UTC",
+   "cut": "Thu 2024-11-07 05:00 UTC"
+  },
+  "counts": {
+   "2": {
+    "management_E": 94,
+    "management_E_targets_in_2025": 0,
+    "management_M": 94,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "3": {
+    "management_E": 93,
+    "management_E_targets_in_2025": 0,
+    "management_M": 93,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "4": {
+    "management_E": 92,
+    "management_E_targets_in_2025": 0,
+    "management_M": 92,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "5": {
+    "management_E": 91,
+    "management_E_targets_in_2025": 0,
+    "management_M": 91,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "6": {
+    "management_E": 90,
+    "management_E_targets_in_2025": 0,
+    "management_M": 90,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "12": {
+    "management_E": 84,
+    "management_E_targets_in_2025": 0,
+    "management_M": 84,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "18": {
+    "management_E": 78,
+    "management_E_targets_in_2025": 0,
+    "management_M": 78,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "24": {
+    "management_E": 72,
+    "management_E_targets_in_2025": 0,
+    "management_M": 72,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "36": {
+    "management_E": 60,
+    "management_E_targets_in_2025": 0,
+    "management_M": 60,
+    "entry_E": 60,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 60
+   },
+   "48": {
+    "management_E": 48,
+    "management_E_targets_in_2025": 0,
+    "management_M": 48,
+    "entry_E": 48,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 48
+   },
+   "60": {
+    "management_E": 36,
+    "management_E_targets_in_2025": 0,
+    "management_M": 36,
+    "entry_E": 36,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 36
+   },
+   "72": {
+    "management_E": 24,
+    "management_E_targets_in_2025": 0,
+    "management_M": 24,
+    "entry_E": 24,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 24
+   }
+  }
+ },
+ "eu_us_dst_gap_2024-03-24": {
+  "week": {
+   "O": "Sun 2024-03-24 21:00 UTC",
+   "C": "Fri 2024-03-29 21:00 UTC",
+   "A": "Mon 2024-03-25 09:00 UTC",
+   "B": "Fri 2024-03-29 09:00 UTC",
+   "cut": "Thu 2024-03-28 04:00 UTC"
+  },
+  "counts": {
+   "2": {
+    "management_E": 94,
+    "management_E_targets_in_2025": 0,
+    "management_M": 94,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "3": {
+    "management_E": 93,
+    "management_E_targets_in_2025": 0,
+    "management_M": 93,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "4": {
+    "management_E": 92,
+    "management_E_targets_in_2025": 0,
+    "management_M": 92,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "5": {
+    "management_E": 91,
+    "management_E_targets_in_2025": 0,
+    "management_M": 91,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "6": {
+    "management_E": 90,
+    "management_E_targets_in_2025": 0,
+    "management_M": 90,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "12": {
+    "management_E": 84,
+    "management_E_targets_in_2025": 0,
+    "management_M": 84,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "18": {
+    "management_E": 78,
+    "management_E_targets_in_2025": 0,
+    "management_M": 78,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "24": {
+    "management_E": 72,
+    "management_E_targets_in_2025": 0,
+    "management_M": 72,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "36": {
+    "management_E": 60,
+    "management_E_targets_in_2025": 0,
+    "management_M": 60,
+    "entry_E": 60,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 60
+   },
+   "48": {
+    "management_E": 48,
+    "management_E_targets_in_2025": 0,
+    "management_M": 48,
+    "entry_E": 48,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 48
+   },
+   "60": {
+    "management_E": 36,
+    "management_E_targets_in_2025": 0,
+    "management_M": 36,
+    "entry_E": 36,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 36
+   },
+   "72": {
+    "management_E": 24,
+    "management_E_targets_in_2025": 0,
+    "management_M": 24,
+    "entry_E": 24,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 24
+   }
+  }
+ },
+ "christmas_2024-12-22": {
+  "week": {
+   "O": "Sun 2024-12-22 22:00 UTC",
+   "C": "Fri 2024-12-27 22:00 UTC",
+   "A": "Mon 2024-12-23 10:00 UTC",
+   "B": "Fri 2024-12-27 10:00 UTC",
+   "cut": "Thu 2024-12-26 05:00 UTC"
+  },
+  "counts": {
+   "2": {
+    "management_E": 94,
+    "management_E_targets_in_2025": 0,
+    "management_M": 78,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 51
+   },
+   "3": {
+    "management_E": 93,
+    "management_E_targets_in_2025": 0,
+    "management_M": 76,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 50
+   },
+   "4": {
+    "management_E": 92,
+    "management_E_targets_in_2025": 0,
+    "management_M": 74,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 49
+   },
+   "5": {
+    "management_E": 91,
+    "management_E_targets_in_2025": 0,
+    "management_M": 72,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 48
+   },
+   "6": {
+    "management_E": 90,
+    "management_E_targets_in_2025": 0,
+    "management_M": 70,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 47
+   },
+   "12": {
+    "management_E": 84,
+    "management_E_targets_in_2025": 0,
+    "management_M": 58,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 41
+   },
+   "18": {
+    "management_E": 78,
+    "management_E_targets_in_2025": 0,
+    "management_M": 50,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 39
+   },
+   "24": {
+    "management_E": 72,
+    "management_E_targets_in_2025": 0,
+    "management_M": 44,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 39
+   },
+   "36": {
+    "management_E": 60,
+    "management_E_targets_in_2025": 0,
+    "management_M": 33,
+    "entry_E": 60,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 33
+   },
+   "48": {
+    "management_E": 48,
+    "management_E_targets_in_2025": 0,
+    "management_M": 34,
+    "entry_E": 48,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 34
+   },
+   "60": {
+    "management_E": 36,
+    "management_E_targets_in_2025": 0,
+    "management_M": 35,
+    "entry_E": 36,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 35
+   },
+   "72": {
+    "management_E": 24,
+    "management_E_targets_in_2025": 0,
+    "management_M": 24,
+    "entry_E": 24,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 24
+   }
+  }
+ },
+ "newyear_last_validation_week_2024-12-29": {
+  "week": {
+   "O": "Sun 2024-12-29 22:00 UTC",
+   "C": "Fri 2025-01-03 22:00 UTC",
+   "A": "Mon 2024-12-30 10:00 UTC",
+   "B": "Fri 2025-01-03 10:00 UTC",
+   "cut": "Thu 2025-01-02 05:00 UTC"
+  },
+  "counts": {
+   "2": {
+    "management_E": 94,
+    "management_E_targets_in_2025": 58,
+    "management_M": 35,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 31,
+    "entry_M": 35
+   },
+   "3": {
+    "management_E": 93,
+    "management_E_targets_in_2025": 58,
+    "management_M": 34,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 32,
+    "entry_M": 34
+   },
+   "4": {
+    "management_E": 92,
+    "management_E_targets_in_2025": 58,
+    "management_M": 33,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 33,
+    "entry_M": 33
+   },
+   "5": {
+    "management_E": 91,
+    "management_E_targets_in_2025": 58,
+    "management_M": 32,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 34,
+    "entry_M": 32
+   },
+   "6": {
+    "management_E": 90,
+    "management_E_targets_in_2025": 58,
+    "management_M": 31,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 35,
+    "entry_M": 31
+   },
+   "12": {
+    "management_E": 84,
+    "management_E_targets_in_2025": 58,
+    "management_M": 25,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 41,
+    "entry_M": 25
+   },
+   "18": {
+    "management_E": 78,
+    "management_E_targets_in_2025": 58,
+    "management_M": 19,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 47,
+    "entry_M": 19
+   },
+   "24": {
+    "management_E": 72,
+    "management_E_targets_in_2025": 58,
+    "management_M": 13,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 53,
+    "entry_M": 13
+   },
+   "36": {
+    "management_E": 60,
+    "management_E_targets_in_2025": 58,
+    "management_M": 1,
+    "entry_E": 60,
+    "entry_E_targets_in_2025": 58,
+    "entry_M": 1
+   },
+   "48": {
+    "management_E": 48,
+    "management_E_targets_in_2025": 48,
+    "management_M": 0,
+    "entry_E": 48,
+    "entry_E_targets_in_2025": 48,
+    "entry_M": 0
+   },
+   "60": {
+    "management_E": 36,
+    "management_E_targets_in_2025": 36,
+    "management_M": 0,
+    "entry_E": 36,
+    "entry_E_targets_in_2025": 36,
+    "entry_M": 0
+   },
+   "72": {
+    "management_E": 24,
+    "management_E_targets_in_2025": 24,
+    "management_M": 0,
+    "entry_E": 24,
+    "entry_E_targets_in_2025": 24,
+    "entry_M": 0
+   }
+  }
+ },
+ "first_2024_week_2023-12-31": {
+  "week": {
+   "O": "Sun 2023-12-31 22:00 UTC",
+   "C": "Fri 2024-01-05 22:00 UTC",
+   "A": "Mon 2024-01-01 10:00 UTC",
+   "B": "Fri 2024-01-05 10:00 UTC",
+   "cut": "Thu 2024-01-04 05:00 UTC"
+  },
+  "counts": {
+   "2": {
+    "management_E": 94,
+    "management_E_targets_in_2025": 0,
+    "management_M": 81,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 54
+   },
+   "3": {
+    "management_E": 93,
+    "management_E_targets_in_2025": 0,
+    "management_M": 80,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 54
+   },
+   "4": {
+    "management_E": 92,
+    "management_E_targets_in_2025": 0,
+    "management_M": 79,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 54
+   },
+   "5": {
+    "management_E": 91,
+    "management_E_targets_in_2025": 0,
+    "management_M": 78,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 54
+   },
+   "6": {
+    "management_E": 90,
+    "management_E_targets_in_2025": 0,
+    "management_M": 77,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 54
+   },
+   "12": {
+    "management_E": 84,
+    "management_E_targets_in_2025": 0,
+    "management_M": 71,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 54
+   },
+   "18": {
+    "management_E": 78,
+    "management_E_targets_in_2025": 0,
+    "management_M": 65,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 54
+   },
+   "24": {
+    "management_E": 72,
+    "management_E_targets_in_2025": 0,
+    "management_M": 59,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 54
+   },
+   "36": {
+    "management_E": 60,
+    "management_E_targets_in_2025": 0,
+    "management_M": 47,
+    "entry_E": 60,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 47
+   },
+   "48": {
+    "management_E": 48,
+    "management_E_targets_in_2025": 0,
+    "management_M": 35,
+    "entry_E": 48,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 35
+   },
+   "60": {
+    "management_E": 36,
+    "management_E_targets_in_2025": 0,
+    "management_M": 23,
+    "entry_E": 36,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 23
+   },
+   "72": {
+    "management_E": 24,
+    "management_E_targets_in_2025": 0,
+    "management_M": 11,
+    "entry_E": 24,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 11
+   }
+  }
+ },
+ "thanksgiving_2024-11-24": {
+  "week": {
+   "O": "Sun 2024-11-24 22:00 UTC",
+   "C": "Fri 2024-11-29 22:00 UTC",
+   "A": "Mon 2024-11-25 10:00 UTC",
+   "B": "Fri 2024-11-29 10:00 UTC",
+   "cut": "Thu 2024-11-28 05:00 UTC"
+  },
+  "counts": {
+   "2": {
+    "management_E": 94,
+    "management_E_targets_in_2025": 0,
+    "management_M": 94,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "3": {
+    "management_E": 93,
+    "management_E_targets_in_2025": 0,
+    "management_M": 93,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "4": {
+    "management_E": 92,
+    "management_E_targets_in_2025": 0,
+    "management_M": 92,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "5": {
+    "management_E": 91,
+    "management_E_targets_in_2025": 0,
+    "management_M": 91,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "6": {
+    "management_E": 90,
+    "management_E_targets_in_2025": 0,
+    "management_M": 90,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "12": {
+    "management_E": 84,
+    "management_E_targets_in_2025": 0,
+    "management_M": 84,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "18": {
+    "management_E": 78,
+    "management_E_targets_in_2025": 0,
+    "management_M": 78,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "24": {
+    "management_E": 72,
+    "management_E_targets_in_2025": 0,
+    "management_M": 72,
+    "entry_E": 67,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 67
+   },
+   "36": {
+    "management_E": 60,
+    "management_E_targets_in_2025": 0,
+    "management_M": 60,
+    "entry_E": 60,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 60
+   },
+   "48": {
+    "management_E": 48,
+    "management_E_targets_in_2025": 0,
+    "management_M": 48,
+    "entry_E": 48,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 48
+   },
+   "60": {
+    "management_E": 36,
+    "management_E_targets_in_2025": 0,
+    "management_M": 36,
+    "entry_E": 36,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 36
+   },
+   "72": {
+    "management_E": 24,
+    "management_E_targets_in_2025": 0,
+    "management_M": 24,
+    "entry_E": 24,
+    "entry_E_targets_in_2025": 0,
+    "entry_M": 24
+   }
+  }
+ },
+ "christmas_2024-12-22_closure": {
+  "counts": {
+   "2": {
+    "management_E": 68,
+    "management_E_targets_in_2025": 0,
+    "entry_E": 41,
+    "entry_E_targets_in_2025": 0
+   },
+   "3": {
+    "management_E": 66,
+    "management_E_targets_in_2025": 0,
+    "entry_E": 40,
+    "entry_E_targets_in_2025": 0
+   },
+   "4": {
+    "management_E": 64,
+    "management_E_targets_in_2025": 0,
+    "entry_E": 39,
+    "entry_E_targets_in_2025": 0
+   },
+   "5": {
+    "management_E": 62,
+    "management_E_targets_in_2025": 0,
+    "entry_E": 38,
+    "entry_E_targets_in_2025": 0
+   },
+   "6": {
+    "management_E": 60,
+    "management_E_targets_in_2025": 0,
+    "entry_E": 37,
+    "entry_E_targets_in_2025": 0
+   },
+   "12": {
+    "management_E": 48,
+    "management_E_targets_in_2025": 0,
+    "entry_E": 31,
+    "entry_E_targets_in_2025": 0
+   },
+   "18": {
+    "management_E": 36,
+    "management_E_targets_in_2025": 0,
+    "entry_E": 25,
+    "entry_E_targets_in_2025": 0
+   },
+   "24": {
+    "management_E": 24,
+    "management_E_targets_in_2025": 0,
+    "entry_E": 19,
+    "entry_E_targets_in_2025": 0
+   },
+   "36": {
+    "management_E": 12,
+    "management_E_targets_in_2025": 0,
+    "entry_E": 12,
+    "entry_E_targets_in_2025": 0
+   },
+   "48": {
+    "management_E": 24,
+    "management_E_targets_in_2025": 0,
+    "entry_E": 24,
+    "entry_E_targets_in_2025": 0
+   },
+   "60": {
+    "management_E": 36,
+    "management_E_targets_in_2025": 0,
+    "entry_E": 36,
+    "entry_E_targets_in_2025": 0
+   },
+   "72": {
+    "management_E": 24,
+    "management_E_targets_in_2025": 0,
+    "entry_E": 24,
+    "entry_E_targets_in_2025": 0
+   }
+  }
+ },
+ "newyear_2024-12-29_closure": {
+  "counts": {
+   "2": {
+    "management_E": 68,
+    "management_E_targets_in_2025": 34,
+    "entry_E": 41,
+    "entry_E_targets_in_2025": 7
+   },
+   "3": {
+    "management_E": 66,
+    "management_E_targets_in_2025": 33,
+    "entry_E": 40,
+    "entry_E_targets_in_2025": 7
+   },
+   "4": {
+    "management_E": 64,
+    "management_E_targets_in_2025": 32,
+    "entry_E": 39,
+    "entry_E_targets_in_2025": 7
+   },
+   "5": {
+    "management_E": 62,
+    "management_E_targets_in_2025": 31,
+    "entry_E": 38,
+    "entry_E_targets_in_2025": 7
+   },
+   "6": {
+    "management_E": 60,
+    "management_E_targets_in_2025": 30,
+    "entry_E": 37,
+    "entry_E_targets_in_2025": 7
+   },
+   "12": {
+    "management_E": 48,
+    "management_E_targets_in_2025": 24,
+    "entry_E": 31,
+    "entry_E_targets_in_2025": 7
+   },
+   "18": {
+    "management_E": 36,
+    "management_E_targets_in_2025": 18,
+    "entry_E": 25,
+    "entry_E_targets_in_2025": 7
+   },
+   "24": {
+    "management_E": 24,
+    "management_E_targets_in_2025": 12,
+    "entry_E": 19,
+    "entry_E_targets_in_2025": 7
+   },
+   "36": {
+    "management_E": 12,
+    "management_E_targets_in_2025": 12,
+    "entry_E": 12,
+    "entry_E_targets_in_2025": 12
+   },
+   "48": {
+    "management_E": 24,
+    "management_E_targets_in_2025": 24,
+    "entry_E": 24,
+    "entry_E_targets_in_2025": 24
+   },
+   "60": {
+    "management_E": 36,
+    "management_E_targets_in_2025": 36,
+    "entry_E": 36,
+    "entry_E_targets_in_2025": 36
+   },
+   "72": {
+    "management_E": 24,
+    "management_E_targets_in_2025": 24,
+    "entry_E": 24,
+    "entry_E_targets_in_2025": 24
+   }
+  }
+ },
+ "validation_2024_totals": {
+  "weeks": 53,
+  "totals": {
+   "2": {
+    "management_E": 4982,
+    "management_M": 4885,
+    "entry_E": 3551,
+    "entry_M": 3481,
+    "management_E_targets_in_2025": 58
+   },
+   "3": {
+    "management_E": 4929,
+    "management_M": 4830,
+    "entry_E": 3551,
+    "entry_M": 3478,
+    "management_E_targets_in_2025": 58
+   },
+   "4": {
+    "management_E": 4876,
+    "management_M": 4777,
+    "entry_E": 3551,
+    "entry_M": 3477,
+    "management_E_targets_in_2025": 58
+   },
+   "5": {
+    "management_E": 4823,
+    "management_M": 4723,
+    "entry_E": 3551,
+    "entry_M": 3475,
+    "management_E_targets_in_2025": 58
+   },
+   "6": {
+    "management_E": 4770,
+    "management_M": 4669,
+    "entry_E": 3551,
+    "entry_M": 3473,
+    "management_E_targets_in_2025": 58
+   },
+   "12": {
+    "management_E": 4452,
+    "management_M": 4345,
+    "entry_E": 3551,
+    "entry_M": 3461,
+    "management_E_targets_in_2025": 58
+   },
+   "18": {
+    "management_E": 4134,
+    "management_M": 4025,
+    "entry_E": 3551,
+    "entry_M": 3453,
+    "management_E_targets_in_2025": 58
+   },
+   "24": {
+    "management_E": 3816,
+    "management_M": 3707,
+    "entry_E": 3551,
+    "entry_M": 3447,
+    "management_E_targets_in_2025": 58
+   },
+   "36": {
+    "management_E": 3180,
+    "management_M": 3073,
+    "entry_E": 3180,
+    "entry_M": 3073,
+    "management_E_targets_in_2025": 58
+   },
+   "48": {
+    "management_E": 2544,
+    "management_M": 2464,
+    "entry_E": 2544,
+    "entry_M": 2464,
+    "management_E_targets_in_2025": 48
+   },
+   "60": {
+    "management_E": 1908,
+    "management_M": 1856,
+    "entry_E": 1908,
+    "entry_M": 1856,
+    "management_E_targets_in_2025": 36
+   },
+   "72": {
+    "management_E": 1272,
+    "management_M": 1234,
+    "entry_E": 1272,
+    "entry_M": 1234,
+    "management_E_targets_in_2025": 24
+   }
+  },
+  "zero_weeks": {
+   "2": 0,
+   "3": 0,
+   "4": 0,
+   "5": 0,
+   "6": 0,
+   "12": 0,
+   "18": 0,
+   "24": 0,
+   "36": 0,
+   "48": 1,
+   "60": 1,
+   "72": 1
+  }
+ },
+ "inner_2023_example_h72_mgmt_M": 87,
+ "entry_long_availability_normal_week": {
+  "6": 24,
+  "5": 12,
+  "4": 12,
+  "3": 12,
+  "2": 7
+ },
+ "input_absence_h72_2024": {
+  "L144_d36_n5": {
+   "missing_slot_fraction": 0.2943,
+   "origins_with_any_missing": 1.0,
+   "min_present": 2,
+   "max_present": 4
+  },
+  "L144_d72_n3": {
+   "missing_slot_fraction": 0.1569,
+   "origins_with_any_missing": 0.4682,
+   "min_present": 1,
+   "max_present": 3
+  },
+  "L432_d1_n433": {
+   "missing_slot_fraction": 0.3374,
+   "origins_with_any_missing": 1.0,
+   "min_present": 250,
+   "max_present": 291
+  },
+  "L432_d8_n55": {
+   "missing_slot_fraction": 0.332,
+   "origins_with_any_missing": 1.0,
+   "min_present": 32,
+   "max_present": 38
+  },
+  "L288_d1_n289": {
+   "missing_slot_fraction": 0.3365,
+   "origins_with_any_missing": 1.0,
+   "min_present": 154,
+   "max_present": 195
+  },
+  "L72_d1_n73": {
+   "missing_slot_fraction": 0.6288,
+   "origins_with_any_missing": 1.0,
+   "min_present": 1,
+   "max_present": 36
+  },
+  "L24_d1_n25": {
+   "missing_slot_fraction": 0.1567,
+   "origins_with_any_missing": 0.5541,
+   "min_present": 1,
+   "max_present": 25
+  },
+  "L8_d2_n5": {
+   "missing_slot_fraction": 0.0038,
+   "origins_with_any_missing": 0.0095,
+   "min_present": 1,
+   "max_present": 5
+  }
+ }
+}

@@ -1,0 +1,23 @@
+== hashes
+15970757c03e39864b9abfde77588aaff4f6b6c8497129e237b328db8d6fab78  ../../probes/a/strategy_counterexample.py
+d9e1399f7dc862e09e9445217796b5c968ef67356e3b7c1865a4d696b134a2a7  ../../probes/a/strategy_counterexample.out
+9e208a30cf9a3ec5169539b41eb81701bf533f070ea28f6ae500c878047ee538  ../../probes/a/stub_trading_contracts.py
+9e208a30cf9a3ec5169539b41eb81701bf533f070ea28f6ae500c878047ee538  stub/trading_contracts.py
+be7eb63df1be57df06a9b8df06a256d457cd4d99b5651ffe20fb90d080414035  original_probe_clean_rerun.out
+== line counts: retained .out / clean rerun
+24
+20
+== diff clean_rerun retained_out (lines only in the retained .out are prefixed '>')
+19a20,23
+> calculate_entry_geometry signature has no short argument: False
+> variant A over 200 random horizon permutations: distinct decisions = {True}
+> entry with ONE finite long (others NaN): ('long', 1.1045, 1.0998, 50.0)
+> entry is order-blind across long horizons: True
+== retained .out lines 1-19 equal clean-rerun lines 1-19:
+yes
+== retained .out lines 21-24 equal clean-rerun lines 17-20 (the last four lines of one run):
+yes
+== does the retained .py print the line 'signature has no short argument'?
+0
+== locals of calculate_entry_geometry whose names contain 'short' (why revision 1's substring check printed False)
+30:short_signal =
