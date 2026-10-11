@@ -32,7 +32,8 @@ def progress(root):
                     records.append(validate(root,model,week,spacing))
             good=[r for r in records if r["status"]=="COMPLETED"]
             runtime_failure |= any(r["status"] not in ("COMPLETED","FAILED_CONVERGENCE") for r in records)
-            unit=(sum(r["elapsed_seconds"] for r in good)/len(good) if good else
+            # Numerical failures consume real CPU too; do not estimate only from winners.
+            unit=(sum(r["elapsed_seconds"] for r in records)/len(records) if records else
                   next(r["elapsed_seconds"]*spacing for r in pilot["records"] if r["spacing"]==spacing))
             projected+=(52-len(records))*unit
         remaining[model]=None if runtime_failure else projected
