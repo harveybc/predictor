@@ -51,6 +51,14 @@ Precio original reconciliado: MAE USD/EUR de 0.004525125 (3 tokens),
 Ningun brazo habilita trading. OLAP: 156 informes / 2,184 metricas con lectura
 exacta verificada; copia fisica `i6e/weekly_compact72_v1/olap/REPORTS.json`.
 
+El control ARIMA cerro 156/156 celdas sin fallos. Con separacion de 36 h y
+18 h, su MAE anual en precio mejora 0.464463% y 0.193648% frente al mismo
+naive; la separacion de 72 h empeora 0.491589%. Son pronosticos a 72 h sobre
+3,712 filas, no rentabilidad. Tres informes agregados / 18 metricas adicionales
+estan publicados y verificados por lectura de vuelta. ARIMAX sigue en dos
+workers, semanas pares/impares sin duplicacion, con fallos numericos retenidos.
+La coleccion, el PNG, ETA y publicacion de disposiciones se actualizan con timers.
+
 Sigue `i6e/statistical72_v1`: controles ARIMA y ARIMAX (1,1,0), sin drift,
 remuestreo al origen, parametros semanales fijos y actualizacion de estado
 horaria por fase. El ejecutor mide TRAIN primero y continua automaticamente

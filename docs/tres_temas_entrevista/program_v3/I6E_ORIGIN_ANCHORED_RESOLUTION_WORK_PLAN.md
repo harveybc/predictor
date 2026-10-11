@@ -20,6 +20,13 @@ metrics. The report bundle and publication receipt are retained physically.
 Input lineage remains LOCAL_RETAINED / UNVERIFIED: publishing is not proof of
 governed source delivery. TEST stays closed and no strategy is promoted.
 
+ARIMA then completed 156/156 cells. Pooled price MAE for 72/36/18h spacing:
+0.004425168, 0.004383068, 0.004394994 versus 0.004403521 paired naive.
+MAE skill: -0.491589%, +0.464463%, +0.193648%. The three independent complete
+arms have 18 additional pooled metrics published with exact readback.
+ARIMAX remains open; its workers now partition even/odd weeks across both hosts.
+These validation gains do not establish profitability or a sampling theorem.
+
 Next: `tools/i6e_statistical_campaign.py` exports verified common origins,
 measures three TRAIN-only phase fits per model, then runs 312 weekly-resolution
 cells under measured memory reservations. `tools/i6e_statistical_coordinate.sh`
