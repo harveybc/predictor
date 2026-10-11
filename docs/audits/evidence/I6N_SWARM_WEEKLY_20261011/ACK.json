@@ -1,0 +1,25 @@
+{
+  "schema": "i6n.swarm_weekly.ack.v1",
+  "state": "ACKNOWLEDGED",
+  "acknowledged_by": "Satoshi",
+  "date": "2026-10-11",
+  "orders_path": "docs/handoffs/SATOSHI_I6N_SWARM_WEEKLY_2026_10_11.md",
+  "orders_sha256": "ac77366af24bcaf4fb9454a51c94ab1f6d5230bb1de4ff14521f76cc0a3f8b9c",
+  "plan_commit": "af0c3570",
+  "plan_path": "docs/tres_temas_entrevista/program_v3/I6N_SWARM_WEEKLY_OFFCHAIN_EXECUTION.md",
+  "plan_sha256": "da51723a08a8ee3f0a94ffaded8b35fd480b72d80f314a812a176cb43c6355df",
+  "code_base_commit": "656e4b30",
+  "code_base_note": "656e4b30 = 259e94df + the handoff .md/.json only (git diff --stat verified); used because the owner named it.",
+  "integration_branch": "satoshi/i6n-swarm-weekly-20261011",
+  "preserved": "48/48 completed endpoint candidates (h12, h72) and 3 cost pilots: reused by verified identity only, never refit",
+  "lanes": [
+    {"id": "A", "owner": "Satoshi agent A", "deliverable": "trajectory historical evaluator, model/training, receipt schema with C/D", "predictor_branch": "satoshi/i6n-swarm-A-trajectory-20261011", "return": "docs/i6n/swarm/A_RETURN.md", "reviews": "E"},
+    {"id": "B", "owner": "Satoshi agent B", "deliverable": "durable DOIN swarm (shared plugin), leases/fencing/recovery, campaign coordinator and CLI tools.i6n_swarm_campaign", "predictor_branch": "satoshi/i6n-swarm-B-doin-20261011", "other_branches": {"doin-plugins": "satoshi/i6n-swarm-B-doin-20261011"}, "return": "docs/i6n/swarm/B_RETURN.md", "reviews": "A"},
+    {"id": "C", "owner": "Satoshi agent C", "deliverable": "complete weekly campaign builder, calendar/split/support, data manifest, 2023 inner folds history", "predictor_branch": "satoshi/i6n-swarm-C-weekly-20261011", "return": "docs/i6n/swarm/C_RETURN.md", "reviews": "D"},
+    {"id": "D", "owner": "Satoshi agent D", "deliverable": "external_payload archive in doin-core/doin-node, lake/warehouse adapter, predictor publishers", "predictor_branch": "satoshi/i6n-swarm-D-archive-20261011", "other_branches": {"doin-core": "satoshi/i6n-external-archive-20261011", "doin-node": "satoshi/i6n-external-archive-20261011", "data-lake": "satoshi/i6n-external-archive-20261011"}, "return": "docs/i6n/swarm/D_RETURN.md", "reviews": "none (reviewed by C)"},
+    {"id": "E", "owner": "Satoshi agent E", "deliverable": "search space, config generator, identity tests, versioned plan JSON and promotion/budget rules", "predictor_branch": "satoshi/i6n-swarm-E-search-20261011", "return": "docs/i6n/swarm/E_RETURN.md", "reviews": "B and C"}
+  ],
+  "review_matrix": {"E": ["B", "C"], "B": ["A"], "A": ["E"], "C": ["D"]},
+  "sequence": ["A/E contracts", "B/C integration", "smoke", "pilot", "12-horizon search", "weekly annual", "multi-output"],
+  "agent_active_rule": "a lane is announced active only after its agent acknowledges"
+}
