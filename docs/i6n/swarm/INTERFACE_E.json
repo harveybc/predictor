@@ -1,13 +1,13 @@
 {
   "schema": "i6n.swarm_weekly.interface.v1",
   "lane": "E",
-  "interface_version": "E.1",
+  "interface_version": "E.1.1",
   "status": "PUBLISHED_EARLY; identity and genotype schema stable; plan JSON keys stable, values sealed in I6N_SEARCH_PLAN_v1.json",
   "branch": "satoshi/i6n-swarm-E-search-20261011",
   "consumes": {
     "A": "INTERFACE_A A.1 @b9eb6929: evaluator request.config == tools.i6n_search.effective_config(genome) (v1 keys). E keeps that boundary: v2 genotype -> exact v1 evaluator genome.",
     "B": "INTERFACE_B B.1 @6a77d424: fit_id / search_candidate formulas adopted verbatim; E is the single source of the functions that compute them.",
-    "C": "fold ids 2023Q1..2023Q4 named by E's plan; exact cutoffs/support from C (not yet published)"
+    "C": "INTERFACE_C C.1 @9ce0e434: fold ids 2023Q1..2023Q4 (INNER_FOLD units); per (unit,h) READY|NO_ELIGIBLE_ROWS|WAIT_DEPENDENCY bound in plan.folds.unit_states"
   },
   "modules": {
     "space": "tools.i6n_search_space (pure; no TF/data/global RNG)",
@@ -16,28 +16,105 @@
   },
   "genotype": {
     "schema": "i6n.genotype.v2",
-    "keys": ["schema", "horizon_hours", "history_hours", "delta_x_hours", "input_transform", "supervision", "trajectory_k", "entrance", "width", "transformer_blocks", "reducer_filters", "stride_pattern", "adapter", "adapter_width"],
+    "keys": [
+      "schema",
+      "horizon_hours",
+      "history_hours",
+      "delta_x_hours",
+      "input_transform",
+      "supervision",
+      "trajectory_k",
+      "entrance",
+      "width",
+      "transformer_blocks",
+      "reducer_filters",
+      "stride_pattern",
+      "adapter",
+      "adapter_width"
+    ],
     "domain": {
-      "horizon_hours": [2, 3, 4, 5, 6, 12, 18, 24, 36, 48, 60, 72],
+      "horizon_hours": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        12,
+        18,
+        24,
+        36,
+        48,
+        60,
+        72
+      ],
       "history_hours": "max(24, m*h), m in [1,2,4,6], deduplicated (history_domain(h))",
       "delta_x_hours": "integer divisors common to h and L, incl. 1 (delta_x_domain(h,L))",
       "n_samples": "1 + L/dx, includes t; offsets -L..0 step dx",
-      "input_transform": ["identity", "difference"],
-      "supervision": ["endpoint", "trajectory"],
+      "input_transform": [
+        "identity",
+        "difference"
+      ],
+      "supervision": [
+        "endpoint",
+        "trajectory"
+      ],
       "trajectory_k": "k in [2,3,4] with h % k == 0; dy = h/k; outputs [dy,2dy,...,h]; endpoint == k=1 -> canonical endpoint with trajectory_k=null",
-      "entrance": ["conv", "transformer", "conv_transformer"],
-      "width": [8, 16, 32, 64, 128],
+      "entrance": [
+        "conv",
+        "transformer",
+        "conv_transformer"
+      ],
+      "width": [
+        8,
+        16,
+        32,
+        64,
+        128
+      ],
       "transformer_blocks": "0 for conv (inactive, canonicalized); 1|2 for transformer routes",
       "reducer_filters": "1..3 values in [4,8,16,32,64,128]; [width, *filters] non-increasing",
-      "stride_pattern": {"none": "all 1", "progressive": "all 2", "final": "last reducer 2, others 1"},
+      "stride_pattern": {
+        "none": "all 1",
+        "progressive": "all 2",
+        "final": "last reducer 2, others 1"
+      },
       "stride_alias": "one reducer: progressive == final -> canonical final",
-      "adapter": ["none", "causalconv", "lstm"],
+      "adapter": [
+        "none",
+        "causalconv",
+        "lstm"
+      ],
       "adapter_width": "[8,16,32,64]; null (inactive) for none",
       "min_final_steps": 2
     },
     "canonicalizer": "tools.i6n_search_space.canonicalize(raw) -> canonical | raise Infeasible(reasons=[{code,gene,detail}]); check(raw) is the non-raising form. Never repairs active genes.",
-    "infeasibility_codes": ["SCHEMA_MISMATCH", "HORIZON_NOT_IN_DOMAIN", "HISTORY_NOT_IN_DOMAIN", "DELTA_X_NOT_COMMON_DIVISOR", "INPUT_TRANSFORM_NOT_IN_DOMAIN", "SUPERVISION_NOT_IN_DOMAIN", "TRAJECTORY_K_NOT_IN_DOMAIN", "TRAJECTORY_DY_NOT_INTEGER", "ENTRANCE_NOT_IN_DOMAIN", "WIDTH_NOT_IN_DOMAIN", "TRANSFORMER_BLOCKS_NOT_IN_DOMAIN", "REDUCER_COUNT_NOT_IN_DOMAIN", "REDUCER_FILTER_NOT_IN_DOMAIN", "REDUCER_FILTERS_INCREASING", "STRIDE_PATTERN_NOT_IN_DOMAIN", "ADAPTER_NOT_IN_DOMAIN", "ADAPTER_WIDTH_NOT_IN_DOMAIN", "FINAL_STEPS_BELOW_MINIMUM", "MODEL_CONTRACT_REJECTED", "EVALUATOR_CONTRACT_REJECTED"],
-    "admission_codes_not_infeasibility": ["CLASS_NOT_OPEN", "CLASS_BUDGET_EXHAUSTED", "DUPLICATE_IDENTITY"]
+    "infeasibility_codes": [
+      "SCHEMA_MISMATCH",
+      "HORIZON_NOT_IN_DOMAIN",
+      "HISTORY_NOT_IN_DOMAIN",
+      "DELTA_X_NOT_COMMON_DIVISOR",
+      "INPUT_TRANSFORM_NOT_IN_DOMAIN",
+      "SUPERVISION_NOT_IN_DOMAIN",
+      "TRAJECTORY_K_NOT_IN_DOMAIN",
+      "TRAJECTORY_DY_NOT_INTEGER",
+      "ENTRANCE_NOT_IN_DOMAIN",
+      "WIDTH_NOT_IN_DOMAIN",
+      "TRANSFORMER_BLOCKS_NOT_IN_DOMAIN",
+      "REDUCER_COUNT_NOT_IN_DOMAIN",
+      "REDUCER_FILTER_NOT_IN_DOMAIN",
+      "REDUCER_FILTERS_INCREASING",
+      "STRIDE_PATTERN_NOT_IN_DOMAIN",
+      "ADAPTER_NOT_IN_DOMAIN",
+      "ADAPTER_WIDTH_NOT_IN_DOMAIN",
+      "FINAL_STEPS_BELOW_MINIMUM",
+      "MODEL_CONTRACT_REJECTED",
+      "EVALUATOR_CONTRACT_REJECTED"
+    ],
+    "admission_codes_not_infeasibility": [
+      "CLASS_NOT_OPEN",
+      "CLASS_BUDGET_EXHAUSTED",
+      "DUPLICATE_IDENTITY"
+    ]
   },
   "evaluator_boundary": {
     "to_evaluator_genome": "tools.i6n_search_space.to_evaluator_genome(g) -> v1 genome {horizon, multiplier(min equivalent), delta_x, input_transform, output_mode, delta_y, core}",
@@ -54,9 +131,24 @@
   },
   "effective_config_record": "tools.i6n_search_space.effective_config(g) -> {schema: i6n.effective_config.v2, genotype, genotype_canonical_sha256, effective_config_sha256, active_genes, inactive_genes, derived{history_hours, delta_x_hours, n_samples, input_offsets_hours, delta_y_hours, output_offsets_hours, n_heads, reducer_strides, steps_per_stage, final_steps, t_retained}, model_core, size_class, evaluator_genome, evaluator_config}",
   "size_classes": [
-    {"class_id": "S1", "max_samples": 25, "max_width": 32, "min_delta_x_hours": 2},
-    {"class_id": "S2", "max_samples": 55, "max_width": 64, "min_delta_x_hours": 1},
-    {"class_id": "S3", "max_samples": 433, "max_width": 128, "min_delta_x_hours": 1}
+    {
+      "class_id": "S1",
+      "max_samples": 25,
+      "max_width": 32,
+      "min_delta_x_hours": 2
+    },
+    {
+      "class_id": "S2",
+      "max_samples": 55,
+      "max_width": 64,
+      "min_delta_x_hours": 1
+    },
+    {
+      "class_id": "S3",
+      "max_samples": 433,
+      "max_width": 128,
+      "min_delta_x_hours": 1
+    }
   ],
   "class_rule": "class_of(g): first class with n_samples<=max_samples, max(width, reducers, adapter_width)<=max_width and dx>=min_delta_x_hours",
   "seeds": {
@@ -74,7 +166,9 @@
     "keys": {
       "plan_sha256": "== seal.sha256; sha256 of canonical plan without the keys plan_sha256 and seal",
       "governing": "{orders_sha256, plan_commit, plan_sha256_of_subplan}",
-      "horizons_hours": "12 horizons", "seed": 6102026, "replicas": 1,
+      "horizons_hours": "12 horizons",
+      "seed": 6102026,
+      "replicas": 1,
       "domain": "as genotype.domain, per-horizon history and k domains expanded",
       "classes": "[{class_id, max_samples, max_width, min_delta_x_hours, child_memory_bytes: null, child_wall_seconds: null, admission: FROM_ADMITTED_COST_PILOT_RECEIPT}] (measured caps are NOT sealed in the plan; they come from pilot receipts with cap = 1.25*measured peak)",
       "promotion": "[{class_id, opens_at_generation: S1 0 | S2 1 | S3 2, requires: [admitted_cost_pilot, previous generation terminal on all folds]}]",
@@ -91,6 +185,9 @@
       "minimal_seed_genome is provided as initial_genotypes[h].seed (v2) plus seed_evaluator_genome (v1)",
       "classes carry child_memory_bytes/child_wall_seconds = null in the sealed plan; B fills them from admitted pilot receipts, never from the plan",
       "prior_mapping is a separate committed artifact referenced by sha256; verdict per candidate is fold_score_reuse NONE (all 48 are NOT_EQUIVALENT as fold receipts); in-domain genotypes keep the same genotype_canonical_sha256"
-    ]
+    ],
+    "sealed_plan_sha256": "8d8865f1343c6b0efa80edf711393425c3445b953cbb76a4f841a5a1994a77d3",
+    "sealed_at_commit_note": "sealed before any fit; committed with tools/i6n_search_plan.py (drift test compares builder vs committed file)",
+    "legacy_mapping_sha256": "9849acfa5fb53f47e6f8b2cf67985cfdc7aababd57f263ceec01256b58295c90"
   }
 }
