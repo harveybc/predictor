@@ -212,6 +212,10 @@ def test_incomplete_weeks_stay_listed_with_typed_exclusions():
     d = unit(p, "W2024-08-04")
     assert d["horizons"]["2"]["state"] == "NO_ELIGIBLE_ROWS"
     assert "W2024-08-04" in [x["unit_id"] for x in p["units"]]
+    cov = {x["week_id"]: x for x in p["data"]["week_coverage"]}
+    assert cov["2024-08-04"]["observed_bars"] == 0 and cov["2024-08-04"]["calendar_bars"] == 120
+    assert cov["2024-07-07"]["observed_bars"] == 90 and cov["2024-07-14"]["observed_bars"] == 120
+    assert "2024-08-04" in p["data"]["weeks_without_bars"]
 
 
 def test_counts_match_weekly_partitions_reference_exactly():
@@ -293,3 +297,61 @@ def test_plan_is_deterministic_and_sealed():
         v.pop("unit_sha256")
         assert c1.canonical_digest(v) == u["unit_sha256"]
     assert a["dispositions"]["weekly_fits_per_arm"] == sum(a["dispositions"]["by_horizon"].values())
+
+
+def test_file_cli_plan_verify_export_redacts_private_paths(tmp_path):
+    import json
+    import numpy as np
+    cal = calendar()
+    obs = full_observed(cal)
+    np.savez(tmp_path / "INPUT.npz", ts=np.array(obs, dtype=np.int64),
+             x=np.zeros((len(obs), 1)), price=np.ones(len(obs)))
+    (tmp_path / "CALENDAR.json").write_text(json.dumps(cal))
+    sha = wc.file_sha256
+    clock = {"status": "RESOLVED", "input_sha256": sha(tmp_path / "INPUT.npz"),
+             "calendar_sha256": c1.canonical_digest(cal)}
+    (tmp_path / "CLOCK.json").write_text(json.dumps(clock))
+    (tmp_path / "SCOPE.json").write_text(json.dumps({"status": "SCOPED_ACCEPTED",
+                                                     "data_start": "2019-12-01T00:00:00Z",
+                                                     "data_end": "2025-01-01T00:00:00Z"}))
+    template = {"schema": "i6n.historical_cell.v1", "calendar": cal, "horizon_hours": 12,
+                "input": {"path": str(tmp_path / "INPUT.npz"), "sha256": clock["input_sha256"]},
+                "source_clock": {"path": str(tmp_path / "CLOCK.json"), "sha256": sha(tmp_path / "CLOCK.json")}}
+    (tmp_path / "CELL.json").write_text(json.dumps(template))
+    cfg = {"schema": wc.CONFIG_SCHEMA, "experiment": "I6N_TEST",
+           "calendar_path": str(tmp_path / "CALENDAR.json"), "calendar_sha256": sha(tmp_path / "CALENDAR.json"),
+           "data": {"input_path": str(tmp_path / "INPUT.npz"), "input_sha256": clock["input_sha256"],
+                    "clock_path": str(tmp_path / "CLOCK.json"), "clock_sha256": sha(tmp_path / "CLOCK.json"),
+                    "clock_scope_path": str(tmp_path / "SCOPE.json"),
+                    "clock_scope_sha256": sha(tmp_path / "SCOPE.json")},
+           "development_split": {"split_id": "DEVELOPMENT", "start": "2024-01-01T00:00:00Z",
+                                 "end": "2025-01-01T00:00:00Z"},
+           "horizons_hours": [2, 72], "history_years": 1, "fold_year": None,
+           "cell_template_path": str(tmp_path / "CELL.json"),
+           "cell_template_sha256": sha(tmp_path / "CELL.json")}
+    (tmp_path / "CONFIG.json").write_text(json.dumps(cfg))
+    out = tmp_path / "plan"
+    summary = wc.run_plan(tmp_path / "CONFIG.json", out)
+    assert summary["weekly_units"] == 53 and summary["by_horizon"] == {"2": 53, "72": 52}
+    assert len(list((out / "cells").iterdir())) == 105
+    cell = json.loads((out / "cells" / "W2024-03-10_h72.json").read_text())
+    assert cell["evaluation_week_id"] == "2024-03-10" and cell["horizon_hours"] == 72
+    assert cell["evaluation_split"]["split_id"] == "DEVELOPMENT" and cell["role"] == "MANAGEMENT"
+    assert wc.verify(out)["state"] == "VERIFIED"
+    with pytest.raises(FileExistsError):
+        wc.run_plan(tmp_path / "CONFIG.json", out)
+    exported = wc.export(out, tmp_path / "git")
+    for name in exported:
+        text = (tmp_path / "git" / name).read_text()
+        assert str(tmp_path) not in text
+    views = json.loads((out / "VIEWS.redacted.json").read_text())
+    assert str(tmp_path) not in json.dumps(views)
+    assert views["weeks"][-1]["horizons"] == [2]
+    with (out / "SUPPORT.csv").open("a") as stream:
+        stream.write("tamper\n")
+    assert wc.verify(out)["state"] == "DAMAGED"
+    bad = dict(cfg, calendar_sha256="0" * 64)
+    (tmp_path / "BAD.json").write_text(json.dumps(bad))
+    with pytest.raises(wc.CampaignError) as e:
+        wc.run_plan(tmp_path / "BAD.json", tmp_path / "plan2")
+    assert e.value.code == "DIGEST_MISMATCH"

@@ -443,6 +443,15 @@ def build_plan(*, calendar_config: Mapping[str, Any], observed_seconds: Sequence
         units.append(u)
     weekly = [u for u in units if u["kind"] == "WEEKLY_REFIT"]
     folds = [u for u in units if u["kind"] == "INNER_FOLD"]
+    earliest = min(datetime.fromisoformat(u["context_start"]) for u in units)
+    coverage = []
+    for w in weeks:
+        if w.market_close <= earliest:
+            continue
+        o, c = _epoch(w.market_open), _epoch(w.market_close)
+        bars = bisect_left(obs, c + 1) - bisect_left(obs, o + 1)  # bar ends in (O, C]
+        coverage.append({"week_id": w.week_id, "calendar_bars": (c - o) // 3600,
+                         "observed_bars": bars})
     body = {
         "schema": PLAN_SCHEMA, "experiment": experiment,
         "calendar": {"calendar_id": ref.calendar_id, "version": ref.version,
@@ -459,7 +468,9 @@ def build_plan(*, calendar_config: Mapping[str, Any], observed_seconds: Sequence
                  "rows": len(obs), "timestamps_sha256": c1.canonical_digest(obs),
                  "clock_scope": {"scope_id": scope["scope_id"], "start": _iso(scope["start"]),
                                  "end": _iso(scope["end"])},
-                 "values_read": False, "test_rows_read": False},
+                 "values_read": False, "test_rows_read": False,
+                 "week_coverage": coverage,
+                 "weeks_without_bars": [x["week_id"] for x in coverage if x["observed_bars"] == 0]},
         "provenance": dict(provenance or {}),
         "units": units,
         "summary": {
@@ -673,6 +684,48 @@ def verify(output: Path) -> Dict[str, Any]:
             "bad_files": bad, "plan_sealed": sealed, "units_sealed": units_ok}
 
 
+def export(output: Path, target: Path) -> Dict[str, Any]:
+    """Write git-safe evidence: compact unit manifest (fit role, business heads) and counts CSV."""
+    output, target = Path(output), Path(target)
+    if verify(output)["state"] != "VERIFIED":
+        raise CampaignError("PLAN_DAMAGED")
+    plan = json.loads((output / "PLAN.json").read_text())
+    fit, hs = plan["fit_role"], [str(h) for h in plan["horizons_hours"]]
+    units = []
+    for u in plan["units"]:
+        keep = {k: v for k, v in u.items() if k != "support"}
+        keep["support_fit_role_business"] = {
+            h: {s: {k: v for k, v in u["support"][fit][h][s].items()
+                    if k in ("n", "n_operational", "origins_enumerated", "status", "origins_sha256", "exclusions")}
+                for s in SPLITS if s in u["support"][fit][h]}
+            for h in hs}
+        units.append(keep)
+    manifest = {"schema": "i6n.weekly_campaign.redacted_units.v1", "plan_sha256": plan["plan_sha256"],
+                "plan_file_sha256": file_sha256(output / "PLAN.json"),
+                "note": "unit_sha256 seals the FULL unit (all roles/offsets) in the private PLAN.json",
+                **{k: plan[k] for k in ("experiment", "calendar", "horizons_hours", "head_offsets", "roles",
+                                        "fit_role", "history_years", "inner_days", "max_context_hours",
+                                        "min_support", "development_split", "test_start", "summary",
+                                        "dispositions", "claims", "eligibility_version", "support_rule")},
+                "data": {k: v for k, v in plan["data"].items() if k != "week_coverage"},
+                "provenance": plan["provenance"], "units": units}
+    target.mkdir(parents=True, exist_ok=True)
+    (target / "WEEKLY_UNITS.redacted.json").write_text(
+        json.dumps(redact(manifest), sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n")
+    fields = ["unit_id", "kind", "data_state", "role", "head_offset_hours", "split", "n",
+              "n_operational", "origins_enumerated", "status"]
+    with (target / "SUPPORT_BUSINESS.csv").open("w", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fields, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(support_rows(plan, business_only=True))
+    with (target / "WEEK_COVERAGE.csv").open("w", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=["week_id", "calendar_bars", "observed_bars"])
+        writer.writeheader()
+        writer.writerows(plan["data"]["week_coverage"])
+    return {p.name: file_sha256(p) for p in sorted(target.iterdir())
+            if p.name in ("WEEKLY_UNITS.redacted.json", "SUPPORT_BUSINESS.csv", "WEEK_COVERAGE.csv")}
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -681,9 +734,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     p.add_argument("--output", type=Path, required=True)
     v = sub.add_parser("verify")
     v.add_argument("--output", type=Path, required=True)
+    e = sub.add_parser("export")
+    e.add_argument("--output", type=Path, required=True)
+    e.add_argument("--to", type=Path, required=True)
     args = parser.parse_args(argv)
     if args.command == "plan":
         print(json.dumps(run_plan(args.config, args.output), indent=1, sort_keys=True))
+        return 0
+    if args.command == "export":
+        print(json.dumps(export(args.output, args.to), indent=1, sort_keys=True))
         return 0
     result = verify(args.output)
     print(json.dumps(result, indent=1, sort_keys=True))

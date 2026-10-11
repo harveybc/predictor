@@ -4,11 +4,30 @@
   "interface_version": "C.1",
   "status": "PUBLISHED_EARLY",
   "branch": "satoshi/i6n-swarm-C-weekly-20261011",
-  "aligned_with": {"A": "INTERFACE_A A.1 @b9eb6929 (freeze --experiment/--fold; candidate_receipt v1 rows)", "B": "INTERFACE_B B.1 @6a77d424 ASSUMED C shapes; differences listed below"},
+  "aligned_with": {
+    "A": "INTERFACE_A A.1 @b9eb6929 (freeze --experiment/--fold; candidate_receipt v1 rows)",
+    "B": "INTERFACE_B B.1 @6a77d424 ASSUMED C shapes; differences listed below"
+  },
   "builder": {
     "module": "tools.i6n_weekly_campaign",
-    "plan": ["<python>", "-m", "tools.i6n_weekly_campaign", "plan", "--config", "<private config.json>", "--output", "<new dir>"],
-    "verify": ["<python>", "-m", "tools.i6n_weekly_campaign", "verify", "--output", "<dir>"],
+    "plan": [
+      "<python>",
+      "-m",
+      "tools.i6n_weekly_campaign",
+      "plan",
+      "--config",
+      "<private config.json>",
+      "--output",
+      "<new dir>"
+    ],
+    "verify": [
+      "<python>",
+      "-m",
+      "tools.i6n_weekly_campaign",
+      "verify",
+      "--output",
+      "<dir>"
+    ],
     "reads": "calendar JSON, CLOCK.json, CLOCK_SCOPE.json, cell template (all digest-pinned) and ONLY the ts member of the retained INPUT.npz; never prices/features; refuses any ts >= 2025-01-01",
     "writes": "PLAN.json (sealed plan_sha256, per-unit unit_sha256), VIEWS.private.json, VIEWS.redacted.json, SUPPORT.csv, cells/<unit_id>_h<h>.json (historical_cell.v1 per READY unit x h), ARTIFACTS.json; output dir must not exist",
     "config_schema": "i6n.weekly_campaign.config.v1 {schema, experiment, calendar_path, calendar_sha256, data:{input_path,input_sha256,clock_path,clock_sha256,clock_scope_path,clock_scope_sha256}, development_split, horizons_hours?, roles?, fit_role?, history_years?=4, inner_days?=28, max_context_hours?=432, fold_year?=2023, arms_per_week?=2, cell_template_path?, cell_template_sha256?, inherited_limits?}"
@@ -62,5 +81,25 @@
   "dependencies_declared": [
     "Weekly VALIDATION (outer-week) scoring: A.1 freeze/evaluate seals and scores TRAIN/INNER only; outer-week rows (split=VALIDATION) need historical_cell run or an A extension",
     "2023Q1-Q3 inner folds: WAIT_DEPENDENCY until a clock scope certificate covers their context (see C_RETURN.md); B's rule 'no fitness with any non-COMPLETE fold' then blocks ranking"
-  ]
+  ],
+  "real_plan": {
+    "plan_sha256": "dd34986a46be92a0b3986be1be9b52081e922f266d22f5dde1f8f037b10ce9e7",
+    "plan_file_sha256": "2424c6a996c12aa29a538f831d89ce4e4195e301d85907d76f47a911edfdef55",
+    "views_redacted": "docs/i6n/swarm/evidence_C/VIEWS.redacted.json (sha256 c49a0bb9cefd12e5db923b8f6a819602757455f43ef8dcc7aad2a23de96c7509)",
+    "units_redacted": "docs/i6n/swarm/evidence_C/WEEKLY_UNITS.redacted.json",
+    "private_root": "<campaign root>/plan-v2 (PLAN.json, VIEWS.private.json, cells/*.json; not in git)",
+    "weekly_units": 53,
+    "weekly_fits_per_arm": 633,
+    "weekly_fits_two_arms": 1266,
+    "fold_units_ready": [
+      "2023Q4"
+    ],
+    "fold_units_wait_dependency": [
+      "2023Q1",
+      "2023Q2",
+      "2023Q3"
+    ],
+    "cell_configs": 645,
+    "cell_configs_authenticated_by_historical_cell": 645
+  }
 }
