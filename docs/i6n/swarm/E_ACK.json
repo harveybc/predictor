@@ -1,0 +1,38 @@
+{
+  "schema": "i6n.swarm_weekly.lane_ack.v1",
+  "lane": "E",
+  "state": "ACKNOWLEDGED",
+  "date": "2026-10-11",
+  "branch": "satoshi/i6n-swarm-E-search-20261011",
+  "base_commit": "5c383d17",
+  "orders_sha256": "ac77366af24bcaf4fb9454a51c94ab1f6d5230bb1de4ff14521f76cc0a3f8b9c",
+  "plan_commit": "af0c3570",
+  "plan_sha256": "da51723a08a8ee3f0a94ffaded8b35fd480b72d80f314a812a176cb43c6355df",
+  "owned_files": [
+    "tools/i6n_search.py",
+    "optimizer_plugins/i6n_optimizer.py",
+    "tools/i6n_search_space.py",
+    "tools/i6n_search_plan.py",
+    "tests/test_i6n_search_space_v2.py",
+    "tests/test_i6n_search_plan.py",
+    "tests/test_i6n_optimizer_v2.py",
+    "docs/i6n/swarm/E_*",
+    "docs/i6n/swarm/INTERFACE_E.*",
+    "docs/i6n/swarm/README_E.md",
+    "docs/i6n/swarm/I6N_SEARCH_PLAN_v1.json"
+  ],
+  "deliverables": [
+    "exact plan-domain tests (12 horizons, L, dx, n, input, supervision/dy, core, reducers, strides, adapter)",
+    "genotype schema v2 + canonicalizer (inactive genes deduplicated) + full identity hash",
+    "typed infeasibility with reasons, no repair",
+    "staged size classes and promotion rules; minimal seed Conv8->Conv4 and small alternative in initial population",
+    "versioned sealed plan JSON (domain, classes, promotion, total and per-class budgets) before any fit",
+    "config generator per h/class/fold (effective config, active/inactive params)",
+    "mapping of the 48 completed endpoint candidates onto the new canonical identity (reuse or typed non-equivalent)",
+    "E_RETURN.md, README_E.md",
+    "reviews of lanes B and C"
+  ],
+  "publishes": ["docs/i6n/swarm/INTERFACE_E.json", "docs/i6n/swarm/INTERFACE_E.md"],
+  "consumes": ["INTERFACE_A.json (model/evaluator receipt schema, trajectory heads)", "INTERFACE_B.json (swarm genotype transport)", "INTERFACE_C.json (fold definitions for 2023 inner folds)"],
+  "reviews": ["B", "C"]
+}
