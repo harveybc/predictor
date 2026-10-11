@@ -1,6 +1,38 @@
 # I6-E: origin-anchored resolution experiment
 
-Status: SPECIFIED / NOT_IMPLEMENTED / NOT_RUN. Accepted 2026-10-10.
+Status: TRAIN_SUPPORT_MEASURED / MODEL_CAMPAIGN_NOT_RUN. Updated 2026-10-10.
+
+## Governing compact-first amendment
+
+The next experiment uses only spacing/sample pairs (72h,3), (36h,5),
+(18h,9), all covering 144 physical hours to predict 72h. The eighteen-arm
+grid, matched long hourly windows and associated cost/fit counts below are
+deferred design history, NOT the active dispatch specification. Do not launch
+them or reuse their counts as the compact campaign denominator.
+
+TRAIN-only timestamp audit (`python -m tools.i6e_support`) measured 71,734
+rows: 13,889 exact-input/exact-future origins for (72h,3), zero for (36h,5)
+and (18h,9), and zero common origins. This is calendar-support failure,
+not a prediction-quality result. Input SHA-256:
+`a838b81c72a291a45dac70ab4c69415c85d7ec1888691cae38817642188e84e5`.
+The support audit reads no target values, fits no model and reads no TEST.
+
+Next implementation must use explicit origin-anchored clock slots with an
+observed-market-bar mask, in addition to the existing source availability
+masks. An absent slot has a neutral numeric placeholder after TRAIN-fit
+scaling, NOT an imputed quote. Preserve physical-time positional encoding;
+attention must exclude absent key slots and zero absent query outputs after
+each block. Do not use row-count horizons, interpolation or carried-forward
+quotes to make missing slots look observed. Require an observed current bar,
+exact future target support and a sealed common origin population. Test
+invariance to placeholder values and future perturbations before fitting.
+
+Use equal model capacity across all three arms, one seed, 3/5/9 temporal
+steps preserved through branches/fusion/core, and the same last-position head.
+Use the weekly four-year TRAIN / all-52-week VALIDATION protocol below, after
+a TRAIN-only cost pilot. Incompatible hourly branch donors must not be reused.
+The active pilot is R0; subsequent donor training/R2 is a separate contrast.
+No claim of pure resolution improvement is permitted before common-row closure.
 Follows the active I6-B/I7 contrast; CPU preparation may proceed independently.
 No current campaign, target definition, worker or checkpoint is modified.
 
