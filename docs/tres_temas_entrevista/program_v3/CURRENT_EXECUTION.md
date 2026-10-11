@@ -1,6 +1,6 @@
 # Estado de ejecución vigente
 
-Observado: 2026-10-07T19:15Z. Este archivo sustituye estados operativos anteriores.
+Observado: 2026-10-11. Este archivo sustituye estados operativos anteriores.
 
 ## Cierre de fase 1
 
@@ -41,28 +41,27 @@ plan `FEATURE_SELECTION_PHASE2_PHASE3_WORK_PLAN_2026_10_05.md`. Retorno único:
 
 ## Frente activo
 
-Fase 4 de extractibilidad y seleccion predictiva, definida en
-`FEATURE_SELECTION_PHASE4_WORK_PLAN_2026_10_06.md`. La ola acotada de 134
-caracteristicas TRAIN cerro sus tareas de extractibilidad con disposiciones
-tipadas; el plan padre de 6495 tareas no se declara completo. Ninguna
-caracteristica esta seleccionada definitivamente.
+I6-E compacto a 72 h: 156/156 celdas neuronales, 52 semanas por brazo,
+cuatro anos anteriores para cada ajuste, seed 6102026, 20 rasgos RAW heredados
+del diseno semanal retenido. Las 3,712 filas son identicas entre los tres brazos.
+No se afirma seleccion optima para 72 h. Target sin limpieza y TEST cerrado.
 
-Corre la etapa 1 RAW del banco `BUSINESS_WEEKLY_WALK_FORWARD`: 40 conjuntos
-target-especificos por 52 semanas consecutivas de VALIDATION-2024, 2080 tareas
-en total. A las 19:15Z habia 233 completas, cero fallidas y un worker activo
-en la instantanea; los slots de gamma y dragon trabajan en CPU. TEST sigue
-cerrado. El estado vivo **no** es el `STATUS.json` de wave2: consultar
-`python3 -m tools.fs4_weekly_campaign --db
-/home/harveybc/.local/state/canonical_20261003/fs4_weekly/wave2/weekly_queue.sqlite
-status` desde el checkout con el codigo del campaign. La etapa 2 de encoders
-y el manifiesto final esperan el resultado sellado de RAW. La 5090 y la 4090
-no hacen computo de este banco RAW; necesitaran admision fresca para etapa 2.
+Precio original reconciliado: MAE USD/EUR de 0.004525125 (3 tokens),
+0.004701840 (5), 0.004598673 (9), contra naive pareado 0.004403521.
+Ningun brazo habilita trading. OLAP: 156 informes / 2,184 metricas con lectura
+exacta verificada; copia fisica `i6e/weekly_compact72_v1/olap/REPORTS.json`.
 
-I6-D queda planificado despues del manifiesto final: ANN densa historica por
-caracteristica como control no temporal y nuevo contraste Dense de rama causal
-contra Conv1D con fusion/nucleo/cabezal identicos. Se ejecuta en paralelo con
-el preentrenamiento de ramas; no reabre la seleccion ni suplanta el eje temporal.
-DOIN, NEAT, RL y nuevas pruebas de estrategia no forman parte de la cola actual.
+Sigue `i6e/statistical72_v1`: controles ARIMA y ARIMAX (1,1,0), sin drift,
+remuestreo al origen, parametros semanales fijos y actualizacion de estado
+horaria por fase. El ejecutor mide TRAIN primero y continua automaticamente
+con 312 celdas semanales-resolucion, conservando fallos y evitando repeticiones.
+Estado consultable con `python -m tools.i6e_statistical_campaign status
+--output <statistical-directory>`. La cola antigua de fase 4 no es el frente
+vivo y sus instrucciones de arranque estan superadas.
+
+Despues del cierre estadistico sigue la extension multihorizonte descrita en
+`I6E_ORIGIN_ANCHORED_RESOLUTION_WORK_PLAN.md`, con seleccion de configuracion
+solo en TRAIN. No saltar a NEAT ni atribuir utilidad financiera a un MAE.
 
 ## Almacenamiento obligatorio
 
@@ -73,7 +72,7 @@ analiticos grandes quedan fuera de GitHub.
 
 ## Siguiente compuerta
 
-Cerrar RAW sobre las 2080 semanas-conjunto, sellar los ganadores sin TEST,
-ejecutar los brazos de encoder emparejados y emitir el manifiesto final de
-seleccion. Entonces arrancan los controles de arquitectura y el preentrenamiento
-de ramas segun el plan maestro.
+Cerrar los controles estadisticos en la misma poblacion y publicar con lectura
+de vuelta. Si faltan celdas, informar evidencia incompleta sin promediar las
+sobrevivientes ni reemplazar un fallo por naive. La extension por horizonte
+conserva su propio diseno, costo y compuerta antes de cualquier ensayo de trading.

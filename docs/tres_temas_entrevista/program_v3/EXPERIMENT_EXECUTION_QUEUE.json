@@ -1,20 +1,19 @@
 {
   "schema": "experiment_execution_queue.v2",
-  "updated_on": "2026-10-07T19:13:49Z",
+  "updated_on": "2026-10-11",
   "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md and its program_v3 subplans",
   "policy": {
-    "focus": "PHASE_4_WEEKLY_RAW_ON_SCOPED_FRONTIER",
-    "parallelism": "one durable coordinator queue; four admitted CPU weekly RAW slots across gamma and dragon; stage 2 waits for the sealed stage-1 result",
-    "seed_default": 0,
+    "focus": "I6E_COMPACT72_STATISTICAL_CONTROLS_AFTER_NEURAL_CLOSURE",
+    "parallelism": "one CPU model worker per compute host; TRAIN cost pilot first; one admitted cell child per worker; coordinator collects and closes unattended",
+    "seed_default": 6102026,
     "seed_maximum": 3,
     "repeat_policy": "adopt valid terminals; repeat only lost corrupt or scientifically changed units",
     "gpu_preference": [
       "gamma_external_5090",
       "dragon_4090",
-      "gamma_internal_5070ti",
       "omega_4070"
     ],
-    "gpu_use_now": "no GPU in weekly RAW; the 5090 and 4090 completed the scoped TRAIN extractibility wave; encoder comparisons need stage-2 selection and fresh admission",
+    "gpu_use_now": "compact neural cells are complete; ARIMA/ARIMAX controls are CPU work; no concurrent 5070 Ti job on gamma",
     "financial_gate": "strictly_better_than_same_row_naive_before_strategy",
     "test_policy": "validation and test remain closed during filter selection",
     "warehouse_policy": "all metrics decisions ranks costs and identities require submit plus readback",
@@ -27,6 +26,16 @@
     "dated_handoffs_can_dispatch": false
   },
   "lanes": [
+    {
+      "priority": 0,
+      "id": "I6E-STATISTICAL72",
+      "resource": "two_bounded_CPU_workers",
+      "state": "DISPATCH_READY",
+      "work": "TRAIN-only cost, 312 weekly-resolution cells, 6552 phase fits per model, common-row closure and automatic live OLAP publication/readback.",
+      "depends_on": [],
+      "produces": "STATISTICAL_CLOSURE.json and olap/PUBLICATION.json",
+      "evidence": "Neural 156/156 and original-price reconciliation complete; 156 reports / 2184 metrics readback verified."
+    },
     {
       "priority": 1,
       "id": "FS-PHASE2-ENGINEERING",
@@ -77,7 +86,7 @@
       "priority": 5,
       "id": "FS-PHASE4-WEEKLY-WRAPPER",
       "resource": "gamma_and_dragon_CPU_RAW_then_admitted_GPU_encoder",
-      "state": "RUNNING_RAW_STAGE1",
+      "state": "RETAINED_HISTORICAL_NOT_ACTIVE",
       "work": "Complete all 52 consecutive 2024 validation weeks for 40 target-specific sets under four-year rolling weekly retraining and same-row target naive. Then apply the sealed stage-2 list and compare random/trained encoders before closing the final manifest. TEST remains sealed.",
       "depends_on": [
         "FS-PHASE4-EXTRACTIBILITY"

@@ -1,7 +1,53 @@
 # I6-E: origin-anchored resolution experiment
 
-Status: MASKED_ADAPTER_TESTED / GPU_TRAIN_PILOT_COMPLETE / WEEKLY_DISPATCH_READY.
-Updated 2026-10-10.
+Status: NEURAL_156_COMPLETE / PRICE_RECONCILED / LIVE_OLAP_VERIFIED / STATISTICAL_DISPATCH_READY.
+Updated 2026-10-11.
+
+## Verified compact result and current continuation
+
+All 156 neural cells completed: 52 weekly four-year refits for each of the
+3/5/9-token arms, seed 6102026, 3,712 identical scored origins per arm. Original
+5-minute source prices were reconciled with every retained 72-hour target using
+the measured NEW_YORK_LOCAL/BAR_START clock and hourly bar-end grouping.
+Pooled price MAE (USD per EUR): 3 tokens 0.004525125; 5 tokens 0.004701840;
+9 tokens 0.004598673; paired naive 0.004403521. No neural arm passes the naive
+gate. This is a result for this finite configuration, not impossibility.
+
+The live warehouse accepted 156 reports / 2,184 metrics and exact identity,
+value, unit, horizon and split readback passed. The first oversized readback
+query was rejected; bounded per-report queries fixed it without duplicating
+metrics. The report bundle and publication receipt are retained physically.
+Input lineage remains LOCAL_RETAINED / UNVERIFIED: publishing is not proof of
+governed source delivery. TEST stays closed and no strategy is promoted.
+
+Next: `tools/i6e_statistical_campaign.py` exports verified common origins,
+measures three TRAIN-only phase fits per model, then runs 312 weekly-resolution
+cells under measured memory reservations. `tools/i6e_statistical_coordinate.sh`
+deploys one immutable commit to two independent workers, collects every 45s,
+closes only complete evidence and publishes with live readback automatically.
+ARIMA and ARIMAX use worker statsmodels 0.14.5, order (1,1,0), no drift,
+maximum 100 optimizer iterations, one fit per phase/week, no order search.
+ARIMAX uses the same 20 features and their masks, delayed 72 physical hours;
+TRAIN-only scaling and a retained QR basis remove constant/linearly dependent
+columns without consulting future data. The basis is recorded per fit.
+Calendar gaps are NaN endogenous observations, never carried-forward quotes.
+Nonconvergence is a failure, never a substituted naive. An interrupted or failed
+fit is retained and not silently repeated. These are CPU controls: GPU idleness
+during them is not disguised as GPU computation.
+
+Commands, with host names and secrets supplied privately:
+
+```bash
+python -m tools.i6e_statistical_campaign status --output <statistical-directory>
+PREFERRED_HOST=<worker-a> SECONDARY_HOST=<worker-b> PIN=<immutable-commit> \
+  WAREHOUSE_URL=<warehouse-url> WAREHOUSE_TOKEN_FILE=<private-file> \
+  bash tools/i6e_statistical_coordinate.sh
+```
+
+The longer-horizon extension below remains a separate TRAIN-selected design;
+do not choose its configuration from these outer-validation results. Core
+pretraining, NEAT, real trading and TEST are not automatic shortcuts around the
+same-row eligibility gate.
 
 ## Governing compact-first amendment
 
@@ -61,11 +107,11 @@ measured cell-time projection. Each cell runs in its own admitted scope.
 only after verifying TRAIN input identities, scaling, inner rows, stopping
 settings and selected weights; it does not train that cell twice.
 
-This first automatic closure reports raw log-return MAE/MSE and paired naive.
-The price-unit join, ARIMA/ARIMAX controls and live-warehouse ETL are NOT
-implemented by this neural executor. Do not label its closure as completion
-of those parts or as permission to open TEST or trade. Local prediction/model
-artifacts and sealed metric terminals are retained for the follow-up ETL.
+The neural executor itself reports raw log-return MAE/MSE and paired naive.
+The separate `i6e_price_metrics` join and `i6e_publish_olap` ETL now close price
+units and live publication; the separate statistical controls are not yet
+closed. Do not label neural closure as completion of all I6-E or as permission
+to open TEST or trade. Original prediction/model artifacts remain unchanged.
 Follows the active I6-B/I7 contrast; CPU preparation may proceed independently.
 No current campaign, target definition, worker or checkpoint is modified.
 

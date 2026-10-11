@@ -1,14 +1,27 @@
 {
   "schema": "research_program_method_state.v1",
-  "updated_on": "2026-10-08",
+  "updated_on": "2026-10-11",
   "current_stage": "integration_verification",
   "completed_stages": [
     "discovery",
     "requirements"
   ],
   "program_owner": "Harvey",
-  "execution_owner": "Satoshi",
-  "handoff_status": "I5_RAW_MAINLINE_I6A_SCOPED_WEEKLY_VALIDATION_COMPLETE_NO_NAIVE_PASS",
+  "execution_owner": "Musashi",
+  "handoff_status": "I6E_NEURAL_COMPLETE_PRICE_RECONCILED_OLAP_VERIFIED_STATISTICAL_CONTROLS_NEXT",
+  "i6e_compact": {
+    "neural_cells_complete": 156,
+    "neural_cells_expected": 156,
+    "common_origins_per_arm": 3712,
+    "horizon_hours": 72,
+    "seed": 6102026,
+    "price_target_reconciled": true,
+    "warehouse_reports_readback_verified": 156,
+    "warehouse_metrics_readback_verified": 2184,
+    "naive_eligible_arms": 0,
+    "test_read": false,
+    "next_action": "TRAIN-only statistical cost pilots, then automatic weekly ARIMA/ARIMAX controls, exact common-row closure and live publication."
+  },
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [
     "Use the complete I6-A 208/208-cell EURUSD Y_s_1h business adaptation as development evidence only: ARCH-B is the strongest arm relative to ARCH-A, but none beats the same-row naive on the mean.",

@@ -1,6 +1,6 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-10. Este documento contiene sólo el plan vigente. Los
+Actualizado: 2026-10-11. Este documento contiene sólo el plan vigente. Los
 retornos RP, snapshots de máquinas, restricciones ya levantadas y dictámenes
 superados son evidencia histórica en `docs/audits/` y `docs/handoffs/`; no
 gobiernan la ejecución.
@@ -114,7 +114,10 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 - [ ] I6-E. Viabilidad de doble pronostico: resoluciones h, h/2 y h/4,
   ventanas ancladas al origen horario, sin suavizado, naive anual pareado.
   [Subplan de ejecucion](program_v3/I6E_ORIGIN_ANCHORED_RESOLUTION_WORK_PLAN.md).
-  Preparacion CPU independiente; contraste de remuestreo despues de I7-M.
+  Contraste compacto de 72 h cerrado: 156 celdas / 3,712 filas por brazo;
+  ningun brazo supera al naive. Precio original reconciliado y 2,184 metricas
+  verificadas en OLAP. Siguen controles ARIMA/ARIMAX automatizados en CPU;
+  la extension multihorizonte conserva seleccion de configuracion solo en TRAIN.
 - [ ] I7-H. Fijar prefijo ganador y probar H-CORE por separado.
 - [ ] I8. Optimización DEAP distribuida por DOIN del modelo elegible.
 - [ ] I9-N. Representación final congelada: Dense control frente a NEAT.
@@ -459,8 +462,8 @@ El estado observado y la cola se mantienen únicamente en
 están cerradas (2026-10-07: `PHASE_2_COMPLETE.json` y
 `PHASE_3_FILTER_COMPLETE.json` para EURUSD y ETH, cubo vivo reconciliado,
 snapshot `phase2-3-feature-selection-20261007`; sin ganador predictivo). El
-objeto siguiente es integrar el runner real de fase 4, medir su costo y ejecutar
-la cola automatica. El snapshot binario se conserva en dos maquinas, con
+frente vigente es I6-E compacto y sus controles estadisticos, no reabrir la
+antigua cola de fase 4. El snapshot binario se conserva en dos maquinas, con
 manifiesto y SHA-256 en Git; la subida a GitHub fue cancelada. El calendario se usa
 ahora sólo como evidencia histórica del selector; su integración como entrada
 permanece en I11.
