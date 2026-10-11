@@ -219,14 +219,26 @@ def _error(code: str, error: BaseException, phase: Optional[str] = None) -> dict
 def _verify_stored(stored: Any) -> dict:
     """Wrapper digest, schema and semantic verification of a stored result file.
 
-    Raises ``PairedMetricsError``: ``RESULT_SEAL_INVALID`` for the wrapper, or
-    any typed code of ``paired_metrics.verify_result`` for the inner result.
+    Raises ``PairedMetricsError``: ``RESULT_SEAL_INVALID`` for the wrapper,
+    any typed code of ``paired_metrics.verify_result`` for the inner result, or
+    ``RESULT_IDENTITY_BINDING_INVALID`` when the inner result's input/contract
+    digests differ from the wrapper identity.
     """
     if (not isinstance(stored, dict) or stored.get("schema_version") != RESULT_FILE_SCHEMA_VERSION
             or stored.get("sha256") != pm.canonical_sha256({k: v for k, v in stored.items() if k != "sha256"})):
         raise pm.PairedMetricsError("RESULT_SEAL_INVALID", "result file digest or schema does not verify")
-    pm.verify_result(stored.get("result"))
-    return stored["result"]
+    result = stored.get("result")
+    pm.verify_result(result)
+    identity = stored.get("identity")
+    # Bind the verified result to the wrapper identity, which run() recomputes from
+    # the config file and status() compares with STATUS.json: a coherent result of
+    # another input or contract must never be reused or reported as success.
+    if (not isinstance(identity, dict) or result["input_sha256"] != identity.get("input_sha256")
+            or result["contract_sha256"] != identity.get("config_sha256")):
+        raise pm.PairedMetricsError(
+            "RESULT_IDENTITY_BINDING_INVALID",
+            "the result's input_sha256/contract_sha256 differ from the output identity")
+    return result
 
 
 def _fail(status: "_Status", typed: dict) -> tuple:
