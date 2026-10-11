@@ -22,11 +22,11 @@ Fix: `paired_metrics_cli._verify_stored` raises
 `RESULT_IDENTITY_BINDING_INVALID` unless `result.input_sha256 ==
 identity.input_sha256` and `result.contract_sha256 == identity.config_sha256`.
 It is used by both `run()` (reuse path, refused as OUTPUT_CORRUPT without
-writing) and `--status` (exit 16, disposition RESULT_INVALID).
+writing) and `--status` (exit 6 = EXIT_DAMAGED, disposition RESULT_INVALID).
 
 | Defect | Test | PRE on 994282ad | POST |
 |---|---|---|---|
-| Inner result not bound to config identity: input digest replaced | test_r4_status_and_rerun_refuse_a_result_not_bound_to_the_config_identity[input_digest_replaced] | FAIL (status did not report damage) | PASS: --status 16 RESULT_INVALID; rerun OUTPUT_CORRUPT; bytes unchanged |
+| Inner result not bound to config identity: input digest replaced | test_r4_status_and_rerun_refuse_a_result_not_bound_to_the_config_identity[input_digest_replaced] | FAIL (status did not report damage) | PASS: --status 6 RESULT_INVALID; rerun OUTPUT_CORRUPT; bytes unchanged |
 | Same, contract narrowed to one horizon | ...[contract_narrowed] | FAIL | PASS |
 | Precondition: both forgeries pass verify_result alone | test_r4_forgeries_verify_in_isolation_so_only_the_identity_binding_can_refuse_them | PASS | PASS |
 
@@ -59,6 +59,20 @@ tools/i6n_contracts/paired_metrics_cli.py sha256 590b10a6374522df443c83503c36645
   while keeping counts, signs, group set, contract and identity consistent is
   still undetectable without the rows and external custody; only rescoring on
   reuse would catch it. No signatures, leases or calendar were added.
-- This round was implemented by Satoshi directly and was not re-verified by a
-  separate reviewer; the order requires one before acceptance of this round.
+- \`--status\` alone cannot detect a directory rewritten consistently: if the
+  forged result and BOTH the RESULT.json and STATUS.json identities are set to
+  the forged digests (wrapper and STATUS summary resealed), \`--status\` reports
+  COMPLETE_VERIFIED with exit 0, because it has no config to recompute the
+  identity from and the digests are unkeyed. Only a rerun with the real config
+  refuses it (OUTPUT_IDENTITY_MISMATCH, nothing written). An orchestrator that
+  must not trust the directory should rerun with its config instead of relying
+  on \`--status\`.
+- Independent verification of this round (separate reviewer, one finite run on
+  efce4b63): forgeries (a) inner input digest replaced and (b) contract
+  narrowed -> \`--status\` 6 RESULT_IDENTITY_BINDING_INVALID, rerun 2
+  OUTPUT_CORRUPT; (c) wrapper identity forged with honest STATUS -> 6
+  RESULT_IDENTITY_MISMATCH, rerun 2; (d) both identities forged -> \`--status\`
+  0, rerun 2 OUTPUT_IDENTITY_MISMATCH; honest control 0/0; bytes unchanged in
+  every case; suite 212 passed; pins matched. The reviewer required only the
+  two documentation corrections applied in the commit after efce4b63.
 - All R3 limits still apply (C2_RETURN_R3.md).
