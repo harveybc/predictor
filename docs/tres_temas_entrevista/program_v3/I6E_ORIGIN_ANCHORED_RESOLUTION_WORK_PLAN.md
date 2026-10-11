@@ -1,6 +1,7 @@
 # I6-E: origin-anchored resolution experiment
 
-Status: TRAIN_SUPPORT_MEASURED / MODEL_CAMPAIGN_NOT_RUN. Updated 2026-10-10.
+Status: MASKED_ADAPTER_TESTED / GPU_TRAIN_PILOT_COMPLETE / WEEKLY_DISPATCH_READY.
+Updated 2026-10-10.
 
 ## Governing compact-first amendment
 
@@ -33,6 +34,38 @@ Use the weekly four-year TRAIN / all-52-week VALIDATION protocol below, after
 a TRAIN-only cost pilot. Incompatible hourly branch donors must not be reused.
 The active pilot is R0; subsequent donor training/R2 is a separate contrast.
 No claim of pure resolution improvement is permitted before common-row closure.
+
+### Implemented compact adapter and execution
+
+`tools/i6e_masked_model.py` reuses the built-in branch factory. Defaults:
+20 causal Conv1D branches, 16 channels, kernel 3; temporal channel fusion;
+physical-hour positional encoding; width 32, two residual Transformer blocks,
+two heads, FFN 64; residual causal Conv1D core channels 24->16->8, all strides
+one; last-position linear head. Each arm has 34,921 parameters. Keras tests
+verify identical initial weights across resolutions, placeholder invariance,
+past-output invariance to future tokens and exact save/load parity.
+
+The TRAIN-only 9-token pilot completed on the preferred GPU: 13,719 fit rows,
+233 purged inner rows, 432 observed updates, selected epoch 3, patience stop
+at epoch 8, 17.462 seconds total, cgroup peak 2,339,917,824 bytes.
+Production reservation is 2,924,897,280 bytes (1.25 times the measured peak).
+Inner raw-log-return MAE 0.006731154 versus paired naive 0.006835417 is only
+a TRAIN diagnostic, not an annual quality conclusion.
+
+`tools/i6e_coordinate.sh` deploys an immutable commit to independent worker
+worktrees, launches 104 weekly cells on the preferred host (5/9 tokens) and
+52 on the secondary (3 tokens), collects artifacts and closes automatically.
+`tools/i6e_campaign.py status --output <campaign-dir>` exposes counters and
+measured cell-time projection. Each cell runs in its own admitted scope.
+`tools/i6e_compact_run.py` reuses the completed pilot fit for week 0 / 9 tokens
+only after verifying TRAIN input identities, scaling, inner rows, stopping
+settings and selected weights; it does not train that cell twice.
+
+This first automatic closure reports raw log-return MAE/MSE and paired naive.
+The price-unit join, ARIMA/ARIMAX controls and live-warehouse ETL are NOT
+implemented by this neural executor. Do not label its closure as completion
+of those parts or as permission to open TEST or trade. Local prediction/model
+artifacts and sealed metric terminals are retained for the follow-up ETL.
 Follows the active I6-B/I7 contrast; CPU preparation may proceed independently.
 No current campaign, target definition, worker or checkpoint is modified.
 

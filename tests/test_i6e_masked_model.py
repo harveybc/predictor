@@ -9,10 +9,16 @@ from tools.i6e_masked_model import build_model
 
 def test_placeholder_invariance_shapes_and_capacity(tmp_path):
     counts = []
+    reference_weights = None
     for steps in (3, 5, 9):
         tf.keras.utils.set_random_seed(6102026)
         model = build_model(steps, 2, 144 / (steps - 1))
         counts.append(model.count_params())
+        if reference_weights is None:
+            reference_weights = model.get_weights()
+        else:
+            for a, b in zip(reference_weights, model.get_weights(), strict=True):
+                np.testing.assert_array_equal(a, b)
         x = np.ones((2, steps, 5), dtype=np.float32)
         x[:, 1, -1] = 0
         before = model(x, training=False).numpy()
