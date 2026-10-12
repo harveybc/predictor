@@ -209,6 +209,19 @@ class Remote:
             raise DeployError("RSYNC_FAILED", _redact(result.stderr[-400:], [self.host]))
 
 
+    def put_many(self, paths: List[str]) -> None:
+        """One rsync for many absolute paths (same path on both ends; --files-from, --relative)."""
+        listing = Path(os.environ.get("TMPDIR", "/tmp")) / f"i6n-deploy-files-{os.getpid()}.txt"
+        listing.write_text("".join(p.lstrip("/") + "\n" for p in sorted(paths)))
+        try:
+            result = subprocess.run(["rsync", "-a", "--checksum", "--files-from", str(listing), "/",
+                                     f"{self.host}:/"], capture_output=True, text=True, timeout=3600)
+        finally:
+            listing.unlink(missing_ok=True)
+        if result.returncode != 0:
+            raise DeployError("RSYNC_FAILED", _redact(result.stderr[-400:], [self.host]))
+
+
 class LocalHost(Remote):
     """The coordinator itself (no ssh)."""
 
@@ -328,6 +341,7 @@ def effective_campaign_config(spec: Mapping[str, Any], inv: Mapping[str, dict], 
     coordinator_inv = inv.get("control", {})
     hosts = [dict(role="coordinator", ledger_host=True, devices=[], python=wrapper, workdir=workdir,
                   data_dir=str(root / "hostdata" / "coordinator"), doin_port=None,
+                  shared_data_root=spec["data_root"],
                   environment=dict(CUDA_VISIBLE_DEVICES=""))]
     for role in WORKER_ORDER:
         if role not in spec["workers"]:
@@ -337,11 +351,16 @@ def effective_campaign_config(spec: Mapping[str, Any], inv: Mapping[str, dict], 
         env["I6N_DATA_ROOT"] = spec["data_root"]
         hosts.append(dict(role=role, ledger_host=False, python=wrapper, workdir=workdir,
                           data_dir=str(root / "hostdata" / role), doin_port=int(spec["ports"]["doin"][role]),
+                          shared_data_root=spec["data_root"],
                           environment=env,
                           devices=[dict(cls=DEVICE_CLASS[role], cuda_visible_devices=env.get("CUDA_VISIBLE_DEVICES", ""))]))
-    admitted = {c: {k: v for k, v in a.items() if k in ("receipt", "child_wall_seconds", "small_pilot",
-                                                       "coverage_adjustment_bytes", "coverage_derivation_sha256")}
-                for c, a in admission.items() if a["admitted"]}
+    admitted = {}
+    for c, a in admission.items():
+        if not a["admitted"]:
+            continue
+        entry = {k: a[k] for k in ("receipt", "child_wall_seconds", "small_pilot", "coverage_adjustment_bytes")}
+        entry["coverage_derivation"] = a.get("coverage_derivation_pin") or a["coverage_derivation_sha256"]
+        admitted[c] = entry
     if not admitted:
         raise DeployError("NO_ADMITTED_CLASS")
     launcher_paths = {inv[r]["admission"] for r in spec["workers"]}
@@ -350,7 +369,8 @@ def effective_campaign_config(spec: Mapping[str, Any], inv: Mapping[str, dict], 
     cfg = dict(
         schema=CAMPAIGN_SCHEMA, campaign_id=spec["campaign_id"], mode="production", experiment=spec["experiment"],
         seed=SEED, prior_candidates=spec.get("prior_candidates"),
-        evaluator_capabilities=list(spec.get("evaluator_capabilities", ["VALIDATION_OUTER_WEEK"])),
+        evaluator_capabilities=list(spec.get("evaluator_capabilities",
+                                             ["VALIDATION_OUTER_WEEK", "DIRECT_MULTI_OUTPUT_ARM"])),
         shared_data_root=spec["data_root"], search_plan=dict(spec["search_plan"]),
         weekly_views=dict(spec["c_views"]), weekly_plan=dict(spec["c_plan"]), multi_output=dict(spec["multi_output"]),
         hosts=hosts,
@@ -468,6 +488,11 @@ class Deployer:
         template = json.loads(Path(spec["cell_template"]["path"]).read_text())
         admission = class_admission(c_plan, e_plan["classes"], spec["pilots"], template["resources"],
                                     child_wall_seconds=template["resources"]["max_seconds"] + 120)
+        for c, a in admission.items():
+            if a.get("admitted"):
+                path = Path(spec["deploy_dir"]) / f"coverage_{c}.json"
+                write_private_json(path, a["coverage_derivation"])
+                a["coverage_derivation_pin"] = {"path": str(path), "sha256": sha256_file(path)}
         token = Path(spec["deploy_dir"]) / "ledger.token"
         if not token.exists():
             fd = os.open(token, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
@@ -499,7 +524,7 @@ class Deployer:
         self.campaign_cli("start", "--root", str(root), "--role", "coordinator")
         mark(spec, self.state, "coordinator", preflight="READY")
 
-    def worker(self, role: str) -> None:
+    def worker(self, role: str, activate: bool = True) -> None:
         spec = self.spec
         remote = self.remotes[role]
         code = Path(spec["code_dir"])
@@ -514,10 +539,15 @@ class Deployer:
         manifest = manifest_lines(files)
         manifest_path = str(Path(spec["deploy_dir"]) / "verify" / f"{role}.sha256")
         differing = remote_mismatches(remote, manifest, manifest_path)
-        for path in differing:
-            if path not in files:
-                raise DeployError("REMOTE_VERIFY_UNPARSED", "cannot map a sha256sum failure to a file")
-            remote.put(files[path], path)
+        unknown = [p for p in differing if p not in files]
+        if unknown:
+            raise DeployError("REMOTE_VERIFY_UNPARSED", "cannot map a sha256sum failure to a file")
+        if differing:
+            if hasattr(remote, "put_many") and all(str(files[p]) == p for p in differing):
+                remote.put_many(differing)
+            else:
+                for path in differing:
+                    remote.put(files[path], path)
         remote.run("chmod 700 " + shlex.quote(str(Path(spec["campaign_root"]) / "private")) + " && chmod 600 "
                    + shlex.quote(str(token)))
         wrapper = Path(spec["deploy_dir"]) / f"i6n-python.{role}"
@@ -527,6 +557,10 @@ class Deployer:
         still = remote_mismatches(remote, manifest, manifest_path)
         if still:
             raise DeployError("REMOTE_BYTES_DIFFER", f"{len(still)} file(s) differ after copy on {role}")
+        self.ensure_git_pin(role)
+        if not activate:
+            mark(spec, self.state, f"replicated:{role}", files=len(files), verified=True)
+            return
         root = shlex.quote(spec["campaign_root"])
         cli = f"cd {shlex.quote(str(code / 'predictor'))} && {shlex.quote(str(code / 'bin' / 'i6n-python'))} -m tools.i6n_swarm_campaign"
         remote.run(f"{cli} install --root {root} --role {role}")
@@ -535,6 +569,32 @@ class Deployer:
             remote.run(f"{cli} start --root {root} --role {role}")
         mark(spec, self.state, f"worker:{role}", files=len(files), verified=True,
              started=started, policy=spec["workers"][role]["start"])
+
+    def ensure_git_pin(self, role: str) -> None:
+        """Make the predictor deploy commit present in the worker's own repo (refs only; no checkout change)."""
+        repo_spec = self.spec["repos"]["predictor"]
+        ref = repo_spec.get("bundle_ref")
+        if not ref:
+            return
+        remote = self.remotes[role]
+        pin = repo_spec["pin"]
+        candidates = [self.inv[role].get("worktree"), "~/Documents/GitHub/predictor"]
+        probe = " || ".join(f"( test -e {c}/.git && echo {c} )" for c in candidates if c)
+        repo = remote.run(probe, check=False).stdout.strip().splitlines()
+        if not repo:
+            raise DeployError("WORKER_REPO_MISSING", role)
+        repo = repo[0]
+        if remote.run(f"git -C {repo} cat-file -e {shlex.quote(pin)}^{{commit}}", check=False).returncode == 0:
+            return
+        bundle = Path(self.spec["deploy_dir"]) / f"predictor-{pin[:12]}.bundle"
+        if not bundle.exists():
+            self.run_local(["git", "-C", repo_spec["path"], "bundle", "create", str(bundle), ref],
+                           capture_output=True, check=True)
+        remote.put(bundle, str(bundle))
+        remote.run(f"git -C {repo} fetch -q {shlex.quote(str(bundle))} "
+                   f"{shlex.quote(ref)}:refs/remotes/i6n-deploy/{shlex.quote(ref.split('/')[-1])}")
+        if remote.run(f"git -C {repo} cat-file -e {shlex.quote(pin)}^{{commit}}", check=False).returncode != 0:
+            raise DeployError("WORKER_PIN_ABSENT_AFTER_FETCH", role)
 
     def install_join_gate(self, role: str) -> None:
         spec = self.spec
@@ -559,6 +619,17 @@ class Deployer:
         self.local.run("systemctl --user daemon-reload && systemctl --user enable --now "
                        + shlex.quote(name + ".timer"))
         mark(spec, self.state, f"join_gate:{role}", unit=name + ".timer")
+
+    def replicate(self) -> dict:
+        """Copy and byte-verify code, data root and campaign root on every worker; no install/start."""
+        self.prepare()
+        if not (Path(self.spec["campaign_root"]) / "PLAN.json").exists():
+            cfg_path = Path(self.spec["deploy_dir"]) / "campaign.private.json"
+            self.campaign_cli("plan", "--config", str(cfg_path), "--output", self.spec["campaign_root"])
+        for role in WORKER_ORDER:
+            if role in self.spec["workers"]:
+                self.worker(role, activate=False)
+        return status(self.spec)
 
     def apply(self) -> dict:
         self.prepare()
@@ -639,6 +710,7 @@ def main(argv=None) -> int:
     group.add_argument("--status", action="store_true")
     group.add_argument("--dry-run", action="store_true")
     group.add_argument("--join", choices=sorted(DEVICE_CLASS))
+    group.add_argument("--replicate", action="store_true", help="copy + verify on workers only")
     args = parser.parse_args(argv)
     spec = dict(load_spec(Path(args.spec)), spec_path=str(Path(args.spec).resolve()))
     if args.status:
@@ -650,6 +722,9 @@ def main(argv=None) -> int:
             cfg = deployer.prepare()
             print(json.dumps({"state": "PREPARED", "admitted": sorted(cfg["class_admission"]),
                               "hosts": [h["role"] for h in cfg["hosts"]]}, indent=1))
+        elif args.replicate:
+            result = deployer.replicate()
+            print(json.dumps({"state": "REPLICATED", "steps": sorted(result["steps"])}, indent=1))
         elif args.join:
             print(json.dumps(deployer.join(args.join), indent=1, sort_keys=True))
         else:

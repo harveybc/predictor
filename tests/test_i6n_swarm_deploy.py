@@ -169,6 +169,10 @@ class FakeHost(dep.Remote):
             data = data + b"x"
         dst.write_bytes(data)
 
+    def put_many(self, paths):
+        for path in paths:
+            self.put(Path(path), path)
+
     def run(self, command, check=True):
         self.commands.append(command)
         out, rc = "", 0
