@@ -30,6 +30,22 @@ def binding(root, name, horizon, scale, **context):
         i6n_evaluator_timeout=600))
 
 
+def c_arms_template(weeks, e_plan_sha256, families=("short",)):
+    """A lane C i6n.multi_output_arms.v1 template (unresolved, sealed with C's own helper)."""
+    from tools.i6n_weekly_multi_output import FAMILIES, _seal
+    arms = [dict(arm_id=f"MO-{f.upper()}-{slot}-{w}", family=f, recipe_slot=slot,
+                 recipe_role={"R1": "BEST", "R2": "MINIMAL_CONTROL"}[slot], week_id=w, unit_sha256=common.sha256_json(w),
+                 cutoff_utc="2024-01-05T22:00:00Z", release_at_utc="2024-01-07T22:00:00Z", horizons=list(FAMILIES[f]),
+                 heads={}, state="WAIT_DEPENDENCY", cause="FINALISTS_UNRESOLVED", recipe=None, config=None, binding=None)
+            for f in families for w in weeks for slot in ("R1", "R2")]
+    body = dict(schema="i6n.multi_output_arms.v1", experiment="exp-fx", weekly_plan_sha256="c" * 64,
+                e_plan_sha256=e_plan_sha256, fit_role="MANAGEMENT", families={k: list(v) for k, v in FAMILIES.items()},
+                budget=dict(max_dispositions=212, planned_dispositions=len(arms), recipes_per_family=2),
+                recipe_rule={}, transfer_claim="TEMPLATE", refit="weekly", per_head_masks="C1",
+                state="WAIT_DEPENDENCY", cause="FINALISTS_UNRESOLVED", excluded_weeks=[], arms=arms, recipes=None)
+    return _seal(body, "manifest_sha256")
+
+
 def build_inputs(tmp_path, horizons=(12, 72), folds=("2023Q1", "2023Q2"), weeks=("W2024-01-07", "W2024-01-14"),
                  frozen=True, wait_folds=(), dca=()):
     root = tmp_path / "inputs"
@@ -83,10 +99,7 @@ def build_inputs(tmp_path, horizons=(12, 72), folds=("2023Q1", "2023Q2"), weeks=
                          release_at_utc="2024-12-29T22:00:00Z", horizons=[], eligible=False,
                          cause={str(h): "NO_ELIGIBLE_ROWS" for h in horizons}, unit_sha256=common.sha256_json("x"),
                          cell_configs={}, bindings=None, binding=None)])
-    multi_doc = dict(schema="i6n.multi_output.arms.v1", arms=[
-        dict(family="short", arm_id=f"short-{w}", week_id=w, horizons=[2, 3, 4, 5, 6, 12],
-             config=dict(kind="multi_output_fixture", family="short"),
-             binding=binding(root, f"multi-short-{w}", 12, 5)) for w in weeks])
+    multi_doc = c_arms_template(weeks, plan["plan_sha256"])
     return dict(search_plan=pin(root / "plan_e.json", plan), weekly_views=pin(root / "views_c.json", views),
                 multi_output=pin(root / "multi_c.json", multi_doc))
 

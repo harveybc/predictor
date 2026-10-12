@@ -54,20 +54,38 @@ def _reference_score_folds(plan, receipts, supports, *, genotype_canonical_sha25
                 aggregator="B_REFERENCE_PENDING_E_MERGE")
 
 
-def score_candidate(score_folds, plan, receipts, supports, genotype, horizon, origins=None):
-    """Rank only through E's score_folds; C origins digests are passed whenever the plan has them."""
-    result = score_folds(plan, receipts, supports, genotype_canonical_sha256=genotype, horizon_hours=horizon,
-                         origins_sha256=origins)
+def score_candidate(score_folds, plan, receipts, supports, genotype, horizon, origins=None, production=False):
+    """Rank only through E's score_folds.
+
+    C origins digests are passed for every fold or for none (partial is refused). In production the
+    aggregator must be lane E's ``score_folds`` itself and the result must report origins VERIFIED;
+    B's same-signature reference exists for fixtures only.
+    """
+    if origins is not None and set(origins) != set(supports):
+        raise ValueError("C origins digests must be given for every fold or none")
+    if production:
+        from tools.i6n_search_plan import score_folds as e_score_folds
+        if score_folds is not e_score_folds:
+            raise ValueError("production ranking requires E.score_folds (no reference aggregator)")
+        if origins is None:
+            raise ValueError("production ranking requires C origins digests for every fold")
+    result = dict(score_folds(plan, receipts, supports, genotype_canonical_sha256=genotype, horizon_hours=horizon,
+                              origins_sha256=origins))
     result.setdefault("aggregator", "E.score_folds")
+    if production and result.get("origins_binding") != "VERIFIED":
+        raise ValueError(f"production ranking requires origins VERIFIED, got {result.get('origins_binding')}")
     return result
 
 
 def resolve_score_folds():
-    try:
-        from tools.i6n_search_plan import score_folds
-    except ImportError:
-        return _reference_score_folds
+    """Lane E's aggregator. The reference is never returned here; fixtures inject it explicitly."""
+    from tools.i6n_search_plan import score_folds
     return score_folds
+
+
+def origins_of(swarm):
+    found = {f["fold"]: f["origins_sha256"] for f in swarm["folds"] if f.get("origins_sha256")}
+    return found or None
 
 
 def fold_fit_id(swarm, fold, config):
@@ -75,7 +93,11 @@ def fold_fit_id(swarm, fold, config):
                          context=fold["context"], support=fold["support"])
 
 
-def size_class(config, classes):
+def size_class(config, classes, genotype=None):
+    """E's class_of for v2 genotypes (single source); the plan's class table for v1 genomes."""
+    if isinstance(genotype, dict) and str(genotype.get("schema", "")).startswith("i6n.genotype.v2"):
+        from tools import i6n_search_space as space
+        return space.class_of(genotype)
     widths = [config["core"]["width"], *config["core"]["reducer_filters"], config["core"].get("adapter_width") or 0]
     for item in classes:
         if (config["samples"] <= item["max_samples"] and max(widths) <= item["max_width"]
@@ -86,7 +108,8 @@ def size_class(config, classes):
 
 def unit_spec(swarm, fold, wire, config, node=None, stage="search", dag_node=None):
     """Node-independent unit spec: every peer derives the same immutable spec for a fit_id."""
-    cls = size_class(config, swarm.get("classes", [])) if swarm.get("classes") else None
+    cls = (size_class(config, swarm.get("classes", []), wire.get("genotype"))
+           if swarm.get("classes") or wire.get("genotype") else None)
     return dict(stage=stage, dag_node=dag_node or swarm.get("dag_node", f"search:h{swarm['horizon']}"),
                 horizon=swarm["horizon"], fold=fold["fold"], experiment=swarm["experiment"],
                 genotype_canonical_sha256=wire["identity"], effective_config_sha256=common.sha256_json(config),
@@ -94,7 +117,7 @@ def unit_spec(swarm, fold, wire, config, node=None, stage="search", dag_node=Non
                                                                      wire["identity"]),
                 device_class="gpu_admitted", fixture=bool(swarm.get("fixture")), size_class=cls,
                 effective_config=config, genotype=wire.get("genotype", wire["genome"]),
-                binding_sha256=fold.get("binding_sha256"))
+                binding_sha256=fold.get("binding_sha256"), support=fold["support"])
 
 
 def receipt_document(fit_id, swarm, fold, wire, config, receipt):
@@ -119,6 +142,13 @@ def decode_wire(wire, generation):
         raise ValueError("unsupported shared genome wire")
     if wire.get("generation") != generation:
         raise ValueError("wire generation mismatch")
+    if wire["schema"] == "i6n-shared-deap-v2":
+        from tools import i6n_search_space as space
+        g = space.canonicalize(wire["genotype"])
+        if (g != wire["genotype"] or wire["genome"] != space.to_evaluator_genome(g)
+                or wire["identity"] != space.genotype_sha256(g)):
+            raise ValueError("v2 wire identity does not match its genotype")
+        return wire["genome"], space.evaluator_config(g)
     genome = search.normalize_genome(wire["genome"])
     if genome != wire["genome"] or search.effective_identity(genome) != wire["identity"]:
         raise ValueError("wire identity does not match its genome")
@@ -154,6 +184,7 @@ class Bridge:
         self.stop_event = stop_event or threading.Event()
         self.score_folds = score_folds or resolve_score_folds()
         self.plan = plan
+        self.production = not node.get("fixture")
         self.admit = admit  # optional callable(unit_spec) -> {admit, cause, exclusive_host, cap_bytes}
         lease = node["lease"]
         self.ttl, self.renew_s = float(lease["ttl_seconds"]), float(lease["renew_seconds"])
@@ -178,6 +209,15 @@ class Bridge:
 
     def run_fold(self, fit_id, spec, request, verify):
         """Claim/adopt/run one fold. Returns ("COMPLETE", doc) or (state, cause)."""
+        if self.node.get("launcher") is not None or self.production:
+            cls = spec.get("size_class") or ""
+            if cls not in self.node.get("class_caps", {}):
+                terminal = self.ledger.terminal(fit_id)
+                if terminal is not None:
+                    return "COMPLETE", terminal["receipt"]
+                cause = f"CLASS_NOT_ADMITTED: {cls or 'unclassified'}"
+                self.ledger.mark_wait(fit_id, cause)
+                return "WAIT_RESOURCE", cause
         deadline = self.clock() + self.max_wait
         exclusive = self.node.get("exclusive_host", True)
         while True:
@@ -208,10 +248,11 @@ class Bridge:
             # The previous holder died before reporting: its evaluator STATUS (RUNNING, lock free) is the parent.
             found = locate_status(context["output_root"], request)
             parent_status = common.file_sha256(found) if found else None
-        payload = dict(request, attempt=dict(index=attempt["index"], parent_status_sha256=parent_status,
-                                             fencing_token=str(token)))
-        if attempt["kind"] == "RESUME":
-            payload["resume_checkpoint"] = attempt["checkpoint"]
+        lineage = dict(index=attempt["index"], parent_status_sha256=parent_status, fencing_token=str(token))
+        if attempt.get("parent") is not None:
+            # A.3: the ledger's previous physical attempt is the lineage authority (works cross-host).
+            lineage["parent"] = attempt["parent"]
+        payload = dict(request, attempt=lineage)  # never resume_checkpoint: A refuses RESUME_UNSUPPORTED
         try:
             argv, env = self._argv(fit_id, spec), self._env()
         except Exception as exc:
@@ -263,6 +304,10 @@ class Bridge:
             if genome["horizon"] != swarm["horizon"]:
                 raise ValueError("genome horizon differs from the swarm domain")
             self._env()  # refuse a GPU node without its device before any claim
+            if self.production and self.plan is None:
+                raise ValueError("production evaluation requires the sealed E plan (i6n_plan)")
+            if self.plan is not None and swarm.get("plan_sha256") != self.plan.get("plan_sha256"):
+                raise ValueError("swarm context plan differs from the sealed E plan")
         except (ValueError, R.NoFallback) as exc:
             raise search.ScoreRejected(f"I6N swarm refused candidate: {exc}") from exc
         receipts, supports, causes = {}, {}, {}
@@ -285,11 +330,10 @@ class Bridge:
             raise search.ScoreRejected(f"I6N folds not complete, no fitness: {causes}")
         plan = self.plan or dict(folds=dict(fold_ids=[f["fold"] for f in swarm["folds"]]),
                                  fitness=dict(aggregation="unweighted_mean_over_folds"),
-                                 horizons_hours=[swarm["horizon"]])
-        origins = {f["fold"]: f["origins_sha256"] for f in swarm["folds"] if f.get("origins_sha256")}
+                                 horizons_hours=[swarm["horizon"]])  # fixtures only (refused above in production)
         try:
             scored = score_candidate(self.score_folds, plan, receipts, supports, wire["identity"], swarm["horizon"],
-                                     origins if len(origins) == len(swarm["folds"]) else None)
+                                     origins_of(swarm), production=self.production)
         except Exception as exc:
             raise search.ScoreRejected(f"I6N fold aggregation refused: {exc}") from exc
         result = dict(fitness=scored["fitness"], metrics=dict(folds=receipts, per_fold=scored["per_fold"],

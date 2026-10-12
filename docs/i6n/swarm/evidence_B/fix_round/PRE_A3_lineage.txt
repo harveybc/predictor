@@ -1,0 +1,3 @@
+FAILED tests/test_i6n_swarm_ledger.py::test_checkpoint_never_resumes_while_the_evaluator_cannot
+FAILED tests/test_i6n_swarm_bridge.py::test_cross_host_recovery_uses_the_ledger_parent_accepted_by_a
+2 failed in 1.64s

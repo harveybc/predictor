@@ -91,7 +91,10 @@ def _loads(text):
 
 
 class Ledger:
-    def __init__(self, path, clock=time.time, readonly=False):
+    def __init__(self, path, clock=time.time, readonly=False, resume_supported=False):
+        # A.3: the evaluator has no optimizer/RNG checkpoint and refuses resume (RESUME_UNSUPPORTED), so a
+        # checkpoint never turns an interruption into RESUME unless a future evaluator declares support.
+        self.resume_supported = resume_supported
         self.path = Path(path)
         self.clock = clock
         self.readonly = readonly
@@ -308,7 +311,8 @@ class Ledger:
                     return dict(result="REFUSED", cause="ATTEMPTS_EXHAUSTED")
                 parent, parent_status = last["attempt_id"], last["status_sha256"]
                 ck = _loads(last["checkpoint"])
-                if isinstance(ck, dict) and all(ck.get(k) for k in CHECKPOINT_KEYS) and ck.get("epoch") is not None:
+                if (self.resume_supported and isinstance(ck, dict) and all(ck.get(k) for k in CHECKPOINT_KEYS)
+                        and ck.get("epoch") is not None):
                     kind, checkpoint = "RESUME", ck
                 elif any(a["kind"] == "RECOVERY" for a in physical):
                     self._set_unit(db, fit_id, "FAILED", "RECOVERY_EXHAUSTED")
@@ -326,9 +330,14 @@ class Ledger:
                  now + ttl, None if checkpoint is None else common.canonical(checkpoint)))
             self._set_unit(db, fit_id, "RUNNING", None)
             self._event(db, "CLAIMED", fit_id, detail=dict(token=token, kind=kind, index=index, host=host))
+            ledger_parent = None
+            if physical:
+                last = physical[-1]
+                ledger_parent = dict(fit_id=fit_id, attempt_index=last["idx"], fencing_token=str(last["token"]),
+                                     state=last["outcome"], state_sha256=last["status_sha256"])
             return dict(result="CLAIMED", token=token, attempt=dict(
                 attempt_id=cur.lastrowid, index=index, kind=kind, parent_attempt=parent,
-                parent_status_sha256=parent_status, checkpoint=checkpoint))
+                parent_status_sha256=parent_status, checkpoint=checkpoint, parent=ledger_parent))
 
     def renew(self, fit_id, token, ttl, progress=None):
         with self._tx() as db:
@@ -347,6 +356,7 @@ class Ledger:
             return True
 
     def _verify_receipt(self, unit, fit_id, doc):
+        """Outer keys AND inner receipts must belong to this unit (E-B5): never another candidate's score."""
         if not isinstance(doc, dict) or set(doc) != RECEIPT_KEYS:
             raise ReceiptMismatch(f"receipt document requires exactly {sorted(RECEIPT_KEYS)}")
         expected = dict(fit_id=fit_id, fold=unit["fold"], experiment=unit["experiment"],
@@ -355,6 +365,27 @@ class Ledger:
         for key, value in expected.items():
             if doc[key] != value:
                 raise ReceiptMismatch(f"receipt {key} does not belong to this fit")
+        spec = json.loads(unit["spec"])
+        shared, inner = doc["shared_receipt"], doc["candidate_receipt"]
+        if not isinstance(shared, dict) or not isinstance(inner, dict):
+            raise ReceiptMismatch("shared_receipt and candidate_receipt must be objects")
+        if spec.get("kind") == "FREEZE":
+            if shared.get("i6n_horizon") != unit["horizon"]:
+                raise ReceiptMismatch("frozen binding horizon does not belong to this unit")
+            return
+        bound = dict(fold=unit["fold"], experiment=unit["experiment"], horizon_hours=unit["horizon"],
+                     effective_config_sha256=unit["effective_config_sha256"], seed=common.SEED)
+        if unit["stage"] != "multi_output":
+            bound["genotype_canonical_sha256"] = unit["genotype"]
+        for key, value in bound.items():
+            if inner.get(key) != value:
+                raise ReceiptMismatch(f"candidate_receipt.{key} does not belong to this fit")
+        if shared.get("metadata", {}).get("candidate_receipt") not in (None, inner):
+            raise ReceiptMismatch("shared receipt carries a different candidate receipt")
+        support = spec.get("support") or (spec.get("request") or {}).get("support")
+        if support is not None and (shared.get("support_digest") != support["support_digest"]
+                                    or shared.get("counts") != support["counts"]):
+            raise ReceiptMismatch("shared receipt support differs from this unit's frozen support")
 
     def _publication(self, unit, fit_id, doc, attempt, disposition, cause=None):
         return dict(kind="FOLD_TERMINAL", disposition=disposition, cause=cause, fit_id=fit_id, fold=unit["fold"],
@@ -488,6 +519,15 @@ class Ledger:
                 self._event(db, cause, row["fit_id"], detail=dict(token=row["token"]))
                 changed.append(dict(fit_id=row["fit_id"], attempt_id=row["attempt_id"], cause=cause))
         return changed
+
+    def mark_wait(self, fit_id, cause):
+        """Typed WAIT_RESOURCE for a unit that has not started (e.g. its size class is not admitted)."""
+        with self._tx() as db:
+            row = db.execute("SELECT state FROM units WHERE fit_id=?", (fit_id,)).fetchone()
+            if row is None or row["state"] in ("COMPLETE", "FAILED", "RUNNING"):
+                return row["state"] if row else None
+            self._set_unit(db, fit_id, "WAIT_RESOURCE", cause)
+            return "WAIT_RESOURCE"
 
     def running_on_host(self, host):
         return [self._attempt_row(r) for r in self._q(

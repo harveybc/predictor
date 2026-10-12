@@ -21,7 +21,7 @@ import urllib.request
 from tools.i6n_swarm import ledger as L
 
 METHODS = ("ensure_unit", "claim", "renew", "complete", "report", "recover", "adopt_prior", "unit", "units",
-           "attempts", "terminal", "dag_nodes", "dag_event", "dag_events", "put_search_state", "search_state", "running_on_host", "register_prior",
+           "attempts", "terminal", "dag_nodes", "dag_event", "dag_events", "put_search_state", "search_state", "running_on_host", "register_prior", "mark_wait", "terminals",
            "next_claimable")
 ERRORS = {"ReceiptMismatch": L.ReceiptMismatch, "BudgetExhausted": L.BudgetExhausted, "LedgerError": L.LedgerError}
 

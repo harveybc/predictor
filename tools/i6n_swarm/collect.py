@@ -28,11 +28,37 @@ def default_publisher(root, payload):
                             mode="external_payload"), None
 
 
-def _candidate_doc(payload, key_units, terminals, attempts_by_fit, fitness):
+def _lineage(led, unit):
+    """Generation, position, operator and parent from the persisted v2 search state (E-B8)."""
+    persisted = led.search_state(unit["dag_node"]) if unit["stage"] == "search" else None
+    tracker = ((persisted or {}).get("state") or {}).get("innovation_tracker") or {}
+    records = (tracker.get("state") or {}).get("candidates") or []
+    for record in records:
+        if record.get("genotype_canonical_sha256") == unit["genotype"]:
+            same = [r for r in records if r.get("generation") == record.get("generation")]
+            parent = record.get("parent_genotype_sha256")
+            return dict(generation=record.get("generation"), population_index=same.index(record),
+                        operator=record.get("origin"), parents=[parent] if parent else [])
+    return dict(generation=unit["spec"].get("generation", 0), population_index=None,
+                operator="UNRECORDED_NO_SEARCH_STATE", parents=[])
+
+
+def _genotype_record(spec):
+    g = spec.get("genotype", {})
+    if isinstance(g, dict) and str(g.get("schema", "")).startswith("i6n.genotype.v2"):
+        from tools import i6n_search_space as space
+        eff = space.effective_config(g)
+        return dict(active={k: eff["genotype"][k] for k in eff["active_genes"]}, inactive=eff["inactive_genes"])
+    return dict(active=g, inactive={}, note="v1 evaluator genome: inactive genes canonicalized away")
+
+
+def _candidate_doc(payload, key_units, terminals, attempts_by_fit, fitness, refused=None, lineage=None):
     first = key_units[0]
     spec = first["spec"]
-    complete = all(u["state"] == "COMPLETE" for u in key_units)
+    complete = all(u["state"] == "COMPLETE" for u in key_units) and refused is None
     failures = [f"{u['fold']}: {u['cause']}" for u in key_units if u["state"] != "COMPLETE"]
+    if refused:
+        failures.insert(0, refused)
     attempts, costs = [], dict(elapsed_seconds=0.0, fit_seconds=None, peak_rss_bytes=None)
     for u in key_units:
         for a in attempts_by_fit.get(u["fit_id"], []):
@@ -57,13 +83,12 @@ def _candidate_doc(payload, key_units, terminals, attempts_by_fit, fitness):
         plan_sha256=payload["e_plan_sha256"],
         plan_metadata=dict(stage=first["stage"], dag_node=first["dag_node"], size_class=spec.get("size_class"),
                            campaign_id=payload["campaign_id"], generations=payload["search"]["generations"]),
-        genotype=dict(active=genotype, inactive={}), genotype_canonical_sha256=first["genotype"],
+        genotype=_genotype_record(spec), genotype_canonical_sha256=first["genotype"],
         effective_config=spec.get("effective_config", {}), effective_config_sha256=first["effective_config_sha256"],
         disposition="ADOPTED_CACHE" if adopted else ("COMPLETE" if complete else "FAILED"),
         disposition_reason=None if complete else "; ".join(failures),
         fitness=fitness if complete else None, seed=common.SEED,
-        lineage=dict(generation=spec.get("generation", 0), population_index=spec.get("population_index"),
-                     operator=spec.get("operator", "UNRECORDED_AT_BRIDGE"), parents=spec.get("parents", [])),
+        lineage=lineage or dict(generation=0, population_index=None, operator="UNRECORDED", parents=[]),
         attempts=attempts, costs=costs)
 
 
@@ -105,10 +130,10 @@ def _record_decisions(led, payload, publisher):
 
 
 def annual_rollups(led, payload, terminals):
-    """Annual MAE per (horizon, finalist) through lane C's AnnualAccumulator; refusals are reported, not hidden.
+    """Annual MAE per (horizon, finalist arm) through lane C's AnnualAccumulator (C.3, keyed by arm).
 
-    Expected weekly support comes from C's plan (VALIDATION n and origins digest per week);
-    rows are A's candidate_receipt rows (split VALIDATION, endpoint head) passed unchanged.
+    Expected weekly support comes from C's plan (VALIDATION n and origins digest per WEEKLY_REFIT unit);
+    each week's A candidate_receipt is added unchanged with its own attempt index; refusals are reported.
     """
     pin = payload["inputs"].get("weekly_plan")
     try:
@@ -119,8 +144,7 @@ def annual_rollups(led, payload, terminals):
         return dict(state="WAIT_DEPENDENCY", cause="C weekly plan not pinned: expected weekly support unknown")
     c_plan = common.read_pinned(pin, "C weekly plan")
     out = {}
-    for unit_group in _annual_groups(led):
-        h, genotype, units = unit_group
+    for h, genotype, units in _annual_groups(led):
         expected = {}
         for u in c_plan["units"]:
             if u.get("kind") != "WEEKLY_REFIT":
@@ -128,16 +152,16 @@ def annual_rollups(led, payload, terminals):
             split = (u.get("support") or {}).get(c_plan["fit_role"], {}).get(str(h), {}).get("VALIDATION")
             if split is not None:
                 expected[u["unit_id"]] = dict(n=split["n"], origins_sha256=split["origins_sha256"])
-        key = f"h{h}:{genotype}"
-        rows = [r for u in units if u["fit_id"] in terminals
-                for r in terminals[u["fit_id"]]["receipt"]["candidate_receipt"].get("rows", [])
-                if r.get("split") == "VALIDATION" and r.get("head_offset_hours") == h]
+        role = units[0]["spec"].get("finalist_role") or "FINALIST"
+        key = f"h{h}:{role}:{genotype}"
         try:
-            identity = rows[0]["candidate_identity_sha256"] if rows else genotype
-            acc = AnnualAccumulator(experiment=payload["experiment"], candidate_identity_sha256=identity,
-                                    horizon_hours=h, role=c_plan["fit_role"], expected=expected)
-            for row in rows:
-                acc.add(row)
+            acc = AnnualAccumulator(experiment=payload["experiment"], horizon_hours=h, role=c_plan["fit_role"],
+                                    expected=expected, arm_sha256=genotype, arm_role=role)
+            for u in units:
+                term = terminals.get(u["fit_id"])
+                if term is None:
+                    continue
+                acc.add_receipt(term["receipt"]["candidate_receipt"])
             out[key] = acc.summary()
         except RollupError as exc:
             out[key] = dict(state="ROLLUP_REFUSED", code=getattr(exc, "code", None), detail=str(exc))
@@ -179,20 +203,19 @@ def collect(root, publisher="auto", now=None, score_folds=None):
     for key, key_units in sorted(groups.items()):
         terminal = all(u["state"] in ("COMPLETE", "FAILED") for u in key_units)
         node_id = key[0]
-        fitness = None
+        fitness, refused = None, None
         if terminal and all(u["state"] == "COMPLETE" for u in key_units) and node_id.startswith("search:"):
             h = key_units[0]["horizon"]
+            from tools.i6n_swarm.bridge import origins_of, score_candidate
+            from tools.i6n_swarm.coordinator import refusal_code, swarm_context
             try:
-                from tools.i6n_swarm.coordinator import swarm_context
                 context = swarm_context(root, h, ledger=led)
                 supports = {f["fold"]: f["support"] for f in context["folds"]}
                 receipts = {u["fold"]: terminals[u["fit_id"]]["receipt"]["shared_receipt"] for u in key_units}
-                from tools.i6n_swarm.bridge import score_candidate
-                origins = {f["fold"]: f["origins_sha256"] for f in context["folds"] if f.get("origins_sha256")}
                 fitness = score_candidate(score_folds, e_plan, receipts, supports, key_units[0]["genotype"], h,
-                                          origins if len(origins) == len(supports) else None)["fitness"]
-            except (LookupError, ValueError, KeyError):
-                fitness = None
+                                          origins_of(context), production=payload["mode"] == "production")["fitness"]
+            except Exception as exc:  # typed refusal: FAILED, no fitness, never COMPLETE (E-B6)
+                refused = refusal_code(exc)
         for u in key_units:
             term = terminals.get(u["fit_id"])
             shared = (term or {}).get("receipt", {}).get("shared_receipt", {})
@@ -212,7 +235,8 @@ def collect(root, publisher="auto", now=None, score_folds=None):
         items = pending_by_key.get(key, [])
         if not terminal or not items or publisher is None:
             continue
-        doc = _candidate_doc(payload, key_units, terminals, attempts_by_fit, fitness)
+        doc = _candidate_doc(payload, key_units, terminals, attempts_by_fit, fitness, refused,
+                             _lineage(led, key_units[0]))
         fold_receipts = [terminals[u["fit_id"]]["receipt"]["candidate_receipt"] for u in key_units
                          if u["fit_id"] in terminals]
         result = publisher.record_candidate(doc, fold_receipts)

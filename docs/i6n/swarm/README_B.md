@@ -66,17 +66,18 @@ attempts (`cpu_fixture`) never feed an ETA.
 
 - A verified terminal receipt is adopted, never refit (any node, any directory).
 - Lease expiry or a new boot id turns a RUNNING attempt into INTERRUPTED.
-- Successor: RESUME only with a complete checkpoint (optimizer, rng, epoch,
-  stopping); otherwise one linked RECOVERY attempt carrying A's parent STATUS
-  digest. At most 3 physical attempts per fit_id. OOM, timeout and evaluator
+- Successor: one linked RECOVERY attempt carrying the ledger's parent record
+  (A.3: works on a host that never saw the parent). No RESUME while A has no
+  optimizer/RNG checkpoint. At most 3 physical attempts per fit_id. OOM, timeout and evaluator
   refusals are terminal FAILED: no retry, no lower cap, no CPU fallback.
 - The runner renews the lease and stops its own child before the lease can
   expire if renewal fails (self-fencing); the orphan guard stops the child if
   the node process dies. A late receipt of the same fit is accepted only if no
   terminal exists; a later one is discarded, never published.
-- The wrapper persists the search state of every generation (immutable) and
-  seeds reproduction with 6102026 + generation + 1, so a restarted or peer node
-  proposes the same offspring.
+- The wrapper runs E's v2 path with the sealed plan, persists the search state
+  of every generation (immutable) and passes the plan seed 6102026 unchanged
+  (E derives the per-generation RNG), so a restarted or peer node proposes the
+  same offspring.
 
 ## Placement
 
@@ -88,7 +89,8 @@ under pressure. Caps come only from admitted pilot receipts (1.25 × peak).
 
 ## Known limits (see B_RETURN.md for the full list)
 
-No DOIN node, unit or fit was started; E's `score_folds`, C's rollup and D's
-publisher are not merged into this branch (typed WAIT_DEPENDENCY or a
-same-signature reference in tests); cross-host recovery depends on A
-accepting a parent STATUS digest that only the lost host holds.
+No DOIN node, unit or fit was started. E, A, C and D modules are merged in
+this branch; ranking runs only through E's `score_folds` with C origins
+VERIFIED in production. Multi-output stays WAIT_DEPENDENCY until A/E provide
+an adapted config. A's contexts carry absolute paths (B's own pins are
+root-relative).

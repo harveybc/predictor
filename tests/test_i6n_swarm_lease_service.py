@@ -33,7 +33,9 @@ def test_two_nodes_share_one_authority(served):
     assert n2.claim(fit, "n2", "secondary", "b2", "rtx4090", 60)["result"] == "HELD"
     assert n1.renew(fit, a["token"], ttl=60, progress={"epoch": 1}) is True
     doc = dict(fit_id=fit, fold="F1", experiment="e", effective_config_sha256="c" * 64,
-               genotype_canonical_sha256="a" * 64, shared_receipt={"status": "ok"}, candidate_receipt={})
+               genotype_canonical_sha256="a" * 64, shared_receipt={"status": "ok"},
+               candidate_receipt=dict(fold="F1", experiment="e", horizon_hours=12, effective_config_sha256="c" * 64,
+                                      genotype_canonical_sha256="a" * 64, seed=6102026))
     assert n1.complete(fit, a["token"], doc) == "ACCEPTED"
     assert n2.claim(fit, "n2", "secondary", "b2", "rtx4090", 60)["result"] == "ADOPT"
     assert led.unit(fit)["state"] == "COMPLETE"

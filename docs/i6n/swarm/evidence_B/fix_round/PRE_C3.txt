@@ -1,0 +1,3 @@
+FAILED tests/test_i6n_swarm_campaign.py::test_multi_output_uses_c_resolve_and_waits_for_an_a_e_config
+FAILED tests/test_i6n_swarm_campaign.py::test_two_week_annual_rollup_through_collect_completes
+2 failed in 0.64s

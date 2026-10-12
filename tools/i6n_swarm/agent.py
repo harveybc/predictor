@@ -109,7 +109,8 @@ def _freeze(node, led, unit, boot_id):
         binding = json.loads(path.read_text())
         if binding.get("i6n_horizon") != unit["horizon"]:
             raise ValueError("binding horizon mismatch")
-        pin = dict(path=str(path), sha256=common.file_sha256(path))
+        # Root-relative: another host resolves it against its own shared data root.
+        pin = common.relative_pin(dict(path=str(path), sha256=common.file_sha256(path)), node["shared_data_root"])
     except (OSError, ValueError) as exc:
         led.report(unit["fit_id"], token, "FAILED", f"BINDING_INVALID: {exc}")
         return "FAILED"

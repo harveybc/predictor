@@ -29,7 +29,10 @@ def receipt_for(fit_id, s, value=0.5):
     return dict(fit_id=fit_id, fold=s["fold"], experiment=s["experiment"],
                 effective_config_sha256=s["effective_config_sha256"],
                 genotype_canonical_sha256=s["genotype_canonical_sha256"],
-                shared_receipt=dict(status="ok", fitness=value), candidate_receipt=dict(seed=6102026))
+                shared_receipt=dict(status="ok", fitness=value),
+                candidate_receipt=dict(seed=6102026, fold=s["fold"], experiment=s["experiment"], horizon_hours=s["horizon"],
+                                       effective_config_sha256=s["effective_config_sha256"],
+                                       genotype_canonical_sha256=s["genotype_canonical_sha256"]))
 
 
 @pytest.fixture
@@ -137,8 +140,25 @@ def test_one_recovery_without_checkpoint_then_failed(env):
     assert led.unit(fit)["state"] == "FAILED"
 
 
-def test_complete_checkpoint_resumes_and_three_physical_attempts_max(env):
+def test_checkpoint_never_resumes_while_the_evaluator_cannot(env):
+    """A.3: no optimizer/RNG checkpoint exists; an interruption gets ONE linked RECOVERY with the ledger parent."""
     led, _, fit, _, _ = env
+    ck = dict(optimizer=True, rng=True, epoch=4, stopping=True, path="/x/ck")
+    a = led.claim(fit, "n1", "hA", "b1", "rtx5090", 60)
+    led.report(fit, a["token"], "INTERRUPTED", "HOST_REBOOT", parent_status_sha256="2" * 64, checkpoint=ck)
+    b = led.claim(fit, "n2", "hB", "b2", "rtx4090", 60)
+    assert b["attempt"]["kind"] == "RECOVERY"
+    assert b["attempt"]["parent"] == dict(fit_id=fit, attempt_index=1, fencing_token=str(a["token"]),
+                                          state="INTERRUPTED", state_sha256="2" * 64)
+    assert a["attempt"]["parent"] is None
+    led.report(fit, b["token"], "INTERRUPTED", "HOST_REBOOT", checkpoint=ck)
+    assert led.claim(fit, "n1", "hA", "b3", "rtx5090", 60)["cause"] == "RECOVERY_EXHAUSTED"
+
+
+def test_complete_checkpoint_resumes_only_when_declared_and_three_attempts_max(tmp_path):
+    led = L.Ledger(tmp_path / "r.sqlite3", clock=Clock(), resume_supported=True)
+    fit = common.sha256_json({"r": 1})
+    led.ensure_unit(fit, spec())
     ck = dict(optimizer=True, rng=True, epoch=4, stopping=True, path="/x/ck")
     a = led.claim(fit, "n1", "hA", "b1", "rtx5090", 60)
     led.report(fit, a["token"], "INTERRUPTED", "HOST_REBOOT", checkpoint=ck)

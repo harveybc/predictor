@@ -73,3 +73,42 @@ doin-node 76 passed (`evidence_B/POST_*.txt`). CLI smoke on generated fixtures:
 
 Next artifact: integration branch merge of A/C/D/E/B, rerun of these suites with
 E/C/D modules present, then the two-role smoke (`install`/`start`) on fixtures.
+
+
+## Fix round (REVIEW_E_OF_B, A.3, C.3), 2026-10-11
+
+Branch now contains the integration branch `c6f1959b` plus A.3 (`b16052d8`) and
+C.3 (`c83bec26`). doin-plugins tip `e24cf6b`; doin-node needed no further change
+(integration `aa890e6` already merges B's runtime with D's archive).
+
+| Finding | Fix | Test (red before, green after) |
+| --- | --- | --- |
+| E-B1 v1 path | DOIN config carries `i6n_plan`, `i6n_folds`, `i6n_admitted_classes`; swarm mode refuses without the sealed plan | `test_e_b1_rendered_doin_config_runs_e_v2_path_with_minimal_seed`; wrapper `test_e_b1_e_b2_…` |
+| E-B2 seed+gen+1 | plan seed passed unchanged | wrapper `test_reproduction_seed_…`, `test_e_b1_e_b2_…` |
+| E-B3 made-up plan | Bridge built with the sealed plan; production refuses without it | `test_e_b3_production_bridge_refuses_without_the_sealed_plan`, `test_e_b3_real_plan_scores_through_e`; wrapper evaluation tests (KeyError 'quarters' before) |
+| E-B4 fallback scorer | production: only E.score_folds, all-fold origins, VERIFIED; partial origins always refused; `resolve_score_folds` never returns the reference | `test_e_b4_production_refuses_partial_origins_and_the_reference_scorer` |
+| E-B5 inner receipts | ledger checks inner candidate receipt and shared support | `test_e_b5_ledger_refuses_inner_receipt_of_another_candidate` |
+| E-B6 refused as COMPLETE | typed FAILED `SCORE_REFUSED:<code>`, fitness null | `test_e_b6_collect_never_publishes_a_refused_candidate_as_complete` |
+| E-B7 tick abort | per-candidate refusal recorded, tick continues | `test_e_b7_refused_candidate_does_not_abort_tick_for_other_horizons` |
+| E-B8 genes/lineage | genotype {active, inactive} from E; lineage from persisted v2 state | `test_e_b8_archive_record_carries_inactive_genes_and_lineage` |
+| E-B9 untyped class wait | typed WAIT_RESOURCE `CLASS_NOT_ADMITTED`, no claim | `test_e_b9_non_admitted_class_is_typed_wait_resource` |
+| E-B10 class drift | E's `class_of` for v2 genotypes | covered by E-B1/E-B9 tests |
+| E-B11 mid-reproduction | ledger outage while persisting gen 1 | wrapper `test_e_b11_disconnect_mid_reproduction_resumes_from_search_state` |
+| Risk 5 absolute pins | `{relpath, sha256}` pins resolved per host; freeze outputs recorded root-relative | `test_root_relative_bindings_resolve_on_a_host_with_another_root` |
+| A.3 lineage | claim returns `attempt.parent`; bridge sends it; no RESUME | `test_checkpoint_never_resumes_while_the_evaluator_cannot`, `test_cross_host_recovery_uses_the_ledger_parent_accepted_by_a` (A's own `normalize_attempt`/`_check_parent` in the child) |
+| C.3 roll-up | `AnnualAccumulator(arm_sha256=finalist genotype, arm_role)` + `add_receipt` | `test_two_week_annual_rollup_through_collect_completes` |
+| C.3 multi-output | `resolve_arms` on C's template; READY arms only; WAIT_DEPENDENCY `EVALUATOR_LACKS_DIRECT_MULTI_OUTPUT_ARM` | `test_multi_output_uses_c_resolve_and_waits_for_an_a_e_config` |
+| doin-core pin | wrapper tests enforce `DOIN_CORE_EXPECTED_COMMIT` | run with a90bca2 and with deps 4a321cd |
+
+Red/green evidence: `evidence_B/fix_round/` (`REPRO_E_PRE.txt` is E's reproducer
+on the pre-fix tip; `PRE_review_e.txt`, `PRE_wrapper.txt`, `PRE_A3_lineage.txt`,
+`PRE_C3.txt` red; `POST_predictor.txt` 70 + 42 passed;
+`POST_doin_integrated_deps.txt` wrapper 23 passed against deps doin-core
+4a321cd / doin-node aa890e6, doin-node 76 passed). E's reproducer script itself
+was not re-run after the fix: its B1 template lacks the new `e_plan` key and its
+B3 line calls the scorer with a made-up plan that the Bridge no longer builds;
+the table's tests replace it.
+
+Still open: no unit/node/fit started; A's evaluation contexts carry absolute
+paths (identity), so the campaign data root must still match across hosts until
+A relativizes them; multi-output waits for an A/E adapted config.

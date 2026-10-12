@@ -1,0 +1,27 @@
+{
+ "B1_rendered_config_has_i6n_plan": false,
+ "B1_population_wire_schemas": [
+  "i6n-shared-deap-v1"
+ ],
+ "B1_minimal_seed_in_initial_population": false,
+ "B1_initial_population_v2_classes": [
+  "S2",
+  "S1",
+  "S1",
+  "S2",
+  "S2",
+  "S2",
+  "S3",
+  "S3"
+ ],
+ "B2_v2_reproduce_with_wrapper_seed": "REFUSED: v2 requires the plan seed and a single stage",
+ "B3_bridge_default_plan_with_E_score_folds": "REFUSED KeyError: 'quarters'",
+ "B3_control_with_real_plan": "NOT_CHECKED",
+ "B4_partial_origins_binding": "NOT_CHECKED",
+ "B4_reference_fallback_on_foreign_receipts": {
+  "fitness": 0.9375,
+  "aggregator": "B_REFERENCE_PENDING_E_MERGE"
+ },
+ "B5_ledger_complete_foreign_inner_receipt": "ACCEPTED",
+ "B6_fit_id_B_equals_E": true
+}

@@ -54,13 +54,15 @@ def receipt(swarm, fold, wire, config, factor):
                     horizon_hours=swarm["horizon"], genotype_canonical_sha256=wire["identity"], seed=6102026, rows=[])))
 
 
-def complete_candidate(root, horizon, genome, factor, node=None, seconds=100.0, fail_fold=None):
+def complete_candidate(root, horizon, genome, factor, node=None, seconds=100.0, fail_fold=None, genotype_v2=None):
     """Drive the real ledger exactly as the bridge would, with a fabricated receipt."""
     swarm = K.swarm_context(root, horizon)
     led = L.Ledger(root / "state" / "ledger.sqlite3", clock=lambda: 1000.0)
     genome = search.normalize_genome(genome)
     wire = dict(schema="i6n-shared-deap-v1", genome=genome, identity=search.effective_identity(genome),
                 context="0" * 64, generation=0)
+    if genotype_v2 is not None:
+        wire = dict(wire, schema="i6n-shared-deap-v2", genotype=genotype_v2)
     config = search.effective_config(genome)
     node = node or dict(device=dict(cls="cpu_fixture"), fixture=True)
     for fold in swarm["folds"]:
@@ -288,19 +290,25 @@ def test_annual_completion_activates_multi_output(root):
     for unit in [u for u in led.units() if u["stage"] == "annual"]:
         c = led.claim(unit["fit_id"], "w", "preferred", "b", "cpu_fixture", 600)
         spec = unit["spec"]
+        sup = spec["request"]["support"]
+        cr = dict(seed=6102026, rows=[], fold=spec["fold"], experiment=spec["experiment"], horizon_hours=spec["horizon"],
+                  effective_config_sha256=spec["effective_config_sha256"],
+                  genotype_canonical_sha256=spec["genotype_canonical_sha256"])
         led.complete(unit["fit_id"], c["token"], dict(
             fit_id=unit["fit_id"], fold=spec["fold"], experiment=spec["experiment"],
             effective_config_sha256=spec["effective_config_sha256"],
             genotype_canonical_sha256=spec["genotype_canonical_sha256"],
-            shared_receipt=dict(status="ok"), candidate_receipt=dict(seed=6102026, rows=[])))
+            shared_receipt=dict(status="ok", counts=sup["counts"], support_digest=sup["support_digest"]),
+            candidate_receipt=cr))
     K.tick(root, now=3100.0)
     states = {n["node_id"]: n["state"] for n in led.dag_nodes()}
     assert states["annual:h12"] == "COMPLETE" and states["annual:h72"] == "COMPLETE"
-    assert states["multi_output:short"] == "QUEUED"
-    # the fixture defines no long-family arms: typed dependency, not a silent skip
+    nodes = {n["node_id"]: n for n in led.dag_nodes()}
+    # lane C resolves arms only from finalists of EVERY family horizon (h2..h6 are not in this fixture plan)
+    assert states["multi_output:short"] == "WAIT_DEPENDENCY"
+    assert "FINALISTS_INCOMPLETE" in nodes["multi_output:short"]["cause"]
     assert states["multi_output:long"] == "WAIT_DEPENDENCY"
-    assert "MULTI_OUTPUT_ARMS_UNDEFINED" in {n["node_id"]: n for n in led.dag_nodes()}["multi_output:long"]["cause"]
-    assert len([u for u in led.units() if u["stage"] == "multi_output"]) == 2
+    assert [u for u in led.units() if u["stage"] == "multi_output"] == []
 
 
 def test_tick_recovers_expired_leases(root):
@@ -486,3 +494,84 @@ def test_annual_rollup_is_typed_when_lane_c_module_or_plan_is_absent(root):
     C.collect(root, publisher=None)
     annual = json.loads((root / "collect" / "ANNUAL.json").read_text())
     assert annual["state"] == "WAIT_DEPENDENCY" and annual["cause"]
+
+
+
+def _finalist_nodes(horizons):
+    nodes = {}
+    for h in horizons:
+        nodes[f"search:h{h}"] = dict(summary=dict(finalists=[
+            dict(role="BEST", fitness=0.9 - h / 1000, search_candidate_sha256=common.sha256_json(["s", h, "B"]),
+                 genotype_canonical_sha256=common.sha256_json(["g", h, "B"])),
+            dict(role="MINIMAL_CONTROL", fitness=0.95, search_candidate_sha256=common.sha256_json(["s", h, "C"]),
+                 genotype_canonical_sha256=common.sha256_json(["g", h, "C"]))]))
+    return nodes
+
+
+def test_multi_output_uses_c_resolve_and_waits_for_an_a_e_config(tmp_path):
+    """C.3: READY arms only after resolve; no invented multi-output config (typed WAIT_DEPENDENCY)."""
+    template = F.c_arms_template(["W2024-01-07", "W2024-01-14"], "e" * 64, families=("short", "long"))
+    pin = F.pin(tmp_path / "arms.json", template)
+    payload = dict(inputs=dict(multi_output=pin), evaluator_capabilities=[], experiment="exp-fx", mode="fixture")
+    node = dict(node_id="multi_output:short", spec=dict(family="short", horizons=[2, 3, 4, 5, 6, 12]))
+    led = L.Ledger(tmp_path / "l.sqlite3")
+    nodes = _finalist_nodes((2, 3, 4, 5, 6, 12))
+    state, cause, created, summary = K._multi_node(led, payload, node, nodes)
+    assert state == "WAIT_DEPENDENCY" and cause.startswith("EVALUATOR_LACKS_DIRECT_MULTI_OUTPUT_ARM")
+    assert summary["ready_arms"] == 4 and not created
+    payload["evaluator_capabilities"] = [K.MULTI_OUTPUT_CAPABILITY]
+    state, cause, _, _ = K._multi_node(led, payload, node, nodes)
+    assert state == "WAIT_DEPENDENCY" and cause.startswith("ARM_CONFIG_UNDEFINED")
+    long_node = dict(node_id="multi_output:long", spec=dict(family="long", horizons=[18, 24, 36, 48, 60, 72]))
+    state, cause, _, _ = K._multi_node(led, payload, long_node, nodes)
+    assert state == "WAIT_DEPENDENCY" and "FINALISTS_INCOMPLETE" in cause
+    assert led.units() == []
+
+
+def test_two_week_annual_rollup_through_collect_completes(tmp_path, monkeypatch):
+    """C.3 roll-up keyed by the finalist arm: two weekly receipts with different cell identities."""
+    cfg_path = F.private_config(tmp_path)
+    cfg = json.loads(Path(cfg_path).read_text())
+    weeks = ["W2024-01-07", "W2024-01-14"]
+    units = [dict(unit_id=f, kind="INNER_FOLD", support={"MANAGEMENT": {str(h): {
+        "TRAIN": {"n": 1, "origins_sha256": common.sha256_json([f, h, "T"])},
+        "INNER": {"n": 1, "origins_sha256": common.sha256_json([f, h, "I"])}} for h in (12, 72)}})
+        for f in ("2023Q1", "2023Q2")]
+    units += [dict(unit_id=w, kind="WEEKLY_REFIT", support={"MANAGEMENT": {str(h): {
+        "VALIDATION": {"n": 5, "origins_sha256": common.sha256_json([w, h, "V"])}} for h in (12, 72)}})
+        for w in weeks]
+    cfg["weekly_plan"] = F.pin(tmp_path / "inputs" / "c_plan.json", dict(fit_role="MANAGEMENT", units=units))
+    out = tmp_path / "campaign"
+    P.build(F.pin(cfg_path, cfg)["path"], out)
+    K.start(out, roles=[], systemctl=Recorder())
+    led = L.Ledger(out / "state" / "ledger.sqlite3")
+    for h in (12, 72):
+        complete_candidate(out, h, search.default_genome(h), 0.9)
+        complete_candidate(out, h, other_genome(h), 0.8)
+        led.dag_event(f"search:h{h}", "SEARCH_TERMINAL", {"stop_reason": "generation_budget"})
+    K.tick(out, now=3000.0)
+    for unit in led.units(stage="annual"):
+        spec, h = unit["spec"], unit["horizon"]
+        sup = spec["request"]["support"]
+        row = dict(schema_version="i6n.candidate_receipt.v1", experiment="exp-fx",
+                   candidate_identity_sha256=common.sha256_json(["cell", unit["fold"], h, unit["genotype"]]),
+                   fold=unit["fold"], horizon_hours=h, head_offset_hours=h, head_role="ENDPOINT", comparison=True,
+                   role="MANAGEMENT", population="S", split="VALIDATION", metric="ABS_AND_SQUARED_ERROR_SUMS",
+                   unit="PRICE", scale="ORIGINAL_PRICE", n=5, sum_abs_error=0.5, sum_sq_error=0.1,
+                   naive_sum_abs_error=0.6, naive_sum_sq_error=0.12, status="SCORED",
+                   support_sha256=common.sha256_json([unit["fold"], h, "V"]), c2_receipt_sha256=None)
+        cr = dict(schema_version="i6n.candidate_receipt.v1", experiment="exp-fx", fold=unit["fold"], horizon_hours=h,
+                  effective_config_sha256=spec["effective_config_sha256"], genotype_canonical_sha256=unit["genotype"],
+                  seed=6102026, attempt=dict(index=1), rows=[row])
+        c = led.claim(unit["fit_id"], "w", "preferred", "b", "cpu_fixture", 600)
+        led.complete(unit["fit_id"], c["token"], dict(
+            fit_id=unit["fit_id"], fold=unit["fold"], experiment="exp-fx", effective_config_sha256=spec["effective_config_sha256"],
+            genotype_canonical_sha256=unit["genotype"], candidate_receipt=cr,
+            shared_receipt=dict(status="ok", counts=sup["counts"], support_digest=sup["support_digest"])))
+    C.collect(out, publisher=None)
+    annual = json.loads((out / "collect" / "ANNUAL.json").read_text())
+    assert annual["state"] == "COMPUTED" and len(annual["rollups"]) == 4
+    for summary in annual["rollups"].values():
+        assert summary["state"] == "ANNUAL_COMPLETE", summary
+        assert summary["weeks_present"] == 2 and summary["n"] == 10
+        assert summary["mae"] == pytest.approx(0.1) and summary["naive_mae"] == pytest.approx(0.12)

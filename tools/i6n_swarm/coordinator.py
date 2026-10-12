@@ -92,7 +92,7 @@ def _state_from_units(units):
     return "QUEUED", None
 
 
-def _freeze_node(led, payload, node, terminals):
+def _freeze_node(led, payload, node, terminals, data_root=None):
     h, items = node["spec"]["horizon"], node["spec"]["items"]
     waits = [f"{i.get('fold_id', i.get('week_id'))}: {i['cause']}" for i in items if i["state"] == "WAIT_DEPENDENCY"]
     created = False
@@ -102,7 +102,8 @@ def _freeze_node(led, payload, node, terminals):
             continue
         key = item.get("fold_id", item.get("week_id"))
         if item.get("binding"):
-            frozen[key] = (common.read_pinned(item["binding"], f"binding {key}"), item["binding"]["sha256"])
+            frozen[key] = (common.read_pinned(item["binding"], f"binding {key}", root=data_root),
+                           item["binding"]["sha256"])
             continue
         fit = freeze_fit_id(payload["experiment"], key, h, item["cell_config"])
         if led.unit(fit) is None:
@@ -120,7 +121,11 @@ def _freeze_node(led, payload, node, terminals):
     return state, cause, created, frozen
 
 
-def _candidate_fitness(units, terminals, context, e_plan, score_folds):
+def refusal_code(exc):
+    return f"SCORE_REFUSED:{getattr(exc, 'code', None) or type(exc).__name__}: {exc}"[:300]
+
+
+def _candidate_fitness(units, terminals, context, e_plan, score_folds, production=False):
     """Fold-mean fitness per genotype using lane E's score_folds (no fitness unless all folds COMPLETE)."""
     by_genotype = {}
     for u in units:
@@ -134,12 +139,15 @@ def _candidate_fitness(units, terminals, context, e_plan, score_folds):
                       size_class=items[0]["spec"].get("size_class"), fitness=None,
                       search_candidate_sha256=items[0]["search_candidate"])
         if set(receipts) == set(supports):
-            from tools.i6n_swarm.bridge import score_candidate
-            origins = {f["fold"]: f["origins_sha256"] for f in context["folds"] if f.get("origins_sha256")}
-            scored = score_candidate(score_folds, e_plan, receipts, supports, genotype, context["horizon"],
-                                     origins if len(origins) == len(supports) else None)
-            record.update(fitness=scored["fitness"], origins_binding=scored.get("origins_binding"),
-                          aggregator=scored.get("aggregator"))
+            from tools.i6n_swarm.bridge import origins_of, score_candidate
+            try:
+                scored = score_candidate(score_folds, e_plan, receipts, supports, genotype, context["horizon"],
+                                         origins_of(context), production=production)
+            except Exception as exc:  # one refused candidate never aborts the tick (E-B7)
+                record["score_refused"] = refusal_code(exc)
+            else:
+                record.update(fitness=scored["fitness"], origins_binding=scored.get("origins_binding"),
+                              aggregator=scored.get("aggregator"))
         out.append(record)
     return out
 
@@ -178,7 +186,8 @@ def _search_node(led, payload, node, terminals, frozen_folds, e_plan, score_fold
     if any(u["state"] == "RUNNING" for u in units):
         return "RUNNING", "SEARCH_TERMINAL_RECORDED_WAITING_FOR_RUNNING_FOLDS", summary
     persisted = led.search_state(node["node_id"])
-    records = _candidate_fitness(units, terminals, summary["swarm_context"], e_plan, score_folds)
+    records = _candidate_fitness(units, terminals, summary["swarm_context"], e_plan, score_folds,
+                                 production=payload["mode"] == "production")
     finalists = None
     if persisted is not None:
         try:
@@ -225,27 +234,67 @@ def _annual_node(led, payload, node, search_summary, frozen_weeks):
     return state, cause, created
 
 
-def _multi_node(led, payload, node):
-    arms = node["spec"]["arms"]
-    if not arms:
-        return "WAIT_DEPENDENCY", "MULTI_OUTPUT_ARMS_UNDEFINED: no arm manifest for this family", False
+MULTI_OUTPUT_CAPABILITY = "DIRECT_MULTI_OUTPUT_ARM"
+
+
+def family_finalists(nodes, horizons):
+    """Search finalists in lane C's resolve format (selection on 2023 inner folds only)."""
+    out = {}
+    for h in horizons:
+        summary = (nodes.get(f"search:h{h}") or {}).get("summary") or {}
+        roles = {}
+        for f in summary.get("finalists") or []:
+            role = "MINIMAL_CONTROL" if f["role"] in ("MINIMAL_CONTROL", "SMALL_ALTERNATIVE") else f["role"]
+            roles[role] = dict(selection_basis="INNER_FOLD_FITNESS", fitness=f["fitness"], source_role=f["role"],
+                               search_candidate_sha256=f["search_candidate_sha256"],
+                               genotype_canonical_sha256=f["genotype_canonical_sha256"])
+        if roles:
+            out[str(h)] = roles
+    return out
+
+
+def _multi_node(led, payload, node, nodes, data_root=None):
+    """Lane C's arms template resolved from search finalists; only READY arms with an A/E config may run."""
+    pin = payload["inputs"].get("multi_output")
+    if not pin:
+        return "WAIT_DEPENDENCY", "MULTI_OUTPUT_ARMS_UNDEFINED: no lane C arms manifest pinned", False, None
+    from tools.i6n_weekly_multi_output import FAMILIES, MultiOutputError, resolve_arms
+    manifest = common.read_pinned(pin, "multi-output arms")
+    family = node["spec"]["family"]
+    try:
+        resolved = resolve_arms(manifest, family_finalists(nodes, FAMILIES[family]))
+    except MultiOutputError as exc:
+        return "FAILED", f"MULTI_OUTPUT_RESOLVE_REFUSED: {exc}", False, None
+    ready = [a for a in resolved["arms"] if a["family"] == family and a["state"] == "READY"]
+    summary = dict(resolved_manifest_sha256=resolved["manifest_sha256"], ready_arms=len(ready),
+                   arms=len([a for a in resolved["arms"] if a["family"] == family]))
+    if not ready:
+        cause = next((a["cause"] for a in resolved["arms"] if a["family"] == family), "NO_ARMS_FOR_FAMILY")
+        return "WAIT_DEPENDENCY", cause, False, summary
+    if MULTI_OUTPUT_CAPABILITY not in payload.get("evaluator_capabilities", []):
+        return ("WAIT_DEPENDENCY", "EVALUATOR_LACKS_DIRECT_MULTI_OUTPUT_ARM: lanes A/E have not provided an "
+                "adapted multi-output config and evaluator path", False, summary)
+    unbound = [a["arm_id"] for a in ready if not a.get("config") or not a.get("binding")]
+    if unbound:
+        return ("WAIT_DEPENDENCY", f"ARM_CONFIG_UNDEFINED: {len(unbound)} READY arms lack an A/E config or binding",
+                False, summary)
     created = False
-    for arm in arms:
-        body = common.read_pinned(arm["binding"], f"arm {arm['arm_id']}")
+    for arm in ready:
+        body = common.read_pinned(arm["binding"], f"arm {arm['arm_id']}", root=data_root)
         fit = common.fit_id(experiment=payload["experiment"], fold=arm["week_id"], effective_config=arm["config"],
                             context=body["i6n_evaluation_context"], support=body["i6n_support"])
         if led.unit(fit) is None:
             led.ensure_unit(fit, dict(
                 stage="multi_output", dag_node=node["node_id"], horizon=max(arm["horizons"]), fold=arm["week_id"],
-                experiment=payload["experiment"], genotype_canonical_sha256=common.sha256_json(arm["config"]),
+                experiment=payload["experiment"], genotype_canonical_sha256=arm["recipe"]["genotype_canonical_sha256"],
                 effective_config_sha256=common.sha256_json(arm["config"]),
-                search_candidate_sha256=common.sha256_json([node["node_id"], arm["arm_id"]]),
+                search_candidate_sha256=arm["recipe"]["search_candidate_sha256"],
                 device_class="gpu_admitted", fixture=payload["mode"] == "fixture", effective_config=arm["config"],
                 arm_id=arm["arm_id"], binding_sha256=arm["binding"]["sha256"],
                 request=dict(context=body["i6n_evaluation_context"], support=body["i6n_support"])))
             created = True
     state, cause = _state_from_units(led.units(dag_node=node["node_id"]))
-    return state, cause, created
+    return state, cause, created, summary
 
 
 def tick(root, now=None, score_folds=None):
@@ -267,7 +316,8 @@ def tick(root, now=None, score_folds=None):
         blocked = [d for d in deps if d["state"] != "COMPLETE"]
         summary = None
         if node["stage"] == "freeze":
-            state, cause, created, items = _freeze_node(led, payload, node, terminals)
+            state, cause, created, items = _freeze_node(led, payload, node, terminals,
+                                                        P.private(root).get("shared_data_root"))
             frozen[node_id] = items
         elif blocked and node["stage"] != "search":
             state, created = "WAIT_DEPENDENCY", False
@@ -287,7 +337,8 @@ def tick(root, now=None, score_folds=None):
             state, cause, created = _annual_node(led, payload, node, nodes[f"search:h{h}"]["summary"],
                                                  frozen.get(f"freeze_weeks:h{h}", {}))
         else:
-            state, cause, created = _multi_node(led, payload, node)
+            state, cause, created, summary = _multi_node(led, payload, node, nodes,
+                                                         P.private(root).get("shared_data_root"))
         if created:
             activated.append(node_id)
         led.dag_set(node_id, state, cause, summary)

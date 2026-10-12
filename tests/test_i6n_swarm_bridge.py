@@ -6,6 +6,7 @@ import json
 import os
 import sys
 import threading
+from pathlib import Path
 
 import pytest
 
@@ -212,9 +213,76 @@ def test_recovery_after_holder_death_links_the_evaluator_status(setup, tmp_path)
     status.write_text(json.dumps(dict(state="RUNNING", identity=dict(effective_config=config, support=fold["support"],
                                                                      context=fold["context"]))))
     _time.sleep(0.1)
-    plan = dict(folds=dict(fold_ids=["F1"]), fitness=dict(aggregation="mean"), horizons_hours=[12])
+    plan = dict(plan_sha256="p" * 64, folds=dict(fold_ids=["F1"]), fitness=dict(aggregation="mean"), horizons_hours=[12])
     B.Bridge(bridge.node, led, boot_id="b1", plan=plan).evaluate_wire(wire, 0, swarm)
     sent = json.loads((counts / calls(counts)[0]).read_text())
     assert sent["index"] == 2 and sent["parent_status_sha256"] == common.file_sha256(status)
     kinds = [a["kind"] for a in led.attempts(fit)]
     assert kinds == ["INITIAL", "RECOVERY"]
+
+
+
+A_CONTRACT = r'''
+import json, os, sys
+from tools.i6n_historical_evaluator import _check_parent, attempt_root, normalize_attempt
+req = json.load(sys.stdin)
+attempt = normalize_attempt(req.get("attempt"))
+if attempt["index"] > 1:
+    _check_parent(attempt_root(req["context"], "x" * 64, attempt["index"] - 1), attempt, req)
+open(os.path.join(os.environ["FAKE_COUNT_DIR"], "A-%d" % len(os.listdir(os.environ["FAKE_COUNT_DIR"]))), "w").write(json.dumps(attempt))
+print(json.dumps(dict(status="ok")))
+'''
+
+
+def test_cross_host_recovery_uses_the_ledger_parent_accepted_by_a(tmp_path, monkeypatch):
+    """Host A dies mid-fit; host B (another output root, no parent files) recovers through the ledger.
+
+    The child runs lane A's own attempt validation (normalize_attempt and _check_parent from
+    tools.i6n_historical_evaluator), so the lineage is checked by A's contract, not by a stub.
+    """
+    import time as _time
+    from tools.i6n_swarm import lease_service as S
+    counts = tmp_path / "counts"
+    counts.mkdir()
+    monkeypatch.setenv("FAKE_COUNT_DIR", str(counts))
+    monkeypatch.setenv("PYTHONPATH", str(Path.cwd()))
+    (tmp_path / "a_contract.py").write_text(A_CONTRACT)
+    led = L.Ledger(tmp_path / "ledger.sqlite3")
+    token = tmp_path / "tok"
+    token.write_text("t")
+    token.chmod(0o600)
+    server = S.start_server(led, "127.0.0.1", 0, token)
+    url = f"http://127.0.0.1:{server.server_address[1]}"
+    try:
+        genome = search.normalize_genome(search.default_genome(12))
+        config = search.effective_config(genome)
+        wire = dict(schema="i6n-shared-deap-v1", genome=genome, identity=search.effective_identity(genome),
+                    context="0" * 64, generation=0)
+        fold = dict(fold="2023Q4", support=support(1), context=dict(experiment="exp1", fold="2023Q4",
+                                                                    output_root=str(tmp_path / "hostB")))
+        swarm = dict(schema="i6n.swarm.context.v1", experiment="exp1", plan_sha256="p" * 64, horizon=12,
+                     dag_node="search:h12", budget_new_candidates=24, folds=[fold])
+        fit = B.fold_fit_id(swarm, fold, config)
+        host_a = S.LedgerClient(url, token)
+        host_a.ensure_unit(fit, B.unit_spec(swarm, fold, wire, config))
+        dead = host_a.claim(fit, "a-node", "preferred", "boot-a", "rtx5090", 0.05)
+        _time.sleep(0.1)  # host A vanished: no renew, no report
+        node = dict(owner="b-node", host_key="secondary", device=dict(cls="cpu_fixture", cuda_visible_devices="",
+                    fixture=True), fixture=True, exclusive_host=True,
+                    evaluator_argv=[sys.executable, str(tmp_path / "a_contract.py")], workdir=str(tmp_path),
+                    launcher=None, class_caps={}, logs_dir=str(tmp_path / "logs"),
+                    lease=dict(ttl_seconds=5, renew_seconds=0.2, max_wait_seconds=2, poll_seconds=0.1))
+        bridge = B.Bridge(node, S.LedgerClient(url, token), boot_id="boot-b")
+        state, _ = bridge.run_fold(fit, B.unit_spec(swarm, fold, wire, config),
+                                   dict(config=config, generation=0, context=fold["context"], support=fold["support"]),
+                                   lambda r: (_ for _ in ()).throw(ValueError("receipt not needed here")))
+    finally:
+        server.shutdown()
+        server.server_close()
+    sent = json.loads((counts / "A-0").read_text())
+    assert sent["index"] == 2 and sent["parent"] == dict(fit_id=fit, attempt_index=1, fencing_token=str(dead["token"]),
+                                                       state="INTERRUPTED", state_sha256=None)
+    assert int(sent["fencing_token"]) > dead["token"]
+    kinds = [(a["kind"], a["host"]) for a in led.attempts(fit)]
+    assert kinds == [("INITIAL", "preferred"), ("RECOVERY", "secondary")]
+    assert state == "FAILED"  # the stub receipt is refused by B's verifier: nothing is published

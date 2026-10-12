@@ -109,21 +109,11 @@ def _class_caps(cfg, classes):
     return caps
 
 
-def _binding(pin, horizon, what):
-    body = common.read_pinned(pin, what)
+def _binding(pin, horizon, what, root=None):
+    body = common.read_pinned(pin, what, root=root)
     if body.get("i6n_horizon") != horizon:
         raise ValueError(f"{what}: binding horizon mismatch")
     return body
-
-
-def fold_set_support(folds):
-    """Contract-only summary of all fold supports for the v1 DEAP plugin identity (never a score)."""
-    counts, naive, digest = {}, {}, {}
-    for split in ("train", "inner"):
-        counts[split] = sum(f["support"]["counts"][split] for f in folds)
-        naive[split] = sum(f["support"]["naive_sums"][split] for f in folds)
-        digest[split] = common.sha256_json([f["support"]["support_digest"][split] for f in folds])
-    return dict(counts=counts, naive_sums=naive, support_digest=digest)
 
 
 def swarm_context(payload, horizon, frozen):
@@ -147,7 +137,9 @@ def doin_template(payload, private, role):
                 bootstrap_peers=[a for other, a in sorted(doin.get("peers", {}).items()) if other != role],
                 shared_min_peers=doin.get("shared_min_peers", 2), claim_timeout=doin.get("claim_timeout", 600),
                 predictor_root=host["workdir"], search=payload["search"],
-                node_config=str(Path(private["root"]) / "private" / "hosts" / role / "node.json"))
+                node_config=str(Path(private["root"]) / "private" / "hosts" / role / "node.json"),
+                e_plan=common.read_pinned(payload["inputs"]["search_plan"], "E search plan"),
+                admitted_classes=sorted(k for k, v in payload["class_caps"].items() if v["state"] == "ADMITTED"))
 
 
 def render_doin_config(template, contexts):
@@ -162,10 +154,15 @@ def render_doin_config(template, contexts):
                         shared_population_seed=common.SEED, n_generations=s["generations"],
                         optimization_patience=s["patience"], improvement_tolerance=s["tolerance"],
                         reproduction_failure_policy="fail_closed", higher_is_better=False,
-                        i6n_budget=s["new_candidates_per_horizon"], i6n_max_proposals=32 * s["new_candidates_per_horizon"],
-                        i6n_horizon=h, i6n_support=fold_set_support(context["folds"]), i6n_evaluation_context=context,
+                        # E's v2 path (E-B1): sealed plan, staged classes, minimal seed in generation 0.
+                        i6n_plan=template["e_plan"], i6n_horizon=h,
+                        i6n_admitted_classes=list(template["admitted_classes"]),
+                        i6n_folds={f["fold"]: dict(i6n_support=f["support"], i6n_evaluation_context=f["context"],
+                                                   **({"i6n_origins_sha256": f["origins_sha256"]}
+                                                      if f.get("origins_sha256") else {}))
+                                   for f in context["folds"]},
                         i6n_swarm=dict(node_config=template["node_config"], horizon=h, dag_node=f"search:h{h}",
-                                       seed=common.SEED)))
+                                       seed=common.SEED, context=context)))
     return dict(node_label=template["node_label"], port=template["port"], data_dir=template["data_dir"],
                 bootstrap_peers=template["bootstrap_peers"], shared_min_peers=template["shared_min_peers"],
                 shared_claim_timeout=template["claim_timeout"], shared_claim_result_patience=10**9,
@@ -229,6 +226,8 @@ def build(config_path, output_root):
     _check_search(e_plan)
     views = common.read_pinned(cfg["weekly_views"], "C weekly views")
     multi = common.read_pinned(cfg["multi_output"], "multi-output arms") if cfg.get("multi_output") else None
+    if multi is not None and multi.get("schema") != "i6n.multi_output_arms.v1":
+        raise ValueError("multi-output manifest must be lane C's i6n.multi_output_arms.v1 template")
     horizons = list(e_plan["horizons_hours"])
     fold_map = _fold_map(e_plan, views, horizons)
     fold_ids = [fold_map[e_id] for e_id in e_fold_ids(e_plan)]
@@ -257,7 +256,8 @@ def build(config_path, output_root):
                 origins[(str(h), e["fold_id"])] = origins_from_c_plan(c_plan, e.get("unit_id", e["fold_id"]), h)
             item["origins_sha256"] = origins.get((str(h), e["fold_id"]))
             if state == "READY" and e.get("binding"):
-                frozen.append((e["fold_id"], _binding(e["binding"], h, f"fold {e['fold_id']} h{h}"), e["binding"]["sha256"]))
+                frozen.append((e["fold_id"], _binding(e["binding"], h, f"fold {e['fold_id']} h{h}", cfg["shared_data_root"]),
+                               e["binding"]["sha256"]))
             elif state == "READY" and not e.get("cell_config"):
                 raise ValueError(f"READY fold {e['fold_id']} h{h} has neither binding nor cell config")
             folds.append(item)
@@ -270,7 +270,7 @@ def build(config_path, output_root):
                 binding = (w.get("bindings") or {}).get(str(h))
                 cell = (w.get("cell_configs") or {}).get(str(h))
                 if binding:
-                    _binding(binding, h, f"week {w['week_id']} h{h}")
+                    _binding(binding, h, f"week {w['week_id']} h{h}", cfg["shared_data_root"])
                 weeks.append(dict(week_id=w["week_id"], state="READY", cause=None, binding=binding, cell_config=cell))
             else:
                 cause = (w.get("cause") or {}).get(str(h)) or "NOT_LISTED_FOR_HORIZON"
@@ -289,9 +289,9 @@ def build(config_path, output_root):
         hs = [h for h in members if h in horizons]
         arms = [a for a in (multi or {}).get("arms", []) if a["family"] == family]
         for arm in arms:
-            _no_test(f"arm {arm['arm_id']}", arm.get("week_id", "")[1:] if arm.get("week_id", "").startswith("W") else arm.get("week_id"))
+            _no_test(f"arm {arm['arm_id']}", arm.get("cutoff_utc"), arm.get("release_at_utc"))
         dag.append(dict(node_id=f"multi_output:{family}", stage="multi_output",
-                        depends_on=[f"annual:h{h}" for h in hs], spec=dict(family=family, horizons=hs, arms=arms)))
+                        depends_on=[f"annual:h{h}" for h in hs], spec=dict(family=family, horizons=hs)))
     for index, node in enumerate(dag):
         node["ord"] = index
     s = e_plan["search"]
@@ -377,3 +377,4 @@ def e_plan(root):
 def is_private_ok(path):
     mode = os.stat(path).st_mode
     return not mode & 0o077
+
