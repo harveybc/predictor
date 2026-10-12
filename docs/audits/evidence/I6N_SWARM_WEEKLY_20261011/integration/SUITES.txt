@@ -1,0 +1,63 @@
+== swarm
+........................................................................ [ 73%]
+..........................                                               [100%]
+98 passed in 18.75s
+exit=0
+== search
+........................................................................ [ 63%]
+........................................................................ [ 85%]
+..................................................                       [100%]
+338 passed in 4.72s
+exit=0
+== controller
+=========================== short test summary info ============================
+FAILED tests/test_i6n_search_controller.py::test_horizon_parameterized_config_and_contexts[12]
+FAILED tests/test_i6n_search_controller.py::test_horizon_parameterized_config_and_contexts[72]
+2 failed, 24 passed in 39.39s
+exit=0
+== contracts
+........................................................................ [ 72%]
+........................................................................ [ 91%]
+...................................                                      [100%]
+395 passed in 5.98s
+exit=0
+== weekly
+..................                                                       [100%]
+18 passed in 45.97s
+exit=0
+== weekly2
+........................................................................ [ 56%]
+.......................................................                  [100%]
+127 passed in 4.29s
+exit=0
+== archive
+=========================== short test summary info ============================
+ERROR tests/test_i6n_archive.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.21s
+exit=0
+== evaluator
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google.protobuf.pyext._message.MessageMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+71 passed, 2 warnings in 61.69s (0:01:01)
+exit=0
+== model
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google.protobuf.pyext._message.MessageMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+193 passed, 15 skipped, 2 warnings in 31.36s
+exit=0
+== fit_h12
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google.protobuf.pyext._message.MessageMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1 passed, 2 warnings in 59.15s
+exit=0
+== fit_h72
+  <frozen importlib._bootstrap>:488: DeprecationWarning: Type google.protobuf.pyext._message.MessageMapContainer uses PyType_Spec with a metaclass that has custom tp_new. This is deprecated and will no longer be allowed in Python 3.14.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1 passed, 2 warnings in 18.63s
+exit=0
+DONE

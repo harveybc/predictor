@@ -1,0 +1,94 @@
+{
+ "schema": "i6n.swarm_weekly.return_status.v1",
+ "as_of": "2026-10-12",
+ "milestones_master": [
+  {
+   "id": "M1",
+   "state": "CORE_IMPLEMENTED",
+   "progress": 66,
+   "source": "docs/audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json (as_of 2026-10-05, unchanged by this front)"
+  },
+  {
+   "id": "M2",
+   "state": "IN_PROGRESS",
+   "progress": null,
+   "source": "docs/audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json (as_of 2026-10-05, unchanged by this front)"
+  },
+  {
+   "id": "M3",
+   "state": "MULTIPLE_REPLICATIONS_COMPLETE",
+   "progress": 78,
+   "source": "docs/audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json (as_of 2026-10-05, unchanged by this front)"
+  },
+  {
+   "id": "M4",
+   "state": "PARTIAL_MEASUREMENT",
+   "progress": 48,
+   "source": "docs/audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json (as_of 2026-10-05, unchanged by this front)"
+  },
+  {
+   "id": "M5",
+   "state": "DESIGNED_NOT_DEFINITIVE",
+   "progress": 22,
+   "source": "docs/audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json (as_of 2026-10-05, unchanged by this front)"
+  },
+  {
+   "id": "M6",
+   "state": "SYNTHETIC_ONLY",
+   "progress": 24,
+   "source": "docs/audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json (as_of 2026-10-05, unchanged by this front)"
+  },
+  {
+   "id": "M7",
+   "state": "INTEGRATED_NOT_TRAINED_ON_FINAL_DATA",
+   "progress": 28,
+   "source": "docs/audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json (as_of 2026-10-05, unchanged by this front)"
+  },
+  {
+   "id": "M8",
+   "state": "INTERFACES_ONLY",
+   "progress": 15,
+   "source": "docs/audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json (as_of 2026-10-05, unchanged by this front)"
+  }
+ ],
+ "milestone_i6n": {
+  "id": "I6-N",
+  "state": "INTEGRATED_DEPLOY_STAGED_NOT_STARTED",
+  "engineering": "five lanes integrated and cross-reviewed; two-real-DOIN-node smoke passed; code/data replicated and byte-verified on both workers; campaign plan sealed (52 DAG nodes)",
+  "science": "NO_NEW_MEASUREMENT: no production optimizer update has occurred",
+  "blocker": "permission classifier denied the production start step [Production Deploy]; owner must allow or run the start command",
+  "next_gate": "first real production optimizer update + one lease heartbeat on the secondary",
+  "eta": {
+   "kind": "unknown",
+   "reason": "no production throughput measured yet"
+  }
+ },
+ "campaign": {
+  "id": "i6nw1",
+  "root": "/var/tmp/i6n-swarm-prod-20261012 (coordinator, private)",
+  "state": "QUEUED/NOT_STARTED",
+  "status_command": "python -m tools.i6n_swarm_campaign status --root /var/tmp/i6n-swarm-prod-20261012 --json",
+  "admission": {
+   "S1": {
+    "admitted": true,
+    "cap_bytes": 3023954012
+   },
+   "S2": {
+    "admitted": true,
+    "cap_bytes": 3044231417
+   },
+   "S3": {
+    "admitted": false,
+    "cause": "NO_COMPLETED_PILOT_RECEIPT (S3 pilot still running on preferred; untouched)"
+   }
+  },
+  "pending_dag": "all 52 nodes QUEUED: NOT_STARTED (start denied); multi-output nodes additionally WAIT_DEPENDENCY on finalists"
+ },
+ "storage_modes_active": {
+  "local_outbox": "code ready, not running",
+  "external_payload_lake": "NOT_DEPLOYED (classifier denied DEPLOY_STEPS_D)",
+  "chain_finalized": false,
+  "olap_readback": "only the earlier 72 pilot reports / 558 metric rows (published by Musashi's cost-collect timer); no swarm publication"
+ },
+ "snapshot": "NOT_TAKEN (warehouse window not executed)"
+}

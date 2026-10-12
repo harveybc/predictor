@@ -1,0 +1,43 @@
+{
+ "schema": "i6n.swarm_weekly.artifacts.v1",
+ "orders": {
+  "swarm_weekly": "ac77366a (656e4b30)",
+  "execute_now": "b78ec898 (bc01dee9)",
+  "plan": "da51723a (af0c3570)"
+ },
+ "code_pins": {
+  "predictor_integration": "2ded0406 (code 68e6a7e2) satoshi/i6n-swarm-integration-A-20261012",
+  "predictor_deploy_tool": "dfa54cb1 satoshi/i6n-deploy-20261012",
+  "doin-core": "4a321cd",
+  "doin-node": "df6aad0",
+  "doin-plugins": "566c5af",
+  "data-lake": "fbb6e58",
+  "data-warehouse": "463ad56"
+ },
+ "plans": {
+  "E_search_plan_v1_2": "606a355567257ff76810cec2dba3cd2952b0b6c3fe4ad592ea568402d8feda3c",
+  "C_weekly_plan_v6": "f58d906d... (681 cells sealed; C.4 3ece50ed)",
+  "C_multi_output_template": "ffecca2f...",
+  "declared_clock_assumption": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01 (f851cea1...)"
+ },
+ "lane_returns": {
+  "A": "satoshi/i6n-swarm-A-trajectory-20261011 (A.4 0f05dd78)",
+  "B": "satoshi/i6n-swarm-B-doin-20261011 (f7a05838)",
+  "C": "satoshi/i6n-swarm-C-weekly-20261011 (C.4 3ece50ed)",
+  "D": "satoshi/i6n-swarm-D-archive-20261011 (D.4 7bcbe7e5)",
+  "E": "satoshi/i6n-swarm-E-search-20261011 (056ae767)"
+ },
+ "reviews": {
+  "E_of_B": "ACCEPT round 2 (056ae767)",
+  "E_of_C": "FIX_REQUIRED->fixed in C.3 (not re-verified by E)",
+  "B_of_A": "covered by integration owner suites",
+  "A_of_E": "FIX_REQUIRED->fixed (5e400352)",
+  "C_of_D": "ACCEPT round 2 (537d7932)"
+ },
+ "private_roots_not_in_git": [
+  "/var/tmp/i6n-swarm-prod-20261012",
+  "/var/tmp/i6n-swarm-data-20261012",
+  "/var/tmp/i6n-swarm-code-2ded0406f25c",
+  "/var/tmp/i6n-swarm-deploy-20261012"
+ ]
+}
