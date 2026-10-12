@@ -245,3 +245,32 @@ def test_bridge_waits_without_claiming_when_context_bytes_are_unavailable(tmp_pa
     state, cause = B.Bridge(node, led).run_fold(fit, led.unit(fit)["spec"], request, lambda r: r)
     assert state == "WAIT_RESOURCE" and cause.startswith("CONTEXT_BYTES_UNAVAILABLE")
     assert led.attempts(fit) == [] and led.unit(fit)["state"] == "WAIT_RESOURCE"
+
+
+def test_production_cell_pins_are_root_relative_and_hosts_may_differ(tmp_path):
+    cfg_path = F.private_config(tmp_path, frozen=False)
+    cfg = json.loads(Path(cfg_path).read_text())
+    from tools import i6n_search_plan as E
+    sealed = E.build_plan()
+    plan_pin = F.pin(tmp_path / "inputs" / "plan_e_sealed.json", sealed)
+    views = json.loads(Path(cfg["weekly_views"]["path"]).read_text())
+    views["folds"] = {str(h): [] for h in sealed["horizons_hours"]}
+    for h in sealed["horizons_hours"]:
+        for q in sealed["folds"]["quarters"]:
+            views["folds"][str(h)].append(dict(fold_id=q, unit_id=q, cutoff_utc="2023-06-24T21:00:00Z", state="READY",
+                                               cause=None, unit_sha256="0" * 64, binding=None,
+                                               cell_config=F.pin(tmp_path / "inputs" / "cells" / f"{q}_h{h}.json", dict(h=h, q=q))))
+    views["weeks"] = []
+    cfg.update(search_plan=plan_pin, weekly_views=F.pin(cfg["weekly_views"]["path"], views), multi_output=None,
+               mode="production", launcher=dict(crispdm_run="/usr/bin/true"), class_admission={},
+               weekly_plan=F.pin(tmp_path / "inputs" / "c_plan.json", dict(fit_role="MANAGEMENT", units=[
+                   dict(unit_id=q, support={"MANAGEMENT": {str(h): {"TRAIN": {"origins_sha256": "1" * 64},
+                                                                   "INNER": {"origins_sha256": "2" * 64}}
+                                                          for h in sealed["horizons_hours"]}})
+                   for q in sealed["folds"]["quarters"]])))
+    cfg["hosts"][1]["shared_data_root"] = str(tmp_path / "other-root-on-preferred")
+    payload = P.build(F.pin(cfg_path, cfg)["path"], tmp_path / "campaign")
+    item = next(n for n in payload["dag"] if n["node_id"] == "freeze_folds:h12")["spec"]["items"][0]
+    assert set(item["cell_config"]) == {"relpath", "sha256"} and item["cell_config"]["relpath"].startswith("cells/")
+    node = json.loads((tmp_path / "campaign" / "private" / "hosts" / "preferred" / "node.json").read_text())
+    assert node["shared_data_root"] == str(tmp_path / "other-root-on-preferred")

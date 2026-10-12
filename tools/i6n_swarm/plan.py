@@ -225,7 +225,8 @@ def bridge_node_config(payload, private, role, device):
                           if v.get("measured_peak_bytes")},
                 ledger=dict(url=ledger["url"], token_file=ledger["token_file"]),
                 logs_dir=str(Path(host["data_dir"]) / "logs"), state_dir=str(Path(host["data_dir"]) / "state"),
-                shared_data_root=private["shared_data_root"], experiment=payload["experiment"],
+                shared_data_root=host.get("shared_data_root") or private["shared_data_root"],
+                experiment=payload["experiment"],
                 doin_node_config=str(Path(private["root"]) / "private" / "hosts" / role / "doin_node.json"),
                 doin_template=doin_template(payload, private, role),
                 freeze_caps=private.get("freeze_caps") or dict(child_memory_bytes=4 * 1024**3, child_wall_seconds=3600),
@@ -266,6 +267,14 @@ def build(config_path, output_root):
     if multi is not None and multi.get("schema") != "i6n.multi_output_arms.v1":
         raise ValueError("multi-output manifest must be lane C's i6n.multi_output_arms.v1 template")
     horizons = list(e_plan["horizons_hours"])
+
+    def portable(pin):
+        """Production: cell pins become {relpath, sha256} under the shared data root (roots may differ per host)."""
+        if cfg["mode"] != "production" or not pin or "path" not in pin:
+            return pin
+        common.read_pinned(pin, "cell config")
+        return common.relative_pin(pin, cfg["shared_data_root"])
+
     fold_map = _fold_map(e_plan, views, horizons)
     fold_ids = [fold_map[e_id] for e_id in e_fold_ids(e_plan)]
     c_plan = common.read_pinned(cfg["weekly_plan"], "C weekly plan") if cfg.get("weekly_plan") else None
@@ -287,7 +296,7 @@ def build(config_path, output_root):
             _no_test(f"fold {e['fold_id']}", e.get("cutoff_utc"))
             state = "READY" if e["state"] in RUNNABLE else e["state"]
             item = dict(fold_id=e["fold_id"], state=state, cause=e.get("cause"), unit_sha256=e.get("unit_sha256"),
-                        binding=e.get("binding"), cell_config=e.get("cell_config"), c_state=e["state"],
+                        binding=e.get("binding"), cell_config=portable(e.get("cell_config")), c_state=e["state"],
                         declared_assumption=e.get("declared_assumption"))
             if c_plan is not None and state == "READY":
                 origins[(str(h), e["fold_id"])] = origins_from_c_plan(c_plan, e.get("unit_id", e["fold_id"]), h)
@@ -308,7 +317,8 @@ def build(config_path, output_root):
                 cell = (w.get("cell_configs") or {}).get(str(h))
                 if binding:
                     _binding(binding, h, f"week {w['week_id']} h{h}", cfg["shared_data_root"])
-                weeks.append(dict(week_id=w["week_id"], state="READY", cause=None, binding=binding, cell_config=cell))
+                weeks.append(dict(week_id=w["week_id"], state="READY", cause=None, binding=binding,
+                                  cell_config=portable(cell)))
             else:
                 cause = (w.get("cause") or {}).get(str(h)) or "NOT_LISTED_FOR_HORIZON"
                 state = "WAIT_DEPENDENCY" if "WAIT" in str(cause) else "NO_ELIGIBLE_ROWS"
@@ -334,7 +344,7 @@ def build(config_path, output_root):
         for w in views["weeks"]:
             cell = (w.get("cell_configs") or {}).get(str(anchor)) if anchor else None
             if anchor in w.get("horizons", []) and cell:
-                items.append(dict(week_id=w["week_id"], state="READY", cause=None, binding=None, cell_config=cell,
+                items.append(dict(week_id=w["week_id"], state="READY", cause=None, binding=None, cell_config=portable(cell),
                                   family=family))
         dag.append(dict(node_id=f"freeze_family:{family}", stage="freeze", depends_on=[],
                         spec=dict(horizon=anchor, family=family, items=items)))
