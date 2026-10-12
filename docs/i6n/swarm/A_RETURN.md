@@ -122,3 +122,25 @@ See README_A.md. All runs used:
 
 B integrates the evaluator through INTERFACE_A A.2. Then the first real
 TRAIN-pilot receipt per class follows, under admission.
+
+## Addendum: A.3 fix round (`d17262d7`, on integration `c6f1959b`)
+
+**Cross-host recovery.** The swarm ledger's parent record (`attempt.parent`)
+is now the lineage authority. The evaluator checks it against this request's
+fit_id, `index - 1`, a FAILED/INTERRUPTED state and an increasing fencing
+token. The local parent STATUS is an additional check only when it exists on
+this host. `resume_checkpoint` is refused as `RESUME_UNSUPPORTED`.
+
+**Tests.** The regression was recorded before the fix: 7 failed, including
+`test_cross_host_recovery_uses_ledger_lineage`. Results after the fix:
+
+| Suite | Result |
+| --- | --- |
+| contract | 33 passed |
+| fit_h12 | 1 passed |
+| swarm bridge, ledger, runner + legacy evaluator + controller | 83 passed, 2 failed on the first run |
+| controller + evaluator, after the fixture fix | 35 passed |
+
+The 2 controller failures came from the legacy fixture's update cap. The
+fixture's `max_updates` is now sized for 50 plan epochs; the resource check
+itself is unchanged.
