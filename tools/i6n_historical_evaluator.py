@@ -635,6 +635,35 @@ def _check_parent(parent_root, attempt, request):
         raise ValueError(f"attempt parent is not an interrupted/failed terminal: {state}")
 
 
+def interrupted_attempt(roots, expected):
+    """Create the next linked attempt for the newest lock-free RUNNING parent."""
+    for index in range(len(roots), 0, -1):
+        root = roots[index - 1]
+        status_path = root / "STATUS.json"
+        if not status_path.exists():
+            continue
+        status = json.loads(status_path.read_text())
+        if status.get("state") != "RUNNING":
+            return None
+        if status.get("identity") != expected:
+            raise ValueError("interrupted parent identity mismatch")
+        if index >= MAX_ATTEMPTS or (roots[index] / "STATUS.json").exists():
+            return None
+        with (root / "RUN.lock").open("a") as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                return None
+            fcntl.flock(lock, fcntl.LOCK_UN)
+        return normalize_attempt({
+            "index": index + 1,
+            "parent_status_sha256": cell.file_hash(status_path),
+            "fencing_token": None,
+            "parent": None,
+        })
+    return None
+
+
 def prepare_candidate(cfg, request):
     """Data for the candidate's heads: trajectory/endpoint offsets or explicit arm heads."""
     offsets = request_offsets(request["config"])
@@ -1016,7 +1045,8 @@ def evaluate(request):
     cfg, frozen = load_request(request)
     if request["context"]["schema"] not in FITTABLE:
         raise ValueError("LEGACY_CONTEXT_READ_ONLY: v1 contexts are verified, never fitted")
-    attempt = normalize_attempt(request.get("attempt"))
+    requested_attempt = request.get("attempt")
+    attempt = normalize_attempt(requested_attempt)
     expected = identity(cfg, request)
     digest = c1.canonical_digest(expected)
     roots = [attempt_root(request["context"], digest, k) for k in range(1, MAX_ATTEMPTS + 1)]
@@ -1024,6 +1054,8 @@ def evaluate(request):
     if completed:
         root = completed[0]
     else:
+        if requested_attempt is None:
+            attempt = interrupted_attempt(roots, expected) or attempt
         root = roots[attempt["index"] - 1]
         if attempt["index"] > 1 and not (root / "STATUS.json").exists():
             _check_parent(roots[attempt["index"] - 2], attempt, request)

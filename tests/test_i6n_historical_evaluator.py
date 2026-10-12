@@ -63,6 +63,23 @@ def test_existing_timer_rejected_before_loading_or_output(tmp_path, monkeypatch)
     assert not root.exists()
 
 
+def test_lock_free_running_attempt_recovers_with_exact_parent_digest(tmp_path):
+    expected = {"candidate": "same-scientific-identity"}
+    roots = [tmp_path / f"candidate.attempt-{index}" for index in range(1, 4)]
+    roots[0].mkdir()
+    status = roots[0] / "STATUS.json"
+    write_json(status, {"state": "RUNNING", "identity": expected})
+
+    attempt = evaluator.interrupted_attempt(roots, expected)
+
+    assert attempt == {
+        "index": 2,
+        "parent_status_sha256": evaluator.cell.file_hash(status),
+        "fencing_token": None,
+        "parent": None,
+    }
+
+
 def test_generated_binding_dispatches_command_from_executor_without_fit(prepared, monkeypatch):
     from optimizer_plugins import i6n_optimizer as optimizer
     _, _, binding, request = prepared
