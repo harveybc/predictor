@@ -33,6 +33,22 @@ def test_failed_candidate_cannot_publish(tmp_path):
         p.verified_search(tmp_path)
 
 
+def test_verifier_uses_trajectory_preparation_for_v2(monkeypatch, tmp_path):
+    from tools import i6n_historical_evaluator as evaluator
+    cfg = {"model": {"n_horizons": 4}}
+    identity = dict(effective_config={}, context={"schema": evaluator.SCHEMA},
+                    support={}, cell={"config": cfg})
+    (tmp_path/'STATUS.json').write_text(json.dumps({"state": "COMPLETED"}))
+    (tmp_path/'RESULT.json').write_text(json.dumps({"identity": identity}))
+    monkeypatch.setattr(evaluator, 'load_request', lambda _: (cfg, {"support": {}}))
+    seen = []
+    monkeypatch.setattr(evaluator.cell, 'prepare', lambda c, **kw: seen.append(kw) or {})
+    monkeypatch.setattr(evaluator, 'support', lambda *a: {})
+    monkeypatch.setattr(evaluator, 'retained', lambda *a, **kw: None)
+    p.verified_search(tmp_path)
+    assert seen == [{"trajectory": True}]
+
+
 def test_publish_failure_does_not_write_success(monkeypatch, tmp_path):
     monkeypatch.setattr(p, 'search_reports', lambda *a: [{'report_sha256': 'a'*64}])
     monkeypatch.setattr(p.base, 'token_from_file', lambda *a: 'not-a-real-token')

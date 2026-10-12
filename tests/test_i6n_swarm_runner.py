@@ -37,7 +37,9 @@ def test_launcher_argv_carries_caps_and_label(tmp_path):
     argv = R.build_argv(launcher, "abc", ["python", "-m", "tools.i6n_historical_evaluator", "evaluate"])
     assert argv[:argv.index("--")] == [launcher["crispdm_run"], "-m", str(2 * 1024**3), "-t", "30s",
                                        "-n", "i6n-test-abc", "-L", "i6n-test-abc"]
-    assert argv[argv.index("--") + 1:] == ["python", "-m", "tools.i6n_historical_evaluator", "evaluate"]
+    child = argv[argv.index("--") + 1:]
+    assert child[0] == sys.executable and child[1].endswith("request_exec.py")
+    assert child[2:] == ["--", "python", "-m", "tools.i6n_historical_evaluator", "evaluate"]
     with pytest.raises(ValueError):
         R.build_argv(dict(launcher, memory_bytes=0), "abc", ["x"])
 
@@ -48,6 +50,16 @@ def test_ok_receipt_from_stdout_through_launcher(tmp_path):
     out = run(tmp_path, R.build_argv(launcher, "ok", child))
     assert out["kind"] == "OK" and out["receipt"]["echo"] == {"x": 1}
     assert (tmp_path / "launcher.argv").exists()
+
+
+def test_request_survives_launcher_without_inherited_stdin(tmp_path):
+    launcher = fake_launcher(tmp_path)
+    path = tmp_path / "fake-crispdm-run"
+    path.write_text(path.read_text().replace('exec "$@"', 'exec "$@" </dev/null'))
+    child = script(tmp_path, "req=json.load(sys.stdin); print(json.dumps({'echo':req}))")
+    out = run(tmp_path, R.build_argv(launcher, "closed-stdin", child))
+    assert out["kind"] == "OK", out
+    assert out["receipt"]["echo"] == {"x": 1}
 
 
 def test_nonzero_exit_is_failed(tmp_path):
