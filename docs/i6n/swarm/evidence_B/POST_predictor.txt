@@ -1,4 +1,4 @@
 $ CUDA_VISIBLE_DEVICES="" crispdm-run -m 2G -t 120s -- python -m pytest -q tests/test_i6n_swarm_ledger.py tests/test_i6n_swarm_runner.py tests/test_i6n_swarm_lease_service.py tests/test_i6n_swarm_placement.py
-59 passed in 9.97s
+59 passed in 10.75s
 $ CUDA_VISIBLE_DEVICES="" crispdm-run -m 2G -t 120s -- python -m pytest -q tests/test_i6n_swarm_bridge.py tests/test_i6n_swarm_campaign.py tests/test_i6n_swarm_agent.py
-37 passed, 1 skipped in 8.52s
+38 passed, 1 skipped in 12.67s
