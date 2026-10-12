@@ -149,6 +149,23 @@ def test_island_admission_rejects_weaker_or_different_search_settings(change, me
         _optimize(_config(must_not_run, **change))
 
 
+def test_runtime_checkpoint_path_is_unique_per_island_without_config_divergence():
+    template = "/state/h{horizon}/{island_id}/checkpoint.json"
+    common = _config(RecordingEvaluator(), optimization_resume_file=template)
+    first = Plugin()._island_settings(dict(common, i6n_island_id="gamma-5090"))
+    second = Plugin()._island_settings(dict(common, i6n_island_id="gamma-5070ti"))
+
+    assert Plugin._runtime_path(template, first) == "/state/h4/gamma-5090/checkpoint.json"
+    assert Plugin._runtime_path(template, second) == "/state/h4/gamma-5070ti/checkpoint.json"
+    assert common["optimization_resume_file"] == template
+
+
+@pytest.mark.parametrize("island_id", ["../escape", "bad/island", ""])
+def test_runtime_checkpoint_identity_rejects_unsafe_island_ids(island_id):
+    with pytest.raises(ValueError, match="i6n_island_id"):
+        Plugin()._island_settings(_config(RecordingEvaluator(), i6n_island_id=island_id))
+
+
 @pytest.mark.parametrize("horizon", [1, 2, 3, 5, 6, 12, 24, 48, 96, 120])
 def test_island_sequence_rejects_every_horizon_except_4_and_72(horizon):
     with pytest.raises(ValueError, match="i6n_horizon"):

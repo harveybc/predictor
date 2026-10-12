@@ -131,6 +131,12 @@ class Plugin:
         seed = _int(cfg.get("ga_seed", cfg.get("seed")), "ga_seed")
         if seed != 6102026:
             raise ValueError("the four islands must use seed 6102026")
+        island_id = cfg.get("i6n_island_id")
+        if island_id is None:
+            island_id = os.environ.get("I6N_ISLAND_ID", "local-test")
+        if (not isinstance(island_id, str) or not island_id
+                or any(char not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_" for char in island_id)):
+            raise ValueError("i6n_island_id must contain only letters, digits, '-' or '_'")
         return {
             "horizon": horizon,
             "population": population,
@@ -138,7 +144,7 @@ class Plugin:
             "patience": patience,
             "tolerance": float(tolerance),
             "seed": seed,
-            "island_id": cfg.get("i6n_island_id") or os.environ.get("I6N_ISLAND_ID", "local-test"),
+            "island_id": island_id,
             "mutation": float(cfg.get("mutation_probability", 0.8)),
             "immigration": float(cfg.get("immigration_probability", 0.2)),
             "s2_generation": _int(cfg.get("i6n_s2_generation", 10), "i6n_s2_generation"),
@@ -146,6 +152,21 @@ class Plugin:
             "min_generations": _int(cfg.get("i6n_min_generations", 30),
                                     "i6n_min_generations", 30),
         }
+
+    @staticmethod
+    def _runtime_path(template, settings):
+        """Resolve a host-local path without changing the shared config digest."""
+        if template is None:
+            return None
+        if not isinstance(template, str) or not template:
+            raise ValueError("runtime path must be a nonempty string")
+        try:
+            return template.format(
+                island_id=settings["island_id"],
+                horizon=settings["horizon"],
+            )
+        except (KeyError, IndexError, ValueError) as exc:
+            raise ValueError("runtime path contains an unsupported placeholder") from exc
 
     @staticmethod
     def _summary(result):
@@ -255,7 +276,7 @@ class Plugin:
         cache = {}
         start_generation = 0
         no_improve = 0
-        checkpoint = cfg.get("optimization_resume_file")
+        checkpoint = self._runtime_path(cfg.get("optimization_resume_file"), settings)
         if checkpoint and os.path.exists(checkpoint):
             with open(checkpoint, encoding="utf-8") as handle:
                 saved = json.load(handle)

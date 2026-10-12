@@ -54,8 +54,12 @@ def _domain(source, horizon, predictor_root, python):
         "higher_is_better": False,
         "shared_population": False,
         "optimization_resume": True,
-        "optimization_resume_file": f"/var/tmp/i6n-island-sequence/state/h{horizon}/checkpoint.json",
-        "optimization_parameters_file": f"/var/tmp/i6n-island-sequence/state/h{horizon}/champion.json",
+        "optimization_resume_file": (
+            f"/var/tmp/i6n-island-sequence/state/h{horizon}/{{island_id}}/checkpoint.json"
+        ),
+        "optimization_parameters_file": (
+            f"/var/tmp/i6n-island-sequence/state/h{horizon}/{{island_id}}/champion.json"
+        ),
         "stage_advance_threshold": 1e300,
     }
     domain.update(
