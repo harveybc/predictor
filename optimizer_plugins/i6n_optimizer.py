@@ -187,6 +187,13 @@ class Plugin:
         if (not isinstance(island_id, str) or not island_id
                 or any(char not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_" for char in island_id)):
             raise ValueError("i6n_island_id must contain only letters, digits, '-' or '_'")
+        control_island_id = cfg.get("i6n_control_island_id", island_id)
+        if (not isinstance(control_island_id, str) or not control_island_id
+                or any(char not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
+                       for char in control_island_id)):
+            raise ValueError(
+                "i6n_control_island_id must contain only letters, digits, '-' or '_'"
+            )
         return {
             "horizon": horizon,
             "population": population,
@@ -195,6 +202,7 @@ class Plugin:
             "tolerance": float(tolerance),
             "seed": seed,
             "island_id": island_id,
+            "control_island_id": control_island_id,
             "mutation": float(cfg.get("mutation_probability", 0.8)),
             "immigration": float(cfg.get("immigration_probability", 0.2)),
             "s2_generation": _int(cfg.get("i6n_s2_generation", 10), "i6n_s2_generation"),
@@ -333,9 +341,12 @@ class Plugin:
         classes = self._open_classes(0, settings, admitted)
         if "S1" not in classes:
             raise ValueError("S1 must be admitted before an island can start")
-        population = [space.seed_genotype(settings["horizon"]),
-                      space.alternative_genotype(settings["horizon"])]
-        seen = {space.genotype_sha256(g) for g in population}
+        fixed = [space.seed_genotype(settings["horizon"]),
+                 space.alternative_genotype(settings["horizon"])]
+        population = fixed if settings["island_id"] == settings["control_island_id"] else []
+        # Non-control islands also reserve these identities so they cannot
+        # accidentally repeat the governed controls through random sampling.
+        seen = {space.genotype_sha256(g) for g in fixed}
         while len(population) < settings["population"]:
             candidate = space.sample_genotype(settings["horizon"], rng, classes=classes)
             identity = space.genotype_sha256(candidate)

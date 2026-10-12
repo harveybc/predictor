@@ -39,6 +39,7 @@ def _domain(source, horizon, predictor_root, python):
         "predictor_root": predictor_root,
         "optimizer_plugin": "i6n_optimizer",
         "i6n_island_mode": True,
+        "i6n_control_island_id": "omega-4070",
         "i6n_horizon": horizon,
         "i6n_plan": build_plan(),
         "i6n_folds": deepcopy(old["i6n_folds"]),
