@@ -47,7 +47,18 @@ def output_offsets(cfg):
     return tuple(dy * k for k in range(1, n + 1))
 
 
-def authenticated(cfg, trajectory=False):
+def explicit_offsets(cfg, offsets):
+    """Direct multi-output heads: strictly increasing business horizons incl. cfg h."""
+    offsets = tuple(offsets)
+    if (not offsets or any(type(o) is not int or o < 1 for o in offsets)
+            or list(offsets) != sorted(set(offsets)) or cfg["horizon_hours"] not in offsets):
+        raise ValueError("direct heads must be increasing whole hours containing the cell horizon")
+    if cfg["model"]["n_horizons"] != len(offsets):
+        raise ValueError("model heads must match direct multi-output horizons")
+    return offsets
+
+
+def authenticated(cfg, trajectory=False, offsets=None):
     """Validate explicit configuration and clock attestation without decoding NPZ.
 
     ``trajectory=False`` (single-week cell, base configs) keeps exactly one
@@ -74,11 +85,13 @@ def authenticated(cfg, trajectory=False):
         raise ValueError("exactly 20 unique selected features required")
     normalize_config(cfg["model"])
     _settings(cfg["training"])
-    if not trajectory:
+    if offsets is not None:
+        offsets = explicit_offsets(cfg, offsets)
+    if not trajectory and offsets is None:
         if cfg["model"]["n_horizons"] != 1 or len(cfg["training"]["head_weights"]) != 1:
             raise ValueError("exactly one horizon required")
     else:
-        offsets = output_offsets(cfg)
+        offsets = offsets if offsets is not None else output_offsets(cfg)
         weights = cfg["training"]["head_weights"]
         if len(weights) != len(offsets):
             raise ValueError("head_weights must match trajectory heads")
@@ -127,7 +140,7 @@ def _head_labels(ts, price, origins, offset):
     return labels, found
 
 
-def prepare(cfg, trajectory=False):
+def prepare(cfg, trajectory=False, offsets=None):
     """Build complete support and TRAIN-only transforms; never fit a model.
 
     Heads are ``output_offsets(cfg)``; each keeps its own C1 mask and TRAIN-only
@@ -136,8 +149,9 @@ def prepare(cfg, trajectory=False):
     intermediate heads. An intermediate head without TRAIN support (or with a
     degenerate scale) is marked untrainable, never scored as zero error.
     """
-    weeks, split = authenticated(cfg, trajectory)
-    offsets = output_offsets(cfg)
+    weeks, split = authenticated(cfg, trajectory, offsets)
+    direct = offsets is not None
+    offsets = explicit_offsets(cfg, offsets) if direct else output_offsets(cfg)
     limits, source = cfg["resources"], cfg["input"]
     with zipfile.ZipFile(source["path"]) as archive:
         if max(Path(source["path"]).stat().st_size, sum(i.file_size for i in archive.infolist())) > limits["max_input_bytes"]:
@@ -159,7 +173,7 @@ def prepare(cfg, trajectory=False):
         source_coverage_start=stamp(ts[0]), history_years=4, inner_days=28,
         history_span_hours=span, role=c1.Role(cfg["role"]), coverage_mode="complete")
     for name, part in (("TRAIN", parts.train), ("INNER", parts.inner)):
-        if not any(m[-1] for m in part.mask):
+        if not any(m[-1] for m in part.mask) and not direct:
             raise WeeklyDataError(f"NO_ELIGIBLE_ENDPOINT_{name}")
     populations = (parts.train, parts.inner, parts.evaluation)
     rows = [sum(1 for m in p.mask if any(m)) for p in populations]
@@ -173,7 +187,9 @@ def prepare(cfg, trajectory=False):
     if math.ceil(rows[0]/batch)*cfg["training"]["max_epochs"] > limits["max_updates"]:
         raise ValueError("optimizer updates exceed resource limit")
     # Feature scaler rows: the endpoint TRAIN support only (identical to endpoint mode).
-    fit = np.searchsorted(ts, [t.timestamp() for t, m in zip(parts.train.origins, parts.train.mask) if m[-1]])
+    # Direct multi-output: rows with any eligible business head (no endpoint column).
+    fit = np.searchsorted(ts, [t.timestamp() for t, m in zip(parts.train.origins, parts.train.mask)
+                               if (any(m) if direct else m[-1])])
     scaled, scaler = scaled_inputs(np.where(np.isfinite(raw), raw, np.nan), fit)
     center, scale = np.zeros(len(offsets)), np.ones(len(offsets))
     status, trainable = [], np.zeros(len(offsets), bool)
@@ -191,12 +207,13 @@ def prepare(cfg, trajectory=False):
         else:
             center[j], scale[j], trainable[j] = labels.mean(), labels.std(), True
             status.append("TRAINED")
-    if not trainable[-1]:
+    if not (trainable.any() if direct else trainable[-1]):
         raise ValueError("degenerate TRAIN target scale")
     return dict(ts=ts, price=price, scaled=scaled, scaler=scaler, fit_indices=fit,
                 target_center=center, target_scale=scale, parts=parts, available=available,
                 observed=observed, weeks=weeks, materialized_bytes=sum(rows)*row_bytes,
-                offsets=offsets, head_status=status, head_trainable=trainable)
+                offsets=offsets, head_status=status, head_trainable=trainable,
+                mode="multi_output" if direct else "endpoint_or_trajectory")
 
 
 def windows(ts, scaled, origins, spacing_hours, samples):
