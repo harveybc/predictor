@@ -1,0 +1,3115 @@
+{
+ "candidates": [
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "05fe0baf2cfd06a0c19d28d080ef2f41c8f6108b2608f507e645c88bcf62c3b1",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0008193135551027,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv_transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4,
+      4,
+      4
+     ],
+     "reducer_strides": [
+      2,
+      1,
+      1
+     ],
+     "transformer_blocks": 2,
+     "width": 32
+    },
+    "delta_x": 12,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 6,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "05fe0baf2cfd06a0c19d28d080ef2f41c8f6108b2608f507e645c88bcf62c3b1",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 12,
+    "entrance": "conv_transformer",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     4,
+     4,
+     4
+    ],
+    "reducer_strides": [
+     2,
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "06d004633a22ff089c8c08ea3754d7ae217bc0efcecbe9e84ed22e6bdf9af00a",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.007019509379382,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 8,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 1,
+     "width": 16
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "06d004633a22ff089c8c08ea3754d7ae217bc0efcecbe9e84ed22e6bdf9af00a",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 8,
+    "delta_x_hours": 3,
+    "entrance": "transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "221bd92f308cba161ceb615a4669c1e77fbbf4b5725c2b43171a88c3f68493ce",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0020814802613573,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 16,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16,
+      8,
+      8
+     ],
+     "reducer_strides": [
+      1,
+      2,
+      1
+     ],
+     "transformer_blocks": 2,
+     "width": 16
+    },
+    "delta_x": 12,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "221bd92f308cba161ceb615a4669c1e77fbbf4b5725c2b43171a88c3f68493ce",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 16,
+    "delta_x_hours": 12,
+    "entrance": "transformer",
+    "history_hours": 24,
+    "horizon_hours": 12,
+    "input_transform": "identity",
+    "reducer_filters": [
+     16,
+     8,
+     8
+    ],
+    "reducer_strides": [
+     1,
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "25cd5ac4d47f34054a3f63736e62f305a4c13cdf7cf52f87d340e50d0cf192e1",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 0.9996633665183041,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16,
+      16
+     ],
+     "reducer_strides": [
+      2,
+      1
+     ],
+     "transformer_blocks": 1,
+     "width": 16
+    },
+    "delta_x": 2,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "25cd5ac4d47f34054a3f63736e62f305a4c13cdf7cf52f87d340e50d0cf192e1",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "329c90d34c4e1a4fa9881d6e3ceb4dceb7ab3d8939cc71a0579208746fe3ff37",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0019243321192728,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 8,
+     "entrance": "conv_transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16,
+      16,
+      8
+     ],
+     "reducer_strides": [
+      2,
+      1,
+      2
+     ],
+     "transformer_blocks": 1,
+     "width": 16
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "329c90d34c4e1a4fa9881d6e3ceb4dceb7ab3d8939cc71a0579208746fe3ff37",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 8,
+    "delta_x_hours": 3,
+    "entrance": "conv_transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16,
+     8
+    ],
+    "reducer_strides": [
+     2,
+     1,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "345d2e8773e1887223d91345a1c32b69070fea2b382598fab7816b8a19039444",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.002177438408044,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 8,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16,
+      16,
+      8
+     ],
+     "reducer_strides": [
+      2,
+      2,
+      2
+     ],
+     "transformer_blocks": 1,
+     "width": 16
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "345d2e8773e1887223d91345a1c32b69070fea2b382598fab7816b8a19039444",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 8,
+    "delta_x_hours": 3,
+    "entrance": "transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16,
+     8
+    ],
+    "reducer_strides": [
+     2,
+     2,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "3753dbba8e04866aa33fa1d967347415aab2172f6b19486b4873f6987c7d62a6",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0010850519045849,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 32,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16,
+      16
+     ],
+     "reducer_strides": [
+      2,
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 32
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 6,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "3753dbba8e04866aa33fa1d967347415aab2172f6b19486b4873f6987c7d62a6",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 3,
+    "entrance": "conv",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "3b8ceb16aca0cae5c620eecd88ab6d37b01caec833ffe7b0f8cd30fd3a97c3fb",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0010652476879316,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 32,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4,
+      4
+     ],
+     "reducer_strides": [
+      1,
+      2
+     ],
+     "transformer_blocks": 0,
+     "width": 8
+    },
+    "delta_x": 2,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "identity",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "3b8ceb16aca0cae5c620eecd88ab6d37b01caec833ffe7b0f8cd30fd3a97c3fb",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 8
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "5cc7915de98b64e1bcc027ee8f9d5eafb616376fa3812ca907e9f43b147b0bc1",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0012233532901433,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 16,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16,
+      16,
+      8
+     ],
+     "reducer_strides": [
+      1,
+      2,
+      1
+     ],
+     "transformer_blocks": 1,
+     "width": 16
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "5cc7915de98b64e1bcc027ee8f9d5eafb616376fa3812ca907e9f43b147b0bc1",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 16,
+    "delta_x_hours": 3,
+    "entrance": "transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16,
+     8
+    ],
+    "reducer_strides": [
+     1,
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "68b7047a6d3ca51339cc89959f111191b3c559d23b99cbbecbc89e26660630f9",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 0.9996519338826555,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv_transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      32,
+      8
+     ],
+     "reducer_strides": [
+      2,
+      1
+     ],
+     "transformer_blocks": 2,
+     "width": 32
+    },
+    "delta_x": 12,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 6,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "68b7047a6d3ca51339cc89959f111191b3c559d23b99cbbecbc89e26660630f9",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 12,
+    "entrance": "conv_transformer",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     32,
+     8
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "77c2aa6534a83be5ce95c01a1d1b4f1ad8cfb7fe4c256e6eab5f7bde7d49049e",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.003490965604409,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv_transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      32,
+      8
+     ],
+     "reducer_strides": [
+      2,
+      1
+     ],
+     "transformer_blocks": 1,
+     "width": 32
+    },
+    "delta_x": 12,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 6,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "77c2aa6534a83be5ce95c01a1d1b4f1ad8cfb7fe4c256e6eab5f7bde7d49049e",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 12,
+    "entrance": "conv_transformer",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     32,
+     8
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "80c20454b05236ff192ca40ba4c4d43f6f643b77d97e6926f78fa8774cdd0f82",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 0.9986823945608347,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 32,
+     "entrance": "conv_transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16,
+      16
+     ],
+     "reducer_strides": [
+      2,
+      1
+     ],
+     "transformer_blocks": 2,
+     "width": 32
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "identity",
+    "multiplier": 6,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "80c20454b05236ff192ca40ba4c4d43f6f643b77d97e6926f78fa8774cdd0f82",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 3,
+    "entrance": "conv_transformer",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "identity",
+    "reducer_filters": [
+     16,
+     16
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "8c104a7df9f9f54b3a3e65b5db532b2e4b9d19da5162023d6a9e2e16f142e712",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 0.9965273924657982,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 8,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16,
+      16,
+      8
+     ],
+     "reducer_strides": [
+      1,
+      1,
+      1
+     ],
+     "transformer_blocks": 1,
+     "width": 16
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "8c104a7df9f9f54b3a3e65b5db532b2e4b9d19da5162023d6a9e2e16f142e712",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 8,
+    "delta_x_hours": 3,
+    "entrance": "transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16,
+     8
+    ],
+    "reducer_strides": [
+     1,
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "905306c938e70480caad45a4ca7f9f60d3af0a38242ebc3e1da85f227af2b8d3",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.002091607636756,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv_transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4,
+      4,
+      4
+     ],
+     "reducer_strides": [
+      2,
+      1,
+      1
+     ],
+     "transformer_blocks": 1,
+     "width": 32
+    },
+    "delta_x": 12,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 6,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "905306c938e70480caad45a4ca7f9f60d3af0a38242ebc3e1da85f227af2b8d3",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 12,
+    "entrance": "conv_transformer",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     4,
+     4,
+     4
+    ],
+    "reducer_strides": [
+     2,
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "90de38c31ae0ff2d0ebb3b0c5c217e118837cbd6ccba0f68d66272d7efd39b80",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0019629514546007,
+   "legacy_genome": {
+    "core": {
+     "adapter": "lstm",
+     "adapter_width": 8,
+     "entrance": "conv_transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4,
+      4
+     ],
+     "reducer_strides": [
+      2,
+      1
+     ],
+     "transformer_blocks": 1,
+     "width": 16
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "90de38c31ae0ff2d0ebb3b0c5c217e118837cbd6ccba0f68d66272d7efd39b80",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "lstm",
+    "adapter_width": 8,
+    "delta_x_hours": 3,
+    "entrance": "conv_transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     4,
+     4
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "a6ae15845b00051b7062619f13f69cae2a82f14a718d2b7c7cd4595e8686965d",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0004143562467296,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4,
+      4
+     ],
+     "reducer_strides": [
+      2,
+      2
+     ],
+     "transformer_blocks": 0,
+     "width": 16
+    },
+    "delta_x": 12,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "a6ae15845b00051b7062619f13f69cae2a82f14a718d2b7c7cd4595e8686965d",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 12,
+    "entrance": "conv",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     4,
+     4
+    ],
+    "reducer_strides": [
+     2,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "b17caa522cd45a5c4454657b80aa4d5da99880c3cec740f010eea08caeea9b6a",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 0.9941249436999559,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 8,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16,
+      16,
+      8
+     ],
+     "reducer_strides": [
+      1,
+      2,
+      1
+     ],
+     "transformer_blocks": 1,
+     "width": 16
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "b17caa522cd45a5c4454657b80aa4d5da99880c3cec740f010eea08caeea9b6a",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 8,
+    "delta_x_hours": 3,
+    "entrance": "transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16,
+     8
+    ],
+    "reducer_strides": [
+     1,
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "b18555869f94431faacec4b669d651bdf90bf9389ce78bfd91c0cfef98b7e25f",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0028525971405544,
+   "legacy_genome": {
+    "core": {
+     "adapter": "lstm",
+     "adapter_width": 8,
+     "entrance": "conv_transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4
+     ],
+     "reducer_strides": [
+      2
+     ],
+     "transformer_blocks": 1,
+     "width": 16
+    },
+    "delta_x": 6,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "b18555869f94431faacec4b669d651bdf90bf9389ce78bfd91c0cfef98b7e25f",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "lstm",
+    "adapter_width": 8,
+    "delta_x_hours": 6,
+    "entrance": "conv_transformer",
+    "history_hours": 24,
+    "horizon_hours": 12,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4
+    ],
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "bfcd26bc1c683c10b5a199f70048a69e8997c2d3a13c51dcb4823dfca9fbc87f",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0012060752707066,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 8,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16,
+      16,
+      8
+     ],
+     "reducer_strides": [
+      1,
+      2,
+      1
+     ],
+     "transformer_blocks": 2,
+     "width": 16
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "bfcd26bc1c683c10b5a199f70048a69e8997c2d3a13c51dcb4823dfca9fbc87f",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 8,
+    "delta_x_hours": 3,
+    "entrance": "transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16,
+     8
+    ],
+    "reducer_strides": [
+     1,
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "d4283d4e917f029452df640d949f295192ffe305cbca2a13e294325e5b315a52",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 0.9963573726717081,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 8,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      8,
+      4
+     ],
+     "reducer_strides": [
+      1,
+      1
+     ],
+     "transformer_blocks": 1,
+     "width": 16
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "d4283d4e917f029452df640d949f295192ffe305cbca2a13e294325e5b315a52",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 8,
+    "delta_x_hours": 3,
+    "entrance": "transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "d731563327aad193445e06e309860b0abae2bf4a3be50394df9a64b242b1cbee",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 0.997746022511747,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 8,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      8,
+      4
+     ],
+     "reducer_strides": [
+      1,
+      2
+     ],
+     "transformer_blocks": 1,
+     "width": 16
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "d731563327aad193445e06e309860b0abae2bf4a3be50394df9a64b242b1cbee",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 8,
+    "delta_x_hours": 3,
+    "entrance": "transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "df67434af496394d58547211f9f9123e4a51332b18eea25b5ef3da2f03ab31b2",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 0.9972006989872957,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 32,
+     "entrance": "conv_transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      32,
+      16
+     ],
+     "reducer_strides": [
+      2,
+      1
+     ],
+     "transformer_blocks": 2,
+     "width": 32
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "identity",
+    "multiplier": 6,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "df67434af496394d58547211f9f9123e4a51332b18eea25b5ef3da2f03ab31b2",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 3,
+    "entrance": "conv_transformer",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "identity",
+    "reducer_filters": [
+     32,
+     16
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "ed84d7bcb9cf06527096ab29665037e0d910ca8d992ffdda724e49f2bbaf2a38",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.00167013080857,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 8,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16,
+      16,
+      8
+     ],
+     "reducer_strides": [
+      2,
+      1,
+      2
+     ],
+     "transformer_blocks": 1,
+     "width": 16
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "difference",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "ed84d7bcb9cf06527096ab29665037e0d910ca8d992ffdda724e49f2bbaf2a38",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 8,
+    "delta_x_hours": 3,
+    "entrance": "transformer",
+    "history_hours": 48,
+    "horizon_hours": 12,
+    "input_transform": "difference",
+    "reducer_filters": [
+     16,
+     16,
+     8
+    ],
+    "reducer_strides": [
+     2,
+     1,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "f07be979a15f82da7f9843654900b6475cb17ca2f29bc93b15733fc3b28d372f",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 12,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0007281483977577,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 32,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16,
+      16
+     ],
+     "reducer_strides": [
+      2,
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 32
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "identity",
+    "multiplier": 6,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "f07be979a15f82da7f9843654900b6475cb17ca2f29bc93b15733fc3b28d372f",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 3,
+    "entrance": "conv",
+    "history_hours": 72,
+    "horizon_hours": 12,
+    "input_transform": "identity",
+    "reducer_filters": [
+     16,
+     16
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "0d0d98b60032004eced32f36ea703eae73510f18eddba042dced8c49254fad34",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 0.9552640231845004,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 32,
+     "entrance": "conv_transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 2,
+     "width": 16
+    },
+    "delta_x": 72,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "0d0d98b60032004eced32f36ea703eae73510f18eddba042dced8c49254fad34",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 72,
+    "entrance": "conv_transformer",
+    "history_hours": 72,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     16
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "136d2649effad9d1ce96e0f013268e471bc39372865ab93b0cba988b12e9bf99",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0114093610790682,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4,
+      4
+     ],
+     "reducer_strides": [
+      2,
+      2
+     ],
+     "transformer_blocks": 0,
+     "width": 16
+    },
+    "delta_x": 72,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "difference",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "136d2649effad9d1ce96e0f013268e471bc39372865ab93b0cba988b12e9bf99",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 72,
+    "entrance": "conv",
+    "history_hours": 288,
+    "horizon_hours": 72,
+    "input_transform": "difference",
+    "reducer_filters": [
+     4,
+     4
+    ],
+    "reducer_strides": [
+     2,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "1d9eb28455a3cf07fb28c3e36ef3f334f75a2bd6d4d687c4e0db4618ba943e6f",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0081157850715674,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      8
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 32
+    },
+    "delta_x": 9,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "difference",
+    "multiplier": 2,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "1d9eb28455a3cf07fb28c3e36ef3f334f75a2bd6d4d687c4e0db4618ba943e6f",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 9,
+    "entrance": "conv",
+    "history_hours": 144,
+    "horizon_hours": 72,
+    "input_transform": "difference",
+    "reducer_filters": [
+     8
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "1fbd9037f20c76aa776833be23315056058068ed098d69c26f47437f7e2423d4",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 0.9992400786876162,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      8
+     ],
+     "reducer_strides": [
+      2
+     ],
+     "transformer_blocks": 0,
+     "width": 16
+    },
+    "delta_x": 9,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 2,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "1fbd9037f20c76aa776833be23315056058068ed098d69c26f47437f7e2423d4",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 9,
+    "entrance": "conv",
+    "history_hours": 144,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8
+    ],
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "2bce608677c8884c524045eedff95ba9e4a7a9ca6a2125a3f9ef788ce437acf1",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0027894835836908,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      8
+     ],
+     "reducer_strides": [
+      2
+     ],
+     "transformer_blocks": 2,
+     "width": 16
+    },
+    "delta_x": 9,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 2,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "2bce608677c8884c524045eedff95ba9e4a7a9ca6a2125a3f9ef788ce437acf1",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 9,
+    "entrance": "transformer",
+    "history_hours": 144,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8
+    ],
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "2fc87a9ad068b12ea0cfae7cdb016c44b72693937631ea5adacf2eda4e162893",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.008987589235527,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 32,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16,
+      4,
+      4
+     ],
+     "reducer_strides": [
+      1,
+      1,
+      1
+     ],
+     "transformer_blocks": 2,
+     "width": 16
+    },
+    "delta_x": 72,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "2fc87a9ad068b12ea0cfae7cdb016c44b72693937631ea5adacf2eda4e162893",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 72,
+    "entrance": "transformer",
+    "history_hours": 72,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     16,
+     4,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "4a74a1dd2e51cdcce02ae9ca7df8b8e8579bb8b0392a063b478dc6248d0aabec",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0088515446423845,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 32,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      8
+     ],
+     "reducer_strides": [
+      2
+     ],
+     "transformer_blocks": 0,
+     "width": 32
+    },
+    "delta_x": 9,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 2,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "4a74a1dd2e51cdcce02ae9ca7df8b8e8579bb8b0392a063b478dc6248d0aabec",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 9,
+    "entrance": "conv",
+    "history_hours": 144,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8
+    ],
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "54b926bac7a60f1771b75d76d2cc30b57eba96f49277a44cebd0e315f4da1545",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0132976875385418,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      8
+     ],
+     "reducer_strides": [
+      2
+     ],
+     "transformer_blocks": 2,
+     "width": 32
+    },
+    "delta_x": 9,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 2,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "54b926bac7a60f1771b75d76d2cc30b57eba96f49277a44cebd0e315f4da1545",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 9,
+    "entrance": "transformer",
+    "history_hours": 144,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8
+    ],
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "74f2a3afdd4f440213b185d7e711c89a40d3a37d8bbfeb63229a8aa890169525",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.012624915941982,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv_transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      32,
+      4
+     ],
+     "reducer_strides": [
+      1,
+      2
+     ],
+     "transformer_blocks": 1,
+     "width": 32
+    },
+    "delta_x": 18,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "difference",
+    "multiplier": 2,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "74f2a3afdd4f440213b185d7e711c89a40d3a37d8bbfeb63229a8aa890169525",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 18,
+    "entrance": "conv_transformer",
+    "history_hours": 144,
+    "horizon_hours": 72,
+    "input_transform": "difference",
+    "reducer_filters": [
+     32,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "76172879f19fb0595ee4fd3236044507af62863395f5a29d7ee44f5a5836bd4f",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0089000795345713,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 32,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 1,
+     "width": 16
+    },
+    "delta_x": 72,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "76172879f19fb0595ee4fd3236044507af62863395f5a29d7ee44f5a5836bd4f",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 72,
+    "entrance": "transformer",
+    "history_hours": 72,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     16
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "7931b70f515a85e50f2a86a009b250a97a3827b927c0c1e87eca8e7bebc8d86a",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0093305924551452,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 32,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16,
+      4,
+      4
+     ],
+     "reducer_strides": [
+      1,
+      1,
+      1
+     ],
+     "transformer_blocks": 2,
+     "width": 32
+    },
+    "delta_x": 72,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "7931b70f515a85e50f2a86a009b250a97a3827b927c0c1e87eca8e7bebc8d86a",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 72,
+    "entrance": "transformer",
+    "history_hours": 72,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     16,
+     4,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "80774dd391886752e69d558a03ef2f3a9737eaa7557fbe47031bdf2dd224a8f8",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.001064222293668,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 16,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      8
+     ],
+     "reducer_strides": [
+      2
+     ],
+     "transformer_blocks": 0,
+     "width": 16
+    },
+    "delta_x": 9,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 2,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "80774dd391886752e69d558a03ef2f3a9737eaa7557fbe47031bdf2dd224a8f8",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 16,
+    "delta_x_hours": 9,
+    "entrance": "conv",
+    "history_hours": 144,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8
+    ],
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "83853bc7c53892ea94091666a8cc81cb9bd8ed080d23e807eaac427253d79b9e",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0108785465704657,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 32,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4
+     ],
+     "reducer_strides": [
+      2
+     ],
+     "transformer_blocks": 2,
+     "width": 8
+    },
+    "delta_x": 18,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 2,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "83853bc7c53892ea94091666a8cc81cb9bd8ed080d23e807eaac427253d79b9e",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 18,
+    "entrance": "transformer",
+    "history_hours": 144,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4
+    ],
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 8
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "89142369b88f809752cf0f1fae7a2505d15002fa54c3235748d999202cece4e9",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0091005382408966,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv_transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      32,
+      8
+     ],
+     "reducer_strides": [
+      2,
+      1
+     ],
+     "transformer_blocks": 2,
+     "width": 32
+    },
+    "delta_x": 36,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "difference",
+    "multiplier": 6,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "89142369b88f809752cf0f1fae7a2505d15002fa54c3235748d999202cece4e9",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 36,
+    "entrance": "conv_transformer",
+    "history_hours": 432,
+    "horizon_hours": 72,
+    "input_transform": "difference",
+    "reducer_filters": [
+     32,
+     8
+    ],
+    "reducer_strides": [
+     2,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "98219c20f4bec97a2c0ec1a90189dd3287c828e7bc8fe5f963ad4a4e68affd02",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 0.9974191597501108,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      8
+     ],
+     "reducer_strides": [
+      2
+     ],
+     "transformer_blocks": 0,
+     "width": 32
+    },
+    "delta_x": 9,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 2,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "98219c20f4bec97a2c0ec1a90189dd3287c828e7bc8fe5f963ad4a4e68affd02",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 9,
+    "entrance": "conv",
+    "history_hours": 144,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8
+    ],
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "9990ad48584d81e6e1d0e29a6d067ed950d4405fc6b5a330514a258623de0d8b",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.011537000048723,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 32,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      8
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 32
+    },
+    "delta_x": 9,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 2,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "9990ad48584d81e6e1d0e29a6d067ed950d4405fc6b5a330514a258623de0d8b",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 9,
+    "entrance": "conv",
+    "history_hours": 144,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "a8bf79e9f3ef693bfddca7d1527d2adccb18e1838ee2ffdb5c272624e8bbb245",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 0.9901657152640486,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 32,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      16
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 2,
+     "width": 16
+    },
+    "delta_x": 72,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "a8bf79e9f3ef693bfddca7d1527d2adccb18e1838ee2ffdb5c272624e8bbb245",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 72,
+    "entrance": "transformer",
+    "history_hours": 72,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     16
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "b0ae742919e41103083a58d00cb756bb83701b27334cb39b47962c6439b7917f",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0064752294824588,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 16,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      8,
+      4
+     ],
+     "reducer_strides": [
+      1,
+      1
+     ],
+     "transformer_blocks": 2,
+     "width": 8
+    },
+    "delta_x": 24,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "b0ae742919e41103083a58d00cb756bb83701b27334cb39b47962c6439b7917f",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 16,
+    "delta_x_hours": 24,
+    "entrance": "transformer",
+    "history_hours": 288,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 8
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "b6d7a322918ebed3aa7d171ef56f46f95264d6d5ed163ed08c688e6b3ec9fe43",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0091005382408966,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 32,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      8
+     ],
+     "reducer_strides": [
+      2
+     ],
+     "transformer_blocks": 2,
+     "width": 16
+    },
+    "delta_x": 36,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "difference",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "b6d7a322918ebed3aa7d171ef56f46f95264d6d5ed163ed08c688e6b3ec9fe43",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 32,
+    "delta_x_hours": 36,
+    "entrance": "transformer",
+    "history_hours": 72,
+    "horizon_hours": 72,
+    "input_transform": "difference",
+    "reducer_filters": [
+     8
+    ],
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "c69ea78997aebf5de3fbf90220a13e544d5d838d0e40955fe191cfd21b632649",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 0.9974191597501108,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      8
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 32
+    },
+    "delta_x": 9,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 2,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "c69ea78997aebf5de3fbf90220a13e544d5d838d0e40955fe191cfd21b632649",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 9,
+    "entrance": "conv",
+    "history_hours": 144,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "c6a13388d9072fa15054a0a773681b5e0d2449698fa6c7fd4fb768df2c716d6d",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.010337909983783,
+   "legacy_genome": {
+    "core": {
+     "adapter": "lstm",
+     "adapter_width": 8,
+     "entrance": "conv_transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4
+     ],
+     "reducer_strides": [
+      2
+     ],
+     "transformer_blocks": 1,
+     "width": 16
+    },
+    "delta_x": 24,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 2,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "c6a13388d9072fa15054a0a773681b5e0d2449698fa6c7fd4fb768df2c716d6d",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "lstm",
+    "adapter_width": 8,
+    "delta_x_hours": 24,
+    "entrance": "conv_transformer",
+    "history_hours": 144,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4
+    ],
+    "reducer_strides": [
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 1,
+    "width": 16
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "c84ccef5b4be3fc4edea8aa34f3bb605db5c4a8ff189326d7e32503c8e937352",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0149077748888604,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 16,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      8,
+      4
+     ],
+     "reducer_strides": [
+      2,
+      2
+     ],
+     "transformer_blocks": 2,
+     "width": 8
+    },
+    "delta_x": 24,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "c84ccef5b4be3fc4edea8aa34f3bb605db5c4a8ff189326d7e32503c8e937352",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 16,
+    "delta_x_hours": 24,
+    "entrance": "transformer",
+    "history_hours": 288,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     2,
+     2
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 8
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "e0e254164442103432c3a56026e8be1f020022c041ccd07b213dd83aba92a01e",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0112657709846378,
+   "legacy_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4,
+      4,
+      4
+     ],
+     "reducer_strides": [
+      2,
+      1,
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 32
+    },
+    "delta_x": 9,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 2,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "e0e254164442103432c3a56026e8be1f020022c041ccd07b213dd83aba92a01e",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 9,
+    "entrance": "conv",
+    "history_hours": 144,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4,
+     4,
+     4
+    ],
+    "reducer_strides": [
+     2,
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 32
+   }
+  },
+  {
+   "fold_reuse_reasons": [
+    "EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD",
+    "FIT_ID_CANNOT_MATCH_ANY_PLAN_FOLD"
+   ],
+   "fold_score_reuse": "NONE",
+   "genotype_canonical_sha256": "e8fe15e4617352f948d545e04e18e898ed6180ab7bcb60b3e9b568f2c383785e",
+   "genotype_status": "MAPPED",
+   "horizon_hours": 72,
+   "legacy_evaluation_week_id": "2024-01-07",
+   "legacy_fitness": 1.0028308939507327,
+   "legacy_genome": {
+    "core": {
+     "adapter": "causalconv",
+     "adapter_width": 16,
+     "entrance": "transformer",
+     "n_horizons": 1,
+     "reducer_filters": [
+      8
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 2,
+     "width": 8
+    },
+    "delta_x": 24,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 4,
+    "output_mode": "endpoint"
+   },
+   "legacy_state": "COMPLETED",
+   "legacy_wire_identity_matches": true,
+   "reasons": [],
+   "refit_of_legacy_context": "FORBIDDEN",
+   "size_class": "S1",
+   "v1_identity": "e8fe15e4617352f948d545e04e18e898ed6180ab7bcb60b3e9b568f2c383785e",
+   "v1_identity_recomputed": true,
+   "v2_genotype": {
+    "adapter": "causalconv",
+    "adapter_width": 16,
+    "delta_x_hours": 24,
+    "entrance": "transformer",
+    "history_hours": 288,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 2,
+    "width": 8
+   }
+  }
+ ],
+ "schema": "i6n.legacy_mapping.v1",
+ "summary": {
+  "completed": 48,
+  "fold_score_reuse_none": 48,
+  "mapped": 48,
+  "n": 48,
+  "out_of_domain_reasons": {},
+  "out_of_v2_domain": 0,
+  "refits_scheduled": 0,
+  "v1_identity_recomputed_all": true
+ }
+}

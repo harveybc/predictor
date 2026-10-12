@@ -103,8 +103,11 @@ def build_model(samples, n_features, spacing_hours, config):
     import tensorflow as tf
     from predictor_plugins.modular_temporal.components import causal_conv1d
     from tools.i6e_masked_model import ClockView
-    from tools.i6n_contracts.temporal_ops import I6NAttentionMask, RightAnchoredSubsample
+    from tools.i6n_contracts.temporal_ops import (
+        I6NAttentionMask, RightAnchoredSubsample, reduction_plan)
 
+    # Reject, never repair, a cascade that would lose t or empty the sequence.
+    reduction_plan(samples, cfg["reducer_strides"])
     K = tf.keras
     inp = K.Input((samples, 2 * n_features + 1), name="clock_input")
     mask = ClockView("mask", name="market_presence")(inp)
@@ -169,3 +172,37 @@ def build_model(samples, n_features, spacing_hours, config):
     last = ClockView("last", name="head_input")(x)
     output = K.layers.Dense(cfg["n_horizons"], name="forecast_head")(last)
     return K.Model(inp, output, name="I6N_masked_candidate")
+
+
+def verify_placement(model, placement, probe):
+    """Strict device contract for a built model; no fallback, no repair.
+
+    Requires soft device placement disabled, every variable (attention
+    included) on ``placement`` and a probe forward pass whose output is on
+    ``placement``. Variables are checked before any op runs, so a GPU request
+    on a host without that GPU fails as PLACEMENT_MISMATCH rather than being
+    executed elsewhere. Returns a JSON-safe report for the candidate receipt.
+    """
+    import tensorflow as tf
+
+    if not isinstance(placement, str) or placement not in ("/CPU:0", "/GPU:0"):
+        raise ValueError("placement must be /CPU:0 or /GPU:0")
+    if tf.config.get_soft_device_placement():
+        raise ValueError("SOFT_PLACEMENT_FORBIDDEN: disable soft device placement first")
+    suffix = "/device:" + placement[1:]
+
+    def on_device(variables):
+        return all(v.value.handle.device.endswith(suffix) for v in variables)
+
+    attention = [v for layer in model.layers
+                 if isinstance(layer, tf.keras.layers.MultiHeadAttention)
+                 for v in layer.variables]
+    if not on_device(model.variables) or not on_device(attention):
+        raise ValueError(f"PLACEMENT_MISMATCH: model variables are not all on {placement}")
+    with tf.device(placement):
+        output = model(probe, training=False)
+    if not output.device.endswith(suffix):
+        raise ValueError(f"PLACEMENT_MISMATCH: output on {output.device}, not {placement}")
+    return dict(soft_device_placement=False, variables_on_device=True,
+                attention_variables_on_device=True if attention else None,
+                output_device=output.device)

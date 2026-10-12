@@ -1,0 +1,8 @@
+    from tools import i6n_search_plan as sp
+E   ImportError: cannot import name 'i6n_search_plan' from 'tools' (/var/tmp/satoshi-i6n-E-20261011/tools/__init__.py)
+=========================== short test summary info ============================
+ERROR tests/test_i6n_search_space_v2.py
+ERROR tests/test_i6n_search_plan.py
+ERROR tests/test_i6n_optimizer_v2.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 3 errors during collection !!!!!!!!!!!!!!!!!!!!
+3 errors in 0.51s

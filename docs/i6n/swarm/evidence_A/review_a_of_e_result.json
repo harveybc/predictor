@@ -1,0 +1,470 @@
+{
+ "plan_sha256": "e7de41f04c8f188606dcaa71baa497e224303bdceaa8c802e71db63045ab788c",
+ "plan_training_matches_A": true,
+ "domain": {
+  "2": {
+   "L": [
+    24
+   ],
+   "k": [
+    2
+   ],
+   "max_n": 25
+  },
+  "3": {
+   "L": [
+    24
+   ],
+   "k": [
+    3
+   ],
+   "max_n": 25
+  },
+  "4": {
+   "L": [
+    24
+   ],
+   "k": [
+    2,
+    4
+   ],
+   "max_n": 25
+  },
+  "5": {
+   "L": [
+    24,
+    30
+   ],
+   "k": [],
+   "max_n": 31
+  },
+  "6": {
+   "L": [
+    24,
+    36
+   ],
+   "k": [
+    2,
+    3
+   ],
+   "max_n": 37
+  },
+  "12": {
+   "L": [
+    24,
+    48,
+    72
+   ],
+   "k": [
+    2,
+    3,
+    4
+   ],
+   "max_n": 73
+  },
+  "18": {
+   "L": [
+    24,
+    36,
+    72,
+    108
+   ],
+   "k": [
+    2,
+    3
+   ],
+   "max_n": 109
+  },
+  "24": {
+   "L": [
+    24,
+    48,
+    96,
+    144
+   ],
+   "k": [
+    2,
+    3,
+    4
+   ],
+   "max_n": 145
+  },
+  "36": {
+   "L": [
+    36,
+    72,
+    144,
+    216
+   ],
+   "k": [
+    2,
+    3,
+    4
+   ],
+   "max_n": 217
+  },
+  "48": {
+   "L": [
+    48,
+    96,
+    192,
+    288
+   ],
+   "k": [
+    2,
+    3,
+    4
+   ],
+   "max_n": 289
+  },
+  "60": {
+   "L": [
+    60,
+    120,
+    240,
+    360
+   ],
+   "k": [
+    2,
+    3,
+    4
+   ],
+   "max_n": 361
+  },
+  "72": {
+   "L": [
+    72,
+    144,
+    288,
+    432
+   ],
+   "k": [
+    2,
+    3,
+    4
+   ],
+   "max_n": 433
+  }
+ },
+ "gen0": {
+  "2": {
+   "n": 8,
+   "seed_is_first": true,
+   "seed": {
+    "entrance": "conv",
+    "width": 8,
+    "reducers": [
+     4
+    ],
+    "strides": [
+     1
+    ],
+    "adapter": "none",
+    "supervision": "endpoint",
+    "L": 24,
+    "dx": 2
+   },
+   "classes": [
+    "S1"
+   ],
+   "trajectories": 5
+  },
+  "3": {
+   "n": 8,
+   "seed_is_first": true,
+   "seed": {
+    "entrance": "conv",
+    "width": 8,
+    "reducers": [
+     4
+    ],
+    "strides": [
+     1
+    ],
+    "adapter": "none",
+    "supervision": "endpoint",
+    "L": 24,
+    "dx": 3
+   },
+   "classes": [
+    "S1"
+   ],
+   "trajectories": 3
+  },
+  "4": {
+   "n": 8,
+   "seed_is_first": true,
+   "seed": {
+    "entrance": "conv",
+    "width": 8,
+    "reducers": [
+     4
+    ],
+    "strides": [
+     1
+    ],
+    "adapter": "none",
+    "supervision": "endpoint",
+    "L": 24,
+    "dx": 2
+   },
+   "classes": [
+    "S1"
+   ],
+   "trajectories": 2
+  },
+  "5": {
+   "n": 8,
+   "seed_is_first": true,
+   "seed": {
+    "entrance": "conv",
+    "width": 8,
+    "reducers": [
+     4
+    ],
+    "strides": [
+     1
+    ],
+    "adapter": "none",
+    "supervision": "endpoint",
+    "L": 30,
+    "dx": 5
+   },
+   "classes": [
+    "S1"
+   ],
+   "trajectories": 0
+  },
+  "6": {
+   "n": 8,
+   "seed_is_first": true,
+   "seed": {
+    "entrance": "conv",
+    "width": 8,
+    "reducers": [
+     4
+    ],
+    "strides": [
+     1
+    ],
+    "adapter": "none",
+    "supervision": "endpoint",
+    "L": 24,
+    "dx": 2
+   },
+   "classes": [
+    "S1"
+   ],
+   "trajectories": 2
+  },
+  "12": {
+   "n": 8,
+   "seed_is_first": true,
+   "seed": {
+    "entrance": "conv",
+    "width": 8,
+    "reducers": [
+     4
+    ],
+    "strides": [
+     1
+    ],
+    "adapter": "none",
+    "supervision": "endpoint",
+    "L": 24,
+    "dx": 2
+   },
+   "classes": [
+    "S1"
+   ],
+   "trajectories": 3
+  },
+  "18": {
+   "n": 8,
+   "seed_is_first": true,
+   "seed": {
+    "entrance": "conv",
+    "width": 8,
+    "reducers": [
+     4
+    ],
+    "strides": [
+     1
+    ],
+    "adapter": "none",
+    "supervision": "endpoint",
+    "L": 24,
+    "dx": 2
+   },
+   "classes": [
+    "S1"
+   ],
+   "trajectories": 4
+  },
+  "24": {
+   "n": 8,
+   "seed_is_first": true,
+   "seed": {
+    "entrance": "conv",
+    "width": 8,
+    "reducers": [
+     4
+    ],
+    "strides": [
+     1
+    ],
+    "adapter": "none",
+    "supervision": "endpoint",
+    "L": 24,
+    "dx": 2
+   },
+   "classes": [
+    "S1"
+   ],
+   "trajectories": 5
+  },
+  "36": {
+   "n": 8,
+   "seed_is_first": true,
+   "seed": {
+    "entrance": "conv",
+    "width": 8,
+    "reducers": [
+     4
+    ],
+    "strides": [
+     1
+    ],
+    "adapter": "none",
+    "supervision": "endpoint",
+    "L": 36,
+    "dx": 2
+   },
+   "classes": [
+    "S1"
+   ],
+   "trajectories": 2
+  },
+  "48": {
+   "n": 8,
+   "seed_is_first": true,
+   "seed": {
+    "entrance": "conv",
+    "width": 8,
+    "reducers": [
+     4
+    ],
+    "strides": [
+     1
+    ],
+    "adapter": "none",
+    "supervision": "endpoint",
+    "L": 48,
+    "dx": 2
+   },
+   "classes": [
+    "S1"
+   ],
+   "trajectories": 3
+  },
+  "60": {
+   "n": 8,
+   "seed_is_first": true,
+   "seed": {
+    "entrance": "conv",
+    "width": 8,
+    "reducers": [
+     4
+    ],
+    "strides": [
+     1
+    ],
+    "adapter": "none",
+    "supervision": "endpoint",
+    "L": 60,
+    "dx": 3
+   },
+   "classes": [
+    "S1"
+   ],
+   "trajectories": 3
+  },
+  "72": {
+   "n": 8,
+   "seed_is_first": true,
+   "seed": {
+    "entrance": "conv",
+    "width": 8,
+    "reducers": [
+     4
+    ],
+    "strides": [
+     1
+    ],
+    "adapter": "none",
+    "supervision": "endpoint",
+    "L": 72,
+    "dx": 3
+   },
+   "classes": [
+    "S1"
+   ],
+   "trajectories": 3
+  }
+ },
+ "checked": {
+  "gen0": 96,
+  "sampled": 720,
+  "mutated": 720
+ },
+ "n433": {
+  "samples": 433,
+  "class_": "S3"
+ },
+ "endpoint_alias_same_identity": true,
+ "inactive_same_identity": true,
+ "active_genes_change_identity": {
+  "history_hours": true,
+  "delta_x_hours": true,
+  "input_transform": true,
+  "supervision": true,
+  "width": true,
+  "reducer_filters": true,
+  "reducer_strides": true,
+  "adapter": true
+ },
+ "typed_infeasibility": {
+  "dx_not_divisor": [
+   "DELTA_X_NOT_COMMON_DIVISOR"
+  ],
+  "k_out_of_domain": [
+   "TRAJECTORY_K_NOT_IN_DOMAIN"
+  ],
+  "dy_not_integer": [
+   "TRAJECTORY_DY_NOT_INTEGER"
+  ],
+  "filters_increasing": [
+   "REDUCER_FILTERS_INCREASING"
+  ],
+  "stride_3": [
+   "REDUCER_STRIDES_NOT_IN_DOMAIN"
+  ],
+  "final_steps": [
+   "FINAL_STEPS_BELOW_MINIMUM"
+  ],
+  "multi": [
+   "DELTA_X_NOT_COMMON_DIVISOR",
+   "WIDTH_NOT_IN_DOMAIN",
+   "ADAPTER_NOT_IN_DOMAIN"
+  ]
+ },
+ "score_folds_mean": 0.915,
+ "score_folds_three": "INCOMPLETE",
+ "score_folds_mixed_candidates_and_fold_labels": "ACCEPTED",
+ "freeze_load_request_gen0": {
+  "12": 8,
+  "72": 8
+ },
+ "problems": [],
+ "elapsed_seconds": 10.9
+}

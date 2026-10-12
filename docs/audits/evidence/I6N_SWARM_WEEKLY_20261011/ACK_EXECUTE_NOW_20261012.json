@@ -1,0 +1,14 @@
+{
+  "schema": "i6n.execute_now.ack.v1",
+  "acknowledged_by": "Satoshi",
+  "orders": {"path": "docs/handoffs/SATOSHI_I6N_EXECUTE_NOW_20261012.md", "branch": "codex/i6n-launch-integration-20261011", "commit": "bc01dee9", "sha256": "b78ec898f61bae8a9f653faf167adc0458a5daadecadebfa9035bd53a3b3009f"},
+  "starting_point": {"integration_branch": "satoshi/i6n-swarm-weekly-20261011", "integration_tip": "f7a05838", "musashi_branch_tip": "2101d97e", "note": "B fix round f7a05838 (with A.3 and C.3) is delivered and integrated; E accepted it (056ae767)."},
+  "owners": {
+    "A_integration": {"agent": "existing lane-B agent (swarm runtime author)", "reuses": ["integration f7a05838", "5bff3b21", "75e4f749", "e242c846 reconciled with E-B1", "2df243fc preflight"], "deliverable": "one pinned integration + two-real-DOIN-node isolated smoke + cross-host byte verification + READINESS.json"},
+    "B_deployment": {"agent": "existing lane-C agent (weekly plans, data roots)", "reuses": ["tools.i6n_swarm_campaign CLI", "C plan-v4", "E plan v1.2", "measured TRAIN pilots"], "deliverable": "effective private config, idempotent top-level deploy command with --status, install/start coordinator+secondary on A's passing pin, preferred joins via timer after S3 verified"},
+    "C_evidence": {"agent": "existing lane-D agent (archive author)", "reuses": ["D.3 5e44bb96", "DEPLOY_STEPS_D", "i6n-launch-cost-collect.timer (preserved)"], "deliverable": "deployed archive path verified (OBJECT_DURABLE, chain reference ingestion, OLAP readback), chain_finalized=false retained, two physical copies, status states"},
+    "in_flight": {"agent": "existing lane-A agent", "task": "A.4 multi-output arm config + host-root-relative contexts (must land before production fits; merged by integration owner)"}
+  },
+  "preserved_running": ["S3 corrected cost pilot on preferred (unit i6n-cost-preferred-2df243fc.service) - not touched", "i6n-launch-cost-collect.timer"],
+  "no_new_authorization_requested": true
+}

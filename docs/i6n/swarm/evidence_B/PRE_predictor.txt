@@ -1,0 +1,15 @@
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_i6n_swarm_campaign.py:14: in <module>
+    from tests import i6n_swarm_fixtures as F
+tests/i6n_swarm_fixtures.py:7: in <module>
+    from tools.i6n_swarm import common
+E   ModuleNotFoundError: No module named 'tools.i6n_swarm'
+=========================== short test summary info ============================
+ERROR tests/test_i6n_swarm_ledger.py
+ERROR tests/test_i6n_swarm_runner.py
+ERROR tests/test_i6n_swarm_bridge.py
+ERROR tests/test_i6n_swarm_lease_service.py
+ERROR tests/test_i6n_swarm_placement.py
+ERROR tests/test_i6n_swarm_campaign.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 6 errors during collection !!!!!!!!!!!!!!!!!!!!
+6 errors in 0.58s

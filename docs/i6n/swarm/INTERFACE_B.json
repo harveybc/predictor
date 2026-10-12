@@ -1,0 +1,73 @@
+{
+  "schema": "i6n.swarm_weekly.interface.v1",
+  "lane": "B",
+  "interface_version": "B.3",
+  "status": "PUBLISHED; fix round after REVIEW_E_OF_B; aligned with A.3, C.3, D.3, E.3",
+  "branch": "satoshi/i6n-swarm-B-doin-20261011",
+  "consumes": {
+    "A": "A.3: evaluate stdin attempt {index, parent_status_sha256, fencing_token, parent: ledger record of the previous physical attempt {fit_id, attempt_index, fencing_token, state, state_sha256}}; no resume_checkpoint (RESUME_UNSUPPORTED)",
+    "C": "C.3: views + pinned weekly plan (v4 at the time of writing, read by digest, never hardcoded); AnnualAccumulator keyed by arm (arm_sha256 = finalist genotype, arm_role); tools.i6n_weekly_multi_output resolve_arms on the pinned i6n.multi_output_arms.v1 template",
+    "D": "D.3: ArchivePublisher.record_candidate(candidate without won, fold_receipts) and record_decision(i6n.archive.decision.v1, increasing sequence) when a horizon search closes; node ingests the reference spool (doin-node archive_reference_spool)",
+    "E": "E.3: sealed plan JSON pinned by path+sha (never hardcoded); fold ids resolved onto plan quarters; ranking only via tools.i6n_search_plan.score_folds(plan, receipts, supports, genotype_canonical_sha256=, horizon_hours=, origins_sha256=C digests); legacy mapping fold_score_reuse NONE adopts nothing"
+  },
+  "identities": {
+    "genotype_canonical_sha256": "E: tools.i6n_search.effective_identity(genome)",
+    "search_candidate_sha256": "sha256(canonical {plan_sha256, horizon_hours, genotype_canonical_sha256}); fold independent (D)",
+    "fit_id": "sha256(canonical {experiment, fold, effective_config_sha256, context_sha256, support_sha256}); one physical fit unit; plan independent so verified terminals are reused across plans/nodes/directories",
+    "fencing_token": "globally monotonic integer issued by the ledger per claim; passed to A as attempt.fencing_token (string)"
+  },
+  "ledger": {
+    "module": "tools.i6n_swarm.ledger",
+    "storage": "<campaign-root>/state/ledger.sqlite3 (WAL), single authority on the coordinator; workers reach it through tools.i6n_swarm.lease_service (HTTP JSON, bearer token from a private file)",
+    "unit_states": [
+      "QUEUED",
+      "RUNNING",
+      "COMPLETE",
+      "WAIT_RESOURCE",
+      "INTERRUPTED",
+      "FAILED",
+      "WAIT_DEPENDENCY"
+    ],
+    "claim": "claim(fit_id, owner, host, boot_id, device_class, ttl_seconds) -> {result: CLAIMED|ADOPT|HELD|WAIT_RESOURCE|REFUSED, token, attempt:{index, kind: INITIAL|RESUME|RECOVERY, parent_attempt, parent_status_sha256}, terminal, cause}",
+    "renew": "renew(fit_id, token, progress) -> bool; false means the holder must self-fence (kill its child) before the lease expires",
+    "complete": "outer keys AND inner candidate_receipt (genotype, fold, horizon, experiment, effective config, seed) AND shared_receipt support (digest, counts) must belong to the unit, else ReceiptMismatch",
+    "report": "report(fit_id, token, outcome: INTERRUPTED|FAILED|FAILED_OOM|FAILED_TIMEOUT, cause, parent_status_sha256)",
+    "recover": "recover(host, boot_id) at boot: RUNNING attempts of a previous boot or with an expired lease -> INTERRUPTED",
+    "policy": "max 3 physical attempts per fit_id; ONE linked RECOVERY attempt (no RESUME while the evaluator lacks optimizer/RNG checkpoints); the claim returns attempt.parent for index>1; OOM/timeout/evaluator refusal are terminal FAILED",
+    "prior": "register_prior(fit_id, receipt, source): adopted at the first claim of exactly that fit_id after identity verification; never refit",
+    "search_state": "put_search_state(dag_node, generation, state) immutable per generation (wrapper writes after create/reproduce)"
+  },
+  "evaluation": {
+    "doin_wrapper": "doin_plugins.predictor.optimizer.PredictorOptimizer with optimization_config.i6n_swarm (shared-only, no predictor/preprocessor/target imports, no default_optimizer fallback)",
+    "evaluator_callable": "tools.i6n_swarm.bridge:evaluate (runs in the node executor thread; launches one crispdm-run admitted subprocess per fold; no SIGALRM, no CPU fallback)",
+    "node_environment": "I6N_SWARM_NODE_CONFIG=<private node json> (ledger url/token file, owner, host key, boot id source, device, crispdm-run path, caps)",
+    "fold_aggregation": "only tools.i6n_search_plan.score_folds; production refuses any other aggregator, partial origins and any origins_binding other than VERIFIED; the reference scorer exists for fixtures and is never returned by resolve_score_folds",
+    "result_binding": "result.candidate_identity == wire.identity and result.hyper_dict == effective_config(wire.genome); the node refuses a peer result whose candidate_identity differs from its population entry",
+    "orphan_guard": "tools/i6n_swarm/childguard.py sits between the supervisor and crispdm-run; when the DOIN node process disappears it TERMs the launcher (scope stop + reservation release), so no fit outlives its lease holder",
+    "doin_config": "optimization_config carries i6n_plan (sealed E plan), i6n_horizon, i6n_admitted_classes, i6n_folds {fold: {i6n_support, i6n_evaluation_context, i6n_origins_sha256}} so E's v2 path runs; i6n_swarm.context is the plan-bound swarm context; the plan seed is passed unchanged to reproduction",
+    "class_admission": "a size class without an admitted pilot cap is a typed WAIT_RESOURCE CLASS_NOT_ADMITTED before any claim"
+  },
+  "role": {
+    "higher_is_better": false,
+    "shared_population_seed": 6102026,
+    "optimization_patience": 3,
+    "improvement_tolerance": 0.0001,
+    "reproduction_failure_policy": "fail_closed"
+  },
+  "dag": {
+    "stages": [
+      "freeze_folds:h / freeze_weeks:h (A freeze, data only, CPU)",
+      "search:h (DOIN swarm)",
+      "annual:h (finalists x READY weeks, weekly refit)",
+      "multi_output:short|long: lane C template resolved from inner-fold finalists; only READY arms; WAIT_DEPENDENCY EVALUATOR_LACKS_DIRECT_MULTI_OUTPUT_ARM until A/E provide an adapted config (capability DIRECT_MULTI_OUTPUT_ARM)"
+    ],
+    "activation": "coordinator tick (systemd timer) activates successors; a localized failure blocks only its dependants"
+  },
+  "publication": "collect: candidates without won; typed FAILED SCORE_REFUSED:<code> with no fitness; genotype {active, inactive} and lineage from the persisted v2 search state; record_decision per closed search",
+  "branches": {
+    "predictor": "satoshi/i6n-swarm-B-doin-20261011",
+    "doin-plugins": "satoshi/i6n-swarm-B-doin-20261011",
+    "doin-node": "satoshi/i6n-swarm-B-runtime-20261011"
+  },
+  "pins": "binding pins may be {relpath, sha256} relative to each host's shared_data_root (freeze outputs are recorded that way); A's contexts themselves still carry absolute paths"
+}

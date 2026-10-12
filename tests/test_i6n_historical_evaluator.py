@@ -20,9 +20,13 @@ def prepared(historical_fixture, tmp_path):
     cfg, _ = historical_fixture
     cfg.update(horizon_hours=2, samples=13, spacing_hours=2)
     cfg["resources"]["max_samples"] = 100
+    # Plan section 2 stopping is mandatory for every frozen fold.
+    cfg["training"].update(max_epochs=50, patience=5, min_delta=1e-6, seed=6102026)
+    # 50 plan epochs need an update budget sized for them (callers may enlarge data).
+    cfg["resources"]["max_updates"] = 10_000
     path = tmp_path / "base.json"
     write_json(path, cfg)
-    binding = evaluator.freeze(path, tmp_path / "bridge")
+    binding = evaluator.freeze(path, tmp_path / "bridge", experiment="unit-exp", fold="F0")
     genome = search.default_genome(2)
     genome.update(delta_x=2, core=cfg["model"])
     request = dict(config=search.effective_config(genome), generation=0,
@@ -103,14 +107,21 @@ def test_all_endpoint_genes_mapped_and_derived_fields_checked(prepared):
             evaluator.candidate_config(base, {**effective, **change})
 
 
-def test_trajectory_rejected_before_data_or_fitting(prepared, monkeypatch):
-    _, _, _, request = prepared
+def test_trajectory_is_supervised_not_rejected_or_renamed(prepared, monkeypatch):
+    base, _, _, request = prepared
     g = search.default_genome(2)
-    g.update(output_mode="trajectory", delta_y=1, delta_x=2)
+    g.update(output_mode="trajectory", delta_y=1, delta_x=2, core=base["model"])
     request["config"] = search.effective_config(g)
-    monkeypatch.setattr(evaluator.cell, "prepare", lambda *a: pytest.fail("trajectory reached data"))
-    with pytest.raises(ValueError, match="TRAJECTORY_UNSUPPORTED"):
+    cfg = evaluator.candidate_config(base, request["config"])
+    assert evaluator.cell.output_offsets(cfg) == (1, 2) and cfg["model"]["n_horizons"] == 2
+    seen = []
+    def stop(*args, **kwargs):
+        seen.append(kwargs)
+        raise RuntimeError("reached trajectory data preparation")
+    monkeypatch.setattr(evaluator.cell, "prepare", stop)
+    with pytest.raises(RuntimeError, match="trajectory data"):
         evaluator.evaluate(request)
+    assert seen == [{"trajectory": True}]
 
 
 def test_backward_difference_masks_first_slot_gaps_and_missing_sources():
@@ -159,8 +170,8 @@ def test_candidate_may_not_drop_a_frozen_endpoint(prepared, monkeypatch):
     from dataclasses import replace
     _, _, _, request = prepared
     original = evaluator.cell.prepare
-    def changed(cfg):
-        data = original(cfg)
+    def changed(cfg, **kwargs):
+        data = original(cfg, **kwargs)
         part = data["parts"].train
         masks = list(part.mask)
         masks[next(i for i, row in enumerate(masks) if any(row))] = (False,)
@@ -188,7 +199,8 @@ def test_tiny_real_difference_fit_shared_receipt_reload_and_reuse(prepared, monk
     score, _ = search._score(receipt, request["support"])
     assert score == receipt["fitness"]
     assert receipt["status"] == "ok" and receipt["metadata"]["checkpoint_reload_verified"]
-    assert receipt["metadata"]["search_space_scope"] == "ENDPOINT_ONLY"
+    assert receipt["metadata"]["search_space_scope"] == "ENDPOINT_AND_TRAJECTORY"
+    assert receipt["metadata"]["candidate_receipt"]["output_mode"] == "endpoint"
     assert receipt["metadata"]["effective_config"] == request["config"]
     assert receipt["metadata"]["training"]["observed_updates"] > 0
     assert receipt["metadata"]["training"]["early_stop"]["rule"]["monitor"] == "train_inner_mean"

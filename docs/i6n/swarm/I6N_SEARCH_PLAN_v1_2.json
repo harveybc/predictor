@@ -1,0 +1,1336 @@
+{
+ "asset": "EURUSD",
+ "budgets": {
+  "cache_hits_count_as_new_fits": false,
+  "folds_per_candidate": 4,
+  "max_physical_attempts_per_identity_fold": 3,
+  "max_proposal_attempts_per_horizon": 768,
+  "max_recovery_attempts_without_checkpoint": 1,
+  "new_candidates_per_horizon_max": 24,
+  "new_fits_per_horizon_max": 96,
+  "oom_retry_with_lower_cap": false,
+  "per_class_new_candidates_per_horizon_max": {
+   "S1": 24,
+   "S2": 16,
+   "S3": 8
+  },
+  "per_class_new_candidates_total_max": {
+   "S1": 288,
+   "S2": 192,
+   "S3": 96
+  },
+  "total_new_fits_max": 1152
+ },
+ "classes": [
+  {
+   "admission": "FROM_ADMITTED_COST_PILOT_RECEIPT",
+   "child_memory_bytes": null,
+   "child_wall_seconds": null,
+   "class_id": "S1",
+   "max_samples": 25,
+   "max_width": 32,
+   "min_delta_x_hours": 2,
+   "note": "downsampled first class (dx>=2), samples<=25, every width<=32",
+   "requires_admitted_cost_pilot": true
+  },
+  {
+   "admission": "FROM_ADMITTED_COST_PILOT_RECEIPT",
+   "child_memory_bytes": null,
+   "child_wall_seconds": null,
+   "class_id": "S2",
+   "max_samples": 55,
+   "max_width": 64,
+   "min_delta_x_hours": 1,
+   "note": "samples<=55 (hourly allowed), every width<=64",
+   "requires_admitted_cost_pilot": true
+  },
+  {
+   "admission": "FROM_ADMITTED_COST_PILOT_RECEIPT",
+   "child_memory_bytes": null,
+   "child_wall_seconds": null,
+   "class_id": "S3",
+   "max_samples": 433,
+   "max_width": 128,
+   "min_delta_x_hours": 1,
+   "note": "up to 433 samples / width 128; pilot must exercise the 433-sample contract",
+   "requires_admitted_cost_pilot": true
+  }
+ ],
+ "cost_admission": {
+  "never": [
+   "learn the bound by provoking OOM",
+   "retry an OOM with a lower cap",
+   "fall back from GPU to CPU"
+  ],
+  "pilot_data": "real TRAIN rows of the target campaign, no TEST",
+  "production_cap_rule": "1.25 * measured_peak, only if it fits host and slice reserve"
+ },
+ "dispositions": [
+  "PENDING",
+  "COMPLETE",
+  "CACHED_VERIFIED",
+  "FAILED",
+  "INTERRUPTED",
+  "NOT_ADMITTED"
+ ],
+ "domain": {
+  "adapter_widths": [
+   8,
+   16,
+   32,
+   64
+  ],
+  "adapters": [
+   "none",
+   "causalconv",
+   "lstm"
+  ],
+  "delta_x": {
+   "rule": "integer-hour divisors common to h and L, including 1; no smoothing or interpolation"
+  },
+  "entrance_widths": [
+   8,
+   16,
+   32,
+   64,
+   128
+  ],
+  "entrances": [
+   "conv",
+   "transformer",
+   "conv_transformer"
+  ],
+  "fixed_branches": "per-feature causal Conv1D filters=16 kernel=3 stride=1, fusion then position",
+  "history": {
+   "min_hours": 24,
+   "multipliers": [
+    1,
+    2,
+    4,
+    6
+   ],
+   "per_horizon": {
+    "12": [
+     24,
+     48,
+     72
+    ],
+    "18": [
+     24,
+     36,
+     72,
+     108
+    ],
+    "2": [
+     24
+    ],
+    "24": [
+     24,
+     48,
+     96,
+     144
+    ],
+    "3": [
+     24
+    ],
+    "36": [
+     36,
+     72,
+     144,
+     216
+    ],
+    "4": [
+     24
+    ],
+    "48": [
+     48,
+     96,
+     192,
+     288
+    ],
+    "5": [
+     24,
+     30
+    ],
+    "6": [
+     24,
+     36
+    ],
+    "60": [
+     60,
+     120,
+     240,
+     360
+    ],
+    "72": [
+     72,
+     144,
+     288,
+     432
+    ]
+   },
+   "rule": "L = max(24, m*h), deduplicated"
+  },
+  "infeasibility": "typed reasons (INTERFACE_E); never repaired into another experiment",
+  "input_transform": [
+   "identity",
+   "difference"
+  ],
+  "lstm": "return_sequences=True (sequence-valued)",
+  "min_final_steps": 2,
+  "reducer_counts": [
+   1,
+   2,
+   3
+  ],
+  "reducer_filters": [
+   4,
+   8,
+   16,
+   32,
+   64,
+   128
+  ],
+  "reducer_order": "entrance width then reducers non-increasing",
+  "reducer_strides": {
+   "named_patterns": {
+    "final": "last reducer 2, others 1",
+    "mixed": "any other per-layer 1|2 list",
+    "none": "all 1",
+    "progressive": "all 2"
+   },
+   "patterns_role": "derived labels and seed choices, not the admissible domain",
+   "per_layer": [
+    1,
+    2
+   ]
+  },
+  "samples": {
+   "max": 433,
+   "rule": "n = 1 + L/dx, including t",
+   "truncation": "none (no 241 cap)"
+  },
+  "stride_anchor": "right-anchored (keeps t); steps = ceil(steps/stride) per reducer",
+  "supervision": {
+   "comparison": "endpoint h on frozen fold support; intermediates are diagnostics",
+   "dy": "h/k when integer, independent of dx",
+   "endpoint_alias": "k=1 canonicalizes to endpoint with trajectory_k=null",
+   "modes": [
+    "endpoint",
+    "trajectory"
+   ],
+   "per_horizon_k": {
+    "12": [
+     2,
+     3,
+     4
+    ],
+    "18": [
+     2,
+     3
+    ],
+    "2": [
+     2
+    ],
+    "24": [
+     2,
+     3,
+     4
+    ],
+    "3": [
+     3
+    ],
+    "36": [
+     2,
+     3,
+     4
+    ],
+    "4": [
+     2,
+     4
+    ],
+    "48": [
+     2,
+     3,
+     4
+    ],
+    "5": [],
+    "6": [
+     2,
+     3
+    ],
+    "60": [
+     2,
+     3,
+     4
+    ],
+    "72": [
+     2,
+     3,
+     4
+    ]
+   },
+   "trajectory_k": [
+    2,
+    3,
+    4
+   ]
+  },
+  "transformer_blocks": {
+   "conv": [
+    0
+   ],
+   "conv_transformer": [
+    1,
+    2
+   ],
+   "transformer": [
+    1,
+    2
+   ]
+  }
+ },
+ "experiment_scope": "BUSINESS_WEEKLY_WALK_FORWARD development search; TEST (2025+) closed",
+ "features": "the 20 retained RAW features (identity bound in the evaluator context)",
+ "finalists": {
+  "claim": "SELECTED_BY_INNER_FOLD_SEARCH_NOT_PROVEN_OPTIMAL",
+  "per_horizon": [
+   "BEST: lowest complete fitness (tie: smaller class, then identity)",
+   "MINIMAL_CONTROL: the seed when it is not the best, else SMALL_ALTERNATIVE (the alternative, or the smallest complete S1 non-equivalent candidate)"
+  ]
+ },
+ "fitness": {
+  "aggregation": "unweighted mean over the 4 folds",
+  "failed": "disposition with reason, no fitness",
+  "naive": "same origins and masks per horizon, original price",
+  "outer_week_or_test": "never used for stopping or fitness",
+  "per_fold": "0.5 * (sum_abs_error_TRAIN / naive_sum_abs_error_TRAIN + sum_abs_error_INNER / naive_sum_abs_error_INNER), endpoint h, original price, sums/counts within each split (tools.i6n_search._score)",
+  "receipt_binding": "per fold: candidate_receipt.genotype_canonical_sha256 == candidate, candidate_receipt.fold == fold id, candidate_receipt.horizon_hours == h, support_digest == frozen support; endpoint rows.support_sha256 == lane C origins_sha256 when supplied; typed RECEIPT_* refusals (lane A review E-A1)",
+  "requires": "all 4 folds COMPLETE with support equal to the frozen fold support"
+ },
+ "folds": {
+  "all_folds_required_before_ranking": true,
+  "cutoff_source": "INTERFACE_C C.1 INNER_FOLD unit: close of the last calendar week entirely inside the quarter",
+  "definition_owner": "lane C (exact cutoffs, support digests); A freezes support per (h, fold)",
+  "distinct_periods": true,
+  "fold_id_rule": "^(2023Q[1-4])(_[A-Z0-9]+)?$; exactly one fold id per quarter",
+  "fold_id_source": "lane C plan INNER_FOLD unit_id (INTERFACE_C.2: '2023Qn' on the certified source, '2023Qn_DCA' under a declared clock assumption); the suffix/assumption is bound in the fold context and therefore in fit_id",
+  "inner_days": 28,
+  "missing_history": "materialize/contrast before the fold; never shorten years, substitute a 2024 week or skip",
+  "purged": true,
+  "quarters": [
+   "2023Q1",
+   "2023Q2",
+   "2023Q3",
+   "2023Q4"
+  ],
+  "replicas_of_one_fit": false,
+  "rule": "last complete market cutoff of each 2023 calendar quarter; 28 inner days before the cutoff, purged; TRAIN = 4 calendar years before the fold cutoff; refit per fold",
+  "train_calendar_years": 4,
+  "unit_states": "INTERFACE_C C.1 per (fold unit, h): READY -> fit; WAIT_DEPENDENCY -> the horizon waits (no ranking on fewer folds); NO_ELIGIBLE_ROWS -> the horizon closes typed NO_FOLD_SUPPORT, never ranked on 3 folds"
+ },
+ "genotype_schema": "i6n.genotype.v2.1",
+ "governing": {
+  "orders_path": "docs/handoffs/SATOSHI_I6N_SWARM_WEEKLY_2026_10_11.md",
+  "orders_sha256": "ac77366af24bcaf4fb9454a51c94ab1f6d5230bb1de4ff14521f76cc0a3f8b9c",
+  "plan_commit": "af0c3570",
+  "plan_path": "docs/tres_temas_entrevista/program_v3/I6N_SWARM_WEEKLY_OFFCHAIN_EXECUTION.md",
+  "plan_sha256": "da51723a08a8ee3f0a94ffaded8b35fd480b72d80f314a812a176cb43c6355df",
+  "sections": [
+   "2",
+   "3",
+   "4"
+  ]
+ },
+ "horizons_hours": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  12,
+  18,
+  24,
+  36,
+  48,
+  60,
+  72
+ ],
+ "identity": {
+  "cache": "a fold result is reused only when its fit_id matches exactly and its terminal receipt verifies",
+  "effective_config_sha256": "sha256 canonical JSON of tools.i6n_search_space.evaluator_config(g)",
+  "fit_id": "sha256 canonical {experiment, fold, effective_config_sha256, context_sha256, support_sha256}",
+  "genotype_canonical_sha256": "tools.i6n_search_space.genotype_sha256 == tools.i6n_search.effective_identity(to_evaluator_genome(g))",
+  "search_candidate_sha256": "sha256 canonical {plan_sha256, horizon_hours, genotype_canonical_sha256}"
+ },
+ "initial_genotypes": {
+  "12": {
+   "alternative": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 24,
+    "horizon_hours": 12,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   },
+   "alternative_genotype_canonical_sha256": "07481244a5b64269fa2b55dd84fbec46a1999216badc30cbc924ce67beb652fc",
+   "seed": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 24,
+    "horizon_hours": 12,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 8
+   },
+   "seed_evaluator_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 8
+    },
+    "delta_x": 2,
+    "delta_y": null,
+    "horizon": 12,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "seed_genotype_canonical_sha256": "3f72d037769414e8bb22112f1b13e617485e63383d79b54cb56f5c61079ebcf9"
+  },
+  "18": {
+   "alternative": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 24,
+    "horizon_hours": 18,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   },
+   "alternative_genotype_canonical_sha256": "3c5b150daf29341aca38e800587618b5cecb0bfb4456d03f8e14c0c56654d69e",
+   "seed": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 24,
+    "horizon_hours": 18,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 8
+   },
+   "seed_evaluator_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 8
+    },
+    "delta_x": 2,
+    "delta_y": null,
+    "horizon": 18,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "seed_genotype_canonical_sha256": "c0ddf9213b4e03967e138ef9f167151cb6ed02be301f70999ecb1735480f129a"
+  },
+  "2": {
+   "alternative": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 24,
+    "horizon_hours": 2,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   },
+   "alternative_genotype_canonical_sha256": "ff158d0fa8f5a84f475998d03d42e526c42532a074085a03240e82871bb6be3e",
+   "seed": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 24,
+    "horizon_hours": 2,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 8
+   },
+   "seed_evaluator_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 8
+    },
+    "delta_x": 2,
+    "delta_y": null,
+    "horizon": 2,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "seed_genotype_canonical_sha256": "44b41b918d82b2b41cda570ccb287db62feb1795f2c18364cf6a2f8e78f0d06b"
+  },
+  "24": {
+   "alternative": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 24,
+    "horizon_hours": 24,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   },
+   "alternative_genotype_canonical_sha256": "7a28939e2768cd4fb851c6fa401fd77eba539d55c4f4b47f6c9a26aef215ef9f",
+   "seed": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 24,
+    "horizon_hours": 24,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 8
+   },
+   "seed_evaluator_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 8
+    },
+    "delta_x": 2,
+    "delta_y": null,
+    "horizon": 24,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "seed_genotype_canonical_sha256": "1345b8a8697654eb2e6d77889434ce4fae4820813b17d923bb7aa8b1572bc9f4"
+  },
+  "3": {
+   "alternative": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 3,
+    "entrance": "conv",
+    "history_hours": 24,
+    "horizon_hours": 3,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   },
+   "alternative_genotype_canonical_sha256": "309dde647ab549ff2b0bf2cdb6588843fb9c4462ea0168feee605f14b8e4db8c",
+   "seed": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 3,
+    "entrance": "conv",
+    "history_hours": 24,
+    "horizon_hours": 3,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 8
+   },
+   "seed_evaluator_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 8
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 3,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "seed_genotype_canonical_sha256": "cc82cbfadcef88a76da67868f4a3037accdad6e31279bb89c04ee11cd0e24aff"
+  },
+  "36": {
+   "alternative": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 36,
+    "horizon_hours": 36,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   },
+   "alternative_genotype_canonical_sha256": "274056ab86192331cdea934811754b04c8bdada3b0a39b527ec6e238e388e3df",
+   "seed": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 36,
+    "horizon_hours": 36,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 8
+   },
+   "seed_evaluator_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 8
+    },
+    "delta_x": 2,
+    "delta_y": null,
+    "horizon": 36,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "seed_genotype_canonical_sha256": "0d1c2e0ec8b34d2d7f8a4e45a59ba8ec71630202b31b879f9d1b1e9a08aadeca"
+  },
+  "4": {
+   "alternative": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 24,
+    "horizon_hours": 4,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   },
+   "alternative_genotype_canonical_sha256": "23a6b4e9dc4976c0b5a36200fbe1352944a12c5f53449b2356aedc728a40b9a5",
+   "seed": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 24,
+    "horizon_hours": 4,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 8
+   },
+   "seed_evaluator_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 8
+    },
+    "delta_x": 2,
+    "delta_y": null,
+    "horizon": 4,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "seed_genotype_canonical_sha256": "24cb1fb14ead1f9a230d6d397ec9dd193850a4fb98c191bf84ce2c6f8aedd476"
+  },
+  "48": {
+   "alternative": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 48,
+    "horizon_hours": 48,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   },
+   "alternative_genotype_canonical_sha256": "06ac6934be27bdd6b88497f665a5726af110ca628a29b2da793b6669f2eaf8eb",
+   "seed": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 48,
+    "horizon_hours": 48,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 8
+   },
+   "seed_evaluator_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 8
+    },
+    "delta_x": 2,
+    "delta_y": null,
+    "horizon": 48,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "seed_genotype_canonical_sha256": "49761922b5c1dfea735a0848c726872c884b4e29df34ff01a4c6b750d8725512"
+  },
+  "5": {
+   "alternative": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 5,
+    "entrance": "conv",
+    "history_hours": 30,
+    "horizon_hours": 5,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   },
+   "alternative_genotype_canonical_sha256": "2773e9be278795e786a1d606f3ec5dbfd3293b8d27d63686b615a71e0103d5c2",
+   "seed": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 5,
+    "entrance": "conv",
+    "history_hours": 30,
+    "horizon_hours": 5,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 8
+   },
+   "seed_evaluator_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 8
+    },
+    "delta_x": 5,
+    "delta_y": null,
+    "horizon": 5,
+    "input_transform": "identity",
+    "multiplier": 6,
+    "output_mode": "endpoint"
+   },
+   "seed_genotype_canonical_sha256": "c1c9b4babd34c804266e3f0b2e0d17ac2e61a3843f34b5bb497d2013307b15e1"
+  },
+  "6": {
+   "alternative": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 24,
+    "horizon_hours": 6,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   },
+   "alternative_genotype_canonical_sha256": "f01fce7854104fd8ef4d679765777c5b3cc32bb22f808d711584480554a27840",
+   "seed": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 2,
+    "entrance": "conv",
+    "history_hours": 24,
+    "horizon_hours": 6,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 8
+   },
+   "seed_evaluator_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 8
+    },
+    "delta_x": 2,
+    "delta_y": null,
+    "horizon": 6,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "seed_genotype_canonical_sha256": "eff8deb20081ffe97a83c319b8c8438373b79b3be20de402842a55f1c94c15b9"
+  },
+  "60": {
+   "alternative": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 3,
+    "entrance": "conv",
+    "history_hours": 60,
+    "horizon_hours": 60,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   },
+   "alternative_genotype_canonical_sha256": "75ab3fed1e0edce442e3c9691ed8966a75d1a7501d00f511ee27d22ce9d82648",
+   "seed": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 3,
+    "entrance": "conv",
+    "history_hours": 60,
+    "horizon_hours": 60,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 8
+   },
+   "seed_evaluator_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 8
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 60,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "seed_genotype_canonical_sha256": "04e2aff4e9e1f0b84ad239460299ee40cfb6c918880c3dbecda2c2d2dc3eaa5f"
+  },
+  "72": {
+   "alternative": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 3,
+    "entrance": "conv",
+    "history_hours": 72,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     8,
+     4
+    ],
+    "reducer_strides": [
+     1,
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 16
+   },
+   "alternative_genotype_canonical_sha256": "0966313f5ede3bd7b4eb0d7457844dd87337f110c1b9955d88cf665cc28ea583",
+   "seed": {
+    "adapter": "none",
+    "adapter_width": null,
+    "delta_x_hours": 3,
+    "entrance": "conv",
+    "history_hours": 72,
+    "horizon_hours": 72,
+    "input_transform": "identity",
+    "reducer_filters": [
+     4
+    ],
+    "reducer_strides": [
+     1
+    ],
+    "schema": "i6n.genotype.v2.1",
+    "supervision": "endpoint",
+    "trajectory_k": null,
+    "transformer_blocks": 0,
+    "width": 8
+   },
+   "seed_evaluator_genome": {
+    "core": {
+     "adapter": "none",
+     "adapter_width": null,
+     "entrance": "conv",
+     "n_horizons": 1,
+     "reducer_filters": [
+      4
+     ],
+     "reducer_strides": [
+      1
+     ],
+     "transformer_blocks": 0,
+     "width": 8
+    },
+    "delta_x": 3,
+    "delta_y": null,
+    "horizon": 72,
+    "input_transform": "identity",
+    "multiplier": 1,
+    "output_mode": "endpoint"
+   },
+   "seed_genotype_canonical_sha256": "a2d25ce31b2197713dc957157961c94b8517a4791e27d701e5a9a6c2965a5fa4"
+  }
+ },
+ "interpretations": [
+  {
+   "id": "INT-STRIDE",
+   "status": "RULED",
+   "text": "RULED 2026-10-11 (Satoshi): '1 o 2 por capa' is the domain, a free per-reducer 1|2 list; none/progressive/final are named patterns used as labels and seeds. Combinations that lose t or leave fewer than min_final_steps are still rejected (FINAL_STEPS_BELOW_MINIMUM). Plan v1.1 is a strict superset of v1.0.0; every v1.0.0 in-domain genotype_canonical_sha256 is unchanged."
+  },
+  {
+   "id": "INT-REDUCER-ORDER",
+   "text": "non-increasing includes the entrance width (inherited search contract; legacy candidates obey it)."
+  },
+  {
+   "id": "INT-S1-DOWNSAMPLED",
+   "text": "S1 requires dx>=2 ('primero downsampling, despues horario'); hourly grids start at S2."
+  },
+  {
+   "id": "INT-CLASS-WIDTH",
+   "text": "class width limit applies to entrance, reducer and adapter widths."
+  },
+  {
+   "id": "INT-MIN-STEPS",
+   "text": "a reduction may not leave fewer than 2 temporal steps. Inherited from the v1 search contract; stricter than lane A's model rule (t retained, sequence nonempty), i.e. an interpretation of 'vaciar la secuencia', not its literal minimum (lane A review E-A2)."
+  },
+  {
+   "id": "INT-SEED-WINDOW",
+   "text": "seed window = smallest history with a downsampled S1 grid, then its finest dx. Consequence: h=5 seeds at L=30, dx=5 (n=7) because no dx>=2 divides both 5 and 24; see initial_genotypes (lane A review E-A3)."
+  },
+  {
+   "id": "INT-ALTERNATIVE",
+   "text": "small alternative = Conv16 -> Conv8 -> Conv4, same window, no Transformer."
+  },
+  {
+   "id": "INT-CACHE-SLOT",
+   "text": "a verified cache hit occupies a population slot and acts as parent but is not a new candidate or fit."
+  },
+  {
+   "id": "INT-LEGACY",
+   "text": "the 48 legacy endpoint candidates are not injected into the population: their scores come from one inner interval before week 2024-01-07, which overlaps the 2023Q4 inner period."
+  }
+ ],
+ "long_horizons_hours": [
+  18,
+  24,
+  36,
+  48,
+  60,
+  72
+ ],
+ "plan_sha256": "606a355567257ff76810cec2dba3cd2952b0b6c3fe4ad592ea568402d8feda3c",
+ "plan_version": "1.2.0",
+ "prior_mapping": {
+  "artifact": "docs/i6n/swarm/E_LEGACY_MAPPING_v1.json",
+  "sha256": "e3254dd63fa4654dadf5c72b1bcdb2a8a0708dd9540202363e303d3e85c77b3f",
+  "verdict": "48/48 genotypes MAPPED with their own v1 identity; fold_score_reuse NONE for all 48; no refit of the legacy context"
+ },
+ "promotion": [
+  {
+   "class_id": "S1",
+   "opens_at_generation": 0,
+   "requires": [
+    "admitted_cost_pilot"
+   ]
+  },
+  {
+   "class_id": "S2",
+   "opens_at_generation": 1,
+   "requires": [
+    "admitted_cost_pilot",
+    "previous generation of the horizon terminal on all folds"
+   ]
+  },
+  {
+   "class_id": "S3",
+   "opens_at_generation": 2,
+   "requires": [
+    "admitted_cost_pilot",
+    "previous generation of the horizon terminal on all folds",
+    "pilot exercised the 433-sample contract"
+   ]
+  }
+ ],
+ "promotion_notes": "opening a class keeps every earlier gene free (no frozen window); a class not admitted stays closed and the search continues inside the admitted ones",
+ "replicas": 1,
+ "schema": "i6n.search_plan.v1",
+ "seal": {
+  "algorithm": "sha256",
+  "canonical": "json sort_keys, separators (',',':'), allow_nan=False, UTF-8; keys plan_sha256 and seal excluded",
+  "sha256": "606a355567257ff76810cec2dba3cd2952b0b6c3fe4ad592ea568402d8feda3c"
+ },
+ "search": {
+  "algorithm": "DEAP generational, conditional mutation + immigrants",
+  "crossover": false,
+  "direction": "minimize",
+  "exhaustion": "close with a reason; never fill with duplicates",
+  "generations": 3,
+  "immigration": 0.2,
+  "initial_population": "seed (Conv8->Conv4) + small alternative + immigrants from open classes",
+  "mutation": 0.8,
+  "new_candidates_per_horizon": 24,
+  "patience": 3,
+  "population_size": 8,
+  "rng": "random.Random('i6n-search-plan-v1:<seed>:<h>:gen<g>') per horizon and generation",
+  "selection": "tools.selBest over a 3-way tournament for the parent; fitness weights (-1,)",
+  "tolerance": 0.0001
+ },
+ "seed": 6102026,
+ "short_horizons_hours": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  12
+ ],
+ "stop_reasons": [
+  "generation_budget",
+  "candidate_budget",
+  "patience",
+  "admissible_generation_exhausted",
+  "attempt_budget"
+ ],
+ "supersedes": [
+  {
+   "fits_under_superseded_plan": 0,
+   "plan_sha256": "8d8865f1343c6b0efa80edf711393425c3445b953cbb76a4f841a5a1994a77d3",
+   "plan_version": "1.0.0",
+   "reason": "INT-STRIDE ruling: free per-layer strides (superset, identities unchanged)"
+  },
+  {
+   "fits_under_superseded_plan": 0,
+   "plan_sha256": "e7de41f04c8f188606dcaa71baa497e224303bdceaa8c802e71db63045ab788c",
+   "plan_version": "1.1.0",
+   "reason": "INTERFACE_C.2 fold ids carry a clock-state suffix (2023Q1_DCA..2023Q3_DCA, 2023Q4); the plan binds the four 2023 quarters and accepts exactly one lane-C fold id per quarter instead of four literal ids. Distinctness and all-four-complete rules unchanged; no genotype or identity change. Same revision also records the fold-receipt binding (lane A review E-A1) and the E-A2/E-A3 interpretation notes"
+  }
+ ],
+ "training": {
+  "max_epochs": 50,
+  "min_delta": 1e-06,
+  "monitor": "mean TRAIN/inner loss",
+  "patience": 5,
+  "restore_best": true,
+  "seed": 6102026
+ },
+ "weekly_rollout": {
+  "annual_mae": "sum(error)/sum(n) with identical naive; weekly mean also recorded",
+  "arms": [
+   "BEST",
+   "MINIMAL_CONTROL|SMALL_ALTERNATIVE"
+  ],
+  "refit": "weekly, 4 calendar years TRAIN per cutoff, random initial weights by default",
+  "transfer_claim": "the search recipe is NOT transferred as an optimum; each week refits",
+  "weeks": "all eligible 2024 weeks generated from the calendar (lane C); max 2*12*53 = 1272 dispositions"
+ }
+}

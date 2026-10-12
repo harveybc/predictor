@@ -1,0 +1,223 @@
+{
+  "schema": "i6n.swarm_weekly.interface.v1",
+  "lane": "A",
+  "interface_version": "A.3",
+  "status": "A.3 implemented on satoshi/i6n-swarm-A-trajectory-20261011 (merged integration c6f1959b); additive over A.2",
+  "branch": "satoshi/i6n-swarm-A-trajectory-20261011",
+  "evaluator": {
+    "module": "tools.i6n_historical_evaluator",
+    "context_schema": "i6n.historical_evaluator.v2",
+    "freeze": {
+      "argv": [
+        "<python>",
+        "-m",
+        "tools.i6n_historical_evaluator",
+        "freeze",
+        "--config",
+        "<abs cell.json>",
+        "--output",
+        "<abs new dir>",
+        "--experiment",
+        "<experiment id>",
+        "--fold",
+        "<fold/unit id>",
+        "[--score-outer]"
+      ],
+      "effect": "prepares data (no fit), seals endpoint-h TRAIN/inner support for ONE (horizon, fold); writes FROZEN.json and BINDING.json; output dir must not exist",
+      "requires": "cell config training block equal to plan section 2 stopping: max_epochs=50, patience=5, min_delta=1e-6, seed=6102026; endpoint base model (n_horizons=1)",
+      "stdout": "BINDING.json content (i6n_horizon, i6n_support, i6n_evaluation_context, i6n_evaluator_command, i6n_evaluator_timeout)",
+      "label_rule": "experiment and fold match [A-Za-z0-9][A-Za-z0-9._:-]{0,127} (2023Q1, W2024-01-07 ok)"
+    },
+    "evaluate": {
+      "argv": "BINDING.i6n_evaluator_command == [<python>, -m, tools.i6n_historical_evaluator, evaluate]",
+      "stdin": {
+        "config": "canonical effective genome = tools.i6n_search.effective_config(genome); lane E: tools.i6n_search_space.evaluator_config(g)",
+        "generation": "int >= 0 (excluded from identity)",
+        "context": "BINDING.i6n_evaluation_context, unchanged",
+        "support": "BINDING.i6n_support, unchanged",
+        "attempt": "OPTIONAL {index: 1..3, parent_status_sha256: null|sha256, fencing_token: str|null, parent?: {fit_id, attempt_index, fencing_token, state: FAILED|INTERRUPTED, state_sha256: null|sha256}}. Omitted == index 1. index>1 needs the ledger parent (authority, cross-host) or the local parent status digest. Any COMPLETED attempt of the identity on this host is adopted (no refit)."
+      },
+      "stdout": "one JSON shared receipt (below)",
+      "timeout_seconds": "BINDING.i6n_evaluator_timeout (= resources.max_seconds + 120)",
+      "thread_rule": "must be a subprocess main thread; in-thread call or existing ITIMER_REAL refuses before any output",
+      "device_rule": "cell config device cpu|gpu; gpu requires exactly one visible GPU, soft placement disabled, all variables (incl. attention) and outputs on that device; no CPU fallback",
+      "exit": "0 + receipt on success; nonzero with traceback on refusal/failure (STATUS.json FAILED retained)",
+      "bridge_requirement_for_B": "For index>1 put the ledger's previous physical attempt into attempt.parent: fit_id, its idx, its token (as text), its outcome (FAILED|INTERRUPTED), its recorded status_sha256 (or null). Do not send resume_checkpoint."
+    },
+    "status_files": "output_root/candidates/<candidate_identity_sha256>[.attempt<k>]/STATUS.json: RUNNING|COMPLETED|FAILED, progress, elapsed_seconds, eta_seconds (null before first epoch); a RUNNING status whose RUN.lock is free is INTERRUPTED",
+    "cell_config_requirements_for_C": {
+      "schema": "i6n.historical_cell.v1 with exactly its keys (see tools/i6n_historical_cell.py KEYS)",
+      "training": {
+        "max_epochs": 50,
+        "patience": 5,
+        "min_delta": 1e-06,
+        "seed": 6102026,
+        "head_weights": [
+          1.0
+        ],
+        "other keys": "batch_size, learning_rate, weight_decay, huber_delta explicit (plan does not fix them; E/B choose)"
+      },
+      "model": "endpoint base (n_horizons=1); the candidate's core and heads come from request.config",
+      "horizon_hours": "the unit's h; samples/spacing_hours of the base only affect the freeze-time input-availability span",
+      "evaluation_week_id/evaluation_split": "WEEKLY_REFIT: the scored week and DEVELOPMENT split; INNER_FOLD: C's structural next week (must have eligible labels; never scored without --score-outer)",
+      "coverage_mode": "complete",
+      "resources.max_samples": "must admit the class's n (up to 433)",
+      "device": "cpu|gpu; gpu = exactly one visible device, no fallback"
+    },
+    "legacy": "load_request(request) -> (cfg, frozen) 2-tuple kept; v1 contexts (retained endpoint terminals) verify read-only via retained(); evaluate() refuses to fit them (LEGACY_CONTEXT_READ_ONLY)"
+  },
+  "shared_receipt": {
+    "compatible_with": "tools.i6n_search._score (unchanged keys)",
+    "keys": {
+      "status": "ok",
+      "counts": {
+        "train": "int endpoint-h S rows",
+        "inner": "int"
+      },
+      "naive_sums": {
+        "train": "float endpoint naive sum |p_t - p_{t+h}| original price",
+        "inner": "float"
+      },
+      "support_digest": {
+        "train": "sha256",
+        "inner": "sha256"
+      },
+      "error_sums": {
+        "train": "float endpoint sum |p_hat - p_{t+h}|",
+        "inner": "float"
+      },
+      "fitness": "0.5*(err_train/naive_train + err_inner/naive_inner), endpoint h only, this fold only",
+      "metadata": "object; metadata.candidate_receipt is the per-candidate receipt below"
+    }
+  },
+  "candidate_receipt": {
+    "schema_version": "i6n.candidate_receipt.v1",
+    "fields": {
+      "experiment": "str (freeze --experiment)",
+      "fold": "str (freeze --fold)",
+      "candidate_identity_sha256": "sha256 of full evaluator identity (cell config incl. data/clock pins and code digests, effective config, context, support); attempt excluded",
+      "genotype_canonical_sha256": "tools.i6n_search.effective_identity(genome)",
+      "effective_config_sha256": "sha256(json.dumps(request.config, sort_keys=True, separators=(',',':'), allow_nan=False).encode('utf-8')) (E.1 definition)",
+      "cell_config_sha256": "canonical sha256 of the derived cell config actually fitted",
+      "horizon_hours": "int h",
+      "output_mode": "endpoint|trajectory",
+      "delta_x_hours": "int dx",
+      "delta_y_hours": "int dy or null for endpoint",
+      "history_hours": "int L",
+      "samples": "int n = 1 + L/dx (includes t)",
+      "final_steps": "int temporal length after all right-anchored reductions (contains t)",
+      "role": "MANAGEMENT|ENTRY (C1 canonical)",
+      "heads": [
+        {
+          "offset_hours": "int",
+          "head_role": "ENDPOINT|INTERMEDIATE",
+          "status": "TRAINED|NO_TRAIN_SUPPORT|DEGENERATE_TRAIN_SCALE",
+          "train_target_center": "float|null",
+          "train_target_scale": "float|null",
+          "loss_weight": "1.0 for TRAINED else 0.0"
+        }
+      ],
+      "rows": [
+        {
+          "schema_version": "i6n.candidate_receipt.v1",
+          "experiment": "str",
+          "candidate_identity_sha256": "sha256",
+          "fold": "str",
+          "horizon_hours": "int (candidate endpoint h)",
+          "head_offset_hours": "int",
+          "head_role": "ENDPOINT|INTERMEDIATE",
+          "comparison": "true only for ENDPOINT rows; selection uses ENDPOINT TRAIN/INNER via fitness; ENDPOINT VALIDATION is the annual-weekly metric row; INTERMEDIATE rows are diagnostics",
+          "role": "MANAGEMENT|ENTRY (C1 canonical)",
+          "population": "S",
+          "split": "TRAIN|INNER|VALIDATION (VALIDATION only for --score-outer units)",
+          "metric": "ABS_AND_SQUARED_ERROR_SUMS",
+          "unit": "PRICE",
+          "scale": "ORIGINAL_PRICE",
+          "n": "int eligible C1 M pairs of this head/split",
+          "sum_abs_error": "float|null",
+          "sum_sq_error": "float|null",
+          "naive_sum_abs_error": "float|null",
+          "naive_sum_sq_error": "float|null",
+          "c2_receipt_sha256": "sha256|null (null when n==0 or head untrained)",
+          "status": "SCORED|NO_SPLIT_SUPPORT|HEAD_NOT_TRAINED",
+          "c2_role": "management_origin|entry_origin (C2 vocabulary alias)",
+          "support_sha256": "sha256 of canonical JSON of sorted epoch-second origins of this head/split"
+        }
+      ],
+      "stopping": {
+        "rule_sha256": "sha256",
+        "monitor": "train_inner_mean",
+        "max_epochs": 50,
+        "patience": 5,
+        "min_delta": 1e-06,
+        "restore": "lowest_finite_epoch_first_tie",
+        "plan_conformant": "bool",
+        "epochs_completed": "int",
+        "best_epoch": "int",
+        "stop_reason": "patience|max_epochs",
+        "restored_weights_sha256": "sha256"
+      },
+      "seed": 6102026,
+      "cost": {
+        "elapsed_seconds": "float wall in evaluator",
+        "fit_seconds": "float",
+        "parameters": "int",
+        "observed_updates": "int",
+        "train_rows": "int",
+        "inner_rows": "int",
+        "materialized_bytes": "int (cell estimate)",
+        "process_peak_rss_bytes": "int ru_maxrss of evaluator process (not cgroup)",
+        "device": "/CPU:0|/GPU:0"
+      },
+      "attempt": {
+        "index": "1..3",
+        "parent_status_sha256": "sha256|null",
+        "fencing_token": "str|null",
+        "parent": "ledger parent record or null",
+        "lineage_note": "recovery attempts are linked, counted, never independent replicas"
+      },
+      "placement": {
+        "soft_device_placement": false,
+        "variables_on_device": "bool",
+        "attention_variables_on_device": "bool",
+        "output_device": "str"
+      },
+      "outer_metrics": "metadata.outer_metrics (not inside candidate_receipt): endpoint VALIDATION n/mae/mse/naive_mae/naive_mse/skill_mae/unit/scale"
+    },
+    "row_identity_keys": [
+      "experiment",
+      "candidate_identity_sha256",
+      "fold",
+      "horizon_hours",
+      "head_offset_hours",
+      "role",
+      "population",
+      "split",
+      "metric",
+      "unit",
+      "schema_version"
+    ]
+  },
+  "scientific_rules": [
+    "comparison metric is the endpoint h on the frozen fold support; intermediates never change endpoint rows, counts or naive",
+    "each head: own C1 mask (exact elapsed hours t+o), own TRAIN-only target scale, own naive; equal loss weights among TRAINED heads",
+    "an endpoint row is never filtered because an intermediate head is missing; an intermediate-only row may train intermediates but is not an endpoint row",
+    "invalid labels are selected away before residuals: no NaN, no gradient",
+    "TEST (2025+) never opened"
+  ],
+  "changes_from_A1": [
+    "ROLE VALUE CHANGE (requested by Satoshi/C): rows.role is C1 canonical MANAGEMENT|ENTRY; the C2 vocabulary moves to the additive field rows.c2_role (management_origin|entry_origin). No v1 receipts with rows were ever produced (A.1 was not implemented before this), so no legacy alias is needed.",
+    "ADDITIVE: rows.support_sha256 = canonical sha256 of the sorted epoch-second origin list of that head/split (lane C origins_sha256 definition).",
+    "ADDITIVE: freeze --score-outer (python: freeze(..., score_outer=True)) for WEEKLY_REFIT units; FROZEN.json gains 'outer' {plan, population, split_id, count, naive_sum}; receipts gain rows with split=VALIDATION (endpoint comparison=true within the outer split; intermediates diagnostics) and metadata.outer_metrics. Never in fitness, early stopping or error_sums.",
+    "CONFIRMED with E.1: effective_config_sha256 = sha256(json.dumps(request.config, sort_keys=True, separators=(',',':'), allow_nan=False).encode('utf-8')); genotype_canonical_sha256 = tools.i6n_search.effective_identity({k: request.config[k] for k in search._GENOME_KEYS}) == effective_identity(to_evaluator_genome(g)).",
+    "CONFIRMED with C.1: each READY (unit,h) historical_cell.v1 config is passed to freeze --config with --experiment <experiment> --fold <unit_id>; WEEKLY_REFIT units add --score-outer, INNER_FOLD units must NOT (their structural evaluation week is never scored). Config requirements below."
+  ],
+  "changes_from_A2": [
+    "ADDITIVE attempt.parent (ledger lineage authority): {fit_id, attempt_index, fencing_token, state, state_sha256}. fit_id must equal tools.i6n_swarm.common.fit_id of this request (experiment, fold, config, context, support); attempt_index == index-1; state in FAILED|INTERRUPTED; state_sha256 = the parent STATUS digest recorded by the ledger, or null; attempt.fencing_token must increase over parent.fencing_token (numeric when both are integers). With a ledger parent, recovery works on a host that never saw the parent attempt.",
+    "Local parent STATUS is an additional check only when the parent directory exists on this host: it must not be running or COMPLETED, and must match parent_status_sha256 and/or parent.state_sha256 when quoted.",
+    "Without a ledger parent, index>1 still requires parent_status_sha256 and the local parent (A.2 behaviour).",
+    "candidate_receipt.attempt and STATUS.attempt now always carry parent (null for index 1 or A.2-style requests). Additive.",
+    "Request key resume_checkpoint is refused with RESUME_UNSUPPORTED: the evaluator writes no optimizer/RNG/epoch checkpoint, so the ledger must use one linked RECOVERY attempt (plan section 5).",
+    "evaluator.fit_id(request) exposes the same fit_id formula for cross-checks."
+  ]
+}
