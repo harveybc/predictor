@@ -1,6 +1,7 @@
 # Lane C: weekly campaign builder, execution and status
 
 Owned code: `tools/i6n_weekly_campaign.py`, `tools/i6n_weekly_rollup.py`,
+`tools/i6n_weekly_multi_output.py`,
 `tools/i6n_weekly_history_extension.py` and their tests. None of them trains,
 reads prices for the plan, opens TEST rows, downloads, or starts a service.
 
@@ -62,8 +63,12 @@ write a new `plan-vN` instead of editing one.
 
 ## Status
 
-- Current plan `plan-v3`, `plan_sha256 be5750da...`: VERIFIED. It supersedes
-  `plan-v2` (`dd34986a...`); the support of its 54 READY units is unchanged.
+- Current plan `plan-v4`, `plan_sha256 40d3f5a0...`: VERIFIED. It supersedes
+  `plan-v3` (`be5750da...`); supports are unchanged, and only the 3 DCA fold
+  split ids carry the assumption sha (E-C3).
+- Multi-output template: `evidence_C/MULTI_OUTPUT_ARMS.template.json`, 212 arms,
+  WAIT_DEPENDENCY until finalists exist (`python -m tools.i6n_weekly_multi_output
+  build|resolve`).
 - 53/53 weekly units READY: 633 (week, h) dispositions per arm, 1,266 for
   two arms (ceiling 1,272).
 - 2023Q4 READY on the certified primary source. 2023Q1_DCA, 2023Q2_DCA and

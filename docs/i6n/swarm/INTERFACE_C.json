@@ -1,13 +1,14 @@
 {
   "schema": "i6n.swarm_weekly.interface.v1",
   "lane": "C",
-  "interface_version": "C.2",
+  "interface_version": "C.3",
   "status": "PUBLISHED",
   "branch": "satoshi/i6n-swarm-C-weekly-20261011",
   "aligned_with": {
     "A": "INTERFACE_A.2 @abddeb73: freeze --fold <fold_id>; WEEKLY_REFIT scored on the outer week via freeze --score-outer, INNER_FOLD never; receipt rows.support_sha256 = C origins_sha256",
     "B": "INTERFACE_B.1 @6a77d424 assumed shapes; differences listed in views_for_B",
-    "roles": "canonical roles are C1 ENTRY/MANAGEMENT; A maps management_origin/entry_origin to them"
+    "roles": "canonical roles are C1 ENTRY/MANAGEMENT; A maps management_origin/entry_origin to them",
+    "E_review": "REVIEW_E_OF_C @ef080611: E-C1 fixed (roll-up keyed by arm), E-C2 fixed (429 retry bound to named date and count), E-C3 fixed (assumption sha in DCA cell split id)"
   },
   "builder": {
     "module": "tools.i6n_weekly_campaign",
@@ -75,23 +76,24 @@
   },
   "annual_rollup": {
     "module": "tools.i6n_weekly_rollup",
-    "accumulator": "AnnualAccumulator(experiment, candidate_identity_sha256, horizon_hours, role, expected={unit_id: {n, origins_sha256}} from PLAN units support[fit_role][h]['VALIDATION'], split='VALIDATION', population='S')",
-    "row_requirements": "A candidate_receipt rows (row_identity_keys) with fold=unit_id, split=VALIDATION, role=MANAGEMENT (C1), n equal to the frozen support, support_sha256 = the unit's origins_sha256; zero-support weeks only as status NO_SPLIT_SUPPORT",
+    "accumulator": "AnnualAccumulator(experiment, arm_sha256=<receipt header genotype_canonical_sha256 (or effective_config_sha256 with arm_key)>, arm_role=BEST|MINIMAL_CONTROL|SMALL_ALTERNATIVE, horizon_hours, role=MANAGEMENT, expected={unit_id: {n, origins_sha256}} from PLAN units support[fit_role][h]['VALIDATION'], split='VALIDATION', population='S')",
+    "row_requirements": "add(row, arm_sha256=<header arm>, attempt_index=<receipt attempt.index>) or add_receipt(receipt): A candidate_receipt rows with fold=unit_id, split=VALIDATION, role=MANAGEMENT, n equal to the frozen support, support_sha256 = the unit's origins_sha256; each week's candidate_identity_sha256 is DIFFERENT and kept per row; the lowest attempt per week is the canonical measurement, higher attempts are history; the year is ANNUAL_COMPLETE when every supported week has a canonical measurement; zero-support weeks only as NO_SPLIT_SUPPORT",
     "metric": "MAE = sum(sum_abs_error)/sum(n); naive pooled over identical rows; weekly mean only as weekly_mean_mae_diagnostic; INCOMPLETE (no score) while any supported week is missing",
     "compare": "compare_annual(a, b) requires identical per-week n and naive sums (NAIVE_MISMATCH otherwise)",
     "scope_guard": "assert_comparable refuses INNER_FOLD vs ANNUAL_WEEKLY_REFIT and cross-horizon comparisons",
-    "state": "to_json()/from_json() sealed state for restart; duplicates idempotent, conflicting duplicates refused"
+    "state": "to_json()/from_json() sealed state for restart; duplicates idempotent, conflicting duplicates refused",
+    "breaking_change_C3": "the C.2 constructor keyword candidate_identity_sha256 is refused with RollupError LEGACY_IDENTITY_KEY; B tools/i6n_swarm/collect.annual_rollups must pass arm_sha256=<genotype>, arm_role and add(row, arm_sha256=..., attempt_index=...)"
   },
   "dependencies_declared": [
     "2023Q1-Q3 run on the EXTENDED successor under DECLARED clock assumption DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01 (sha256 f851cea1...): planned case 2019-10-28 INCONCLUSIVE in 4 attempt reports (last: one authorized single-case attempt, HTTP 429); no further retry"
   ],
   "real_plan": {
-    "plan_sha256": "be5750da0177ecd3a47d73b2682a22964e45d1a5c42b6209903022215bc9169f",
-    "plan_file_sha256": "8f2aef32786f3918d3f8d5f71650545dcf3cb8010dcf671f8edc997a27956590",
-    "superseded_plan_sha256": "dd34986a46be92a0b3986be1be9b52081e922f266d22f5dde1f8f037b10ce9e7 (plan-v2; support of its 54 READY units unchanged in v3)",
-    "views_redacted": "docs/i6n/swarm/evidence_C/VIEWS.redacted.json (sha256 899912a0dd591e29f4d6890a3088052108ea522a3592a241f6bedff78ee46520)",
+    "plan_sha256": "40d3f5a0254dcc22122357ef89f3db8cad2fbbbc98baffaa2ea235f7b7704fe2",
+    "plan_file_sha256": "c5155b54240cf581b8f9b84c84682d3f1454d9bc8a2e21fb2777ef4d14177cea",
+    "superseded_plan_sha256": "be5750da0177ecd3a47d73b2682a22964e45d1a5c42b6209903022215bc9169f (plan-v3; 54/57 units byte-identical, all supports identical; the 3 DCA folds changed only their structural split id, E-C3)",
+    "views_redacted": "docs/i6n/swarm/evidence_C/VIEWS.redacted.json (sha256 91045243528540e2916c90af636a9c2b765fd32cadf025dee6777c955e98a81a)",
     "units_redacted": "docs/i6n/swarm/evidence_C/WEEKLY_UNITS.redacted.json",
-    "private_root": "<campaign root>/plan-v3 (PLAN.json, VIEWS.private.json, cells/*.json; not in git)",
+    "private_root": "<campaign root>/plan-v4 (PLAN.json, VIEWS.private.json, cells/*.json; not in git)",
     "primary_input_sha256": "56dbc22e182e5e720d4415f6998206065a506081941c3c2e76d5f8ed6c076031",
     "extended_input_sha256": "bf8587b15d372c7f6bbbeffaa549e50f4da51f0299473be790f12e555bd4f049",
     "extended_clock_sha256": "43103443d57645024c0aed3c868be4090caccf3e929b73a54981839506ef156f",
@@ -106,5 +108,39 @@
     },
     "cell_configs": 681,
     "cell_configs_authenticated_by_historical_cell": 681
-  }
+  },
+  "multi_output": {
+    "module": "tools.i6n_weekly_multi_output",
+    "build": [
+      "<python>",
+      "-m",
+      "tools.i6n_weekly_multi_output",
+      "build",
+      "--plan",
+      "<plan dir>/PLAN.json",
+      "--e-plan-sha256",
+      "<E plan sha256>",
+      "--output",
+      "<new file>"
+    ],
+    "resolve": [
+      "<python>",
+      "-m",
+      "tools.i6n_weekly_multi_output",
+      "resolve",
+      "--manifest",
+      "<template>",
+      "--finalists",
+      "<finalists.json>",
+      "--output",
+      "<new file>"
+    ],
+    "schema": "i6n.multi_output_arms.v1 {state: WAIT_DEPENDENCY|PARTIAL|READY, cause, families:{short:[2,3,4,5,6,12], long:[18,24,36,48,60,72]}, budget:{max_dispositions:212, planned_dispositions, recipes_per_family:2}, recipe_rule, transfer_claim, excluded_weeks, arms:[...], recipes, manifest_sha256 (+ template_sha256, finalists_sha256 once resolved)}",
+    "arm": "{arm_id: MO-<FAMILY>-<R1|R2>-<unit_id>, family: short|long, recipe_slot, recipe_role, week_id: <C weekly unit id W<sunday>, used as fold>, unit_sha256, cutoff_utc, release_at_utc, horizons:[family], heads:{h:{state: READY|NO_ELIGIBLE_ROWS, cause, TRAIN/INNER/VALIDATION:{n, origins_sha256}}}, state: WAIT_DEPENDENCY|READY, cause, recipe: null|{role, source_horizon, search_candidate_sha256, genotype_canonical_sha256, inner_fold_fitness}, config: null, binding: null}",
+    "finalists_input": "{str(h): {BEST: {search_candidate_sha256, genotype_canonical_sha256, fitness, selection_basis: INNER_FOLD_FITNESS}, MINIMAL_CONTROL: {...}}} for all 12 horizons; any other selection_basis is refused (no selection on 2024 validation)",
+    "rule": "per family: anchor = horizon with the lowest BEST inner-fold fitness (tie -> shorter h); R1 = BEST(anchor), R2 = MINIMAL_CONTROL(anchor); a family with incomplete finalists stays WAIT_DEPENDENCY (FINALISTS_INCOMPLETE: h..)",
+    "for_B": "pin the manifest as cfg.multi_output; pass to the multi_output DAG node ONLY arms with state READY; until then the node is WAIT_DEPENDENCY. config (multi-output effective config adapted from the recipe) is E/A's and binding (freeze) is B's at activation; never a transferred optimum",
+    "real_template": "docs/i6n/swarm/evidence_C/MULTI_OUTPUT_ARMS.template.json (sha256 a4c52607230c2a5a6d2f73339fb561a4ad97cd65a6c57aac1dd444e972c2e237, manifest_sha256 803b3d7208ed654a3efcf7b07cd99d3d89db7d53d229c0c8a75bdaa5dff030d2): 212 arms, WAIT_DEPENDENCY FINALISTS_UNRESOLVED, no excluded week"
+  },
+  "clock_429_rule": "tools.i6n_external_clock_audit_v2_resume: a 429 case is retried only as a single named --only-date in RATE_LIMITED_RETRIES {2019-10-28: 1}; the chain already has 2 HTTP 429 outcomes for 2019-10-28, so a further attempt is refused RATE_LIMIT_RETRY_EXHAUSTED (verified on the real chain, no request made)"
 }

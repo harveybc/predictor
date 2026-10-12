@@ -128,3 +128,27 @@ def test_rate_limited_case_with_numeric_fields_is_final():
     prior = prior_transport()
     prior["cases"][17].update(reason=RATE_LIMITED, available_endpoints=24)
     assert not resume.transport_failure(prior["cases"][17])
+
+
+def test_rate_limited_retry_is_bound_to_the_named_date_and_attempt_count():
+    assert resume.rate_limited_retry_admitted("2019-10-28", prior_rate_limited=1)
+    assert not resume.rate_limited_retry_admitted("2019-10-28", prior_rate_limited=2)
+    assert not resume.rate_limited_retry_admitted("2020-10-26", prior_rate_limited=1)
+    prior = prior_transport()
+    prior["cases"][17].update(reason=RATE_LIMITED)
+    with pytest.raises(ValueError, match="RATE_LIMIT_RETRY_EXHAUSTED"):
+        resume.pending_cases(prior, ["2019-10-28"], rate_limited_history={"2019-10-28": 2})
+    assert [c["date"] for c in resume.pending_cases(prior, ["2019-10-28"],
+                                                    rate_limited_history={"2019-10-28": 1})] == ["2019-10-28"]
+    other = prior_transport()
+    other["cases"][17].update(status="PASS")
+    other["cases"][18].update(status="INCONCLUSIVE", dukascopy_sha256=None, reason=RATE_LIMITED)
+    with pytest.raises(ValueError, match="RATE_LIMIT_DATE_NOT_ADMITTED"):
+        resume.pending_cases(other, ["2020-10-26"])
+
+
+def test_rate_limited_history_counts_every_report_of_the_chain():
+    reports = [{"cases": [{"date": "2019-10-28", "reason": RATE_LIMITED}]},
+               {"cases": [{"date": "2019-10-28", "reason": "ReadTimeout: x"}]},
+               {"cases": [{"date": "2019-10-28", "reason": RATE_LIMITED}]}]
+    assert resume.count_rate_limited(reports) == {"2019-10-28": 2}

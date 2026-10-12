@@ -51,8 +51,42 @@ def fetch_holdout(session, day, deadline, trace):
 RATE_LIMITED = "ValueError: HTTP 429; no retry, alternate host or further redirect"
 
 
+#: Dates whose 429 may be retried, and how many single-case retries after the first 429.
+#: 2019-10-28: one owner-authorized retry (also 429). It is used, the span is a declared
+#: assumption (DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01), so a further attempt is refused.
+RATE_LIMITED_RETRIES = {"2019-10-28": 1}
+
+
 def rate_limited(case):
     return case.get("reason") == RATE_LIMITED
+
+
+def count_rate_limited(reports):
+    """Number of HTTP 429 outcomes per date across a report chain (prior + ancestors)."""
+    counts = {}
+    for report in reports:
+        for case in report.get("cases", []):
+            if rate_limited(case):
+                counts[case["date"]] = counts.get(case["date"], 0) + 1
+    return counts
+
+
+def rate_limited_retry_admitted(day, prior_rate_limited):
+    """True only for a named date whose retry budget is not yet used (first 429 is not a retry)."""
+    return day in RATE_LIMITED_RETRIES and prior_rate_limited - 1 < RATE_LIMITED_RETRIES[day]
+
+
+def chain_reports(prior_root):
+    """The prior report and every ancestor bundled in its report_chain (read-only)."""
+    reports = [json.loads(v1._read(prior_root / "REPORT.json", 2_000_000))]
+    chain = prior_root / "report_chain"
+    if chain.is_dir():
+        for path in sorted(chain.glob("*.json")):
+            raw = v1._read(path, 2_000_000)
+            if source.digest(raw) != path.stem:
+                raise ValueError("ancestor report SHA-256 mismatch")
+            reports.append(json.loads(raw))
+    return reports
 
 
 def transport_failure(case):
@@ -65,7 +99,7 @@ def transport_failure(case):
         reason == "ValueError: expected HTTP 200, got 301; no retry") or reason == RATE_LIMITED
 
 
-def pending_cases(prior, only_dates=None):
+def pending_cases(prior, only_dates=None, rate_limited_history=None):
     expected = [d.isoformat() for d in v1.planned_dates() if d.isoformat() != "2019-01-21"]
     expected += [d.isoformat() for d in v2.holdout_dates()]
     cases = prior["cases"]
@@ -80,6 +114,15 @@ def pending_cases(prior, only_dates=None):
         raise ValueError("pending dates differ from the explicit network authorization")
     if any(rate_limited(c) for c in pending) and (only_dates is None or len(pending) != 1):
         raise ValueError("a rate-limited case needs an explicit single-case --only-date authorization")
+    history = rate_limited_history if rate_limited_history is not None else count_rate_limited([prior])
+    for case in pending:
+        if not rate_limited(case):
+            continue
+        if case["date"] not in RATE_LIMITED_RETRIES:
+            raise ValueError(f"RATE_LIMIT_DATE_NOT_ADMITTED: {case['date']}")
+        if not rate_limited_retry_admitted(case["date"], history.get(case["date"], 0)):
+            raise ValueError(f"RATE_LIMIT_RETRY_EXHAUSTED: {case['date']} already has "
+                             f"{history.get(case['date'], 0)} HTTP 429 outcomes in the chain")
     return pending
 
 
@@ -97,7 +140,7 @@ def run(annual_root, prior_root, output, *, only_dates=None, wall_seconds=260, c
         raise ValueError("annual manifest pin changed")
     if prior["clock_policy"] != v2.CLOCK_POLICY or prior["status"] != "INCONCLUSIVE":
         raise ValueError("expected the inconclusive EU-clock V2 attempt")
-    pending = pending_cases(prior, only_dates)
+    pending = pending_cases(prior, only_dates, rate_limited_history=count_rate_limited(chain_reports(prior_root)))
     if any(m["status"] != "PASS" for m in prior["annual_mapping"]):
         raise ValueError("annual mapping failed")
     output.mkdir(mode=0o700, parents=True, exist_ok=False)

@@ -387,6 +387,9 @@ def test_declared_clock_assumption_source_is_carried_in_fold_identity():
         assert f["horizons"]["12"]["state"] == "READY_WITH_DECLARED_CLOCK_ASSUMPTION"
         assert f["support"]["MANAGEMENT"]["12"]["TRAIN"]["n"] > 10000
         assert f["primary_data"]["state"] == "WAIT_DEPENDENCY"
+        # E-C3: the assumption sha reaches the cell config (and so A's identity) directly
+        split_id = wc.cell_overlay(p, f, 12)["evaluation_split"]["split_id"]
+        assert split_id == f"STRUCTURAL_UNSCORED_{q}_DCA_DCA_TEST_" + "e" * 64
     assert all(u["data_source"] == "PRIMARY" for u in p["units"] if u["kind"] == "WEEKLY_REFIT")
     same = plan(cal=cal, observed=primary, history_years=4, fold_year=2023)
     a = {u["unit_id"]: u["support"] for u in p["units"] if u["kind"] == "WEEKLY_REFIT"}

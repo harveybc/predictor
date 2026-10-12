@@ -1,4 +1,4 @@
-# Lane C interface (C.2)
+# Lane C interface (C.3)
 
 Machine-readable contract: `INTERFACE_C.json`. Summary for A, B, D and E:
 
@@ -28,3 +28,9 @@ Machine-readable contract: `INTERFACE_C.json`. Summary for A, B, D and E:
   and cross-horizon comparisons.
 - **Assumption:** 2023Q1-Q3 use the extended successor under declared clock
   assumption `DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01` (see `C_RETURN.md`).
+- **C.3:** the annual roll-up is keyed by arm (`arm_sha256` = receipt-header
+  genotype, plus `arm_role`). Weekly candidate identities are kept per row, and
+  the lowest attempt is canonical. The legacy keyword is refused, so B's
+  `collect` must adapt. The multi-output arms manifest
+  (`tools.i6n_weekly_multi_output`) is a template of 212 arms; B passes only
+  READY arms after finalist resolution.
