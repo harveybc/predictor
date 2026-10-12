@@ -42,7 +42,7 @@ MIGRATION_ID = "doin_0001"
 TABLE = "gov_doin_projection"
 EVENT_TABLE = "gov_doin_projection_event"
 ALL_TABLES = (TABLE, EVENT_TABLE)
-VIEWS = ("gov_doin_projection_current", "gov_doin_metric_canonical")
+VIEWS = ("gov_doin_projection_current", "gov_doin_metric_canonical", "gov_doin_candidate_decision_current")
 ALL_RELATIONS = ALL_TABLES + VIEWS
 
 IDENTITY_FIELDS = ("experiment", "candidate_identity_sha256", "fold", "horizon_hours",
@@ -123,6 +123,19 @@ def ddl(qualified: Callable[[str], str] = lambda n: n, dialect: str = "duckdb") 
         f" JOIN {t('gov_metric')} m ON m.report_sha256 = c.report_sha256"
         " WHERE c.state = 'PROJECTED'"
     )
+    # Search outcomes are append-only decision events (fold DECISION-<seq>, metric SEARCH_OUTCOME,
+    # outcome in `status`). The current outcome per candidate is the latest PROJECTED decision of
+    # its (experiment, horizon); earlier decisions stay in gov_doin_metric_canonical as history.
+    decision_view = (
+        "SELECT c.experiment, c.horizon_hours, c.candidate_identity_sha256 AS search_candidate_sha256,"
+        " c.status AS outcome, c.fold AS decision_fold, m.value AS won, c.block_hash, c.report_sha256"
+        f" FROM {t('gov_doin_projection_current')} c"
+        f" JOIN {t('gov_metric')} m ON m.report_sha256 = c.report_sha256 AND m.metric = 'won'"
+        " WHERE c.state = 'PROJECTED' AND c.metric = 'SEARCH_OUTCOME'"
+        f" AND c.fold = (SELECT MAX(c2.fold) FROM {t('gov_doin_projection_current')} c2"
+        " WHERE c2.state = 'PROJECTED' AND c2.metric = 'SEARCH_OUTCOME'"
+        " AND c2.experiment = c.experiment AND c2.horizon_hours = c.horizon_hours)"
+    )
     return [
         f"CREATE TABLE IF NOT EXISTS {t(TABLE)} ({','.join(cols)})",
         f"CREATE TABLE IF NOT EXISTS {t(EVENT_TABLE)} ("
@@ -134,6 +147,7 @@ def ddl(qualified: Callable[[str], str] = lambda n: n, dialect: str = "duckdb") 
         f"CREATE INDEX IF NOT EXISTS gov_doin_event_key_idx ON {t(EVENT_TABLE)} (projection_key)",
         f"{create_view} {t('gov_doin_projection_current')} AS {current}",
         f"{create_view} {t('gov_doin_metric_canonical')} AS {canonical_view}",
+        f"{create_view} {t('gov_doin_candidate_decision_current')} AS {decision_view}",
     ]
 
 

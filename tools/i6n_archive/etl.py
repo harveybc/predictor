@@ -64,10 +64,15 @@ class ArchiveETL:
         chain_tx_ids = {tx.id for b in blocks for tx in b.transactions}
         tip = blocks[-1]
         self._revoke(canonical_hashes, chain_tx_ids, tip, summary)
+        done = self.outbox.done_keys()  # watermark: work is proportional to new references
+        summary["skipped_done"] = 0
         for ref in refs:
             if ref.finality != FINALIZED:
                 continue
             summary["finalized"] += 1
+            if (ref.tx_id, ref.block_hash) in done:
+                summary["skipped_done"] += 1
+                continue
             try:
                 self._project(ref, tip, summary)
             except SystemExit:
@@ -83,6 +88,7 @@ class ArchiveETL:
             detail = {"reason": "REORG", "observed_tip_hash": tip.hash, "observed_tip_height": tip.header.index}
             self.sink.revoke({"schema": SCHEMA_REVOKE, "block_hash": block_hash, **detail})
             self.outbox.mark_block_revoked(block_hash, detail)
+            self.outbox.forget_block(block_hash)
             summary["revoked_blocks"].append(block_hash)
         for item in self.outbox.items():
             final = item["states"]["CHAIN_FINALIZED"]
@@ -99,16 +105,11 @@ class ArchiveETL:
 
     # -- projection ----------------------------------------------------------------------------
     def _item_for(self, resolved: Any, mode: str) -> dict | None:
-        for item in self.outbox.items():
-            if item["body_digest"] == resolved.body_digest and item["archive_mode"] == mode:
-                return item
-        return None
+        return self.outbox.item_by_body(resolved.body_digest, mode)
 
     def _project(self, ref: Any, tip: Any, summary: dict) -> None:
         resolved = self.archive.resolve(ref.reference)
-        if resolved.payload_schema != records.ROUND_SCHEMA:
-            raise ArchiveRefusal("PAYLOAD_SCHEMA")
-        units = records.projection_units(resolved.payload)
+        units = records.units_for(resolved.payload_schema, resolved.payload)
         mode = ref.reference["archive_mode"]
         item = self._item_for(resolved, mode)
         if item is not None and not item["states"]["CHAIN_FINALIZED"]:
@@ -144,6 +145,7 @@ class ArchiveETL:
         if self.crash_before_ack:
             raise SystemExit("simulated power loss before readback/ACK")
         verified_rows = self._readback(reports)
+        self.outbox.mark_done(ref.tx_id, ref.block_hash, item["item_id"] if item else None, len(reports))
         if item is not None:
             self.outbox.set_state(item["item_id"], "OLAP_READBACK_VERIFIED", {
                 "reports": len(reports), "metric_rows": verified_rows, "block_hash": ref.block_hash,

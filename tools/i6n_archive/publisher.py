@@ -55,14 +55,28 @@ class ArchivePublisher:
 
     # -- B calls this -----------------------------------------------------------------------
     def record_candidate(self, candidate: dict, fold_receipts: list[dict]) -> dict:
+        """Every candidate at its terminal disposition, with every physical attempt's receipt.
+        The search outcome is NOT part of it: see ``record_decision``."""
         payload = records.round_payload(candidate, fold_receipts)
+        return self._record(records.ROUND_SCHEMA, payload, payload["search_candidate_sha256"])
+
+    def record_decision(self, decision: dict) -> dict:
+        """Append one search outcome event (winner/finalist/control) for (experiment, plan, h)."""
+        payload = records.validate_decision(decision)
+        key = f"DECISION:{payload['plan_sha256'][:16]}:h{payload['horizon_hours']}:{payload['sequence']}"
+        return self._record(records.DECISION_SCHEMA, payload, key)
+
+    def _record(self, payload_schema: str, payload: dict, key: str) -> dict:
+        units = records.units_for(payload_schema, payload)
+        row_reports = {u["report"]["tags"]["row_key_sha256"]: u["report"]["report_sha256"] for u in units}
         external = build_external_body(domain_id=self.domain_id, producer_peer_id=self.producer_peer_id,
-                                       payload_schema=records.ROUND_SCHEMA, payload=payload)
+                                       payload_schema=payload_schema, payload=payload)
         created = self.outbox.insert_item(
             item_id=external.body_digest, experiment=payload["experiment"],
-            search_candidate_sha256=payload["search_candidate_sha256"], archive_mode=self.mode,
+            search_candidate_sha256=key, archive_mode=self.mode,
             body=external.body, manifest=external.manifest, body_digest=external.body_digest,
-            manifest_digest=external.manifest_digest, tx_timestamp=self._clock().isoformat())
+            manifest_digest=external.manifest_digest, tx_timestamp=self._clock().isoformat(),
+            row_reports=row_reports)
         item = self.outbox.item(external.body_digest)
         return {"item_id": item["item_id"], "body_digest": external.body_digest,
                 "manifest_digest": external.manifest_digest, "created": created, "states": item["states"]}
