@@ -1,0 +1,12 @@
+{
+ "C1_same_arm_two_weekly_refits_A_identities": {
+  "W2024-01-07": "ADDED",
+  "W2024-01-14": "REFUSED IDENTITY_MISMATCH"
+ },
+ "C1_annual_state": "INCOMPLETE",
+ "C2_429_is_transport_failure_any_date": [
+  true,
+  true
+ ],
+ "C2_attempt_cap_in_code": false
+}
