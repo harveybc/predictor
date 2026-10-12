@@ -1,0 +1,32 @@
+{
+ "counts": {
+  "NOT_APPLICABLE": 0,
+  "PROVEN_LEAK": 9,
+  "PROVEN_SAFE": 67,
+  "RISK_UNRESOLVED": 15
+ },
+ "elapsed_seconds": 485.1,
+ "findings": 91,
+ "phase": "done",
+ "phase_seconds": {
+  "alignment": 469.6,
+  "archive": 464.3,
+  "data": 0.3,
+  "features": 0.6,
+  "features.availability": 0.6,
+  "features.done": 460.2,
+  "folds": 460.2,
+  "folds.2023Q1_DCA": 460.2,
+  "folds.2023Q2_DCA": 461.2,
+  "folds.2023Q3_DCA": 462.3,
+  "folds.2023Q4": 463.3,
+  "identity": 0.0,
+  "local_rows": 464.3,
+  "write": 485.1
+ },
+ "schema": "i6n.causal_trace_audit.v1.status",
+ "state": "COMPLETE",
+ "terminal": "COMPLETE",
+ "updated_utc": "2026-10-12T21:42:02.958141+00:00",
+ "worst": "PROVEN_LEAK"
+}

@@ -1,0 +1,237 @@
+{
+  "schema": "i6n.causal_trace_audit.spec.v1",
+  "declared_utc": "2026-10-12T23:40:00Z",
+  "declared_before_any_result": true,
+  "object": {
+    "predictor_commit": "cbbe1f168c0a6cc189abbd1e8b297e6bd093f951",
+    "plan_sha256": "1b83490b54af927033a93105e3be85b8b7323c89672b147745bbeb1d3efee983",
+    "h4_config_sha256": "fb70328d8b057f110006e0713d304b5c42fec5419a8dcee35527add6ca19a4cf",
+    "champion_genotype_sha256": "356e4accee09059a45b7c6863f953ae8aeeedd298f5725efd489589200733535",
+    "advertised_fitness": -0.010586766321054819,
+    "horizon_hours": 4,
+    "folds": [
+      "2023Q1_DCA",
+      "2023Q2_DCA",
+      "2023Q3_DCA",
+      "2023Q4"
+    ],
+    "feature_count": 20,
+    "test_boundary": "2025-01-01T00:00:00+00:00"
+  },
+  "paths": {
+    "h4_config": "config/h4/<island>/doin_node.json",
+    "active_config": "active/<island>/doin_node.json",
+    "sequence_manifest": "config/MANIFEST.json",
+    "chain_db": "doin/h4/<island>/chain.db",
+    "checkpoint": "state/h4/<island>/checkpoint.json",
+    "archive_outbox": "archive/h4/<island>/*/outbox.sqlite",
+    "parent_input": "i6e/statistical72_v1/INPUT.npz",
+    "parent_design": "i6e/statistical72_v1/DESIGN.json",
+    "fs4_test_freeze": "fs4/preliminary/wave2_successor/weekly/TEST_FREEZE.json",
+    "fs4_weekly_plan": "fs4/preliminary/wave2_successor/weekly/WEEKLY_PLAN.json",
+    "i6b_manifest": "i6b/eurusd/train_selected20.manifest.json",
+    "ps1_batches": [
+      "ps1/batch_001/features_train.parquet",
+      "ps1/batch_002/features_train.parquet",
+      "ps1/batch_003/features_train.parquet"
+    ]
+  },
+  "tolerances": {
+    "mutation": "exact",
+    "digest": "exact",
+    "identity_equality": "exact",
+    "metric_replay": "exact",
+    "metric_replay_secondary_report": {
+      "method": "math.isclose",
+      "rel_tol": 1e-12,
+      "abs_tol": 1e-12,
+      "reason": "summation order of float64 sums; reported beside the exact result, never substitutes it"
+    },
+    "forward_replay_gpu_to_cpu": {
+      "rtol": 0.0001,
+      "atol": 1e-06,
+      "use": "DIAGNOSTIC_ONLY; GPU kernels versus CPU kernels is not numeric serialization, so no PROVEN_SAFE verdict rests on it"
+    },
+    "transform_identification": {
+      "abs": 1e-09,
+      "use": "IDENTIFICATION_ONLY of which closed formula produced a retained column; not a mutation tolerance"
+    },
+    "vendor_identification": {
+      "abs": 1e-06,
+      "use": "IDENTIFICATION_ONLY against an independent vendor's bars"
+    }
+  },
+  "availability_bounds_hours_after_source_date_utc_midnight": {
+    "comment": "A feature value dated d may not be used by any origin earlier than d 00:00 UTC + bound. STRICT bounds follow the source's own publication/close; LOOSE bound 0 means 'not before the calendar day of its own date'. Any use earlier than the STRICT bound is a later-observation use.",
+    "loose": 0,
+    "strict": {
+      "fred.inflation_expectations.t5yie.level": 20,
+      "fred.rates.dgs3mo.diff_5d": 20,
+      "fred.rates.dgs5.level": 20,
+      "fred.rates.dgs7.logret_5d": 20,
+      "fred.rates.dprime.logret_5d": 0,
+      "fred.stress.stlfsi4.level": 0,
+      "yh.eem.logret_5d": 20,
+      "yh.iyr.logret_1d": 20,
+      "yh.kc_f.logret_1d": 17,
+      "yh.n225.logret_1d": 6,
+      "yh.si_f.logret_1d": 17,
+      "yh.slv.logret_1d": 20,
+      "yh.vnq.logret_1d": 20,
+      "yh.xlc.logret_1d": 20,
+      "yh.xlre.logret_1d": 20
+    }
+  },
+  "feature_sources": {
+    "fred.inflation_expectations.t5yie.level": {
+      "kind": "fred",
+      "path": "macro_economic/fred/inflation_expectations/t5yie/observations.parquet",
+      "formula": "level"
+    },
+    "fred.rates.dgs3mo.diff_5d": {
+      "kind": "fred",
+      "path": "macro_economic/fred/rates/dgs3mo/observations.parquet",
+      "formula": "diff_5"
+    },
+    "fred.rates.dgs5.level": {
+      "kind": "fred",
+      "path": "macro_economic/fred/rates/dgs5/observations.parquet",
+      "formula": "level"
+    },
+    "fred.rates.dgs7.logret_5d": {
+      "kind": "fred",
+      "path": "macro_economic/fred/rates/dgs7/observations.parquet",
+      "formula": "logret_5"
+    },
+    "fred.rates.dprime.logret_5d": {
+      "kind": "fred",
+      "path": "macro_economic/fred/rates/dprime/observations.parquet",
+      "formula": "logret_5"
+    },
+    "fred.stress.stlfsi4.level": {
+      "kind": "fred",
+      "path": "macro_economic/fred/stress/stlfsi4/observations.parquet",
+      "formula": "level"
+    },
+    "fx.gbpusd.logret_1h": {
+      "kind": "fx_hourly",
+      "path": "market_data/forex/g10/gbpusd/1h.parquet",
+      "formula": "logret_1h"
+    },
+    "px.close_loc": {
+      "kind": "fx_hourly",
+      "path": "market_data/forex/g10/eurusd/1h.parquet",
+      "formula": "close_loc"
+    },
+    "px.log_co": {
+      "kind": "fx_hourly",
+      "path": "market_data/forex/g10/eurusd/1h.parquet",
+      "formula": "log_co"
+    },
+    "px.rv5": {
+      "kind": "fx_hourly",
+      "path": "market_data/forex/g10/eurusd/1h.parquet",
+      "formula": "rv5"
+    },
+    "rg.atr_ratio": {
+      "kind": "fx_hourly",
+      "path": "market_data/forex/g10/eurusd/1h.parquet",
+      "formula": "unknown"
+    },
+    "yh.eem.logret_5d": {
+      "kind": "yahoo",
+      "path": "market_data/equities/etfs/eem/daily.parquet",
+      "formula": "logret_5"
+    },
+    "yh.iyr.logret_1d": {
+      "kind": "yahoo",
+      "path": "market_data/equities/etfs/iyr/daily.parquet",
+      "formula": "logret_1"
+    },
+    "yh.kc_f.logret_1d": {
+      "kind": "yahoo",
+      "path": "market_data/commodities/agriculture/kc_f/daily.parquet",
+      "formula": "logret_1"
+    },
+    "yh.n225.logret_1d": {
+      "kind": "yahoo",
+      "path": "market_data/equities/global_indices/n225/daily.parquet",
+      "formula": "logret_1"
+    },
+    "yh.si_f.logret_1d": {
+      "kind": "yahoo",
+      "path": "market_data/commodities/precious_metals/si_f/daily.parquet",
+      "formula": "logret_1"
+    },
+    "yh.slv.logret_1d": {
+      "kind": "yahoo",
+      "path": "market_data/equities/etfs/slv/daily.parquet",
+      "formula": "logret_1"
+    },
+    "yh.vnq.logret_1d": {
+      "kind": "yahoo",
+      "path": "market_data/equities/etfs/vnq/daily.parquet",
+      "formula": "logret_1"
+    },
+    "yh.xlc.logret_1d": {
+      "kind": "yahoo",
+      "path": "market_data/equities/etfs/xlc/daily.parquet",
+      "formula": "logret_1"
+    },
+    "yh.xlre.logret_1d": {
+      "kind": "yahoo",
+      "path": "market_data/equities/etfs/xlre/daily.parquet",
+      "formula": "logret_1"
+    }
+  },
+  "mutation": {
+    "sentinel": 1000000.0,
+    "cases": [
+      "ordinary",
+      "week_open",
+      "pre_close",
+      "dst_transition",
+      "missing_bar",
+      "fold_boundary_first_inner",
+      "fold_boundary_last_train"
+    ],
+    "forward_batch_size": 1,
+    "forward_batch_size_reason": "the CPU forward pass is deterministic per call but batch-position sensitive at 1e-8; equal positions make exact equality meaningful"
+  },
+  "envelope": {
+    "wall_seconds": 1800,
+    "memory_bytes": 4294967296,
+    "soft_phase_budget_seconds": 1500
+  },
+  "code_identity_known_predecessors": {
+    "tools/i6n_historical_evaluator.py": {
+      "sha256": "1fdd9e7b0411c6e8de450dea8ffe0d7999649c037281e672cbf62b96d69f3f2e",
+      "commit": "9fbcf1ec",
+      "diff_to_audited_commit": "interrupted_attempt() recovery fencing only (lines 636-660); no scoring, support, window or stopping code changed"
+    }
+  },
+  "availability_identification": {
+    "method": "as-of alignment: for every lag L in [-24,96] h after the source date 00:00 UTC, the hourly column is compared with the forward-filled dated series; the lag with the highest match rate (>=0.95 required) is the identified availability rule; verdict compares L with the declared bound",
+    "formula_variants": [
+      "observation lag",
+      "calendar-day lag (5 and 7 days)"
+    ],
+    "value_transition_lags": "reported beside the as-of result as a secondary diagnostic (confounded by repeated values)"
+  },
+  "vendor_identification_lags_hours": [
+    -6,
+    -5,
+    -4,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "runs": "run 1 and run 2 terminated on runner key-path and NaN-equality defects of the audit tool itself (no verdict used); run 3 is the audit"
+}
