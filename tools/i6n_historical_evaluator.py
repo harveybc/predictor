@@ -636,7 +636,7 @@ def _check_parent(parent_root, attempt, request):
 
 
 def interrupted_attempt(roots, expected):
-    """Create the next linked attempt for the newest lock-free RUNNING parent."""
+    """Fence a lock-free RUNNING parent and create its linked recovery attempt."""
     for index in range(len(roots), 0, -1):
         root = roots[index - 1]
         status_path = root / "STATUS.json"
@@ -647,14 +647,17 @@ def interrupted_attempt(roots, expected):
             return None
         if status.get("identity") != expected:
             raise ValueError("interrupted parent identity mismatch")
-        if index >= MAX_ATTEMPTS or (roots[index] / "STATUS.json").exists():
-            return None
         with (root / "RUN.lock").open("a") as lock:
             try:
                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:
                 return None
+            status.update(state="INTERRUPTED", eta_seconds=None,
+                          interruption_reason="LOCK_FREE_ORPHAN")
+            cell.atomic_json(status_path, status)
             fcntl.flock(lock, fcntl.LOCK_UN)
+        if index >= MAX_ATTEMPTS or (roots[index] / "STATUS.json").exists():
+            raise ValueError("physical attempt budget exhausted after interrupted attempt")
         return normalize_attempt({
             "index": index + 1,
             "parent_status_sha256": cell.file_hash(status_path),

@@ -460,6 +460,7 @@ class Plugin:
         }
         population = self._initial_island_population(settings, admitted, rng)
         cache = {}
+        rejections = {}
         start_generation = 0
         no_improve = 0
         best_identity = None
@@ -475,11 +476,17 @@ class Plugin:
                 raise ValueError("island resume checkpoint identity mismatch")
             population = [space.canonicalize(g) for g in saved["population"]]
             cache = deepcopy(saved.get("cache", {}))
+            rejections = deepcopy(saved.get("rejections", {}))
+            if not isinstance(rejections, dict):
+                raise ValueError("invalid candidate rejection checkpoint")
             start_generation = _int(saved["generation"], "checkpoint generation")
             resume_generation_in_progress = saved.get("generation_complete", True) is False
             resumed_from_checkpoint = True
             no_improve = _int(saved.get("no_improve", 0), "checkpoint no_improve")
-            self.best_fitness_so_far = float(saved.get("best_fitness", float("inf")))
+            retained_best = saved.get("best_fitness")
+            self.best_fitness_so_far = (
+                float("inf") if retained_best is None else float(retained_best)
+            )
             self.best_params_so_far = deepcopy(saved.get("best_params"))
             self.best_train_mae_so_far = saved.get("best_train_mae")
             self.best_train_naive_mae_so_far = saved.get("best_train_naive_mae")
@@ -539,8 +546,10 @@ class Plugin:
                 "generation": generation_value,
                 "generation_complete": generation_complete,
                 "population": population_value,
-                "cache": cache, "no_improve": no_improve,
-                "best_fitness": self.best_fitness_so_far,
+                "cache": cache, "rejections": rejections,
+                "no_improve": no_improve,
+                "best_fitness": (self.best_fitness_so_far
+                                 if math.isfinite(self.best_fitness_so_far) else None),
                 "best_params": self.best_params_so_far,
                 "best_identity": best_identity, "rng_state": rng.getstate(),
                 "best_train_mae": self.best_train_mae_so_far,
@@ -599,12 +608,27 @@ class Plugin:
             best_before = self.best_fitness_so_far
             for candidate_number, genotype in enumerate(population, 1):
                 identity = space.genotype_sha256(genotype)
+                if identity in rejections:
+                    continue
                 result = cache.get(identity)
                 evaluated_now = result is None
                 if result is None:
                     candidate_started = time.monotonic()
                     wire = evaluator._wire(genotype, _digest(contract), generation)
-                    evaluated = evaluator.evaluate(wire, generation, cfg)
+                    try:
+                        evaluated = evaluator.evaluate(wire, generation, cfg)
+                    except search.ScoreRejected as exc:
+                        rejections[identity] = {
+                            "disposition": "FAILED",
+                            "generation": generation,
+                            "reason": str(exc),
+                        }
+                        save_checkpoint(
+                            generation_value=generation,
+                            population_value=population,
+                            generation_complete=False,
+                        )
+                        continue
                     evaluated["fitness"] = float(evaluated["fitness"]) - 1.0
                     effective_config_sha256 = _digest(evaluated["hyper_dict"])
                     evaluated.setdefault("metrics", {}).update({
@@ -694,6 +718,8 @@ class Plugin:
                         generation_complete=False,
                     )
 
+            if not ranked:
+                raise RuntimeError("generation has no successful candidates")
             ranked.sort(key=lambda row: (row["fitness"], space.genotype_sha256(row["genotype"])))
             # Fitness is already a relative error.  Its direct decrement is
             # therefore the relative increment governed by the 1e-8 threshold.

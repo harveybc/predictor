@@ -79,6 +79,24 @@ class RecordingEvaluator:
         return _receipt(request, self._ratio_by_generation(request["generation"]))
 
 
+class RejectFirstCandidateEvaluator(RecordingEvaluator):
+    """Reject every fold request for the first genotype and score the rest."""
+
+    def __init__(self):
+        super().__init__()
+        self.rejected_identity = None
+
+    def __call__(self, request):
+        self.calls.append(copy.deepcopy(request))
+        genome = {key: request["config"][key] for key in search._GENOME_KEYS}
+        identity = search.effective_identity(genome)
+        if self.rejected_identity is None:
+            self.rejected_identity = identity
+        if identity == self.rejected_identity:
+            raise RuntimeError("physical attempt budget exhausted after interruption")
+        return _receipt(request, 0.8)
+
+
 class EventRecorder:
     """Capture the existing DOIN optimizer callback surface."""
 
@@ -509,6 +527,25 @@ def test_candidate_checkpoint_prevents_refit_after_mid_generation_restart(
         genome = {key: request["config"][key] for key in search._GENOME_KEYS}
         evaluated_identities.append(search.effective_identity(genome))
     assert retained_identity not in evaluated_identities
+
+
+def test_rejected_candidate_is_checkpointed_and_does_not_abort_island(tmp_path):
+    checkpoint = tmp_path / "checkpoint.json"
+    evaluator = RejectFirstCandidateEvaluator()
+
+    plugin, result = _optimize(_config(
+        evaluator,
+        i6n_island_id="island-a",
+        optimization_resume_file=str(checkpoint),
+    ))
+
+    retained = json.loads(checkpoint.read_text(encoding="utf-8"))
+    rejection = retained["rejections"][evaluator.rejected_identity]
+    assert rejection["disposition"] == "FAILED"
+    assert "physical attempt budget exhausted" in rejection["reason"]
+    assert evaluator.rejected_identity not in retained["cache"]
+    assert result is not None
+    assert plugin.island_terminal()["status"] == "COMPLETE"
 
 
 def test_same_seed_replays_the_same_local_island():

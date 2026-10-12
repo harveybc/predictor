@@ -78,6 +78,22 @@ def test_lock_free_running_attempt_recovers_with_exact_parent_digest(tmp_path):
         "fencing_token": None,
         "parent": None,
     }
+    assert json.loads(status.read_text())["state"] == "INTERRUPTED"
+
+
+def test_lock_free_running_attempt_at_budget_is_terminally_interrupted(tmp_path):
+    expected = {"candidate": "same-scientific-identity"}
+    roots = [tmp_path / f"candidate.attempt-{index}" for index in range(1, 4)]
+    roots[-1].mkdir()
+    status = roots[-1] / "STATUS.json"
+    write_json(status, {"state": "RUNNING", "identity": expected})
+
+    with pytest.raises(ValueError, match="physical attempt budget exhausted"):
+        evaluator.interrupted_attempt(roots, expected)
+
+    retained = json.loads(status.read_text())
+    assert retained["state"] == "INTERRUPTED"
+    assert retained["interruption_reason"] == "LOCK_FREE_ORPHAN"
 
 
 def test_generated_binding_dispatches_command_from_executor_without_fit(prepared, monkeypatch):
