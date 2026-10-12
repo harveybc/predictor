@@ -14,7 +14,7 @@ from tools.i6e_publish_olap import verify_readback
 
 def reports(result, terminal_sha256, pin):
     """Keep S/U, role, calendar, protocol, original units and horizon distinct."""
-    if result.get('scope') != 'HISTORICAL_SINGLE_WEEK_DEVELOPMENT' or result.get('state') != 'COMPLETED':
+    if result.get('scope') not in ('HISTORICAL_SINGLE_WEEK_DEVELOPMENT', 'TRAIN_COST_PILOT') or result.get('state') != 'COMPLETED':
         raise ValueError('only completed historical development terminals admitted')
     rows = c2.olap_records(result['metrics'])
     cfg = result['identity']['config']

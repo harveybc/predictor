@@ -58,3 +58,20 @@ missing multi-output arms explicit; do not report them as delivered.
 
 The entire swarm is NOT running merely because the two pilots completed.
 Publication in the chain and OLAP also remains separate from local completion.
+
+## Publication and next pilot
+
+The first two pilots are now OLAP_READBACK_VERIFIED: 40 reports / 310 metric
+rows, including all intermediate trajectory heads and their own paired naive.
+They carry TRAIN_COST_PILOT, not annual validation or search-winner claims.
+`chain_finalized=false` is explicit. The old search verifier incorrectly called
+single-head preparation for a v2 trajectory; a failing regression and the real
+retained trajectory exposed it. Preparation is now trajectory-aware for v2;
+the four search-publication tests pass.
+
+The next measured workload was started on the preferred GPU with pin
+`da32dee6`: h36, history216 h, dx4, 55 samples, trajectory9/18/27/36,
+two Transformer64 blocks, three Conv64 reducers, LSTM64 adapter. Its private
+root is `/var/tmp/i6n-launch-cost-S2-20261011/`. No S1 fit was repeated.
+The same timer collects both roots and publishes completed pilot metrics
+automatically, under a bounded CPU scope. S2 is not claimed complete here.
