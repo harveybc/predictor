@@ -82,3 +82,15 @@ base cell changes only max_samples145 ->433 (data and stopping unchanged),
 and retains the 7936 MiB declared pilot cap. A refusal or OOM is terminal,
 not a license to trim the model or memory margin. Root:
 `/var/tmp/i6n-launch-cost-S3-20261011/`. Collector and publisher cover all roots.
+
+Correction: the first S3 request failed BEFORE TensorFlow/updates with
+`materialized bytes exceed resource limit`. Its max_samples was extended but
+the inherited 400 MB materialization /20 MB batch guards were not. This was
+a configuration defect, not an OOM or a measured resource refusal. The failed
+attempt is preserved, no scientific score. Successor pin `2df243fc` first
+preflights the full candidate on CPU and explicitly declares 2 GiB materialized
+and64 MiB batch bounds; the actual admission cap remains7936 MiB, with the
+same data, architecture, batch size, seed and stopping. New root:
+`/var/tmp/i6n-launch-cost-S3-corrected-20261011/`. No failed fit was retrained:
+the predecessor had zero updates. This correction is not permission for a
+retry after OOM. The timer retains both dispositions separately.
