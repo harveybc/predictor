@@ -74,4 +74,11 @@ The next measured workload was started on the preferred GPU with pin
 two Transformer64 blocks, three Conv64 reducers, LSTM64 adapter. Its private
 root is `/var/tmp/i6n-launch-cost-S2-20261011/`. No S1 fit was repeated.
 The same timer collects both roots and publishes completed pilot metrics
-automatically, under a bounded CPU scope. S2 is not claimed complete here.
+automatically, under a bounded CPU scope. S2 subsequently COMPLETED with 490
+updates, restored best epoch 2, fit wall303.274 s and cgroup peak2390552576 B.
+The S3 pilot is next, pinned `b3aa8421`: h72 / L432 / dx1 / n433 / width128 /
+two Transformer blocks / three Conv128 reducers / LSTM64 / four heads. Its
+base cell changes only max_samples145 ->433 (data and stopping unchanged),
+and retains the 7936 MiB declared pilot cap. A refusal or OOM is terminal,
+not a license to trim the model or memory margin. Root:
+`/var/tmp/i6n-launch-cost-S3-20261011/`. Collector and publisher cover all roots.
