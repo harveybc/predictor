@@ -67,6 +67,7 @@ def healthcheck(node, now=None, run=subprocess.run):
             probe = False
     health = dict(boot_id=facts["boot_id"], checked_at=facts["now"], nv_err_no_memory=nv_err,
                   sunreclaim_bytes=facts["sunreclaim_bytes"], gpu_probe_ok=probe,
+                  gpu_free_bytes=facts.get("gpu_free_bytes"),
                   slice_limit_bytes=_slice_limit(run))
     common.atomic_json(Path(node["state_dir"]) / "HEALTH.json", health, mode=0o600)
     return health

@@ -100,3 +100,10 @@ def test_host_facts_carries_verified_slice_limit_from_healthcheck(tmp_path):
     meminfo.write_text("MemTotal: 32768 kB\nMemAvailable: 16384 kB\nSUnreclaim: 1024 kB\n")
     got = P.host_facts(NOW, "boot-2", healthcheck={"slice_limit_bytes": 12345}, meminfo_path=meminfo)
     assert got["slice_limit_bytes"] == 12345
+
+
+def test_host_facts_carries_measured_gpu_free_bytes_from_healthcheck(tmp_path):
+    meminfo = tmp_path / "meminfo"
+    meminfo.write_text("MemTotal: 32768 kB\nMemAvailable: 16384 kB\nSUnreclaim: 0 kB\n")
+    got = P.host_facts(NOW, "boot-2", healthcheck={"gpu_free_bytes": 6 * GIB}, meminfo_path=meminfo)
+    assert got["gpu_free_bytes"] == 6 * GIB

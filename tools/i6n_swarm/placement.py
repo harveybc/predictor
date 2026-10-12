@@ -102,4 +102,6 @@ def host_facts(now, boot_id, healthcheck=None, meminfo_path="/proc/meminfo"):
                  healthcheck=healthcheck, pressure=False, draining=False, cpu_heavy=False)
     if healthcheck and type(healthcheck.get("slice_limit_bytes")) is int:
         facts["slice_limit_bytes"] = healthcheck["slice_limit_bytes"]
+    if healthcheck and type(healthcheck.get("gpu_free_bytes")) is int:
+        facts["gpu_free_bytes"] = healthcheck["gpu_free_bytes"]
     return facts

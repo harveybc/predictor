@@ -5,6 +5,7 @@ Fake freeze/evaluator subprocesses on CPU; systemctl is a recorder; nothing is i
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -128,6 +129,24 @@ def test_boot_recovery_interrupts_previous_boot_of_this_host_only(campaign):
     led.claim(units[1]["fit_id"], "y", "secondary", "boot-s", "cpu", 3600, exclusive_host=False)
     changed = A.recover(node, led, boot_id="boot-new")
     assert [c["fit_id"] for c in changed] == [units[0]["fit_id"]]
+
+
+def test_healthcheck_persists_measured_gpu_free_bytes(campaign, monkeypatch):
+    _root, node, _tmp = campaign
+    node["device"]["cuda_visible_devices"] = "GPU-C"
+    monkeypatch.setattr(A.placement, "host_facts", lambda *_args, **_kwargs: {
+        "boot_id": "boot-1", "now": 100.0, "sunreclaim_bytes": 123,
+    })
+
+    def run(argv, **_kwargs):
+        if argv[0] == "nvidia-smi":
+            return SimpleNamespace(returncode=0, stdout="RTX 4070, 6144\n")
+        if argv[0] == "systemctl":
+            return SimpleNamespace(returncode=0, stdout=str(14 * 1024**3) + "\n")
+        return SimpleNamespace(returncode=0, stdout="")
+
+    got = A.healthcheck(node, now=100.0, run=run)
+    assert got["gpu_free_bytes"] == 6144 * 1024**2
 
 
 def test_late_worker_fixed_stages_exclude_freeze():
