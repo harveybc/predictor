@@ -199,3 +199,49 @@ def test_class_cap_coverage_adjustment_raises_never_lowers(tmp_path):
     pinned = _caps(tmp_path, coverage_adjustment_bytes=51 * 1024**2,
                    coverage_derivation=F.pin(tmp_path / "derivation.json", dict(rows="S2 h12 vs h36 pilot")))
     assert pinned["coverage_derivation_sha256"] == common.file_sha256(tmp_path / "derivation.json")
+
+
+def test_frozen_context_bytes_reach_another_host_through_the_ledger(tmp_path):
+    """Identical relpaths do not prove identical bytes: pins are verified or fetched by content."""
+    import hashlib
+    from tools.i6n_swarm import lease_service as S
+    host_a, host_b = tmp_path / "hostA", tmp_path / "hostB"
+    frozen = host_a / "bindings" / "x" / "FROZEN.json"
+    frozen.parent.mkdir(parents=True)
+    frozen.write_text(json.dumps(dict(support="sealed")))
+    sha = hashlib.sha256(frozen.read_bytes()).hexdigest()
+    context = dict(schema="i6n.historical_evaluator.v3", frozen_support=dict(relpath="bindings/x/FROZEN.json", sha256=sha))
+    token = tmp_path / "tok"
+    token.write_text("t")
+    token.chmod(0o600)
+    led = L.Ledger(tmp_path / "l.sqlite3")
+    server = S.start_server(led, "127.0.0.1", 0, token)
+    try:
+        client = S.LedgerClient(f"http://127.0.0.1:{server.server_address[1]}", token)
+        assert B.materialize_context(context, host_b, client).startswith("CONTEXT_BYTES_UNAVAILABLE")
+        assert client.put_blob(sha, frozen.read_bytes()) == "STORED"
+        with pytest.raises(L.LedgerError):
+            client.put_blob("0" * 64, b"forged")
+        assert B.materialize_context(context, host_b, client) is None
+        assert common.file_sha256(host_b / "bindings/x/FROZEN.json") == sha
+        (host_b / "bindings/x/FROZEN.json").write_text("same path, other bytes")
+        assert B.materialize_context(context, host_b, client).startswith("CONTEXT_BYTES_DIFFER")
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+def test_bridge_waits_without_claiming_when_context_bytes_are_unavailable(tmp_path):
+    led = L.Ledger(tmp_path / "l.sqlite3")
+    node = dict(owner="o", host_key="h", device=dict(cls="cpu_fixture", cuda_visible_devices="", fixture=True),
+                fixture=True, shared_data_root=str(tmp_path / "root"), launcher=None, class_caps={},
+                evaluator_argv=["false"], logs_dir=str(tmp_path / "logs"),
+                lease=dict(ttl_seconds=5, renew_seconds=1, max_wait_seconds=1, poll_seconds=0.1))
+    fit = common.sha256_json(["ctx"])
+    led.ensure_unit(fit, dict(stage="search", dag_node="search:h12", horizon=12, fold="2023Q4", experiment="e",
+                              genotype_canonical_sha256="a" * 64, effective_config_sha256="c" * 64,
+                              search_candidate_sha256="d" * 64, device_class="gpu_admitted", fixture=True))
+    request = dict(config={}, generation=0, support={}, context=dict(frozen_support=dict(relpath="b/F.json", sha256="e" * 64)))
+    state, cause = B.Bridge(node, led).run_fold(fit, led.unit(fit)["spec"], request, lambda r: r)
+    assert state == "WAIT_RESOURCE" and cause.startswith("CONTEXT_BYTES_UNAVAILABLE")
+    assert led.attempts(fit) == [] and led.unit(fit)["state"] == "WAIT_RESOURCE"

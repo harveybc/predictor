@@ -58,9 +58,43 @@ def make_handler(ledger, token):
             self.end_headers()
             self.wfile.write(data)
 
-        def do_POST(self):
+        def _authorized(self):
             supplied = self.headers.get("Authorization", "")
-            if not hmac.compare_digest(supplied.encode(), f"Bearer {token}".encode()):
+            return hmac.compare_digest(supplied.encode(), f"Bearer {token}".encode())
+
+        def do_GET(self):
+            if not self._authorized():
+                return self._send(401, dict(error="LedgerAuthError", detail="bad token"))
+            if not self.path.startswith("/v1/blob/"):
+                return self._send(404, dict(error="LedgerRequestError", detail="unknown path"))
+            try:
+                data = ledger.get_blob(self.path.rsplit("/", 1)[-1])
+            except L.LedgerError as exc:
+                return self._send(400, dict(error="LedgerError", detail=str(exc)))
+            if data is None:
+                return self._send(404, dict(error="BlobMissing", detail="no such blob"))
+            self.send_response(200)
+            self.send_header("Content-Type", "application/octet-stream")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+        def do_PUT(self):
+            if not self._authorized():
+                return self._send(401, dict(error="LedgerAuthError", detail="bad token"))
+            if not self.path.startswith("/v1/blob/"):
+                return self._send(404, dict(error="LedgerRequestError", detail="unknown path"))
+            length = int(self.headers.get("Content-Length", "0"))
+            if length > 256 * 1024**2:
+                return self._send(413, dict(error="LedgerRequestError", detail="blob too large"))
+            try:
+                result = ledger.put_blob(self.path.rsplit("/", 1)[-1], self.rfile.read(length))
+            except L.LedgerError as exc:
+                return self._send(409, dict(error="LedgerError", detail=str(exc)))
+            return self._send(200, dict(result=result))
+
+        def do_POST(self):
+            if not self._authorized():
                 return self._send(401, dict(error="LedgerAuthError", detail="bad token"))
             name = self.path.rsplit("/", 1)[-1]
             if not self.path.startswith("/v1/") or name not in METHODS:
@@ -108,6 +142,27 @@ class LedgerClient:
             raise ERRORS.get(body.get("error"), LedgerRequestError)(body.get("detail")) from None
         except (urllib.error.URLError, OSError, TimeoutError) as exc:
             raise LedgerUnavailable(str(exc)) from exc
+
+    def _raw(self, method, sha256, data=None):
+        request = urllib.request.Request(f"{self.url}/v1/blob/{sha256}", data=data, method=method,
+                                         headers={"Authorization": f"Bearer {self.token}"})
+        try:
+            with urllib.request.urlopen(request, timeout=max(self.timeout, 120)) as response:
+                return response.read()
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404 and method == "GET":
+                return None
+            if exc.code == 401:
+                raise LedgerAuthError("bad token") from None
+            raise L.LedgerError(f"blob {method} refused: HTTP {exc.code}") from None
+        except (urllib.error.URLError, OSError, TimeoutError) as exc:
+            raise LedgerUnavailable(str(exc)) from exc
+
+    def put_blob(self, sha256, data):
+        return json.loads(self._raw("PUT", sha256, data))["result"]
+
+    def get_blob(self, sha256):
+        return self._raw("GET", sha256)
 
     def __getattr__(self, name):
         if name not in METHODS:

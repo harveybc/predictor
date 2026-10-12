@@ -124,6 +124,11 @@ def _freeze(node, led, unit, boot_id):
     except (OSError, ValueError) as exc:
         led.report(unit["fit_id"], token, "FAILED", f"BINDING_INVALID: {exc}")
         return "FAILED"
+    # Every evaluating host needs these exact bytes: publish them content-addressed before completing.
+    for blob in [path, *[common.resolve_pin(p, data_root) for p in B.context_pins(binding["i6n_evaluation_context"])]]:
+        data = Path(blob).read_bytes()
+        import hashlib
+        led.put_blob(hashlib.sha256(data).hexdigest(), data)
     from tools.i6n_swarm.coordinator import freeze_receipt_document
     led.complete(unit["fit_id"], token, freeze_receipt_document(unit, binding, pin))
     return "COMPLETE"

@@ -155,6 +155,43 @@ def decode_wire(wire, generation):
     return genome, search.effective_config(genome)
 
 
+def context_pins(context):
+    """{relpath, sha256} pins inside an evaluation context (A.4 v3 host-relative contexts)."""
+    found = []
+    if isinstance(context, dict):
+        for value in context.values():
+            if isinstance(value, dict) and set(value) == {"relpath", "sha256"}:
+                found.append(value)
+    return found
+
+
+def materialize_context(context, data_root, ledger):
+    """Make every pinned context file present on THIS host with exactly its bytes.
+
+    Identical paths do not prove identical bytes: a present file must hash to its pin, a missing one is
+    fetched from the ledger's content-addressed store. Returns None or a typed cause.
+    """
+    if not data_root:
+        return None
+    for pin in context_pins(context):
+        target = common.resolve_pin(pin, data_root)
+        if target.exists():
+            if common.file_sha256(target) != pin["sha256"]:
+                return f"CONTEXT_BYTES_DIFFER: {pin['relpath']}"
+            continue
+        data = ledger.get_blob(pin["sha256"])
+        if data is None:
+            return f"CONTEXT_BYTES_UNAVAILABLE: {pin['relpath']}"
+        import hashlib
+        if hashlib.sha256(data).hexdigest() != pin["sha256"]:
+            return f"CONTEXT_BYTES_DIFFER: {pin['relpath']}"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        tmp = target.with_name(f".{target.name}.{os.getpid()}.tmp")
+        tmp.write_bytes(data)
+        tmp.replace(target)
+    return None
+
+
 def locate_status(output_root, request):
     """Find A's STATUS.json for exactly this request identity (newest attempt directory)."""
     root = Path(output_root) / "candidates"
@@ -213,6 +250,13 @@ class Bridge:
 
     def run_fold(self, fit_id, spec, request, verify):
         """Claim/adopt/run one fold. Returns ("COMPLETE", doc) or (state, cause)."""
+        if self.ledger.terminal(fit_id) is None:
+            missing = materialize_context(request["context"], self.node.get("shared_data_root"), self.ledger)
+            if missing is not None:
+                if missing.startswith("CONTEXT_BYTES_DIFFER"):
+                    return "FAILED", missing
+                self.ledger.mark_wait(fit_id, missing)
+                return "WAIT_RESOURCE", missing
         if self.node.get("launcher") is not None or self.production:
             cls = spec.get("size_class") or ""
             if cls not in self.node.get("class_caps", {}):
