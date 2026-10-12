@@ -1,0 +1,11 @@
+$ python -m tools.i6n_swarm_campaign plan --config <private.json> --output <root>
+{"state": "PLANNED", "dag_nodes": 10, "budget": {"search_new_fits_max": 16, "max_physical_attempts_per_fit": 3, "annual_dispositions_max": 212, "multi_output_dispositions_max": 212, "multi_output_arms": 2}}
+$ python -m tools.i6n_swarm_campaign preflight --root <root> --json
+{"state": "READY", "failed": []}
+$ python -m tools.i6n_swarm_campaign start --root <root> --role none
+{"started": [], "adopted_prior": {"registered": 0, "not_reusable": 0}, "activated": []}
+$ python -m tools.i6n_swarm_campaign status --root <root> --json
+{"swarm": "QUEUED", "nodes": {"freeze_folds:h12": "COMPLETE", "freeze_weeks:h12": "COMPLETE", "freeze_folds:h72": "COMPLETE", "freeze_weeks:h72": "COMPLETE", "search:h12": "QUEUED", "search:h72": "QUEUED", "annual:h12": "WAIT_DEPENDENCY", "annual:h72": "WAIT_DEPENDENCY", "multi_output:short": "WAIT_DEPENDENCY", "multi_output:long": "WAIT_DEPENDENCY"}, "publication": "QUEUED"}
+$ python -m tools.i6n_swarm_campaign collect --root <root>
+{"published": 0, "pending": 0, "publication_state": "QUEUED", "cause": "tools.i6n_archive.publisher (lane D) is not installed in this checkout", "rows": 0}
+(collect re-run after the empty-outbox state fix; the first run printed publication_state COMPLETE for an empty outbox, which was the defect)
