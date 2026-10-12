@@ -1,0 +1,174 @@
+{
+ "clock": {
+  "availability_policy": "AT_TIMESTAMP",
+  "calendar_sha256": "347be3faf00e51833a1eb3070b3ce97212c4649698096f7aa92ed4b2687952a7",
+  "clock_policy": "EU_DST_OFFSET_MINUS5_BASE_BAR_START; retained 2019-03-11..2024 prices reconciled to annual source; base scope from 2019-12-01 as before; DECLARED CLOCK ASSUMPTION DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01 f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a: NOT independently quote-verified: the EU-DST clock policy over 2019-03-11T00:00:00+00:00..2019-12-01T00:00:00+00:00, in particular the EU/US DST-gap week covered by planned case 2019-10-28 (INCONCLUSIVE: ValueError: HTTP 429; no retry, alternate host or further redirect; 4 attempt reports). Declared, as the December-2019 warmup was declared, on the basis of the passing in-span cases replayed exactly and the passing October holdouts of later years. Scope 2d81f6542e54a83200e715640cf0eba175889f756644798d80b99aea5ee502c7; preparation 67ab759e7bc09dc079414ff3942e0d030b92b7df3f130d3ca36b66436184393e; inherited publication/vintage assumptions; retrospective research only",
+  "coverage_mode": "complete",
+  "data_kind": "historical",
+  "input_sha256": "bf8587b15d372c7f6bbbeffaa549e50f4da51f0299473be790f12e555bd4f049",
+  "schema": "i6n.source_clock.v1",
+  "status": "RESOLVED",
+  "timestamp_semantics": "UTC_BAR_END"
+ },
+ "clock_attempt_2019_10_28_r429_report_sha256": "7e1e34cb3f91af7bcb6033815305e2d24a2d72f0cd85196a3f80cb431dd3f37c",
+ "clock_scope": {
+  "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+  "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a",
+  "base_scope": {
+   "data_end": "2025-01-01T00:00:00Z",
+   "data_start": "2019-12-01T00:00:00Z",
+   "evaluation_year": 2024,
+   "excluded_out_of_scope_case": "2019-10-28; before the earliest 2019-12-11 dependency; original inconclusive audit retained unchanged",
+   "full_audit_sha256": "b3148be1ba239a1b6febcac6e0e424dd143918034ff956ff3db798504f1e2b90",
+   "full_audit_status": "INCONCLUSIVE",
+   "independently_checked_cases": 20,
+   "independently_checked_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+   ],
+   "maximum_planned_context_hours": 432,
+   "scope_basis": "Four preceding calendar years for every 2024 weekly refit, plus at most 432h context",
+   "status": "SCOPED_ACCEPTED",
+   "warmup_2019_december": "Declared standard-time agreement of the candidate clock policies; not independently quote-verified by this certificate"
+  },
+  "base_scope_sha256": "376f0001be4b129a5a2d247a521ae379569deb03ed451ee62249f9a58260becf",
+  "data_end": "2025-01-01T00:00:00Z",
+  "data_start": "2019-03-11T00:00:00+00:00",
+  "declared_assumption": {
+   "analogous_october_holdouts_pass": [
+    "2020-10-26",
+    "2021-11-01",
+    "2022-10-31",
+    "2023-10-30",
+    "2024-10-28"
+   ],
+   "assumption_id": "DCA_2019_EU_DST_POLICY_2019-03-11_2019-12-01",
+   "assumption_sha256": "f851cea1e9c4d46586d3230a07c7ba435b3d7c5e5f7f731d363170eb51769a9a",
+   "limitation": "NOT independently quote-verified: the EU-DST clock policy over 2019-03-11T00:00:00+00:00..2019-12-01T00:00:00+00:00, in particular the EU/US DST-gap week covered by planned case 2019-10-28 (INCONCLUSIVE: ValueError: HTTP 429; no retry, alternate host or further redirect; 4 attempt reports). Declared, as the December-2019 warmup was declared, on the basis of the passing in-span cases replayed exactly and the passing October holdouts of later years.",
+   "passing_case_replay": [
+    {
+     "date": "2019-03-18",
+     "matches_retained_case": true,
+     "status": "PASS"
+    },
+    {
+     "date": "2019-07-15",
+     "matches_retained_case": true,
+     "status": "PASS"
+    }
+   ],
+   "passing_cases": [
+    {
+     "date": "2019-03-18",
+     "reason": null,
+     "status": "PASS"
+    },
+    {
+     "date": "2019-07-15",
+     "reason": null,
+     "status": "PASS"
+    }
+   ],
+   "span": {
+    "end": "2019-12-01T00:00:00+00:00",
+    "start": "2019-03-11T00:00:00+00:00"
+   },
+   "status": "DECLARED_ASSUMPTION",
+   "unverified_case": {
+    "date": "2019-10-28",
+    "reason": "ValueError: HTTP 429; no retry, alternate host or further redirect",
+    "status": "INCONCLUSIVE"
+   },
+   "unverified_case_attempt_report_sha256": [
+    "b51744f870856e3b6eb68a46d58edcae75e4c2a9bbdee2ef26a65897be3d39c0",
+    "01784d255e01e5a1f424090bf72d7351cb4d4a4435d4a572c97081fa893d67fc",
+    "b3148be1ba239a1b6febcac6e0e424dd143918034ff956ff3db798504f1e2b90",
+    "7e1e34cb3f91af7bcb6033815305e2d24a2d72f0cd85196a3f80cb431dd3f37c"
+   ]
+  },
+  "full_audit_sha256": "7e1e34cb3f91af7bcb6033815305e2d24a2d72f0cd85196a3f80cb431dd3f37c",
+  "full_audit_status": "INCONCLUSIVE",
+  "scope_basis": "Context of the 2023 Q1-Q3 inner folds (four calendar years plus at most 432 h) before the base December-2019 scope",
+  "status": "SCOPED_ACCEPTED_WITH_DECLARED_ASSUMPTION"
+ },
+ "preparation": {
+  "archives": [
+   {
+    "duplicate_minutes_removed": 60,
+    "hourly_rows": 6213,
+    "member": "DAT_ASCII_EURUSD_M1_2019.csv",
+    "minute_rows": 372470,
+    "reconciled_retained_rows": 5058,
+    "sha256": "221fa4e0db549f48719273979ea4b1a2b0877f45f1147a8416ff8bbd055f5491",
+    "year": "2019"
+   },
+   {
+    "duplicate_minutes_removed": 60,
+    "hourly_rows": 6230,
+    "member": "DAT_ASCII_EURUSD_M1_2020.csv",
+    "minute_rows": 372275,
+    "reconciled_retained_rows": 6230,
+    "sha256": "38efbafce27f0e15df0006cc413cc02a68a18cada4f3b99e9afd42e17dd2ff2c",
+    "year": "2020"
+   },
+   {
+    "duplicate_minutes_removed": 60,
+    "hourly_rows": 6219,
+    "member": "DAT_ASCII_EURUSD_M1_2021.csv",
+    "minute_rows": 369442,
+    "reconciled_retained_rows": 6219,
+    "sha256": "64af4aa52958685a6889cfa15df400c62dc6ad543cf6ea10a13a0d3a7e01a563",
+    "year": "2021"
+   },
+   {
+    "duplicate_minutes_removed": 60,
+    "hourly_rows": 6239,
+    "member": "DAT_ASCII_EURUSD_M1_2022.csv",
+    "minute_rows": 372805,
+    "reconciled_retained_rows": 6239,
+    "sha256": "5ed361f3d93107f644834cac06870e830f9dc887d5aa5fde4b90c2accdf773f3",
+    "year": "2022"
+   },
+   {
+    "duplicate_minutes_removed": 60,
+    "hourly_rows": 5409,
+    "member": "DAT_ASCII_EURUSD_M1_2023.csv",
+    "minute_rows": 322578,
+    "reconciled_retained_rows": 5409,
+    "sha256": "26e41c4bccfd70f2c76ef7f3ffcba0e3b7097231927a41640f4a7c442815f34a",
+    "year": "2023"
+   },
+   {
+    "duplicate_minutes_removed": 0,
+    "hourly_rows": 6243,
+    "member": "DAT_ASCII_EURUSD_M1_2024.csv",
+    "minute_rows": 372379,
+    "reconciled_retained_rows": 6243,
+    "sha256": "58f074ba6b835eb2fbeaeb6678502a23b26768eefdfa509eb75ff5296bb2904d",
+    "year": "2024"
+   }
+  ],
+  "base_successor_input_sha256": "56dbc22e182e5e720d4415f6998206065a506081941c3c2e76d5f8ed6c076031",
+  "base_successor_is_exact_suffix": true,
+  "clock_scope_sha256": "2d81f6542e54a83200e715640cf0eba175889f756644798d80b99aea5ee502c7",
+  "design_sha256": "f2cd28cd50ce2bf8cf03c7cce67c5bf0eecca9e6a9f53d500646858cd79df8d6",
+  "extension_rows": 4544,
+  "inherited_feature_limits": [
+   "Selection uses DEVELOPMENT 2024, not prospective validation",
+   "FRED current vintage; historical revisions not certified",
+   "Daily publication lags are inherited declared assumptions",
+   "Nominal NY weekly calendar is not a verified broker schedule"
+  ],
+  "input_sha256": "bf8587b15d372c7f6bbbeffaa549e50f4da51f0299473be790f12e555bd4f049",
+  "rows": 35398,
+  "shifted_rows": 2445,
+  "source_input_sha256": "897caee164286bedea61c4caab361213cf703d3f50e60ba12cee543d9bfa28c9",
+  "status": "PREPARED",
+  "test_read": false,
+  "transform": "Same as the base successor: invert legacy NY start clock; Europe/London wall+5h; UTC+1h bar end; values preserved"
+ },
+ "schema": "i6n.weekly_declared_clock_assumption.evidence.v1"
+}
