@@ -59,3 +59,19 @@ declared clock assumption; 2024-informed feature selection is retrospective
 development; Q1/Q2 2023 inner support is thin (h72: 51 rows); the deploy tool was
 written before its tests (no recorded red run); S3 admission needs a new plan with
 its receipt; no warehouse snapshot was taken.
+
+## Addendum 2026-10-12 (order SATOSHI_I6N_START_DENIAL_RESOLUTION, 7114e393 @8ca5f61d)
+
+- Corrected `DEPLOY_STEPS_D.md` adopted (merge a9fe29c4): archive deployment
+  uses integrated doin-node `df6aad0b`, never ancestor `018ca2d`.
+- S3 cost pilot on the preferred GPU is terminal **FAILED_TIMEOUT** (WALL_LIMIT
+  rc=124 after 3610.416 s, 1662 updates retained). Kept intact, not rerun; S3 is
+  not admitted from that failure. Its nested progress is historical, not a live
+  child. S3 is not a global dependency: both workers take independently admitted
+  S1/S2 work after fresh health/resource checks (join policy unchanged).
+- Original denial: permission classifier category `[Production Deploy]`, recorded
+  in `docs/i6n/swarm/DEPLOY_RETURN.md` (dfa54cb1) and `D_DEPLOY_RECORD.md`.
+- Permission request: one bounded attempt of the unchanged deployer from its
+  intended worktree, bound to spec digest 87b41daf... (see COMMANDS.md); outcome
+  recorded below by the deployment step itself. No settings were edited, no
+  alternative route used.

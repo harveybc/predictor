@@ -1,6 +1,6 @@
 {
  "schema": "i6n.swarm_weekly.return_status.v1",
- "as_of": "2026-10-12",
+ "as_of": "2026-10-12T2",
  "milestones_master": [
   {
    "id": "M1",
@@ -79,7 +79,7 @@
    },
    "S3": {
     "admitted": false,
-    "cause": "NO_COMPLETED_PILOT_RECEIPT (S3 pilot still running on preferred; untouched)"
+    "cause": "PILOT_FAILED_TIMEOUT (WALL_LIMIT rc=124); new admitted pilot required before any S3 plan"
    }
   },
   "pending_dag": "all 52 nodes QUEUED: NOT_STARTED (start denied); multi-output nodes additionally WAIT_DEPENDENCY on finalists"
@@ -90,5 +90,20 @@
   "chain_finalized": false,
   "olap_readback": "only the earlier 72 pilot reports / 558 metric rows (published by Musashi's cost-collect timer); no swarm publication"
  },
- "snapshot": "NOT_TAKEN (warehouse window not executed)"
+ "snapshot": "NOT_TAKEN (warehouse window not executed)",
+ "s3_cost_pilot": {
+  "state": "FAILED_TIMEOUT",
+  "cause": "WALL_LIMIT rc=124 after 3610.416 s",
+  "updates_retained": 1662,
+  "note": "terminal kept intact; not rerun; S3 NOT admitted from this failure; nested training progress is historical, not a live child",
+  "admission_impact": "none for S1/S2: both workers take independently admitted S1/S2 work after fresh health/resource checks"
+ },
+ "archive": {
+  "deploy_steps": "DEPLOY_STEPS_D.md corrected in 8ca5f61d: archive deployment pins integrated doin-node df6aad0b (not ancestor 018ca2d)",
+  "state": "NOT_DEPLOYED",
+  "denial": "[Production Deploy]"
+ },
+ "orders": {
+  "start_denial_resolution": "7114e393 (8ca5f61d)"
+ }
 }
