@@ -214,7 +214,7 @@ class Remote:
         listing = Path(os.environ.get("TMPDIR", "/tmp")) / f"i6n-deploy-files-{os.getpid()}.txt"
         listing.write_text("".join(p.lstrip("/") + "\n" for p in sorted(paths)))
         try:
-            result = subprocess.run(["rsync", "-a", "--checksum", "--files-from", str(listing), "/",
+            result = subprocess.run(["rsync", "-a", "--omit-dir-times", "--checksum", "--files-from", str(listing), "/",
                                      f"{self.host}:/"], capture_output=True, text=True, timeout=3600)
         finally:
             listing.unlink(missing_ok=True)
@@ -711,10 +711,18 @@ def main(argv=None) -> int:
     group.add_argument("--dry-run", action="store_true")
     group.add_argument("--join", choices=sorted(DEVICE_CLASS))
     group.add_argument("--replicate", action="store_true", help="copy + verify on workers only")
+    group.add_argument("--write-status", action="store_true", help="write <campaign root>/STATUS.json (read-only otherwise)")
     args = parser.parse_args(argv)
     spec = dict(load_spec(Path(args.spec)), spec_path=str(Path(args.spec).resolve()))
-    if args.status:
-        print(json.dumps(status(spec), indent=1, sort_keys=True, default=str))
+    if args.status or args.write_status:
+        result = status(spec)
+        if args.write_status:
+            result["generated_at"] = time.time()
+            result["generated_by"] = "python -m tools.i6n_swarm_deploy --spec <private spec> --write-status"
+            result["live_status"] = "status/STATUS.json (rewritten by the coordinator tick timer every 5 min)"
+            (Path(spec["campaign_root"]) / "STATUS.json").write_text(
+                json.dumps(result, indent=1, sort_keys=True, default=str) + "\n")
+        print(json.dumps(result, indent=1, sort_keys=True, default=str))
         return 0
     deployer = Deployer(spec)
     try:
