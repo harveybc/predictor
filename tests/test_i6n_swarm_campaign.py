@@ -323,10 +323,16 @@ def test_collect_publishes_once_and_writes_results(root):
     complete_candidate(root, 12, other_genome(12), 0.8, fail_fold="2023Q2")
     published = []
 
+    decisions = []
+
     class FakePublisher:
         def record_candidate(self, candidate, fold_receipts):
             published.append((candidate, fold_receipts))
             return dict(item_id=common.sha256_json(candidate), states={"LOCAL_COMPLETE": {"ok": True}})
+
+        def record_decision(self, decision):
+            decisions.append(decision)
+            return dict(item_id=common.sha256_json(decision), states={"LOCAL_COMPLETE": {"ok": True}})
 
     first = C.collect(root, publisher=FakePublisher())
     second = C.collect(root, publisher=FakePublisher())
@@ -334,13 +340,23 @@ def test_collect_publishes_once_and_writes_results(root):
     docs = {c["disposition"]: c for c, _ in published}
     assert set(docs) == {"COMPLETE", "FAILED"}
     done = docs["COMPLETE"]
-    assert done["schema"] == "i6n.archive.candidate.v1" and done["seed"] == 6102026
+    assert done["schema"] == "i6n.archive.candidate.v1" and done["seed"] == 6102026 and "won" not in done
     assert done["fitness"] == pytest.approx(0.9) and docs["FAILED"]["fitness"] is None
     assert len(done["attempts"]) == 2 and all(a["index"] == 1 for a in done["attempts"])
     rows = list(csv.DictReader(open(root / "collect" / "RESULTS.csv")))
     train = [r for r in rows if r["split"] == "TRAIN" and r["disposition"] == "COMPLETE"]
     assert train and float(train[0]["mae"]) == pytest.approx(float(train[0]["naive_mae"]) * 0.9)
     assert json.loads((root / "collect" / "ARTIFACTS.json").read_text())["plan_sha256"]
+    assert decisions == []  # the search of h12 has not closed: no decision event yet
+    L.Ledger(root / "state" / "ledger.sqlite3").dag_event("search:h12", "SEARCH_TERMINAL", {"stop_reason": "patience"})
+    K.tick(root, now=3000.0)
+    third = C.collect(root, publisher=FakePublisher())
+    fourth = C.collect(root, publisher=FakePublisher())
+    assert third["decisions"] == 1 and fourth["decisions"] == 0
+    d = decisions[0]
+    assert d["schema"] == "i6n.archive.decision.v1" and d["sequence"] == 1 and d["supersedes_decision_sha256"] is None
+    outcomes = {o["outcome"] for o in d["outcomes"]}
+    assert "WINNER" in outcomes and len([o for o in d["outcomes"] if o["outcome"] == "WINNER"]) == 1
 
 
 def test_collect_without_publisher_keeps_outbox_pending(root):
@@ -463,3 +479,10 @@ def test_legacy_mapping_with_no_fold_reuse_adopts_nothing(tmp_path):
     P.build(F.pin(cfg_path, cfg)["path"], out)
     receipt = K.start(out, roles=[], systemctl=Recorder())
     assert receipt["adopted_prior"] == dict(registered=0, not_reusable=3)
+
+
+def test_annual_rollup_is_typed_when_lane_c_module_or_plan_is_absent(root):
+    K.start(root, roles=[], systemctl=Recorder())
+    C.collect(root, publisher=None)
+    annual = json.loads((root / "collect" / "ANNUAL.json").read_text())
+    assert annual["state"] == "WAIT_DEPENDENCY" and annual["cause"]
