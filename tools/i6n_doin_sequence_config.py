@@ -367,16 +367,18 @@ def main(argv=None):
     parser.add_argument("--data-root", help="data root holding the fold cells and frozen supports (v3)")
     parser.add_argument("--genesis-hash", help="DOIN genesis block hash (v3)")
     args = parser.parse_args(argv)
+    if not args.h72_v3_no_stlfsi4:
+        parser.error(
+            "implicit legacy H4/H72 generation is disabled after the STLFSI4 point-in-time leak; "
+            "use --h72-v3-no-stlfsi4"
+        )
     source = json.loads(Path(args.source_node_config).read_text(encoding="utf-8"))
     nodes = json.loads(Path(args.nodes_json).read_text(encoding="utf-8"))
-    if args.h72_v3_no_stlfsi4:
-        if not (args.campaign_root and args.data_root and args.genesis_hash):
-            parser.error("--h72-v3-no-stlfsi4 requires --campaign-root, --data-root and --genesis-hash")
-        manifest = generate_h72_v3(source, nodes, args.output, args.predictor_root, args.python,
-                                   campaign_root=args.campaign_root, data_root=args.data_root,
-                                   genesis_hash=args.genesis_hash)
-    else:
-        manifest = generate(source, nodes, args.output, args.predictor_root, args.python)
+    if not (args.campaign_root and args.data_root and args.genesis_hash):
+        parser.error("--h72-v3-no-stlfsi4 requires --campaign-root, --data-root and --genesis-hash")
+    manifest = generate_h72_v3(source, nodes, args.output, args.predictor_root, args.python,
+                               campaign_root=args.campaign_root, data_root=args.data_root,
+                               genesis_hash=args.genesis_hash)
     print(json.dumps(manifest, sort_keys=True))
 
 

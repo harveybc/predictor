@@ -371,6 +371,13 @@ class Plugin:
             raise ValueError("i6n_feature_manifest differs from the sealed plan feature manifest")
         if availability.manifest_sha256(sealed["features"]) != sealed["sha256"]:
             raise ValueError("sealed plan feature manifest digest mismatch")
+        for fold in contract["fold_order"]:
+            context = contract["folds"][fold]["evaluation_context"]
+            if (context.get("schema") != "i6n.historical_evaluator.v3"
+                    or context.get("experiment") != i6n_island_plan.EXPERIMENT_V3):
+                raise ValueError(
+                    f"POINT_IN_TIME_CONTAMINATED_CONTEXT: fold {fold} is not bound to the clean H72 experiment"
+                )
         contamination.assert_valid_skill({"folds": contract["folds"],
                                           "feature_manifest_sha256": sealed["sha256"]})
         return True

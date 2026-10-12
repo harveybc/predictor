@@ -19,7 +19,9 @@ from optimizer_plugins.i6n_optimizer import Plugin
 from tools import i6n_contamination as contamination
 from tools import i6n_doin_sequence_config as sequence
 from tools import i6n_historical_cell as cell
+from tools import i6n_historical_evaluator as evaluator
 from tools import i6n_island_plan as island_plan
+from tools import i6n_search as search
 from tools import i6n_island_successor as successor
 from tools import i6n_search_space as space
 from tools import i6n_weekly_rollup as rollup
@@ -211,6 +213,43 @@ def test_v3_generator_refuses_the_legacy_experiment_and_digest_drift(fixture, tm
         _generate(tmp_path, root, drift)
 
 
+def test_sequence_cli_refuses_the_implicit_legacy_h72_path(tmp_path):
+    with pytest.raises(SystemExit) as exc:
+        sequence.main([
+            "--source-node-config", str(tmp_path / "unused-source.json"),
+            "--nodes-json", str(tmp_path / "unused-nodes.json"),
+            "--output", str(tmp_path / "must-not-exist"),
+            "--predictor-root", "<predictor-root>",
+            "--python", "<python>",
+        ])
+    assert exc.value.code == 2
+    assert not (tmp_path / "must-not-exist").exists()
+
+
+def test_v3_context_cannot_relabel_a_v1_twenty_feature_cell(fixture, tmp_path, monkeypatch):  # noqa: F811
+    root, source = _data_root(tmp_path, fixture[0])
+    binding = source["domains"][0]["optimization_config"]["i6n_folds"][FOLDS[0]]
+    context = copy.deepcopy(binding["i6n_evaluation_context"])
+    base_path = root / context["base_config"]["relpath"]
+    base = json.loads(base_path.read_text())
+    base["schema"] = cell.SCHEMA_V1
+    base["features"] = list(fa.LEGACY_MANIFEST_20)
+    base.pop("feature_manifest_sha256")
+    base.pop("availability_contract_sha256")
+    base_path.write_text(json.dumps(base))
+    context["base_config"]["sha256"] = file_hash(base_path)
+    monkeypatch.setenv(evaluator.DATA_ROOT_ENV, str(root))
+    genome = search.default_genome(72)
+    request = {
+        "config": search.effective_config(genome),
+        "generation": 0,
+        "context": context,
+        "support": copy.deepcopy(binding["i6n_support"]),
+    }
+    with pytest.raises(ValueError, match="POINT_IN_TIME_CELL_SCHEMA"):
+        evaluator.load_request(request)
+
+
 # --------------------------------------------------------------------------- isolation
 
 def test_fit_cache_identity_differs_between_legacy_and_successor_bindings():
@@ -227,7 +266,10 @@ def _v3_config(evaluator, **changes):
     cfg = _config(evaluator, horizon=72, i6n_plan=plan,
                   i6n_feature_manifest=copy.deepcopy(plan["feature_manifest"]), **changes)
     for fold in cfg["i6n_folds"].values():
-        fold["i6n_evaluation_context"]["experiment"] = island_plan.EXPERIMENT_V3
+        fold["i6n_evaluation_context"].update(
+            schema="i6n.historical_evaluator.v3",
+            experiment=island_plan.EXPERIMENT_V3,
+        )
     return cfg
 
 

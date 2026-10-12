@@ -273,8 +273,19 @@ def verify_declaration(decl: Mapping[str, Any], start: date, end: date) -> dict[
     }
 
 
-def gate(features: Sequence[str], contract: Mapping[str, Any] | None = None) -> dict[str, Any]:
-    """Refuse any feature without a passing declaration; return a typed report."""
+def gate(
+    features: Sequence[str],
+    contract: Mapping[str, Any] | None = None,
+    *,
+    require_verified: bool = False,
+) -> dict[str, Any]:
+    """Refuse invalid availability and optionally unresolved source evidence.
+
+    ``require_verified`` is the promotion gate: conservative declarations are
+    accepted, but a feature whose availability or consumption source remains
+    explicitly ``UNVERIFIED`` is not. Development runs retain those features
+    and report them by name rather than silently promoting them.
+    """
     contract = load_contract() if contract is None else contract
     if (not isinstance(features, (list, tuple)) or not features
             or any(not isinstance(f, str) or not f.strip() for f in features)
@@ -302,11 +313,22 @@ def gate(features: Sequence[str], contract: Mapping[str, Any] | None = None) -> 
             "revision_policy": decl["revision_policy"]["kind"],
             **check,
         }
+    unverified = sorted(
+        feature for feature, row in rows.items()
+        if row["availability_source"] == "UNVERIFIED"
+        or row["consumption_source"] == "UNVERIFIED"
+    )
+    if require_verified and unverified:
+        raise AvailabilityGateError(
+            "UNVERIFIED_AVAILABILITY",
+            ",".join(unverified),
+        )
     return {
         "schema": "i6n.feature_availability.gate_report.v1",
         "status": "PASS",
         "contract_sha256": contract.get("contract_sha256"),
         "manifest_sha256": manifest_sha256(features),
         "checked_span": {"start": span["start"], "end": span["end"]},
+        "unverified_features": unverified,
         "features": rows,
     }

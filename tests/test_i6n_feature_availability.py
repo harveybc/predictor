@@ -49,6 +49,21 @@ def test_gate_passes_the_retained_manifest_and_types_every_source():
         assert row["violations"] == 0 and row["min_margin_hours"] >= 0
 
 
+def test_test_promotion_gate_refuses_the_seven_unverified_features():
+    report = fa.gate(list(fa.MANIFEST_NO_STLFSI4))
+    assert report["unverified_features"] == [
+        "fred.rates.dgs3mo.diff_5d",
+        "fred.rates.dgs7.logret_5d",
+        "fx.gbpusd.logret_1h",
+        "px.close_loc",
+        "px.log_co",
+        "px.rv5",
+        "rg.atr_ratio",
+    ]
+    with pytest.raises(fa.AvailabilityGateError, match="UNVERIFIED_AVAILABILITY"):
+        fa.gate(list(fa.MANIFEST_NO_STLFSI4), require_verified=True)
+
+
 def test_gate_refuses_an_undeclared_external_feature():
     features = list(fa.MANIFEST_NO_STLFSI4[:-1]) + ["fred.new.series.level"]
     with pytest.raises(fa.AvailabilityGateError, match="UNDECLARED_FEATURE"):

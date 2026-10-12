@@ -87,6 +87,7 @@ def authenticated(cfg, trajectory=False, offsets=None):
     for key in ("samples", "spacing_hours"):
         if type(cfg[key]) is not int or cfg[key] < (2 if key == "samples" else 1):
             raise ValueError(f"invalid {key}")
+    split = c1._split(cfg["evaluation_split"])
     features = cfg["features"]
     if schema == SCHEMA_V1:
         if (not isinstance(features, list) or len(features) != 20
@@ -102,7 +103,11 @@ def authenticated(cfg, trajectory=False, offsets=None):
         contract = availability.load_contract()
         if cfg["availability_contract_sha256"] != contract["contract_sha256"]:
             raise ValueError("availability_contract_sha256 differs from the sealed availability contract")
-        availability.gate(features, contract)  # refuses undeclared, excluded or early-consumed features
+        availability.gate(
+            features,
+            contract,
+            require_verified=split.split_id.upper() == "TEST",
+        )  # TEST additionally refuses every explicitly unresolved source
     normalize_config(cfg["model"])
     _settings(cfg["training"])
     if offsets is not None:
@@ -129,7 +134,6 @@ def authenticated(cfg, trajectory=False, offsets=None):
     _, weeks = c1.load_calendar(cfg["calendar"])
     if any(w.market_open.timestamp() % 3600 for w in weeks):
         raise ValueError("calendar opens must align with whole UTC hours")
-    split = c1._split(cfg["evaluation_split"])
     if split.split_id.upper() == "TEST" or split.end > stamp(1735689600):
         raise ValueError("TEST is forbidden")
     for name in ("input", "source_clock"):

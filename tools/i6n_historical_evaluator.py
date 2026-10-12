@@ -29,9 +29,14 @@ import time
 
 import numpy as np
 
-from tools import i6n_historical_cell as cell, i6n_model, i6n_search as search
+from tools import i6n_historical_cell as cell, i6n_island_plan, i6n_model, i6n_search as search
 from tools.i6n_weekly_multi_output import FAMILIES
-from tools.i6n_contracts import business_metrics as bm, eligibility as c1, paired_metrics as c2
+from tools.i6n_contracts import (
+    business_metrics as bm,
+    eligibility as c1,
+    feature_availability as availability,
+    paired_metrics as c2,
+)
 
 SCHEMA = "i6n.historical_evaluator.v2"   # absolute-path contexts: single host only
 # v3: host-root-relative context ({relpath, sha256} under $I6N_DATA_ROOT); portable identity.
@@ -535,6 +540,19 @@ def load_request(request):
     for key in ("base_config", "frozen_support"):
         if cell.file_hash(paths[key]) != paths[key+"_sha256"]:
             raise ValueError(f"{key} digest mismatch")
+    # Inspect the sealed schema before the generic reader authenticates it so
+    # a re-labelled legacy cell receives the point-in-time refusal, rather
+    # than an incidental clock/config error.
+    base = json.loads(paths["base_config"].read_text(encoding="utf-8"))
+    if schema == SCHEMA_V3 and ctx["experiment"] == i6n_island_plan.EXPERIMENT_V3:
+        contract = availability.load_contract()
+        if base.get("schema") != cell.SCHEMA_V2:
+            raise ValueError("POINT_IN_TIME_CELL_SCHEMA: the clean H72 experiment requires a v2 cell")
+        if (base.get("features") != list(availability.MANIFEST_NO_STLFSI4)
+                or base.get("feature_manifest_sha256")
+                != availability.manifest_sha256(availability.MANIFEST_NO_STLFSI4)
+                or base.get("availability_contract_sha256") != contract["contract_sha256"]):
+            raise ValueError("POINT_IN_TIME_CELL_IDENTITY: clean H72 cell identity mismatch")
     base = cell.read_config(paths["base_config"])
     if paths["root"] is not None:
         for key in ("input", "source_clock"):
