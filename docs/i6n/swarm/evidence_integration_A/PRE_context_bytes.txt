@@ -1,0 +1,3 @@
+FAILED tests/test_i6n_swarm_integration_a4.py::test_frozen_context_bytes_reach_another_host_through_the_ledger
+FAILED tests/test_i6n_swarm_integration_a4.py::test_bridge_waits_without_claiming_when_context_bytes_are_unavailable
+2 failed, 6 deselected in 0.81s

@@ -12,6 +12,7 @@ Outputs under the campaign root (which must not exist):
 """
 from copy import deepcopy
 import json
+import math
 import os
 from pathlib import Path
 
@@ -81,6 +82,28 @@ def _no_test(label, *stamps):
             raise ValueError(f"TEST period closed: {label} references {stamp}")
 
 
+def _coverage(admitted, class_id):
+    """Pilot peaks certify one horizon at the class corner; other horizons may materialize more rows.
+
+    An optional ``coverage_adjustment_bytes`` (int >= 0) is ADDED to the measured peak before the 1.25
+    margin, with its derivation pinned by digest. It can only raise a cap, never lower one.
+    """
+    if "coverage_adjustment_bytes" not in admitted:
+        return 0, None
+    adjustment = admitted["coverage_adjustment_bytes"]
+    if type(adjustment) is not int or adjustment < 0:
+        raise ValueError(f"class {class_id}: coverage_adjustment_bytes must be a non-negative integer")
+    derivation = admitted.get("coverage_derivation")
+    if isinstance(derivation, dict):
+        common.read_pinned(derivation, f"coverage derivation {class_id}")
+        digest = derivation["sha256"]
+    elif isinstance(derivation, str) and len(derivation) == 64 and all(c in "0123456789abcdef" for c in derivation):
+        digest = derivation
+    else:
+        raise ValueError(f"class {class_id}: coverage_adjustment_bytes requires a coverage_derivation digest or pin")
+    return adjustment, digest
+
+
 def _class_caps(cfg, classes):
     caps = {}
     for item in classes:
@@ -93,8 +116,12 @@ def _class_caps(cfg, classes):
             peak = receipt.get("observed_peak_bytes")
             if receipt.get("state") != "COMPLETED" or type(peak) is not int or peak <= 0:
                 raise ValueError(f"pilot receipt for {item['class_id']} lacks a completed measured peak")
+            adjustment, derivation = _coverage(admitted, item["class_id"])
+            covered = peak + adjustment
             caps[item["class_id"]] = dict(state="ADMITTED", source="PILOT_RECEIPT", receipt_sha256=admitted["receipt"]["sha256"],
-                                          child_memory_bytes=int(1.25 * peak), measured_peak_bytes=peak,
+                                          child_memory_bytes=math.ceil(1.25 * covered), measured_peak_bytes=covered,
+                                          pilot_peak_bytes=peak, coverage_adjustment_bytes=adjustment,
+                                          coverage_derivation_sha256=derivation,
                                           child_wall_seconds=int(admitted["child_wall_seconds"]),
                                           vram_bytes=admitted.get("vram_bytes", 0),
                                           small_pilot=bool(admitted.get("small_pilot")))
@@ -133,9 +160,12 @@ def doin_template(payload, private, role):
     host = private["hosts"][role]
     doin = private["doin"]
     return dict(campaign_id=payload["campaign_id"], node_label=f"i6n-swarm-{payload['campaign_id']}-{role}",
-                port=host["doin_port"], data_dir=str(Path(host["data_dir"]) / "doin"),
+                mode=payload["mode"], port=host["doin_port"], data_dir=str(Path(host["data_dir"]) / "doin"),
                 bootstrap_peers=[a for other, a in sorted(doin.get("peers", {}).items()) if other != role],
-                shared_min_peers=doin.get("shared_min_peers", 2), claim_timeout=doin.get("claim_timeout", 600),
+                # OTHER verified peers this node waits for (a node alone uses 0; a late joiner resumes the
+                # current generation from the ledger, see doin-plugins I6-N wrapper).
+                shared_min_peers=doin.get("shared_min_peers", len([o for o in doin.get("peers", {}) if o != role])),
+                claim_timeout=doin.get("claim_timeout", 600),
                 predictor_root=host["workdir"], search=payload["search"],
                 node_config=str(Path(private["root"]) / "private" / "hosts" / role / "node.json"),
                 e_plan=common.read_pinned(payload["inputs"]["search_plan"], "E search plan"),
@@ -143,7 +173,14 @@ def doin_template(payload, private, role):
 
 
 def render_doin_config(template, contexts):
+    """ONE v2 wiring grammar (E-B1, reconciled with e242c846): the sealed E plan read by digest."""
     s = template["search"]
+    e_plan = template.get("e_plan")
+    if not isinstance(e_plan, dict) or not e_plan.get("plan_sha256"):
+        raise ValueError("the sealed joint search plan (e_plan) is required: no v1 DOIN config is rendered")
+    if template.get("mode") == "production":
+        from tools.i6n_search_plan import verify_plan
+        verify_plan(dict(e_plan))  # production pins a sealed E plan, never a fixture or edited copy
 
     def domain(h, context):
         return dict(domain_id=f"i6n-swarm-{template['campaign_id']}-h{h}", optimize=True, evaluate=False,
@@ -188,7 +225,8 @@ def bridge_node_config(payload, private, role, device):
                           if v.get("measured_peak_bytes")},
                 ledger=dict(url=ledger["url"], token_file=ledger["token_file"]),
                 logs_dir=str(Path(host["data_dir"]) / "logs"), state_dir=str(Path(host["data_dir"]) / "state"),
-                shared_data_root=private["shared_data_root"], experiment=payload["experiment"],
+                shared_data_root=host.get("shared_data_root") or private["shared_data_root"],
+                experiment=payload["experiment"],
                 doin_node_config=str(Path(private["root"]) / "private" / "hosts" / role / "doin_node.json"),
                 doin_template=doin_template(payload, private, role),
                 freeze_caps=private.get("freeze_caps") or dict(child_memory_bytes=4 * 1024**3, child_wall_seconds=3600),
@@ -229,6 +267,14 @@ def build(config_path, output_root):
     if multi is not None and multi.get("schema") != "i6n.multi_output_arms.v1":
         raise ValueError("multi-output manifest must be lane C's i6n.multi_output_arms.v1 template")
     horizons = list(e_plan["horizons_hours"])
+
+    def portable(pin):
+        """Production: cell pins become {relpath, sha256} under the shared data root (roots may differ per host)."""
+        if cfg["mode"] != "production" or not pin or "path" not in pin:
+            return pin
+        common.read_pinned(pin, "cell config")
+        return common.relative_pin(pin, cfg["shared_data_root"])
+
     fold_map = _fold_map(e_plan, views, horizons)
     fold_ids = [fold_map[e_id] for e_id in e_fold_ids(e_plan)]
     c_plan = common.read_pinned(cfg["weekly_plan"], "C weekly plan") if cfg.get("weekly_plan") else None
@@ -250,7 +296,7 @@ def build(config_path, output_root):
             _no_test(f"fold {e['fold_id']}", e.get("cutoff_utc"))
             state = "READY" if e["state"] in RUNNABLE else e["state"]
             item = dict(fold_id=e["fold_id"], state=state, cause=e.get("cause"), unit_sha256=e.get("unit_sha256"),
-                        binding=e.get("binding"), cell_config=e.get("cell_config"), c_state=e["state"],
+                        binding=e.get("binding"), cell_config=portable(e.get("cell_config")), c_state=e["state"],
                         declared_assumption=e.get("declared_assumption"))
             if c_plan is not None and state == "READY":
                 origins[(str(h), e["fold_id"])] = origins_from_c_plan(c_plan, e.get("unit_id", e["fold_id"]), h)
@@ -271,7 +317,8 @@ def build(config_path, output_root):
                 cell = (w.get("cell_configs") or {}).get(str(h))
                 if binding:
                     _binding(binding, h, f"week {w['week_id']} h{h}", cfg["shared_data_root"])
-                weeks.append(dict(week_id=w["week_id"], state="READY", cause=None, binding=binding, cell_config=cell))
+                weeks.append(dict(week_id=w["week_id"], state="READY", cause=None, binding=binding,
+                                  cell_config=portable(cell)))
             else:
                 cause = (w.get("cause") or {}).get(str(h)) or "NOT_LISTED_FOR_HORIZON"
                 state = "WAIT_DEPENDENCY" if "WAIT" in str(cause) else "NO_ELIGIBLE_ROWS"
@@ -290,8 +337,20 @@ def build(config_path, output_root):
         arms = [a for a in (multi or {}).get("arms", []) if a["family"] == family]
         for arm in arms:
             _no_test(f"arm {arm['arm_id']}", arm.get("cutoff_utc"), arm.get("release_at_utc"))
+        # A.4: one family binding per eligible week, frozen from the week's cell of the family's
+        # longest planned horizon (any family horizon is a valid base cell; this choice is fixed).
+        anchor = max(hs) if hs else None
+        items = []
+        for w in views["weeks"]:
+            cell = (w.get("cell_configs") or {}).get(str(anchor)) if anchor else None
+            if anchor in w.get("horizons", []) and cell:
+                items.append(dict(week_id=w["week_id"], state="READY", cause=None, binding=None, cell_config=portable(cell),
+                                  family=family))
+        dag.append(dict(node_id=f"freeze_family:{family}", stage="freeze", depends_on=[],
+                        spec=dict(horizon=anchor, family=family, items=items)))
         dag.append(dict(node_id=f"multi_output:{family}", stage="multi_output",
-                        depends_on=[f"annual:h{h}" for h in hs], spec=dict(family=family, horizons=hs)))
+                        depends_on=[f"annual:h{h}" for h in hs] + [f"freeze_family:{family}"],
+                        spec=dict(family=family, horizons=hs, anchor_horizon=anchor)))
     for index, node in enumerate(dag):
         node["ord"] = index
     s = e_plan["search"]

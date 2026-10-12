@@ -1,0 +1,9 @@
+# predictor @63522238
+$ crispdm-run -m 2G -t 120s -- python -m pytest -q tests/test_i6n_swarm_ledger.py tests/test_i6n_swarm_runner.py tests/test_i6n_swarm_lease_service.py tests/test_i6n_swarm_placement.py tests/test_i6n_cost_pilot.py
+65 passed in 11.43s
+$ crispdm-run -m 2G -t 120s -- python -m pytest -q tests/test_i6n_swarm_bridge.py tests/test_i6n_swarm_review_e.py tests/test_i6n_swarm_v2_wiring.py tests/test_i6n_swarm_integration_a4.py
+32 passed in 11.59s
+$ crispdm-run -m 2G -t 120s -- python -m pytest -q tests/test_i6n_swarm_campaign.py tests/test_i6n_swarm_agent.py
+31 passed in 13.55s
+$ crispdm-run -m 2G -t 120s -- env PYTHONPATH=.:<deps>/{doin-core/src,doin-node/src,data-lake,data-warehouse} python -m pytest -q tests/test_i6n_search_publish.py tests/test_i6n_publish.py tests/test_i6n_archive.py
+26 passed, 1 skipped in 2.88s

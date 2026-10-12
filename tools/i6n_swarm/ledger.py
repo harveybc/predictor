@@ -629,3 +629,27 @@ class Ledger:
             return None
         return dict(node_id=node_id, generation=rows[0]["generation"], state=json.loads(rows[0]["state"]),
                     state_sha256=rows[0]["state_sha256"])
+
+    # ------------------------------------------------------------ content-addressed blobs
+    def _blob_path(self, sha256):
+        if not isinstance(sha256, str) or len(sha256) != 64 or any(c not in "0123456789abcdef" for c in sha256):
+            raise LedgerError("blob id must be a sha256 hex digest")
+        return self.path.parent / "blobs" / sha256[:2] / sha256
+
+    def put_blob(self, sha256, data):
+        """Store frozen bytes (FROZEN/BINDING/cell files) by content so every host can materialize them."""
+        import hashlib
+        if hashlib.sha256(data).hexdigest() != sha256:
+            raise LedgerError("blob bytes do not match their sha256")
+        path = self._blob_path(sha256)
+        if path.exists():
+            return "ALREADY"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".tmp")
+        tmp.write_bytes(data)
+        tmp.replace(path)
+        return "STORED"
+
+    def get_blob(self, sha256):
+        path = self._blob_path(sha256)
+        return path.read_bytes() if path.exists() else None

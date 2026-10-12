@@ -1,12 +1,12 @@
 {
   "schema": "i6n.swarm_weekly.interface.v1",
   "lane": "A",
-  "interface_version": "A.3",
-  "status": "A.3 implemented on satoshi/i6n-swarm-A-trajectory-20261011 (merged integration c6f1959b); additive over A.2",
+  "interface_version": "A.4",
+  "status": "A.4 on satoshi/i6n-swarm-A-trajectory-20261011 (merged B f7a05838); additive over A.3 except where noted",
   "branch": "satoshi/i6n-swarm-A-trajectory-20261011",
   "evaluator": {
     "module": "tools.i6n_historical_evaluator",
-    "context_schema": "i6n.historical_evaluator.v2",
+    "context_schema": "i6n.historical_evaluator.v3 (root-relative; preferred) | v2 (absolute, single host) | v1 (read-only)",
     "freeze": {
       "argv": [
         "<python>",
@@ -14,14 +14,16 @@
         "tools.i6n_historical_evaluator",
         "freeze",
         "--config",
-        "<abs cell.json>",
+        "<abs cell.json under root>",
         "--output",
-        "<abs new dir>",
+        "<abs new dir under root>",
         "--experiment",
-        "<experiment id>",
+        "<id>",
         "--fold",
         "<fold/unit id>",
-        "[--score-outer]"
+        "[--score-outer]",
+        "[--family short|long]",
+        "[--data-root <shared data root>]"
       ],
       "effect": "prepares data (no fit), seals endpoint-h TRAIN/inner support for ONE (horizon, fold); writes FROZEN.json and BINDING.json; output dir must not exist",
       "requires": "cell config training block equal to plan section 2 stopping: max_epochs=50, patience=5, min_delta=1e-6, seed=6102026; endpoint base model (n_horizons=1)",
@@ -125,7 +127,7 @@
           "fold": "str",
           "horizon_hours": "int (candidate endpoint h)",
           "head_offset_hours": "int",
-          "head_role": "ENDPOINT|INTERMEDIATE",
+          "head_role": "ENDPOINT|INTERMEDIATE|DIRECT_HEAD",
           "comparison": "true only for ENDPOINT rows; selection uses ENDPOINT TRAIN/INNER via fitness; ENDPOINT VALIDATION is the annual-weekly metric row; INTERMEDIATE rows are diagnostics",
           "role": "MANAGEMENT|ENTRY (C1 canonical)",
           "population": "S",
@@ -182,7 +184,9 @@
         "attention_variables_on_device": "bool",
         "output_device": "str"
       },
-      "outer_metrics": "metadata.outer_metrics (not inside candidate_receipt): endpoint VALIDATION n/mae/mse/naive_mae/naive_mse/skill_mae/unit/scale"
+      "outer_metrics": "metadata.outer_metrics (not inside candidate_receipt): endpoint VALIDATION n/mae/mse/naive_mae/naive_mse/skill_mae/unit/scale",
+      "family": "short|long (direct multi-output arms only)",
+      "recipe": "arm recipe identity without config (arms only)"
     },
     "row_identity_keys": [
       "experiment",
@@ -219,5 +223,19 @@
     "candidate_receipt.attempt and STATUS.attempt now always carry parent (null for index 1 or A.2-style requests). Additive.",
     "Request key resume_checkpoint is refused with RESUME_UNSUPPORTED: the evaluator writes no optimizer/RNG/epoch checkpoint, so the ledger must use one linked RECOVERY attempt (plan section 5).",
     "evaluator.fit_id(request) exposes the same fit_id formula for cross-checks."
+  ],
+  "capabilities": [
+    "TRAJECTORY_SUPERVISION",
+    "OUTER_WEEK_VALIDATION",
+    "LEDGER_LINEAGE",
+    "DIRECT_MULTI_OUTPUT_ARM",
+    "HOST_RELATIVE_CONTEXT"
+  ],
+  "changes_from_A3": [
+    "DIRECT MULTI-OUTPUT ARMS (plan 4.6, lane C manifest): pure tools.i6n_historical_evaluator.multi_output_arm_config(finalist_evaluator_config, family_horizons) -> arm config (schema i6n.multi_output_arm.v1). Family must be exactly lane C FAMILIES short [2,3,4,5,6,12] or long [18,24,36,48,60,72] and contain the recipe horizon. Recipe window (L, dx, n), input transform and complete core (branches/fusion/core) are verbatim; one direct head per business horizon (core.n_horizons = 6); recipe supervision is NOT carried; output_mode = direct_multi_output (never a trajectory). arm['recipe'] = {source_horizon, source_output_mode, genotype_canonical_sha256, effective_config_sha256, config}. Identity: arm_config_sha256(arm) == effective_config_sha256(arm) (E definition). The arm config is self-verifying (it must equal the map of its own recipe and family).",
+    "FREEZE --family short|long (with --score-outer for weekly units): seals per head TRAIN/inner C1 support (identical rows/naive/digest to a separate endpoint freeze of that horizon), per-head C1 plans, per-head outer S; heads without TRAIN support typed NO_TRAIN_SUPPORT|DEGENERATE_TRAIN_SCALE and excluded (never zero error); an ineligible head never drops another head's rows. The base cell config's horizon must be in the family. BINDING adds i6n_family and i6n_offsets; i6n_support is the POOLED support over trained heads (shared-adapter compatibility only).",
+    "EVALUATE an arm: request.config = arm config with the family binding; per-head TRAIN-only scales, equal weights among trained heads, per-head naive on identical rows; receipt rows head_role DIRECT_HEAD (new enum value), comparison=true, horizon_hours = head offset; candidate_receipt gains family and recipe (config omitted); output_mode direct_multi_output; delta_y_hours null; metadata.shared_receipt_scope = POOLED_FAMILY_HEADS_DIAGNOSTIC_NOT_SELECTION (top-level error/naive sums pooled, fitness diagnostic only). Outer VALIDATION rows per head, never in stopping/fitness. Endpoint genomes on a family binding and arm configs on an endpoint binding are refused.",
+    "HOST-ROOT-RELATIVE CONTEXTS: freeze --data-root <root> writes context schema i6n.historical_evaluator.v3 = {schema, base_config:{relpath, sha256}, frozen_support:{relpath, sha256}, output_root:{relpath}, experiment, fold}; cell config, its inputs and the output must lie under the root. Evaluation resolves against $I6N_DATA_ROOT on each host (required for v3; never part of identity). v3 support digests bind data by content sha only (portable); candidate identity uses root-relative data paths and drops CUDA_VISIBLE_DEVICES, so fit_id and candidate_identity_sha256 are host-independent. v2 (absolute) contexts remain fittable on a single host for legacy callers; v1 stays read-only.",
+    "For B: freeze argv add --data-root <shared_data_root> (and --family for arms); evaluate subprocess env must set I6N_DATA_ROOT=<this host's shared_data_root>."
   ]
 }

@@ -18,6 +18,7 @@ import fcntl
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 import re
 import resource
@@ -28,10 +29,21 @@ import time
 
 import numpy as np
 
-from tools import i6n_historical_cell as cell, i6n_search as search
+from tools import i6n_historical_cell as cell, i6n_model, i6n_search as search
+from tools.i6n_weekly_multi_output import FAMILIES
 from tools.i6n_contracts import business_metrics as bm, eligibility as c1, paired_metrics as c2
 
-SCHEMA = "i6n.historical_evaluator.v2"
+SCHEMA = "i6n.historical_evaluator.v2"   # absolute-path contexts: single host only
+# v3: host-root-relative context ({relpath, sha256} under $I6N_DATA_ROOT); portable identity.
+SCHEMA_V3 = "i6n.historical_evaluator.v3"
+CONTEXT_V3_KEYS = {"schema", "base_config", "frozen_support", "output_root", "experiment", "fold"}
+DATA_ROOT_ENV = "I6N_DATA_ROOT"
+FITTABLE = (SCHEMA, SCHEMA_V3)
+ARM_SCHEMA = "i6n.multi_output_arm.v1"
+ARM_ADAPTATION = ("RECIPE_WINDOW_INPUT_TRANSFORM_AND_CORE_VERBATIM; ONE_DIRECT_HEAD_PER_FAMILY_HORIZON; "
+                  "RECIPE_OUTPUT_SUPERVISION_NOT_CARRIED; NOT_A_TRAJECTORY")
+CAPABILITIES = ("TRAJECTORY_SUPERVISION", "OUTER_WEEK_VALIDATION", "LEDGER_LINEAGE",
+                "DIRECT_MULTI_OUTPUT_ARM", "HOST_RELATIVE_CONTEXT")
 # v1 contexts (the retained endpoint-only terminals) are verifiable, never fitted.
 LEGACY_SCHEMA = "i6n.historical_evaluator.v1"
 LEGACY_CONTEXT_KEYS = {"schema", "base_config", "base_config_sha256", "frozen_support",
@@ -160,6 +172,74 @@ def candidate_config(base, effective):
     return cfg
 
 
+def multi_output_arm_config(finalist, family_horizons):
+    """Pure map: (finalist evaluator_config, family horizons) -> direct multi-output arm config.
+
+    The recipe's input window (L, dx, n), input transform and complete core
+    (branches/fusion/core per i6n_model) are carried verbatim; the output is
+    one direct head per business horizon of the family (short or long, exactly
+    as lane C's FAMILIES). The recipe's own supervision (endpoint/trajectory)
+    is NOT carried: this is direct multi-output, not a trajectory. Identity is
+    ``effective_config_sha256`` of the returned config (lane E definition).
+    """
+    try:
+        genome = {k: finalist[k] for k in search._GENOME_KEYS}
+        canonical = search.effective_config(genome)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError("invalid effective genome for the arm recipe") from exc
+    if c1.canonical_digest(canonical) != c1.canonical_digest(finalist):
+        raise ValueError("noncanonical or modified effective genome for the arm recipe")
+    horizons = list(family_horizons) if isinstance(family_horizons, (list, tuple)) else None
+    family = next((name for name, hs in FAMILIES.items() if horizons == list(hs)), None)
+    if family is None:
+        raise ValueError(f"family horizons must be exactly one of {dict(FAMILIES)}")
+    if canonical["horizon"] not in horizons:
+        raise ValueError("recipe horizon is not a horizon of this family")
+    core = i6n_model.normalize_config(dict(canonical["core"], n_horizons=len(horizons)))
+    return dict(schema=ARM_SCHEMA, family=family, horizons=horizons, output_mode="direct_multi_output",
+                output_offsets=list(horizons), history_hours=canonical["history_hours"],
+                delta_x=canonical["delta_x"], samples=canonical["samples"],
+                input_offsets=canonical["input_offsets"], input_transform=canonical["input_transform"],
+                core=core, final_steps=canonical["final_steps"], adaptation=ARM_ADAPTATION,
+                recipe=dict(source_horizon=canonical["horizon"], source_output_mode=canonical["output_mode"],
+                            genotype_canonical_sha256=search.effective_identity(genome),
+                            effective_config_sha256=effective_config_sha256(canonical), config=canonical))
+
+
+def is_arm(config):
+    return isinstance(config, dict) and config.get("schema") == ARM_SCHEMA
+
+
+def verify_arm(arm):
+    """Self-verifying arm: it must equal the pure map of its own recipe and family."""
+    if not is_arm(arm) or not isinstance(arm.get("recipe"), dict):
+        raise ValueError("direct multi-output arm config required")
+    if multi_output_arm_config(arm["recipe"].get("config"), arm.get("horizons")) != arm:
+        raise ValueError("noncanonical or modified effective multi-output arm config")
+    return arm
+
+
+def arm_config_sha256(arm):
+    """Arm identity: lane E's effective_config_sha256 of the (verified) arm config."""
+    return effective_config_sha256(verify_arm(arm))
+
+
+def arm_candidate_config(base, arm):
+    """Cell config of a direct multi-output arm; the base horizon must be in the family."""
+    verify_arm(arm)
+    if base["horizon_hours"] not in arm["horizons"]:
+        raise ValueError("base cell horizon is not in the arm family")
+    cfg = dict(deepcopy(base), samples=arm["samples"], spacing_hours=arm["delta_x"], model=deepcopy(arm["core"]))
+    cfg["training"] = dict(cfg["training"], head_weights=[1.] * len(arm["horizons"]))
+    cell.explicit_offsets(cfg, arm["horizons"])
+    return cfg
+
+
+def request_offsets(config):
+    """Explicit direct heads of an arm request; None for endpoint/trajectory genomes."""
+    return list(config["horizons"]) if is_arm(config) else None
+
+
 def transform_windows(x, kind):
     """Backward difference of TRAIN-scaled levels on this exact input grid."""
     if kind == "identity":
@@ -194,14 +274,60 @@ def observations(data, cfg, split, column=-1):
     return origins, data["price"][oi].astype(np.float64), data["price"][ti].astype(np.float64)
 
 
-def support(data, cfg):
+def _governing(cfg, offset, portable):
+    keys = ("input", "source_clock", "calendar", "features", "asset", "unit", "role")
+    governing = {k: cfg[k] for k in keys}
+    if portable:  # host-independent: data pins by content digest only
+        governing.update(input={"sha256": cfg["input"]["sha256"]},
+                         source_clock={"sha256": cfg["source_clock"]["sha256"]})
+    return dict(governing, horizon_hours=offset)
+
+
+def head_support(data, cfg, column=-1, portable=False):
+    """Unvalidated per-head TRAIN/inner counts, naive sums, digests and origins digests."""
+    result = dict(counts={}, naive_sums={}, support_digest={})
+    origin_digests = {}
+    governing = _governing(cfg, _offsets(data, cfg)[column], portable)
+    for name in SPLITS:
+        part = getattr(data["parts"], name)
+        origins, current, future = observations(data, cfg, name, column)
+        origin_digests[name] = origins_sha256(origins)
+        result["counts"][name] = len(origins)
+        result["naive_sums"][name] = math.fsum(np.abs(current-future).tolist())
+        result["support_digest"][name] = c1.canonical_digest(dict(governing=governing, split=name,
+            history_start=c1.iso(data["parts"].history_start), inner_start=c1.iso(data["parts"].inner_start),
+            fit_cutoff=c1.iso(data["parts"].fit_cutoff), origins=[c1.iso(t) for t in part.origins],
+            targets=[[c1.iso(row[column])] for row in part.target_instants], mask=[[m[column]] for m in part.mask]))
+    return result, origin_digests
+
+
+def family_support(data, cfg, portable):
+    """Per-head supports of a direct multi-output arm and their pooled shared support."""
+    heads, pooled = {}, dict(counts={}, naive_sums={}, support_digest={})
+    for j, offset in enumerate(_offsets(data, cfg)):
+        if data["head_status"][j] == "TRAINED":
+            sup, origin_digests = head_support(data, cfg, j, portable)
+            heads[str(offset)] = dict(status="TRAINED", support=sup, support_origins_sha256=origin_digests)
+        else:
+            heads[str(offset)] = dict(status=data["head_status"][j], support=None, support_origins_sha256=None)
+    trained = [h for h in heads.values() if h["status"] == "TRAINED"]
+    for name in SPLITS:
+        pooled["counts"][name] = sum(h["support"]["counts"][name] for h in trained)
+        pooled["naive_sums"][name] = math.fsum(h["support"]["naive_sums"][name] for h in trained)
+        pooled["support_digest"][name] = c1.canonical_digest(dict(mode="multi_output", split=name, heads={
+            o: h["support"]["support_digest"][name] for o, h in heads.items() if h["status"] == "TRAINED"}))
+    return search._support(pooled), heads
+
+
+def support(data, cfg, portable=False):
     """Bind the endpoint column's full ordered mask, not a candidate intersection.
 
     Intermediate heads are projected away, so an endpoint-only candidate and a
     trajectory candidate of the same fold bind byte-identical support.
+    ``portable`` (v3 contexts) binds data by content digest, not host paths.
     """
     result = dict(counts={}, naive_sums={}, support_digest={})
-    governing = {k: cfg[k] for k in ("input", "source_clock", "calendar", "features", "asset", "unit", "role", "horizon_hours")}
+    governing = _governing(cfg, cfg["horizon_hours"], portable)
     for name in SPLITS:
         part = getattr(data["parts"], name)
         origins, current, future = observations(data, cfg, name)
@@ -261,40 +387,127 @@ def outer_plan(data, cfg, sealed, column=-1):
     return dict(plan=raw, population=pop)
 
 
-def freeze(config_path, output, experiment, fold, score_outer=False):
-    """Seal full TRAIN/inner endpoint S of one (horizon, fold), without fitting.
+def _under(path, root, what):
+    try:
+        return Path(path).resolve().relative_to(root)
+    except ValueError:
+        raise ValueError(f"{what} is outside the data root") from None
 
-    ``score_outer`` (weekly-refit units only) also seals the outer week's
-    endpoint S, count and naive sum; those rows are reported as VALIDATION
-    diagnostics after the fit and never enter fitness or stopping.
+
+def _sealed_outer(data, cfg, sealed, column):
+    origins, current, future = observations(data, cfg, "validation", column)
+    outer = dict(count=len(origins), naive_sum=math.fsum(np.abs(current-future).tolist()),
+                 origins_sha256=origins_sha256(origins))
+    if len(origins):
+        outer.update(outer_plan(data, cfg, sealed, column))
+    return outer
+
+
+def freeze(config_path, output, experiment, fold, score_outer=False, family=None, data_root=None):
+    """Seal one (horizon or family, fold) before any fit, without fitting.
+
+    ``score_outer`` (weekly-refit units only) also seals the outer week's S,
+    count and naive per head; reported as VALIDATION diagnostics after the fit,
+    never in fitness or stopping. ``family`` ('short'|'long') seals a direct
+    multi-output arm: per-head C1 support, TRAIN-only trainability and outer
+    week per head, with a pooled shared support for the adapter receipt.
+    ``data_root`` writes a v3 host-root-relative context: the config, its
+    inputs and the output must lie under that root; evaluation hosts resolve
+    the context against their own ``$I6N_DATA_ROOT``.
     """
     if type(score_outer) is not bool:
         raise ValueError("score_outer must be a boolean")
+    if family is not None and family not in FAMILIES:
+        raise ValueError(f"family must be one of {sorted(FAMILIES)}")
     path, root = Path(config_path).resolve(), Path(output).resolve()
     _label(experiment, "experiment")
     _label(fold, "fold")
     cfg = cell.read_config(path)
     plan_stopping(cfg)
-    search.default_genome(cfg["horizon_hours"])
-    data = cell.prepare(cfg)
+    portable = data_root is not None
+    if portable:
+        data_root = Path(data_root).resolve()
+        rel_config, rel_output = _under(path, data_root, "cell config"), _under(root, data_root, "output")
+        for key in ("input", "source_clock"):
+            _under(cfg[key]["path"], data_root, f"cell {key}")
     sealed = c1.iso(datetime.now(timezone.utc))
-    frozen = dict(schema=SCHEMA, support=support(data, cfg),
-                  splits={s: split_plan(data, cfg, s, sealed) for s in SPLITS})
-    if score_outer:
-        _, current, future = observations(data, cfg, "validation")
-        frozen["outer"] = dict(outer_plan(data, cfg, sealed), split_id=cfg["evaluation_split"]["split_id"],
-                               count=len(current), naive_sum=math.fsum(np.abs(current-future).tolist()))
+    if family is None:
+        search.default_genome(cfg["horizon_hours"])
+        data = cell.prepare(cfg)
+        frozen = dict(schema=SCHEMA_V3 if portable else SCHEMA, mode="endpoint", portable=portable,
+                      support=support(data, cfg, portable),
+                      splits={s: split_plan(data, cfg, s, sealed) for s in SPLITS})
+        if score_outer:
+            frozen["outer"] = dict(_sealed_outer(data, cfg, sealed, -1),
+                                   split_id=cfg["evaluation_split"]["split_id"])
+            if not frozen["outer"]["count"]:
+                raise ValueError("NO_ELIGIBLE_OUTER_ENDPOINT")
+    else:
+        hs = list(FAMILIES[family])
+        if cfg["horizon_hours"] not in hs:
+            raise ValueError("base cell horizon is not in the requested family")
+        cfg = dict(cfg, model=dict(cfg["model"], n_horizons=len(hs)),
+                   training=dict(cfg["training"], head_weights=[1.] * len(hs)))
+        data = cell.prepare(cfg, offsets=hs)
+        pooled, heads = family_support(data, cfg, portable)
+        for j, offset in enumerate(hs):
+            head = heads[str(offset)]
+            if head["status"] != "TRAINED":
+                continue
+            head["splits"] = {s: (split_plan(data, cfg, s, sealed, column=j)
+                                  if head["support"]["counts"][s] else None) for s in SPLITS}
+            if score_outer:
+                head["outer"] = _sealed_outer(data, cfg, sealed, j)
+        frozen = dict(schema=SCHEMA_V3 if portable else SCHEMA, mode="multi_output", portable=portable,
+                      family=family, offsets=hs, support=pooled, heads=heads, score_outer=score_outer,
+                      outer_split_id=cfg["evaluation_split"]["split_id"] if score_outer else None)
     root.mkdir(parents=True, exist_ok=False)
     cell.atomic_json(root / "FROZEN.json", frozen)
-    context = dict(schema=SCHEMA, base_config=str(path), base_config_sha256=cell.file_hash(path),
-        frozen_support=str(root / "FROZEN.json"), frozen_support_sha256=cell.file_hash(root / "FROZEN.json"), output_root=str(root),
-        experiment=experiment, fold=fold)
+    frozen_sha = cell.file_hash(root / "FROZEN.json")
+    if portable:
+        context = dict(schema=SCHEMA_V3,
+                       base_config=dict(relpath=rel_config.as_posix(), sha256=cell.file_hash(path)),
+                       frozen_support=dict(relpath=(rel_output / "FROZEN.json").as_posix(), sha256=frozen_sha),
+                       output_root=dict(relpath=rel_output.as_posix()), experiment=experiment, fold=fold)
+    else:
+        context = dict(schema=SCHEMA, base_config=str(path), base_config_sha256=cell.file_hash(path),
+            frozen_support=str(root / "FROZEN.json"), frozen_support_sha256=frozen_sha, output_root=str(root),
+            experiment=experiment, fold=fold)
     binding = dict(i6n_horizon=cfg["horizon_hours"], i6n_support=frozen["support"],
                    i6n_evaluation_context=context,
                    i6n_evaluator_command=[sys.executable, "-m", "tools.i6n_historical_evaluator", "evaluate"],
                    i6n_evaluator_timeout=cfg["resources"]["max_seconds"] + 120)
+    if family is not None:
+        binding.update(i6n_family=family, i6n_offsets=list(FAMILIES[family]))
     cell.atomic_json(root / "BINDING.json", binding)
     return binding
+
+
+def _relpath(pin, root, what):
+    rel = pin.get("relpath") if isinstance(pin, dict) else None
+    if not isinstance(rel, str) or not rel or Path(rel).is_absolute() or ".." in Path(rel).parts:
+        raise ValueError(f"{what} relpath must be a relative path inside the data root")
+    return root / rel
+
+
+def context_paths(ctx):
+    """Resolve a context to this host's absolute paths (v3 via $I6N_DATA_ROOT)."""
+    if ctx.get("schema") != SCHEMA_V3:
+        return dict(base_config=Path(ctx["base_config"]), frozen_support=Path(ctx["frozen_support"]),
+                    output_root=Path(ctx["output_root"]), root=None,
+                    base_config_sha256=ctx["base_config_sha256"], frozen_support_sha256=ctx["frozen_support_sha256"])
+    value = os.environ.get(DATA_ROOT_ENV)
+    if not value or not Path(value).is_absolute() or not Path(value).is_dir():
+        raise ValueError(f"{DATA_ROOT_ENV} must name this host's existing absolute data root")
+    root = Path(value).resolve()
+    paths = {k: _relpath(ctx[k], root, k) for k in ("base_config", "frozen_support", "output_root")}
+    for k in ("base_config", "frozen_support"):
+        if set(ctx[k]) != {"relpath", "sha256"}:
+            raise ValueError(f"{k} pin requires exactly relpath and sha256")
+    if set(ctx["output_root"]) != {"relpath"}:
+        raise ValueError("output_root pin requires exactly relpath")
+    return dict(paths, root=root, base_config_sha256=ctx["base_config"]["sha256"],
+                frozen_support_sha256=ctx["frozen_support"]["sha256"])
 
 
 def load_request(request):
@@ -315,32 +528,66 @@ def load_request(request):
         raise ValueError("invalid generation")
     ctx = request["context"]
     schema = ctx.get("schema") if isinstance(ctx, dict) else None
-    required = {SCHEMA: CONTEXT_KEYS, LEGACY_SCHEMA: LEGACY_CONTEXT_KEYS}.get(schema)
+    required = {SCHEMA: CONTEXT_KEYS, LEGACY_SCHEMA: LEGACY_CONTEXT_KEYS, SCHEMA_V3: CONTEXT_V3_KEYS}.get(schema)
     if required is None or set(ctx) != required:
         raise ValueError("historical context schema mismatch")
+    paths = context_paths(ctx)
     for key in ("base_config", "frozen_support"):
-        if cell.file_hash(ctx[key]) != ctx[key+"_sha256"]:
+        if cell.file_hash(paths[key]) != paths[key+"_sha256"]:
             raise ValueError(f"{key} digest mismatch")
-    base = cell.read_config(ctx["base_config"])
-    if schema == SCHEMA:
+    base = cell.read_config(paths["base_config"])
+    if paths["root"] is not None:
+        for key in ("input", "source_clock"):
+            _under(base[key]["path"], paths["root"], f"cell {key}")
+    if schema in FITTABLE:
         _label(ctx["experiment"], "experiment")
         _label(ctx["fold"], "fold")
         plan_stopping(base)
-    cfg = candidate_config(base, request["config"])
-    frozen = json.loads(Path(ctx["frozen_support"]).read_text())
+    frozen = json.loads(paths["frozen_support"].read_text())
+    mode = frozen.get("mode", "endpoint")
+    if mode == "multi_output":
+        if not is_arm(request["config"]):
+            raise ValueError("multi-output family binding requires a direct multi-output arm config")
+        if list(request["config"].get("horizons", [])) != frozen["offsets"]:
+            raise ValueError("arm family horizons differ from the frozen family binding")
+        cfg = arm_candidate_config(base, request["config"])
+    else:
+        if is_arm(request["config"]):
+            raise ValueError("a direct multi-output arm config requires a --family binding")
+        cfg = candidate_config(base, request["config"])
     if frozen["schema"] != schema or search._support(request["support"]) != frozen["support"]:
         raise ValueError("request differs from frozen support")
     return cfg, frozen
 
 
 def identity(cfg, request):
-    """Full identity; generation and attempt are deliberately excluded."""
-    return dict(cell=cell.identity(cfg), effective_config=request["config"], context=request["context"],
+    """Full identity; generation and attempt are deliberately excluded.
+
+    v3 contexts are host-independent: data paths are root-relative and the
+    host's CUDA_VISIBLE_DEVICES is not part of identity (device stays explicit).
+    """
+    paths = context_paths(request["context"])
+    if paths["root"] is None:
+        cell_identity = cell.identity(cfg)
+    else:
+        portable = deepcopy(cfg)
+        for key in ("input", "source_clock"):
+            portable[key]["path"] = _under(cfg[key]["path"], paths["root"], f"cell {key}").as_posix()
+        cell_identity = cell.identity(portable)
+        cell_identity.pop("cuda_visible_devices")
+    return dict(cell=cell_identity, effective_config=request["config"], context=request["context"],
         support=request["support"], bridge_sha256=cell.file_hash(__file__), search_sha256=cell.file_hash(search.__file__))
 
 
+def output_root(context):
+    """This host's output root: v3 resolves its relpath under $I6N_DATA_ROOT."""
+    if context.get("schema") == SCHEMA_V3:
+        return context_paths(context)["output_root"]
+    return Path(context["output_root"])
+
+
 def attempt_root(context, digest, index):
-    base = Path(context["output_root"]) / "candidates"
+    base = output_root(context) / "candidates"
     return base / digest if index == 1 else base / f"{digest}.attempt{index}"
 
 
@@ -386,6 +633,38 @@ def _check_parent(parent_root, attempt, request):
             fcntl.flock(lock, fcntl.LOCK_UN)
     elif state != "FAILED":
         raise ValueError(f"attempt parent is not an interrupted/failed terminal: {state}")
+
+
+def prepare_candidate(cfg, request):
+    """Data for the candidate's heads: trajectory/endpoint offsets or explicit arm heads."""
+    offsets = request_offsets(request["config"])
+    return cell.prepare(cfg, trajectory=True) if offsets is None else cell.prepare(cfg, offsets=offsets)
+
+
+def check_support(data, cfg, frozen):
+    """Full candidate support must equal the frozen support (no intersection/drop)."""
+    portable = bool(frozen.get("portable", False))
+    if frozen.get("mode", "endpoint") == "multi_output":
+        pooled, heads = family_support(data, cfg, portable)
+        sealed = {o: {k: h[k] for k in ("status", "support", "support_origins_sha256")}
+                  for o, h in frozen["heads"].items()}
+        if pooled != frozen["support"] or heads != sealed:
+            raise ValueError("candidate full support differs; intersection/drop forbidden")
+    elif support(data, cfg, portable) != frozen["support"]:
+        raise ValueError("candidate full support differs; intersection/drop forbidden")
+
+
+def _direct(data):
+    return data.get("mode") == "multi_output"
+
+
+def _stem(data, cfg, name, column, sep):
+    """Artifact/score key of one head: bare split name only for the endpoint column."""
+    offsets = _offsets(data, cfg)
+    j = column % len(offsets)
+    if not _direct(data) and j == len(offsets) - 1:
+        return name
+    return f"{name}{sep}h{offsets[j]}"
 
 
 def fit_candidate(data, cfg, effective, root, progress, outer=False):
@@ -439,7 +718,7 @@ def fit_candidate(data, cfg, effective, root, progress, outer=False):
                     raise ValueError("materialized head rows differ from C1 head support")
                 predicted = (cell.price_prediction(current, outputs[selected, j], data["target_center"][j],
                                                    data["target_scale"][j]) if len(current) else np.zeros(0))
-                prefix = name if j == len(offsets) - 1 else f"{name}_h{offset}"
+                prefix = _stem(data, cfg, name, j, "_")
                 scores.update({f"{prefix}_{key}": value for key, value in
                     dict(origins=head_origins, current=current, future=future, prediction=predicted).items()})
     np.savez(root / "scores.tmp.npz", **scores)
@@ -464,9 +743,11 @@ def effective_config_sha256(config):
 def receipt_header(cfg, request, digest, attempt, metadata, elapsed):
     """Per-candidate receipt fields known after the fit (rows added by scoring)."""
     effective, audit = request["config"], metadata["training"]
-    genome = {k: effective[k] for k in search._GENOME_KEYS}
+    arm = is_arm(effective)
+    genotype = (effective["recipe"]["genotype_canonical_sha256"] if arm else
+                search.effective_identity({k: effective[k] for k in search._GENOME_KEYS}))
     offsets, h = metadata["output_offsets"], cfg["horizon_hours"]
-    heads = [dict(offset_hours=o, head_role="ENDPOINT" if o == h else "INTERMEDIATE", status=st,
+    heads = [dict(offset_hours=o, head_role=_head_role(arm, o, h), status=st,
                   train_target_center=metadata["target_center"][j] if st == "TRAINED" else None,
                   train_target_scale=metadata["target_scale"][j] if st == "TRAINED" else None,
                   loss_weight=1. if st == "TRAINED" else 0.)
@@ -475,11 +756,11 @@ def receipt_header(cfg, request, digest, attempt, metadata, elapsed):
     return dict(
         schema_version=RECEIPT_SCHEMA, experiment=request["context"]["experiment"],
         fold=request["context"]["fold"], candidate_identity_sha256=digest,
-        genotype_canonical_sha256=search.effective_identity(genome),
+        genotype_canonical_sha256=genotype,
         effective_config_sha256=effective_config_sha256(effective),
         cell_config_sha256=c1.canonical_digest(cfg), horizon_hours=h,
         output_mode=effective["output_mode"], delta_x_hours=effective["delta_x"],
-        delta_y_hours=effective["delta_y"], history_hours=effective["history_hours"],
+        delta_y_hours=None if arm else effective["delta_y"], history_hours=effective["history_hours"],
         samples=effective["samples"], final_steps=effective["final_steps"], role=cfg["role"],
         heads=heads, stopping=dict(rule_sha256=rule["sha256"], monitor=rule["rule"]["monitor"],
             max_epochs=rule["rule"]["max_epochs"], patience=rule["rule"]["patience"],
@@ -494,7 +775,14 @@ def receipt_header(cfg, request, digest, attempt, metadata, elapsed):
                   materialized_bytes=metadata["materialized_bytes"],
                   process_peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024,
                   device=metadata["device"]),
-        attempt=attempt, placement=metadata["placement"], rows=[])
+        attempt=attempt, placement=metadata["placement"], rows=[],
+        **(dict(family=effective["family"], recipe=dict(effective["recipe"], config=None)) if arm else {}))
+
+
+def _head_role(arm, offset, h):
+    if arm:
+        return "DIRECT_HEAD"
+    return "ENDPOINT" if offset == h else "INTERMEDIATE"
 
 
 def origins_sha256(origins):
@@ -502,14 +790,16 @@ def origins_sha256(origins):
     return c1.canonical_digest(sorted(int(t) for t in origins))
 
 
-def _row(header, cfg, offset, split, n, status, group=None, digest=None, support_sha256=None):
+def _row(header, cfg, offset, split, n, status, group=None, digest=None, support_sha256=None, direct=False):
+    """One receipt row. Direct multi-output heads are each a business horizon:
+    horizon_hours = head offset, head_role DIRECT_HEAD, comparison true."""
     sums = ("sum_abs_error", "sum_squared_error", "naive_sum_abs_error", "naive_sum_squared_error")
     values = [group[k] for k in sums] if group is not None else [None] * 4
     return dict(schema_version=RECEIPT_SCHEMA, experiment=header["experiment"],
         candidate_identity_sha256=header["candidate_identity_sha256"], fold=header["fold"],
-        horizon_hours=cfg["horizon_hours"], head_offset_hours=offset,
-        head_role="ENDPOINT" if offset == cfg["horizon_hours"] else "INTERMEDIATE",
-        comparison=offset == cfg["horizon_hours"], role=cfg["role"], c2_role=cfg["role"].lower()+"_origin",
+        horizon_hours=offset if direct else cfg["horizon_hours"], head_offset_hours=offset,
+        head_role=_head_role(direct, offset, cfg["horizon_hours"]),
+        comparison=direct or offset == cfg["horizon_hours"], role=cfg["role"], c2_role=cfg["role"].lower()+"_origin",
         population="S", split=split.upper(), metric="ABS_AND_SQUARED_ERROR_SUMS", unit=cfg["unit"],
         scale="ORIGINAL_PRICE", n=n, sum_abs_error=values[0], sum_sq_error=values[1],
         naive_sum_abs_error=values[2], naive_sum_sq_error=values[3], c2_receipt_sha256=digest,
@@ -519,7 +809,7 @@ def _row(header, cfg, offset, split, n, status, group=None, digest=None, support
 def _c2(data, cfg, root, run_id, checkpoint, name, column, rows, plan_raw, pop, reuse, protocol, split_id=None):
     """Native C2 scoring of one head/split on its own C1 S (both forecast and naive)."""
     offset = _offsets(data, cfg)[column]
-    stem = name if offset == cfg["horizon_hours"] else f"{name}.h{offset}"
+    stem = _stem(data, cfg, name, column, ".")
     plan = c1.prepare_support_plan(plan_raw)
     origins, current, future, prediction = rows
     if prediction.shape != current.shape or not np.isfinite(prediction).all() or (prediction <= 0).any():
@@ -622,10 +912,69 @@ def score_receipt(data, cfg, frozen, root, run_id, metadata, reuse=False):
     return receipt
 
 
+def score_any(data, cfg, frozen, root, run_id, metadata, reuse=False):
+    if frozen.get("mode", "endpoint") == "multi_output":
+        return score_arm_receipt(data, cfg, frozen, root, run_id, metadata, reuse)
+    return score_receipt(data, cfg, frozen, root, run_id, metadata, reuse)
+
+
+def score_arm_receipt(data, cfg, frozen, root, run_id, metadata, reuse=False):
+    """Direct multi-output arm: every TRAINED head scored by C2 on its own sealed S.
+
+    Shared-adapter sums are POOLED over trained heads (diagnostic, never a
+    selection score: arms are not searched). Outer VALIDATION rows per head
+    only for --score-outer units; never in stopping, fitness or error_sums.
+    """
+    receipt = dict(deepcopy(frozen["support"]), status="ok", error_sums={}, metadata=deepcopy(metadata))
+    receipt["metadata"].update(c2_receipts={}, shared_receipt_scope="POOLED_FAMILY_HEADS_DIAGNOSTIC_NOT_SELECTION")
+    header = receipt["metadata"]["candidate_receipt"]
+    offsets, checkpoint, protocol = _offsets(data, cfg), metadata["training"]["restored_weights_sha256"], frozen["schema"]
+    names = SPLITS + (("validation",) if frozen.get("score_outer") else ())
+    pooled, table = {name: [] for name in SPLITS}, []
+    with np.load(root / "scores.npz", allow_pickle=False) as scores:
+        for name in names:
+            split_id = frozen["outer_split_id"] if name == "validation" else None
+            part = getattr(data["parts"], PART[name])
+            for j, offset in enumerate(offsets):
+                head = frozen["heads"][str(offset)]
+                if head["status"] != "TRAINED":
+                    raw = [int(t.timestamp()) for t, m in zip(part.origins, part.mask) if m[j]]
+                    table.append(_row(header, cfg, offset, name, len(raw), "HEAD_NOT_TRAINED",
+                                      support_sha256=origins_sha256(raw), direct=True))
+                    continue
+                prefix = _stem(data, cfg, name, j, "_")
+                origins, current, future = observations(data, cfg, name, column=j)
+                for key, actual in dict(origins=origins, current=current, future=future).items():
+                    if not np.array_equal(scores[f"{prefix}_{key}"], actual):
+                        raise ValueError("retained head scores differ from C1 head support")
+                if not len(origins):
+                    table.append(_row(header, cfg, offset, name, 0, "NO_SPLIT_SUPPORT",
+                                      support_sha256=origins_sha256([]), direct=True))
+                    continue
+                sealed = head["outer"] if name == "validation" else head["splits"][name]
+                group, path = _c2(data, cfg, root, run_id, checkpoint, name, j,
+                                  (origins, current, future, scores[f"{prefix}_prediction"]),
+                                  sealed["plan"], sealed["population"], reuse, protocol, split_id)
+                expected = ((sealed["count"], sealed["naive_sum"]) if name == "validation" else
+                            (head["support"]["counts"][name], head["support"]["naive_sums"][name]))
+                if (group["n"], group["naive_sum_abs_error"]) != expected:
+                    raise ValueError("C2 receipt changed the sealed per-head support")
+                if name in pooled:
+                    pooled[name].append(group["sum_abs_error"])
+                receipt["metadata"]["c2_receipts"][f"{name}.h{offset}"] = dict(path=str(path), sha256=cell.file_hash(path))
+                table.append(_row(header, cfg, offset, name, group["n"], "SCORED", group,
+                                  cell.file_hash(path), origins_sha256(origins), direct=True))
+    receipt["error_sums"] = {name: math.fsum(values) for name, values in pooled.items()}
+    header["rows"] = table
+    receipt["fitness"] = search._score(receipt, frozen["support"])[0]
+    return receipt
+
+
 def artifact_names(receipt):
     """Fixed endpoint artifacts plus one input/C2 pair per scored intermediate head/split."""
-    names = set(ARTIFACTS)
-    for row in receipt["metadata"].get("candidate_receipt", {}).get("rows", []):
+    rows = receipt["metadata"].get("candidate_receipt", {}).get("rows", [])
+    names = set(ARTIFACTS) if not rows else {"model.keras", "scores.npz"}
+    for row in rows:
         if row["status"] == "SCORED":
             stem = row["split"].lower() + ("" if row["head_role"] == "ENDPOINT" else f".h{row['head_offset_hours']}")
             names |= {stem + ".input.json", stem + ".c2.json"}
@@ -646,7 +995,7 @@ def retained(root, expected, data, cfg, frozen):
     for name, digest in result["artifacts"].items():
         if cell.file_hash(root / name) != digest:
             raise ValueError(name+" digest mismatch")
-    receipt = score_receipt(data, cfg, frozen, root, root.name.split(".")[0], result["receipt"]["metadata"], reuse=True)
+    receipt = score_any(data, cfg, frozen, root, root.name.split(".")[0], result["receipt"]["metadata"], reuse=True)
     if receipt != result["receipt"]:
         raise ValueError("receipt differs from fresh C2 rescore")
     return receipt
@@ -665,7 +1014,7 @@ def evaluate(request):
     if signal.getitimer(signal.ITIMER_REAL)[0]:
         raise ValueError("existing wall timer; use an isolated evaluator process")
     cfg, frozen = load_request(request)
-    if request["context"]["schema"] != SCHEMA:
+    if request["context"]["schema"] not in FITTABLE:
         raise ValueError("LEGACY_CONTEXT_READ_ONLY: v1 contexts are verified, never fitted")
     attempt = normalize_attempt(request.get("attempt"))
     expected = identity(cfg, request)
@@ -698,16 +1047,16 @@ def evaluate(request):
         previous = signal.signal(signal.SIGALRM, expired)
         signal.setitimer(signal.ITIMER_REAL, cfg["resources"]["max_seconds"])
         try:
-            data = cell.prepare(cfg, trajectory=True)
-            if support(data, cfg) != frozen["support"]:
-                raise ValueError("candidate full support differs; intersection/drop forbidden")
+            data = prepare_candidate(cfg, request)
+            check_support(data, cfg, frozen)
             if prior:
                 return retained(root, expected, data, cfg, frozen)
-            metadata = fit_candidate(data, cfg, request["config"], root, progress, "outer" in frozen)
+            outer = "outer" in frozen or bool(frozen.get("score_outer"))
+            metadata = fit_candidate(data, cfg, request["config"], root, progress, outer)
             metadata["materialized_bytes"] = data["materialized_bytes"]
             metadata["candidate_receipt"] = receipt_header(cfg, request, digest, attempt, metadata,
                                                            time.monotonic()-started)
-            receipt = score_receipt(data, cfg, frozen, root, digest, metadata)
+            receipt = score_any(data, cfg, frozen, root, digest, metadata)
             load_request(request)
             if identity(cfg, request) != expected:
                 raise ValueError("evaluator identity changed during fit")

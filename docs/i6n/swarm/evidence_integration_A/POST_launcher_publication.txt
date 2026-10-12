@@ -1,0 +1,4 @@
+$ crispdm-run -m 2G -t 120s -- python -m pytest -q tests/test_i6n_swarm_runner.py tests/test_i6n_cost_pilot.py   # launcher
+22 passed in 7.94s
+$ crispdm-run -m 2G -t 120s -- env PYTHONPATH=.:<deps>/{doin-core/src,doin-node/src,data-lake,data-warehouse} python -m pytest -q tests/test_i6n_search_publish.py tests/test_i6n_publish.py tests/test_i6n_archive.py   # publication
+26 passed, 1 skipped in 2.15s

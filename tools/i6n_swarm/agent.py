@@ -18,6 +18,7 @@ import time
 from tools import i6n_search as search
 from tools.i6n_swarm import bridge as B, common, ledger as L, placement, plan as P, runner as R
 
+V3 = "i6n.historical_evaluator.v3"
 ACTIVE_SEARCH = ("QUEUED", "RUNNING", "WAIT_RESOURCE", "INTERRUPTED")
 
 
@@ -80,8 +81,10 @@ def _freeze(node, led, unit, boot_id):
         return claim["result"]
     token, attempt = claim["token"], claim["attempt"]
     cell = spec["cell_config"]
+    data_root = node["shared_data_root"]
     try:
-        common.read_pinned(cell, "cell config")
+        common.read_pinned(cell, "cell config", root=data_root)
+        cell_path = common.resolve_pin(cell, data_root)
     except ValueError as exc:
         led.report(unit["fit_id"], token, "FAILED", f"CELL_CONFIG: {exc}")
         return "FAILED"
@@ -89,13 +92,16 @@ def _freeze(node, led, unit, boot_id):
     out = Path(node["shared_data_root"]) / "bindings" / node["campaign_id"] / safe / unit["fold"]
     if attempt["index"] > 1:
         out = out.with_name(f"{out.name}.attempt{attempt['index']}")
-    child = [*node["freeze_argv"], "--config", cell["path"], "--output", str(out), "--experiment",
-             unit["experiment"], "--fold", unit["fold"]] + (["--score-outer"] if spec.get("score_outer") else [])
+    # A.4: always a v3 host-relative context (--data-root); a family unit seals a direct multi-output binding.
+    child = ([*node["freeze_argv"], "--config", str(cell_path), "--output", str(out), "--experiment",
+              unit["experiment"], "--fold", unit["fold"], "--data-root", str(data_root)]
+             + (["--score-outer"] if spec.get("score_outer") else [])
+             + (["--family", spec["family"]] if spec.get("family") else []))
     caps = node.get("freeze_caps") or {}
     argv = child if node.get("launcher") is None else R.build_argv(
         dict(node["launcher"], memory_bytes=caps["child_memory_bytes"], wall_seconds=caps["child_wall_seconds"]),
         "freeze-" + unit["fit_id"][:20], child)
-    env = dict(os.environ, CUDA_VISIBLE_DEVICES="", PYTHONDONTWRITEBYTECODE="1")
+    env = dict(os.environ, CUDA_VISIBLE_DEVICES="", PYTHONDONTWRITEBYTECODE="1", I6N_DATA_ROOT=str(data_root))
     result = R.run_attempt(argv, env, "", wall_seconds=caps.get("child_wall_seconds", 0),
                            renew=lambda p=None: led.renew(unit["fit_id"], token, ttl=float(node["lease"]["ttl_seconds"])),
                            renew_interval=float(node["lease"]["renew_seconds"]), ttl=float(node["lease"]["ttl_seconds"]),
@@ -109,11 +115,20 @@ def _freeze(node, led, unit, boot_id):
         binding = json.loads(path.read_text())
         if binding.get("i6n_horizon") != unit["horizon"]:
             raise ValueError("binding horizon mismatch")
+        if not node.get("fixture") and binding.get("i6n_evaluation_context", {}).get("schema") != V3:
+            raise ValueError("BINDING_NOT_HOST_RELATIVE_V3: production bindings must be frozen with --data-root")
+        if spec.get("family") and binding.get("i6n_family") != spec["family"]:
+            raise ValueError("family binding does not name this family")
         # Root-relative: another host resolves it against its own shared data root.
         pin = common.relative_pin(dict(path=str(path), sha256=common.file_sha256(path)), node["shared_data_root"])
     except (OSError, ValueError) as exc:
         led.report(unit["fit_id"], token, "FAILED", f"BINDING_INVALID: {exc}")
         return "FAILED"
+    # Every evaluating host needs these exact bytes: publish them content-addressed before completing.
+    for blob in [path, *[common.resolve_pin(p, data_root) for p in B.context_pins(binding["i6n_evaluation_context"])]]:
+        data = Path(blob).read_bytes()
+        import hashlib
+        led.put_blob(hashlib.sha256(data).hexdigest(), data)
     from tools.i6n_swarm.coordinator import freeze_receipt_document
     led.complete(unit["fit_id"], token, freeze_receipt_document(unit, binding, pin))
     return "COMPLETE"

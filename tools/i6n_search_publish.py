@@ -24,7 +24,7 @@ def verified_search(root):
     cfg, frozen = evaluator.load_request(request)
     if cfg != identity['cell']['config']:
         raise ValueError('retained config differs from original binding')
-    data = evaluator.cell.prepare(cfg)
+    data = evaluator.cell.prepare(cfg, trajectory=request['context']['schema'] == evaluator.SCHEMA)
     if evaluator.support(data, cfg) != frozen['support']:
         raise ValueError('retained support differs from source')
     evaluator.retained(root, identity, data, cfg, frozen)

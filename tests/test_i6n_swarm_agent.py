@@ -35,6 +35,8 @@ binding = dict(i6n_horizon=cell["h"], i6n_support=dict(counts=dict(train=50, inn
                i6n_evaluation_context=dict(schema="fixture", fold=opt["--fold"], experiment=opt["--experiment"],
                                            score_outer="--score-outer" in args),
                i6n_evaluator_command=["x"], i6n_evaluator_timeout=60)
+if "--family" in args:
+    binding["i6n_family"] = opt["--family"]
 json.dump(binding, open(os.path.join(out, "BINDING.json"), "w"))
 print(json.dumps(binding))
 '''
@@ -78,7 +80,7 @@ def test_freeze_units_run_outside_gpu_and_score_outer_only_for_weeks(campaign):
     assert done["completed"] == len(freeze_units) and all(u["state"] == "COMPLETE" for u in led.units(stage="freeze"))
     for u in freeze_units:
         binding = led.terminal(u["fit_id"])["receipt"]["shared_receipt"]
-        assert binding["i6n_evaluation_context"]["score_outer"] is u["dag_node"].startswith("freeze_weeks")
+        assert binding["i6n_evaluation_context"]["score_outer"] is u["dag_node"].startswith(("freeze_weeks", "freeze_family"))
     K.tick(root, now=4000.0)
     states = {n["node_id"]: n["state"] for n in led.dag_nodes()}
     assert states["search:h12"] == "QUEUED" and states["freeze_weeks:h12"] == "COMPLETE"
