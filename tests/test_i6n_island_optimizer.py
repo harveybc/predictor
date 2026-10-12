@@ -13,6 +13,7 @@ from collections import defaultdict
 import pytest
 
 from optimizer_plugins.i6n_optimizer import Plugin
+from tools.i6n_doin_sequence_config import _domain
 from tools import i6n_search as search
 
 
@@ -164,6 +165,20 @@ def test_runtime_checkpoint_path_is_unique_per_island_without_config_divergence(
 def test_runtime_checkpoint_identity_rejects_unsafe_island_ids(island_id):
     with pytest.raises(ValueError, match="i6n_island_id"):
         Plugin()._island_settings(_config(RecordingEvaluator(), i6n_island_id=island_id))
+
+
+def test_deployment_preserves_only_cost_admitted_capacity_classes():
+    source = {"domains": [{
+        "optimization_config": {
+            "i6n_horizon": 4,
+            "i6n_folds": {},
+            "i6n_admitted_classes": ["S1", "S2"],
+        }
+    }]}
+
+    generated = _domain(source, 4, "/predictor", "/python")
+
+    assert generated["optimization_config"]["i6n_admitted_classes"] == ["S1", "S2"]
 
 
 @pytest.mark.parametrize("horizon", [1, 2, 3, 5, 6, 12, 24, 48, 96, 120])

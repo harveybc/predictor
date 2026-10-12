@@ -30,6 +30,11 @@ def _domain(source, horizon, predictor_root, python):
     required = {"i6n_folds", "i6n_admitted_classes"}
     if not required <= set(old):
         raise ValueError(f"horizon-{horizon} source lacks {sorted(required - set(old))}")
+    admitted = old["i6n_admitted_classes"]
+    if (not isinstance(admitted, list) or not admitted
+            or len(set(admitted)) != len(admitted)
+            or not set(admitted) <= {"S1", "S2", "S3"}):
+        raise ValueError(f"horizon-{horizon} source has invalid admitted classes")
     config = {
         "predictor_root": predictor_root,
         "optimizer_plugin": "i6n_optimizer",
@@ -37,7 +42,7 @@ def _domain(source, horizon, predictor_root, python):
         "i6n_horizon": horizon,
         "i6n_plan": build_plan(),
         "i6n_folds": deepcopy(old["i6n_folds"]),
-        "i6n_admitted_classes": ["S1", "S2", "S3"],
+        "i6n_admitted_classes": deepcopy(admitted),
         "i6n_evaluator_command": [python, "-m", "tools.i6n_historical_evaluator", "evaluate"],
         "i6n_evaluator_timeout": 14400,
         "population_size": 20,
