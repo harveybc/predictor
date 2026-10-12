@@ -13,6 +13,8 @@ def collect(inventory, root):
     workers = json.loads(Path(inventory).read_text())
     report = {}
     for role in ("preferred", "secondary"):
+        if not (root / role / "CONFIG.private.json").exists():
+            continue
         worker = next(w for w in workers if w["role"] == role)
         remote_root = root / role / "run"
         code = ("import json,pathlib; r=pathlib.Path("+repr(str(remote_root))+"); "
@@ -50,10 +52,11 @@ def collect(inventory, root):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--inventory", required=True)
-    p.add_argument("--root", required=True)
+    p.add_argument("--root", required=True, action="append")
     args = p.parse_args()
-    result = collect(args.inventory, args.root)
-    print(json.dumps({role: value["state"] for role, value in result.items()}))
+    for root in args.root:
+        result = collect(args.inventory, root)
+        print(json.dumps({"root": root, "states": {role: value["state"] for role, value in result.items()}}))
 
 
 if __name__ == "__main__":
