@@ -1,11 +1,59 @@
 # Lane C return: complete weekly units, 2023 folds, support and data
 
 Branch `satoshi/i6n-swarm-C-weekly-20261011`, base `5c383d17`. Current plan
-`plan-v3`, `plan_sha256 be5750da0177ecd3a47d73b2682a22964e45d1a5c42b6209903022215bc9169f`
-(PLAN.json file `8f2aef32...`), VERIFIED. It supersedes `plan-v2`
-(`dd34986a...`); the support of all 54 units that were READY there is
-unchanged. No fit, no price read for the plan, and no TEST row. There was
+`plan-v4` (`40d3f5a0...`, VERIFIED; see C.3). It supersedes plan-v3
+(`be5750da...`), which superseded plan-v2 (`dd34986a...`). The support of every
+unit that was READY in v2 is unchanged. No fit, no price read for the plan, and no TEST row. There was
 one authorized single-case download (below). No service was started.
+
+## Update C.3: lane E review fixes and the multi-output template
+
+The integration branch `c6f1959b` was merged as a fast-forward. Every fix had
+its regression test first: the PRE run showed collection errors and 1 failure.
+The current plan is **`plan-v4` (`40d3f5a0...`, VERIFIED)**. 54 of its 57 units
+are byte-identical to plan-v3, and every unit's support is identical. Only the
+three DCA folds changed, in their structural split id.
+
+- **E-C1 (FIX_REQUIRED, fixed):** `AnnualAccumulator` is now keyed by the
+  **arm**: `arm_sha256` is the receipt header's `genotype_canonical_sha256` (or
+  `effective_config_sha256`), plus `arm_role`. Each week's own
+  `candidate_identity_sha256` is kept per row. The lowest attempt per week is
+  the canonical measurement; higher attempts are history only. The year
+  completes when every supported week has a canonical measurement. The C.2
+  keyword is now a typed refusal, `LEGACY_IDENTITY_KEY`. **B action:**
+  `tools/i6n_swarm/collect.annual_rollups` must pass `arm_sha256=<genotype>`
+  and `arm_role`, and call `add(row, arm_sha256=..., attempt_index=...)`.
+  Until then its roll-ups report `ROLLUP_REFUSED`.
+- **E-C2 (fixed):** an HTTP 429 case is retried only as a single named
+  `--only-date` listed in `RATE_LIMITED_RETRIES = {2019-10-28: 1}`, counted
+  across the whole report chain. On the real chain, which has 2 HTTP 429
+  outcomes for 2019-10-28, a further attempt is refused with
+  `RATE_LIMIT_RETRY_EXHAUSTED` before any request or directory is created.
+- **E-C3 (fixed):** the cell configs of `2023Q1_DCA`..`2023Q3_DCA` now carry
+  the assumption id and sha in `evaluation_split.split_id`, a historical-cell
+  key. It therefore enters A's candidate identity directly. All 48 fold cells
+  pass `authenticated`.
+- **New: multi-output arms manifest (plan section 4.6),**
+  `tools/i6n_weekly_multi_output.py`.
+  - **Template:** `evidence_C/MULTI_OUTPUT_ARMS.template.json`
+    (`manifest_sha256 803b3d72...`). It has **212 arms**: the short and long
+    families × R1/R2 × all 53 weekly units, no week excluded, inside the
+    212-disposition budget. Each arm carries per-head C1 support. For example,
+    in W2024-12-29 the long heads h48, h60 and h72 are NO_ELIGIBLE_ROWS while
+    h18, h24 and h36 stay READY.
+  - **State:** `WAIT_DEPENDENCY FINALISTS_UNRESOLVED`.
+  - **Resolution:** `resolve` binds R1 to the BEST finalist and R2 to the
+    MINIMAL_CONTROL finalist of the family's lowest inner-fold-fitness
+    horizon. Finalists selected on any basis other than the inner folds are
+    refused.
+  - **Not provided by C:** the multi-output config adaptation (E/A) and the
+    binding (B).
+
+POST, under `crispdm-run -m 2G -t 120s`:
+
+- `test_i6n_weekly_campaign.py`: **18 passed in 43.30 s**.
+- rollup (11), multi_output (7), history_extension, weekly_data and all four
+  clock-audit suites: **135 passed in 6.79 s**.
 
 ## Update C.2: clock ruling outcome
 

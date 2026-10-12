@@ -437,6 +437,12 @@ def build_plan(*, calendar_config: Mapping[str, Any], observed_seconds: Sequence
                 u["primary_data"], u["data"] = u["data"], dict(alt, state=DECLARED_READY)
                 u["data_source"], u["clock_assumption"] = "EXTENDED", dict(ext["assumption"])
                 u["unit_id"] = u["fold_id"] = u["unit_id"] + DECLARED_SUFFIX
+                if u["structural_evaluation_split"] is not None:
+                    # E-C3: the assumption id and sha enter the cell config (evaluation_split is a
+                    # historical_cell key), hence A's candidate identity, not only via the clock file.
+                    a = ext["assumption"]
+                    u["structural_evaluation_split"]["split_id"] = (
+                        f"STRUCTURAL_UNSCORED_{u['unit_id']}_{a['assumption_id']}_{a['assumption_sha256']}")
                 if ext_index is None:
                     ext_index = SupportIndex(weeks, ext["obs"], roles=role_objs, offsets=offsets,
                                              test_start=test_start)
