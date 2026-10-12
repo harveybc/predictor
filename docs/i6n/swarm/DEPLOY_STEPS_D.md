@@ -1,4 +1,23 @@
-# Lane D deploy steps (prepared, NOT executed)
+# Lane D deploy steps (D.4; prepared, NOT executed — see D_DEPLOY_RECORD.md)
+
+D.4 changes since D.3:
+
+- **Predictor pin.** `1acfda59`, which includes off-chain readback, lifecycle
+  status, snapshot `--owner-stopped`, and the merge of integration `23dbc81c`.
+- **Prebuilt wheels.** In `/var/tmp/i6n_D_predeploy_20261012/wheels/SHA256SUMS`.
+  The lake wheel must be rebuilt first; see the defect in D_DEPLOY_RECORD.md.
+- **Snapshot of the cube.** The cube keeps a `.wal` while the warehouse runs.
+  After a clean stop, use `snapshot take --owner-stopped` so the file and its
+  WAL are copied together.
+- **ETL runs in two phases.** First an off-chain readback (`OFFCHAIN_VERIFIED`,
+  `chain_finalized=false`). Then, once a node chain file exists, it projects
+  FINALIZED references, which supersede the off-chain rows.
+- **Lake store ids.** The private config lists `lake.store_ids`, which must
+  include B's publisher store id `i6n-swarm-<campaign_id>`. The CLI also adds
+  the publisher's own id automatically.
+- **Lifecycle status.** Run
+  `python -m tools.i6n_archive.lifecycle --campaign-root <root> --write`
+  together with the ETL timer. It writes `<root>/archive/LIFECYCLE.json`.
 
 Lane D did not restart, reconfigure, install or start any service, timer, venv
 or node. Each step below is for the operator, or for B where marked. Lane C
@@ -30,7 +49,7 @@ and 5060 were in use on 2026-10-11, and 5061 was free then.
 | doin-node | satoshi/i6n-external-archive-20261011 | `018ca2d` |
 | data-lake | satoshi/i6n-external-archive-20261011 | `fbb6e58` (data-lake-service 0.1.1) |
 | data-warehouse | satoshi/i6n-external-archive-20261011 | `463ad56` (data-warehouse-service 0.1.3) |
-| predictor | satoshi/i6n-swarm-D-archive-20261011 | see D_RETURN.md (predictor-olap-store / predictor-duckdb-store 0.1.7) |
+| predictor | satoshi/i6n-swarm-D-archive-20261011 | `1acfda59` (predictor-olap-store / predictor-duckdb-store 0.1.7) |
 
 ## 0. Build wheels once, from the pins
 
@@ -156,7 +175,7 @@ warehouse cube only inside the step-3 window, while the owner process is
 stopped.
 
 ```bash
-python -m tools.i6n_archive.snapshot take \
+python -m tools.i6n_archive.snapshot take --owner-stopped \
   --source cas=<persistent volume>/doin_archive_cas \
   --source outbox=<archive-root>/outbox.sqlite \
   --source warehouse=<state>/crispdm-duckdb/prod/cube.duckdb \

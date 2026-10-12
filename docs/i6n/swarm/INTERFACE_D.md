@@ -1,4 +1,4 @@
-# Lane D interface (D.3)
+# Lane D interface (D.4)
 
 Machine-readable contract: `INTERFACE_D.json`. D.1 was published early at
 `4bedc36c`; D.2 aligned with INTERFACE_A A.2, INTERFACE_E E.1 and INTERFACE_C C.1. D.3 applies lane C's
@@ -45,3 +45,14 @@ review (REVIEW_C_OF_D.md) and C.2.
   `VALIDATION_ON_INNER_FOLD`.
 - **R-2.** The ETL is incremental, using the `etl_done` watermark and BLOB-free
   lookups.
+
+## D.4 changes (execute-now orders, task C)
+
+- **Off-chain readback.** `ArchiveETL.run_offchain` gives OLAP readback for
+  items that are durable in the lake, hash-verified and whose reference is
+  spooled to the node. Their finality is `OFFCHAIN_VERIFIED` and
+  `chain_finalized` stays false. A later FINALIZED projection supersedes them
+  and never duplicates them.
+- **Lifecycle status.** `tools.i6n_archive.lifecycle` reports each fold and
+  candidate stage separately, with the ETA kind and its sample count.
+- **Not deployed.** See D_DEPLOY_RECORD.md.

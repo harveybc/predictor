@@ -1,8 +1,8 @@
 {
   "schema": "i6n.swarm_weekly.interface.v1",
   "lane": "D",
-  "interface_version": "D.3",
-  "status": "STABLE_FOR_B_INTEGRATION after lane C review fixes F1-F3, R-1, R-2; NOT deployed",
+  "interface_version": "D.4",
+  "status": "D.4 code complete (off-chain readback, lifecycle); live deployment STOPPED at a permission denial (D_DEPLOY_RECORD.md); NOT deployed",
   "branch": "satoshi/i6n-swarm-D-archive-20261011",
   "consumes": {
     "A": "INTERFACE_A A.2 @abddeb73: candidate_receipt v1 rows; role = C1 MANAGEMENT|ENTRY (refused otherwise), additive c2_role and support_sha256 kept in report tags; outer-week split=VALIDATION rows for WEEKLY_REFIT units (fold W<week>)",
@@ -24,7 +24,7 @@
       }
     },
     "pump": "publisher.pump(archive: doin_node.archive.external.ExternalPayloadArchive, submit: callable(Transaction)) -> {stored, submitted, errors}. external_payload: PUT body+manifest, GET exact, digest compare -> OBJECT_DURABLE; only then the reference tx (timestamp fixed at record time => same tx id on replay) goes to submit. Failed PUT/GET => LOCAL_COMPLETE only, nothing submitted.",
-    "etl": "tools.i6n_archive.etl.ArchiveETL(outbox, stores, sink, confirmation_depth).run(chain_blocks) -> dict: verifies chain links, finality, reference tx id binding, bytes, digests, schema; projects into the warehouse; reads back; then marks CHAIN_FINALIZED and OLAP_READBACK_VERIFIED (ACK). Reorg: canonical projection revoked by an appended event, history kept. Incremental: (tx_id, block_hash) pairs already read back are skipped (etl_done watermark), so work is proportional to new references; a reorg forgets the watermark of revoked blocks.",
+    "etl": "tools.i6n_archive.etl.ArchiveETL(outbox, stores, sink, confirmation_depth).run(chain_blocks) -> dict: verifies chain links, finality, reference tx id binding, bytes, digests, schema; projects into the warehouse; reads back; then marks CHAIN_FINALIZED and OLAP_READBACK_VERIFIED (ACK). Reorg: canonical projection revoked by an appended event, history kept. Incremental: (tx_id, block_hash) pairs already read back are skipped (etl_done watermark), so work is proportional to new references; a reorg forgets the watermark of revoked blocks. D.4: ArchiveETL.run_offchain() projects durable, spooled, hash-reverified bodies with finality_state OFFCHAIN_VERIFIED (block NO_BLOCK, chain_finalized=false); a FINALIZED projection later supersedes it (event SUPERSEDED), never duplicates it.",
     "status": "publisher.status() -> {items, per_state_counts, green (all four states), missing: [...]} ; read-only",
     "cli": "python -m tools.i6n_archive {status|pump|etl} --config <private.json>; python -m tools.i6n_archive.snapshot {take|verify}",
     "submit_to_node": "CLI pump writes <spool>/<tx_id>.json (exclusive create, identical replay is a no-op); the node calls doin_node.archive.external.ingest_reference_spool(spool, consensus.record_transaction, known_tx_ids=...) which re-derives the id and checks the reference before consensus sees it (B wires this hook in the runtime)",
@@ -60,7 +60,8 @@
       },
       "effect": "append-only decision event; own body, reference and projection rows (fold DECISION-<seq>, role DECISION, split SEARCH, metric SEARCH_OUTCOME, metrics won/selected); view gov_doin_candidate_decision_current gives the latest decision per (experiment, h)"
     },
-    "deploy_checks": "python -m tools.i6n_archive.probe {lake|warehouse} --url .. --token-env NAME, run only via systemd-run --user -p EnvironmentFile=<existing env file>; never reads a token file"
+    "deploy_checks": "python -m tools.i6n_archive.probe {lake|warehouse} --url .. --token-env NAME, run only via systemd-run --user -p EnvironmentFile=<existing env file>; never reads a token file",
+    "lifecycle": "python -m tools.i6n_archive.lifecycle --campaign-root <root> [--status-json <B status>] [--write]: fold QUEUED/CLAIMED/UPDATING/COMPLETED/FAILED/INTERRUPTED, candidate NOT_RECORDED/LOCAL_COMPLETE/ARCHIVED/READBACK_VERIFIED, chain_finalized separate, ETA kind+basis_n (unknown without samples)"
   },
   "candidate_document": {
     "schema": "i6n.archive.candidate.v1",
@@ -146,7 +147,12 @@
       "PROJECTED",
       "ALREADY_PROJECTED",
       "DUPLICATE_NOT_PROJECTED",
-      "REINSTATED"
+      "REINSTATED",
+      "ALREADY_FINALIZED"
+    ],
+    "finality_states": [
+      "FINALIZED",
+      "OFFCHAIN_VERIFIED"
     ]
   },
   "archive": {
