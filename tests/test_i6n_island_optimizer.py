@@ -620,3 +620,20 @@ def test_candidate_is_durably_reported_before_its_champion_is_broadcast():
     assert first_candidate < first_champion
     assert order[first_candidate][1] == order[first_champion][1]
 
+
+def test_runtime_telemetry_uses_doin_canonical_candidate_fields():
+    events = EventRecorder()
+    plugin, _result = _optimize(_config(RecordingEvaluator(), events))
+
+    terminal = plugin.island_terminal()
+    runtime = plugin.get_runtime_statistics()
+    event = events.candidates[-1]
+
+    assert runtime["candidate_evaluations_total"] == terminal["evaluated_candidate_count"]
+    assert runtime["candidate_history_source"].endswith(":local-test")
+    assert runtime["candidates_per_hour"] > 0
+    assert runtime["candidate_seconds_median"] > 0
+    assert event["candidate_num"] == event["candidate_in_gen"]
+    assert event["total_candidates"] == event["population_size"] == 20
+    assert event["total_candidates_evaluated"] == event["total_eval"]
+

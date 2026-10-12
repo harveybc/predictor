@@ -12,8 +12,10 @@ import json
 import math
 import os
 import random
+import statistics
 import subprocess
 import tempfile
+import time
 
 from deap import base, tools
 
@@ -81,6 +83,8 @@ class Plugin:
         self.best_test_mae_so_far = None
         self.best_test_naive_mae_so_far = None
         self._island_terminal = None
+        self._runtime_statistics = {"candidate_evaluations_total": 0}
+        self._candidate_durations = []
 
     def set_params(self, **kwargs):
         self.params.update(deepcopy(kwargs))
@@ -88,6 +92,39 @@ class Plugin:
     def island_terminal(self):
         """Return the explicit terminal produced by the local-island run."""
         return deepcopy(self._island_terminal)
+
+    def get_runtime_statistics(self):
+        """Return a snapshot consumed by DOIN's live campaign dashboard."""
+        return deepcopy(self._runtime_statistics)
+
+    @staticmethod
+    def _percentile(values, fraction):
+        ordered = sorted(float(value) for value in values)
+        if not ordered:
+            raise ValueError("percentile requires at least one value")
+        position = (len(ordered) - 1) * fraction
+        lower = math.floor(position)
+        upper = math.ceil(position)
+        if lower == upper:
+            return ordered[lower]
+        weight = position - lower
+        return ordered[lower] * (1.0 - weight) + ordered[upper] * weight
+
+    def _publish_runtime_statistics(self, *, source, total):
+        snapshot = {
+            "candidate_evaluations_total": int(total),
+            "candidate_history_source": source,
+        }
+        if self._candidate_durations:
+            recent = self._candidate_durations[-50:]
+            mean_seconds = statistics.fmean(recent)
+            snapshot.update({
+                "candidates_per_hour": 3600.0 / mean_seconds,
+                "candidate_seconds_median": statistics.median(recent),
+                "candidate_seconds_p25": self._percentile(recent, 0.25),
+                "candidate_seconds_p75": self._percentile(recent, 0.75),
+            })
+        self._runtime_statistics = snapshot
 
     def _record_island_terminal(
         self, *, settings, plan_sha256, contract_sha256,
@@ -412,6 +449,9 @@ class Plugin:
         )
         checkpoint_identity_sha256 = _digest(checkpoint_identity)
         contract_sha256 = checkpoint_identity["contract_sha256"]
+        runtime_source = (
+            f"i6n:{plan_identity}:{settings['horizon']}:{settings['island_id']}"
+        )
         rng = random.Random(search_seed)
         envelope = {
             "schema": "i6n.island.champion.v1", "plan_sha256": plan["plan_sha256"],
@@ -447,6 +487,7 @@ class Plugin:
             self.best_naive_mae_so_far = saved.get("best_val_naive_mae")
             best_identity = saved.get("best_identity")
             rng.setstate(_nested_tuple(saved["rng_state"]))
+            self._publish_runtime_statistics(source=runtime_source, total=len(cache))
             stop_reason = saved.get("stop_reason")
             if resume_generation_in_progress and stop_reason is not None:
                 raise ValueError("in-progress checkpoint cannot declare a stop reason")
@@ -511,6 +552,7 @@ class Plugin:
 
         evaluator = _V2(self)
         total_eval = len(cache)
+        self._publish_runtime_statistics(source=runtime_source, total=total_eval)
         if resumed_from_checkpoint and best_identity in cache:
             callback = callbacks.get("on_new_champion")
             if callback:
@@ -560,6 +602,7 @@ class Plugin:
                 result = cache.get(identity)
                 evaluated_now = result is None
                 if result is None:
+                    candidate_started = time.monotonic()
                     wire = evaluator._wire(genotype, _digest(contract), generation)
                     evaluated = evaluator.evaluate(wire, generation, cfg)
                     evaluated["fitness"] = float(evaluated["fitness"]) - 1.0
@@ -575,6 +618,11 @@ class Plugin:
                     result = self._summary(evaluated)
                     cache[identity] = result
                     total_eval += 1
+                    self._candidate_durations.append(time.monotonic() - candidate_started)
+                    self._publish_runtime_statistics(
+                        source=runtime_source,
+                        total=total_eval,
+                    )
                 fitness = float(result["fitness"])
                 ranked.append({"genotype": genotype, "fitness": fitness,
                                "result": result, "generation": generation})
@@ -589,11 +637,16 @@ class Plugin:
                     best_identity = identity
                 info = {
                     "generation": generation, "candidate_in_gen": candidate_number,
-                    "total_eval": total_eval, "stage": 1, "total_stages": 1,
+                    "candidate_num": candidate_number,
+                    "total_eval": total_eval,
+                    "total_candidates_evaluated": total_eval,
+                    "stage": 1, "total_stages": 1,
                     "stage_name": f"I6N-H{settings['horizon']}", "gen_in_stage": generation,
                     "n_generations_stage": settings["generations"],
                     "n_generations_total": settings["generations"],
-                    "population_size": settings["population"], "is_champion": is_champion,
+                    "population_size": settings["population"],
+                    "total_candidates": settings["population"],
+                    "is_champion": is_champion,
                     "fitness": fitness, "champion_fitness": self.best_fitness_so_far,
                     "genotype_canonical_sha256": identity,
                     "effective_config_sha256": result["metrics"]["effective_config_sha256"],
