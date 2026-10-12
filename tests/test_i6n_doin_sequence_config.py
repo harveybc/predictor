@@ -49,6 +49,11 @@ def test_generated_nodes_use_hash_only_candidate_archival(tmp_path):
         "doin-node", "doin-core", "doin-plugins", "predictor"
     ]
     assert config["archive_reference_spool"].endswith("/h4/node-0")
+    assert config["initial_threshold"] == 1e-6
+    assert config["domains"][0]["has_synthetic_data"] is False
+    assert config["domains"][0]["synthetic_data_validation"] is False
+    assert "inference_plugin" not in config["domains"][0]
+    assert "synthetic_data_plugin" not in config["domains"][0]
     assert config["domains"][0]["optimization_config"]["min_relative_improvement"] == 1e-8
 
 

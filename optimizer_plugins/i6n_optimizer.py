@@ -423,6 +423,8 @@ class Plugin:
         start_generation = 0
         no_improve = 0
         best_identity = None
+        resume_generation_in_progress = False
+        resumed_from_checkpoint = False
         checkpoint = self._runtime_path(cfg.get("optimization_resume_file"), settings)
         if checkpoint and os.path.exists(checkpoint):
             with open(checkpoint, encoding="utf-8") as handle:
@@ -434,12 +436,20 @@ class Plugin:
             population = [space.canonicalize(g) for g in saved["population"]]
             cache = deepcopy(saved.get("cache", {}))
             start_generation = _int(saved["generation"], "checkpoint generation")
+            resume_generation_in_progress = saved.get("generation_complete", True) is False
+            resumed_from_checkpoint = True
             no_improve = _int(saved.get("no_improve", 0), "checkpoint no_improve")
             self.best_fitness_so_far = float(saved.get("best_fitness", float("inf")))
             self.best_params_so_far = deepcopy(saved.get("best_params"))
+            self.best_train_mae_so_far = saved.get("best_train_mae")
+            self.best_train_naive_mae_so_far = saved.get("best_train_naive_mae")
+            self.best_val_mae_so_far = saved.get("best_val_mae")
+            self.best_naive_mae_so_far = saved.get("best_val_naive_mae")
             best_identity = saved.get("best_identity")
             rng.setstate(_nested_tuple(saved["rng_state"]))
             stop_reason = saved.get("stop_reason")
+            if resume_generation_in_progress and stop_reason is not None:
+                raise ValueError("in-progress checkpoint cannot declare a stop reason")
             if stop_reason == "patience":
                 if (start_generation >= settings["min_generations"]
                         and no_improve >= settings["patience"]):
@@ -474,8 +484,53 @@ class Plugin:
             if stop_reason is not None:
                 raise ValueError("checkpoint has an unknown stop reason")
 
+        def save_checkpoint(*, generation_value, population_value,
+                            generation_complete, stop_reason=None):
+            if not checkpoint:
+                return
+            self._atomic_json(checkpoint, {
+                "schema": "i6n.island.checkpoint.v2",
+                "checkpoint_identity": checkpoint_identity,
+                "checkpoint_identity_sha256": checkpoint_identity_sha256,
+                "plan_sha256": plan_identity,
+                "horizon": settings["horizon"], "seed": settings["seed"],
+                "island_id": settings["island_id"], "search_seed": search_seed,
+                "generation": generation_value,
+                "generation_complete": generation_complete,
+                "population": population_value,
+                "cache": cache, "no_improve": no_improve,
+                "best_fitness": self.best_fitness_so_far,
+                "best_params": self.best_params_so_far,
+                "best_identity": best_identity, "rng_state": rng.getstate(),
+                "best_train_mae": self.best_train_mae_so_far,
+                "best_train_naive_mae": self.best_train_naive_mae_so_far,
+                "best_val_mae": self.best_val_mae_so_far,
+                "best_val_naive_mae": self.best_naive_mae_so_far,
+                "stop_reason": stop_reason,
+            })
+
         evaluator = _V2(self)
         total_eval = len(cache)
+        if resumed_from_checkpoint and best_identity in cache:
+            callback = callbacks.get("on_new_champion")
+            if callback:
+                retained = cache[best_identity]
+                public_params = dict(
+                    self.best_params_so_far,
+                    _i6n_envelope=envelope,
+                    _i6n_origin_island=settings["island_id"],
+                    _i6n_genotype_sha256=best_identity,
+                )
+                callback(
+                    public_params, self.best_fitness_so_far,
+                    retained.get("metrics", {}),
+                    start_generation, {
+                        "stage": 1, "total_stages": 1,
+                        "candidate": 0,
+                        "total_candidates_evaluated": total_eval,
+                        "resumed_checkpoint": True,
+                    },
+                )
         for generation in range(start_generation, settings["generations"]):
             stage = {
                 "stage": 1, "total_stages": 1, "meta_mode": False,
@@ -483,7 +538,9 @@ class Plugin:
                 "population_size": settings["population"],
             }
             on_start = callbacks.get("on_generation_start")
-            if on_start:
+            if on_start and not (
+                resume_generation_in_progress and generation == start_generation
+            ):
                 migrant = on_start(population, [], list(search._GENOME_KEYS), generation, stage)
                 # This campaign has one search stage.  DOIN's historical stage
                 # broadcast is migration metadata, never a substitute for this
@@ -574,6 +631,15 @@ class Plugin:
                     signal = callbacks["on_between_candidates"](generation, candidate_number, info)
                     # A remote stage-complete signal cannot terminate the sole
                     # governed stage; only local patience or max generations can.
+                # Candidate results are expensive and independently complete.
+                # Persist the cache before starting the next candidate so a
+                # restart never repeats a finished model fit.
+                if evaluated_now:
+                    save_checkpoint(
+                        generation_value=generation,
+                        population_value=population,
+                        generation_complete=False,
+                    )
 
             ranked.sort(key=lambda row: (row["fitness"], space.genotype_sha256(row["genotype"])))
             # Fitness is already a relative error.  Its direct decrement is
@@ -601,21 +667,13 @@ class Plugin:
                                                {"min": ranked[0]["fitness"], "max": ranked[-1]["fitness"]})
             if not stop:
                 population = self._next_island_population(ranked, settings, admitted, rng)
-            if checkpoint:
-                self._atomic_json(checkpoint, {
-                    "schema": "i6n.island.checkpoint.v2",
-                    "checkpoint_identity": checkpoint_identity,
-                    "checkpoint_identity_sha256": checkpoint_identity_sha256,
-                    "plan_sha256": plan_identity,
-                    "horizon": settings["horizon"], "seed": settings["seed"],
-                    "island_id": settings["island_id"], "search_seed": search_seed,
-                    "generation": generation + 1, "population": population,
-                    "cache": cache, "no_improve": no_improve,
-                    "best_fitness": self.best_fitness_so_far,
-                    "best_params": self.best_params_so_far,
-                    "best_identity": best_identity, "rng_state": rng.getstate(),
-                    "stop_reason": stage["stop_reason"] if stop else None,
-                })
+            save_checkpoint(
+                generation_value=generation + 1,
+                population_value=population,
+                generation_complete=True,
+                stop_reason=stage["stop_reason"] if stop else None,
+            )
+            resume_generation_in_progress = False
             if stop:
                 self._record_island_terminal(
                     settings=settings, plan_sha256=plan_identity,

@@ -72,6 +72,12 @@ def _domain(source, horizon, predictor_root, python):
         domain_id=f"i6n-island-sequence-h{horizon}",
         optimize=True,
         evaluate=True,
+        # Historical-fold fitness is already verified by the governed
+        # evaluator.  This domain has no synthetic generator, so use DOIN's
+        # explicit reduced-weight auto-accept path instead of creating
+        # verification tasks that no plugin can execute.
+        has_synthetic_data=False,
+        synthetic_data_validation=False,
         optimization_plugin="predictor",
         higher_is_better=False,
         optimization_config=config,
@@ -106,6 +112,9 @@ def generate(source, nodes, output, predictor_root, python):
             config = {
                 "host": "0.0.0.0",
                 "port": port,
+                # Predictor improvements are relative-to-naive deltas and are
+                # commonly much smaller than the generic DOIN default of 1.0.
+                "initial_threshold": 1e-6,
                 "data_dir": f"/var/tmp/i6n-island-sequence/doin/h{horizon}/{node['island_id']}",
                 "bootstrap_peers": [e for e in endpoints if e != node["endpoint"]],
                 "component_version_scope": [

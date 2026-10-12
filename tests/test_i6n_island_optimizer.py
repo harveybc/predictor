@@ -353,6 +353,7 @@ def test_checkpoint_identity_rejects_config_contract_feature_evaluator_and_class
     _plugin, expected = _optimize(base)
     retained = json.loads(checkpoint.read_text(encoding="utf-8"))
     assert retained["schema"] == "i6n.island.checkpoint.v2"
+    assert retained["generation_complete"] is True
     assert retained["checkpoint_identity"]["plan_sha256"]
     assert retained["checkpoint_identity"]["config_sha256"]
     assert retained["checkpoint_identity"]["contract_sha256"]
@@ -425,7 +426,7 @@ def test_resume_from_preminimum_checkpoint_continues_instead_of_terminating(
 
     def interrupt_after_generation_eleven(path, payload):
         original(path, payload)
-        if payload["generation"] == 11:
+        if payload["generation"] == 11 and payload["generation_complete"]:
             raise SimulatedPowerLoss
 
     config = _config(
@@ -441,6 +442,7 @@ def test_resume_from_preminimum_checkpoint_continues_instead_of_terminating(
 
     interrupted = json.loads(checkpoint.read_text(encoding="utf-8"))
     assert interrupted["generation"] == 11
+    assert interrupted["generation_complete"] is True
     assert interrupted["no_improve"] >= 10
     assert interrupted["stop_reason"] is None
 
@@ -462,6 +464,51 @@ def test_resume_from_preminimum_checkpoint_continues_instead_of_terminating(
     assert events.generations[0]["generation"] == 11
     assert events.generations[-1]["generation"] == 29
     assert events.generations[-1]["stage_info"]["stop_reason"] == "patience"
+
+
+def test_candidate_checkpoint_prevents_refit_after_mid_generation_restart(
+    monkeypatch, tmp_path,
+):
+    checkpoint = tmp_path / "checkpoint.json"
+    original = Plugin._atomic_json
+
+    class SimulatedPowerLoss(RuntimeError):
+        pass
+
+    def interrupt_after_first_candidate(path, payload):
+        original(path, payload)
+        if not payload["generation_complete"] and len(payload["cache"]) == 1:
+            raise SimulatedPowerLoss
+
+    config = _config(
+        RecordingEvaluator(),
+        i6n_island_id="island-a",
+        optimization_resume_file=str(checkpoint),
+    )
+    monkeypatch.setattr(
+        Plugin, "_atomic_json", staticmethod(interrupt_after_first_candidate)
+    )
+    with pytest.raises(SimulatedPowerLoss):
+        _optimize(config)
+
+    interrupted = json.loads(checkpoint.read_text(encoding="utf-8"))
+    assert interrupted["generation"] == 0
+    assert interrupted["generation_complete"] is False
+    retained_identity = next(iter(interrupted["cache"]))
+
+    monkeypatch.setattr(Plugin, "_atomic_json", staticmethod(original))
+    resumed_evaluator = RecordingEvaluator()
+    resumed = copy.deepcopy(config)
+    resumed["i6n_evaluator"] = resumed_evaluator
+    _optimize(resumed)
+
+    evaluated_identities = []
+    for request in resumed_evaluator.calls:
+        if request["context"]["fold"] != FOLDS[0]:
+            continue
+        genome = {key: request["config"][key] for key in search._GENOME_KEYS}
+        evaluated_identities.append(search.effective_identity(genome))
+    assert retained_identity not in evaluated_identities
 
 
 def test_same_seed_replays_the_same_local_island():
