@@ -336,6 +336,22 @@ def wrapper_text(spec: Mapping[str, Any], python: str, data_root: str) -> str:
             f"exec {shlex.quote(python)} \"$@\"\n")
 
 
+def validate_runtime_entrypoints(spec: Mapping[str, Any], run: Callable = subprocess.run) -> None:
+    """Check the exported code used by services, not just this deployer's checkout."""
+    code = Path(spec["code_dir"])
+    for name in ("i6n_swarm_deploy", "i6n_swarm_campaign", "i6n_historical_evaluator"):
+        if not (code / "predictor" / "tools" / (name + ".py")).is_file():
+            raise DeployError("RUNTIME_ENTRYPOINT_MISSING", name)
+        result = run([str(code / "bin" / "i6n-python"), "-m", "tools." + name, "--help"],
+                     capture_output=True, text=True, cwd=str(code / "predictor"), timeout=30,
+                     env=dict(os.environ, CUDA_VISIBLE_DEVICES=""))
+        if result.returncode:
+            raise DeployError("RUNTIME_ENTRYPOINT_FAILED", name)
+        if name == "i6n_historical_evaluator" and any(
+                flag not in result.stdout for flag in ("--data-root", "--family")):
+            raise DeployError("RUNTIME_CLI_INCOMPATIBLE", name)
+
+
 # --------------------------------------------------------------------------- effective config
 def effective_campaign_config(spec: Mapping[str, Any], inv: Mapping[str, dict], admission: Mapping[str, Any],
                               addresses: Mapping[str, str], token_file: str) -> dict:
@@ -486,6 +502,7 @@ class Deployer:
         wrapper = code / "bin" / "i6n-python"
         wrapper.write_text(wrapper_text(spec, coordinator_python, spec["data_root"]))
         wrapper.chmod(0o755)
+        validate_runtime_entrypoints(spec, self.run_local)
         self.code_manifest = manifest_lines(code_files)
         (Path(spec["deploy_dir"])).mkdir(parents=True, exist_ok=True)
         c_plan = json.loads(Path(spec["c_plan"]["path"]).read_text())

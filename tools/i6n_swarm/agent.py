@@ -162,13 +162,19 @@ def _fit(node, led, unit, boot_id, admit):
     return state
 
 
-def run_fixed_units(node, led, stages=("freeze", "annual", "multi_output"), boot_id=None, admit=None, max_passes=5):
+def run_fixed_units(node, led, stages=("freeze", "annual", "multi_output"), boot_id=None, admit=None, max_passes=5,
+                    max_units=None):
+    """Run a bounded batch so node synchronization is not starved by preparation."""
+    if max_units is not None and (type(max_units) is not int or max_units <= 0):
+        raise ValueError("max_units must be a positive integer")
     boot_id = boot_id or common.boot_id()
     admit = admit or make_admit(node)
     done = dict(completed=0, failed=0, other=0)
     for _ in range(max_passes):
         progressed = False
         for unit in led.next_claimable(list(stages)):
+            if max_units is not None and sum(done.values()) >= max_units:
+                return done
             if unit["stage"] == "freeze":
                 result = _freeze(node, led, unit, boot_id)
             else:
@@ -225,7 +231,7 @@ def main(argv=None):
     report = dict(recovered=recover(node, led))
     if not args.recover_only:
         report["health"] = healthcheck(node)
-        report["fixed_units"] = run_fixed_units(node, led)
+        report["fixed_units"] = run_fixed_units(node, led, max_units=node.get("max_fixed_units_per_tick", 4))
         report["node"] = sync_node(node, led)
     common.atomic_json(Path(node["state_dir"]) / "AGENT.json", dict(report, at=time.time()), mode=0o600)
     print(json.dumps(report, default=str))

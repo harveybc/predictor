@@ -1084,12 +1084,17 @@ def main():
     parser.add_argument("--output", type=Path)
     parser.add_argument("--experiment")
     parser.add_argument("--fold")
+    parser.add_argument("--data-root", type=Path,
+                        help="root for portable v3 input and output references")
+    parser.add_argument("--family", choices=sorted(FAMILIES),
+                        help="seal a direct multi-output short or long family")
     parser.add_argument("--score-outer", action="store_true",
                         help="weekly-refit unit: also seal and report the outer week (diagnostic only)")
     args = parser.parse_args()
     if args.command == "freeze" and None in (args.config, args.output, args.experiment, args.fold):
         parser.error("freeze requires --config, --output, --experiment and --fold")
-    result = (freeze(args.config, args.output, args.experiment, args.fold, args.score_outer)
+    result = (freeze(args.config, args.output, args.experiment, args.fold, args.score_outer,
+                     family=args.family, data_root=args.data_root)
               if args.command == "freeze"
               else evaluate(json.load(sys.stdin)))
     print(json.dumps(result, allow_nan=False))
