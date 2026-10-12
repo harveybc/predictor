@@ -54,7 +54,7 @@ def candidate(index=0, disposition="COMPLETE", fitness=0.95, won=False, h=12):
         "genotype": genotype, "genotype_canonical_sha256": gsha,
         "search_candidate_sha256": records.search_candidate_sha256(PLAN, h, gsha),
         "effective_config": config, "effective_config_sha256": records.e_config_sha256(config),
-        "disposition": disposition, "fitness": fitness, "won": won, "seed": 6102026,
+        "disposition": disposition, "fitness": fitness, "seed": 6102026,
         "lineage": {"generation": 0, "population_index": index, "operator": "seed", "parents": []},
         "attempts": [{"fold": "2023Q1", "index": 1, "state": "COMPLETED" if fitness is not None else "FAILED",
                       "parent_status_sha256": None, "fencing_token": "tok-1", "reason": None}],
@@ -559,3 +559,179 @@ def test_interface_a2_roles_weekly_validation_rows_and_support_digest(tmp_path):
     old_role["rows"][0]["role"] = "management_origin"
     with pytest.raises(records.ArchiveRecordError, match="MANAGEMENT or ENTRY"):
         pub.record_candidate(candidate(6), [old_role])
+
+
+# --------------------------------------------------------------------------- lane C review (F1, F2, R-1, R-2)
+def _flow(pub, archive, etl, chain):
+    pub.pump(archive, chain.submit)
+    chain.mint(empty_after=6)
+    return etl.run(chain.blocks)
+
+
+def _decision(seq, outcomes, h=12, supersedes=None):
+    return {"schema": records.DECISION_SCHEMA, "experiment": "i6n-swarm-test", "plan_sha256": PLAN,
+            "horizon_hours": h, "sequence": seq, "supersedes_decision_sha256": supersedes,
+            "basis": {"rule": "best complete fitness + minimal control", "folds": ["2023Q1"]},
+            "outcomes": [{"search_candidate_sha256": k, "outcome": v} for k, v in sorted(outcomes.items())]}
+
+
+def test_f1_search_outcome_is_an_append_only_decision_event(tmp_path):
+    pub, archive, etl, wh, _ = _rig(tmp_path)
+    chain = LocalChain()
+    c0, c1 = candidate(0), candidate(1)
+    pub.record_candidate(c0, [receipt(c0)])
+    pub.record_candidate(c1, [receipt(c1)])
+    assert _flow(pub, archive, etl, chain)["errors"] == []
+    first = pub.record_decision(_decision(1, {c0["search_candidate_sha256"]: "WINNER",
+                                              c1["search_candidate_sha256"]: "CONTROL"}))
+    assert _flow(pub, archive, etl, chain)["errors"] == []
+    second = pub.record_decision(_decision(2, {c0["search_candidate_sha256"]: "NOT_SELECTED",
+                                               c1["search_candidate_sha256"]: "WINNER"},
+                                           supersedes=first["body_digest"]))
+    assert second["item_id"] != first["item_id"]
+    assert _flow(pub, archive, etl, chain)["errors"] == []
+    status = pub.status()
+    assert status["items"] == 4 and status["green"] == 4
+    with wh.engine().connect() as c:
+        current = dict(c.exec_driver_sql(
+            "SELECT search_candidate_sha256, outcome FROM gov_doin_candidate_decision_current").fetchall())
+        won = dict(c.exec_driver_sql(
+            "SELECT search_candidate_sha256, won FROM gov_doin_candidate_decision_current").fetchall())
+        history = c.exec_driver_sql(
+            "SELECT count(*) FROM gov_doin_metric_canonical WHERE receipt_metric = 'SEARCH_OUTCOME'"
+            " AND derived_metric = 'won'").scalar()
+    assert current == {c0["search_candidate_sha256"]: "NOT_SELECTED", c1["search_candidate_sha256"]: "WINNER"}
+    assert won == {c0["search_candidate_sha256"]: 0.0, c1["search_candidate_sha256"]: 1.0}
+    assert history == 4                                   # both decisions kept, append-only
+    with pytest.raises(records.ArchiveRecordError, match="WON_IS_A_DECISION_EVENT"):
+        pub.record_candidate(dict(candidate(2), won=True), [])
+    with pytest.raises(records.ArchiveRecordError, match="DECISION_TWO_WINNERS"):
+        pub.record_decision(_decision(3, {c0["search_candidate_sha256"]: "WINNER",
+                                          c1["search_candidate_sha256"]: "WINNER"}))
+
+
+def test_f2_attempts_of_one_fold_project_one_canonical_measurement(tmp_path):
+    rows = {}
+    for tag, n_attempts in (("one", 1), ("two", 2)):
+        pub, archive, etl, wh, _ = _rig(tmp_path, tag=tag)
+        chain = LocalChain()
+        c0 = candidate(0)
+        r1 = receipt(c0)
+        receipts = [r1]
+        if n_attempts == 2:
+            r2 = json.loads(json.dumps(r1))
+            r2["attempt"] = {"index": 2, "parent_status_sha256": "a" * 64, "fencing_token": "tok-2"}
+            receipts.append(r2)
+        pub.record_candidate(c0, receipts)
+        assert _flow(pub, archive, etl, chain)["errors"] == []
+        assert pub.status()["green"] == 1
+        rows[tag] = [r for r in _canonical(wh) if r[5] != "CANDIDATE"]
+        with wh.engine().connect() as c:
+            tags = json.loads(c.exec_driver_sql(
+                "SELECT tags_json FROM gov_report WHERE phase = 'I6N_SWARM_DOIN_CANDIDATE'").scalar())
+        history = json.loads(tags["attempt_history_json"])
+        assert [(h["fold"], h["index"], h["canonical"]) for h in history] == \
+            [("2023Q1", i, i == 1) for i in range(1, n_attempts + 1)]
+    assert rows["one"] == rows["two"]                    # never double-counted
+    c0 = candidate(0)
+    bad = json.loads(json.dumps(receipt(c0)))
+    bad["attempt"] = {"index": 2, "parent_status_sha256": None, "fencing_token": "t"}
+    with pytest.raises(records.ArchiveRecordError, match="ATTEMPT_LINEAGE"):
+        records.round_payload(c0, [receipt(c0), bad])
+    many = [json.loads(json.dumps(receipt(c0))) for _ in range(4)]
+    for i, r in enumerate(many, 1):
+        r["attempt"] = {"index": i, "parent_status_sha256": None if i == 1 else "b" * 64, "fencing_token": "t"}
+    with pytest.raises(records.ArchiveRecordError, match="ATTEMPTS_EXCEEDED"):
+        records.round_payload(c0, many)
+
+
+def test_f1_row_key_conflicts_are_refused_at_record_time(tmp_path):
+    pub, archive, etl, wh, _ = _rig(tmp_path)
+    c0 = candidate(0)
+    pub.record_candidate(c0, [receipt(c0)])
+    with pytest.raises(records.ArchiveRecordError, match="ROW_KEY_CONFLICT"):
+        pub.record_candidate(c0, [receipt(c0, scale=2.0)])
+    assert len(pub.outbox.items()) == 1
+
+
+def test_r1_validation_rows_are_refused_on_inner_folds():
+    c0 = candidate(0)
+    r = receipt(c0, fold="2023Q1")
+    r["rows"].append(dict(r["rows"][3], split="VALIDATION", n=7))
+    with pytest.raises(records.ArchiveRecordError, match="VALIDATION_ON_INNER_FOLD"):
+        records.round_payload(c0, [r])
+    for fold in ("2023Q1_DCA", "W2024-12-29"):
+        records.round_payload(c0, [receipt(c0, fold=fold)])
+
+
+class _CountingSink:
+    def __init__(self, inner):
+        self.inner, self.writes, self.reads = inner, 0, 0
+
+    def write(self, document):
+        self.writes += 1
+        return self.inner.write(document)
+
+    def read(self, document):
+        self.reads += 1
+        return self.inner.read(document)
+
+    def revoke(self, document):
+        return self.inner.revoke(document)
+
+
+class _CountingArchive:
+    def __init__(self, inner):
+        self.inner, self.resolves = inner, 0
+
+    def resolve(self, reference):
+        self.resolves += 1
+        return self.inner.resolve(reference)
+
+
+def test_r2_etl_work_is_proportional_to_new_items(tmp_path):
+    pub, archive, etl, wh, lake = _rig(tmp_path)
+    sink = _CountingSink(DirectSink(wh))
+    reader = _CountingArchive(ExternalPayloadArchive({STORE_ID: GrantedByteStore(lake, HOST_BEARER_GRANT)}))
+    counted = ArchiveETL(pub.outbox, reader, sink, confirmation_depth=6)
+    chain = LocalChain()
+    for i in range(3):
+        c = candidate(i)
+        pub.record_candidate(c, [receipt(c)])
+    _flow(pub, archive, counted, chain)
+    per_candidate = sink.writes // 3
+    assert reader.resolves == 3
+    sink.writes = sink.reads = reader.resolves = 0
+    assert counted.run(chain.blocks)["errors"] == []      # nothing new: no work
+    assert (sink.writes, sink.reads, reader.resolves) == (0, 0, 0)
+    for i in range(3, 5):
+        c = candidate(i)
+        pub.record_candidate(c, [receipt(c)])
+    assert _flow(pub, archive, counted, chain)["errors"] == []
+    assert reader.resolves == 2 and sink.writes == 2 * per_candidate
+    assert pub.status()["green"] == 5
+
+
+def test_f3_probe_takes_the_token_only_from_the_environment(tmp_path, monkeypatch):
+    from data_lake_service.web import create_app as lake_app
+    from tools.i6n_archive import probe
+
+    lake = _store(tmp_path)
+    client = lake_app({"service_token": "env-token", "store_id": STORE_ID}, lake,
+                      {"capabilities": list(lake.capabilities())}).test_client()
+
+    def transport(method, url, data=None, headers=None):
+        response = client.open("/" + url.split("://", 1)[1].split("/", 1)[1], method=method, data=data,
+                               headers=headers)
+        return response.status_code, response.get_data()
+
+    monkeypatch.delenv("I6N_TEST_TOKEN", raising=False)
+    with pytest.raises(SystemExit, match="TOKEN_ENV_MISSING"):
+        probe.probe_lake("http://lake.invalid", "I6N_TEST_TOKEN", transport)
+    monkeypatch.setenv("I6N_TEST_TOKEN", "env-token")
+    result = probe.probe_lake("http://lake.invalid", "I6N_TEST_TOKEN", transport)
+    assert result["ok"] is True and "env-token" not in json.dumps(result)
+    import inspect
+
+    source = inspect.getsource(probe)
+    assert "read_text" not in source and "open(" not in source     # no token file is ever read

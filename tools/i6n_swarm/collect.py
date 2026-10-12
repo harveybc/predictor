@@ -28,7 +28,7 @@ def default_publisher(root, payload):
                             mode="external_payload"), None
 
 
-def _candidate_doc(payload, key_units, terminals, attempts_by_fit, fitness, won):
+def _candidate_doc(payload, key_units, terminals, attempts_by_fit, fitness):
     first = key_units[0]
     spec = first["spec"]
     complete = all(u["state"] == "COMPLETE" for u in key_units)
@@ -61,10 +61,94 @@ def _candidate_doc(payload, key_units, terminals, attempts_by_fit, fitness, won)
         effective_config=spec.get("effective_config", {}), effective_config_sha256=first["effective_config_sha256"],
         disposition="ADOPTED_CACHE" if adopted else ("COMPLETE" if complete else "FAILED"),
         disposition_reason=None if complete else "; ".join(failures),
-        fitness=fitness if complete else None, won=bool(won), seed=common.SEED,
+        fitness=fitness if complete else None, seed=common.SEED,
         lineage=dict(generation=spec.get("generation", 0), population_index=spec.get("population_index"),
                      operator=spec.get("operator", "UNRECORDED_AT_BRIDGE"), parents=spec.get("parents", [])),
         attempts=attempts, costs=costs)
+
+
+OUTCOME = {"BEST": "WINNER", "MINIMAL_CONTROL": "CONTROL", "SMALL_ALTERNATIVE": "FINALIST"}
+
+
+def _record_decisions(led, payload, publisher):
+    """One append-only decision event per closed search (WINNER/FINALIST/CONTROL/NOT_SELECTED).
+
+    The sequence and the previous body digest are kept as idempotent ledger DAG
+    events, so a re-run never records the same decision twice and a changed
+    basis supersedes the previous decision with sequence + 1.
+    """
+    recorded = 0
+    for node in led.dag_nodes():
+        summary = node["summary"] or {}
+        if node["stage"] != "search" or node["state"] != "COMPLETE" or not summary.get("finalists"):
+            continue
+        roles = {f["search_candidate_sha256"]: OUTCOME.get(f["role"], "FINALIST") for f in summary["finalists"]}
+        outcomes = [dict(search_candidate_sha256=c["search_candidate_sha256"],
+                         outcome=roles.get(c["search_candidate_sha256"], "NOT_SELECTED"))
+                    for c in sorted(summary.get("candidates", []), key=lambda c: c["search_candidate_sha256"])]
+        basis = dict(rule=summary.get("finalist_rule"), folds=payload["folds"], stop_reason=summary.get("stop_reason"),
+                     fitness={c["search_candidate_sha256"]: c.get("fitness") for c in summary.get("candidates", [])})
+        basis_sha = common.sha256_json(dict(basis=basis, outcomes=outcomes))
+        previous = [e for e in led.dag_events(node["node_id"]) if e["event"].startswith("DECISION_")]
+        if previous and previous[-1]["detail"]["basis_sha256"] == basis_sha:
+            continue
+        sequence = len(previous) + 1
+        decision = dict(schema="i6n.archive.decision.v1", experiment=payload["experiment"],
+                        plan_sha256=payload["e_plan_sha256"], horizon_hours=node["spec"]["horizon"], sequence=sequence,
+                        supersedes_decision_sha256=previous[-1]["detail"]["item_id"] if previous else None,
+                        basis=basis, outcomes=outcomes)
+        result = publisher.record_decision(decision)
+        led.dag_event(node["node_id"], f"DECISION_{sequence:04d}",
+                      dict(basis_sha256=basis_sha, item_id=result.get("item_id"), sequence=sequence))
+        recorded += 1
+    return recorded
+
+
+def annual_rollups(led, payload, terminals):
+    """Annual MAE per (horizon, finalist) through lane C's AnnualAccumulator; refusals are reported, not hidden.
+
+    Expected weekly support comes from C's plan (VALIDATION n and origins digest per week);
+    rows are A's candidate_receipt rows (split VALIDATION, endpoint head) passed unchanged.
+    """
+    pin = payload["inputs"].get("weekly_plan")
+    try:
+        from tools.i6n_weekly_rollup import AnnualAccumulator, RollupError
+    except ImportError:
+        return dict(state="WAIT_DEPENDENCY", cause="tools.i6n_weekly_rollup (lane C) is not installed")
+    if not pin:
+        return dict(state="WAIT_DEPENDENCY", cause="C weekly plan not pinned: expected weekly support unknown")
+    c_plan = common.read_pinned(pin, "C weekly plan")
+    out = {}
+    for unit_group in _annual_groups(led):
+        h, genotype, units = unit_group
+        expected = {}
+        for u in c_plan["units"]:
+            if u.get("kind") != "WEEKLY_REFIT":
+                continue
+            split = (u.get("support") or {}).get(c_plan["fit_role"], {}).get(str(h), {}).get("VALIDATION")
+            if split is not None:
+                expected[u["unit_id"]] = dict(n=split["n"], origins_sha256=split["origins_sha256"])
+        key = f"h{h}:{genotype}"
+        rows = [r for u in units if u["fit_id"] in terminals
+                for r in terminals[u["fit_id"]]["receipt"]["candidate_receipt"].get("rows", [])
+                if r.get("split") == "VALIDATION" and r.get("head_offset_hours") == h]
+        try:
+            identity = rows[0]["candidate_identity_sha256"] if rows else genotype
+            acc = AnnualAccumulator(experiment=payload["experiment"], candidate_identity_sha256=identity,
+                                    horizon_hours=h, role=c_plan["fit_role"], expected=expected)
+            for row in rows:
+                acc.add(row)
+            out[key] = acc.summary()
+        except RollupError as exc:
+            out[key] = dict(state="ROLLUP_REFUSED", code=getattr(exc, "code", None), detail=str(exc))
+    return dict(state="COMPUTED", rollups=out)
+
+
+def _annual_groups(led):
+    groups = {}
+    for u in led.units(stage="annual"):
+        groups.setdefault((u["horizon"], u["genotype"]), []).append(u)
+    return [(h, g, units) for (h, g), units in sorted(groups.items())]
 
 
 def collect(root, publisher="auto", now=None, score_folds=None):
@@ -87,11 +171,6 @@ def collect(root, publisher="auto", now=None, score_folds=None):
     groups = {}
     for u in units:
         groups.setdefault((u["dag_node"], u["search_candidate"]), []).append(u)
-    winners = set()
-    for node in led.dag_nodes():
-        for f in ((node["summary"] or {}).get("finalists") or []):
-            if f.get("role") == "BEST":
-                winners.add((node["node_id"], f["search_candidate_sha256"]))
     pending = led.outbox_pending()
     pending_by_key = {}
     for item in pending:
@@ -133,13 +212,14 @@ def collect(root, publisher="auto", now=None, score_folds=None):
         items = pending_by_key.get(key, [])
         if not terminal or not items or publisher is None:
             continue
-        doc = _candidate_doc(payload, key_units, terminals, attempts_by_fit, fitness, key in winners)
+        doc = _candidate_doc(payload, key_units, terminals, attempts_by_fit, fitness)
         fold_receipts = [terminals[u["fit_id"]]["receipt"]["candidate_receipt"] for u in key_units
                          if u["fit_id"] in terminals]
         result = publisher.record_candidate(doc, fold_receipts)
         for item in items:
             led.outbox_mark(item["id"], dict(item_id=result.get("item_id"), states=result.get("states")))
         published += 1
+    decisions = _record_decisions(led, payload, publisher) if publisher is not None else 0
     buffer = io.StringIO()
     writer = csv.DictWriter(buffer, fieldnames=COLUMNS)
     writer.writeheader()
@@ -147,9 +227,13 @@ def collect(root, publisher="auto", now=None, score_folds=None):
         writer.writerow({k: ("" if row[k] is None else row[k]) for k in COLUMNS})
     common.atomic_write(root / "collect" / "RESULTS.csv", buffer.getvalue())
     remaining = len(led.outbox_pending())
-    state = "COMPLETE" if remaining == 0 else ("WAIT_DEPENDENCY" if publisher is None else "QUEUED")
-    report = dict(at=led.clock(), published=published, pending=remaining, publication_state=state, cause=cause,
+    if not led.outbox_all():
+        state, cause = "QUEUED", cause or "no terminal fold yet"
+    else:
+        state = "COMPLETE" if remaining == 0 else ("WAIT_DEPENDENCY" if publisher is None else "QUEUED")
+    report = dict(at=led.clock(), published=published, decisions=decisions, pending=remaining, publication_state=state, cause=cause,
                   results_sha256=common.file_sha256(root / "collect" / "RESULTS.csv"), rows=len(rows))
+    common.atomic_json(root / "collect" / "ANNUAL.json", annual_rollups(led, payload, terminals))
     common.atomic_json(root / "collect" / "COLLECT.json", report)
     common.atomic_json(root / "collect" / "ARTIFACTS.json", dict(
         plan_sha256=P.load(root)["sha256"], e_plan_sha256=payload["e_plan_sha256"],

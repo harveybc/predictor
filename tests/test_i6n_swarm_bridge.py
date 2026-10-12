@@ -167,3 +167,54 @@ def test_gpu_node_without_device_refuses_before_any_launch(setup):
     with pytest.raises(search.ScoreRejected, match="fallback"):
         B.Bridge(node, led, boot_id="b").evaluate_wire(wire, 0, swarm)
     assert calls(counts) == []
+
+
+def test_two_nodes_over_the_lease_service_fit_each_fold_exactly_once(setup, tmp_path):
+    """Two roles evaluate the same candidate at the same time through the HTTP ledger."""
+    from tools.i6n_swarm import lease_service as S
+    bridge, led, wire, swarm, counts = setup
+    token = tmp_path / "tok"
+    token.write_text("t")
+    token.chmod(0o600)
+    server = S.start_server(led, "127.0.0.1", 0, token)
+    url = f"http://127.0.0.1:{server.server_address[1]}"
+    try:
+        nodes = [B.Bridge(dict(bridge.node, owner=o, host_key=h), S.LedgerClient(url, token), boot_id="b")
+                 for o, h in (("pref", "preferred"), ("sec", "secondary"))]
+        out = {}
+        threads = [threading.Thread(target=lambda n=n, i=i: out.update({i: n.evaluate_wire(wire, 0, swarm)}))
+                   for i, n in enumerate(nodes)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join(30)
+    finally:
+        server.shutdown()
+        server.server_close()
+    assert out[0]["fitness"] == out[1]["fitness"]
+    assert len(calls(counts)) == 2  # one fit per fold across both nodes
+    assert all(len([a for a in led.attempts(u["fit_id"]) if a["physical"]]) == 1 for u in led.units())
+
+
+def test_recovery_after_holder_death_links_the_evaluator_status(setup, tmp_path):
+    """Holder died mid-fit (no report): the single recovery attempt carries A's parent STATUS digest."""
+    import time as _time
+    bridge, led, wire, swarm, counts = setup
+    swarm["folds"] = swarm["folds"][:1]
+    fold = swarm["folds"][0]
+    fold["context"]["output_root"] = str(tmp_path / "out")
+    config = search.effective_config(wire["genome"])
+    fit = B.fold_fit_id(swarm, fold, config)
+    led.ensure_unit(fit, B.unit_spec(swarm, fold, wire, config))
+    led.claim(fit, "dead-node", "secondary", "b0", "rtx4090", 0.05)
+    status = tmp_path / "out" / "candidates" / "abc" / "STATUS.json"
+    status.parent.mkdir(parents=True)
+    status.write_text(json.dumps(dict(state="RUNNING", identity=dict(effective_config=config, support=fold["support"],
+                                                                     context=fold["context"]))))
+    _time.sleep(0.1)
+    plan = dict(folds=dict(fold_ids=["F1"]), fitness=dict(aggregation="mean"), horizons_hours=[12])
+    B.Bridge(bridge.node, led, boot_id="b1", plan=plan).evaluate_wire(wire, 0, swarm)
+    sent = json.loads((counts / calls(counts)[0]).read_text())
+    assert sent["index"] == 2 and sent["parent_status_sha256"] == common.file_sha256(status)
+    kinds = [a["kind"] for a in led.attempts(fit)]
+    assert kinds == ["INITIAL", "RECOVERY"]

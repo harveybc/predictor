@@ -10,7 +10,11 @@ Credentials are used only through existing EnvironmentFiles:
 - the warehouse token: `WAREHOUSE_TOKEN` in the existing follower secret env
   file used by `predictor-i6m-olap.service`.
 
-Nobody, agent or script, reads or prints those files. If a step needs a
+Nobody, agent or script, reads or prints those files. A token reaches a
+process only through systemd `EnvironmentFile=`: either the existing unit's, or
+a transient `systemd-run --user -p EnvironmentFile=<existing env file>`. The
+process then reads `os.environ` only. Every check below that needs a token is a
+`tools.i6n_archive.probe` run in such a transient unit (review F3). If a step needs a
 credential that no existing service env provides, stop and report it.
 
 Placeholders follow the repository's public-host rules: `<coord>` is the
@@ -76,29 +80,38 @@ The optional operator rehearsal on a copy of the production cube:
    Then run `systemctl --user daemon-reload && systemctl --user enable --now crispdm-data-lake-doin-archive.service`.
 4. Verify:
    - `curl -s 127.0.0.1:<lake-cas-port>/healthz` returns `ok`.
-   - With the token taken from the service env by a script that never echoes
-     it: `GET /api/v1/host` lists `byte_upload` and `byte_read`.
-   - A PUT/GET of a 3-byte probe returns the same digest. The probe object
-     stays, which is harmless because objects are immutable.
+   - The capabilities and a 3-byte PUT/GET probe, with the token passed only
+     through the existing env file:
+     ```bash
+     systemd-run --user --wait --pipe --collect -p EnvironmentFile=<existing 5056 env file> \
+       -p WorkingDirectory=<pinned predictor checkout> -p Environment=PYTHONPATH=<pinned predictor checkout> \
+       <python> -m tools.i6n_archive.probe lake --url http://127.0.0.1:<lake-cas-port> --token-env DATA_GOV_LAKE_TOKEN
+     ```
+     Expect `"ok": true`. The probe object stays, which is harmless because
+     objects are immutable.
 
 ## 3. Warehouse upgrade (maintenance window; owner process only)
 
-1. Take a pre-upgrade snapshot (see §6). `systemctl --user stop crispdm-data-warehouse-olap.service`
-   first, because the snapshot tool refuses a DuckDB file that has a `.wal`.
-2. BEFORE stopping (step 3.1), record `SELECT count(*) FROM gov_report`,
-   `SELECT count(*) FROM gov_metric` and the relation list. Use the existing
-   `GET /api/v1/query` route, called from a script that takes the token from the
-   follower env and never echoes it.
+1. While the service is still running, record the baseline counts and capabilities:
+   ```bash
+   systemd-run --user --wait --pipe --collect -p EnvironmentFile=<existing follower secret env file> \
+     -p WorkingDirectory=<pinned predictor checkout> -p Environment=PYTHONPATH=<pinned predictor checkout> \
+     <python> -m tools.i6n_archive.probe warehouse --url http://127.0.0.1:5057 --token-env WAREHOUSE_TOKEN
+   ```
+   This yields `gov_report` and `gov_metric` counts; `gov_doin_projection`
+   answers an HTTP error before the upgrade, which is expected.
+2. Then `systemctl --user stop crispdm-data-warehouse-olap.service` and take the
+   pre-upgrade snapshot (§6). The snapshot tool refuses a DuckDB file that
+   still has a `.wal`.
 3. Install `data_warehouse_service-0.1.3`, `predictor_olap_store-0.1.7` and
    `predictor_duckdb_store-0.1.7` into `~/.venvs/store-hosts-duckdb-prod` with
    `pip install --no-deps <wheels>`.
 4. `systemctl --user start crispdm-data-warehouse-olap.service`. The start-up DDL
    creates the `doin_0001` relations with `CREATE ... IF NOT EXISTS` only.
 5. Verify:
-   - `/api/v1/host` lists `write_doin_projection`, `read_doin_projection` and
-     `revoke_doin_projection`.
-   - The counts from 3.2 are unchanged.
-   - `SELECT count(*) FROM gov_doin_projection` returns 0.
+   - Run the same `probe warehouse` transient unit as in 3.1. It must report
+     `doin_capabilities_ok: true`, the 3.1 counts unchanged, and
+     `gov_doin_projection` = 0.
    - The loader and `predictor-i6m-olap` keep running. They use only the old
      routes.
 6. Rollback: reinstall the previous wheels. Their SHA-256 values are the ones
@@ -124,11 +137,17 @@ The optional operator rehearsal on a copy of the production cube:
   `EnvironmentFile` for each of the two existing env files: the lake token and
   the follower `WAREHOUSE_TOKEN`.
 - Timers: pump every 2 min, ETL every 5 min. Both are idempotent, and an outage
-  just leaves work in the outbox.
+  just leaves work in the outbox. The ETL is incremental: a `(tx, block)` that was
+  already read back is skipped through the `etl_done` watermark, so the cost of
+  a run grows with new references, not with history. Chain verification
+  remains linear in chain length. A reorg clears the watermark of revoked
+  blocks.
 - Heartbeat check, run once: `python -m tools.i6n_archive status --config <private.json>`.
+  This command needs no token.
   This proves the services run. It is not a claim of on-chain publication.
-  Then run one read-only query:
-  `SELECT count(*) FROM gov_doin_metric_canonical`.
+  Then run the `probe warehouse` transient unit from §3.1 once. Its
+  `gov_doin_projection` count must be above 0 once `status` shows an item with
+  OLAP_READBACK_VERIFIED.
 
 ## 6. Physical snapshot on two hosts
 

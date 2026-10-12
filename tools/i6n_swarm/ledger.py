@@ -63,6 +63,8 @@ CREATE TABLE IF NOT EXISTS events(
 CREATE TABLE IF NOT EXISTS dag(
   node_id TEXT PRIMARY KEY, stage TEXT NOT NULL, ord INTEGER NOT NULL, depends_on TEXT NOT NULL, spec TEXT NOT NULL,
   state TEXT NOT NULL, cause TEXT, summary TEXT, activated_at REAL, completed_at REAL, updated_at REAL NOT NULL);
+CREATE TABLE IF NOT EXISTS prior_receipts(
+  fit_id TEXT PRIMARY KEY, receipt TEXT NOT NULL, receipt_sha256 TEXT NOT NULL, source TEXT NOT NULL, at REAL NOT NULL);
 CREATE TABLE IF NOT EXISTS search_state(
   node_id TEXT NOT NULL, generation INTEGER NOT NULL, state TEXT NOT NULL, state_sha256 TEXT NOT NULL,
   at REAL NOT NULL, PRIMARY KEY(node_id, generation));
@@ -257,6 +259,22 @@ class Ledger:
             if terminal is not None:
                 return dict(result="ADOPT", terminal=dict(receipt=json.loads(terminal["receipt"]),
                             receipt_sha256=terminal["receipt_sha256"], source=terminal["source"]))
+            prior = db.execute("SELECT * FROM prior_receipts WHERE fit_id=?", (fit_id,)).fetchone()
+            if prior is not None and not db.execute("SELECT 1 FROM attempts WHERE fit_id=? AND outcome='RUNNING'",
+                                                    (fit_id,)).fetchone():
+                doc = json.loads(prior["receipt"])
+                try:
+                    self._verify_receipt(unit, fit_id, doc)
+                except ReceiptMismatch as exc:
+                    self._event(db, "PRIOR_REJECTED", fit_id, detail=dict(reason=str(exc)))
+                else:
+                    db.execute("INSERT INTO terminals VALUES(?,?,?,?,?,?,?)", (fit_id, prior["receipt"],
+                               prior["receipt_sha256"], None, "PRIOR", prior["source"], now))
+                    self._set_unit(db, fit_id, "COMPLETE", None)
+                    self._outbox(db, fit_id, self._publication(unit, fit_id, doc, None, "ADOPTED_CACHE"))
+                    self._event(db, "ADOPTED_PRIOR", fit_id)
+                    return dict(result="ADOPT", terminal=dict(receipt=doc, receipt_sha256=prior["receipt_sha256"],
+                                                              source="PRIOR"))
             if unit["state"] == "FAILED":
                 return dict(result="REFUSED", cause=unit["cause"])
             running = db.execute("SELECT * FROM attempts WHERE fit_id=? AND outcome='RUNNING' ORDER BY token DESC",
@@ -443,6 +461,12 @@ class Ledger:
             self._outbox(db, fit_id, self._publication(unit, fit_id, doc, None, "ADOPTED_CACHE"))
             self._event(db, "ADOPTED_PRIOR", fit_id, detail=source)
             return "ADOPTED_PRIOR"
+
+    def register_prior(self, fit_id, doc, source):
+        """Remember a verified prior receipt of exactly this fit_id; adopted at the first claim."""
+        with self._tx() as db:
+            db.execute("INSERT OR IGNORE INTO prior_receipts VALUES(?,?,?,?,?)", (
+                fit_id, common.canonical(doc), common.sha256_json(doc), common.canonical(source), self.clock()))
 
     def recover(self, host=None, boot_id=None):
         """Boot/tick recovery: previous-boot attempts of ``host`` and expired leases become INTERRUPTED."""

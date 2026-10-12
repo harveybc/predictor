@@ -1,7 +1,8 @@
-# Lane D interface (D.2)
+# Lane D interface (D.3)
 
 Machine-readable contract: `INTERFACE_D.json`. D.1 was published early at
-`4bedc36c`; D.2 aligns with INTERFACE_A A.2, INTERFACE_E E.1 and INTERFACE_C C.1.
+`4bedc36c`; D.2 aligned with INTERFACE_A A.2, INTERFACE_E E.1 and INTERFACE_C C.1. D.3 applies lane C's
+review (REVIEW_C_OF_D.md) and C.2.
 
 - **For B.** Call `ArchivePublisher.record_candidate(candidate, fold_receipts)`
   whenever a candidate reaches any terminal disposition. Pass the candidate
@@ -24,3 +25,23 @@ Machine-readable contract: `INTERFACE_D.json`. D.1 was published early at
 - **States.** LOCAL_COMPLETE, OBJECT_DURABLE, CHAIN_FINALIZED and
   OLAP_READBACK_VERIFIED are kept as separate columns, and a missing state is
   never shown green.
+
+## D.3 changes (lane C review)
+
+- **F1.** `won` is no longer a field of the candidate record; a candidate that
+  carries it is refused with `WON_IS_A_DECISION_EVENT`. Search outcomes go
+  through `record_decision`. It writes an append-only decision event
+  (WINNER/FINALIST/CONTROL/NOT_SELECTED, with an increasing sequence), which
+  gets its own body, reference and projection rows. The latest decision is in
+  `gov_doin_candidate_decision_current`. A row key bound to different content
+  is refused at record time (`ROW_KEY_CONFLICT`).
+- **F2.** Up to three physical attempts of one fold are legitimate. The lowest
+  attempt index is the one canonical measurement that gets projected. The
+  other attempts stay in the body and in `attempt_history_json`, so nothing is
+  counted twice.
+- **F3.** Deploy checks use `tools.i6n_archive.probe` under
+  `systemd-run -p EnvironmentFile=`. They never read a token file.
+- **R-1.** VALIDATION rows on inner folds are refused with
+  `VALIDATION_ON_INNER_FOLD`.
+- **R-2.** The ETL is incremental, using the `etl_done` watermark and BLOB-free
+  lookups.

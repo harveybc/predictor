@@ -187,6 +187,8 @@ def bridge_node_config(payload, private, role, device):
                 freeze_argv=[host["python"], "-m", "tools.i6n_historical_evaluator", "freeze"],
                 python=host["python"], workdir=host["workdir"], launcher=private.get("launcher"),
                 class_caps=caps, lease=private["lease"],
+                measured={k: dict(peak_bytes=v["measured_peak_bytes"]) for k, v in caps.items()
+                          if v.get("measured_peak_bytes")},
                 ledger=dict(url=ledger["url"], token_file=ledger["token_file"]),
                 logs_dir=str(Path(host["data_dir"]) / "logs"), state_dir=str(Path(host["data_dir"]) / "state"),
                 shared_data_root=private["shared_data_root"], experiment=payload["experiment"],

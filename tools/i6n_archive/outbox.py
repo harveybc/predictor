@@ -61,6 +61,14 @@ CREATE TABLE IF NOT EXISTS inbox (
     receipt TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS row_index (
+    row_key_sha256 TEXT PRIMARY KEY, report_sha256 TEXT NOT NULL, item_id TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS etl_done (
+    tx_id TEXT NOT NULL, block_hash TEXT NOT NULL, item_id TEXT, reports INTEGER NOT NULL, done_at TEXT NOT NULL,
+    PRIMARY KEY (tx_id, block_hash)
+);
+CREATE INDEX IF NOT EXISTS items_body_idx ON items (body_digest, archive_mode);
 CREATE TABLE IF NOT EXISTS inbox_history (
     seq INTEGER PRIMARY KEY AUTOINCREMENT, projection_key TEXT NOT NULL, state TEXT NOT NULL,
     detail TEXT NOT NULL, at TEXT NOT NULL
@@ -119,8 +127,18 @@ class Outbox:
 
     def insert_item(self, *, item_id: str, experiment: str, search_candidate_sha256: str, archive_mode: str,
                     body: bytes, manifest: bytes, body_digest: str, manifest_digest: str,
-                    tx_timestamp: str) -> bool:
+                    tx_timestamp: str, row_reports: dict | None = None) -> bool:
+        """``row_reports`` maps each projected row key to its report digest. A row key already
+        bound to another report is refused HERE (ROW_KEY_CONFLICT), never later at the ETL."""
         with self._tx():
+            for row_key, report in sorted((row_reports or {}).items()):
+                bound = self._conn.execute("SELECT report_sha256, item_id FROM row_index WHERE row_key_sha256 = ?",
+                                           (row_key,)).fetchone()
+                if bound is not None and bound["report_sha256"] != report:
+                    from tools.i6n_archive.records import ArchiveRecordError
+
+                    raise ArchiveRecordError(f"ROW_KEY_CONFLICT: row {row_key[:12]} is already archived with "
+                                             f"different content (item {bound['item_id'][:12]})")
             row = self._conn.execute("SELECT body, manifest FROM items WHERE item_id = ?", (item_id,)).fetchone()
             if row is not None:
                 if bytes(row["body"]) != body or bytes(row["manifest"]) != manifest:
@@ -135,6 +153,9 @@ class Outbox:
                 (item_id, experiment, search_candidate_sha256, archive_mode, body, manifest, body_digest,
                  manifest_digest, tx_timestamp, _now(), _dump(evidence)))
             self._history(item_id, "LOCAL_COMPLETE", evidence)
+            for row_key, report in sorted((row_reports or {}).items()):
+                self._conn.execute("INSERT OR IGNORE INTO row_index (row_key_sha256, report_sha256, item_id)"
+                                   " VALUES (?,?,?)", (row_key, report, item_id))
         return True
 
     def _history(self, item_id: str, event: str, detail: Any) -> None:
@@ -150,12 +171,35 @@ class Outbox:
         out["green"] = all(out["states"][s] for s in STATES)
         return out
 
+    _META = ("item_id, experiment, search_candidate_sha256, archive_mode, body_digest, manifest_digest,"
+             " tx_timestamp, created_at, reference_json, reference_tx_id, local_complete, object_durable,"
+             " chain_finalized, olap_readback_verified")  # never the BLOBs
+
     def item(self, item_id: str) -> dict | None:
-        row = self._conn.execute("SELECT * FROM items WHERE item_id = ?", (item_id,)).fetchone()
+        row = self._conn.execute(f"SELECT {self._META} FROM items WHERE item_id = ?", (item_id,)).fetchone()
+        return self._row(row) if row else None
+
+    def item_by_body(self, body_digest: str, archive_mode: str) -> dict | None:
+        row = self._conn.execute(f"SELECT {self._META} FROM items WHERE body_digest = ? AND archive_mode = ?",
+                                 (body_digest, archive_mode)).fetchone()
         return self._row(row) if row else None
 
     def items(self) -> list[dict]:
-        return [self._row(r) for r in self._conn.execute("SELECT * FROM items ORDER BY created_at, item_id")]
+        return [self._row(r) for r in self._conn.execute(
+            f"SELECT {self._META} FROM items ORDER BY created_at, item_id")]
+
+    # -- ETL watermark: a (tx, block) is done once its projection was read back exactly -------
+    def done_keys(self) -> set[tuple[str, str]]:
+        return {(r[0], r[1]) for r in self._conn.execute("SELECT tx_id, block_hash FROM etl_done")}
+
+    def mark_done(self, tx_id: str, block_hash: str, item_id: str | None, reports: int) -> None:
+        with self._tx():
+            self._conn.execute("INSERT OR IGNORE INTO etl_done (tx_id, block_hash, item_id, reports, done_at)"
+                               " VALUES (?,?,?,?,?)", (tx_id, block_hash, item_id, reports, _now()))
+
+    def forget_block(self, block_hash: str) -> int:
+        with self._tx():
+            return self._conn.execute("DELETE FROM etl_done WHERE block_hash = ?", (block_hash,)).rowcount
 
     def bytes_of(self, item_id: str) -> tuple[bytes, bytes]:
         row = self._conn.execute("SELECT body, manifest FROM items WHERE item_id = ?", (item_id,)).fetchone()

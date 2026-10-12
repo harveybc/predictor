@@ -18,7 +18,8 @@ import sys
 
 
 def _roles(args, default):
-    return args.role or default
+    roles = args.role or default
+    return [] if roles == ["none"] else roles  # "--role none": ledger/DAG only, no systemd units
 
 
 def main(argv=None):

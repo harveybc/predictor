@@ -23,6 +23,8 @@ import re
 from typing import Any, Mapping
 
 CANDIDATE_SCHEMA = "i6n.archive.candidate.v1"
+DECISION_SCHEMA = "i6n.archive.decision.v1"
+OUTCOMES = ("WINNER", "FINALIST", "CONTROL", "NOT_SELECTED")
 ROUND_SCHEMA = "i6n.archive.round.v1"
 RECEIPT_SCHEMA = "i6n.candidate_receipt.v1"
 DOIN_METADATA_SCHEMA = "i6n.doin_projection.v1"
@@ -87,11 +89,14 @@ def validate_candidate(candidate: Any) -> dict:
     if not isinstance(candidate, Mapping):
         _fail("candidate must be an object")
     c = dict(candidate)
+    if "won" in c:
+        _fail("WON_IS_A_DECISION_EVENT: the search outcome is recorded with record_decision, "
+              "not as a field of the candidate record")
     if c.get("schema") != CANDIDATE_SCHEMA:
         _fail(f"candidate schema must be {CANDIDATE_SCHEMA}")
     required = ("experiment", "search_candidate_sha256", "horizon_hours", "plan_sha256", "plan_metadata",
                 "genotype", "genotype_canonical_sha256", "effective_config", "effective_config_sha256",
-                "disposition", "fitness", "won", "seed", "lineage", "attempts", "costs")
+                "disposition", "fitness", "seed", "lineage", "attempts", "costs")
     missing = [k for k in required if k not in c]
     if missing:
         _fail("candidate fields missing: " + ",".join(missing))
@@ -117,10 +122,6 @@ def validate_candidate(candidate: Any) -> dict:
         _finite(c["fitness"], "fitness", nullable=False)
     elif c["fitness"] is not None:
         _fail(f"fitness must be null for disposition {c['disposition']} (no invented score)")
-    if not isinstance(c["won"], bool):
-        _fail("won must be a boolean")
-    if c["won"] and c["disposition"] not in SCORED_DISPOSITIONS:
-        _fail("an unscored candidate cannot be a winner")
     if c["seed"] != SEED:
         _fail(f"seed must be {SEED}")
     lineage = c["lineage"]
@@ -180,6 +181,9 @@ def validate_receipt(receipt: Any, candidate: Mapping) -> dict:
             _fail(f"receipt row split {row['split']!r} refused (TEST is never opened)")
         if row["population"] not in ("S", "U"):
             _fail("population must be S or U")
+        if row["split"] == "VALIDATION" and not r["fold"].startswith("W"):
+            _fail("VALIDATION_ON_INNER_FOLD: outer-week VALIDATION rows belong to WEEKLY_REFIT units "
+                  "(fold W<week>), never to an inner fold")
         if row["role"] not in ROLES:
             _fail("role must be the C1 canonical MANAGEMENT or ENTRY (INTERFACE_A A.2)")
         if row.get("support_sha256") is not None:
@@ -204,13 +208,38 @@ def validate_receipt(receipt: Any, candidate: Mapping) -> dict:
     return r
 
 
+def _attempt(receipt: Mapping) -> dict:
+    attempt = receipt.get("attempt") or {"index": 1, "parent_status_sha256": None}
+    if not isinstance(attempt, Mapping):
+        _fail("ATTEMPT_LINEAGE: attempt must be an object")
+    return dict(attempt)
+
+
 def round_payload(candidate: Mapping, fold_receipts: list) -> dict:
+    """One candidate and ALL its receipts. Physical attempts of one fold are kept (max 3);
+    the canonical scientific measurement of a fold is its lowest attempt index."""
     c = validate_candidate(candidate)
     receipts = [validate_receipt(r, c) for r in fold_receipts]
-    folds = [(r["fold"], (r.get("attempt") or {}).get("index", 1)) for r in receipts]
-    if len(set(folds)) != len(folds):
-        _fail("two receipts for the same fold and attempt")
-    receipts.sort(key=lambda r: (r["fold"], (r.get("attempt") or {}).get("index", 1)))
+    by_fold: dict[str, list] = {}
+    for r in receipts:
+        attempt = _attempt(r)
+        index = attempt.get("index", 1)
+        if isinstance(index, bool) or not isinstance(index, int) or index < 1:
+            _fail("ATTEMPT_LINEAGE: attempt.index must be an integer >= 1")
+        if index > 1:
+            parent = attempt.get("parent_status_sha256")
+            if not isinstance(parent, str) or not _HEX64.match(parent):
+                _fail("ATTEMPT_LINEAGE: a recovery attempt needs the previous terminal's parent_status_sha256")
+        by_fold.setdefault(r["fold"], []).append((index, r))
+    for fold, attempts in by_fold.items():
+        indexes = [i for i, _ in attempts]
+        if len(indexes) != len(set(indexes)):
+            _fail(f"ATTEMPT_LINEAGE: two receipts for fold {fold} with the same attempt index")
+        if len(attempts) > MAX_ATTEMPTS_PER_FOLD or max(indexes) > MAX_ATTEMPTS_PER_FOLD:
+            _fail(f"ATTEMPTS_EXCEEDED: more than {MAX_ATTEMPTS_PER_FOLD} physical attempts for fold {fold}")
+        if len({r["candidate_identity_sha256"] for _, r in attempts}) != 1:
+            _fail(f"ATTEMPT_IDENTITY_MISMATCH: attempts of fold {fold} carry different identities")
+    receipts.sort(key=lambda r: (r["fold"], _attempt(r).get("index", 1)))
     return {"schema": ROUND_SCHEMA, "experiment": c["experiment"],
             "search_candidate_sha256": c["search_candidate_sha256"], "candidate": c,
             "fold_receipts": receipts}
@@ -272,8 +301,17 @@ def projection_units(payload: Mapping) -> list[dict]:
               "genotype_canonical_sha256": c["genotype_canonical_sha256"], "disposition": c["disposition"],
               "doin_metadata_schema": DOIN_METADATA_SCHEMA, "test_read": "false"}
     units = []
-    for receipt in p["fold_receipts"]:
-        attempt = (receipt.get("attempt") or {}).get("index", 1)
+    history = []
+    canonical_folds: set[str] = set()
+    for receipt in p["fold_receipts"]:  # sorted by (fold, attempt index)
+        attempt = _attempt(receipt).get("index", 1)
+        is_canonical = receipt["fold"] not in canonical_folds
+        history.append({"fold": receipt["fold"], "index": attempt, "canonical": is_canonical,
+                        "receipt_sha256": hashlib.sha256(canonical(receipt)).hexdigest(),
+                        "parent_status_sha256": _attempt(receipt).get("parent_status_sha256")})
+        if not is_canonical:
+            continue  # kept in the body and in attempt_history_json, never projected as metrics
+        canonical_folds.add(receipt["fold"])
         for row in receipt["rows"]:
             identity = {k: row[k] for k in ROW_IDENTITY}
             key = row_key_sha256(identity)
@@ -292,9 +330,7 @@ def projection_units(payload: Mapping) -> list[dict]:
                 "role": "CANDIDATE", "population": "S", "split": "SEARCH", "metric": "CANDIDATE_DISPOSITION",
                 "unit": "NONE", "schema_version": CANDIDATE_SCHEMA}
     key = row_key_sha256(identity)
-    metrics = [{"metric": "won", "value": 1.0 if c["won"] else 0.0, "unit": "FLAG", "split": "SEARCH",
-                "horizon": c["horizon_hours"]},
-               {"metric": "attempts_total", "value": float(len(c["attempts"])), "unit": "count",
+    metrics = [{"metric": "attempts_total", "value": float(len(c["attempts"])), "unit": "count",
                 "split": "SEARCH", "horizon": c["horizon_hours"]}]
     if c["fitness"] is not None:
         metrics.append({"metric": "fitness", "value": float(c["fitness"]), "unit": "RATIO", "split": "SEARCH",
@@ -305,7 +341,8 @@ def projection_units(payload: Mapping) -> list[dict]:
             metrics.append({"metric": "cost." + name, "value": float(value), "unit": unit, "split": "SEARCH",
                             "horizon": c["horizon_hours"]})
     lineage = c["lineage"]
-    tags = dict(common, row_key_sha256=key, **identity, won=str(c["won"]).lower(),
+    tags = dict(common, row_key_sha256=key, **identity,
+                attempt_history_json=json.dumps(history, sort_keys=True, separators=(",", ":")),
                 disposition_reason=c.get("disposition_reason"), generation=lineage["generation"],
                 population_index=lineage["population_index"], operator=lineage["operator"],
                 parents_json=json.dumps(lineage["parents"], separators=(",", ":")),
@@ -320,3 +357,81 @@ def projection_units(payload: Mapping) -> list[dict]:
                             "comparison": None, "status": c["disposition"]},
                   "report": _base_report(c, key, "I6N_SWARM_DOIN_CANDIDATE", tags, metrics)})
     return units
+
+
+# --------------------------------------------------------------------------- search decisions
+def validate_decision(decision: Any) -> dict:
+    """An append-only search outcome event (winner/finalist/control). A later decision for the
+    same (experiment, plan, horizon) has a higher sequence; nothing earlier is rewritten."""
+    if not isinstance(decision, Mapping) or decision.get("schema") != DECISION_SCHEMA:
+        _fail(f"DECISION_SCHEMA: schema must be {DECISION_SCHEMA}")
+    d = dict(decision)
+    keys = {"schema", "experiment", "plan_sha256", "horizon_hours", "sequence", "supersedes_decision_sha256",
+            "basis", "outcomes"}
+    if set(d) != keys:
+        _fail(f"DECISION_SCHEMA: keys must be {sorted(keys)}")
+    if not isinstance(d["experiment"], str) or not _KEY.match(d["experiment"]):
+        _fail("DECISION_SCHEMA: experiment")
+    _hex(d, "plan_sha256")
+    _int(d, "horizon_hours", 1)
+    if _int(d, "sequence", 1) > 999999:
+        _fail("DECISION_SCHEMA: sequence above 999999")
+    _hex(d, "supersedes_decision_sha256", nullable=True)
+    if not isinstance(d["basis"], Mapping):
+        _fail("DECISION_SCHEMA: basis must be an object")
+    outcomes = d["outcomes"]
+    if not isinstance(outcomes, list) or not outcomes:
+        _fail("DECISION_SCHEMA: outcomes must be a non-empty list")
+    seen = set()
+    for item in outcomes:
+        if not isinstance(item, Mapping) or set(item) != {"search_candidate_sha256", "outcome"}:
+            _fail("DECISION_SCHEMA: outcome entries are {search_candidate_sha256, outcome}")
+        _hex(item, "search_candidate_sha256")
+        if item["outcome"] not in OUTCOMES:
+            _fail("DECISION_OUTCOME: outcome must be one of " + ",".join(OUTCOMES))
+        if item["search_candidate_sha256"] in seen:
+            _fail("DECISION_DUPLICATE_CANDIDATE")
+        seen.add(item["search_candidate_sha256"])
+    if sum(1 for item in outcomes if item["outcome"] == "WINNER") > 1:
+        _fail("DECISION_TWO_WINNERS: at most one WINNER per decision")
+    d["outcomes"] = sorted((dict(o) for o in outcomes), key=lambda o: o["search_candidate_sha256"])
+    canonical(d)
+    return d
+
+
+def decision_units(payload: Mapping) -> list[dict]:
+    d = validate_decision(payload)
+    if canonical(d) != canonical(dict(payload)):
+        _fail("DECISION_SCHEMA: payload is not in canonical order")
+    fold = f"DECISION-{d['sequence']:06d}"
+    units = []
+    for item in d["outcomes"]:
+        identity = {"experiment": d["experiment"], "candidate_identity_sha256": item["search_candidate_sha256"],
+                    "fold": fold, "horizon_hours": d["horizon_hours"], "head_offset_hours": d["horizon_hours"],
+                    "role": "DECISION", "population": "S", "split": "SEARCH", "metric": "SEARCH_OUTCOME",
+                    "unit": "NONE", "schema_version": DECISION_SCHEMA}
+        key = row_key_sha256(identity)
+        tags = dict({k: str(v) for k, v in identity.items()}, row_key_sha256=key, outcome=item["outcome"],
+                    sequence=str(d["sequence"]), plan_sha256=d["plan_sha256"],
+                    supersedes_decision_sha256=d["supersedes_decision_sha256"] or "",
+                    basis_json=json.dumps(d["basis"], sort_keys=True, separators=(",", ":")),
+                    doin_metadata_schema=DOIN_METADATA_SCHEMA, test_read="false")
+        metrics = [{"metric": "won", "value": 1.0 if item["outcome"] == "WINNER" else 0.0, "unit": "FLAG",
+                    "split": "SEARCH", "horizon": d["horizon_hours"]},
+                   {"metric": "selected", "value": 0.0 if item["outcome"] == "NOT_SELECTED" else 1.0,
+                    "unit": "FLAG", "split": "SEARCH", "horizon": d["horizon_hours"]}]
+        pseudo = {"search_candidate_sha256": item["search_candidate_sha256"],
+                  "effective_config_sha256": None, "provenance": {}}
+        units.append({"identity": identity,
+                      "extra": {"search_candidate_sha256": item["search_candidate_sha256"], "head_role": None,
+                                "comparison": None, "status": item["outcome"]},
+                      "report": _base_report(pseudo, key, "I6N_SWARM_DOIN_DECISION", tags, metrics)})
+    return units
+
+
+def units_for(payload_schema: str, payload: Mapping) -> list[dict]:
+    if payload_schema == ROUND_SCHEMA:
+        return projection_units(payload)
+    if payload_schema == DECISION_SCHEMA:
+        return decision_units(payload)
+    _fail(f"PAYLOAD_SCHEMA: {payload_schema!r} is not an archive payload")

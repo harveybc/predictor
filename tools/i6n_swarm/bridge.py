@@ -202,7 +202,13 @@ class Bridge:
                 continue
             break
         token, attempt = claim["token"], claim["attempt"]
-        payload = dict(request, attempt=dict(index=attempt["index"], parent_status_sha256=attempt["parent_status_sha256"],
+        parent_status = attempt["parent_status_sha256"]
+        context = request["context"] if isinstance(request["context"], dict) else {}
+        if attempt["index"] > 1 and parent_status is None and context.get("output_root"):
+            # The previous holder died before reporting: its evaluator STATUS (RUNNING, lock free) is the parent.
+            found = locate_status(context["output_root"], request)
+            parent_status = common.file_sha256(found) if found else None
+        payload = dict(request, attempt=dict(index=attempt["index"], parent_status_sha256=parent_status,
                                              fencing_token=str(token)))
         if attempt["kind"] == "RESUME":
             payload["resume_checkpoint"] = attempt["checkpoint"]

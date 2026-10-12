@@ -113,3 +113,28 @@ CUDA_VISIBLE_DEVICES="" PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=<worktree srcs> \
 3. The operator executes DEPLOY_STEPS_D §2–§6.
 4. Record a heartbeat: `status` JSON plus one `gov_doin_metric_canonical` readback, and
    `evidence_D/` snapshot manifests from both hosts.
+
+## Round 2: lane C review fixes (REVIEW_C_OF_D.md @9f055497, verdict FIX_REQUIRED)
+
+Each regression test was written first. PRE ran against `682986cd` and all five
+failed; the PRE column gives each failure. POST covers the affected suites
+only, run once.
+
+| Finding | Regression test | PRE on `682986cd` | POST |
+|---|---|---|---|
+| F1: winner is an immutable candidate field, so re-recording CONFLICTs | `test_f1_search_outcome_is_an_append_only_decision_event` (two decisions, 4/4 green, current = latest, both kept in history, `won` in a candidate refused, two winners refused) | FAILED (no `record_decision`) | pass |
+| F1: row-key conflicts are found only at the ETL | `test_f1_row_key_conflicts_are_refused_at_record_time` | FAILED (DID NOT RAISE) | pass |
+| F2: two attempts of one fold CONFLICT | `test_f2_attempts_of_one_fold_project_one_canonical_measurement` (1 vs 2 attempts give identical canonical rows; `attempt_history_json`; lineage and >3 attempts refused) | FAILED | pass |
+| R-1: VALIDATION accepted on inner folds | `test_r1_validation_rows_are_refused_on_inner_folds` (`VALIDATION_ON_INNER_FOLD`; `2023Q1_DCA` and `W2024-12-29` accepted) | FAILED (DID NOT RAISE) | pass |
+| R-2: ETL rework is quadratic | `test_r2_etl_work_is_proportional_to_new_items` (replay does 0 writes, 0 reads, 0 resolves; 2 new candidates resolve 2 and write 2×units) | FAILED (`(18, 3, 3) != (0, 0, 0)`) | pass |
+| F3: deploy text tells a script to read token files | `test_f3_probe_takes_the_token_only_from_the_environment`; DEPLOY_STEPS §2.4, §3.1 and §5 now use `systemd-run --user -p EnvironmentFile=` with `tools.i6n_archive.probe`; §3 order fixed (counts while running, then stop and snapshot) | n/a (documentation; the test was written with the probe) | pass |
+
+**POST:** `tests/test_i6n_archive.py` plus `olap/store/tests/test_doin_projection_{store,migration}.py` and `test_parity.py` gave 41 passed, 1 skipped.
+
+**Store change:** one added view, `gov_doin_candidate_decision_current`. It is
+part of `doin_0001`, which is still additive and not deployed, and the
+migration rehearsal passes with it.
+
+**Interface:** now INTERFACE_D D.3. Because of F1, lane C's `review_d_repro.py`
+R1 calls `candidate(..., won=...)`, which is now refused by design. The
+equivalent check is the F1 test above.
