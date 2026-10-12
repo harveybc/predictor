@@ -1,0 +1,10 @@
+[Unit]
+Description=Governed I6N H4 to H72 island successor
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/env python3 -m tools.i6n_island_successor --spec %h/.config/i6n/island-successor.json
+MemoryMax=512M
+TimeoutStartSec=900
+

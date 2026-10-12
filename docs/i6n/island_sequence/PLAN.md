@@ -145,9 +145,43 @@ private deployment spec, never in the public repository.
 - TEST access invalidates the run.
 - The sequence never starts H72 from a merely local H4 completion.
 
+## Hash-Only Candidate Archive
+
+The node keeps legacy behavior unless `candidate_archive_mode` is explicitly
+`external_payload`. Each production node uses the same external store and its
+own durable outbox root; the reference spool is consumed by the existing node
+spool loop.
+
+```json
+{
+  "candidate_archive_mode": "external_payload",
+  "candidate_archive_root": "/var/lib/doin/i6n-candidate-archive",
+  "candidate_archive_store_id": "<archive-store-id>",
+  "candidate_archive_store_url": "https://<archive-host>",
+  "candidate_archive_token_env": "DOIN_ARCHIVE_TOKEN",
+  "candidate_archive_pump_interval": 30,
+  "archive_reference_spool": "/var/lib/doin/i6n-reference-spool",
+  "archive_spool_interval": 30
+}
+```
+
+The callback first validates and writes `i6n.archive.island_candidate.v1` to
+the local SQLite outbox, then PUTs and GET-verifies body and manifest in the
+content-addressed store. Only after readback does it write the hash/reference
+transaction to the spool. Candidate configuration, genotype and metrics never
+appear in that transaction. The ETL resolves finalized references and writes
+four fold reports plus one candidate report to OLAP. The retained fold evidence
+includes error sums, naive sums, counts, receipts and origin identities, so the
+candidate fitness is independently recomputable. Missing or altered bytes
+remain unresolved; the autonomous pump retries retained outbox items. A
+separate idempotent closure timer emits the successor receipt only after every
+finalized reference resolves, warehouse readback matches, and pending, error
+and quarantine counts are all zero.
+
 ## Current Boundary
 
-This commit is complete at test and methodology design only. The tests are
-expected to fail because `optimizer_plugins.i6n_optimizer.Plugin` intentionally
-has no island `optimize` implementation yet. No runtime code or campaign state
-is changed in this stage.
+The local-island optimizer, node/plugin integration, hash-only archive,
+four-node terminal collector and durable H4-to-H72 successor pass their focused
+contracts in isolated processes. Production fleet identity, synchronized-chain
+readback, first finalized candidate projection and the live ordered launch
+remain system/alpha gates; component tests alone do not satisfy those gates.

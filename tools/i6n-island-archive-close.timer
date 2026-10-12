@@ -1,0 +1,11 @@
+[Unit]
+Description=Retry I6N archive closure without an interactive monitor
+
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=60s
+Persistent=true
+Unit=i6n-island-archive-close.service
+
+[Install]
+WantedBy=timers.target

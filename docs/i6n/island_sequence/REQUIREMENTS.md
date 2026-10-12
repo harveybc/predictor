@@ -7,8 +7,10 @@ general optimizer. It adds an explicit local-island execution mode for exactly
 two governed I6N searches: 4-hour first, then 72-hour. Each DOIN node evolves a
 local population and exchanges champions through one canonical blockchain.
 
-The work in this stage is specification only. No campaign is authorized by
-these documents or by the red tests.
+The local-island unit contract and the hash-only candidate archive component
+are implemented. This document and those passing component tests do not by
+themselves authorize a campaign; fleet/system and production readback gates
+remain separate.
 
 ## Optimizer Contract
 

@@ -60,6 +60,17 @@ class ArchivePublisher:
         payload = records.round_payload(candidate, fold_receipts)
         return self._record(records.ROUND_SCHEMA, payload, payload["search_candidate_sha256"])
 
+    def record_island_candidate(self, candidate_info: dict, optimization_config: dict) -> dict:
+        """Durably retain one local-island callback before any chain reference exists."""
+        payload = records.island_candidate_payload(
+            self.domain_id, candidate_info, optimization_config
+        )
+        return self._record(
+            records.ISLAND_CANDIDATE_SCHEMA,
+            payload,
+            payload["archive_event_sha256"],
+        )
+
     def record_decision(self, decision: dict) -> dict:
         """Append one search outcome event (winner/finalist/control) for (experiment, plan, h)."""
         payload = records.validate_decision(decision)

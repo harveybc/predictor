@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import copy
 from collections import defaultdict
+import json
+import math
 
 import pytest
 
@@ -46,6 +48,16 @@ def _receipt(request: dict, ratio: float) -> dict:
                 "genotype_canonical_sha256": search.effective_identity(genome),
                 "fold": request["context"]["fold"],
                 "horizon_hours": request["config"]["horizon"],
+                "rows": [
+                    {
+                        "split": split.upper(),
+                        "head_offset_hours": request["config"]["horizon"],
+                        "head_role": "ENDPOINT",
+                        "comparison": True,
+                        "support_sha256": support["support_digest"][split],
+                    }
+                    for split in ("train", "inner")
+                ],
             },
         },
     )
@@ -226,6 +238,159 @@ def test_reported_fitness_is_ratio_minus_one_and_negative_is_better():
     assert all(event["higher_is_better"] is False for event in events.candidates)
 
 
+def test_candidate_event_preserves_archive_receipts_and_effective_identity():
+    evaluator = RecordingEvaluator()
+    events = EventRecorder()
+    cfg = _config(evaluator, events, feature_manifest_sha256="a" * 64,
+                  i6n_evaluator_identity="tests:recording-evaluator-v1")
+    for binding in cfg["i6n_folds"].values():
+        binding["i6n_origins_sha256"] = copy.deepcopy(
+            binding["i6n_support"]["support_digest"]
+        )
+
+    _optimize(cfg)
+
+    event = events.candidates[0]
+    metrics = event["metrics"]
+    assert set(metrics["receipts"]) == set(FOLDS)
+    assert metrics["origins_binding"] == "VERIFIED"
+    assert metrics["origins_sha256"] == {
+        fold: cfg["i6n_folds"][fold]["i6n_origins_sha256"] for fold in FOLDS
+    }
+    assert metrics["genotype_canonical_sha256"] == event["genotype_canonical_sha256"]
+    assert metrics["effective_config_sha256"] == event["effective_config_sha256"]
+    assert metrics["contract_sha256"] == event["contract_sha256"]
+    for fold, receipt in metrics["receipts"].items():
+        binding = receipt["metadata"]["candidate_receipt"]
+        assert binding["fold"] == fold
+        assert binding["genotype_canonical_sha256"] == event["genotype_canonical_sha256"]
+
+
+def test_checkpoint_identity_rejects_config_contract_feature_evaluator_and_class_mutations(
+    tmp_path,
+):
+    checkpoint = tmp_path / "checkpoint.json"
+    base = _config(
+        RecordingEvaluator(),
+        i6n_island_id="island-a",
+        optimization_resume_file=str(checkpoint),
+        feature_manifest_sha256="a" * 64,
+        i6n_evaluator_identity="tests:recording-evaluator-v1",
+    )
+    _plugin, expected = _optimize(base)
+    retained = json.loads(checkpoint.read_text(encoding="utf-8"))
+    assert retained["schema"] == "i6n.island.checkpoint.v2"
+    assert retained["checkpoint_identity"]["plan_sha256"]
+    assert retained["checkpoint_identity"]["config_sha256"]
+    assert retained["checkpoint_identity"]["contract_sha256"]
+    assert retained["checkpoint_identity"]["folds_sha256"]
+    assert retained["checkpoint_identity"]["support_sha256"]
+    assert retained["checkpoint_identity"]["features_sha256"]
+    assert retained["checkpoint_identity"]["evaluator_sha256"]
+    assert retained["checkpoint_identity"]["admitted_classes"] == ["S1", "S2", "S3"]
+
+    same = copy.deepcopy(base)
+    same_evaluator = RecordingEvaluator()
+    same["i6n_evaluator"] = same_evaluator
+    _plugin, replayed = _optimize(same)
+    assert replayed == expected
+    assert same_evaluator.calls == []
+
+    mutations = []
+    changed = copy.deepcopy(base)
+    changed["feature_manifest_sha256"] = "b" * 64
+    mutations.append(changed)
+    changed = copy.deepcopy(base)
+    changed["i6n_evaluator_identity"] = "tests:recording-evaluator-v2"
+    mutations.append(changed)
+    changed = copy.deepcopy(base)
+    changed["i6n_admitted_classes"] = ["S1", "S2"]
+    mutations.append(changed)
+    changed = copy.deepcopy(base)
+    changed["i6n_folds"][FOLDS[0]]["i6n_support"]["support_digest"]["train"] = "f" * 64
+    mutations.append(changed)
+    changed = copy.deepcopy(base)
+    changed["i6n_evaluator_timeout"] = 999
+    mutations.append(changed)
+
+    for changed in mutations:
+        changed["i6n_evaluator"] = RecordingEvaluator()
+        with pytest.raises(ValueError, match="checkpoint identity mismatch"):
+            _optimize(changed)
+
+
+def test_checkpoint_never_claims_patience_before_minimum_generation(monkeypatch):
+    checkpoints = []
+
+    def capture(_path, payload):
+        checkpoints.append(copy.deepcopy(payload))
+
+    monkeypatch.setattr(Plugin, "_atomic_json", staticmethod(capture))
+    _optimize(_config(
+        RecordingEvaluator(),
+        i6n_island_id="island-a",
+        optimization_resume_file="/unused/{island_id}/checkpoint.json",
+    ))
+
+    assert checkpoints[-1]["generation"] == 30
+    assert checkpoints[-1]["stop_reason"] == "patience"
+    assert all(
+        item["stop_reason"] is None
+        for item in checkpoints
+        if item["generation"] < 30
+    )
+
+
+def test_resume_from_preminimum_checkpoint_continues_instead_of_terminating(
+    monkeypatch, tmp_path,
+):
+    checkpoint = tmp_path / "checkpoint.json"
+    original = Plugin._atomic_json
+
+    class SimulatedPowerLoss(RuntimeError):
+        pass
+
+    def interrupt_after_generation_eleven(path, payload):
+        original(path, payload)
+        if payload["generation"] == 11:
+            raise SimulatedPowerLoss
+
+    config = _config(
+        RecordingEvaluator(),
+        i6n_island_id="island-a",
+        optimization_resume_file=str(checkpoint),
+    )
+    monkeypatch.setattr(
+        Plugin, "_atomic_json", staticmethod(interrupt_after_generation_eleven)
+    )
+    with pytest.raises(SimulatedPowerLoss):
+        _optimize(config)
+
+    interrupted = json.loads(checkpoint.read_text(encoding="utf-8"))
+    assert interrupted["generation"] == 11
+    assert interrupted["no_improve"] >= 10
+    assert interrupted["stop_reason"] is None
+
+    # Regression/mutation: the old writer persisted this premature reason.
+    # A new reader must continue from the retained state, not return success.
+    interrupted["stop_reason"] = "patience"
+    checkpoint.write_text(json.dumps(interrupted), encoding="utf-8")
+
+    monkeypatch.setattr(Plugin, "_atomic_json", staticmethod(original))
+    events = EventRecorder()
+    resumed = copy.deepcopy(config)
+    resumed["i6n_evaluator"] = RecordingEvaluator()
+    resumed["optimization_callbacks"] = {
+        "on_candidate_evaluated": events.on_candidate_evaluated,
+        "on_generation_end": events.on_generation_end,
+    }
+    _optimize(resumed)
+
+    assert events.generations[0]["generation"] == 11
+    assert events.generations[-1]["generation"] == 29
+    assert events.generations[-1]["stage_info"]["stop_reason"] == "patience"
+
+
 def test_same_seed_replays_the_same_local_island():
     first_evaluator = RecordingEvaluator()
     second_evaluator = RecordingEvaluator()
@@ -274,4 +439,64 @@ def test_improvement_equal_to_threshold_does_not_reset_patience():
 
     assert [event["generation"] for event in events.generations] == list(range(30))
     assert events.generations[-1]["stage_info"]["stop_reason"] == "patience"
+
+
+def test_any_representable_improvement_above_threshold_resets_patience():
+    improvement = math.nextafter(1e-8, math.inf)
+    evaluator = RecordingEvaluator(
+        lambda generation: 1.0 if generation < 5 else 1.0 - improvement
+    )
+    events = EventRecorder()
+    _optimize(_config(evaluator, events))
+
+    generation_five = events.generations[5]["stage_info"]
+    assert generation_five["relative_improvement"] > 1e-8
+    assert generation_five["no_improve_count"] == 0
+
+
+def test_completed_island_exposes_an_explicit_checkpoint_bound_terminal():
+    plugin, _result = _optimize(_config(
+        RecordingEvaluator(),
+        i6n_island_id="gamma-5090",
+    ))
+
+    terminal = plugin.island_terminal()
+
+    assert terminal["status"] == "COMPLETE"
+    assert terminal["island_id"] == "gamma-5090"
+    assert terminal["horizon"] == 4
+    assert terminal["seed"] == SEED
+    assert terminal["stop_reason"] == "patience"
+    assert terminal["terminal_generation"] == 30
+    assert len(terminal["champion_sha256"]) == 64
+    assert len(terminal["plan_sha256"]) == 64
+    assert len(terminal["contract_sha256"]) == 64
+    assert len(terminal["checkpoint_identity_sha256"]) == 64
+    assert math.isfinite(terminal["champion_fitness"])
+    assert len(terminal["final_population_sha256"]) == 64
+    assert len(terminal["candidate_ledger_sha256"]) == 64
+    assert terminal["evaluated_candidate_count"] > 0
+
+    terminal["status"] = "TAMPERED"
+    assert plugin.island_terminal()["status"] == "COMPLETE"
+
+
+def test_candidate_is_durably_reported_before_its_champion_is_broadcast():
+    order = []
+    config = _config(RecordingEvaluator())
+    config["optimization_callbacks"] = {
+        "on_candidate_evaluated": lambda event: order.append(
+            ("candidate", event["genotype_canonical_sha256"])
+        ),
+        "on_new_champion": lambda params, *_args: order.append(
+            ("champion", params["_i6n_genotype_sha256"])
+        ),
+    }
+
+    _optimize(config)
+
+    first_candidate = next(index for index, item in enumerate(order) if item[0] == "candidate")
+    first_champion = next(index for index, item in enumerate(order) if item[0] == "champion")
+    assert first_candidate < first_champion
+    assert order[first_candidate][1] == order[first_champion][1]
 

@@ -1,0 +1,13 @@
+[Unit]
+Description=I6N finalized candidate archive and OLAP closure tick
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/Documents/GitHub/predictor
+EnvironmentFile=%h/.config/i6n/archive-close.env
+ExecStart=%h/.config/i6n/python -m tools.i6n_archive close --config %h/.config/i6n/archive-close.json
+SuccessExitStatus=4
+Nice=10
+

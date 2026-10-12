@@ -1,0 +1,11 @@
+[Unit]
+Description=Collect one coherent governed I6N four-island terminal observation
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/env python3 -m tools.i6n_island_terminal_collect --spec %h/.config/i6n/island-terminal-collect.json
+MemoryMax=256M
+TimeoutStartSec=120
+

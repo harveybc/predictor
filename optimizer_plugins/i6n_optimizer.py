@@ -80,9 +80,47 @@ class Plugin:
         self.best_naive_mae_so_far = None
         self.best_test_mae_so_far = None
         self.best_test_naive_mae_so_far = None
+        self._island_terminal = None
 
     def set_params(self, **kwargs):
         self.params.update(deepcopy(kwargs))
+
+    def island_terminal(self):
+        """Return the explicit terminal produced by the local-island run."""
+        return deepcopy(self._island_terminal)
+
+    def _record_island_terminal(
+        self, *, settings, plan_sha256, contract_sha256,
+        checkpoint_identity_sha256, generation, stop_reason, champion_sha256,
+        champion_fitness, population, cache,
+    ):
+        if stop_reason not in {"patience", "generation_limit"}:
+            raise ValueError("island terminal requires a governed stop reason")
+        if not isinstance(champion_sha256, str) or not champion_sha256:
+            raise ValueError("island terminal requires a champion identity")
+        if type(champion_fitness) not in (int, float) or not math.isfinite(champion_fitness):
+            raise ValueError("island terminal requires a finite champion fitness")
+        population_ids = [space.genotype_sha256(genotype) for genotype in population]
+        candidate_ledger = {
+            identity: cache[identity]
+            for identity in sorted(cache)
+        }
+        self._island_terminal = {
+            "status": "COMPLETE",
+            "island_id": settings["island_id"],
+            "horizon": settings["horizon"],
+            "seed": settings["seed"],
+            "stop_reason": stop_reason,
+            "terminal_generation": generation,
+            "champion_sha256": champion_sha256,
+            "plan_sha256": plan_sha256,
+            "contract_sha256": contract_sha256,
+            "checkpoint_identity_sha256": checkpoint_identity_sha256,
+            "champion_fitness": float(champion_fitness),
+            "final_population_sha256": _digest(population_ids),
+            "candidate_ledger_sha256": _digest(candidate_ledger),
+            "evaluated_candidate_count": len(candidate_ledger),
+        }
 
     @staticmethod
     def _atomic_json(path, payload):
@@ -175,7 +213,86 @@ class Plugin:
             for key in (
                 "fitness", "hyper_dict", "genotype_canonical_sha256",
                 "train_mae", "train_naive_mae", "val_mae", "val_naive_mae",
+                "metrics",
             )
+        }
+
+    @staticmethod
+    def _callable_identity(value):
+        """Return a stable code identity for a configured runtime evaluator."""
+        target = value if isinstance(value, type) or hasattr(value, "__qualname__") else type(value)
+        module = getattr(target, "__module__", None)
+        qualname = getattr(target, "__qualname__", None)
+        if not isinstance(module, str) or not isinstance(qualname, str):
+            raise ValueError("i6n_evaluator has no stable module/qualified-name identity")
+        return f"{module}:{qualname}"
+
+    @staticmethod
+    def _matching_identity_fields(value, markers):
+        """Extract named identities even when they live inside fold bindings."""
+        matched = {}
+
+        def visit(current, path):
+            if isinstance(current, Mapping):
+                for key in sorted(current):
+                    child = current[key]
+                    child_path = path + (str(key),)
+                    if any(marker in str(key).lower() for marker in markers):
+                        matched[".".join(child_path)] = deepcopy(child)
+                    else:
+                        visit(child, child_path)
+            elif isinstance(current, (list, tuple)):
+                for index, child in enumerate(current):
+                    visit(child, path + (str(index),))
+
+        visit(value, ())
+        return matched
+
+    @classmethod
+    def _checkpoint_identity(cls, cfg, plan, contract, settings, admitted, search_seed):
+        """Bind every scientific input that makes a resumed island comparable."""
+        config = {}
+        for key, value in cfg.items():
+            if key == "optimization_callbacks":
+                continue
+            if key == "i6n_evaluator":
+                config["i6n_evaluator_runtime_identity"] = cls._callable_identity(value)
+            else:
+                config[key] = deepcopy(value)
+        try:
+            _json(config)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("I6N checkpoint configuration must be canonical JSON") from exc
+
+        features = cls._matching_identity_fields(config, ("feature", "manifest"))
+        evaluator = cls._matching_identity_fields(config, ("evaluator",))
+        folds = {
+            "fold_order": deepcopy(contract["fold_order"]),
+            "folds": deepcopy(contract["folds"]),
+        }
+        support = {
+            fold: {
+                "support": deepcopy(contract["folds"][fold]["support"]),
+                "origins_sha256": deepcopy(contract["folds"][fold].get("origins_sha256")),
+            }
+            for fold in contract["fold_order"]
+        }
+        admitted_ordered = sorted(admitted)
+        return {
+            "schema": "i6n.island.checkpoint.identity.v1",
+            "plan_sha256": plan["plan_sha256"],
+            "config_sha256": _digest(config),
+            "contract_sha256": _digest(contract),
+            "folds_sha256": _digest(folds),
+            "support_sha256": _digest(support),
+            "features_sha256": _digest(features),
+            "evaluator_sha256": _digest(evaluator),
+            "admitted_classes": admitted_ordered,
+            "admitted_classes_sha256": _digest(admitted_ordered),
+            "horizon": settings["horizon"],
+            "seed": settings["seed"],
+            "island_id": settings["island_id"],
+            "search_seed": search_seed,
         }
 
     @staticmethod
@@ -248,6 +365,7 @@ class Plugin:
         """
         del predictor, preprocessor
         cfg = self._config(opt_config)
+        self._island_terminal = None
         cfg.setdefault("i6n_plan", i6n_island_plan.build_plan())
         settings = self._island_settings(cfg)
         plan, contract = _V2(self)._contract(cfg)
@@ -258,7 +376,7 @@ class Plugin:
                 or plan["search"]["min_generations_before_stop"] != settings["min_generations"]
                 or float(plan["search"]["tolerance"]) != settings["tolerance"]):
             raise ValueError("runtime island settings differ from the sealed plan")
-        admitted = set(cfg.get("i6n_admitted_classes", ("S1", "S2", "S3")))
+        admitted = _V2._admitted(cfg)
         callbacks = cfg.get("optimization_callbacks") or {}
         plan_identity = plan["plan_sha256"]
         search_seed = int.from_bytes(hashlib.sha256(_json({
@@ -266,6 +384,11 @@ class Plugin:
             "horizon": settings["horizon"], "training_seed": settings["seed"],
             "island_id": settings["island_id"],
         }).encode("utf-8")).digest()[:8], "big")
+        checkpoint_identity = self._checkpoint_identity(
+            cfg, plan, contract, settings, admitted, search_seed
+        )
+        checkpoint_identity_sha256 = _digest(checkpoint_identity)
+        contract_sha256 = checkpoint_identity["contract_sha256"]
         rng = random.Random(search_seed)
         envelope = {
             "schema": "i6n.island.champion.v1", "plan_sha256": plan["plan_sha256"],
@@ -276,15 +399,14 @@ class Plugin:
         cache = {}
         start_generation = 0
         no_improve = 0
+        best_identity = None
         checkpoint = self._runtime_path(cfg.get("optimization_resume_file"), settings)
         if checkpoint and os.path.exists(checkpoint):
             with open(checkpoint, encoding="utf-8") as handle:
                 saved = json.load(handle)
-            expected = (plan_identity, settings["horizon"], settings["seed"],
-                        settings["island_id"], search_seed)
-            actual = (saved.get("plan_sha256"), saved.get("horizon"), saved.get("seed"),
-                      saved.get("island_id"), saved.get("search_seed"))
-            if actual != expected:
+            if (saved.get("schema") != "i6n.island.checkpoint.v2"
+                    or saved.get("checkpoint_identity") != checkpoint_identity
+                    or saved.get("checkpoint_identity_sha256") != checkpoint_identity_sha256):
                 raise ValueError("island resume checkpoint identity mismatch")
             population = [space.canonicalize(g) for g in saved["population"]]
             cache = deepcopy(saved.get("cache", {}))
@@ -292,13 +414,45 @@ class Plugin:
             no_improve = _int(saved.get("no_improve", 0), "checkpoint no_improve")
             self.best_fitness_so_far = float(saved.get("best_fitness", float("inf")))
             self.best_params_so_far = deepcopy(saved.get("best_params"))
+            best_identity = saved.get("best_identity")
             rng.setstate(_nested_tuple(saved["rng_state"]))
-            if saved.get("stop_reason") in {"patience", "generation_limit"}:
+            stop_reason = saved.get("stop_reason")
+            if stop_reason == "patience":
+                if (start_generation >= settings["min_generations"]
+                        and no_improve >= settings["patience"]):
+                    self._record_island_terminal(
+                        settings=settings, plan_sha256=plan_identity,
+                        contract_sha256=contract_sha256,
+                        checkpoint_identity_sha256=checkpoint_identity_sha256,
+                        generation=start_generation, stop_reason=stop_reason,
+                        champion_sha256=best_identity,
+                        champion_fitness=self.best_fitness_so_far,
+                        population=population, cache=cache,
+                    )
+                    return deepcopy(self.best_params_so_far)
+                if no_improve < settings["patience"]:
+                    raise ValueError("checkpoint patience stop contradicts its counter")
+                # A checkpoint carrying the former writer bug can claim patience
+                # before the governed minimum. Resume its retained population.
+                stop_reason = None
+            if stop_reason == "generation_limit":
+                if start_generation < settings["generations"]:
+                    raise ValueError("checkpoint generation-limit stop precedes its limit")
+                self._record_island_terminal(
+                    settings=settings, plan_sha256=plan_identity,
+                    contract_sha256=contract_sha256,
+                    checkpoint_identity_sha256=checkpoint_identity_sha256,
+                    generation=start_generation, stop_reason=stop_reason,
+                    champion_sha256=best_identity,
+                    champion_fitness=self.best_fitness_so_far,
+                    population=population, cache=cache,
+                )
                 return deepcopy(self.best_params_so_far)
+            if stop_reason is not None:
+                raise ValueError("checkpoint has an unknown stop reason")
 
         evaluator = _V2(self)
         total_eval = len(cache)
-        best_identity = None
         for generation in range(start_generation, settings["generations"]):
             stage = {
                 "stage": 1, "total_stages": 1, "meta_mode": False,
@@ -329,13 +483,16 @@ class Plugin:
                     wire = evaluator._wire(genotype, _digest(contract), generation)
                     evaluated = evaluator.evaluate(wire, generation, cfg)
                     evaluated["fitness"] = float(evaluated["fitness"]) - 1.0
-                    evaluated.setdefault("metrics", {})["relative_error_vs_naive"] = evaluated["fitness"]
-                    result = self._summary(evaluated)
-                    result["metrics"] = {
+                    effective_config_sha256 = _digest(evaluated["hyper_dict"])
+                    evaluated.setdefault("metrics", {}).update({
                         "relative_error_vs_naive": evaluated["fitness"],
-                        "per_fold_ratio": evaluated["metrics"].get("per_fold", {}),
-                        "aggregation": evaluated["metrics"].get("aggregation"),
-                    }
+                        "genotype_canonical_sha256": identity,
+                        "effective_config_sha256": effective_config_sha256,
+                        "plan_sha256": plan_identity,
+                        "contract_sha256": contract_sha256,
+                        "checkpoint_identity_sha256": checkpoint_identity_sha256,
+                    })
+                    result = self._summary(evaluated)
                     cache[identity] = result
                     total_eval += 1
                 fitness = float(result["fitness"])
@@ -350,13 +507,6 @@ class Plugin:
                     self.best_val_mae_so_far = result.get("val_mae")
                     self.best_naive_mae_so_far = result.get("val_naive_mae")
                     best_identity = identity
-                    on_champion = callbacks.get("on_new_champion")
-                    if on_champion:
-                        public_params = dict(self.best_params_so_far, _i6n_envelope=envelope,
-                                             _i6n_origin_island=settings["island_id"])
-                        on_champion(public_params, fitness, result.get("metrics", {}),
-                                    generation, dict(stage, candidate=candidate_number,
-                                                     total_candidates_evaluated=total_eval))
                 info = {
                     "generation": generation, "candidate_in_gen": candidate_number,
                     "total_eval": total_eval, "stage": 1, "total_stages": 1,
@@ -365,6 +515,11 @@ class Plugin:
                     "n_generations_total": settings["generations"],
                     "population_size": settings["population"], "is_champion": is_champion,
                     "fitness": fitness, "champion_fitness": self.best_fitness_so_far,
+                    "genotype_canonical_sha256": identity,
+                    "effective_config_sha256": result["metrics"]["effective_config_sha256"],
+                    "plan_sha256": plan_identity,
+                    "contract_sha256": contract_sha256,
+                    "checkpoint_identity_sha256": checkpoint_identity_sha256,
                     "parameters": result["hyper_dict"],
                     "champion_parameters": self.best_params_so_far,
                     "train_mae": result.get("train_mae"),
@@ -380,6 +535,18 @@ class Plugin:
                 }
                 if evaluated_now and callbacks.get("on_candidate_evaluated"):
                     callbacks["on_candidate_evaluated"](info)
+                if is_champion and callbacks.get("on_new_champion"):
+                    public_params = dict(
+                        self.best_params_so_far,
+                        _i6n_envelope=envelope,
+                        _i6n_origin_island=settings["island_id"],
+                        _i6n_genotype_sha256=identity,
+                    )
+                    callbacks["on_new_champion"](
+                        public_params, fitness, result.get("metrics", {}),
+                        generation, dict(stage, candidate=candidate_number,
+                                         total_candidates_evaluated=total_eval),
+                    )
                 if callbacks.get("on_between_candidates"):
                     signal = callbacks["on_between_candidates"](generation, candidate_number, info)
                     # A remote stage-complete signal cannot terminate the sole
@@ -390,9 +557,7 @@ class Plugin:
             # therefore the relative increment governed by the 1e-8 threshold.
             relative_improvement = (float("inf") if not math.isfinite(best_before) else
                                     best_before - self.best_fitness_so_far)
-            improved = (relative_improvement > settings["tolerance"]
-                        and not math.isclose(relative_improvement, settings["tolerance"],
-                                             rel_tol=1e-12, abs_tol=1e-15))
+            improved = relative_improvement > settings["tolerance"]
             no_improve = 0 if improved else no_improve + 1
             stage.update(generation=generation, champion_fitness=self.best_fitness_so_far,
                          champion_parameters=self.best_params_so_far,
@@ -415,7 +580,10 @@ class Plugin:
                 population = self._next_island_population(ranked, settings, admitted, rng)
             if checkpoint:
                 self._atomic_json(checkpoint, {
-                    "schema": "i6n.island.checkpoint.v1", "plan_sha256": plan_identity,
+                    "schema": "i6n.island.checkpoint.v2",
+                    "checkpoint_identity": checkpoint_identity,
+                    "checkpoint_identity_sha256": checkpoint_identity_sha256,
+                    "plan_sha256": plan_identity,
                     "horizon": settings["horizon"], "seed": settings["seed"],
                     "island_id": settings["island_id"], "search_seed": search_seed,
                     "generation": generation + 1, "population": population,
@@ -423,10 +591,19 @@ class Plugin:
                     "best_fitness": self.best_fitness_so_far,
                     "best_params": self.best_params_so_far,
                     "best_identity": best_identity, "rng_state": rng.getstate(),
-                    "stop_reason": ("patience" if no_improve >= settings["patience"] else
-                                    "generation_limit" if generation + 1 >= settings["generations"] else None),
+                    "stop_reason": stage["stop_reason"] if stop else None,
                 })
             if stop:
+                self._record_island_terminal(
+                    settings=settings, plan_sha256=plan_identity,
+                    contract_sha256=contract_sha256,
+                    checkpoint_identity_sha256=checkpoint_identity_sha256,
+                    generation=generation + 1,
+                    stop_reason=stage["stop_reason"],
+                    champion_sha256=best_identity,
+                    champion_fitness=self.best_fitness_so_far,
+                    population=population, cache=cache,
+                )
                 break
         return deepcopy(self.best_params_so_far)
 
@@ -779,6 +956,7 @@ class _V2:
             raise search.ScoreRejected(f"I6N v2 evaluator rejected candidate: {exc}") from exc
         metrics = json.loads(_json(dict(per_fold=scored["per_fold"], receipts=receipts,
                                         origins_binding=scored["origins_binding"],
+                                        origins_sha256=origins or None,
                                         aggregation=scored["aggregation"])))
         result = dict(fitness=scored["fitness"], metrics=metrics, hyper_dict=config,
                       genotype_canonical_sha256=space.genotype_sha256(g))

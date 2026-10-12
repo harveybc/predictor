@@ -1,0 +1,11 @@
+[Unit]
+Description=Poll the governed I6N island successor without agent intervention
+
+[Timer]
+OnBootSec=60s
+OnUnitInactiveSec=60s
+Persistent=true
+Unit=i6n-island-successor.service
+
+[Install]
+WantedBy=timers.target

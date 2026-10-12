@@ -2,7 +2,7 @@
   "schema": "project-method-state.v1",
   "initiative": "I6N DOIN local-island sequence: H4 then H72",
   "updated_at": "2026-10-12",
-  "current_stage": "S8_UNIT_TEST_DESIGN",
+  "current_stage": "S11_SYSTEM_VERIFICATION",
   "stage_status": {
     "S0_DISCOVERY": "PASSED",
     "S1_REQUIREMENTS": "PASSED",
@@ -13,9 +13,9 @@
     "S6_COMPONENT_DESIGN": "PASSED",
     "S7_INTEGRATION_TEST_DESIGN": "PASSED",
     "S8_UNIT_TEST_DESIGN": "PASSED",
-    "S9_UNIT_IMPLEMENTATION": "NOT_STARTED",
-    "S10_INTEGRATION_VERIFICATION": "NOT_STARTED",
-    "S11_SYSTEM_VERIFICATION": "NOT_STARTED",
+    "S9_UNIT_IMPLEMENTATION": "PASSED",
+    "S10_INTEGRATION_VERIFICATION": "PASSED",
+    "S11_SYSTEM_VERIFICATION": "IN_PROGRESS",
     "S12_ALPHA_ACCEPTANCE": "NOT_STARTED",
     "S13_BETA_ACCEPTANCE": "DEFERRED_OPTIONAL",
     "S14_RELEASE_OPERATION": "NOT_STARTED"
@@ -47,10 +47,19 @@
   },
   "objective": "Minimize mean four-fold relative error, reported as error_ratio_minus_one; negative values beat the paired naive for the same horizon and support.",
   "test_status": {
-    "expected": "RED until the local-island optimize path exists",
+    "expected": "GREEN for the implemented local-island and external-archive component contracts",
     "command": "python -m pytest -q tests/test_i6n_island_optimizer.py",
-    "observed": "RED: 7 passed, 17 failed on 2026-10-12",
-    "failure_summary": "The concurrent partial implementation validates several admission settings, but invalid-horizon errors do not identify i6n_horizon and valid H4/H72 runs fail before evaluation because i6n_plan is absent from the documented island configuration contract."
+    "observed": "GREEN: predictor integration 108 passed; doin-node integration 27 passed; doin-plugins 13 passed; doin-core archive 16 passed on 2026-10-12",
+    "failure_summary": null
+  },
+  "archive_integration": {
+    "status": "COMPONENT_INTEGRATION_PASSED",
+    "mode": "external_payload",
+    "payload_schema": "i6n.archive.island_candidate.v1",
+    "chain_content": "hash/reference only",
+    "external_content": "effective config, canonical genotype identity, candidate metrics, four fold ratios and provenance identities",
+    "olap_projection": "four fold reports plus one candidate report with exact readback",
+    "remaining_gate": "fleet deployment and first finalized production candidate readback; the closure producer is autonomous and fail-closed"
   },
   "traceability_file": "docs/i6n/island_sequence/TRACEABILITY.md",
   "accepted_requirements": [
@@ -69,9 +78,9 @@
     "OPS-002"
   ],
   "next_allowed_actions": [
-    "Implement the explicit local-island Plugin.optimize path behind i6n_island_mode=true.",
-    "Implement durable per-node terminal receipts and the automated H4-to-H72 successor.",
-    "Make the focused contract tests pass without modifying their scientific requirements."
+    "Deploy the exact committed artifacts and sealed H4 configuration to all four local islands.",
+    "Verify exact seed, network, genesis, chain checkpoint and component commits across all four node APIs.",
+    "Verify a finalized production candidate reference through CAS and OLAP readback before declaring alpha acceptance."
   ],
   "blocked_actions": [
     "Do not launch an H4 or H72 campaign before unit, integration, and system gates pass.",
@@ -88,6 +97,16 @@
       "date": "2026-10-12",
       "stage": "S8_UNIT_TEST_DESIGN",
       "event": "Created the executable island optimizer contract and persistent methodology artifacts; governing implementation intentionally not changed."
+    },
+    {
+      "date": "2026-10-12",
+      "stage": "S10_INTEGRATION_VERIFICATION",
+      "event": "Added the hash-only I6N candidate archive callback contract and verified durable outbox, reference-only chain payload, mutation sensitivity, idempotent retry, refusal of unavailable bytes, and five-row OLAP projection/readback."
+    },
+    {
+      "date": "2026-10-12",
+      "stage": "S10_INTEGRATION_VERIFICATION",
+      "event": "Verified the integrated predictor, node, plugin and core contracts in isolated processes: 108, 27, 13 and 16 tests passed respectively; advanced to four-node system verification."
     }
   ]
 }

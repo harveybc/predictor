@@ -87,6 +87,10 @@ def generate(source, nodes, output, predictor_root, python):
     endpoints = [n.get("endpoint") for n in nodes]
     if len(set(endpoints)) != 4 or any(not isinstance(e, str) or ":" not in e for e in endpoints):
         raise ValueError("four distinct host:port endpoints are required")
+    archive_urls = [n.get("candidate_archive_store_url") for n in nodes]
+    if any(not isinstance(url, str) or not url.startswith(("http://", "https://"))
+           for url in archive_urls):
+        raise ValueError("every node requires an HTTP(S) candidate_archive_store_url")
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
     manifest = sequence_manifest()
@@ -106,6 +110,18 @@ def generate(source, nodes, output, predictor_root, python):
                 "shared_min_peers": 3,
                 "require_deterministic_seed": True,
                 "dashboard_enabled": True,
+                "candidate_archive_mode": "external_payload",
+                "candidate_archive_root": (
+                    f"/var/tmp/i6n-island-sequence/archive/h{horizon}/{node['island_id']}"
+                ),
+                "candidate_archive_store_id": "doin_archive_cas",
+                "candidate_archive_store_url": node["candidate_archive_store_url"],
+                "candidate_archive_token_env": "DATA_GOV_LAKE_TOKEN",
+                "candidate_archive_pump_interval": 30.0,
+                "archive_reference_spool": (
+                    f"/var/tmp/i6n-island-sequence/spool/h{horizon}/{node['island_id']}"
+                ),
+                "archive_spool_interval": 10.0,
                 "domains": [deepcopy(common_domain)],
             }
             path = node_dir / "doin_node.json"

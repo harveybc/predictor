@@ -24,6 +24,7 @@ from typing import Any, Mapping
 
 CANDIDATE_SCHEMA = "i6n.archive.candidate.v1"
 DECISION_SCHEMA = "i6n.archive.decision.v1"
+ISLAND_CANDIDATE_SCHEMA = "i6n.archive.island_candidate.v1"
 OUTCOMES = ("WINNER", "FINALIST", "CONTROL", "NOT_SELECTED")
 ROUND_SCHEMA = "i6n.archive.round.v1"
 RECEIPT_SCHEMA = "i6n.candidate_receipt.v1"
@@ -39,6 +40,7 @@ _SUMS = ("sum_abs_error", "sum_sq_error", "naive_sum_abs_error", "naive_sum_sq_e
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _KEY = re.compile(r"^[A-Za-z0-9._:-]{1,96}$")
 MAX_ATTEMPTS_PER_FOLD = 3
+_ISLAND_SPLITS = ("train", "inner")
 
 
 class ArchiveRecordError(ValueError):
@@ -57,6 +59,530 @@ def e_config_sha256(config: Any) -> str:
 def search_candidate_sha256(plan_sha256: str, horizon_hours: int, genotype_canonical_sha256: str) -> str:
     return hashlib.sha256(canonical({"plan_sha256": plan_sha256, "horizon_hours": horizon_hours,
                                      "genotype_canonical_sha256": genotype_canonical_sha256})).hexdigest()
+
+
+def _sha256(value: Any) -> str:
+    return hashlib.sha256(canonical(value)).hexdigest()
+
+
+def _island_split_mapping(value: Any, name: str, *, kind: str) -> dict:
+    if not isinstance(value, Mapping) or set(value) != set(_ISLAND_SPLITS):
+        _fail(f"ISLAND_{name.upper()} must contain exactly train and inner")
+    result = dict(value)
+    for split in _ISLAND_SPLITS:
+        item = result[split]
+        if kind == "count":
+            if isinstance(item, bool) or not isinstance(item, int) or item < 1:
+                _fail(f"ISLAND_{name.upper()}.{split} must be an integer >= 1")
+        elif kind == "positive":
+            _finite(item, f"{name}.{split}", nullable=False)
+            if item <= 0:
+                _fail(f"ISLAND_{name.upper()}.{split} must be positive")
+        elif kind == "nonnegative":
+            _finite(item, f"{name}.{split}", nullable=False)
+            if item < 0:
+                _fail(f"ISLAND_{name.upper()}.{split} must be nonnegative")
+        elif kind == "digest":
+            if not isinstance(item, str) or not _HEX64.fullmatch(item):
+                _fail(f"ISLAND_{name.upper()}.{split} must be a lowercase sha256")
+        else:  # pragma: no cover - internal caller contract
+            raise AssertionError(f"unsupported island evidence kind: {kind}")
+    return result
+
+
+def _island_origins(metrics: Mapping, folds: Mapping) -> tuple[str, dict[str, dict] | None]:
+    binding = metrics.get("origins_binding")
+    configured = {}
+    for fold, fold_config in folds.items():
+        if not isinstance(fold_config, Mapping):
+            _fail("ISLAND_FOLD_BINDING")
+        configured[fold] = fold_config.get("i6n_origins_sha256")
+    if any(value is not None for value in configured.values()):
+        if any(value is None for value in configured.values()):
+            _fail("ISLAND_ORIGINS_CONFIG_PARTIAL")
+        if binding != "VERIFIED":
+            _fail("ISLAND_ORIGINS_BINDING_NOT_VERIFIED")
+        supplied = metrics.get("origins_sha256")
+        if not isinstance(supplied, Mapping) or set(supplied) != set(folds):
+            _fail("ISLAND_ORIGINS_FOLD_BINDING")
+        result = {}
+        for fold in folds:
+            expected = _island_split_mapping(
+                configured[fold], f"configured_origins.{fold}", kind="digest"
+            )
+            observed = _island_split_mapping(
+                supplied[fold], f"origins_sha256.{fold}", kind="digest"
+            )
+            if observed != expected:
+                _fail("ISLAND_ORIGINS_CONFIG_MISMATCH")
+            result[fold] = observed
+        return binding, result
+
+    if binding != "NOT_CHECKED" or metrics.get("origins_sha256") is not None:
+        _fail("ISLAND_ORIGINS_UNDECLARED")
+    return binding, None
+
+
+def _island_fold_evidence(
+    *, fold: str, ratio: Any, receipt: Any, binding: Mapping, genotype_sha: str,
+    horizon: int, origins_binding: str, origins_sha256: Mapping | None,
+) -> dict:
+    if not isinstance(binding, Mapping):
+        _fail("ISLAND_FOLD_BINDING")
+    support = binding.get("i6n_support")
+    context = binding.get("i6n_evaluation_context")
+    if (not isinstance(support, Mapping) or set(support) != {
+            "counts", "naive_sums", "support_digest"} or not isinstance(context, Mapping)):
+        _fail("ISLAND_FOLD_PROVENANCE")
+    expected_counts = _island_split_mapping(
+        support["counts"], f"configured_counts.{fold}", kind="count"
+    )
+    expected_naive = _island_split_mapping(
+        support["naive_sums"], f"configured_naive_sums.{fold}", kind="positive"
+    )
+    expected_support = _island_split_mapping(
+        support["support_digest"], f"configured_support_digest.{fold}", kind="digest"
+    )
+
+    required = {"status", "counts", "error_sums", "naive_sums", "support_digest", "metadata"}
+    if (not isinstance(receipt, Mapping) or not required <= set(receipt)
+            or set(receipt) - required - {"fitness"}):
+        _fail("ISLAND_RECEIPT_SCHEMA")
+    if receipt.get("status") != "ok":
+        _fail("ISLAND_RECEIPT_STATUS")
+    counts = _island_split_mapping(receipt.get("counts"), f"counts.{fold}", kind="count")
+    error_sums = _island_split_mapping(
+        receipt.get("error_sums"), f"error_sums.{fold}", kind="nonnegative"
+    )
+    naive_sums = _island_split_mapping(
+        receipt.get("naive_sums"), f"naive_sums.{fold}", kind="positive"
+    )
+    support_digest = _island_split_mapping(
+        receipt.get("support_digest"), f"support_digest.{fold}", kind="digest"
+    )
+    if (counts != expected_counts or naive_sums != expected_naive
+            or support_digest != expected_support):
+        _fail("ISLAND_RECEIPT_SUPPORT_MISMATCH")
+
+    metadata = receipt.get("metadata")
+    candidate_receipt = metadata.get("candidate_receipt") if isinstance(metadata, Mapping) else None
+    if not isinstance(candidate_receipt, Mapping):
+        _fail("ISLAND_RECEIPT_BINDING_MISSING")
+    if candidate_receipt.get("genotype_canonical_sha256") != genotype_sha:
+        _fail("ISLAND_RECEIPT_CANDIDATE_MISMATCH")
+    if candidate_receipt.get("fold") != fold:
+        _fail("ISLAND_RECEIPT_FOLD_MISMATCH")
+    if candidate_receipt.get("horizon_hours") != horizon:
+        _fail("ISLAND_RECEIPT_HORIZON_MISMATCH")
+
+    origin_digests = dict(origins_sha256) if origins_sha256 is not None else None
+    if origins_binding == "VERIFIED":
+        rows = candidate_receipt.get("rows")
+        if not isinstance(rows, list):
+            _fail("ISLAND_RECEIPT_ENDPOINT_ROW_MISSING")
+        for split in _ISLAND_SPLITS:
+            endpoint = [
+                row for row in rows
+                if isinstance(row, Mapping)
+                and row.get("split") == split.upper()
+                and row.get("head_offset_hours") == horizon
+                and row.get("head_role") == "ENDPOINT"
+                and row.get("comparison") is True
+            ]
+            if len(endpoint) != 1:
+                _fail("ISLAND_RECEIPT_ENDPOINT_ROW_MISSING")
+            if endpoint[0].get("support_sha256") != origin_digests[split]:
+                _fail("ISLAND_RECEIPT_ORIGINS_MISMATCH")
+
+    _finite(ratio, f"per_fold.{fold}", nullable=False)
+    recomputed = math.fsum(
+        error_sums[split] / naive_sums[split] for split in _ISLAND_SPLITS
+    ) / len(_ISLAND_SPLITS)
+    if not math.isclose(float(ratio), recomputed, rel_tol=1e-12, abs_tol=1e-12):
+        _fail("ISLAND_FOLD_RATIO_EVIDENCE")
+    if "fitness" in receipt:
+        _finite(receipt["fitness"], f"receipt_fitness.{fold}", nullable=False)
+        if not math.isclose(float(receipt["fitness"]), recomputed,
+                            rel_tol=1e-12, abs_tol=1e-12):
+            _fail("ISLAND_RECEIPT_FITNESS_EVIDENCE")
+
+    retained_receipt = json.loads(canonical(dict(receipt)))
+    receipt_sha = _sha256(retained_receipt)
+    receipt_identity_sha = _sha256(candidate_receipt)
+    origin_identity = {
+        "origins_binding": origins_binding,
+        "origins_sha256": origin_digests,
+    }
+    support_sha = _sha256(support)
+    context_sha = _sha256(context)
+    origin_identity_sha = _sha256(origin_identity)
+    fold_identity = _sha256({
+        "fold": fold,
+        "support_sha256": support_sha,
+        "evaluation_context_sha256": context_sha,
+        "receipt_sha256": receipt_sha,
+        "origin_identity_sha256": origin_identity_sha,
+    })
+    return {
+        "fold": fold,
+        "ratio_to_naive": float(recomputed),
+        "relative_error_vs_naive": float(recomputed) - 1.0,
+        "counts": counts,
+        "error_sums": error_sums,
+        "naive_sums": naive_sums,
+        "support_digest": support_digest,
+        "receipt": retained_receipt,
+        "receipt_sha256": receipt_sha,
+        "receipt_identity_sha256": receipt_identity_sha,
+        "origins_binding": origins_binding,
+        "origins_sha256": origin_digests,
+        "origin_identity_sha256": origin_identity_sha,
+        "support_sha256": support_sha,
+        "evaluation_context_sha256": context_sha,
+        "fold_identity_sha256": fold_identity,
+    }
+
+
+def island_candidate_payload(
+    domain_id: str,
+    candidate_info: Mapping,
+    optimization_config: Mapping,
+) -> dict:
+    """Build the external-only record emitted by the I6N island optimizer.
+
+    The callback exposes the effective config plus per-fold receipts and
+    ratios. This adapter verifies and retains those receipts, binds them to
+    the sealed support/origins, and derives every archived score from them.
+    """
+    if not isinstance(domain_id, str) or not _KEY.match(domain_id):
+        _fail("ISLAND_DOMAIN_ID")
+    if not isinstance(candidate_info, Mapping) or not isinstance(optimization_config, Mapping):
+        _fail("ISLAND_CANDIDATE_INPUT")
+    if optimization_config.get("i6n_island_mode") is not True:
+        _fail("ISLAND_MODE_REQUIRED")
+
+    horizon = optimization_config.get("i6n_horizon")
+    if horizon not in (4, 72):
+        _fail("ISLAND_HORIZON must be 4 or 72")
+    plan = optimization_config.get("i6n_plan")
+    if not isinstance(plan, Mapping):
+        _fail("ISLAND_PLAN_REQUIRED")
+    plan_sha = plan.get("plan_sha256")
+    if not isinstance(plan_sha, str) or not _HEX64.match(plan_sha):
+        _fail("ISLAND_PLAN_SHA256")
+
+    effective = candidate_info.get("parameters")
+    if not isinstance(effective, Mapping) or effective.get("horizon") != horizon:
+        _fail("ISLAND_EFFECTIVE_CONFIG")
+    effective = dict(effective)
+    effective_sha = e_config_sha256(effective)
+    genotype_sha = _sha256({"schema": "i6n-search-v1", "config": effective})
+    search_sha = search_candidate_sha256(plan_sha, horizon, genotype_sha)
+    contract_sha = candidate_info.get("contract_sha256")
+    checkpoint_sha = candidate_info.get("checkpoint_identity_sha256")
+    callback_identities = {
+        "genotype_canonical_sha256": genotype_sha,
+        "effective_config_sha256": effective_sha,
+        "plan_sha256": plan_sha,
+    }
+    for name, expected_identity in callback_identities.items():
+        if candidate_info.get(name) != expected_identity:
+            _fail(f"ISLAND_{name.upper()}_MISMATCH")
+    for name, value in (("contract_sha256", contract_sha),
+                        ("checkpoint_identity_sha256", checkpoint_sha)):
+        if not isinstance(value, str) or not _HEX64.match(value):
+            _fail(f"ISLAND_{name.upper()}")
+
+    seed = optimization_config.get("seed")
+    training_seed = candidate_info.get("training_seed")
+    if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0 or training_seed != seed:
+        _fail("ISLAND_SEED_MISMATCH")
+    island_id = candidate_info.get("island_id")
+    if not isinstance(island_id, str) or not _KEY.match(island_id):
+        _fail("ISLAND_ID")
+    generation = candidate_info.get("generation")
+    population_index = candidate_info.get("candidate_in_gen")
+    total_evaluations = candidate_info.get("total_eval")
+    for name, value in (("generation", generation), ("population_index", population_index),
+                        ("total_evaluations", total_evaluations)):
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+            _fail(f"ISLAND_{name.upper()}")
+
+    metrics = candidate_info.get("metrics")
+    folds = optimization_config.get("i6n_folds")
+    if not isinstance(metrics, Mapping) or not isinstance(folds, Mapping) or len(folds) != 4:
+        _fail("ISLAND_FOUR_FOLDS_REQUIRED")
+    ratios = metrics.get("per_fold")
+    receipts = metrics.get("receipts")
+    if (not isinstance(ratios, Mapping) or set(ratios) != set(folds)
+            or not isinstance(receipts, Mapping) or set(receipts) != set(folds)):
+        _fail("ISLAND_FOLD_RATIO_BINDING")
+    origins_binding, origins = _island_origins(metrics, folds)
+    metric_identities = dict(callback_identities, contract_sha256=contract_sha,
+                             checkpoint_identity_sha256=checkpoint_sha)
+    for name, expected_identity in metric_identities.items():
+        if metrics.get(name) != expected_identity:
+            _fail(f"ISLAND_METRIC_{name.upper()}_MISMATCH")
+
+    per_fold = []
+    for fold in sorted(folds):
+        per_fold.append(_island_fold_evidence(
+            fold=fold,
+            ratio=ratios[fold],
+            receipt=receipts[fold],
+            binding=folds[fold],
+            genotype_sha=genotype_sha,
+            horizon=horizon,
+            origins_binding=origins_binding,
+            origins_sha256=None if origins is None else origins[fold],
+        ))
+
+    fitness = candidate_info.get("fitness")
+    relative = metrics.get("relative_error_vs_naive")
+    _finite(fitness, "fitness", nullable=False)
+    _finite(relative, "relative_error_vs_naive", nullable=False)
+    expected = sum(row["ratio_to_naive"] for row in per_fold) / 4.0 - 1.0
+    if not math.isclose(float(fitness), expected, rel_tol=0.0, abs_tol=1e-12):
+        _fail("ISLAND_FITNESS_NOT_FOUR_FOLD_MEAN")
+    if not math.isclose(float(relative), float(fitness), rel_tol=0.0, abs_tol=1e-12):
+        _fail("ISLAND_RELATIVE_ERROR_MISMATCH")
+
+    aggregate = {}
+    for split, prefix, source, naive_source in (
+        ("train", "train", "train_mae", "train_naive_mae"),
+        ("inner", "inner", "val_mae", "val_naive_mae"),
+    ):
+        count = sum(row["counts"][split] for row in per_fold)
+        expected_mae = math.fsum(row["error_sums"][split] for row in per_fold) / count
+        expected_naive = math.fsum(row["naive_sums"][split] for row in per_fold) / count
+        for field, observed, expected_value in (
+            (source, candidate_info.get(source), expected_mae),
+            (naive_source, candidate_info.get(naive_source), expected_naive),
+        ):
+            _finite(observed, field, nullable=False)
+            if not math.isclose(float(observed), expected_value, rel_tol=1e-12, abs_tol=1e-12):
+                _fail(f"ISLAND_AGGREGATE_{field.upper()}")
+        aggregate[f"{prefix}_mae"] = expected_mae
+        aggregate[f"{prefix}_naive_mae"] = expected_naive
+    aggregate["relative_error_vs_naive"] = float(fitness)
+
+    event_identity = {
+        "domain_id": domain_id, "plan_sha256": plan_sha, "horizon_hours": horizon,
+        "seed": seed, "island_id": island_id, "generation": generation,
+        "population_index": population_index, "total_evaluations": total_evaluations,
+        "search_candidate_sha256": search_sha,
+    }
+    payload = {
+        "schema": ISLAND_CANDIDATE_SCHEMA,
+        "experiment": domain_id,
+        "plan_sha256": plan_sha,
+        "contract_sha256": contract_sha,
+        "checkpoint_identity_sha256": checkpoint_sha,
+        "horizon_hours": horizon,
+        "seed": seed,
+        "island_id": island_id,
+        "generation": generation,
+        "population_index": population_index,
+        "total_evaluations": total_evaluations,
+        "is_champion": bool(candidate_info.get("is_champion")),
+        "genotype": {"schema": "i6n-search-v1-effective-config", "effective": effective},
+        "genotype_canonical_sha256": genotype_sha,
+        "effective_config": effective,
+        "effective_config_sha256": effective_sha,
+        "search_candidate_sha256": search_sha,
+        "archive_event_sha256": _sha256(event_identity),
+        "fitness": float(fitness),
+        "aggregate_metrics": aggregate,
+        "per_fold": per_fold,
+        "metric_schema": metrics.get("metric_schema"),
+        "aggregation": metrics.get("aggregation"),
+    }
+    return validate_island_candidate_payload(payload)
+
+
+def validate_island_candidate_payload(payload: Any) -> dict:
+    """Fail closed if an island candidate body or any identity was altered."""
+    if not isinstance(payload, Mapping) or payload.get("schema") != ISLAND_CANDIDATE_SCHEMA:
+        _fail(f"payload schema must be {ISLAND_CANDIDATE_SCHEMA}")
+    p = dict(payload)
+    required = {
+        "schema", "experiment", "plan_sha256", "contract_sha256",
+        "checkpoint_identity_sha256", "horizon_hours", "seed", "island_id",
+        "generation", "population_index", "total_evaluations", "is_champion", "genotype",
+        "genotype_canonical_sha256", "effective_config", "effective_config_sha256",
+        "search_candidate_sha256", "archive_event_sha256", "fitness", "aggregate_metrics",
+        "per_fold", "metric_schema", "aggregation",
+    }
+    if set(p) != required:
+        _fail("ISLAND_PAYLOAD_KEYS")
+    if not isinstance(p["experiment"], str) or not _KEY.match(p["experiment"]):
+        _fail("ISLAND_EXPERIMENT")
+    for name in ("plan_sha256", "contract_sha256", "checkpoint_identity_sha256",
+                 "genotype_canonical_sha256", "effective_config_sha256",
+                 "search_candidate_sha256", "archive_event_sha256"):
+        _hex(p, name)
+    if p["horizon_hours"] not in (4, 72):
+        _fail("ISLAND_HORIZON must be 4 or 72")
+    if not isinstance(p["effective_config"], Mapping) or p["effective_config"].get("horizon") != p["horizon_hours"]:
+        _fail("ISLAND_EFFECTIVE_CONFIG")
+    effective = dict(p["effective_config"])
+    if e_config_sha256(effective) != p["effective_config_sha256"]:
+        _fail("ISLAND_EFFECTIVE_CONFIG_DIGEST")
+    expected_genotype = _sha256({"schema": "i6n-search-v1", "config": effective})
+    if expected_genotype != p["genotype_canonical_sha256"]:
+        _fail("ISLAND_GENOTYPE_DIGEST")
+    if p["genotype"] != {"schema": "i6n-search-v1-effective-config", "effective": effective}:
+        _fail("ISLAND_GENOTYPE")
+    if search_candidate_sha256(p["plan_sha256"], p["horizon_hours"], expected_genotype) \
+            != p["search_candidate_sha256"]:
+        _fail("ISLAND_SEARCH_CANDIDATE_DIGEST")
+    for name in ("seed", "generation", "population_index", "total_evaluations"):
+        _int(p, name)
+    if not isinstance(p["island_id"], str) or not _KEY.match(p["island_id"]):
+        _fail("ISLAND_ID")
+    if not isinstance(p["is_champion"], bool):
+        _fail("ISLAND_CHAMPION_FLAG")
+    _finite(p["fitness"], "fitness", nullable=False)
+    if not isinstance(p["aggregate_metrics"], Mapping):
+        _fail("ISLAND_AGGREGATE_METRICS")
+    for name, value in p["aggregate_metrics"].items():
+        _finite(value, f"aggregate_metrics.{name}", nullable=False)
+    if not isinstance(p["per_fold"], list) or len(p["per_fold"]) != 4:
+        _fail("ISLAND_FOUR_FOLDS_REQUIRED")
+    fold_names = []
+    for row in p["per_fold"]:
+        if not isinstance(row, Mapping) or set(row) != {
+            "fold", "ratio_to_naive", "relative_error_vs_naive", "counts",
+            "error_sums", "naive_sums", "support_digest", "receipt",
+            "receipt_sha256", "receipt_identity_sha256", "origins_binding",
+            "origins_sha256", "origin_identity_sha256", "support_sha256",
+            "evaluation_context_sha256", "fold_identity_sha256",
+        }:
+            _fail("ISLAND_FOLD_ROW")
+        fold_names.append(row["fold"])
+        for name in (
+            "receipt_sha256", "receipt_identity_sha256", "origin_identity_sha256",
+            "support_sha256", "evaluation_context_sha256", "fold_identity_sha256",
+        ):
+            _hex(row, name)
+        counts = _island_split_mapping(row["counts"], "counts", kind="count")
+        error_sums = _island_split_mapping(
+            row["error_sums"], "error_sums", kind="nonnegative"
+        )
+        naive_sums = _island_split_mapping(
+            row["naive_sums"], "naive_sums", kind="positive"
+        )
+        support_digest = _island_split_mapping(
+            row["support_digest"], "support_digest", kind="digest"
+        )
+        receipt = row["receipt"]
+        if not isinstance(receipt, Mapping) or _sha256(receipt) != row["receipt_sha256"]:
+            _fail("ISLAND_RECEIPT_DIGEST")
+        if (receipt.get("status") != "ok" or receipt.get("counts") != counts
+                or receipt.get("error_sums") != error_sums
+                or receipt.get("naive_sums") != naive_sums
+                or receipt.get("support_digest") != support_digest):
+            _fail("ISLAND_RECEIPT_EVIDENCE_MISMATCH")
+        metadata = receipt.get("metadata")
+        candidate_receipt = metadata.get("candidate_receipt") if isinstance(metadata, Mapping) else None
+        if not isinstance(candidate_receipt, Mapping):
+            _fail("ISLAND_RECEIPT_BINDING_MISSING")
+        if _sha256(candidate_receipt) != row["receipt_identity_sha256"]:
+            _fail("ISLAND_RECEIPT_IDENTITY")
+        if candidate_receipt.get("genotype_canonical_sha256") != p["genotype_canonical_sha256"]:
+            _fail("ISLAND_RECEIPT_CANDIDATE_MISMATCH")
+        if candidate_receipt.get("fold") != row["fold"]:
+            _fail("ISLAND_RECEIPT_FOLD_MISMATCH")
+        if candidate_receipt.get("horizon_hours") != p["horizon_hours"]:
+            _fail("ISLAND_RECEIPT_HORIZON_MISMATCH")
+
+        origins_binding = row["origins_binding"]
+        origins = row["origins_sha256"]
+        if origins_binding == "VERIFIED":
+            origins = _island_split_mapping(origins, "origins_sha256", kind="digest")
+            rows = candidate_receipt.get("rows")
+            if not isinstance(rows, list):
+                _fail("ISLAND_RECEIPT_ENDPOINT_ROW_MISSING")
+            for split in _ISLAND_SPLITS:
+                endpoint = [
+                    item for item in rows
+                    if isinstance(item, Mapping)
+                    and item.get("split") == split.upper()
+                    and item.get("head_offset_hours") == p["horizon_hours"]
+                    and item.get("head_role") == "ENDPOINT"
+                    and item.get("comparison") is True
+                ]
+                if len(endpoint) != 1:
+                    _fail("ISLAND_RECEIPT_ENDPOINT_ROW_MISSING")
+                if endpoint[0].get("support_sha256") != origins[split]:
+                    _fail("ISLAND_RECEIPT_ORIGINS_MISMATCH")
+        elif origins_binding == "NOT_CHECKED" and origins is None:
+            origins = None
+        else:
+            _fail("ISLAND_ORIGINS_BINDING")
+        expected_origin_identity = _sha256({
+            "origins_binding": origins_binding,
+            "origins_sha256": origins,
+        })
+        if expected_origin_identity != row["origin_identity_sha256"]:
+            _fail("ISLAND_ORIGIN_IDENTITY")
+
+        expected_support_sha = _sha256({
+            "counts": counts,
+            "naive_sums": naive_sums,
+            "support_digest": support_digest,
+        })
+        if expected_support_sha != row["support_sha256"]:
+            _fail("ISLAND_SUPPORT_IDENTITY")
+        _finite(row["ratio_to_naive"], "ratio_to_naive", nullable=False)
+        _finite(row["relative_error_vs_naive"], "fold_relative_error", nullable=False)
+        recomputed_ratio = math.fsum(
+            error_sums[split] / naive_sums[split] for split in _ISLAND_SPLITS
+        ) / len(_ISLAND_SPLITS)
+        if not math.isclose(row["ratio_to_naive"], recomputed_ratio,
+                            rel_tol=1e-12, abs_tol=1e-12):
+            _fail("ISLAND_FOLD_RATIO_EVIDENCE")
+        if not math.isclose(row["relative_error_vs_naive"], row["ratio_to_naive"] - 1.0,
+                            rel_tol=0.0, abs_tol=1e-12):
+            _fail("ISLAND_FOLD_RELATIVE_ERROR")
+        expected_fold = _sha256({
+            "fold": row["fold"],
+            "support_sha256": row["support_sha256"],
+            "evaluation_context_sha256": row["evaluation_context_sha256"],
+            "receipt_sha256": row["receipt_sha256"],
+            "origin_identity_sha256": row["origin_identity_sha256"],
+        })
+        if expected_fold != row["fold_identity_sha256"]:
+            _fail("ISLAND_FOLD_IDENTITY")
+    if fold_names != sorted(set(fold_names)):
+        _fail("ISLAND_FOLD_ORDER_OR_DUPLICATE")
+    expected_fitness = sum(row["ratio_to_naive"] for row in p["per_fold"]) / 4.0 - 1.0
+    if not math.isclose(p["fitness"], expected_fitness, rel_tol=0.0, abs_tol=1e-12):
+        _fail("ISLAND_FITNESS_NOT_FOUR_FOLD_MEAN")
+    expected_aggregate = {"relative_error_vs_naive": expected_fitness}
+    for split, prefix in (("train", "train"), ("inner", "inner")):
+        count = sum(row["counts"][split] for row in p["per_fold"])
+        expected_aggregate[f"{prefix}_mae"] = math.fsum(
+            row["error_sums"][split] for row in p["per_fold"]
+        ) / count
+        expected_aggregate[f"{prefix}_naive_mae"] = math.fsum(
+            row["naive_sums"][split] for row in p["per_fold"]
+        ) / count
+    if set(p["aggregate_metrics"]) != set(expected_aggregate):
+        _fail("ISLAND_AGGREGATE_METRIC_KEYS")
+    for name, expected_value in expected_aggregate.items():
+        if not math.isclose(p["aggregate_metrics"][name], expected_value,
+                            rel_tol=1e-12, abs_tol=1e-12):
+            _fail(f"ISLAND_AGGREGATE_{name.upper()}")
+    event_identity = {name: p[name] for name in (
+        "plan_sha256", "horizon_hours", "seed", "island_id", "generation",
+        "population_index", "total_evaluations", "search_candidate_sha256",
+    )}
+    event_identity["domain_id"] = p["experiment"]
+    if _sha256(event_identity) != p["archive_event_sha256"]:
+        _fail("ISLAND_EVENT_IDENTITY")
+    canonical(p)
+    return p
 
 
 def _fail(message: str):
@@ -429,9 +955,122 @@ def decision_units(payload: Mapping) -> list[dict]:
     return units
 
 
+def island_candidate_units(payload: Mapping) -> list[dict]:
+    """Project one island callback into four fold rows and one candidate row."""
+    p = validate_island_candidate_payload(payload)
+    common = {
+        "search_candidate_sha256": p["search_candidate_sha256"],
+        "archive_event_sha256": p["archive_event_sha256"],
+        "plan_sha256": p["plan_sha256"],
+        "contract_sha256": p["contract_sha256"],
+        "checkpoint_identity_sha256": p["checkpoint_identity_sha256"],
+        "genotype_canonical_sha256": p["genotype_canonical_sha256"],
+        "effective_config_sha256": p["effective_config_sha256"],
+        "island_id": p["island_id"],
+        "generation": p["generation"],
+        "population_index": p["population_index"],
+        "total_evaluations": p["total_evaluations"],
+        "seed": p["seed"],
+        "doin_metadata_schema": DOIN_METADATA_SCHEMA,
+        "test_read": "false",
+    }
+    pseudo = {
+        "search_candidate_sha256": p["search_candidate_sha256"],
+        "effective_config_sha256": p["effective_config_sha256"],
+        "provenance": {},
+    }
+    units = []
+    for fold in p["per_fold"]:
+        identity = {
+            "experiment": p["experiment"],
+            "candidate_identity_sha256": p["archive_event_sha256"],
+            "fold": fold["fold"],
+            "horizon_hours": p["horizon_hours"],
+            "head_offset_hours": p["horizon_hours"],
+            "role": "CANDIDATE_FOLD",
+            "population": "S",
+            "split": "SEARCH",
+            "metric": "FOUR_FOLD_FITNESS",
+            "unit": "RATIO",
+            "schema_version": ISLAND_CANDIDATE_SCHEMA,
+        }
+        key = row_key_sha256(identity)
+        tags = dict(common, row_key_sha256=key, **identity,
+                    support_sha256=fold["support_sha256"],
+                    evaluation_context_sha256=fold["evaluation_context_sha256"],
+                    fold_identity_sha256=fold["fold_identity_sha256"],
+                    receipt_sha256=fold["receipt_sha256"],
+                    receipt_identity_sha256=fold["receipt_identity_sha256"],
+                    origins_binding=fold["origins_binding"],
+                    origins_sha256_json=json.dumps(
+                        fold["origins_sha256"], sort_keys=True, separators=(",", ":")
+                    ),
+                    origin_identity_sha256=fold["origin_identity_sha256"])
+        metrics = [
+            {"metric": "fold_ratio_to_naive", "value": fold["ratio_to_naive"], "unit": "RATIO",
+             "split": "SEARCH", "horizon": p["horizon_hours"]},
+            {"metric": "fold_relative_error_vs_naive", "value": fold["relative_error_vs_naive"],
+             "unit": "RATIO", "split": "SEARCH", "horizon": p["horizon_hours"]},
+        ]
+        for split in _ISLAND_SPLITS:
+            split_name = split.upper()
+            count = fold["counts"][split]
+            error_sum = fold["error_sums"][split]
+            naive_sum = fold["naive_sums"][split]
+            metrics.extend([
+                {"metric": "n", "value": float(count), "unit": "count",
+                 "split": split_name, "horizon": p["horizon_hours"]},
+                {"metric": "sum_abs_error", "value": error_sum, "unit": "PRICE",
+                 "split": split_name, "horizon": p["horizon_hours"]},
+                {"metric": "naive_sum_abs_error", "value": naive_sum, "unit": "PRICE",
+                 "split": split_name, "horizon": p["horizon_hours"]},
+                {"metric": "mae", "value": error_sum / count, "unit": "PRICE",
+                 "split": split_name, "horizon": p["horizon_hours"]},
+                {"metric": "naive_mae", "value": naive_sum / count, "unit": "PRICE",
+                 "split": split_name, "horizon": p["horizon_hours"]},
+            ])
+        units.append({"identity": identity,
+                      "extra": {"search_candidate_sha256": p["search_candidate_sha256"],
+                                "head_role": None, "comparison": True, "status": "COMPLETE"},
+                      "report": _base_report(pseudo, key, "I6N_ISLAND_FOLD", tags, metrics)})
+
+    identity = {
+        "experiment": p["experiment"],
+        "candidate_identity_sha256": p["archive_event_sha256"],
+        "fold": "ALL_FOLDS",
+        "horizon_hours": p["horizon_hours"],
+        "head_offset_hours": p["horizon_hours"],
+        "role": "CANDIDATE",
+        "population": "S",
+        "split": "SEARCH",
+        "metric": "FOUR_FOLD_FITNESS",
+        "unit": "RATIO",
+        "schema_version": ISLAND_CANDIDATE_SCHEMA,
+    }
+    key = row_key_sha256(identity)
+    tags = dict(common, row_key_sha256=key, **identity,
+                genotype_json=json.dumps(p["genotype"], sort_keys=True, separators=(",", ":")),
+                effective_config_json=json.dumps(p["effective_config"], sort_keys=True, separators=(",", ":")),
+                is_champion=str(p["is_champion"]).lower(), aggregation=p["aggregation"],
+                metric_schema=p["metric_schema"])
+    metrics = [{"metric": "fitness", "value": p["fitness"], "unit": "RATIO",
+                "split": "SEARCH", "horizon": p["horizon_hours"]}]
+    metrics.extend({"metric": name, "value": value,
+                    "unit": "RATIO" if "relative" in name else "PRICE",
+                    "split": "SEARCH", "horizon": p["horizon_hours"]}
+                   for name, value in sorted(p["aggregate_metrics"].items()))
+    units.append({"identity": identity,
+                  "extra": {"search_candidate_sha256": p["search_candidate_sha256"],
+                            "head_role": None, "comparison": True, "status": "COMPLETE"},
+                  "report": _base_report(pseudo, key, "I6N_ISLAND_CANDIDATE", tags, metrics)})
+    return units
+
+
 def units_for(payload_schema: str, payload: Mapping) -> list[dict]:
     if payload_schema == ROUND_SCHEMA:
         return projection_units(payload)
     if payload_schema == DECISION_SCHEMA:
         return decision_units(payload)
+    if payload_schema == ISLAND_CANDIDATE_SCHEMA:
+        return island_candidate_units(payload)
     _fail(f"PAYLOAD_SCHEMA: {payload_schema!r} is not an archive payload")
