@@ -56,7 +56,7 @@
   "state": "INTEGRATED_DEPLOY_STAGED_NOT_STARTED",
   "engineering": "five lanes integrated and cross-reviewed; two-real-DOIN-node smoke passed; code/data replicated and byte-verified on both workers; campaign plan sealed (52 DAG nodes)",
   "science": "NO_NEW_MEASUREMENT: no production optimizer update has occurred",
-  "blocker": "permission classifier denied the production start step [Production Deploy]; owner must allow or run the start command",
+  "blocker": "auto-mode classifier denied the unchanged deployer twice ([Production Deploy]); no in-session approval prompt exists; owner must run the command or add a Bash permission rule",
   "next_gate": "first real production optimizer update + one lease heartbeat on the secondary",
   "eta": {
    "kind": "unknown",
@@ -66,7 +66,7 @@
  "campaign": {
   "id": "i6nw1",
   "root": "/var/tmp/i6n-swarm-prod-20261012 (coordinator, private)",
-  "state": "QUEUED/NOT_STARTED",
+  "state": "PREPARED_AND_REPLICATED_NOT_STARTED",
   "status_command": "python -m tools.i6n_swarm_campaign status --root /var/tmp/i6n-swarm-prod-20261012 --json",
   "admission": {
    "S1": {

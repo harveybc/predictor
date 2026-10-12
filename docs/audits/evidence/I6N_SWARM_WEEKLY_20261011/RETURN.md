@@ -75,3 +75,18 @@ its receipt; no warehouse snapshot was taken.
   intended worktree, bound to spec digest 87b41daf... (see COMMANDS.md); outcome
   recorded below by the deployment step itself. No settings were edited, no
   alternative route used.
+- Outcome of the single permission attempt (2026-10-12, main session, cwd
+  `/var/tmp/satoshi-i6n-deploy-20261012` @dfa54cb1, command exactly as in
+  COMMANDS.md): **DENIED again by the auto-mode classifier, category
+  `[Production Deploy]`**. The supported approval mechanism in this session is
+  that classifier; it exposes no in-session approval prompt, only the owner's
+  Bash permission rule in settings. Not retried, no alternative route.
+- Campaign i6nw1 state: PREPARED_AND_REPLICATED, NOT_STARTED (52 DAG nodes
+  QUEUED). First production receipt: none. Archive: NOT_DEPLOYED, same denial
+  category. NO_NEW_MEASUREMENT.
+- Exact owner action (either): run on the coordinator from
+  `/var/tmp/satoshi-i6n-deploy-20261012`:
+  `python -m tools.i6n_swarm_deploy --spec /var/tmp/i6n-swarm-deploy-20261012/DEPLOY.prod.private.json`
+  (idempotent; then status via COMMANDS.md); or add a Bash permission rule in
+  the owner's own settings allowing that exact command and
+  `DEPLOY_STEPS_D.md` §0, §2-§6, and tell me to proceed.
