@@ -6,6 +6,29 @@ Branch `satoshi/i6n-swarm-C-weekly-20261011`, base `5c383d17`. Current plan
 unit that was READY in v2 is unchanged. No fit, no price read for the plan, and no TEST row. There was
 one authorized single-case download (below). No service was started.
 
+## Update C.4: plan digest seals cell bytes (integration owner finding)
+
+`plan_sha256` used to seal the units but not the cell config bytes, so plan-v4
+and plan-v5 shared one digest although their cells differed. Now `run_plan`
+does three things:
+
+- It records `cell_configs[unit_id][h]` (the sha256 of every cell file) and
+  `cell_template_sha256` in the plan.
+- It re-seals the plan, so the digest covers every cell byte.
+- `verify` re-hashes every cell file.
+
+The regression test failed first and passes now (campaign suite: 19 passed in
+44.05 s).
+
+Production inputs are **plan-v6** (`f58d906d41f039c1863d868cf067aff58f9884c932d8f2d829e320e38894be11`)
+in the data root `/var/tmp/i6n-swarm-data-20261012/c/plan-v6`:
+
+- 681 cells sealed, VERIFIED;
+- multi-output template `MULTI_OUTPUT_ARMS.v6.template.json` (`ffecca2f...`);
+- plan-v5 moved, bytes kept, to `/var/tmp/i6n-swarm-data-20261012-superseded/`.
+
+No fit had used plan-v5, so no identity is lost.
+
 ## Update C.3: lane E review fixes and the multi-output template
 
 The integration branch `c6f1959b` was merged as a fast-forward. Every fix had

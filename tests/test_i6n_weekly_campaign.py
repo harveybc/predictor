@@ -399,3 +399,55 @@ def test_declared_clock_assumption_source_is_carried_in_fold_identity():
     q = plan(cal=cal, observed=primary, history_years=4, fold_year=2023, extended_source=narrow)
     states = {u["quarter"]: u["data"]["state"] for u in q["units"] if u["kind"] == "INNER_FOLD"}
     assert states["2023Q1"] == "WAIT_DEPENDENCY" and states["2023Q3"] == "READY_WITH_DECLARED_CLOCK_ASSUMPTION"
+
+
+def test_regression_plan_digest_seals_every_cell_config_byte(tmp_path):
+    import json
+    import numpy as np
+    cal = calendar()
+    obs = full_observed(cal)
+    np.savez(tmp_path / "INPUT.npz", ts=np.array(obs, dtype=np.int64), x=np.zeros((len(obs), 1)),
+             price=np.ones(len(obs)))
+    (tmp_path / "CALENDAR.json").write_text(json.dumps(cal))
+    sha = wc.file_sha256
+    clock = {"status": "RESOLVED", "input_sha256": sha(tmp_path / "INPUT.npz"),
+             "calendar_sha256": c1.canonical_digest(cal)}
+    (tmp_path / "CLOCK.json").write_text(json.dumps(clock))
+    (tmp_path / "SCOPE.json").write_text(json.dumps({"status": "S", "data_start": "2019-12-01T00:00:00Z",
+                                                     "data_end": "2025-01-01T00:00:00Z"}))
+
+    def template(name, max_samples):
+        body = {"schema": "i6n.historical_cell.v1", "calendar": cal, "horizon_hours": 12,
+                "training": dict(wc.PLAN_STOPPING, batch_size=256), "model": {"n_horizons": 1},
+                "resources": {"max_samples": max_samples},
+                "input": {"path": str(tmp_path / "INPUT.npz"), "sha256": clock["input_sha256"]},
+                "source_clock": {"path": str(tmp_path / "CLOCK.json"), "sha256": sha(tmp_path / "CLOCK.json")}}
+        (tmp_path / name).write_text(json.dumps(body))
+        return tmp_path / name
+
+    plans = {}
+    for tag, samples in (("a", 145), ("b", 433)):
+        t = template(f"CELL_{tag}.json", samples)
+        cfg = {"schema": wc.CONFIG_SCHEMA, "experiment": "I6N_TEST",
+               "calendar_path": str(tmp_path / "CALENDAR.json"), "calendar_sha256": sha(tmp_path / "CALENDAR.json"),
+               "data": {"input_path": str(tmp_path / "INPUT.npz"), "input_sha256": clock["input_sha256"],
+                        "clock_path": str(tmp_path / "CLOCK.json"), "clock_sha256": sha(tmp_path / "CLOCK.json"),
+                        "clock_scope_path": str(tmp_path / "SCOPE.json"), "clock_scope_sha256": sha(tmp_path / "SCOPE.json")},
+               "development_split": {"split_id": "DEVELOPMENT", "start": "2024-01-01T00:00:00Z",
+                                     "end": "2025-01-01T00:00:00Z"},
+               "horizons_hours": [2], "history_years": 1, "fold_year": None,
+               "cell_template_path": str(t), "cell_template_sha256": sha(t)}
+        (tmp_path / f"CONFIG_{tag}.json").write_text(json.dumps(cfg))
+        wc.run_plan(tmp_path / f"CONFIG_{tag}.json", tmp_path / f"plan_{tag}")
+        plans[tag] = json.loads((tmp_path / f"plan_{tag}" / "PLAN.json").read_text())
+    a, b = plans["a"], plans["b"]
+    assert all(ua["support"] == ub["support"] for ua, ub in zip(a["units"], b["units"]))
+    assert a["plan_sha256"] != b["plan_sha256"]  # different cell bytes -> different plan digest
+    cells = a["cell_configs"]
+    assert sum(len(v) for v in cells.values()) == 53
+    one = tmp_path / "plan_a" / "cells" / "W2024-01-07_h2.json"
+    assert cells["W2024-01-07"]["2"] == sha(one)
+    assert wc.verify(tmp_path / "plan_a")["state"] == "VERIFIED"
+    one.write_text(one.read_text().replace("145", "146"))
+    v = wc.verify(tmp_path / "plan_a")
+    assert v["state"] == "DAMAGED" and v["bad_cells"] == ["W2024-01-07_h2.json"]

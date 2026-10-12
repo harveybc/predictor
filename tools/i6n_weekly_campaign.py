@@ -734,6 +734,10 @@ def run_plan(config_path: Path, output: Path) -> Dict[str, Any]:
                 path = output / "cells" / f"{u['unit_id']}_h{h}.json"
                 _write(path, cell)
                 cells.setdefault(u["unit_id"], {})[h] = {"path": str(path), "sha256": file_sha256(path)}
+    # The plan digest seals every cell config byte (C review defect: plan-v5 sealed units only).
+    plan["cell_configs"] = {u: {h: pin["sha256"] for h, pin in sorted(hs.items())} for u, hs in sorted(cells.items())}
+    plan["cell_template_sha256"] = cfg.get("cell_template_sha256")
+    plan["plan_sha256"] = c1.canonical_digest({k: v for k, v in plan.items() if k != "plan_sha256"})
     _write(output / "PLAN.json", plan)
     view = {"schema": "i6n.weekly_campaign.views.v1", "plan_sha256": plan["plan_sha256"],
             "folds": fold_view(plan, cells), "weeks": week_view(plan, cells)}
@@ -760,8 +764,16 @@ def verify(output: Path) -> Dict[str, Any]:
     sealed = c1.canonical_digest(body) == plan["plan_sha256"] == manifest["plan_sha256"]
     units_ok = all(c1.canonical_digest({k: v for k, v in u.items() if k != "unit_sha256"}) == u["unit_sha256"]
                    for u in plan["units"])
-    return {"state": "VERIFIED" if (not bad and sealed and units_ok) else "DAMAGED",
-            "bad_files": bad, "plan_sealed": sealed, "units_sealed": units_ok}
+    bad_cells = []
+    for unit_id, hs in sorted((plan.get("cell_configs") or {}).items()):
+        for h, digest in sorted(hs.items(), key=lambda kv: int(kv[0])):
+            path = output / "cells" / f"{unit_id}_h{h}.json"
+            if not path.exists() or file_sha256(path) != digest:
+                bad_cells.append(path.name)
+    ok = not bad and sealed and units_ok and not bad_cells
+    return {"state": "VERIFIED" if ok else "DAMAGED", "bad_files": bad, "plan_sealed": sealed,
+            "units_sealed": units_ok, "bad_cells": bad_cells,
+            "cells_sealed": sum(len(v) for v in (plan.get("cell_configs") or {}).values())}
 
 
 def export(output: Path, target: Path) -> Dict[str, Any]:
