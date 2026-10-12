@@ -297,8 +297,20 @@ def build(config_path, output_root):
         arms = [a for a in (multi or {}).get("arms", []) if a["family"] == family]
         for arm in arms:
             _no_test(f"arm {arm['arm_id']}", arm.get("cutoff_utc"), arm.get("release_at_utc"))
+        # A.4: one family binding per eligible week, frozen from the week's cell of the family's
+        # longest planned horizon (any family horizon is a valid base cell; this choice is fixed).
+        anchor = max(hs) if hs else None
+        items = []
+        for w in views["weeks"]:
+            cell = (w.get("cell_configs") or {}).get(str(anchor)) if anchor else None
+            if anchor in w.get("horizons", []) and cell:
+                items.append(dict(week_id=w["week_id"], state="READY", cause=None, binding=None, cell_config=cell,
+                                  family=family))
+        dag.append(dict(node_id=f"freeze_family:{family}", stage="freeze", depends_on=[],
+                        spec=dict(horizon=anchor, family=family, items=items)))
         dag.append(dict(node_id=f"multi_output:{family}", stage="multi_output",
-                        depends_on=[f"annual:h{h}" for h in hs], spec=dict(family=family, horizons=hs)))
+                        depends_on=[f"annual:h{h}" for h in hs] + [f"freeze_family:{family}"],
+                        spec=dict(family=family, horizons=hs, anchor_horizon=anchor)))
     for index, node in enumerate(dag):
         node["ord"] = index
     s = e_plan["search"]

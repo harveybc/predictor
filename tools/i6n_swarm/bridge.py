@@ -192,7 +192,11 @@ class Bridge:
 
     # ---------------------------------------------------------------- folds
     def _env(self):
-        return R.device_env(self.node["device"], os.environ)
+        env = R.device_env(self.node["device"], os.environ)
+        if self.node.get("shared_data_root"):
+            # A.4 v3 contexts resolve against this host's root; never part of identity.
+            env["I6N_DATA_ROOT"] = str(self.node["shared_data_root"])
+        return env
 
     def _argv(self, fit_id, spec):
         child = list(self.node["evaluator_argv"])

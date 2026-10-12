@@ -19,6 +19,7 @@ from tools import i6n_search as search
 from tools.i6n_swarm import common, ledger as L, plan as P
 
 FREEZE_GENOTYPE = common.sha256_json("I6N_SWARM_FREEZE_NO_FIT")
+V3_CONTEXT = "i6n.historical_evaluator.v3"
 TERMINAL_UNIT = ("COMPLETE", "FAILED")
 
 
@@ -44,9 +45,12 @@ def swarm_context(root, horizon, ledger=None):
     raise LookupError(f"search:h{horizon} has no frozen swarm context yet")
 
 
-def freeze_fit_id(experiment, item_id, horizon, cell_pin):
-    return common.sha256_json(dict(kind="FREEZE", experiment=experiment, fold=item_id, horizon=horizon,
-                                   cell_config_sha256=cell_pin["sha256"]))
+def freeze_fit_id(experiment, item_id, horizon, cell_pin, family=None):
+    body = dict(kind="FREEZE", experiment=experiment, fold=item_id, horizon=horizon,
+                cell_config_sha256=cell_pin["sha256"])
+    if family:
+        body["family"] = family  # a family binding is a different frozen object than the week's endpoint one
+    return common.sha256_json(body)
 
 
 def freeze_spec(payload, node_id, horizon, item):
@@ -55,7 +59,8 @@ def freeze_spec(payload, node_id, horizon, item):
                 effective_config_sha256=item["cell_config"]["sha256"],
                 search_candidate_sha256=common.sha256_json([node_id, item["cell_config"]["sha256"]]),
                 device_class="cpu", fixture=payload["mode"] == "fixture", cell_config=item["cell_config"],
-                kind="FREEZE", score_outer=node_id.startswith("freeze_weeks:"))
+                kind="FREEZE", score_outer=node_id.startswith(("freeze_weeks:", "freeze_family:")),
+                family=item.get("family"))
 
 
 def freeze_receipt_document(unit, binding_body, binding_pin):
@@ -105,7 +110,7 @@ def _freeze_node(led, payload, node, terminals, data_root=None):
             frozen[key] = (common.read_pinned(item["binding"], f"binding {key}", root=data_root),
                            item["binding"]["sha256"])
             continue
-        fit = freeze_fit_id(payload["experiment"], key, h, item["cell_config"])
+        fit = freeze_fit_id(payload["experiment"], key, h, item["cell_config"], item.get("family"))
         if led.unit(fit) is None:
             led.ensure_unit(fit, freeze_spec(payload, node["node_id"], h, item))
             created = True
@@ -118,6 +123,11 @@ def _freeze_node(led, payload, node, terminals, data_root=None):
         state, cause = "WAIT_DEPENDENCY", "; ".join(waits)
     elif state == "QUEUED" and not units:
         state = "COMPLETE"
+    if payload["mode"] == "production":
+        legacy = sorted(k for k, (body, _) in frozen.items()
+                        if body.get("i6n_evaluation_context", {}).get("schema") != V3_CONTEXT)
+        if legacy:  # A.4: production identity must be host-independent (never a v2 absolute context)
+            return "FAILED", f"BINDING_NOT_HOST_RELATIVE_V3: {legacy[:5]}", created, {}
     return state, cause, created, frozen
 
 
@@ -253,7 +263,7 @@ def family_finalists(nodes, horizons):
     return out
 
 
-def _multi_node(led, payload, node, nodes, data_root=None):
+def _multi_node(led, payload, node, nodes, data_root=None, family_bindings=None):
     """Lane C's arms template resolved from search finalists; only READY arms with an A/E config may run."""
     pin = payload["inputs"].get("multi_output")
     if not pin:
@@ -261,6 +271,7 @@ def _multi_node(led, payload, node, nodes, data_root=None):
     from tools.i6n_weekly_multi_output import FAMILIES, MultiOutputError, resolve_arms
     manifest = common.read_pinned(pin, "multi-output arms")
     family = node["spec"]["family"]
+    family_bindings = family_bindings or {}
     try:
         resolved = resolve_arms(manifest, family_finalists(nodes, FAMILIES[family]))
     except MultiOutputError as exc:
@@ -272,28 +283,43 @@ def _multi_node(led, payload, node, nodes, data_root=None):
         cause = next((a["cause"] for a in resolved["arms"] if a["family"] == family), "NO_ARMS_FOR_FAMILY")
         return "WAIT_DEPENDENCY", cause, False, summary
     if MULTI_OUTPUT_CAPABILITY not in payload.get("evaluator_capabilities", []):
-        return ("WAIT_DEPENDENCY", "EVALUATOR_LACKS_DIRECT_MULTI_OUTPUT_ARM: lanes A/E have not provided an "
-                "adapted multi-output config and evaluator path", False, summary)
-    unbound = [a["arm_id"] for a in ready if not a.get("config") or not a.get("binding")]
-    if unbound:
-        return ("WAIT_DEPENDENCY", f"ARM_CONFIG_UNDEFINED: {len(unbound)} READY arms lack an A/E config or binding",
-                False, summary)
-    created = False
+        return ("WAIT_DEPENDENCY", "EVALUATOR_LACKS_DIRECT_MULTI_OUTPUT_ARM: the campaign does not declare "
+                "DIRECT_MULTI_OUTPUT_ARM (INTERFACE_A A.4)", False, summary)
+    from tools.i6n_historical_evaluator import multi_output_arm_config
+    created, missing = False, []
     for arm in ready:
-        body = common.read_pinned(arm["binding"], f"arm {arm['arm_id']}", root=data_root)
-        fit = common.fit_id(experiment=payload["experiment"], fold=arm["week_id"], effective_config=arm["config"],
+        recipe = arm["recipe"]
+        source = (nodes.get(f"search:h{recipe['source_horizon']}") or {}).get("summary") or {}
+        finalist = next((f for f in source.get("finalists") or []
+                         if f["genotype_canonical_sha256"] == recipe["genotype_canonical_sha256"]), None)
+        if finalist is None or not finalist.get("effective_config"):
+            return ("WAIT_DEPENDENCY", f"FINALIST_CONFIG_MISSING: {arm['arm_id']}", created, summary)
+        # A.4 pure map: the finalist's window and core, one DIRECT head per family horizon (not a trajectory).
+        config = multi_output_arm_config(finalist["effective_config"], list(FAMILIES[family]))
+        frozen = family_bindings.get(arm["week_id"])
+        if frozen is None:
+            missing.append(arm["week_id"])
+            continue
+        body, sha = frozen
+        if body.get("i6n_family") != family:
+            return "FAILED", f"FAMILY_BINDING_MISMATCH: {arm['week_id']}", created, summary
+        fit = common.fit_id(experiment=payload["experiment"], fold=arm["week_id"], effective_config=config,
                             context=body["i6n_evaluation_context"], support=body["i6n_support"])
         if led.unit(fit) is None:
             led.ensure_unit(fit, dict(
-                stage="multi_output", dag_node=node["node_id"], horizon=max(arm["horizons"]), fold=arm["week_id"],
-                experiment=payload["experiment"], genotype_canonical_sha256=arm["recipe"]["genotype_canonical_sha256"],
-                effective_config_sha256=common.sha256_json(arm["config"]),
-                search_candidate_sha256=arm["recipe"]["search_candidate_sha256"],
-                device_class="gpu_admitted", fixture=payload["mode"] == "fixture", effective_config=arm["config"],
-                arm_id=arm["arm_id"], binding_sha256=arm["binding"]["sha256"],
+                stage="multi_output", dag_node=node["node_id"], horizon=body["i6n_horizon"], fold=arm["week_id"],
+                experiment=payload["experiment"], genotype_canonical_sha256=recipe["genotype_canonical_sha256"],
+                effective_config_sha256=common.sha256_json(config),
+                search_candidate_sha256=recipe["search_candidate_sha256"], device_class="gpu_admitted",
+                fixture=payload["mode"] == "fixture", effective_config=config, arm_id=arm["arm_id"],
+                recipe_slot=arm["recipe_slot"], family=family, binding_sha256=sha,
+                size_class=finalist.get("size_class"),
                 request=dict(context=body["i6n_evaluation_context"], support=body["i6n_support"])))
             created = True
-    state, cause = _state_from_units(led.units(dag_node=node["node_id"]))
+    units = led.units(dag_node=node["node_id"])
+    state, cause = _state_from_units(units)
+    if missing and (not units or state == "COMPLETE"):
+        state, cause = "WAIT_DEPENDENCY", f"FAMILY_BINDING_PENDING: {len(missing)} weeks"
     return state, cause, created, summary
 
 
@@ -337,8 +363,9 @@ def tick(root, now=None, score_folds=None):
             state, cause, created = _annual_node(led, payload, node, nodes[f"search:h{h}"]["summary"],
                                                  frozen.get(f"freeze_weeks:h{h}", {}))
         else:
-            state, cause, created, summary = _multi_node(led, payload, node, nodes,
-                                                         P.private(root).get("shared_data_root"))
+            state, cause, created, summary = _multi_node(
+                led, payload, node, nodes, P.private(root).get("shared_data_root"),
+                frozen.get(f"freeze_family:{node['spec']['family']}", {}))
         if created:
             activated.append(node_id)
         led.dag_set(node_id, state, cause, summary)

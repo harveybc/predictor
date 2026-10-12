@@ -14,8 +14,16 @@ import time
 
 from tools.i6n_swarm import common, ledger as L, plan as P
 
-COLUMNS = ("stage", "dag_node", "horizon", "search_candidate_sha256", "genotype_canonical_sha256", "fold", "disposition",
-           "split", "population", "n", "error_sum", "naive_sum", "mae", "naive_mae", "skill_mae", "fitness")
+COLUMNS = ("stage", "dag_node", "horizon", "head_offset_hours", "row_kind", "search_candidate_sha256",
+           "genotype_canonical_sha256", "fold", "disposition", "split", "population", "n", "error_sum", "naive_sum",
+           "mae", "naive_mae", "skill_mae", "fitness")
+
+
+def _metric(n, err, naive):
+    mae = err / n if n and err is not None else None
+    naive_mae = naive / n if n and naive is not None else None
+    return dict(n=n, error_sum=err, naive_sum=naive, mae=mae, naive_mae=naive_mae,
+                skill_mae=(mae - naive_mae) / naive_mae if mae is not None and naive_mae else None)
 
 
 def default_publisher(root, payload):
@@ -220,18 +228,24 @@ def collect(root, publisher="auto", now=None, score_folds=None):
             term = terminals.get(u["fit_id"])
             shared = (term or {}).get("receipt", {}).get("shared_receipt", {})
             disposition = "COMPLETE" if u["state"] == "COMPLETE" else u["state"]
+            base = dict(stage=u["stage"], dag_node=u["dag_node"], horizon=u["horizon"],
+                        search_candidate_sha256=u["search_candidate"], genotype_canonical_sha256=u["genotype"],
+                        fold=u["fold"], disposition=disposition, population="S", fitness=fitness)
+            # Multi-output arms: the per-head DIRECT_HEAD rows (own naive) are the result; pooled sums are
+            # a diagnostic only and never a selection score (A.4).
+            pooled_kind = "POOLED_DIAGNOSTIC" if u["stage"] == "multi_output" else "ENDPOINT"
             for split in ("train", "inner"):
-                n = (shared.get("counts") or {}).get(split)
-                err = (shared.get("error_sums") or {}).get(split)
-                naive = (shared.get("naive_sums") or {}).get(split)
-                mae = err / n if n and err is not None else None
-                naive_mae = naive / n if n and naive is not None else None
-                rows.append(dict(stage=u["stage"], dag_node=u["dag_node"], horizon=u["horizon"],
-                                 search_candidate_sha256=u["search_candidate"], genotype_canonical_sha256=u["genotype"],
-                                 fold=u["fold"], disposition=disposition, split=split.upper(), population="S", n=n,
-                                 error_sum=err, naive_sum=naive, mae=mae, naive_mae=naive_mae,
-                                 skill_mae=(mae - naive_mae) / naive_mae if mae is not None and naive_mae else None,
-                                 fitness=fitness))
+                rows.append(dict(base, head_offset_hours=u["horizon"], row_kind=pooled_kind, split=split.upper(),
+                                 **_metric((shared.get("counts") or {}).get(split),
+                                           (shared.get("error_sums") or {}).get(split),
+                                           (shared.get("naive_sums") or {}).get(split))))
+            if u["stage"] == "multi_output" and term:
+                for r in term["receipt"]["candidate_receipt"].get("rows") or []:
+                    if r.get("head_role") != "DIRECT_HEAD":
+                        continue
+                    rows.append(dict(base, head_offset_hours=r.get("head_offset_hours"), row_kind="DIRECT_HEAD",
+                                     split=r.get("split"), population=r.get("population", "S"),
+                                     **_metric(r.get("n"), r.get("sum_abs_error"), r.get("naive_sum_abs_error"))))
         items = pending_by_key.get(key, [])
         if not terminal or not items or publisher is None:
             continue

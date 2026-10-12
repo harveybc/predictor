@@ -98,7 +98,8 @@ def test_plan_is_sealed_and_tamper_evident(root):
     assert [n["node_id"] for n in payload["dag"] if not n["node_id"].startswith("freeze")] == [
         "search:h12", "search:h72", "annual:h12", "annual:h72", "multi_output:short", "multi_output:long"]
     assert {n["node_id"] for n in payload["dag"] if n["node_id"].startswith("freeze")} == {
-        "freeze_folds:h12", "freeze_folds:h72", "freeze_weeks:h12", "freeze_weeks:h72"}
+        "freeze_folds:h12", "freeze_folds:h72", "freeze_weeks:h12", "freeze_weeks:h72",
+        "freeze_family:short", "freeze_family:long"}
     assert payload["budget"]["search_new_fits_max"] == 4 * 2 * 2
     for role in ("preferred", "secondary"):
         node = json.loads((root / "private" / "hosts" / role / "doin_node.json").read_text())
@@ -190,7 +191,7 @@ def test_start_is_idempotent(root, tmp_path):
     starts = [c for c in rec.calls if c[0] == "start"]
     assert len(starts) == 1 and first["started"] and second["started"] == []
     led = L.Ledger.open_readonly(root / "state" / "ledger.sqlite3")
-    assert len(led.dag_nodes()) == 10
+    assert len(led.dag_nodes()) == 12
 
 
 def test_status_reads_only_and_reports_every_level(root, monkeypatch):
@@ -306,7 +307,7 @@ def test_annual_completion_activates_multi_output(root):
     nodes = {n["node_id"]: n for n in led.dag_nodes()}
     # lane C resolves arms only from finalists of EVERY family horizon (h2..h6 are not in this fixture plan)
     assert states["multi_output:short"] == "WAIT_DEPENDENCY"
-    assert "FINALISTS_INCOMPLETE" in nodes["multi_output:short"]["cause"]
+    assert any(k in nodes["multi_output:short"]["cause"] for k in ("FINALISTS_INCOMPLETE", "freeze_family:short"))
     assert states["multi_output:long"] == "WAIT_DEPENDENCY"
     assert [u for u in led.units() if u["stage"] == "multi_output"] == []
 
@@ -521,7 +522,7 @@ def test_multi_output_uses_c_resolve_and_waits_for_an_a_e_config(tmp_path):
     assert summary["ready_arms"] == 4 and not created
     payload["evaluator_capabilities"] = [K.MULTI_OUTPUT_CAPABILITY]
     state, cause, _, _ = K._multi_node(led, payload, node, nodes)
-    assert state == "WAIT_DEPENDENCY" and cause.startswith("ARM_CONFIG_UNDEFINED")
+    assert state == "WAIT_DEPENDENCY" and cause.startswith("FINALIST_CONFIG_MISSING")  # no invented config
     long_node = dict(node_id="multi_output:long", spec=dict(family="long", horizons=[18, 24, 36, 48, 60, 72]))
     state, cause, _, _ = K._multi_node(led, payload, long_node, nodes)
     assert state == "WAIT_DEPENDENCY" and "FINALISTS_INCOMPLETE" in cause
