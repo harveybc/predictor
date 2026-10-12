@@ -143,6 +143,8 @@ def doin_template(payload, private, role):
     host = private["hosts"][role]
     doin = private["doin"]
     return dict(campaign_id=payload["campaign_id"], node_label=f"i6n-swarm-{payload['campaign_id']}-{role}",
+                mode=payload["mode"], search_plan_document=payload.get("search_plan_document"),
+                admitted_classes=[k for k, v in payload["class_caps"].items() if v["state"] == "ADMITTED"],
                 port=host["doin_port"], data_dir=str(Path(host["data_dir"]) / "doin"),
                 bootstrap_peers=[a for other, a in sorted(doin.get("peers", {}).items()) if other != role],
                 shared_min_peers=doin.get("shared_min_peers", 2), claim_timeout=doin.get("claim_timeout", 600),
@@ -152,11 +154,23 @@ def doin_template(payload, private, role):
 
 def render_doin_config(template, contexts):
     s = template["search"]
+    joint_plan = template.get("search_plan_document")
+    if template.get("mode") == "production" and joint_plan is None:
+        raise ValueError("production requires the sealed joint search plan")
 
     def domain(h, context):
+        joint = {}
+        if joint_plan is not None:
+            joint = dict(i6n_plan=deepcopy(joint_plan),
+                         i6n_admitted_classes=list(template.get("admitted_classes", [])),
+                         i6n_folds={f["fold"]: dict(i6n_support=f["support"],
+                             i6n_evaluation_context=f["context"],
+                             **({"i6n_origins_sha256": f["origins_sha256"]} if f.get("origins_sha256") else {}))
+                             for f in context["folds"]})
         return dict(domain_id=f"i6n-swarm-{template['campaign_id']}-h{h}", optimize=True, evaluate=False,
                     optimization_plugin="predictor", higher_is_better=False,
                     optimization_config=dict(
+                        **joint,
                         predictor_root=template["predictor_root"], optimizer_plugin="i6n_optimizer",
                         shared_population=True, shared_population_size=s["population_size"],
                         shared_population_seed=common.SEED, n_generations=s["generations"],
@@ -305,6 +319,7 @@ def build(config_path, output_root):
                     new_candidates_per_horizon=s["new_candidates_per_horizon"], mutation=s["mutation"],
                     immigration=s["immigration"], tolerance=s["tolerance"], patience=s["patience"]),
         horizons=horizons, folds=fold_ids, fold_map=fold_map, classes=classes, class_caps=caps,
+        search_plan_document=e_plan if cfg["mode"] == "production" else None,
         fold_origins={h: {f: o for (hh, f), o in origins.items() if hh == h} for h in {k[0] for k in origins}},
         initial_genotypes=e_plan.get("initial_genotypes", {}),
         budget=dict(search_new_fits_max=s["new_candidates_per_horizon"] * len(fold_ids) * len(horizons),
