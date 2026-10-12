@@ -107,6 +107,9 @@ def generate(source, nodes, output, predictor_root, python):
                 "port": port,
                 "data_dir": f"/var/tmp/i6n-island-sequence/doin/h{horizon}/{node['island_id']}",
                 "bootstrap_peers": [e for e in endpoints if e != node["endpoint"]],
+                "component_version_scope": [
+                    "doin-node", "doin-core", "doin-plugins", "predictor"
+                ],
                 "shared_min_peers": 3,
                 "require_deterministic_seed": True,
                 "dashboard_enabled": True,

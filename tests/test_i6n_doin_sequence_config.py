@@ -45,6 +45,9 @@ def test_generated_nodes_use_hash_only_candidate_archival(tmp_path):
     assert config["candidate_archive_store_id"] == "doin_archive_cas"
     assert config["candidate_archive_store_url"] == "http://127.0.0.1:15061"
     assert config["candidate_archive_token_env"] == "DATA_GOV_LAKE_TOKEN"
+    assert config["component_version_scope"] == [
+        "doin-node", "doin-core", "doin-plugins", "predictor"
+    ]
     assert config["archive_reference_spool"].endswith("/h4/node-0")
     assert config["domains"][0]["optimization_config"]["min_relative_improvement"] == 1e-8
 
