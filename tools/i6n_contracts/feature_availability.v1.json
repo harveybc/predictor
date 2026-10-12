@@ -1,0 +1,717 @@
+{
+ "checked_span": {
+  "end": "2024-12-31",
+  "start": "2019-01-01"
+ },
+ "contract_sha256": "9668898c28cafeef2bc48e7d3a42e82a2655d699ff8f0d8d59e921bf120b1bc9",
+ "contract_version": "1.0.0",
+ "declarations": [
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): as-of identified at source date + 48 h, match 0.9985 over 35398 rows; publication instant not in retained evidence",
+   "availability_source": "DECLARED_CONSERVATIVE",
+   "available_time": {
+    "basis": "primary publisher, same business day: the U.S. Treasury daily par yield curve (nominal and TIPS real) for business day D is released after the New York close of D, no later than 23:00 UTC (18:00 EST); D 00:00 UTC + 24 h bounds that release from above and is more conservative than the audit strict bound D + 20 h (SPEC.json). The FRED/H.15 mirror posts D on the next business day and is NOT the clock used here. T5YIE = DGS5 - DFII5, both inputs published by Treasury on D.",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 24
+   },
+   "consumption": {
+    "identified_by": "audit as-of alignment over lags -24..96 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 48,
+    "match_rate": 0.9985,
+    "source": "VERIFIED_EVIDENCE"
+   },
+   "event_time": {
+    "description": "FRED observation date D (a US business day), anchored at D 00:00 UTC",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "kind": "SOURCE_DATE"
+   },
+   "feature": "fred.inflation_expectations.t5yie.level",
+   "revision_policy": {
+    "kind": "LATEST_VINTAGE_UNVERIFIED",
+    "note": "retrieved as the latest FRED vintage; Treasury-derived daily series are not normally revised, but no first-release (ALFRED) vintage was retained, so revisions are unverified"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): as-of identified at source date + 48 h, match 0.856 over 35398 rows (below the audit's 0.95 identification threshold: as-of rule NOT identified; formula match only; secondary transition-lag diagnostic confounded); publication instant not in retained evidence",
+   "availability_source": "UNVERIFIED",
+   "available_time": {
+    "basis": "primary publisher, same business day: the U.S. Treasury daily par yield curve (nominal and TIPS real) for business day D is released after the New York close of D, no later than 23:00 UTC (18:00 EST); D 00:00 UTC + 24 h bounds that release from above and is more conservative than the audit strict bound D + 20 h (SPEC.json). The FRED/H.15 mirror posts D on the next business day and is NOT the clock used here.",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 24
+   },
+   "consumption": {
+    "identified_by": "audit as-of alignment over lags -24..96 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 48,
+    "match_rate": 0.856,
+    "source": "UNVERIFIED"
+   },
+   "event_time": {
+    "description": "FRED observation date D (a US business day), anchored at D 00:00 UTC",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "kind": "SOURCE_DATE"
+   },
+   "feature": "fred.rates.dgs3mo.diff_5d",
+   "revision_policy": {
+    "kind": "LATEST_VINTAGE_UNVERIFIED",
+    "note": "retrieved as the latest FRED vintage; Treasury-derived daily series are not normally revised, but no first-release (ALFRED) vintage was retained, so revisions are unverified"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): as-of identified at source date + 48 h, match 0.9985 over 35398 rows; publication instant not in retained evidence",
+   "availability_source": "DECLARED_CONSERVATIVE",
+   "available_time": {
+    "basis": "primary publisher, same business day: the U.S. Treasury daily par yield curve (nominal and TIPS real) for business day D is released after the New York close of D, no later than 23:00 UTC (18:00 EST); D 00:00 UTC + 24 h bounds that release from above and is more conservative than the audit strict bound D + 20 h (SPEC.json). The FRED/H.15 mirror posts D on the next business day and is NOT the clock used here.",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 24
+   },
+   "consumption": {
+    "identified_by": "audit as-of alignment over lags -24..96 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 48,
+    "match_rate": 0.9985,
+    "source": "VERIFIED_EVIDENCE"
+   },
+   "event_time": {
+    "description": "FRED observation date D (a US business day), anchored at D 00:00 UTC",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "kind": "SOURCE_DATE"
+   },
+   "feature": "fred.rates.dgs5.level",
+   "revision_policy": {
+    "kind": "LATEST_VINTAGE_UNVERIFIED",
+    "note": "retrieved as the latest FRED vintage; Treasury-derived daily series are not normally revised, but no first-release (ALFRED) vintage was retained, so revisions are unverified"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): as-of identified at source date + 48 h, match 0.8119 over 35398 rows (below the audit's 0.95 identification threshold: as-of rule NOT identified; formula match only; secondary transition-lag diagnostic confounded); publication instant not in retained evidence",
+   "availability_source": "UNVERIFIED",
+   "available_time": {
+    "basis": "primary publisher, same business day: the U.S. Treasury daily par yield curve (nominal and TIPS real) for business day D is released after the New York close of D, no later than 23:00 UTC (18:00 EST); D 00:00 UTC + 24 h bounds that release from above and is more conservative than the audit strict bound D + 20 h (SPEC.json). The FRED/H.15 mirror posts D on the next business day and is NOT the clock used here.",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 24
+   },
+   "consumption": {
+    "identified_by": "audit as-of alignment over lags -24..96 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 48,
+    "match_rate": 0.8119,
+    "source": "UNVERIFIED"
+   },
+   "event_time": {
+    "description": "FRED observation date D (a US business day), anchored at D 00:00 UTC",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "kind": "SOURCE_DATE"
+   },
+   "feature": "fred.rates.dgs7.logret_5d",
+   "revision_policy": {
+    "kind": "LATEST_VINTAGE_UNVERIFIED",
+    "note": "retrieved as the latest FRED vintage; Treasury-derived daily series are not normally revised, but no first-release (ALFRED) vintage was retained, so revisions are unverified"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): as-of identified at source date + 49 h, match 0.99997 over 35398 rows",
+   "availability_source": "DECLARED_CONSERVATIVE",
+   "available_time": {
+    "basis": "prime-rate changes are announced before their effective date, so the rate in effect on D is public by D 00:00 UTC (audit strict bound 0 h); declared D + 24 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 24
+   },
+   "consumption": {
+    "identified_by": "audit as-of alignment over lags -24..96 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 49,
+    "match_rate": 0.99997,
+    "source": "VERIFIED_EVIDENCE"
+   },
+   "event_time": {
+    "description": "date D on which the bank prime loan rate is in effect, anchored at D 00:00 UTC",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "kind": "SOURCE_DATE"
+   },
+   "feature": "fred.rates.dprime.logret_5d",
+   "revision_policy": {
+    "kind": "LATEST_VINTAGE_UNVERIFIED",
+    "note": "retrieved as the latest FRED vintage; Treasury-derived daily series are not normally revised, but no first-release (ALFRED) vintage was retained, so revisions are unverified"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): consumed at source date + 23 h, match 1.0 over 35398 rows",
+   "availability_source": "UNVERIFIED",
+   "available_time": {
+    "basis": "FRED publishes the Friday-dated weekly value on the following Thursday (owner order 2026-10-12; audit addendum section 4); the 15:00 UTC hour is declared, unverified, and irrelevant to the verdict (the weekday alone makes the +23 h consumption about five days early)",
+    "hour": 15,
+    "kind": "NEXT_WEEKDAY",
+    "weekday": 3
+   },
+   "consumption": {
+    "identified_by": "audit as-of alignment over lags -24..96 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 23,
+    "match_rate": 1.0,
+    "source": "VERIFIED_EVIDENCE"
+   },
+   "event_time": {
+    "description": "week ending Friday D (St. Louis Fed Financial Stress Index, weekly)",
+    "event_weekdays": [
+     4
+    ],
+    "kind": "SOURCE_DATE"
+   },
+   "exclusion": {
+    "date": "2026-10-12",
+    "ordered_by": "owner",
+    "reason": "consumed about five days before publication (point-in-time violation)",
+    "shifted_by_assumed_lag": false
+   },
+   "feature": "fred.stress.stlfsi4.level",
+   "revision_policy": {
+    "kind": "LATEST_VINTAGE_UNVERIFIED",
+    "note": "retrieved as the latest FRED vintage; Treasury-derived daily series are not normally revised, but no first-release (ALFRED) vintage was retained, so revisions are unverified"
+   },
+   "status": "EXCLUDED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): producer code absent from every sibling repository; logret_1h identified at 60% (-5 h vendor bar); vendor source market_data/forex/g10/gbpusd/1h.parquet",
+   "availability_source": "UNVERIFIED",
+   "available_time": {
+    "basis": "an hourly bar's OHLC is known at the bar end",
+    "kind": "BAR_END",
+    "lag_hours": 0
+   },
+   "consumption": {
+    "identified_by": "INPUT clock UTC_BAR_END; audit A1 proves no row after t enters a window",
+    "kind": "BAR_END",
+    "lag_hours": 0,
+    "match_rate": null,
+    "source": "UNVERIFIED"
+   },
+   "event_time": {
+    "description": "hourly bar ending at t on the UTC_BAR_END clock of INPUT.npz",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     6
+    ],
+    "kind": "BAR_END"
+   },
+   "feature": "fx.gbpusd.logret_1h",
+   "revision_policy": {
+    "kind": "VENDOR_BARS_AS_RETAINED",
+    "note": "vendor minute archives reconciled into retained hourly bars; no revisions tracked"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): producer code absent from every sibling repository; the vendor bar clock ties the feature and the retained close to the same vendor bar (best lag -5 h for both; 61%/40% at -5/-6 h across DST), i.e. no later bar; formula identified at 61%; vendor source market_data/forex/g10/eurusd/1h.parquet",
+   "availability_source": "UNVERIFIED",
+   "available_time": {
+    "basis": "an hourly bar's OHLC is known at the bar end",
+    "kind": "BAR_END",
+    "lag_hours": 0
+   },
+   "consumption": {
+    "identified_by": "INPUT clock UTC_BAR_END; audit A1 proves no row after t enters a window",
+    "kind": "BAR_END",
+    "lag_hours": 0,
+    "match_rate": null,
+    "source": "UNVERIFIED"
+   },
+   "event_time": {
+    "description": "hourly bar ending at t on the UTC_BAR_END clock of INPUT.npz",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     6
+    ],
+    "kind": "BAR_END"
+   },
+   "feature": "px.close_loc",
+   "revision_policy": {
+    "kind": "VENDOR_BARS_AS_RETAINED",
+    "note": "vendor minute archives reconciled into retained hourly bars; no revisions tracked"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): producer code absent from every sibling repository; the vendor bar clock ties the feature and the retained close to the same vendor bar (best lag -5 h for both; 61%/40% at -5/-6 h across DST), i.e. no later bar; formula identified at 61%; vendor source market_data/forex/g10/eurusd/1h.parquet",
+   "availability_source": "UNVERIFIED",
+   "available_time": {
+    "basis": "an hourly bar's OHLC is known at the bar end",
+    "kind": "BAR_END",
+    "lag_hours": 0
+   },
+   "consumption": {
+    "identified_by": "INPUT clock UTC_BAR_END; audit A1 proves no row after t enters a window",
+    "kind": "BAR_END",
+    "lag_hours": 0,
+    "match_rate": null,
+    "source": "UNVERIFIED"
+   },
+   "event_time": {
+    "description": "hourly bar ending at t on the UTC_BAR_END clock of INPUT.npz",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     6
+    ],
+    "kind": "BAR_END"
+   },
+   "feature": "px.log_co",
+   "revision_policy": {
+    "kind": "VENDOR_BARS_AS_RETAINED",
+    "note": "vendor minute archives reconciled into retained hourly bars; no revisions tracked"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): producer code absent from every sibling repository; the vendor bar clock ties the feature and the retained close to the same vendor bar (best lag -5 h for both; 61%/40% at -5/-6 h across DST), i.e. no later bar; formula NOT identified (best 0.3%); vendor source market_data/forex/g10/eurusd/1h.parquet",
+   "availability_source": "UNVERIFIED",
+   "available_time": {
+    "basis": "an hourly bar's OHLC is known at the bar end",
+    "kind": "BAR_END",
+    "lag_hours": 0
+   },
+   "consumption": {
+    "identified_by": "INPUT clock UTC_BAR_END; audit A1 proves no row after t enters a window",
+    "kind": "BAR_END",
+    "lag_hours": 0,
+    "match_rate": null,
+    "source": "UNVERIFIED"
+   },
+   "event_time": {
+    "description": "hourly bar ending at t on the UTC_BAR_END clock of INPUT.npz",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     6
+    ],
+    "kind": "BAR_END"
+   },
+   "feature": "px.rv5",
+   "revision_policy": {
+    "kind": "VENDOR_BARS_AS_RETAINED",
+    "note": "vendor minute archives reconciled into retained hourly bars; no revisions tracked"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): producer code absent from every sibling repository; the vendor bar clock ties the feature and the retained close to the same vendor bar (best lag -5 h for both; 61%/40% at -5/-6 h across DST), i.e. no later bar; formula unknown; vendor source market_data/forex/g10/eurusd/1h.parquet",
+   "availability_source": "UNVERIFIED",
+   "available_time": {
+    "basis": "an hourly bar's OHLC is known at the bar end",
+    "kind": "BAR_END",
+    "lag_hours": 0
+   },
+   "consumption": {
+    "identified_by": "INPUT clock UTC_BAR_END; audit A1 proves no row after t enters a window",
+    "kind": "BAR_END",
+    "lag_hours": 0,
+    "match_rate": null,
+    "source": "UNVERIFIED"
+   },
+   "event_time": {
+    "description": "hourly bar ending at t on the UTC_BAR_END clock of INPUT.npz",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     6
+    ],
+    "kind": "BAR_END"
+   },
+   "feature": "rg.atr_ratio",
+   "revision_policy": {
+    "kind": "VENDOR_BARS_AS_RETAINED",
+    "note": "vendor minute archives reconciled into retained hourly bars; no revisions tracked"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): trailing daily closes identified at source date + 24 h, match 0.9977; close instant from the exchange session, not from retained vendor timestamps",
+   "availability_source": "DECLARED_CONSERVATIVE",
+   "available_time": {
+    "basis": "NYSE Arca close 16:00 New York = 21:00 UTC (EST) / 20:00 UTC (EDT); declared D + 22 h (one hour vendor margin over the winter close)",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 22
+   },
+   "consumption": {
+    "identified_by": "audit as-of alignment over lags -24..96 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 24,
+    "match_rate": 0.9977,
+    "source": "VERIFIED_EVIDENCE"
+   },
+   "event_time": {
+    "description": "exchange trade date D of the daily close, anchored at D 00:00 UTC",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "kind": "SOURCE_DATE"
+   },
+   "feature": "yh.eem.logret_5d",
+   "revision_policy": {
+    "kind": "RETROACTIVE_SPLIT_ADJUSTMENT",
+    "note": "vendor 'Close' is split-adjusted retroactively (not dividend-adjusted); a log return between adjusted closes is invariant to the split factor; later vendor corrections are not tracked"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): trailing daily closes identified at source date + 24 h, match 0.9977; close instant from the exchange session, not from retained vendor timestamps",
+   "availability_source": "DECLARED_CONSERVATIVE",
+   "available_time": {
+    "basis": "NYSE Arca close 16:00 New York = 21:00 UTC (EST) / 20:00 UTC (EDT); declared D + 22 h (one hour vendor margin over the winter close)",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 22
+   },
+   "consumption": {
+    "identified_by": "audit as-of alignment over lags -24..96 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 24,
+    "match_rate": 0.9977,
+    "source": "VERIFIED_EVIDENCE"
+   },
+   "event_time": {
+    "description": "exchange trade date D of the daily close, anchored at D 00:00 UTC",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "kind": "SOURCE_DATE"
+   },
+   "feature": "yh.iyr.logret_1d",
+   "revision_policy": {
+    "kind": "RETROACTIVE_SPLIT_ADJUSTMENT",
+    "note": "vendor 'Close' is split-adjusted retroactively (not dividend-adjusted); a log return between adjusted closes is invariant to the split factor; later vendor corrections are not tracked"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): trailing daily closes identified at source date + 24 h, match 0.9977; close instant from the exchange session, not from retained vendor timestamps",
+   "availability_source": "DECLARED_CONSERVATIVE",
+   "available_time": {
+    "basis": "vendor daily bar of a US futures contract ends with the 17:00 New York session close = 22:00 UTC (EST); declared D + 23 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 23
+   },
+   "consumption": {
+    "identified_by": "audit as-of alignment over lags -24..96 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 24,
+    "match_rate": 0.9977,
+    "source": "VERIFIED_EVIDENCE"
+   },
+   "event_time": {
+    "description": "exchange trade date D of the daily close, anchored at D 00:00 UTC",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "kind": "SOURCE_DATE"
+   },
+   "feature": "yh.kc_f.logret_1d",
+   "revision_policy": {
+    "kind": "RETROACTIVE_SPLIT_ADJUSTMENT",
+    "note": "vendor 'Close' is split-adjusted retroactively (not dividend-adjusted); a log return between adjusted closes is invariant to the split factor; later vendor corrections are not tracked"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): trailing daily closes identified at source date + 24 h, match 0.9979; close instant from the exchange session, not from retained vendor timestamps",
+   "availability_source": "DECLARED_CONSERVATIVE",
+   "available_time": {
+    "basis": "Tokyo Stock Exchange close 15:30 JST = 06:30 UTC; declared D + 8 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 8
+   },
+   "consumption": {
+    "identified_by": "audit as-of alignment over lags -24..96 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 24,
+    "match_rate": 0.9979,
+    "source": "VERIFIED_EVIDENCE"
+   },
+   "event_time": {
+    "description": "exchange trade date D of the daily close, anchored at D 00:00 UTC",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "kind": "SOURCE_DATE"
+   },
+   "feature": "yh.n225.logret_1d",
+   "revision_policy": {
+    "kind": "RETROACTIVE_SPLIT_ADJUSTMENT",
+    "note": "vendor 'Close' is split-adjusted retroactively (not dividend-adjusted); a log return between adjusted closes is invariant to the split factor; later vendor corrections are not tracked"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): trailing daily closes identified at source date + 24 h, match 0.9977; close instant from the exchange session, not from retained vendor timestamps",
+   "availability_source": "DECLARED_CONSERVATIVE",
+   "available_time": {
+    "basis": "vendor daily bar of a US futures contract ends with the 17:00 New York session close = 22:00 UTC (EST); declared D + 23 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 23
+   },
+   "consumption": {
+    "identified_by": "audit as-of alignment over lags -24..96 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 24,
+    "match_rate": 0.9977,
+    "source": "VERIFIED_EVIDENCE"
+   },
+   "event_time": {
+    "description": "exchange trade date D of the daily close, anchored at D 00:00 UTC",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "kind": "SOURCE_DATE"
+   },
+   "feature": "yh.si_f.logret_1d",
+   "revision_policy": {
+    "kind": "RETROACTIVE_SPLIT_ADJUSTMENT",
+    "note": "vendor 'Close' is split-adjusted retroactively (not dividend-adjusted); a log return between adjusted closes is invariant to the split factor; later vendor corrections are not tracked"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): trailing daily closes identified at source date + 24 h, match 0.9977; close instant from the exchange session, not from retained vendor timestamps",
+   "availability_source": "DECLARED_CONSERVATIVE",
+   "available_time": {
+    "basis": "NYSE Arca close 16:00 New York = 21:00 UTC (EST) / 20:00 UTC (EDT); declared D + 22 h (one hour vendor margin over the winter close)",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 22
+   },
+   "consumption": {
+    "identified_by": "audit as-of alignment over lags -24..96 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 24,
+    "match_rate": 0.9977,
+    "source": "VERIFIED_EVIDENCE"
+   },
+   "event_time": {
+    "description": "exchange trade date D of the daily close, anchored at D 00:00 UTC",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "kind": "SOURCE_DATE"
+   },
+   "feature": "yh.slv.logret_1d",
+   "revision_policy": {
+    "kind": "RETROACTIVE_SPLIT_ADJUSTMENT",
+    "note": "vendor 'Close' is split-adjusted retroactively (not dividend-adjusted); a log return between adjusted closes is invariant to the split factor; later vendor corrections are not tracked"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): trailing daily closes identified at source date + 24 h, match 0.9977; close instant from the exchange session, not from retained vendor timestamps",
+   "availability_source": "DECLARED_CONSERVATIVE",
+   "available_time": {
+    "basis": "NYSE Arca close 16:00 New York = 21:00 UTC (EST) / 20:00 UTC (EDT); declared D + 22 h (one hour vendor margin over the winter close)",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 22
+   },
+   "consumption": {
+    "identified_by": "audit as-of alignment over lags -24..96 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 24,
+    "match_rate": 0.9977,
+    "source": "VERIFIED_EVIDENCE"
+   },
+   "event_time": {
+    "description": "exchange trade date D of the daily close, anchored at D 00:00 UTC",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "kind": "SOURCE_DATE"
+   },
+   "feature": "yh.vnq.logret_1d",
+   "revision_policy": {
+    "kind": "RETROACTIVE_SPLIT_ADJUSTMENT",
+    "note": "vendor 'Close' is split-adjusted retroactively (not dividend-adjusted); a log return between adjusted closes is invariant to the split factor; later vendor corrections are not tracked"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): trailing daily closes identified at source date + 24 h, match 0.9977; close instant from the exchange session, not from retained vendor timestamps",
+   "availability_source": "DECLARED_CONSERVATIVE",
+   "available_time": {
+    "basis": "NYSE Arca close 16:00 New York = 21:00 UTC (EST) / 20:00 UTC (EDT); declared D + 22 h (one hour vendor margin over the winter close)",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 22
+   },
+   "consumption": {
+    "identified_by": "audit as-of alignment over lags -24..96 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 24,
+    "match_rate": 0.9977,
+    "source": "VERIFIED_EVIDENCE"
+   },
+   "event_time": {
+    "description": "exchange trade date D of the daily close, anchored at D 00:00 UTC",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "kind": "SOURCE_DATE"
+   },
+   "feature": "yh.xlc.logret_1d",
+   "revision_policy": {
+    "kind": "RETROACTIVE_SPLIT_ADJUSTMENT",
+    "note": "vendor 'Close' is split-adjusted retroactively (not dividend-adjusted); a log return between adjusted closes is invariant to the split factor; later vendor corrections are not tracked"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  },
+  {
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): trailing daily closes identified at source date + 24 h, match 0.9977; close instant from the exchange session, not from retained vendor timestamps",
+   "availability_source": "DECLARED_CONSERVATIVE",
+   "available_time": {
+    "basis": "NYSE Arca close 16:00 New York = 21:00 UTC (EST) / 20:00 UTC (EDT); declared D + 22 h (one hour vendor margin over the winter close)",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 22
+   },
+   "consumption": {
+    "identified_by": "audit as-of alignment over lags -24..96 h",
+    "kind": "DATE_OFFSET",
+    "lag_hours": 24,
+    "match_rate": 0.9977,
+    "source": "VERIFIED_EVIDENCE"
+   },
+   "event_time": {
+    "description": "exchange trade date D of the daily close, anchored at D 00:00 UTC",
+    "event_weekdays": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "kind": "SOURCE_DATE"
+   },
+   "feature": "yh.xlre.logret_1d",
+   "revision_policy": {
+    "kind": "RETROACTIVE_SPLIT_ADJUSTMENT",
+    "note": "vendor 'Close' is split-adjusted retroactively (not dividend-adjusted); a log return between adjusted closes is invariant to the split factor; later vendor corrections are not tracked"
+   },
+   "status": "RETAINED",
+   "timezone": "UTC"
+  }
+ ],
+ "evidence": {
+  "audit_branch": "retsu/i6n-causal-trace-audit-addendum-20261012",
+  "audit_commit": "d0642119247f3e3522b753281af0e922af946029",
+  "directory": "docs/audits/evidence/I6N_CAUSAL_TRACE_AUDIT_20261012",
+  "files_sha256": {
+   "ADDENDUM_FOR_MUSASHI.md": "ecba8c975b24472ccdd6e230209018b85e968b750dfa46aa8d13df3771e69bd8",
+   "FEATURE_AVAILABILITY.json": "4af58212926b6ced43c3c49eace4b923d4a9e12e8ec36089266b87b2ffa45f7e",
+   "FEATURE_PROVENANCE.csv": "cb8ddbfd91a96262ba0009f3aa7ae3bd39c56ad20b9ba623cf10c57733f02e2d",
+   "SPEC.json": "a3b74e8463fb928fe932b1c9bcb9ead1ae1e4245dafdd60bda51e4aceb7b2242"
+  }
+ },
+ "invariant": "a window ending at t may consume a value only when available_time <= t; for a retained input: consumed_from(event) >= available_at(event) for every event",
+ "order": "owner ruling 2026-10-12: exclude STLFSI4 before H72; every external feature declares availability",
+ "schema": "i6n.feature_availability.contract.v1",
+ "source_vocabulary": {
+  "DECLARED_CONSERVATIVE": "as-of rule proven; publication instant declared from the publisher's schedule with a margin, not from retained timestamps",
+  "UNVERIFIED": "the as-of rule or the producer cannot be reproduced from retained evidence; kept explicitly (never dropped silently) and never reported as SAFE",
+  "VERIFIED_EVIDENCE": "both the publication instant and the as-of rule are proven by retained evidence"
+ }
+}

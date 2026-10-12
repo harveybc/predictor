@@ -20,6 +20,7 @@ from tools.i6m_queue import atomic_json
 from tools.i6e_clock_windows import clock_windows
 from tools.i6e_compact_run import scaled_inputs
 from tools.i6n_contracts import business_metrics as bm, eligibility as c1, paired_metrics as c2
+from tools.i6n_contracts import feature_availability as availability
 from tools.i6n_model import normalize_config
 from tools.i6n_training import _settings
 from tools.i6n_weekly_data import WeeklyDataError, build_weekly_partitions
@@ -27,6 +28,12 @@ from tools.i6n_weekly_data import WeeklyDataError, build_weekly_partitions
 BASE = Path(__file__).resolve().parents[1]
 KEYS = set("schema input source_clock calendar evaluation_week_id evaluation_split coverage_mode role horizon_hours samples spacing_hours features model training resources device asset unit".split())
 LIMITS = set("max_input_bytes max_rows max_samples max_materialized_bytes max_batch_bytes max_updates max_parameters max_seconds".split())
+# v2 (owner order 2026-10-12): any feature count, every feature passes the
+# point-in-time availability gate, and the manifest and contract digests are bound.
+SCHEMA_V1 = "i6n.historical_cell.v1"
+SCHEMA_V2 = "i6n.historical_cell.v2"
+KEYS_V2 = KEYS | {"feature_manifest_sha256", "availability_contract_sha256"}
+MAX_FEATURES = 64
 CLOCK_KEYS = set("schema status coverage_mode data_kind input_sha256 features calendar_sha256 timestamp_semantics availability_policy clock_policy".split())
 
 
@@ -65,7 +72,8 @@ def authenticated(cfg, trajectory=False, offsets=None):
     endpoint head. The historical evaluator passes ``trajectory=True`` for a
     candidate with heads [dy, ..., h] and equal per-head loss weights.
     """
-    if not isinstance(cfg, dict) or set(cfg) != KEYS or cfg["schema"] != "i6n.historical_cell.v1":
+    schema = cfg.get("schema") if isinstance(cfg, dict) else None
+    if schema not in (SCHEMA_V1, SCHEMA_V2) or set(cfg) != (KEYS if schema == SCHEMA_V1 else KEYS_V2):
         raise ValueError("historical cell config schema mismatch")
     if cfg["coverage_mode"] != "complete":
         raise ValueError("complete historical coverage required")
@@ -80,9 +88,21 @@ def authenticated(cfg, trajectory=False, offsets=None):
         if type(cfg[key]) is not int or cfg[key] < (2 if key == "samples" else 1):
             raise ValueError(f"invalid {key}")
     features = cfg["features"]
-    if (not isinstance(features, list) or len(features) != 20
-            or any(not isinstance(f, str) or not f.strip() for f in features) or len(set(features)) != 20):
-        raise ValueError("exactly 20 unique selected features required")
+    if schema == SCHEMA_V1:
+        if (not isinstance(features, list) or len(features) != 20
+                or any(not isinstance(f, str) or not f.strip() for f in features) or len(set(features)) != 20):
+            raise ValueError("exactly 20 unique selected features required")
+    else:
+        if (not isinstance(features, list) or not 1 <= len(features) <= MAX_FEATURES
+                or any(not isinstance(f, str) or not f.strip() for f in features)
+                or len(set(features)) != len(features)):
+            raise ValueError(f"1..{MAX_FEATURES} unique selected features required")
+        if cfg["feature_manifest_sha256"] != availability.manifest_sha256(features):
+            raise ValueError("feature_manifest_sha256 does not bind the ordered feature list")
+        contract = availability.load_contract()
+        if cfg["availability_contract_sha256"] != contract["contract_sha256"]:
+            raise ValueError("availability_contract_sha256 differs from the sealed availability contract")
+        availability.gate(features, contract)  # refuses undeclared, excluded or early-consumed features
     normalize_config(cfg["model"])
     _settings(cfg["training"])
     if offsets is not None:
@@ -156,7 +176,7 @@ def prepare(cfg, trajectory=False, offsets=None):
     with zipfile.ZipFile(source["path"]) as archive:
         if max(Path(source["path"]).stat().st_size, sum(i.file_size for i in archive.infolist())) > limits["max_input_bytes"]:
             raise ValueError("input bytes exceed resource limit")
-    ts, raw, price = load_input(source["path"], source["sha256"])
+    ts, raw, price = load_input(source["path"], source["sha256"], n_features=len(cfg["features"]))
     if len(ts) > limits["max_rows"] or raw.dtype.kind not in "fi":
         raise ValueError("source rows or numeric features invalid")
     count = sum(math.ceil((w.market_close-w.market_open).total_seconds()/3600) for w in weeks)
@@ -177,12 +197,13 @@ def prepare(cfg, trajectory=False, offsets=None):
             raise WeeklyDataError(f"NO_ELIGIBLE_ENDPOINT_{name}")
     populations = (parts.train, parts.inner, parts.evaluation)
     rows = [sum(1 for m in p.mask if any(m)) for p in populations]
-    row_bytes = cfg["samples"]*41*4 + 8 + len(offsets)*(1 + 8)
+    channels = channel_count(cfg)
+    row_bytes = cfg["samples"]*channels*4 + 8 + len(offsets)*(1 + 8)
     batch = cfg["training"]["batch_size"]
     if sum(rows)*row_bytes > limits["max_materialized_bytes"]:
         raise ValueError("materialized bytes exceed resource limit")
     # Values, indices, desired timestamps, masks, and concatenation coexist.
-    if batch*cfg["samples"]*(2*41*4 + 2*8 + 2) > limits["max_batch_bytes"]:
+    if batch*cfg["samples"]*(2*channels*4 + 2*8 + 2) > limits["max_batch_bytes"]:
         raise ValueError("window batch bytes exceed resource limit")
     if math.ceil(rows[0]/batch)*cfg["training"]["max_epochs"] > limits["max_updates"]:
         raise ValueError("optimizer updates exceed resource limit")
@@ -216,11 +237,16 @@ def prepare(cfg, trajectory=False, offsets=None):
                 mode="multi_output" if direct else "endpoint_or_trajectory")
 
 
+def channel_count(cfg):
+    """Scaled value and availability per feature, plus one market-presence mask."""
+    return 2 * len(cfg["features"]) + 1
+
+
 def windows(ts, scaled, origins, spacing_hours, samples):
     """Bridge arbitrary C1 origins to the exact-time observed-origin sampler."""
     index = np.searchsorted(ts, origins)
     present = (index < len(ts)) & (ts[np.minimum(index, len(ts)-1)] == origins)
-    result = np.zeros((len(origins), samples, 41), np.float32)
+    result = np.zeros((len(origins), samples, scaled.shape[1] + 1), np.float32)
     if present.any():
         values, mask = clock_windows(ts, scaled, index[present], spacing_hours, samples)
         result[present, :, :-1], result[present, :, -1] = values, mask
@@ -240,7 +266,7 @@ def materialize(data, part, cfg):
     selected = mask.any(axis=1)
     origins = np.array([int(t.timestamp()) for t in part.origins], np.int64)[selected]
     mask = mask[selected]
-    x = np.empty((len(origins), cfg["samples"], 41), np.float32)
+    x = np.empty((len(origins), cfg["samples"], channel_count(cfg)), np.float32)
     batch = cfg["training"]["batch_size"]
     for i in range(0, len(origins), batch):
         x[i:i+batch] = windows(data["ts"], data["scaled"], origins[i:i+batch], cfg["spacing_hours"], cfg["samples"])
@@ -303,7 +329,7 @@ def execute(cfg, root, progress):
         probe = tf.matmul(tf.ones((2, 2)), tf.ones((2, 2)))
         if not probe.device.endswith("/device:"+placement[1:]):
             raise ValueError("device probe placement mismatch")
-        model = build_model(cfg["samples"], 20, cfg["spacing_hours"], cfg["model"])
+        model = build_model(cfg["samples"], len(cfg["features"]), cfg["spacing_hours"], cfg["model"])
         if model.count_params() > cfg["resources"]["max_parameters"]:
             raise ValueError("parameters exceed resource limit")
         if any(not v.value.handle.device.endswith("/device:"+placement[1:]) for v in model.trainable_variables):

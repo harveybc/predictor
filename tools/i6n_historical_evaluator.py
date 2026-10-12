@@ -718,7 +718,7 @@ def fit_candidate(data, cfg, effective, root, progress, outer=False):
         probe = tf.matmul(tf.ones((2, 2)), tf.ones((2, 2)))
         if not probe.device.endswith("/device:"+placement[1:]):
             raise ValueError("device placement mismatch; no fallback")
-        model = build_model(cfg["samples"], 20, cfg["spacing_hours"], cfg["model"])
+        model = build_model(cfg["samples"], len(cfg["features"]), cfg["spacing_hours"], cfg["model"])
         if model.count_params() > cfg["resources"]["max_parameters"]:
             raise ValueError("parameters exceed resource limit")
         placement_report = verify_placement(model, placement, arrays["train"][0][:1])
