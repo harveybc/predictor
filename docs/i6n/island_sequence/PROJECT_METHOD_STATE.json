@@ -59,7 +59,7 @@
     "chain_content": "hash/reference only",
     "external_content": "effective config, canonical genotype identity, candidate metrics, four fold ratios and provenance identities",
     "olap_projection": "four fold reports plus one candidate report with exact readback",
-    "remaining_gate": "fleet deployment and first finalized production candidate readback; the closure producer is autonomous and fail-closed"
+    "remaining_gate": "first finalized production candidate readback and four-outbox fleet closure; the closure producer is autonomous and fail-closed"
   },
   "traceability_file": "docs/i6n/island_sequence/TRACEABILITY.md",
   "accepted_requirements": [
@@ -75,7 +75,8 @@
     "SEQ-002",
     "SEQ-003",
     "OPS-001",
-    "OPS-002"
+    "OPS-002",
+    "SEQ-006"
   ],
   "next_allowed_actions": [
     "Deploy the exact committed artifacts and sealed H4 configuration to all four local islands.",
@@ -107,6 +108,11 @@
       "date": "2026-10-12",
       "stage": "S10_INTEGRATION_VERIFICATION",
       "event": "Verified the integrated predictor, node, plugin and core contracts in isolated processes: 108, 27, 13 and 16 tests passed respectively; advanced to four-node system verification."
+    },
+    {
+      "date": "2026-10-12",
+      "stage": "S11_SYSTEM_VERIFICATION",
+      "event": "Hardened unattended closure for four independently sealed candidate outboxes: each reconstructs the optimizer's exact terminal candidate ledger; a later chain snapshot must contain the exact terminal tip and finalized checkpoint before H72 can start."
     }
   ]
 }

@@ -13,6 +13,7 @@ from doin_core.models import Block
 from tools.i6n_archive import __main__ as archive_main
 from tools.i6n_archive.__main__ import (
     ClosurePending,
+    ClosureRefusal,
     _load_chain_blocks,
     _load_chain_snapshot,
     produce_archive_closure,
@@ -117,6 +118,9 @@ def _closure_fixture(tmp_path, monkeypatch, *, bad_metric=False, unresolved=Fals
             return resolved
 
     class Outbox:
+        def __init__(self, path):
+            self.path = path
+
         def items(self):
             return [{
                 "item_id": "candidate-1", "body_digest": "body", "manifest_digest": "manifest",
@@ -129,7 +133,8 @@ def _closure_fixture(tmp_path, monkeypatch, *, bad_metric=False, unresolved=Fals
             return [{"state": "PROJECTED"}]
 
     class Publisher:
-        outbox = Outbox()
+        def __init__(self, path="outbox.sqlite"):
+            self.outbox = Outbox(path)
 
         @staticmethod
         def status():
@@ -153,6 +158,7 @@ def _closure_fixture(tmp_path, monkeypatch, *, bad_metric=False, unresolved=Fals
             "scientific_config_sha256": "4" * 64, "network_id": "network",
             "genesis_hash": "genesis", "chain_height": 2, "tip_hash": "tip-1",
             "finalized_height": 1, "finalized_hash": "tip-1",
+            "evaluated_candidate_count": 1,
         }
         envelope = {"schema": "i6n.island.terminal.v1", "payload": payload,
                     "payload_sha256": _sha(payload)}
@@ -176,7 +182,7 @@ def _closure_fixture(tmp_path, monkeypatch, *, bad_metric=False, unresolved=Fals
         "network_id": "network", "genesis_hash": "genesis", "chain_height": 2,
         "tip_hash": "tip-1", "finalized_height": 1, "finalized_hash": "tip-1",
     }
-    return config, Publisher(), Archive(), Sink(), [SimpleNamespace()], chain_status
+    return config, Publisher(tmp_path / "legacy.sqlite"), Archive(), Sink(), [SimpleNamespace()], chain_status
 
 
 def test_archive_closure_is_generated_once_after_exact_candidate_readback(tmp_path, monkeypatch):
@@ -188,9 +194,10 @@ def test_archive_closure_is_generated_once_after_exact_candidate_readback(tmp_pa
     second = produce_archive_closure(config, publisher, archive, sink, blocks, status, etl, pump)
 
     assert first == second
-    assert first["schema"] == "i6n.island.archive_closure.v1"
+    assert first["schema"] == "i6n.island.archive_closure.v2"
     assert first["payload"]["archive"]["candidate_items"] == 1
     assert first["payload"]["archive"]["candidate_metric_rows"] == 1
+    assert first["payload"]["chain_relation"] == "EXACT"
     assert Path(config["closure"]["receipt"]).read_text().endswith("\n")
 
 
@@ -206,6 +213,97 @@ def test_archive_closure_refuses_incomplete_or_mismatched_evidence(tmp_path, mon
             {"chain_verified": True, "errors": []}, {"errors": []},
         )
     assert not Path(config["closure"]["receipt"]).exists()
+
+
+def test_archive_closure_accepts_a_verified_descendant_of_the_terminal_chain(tmp_path, monkeypatch):
+    config, publisher, archive, sink, _blocks, status = _closure_fixture(tmp_path, monkeypatch)
+    blocks = [
+        SimpleNamespace(hash="genesis"),
+        SimpleNamespace(hash="tip-1"),
+        SimpleNamespace(hash="tip-2"),
+    ]
+    status.update(
+        chain_height=3,
+        tip_hash="tip-2",
+        finalized_height=2,
+        finalized_hash="tip-2",
+    )
+
+    result = produce_archive_closure(
+        config, publisher, archive, sink, blocks, status,
+        {"chain_verified": True, "errors": []}, {"errors": []},
+    )
+
+    assert result["payload"]["chain_relation"] == "DESCENDANT_VERIFIED"
+    assert result["payload"]["terminal_chain"] == {
+        "chain_height": 2,
+        "tip_hash": "tip-1",
+        "finalized_height": 1,
+        "finalized_hash": "tip-1",
+    }
+
+
+def test_archive_closure_rejects_a_chain_that_does_not_contain_the_terminal_tip(tmp_path, monkeypatch):
+    config, publisher, archive, sink, _blocks, status = _closure_fixture(tmp_path, monkeypatch)
+    blocks = [
+        SimpleNamespace(hash="genesis"),
+        SimpleNamespace(hash="other-tip"),
+        SimpleNamespace(hash="tip-2"),
+    ]
+    status.update(
+        chain_height=3,
+        tip_hash="tip-2",
+        finalized_height=2,
+        finalized_hash="tip-2",
+    )
+
+    with pytest.raises(ClosureRefusal, match="TERMINAL_TIP_NOT_ANCESTOR"):
+        produce_archive_closure(
+            config, publisher, archive, sink, blocks, status,
+            {"chain_verified": True, "errors": []}, {"errors": []},
+        )
+
+
+def test_archive_closure_requires_one_complete_outbox_per_terminal_island(tmp_path, monkeypatch):
+    config, publisher, archive, sink, blocks, status = _closure_fixture(tmp_path, monkeypatch)
+    publisher_type = type(publisher)
+    publishers = {
+        f"island-{index}": publisher_type(tmp_path / f"island-{index}.sqlite")
+        for index in range(4)
+    }
+    etl = {island: {"chain_verified": True, "errors": []} for island in publishers}
+    pump = {island: {"errors": []} for island in publishers}
+    config["closure"]["outbox_seals"] = [str(tmp_path / f"seal-{index}.json") for index in range(4)]
+    real_verify_outbox_seals = archive_main._verify_outbox_seals
+    monkeypatch.setattr(
+        archive_main, "_verify_outbox_seals",
+        lambda _paths, _terminals, _digests, _publishers: {
+            island: {"seal_sha256": f"seal-{index}"}
+            for index, island in enumerate(sorted(publishers))
+        },
+    )
+
+    result = produce_archive_closure(
+        config, publishers, archive, sink, blocks, status, etl, pump,
+    )
+
+    assert result["payload"]["archive"]["items"] == 4
+    assert set(result["payload"]["archive"]["islands"]) == set(publishers)
+
+    with pytest.raises(ClosureRefusal, match="OUTBOX_ISLAND_SET_MISMATCH"):
+        produce_archive_closure(
+            config, {"island-0": publisher}, archive, sink, blocks, status,
+            {"island-0": {"chain_verified": True, "errors": []}},
+            {"island-0": {"errors": []}},
+        )
+
+    with pytest.raises(ClosureRefusal, match="OUTBOX_PUBLISHERS_NOT_INDEPENDENT"):
+        real_verify_outbox_seals(
+            config["closure"]["outbox_seals"],
+            {f"island-{index}": {"island_id": f"island-{index}"} for index in range(4)},
+            {f"island-{index}": f"digest-{index}" for index in range(4)},
+            {f"island-{index}": publisher for index in range(4)},
+        )
 
 
 def test_archive_close_systemd_timer_is_autonomous_and_contains_no_private_host():

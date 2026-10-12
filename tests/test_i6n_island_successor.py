@@ -122,12 +122,60 @@ def _write_closure(spec: dict, terminal_digests: list[str], **changes) -> str:
         "tip_hash": "tip-120",
         "finalized_height": 114,
         "finalized_hash": "finalized-114",
+        "terminal_chain": {
+            "chain_height": 120,
+            "tip_hash": "tip-120",
+            "finalized_height": 114,
+            "finalized_hash": "finalized-114",
+        },
+        "chain_relation": "EXACT",
         "archive": {"items": 80, "green": 80, "missing": [], "submitted_unfinalized": 0},
         "olap": {"status": "GREEN", "chain_verified": True, "readback_verified": True},
     }
     payload.update(changes)
     return _write_envelope(
         Path(spec["archive_closure_receipt"]), successor.CLOSURE_SCHEMA, payload)
+
+
+def test_successor_accepts_a_closure_on_a_verified_descendant_chain(tmp_path):
+    spec_path, spec = _spec(tmp_path)
+    terminal_digests = _write_terminals(spec)
+    _write_closure(
+        spec,
+        terminal_digests,
+        chain_height=126,
+        tip_hash="tip-126",
+        finalized_height=120,
+        finalized_hash="tip-120",
+        chain_relation="DESCENDANT_VERIFIED",
+    )
+
+    report = successor.status(spec_path, now=lambda: 1.0)
+
+    assert report["state"] == "READY_TO_START_H72"
+
+
+def test_successor_rejects_a_descendant_claim_without_the_terminal_anchor(tmp_path):
+    spec_path, spec = _spec(tmp_path)
+    terminal_digests = _write_terminals(spec)
+    _write_closure(
+        spec,
+        terminal_digests,
+        chain_height=126,
+        tip_hash="tip-126",
+        finalized_height=120,
+        finalized_hash="tip-120",
+        chain_relation="DESCENDANT_VERIFIED",
+        terminal_chain={
+            "chain_height": 120,
+            "tip_hash": "wrong",
+            "finalized_height": 114,
+            "finalized_hash": "finalized-114",
+        },
+    )
+
+    with pytest.raises(successor.Refusal, match="TERMINAL_CHAIN_MISMATCH"):
+        successor.status(spec_path, now=lambda: 1.0)
 
 
 def _write_start_receipt(spec: dict, transition_id: str) -> str:

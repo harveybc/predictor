@@ -20,6 +20,7 @@
 | SEQ-003 | `test_external_chain_transaction_contains_only_reference_and_retry_is_idempotent`; `test_candidate_or_metric_mutation_changes_external_body_hash`; `test_missing_or_unreadable_external_payload_is_rejected` | `test_island_candidate_reaches_olap_with_exact_readback` proves durable outbox, finalized reference resolution, four fold projections, candidate projection, and exact OLAP readback on disposable stores | Component integration passed; production fleet gate pending |
 | SEQ-004 | `test_i6n_island_successor.py` | Durable successor state and exactly one H72 launch across repeated invocations | Integration passed; restart system evidence pending |
 | SEQ-005 | Horizon acceptance tests | Separate sealed configs and transition receipt | Partially designed |
+| SEQ-006 | `test_archive_closure_requires_one_complete_outbox_per_terminal_island`; `test_archive_closure_accepts_a_verified_descendant_of_the_terminal_chain`; `test_live_wal_outbox_is_snapshotted_and_bound_to_exact_terminal_ledger`; `test_four_independent_outboxes_are_bound_to_their_four_terminals` | Four independent SQLite snapshots reconstruct and exactly match each island terminal candidate-ledger digest; closure verifies candidate bytes, peer/island identity, exact OLAP readback, and terminal-checkpoint ancestry before H72 | Integration passed; production closure pending |
 | OPS-001 | Same-seed unit test; `test_i6n_island_terminal_collect.py` | API preflight rejects any commit, seed, network, height, tip or finalized-checkpoint mismatch | Integration passed; production API evidence pending |
 | OPS-002 | Not in optimizer unit scope | Versioned systemd unit/timer installation and unattended replay | Pending system test |
 | OPS-003 | Generation callbacks in patience tests | Read-only status schema and ETA mutation tests | Partially designed |
@@ -48,3 +49,9 @@
   store and reconciled by identity.
 - Historical 8-by-3 results remain retained but are explicitly non-governing
   for the H4/H72 island sequence.
+- A fleet closure is invalid if it sees fewer than four distinct outboxes, if
+  any outbox cannot reconstruct its island's exact terminal candidate ledger,
+  or if producer, island, candidate-set or terminal identities are duplicated,
+  or if the closure chain does not contain the exact terminal tip and finalized
+  checkpoint. Chain advancement after terminal collection is permitted only
+  with an explicit descendant proof.

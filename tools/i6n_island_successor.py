@@ -36,7 +36,7 @@ from tools.i6n_doin_fleet_verify import (
 
 SPEC_SCHEMA = "i6n.island_successor.spec.v1"
 TERMINAL_SCHEMA = "i6n.island.terminal.v1"
-CLOSURE_SCHEMA = "i6n.island.archive_closure.v1"
+CLOSURE_SCHEMA = "i6n.island.archive_closure.v2"
 START_SCHEMA = "i6n.island.start_receipt.v1"
 INTENT_SCHEMA = "i6n.island.transition_intent.v1"
 RECEIPT_SCHEMA = "i6n.island.transition_receipt.v1"
@@ -325,12 +325,28 @@ def _validate_closure(spec: Mapping[str, Any], terminals: Mapping[str, Any]) -> 
     baseline = terminals["records"][0]["payload"]
     for name, code in (
         ("network_id", "NETWORK_MISMATCH"), ("genesis_hash", "GENESIS_MISMATCH"),
-        ("chain_height", "CHAIN_HEIGHT_MISMATCH"), ("tip_hash", "TIP_HASH_MISMATCH"),
-        ("finalized_height", "FINALIZED_HEIGHT_MISMATCH"),
-        ("finalized_hash", "FINALIZED_HASH_MISMATCH"),
     ):
         if payload.get(name) != baseline.get(name):
             raise Refusal(f"{code}: archive closure")
+    terminal_fields = ("chain_height", "tip_hash", "finalized_height", "finalized_hash")
+    terminal_chain = payload.get("terminal_chain")
+    expected_terminal = {name: baseline.get(name) for name in terminal_fields}
+    if terminal_chain != expected_terminal:
+        raise Refusal("TERMINAL_CHAIN_MISMATCH: archive closure")
+    relation = payload.get("chain_relation")
+    if relation not in {"EXACT", "DESCENDANT_VERIFIED"}:
+        raise Refusal("CHAIN_RELATION_INVALID: archive closure")
+    current_height = payload.get("chain_height")
+    current_finalized = payload.get("finalized_height")
+    if (type(current_height) is not int or current_height < baseline["chain_height"]
+            or type(current_finalized) is not int
+            or current_finalized < baseline["finalized_height"]
+            or not isinstance(payload.get("tip_hash"), str) or not payload["tip_hash"]
+            or not isinstance(payload.get("finalized_hash"), str) or not payload["finalized_hash"]):
+        raise Refusal("CLOSURE_CHAIN_NOT_DESCENDANT")
+    if relation == "EXACT" and any(
+            payload.get(name) != baseline.get(name) for name in terminal_fields):
+        raise Refusal("EXACT_CHAIN_RELATION_MISMATCH")
     archive = payload.get("archive")
     if (not isinstance(archive, dict) or type(archive.get("items")) is not int
             or archive.get("items") < 1 or archive.get("green") != archive.get("items")

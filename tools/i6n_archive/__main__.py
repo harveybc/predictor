@@ -28,9 +28,14 @@ from doin_core.archive.body import ArchiveRefusal
 from doin_node.archive.external import FINALIZED, canonical_references
 
 from tools.i6n_archive import records
+from tools.i6n_outbox_snapshot import (
+    SNAPSHOT_SCHEMA,
+    STABLE_FIELDS as OUTBOX_STABLE_FIELDS,
+    _inspect as inspect_outbox_snapshot,
+)
 
 
-CLOSURE_SCHEMA = "i6n.island.archive_closure.v1"
+CLOSURE_SCHEMA = "i6n.island.archive_closure.v2"
 
 
 class ClosurePending(RuntimeError):
@@ -170,12 +175,13 @@ def _metric_key(metric: dict) -> tuple:
     )
 
 
-def _read_terminal_digests(paths: list[str], expected: dict) -> tuple[list[str], tuple]:
+def _read_terminal_digests(paths: list[str], expected: dict) -> tuple[dict[str, str], tuple, dict[str, dict]]:
     if len(paths) != 4 or len(set(paths)) != 4:
         raise ClosureRefusal("TERMINALS_REQUIRE_FOUR_DISTINCT_PATHS")
-    digests = []
+    digests = {}
     identities = set()
     baseline = None
+    terminals = {}
     for index, raw_path in enumerate(paths):
         path = Path(raw_path)
         try:
@@ -197,14 +203,94 @@ def _read_terminal_digests(paths: list[str], expected: dict) -> tuple[list[str],
         if not isinstance(identity, str) or not identity or identity in identities:
             raise ClosureRefusal("TERMINAL_ISLAND_DUPLICATE")
         identities.add(identity)
+        evaluated = payload.get("evaluated_candidate_count")
+        if type(evaluated) is not int or evaluated < 1:
+            raise ClosureRefusal(f"TERMINAL_EVALUATED_COUNT_INVALID[{index}]")
+        terminals[identity] = payload
         chain_identity = tuple(payload.get(name) for name in (
             "chain_height", "tip_hash", "finalized_height", "finalized_hash"))
         if baseline is None:
             baseline = chain_identity
         elif chain_identity != baseline:
             raise ClosureRefusal("TERMINAL_CHAIN_MISMATCH")
-        digests.append(document["payload_sha256"])
-    return sorted(digests), baseline
+        digests[identity] = document["payload_sha256"]
+    return digests, baseline, terminals
+
+
+def _verify_terminal_ancestor(blocks, chain_status: dict, terminal_chain: tuple) -> str:
+    """Prove that the closure snapshot is the terminal snapshot or its descendant."""
+    terminal_height, terminal_tip, terminal_finalized_height, terminal_finalized_hash = terminal_chain
+    current = tuple(chain_status.get(name) for name in (
+        "chain_height", "tip_hash", "finalized_height", "finalized_hash"))
+    if current == terminal_chain:
+        return "EXACT"
+    if terminal_height < 1 or chain_status["chain_height"] < terminal_height:
+        raise ClosureRefusal("TERMINAL_CHAIN_NOT_ANCESTOR")
+    if len(blocks) != chain_status["chain_height"]:
+        raise ClosureRefusal("CLOSURE_CHAIN_LENGTH_MISMATCH")
+    if blocks[terminal_height - 1].hash != terminal_tip:
+        raise ClosureRefusal("TERMINAL_TIP_NOT_ANCESTOR")
+    if terminal_finalized_height < 0 or terminal_finalized_height >= len(blocks):
+        raise ClosureRefusal("TERMINAL_FINALIZED_CHECKPOINT_INVALID")
+    if blocks[terminal_finalized_height].hash != terminal_finalized_hash:
+        raise ClosureRefusal("TERMINAL_FINALIZED_HASH_NOT_ANCESTOR")
+    if chain_status["finalized_height"] < terminal_finalized_height:
+        raise ClosureRefusal("CHAIN_FINALITY_REGRESSED")
+    return "DESCENDANT_VERIFIED"
+
+
+def _as_result_map(value, island_ids: set[str], field: str) -> dict[str, dict]:
+    if isinstance(value, dict) and set(value) == island_ids and all(
+            isinstance(item, dict) for item in value.values()):
+        return value
+    if len(island_ids) == 1 and isinstance(value, dict):
+        return {next(iter(island_ids)): value}
+    raise ClosureRefusal(f"{field.upper()}_ISLAND_SET_MISMATCH")
+
+
+def _verify_outbox_seals(paths: list[str], terminals: dict[str, dict],
+                         terminal_digests: dict[str, str], publishers: dict) -> dict[str, dict]:
+    """Bind four independent immutable snapshots to four optimizer terminals."""
+    if len(paths) != 4 or len(set(paths)) != 4:
+        raise ClosureRefusal("OUTBOX_SEALS_REQUIRE_FOUR_DISTINCT_PATHS")
+    if len({id(publisher) for publisher in publishers.values()}) != 4:
+        raise ClosureRefusal("OUTBOX_PUBLISHERS_NOT_INDEPENDENT")
+    outbox_paths = [str(Path(publisher.outbox.path).resolve()) for publisher in publishers.values()]
+    if len(set(outbox_paths)) != 4:
+        raise ClosureRefusal("OUTBOX_PATHS_NOT_INDEPENDENT")
+
+    seals = {}
+    for raw_path in paths:
+        path = Path(raw_path)
+        try:
+            document = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ClosureRefusal("OUTBOX_SEAL_INVALID_JSON") from exc
+        if (not isinstance(document, dict) or document.get("schema") != SNAPSHOT_SCHEMA
+                or not isinstance(document.get("payload"), dict)
+                or _digest(document["payload"]) != document.get("payload_sha256")):
+            raise ClosureRefusal("OUTBOX_SEAL_ENVELOPE_INVALID")
+        payload = document["payload"]
+        island_id = payload.get("island_id")
+        if island_id not in terminals or island_id in seals:
+            raise ClosureRefusal("OUTBOX_SEAL_ISLAND_SET_MISMATCH")
+        if payload.get("terminal_receipt_sha256") != terminal_digests[island_id]:
+            raise ClosureRefusal(f"OUTBOX_SEAL_TERMINAL_MISMATCH: {island_id}")
+        observed = inspect_outbox_snapshot(publishers[island_id].outbox.path, terminals[island_id])
+        if (any(payload.get(field) != observed[field] for field in OUTBOX_STABLE_FIELDS)
+                or payload.get("terminal_receipt_sha256") != terminal_digests[island_id]):
+            raise ClosureRefusal(f"OUTBOX_SEAL_CONTENT_MISMATCH: {island_id}")
+        seals[island_id] = dict(payload, seal_sha256=document["payload_sha256"])
+
+    if set(seals) != set(terminals):
+        raise ClosureRefusal("OUTBOX_SEAL_ISLAND_SET_MISMATCH")
+    for field, refusal in (
+        ("producer_peer_id", "OUTBOX_PRODUCER_PEERS_NOT_DISTINCT"),
+        ("items_sha256", "OUTBOX_ITEM_SETS_NOT_DISTINCT"),
+    ):
+        if len({seal[field] for seal in seals.values()}) != 4:
+            raise ClosureRefusal(refusal)
+    return seals
 
 
 def _blocker_count(paths: list[str]) -> int:
@@ -302,10 +388,6 @@ def produce_archive_closure(config: dict, publisher, archive, sink, blocks, chai
     required = {"horizon", "scientific_config_sha256", "network_id", "genesis_hash"}
     if set(expected) != required or expected["horizon"] != 4:
         raise ClosureRefusal("CLOSURE_EXPECTED_INVALID")
-    if pump_result.get("errors"):
-        raise ClosurePending("PUMP_ERRORS_REMAIN")
-    if etl_result.get("errors") or etl_result.get("chain_verified") is not True:
-        raise ClosurePending("ETL_ERRORS_REMAIN")
     for name in ("network_id", "genesis_hash"):
         if chain_status.get(name) != expected[name]:
             raise ClosureRefusal(f"CHAIN_{name.upper()}_MISMATCH")
@@ -319,15 +401,39 @@ def produce_archive_closure(config: dict, publisher, archive, sink, blocks, chai
     terminal_paths = closure.get("terminal_receipts")
     if not isinstance(terminal_paths, list):
         raise ClosureRefusal("CLOSURE_TERMINALS_REQUIRED")
-    terminal_digests, terminal_chain = _read_terminal_digests(terminal_paths, expected)
-    observed_chain = tuple(chain_status.get(name) for name in (
-        "chain_height", "tip_hash", "finalized_height", "finalized_hash"))
-    if observed_chain != terminal_chain:
-        raise ClosureRefusal("CLOSURE_CHAIN_DOES_NOT_MATCH_TERMINALS")
-    status = publisher.status()
-    if (status.get("items", 0) < 1 or status.get("green") != status.get("items")
-            or status.get("missing") != [] or status.get("submitted_unfinalized") != 0):
-        raise ClosurePending("ARCHIVE_ITEMS_NOT_GREEN")
+    terminal_digests, terminal_chain, terminals = _read_terminal_digests(terminal_paths, expected)
+    chain_relation = _verify_terminal_ancestor(blocks, chain_status, terminal_chain)
+
+    fleet_mode = isinstance(publisher, dict)
+    publishers = publisher if fleet_mode else {next(iter(terminals)): publisher}
+    if fleet_mode and set(publishers) != set(terminals):
+        raise ClosureRefusal("OUTBOX_ISLAND_SET_MISMATCH")
+    seals = {}
+    if fleet_mode:
+        seal_paths = closure.get("outbox_seals")
+        if not isinstance(seal_paths, list):
+            raise ClosureRefusal("OUTBOX_SEALS_REQUIRED")
+        seals = _verify_outbox_seals(
+            seal_paths, terminals, terminal_digests, publishers,
+        )
+    island_ids = set(publishers)
+    pump_results = _as_result_map(pump_result, island_ids, "pump")
+    etl_results = _as_result_map(etl_result, island_ids, "etl")
+    if any(result.get("errors") for result in pump_results.values()):
+        raise ClosurePending("PUMP_ERRORS_REMAIN")
+    if any(result.get("errors") or result.get("chain_verified") is not True
+           for result in etl_results.values()):
+        raise ClosurePending("ETL_ERRORS_REMAIN")
+
+    statuses = {}
+    for island_id, candidate_publisher in publishers.items():
+        status = candidate_publisher.status()
+        if (status.get("items", 0) < 1 or status.get("green") != status.get("items")
+                or status.get("missing") != [] or status.get("submitted_unfinalized") != 0):
+            raise ClosurePending(f"ARCHIVE_ITEMS_NOT_GREEN: {island_id}")
+        if fleet_mode and status["items"] != terminals[island_id]["evaluated_candidate_count"]:
+            raise ClosureRefusal(f"OUTBOX_CANDIDATE_COUNT_MISMATCH: {island_id}")
+        statuses[island_id] = status
 
     guards = closure.get("blocker_paths", {})
     if not isinstance(guards, dict) or any(
@@ -340,26 +446,51 @@ def produce_archive_closure(config: dict, publisher, archive, sink, blocks, chai
     if any(blocker_counts.values()):
         raise ClosurePending("BLOCKER_PATHS_NOT_EMPTY: " + json.dumps(blocker_counts, sort_keys=True))
 
-    verified = _verify_candidate_readback(
-        publisher.outbox, archive, sink, blocks,
-        confirmation_depth=int(config.get("confirmation_depth", 6)), horizon=expected["horizon"],
-    )
+    verified_by_island = {}
+    for island_id, candidate_publisher in publishers.items():
+        verified_by_island[island_id] = _verify_candidate_readback(
+            candidate_publisher.outbox, archive, sink, blocks,
+            confirmation_depth=int(config.get("confirmation_depth", 6)), horizon=expected["horizon"],
+        )
+    aggregate_status = {
+        "items": sum(status["items"] for status in statuses.values()),
+        "green": sum(status["green"] for status in statuses.values()),
+    }
+    aggregate_verified = {
+        key: sum(item[key] for item in verified_by_island.values())
+        for key in ("candidate_items", "candidate_reports", "candidate_metric_rows")
+    }
+    aggregate_verified["finalized_references_resolved"] = max(
+        item["finalized_references_resolved"] for item in verified_by_island.values())
+    terminal_chain_payload = dict(zip(
+        ("chain_height", "tip_hash", "finalized_height", "finalized_hash"), terminal_chain))
     payload = {
         "status": "GREEN", "horizon": expected["horizon"],
         "scientific_config_sha256": expected["scientific_config_sha256"],
-        "terminal_receipt_sha256s": terminal_digests,
+        "terminal_receipt_sha256s": sorted(terminal_digests.values()),
         "network_id": chain_status["network_id"], "genesis_hash": chain_status["genesis_hash"],
         "chain_height": chain_status["chain_height"], "tip_hash": chain_status["tip_hash"],
         "finalized_height": chain_status["finalized_height"],
         "finalized_hash": chain_status["finalized_hash"],
+        "terminal_chain": terminal_chain_payload,
+        "chain_relation": chain_relation,
         "archive": {
-            "items": status["items"], "green": status["green"], "missing": [],
-            "submitted_unfinalized": 0, **verified,
+            "items": aggregate_status["items"], "green": aggregate_status["green"],
+            "missing": [], "submitted_unfinalized": 0, **aggregate_verified,
+            "islands": {
+                island_id: {
+                    "items": statuses[island_id]["items"],
+                    "green": statuses[island_id]["green"],
+                    **({"snapshot_seal": seals[island_id]} if fleet_mode else {}),
+                    **verified_by_island[island_id],
+                }
+                for island_id in sorted(statuses)
+            },
         },
         "olap": {
             "status": "GREEN", "chain_verified": True, "readback_verified": True,
-            "projected_reports": verified["candidate_reports"],
-            "metric_rows": verified["candidate_metric_rows"],
+            "projected_reports": aggregate_verified["candidate_reports"],
+            "metric_rows": aggregate_verified["candidate_metric_rows"],
         },
         "blockers": blocker_counts,
     }
@@ -387,10 +518,39 @@ def main(argv=None) -> int:
     config = json.loads(args.config.read_text())
     from tools.i6n_archive.publisher import ArchivePublisher
 
-    publisher = ArchivePublisher.from_outbox(Path(config["root"]) / "outbox.sqlite") \
-        if (Path(config["root"]) / "outbox.sqlite").exists() else None
+    island_config = config.get("islands")
+    if island_config is not None:
+        if (not isinstance(island_config, list) or len(island_config) != 4
+                or any(not isinstance(item, dict)
+                       or set(item) != {"island_id", "root", "submit_spool"}
+                       for item in island_config)):
+            raise ValueError("islands must contain four island_id/root/submit_spool objects")
+        if len({item["island_id"] for item in island_config}) != 4:
+            raise ValueError("islands must contain four distinct island_id values")
+        publishers = {}
+        missing = []
+        for item in island_config:
+            outbox_path = Path(item["root"]) / "outbox.sqlite"
+            if outbox_path.exists():
+                publishers[item["island_id"]] = ArchivePublisher.from_outbox(outbox_path)
+            else:
+                missing.append(item["island_id"])
+    else:
+        root = Path(config["root"])
+        publisher = ArchivePublisher.from_outbox(root / "outbox.sqlite") \
+            if (root / "outbox.sqlite").exists() else None
+        publishers = {"legacy": publisher} if publisher is not None else {}
+        missing = [] if publisher is not None else ["legacy"]
     if args.command == "status":
-        print(json.dumps(publisher.status() if publisher else {"state": "NO_OUTBOX"}, sort_keys=True))
+        if island_config is None:
+            result = publishers["legacy"].status() if publishers else {"state": "NO_OUTBOX"}
+        else:
+            result = {
+                "state": "READY" if not missing else "WAIT_OUTBOXES",
+                "missing": sorted(missing),
+                "islands": {name: publisher.status() for name, publisher in sorted(publishers.items())},
+            }
+        print(json.dumps(result, sort_keys=True))
         return 0
     from doin_node.archive.external import ExternalPayloadArchive, HttpByteStore
 
@@ -398,33 +558,64 @@ def main(argv=None) -> int:
     store = HttpByteStore(lake["url"], token_provider=_token(lake["token_env"]))
     archive = ExternalPayloadArchive({lake["store_id"]: store}, write_store_id=lake["store_id"])
     if args.command == "pump":
-        if publisher is None:
+        if not publishers:
             print(json.dumps({"state": "NO_OUTBOX"}))
             return 0
-        result = publisher.pump(archive, _spool_submitter(Path(config["submit_spool"])))
+        if island_config is None:
+            result = publishers["legacy"].pump(
+                archive, _spool_submitter(Path(config["submit_spool"])))
+        else:
+            by_id = {item["island_id"]: item for item in island_config}
+            result = {
+                name: publisher.pump(
+                    archive, _spool_submitter(Path(by_id[name]["submit_spool"])))
+                for name, publisher in sorted(publishers.items())
+            }
         print(json.dumps(result, sort_keys=True))
-        return 0 if not result["errors"] else 3
+        errors = result.get("errors") if island_config is None else [
+            error for item in result.values() for error in item["errors"]]
+        return 0 if not errors else 3
     from tools.i6n_archive.etl import ArchiveETL
     from tools.i6n_archive.outbox import Outbox
     from tools.i6n_archive.sink import HttpSink
 
-    if args.command == "close" and publisher is None:
-        print(json.dumps({"state": "WAIT", "reason": "NO_OUTBOX"}, sort_keys=True))
+    if args.command == "close" and missing:
+        print(json.dumps({"state": "WAIT", "reason": "MISSING_OUTBOXES",
+                          "islands": sorted(missing)}, sort_keys=True))
         return 4
     pump_result = {"stored": 0, "submitted": 0, "errors": []}
-    if args.command == "close" and publisher is not None:
-        pump_result = publisher.pump(archive, _spool_submitter(Path(config["submit_spool"])))
+    if args.command == "close":
+        if island_config is None:
+            pump_result = publishers["legacy"].pump(
+                archive, _spool_submitter(Path(config["submit_spool"])))
+        else:
+            by_id = {item["island_id"]: item for item in island_config}
+            pump_result = {
+                name: publisher.pump(
+                    archive, _spool_submitter(Path(by_id[name]["submit_spool"])))
+                for name, publisher in sorted(publishers.items())
+            }
     blocks, chain_status = _load_chain_snapshot(config["chain"])
-    outbox = publisher.outbox if publisher else Outbox(Path(config["root"]) / "inbox.sqlite")
     warehouse = config["warehouse"]
     sink = HttpSink(warehouse["url"], token_provider=_token(warehouse["token_env"]))
-    etl = ArchiveETL(outbox, archive, sink,
-                     confirmation_depth=int(config.get("confirmation_depth", 6)))
-    result = etl.run(blocks)
+    if island_config is None:
+        outbox = publishers["legacy"].outbox if publishers else Outbox(Path(config["root"]) / "inbox.sqlite")
+        result = ArchiveETL(
+            outbox, archive, sink,
+            confirmation_depth=int(config.get("confirmation_depth", 6))).run(blocks)
+    else:
+        result = {
+            name: ArchiveETL(
+                publisher.outbox, archive, sink,
+                confirmation_depth=int(config.get("confirmation_depth", 6))).run(blocks)
+            for name, publisher in sorted(publishers.items())
+        }
     if args.command == "close":
         try:
             envelope = produce_archive_closure(
-                config, publisher, archive, sink, blocks, chain_status, result, pump_result)
+                config,
+                publishers if island_config is not None else publishers["legacy"],
+                archive, sink, blocks, chain_status, result, pump_result)
         except ClosurePending as exc:
             print(json.dumps({"state": "WAIT", "reason": str(exc), "pump": pump_result,
                               "etl": result}, sort_keys=True))
@@ -435,7 +626,9 @@ def main(argv=None) -> int:
         print(json.dumps({"state": "GREEN", "receipt": envelope}, sort_keys=True))
         return 0
     print(json.dumps(result, sort_keys=True))
-    return 0 if not result["errors"] else 3
+    errors = result.get("errors") if island_config is None else [
+        error for item in result.values() for error in item["errors"]]
+    return 0 if not errors else 3
 
 
 if __name__ == "__main__":
