@@ -11,6 +11,7 @@ import copy
 from collections import defaultdict
 import json
 import math
+import threading
 
 import pytest
 
@@ -131,6 +132,29 @@ def _optimize(config):
     plugin = Plugin()
     result = plugin.optimize(None, None, config)
     return plugin, result
+
+
+def test_runtime_callbacks_with_thread_locks_are_preserved_without_deepcopy():
+    class StatefulCallbacks:
+        def __init__(self):
+            self.lock = threading.Lock()
+
+        def on_candidate_evaluated(self, _event):
+            return None
+
+    callback_owner = StatefulCallbacks()
+    evaluator = RecordingEvaluator()
+    callbacks = {"on_candidate_evaluated": callback_owner.on_candidate_evaluated}
+    cfg = Plugin()._config({
+        "higher_is_better": False,
+        "nested": {"mutable": []},
+        "i6n_evaluator": evaluator,
+        "optimization_callbacks": callbacks,
+    })
+
+    assert cfg["i6n_evaluator"] is evaluator
+    assert cfg["optimization_callbacks"] is callbacks
+    assert cfg["nested"] == {"mutable": []}
 
 
 @pytest.mark.parametrize("flag", [None, False])
