@@ -87,8 +87,9 @@ reported and none was passed as SAFE.
 ## 5. Privacy scan of the committed files
 
 - No host names, usernames, home paths, UUIDs, IPs or tokens appear in the evidence.
-- The test file contains the synthetic redaction fixtures `host-a-0000`, `/home/someone` and
-  `203.0.113.7`. Making those fixtures neutral is advisable.
+- **Test fixtures:** `tests/test_i6n_causal_trace_audit.py` lines 211-213 contain a real
+  island host label and sample home/IP strings as redaction fixtures. Replace them with
+  neutral placeholders.
 - **Redaction gap:** `TRACE_GRAPH.json` (4 edges) and `FINDINGS.csv` E9 carry the absolute
   path `<data-root>/ISLAND_2/...`. The island is redacted, but the path is not
   mapped to `<data-root>`.
