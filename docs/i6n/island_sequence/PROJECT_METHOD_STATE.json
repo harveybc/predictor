@@ -1,0 +1,93 @@
+{
+  "schema": "project-method-state.v1",
+  "initiative": "I6N DOIN local-island sequence: H4 then H72",
+  "updated_at": "2026-10-12",
+  "current_stage": "S8_UNIT_TEST_DESIGN",
+  "stage_status": {
+    "S0_DISCOVERY": "PASSED",
+    "S1_REQUIREMENTS": "PASSED",
+    "S2_USE_CASES": "PASSED",
+    "S3_ACCEPTANCE_TEST_DESIGN": "PASSED",
+    "S4_ARCHITECTURE": "PASSED",
+    "S5_SYSTEM_TEST_DESIGN": "PASSED",
+    "S6_COMPONENT_DESIGN": "PASSED",
+    "S7_INTEGRATION_TEST_DESIGN": "PASSED",
+    "S8_UNIT_TEST_DESIGN": "PASSED",
+    "S9_UNIT_IMPLEMENTATION": "NOT_STARTED",
+    "S10_INTEGRATION_VERIFICATION": "NOT_STARTED",
+    "S11_SYSTEM_VERIFICATION": "NOT_STARTED",
+    "S12_ALPHA_ACCEPTANCE": "NOT_STARTED",
+    "S13_BETA_ACCEPTANCE": "DEFERRED_OPTIONAL",
+    "S14_RELEASE_OPERATION": "NOT_STARTED"
+  },
+  "problem": "The retained I6N adapter implements a centralized shared-population path with an 8 by 3 pilot budget. It does not implement the required historical DOIN topology in which every node evolves a local population and exchanges champions over one blockchain.",
+  "actors": [
+    "predictor I6N optimizer plugin",
+    "four DOIN optimization nodes",
+    "DOIN blockchain and champion exchange",
+    "four-fold I6N evaluator",
+    "OLAP archive and readback",
+    "automatic H4-to-H72 successor"
+  ],
+  "constraints": [
+    "The old shared-population behavior and its retained evidence remain unchanged.",
+    "Island mode requires an explicit i6n_island_mode=true configuration flag.",
+    "Each node has a local population of at least 20.",
+    "Each optimization allows at least 100 generations and uses patience of at least 10 generations.",
+    "min_relative_improvement is exactly 1e-8 and improvement is strict.",
+    "Only horizons 4 and 72 are eligible, in that order.",
+    "Every candidate is evaluated on all four quarterly folds; TEST is never read.",
+    "All four nodes use the same declared seed, blockchain identity, and exact repository commits."
+  ],
+  "data_scope": {
+    "training": "Four years ending before each quarterly inner fold",
+    "inner_validation": "Four distinct 2023 quarterly folds under the frozen business eligibility contract",
+    "test": "Excluded from search, ranking, early stopping, and transition gates",
+    "features": "Frozen selected RAW feature manifest and its governed digests"
+  },
+  "objective": "Minimize mean four-fold relative error, reported as error_ratio_minus_one; negative values beat the paired naive for the same horizon and support.",
+  "test_status": {
+    "expected": "RED until the local-island optimize path exists",
+    "command": "python -m pytest -q tests/test_i6n_island_optimizer.py",
+    "observed": "RED: 7 passed, 17 failed on 2026-10-12",
+    "failure_summary": "The concurrent partial implementation validates several admission settings, but invalid-horizon errors do not identify i6n_horizon and valid H4/H72 runs fail before evaluation because i6n_plan is absent from the documented island configuration contract."
+  },
+  "traceability_file": "docs/i6n/island_sequence/TRACEABILITY.md",
+  "accepted_requirements": [
+    "ISL-001",
+    "ISL-002",
+    "ISL-003",
+    "ISL-004",
+    "ISL-005",
+    "ISL-006",
+    "ISL-007",
+    "ISL-008",
+    "SEQ-001",
+    "SEQ-002",
+    "SEQ-003",
+    "OPS-001",
+    "OPS-002"
+  ],
+  "next_allowed_actions": [
+    "Implement the explicit local-island Plugin.optimize path behind i6n_island_mode=true.",
+    "Implement durable per-node terminal receipts and the automated H4-to-H72 successor.",
+    "Make the focused contract tests pass without modifying their scientific requirements."
+  ],
+  "blocked_actions": [
+    "Do not launch an H4 or H72 campaign before unit, integration, and system gates pass.",
+    "Do not use the shared-population 8 by 3 pilot as scientific evidence.",
+    "Do not start H72 before H4 has a fleet terminal, common finalized chain checkpoint, and verified OLAP readback."
+  ],
+  "open_decisions": [
+    "Whether group-safe crossover is admitted in addition to mutation and immigration.",
+    "Exact generation openings for S2 and S3 after cost admission.",
+    "Whether simultaneous use of both Gamma GPUs passes fresh host-memory admission."
+  ],
+  "history": [
+    {
+      "date": "2026-10-12",
+      "stage": "S8_UNIT_TEST_DESIGN",
+      "event": "Created the executable island optimizer contract and persistent methodology artifacts; governing implementation intentionally not changed."
+    }
+  ]
+}

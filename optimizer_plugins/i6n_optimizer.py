@@ -1,4 +1,4 @@
-"""Shared-only I6N DEAP adapter for doin_plugins.predictor.PredictorOptimizer.
+"""I6N DEAP adapter for shared pilots and cooperative DOIN islands.
 
 No data or training imports. Evaluation requires an explicitly configured
 receipt producer; see docs/i6n/DOIN_ADAPTER.md for the runtime boundaries.
@@ -10,12 +10,15 @@ import hashlib
 import importlib
 import json
 import math
+import os
 import random
 import subprocess
+import tempfile
 
 from deap import base, tools
 
 from tools import i6n_search as search
+from tools import i6n_island_plan
 from tools import i6n_search_plan as plan_v2
 from tools import i6n_search_space as space
 
@@ -38,6 +41,13 @@ def _digest(value):
     return hashlib.sha256(_json(value).encode("utf-8")).hexdigest()
 
 
+def _nested_tuple(value):
+    """Restore ``random.Random`` state after JSON converted tuples to lists."""
+    if isinstance(value, list):
+        return tuple(_nested_tuple(item) for item in value)
+    return value
+
+
 class _Fitness(base.Fitness):
     weights = (-1.,)
 
@@ -53,7 +63,8 @@ class Plugin:
 
     The node owns claims and result persistence. This class owns canonical
     proposal deduplication across generations, carried in innovation_tracker.
-    There is no island-mode optimize() implementation or implicit evaluator.
+    ``optimize`` is the production island path.  The historical shared methods
+    remain available so retained pilot evidence stays reproducible.
     """
 
     # Required by app.plugin_loader; admission settings must be explicit.
@@ -61,18 +72,342 @@ class Plugin:
 
     def __init__(self):
         self.params = {}
+        self.best_fitness_so_far = float("inf")
+        self.best_params_so_far = None
+        self.best_train_mae_so_far = None
+        self.best_train_naive_mae_so_far = None
+        self.best_val_mae_so_far = None
+        self.best_naive_mae_so_far = None
+        self.best_test_mae_so_far = None
+        self.best_test_naive_mae_so_far = None
 
     def set_params(self, **kwargs):
         self.params.update(deepcopy(kwargs))
+
+    @staticmethod
+    def _atomic_json(path, payload):
+        path = os.path.abspath(os.path.expanduser(path))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        fd, tmp = tempfile.mkstemp(prefix=".i6n-", suffix=".tmp", dir=os.path.dirname(path))
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                json.dump(payload, handle, sort_keys=True, separators=(",", ":"), allow_nan=False)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(tmp, path)
+        finally:
+            if os.path.exists(tmp):
+                os.unlink(tmp)
 
     def _config(self, opt_config):
         if not isinstance(opt_config, Mapping):
             raise ValueError("opt_config must be a mapping")
         cfg = deepcopy(self.params)
         cfg.update(deepcopy(dict(opt_config)))
+        # Evaluators/callbacks are runtime capabilities, not configuration
+        # values.  Preserve their identity instead of cloning stateful callables.
+        for key in ("i6n_evaluator", "optimization_callbacks"):
+            if key in opt_config:
+                cfg[key] = opt_config[key]
         if cfg.get("higher_is_better", False) is not False:
             raise ValueError("I6N requires higher_is_better=False (raw minimization)")
         return cfg
+
+    def _island_settings(self, cfg):
+        """Validate the non-negotiable production search envelope."""
+        if cfg.get("i6n_island_mode") is not True:
+            raise ValueError("i6n_island_mode=true is required for local DOIN optimization")
+        horizon = cfg.get("i6n_horizon")
+        if horizon not in (4, 72):
+            raise ValueError("i6n_horizon must be 4 or 72")
+        population = _int(cfg.get("population_size"), "population_size", 20)
+        generations = _int(cfg.get("n_generations"), "n_generations", 100)
+        patience = _int(cfg.get("optimization_patience"), "optimization_patience", 10)
+        tolerance = cfg.get("min_relative_improvement")
+        if type(tolerance) not in (int, float) or not math.isfinite(tolerance):
+            raise ValueError("min_relative_improvement must be finite")
+        if float(tolerance) != 1e-8:
+            raise ValueError("min_relative_improvement must equal 1e-8")
+        seed = _int(cfg.get("ga_seed", cfg.get("seed")), "ga_seed")
+        if seed != 6102026:
+            raise ValueError("the four islands must use seed 6102026")
+        return {
+            "horizon": horizon,
+            "population": population,
+            "generations": generations,
+            "patience": patience,
+            "tolerance": float(tolerance),
+            "seed": seed,
+            "island_id": cfg.get("i6n_island_id") or os.environ.get("I6N_ISLAND_ID", "local-test"),
+            "mutation": float(cfg.get("mutation_probability", 0.8)),
+            "immigration": float(cfg.get("immigration_probability", 0.2)),
+            "s2_generation": _int(cfg.get("i6n_s2_generation", 10), "i6n_s2_generation"),
+            "s3_generation": _int(cfg.get("i6n_s3_generation", 25), "i6n_s3_generation"),
+            "min_generations": _int(cfg.get("i6n_min_generations", 30),
+                                    "i6n_min_generations", 30),
+        }
+
+    @staticmethod
+    def _summary(result):
+        return {
+            key: deepcopy(result.get(key))
+            for key in (
+                "fitness", "hyper_dict", "genotype_canonical_sha256",
+                "train_mae", "train_naive_mae", "val_mae", "val_naive_mae",
+            )
+        }
+
+    @staticmethod
+    def _network_genotype(params, horizon, envelope):
+        if not isinstance(params, Mapping):
+            return None
+        if params.get("_i6n_envelope") != envelope:
+            return None
+        try:
+            genome = {key: params[key] for key in search._GENOME_KEYS}
+            genotype = space.canonicalize(space.from_evaluator_genome(genome))
+        except (KeyError, TypeError, ValueError, space.Infeasible):
+            return None
+        return genotype if genotype["horizon_hours"] == horizon else None
+
+    @staticmethod
+    def _open_classes(generation, settings, admitted):
+        open_ids = ["S1"]
+        if generation >= settings["s2_generation"]:
+            open_ids.append("S2")
+        if generation >= settings["s3_generation"]:
+            open_ids.append("S3")
+        return [name for name in open_ids if name in admitted]
+
+    def _initial_island_population(self, settings, admitted, rng):
+        classes = self._open_classes(0, settings, admitted)
+        if "S1" not in classes:
+            raise ValueError("S1 must be admitted before an island can start")
+        population = [space.seed_genotype(settings["horizon"]),
+                      space.alternative_genotype(settings["horizon"])]
+        seen = {space.genotype_sha256(g) for g in population}
+        while len(population) < settings["population"]:
+            candidate = space.sample_genotype(settings["horizon"], rng, classes=classes)
+            identity = space.genotype_sha256(candidate)
+            if identity not in seen:
+                seen.add(identity)
+                population.append(candidate)
+        return population
+
+    def _next_island_population(self, ranked, settings, admitted, rng):
+        classes = self._open_classes(ranked[0]["generation"] + 1, settings, admitted)
+        if not classes:
+            raise RuntimeError("no admitted class remains open")
+        population = [deepcopy(ranked[0]["genotype"])]
+        seen = {space.genotype_sha256(population[0])}
+        attempts = 0
+        while len(population) < settings["population"] and attempts < settings["population"] * 256:
+            attempts += 1
+            if rng.random() < settings["immigration"]:
+                candidate = space.sample_genotype(settings["horizon"], rng, classes=classes)
+            else:
+                tournament = rng.sample(ranked, min(3, len(ranked)))
+                parent = min(tournament, key=lambda row: row["fitness"])["genotype"]
+                candidate = space.mutate(parent, rng, classes=classes, exclude=seen)
+                if candidate is None:
+                    continue
+            identity = space.genotype_sha256(candidate)
+            if identity not in seen:
+                seen.add(identity)
+                population.append(candidate)
+        if len(population) != settings["population"]:
+            raise RuntimeError("unique I6N island population exhausted before reaching configured size")
+        return population
+
+    def optimize(self, predictor, preprocessor, opt_config):
+        """Run one full local island; DOIN callbacks exchange champions.
+
+        Each candidate is the governed four-fold evaluation.  The optimized
+        value is the relative error against the paired naive: ratio - 1.
+        """
+        del predictor, preprocessor
+        cfg = self._config(opt_config)
+        cfg.setdefault("i6n_plan", i6n_island_plan.build_plan())
+        settings = self._island_settings(cfg)
+        plan, contract = _V2(self)._contract(cfg)
+        if (plan["seed"] != settings["seed"]
+                or plan["search"]["population_size"] != settings["population"]
+                or plan["search"]["generations"] != settings["generations"]
+                or plan["search"]["patience"] != settings["patience"]
+                or plan["search"]["min_generations_before_stop"] != settings["min_generations"]
+                or float(plan["search"]["tolerance"]) != settings["tolerance"]):
+            raise ValueError("runtime island settings differ from the sealed plan")
+        admitted = set(cfg.get("i6n_admitted_classes", ("S1", "S2", "S3")))
+        callbacks = cfg.get("optimization_callbacks") or {}
+        plan_identity = plan["plan_sha256"]
+        search_seed = int.from_bytes(hashlib.sha256(_json({
+            "plan_sha256": plan_identity,
+            "horizon": settings["horizon"], "training_seed": settings["seed"],
+            "island_id": settings["island_id"],
+        }).encode("utf-8")).digest()[:8], "big")
+        rng = random.Random(search_seed)
+        envelope = {
+            "schema": "i6n.island.champion.v1", "plan_sha256": plan["plan_sha256"],
+            "context_sha256": _digest(contract), "horizon": settings["horizon"],
+            "training_seed": settings["seed"], "genotype_schema": space.GENOTYPE_SCHEMA,
+        }
+        population = self._initial_island_population(settings, admitted, rng)
+        cache = {}
+        start_generation = 0
+        no_improve = 0
+        checkpoint = cfg.get("optimization_resume_file")
+        if checkpoint and os.path.exists(checkpoint):
+            with open(checkpoint, encoding="utf-8") as handle:
+                saved = json.load(handle)
+            expected = (plan_identity, settings["horizon"], settings["seed"],
+                        settings["island_id"], search_seed)
+            actual = (saved.get("plan_sha256"), saved.get("horizon"), saved.get("seed"),
+                      saved.get("island_id"), saved.get("search_seed"))
+            if actual != expected:
+                raise ValueError("island resume checkpoint identity mismatch")
+            population = [space.canonicalize(g) for g in saved["population"]]
+            cache = deepcopy(saved.get("cache", {}))
+            start_generation = _int(saved["generation"], "checkpoint generation")
+            no_improve = _int(saved.get("no_improve", 0), "checkpoint no_improve")
+            self.best_fitness_so_far = float(saved.get("best_fitness", float("inf")))
+            self.best_params_so_far = deepcopy(saved.get("best_params"))
+            rng.setstate(_nested_tuple(saved["rng_state"]))
+            if saved.get("stop_reason") in {"patience", "generation_limit"}:
+                return deepcopy(self.best_params_so_far)
+
+        evaluator = _V2(self)
+        total_eval = len(cache)
+        best_identity = None
+        for generation in range(start_generation, settings["generations"]):
+            stage = {
+                "stage": 1, "total_stages": 1, "meta_mode": False,
+                "total_candidates_evaluated": total_eval,
+                "population_size": settings["population"],
+            }
+            on_start = callbacks.get("on_generation_start")
+            if on_start:
+                migrant = on_start(population, [], list(search._GENOME_KEYS), generation, stage)
+                # This campaign has one search stage.  DOIN's historical stage
+                # broadcast is migration metadata, never a substitute for this
+                # island's generation patience/limit.
+                if isinstance(migrant, Mapping) and migrant.get("_force_stage_advance"):
+                    migrant = None
+                migrant_g = self._network_genotype(migrant, settings["horizon"], envelope)
+                if migrant_g is not None:
+                    incoming_id = space.genotype_sha256(migrant_g)
+                    if incoming_id not in {space.genotype_sha256(g) for g in population}:
+                        population[-1] = migrant_g
+
+            ranked = []
+            best_before = self.best_fitness_so_far
+            for candidate_number, genotype in enumerate(population, 1):
+                identity = space.genotype_sha256(genotype)
+                result = cache.get(identity)
+                evaluated_now = result is None
+                if result is None:
+                    wire = evaluator._wire(genotype, _digest(contract), generation)
+                    evaluated = evaluator.evaluate(wire, generation, cfg)
+                    evaluated["fitness"] = float(evaluated["fitness"]) - 1.0
+                    evaluated.setdefault("metrics", {})["relative_error_vs_naive"] = evaluated["fitness"]
+                    result = self._summary(evaluated)
+                    result["metrics"] = {
+                        "relative_error_vs_naive": evaluated["fitness"],
+                        "per_fold_ratio": evaluated["metrics"].get("per_fold", {}),
+                        "aggregation": evaluated["metrics"].get("aggregation"),
+                    }
+                    cache[identity] = result
+                    total_eval += 1
+                fitness = float(result["fitness"])
+                ranked.append({"genotype": genotype, "fitness": fitness,
+                               "result": result, "generation": generation})
+                is_champion = fitness < self.best_fitness_so_far
+                if is_champion:
+                    self.best_fitness_so_far = fitness
+                    self.best_params_so_far = deepcopy(result["hyper_dict"])
+                    self.best_train_mae_so_far = result.get("train_mae")
+                    self.best_train_naive_mae_so_far = result.get("train_naive_mae")
+                    self.best_val_mae_so_far = result.get("val_mae")
+                    self.best_naive_mae_so_far = result.get("val_naive_mae")
+                    best_identity = identity
+                    on_champion = callbacks.get("on_new_champion")
+                    if on_champion:
+                        public_params = dict(self.best_params_so_far, _i6n_envelope=envelope,
+                                             _i6n_origin_island=settings["island_id"])
+                        on_champion(public_params, fitness, result.get("metrics", {}),
+                                    generation, dict(stage, candidate=candidate_number,
+                                                     total_candidates_evaluated=total_eval))
+                info = {
+                    "generation": generation, "candidate_in_gen": candidate_number,
+                    "total_eval": total_eval, "stage": 1, "total_stages": 1,
+                    "stage_name": f"I6N-H{settings['horizon']}", "gen_in_stage": generation,
+                    "n_generations_stage": settings["generations"],
+                    "n_generations_total": settings["generations"],
+                    "population_size": settings["population"], "is_champion": is_champion,
+                    "fitness": fitness, "champion_fitness": self.best_fitness_so_far,
+                    "parameters": result["hyper_dict"],
+                    "champion_parameters": self.best_params_so_far,
+                    "train_mae": result.get("train_mae"),
+                    "train_naive_mae": result.get("train_naive_mae"),
+                    "val_mae": result.get("val_mae"),
+                    "val_naive_mae": result.get("val_naive_mae"),
+                    "test_mae": None, "test_naive_mae": None,
+                    "metrics": result.get("metrics", {}),
+                    "no_improve_counter": no_improve,
+                    "higher_is_better": False,
+                    "training_seed": settings["seed"],
+                    "island_id": settings["island_id"],
+                }
+                if evaluated_now and callbacks.get("on_candidate_evaluated"):
+                    callbacks["on_candidate_evaluated"](info)
+                if callbacks.get("on_between_candidates"):
+                    signal = callbacks["on_between_candidates"](generation, candidate_number, info)
+                    # A remote stage-complete signal cannot terminate the sole
+                    # governed stage; only local patience or max generations can.
+
+            ranked.sort(key=lambda row: (row["fitness"], space.genotype_sha256(row["genotype"])))
+            # Fitness is already a relative error.  Its direct decrement is
+            # therefore the relative increment governed by the 1e-8 threshold.
+            relative_improvement = (float("inf") if not math.isfinite(best_before) else
+                                    best_before - self.best_fitness_so_far)
+            improved = (relative_improvement > settings["tolerance"]
+                        and not math.isclose(relative_improvement, settings["tolerance"],
+                                             rel_tol=1e-12, abs_tol=1e-15))
+            no_improve = 0 if improved else no_improve + 1
+            stage.update(generation=generation, champion_fitness=self.best_fitness_so_far,
+                         champion_parameters=self.best_params_so_far,
+                         total_candidates_evaluated=total_eval,
+                         no_improve_counter=no_improve, patience=settings["patience"],
+                         relative_improvement=relative_improvement,
+                         min_relative_improvement=settings["tolerance"])
+            stop = ((no_improve >= settings["patience"]
+                     and generation + 1 >= settings["min_generations"])
+                    or generation + 1 >= settings["generations"])
+            stage.update(converged=stop,
+                         stop_reason=(("patience" if no_improve >= settings["patience"] else
+                                       "generation_limit") if stop else None),
+                         no_improve_count=no_improve)
+            if callbacks.get("on_generation_end"):
+                callbacks["on_generation_end"](population, ranked[:1], list(search._GENOME_KEYS),
+                                               generation, stage,
+                                               {"min": ranked[0]["fitness"], "max": ranked[-1]["fitness"]})
+            if not stop:
+                population = self._next_island_population(ranked, settings, admitted, rng)
+            if checkpoint:
+                self._atomic_json(checkpoint, {
+                    "schema": "i6n.island.checkpoint.v1", "plan_sha256": plan_identity,
+                    "horizon": settings["horizon"], "seed": settings["seed"],
+                    "island_id": settings["island_id"], "search_seed": search_seed,
+                    "generation": generation + 1, "population": population,
+                    "cache": cache, "no_improve": no_improve,
+                    "best_fitness": self.best_fitness_so_far,
+                    "best_params": self.best_params_so_far,
+                    "best_identity": best_identity, "rng_state": rng.getstate(),
+                    "stop_reason": ("patience" if no_improve >= settings["patience"] else
+                                    "generation_limit" if generation + 1 >= settings["generations"] else None),
+                })
+            if stop:
+                break
+        return deepcopy(self.best_params_so_far)
 
     def _contract(self, cfg):
         horizon = cfg.get("i6n_horizon")
