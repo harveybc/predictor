@@ -337,22 +337,26 @@ def start(root, roles=(), unit_dir=None, systemctl=None, now=None):
 
 
 def adopt_prior(root, led, payload):
-    """Adopt prior receipts only where E's mapping says EQUIVALENT and the fit_id matches exactly."""
+    """Register prior receipts that lane E maps as reusable for exactly one fit_id.
+
+    E's legacy mapping (i6n.legacy_mapping.v1) currently marks all 48 endpoint
+    candidates ``fold_score_reuse: NONE``: they are recorded as not reusable
+    and nothing is adopted. A reusable item must name its fit_id and a pinned
+    receipt; it is adopted at the first claim of that fit (never refit).
+    """
     pin = payload["inputs"].get("prior_candidates")
     if not pin:
-        return 0
+        return dict(registered=0, not_reusable=0)
     mapping = common.read_pinned(pin, "prior mapping")
-    count = 0
+    registered = not_reusable = 0
     for item in mapping.get("candidates", []):
-        if item.get("verdict") != "EQUIVALENT" or not item.get("fit_id"):
+        reuse = item.get("fold_score_reuse", item.get("verdict"))
+        if reuse not in ("FOLD_RECEIPT", "EQUIVALENT") or not item.get("fit_id") or not item.get("receipt"):
+            not_reusable += 1
             continue
-        unit = led.unit(item["fit_id"])
-        if unit is None:
-            continue
-        doc = common.read_pinned(item["receipt"], "prior receipt")
-        if led.adopt_prior(item["fit_id"], doc, source=item["receipt"]) == "ADOPTED_PRIOR":
-            count += 1
-    return count
+        led.register_prior(item["fit_id"], common.read_pinned(item["receipt"], "prior receipt"), source=item["receipt"])
+        registered += 1
+    return dict(registered=registered, not_reusable=not_reusable)
 
 
 def preflight(root, which=shutil.which, linger=default_linger):

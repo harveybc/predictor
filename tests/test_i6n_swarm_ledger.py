@@ -251,3 +251,17 @@ def test_fit_id_is_plan_and_directory_independent():
     c = common.fit_id(experiment="e", fold="F2", effective_config={"a": 1, "b": 2}, context={"k": 1}, support={"s": 1})
     assert a == b != c
     assert json.loads(common.canonical({"b": 1, "a": 2})) == {"a": 2, "b": 1}
+
+
+def test_registered_prior_is_adopted_at_first_claim_and_never_fit(env):
+    led, _, fit, s, _ = env
+    led.register_prior(fit, receipt_for(fit, s, 0.7), source={"path": "/prior", "sha256": "9" * 64})
+    res = led.claim(fit, "n1", "hA", "b1", "rtx5090", 60)
+    assert res["result"] == "ADOPT" and res["terminal"]["source"] == "PRIOR"
+    assert led.attempts(fit) == [] and led.outbox_pending()[0]["payload"]["disposition"] == "ADOPTED_CACHE"
+
+
+def test_prior_for_another_candidate_is_rejected_and_fit_proceeds(env):
+    led, _, fit, s, _ = env
+    led.register_prior(fit, receipt_for("f" * 64, s), source={"path": "/prior", "sha256": "9" * 64})
+    assert led.claim(fit, "n1", "hA", "b1", "rtx5090", 60)["result"] == "CLAIMED"

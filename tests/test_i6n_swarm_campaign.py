@@ -450,3 +450,16 @@ def test_e_score_folds_signature_when_installed():
     import inspect
     params = inspect.signature(score_folds).parameters
     assert {"genotype_canonical_sha256", "horizon_hours", "origins_sha256"} <= set(params)
+
+
+def test_legacy_mapping_with_no_fold_reuse_adopts_nothing(tmp_path):
+    cfg_path = F.private_config(tmp_path)
+    cfg = json.loads(Path(cfg_path).read_text())
+    mapping = dict(schema="i6n.legacy_mapping.v1", candidates=[
+        dict(genotype_canonical_sha256="a" * 64, horizon_hours=12, fold_score_reuse="NONE",
+             fold_reuse_reasons=["EVALUATION_CONTEXT_NOT_A_2023_QUARTER_FOLD"]) for _ in range(3)])
+    cfg["prior_candidates"] = F.pin(tmp_path / "inputs" / "legacy.json", mapping)
+    out = tmp_path / "campaign"
+    P.build(F.pin(cfg_path, cfg)["path"], out)
+    receipt = K.start(out, roles=[], systemctl=Recorder())
+    assert receipt["adopted_prior"] == dict(registered=0, not_reusable=3)

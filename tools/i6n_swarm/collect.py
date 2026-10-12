@@ -147,7 +147,10 @@ def collect(root, publisher="auto", now=None, score_folds=None):
         writer.writerow({k: ("" if row[k] is None else row[k]) for k in COLUMNS})
     common.atomic_write(root / "collect" / "RESULTS.csv", buffer.getvalue())
     remaining = len(led.outbox_pending())
-    state = "COMPLETE" if remaining == 0 else ("WAIT_DEPENDENCY" if publisher is None else "QUEUED")
+    if not led.outbox_all():
+        state, cause = "QUEUED", cause or "no terminal fold yet"
+    else:
+        state = "COMPLETE" if remaining == 0 else ("WAIT_DEPENDENCY" if publisher is None else "QUEUED")
     report = dict(at=led.clock(), published=published, pending=remaining, publication_state=state, cause=cause,
                   results_sha256=common.file_sha256(root / "collect" / "RESULTS.csv"), rows=len(rows))
     common.atomic_json(root / "collect" / "COLLECT.json", report)
