@@ -144,3 +144,37 @@ this host. `resume_checkpoint` is refused as `RESUME_UNSUPPORTED`.
 The 2 controller failures came from the legacy fixture's update cap. The
 fixture's `max_updates` is now sized for 50 plan epochs; the resource check
 itself is unchanged.
+
+## Addendum: A.4 (direct multi-output arms, host-relative contexts)
+
+The branch merged B's `f7a05838` first. Then:
+
+- **Arm config:** the pure function `multi_output_arm_config` and
+  `arm_config_sha256` were added.
+- **Family freeze and arm evaluation:** `freeze --family` gives per-head C1
+  masks, TRAIN-only scales, equal weights, per-head naive, per-head outer
+  VALIDATION rows and typed unsupported heads.
+- **v3 contexts:** contexts are root-relative and resolved through
+  `I6N_DATA_ROOT`, so identity and fit_id are portable.
+
+**Tests.** The regression tests were written first (14 failed before the
+change). After the change:
+
+| Suite | Result |
+| --- | --- |
+| `test_i6n_multi_output_arm` | 14 passed (85 s, includes one 6-head arm fit) |
+| trajectory contract + cell + search_publish | 60 passed |
+| h12 + h72 fits | 2 passed |
+| legacy evaluator + controller | 35 passed |
+| B bridge/runner + C multi_output | 34 passed, 1 failed on the first run |
+
+The one failure was B's stub calling `attempt_root` with a minimal context.
+After fixing `attempt_root` to resolve only `output_root`, that run gave
+35 passed.
+
+**Risks.**
+
+- The arm suite is close to the 120 s cap.
+- v2 absolute contexts remain fittable for single-host legacy callers, so B
+  must pass `--data-root` to get portable fit identities.
+- Arm top-level sums are pooled diagnostics; use the per-head rows.

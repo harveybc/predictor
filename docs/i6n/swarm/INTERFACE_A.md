@@ -1,4 +1,4 @@
-# Lane A interface (A.3)
+# Lane A interface (A.4)
 
 Machine-readable contract: `INTERFACE_A.json`. Summary for B, C, D and E:
 
@@ -60,3 +60,20 @@ Machine-readable contract: `INTERFACE_A.json`. Summary for B, C, D and E:
   directory exists on this host.
 - `resume_checkpoint` is refused with `RESUME_UNSUPPORTED`. No resumable
   checkpoint exists, so recovery always uses one linked RECOVERY attempt.
+
+## A.4 changes (direct multi-output arms, host-relative contexts)
+
+- **Arm config:** `multi_output_arm_config(finalist_config, family_horizons)`
+  is a pure function. It copies the recipe's window, input transform and core
+  verbatim and adds one direct head per business horizon of the family. It
+  does not carry the recipe's supervision, and it is never called a
+  trajectory. Its identity is `arm_config_sha256` (E's
+  `effective_config_sha256`).
+- **Family freeze:** `freeze --family short|long [--score-outer]` seals
+  per-head C1 support, per-head plans and per-head outer support. Heads
+  without TRAIN support are typed and excluded. Rows are scored per head with
+  their own naive, as `DIRECT_HEAD` rows. Top-level receipt sums are pooled
+  and diagnostic only.
+- **Host-relative contexts:** `freeze --data-root <root>` writes a v3
+  context with `{relpath, sha256}` pins. Each evaluating host sets
+  `I6N_DATA_ROOT`. Support, identity and fit_id are host-independent.
