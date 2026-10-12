@@ -20,6 +20,24 @@ from tools.i6n_swarm import bridge as B, common, ledger as L, placement, plan as
 
 V3 = "i6n.historical_evaluator.v3"
 ACTIVE_SEARCH = ("QUEUED", "RUNNING", "WAIT_RESOURCE", "INTERRUPTED")
+FIXED_STAGES = ("freeze", "annual", "multi_output")
+
+
+def fixed_stages(node):
+    stages = tuple(node.get("fixed_stages", FIXED_STAGES))
+    if not stages or any(stage not in FIXED_STAGES for stage in stages) or len(set(stages)) != len(stages):
+        raise ValueError("fixed_stages must be a nonempty unique subset of freeze, annual, multi_output")
+    return stages
+
+
+def _slice_limit(run=subprocess.run):
+    try:
+        out = run(["systemctl", "--user", "show", "crispdm-batch.slice", "-p", "MemoryMax", "--value"],
+                  capture_output=True, text=True, timeout=20)
+        value = out.stdout.strip()
+        return int(value) if out.returncode == 0 and value.isdigit() and int(value) > 0 else None
+    except (OSError, subprocess.TimeoutExpired, ValueError):
+        return None
 
 
 def recover(node, led, boot_id=None):
@@ -48,7 +66,8 @@ def healthcheck(node, now=None, run=subprocess.run):
         except (OSError, subprocess.TimeoutExpired, ValueError):
             probe = False
     health = dict(boot_id=facts["boot_id"], checked_at=facts["now"], nv_err_no_memory=nv_err,
-                  sunreclaim_bytes=facts["sunreclaim_bytes"], gpu_probe_ok=probe)
+                  sunreclaim_bytes=facts["sunreclaim_bytes"], gpu_probe_ok=probe,
+                  slice_limit_bytes=_slice_limit(run))
     common.atomic_json(Path(node["state_dir"]) / "HEALTH.json", health, mode=0o600)
     return health
 
@@ -231,7 +250,8 @@ def main(argv=None):
     report = dict(recovered=recover(node, led))
     if not args.recover_only:
         report["health"] = healthcheck(node)
-        report["fixed_units"] = run_fixed_units(node, led, max_units=node.get("max_fixed_units_per_tick", 4))
+        report["fixed_units"] = run_fixed_units(node, led, stages=fixed_stages(node),
+                                                max_units=node.get("max_fixed_units_per_tick", 4))
         report["node"] = sync_node(node, led)
     common.atomic_json(Path(node["state_dir"]) / "AGENT.json", dict(report, at=time.time()), mode=0o600)
     print(json.dumps(report, default=str))

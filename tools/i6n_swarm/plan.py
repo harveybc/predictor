@@ -213,8 +213,8 @@ def doin_node_config(payload, private, role, contexts):
 def bridge_node_config(payload, private, role, device):
     host = private["hosts"][role]
     ledger = private["ledger"]
-    caps = {k: v for k, v in payload["class_caps"].items() if v["state"] == "ADMITTED"}
-    return dict(schema="i6n.swarm.node.v1", campaign_id=payload["campaign_id"], owner=f"{role}-{device['cls']}",
+    caps = {k: deepcopy(v) for k, v in payload["class_caps"].items() if v["state"] == "ADMITTED"}
+    node = dict(schema="i6n.swarm.node.v1", campaign_id=payload["campaign_id"], owner=f"{role}-{device['cls']}",
                 host_key=role, device=device, fixture=payload["mode"] == "fixture",
                 exclusive_host=device["cls"] != "rtx5070ti",
                 evaluator_argv=host.get("evaluator_argv") or [host["python"], "-m", "tools.i6n_historical_evaluator", "evaluate"],
@@ -231,6 +231,14 @@ def bridge_node_config(payload, private, role, device):
                 doin_template=doin_template(payload, private, role),
                 freeze_caps=private.get("freeze_caps") or dict(child_memory_bytes=4 * 1024**3, child_wall_seconds=3600),
                 campaign_root=private["root"])
+    for key in ("fixed_stages", "physical_host_key", "sibling_class"):
+        if key in host:
+            node[key] = deepcopy(host[key])
+    if host.get("desktop_workload"):
+        for cap in node["class_caps"].values():
+            cap["desktop_workload"] = True
+            cap["vram_bytes"] = int(host.get("vram_bytes", cap.get("vram_bytes", 0)))
+    return node
 
 
 def _resolve_host(entry):

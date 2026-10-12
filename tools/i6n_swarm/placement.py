@@ -56,8 +56,11 @@ def admit(device_class, facts, class_spec, measured, sibling_class=None):
         if not health.get("gpu_probe_ok"):
             return _no("GPU_PROBE_FAILED")
     if device_class == "rtx4070":
-        if not class_spec.get("small_pilot"):
+        governed = bool(class_spec.get("desktop_workload"))
+        if not class_spec.get("small_pilot") and not governed:
             return _no("NOT_A_SMALL_PILOT")
+        if governed and not (measured or {}).get(class_spec["class_id"], {}).get("peak_bytes"):
+            return _no("NO_MEASURED_PEAK")
         if facts.get("cpu_heavy"):
             return _no("HOST_CPU_HEAVY")
         if facts["mem_available_bytes"] - cap < DESKTOP_RAM:
@@ -94,6 +97,9 @@ def host_facts(now, boot_id, healthcheck=None, meminfo_path="/proc/meminfo"):
         for line in handle:
             key, _, rest = line.partition(":")
             values[key] = int(rest.split()[0]) * 1024
-    return dict(now=now, boot_id=boot_id, mem_total_bytes=values.get("MemTotal", 0),
-                mem_available_bytes=values.get("MemAvailable", 0), sunreclaim_bytes=values.get("SUnreclaim", 0),
-                healthcheck=healthcheck, pressure=False, draining=False, cpu_heavy=False)
+    facts = dict(now=now, boot_id=boot_id, mem_total_bytes=values.get("MemTotal", 0),
+                 mem_available_bytes=values.get("MemAvailable", 0), sunreclaim_bytes=values.get("SUnreclaim", 0),
+                 healthcheck=healthcheck, pressure=False, draining=False, cpu_heavy=False)
+    if healthcheck and type(healthcheck.get("slice_limit_bytes")) is int:
+        facts["slice_limit_bytes"] = healthcheck["slice_limit_bytes"]
+    return facts

@@ -62,6 +62,18 @@ def test_4070_small_pilots_only_with_desktop_reserve():
     assert P.admit("rtx4070", facts(cpu_heavy=True, mem_available_bytes=14 * GIB), CLASS, measured={})["cause"] == "HOST_CPU_HEAVY"
 
 
+def test_4070_governed_workload_requires_measured_peak_and_keeps_reserves():
+    governed = dict(CLASS, small_pilot=False, desktop_workload=True)
+    assert P.admit("rtx4070", facts(), governed, measured={})["cause"] == "NO_MEASURED_PEAK"
+    measured = {"small": dict(peak_bytes=2 * GIB, n=4)}
+    admitted = P.admit("rtx4070", facts(mem_available_bytes=16 * GIB, gpu_free_bytes=6 * GIB),
+                       governed, measured=measured)
+    assert admitted["admit"] and admitted["exclusive_host"]
+    assert admitted["cap_bytes"] == int(2.5 * GIB)
+    assert P.admit("rtx4070", facts(mem_available_bytes=10 * GIB), governed,
+                   measured=measured)["cause"] == "DESKTOP_RAM_RESERVE"
+
+
 def test_5070ti_needs_aggregate_proof_from_measured_peaks():
     assert P.admit("rtx5070ti", facts(), CLASS, measured={})["cause"] == "NO_MEASURED_PEAK"
     measured = {"small": dict(peak_bytes=4 * GIB, n=2)}
@@ -81,3 +93,10 @@ def test_5070ti_drains_under_pressure():
 
 def test_unknown_device_class_refused():
     assert P.admit("rtx5070", facts(), CLASS, measured={})["cause"] == "DEVICE_CLASS_NOT_AUTHORIZED"
+
+
+def test_host_facts_carries_verified_slice_limit_from_healthcheck(tmp_path):
+    meminfo = tmp_path / "meminfo"
+    meminfo.write_text("MemTotal: 32768 kB\nMemAvailable: 16384 kB\nSUnreclaim: 1024 kB\n")
+    got = P.host_facts(NOW, "boot-2", healthcheck={"slice_limit_bytes": 12345}, meminfo_path=meminfo)
+    assert got["slice_limit_bytes"] == 12345

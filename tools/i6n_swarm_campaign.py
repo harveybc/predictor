@@ -41,6 +41,9 @@ def main(argv=None):
     q.add_argument("--root", required=True)
     q = sub.add_parser("tick")
     q.add_argument("--root", required=True)
+    q = sub.add_parser("prepare-late-workers")
+    q.add_argument("--root", required=True)
+    q.add_argument("--spec", required=True)
     args = parser.parse_args(argv)
 
     if args.command == "status":
@@ -65,6 +68,9 @@ def main(argv=None):
     elif args.command == "collect":
         from tools.i6n_swarm import collect
         result = collect.collect(args.root)
+    elif args.command == "prepare-late-workers":
+        from tools.i6n_swarm import late_join
+        result = late_join.prepare(args.root, args.spec)
     else:
         from tools.i6n_swarm import coordinator
         result = coordinator.tick(args.root)

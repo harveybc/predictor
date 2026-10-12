@@ -130,6 +130,13 @@ def test_boot_recovery_interrupts_previous_boot_of_this_host_only(campaign):
     assert [c["fit_id"] for c in changed] == [units[0]["fit_id"]]
 
 
+def test_late_worker_fixed_stages_exclude_freeze():
+    assert A.fixed_stages({}) == ("freeze", "annual", "multi_output")
+    assert A.fixed_stages({"fixed_stages": ["annual", "multi_output"]}) == ("annual", "multi_output")
+    with pytest.raises(ValueError, match="fixed_stages"):
+        A.fixed_stages({"fixed_stages": ["search"]})
+
+
 def test_annual_units_run_with_fencing_and_complete(campaign):
     root, node, tmp = campaign
     led = L.Ledger(root / "state" / "ledger.sqlite3")

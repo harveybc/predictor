@@ -66,11 +66,12 @@ def render(root, role):
     node_env = env + f"Environment=I6N_SWARM_NODE_CONFIG={node_cfg}\n"
     for key, value in sorted((host.get("environment") or {}).items()):
         node_env += f"Environment={key}={value}\n"
+    node_command = host.get("node_command") or private["doin"]["node_command"]
     units[f"{p}{role}-node.service"] = (
         head.format(what=f"{role} DOIN node (shared swarm)") + f"ConditionPathExists={doin_cfg}\n\n[Service]\n"
         "Type=simple\n" + node_env +
         "ExecStartPre=" + _q([python, "-m", "tools.i6n_swarm.agent", "--node-config", node_cfg, "--recover-only"]) +
-        "\nExecStart=" + _q([*private["doin"]["node_command"], "--config", doin_cfg]) +
+        "\nExecStart=" + _q([*node_command, "--config", doin_cfg]) +
         "\nRestart=on-failure\nRestartSec=30\nTimeoutStopSec=120\nKillMode=mixed\n\n[Install]\nWantedBy=default.target\n")
     units[f"{p}{role}-agent.service"] = (
         head.format(what=f"{role} agent (recovery, healthcheck, fixed units, node sync)") +

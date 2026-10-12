@@ -173,6 +173,16 @@ def test_install_writes_only_this_campaign_units_and_enables_them(root, tmp_path
     assert again["unchanged"] == sorted(ours)
 
 
+def test_worker_unit_can_pin_a_host_specific_node_command(root, tmp_path):
+    private_path = root / "private" / "campaign.json"
+    private = json.loads(private_path.read_text())
+    private["hosts"]["preferred"]["node_command"] = ["/pinned/i6n-python", "-m", "doin_node.cli"]
+    private_path.write_text(json.dumps(private))
+    units = U.render(root, "preferred")
+    body = units["i6n-swarm-fx1-preferred-node.service"]
+    assert "ExecStart=/pinned/i6n-python -m doin_node.cli" in body
+
+
 def test_install_refuses_to_overwrite_a_foreign_file_with_our_name(root, tmp_path):
     unit_dir = tmp_path / "units"
     unit_dir.mkdir()
