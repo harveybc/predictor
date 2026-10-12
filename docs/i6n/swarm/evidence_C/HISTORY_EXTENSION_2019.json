@@ -1,0 +1,106 @@
+{
+ "claims": {
+  "certificate_issued": false,
+  "downloaded": false,
+  "npz_written": false,
+  "test_read": false
+ },
+ "clock_cases_in_span": [
+  {
+   "date": "2019-03-18",
+   "reason": null,
+   "status": "PASS"
+  },
+  {
+   "date": "2019-07-15",
+   "reason": null,
+   "status": "PASS"
+  },
+  {
+   "date": "2019-10-28",
+   "reason": "ValueError: HTTP 429; no retry, alternate host or further redirect",
+   "status": "INCONCLUSIVE"
+  }
+ ],
+ "data": {
+  "archive": {
+   "duplicate_minutes_removed": 60,
+   "hourly_rows": 6213,
+   "member": "DAT_ASCII_EURUSD_M1_2019.csv",
+   "minute_rows": 372470,
+   "sha256": "221fa4e0db549f48719273979ea4b1a2b0877f45f1147a8416ff8bbd055f5491",
+   "year": "2019"
+  },
+  "corrected_first": "2019-03-12T22:00:00+00:00",
+  "corrected_last": "2019-11-29T22:00:00+00:00",
+  "feature_finite_fraction": {
+   "fred.inflation_expectations.t5yie.level": 1.0,
+   "fred.rates.dgs3mo.diff_5d": 1.0,
+   "fred.rates.dgs5.level": 1.0,
+   "fred.rates.dgs7.logret_5d": 1.0,
+   "fred.rates.dprime.logret_5d": 1.0,
+   "fred.stress.stlfsi4.level": 1.0,
+   "fx.gbpusd.logret_1h": 0.9997777283840854,
+   "px.close_loc": 1.0,
+   "px.log_co": 1.0,
+   "px.rv5": 1.0,
+   "rg.atr_ratio": 1.0,
+   "yh.eem.logret_5d": 1.0,
+   "yh.iyr.logret_1d": 1.0,
+   "yh.kc_f.logret_1d": 1.0,
+   "yh.n225.logret_1d": 0.9888864192042676,
+   "yh.si_f.logret_1d": 1.0,
+   "yh.slv.logret_1d": 1.0,
+   "yh.vnq.logret_1d": 1.0,
+   "yh.xlc.logret_1d": 1.0,
+   "yh.xlre.logret_1d": 1.0
+  },
+  "matched": 4499,
+  "max_abs_price_difference": 0.0,
+  "retained_rows": 4499,
+  "shifted_rows": 432,
+  "source_rows": 4499,
+  "state": "RECONCILED_NOT_MATERIALIZED",
+  "successor_first": "2019-12-01T23:00:00+00:00"
+ },
+ "full_audit_status": "INCONCLUSIVE",
+ "missing": [
+  {
+   "date": "2019-10-28",
+   "object": "INDEPENDENT_CLOCK_CASE",
+   "reason": "ValueError: HTTP 429; no retry, alternate host or further redirect",
+   "status": "INCONCLUSIVE"
+  },
+  {
+   "detail": "no scope certificate covers this span; this tool never issues one",
+   "end": "2019-12-01T00:00:00+00:00",
+   "object": "CLOCK_SCOPE_CERTIFICATE",
+   "start": "2019-03-12T21:00:00+00:00"
+  }
+ ],
+ "pass_case_replay": [
+  {
+   "date": "2019-03-18",
+   "matches_retained_case": true,
+   "status": "PASS"
+  },
+  {
+   "date": "2019-07-15",
+   "matches_retained_case": true,
+   "status": "PASS"
+  }
+ ],
+ "pins": {
+  "archive_manifest_sha256": "1a5e1bc955a88bf82eb62ff4be108be1b3b6cd7ddab832748a51fe68868ae115",
+  "clock_audit_sha256": "b3148be1ba239a1b6febcac6e0e424dd143918034ff956ff3db798504f1e2b90",
+  "design_sha256": "f2cd28cd50ce2bf8cf03c7cce67c5bf0eecca9e6a9f53d500646858cd79df8d6",
+  "source_sha256": "897caee164286bedea61c4caab361213cf703d3f50e60ba12cee543d9bfa28c9",
+  "successor_sha256": "56dbc22e182e5e720d4415f6998206065a506081941c3c2e76d5f8ed6c076031"
+ },
+ "schema": "i6n.weekly_history_extension.v1",
+ "span": {
+  "end": "2019-12-01T00:00:00+00:00",
+  "start": "2019-03-12T21:00:00+00:00"
+ },
+ "state": "WAIT_DEPENDENCY"
+}

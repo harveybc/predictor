@@ -1,0 +1,3 @@
+FAILED tests/test_i6n_search_plan.py::test_plan_domain_matches_space - KeyErr...
+FAILED tests/test_i6n_search_plan.py::test_committed_plan_and_legacy_artifact_match_builder
+39 failed, 134 passed in 3.57s

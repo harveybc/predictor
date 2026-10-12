@@ -46,6 +46,15 @@ def fetch_holdout(session, day, deadline, trace):
     raise ValueError("redirect chain exhausted")
 
 
+# HTTP 429 (rate limited) carries no quote bytes: a transport refusal, not a
+# numeric result. It is retried only as an explicitly named single case.
+RATE_LIMITED = "ValueError: HTTP 429; no retry, alternate host or further redirect"
+
+
+def rate_limited(case):
+    return case.get("reason") == RATE_LIMITED
+
+
 def transport_failure(case):
     if (case.get("status") != "INCONCLUSIVE" or case.get("evidence_role") != "holdout"
             or case.get("dukascopy_sha256") is not None
@@ -53,7 +62,7 @@ def transport_failure(case):
         return False
     reason = case.get("reason", "")
     return reason.startswith(("ReadTimeout:", "ConnectTimeout:", "TimeoutError:")) or (
-        reason == "ValueError: expected HTTP 200, got 301; no retry")
+        reason == "ValueError: expected HTTP 200, got 301; no retry") or reason == RATE_LIMITED
 
 
 def pending_cases(prior, only_dates=None):
@@ -69,6 +78,8 @@ def pending_cases(prior, only_dates=None):
         raise ValueError("only transport failures may be retried; numeric mismatches are final")
     if only_dates is not None and [c["date"] for c in pending] != list(only_dates):
         raise ValueError("pending dates differ from the explicit network authorization")
+    if any(rate_limited(c) for c in pending) and (only_dates is None or len(pending) != 1):
+        raise ValueError("a rate-limited case needs an explicit single-case --only-date authorization")
     return pending
 
 

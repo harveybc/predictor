@@ -20,7 +20,7 @@ __all__ = ["PredictorOlapStore", "backend", "__version__", "SOURCE_SHA256",
            "SOURCE_REVISION", "SOURCE_PATH", "MODULE_SHA256", "PENDING_REVIEW",
            "ENVELOPE_SOURCE_PATH", "ENVELOPE_SOURCE_SHA256",
            "FEATURE_SELECTION_CONTRACT_SHA256", "RECONCILIATION_CONTRACT_SHA256"]
-__version__ = "0.1.6"
+__version__ = "0.1.7"
 
 #: The digest of the deployed query plugin this module was copied from, and the revision
 #: that holds it. Both are checked by the package's tests. These describe PRODUCTION and are
@@ -51,7 +51,7 @@ RECONCILIATION_CONTRACT_SHA256 = (
 #: candidate change is awaiting production review, and PENDING_REVIEW says which one. The
 #: package's tests require the two to be consistent: a divergence without a stated reason is
 #: a failure, and a stated reason without a divergence is one too.
-MODULE_SHA256 = "98489130b33bec26ff704374df0a111b27e51e877ab28655385ddd7c89736df1"
+MODULE_SHA256 = "c4f30bb8146f67e3a363a06c05b21cc74825ef1b955a3f47578a527e0d58773f"
 PENDING_REVIEW = (
     "S2 availability-contract dimension: additive `gov_availability_contract` table, the "
     "`gov_delivery_availability` view and `write_availability_contracts` / "
@@ -80,4 +80,8 @@ PENDING_REVIEW = (
     "appended to the start-up DDL, and `write_fs4_terminals` / `read_fs4_terminals` / "
     "`reconcile_fs4` for the host's /api/v2/fs4 routes; proved on a throwaway DuckDB file "
     "and NOT deployed."
+    " 2026-10-11 (I6-N lane D): additive DOIN archive projection (doin_0001):"
+    " `gov_doin_projection`, append-only `gov_doin_projection_event`, views"
+    " `gov_doin_projection_current` / `gov_doin_metric_canonical` and the capabilities"
+    " write/read/revoke_doin_projection. Proved on throwaway SQLite and DuckDB; NOT deployed."
 )

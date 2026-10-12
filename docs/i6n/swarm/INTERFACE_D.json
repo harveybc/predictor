@@ -1,0 +1,154 @@
+{
+  "schema": "i6n.swarm_weekly.interface.v1",
+  "lane": "D",
+  "interface_version": "D.2",
+  "status": "STABLE_FOR_B_INTEGRATION; tests green on disposable instances; NOT deployed",
+  "branch": "satoshi/i6n-swarm-D-archive-20261011",
+  "consumes": {
+    "A": "INTERFACE_A A.2 @abddeb73: candidate_receipt v1 rows; role = C1 MANAGEMENT|ENTRY (refused otherwise), additive c2_role and support_sha256 kept in report tags; outer-week split=VALIDATION rows for WEEKLY_REFIT units (fold W<week>)",
+    "B": "calls the publisher API below when a candidate reaches a terminal disposition (COMPLETE or not); B's scheduler is not modified by D",
+    "E": "INTERFACE_E E.1 @3b62fdb0: effective_config_sha256 = sha256(json.dumps(config, sort_keys=True, separators=(\",\",\":\"), allow_nan=False).encode(\"utf-8\")) of the evaluator request config; search_candidate_sha256 = sha256(canonical {plan_sha256, horizon_hours, genotype_canonical_sha256}); both re-verified by D",
+    "C": "INTERFACE_C C.1: fold ids 2023Q1..Q4 and W<week_id>; any fold id naming 2025 or TEST is refused"
+  },
+  "publisher_api": {
+    "module": "tools.i6n_archive.publisher",
+    "open": "ArchivePublisher(root=<campaign-root>/archive, store_id=<str>, domain_id=<str>, producer_peer_id=<str>, mode='external_payload'|'full_payload')",
+    "record_candidate": {
+      "call": "publisher.record_candidate(candidate: dict, fold_receipts: list[dict]) -> dict",
+      "effect": "validates, builds canonical body bytes (content-addressed), writes one outbox item; state LOCAL_COMPLETE. Idempotent: same body -> same item_id, no new row. Never trains, never touches the scheduler.",
+      "returns": {
+        "item_id": "sha256 = body_digest",
+        "body_digest": "sha256",
+        "manifest_digest": "sha256",
+        "states": "{LOCAL_COMPLETE, OBJECT_DURABLE, CHAIN_FINALIZED, OLAP_READBACK_VERIFIED} each null or an evidence object"
+      }
+    },
+    "pump": "publisher.pump(archive: doin_node.archive.external.ExternalPayloadArchive, submit: callable(Transaction)) -> {stored, submitted, errors}. external_payload: PUT body+manifest, GET exact, digest compare -> OBJECT_DURABLE; only then the reference tx (timestamp fixed at record time => same tx id on replay) goes to submit. Failed PUT/GET => LOCAL_COMPLETE only, nothing submitted.",
+    "etl": "tools.i6n_archive.etl.ArchiveETL(outbox, stores, sink, confirmation_depth).run(chain_blocks) -> dict: verifies chain links, finality, reference tx id binding, bytes, digests, schema; projects into the warehouse; reads back; then marks CHAIN_FINALIZED and OLAP_READBACK_VERIFIED (ACK). Reorg: canonical projection revoked by an appended event, history kept.",
+    "status": "publisher.status() -> {items, per_state_counts, green (all four states), missing: [...]} ; read-only",
+    "cli": "python -m tools.i6n_archive {status|pump|etl} --config <private.json>; python -m tools.i6n_archive.snapshot {take|verify}",
+    "submit_to_node": "CLI pump writes <spool>/<tx_id>.json (exclusive create, identical replay is a no-op); the node calls doin_node.archive.external.ingest_reference_spool(spool, consensus.record_transaction, known_tx_ids=...) which re-derives the id and checks the reference before consensus sees it (B wires this hook in the runtime)",
+    "private_config": {
+      "root": "<campaign-root>/archive",
+      "confirmation_depth": 6,
+      "lake": {
+        "store_id": "doin_archive_cas",
+        "url": "http://127.0.0.1:<lake-cas-port>",
+        "token_env": "DATA_GOV_LAKE_TOKEN"
+      },
+      "warehouse": {
+        "url": "http://127.0.0.1:5057",
+        "token_env": "WAREHOUSE_TOKEN"
+      },
+      "chain": {
+        "chain_json": "<node data dir>/chain.json"
+      },
+      "submit_spool": "<campaign-root>/archive/spool"
+    }
+  },
+  "candidate_document": {
+    "schema": "i6n.archive.candidate.v1",
+    "required": {
+      "experiment": "str key [A-Za-z0-9._:-]{1,96}",
+      "search_candidate_sha256": "sha256: E search_candidate_sha256(g, plan_sha256); D verifies",
+      "horizon_hours": "int",
+      "plan_sha256": "sha256 of the versioned plan JSON (E)",
+      "plan_metadata": "object (stage/class/budget class/generation budget...)",
+      "genotype": "object: {active:{...}, inactive:{...}} canonical (E)",
+      "genotype_canonical_sha256": "sha256 (E: tools.i6n_search.effective_identity)",
+      "effective_config": "object: E evaluator_config(g) (A request.config); D verifies effective_config_sha256 with E formula",
+      "effective_config_sha256": "sha256 of canonical effective_config (verified by D)",
+      "disposition": "COMPLETE|ADOPTED_CACHE|FAILED|INFEASIBLE|INTERRUPTED|NOT_ADMITTED (B emits COMPLETE, FAILED, INTERRUPTED, NOT_ADMITTED)",
+      "fitness": "number for COMPLETE/ADOPTED_CACHE only; null otherwise (never an invented score)",
+      "won": "bool",
+      "seed": "int (6102026)",
+      "lineage": "{generation:int, population_index:int, operator:str, parents:[sha256]}",
+      "attempts": "[{fold:str, index:1..3, state:str, parent_status_sha256:sha256|null, fencing_token:str|null, reason:str|null}] (max 3 per fold)",
+      "costs": "object of finite numbers or null (elapsed_seconds, fit_seconds, peak_rss_bytes, ...)"
+    },
+    "optional": {
+      "disposition_reason": "str",
+      "provenance": "object"
+    }
+  },
+  "fold_receipt": "A's candidate_receipt (i6n.candidate_receipt.v1) unchanged; rows with split TEST or a 2025+ fold are refused",
+  "projection": {
+    "row_identity_keys": [
+      "experiment",
+      "candidate_identity_sha256",
+      "fold",
+      "horizon_hours",
+      "head_offset_hours",
+      "role",
+      "population",
+      "split",
+      "metric",
+      "unit",
+      "schema_version"
+    ],
+    "derived_metrics_per_receipt_row": {
+      "n": "count",
+      "sum_abs_error": "PRICE",
+      "sum_sq_error": "PRICE_SQUARED",
+      "naive_sum_abs_error": "PRICE",
+      "naive_sum_sq_error": "PRICE_SQUARED",
+      "mae": "PRICE",
+      "naive_mae": "PRICE",
+      "mse": "PRICE_SQUARED",
+      "naive_mse": "PRICE_SQUARED",
+      "skill_mae": "RATIO (only when naive_mae>0; undefined otherwise, never zero)"
+    },
+    "rows_with_n_zero": "only n (count) projected; no means",
+    "idempotency_key": "sha256(canonical(row identity with derived metric/unit)) + block_hash + finality_state",
+    "warehouse": "gov_report/gov_metric (one report per receipt row; gov_metric.horizon = head_offset_hours) + additive gov_doin_projection, gov_doin_projection_event, view gov_doin_metric_canonical (doin metadata schema i6n.doin_projection.v1)",
+    "candidate_level_row": {
+      "identity": {
+        "fold": "ALL_FOLDS",
+        "role": "CANDIDATE",
+        "population": "S",
+        "split": "SEARCH",
+        "metric": "CANDIDATE_DISPOSITION",
+        "unit": "NONE",
+        "schema_version": "i6n.archive.candidate.v1",
+        "candidate_identity_sha256": "= search_candidate_sha256"
+      },
+      "metrics": "won (FLAG), attempts_total, fitness (RATIO, only when scored), cost.<name>",
+      "tags": "disposition, lineage (generation, population_index, operator, parents_json), genotype_json, effective_config_json, plan_metadata_json, attempts_json, seed",
+      "phase": "I6N_SWARM_DOIN_CANDIDATE"
+    },
+    "receipt_rows_phase": "I6N_SWARM_DOIN",
+    "report_identity": "report carries no block hash, archive mode or locator: full and external, or two blocks, give ONE report_sha256",
+    "warehouse_routes": {
+      "write": "POST /api/v2/doin/projections {schema: i6n.doin_projection.write.v1, report, projection}",
+      "read": "GET /api/v2/doin/projections?report_sha256=..&row_key_sha256=..&block_hash=..",
+      "revoke": "POST /api/v2/doin/projections/revoke {schema: i6n.doin_projection.revoke.v1, block_hash, reason: REORG|NOT_CANONICAL|OPERATOR}"
+    },
+    "receipt_states": [
+      "PROJECTED",
+      "ALREADY_PROJECTED",
+      "DUPLICATE_NOT_PROJECTED",
+      "REINSTATED"
+    ]
+  },
+  "archive": {
+    "body": "doin.external_payload_body.v1 (doin-core doin_core.archive.external): canonical UTF-8 JSON {schema, domain_id, producer_peer_id, payload_schema, payload}; contains no manifest digest and no block hash",
+    "manifest": "doin.external_payload_manifest.v1: {schema, body_digest, body_size, body_schema, payload_schema, domain_id}",
+    "reference_tx": "CANDIDATE_EVALUATED transaction payload doin.external_payload_ref.v1 {archive_mode, body_digest, manifest_digest, body_size, payload_schema, locator} (external) or the same plus body (full_payload); tx.id must equal compute_id",
+    "locator": "doin-cas://<store_id>/sha256/<body_digest>",
+    "hash_identities": "body_digest = sha256(body bytes); manifest_digest = sha256(manifest bytes); block hash = header hash. Three distinct values, none an input of its own computation."
+  },
+  "states": [
+    "LOCAL_COMPLETE",
+    "OBJECT_DURABLE",
+    "CHAIN_FINALIZED",
+    "OLAP_READBACK_VERIFIED"
+  ],
+  "state_rule": "each state is set only by the step that verified it; a missing state is never reported green",
+  "commits": {
+    "predictor": "satoshi/i6n-swarm-D-archive-20261011 (see D_RETURN.md)",
+    "doin-core": "satoshi/i6n-external-archive-20261011 @4a321cd",
+    "doin-node": "satoshi/i6n-external-archive-20261011 @018ca2d",
+    "data-lake": "satoshi/i6n-external-archive-20261011 @fbb6e58",
+    "data-warehouse": "satoshi/i6n-external-archive-20261011 @463ad56"
+  }
+}
