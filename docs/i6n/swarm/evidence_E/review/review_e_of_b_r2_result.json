@@ -1,0 +1,37 @@
+{
+ "B1_rendered_config_has_i6n_plan": true,
+ "B1_population_wire_schemas": [
+  "i6n-shared-deap-v2"
+ ],
+ "B1_minimal_seed_in_initial_population": true,
+ "B1_initial_population_classes": [
+  "S1",
+  "S1",
+  "S1",
+  "S1",
+  "S1",
+  "S1",
+  "S1",
+  "S1"
+ ],
+ "B1_origins_passed_per_fold": [
+  "2023Q1_DCA",
+  "2023Q2_DCA",
+  "2023Q3_DCA",
+  "2023Q4"
+ ],
+ "B2_wrapper_passes_campaign_seed_unchanged": true,
+ "B2_v2_reproduce_with_wrapper_seed": "ACCEPTED generation=1 population=8",
+ "B3_production_bridge_without_plan": "REFUSED ScoreRejected: I6N swarm refused candidate: production evaluation requires the sealed E plan (i6n_plan)",
+ "B3_real_plan_production_score": "VERIFIED",
+ "B4_partial_origins_production": "REFUSED: C origins digests must be given for every fold or none",
+ "B4_partial_origins_fixture": "REFUSED: C origins digests must be given for every fold or none",
+ "B4_reference_scorer_production_foreign": "REFUSED: production ranking requires E.score_folds (no reference aggregator)",
+ "B4_no_origins_production": "REFUSED: production ranking requires C origins digests for every fold",
+ "B4_resolve_score_folds_is_E": true,
+ "B5_ledger_foreign_inner": "REFUSED ReceiptMismatch: candidate_receipt.fold does not belong to this fit",
+ "B5_ledger_own_inner_foreign_support": "REFUSED ReceiptMismatch: shared receipt carries a different candidate receipt",
+ "B5_ledger_own_inner_other_fold_support": "REFUSED ReceiptMismatch: shared receipt support differs from this unit's frozen support",
+ "B5_ledger_own_receipt_control": "ACCEPTED",
+ "B6_fit_id_B_equals_E": true
+}

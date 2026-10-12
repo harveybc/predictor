@@ -100,3 +100,47 @@ plan, plus E-B6 and E-B7. E-B8 follows from E-B1.
 
 The ledger, fencing, attempt policy, runner, placement and CLI contracts are
 **ACCEPTED** as reviewed. No lane B file was edited.
+
+## Round 2
+
+Reviewed, read-only, three branches:
+- predictor `satoshi/i6n-swarm-B-doin-20261011@f7a05838`. It contains
+  integration `c6f1959b` plus A.3 and C.3, and E's modules byte-identical to
+  E `5e400352`.
+- doin-plugins `@e24cf6b`, in a scratch worktree.
+- doin-node integration `satoshi/i6n-swarm-integration-20261011@aa890e6`, from
+  the deps checkout.
+
+`PYTHONPATH=<B worktree>:<deps>/{doin-core/src,doin-node/src}:<doin-plugins@e24cf6b>/src:<deps>/{data-lake,data-warehouse}`.
+
+**Reproducer.** The round-1 reproducer was adapted to B.3: the template now
+carries `e_plan` and `admitted_classes`, the Bridge runs in production with
+`fixture=false`, and the ledger case was tightened. It was run once
+(`crispdm-run -m 2G -t 120s`).
+- Script: `evidence_E/review/review_e_of_b_r2.py`.
+- Output: `evidence_E/review/review_e_of_b_r2_result.json`.
+
+**Affected suites, run once each:**
+- predictor bridge, ledger and campaign: 61 passed;
+- predictor review_e, agent and lease service: 20 passed;
+- doin-plugins wrapper: 12 passed;
+- doin-node runtime: 8 passed.
+
+| ID | Round 2 | Evidence |
+|---|---|---|
+| E-B1 | CLOSED | The rendered config carries `i6n_plan`, `i6n_folds` (with C origins on all four `*_DCA`/`2023Q4` folds) and `i6n_admitted_classes`. The wire is `i6n-shared-deap-v2`, the Conv8->Conv4 seed is in generation 0, and all eight candidates are S1 with only S1 admitted. |
+| E-B2 | CLOSED | The wrapper passes `I6N_SEED` unchanged. E's v2 reproduction is accepted (generation 1, 8 new candidates). |
+| E-B3 | CLOSED | A production Bridge without the plan raises `ScoreRejected: production evaluation requires the sealed E plan`. With the real plan, production scoring reports `origins_binding: VERIFIED`. |
+| E-B4 | CLOSED | All four cases are refused: partial origins (production and fixture), the reference scorer in production on foreign receipts, and production without origins. `resolve_score_folds()` is E's `score_folds`. |
+| E-B5 | CLOSED | The ledger refuses an inner receipt of another fold, candidate or horizon; a shared receipt carrying a different candidate receipt; and the own inner receipt with another fold's support (`shared receipt support differs from this unit's frozen support`). The own receipt is accepted as the control. |
+| E-B6 | CLOSED | Collect records a refusal as typed FAILED `SCORE_REFUSED:<code>` with null fitness (B's `test_e_b6_*`, passing in the suite run). |
+| E-B7 | CLOSED | `tick` records a per-candidate `score_refused` and continues (`test_e_b7_*`). |
+| E-B8 | CLOSED | The archive genotype is `{active, inactive}` from E's `effective_config`, and lineage (`origin`, `parent_genotype_sha256`) comes from the persisted v2 state (`test_e_b8_*`). |
+| E-B9 | CLOSED | A class that is not admitted is a typed WAIT_RESOURCE `CLASS_NOT_ADMITTED`, with no claim (`test_e_b9_*`). |
+| E-B10 | CLOSED | `size_class` delegates to E's `class_of` for v2 genotypes. |
+| E-B11 | CLOSED | `test_e_b11_disconnect_mid_reproduction_resumes_from_search_state` runs in the wrapper suite. |
+
+B's `fit_id` still equals E's `space.fit_id`.
+
+**Round 2 verdict: ACCEPTED.** All of E-B1 to E-B11 are closed, and no new
+defect was found within E's review scope. No lane B file was edited.
