@@ -315,7 +315,7 @@ def test_horizon_parameterized_config_and_contexts(config, prepared, horizon):
     repin(base)
     base.update(horizon_hours=horizon, samples=13, spacing_hours=horizon//6)
     write_json(base_path, base)
-    binding = ctl.bridge.freeze(base_path, path.parent / f"bridge-{horizon}")
+    binding = ctl.bridge.freeze(base_path, path.parent / f"bridge-{horizon}", experiment="unit", fold="F0")
     cfg.update(scope=f"ENDPOINT_ONLY_ENGINEERING_H{horizon}", external_pilots=[],
                binding=pin(Path(binding["i6n_evaluation_context"]["output_root"]) / "BINDING.json"))
     write_json(path, cfg)
