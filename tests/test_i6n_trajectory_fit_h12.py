@@ -62,7 +62,7 @@ def test_endpoint_and_trajectory_share_endpoint_rows_and_naive(frozen, monkeypat
     assert tr["seed"] == 6102026 and tr["stopping"]["plan_conformant"] is True
     assert tr["stopping"]["patience"] == 5 and tr["stopping"]["max_epochs"] == 50
     assert tr["cost"]["parameters"] > 0 and tr["cost"]["process_peak_rss_bytes"] > 0
-    assert tr["attempt"] == {"index": 1, "parent_status_sha256": None, "fencing_token": None}
+    assert tr["attempt"] == {"index": 1, "parent_status_sha256": None, "fencing_token": None, "parent": None}
     assert tr["placement"]["soft_device_placement"] is False
 
     keys = ("schema_version", "experiment", "candidate_identity_sha256", "fold", "horizon_hours",

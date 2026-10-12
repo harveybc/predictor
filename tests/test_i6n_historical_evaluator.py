@@ -22,6 +22,8 @@ def prepared(historical_fixture, tmp_path):
     cfg["resources"]["max_samples"] = 100
     # Plan section 2 stopping is mandatory for every frozen fold.
     cfg["training"].update(max_epochs=50, patience=5, min_delta=1e-6, seed=6102026)
+    # 50 plan epochs need an update budget sized for them (callers may enlarge data).
+    cfg["resources"]["max_updates"] = 10_000
     path = tmp_path / "base.json"
     write_json(path, cfg)
     binding = evaluator.freeze(path, tmp_path / "bridge", experiment="unit-exp", fold="F0")

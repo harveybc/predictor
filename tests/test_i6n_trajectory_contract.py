@@ -279,7 +279,8 @@ def test_attempt_lineage_linked_counted_and_bounded(frozen12, monkeypatch):
         evaluator.evaluate(second)
     status = json.loads((root.parent / (root.name + ".attempt2") / "STATUS.json").read_text())
     assert status["state"] == "FAILED"
-    assert status["attempt"] == {"index": 2, "parent_status_sha256": first, "fencing_token": "lease-7"}
+    assert status["attempt"] == {"index": 2, "parent_status_sha256": first, "fencing_token": "lease-7",
+                                 "parent": None}
     with pytest.raises(ValueError, match="retry"):
         evaluator.evaluate(second)
     assert len(calls) == 2
@@ -327,3 +328,83 @@ def test_outer_week_never_reaches_stopping_or_fitness(tmp_path, monkeypatch):
     with pytest.raises(RuntimeError, match="captured"):
         evaluator.evaluate(request)
     assert seen == [1]
+
+
+# --- A.3: cross-host recovery with the swarm ledger as lineage authority -------------------
+
+def _ledger_parent(request, index, state, state_sha256, token="7"):
+    from tools.i6n_swarm import common
+    fit = common.fit_id(experiment=request["context"]["experiment"], fold=request["context"]["fold"],
+                        effective_config=request["config"], context=request["context"],
+                        support=request["support"])
+    return dict(fit_id=fit, attempt_index=index, fencing_token=token, state=state,
+                state_sha256=state_sha256)
+
+
+def test_cross_host_recovery_uses_ledger_lineage(frozen12, monkeypatch, tmp_path):
+    _, _, request = frozen12
+    calls = []
+
+    def fail(*args, **kwargs):
+        calls.append(1)
+        raise RuntimeError("worker host lost")
+    monkeypatch.setattr(evaluator, "fit_candidate", fail)
+    with pytest.raises(RuntimeError):
+        evaluator.evaluate(request)
+    root = evaluator.candidate_root(request)
+    first = file_hash(root / "STATUS.json")
+    # The parent's STATUS lives only on the lost host: move it away, never delete.
+    lost = tmp_path / "lost_host"
+    root.rename(lost)
+    parent = _ledger_parent(request, 1, "INTERRUPTED", first)
+    assert evaluator.fit_id(request) == parent["fit_id"]
+    recovery = dict(request, attempt=dict(index=2, parent_status_sha256=None, fencing_token="8",
+                                          parent=parent))
+    with pytest.raises(RuntimeError, match="worker host lost"):
+        evaluator.evaluate(recovery)
+    assert len(calls) == 2
+    status = json.loads((root.parent / (root.name + ".attempt2") / "STATUS.json").read_text())
+    assert status["attempt"]["parent"] == parent and status["attempt"]["index"] == 2
+    # Old-style request without any lineage still refuses on a host that lacks the parent.
+    with pytest.raises(ValueError, match="attempt"):
+        evaluator.evaluate(dict(request, attempt=dict(index=3, parent_status_sha256=None,
+                                                      fencing_token="9")))
+    assert len(calls) == 2
+
+
+@pytest.mark.parametrize("change,match", [
+    (dict(fit_id="0" * 64), "fit_id"),
+    (dict(attempt_index=2), "attempt_index"),
+    (dict(state="COMPLETED"), "state"),
+    (dict(fencing_token="8"), "fencing_token must increase"),
+    (dict(fencing_token="9"), "fencing_token must increase"),
+    (dict(extra=1), "ledger parent record requires"),
+    (dict(state_sha256="xyz"), "state_sha256"),
+])
+def test_ledger_parent_record_must_be_consistent(frozen12, monkeypatch, change, match):
+    _, _, request = frozen12
+    monkeypatch.setattr(evaluator, "fit_candidate", lambda *a: pytest.fail("inconsistent lineage reached fit"))
+    parent = dict(_ledger_parent(request, 1, "FAILED", None), **change)
+    with pytest.raises(ValueError, match=match):
+        evaluator.evaluate(dict(request, attempt=dict(index=2, parent_status_sha256=None,
+                                                      fencing_token="8", parent=parent)))
+
+
+def test_local_status_is_an_additional_check_when_available(frozen12, monkeypatch):
+    _, _, request = frozen12
+
+    def fail(*args, **kwargs):
+        raise RuntimeError("deliberate")
+    monkeypatch.setattr(evaluator, "fit_candidate", fail)
+    with pytest.raises(RuntimeError):
+        evaluator.evaluate(request)
+    parent = _ledger_parent(request, 1, "FAILED", "1" * 64)  # ledger digest disagrees with local file
+    with pytest.raises(ValueError, match="local parent status"):
+        evaluator.evaluate(dict(request, attempt=dict(index=2, parent_status_sha256=None,
+                                                      fencing_token="8", parent=parent)))
+
+
+def test_resume_checkpoint_is_typed_unsupported(frozen12):
+    _, _, request = frozen12
+    with pytest.raises(ValueError, match="RESUME_UNSUPPORTED"):
+        evaluator.evaluate(dict(request, resume_checkpoint={"epoch": 3}))

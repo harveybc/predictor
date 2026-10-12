@@ -1,4 +1,4 @@
-# Lane A interface (A.2, implemented at 298619e4)
+# Lane A interface (A.3)
 
 Machine-readable contract: `INTERFACE_A.json`. Summary for B, C, D and E:
 
@@ -43,3 +43,20 @@ Machine-readable contract: `INTERFACE_A.json`. Summary for B, C, D and E:
   straight to `freeze --config`; they must carry plan stopping (50/5/1e-6,
   seed 6102026) and an endpoint base model. See
   `cell_config_requirements_for_C` in the JSON.
+
+## A.3 changes (cross-host recovery)
+
+- `attempt.parent` carries the swarm ledger's record of the previous physical
+  attempt: `{fit_id, attempt_index, fencing_token, state, state_sha256}`. It is
+  the lineage authority. The evaluator checks that:
+  - `fit_id` equals this request's `fit_id` (B's formula);
+  - `attempt_index` is `index - 1`;
+  - `state` is FAILED or INTERRUPTED;
+  - the new fencing token is greater than the parent's.
+
+  It then records the parent in STATUS and in the receipt's `attempt`. This
+  makes recovery work on a host that never saw the parent.
+- The local parent STATUS remains an additional check when the parent's
+  directory exists on this host.
+- `resume_checkpoint` is refused with `RESUME_UNSUPPORTED`. No resumable
+  checkpoint exists, so recovery always uses one linked RECOVERY attempt.

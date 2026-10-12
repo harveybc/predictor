@@ -47,6 +47,10 @@ ARTIFACTS = {"model.keras", "scores.npz", "train.input.json", "inner.input.json"
 PLAN_STOPPING = dict(max_epochs=50, patience=5, min_delta=1e-6, seed=6102026)
 MAX_ATTEMPTS = 3
 ATTEMPT_KEYS = {"index", "parent_status_sha256", "fencing_token"}
+OPTIONAL_ATTEMPT_KEYS = {"parent"}
+# A.3: the swarm ledger's record of the previous physical attempt (authority for lineage).
+LEDGER_PARENT_KEYS = {"fit_id", "attempt_index", "fencing_token", "state", "state_sha256"}
+LEDGER_PARENT_STATES = ("FAILED", "INTERRUPTED")
 _LABEL = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}")
 
 
@@ -66,22 +70,73 @@ def _label(value, name):
     return value
 
 
+def _hex(value):
+    return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None
+
+
+def _token_order(parent, child):
+    """Fencing tokens must increase; integer tokens compare numerically."""
+    if parent.isdigit() and child.isdigit():
+        return int(child) > int(parent)
+    return child != parent
+
+
 def normalize_attempt(value):
-    """Attempt 1 by default; k>1 must name the previous terminal status digest."""
+    """Attempt 1 by default; k>1 carries lineage (A.3).
+
+    Lineage authority for k>1 is the swarm ledger's ``parent`` record
+    (fit_id, attempt_index=k-1, parent fencing token, FAILED|INTERRUPTED state,
+    optional recorded status digest), so recovery works on a host that never
+    saw the parent. A local ``parent_status_sha256`` remains accepted (A.2)
+    and is checked against the local file whenever that file exists.
+    """
     if value is None:
-        return dict(index=1, parent_status_sha256=None, fencing_token=None)
-    if not isinstance(value, dict) or set(value) != ATTEMPT_KEYS:
-        raise ValueError(f"attempt requires exactly {sorted(ATTEMPT_KEYS)}")
-    index, parent, token = value["index"], value["parent_status_sha256"], value["fencing_token"]
+        return dict(index=1, parent_status_sha256=None, fencing_token=None, parent=None)
+    if (not isinstance(value, dict) or not ATTEMPT_KEYS <= set(value)
+            or set(value) - ATTEMPT_KEYS - OPTIONAL_ATTEMPT_KEYS):
+        raise ValueError(f"attempt requires exactly {sorted(ATTEMPT_KEYS)} plus optional {sorted(OPTIONAL_ATTEMPT_KEYS)}")
+    index, local, token = value["index"], value["parent_status_sha256"], value["fencing_token"]
+    parent = value.get("parent")
     if type(index) is not int or not 1 <= index <= MAX_ATTEMPTS:
         raise ValueError(f"attempt index must be 1..{MAX_ATTEMPTS} physical attempts")
-    if index == 1 and parent is not None:
-        raise ValueError("attempt 1 has no parent status")
-    if index > 1 and (not isinstance(parent, str) or re.fullmatch(r"[0-9a-f]{64}", parent) is None):
-        raise ValueError("attempt parent_status_sha256 required for a linked recovery attempt")
     if token is not None and (not isinstance(token, str) or not token.strip()):
         raise ValueError("attempt fencing_token must be nonempty text or null")
-    return dict(index=index, parent_status_sha256=parent, fencing_token=token)
+    if local is not None and not _hex(local):
+        raise ValueError("attempt parent_status_sha256 must be a sha256 hex digest or null")
+    if index == 1:
+        if local is not None or parent is not None:
+            raise ValueError("attempt 1 has no parent status or ledger parent")
+    elif parent is None and local is None:
+        raise ValueError("attempt parent_status_sha256 or ledger parent required for a linked recovery attempt")
+    if parent is not None:
+        if not isinstance(parent, dict) or set(parent) != LEDGER_PARENT_KEYS:
+            raise ValueError(f"ledger parent record requires exactly {sorted(LEDGER_PARENT_KEYS)}")
+        if not _hex(parent["fit_id"]):
+            raise ValueError("ledger parent fit_id must be a sha256 hex digest")
+        if type(parent["attempt_index"]) is not int or parent["attempt_index"] != index - 1:
+            raise ValueError("ledger parent attempt_index must equal attempt index - 1")
+        if parent["state"] not in LEDGER_PARENT_STATES:
+            raise ValueError(f"ledger parent state must be one of {LEDGER_PARENT_STATES}")
+        if parent["state_sha256"] is not None and not _hex(parent["state_sha256"]):
+            raise ValueError("ledger parent state_sha256 must be a sha256 hex digest or null")
+        ptoken = parent["fencing_token"]
+        if not isinstance(ptoken, str) or not ptoken.strip():
+            raise ValueError("ledger parent fencing_token must be nonempty text")
+        if token is None or not _token_order(ptoken, token):
+            raise ValueError("attempt fencing_token must increase over the ledger parent's token")
+        parent = dict(parent)
+    return dict(index=index, parent_status_sha256=local, fencing_token=token, parent=parent)
+
+
+def fit_id(request):
+    """Lane B/E fit_id of this request (tools.i6n_swarm.common.fit_id formula)."""
+    def sha(value):
+        return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"),
+                                         allow_nan=False).encode()).hexdigest()
+    ctx = request["context"]
+    return sha(dict(experiment=ctx["experiment"], fold=ctx["fold"],
+                    effective_config_sha256=sha(request["config"]),
+                    context_sha256=sha(ctx), support_sha256=sha(request["support"])))
 
 
 def candidate_config(base, effective):
@@ -250,6 +305,9 @@ def load_request(request):
     ``evaluate`` refuses to fit them.
     """
     keys = {"config", "generation", "context", "support"}
+    if isinstance(request, dict) and "resume_checkpoint" in request:
+        raise ValueError("RESUME_UNSUPPORTED: no optimizer/RNG/epoch checkpoint is written; "
+                         "use one linked RECOVERY attempt")
     if not isinstance(request, dict) or set(request) - {"attempt"} != keys:
         raise ValueError("shared evaluator request schema mismatch")
     normalize_attempt(request.get("attempt"))
@@ -297,14 +355,30 @@ def _state(root):
     return json.loads(path.read_text())["state"] if path.exists() else None
 
 
-def _check_parent(parent, digest):
-    """A linked recovery needs the exact terminal non-COMPLETED parent status."""
-    path = parent / "STATUS.json"
-    if not path.exists() or cell.file_hash(path) != digest:
-        raise ValueError("attempt parent status digest mismatch")
-    state = _state(parent)
+def _check_parent(parent_root, attempt, request):
+    """Lineage check for attempt k>1 (A.3).
+
+    The ledger parent record is the authority: it must name this request's
+    fit_id (same experiment, fold, config, context and support). When the
+    parent's local directory exists (same host), its STATUS is an additional
+    check: it must not be running, must not be COMPLETED (that would have been
+    adopted), and must match every digest the request quotes.
+    """
+    ledger = attempt["parent"]
+    if ledger is not None and ledger["fit_id"] != fit_id(request):
+        raise ValueError("ledger parent fit_id differs from this request's identity/fold")
+    path = parent_root / "STATUS.json"
+    if not path.exists():
+        if ledger is None:
+            raise ValueError("attempt parent status digest mismatch (no local parent; supply the ledger parent)")
+        return
+    digest = cell.file_hash(path)
+    for quoted in (attempt["parent_status_sha256"], ledger and ledger["state_sha256"]):
+        if quoted is not None and quoted != digest:
+            raise ValueError("attempt parent status digest mismatch (local parent status differs)")
+    state = _state(parent_root)
     if state == "RUNNING":
-        with (parent / "RUN.lock").open("a") as lock:
+        with (parent_root / "RUN.lock").open("a") as lock:
             try:
                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:
@@ -603,7 +677,7 @@ def evaluate(request):
     else:
         root = roots[attempt["index"] - 1]
         if attempt["index"] > 1 and not (root / "STATUS.json").exists():
-            _check_parent(roots[attempt["index"] - 2], attempt["parent_status_sha256"])
+            _check_parent(roots[attempt["index"] - 2], attempt, request)
     root.mkdir(parents=True, exist_ok=True)
     with (root / "RUN.lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
