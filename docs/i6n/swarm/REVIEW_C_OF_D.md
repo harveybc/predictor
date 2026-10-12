@@ -122,3 +122,30 @@ c1 = T.candidate(0, won=True);  pub.record_candidate(c1, [T.receipt(c1)])
 pub.pump(archive, chain.submit); chain.mint(empty_after=6); etl.run(chain.blocks)      # CONFLICT
 # R2: r2 = copy of T.receipt(c0) with attempt.index=2; pub.record_candidate(c0, [r1, r2]) -> CONFLICT
 ```
+
+## Round 2 (D.3 @5e44bb96): ACCEPT
+
+I re-verified once against predictor `5e44bb96`. The sibling pins are
+unchanged (doin-core `4a321cd`, doin-node `018ca2d`, data-lake `fbb6e58`,
+data-warehouse `463ad56`), so only the affected predictor suites were rerun:
+`tests/test_i6n_archive.py` + `olap/store/tests` gave **115 passed, 2 skipped
+in 9.67 s** (CPU, `crispdm-run -m 2G -t 120s`, DuckDB included). The
+reproducers were adapted to D.3 in `evidence_C/review_D/review_d_repro_r2.py`,
+and `review_d_scale.py` was rerun.
+
+| Finding | D.3 change | Re-verification | Status |
+| --- | --- | --- | --- |
+| F1 won flag cannot be updated | `won` removed from the candidate; append-only `record_decision` events; view `gov_doin_candidate_decision_current` | A candidate with `won` is refused `WON_IS_A_DECISION_EVENT`. Decisions 1 (winner a) and 2 (winner b, supersedes 1) project with 0 errors; 4/4 items green; the current view names b at `DECISION-000002`; all 4 historical `won` rows kept. A same-sequence conflicting decision and a changed re-record are refused `ROW_KEY_CONFLICT` at record time, never at the ETL. | FIXED |
+| F2 two attempts of one fold | Up to 3 attempts kept, lowest index projected; recovery needs `parent_status_sha256` | Attempts 1 (sum 5.0) and 2 (scale 2) project with 0 errors and green. The projected TRAIN h12 sum is 5.0, the attempt-1 value. `attempt_history_json` shows (1, canonical) and (2, not canonical). Index 2 without a parent is refused `ATTEMPT_LINEAGE`. | FIXED |
+| F3 token files | `tools.i6n_archive.probe` reads only `os.environ`, run as `systemd-run --user -p EnvironmentFile=`; §3 order fixed | Read the probe and the DEPLOY_STEPS diff: no step reads or sources an env file; baseline counts are taken before the stop. | FIXED |
+| R-1 VALIDATION on inner fold | Refused unless the fold starts with `W` | `2023Q1` + VALIDATION is refused `VALIDATION_ON_INNER_FOLD`. `2023Q1_DCA`, `2023Q4` and `W2024-12-29` are accepted; `W2025-01-05` is refused. | FIXED |
+| R-2 ETL cost | `etl_done` watermark; `item_by_body` index; metadata queries without BLOBs | 100 candidates: first run 2.53 s (was 3.92), replay 0.01 s (was 1.82), `items()` 4.2 ms. | FIXED |
+
+Remaining notes (not blocking):
+- The decision view selects the latest decision per (experiment, horizon), not
+  per plan. Use one experiment per plan, or add `plan_sha256` to the grouping.
+- The `ROW_KEY_CONFLICT` pre-check is local to one outbox root. The store
+  still refuses a conflict at projection for any other publisher.
+- Chain verification remains linear in chain length, as D states.
+
+Verdict round 2: **ACCEPT**.

@@ -10,7 +10,7 @@ for n in N:
         pub, archive, etl, wh, _ = T._rig(Path(d))
         chain = T.LocalChain()
         for i in range(n):
-            c = T.candidate(i)
+            c = T.candidate(i); c.pop("won", None)
             pub.record_candidate(c, [T.receipt(c, fold=f) for f in ("2023Q1", "2023Q2", "2023Q3", "2023Q4")])
         pub.pump(archive, chain.submit); chain.mint(empty_after=6)
         t0 = time.perf_counter(); pub.outbox.items(); t_items = time.perf_counter() - t0
