@@ -27,6 +27,7 @@ import tempfile
 import time
 from typing import Any, Callable, Mapping, Sequence
 
+from tools import i6n_contamination as contamination
 from tools.i6n_doin_fleet_verify import (
     FleetSpecError,
     _fetch_json as _fleet_fetch_json,
@@ -35,6 +36,10 @@ from tools.i6n_doin_fleet_verify import (
 
 
 SPEC_SCHEMA = "i6n.island_successor.spec.v1"
+# v2 (owner order 2026-10-12): the H72 fleet has its own chain identity and
+# component versions; the H4 values still govern the H4 terminals and closure.
+SPEC_SCHEMA_V2 = "i6n.island_successor.spec.v2"
+H72_EXPECTED_KEYS = ("h72_network_id", "h72_genesis_hash", "h72_component_versions")
 TERMINAL_SCHEMA = "i6n.island.terminal.v1"
 CLOSURE_SCHEMA = "i6n.island.archive_closure.v2"
 START_SCHEMA = "i6n.island.start_receipt.v1"
@@ -159,8 +164,9 @@ def load_spec(path: str | Path) -> dict[str, Any]:
         spec = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise SpecError(f"cannot read private spec: {type(exc).__name__}") from exc
-    if not isinstance(spec, dict) or spec.get("schema") != SPEC_SCHEMA:
-        raise SpecError(f"schema must equal {SPEC_SCHEMA}")
+    schema = spec.get("schema") if isinstance(spec, dict) else None
+    if schema not in (SPEC_SCHEMA, SPEC_SCHEMA_V2):
+        raise SpecError(f"schema must equal {SPEC_SCHEMA} or {SPEC_SCHEMA_V2}")
 
     state_dir = _absolute_path(spec.get("state_dir"), "state_dir")
     terminal_values = spec.get("terminal_receipts")
@@ -176,16 +182,35 @@ def load_spec(path: str | Path) -> dict[str, Any]:
         "seed", "h4_scientific_config_sha256", "h72_scientific_config_sha256",
         "network_id", "genesis_hash", "component_versions",
     }
+    if schema == SPEC_SCHEMA_V2:
+        expected_keys |= set(H72_EXPECTED_KEYS)
     if not isinstance(expected, dict) or set(expected) != expected_keys:
         raise SpecError(f"expected must contain exactly {sorted(expected_keys)}")
     if type(expected["seed"]) is not int:
         raise SpecError("expected.seed must be an integer")
-    for field in expected_keys - {"seed", "component_versions"}:
+    for field in expected_keys - {"seed", "component_versions", "h72_component_versions"}:
         _nonempty_string(expected[field], f"expected.{field}")
     try:
         expected_components = _exact_components(expected["component_versions"], "expected.component_versions")
+        h72_components = (_exact_components(expected["h72_component_versions"], "expected.h72_component_versions")
+                          if schema == SPEC_SCHEMA_V2 else expected_components)
     except Refusal as exc:
         raise SpecError(str(exc)) from exc
+    h72_expected = {
+        "seed": expected["seed"],
+        "scientific_config_sha256": expected["h72_scientific_config_sha256"],
+        "network_id": expected.get("h72_network_id", expected["network_id"]),
+        "genesis_hash": expected.get("h72_genesis_hash", expected["genesis_hash"]),
+        "component_versions": h72_components,
+    }
+    if schema == SPEC_SCHEMA_V2:
+        # The successor identity must not be any point-in-time-contaminated identity.
+        reasons = contamination.is_contaminated({
+            "h72_scientific_config_sha256": h72_expected["scientific_config_sha256"],
+            "h72_network_id": h72_expected["network_id"],
+        })
+        if reasons:
+            raise SpecError(str(contamination.ContaminatedResult(reasons)))
 
     closure = _absolute_path(spec.get("archive_closure_receipt"), "archive_closure_receipt")
     launch = spec.get("h72_start")
@@ -224,7 +249,7 @@ def load_spec(path: str | Path) -> dict[str, Any]:
         raise SpecError("launch_retry_seconds must be an integer at least as large as poll_interval_seconds")
 
     return {
-        "schema": SPEC_SCHEMA,
+        "schema": schema,
         "spec_path": path.resolve(),
         "state_dir": state_dir,
         "terminal_receipts": terminal_paths,
@@ -232,6 +257,7 @@ def load_spec(path: str | Path) -> dict[str, Any]:
         "poll_interval_seconds": poll,
         "launch_retry_seconds": retry,
         "expected": dict(expected, component_versions=expected_components),
+        "h72_expected": h72_expected,
         "h72_start": {
             "command": list(command), "receipt": start_receipt, "working_directory": cwd,
             "environment": dict(environment), "nodes": clean_nodes,
@@ -384,7 +410,7 @@ def _expected_start_payload(spec: Mapping[str, Any], transition_id: str,
     if (fleet_report.get("ready") is not True or fleet_report.get("status") != "READY"
             or not isinstance(fleet, Mapping) or not isinstance(nodes, list) or len(nodes) != 4):
         raise Refusal("H72_FLEET_NOT_READY")
-    expected = spec["expected"]
+    expected = spec["h72_expected"]
     if fleet.get("network_id") != expected["network_id"]:
         raise Refusal("NETWORK_MISMATCH: live H72 fleet")
     if fleet.get("genesis_hash") != expected["genesis_hash"]:
@@ -411,7 +437,7 @@ def _expected_start_payload(spec: Mapping[str, Any], transition_id: str,
     return {
         "status": "LIVE_FLEET_VERIFIED", "horizon": 72,
         "seed": expected["seed"],
-        "scientific_config_sha256": expected["h72_scientific_config_sha256"],
+        "scientific_config_sha256": expected["scientific_config_sha256"],
         "transition_id": transition_id,
         "network_id": fleet["network_id"], "genesis_hash": fleet["genesis_hash"],
         "chain_height": fleet["chain_height"], "tip_hash": fleet["tip_hash"],
@@ -428,15 +454,16 @@ def _validate_start(spec: Mapping[str, Any], transition_id: str) -> dict[str, An
     if result is None:
         return None
     payload, receipt_sha = result
+    h72 = spec["h72_expected"]
     if (payload.get("status") != "LIVE_FLEET_VERIFIED" or payload.get("horizon") != 72
-            or payload.get("seed") != spec["expected"]["seed"]
-            or payload.get("scientific_config_sha256") != spec["expected"]["h72_scientific_config_sha256"]
+            or payload.get("seed") != h72["seed"]
+            or payload.get("scientific_config_sha256") != h72["scientific_config_sha256"]
             or payload.get("transition_id") != transition_id
-            or payload.get("network_id") != spec["expected"]["network_id"]
-            or payload.get("genesis_hash") != spec["expected"]["genesis_hash"]):
+            or payload.get("network_id") != h72["network_id"]
+            or payload.get("genesis_hash") != h72["genesis_hash"]):
         raise Refusal("START_RECEIPT_MISMATCH")
     _exact_components(payload.get("component_versions"), "h72_start.component_versions",
-                      expected=spec["expected"]["component_versions"])
+                      expected=h72["component_versions"])
     evidence = payload.get("fleet_evidence")
     if (not isinstance(evidence, Mapping)
             or payload.get("fleet_evidence_sha256") != _digest(evidence)
@@ -459,9 +486,9 @@ def _verify_live_h72(spec: Mapping[str, Any], transition_id: str, *, fetch_json:
     fleet_spec = {
         "schema": "i6n.doin_fleet_verify.spec.v1",
         "expected": {
-            "seed": spec["expected"]["seed"],
-            "config_digest": spec["expected"]["h72_scientific_config_sha256"],
-            "component_versions": spec["expected"]["component_versions"],
+            "seed": spec["h72_expected"]["seed"],
+            "config_digest": spec["h72_expected"]["scientific_config_sha256"],
+            "component_versions": spec["h72_expected"]["component_versions"],
         },
         "nodes": spec["h72_start"]["nodes"],
     }

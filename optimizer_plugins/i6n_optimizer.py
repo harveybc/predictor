@@ -18,7 +18,9 @@ import tempfile
 from deap import base, tools
 
 from tools import i6n_search as search
+from tools import i6n_contamination as contamination
 from tools import i6n_island_plan
+from tools.i6n_contracts import feature_availability as availability
 from tools import i6n_search_plan as plan_v2
 from tools import i6n_search_space as space
 
@@ -316,6 +318,27 @@ class Plugin:
         }
 
     @staticmethod
+    def _point_in_time_admission(cfg, plan, contract):
+        """Successor plans (owner order 2026-10-12) bind a gated feature manifest.
+
+        Returns True for such plans after refusing manifest drift and any fold
+        context that carries a point-in-time-contaminated identity.  Legacy
+        plans (no ``feature_manifest``) are unchanged and return False.
+        """
+        sealed = plan.get("feature_manifest")
+        if sealed is None:
+            return False
+        manifest = cfg.get("i6n_feature_manifest")
+        if (not isinstance(manifest, Mapping) or manifest.get("sha256") != sealed["sha256"]
+                or manifest.get("features") != sealed["features"]):
+            raise ValueError("i6n_feature_manifest differs from the sealed plan feature manifest")
+        if availability.manifest_sha256(sealed["features"]) != sealed["sha256"]:
+            raise ValueError("sealed plan feature manifest digest mismatch")
+        contamination.assert_valid_skill({"folds": contract["folds"],
+                                          "feature_manifest_sha256": sealed["sha256"]})
+        return True
+
+    @staticmethod
     def _network_genotype(params, horizon, envelope):
         if not isinstance(params, Mapping):
             return None
@@ -400,6 +423,7 @@ class Plugin:
                 or float(plan["search"]["tolerance"]) != settings["tolerance"]):
             raise ValueError("runtime island settings differ from the sealed plan")
         admitted = _V2._admitted(cfg)
+        gated = self._point_in_time_admission(cfg, plan, contract)
         callbacks = cfg.get("optimization_callbacks") or {}
         plan_identity = plan["plan_sha256"]
         search_seed = int.from_bytes(hashlib.sha256(_json({
@@ -427,6 +451,8 @@ class Plugin:
         if checkpoint and os.path.exists(checkpoint):
             with open(checkpoint, encoding="utf-8") as handle:
                 saved = json.load(handle)
+            if gated:  # never resume a point-in-time-contaminated island state
+                contamination.assert_valid_skill(saved.get("checkpoint_identity", {}))
             if (saved.get("schema") != "i6n.island.checkpoint.v2"
                     or saved.get("checkpoint_identity") != checkpoint_identity
                     or saved.get("checkpoint_identity_sha256") != checkpoint_identity_sha256):

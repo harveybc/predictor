@@ -19,8 +19,11 @@ def epoch(text):
     return int(datetime.fromisoformat(text.replace("Z", "+00:00")).timestamp())
 
 
-def load_input(path, expected):
-    """Authenticate bytes before interpreting them; reject TEST and invalid clocks."""
+def load_input(path, expected, n_features=20):
+    """Authenticate bytes before interpreting them; reject TEST and invalid clocks.
+
+    ``n_features`` is the bound manifest length (20 for the legacy manifest).
+    """
     if file_hash(path) != expected:
         raise ValueError("input digest mismatch")
     with np.load(path, allow_pickle=False) as archive:
@@ -28,7 +31,7 @@ def load_input(path, expected):
     if (ts.dtype.kind != "i" or ts.ndim != 1 or not len(ts)
             or np.any(np.diff(ts) <= 0) or np.any(ts % 3600)
             or ts[-1] >= epoch("2025-01-01T00:00:00Z")
-            or x.shape != (len(ts), 20) or price.shape != ts.shape
+            or x.shape != (len(ts), n_features) or price.shape != ts.shape
             or not np.isfinite(price).all() or np.any(price <= 0)):
         raise ValueError("invalid hourly price clock/features or forbidden TEST rows")
     return ts, x, price

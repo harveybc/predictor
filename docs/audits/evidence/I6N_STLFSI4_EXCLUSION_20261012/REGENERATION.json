@@ -1,0 +1,327 @@
+{
+ "base_commit": {
+  "predictor": "c870ebea",
+  "why": "control checkout commit; tools/i6n_doin_sequence_config.py at c870ebea regenerates the eight v2 configs byte-for-byte (generator unchanged b1dd1f66..c870ebea); the running nodes execute cbbe1f16"
+ },
+ "how_features_enter": [
+  "cell config key 'features' (ordered list) + INPUT.npz column order + CLOCK.json 'features' (exact match enforced by tools.i6n_historical_cell.authenticated)",
+  "support_digest per split (tools.i6n_historical_evaluator.support: governing = input/clock digests + features)",
+  "evaluation context pins base_config and FROZEN.json by sha256 -> optimization_config i6n_folds -> optimization_config_sha256 (node config_digest)",
+  "plan text i6n_plan.features (sealed plan_sha256); evaluator fit identity = cell config + context + support (+ code digests)"
+ ],
+ "identity": {
+  "availability_contract_sha256": "9668898c28cafeef2bc48e7d3a42e82a2655d699ff8f0d8d59e921bf120b1bc9",
+  "contamination_label_sha256": "5f94e09a12c8d929a157c57f84769e0d987381940d96e7d5d70c994e07d09b76",
+  "domain_id": "i6n-island-sequence-h72-v3-no-stlfsi4",
+  "excluded_features": [
+   "fred.stress.stlfsi4.level"
+  ],
+  "experiment": "i6n-swarm-weekly-2024-v2-no-stlfsi4",
+  "feature_manifest_sha256": "2ff34fa21d5841da1befdd4d898db911128d959a5e460d04cc45b54955416470",
+  "features": [
+   "fred.inflation_expectations.t5yie.level",
+   "fred.rates.dgs3mo.diff_5d",
+   "fred.rates.dgs5.level",
+   "fred.rates.dgs7.logret_5d",
+   "fred.rates.dprime.logret_5d",
+   "fx.gbpusd.logret_1h",
+   "px.close_loc",
+   "px.log_co",
+   "px.rv5",
+   "rg.atr_ratio",
+   "yh.eem.logret_5d",
+   "yh.iyr.logret_1d",
+   "yh.kc_f.logret_1d",
+   "yh.n225.logret_1d",
+   "yh.si_f.logret_1d",
+   "yh.slv.logret_1d",
+   "yh.vnq.logret_1d",
+   "yh.xlc.logret_1d",
+   "yh.xlre.logret_1d"
+  ],
+  "genesis_hash": "4e19257e8941caec2ec6a4d581a981a533ab5728c11e58c3d13040049e3cd6d5",
+  "network_id": "71f2624859bf4181b5a17e42cbecc9c2840b400ebe75e38355ad55db17c2bde3",
+  "optimization_config_sha256": "3d922c0781e86a4bf55adb79fd908c6149f144b72e3380a87ad254c09fbf05b4",
+  "optimization_config_sha256_per_island": {
+   "island-0": "3d922c0781e86a4bf55adb79fd908c6149f144b72e3380a87ad254c09fbf05b4",
+   "island-1": "3d922c0781e86a4bf55adb79fd908c6149f144b72e3380a87ad254c09fbf05b4",
+   "island-2": "3d922c0781e86a4bf55adb79fd908c6149f144b72e3380a87ad254c09fbf05b4",
+   "island-3": "3d922c0781e86a4bf55adb79fd908c6149f144b72e3380a87ad254c09fbf05b4"
+  },
+  "plan_sha256": "614dc5f2ab890cd7eb7127d437c0361424a354f5dfad153a341b45eb52e5f083",
+  "plan_version": "2.1.0-island-sequence-no-stlfsi4",
+  "supersedes": {
+   "h4": "fb70328d8b057f110006e0713d304b5c42fec5419a8dcee35527add6ca19a4cf",
+   "h72": "c22b67e456c9bcc7156024dd5318587d4c876f53220686c41e28e5c9d9aeb97a",
+   "plan_sha256": "1b83490b54af927033a93105e3be85b8b7323c89672b147745bbeb1d3efee983"
+  }
+ },
+ "order": "owner ruling 2026-10-12: exclude STLFSI4 before H72 (no lag shift); H72 only; no fits; no TEST rows",
+ "parity": {
+  "generator_reproducible": "two independent generations byte-identical",
+  "worktree_code_refreezes_superseded_cells": {
+   "2023Q1_DCA": "support identical",
+   "2023Q4": "support identical"
+  }
+ },
+ "paths": {
+  "campaign_root": "<campaign-root>",
+  "data_root": "<data-root>",
+  "private_root": "<private-root>",
+  "staging_data_root": "<private-root>/data-v3-no-stlfsi4"
+ },
+ "regenerated": {
+  "cells": {
+   "artifacts_sha256": "18dda6b95c4d059964a24685495b3577c3a775248318bee8de0234fa82e3a6fc",
+   "count": 56,
+   "fold_cells": {
+    "2023Q1_DCA": "ec3c72a0f7ea33da5e5732f537f88e1e894f79ea5ebcad1f51f9d11bd68764ec",
+    "2023Q2_DCA": "5cfac7fa4584fc9b15dfed129c4f08daf6887c103bfa984004408c96697d9ec1",
+    "2023Q3_DCA": "9e83a75b969bfc89a358faa23745196fbe1268007f0395fe75a0c0955cf083ad",
+    "2023Q4": "a603f1393df0c114688b8a4d4222d520b59f78f72281cf3c1917562c4f5903ad"
+   },
+   "views_sha256": "a41f2562a83efa1837b9272e7792ee884cb4ffe79a3c4ed83219239b79c26b44"
+  },
+  "data_pins": 78,
+  "frozen_supports": {
+   "2023Q1_DCA": {
+    "base_config": {
+     "relpath": "c/plan-v6-no-stlfsi4/cells/2023Q1_DCA_h72.json",
+     "sha256": "ec3c72a0f7ea33da5e5732f537f88e1e894f79ea5ebcad1f51f9d11bd68764ec"
+    },
+    "equal_to_superseded": {
+     "counts": true,
+     "input_unavailable_origins": true,
+     "naive_sums": true,
+     "origins_sha256": true,
+     "population_keys": true
+    },
+    "experiment": "i6n-swarm-weekly-2024-v2-no-stlfsi4",
+    "frozen_support": {
+     "relpath": "bindings/i6nw3-no-stlfsi4/freeze_folds_h72/2023Q1_DCA/FROZEN.json",
+     "sha256": "eb4303b745e73dfb3c7e8fb3d7f680cf169a69e97383c6953c252c6869b204d5"
+    },
+    "origins_sha256": {
+     "inner": "849f3899bce373b77658171d374bd2870e97f9a9af374881c0010a5503e7bb12",
+     "train": "7bea2861aa9bbad93a8f34187a279ab3c877338cb26fb5b111b669d6a08486df"
+    },
+    "output_root": {
+     "relpath": "bindings/i6nw3-no-stlfsi4/freeze_folds_h72/2023Q1_DCA"
+    },
+    "superseded": {
+     "base_config_sha256": "a7fb1b57e0a3db61f3060634b09224f531a8981c4abe17a8bea6e04e3b9442a9",
+     "frozen_support_sha256": "33c39ca326f4a5815e67d268e1fb255ceaba947f1715b47b310983a5d22f1a76",
+     "support_digest": {
+      "inner": "88f6bcceedb166c29cac9c1969453e23c7b641e827bc15f07ff8edf8df4dea1e",
+      "train": "22188ad63af927c48851d465da829a4e97eac4fd57204facbbb4381c51fac6a5"
+     }
+    },
+    "support": {
+     "counts": {
+      "inner": 51,
+      "train": 4857
+     },
+     "naive_sums": {
+      "inner": 0.4929600000000005,
+      "train": 33.92045000000001
+     },
+     "support_digest": {
+      "inner": "c54b5fb639a9f39044952e14603c501839684f606aca2c4774e89c86f45dfa8e",
+      "train": "2334152ed6ce94529b40ca8f6edc0789f45f7c9578254fe267485d1f19dc2d96"
+     }
+    }
+   },
+   "2023Q2_DCA": {
+    "base_config": {
+     "relpath": "c/plan-v6-no-stlfsi4/cells/2023Q2_DCA_h72.json",
+     "sha256": "5cfac7fa4584fc9b15dfed129c4f08daf6887c103bfa984004408c96697d9ec1"
+    },
+    "equal_to_superseded": {
+     "counts": true,
+     "input_unavailable_origins": true,
+     "naive_sums": true,
+     "origins_sha256": true,
+     "population_keys": true
+    },
+    "experiment": "i6n-swarm-weekly-2024-v2-no-stlfsi4",
+    "frozen_support": {
+     "relpath": "bindings/i6nw3-no-stlfsi4/freeze_folds_h72/2023Q2_DCA/FROZEN.json",
+     "sha256": "54e7c0233d04d0ff2a8629055dba0c64dfa68cd7be2573f81e699822449f5cad"
+    },
+    "origins_sha256": {
+     "inner": "84826f624d3defd0629b06074ddb5719c3d17701bef17e9a53e92e6e88bd1cf6",
+     "train": "2763ae77f53c0404bdb88dd30256e9cf69f68298a4e0e9c27a55019cbd7a1ea3"
+    },
+    "output_root": {
+     "relpath": "bindings/i6nw3-no-stlfsi4/freeze_folds_h72/2023Q2_DCA"
+    },
+    "superseded": {
+     "base_config_sha256": "bc2999aba60ea21794721e5be0ec1593aeea6ebd4172e4fae0989e088b2f9cdd",
+     "frozen_support_sha256": "aa55957b6382517f35780faa99280b98d537dcd11bda798af4a5e6852be7094a",
+     "support_digest": {
+      "inner": "f8c281a0bc007737eaf6a27f13ff08ca54f7c4a23b37e7713d74407165c1ece6",
+      "train": "5f30cdc135619e3e029024d231ded2b6f820773bbd73c370c078afbf5a584421"
+     }
+    },
+    "support": {
+     "counts": {
+      "inner": 51,
+      "train": 4716
+     },
+     "naive_sums": {
+      "inner": 0.3499499999999991,
+      "train": 33.92810000000001
+     },
+     "support_digest": {
+      "inner": "154e74f7fff879de9e08eeab419f85c0e4324b792a208f381f94170b522ee7b6",
+      "train": "32553f25c4ab750a97082fcac01109f14b5b0134865c6d9b7a233f864ae241df"
+     }
+    }
+   },
+   "2023Q3_DCA": {
+    "base_config": {
+     "relpath": "c/plan-v6-no-stlfsi4/cells/2023Q3_DCA_h72.json",
+     "sha256": "9e83a75b969bfc89a358faa23745196fbe1268007f0395fe75a0c0955cf083ad"
+    },
+    "equal_to_superseded": {
+     "counts": true,
+     "input_unavailable_origins": true,
+     "naive_sums": true,
+     "origins_sha256": true,
+     "population_keys": true
+    },
+    "experiment": "i6n-swarm-weekly-2024-v2-no-stlfsi4",
+    "frozen_support": {
+     "relpath": "bindings/i6nw3-no-stlfsi4/freeze_folds_h72/2023Q3_DCA/FROZEN.json",
+     "sha256": "71b5d3109bca1ac23d25bc7fa0b93e7fc56655192a2b0ad0899114e34bf12d6b"
+    },
+    "origins_sha256": {
+     "inner": "fd1befcb858321c12c81c3a774980aa0e00987eb636a8c15ca693256beb3b089",
+     "train": "079534942228de419c47f862ea6689e34a2faf589dc85e743635915b38213342"
+    },
+    "output_root": {
+     "relpath": "bindings/i6nw3-no-stlfsi4/freeze_folds_h72/2023Q3_DCA"
+    },
+    "superseded": {
+     "base_config_sha256": "4454b198ed45e30d5fea8997df3f8b7bbaf21d5581a770765a269fc7d4cfed67",
+     "frozen_support_sha256": "f89e0376ae374625ffcb2fafb106d02f51b96d12df32bf42f765105a7700c084",
+     "support_digest": {
+      "inner": "c2ad1bfea6fff257fbb01c43e27021ebd19e0b3ab89b27c749d64403dc60dd94",
+      "train": "b4fd48620c7d147b7cd7159b463e242ebdc7abf0ab6ec68186eab1cac8eb5ebd"
+     }
+    },
+    "support": {
+     "counts": {
+      "inner": 96,
+      "train": 4629
+     },
+     "naive_sums": {
+      "inner": 0.5493799999999993,
+      "train": 33.988080000000004
+     },
+     "support_digest": {
+      "inner": "42fa0593da4965bb5137600fb1b9a28bbeaeccba8211eeefd06a4a1af1345f4f",
+      "train": "e915e0aeaf27b21aeb8d3bc44a7ae43622e4c038d86c6eafb3d6b5824283d57c"
+     }
+    }
+   },
+   "2023Q4": {
+    "base_config": {
+     "relpath": "c/plan-v6-no-stlfsi4/cells/2023Q4_h72.json",
+     "sha256": "a603f1393df0c114688b8a4d4222d520b59f78f72281cf3c1917562c4f5903ad"
+    },
+    "equal_to_superseded": {
+     "counts": true,
+     "input_unavailable_origins": true,
+     "naive_sums": true,
+     "origins_sha256": true,
+     "population_keys": true
+    },
+    "experiment": "i6n-swarm-weekly-2024-v2-no-stlfsi4",
+    "frozen_support": {
+     "relpath": "bindings/i6nw3-no-stlfsi4/freeze_folds_h72/2023Q4/FROZEN.json",
+     "sha256": "535d9eca5ee721914833fcedacd92d7742fa247e1e82fc6a91c0b339c344d8ee"
+    },
+    "origins_sha256": {
+     "inner": "1989c866432fb2f680616672330a9f34327db6a5596eb2a4f91bf1977f9ba7f8",
+     "train": "6ff361ac680ca55117cdd4f027f9eeb3345fb12226fb9f5bfece6aff729d0a33"
+    },
+    "output_root": {
+     "relpath": "bindings/i6nw3-no-stlfsi4/freeze_folds_h72/2023Q4"
+    },
+    "superseded": {
+     "base_config_sha256": "90f3829c390064cfaee13bc33bb36d645babfea1b2c801d4f847ed0ce24ff124",
+     "frozen_support_sha256": "04dcb13a8e00bfcc4f229aa1d7374be02ea00f9d1a8395ec1b59bd50292e641b",
+     "support_digest": {
+      "inner": "1cfc87b93cc2b9a80daaf1b06bda5246697d305f4c580ac82ebe62285b9820df",
+      "train": "2a90e5f3af7a2f44160eb3c10417dc5b92d3b0a56eb4479d3105f487380216a0"
+     }
+    },
+    "support": {
+     "counts": {
+      "inner": 83,
+      "train": 4629
+     },
+     "naive_sums": {
+      "inner": 0.8555900000000001,
+      "train": 34.39768000000001
+     },
+     "support_digest": {
+      "inner": "352703d170ad7b5fd7747051fe1a635b618356e86b9d79f422e44b06f7209be0",
+      "train": "b763eeca4ace49a327c55bef35d24a60bfe937997eb453030043ebf7ea1841f0"
+     }
+    }
+   }
+  },
+  "inputs": {
+   "extended": {
+    "clock_sha256": "8ff8837140f4d870101b7f640f41d0422f0e9a6c154a10a6ed29323060dc8d29",
+    "derivation_sha256": "97c3767e622cc36b28e07b099b69ad82d8369f1e31d419c8df719c67950ea8f1",
+    "excluded_column_indices": [
+     5
+    ],
+    "input_sha256": "ef22ddb54921ee9f9c774a550731dcd522c9d712f2a1882f1bf4e6a35e3942b8",
+    "rows": 35398,
+    "source_clock_sha256": "43103443d57645024c0aed3c868be4090caccf3e929b73a54981839506ef156f",
+    "source_input_sha256": "bf8587b15d372c7f6bbbeffaa549e50f4da51f0299473be790f12e555bd4f049"
+   },
+   "primary": {
+    "clock_sha256": "c7605aa451318f105cecb6e2e2f8766209b6316e983e06fa351c20ca125157fa",
+    "derivation_sha256": "1eaa5dfa00860f3dcfedf34e2da76d577c7135065c8728b75f881f9d572ed8e0",
+    "excluded_column_indices": [
+     5
+    ],
+    "input_sha256": "35e21f9eb88ebd2f0a5d21cc610783494be1cb73c2659c6584c07deb0ee83fdc",
+    "rows": 30854,
+    "source_clock_sha256": "a5319d375efd32a78a73e3628716da7f49300567120e1ac02b0d7c9b2777357f",
+    "source_input_sha256": "56dbc22e182e5e720d4415f6998206065a506081941c3c2e76d5f8ed6c076031"
+   }
+  },
+  "node_configs": {
+   "island-0": {
+    "config_file_sha256": "b6cb4687749559c6d84b08911ca1fbc580589616cbed2449a57941ca35c556e1"
+   },
+   "island-1": {
+    "config_file_sha256": "6e9b371a88916fa37cccf2fce276a54abafba4ae2d129f2566616f8979588539"
+   },
+   "island-2": {
+    "config_file_sha256": "54bce31146a2319770a6f449a04177be10cdc5f7d6a849042857320de8ead4bb"
+   },
+   "island-3": {
+    "config_file_sha256": "1ba09e8136c86a3de5d1e3a5a1591a5a5ec50078293ff43b420d8d5419ba6461"
+   }
+  },
+  "scalers": "none: feature and target scaling are fitted inside each fit on TRAIN rows only; no prep artifact exists"
+ },
+ "schema": "i6n.h72_no_stlfsi4.regeneration.v1",
+ "start": {
+  "command": [
+   "<private-root>/start-h72.v3.sh"
+  ],
+  "dry_run": "I6N_DRY_RUN=1: all four islands OK (domain, optimization_config, network, plan, manifest, contract, 19 features, no STLFSI4), 78 data pins verified; real run with UNSET commit refused with exit 3 before any unit action",
+  "environment": {
+   "I6N_REQUIRED_PREDICTOR_COMMIT": "<deploy commit; UNSET fails closed>"
+  },
+  "successor_spec": "<private-root>/successor.h4-h72.v3.json (schema i6n.island_successor.spec.v2)"
+ }
+}

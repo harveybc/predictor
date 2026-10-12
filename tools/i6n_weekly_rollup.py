@@ -15,7 +15,7 @@ Scope guard: an INNER_FOLD (TRAIN/inner search fitness, e.g. 70 overlapping
 inner rows of h72) is never comparable with an ANNUAL_WEEKLY_REFIT result, and
 different horizons are never compared.
 
-Pure standard library; no I/O, no warehouse writes, no fits.
+Pure standard library; no I/O (besides reading the sealed contamination label), no warehouse writes, no fits.
 """
 
 from __future__ import annotations
@@ -24,6 +24,8 @@ import hashlib
 import json
 import math
 from typing import Any, Dict, Mapping, Optional
+
+from tools import i6n_contamination as contamination
 
 ANNUAL_SCOPE = "ANNUAL_WEEKLY_REFIT"
 INNER_SCOPE = "INNER_FOLD"
@@ -228,6 +230,8 @@ class AnnualAccumulator:
 
 def compare_annual(a: AnnualAccumulator, b: AnnualAccumulator) -> Dict[str, Any]:
     """Pair two arms on the identical frozen weekly support and identical naive."""
+    # Owner order 2026-10-12: point-in-time-contaminated identities are never valid skill.
+    contamination.compare_skill(dict(a.identity), dict(b.identity))
     if a.identity != b.identity or a.expected != b.expected:
         raise RollupError("NOT_COMPARABLE_IDENTITY", "different head/split/support")
     sa, sb = a.summary(), b.summary()
@@ -259,6 +263,7 @@ def fold_summary(row: Mapping[str, Any]) -> Dict[str, Any]:
 
 def assert_comparable(a: Mapping[str, Any], b: Mapping[str, Any]) -> None:
     """Refuse cross-scope or cross-horizon comparisons (e.g. inner fold vs annual h12)."""
+    contamination.compare_skill(a, b)
     if a.get("scope") != b.get("scope"):
         raise RollupError("NOT_COMPARABLE_SCOPE", f"{a.get('scope')} vs {b.get('scope')}")
     if a.get("horizon_hours") != b.get("horizon_hours") or a.get("head_offset_hours") != b.get("head_offset_hours"):
