@@ -150,11 +150,22 @@ def test_runtime_callbacks_with_thread_locks_are_preserved_without_deepcopy():
         "nested": {"mutable": []},
         "i6n_evaluator": evaluator,
         "optimization_callbacks": callbacks,
+        "_non_serializable_keys": {"optimization_callbacks"},
     })
 
     assert cfg["i6n_evaluator"] is evaluator
     assert cfg["optimization_callbacks"] is callbacks
     assert cfg["nested"] == {"mutable": []}
+    assert "_non_serializable_keys" not in cfg
+
+
+def test_runtime_marker_cannot_hide_scientific_configuration():
+    with pytest.raises(ValueError, match="unsupported runtime keys"):
+        Plugin()._config({
+            "higher_is_better": False,
+            "population_size": 20,
+            "_non_serializable_keys": {"population_size"},
+        })
 
 
 @pytest.mark.parametrize("flag", [None, False])

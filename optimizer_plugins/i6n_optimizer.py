@@ -140,16 +140,23 @@ class Plugin:
     def _config(self, opt_config):
         if not isinstance(opt_config, Mapping):
             raise ValueError("opt_config must be a mapping")
-        runtime_keys = ("i6n_evaluator", "optimization_callbacks")
+        runtime_keys = {"i6n_evaluator", "optimization_callbacks"}
+        declared_runtime = opt_config.get("_non_serializable_keys", ())
+        if not isinstance(declared_runtime, (set, frozenset, list, tuple)):
+            raise ValueError("_non_serializable_keys must be a collection")
+        declared_runtime = set(declared_runtime)
+        if (any(not isinstance(key, str) for key in declared_runtime)
+                or not declared_runtime <= runtime_keys):
+            raise ValueError("_non_serializable_keys contains unsupported runtime keys")
         serializable = {
             key: value for key, value in opt_config.items()
-            if key not in runtime_keys
+            if key not in runtime_keys and key != "_non_serializable_keys"
         }
         cfg = deepcopy(self.params)
         cfg.update(deepcopy(serializable))
         # Evaluators/callbacks are runtime capabilities, not configuration
         # values.  Preserve their identity instead of cloning stateful callables.
-        for key in runtime_keys:
+        for key in sorted(runtime_keys):
             if key in opt_config:
                 cfg[key] = opt_config[key]
         if cfg.get("higher_is_better", False) is not False:
