@@ -732,9 +732,18 @@ class Plugin:
             timeout = cfg.get("i6n_evaluator_timeout", 120.)
             if type(timeout) not in (float, int) or not math.isfinite(timeout) or timeout <= 0:
                 raise ValueError("i6n_evaluator_timeout must be finite and positive")
-            result = subprocess.run(command, input=_json(request), text=True,
-                                    capture_output=True, check=True, timeout=timeout,
-                                    shell=False)
+            try:
+                result = subprocess.run(command, input=_json(request), text=True,
+                                        capture_output=True, check=True, timeout=timeout,
+                                        shell=False)
+            except subprocess.CalledProcessError as exc:
+                # Keep enough child context to diagnose governed workers without
+                # echoing their JSON request or captured stdout into service logs.
+                stderr = (exc.stderr or "").replace("\x00", "").strip()[-2000:]
+                detail = f": {stderr}" if stderr else ""
+                raise RuntimeError(
+                    f"I6N evaluator command failed with exit {exc.returncode}{detail}"
+                ) from None
             return json.loads(result.stdout)
         if isinstance(callback, str):
             module, separator, name = callback.partition(":")

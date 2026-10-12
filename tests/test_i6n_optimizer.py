@@ -7,6 +7,7 @@ import math
 import os
 from pathlib import Path
 import random
+import subprocess
 import sys
 
 import pytest
@@ -202,6 +203,24 @@ def test_json_command_and_failures():
         state = p.create_shared_population(1, cfg)
         with pytest.raises(search.ScoreRejected):
             p.evaluate_single_genome(state["population"][0], 0, cfg)
+
+
+def test_json_command_failure_reports_bounded_stderr_only(monkeypatch):
+    marker = "diagnostic-tail-marker"
+    stderr = "x" * 2500 + "\x00" + marker
+
+    def fail(*args, **kwargs):
+        raise subprocess.CalledProcessError(
+            17, args[0], output="secret-stdout", stderr=stderr)
+
+    monkeypatch.setattr("optimizer_plugins.i6n_optimizer.subprocess.run", fail)
+    cfg = config(i6n_evaluator=None, i6n_evaluator_command=["evaluator"])
+    with pytest.raises(RuntimeError) as raised:
+        Plugin()._evaluate(cfg, {"secret-request": "must-not-appear"})
+    message = str(raised.value)
+    assert "exit 17" in message and marker in message
+    assert "secret-stdout" not in message and "secret-request" not in message
+    assert "\x00" not in message and len(message) < 2100
 
 
 def test_canonical_dedup_and_bounded_exhaustion(monkeypatch):
