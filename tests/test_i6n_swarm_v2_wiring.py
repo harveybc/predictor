@@ -10,7 +10,7 @@ def template():
     return dict(campaign_id="wiring", node_label="wiring", port=18000, data_dir="/unused",
                 bootstrap_peers=[], shared_min_peers=2, claim_timeout=600,
                 predictor_root="/unused", search=plan["search"], node_config="/unused/node.json",
-                mode="production", search_plan_document=plan, admitted_classes=["S1"])
+                mode="production", e_plan=plan, admitted_classes=["S1"])
 
 
 def context():
@@ -20,7 +20,7 @@ def context():
                           support=dict(counts=dict(train=100, inner=20),
                                        naive_sums=dict(train=10, inner=4),
                                        support_digest=dict(train=str(i+1)*64, inner=str(i+5)*64))))
-    return dict(folds=folds)
+    return dict(folds=folds, plan_sha256=E.build_plan()["plan_sha256"])
 
 
 def test_production_config_selects_joint_optimizer_and_minimal_seed():
@@ -35,6 +35,13 @@ def test_production_config_selects_joint_optimizer_and_minimal_seed():
 
 def test_production_refuses_missing_joint_plan():
     t = template()
-    t.pop("search_plan_document")
+    t.pop("e_plan")
     with pytest.raises(ValueError, match="joint"):
+        render_doin_config(t, {"12": context()})
+
+
+def test_production_refuses_an_unsealed_plan_copy():
+    t = template()
+    t["e_plan"] = dict(t["e_plan"], seed=1)
+    with pytest.raises(ValueError):
         render_doin_config(t, {"12": context()})
