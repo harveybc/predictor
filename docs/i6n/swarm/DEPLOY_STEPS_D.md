@@ -27,7 +27,7 @@ and 5060 were in use on 2026-10-11, and 5061 was free then.
 | Repo | Branch | Commit |
 |---|---|---|
 | doin-core | satoshi/i6n-external-archive-20261011 | `4a321cd` |
-| doin-node | satoshi/i6n-external-archive-20261011 | `018ca2d` |
+| doin-node | satoshi/i6n-swarm-B-runtime-20261011 | `df6aad0b0ee5a932845828d682af547c2e170d46` |
 | data-lake | satoshi/i6n-external-archive-20261011 | `fbb6e58` (data-lake-service 0.1.1) |
 | data-warehouse | satoshi/i6n-external-archive-20261011 | `463ad56` (data-warehouse-service 0.1.3) |
 | predictor | satoshi/i6n-swarm-D-archive-20261011 | see D_RETURN.md (predictor-olap-store / predictor-duckdb-store 0.1.7) |
@@ -36,7 +36,7 @@ and 5060 were in use on 2026-10-11, and 5061 was free then.
 
 ```bash
 D=/var/tmp/i6n_D_predeploy; mkdir -p $D/src $D/wheels
-for r in doin-core:4a321cd doin-node:018ca2d data-lake:fbb6e58 data-warehouse:463ad56 predictor:<pin>; do
+for r in doin-core:4a321cd doin-node:df6aad0b0ee5a932845828d682af547c2e170d46 data-lake:fbb6e58 data-warehouse:463ad56 predictor:<pin>; do
   name=${r%%:*}; rev=${r##*:}; mkdir -p $D/src/$name
   git -C ~/Documents/GitHub/$name archive $rev | tar -x -C $D/src/$name
 done
@@ -121,7 +121,14 @@ The optional operator rehearsal on a copy of the production cube:
 
 ## 4. DOIN node (B)
 
-1. Install doin-core `4a321cd` and doin-node `018ca2d` into the node environment of the swarm runtime.
+1. Use doin-core `4a321cd` and the integrated doin-node
+   `df6aad0b0ee5a932845828d682af547c2e170d46`, matching `DEPLOY_RETURN.md` and
+   the sealed production spec. The old archive-only pin `018ca2d` is an
+   ancestor of this integrated runtime; do not install it over the runtime.
+   Where the deployer already exports these exact trees through its pinned
+   Python wrapper, verify the effective module paths and reuse that environment
+   rather than modifying an unrelated live editable installation. Any future
+   pin change must update the spec, exported manifest and this runbook together.
 2. In the runtime loop, call `ingest_reference_spool(<archive-root>/spool, node.consensus.record_transaction, known_tx_ids=node._seen_candidate_tx_ids)` on each tick.
 3. Make sure blocks are persisted to `<node data dir>/chain.json`. The ETL reads only that file, and fork choice stays with the node.
 4. Until this step is done, references wait in the spool and items stay at `OBJECT_DURABLE`. They are never green.
