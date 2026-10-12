@@ -297,3 +297,13 @@ def test_wrapper_pins_pythonpath_and_data_root(tmp_path):
     text = dep.wrapper_text(s, "/opt/py/bin/python", "/data/root")
     assert f"{s['code_dir']}/doin-node/src" in text and f"{s['code_dir']}/predictor:" in text
     assert "export I6N_DATA_ROOT=/data/root" in text and text.rstrip().endswith('exec /opt/py/bin/python "$@"')
+
+
+def test_quoted_sha256sum_names_with_spaces_are_mapped(tmp_path):
+    class Quoting(FakeHost):
+        def run(self, command, check=True):
+            if command.startswith("sha256sum -c --quiet "):
+                return subprocess.CompletedProcess(command, 1, "'/x/data copy.py': FAILED open or read\n", "")
+            return super().run(command, check)
+    host = Quoting(tmp_path / "h")
+    assert dep.remote_mismatches(host, "0  /x/data copy.py\n", "/m.sha256") == ["/x/data copy.py"]

@@ -257,8 +257,13 @@ def remote_mismatches(remote: Remote, manifest_text: str, manifest_path: str) ->
     result = remote.run("sha256sum -c --quiet " + shlex.quote(manifest_path) + " 2>/dev/null", check=False)
     if result.returncode == 0:
         return []
-    bad = [line.rsplit(":", 1)[0] for line in result.stdout.splitlines() if line.rstrip().endswith("FAILED")
-           or "FAILED open or read" in line]
+    bad = []
+    for line in result.stdout.splitlines():
+        if line.rstrip().endswith("FAILED") or "FAILED open or read" in line:
+            path = line.rsplit(":", 1)[0]
+            if len(path) > 1 and path[0] == path[-1] == "'":  # newer coreutils quote names with spaces
+                path = path[1:-1].replace("'\\''", "'")
+            bad.append(path)
     return bad or ["<unparsed sha256sum failure>"]
 
 
