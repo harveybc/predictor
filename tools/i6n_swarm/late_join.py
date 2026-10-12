@@ -90,18 +90,27 @@ def prepare(root, spec_path):
         private["hosts"][role] = host
         private["doin"].setdefault("peers", {})[role] = worker["doin_address"]
 
-    common.atomic_json(private_path, private, mode=0o600)
     contexts = _contexts(root) if (root / "state" / "ledger.sqlite3").exists() else payload.get("swarm_contexts", {})
+    prepared = {}
+    for worker in spec["workers"]:
+        role = worker["role"]
+        prepared[role] = {
+            "node": P.bridge_node_config(payload, private, role, private["hosts"][role]["devices"][0]),
+            "doin": P.doin_node_config(payload, private, role, contexts),
+        }
+
+    # Do not alter the live operational envelope until every derived config has
+    # been generated successfully. Each subsequent write is itself atomic.
+    common.atomic_json(private_path, private, mode=0o600)
     files = {}
     for worker in spec["workers"]:
         role = worker["role"]
         directory = root / "private" / "hosts" / role
         directory.mkdir(parents=True, exist_ok=True, mode=0o700)
-        node = P.bridge_node_config(payload, private, role, private["hosts"][role]["devices"][0])
         node_path = directory / "node.json"
         doin_path = directory / "doin_node.json"
-        common.atomic_json(node_path, node, mode=0o600)
-        common.atomic_json(doin_path, P.doin_node_config(payload, private, role, contexts), mode=0o600)
+        common.atomic_json(node_path, prepared[role]["node"], mode=0o600)
+        common.atomic_json(doin_path, prepared[role]["doin"], mode=0o600)
         files[role] = {"node_sha256": common.file_sha256(node_path),
                        "doin_sha256": common.file_sha256(doin_path)}
 

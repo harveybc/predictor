@@ -90,3 +90,23 @@ def test_prepare_rejects_wrong_plan_identity(tmp_path):
     path.write_text(json.dumps(spec))
     with pytest.raises(ValueError, match="plan_file_sha256"):
         late_join.prepare(root, path)
+
+
+def test_prepare_does_not_mutate_private_config_when_derivation_fails(tmp_path, monkeypatch):
+    cfg = F.private_config(tmp_path)
+    root = tmp_path / "campaign"
+    payload = P.build(cfg, root)
+    before = (root / "private/campaign.json").read_bytes()
+    spec = _spec(root, common.file_sha256(root / "PLAN.json"), payload["e_plan_sha256"])
+    path = tmp_path / "amendment.json"
+    path.write_text(json.dumps(spec))
+
+    def fail(*_args, **_kwargs):
+        raise RuntimeError("derived config failed")
+
+    monkeypatch.setattr(P, "bridge_node_config", fail)
+    with pytest.raises(RuntimeError, match="derived config failed"):
+        late_join.prepare(root, path)
+
+    assert (root / "private/campaign.json").read_bytes() == before
+    assert not (root / "status/WORKER_AMENDMENTS").exists()
