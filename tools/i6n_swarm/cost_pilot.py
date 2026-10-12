@@ -62,6 +62,16 @@ def execute(path):
             cell = common.read_pinned(cfg["cell"], "pilot cell")
             if cell["evaluation_split"]["split_id"].startswith("STRUCTURAL_UNSCORED_") is False:
                 raise ValueError("pilot requires a TRAIN-only structural fold")
+            preflight = [cfg["python"], "-m", "tools.i6n_swarm.cost_pilot", "--config", str(path), "--preflight"]
+            env = dict(os.environ, **cfg.get("environment", {}))
+            preflight_launcher = dict(cfg["launcher"], memory_bytes=2*1024**3, wall_seconds=120)
+            checked = runner.run_attempt(runner.build_argv(preflight_launcher, "preflight", preflight),
+                dict(env, CUDA_VISIBLE_DEVICES=""), "", wall_seconds=120,
+                renew=lambda p=None: True, renew_interval=5, ttl=60,
+                log_dir=root / "preflight_logs", cwd=cfg["workdir"], guard=True)
+            common.atomic_json(root/"PREFLIGHT.json", checked, mode=0o600)
+            if checked["kind"] != "OK":
+                raise RuntimeError(f"preflight failed without a fit: {checked}")
             binding_root = root / "binding"
             freeze = [cfg["python"], "-m", "tools.i6n_historical_evaluator", "freeze",
                       "--config", cfg["cell"]["path"], "--output", str(binding_root),
@@ -107,8 +117,18 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True)
     parser.add_argument("--status", action="store_true")
+    parser.add_argument("--preflight", action="store_true")
     args = parser.parse_args()
-    if args.status:
+    if args.preflight:
+        from tools import i6n_historical_evaluator as evaluator
+        cfg = json.loads(Path(args.config).read_text())
+        common.read_pinned(cfg["cell"], "pilot cell")
+        base = evaluator.cell.read_config(cfg["cell"]["path"])
+        candidate = evaluator.candidate_config(base, cfg["effective_config"])
+        data = evaluator.cell.prepare(candidate, trajectory=True)
+        print(json.dumps(dict(state="READY_NO_FIT", samples=candidate["samples"],
+                              materialized_bytes=data["materialized_bytes"])))
+    elif args.status:
         cfg = json.loads(Path(args.config).read_text())
         path = Path(cfg["output"]) / "STATUS.json"
         print(path.read_text() if path.exists() else '{"state":"NOT_STARTED"}')

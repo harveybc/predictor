@@ -61,6 +61,8 @@ def deploy(args):
             # pilot. Data, dates, features, stopping and history are unchanged.
             cell = copy.deepcopy(cell)
             cell["resources"]["max_samples"] = 433
+            cell["resources"]["max_materialized_bytes"] = 2*1024**3
+            cell["resources"]["max_batch_bytes"] = 64*1024**2
             pilot_cell = directory / "CELL.private.json"
             common.atomic_json(pilot_cell, cell, mode=0o600)
             cell_pin = dict(path=str(pilot_cell), sha256=common.file_sha256(pilot_cell))
