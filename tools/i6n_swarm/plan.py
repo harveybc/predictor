@@ -162,7 +162,10 @@ def doin_template(payload, private, role):
     return dict(campaign_id=payload["campaign_id"], node_label=f"i6n-swarm-{payload['campaign_id']}-{role}",
                 mode=payload["mode"], port=host["doin_port"], data_dir=str(Path(host["data_dir"]) / "doin"),
                 bootstrap_peers=[a for other, a in sorted(doin.get("peers", {}).items()) if other != role],
-                shared_min_peers=doin.get("shared_min_peers", 2), claim_timeout=doin.get("claim_timeout", 600),
+                # OTHER verified peers this node waits for (a node alone uses 0; a late joiner resumes the
+                # current generation from the ledger, see doin-plugins I6-N wrapper).
+                shared_min_peers=doin.get("shared_min_peers", len([o for o in doin.get("peers", {}) if o != role])),
+                claim_timeout=doin.get("claim_timeout", 600),
                 predictor_root=host["workdir"], search=payload["search"],
                 node_config=str(Path(private["root"]) / "private" / "hosts" / role / "node.json"),
                 e_plan=common.read_pinned(payload["inputs"]["search_plan"], "E search plan"),

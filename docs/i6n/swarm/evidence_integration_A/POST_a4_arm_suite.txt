@@ -1,0 +1,2 @@
+$ crispdm-run -m 2G -t 120s -- python -m pytest -q tests/test_i6n_multi_output_arm.py   # A.4 arm suite, alone
+14 passed, 2 warnings in 85.71s (0:01:25)
