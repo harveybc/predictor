@@ -11,6 +11,8 @@
 Caps: 1.25 x measured class peak when measured and it fits, else the admitted
 class cap. A cap is never lowered to make a job fit.
 """
+import math
+
 GIB = 1024**3
 HOST_RESERVE = 2 * GIB
 DESKTOP_RAM = 8 * GIB
@@ -24,7 +26,7 @@ AUTHORIZED = ("rtx5090", "rtx4090", "rtx4070", "rtx5070ti", "cpu_fixture")
 
 def _cap(class_spec, measured):
     peak = (measured or {}).get(class_spec["class_id"], {}).get("peak_bytes")
-    return int(1.25 * peak) if peak else int(class_spec["child_memory_bytes"])
+    return math.ceil(1.25 * peak) if peak else int(class_spec["child_memory_bytes"])
 
 
 def _no(cause, **evidence):

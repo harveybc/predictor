@@ -12,6 +12,7 @@ Outputs under the campaign root (which must not exist):
 """
 from copy import deepcopy
 import json
+import math
 import os
 from pathlib import Path
 
@@ -81,6 +82,28 @@ def _no_test(label, *stamps):
             raise ValueError(f"TEST period closed: {label} references {stamp}")
 
 
+def _coverage(admitted, class_id):
+    """Pilot peaks certify one horizon at the class corner; other horizons may materialize more rows.
+
+    An optional ``coverage_adjustment_bytes`` (int >= 0) is ADDED to the measured peak before the 1.25
+    margin, with its derivation pinned by digest. It can only raise a cap, never lower one.
+    """
+    if "coverage_adjustment_bytes" not in admitted:
+        return 0, None
+    adjustment = admitted["coverage_adjustment_bytes"]
+    if type(adjustment) is not int or adjustment < 0:
+        raise ValueError(f"class {class_id}: coverage_adjustment_bytes must be a non-negative integer")
+    derivation = admitted.get("coverage_derivation")
+    if isinstance(derivation, dict):
+        common.read_pinned(derivation, f"coverage derivation {class_id}")
+        digest = derivation["sha256"]
+    elif isinstance(derivation, str) and len(derivation) == 64 and all(c in "0123456789abcdef" for c in derivation):
+        digest = derivation
+    else:
+        raise ValueError(f"class {class_id}: coverage_adjustment_bytes requires a coverage_derivation digest or pin")
+    return adjustment, digest
+
+
 def _class_caps(cfg, classes):
     caps = {}
     for item in classes:
@@ -93,8 +116,12 @@ def _class_caps(cfg, classes):
             peak = receipt.get("observed_peak_bytes")
             if receipt.get("state") != "COMPLETED" or type(peak) is not int or peak <= 0:
                 raise ValueError(f"pilot receipt for {item['class_id']} lacks a completed measured peak")
+            adjustment, derivation = _coverage(admitted, item["class_id"])
+            covered = peak + adjustment
             caps[item["class_id"]] = dict(state="ADMITTED", source="PILOT_RECEIPT", receipt_sha256=admitted["receipt"]["sha256"],
-                                          child_memory_bytes=int(1.25 * peak), measured_peak_bytes=peak,
+                                          child_memory_bytes=math.ceil(1.25 * covered), measured_peak_bytes=covered,
+                                          pilot_peak_bytes=peak, coverage_adjustment_bytes=adjustment,
+                                          coverage_derivation_sha256=derivation,
                                           child_wall_seconds=int(admitted["child_wall_seconds"]),
                                           vram_bytes=admitted.get("vram_bytes", 0),
                                           small_pilot=bool(admitted.get("small_pilot")))

@@ -174,3 +174,28 @@ def test_collect_reports_direct_head_rows_and_pooled_as_diagnostic(tmp_path):
     direct = [r for r in rows if r["row_kind"] == "DIRECT_HEAD"]
     assert {(int(r["head_offset_hours"]), r["split"]) for r in direct} == {(2, "TRAIN"), (2, "INNER"), (12, "TRAIN"), (12, "INNER")}
     assert all(float(r["skill_mae"]) == pytest.approx(-0.5) for r in direct)
+
+
+def _caps(tmp_path, **admission):
+    receipt = F.pin(tmp_path / "pilot.json", dict(state="COMPLETED", observed_peak_bytes=1_944_051_712))
+    entry = dict(receipt=receipt, child_wall_seconds=3600, **admission)
+    return P._class_caps(dict(mode="production", class_admission={"S1": entry}), [dict(class_id="S1")])["S1"]
+
+
+def test_class_cap_coverage_adjustment_raises_never_lowers(tmp_path):
+    import math
+    base = _caps(tmp_path)
+    assert base["child_memory_bytes"] == math.ceil(1.25 * 1_944_051_712) and base["coverage_adjustment_bytes"] == 0
+    adj = _caps(tmp_path, coverage_adjustment_bytes=9 * 1024**2, coverage_derivation="d" * 64)
+    assert adj["child_memory_bytes"] == math.ceil(1.25 * (1_944_051_712 + 9 * 1024**2))
+    assert adj["child_memory_bytes"] > base["child_memory_bytes"] and adj["coverage_derivation_sha256"] == "d" * 64
+    assert adj["measured_peak_bytes"] == 1_944_051_712 + 9 * 1024**2 and adj["pilot_peak_bytes"] == 1_944_051_712
+    for bad in (dict(coverage_adjustment_bytes=-1, coverage_derivation="d" * 64),
+                dict(coverage_adjustment_bytes=True, coverage_derivation="d" * 64),
+                dict(coverage_adjustment_bytes=5.0, coverage_derivation="d" * 64),
+                dict(coverage_adjustment_bytes=5)):
+        with pytest.raises(ValueError):
+            _caps(tmp_path, **bad)
+    pinned = _caps(tmp_path, coverage_adjustment_bytes=51 * 1024**2,
+                   coverage_derivation=F.pin(tmp_path / "derivation.json", dict(rows="S2 h12 vs h36 pilot")))
+    assert pinned["coverage_derivation_sha256"] == common.file_sha256(tmp_path / "derivation.json")
