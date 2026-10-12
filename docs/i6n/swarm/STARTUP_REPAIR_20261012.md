@@ -66,3 +66,19 @@ training outputs. It has no accepted fitness or model-quality result. Its
 partial fits must be disclosed as infrastructure interruptions, not erased or
 reported as independent repetitions. The next deployment must verify renewed
 leases beyond their initial TTL before being called operational.
+
+## Verified startup of i6nw3
+
+Runtime `5171724a` reached two accepted production fold receipts for horizon
+2 hours, with receipt digests recomputed from the ledger readback. Both workers
+renewed leases; the secondary renewed past 120 seconds, beyond the original
+lease lifetime. The first preferred fit completed after multiple renewals.
+The observation is retained in `STARTUP_VERIFIED_20261012.json`.
+
+This verifies real fitting and heartbeat transport, not the full search,
+four-fold candidate aggregation, annual validation, TEST, or archive deployment.
+Those must not be described as completed. The search-to-annual handoff still
+needs its first completed candidate. In particular, audit the bridge's handling
+of earlier HELD folds when another peer finishes them during later local folds:
+the current call retains those earlier causes until it returns. Reconcile
+completed receipts before calling a candidate invalid; do not refit them.
