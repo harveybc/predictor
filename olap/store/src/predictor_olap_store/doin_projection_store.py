@@ -54,6 +54,13 @@ CHAIN_FIELDS = ("block_hash", "block_height", "tx_id", "body_digest", "manifest_
 SPLITS = ("TRAIN", "INNER", "VALIDATION", "SEARCH")  # SEARCH: candidate-level row (fitness, costs); TEST never
 POPULATIONS = ("S", "U")
 ARCHIVE_MODES = ("external_payload", "full_payload")
+#: FINALIZED: the reference sits at >= confirmation depth on a verified chain.
+#: OFFCHAIN_VERIFIED: the body is durable in the lake and its bytes were re-read and hashed,
+#: but NO chain has finalized it (chain_finalized=false). It carries no block (NO_BLOCK, height 0,
+#: depth 0) and is superseded, never duplicated, when a FINALIZED projection of the same row
+#: arrives.
+FINALITY_STATES = ("FINALIZED", "OFFCHAIN_VERIFIED")
+NO_BLOCK = "0" * 64
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 _INT_FIELDS = ("horizon_hours", "head_offset_hours", "block_height", "confirmation_depth", "depth")
 
@@ -103,7 +110,7 @@ def ddl(qualified: Callable[[str], str] = lambda n: n, dialect: str = "duckdb") 
              " CHECK (split IN ('TRAIN','INNER','VALIDATION','SEARCH'))",
              " CHECK (population IN ('S','U'))",
              " CHECK (archive_mode IN ('external_payload','full_payload'))",
-             " CHECK (finality_state = 'FINALIZED')",
+             " CHECK (finality_state IN ('FINALIZED','OFFCHAIN_VERIFIED'))",
              " CHECK (archive_mode = 'full_payload' OR locator IS NOT NULL)",
              " UNIQUE (row_key_sha256, block_hash, finality_state)"]
     current = (
@@ -140,7 +147,7 @@ def ddl(qualified: Callable[[str], str] = lambda n: n, dialect: str = "duckdb") 
         f"CREATE TABLE IF NOT EXISTS {t(TABLE)} ({','.join(cols)})",
         f"CREATE TABLE IF NOT EXISTS {t(EVENT_TABLE)} ("
         " event_id TEXT PRIMARY KEY, seq BIGINT NOT NULL UNIQUE, projection_key TEXT NOT NULL,"
-        " event TEXT NOT NULL CHECK (event IN ('PROJECTED','DUPLICATE','REVOKED')),"
+        " event TEXT NOT NULL CHECK (event IN ('PROJECTED','DUPLICATE','REVOKED','SUPERSEDED')),"
         " reason TEXT, observed_tip_hash TEXT, observed_tip_height BIGINT, recorded_at TEXT NOT NULL)",
         f"CREATE INDEX IF NOT EXISTS gov_doin_projection_row_idx ON {t(TABLE)} (row_key_sha256)",
         f"CREATE INDEX IF NOT EXISTS gov_doin_projection_block_idx ON {t(TABLE)} (block_hash)",
@@ -213,11 +220,16 @@ def _validate(document: Any) -> tuple[dict, dict, dict]:
         value = projection[name]
         if isinstance(value, bool) or not isinstance(value, int) or value < 0:
             raise Refusal(f"{name} must be a non-negative integer")
-    if projection["finality_state"] != "FINALIZED":
-        raise Refusal("only FINALIZED references are projected")
+    if projection["finality_state"] not in FINALITY_STATES:
+        raise Refusal("finality_state must be FINALIZED or OFFCHAIN_VERIFIED")
     depth = projection["depth"]
-    if isinstance(depth, bool) or not isinstance(depth, int) or depth < projection["confirmation_depth"]:
-        raise Refusal("depth below confirmation_depth is not FINALIZED")
+    if isinstance(depth, bool) or not isinstance(depth, int):
+        raise Refusal("depth must be an integer")
+    if projection["finality_state"] == "FINALIZED":
+        if projection["block_hash"] == NO_BLOCK or depth < projection["confirmation_depth"]:
+            raise Refusal("depth below confirmation_depth (or no block) is not FINALIZED")
+    elif projection["block_hash"] != NO_BLOCK or projection["block_height"] != 0 or depth != 0:
+        raise Refusal("OFFCHAIN_VERIFIED carries no block: block_hash NO_BLOCK, height 0, depth 0")
     if projection["archive_mode"] not in ARCHIVE_MODES:
         raise Refusal("archive_mode must be external_payload or full_payload")
     locator = projection["locator"]
@@ -246,10 +258,9 @@ def _append_event(conn, t, key: str, event: str, reason=None, tip_hash=None, tip
 
 
 def _current(conn, t, where: str, params: tuple) -> list[dict]:
-    rows = _run(conn, f"SELECT projection_key, row_key_sha256, report_sha256, block_hash, state"
-                      f" FROM {t('gov_doin_projection_current')} WHERE {where}", params)
-    return [dict(zip(("projection_key", "row_key_sha256", "report_sha256", "block_hash", "state"), r))
-            for r in rows]
+    names = ("projection_key", "row_key_sha256", "report_sha256", "block_hash", "state", "finality_state")
+    rows = _run(conn, f"SELECT {', '.join(names)} FROM {t('gov_doin_projection_current')} WHERE {where}", params)
+    return [dict(zip(names, r)) for r in rows]
 
 
 def _store_report(conn, t, report: dict, normalised: dict) -> int:
@@ -289,6 +300,16 @@ def write_document(conn, document: dict, *, qualified: Callable[[str], str]) -> 
     for other in active:
         if other["report_sha256"] != report["report_sha256"]:
             raise Refusal("CONFLICT: an active projection of this row key carries different metrics")
+    finalized = projection["finality_state"] == "FINALIZED"
+    if not finalized and any(a["finality_state"] == "FINALIZED" for a in active):
+        return dict(receipt, state="ALREADY_FINALIZED", active_projection_key=active[0]["projection_key"])
+    superseded = []
+    if finalized:
+        for other in [a for a in active if a["finality_state"] == "OFFCHAIN_VERIFIED"]:
+            _append_event(conn, t, other["projection_key"], "SUPERSEDED", reason="FINALIZED:" + key)
+            superseded.append(other["projection_key"])
+        active = [a for a in active if a["finality_state"] != "OFFCHAIN_VERIFIED"]
+    receipt["superseded"] = superseded
     if existing:
         if existing[0]["report_sha256"] != report["report_sha256"]:
             raise Refusal("CONFLICT: projection key already bound to another report")

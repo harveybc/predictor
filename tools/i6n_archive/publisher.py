@@ -139,4 +139,8 @@ class ArchivePublisher:
         return {"schema": "i6n.archive.status.v1", "mode": self.mode, "items": len(items),
                 "per_state": per_state, "green": sum(1 for i in items if i["green"]), "missing": missing,
                 "submitted_unfinalized": sum(1 for i in items if i["reference_tx_id"]
-                                             and not i["states"]["CHAIN_FINALIZED"])}
+                                             and not i["states"]["CHAIN_FINALIZED"]),
+                "readback_verified_offchain": sum(1 for i in items if i["states"]["OLAP_READBACK_VERIFIED"]
+                                                  and not i["states"]["OLAP_READBACK_VERIFIED"].get(
+                                                      "chain_finalized", True)),
+                "chain_finalized": sum(1 for i in items if i["states"]["CHAIN_FINALIZED"])}

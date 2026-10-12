@@ -735,3 +735,91 @@ def test_f3_probe_takes_the_token_only_from_the_environment(tmp_path, monkeypatc
 
     source = inspect.getsource(probe)
     assert "read_text" not in source and "open(" not in source     # no token file is ever read
+
+
+# --------------------------------------------------------------------------- off-chain readback (deployment order 2026-10-12)
+def test_offchain_readback_keeps_chain_finalized_false_until_a_chain_finalizes(tmp_path):
+    pub, archive, etl, wh, _ = _rig(tmp_path)
+    chain = LocalChain()
+    a, _ = _record_two(pub)
+    pub.pump(archive, chain.submit)
+    summary = etl.run_offchain()
+    assert summary["errors"] == [] and summary["readback_verified"] == 2
+    item = pub.outbox.item(a["item_id"])
+    assert item["states"]["OLAP_READBACK_VERIFIED"]["chain_finalized"] is False
+    assert item["states"]["OLAP_READBACK_VERIFIED"]["finality_state"] == "OFFCHAIN_VERIFIED"
+    assert item["states"]["CHAIN_FINALIZED"] is None and pub.status()["green"] == 0
+    assert pub.status()["readback_verified_offchain"] == 2
+    rows_offchain = _canonical(wh)
+    assert rows_offchain
+    again = etl.run_offchain()                                  # idempotent, no work
+    assert again["readback_verified"] == 0 and again["skipped_done"] == 2
+    chain.mint()                                                # a chain finalizes later
+    assert etl.run(chain.blocks)["errors"] == []
+    assert pub.status()["green"] == 2
+    assert [r[:14] for r in _canonical(wh)] == [r[:14] for r in rows_offchain]   # no double count
+    with wh.engine().connect() as c:
+        states = {r[0] for r in c.exec_driver_sql("SELECT DISTINCT finality_state FROM gov_doin_metric_canonical")}
+    assert states == {"FINALIZED"}
+    # a later reorg must never revoke the no-block projections' history, only real blocks
+    fork = [chain.blocks[0]] + [_block(chain.blocks[0], [], "peer-9", salt=500)]
+    for _ in range(10):
+        fork.append(_block(fork[-1], [], "peer-9", salt=500))
+    assert dps_revoked_blocks(etl.run(fork)) == [chain.blocks[1].hash]
+
+
+def dps_revoked_blocks(summary):
+    return summary["revoked_blocks"]
+
+
+def test_offchain_failure_is_visible_and_retryable_without_refit(tmp_path):
+    pub, archive, etl, wh, lake = _rig(tmp_path)
+    chain = LocalChain()
+    a, _ = _record_two(pub)
+    pub.pump(archive, chain.submit)
+    path = lake.path_of(a["body_digest"])
+    path.chmod(0o644)
+    original = path.read_bytes()
+    path.write_bytes(b"x" + original)
+    failed = etl.run_offchain()
+    assert any(e["item_id"] == a["item_id"] for e in failed["errors"])
+    assert pub.outbox.item(a["item_id"])["states"]["OLAP_READBACK_VERIFIED"] is None
+    path.write_bytes(original)
+    retried = etl.run_offchain()
+    assert retried["errors"] == [] and retried["readback_verified"] == 1
+
+
+def test_lifecycle_separates_queued_claimed_updating_completed_archived_readback(tmp_path):
+    from tools.i6n_archive.lifecycle import compute
+
+    pub, archive, etl, wh, _ = _rig(tmp_path)
+    c0, c1, c2 = candidate(0), candidate(1), candidate(2)
+    pub.record_candidate(c0, [receipt(c0)])
+    pub.record_candidate(c1, [receipt(c1)])
+    chain = LocalChain()
+    pub.pump(archive, chain.submit)
+    etl.run_offchain()                       # c0, c1 readback-verified off-chain
+    pub.record_candidate(c2, [receipt(c2)])  # c2 only LOCAL_COMPLETE
+    swarm = {"campaign_id": "cid", "levels": {
+        "swarm": {"state": "RUNNING", "eta": {"kind": "projected", "seconds": 10.0}},   # no basis_n -> unknown
+        "horizon": [{"node_id": "search:h12", "state": "RUNNING",
+                     "eta": {"kind": "projected", "seconds": 100.0, "low": 80.0, "high": 120.0, "basis_n": 3}}],
+        "fold": [{"fit_id": "f1", "state": "QUEUED"},
+                 {"fit_id": "f2", "state": "RUNNING", "lease": {"token": "t"}, "eta": None},
+                 {"fit_id": "f3", "state": "RUNNING", "lease": {"token": "t"},
+                  "eta": {"kind": "measured", "seconds": 30.0, "source": "evaluator_epochs"}},
+                 {"fit_id": "f4", "state": "COMPLETE"}],
+        "candidate": [{"search_candidate_sha256": c["search_candidate_sha256"], "state": "COMPLETE"}
+                      for c in (c0, c1, c2)] + [{"search_candidate_sha256": "f" * 64, "state": "RUNNING"}],
+        "publication": {"state": "QUEUED"}}}
+    out = compute(swarm, pub.outbox, now="t0")
+    assert out["fold_lifecycle_counts"] == {"QUEUED": 1, "CLAIMED": 1, "UPDATING": 1, "COMPLETED": 1,
+                                            "FAILED": 0, "INTERRUPTED": 0}
+    assert out["archive_lifecycle_counts"] == {"NOT_RECORDED": 1, "LOCAL_COMPLETE": 1, "ARCHIVED": 0,
+                                               "READBACK_VERIFIED": 2}
+    assert out["chain_finalized_candidates"] == 0
+    assert out["swarm"]["eta"]["kind"] == "unknown"
+    assert out["nodes"][0]["eta"] == {"kind": "projected", "seconds": 100.0, "low": 80.0, "high": 120.0,
+                                      "basis_n": 3, "source": None}
+    assert {c["readback_finality"] for c in out["candidates"] if c["archive"] == "READBACK_VERIFIED"} == \
+        {"OFFCHAIN_VERIFIED"}

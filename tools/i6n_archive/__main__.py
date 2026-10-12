@@ -8,7 +8,9 @@ service); the CLI never reads or prints a token file.
 * ``status``  read-only: the outbox states; no network, no TF, no training.
 * ``pump``    PUT/GET/verify bodies, then write reference transactions to the spool that the
               DOIN node ingests (one ``<tx_id>.json`` per reference, exclusive create).
-* ``etl``     verify the node's chain file, resolve finalized bodies, project, read back, ACK.
+* ``etl``     off-chain readback of durable, spooled items (OFFCHAIN_VERIFIED, chain_finalized
+              false), then, when the node's chain file exists, verify it and project finalized
+              references (superseding the off-chain rows, never duplicating them).
 """
 
 from __future__ import annotations
@@ -67,7 +69,13 @@ def main(argv=None) -> int:
 
     lake = config["lake"]
     store = HttpByteStore(lake["url"], token_provider=_token(lake["token_env"]))
-    archive = ExternalPayloadArchive({lake["store_id"]: store}, write_store_id=lake["store_id"])
+    # The locator names the PUBLISHER's store id (B uses i6n-swarm-<campaign_id>); every id in
+    # lake.store_ids (and the publisher's) resolves to the same configured lake host.
+    ids = set(lake.get("store_ids") or []) | ({lake["store_id"]} if lake.get("store_id") else set())
+    if publisher is not None:
+        ids.add(publisher.store_id)
+    write_id = publisher.store_id if publisher is not None else lake.get("store_id")
+    archive = ExternalPayloadArchive({i: store for i in ids}, write_store_id=write_id)
     if args.command == "pump":
         if publisher is None:
             print(json.dumps({"state": "NO_OUTBOX"}))
@@ -81,15 +89,21 @@ def main(argv=None) -> int:
     from tools.i6n_archive.outbox import Outbox
     from tools.i6n_archive.sink import HttpSink
 
-    chain = Chain()
-    chain.load(config["chain"]["chain_json"])
     outbox = publisher.outbox if publisher else Outbox(Path(config["root"]) / "inbox.sqlite")
     warehouse = config["warehouse"]
     etl = ArchiveETL(outbox, archive, HttpSink(warehouse["url"], token_provider=_token(warehouse["token_env"])),
                      confirmation_depth=int(config.get("confirmation_depth", 6)))
-    result = etl.run(chain.blocks)
+    result = {"offchain": etl.run_offchain()}
+    chain_json = (config.get("chain") or {}).get("chain_json")
+    if chain_json and Path(chain_json).is_file():
+        chain = Chain()
+        chain.load(chain_json)
+        result["chain"] = etl.run(chain.blocks)
+    else:
+        result["chain"] = {"state": "WAIT_DEPENDENCY", "errors": [],
+                           "cause": "no node chain file configured/present; chain_finalized stays false"}
     print(json.dumps(result, sort_keys=True))
-    return 0 if not result["errors"] else 3
+    return 0 if not (result["offchain"]["errors"] or result["chain"]["errors"]) else 3
 
 
 if __name__ == "__main__":
