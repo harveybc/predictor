@@ -823,3 +823,16 @@ def test_lifecycle_separates_queued_claimed_updating_completed_archived_readback
                                       "basis_n": 3, "source": None}
     assert {c["readback_finality"] for c in out["candidates"] if c["archive"] == "READBACK_VERIFIED"} == \
         {"OFFCHAIN_VERIFIED"}
+
+
+def test_snapshot_refuses_a_live_duckdb_wal_and_copies_it_when_the_owner_is_stopped(tmp_path):
+    src = tmp_path / "w"
+    src.mkdir()
+    (src / "cube.duckdb").write_bytes(b"db")
+    (src / "cube.duckdb.wal").write_bytes(b"wal")
+    with pytest.raises(ValueError, match="DUCKDB_WAL_PRESENT"):
+        take_snapshot({"warehouse": src / "cube.duckdb"}, tmp_path / "s1")
+    manifest = take_snapshot({"warehouse": src / "cube.duckdb"}, tmp_path / "s2", owner_stopped=True)
+    assert sorted(f["path"] for f in manifest["files"]) == ["warehouse/cube.duckdb", "warehouse/cube.duckdb.wal"]
+    verify_snapshot(tmp_path / "s2", restore_to=tmp_path / "r")
+    assert (tmp_path / "r/warehouse/cube.duckdb.wal").read_bytes() == b"wal"

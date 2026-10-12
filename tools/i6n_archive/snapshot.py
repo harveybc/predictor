@@ -29,10 +29,14 @@ def _sha(path: Path) -> str:
     return h.hexdigest()
 
 
-def _copy_file(src: Path, dst: Path) -> None:
+def _copy_file(src: Path, dst: Path, owner_stopped: bool = False) -> None:
     dst.parent.mkdir(parents=True, exist_ok=True)
-    if src.suffix == ".duckdb" and Path(str(src) + ".wal").exists():
-        raise ValueError("DUCKDB_WAL_PRESENT: stop the owner process or CHECKPOINT before a physical copy")
+    wal = Path(str(src) + ".wal")
+    if src.suffix == ".duckdb" and wal.exists():
+        if not owner_stopped:
+            raise ValueError("DUCKDB_WAL_PRESENT: stop the owner process (then pass owner_stopped) or CHECKPOINT")
+        # Owner stopped: the file and its WAL are copied together; DuckDB replays the WAL on open.
+        shutil.copy2(wal, Path(str(dst) + ".wal"))
     with src.open("rb") as handle:
         magic = handle.read(16)
     if magic == _SQLITE_MAGIC:
@@ -47,7 +51,7 @@ def _copy_file(src: Path, dst: Path) -> None:
         shutil.copy2(src, dst)
 
 
-def take_snapshot(sources: dict, dest: str | Path) -> dict:
+def take_snapshot(sources: dict, dest: str | Path, *, owner_stopped: bool = False) -> dict:
     dest = Path(dest)
     if dest.exists() and any(dest.iterdir()):
         raise ValueError("SNAPSHOT_DESTINATION_NOT_EMPTY")
@@ -60,11 +64,11 @@ def take_snapshot(sources: dict, dest: str | Path) -> dict:
             members = sorted(p for p in src.rglob("*") if p.is_file() and ".tmp" not in p.name)
             for member in members:
                 rel = Path(name) / member.relative_to(src)
-                _copy_file(member, dest / rel)
+                _copy_file(member, dest / rel, owner_stopped)
         elif src.is_file():
             kinds[name] = "file"
             rel = Path(name) / src.name
-            _copy_file(src, dest / rel)
+            _copy_file(src, dest / rel, owner_stopped)
         else:
             raise ValueError(f"SNAPSHOT_SOURCE_MISSING: {name}")
     for path in sorted(p for p in dest.rglob("*") if p.is_file()):
@@ -111,13 +115,15 @@ def main(argv=None) -> int:
     take = sub.add_parser("take")
     take.add_argument("--source", action="append", required=True, help="name=path (dir or file)")
     take.add_argument("--dest", type=Path, required=True)
+    take.add_argument("--owner-stopped", action="store_true",
+                      help="the DuckDB owner process is stopped: copy a .duckdb with its .wal")
     verify = sub.add_parser("verify")
     verify.add_argument("--dest", type=Path, required=True)
     verify.add_argument("--restore-to", type=Path)
     args = parser.parse_args(argv)
     if args.command == "take":
         sources = dict(item.split("=", 1) for item in args.source)
-        manifest = take_snapshot(sources, args.dest)
+        manifest = take_snapshot(sources, args.dest, owner_stopped=args.owner_stopped)
     else:
         manifest = verify_snapshot(args.dest, restore_to=args.restore_to)
     print(json.dumps({"schema": manifest["schema"], "files": len(manifest["files"]),
