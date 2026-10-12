@@ -78,6 +78,41 @@ def calls(counts):
     return sorted(os.listdir(counts))
 
 
+def test_host_relative_output_renews_and_completes(setup, tmp_path, monkeypatch):
+    """Production v3 output references must survive the first heartbeat."""
+    bridge, led, wire, swarm, counts = setup
+    node = dict(bridge.node, shared_data_root=str(tmp_path))
+    script = Path(node["evaluator_argv"][-1])
+    script.write_text(FAKE.replace("req = json.load(sys.stdin)",
+                                  "import time; time.sleep(0.6)\nreq = json.load(sys.stdin)"))
+    for fold in swarm["folds"]:
+        fold["context"]["output_root"] = {"relpath": "outputs/" + fold["fold"]}
+        status = tmp_path / "outputs" / fold["fold"] / "candidates" / "example" / "STATUS.json"
+        status.parent.mkdir(parents=True)
+        status.write_text(json.dumps(dict(state="RUNNING", progress={"updates": 5},
+            identity=dict(effective_config=search.effective_config(wire["genome"]),
+                          support=fold["support"], context=fold["context"]))))
+    renewals = []
+    original = led.renew
+
+    def renew(*args, **kwargs):
+        renewals.append(kwargs.get("progress"))
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(led, "renew", renew)
+    result = B.Bridge(node, led).evaluate_wire(wire, 0, swarm)
+    assert result["fitness"] == pytest.approx(0.8)
+    assert any(p and p["progress"]["updates"] == 5 for p in renewals)
+    assert all(u["state"] == "COMPLETE" for u in led.units())
+
+
+@pytest.mark.parametrize("reference", [{"relpath": "../outside"}, {"relpath": "/outside"},
+                                       {"relpath": ""}, {"relpath": "x", "extra": True}])
+def test_status_reference_rejects_invalid_relative_paths(tmp_path, reference):
+    with pytest.raises(ValueError):
+        B.locate_status(reference, {}, data_root=tmp_path)
+
+
 def test_fold_mean_fitness_uses_search_score_per_fold(setup):
     bridge, led, wire, swarm, counts = setup
     result = bridge.evaluate_wire(wire, 0, swarm)

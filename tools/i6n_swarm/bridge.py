@@ -192,8 +192,17 @@ def materialize_context(context, data_root, ledger):
     return None
 
 
-def locate_status(output_root, request):
+def locate_status(output_root, request, data_root=None):
     """Find A's STATUS.json for exactly this request identity (newest attempt directory)."""
+    if isinstance(output_root, dict):
+        rel = output_root.get("relpath")
+        if (set(output_root) != {"relpath"} or not isinstance(rel, str) or not rel
+                or Path(rel).is_absolute() or ".." in Path(rel).parts or not data_root):
+            raise ValueError("output_root requires a relative path inside this host's data root")
+        base = Path(data_root).resolve()
+        output_root = (base / rel).resolve()
+        if not output_root.is_relative_to(base):
+            raise ValueError("output_root resolves outside this host's data root")
     root = Path(output_root) / "candidates"
     best = None
     if not root.is_dir():
@@ -294,7 +303,7 @@ class Bridge:
         context = request["context"] if isinstance(request["context"], dict) else {}
         if attempt["index"] > 1 and parent_status is None and context.get("output_root"):
             # The previous holder died before reporting: its evaluator STATUS (RUNNING, lock free) is the parent.
-            found = locate_status(context["output_root"], request)
+            found = locate_status(context["output_root"], request, self.node.get("shared_data_root"))
             parent_status = common.file_sha256(found) if found else None
         lineage = dict(index=attempt["index"], parent_status_sha256=parent_status, fencing_token=str(token))
         if attempt.get("parent") is not None:
@@ -312,7 +321,7 @@ class Bridge:
         def progress():
             if not status_root:
                 return None
-            status = locate_status(status_root, request)
+            status = locate_status(status_root, request, self.node.get("shared_data_root"))
             if status is None:
                 return None
             body = json.loads(status.read_text())
@@ -326,7 +335,7 @@ class Bridge:
                                 log_dir=Path(self.node["logs_dir"]) / fit_id[:16], guard=True)
         status_sha = None
         if status_root:
-            found = locate_status(status_root, request)
+            found = locate_status(status_root, request, self.node.get("shared_data_root"))
             status_sha = common.file_sha256(found) if found else None
         if outcome["kind"] == "OK":
             try:

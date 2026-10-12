@@ -40,3 +40,29 @@ No changes to horizon sets, features, calendars, eligible rows, naive, weekly
 refitting, search budgets, model families or early stopping. S3 remains a
 retained timeout and is not admitted or retried by this repair. S1/S2 placement
 still requires fresh health/resource checks.
+
+## Runtime integration follow-up
+
+The first successor reached real GPU updates on both roles, but did not finish
+a model evaluation. Do not mistake startup progress for completed training.
+Two additional defects appeared in the actual exported runtime:
+
+- The restricted export omitted `setup.py`; the real optimizer loader uses
+  its entry-point registry. Export now includes the registry from the exact
+  pinned git object. The loader was checked on both workers.
+- The v3 evaluator context carries `output_root` as `{relpath: ...}`. The
+  bridge passed that dictionary to `Path` while sampling progress, raising
+  before the first ledger renewal and stopping the child. The bridge now
+  resolves the reference against the host data root, rejecting escape paths.
+  This applies to progress, terminal status and interrupted-attempt lookup.
+
+The bridge regression launches CPU fixture children long enough to renew and
+then complete, using the production relative-output shape. PRE: five failing
+cases. POST: 51 tests passed in 15.52 seconds across bridge, runner, startup
+and deployment suites. Registry-only PRE failed and POST passed earlier.
+
+The interrupted successor is retained separately, including its partial
+training outputs. It has no accepted fitness or model-quality result. Its
+partial fits must be disclosed as infrastructure interruptions, not erased or
+reported as independent repetitions. The next deployment must verify renewed
+leases beyond their initial TTL before being called operational.

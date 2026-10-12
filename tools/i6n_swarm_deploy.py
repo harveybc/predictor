@@ -321,6 +321,10 @@ def export_code(spec: Mapping[str, Any], run: Callable = subprocess.run) -> Dict
             with tarfile.open(fileobj=io.BytesIO(data)) as tar:
                 tar.extractall(target, filter="data")
             marker.write_text(repo["pin"] + "\n")
+        if name == "predictor" and not (target / "setup.py").is_file():
+            registry = run(["git", "-C", repo["path"], "show", repo["pin"] + ":setup.py"],
+                           capture_output=True, check=True).stdout
+            (target / "setup.py").write_bytes(registry)
         for path in sorted(p for p in target.rglob("*") if p.is_file() and "__pycache__" not in p.parts):
             files[str(path)] = path
     return files

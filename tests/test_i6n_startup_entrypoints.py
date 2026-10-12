@@ -71,3 +71,21 @@ def test_fixed_preparation_yields_to_node_sync_after_bounded_batch(monkeypatch):
     result = agent.run_fixed_units({}, Ledger(), boot_id="boot", admit=lambda _: True, max_units=4)
     assert called == ["0", "1", "2", "3"]
     assert result["completed"] == 4
+
+
+def test_partial_export_retains_plugin_registry_from_exact_pin(tmp_path):
+    target = tmp_path / "predictor"
+    target.mkdir()
+    (target / "tools").mkdir()
+    (tmp_path / ".predictor.pin").write_text("pinned\n")
+    calls = []
+
+    def git(argv, **kwargs):
+        calls.append(argv)
+        return subprocess.CompletedProcess(argv, 0, b"# pinned setup registry\n", b"")
+
+    files = deploy.export_code({"code_dir": str(tmp_path), "repos": {
+        "predictor": {"path": "/repo", "pin": "pinned", "paths": ["tools"]}}}, run=git)
+    assert (target / "setup.py").read_bytes() == b"# pinned setup registry\n"
+    assert str(target / "setup.py") in files
+    assert calls == [["git", "-C", "/repo", "show", "pinned:setup.py"]]
