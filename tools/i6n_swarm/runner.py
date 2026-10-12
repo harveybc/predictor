@@ -11,10 +11,12 @@ Outcome kinds: OK, FAILED, FAILED_OOM, FAILED_TIMEOUT, INTERRUPTED, NOT_STARTED.
 OOM and timeout are terminal: nothing here retries, lowers a cap or changes device.
 """
 import json
+import hashlib
 import os
 from pathlib import Path
 import signal
 import subprocess
+import sys
 import time
 
 ADMISSION_REFUSED = 75
@@ -54,7 +56,8 @@ def build_argv(launcher, label, child_argv):
     argv = [launcher["crispdm_run"], "-m", str(memory), "-t", f"{wall}s", "-n", name, "-L", name]
     if launcher.get("queue_wait_seconds"):
         argv += ["-q", "-W", str(int(launcher["queue_wait_seconds"]))]
-    return argv + ["--", *child_argv]
+    relay = str(Path(__file__).with_name("request_exec.py"))
+    return argv + ["--", sys.executable, relay, "--", *child_argv]
 
 
 def _tail(path, limit=4000):
@@ -118,6 +121,19 @@ def run_attempt(argv, env, stdin_text, *, wall_seconds, renew, renew_interval, t
     log_dir = Path(log_dir)
     log_dir.mkdir(parents=True, exist_ok=True)
     stamp = f"{int(time.time() * 1000)}-{os.getpid()}"
+    env = dict(env)
+    # The relay restores stdin inside the admitted scope, not before the launcher.
+    if stdin_text:
+        data = stdin_text.encode()
+        request_path = log_dir.resolve() / f"request-{stamp}.json"
+        fd = os.open(request_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(data)
+        env.update(I6N_SWARM_REQUEST_FILE=str(request_path),
+                   I6N_SWARM_REQUEST_SHA256=hashlib.sha256(data).hexdigest())
+    else:
+        env.pop("I6N_SWARM_REQUEST_FILE", None)
+        env.pop("I6N_SWARM_REQUEST_SHA256", None)
     out_path, err_path = log_dir / f"attempt-{stamp}.stdout", log_dir / f"attempt-{stamp}.stderr"
     margin = max(renew_interval * 2, ttl * 0.25) if margin is None else margin
     started = clock()
