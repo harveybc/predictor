@@ -544,7 +544,7 @@ def load_request(request):
     # a re-labelled legacy cell receives the point-in-time refusal, rather
     # than an incidental clock/config error.
     base = json.loads(paths["base_config"].read_text(encoding="utf-8"))
-    if schema == SCHEMA_V3 and ctx["experiment"] == i6n_island_plan.EXPERIMENT_V3:
+    if schema == SCHEMA_V3 and ctx["experiment"] in i6n_island_plan.CLEAN_H72_EXPERIMENTS:
         contract = availability.load_contract()
         if base.get("schema") != cell.SCHEMA_V2:
             raise ValueError("POINT_IN_TIME_CELL_SCHEMA: the clean H72 experiment requires a v2 cell")

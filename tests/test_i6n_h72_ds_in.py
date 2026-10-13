@@ -10,13 +10,18 @@ import copy
 import json
 import random
 
+import pytest
+
 from optimizer_plugins.i6n_optimizer import Plugin
 from tools import i6n_doin_sequence_config as sequence
+from tools import i6n_historical_evaluator as evaluator
 from tools import i6n_island_plan as island_plan
+from tools import i6n_search as search
 from tools import i6n_search_space as space
 from tests.test_i6n_historical_cell import fixture  # noqa: F401
 from tests.test_i6n_island_optimizer import RecordingEvaluator, _config
 from tests.test_i6n_stlfsi4_exclusion import GENESIS, _data_root, _nodes
+from tools.i6m_data import file_hash
 
 
 CONSTRAINTS = {
@@ -129,3 +134,28 @@ def test_h72_ds_in_rejects_hourly_or_trajectory_network_champions():
     assert Plugin._network_genotype(payload(allowed), 72, envelope, constraints) is not None
     assert Plugin._network_genotype(payload(hourly), 72, envelope, constraints) is None
     assert Plugin._network_genotype(payload(trajectory), 72, envelope, constraints) is None
+
+
+def test_h72_ds_in_evaluator_rejects_a_relabelled_legacy_cell(fixture, tmp_path, monkeypatch):  # noqa: F811
+    root, source = _data_root(tmp_path, fixture[0])
+    binding = source["domains"][0]["optimization_config"]["i6n_folds"]["2023Q1_DCA"]
+    context = copy.deepcopy(binding["i6n_evaluation_context"])
+    context["experiment"] = island_plan.EXPERIMENT_V4_DS_IN
+    base_path = root / context["base_config"]["relpath"]
+    base = json.loads(base_path.read_text())
+    base["schema"] = "i6n.historical_cell.v1"
+    base.pop("feature_manifest_sha256")
+    base.pop("availability_contract_sha256")
+    base_path.write_text(json.dumps(base))
+    context["base_config"]["sha256"] = file_hash(base_path)
+    monkeypatch.setenv(evaluator.DATA_ROOT_ENV, str(root))
+    genome = search.default_genome(72)
+    request = {
+        "config": search.effective_config(genome),
+        "generation": 0,
+        "context": context,
+        "support": binding["i6n_support"],
+    }
+
+    with pytest.raises(ValueError, match="POINT_IN_TIME_CELL_SCHEMA"):
+        evaluator.load_request(request)

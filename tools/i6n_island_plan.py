@@ -130,6 +130,7 @@ GENOTYPE_CONSTRAINTS_V4_DS_IN = {
     "supervisions": ["endpoint"],
     "input_transforms": ["identity", "difference"],
 }
+CLEAN_H72_EXPERIMENTS = (EXPERIMENT_V3, EXPERIMENT_V4_DS_IN)
 
 
 def build_plan_v3():
