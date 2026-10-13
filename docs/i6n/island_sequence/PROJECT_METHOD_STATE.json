@@ -127,6 +127,11 @@
       "date": "2026-10-13",
       "stage": "S11_SYSTEM_VERIFICATION",
       "event": "Owner changed successor order before H72 started: H72-DS-IN is first, with delta_x>=2, endpoint-only exact t+72h, unchanged frozen support and naive; a clean paired H4 DS/raw contrast follows, and hourly/raw H72 remains a later control. Active H4 is retrospective engineering evidence, not a raw control."
+    },
+    {
+      "date": "2026-10-13",
+      "stage": "S11_SYSTEM_VERIFICATION",
+      "event": "Added an exhaustive no-fit H72-DS-IN support preflight over every admitted grid, transform and fold. The successor dry-run also verifies a pinned host-wide Gamma evaluator lease so its two DOIN peers cannot train concurrently under the shared RAM ceiling."
     }
   ]
 }

@@ -15,6 +15,7 @@ import pytest
 from optimizer_plugins.i6n_optimizer import Plugin
 from tools import i6n_doin_sequence_config as sequence
 from tools import i6n_historical_evaluator as evaluator
+from tools import i6n_h72_ds_support_preflight as support_preflight
 from tools import i6n_island_plan as island_plan
 from tools import i6n_search as search
 from tools import i6n_search_space as space
@@ -44,7 +45,10 @@ def test_h72_ds_in_plan_is_a_distinct_sealed_input_only_identity():
 
 
 def test_h72_ds_in_generator_preserves_fold_support_and_naive(fixture, tmp_path):  # noqa: F811
-    root, source = _data_root(tmp_path, fixture[0])
+    fixture_cfg = copy.deepcopy(fixture[0])
+    fixture_cfg["resources"]["max_samples"] = 433
+    fixture_cfg["training"].update(evaluator.PLAN_STOPPING)
+    root, source = _data_root(tmp_path, fixture_cfg)
     expected_folds = copy.deepcopy(source["domains"][0]["optimization_config"]["i6n_folds"])
 
     manifest = sequence.generate_h72_ds_in_v4(
@@ -72,6 +76,47 @@ def test_h72_ds_in_generator_preserves_fold_support_and_naive(fixture, tmp_path)
         ]["frozen_support"]
         assert actual["i6n_evaluation_context"]["experiment"] == island_plan.EXPERIMENT_V4_DS_IN
     assert opt["i6n_admitted_classes"] == ["S1", "S2"]
+
+
+
+def test_h72_ds_in_preflight_enumerates_every_window_transform_and_fold(  # noqa: F811
+    fixture, tmp_path, monkeypatch
+):
+    fixture_cfg = copy.deepcopy(fixture[0])
+    fixture_cfg["resources"]["max_samples"] = 433
+    fixture_cfg["training"].update(evaluator.PLAN_STOPPING)
+    root, source = _data_root(tmp_path, fixture_cfg)
+    sequence.generate_h72_ds_in_v4(
+        source, _nodes(), tmp_path / "out", "<predictor-root>", "<python>",
+        campaign_root="<campaign-root>", data_root=root, genesis_hash=GENESIS,
+    )
+
+    requests = []
+
+    def load_request(request):
+        requests.append(copy.deepcopy(request))
+        return request["config"], request["support"]
+
+    monkeypatch.setattr(evaluator, "load_request", load_request)
+    monkeypatch.setattr(evaluator, "prepare_candidate", lambda cfg, request: request)
+    monkeypatch.setattr(evaluator, "check_support", lambda data, cfg, frozen: None)
+
+    report = support_preflight.verify(
+        tmp_path / "out" / "h72-ds-in" / "node-0" / "doin_node.json", root
+    )
+
+    assert report["status"] == "PASS"
+    assert report["folds"] == 4
+    assert report["cells_checked"] == len(report["windows"]) * 2 * 4
+    assert len(requests) == report["cells_checked"]
+    assert {request["config"]["input_transform"] for request in requests} == {
+        "identity", "difference"
+    }
+    assert {request["config"]["horizon"] for request in requests} == {72}
+    assert {request["config"]["output_mode"] for request in requests} == {"endpoint"}
+    assert {tuple(request["config"]["output_offsets"]) for request in requests} == {
+        (72,)
+    }
 
 
 def test_h72_ds_in_population_and_mutation_never_escape_constraints():
