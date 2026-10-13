@@ -354,6 +354,110 @@ def generate_h72_v3(source, nodes, output, predictor_root, python, *, campaign_r
     return manifest
 
 
+def generate_h72_ds_in_v4(source, nodes, output, predictor_root, python, *, campaign_root,
+                          data_root, genesis_hash):
+    """Write the first H72 successor as an input-only downsampling experiment."""
+    if not isinstance(nodes, list) or len(nodes) != 4:
+        raise ValueError("nodes JSON must be a list of exactly four nodes")
+    ids = [n.get("island_id") for n in nodes]
+    endpoints = [n.get("endpoint") for n in nodes]
+    if len(set(ids)) != 4 or any(not isinstance(i, str) or not i for i in ids):
+        raise ValueError("four distinct nonempty island_id values are required")
+    if len(set(endpoints)) != 4 or any(not isinstance(e, str) or ":" not in e for e in endpoints):
+        raise ValueError("four distinct host:port endpoints are required")
+    if any(not str(n.get("candidate_archive_store_url", "")).startswith(("http://", "https://"))
+           for n in nodes):
+        raise ValueError("every node requires an HTTP(S) candidate_archive_store_url")
+    if not isinstance(genesis_hash, str) or len(genesis_hash) != 64:
+        raise ValueError("genesis_hash must be the 64-hex DOIN genesis block hash")
+
+    domain = _domain_v3(source, predictor_root, python, campaign_root, data_root, ids[0])
+    plan = island_plan.build_plan_v4_ds_in()
+    tag = island_plan.RUN_TAG_V4_DS_IN
+    opt = domain["optimization_config"]
+    opt.update(
+        i6n_plan=plan,
+        i6n_genotype_constraints=deepcopy(plan["search_constraints"]),
+        optimization_resume_file=f"{campaign_root}/state/{tag}/{{island_id}}/checkpoint.json",
+        optimization_parameters_file=f"{campaign_root}/state/{tag}/{{island_id}}/champion.json",
+    )
+    for fold in opt["i6n_folds"].values():
+        fold["i6n_evaluation_context"]["experiment"] = island_plan.EXPERIMENT_V4_DS_IN
+    domain["domain_id"] = island_plan.DOMAIN_ID_V4_DS_IN
+    digest = canonical_sha256(opt)
+    label = contamination.load_label()
+    contamination.assert_valid_skill({
+        "scientific_config_sha256": digest,
+        "network_id": network_id(genesis_hash, [domain["domain_id"]]),
+    }, label)
+
+    output = Path(output)
+    output.mkdir(parents=True, exist_ok=False)
+    manifest = {
+        "schema": "i6n.doin_island_sequence.v2",
+        "plan_sha256": plan["plan_sha256"],
+        "plan_version": plan["plan_version"],
+        "horizons_hours": [72],
+        "order": ["H72-DS-IN"],
+        "seed": 6102026,
+        "population_per_node": 20,
+        "node_count": 4,
+        "max_generations": 100,
+        "generation_patience": 10,
+        "min_generations_before_stop": 30,
+        "min_relative_improvement": 1e-8,
+        "domain_id": domain["domain_id"],
+        "experiment": island_plan.EXPERIMENT_V4_DS_IN,
+        "genesis_hash": genesis_hash,
+        "network_id": network_id(genesis_hash, [domain["domain_id"]]),
+        "feature_manifest_sha256": plan["feature_manifest"]["sha256"],
+        "features": list(plan["feature_manifest"]["features"]),
+        "excluded_features": list(plan["feature_manifest"]["excluded"]),
+        "availability_contract_sha256": plan["feature_manifest"]["availability_contract_sha256"],
+        "contamination_label_sha256": label["label_sha256"],
+        "genotype_constraints": deepcopy(plan["search_constraints"]),
+        "supersedes": dict(SUPERSEDED),
+        "optimization_config_sha256_by_horizon": {"72": digest},
+        "nodes": [],
+    }
+    for node in nodes:
+        node_dir = output / "h72-ds-in" / node["island_id"]
+        node_dir.mkdir(parents=True, exist_ok=False)
+        config = {
+            "host": "0.0.0.0",
+            "port": int(node["endpoint"].rsplit(":", 1)[1]),
+            "data_dir": f"{campaign_root}/doin/{tag}/{node['island_id']}",
+            "bootstrap_peers": [e for e in endpoints if e != node["endpoint"]],
+            "component_version_scope": ["doin-node", "doin-core", "doin-plugins", "predictor"],
+            "shared_min_peers": 3,
+            "require_deterministic_seed": True,
+            "dashboard_enabled": True,
+            "candidate_archive_mode": "external_payload",
+            "candidate_archive_root": f"{campaign_root}/archive/{tag}/{node['island_id']}",
+            "candidate_archive_store_id": "doin_archive_cas",
+            "candidate_archive_store_url": node["candidate_archive_store_url"],
+            "candidate_archive_token_env": "DATA_GOV_LAKE_TOKEN",
+            "candidate_archive_pump_interval": 30.0,
+            "archive_reference_spool": f"{campaign_root}/spool/{tag}/{node['island_id']}",
+            "archive_spool_interval": 10.0,
+            "domains": [deepcopy(domain)],
+        }
+        path = node_dir / "doin_node.json"
+        path.write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        manifest["nodes"].append({
+            "horizon": 72,
+            "island_id": node["island_id"],
+            "endpoint": node["endpoint"],
+            "config": str(path),
+            "config_file_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "optimization_config_sha256": digest,
+        })
+    (output / "MANIFEST.json").write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return manifest
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-node-config", required=True)
@@ -363,22 +467,24 @@ def main(argv=None):
     parser.add_argument("--python", required=True)
     parser.add_argument("--h72-v3-no-stlfsi4", action="store_true",
                         help="generate only the gated H72 successor identity (owner order 2026-10-12)")
+    parser.add_argument("--h72-ds-in-v4", action="store_true",
+                        help="generate the gated input-downsampled H72 successor identity")
     parser.add_argument("--campaign-root", help="runtime root for state/archive/spool/chain (v3)")
     parser.add_argument("--data-root", help="data root holding the fold cells and frozen supports (v3)")
     parser.add_argument("--genesis-hash", help="DOIN genesis block hash (v3)")
     args = parser.parse_args(argv)
-    if not args.h72_v3_no_stlfsi4:
+    if args.h72_v3_no_stlfsi4 == args.h72_ds_in_v4:
         parser.error(
-            "implicit legacy H4/H72 generation is disabled after the STLFSI4 point-in-time leak; "
-            "use --h72-v3-no-stlfsi4"
+            "select exactly one of --h72-v3-no-stlfsi4 or --h72-ds-in-v4"
         )
     source = json.loads(Path(args.source_node_config).read_text(encoding="utf-8"))
     nodes = json.loads(Path(args.nodes_json).read_text(encoding="utf-8"))
     if not (args.campaign_root and args.data_root and args.genesis_hash):
         parser.error("--h72-v3-no-stlfsi4 requires --campaign-root, --data-root and --genesis-hash")
-    manifest = generate_h72_v3(source, nodes, args.output, args.predictor_root, args.python,
-                               campaign_root=args.campaign_root, data_root=args.data_root,
-                               genesis_hash=args.genesis_hash)
+    generator = generate_h72_ds_in_v4 if args.h72_ds_in_v4 else generate_h72_v3
+    manifest = generator(source, nodes, args.output, args.predictor_root, args.python,
+                         campaign_root=args.campaign_root, data_root=args.data_root,
+                         genesis_hash=args.genesis_hash)
     print(json.dumps(manifest, sort_keys=True))
 
 

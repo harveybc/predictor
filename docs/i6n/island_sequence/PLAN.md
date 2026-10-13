@@ -5,8 +5,10 @@
 Use the established DOIN island topology, not the experimental centralized
 shared-population path. Four nodes each evolve a local DEAP population of 20
 and exchange champions through one blockchain. Run one governed H4 search to
-completion, close and archive it, then automatically start one governed H72
-search.
+completion, close and archive it, then automatically start the separately
+identified H72 input-downsampling search. After its closure, compare H4 input
+downsampling against the retained H4 raw result. The large hourly/raw H72
+search remains a later control.
 
 ## Fixed Search Contract
 
@@ -21,7 +23,7 @@ search.
 | Folds per candidate | 4 distinct quarters |
 | Direction | Minimize |
 | Reported fitness | mean ratio to paired naive minus 1 |
-| Search order | H4, then H72 |
+| Search order | H4 raw, H72-DS-IN, H4-DS-IN, H72 hourly/raw control |
 
 The values above are admission minima for this sequence. An implementation may
 accept larger populations, generation ceilings, or patience only after a newly
@@ -81,10 +83,10 @@ H4_PREPARED
   -> H4_CHAIN_SHARED
   -> H4_ARCHIVE_VERIFIED
   -> H4_QUIESCED
-  -> H72_RUNNING
-  -> H72_FLEET_TERMINAL
-  -> H72_CHAIN_SHARED
-  -> H72_ARCHIVE_VERIFIED
+  -> H72_DS_IN_RUNNING
+  -> H72_DS_IN_FLEET_TERMINAL
+  -> H72_DS_IN_CHAIN_SHARED
+  -> H72_DS_IN_ARCHIVE_VERIFIED
   -> COMPLETE
 ```
 
@@ -141,21 +143,20 @@ During H4, prepare H72 without launching it:
 5. on gamma, keep both DOIN nodes reachable but serialize heavy evaluations
    through one host-wide lease; the 5090 has priority and the 5070 Ti consumes
    only a free slot while host RAM remains at its current capacity;
-6. launch the unchanged hourly/raw H72 identity only after all prior sequence
-   gates and the fresh resource gate are green.
-
-If and only if that baseline produces a typed RAM, VRAM, wall-time or storage
-refusal, the controller closes it without lowering a cap and opens these
-separate experiments in order:
-
-1. **H72-DS-IN:** input-only downsampling. Samples are unsmoothed and
+6. launch **H72-DS-IN first**, under a new network, plan, checkpoint and archive
+   identity. Samples are unsmoothed and
    right-anchored at the current known tick (`t, t-k, ...`). The target is still
    the exact hourly `t+72h` endpoint, and the business mask and 72-hour naive
-   remain byte-identical to the baseline support.
-2. **H72-DS-INOUT:** only if H72-DS-IN is still inadmissible or empirically
-   insufficient. Input and output may use a declared factor, but the final head
-   must land exactly at `t+72h`; its error and naive are computed on the same
-   original-time rows and original scale.
+   remain byte-identical to the frozen H72 support. Its sealed search domain
+   requires `delta_x >= 2` and endpoint-only supervision.
+7. after H72-DS-IN closure, run a clean paired **H4-DS-IN versus H4-RAW**
+   contrast with the same 19 features, support, naive and budget. The active H4
+   campaign remains a retrospective engineering reference, not its raw control.
+8. run the hourly/raw H72 identity later as the large-resource control.
+
+Only if input-only evidence justifies it may a separate **H72-DS-INOUT**
+identity change output steps. Its final head must still land exactly at
+`t+72h`; its error and naive use the same original-time rows and scale.
 
 No smoothing, interpolation across unknown future bars, target cleaning, TEST
 access or identity reuse is allowed. Downsampling factors, effective window,

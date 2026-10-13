@@ -488,7 +488,8 @@ def _open(max_class=None, classes=None):
     return classes
 
 
-def sample_genotype(h, rng, max_class=None, *, classes=None, max_tries=2000):
+def sample_genotype(h, rng, max_class=None, *, classes=None, max_tries=2000,
+                    predicate=None):
     """Sample a feasible genotype inside the open classes (all earlier genes free)."""
     open_ids = _open(max_class, classes)
     limits = [_CLASS[c] for c in open_ids]
@@ -526,7 +527,7 @@ def sample_genotype(h, rng, max_class=None, *, classes=None, max_tries=2000):
             g = canonicalize(raw)
         except Infeasible:
             continue
-        if class_of(g) in open_ids:
+        if class_of(g) in open_ids and (predicate is None or predicate(g)):
             return g
     raise ValueError("sampling attempt bound exhausted")
 
@@ -579,7 +580,8 @@ def _variants(g, group):
         raise ValueError(f"unknown mutation group {group!r}")
 
 
-def mutate(genotype, rng, max_class=None, *, classes=None, group=None, exclude=(), filtered=None):
+def mutate(genotype, rng, max_class=None, *, classes=None, group=None, exclude=(), filtered=None,
+           predicate=None):
     """Joint conditional mutation inside the open classes.
 
     Returns a new canonical genotype, or None when no admissible distinct
@@ -609,6 +611,12 @@ def mutate(genotype, rng, max_class=None, *, classes=None, group=None, exclude=(
                 if filtered is not None:
                     filtered.append({"group": name, "genotype_canonical_sha256": ident, "reasons": [
                         {"code": "CLASS_NOT_OPEN", "gene": "*", "detail": f"{cls} not in {open_ids}"}]})
+                continue
+            if predicate is not None and not predicate(child):
+                if filtered is not None:
+                    filtered.append({"group": name, "genotype_canonical_sha256": ident, "reasons": [
+                        {"code": "CAMPAIGN_CONSTRAINT", "gene": "*",
+                         "detail": "candidate is outside the sealed campaign subdomain"}]})
                 continue
             options[ident] = child
         if options:

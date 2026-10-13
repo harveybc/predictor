@@ -3,9 +3,11 @@
 ## Scope
 
 This initiative replaces neither the retained shared-population evidence nor the
-general optimizer. It adds an explicit local-island execution mode for exactly
-two governed I6N searches: 4-hour first, then 72-hour. Each DOIN node evolves a
-local population and exchanges champions through one canonical blockchain.
+general optimizer. It adds an explicit local-island execution mode and a
+governed sequence: the active H4 engineering search; clean H72-DS-IN; a clean,
+paired H4-DS-IN versus H4-RAW contrast; and the later hourly/raw H72 control.
+Each campaign gives every DOIN node a local population and one campaign-wide
+canonical blockchain.
 
 The local-island unit contract and the hash-only candidate archive component
 are implemented. This document and those passing component tests do not by
@@ -63,10 +65,11 @@ calendar, feature manifest, and protocol identity must be bound by each receipt.
 | OPS-005 | Resource admission | GPU/host placement uses fresh measured admission. A node that cannot admit its configured workload is reported, never silently replaced by CPU or a smaller scientific configuration. |
 | OPS-006 | Storage admission | Before H72, each host projects remaining candidate evidence from measured H4 bytes per completed candidate, adds a fixed reserve, and refuses launch when free bytes are insufficient. Cleanup or relocation must preserve content hashes and archive readback. |
 | OPS-007 | Relay provenance | Gossip forwarding distinguishes the logical author from the physical relay. The relay is excluded by peer ID and its transport endpoint is never assigned to the original author. |
-| H72-001 | Baseline first | The first H72 campaign uses the sealed hourly/raw input and exact `t+72h` target. Resource pressure cannot silently change sampling, window, support, naive, or model identity. |
-| H72-002 | Input-only contingency | Only after a typed baseline resource refusal may a separately sealed experiment right-anchor unsmoothed input samples at `t, t-k, ...`; the target remains the exact original-time `t+72h` endpoint. |
-| H72-003 | Input/output contingency | Only after the input-only contingency is insufficient may a third identity use downsampled input and output steps. It must still land exactly on `t+72h`, include `t`, and compare against the 72-hour naive on the identical original-time origins and targets. |
+| H72-001 | Input-only first | The first clean H72 campaign is separately sealed as H72-DS-IN: unsmoothed right-anchored inputs `t, t-k, ...`, `k >= 2 h`, endpoint-only supervision and exact `t+72h`. |
+| H72-002 | Paired comparability | H72-DS-IN retains the frozen H72 business origins, targets, original scale and 72-hour naive byte for byte; sampling changes cannot change support. |
+| H72-003 | Ordered controls | H4-DS-IN follows H72-DS-IN and compares against retained H4 raw; hourly/raw H72 follows as a later large-resource control. Every arm has a distinct plan, network, checkpoint and archive identity. |
 | H72-004 | Gamma placement | With current host memory, both gamma nodes may remain online but a host-wide semaphore admits at most one heavy fit at a time and gives the 5090 priority. The 5070 Ti consumes free slots; concurrent fits require a fresh host-memory pilot with reserve. |
+| H72-005 | Input/output contingency | Only after input-only evidence may another identity change output steps. Its final head still lands exactly on `t+72h`, includes input `t`, and uses identical original-time origins, targets and naive. |
 
 ## Business And Data Invariants
 

@@ -1,6 +1,6 @@
 {
   "schema": "project-method-state.v1",
-  "initiative": "I6N DOIN local-island sequence: H4 then H72",
+  "initiative": "I6N DOIN local-island sequence: active H4 engineering, H72-DS-IN, clean H4 DS/raw contrast, H72 raw control",
   "updated_at": "2026-10-12",
   "current_stage": "S11_SYSTEM_VERIFICATION",
   "stage_status": {
@@ -82,7 +82,9 @@
     "Deploy the exact committed artifacts and sealed H4 configuration to all four local islands.",
     "Verify exact seed, network, genesis, chain checkpoint and component commits across all four node APIs.",
     "Verify a finalized production candidate reference through CAS and OLAP readback before declaring alpha acceptance.",
-    "Prepare, but do not launch, H72 relay, storage, host-memory and full-size workload admission gates."
+    "Prepare and seal H72-DS-IN as the first successor without launching it before H4 archive closure.",
+    "Prepare clean H4-DS-IN and H4-RAW as a paired 19-feature contrast after H72-DS-IN; retain active H4 only as retrospective engineering evidence.",
+    "Retain hourly/raw H72 as a separately identified later control."
   ],
   "blocked_actions": [
     "Do not launch an H4 or H72 campaign before unit, integration, and system gates pass.",
@@ -120,6 +122,11 @@
       "date": "2026-10-13",
       "stage": "S11_SYSTEM_VERIFICATION",
       "event": "Prepared H72 resource and relay gates without touching H4: hourly/raw baseline first, measured storage admission, one-job Gamma policy, and separately identified input-only then input/output downsampling contingencies."
+    },
+    {
+      "date": "2026-10-13",
+      "stage": "S11_SYSTEM_VERIFICATION",
+      "event": "Owner changed successor order before H72 started: H72-DS-IN is first, with delta_x>=2, endpoint-only exact t+72h, unchanged frozen support and naive; a clean paired H4 DS/raw contrast follows, and hourly/raw H72 remains a later control. Active H4 is retrospective engineering evidence, not a raw control."
     }
   ]
 }

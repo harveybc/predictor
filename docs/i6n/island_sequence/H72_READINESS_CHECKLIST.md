@@ -44,7 +44,8 @@ existing terminal, common-chain and archive/OLAP gates close.
 
 ## H72 scientific identity
 
-- [ ] Keep the primary H72 experiment hourly/raw with exact `t+72h` target.
+- [ ] Start with separately sealed H72-DS-IN: `delta_x >= 2`, endpoint-only
+  output, exact `t+72h`, and an input grid that includes `t`.
 - [ ] Include the current known tick `t` in every input window.
 - [ ] Use the same business eligibility mask for model and 72-hour naive.
 - [ ] Keep TEST inaccessible to search, early stopping and fallback selection.
@@ -52,10 +53,12 @@ existing terminal, common-chain and archive/OLAP gates close.
 
 ## Resource contingency
 
-- [ ] Open H72-DS-IN only after a typed baseline resource refusal.
 - [ ] H72-DS-IN uses unsmoothed `t, t-k, ...` inputs and the original `t+72h`
   target, support and naive under a new identity.
-- [ ] Open H72-DS-INOUT only if H72-DS-IN is still insufficient.
+- [ ] Queue clean H4-DS-IN and H4-RAW after H72-DS-IN, paired on the same
+  19-feature support and naive. Treat current H4 only as engineering evidence.
+- [ ] Keep hourly/raw H72 as the later large-resource control.
+- [ ] Open H72-DS-INOUT only if H72-DS-IN evidence justifies it.
 - [ ] H72-DS-INOUT must land exactly on `t+72h` and retain original-time paired
   error/naive rows under another new identity.
 - [ ] Never reinterpret a fallback as continuation of the baseline blockchain.

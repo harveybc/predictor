@@ -119,6 +119,18 @@ EXPERIMENT_V3 = "i6n-swarm-weekly-2024-v2-no-stlfsi4"
 DOMAIN_ID_V3 = "i6n-island-sequence-h72-v3-no-stlfsi4"
 RUN_TAG_V3 = "h72-v3-no-stlfsi4"
 
+PLAN_VERSION_V4_DS_IN = "2.2.0-island-sequence-h72-ds-in"
+EXPERIMENT_V4_DS_IN = "i6n-swarm-weekly-2024-v3-h72-ds-in"
+DOMAIN_ID_V4_DS_IN = "i6n-island-sequence-h72-ds-in-v4"
+RUN_TAG_V4_DS_IN = "h72-ds-in-v4"
+GENOTYPE_CONSTRAINTS_V4_DS_IN = {
+    "schema": "i6n.genotype_constraints.v1",
+    "delta_x_min_hours": 2,
+    "delta_x_max_hours": 72,
+    "supervisions": ["endpoint"],
+    "input_transforms": ["identity", "difference"],
+}
+
 
 def build_plan_v3():
     """Sealed successor plan: the 19 availability-gated features, H72 only."""
@@ -162,6 +174,45 @@ def build_plan_v3():
             "contamination_label": label["label"],
             "contamination_label_sha256": label["label_sha256"],
             "refusals": ["checkpoint", "migrant", "fit cache", "start receipt", "ranking", "comparison"],
+        },
+    )
+    digest = legacy._sha(legacy._body(plan))
+    plan["plan_sha256"] = digest
+    plan["seal"] = {
+        "algorithm": "sha256",
+        "canonical": "json sort_keys, separators (',',':'), allow_nan=False, UTF-8; keys plan_sha256 and seal excluded",
+        "sha256": digest,
+    }
+    legacy.verify_plan(plan)
+    return plan
+
+
+def build_plan_v4_ds_in():
+    """Seal input-only downsampling as the first clean H72 successor.
+
+    The constraint changes the input grid only.  Fold bindings continue to
+    define the exact physical t+72h endpoint, business mask and paired naive.
+    """
+    plan = deepcopy(build_plan_v3())
+    previous = plan["plan_sha256"]
+    plan.pop("seal")
+    plan.update(
+        plan_version=PLAN_VERSION_V4_DS_IN,
+        supersedes=plan["supersedes"] + [{
+            "plan_version": PLAN_VERSION_V3,
+            "plan_sha256": previous,
+            "reason": ("owner ruling 2026-10-13: run the separately identified input-downsampled "
+                       "H72 experiment before the hourly/raw H72 control"),
+            "fits_under_superseded_plan": 0,
+            "results_label": "NOT_RUN",
+        }],
+        experiment=EXPERIMENT_V4_DS_IN,
+        sequence_scope="H72-DS-IN only; hourly/raw H72 is a later control",
+        search_constraints=deepcopy(GENOTYPE_CONSTRAINTS_V4_DS_IN),
+        downsampling={
+            "input": "right-anchored unsmoothed samples t, t-delta_x, ...; delta_x >= 2 hours",
+            "output": "single exact endpoint t+72h; no trajectory heads in this experiment",
+            "support": "unchanged frozen H72 origins, business mask and paired 72-hour naive",
         },
     )
     digest = legacy._sha(legacy._body(plan))

@@ -374,7 +374,7 @@ class Plugin:
         for fold in contract["fold_order"]:
             context = contract["folds"][fold]["evaluation_context"]
             if (context.get("schema") != "i6n.historical_evaluator.v3"
-                    or context.get("experiment") != i6n_island_plan.EXPERIMENT_V3):
+                    or context.get("experiment") != plan.get("experiment")):
                 raise ValueError(
                     f"POINT_IN_TIME_CONTAMINATED_CONTEXT: fold {fold} is not bound to the clean H72 experiment"
                 )
@@ -383,7 +383,7 @@ class Plugin:
         return True
 
     @staticmethod
-    def _network_genotype(params, horizon, envelope):
+    def _network_genotype(params, horizon, envelope, constraints=None):
         if not isinstance(params, Mapping):
             return None
         if params.get("_i6n_envelope") != envelope:
@@ -393,7 +393,46 @@ class Plugin:
             genotype = space.canonicalize(space.from_evaluator_genome(genome))
         except (KeyError, TypeError, ValueError, space.Infeasible):
             return None
-        return genotype if genotype["horizon_hours"] == horizon else None
+        if genotype["horizon_hours"] != horizon:
+            return None
+        return genotype if Plugin._matches_genotype_constraints(genotype, constraints) else None
+
+    @staticmethod
+    def _genotype_constraints(cfg, plan):
+        value = cfg.get("i6n_genotype_constraints")
+        expected = plan.get("search_constraints")
+        if value is None and expected is None:
+            return None
+        if value != expected:
+            raise ValueError("runtime genotype constraints differ from the sealed plan")
+        if (not isinstance(value, Mapping)
+                or set(value) != {"schema", "delta_x_min_hours", "delta_x_max_hours",
+                                  "supervisions", "input_transforms"}
+                or value["schema"] != "i6n.genotype_constraints.v1"
+                or type(value["delta_x_min_hours"]) is not int
+                or value["delta_x_min_hours"] < 1
+                or type(value["delta_x_max_hours"]) is not int
+                or value["delta_x_max_hours"] < value["delta_x_min_hours"]
+                or not isinstance(value["supervisions"], list)
+                or not value["supervisions"]
+                or len(set(value["supervisions"])) != len(value["supervisions"])
+                or not set(value["supervisions"]) <= set(space.SUPERVISIONS)
+                or not isinstance(value["input_transforms"], list)
+                or not value["input_transforms"]
+                or len(set(value["input_transforms"])) != len(value["input_transforms"])
+                or not set(value["input_transforms"]) <= set(space.INPUT_TRANSFORMS)):
+            raise ValueError("invalid i6n_genotype_constraints")
+        return deepcopy(value)
+
+    @staticmethod
+    def _matches_genotype_constraints(genotype, constraints):
+        if constraints is None:
+            return True
+        genotype = space.canonicalize(genotype)
+        return (constraints["delta_x_min_hours"] <= genotype["delta_x_hours"]
+                <= constraints["delta_x_max_hours"]
+                and genotype["supervision"] in constraints["supervisions"]
+                and genotype["input_transform"] in constraints["input_transforms"])
 
     @staticmethod
     def _open_classes(generation, settings, admitted):
@@ -404,25 +443,30 @@ class Plugin:
             open_ids.append("S3")
         return [name for name in open_ids if name in admitted]
 
-    def _initial_island_population(self, settings, admitted, rng):
+    def _initial_island_population(self, settings, admitted, rng, constraints=None):
         classes = self._open_classes(0, settings, admitted)
         if "S1" not in classes:
             raise ValueError("S1 must be admitted before an island can start")
         fixed = [space.seed_genotype(settings["horizon"]),
                  space.alternative_genotype(settings["horizon"])]
+        if not all(self._matches_genotype_constraints(g, constraints) for g in fixed):
+            raise ValueError("governed control genotypes violate the sealed campaign constraints")
         population = fixed if settings["island_id"] == settings["control_island_id"] else []
         # Non-control islands also reserve these identities so they cannot
         # accidentally repeat the governed controls through random sampling.
         seen = {space.genotype_sha256(g) for g in fixed}
         while len(population) < settings["population"]:
-            candidate = space.sample_genotype(settings["horizon"], rng, classes=classes)
+            candidate = space.sample_genotype(
+                settings["horizon"], rng, classes=classes,
+                predicate=lambda g: self._matches_genotype_constraints(g, constraints),
+            )
             identity = space.genotype_sha256(candidate)
             if identity not in seen:
                 seen.add(identity)
                 population.append(candidate)
         return population
 
-    def _next_island_population(self, ranked, settings, admitted, rng):
+    def _next_island_population(self, ranked, settings, admitted, rng, constraints=None):
         classes = self._open_classes(ranked[0]["generation"] + 1, settings, admitted)
         if not classes:
             raise RuntimeError("no admitted class remains open")
@@ -432,11 +476,17 @@ class Plugin:
         while len(population) < settings["population"] and attempts < settings["population"] * 256:
             attempts += 1
             if rng.random() < settings["immigration"]:
-                candidate = space.sample_genotype(settings["horizon"], rng, classes=classes)
+                candidate = space.sample_genotype(
+                    settings["horizon"], rng, classes=classes,
+                    predicate=lambda g: self._matches_genotype_constraints(g, constraints),
+                )
             else:
                 tournament = rng.sample(ranked, min(3, len(ranked)))
                 parent = min(tournament, key=lambda row: row["fitness"])["genotype"]
-                candidate = space.mutate(parent, rng, classes=classes, exclude=seen)
+                candidate = space.mutate(
+                    parent, rng, classes=classes, exclude=seen,
+                    predicate=lambda g: self._matches_genotype_constraints(g, constraints),
+                )
                 if candidate is None:
                     continue
             identity = space.genotype_sha256(candidate)
@@ -467,6 +517,7 @@ class Plugin:
                 or float(plan["search"]["tolerance"]) != settings["tolerance"]):
             raise ValueError("runtime island settings differ from the sealed plan")
         admitted = _V2._admitted(cfg)
+        constraints = self._genotype_constraints(cfg, plan)
         gated = self._point_in_time_admission(cfg, plan, contract)
         callbacks = cfg.get("optimization_callbacks") or {}
         plan_identity = plan["plan_sha256"]
@@ -489,7 +540,7 @@ class Plugin:
             "context_sha256": _digest(contract), "horizon": settings["horizon"],
             "training_seed": settings["seed"], "genotype_schema": space.GENOTYPE_SCHEMA,
         }
-        population = self._initial_island_population(settings, admitted, rng)
+        population = self._initial_island_population(settings, admitted, rng, constraints)
         cache = {}
         rejections = {}
         start_generation = 0
@@ -631,7 +682,9 @@ class Plugin:
                 # island's generation patience/limit.
                 if isinstance(migrant, Mapping) and migrant.get("_force_stage_advance"):
                     migrant = None
-                migrant_g = self._network_genotype(migrant, settings["horizon"], envelope)
+                migrant_g = self._network_genotype(
+                    migrant, settings["horizon"], envelope, constraints
+                )
                 if migrant_g is not None:
                     incoming_id = space.genotype_sha256(migrant_g)
                     if incoming_id not in {space.genotype_sha256(g) for g in population}:
@@ -778,7 +831,9 @@ class Plugin:
                                                generation, stage,
                                                {"min": ranked[0]["fitness"], "max": ranked[-1]["fitness"]})
             if not stop:
-                population = self._next_island_population(ranked, settings, admitted, rng)
+                population = self._next_island_population(
+                    ranked, settings, admitted, rng, constraints
+                )
             save_checkpoint(
                 generation_value=generation + 1,
                 population_value=population,

@@ -28,10 +28,12 @@
 | OPS-005 | Configuration rejection precedes evaluator | GPU visibility, memory admission, and no-CPU-fallback probes | Partially designed |
 | OPS-006 | H72 readiness checklist binds measured bytes/candidate, projected remaining candidates and reserve | Per-host production projection and archive-preserving relocation receipt | Designed; production measurement pending |
 | OPS-007 | `doin-node` relay tests preserve handler address, exclude the physical transport peer, and stamp the next relay while retaining the logical author | Disposable four-node run has zero wrong-host gossip endpoint attempts | Component passed on prepared commit; system verification pending |
-| H72-001 | Config identity and successor gate retain hourly/raw H72 | Full-size per-host admission pilot followed by sealed baseline start | Designed; H4 closure pending |
-| H72-002 | Input-only contingency contract: right-anchored, no smoothing, exact `t+72h`, same support and naive | New identity and paired support digest; only admissible after typed baseline refusal | Designed; dormant |
+| H72-001 | H72-DS-IN constraint: right-anchored, no smoothing, `delta_x>=2`, endpoint-only exact `t+72h` | Unit tests reject hourly, trajectory and foreign network candidates | Implemented; production start awaits H4 closure |
+| H72-002 | H72-DS-IN retains frozen H72 support and naive | Generator test compares every fold's support, origins and pinned source cells | Implemented; production readback pending |
 | H72-003 | Input/output contingency contract: exact original endpoint and naive despite step representation | New identity, alignment mutation tests and paired original-scale readback | Designed; dormant |
 | H72-004 | Gamma placement declares one host-wide heavy-fit lease, four reachable nodes and 5090 priority | 5070 Ti consumes free slots; fresh dual-workload admission is required before concurrency | Designed; production gate pending |
+| H4DS-001 | Clean H4-DS-IN and H4-RAW follow H72-DS-IN; current H4 is only a retrospective engineering reference | Separate identities and exactly paired 19-feature H4 support/naive tests | Planned |
+| H72RAW-001 | Hourly/raw H72 remains a later large-resource control | Separate identity, admission pilot and paired comparison | Prepared; not first successor |
 
 ## Acceptance Layers
 
