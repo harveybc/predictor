@@ -125,6 +125,43 @@ Refuse launch unless every node reports:
 Host-specific endpoints, device assignments and private addresses belong in a
 private deployment spec, never in the public repository.
 
+### 6. H72 readiness and contingency sequence
+
+H4 remains untouched until all four terminal, chain and archive gates close.
+During H4, prepare H72 without launching it:
+
+1. pin the relay-provenance correction and rerun the disposable four-node
+   gossip/fleet checks;
+2. measure bytes per completed candidate on every island and project the
+   remaining minimum of 600 candidates per island;
+3. retain at least 20 GiB of non-campaign free space per host, plus the measured
+   projected campaign bytes; refuse H72 when either term does not fit;
+4. run one full-size H72 cost/admission pilot on each distinct host class, with
+   the exact largest admitted window/model class and without reading TEST;
+5. on gamma, keep both DOIN nodes reachable but serialize heavy evaluations
+   through one host-wide lease; the 5090 has priority and the 5070 Ti consumes
+   only a free slot while host RAM remains at its current capacity;
+6. launch the unchanged hourly/raw H72 identity only after all prior sequence
+   gates and the fresh resource gate are green.
+
+If and only if that baseline produces a typed RAM, VRAM, wall-time or storage
+refusal, the controller closes it without lowering a cap and opens these
+separate experiments in order:
+
+1. **H72-DS-IN:** input-only downsampling. Samples are unsmoothed and
+   right-anchored at the current known tick (`t, t-k, ...`). The target is still
+   the exact hourly `t+72h` endpoint, and the business mask and 72-hour naive
+   remain byte-identical to the baseline support.
+2. **H72-DS-INOUT:** only if H72-DS-IN is still inadmissible or empirically
+   insufficient. Input and output may use a declared factor, but the final head
+   must land exactly at `t+72h`; its error and naive are computed on the same
+   original-time rows and original scale.
+
+No smoothing, interpolation across unknown future bars, target cleaning, TEST
+access or identity reuse is allowed. Downsampling factors, effective window,
+model capacity and repository/config digests are stored with every candidate
+in the external payload and OLAP projection.
+
 ## Required Test Order
 
 1. `tests/test_i6n_island_optimizer.py`
