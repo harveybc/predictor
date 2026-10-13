@@ -61,6 +61,12 @@ calendar, feature manifest, and protocol identity must be bound by each receipt.
 | OPS-003 | Monitorable status | A read-only status command/API reports phase, generation, evaluated candidates, patience, champion fitness, node health, chain checkpoint, archive state, and evidence-based ETA. |
 | OPS-004 | Power-loss recovery | A restart resumes from a configuration-bound atomic checkpoint without repeating a completed candidate or changing the proposal sequence. |
 | OPS-005 | Resource admission | GPU/host placement uses fresh measured admission. A node that cannot admit its configured workload is reported, never silently replaced by CPU or a smaller scientific configuration. |
+| OPS-006 | Storage admission | Before H72, each host projects remaining candidate evidence from measured H4 bytes per completed candidate, adds a fixed reserve, and refuses launch when free bytes are insufficient. Cleanup or relocation must preserve content hashes and archive readback. |
+| OPS-007 | Relay provenance | Gossip forwarding distinguishes the logical author from the physical relay. The relay is excluded by peer ID and its transport endpoint is never assigned to the original author. |
+| H72-001 | Baseline first | The first H72 campaign uses the sealed hourly/raw input and exact `t+72h` target. Resource pressure cannot silently change sampling, window, support, naive, or model identity. |
+| H72-002 | Input-only contingency | Only after a typed baseline resource refusal may a separately sealed experiment right-anchor unsmoothed input samples at `t, t-k, ...`; the target remains the exact original-time `t+72h` endpoint. |
+| H72-003 | Input/output contingency | Only after the input-only contingency is insufficient may a third identity use downsampled input and output steps. It must still land exactly on `t+72h`, include `t`, and compare against the 72-hour naive on the identical original-time origins and targets. |
+| H72-004 | Gamma placement | With current host memory, both gamma nodes may remain online but a host-wide semaphore admits at most one heavy fit at a time and gives the 5090 priority. The 5070 Ti consumes free slots; concurrent fits require a fresh host-memory pilot with reserve. |
 
 ## Business And Data Invariants
 
@@ -82,3 +88,5 @@ calendar, feature manifest, and protocol identity must be bound by each receipt.
   or TEST evaluation.
 - No claim that a red test, stub receipt, or configuration constitutes a model
   measurement.
+- No downsampling fallback is an automatic retry of the hourly H72 campaign;
+  every fallback is a new governed experiment and blockchain identity.

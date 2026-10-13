@@ -26,6 +26,12 @@
 | OPS-003 | Generation callbacks in patience tests | Read-only status schema and ETA mutation tests | Partially designed |
 | OPS-004 | Same-seed determinism | Kill/restart parity after candidate and generation boundaries | Pending system test |
 | OPS-005 | Configuration rejection precedes evaluator | GPU visibility, memory admission, and no-CPU-fallback probes | Partially designed |
+| OPS-006 | H72 readiness checklist binds measured bytes/candidate, projected remaining candidates and reserve | Per-host production projection and archive-preserving relocation receipt | Designed; production measurement pending |
+| OPS-007 | `doin-node` relay tests preserve handler address, exclude the physical transport peer, and stamp the next relay while retaining the logical author | Disposable four-node run has zero wrong-host gossip endpoint attempts | Component passed on prepared commit; system verification pending |
+| H72-001 | Config identity and successor gate retain hourly/raw H72 | Full-size per-host admission pilot followed by sealed baseline start | Designed; H4 closure pending |
+| H72-002 | Input-only contingency contract: right-anchored, no smoothing, exact `t+72h`, same support and naive | New identity and paired support digest; only admissible after typed baseline refusal | Designed; dormant |
+| H72-003 | Input/output contingency contract: exact original endpoint and naive despite step representation | New identity, alignment mutation tests and paired original-scale readback | Designed; dormant |
+| H72-004 | Gamma placement declares one host-wide heavy-fit lease, four reachable nodes and 5090 priority | 5070 Ti consumes free slots; fresh dual-workload admission is required before concurrency | Designed; production gate pending |
 
 ## Acceptance Layers
 

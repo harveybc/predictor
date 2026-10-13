@@ -81,7 +81,8 @@
   "next_allowed_actions": [
     "Deploy the exact committed artifacts and sealed H4 configuration to all four local islands.",
     "Verify exact seed, network, genesis, chain checkpoint and component commits across all four node APIs.",
-    "Verify a finalized production candidate reference through CAS and OLAP readback before declaring alpha acceptance."
+    "Verify a finalized production candidate reference through CAS and OLAP readback before declaring alpha acceptance.",
+    "Prepare, but do not launch, H72 relay, storage, host-memory and full-size workload admission gates."
   ],
   "blocked_actions": [
     "Do not launch an H4 or H72 campaign before unit, integration, and system gates pass.",
@@ -91,7 +92,8 @@
   "open_decisions": [
     "Whether group-safe crossover is admitted in addition to mutation and immigration.",
     "Exact generation openings for S2 and S3 after cost admission.",
-    "Whether simultaneous use of both Gamma GPUs passes fresh host-memory admission."
+    "Whether a future Gamma memory upgrade allows simultaneous 5090 and 5070 Ti admission; current policy is one job with 5090 priority.",
+    "Which unsmoothed downsampling factor is admitted only if the hourly/raw H72 baseline receives a typed resource refusal."
   ],
   "history": [
     {
@@ -113,6 +115,11 @@
       "date": "2026-10-12",
       "stage": "S11_SYSTEM_VERIFICATION",
       "event": "Hardened unattended closure for four independently sealed candidate outboxes: each reconstructs the optimizer's exact terminal candidate ledger; a later chain snapshot must contain the exact terminal tip and finalized checkpoint before H72 can start."
+    },
+    {
+      "date": "2026-10-13",
+      "stage": "S11_SYSTEM_VERIFICATION",
+      "event": "Prepared H72 resource and relay gates without touching H4: hourly/raw baseline first, measured storage admission, one-job Gamma policy, and separately identified input-only then input/output downsampling contingencies."
     }
   ]
 }
