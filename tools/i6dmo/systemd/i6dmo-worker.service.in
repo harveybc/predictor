@@ -1,0 +1,14 @@
+[Unit]
+Description=I6-DMO @CID@ worker for role @ROLE@ (admit, claim, supervise exactly one unit)
+@MARK@
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=@WORKDIR@
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=CUDA_VISIBLE_DEVICES=
+ExecStart=@PYTHON@ -m tools.i6dmo worker --root @ROOT@ --host-role @ROLE@ --once
+TimeoutStartSec=infinity
+KillMode=process
+Nice=5

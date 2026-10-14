@@ -1,0 +1,11 @@
+#!/bin/sh
+# I6-DMO private bootstrap (TEMPLATE, committed with placeholders only).
+#
+# Satoshi generates the real file privately with
+#   python -m tools.i6dmo render-bootstrap --deployment <private-spec.json> --root <new-root> --out <private-file>
+# The rendered file lives outside every Git checkout (mode 0700) and is sourced before the
+# documented sequence. It holds paths only: never a token, password or credential value.
+# The warehouse token stays in the existing fleet EnvironmentFile named inside the private spec;
+# only the publish unit loads it.
+export I6DMO_PRIVATE_SPEC='@PRIVATE_SPEC@'
+export I6DMO_ROOT='@ROOT@'

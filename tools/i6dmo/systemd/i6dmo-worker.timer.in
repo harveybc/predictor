@@ -1,0 +1,12 @@
+[Unit]
+Description=I6-DMO @CID@ worker timer for role @ROLE@
+@MARK@
+
+[Timer]
+OnBootSec=3min
+OnUnitInactiveSec=120s
+Persistent=true
+Unit=@PREFIX@@ROLE@-worker.service
+
+[Install]
+WantedBy=timers.target

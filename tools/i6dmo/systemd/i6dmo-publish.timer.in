@@ -1,0 +1,12 @@
+[Unit]
+Description=I6-DMO @CID@ publication timer
+@MARK@
+
+[Timer]
+OnBootSec=5min
+OnUnitInactiveSec=600s
+Persistent=true
+Unit=@PREFIX@publish.service
+
+[Install]
+WantedBy=timers.target
