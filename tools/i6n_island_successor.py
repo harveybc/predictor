@@ -283,10 +283,16 @@ def _validate_terminal(payload: Mapping[str, Any], expected: Mapping[str, Any], 
         raise Refusal(f"GENESIS_MISMATCH: {field}")
     _exact_components(payload.get("component_versions"), f"{field}.component_versions",
                       expected=expected["component_versions"])
-    for name in ("chain_height", "finalized_height", "terminal_generation"):
+    for name in ("chain_height", "terminal_generation"):
         if type(payload.get(name)) is not int or payload[name] < 0:
             raise Refusal(f"INVALID_TERMINAL_FIELD: {field}.{name}")
-    for name in ("tip_hash", "finalized_hash", "stop_reason"):
+    if type(payload.get('finalized_height')) is not int or payload['finalized_height'] < -1:
+        raise Refusal('INVALID_TERMINAL_FINALITY')
+    if payload['finalized_height'] == -1 and payload.get('finalized_hash') != '':
+        raise Refusal('INVALID_TERMINAL_FINALITY')
+    if payload['finalized_height'] >= 0:
+        _nonempty_string(payload.get('finalized_hash'), 'finalized_hash', Refusal)
+    for name in ("tip_hash", "stop_reason"):
         _nonempty_string(payload.get(name), f"{field}.{name}", Refusal)
     for name in (
         "champion_sha256", "plan_sha256", "contract_sha256",
@@ -372,7 +378,9 @@ def _validate_closure(spec: Mapping[str, Any], terminals: Mapping[str, Any]) -> 
             or type(current_finalized) is not int
             or current_finalized < baseline["finalized_height"]
             or not isinstance(payload.get("tip_hash"), str) or not payload["tip_hash"]
-            or not isinstance(payload.get("finalized_hash"), str) or not payload["finalized_hash"]):
+            or not isinstance(payload.get("finalized_hash"), str)
+            or (current_finalized >= 0 and not payload['finalized_hash'])
+            or (current_finalized == -1 and payload['finalized_hash'] != '')):
         raise Refusal("CLOSURE_CHAIN_NOT_DESCENDANT")
     if relation == "EXACT" and any(
             payload.get(name) != baseline.get(name) for name in terminal_fields):

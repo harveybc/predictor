@@ -231,9 +231,11 @@ def _verify_terminal_ancestor(blocks, chain_status: dict, terminal_chain: tuple)
         raise ClosureRefusal("CLOSURE_CHAIN_LENGTH_MISMATCH")
     if blocks[terminal_height - 1].hash != terminal_tip:
         raise ClosureRefusal("TERMINAL_TIP_NOT_ANCESTOR")
-    if terminal_finalized_height < 0 or terminal_finalized_height >= len(blocks):
+    if terminal_finalized_height < -1 or terminal_finalized_height >= len(blocks):
         raise ClosureRefusal("TERMINAL_FINALIZED_CHECKPOINT_INVALID")
-    if blocks[terminal_finalized_height].hash != terminal_finalized_hash:
+    if terminal_finalized_height == -1 and terminal_finalized_hash != '':
+        raise ClosureRefusal('TERMINAL_FINALIZED_CHECKPOINT_INVALID')
+    if terminal_finalized_height >= 0 and blocks[terminal_finalized_height].hash != terminal_finalized_hash:
         raise ClosureRefusal("TERMINAL_FINALIZED_HASH_NOT_ANCESTOR")
     if chain_status["finalized_height"] < terminal_finalized_height:
         raise ClosureRefusal("CHAIN_FINALITY_REGRESSED")
@@ -399,10 +401,11 @@ def produce_archive_closure(config: dict, publisher, archive, sink, blocks, chai
         if chain_status.get(name) != expected[name]:
             raise ClosureRefusal(f"CHAIN_{name.upper()}_MISMATCH")
     for name in ("chain_height", "finalized_height"):
-        if type(chain_status.get(name)) is not int or chain_status[name] < 0:
+        if type(chain_status.get(name)) is not int or chain_status[name] < (-1 if name == 'finalized_height' else 0):
             raise ClosurePending(f"CHAIN_{name.upper()}_UNAVAILABLE")
     for name in ("tip_hash", "finalized_hash"):
-        if not isinstance(chain_status.get(name), str) or not chain_status[name]:
+        absent_finality = name == 'finalized_hash' and chain_status['finalized_height'] == -1
+        if not isinstance(chain_status.get(name), str) or (not absent_finality and not chain_status[name]) or (absent_finality and chain_status[name] != ''):
             raise ClosurePending(f"CHAIN_{name.upper()}_UNAVAILABLE")
 
     terminal_paths = closure.get("terminal_receipts")

@@ -394,10 +394,13 @@ def _read_node(
 
     chain_height = _required_nonnegative_int(chain, "chain_height", node_id, errors)
     tip_hash = _required_string(chain, "tip_hash", node_id, errors)
-    finalized_height = _required_nonnegative_int(
-        chain, "finalized_height", node_id, errors
-    )
-    finalized_hash = _optional_string(chain, "finalized_hash", node_id, errors)
+    if type(chain.get('finalized_height')) is int and chain['finalized_height'] == -1:
+        finalized_height, finalized_hash = -1, chain.get('finalized_hash')
+        if finalized_hash != '':
+            errors.append(_error('INVALID_CHAIN_STATE', node_id, 'finalized_hash'))
+    else:
+        finalized_height = _required_nonnegative_int(chain, 'finalized_height', node_id, errors)
+        finalized_hash = _optional_string(chain, 'finalized_hash', node_id, errors)
     if (
         chain_height is not None
         and finalized_height is not None

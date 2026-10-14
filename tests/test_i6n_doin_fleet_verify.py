@@ -83,6 +83,8 @@ def test_matching_four_node_fleet_is_ready_and_queries_both_endpoints() -> None:
 
     assert report["status"] == "READY"
     assert report["ready"] is True
+
+
     assert report["fleet"] == {
         "expected_nodes": 4,
         "responding_nodes": 4,
@@ -98,6 +100,19 @@ def test_matching_four_node_fleet_is_ready_and_queries_both_endpoints() -> None:
         for url in calls
     )
     assert all("base_url" not in node for node in report["nodes"])
+
+
+def test_matching_unfinalized_fleet_preserves_the_absence_of_a_checkpoint():
+    spec = _spec()
+    responses = _responses(spec)
+    for url, value in responses.items():
+        if url.endswith('/chain/status'):
+            value.update(finalized_height=-1, finalized_hash='')
+    report = verify_fleet(spec, fetch_json=_fetcher(responses))
+    assert report['ready'] is True
+    assert report['fleet']['finalized_checkpoint'] == {'height': -1, 'hash': ''}
+    responses[spec['nodes'][0]['base_url'] + '/chain/status']['finalized_hash'] = 'invented'
+    assert verify_fleet(spec, fetch_json=_fetcher(responses))['ready'] is False
 
 
 @pytest.mark.parametrize("node_count", [0, 3, 5])
