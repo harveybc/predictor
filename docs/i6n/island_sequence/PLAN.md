@@ -2,6 +2,18 @@
 
 ## Decision
 
+Owner amendment 2026-10-14: restart H4 in a fresh chain/state namespace after
+the proof-of-optimization repair. Retain the retired history as diagnostics.
+Both new searches use the 19-feature availability-gated manifest, excluding
+STLFSI4. H4 allows the previously approved input-resolution search; it is not
+a separately fixed RAW control. H72 remains input-downsampled first.
+
+Only a strict improvement over the committed parent champion can mint a
+non-genesis block. All receivers append the originator's exact block. Migration
+occurs only after commitment; proposal, stage and peer-best hints do not migrate.
+The fresh nodes require canonical work proofs: VUW, reputation decay, reward
+and header work are replayed from the committed parent history.
+
 Use the established DOIN island topology, not the experimental centralized
 shared-population path. Four nodes each evolve a local DEAP population of 20
 and exchange champions through one blockchain. Run one governed H4 search to
@@ -67,7 +79,8 @@ Before an island exits, persist a deterministic domain terminal containing:
 - terminal generation and reason;
 - final population fingerprint and champion identity/fitness;
 - last candidate ledger identity;
-- canonical finalized chain checkpoint.
+- canonical chain tip and finality checkpoint. An absent finality checkpoint
+  is represented explicitly as height -1 and empty hash.
 
 Restore this terminal after restart and expose it through the read-only API.
 
@@ -213,13 +226,21 @@ includes error sums, naive sums, counts, receipts and origin identities, so the
 candidate fitness is independently recomputable. Missing or altered bytes
 remain unresolved; the autonomous pump retries retained outbox items. A
 separate idempotent closure timer emits the successor receipt only after every
-finalized reference resolves, warehouse readback matches, and pending, error
-and quarantine counts are all zero.
+candidate body resolves and its exact warehouse readback matches. Every
+candidate is first projected as OFFCHAIN_VERIFIED, carrying no block/finality
+claim. Genuine later champion blocks may upgrade a reference to FINALIZED.
+Corpus closure v3 retains the count of unfinalized references rather than
+minting housekeeping blocks or waiting forever for six successors. All four
+optimizer terminals, full-chain equality and candidate-count/snapshot identity
+still gate H72. The earlier FINALIZED-only closure v2 remains supported.
 
 ## Current Boundary
 
-The local-island optimizer, node/plugin integration, hash-only archive,
-four-node terminal collector and durable H4-to-H72 successor pass their focused
-contracts in isolated processes. Production fleet identity, synchronized-chain
-readback, first finalized candidate projection and the live ordered launch
-remain system/alpha gates; component tests alone do not satisfy those gates.
+The repaired H4 fleet was started on 2026-10-14 with matching seeds and four
+component pins. Its first real improvement was adopted byte-identically by all
+four nodes and independently checked against its canonical work proof and
+archived metric bytes. Candidate metrics were delivered and read back from the
+warehouse with OFFCHAIN_VERIFIED provenance. Controller and per-peer archive
+timers run without an agent. H4 completion and the live H72 handoff remain
+future acceptance points. H4 scores remain development/tuning evidence; seven
+feature producers/publication clocks remain gated before TEST.
