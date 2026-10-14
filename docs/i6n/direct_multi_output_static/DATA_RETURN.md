@@ -94,3 +94,29 @@ The successor availability contract `tools/i6dmo/feature_availability.successor.
 4. **Clock disagreement in DST-gap weeks.** The producer clock is New York local, bar start. The I6N clock policy is EU DST minus 5 h. In the DST-gap weeks, about 1,966 TRAIN rows sit 1 h later than the producer's bar end. They are stale, not leaked.
 5. **Confirmatory TEST still blocked.** The sealed contract `9668898c` still marks all seven features UNVERIFIED. The successor v2 is ready to adopt for the TEST gate, but the FRED clocks still block it (`PROVENANCE_UNRESOLVED`).
 6. **Development use of 2024.** The 2024 year was used in development selection. The outer VALIDATION year is reported as development.
+
+## Long-family bundle preparation (`I6-DMO-LONG-DS12-STATIC-R0`)
+
+This is preparation only. Nothing was fit, and no short-family validation outcome was read.
+
+**Commits.** Tests came first (`b675db8e`: 3 failing, 3 passing). The implementation followed (`0a6d9584`). The `long_data_view` helper was added together with its test. Both test files now pass, 34 tests in total.
+
+**Design and rule.**
+- The bundle was built from the long data view: the short design plus the PLAN section 5 fields (heads 18/24/36/48/60/72, 144 h span, 12 h spacing, 13 observations).
+- `data_contract_sha256` covers only the data fields. A design sealed by the model lane therefore has the same data identity.
+- The rule is `DS12_ASOF_LAST_AVAILABLE`.
+
+**Real bundle.** It was built and re-verified, but it is not in Git.
+- Identity: bundle_sha256 `e88f72aa...77a1`, `BUNDLE.json` file `afcef506...9a75`, data contract `6e354fe6...5e75`, input `ef22ddb5...b8`.
+- Earliest consumed bar: 2019-12-26T23:00Z. This is after the `DCA_2019_EU_DST_POLICY` span, which ends 2019-12-01, and inside the declared, not quote-verified, December-2019 warmup. Both are recorded in `history_provenance`.
+- TRAIN was not shortened, and no input refusals occurred.
+
+| Split | Rows | Labels h18/24/36/48/60/72 | Origins with as-of slots / stale beyond 49 h | row_ids_sha256 |
+|---|---|---|---|---|
+| fit | 15,017 | 14690/13623/11198/9052/6706/4509 | 15,017 / 574 | bcd38518... |
+| inner | 611 | 611/563/467/371/275/179 | 611 / 6 | 73ab7376... |
+| validation | 4,043 | 4025/3707/3073/2464/1856/1234 | 4,043 / 65 | 7c146e1c... |
+
+Fit-only naive MAE per head: h18 0.00352008, h24 0.00410667, h36 0.00496066, h48 0.00583283, h60 0.00658154, h72 0.00746189. These equal the disk replay.
+
+h72 support is small because of the C1 rule `q < force-flat`: 4,509 fit rows and 179 inner rows. Every valid label falls inside its own split (tested), so the trainer's `PURGE_VIOLATION` check cannot fire.
