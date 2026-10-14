@@ -1,9 +1,18 @@
 {
   "schema": "i6dmo.interface.data.v1",
   "lane": "data",
-  "status": "DRAFT_EARLY_PUBLICATION",
-  "owner_modules": ["tools/i6dmo/data.py", "tools/i6dmo/naive.py", "tools/i6dmo/provenance.py", "tools/i6dmo/cli_data.py"],
-  "owner_tests": ["tests/i6dmo/test_data_dmo.py", "tests/i6dmo/_synth.py"],
+  "status": "IMPLEMENTED_CPU_TESTED",
+  "owner_modules": [
+    "tools/i6dmo/data.py",
+    "tools/i6dmo/naive.py",
+    "tools/i6dmo/provenance.py",
+    "tools/i6dmo/cli_data.py",
+    "tools/i6dmo/producer_recovery.v1.json"
+  ],
+  "owner_tests": [
+    "tests/i6dmo/test_data_dmo.py",
+    "tests/i6dmo/_synth.py"
+  ],
   "shared_files_added": {
     "tools/i6dmo/__init__.py": "EMPTY file (0 bytes); identical empty adds by other lanes merge cleanly",
     "tests/i6dmo/__init__.py": "EMPTY file (0 bytes)"
@@ -24,13 +33,14 @@
     "tools.i6dmo.data.build_origin_table(bundle, design) -> OriginTable": "every observed hourly bar is an origin candidate (no thinning); per origin: row_id 'EURUSD|<iso t>', split (FIT|INNER|VALIDATION), week_id, input_ok + reason, per-head label mask (C1 MANAGEMENT M), per-head entry mask (C1 ENTRY M), p(t), p(t+h) exact or NaN; counted reasons per split x head",
     "tools.i6dmo.data.materialize(bundle, table, split) -> SplitArrays": "X float64 (n,13,19) RAW; y_price float64 (n,6) original price p(t+h) with NaN where mask False; mask bool (n,6); entry_mask bool (n,6); price_origin (n,); origin_ts (n,); row_ids (n,). Only rows with input_ok and >=1 valid head are included (keep_row_if_any_head_valid)",
     "tools.i6dmo.data.fit_statistics(bundle, table) -> dict": "per-feature mean/std over FIT-row window bars only; per-head fit-only naive MAE (loss scale) ; zero scale -> typed ZERO_SCALE disposition, never an epsilon",
-    "tools.i6dmo.data.build_frozen_bundle(input_dir, design, out_dir) -> BUNDLE.json": "writes ARRAYS_<split>.npz for FIT/INNER/VALIDATION and BUNDLE.json with digests: input files, calendar, manifest, availability contract, gate report, row_ids per split, arrays, origin-table reason counts, coverage report; bundle_sha256 is the identity consumed by model/ops",
     "tools.i6dmo.data.verify_bundle(out_dir) -> dict": "re-hashes every file and row id list; typed BUNDLE_DIGEST_MISMATCH on any change",
     "tools.i6dmo.naive.naive_replay(input_dir_or_bundle, row_ids, horizons)": "independent of data.py target arrays: re-reads ts/price, looks up p(t) and p(t+h) by exact timestamp, returns per-head n, sum_abs, mae and row_ids_sha256",
-    "tools.i6dmo.naive.paired_metrics(arrays, predictions, design) -> dict": "builds the C2 (tools.i6n_contracts.paired_metrics) input on identical row ids and physical h, scores it, and attaches a manual recomputation that must agree; relative error (MAE_h-naive_h)/naive_h, negative better",
     "tools.i6dmo.naive.weekly_diagnostics(rows) -> dict": "per week x head sums/counts, explicit ABSENT weeks/heads; annual pooled MAE = sum/count, never mean of weekly MAEs",
     "tools.i6dmo.provenance.availability_gate(features)": "reuses tools.i6n_contracts.feature_availability.gate; returns PASS + unverified list; confirmatory_test_blocked=True while any feature is UNVERIFIED",
-    "tools.i6dmo.provenance.producer_status()": "seven unresolved producers/clocks: RECOVERED (path@commit + reproduction match) or STILL_UNRESOLVED (missing object)"
+    "tools.i6dmo.provenance.producer_status()": "seven unresolved producers/clocks: RECOVERED (path@commit + reproduction match) or STILL_UNRESOLVED (missing object)",
+    "tools.i6dmo.data.load_split(bundle_dir, split) -> dict": "verify then merge model and aux arrays",
+    "tools.i6dmo.data.build_frozen_bundle(input_dir, design, out_dir, *, code_commit=None) -> dict": "writes ARRAYS_<split>.npz for FIT/INNER/VALIDATION and BUNDLE.json with digests: input files, calendar, manifest, availability contract, gate report, row_ids per split, arrays, origin-table reason counts, coverage report; bundle_sha256 is the identity consumed by model/ops",
+    "tools.i6dmo.naive.paired_metrics(arrays, predictions, design, *, input_dir, checkpoint, sealed_at) -> dict": "builds the C2 (tools.i6n_contracts.paired_metrics) input on identical row ids and physical h, scores it, and attaches a manual recomputation that must agree; relative error (MAE_h-naive_h)/naive_h, negative better"
   },
   "fixed_decisions_implemented": [
     "origin t is the last completed observed hourly bar (bar-END clock); its value is included",
@@ -38,5 +48,60 @@
     "targets p(t+h) at exact hourly endpoints h in {2,3,4,5,6,12}; never the next observed row",
     "split membership: origin in split AND target in the same split (cross-boundary labels purged); FIT label_available_by = inner boundary",
     "TRAIN [2020-01-01,2024-01-01); INNER = last 8 weeks (2023-11-06..2024-01-01); VALIDATION [2024-01-01,2025-01-01); TEST never materialized"
-  ]
+  ],
+  "bundle_format": {
+    "conforms_to": "INTERFACE_MODEL.json consumed_data_bundle_contract (model lane @12e13752); its load_data_bundle() accepted the real bundle",
+    "BUNDLE.json": {
+      "schema": "i6dmo.data_bundle.v1",
+      "features": "19 names, MANIFEST_NO_STLFSI4 order",
+      "feature_manifest_sha256": "2ff34fa2...",
+      "horizons_hours": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        12
+      ],
+      "offsets_hours": [
+        -24,
+        -22,
+        -20,
+        -18,
+        -16,
+        -14,
+        -12,
+        -10,
+        -8,
+        -6,
+        -4,
+        -2,
+        0
+      ],
+      "splits": "{fit, inner, validation} -> {path, sha256 (file), aux_path, start, end, label_available_by, n_rows, row_ids_sha256, arrays_sha256, aux_sha256 (content), head_valid, head_entry_valid, counts (typed reasons), first/last_origin}",
+      "fit_statistics": "per-head fit-only naive MAE (naive_mae_fit) and per-feature fit-only mean/std; status OK|ZERO_SCALE|UNSUPPORTED_HEAD",
+      "other": "inputs{name:sha256}, calendar{id,version,sha256,label ASSUMED_NOT_BROKER}, availability_gate, producer_status, confirmatory_test_blocked, coverage, design_sha256, code{commit, files_sha256}, bundle_sha256 (content identity; excludes npz container digests, which carry write times), files{name: file sha256}"
+    },
+    "<split>.npz": "exactly row_id (n,) int64 origin epoch s, x (n,13,19) float64 RAW oldest->origin, origin_price (n,), target_price (n,6) NaN where mask False, mask (n,6) bool = C1 MANAGEMENT label support",
+    "<split>_aux.npz": "row_id (n,) int64 (same order), row_ids (n,) str 'EURUSD|<iso>', entry_mask (n,6) bool = C1 ENTRY support (subset of mask), week_ids (n,) str calendar week",
+    "test": "never present; load_input refuses TEST_ROWS_PRESENT"
+  },
+  "real_bundle_built": {
+    "code_commit": "58d489fe",
+    "bundle_sha256": "5221615d3391dc27010f7432a5ff6cb2aebb63765cae1480287b98fde76773c2",
+    "design_sha256": "541ce40ac1becceb16b14937e34e3452eee36aad8a370686dacf62860c86d381",
+    "input_sha256": "ef22ddb54921ee9f9c774a550731dcd522c9d712f2a1882f1bf4e6a35e3942b8",
+    "calendar_sha256": "782603fd26e879d6f837c83e9ec92d363500cb1dd150544e10a80c1ddeb88265",
+    "rows": {
+      "fit": 14279,
+      "inner": 624,
+      "validation": 4122
+    },
+    "row_ids_sha256": {
+      "fit": "1d0a295c0356eb1ba723b91ea8cdcfa2d03db8aca5f62bfdf9aaeda0cd5648a5",
+      "inner": "582af6e37fb50129a48f11b606f4fd256a7a431978c947e3c72ee389a223f3a6",
+      "validation": "b4ccd80cfdc399a432c4042ae1dfaa394f3aa6cbf2537801b94fbc742e52b244"
+    },
+    "location": "<private-root>/i6dmo data bundle (not in Git); rebuild: python -m tools.i6dmo.cli_data data-bundle --design <design> --input-dir <data-root>/inputs/extended-no-stlfsi4 --out <new-dir> --code-commit <commit>"
+  }
 }
