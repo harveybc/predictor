@@ -20,8 +20,8 @@ from tools.i6n_swarm.common import atomic_json, boot_id, sha256_json
 GIB = 1024 ** 3
 HEAVY_GPU_PROCESS = GIB
 LEGACY_PREFIXES = ("i6n-", "doin-")
-# Deliberately left running by the handoff: archive delivery and warehouse transports (not training).
-LEGACY_KEEP = ("-archive-", "warehouse-tunnel")
+# Deliberately left running: archive delivery, warehouse transports and ssh keep-alive sessions (not training).
+LEGACY_KEEP = ("-archive-", "warehouse-tunnel", "persistent-session")
 
 
 def _meminfo(path="/proc/meminfo"):
@@ -171,9 +171,9 @@ def preflight(design_path, spec_path, *, adapter=None, probe=None, data_pins=Non
     except C.Refused as exc:
         _check(checks, "deployment_spec", False, "LAUNCH", str(exc))
         spec = None
-    envfile = Path((spec or {}).get("warehouse", {}).get("environment_file", "/nonexistent"))
-    _check(checks, "warehouse_environment_file_exists", envfile.exists(), "PAIR",
-           "existence only; contents are never read", owner="existing fleet EnvironmentFile")
+    envfile = (spec or {}).get("warehouse", {}).get("environment_file")
+    _check(checks, "warehouse_environment_file_exists", bool(envfile) and Path(envfile).exists(), "PUBLICATION",
+           "existence only; contents are never read", owner="Satoshi (existing fleet EnvironmentFile)")
     pins = data_pins or {}
     for role, role_spec in sorted((spec or {}).get("roles", {}).items()):
         files = [C.pin_file(k, p) for k, p in pins.items() if "relpath" in p]
