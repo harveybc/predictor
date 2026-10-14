@@ -71,3 +71,37 @@ The exact deploy sequence is in `INTERFACE_OPS.json` under `deploy_sequence`.
   scratch campaign's timers. None of those units ever started. I disabled and removed them within
   the same minute and confirmed zero `i6dmo` units remain. The flag is now fixed: `--no-start`
   enables nothing, and the fix is covered by a test.
+
+## Integration and deployment (2026-10-14)
+
+Integration branch `satoshi/i6dmo-static-20261014`, deployed at commit `93078a0f`. That commit
+contains ops, model `0d60f685`, data `0d0a3349` and strategy `457624e0`.
+
+**Checks.** `validate-design` passed (design `541ce40a`; model effective config `cd78cc6c`). The
+integration tests ran as bounded CPU jobs: 177 passed across the whole suite. After the deploy
+fixes, the 55 ops tests passed again.
+
+**What runs where.** Children are supervised from the coordinator by timers.
+- **Coordinator.** It runs the tick, the three role workers and the CPU report and pair units.
+  Publication units are not installed: they wait for the warehouse EnvironmentFile (owner: Satoshi).
+- **Preferred host (5090).** The first-fit admission was refused with HOST_MEMORY_BELOW_GATE: about
+  10.3 GiB is available, but the 7.75 GiB cap plus the host's 3 GiB reserve does not fit. The
+  margin was not trimmed. Its 5070 Ti is not a slot.
+- **Secondary host (4090).** `short.fit` was routed here by policy and is running at the
+  7936 MiB cap.
+
+**First root retired.** The first root was retired because of an engineering defect: the launcher
+refused admission with rc 75, but the worker read rc 0 because systemd had already collected the
+transient unit. No fit ran. The fix is in `ab1d492a`: the child now writes its own `EXIT_CODE`.
+
+**Status command:** `python -m tools.i6dmo status --root "$I6DMO_ROOT" --level campaign --json`
+
+**Denominators.** There are 5 validation units. The final units are not enumerated until readiness.
+
+**ETA.** UNMEASURED until a fit completes.
+
+**Waiting.**
+- `short.report` waits for `short.fit`.
+- The long units seal automatically after short closure.
+- The pair unit waits for the owner rulings and the strategy pins.
+- Publication waits for the warehouse EnvironmentFile.
