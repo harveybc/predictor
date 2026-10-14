@@ -247,3 +247,19 @@ def test_gpu_request_without_gpu_is_typed_no_cpu_fallback(tmp_path):
     receipt = T.train_unit(DESIGN, bundle, tmp_path / "u", device="gpu")
     assert receipt["status"] == "FAILED_TYPED" and receipt["code"] == "NO_GPU_VISIBLE"
     assert not (tmp_path / "u" / "model").exists()
+
+
+def test_determinism_is_enabled_and_recorded_everywhere(tmp_path):
+    """DMO10 GPU identity: op determinism on for training AND inference, and recorded."""
+    from tools.i6dmo import model as M
+    bundle = write_bundle(tmp_path / "b")
+    receipt = T.train_unit(DESIGN, bundle, tmp_path / "u", device="cpu",
+                           training_overrides={"max_epochs": 2})
+    assert receipt["status"] == "COMPLETED"
+    assert receipt["determinism"]["op_determinism"] is True
+    assert M.DETERMINISM["op_determinism"] is True  # build/load/predict paths share the switch
+    doc = json.loads((tmp_path / "u" / "model" / "MODEL.json").read_text())
+    assert doc["determinism"]["op_determinism"] is True
+    loaded, document = M.load_dmo(tmp_path / "u" / "model")
+    assert document["determinism"]["op_determinism"] is True
+    assert M.DETERMINISM["op_determinism"] is True

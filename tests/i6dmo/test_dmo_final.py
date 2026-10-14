@@ -237,6 +237,7 @@ def test_guarded_test_bundle_and_prediction_generation(tmp_path):
     assert receipt["status"] == "COMPLETED"
     result = F.generate_test_predictions(unit, bundle, tmp_path / "preds", readiness=readiness)
     assert result["rows"] == 10 and result["weights_sha256"] == receipt["identity"]["weights_sha256"]
+    assert result["determinism"]["op_determinism"] is True
     with np.load(tmp_path / "preds" / "test.npz") as pz:
         assert pz["predicted_price"].shape == (10, 6)
         assert np.array_equal(pz["row_id"], test_arrays["row_id"])
