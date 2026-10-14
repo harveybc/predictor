@@ -833,10 +833,6 @@ def run_backtest(*, bars: Sequence[Bar], weeks: Sequence[c1.OperationalWeek],
 # --------------------------------------------------------------------------
 # Ops hook: pair unit (tools.i6dmo.unit_runner HOOKS["pair"])
 
-OWNER_RULINGS = ("barrier_equality", "costs_and_pip_value", "fill_model", "sharpe_convention",
-                 "min_long_heads")
-COST_KEYS = ("pip_cost", "spread_price", "slippage_price", "commission_per_lot_round_trip",
-             "swap_per_lot_per_day")
 FAMILY_REPORT_UNITS = {"short": "short.report", "long": "long.report"}
 PREDICTION_ARTIFACT_NAMES = ("validation_predictions", "predictions/validation.npz")
 
@@ -876,50 +872,174 @@ def _finite(value) -> bool:
     return not isinstance(value, bool) and isinstance(value, (int, float)) and math.isfinite(value)
 
 
-def _validated_rulings(rulings, policy) -> Dict[str, Any]:
-    """Owner rulings -> executable parameters; only implemented options are accepted."""
-    if not isinstance(rulings, Mapping):
-        raise _Refusal("FAILED", "OWNER_RULINGS_INCOMPLETE:rulings")
-    for key in OWNER_RULINGS:
-        if key not in rulings:
-            raise _Refusal("FAILED", f"OWNER_RULINGS_INCOMPLETE:{key}")
-    if rulings["barrier_equality"] != policy.BARRIER_EQUALITY_RULE:
-        raise _Refusal("FAILED", "RULING_NOT_IMPLEMENTED:barrier_equality")
-    costs = rulings["costs_and_pip_value"]
-    if not isinstance(costs, Mapping) or set(costs) != set(COST_KEYS) or \
-            not all(_number(costs[k], positive=(k == "pip_cost")) for k in COST_KEYS):
-        raise _Refusal("FAILED", "RULING_INVALID:costs_and_pip_value")
-    fill = rulings["fill_model"]
-    if not isinstance(fill, Mapping) or set(fill) != {"fill", "intrabar_both_barriers",
-                                                      "force_close_lead_hours"}:
-        raise _Refusal("FAILED", "RULING_INVALID:fill_model")
-    if fill["fill"] != EXECUTION_RULES["fill"] or \
-            fill["intrabar_both_barriers"] != EXECUTION_RULES["intrabar_both_barriers"]:
-        raise _Refusal("FAILED", "RULING_NOT_IMPLEMENTED:fill_model")
-    if type(fill["force_close_lead_hours"]) is not int or fill["force_close_lead_hours"] < 1:
-        raise _Refusal("FAILED", "RULING_INVALID:fill_model")
-    sharpe = rulings["sharpe_convention"]
-    if not isinstance(sharpe, Mapping) or set(sharpe) != {"return_clock", "periods_per_year"}:
-        raise _Refusal("FAILED", "RULING_INVALID:sharpe_convention")
-    if sharpe["return_clock"] != "UTC_DAY_LAST_MARK_TO_MARKET":
-        raise _Refusal("FAILED", "RULING_NOT_IMPLEMENTED:sharpe_convention")
-    if type(sharpe["periods_per_year"]) is not int or sharpe["periods_per_year"] < 1:
-        raise _Refusal("FAILED", "RULING_INVALID:sharpe_convention")
-    min_long = rulings["min_long_heads"]
-    min_short = rulings.get("min_short_heads", 1)
-    if type(min_long) is not int or not 1 <= min_long <= 6 or \
-            type(min_short) is not int or not 0 <= min_short <= 6:
-        raise _Refusal("FAILED", "RULING_INVALID:min_long_heads")
-    entry = dict(DEFAULT_ENTRY_PARAMETERS, pip_cost=float(costs["pip_cost"]),
-                 min_valid_long_heads=min_long)
+# --------------------------------------------------------------------------
+# Sealed execution-policy receipt (AUD-DMO-06): derived automatically from the
+# versioned instrument configuration plus the established business contract.
+# There is no approval prompt and no owner-ruling wait anywhere in this path.
+
+EXECUTION_POLICY_SCHEMA = "i6dmo.execution_policy.v1"
+INSTRUMENT_KEYS = ("instrument_id", "config_version", "price_decimals", "point_size",
+                   "pip_size", "pip_cost_parameter", "lot_units", "costs", "cost_verification")
+INSTRUMENT_COST_KEYS = ("spread_price", "slippage_price", "commission_per_lot_round_trip",
+                        "swap_per_lot_per_day")
+BUSINESS_CONTRACT_SOURCES = {
+    "business_contract": "docs/tres_temas_entrevista/program_v3/"
+                         "BUSINESS_WEEKLY_WALK_FORWARD_CONTRACT_2026_10_03.md",
+    "market_week_contract_sha256":
+        "604f94809c41613e7346ed630d698591fadd7ecc9961b9e3cb04fcad00c01c76",
+    "audit_finding": "AUD-DMO-06",
+}
+
+
+def _err(code: str, detail: str) -> StrategyAdapterError:
+    return StrategyAdapterError(code, detail)
+
+
+def _validated_instrument(instrument) -> Dict[str, Any]:
+    if not isinstance(instrument, Mapping) or set(instrument) != set(INSTRUMENT_KEYS):
+        raise _err("INSTRUMENT_CONFIG_INVALID",
+                   f"instrument configuration needs exactly {sorted(INSTRUMENT_KEYS)}")
+    for key in ("instrument_id", "config_version"):
+        v = instrument[key]
+        if not isinstance(v, str) or not v.strip():
+            raise _err("INSTRUMENT_CONFIG_INVALID", f"{key} must be non-empty text")
+    for key in ("point_size", "pip_size", "pip_cost_parameter", "lot_units"):
+        if not _number(instrument[key], positive=True):
+            raise _err("INSTRUMENT_CONFIG_INVALID", f"{key} must be a positive number")
+    if type(instrument["price_decimals"]) is not int or instrument["price_decimals"] < 1:
+        raise _err("INSTRUMENT_CONFIG_INVALID", "price_decimals must be a positive int")
+    if not math.isclose(instrument["pip_size"], 10.0 * instrument["point_size"], rel_tol=1e-9):
+        raise _err("PIP_POINT_INCONSISTENT",
+                   f"pip_size {instrument['pip_size']} != 10 x point_size {instrument['point_size']}")
+    costs = instrument["costs"]
+    if not isinstance(costs, Mapping) or set(costs) != set(INSTRUMENT_COST_KEYS) or \
+            not all(_number(costs[k]) for k in INSTRUMENT_COST_KEYS):
+        raise _err("INSTRUMENT_CONFIG_INVALID",
+                   f"costs needs exactly {sorted(INSTRUMENT_COST_KEYS)} as non-negative price-unit/"
+                   "account-currency numbers")
+    verification = instrument["cost_verification"]
+    if isinstance(verification, str):
+        if verification != "NOT_BROKER_VERIFIED":
+            raise _err("COST_VERIFICATION_INVALID",
+                       "configured costs are NOT_BROKER_VERIFIED unless evidence is attached")
+    elif isinstance(verification, Mapping):
+        if verification.get("status") != "BROKER_VERIFIED" or \
+                not isinstance(verification.get("evidence"), str) or \
+                not verification["evidence"].strip() or set(verification) != {"status", "evidence"}:
+            raise _err("COST_VERIFICATION_INVALID",
+                       "BROKER_VERIFIED requires non-empty evidence {status, evidence}")
+    else:
+        raise _err("COST_VERIFICATION_INVALID", "cost_verification type")
+    return json.loads(json.dumps(instrument, sort_keys=True))
+
+
+def derive_execution_policy(instrument: Mapping[str, Any], *,
+                            policy: Optional[types.ModuleType] = None) -> Dict[str, Any]:
+    """Deterministic sealed receipt from the versioned instrument configuration.
+
+    Fixed values come from the pinned policy and the business contract: minimum
+    longs = the existing policy's ``EntryParameters`` default (2), inclusive
+    barrier equality, SL-first same-bar ambiguity, next-bar execution as a
+    stated SIMULATION_ASSUMPTION, initial equity 10000, and the return clock /
+    annualization recorded here, not asked. Costs stay in configured price
+    units and are labelled by their verification status; nothing here claims
+    live-broker verification for unmeasured costs.
+    """
+    policy = policy or load_pinned_policy()
+    instrument = _validated_instrument(instrument)
+    pcp = instrument["pip_cost_parameter"]
+    if math.isclose(pcp, instrument["point_size"], rel_tol=1e-9):
+        pip_unit = "POINT"
+    elif math.isclose(pcp, instrument["pip_size"], rel_tol=1e-9):
+        pip_unit = "PIP"
+    else:
+        raise _err("PIP_COST_PARAMETER_UNRECOGNIZED",
+                   f"pip_cost_parameter {pcp} equals neither point_size nor pip_size")
+    defaults = policy.EntryParameters()
+    body = {
+        "schema": EXECUTION_POLICY_SCHEMA,
+        "instrument": instrument,
+        "pip_semantics": {
+            "pip_cost_parameter_unit": pip_unit,
+            "note": ("The pinned policy's pip_cost parameter denominates thresholds and "
+                     f"'pips' outputs in units of {pcp} price units ({pip_unit}); "
+                     "reported 'pips' are therefore that unit, not broker pips, unless "
+                     "pip_cost_parameter equals pip_size."),
+        },
+        "business_rules": {
+            "entry_family": "LONG_FAMILY_ONLY",
+            "min_valid_long_heads": defaults.min_valid_long_heads,
+            "min_valid_short_heads": 1,
+            "barrier_equality": policy.BARRIER_EQUALITY_RULE,
+            "one_position_per_asset": True,
+            "forced_flat_requires_fill": True,
+            "initial_equity": 10000.0,
+        },
+        "simulation_assumptions": {
+            "fill": EXECUTION_RULES["fill"],
+            "intrabar_both_barriers": EXECUTION_RULES["intrabar_both_barriers"],
+            "force_close_lead_hours": 1,
+            "sizing": ("units = min(volume schedule, cash * rel_volume * leverage) in "
+                       "base-currency units with no price conversion; notional and margin "
+                       "therefore vary with the price level"),
+            "statement": ("SIMULATION_ASSUMPTION: next-available-bar-open fills, half-spread "
+                          "plus slippage per fill and pro-rata swap are simulation "
+                          "assumptions, not broker-verified execution."),
+        },
+        "reporting": {"return_clock": "UTC_DAY_LAST_MARK_TO_MARKET", "periods_per_year": 260},
+        "policy_pin": {"sha256": STRATEGY_PIN["sha256"], "commit": STRATEGY_PIN["commit"],
+                       "rules_version": policy.RULES_VERSION},
+        "sources": dict(BUSINESS_CONTRACT_SOURCES),
+    }
+    return dict(body, receipt_sha256=_canonical_sha(body))
+
+
+def seal_execution_policy(root, instrument: Mapping[str, Any], *,
+                          policy: Optional[types.ModuleType] = None) -> Dict[str, Any]:
+    """Derive and write ``<root>/gates/EXECUTION_POLICY.json`` (idempotent content)."""
+    receipt = derive_execution_policy(instrument, policy=policy)
+    _atomic_json(Path(root) / "gates" / "EXECUTION_POLICY.json", receipt)
+    return receipt
+
+
+def load_execution_policy(root) -> Optional[Dict[str, Any]]:
+    """Load and verify a sealed receipt; None when absent, typed error when tampered."""
+    path = Path(root) / "gates" / "EXECUTION_POLICY.json"
+    if not path.exists():
+        return None
+    try:
+        doc = json.loads(path.read_text())
+    except ValueError:
+        raise _err("EXECUTION_POLICY_TAMPERED", "receipt is not valid JSON")
+    body = {k: v for k, v in doc.items() if k != "receipt_sha256"}
+    if doc.get("schema") != EXECUTION_POLICY_SCHEMA or \
+            doc.get("receipt_sha256") != _canonical_sha(body):
+        raise _err("EXECUTION_POLICY_TAMPERED", "receipt digest does not match its body")
+    return doc
+
+
+def execution_from_policy(receipt: Mapping[str, Any]) -> Dict[str, Any]:
+    """Sealed receipt -> executable entry/execution parameters and the costs seal."""
+    instrument = receipt["instrument"]
+    costs = instrument["costs"]
+    rules = receipt["business_rules"]
+    sim = receipt["simulation_assumptions"]
+    entry = dict(DEFAULT_ENTRY_PARAMETERS, pip_cost=float(instrument["pip_cost_parameter"]),
+                 min_valid_long_heads=rules["min_valid_long_heads"])
     execution = ExecutionParameters(
+        initial_equity=rules["initial_equity"],
         spread_price=float(costs["spread_price"]), slippage_price=float(costs["slippage_price"]),
         commission_per_lot_round_trip=float(costs["commission_per_lot_round_trip"]),
         swap_per_lot_per_day=float(costs["swap_per_lot_per_day"]),
-        force_close_lead_hours=fill["force_close_lead_hours"],
-        sharpe_periods_per_year=sharpe["periods_per_year"])
-    return dict(entry=entry, execution=execution, min_long=min_long, min_short=min_short,
-                costs_sha256=_canonical_sha(dict(costs)))
+        lot_units=float(instrument["lot_units"]),
+        force_close_lead_hours=sim["force_close_lead_hours"],
+        sharpe_periods_per_year=receipt["reporting"]["periods_per_year"])
+    verification = instrument["cost_verification"]
+    return dict(entry=entry, execution=execution,
+                min_long=rules["min_valid_long_heads"], min_short=rules["min_valid_short_heads"],
+                costs_sha256=_canonical_sha(dict(costs)),
+                cost_verification=(verification if isinstance(verification, str)
+                                   else verification["status"]))
 
 
 def _campaign_root(spec) -> Path:
@@ -939,14 +1059,21 @@ def _campaign_root(spec) -> Path:
     return root
 
 
-def _owner_rulings(root: Path):
-    from tools.i6dmo import campaign  # ops lane: same digest/binding rules as the worker guard
-    problem = campaign.gate_problem(root, "STRATEGY_OWNER_RULINGS")
-    if problem:
-        raise _Refusal("FAILED", f"STRATEGY_OWNER_RULINGS_OPEN:{problem}",
-                       {"pair_status": "BLOCKED_OWNER_RULINGS"})
-    doc = json.loads((root / "gates" / "STRATEGY_OWNER_RULINGS.json").read_text())
-    return (doc.get("evidence") or {}).get("rulings"), doc["receipt_sha256"]
+def _sealed_policy_for(spec, root: Path, policy) -> Dict[str, Any]:
+    """Derive the receipt from the effective config and reconcile a pre-sealed one.
+
+    No approval: a missing instrument configuration is a typed config failure,
+    a tampered sealed receipt is refused, and a sealed receipt that does not
+    match the sealed effective configuration is a mismatch.
+    """
+    instrument = ((spec.get("effective_config") or {}).get("strategy_execution") or {}).get("instrument")
+    if instrument is None:
+        raise _Refusal("FAILED", "INSTRUMENT_CONFIG_MISSING")
+    derived = derive_execution_policy(instrument, policy=policy)
+    sealed = load_execution_policy(root)
+    if sealed is not None and sealed["receipt_sha256"] != derived["receipt_sha256"]:
+        raise _Refusal("FAILED", "EXECUTION_POLICY_MISMATCH")
+    return derived
 
 
 def _family_upstream(spec, family):
@@ -1040,6 +1167,7 @@ def _business_report(spec, backtest, pair_status):
                 tags={"unit": spec["unit_id"], "family": "pair", "kind": spec["kind"],
                       "test_read": "false", "pair_status": pair_status,
                       "strategy_policy_sha256": STRATEGY_PIN["sha256"],
+                      "cost_verification": str(backtest.get("cost_verification")),
                       "undefined_metrics": ",".join(undefined)},
                 metrics=metrics)
 
@@ -1083,12 +1211,13 @@ def run_unit(spec: Mapping[str, Any], out_dir, progress_path) -> Dict[str, Any]:
             raise _Refusal("FAILED", "TEST_OPEN_REFUSED")
         _progress(progress_path, 0, "score")
         root = _campaign_root(spec)
-        rulings, rulings_receipt = _owner_rulings(root)
         policy = load_pinned_policy()
-        ruled = _validated_rulings(rulings, policy)
+        sealed = _sealed_policy_for(spec, root, policy)
+        ruled = execution_from_policy(sealed)
+        put("execution_policy", "pair/EXECUTION_POLICY.json", sealed)
         gates.update(strategy_version=f"{STRATEGY_PIN['sha256']}:{policy.RULES_VERSION}",
                      costs_sha256=ruled["costs_sha256"],
-                     owner_rulings_receipt_sha256=rulings_receipt)
+                     execution_policy_sha256=sealed["receipt_sha256"])
         ups = {f: _family_upstream(spec, f) for f in ("short", "long")}
         eligibility = pair_eligibility(ups["short"][2].get("eligibility") or {},
                                        ups["long"][2].get("eligibility") or {},
@@ -1114,7 +1243,8 @@ def run_unit(spec: Mapping[str, Any], out_dir, progress_path) -> Dict[str, Any]:
                               entry_params=ruled["entry"], execution=ruled["execution"],
                               validation_eligible=eligibility["eligible"])
         result["eligibility"] = eligibility
-        result["owner_rulings"] = dict(rulings)
+        result["execution_policy_sha256"] = sealed["receipt_sha256"]
+        result["cost_verification"] = ruled["cost_verification"]
         pair_status = "PASS" if not result["failures"] else "EXECUTION_FAILURES"
         put("backtest", "pair/BACKTEST.json", result)
         _progress(progress_path, 3, "publish")
