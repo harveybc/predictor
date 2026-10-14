@@ -1,5 +1,5 @@
 {
- "code_commit": "a595bb3a",
+ "code_commit": "7c3bebb2",
  "covered": [
   "DMO01",
   "DMO04",
@@ -9,18 +9,42 @@
  "failed": 1,
  "failed_detail": {
   "DMO10": {
-   "assertion": "monitored == hist[best]['monitored'] (bitwise)",
-   "finding": "FIFTH consecutive revision with the bit-identical value pair, across FOUR rewrites of the monitored-evaluation procedure (op determinism, shared path, unified inference path, sequential partition). The record now claims procedure i6dmo.monitor_eval.v1, partition sequential_row_id_fixed, graph inference, self_check PASS - and still stores the same old float. A recorded value that never moves under four procedural rewrites is not numerics: on the GPU run, whatever produces hist[].monitored (and satisfies the self-check) is still the original path, while the replay exercises the new one. Suggest the model lane verify ON A GPU RUN that hist values actually change between revisions, and that the self-check compares the stored value against the shared path rather than against itself (same object compared twice passes trivially). Nothing relaxed.",
-   "history": "identical pair across 5047cef9/cca08c9b/fc4246b4/d3b00360/e2d84774/a595bb3a",
+   "history": "bit-stable pair across 5047cef9..a595bb3a; witness typed at 7c3bebb2",
    "test": "tests/i6dmo/test_dmo_train.py::test_dmo10_train_unit_end_to_end_restore_and_reload",
-   "values": {
-    "recorded": 0.9923369350252383,
-    "replay": 0.9923319867401985
+   "typed": "MONITOR_WITNESS_DIVERGENCE",
+   "verdict": "REAL FORWARD DIVERGENCE, not a stale path: with monitor v2 both sides go through the canonical loader path, the very first batch has identical rows and counts, and the per-head sums still differ in the 4th-6th decimal. The in-training model instance and the canonically rebuilt/loaded instance produce different forward passes on this GPU with identical weights - each deterministic (the bit-stable pairs across six revisions), so the likely cause is instance-level algorithm selection (cuDNN/cuBLAS autotune or tf.function trace context differing after a training session), which op determinism makes repeatable but not instance-invariant. Owner: model lane. Nothing relaxed.",
+   "witness": {
+    "batch": "fit batch 0 (start 0)",
+    "partial_counts": [
+     96,
+     71,
+     65,
+     76,
+     74,
+     74
+    ],
+    "recomputed_partial_sums": [
+     91.62058047044911,
+     62.92874957006968,
+     50.245725782161124,
+     69.33698446296076,
+     60.43053086947311,
+     70.29462522989473
+    ],
+    "recorded_partial_sums": [
+     91.62024683158734,
+     62.92798898872531,
+     50.2465664609722,
+     69.33756212510089,
+     60.431633421291004,
+     70.29452050825915
+    ],
+    "row_ids_sha256": "02bf9bc774511ea6533431b7fbc8d3bcb2f8078183a0b829102735b9ca8f32e2"
    }
   }
  },
  "gpu_devices": 1,
- "note": "DMO01 causality and DMO04 masking pass on the GPU (12 passed, probe-logic test now skipped under GPU as intended); DMO10 remains CPU-only acceptance",
+ "note": "DMO01 causality and DMO04 masking pass on the GPU; DMO10 remains CPU-only acceptance; the witness has localized the gap to the first forward batch between instances",
  "passed": 12,
  "probe": {
   "meaning": "in_session vs rebuild vs full_load per-head sums agree in ONE session on the GPU",
@@ -37,5 +61,5 @@
  "skipped": 1,
  "tests": "test_dmo_model.py + test_dmo_train.py -k dmo01/dmo04/dmo10/causality (12 selected)",
  "tf": "2.21.0",
- "wall_seconds": 15.7
+ "wall_seconds": 30.0
 }
