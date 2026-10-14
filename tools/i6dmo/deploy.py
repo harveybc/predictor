@@ -67,11 +67,12 @@ def render_units(root, roles=None):
     workdir = coord.get("workdir") or spec["roles"].get("coordinator", {}).get("workdir")
     roles = roles or coord.get("unit_roles") or sorted(spec["roles"])
     base = dict(CID=cid, MARK=f"{MARK}={cid}", PYTHON=python, WORKDIR=workdir, ROOT=root, PREFIX=p,
-                INTERVAL=int(spec.get("tick_interval_seconds", 300)), ENVFILE=spec["warehouse"]["environment_file"])
+                INTERVAL=int(spec.get("tick_interval_seconds", 300)), ENVFILE=spec["warehouse"].get("environment_file") or "")
     units = {f"{p}tick.service": _fill("i6dmo-tick.service.in", base),
-             f"{p}tick.timer": _fill("i6dmo-tick.timer.in", base),
-             f"{p}publish.service": _fill("i6dmo-publish.service.in", base),
-             f"{p}publish.timer": _fill("i6dmo-publish.timer.in", base)}
+             f"{p}tick.timer": _fill("i6dmo-tick.timer.in", base)}
+    if spec["warehouse"].get("environment_file"):  # else publication waits; the outbox keeps every fact
+        units[f"{p}publish.service"] = _fill("i6dmo-publish.service.in", base)
+        units[f"{p}publish.timer"] = _fill("i6dmo-publish.timer.in", base)
     for role in roles:
         if role not in spec["roles"]:
             raise C.Refused(f"UNKNOWN_ROLE: {role}")
@@ -128,11 +129,16 @@ def deploy(root, *, unit_dir=None, systemctl=None, start=True, roles=None, rende
                          launched=bool(a["launch"])) for a in q.running()]
     finally:
         q.close()
-    doc = dict(schema="i6dmo.deploy.v1", campaign_id=cid, units=sorted(rendered), written=written,
+    waiting = [] if spec_has_envfile(root) else ["PUBLISH_WAITS_WAREHOUSE_ENVIRONMENT_FILE owner=Satoshi"]
+    doc = dict(schema="i6dmo.deploy.v1", campaign_id=cid, units=sorted(rendered), written=written, waiting=waiting,
                unchanged=unchanged, timers=timers, observed=observed, live_children=children,
                note="observed states are systemctl readings at deploy time; children start on the next worker tick")
     atomic_json(root / "DEPLOY.json", doc)
     return doc
+
+
+def spec_has_envfile(root):
+    return bool(C.load_deployment(root)["warehouse"].get("environment_file"))
 
 
 def _inside_git(path):

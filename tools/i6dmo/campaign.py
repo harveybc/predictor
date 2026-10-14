@@ -252,6 +252,7 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
 
 SUPERSEDED_BUNDLE_PREFIXES = ("5221615d",)  # exact-slot build, superseded by the as-of ruling
 BUNDLE_SAMPLING_RULE = "DS2_ASOF_LAST_AVAILABLE"
+BUNDLE_SAMPLING_BY_KEY = {"short_bundle": "DS2_ASOF_LAST_AVAILABLE", "long_bundle": "DS12_ASOF_LAST_AVAILABLE"}
 
 
 def _check_bundle_pins(pins):
@@ -264,8 +265,9 @@ def _check_bundle_pins(pins):
             raise Refused(f"BUNDLE_PIN_INCOMPLETE: {key} needs bundle_sha256")
         if identity.startswith(SUPERSEDED_BUNDLE_PREFIXES):
             raise Refused(f"SUPERSEDED_BUNDLE: {key} {identity[:8]} must not be used")
-        if pin.get("input_sampling") != BUNDLE_SAMPLING_RULE:
-            raise Refused(f"BUNDLE_SAMPLING: {key} must be {BUNDLE_SAMPLING_RULE}")
+        rule = BUNDLE_SAMPLING_BY_KEY.get(key, BUNDLE_SAMPLING_RULE)
+        if pin.get("input_sampling") != rule:
+            raise Refused(f"BUNDLE_SAMPLING: {key} must be {rule}")
 
 
 def pin_file(key, pin):

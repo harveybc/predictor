@@ -590,6 +590,12 @@ def _artifacts(root, effective, unit, role_spec):
             return bundle, f"ENTRY_UNAVAILABLE:{module}.run_unit owner={owner}"
     if key is not None and pin is None:
         return bundle, f"BUNDLE_PIN_MISSING:{key} owner=data lane (tools.i6dmo.data.build_frozen_bundle)"
+    if pin is not None and pin.get("data_contract_sha256") and unit["family"] in ("short", "long"):
+        design = effective["long"]["design"] if unit["family"] == "long" else effective["design"]
+        from tools.i6dmo import data as data_lane
+        if data_lane.data_contract_sha256(design) != pin["data_contract_sha256"]:
+            return bundle, (f"DATA_CONTRACT_MISMATCH:{key} sealed {unit['family']} design differs from the bundle's "
+                            "data view owner=data lane / model lane")
     hook = importlib.import_module(module)
     if hasattr(hook, "preconditions"):
         cause = hook.preconditions(dict(unit=unit, effective_config=effective, data_root=role_spec.get("data_root")))
