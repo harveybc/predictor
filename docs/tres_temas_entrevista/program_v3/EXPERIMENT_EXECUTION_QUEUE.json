@@ -1,10 +1,10 @@
 {
   "schema": "experiment_execution_queue.v2",
-  "updated_on": "2026-10-11",
+  "updated_on": "2026-10-14",
   "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md and its program_v3 subplans",
   "policy": {
-    "focus": "I6E_MULTI_HORIZON_DOWNSAMPLING_THEN_HOURLY_RUNNING",
-    "parallelism": "Two GPU slots and one 1-GiB ARIMA CPU slot. Per-model coarse stage precedes hourly stage. Only preferred GPU on preferred host; secondary <=9 samples. Durable scheduler and OLAP follower need no agent intervention.",
+    "focus": "I6_DMO_SHORT_DS2_STATIC_THEN_LONG_AND_STRATEGY",
+    "parallelism": "Parallel bounded implementation/data/strategy/OLAP lanes; first scientific fixed fit on preferred 5090 only, one heavy process per host. No duplicate fits to fill GPUs.",
     "seed_default": 6102026,
     "seed_maximum": 3,
     "repeat_policy": "adopt valid terminals; repeat only lost corrupt or scientifically changed units",
@@ -13,19 +13,32 @@
       "dragon_4090",
       "omega_4070"
     ],
-    "gpu_use_now": "Real weekly fits running on 5090 and 4090 under measured reservations. Never run 5070 Ti concurrently. TEST remains closed.",
+    "gpu_use_now": "Four POO-v2 services stopped and disabled; no new scientific fit yet. Satoshi implements/tests/preflights I6-DMO before deployment.",
     "financial_gate": "MAE in original price must beat naive para el horizonte de X horas on identical rows before strategy evaluation",
-    "test_policy": "2025 TEST reserved; no selection on TEST; 2024 validation only after sealing grid and per-horizon input populations",
+    "test_policy": "2024 is development due to feature selection. TEST 2025 closed until full pair, procedure freeze and source provenance gates pass.",
     "warehouse_policy": "all metrics decisions ranks costs and identities require submit plus readback",
-    "snapshot_policy": "verified physical DuckDB copies on coordinator and worker_b; Git contains code, manifest and SHA-256, never the 3.4 GiB binary"
+    "snapshot_policy": "verified physical DuckDB copies on coordinator and worker_b; Git contains code, manifest and SHA-256, never the 3.4 GiB binary",
+    "retraining_frequency": "NONE for initial static baseline; QUARTERLY/MONTHLY/WEEKLY later validation-only comparisons"
   },
   "superseded": {
     "neat_hyperparameter_campaigns": "DIAGNOSTIC_ONLY_STOPPED",
     "all_321_or_all_83_as_selected": false,
     "phase1_causal_supported_is_final_selection": false,
-    "dated_handoffs_can_dispatch": false
+    "dated_handoffs_can_dispatch": false,
+    "h4_h72_poo_sequence": "PAUSED_NO_AUTOMATIC_RESTART"
   },
   "lanes": [
+    {
+      "priority": 0,
+      "id": "I6-DMO",
+      "resource": "bounded_parallel_CPU_implementation_then_preferred_5090",
+      "state": "DESIGNED_NOT_IMPLEMENTED",
+      "dispatch_enabled": true,
+      "work": "Implement and run short six-head DS2 R0 static baseline; automatically advance eligible long/pair stages, no TEST before frozen readiness gates.",
+      "depends_on": [],
+      "produces": "Generated STATUS, effective configs, per-horizon naive/MAE, model pairs, OLAP readback and eventual frozen TEST trading metrics",
+      "work_plan": "../../i6n/direct_multi_output_static/PLAN.md"
+    },
     {
       "priority": -1,
       "id": "I6E-STATISTICAL72",
@@ -34,19 +47,22 @@
       "work": "TRAIN-only cost, 312 weekly-resolution cells, 6552 phase fits per model, common-row closure and automatic live OLAP publication/readback.",
       "depends_on": [],
       "produces": "STATISTICAL_CLOSURE.json and olap/PUBLICATION.json",
-      "evidence": "ARIMA 156 successful; ARIMAX 121 successful and 35 numerical failures. Retained publication receipt: 312 reports / 2910 metrics PUBLISHED_READBACK_VERIFIED; failed arms have no aggregate."
+      "evidence": "ARIMA 156 successful; ARIMAX 121 successful and 35 numerical failures. Retained publication receipt: 312 reports / 2910 metrics PUBLISHED_READBACK_VERIFIED; failed arms have no aggregate.",
+      "dispatch_enabled": false
     },
     {
       "priority": 0,
       "id": "I6E-MULTIHORIZON",
       "resource": "CPU_design_and_tests_then_measured_5090_and_4090",
-      "state": "RUNNING_DOWNSAMPLING",
+      "state": "DEFERRED_BY_I6_DMO_AMENDMENT",
       "work": "Complete 28 downsampled arms then 10 hourly arms automatically, per model. Horizons 2,3,4,5,6,24,48,72,96,120; context 2h; coarse steps 1/2/3/4 where divisible. No permissions or user visits between stages.",
       "depends_on": [],
       "produces": "per-horizon original-price metrics and naive, complete stage dispositions, unattended status/ETA and exact OLAP readback",
       "design": "I6E_MULTI_HORIZON_PLAN.json",
       "work_plan": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
-      "evidence": "Runtime pin 48c55ac0, 38 contract/model tests and 2 observer tests. Live root i6e/multihorizon_2024_v2: sealed 2014 dispositions per NEURAL/ARIMA, real fits and exact OLAP readback. Receipt defects in predecessor retained; authenticated fits adopted without repeat. Live counters/ETA in STATUS.json and MONITOR_STATUS.json."
+      "evidence": "Runtime pin 48c55ac0, 38 contract/model tests and 2 observer tests. Live root i6e/multihorizon_2024_v2: sealed 2014 dispositions per NEURAL/ARIMA, real fits and exact OLAP readback. Receipt defects in predecessor retained; authenticated fits adopted without repeat. Live counters/ETA in STATUS.json and MONITOR_STATUS.json.",
+      "dispatch_enabled": false,
+      "previous_state": "RUNNING_DOWNSAMPLING"
     },
     {
       "priority": 1,
@@ -56,7 +72,8 @@
       "work": "Implement and test the durable pairwise driver, bounded worker, warehouse migration, status writer and restart behavior.",
       "depends_on": [],
       "produces": "one deployable commit and wheel for all hosts",
-      "evidence": "driver fc026d04 (branch satoshi/fs-phase23-driver-20261005), data 18865d4c (satoshi/fs-phase23-data-20261005), integrated branch satoshi/fs-phase23-integrated-20261006; one commit deployed on all three roles with digest parity"
+      "evidence": "driver fc026d04 (branch satoshi/fs-phase23-driver-20261005), data 18865d4c (satoshi/fs-phase23-data-20261005), integrated branch satoshi/fs-phase23-integrated-20261006; one commit deployed on all three roles with digest parity",
+      "dispatch_enabled": false
     },
     {
       "priority": 2,
@@ -68,7 +85,8 @@
         "FS-PHASE2-ENGINEERING"
       ],
       "produces": "PHASE_2_COMPLETE.json plus OLAP tables and verified snapshot",
-      "evidence": "PHASE_2_COMPLETE.json EURUSD (2026-10-06T23:54:40Z, 66,795 pairs, 256 units, 0 failed) and ETH (09:30Z, 3,403 pairs, 32 units, 0 failed); live warehouse reconcile complete for both runs; verified physical snapshots and SHA-256 manifest"
+      "evidence": "PHASE_2_COMPLETE.json EURUSD (2026-10-06T23:54:40Z, 66,795 pairs, 256 units, 0 failed) and ETH (09:30Z, 3,403 pairs, 32 units, 0 failed); live warehouse reconcile complete for both runs; verified physical snapshots and SHA-256 manifest",
+      "dispatch_enabled": false
     },
     {
       "priority": 3,
@@ -80,7 +98,8 @@
         "FS-PHASE2-PAIRWISE"
       ],
       "produces": "PHASE_3_FILTER_COMPLETE.json plus candidate subset trajectories",
-      "evidence": "PHASE_3_FILTER_COMPLETE.json EURUSD (23:57:02Z, 14 targets, 45,990 ranking rows, 686 subsets) and ETH (09:30:59Z, 6 targets, 4,212 / 294); CANDIDATES_FOR_VALIDATION.json per population, predictive_winner null, uses_test_split false"
+      "evidence": "PHASE_3_FILTER_COMPLETE.json EURUSD (23:57:02Z, 14 targets, 45,990 ranking rows, 686 subsets) and ETH (09:30:59Z, 6 targets, 4,212 / 294); CANDIDATES_FOR_VALIDATION.json per population, predictive_winner null, uses_test_split false",
+      "dispatch_enabled": false
     },
     {
       "priority": 4,
@@ -92,7 +111,8 @@
         "FS-PHASE3-FILTERS"
       ],
       "produces": "extractibility evidence for wrapper validation",
-      "evidence": "fs4/preliminary/wave2_successor/EXTRACTIBILITY_PARTIAL_COMPLETE.json, digest d9bf5effb0a5b410c6961255cb9fe22e244b1f552d3af5818e0ea06c254169eb; 670/670 task dispositions per arm, 589 measured and 81 typed NO_TRAIN_OBSERVATIONS per arm; final selection false"
+      "evidence": "fs4/preliminary/wave2_successor/EXTRACTIBILITY_PARTIAL_COMPLETE.json, digest d9bf5effb0a5b410c6961255cb9fe22e244b1f552d3af5818e0ea06c254169eb; 670/670 task dispositions per arm, 589 measured and 81 typed NO_TRAIN_OBSERVATIONS per arm; final selection false",
+      "dispatch_enabled": false
     },
     {
       "priority": 5,
@@ -104,82 +124,97 @@
         "FS-PHASE4-EXTRACTIBILITY"
       ],
       "produces": "BUSINESS_WEEKLY_WALK_FORWARD winner and final selection manifest",
-      "evidence": "Plan ef7ffd580084c6fd09689e345a5b5c3bf1ae805604e36dd42f815b1bdec3c3f4 has 2080 RAW tasks, 40 sets x 52 weeks. Live counts must be queried from the weekly_queue.sqlite task store with tools.fs4_weekly_campaign status; the older STATUS.json is stale."
+      "evidence": "Plan ef7ffd580084c6fd09689e345a5b5c3bf1ae805604e36dd42f815b1bdec3c3f4 has 2080 RAW tasks, 40 sets x 52 weeks. Live counts must be queried from the weekly_queue.sqlite task store with tools.fs4_weekly_campaign status; the older STATUS.json is stale.",
+      "dispatch_enabled": false
     },
     {
       "priority": 6,
       "id": "MOD-PER-FEATURE-DENSE-CONTROLS",
       "resource": "CPU_design_then_admitted_compute",
-      "state": "WAITING_FOR_FINAL_MANIFEST",
+      "state": "DEFERRED_BY_I6_DMO_AMENDMENT",
       "work": "After final feature selection and I6-A design, replay the authenticated historical per-feature Dense ANN on its original inputs and protocol, or mark it NOT_REPRODUCIBLE; refit on selected features as a new whole-model control; separately compare a new causal-window Dense branch against Conv1D under identical temporal fusion/core/head and weekly rows. Do not treat flattened latent units as timestamps.",
       "depends_on": [
         "FS-PHASE4-WEEKLY-WRAPPER"
       ],
-      "produces": "I6-D paired historical and branch-only Dense control evidence"
+      "produces": "I6-D paired historical and branch-only Dense control evidence",
+      "dispatch_enabled": false,
+      "previous_state": "WAITING_FOR_FINAL_MANIFEST"
     },
     {
       "priority": 7,
       "id": "MOD-ARCH-E1",
       "resource": "best_admissible_gpu",
-      "state": "WAITING_FOR_FINAL_MANIFEST",
+      "state": "DEFERRED_BY_I6_DMO_AMENDMENT",
       "work": "Matched architecture controls, branch donors and R0/R1/R2; run I6-D alongside branch pretraining and account for it before declaring a winning branch family.",
       "depends_on": [
         "FS-PHASE4-WEEKLY-WRAPPER"
       ],
-      "produces": "winning branch architecture and regime"
+      "produces": "winning branch architecture and regime",
+      "dispatch_enabled": false,
+      "previous_state": "WAITING_FOR_FINAL_MANIFEST"
     },
     {
       "priority": 8,
       "id": "MOD-HCORE",
       "resource": "best_admissible_gpu",
-      "state": "WAITING_FOR_MOD_ARCH_E1",
+      "state": "DEFERRED_BY_I6_DMO_AMENDMENT",
       "work": "Fix winning branch prefix, materialize fusion, pretrain core and test transfer separately.",
       "depends_on": [
         "MOD-ARCH-E1"
       ],
-      "produces": "core donor and transfer result"
+      "produces": "core donor and transfer result",
+      "dispatch_enabled": false,
+      "previous_state": "WAITING_FOR_MOD_ARCH_E1"
     },
     {
       "priority": 9,
       "id": "MOD-DOIN",
       "resource": "fleet",
-      "state": "WAITING_FOR_ELIGIBLE_MODEL",
+      "state": "DEFERRED_BY_I6_DMO_AMENDMENT",
       "work": "DEAP proposes typed configurations and DOIN evaluates finite candidate batches.",
       "depends_on": [
         "MOD-ARCH-E1"
       ],
-      "produces": "verified incumbent and candidate history"
+      "produces": "verified incumbent and candidate history",
+      "dispatch_enabled": false,
+      "previous_state": "WAITING_FOR_ELIGIBLE_MODEL"
     },
     {
       "priority": 10,
       "id": "HEAD-DENSE-NEAT",
       "resource": "best_admissible_gpu",
-      "state": "WAITING_FOR_FROZEN_REPRESENTATION",
+      "state": "DEFERRED_BY_I6_DMO_AMENDMENT",
       "work": "Dense control versus true NEAT predictive head on the frozen representation.",
       "depends_on": [
         "MOD-HCORE"
       ],
-      "produces": "matched head comparison"
+      "produces": "matched head comparison",
+      "dispatch_enabled": false,
+      "previous_state": "WAITING_FOR_FROZEN_REPRESENTATION"
     },
     {
       "priority": 11,
       "id": "RL-RAW-MODULAR",
       "resource": "best_admissible_gpu",
-      "state": "WAITING_FOR_FINAL_REPRESENTATION",
+      "state": "DEFERRED_BY_I6_DMO_AMENDMENT",
       "work": "SAC raw/modular and DQN raw/modular, one seed first.",
       "depends_on": [
         "MOD-HCORE"
       ],
-      "produces": "matched policy results"
+      "produces": "matched policy results",
+      "dispatch_enabled": false,
+      "previous_state": "WAITING_FOR_FINAL_REPRESENTATION"
     },
     {
       "priority": 12,
       "id": "TRADING-PAPER",
       "resource": "CPU_services",
-      "state": "PAUSED_DURING_SELECTION_FOCUS",
+      "state": "DEFERRED_BY_I6_DMO_AMENDMENT",
       "work": "Resume after the active selection closure; promote only naive-eligible artifacts.",
       "depends_on": [],
-      "produces": "shadow and paper receipts"
+      "produces": "shadow and paper receipts",
+      "dispatch_enabled": false,
+      "previous_state": "PAUSED_DURING_SELECTION_FOCUS"
     },
     {
       "priority": 99,
@@ -192,7 +227,8 @@
         "RL-RAW-MODULAR",
         "TRADING-PAPER"
       ],
-      "produces": "separate incremental-value ablation"
+      "produces": "separate incremental-value ablation",
+      "dispatch_enabled": false
     }
   ]
 }

@@ -1,11 +1,27 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-11. Este documento contiene sólo el plan vigente. Los
+Actualizado: 2026-10-14. Este documento contiene sólo el plan vigente. Los
 retornos RP, snapshots de máquinas, restricciones ya levantadas y dictámenes
 superados son evidencia histórica en `docs/audits/` y `docs/handoffs/`; no
 gobiernan la ejecución.
 
 ## 1. Autoridad vigente
+
+Enmienda del propietario 2026-10-14: el siguiente despacho es
+[I6-DMO, direct multi-output estatico](../i6n/direct_multi_output_static/PLAN.md).
+Primero corto 2/3/4/5/6/12 h con entradas cada 2 h, 13 observaciones que cubren
+24 h e incluyen t; luego largo 18/24/36/48/60/72 h; despues evaluar la pareja
+completa en la estrategia. Reajustes durante el ano desactivados en esta
+primera identidad. Esta enmienda prevalece sobre instrucciones antiguas de
+reajuste semanal obligatorio, barridos por horizonte y relevo H4->H72.
+No borra resultados ni autoriza reutilizar sus identidades. Las cuatro islas
+POO-v2 y su relevo estan detenidos; sus archivos y entregas OLAP se conservan.
+
+Prioridad inmediata: mascara y disponibilidad del negocio; utilidad predictiva
+y trading de la pareja; despues valor/coste de reajustes trimestrales,
+mensuales y semanales. La primera prueba es un modelo modular pequeno R0,
+no doce entrenamientos independientes ni una busqueda DEAP. R2 con donantes
+compatibles sigue planificado como contraste posterior.
 
 El orden de autoridad es:
 
@@ -59,8 +75,11 @@ en la misma población.
 ## 3. Reglas no negociables
 
 1. **Tiempo y causalidad.** Todo dato, transformación, label, split y replay
-   declara tiempo de evento, tiempo de disponibilidad y soporte. No se ajusta
-   nada con validación/test ni se permite fuga por bordes, relleno o revisiones.
+   declara tiempo de evento, tiempo de disponibilidad y soporte. Scalers,
+   imputacion y checkpoint selection usan fit/inner; VALIDATION puede elegir
+   hiperparametros y features, declarando su uso como desarrollo. TEST no
+   participa en ninguna seleccion. No se permite fuga por bordes, revisiones
+   ni disponibilidad; seleccionar con 2024 no convierte folds 2023 en OOS.
 2. **Naive pareado.** Cada MAE/MSE comunicado incluye el naive de las mismas
    filas, escala y horizonte. Una predicción que no supera estrictamente el
    naive no entra a la estrategia heurística ni genera artefactos de trading.
@@ -80,11 +99,15 @@ en la misma población.
    métricas científicas prueban hipótesis; shadow/paper prueba integración.
 9. **Paralelismo útil.** Un bloqueo local no detiene perfiles, referencias,
    preparación ni entrenamientos independientes y elegibles.
-10. **El negocio gobierna la evaluación financiera.** EURUSD validation y test
-   se recorren por semanas consecutivas. Antes de cada semana se actualiza el
-   modelo con una ventana móvil de cuatro años terminada en el cutoff. Se congela
-   el procedimiento antes del test, no un único juego de pesos para todo el año.
-   `LITERATURE_STATIC` permanece como modo separado para reproducciones fieles.
+10. **El negocio gobierna la evaluacion financiera.** Calendario, disponibilidad,
+   mascaras por salida, cierre forzoso y costes son obligatorios en todos los
+   modos. La frecuencia de reajuste es explicita: NONE, QUARTERLY, MONTHLY o
+   WEEKLY, con identidad propia. I6-DMO empieza por BUSINESS_STATIC_BASELINE:
+   cuatro anos TRAIN, ano completo VALIDATION y ano completo TEST congelado;
+   no es una simulacion de adaptacion semanal. Reajustes posteriores usan
+   cuatro anos moviles y se comparan primero en VALIDATION. Todos los modos
+   reportan cada semana y el total anual; no se sustituyen por una semana.
+   `LITERATURE_STATIC` sigue reservado a reproducciones fieles de papers.
 
 ## 4. Checklist de control de alto nivel
 
@@ -92,7 +115,7 @@ Este checklist es la vista que debe consultar el orquestador antes de cada
 despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
 
 - [ ] I0. Contrato de negocio: targets corto/largo, barrera, RL, costes y riesgo.
-- [ ] I0-W. Walk-forward: cuatro años móviles, actualización semanal, años completos de validation/test y modo literatura separado.
+- [ ] I0-W. Cadencia configurable: baseline estatico primero, despues trimestral/mensual/semanal con cuatro anos moviles; anos externos completos y modo literatura separado.
 - [ ] I1. Inventario: fuente, columna, unidad, frecuencia, licencia y disponibilidad.
 - [ ] I2. Perfil básico completo por celda de métrica, no una marca global.
 - [x] I3. Perfil individual y escalera causal por feature-target.
@@ -110,7 +133,13 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
   Esto no cierra la viabilidad de la estrategia. I7-M historico: un cabezal directo
   con 11 salidas (1-6, 24, 48, 72, 96 y 120 h), ramas preentrenadas en R2,
   cuatro anos moviles y 52 semanas de VALIDATION. 1 h es solo diagnostico.
-  [Contrato y ejecucion](program_v3/I7_MULTI_HORIZON_WORK_PLAN.md).
+  [Contrato historico](program_v3/I7_MULTI_HORIZON_WORK_PLAN.md); no es el siguiente despacho.
+- [ ] I6-DMO. Prioridad vigente: corto multisalida DS2 estatico, luego largo
+  multisalida, pareja en VALIDATION y confirmacion predictiva/trading en TEST
+  solo tras congelar procedimiento y resolver procedencia. Seis cabezales por
+  familia, sin reajustes durante el ano; naive por horizonte y mascaras C1/C2.
+  [Plan](../i6n/direct_multi_output_static/PLAN.md) y
+  [orden Satoshi](../handoffs/MUSASHI_TO_SATOSHI_DIRECT_MULTI_OUTPUT_20261014.md).
 - [ ] I6-E. Viabilidad de doble pronostico: h=2,3,4,5,6,24,48,72,96,120 h.
   Primero downsampling a 1/2/3/4 ticks cuando h/k sea una hora entera;
   despues controles horarios de menor a mayor ventana; contexto 2h en ambos.
@@ -123,21 +152,26 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
   ningun brazo supera al naive. Precio original reconciliado y 2,184 metricas
   verificadas en OLAP. Controles CPU: 312 disposiciones cerradas, 35 fallos
   ARIMAX retenidos; 312 informes / 2,910 metricas con recibo de readback.
-  La grilla nueva esta EN EJECUCION: runtime `48c55ac0`, 38 pruebas y
-  observador automatizado; 5090/4090 con memoria medida, control ARIMA CPU,
-  cola de 2014 disposiciones por modelo, outbox con lectura exacta verificada.
+  La grilla y las busquedas posteriores H4/H72 quedan fuera del despacho
+  vigente, pausadas por I6-DMO; conservar sus disposiciones y entregas OLAP.
   No reutilizar ciegamente donantes ni confundir el barrido R2 de ventana fija
   24 con el contraste de ventanas. TEST cerrado. Skill vigente:
   `(MAE_h-naive_h)/naive_h`, negativo mejora; etiquetas y OLAP lo explicitan.
 - [ ] I7-H. Fijar prefijo ganador y probar H-CORE por separado.
-- [ ] I8. Optimización DEAP distribuida por DOIN del modelo elegible.
+- [ ] I8. Optimizacion DEAP distribuida por DOIN: H4 retenido como desarrollo,
+  cuatro islas POO-v2 pausadas por cambio de plan; no reactivar H72. Protocolo
+  colaborativo y pruebas de trabajo se conservan; busqueda multisalida futura
+  solo bajo una nueva identidad despues del baseline I6-DMO.
 - [ ] I9-N. Representación final congelada: Dense control frente a NEAT.
 - [ ] I9-R. SAC raw/modular y DQN raw/modular.
 - [ ] I10. LTS semanal, shadow, MT5 demo y Alpaca paper.
 - [ ] I11. Extensión final opcional: calendario económico causal como entrada.
 - [ ] I12. Posprograma: configurar `feature-selector` desde el chat de M5PHET.
 
-Las casillas no implican ejecución serial. I2 de un lote puede coexistir con I4
+Las casillas no implican ejecución serial. I6-DMO mantiene una secuencia
+cientifica corta->larga->pareja; su codigo, procedencia, adaptador de estrategia
+y automatizacion se implementan en paralelo. No duplicar un fit para ocupar
+GPU. I2 de un lote puede coexistir con I4
 de otro; referencias públicas, ingeniería, M5PHET y paper trading pueden avanzar
 si no consumen artefactos que todavía no existen.
 
@@ -165,8 +199,10 @@ predictores ni convertir el resultado negativo en una afirmacion sobre RL.
 
 ### Secuencia de datos
 
-La primera selección financiera de negocio es **EURUSD**, con targets de retorno
-1-6 h, 24-144 h, barreras de orden y objetivo de política. FXMacroData aporta
+La primera seleccion financiera de negocio es **EURUSD**. Los targets vigentes
+de la estrategia son corto 2/3/4/5/6/12 h y largo 18/24/36/48/60/72 h; perfiles
+anteriores 1-6 h y 24-144 h quedan como evidencia, no calendario de despacho.
+Tambien se conservan barreras de orden y objetivo de politica. FXMacroData aporta
 calendario, consenso, actual y revisiones con vintage; Yahoo Finance y Alpaca
 aportan covariables donde tengan cobertura point-in-time. ETH puede probar
 mecánica y controles en un manifiesto secundario, pero no reemplaza EURUSD por
@@ -299,6 +335,9 @@ en un diagrama son ilustrativas, no un límite.
 4. El núcleo default proyecta por instante, usa dos bloques Transformer completos
    y tres etapas Conv1D residuales que llevan tiempo 24→12→6→6 y canales
    32→16→8.
+   La identidad inicial I6-DMO es una excepcion pequena y explicita: branches
+   Conv1D de 4 filtros y core Conv1D 8->4, todos stride 1; no cambia ese default
+   ni el diseno de plugins. Colapsa tiempo exclusivamente dentro de cada head.
 5. El cabezal recibe la representación temporal `(batch, 6, 8)` o la forma
    configurada.
 

@@ -1,6 +1,6 @@
 {
   "schema": "master_checklist.v1",
-  "updated_on": "2026-10-11",
+  "updated_on": "2026-10-14",
   "states": [
     "NOT_STARTED",
     "DESIGNED",
@@ -17,12 +17,12 @@
     },
     {
       "id": "I0-W",
-      "name": "business_weekly_walk_forward",
+      "name": "business_cadence_and_static_baseline",
       "state": "DESIGNED",
       "depends_on": [
         "I0"
       ],
-      "gate": "BW01-BW18 executable across forecasting, heuristic and RL with rolling four-year weekly evaluation"
+      "gate": "Business masks/calendar always; NONE first, later QUARTERLY/MONTHLY/WEEKLY with four-year windows and full external years"
     },
     {
       "id": "I1",
@@ -87,7 +87,9 @@
       "id": "I5-P",
       "name": "selected_input_denoising_ablation",
       "state": "EVIDENCE_PARTIAL",
-      "depends_on": ["I5"],
+      "depends_on": [
+        "I5"
+      ],
       "gate": "paired RAW, causal reconstruction and latent inputs on selected features; target and naive unchanged; verified temporal support and RAW fallback",
       "evidence": "Four selected-feature origin-covering donors and a real TRAIN probe are retained. Three paired TRAIN-2023 weeks found reconstruction worse than RAW on the same target, rows and naive; RAW remains the mainline input. The latent arm and full acceptance gate are not complete."
     },
@@ -134,11 +136,26 @@
     {
       "id": "I6-E",
       "name": "multihorizon_downsampling_then_hourly",
-      "state": "IN_PROGRESS",
-      "depends_on": ["I5"],
+      "state": "EVIDENCE_PARTIAL",
+      "depends_on": [
+        "I5"
+      ],
       "gate": "28 downsampled then 10 hourly unique arms, original-price MAE against naive para el horizonte de X horas on authenticated rows, autonomous stage completion and live OLAP readback",
-      "work_plan": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
-      "evidence": "Runtime 48c55ac0 deployed with 38 contract/model tests plus 2 monitor tests. Real 5090/4090 weekly fits, 1-GiB CPU ARIMA, persistent coordinator/outbox/status timer, exact OLAP readback and automatic D->H queue. Live counters in multihorizon_2024_v2, no annual conclusion yet, TEST closed."
+      "work_plan": "../../i6n/direct_multi_output_static/PLAN.md",
+      "evidence": "Runtime 48c55ac0 deployed with 38 contract/model tests plus 2 monitor tests. Real 5090/4090 weekly fits, 1-GiB CPU ARIMA, persistent coordinator/outbox/status timer, exact OLAP readback and automatic D->H queue. Live counters in multihorizon_2024_v2, no annual conclusion yet, TEST closed.",
+      "execution_status": "PAUSED_BY_OWNER_FOR_I6_DMO"
+    },
+    {
+      "id": "I6-DMO",
+      "name": "static_direct_multi_output_business_pair",
+      "state": "DESIGNED",
+      "depends_on": [
+        "I0",
+        "I5"
+      ],
+      "gate": "Short DS2 static six heads, long six heads, frozen-pair validation and TEST forecast/trading metrics after gates",
+      "work_plan": "../../i6n/direct_multi_output_static/PLAN.md",
+      "evidence": "2026-10-14 owner amendment; four POO-v2 services stopped/disabled and successor disabled; implementation delegated, no new fit or TEST read"
     },
     {
       "id": "I7-H",
@@ -152,11 +169,13 @@
     {
       "id": "I8",
       "name": "doin_optimization",
-      "state": "NOT_STARTED",
+      "state": "EVIDENCE_PARTIAL",
       "depends_on": [
         "I7"
       ],
-      "gate": "verified incumbent"
+      "gate": "verified incumbent",
+      "execution_status": "PAUSED_BY_OWNER",
+      "evidence": "Retained H4 tuning and repaired POO-v2 consensus; four live services stopped/disabled for new fixed-model baseline. No H72 successor launch."
     },
     {
       "id": "I9-N",
@@ -223,6 +242,10 @@
     "strategy evaluation when forecast does not beat same-row naive",
     "flattened Dense output size or reshape claimed to preserve chronological positions",
     "economic calendar or causal dossier used as model input before I11",
-    "denoising the predictive target or naive during I5-P"
-  ]
+    "denoising the predictive target or naive during I5-P",
+    "retired H4/H72 successor revives while I6-DMO is active",
+    "static business baseline labelled as weekly adaptation",
+    "six independent full models substituted for shared six-head model"
+  ],
+  "active_dispatch": "I6-DMO"
 }

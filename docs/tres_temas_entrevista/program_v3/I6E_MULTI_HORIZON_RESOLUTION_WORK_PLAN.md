@@ -1,5 +1,14 @@
 # I6-E-M: horizontes de negocio, primero downsampling y despues horario
 
+## Superseding dispatch amendment, 2026-10-14
+
+The per-horizon campaign below is retained history/design, not the next
+execution. Do not resume its downsampled/hourly queues. The active experiment
+is [I6-DMO](../../i6n/direct_multi_output_static/PLAN.md), short six-head DS2
+static first, long six-head second, then frozen-pair trading evaluation.
+Retain all completed metrics and original identities; no silent conversion
+of weekly or single-horizon results into static multi-output results.
+
 Actualizado: 2026-10-11. Estado: EJECUTOR IMPLEMENTADO Y PROBADO; despliegue
 y medicion de coste registrados separadamente en el estado operativo.
 Este es el subplan vigente para la extension de I6-E. Sustituye la grilla

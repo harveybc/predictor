@@ -1,0 +1,85 @@
+{
+  "schema": "i6dmo.design.v1",
+  "status": "DESIGN_NOT_RUNTIME_CONFIG",
+  "experiment_id": "I6-DMO-SHORT-DS2-STATIC-R0",
+  "asset": "EURUSD",
+  "seed": 6102026,
+  "repetitions": 1,
+  "evaluation_mode": "BUSINESS_STATIC_BASELINE",
+  "retraining_frequency": "NONE",
+  "input": {
+    "value_mode": "RAW",
+    "history_span_hours": 24,
+    "spacing_hours": 2,
+    "observations": 13,
+    "include_origin": true,
+    "issuance_hours": 1,
+    "smoothing": false,
+    "require_exact_timestamps": true
+  },
+  "horizons_hours": [2, 3, 4, 5, 6, 12],
+  "feature_policy": {
+    "source": "active_19_feature_point_in_time_manifest",
+    "exclude": ["fred.stress.stlfsi4.level"],
+    "reject_stlfsi4_aliases": true,
+    "development_selection_used_2024": true,
+    "unresolved_provenance_blocks_confirmatory_test": true
+  },
+  "splits": {
+    "train": {"start": "2020-01-01T00:00:00Z", "end": "2024-01-01T00:00:00Z"},
+    "inner_tail_weeks": 8,
+    "validation": {"start": "2024-01-01T00:00:00Z", "end": "2025-01-01T00:00:00Z"},
+    "test": {"start": "2025-01-01T00:00:00Z", "end": "2026-01-01T00:00:00Z", "open": false},
+    "end_exclusive": true,
+    "purge_by_label_availability": true
+  },
+  "business": {
+    "calendar": "versioned_instrument_contract",
+    "entry_delay_after_open_hours": 12,
+    "force_flat_before_close_hours": 12,
+    "entry_cutoff": "inherit_versioned_thursday_cutoff",
+    "per_output_masks": true,
+    "keep_row_if_any_head_valid": true,
+    "preserve_observed_past_input_history": true
+  },
+  "model": {
+    "regime": "R0",
+    "branch": {"type": "causal_conv1d", "filters": 4, "kernel_size": 3, "stride": 1},
+    "fusion": "concatenate_filters",
+    "positional_encoding": "immediately_after_fusion",
+    "core": {"type": "causal_conv1d", "filters": [8, 4], "kernel_sizes": [3, 3], "strides": [1, 1], "transformer_blocks": 0},
+    "heads": {"independent_weights": true, "readout": "flatten_core_sequence", "hidden_units": [8], "hidden_activation": "relu", "output_units": 1, "output_activation": "linear"}
+  },
+  "training": {
+    "optimizer": "AdamW",
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "batch_size": 256,
+    "max_epochs": 200,
+    "patience": 10,
+    "min_delta": 1e-8,
+    "loss": "equal_head_masked_mae_over_fit_only_naive",
+    "monitor": "mean_end_of_epoch_fit_and_inner_loss",
+    "restore_best_weights": true,
+    "outer_validation_for_checkpoint_selection": false
+  },
+  "metrics": {
+    "scale": "original_price_USD_per_EUR",
+    "relative_error": "(MAE_h-naive_h)/naive_h",
+    "negative_is_better": true,
+    "per_horizon": true,
+    "annual_aggregation": "pooled_absolute_error_sums_and_counts",
+    "weekly_diagnostics": true,
+    "olap_write_and_readback": true
+  },
+  "execution": {
+    "first_scientific_gpu": "preferred_5090",
+    "one_heavy_job_per_host": true,
+    "secondary_gpu": "4090_after_admission",
+    "preferred_aux_gpu": "disabled_for_parallel_fits",
+    "adopt_first_full_fit_as_cost_measurement": true,
+    "cpu_fallback": false,
+    "new_scientific_identity": true,
+    "resume_retired_doin_campaign": false
+  }
+}

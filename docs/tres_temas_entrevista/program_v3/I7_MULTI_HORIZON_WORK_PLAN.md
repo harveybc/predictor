@@ -1,5 +1,11 @@
 # I7-M: direct multi-output strategy horizon sweep
 
+Next dispatch superseded on 2026-10-14 by
+[I6-DMO](../../i6n/direct_multi_output_static/PLAN.md): short 2/3/4/5/6/12,
+DS2 inclusive 24-hour history, one static annual fit, then long vector and
+full strategy pair. This document describes only the retained historical
+11-output weekly experiment; its launch commands are not current orders.
+
 Retained historical experiment, not the next dispatch. The 52-week R2 sweep
 with a fixed 24-sample hourly window is complete, with a separately computed
 naive for each horizon in raw log-return units. It does NOT test context

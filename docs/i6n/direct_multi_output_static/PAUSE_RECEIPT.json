@@ -1,0 +1,21 @@
+{
+  "schema": "i6dmo.pause_receipt.v1",
+  "observed_at_utc": "2026-10-14T12:25:02Z",
+  "reason": "Owner replaced single-horizon optimization with static direct multi-output baseline",
+  "retired_runtime": "i6n-poo-v2-20261014",
+  "automatic_successor_stopped_and_disabled": true,
+  "old_pilot_and_historical_dispatch_timers_disabled": true,
+  "nodes": [
+    {"role": "coordinator_4070", "main_pid": 0, "control_pid": 0, "active_state": "failed", "stop_result": "timeout", "enabled": false},
+    {"role": "secondary_4090", "main_pid": 0, "control_pid": 0, "active_state": "failed", "stop_result": "timeout", "enabled": false},
+    {"role": "preferred_5090", "main_pid": 0, "control_pid": 0, "active_state": "failed", "stop_result": "timeout", "enabled": false},
+    {"role": "preferred_aux_5070ti", "main_pid": 0, "control_pid": 0, "active_state": "failed", "stop_result": "timeout", "enabled": false}
+  ],
+  "matching_historical_evaluator_processes_after_stop": 0,
+  "partial_fits_disposition": "INTERRUPTED_BY_OWNER_AMENDMENT_NOT_SCIENTIFIC_TERMINALS",
+  "completed_artifacts_deleted": false,
+  "chains_or_metrics_rewritten": false,
+  "archive_delivery_and_transport_preserved": true,
+  "unrelated_services_stopped": false,
+  "new_experiment_started": false
+}

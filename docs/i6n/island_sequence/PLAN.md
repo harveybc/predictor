@@ -2,6 +2,15 @@
 
 ## Decision
 
+Owner superseding amendment 2026-10-14: this sequence is PAUSED, not the next
+dispatch. Four POO-v2 services and the automatic H4->H72 controller are stopped
+and disabled. Retain every chain/state/fit/archive object; incomplete fits are
+interrupted, not completed candidates. No successor may revive this sequence.
+The active plan is [I6-DMO](../direct_multi_output_static/PLAN.md), beginning
+with one fixed short six-head DS2 fit and no within-year retraining. The search
+contract below remains the retained contract if a newly identified future
+search is admitted; it is not an instruction to resume now.
+
 Owner amendment 2026-10-14: restart H4 in a fresh chain/state namespace after
 the proof-of-optimization repair. Retain the retired history as diagnostics.
 Both new searches use the 19-feature availability-gated manifest, excluding

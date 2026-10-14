@@ -1,14 +1,14 @@
 {
   "schema": "research_program_method_state.v1",
-  "updated_on": "2026-10-11",
-  "current_stage": "integration_verification",
+  "updated_on": "2026-10-14",
+  "current_stage": "S8_UNIT_TEST_DESIGN",
   "completed_stages": [
     "discovery",
     "requirements"
   ],
   "program_owner": "Harvey",
   "execution_owner": "Musashi",
-  "handoff_status": "I6E_STATISTICAL_DISPOSITIONS_CLOSED_MULTI_HORIZON_PLAN_AND_PURE_TESTS_READY",
+  "handoff_status": "I6_DMO_DESIGNED_SATOSHI_IMPLEMENTATION_ORDER_PUBLISHED",
   "i6e_compact": {
     "neural_cells_complete": 156,
     "neural_cells_expected": 156,
@@ -23,14 +23,33 @@
     "next_action": "Retain complete 72h controls and typed ARIMAX failures. Implement the new multihorizon downsampling-then-hourly plan without modifying sealed engines."
   },
   "i6e_multihorizon": {
-    "status": "RUNNING_DOWNSAMPLING_OLAP_READBACK_VERIFIED",
+    "status": "PAUSED_BY_OWNER_FOR_I6_DMO",
     "execution_ready": true,
     "current_stage": "production_observation",
     "work_plan": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
     "generated_design": "I6E_MULTI_HORIZON_PLAN.json",
-    "horizons_hours": [2, 3, 4, 5, 6, 24, 48, 72, 96, 120],
-    "coarse_forecast_steps": [1, 2, 3, 4],
-    "stage_order": ["DOWNSAMPLING", "HOURLY"],
+    "horizons_hours": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      24,
+      48,
+      72,
+      96,
+      120
+    ],
+    "coarse_forecast_steps": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "stage_order": [
+      "DOWNSAMPLING",
+      "HOURLY"
+    ],
     "unique_arms": 38,
     "downsampled_arms": 28,
     "hourly_arms": 10,
@@ -47,15 +66,15 @@
     "runtime_pin": "48c55ac075ecb503c1f2da58c5ec333c99da9afc",
     "live_root_suffix": "i6e/multihorizon_2024_v2",
     "live_design_sha256": "f57b9b92d4b2a2188ab49b9acaf10df655bde18f10c7b92e8bb26b63258859c1",
-    "next_action": "Scheduler automatically completes D then H. Observer and OLAP follower run without agents. Preserve typed ARIMA failures and original receipt-defect history; do not repeat adopted fits or open TEST."
+    "next_action": "Retain historical evidence; do not restart old queue. Implement new I6-DMO baseline.",
+    "dispatch_enabled": false
   },
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [
-    "Implement I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md MH05-MH10; execute downsampling before hourly controls only after model/rows/resource verification. Never require another owner visit between stages.",
-    "Use the complete I6-A 208/208-cell EURUSD Y_s_1h business adaptation as development evidence only: ARCH-B is the strongest arm relative to ARCH-A, but none beats the same-row naive on the mean.",
-    "Retain RAW as the mainline selected input; the reconstructed-input TRAIN diagnostic was worse in all three paired weeks and does not authorize denoising the target.",
-    "Complete the remaining general E0 H2/H3, literature-model and target/horizon controls before calling I6-A globally verified; then pretrain authenticated branches and compare R0/R1/R2 on matched weekly rows.",
-    "Do not open TEST or promote a trading model until the selected architecture and same-row naive gates pass."
+    "Follow docs/i6n/direct_multi_output_static/PLAN.md and handoff dated 2026-10-14",
+    "Implement executable DMO01-DMO20 tests before runtime changes",
+    "Build fixed six-head short DS2 model and static annual pipeline",
+    "Deploy only after software/data/resource gates; use timers, not agent polling"
   ],
   "documents": {
     "horizon_resolution": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
@@ -121,7 +140,11 @@
       "selected_set_donors_expected": 4,
       "real_train_probe_rows": 128,
       "real_train_probe_receipt": "/home/harveybc/.local/state/canonical_20261003/i5p/real_train_probe_128.json",
-      "paired_train_weeks_2023": [0, 26, 51],
+      "paired_train_weeks_2023": [
+        0,
+        26,
+        51
+      ],
       "paired_scored_rows_total": 309,
       "reconstructed_worse_mae_weeks": 3,
       "mainline_input": "RAW",
@@ -666,5 +689,12 @@
     "EXECUTED": "run happened; not automatically verified",
     "VERIFIED": "evidence was independently checked",
     "historical_reviews": "stored under docs/audits and handoffs, never embedded here"
+  },
+  "active_initiative": {
+    "id": "I6-DMO",
+    "method_state": "../../i6n/direct_multi_output_static/PROJECT_METHOD_STATE.json",
+    "retraining_frequency": "NONE",
+    "test_read": false,
+    "runtime_implemented": false
   }
 }

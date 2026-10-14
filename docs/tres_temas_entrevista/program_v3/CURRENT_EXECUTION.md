@@ -1,6 +1,27 @@
 # Estado de ejecución vigente
 
-Observado: 2026-10-11. Este archivo sustituye estados operativos anteriores.
+Observado: 2026-10-14. Este archivo sustituye estados operativos anteriores.
+
+## Estado vigente: parada y cambio de experimento
+
+Por orden del propietario, las cuatro islas POO-v2 y el timer de relevo
+H4->H72 estan detenidos/deshabilitados. Los cuatro servicios agotaron el
+timeout de parada (120 s); despues MainPID=0 y ControlPID=0 en todos.
+No hay fit vigente de esta campana. Conservar cadenas, checkpoints y
+resultados terminados; parciales interrumpidos no equivalen a terminales validos.
+Las entregas de archivo/OLAP y sus transportes permanecen activos, sin fits.
+
+Siguiente trabajo: [I6-DMO](../../i6n/direct_multi_output_static/PLAN.md),
+diseno entregado a Satoshi. Corto 2/3/4/5/6/12 h en un modelo de seis heads,
+ventana inclusiva de 24 h, 13 muestras cada 2 h, RAW, seed 6102026, R0,
+sin updates dentro del ano. Luego largo 18/24/36/48/60/72 h y evaluacion de la
+pareja. Codigo nuevo no implementado ni iniciado por este cambio documental.
+TEST cerrado; R2/uncertainty/cadencia creciente quedan posteriores.
+
+Las secciones que siguen conservan resultados y estados observados hasta
+2026-10-11. Sus menciones a trabajos vivos, timers y siguientes compuertas
+son historicas y no ordenan relanzarlos. El runtime y la cola nueva gobiernan
+solo despues de sus pruebas y preflight, no porque este archivo diga diseno.
 
 ## Cierre de fase 1
 

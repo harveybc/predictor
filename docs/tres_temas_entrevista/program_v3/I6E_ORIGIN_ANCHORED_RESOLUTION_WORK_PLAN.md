@@ -1,5 +1,12 @@
 # I6-E: origin-anchored resolution experiment
 
+## Superseding dispatch amendment, 2026-10-14
+
+Retain this design and its origin-alignment evidence, but do not launch its
+older experiment sequence. [I6-DMO](../../i6n/direct_multi_output_static/PLAN.md)
+is the next dispatch. Reuse audited exact-time helpers, not old scientific
+identities, donors or a weekly retraining obligation for the static baseline.
+
 Status: NEURAL_156_COMPLETE / PRICE_RECONCILED / LIVE_OLAP_VERIFIED / STATISTICAL_DISPOSITIONS_COMPLETE.
 Updated 2026-10-11.
 
