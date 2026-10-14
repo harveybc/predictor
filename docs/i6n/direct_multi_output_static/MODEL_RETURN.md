@@ -210,3 +210,41 @@ shuffle remains gradient-only and never reaches monitoring.
 `replay_monitored` refuses a permuted or unrecorded partition as typed
 `MONITOR_PATH_MISMATCH`. The CPU-only probe fixture now skips when a GPU is
 visible. No tolerance. CPU POST: 66 passed (PRE: 2 failed). Lane 4 reruns.
+
+## Round 9: monitor witness + loader-path epoch monitoring (v2)
+
+Ops' artifact diff shows every GPU round trained FRESH (distinct dirs/mtimes,
+25 epochs, stop=max_epochs, best=last epoch, no restore involved) with perfect
+within-revision determinism, isolating the divergence to the trained-in-session
+instance versus a loaded instance on identical final weights. Honest caveats
+recorded: the three-instance probe used an UNTRAINED in-session model, so it
+could not see a trained-process effect (plausible cuDNN/compilation state
+acquired during training altering later in-process forwards); and five
+identical floats across rewrites also admits the innocent explanation that the
+tiny fixture is single-batch and arithmetically insensitive to every rewrite so
+far - the witness decides between "stale path" and "real forward divergence".
+
+Changes (`i6dmo.monitor_eval.v2`, mixed/old records refused):
+
+1. Epoch-end monitoring now evaluates through the CANONICAL LOADER PATH: each
+   epoch saves weights and rebuilds via `build_dmo` + `load_weights` into a
+   fresh instance (4.8k params; per-epoch overhead measured and recorded in
+   `monitor_evaluation.loader_overhead_s`), and `evaluate_monitored` runs on
+   THAT instance. The recorded value equals the replay by construction; early
+   stopping reads it; self-check and witness stay.
+2. Monitor WITNESS recorded at fit time (best epoch) and recomputed at replay:
+   sha256 of the exact consumed row-id batch sequence, per-batch per-head
+   float64 partial sums/counts, and a code witness (sha256 of the
+   `evaluate_monitored` source plus a nonce from the partition parameters,
+   computed INSIDE the function). Replay compares batch by batch and reports
+   the FIRST divergent batch index with its row-id digest and the pair of
+   partial sums (typed `MONITOR_WITNESS_DIVERGENCE`); a witness bound to row
+   ids refuses a replay without them.
+3. Self-check triviality audit: `monitor_self_check` recomputes on FRESHLY
+   materialized input copies through the full path on a fresh loader instance;
+   a deliberately corrupted history value fails typed (CPU regression).
+4. The end-to-end DMO10 test prints out-dir, started/finished timestamps and
+   update/epoch counts so a cached artifact is visible.
+
+No tolerance. CPU POST: 104 passed across the five model-lane files (PRE: 3
+failed). One lane-4 GPU round now runs witness + replay together.

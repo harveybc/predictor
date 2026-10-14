@@ -201,7 +201,9 @@ def test_dmo10_train_unit_end_to_end_restore_and_reload(tmp_path):
           f"finished={receipt['finished_at']} updates={training['updates']} "
           f"epochs={training['epochs_completed']}")
     record = training["monitor_evaluation"]
-    assert record["procedure"] == "i6dmo.monitor_eval.v1" and record["batch_size"] == 256
+    assert record["procedure"] == "i6dmo.monitor_eval.v2" and record["batch_size"] == 256
+    assert record["monitor_instance"] == "canonical_loader_rebuild"
+    assert record["loader_overhead_s"]["epochs"] == training["epochs_completed"]
     assert record["graph"] == "inference" and record["self_check"] == "PASS"
     assert record["partition"] == "sequential_row_id_fixed"  # the shuffle never reaches monitoring
     assert record["best_epoch"] == training["best_epoch"]
@@ -299,8 +301,9 @@ def test_monitor_evaluation_is_one_shared_procedure_and_path_mismatch_is_refused
     y = rng.normal(size=(130, 6))
     mask = np.ones((130, 6), bool)
     fit, inner = (x, y, mask), (x[:40], y[:40], mask[:40])
-    record = {"procedure": "i6dmo.monitor_eval.v1", "batch_size": 64,
-              "graph": "inference", "partition": "sequential_row_id_fixed"}
+    record = {"procedure": "i6dmo.monitor_eval.v2", "batch_size": 64,
+              "graph": "inference", "partition": "sequential_row_id_fixed",
+              "monitor_instance": "canonical_loader_rebuild"}
     fm, im, monitored = T.replay_monitored(bundle.forecast_model, fit, inner, record)
     fm2, im2, monitored2, witness = T.evaluate_monitored(bundle.forecast_model, fit, inner, 64)
     assert witness["code_witness"] and witness["fit"]["batches"][0]["partial_sums"]
@@ -320,11 +323,15 @@ def test_training_graph_evaluated_monitor_is_refused_and_self_check_is_typed():
     y = rng.normal(size=(20, 6))
     mask = np.ones((20, 6), bool)
     fit, inner = (x, y, mask), (x[:8], y[:8], mask[:8])
-    good = {"procedure": "i6dmo.monitor_eval.v1", "batch_size": 20, "graph": "inference",
-            "partition": "sequential_row_id_fixed"}
+    good = {"procedure": "i6dmo.monitor_eval.v2", "batch_size": 20, "graph": "inference",
+            "partition": "sequential_row_id_fixed", "monitor_instance": "canonical_loader_rebuild"}
     _, _, monitored = T.replay_monitored(bundle.forecast_model, fit, inner, good)
     with pytest.raises(T.TrainDisposition, match="MONITOR_PATH_MISMATCH"):
         T.replay_monitored(bundle.forecast_model, fit, inner, dict(good, graph="training"))
+    for mixed in (dict(good, procedure="i6dmo.monitor_eval.v1"),
+                  dict(good, monitor_instance="in_session")):
+        with pytest.raises(T.TrainDisposition, match="MONITOR_PATH_MISMATCH"):
+            T.replay_monitored(bundle.forecast_model, fit, inner, mixed)
     for bad in (dict(good, partition="seeded_permutation"), {k: v for k, v in good.items()
                                                              if k != "partition"}):
         with pytest.raises(T.TrainDisposition, match="MONITOR_PATH_MISMATCH.*partition|MONITOR_PATH_MISMATCH"):

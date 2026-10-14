@@ -285,11 +285,18 @@ def masked_split_metrics(y, pred, mask):
             "active_heads": len(active)}
 
 
-MONITOR_EVAL = "i6dmo.monitor_eval.v1"
+MONITOR_EVAL = "i6dmo.monitor_eval.v2"
 MONITOR_PARTITION = "sequential_row_id_fixed"
+MONITOR_INSTANCE = "canonical_loader_rebuild"
 
 
-def evaluate_monitored(model, fit, inner, batch_size):
+def _ids_sha(ids):
+    import hashlib as _h
+    ids = np.ascontiguousarray(np.asarray(ids, dtype=np.int64))
+    return _h.sha256(ids.tobytes()).hexdigest()
+
+
+def evaluate_monitored(model, fit, inner, batch_size, ids=None):
     """THE monitored-loss evaluation procedure (training and replay share it, DMO10).
 
     One fixed path over the CANONICAL FIXED SEQUENTIAL partition: the split
@@ -301,22 +308,67 @@ def evaluate_monitored(model, fit, inner, batch_size):
     steps ONLY and never reaches monitoring: on GPU a row's float32 forward
     value legitimately varies with batch composition (GEMM tiling), so only
     this fixed partition is bitwise comparable across sessions.
+
+    Returns ``(fit_metrics, inner_metrics, monitored, witness)``. The witness
+    carries the sha256 of the exact consumed row-id batch sequence, per-batch
+    per-head float64 partial sums/counts, and a code witness (sha256 of this
+    function's source plus a nonce derived from the partition parameters,
+    computed INSIDE this function) so a stale, cached or fallback evaluation
+    path is detectable at replay (``ids=None`` records positional ids).
     """
+    import inspect
     from tools.i6dmo.model import predict_matrix
-    fm = masked_split_metrics(fit[1], predict_matrix(model, fit[0], batch_size=batch_size), fit[2])
-    im = masked_split_metrics(inner[1], predict_matrix(model, inner[0], batch_size=batch_size), inner[2])
-    return fm, im, 0.5 * (fm["loss"] + im["loss"])
+    names = ("fit", "inner")
+    splits = {"fit": fit, "inner": inner}
+    id_arrays = {}
+    for index, name in enumerate(names):
+        n = len(splits[name][0])
+        given = None if ids is None else np.asarray(ids[index], dtype=np.int64)
+        if given is not None and len(given) != n:
+            raise TrainDisposition("MONITOR_PATH_MISMATCH", f"{name} ids length {len(given)} != rows {n}")
+        id_arrays[name] = np.arange(n, dtype=np.int64) if given is None else given
+    nonce = hashlib.sha256(_canonical(
+        {"procedure": MONITOR_EVAL, "batch_size": batch_size, "partition": MONITOR_PARTITION,
+         "n_fit": len(fit[0]), "n_inner": len(inner[0]),
+         "fit_ids_sha256": _ids_sha(id_arrays["fit"]),
+         "inner_ids_sha256": _ids_sha(id_arrays["inner"])}).encode()).hexdigest()
+    code_witness = hashlib.sha256(
+        (inspect.getsource(evaluate_monitored) + nonce).encode()).hexdigest()
+    witness = {"ids": "positional" if ids is None else "row_id", "nonce": nonce,
+               "code_witness": code_witness}
+    results = {}
+    for name in names:
+        x, y, mask = splits[name]
+        pred = predict_matrix(model, x, batch_size=batch_size)
+        results[name] = masked_split_metrics(y, pred, mask)
+        y64, mb_all = np.asarray(y, np.float64), np.asarray(mask, bool)
+        batches = []
+        for b, start in enumerate(range(0, len(x), batch_size)):
+            stop = start + batch_size
+            pb, yb, mb = pred[start:stop], y64[start:stop], mb_all[start:stop]
+            sums = [math.fsum(np.abs(pb[mb[:, h], h] - yb[mb[:, h], h]).tolist())
+                    for h in range(yb.shape[1])]
+            counts = [int(mb[:, h].sum()) for h in range(yb.shape[1])]
+            batches.append({"batch": b, "start": start, "rows": int(len(pb)),
+                            "row_ids_sha256": _ids_sha(id_arrays[name][start:stop]),
+                            "partial_sums": sums, "partial_counts": counts})
+        witness[name] = {"row_ids_sha256": _ids_sha(id_arrays[name]), "batches": batches}
+    monitored = 0.5 * (results["fit"]["loss"] + results["inner"]["loss"])
+    return results["fit"], results["inner"], monitored, witness
 
 
-def monitor_self_check(model, fit, inner, record, expected):
-    """Recording-time self-check: the shared inference path must reproduce ``expected`` bitwise.
+def monitor_self_check(model, fit, inner, record, expected, ids=None):
+    """Recording-time self-check: a SEPARATE recompute must reproduce ``expected`` bitwise.
 
-    Called in-session on the restored weights before any receipt is written. A
-    mismatch means the monitored value early stopping read did not come from
-    the inference path (training-graph fusion/retrace), and the unit is a typed
-    MONITOR_SELF_CHECK_FAILED, never silently accepted.
+    Called in-session before any receipt is written, on FRESHLY materialized
+    input copies (never the same tensor object) and through the full
+    ``evaluate_monitored`` path, so the comparison is always between two
+    independent computations and never the stored value against itself. A
+    mismatch is a typed MONITOR_SELF_CHECK_FAILED, never silently accepted.
     """
-    fm, im, monitored = replay_monitored(model, fit, inner, record)
+    fit = tuple(np.array(part, copy=True) for part in fit)
+    inner = tuple(np.array(part, copy=True) for part in inner)
+    fm, im, monitored = replay_monitored(model, fit, inner, record, ids=ids)
     if monitored != expected:
         raise TrainDisposition("MONITOR_SELF_CHECK_FAILED",
                                f"inference-path recompute {monitored!r} != recorded {expected!r} "
@@ -324,17 +376,26 @@ def monitor_self_check(model, fit, inner, record, expected):
     return fm, im, monitored
 
 
-def replay_monitored(model, fit, inner, record, batch_size=None):
+def replay_monitored(model, fit, inner, record, batch_size=None, ids=None):
     """Recompute the monitored loss through the recorded identical procedure.
 
     ``record`` is TRAINING.json's ``monitor_evaluation``. A different procedure
-    name or batch size is a typed MONITOR_PATH_MISMATCH: a one-pass recompute of
-    a batched training monitor is a different reduction order, not a replay.
+    name, batch size, graph, partition or monitor instance is a typed
+    MONITOR_PATH_MISMATCH (mixed v1/v2 records are refused): a one-pass or
+    permuted recompute of a batched training monitor is a different reduction
+    order, not a replay. ``model`` must be the canonical loader-path instance
+    (``load_dmo``). When the record carries a witness, the recompute is
+    compared batch by batch and the FIRST divergent batch is reported with its
+    row-id digest and the pair of partial sums (MONITOR_WITNESS_DIVERGENCE).
     """
     if not isinstance(record, dict) or record.get("procedure") != MONITOR_EVAL:
         raise TrainDisposition("MONITOR_PATH_MISMATCH",
                                f"recorded procedure {record.get('procedure') if isinstance(record, dict) else record!r}"
-                               f" is not {MONITOR_EVAL}")
+                               f" is not {MONITOR_EVAL} (mixed or old records are never comparable)")
+    if record.get("monitor_instance", MONITOR_INSTANCE) != MONITOR_INSTANCE:
+        raise TrainDisposition("MONITOR_PATH_MISMATCH",
+                               f"monitor instance {record.get('monitor_instance')!r} is not the "
+                               f"canonical {MONITOR_INSTANCE}")
     if record.get("graph", "inference") != "inference":
         raise TrainDisposition("MONITOR_PATH_MISMATCH",
                                f"a {record.get('graph')}-graph-evaluated monitor is not comparable; "
@@ -351,7 +412,41 @@ def replay_monitored(model, fit, inner, record, batch_size=None):
         raise TrainDisposition("MONITOR_PATH_MISMATCH",
                                f"replay batch_size {batch_size} != recorded {recorded}; "
                                "the monitored value is only comparable through the identical path")
-    return evaluate_monitored(model, fit, inner, recorded)
+    stored = record.get("witness")
+    if stored is not None and stored.get("ids") == "row_id" and ids is None:
+        raise TrainDisposition("MONITOR_PATH_MISMATCH",
+                               "the recorded witness binds row ids; the replay must supply the same ids")
+    fm, im, monitored, witness = evaluate_monitored(model, fit, inner, recorded, ids=ids)
+    if stored is not None:
+        _compare_witness(stored, witness)
+    return fm, im, monitored
+
+
+def _compare_witness(stored, fresh):
+    if stored.get("code_witness") != fresh["code_witness"]:
+        raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE",
+                               "code witness differs: the recorded evaluation ran different "
+                               "evaluate_monitored source or partition parameters (stale/cached/"
+                               f"fallback path): recorded={stored.get('code_witness')} "
+                               f"recomputed={fresh['code_witness']}")
+    for name in ("fit", "inner"):
+        a, b = stored.get(name) or {}, fresh[name]
+        if a.get("row_ids_sha256") != b["row_ids_sha256"]:
+            raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE",
+                                   f"{name} row-id sequence differs: recorded "
+                                   f"{a.get('row_ids_sha256')} recomputed {b['row_ids_sha256']}")
+        for ra, rb in zip(a.get("batches") or [], b["batches"]):
+            if ra != rb:
+                raise TrainDisposition(
+                    "MONITOR_WITNESS_DIVERGENCE",
+                    f"{name} batch {rb['batch']} (start {rb['start']}, row_ids "
+                    f"{rb['row_ids_sha256']}): recorded partial_sums={ra.get('partial_sums')} "
+                    f"counts={ra.get('partial_counts')} vs recomputed "
+                    f"partial_sums={rb['partial_sums']} counts={rb['partial_counts']}")
+        if len(a.get("batches") or []) != len(b["batches"]):
+            raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE",
+                                   f"{name} batch count differs: {len(a.get('batches') or [])} "
+                                   f"recorded vs {len(b['batches'])} recomputed")
 
 
 class MeanMonitorStopper:
@@ -398,8 +493,25 @@ class MeanMonitorStopper:
                 "restore": "lowest_monitored_first_tie"}
 
 
-def fit_dmo(bundle, fit, inner, training, seed, progress=None):
+def _monitor_model(bundle, workdir):
+    """A FRESH canonical-loader-path instance holding the training model's current weights.
+
+    Monitoring (and therefore early stopping) never reads the trained in-session
+    instance: training on GPU acquires cuDNN/compilation state that can alter
+    subsequent in-process forwards, so the monitored value is computed on the
+    same save -> build_dmo -> load_weights instance the replay uses.
+    """
+    from tools.i6dmo import model as M
+    path = Path(workdir) / "monitor.weights.h5"
+    bundle.forecast_model.save_weights(path)
+    fresh = M.build_dmo(bundle.config)
+    fresh.forecast_model.load_weights(path)
+    return fresh.forecast_model
+
+
+def fit_dmo(bundle, fit, inner, training, seed, progress=None, ids=None):
     """One fit with AdamW; returns the audit dict. Restores the selected weights."""
+    import tempfile
     import tensorflow as tf
     from predictor_plugins.modular_temporal import weights_hash
     from tools.i6dmo.model import predict_matrix
@@ -425,6 +537,8 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None):
 
     stopper = MeanMonitorStopper(training["patience"], training["min_delta"], training["max_epochs"])
     batch, updates, rows = training["batch_size"], 0, []
+    best_witness, loader_overhead = None, []
+    monitor_dir = tempfile.TemporaryDirectory(prefix="i6dmo_monitor_")
     initial = weights_hash(model)
     started = time.monotonic()
     while True:
@@ -437,9 +551,17 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None):
                 raise TrainDisposition("NONFINITE_LOSS", f"training batch loss {loss}")
             updates += 1
         # The monitored value early stopping reads comes ONLY from the shared inference path on
-        # the canonical sequential partition; the per-epoch permutation above is gradient-only.
-        fm, im, _ = evaluate_monitored(model, (x_fit, y_fit, m_fit), (x_in, y_in, m_in), batch)
+        # the canonical sequential partition AND the canonical loader-path instance; the
+        # per-epoch permutation above is gradient-only.
+        overhead_start = time.monotonic()
+        monitor_model = _monitor_model(bundle, monitor_dir.name)
+        loader_overhead.append(time.monotonic() - overhead_start)
+        fm, im, _, epoch_witness = evaluate_monitored(
+            monitor_model, (x_fit, y_fit, m_fit), (x_in, y_in, m_in), batch, ids=ids)
+        was_best = stopper.best_monitored
         stop = stopper.update(fm["loss"], im["loss"], model.get_weights())
+        if stopper.best_monitored < was_best:
+            best_witness = epoch_witness
         row = dict(stopper.history[-1], updates=updates, weights_sha256=weights_hash(model),
                    fit=fm, inner=im, elapsed_s=time.monotonic() - started)
         rows.append(row)
@@ -454,13 +576,20 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None):
     if restored != rows[stopper.best_epoch - 1]["weights_sha256"]:
         raise TrainDisposition("RESTORE_MISMATCH", "restored weights differ from the selected epoch")
     record = {"procedure": MONITOR_EVAL, "batch_size": batch, "graph": "inference",
-              "partition": MONITOR_PARTITION,
+              "partition": MONITOR_PARTITION, "monitor_instance": MONITOR_INSTANCE,
+              "witness": best_witness,
+              "loader_overhead_s": {"epochs": len(loader_overhead),
+                                    "mean_s": math.fsum(loader_overhead) / len(loader_overhead),
+                                    "max_s": max(loader_overhead),
+                                    "total_s": math.fsum(loader_overhead)},
               "prediction_dtype": "float32 inputs, float64 per-batch outputs",
               "accumulation": "global per-head float64 math.fsum sums/counts, "
                               "equal-weight mean over supported heads"}
     best_row = rows[stopper.best_epoch - 1]
     fm_best, im_best, monitored_best = monitor_self_check(
-        model, (x_fit, y_fit, m_fit), (x_in, y_in, m_in), record, best_row["monitored"])
+        _monitor_model(bundle, monitor_dir.name), (x_fit, y_fit, m_fit), (x_in, y_in, m_in),
+        record, best_row["monitored"], ids=ids)
+    monitor_dir.cleanup()
     record.update(self_check="PASS", best_epoch=stopper.best_epoch, monitored=monitored_best,
                   fit={"sums": fm_best["sums"], "counts": fm_best["counts"]},
                   inner={"sums": im_best["sums"], "counts": im_best["counts"]})
@@ -571,7 +700,8 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
         with tf.device(placement):
             bundle = M.build_dmo(effective["model"])
             result = fit_dmo(bundle, transform(fit_rows, scales), transform(inner_rows, scales),
-                             training, effective["seed"], progress)
+                             training, effective["seed"], progress,
+                             ids=(fit_rows["row_id"], inner_rows["row_id"]))
             t0 = time.monotonic()
             predictions = {}
             for name in required_splits(effective):
