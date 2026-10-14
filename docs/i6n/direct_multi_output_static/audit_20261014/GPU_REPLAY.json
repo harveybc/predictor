@@ -1,5 +1,5 @@
 {
- "code_commit": "cca08c9b",
+ "code_commit": "fc4246b4",
  "covered": [
   "DMO01",
   "DMO04",
@@ -9,19 +9,19 @@
  "failed": 1,
  "failed_detail": {
   "DMO10": {
-   "assertion": "math.isclose(0.5*(fit_loss+inner_loss), hist[best]['monitored'], rel_tol=1e-6)",
-   "finding": "after the cca08c9b op-determinism fix the earlier bitwise reload mismatch no longer fires; the failure moved to the same-weight monitoring arithmetic: on this GPU the recomputed 0.5*(fit+inner) at the best epoch differs from the recorded monitored value by about 5e-6 (0.99233199 vs 0.99233694), beyond the 1e-6 CPU tolerance. Likely a GPU reduction-order difference between the training-time evaluation and the recomputation path. Owner: model lane. Nothing was relaxed.",
-   "history": "previous replay (5047cef9): np.array_equal(predicted_price) bitwise reload failure",
+   "assertion": "monitored == hist[best]['monitored'] (bitwise, shared evaluate_monitored)",
+   "finding": "replay_monitored returns 0.9923319867401985 while the training-time history records 0.9923369350252383 for the best epoch. Both values are bit-stable across repeated GPU runs (the cca08c9b replay produced the same pair), so each path is deterministic but the two procedures still differ on this GPU by ~5e-6; they agree on CPU. The difference therefore sits in what the fit loop evaluates versus what the replay evaluates (e.g. weights or op placement at the recording moment), not in kernel nondeterminism. Owner: model lane. Nothing relaxed; bitwise contract kept.",
+   "history": "5047cef9: bitwise reload mismatch (fixed by cca08c9b op determinism); cca08c9b: same 5e-6 monitored difference at rel_tol 1e-6",
    "test": "tests/i6dmo/test_dmo_train.py::test_dmo10_train_unit_end_to_end_restore_and_reload"
   }
  },
  "gpu_devices": 1,
- "note": "DMO01 causality and DMO04 masking replays pass on the GPU; DMO10 remains CPU-only acceptance until the model lane resolves the GPU monitoring arithmetic difference",
+ "note": "DMO01 causality and DMO04 masking replays pass on the GPU; DMO10 remains CPU-only acceptance until the fit-time and replay monitored evaluations coincide on GPU",
  "passed": 11,
  "pytest_rc": 1,
  "schema": "i6dmo.gpu_replay.v1",
  "scope": "ENGINEERING_NOT_SCIENCE",
  "tests": "test_dmo_model.py + test_dmo_train.py -k dmo01/dmo04/dmo10/causality (12 selected)",
  "tf": "2.21.0",
- "wall_seconds": 11.2
+ "wall_seconds": 11.4
 }
