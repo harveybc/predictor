@@ -397,8 +397,8 @@ class Queue:
             out.append(item)
         return out
 
-    def measured_peak(self, device_class=None, kind=None):
-        """Largest measured full-tree peak of completed attempts (optionally per device class / unit kind)."""
+    def measured_peak(self, device_class=None, kind=None, family=None):
+        """Largest measured full-tree peak of completed attempts (per device class / unit kind / family)."""
         sql = ("SELECT MAX(a.peak_bytes) FROM attempts a JOIN units u ON u.unit_id=a.unit_id "
                "WHERE a.outcome='COMPLETE' AND a.peak_bytes IS NOT NULL")
         args = []
@@ -408,6 +408,9 @@ class Queue:
         if kind:
             sql += " AND u.kind=?"
             args.append(kind)
+        if family:
+            sql += " AND json_extract(u.spec, '$.family')=?"
+            args.append(family)
         with self._lock:
             row = self._db.execute(sql, args).fetchone()
         return None if row is None or row[0] is None else int(row[0])

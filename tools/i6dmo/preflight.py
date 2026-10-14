@@ -18,6 +18,7 @@ from pathlib import Path
 from tools.i6n_swarm.common import atomic_json, boot_id, sha256_json
 
 GIB = 1024 ** 3
+MIN_DISK = 20 * GIB
 HEAVY_GPU_PROCESS = GIB
 LEGACY_PREFIXES = ("i6n-", "doin-")
 # Deliberately left running: archive delivery, warehouse transports and ssh keep-alive sessions (not training).
@@ -186,6 +187,9 @@ def preflight(design_path, spec_path, *, adapter=None, probe=None, data_pins=Non
             boot_id=facts.get("boot_id"), mem_available_bytes=facts.get("mem_available_bytes"),
             slice_available_bytes=facts.get("slice_available_bytes"), disk_free_bytes=facts.get("disk_free_bytes"),
             gpus=len(facts.get("gpus", [])), nvidia_smi=facts.get("nvidia_smi")))
+        _check(checks, f"disk:{role}", facts.get("disk_free_bytes", 0) >= MIN_DISK, "LAUNCH",
+               dict(disk_free_bytes=facts.get("disk_free_bytes"), required_bytes=MIN_DISK,
+                    measured_on="the role's run_root filesystem"))
         legacy = facts.get("legacy_active_units")
         _check(checks, f"legacy_units_stopped:{role}", legacy == [], "LAUNCH",
                dict(active=legacy) if legacy else None, state=None if legacy is not None else "UNVERIFIED")

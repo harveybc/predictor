@@ -509,8 +509,14 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
         device_class = gpu["class"] if gpu else "cpu"
         launcher = dict(spec["launcher"], **role_spec.get("launcher", {}))
         if gpu:
+            # The resource class is the model family+kind, not the GPU: a full-tree peak measured on
+            # one admitted GPU carries to another of the same class. The launcher may seed a class
+            # peak measured in a prior campaign; a local measurement, once it exists, wins.
+            class_key = f"{unit['family']}.{unit['kind']}"
+            measured = q.measured_peak(kind=unit["kind"], family=unit["family"]) \
+                or (launcher.get("measured_class_peaks") or {}).get(class_key)
             cap = cap_for(q, unit["unit_id"], device_class, initial_cap=launcher["initial_cap_bytes"],
-                          measured_peak=q.measured_peak(device_class=device_class, kind=unit["kind"]))
+                          measured_peak=measured)
         else:
             cap = max(int(launcher.get("cpu_cap_bytes", CPU_CAP)), q.min_cap(unit["unit_id"]))
         facts = facts_provider(role)

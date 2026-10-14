@@ -135,23 +135,56 @@ def compute(root, level="campaign", unit=None, now=None):
                                            "BLOCKED")}
     completed = [a for a in attempts if a["outcome"] == "COMPLETE" and a["costs"]]
     kind_of = {uid: row["kind"] for uid, row in rows.items()}
-    fit_times = [a["costs"].get("fit_seconds") or (a["ended_at"] - a["started_at"]) for a in completed
-                 if kind_of.get(a["unit_id"]) in FIT_KINDS]
+    family_of = {u["unit_id"]: u["family"] for u in plan["units"]}
+    fit_times = {}
+    for a in completed:
+        if kind_of.get(a["unit_id"]) in FIT_KINDS:
+            fit_times.setdefault(family_of.get(a["unit_id"]), []).append(
+                a["costs"].get("fit_seconds") or (a["ended_at"] - a["started_at"]))
     score_times = [a["costs"]["score_seconds"] for a in completed if a["costs"].get("score_seconds") is not None]
-    remaining_fits = sum(1 for u in plan["units"] if u["kind"] in FIT_KINDS and views[u["unit_id"]]["state"] not in
-                         ("COMPLETE", "FAILED", "BLOCKED"))
-    remaining_scores = sum(1 for u in plan["units"] if views[u["unit_id"]]["state"] not in
-                           ("COMPLETE", "FAILED", "BLOCKED"))
-    eta = dict(fit=_eta(remaining_fits, fit_times), score=_eta(remaining_scores, score_times),
+
+    def _open_unit(uid):
+        return views[uid]["state"] not in ("COMPLETE", "FAILED", "BLOCKED")
+
+    remaining_fit_families, all_fit_families = {}, set()
+    for u in plan["units"]:
+        if u["kind"] in FIT_KINDS:
+            all_fit_families.add(u["family"])
+            if _open_unit(u["unit_id"]):
+                remaining_fit_families[u["family"]] = remaining_fit_families.get(u["family"], 0) + 1
+    families = {fam: _eta(remaining_fit_families.get(fam, 0), fit_times.get(fam, []))
+                for fam in sorted(all_fit_families)}
+    unmeasured = sorted(f for f in remaining_fit_families if families[f]["kind"] == "UNMEASURED")
+    if not remaining_fit_families:
+        fit_eta = dict(kind="DONE", seconds=0.0, families=families)
+    elif unmeasured:
+        fit_eta = dict(kind="UNMEASURED", seconds=None, families=families,
+                       cause=("no completed fit of " + ", ".join(unmeasured)
+                              + "; a measured fit of another family is never its ETA"))
+    else:
+        fit_eta = dict(kind="MEASURED", families=families,
+                       seconds=sum(e["seconds"] for e in families.values() if e["seconds"]))
+    remaining_scores = sum(1 for u in plan["units"] if _open_unit(u["unit_id"]))
+    completed_costs = {a["unit_id"]: dict(fit_seconds=a["costs"].get("fit_seconds"),
+                                          score_seconds=a["costs"].get("score_seconds"),
+                                          wall_seconds=a["costs"].get("wall_seconds"),
+                                          cgroup_peak_bytes=a["costs"].get("cgroup_peak_bytes"),
+                                          device_class=a["device_class"]) for a in completed}
+    eta = dict(fit=fit_eta, score=_eta(remaining_scores, score_times),
+               measured_completed_costs=completed_costs,
                publication=(_eta(publication.get("pending", 0), publication.get("delivery_seconds", []))
                             if publication.get("expected") and not remaining_scores else
                             dict(kind="UNMEASURED", seconds=None, cause="publication population not yet complete",
                                  basis_n=len(publication.get("delivery_seconds", [])))),
-               note="phases are separate; an in-flight first fit is not a completed-fit ETA")
+               note="phases are separate; an in-flight first fit is not a completed-fit ETA, and a measured "
+                    "short fit is never the long or end-to-end ETA")
     close = _read_json(root / "CLOSE.json")
+    hold = _read_json(root / "AUDIT_HOLD.json")
     readiness = _read_json(root / "gates" / "TEST_READINESS.json")
     if close and close.get("state") == "CLOSED":
         state = "CLOSED"
+    elif hold is not None:
+        state = "HELD"
     elif counts["FAILED"]:
         state = "FAILED"
     elif counts["STALE"]:
@@ -177,6 +210,9 @@ def compute(root, level="campaign", unit=None, now=None):
                            failed=sum(1 for m in members if views[m]["state"] in ("FAILED", "BLOCKED")),
                            states={m: views[m]["state"] for m in members}))
     campaign = dict(schema="i6dmo.status.v1", campaign_id=plan["campaign_id"], state=state, counts=counts,
+                    hold=None if hold is None else dict(
+                        verdict=hold.get("verdict"), reason=hold.get("reason"),
+                        publication_continues=bool(hold.get("publication_of_retained_cost_facts_allowed"))),
                     expected=plan["expected"], test_units_enumerated=plan["test_units_enumerated"],
                     test_readiness=None if readiness is None else readiness.get("state"), eta=eta, generated_at=now,
                     progress_note="stage progress counts declared terminals; no invented percentages")

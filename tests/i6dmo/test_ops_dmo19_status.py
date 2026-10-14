@@ -30,6 +30,7 @@ def test_dmo19_running_unit_reports_progress_age_and_no_invented_eta(tmp_path):
     assert unit["eta"]["kind"] == "UPPER_BOUND_AT_DECLARED_CEILING"  # early stopping may end sooner
     camp = status.compute(root, level="campaign", now=now)
     assert camp["eta"]["fit"]["kind"] == "UNMEASURED" and camp["eta"]["publication"]["kind"] == "UNMEASURED"
+    assert camp["eta"]["fit"]["families"]["short"]["kind"] == "UNMEASURED"
     assert camp["state"] == "RUNNING" and camp["expected"]["validation_units"] == 5
 
 
@@ -56,7 +57,9 @@ def test_dmo19_eta_measured_only_from_completed_production_timings(tmp_path):
     run_worker(root, "preferred", tmp_path / "c.txt")
     campaign.publish(root, warehouse=FakeWarehouse())
     camp = status.compute(root, level="campaign")
-    assert camp["eta"]["fit"]["kind"] == "MEASURED" and camp["eta"]["fit"]["basis_n"] == 1
+    assert camp["eta"]["fit"]["families"]["short"]["kind"] == "DONE"
+    assert camp["eta"]["fit"]["families"]["short"]["basis_n"] == 1
+    assert camp["eta"]["fit"]["kind"] == "UNMEASURED"  # the long family has no measured fit
     assert camp["eta"]["score"]["kind"] in ("MEASURED", "UNMEASURED")
     assert camp["counts"]["COMPLETE"] == 1 and camp["state"] != "COMPLETE"
     closed = campaign.close_campaign(root)
