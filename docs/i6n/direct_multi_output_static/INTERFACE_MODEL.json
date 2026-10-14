@@ -120,7 +120,7 @@
     "core_activation": "relu (plan names only filters/kernel/stride)",
     "positional_encoding": "additive sinusoid at physical offsets -24..0 h (subclass of the plugin PositionalEncoding)",
     "restore": "lowest monitored epoch, first tie; min_delta governs patience only (i6n masked early-stop convention)",
-    "op_determinism": "not enabled (GPU determinism of boolean_mask gradients untested)"
+    "op_determinism": "ENABLED everywhere (tf.config.experimental.enable_op_determinism + TF_DETERMINISTIC_OPS/TF_CUDNN_DETERMINISTIC) by build_dmo/load_dmo/train_unit/generate_test_predictions; recorded in the receipt ('determinism'), MODEL.json and PREDICTIONS.json; DMO10 save/load identity stays bitwise on the same device; no tolerance was declared (lane 4's bounded GPU replay confirms)"
   },
   "long_family": {
     "seal_command": "python -m tools.i6dmo seal-long-design --short-design <EXPERIMENT.short.json> --short-terminal <terminals/<id>/TERMINAL.json of short.report> --out <EXPERIMENT.long.json> [--json]  (also python -m tools.i6dmo.design ...); exit 0 SEALED, 2 typed FAILED",

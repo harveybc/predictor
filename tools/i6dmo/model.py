@@ -47,6 +47,24 @@ from predictor_plugins.modular_temporal.registry import _resolve
 
 keras = tf.keras
 MODEL_SCHEMA = "i6dmo.model.v1"
+
+#: Deterministic kernels for training AND inference so DMO10 save/load prediction identity is
+#: bitwise on the SAME device (lane 4 GPU replay found nondeterministic kernel selection between
+#: sessions). Enabled by every build/load path below; recorded in MODEL.json and the train receipt.
+DETERMINISM = {"op_determinism": False, "api": "tf.config.experimental.enable_op_determinism",
+               "env": {}}
+
+
+def enable_determinism():
+    """Idempotently enable TF op determinism; returns the recorded flags."""
+    import os as _os
+    _os.environ.setdefault("TF_DETERMINISTIC_OPS", "1")
+    _os.environ.setdefault("TF_CUDNN_DETERMINISTIC", "1")
+    tf.config.experimental.enable_op_determinism()
+    DETERMINISM["op_determinism"] = True
+    DETERMINISM["env"] = {k: _os.environ.get(k)
+                          for k in ("TF_DETERMINISTIC_OPS", "TF_CUDNN_DETERMINISTIC")}
+    return json.loads(_canonical(DETERMINISM))
 ARTIFACT_SCHEMA = "i6dmo.model_artifact.v1"
 _KEYS = {"schema", "features", "offsets_hours", "horizons_hours", "branch", "core", "heads",
          "positional_encoding", "regime", "seed"}
@@ -225,6 +243,7 @@ def _core_params(c):
 def build_dmo(config):
     """Build the fixed R0 model. Seeds the global RNG first (explicit random init)."""
     c = normalize_model_config(config)
+    enable_determinism()
     keras.utils.set_random_seed(c["seed"])
     grid = tuple(c["offsets_hours"])
     steps, n = len(grid), len(c["features"])
@@ -280,6 +299,7 @@ def save_dmo(bundle, directory, extra=None):
     archive = out / "forecast_model.keras"
     bundle.forecast_model.save(archive)
     document = {"schema": ARTIFACT_SCHEMA, "config": bundle.config, "keras_version": keras_version(),
+                "determinism": json.loads(_canonical(DETERMINISM)),
                 "tensorflow_version": tf.__version__, "output_names": list(bundle.forecast_model.output_names),
                 "components": bundle.component_manifests(),
                 "weights_sha256": weights_hash(bundle.forecast_model), "archive_sha256": _file_hash(archive),
@@ -296,6 +316,7 @@ def load_dmo(directory):
         raise ValueError("unsupported model artifact schema")
     if _major_minor(document["keras_version"]) != _major_minor(keras_version()):
         raise ValueError(f"saved under Keras {document['keras_version']}, running {keras_version()}")
+    enable_determinism()
     archive = src / "forecast_model.keras"
     if _file_hash(archive) != document["archive_sha256"]:
         raise ValueError("model archive hash mismatch")

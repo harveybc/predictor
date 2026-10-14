@@ -217,6 +217,7 @@ def generate_test_predictions(final_unit_dir, test_bundle_dir, out_dir, *, readi
         raise FinalBlocked("FINAL_DESIGN_MISMATCH",
                            "the TEST bundle binds a different sealed final design than the trained unit")
     from tools.i6dmo import model as M
+    determinism = M.enable_determinism()  # inference as deterministic as the recorded fit
     bundle, document = M.load_dmo(unit / "model")
     if document["weights_sha256"] != receipt["identity"]["weights_sha256"]:
         raise FinalBlocked("FINAL_WEIGHTS_MISMATCH", "unit receipt and model archive disagree")
@@ -234,7 +235,8 @@ def generate_test_predictions(final_unit_dir, test_bundle_dir, out_dir, *, readi
               "scales_sha256": scales.get("scales_sha256"),
               "design_sha256": manifest["design_sha256"],
               "readiness_sha256": readiness["readiness_sha256"],
-              "predictions_sha256": _file_sha(out / "test.npz"), "trained": False}
+              "predictions_sha256": _file_sha(out / "test.npz"), "trained": False,
+              "determinism": determinism}
     (out / "PREDICTIONS.json").write_text(json.dumps(result, sort_keys=True, indent=1) + "\n",
                                           encoding="utf-8")
     return result

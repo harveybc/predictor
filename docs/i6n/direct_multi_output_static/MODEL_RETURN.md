@@ -136,3 +136,15 @@ the real executor seam; strategy_adapter untouched):
   passed; full `tests/i6dmo` 227 passed (pre-merge baseline) — code-only
   acceptance, not scientific success. AUD-DMO-01 and the real TEST year remain
   closed pending lane 1 and the external gates.
+
+## Round 4: DMO10 GPU save/load identity (lane 4 replay)
+
+Op determinism is now ENABLED for training and inference everywhere
+(`enable_determinism()` in `tools/i6dmo/model.py`: `enable_op_determinism` plus
+`TF_DETERMINISTIC_OPS`/`TF_CUDNN_DETERMINISTIC`, called by `build_dmo`,
+`load_dmo`, `train_unit` and `generate_test_predictions`) and recorded in the
+train receipt (`determinism`), `MODEL.json` and `PREDICTIONS.json`. No numeric
+tolerance was declared: the bitwise same-device check stands. CPU POST: 99
+passed (PRE: the two new recording tests failed). The GPU confirmation is lane
+4's bounded replay, not this lane's. The earlier "op determinism is off" risk
+line is superseded by this round.

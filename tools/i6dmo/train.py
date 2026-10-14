@@ -467,6 +467,8 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
                "artifacts": {}}
     try:
         import tensorflow as tf
+        from tools.i6dmo.model import enable_determinism
+        receipt["determinism"] = enable_determinism()
         if device == "gpu" and not tf.config.list_physical_devices("GPU"):
             raise TrainDisposition("NO_GPU_VISIBLE", "a GPU fit was requested; CPU fallback is forbidden")
         receipt["device"] = device
