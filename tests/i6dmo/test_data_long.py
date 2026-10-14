@@ -198,3 +198,10 @@ def test_long_requires_144h_history_and_never_shortens(tmp_path):
     with pytest.raises(data.DataContractError) as err:
         data.load_input(src, bad)
     assert err.value.code == "WINDOW_NOT_CONTRACT"
+
+
+def test_long_data_view_matches_plan_derivation():
+    view = data.long_data_view(_synth.load_design())
+    assert data.data_contract_sha256(view) == data.data_contract_sha256(long_design(sealed=True))
+    with pytest.raises(data.DataContractError):
+        data.long_data_view(view)

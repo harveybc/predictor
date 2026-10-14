@@ -63,13 +63,16 @@ DESIGN_KEYS = frozenset({"schema", "status", "experiment_id", "asset", "seed", "
                          "evaluation_mode", "retraining_frequency", "input", "horizons_hours",
                          "feature_policy", "splits", "business", "model", "training", "metrics",
                          "execution"})
+#: Present only in a long design sealed by the model lane; they never enter the data identity.
+SEAL_KEYS = frozenset({"derived_from", "seal_sha256"})
+DATA_CONTRACT_KEYS = ("asset", "input", "horizons_hours", "feature_policy", "splits", "business")
 INPUT_KEYS = frozenset({"value_mode", "history_span_hours", "spacing_hours", "observations",
                         "include_origin", "issuance_hours", "smoothing", "require_exact_timestamps"})
 SPLIT_KEYS = frozenset({"train", "inner_tail_weeks", "validation", "test", "end_exclusive",
                         "purge_by_label_availability"})
 ORIGIN_REASONS = ("ORIGIN_OUTSIDE_CALENDAR_WEEK", "INPUT_NO_OBSERVATION_AVAILABLE",
                   "NO_VALID_HEAD")
-SAMPLING_RULE = "DS2_ASOF_LAST_AVAILABLE"
+SAMPLING_RULE = "DS2_ASOF_LAST_AVAILABLE"      # short family; long family is DS12_...
 SAMPLING_DESCRIPTION = ("each slot instant s takes, per feature, the last retained finite "
                         "observation with available_time (UTC bar end) <= s; never the next row, "
                         "never interpolation; staleness s - observation_time recorded per slot "
@@ -157,7 +160,7 @@ def validate_design(design: Mapping[str, Any], *, _allow_noncontract_splits: boo
     """Check the design fields this lane consumes; unknown top-level fields are refused."""
     if not isinstance(design, Mapping):
         raise DataContractError("DESIGN_INVALID", "design must be an object")
-    unknown = set(design) - DESIGN_KEYS
+    unknown = set(design) - DESIGN_KEYS - SEAL_KEYS
     if unknown:
         raise DataContractError("UNKNOWN_DESIGN_FIELD", f"{sorted(unknown)}")
     if design.get("schema") != "i6dmo.design.v1" or design.get("asset") != ASSET:
@@ -205,6 +208,40 @@ def split_bounds(design: Mapping[str, Any], *,
     return (c1.SplitBounds("FIT", train0, inner0, label_available_by=inner0),
             c1.SplitBounds("INNER", inner0, train1, label_available_by=train1),
             c1.SplitBounds("VALIDATION", val0, val1, label_available_by=val1))
+
+
+def sampling_rule_name(window: "WindowSpec") -> str:
+    """Rule name parametrized by input spacing (DS2 short, DS12 long)."""
+    return f"DS{window.spacing_hours}_ASOF_LAST_AVAILABLE"
+
+
+def data_contract_sha256(design: Mapping[str, Any]) -> str:
+    """Identity of the data-relevant design fields (seal/training fields excluded)."""
+    return provenance.canonical_sha256({k: design[k] for k in DATA_CONTRACT_KEYS})
+
+
+#: PLAN.md section 5 long-family data fields (mirrors the model lane's LONG_FROM_PLAN).
+LONG_DATA_FIELDS = {"experiment_id": "I6-DMO-LONG-DS12-STATIC-R0",
+                    "horizons_hours": [18, 24, 36, 48, 60, 72],
+                    "input.history_span_hours": 144, "input.spacing_hours": 12}
+
+
+def long_data_view(short_design: Mapping[str, Any]) -> dict:
+    """Unsealed long data view: the short design with the PLAN section 5 long fields.
+
+    Its ``data_contract_sha256`` equals that of the model lane's sealed long design
+    (seal fields never enter the data identity), so a bundle prepared before the
+    short closure is reusable once the long design is sealed.
+    """
+    if short_design.get("experiment_id") != "I6-DMO-SHORT-DS2-STATIC-R0":
+        raise DataContractError("SHORT_DESIGN_REQUIRED", str(short_design.get("experiment_id")))
+    doc = json.loads(json.dumps(short_design))
+    for path, value in LONG_DATA_FIELDS.items():
+        node, keys = doc, path.split(".")
+        for key in keys[:-1]:
+            node = node[key]
+        node[keys[-1]] = value
+    return doc
 
 
 def test_start(design: Mapping[str, Any]) -> datetime:
@@ -278,7 +315,8 @@ def load_input(input_dir: str | Path, design: Mapping[str, Any], *,
         raise DataContractError("CALENDAR_OFFSET_MISMATCH", "calendar offsets differ from design")
     bundle = InputBundle(ts=ts, x=x, price=price, features=features, calendar_config=calendar,
                          files=files, clock=clock, design=design, window=window, horizons=hs,
-                         input_dir=root, _allow_noncontract_splits=_allow_noncontract_splits)
+                         input_dir=root, _allow_noncontract_splits=_allow_noncontract_splits,
+                         sampling_rule=sampling_rule_name(window))
     _check_coverage(bundle)
     return bundle
 
@@ -494,7 +532,7 @@ def build_origin_table(bundle: InputBundle, design: Mapping[str, Any], *,
         counts[s]["rows_materialized"] = int(sel.sum())
         st = stale[sel]
         counts[s]["asof"] = {
-            "rule": SAMPLING_RULE, "scope": "materialized rows",
+            "rule": bundle.sampling_rule, "scope": "materialized rows",
             "closure_threshold_hours": int(closure),
             "origins_all_slots_exact": int((st.reshape(len(st), -1) == 0).all(axis=1).sum()),
             "origins_with_asof_slot": int((st.reshape(len(st), -1) > 0).any(axis=1).sum()),
@@ -634,6 +672,42 @@ def fit_statistics(bundle: InputBundle, table: OriginTable) -> dict:
 
 # --------------------------------------------------------------------------- frozen bundle
 
+def history_provenance(bundle: InputBundle, table: OriginTable) -> dict:
+    """Earliest retained bar any materialized slot consumes, and the clock scope covering it."""
+    sel = np.zeros(len(table.origin_ts), dtype=bool)
+    for s in SPLITS:
+        sel |= table.materialized(s)
+    idx = table.slot_index[sel]
+    earliest = int(bundle.ts[idx[idx >= 0].min()]) if idx.size else None
+    train_start = _epoch(split_bounds(bundle.design,
+                                      _allow_noncontract_splits=bundle._allow_noncontract_splits)[0].start)
+    out = {"earliest_consumed_bar": iso(earliest) if earliest is not None else None,
+           "train_start": iso(train_start),
+           "consumed_before_train_start": earliest is not None and earliest < train_start,
+           "clock_policy": bundle.clock.get("clock_policy"),
+           "declared_assumptions": [], "base_scope_warmup": None,
+           "consumed_before_base_scope_start": None}
+    scope_path = bundle.input_dir / "CLOCK_SCOPE.json"
+    if scope_path.is_file():
+        scope = json.loads(scope_path.read_text())
+        out["clock_scope_sha256"] = provenance.file_sha256(scope_path)
+        declared = scope.get("declared_assumption") or {}
+        if declared:
+            span = declared.get("span") or {}
+            end = _epoch(_instant(span["end"])) if span.get("end") else None
+            out["declared_assumptions"].append({
+                "assumption_id": declared.get("assumption_id"),
+                "assumption_sha256": scope.get("assumption_sha256"),
+                "status": declared.get("status"), "span": span,
+                "overlaps_consumed_history": (earliest is not None and end is not None
+                                              and earliest < end)})
+        base = scope.get("base_scope") or {}
+        out["base_scope_warmup"] = base.get("warmup_2019_december")
+        if base.get("data_start") and earliest is not None:
+            out["consumed_before_base_scope_start"] = earliest < _epoch(_instant(base["data_start"]))
+    return out
+
+
 def _code_digests() -> dict:
     here = Path(__file__).resolve().parent
     names = ("data.py", "naive.py", "provenance.py", "producer_recovery.v1.json",
@@ -684,12 +758,15 @@ def build_frozen_bundle(input_dir: str | Path, design: Mapping[str, Any], out_di
         "schema": SCHEMA,
         "experiment_id": bundle.design["experiment_id"],
         "design_sha256": provenance.canonical_sha256(bundle.design),
+        "data_contract_sha256": data_contract_sha256(bundle.design),
+        "history_provenance": history_provenance(bundle, table),
         "asset": ASSET,
         "window": bundle.window.to_json(),
         "horizons_hours": list(bundle.horizons),
         "offsets_hours": list(bundle.window.offsets_hours()),
-        "input_sampling": {"rule": SAMPLING_RULE, "description": SAMPLING_DESCRIPTION,
-                           "staleness_array": "<split>_aux.npz slot_staleness_s (n,13,19) seconds; not a model input",
+        "input_sampling": {"rule": bundle.sampling_rule, "description": SAMPLING_DESCRIPTION,
+                           "staleness_array": (f"<split>_aux.npz slot_staleness_s (n,{bundle.window.observations},"
+                                               f"{len(bundle.features)}) seconds; not a model input"),
                            "ruling": "Satoshi technical ruling 2026-10-14 under PLAN section 4"},
         "features": list(bundle.features),
         "row_id_format": "npz row_id = origin UTC epoch seconds (int64); aux row_ids = 'EURUSD|<UTC ISO origin>'",
