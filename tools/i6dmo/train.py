@@ -37,6 +37,10 @@ import time
 
 import numpy as np
 
+# Imported FIRST so the static-algorithm determinism env is in place before TensorFlow
+# initializes in this interpreter (`python -m tools.i6dmo.train` is the production child;
+# the init-order witness in tools.i6dmo.model refuses to score records recorded otherwise).
+from tools.i6dmo import model as _model_determinism  # noqa: F401
 from tools.i6dmo import design as D
 
 RECEIPT_SCHEMA = "i6dmo.train_receipt.v1"
@@ -431,6 +435,12 @@ def replay_monitored(model, fit, inner, record, batch_size=None, ids=None):
     tolerance_active = False
     if flags is not None:
         running = current_determinism_flags()
+        if flags.get("tf_imported_before_flags") is True or running["tf_imported_before_flags"] is True:
+            side = "recorded" if flags.get("tf_imported_before_flags") is True else "running"
+            raise TrainDisposition("DETERMINISM_INIT_ORDER_INVALID",
+                                   f"the {side} process imported TensorFlow before the static-"
+                                   "algorithm flags were set; its kernel selection is ungoverned "
+                                   "and the monitored value is not scoreable")
         if flags != running:
             raise TrainDisposition("DETERMINISM_FLAGS_MISMATCH",
                                    f"recorded flags {flags} != running process {running}; a record "
@@ -729,9 +739,9 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
                             "code_files_sha256": _code_identity()},
                "artifacts": {}}
     try:
-        import tensorflow as tf
         from tools.i6dmo.model import enable_determinism
         receipt["determinism"] = enable_determinism()
+        import tensorflow as tf
         if device == "gpu" and not tf.config.list_physical_devices("GPU"):
             raise TrainDisposition("NO_GPU_VISIBLE", "a GPU fit was requested; CPU fallback is forbidden")
         receipt["device"] = device

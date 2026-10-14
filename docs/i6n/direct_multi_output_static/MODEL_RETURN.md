@@ -279,3 +279,33 @@ CPU POST: 106 passed across the five model-lane files (PRE: 5 failed,
 including flags-enforcement and tolerance-bound regressions). Lane 4 runs the
 deciding GPU round: static flags fix it bitwise, or the witness fires within
 the declared bound and the tolerance closes it with the deltas on record.
+
+## Round 11: subprocess-path fidelity and the init-ordering witness
+
+Lane 4 found the flags round bit-identical to the pre-flags round: the flags
+were set after TensorFlow had already initialized. The init-ordering witness
+then caught the SAME defect in the production CLI itself: `train_unit` imported
+TensorFlow before `tools.i6dmo.model`, so even `python -m tools.i6dmo.train`
+ran with ungoverned kernel selection. Fixes:
+
+1. `tools/i6dmo/train.py` imports `tools.i6dmo.model` FIRST (the module sets
+   the static-algorithm env before importing TF itself), and `train_unit`
+   enables determinism before importing TensorFlow.
+2. Init-ordering witness: `model.INIT_ORDER` records whether `tensorflow` was
+   already in `sys.modules` at the instant the flags were set, plus the flag
+   values at that instant; it is stored in `determinism`/`determinism_flags`,
+   and `replay_monitored`/the self-check refuse to score any record (or run in
+   any process) with `tf_imported_before_flags=true` as typed
+   `DETERMINISM_INIT_ORDER_INVALID`.
+3. The end-to-end DMO10 test now exercises the REAL subprocess entrypoints:
+   train via `python -m tools.i6dmo.train` and replay via the new
+   `python -m tools.i6dmo.replay_monitor --design --bundle --unit --json`
+   (fresh flags-first interpreters, faithful to unit_runner), asserting
+   bitwise MATCH on CPU and `tf_imported_before_flags=false` on both sides.
+   `tests/i6dmo/conftest.py` imports the model module before TF so the
+   remaining in-process tests run under the production init order.
+4. The 1e-5 tolerance stays exactly as declared; any revision would be a new
+   transparent declaration, never retroactive.
+
+CPU POST: 23 passed in train (PRE: 2 failed) plus the other four files. Lane 4
+runs the next bounded round with governed kernel selection on both sides.

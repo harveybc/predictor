@@ -38,11 +38,22 @@ from pathlib import Path
 
 import numpy as np
 import os as _os
+import sys as _sys
 
 # Static GPU algorithm selection, set BEFORE TensorFlow initializes in every entrypoint that
 # imports this module: cuDNN/cuBLAS AUTOTUNE state is per-process, so a process that trained
 # selects different (individually deterministic) kernels than one that only loads; op
 # determinism makes each choice repeatable, not process-invariant (lane 4 witness verdict).
+#: Init-ordering witness: if TensorFlow was already in sys.modules at THIS instant, the env
+#: below may not govern its kernel selection, so records from this process are not scoreable
+#: (lane 4 found the flags round bit-identical to the pre-flags round under the pytest
+#: harness, which imports TF at collection; production spawns flags-first interpreters).
+INIT_ORDER = {
+    "tf_imported_before_flags": "tensorflow" in _sys.modules,
+    "flags_at_import": {k: _os.environ.get(k) for k in
+                        ("TF_CUDNN_USE_AUTOTUNE", "TF_CUDNN_DETERMINISTIC",
+                         "TF_DETERMINISTIC_OPS", "TF_XLA_FLAGS")},
+}
 _os.environ["TF_CUDNN_USE_AUTOTUNE"] = "0"
 _os.environ["TF_CUDNN_DETERMINISTIC"] = "1"
 _os.environ["TF_DETERMINISTIC_OPS"] = "1"
@@ -64,7 +75,8 @@ MODEL_SCHEMA = "i6dmo.model.v1"
 #: bitwise on the SAME device (lane 4 GPU replay found nondeterministic kernel selection between
 #: sessions). Enabled by every build/load path below; recorded in MODEL.json and the train receipt.
 DETERMINISM = {"op_determinism": False, "api": "tf.config.experimental.enable_op_determinism",
-               "autotune": "static", "jit_autoclustering": False, "env": {}}
+               "autotune": "static", "jit_autoclustering": False, "env": {},
+               "init_order": INIT_ORDER}
 _DETERMINISM_ENV = ("TF_DETERMINISTIC_OPS", "TF_CUDNN_DETERMINISTIC", "TF_CUDNN_USE_AUTOTUNE",
                     "TF_XLA_FLAGS")
 
@@ -92,6 +104,7 @@ def determinism_flags():
     """The canonical flag dict recorded in monitor records and enforced at replay."""
     enable_determinism()
     return {"op_determinism": True, "jit_autoclustering": False,
+            "tf_imported_before_flags": INIT_ORDER["tf_imported_before_flags"],
             "TF_DETERMINISTIC_OPS": DETERMINISM["env"]["TF_DETERMINISTIC_OPS"],
             "TF_CUDNN_DETERMINISTIC": DETERMINISM["env"]["TF_CUDNN_DETERMINISTIC"],
             "TF_CUDNN_USE_AUTOTUNE": DETERMINISM["env"]["TF_CUDNN_USE_AUTOTUNE"]}

@@ -15,7 +15,9 @@
     "tests/i6dmo/test_dmo_long.py",
     "tools/i6dmo/final.py",
     "tests/i6dmo/test_dmo_final.py",
-    "tools/i6dmo/gpu_probe_dmo10.py"
+    "tools/i6dmo/gpu_probe_dmo10.py",
+    "tools/i6dmo/replay_monitor.py",
+    "tests/i6dmo/conftest.py"
   ],
   "python_api": {
     "tools.i6dmo.design.load_design(path) -> dict": "typed, unknown/missing fields rejected at every level; fixed C-section values enforced",
@@ -164,5 +166,6 @@
     "justification": "process-level GPU algorithm selection, library property (lane 4 witness verdict: real forward divergence between a trained and an untrained process at 1e-4..1e-5 with identical weights)",
     "activation": "ONLY when monitor_evaluation.determinism_flags is recorded, equals the running process flags, and declares TF_CUDNN_USE_AUTOTUNE=0; otherwise MONITOR_WITNESS_DIVERGENCE stays a hard typed refusal",
     "reporting": "replay_monitored returns the tolerated batches with their max relative delta; nothing is silently absorbed"
-  }
+  },
+  "replay_entrypoint": "python -m tools.i6dmo.replay_monitor --design <design> --bundle <bundle> --unit <trained unit> [--json]: fresh flags-first interpreter; canonical load; recomputes the monitored value through the recorded procedure with witness comparison; exit 0 MATCH/TOLERATED (verdict JSON), 5 typed disposition; refuses records or processes with tf_imported_before_flags=true (DETERMINISM_INIT_ORDER_INVALID)"
 }
