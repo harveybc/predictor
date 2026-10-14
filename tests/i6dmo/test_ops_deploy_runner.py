@@ -156,3 +156,13 @@ def test_mirrors_are_verified_byte_copies(tmp_path):
     victim.write_text("tampered")
     assert campaign.publish(root, warehouse=FakeWarehouse())["mirrors"]["state"] == "VERIFIED"  # repaired
     assert os.path.exists(victim) and victim.read_text() != "tampered"
+
+
+def test_render_only_and_no_start_never_enable(tmp_path):
+    from tools.i6dmo import deploy
+    root = make_campaign(tmp_path)
+    log = []
+    out = deploy.deploy(root, unit_dir=tmp_path / "rendered", systemctl=_systemctl(log), render_only=True)
+    assert out["render_only"] and log == [] and len(list((tmp_path / "rendered").iterdir())) == len(out["units"])
+    deploy.deploy(root, unit_dir=tmp_path / "units", systemctl=_systemctl(log), start=False)
+    assert not [a for a in log if a[0] == "enable"]

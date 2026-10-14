@@ -86,7 +86,8 @@ def default_systemctl(*args):
     return dict(rc=out.returncode, stdout=out.stdout.strip())
 
 
-def deploy(root, *, unit_dir=None, systemctl=None, start=True, roles=None):
+def deploy(root, *, unit_dir=None, systemctl=None, start=True, roles=None, render_only=False):
+    """start=False writes files and reloads only (nothing enabled); render_only calls no systemctl."""
     root = Path(root).resolve()
     if (root / "CLOSE.json").exists() or (root / "RETIRED").exists():
         raise C.Refused("CAMPAIGN_CLOSED_OR_RETIRED: refusing resurrection")
@@ -111,13 +112,14 @@ def deploy(root, *, unit_dir=None, systemctl=None, start=True, roles=None):
         tmp.write_text(text)
         os.replace(tmp, path)
         written.append(name)
+    timers = sorted(n for n in rendered if n.endswith(".timer"))
+    if render_only:  # pure rendering into unit_dir: no systemctl call of any kind
+        return dict(schema="i6dmo.deploy.v1", campaign_id=cid, units=sorted(rendered), written=written,
+                    unchanged=unchanged, timers=timers, render_only=True)
     if written:
         systemctl("daemon-reload")
-    timers = sorted(n for n in rendered if n.endswith(".timer"))
     if start:
         systemctl("enable", "--now", *timers)
-    else:
-        systemctl("enable", *timers)
     observed = {n: dict(enabled=systemctl("is-enabled", n)["stdout"], active=systemctl("is-active", n)["stdout"])
                 for n in sorted(rendered)}
     q = C.open_queue(root)

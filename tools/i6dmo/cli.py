@@ -68,6 +68,9 @@ def cmd_deploy(args):
     spec = json.loads(Path(args.deployment).read_text())
     if C.load_deployment(args.root) != spec:
         raise C.Refused("DEPLOYMENT_SPEC_DIFFERS: the root was initialised with another private spec")
+    if args.render_to:
+        _emit(deploy.deploy(args.root, unit_dir=args.render_to, render_only=True))
+        return 0
     _emit(deploy.deploy(args.root, start=not args.no_start))
     return 0
 
@@ -173,7 +176,8 @@ def build_parser():
     p = sub.add_parser("deploy")
     p.add_argument("--root", required=True)
     p.add_argument("--deployment", required=True)
-    p.add_argument("--no-start", action="store_true")
+    p.add_argument("--no-start", action="store_true", help="write unit files and daemon-reload; enable nothing")
+    p.add_argument("--render-to", help="render unit files into this directory; no systemctl call at all")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_deploy)
 
