@@ -1,5 +1,5 @@
 {
- "code_commit": "eb8add91",
+ "code_commit": "ce1a1ac9",
  "covered": [
   "DMO01",
   "DMO04",
@@ -9,56 +9,14 @@
  "failed": 1,
  "failed_detail": {
   "DMO10": {
-   "history": "identical sum pair across 7c3bebb2 / 7faecbdc / eb8add91; monitored pair stable since 5047cef9",
+   "history": "sum pair stable 7c3bebb2..eb8add91; at ce1a1ac9 the row witness reclassified it as a data-side effect",
    "test": "tests/i6dmo/test_dmo_train.py::test_dmo10_train_unit_end_to_end_restore_and_reload",
-   "typed": "MONITOR_WITNESS_DIVERGENCE (beyond the 1e-5 bound; governed flags, subprocess entrypoints)",
-   "verdict": "the partial sums are BIT-IDENTICAL for the THIRD consecutive round, now under flags-first subprocess entrypoints with the init-order witness green and fresh training proven by provenance timestamps (25 updates). Kernel selection and TF init order are therefore EXCLUDED as causes. Two numbers invariant across seven code revisions mean a deterministic structural difference: most plausibly the monitor evaluates weights that are not the weights that get SAVED (a final weight mutation after the epoch's evaluation - optimizer slot/weight-decay application or the last gradient update ordering) while both weight digests are computed at save time, so they agree with the file, not with the evaluated state. Decisive probe for the model lane: at the moment the batch-0 witness is recorded, also record the per-tensor weight digests THEN and compare them with the saved digests - a mismatch there ends the hunt. Nothing relaxed.",
-   "witness": {
-    "batch": "fit batch 0 (start 0)",
-    "heads_beyond_1e5": [
-     1,
-     2,
-     4
-    ],
-    "max_relative_delta": 1.8245e-05,
-    "partial_counts": [
-     96,
-     71,
-     65,
-     76,
-     74,
-     74
-    ],
-    "recomputed_partial_sums": [
-     91.62058047044911,
-     62.92874957006968,
-     50.245725782161124,
-     69.33698446296076,
-     60.43053086947311,
-     70.29462522989473
-    ],
-    "recorded_partial_sums": [
-     91.62024683158734,
-     62.92798898872531,
-     50.2465664609722,
-     69.33756212510089,
-     60.431633421291004,
-     70.29452050825915
-    ],
-    "relative_deltas": [
-     3.642e-06,
-     1.2087e-05,
-     1.6731e-05,
-     8.331e-06,
-     1.8245e-05,
-     1.49e-06
-    ],
-    "row_ids_sha256": "02bf9bc774511ea6533431b7fbc8d3bcb2f8078183a0b829102735b9ca8f32e2"
-   }
+   "typed": "MONITOR_WITNESS_DIVERGENCE: fit batch 0 row-level forward witness: rows ['row 0', 'row 1', 'row 2', 'row 3', 'row 4'] of 96 diverge (96 total), relative deltas [6.028e-08, 1.211e-04], uniform_delta_pattern=False: LOCALIZED row divergence: weight or data effect, not a uniform execution-mode rounding",
+   "verdict": "TF32 is EXCLUDED (disabled flags-first, divergence unchanged in kind) and the weights are EXCLUDED (WEIGHTS_AT_WITNESS_MISMATCH did not fire: the weights at witness time digest-match the saved weights). All 96 rows diverge with row-dependent magnitudes spanning 6e-8..1.2e-4, which the witness itself classifies as a weight-or-data effect; with weights equal, the remaining cause is the INPUT DATA: the normalized input tensor fed by the training pipeline differs per row from the tensor the replay builds from the saved arrays (e.g. normalization computed/applied on GPU in float32 during training versus on CPU in float64 then cast in the replay) - CPU-identical because both sides normalize identically there. Decisive next witness: digest the POST-NORMALIZATION per-row input bytes on both sides before any forward pass. Nothing relaxed."
   }
  },
  "gpu_devices": 1,
- "note": "DMO01/DMO04 remain green on GPU; DMO10 stays CPU-only acceptance; identical sums across the last two rounds localize the next check to TF initialization order",
+ "note": "DMO01/DMO04 green on GPU; DMO10 open: input-tensor identity between the training pipeline and the replay is the remaining unverified link",
  "passed": 12,
  "probe": {
   "meaning": "in_session vs rebuild vs full_load per-head sums agree in ONE session on the GPU",
@@ -75,5 +33,5 @@
  "skipped": 1,
  "tests": "test_dmo_model.py + test_dmo_train.py -k dmo01/dmo04/dmo10/causality (12 selected)",
  "tf": "2.21.0",
- "wall_seconds": 33.7
+ "wall_seconds": 35.3
 }
