@@ -45,7 +45,8 @@ def replay_unit(design_path, bundle_dir, unit_dir):
             "save-path). A CPU pass alongside this mismatch would mean the mutation is GPU-only "
             "(e.g., a GPU-resident slot or cast applied on save), which the digests now decide.")
     fm, im, monitored, tolerated = T.replay_monitored(
-        loaded.forecast_model, T.transform(fit_rows, scales), T.transform(inner_rows, scales),
+        loaded.forecast_model, T.materialize_monitor_inputs(fit_rows, scales),
+        T.materialize_monitor_inputs(inner_rows, scales),
         record, ids=(fit_rows["row_id"], inner_rows["row_id"]))
     recorded = record["monitored"]
     return {"schema": "i6dmo.replay_monitor.v1",

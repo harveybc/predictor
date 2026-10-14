@@ -292,6 +292,18 @@ def masked_split_metrics(y, pred, mask):
 MONITOR_EVAL = "i6dmo.monitor_eval.v2"
 MONITOR_PARTITION = "sequential_row_id_fixed"
 MONITOR_INSTANCE = "canonical_loader_rebuild"
+#: THE canonical monitor-input materialization, shared by the fit path and the replay: the
+#: bundle arrays are the source of truth, normalization happens in float64 on CPU (numpy),
+#: and there is exactly ONE cast to float32, in materialize_monitor_inputs, before any
+#: forward. Any other derivation (e.g., a float32 pipeline) yields different bytes and is
+#: refused by the input witness.
+MONITOR_INPUT = "i6dmo.monitor_input.v1:float64_cpu_normalize_single_float32_cast"
+
+
+def materialize_monitor_inputs(rows, scales):
+    """The ONE shared monitor-input materialization (see MONITOR_INPUT)."""
+    x, y, mask = transform(rows, scales)
+    return np.ascontiguousarray(x, dtype=np.float32), y, mask
 #: Pre-declared monitored-value comparison tolerance, serialization/process-level only.
 #: Written justification: process-level GPU algorithm selection, a library property —
 #: with autotune forced static on both sides, any residual per-batch partial-sum delta
@@ -358,6 +370,7 @@ def evaluate_monitored(model, fit, inner, batch_size, ids=None):
     results = {}
     for name in names:
         x, y, mask = splits[name]
+        x = np.ascontiguousarray(np.asarray(x, dtype=np.float32))  # the EXACT bytes fed below
         pred = predict_matrix(model, x, batch_size=batch_size)
         results[name] = masked_split_metrics(y, pred, mask)
         y64, mb_all = np.asarray(y, np.float64), np.asarray(mask, bool)
@@ -370,8 +383,15 @@ def evaluate_monitored(model, fit, inner, batch_size, ids=None):
             counts = [int(mb[:, h].sum()) for h in range(yb.shape[1])]
             batches.append({"batch": b, "start": start, "rows": int(len(pb)),
                             "row_ids_sha256": _ids_sha(id_arrays[name][start:stop]),
+                            "input_sha256": hashlib.sha256(x[start:stop].tobytes()).hexdigest(),
                             "partial_sums": sums, "partial_counts": counts})
         witness[name] = {"row_ids_sha256": _ids_sha(id_arrays[name]), "batches": batches,
+                         # Input witness: post-normalization float32 bytes, digested before any
+                         # forward; batch-0 rows individually, the first rows byte-complete.
+                         "input_sha256": hashlib.sha256(x.tobytes()).hexdigest(),
+                         "batch0_input_row_sha256": [hashlib.sha256(row.tobytes()).hexdigest()
+                                                     for row in x[:batch_size]],
+                         "batch0_input_rows_hex": [row.tobytes().hex() for row in x[:8]],
                          # Row-level forward witness: batch-0 per-row per-head float64 hex, so a
                          # replay can tell a weight effect (localized rows) from a different
                          # matmul/conv execution mode (uniform small deltas on every row).
@@ -420,6 +440,11 @@ def replay_monitored(model, fit, inner, record, batch_size=None, ids=None):
         raise TrainDisposition("MONITOR_PATH_MISMATCH",
                                f"monitor instance {record.get('monitor_instance')!r} is not the "
                                f"canonical {MONITOR_INSTANCE}")
+    if record.get("input_materialization", MONITOR_INPUT) != MONITOR_INPUT:
+        raise TrainDisposition("MONITOR_PATH_MISMATCH",
+                               f"input materialization {record.get('input_materialization')!r} is "
+                               f"not the canonical {MONITOR_INPUT}; the bundle arrays with one "
+                               "float64 CPU normalization and a single float32 cast are the truth")
     if record.get("graph", "inference") != "inference":
         raise TrainDisposition("MONITOR_PATH_MISMATCH",
                                f"a {record.get('graph')}-graph-evaluated monitor is not comparable; "
@@ -494,6 +519,36 @@ def _row_forward_diff(stored_hex, fresh_hex):
                                "execution-mode rounding")}
 
 
+def _compare_input_witness(name, a, b):
+    """Byte identity of the post-normalization inputs; a mismatch names rows and bytes."""
+    if a.get("input_sha256") is None:
+        return
+    if a["input_sha256"] == b["input_sha256"]:
+        return
+    rows = [i for i, (ra, rb) in enumerate(zip(a.get("batch0_input_row_sha256") or [],
+                                               b["batch0_input_row_sha256"])) if ra != rb]
+    detail = (f"{name}: post-normalization input bytes differ (recorded {a['input_sha256']} vs "
+              f"recomputed {b['input_sha256']}); the monitor was fed a different tensor than the "
+              f"canonical materialization rebuilds")
+    bad_batches = [rb["batch"] for ra, rb in zip(a.get("batches") or [], b["batches"])
+                   if ra.get("input_sha256") != rb["input_sha256"]]
+    detail += f"; divergent batches {bad_batches[:5]} of {len(b['batches'])}"
+    if rows:
+        detail += f"; batch 0 first divergent rows {[f'row {i}' for i in rows[:5]]} of {len(b['batch0_input_row_sha256'])}"
+        stored_hex, fresh_hex = a.get("batch0_input_rows_hex") or [], b["batch0_input_rows_hex"]
+        for i, (ha, hb) in enumerate(zip(stored_hex, fresh_hex)):
+            if ha != hb:
+                sa = np.frombuffer(bytes.fromhex(ha), dtype=np.float32)
+                sb = np.frombuffer(bytes.fromhex(hb), dtype=np.float32)
+                elems = np.flatnonzero(sa.tobytes() != sb.tobytes() if len(sa) != len(sb)
+                                       else sa != sb)[:4]
+                pairs = [(int(e), float(sa[e]), float(sb[e])) for e in elems]
+                detail += (f"; row {i} byte-level first differing elements "
+                           f"(index, recorded, recomputed): {pairs}")
+                break
+    raise TrainDisposition("INPUT_WITNESS_MISMATCH", detail)
+
+
 def _compare_witness(stored, fresh, tolerance_active=False):
     """Batch-by-batch comparison; returns the tolerated batches (empty when exact).
 
@@ -510,6 +565,7 @@ def _compare_witness(stored, fresh, tolerance_active=False):
                                f"recomputed={fresh['code_witness']}")
     for name in ("fit", "inner"):
         a, b = stored.get(name) or {}, fresh[name]
+        _compare_input_witness(name, a, b)
         row_diff = None
         if a.get("batch0_predictions_hex"):
             row_diff = _row_forward_diff(a["batch0_predictions_hex"], b["batch0_predictions_hex"])
@@ -694,6 +750,7 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None, ids=None):
         raise TrainDisposition("RESTORE_MISMATCH", "restored weights differ from the selected epoch")
     record = {"procedure": MONITOR_EVAL, "batch_size": batch, "graph": "inference",
               "partition": MONITOR_PARTITION, "monitor_instance": MONITOR_INSTANCE,
+              "input_materialization": MONITOR_INPUT,
               "determinism_flags": current_determinism_flags(),
               "declared_tolerance": dict(MONITOR_TOLERANCE),
               "witness": best_witness,
@@ -818,7 +875,8 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
 
         with tf.device(placement):
             bundle = M.build_dmo(effective["model"])
-            result = fit_dmo(bundle, transform(fit_rows, scales), transform(inner_rows, scales),
+            result = fit_dmo(bundle, materialize_monitor_inputs(fit_rows, scales),
+                             materialize_monitor_inputs(inner_rows, scales),
                              training, effective["seed"], progress,
                              ids=(fit_rows["row_id"], inner_rows["row_id"]))
             t0 = time.monotonic()

@@ -335,3 +335,28 @@ order. Two recordings now end the hunt in one GPU round:
 Tolerance unchanged at the declared 1e-5 (any revision would be a new
 transparent declaration). CPU POST: 25 passed in train (PRE: 2 failed) plus
 the other four files. Lane 4's next bounded round names the mechanism.
+
+## Round 13: input witness + one canonical monitor-input materialization
+
+Lane 4's row witness excluded TF32 and weights (digests match) and showed a
+LOCALIZED pattern across all 96 rows (6e-8..1.2e-4): the remaining suspect is
+the input tensor itself. Changes:
+
+1. INPUT WITNESS: `evaluate_monitored` digests the POST-NORMALIZATION float32
+   bytes it actually feeds — full-split and per-batch sha256, batch-0 per-row
+   digests, and the first eight rows byte-complete — before any forward. The
+   replay recomputes and diffs them FIRST; a mismatch is typed
+   `INPUT_WITNESS_MISMATCH` naming the divergent batches, the first batch-0
+   rows and, for the first divergent row, the first differing float elements
+   (index, recorded, recomputed).
+2. ONE materialization: `materialize_monitor_inputs` (bundle arrays as the
+   source of truth; normalization in float64 on CPU; exactly ONE float32 cast)
+   is now consumed by BOTH the fit path and `replay_monitor`; the record pins
+   `input_materialization = i6dmo.monitor_input.v1:...` and a record declaring
+   any other derivation never scores (typed). A deliberately re-derived
+   float32-pipeline input is refused by the witness (CPU regression).
+3. This would also explain perfect CPU identity if the divergence were a
+   GPU-side cast/normalization split: the witness now decides at the byte
+   level. Tolerance unchanged at the declared 1e-5.
+
+CPU POST: 26 passed in train (PRE: 1 failed) plus the other four files.
