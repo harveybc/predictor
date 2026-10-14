@@ -8,15 +8,8 @@ from tests.i6dmo.ops_fakes import FakeWarehouse, make_campaign, run_worker
 EXTERNAL = ("DATA_PROVENANCE", "SOFTWARE_TRACEABILITY")
 
 
-def _rulings(root):
-    from tools.i6dmo import campaign
-    campaign.record_gate(root, "STRATEGY_OWNER_RULINGS", status="PASS",
-                         evidence={r: "ruled" for r in campaign.OWNER_RULINGS}, splits_read=[])
-
-
 def _validate_everything(root, counter, pair_mode="ok"):
     from tools.i6dmo import campaign
-    _rulings(root)
     for role, mode in (("preferred", "ok"), ("coordinator", "ok"), ("preferred", "ok"), ("coordinator", "ok"),
                        ("coordinator", pair_mode)):
         campaign.tick(root)
@@ -93,19 +86,42 @@ def test_dmo13_pair_not_eligible_is_terminal_and_never_opens_test(tmp_path):
     assert not [u for u in campaign.load_plan(root)["units"] if u["test_open"]]
 
 
-def test_dmo13_pair_waits_for_owner_rulings_without_failing(tmp_path):
+def test_dmo13_pair_waits_for_the_sealed_execution_policy_without_failing(tmp_path):
     from tools.i6dmo import campaign, status
-    root = make_campaign(tmp_path)
+    root = make_campaign(tmp_path, instrument=None)  # no versioned instrument configuration yet
     counter = tmp_path / "calls.txt"
     for role in ("preferred", "coordinator", "preferred", "coordinator"):
         campaign.tick(root)
         assert run_worker(root, role, counter)["result"] == "COMPLETE"
     campaign.tick(root)
     out = run_worker(root, "coordinator", counter)
-    assert out["result"] == "WAIT_OWNER_RULING" and "barrier_equality" in out["cause"]
+    assert out["result"] == "WAIT_ARTIFACT" and "INSTRUMENT_CONFIG_MISSING" in out["cause"]
     unit = status.compute(root, level="unit", unit="pair.validation")
-    assert unit["state"] == "WAIT_OWNER_RULING" and not unit["attempts"]
-    missing = {m["gate"] for m in campaign.readiness(root)["missing"]}
-    assert "STRATEGY_OWNER_RULINGS" in missing
-    _rulings(root)
-    assert run_worker(root, "coordinator", counter)["result"] == "COMPLETE"
+    assert unit["state"] == "WAIT_ARTIFACT" and not unit["attempts"]
+    missing = {m["gate"]: m["reason"] for m in campaign.readiness(root)["missing"]}
+    assert missing.get("EXECUTION_POLICY") == "INSTRUMENT_CONFIG_MISSING"
+
+
+def test_dmo13_execution_policy_is_sealed_at_init_and_recording_it_by_hand_is_refused(tmp_path):
+    import json
+    from tools.i6dmo import campaign
+    root = make_campaign(tmp_path)
+    receipt = json.loads((root / "gates" / "EXECUTION_POLICY.json").read_text())
+    assert receipt["instrument"]["config_version"].startswith("i6dmo-eurusd-exec")
+    assert campaign._execution_policy_problem(root) is None
+    with pytest.raises(campaign.Refused, match="EXECUTION_POLICY_IS_SEALED_NOT_RECORDED"):
+        campaign.record_gate(root, "EXECUTION_POLICY", status="PASS", evidence={}, splits_read=[])
+
+
+def test_dmo13_tampered_execution_policy_is_a_final_refusal_not_a_wait(tmp_path):
+    import json
+    from tools.i6dmo import campaign
+    root = make_campaign(tmp_path)
+    path = root / "gates" / "EXECUTION_POLICY.json"
+    doc = json.loads(path.read_text())
+    doc["instrument"]["costs"]["spread_price"] = 0.0
+    path.write_text(json.dumps(doc))
+    assert campaign._execution_policy_problem(root) == "EXECUTION_POLICY_TAMPERED"
+    missing = {m["gate"]: m["reason"] for m in campaign.readiness(root)["missing"]}
+    assert missing.get("EXECUTION_POLICY") == "EXECUTION_POLICY_TAMPERED"
+    assert campaign.ensure_execution_policy(root).startswith("EXECUTION_POLICY_TAMPERED")  # never re-sealed valid

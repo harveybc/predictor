@@ -6,12 +6,6 @@ import pytest
 from tests.i6dmo.ops_fakes import fake_adapter, make_campaign, run_worker, write_long_design
 
 
-def _rulings(root):
-    from tools.i6dmo import campaign
-    campaign.record_gate(root, "STRATEGY_OWNER_RULINGS", status="PASS",
-                         evidence={r: "ruled" for r in campaign.OWNER_RULINGS}, splits_read=[])
-
-
 def _to_pair(root, counter, report_mode="ok"):
     from tools.i6dmo import campaign
     for role, mode in (("preferred", "ok"), ("coordinator", report_mode), ("preferred", "ok"),
@@ -29,23 +23,22 @@ def _assert_waits(root, counter, prefix, state="WAIT_ARTIFACT"):
     assert unit["state"] == state and unit["attempts"] == []
 
 
-def test_pair_waits_for_owner_rulings_before_claim(tmp_path):
+def test_pair_waits_for_an_absent_execution_policy_receipt_before_claim(tmp_path):
     root = make_campaign(tmp_path)
+    (root / "gates" / "EXECUTION_POLICY.json").unlink()  # e.g. a root restored without its seal
     _to_pair(root, tmp_path / "c.txt")
-    _assert_waits(root, tmp_path / "c.txt", "WAIT_OWNER_RULING", state="WAIT_OWNER_RULING")
+    _assert_waits(root, tmp_path / "c.txt", "EXECUTION_POLICY_ABSENT")
 
 
 def test_pair_waits_for_missing_strategy_pins(tmp_path):
     root = make_campaign(tmp_path, strategy_pins=False)
     _to_pair(root, tmp_path / "c.txt")
-    _rulings(root)
     _assert_waits(root, tmp_path / "c.txt", "STRATEGY_INPUT_PIN_MISSING:strategy_bars")
 
 
 def test_pair_waits_for_digest_mismatched_strategy_input(tmp_path):
     root = make_campaign(tmp_path)
     _to_pair(root, tmp_path / "c.txt")
-    _rulings(root)
     (tmp_path / "strategy_calendar.json").write_text('{"changed": true}')
     _assert_waits(root, tmp_path / "c.txt", "STRATEGY_INPUT_DIGEST_MISMATCH:strategy_calendar")
 
@@ -53,7 +46,6 @@ def test_pair_waits_for_digest_mismatched_strategy_input(tmp_path):
 def test_pair_waits_when_a_report_lacks_validation_predictions(tmp_path):
     root = make_campaign(tmp_path)
     _to_pair(root, tmp_path / "c.txt", report_mode="no_vp")
-    _rulings(root)
     _assert_waits(root, tmp_path / "c.txt", "UPSTREAM_ARTIFACT_MISSING:short.report:validation_predictions")
 
 

@@ -32,7 +32,6 @@ IDENTITY_KEYS = ("unit", "family", "kind", "cadence", "effective_config_sha256",
 DEFAULT_ENTRYPOINTS = {kind: ["{python}", "-m", "tools.i6dmo.unit_runner", "--kind", kind]
                        for kind in ("fit", "report", "pair", "final_refit", "final_test")}
 FINAL_REFIT_TRAIN = ["2021-01-01T00:00:00Z", "2025-01-01T00:00:00Z"]
-OWNER_RULINGS = ("barrier_equality", "costs_and_pip_value", "fill_model", "sharpe_convention", "min_long_heads")
 # Gate -> (owner, artifact, produced automatically by tick?)
 GATES = {
     "SHORT_VALIDATION": ("ops lane tick", "gates/SHORT_VALIDATION.json", True),
@@ -44,8 +43,9 @@ GATES = {
                         "gates/DATA_PROVENANCE.json", False),
     "SOFTWARE_TRACEABILITY": ("Satoshi integration: TRACEABILITY.json with DMO01-DMO20 PASS",
                               "gates/SOFTWARE_TRACEABILITY.json", False),
-    "STRATEGY_OWNER_RULINGS": ("owner (Master): " + ", ".join(OWNER_RULINGS),
-                               "gates/STRATEGY_OWNER_RULINGS.json", False),
+    "EXECUTION_POLICY": ("strategy lane: receipt sealed automatically at init/deploy from the versioned "
+                         "effective_config.strategy_execution.instrument; tampering is a final refusal",
+                         "gates/EXECUTION_POLICY.json", True),
 }
 
 
@@ -186,7 +186,7 @@ def _seal_family(design, adapter, family):
 
 # --------------------------------------------------------------------- init
 def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=None, data_pins=None, entrypoints=None,
-                  prior_roots=(), long_design=None):
+                  prior_roots=(), long_design=None, strategy_execution=None):
     design = json.loads(Path(design_path).read_text())
     if design.get("splits", {}).get("test", {}).get("open") is not False:
         raise Refused("TEST_OPEN_IN_DESIGN")
@@ -219,7 +219,7 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
         adapter_effective=short["adapter_effective"], cadence=design["retraining_frequency"], seed=design["seed"],
         code_commit=code_commit or _git_head(), data_pins=data_pins, data_sha256=sha256_json(data_pins),
         entrypoints=entries, prior_roots=[str(p) for p in prior_roots], test_open=False,
-        deployment_sha256=sha256_json(spec), long=long_doc))
+        strategy_execution=strategy_execution, deployment_sha256=sha256_json(spec), long=long_doc))
     eff_sha = sha256_json(effective)
     campaign_id = "i6dmo-" + sha256_json(dict(experiment=design["experiment_id"], cadence=effective["cadence"],
                                               effective=eff_sha))[:12]
@@ -245,8 +245,10 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
     for unit in plan["units"]:
         unit.pop("_state", None)
     _write_plan(root, plan)
+    policy_wait = ensure_execution_policy(root)
     write_status(root)
     return dict(campaign_id=campaign_id, effective_config_sha256=eff_sha, root=str(root),
+                execution_policy="SEALED" if policy_wait is None else policy_wait,
                 units=[u["unit_id"] for u in plan["units"]])
 
 
@@ -399,6 +401,8 @@ def _apply_long(root):
 def record_gate(root, name, *, status, evidence, splits_read, effective_config_sha256=None, owner=None):
     if name not in GATES:
         raise Refused(f"UNKNOWN_GATE: {name}")
+    if name == "EXECUTION_POLICY":
+        raise Refused("EXECUTION_POLICY_IS_SEALED_NOT_RECORDED: it derives from the instrument configuration")
     if any(str(s).lower() == "test" for s in splits_read):
         raise Refused("TEST_FEEDBACK: a gate before TEST may not be built from TEST reads")
     plan = load_plan(root)
@@ -415,7 +419,50 @@ def gate_problem(root, name):
     return _gate_problem(root, name, load_plan(root))
 
 
+def ensure_execution_policy(root):
+    """Seal gates/EXECUTION_POLICY.json from the sealed instrument configuration (idempotent).
+
+    Returns the typed cause while it cannot be sealed; a tampered existing receipt is left in
+    place so verification keeps failing it (never overwritten into validity).
+    """
+    from tools.i6dmo import strategy_adapter as SA
+    effective = load_effective(root)
+    instrument = (effective.get("strategy_execution") or {}).get("instrument")
+    if instrument is None:
+        return "INSTRUMENT_CONFIG_MISSING: effective_config.strategy_execution.instrument owner=Satoshi (init)"
+    try:
+        existing = SA.load_execution_policy(root)
+    except SA.StrategyAdapterError as exc:
+        return f"EXECUTION_POLICY_TAMPERED: {exc}"
+    derived = SA.derive_execution_policy(instrument)
+    if existing is None:
+        SA.seal_execution_policy(root, instrument)
+        return None
+    if existing["receipt_sha256"] != derived["receipt_sha256"]:
+        return "EXECUTION_POLICY_MISMATCH: sealed receipt differs from the sealed instrument configuration"
+    return None
+
+
+def _execution_policy_problem(root):
+    from tools.i6dmo import strategy_adapter as SA
+    effective = load_effective(root)
+    instrument = (effective.get("strategy_execution") or {}).get("instrument")
+    if instrument is None:
+        return "INSTRUMENT_CONFIG_MISSING"
+    try:
+        sealed = SA.load_execution_policy(root)
+    except SA.StrategyAdapterError:
+        return "EXECUTION_POLICY_TAMPERED"
+    if sealed is None:
+        return "ABSENT"
+    if sealed["receipt_sha256"] != SA.derive_execution_policy(instrument)["receipt_sha256"]:
+        return "MISMATCH"
+    return None
+
+
 def _gate_problem(root, name, plan):
+    if name == "EXECUTION_POLICY":
+        return _execution_policy_problem(root)
     path = _paths(root)["gates"] / f"{name}.json"
     if not path.exists():
         return "ABSENT"

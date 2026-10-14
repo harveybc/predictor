@@ -137,6 +137,18 @@ class FakeWarehouse:
 
 
 CODE = "c" * 40
+INSTRUMENT = {
+    "instrument_id": "EURUSD",
+    "config_version": "i6dmo-eurusd-exec-2026-10-14",
+    "price_decimals": 5,
+    "point_size": 0.00001,
+    "pip_size": 0.0001,
+    "pip_cost_parameter": 0.00001,
+    "lot_units": 100000.0,
+    "costs": {"spread_price": 0.00008, "slippage_price": 0.00002,
+              "commission_per_lot_round_trip": 7.0, "swap_per_lot_per_day": 10.0},
+    "cost_verification": "NOT_BROKER_VERIFIED",
+}
 DATA = {"corpus": {"sha256": "d" * 64}}
 
 
@@ -163,7 +175,7 @@ def strategy_pin_files(tmp_path):
 
 
 def make_campaign(tmp_path, *, name="root", code_commit=CODE, data_pins=None, prior_roots=(), long=True,
-                  strategy_pins=True, **design_overrides):
+                  strategy_pins=True, instrument="default", **design_overrides):
     from tools.i6dmo import campaign
     tmp_path = Path(tmp_path)
     design = write_design(tmp_path, name=f"{name}-design.json", **design_overrides)
@@ -178,6 +190,9 @@ def make_campaign(tmp_path, *, name="root", code_commit=CODE, data_pins=None, pr
     campaign.init_campaign(design, spec_path, root, adapter=fake_adapter(), code_commit=code_commit,
                            data_pins=pins, entrypoints=trainer_entrypoints(),
                            prior_roots=[str(p) for p in prior_roots],
+                           strategy_execution=(None if instrument is None else
+                                               {"instrument": json.loads(json.dumps(
+                                                   INSTRUMENT if instrument == "default" else instrument))}),
                            long_design=write_long_design(tmp_path, **design_overrides) if long else None)
     return root
 

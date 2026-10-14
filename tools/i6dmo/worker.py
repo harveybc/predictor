@@ -363,8 +363,7 @@ def _pick(q, plan, spec, role):
     running_hosts = {a["host_key"] for a in q.running() if a["heavy"]}
     for unit in plan["units"]:
         row = rows.get(unit["unit_id"])
-        if row is None or row["state"] not in ("QUEUED", "WAIT_RESOURCE", "INTERRUPTED", "WAIT_ARTIFACT",
-                                               "WAIT_OWNER_RULING") \
+        if row is None or row["state"] not in ("QUEUED", "WAIT_RESOURCE", "INTERRUPTED", "WAIT_ARTIFACT") \
                 or not row["identity_sha256"]:
             continue
         if any(rows[d]["state"] != "COMPLETE" for d in row["spec"]["depends_on"]):
@@ -502,9 +501,8 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
         role_spec = spec["roles"][role]
         bundle, missing = _artifacts(root, effective, unit, role_spec)
         if missing:
-            state = "WAIT_OWNER_RULING" if missing.startswith("WAIT_OWNER_RULING") else "WAIT_ARTIFACT"
-            q.set_state(unit["unit_id"], state, missing)
-            return dict(result=state, unit_id=unit["unit_id"], cause=missing)
+            q.set_state(unit["unit_id"], "WAIT_ARTIFACT", missing)
+            return dict(result="WAIT_ARTIFACT", unit_id=unit["unit_id"], cause=missing)
         gpu = _role_gpu(role_spec) if unit["device"] == "gpu" else None
         device_class = gpu["class"] if gpu else "cpu"
         launcher = dict(spec["launcher"], **role_spec.get("launcher", {}))
@@ -589,9 +587,11 @@ def _artifacts(root, effective, unit, role_spec):
         bundle = dict(key=key, path=str(Path(role_spec.get("data_root") or "") / pin["relpath"]), sha256=pin["sha256"],
                       bundle_sha256=pin.get("bundle_sha256"))
     if unit["kind"] in ("pair", "final_test"):
-        problem = C.gate_problem(root, "STRATEGY_OWNER_RULINGS")
-        if problem:
-            return bundle, (f"WAIT_OWNER_RULING:{problem}: " + ",".join(C.OWNER_RULINGS) + " owner=owner")
+        problem = C._execution_policy_problem(root)
+        if problem in ("INSTRUMENT_CONFIG_MISSING", "ABSENT"):
+            return bundle, (f"EXECUTION_POLICY_{problem}: sealed at init/deploy from "
+                            "effective_config.strategy_execution.instrument owner=Satoshi")
+        # EXECUTION_POLICY_TAMPERED / MISMATCH stay claimable: the pinned hook refuses them FINALLY.
         cause = _pair_inputs_missing(root, effective, unit, role_spec)
         if cause:
             return bundle, cause
