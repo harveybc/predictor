@@ -1,0 +1,23 @@
+{
+  "schema": "i6dmo.interface.strategy.v1",
+  "lane": "strategy",
+  "status": "DRAFT_EARLY_PUBLICATION",
+  "owned_files": [
+    "tools/i6dmo/strategy_adapter.py",
+    "tests/i6dmo/test_strategy_adapter.py",
+    "docs/i6n/direct_multi_output_static/INTERFACE_STRATEGY.json",
+    "docs/i6n/direct_multi_output_static/STRATEGY_RETURN.md"
+  ],
+  "shared_files": "none; tools/i6dmo is imported as a namespace portion, this lane does not create tools/i6dmo/__init__.py",
+  "strategy_pin": {
+    "repository": "heuristic-strategy (sibling checkout; resolved from env I6DMO_STRATEGY_REPO, else <predictor>/../heuristic-strategy)",
+    "branch": "satoshi/i6dmo-strategy-20261014",
+    "commit": "d40fd3b054e4f952054a86ea203e8f74e6b295e1",
+    "path": "app/policies/business_pair_policy.py",
+    "blob": "79b6df7a7bffea7dd7f67c2ab33eeb64941bd44c",
+    "sha256": "6b6c5d96cafed149d3d832462b1eea27c2cd1cb8ca88a3ac495e7b8f1cbccf80",
+    "load": "git show <commit>:<path> from the repository object store, sha256 verified, executed as an isolated module; never resolved through the heuristic_strategy.plugins entry point or sys.path"
+  },
+  "families": {"short": [2, 3, 4, 5, 6, 12], "long": [18, 24, 36, 48, 60, 72]},
+  "note": "filled in completely on final publication"
+}
