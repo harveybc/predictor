@@ -292,14 +292,30 @@ def predict_matrix(model, x, batch_size=4096):
     return np.concatenate(parts, axis=0) if parts else np.zeros((0, width))
 
 
+def weight_tensor_digests(model):
+    """Per-tensor identity: shape, dtype and sha256 of each weight, in model order."""
+    out = []
+    for value in model.get_weights():
+        value = np.ascontiguousarray(value)
+        digest = hashlib.sha256()
+        digest.update(_canonical([list(value.shape), str(value.dtype)]).encode("ascii"))
+        digest.update(value.tobytes())
+        out.append({"shape": list(value.shape), "dtype": str(value.dtype), "sha256": digest.hexdigest()})
+    return out
+
+
 def save_dmo(bundle, directory, extra=None):
-    """Write ``forecast_model.keras`` + ``MODEL.json`` (config, identities, hashes)."""
+    """Write the weights file (canonical), full archive (compatibility) and MODEL.json."""
     out = Path(directory)
     out.mkdir(parents=True, exist_ok=True)
     archive = out / "forecast_model.keras"
     bundle.forecast_model.save(archive)
+    weights_file = out / "model.weights.h5"
+    bundle.forecast_model.save_weights(weights_file)
     document = {"schema": ARTIFACT_SCHEMA, "config": bundle.config, "keras_version": keras_version(),
                 "determinism": json.loads(_canonical(DETERMINISM)),
+                "weight_tensors": weight_tensor_digests(bundle.forecast_model),
+                "weights_file_sha256": _file_hash(weights_file),
                 "tensorflow_version": tf.__version__, "output_names": list(bundle.forecast_model.output_names),
                 "components": bundle.component_manifests(),
                 "weights_sha256": weights_hash(bundle.forecast_model), "archive_sha256": _file_hash(archive),
@@ -308,8 +324,13 @@ def save_dmo(bundle, directory, extra=None):
     return document
 
 
-def load_dmo(directory):
-    """Rebuild from config, restore archived weights, refuse any identity drift."""
+def load_dmo(directory, compatibility_check=True):
+    """Canonical load: REBUILD the architecture from the saved config via ``build_dmo`` and
+    ``load_weights`` from the weights file, verifying every tensor digest recorded at save
+    time (typed WEIGHTS_DIGEST_MISMATCH). Keras full-model deserialization is only a
+    secondary compatibility check on the WEIGHTS (never the scoring graph): on GPU a
+    deserialized graph can fuse/trace differently from the built one (lane 4, DMO10).
+    """
     src = Path(directory)
     document = json.loads((src / "MODEL.json").read_text(encoding="utf-8"))
     if document.get("schema") != ARTIFACT_SCHEMA:
@@ -320,16 +341,23 @@ def load_dmo(directory):
     archive = src / "forecast_model.keras"
     if _file_hash(archive) != document["archive_sha256"]:
         raise ValueError("model archive hash mismatch")
-    stored = keras.models.load_model(archive, compile=False, safe_mode=True)
-    if weights_hash(stored) != document["weights_sha256"]:
-        raise ValueError("archived weights hash mismatch")
+    weights_file = src / "model.weights.h5"
+    if _file_hash(weights_file) != document["weights_file_sha256"]:
+        raise ValueError("weights file hash mismatch")
     rebuilt = build_dmo(document["config"])
-    rebuilt.forecast_model.set_weights(stored.get_weights())
+    rebuilt.forecast_model.load_weights(weights_file)
+    tensors = weight_tensor_digests(rebuilt.forecast_model)
+    if tensors != document["weight_tensors"]:
+        bad = [i for i, (a, b) in enumerate(zip(tensors, document["weight_tensors"])) if a != b]
+        raise ValueError(f"WEIGHTS_DIGEST_MISMATCH: loaded weight tensors {bad} differ from the "
+                         "digests recorded at save time")
     if weights_hash(rebuilt.forecast_model) != document["weights_sha256"]:
-        raise ValueError("rebuilt architecture does not hold the archived weights")
+        raise ValueError("rebuilt architecture does not hold the saved weights")
     if list(rebuilt.forecast_model.output_names) != document["output_names"]:
         raise ValueError("output names drifted")
-    probe = np.random.default_rng(0).normal(size=(3, *rebuilt.forecast_model.input_shape[1:])).astype("float32")
-    if not np.array_equal(predict_matrix(rebuilt.forecast_model, probe), predict_matrix(stored, probe)):
-        raise ValueError("rebuilt architecture does not reproduce the archived outputs")
+    document = dict(document, load_path="rebuild+load_weights")
+    if compatibility_check:
+        stored = keras.models.load_model(archive, compile=False, safe_mode=True)
+        if weights_hash(stored) != document["weights_sha256"]:
+            raise ValueError("archived full model carries different weights (compatibility check)")
     return rebuilt, document

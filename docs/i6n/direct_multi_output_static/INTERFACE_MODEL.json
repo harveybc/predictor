@@ -14,7 +14,8 @@
     "tests/i6dmo/test_dmo_train.py",
     "tests/i6dmo/test_dmo_long.py",
     "tools/i6dmo/final.py",
-    "tests/i6dmo/test_dmo_final.py"
+    "tests/i6dmo/test_dmo_final.py",
+    "tools/i6dmo/gpu_probe_dmo10.py"
   ],
   "python_api": {
     "tools.i6dmo.design.load_design(path) -> dict": "typed, unknown/missing fields rejected at every level; fixed C-section values enforced",
@@ -22,7 +23,7 @@
     "tools.i6dmo.design.validate_design_report(path) -> dict": "pure validate-design logic (no fit, network, TEST, credentials); status PASS or typed code",
     "tools.i6dmo.design.add_cli(subparsers)": "registers `validate-design --design <path> [--json]` on the shared `python -m tools.i6dmo` parser (ops lane owns __main__)",
     "tools.i6dmo.model.build_dmo(config) -> DmoBundle": "branches/fusion/core/six independent heads; outputs named h2,h3,h4,h5,h6,h12",
-    "tools.i6dmo.model.save_dmo(bundle, dir) / load_dmo(dir)": "archive + MODEL.json identity; load verifies archive/weights hashes and identical predictions",
+    "tools.i6dmo.model.save_dmo(bundle, dir) / load_dmo(dir)": "save writes model.weights.h5 (canonical) + forecast_model.keras (compatibility) + MODEL.json with per-tensor weight digests; load REBUILDS via build_dmo + load_weights, verifies every tensor digest (WEIGHTS_DIGEST_MISMATCH) and the weights-file/archive hashes; full-model deserialization is only a secondary weights compatibility check, never the scoring graph; doc.load_path = 'rebuild+load_weights'",
     "tools.i6dmo.train.train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=None) -> receipt": "one fit; overrides (max_epochs/patience only) are for software tests and stamp scientific=false; CLI exposes none"
   },
   "subprocess_entry_point": {
@@ -155,5 +156,6 @@
     "test_bundle": "build_test_bundle(final_design, {'test': arrays}, out, readiness=guard_test(...)): single test split bound to readiness_sha256 and the final design sha; the ordinary trainer refuses it (TEST_FORBIDDEN)",
     "predictions": "generate_test_predictions(final_unit_dir, test_bundle_dir, out, readiness=...): frozen weights + fit-only SCALES reused, design shas must match, writes test.npz (row_id, predicted_price, ...) + PREDICTIONS.json; trained=false",
     "hook": "run_unit(spec,...): spec needs campaign_root, upstream_dirs {final.short_refit, final.long_refit}, test_bundles {short, long}; refusals are FAILED with disposition FINAL_BLOCKED_GATE:<code> naming the missing object; backtest delegates to strategy export run_final_backtest(spec, predictions, execution_params, out_dir) (until published: FINAL_BLOCKED_GATE:FINAL_BACKTEST_EXPORT_MISSING with predictions retained)"
-  }
+  },
+  "dmo10_probe": "CUDA_VISIBLE_DEVICES=<scope> python -m tools.i6dmo.gpu_probe_dmo10 [--out DIR]: one session, in_session vs rebuild vs full_load per-head sums on one batch; exit 1 + divergent_pairs names the diverging pair (lane 4 bounded GPU scope; CPU logic tested)"
 }

@@ -182,3 +182,18 @@ says so, so the effective sha changed again (design sha unchanged). CPU POST:
 94 passed (PRE: 2 failed). Lane 4 re-verifies on GPU; if its in-session gap
 persists there, the self-check now fails typed instead of recording a
 non-replayable value.
+
+## Round 7: DMO10 canonical load path (GPU in-training vs loaded divergence)
+
+Lane 4 localized the remaining bit-stable gap to the freshly LOADED instance:
+keras full-model deserialization can reconstruct a differently fused/traced
+graph on GPU. The canonical load path (`load_dmo`, used by the DMO10 replay,
+validation/TEST predictions and the final hook) now REBUILDS the architecture
+with `build_dmo` and `load_weights` from the saved `model.weights.h5`,
+verifying every tensor's recorded digest (typed `WEIGHTS_DIGEST_MISMATCH`) and
+file hashes; full-model deserialization remains only a secondary WEIGHTS
+compatibility check and never scores. `tools/i6dmo/gpu_probe_dmo10.py` (for
+lane 4's bounded GPU scope; logic CPU-tested) scores one identical batch
+through in_session / rebuild / full_load in one session and names the diverging
+pair. No tolerance. CPU POST: 66 passed across model/train/final/long (PRE: 3
+failed). GPU re-verification is lane 4's.
