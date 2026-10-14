@@ -148,3 +148,18 @@ tolerance was declared: the bitwise same-device check stands. CPU POST: 99
 passed (PRE: the two new recording tests failed). The GPU confirmation is lane
 4's bounded replay, not this lane's. The earlier "op determinism is off" risk
 line is superseded by this round.
+
+## Round 5: DMO10 monitored-value identity (shared evaluation path)
+
+The ~5e-6 GPU mismatch was a different computation path, not nondeterminism:
+training monitored per predict_matrix batches while the replay recomputed in
+one pass. Now ONE function, `train.evaluate_monitored` (predictions at the
+training batch size, float64 global fsum sums/counts, equal-weight head mean),
+is used by the training loop and by `train.replay_monitored`, which takes the
+`monitor_evaluation` record from TRAINING.json and refuses any other procedure
+or batch size as `MONITOR_PATH_MISMATCH`. The DMO10 replay now asserts bitwise
+equality (`==`, no tolerance declared). The monitoring batch changed from the
+implicit 4096 to the recorded training batch (256); tiny CPU fixtures are
+unaffected (one batch either way), and no sealed scientific run depends on the
+superseded implicit value. CPU POST: 56 passed across train/final/long (PRE:
+the 2 shared-path tests failed). GPU confirmation is lane 4's rerun.

@@ -285,6 +285,46 @@ def masked_split_metrics(y, pred, mask):
             "active_heads": len(active)}
 
 
+MONITOR_EVAL = "i6dmo.monitor_eval.v1"
+
+
+def evaluate_monitored(model, fit, inner, batch_size):
+    """THE monitored-loss evaluation procedure (training and replay share it, DMO10).
+
+    One fixed path: frozen-weight predictions through ``predict_matrix`` at the
+    given batch size (float32 inputs, float64 outputs per batch, concatenated in
+    order), then :func:`masked_split_metrics` global per-head float64 ``fsum``
+    sums/counts, equal-weight mean over supported heads, and
+    ``0.5 * (fit_loss + inner_loss)``. Bitwise identity on one device requires
+    the identical batch size and order, which the training record pins.
+    """
+    from tools.i6dmo.model import predict_matrix
+    fm = masked_split_metrics(fit[1], predict_matrix(model, fit[0], batch_size=batch_size), fit[2])
+    im = masked_split_metrics(inner[1], predict_matrix(model, inner[0], batch_size=batch_size), inner[2])
+    return fm, im, 0.5 * (fm["loss"] + im["loss"])
+
+
+def replay_monitored(model, fit, inner, record, batch_size=None):
+    """Recompute the monitored loss through the recorded identical procedure.
+
+    ``record`` is TRAINING.json's ``monitor_evaluation``. A different procedure
+    name or batch size is a typed MONITOR_PATH_MISMATCH: a one-pass recompute of
+    a batched training monitor is a different reduction order, not a replay.
+    """
+    if not isinstance(record, dict) or record.get("procedure") != MONITOR_EVAL:
+        raise TrainDisposition("MONITOR_PATH_MISMATCH",
+                               f"recorded procedure {record.get('procedure') if isinstance(record, dict) else record!r}"
+                               f" is not {MONITOR_EVAL}")
+    recorded = record.get("batch_size")
+    if type(recorded) is not int or recorded < 1:
+        raise TrainDisposition("MONITOR_PATH_MISMATCH", "recorded batch_size missing")
+    if batch_size is not None and batch_size != recorded:
+        raise TrainDisposition("MONITOR_PATH_MISMATCH",
+                               f"replay batch_size {batch_size} != recorded {recorded}; "
+                               "the monitored value is only comparable through the identical path")
+    return evaluate_monitored(model, fit, inner, recorded)
+
+
 class MeanMonitorStopper:
     """Monitor ``0.5 * (fit + inner)``; patience vs ``reference - min_delta``; keep lowest.
 
@@ -367,8 +407,7 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None):
             if not math.isfinite(loss):
                 raise TrainDisposition("NONFINITE_LOSS", f"training batch loss {loss}")
             updates += 1
-        fm = masked_split_metrics(y_fit, predict_matrix(model, x_fit), m_fit)
-        im = masked_split_metrics(y_in, predict_matrix(model, x_in), m_in)
+        fm, im, _ = evaluate_monitored(model, (x_fit, y_fit, m_fit), (x_in, y_in, m_in), batch)
         stop = stopper.update(fm["loss"], im["loss"], model.get_weights())
         row = dict(stopper.history[-1], updates=updates, weights_sha256=weights_hash(model),
                    fit=fm, inner=im, elapsed_s=time.monotonic() - started)
@@ -386,6 +425,10 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None):
     if int(optimizer.iterations.numpy()) != updates:
         raise TrainDisposition("UPDATE_COUNT_MISMATCH", "optimizer iterations disagree with updates")
     return {"history": rows, "best_epoch": stopper.best_epoch, "best_monitored": stopper.best_monitored,
+            "monitor_evaluation": {"procedure": MONITOR_EVAL, "batch_size": batch,
+                                   "prediction_dtype": "float32 inputs, float64 per-batch outputs",
+                                   "accumulation": "global per-head float64 math.fsum sums/counts, "
+                                                   "equal-weight mean over supported heads"},
             "stop_reason": stopper.stop_reason, "epochs_completed": len(rows), "updates": updates,
             "initial_weights_sha256": initial, "last_weights_sha256": last,
             "restored_weights_sha256": restored, "early_stop": stopper.identity(),
