@@ -248,3 +248,34 @@ Changes (`i6dmo.monitor_eval.v2`, mixed/old records refused):
 
 No tolerance. CPU POST: 104 passed across the five model-lane files (PRE: 3
 failed). One lane-4 GPU round now runs witness + replay together.
+
+## Round 10: static algorithm selection + pre-declared process-level tolerance
+
+Witness verdict on pin 8f8c4c1f: REAL FORWARD DIVERGENCE, process-level —
+identical rows/counts/weights, per-head partial sums differing at 1e-4..1e-5,
+both sides individually deterministic. Interpretation: cuDNN/cuBLAS autotune
+state is per-process; a process that trained selects different (repeatable)
+kernels than one that only loads. Fix, in deciding-round form:
+
+1. STATIC algorithm selection forced BEFORE TensorFlow initializes in every
+   entrypoint: `TF_CUDNN_USE_AUTOTUNE=0`, `TF_CUDNN_DETERMINISTIC=1`,
+   `TF_DETERMINISTIC_OPS=1`, XLA autoclustering off (`--tf_xla_auto_jit=0`,
+   `set_jit(False)`), set at `tools/i6dmo/model.py` import and re-forced by
+   `enable_determinism()`. All flags recorded in the receipt, MODEL.json,
+   PREDICTIONS.json and `monitor_evaluation.determinism_flags`; a record whose
+   flags differ from the running process is refused typed
+   `DETERMINISM_FLAGS_MISMATCH`. The 4.8k-parameter model makes the
+   performance impact irrelevant.
+2. PRE-DECLARED tolerance, implemented now behind the flag check so one GPU
+   round closes either way: |delta| <= 1e-5 RELATIVE per per-batch per-head
+   partial sum (and the same relative bound on the monitored value), written
+   justification "process-level GPU algorithm selection, library property".
+   It activates ONLY when the static-algorithm flags are recorded and equal
+   the running process's flags; tolerated batches are returned and reported,
+   never silently absorbed. Reload and prediction identities stay bitwise; on
+   CPU the comparison remains exact in practice (no witness fires).
+
+CPU POST: 106 passed across the five model-lane files (PRE: 5 failed,
+including flags-enforcement and tolerance-bound regressions). Lane 4 runs the
+deciding GPU round: static flags fix it bitwise, or the witness fires within
+the declared bound and the tolerance closes it with the deltas on record.

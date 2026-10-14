@@ -288,6 +288,21 @@ def masked_split_metrics(y, pred, mask):
 MONITOR_EVAL = "i6dmo.monitor_eval.v2"
 MONITOR_PARTITION = "sequential_row_id_fixed"
 MONITOR_INSTANCE = "canonical_loader_rebuild"
+#: Pre-declared monitored-value comparison tolerance, serialization/process-level only.
+#: Written justification: process-level GPU algorithm selection, a library property —
+#: with autotune forced static on both sides, any residual per-batch partial-sum delta
+#: bounded by 1e-5 RELATIVE is accepted for the monitored-value comparison ONLY; reload
+#: and prediction identities stay bitwise. It activates ONLY when the record carries the
+#: static-algorithm determinism flags and they equal the running process's flags.
+MONITOR_TOLERANCE = {"relative_per_partial_sum": 1e-5,
+                     "justification": "process-level GPU algorithm selection, library property",
+                     "requires_static_flags": True}
+
+
+def current_determinism_flags():
+    """The running process's canonical determinism/static-algorithm flags."""
+    from tools.i6dmo.model import determinism_flags
+    return determinism_flags()
 
 
 def _ids_sha(ids):
@@ -368,7 +383,7 @@ def monitor_self_check(model, fit, inner, record, expected, ids=None):
     """
     fit = tuple(np.array(part, copy=True) for part in fit)
     inner = tuple(np.array(part, copy=True) for part in inner)
-    fm, im, monitored = replay_monitored(model, fit, inner, record, ids=ids)
+    fm, im, monitored, _ = replay_monitored(model, fit, inner, record, ids=ids)
     if monitored != expected:
         raise TrainDisposition("MONITOR_SELF_CHECK_FAILED",
                                f"inference-path recompute {monitored!r} != recorded {expected!r} "
@@ -412,17 +427,40 @@ def replay_monitored(model, fit, inner, record, batch_size=None, ids=None):
         raise TrainDisposition("MONITOR_PATH_MISMATCH",
                                f"replay batch_size {batch_size} != recorded {recorded}; "
                                "the monitored value is only comparable through the identical path")
+    flags = record.get("determinism_flags")
+    tolerance_active = False
+    if flags is not None:
+        running = current_determinism_flags()
+        if flags != running:
+            raise TrainDisposition("DETERMINISM_FLAGS_MISMATCH",
+                                   f"recorded flags {flags} != running process {running}; a record "
+                                   "scored under other kernel-selection flags is never comparable")
+        tolerance_active = flags.get("TF_CUDNN_USE_AUTOTUNE") == "0"
     stored = record.get("witness")
     if stored is not None and stored.get("ids") == "row_id" and ids is None:
         raise TrainDisposition("MONITOR_PATH_MISMATCH",
                                "the recorded witness binds row ids; the replay must supply the same ids")
     fm, im, monitored, witness = evaluate_monitored(model, fit, inner, recorded, ids=ids)
+    tolerated = []
     if stored is not None:
-        _compare_witness(stored, witness)
-    return fm, im, monitored
+        tolerated = _compare_witness(stored, witness, tolerance_active)
+        if tolerated and record.get("monitored") is not None:
+            bound = MONITOR_TOLERANCE["relative_per_partial_sum"] * max(1.0, abs(record["monitored"]))
+            if abs(monitored - record["monitored"]) > bound:
+                raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE",
+                                       f"monitored {monitored!r} vs recorded {record['monitored']!r} "
+                                       f"exceeds the pre-declared bound {bound}")
+    return fm, im, monitored, tolerated
 
 
-def _compare_witness(stored, fresh):
+def _compare_witness(stored, fresh, tolerance_active=False):
+    """Batch-by-batch comparison; returns the tolerated batches (empty when exact).
+
+    With ``tolerance_active`` (static-algorithm flags confirmed on both sides), a batch
+    whose rows/counts/row-ids match exactly and whose per-head partial sums differ by at
+    most the pre-declared 1e-5 RELATIVE bound is tolerated and reported, not refused.
+    """
+    tolerated = []
     if stored.get("code_witness") != fresh["code_witness"]:
         raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE",
                                "code witness differs: the recorded evaluation ran different "
@@ -436,17 +474,29 @@ def _compare_witness(stored, fresh):
                                    f"{name} row-id sequence differs: recorded "
                                    f"{a.get('row_ids_sha256')} recomputed {b['row_ids_sha256']}")
         for ra, rb in zip(a.get("batches") or [], b["batches"]):
-            if ra != rb:
-                raise TrainDisposition(
-                    "MONITOR_WITNESS_DIVERGENCE",
-                    f"{name} batch {rb['batch']} (start {rb['start']}, row_ids "
-                    f"{rb['row_ids_sha256']}): recorded partial_sums={ra.get('partial_sums')} "
-                    f"counts={ra.get('partial_counts')} vs recomputed "
-                    f"partial_sums={rb['partial_sums']} counts={rb['partial_counts']}")
+            if ra == rb:
+                continue
+            structural = {k: ra.get(k) for k in ("batch", "start", "rows", "row_ids_sha256",
+                                                 "partial_counts")}
+            if tolerance_active and structural == {k: rb[k] for k in structural}:
+                deltas = [abs(u - v) / max(abs(u), abs(v), 1e-300)
+                          for u, v in zip(ra.get("partial_sums") or [], rb["partial_sums"])]
+                if deltas and max(deltas) <= MONITOR_TOLERANCE["relative_per_partial_sum"]:
+                    tolerated.append({"split": name, "batch": rb["batch"],
+                                      "max_relative_delta": max(deltas),
+                                      "tolerance": MONITOR_TOLERANCE})
+                    continue
+            raise TrainDisposition(
+                "MONITOR_WITNESS_DIVERGENCE",
+                f"{name} batch {rb['batch']} (start {rb['start']}, row_ids "
+                f"{rb['row_ids_sha256']}): recorded partial_sums={ra.get('partial_sums')} "
+                f"counts={ra.get('partial_counts')} vs recomputed "
+                f"partial_sums={rb['partial_sums']} counts={rb['partial_counts']}")
         if len(a.get("batches") or []) != len(b["batches"]):
             raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE",
                                    f"{name} batch count differs: {len(a.get('batches') or [])} "
                                    f"recorded vs {len(b['batches'])} recomputed")
+    return tolerated
 
 
 class MeanMonitorStopper:
@@ -577,6 +627,8 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None, ids=None):
         raise TrainDisposition("RESTORE_MISMATCH", "restored weights differ from the selected epoch")
     record = {"procedure": MONITOR_EVAL, "batch_size": batch, "graph": "inference",
               "partition": MONITOR_PARTITION, "monitor_instance": MONITOR_INSTANCE,
+              "determinism_flags": current_determinism_flags(),
+              "declared_tolerance": dict(MONITOR_TOLERANCE),
               "witness": best_witness,
               "loader_overhead_s": {"epochs": len(loader_overhead),
                                     "mean_s": math.fsum(loader_overhead) / len(loader_overhead),

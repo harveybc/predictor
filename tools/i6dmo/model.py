@@ -37,6 +37,18 @@ import json
 from pathlib import Path
 
 import numpy as np
+import os as _os
+
+# Static GPU algorithm selection, set BEFORE TensorFlow initializes in every entrypoint that
+# imports this module: cuDNN/cuBLAS AUTOTUNE state is per-process, so a process that trained
+# selects different (individually deterministic) kernels than one that only loads; op
+# determinism makes each choice repeatable, not process-invariant (lane 4 witness verdict).
+_os.environ["TF_CUDNN_USE_AUTOTUNE"] = "0"
+_os.environ["TF_CUDNN_DETERMINISTIC"] = "1"
+_os.environ["TF_DETERMINISTIC_OPS"] = "1"
+if "--tf_xla_auto_jit=0" not in _os.environ.get("TF_XLA_FLAGS", ""):
+    _os.environ["TF_XLA_FLAGS"] = (_os.environ.get("TF_XLA_FLAGS", "") + " --tf_xla_auto_jit=0").strip()
+
 import tensorflow as tf
 
 from predictor_plugins.modular_temporal import (FeatureSelect, PositionalEncoding, TemporalComponent,
@@ -52,19 +64,37 @@ MODEL_SCHEMA = "i6dmo.model.v1"
 #: bitwise on the SAME device (lane 4 GPU replay found nondeterministic kernel selection between
 #: sessions). Enabled by every build/load path below; recorded in MODEL.json and the train receipt.
 DETERMINISM = {"op_determinism": False, "api": "tf.config.experimental.enable_op_determinism",
-               "env": {}}
+               "autotune": "static", "jit_autoclustering": False, "env": {}}
+_DETERMINISM_ENV = ("TF_DETERMINISTIC_OPS", "TF_CUDNN_DETERMINISTIC", "TF_CUDNN_USE_AUTOTUNE",
+                    "TF_XLA_FLAGS")
 
 
 def enable_determinism():
-    """Idempotently enable TF op determinism; returns the recorded flags."""
-    import os as _os
-    _os.environ.setdefault("TF_DETERMINISTIC_OPS", "1")
-    _os.environ.setdefault("TF_CUDNN_DETERMINISTIC", "1")
+    """Idempotently force deterministic, STATICALLY selected kernels; returns the flags.
+
+    Op determinism plus autotune OFF (cuDNN) and XLA autoclustering OFF, so kernel
+    selection is process-invariant, not merely repeatable within one process. The
+    4.8k-parameter model makes the performance cost irrelevant.
+    """
+    _os.environ["TF_CUDNN_USE_AUTOTUNE"] = "0"
+    _os.environ["TF_CUDNN_DETERMINISTIC"] = "1"
+    _os.environ["TF_DETERMINISTIC_OPS"] = "1"
+    if "--tf_xla_auto_jit=0" not in _os.environ.get("TF_XLA_FLAGS", ""):
+        _os.environ["TF_XLA_FLAGS"] = (_os.environ.get("TF_XLA_FLAGS", "") + " --tf_xla_auto_jit=0").strip()
     tf.config.experimental.enable_op_determinism()
+    tf.config.optimizer.set_jit(False)
     DETERMINISM["op_determinism"] = True
-    DETERMINISM["env"] = {k: _os.environ.get(k)
-                          for k in ("TF_DETERMINISTIC_OPS", "TF_CUDNN_DETERMINISTIC")}
+    DETERMINISM["env"] = {k: _os.environ.get(k) for k in _DETERMINISM_ENV}
     return json.loads(_canonical(DETERMINISM))
+
+
+def determinism_flags():
+    """The canonical flag dict recorded in monitor records and enforced at replay."""
+    enable_determinism()
+    return {"op_determinism": True, "jit_autoclustering": False,
+            "TF_DETERMINISTIC_OPS": DETERMINISM["env"]["TF_DETERMINISTIC_OPS"],
+            "TF_CUDNN_DETERMINISTIC": DETERMINISM["env"]["TF_CUDNN_DETERMINISTIC"],
+            "TF_CUDNN_USE_AUTOTUNE": DETERMINISM["env"]["TF_CUDNN_USE_AUTOTUNE"]}
 ARTIFACT_SCHEMA = "i6dmo.model_artifact.v1"
 _KEYS = {"schema", "features", "offsets_hours", "horizons_hours", "branch", "core", "heads",
          "positional_encoding", "regime", "seed"}

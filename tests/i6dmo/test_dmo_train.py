@@ -218,7 +218,7 @@ def test_dmo10_train_unit_end_to_end_restore_and_reload(tmp_path):
         T.replay_monitored(loaded.forecast_model, (fit_x, fit_y, fit_m), (in_x, in_y, in_m), record)
     import copy as _copy
     corrupted = _copy.deepcopy(record)
-    corrupted["witness"]["fit"]["batches"][0]["partial_sums"][2] += 1e-9
+    corrupted["witness"]["fit"]["batches"][0]["partial_sums"][2] *= 1.001  # beyond the declared bound
     with pytest.raises(T.TrainDisposition, match="MONITOR_WITNESS_DIVERGENCE") as err:
         T.replay_monitored(loaded.forecast_model, (fit_x, fit_y, fit_m), (in_x, in_y, in_m),
                            corrupted, ids=ids)
