@@ -136,11 +136,12 @@ def test_final_test_waits_until_the_strategy_lane_exports_run_final_backtest(tmp
     plan = campaign.load_plan(root)
     plan["units"].append(unit)
     campaign._write_plan(root, plan)
-    assert not hasattr(strategy_adapter, "run_final_backtest")  # current strategy lane state
+    monkeypatch.delattr(strategy_adapter, "run_final_backtest")  # simulate the pre-export checkout
     out = run_worker(root, "coordinator", tmp_path / "c.txt")
     assert out["result"] == "WAIT_ARTIFACT" and out["cause"].startswith("FINAL_BACKTEST_EXPORT_MISSING")
     assert status.compute(root, level="unit", unit="final.pair_test")["attempts"] == []
-    monkeypatch.setattr(strategy_adapter, "run_final_backtest", lambda *a, **k: None, raising=False)
+    monkeypatch.undo()  # the real strategy lane export is present again: the wait clears
+    assert callable(strategy_adapter.run_final_backtest)
     out = run_worker(root, "coordinator", tmp_path / "c.txt")
     assert not str(out.get("cause", "")).startswith("FINAL_BACKTEST_EXPORT_MISSING")
 
