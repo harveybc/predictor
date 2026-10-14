@@ -1,15 +1,16 @@
 {
   "schema": "i6dmo.interface.strategy.v1",
   "lane": "strategy",
-  "status": "ADAPTER_PREPARED_NOT_RUN (no strategy fit, no TEST, no trading)",
+  "status": "ADAPTER_AND_PAIR_HOOK_PREPARED_NOT_RUN (no strategy fit, no TEST, no trading)",
   "owned_files": [
     "tools/i6dmo/strategy_adapter.py",
     "tests/i6dmo/test_strategy_adapter.py",
     "docs/i6n/direct_multi_output_static/INTERFACE_STRATEGY.json",
     "docs/i6n/direct_multi_output_static/STRATEGY_PLUGIN_MAP.json",
-    "docs/i6n/direct_multi_output_static/STRATEGY_RETURN.md"
+    "docs/i6n/direct_multi_output_static/STRATEGY_RETURN.md",
+    "tests/i6dmo/test_strategy_pair_unit.py"
   ],
-  "shared_files": "none; tools/i6dmo is imported as a namespace portion, this lane does not create tools/i6dmo/__init__.py",
+  "shared_files": "tools/i6dmo/__init__.py and tests/i6dmo/__init__.py arrive empty via merge of ops ae70a6a9",
   "strategy_pin": {
     "repository": "heuristic-strategy",
     "branch": "satoshi/i6dmo-strategy-20261014 (pushed)",
@@ -22,7 +23,24 @@
     "repo_resolution": "$I6DMO_STRATEGY_REPO, else <checkout>/../heuristic-strategy, else <main-repo-of-worktree>/../heuristic-strategy; deploy must fetch the pinned branch on every host role that runs a pair unit"
   },
   "plugin_map": "STRATEGY_PLUGIN_MAP.json: in the default interpreter the entry point resolves to an installed 2025 copy (sha256 3e1ebec1...), not the inspected checkout; the executor uses only the pinned blob",
-  "families": {"short": [2, 3, 4, 5, 6, 12], "long": [18, 24, 36, 48, 60, 72]},
+  "families": {
+    "short": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      12
+    ],
+    "long": [
+      18,
+      24,
+      36,
+      48,
+      60,
+      72
+    ]
+  },
   "python_api": {
     "load_pinned_policy(pin=STRATEGY_PIN) -> module": "STRATEGY_PIN_UNRESOLVED | STRATEGY_PIN_MISMATCH",
     "map_strategy_resolution() -> dict": "also CLI: python -m tools.i6dmo.strategy_adapter map-plugin --json",
@@ -38,11 +56,82 @@
     "predictions": "model lane predictions/{validation}.npz: row_id (origin epoch s), horizons_hours, predicted_price (n,6) original USD/EUR",
     "calendar": "C1 tools.i6n_contracts.eligibility.load_calendar config (versioned weeks O, C, K; offsets 12/12); an assumed FX calendar stays labelled as assumed",
     "bars": "REQUESTED FROM DATA LANE: hourly EURUSD OHLC, close_time = instant the bar closes (bar covers (close_time-1h, close_time]); gaps allowed; split-bounded",
-    "eligibility_reports": "report units' {horizon_hours: {mae, naive, eligible, n}} per family (ops TERMINAL.eligibility)"
+    "eligibility_reports": "report units' {horizon_hours: {mae, naive, eligible, n}} per family (ops TERMINAL.eligibility)",
+    "report_terminal_artifact": "each family report terminal must expose artifacts.validation_predictions (or 'predictions/validation.npz') = model-lane npz, plus eligibility {h: {mae, naive, eligible, n}}",
+    "input_pins": "effective_config.data_pins.strategy_bars (npz close_time epoch s, open, high, low, close) and data_pins.strategy_calendar (C1 load_calendar JSON), {relpath under data_root, sha256}; ops should check them before claiming (otherwise the hook returns FAILED STRATEGY_INPUT_PIN_MISSING)"
   },
   "execution_rules": "tools.i6dmo.strategy_adapter.EXECUTION_RULES (next-bar-open fills, force-close trigger t >= B-1h with fill by B, missing fill retained, SL first when both barriers touch in one bar, separate spread/slippage/commission/swap lines, one position per asset, 120-hour frequency window)",
-  "metrics": ["initial_equity=10000", "final_equity (mark to market)", "net_pnl", "return", "realized_pnl", "closed_trades", "open_trades", "winning/losing", "max_drawdown and fraction", "sharpe and sortino (UTC-day mark-to-market returns, 260 periods/year)", "profit_factor", "exposure", "turnover", "costs{spread, slippage, commission, swap}", "undefined values carry *_reason"],
-  "references": ["cash", "BUSINESS_MATCHED_PASSIVE_LONG", "CONVENTIONAL_BUY_AND_HOLD_VIOLATES_NO_WEEKEND_POSITION"],
-  "not_implemented_here": "the ops child entry `python -m tools.i6dmo.strategy run-unit` for the PAIR_VALIDATION unit; integration wires pair_eligibility + run_backtest after the long family closes. No pair run is possible before both families have report terminals.",
-  "owner_rulings_pending": "listed in STRATEGY_RETURN.md"
+  "metrics": [
+    "initial_equity=10000",
+    "final_equity (mark to market)",
+    "net_pnl",
+    "return",
+    "realized_pnl",
+    "closed_trades",
+    "open_trades",
+    "winning/losing",
+    "max_drawdown and fraction",
+    "sharpe and sortino (UTC-day mark-to-market returns, 260 periods/year)",
+    "profit_factor",
+    "exposure",
+    "turnover",
+    "costs{spread, slippage, commission, swap}",
+    "undefined values carry *_reason"
+  ],
+  "references": [
+    "cash",
+    "BUSINESS_MATCHED_PASSIVE_LONG",
+    "CONVENTIONAL_BUY_AND_HOLD_VIOLATES_NO_WEEKEND_POSITION"
+  ],
+  "owner_rulings_pending": "listed in STRATEGY_RETURN.md",
+  "ops_hook": {
+    "callable": "tools.i6dmo.strategy_adapter.run_unit(spec, out_dir, progress_path) -> i6dmo.terminal.v1 dict (unit_runner HOOKS pair/final_test)",
+    "order": [
+      "kind final_test -> FAILED FINAL_TEST_HOOK_NOT_PREPARED",
+      "test_open -> FAILED TEST_OPEN_REFUSED",
+      "campaign root = upstream path parents[2], PLAN.json campaign_id must match -> CAMPAIGN_ROOT_UNRESOLVED",
+      "campaign.gate_problem(root, STRATEGY_OWNER_RULINGS) != None -> FAILED STRATEGY_OWNER_RULINGS_OPEN:<problem>, gates.pair_status BLOCKED_OWNER_RULINGS, nothing computed",
+      "rulings validated -> OWNER_RULINGS_INCOMPLETE:<key> | RULING_NOT_IMPLEMENTED:<key> | RULING_INVALID:<key>",
+      "upstream short.report/long.report stored terminals sha256-verified and COMPLETE",
+      "pair_eligibility(report eligibility, ruled min heads) -> PAIR_NOT_ELIGIBLE (no backtest)",
+      "validation predictions, bars, calendar loaded with digests; any instant >= 2025-01-01 -> FAILED TEST_FORBIDDEN",
+      "run_backtest with owner-ruled parameters -> COMPLETE, gates.pair_status PASS | EXECUTION_FAILURES"
+    ],
+    "gates_emitted": [
+      "pair_status",
+      "strategy_version (<policy sha256>:<rules_version>)",
+      "costs_sha256 (canonical JSON of the ruled costs)",
+      "owner_rulings_receipt_sha256"
+    ],
+    "artifacts": {
+      "eligibility": "pair/ELIGIBILITY.json",
+      "backtest": "pair/BACKTEST.json (includes eligibility, owner_rulings, receipts, metrics, references)"
+    },
+    "reports": "one governed report i6dmo:<campaign>:pair.validation:business, split validation, finite metrics only, undefined metrics named in tags",
+    "costs": "fit_seconds null (report-kind rule), wall/score/cpu seconds"
+  },
+  "owner_rulings_gate_evidence": {
+    "rulings": {
+      "barrier_equality": "INCLUSIVE_TOUCH (only implemented value; another value needs a new policy pin)",
+      "costs_and_pip_value": {
+        "pip_cost": "float>0",
+        "spread_price": "float>=0 (price units, full spread)",
+        "slippage_price": "float>=0 per fill",
+        "commission_per_lot_round_trip": "float>=0",
+        "swap_per_lot_per_day": "float>=0"
+      },
+      "fill_model": {
+        "fill": "MARKET_ORDER_AT_OPEN_OF_NEXT_AVAILABLE_BAR",
+        "intrabar_both_barriers": "STOP_LOSS_FIRST",
+        "force_close_lead_hours": "int>=1"
+      },
+      "sharpe_convention": {
+        "return_clock": "UTC_DAY_LAST_MARK_TO_MARKET",
+        "periods_per_year": "int>=1"
+      },
+      "min_long_heads": "int 1..6",
+      "min_short_heads": "optional int 0..6, default 1"
+    },
+    "record": "python -m tools.i6dmo gate --root R --name STRATEGY_OWNER_RULINGS --receipt <json with evidence.rulings>"
+  }
 }
