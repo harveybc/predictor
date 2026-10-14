@@ -1,6 +1,6 @@
 {
  "broken": [],
- "code_commit": "ec05eb42e8e9a3d5d555aa5b11d1784a20d895a2",
+ "code_commit": "cca08c9b34122b7a4b6676a31bce0efc506a7419",
  "entries": {
   "DMO01": {
    "broken_pointers": [],
@@ -167,8 +167,9 @@
    ],
    "gpu_backed": false,
    "gpu_replay_failure": {
-    "assertion": "np.array_equal(pz['predicted_price'], fresh)",
-    "finding": "bitwise save/load prediction identity holds on CPU but not on this GPU: a fresh reload predicts values that differ from the saved predictions (nondeterministic GPU kernel selection between sessions; the model lane's declared op_determinism limitation). Owner: model lane - enable op determinism or a declared tolerance for the GPU identity check.",
+    "assertion": "math.isclose(0.5*(fit_loss+inner_loss), hist[best]['monitored'], rel_tol=1e-6)",
+    "finding": "after the cca08c9b op-determinism fix the earlier bitwise reload mismatch no longer fires; the failure moved to the same-weight monitoring arithmetic: on this GPU the recomputed 0.5*(fit+inner) at the best epoch differs from the recorded monitored value by about 5e-6 (0.99233199 vs 0.99233694), beyond the 1e-6 CPU tolerance. Likely a GPU reduction-order difference between the training-time evaluation and the recomputation path. Owner: model lane. Nothing was relaxed.",
+    "history": "previous replay (5047cef9): np.array_equal(predicted_price) bitwise reload failure",
     "test": "tests/i6dmo/test_dmo_train.py::test_dmo10_train_unit_end_to_end_restore_and_reload"
    },
    "owner": "model",
@@ -356,7 +357,7 @@
   "device": "rtx5090 (preferred role), fresh admission, one bounded crispdm-run job (-m 6G -t 540s)",
   "pytest_rc": 1,
   "receipt": "docs/i6n/direct_multi_output_static/audit_20261014/GPU_REPLAY.json",
-  "wall_seconds": 23.3
+  "wall_seconds": 11.2
  },
  "schema": "i6dmo.traceability.v1",
  "scope": "software acceptance evidence; not a scientific verdict and not TEST closure"
