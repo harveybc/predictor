@@ -44,7 +44,7 @@
   },
   "fixed_decisions_implemented": [
     "origin t is the last completed observed hourly bar (bar-END clock); its value is included",
-    "inputs are the 13 EXACT bars t-24h..t at 2 h spacing; an absent slot makes the origin input-unavailable (INPUT_SLOT_NOT_OBSERVED), never filled",
+    "inputs are 13 slot instants t-24h..t at 2 h spacing, each sampled as-of the last finite observation with available_time <= s (DS2_ASOF_LAST_AVAILABLE); staleness recorded; never the next row",
     "targets p(t+h) at exact hourly endpoints h in {2,3,4,5,6,12}; never the next observed row",
     "split membership: origin in split AND target in the same split (cross-boundary labels purged); FIT label_available_by = inner boundary",
     "TRAIN [2020-01-01,2024-01-01); INNER = last 8 weeks (2023-11-06..2024-01-01); VALIDATION [2024-01-01,2025-01-01); TEST never materialized"
@@ -83,25 +83,50 @@
       "other": "inputs{name:sha256}, calendar{id,version,sha256,label ASSUMED_NOT_BROKER}, availability_gate, producer_status, confirmatory_test_blocked, coverage, design_sha256, code{commit, files_sha256}, bundle_sha256 (content identity; excludes npz container digests, which carry write times), files{name: file sha256}"
     },
     "<split>.npz": "exactly row_id (n,) int64 origin epoch s, x (n,13,19) float64 RAW oldest->origin, origin_price (n,), target_price (n,6) NaN where mask False, mask (n,6) bool = C1 MANAGEMENT label support",
-    "<split>_aux.npz": "row_id (n,) int64 (same order), row_ids (n,) str 'EURUSD|<iso>', entry_mask (n,6) bool = C1 ENTRY support (subset of mask), week_ids (n,) str calendar week",
+    "<split>_aux.npz": "row_id (n,) int64 (same order), row_ids (n,) str 'EURUSD|<iso>', entry_mask (n,6) bool = C1 ENTRY support (subset of mask), week_ids (n,) str calendar week; slot_staleness_s (n,13,19) int64",
     "test": "never present; load_input refuses TEST_ROWS_PRESENT"
   },
   "real_bundle_built": {
-    "code_commit": "58d489fe",
-    "bundle_sha256": "5221615d3391dc27010f7432a5ff6cb2aebb63765cae1480287b98fde76773c2",
+    "code_commit": "e77cbbd2",
+    "bundle_sha256": "3e42c3f55dfffd275aa125f144144af26dfa0ec30d80b8e27f599d1511b1c205",
+    "bundle_json_file_sha256": "0140dfbc91d6234360bcb60790c9c36588ac56b1afde028ae38fa817cd01e03a",
     "design_sha256": "541ce40ac1becceb16b14937e34e3452eee36aad8a370686dacf62860c86d381",
     "input_sha256": "ef22ddb54921ee9f9c774a550731dcd522c9d712f2a1882f1bf4e6a35e3942b8",
     "calendar_sha256": "782603fd26e879d6f837c83e9ec92d363500cb1dd150544e10a80c1ddeb88265",
     "rows": {
-      "fit": 14279,
-      "inner": 624,
-      "validation": 4122
+      "fit": 18144,
+      "inner": 739,
+      "validation": 4889
     },
     "row_ids_sha256": {
-      "fit": "1d0a295c0356eb1ba723b91ea8cdcfa2d03db8aca5f62bfdf9aaeda0cd5648a5",
-      "inner": "582af6e37fb50129a48f11b606f4fd256a7a431978c947e3c72ee389a223f3a6",
-      "validation": "b4ccd80cfdc399a432c4042ae1dfaa394f3aa6cbf2537801b94fbc742e52b244"
+      "fit": "a7965dbbd74f32f2dfdd9b2f0b5c96846500a2f64e52d56b59df33dc576e7236",
+      "inner": "c367a1a2ac82d617d28bfc59869e60c92f86fbbccf3b79978588a2abb6ad6ceb",
+      "validation": "cef0d08e3ad194b26c4ecf66f5113442cd6233ba80d34382124c81cfea3513c4"
     },
+    "superseded": "5221615d... (exact-slot rule, before the ruling)",
     "location": "<private-root>/i6dmo data bundle (not in Git); rebuild: python -m tools.i6dmo.cli_data data-bundle --design <design> --input-dir <data-root>/inputs/extended-no-stlfsi4 --out <new-dir> --code-commit <commit>"
+  },
+  "input_sampling": {
+    "rule": "DS2_ASOF_LAST_AVAILABLE",
+    "ruling": "Satoshi 2026-10-14 (PLAN section 4)",
+    "aux_array": "slot_staleness_s (n,13,19) int64 seconds in <split>_aux.npz; not a model input",
+    "refusal": "INPUT_NO_OBSERVATION_AVAILABLE only"
+  },
+  "successor_availability_contract": {
+    "path": "tools/i6dmo/feature_availability.successor.v2.json",
+    "contract_sha256": "c1c00b291829b69579ec8b9940775584b606094ef68d39ca25b5690ac64048d6",
+    "status": "PREPARED_NOT_ADOPTED",
+    "promoted": [
+      "fx.gbpusd.logret_1h",
+      "px.close_loc",
+      "px.log_co",
+      "px.rv5",
+      "rg.atr_ratio"
+    ],
+    "still_unverified": [
+      "fred.rates.dgs3mo.diff_5d",
+      "fred.rates.dgs7.logret_5d"
+    ],
+    "role": "TEST gate input; short design keeps 9668898c"
   }
 }
