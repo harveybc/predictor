@@ -1,0 +1,56 @@
+{
+  "schema": "i6dmo.interface.model.v1",
+  "lane": "model",
+  "status": "PUBLISHED_EARLY_SUBJECT_TO_ADDITIVE_CHANGES",
+  "owned_files": [
+    "tools/i6dmo/design.py",
+    "tools/i6dmo/model.py",
+    "tools/i6dmo/train.py",
+    "tests/i6dmo/test_dmo_model.py",
+    "tests/i6dmo/test_dmo_design.py",
+    "tests/i6dmo/test_dmo_train.py"
+  ],
+  "python_api": {
+    "tools.i6dmo.design.load_design(path) -> dict": "typed, unknown/missing fields rejected at every level; fixed C-section values enforced",
+    "tools.i6dmo.design.effective_config(design) -> dict": "sealed effective config; carries the full design and design_sha256; effective_config_sha256 covers everything",
+    "tools.i6dmo.design.validate_design_report(path) -> dict": "pure validate-design logic (no fit, network, TEST, credentials); status PASS or typed code",
+    "tools.i6dmo.design.add_cli(subparsers)": "registers `validate-design --design <path> [--json]` on the shared `python -m tools.i6dmo` parser (ops lane owns __main__)",
+    "tools.i6dmo.model.build_dmo(config) -> DmoBundle": "branches/fusion/core/six independent heads; outputs named h2,h3,h4,h5,h6,h12",
+    "tools.i6dmo.model.save_dmo(bundle, dir) / load_dmo(dir)": "archive + MODEL.json identity; load verifies archive/weights hashes and identical predictions",
+    "tools.i6dmo.train.train_unit(design_path, bundle_dir, out_dir, device) -> receipt": "one fit; same entry the CLI uses"
+  },
+  "subprocess_entry_point": {
+    "command": "python -m tools.i6dmo.train --design <design.json> --bundle <frozen_data_bundle_dir> --out <new_unit_dir> --device {cpu,gpu} [--json]",
+    "exit_codes": {"0": "COMPLETED", "2": "CONTRACT_ERROR (bad args/design/bundle identity; nothing trained)", "3": "FAILED_TYPED scientific/engineering disposition (receipt written)"},
+    "out_dir_must_not_exist_or_be_empty": true,
+    "no_epoch_or_sample_overrides_on_cli": true,
+    "gpu_requested_without_visible_gpu": "FAILED_TYPED NO_GPU_VISIBLE (no CPU fallback)",
+    "atomic_terminal": "RECEIPT.json written last via tmp+rename; its presence is the terminal"
+  },
+  "consumed_data_bundle_contract": {
+    "owner": "lane data",
+    "manifest": "BUNDLE.json",
+    "manifest_required_keys": ["schema", "features", "feature_manifest_sha256", "horizons_hours", "offsets_hours", "splits"],
+    "features": "exactly tools.i6n_contracts.feature_availability.MANIFEST_NO_STLFSI4 (19, same order); manifest_sha256 must match",
+    "offsets_hours": [-24, -22, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2, 0],
+    "horizons_hours": [2, 3, 4, 5, 6, 12],
+    "splits": "{fit, inner, validation} -> {path (relative), sha256}; a 'test' split or any origin >= 2025-01-01 is refused (TEST_FORBIDDEN)",
+    "split_npz_arrays": {
+      "row_id": "(n,) int64 unique, origin UTC epoch seconds",
+      "x": "(n, 13, 19) float, finite, RAW values, oldest->origin",
+      "origin_price": "(n,) float finite, EURUSD p(t)",
+      "target_price": "(n, 6) float, NaN allowed only where mask is false",
+      "mask": "(n, 6) bool, per-head business/support mask (C1/C2 computed by lane data)"
+    },
+    "model_side_defensive_checks": ["fit origins in [2020-01-01, 2023-11-06)", "fit valid labels t+h < 2023-11-06 (purge)", "inner origins/labels in [2023-11-06, 2024-01-01)", "validation origins/labels in [2024-01-01, 2025-01-01)", "every fit head has >=1 valid label"]
+  },
+  "produced_unit_artifacts": {
+    "RECEIPT.json": "schema i6dmo.train_receipt.v1: status, code, identity {design_sha256, effective_config_sha256, bundle_manifest_sha256, feature_manifest_sha256, weights_sha256, model_archive_sha256, code_files_sha256}, artifacts{path:sha256}, timings {wall_s, fit_s, predict_s}, resources {cpu_user_s, cpu_sys_s, max_rss_kib, cgroup_memory_peak_bytes|null, device, visible_gpus}, training summary, scientific: true",
+    "model/forecast_model.keras + model/MODEL.json": "restored-best weights; load_dmo reproduces predictions exactly",
+    "SCALES.json": "fit-only input mean/std per feature and per-head fit naive MAE (training coordinate scale)",
+    "TRAINING.json": "per-epoch fit_loss, inner_loss, monitored=0.5*(fit+inner), per-head sums/counts, stale count, weights sha; best_epoch, stop_reason",
+    "predictions/{fit,inner,validation}.npz": "row_id, horizons_hours, origin_price, predicted_price (n,6) original USD/EUR, target_price (NaN where invalid), mask"
+  },
+  "training_coordinate": "y_h = (p(t+h) - p(t)) / naive_fit_h where naive_fit_h = fit-only masked mean |p(t+h)-p(t)|; the per-head loss is therefore exactly MAE_h / naive_fit_h; prediction p_hat = p(t) + yhat_h * naive_fit_h",
+  "typed_dispositions": ["ZERO_NAIVE_SCALE", "HEAD_UNSUPPORTED_IN_FIT", "CONSTANT_FEATURE_IN_FIT", "NONFINITE_INPUT", "NONFINITE_LOSS", "NO_GPU_VISIBLE", "TEST_FORBIDDEN", "FEATURE_IDENTITY_MISMATCH", "STLFSI4_ALIAS", "PURGE_VIOLATION", "SPLIT_BOUNDARY_VIOLATION"]
+}
