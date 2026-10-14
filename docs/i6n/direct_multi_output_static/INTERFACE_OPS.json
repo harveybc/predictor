@@ -1,0 +1,38 @@
+{
+  "schema": "i6dmo.interface.ops.v1",
+  "lane": "ops",
+  "status": "DRAFT_EARLY_PUBLICATION",
+  "owned_files": [
+    "tools/i6dmo/__main__.py", "tools/i6dmo/cli.py", "tools/i6dmo/queue.py", "tools/i6dmo/campaign.py",
+    "tools/i6dmo/worker.py", "tools/i6dmo/preflight.py", "tools/i6dmo/deploy.py", "tools/i6dmo/status.py",
+    "tools/i6dmo/outbox.py", "tools/i6dmo/mirror.py", "tools/i6dmo/systemd/*", "tools/i6dmo/bootstrap_private.sh.template",
+    "tests/i6dmo/test_ops_*.py", "tests/i6dmo/ops_fakes.py"
+  ],
+  "shared_files_minimal": {"tools/i6dmo/__init__.py": "one-line docstring only; any lane may create it with identical content"},
+  "consumed_hooks": {
+    "tools.i6dmo.contracts.validate_design(design: dict) -> dict": "model lane; must return {ok: bool, errors: [str], design_sha256: str}; pure",
+    "tools.i6dmo.contracts.effective_config(design: dict) -> dict": "model lane; sealed effective config; ops adds pins and seals with sha256",
+    "child entry argv per unit kind": "configured in EFFECTIVE_CONFIG.ops.entrypoints {fit, report, pair, final_refit, final_test}; default python -m tools.i6dmo.<training|reporting|strategy> run-unit"
+  },
+  "child_protocol": {
+    "argv_suffix": ["run-unit", "--spec", "<attempt_dir>/UNIT_SPEC.json", "--out", "<attempt_dir>/out", "--progress", "<attempt_dir>/progress.json"],
+    "UNIT_SPEC.json": "unit_id, kind, family, stage, cadence, identity, identity_sha256, effective_config (sealed), upstream terminals {unit_id: {path, sha256}}, device {class, gpu_uuid}, cap_bytes, test_open (false except final_test after readiness)",
+    "progress.json": "{done:int, total:int|null, unit:'epoch'|'batch'|'row'|..., phase:'fit'|'score'|'publish', updated_at: epoch seconds} rewritten atomically",
+    "out/TERMINAL.json": {
+      "schema": "i6dmo.terminal.v1",
+      "unit_id": "str", "identity_sha256": "must equal UNIT_SPEC.identity_sha256",
+      "status": "COMPLETE | FAILED | NOT_ELIGIBLE | PAIR_NOT_ELIGIBLE",
+      "disposition": "free text typed cause",
+      "artifacts": "{name: {path: relative to out, sha256}}  (best checkpoint, predictions, per-head masks/counts)",
+      "costs": "{wall_seconds, fit_seconds, score_seconds, cgroup_peak_bytes, gpu_uuid, cpu_seconds}",
+      "eligibility": "report units: {horizon_hours(str): {mae, naive, eligible: bool, n}}",
+      "gates": "optional pair/freeze declarations {strategy_version, costs_sha256, ...}",
+      "reports": "list of governed OLAP reports (predictor_olap_store.query.normalise_report schema); ops enqueues them in the outbox"
+    },
+    "stdout_last_line": "JSON object {terminal_sha256}",
+    "exit_codes": "0 terminal written; nonzero = FAILED (137 -> FAILED_OOM, 124 -> FAILED_TIMEOUT); never retried with a smaller cap"
+  },
+  "private_deployment_spec": "see tools/i6dmo/deploy.py PRIVATE_SPEC_DOC; JSON with roles -> {ssh_alias|null for local, gpus [{class, uuid, heavy, parallel_slot}], data_root, run_root, python, workdir}, warehouse {url, environment_file, token_env}, mirrors {local, second_host_role, second_host_path}, launcher {crispdm_run, initial_cap_bytes, wall_seconds}. Never committed.",
+  "stages": ["SHORT_DS_STATIC_VALIDATION", "LONG_DS_STATIC_VALIDATION", "PAIR_VALIDATION", "FINAL_PROCEDURE_FROZEN", "TEST_READINESS", "FINAL_PAIR_TEST", "CLOSED"],
+  "deploy_sequence": "filled in on final publication"
+}
