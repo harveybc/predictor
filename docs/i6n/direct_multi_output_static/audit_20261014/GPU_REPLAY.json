@@ -1,5 +1,5 @@
 {
- "code_commit": "fc4246b4",
+ "code_commit": "d3b00360",
  "covered": [
   "DMO01",
   "DMO04",
@@ -9,19 +9,19 @@
  "failed": 1,
  "failed_detail": {
   "DMO10": {
-   "assertion": "monitored == hist[best]['monitored'] (bitwise, shared evaluate_monitored)",
-   "finding": "replay_monitored returns 0.9923319867401985 while the training-time history records 0.9923369350252383 for the best epoch. Both values are bit-stable across repeated GPU runs (the cca08c9b replay produced the same pair), so each path is deterministic but the two procedures still differ on this GPU by ~5e-6; they agree on CPU. The difference therefore sits in what the fit loop evaluates versus what the replay evaluates (e.g. weights or op placement at the recording moment), not in kernel nondeterminism. Owner: model lane. Nothing relaxed; bitwise contract kept.",
-   "history": "5047cef9: bitwise reload mismatch (fixed by cca08c9b op determinism); cca08c9b: same 5e-6 monitored difference at rel_tol 1e-6",
+   "assertion": "monitored == hist[best]['monitored'] (bitwise)",
+   "finding": "the SAME bit-stable pair persists across three revisions (recorded 0.9923369350252383, replay 0.9923319867401985). At d3b00360 the in-session bitwise self-check PASSED (no MONITOR_SELF_CHECK_FAILED; receipt COMPLETED), so at recording time the shared path really produced the recorded value. The replay in a fresh process on the loaded model deterministically produces the other value. Conclusion: the divergence is between the in-training model instance and a freshly LOADED model instance on this GPU (graph reconstruction/placement after load), not between evaluation procedures and not kernel nondeterminism. Owner: model lane - compare per-head sums from the in-session model vs the loaded model on identical batches. Nothing relaxed.",
+   "history": "5047cef9 bitwise reload; cca08c9b/fc4246b4 same 5e-6 monitored pair",
    "test": "tests/i6dmo/test_dmo_train.py::test_dmo10_train_unit_end_to_end_restore_and_reload"
   }
  },
  "gpu_devices": 1,
- "note": "DMO01 causality and DMO04 masking replays pass on the GPU; DMO10 remains CPU-only acceptance until the fit-time and replay monitored evaluations coincide on GPU",
+ "note": "DMO01 causality and DMO04 masking replays pass on the GPU; DMO10 remains CPU-only acceptance; cross-session GPU save/load evaluation identity is the open gap",
  "passed": 11,
  "pytest_rc": 1,
  "schema": "i6dmo.gpu_replay.v1",
  "scope": "ENGINEERING_NOT_SCIENCE",
  "tests": "test_dmo_model.py + test_dmo_train.py -k dmo01/dmo04/dmo10/causality (12 selected)",
  "tf": "2.21.0",
- "wall_seconds": 11.4
+ "wall_seconds": 11.9
 }
