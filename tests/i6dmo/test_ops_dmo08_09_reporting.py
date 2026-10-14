@@ -80,7 +80,7 @@ def _setup(tmp_path, *, shuffle=False, horizons=H, bundle_sha="3e42c3f5" + "0" *
               "heads": {str(h): {"label_valid": int(arrays.mask[:, j].sum()), "entry_valid": int(arrays.mask[:, j].sum()),
                                  "reasons": {"TARGET_AFTER_FORCE_FLAT": 1} if h in (2, 12) else {}}
                         for j, h in enumerate(H)}}
-    manifest = dict(bundle_sha256=bundle_sha, input_sampling=dict(rule="DS2_ASOF_LAST_AVAILABLE"),
+    manifest = dict(bundle_sha256=bundle_sha, input_sampling=dict(rule="DS2_EXACT"),
                     horizons_hours=list(H), splits=dict(validation=dict(
                         row_ids_sha256=provenance.canonical_sha256(arrays.row_ids.tolist()),
                         n_rows=len(arrays.row_ids), counts=counts,
@@ -134,7 +134,7 @@ def test_dmo08_mae_and_naive_on_identical_rows_agree_with_independent_recomputat
     assert math.isclose(by[("Price_MAE", 2)], doc["eligibility"]["2"]["mae"], rel_tol=1e-12)
     assert by[("Support_Valid_Labels", 12)] == int(arrays.mask[:, 5].sum())
     assert by[("Excluded_TARGET_AFTER_FORCE_FLAT", 2)] == 1
-    assert annual["tags"]["test_read"] == "false" and annual["tags"]["sampling"] == "DS2_ASOF_LAST_AVAILABLE"
+    assert annual["tags"]["test_read"] == "false" and annual["tags"]["sampling"] == "DS2_EXACT"
     box = outbox.Outbox(tmp_path / "ob.sqlite3")
     for report in doc["reports"]:
         box.enqueue(report, source_unit="short.report")  # every fact is a valid governed report
@@ -169,7 +169,7 @@ def test_dmo08_init_refuses_superseded_or_exact_slot_bundle_pins(tmp_path):
     from tests.i6dmo.ops_fakes import make_campaign
     from tools.i6dmo import campaign
     good = {"relpath": "b", "sha256": "1" * 64, "bundle_sha256": "3e42c3f5" + "0" * 56,
-            "input_sampling": "DS2_ASOF_LAST_AVAILABLE"}
+            "input_sampling": "DS2_EXACT"}
     make_campaign(tmp_path, name="ok", data_pins={"short_bundle": good})
     with pytest.raises(campaign.Refused, match="SUPERSEDED_BUNDLE"):
         make_campaign(tmp_path, name="old", data_pins={"short_bundle": dict(good, bundle_sha256="5221615d" + "0" * 56)})

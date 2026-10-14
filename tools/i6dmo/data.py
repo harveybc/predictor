@@ -6,17 +6,19 @@ experiment (and, unchanged, any later design with the same schema):
 * An origin ``t`` is an OBSERVED hourly bar on the UTC bar-END clock of the
   retained input (its own value included). Every observed bar inside a split
   is a candidate; origins are never thinned to the input spacing.
-* The input window has ``observations`` slot INSTANTS ``s = t - span .. t`` at
-  ``spacing`` hours (Satoshi ruling 2026-10-14, rule ``DS2_ASOF_LAST_AVAILABLE``):
-  each slot takes, per feature, the last retained observation whose
-  ``available_time`` (its UTC bar end) is ``<= s`` and whose value is finite.
-  Never the next row, never interpolation. Known past observations across a
-  weekend or a vendor gap are therefore retained (PLAN section 4). Per slot
-  and feature the staleness ``s - observation_time`` is recorded (aux arrays,
-  not a model input); origins whose staleness exceeds the longest calendar
-  closure are a declared, counted category, not a refusal. An origin is
-  refused only when some feature has NO finite observation ``<= s`` in the
-  whole retained history (``INPUT_NO_OBSERVATION_AVAILABLE``) or by C1.
+* The DEFAULT treatment (audit AUD-DMO-01; the sealed design's
+  ``require_exact_timestamps``) is EXACT: the window is the ``observations``
+  EXACT bars ``t - span .. t`` at ``spacing`` hours, rule ``DS2_EXACT`` /
+  ``DS12_EXACT``. A slot whose exact bar is absent, or whose value is not
+  finite, makes the origin a COUNTED exclusion (``INPUT_SLOT_NOT_OBSERVED`` /
+  ``INPUT_VALUE_NOT_FINITE``); nothing is filled, interpolated or bridged.
+* The superseded 2026-10-14 ASOF ruling survives ONLY as an optional,
+  separately named arm (``sampling=ASOF``, rule ``DS{spacing}_ASOF_LAST_
+  AVAILABLE``, its own ``data_contract_sha256``): each slot takes, per
+  feature, the last retained finite observation with ``available_time <= s``
+  (never the next row); staleness is recorded per slot/feature in the aux
+  arrays and stale-beyond-closure origins are counted. It is never a
+  substitution for the exact treatment.
 * Each head ``h`` needs the exact bar ``t + h``; masks come from the audited
   C1 component (``tools.i6n_contracts.eligibility``): MANAGEMENT ``M`` is the
   forecasting support S_h, ENTRY ``M`` is the narrower opening support.
@@ -70,13 +72,21 @@ INPUT_KEYS = frozenset({"value_mode", "history_span_hours", "spacing_hours", "ob
                         "include_origin", "issuance_hours", "smoothing", "require_exact_timestamps"})
 SPLIT_KEYS = frozenset({"train", "inner_tail_weeks", "validation", "test", "end_exclusive",
                         "purge_by_label_availability"})
-ORIGIN_REASONS = ("ORIGIN_OUTSIDE_CALENDAR_WEEK", "INPUT_NO_OBSERVATION_AVAILABLE",
-                  "NO_VALID_HEAD")
-SAMPLING_RULE = "DS2_ASOF_LAST_AVAILABLE"      # short family; long family is DS12_...
-SAMPLING_DESCRIPTION = ("each slot instant s takes, per feature, the last retained finite "
-                        "observation with available_time (UTC bar end) <= s; never the next row, "
-                        "never interpolation; staleness s - observation_time recorded per slot "
-                        "and feature; refusal only when no observation <= s exists")
+ORIGIN_REASONS = ("ORIGIN_OUTSIDE_CALENDAR_WEEK", "INPUT_BEFORE_DATA_START",
+                  "INPUT_SLOT_NOT_OBSERVED", "INPUT_VALUE_NOT_FINITE",
+                  "INPUT_NO_OBSERVATION_AVAILABLE", "NO_VALID_HEAD")
+EXACT = "EXACT"
+ASOF = "ASOF_LAST_AVAILABLE"
+SAMPLING_TREATMENTS = (EXACT, ASOF)
+SAMPLING_DESCRIPTIONS = {
+    EXACT: ("every slot instant s must hold the EXACT retained bar with a finite value; a missing "
+            "or non-finite slot is a counted origin exclusion, never filled (sealed design "
+            "require_exact_timestamps; audit AUD-DMO-01)"),
+    ASOF: ("OPTIONAL ARM, never the default: each slot instant s takes, per feature, the last "
+           "retained finite observation with available_time (UTC bar end) <= s; never the next "
+           "row, never interpolation; staleness s - observation_time recorded per slot and "
+           "feature; refusal only when no observation <= s exists"),
+}
 INPUT_FILES = ("INPUT.npz", "CLOCK.json", "CALENDAR.json", "DERIVATION.json",
                "PREPARATION.json", "CLOCK_SCOPE.json")
 
@@ -210,14 +220,34 @@ def split_bounds(design: Mapping[str, Any], *,
             c1.SplitBounds("VALIDATION", val0, val1, label_available_by=val1))
 
 
-def sampling_rule_name(window: "WindowSpec") -> str:
-    """Rule name parametrized by input spacing (DS2 short, DS12 long)."""
-    return f"DS{window.spacing_hours}_ASOF_LAST_AVAILABLE"
+def _treatment(sampling: str) -> str:
+    if sampling not in SAMPLING_TREATMENTS:
+        raise DataContractError("SAMPLING_UNKNOWN", f"{sampling!r}; one of {SAMPLING_TREATMENTS}")
+    return sampling
 
 
-def data_contract_sha256(design: Mapping[str, Any]) -> str:
-    """Identity of the data-relevant design fields (seal/training fields excluded)."""
-    return provenance.canonical_sha256({k: design[k] for k in DATA_CONTRACT_KEYS})
+def sampling_rule_name(window: "WindowSpec", sampling: str = EXACT) -> str:
+    """Rule name parametrized by spacing and treatment (DS2_EXACT default; DS12_EXACT long)."""
+    suffix = "EXACT" if _treatment(sampling) == EXACT else "ASOF_LAST_AVAILABLE"
+    return f"DS{window.spacing_hours}_{suffix}"
+
+
+def data_contract_sha256(design: Mapping[str, Any], sampling: str = EXACT) -> str:
+    """Identity of the data-relevant design fields PLUS the sampling treatment."""
+    body = {k: design[k] for k in DATA_CONTRACT_KEYS}
+    body["input_sampling_rule"] = sampling_rule_name(WindowSpec.from_design(design), sampling)
+    return provenance.canonical_sha256(body)
+
+
+def authenticate_sampling(manifest: Mapping[str, Any], design: Mapping[str, Any],
+                          sampling: str = EXACT) -> str:
+    """Refuse a bundle whose recorded sampling rule differs from the design's expectation."""
+    expected = sampling_rule_name(WindowSpec.from_design(design), sampling)
+    got = (manifest.get("input_sampling") or {}).get("rule")
+    if got != expected:
+        raise DataContractError("SAMPLING_RULE_MISMATCH",
+                                f"bundle rule {got!r} != design rule {expected!r}")
+    return expected
 
 
 #: PLAN.md section 5 long-family data fields (mirrors the model lane's LONG_FROM_PLAN).
@@ -266,10 +296,11 @@ class InputBundle:
     horizons: Tuple[int, ...]
     input_dir: Path = field(repr=False)
     _allow_noncontract_splits: bool = False
-    sampling_rule: str = SAMPLING_RULE
+    sampling: str = EXACT
+    sampling_rule: str = "DS2_EXACT"
 
 
-def load_input(input_dir: str | Path, design: Mapping[str, Any], *,
+def load_input(input_dir: str | Path, design: Mapping[str, Any], *, sampling: str = EXACT,
                _allow_noncontract_splits: bool = False) -> InputBundle:
     """Validate design + retained input; refuse TEST bars, manifest drift and short coverage."""
     design = validate_design(design, _allow_noncontract_splits=_allow_noncontract_splits)
@@ -316,7 +347,8 @@ def load_input(input_dir: str | Path, design: Mapping[str, Any], *,
     bundle = InputBundle(ts=ts, x=x, price=price, features=features, calendar_config=calendar,
                          files=files, clock=clock, design=design, window=window, horizons=hs,
                          input_dir=root, _allow_noncontract_splits=_allow_noncontract_splits,
-                         sampling_rule=sampling_rule_name(window))
+                         sampling=_treatment(sampling),
+                         sampling_rule=sampling_rule_name(window, sampling))
     _check_coverage(bundle)
     return bundle
 
@@ -427,14 +459,31 @@ class OriginTable:
         return (self.split == split) & self.input_ok & self.label_ok.any(axis=1)
 
 
-def asof_slot_index(ts: np.ndarray, x: np.ndarray, origins: np.ndarray,
-                    offsets_seconds: Sequence[int]) -> Tuple[np.ndarray, np.ndarray]:
-    """Per (origin, slot, feature) row of the last finite observation with ts <= s.
+def slot_index(ts: np.ndarray, x: np.ndarray, origins: np.ndarray,
+               offsets_seconds: Sequence[int]) -> Tuple[np.ndarray, np.ndarray]:
+    """DEFAULT (EXACT) per (origin, slot, feature) source row: the exact finite bar or -1.
 
-    Returns ``(index, instants)``: ``index`` (n, obs, F) int64 with -1 when no
-    such observation exists, and the slot instants (n, obs). Only rows with
-    ``ts <= s`` are ever selected, so no slot can read the future.
+    A slot instant without an exact retained bar, or whose feature value is not
+    finite, yields -1 (a counted exclusion upstream). Nothing older is selected.
     """
+    instants = np.asarray(origins, dtype=np.int64)[:, None] + np.asarray(offsets_seconds,
+                                                                          dtype=np.int64)
+    k = np.searchsorted(ts, instants)
+    exact = (k < len(ts)) & (ts[np.minimum(k, len(ts) - 1)] == instants)
+    k = np.minimum(k, len(ts) - 1)
+    finite = np.isfinite(x)
+    index = np.where(exact[:, :, None] & finite[k], k[:, :, None], -1)
+    return index.astype(np.int64), instants
+
+
+#: Historical name from the superseded ASOF default. The audit probe addresses the
+#: DEFAULT sampler through it, so it MUST stay bound to the default (exact) indexer.
+asof_slot_index = slot_index
+
+
+def asof_arm_slot_index(ts: np.ndarray, x: np.ndarray, origins: np.ndarray,
+                        offsets_seconds: Sequence[int]) -> Tuple[np.ndarray, np.ndarray]:
+    """OPTIONAL ASOF arm: last finite observation with ts <= s per (origin, slot, feature)."""
     rows = np.arange(len(ts), dtype=np.int64)
     finite = np.isfinite(x)
     last_valid = np.maximum.accumulate(np.where(finite, rows[:, None], -1), axis=0)
@@ -468,8 +517,15 @@ def build_origin_table(bundle: InputBundle, design: Mapping[str, Any], *,
     input_ok = np.zeros(n, dtype=bool)
     label_ok = np.zeros((n, nh), dtype=bool)
     entry_ok = np.zeros((n, nh), dtype=bool)
-    slot_index, slot_instants = asof_slot_index(ts, bundle.x, ts[cand], offsets)
-    no_obs = (slot_index < 0).any(axis=(1, 2))
+    indexer = slot_index if bundle.sampling == EXACT else asof_arm_slot_index
+    slot_idx, slot_instants = indexer(ts, bundle.x, ts[cand], offsets)
+    missing_any = (slot_idx < 0).any(axis=(1, 2))
+    if bundle.sampling == EXACT:
+        exact_pos0 = np.searchsorted(ts, slot_instants)
+        bar_exists = (exact_pos0 < len(ts)) & (ts[np.minimum(exact_pos0, len(ts) - 1)]
+                                               == slot_instants)
+        before_start = (slot_instants < int(ts[0])).any(axis=1)
+        bar_missing = (~bar_exists).any(axis=1)
     target_index = np.full((n, nh), -1, dtype=np.int64)
     input_reason: List[Optional[str]] = []
     reasons_out: List[Tuple[Tuple[str, ...], ...]] = []
@@ -484,7 +540,16 @@ def build_origin_table(bundle: InputBundle, design: Mapping[str, Any], *,
         out_split[k] = split.split_id
         c = counts[split.split_id]
         c["origins"]["candidates"] += 1
-        reason = "INPUT_NO_OBSERVATION_AVAILABLE" if no_obs[k] else None
+        if not missing_any[k]:
+            reason = None
+        elif bundle.sampling != EXACT:
+            reason = "INPUT_NO_OBSERVATION_AVAILABLE"
+        elif before_start[k]:
+            reason = "INPUT_BEFORE_DATA_START"
+        elif bar_missing[k]:
+            reason = "INPUT_SLOT_NOT_OBSERVED"
+        else:
+            reason = "INPUT_VALUE_NOT_FINITE"
         input_ok[k] = reason is None
         input_reason.append(reason)
         if reason is None:
@@ -522,24 +587,25 @@ def build_origin_table(bundle: InputBundle, design: Mapping[str, Any], *,
     split_arr = out_split.astype(str)
     closure = max(((_epoch(b.market_open) - _epoch(a.market_close)) // HOUR
                    for a, b in zip(weeks, weeks[1:])), default=0)
-    stale = np.where(slot_index >= 0, slot_instants[:, :, None] - ts[np.maximum(slot_index, 0)], 0)
+    stale = np.where(slot_idx >= 0, slot_instants[:, :, None] - ts[np.maximum(slot_idx, 0)], 0)
     exact_pos = np.searchsorted(ts, slot_instants)
     exact_exists = (exact_pos < len(ts)) & (ts[np.minimum(exact_pos, len(ts) - 1)] == slot_instants)
-    nonfinite_exact = exact_exists[:, :, None] & (slot_index != exact_pos[:, :, None]) \
-        & (slot_index >= 0)
+    nonfinite_exact = exact_exists[:, :, None] & (slot_idx != exact_pos[:, :, None]) \
+        & (slot_idx >= 0)
     for s in SPLITS:
         sel = (split_arr == s) & input_ok & label_ok.any(axis=1)
         counts[s]["rows_materialized"] = int(sel.sum())
-        st = stale[sel]
-        counts[s]["asof"] = {
-            "rule": bundle.sampling_rule, "scope": "materialized rows",
+        st = stale[sel].reshape(int(sel.sum()), -1) if sel.any() \
+            else np.zeros((0, stale.shape[1] * stale.shape[2]), dtype=np.int64)
+        counts[s]["sampling"] = {
+            "rule": bundle.sampling_rule, "treatment": bundle.sampling,
+            "scope": "materialized rows",
             "closure_threshold_hours": int(closure),
-            "origins_all_slots_exact": int((st.reshape(len(st), -1) == 0).all(axis=1).sum()),
-            "origins_with_asof_slot": int((st.reshape(len(st), -1) > 0).any(axis=1).sum()),
+            "origins_all_slots_exact": int((st == 0).all(axis=1).sum()),
+            "origins_with_asof_slot": int((st > 0).any(axis=1).sum()),
             "origins_asof_due_to_nonfinite_bar": int(nonfinite_exact[sel].any(axis=(1, 2)).sum()),
-            "origins_stale_beyond_closure": int((st.reshape(len(st), -1)
-                                                 > closure * HOUR).any(axis=1).sum()),
-            "slots_asof_by_feature": {f: int((st[:, :, i] > 0).sum())
+            "origins_stale_beyond_closure": int((st > closure * HOUR).any(axis=1).sum()),
+            "slots_asof_by_feature": {f: int((st[:, i::len(bundle.features)] > 0).sum())
                                       for i, f in enumerate(bundle.features)},
             "nonfinite_exact_slots_by_feature": {f: int(nonfinite_exact[sel][:, :, i].sum())
                                                  for i, f in enumerate(bundle.features)},
@@ -562,7 +628,7 @@ def build_origin_table(bundle: InputBundle, design: Mapping[str, Any], *,
     table = OriginTable(horizons=hs, origin_ts=ts[cand].astype(np.int64), split=split_arr,
                         week_id=out_week.astype(str), input_ok=input_ok, input_reason=input_reason,
                         label_ok=label_ok, entry_ok=entry_ok, label_reasons=reasons_out,
-                        slot_index=slot_index, origin_index=cand.astype(np.int64),
+                        slot_index=slot_idx, origin_index=cand.astype(np.int64),
                         slot_instants=slot_instants, target_index=target_index, counts=counts,
                         split_weeks=split_weeks,
                         calendar={"calendar_id": ref.calendar_id, "version": ref.version})
@@ -724,12 +790,12 @@ def _manifest_digest(manifest: Mapping[str, Any]) -> str:
 
 
 def build_frozen_bundle(input_dir: str | Path, design: Mapping[str, Any], out_dir: str | Path,
-                        *, code_commit: Optional[str] = None) -> dict:
+                        *, sampling: str = EXACT, code_commit: Optional[str] = None) -> dict:
     """Build FIT/INNER/VALIDATION arrays and an immutable BUNDLE.json with digests."""
     out = Path(out_dir)
     if out.exists() and any(out.iterdir()):
         raise DataContractError("BUNDLE_EXISTS", "a frozen bundle is never overwritten")
-    bundle = load_input(input_dir, design)
+    bundle = load_input(input_dir, design, sampling=sampling)
     table = build_origin_table(bundle, design)
     gate = provenance.availability_gate(list(bundle.features))
     out.mkdir(parents=True, exist_ok=True)
@@ -758,13 +824,14 @@ def build_frozen_bundle(input_dir: str | Path, design: Mapping[str, Any], out_di
         "schema": SCHEMA,
         "experiment_id": bundle.design["experiment_id"],
         "design_sha256": provenance.canonical_sha256(bundle.design),
-        "data_contract_sha256": data_contract_sha256(bundle.design),
+        "data_contract_sha256": data_contract_sha256(bundle.design, bundle.sampling),
         "history_provenance": history_provenance(bundle, table),
         "asset": ASSET,
         "window": bundle.window.to_json(),
         "horizons_hours": list(bundle.horizons),
         "offsets_hours": list(bundle.window.offsets_hours()),
-        "input_sampling": {"rule": bundle.sampling_rule, "description": SAMPLING_DESCRIPTION,
+        "input_sampling": {"rule": bundle.sampling_rule, "treatment": bundle.sampling,
+                           "description": SAMPLING_DESCRIPTIONS[bundle.sampling],
                            "staleness_array": (f"<split>_aux.npz slot_staleness_s (n,{bundle.window.observations},"
                                                f"{len(bundle.features)}) seconds; not a model input"),
                            "ruling": "Satoshi technical ruling 2026-10-14 under PLAN section 4"},
@@ -821,11 +888,15 @@ def verify_bundle(out_dir: str | Path) -> dict:
     return {"status": "VERIFIED", "bundle_sha256": manifest["bundle_sha256"]}
 
 
-def load_split(out_dir: str | Path, split: str) -> Dict[str, np.ndarray]:
-    """Read one verified split (model arrays + aux arrays) of a frozen bundle."""
+def load_split(out_dir: str | Path, split: str, *, design: Optional[Mapping[str, Any]] = None,
+               sampling: str = EXACT) -> Dict[str, np.ndarray]:
+    """Read one verified split of a frozen bundle; with ``design``, authenticate the rule."""
     verify_bundle(out_dir)
     root = Path(out_dir)
-    info = json.loads((root / "BUNDLE.json").read_text())["splits"][split.lower()]
+    manifest = json.loads((root / "BUNDLE.json").read_text())
+    if design is not None:
+        authenticate_sampling(manifest, design, sampling)
+    info = manifest["splits"][split.lower()]
     merged: Dict[str, np.ndarray] = {}
     for key in ("path", "aux_path"):
         with np.load(root / info[key], allow_pickle=False) as z:

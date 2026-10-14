@@ -50,31 +50,42 @@ def full(tmp_path_factory, design):
 
 # --------------------------------------------------------------------------- DMO02
 
-def asof_reference(ts, x, s, f):
-    """Independent as-of: last row with ts <= s and a finite value of feature f."""
-    k = int(np.searchsorted(ts, s, side="right")) - 1
-    while k >= 0 and not np.isfinite(x[k, f]):
-        k -= 1
-    return k
+def test_dmo02_default_sampler_rejects_audit_probe_fixture():
+    """AUD-DMO-01 probe fixture: the DEFAULT sampler never selects a stale value."""
+    origin = 72 * 3600
+    ts = np.array([0, 3600, 7200, origin], dtype=np.int64)
+    x = np.array([[1., 1.], [2., 2.], [3., 3.], [4., np.nan]])
+    offsets = np.arange(-24, 1, 2, dtype=np.int64) * 3600
+    indices, slots = data.slot_index(ts, x, np.array([origin]), offsets)
+    assert data.asof_slot_index is data.slot_index          # probe-visible default
+    observed_ok = indices >= 0
+    for j, s_ in enumerate(slots[0]):
+        for f in range(2):
+            k = indices[0, j, f]
+            if k >= 0:
+                assert int(ts[k]) == int(s_)                 # exact instant, never older
+                assert np.isfinite(x[k, f])
+    # the current bar's NaN feature is NOT replaced by the 70 h old finite value
+    assert indices[0, -1, 0] == 3 and indices[0, -1, 1] == -1
+    assert int(observed_ok.sum()) == 1                       # only (t, feature 0) is exact+finite
+    assert data.sampling_rule_name(data.WindowSpec(24, 2, 13)) == "DS2_EXACT"
 
 
-def test_dmo02_window_is_13_slot_instants_including_t_asof_sampled(full, design):
+def test_dmo02_window_is_13_exact_timestamps_including_t(full, design):
     spec = data.WindowSpec.from_design(design)
     assert spec.offsets_hours() == tuple(range(-24, 1, 2))
     assert len(spec.offsets_hours()) == 13 and spec.offsets_hours()[-1] == 0
-    assert full["bundle"].sampling_rule == data.SAMPLING_RULE == "DS2_ASOF_LAST_AVAILABLE"
+    assert full["bundle"].sampling_rule == "DS2_EXACT"
     arrays = data.materialize(full["bundle"], full["table"], "FIT")
     ts, x = full["bundle"].ts, full["bundle"].x
-    rows = list(range(0, len(arrays.origin_ts), max(1, len(arrays.origin_ts) // 40)))
-    for r in rows + [len(arrays.origin_ts) - 1]:
+    pos = {int(v): i for i, v in enumerate(ts)}
+    assert (arrays.staleness_s == 0).all()                   # exact: no stale slot ever
+    for r in (0, len(arrays.origin_ts) // 2, len(arrays.origin_ts) - 1):
         t = int(arrays.origin_ts[r])
         stamps = [t + o * H for o in spec.offsets_hours()]
         assert stamps[-1] == t
-        for j, s in enumerate(stamps):
-            for f in range(x.shape[1]):
-                k = asof_reference(ts, x, s, f)
-                assert arrays.X[r, j, f] == x[k, f]
-                assert arrays.staleness_s[r, j, f] == s - int(ts[k]) >= 0
+        expected = np.stack([x[pos[s]] for s in stamps])
+        np.testing.assert_array_equal(arrays.X[r], expected)
         assert arrays.row_ids[r] == f"EURUSD|{iso(t)}"
 
 
@@ -95,110 +106,80 @@ def test_dmo02_perturbing_t_plus_1_and_later_changes_no_input(full, design, tmp_
     a2 = data.materialize(b2, t2, "FIT")
     r2 = list(a2.row_ids).index(arrays.row_ids[r])
     np.testing.assert_array_equal(a2.X[r2], arrays.X[r])
-    np.testing.assert_array_equal(a2.staleness_s[r2], arrays.staleness_s[r])
     assert a2.price_origin[r2] == arrays.price_origin[r]
 
 
-def test_dmo02_absent_slot_takes_previous_bar_never_next(full, design, tmp_path):
+def test_dmo02_absent_or_nonfinite_slot_is_counted_exclusion_never_filled(full, design):
     hole = _synth.epoch("2022-06-15T13:00:00+00:00")
     table = full["table"]
-    t = hole + 2 * H                                  # slot t-2h is the hole
-    rec = table.record(t)
-    assert rec.input_ok is True
+    affected = [t for t in range(hole, hole + 25 * H, H) if t in table.index]
+    assert affected
+    for t in affected:
+        if (t - hole) % (2 * H) == 0 and t - hole <= 24 * H:
+            rec = table.record(t)
+            assert rec.input_ok is False
+            assert rec.input_reason == "INPUT_SLOT_NOT_OBSERVED"
     arrays = data.materialize(full["bundle"], table, "FIT")
-    r = list(arrays.origin_ts).index(t)
-    j = data.WindowSpec.from_design(design).offsets_hours().index(-2)
-    pos = {int(v): i for i, v in enumerate(full["bundle"].ts)}
-    np.testing.assert_array_equal(arrays.X[r, j], full["bundle"].x[pos[hole - H]])
-    assert (arrays.staleness_s[r, j] == H).all()
-    # perturbing the NEXT observed row (hole + 1 h) leaves that slot unchanged
-    src = _synth.make_input(tmp_path / "n", missing=full["missing"], nonfinite=full["nonfinite"])
-    with np.load(src / "INPUT.npz") as z:
-        ts, x = z["ts"], z["x"].copy()
-    x[np.searchsorted(ts, hole + H)] += 50.0
-    _synth.rewrite_input(src, x=x)
-    b2 = data.load_input(src, design)
-    a2 = data.materialize(b2, data.build_origin_table(b2, design), "FIT")
-    np.testing.assert_array_equal(a2.X[list(a2.origin_ts).index(t), j], arrays.X[r, j])
-    asof = table.counts["FIT"]["asof"]
-    assert asof["origins_with_asof_slot"] >= 1
-    assert asof["origins_asof_due_to_nonfinite_bar"] >= 1
-    assert asof["slots_asof_by_feature"]["fx.gbpusd.logret_1h"] >= 1
+    assert not set(int(v) for v in arrays.origin_ts) & {t for t in affected
+                                                        if (t - hole) % (2 * H) == 0}
+    nf = _synth.epoch("2021-09-08T09:00:00+00:00")       # finite bar exists, one NaN feature
+    rec = table.record(nf + 2 * H)
+    assert rec.input_ok is False and rec.input_reason == "INPUT_VALUE_NOT_FINITE"
+    assert table.counts["FIT"]["origins"]["INPUT_SLOT_NOT_OBSERVED"] >= 1
+    assert table.counts["FIT"]["origins"]["INPUT_VALUE_NOT_FINITE"] >= 1
+    assert table.counts["FIT"]["sampling"]["origins_with_asof_slot"] == 0
 
 
-def test_dmo02_weekend_slots_take_friday_close_asof(full, design):
+def test_dmo02_weekend_window_origins_are_refused_under_exact(full, design):
     cal = json.loads((full["src"] / "CALENDAR.json").read_text())["market_calendar"]["weeks"]
     i = next(k for k, w in enumerate(cal) if w["week_id"] == "2021-02-07")
-    prev_close = _synth.epoch(cal[i - 1]["market_close"])
     a = _synth.epoch(cal[i]["market_open"]) + 12 * H
-    rec = full["table"].record(a)
-    assert rec.input_ok is True and any(rec.label_ok)
-    arrays = data.materialize(full["bundle"], full["table"], "FIT")
-    r = list(arrays.origin_ts).index(a)
-    pos = {int(v): k for k, v in enumerate(full["bundle"].ts)}
-    j = 0                                            # slot t-24 h falls on Sunday
-    s = a - 24 * H
-    assert s < _synth.epoch(cal[i]["market_open"])
-    np.testing.assert_array_equal(arrays.X[r, j], full["bundle"].x[pos[prev_close]])
-    assert (arrays.staleness_s[r, j] == s - prev_close).all()
-
-
-def test_dmo02_no_slot_reads_an_observation_after_its_instant(full, design):
-    spec = data.WindowSpec.from_design(design)
-    ts, x = full["bundle"].ts, full["bundle"].x
-    have = set(int(v) for v in ts)
-    for split in ("FIT", "INNER", "VALIDATION"):
-        arrays = data.materialize(full["bundle"], full["table"], split)
-        assert (arrays.staleness_s >= 0).all()
-        slots = arrays.origin_ts[:, None] + np.asarray(spec.offsets_hours()) * H
-        source = slots[:, :, None] - arrays.staleness_s
-        assert (source <= arrays.origin_ts[:, None, None]).all()
-        assert set(np.unique(source).tolist()) <= have
-        assert np.isfinite(arrays.X).all()
+    rec = full["table"].record(a)                         # t-24h falls on the weekend
+    assert rec.input_ok is False
+    assert rec.input_reason == "INPUT_SLOT_NOT_OBSERVED"
 
 
 @pytest.fixture(scope="module")
-def gappy(tmp_path_factory, design):
-    """Feature 3 has no finite value before 2020-01-02T12; a 72 h bar outage in 2022-08."""
-    root = tmp_path_factory.mktemp("gappy")
-    out0, out1 = _synth.epoch("2022-08-08T00:00:00+00:00"), _synth.epoch("2022-08-11T00:00:00+00:00")
-    src = _synth.make_input(root / "input", missing=set(range(out0, out1 + 1, H)))
-    with np.load(src / "INPUT.npz") as z:
-        ts, x = z["ts"], z["x"].copy()
-    x[ts < _synth.epoch("2020-01-02T12:00:00+00:00"), 3] = np.nan
-    _synth.rewrite_input(src, x=x)
-    bundle = data.load_input(src, design)
-    return {"bundle": bundle, "table": data.build_origin_table(bundle, design),
-            "outage": (out0, out1), "src": src}
+def asof(tmp_path_factory, design):
+    """The SAME retained input built under the OPTIONAL, separately named ASOF arm."""
+    root = tmp_path_factory.mktemp("asof")
+    src = _synth.make_input(root / "input", missing={_synth.epoch("2022-06-15T13:00:00+00:00")},
+                            nonfinite=[(_synth.epoch("2021-09-08T09:00:00+00:00"), 5)])
+    bundle = data.load_input(src, _synth.load_design(), sampling=data.ASOF)
+    return {"src": src, "bundle": bundle,
+            "table": data.build_origin_table(bundle, _synth.load_design())}
 
 
-def test_asof_refuses_only_when_no_observation_exists(gappy):
-    table = gappy["table"]
-    first = _synth.epoch("2020-01-02T12:00:00+00:00")
-    for t in table.origins_in_week("2019-12-29"):
-        rec = table.record(t)
-        if t - 24 * H < first:
-            assert rec.input_ok is False
-            assert rec.input_reason == "INPUT_NO_OBSERVATION_AVAILABLE"
-        else:
-            assert rec.input_ok is True
-    assert table.counts["FIT"]["origins"]["INPUT_NO_OBSERVATION_AVAILABLE"] >= 1
+def test_asof_arm_is_optional_separately_named_never_default(asof, design):
+    assert asof["bundle"].sampling_rule == "DS2_ASOF_LAST_AVAILABLE"
+    assert data.sampling_rule_name(data.WindowSpec(24, 2, 13), data.ASOF) \
+        == "DS2_ASOF_LAST_AVAILABLE"
+    table = asof["table"]
+    hole = _synth.epoch("2022-06-15T13:00:00+00:00")
+    rec = table.record(hole + 2 * H)
+    assert rec.input_ok is True                           # arm keeps the origin, exact refuses it
+    arrays = data.materialize(asof["bundle"], table, "FIT")
+    r = list(arrays.origin_ts).index(hole + 2 * H)
+    j = data.WindowSpec.from_design(design).offsets_hours().index(-2)
+    pos = {int(v): i for i, v in enumerate(asof["bundle"].ts)}
+    np.testing.assert_array_equal(arrays.X[r, j], asof["bundle"].x[pos[hole - H]])
+    assert (arrays.staleness_s[r, j] == H).all()
+    assert table.counts["FIT"]["sampling"]["rule"] == "DS2_ASOF_LAST_AVAILABLE"
+    assert table.counts["FIT"]["sampling"]["origins_with_asof_slot"] >= 1
 
 
-def test_asof_stale_beyond_weekend_closure_is_counted_not_refused(gappy):
-    table = gappy["table"]
-    asof = table.counts["FIT"]["asof"]
-    weeks = json.loads((gappy["src"] / "CALENDAR.json").read_text())["market_calendar"]["weeks"]
-    gaps = [(_synth.epoch(b["market_open"]) - _synth.epoch(a["market_close"])) // H
-            for a, b in zip(weeks, weeks[1:])]
-    assert asof["closure_threshold_hours"] == max(gaps) == 49     # US fall-back weekend
-    assert asof["origins_stale_beyond_closure"] >= 1
-    t = gappy["outage"][1] + 2 * H                   # Thursday after a 72 h outage
-    rec = table.record(t)
-    assert rec.input_ok is True
-    arrays = data.materialize(gappy["bundle"], table, "FIT")
-    r = list(arrays.origin_ts).index(t)
-    assert arrays.staleness_s[r].max() > 48 * H
+def test_bundle_load_authenticates_sampling_rule(asof, design, tmp_path):
+    out = tmp_path / "asof_bundle"
+    manifest = data.build_frozen_bundle(asof["src"], design, out, sampling=data.ASOF)
+    assert manifest["input_sampling"]["rule"] == "DS2_ASOF_LAST_AVAILABLE"
+    with pytest.raises(data.DataContractError) as err:
+        data.load_split(out, "fit", design=design)        # default expectation is EXACT
+    assert err.value.code == "SAMPLING_RULE_MISMATCH"
+    loaded = data.load_split(out, "fit", design=design, sampling=data.ASOF)
+    assert "x" in loaded
+    with pytest.raises(data.DataContractError) as err:
+        data.authenticate_sampling(json.loads((out / "BUNDLE.json").read_text()), design)
+    assert err.value.code == "SAMPLING_RULE_MISMATCH"
 
 
 # --------------------------------------------------------------------------- DMO03
@@ -487,12 +468,16 @@ def test_dmo16_four_calendar_years_and_all_validation_origins(full, design, tmp_
     ref, weeks = c1.load_calendar(cal)
     ts = full["bundle"].ts
     have = set(int(v) for v in ts)
+    xbad = set(int(v) for v in ts[~np.isfinite(full["bundle"].x).all(axis=1)])
     expected = 0
     v0, v1 = _synth.epoch("2024-01-01T00:00:00+00:00"), _synth.epoch("2025-01-01T00:00:00+00:00")
     for w in weeks:
         a, b = int(w.operational_start.timestamp()), int(w.force_flat.timestamp())
         for t in range(a, b, H):
             if not (v0 <= t < v1) or t not in have:
+                continue
+            slots = [t - k * H for k in range(0, 25, 2)]
+            if any(s not in have or s in xbad for s in slots):
                 continue
             if any(t + h * H < min(b, v1) and t + h * H in have for h in HORIZONS):
                 expected += 1

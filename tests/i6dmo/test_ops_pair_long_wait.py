@@ -103,13 +103,13 @@ def test_real_model_lane_sealer_accepts_a_short_closure_terminal(tmp_path):
 def test_long_bundle_pin_uses_its_own_sampling_and_data_contract(tmp_path):
     from tools.i6dmo import campaign
     short = {"relpath": "s", "sha256": "1" * 64, "bundle_sha256": "3e42c3f5" + "0" * 56,
-             "input_sampling": "DS2_ASOF_LAST_AVAILABLE"}
+             "input_sampling": "DS2_EXACT"}
     long_ = {"relpath": "l", "sha256": "2" * 64, "bundle_sha256": "e88f72aa" + "0" * 56,
-             "input_sampling": "DS12_ASOF_LAST_AVAILABLE", "data_contract_sha256": "6" * 64}
+             "input_sampling": "DS12_EXACT", "data_contract_sha256": "6" * 64}
     make_campaign(tmp_path, name="ok", data_pins={"short_bundle": short, "long_bundle": long_})
     with pytest.raises(campaign.Refused, match="BUNDLE_SAMPLING: long_bundle"):
         make_campaign(tmp_path, name="bad", data_pins={"short_bundle": short,
-                                                       "long_bundle": dict(long_, input_sampling="DS2_ASOF_LAST_AVAILABLE")})
+                                                       "long_bundle": dict(long_, input_sampling="DS2_EXACT")})
 
 
 def test_publish_units_wait_without_a_warehouse_environment_file(tmp_path):

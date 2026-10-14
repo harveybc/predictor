@@ -24,7 +24,7 @@ def cmd_bundle(args) -> dict:
     if args.long_data_view:
         design = data.long_data_view(design)
     manifest = data.build_frozen_bundle(args.input_dir, design, args.out,
-                                        code_commit=args.code_commit)
+                                        sampling=args.sampling, code_commit=args.code_commit)
     return {"status": "BUILT", "bundle_sha256": manifest["bundle_sha256"],
             "feature_manifest_sha256": manifest["feature_manifest_sha256"],
             "availability_contract_sha256": manifest["availability_contract_sha256"],
@@ -37,7 +37,7 @@ def cmd_bundle(args) -> dict:
             "experiment_id": manifest["experiment_id"],
             "data_contract_sha256": manifest["data_contract_sha256"],
             "sampling_rule": manifest["input_sampling"]["rule"],
-            "fit_naive_mae": manifest["fit_statistics"]["naive_mae_fit"],
+            "fit_naive_mae": manifest["fit_statistics"].get("naive_mae_fit"),
             "history_provenance": manifest["history_provenance"],
             "confirmatory_test_blocked": manifest["confirmatory_test_blocked"]}
 
@@ -65,6 +65,8 @@ def register(subparsers) -> None:
     p.add_argument("--code-commit")
     p.add_argument("--long-data-view", action="store_true",
                    help="derive the long data view (PLAN section 5) from the short design")
+    p.add_argument("--sampling", choices=list(data.SAMPLING_TREATMENTS), default=data.EXACT,
+                   help="EXACT is the sealed default; ASOF_LAST_AVAILABLE is the optional arm")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_bundle)
     p = subparsers.add_parser("data-verify", help="re-hash a frozen data bundle")

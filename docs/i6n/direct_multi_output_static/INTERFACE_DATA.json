@@ -1,7 +1,7 @@
 {
   "schema": "i6dmo.interface.data.v1",
   "lane": "data",
-  "status": "IMPLEMENTED_CPU_TESTED",
+  "status": "IMPLEMENTED_CPU_TESTED_EXACT_DEFAULT",
   "owner_modules": [
     "tools/i6dmo/data.py",
     "tools/i6dmo/naive.py",
@@ -87,30 +87,69 @@
     "test": "never present; load_input refuses TEST_ROWS_PRESENT"
   },
   "real_bundle_built": {
-    "code_commit": "e77cbbd2",
-    "bundle_sha256": "3e42c3f55dfffd275aa125f144144af26dfa0ec30d80b8e27f599d1511b1c205",
-    "bundle_json_file_sha256": "0140dfbc91d6234360bcb60790c9c36588ac56b1afde028ae38fa817cd01e03a",
-    "design_sha256": "541ce40ac1becceb16b14937e34e3452eee36aad8a370686dacf62860c86d381",
-    "input_sha256": "ef22ddb54921ee9f9c774a550731dcd522c9d712f2a1882f1bf4e6a35e3942b8",
-    "calendar_sha256": "782603fd26e879d6f837c83e9ec92d363500cb1dd150544e10a80c1ddeb88265",
-    "rows": {
-      "fit": 18144,
-      "inner": 739,
-      "validation": 4889
+    "status": "SUPERSEDED_BY_EXACT; the ASOF bundles 3e42c3f5 (short) and e88f72aa (long) are retained as the separately named ASOF arm, not deleted",
+    "exact_short": {
+      "code_commit": "7601904f",
+      "rule": "DS2_EXACT",
+      "bundle_sha256": "5f3d678295cda9b1841565fa8df7a9017804d793596fd9b7634ebaf998790122",
+      "bundle_json_file_sha256": "489ebb8deabbcd392ff6180d804636edc5426d873f061eecb75e1c762ad6d603",
+      "data_contract_sha256": "02a37cc7140d16fd",
+      "input_sha256": "ef22ddb54921ee9f9c774a550731dcd522c9d712f2a1882f1bf4e6a35e3942b8",
+      "rows": {
+        "fit": 14279,
+        "inner": 624,
+        "validation": 4122
+      },
+      "row_ids_sha256": {
+        "fit": "1d0a295c0356eb1ba723b91ea8cdcfa2d03db8aca5f62bfdf9aaeda0cd5648a5",
+        "inner": "582af6e37fb50129a48f11b606f4fd256a7a431978c947e3c72ee389a223f3a6",
+        "validation": "b4ccd80cfdc399a432c4042ae1dfaa394f3aa6cbf2537801b94fbc742e52b244"
+      },
+      "fit_naive_mae": {
+        "2": 0.0010524471214455814,
+        "3": 0.0013024451699907742,
+        "4": 0.0015218521445506154,
+        "5": 0.0017217456849464728,
+        "6": 0.0019143797935103257,
+        "12": 0.0028857732041322973
+      },
+      "origins_lost_vs_asof": {
+        "fit": "18144-14279=3865",
+        "inner": "739-624=115",
+        "validation": "4889-4122=767"
+      },
+      "exclusions": {
+        "fit": {
+          "INPUT_SLOT_NOT_OBSERVED": 5941,
+          "INPUT_VALUE_NOT_FINITE": 291
+        },
+        "inner": {
+          "INPUT_SLOT_NOT_OBSERVED": 200
+        },
+        "validation": {
+          "INPUT_SLOT_NOT_OBSERVED": 1330,
+          "INPUT_VALUE_NOT_FINITE": 17
+        }
+      }
     },
-    "row_ids_sha256": {
-      "fit": "a7965dbbd74f32f2dfdd9b2f0b5c96846500a2f64e52d56b59df33dc576e7236",
-      "inner": "c367a1a2ac82d617d28bfc59869e60c92f86fbbccf3b79978588a2abb6ad6ceb",
-      "validation": "cef0d08e3ad194b26c4ecf66f5113442cd6233ba80d34382124c81cfea3513c4"
-    },
-    "superseded": "5221615d... (exact-slot rule, before the ruling)",
-    "location": "<private-root>/i6dmo data bundle (not in Git); rebuild: python -m tools.i6dmo.cli_data data-bundle --design <design> --input-dir <data-root>/inputs/extended-no-stlfsi4 --out <new-dir> --code-commit <commit>"
+    "exact_long": {
+      "code_commit": "7601904f",
+      "rule": "DS12_EXACT",
+      "bundle_sha256": "9f14c2d28a36b837433149846391e3cce0727c7d47828d6e05889e6940886ffb",
+      "bundle_json_file_sha256": "48460378d26c67027931652fe4cf396c731941e35984779529c60f78b923b507",
+      "data_contract_sha256": "b3f4f7f39c96ef0a",
+      "rows": {
+        "fit": 0,
+        "inner": 0,
+        "validation": 0
+      },
+      "finding": "EMPTY SUPPORT: every 144 h / 12 h ladder crosses a >=47 h weekend closure, so no origin has 13 exact bars; all candidates are INPUT_SLOT_NOT_OBSERVED (fit 23153, inner 944, validation 6243). The sealed long family cannot fit under DS12_EXACT; running it requires an explicit ruling (ASOF arm or a market-time window redesign), not a silent substitution."
+    }
   },
   "input_sampling": {
-    "rule": "DS2_ASOF_LAST_AVAILABLE",
-    "ruling": "Satoshi 2026-10-14 (PLAN section 4)",
-    "aux_array": "slot_staleness_s (n,13,19) int64 seconds in <split>_aux.npz; not a model input",
-    "refusal": "INPUT_NO_OBSERVATION_AVAILABLE only"
+    "default": "EXACT (DS2_EXACT / DS12_EXACT): a missing or non-finite exact slot is a counted exclusion, never filled (audit AUD-DMO-01; sealed require_exact_timestamps)",
+    "optional_arm": "sampling=ASOF_LAST_AVAILABLE -> DS{spacing}_ASOF_LAST_AVAILABLE with its own data_contract_sha256; never a substitution",
+    "authentication": "data.authenticate_sampling / data.load_split(design=...) refuse SAMPLING_RULE_MISMATCH"
   },
   "successor_availability_contract": {
     "path": "tools/i6dmo/feature_availability.successor.v2.json",
