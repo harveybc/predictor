@@ -200,6 +200,7 @@ def test_dmo10_train_unit_end_to_end_restore_and_reload(tmp_path):
     record = training["monitor_evaluation"]
     assert record["procedure"] == "i6dmo.monitor_eval.v1" and record["batch_size"] == 256
     assert record["graph"] == "inference" and record["self_check"] == "PASS"
+    assert record["partition"] == "sequential_row_id_fixed"  # the shuffle never reaches monitoring
     assert record["best_epoch"] == training["best_epoch"]
     assert record["monitored"] == hist[best]["monitored"]  # the value early stopping read
     fm_r, im_r, monitored = T.replay_monitored(loaded.forecast_model, (fit_x, fit_y, fit_m),
@@ -301,10 +302,15 @@ def test_training_graph_evaluated_monitor_is_refused_and_self_check_is_typed():
     y = rng.normal(size=(20, 6))
     mask = np.ones((20, 6), bool)
     fit, inner = (x, y, mask), (x[:8], y[:8], mask[:8])
-    good = {"procedure": "i6dmo.monitor_eval.v1", "batch_size": 20, "graph": "inference"}
+    good = {"procedure": "i6dmo.monitor_eval.v1", "batch_size": 20, "graph": "inference",
+            "partition": "sequential_row_id_fixed"}
     _, _, monitored = T.replay_monitored(bundle.forecast_model, fit, inner, good)
     with pytest.raises(T.TrainDisposition, match="MONITOR_PATH_MISMATCH"):
         T.replay_monitored(bundle.forecast_model, fit, inner, dict(good, graph="training"))
+    for bad in (dict(good, partition="seeded_permutation"), {k: v for k, v in good.items()
+                                                             if k != "partition"}):
+        with pytest.raises(T.TrainDisposition, match="MONITOR_PATH_MISMATCH.*partition|MONITOR_PATH_MISMATCH"):
+            T.replay_monitored(bundle.forecast_model, fit, inner, bad)
     T.monitor_self_check(bundle.forecast_model, fit, inner, good, monitored)  # bitwise: passes
     with pytest.raises(T.TrainDisposition, match="MONITOR_SELF_CHECK_FAILED"):
         T.monitor_self_check(bundle.forecast_model, fit, inner, good, monitored + 1e-12)

@@ -169,6 +169,8 @@ def test_dmo10_canonical_load_rebuilds_and_verifies_per_tensor_digests(bundle, t
 
 def test_dmo10_gpu_probe_logic_three_instances_agree_on_cpu(tmp_path):
     from tools.i6dmo import gpu_probe_dmo10 as P
+    if tf.config.list_physical_devices("GPU"):
+        pytest.skip("CPU-only fixture: the GPU run of this probe is lane 4's bounded scope")
     report = P.run(tmp_path / "probe")
     assert report["device"] == "cpu" and report["divergent_pairs"] == []
     assert sorted(report["pairs"]) == ["in_session_vs_full_load", "in_session_vs_rebuild",
