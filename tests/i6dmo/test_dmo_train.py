@@ -552,3 +552,42 @@ def test_input_witness_recorded_and_a_rederived_input_is_refused(tmp_path):
     with pytest.raises(T.TrainDisposition, match="MONITOR_PATH_MISMATCH"):
         T.replay_monitored(loaded.forecast_model, fit_t, inner_t, other,
                            ids=(fit_rows["row_id"], inner_rows["row_id"]))
+
+
+def test_dedicated_monitor_forward_recorded_and_training_graph_record_refused(tmp_path):
+    """The monitor owns ONE forward; a record produced by any other forward never scores."""
+    import copy
+    import tensorflow as tf
+    from tools.i6dmo import model as M, replay_monitor as R
+    bundle = write_bundle(tmp_path / "b")
+    receipt = T.train_unit(DESIGN, bundle, tmp_path / "u", device="cpu",
+                           training_overrides={"max_epochs": 2})
+    assert receipt["status"] == "COMPLETED"
+    training = json.loads((tmp_path / "u" / "TRAINING.json").read_text())
+    record = training["monitor_evaluation"]
+    assert record["monitor_forward"]["id"] == "i6dmo.monitor_forward.v1"
+    assert record["monitor_forward"]["source_sha256"] == T.monitor_forward_identity()["source_sha256"]
+    assert record["witness"]["forward"] == record["monitor_forward"]
+    assert R.replay_unit(DESIGN, bundle, tmp_path / "u")["status"] == "MATCH"
+    eff = T.effective_from_design(DESIGN)
+    data = T.load_data_bundle(bundle, eff)
+    scales = json.loads((tmp_path / "u" / "SCALES.json").read_text())
+    fit_rows, _ = T.trainable_rows(data["fit"])
+    inner_rows, _ = T.trainable_rows(data["inner"])
+    loaded, _ = M.load_dmo(tmp_path / "u" / "model")
+    args = (loaded.forecast_model, T.materialize_monitor_inputs(fit_rows, scales),
+            T.materialize_monitor_inputs(inner_rows, scales))
+    for foreign in ({"id": "training_step_graph", "source_sha256": "0" * 64},
+                    dict(record["monitor_forward"], source_sha256="0" * 64)):
+        bad = copy.deepcopy(record)
+        bad["monitor_forward"] = foreign
+        bad["witness"]["forward"] = foreign
+        with pytest.raises(T.TrainDisposition, match="MONITOR_FORWARD_MISMATCH"):
+            T.replay_monitored(*args, bad, ids=(fit_rows["row_id"], inner_rows["row_id"]))
+    # Grappler remapping and sibling fusion are off, recorded and part of the enforced flags.
+    flags = T.current_determinism_flags()
+    assert flags["grappler_remapping"] is False and flags["grappler_layout_optimizer"] is False
+    assert flags["grappler_auto_mixed_precision"] is False
+    options = tf.config.optimizer.get_experimental_options()
+    assert options.get("remapping") is False and options.get("layout_optimizer") is False
+    assert record["determinism_flags"]["grappler_remapping"] is False
