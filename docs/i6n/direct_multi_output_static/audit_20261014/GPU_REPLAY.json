@@ -1,27 +1,40 @@
 {
- "code_commit": "d3b00360",
+ "code_commit": "e2d84774",
  "covered": [
   "DMO01",
   "DMO04",
   "DMO10"
  ],
  "device": "rtx5090 (preferred role), fresh admission, one bounded crispdm-run job (-m 6G -t 540s)",
- "failed": 1,
+ "failed": 2,
  "failed_detail": {
   "DMO10": {
    "assertion": "monitored == hist[best]['monitored'] (bitwise)",
-   "finding": "the SAME bit-stable pair persists across three revisions (recorded 0.9923369350252383, replay 0.9923319867401985). At d3b00360 the in-session bitwise self-check PASSED (no MONITOR_SELF_CHECK_FAILED; receipt COMPLETED), so at recording time the shared path really produced the recorded value. The replay in a fresh process on the loaded model deterministically produces the other value. Conclusion: the divergence is between the in-training model instance and a freshly LOADED model instance on this GPU (graph reconstruction/placement after load), not between evaluation procedures and not kernel nondeterminism. Owner: model lane - compare per-head sums from the in-session model vs the loaded model on identical batches. Nothing relaxed.",
-   "history": "5047cef9 bitwise reload; cca08c9b/fc4246b4 same 5e-6 monitored pair",
+   "finding": "the probe is GREEN yet the end-to-end check still fails with the identical pair (recorded 0.9923369350252383, replay 0.9923319867401985) for the FOURTH revision. Since three model instances agree on fixed batches, the remaining difference must be in WHICH batches each side evaluates: the fit-time monitor evaluates under the seeded per-epoch permutation while the replay evaluates sequentially, and on this GPU a row's float32 prediction can differ bitwise with batch composition (GEMM tiling), which fsum then preserves. Hypothesis for the model lane: evaluate the monitor on the SAME fixed batch partition as the replay (sequential, recorded batch size) instead of the training permutation. Nothing relaxed.",
+   "history": "same value pair across 5047cef9/cca08c9b/fc4246b4/d3b00360/e2d84774",
    "test": "tests/i6dmo/test_dmo_train.py::test_dmo10_train_unit_end_to_end_restore_and_reload"
+  },
+  "test_selection": {
+   "finding": "fails only because it asserts device == 'cpu' and the replay scope exposes the GPU; a CPU-only fixture caught by the -k dmo10 filter, not a product defect. The model lane may mark it CPU-only (skip when a GPU is visible).",
+   "test": "tests/i6dmo/test_dmo_model.py::test_dmo10_gpu_probe_logic_three_instances_agree_on_cpu"
   }
  },
  "gpu_devices": 1,
- "note": "DMO01 causality and DMO04 masking replays pass on the GPU; DMO10 remains CPU-only acceptance; cross-session GPU save/load evaluation identity is the open gap",
- "passed": 11,
+ "note": "DMO01 causality and DMO04 masking pass on the GPU (12 passed); the DMO10 gap is now isolated to the batch partition used by the fit-time monitor",
+ "passed": 12,
+ "probe": {
+  "meaning": "in_session vs rebuild vs full_load per-head sums agree in ONE session on the GPU",
+  "output": {
+   "device": "gpu",
+   "divergent_pairs": []
+  },
+  "rc": 0,
+  "tool": "tools/i6dmo/gpu_probe_dmo10.py (module run)"
+ },
  "pytest_rc": 1,
  "schema": "i6dmo.gpu_replay.v1",
  "scope": "ENGINEERING_NOT_SCIENCE",
  "tests": "test_dmo_model.py + test_dmo_train.py -k dmo01/dmo04/dmo10/causality (12 selected)",
  "tf": "2.21.0",
- "wall_seconds": 11.9
+ "wall_seconds": 13.3
 }

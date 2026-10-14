@@ -1,6 +1,6 @@
 {
  "broken": [],
- "code_commit": "d3b0036021756bfca7ea84214d2abe99c2b79f06",
+ "code_commit": "e2d8477453b23aef9d702736a39effceefbbe87e",
  "entries": {
   "DMO01": {
    "broken_pointers": [],
@@ -168,8 +168,8 @@
    "gpu_backed": false,
    "gpu_replay_failure": {
     "assertion": "monitored == hist[best]['monitored'] (bitwise)",
-    "finding": "the SAME bit-stable pair persists across three revisions (recorded 0.9923369350252383, replay 0.9923319867401985). At d3b00360 the in-session bitwise self-check PASSED (no MONITOR_SELF_CHECK_FAILED; receipt COMPLETED), so at recording time the shared path really produced the recorded value. The replay in a fresh process on the loaded model deterministically produces the other value. Conclusion: the divergence is between the in-training model instance and a freshly LOADED model instance on this GPU (graph reconstruction/placement after load), not between evaluation procedures and not kernel nondeterminism. Owner: model lane - compare per-head sums from the in-session model vs the loaded model on identical batches. Nothing relaxed.",
-    "history": "5047cef9 bitwise reload; cca08c9b/fc4246b4 same 5e-6 monitored pair",
+    "finding": "the probe is GREEN yet the end-to-end check still fails with the identical pair (recorded 0.9923369350252383, replay 0.9923319867401985) for the FOURTH revision. Since three model instances agree on fixed batches, the remaining difference must be in WHICH batches each side evaluates: the fit-time monitor evaluates under the seeded per-epoch permutation while the replay evaluates sequentially, and on this GPU a row's float32 prediction can differ bitwise with batch composition (GEMM tiling), which fsum then preserves. Hypothesis for the model lane: evaluate the monitor on the SAME fixed batch partition as the replay (sequential, recorded batch size) instead of the training permutation. Nothing relaxed.",
+    "history": "same value pair across 5047cef9/cca08c9b/fc4246b4/d3b00360/e2d84774",
     "test": "tests/i6dmo/test_dmo_train.py::test_dmo10_train_unit_end_to_end_restore_and_reload"
    },
    "owner": "model",
@@ -357,7 +357,7 @@
   "device": "rtx5090 (preferred role), fresh admission, one bounded crispdm-run job (-m 6G -t 540s)",
   "pytest_rc": 1,
   "receipt": "docs/i6n/direct_multi_output_static/audit_20261014/GPU_REPLAY.json",
-  "wall_seconds": 11.9
+  "wall_seconds": 13.3
  },
  "schema": "i6dmo.traceability.v1",
  "scope": "software acceptance evidence; not a scientific verdict and not TEST closure"
