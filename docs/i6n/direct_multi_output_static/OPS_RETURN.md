@@ -9,9 +9,13 @@ Tests are under `tests/i6dmo/`. They use fake trainers and a fake warehouse, run
 no network, no data and no TEST rows.
 
 PRE: the tests were written first. All 27 failed at import because `tools.i6dmo.campaign` did not
-exist yet. POST: 38 of 38 passed. That count covers the 29 DMO tests below plus 9 engineering tests.
-The POST suite was also run once on a scratch merge of the ops, model, strategy and data branches,
-and all 38 passed there too.
+exist yet. POST: 38 of 38 passed (29 DMO tests plus 9 engineering tests), also once on a scratch
+merge of the ops, model, strategy and data branches.
+
+Report unit (second round): 7 DMO08/DMO09 tests were written first and all 7 failed at import
+(`tools.i6dmo.reporting` absent). After implementing it and merging the lane tips model `12e13752`,
+data `012504bc` and strategy `aa630023` into this branch, one POST run gave 45 of 45 ops tests
+passing. The other lanes' own test files were not re-run here.
 
 | DMO | Test(s) | PRE | POST |
 |---|---|---|---|
@@ -21,6 +25,8 @@ and all 38 passed there too.
 | DMO13 | `test_ops_dmo13_test_closed.py`: init refuses an open-TEST design; init and deploy never open TEST, and a tampered seal is refused; readiness reports BLOCKED with the missing artifact and its owner; final units appear only when READY; PAIR_NOT_ELIGIBLE is terminal; the pair waits on owner rulings without failing | FAIL | PASS |
 | DMO17 | `test_ops_dmo17_host_lease.py`: a heavy host lease blocks the 5070 Ti; a foreign heavy GPU process refuses admission; the 5090 is used first at a 7936 MiB cap; a refused cap is never shrunk and the unit routes to the secondary | FAIL | PASS |
 | DMO19 | `test_ops_dmo19_status.py`: progress and heartbeat age come from the child; the in-flight ETA is only an upper bound; a stale or failed unit is never COMPLETE; the ETA becomes MEASURED only after a completed fit; close refuses an incomplete campaign | FAIL | PASS |
+| DMO08 | `test_ops_dmo08_09_reporting.py`: per-h original-price MAE/naive on identical row ids agree with an independent recomputation through the real `naive.paired_metrics`; shuffled rows / reordered heads -> typed FAILED; superseded (5221615d) or mismatched bundle refused at report and at init; preconditions wait for pins | FAIL (import) | PASS |
+| DMO09 | same file: unequal weeks pool by sums/counts (differs from the mean of weekly MAEs), absent week explicit (ABSENT, Week_N=0) in METRICS and OLAP week reports | FAIL (import) | PASS |
 | DMO20 | `test_ops_dmo20_cadence.py`: the four cadences have distinct identities; a static terminal is not adoptable by a cadence campaign; a gate built from TEST reads is refused; selection ignores TEST terminals | FAIL | PASS |
 
 The 9 engineering tests are in `test_ops_deploy_runner.py`. They cover: idempotent and foreign-safe
@@ -40,10 +46,10 @@ The exact deploy sequence is in `INTERFACE_OPS.json` under `deploy_sequence`.
 
 ## Interface and integration gaps (precise owners)
 
-- **Report unit:** `tools.i6dmo.reporting.run_unit` does not exist yet. Until it does, `short.report`
-  stays in WAIT_ARTIFACT, and so the first fit runs but the report unit waits. Owner: the data lane
-  (`naive.paired_metrics` plus `weekly_diagnostics` on `predictions/validation.npz`) or the Satoshi
-  integration.
+- **Report unit:** implemented by ops in `tools/i6dmo/reporting.py`. `short.report` waits in
+  WAIT_ARTIFACT until the private pins file carries `short_bundle` (relpath, BUNDLE.json sha256,
+  bundle_sha256, input_sampling `DS2_ASOF_LAST_AVAILABLE`) and `short_input` (relpath, INPUT.npz
+  sha256). Satoshi relays them; init refuses the superseded exact-slot bundle `5221615d`.
 - **Pair unit:** `tools.i6dmo.strategy_adapter.run_unit` is missing; the pair unit should call
   `pair_eligibility` and then `run_backtest`. Owner: the strategy lane.
 - **Owner rulings:** the pair unit is also gated by a typed `STRATEGY_OWNER_RULINGS` gate. It is

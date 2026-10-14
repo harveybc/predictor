@@ -206,6 +206,7 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
     if not data_pins or not all(isinstance(p, dict) and len(str(p.get("sha256", ""))) == 64
                                 for p in data_pins.values()):
         raise Refused("DATA_PINS_REQUIRED: every pin needs a sha256")
+    _check_bundle_pins(data_pins)
     entries = validate_entrypoints(dict(entrypoints or DEFAULT_ENTRYPOINTS))
     long_doc = None
     if long_design is not None:
@@ -247,6 +248,30 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
     write_status(root)
     return dict(campaign_id=campaign_id, effective_config_sha256=eff_sha, root=str(root),
                 units=[u["unit_id"] for u in plan["units"]])
+
+
+SUPERSEDED_BUNDLE_PREFIXES = ("5221615d",)  # exact-slot build, superseded by the as-of ruling
+BUNDLE_SAMPLING_RULE = "DS2_ASOF_LAST_AVAILABLE"
+
+
+def _check_bundle_pins(pins):
+    """*_bundle pins: {relpath (bundle dir), sha256 (BUNDLE.json file), bundle_sha256, input_sampling}."""
+    for key, pin in pins.items():
+        if not key.endswith("_bundle"):
+            continue
+        identity = str(pin.get("bundle_sha256", ""))
+        if len(identity) != 64:
+            raise Refused(f"BUNDLE_PIN_INCOMPLETE: {key} needs bundle_sha256")
+        if identity.startswith(SUPERSEDED_BUNDLE_PREFIXES):
+            raise Refused(f"SUPERSEDED_BUNDLE: {key} {identity[:8]} must not be used")
+        if pin.get("input_sampling") != BUNDLE_SAMPLING_RULE:
+            raise Refused(f"BUNDLE_SAMPLING: {key} must be {BUNDLE_SAMPLING_RULE}")
+
+
+def pin_file(key, pin):
+    """The file whose digest a pin carries: BUNDLE.json for *_bundle, INPUT.npz for *_input."""
+    suffix = "BUNDLE.json" if key.endswith("_bundle") else "INPUT.npz" if key.endswith("_input") else None
+    return pin["relpath"] if suffix is None else f"{pin['relpath'].rstrip('/')}/{suffix}"
 
 
 def _validate_spec(spec):

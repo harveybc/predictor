@@ -518,7 +518,8 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
         unit_spec = dict(unit, schema="i6dmo.unit_spec.v1", campaign_id=plan["campaign_id"],
                          effective_config=effective, effective_config_sha256=plan["effective_config_sha256"],
                          device=dict(cls=device_class, gpu_uuid=gpu["uuid"] if gpu else None), cap_bytes=cap,
-                         data_root=role_spec.get("data_root"), bundle=bundle, attempt=dict(index=attempt["index"], kind=attempt["kind"]),
+                         data_root=role_spec.get("data_root"), bundle=bundle,
+                         pins=resolved_pins(effective, role_spec), attempt=dict(index=attempt["index"], kind=attempt["kind"]),
                          upstream={d: _upstream(root, q, d) for d in unit["depends_on"]})
         atomic_json(folder / "UNIT_SPEC.json", unit_spec)
         name = f"{plan['campaign_id']}-{unit['unit_id'].replace('.', '-')}-a{attempt['index']:02d}"
@@ -565,7 +566,8 @@ def _artifacts(root, effective, unit, role_spec):
     key, pin = bundle_pin(root, effective, unit)
     bundle = None
     if pin is not None:
-        bundle = dict(key=key, path=str(Path(role_spec.get("data_root") or "") / pin["relpath"]), sha256=pin["sha256"])
+        bundle = dict(key=key, path=str(Path(role_spec.get("data_root") or "") / pin["relpath"]), sha256=pin["sha256"],
+                      bundle_sha256=pin.get("bundle_sha256"))
     if unit["kind"] in ("pair", "final_test"):
         problem = C.gate_problem(root, "STRATEGY_OWNER_RULINGS")
         if problem:
@@ -585,7 +587,19 @@ def _artifacts(root, effective, unit, role_spec):
             return bundle, f"ENTRY_UNAVAILABLE:{module}.run_unit owner={owner}"
     if key is not None and pin is None:
         return bundle, f"BUNDLE_PIN_MISSING:{key} owner=data lane (tools.i6dmo.data.build_frozen_bundle)"
+    hook = importlib.import_module(module)
+    if hasattr(hook, "preconditions"):
+        cause = hook.preconditions(dict(unit=unit, effective_config=effective, data_root=role_spec.get("data_root")))
+        if cause:
+            return bundle, cause
     return bundle, None
+
+
+def resolved_pins(effective, role_spec):
+    """Every sealed data pin as an absolute path on the executing role's data root."""
+    root = Path(role_spec.get("data_root") or "")
+    return {key: dict(pin, path=str(root / pin["relpath"])) for key, pin in (effective.get("data_pins") or {}).items()
+            if "relpath" in pin}
 
 
 def _upstream(root, q, unit_id):

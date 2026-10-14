@@ -17,7 +17,8 @@
   "tools/i6dmo/systemd/*.in",
   "tools/i6dmo/bootstrap_private.sh.template",
   "tests/i6dmo/ops_*.py",
-  "tests/i6dmo/test_ops_*.py"
+  "tests/i6dmo/test_ops_*.py",
+  "tools/i6dmo/reporting.py"
  ],
  "shared_files": {
   "tools/i6dmo/__init__.py": "empty (0 bytes)",
@@ -67,12 +68,12 @@
   "argv": "<entry> run-unit --spec <attempt>/UNIT_SPEC.json --out <attempt>/out --progress <attempt>/progress.json",
   "default_entries": "python -m tools.i6dmo.unit_runner --kind <kind>",
   "fit/final_refit": "unit_runner runs `python -m tools.i6dmo.train --design <attempt>/design.json --bundle <data_root>/<pin.relpath parent> --out <out>/train --device gpu|cpu --json`; RECEIPT.json -> TERMINAL.json (exit 2/3/4 -> typed FAILED terminal, never retried; 137/124 -> FAILED_OOM/FAILED_TIMEOUT); PROGRESS.json -> progress.json",
-  "report": "hook tools.i6dmo.reporting.run_unit(spec, out_dir, progress_path) -> terminal dict  (NOT YET OWNED: data lane naive.paired_metrics + weekly_diagnostics on model predictions/validation.npz; must emit eligibility {h: {mae, naive, eligible, n}} and governed reports)",
+  "report": "tools.i6dmo.reporting.run_unit (ops lane): verifies BUNDLE.json (file sha, bundle_sha256, sampling DS2_ASOF_LAST_AVAILABLE, superseded 5221615d refused) and INPUT.npz pins; re-materializes VALIDATION through data.load_input/build_origin_table/materialize and requires the bundle's row_ids_sha256; requires predictions/validation.npz row_id/horizons/mask identical; scores with naive.paired_metrics (C2 + manual + disk replay) and weekly_diagnostics; writes METRICS.json, SUPPORT.json, eligibility {h: {n, mae, naive, relative_error, eligible}}; reports: one annual + one per expected week (absent weeks explicit). preconditions(): BUNDLE_PIN_MISSING / INPUT_PIN_MISSING -> WAIT_ARTIFACT",
   "pair/final_test": "hook tools.i6dmo.strategy_adapter.run_unit(spec, out_dir, progress_path) -> terminal dict (strategy lane: pair_eligibility then run_backtest; must set gates {pair_status, strategy_version, costs_sha256})",
   "terminal": "schema i6dmo.terminal.v1: unit_id, identity_sha256, status COMPLETE|FAILED|NOT_ELIGIBLE|PAIR_NOT_ELIGIBLE, disposition, artifacts {name: {path, sha256}}, costs {wall_seconds, fit_seconds, score_seconds, cgroup_peak_bytes, gpu_uuid}, eligibility, gates, reports[]",
   "missing_hook_or_bundle": "worker marks WAIT_ARTIFACT (cause names module/pin and owner) before claiming: no attempt is burned"
  },
- "data_pins": "private JSON passed to init: {short_bundle: {relpath, sha256 of BUNDLE.json}, long_bundle: {...}}; relpath is under each GPU role's data_root",
+ "data_pins": "private JSON passed to init: {short_bundle: {relpath: <bundle dir>, sha256: <BUNDLE.json file sha>, bundle_sha256: <manifest identity>, input_sampling: 'DS2_ASOF_LAST_AVAILABLE'}, short_input: {relpath: <retained input dir>, sha256: <INPUT.npz sha>}, long_bundle/long_input likewise}; relpaths under each role's data_root (GPU roles for fits, the CPU role for reports). init refuses SUPERSEDED_BUNDLE (5221615d), missing bundle_sha256 and any other sampling rule.",
  "identity": "sha256 of {unit, family, kind, cadence (NONE|QUARTERLY|MONTHLY|WEEKLY), family effective sha, data_sha256, code_commit, seed, upstream identities}; adoption only by an exact, re-verified stored terminal",
  "admission": "cap = max(refused cap for the unit, ceil(1.25 x measured peak of that device class and kind) else launcher.initial_cap_bytes); requires MemAvailable >= cap + reserve, slice >= cap, disk >= 20 GiB, GPU visible with >= 2 GiB free, no foreign heavy (>=1 GiB) GPU process on the host; preferred (lowest order) GPU role first; a later role takes a GPU unit only after earlier roles refused it or hold a heavy lease; one heavy lease per host_key",
  "private_deployment_spec": "documented in tools/i6dmo/deploy.py PRIVATE_SPEC_DOC; never committed",
@@ -92,5 +93,10 @@
   "fresh heartbeat_age_seconds",
   "no other heavy attempt on the preferred host_key",
   "DEPLOY.json observed: timers enabled/active"
- ]
+ ],
+ "merged_lane_tips": {
+  "model": "12e13752",
+  "data": "012504bc",
+  "strategy": "aa630023"
+ }
 }

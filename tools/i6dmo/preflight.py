@@ -174,7 +174,7 @@ def preflight(design_path, spec_path, *, adapter=None, probe=None, data_pins=Non
            "existence only; contents are never read", owner="existing fleet EnvironmentFile")
     pins = data_pins or {}
     for role, role_spec in sorted((spec or {}).get("roles", {}).items()):
-        files = [p["relpath"] for p in pins.values() if "relpath" in p] if role_spec.get("gpus") else []
+        files = [C.pin_file(k, p) for k, p in pins.items() if "relpath" in p]
         try:
             facts = (probe or (lambda r, f: probe_role(spec, r, files=f)))(role, files)
         except Exception as exc:
@@ -203,8 +203,8 @@ def preflight(design_path, spec_path, *, adapter=None, probe=None, data_pins=Non
             _check(checks, f"admission_initial_cap:{role}", ok, "LAUNCH" if first else "TEST",
                    dict(evidence, cause=cause, preferred=first))
         for key, pin in pins.items():
-            if role_spec.get("gpus") and "relpath" in pin:
-                got = (facts.get("files") or {}).get(pin["relpath"])
+            if "relpath" in pin:
+                got = (facts.get("files") or {}).get(C.pin_file(key, pin))
                 _check(checks, f"data_pin:{role}:{key}", got == pin["sha256"], "LAUNCH",
                        dict(found=got is not None), owner="data lane")
         if role_spec.get("cpu_units"):

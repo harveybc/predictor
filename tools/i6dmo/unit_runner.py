@@ -23,7 +23,7 @@ from pathlib import Path
 
 HOOKS = {"report": "tools.i6dmo.reporting", "pair": "tools.i6dmo.strategy_adapter",
          "final_test": "tools.i6dmo.strategy_adapter"}
-HOOK_OWNERS = {"tools.i6dmo.reporting": "data lane / Satoshi integration (paired_metrics + weekly_diagnostics)",
+HOOK_OWNERS = {"tools.i6dmo.reporting": "ops lane (tools/i6dmo/reporting.py)",
                "tools.i6dmo.strategy_adapter": "strategy lane"}
 TRAINER_MODULE = "tools.i6dmo.train"
 FIT_KINDS = ("fit", "final_refit")
@@ -71,6 +71,9 @@ def run_fit(spec, out, progress, python=sys.executable, poll=5.0):
     bundle = spec.get("bundle") or {}
     manifest = Path(bundle.get("path", "")) / "BUNDLE.json"
     if not manifest.exists() or _sha(manifest) != bundle.get("sha256"):
+        return _terminal(spec, out, "FAILED", "BUNDLE_PIN_MISMATCH", {}, {}, [])
+    identity = json.loads(manifest.read_text()).get("bundle_sha256")
+    if bundle.get("bundle_sha256") and identity != bundle["bundle_sha256"]:
         return _terminal(spec, out, "FAILED", "BUNDLE_PIN_MISMATCH", {}, {}, [])
     design_path = folder / "design.json"
     _atomic(design_path, _family_design(spec))
