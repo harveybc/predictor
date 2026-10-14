@@ -130,7 +130,8 @@ def compute(root, level="campaign", unit=None, now=None):
         return dict(publication, schema="i6dmo.status.v1", campaign_id=plan["campaign_id"], generated_at=now)
     plan_ids = [u["unit_id"] for u in plan["units"]]
     states = [views[u]["state"] for u in plan_ids if u in views]
-    counts = {s: states.count(s) for s in ("WAIT_ARTIFACT", "WAIT_OWNER_RULING", "WAIT_DEPENDENCY", "QUEUED",
+    counts = {s: states.count(s) for s in ("WAIT_ARTIFACT", "WAIT_OWNER_RULING", "WAIT_DESIGN_RULING",
+                                           "WAIT_DEPENDENCY", "QUEUED",
                                            "WAIT_RESOURCE", "RUNNING", "STALE", "INTERRUPTED", "COMPLETE", "FAILED",
                                            "BLOCKED")}
     completed = [a for a in attempts if a["outcome"] == "COMPLETE" and a["costs"]]
@@ -195,6 +196,8 @@ def compute(root, level="campaign", unit=None, now=None):
         state = "WAITING_FOR_WORKER"
     elif counts["WAIT_OWNER_RULING"]:
         state = "WAIT_OWNER_RULING"
+    elif counts["WAIT_DESIGN_RULING"] and not (counts["WAIT_DEPENDENCY"] or counts["WAIT_ARTIFACT"]):
+        state = "WAIT_DESIGN_RULING"
     elif counts["WAIT_ARTIFACT"]:
         state = "WAIT_ARTIFACT"
     elif counts["BLOCKED"]:

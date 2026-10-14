@@ -252,7 +252,10 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
                 units=[u["unit_id"] for u in plan["units"]])
 
 
-SUPERSEDED_BUNDLE_PREFIXES = ("5221615d",)  # exact-slot build, superseded by the as-of ruling
+SUPERSEDED_BUNDLE_PREFIXES = ("5221615d",)  # pre-ruling exact-slot build
+# Retained ASOF diagnostic arm (audited AUD-DMO-01): real evidence under its own identity,
+# never admissible as the exact-DS2 treatment of this campaign.
+ASOF_DIAGNOSTIC_PREFIXES = ("3e42c3f5", "e88f72aa")
 BUNDLE_SAMPLING_RULE = "DS2_EXACT"
 BUNDLE_SAMPLING_BY_KEY = {"short_bundle": "DS2_EXACT", "long_bundle": "DS12_EXACT"}
 
@@ -267,6 +270,9 @@ def _check_bundle_pins(pins):
             raise Refused(f"BUNDLE_PIN_INCOMPLETE: {key} needs bundle_sha256")
         if identity.startswith(SUPERSEDED_BUNDLE_PREFIXES):
             raise Refused(f"SUPERSEDED_BUNDLE: {key} {identity[:8]} must not be used")
+        if identity.startswith(ASOF_DIAGNOSTIC_PREFIXES):
+            raise Refused(f"ASOF_DIAGNOSTIC_ARM: {key} {identity[:8]} is the retained ASOF diagnostic, "
+                          "not the exact-DS2 identity")
         rule = BUNDLE_SAMPLING_BY_KEY.get(key, BUNDLE_SAMPLING_RULE)
         if pin.get("input_sampling") != rule:
             raise Refused(f"BUNDLE_SAMPLING: {key} must be {rule}")
@@ -547,6 +553,10 @@ def readiness(root):
         validation = [u for u in plan["units"] if u["kind"] in ("fit", "report", "pair")]
         for unit in validation:
             row = units[unit["unit_id"]]
+            if row["state"] == "WAIT_DESIGN_RULING":
+                return dict(state="BLOCKED", disposition="DESIGN_RULING_REQUIRED",
+                            missing=[dict(gate="DESIGN_RULING", artifact="state/DESIGN_BLOCK.json",
+                                          owner="plan owner (Master work plan)", reason=row["cause"])])
             if row["state"] in ("FAILED", "BLOCKED"):
                 return dict(state="TERMINAL", disposition=f"UNIT_{row['state']}:{unit['unit_id']}",
                             cause=row["cause"], missing=[])
@@ -649,11 +659,56 @@ def _auto_seal_long(root, adapter=None):
     return result
 
 
+LONG_EMPTY_SUPPORT_CAUSE = (
+    "WAIT_DESIGN_RULING: LONG_EXACT_EMPTY_SUPPORT - the exact long bundle has 0 rows in every split; "
+    "every 144h/12h ladder crosses a >=47h weekend closure, so the sealed long design cannot fit under "
+    "exact sampling; plan-owner ruling required (ASOF arm under its own identity, or a market-time "
+    "window redesign)")
+LONG_CHAIN = ("long.fit", "long.report", "pair.validation")
+
+
+def record_design_block(root, unit_ids, cause):
+    """A sealed-design impossibility reported to the plan owner: the units hold, nothing else stops."""
+    if not str(cause).startswith("WAIT_DESIGN_RULING:"):
+        raise Refused("DESIGN_BLOCK_CAUSE_UNTYPED: the cause must start with WAIT_DESIGN_RULING:")
+    doc = dict(schema="i6dmo.design_block.v1", units=sorted(unit_ids), cause=str(cause), recorded_at=time.time())
+    atomic_json(Path(root) / "state" / "DESIGN_BLOCK.json", doc)
+    _apply_design_block(root)
+    return doc
+
+
+def _design_block(root):
+    path = Path(root) / "state" / "DESIGN_BLOCK.json"
+    return json.loads(path.read_text()) if path.exists() else None
+
+
+def _apply_design_block(root):
+    block = _design_block(root)
+    if block is None:
+        return []
+    held = []
+    q = open_queue(root)
+    try:
+        for unit_id in block["units"]:
+            row = q.unit(unit_id)
+            if row is None or row["state"] in ("COMPLETE", "FAILED"):
+                continue
+            if row["state"] != "WAIT_DESIGN_RULING" or row["cause"] != block["cause"]:
+                q.set_state(unit_id, "WAIT_DESIGN_RULING", block["cause"])
+            held.append(unit_id)
+    finally:
+        q.close()
+    return held
+
+
 def tick(root, now=None, adapter=None):
     """One finite, atomic advance. Never waits, never trains, never reads a token."""
     root = Path(root)
     load_effective(root)
-    _auto_seal_long(root, adapter=adapter)
+    design_block = _design_block(root)
+    held = set((design_block or {}).get("units", ()))
+    if not held:
+        _auto_seal_long(root, adapter=adapter)
     _apply_long(root)
     plan = load_plan(root)
     q = open_queue(root)
@@ -662,6 +717,8 @@ def tick(root, now=None, adapter=None):
         rows = {u["unit_id"]: u for u in q.units()}
         for unit in plan["units"]:
             row = rows[unit["unit_id"]]
+            if unit["unit_id"] in held:
+                continue
             if row["state"] != "WAIT_DEPENDENCY":
                 continue
             deps = [rows[d] for d in unit["depends_on"]]
@@ -680,6 +737,7 @@ def tick(root, now=None, adapter=None):
         gates = _auto_gates(root, plan, q)
     finally:
         q.close()
+    _apply_design_block(root)
     _delivery_gate(root, plan)
     ready = readiness(root)
     opened = ready["state"] == "READY" and _enumerate_finals(root, load_plan(root), ready)

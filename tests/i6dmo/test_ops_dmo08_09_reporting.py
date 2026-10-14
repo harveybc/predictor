@@ -67,7 +67,7 @@ def _predictions(arrays, *, shuffle=False, horizons=H):
                 target_price=arrays.y_price[order], mask=arrays.mask[order]), pred
 
 
-def _setup(tmp_path, *, shuffle=False, horizons=H, bundle_sha="3e42c3f5" + "0" * 56):
+def _setup(tmp_path, *, shuffle=False, horizons=H, bundle_sha="5f3d6782" + "0" * 56):
     from tools.i6dmo import provenance
     arrays = _arrays()
     inp = tmp_path / "input"
@@ -168,7 +168,7 @@ def test_dmo08_superseded_or_unpinned_bundle_is_refused(tmp_path):
 def test_dmo08_init_refuses_superseded_or_exact_slot_bundle_pins(tmp_path):
     from tests.i6dmo.ops_fakes import make_campaign
     from tools.i6dmo import campaign
-    good = {"relpath": "b", "sha256": "1" * 64, "bundle_sha256": "3e42c3f5" + "0" * 56,
+    good = {"relpath": "b", "sha256": "1" * 64, "bundle_sha256": "5f3d6782" + "0" * 56,
             "input_sampling": "DS2_EXACT"}
     make_campaign(tmp_path, name="ok", data_pins={"short_bundle": good})
     with pytest.raises(campaign.Refused, match="SUPERSEDED_BUNDLE"):

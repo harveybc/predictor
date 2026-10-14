@@ -102,9 +102,9 @@ def test_real_model_lane_sealer_accepts_a_short_closure_terminal(tmp_path):
 
 def test_long_bundle_pin_uses_its_own_sampling_and_data_contract(tmp_path):
     from tools.i6dmo import campaign
-    short = {"relpath": "s", "sha256": "1" * 64, "bundle_sha256": "3e42c3f5" + "0" * 56,
+    short = {"relpath": "s", "sha256": "1" * 64, "bundle_sha256": "5f3d6782" + "0" * 56,
              "input_sampling": "DS2_EXACT"}
-    long_ = {"relpath": "l", "sha256": "2" * 64, "bundle_sha256": "e88f72aa" + "0" * 56,
+    long_ = {"relpath": "l", "sha256": "2" * 64, "bundle_sha256": "9f14c2d2" + "0" * 56,
              "input_sampling": "DS12_EXACT", "data_contract_sha256": "6" * 64}
     make_campaign(tmp_path, name="ok", data_pins={"short_bundle": short, "long_bundle": long_})
     with pytest.raises(campaign.Refused, match="BUNDLE_SAMPLING: long_bundle"):
@@ -143,3 +143,49 @@ def test_final_test_waits_until_the_strategy_lane_exports_run_final_backtest(tmp
     monkeypatch.setattr(strategy_adapter, "run_final_backtest", lambda *a, **k: None, raising=False)
     out = run_worker(root, "coordinator", tmp_path / "c.txt")
     assert not str(out.get("cause", "")).startswith("FINAL_BACKTEST_EXPORT_MISSING")
+
+
+def test_design_block_holds_the_long_chain_while_short_and_publication_proceed(tmp_path):
+    from tools.i6dmo import campaign, status
+    root = make_campaign(tmp_path, long=False)
+    campaign.record_design_block(root, campaign.LONG_CHAIN, campaign.LONG_EMPTY_SUPPORT_CAUSE)
+    counter = tmp_path / "c.txt"
+    campaign.tick(root)
+    assert run_worker(root, "preferred", counter)["result"] == "COMPLETE"      # short.fit proceeds
+    campaign.tick(root)
+    assert run_worker(root, "coordinator", counter)["result"] == "COMPLETE"    # short.report proceeds
+    out = campaign.tick(root)                                                  # never seals/queues the long chain
+    for unit_id in campaign.LONG_CHAIN:
+        view = status.compute(root, level="unit", unit=unit_id)
+        assert view["state"] == "WAIT_DESIGN_RULING" and "LONG_EXACT_EMPTY_SUPPORT" in view["cause"]
+        assert view["attempts"] == []
+    assert run_worker(root, "preferred", counter)["result"] == "IDLE"          # nothing claimable remains
+    ready = campaign.readiness(root)
+    assert ready["state"] == "BLOCKED" and ready["missing"][0]["gate"] == "DESIGN_RULING"
+    assert "plan owner" in ready["missing"][0]["owner"]
+    assert not out["finals_enumerated"]
+    closed = campaign.close_campaign(root)
+    assert closed["state"] == "REFUSED"
+
+
+def test_design_block_requires_a_typed_cause_and_never_touches_completed_units(tmp_path):
+    from tools.i6dmo import campaign, status
+    root = make_campaign(tmp_path)
+    run_worker(root, "preferred", tmp_path / "c.txt")
+    with pytest.raises(campaign.Refused, match="DESIGN_BLOCK_CAUSE_UNTYPED"):
+        campaign.record_design_block(root, ["long.fit"], "the long family is impossible")
+    campaign.record_design_block(root, ["short.fit", "long.fit"], campaign.LONG_EMPTY_SUPPORT_CAUSE)
+    assert status.compute(root, level="unit", unit="short.fit")["state"] == "COMPLETE"  # a terminal is immutable
+
+
+def test_init_refuses_the_asof_diagnostic_identities_for_the_exact_campaign(tmp_path):
+    from tools.i6dmo import campaign
+    exact = {"relpath": "b", "sha256": "1" * 64, "bundle_sha256": "5f3d6782" + "0" * 56,
+             "input_sampling": "DS2_EXACT"}
+    make_campaign(tmp_path, name="ok", data_pins={"short_bundle": exact})
+    with pytest.raises(campaign.Refused, match="ASOF_DIAGNOSTIC_ARM"):
+        make_campaign(tmp_path, name="asof", data_pins={"short_bundle": dict(
+            exact, bundle_sha256="3e42c3f5" + "0" * 56)})
+    with pytest.raises(campaign.Refused, match="ASOF_DIAGNOSTIC_ARM"):
+        make_campaign(tmp_path, name="asofl", data_pins={"short_bundle": exact, "long_bundle": dict(
+            exact, bundle_sha256="e88f72aa" + "0" * 56, input_sampling="DS12_EXACT")})
