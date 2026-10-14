@@ -197,9 +197,11 @@ def test_dmo10_train_unit_end_to_end_restore_and_reload(tmp_path):
     scales = json.loads((out / "SCALES.json").read_text())
     fit_x, fit_y, fit_m = T.transform(T.trainable_rows(data["fit"])[0], scales)
     in_x, in_y, in_m = T.transform(T.trainable_rows(data["inner"])[0], scales)
-    fl = T.masked_split_metrics(fit_y, M.predict_matrix(loaded.forecast_model, fit_x), fit_m)["loss"]
-    il = T.masked_split_metrics(in_y, M.predict_matrix(loaded.forecast_model, in_x), in_m)["loss"]
-    assert math.isclose(0.5 * (fl + il), hist[best]["monitored"], rel_tol=1e-6)
+    record = training["monitor_evaluation"]
+    assert record["procedure"] == "i6dmo.monitor_eval.v1" and record["batch_size"] == 256
+    _, _, monitored = T.replay_monitored(loaded.forecast_model, (fit_x, fit_y, fit_m),
+                                         (in_x, in_y, in_m), record)
+    assert monitored == hist[best]["monitored"]  # bitwise: identical evaluation procedure
     # Saved predictions equal a fresh prediction from the reloaded artifact.
     with np.load(out / "predictions" / "validation.npz") as pz:
         vx, _, _ = T.transform(data["validation"], scales)
@@ -263,3 +265,23 @@ def test_determinism_is_enabled_and_recorded_everywhere(tmp_path):
     loaded, document = M.load_dmo(tmp_path / "u" / "model")
     assert document["determinism"]["op_determinism"] is True
     assert M.DETERMINISM["op_determinism"] is True
+
+
+def test_monitor_evaluation_is_one_shared_procedure_and_path_mismatch_is_refused(tmp_path):
+    """DMO10: training monitor and replay share ONE function; a different batching is refused."""
+    from tools.i6dmo import model as M
+    rng = np.random.default_rng(0)
+    cfg = M.model_config(["a", "b", "c"])
+    bundle = M.build_dmo(dict(cfg, features=["a", "b", "c"]))
+    x = rng.normal(size=(130, 13, 3)).astype("float32")  # two batches at batch_size 64
+    y = rng.normal(size=(130, 6))
+    mask = np.ones((130, 6), bool)
+    fit, inner = (x, y, mask), (x[:40], y[:40], mask[:40])
+    record = {"procedure": "i6dmo.monitor_eval.v1", "batch_size": 64}
+    fm, im, monitored = T.replay_monitored(bundle.forecast_model, fit, inner, record)
+    fm2, im2, monitored2 = T.evaluate_monitored(bundle.forecast_model, fit, inner, 64)
+    assert monitored == monitored2 and fm["sums"] == fm2["sums"]  # same function, bitwise
+    with pytest.raises(T.TrainDisposition, match="MONITOR_PATH_MISMATCH"):
+        T.replay_monitored(bundle.forecast_model, fit, inner, record, batch_size=130)
+    with pytest.raises(T.TrainDisposition, match="MONITOR_PATH_MISMATCH"):
+        T.replay_monitored(bundle.forecast_model, fit, inner, {"procedure": "other", "batch_size": 64})
