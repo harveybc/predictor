@@ -8,6 +8,7 @@ claims a launch. Checks carry ``blocks``: LAUNCH (first fit), PAIR (strategy sta
 """
 import hashlib
 import json
+import math
 import os
 import shlex
 import shutil
@@ -201,7 +202,9 @@ def preflight(design_path, spec_path, *, adapter=None, probe=None, data_pins=Non
                 _check(checks, f"non_parallel_slot:{role}:{gpu['class']}", gpu.get("parallel_slot") is False, "LAUNCH",
                        "a second GPU on a heavy host is never a parallel slot")
         if heavy is not None:
-            cap = int(spec["launcher"]["initial_cap_bytes"])
+            launcher = dict(spec["launcher"], **role_spec.get("launcher", {}))
+            peak = (launcher.get("measured_class_peaks") or {}).get("short.fit")
+            cap = math.ceil(1.25 * peak) if peak else int(launcher["initial_cap_bytes"])
             ok, cause, evidence = W.admit(facts, cap=cap, gpu_uuid=heavy["uuid"],
                                           reserve=int(role_spec.get("reserve_bytes", W.HOST_RESERVE)))
             first = role_spec.get("order", 0) == min(v.get("order", 0) for v in spec["roles"].values()
