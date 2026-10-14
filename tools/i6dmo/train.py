@@ -298,6 +298,30 @@ MONITOR_INSTANCE = "canonical_loader_rebuild"
 #: forward. Any other derivation (e.g., a float32 pipeline) yields different bytes and is
 #: refused by the input witness.
 MONITOR_INPUT = "i6dmo.monitor_input.v1:float64_cpu_normalize_single_float32_cast"
+MONITOR_FORWARD = "i6dmo.monitor_forward.v1"
+
+
+def monitor_forward(model, x32, batch_size):
+    """THE monitor's one dedicated forward (fit-time recording and replay call exactly this).
+
+    Pure eager calls on the canonical loader instance over the canonical sequential
+    partition — created independently of any training step, so no training-side traced
+    graph or grappler-remapped function cluster can be what the monitor measures.
+    Float32 in, per-batch float64 out, concatenated in order.
+    """
+    import tensorflow as tf
+    parts = []
+    for start in range(0, len(x32), batch_size):
+        out = model(tf.constant(x32[start:start + batch_size]), training=False)
+        parts.append(np.concatenate([np.asarray(o, dtype=np.float64) for o in out], axis=1))
+    width = len(model.outputs)
+    return np.concatenate(parts, axis=0) if parts else np.zeros((0, width))
+
+
+def monitor_forward_identity():
+    import inspect
+    return {"id": MONITOR_FORWARD,
+            "source_sha256": hashlib.sha256(inspect.getsource(monitor_forward).encode()).hexdigest()}
 
 
 def materialize_monitor_inputs(rows, scales):
@@ -348,7 +372,6 @@ def evaluate_monitored(model, fit, inner, batch_size, ids=None):
     path is detectable at replay (``ids=None`` records positional ids).
     """
     import inspect
-    from tools.i6dmo.model import predict_matrix
     names = ("fit", "inner")
     splits = {"fit": fit, "inner": inner}
     id_arrays = {}
@@ -366,12 +389,12 @@ def evaluate_monitored(model, fit, inner, batch_size, ids=None):
     code_witness = hashlib.sha256(
         (inspect.getsource(evaluate_monitored) + nonce).encode()).hexdigest()
     witness = {"ids": "positional" if ids is None else "row_id", "nonce": nonce,
-               "code_witness": code_witness}
+               "code_witness": code_witness, "forward": monitor_forward_identity()}
     results = {}
     for name in names:
         x, y, mask = splits[name]
         x = np.ascontiguousarray(np.asarray(x, dtype=np.float32))  # the EXACT bytes fed below
-        pred = predict_matrix(model, x, batch_size=batch_size)
+        pred = monitor_forward(model, x, batch_size)
         results[name] = masked_split_metrics(y, pred, mask)
         y64, mb_all = np.asarray(y, np.float64), np.asarray(mask, bool)
         batches = []
@@ -440,6 +463,13 @@ def replay_monitored(model, fit, inner, record, batch_size=None, ids=None):
         raise TrainDisposition("MONITOR_PATH_MISMATCH",
                                f"monitor instance {record.get('monitor_instance')!r} is not the "
                                f"canonical {MONITOR_INSTANCE}")
+    recorded_forward = record.get("monitor_forward")
+    if recorded_forward is not None and recorded_forward != monitor_forward_identity():
+        raise TrainDisposition("MONITOR_FORWARD_MISMATCH",
+                               f"record produced by forward {recorded_forward} but the monitor's "
+                               f"one dedicated forward is {monitor_forward_identity()}; a value "
+                               "measured through any other forward (e.g., a training-step graph) "
+                               "is never comparable")
     if record.get("input_materialization", MONITOR_INPUT) != MONITOR_INPUT:
         raise TrainDisposition("MONITOR_PATH_MISMATCH",
                                f"input materialization {record.get('input_materialization')!r} is "
@@ -557,6 +587,10 @@ def _compare_witness(stored, fresh, tolerance_active=False):
     most the pre-declared 1e-5 RELATIVE bound is tolerated and reported, not refused.
     """
     tolerated = []
+    if stored.get("forward") is not None and stored["forward"] != fresh["forward"]:
+        raise TrainDisposition("MONITOR_FORWARD_MISMATCH",
+                               f"witness forward {stored['forward']} != the monitor's dedicated "
+                               f"forward {fresh['forward']}")
     if stored.get("code_witness") != fresh["code_witness"]:
         raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE",
                                "code witness differs: the recorded evaluation ran different "
@@ -751,6 +785,7 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None, ids=None):
     record = {"procedure": MONITOR_EVAL, "batch_size": batch, "graph": "inference",
               "partition": MONITOR_PARTITION, "monitor_instance": MONITOR_INSTANCE,
               "input_materialization": MONITOR_INPUT,
+              "monitor_forward": monitor_forward_identity(),
               "determinism_flags": current_determinism_flags(),
               "declared_tolerance": dict(MONITOR_TOLERANCE),
               "witness": best_witness,

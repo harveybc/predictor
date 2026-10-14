@@ -360,3 +360,26 @@ the input tensor itself. Changes:
    level. Tolerance unchanged at the declared 1e-5.
 
 CPU POST: 26 passed in train (PRE: 1 failed) plus the other four files.
+
+## Round 14: one dedicated monitor forward + grappler remapping off
+
+Inputs proved byte-identical, so only the forward's EXECUTION GRAPH remained.
+Both belts, as ordered:
+
+1. The monitor now owns ONE dedicated forward, `train.monitor_forward` — pure
+   eager calls on the canonical loader instance over the canonical sequential
+   partition, created independently of any training step. The fit-time
+   recording AND `replay_monitor` call exactly this function; its identity
+   (`i6dmo.monitor_forward.v1` + source sha256, computed by
+   `monitor_forward_identity()`) is recorded in `monitor_evaluation` and inside
+   the witness, and a record produced by any other forward (e.g., a
+   training-step graph) is refused typed `MONITOR_FORWARD_MISMATCH`.
+2. Grappler remapping is disabled flags-first in `enable_determinism()`, with
+   the sibling fusion passes judged relevant (`layout_optimizer`,
+   `auto_mixed_precision`) also off; all three recorded in the determinism
+   flags and enforced like the others (XLA autoclustering was already off).
+
+Tolerance unchanged at the declared 1e-5. If lane 4's round STILL diverges
+with same bytes, same weights, same function and remapping off, Satoshi has
+pre-approved a transparent bound revision as a NEW declaration at the measured
+maximum — to be recorded here only if that branch is taken.

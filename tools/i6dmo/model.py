@@ -95,6 +95,13 @@ def enable_determinism():
         _os.environ["TF_XLA_FLAGS"] = (_os.environ.get("TF_XLA_FLAGS", "") + " --tf_xla_auto_jit=0").strip()
     tf.config.experimental.enable_op_determinism()
     tf.config.optimizer.set_jit(False)
+    # Grappler remapping/fusion rewrites a traced forward differently in a process that has
+    # trained; disable remapping and the sibling fusion passes so every process executes the
+    # same op-for-op graph (XLA autoclustering is already off above).
+    tf.config.optimizer.set_experimental_options({"remapping": False, "layout_optimizer": False,
+                                                  "auto_mixed_precision": False})
+    DETERMINISM["grappler"] = {"remapping": False, "layout_optimizer": False,
+                               "auto_mixed_precision": False}
     # TF32 matmul/conv (Ampere+) rounds float32 mantissas per execution mode, not per weight;
     # disable explicitly so trained and loading processes share one FP32 forward semantics.
     tf.config.experimental.enable_tensor_float_32_execution(False)
@@ -108,6 +115,8 @@ def determinism_flags():
     """The canonical flag dict recorded in monitor records and enforced at replay."""
     enable_determinism()
     return {"op_determinism": True, "jit_autoclustering": False,
+            "grappler_remapping": False, "grappler_layout_optimizer": False,
+            "grappler_auto_mixed_precision": False,
             "tensor_float_32": DETERMINISM.get("tensor_float_32", False),
             "tf_imported_before_flags": INIT_ORDER["tf_imported_before_flags"],
             "TF_DETERMINISTIC_OPS": DETERMINISM["env"]["TF_DETERMINISTIC_OPS"],

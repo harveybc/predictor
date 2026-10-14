@@ -172,6 +172,7 @@
     "weights_at_witness": "per-tensor digests of the evaluated instance, recorded in the witness and diffed by replay_monitor against MODEL.json weight_tensors (typed WEIGHTS_AT_WITNESS_MISMATCH names tensors)",
     "batch0_predictions_hex": "per-row per-head float64 hex of batch 0 per split; replay diffs and reports first divergent rows + uniform/localized delta-pattern verdict inside MONITOR_WITNESS_DIVERGENCE",
     "tensor_float_32": "disabled flags-first in enable_determinism and recorded in determinism_flags",
-    "input_witness": "post-normalization float32 byte digests (split, per batch, batch-0 per row, first 8 rows byte-complete) recorded before any forward and diffed first at replay; typed INPUT_WITNESS_MISMATCH names batches/rows/elements; input_materialization pinned to i6dmo.monitor_input.v1 (bundle arrays, float64 CPU normalization, single float32 cast in materialize_monitor_inputs, shared by fit and replay)"
+    "input_witness": "post-normalization float32 byte digests (split, per batch, batch-0 per row, first 8 rows byte-complete) recorded before any forward and diffed first at replay; typed INPUT_WITNESS_MISMATCH names batches/rows/elements; input_materialization pinned to i6dmo.monitor_input.v1 (bundle arrays, float64 CPU normalization, single float32 cast in materialize_monitor_inputs, shared by fit and replay)",
+    "monitor_forward": "one dedicated eager forward (i6dmo.monitor_forward.v1, source sha256) owned by the monitor module; used by fit-time recording and replay_monitor; records/witnesses from any other forward are refused typed MONITOR_FORWARD_MISMATCH; grappler remapping/layout_optimizer/auto_mixed_precision disabled flags-first and enforced"
   }
 }
