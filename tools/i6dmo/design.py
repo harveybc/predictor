@@ -7,15 +7,27 @@ values, and resolves a sealed effective config whose identity covers the whole
 design. ``validate-design`` reads only the design file and the bundled
 availability contract: no data, network, TEST rows, credentials or training.
 
+Two families share this adapter. The short design is the committed
+``EXPERIMENT.short.json``. The long design is never hand-written: the
+``seal-long-design`` command derives it deterministically from the validated
+short design plus a valid short closure terminal (whose unit id, identity and
+file digest are recorded, never its metrics or eligibility). It mirrors every
+short decision except the fields PLAN.md section 5 fixes for the long family
+(``LONG_FROM_PLAN``) and is tamper-evident through ``seal_sha256``. A field
+PLAN.md leaves open is listed in ``LONG_PLAN_OPEN_FIELDS`` and yields the typed
+``LONG_DESIGN_UNDECIDED`` naming that field; nothing is improvised.
+
 Typed refusals are :class:`DesignError` with a stable leading code.
 """
 
 from __future__ import annotations
 
 import argparse
+import copy
 from datetime import datetime, timedelta, timezone
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import sys
@@ -25,7 +37,31 @@ from tools.i6n_contracts import feature_availability as fa
 DESIGN_SCHEMA = "i6dmo.design.v1"
 EFFECTIVE_SCHEMA = "i6dmo.effective_config.v1"
 HORIZONS = [2, 3, 4, 5, 6, 12]
+LONG_HORIZONS = [18, 24, 36, 48, 60, 72]
+SHORT_ID = "I6-DMO-SHORT-DS2-STATIC-R0"
+LONG_ID = "I6-DMO-LONG-DS12-STATIC-R0"
 STLFSI4 = "fred.stress.stlfsi4.level"
+UNDECIDED = "UNDECIDED"
+#: PLAN.md section 5, verbatim decisions for the long family; everything else mirrors the short design.
+LONG_FROM_PLAN = {
+    ("experiment_id",): LONG_ID,
+    ("horizons_hours",): LONG_HORIZONS,          # "[18, 24, 36, 48, 60, 72] physical hours"
+    ("input", "history_span_hours"): 144,        # "initial 144-hour inclusive span"
+    ("input", "spacing_hours"): 12,              # "input spacing 12 h"
+}
+#: Asserted by PLAN.md section 5 and kept equal to the short values: "13 observations",
+#: "same small modular family", "Every hourly origin still gets exact endpoint heads" (issuance 1 h).
+#: Fields PLAN.md leaves open for the long family. Reading of PLAN.md (2a440265): none. Its
+#: "Freeze its support/cost design before fitting" is satisfied by sealing the mirrored business
+#: (per-head masks) and execution (admission/cost) blocks; a reviewer who rules otherwise adds the
+#: path here and the seal then stops with LONG_DESIGN_UNDECIDED.
+LONG_PLAN_OPEN_FIELDS_DEFAULT = ()
+LONG_PLAN_OPEN_FIELDS = LONG_PLAN_OPEN_FIELDS_DEFAULT
+SHORT_CLOSURE_UNIT = "short.report"
+SHORT_CLOSURE_STATUSES = ("COMPLETE", "NOT_ELIGIBLE")
+TERMINAL_SCHEMA = "i6dmo.terminal.v1"
+LONG_RULE = ("long design = validated short design with PLAN.md section 5 long fields; sealed after a "
+             "valid short closure terminal; no validation/TEST outcome is read")
 
 
 class DesignError(ValueError):
@@ -60,7 +96,7 @@ _TS = _typ(str)
 SCHEMA = {
     "schema": _fixed(DESIGN_SCHEMA),
     "status": _fixed("DESIGN_NOT_RUNTIME_CONFIG"),
-    "experiment_id": _fixed("I6-DMO-SHORT-DS2-STATIC-R0"),
+    "experiment_id": _fixed(SHORT_ID),
     "asset": _fixed("EURUSD"),
     "seed": _fixed(6102026),
     "repetitions": _fixed(1),
@@ -149,6 +185,35 @@ SCHEMA = {
 }
 
 
+_HEX = ("hex64", None)
+
+
+def _long_schema():
+    schema = copy.deepcopy(SCHEMA)
+    for path, value in LONG_FROM_PLAN.items():
+        node = schema
+        for key in path[:-1]:
+            node = node[key]
+        node[path[-1]] = _fixed(value)
+    schema["derived_from"] = {
+        "rule": _fixed(LONG_RULE),
+        "short_experiment_id": _fixed(SHORT_ID),
+        "short_design_sha256": _HEX,
+        "short_terminal": {"unit_id": _fixed(SHORT_CLOSURE_UNIT), "identity_sha256": _HEX,
+                           "terminal_file_sha256": _HEX},
+    }
+    schema["seal_sha256"] = _HEX
+    return schema
+
+
+LONG_SCHEMA = _long_schema()
+
+
+def family(doc):
+    """``long`` for the long experiment id, otherwise ``short`` (validated as such)."""
+    return "long" if isinstance(doc, dict) and doc.get("experiment_id") == LONG_ID else "short"
+
+
 def _same(a, b):
     """Type-strict equality (True is not 1; 1 is not 1.0)."""
     if isinstance(a, list) and isinstance(b, list):
@@ -183,6 +248,9 @@ def _check(node, spec, path):
             raise DesignError("TYPE", f"{path} must be {type(arg).__name__}")
         if not _same(node, arg):
             raise DesignError("FIXED_VALUE", f"{path} is fixed to {arg!r} by the owner order; got {node!r}")
+    elif kind == "hex64":
+        if not isinstance(node, str) or not re.fullmatch(r"[0-9a-f]{64}", node):
+            raise DesignError("TYPE", f"{path} must be a lowercase sha256 hex digest")
     elif kind == "test_open":
         if node is not False:
             raise DesignError("TEST_FORBIDDEN", f"{path} must be false; TEST opens only through final gates")
@@ -193,9 +261,27 @@ def _check(node, spec, path):
             raise DesignError("STLFSI4_EXCLUSION", f"{path} must be exactly [{STLFSI4!r}]; got {node!r}")
 
 
+def _undecided(node, path=""):
+    if isinstance(node, dict):
+        return [p for k, v in node.items() for p in _undecided(v, f"{path}.{k}" if path else k)]
+    return [path] if node == UNDECIDED else []
+
+
+def _seal_body(doc):
+    return {k: v for k, v in doc.items() if k != "seal_sha256"}
+
+
 def validate_design(doc):
-    """Validate a parsed design; return a detached copy. Raises DesignError."""
-    _check(doc, SCHEMA, "")
+    """Validate a parsed short or long design; return a detached copy. Raises DesignError."""
+    if family(doc) == "long":
+        open_paths = _undecided(doc)
+        if open_paths:
+            raise DesignError("LONG_DESIGN_UNDECIDED", f"PLAN.md leaves {open_paths} open; long.fit must wait")
+        _check(doc, LONG_SCHEMA, "")
+        if doc["seal_sha256"] != _sha(_seal_body(doc)):
+            raise DesignError("LONG_DESIGN_SEAL", "the sealed long design was modified")
+    else:
+        _check(doc, SCHEMA, "")
     return json.loads(_canonical(doc))
 
 
@@ -277,6 +363,7 @@ def effective_config(design):
     m, t = d["model"], d["training"]
     effective = {
         "schema": EFFECTIVE_SCHEMA,
+        "family": family(d),
         "design": d,
         "design_sha256": design_sha256(d),
         "experiment_id": d["experiment_id"],
@@ -337,7 +424,7 @@ def validate_design_report(path):
     fm = effective["feature_manifest"]
     return {
         "schema": "i6dmo.validate_design.v1", "status": "PASS", "pure": True,
-        "experiment_id": effective["experiment_id"],
+        "family": effective["family"], "experiment_id": effective["experiment_id"],
         "design_sha256": effective["design_sha256"],
         "effective_config_sha256": effective["effective_config_sha256"],
         "feature_count": fm["count"], "feature_manifest_sha256": fm["manifest_sha256"],
@@ -351,6 +438,89 @@ def validate_design_report(path):
     }
 
 
+def _file_sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def _short_closure(terminal_path):
+    """Read only schema/unit_id/status/identity of the short closure terminal."""
+    try:
+        term = json.loads(Path(terminal_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise DesignError("SHORT_NOT_TERMINAL_VALID", f"unreadable terminal: {exc}") from None
+    if not isinstance(term, dict) or term.get("schema") != TERMINAL_SCHEMA:
+        raise DesignError("SHORT_NOT_TERMINAL_VALID", f"terminal schema must be {TERMINAL_SCHEMA}")
+    if term.get("unit_id") != SHORT_CLOSURE_UNIT:
+        raise DesignError("SHORT_NOT_TERMINAL_VALID", f"closure unit must be {SHORT_CLOSURE_UNIT}")
+    if term.get("status") not in SHORT_CLOSURE_STATUSES:
+        raise DesignError("SHORT_NOT_TERMINAL_VALID", f"short closure status must be one of "
+                          f"{SHORT_CLOSURE_STATUSES} (a scientific terminal)")
+    identity = term.get("identity_sha256")
+    if not isinstance(identity, str) or not re.fullmatch(r"[0-9a-f]{64}", identity):
+        raise DesignError("SHORT_NOT_TERMINAL_VALID", "terminal identity_sha256 missing")
+    return {"unit_id": SHORT_CLOSURE_UNIT, "identity_sha256": identity,
+            "terminal_file_sha256": _file_sha(terminal_path)}
+
+
+def seal_long_design(short_design_path, short_terminal_path, out_path):
+    """Derive, seal and write ``EXPERIMENT.long.json`` deterministically (idempotent).
+
+    Only the short design and the closure terminal's schema/unit/status/identity
+    are read. The long hyperparameters are a pure function of the short design
+    and ``LONG_FROM_PLAN``; short metrics or eligibility never enter.
+    """
+    short = load_design(short_design_path)
+    if family(short) != "short":
+        raise DesignError("SHORT_DESIGN_REQUIRED", "seal-long-design derives from the short design")
+    closure = _short_closure(short_terminal_path)
+    doc = copy.deepcopy(short)
+    for path, value in LONG_FROM_PLAN.items():
+        node = doc
+        for key in path[:-1]:
+            node = node[key]
+        node[path[-1]] = copy.deepcopy(value)
+    open_paths = []
+    for path in LONG_PLAN_OPEN_FIELDS:
+        node = doc
+        for key in path[:-1]:
+            node = node[key]
+        node[path[-1]] = UNDECIDED
+        open_paths.append(".".join(path))
+    if open_paths:
+        raise DesignError("LONG_DESIGN_UNDECIDED", f"PLAN.md leaves {open_paths} open; nothing written")
+    doc["derived_from"] = {"rule": LONG_RULE, "short_experiment_id": SHORT_ID,
+                           "short_design_sha256": design_sha256(short), "short_terminal": closure}
+    doc["seal_sha256"] = _sha(_seal_body(doc))
+    validate_design(doc)
+    effective_config(doc)
+    text = json.dumps(doc, sort_keys=True, indent=2) + "\n"
+    out = Path(out_path)
+    if out.exists():
+        if out.read_text(encoding="utf-8") != text:
+            raise DesignError("LONG_DESIGN_EXISTS", f"{out} holds a different long design; never overwritten")
+    else:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        tmp = out.with_name(out.name + ".tmp")
+        tmp.write_text(text, encoding="utf-8")
+        os.replace(tmp, out)
+    return {"schema": "i6dmo.seal_long_design.v1", "status": "SEALED", "experiment_id": LONG_ID,
+            "design_sha256": design_sha256(doc), "seal_sha256": doc["seal_sha256"],
+            "file_sha256": _file_sha(out), "derived_from": doc["derived_from"]}
+
+
+def run_seal_long_design(args):
+    try:
+        result = seal_long_design(args.short_design, args.short_terminal, args.out)
+    except DesignError as exc:
+        result = {"schema": "i6dmo.seal_long_design.v1", "status": "FAILED", "code": exc.code,
+                  "detail": str(exc)}
+    if args.json:
+        print(json.dumps(result, sort_keys=True))
+    else:
+        print(f"{result['status']} {result.get('design_sha256') or result.get('code')}")
+    return 0 if result["status"] == "SEALED" else 2
+
+
 def run_validate_design(args):
     report = validate_design_report(args.design)
     if args.json:
@@ -361,11 +531,20 @@ def run_validate_design(args):
 
 
 def add_cli(subparsers):
-    """Register ``validate-design`` on the shared ``python -m tools.i6dmo`` parser."""
+    """Register ``validate-design`` and ``seal-long-design`` on the shared CLI parser.
+
+    ``seal-long`` (campaign sealing) belongs to the ops lane; this name does not collide.
+    """
     p = subparsers.add_parser("validate-design", help="pure typed validation of an I6-DMO design")
     p.add_argument("--design", required=True)
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=run_validate_design)
+    q = subparsers.add_parser("seal-long-design", help="derive and seal EXPERIMENT.long.json after short closure")
+    q.add_argument("--short-design", required=True)
+    q.add_argument("--short-terminal", required=True, help="TERMINAL.json of the short.report unit")
+    q.add_argument("--out", required=True)
+    q.add_argument("--json", action="store_true")
+    q.set_defaults(func=run_seal_long_design)
     return p
 
 

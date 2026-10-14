@@ -11,7 +11,8 @@
     "tests/i6dmo/dmo_model_fixtures.py",
     "tests/i6dmo/test_dmo_design.py",
     "tests/i6dmo/test_dmo_model.py",
-    "tests/i6dmo/test_dmo_train.py"
+    "tests/i6dmo/test_dmo_train.py",
+    "tests/i6dmo/test_dmo_long.py"
   ],
   "python_api": {
     "tools.i6dmo.design.load_design(path) -> dict": "typed, unknown/missing fields rejected at every level; fixed C-section values enforced",
@@ -118,5 +119,26 @@
     "positional_encoding": "additive sinusoid at physical offsets -24..0 h (subclass of the plugin PositionalEncoding)",
     "restore": "lowest monitored epoch, first tie; min_delta governs patience only (i6n masked early-stop convention)",
     "op_determinism": "not enabled (GPU determinism of boolean_mask gradients untested)"
+  },
+  "long_family": {
+    "seal_command": "python -m tools.i6dmo seal-long-design --short-design <EXPERIMENT.short.json> --short-terminal <terminals/<id>/TERMINAL.json of short.report> --out <EXPERIMENT.long.json> [--json]  (also python -m tools.i6dmo.design ...); exit 0 SEALED, 2 typed FAILED",
+    "pipeline": "seal-long-design (model lane, writes the long design) -> ops `seal-long --root R --design EXPERIMENT.long.json` (campaign sealing) -> long.fit leaves WAIT_ARTIFACT",
+    "short_closure_accepted": "terminal schema i6dmo.terminal.v1, unit_id short.report, status COMPLETE|NOT_ELIGIBLE, identity_sha256; only these fields are read (never eligibility/metrics)",
+    "derived": "short design + PLAN section 5: experiment_id I6-DMO-LONG-DS12-STATIC-R0, horizons [18,24,36,48,60,72], history_span_hours 144, spacing_hours 12; observations 13, issuance 1 h and every other block mirrored; derived_from {short_design_sha256, short_terminal{unit_id, identity_sha256, terminal_file_sha256}}; seal_sha256 over the body",
+    "deterministic": "byte-identical output for the same inputs; idempotent onto an identical file; LONG_DESIGN_EXISTS onto a different one",
+    "undecided": "LONG_PLAN_OPEN_FIELDS (currently empty) -> LONG_DESIGN_UNDECIDED: <dotted field>, nothing written; any 'UNDECIDED' value in a long design fails validate-design with the same code",
+    "schema_compat": "long design keeps schema i6dmo.design.v1 (ops _design_checks); family is selected by experiment_id; effective config carries family short|long",
+    "trainer": "same train entry point; long bundle must declare offsets -144..0 step 12 and horizons 18..72 (BUNDLE_OFFSETS/BUNDLE_HORIZONS otherwise); outputs h18..h72; same masked normalized loss",
+    "typed_codes": [
+      "LONG_DESIGN_UNDECIDED",
+      "LONG_DESIGN_SEAL",
+      "LONG_DESIGN_EXISTS",
+      "SHORT_NOT_TERMINAL_VALID",
+      "SHORT_DESIGN_REQUIRED"
+    ]
+  },
+  "short_identities": {
+    "design_sha256": "541ce40ac1becceb16b14937e34e3452eee36aad8a370686dacf62860c86d381",
+    "effective_config_sha256": "cd78cc6ce9c03d2202d73cc7e5a0624f60f72a66f7abe498b5b027e5c148513f (changed from 56ba5324... by the added effective 'family' key; design sha unchanged)"
   }
 }
