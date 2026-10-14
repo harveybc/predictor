@@ -136,8 +136,10 @@ def test_same_seed_same_initial_weights_and_config_is_strict():
 def test_dmo10_save_load_identical_predictions_and_tamper_refusal(bundle, tmp_path):
     x = _x(rows=17, seed=11)
     doc = M.save_dmo(bundle, tmp_path / "m")
+    assert doc["weight_tensors"] and all(set(t) == {"shape", "dtype", "sha256"} for t in doc["weight_tensors"])
     loaded, document = M.load_dmo(tmp_path / "m")
     assert document["weights_sha256"] == doc["weights_sha256"]
+    assert document["load_path"] == "rebuild+load_weights"  # scoring path never deserializes the graph
     assert np.array_equal(M.predict_matrix(bundle.forecast_model, x),
                           M.predict_matrix(loaded.forecast_model, x))
     assert list(loaded.forecast_model.output_names) == ["h2", "h3", "h4", "h5", "h6", "h12"]
@@ -145,3 +147,30 @@ def test_dmo10_save_load_identical_predictions_and_tamper_refusal(bundle, tmp_pa
     archive.write_bytes(archive.read_bytes() + b"x")
     with pytest.raises(ValueError, match="archive"):
         M.load_dmo(tmp_path / "m")
+
+
+def test_dmo10_canonical_load_rebuilds_and_verifies_per_tensor_digests(bundle, tmp_path):
+    import json
+    M.save_dmo(bundle, tmp_path / "m")
+    # A tampered recorded tensor digest is a typed refusal.
+    doc_path = tmp_path / "m" / "MODEL.json"
+    doc = json.loads(doc_path.read_text())
+    doc["weight_tensors"][3]["sha256"] = "0" * 64
+    doc_path.write_text(json.dumps(doc, sort_keys=True, indent=1))
+    with pytest.raises(ValueError, match="WEIGHTS_DIGEST_MISMATCH"):
+        M.load_dmo(tmp_path / "m")
+    # A tampered weights file is refused before any tensor loads.
+    M.save_dmo(bundle, tmp_path / "m2")
+    weights = tmp_path / "m2" / "model.weights.h5"
+    weights.write_bytes(weights.read_bytes() + b"x")
+    with pytest.raises(ValueError, match="weights file"):
+        M.load_dmo(tmp_path / "m2")
+
+
+def test_dmo10_gpu_probe_logic_three_instances_agree_on_cpu(tmp_path):
+    from tools.i6dmo import gpu_probe_dmo10 as P
+    report = P.run(tmp_path / "probe")
+    assert report["device"] == "cpu" and report["divergent_pairs"] == []
+    assert sorted(report["pairs"]) == ["in_session_vs_full_load", "in_session_vs_rebuild",
+                                      "rebuild_vs_full_load"]
+    assert all(v["equal"] for v in report["pairs"].values())
