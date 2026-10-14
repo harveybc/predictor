@@ -167,5 +167,10 @@
     "activation": "ONLY when monitor_evaluation.determinism_flags is recorded, equals the running process flags, and declares TF_CUDNN_USE_AUTOTUNE=0; otherwise MONITOR_WITNESS_DIVERGENCE stays a hard typed refusal",
     "reporting": "replay_monitored returns the tolerated batches with their max relative delta; nothing is silently absorbed"
   },
-  "replay_entrypoint": "python -m tools.i6dmo.replay_monitor --design <design> --bundle <bundle> --unit <trained unit> [--json]: fresh flags-first interpreter; canonical load; recomputes the monitored value through the recorded procedure with witness comparison; exit 0 MATCH/TOLERATED (verdict JSON), 5 typed disposition; refuses records or processes with tf_imported_before_flags=true (DETERMINISM_INIT_ORDER_INVALID)"
+  "replay_entrypoint": "python -m tools.i6dmo.replay_monitor --design <design> --bundle <bundle> --unit <trained unit> [--json]: fresh flags-first interpreter; canonical load; recomputes the monitored value through the recorded procedure with witness comparison; exit 0 MATCH/TOLERATED (verdict JSON), 5 typed disposition; refuses records or processes with tf_imported_before_flags=true (DETERMINISM_INIT_ORDER_INVALID)",
+  "monitor_witness_v2_extensions": {
+    "weights_at_witness": "per-tensor digests of the evaluated instance, recorded in the witness and diffed by replay_monitor against MODEL.json weight_tensors (typed WEIGHTS_AT_WITNESS_MISMATCH names tensors)",
+    "batch0_predictions_hex": "per-row per-head float64 hex of batch 0 per split; replay diffs and reports first divergent rows + uniform/localized delta-pattern verdict inside MONITOR_WITNESS_DIVERGENCE",
+    "tensor_float_32": "disabled flags-first in enable_determinism and recorded in determinism_flags"
+  }
 }

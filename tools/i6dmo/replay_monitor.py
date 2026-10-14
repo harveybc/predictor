@@ -34,6 +34,16 @@ def replay_unit(design_path, bundle_dir, unit_dir):
     fit_rows, _ = T.trainable_rows(data["fit"])
     inner_rows, _ = T.trainable_rows(data["inner"])
     loaded, document = M.load_dmo(unit / "model")
+    recorded_weights = (record.get("witness") or {}).get("weights_at_witness")
+    if recorded_weights is not None and recorded_weights != document["weight_tensors"]:
+        bad = [i for i, (a, b) in enumerate(zip(recorded_weights, document["weight_tensors"]))
+               if a != b]
+        raise T.TrainDisposition(
+            "WEIGHTS_AT_WITNESS_MISMATCH",
+            f"tensors {bad} differ between the instance the fit-time witness evaluated and the "
+            "saved weights file: a post-evaluation weight mutation (optimizer slot/weight-decay/"
+            "save-path). A CPU pass alongside this mismatch would mean the mutation is GPU-only "
+            "(e.g., a GPU-resident slot or cast applied on save), which the digests now decide.")
     fm, im, monitored, tolerated = T.replay_monitored(
         loaded.forecast_model, T.transform(fit_rows, scales), T.transform(inner_rows, scales),
         record, ids=(fit_rows["row_id"], inner_rows["row_id"]))
@@ -45,6 +55,8 @@ def replay_unit(design_path, bundle_dir, unit_dir):
             "tf_imported_before_flags": M.INIT_ORDER["tf_imported_before_flags"],
             "determinism_flags": T.current_determinism_flags(),
             "weights_sha256": document["weights_sha256"], "load_path": document["load_path"],
+            "weights_at_witness_match": recorded_weights == document["weight_tensors"]
+                                        if recorded_weights is not None else None,
             "fit_counts": fm["counts"], "inner_counts": im["counts"]}
 
 

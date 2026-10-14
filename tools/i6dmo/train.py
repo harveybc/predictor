@@ -371,7 +371,12 @@ def evaluate_monitored(model, fit, inner, batch_size, ids=None):
             batches.append({"batch": b, "start": start, "rows": int(len(pb)),
                             "row_ids_sha256": _ids_sha(id_arrays[name][start:stop]),
                             "partial_sums": sums, "partial_counts": counts})
-        witness[name] = {"row_ids_sha256": _ids_sha(id_arrays[name]), "batches": batches}
+        witness[name] = {"row_ids_sha256": _ids_sha(id_arrays[name]), "batches": batches,
+                         # Row-level forward witness: batch-0 per-row per-head float64 hex, so a
+                         # replay can tell a weight effect (localized rows) from a different
+                         # matmul/conv execution mode (uniform small deltas on every row).
+                         "batch0_predictions_hex": [[float(v).hex() for v in row]
+                                                    for row in pred[:batch_size]]}
     monitored = 0.5 * (results["fit"]["loss"] + results["inner"]["loss"])
     return results["fit"], results["inner"], monitored, witness
 
@@ -463,6 +468,32 @@ def replay_monitored(model, fit, inner, record, batch_size=None, ids=None):
     return fm, im, monitored, tolerated
 
 
+def _row_forward_diff(stored_hex, fresh_hex):
+    """Batch-0 per-row diff with a delta-pattern verdict (uniform => execution mode)."""
+    divergent, deltas = [], []
+    for i, (ra, rb) in enumerate(zip(stored_hex, fresh_hex)):
+        if ra == rb:
+            continue
+        divergent.append(i)
+        for ha, hb in zip(ra, rb):
+            va, vb = float.fromhex(ha), float.fromhex(hb)
+            if va != vb:
+                deltas.append(abs(va - vb) / max(abs(va), abs(vb), 1e-300))
+    if not divergent:
+        return None
+    uniform = (len(divergent) == min(len(stored_hex), len(fresh_hex)) and deltas
+               and max(deltas) <= 10 * min(deltas))
+    return {"n_rows": len(stored_hex), "n_divergent_rows": len(divergent),
+            "first_divergent_rows": divergent[:5],
+            "max_relative_delta": max(deltas) if deltas else 0.0,
+            "min_relative_delta": min(deltas) if deltas else 0.0,
+            "uniform_delta_pattern": uniform,
+            "interpretation": ("UNIFORM small deltas on every row: a different matmul/conv "
+                               "execution mode (e.g., TF32 vs FP32), not weights" if uniform else
+                               "LOCALIZED row divergence: weight or data effect, not a uniform "
+                               "execution-mode rounding")}
+
+
 def _compare_witness(stored, fresh, tolerance_active=False):
     """Batch-by-batch comparison; returns the tolerated batches (empty when exact).
 
@@ -479,6 +510,9 @@ def _compare_witness(stored, fresh, tolerance_active=False):
                                f"recomputed={fresh['code_witness']}")
     for name in ("fit", "inner"):
         a, b = stored.get(name) or {}, fresh[name]
+        row_diff = None
+        if a.get("batch0_predictions_hex"):
+            row_diff = _row_forward_diff(a["batch0_predictions_hex"], b["batch0_predictions_hex"])
         if a.get("row_ids_sha256") != b["row_ids_sha256"]:
             raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE",
                                    f"{name} row-id sequence differs: recorded "
@@ -494,18 +528,38 @@ def _compare_witness(stored, fresh, tolerance_active=False):
                 if deltas and max(deltas) <= MONITOR_TOLERANCE["relative_per_partial_sum"]:
                     tolerated.append({"split": name, "batch": rb["batch"],
                                       "max_relative_delta": max(deltas),
+                                      "row_forward_diff": row_diff if rb["batch"] == 0 else None,
                                       "tolerance": MONITOR_TOLERANCE})
                     continue
-            raise TrainDisposition(
-                "MONITOR_WITNESS_DIVERGENCE",
-                f"{name} batch {rb['batch']} (start {rb['start']}, row_ids "
-                f"{rb['row_ids_sha256']}): recorded partial_sums={ra.get('partial_sums')} "
-                f"counts={ra.get('partial_counts')} vs recomputed "
-                f"partial_sums={rb['partial_sums']} counts={rb['partial_counts']}")
+            detail = (f"{name} batch {rb['batch']} (start {rb['start']}, row_ids "
+                      f"{rb['row_ids_sha256']}): recorded partial_sums={ra.get('partial_sums')} "
+                      f"counts={ra.get('partial_counts')} vs recomputed "
+                      f"partial_sums={rb['partial_sums']} counts={rb['partial_counts']}")
+            if rb["batch"] == 0 and row_diff:
+                detail += (f"; row-level forward witness: rows "
+                           f"{['row ' + str(i) for i in row_diff['first_divergent_rows']]} of "
+                           f"{row_diff['n_rows']} diverge ({row_diff['n_divergent_rows']} total), "
+                           f"relative deltas [{row_diff['min_relative_delta']:.3e}, "
+                           f"{row_diff['max_relative_delta']:.3e}], uniform_delta_pattern="
+                           f"{row_diff['uniform_delta_pattern']}: {row_diff['interpretation']}")
+            raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE", detail)
         if len(a.get("batches") or []) != len(b["batches"]):
             raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE",
                                    f"{name} batch count differs: {len(a.get('batches') or [])} "
                                    f"recorded vs {len(b['batches'])} recomputed")
+        if row_diff:  # hex differs even where sums agree/cancel: forward values are not identical
+            summary = (f"{name} batch 0 row-level forward witness: rows "
+                       f"{['row ' + str(i) for i in row_diff['first_divergent_rows']]} of "
+                       f"{row_diff['n_rows']} diverge ({row_diff['n_divergent_rows']} total), "
+                       f"relative deltas [{row_diff['min_relative_delta']:.3e}, "
+                       f"{row_diff['max_relative_delta']:.3e}], uniform_delta_pattern="
+                       f"{row_diff['uniform_delta_pattern']}: {row_diff['interpretation']}")
+            if tolerance_active and row_diff["max_relative_delta"] <=                     MONITOR_TOLERANCE["relative_per_partial_sum"]:
+                tolerated.append({"split": name, "batch": 0, "row_forward_diff": row_diff,
+                                  "max_relative_delta": row_diff["max_relative_delta"],
+                                  "tolerance": MONITOR_TOLERANCE})
+            else:
+                raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE", summary)
     return tolerated
 
 
@@ -621,6 +675,9 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None, ids=None):
         was_best = stopper.best_monitored
         stop = stopper.update(fm["loss"], im["loss"], model.get_weights())
         if stopper.best_monitored < was_best:
+            from tools.i6dmo.model import weight_tensor_digests
+            # Weights-at-witness: the exact tensors of the instance the witness evaluated.
+            epoch_witness["weights_at_witness"] = weight_tensor_digests(monitor_model)
             best_witness = epoch_witness
         row = dict(stopper.history[-1], updates=updates, weights_sha256=weights_hash(model),
                    fit=fm, inner=im, elapsed_s=time.monotonic() - started)

@@ -95,6 +95,10 @@ def enable_determinism():
         _os.environ["TF_XLA_FLAGS"] = (_os.environ.get("TF_XLA_FLAGS", "") + " --tf_xla_auto_jit=0").strip()
     tf.config.experimental.enable_op_determinism()
     tf.config.optimizer.set_jit(False)
+    # TF32 matmul/conv (Ampere+) rounds float32 mantissas per execution mode, not per weight;
+    # disable explicitly so trained and loading processes share one FP32 forward semantics.
+    tf.config.experimental.enable_tensor_float_32_execution(False)
+    DETERMINISM["tensor_float_32"] = bool(tf.config.experimental.tensor_float_32_execution_enabled())
     DETERMINISM["op_determinism"] = True
     DETERMINISM["env"] = {k: _os.environ.get(k) for k in _DETERMINISM_ENV}
     return json.loads(_canonical(DETERMINISM))
@@ -104,6 +108,7 @@ def determinism_flags():
     """The canonical flag dict recorded in monitor records and enforced at replay."""
     enable_determinism()
     return {"op_determinism": True, "jit_autoclustering": False,
+            "tensor_float_32": DETERMINISM.get("tensor_float_32", False),
             "tf_imported_before_flags": INIT_ORDER["tf_imported_before_flags"],
             "TF_DETERMINISTIC_OPS": DETERMINISM["env"]["TF_DETERMINISTIC_OPS"],
             "TF_CUDNN_DETERMINISTIC": DETERMINISM["env"]["TF_CUDNN_DETERMINISTIC"],

@@ -309,3 +309,29 @@ ran with ungoverned kernel selection. Fixes:
 
 CPU POST: 23 passed in train (PRE: 2 failed) plus the other four files. Lane 4
 runs the next bounded round with governed kernel selection on both sides.
+
+## Round 12: weights-at-witness, row-level forward witness, TF32 off
+
+Three governed rounds with identical sums exclude kernel autotune and init
+order. Two recordings now end the hunt in one GPU round:
+
+1. WEIGHTS-AT-WITNESS: the epoch-end witness records the per-tensor weight
+   digests of the exact instance it evaluated; the replay diffs them against
+   the saved-file digests and a mismatch is typed
+   `WEIGHTS_AT_WITNESS_MISMATCH` naming the tensors — proof of a
+   post-evaluation weight mutation (optimizer slot/weight-decay/save-path).
+   A CPU pass alongside such a mismatch would mean the mutation is GPU-only
+   (e.g., a GPU-resident slot or a cast applied on save); the digests decide.
+2. ROW-LEVEL FORWARD WITNESS: batch-0 per-row per-head predictions recorded as
+   float64 hex at fit-monitor time; the replay records its own and diffs. A
+   hex mismatch is a divergence even where sums agree; the typed message names
+   the first divergent rows and the delta pattern — UNIFORM ~equal relative
+   deltas on every row indict a different matmul/conv execution mode (e.g.,
+   TF32 vs FP32), localized rows indict weights/data.
+3. TF32 disabled explicitly in `enable_determinism()` (flags-first) and
+   `tensor_float_32` recorded in the determinism flags on both sides — the
+   prime execution-mode suspect on the 5090, applied now as the fix candidate.
+
+Tolerance unchanged at the declared 1e-5 (any revision would be a new
+transparent declaration). CPU POST: 25 passed in train (PRE: 2 failed) plus
+the other four files. Lane 4's next bounded round names the mechanism.
