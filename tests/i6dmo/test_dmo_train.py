@@ -178,10 +178,25 @@ def test_dmo10_stopper_hits_ceiling_and_first_tie_wins():
 def test_dmo10_train_unit_end_to_end_restore_and_reload(tmp_path):
     bundle = write_bundle(tmp_path / "bundle")
     out = tmp_path / "unit"
-    receipt = T.train_unit(DESIGN, bundle, out, device="cpu",
-                           training_overrides={"max_epochs": 25, "patience": 4})
+    # REAL production entrypoint: a fresh interpreter whose environment carries the
+    # determinism flags before TensorFlow can initialize (faithful to unit_runner).
+    env = {**ENV, "I6DMO_TEST_TRAINING_OVERRIDES": json.dumps({"max_epochs": 25, "patience": 4})}
+    run = subprocess.run([sys.executable, "-m", "tools.i6dmo.train", "--design", str(DESIGN),
+                          "--bundle", str(bundle), "--out", str(out), "--device", "cpu", "--json"],
+                         capture_output=True, text=True, cwd=REPO, env=env, check=False)
+    assert run.returncode == 0, run.stdout[-1500:] + run.stderr[-1500:]
+    receipt = json.loads((out / "RECEIPT.json").read_text())
     assert receipt["status"] == "COMPLETED", receipt
+    assert receipt["determinism"]["init_order"]["tf_imported_before_flags"] is False
     assert receipt["scientific"] is False and receipt["overrides"] == {"max_epochs": 25, "patience": 4}
+    # REAL replay entrypoint, also a fresh flags-first interpreter; bitwise on CPU.
+    replay = subprocess.run([sys.executable, "-m", "tools.i6dmo.replay_monitor", "--design", str(DESIGN),
+                             "--bundle", str(bundle), "--unit", str(out), "--json"],
+                            capture_output=True, text=True, cwd=REPO, env=ENV, check=False)
+    assert replay.returncode == 0, replay.stdout[-1500:] + replay.stderr[-1500:]
+    verdict = json.loads(replay.stdout)
+    assert verdict["status"] == "MATCH" and verdict["bitwise"] is True
+    assert verdict["tf_imported_before_flags"] is False
     training = json.loads((out / "TRAINING.json").read_text())
     hist = training["history"]
     for row in hist:
@@ -415,3 +430,23 @@ def test_predeclared_tolerance_applies_only_with_static_flags_and_small_deltas(t
     del unflagged["determinism_flags"]  # tolerance never activates without confirmed static flags
     with pytest.raises(T.TrainDisposition, match="MONITOR_WITNESS_DIVERGENCE"):
         T.replay_monitored(bundle.forecast_model, fit, inner, unflagged)
+
+
+def test_init_order_witness_recorded_and_preimported_record_refused():
+    """A record produced where TF initialized before the flags never scores."""
+    import sys as _sys
+    from tools.i6dmo import model as M
+    assert "tensorflow" in _sys.modules  # pytest process has TF up...
+    assert M.INIT_ORDER["tf_imported_before_flags"] is False  # ...but model.py got there first
+    assert M.DETERMINISM["init_order"] == M.INIT_ORDER
+    assert T.current_determinism_flags()["tf_imported_before_flags"] is False
+    bundle = M.build_dmo(M.model_config(["a", "b"]))
+    rng = np.random.default_rng(9)
+    x = rng.normal(size=(12, 13, 2)).astype("float32")
+    y, mask = rng.normal(size=(12, 6)), np.ones((12, 6), bool)
+    fit, inner = (x, y, mask), (x[:4], y[:4], mask[:4])
+    record = {"procedure": "i6dmo.monitor_eval.v2", "batch_size": 12, "graph": "inference",
+              "partition": "sequential_row_id_fixed", "monitor_instance": "canonical_loader_rebuild",
+              "determinism_flags": dict(T.current_determinism_flags(), tf_imported_before_flags=True)}
+    with pytest.raises(T.TrainDisposition, match="DETERMINISM_INIT_ORDER_INVALID"):
+        T.replay_monitored(bundle.forecast_model, fit, inner, record)
