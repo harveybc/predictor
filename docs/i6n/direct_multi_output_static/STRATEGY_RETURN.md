@@ -66,3 +66,22 @@ python -m tools.i6dmo.strategy_adapter map-plugin --json
 - The ops pair `run-unit` entry is not implemented here. Integration must wire `pair_eligibility` and `run_backtest` once both families have terminals.
 - Every host that runs a pair unit needs the pinned heuristic-strategy commit. Otherwise the load fails with the typed error `STRATEGY_PIN_UNRESOLVED`.
 - Sampled endpoints do not reveal continuous first passage.
+
+## Addendum: pair-unit hook for the ops runner
+
+The ops branch at ae70a6a9 is merged so the real `unit_runner`, `campaign.gate_problem` and
+`worker._validate_child` are under test. `run_unit(spec, out_dir, progress_path)` is the
+`pair` hook. While the STRATEGY_OWNER_RULINGS gate is not PASS, it returns a typed FAILED
+terminal (`STRATEGY_OWNER_RULINGS_OPEN:<problem>`, `pair_status BLOCKED_OWNER_RULINGS`) and
+computes nothing. When the gate passes, it runs with the owner-ruled values, never with the
+declared defaults. It rejects a ruling the code does not implement. `final_test` is refused
+(`FINAL_TEST_HOOK_NOT_PREPARED`).
+
+PRE: `tests/i6dmo/test_strategy_pair_unit.py` gave 13 failed (no `run_unit`). POST: 38 passed.
+After a one-line typed-code rendering fix, the full `tests/i6dmo` run gave 76 passed (ops,
+adapter and pair).
+
+Open contract points for integration: the bars and calendar pins
+(`data_pins.strategy_bars`/`strategy_calendar`) and the report-terminal artifact
+`validation_predictions` must be produced by the data and reporting owners. The worker should
+check those pins before it claims the unit, because the hook's FAILED terminal is final.

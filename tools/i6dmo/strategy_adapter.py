@@ -831,6 +831,304 @@ def run_backtest(*, bars: Sequence[Bar], weeks: Sequence[c1.OperationalWeek],
 
 
 # --------------------------------------------------------------------------
+# Ops hook: pair unit (tools.i6dmo.unit_runner HOOKS["pair"])
+
+OWNER_RULINGS = ("barrier_equality", "costs_and_pip_value", "fill_model", "sharpe_convention",
+                 "min_long_heads")
+COST_KEYS = ("pip_cost", "spread_price", "slippage_price", "commission_per_lot_round_trip",
+             "swap_per_lot_per_day")
+FAMILY_REPORT_UNITS = {"short": "short.report", "long": "long.report"}
+PREDICTION_ARTIFACT_NAMES = ("validation_predictions", "predictions/validation.npz")
+
+
+class _Refusal(Exception):
+    def __init__(self, status, disposition, gates=None):
+        super().__init__(disposition)
+        self.status, self.disposition, self.gates = status, disposition, gates or {}
+
+
+def _canonical_sha(value) -> str:
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"),
+                                     allow_nan=False).encode()).hexdigest()
+
+
+def _file_sha(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for block in iter(lambda: fh.read(1 << 20), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def _atomic_json(path: Path, value) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(f".{path.name}.tmp")
+    tmp.write_text(json.dumps(value, sort_keys=True, allow_nan=False))
+    os.replace(tmp, path)
+
+
+def _number(value, *, positive=False) -> bool:
+    return (not isinstance(value, bool) and isinstance(value, (int, float)) and math.isfinite(value)
+            and (value > 0 if positive else value >= 0))
+
+
+def _finite(value) -> bool:
+    return not isinstance(value, bool) and isinstance(value, (int, float)) and math.isfinite(value)
+
+
+def _validated_rulings(rulings, policy) -> Dict[str, Any]:
+    """Owner rulings -> executable parameters; only implemented options are accepted."""
+    if not isinstance(rulings, Mapping):
+        raise _Refusal("FAILED", "OWNER_RULINGS_INCOMPLETE:rulings")
+    for key in OWNER_RULINGS:
+        if key not in rulings:
+            raise _Refusal("FAILED", f"OWNER_RULINGS_INCOMPLETE:{key}")
+    if rulings["barrier_equality"] != policy.BARRIER_EQUALITY_RULE:
+        raise _Refusal("FAILED", "RULING_NOT_IMPLEMENTED:barrier_equality")
+    costs = rulings["costs_and_pip_value"]
+    if not isinstance(costs, Mapping) or set(costs) != set(COST_KEYS) or \
+            not all(_number(costs[k], positive=(k == "pip_cost")) for k in COST_KEYS):
+        raise _Refusal("FAILED", "RULING_INVALID:costs_and_pip_value")
+    fill = rulings["fill_model"]
+    if not isinstance(fill, Mapping) or set(fill) != {"fill", "intrabar_both_barriers",
+                                                      "force_close_lead_hours"}:
+        raise _Refusal("FAILED", "RULING_INVALID:fill_model")
+    if fill["fill"] != EXECUTION_RULES["fill"] or \
+            fill["intrabar_both_barriers"] != EXECUTION_RULES["intrabar_both_barriers"]:
+        raise _Refusal("FAILED", "RULING_NOT_IMPLEMENTED:fill_model")
+    if type(fill["force_close_lead_hours"]) is not int or fill["force_close_lead_hours"] < 1:
+        raise _Refusal("FAILED", "RULING_INVALID:fill_model")
+    sharpe = rulings["sharpe_convention"]
+    if not isinstance(sharpe, Mapping) or set(sharpe) != {"return_clock", "periods_per_year"}:
+        raise _Refusal("FAILED", "RULING_INVALID:sharpe_convention")
+    if sharpe["return_clock"] != "UTC_DAY_LAST_MARK_TO_MARKET":
+        raise _Refusal("FAILED", "RULING_NOT_IMPLEMENTED:sharpe_convention")
+    if type(sharpe["periods_per_year"]) is not int or sharpe["periods_per_year"] < 1:
+        raise _Refusal("FAILED", "RULING_INVALID:sharpe_convention")
+    min_long = rulings["min_long_heads"]
+    min_short = rulings.get("min_short_heads", 1)
+    if type(min_long) is not int or not 1 <= min_long <= 6 or \
+            type(min_short) is not int or not 0 <= min_short <= 6:
+        raise _Refusal("FAILED", "RULING_INVALID:min_long_heads")
+    entry = dict(DEFAULT_ENTRY_PARAMETERS, pip_cost=float(costs["pip_cost"]),
+                 min_valid_long_heads=min_long)
+    execution = ExecutionParameters(
+        spread_price=float(costs["spread_price"]), slippage_price=float(costs["slippage_price"]),
+        commission_per_lot_round_trip=float(costs["commission_per_lot_round_trip"]),
+        swap_per_lot_per_day=float(costs["swap_per_lot_per_day"]),
+        force_close_lead_hours=fill["force_close_lead_hours"],
+        sharpe_periods_per_year=sharpe["periods_per_year"])
+    return dict(entry=entry, execution=execution, min_long=min_long, min_short=min_short,
+                costs_sha256=_canonical_sha(dict(costs)))
+
+
+def _campaign_root(spec) -> Path:
+    roots = set()
+    for value in (spec.get("upstream") or {}).values():
+        if isinstance(value, Mapping) and value.get("path"):
+            roots.add(Path(value["path"]).parents[2])  # <root>/terminals/<identity>/TERMINAL.json
+    if len(roots) != 1:
+        raise _Refusal("FAILED", "CAMPAIGN_ROOT_UNRESOLVED")
+    root = roots.pop()
+    try:
+        plan = json.loads((root / "PLAN.json").read_text())
+    except (OSError, ValueError):
+        raise _Refusal("FAILED", "CAMPAIGN_ROOT_UNRESOLVED")
+    if plan.get("campaign_id") != spec.get("campaign_id"):
+        raise _Refusal("FAILED", "CAMPAIGN_ROOT_UNRESOLVED")
+    return root
+
+
+def _owner_rulings(root: Path):
+    from tools.i6dmo import campaign  # ops lane: same digest/binding rules as the worker guard
+    problem = campaign.gate_problem(root, "STRATEGY_OWNER_RULINGS")
+    if problem:
+        raise _Refusal("FAILED", f"STRATEGY_OWNER_RULINGS_OPEN:{problem}",
+                       {"pair_status": "BLOCKED_OWNER_RULINGS"})
+    doc = json.loads((root / "gates" / "STRATEGY_OWNER_RULINGS.json").read_text())
+    return (doc.get("evidence") or {}).get("rulings"), doc["receipt_sha256"]
+
+
+def _family_upstream(spec, family):
+    unit_id = FAMILY_REPORT_UNITS[family]
+    up = (spec.get("upstream") or {}).get(unit_id)
+    if not isinstance(up, Mapping) or not up.get("path"):
+        raise _Refusal("FAILED", f"UPSTREAM_MISSING:{unit_id}")
+    path = Path(up["path"])
+    if not path.exists() or _file_sha(path) != up.get("sha256"):
+        raise _Refusal("FAILED", f"UPSTREAM_DIGEST_MISMATCH:{unit_id}")
+    stored = json.loads(path.read_text())
+    child = stored.get("terminal") or {}
+    if child.get("status") != "COMPLETE":
+        raise _Refusal("FAILED", f"UPSTREAM_NOT_COMPLETE:{unit_id}")
+    return unit_id, path.parent, child
+
+
+def _family_predictions(unit_id, folder, child, family, window):
+    import numpy as np
+    arts = child.get("artifacts") or {}
+    name = next((n for n in PREDICTION_ARTIFACT_NAMES if n in arts), None)
+    if name is None:
+        raise _Refusal("FAILED", f"UPSTREAM_ARTIFACT_MISSING:{unit_id}:validation_predictions")
+    path = folder / "out" / arts[name]["path"]
+    if not path.exists() or _file_sha(path) != arts[name]["sha256"]:
+        raise _Refusal("FAILED", f"UPSTREAM_ARTIFACT_DIGEST:{unit_id}:{name}")
+    with np.load(path, allow_pickle=False) as z:
+        preds = family_predictions_from_arrays(
+            row_id=z["row_id"].tolist(), horizons_hours=z["horizons_hours"].tolist(),
+            predicted_price=z["predicted_price"].tolist(), family=family)
+    for t in preds:
+        if t >= TEST_START:
+            raise _Refusal("FAILED", "TEST_FORBIDDEN")
+        if not window[0] <= t < window[1]:
+            raise _Refusal("FAILED", f"PREDICTION_OUTSIDE_VALIDATION:{unit_id}")
+    return preds
+
+
+def _pinned_input(spec, key):
+    pin = ((spec.get("effective_config") or {}).get("data_pins") or {}).get(key)
+    if not isinstance(pin, Mapping) or not pin.get("relpath") or not spec.get("data_root"):
+        raise _Refusal("FAILED", f"STRATEGY_INPUT_PIN_MISSING:{key}")
+    path = Path(spec["data_root"]) / pin["relpath"]
+    if not path.exists() or _file_sha(path) != pin.get("sha256"):
+        raise _Refusal("FAILED", f"STRATEGY_INPUT_DIGEST_MISMATCH:{key}")
+    return path
+
+
+def _bars(path: Path, window) -> List[Bar]:
+    import numpy as np
+    with np.load(path, allow_pickle=False) as z:
+        rows = list(zip(z["close_time"].tolist(), z["open"].tolist(), z["high"].tolist(),
+                        z["low"].tolist(), z["close"].tolist()))
+    bars = []
+    for ts, o, h, lo, c in rows:
+        t = datetime.fromtimestamp(int(ts), tz=UTC)
+        if t >= TEST_START:
+            raise _Refusal("FAILED", "TEST_FORBIDDEN")
+        if window[0] <= t < window[1]:
+            bars.append(Bar(close_time=t, open=o, high=h, low=lo, close=c))
+    if not bars:
+        raise _Refusal("FAILED", "NO_VALIDATION_BARS")
+    return bars
+
+
+def _progress(path, done: int, phase: str, total: int = 4) -> None:
+    import time
+    _atomic_json(Path(path), dict(done=done, total=total, unit="stage", phase=phase,
+                                  updated_at=time.time()))
+
+
+def _business_report(spec, backtest, pair_status):
+    m = backtest["metrics"]
+    rows = [("Net_PnL", m["net_pnl"], "USD"), ("Return", m["return"], "fraction"),
+            ("Final_Equity", m["final_equity"], "USD"), ("Closed_Trades", m["closed_trades"], "count"),
+            ("Open_Trades", m["open_trades"], "count"), ("Max_Drawdown", m["max_drawdown"], "USD"),
+            ("Max_Drawdown_Fraction", m["max_drawdown_fraction"], "fraction"),
+            ("Sharpe", m["sharpe"], "ratio"), ("Sortino", m["sortino"], "ratio"),
+            ("Profit_Factor", m["profit_factor"], "ratio"), ("Exposure", m["exposure"], "fraction"),
+            ("Turnover", m["turnover"], "ratio"),
+            *((f"Cost_{k.capitalize()}", v, "USD") for k, v in m["costs"].items()),
+            ("Execution_Failures", sum(backtest["failures"].values()), "count")]
+    metrics = [dict(metric=n, value=v, split="validation", horizon=None, unit=u)
+               for n, v, u in rows if _finite(v)]
+    undefined = [k for k in ("sharpe", "sortino", "profit_factor") if m[k] is None]
+    return dict(experiment_key=f"i6dmo:{spec['campaign_id']}:{spec['unit_id']}:business",
+                experiment_set_key=f"i6dmo:{spec['campaign_id']}", actor="predictor",
+                lake="LOCAL_RETAINED", lineage="UNVERIFIED", config_sha256=spec["identity_sha256"],
+                code_commit=(spec.get("effective_config") or {}).get("code_commit"),
+                project="predictor", phase="I6DMO",
+                tags={"unit": spec["unit_id"], "family": "pair", "kind": spec["kind"],
+                      "test_read": "false", "pair_status": pair_status,
+                      "strategy_policy_sha256": STRATEGY_PIN["sha256"],
+                      "undefined_metrics": ",".join(undefined)},
+                metrics=metrics)
+
+
+def run_unit(spec: Mapping[str, Any], out_dir, progress_path) -> Dict[str, Any]:
+    """Ops hook for the PAIR_VALIDATION unit; returns an ``i6dmo.terminal.v1`` dict.
+
+    Refuses (typed FAILED terminal, nothing computed) while the owner-rulings gate is
+    not PASS, for any TEST access and for the not-yet-prepared final_test kind.
+    With a PASS gate it uses the OWNER-RULED parameters (never the declared
+    defaults), gates the pair on per-head validation eligibility, and runs the
+    business backtest on validation predictions only.
+    """
+    import time
+    started, cpu0 = time.time(), time.process_time()
+    out_dir = Path(out_dir)
+    artifacts: Dict[str, Dict[str, str]] = {}
+    gates: Dict[str, Any] = {}
+    reports: List[Dict[str, Any]] = []
+
+    def terminal(status, disposition, extra_gates=None):
+        return dict(schema="i6dmo.terminal.v1", unit_id=spec.get("unit_id"),
+                    identity_sha256=spec.get("identity_sha256"), status=status,
+                    disposition=disposition, artifacts=artifacts, eligibility={},
+                    gates={**gates, **(extra_gates or {})}, reports=reports,
+                    costs=dict(wall_seconds=time.time() - started, fit_seconds=None,
+                               score_seconds=time.time() - started,
+                               cpu_seconds=time.process_time() - cpu0,
+                               cgroup_peak_bytes=None, gpu_uuid=None))
+
+    def put(name, rel, value):
+        _atomic_json(out_dir / rel, value)
+        artifacts[name] = {"path": rel, "sha256": _file_sha(out_dir / rel)}
+
+    try:
+        if spec.get("kind") == "final_test":
+            raise _Refusal("FAILED", "FINAL_TEST_HOOK_NOT_PREPARED")
+        if spec.get("kind") != "pair":
+            raise _Refusal("FAILED", "KIND_INVALID")
+        if spec.get("test_open"):
+            raise _Refusal("FAILED", "TEST_OPEN_REFUSED")
+        _progress(progress_path, 0, "score")
+        root = _campaign_root(spec)
+        rulings, rulings_receipt = _owner_rulings(root)
+        policy = load_pinned_policy()
+        ruled = _validated_rulings(rulings, policy)
+        gates.update(strategy_version=f"{STRATEGY_PIN['sha256']}:{policy.RULES_VERSION}",
+                     costs_sha256=ruled["costs_sha256"],
+                     owner_rulings_receipt_sha256=rulings_receipt)
+        ups = {f: _family_upstream(spec, f) for f in ("short", "long")}
+        eligibility = pair_eligibility(ups["short"][2].get("eligibility") or {},
+                                       ups["long"][2].get("eligibility") or {},
+                                       min_valid_long_heads=ruled["min_long"],
+                                       min_valid_short_heads=ruled["min_short"])
+        put("eligibility", "pair/ELIGIBILITY.json", eligibility)
+        _progress(progress_path, 1, "score")
+        if eligibility["status"] != "ELIGIBLE":
+            raise _Refusal("PAIR_NOT_ELIGIBLE", ";".join(eligibility["missing"]),
+                           {"pair_status": "PAIR_NOT_ELIGIBLE"})
+        val = ((spec.get("effective_config") or {}).get("design") or {}).get("splits", {}).get("validation")
+        if not isinstance(val, Mapping):
+            raise _Refusal("FAILED", "VALIDATION_WINDOW_MISSING")
+        window = (parse_time(val["start"]), parse_time(val["end"]))
+        if window[1] > TEST_START:
+            raise _Refusal("FAILED", "TEST_FORBIDDEN")
+        preds = {f: _family_predictions(*ups[f], f, window) for f in ("short", "long")}
+        bars = _bars(_pinned_input(spec, "strategy_bars"), window)
+        _, weeks = c1.load_calendar(json.loads(_pinned_input(spec, "strategy_calendar").read_text()))
+        _progress(progress_path, 2, "score")
+        result = run_backtest(bars=bars, weeks=weeks, short_predictions=preds["short"],
+                              long_predictions=preds["long"], policy=policy,
+                              entry_params=ruled["entry"], execution=ruled["execution"],
+                              validation_eligible=eligibility["eligible"])
+        result["eligibility"] = eligibility
+        result["owner_rulings"] = dict(rulings)
+        pair_status = "PASS" if not result["failures"] else "EXECUTION_FAILURES"
+        put("backtest", "pair/BACKTEST.json", result)
+        _progress(progress_path, 3, "publish")
+        reports.append(_business_report(spec, result, pair_status))
+        _progress(progress_path, 4, "publish")
+        return terminal("COMPLETE", pair_status, {"pair_status": pair_status})
+    except _Refusal as refusal:
+        return terminal(refusal.status, refusal.disposition, refusal.gates)
+    except (StrategyAdapterError, c1.EligibilityError) as exc:
+        code = getattr(exc, "code", "ERROR")
+        return terminal("FAILED", str(getattr(code, "value", code)))
+
+
+# --------------------------------------------------------------------------
 # CLI
 
 
