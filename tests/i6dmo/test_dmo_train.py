@@ -197,14 +197,30 @@ def test_dmo10_train_unit_end_to_end_restore_and_reload(tmp_path):
     scales = json.loads((out / "SCALES.json").read_text())
     fit_x, fit_y, fit_m = T.transform(T.trainable_rows(data["fit"])[0], scales)
     in_x, in_y, in_m = T.transform(T.trainable_rows(data["inner"])[0], scales)
+    print(f"DMO10 provenance: out={out} started={receipt['started_at']} "
+          f"finished={receipt['finished_at']} updates={training['updates']} "
+          f"epochs={training['epochs_completed']}")
     record = training["monitor_evaluation"]
     assert record["procedure"] == "i6dmo.monitor_eval.v1" and record["batch_size"] == 256
     assert record["graph"] == "inference" and record["self_check"] == "PASS"
     assert record["partition"] == "sequential_row_id_fixed"  # the shuffle never reaches monitoring
     assert record["best_epoch"] == training["best_epoch"]
     assert record["monitored"] == hist[best]["monitored"]  # the value early stopping read
+    witness = record["witness"]
+    assert witness["ids"] == "row_id" and witness["code_witness"]
+    assert len(witness["fit"]["batches"]) == -(-len(fit_x) // record["batch_size"])
+    ids = (T.trainable_rows(data["fit"])[0]["row_id"], T.trainable_rows(data["inner"])[0]["row_id"])
     fm_r, im_r, monitored = T.replay_monitored(loaded.forecast_model, (fit_x, fit_y, fit_m),
-                                               (in_x, in_y, in_m), record)
+                                               (in_x, in_y, in_m), record, ids=ids)
+    with pytest.raises(T.TrainDisposition, match="MONITOR_PATH_MISMATCH"):  # witness needs the ids
+        T.replay_monitored(loaded.forecast_model, (fit_x, fit_y, fit_m), (in_x, in_y, in_m), record)
+    import copy as _copy
+    corrupted = _copy.deepcopy(record)
+    corrupted["witness"]["fit"]["batches"][0]["partial_sums"][2] += 1e-9
+    with pytest.raises(T.TrainDisposition, match="MONITOR_WITNESS_DIVERGENCE") as err:
+        T.replay_monitored(loaded.forecast_model, (fit_x, fit_y, fit_m), (in_x, in_y, in_m),
+                           corrupted, ids=ids)
+    assert "batch 0" in str(err.value) and "row_ids" in str(err.value)
     assert monitored == hist[best]["monitored"]  # bitwise: identical evaluation procedure
     assert fm_r["sums"] == record["fit"]["sums"] and fm_r["counts"] == record["fit"]["counts"]
     assert im_r["sums"] == record["inner"]["sums"] and im_r["counts"] == record["inner"]["counts"]
@@ -286,7 +302,8 @@ def test_monitor_evaluation_is_one_shared_procedure_and_path_mismatch_is_refused
     record = {"procedure": "i6dmo.monitor_eval.v1", "batch_size": 64,
               "graph": "inference", "partition": "sequential_row_id_fixed"}
     fm, im, monitored = T.replay_monitored(bundle.forecast_model, fit, inner, record)
-    fm2, im2, monitored2 = T.evaluate_monitored(bundle.forecast_model, fit, inner, 64)
+    fm2, im2, monitored2, witness = T.evaluate_monitored(bundle.forecast_model, fit, inner, 64)
+    assert witness["code_witness"] and witness["fit"]["batches"][0]["partial_sums"]
     assert monitored == monitored2 and fm["sums"] == fm2["sums"]  # same function, bitwise
     with pytest.raises(T.TrainDisposition, match="MONITOR_PATH_MISMATCH"):
         T.replay_monitored(bundle.forecast_model, fit, inner, record, batch_size=130)
@@ -315,3 +332,26 @@ def test_training_graph_evaluated_monitor_is_refused_and_self_check_is_typed():
     T.monitor_self_check(bundle.forecast_model, fit, inner, good, monitored)  # bitwise: passes
     with pytest.raises(T.TrainDisposition, match="MONITOR_SELF_CHECK_FAILED"):
         T.monitor_self_check(bundle.forecast_model, fit, inner, good, monitored + 1e-12)
+
+
+def test_self_check_is_not_trivial_a_corrupted_history_value_fails(tmp_path, monkeypatch):
+    """The self-check compares two SEPARATE computations: corrupting what the stopper
+    recorded (the hist value) must make the recording-time recompute fail typed."""
+    from tools.i6dmo import model as M
+
+    class Corrupting(T.MeanMonitorStopper):
+        def update(self, fit_loss, inner_loss, weights):
+            decision = super().update(fit_loss, inner_loss, weights)
+            self.history[-1]["monitored"] = self.history[-1]["monitored"] + 1e-9  # corrupt hist
+            return decision
+
+    monkeypatch.setattr(T, "MeanMonitorStopper", Corrupting)
+    bundle = M.build_dmo(M.model_config(["a", "b"]))
+    rng = np.random.default_rng(3)
+    x = rng.normal(size=(40, 13, 2)).astype("float32")
+    y = rng.normal(size=(40, 6))
+    mask = np.ones((40, 6), bool)
+    training = dict(T.effective_from_design(DESIGN)["training"], max_epochs=2)
+    with pytest.raises(T.TrainDisposition, match="MONITOR_SELF_CHECK_FAILED"):
+        T.fit_dmo(bundle, (x, y, mask), (x[:8], y[:8], mask[:8]), training, 1,
+                  ids=(np.arange(40, dtype=np.int64), np.arange(8, dtype=np.int64)))
