@@ -1122,7 +1122,7 @@ def _pinned_input(spec, key):
     return path
 
 
-def _bars(path: Path, window) -> List[Bar]:
+def _bars(path: Path, window, *, allow_test: bool = False) -> List[Bar]:
     import numpy as np
     with np.load(path, allow_pickle=False) as z:
         rows = list(zip(z["close_time"].tolist(), z["open"].tolist(), z["high"].tolist(),
@@ -1130,7 +1130,7 @@ def _bars(path: Path, window) -> List[Bar]:
     bars = []
     for ts, o, h, lo, c in rows:
         t = datetime.fromtimestamp(int(ts), tz=UTC)
-        if t >= TEST_START:
+        if t >= TEST_START and not allow_test:
             raise _Refusal("FAILED", "TEST_FORBIDDEN")
         if window[0] <= t < window[1]:
             bars.append(Bar(close_time=t, open=o, high=h, low=lo, close=c))
@@ -1256,6 +1256,97 @@ def run_unit(spec: Mapping[str, Any], out_dir, progress_path) -> Dict[str, Any]:
     except (StrategyAdapterError, c1.EligibilityError) as exc:
         code = getattr(exc, "code", "ERROR")
         return terminal("FAILED", str(getattr(code, "value", code)))
+
+
+# --------------------------------------------------------------------------
+# Final TEST backtest export (consumed by tools.i6dmo.final, lane 2)
+
+FINAL_PREDICTIONS_SCHEMA = "i6dmo.final_test_predictions.v1"
+FINAL_IDENTITY_KEYS = ("weights_sha256", "design_sha256", "readiness_sha256",
+                       "predictions_sha256")
+
+
+def _final_family_arrays(out_dir: Path, family: str, result: Mapping[str, Any], window):
+    import numpy as np
+    for key in FINAL_IDENTITY_KEYS:
+        if not isinstance(result.get(key), str) or not result[key]:
+            raise _err("IDENTITY_UNBOUND", f"{family} predictions carry no {key}")
+    if result.get("schema") != FINAL_PREDICTIONS_SCHEMA or result.get("trained") is not False:
+        raise _err("IDENTITY_UNBOUND", f"{family} predictions are not a frozen final receipt")
+    path = Path(out_dir) / f"predictions_{family}" / "test.npz"
+    if not path.exists() or _file_sha(path) != result["predictions_sha256"]:
+        raise _err("PREDICTIONS_DIGEST_MISMATCH", f"{family}: {path.name}")
+    with np.load(path, allow_pickle=False) as z:
+        preds = family_predictions_from_arrays(
+            row_id=z["row_id"].tolist(), horizons_hours=z["horizons_hours"].tolist(),
+            predicted_price=z["predicted_price"].tolist(), family=family)
+    for t in preds:
+        if not window[0] <= t < window[1]:
+            raise _err("PREDICTION_OUTSIDE_TEST_WINDOW", f"{family}: {c1.iso(t)}")
+    return preds
+
+
+def run_final_backtest(spec: Mapping[str, Any], predictions: Mapping[str, Any],
+                       execution_params: Mapping[str, Any], out_dir) -> Dict[str, Any]:
+    """Frozen-pair business backtest on the TEST window (final.pair_test delegation).
+
+    Same semantics as :func:`run_backtest`, but on the frozen final models'
+    TEST predictions, consuming ONLY the sealed execution-policy parameters
+    passed in (``execution_from_policy`` output; nothing is re-derived here).
+    The receipt binds the final weights/design/readiness/prediction digests of
+    both families. Typed refusals raise :class:`StrategyAdapterError`; no fit,
+    no scale refitting and no identity substitution happen on this path.
+    """
+    out_dir = Path(out_dir)
+    if spec.get("kind") != "final_test":
+        raise _err("KIND_INVALID", f"kind {spec.get('kind')!r}; only final.pair_test delegates here")
+    if spec.get("test_open") is not True:
+        raise _err("TEST_NOT_OPEN", "the final TEST unit spec must carry test_open true")
+    if not isinstance(execution_params, Mapping) or \
+            not isinstance(execution_params.get("execution"), ExecutionParameters) or \
+            not isinstance(execution_params.get("entry"), Mapping) or \
+            not isinstance(execution_params.get("costs_sha256"), str):
+        raise _err("EXECUTION_PARAMS_INVALID",
+                   "pass execution_from_policy(load_execution_policy(root)) output unchanged")
+    test = ((spec.get("effective_config") or {}).get("design") or {}).get("splits", {}).get("test")
+    if not isinstance(test, Mapping):
+        raise _err("TEST_WINDOW_MISSING", "effective_config.design.splits.test is required")
+    window = (parse_time(test["start"]), parse_time(test["end"]))
+    for f in ("short", "long"):
+        if not isinstance(predictions.get(f), Mapping):
+            raise _err("IDENTITY_UNBOUND", f"{f} predictions receipt is missing")
+        for key in FINAL_IDENTITY_KEYS:
+            if not isinstance(predictions[f].get(key), str) or not predictions[f][key]:
+                raise _err("IDENTITY_UNBOUND", f"{f} predictions carry no {key}")
+    if predictions["short"]["readiness_sha256"] != predictions["long"]["readiness_sha256"]:
+        raise _err("READINESS_MISMATCH", "families bind different readiness receipts")
+    preds = {f: _final_family_arrays(out_dir, f, predictions[f], window)
+             for f in ("short", "long")}
+    bars = _bars(_pinned_input(spec, "strategy_bars"), window, allow_test=True)
+    _, weeks = c1.load_calendar(json.loads(_pinned_input(spec, "strategy_calendar").read_text()))
+    result = run_backtest(bars=bars, weeks=weeks, short_predictions=preds["short"],
+                          long_predictions=preds["long"],
+                          entry_params=execution_params["entry"],
+                          execution=execution_params["execution"], allow_test=True)
+    result["identity"] = {
+        "readiness_sha256": predictions["short"]["readiness_sha256"],
+        "strategy_policy_sha256": STRATEGY_PIN["sha256"],
+        **{f: {k: predictions[f][k] for k in FINAL_IDENTITY_KEYS} for f in ("short", "long")}}
+    result["costs_sha256"] = execution_params["costs_sha256"]
+    result["cost_verification"] = execution_params.get("cost_verification")
+    result["window"] = {"start": c1.iso(window[0]), "end": c1.iso(window[1]), "split": "test"}
+    rel = "final_backtest/BACKTEST.json"
+    _atomic_json(out_dir / rel, result)
+    pair_status = "PASS" if not result["failures"] else "EXECUTION_FAILURES"
+    report = _business_report(spec, result, pair_status)
+    report["tags"]["test_read"] = "true"
+    report["experiment_key"] = f"i6dmo:{spec['campaign_id']}:{spec['unit_id']}:final_business"
+    for metric in report["metrics"]:
+        metric["split"] = "test"
+    return {"pair_status": pair_status, "disposition": "FINAL_TEST_COMPLETE",
+            "reports": [report], "fit_seconds": None,
+            "artifacts": {"final_backtest": {"path": rel,
+                                             "sha256": _file_sha(out_dir / rel)}}}
 
 
 # --------------------------------------------------------------------------

@@ -115,3 +115,15 @@ recorded separately. Hook export names unchanged (`run_unit`; final_test still r
 FINAL_TEST_HOOK_NOT_PREPARED for lane 2 to replace). The ops worker guard and
 STRATEGY_OWNER_RULINGS gate entry in worker.py/campaign.py are ops-lane files; my hook no
 longer reads them.
+
+## Addendum 3: run_final_backtest export for lane 2
+
+Merged satoshi/i6dmo-model-20261014 @e8968d67. New stable export
+`run_final_backtest(spec, predictions, execution_params, out_dir)`: same semantics as
+run_backtest on the frozen final models' TEST-window predictions, consuming ONLY the sealed
+execution-policy parameters passed in (no re-derivation), with identity-bound receipts
+(weights/design/readiness/predictions digests of both families, policy pin, costs seal,
+NOT_BROKER_VERIFIED label) and typed refusals. No fit. PRE: 8 failed (export absent).
+POST: 8 passed; strategy+final subset 79 passed; full tests/i6dmo green run recorded.
+One test fix during POST: an early close may be followed by a legitimate re-entry in the
+same week, so the counterexample asserts the first trade, not a single trade.

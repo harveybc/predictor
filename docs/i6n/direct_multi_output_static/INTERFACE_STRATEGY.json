@@ -9,7 +9,8 @@
     "docs/i6n/direct_multi_output_static/STRATEGY_PLUGIN_MAP.json",
     "docs/i6n/direct_multi_output_static/STRATEGY_RETURN.md",
     "tests/i6dmo/test_strategy_pair_unit.py",
-    "tests/i6dmo/test_strategy_execution_policy.py"
+    "tests/i6dmo/test_strategy_execution_policy.py",
+    "tests/i6dmo/test_strategy_final_backtest.py"
   ],
   "shared_files": "tools/i6dmo/__init__.py and tests/i6dmo/__init__.py arrive empty via merge of ops ae70a6a9",
   "strategy_pin": {
@@ -135,5 +136,22 @@
     },
     "fixed_by_contract": "min longs 2 (existing policy), barrier equality inclusive, same-bar ambiguity SL-first, next-bar execution recorded as SIMULATION_ASSUMPTION, initial equity 10000, return clock UTC day / 260 recorded in the receipt",
     "unit_audit": "tests/i6dmo/test_strategy_execution_policy.py exercises point/pip/lot conversions and sizing at prices 1.10 and 0.95 against the ACTUAL pinned policy; reported 'pips' are POINTS of pip_cost_parameter unless it equals pip_size; costs are labelled NOT_BROKER_VERIFIED"
+  },
+  "final_backtest_export": {
+    "callable": "tools.i6dmo.strategy_adapter.run_final_backtest(spec, predictions, execution_params, out_dir) -> {pair_status, disposition, reports, artifacts, fit_seconds: null}",
+    "consumes": "ONLY the execution_params passed in (execution_from_policy output; no re-derivation); frozen final predictions receipts {short, long} = i6dmo.final_test_predictions.v1 with arrays at out_dir/predictions_<family>/test.npz",
+    "identity_bound": "receipt binds weights/design/readiness/predictions sha256 of both families, the policy pin, costs_sha256 and cost_verification; families must share one readiness_sha256",
+    "typed_refusals": [
+      "KIND_INVALID",
+      "TEST_NOT_OPEN",
+      "EXECUTION_PARAMS_INVALID",
+      "TEST_WINDOW_MISSING",
+      "IDENTITY_UNBOUND",
+      "READINESS_MISMATCH",
+      "PREDICTIONS_DIGEST_MISMATCH",
+      "PREDICTION_OUTSIDE_TEST_WINDOW"
+    ],
+    "artifact": "final_backtest/BACKTEST.json (sha in the returned artifacts); report split test, tags.test_read true",
+    "note": "only reachable through tools.i6dmo.final.run_unit after guard_test + guard_execution_policy; run_unit('final_test') in this module still refuses (lane 2 owns the final hook)"
   }
 }
