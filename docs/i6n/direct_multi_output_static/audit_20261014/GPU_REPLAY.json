@@ -1,26 +1,26 @@
 {
- "code_commit": "e2d84774",
+ "code_commit": "a595bb3a",
  "covered": [
   "DMO01",
   "DMO04",
   "DMO10"
  ],
  "device": "rtx5090 (preferred role), fresh admission, one bounded crispdm-run job (-m 6G -t 540s)",
- "failed": 2,
+ "failed": 1,
  "failed_detail": {
   "DMO10": {
    "assertion": "monitored == hist[best]['monitored'] (bitwise)",
-   "finding": "the probe is GREEN yet the end-to-end check still fails with the identical pair (recorded 0.9923369350252383, replay 0.9923319867401985) for the FOURTH revision. Since three model instances agree on fixed batches, the remaining difference must be in WHICH batches each side evaluates: the fit-time monitor evaluates under the seeded per-epoch permutation while the replay evaluates sequentially, and on this GPU a row's float32 prediction can differ bitwise with batch composition (GEMM tiling), which fsum then preserves. Hypothesis for the model lane: evaluate the monitor on the SAME fixed batch partition as the replay (sequential, recorded batch size) instead of the training permutation. Nothing relaxed.",
-   "history": "same value pair across 5047cef9/cca08c9b/fc4246b4/d3b00360/e2d84774",
-   "test": "tests/i6dmo/test_dmo_train.py::test_dmo10_train_unit_end_to_end_restore_and_reload"
-  },
-  "test_selection": {
-   "finding": "fails only because it asserts device == 'cpu' and the replay scope exposes the GPU; a CPU-only fixture caught by the -k dmo10 filter, not a product defect. The model lane may mark it CPU-only (skip when a GPU is visible).",
-   "test": "tests/i6dmo/test_dmo_model.py::test_dmo10_gpu_probe_logic_three_instances_agree_on_cpu"
+   "finding": "FIFTH consecutive revision with the bit-identical value pair, across FOUR rewrites of the monitored-evaluation procedure (op determinism, shared path, unified inference path, sequential partition). The record now claims procedure i6dmo.monitor_eval.v1, partition sequential_row_id_fixed, graph inference, self_check PASS - and still stores the same old float. A recorded value that never moves under four procedural rewrites is not numerics: on the GPU run, whatever produces hist[].monitored (and satisfies the self-check) is still the original path, while the replay exercises the new one. Suggest the model lane verify ON A GPU RUN that hist values actually change between revisions, and that the self-check compares the stored value against the shared path rather than against itself (same object compared twice passes trivially). Nothing relaxed.",
+   "history": "identical pair across 5047cef9/cca08c9b/fc4246b4/d3b00360/e2d84774/a595bb3a",
+   "test": "tests/i6dmo/test_dmo_train.py::test_dmo10_train_unit_end_to_end_restore_and_reload",
+   "values": {
+    "recorded": 0.9923369350252383,
+    "replay": 0.9923319867401985
+   }
   }
  },
  "gpu_devices": 1,
- "note": "DMO01 causality and DMO04 masking pass on the GPU (12 passed); the DMO10 gap is now isolated to the batch partition used by the fit-time monitor",
+ "note": "DMO01 causality and DMO04 masking pass on the GPU (12 passed, probe-logic test now skipped under GPU as intended); DMO10 remains CPU-only acceptance",
  "passed": 12,
  "probe": {
   "meaning": "in_session vs rebuild vs full_load per-head sums agree in ONE session on the GPU",
@@ -34,7 +34,8 @@
  "pytest_rc": 1,
  "schema": "i6dmo.gpu_replay.v1",
  "scope": "ENGINEERING_NOT_SCIENCE",
+ "skipped": 1,
  "tests": "test_dmo_model.py + test_dmo_train.py -k dmo01/dmo04/dmo10/causality (12 selected)",
  "tf": "2.21.0",
- "wall_seconds": 13.3
+ "wall_seconds": 15.7
 }
