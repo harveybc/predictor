@@ -36,6 +36,7 @@ from tools.i6n_outbox_snapshot import (
 
 
 CLOSURE_SCHEMA = "i6n.island.archive_closure.v2"
+CLOSURE_OFFCHAIN_SCHEMA = "i6n.island.archive_closure.v3"
 
 
 class ClosurePending(RuntimeError):
@@ -305,7 +306,7 @@ def _blocker_count(paths: list[str]) -> int:
 
 
 def _verify_candidate_readback(outbox, archive, sink, blocks, *, confirmation_depth: int,
-                               horizon: int) -> dict:
+                               horizon: int, require_finalized: bool = True) -> dict:
     try:
         refs = canonical_references(blocks, confirmation_depth=confirmation_depth)
     except ArchiveRefusal as exc:
@@ -329,11 +330,13 @@ def _verify_candidate_readback(outbox, archive, sink, blocks, *, confirmation_de
     metric_count = 0
     candidate_count = 0
     for item in items:
-        missing = [name for name, evidence in item["states"].items() if not evidence]
+        required_states = ('LOCAL_COMPLETE', 'OBJECT_DURABLE', 'OLAP_READBACK_VERIFIED')
+        missing = [name for name, evidence in item["states"].items()
+                   if not evidence and (require_finalized or name in required_states)]
         if missing:
             raise ClosurePending(f"CANDIDATE_PENDING: {item['item_id']}: {','.join(missing)}")
         tx_id = item.get("reference_tx_id")
-        if tx_id not in finalized_by_tx:
+        if require_finalized and tx_id not in finalized_by_tx:
             raise ClosurePending(f"CANDIDATE_REFERENCE_NOT_FINALIZED: {item['item_id']}")
         try:
             resolved = archive.resolve(item["reference"])
@@ -382,6 +385,10 @@ def produce_archive_closure(config: dict, publisher, archive, sink, blocks, chai
     closure = config.get("closure")
     if not isinstance(closure, dict):
         raise ClosureRefusal("CLOSURE_CONFIG_REQUIRED")
+    policy = closure.get('candidate_finality_policy', 'FINALIZED')
+    if policy not in ('FINALIZED', 'OFFCHAIN_VERIFIED'):
+        raise ClosureRefusal('CANDIDATE_FINALITY_POLICY_INVALID')
+    require_finalized = policy == 'FINALIZED'
     expected = closure.get("expected")
     if not isinstance(expected, dict):
         raise ClosureRefusal("CLOSURE_EXPECTED_REQUIRED")
@@ -403,6 +410,14 @@ def produce_archive_closure(config: dict, publisher, archive, sink, blocks, chai
         raise ClosureRefusal("CLOSURE_TERMINALS_REQUIRED")
     terminal_digests, terminal_chain, terminals = _read_terminal_digests(terminal_paths, expected)
     chain_relation = _verify_terminal_ancestor(blocks, chain_status, terminal_chain)
+    if not require_finalized:
+        # The corpus can close without later blocks, but champion ordering still
+        # has to satisfy the repaired consensus contract over this exact chain.
+        from doin_core.consensus.champion import advance_champions
+        best, seen = {}, set()
+        for block in blocks:
+            directions = {tx.domain_id: False for tx in block.transactions if tx.domain_id}
+            best, seen = advance_champions(block, best, seen, directions)
 
     fleet_mode = isinstance(publisher, dict)
     publishers = publisher if fleet_mode else {next(iter(terminals)): publisher}
@@ -428,8 +443,16 @@ def produce_archive_closure(config: dict, publisher, archive, sink, blocks, chai
     statuses = {}
     for island_id, candidate_publisher in publishers.items():
         status = candidate_publisher.status()
-        if (status.get("items", 0) < 1 or status.get("green") != status.get("items")
-                or status.get("missing") != [] or status.get("submitted_unfinalized") != 0):
+        if require_finalized:
+            ready = (status.get('items', 0) >= 1 and status.get('green') == status.get('items')
+                     and status.get('missing') == [] and status.get('submitted_unfinalized') == 0)
+        else:
+            items = candidate_publisher.outbox.items()
+            ready = bool(items) and all(all(item['states'][key] for key in
+                         ('LOCAL_COMPLETE', 'OBJECT_DURABLE', 'OLAP_READBACK_VERIFIED')) for item in items)
+            status = dict(status, corpus_verified=sum(all(item['states'][key] for key in
+                          ('LOCAL_COMPLETE', 'OBJECT_DURABLE', 'OLAP_READBACK_VERIFIED')) for item in items))
+        if not ready:
             raise ClosurePending(f"ARCHIVE_ITEMS_NOT_GREEN: {island_id}")
         if fleet_mode and status["items"] != terminals[island_id]["evaluated_candidate_count"]:
             raise ClosureRefusal(f"OUTBOX_CANDIDATE_COUNT_MISMATCH: {island_id}")
@@ -451,6 +474,7 @@ def produce_archive_closure(config: dict, publisher, archive, sink, blocks, chai
         verified_by_island[island_id] = _verify_candidate_readback(
             candidate_publisher.outbox, archive, sink, blocks,
             confirmation_depth=int(config.get("confirmation_depth", 6)), horizon=expected["horizon"],
+            require_finalized=require_finalized,
         )
     aggregate_status = {
         "items": sum(status["items"] for status in statuses.values()),
@@ -494,7 +518,14 @@ def produce_archive_closure(config: dict, publisher, archive, sink, blocks, chai
         },
         "blockers": blocker_counts,
     }
-    envelope = {"schema": CLOSURE_SCHEMA, "payload": payload, "payload_sha256": _digest(payload)}
+    schema = CLOSURE_SCHEMA
+    if not require_finalized:
+        schema = CLOSURE_OFFCHAIN_SCHEMA
+        payload['candidate_finality_policy'] = policy
+        payload['archive']['corpus_verified'] = sum(s['corpus_verified'] for s in statuses.values())
+        payload['archive']['green'] = sum(s['green'] for s in statuses.values())
+        payload['archive']['submitted_unfinalized'] = sum(s['submitted_unfinalized'] for s in statuses.values())
+    envelope = {"schema": schema, "payload": payload, "payload_sha256": _digest(payload)}
     receipt = Path(closure["receipt"])
     if not receipt.is_absolute():
         raise ClosureRefusal("CLOSURE_RECEIPT_MUST_BE_ABSOLUTE")
@@ -600,16 +631,22 @@ def main(argv=None) -> int:
     sink = HttpSink(warehouse["url"], token_provider=_token(warehouse["token_env"]))
     if island_config is None:
         outbox = publishers["legacy"].outbox if publishers else Outbox(Path(config["root"]) / "inbox.sqlite")
-        result = ArchiveETL(
+        etl = ArchiveETL(
             outbox, archive, sink,
-            confirmation_depth=int(config.get("confirmation_depth", 6))).run(blocks)
+            confirmation_depth=int(config.get("confirmation_depth", 6)))
+        offchain = etl.run_offchain()
+        result = etl.run(blocks)
+        result['offchain'] = offchain
+        result['errors'].extend(offchain['errors'])
     else:
-        result = {
-            name: ArchiveETL(
-                publisher.outbox, archive, sink,
-                confirmation_depth=int(config.get("confirmation_depth", 6))).run(blocks)
-            for name, publisher in sorted(publishers.items())
-        }
+        result = {}
+        for name, publisher in sorted(publishers.items()):
+            etl = ArchiveETL(publisher.outbox, archive, sink,
+                             confirmation_depth=int(config.get('confirmation_depth', 6)))
+            offchain = etl.run_offchain()
+            result[name] = etl.run(blocks)
+            result[name]['offchain'] = offchain
+            result[name]['errors'].extend(offchain['errors'])
     if args.command == "close":
         try:
             envelope = produce_archive_closure(

@@ -126,6 +126,7 @@ def prepare(args) -> dict:
             ident = node['island_id']
             conf = deepcopy(template)
             conf.update(port=int(node['endpoint'].rsplit(':', 1)[1]),
+                        require_champion_work_proof=True,
                         bootstrap_peers=[n['endpoint'] for n in nodes if n['island_id'] != ident],
                         domains=[deepcopy(domain)],
                         data_dir=str(runtime / f'doin/h{horizon}' / ident),

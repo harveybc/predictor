@@ -42,6 +42,7 @@ SPEC_SCHEMA_V2 = "i6n.island_successor.spec.v2"
 H72_EXPECTED_KEYS = ("h72_network_id", "h72_genesis_hash", "h72_component_versions")
 TERMINAL_SCHEMA = "i6n.island.terminal.v1"
 CLOSURE_SCHEMA = "i6n.island.archive_closure.v2"
+CLOSURE_OFFCHAIN_SCHEMA = "i6n.island.archive_closure.v3"
 START_SCHEMA = "i6n.island.start_receipt.v1"
 INTENT_SCHEMA = "i6n.island.transition_intent.v1"
 RECEIPT_SCHEMA = "i6n.island.transition_receipt.v1"
@@ -339,7 +340,10 @@ def _validate_closure(spec: Mapping[str, Any], terminals: Mapping[str, Any]) -> 
     path = spec["archive_closure_receipt"]
     if not path.is_file():
         return None
-    payload, receipt_sha = _read_envelope(path, CLOSURE_SCHEMA, "archive_closure_receipt")
+    schema = _read_json(path, 'archive_closure_receipt').get('schema')
+    if schema not in (CLOSURE_SCHEMA, CLOSURE_OFFCHAIN_SCHEMA):
+        raise Refusal('CLOSURE_SCHEMA_INVALID')
+    payload, receipt_sha = _read_envelope(path, schema, "archive_closure_receipt")
     expected = spec["expected"]
     if payload.get("status") != "GREEN":
         raise Refusal("ARCHIVE_NOT_GREEN: closure status")
@@ -374,9 +378,15 @@ def _validate_closure(spec: Mapping[str, Any], terminals: Mapping[str, Any]) -> 
             payload.get(name) != baseline.get(name) for name in terminal_fields):
         raise Refusal("EXACT_CHAIN_RELATION_MISMATCH")
     archive = payload.get("archive")
-    if (not isinstance(archive, dict) or type(archive.get("items")) is not int
-            or archive.get("items") < 1 or archive.get("green") != archive.get("items")
-            or archive.get("missing") != [] or archive.get("submitted_unfinalized") != 0):
+    if schema == CLOSURE_OFFCHAIN_SCHEMA:
+        ready = (isinstance(archive, dict) and type(archive.get('items')) is int
+                 and archive['items'] >= 1 and archive.get('corpus_verified') == archive['items']
+                 and payload.get('candidate_finality_policy') == 'OFFCHAIN_VERIFIED')
+    else:
+        ready = (isinstance(archive, dict) and type(archive.get('items')) is int
+                 and archive['items'] >= 1 and archive.get('green') == archive['items']
+                 and archive.get('missing') == [] and archive.get('submitted_unfinalized') == 0)
+    if not ready:
         raise Refusal("ARCHIVE_NOT_GREEN")
     olap = payload.get("olap")
     if (not isinstance(olap, dict) or olap.get("status") != "GREEN"

@@ -735,3 +735,55 @@ def test_f3_probe_takes_the_token_only_from_the_environment(tmp_path, monkeypatc
 
     source = inspect.getsource(probe)
     assert "read_text" not in source and "open(" not in source     # no token file is ever read
+
+
+# --------------------------------------------------------------------------- off-chain readback (deployment order 2026-10-12)
+def test_offchain_readback_keeps_chain_finalized_false_until_a_chain_finalizes(tmp_path):
+    pub, archive, etl, wh, _ = _rig(tmp_path)
+    chain = LocalChain()
+    a, _ = _record_two(pub)
+    pub.pump(archive, chain.submit)
+    summary = etl.run_offchain()
+    assert summary["errors"] == [] and summary["readback_verified"] == 2
+    item = pub.outbox.item(a["item_id"])
+    assert item["states"]["OLAP_READBACK_VERIFIED"]["chain_finalized"] is False
+    assert item["states"]["OLAP_READBACK_VERIFIED"]["finality_state"] == "OFFCHAIN_VERIFIED"
+    assert item["states"]["CHAIN_FINALIZED"] is None and pub.status()["green"] == 0
+    assert pub.status()["readback_verified_offchain"] == 2
+    rows_offchain = _canonical(wh)
+    assert rows_offchain
+    again = etl.run_offchain()                                  # idempotent, no work
+    assert again["readback_verified"] == 0 and again["skipped_done"] == 2
+    chain.mint()                                                # a chain finalizes later
+    assert etl.run(chain.blocks)["errors"] == []
+    assert pub.status()["green"] == 2
+    assert [r[:14] for r in _canonical(wh)] == [r[:14] for r in rows_offchain]   # no double count
+    with wh.engine().connect() as c:
+        states = {r[0] for r in c.exec_driver_sql("SELECT DISTINCT finality_state FROM gov_doin_metric_canonical")}
+    assert states == {"FINALIZED"}
+    # a later reorg must never revoke the no-block projections' history, only real blocks
+    fork = [chain.blocks[0]] + [_block(chain.blocks[0], [], "peer-9", salt=500)]
+    for _ in range(10):
+        fork.append(_block(fork[-1], [], "peer-9", salt=500))
+    assert dps_revoked_blocks(etl.run(fork)) == [chain.blocks[1].hash]
+
+
+def dps_revoked_blocks(summary):
+    return summary["revoked_blocks"]
+
+
+def test_offchain_failure_is_visible_and_retryable_without_refit(tmp_path):
+    pub, archive, etl, wh, lake = _rig(tmp_path)
+    chain = LocalChain()
+    a, _ = _record_two(pub)
+    pub.pump(archive, chain.submit)
+    path = lake.path_of(a["body_digest"])
+    path.chmod(0o644)
+    original = path.read_bytes()
+    path.write_bytes(b"x" + original)
+    failed = etl.run_offchain()
+    assert any(e["item_id"] == a["item_id"] for e in failed["errors"])
+    assert pub.outbox.item(a["item_id"])["states"]["OLAP_READBACK_VERIFIED"] is None
+    path.write_bytes(original)
+    retried = etl.run_offchain()
+    assert retried["errors"] == [] and retried["readback_verified"] == 1

@@ -201,6 +201,31 @@ def test_archive_closure_is_generated_once_after_exact_candidate_readback(tmp_pa
     assert Path(config["closure"]["receipt"]).read_text().endswith("\n")
 
 
+def test_corpus_closure_preserves_nonfinality_and_requires_every_readback(tmp_path, monkeypatch):
+    config, publisher, archive, sink, blocks, status = _closure_fixture(tmp_path, monkeypatch)
+    config['closure']['candidate_finality_policy'] = 'OFFCHAIN_VERIFIED'
+    items = publisher.outbox.items()
+    items[0]['states']['CHAIN_FINALIZED'] = None
+    monkeypatch.setattr(publisher.outbox, 'items', lambda: items)
+    monkeypatch.setattr(publisher, 'status', lambda: dict(items=1, green=0,
+                        missing=['CHAIN_FINALIZED'], submitted_unfinalized=1))
+    calls = []
+    monkeypatch.setattr('doin_core.consensus.champion.advance_champions',
+                        lambda block, best, seen, directions: (calls.append(block) or best, seen))
+    blocks[0].transactions = []
+    result = produce_archive_closure(config, publisher, archive, sink, blocks, status,
+                                     {'chain_verified': True, 'errors': []}, {'errors': []})
+    assert calls == blocks
+    assert result['schema'] == 'i6n.island.archive_closure.v3'
+    assert result['payload']['archive']['corpus_verified'] == 1
+    assert result['payload']['archive']['green'] == 0
+    assert result['payload']['archive']['submitted_unfinalized'] == 1
+    items[0]['states']['OLAP_READBACK_VERIFIED'] = None
+    with pytest.raises(ClosurePending, match='ARCHIVE_ITEMS_NOT_GREEN'):
+        produce_archive_closure(config, publisher, archive, sink, blocks, status,
+                                 {'chain_verified': True, 'errors': []}, {'errors': []})
+
+
 @pytest.mark.parametrize("mutation", ["bad_metric", "unresolved", "missing_final", "blocker"])
 def test_archive_closure_refuses_incomplete_or_mismatched_evidence(tmp_path, monkeypatch, mutation):
     kwargs = {mutation: True}

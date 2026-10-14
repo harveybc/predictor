@@ -155,6 +155,22 @@ def test_successor_accepts_a_closure_on_a_verified_descendant_chain(tmp_path):
     assert report["state"] == "READY_TO_START_H72"
 
 
+def test_successor_accepts_verified_corpus_without_fabricating_finality(tmp_path):
+    spec_path, spec = _spec(tmp_path)
+    terminal_digests = _write_terminals(spec)
+    _write_closure(spec, terminal_digests)
+    path = Path(spec['archive_closure_receipt'])
+    payload = json.loads(path.read_text())['payload']
+    payload['candidate_finality_policy'] = 'OFFCHAIN_VERIFIED'
+    payload['archive'].update(corpus_verified=80, green=0, submitted_unfinalized=80)
+    _write_envelope(path, successor.CLOSURE_OFFCHAIN_SCHEMA, payload)
+    assert successor.status(spec_path, now=lambda: 1.0)['state'] == 'READY_TO_START_H72'
+    payload['archive']['corpus_verified'] = 79
+    _write_envelope(path, successor.CLOSURE_OFFCHAIN_SCHEMA, payload)
+    with pytest.raises(successor.Refusal, match='ARCHIVE_NOT_GREEN'):
+        successor.status(spec_path, now=lambda: 1.0)
+
+
 def test_successor_rejects_a_descendant_claim_without_the_terminal_anchor(tmp_path):
     spec_path, spec = _spec(tmp_path)
     terminal_digests = _write_terminals(spec)

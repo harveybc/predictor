@@ -197,6 +197,11 @@ class Outbox:
             self._conn.execute("INSERT OR IGNORE INTO etl_done (tx_id, block_hash, item_id, reports, done_at)"
                                " VALUES (?,?,?,?,?)", (tx_id, block_hash, item_id, reports, _now()))
 
+    def forget_done(self, tx_id: str, block_hash: str) -> int:
+        with self._tx():
+            return self._conn.execute("DELETE FROM etl_done WHERE tx_id = ? AND block_hash = ?",
+                                      (tx_id, block_hash)).rowcount
+
     def forget_block(self, block_hash: str) -> int:
         with self._tx():
             return self._conn.execute("DELETE FROM etl_done WHERE block_hash = ?", (block_hash,)).rowcount

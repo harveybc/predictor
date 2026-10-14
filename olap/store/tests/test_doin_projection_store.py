@@ -169,3 +169,40 @@ def test_migration_is_additive_and_idempotent(store):
         assert _count(store, relation) == 0
     assert "CREATE TABLE IF NOT EXISTS" in dps.render_sql()
     assert "DROP" not in dps.render_sql().upper()
+
+
+def _offchain(value=0.001):
+    doc = _document(block=dps.NO_BLOCK, value=value, finality="OFFCHAIN_VERIFIED")
+    doc["projection"].update(block_height=0, depth=0)
+    return doc
+
+
+def test_offchain_verified_projection_is_superseded_by_finality_without_double_count(store):
+    first = store.write_doin_projection(_offchain())
+    assert first["state"] == "PROJECTED"
+    assert store.write_doin_projection(_offchain())["state"] == "ALREADY_PROJECTED"
+    with store.engine().connect() as connection:
+        finality = connection.execute(text(
+            f"SELECT DISTINCT finality_state FROM {store._qualified('gov_doin_metric_canonical')}")).fetchall()
+    assert [r[0] for r in finality] == ["OFFCHAIN_VERIFIED"]
+    final = store.write_doin_projection(_document())
+    assert final["state"] == "PROJECTED" and final["superseded"] == [first["projection_key"]]
+    rows = _canonical(store)
+    assert rows == [("mae", 0.001, "b" * 64), ("n", 10.0, "b" * 64)]       # one row each, finalized
+    assert store.write_doin_projection(_offchain())["state"] == "ALREADY_FINALIZED"
+    assert _canonical(store) == rows
+    with pytest.raises(ValueError, match="CONFLICT"):
+        store.write_doin_projection(_offchain(value=0.7))
+
+
+def test_offchain_projection_shape_is_strict(store):
+    bad = _offchain()
+    bad["projection"]["depth"] = 3
+    with pytest.raises(ValueError, match="OFFCHAIN_VERIFIED"):
+        store.write_doin_projection(bad)
+    no_block = _document(finality="OFFCHAIN_VERIFIED")
+    with pytest.raises(ValueError, match="OFFCHAIN_VERIFIED"):
+        store.write_doin_projection(no_block)
+    unknown = _document(finality="CONFIRMING")
+    with pytest.raises(ValueError, match="finality"):
+        store.write_doin_projection(unknown)
