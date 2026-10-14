@@ -98,6 +98,13 @@ def materialize_validation(spec):
     return data.materialize(bundle, table, "VALIDATION")
 
 
+def pred_doc_path(spec):
+    up = spec["upstream"][f"{spec['family']}.fit"]
+    stored = json.loads(Path(up["path"]).read_text())
+    art = stored["terminal"]["artifacts"]["predictions/validation.npz"]
+    return Path(up["path"]).parent / "out" / art["path"]
+
+
 def _predictions(spec):
     up = spec["upstream"].get(f"{spec['family']}.fit") or {}
     path = Path(up.get("path", ""))
@@ -258,6 +265,10 @@ def run_unit(spec, out_dir, progress_path, *, arrays_loader=None):
                    heads=(info.get("counts") or {}).get("heads"), origins=(info.get("counts") or {}).get("origins"),
                    scored={h: row["n"] for h, row in result["per_horizon"].items()})
     _atomic(out / "METRICS.json", dict(result, predictions_sha256=pred_sha, bundle_sha256=manifest["bundle_sha256"]))
+    import shutil
+    shutil.copyfile(pred_doc_path(spec), out / "validation_predictions.npz")
+    if _sha(out / "validation_predictions.npz") != pred_sha:
+        return _failed("PREDICTIONS_COPY_DIGEST", "copy differs", started)
     _atomic(out / "SUPPORT.json", support)
     _progress(progress_path, 4, "publish")
     eligibility = {h: dict(n=row["n"], mae=row["mae"], naive=row["naive_mae"], relative_error=row["relative_error"],
@@ -268,7 +279,8 @@ def run_unit(spec, out_dir, progress_path, *, arrays_loader=None):
     _progress(progress_path, 5, "done")
     return dict(status="COMPLETE", disposition="PAIRED_METRICS_AGREE",
                 artifacts={"metrics": dict(path="METRICS.json", sha256=_sha(out / "METRICS.json")),
-                           "support": dict(path="SUPPORT.json", sha256=_sha(out / "SUPPORT.json"))},
+                           "support": dict(path="SUPPORT.json", sha256=_sha(out / "SUPPORT.json")),
+                           "validation_predictions": dict(path="validation_predictions.npz", sha256=pred_sha)},
                 eligibility=eligibility, gates={}, reports=reports,
                 costs=dict(fit_seconds=0.0, score_seconds=time.time() - started),
                 lineage=dict(bundle_sha256=manifest["bundle_sha256"], predictions_sha256=pred_sha,

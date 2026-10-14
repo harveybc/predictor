@@ -554,10 +554,57 @@ def _enumerate_finals(root, plan, ready):
 
 
 # ---------------------------------------------------------------------- tick
-def tick(root, now=None):
+def _default_long_sealer(short_design_path, short_terminal_path, out_path):
+    from tools.i6dmo import design as model_design  # model lane
+    try:
+        return model_design.seal_long_design(short_design_path, short_terminal_path, out_path)
+    except model_design.DesignError as exc:
+        return dict(status="FAILED", code=exc.code, detail=str(exc)[:300])
+
+
+LONG_SEALER = _default_long_sealer
+SHORT_CLOSURE_DISPOSITIONS = ("COMPLETE", "NOT_ELIGIBLE")
+
+
+def _auto_seal_long(root, adapter=None):
+    """After short closure (short.report COMPLETE or NOT_ELIGIBLE) derive, seal and apply the long design."""
+    root = Path(root)
+    effective = _effective_with_long(root)
+    if effective.get("long") is not None:
+        return None
+    q = open_queue(root)
+    try:
+        row = q.unit("short.report")
+        term = q.terminal("short.report")
+        if row is None or row["state"] != "COMPLETE" or term is None or \
+                term["terminal"].get("status") not in SHORT_CLOSURE_DISPOSITIONS:
+            return None
+        child = root / "terminals" / term["identity_sha256"] / "CHILD_TERMINAL.json"
+        designs = root / "designs"
+        designs.mkdir(exist_ok=True)
+        short_path = designs / "EXPERIMENT.short.json"
+        if not short_path.exists():
+            short_path.write_text(json.dumps(effective["design"], sort_keys=True, indent=2) + "\n")
+        result = LONG_SEALER(short_path, child, designs / "EXPERIMENT.long.json")
+        if result.get("status") != "SEALED":
+            cause = f"LONG_DESIGN_{result.get('code')}: owner=model lane (seal-long-design)"
+            for unit_id in ("long.fit", "long.report", "pair.validation"):
+                unit = q.unit(unit_id)
+                if unit and unit["identity_sha256"] is None and unit["cause"] != cause:
+                    q.set_state(unit_id, "WAIT_ARTIFACT", cause)
+            return result
+        q.event("LONG_DESIGN_DERIVED", "long.fit", dict(design_sha256=result.get("design_sha256")))
+    finally:
+        q.close()
+    seal_long(root, designs / "EXPERIMENT.long.json", adapter=adapter)
+    return result
+
+
+def tick(root, now=None, adapter=None):
     """One finite, atomic advance. Never waits, never trains, never reads a token."""
     root = Path(root)
     load_effective(root)
+    _auto_seal_long(root, adapter=adapter)
     _apply_long(root)
     plan = load_plan(root)
     q = open_queue(root)
@@ -577,7 +624,8 @@ def tick(root, now=None):
                 q.set_state(unit["unit_id"], "QUEUED")
                 activated.append(unit["unit_id"])
         for unit in plan["units"]:
-            if rows[unit["unit_id"]]["state"] == "WAIT_ARTIFACT" and rows["short.report"]["state"] == "COMPLETE":
+            if rows[unit["unit_id"]]["state"] == "WAIT_ARTIFACT" and rows["short.report"]["state"] == "COMPLETE" \
+                    and not rows[unit["unit_id"]]["cause"] and unit["identity_sha256"] is None:
                 q.set_state(unit["unit_id"], "WAIT_ARTIFACT",
                             "LONG_DESIGN_NOT_SEALED: run `seal-long` with the sealed long design (model lane)")
         gates = _auto_gates(root, plan, q)

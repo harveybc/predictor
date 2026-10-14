@@ -141,6 +141,8 @@ def test_dmo08_mae_and_naive_on_identical_rows_agree_with_independent_recomputat
     metrics = json.loads((out / "METRICS.json").read_text())
     assert metrics["agreement"]["status"] == "AGREE"
     assert doc["artifacts"]["metrics"]["sha256"] == _sha(out / "METRICS.json")
+    vp = doc["artifacts"]["validation_predictions"]
+    assert vp["sha256"] == _sha(out / vp["path"])  # the pair hook consumes the validated predictions
 
 
 @pytest.mark.parametrize("kind,code", [("shuffle", "ROW_ID_MISMATCH"), ("horizons", "HORIZON_MISMATCH")])

@@ -53,7 +53,9 @@ def main():
     terminal = dict(
         schema="i6dmo.terminal.v1", unit_id=spec["unit_id"], identity_sha256=spec["identity_sha256"],
         status="COMPLETE", disposition="FAKE_COMPLETE",
-        artifacts={"predictions": {"path": "predictions.csv", "sha256": digest}},
+        artifacts=dict({"predictions": {"path": "predictions.csv", "sha256": digest}},
+                       **({"validation_predictions": {"path": "predictions.csv", "sha256": digest}}
+                          if args.kind == "report" and mode != "no_vp" else {})),
         costs=dict(wall_seconds=1.0, fit_seconds=0.5 if args.kind in ("fit", "final_refit") else 0.0,
                    score_seconds=0.2, cgroup_peak_bytes=int(os.environ.get("I6DMO_FAKE_PEAK", 1 << 30)),
                    gpu_uuid=(spec.get("device") or {}).get("gpu_uuid")),

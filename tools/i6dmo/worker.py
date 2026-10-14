@@ -572,6 +572,9 @@ def _artifacts(root, effective, unit, role_spec):
         problem = C.gate_problem(root, "STRATEGY_OWNER_RULINGS")
         if problem:
             return bundle, (f"WAIT_OWNER_RULING:{problem}: " + ",".join(C.OWNER_RULINGS) + " owner=owner")
+        cause = _pair_inputs_missing(root, effective, unit, role_spec)
+        if cause:
+            return bundle, cause
     if not _uses_unit_runner(argv):
         return bundle, None
     module = unit_runner.hook_module(unit["kind"])
@@ -593,6 +596,36 @@ def _artifacts(root, effective, unit, role_spec):
         if cause:
             return bundle, cause
     return bundle, None
+
+
+STRATEGY_PINS = ("strategy_bars", "strategy_calendar")
+PREDICTION_ARTIFACTS = ("validation_predictions", "predictions/validation.npz")
+
+
+def _pair_inputs_missing(root, effective, unit, role_spec):
+    """Keep a pair/test unit unclaimed while its hook would only return a final FAILED terminal."""
+    pins = effective.get("data_pins") or {}
+    data_root = Path(role_spec.get("data_root") or "")
+    for key in STRATEGY_PINS:
+        pin = pins.get(key)
+        if not pin or "relpath" not in pin:
+            return f"STRATEGY_INPUT_PIN_MISSING:{key} owner=data lane / Satoshi (private pins)"
+        path = data_root / pin["relpath"]
+        if not path.is_file() or file_sha256(path) != pin.get("sha256"):
+            return f"STRATEGY_INPUT_DIGEST_MISMATCH:{key} owner=Satoshi (replicate to the executing role)"
+    q = C.open_queue(root)
+    try:
+        for dep in unit["depends_on"]:
+            term = q.terminal(dep)
+            if term is None:
+                return f"UPSTREAM_NOT_TERMINAL:{dep}"
+            stored = Path(root) / "terminals" / (term["identity_sha256"] or "none") / "TERMINAL.json"
+            arts = (term["terminal"].get("artifacts") or {}) if stored.exists() else {}
+            if dep.endswith(".report") and not any(n in arts for n in PREDICTION_ARTIFACTS):
+                return f"UPSTREAM_ARTIFACT_MISSING:{dep}:validation_predictions owner=ops report unit"
+    finally:
+        q.close()
+    return None
 
 
 def resolved_pins(effective, role_spec):

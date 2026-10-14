@@ -149,8 +149,21 @@ def write_long_design(tmp_path, **overrides):
     return path
 
 
+def strategy_pin_files(tmp_path):
+    """Strategy bars/calendar files under the coordinator role's data_root (= tmp_path in the fake spec)."""
+    tmp_path = Path(tmp_path)
+    out = {}
+    for key, name, body in (("strategy_bars", "strategy_bars.npz", b"bars"),
+                            ("strategy_calendar", "strategy_calendar.json", b"{}")):
+        path = tmp_path / name
+        if not path.exists():
+            path.write_bytes(body)
+        out[key] = {"relpath": name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+    return out
+
+
 def make_campaign(tmp_path, *, name="root", code_commit=CODE, data_pins=None, prior_roots=(), long=True,
-                  **design_overrides):
+                  strategy_pins=True, **design_overrides):
     from tools.i6dmo import campaign
     tmp_path = Path(tmp_path)
     design = write_design(tmp_path, name=f"{name}-design.json", **design_overrides)
@@ -158,8 +171,12 @@ def make_campaign(tmp_path, *, name="root", code_commit=CODE, data_pins=None, pr
     if not spec_path.exists():
         spec_path.write_text(json.dumps(private_spec(tmp_path)))
     root = tmp_path / name
+    pins = dict(data_pins or DATA)
+    if strategy_pins:
+        for key, pin in strategy_pin_files(tmp_path).items():
+            pins.setdefault(key, pin)
     campaign.init_campaign(design, spec_path, root, adapter=fake_adapter(), code_commit=code_commit,
-                           data_pins=data_pins or DATA, entrypoints=trainer_entrypoints(),
+                           data_pins=pins, entrypoints=trainer_entrypoints(),
                            prior_roots=[str(p) for p in prior_roots],
                            long_design=write_long_design(tmp_path, **design_overrides) if long else None)
     return root
