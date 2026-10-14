@@ -1,8 +1,11 @@
 """Pair-stage hook ``tools.i6dmo.strategy_adapter.run_unit`` against the ops contract.
 
 Fake family outputs (synthetic predictions, bars and calendar) only: no fit,
-no TEST row, no trading. The owner-rulings gate is recorded with the ops lane's
-own ``campaign.record_gate`` so the digest/binding rules are the real ones.
+no TEST row, no trading. AUD-DMO-06: there is no owner-approval gate; the hook
+derives a SEALED execution-policy receipt from the versioned instrument
+configuration in the sealed effective config plus the business contract, and
+refuses tampered or mismatching receipts. The policy under test is the ACTUAL
+pinned heuristic-strategy blob (d40fd3b0), loaded by ``load_pinned_policy``.
 """
 
 from __future__ import annotations
@@ -15,7 +18,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from tools.i6dmo import campaign as C
 from tools.i6dmo import strategy_adapter as sa
 from tools.i6dmo import unit_runner
 from tools.i6dmo import worker as W
@@ -30,14 +32,17 @@ SHORT = [2, 3, 4, 5, 6, 12]
 LONG = [18, 24, 36, 48, 60, 72]
 ENTRY_LONG = [P0 + d for d in (0.0010, 0.0012, 0.0015, 0.0011, 0.0013, 0.0014)]
 
-RULINGS = {
-    "barrier_equality": "INCLUSIVE_TOUCH",
-    "costs_and_pip_value": {"pip_cost": 0.00001, "spread_price": 0.00008, "slippage_price": 0.00002,
-                            "commission_per_lot_round_trip": 7.0, "swap_per_lot_per_day": 10.0},
-    "fill_model": {"fill": "MARKET_ORDER_AT_OPEN_OF_NEXT_AVAILABLE_BAR",
-                   "intrabar_both_barriers": "STOP_LOSS_FIRST", "force_close_lead_hours": 1},
-    "sharpe_convention": {"return_clock": "UTC_DAY_LAST_MARK_TO_MARKET", "periods_per_year": 260},
-    "min_long_heads": 2,
+INSTRUMENT = {
+    "instrument_id": "EURUSD",
+    "config_version": "i6dmo-eurusd-exec-2026-10-14",
+    "price_decimals": 5,
+    "point_size": 0.00001,
+    "pip_size": 0.0001,
+    "pip_cost_parameter": 0.00001,
+    "lot_units": 100000.0,
+    "costs": {"spread_price": 0.00008, "slippage_price": 0.00002,
+              "commission_per_lot_round_trip": 7.0, "swap_per_lot_per_day": 10.0},
+    "cost_verification": "NOT_BROKER_VERIFIED",
 }
 
 
@@ -96,6 +101,7 @@ def env(tmp_path):
         "entry_delay_after_open_hours": 12, "force_flat_before_close_hours": 12}))
     effective = dict(
         code_commit="c" * 40,
+        strategy_execution={"instrument": json.loads(json.dumps(INSTRUMENT))},
         design={"splits": {"validation": {"start": "2024-01-01T00:00:00Z", "end": "2025-01-01T00:00:00Z"},
                            "test": {"start": "2025-01-01T00:00:00Z", "end": "2026-01-01T00:00:00Z",
                                     "open": False}}},
@@ -111,76 +117,74 @@ def env(tmp_path):
     return dict(root=root, spec=spec, out=out, progress=out.parent / "progress.json")
 
 
-def _rule(root, status="PASS", rulings=RULINGS):
-    return C.record_gate(root, "STRATEGY_OWNER_RULINGS", status=status, evidence={"rulings": rulings},
-                         splits_read=[])
-
-
 def _run(env):
     return sa.run_unit(env["spec"], env["out"], env["progress"])
 
 
-def test_pair_refused_while_owner_rulings_gate_is_absent(env):
+def test_pair_runs_without_any_owner_approval_gate(env):
+    # AUD-DMO-06: no STRATEGY_OWNER_RULINGS gate exists and none is required.
+    assert not (env["root"] / "gates" / "STRATEGY_OWNER_RULINGS.json").exists()
     doc = _run(env)
-    assert doc["status"] == "FAILED"
-    assert doc["disposition"] == "STRATEGY_OWNER_RULINGS_OPEN:ABSENT"
-    assert doc["gates"] == {"pair_status": "BLOCKED_OWNER_RULINGS"}
-    assert doc["artifacts"] == {} and doc["reports"] == []
-    assert not (env["out"] / "pair").exists()  # nothing computed, no business result
+    assert doc["status"] == "COMPLETE", doc["disposition"]
+    assert "owner" not in doc["disposition"].lower()
 
 
-def test_pair_refused_while_owner_rulings_gate_is_not_pass(env):
-    _rule(env["root"], status="PENDING")
+def test_missing_instrument_configuration_is_a_typed_config_failure_not_a_wait(env):
+    del env["spec"]["effective_config"]["strategy_execution"]
     doc = _run(env)
-    assert (doc["status"], doc["disposition"]) == ("FAILED", "STRATEGY_OWNER_RULINGS_OPEN:STATUS_PENDING")
-
-
-def test_tampered_owner_gate_is_refused(env):
-    _rule(env["root"])
-    path = env["root"] / "gates" / "STRATEGY_OWNER_RULINGS.json"
-    doc = json.loads(path.read_text())
-    doc["evidence"]["rulings"]["min_long_heads"] = 1
-    path.write_text(json.dumps(doc))
-    assert _run(env)["disposition"] == "STRATEGY_OWNER_RULINGS_OPEN:RECEIPT_DIGEST_MISMATCH"
-
-
-@pytest.mark.parametrize("change,code", [
-    (lambda r: r.pop("min_long_heads"), "OWNER_RULINGS_INCOMPLETE:min_long_heads"),
-    (lambda r: r.update(barrier_equality="STRICT_CROSS"), "RULING_NOT_IMPLEMENTED:barrier_equality"),
-    (lambda r: r["fill_model"].update(intrabar_both_barriers="TAKE_PROFIT_FIRST"),
-     "RULING_NOT_IMPLEMENTED:fill_model"),
-    (lambda r: r["sharpe_convention"].update(return_clock="HOURLY"), "RULING_NOT_IMPLEMENTED:sharpe_convention"),
-    (lambda r: r["costs_and_pip_value"].pop("spread_price"), "RULING_INVALID:costs_and_pip_value"),
-])
-def test_rulings_must_be_complete_and_implemented(env, change, code):
-    rulings = json.loads(json.dumps(RULINGS))
-    change(rulings)
-    _rule(env["root"], rulings=rulings)
-    doc = _run(env)
-    assert (doc["status"], doc["disposition"]) == ("FAILED", code)
+    assert (doc["status"], doc["disposition"]) == ("FAILED", "INSTRUMENT_CONFIG_MISSING")
     assert not (env["out"] / "pair").exists()
 
 
-def test_pair_runs_with_owner_ruled_parameters_and_matches_the_ops_terminal_contract(env):
-    _rule(env["root"])
+def test_invalid_instrument_configuration_is_typed(env):
+    env["spec"]["effective_config"]["strategy_execution"]["instrument"]["cost_verification"] = "LIVE"
+    assert _run(env)["disposition"] == "COST_VERIFICATION_INVALID"
+
+
+def test_presealed_receipt_must_match_and_tampering_is_refused(env):
+    receipt = sa.seal_execution_policy(env["root"], INSTRUMENT)
     doc = _run(env)
+    assert doc["status"] == "COMPLETE"
+    assert doc["gates"]["execution_policy_sha256"] == receipt["receipt_sha256"]
+    # Tampered sealed receipt: refused, nothing recomputed silently.
+    path = env["root"] / "gates" / "EXECUTION_POLICY.json"
+    body = json.loads(path.read_text())
+    body["business_rules"]["min_valid_long_heads"] = 1
+    path.write_text(json.dumps(body))
+    assert _run(env)["disposition"] == "EXECUTION_POLICY_TAMPERED"
+    # A sealed receipt for a DIFFERENT configuration than the effective config: mismatch.
+    other = json.loads(json.dumps(INSTRUMENT))
+    other["costs"]["spread_price"] = 0.0005
+    sa.seal_execution_policy(env["root"], other)
+    assert _run(env)["disposition"] == "EXECUTION_POLICY_MISMATCH"
+
+
+def test_pair_runs_with_the_sealed_policy_and_matches_the_ops_terminal_contract(env):
+    doc = _run(env)
+    assert doc["status"] == "COMPLETE", doc["disposition"]
     assert doc["status"] == "COMPLETE", doc["disposition"]
     g = doc["gates"]
     assert g["pair_status"] == "PASS"
     assert g["strategy_version"] == f"{sa.STRATEGY_PIN['sha256']}:heuristic_strategy.business_pair_policy.v1"
-    costs = RULINGS["costs_and_pip_value"]
+    costs = INSTRUMENT["costs"]
     assert g["costs_sha256"] == hashlib.sha256(
         json.dumps(costs, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    assert g["execution_policy_sha256"] == sa.derive_execution_policy(INSTRUMENT)["receipt_sha256"]
     for name, art in doc["artifacts"].items():
         assert _sha(env["out"] / art["path"]) == art["sha256"], name
+    sealed = json.loads((env["out"] / doc["artifacts"]["execution_policy"]["path"]).read_text())
+    assert sealed["receipt_sha256"] == g["execution_policy_sha256"]
+    assert sealed["instrument"]["cost_verification"] == "NOT_BROKER_VERIFIED"
     backtest = json.loads((env["out"] / doc["artifacts"]["backtest"]["path"]).read_text())
-    assert backtest["execution"]["spread_price"] == costs["spread_price"]  # owner value, not default
+    assert backtest["execution"]["spread_price"] == costs["spread_price"]  # configured, not default
     assert backtest["entry_parameters"]["min_valid_long_heads"] == 2
     assert backtest["metrics"]["closed_trades"] >= 1
     assert backtest["eligibility"]["eligible"] == {"short": [2, 3], "long": [18, 24, 72]}
+    assert backtest["execution_policy_sha256"] == g["execution_policy_sha256"]
     assert not doc["costs"].get("fit_seconds")
     for report in doc["reports"]:
         assert report["tags"]["test_read"] == "false"
+        assert report["tags"]["cost_verification"] == "NOT_BROKER_VERIFIED"
         assert all(isinstance(m["value"], (int, float)) for m in report["metrics"])
     unit = dict(unit_id="pair.validation", kind="pair", identity_sha256="i" * 64)
     W._validate_child(dict(doc, schema="i6dmo.terminal.v1", unit_id="pair.validation",
@@ -191,7 +195,6 @@ def test_pair_runs_with_owner_ruled_parameters_and_matches_the_ops_terminal_cont
 
 def test_ineligible_pair_returns_pair_not_eligible_without_trading(env):
     env["spec"]["upstream"]["long.report"] = _stored_terminal(env["root"], "long.report2", "long", {18})
-    _rule(env["root"])
     doc = _run(env)
     assert doc["status"] == "PAIR_NOT_ELIGIBLE"
     assert doc["gates"]["pair_status"] == "PAIR_NOT_ELIGIBLE"
@@ -200,7 +203,6 @@ def test_ineligible_pair_returns_pair_not_eligible_without_trading(env):
 
 
 def test_tampered_upstream_and_missing_input_pins_are_typed_failures(env):
-    _rule(env["root"])
     up = env["spec"]["upstream"]["short.report"]
     env["spec"]["upstream"]["short.report"] = dict(up, sha256="0" * 64)
     assert _run(env)["disposition"] == "UPSTREAM_DIGEST_MISMATCH:short.report"
@@ -211,7 +213,6 @@ def test_tampered_upstream_and_missing_input_pins_are_typed_failures(env):
 
 
 def test_test_reads_are_refused(env):
-    _rule(env["root"])
     env["spec"]["test_open"] = True
     assert _run(env)["disposition"] == "TEST_OPEN_REFUSED"
     env["spec"]["test_open"] = False
@@ -220,7 +221,6 @@ def test_test_reads_are_refused(env):
 
 
 def test_unit_runner_cli_writes_the_terminal(env, capsys):
-    _rule(env["root"])
     spec_path = env["out"].parent / "UNIT_SPEC.json"
     spec_path.write_text(json.dumps(env["spec"]))
     rc = unit_runner.main(["--kind", "pair", "run-unit", "--spec", str(spec_path), "--out", str(env["out"]),

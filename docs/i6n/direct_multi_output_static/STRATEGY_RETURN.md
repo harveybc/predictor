@@ -85,3 +85,33 @@ Open contract points for integration: the bars and calendar pins
 (`data_pins.strategy_bars`/`strategy_calendar`) and the report-terminal artifact
 `validation_predictions` must be produced by the data and reporting owners. The worker should
 check those pins before it claims the unit, because the hook's FAILED terminal is final.
+
+## Addendum 2: AUD-DMO-06 correction (sealed execution policy, no owner gate)
+
+Merged audit branch codex/i6dmo-strict-audit-20261014 @98d83fcf (ordinary merge; my prior
+commit was already an ancestor of the audited integration). The WAIT_OWNER_RULING dependency
+in the pair hook is removed: `run_unit` now derives a SEALED execution-policy receipt
+(`i6dmo.execution_policy.v1`, sha-sealed canonical body) automatically from the versioned
+instrument configuration in the sealed effective config plus the business contract. No
+approval prompt exists on this path. Fixed values: minimum longs 2 (the pinned policy's own
+default), inclusive barrier equality, same-bar ambiguity SL-first, next-bar execution recorded
+as a SIMULATION_ASSUMPTION statement, initial equity 10000, return clock UTC day with 260
+periods per year recorded in the receipt. Costs come from the configured price-unit
+spread/slippage/commission/swap and are labelled NOT_BROKER_VERIFIED (BROKER_VERIFIED needs
+non-empty evidence). Tampered sealed receipts are refused (EXECUTION_POLICY_TAMPERED), a
+sealed receipt differing from the configuration is EXECUTION_POLICY_MISMATCH, and a missing
+instrument configuration is the typed config failure INSTRUMENT_CONFIG_MISSING, never a wait.
+
+Point/pip/lot audit (tests at prices 1.10 and 0.95 against the ACTUAL pinned policy blob):
+the legacy `pip_cost` 0.00001 is a POINT (0.1 real pip); geometry distances and the
+profit_threshold are in that unit and independent of price level; sizing is base-currency
+units = cash*rel_volume*leverage with no price conversion, so notional varies with price
+(22000 at 1.10 vs 19000 at 0.95 for the same 20000 units); commission and swap scale with
+units/lots, never price. All recorded in the receipt's pip_semantics and sizing assumptions.
+
+PRE: tests/i6dmo/test_strategy_execution_policy.py + rewritten test_strategy_pair_unit.py gave
+19 failed, 4 errors (no receipt API). POST: 54 strategy-lane tests pass; full tests/i6dmo run
+recorded separately. Hook export names unchanged (`run_unit`; final_test still refuses
+FINAL_TEST_HOOK_NOT_PREPARED for lane 2 to replace). The ops worker guard and
+STRATEGY_OWNER_RULINGS gate entry in worker.py/campaign.py are ops-lane files; my hook no
+longer reads them.
