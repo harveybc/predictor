@@ -147,3 +147,13 @@ def confirmatory_gate(features: Sequence[str] = MANIFEST) -> dict:
     if unresolved:
         raise ProvenanceError("PROVENANCE_UNRESOLVED", f"unresolved producers {unresolved}")
     return {"status": "PASS"}
+
+
+#: Successor availability contract PREPARED (Satoshi ruling 2026-10-14) and NOT
+#: adopted by the short design: it promotes the five recovered hourly features
+#: and keeps the two FRED clocks UNVERIFIED. It is a TEST gate input only.
+SUCCESSOR_CONTRACT_PATH = Path(__file__).with_name("feature_availability.successor.v2.json")
+
+
+def load_successor_contract() -> dict:
+    return fa.validate_contract(json.loads(SUCCESSOR_CONTRACT_PATH.read_text(encoding="utf-8")))

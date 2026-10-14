@@ -6,10 +6,17 @@ experiment (and, unchanged, any later design with the same schema):
 * An origin ``t`` is an OBSERVED hourly bar on the UTC bar-END clock of the
   retained input (its own value included). Every observed bar inside a split
   is a candidate; origins are never thinned to the input spacing.
-* The input window is the ``observations`` EXACT bars ``t - span .. t`` at
-  ``spacing`` hours. A slot without an observed bar, or with a non-finite
-  value, makes the origin input-unavailable with a counted reason. Nothing is
-  filled, interpolated or bridged; slots are all ``<= t`` by construction.
+* The input window has ``observations`` slot INSTANTS ``s = t - span .. t`` at
+  ``spacing`` hours (Satoshi ruling 2026-10-14, rule ``DS2_ASOF_LAST_AVAILABLE``):
+  each slot takes, per feature, the last retained observation whose
+  ``available_time`` (its UTC bar end) is ``<= s`` and whose value is finite.
+  Never the next row, never interpolation. Known past observations across a
+  weekend or a vendor gap are therefore retained (PLAN section 4). Per slot
+  and feature the staleness ``s - observation_time`` is recorded (aux arrays,
+  not a model input); origins whose staleness exceeds the longest calendar
+  closure are a declared, counted category, not a refusal. An origin is
+  refused only when some feature has NO finite observation ``<= s`` in the
+  whole retained history (``INPUT_NO_OBSERVATION_AVAILABLE``) or by C1.
 * Each head ``h`` needs the exact bar ``t + h``; masks come from the audited
   C1 component (``tools.i6n_contracts.eligibility``): MANAGEMENT ``M`` is the
   forecasting support S_h, ENTRY ``M`` is the narrower opening support.
@@ -60,8 +67,13 @@ INPUT_KEYS = frozenset({"value_mode", "history_span_hours", "spacing_hours", "ob
                         "include_origin", "issuance_hours", "smoothing", "require_exact_timestamps"})
 SPLIT_KEYS = frozenset({"train", "inner_tail_weeks", "validation", "test", "end_exclusive",
                         "purge_by_label_availability"})
-ORIGIN_REASONS = ("ORIGIN_OUTSIDE_CALENDAR_WEEK", "INPUT_BEFORE_DATA_START",
-                  "INPUT_SLOT_NOT_OBSERVED", "INPUT_VALUE_NOT_FINITE", "NO_VALID_HEAD")
+ORIGIN_REASONS = ("ORIGIN_OUTSIDE_CALENDAR_WEEK", "INPUT_NO_OBSERVATION_AVAILABLE",
+                  "NO_VALID_HEAD")
+SAMPLING_RULE = "DS2_ASOF_LAST_AVAILABLE"
+SAMPLING_DESCRIPTION = ("each slot instant s takes, per feature, the last retained finite "
+                        "observation with available_time (UTC bar end) <= s; never the next row, "
+                        "never interpolation; staleness s - observation_time recorded per slot "
+                        "and feature; refusal only when no observation <= s exists")
 INPUT_FILES = ("INPUT.npz", "CLOCK.json", "CALENDAR.json", "DERIVATION.json",
                "PREPARATION.json", "CLOCK_SCOPE.json")
 
@@ -217,6 +229,7 @@ class InputBundle:
     horizons: Tuple[int, ...]
     input_dir: Path = field(repr=False)
     _allow_noncontract_splits: bool = False
+    sampling_rule: str = SAMPLING_RULE
 
 
 def load_input(input_dir: str | Path, design: Mapping[str, Any], *,
@@ -347,7 +360,9 @@ class OriginTable:
     label_ok: np.ndarray             # (n, H) bool, C1 MANAGEMENT M
     entry_ok: np.ndarray             # (n, H) bool, C1 ENTRY M
     label_reasons: List[Tuple[Tuple[str, ...], ...]]
-    slot_index: np.ndarray           # (n, obs) int64, -1 absent
+    slot_index: np.ndarray           # (n, obs, F) int64 as-of source row per feature, -1 none
+    origin_index: np.ndarray         # (n,) int64 row of the observed origin bar
+    slot_instants: np.ndarray        # (n, obs) int64 slot instants s
     target_index: np.ndarray         # (n, H) int64, -1 absent
     counts: Dict[str, Any]
     split_weeks: Dict[str, List[str]]
@@ -374,9 +389,27 @@ class OriginTable:
         return (self.split == split) & self.input_ok & self.label_ok.any(axis=1)
 
 
+def asof_slot_index(ts: np.ndarray, x: np.ndarray, origins: np.ndarray,
+                    offsets_seconds: Sequence[int]) -> Tuple[np.ndarray, np.ndarray]:
+    """Per (origin, slot, feature) row of the last finite observation with ts <= s.
+
+    Returns ``(index, instants)``: ``index`` (n, obs, F) int64 with -1 when no
+    such observation exists, and the slot instants (n, obs). Only rows with
+    ``ts <= s`` are ever selected, so no slot can read the future.
+    """
+    rows = np.arange(len(ts), dtype=np.int64)
+    finite = np.isfinite(x)
+    last_valid = np.maximum.accumulate(np.where(finite, rows[:, None], -1), axis=0)
+    instants = np.asarray(origins, dtype=np.int64)[:, None] + np.asarray(offsets_seconds,
+                                                                           dtype=np.int64)
+    k = np.searchsorted(ts, instants, side="right") - 1
+    index = np.where((k >= 0)[:, :, None], last_valid[np.maximum(k, 0)], -1)
+    return index.astype(np.int64), instants
+
+
 def build_origin_table(bundle: InputBundle, design: Mapping[str, Any], *,
                        _allow_noncontract_splits: bool = False) -> OriginTable:
-    """Evaluate every candidate origin with exact slots and C1 per-head masks."""
+    """Evaluate every candidate origin with as-of slots and C1 per-head masks."""
     allow = _allow_noncontract_splits or bundle._allow_noncontract_splits
     design = validate_design(design, _allow_noncontract_splits=allow)
     splits = split_bounds(design, _allow_noncontract_splits=allow)
@@ -385,7 +418,6 @@ def build_origin_table(bundle: InputBundle, design: Mapping[str, Any], *,
     window = WindowSpec.from_design(design)
     ts = bundle.ts
     pos = {int(v): i for i, v in enumerate(ts)}
-    finite = np.isfinite(bundle.x).all(axis=1)
     observed = c1.ObservedTargets({datetime.fromtimestamp(int(v), UTC):
                                    datetime.fromtimestamp(int(v), UTC) for v in ts})
     opens = [w.market_open for w in weeks]
@@ -398,7 +430,8 @@ def build_origin_table(bundle: InputBundle, design: Mapping[str, Any], *,
     input_ok = np.zeros(n, dtype=bool)
     label_ok = np.zeros((n, nh), dtype=bool)
     entry_ok = np.zeros((n, nh), dtype=bool)
-    slot_index = np.full((n, len(offsets)), -1, dtype=np.int64)
+    slot_index, slot_instants = asof_slot_index(ts, bundle.x, ts[cand], offsets)
+    no_obs = (slot_index < 0).any(axis=(1, 2))
     target_index = np.full((n, nh), -1, dtype=np.int64)
     input_reason: List[Optional[str]] = []
     reasons_out: List[Tuple[Tuple[str, ...], ...]] = []
@@ -413,18 +446,7 @@ def build_origin_table(bundle: InputBundle, design: Mapping[str, Any], *,
         out_split[k] = split.split_id
         c = counts[split.split_id]
         c["origins"]["candidates"] += 1
-        reason = None
-        for j, off in enumerate(offsets):
-            idx = pos.get(t + off)
-            if idx is None:
-                reason = reason or ("INPUT_BEFORE_DATA_START" if t + off < int(ts[0])
-                                    else "INPUT_SLOT_NOT_OBSERVED")
-                continue
-            slot_index[k, j] = idx
-            if not finite[idx] and reason is None:
-                reason = "INPUT_VALUE_NOT_FINITE"
-        if reason is not None and any(slot_index[k] < 0) and reason == "INPUT_VALUE_NOT_FINITE":
-            reason = "INPUT_SLOT_NOT_OBSERVED"
+        reason = "INPUT_NO_OBSERVATION_AVAILABLE" if no_obs[k] else None
         input_ok[k] = reason is None
         input_reason.append(reason)
         if reason is None:
@@ -460,9 +482,30 @@ def build_origin_table(bundle: InputBundle, design: Mapping[str, Any], *,
         if input_ok[k] and not label_ok[k].any():
             c["origins"]["NO_VALID_HEAD"] += 1
     split_arr = out_split.astype(str)
+    closure = max(((_epoch(b.market_open) - _epoch(a.market_close)) // HOUR
+                   for a, b in zip(weeks, weeks[1:])), default=0)
+    stale = np.where(slot_index >= 0, slot_instants[:, :, None] - ts[np.maximum(slot_index, 0)], 0)
+    exact_pos = np.searchsorted(ts, slot_instants)
+    exact_exists = (exact_pos < len(ts)) & (ts[np.minimum(exact_pos, len(ts) - 1)] == slot_instants)
+    nonfinite_exact = exact_exists[:, :, None] & (slot_index != exact_pos[:, :, None]) \
+        & (slot_index >= 0)
     for s in SPLITS:
         sel = (split_arr == s) & input_ok & label_ok.any(axis=1)
         counts[s]["rows_materialized"] = int(sel.sum())
+        st = stale[sel]
+        counts[s]["asof"] = {
+            "rule": SAMPLING_RULE, "scope": "materialized rows",
+            "closure_threshold_hours": int(closure),
+            "origins_all_slots_exact": int((st.reshape(len(st), -1) == 0).all(axis=1).sum()),
+            "origins_with_asof_slot": int((st.reshape(len(st), -1) > 0).any(axis=1).sum()),
+            "origins_asof_due_to_nonfinite_bar": int(nonfinite_exact[sel].any(axis=(1, 2)).sum()),
+            "origins_stale_beyond_closure": int((st.reshape(len(st), -1)
+                                                 > closure * HOUR).any(axis=1).sum()),
+            "slots_asof_by_feature": {f: int((st[:, :, i] > 0).sum())
+                                      for i, f in enumerate(bundle.features)},
+            "nonfinite_exact_slots_by_feature": {f: int(nonfinite_exact[sel][:, :, i].sum())
+                                                 for i, f in enumerate(bundle.features)},
+            "max_staleness_hours": (float(st.max()) / HOUR) if st.size else None}
         for h in hs:
             counts[s]["heads"][str(h)]["reasons"] = dict(sorted(counts[s]["heads"][str(h)]["reasons"].items()))
     split_weeks = {}
@@ -481,7 +524,8 @@ def build_origin_table(bundle: InputBundle, design: Mapping[str, Any], *,
     table = OriginTable(horizons=hs, origin_ts=ts[cand].astype(np.int64), split=split_arr,
                         week_id=out_week.astype(str), input_ok=input_ok, input_reason=input_reason,
                         label_ok=label_ok, entry_ok=entry_ok, label_reasons=reasons_out,
-                        slot_index=slot_index, target_index=target_index, counts=counts,
+                        slot_index=slot_index, origin_index=cand.astype(np.int64),
+                        slot_instants=slot_instants, target_index=target_index, counts=counts,
                         split_weeks=split_weeks,
                         calendar={"calendar_id": ref.calendar_id, "version": ref.version})
     table.index = {int(t): k for k, t in enumerate(table.origin_ts)}
@@ -497,7 +541,8 @@ class SplitArrays:
     split: str
     horizons: Tuple[int, ...]
     features: Tuple[str, ...]
-    X: np.ndarray                 # (n, obs, F) float64 RAW
+    X: np.ndarray                 # (n, obs, F) float64 RAW, as-of sampled
+    staleness_s: np.ndarray       # (n, obs, F) int64 seconds s - observation_time (aux only)
     y_price: np.ndarray           # (n, H) float64 original price p(t+h); NaN where mask False
     mask: np.ndarray              # (n, H) bool  MANAGEMENT support S_h
     entry_mask: np.ndarray        # (n, H) bool  ENTRY support
@@ -517,7 +562,8 @@ class SplitArrays:
     def to_aux_dict(self) -> Dict[str, np.ndarray]:
         """Business/strategy side arrays aligned row by row with ``to_npz_dict``."""
         return {"row_id": self.origin_ts.astype(np.int64), "row_ids": self.row_ids,
-                "entry_mask": self.entry_mask, "week_ids": self.week_ids}
+                "entry_mask": self.entry_mask, "week_ids": self.week_ids,
+                "slot_staleness_s": self.staleness_s}
 
 
 def materialize(bundle: InputBundle, table: OriginTable, split: str) -> SplitArrays:
@@ -527,16 +573,22 @@ def materialize(bundle: InputBundle, table: OriginTable, split: str) -> SplitArr
     slots = table.slot_index[sel]
     if (slots < 0).any():
         raise DataContractError("INTERNAL_SLOT_MISSING", split)
-    origin_idx = slots[:, -1]
+    origin_idx = table.origin_index[sel]
     if not np.array_equal(bundle.ts[origin_idx], table.origin_ts[sel]):
         raise DataContractError("INTERNAL_ORIGIN_MISMATCH", split)
+    source_ts = bundle.ts[slots]
+    staleness = table.slot_instants[sel][:, :, None] - source_ts
+    if (staleness < 0).any():
+        raise DataContractError("INTERNAL_FUTURE_READ", split)
+    nf = bundle.x.shape[1]
+    X = bundle.x[slots, np.arange(nf)]
     mask = table.label_ok[sel].copy()
     targets = table.target_index[sel]
     y = np.full(mask.shape, np.nan)
     y[mask] = bundle.price[targets[mask]]
     return SplitArrays(
         split=split, horizons=table.horizons, features=bundle.features,
-        X=bundle.x[slots], y_price=y, mask=mask, entry_mask=table.entry_ok[sel] & mask,
+        X=X, staleness_s=staleness.astype(np.int64), y_price=y, mask=mask, entry_mask=table.entry_ok[sel] & mask,
         price_origin=bundle.price[origin_idx], origin_ts=table.origin_ts[sel].copy(),
         row_ids=np.asarray([row_id(t) for t in table.origin_ts[sel]], dtype=str),
         week_ids=table.week_id[sel].copy(), expected_weeks=tuple(table.weeks_in_split(split)),
@@ -552,10 +604,11 @@ def fit_statistics(bundle: InputBundle, table: OriginTable) -> dict:
     sel = np.flatnonzero(table.materialized("FIT"))
     if not len(sel):
         return {"status": "NO_FIT_ROWS"}
-    bars = np.unique(table.slot_index[sel].reshape(-1))
-    xs = bundle.x[bars]
-    mean = xs.mean(axis=0)
-    std = xs.std(axis=0)
+    per_feature = [np.unique(table.slot_index[sel][:, :, f].reshape(-1))
+                   for f in range(bundle.x.shape[1])]
+    bars = np.unique(np.concatenate(per_feature))
+    mean = np.asarray([bundle.x[idx, f].mean() for f, idx in enumerate(per_feature)])
+    std = np.asarray([bundle.x[idx, f].std() for f, idx in enumerate(per_feature)])
     naive_mae, unsupported = {}, []
     for j, h in enumerate(table.horizons):
         rows = sel[table.label_ok[sel, j]]
@@ -563,7 +616,7 @@ def fit_statistics(bundle: InputBundle, table: OriginTable) -> dict:
             naive_mae[str(h)] = None
             unsupported.append(h)
             continue
-        p0 = bundle.price[table.slot_index[rows, -1]]
+        p0 = bundle.price[table.origin_index[rows]]
         p1 = bundle.price[table.target_index[rows, j]]
         value = math.fsum(np.abs(p1 - p0).tolist()) / len(rows)
         naive_mae[str(h)] = value
@@ -571,7 +624,7 @@ def fit_statistics(bundle: InputBundle, table: OriginTable) -> dict:
             unsupported.append(h)
     zero = [f for f, s in zip(bundle.features, std) if s == 0.0]
     status = "UNSUPPORTED_HEAD" if unsupported else ("ZERO_SCALE" if zero else "OK")
-    return {"status": status, "basis": "FIT rows only; unique window bars; std ddof=0",
+    return {"status": status, "basis": "FIT rows only; unique as-of source observations per feature; std ddof=0",
             "fit_rows": int(len(sel)), "fit_window_bars": int(len(bars)),
             "feature_mean": {f: float(v) for f, v in zip(bundle.features, mean)},
             "feature_std": {f: float(v) for f, v in zip(bundle.features, std)},
@@ -583,7 +636,8 @@ def fit_statistics(bundle: InputBundle, table: OriginTable) -> dict:
 
 def _code_digests() -> dict:
     here = Path(__file__).resolve().parent
-    names = ("data.py", "naive.py", "provenance.py", "producer_recovery.v1.json")
+    names = ("data.py", "naive.py", "provenance.py", "producer_recovery.v1.json",
+             "feature_availability.successor.v2.json")
     return {n: provenance.file_sha256(here / n) for n in names if (here / n).is_file()}
 
 
@@ -634,6 +688,9 @@ def build_frozen_bundle(input_dir: str | Path, design: Mapping[str, Any], out_di
         "window": bundle.window.to_json(),
         "horizons_hours": list(bundle.horizons),
         "offsets_hours": list(bundle.window.offsets_hours()),
+        "input_sampling": {"rule": SAMPLING_RULE, "description": SAMPLING_DESCRIPTION,
+                           "staleness_array": "<split>_aux.npz slot_staleness_s (n,13,19) seconds; not a model input",
+                           "ruling": "Satoshi technical ruling 2026-10-14 under PLAN section 4"},
         "features": list(bundle.features),
         "row_id_format": "npz row_id = origin UTC epoch seconds (int64); aux row_ids = 'EURUSD|<UTC ISO origin>'",
         "price_clock": "UTC_BAR_END; original price USD per EUR",

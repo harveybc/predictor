@@ -616,3 +616,28 @@ def test_availability_gate_reports_unverified_and_blocks_confirmatory_test():
     with pytest.raises(provenance.ProvenanceError) as err:
         provenance.confirmatory_gate()
     assert err.value.code == "PROVENANCE_UNRESOLVED"
+
+
+def test_successor_availability_contract_prepared_not_adopted():
+    from tools.i6n_contracts import feature_availability as fa
+    contract = provenance.load_successor_contract()
+    assert contract["contract_sha256"] == fa.contract_sha256(contract)
+    assert contract["contract_sha256"] != provenance.EXPECTED_CONTRACT_SHA256
+    assert contract["status"] == "PREPARED_NOT_ADOPTED"
+    by = {d["feature"]: d for d in contract["declarations"]}
+    promoted = {"fx.gbpusd.logret_1h", "px.close_loc", "px.log_co", "px.rv5", "rg.atr_ratio"}
+    for f in promoted:
+        assert by[f]["availability_source"] == "VERIFIED_EVIDENCE"
+        assert by[f]["consumption"]["source"] == "VERIFIED_EVIDENCE"
+        assert "feature-eng" in by[f]["availability_evidence"]
+    for f in ("fred.rates.dgs3mo.diff_5d", "fred.rates.dgs7.logret_5d"):
+        assert by[f]["availability_source"] == "UNVERIFIED"
+        assert "ALFRED" in by[f]["availability_evidence"]
+    assert by["fred.stress.stlfsi4.level"]["status"] == "EXCLUDED"
+    report = fa.gate(list(provenance.MANIFEST), contract)
+    assert report["unverified_features"] == ["fred.rates.dgs3mo.diff_5d", "fred.rates.dgs7.logret_5d"]
+    with pytest.raises(fa.AvailabilityGateError):
+        fa.gate(list(provenance.MANIFEST), contract, require_verified=True)
+    # the short design still runs on the sealed v1 contract
+    assert provenance.availability_gate(list(provenance.MANIFEST))["contract_sha256"] \
+        == provenance.EXPECTED_CONTRACT_SHA256
