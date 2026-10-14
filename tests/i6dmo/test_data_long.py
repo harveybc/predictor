@@ -52,7 +52,7 @@ def lng(tmp_path_factory):
                             missing={_synth.epoch("2022-06-15T13:00:00+00:00")},
                             nonfinite=[(_synth.epoch("2021-09-08T09:00:00+00:00"), 5)])
     design = long_design()
-    bundle = data.load_input(src, design)
+    bundle = data.load_input(src, design, sampling=data.ASOF)
     return {"src": src, "design": design, "bundle": bundle,
             "table": data.build_origin_table(bundle, design), "root": root}
 
@@ -62,8 +62,8 @@ def test_long_window_offsets_rule_and_asof_values(lng):
     assert spec.offsets_hours() == tuple(range(-144, 1, 12))
     assert len(spec.offsets_hours()) == 13
     assert lng["bundle"].sampling_rule == "DS12_ASOF_LAST_AVAILABLE"
-    assert data.sampling_rule_name(data.WindowSpec.from_design(_synth.load_design())) \
-        == "DS2_ASOF_LAST_AVAILABLE"
+    assert data.sampling_rule_name(data.WindowSpec.from_design(_synth.load_design())) == "DS2_EXACT"
+    assert data.sampling_rule_name(data.WindowSpec.from_design(lng["design"])) == "DS12_EXACT"
     arrays = data.materialize(lng["bundle"], lng["table"], "FIT")
     ts, x = lng["bundle"].ts, lng["bundle"].x
     for r in range(0, len(arrays.origin_ts), max(1, len(arrays.origin_ts) // 25)):
@@ -93,7 +93,7 @@ def test_long_weekend_and_dst_staleness_counted(lng):
     assert weekend.any(axis=1).all()
     st = arrays.staleness_s[:, :, 0]
     np.testing.assert_array_equal(st[weekend], expected[weekend])
-    asof = lng["table"].counts["FIT"]["asof"]
+    asof = lng["table"].counts["FIT"]["sampling"]
     assert asof["rule"] == "DS12_ASOF_LAST_AVAILABLE"
     assert asof["closure_threshold_hours"] == 49
     assert asof["origins_with_asof_slot"] == len(arrays.origin_ts)
@@ -158,7 +158,7 @@ def test_long_bundle_identity_history_provenance_and_model_format(lng, tmp_path)
         "base_scope": {"data_start": "2019-12-01T00:00:00Z",
                        "warmup_2019_december": "declared, not quote-verified"}}))
     out = tmp_path / "b"
-    m = data.build_frozen_bundle(lng["src"], long_design(), out)
+    m = data.build_frozen_bundle(lng["src"], long_design(), out, sampling=data.ASOF)
     assert m["offsets_hours"] == list(range(-144, 1, 12))
     assert m["horizons_hours"] == list(LONG)
     assert m["input_sampling"]["rule"] == "DS12_ASOF_LAST_AVAILABLE"
@@ -171,7 +171,8 @@ def test_long_bundle_identity_history_provenance_and_model_format(lng, tmp_path)
     assert hp["base_scope_warmup"] == "declared, not quote-verified"
     assert hp["consumed_before_base_scope_start"] is False
     # the data identity ignores seal fields; a sealed long design yields the same data contract
-    m2 = data.build_frozen_bundle(lng["src"], long_design(sealed=True), tmp_path / "b2")
+    m2 = data.build_frozen_bundle(lng["src"], long_design(sealed=True), tmp_path / "b2",
+                                  sampling=data.ASOF)
     assert m2["data_contract_sha256"] == m["data_contract_sha256"]
     assert m2["design_sha256"] != m["design_sha256"]
     assert data.data_contract_sha256(_synth.load_design()) != m["data_contract_sha256"]
@@ -203,5 +204,30 @@ def test_long_requires_144h_history_and_never_shortens(tmp_path):
 def test_long_data_view_matches_plan_derivation():
     view = data.long_data_view(_synth.load_design())
     assert data.data_contract_sha256(view) == data.data_contract_sha256(long_design(sealed=True))
+    assert data.data_contract_sha256(view, sampling=data.ASOF) \
+        == data.data_contract_sha256(long_design(sealed=True), sampling=data.ASOF)
     with pytest.raises(data.DataContractError):
         data.long_data_view(view)
+
+
+def test_long_exact_default_has_empty_support_and_counts_it(lng, tmp_path):
+    """DS12_EXACT: every 144 h / 12 h ladder crosses a >=47 h weekend closure, so NO origin
+    has 13 exact bars. The default build must count that, not fill or thin."""
+    bundle = data.load_input(lng["src"], long_design())
+    assert bundle.sampling_rule == "DS12_EXACT"
+    table = data.build_origin_table(bundle, long_design())
+    for split in ("FIT", "INNER", "VALIDATION"):
+        c = table.counts[split]
+        assert c["rows_materialized"] == 0
+        assert c["origins"]["INPUT_SLOT_NOT_OBSERVED"] + c["origins"]["ORIGIN_OUTSIDE_CALENDAR_WEEK"] \
+            + c["origins"]["INPUT_VALUE_NOT_FINITE"] == c["origins"]["candidates"]
+    m = data.build_frozen_bundle(lng["src"], long_design(), tmp_path / "empty")
+    assert m["input_sampling"]["rule"] == "DS12_EXACT"
+    assert m["fit_statistics"]["status"] == "NO_FIT_ROWS"
+    assert all(v["n_rows"] == 0 for v in m["splits"].values())
+    assert data.verify_bundle(tmp_path / "empty")["status"] == "VERIFIED"
+
+
+def test_long_identities_differ_by_sampling_treatment():
+    d = long_design()
+    assert data.data_contract_sha256(d) != data.data_contract_sha256(d, sampling=data.ASOF)
