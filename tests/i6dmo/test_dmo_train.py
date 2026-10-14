@@ -450,3 +450,58 @@ def test_init_order_witness_recorded_and_preimported_record_refused():
               "determinism_flags": dict(T.current_determinism_flags(), tf_imported_before_flags=True)}
     with pytest.raises(T.TrainDisposition, match="DETERMINISM_INIT_ORDER_INVALID"):
         T.replay_monitored(bundle.forecast_model, fit, inner, record)
+
+
+def test_weights_at_witness_and_row_forward_witness_recorded_and_enforced(tmp_path):
+    """Decisive instrumentation: weight digests at witness time and batch-0 row forwards."""
+    import copy
+    from tools.i6dmo import model as M, replay_monitor as R
+    bundle = write_bundle(tmp_path / "b")
+    receipt = T.train_unit(DESIGN, bundle, tmp_path / "u", device="cpu",
+                           training_overrides={"max_epochs": 2})
+    assert receipt["status"] == "COMPLETED"
+    training = json.loads((tmp_path / "u" / "TRAINING.json").read_text())
+    witness = training["monitor_evaluation"]["witness"]
+    model_doc = json.loads((tmp_path / "u" / "model" / "MODEL.json").read_text())
+    # (1) weights-at-witness: recorded at monitor time, equal to the saved-file digests here.
+    assert witness["weights_at_witness"] == model_doc["weight_tensors"]
+    verdict = R.replay_unit(DESIGN, bundle, tmp_path / "u")
+    assert verdict["status"] == "MATCH" and verdict["weights_at_witness_match"] is True
+    # A mutated recorded digest is a typed mismatch naming the tensors.
+    t_path = tmp_path / "u" / "TRAINING.json"
+    corrupted = json.loads(t_path.read_text())
+    corrupted["monitor_evaluation"]["witness"]["weights_at_witness"][4]["sha256"] = "0" * 64
+    t_path.write_text(json.dumps(corrupted))
+    with pytest.raises(T.TrainDisposition, match="WEIGHTS_AT_WITNESS_MISMATCH.*4"):
+        R.replay_unit(DESIGN, bundle, tmp_path / "u")
+    t_path.write_text(json.dumps(training))
+    # (2) row-level forward witness: batch-0 per-row per-head float64 hex on both splits.
+    for split in ("fit", "inner"):
+        rows_hex = witness[split]["batch0_predictions_hex"]
+        assert len(rows_hex) == min(256, training["monitor_evaluation"]["batch_size"],
+                                    witness[split]["batches"][0]["rows"])
+        assert all(len(row) == 6 and all(float.fromhex(h) == float.fromhex(h) for h in row)
+                   for row in rows_hex)
+    # A corrupted stored row names the row and reports the delta pattern.
+    record = copy.deepcopy(training["monitor_evaluation"])
+    row3 = record["witness"]["fit"]["batch0_predictions_hex"][3]
+    row3[2] = (float.fromhex(row3[2]) + 0.5).hex()
+    eff = T.effective_from_design(DESIGN)
+    data = T.load_data_bundle(bundle, eff)
+    scales = json.loads((tmp_path / "u" / "SCALES.json").read_text())
+    loaded, _ = M.load_dmo(tmp_path / "u" / "model")
+    fit_rows, _ = T.trainable_rows(data["fit"])
+    inner_rows, _ = T.trainable_rows(data["inner"])
+    args = (loaded.forecast_model, T.transform(fit_rows, scales), T.transform(inner_rows, scales))
+    with pytest.raises(T.TrainDisposition, match="MONITOR_WITNESS_DIVERGENCE") as err:
+        T.replay_monitored(*args, record, ids=(fit_rows["row_id"], inner_rows["row_id"]))
+    assert "row 3" in str(err.value) and "uniform" in str(err.value).lower()
+
+
+def test_tf32_is_disabled_flags_first_and_recorded():
+    import tensorflow as tf
+    from tools.i6dmo import model as M
+    M.enable_determinism()
+    assert tf.config.experimental.tensor_float_32_execution_enabled() is False
+    assert M.DETERMINISM["tensor_float_32"] is False
+    assert T.current_determinism_flags()["tensor_float_32"] is False
