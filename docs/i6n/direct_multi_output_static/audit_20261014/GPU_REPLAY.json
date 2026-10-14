@@ -1,5 +1,5 @@
 {
- "code_commit": "7faecbdc",
+ "code_commit": "eb8add91",
  "covered": [
   "DMO01",
   "DMO04",
@@ -9,9 +9,10 @@
  "failed": 1,
  "failed_detail": {
   "DMO10": {
+   "history": "identical sum pair across 7c3bebb2 / 7faecbdc / eb8add91; monitored pair stable since 5047cef9",
    "test": "tests/i6dmo/test_dmo_train.py::test_dmo10_train_unit_end_to_end_restore_and_reload",
-   "typed": "MONITOR_WITNESS_DIVERGENCE (beyond the 1e-5 relative bound)",
-   "verdict": "the partial sums are BIT-IDENTICAL to the 7c3bebb2 round: the static GPU algorithm flags changed nothing in this environment, and 3 of 6 heads exceed the 1e-5 relative bound (max 1.82e-5), so the hard divergence stands. Because the sums did not move at all, either these flags do not govern the divergent kernels on this GPU/TF build, or they were set after TensorFlow initialization in the test process (the environment check passes while TF ignored them) - the DETERMINISM_FLAGS_MISMATCH guard verifies the environment, not that TF actually initialized under it. Owner: model lane. Nothing relaxed.",
+   "typed": "MONITOR_WITNESS_DIVERGENCE (beyond the 1e-5 bound; governed flags, subprocess entrypoints)",
+   "verdict": "the partial sums are BIT-IDENTICAL for the THIRD consecutive round, now under flags-first subprocess entrypoints with the init-order witness green and fresh training proven by provenance timestamps (25 updates). Kernel selection and TF init order are therefore EXCLUDED as causes. Two numbers invariant across seven code revisions mean a deterministic structural difference: most plausibly the monitor evaluates weights that are not the weights that get SAVED (a final weight mutation after the epoch's evaluation - optimizer slot/weight-decay application or the last gradient update ordering) while both weight digests are computed at save time, so they agree with the file, not with the evaluated state. Decisive probe for the model lane: at the moment the batch-0 witness is recorded, also record the per-tensor weight digests THEN and compare them with the saved digests - a mismatch there ends the hunt. Nothing relaxed.",
    "witness": {
     "batch": "fit batch 0 (start 0)",
     "heads_beyond_1e5": [
@@ -74,5 +75,5 @@
  "skipped": 1,
  "tests": "test_dmo_model.py + test_dmo_train.py -k dmo01/dmo04/dmo10/causality (12 selected)",
  "tf": "2.21.0",
- "wall_seconds": 29.8
+ "wall_seconds": 33.7
 }
