@@ -57,6 +57,17 @@ LONG_FROM_PLAN = {
 #: path here and the seal then stops with LONG_DESIGN_UNDECIDED.
 LONG_PLAN_OPEN_FIELDS_DEFAULT = ()
 LONG_PLAN_OPEN_FIELDS = LONG_PLAN_OPEN_FIELDS_DEFAULT
+FINAL_SUFFIX = "-FINAL"
+#: PLAN.md section 5 final-refit definition: "fit once on [2021-01-01, 2025-01-01) using the
+#: sealed inner/checkpoint rule, then freeze weights throughout TEST" (one scheduled pre-TEST
+#: refit). The sealed inner rule is the same eight-week chronological tail, so every final
+#: sample and valid label is strictly before TEST. No field is left open today.
+FINAL_TRAIN = {"start": "2021-01-01T00:00:00Z", "end": "2025-01-01T00:00:00Z"}
+FINAL_PLAN_OPEN_FIELDS_DEFAULT = ()
+FINAL_PLAN_OPEN_FIELDS = FINAL_PLAN_OPEN_FIELDS_DEFAULT
+FINAL_RULE = ("final design = validated short/long design with the PLAN section 5 final-refit "
+              "window [2021-01-01, 2025-01-01) and its eight-week inner tail; no outer validation "
+              "split; weights frozen throughout TEST; derived without reading any outcome")
 SHORT_CLOSURE_UNIT = "short.report"
 SHORT_CLOSURE_STATUSES = ("COMPLETE", "NOT_ELIGIBLE")
 TERMINAL_SCHEMA = "i6dmo.terminal.v1"
@@ -209,9 +220,36 @@ def _long_schema():
 LONG_SCHEMA = _long_schema()
 
 
+def _final_schema(fam):
+    schema = copy.deepcopy(LONG_SCHEMA if fam == "long" else SCHEMA)
+    base_id = LONG_ID if fam == "long" else SHORT_ID
+    schema["experiment_id"] = _fixed(base_id + FINAL_SUFFIX)
+    schema["splits"]["train"] = {"start": _fixed(FINAL_TRAIN["start"]), "end": _fixed(FINAL_TRAIN["end"])}
+    del schema["splits"]["validation"]
+    schema["derived_from"] = {
+        "rule": _fixed(FINAL_RULE),
+        "base_experiment_id": _fixed(base_id),
+        "base_design_sha256": _HEX,
+    }
+    if fam == "long":  # the long base already carries derived_from/seal; the final replaces them
+        schema["derived_from"]["base_short_terminal"] = LONG_SCHEMA["derived_from"]["short_terminal"]
+    schema["seal_sha256"] = _HEX
+    return schema
+
+
+FINAL_SCHEMAS = {fam: _final_schema(fam) for fam in ("short", "long")}
+
+
+def mode(doc):
+    """``FINAL_REFIT`` for a derived final design, otherwise ``VALIDATION``."""
+    eid = doc.get("experiment_id") if isinstance(doc, dict) else None
+    return "FINAL_REFIT" if isinstance(eid, str) and eid.endswith(FINAL_SUFFIX) else "VALIDATION"
+
+
 def family(doc):
-    """``long`` for the long experiment id, otherwise ``short`` (validated as such)."""
-    return "long" if isinstance(doc, dict) and doc.get("experiment_id") == LONG_ID else "short"
+    """``long`` for the long experiment ids, otherwise ``short`` (validated as such)."""
+    eid = doc.get("experiment_id") if isinstance(doc, dict) else None
+    return "long" if eid in (LONG_ID, LONG_ID + FINAL_SUFFIX) else "short"
 
 
 def _same(a, b):
@@ -272,8 +310,16 @@ def _seal_body(doc):
 
 
 def validate_design(doc):
-    """Validate a parsed short or long design; return a detached copy. Raises DesignError."""
-    if family(doc) == "long":
+    """Validate a parsed short/long validation or derived final design. Raises DesignError."""
+    fam, final = family(doc), mode(doc) == "FINAL_REFIT" if isinstance(doc, dict) else False
+    if final:
+        open_paths = _undecided(doc)
+        if open_paths:
+            raise DesignError("FINAL_DESIGN_UNDECIDED", f"PLAN leaves {open_paths} open; final units must wait")
+        _check(doc, FINAL_SCHEMAS[fam], "")
+        if doc["seal_sha256"] != _sha(_seal_body(doc)):
+            raise DesignError("FINAL_DESIGN_SEAL", "the sealed final design was modified")
+    elif fam == "long":
         open_paths = _undecided(doc)
         if open_paths:
             raise DesignError("LONG_DESIGN_UNDECIDED", f"PLAN.md leaves {open_paths} open; long.fit must wait")
@@ -283,6 +329,34 @@ def validate_design(doc):
     else:
         _check(doc, SCHEMA, "")
     return json.loads(_canonical(doc))
+
+
+def final_refit_design(base_design):
+    """Derive the typed FINAL_REFIT design from a validated validation design (pure, deterministic).
+
+    TRAIN becomes the PLAN final window [2021-01-01, 2025-01-01) with the same eight-week inner
+    tail; the outer validation split is removed; everything else (features, model, training,
+    business, metrics, execution, horizons, input grid, seed) is mirrored unchanged. A field in
+    ``FINAL_PLAN_OPEN_FIELDS`` is a typed ``FINAL_DESIGN_UNDECIDED``; nothing is improvised.
+    """
+    base = validate_design(base_design)
+    if mode(base) == "FINAL_REFIT":
+        raise DesignError("FINAL_FROM_VALIDATION_ONLY", "a final design derives from the validation design")
+    open_paths = [".".join(path) for path in FINAL_PLAN_OPEN_FIELDS]
+    if open_paths:
+        raise DesignError("FINAL_DESIGN_UNDECIDED", f"PLAN leaves {open_paths} open; final units must wait")
+    doc = copy.deepcopy(base)
+    doc["experiment_id"] = base["experiment_id"] + FINAL_SUFFIX
+    doc["splits"]["train"] = dict(FINAL_TRAIN)
+    del doc["splits"]["validation"]
+    derived = {"rule": FINAL_RULE, "base_experiment_id": base["experiment_id"],
+               "base_design_sha256": design_sha256(base)}
+    if family(base) == "long":
+        derived["base_short_terminal"] = copy.deepcopy(base["derived_from"]["short_terminal"])
+    doc["derived_from"] = derived
+    doc.pop("seal_sha256", None)
+    doc["seal_sha256"] = _sha(_seal_body(doc))
+    return validate_design(doc)
 
 
 def _reject_duplicates(pairs):
@@ -361,9 +435,19 @@ def effective_config(design):
     if len(offsets) != inp["observations"] or offsets[-1] != 0:
         raise DesignError("INPUT_GRID", "span/spacing do not give the declared observations ending at t")
     m, t = d["model"], d["training"]
+    splits_out = {
+        "fit": {"start": _iso(train_start), "end": _iso(inner_start)},
+        "inner": {"start": _iso(inner_start), "end": _iso(train_end)},
+        "test": dict(s["test"]),
+        "end_exclusive": True,
+        "label_rule": "valid label requires origin+h < end of its own split (fit: < inner start)",
+    }
+    if mode(d) == "VALIDATION":
+        splits_out["validation"] = dict(s["validation"])
     effective = {
         "schema": EFFECTIVE_SCHEMA,
         "family": family(d),
+        "mode": mode(d),
         "design": d,
         "design_sha256": design_sha256(d),
         "experiment_id": d["experiment_id"],
@@ -371,14 +455,7 @@ def effective_config(design):
         "horizons_hours": list(d["horizons_hours"]),
         "offsets_hours": offsets,
         "feature_manifest": features,
-        "splits": {
-            "fit": {"start": _iso(train_start), "end": _iso(inner_start)},
-            "inner": {"start": _iso(inner_start), "end": _iso(train_end)},
-            "validation": dict(s["validation"]),
-            "test": dict(s["test"]),
-            "end_exclusive": True,
-            "label_rule": "valid label requires origin+h < end of its own split (fit: < inner start)",
-        },
+        "splits": splits_out,
         "model": {
             "schema": "i6dmo.model.v1",
             "features": features["features"],
@@ -424,14 +501,16 @@ def validate_design_report(path):
     fm = effective["feature_manifest"]
     return {
         "schema": "i6dmo.validate_design.v1", "status": "PASS", "pure": True,
-        "family": effective["family"], "experiment_id": effective["experiment_id"],
+        "family": effective["family"], "mode": effective["mode"],
+        "experiment_id": effective["experiment_id"],
         "design_sha256": effective["design_sha256"],
         "effective_config_sha256": effective["effective_config_sha256"],
         "feature_count": fm["count"], "feature_manifest_sha256": fm["manifest_sha256"],
         "availability_contract_sha256": fm.get("availability_contract_sha256"),
         "unverified_features": fm.get("unverified_features", []),
         "horizons_hours": effective["horizons_hours"], "offsets_hours": effective["offsets_hours"],
-        "splits": {k: v for k, v in effective["splits"].items() if k in ("fit", "inner", "validation")},
+        "splits": {k: v for k, v in effective["splits"].items() if k in ("fit", "inner", "validation")
+                   and isinstance(v, dict)},
         "test_open": False,
         "disclosure": "19-feature set was developed using 2024; outer VALIDATION is development, "
                       "not an untouched holdout; unverified producers block confirmatory TEST",

@@ -1,5 +1,6 @@
 """Bounded independent protocol probes; no fitting, GPU, TEST data or services."""
 import argparse
+import importlib
 import json
 import sys
 import tempfile
@@ -11,7 +12,12 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT))
 
-from tools.i6dmo import data, strategy_adapter, unit_runner  # noqa: E402
+from tools.i6dmo import data, unit_runner  # noqa: E402
+
+# AUD-DMO-03 probes the REAL executor seam: the hook module the worker/unit_runner registration
+# resolves for kind final_test (originally tools.i6dmo.strategy_adapter, whose run_unit was the
+# unconditional placeholder; the correction re-registers tools.i6dmo.final with typed guards).
+final_test_hook = importlib.import_module(unit_runner.hook_module("final_test"))  # noqa: E402
 
 
 def run():
@@ -30,7 +36,7 @@ def run():
             "window": {"train": list(final_train.values())}}
     selected = unit_runner._family_design(spec)["splits"]["train"]
     with tempfile.TemporaryDirectory() as tmp:
-        terminal = strategy_adapter.run_unit(
+        terminal = final_test_hook.run_unit(
             {"kind": "final_test", "unit_id": "fixture.final", "identity_sha256": "a" * 64},
             Path(tmp) / "out", Path(tmp) / "progress.json")
     probes = [

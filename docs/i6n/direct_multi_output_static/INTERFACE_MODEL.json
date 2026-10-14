@@ -12,7 +12,9 @@
     "tests/i6dmo/test_dmo_design.py",
     "tests/i6dmo/test_dmo_model.py",
     "tests/i6dmo/test_dmo_train.py",
-    "tests/i6dmo/test_dmo_long.py"
+    "tests/i6dmo/test_dmo_long.py",
+    "tools/i6dmo/final.py",
+    "tests/i6dmo/test_dmo_final.py"
   ],
   "python_api": {
     "tools.i6dmo.design.load_design(path) -> dict": "typed, unknown/missing fields rejected at every level; fixed C-section values enforced",
@@ -140,5 +142,18 @@
   "short_identities": {
     "design_sha256": "541ce40ac1becceb16b14937e34e3452eee36aad8a370686dacf62860c86d381",
     "effective_config_sha256": "cd78cc6ce9c03d2202d73cc7e5a0624f60f72a66f7abe498b5b027e5c148513f (changed from 56ba5324... by the added effective 'family' key; design sha unchanged)"
+  },
+  "final_refit": {
+    "protocol": "typed FINAL_REFIT design = design.final_refit_design(validation design): experiment_id + '-FINAL', TRAIN [2021-01-01, 2025-01-01) with the same 8-week inner tail (fit [2021-01-01, 2024-11-06), inner [2024-11-06, 2025-01-01)), validation split removed, sealed; effective mode FINAL_REFIT; FINAL_PLAN_OPEN_FIELDS (empty) -> FINAL_DESIGN_UNDECIDED",
+    "unit_runner": "_family_design derives the final design for kind final_refit and refuses a unit window differing from the typed one (FINAL_WINDOW_MISMATCH); the REAL CLI (python -m tools.i6dmo.train) consumes the final design file directly",
+    "identity": "final design/effective shas differ from validation shas; a validation-era bundle is refused under the final design (SPLIT_BOUNDARY_VIOLATION) and vice versa, so no inherited TRAINED terminal crosses identities; scales fit only on the final TRAIN window; every final sample/label strictly before TEST",
+    "software_test_overrides": "env I6DMO_TEST_TRAINING_OVERRIDES (JSON, max_epochs/patience only) for subprocess tests; stamps scientific=false; no CLI flag"
+  },
+  "final_test_path": {
+    "module": "tools/i6dmo/final.py (model lane), registered as unit_runner HOOKS['final_test'] (replaces the strategy placeholder by registration)",
+    "guards": "guard_test(root): TEST_READINESS READY; PAIR_VALIDATION/PROCEDURE_FREEZE/DATA_PROVENANCE PASS without TEST reads; PROCEDURE_FREEZE.final_fit_policy must equal the typed FINAL_REFIT; DATA_PROVENANCE.evidence.fred_clocks must resolve fred.rates.dgs3mo.diff_5d and fred.rates.dgs7.logret_5d (not UNVERIFIED/STILL_UNRESOLVED); then guard_execution_policy(root): strategy_adapter.load_execution_policy + execution_from_policy, refusing absent (EXECUTION_POLICY_MISSING) or tampered (EXECUTION_POLICY_TAMPERED) receipts; conventions are never re-derived",
+    "test_bundle": "build_test_bundle(final_design, {'test': arrays}, out, readiness=guard_test(...)): single test split bound to readiness_sha256 and the final design sha; the ordinary trainer refuses it (TEST_FORBIDDEN)",
+    "predictions": "generate_test_predictions(final_unit_dir, test_bundle_dir, out, readiness=...): frozen weights + fit-only SCALES reused, design shas must match, writes test.npz (row_id, predicted_price, ...) + PREDICTIONS.json; trained=false",
+    "hook": "run_unit(spec,...): spec needs campaign_root, upstream_dirs {final.short_refit, final.long_refit}, test_bundles {short, long}; refusals are FAILED with disposition FINAL_BLOCKED_GATE:<code> naming the missing object; backtest delegates to strategy export run_final_backtest(spec, predictions, execution_params, out_dir) (until published: FINAL_BLOCKED_GATE:FINAL_BACKTEST_EXPORT_MISSING with predictions retained)"
   }
 }

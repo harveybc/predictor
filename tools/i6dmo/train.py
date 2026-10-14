@@ -42,6 +42,7 @@ from tools.i6dmo import design as D
 RECEIPT_SCHEMA = "i6dmo.train_receipt.v1"
 BUNDLE_SCHEMA = "i6dmo.data_bundle.v1"
 SPLITS = ("fit", "inner", "validation")
+FINAL_SPLITS = ("fit", "inner")
 ARRAYS = ("row_id", "x", "origin_price", "target_price", "mask")
 OVERRIDABLE = ("max_epochs", "patience")
 CODE_FILES = ("tools/i6dmo/design.py", "tools/i6dmo/model.py", "tools/i6dmo/train.py",
@@ -102,8 +103,14 @@ def effective_from_design(path):
         raise ContractError("DESIGN_INVALID", str(exc)) from None
 
 
+def required_splits(effective):
+    """The model splits a bundle must carry: no outer validation in a FINAL_REFIT."""
+    return FINAL_SPLITS if effective.get("mode") == "FINAL_REFIT" else SPLITS
+
+
 def load_data_bundle(bundle_dir, effective):
     """Authenticate the frozen data bundle and run the model-side boundary checks."""
+    expected = required_splits(effective)
     root = Path(bundle_dir)
     try:
         manifest = json.loads((root / "BUNDLE.json").read_text(encoding="utf-8"))
@@ -118,9 +125,10 @@ def load_data_bundle(bundle_dir, effective):
     if not isinstance(splits, dict):
         raise TrainDisposition("BUNDLE_SCHEMA", "splits must be an object")
     if any("test" in str(name).lower() for name in splits):
-        raise TrainDisposition("TEST_FORBIDDEN", "a TEST split is never read by the short fit")
-    if set(splits) != set(SPLITS):
-        raise TrainDisposition("BUNDLE_SCHEMA", f"splits must be exactly {list(SPLITS)}")
+        raise TrainDisposition("TEST_FORBIDDEN", "a TEST split is never read by a fit; the guarded "
+                               "final module alone consumes TEST bundles, without training")
+    if set(splits) != set(expected):
+        raise TrainDisposition("BUNDLE_SCHEMA", f"splits must be exactly {list(expected)}")
     try:
         identity = D.check_feature_identity(manifest["features"])
     except D.DesignError as exc:
@@ -136,7 +144,7 @@ def load_data_bundle(bundle_dir, effective):
     steps, n_features = len(effective["offsets_hours"]), len(identity["features"])
     out = {"manifest": manifest, "manifest_sha256": file_sha256(root / "BUNDLE.json"),
            "feature_identity": identity}
-    for name in SPLITS:
+    for name in expected:
         entry = splits[name]
         path = root / entry["path"]
         if Path(entry["path"]).is_absolute() or ".." in Path(entry["path"]).parts:
@@ -482,7 +490,7 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
                              training, effective["seed"], progress)
             t0 = time.monotonic()
             predictions = {}
-            for name in SPLITS:
+            for name in required_splits(effective):
                 x, _, _ = transform(data[name], scales)
                 predictions[name] = to_price(M.predict_matrix(bundle.forecast_model, x), data[name], scales)
             predict_s = time.monotonic() - t0
@@ -494,13 +502,13 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
                 "inner_trainable": len(inner_rows["row_id"]), "inner_without_valid_head": inner_dropped},
             **result})
         (out / "predictions").mkdir(exist_ok=True)
-        for name in SPLITS:
+        for name in required_splits(effective):
             np.savez(out / "predictions" / f"{name}.npz", row_id=data[name]["row_id"],
                      horizons_hours=np.asarray(effective["horizons_hours"], np.int64),
                      origin_price=data[name]["origin_price"], predicted_price=predictions[name],
                      target_price=data[name]["target_price"], mask=data[name]["mask"])
         files = ["model/forecast_model.keras", "model/MODEL.json", "SCALES.json", "TRAINING.json",
-                 *[f"predictions/{n}.npz" for n in SPLITS]]
+                 *[f"predictions/{n}.npz" for n in required_splits(effective)]]
         receipt["artifacts"] = {rel: file_sha256(out / rel) for rel in files}
         receipt["identity"].update(weights_sha256=model_doc["weights_sha256"],
                                    model_archive_sha256=model_doc["archive_sha256"],
@@ -510,7 +518,7 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
         receipt["model_side_summary"] = {
             "note": "pooled original-price MAE/naive on identical valid rows; the independent replay governs",
             "horizons_hours": effective["horizons_hours"],
-            **{name: _summary(data[name], predictions[name]) for name in SPLITS}}
+            **{name: _summary(data[name], predictions[name]) for name in required_splits(effective)}}
         receipt["timings"] = {"fit_s": result["fit_seconds"], "predict_s": predict_s}
         receipt.update(status="COMPLETED", code="COMPLETED")
     except TrainDisposition as exc:
@@ -540,8 +548,18 @@ def main(argv=None):
     parser.add_argument("--device", required=True, choices=("cpu", "gpu"))
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
+    overrides = None
+    raw = os.environ.get("I6DMO_TEST_TRAINING_OVERRIDES")
+    if raw:  # software tests only: stamps the receipt scientific=false; no CLI flag exists
+        try:
+            overrides = json.loads(raw)
+        except ValueError:
+            print(json.dumps({"status": "CONTRACT_ERROR", "code": "OVERRIDE",
+                              "detail": "I6DMO_TEST_TRAINING_OVERRIDES is not JSON"}))
+            return 2
     try:
-        receipt = train_unit(args.design, args.bundle, args.out, args.device)
+        receipt = train_unit(args.design, args.bundle, args.out, args.device,
+                             training_overrides=overrides)
     except ContractError as exc:
         print(json.dumps({"status": "CONTRACT_ERROR", "code": exc.code, "detail": str(exc)}))
         return 2

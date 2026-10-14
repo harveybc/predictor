@@ -43,8 +43,8 @@ def test_final_refit_design_is_typed_and_changes_identity():
     D.validate_design(final)  # sealed and self-consistent
     eff = D.effective_config(final)
     assert eff["mode"] == "FINAL_REFIT" and eff["family"] == "short"
-    assert eff["splits"]["fit"] == {"start": "2021-01-01T00:00:00Z", "end": "2024-11-04T00:00:00Z"}
-    assert eff["splits"]["inner"] == {"start": "2024-11-04T00:00:00Z", "end": "2025-01-01T00:00:00Z"}
+    assert eff["splits"]["fit"] == {"start": "2021-01-01T00:00:00Z", "end": "2024-11-06T00:00:00Z"}
+    assert eff["splits"]["inner"] == {"start": "2024-11-06T00:00:00Z", "end": "2025-01-01T00:00:00Z"}
     assert "validation" not in eff["splits"]
     # The final identity never matches the validation identity: no terminal can cross.
     val = D.effective_config(base)
@@ -152,6 +152,22 @@ def _gate(root, name, status="PASS", evidence=None):
     return doc
 
 
+def _execution_policy(root):
+    from tools.i6dmo import strategy_adapter as sa
+    body = {"schema": sa.EXECUTION_POLICY_SCHEMA,
+            "instrument": {"pip_cost_parameter": 0.00001, "lot_units": 100000.0,
+                           "cost_verification": "NOT_BROKER_VERIFIED",
+                           "costs": {"spread_price": 0.00002, "slippage_price": 0.00001,
+                                     "commission_per_lot_round_trip": 7.0, "swap_per_lot_per_day": 10.0}},
+            "business_rules": {"min_valid_long_heads": 2, "min_valid_short_heads": 1,
+                               "initial_equity": 10000.0},
+            "simulation_assumptions": {"force_close_lead_hours": 1},
+            "reporting": {"periods_per_year": 260}}
+    doc = dict(body, receipt_sha256=sa._canonical_sha(body))
+    (root / "gates" / "EXECUTION_POLICY.json").write_text(json.dumps(doc))
+    return doc
+
+
 def _ready_root(tmp_path):
     from tools.i6dmo import final as F
     root = tmp_path / "root"
@@ -164,6 +180,7 @@ def _ready_root(tmp_path):
         "fred.rates.dgs7.logret_5d": {"status": "VERIFIED"}}})
     (root / "gates" / "TEST_READINESS.json").write_text(json.dumps(
         {"schema": "i6dmo.test_readiness.v1", "state": "READY", "receipts": {}, "readiness_sha256": "ef" * 32}))
+    _execution_policy(root)
     return root
 
 
@@ -226,3 +243,50 @@ def test_guarded_test_bundle_and_prediction_generation(tmp_path):
         assert pz["horizons_hours"].tolist() == HORIZONS
     with pytest.raises(F.FinalBlocked, match="TEST_READINESS"):
         F.generate_test_predictions(unit, bundle, tmp_path / "p2", readiness=None)
+
+
+def test_final_hook_consumes_the_sealed_execution_policy_never_re_derived(tmp_path):
+    """AUD-DMO-06 wiring: absent or tampered EXECUTION_POLICY.json refuses the final hook."""
+    from tools.i6dmo import final as F
+    root = _ready_root(tmp_path)
+    spec = {"kind": "final_test", "unit_id": "final.pair_test", "identity_sha256": "a" * 64,
+            "campaign_root": str(root), "upstream_dirs": {}, "test_bundles": {}}
+    (root / "gates" / "EXECUTION_POLICY.json").unlink()
+    terminal = F.run_unit(spec, tmp_path / "o1", tmp_path / "p1.json")
+    assert terminal["disposition"] == "FINAL_BLOCKED_GATE:EXECUTION_POLICY_MISSING"
+    doc = _execution_policy(root)
+    doc["business_rules"]["initial_equity"] = 20000.0  # body changed, seal kept: tampered
+    (root / "gates" / "EXECUTION_POLICY.json").write_text(json.dumps(doc))
+    terminal = F.run_unit(spec, tmp_path / "o2", tmp_path / "p2.json")
+    assert terminal["disposition"] == "FINAL_BLOCKED_GATE:EXECUTION_POLICY_TAMPERED"
+
+
+def test_final_hook_happy_path_hands_policy_params_to_the_backtest(tmp_path):
+    from tools.i6dmo import final as F, train as T
+    root = _ready_root(tmp_path)
+    readiness = F.guard_test(root)
+    final_design = D.final_refit_design(D.load_design(DESIGN))
+    unit = tmp_path / "unit"
+    receipt = T.train_unit(F.design_file_for(final_design, tmp_path), final_bundle(tmp_path / "fb"), unit,
+                           device="cpu", training_overrides={"max_epochs": 2})
+    assert receipt["status"] == "COMPLETED"
+    test_arrays = split_arrays("2025-01-06T00:00:00", 10, 7)
+    bundle = F.build_test_bundle(final_design, {"test": test_arrays}, tmp_path / "tb", readiness=readiness)
+    seen = {}
+
+    def fake_backtest(spec, predictions, params, out_dir):
+        seen.update(params=params, families=sorted(predictions))
+        return {"pair_status": "PASS", "disposition": "FINAL_TEST_COMPLETE", "reports": []}
+
+    spec = {"kind": "final_test", "unit_id": "final.pair_test", "identity_sha256": "a" * 64,
+            "campaign_root": str(root),
+            "upstream_dirs": {"final.short_refit": str(unit), "final.long_refit": str(unit)},
+            "test_bundles": {"short": str(bundle), "long": str(bundle)},
+            "_backtest_runner": fake_backtest}
+    terminal = F.run_unit(spec, tmp_path / "out", tmp_path / "p.json")
+    assert terminal["status"] == "COMPLETE" and terminal["disposition"] == "FINAL_TEST_COMPLETE"
+    assert seen["families"] == ["long", "short"]
+    assert seen["params"]["execution"].initial_equity == 10000.0
+    assert seen["params"]["min_long"] == 2
+    assert terminal["gates"]["costs_sha256"] == seen["params"]["costs_sha256"]
+    assert terminal["artifacts"]["short_test_predictions"]["path"] == "predictions_short/test.npz"

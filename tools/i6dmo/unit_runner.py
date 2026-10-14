@@ -22,9 +22,10 @@ import time
 from pathlib import Path
 
 HOOKS = {"report": "tools.i6dmo.reporting", "pair": "tools.i6dmo.strategy_adapter",
-         "final_test": "tools.i6dmo.strategy_adapter"}
+         "final_test": "tools.i6dmo.final"}
 HOOK_OWNERS = {"tools.i6dmo.reporting": "ops lane (tools/i6dmo/reporting.py)",
-               "tools.i6dmo.strategy_adapter": "strategy lane"}
+               "tools.i6dmo.strategy_adapter": "strategy lane",
+               "tools.i6dmo.final": "model lane (guarded final TEST path)"}
 TRAINER_MODULE = "tools.i6dmo.train"
 FIT_KINDS = ("fit", "final_refit")
 
@@ -49,10 +50,23 @@ def hook_module(kind):
 
 
 def _family_design(spec):
+    """The design the trainer CLI receives: the family design, or its typed FINAL_REFIT variant.
+
+    A ``final_refit`` unit trains on the PLAN final window (TRAIN 2021-2025 with its inner tail),
+    never the fixed validation adapter; the unit's declared window must match the typed protocol
+    exactly (FINAL_WINDOW_MISMATCH otherwise, a typed terminal upstream, not an improvised window).
+    """
     effective = spec["effective_config"]
-    if spec["family"] == "long":
-        return effective["long"]["design"]
-    return effective["design"]
+    base = effective["long"]["design"] if spec["family"] == "long" else effective["design"]
+    if spec.get("kind") != "final_refit":
+        return base
+    from tools.i6dmo import design as design_module  # model lane typed adapter
+    final = design_module.final_refit_design(base)
+    declared = [final["splits"]["train"]["start"], final["splits"]["train"]["end"]]
+    window = (spec.get("windows") or spec.get("window") or {}).get("train")
+    if window is not None and list(window) != declared:
+        raise ValueError(f"FINAL_WINDOW_MISMATCH: unit window {window} != typed final window {declared}")
+    return final
 
 
 def _progress_from_trainer(src, dst):
