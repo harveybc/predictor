@@ -1,18 +1,30 @@
 {
   "schema": "i6dmo.method_state.v1",
   "updated_on": "2026-10-14",
-  "current_stage": "S8_UNIT_TEST_DESIGN",
-  "execution_status": "DESIGNED_NOT_IMPLEMENTED",
-  "design_artifacts": ["PLAN.md", "EXPERIMENT.short.json", "ACCEPTANCE.md"],
-  "completed_definition_stages": ["S0_DISCOVERY", "S1_REQUIREMENTS", "S2_USE_CASES", "S3_ACCEPTANCE_TEST_DESIGN", "S4_ARCHITECTURE", "S5_SYSTEM_TEST_DESIGN", "S6_COMPONENT_DESIGN", "S7_INTEGRATION_TEST_DESIGN"],
+  "current_stage": "S10_INTEGRATION_VERIFICATION",
+  "execution_status": "AUDIT_REVISE_BEFORE_CONTINUE",
+  "design_artifacts": [
+    "PLAN.md",
+    "EXPERIMENT.short.json",
+    "ACCEPTANCE.md"
+  ],
+  "completed_definition_stages": [
+    "S0_DISCOVERY",
+    "S1_REQUIREMENTS",
+    "S2_USE_CASES",
+    "S3_ACCEPTANCE_TEST_DESIGN",
+    "S4_ARCHITECTURE",
+    "S5_SYSTEM_TEST_DESIGN",
+    "S6_COMPONENT_DESIGN",
+    "S7_INTEGRATION_TEST_DESIGN"
+  ],
   "definition_gate": "SATOSHI_MUST_REVIEW_AND_MAP_DMO01_DMO20_BEFORE_RUNTIME_IMPLEMENTATION",
   "next_allowed_actions": [
-    "Read the master amendment, plan, design and acceptance table",
-    "Define and implement DMO01-DMO20 unit and integration negative controls",
-    "Implement modular CLI and runtime only after executable unit-test design",
-    "Recover point-in-time source evidence and build full TRAIN/VALIDATION support",
-    "Run one preferred-GPU full short fit after gates and resource admission",
-    "Let durable scripts advance eligible stages without an agent"
+    "Integrate bounded warehouse readback correction and regressions",
+    "Follow the audit correction order dated 2026-10-14",
+    "Restore exact input sampling under a new identity",
+    "Implement and verify actual final refit and guarded TEST path without real TEST access",
+    "Complete independent traceability and GPU integration evidence before corrected scientific release"
   ],
   "blocked_actions": [
     "Restart retired H4/H72 DOIN campaign",
@@ -20,5 +32,14 @@
     "Change consensus or silently reuse old identity/donors",
     "Claim tests or scientific gates passed without evidence"
   ],
-  "history": [{"date": "2026-10-14", "event": "Owner changed next experiment to short direct multi-output DS2 static business baseline; implementation delegated to Satoshi."}]
+  "history": [
+    {
+      "date": "2026-10-14",
+      "event": "Owner changed next experiment to short direct multi-output DS2 static business baseline; implementation delegated to Satoshi."
+    },
+    {
+      "date": "2026-10-14",
+      "event": "Independent audit fdaae9d2 reproduced three protocol defects; original 208 CPU tests passed; cost publication and two mirrors repaired; scientific successor held."
+    }
+  ]
 }

@@ -1,0 +1,31 @@
+{
+  "schema": "i6dmo.audit_verification.v1",
+  "audited_commit": "fdaae9d2",
+  "verdict": "REVISE_BEFORE_CONTINUE",
+  "original_full_suite": {"device": "CPU", "passed": 208, "seconds": 130.11, "memory_cap_gib": 3, "wall_limit_seconds": 300},
+  "readback_regressions_pre": {"failed": 4, "seconds": 0.38},
+  "readback_regressions_and_existing_outbox_post": {"passed": 8, "seconds": 0.36},
+  "independent_protocol_defects_reproduced": 3,
+  "scientific_training_runs_by_audit": 0,
+  "test_rows_read_by_audit": 0,
+  "warehouse": {
+    "report_sha256": "5dcbc7c1a9c3a4386a23da2f5d17d65e83f3aeee65c52b9fb1aad6c80ba677bf",
+    "delivered_reports": 1,
+    "cost_metrics": 5,
+    "exact_readback_verified": true,
+    "mirrors_verified": 2,
+    "files_per_mirror": 19,
+    "publication_timer_enabled": true
+  },
+  "retained_fit": {"sampling": "DS2_ASOF_LAST_AVAILABLE", "epochs_completed": 32, "best_epoch": 22, "updates": 2272, "fit_seconds": 32.21830207697349, "trainer_wall_seconds": 36.781082967994735, "cgroup_peak_bytes": 2431946752},
+  "scientific_worker_timers_stopped_disabled": true,
+  "doin_unchanged": {
+    "hosts_checked": 3,
+    "runtime_repositories_clean": true,
+    "node_commit": "393049dd4591076d4012f6ff1974aa42c4a390cf",
+    "core_commit": "9f9d3f757c5ee69c2995352a2370021fc837534c",
+    "plugins_commit": "2fc0523e6ee6fa371cee4d7862ca61c087a852fc",
+    "old_four_nodes_and_successor_disabled": true,
+    "live_consensus_recertified": false
+  }
+}

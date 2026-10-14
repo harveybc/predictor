@@ -22,7 +22,7 @@ from pathlib import Path
 STORE_SRC = Path(__file__).resolve().parents[2] / "olap" / "store" / "src"
 if str(STORE_SRC) not in sys.path:
     sys.path.insert(0, str(STORE_SRC))
-from predictor_olap_store.query import normalise_report, report_sha256  # noqa: E402
+from predictor_olap_store.query import MAX_LIMIT, normalise_report, report_sha256  # noqa: E402
 
 from tools.i6n_archive.sink import _urllib  # noqa: E402  (shared stdlib HTTP transport)
 from tools.i6n_swarm.common import canonical  # noqa: E402
@@ -214,6 +214,17 @@ class HttpWarehouse:
     def query_metrics(self, digest):
         if len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
             raise ValueError("bad digest")
+        where = f"WHERE report_sha256='{digest}'"
+        count_sql = f"SELECT COUNT(*) AS row_count FROM gov_metric {where} LIMIT 1"
+        counts = self._call("GET", "/api/v1/query?" + urllib.parse.urlencode({"sql": count_sql}))["rows"]
+        count = counts[0].get("row_count") if len(counts) == 1 else None
+        if not isinstance(count, int) or isinstance(count, bool) or count < 0:
+            raise RuntimeError("WAREHOUSE_READBACK_COUNT_INVALID")
+        if count > MAX_LIMIT:
+            raise RuntimeError("WAREHOUSE_READBACK_OVERFLOW")
         sql = ("SELECT report_sha256, metric, value, unit, horizon, split FROM gov_metric "
-               f"WHERE report_sha256='{digest}' LIMIT 10000")
-        return self._call("GET", "/api/v1/query?" + urllib.parse.urlencode({"sql": sql}))["rows"]
+               f"{where} LIMIT {MAX_LIMIT}")
+        rows = self._call("GET", "/api/v1/query?" + urllib.parse.urlencode({"sql": sql}))["rows"]
+        if len(rows) != count:
+            raise RuntimeError("WAREHOUSE_READBACK_COUNT_MISMATCH")
+        return rows
