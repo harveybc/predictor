@@ -16,6 +16,11 @@ def bundle():
     return M.build_dmo(M.model_config(list(MANIFEST_NO_STLFSI4)))
 
 
+def _parents(model, name):
+    """Names of the layers feeding ``name`` in the forecast graph (all call sites)."""
+    return [n.operation.name for node in model.get_layer(name)._inbound_nodes for n in node.parent_nodes]
+
+
 def _x(rows=5, seed=0):
     return np.random.default_rng(seed).normal(size=(rows, 13, 19)).astype("float32")
 
@@ -44,9 +49,8 @@ def test_dmo01_branch_fusion_encoding_core_identity(bundle):
     pe = bundle.forecast_model.get_layer("positional_encoding")
     assert isinstance(pe, M.PhysicalOffsetEncoding)
     assert pe.offsets_hours == tuple(range(-24, 1, 2))
-    fusion = bundle.forecast_model.get_layer("sequence_fusion")
-    assert pe.input is fusion.output
-    assert bundle.forecast_model.get_layer("temporal_core").input is pe.output
+    assert _parents(bundle.forecast_model, "positional_encoding") == ["sequence_fusion"]
+    assert _parents(bundle.forecast_model, "temporal_core") == ["positional_encoding"]
     convs = [l for l in bundle.core_model.layers if isinstance(l, tf.keras.layers.Conv1D)]
     assert [(l.filters, l.kernel_size, l.strides, l.padding) for l in convs] == \
         [(8, (3,), (1,), "causal"), (4, (3,), (1,), "causal")]
@@ -72,6 +76,9 @@ def test_dmo01_no_forbidden_layers(bundle):
 def test_dmo01_heads_have_independent_weights_and_share_one_backbone(bundle):
     heads = bundle.head_models
     assert list(heads) == ["h2", "h3", "h4", "h5", "h6", "h12"]
+    for name in heads:  # every head reads the one shared core output, called once
+        assert _parents(bundle.forecast_model, name) == ["temporal_core"]
+    assert len(bundle.forecast_model.get_layer("temporal_core")._inbound_nodes) == 1
     ids = [{id(w) for w in head.weights} for head in heads.values()]
     for i, a in enumerate(ids):
         for b in ids[i + 1:]:
