@@ -98,3 +98,41 @@ following commit; POST for all four model-lane files: `81 passed in 41.42s`.
 - Bundle schema: the data lane reports that its real short bundle conforms and
   was accepted by `load_data_bundle` (INTERFACE_DATA).
 - A tiny CPU smoke run (200 epochs) took 27 s. This is not an ETA.
+
+## Round 3: audit corrections AUD-DMO-02 / AUD-DMO-03 (lane 2)
+
+Audit branch `98d83fcf` merged ordinarily; lane 3 `3268079d` merged before the
+final hooks. Tests first at `4f8e32ac` (PRE: 15 failed). Probes (audit
+`probes.py`, probe 3 now resolved through the registered `unit_runner` hook,
+the real executor seam; strategy_adapter untouched):
+
+| Probe | PRE | POST |
+|---|---|---|
+| AUD-DMO-01 (sampling) | REPRODUCED | REPRODUCED — lane 1 owns it |
+| AUD-DMO-02 (final window) | REPRODUCED | NOT_REPRODUCED |
+| AUD-DMO-03 (final placeholder) | REPRODUCED | NOT_REPRODUCED |
+
+- Typed FINAL_REFIT: `final_refit_design` seals TRAIN `[2021-01-01,
+  2025-01-01)` with the same 8-week inner tail (fit ends 2024-11-06); no outer
+  validation split; every sample/label strictly before TEST; scales fit only on
+  the final TRAIN window; `FINAL_DESIGN_UNDECIDED` for PLAN-open fields (none).
+  Final and validation identities never match, and each refuses the other's
+  bundle, so no TRAINED terminal crosses identities (tested both directions).
+- `unit_runner._family_design` applies the final window for `final_refit`
+  (FINAL_WINDOW_MISMATCH otherwise) and the REAL CLI path was exercised in a
+  subprocess on synthetic dates/arrays: COMPLETED on a final-window bundle,
+  no validation predictions, `scientific=false` via the env-only test override.
+- `tools/i6dmo/final.py` (new, model lane) replaces the placeholder by
+  registration (`HOOKS["final_test"]`): guarded TEST bundle construction,
+  frozen-model prediction generation and the final hook. Guards tested as
+  refusals: TEST_READINESS, PAIR_VALIDATION, PROCEDURE_FREEZE policy mismatch,
+  FRED clocks unresolved, EXECUTION_POLICY absent/tampered (consumed via
+  `strategy_adapter.execution_from_policy(load_execution_policy(...))`, never
+  re-derived). Backtest delegates to the strategy export
+  `run_final_backtest(spec, predictions, execution_params, out_dir)`; until the
+  strategy lane publishes it, the hook returns the typed
+  `FINAL_BLOCKED_GATE:FINAL_BACKTEST_EXPORT_MISSING` with predictions retained.
+- POST: model-lane files 98 passed; neighboring strategy/ops guard tests 38
+  passed; full `tests/i6dmo` 227 passed (pre-merge baseline) — code-only
+  acceptance, not scientific success. AUD-DMO-01 and the real TEST year remain
+  closed pending lane 1 and the external gates.
