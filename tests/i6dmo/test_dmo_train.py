@@ -505,3 +505,50 @@ def test_tf32_is_disabled_flags_first_and_recorded():
     assert tf.config.experimental.tensor_float_32_execution_enabled() is False
     assert M.DETERMINISM["tensor_float_32"] is False
     assert T.current_determinism_flags()["tensor_float_32"] is False
+
+
+def test_input_witness_recorded_and_a_rederived_input_is_refused(tmp_path):
+    """The exact float32 bytes fed to the forward are witnessed on both sides."""
+    import copy
+    import hashlib
+    from tools.i6dmo import model as M, replay_monitor as R
+    bundle = write_bundle(tmp_path / "b")
+    receipt = T.train_unit(DESIGN, bundle, tmp_path / "u", device="cpu",
+                           training_overrides={"max_epochs": 2})
+    assert receipt["status"] == "COMPLETED"
+    training = json.loads((tmp_path / "u" / "TRAINING.json").read_text())
+    record = training["monitor_evaluation"]
+    assert record["input_materialization"] == T.MONITOR_INPUT
+    witness = record["witness"]
+    eff = T.effective_from_design(DESIGN)
+    data = T.load_data_bundle(bundle, eff)
+    scales = json.loads((tmp_path / "u" / "SCALES.json").read_text())
+    fit_rows, _ = T.trainable_rows(data["fit"])
+    inner_rows, _ = T.trainable_rows(data["inner"])
+    fit_t = T.materialize_monitor_inputs(fit_rows, scales)
+    x32 = fit_t[0]
+    assert x32.dtype == np.float32
+    assert witness["fit"]["input_sha256"] == hashlib.sha256(
+        np.ascontiguousarray(x32).tobytes()).hexdigest()
+    assert witness["fit"]["batches"][0]["input_sha256"]
+    assert len(witness["fit"]["batch0_input_row_sha256"]) == witness["fit"]["batches"][0]["rows"]
+    assert len(witness["fit"]["batch0_input_rows_hex"]) == min(8, len(x32))
+    assert R.replay_unit(DESIGN, bundle, tmp_path / "u")["status"] == "MATCH"
+    # A deliberately RE-DERIVED input (float32-pipeline normalization instead of the canonical
+    # float64-normalize-then-single-cast) is refused with the first divergent rows named.
+    mean32 = np.asarray(scales["input_mean"], np.float32)
+    std32 = np.asarray(scales["input_std"], np.float32)
+    alt_x = ((fit_rows["x"].astype(np.float32) - mean32) / std32).astype(np.float32)
+    assert alt_x.tobytes() != x32.tobytes()  # genuinely different derivation
+    loaded, _ = M.load_dmo(tmp_path / "u" / "model")
+    inner_t = T.materialize_monitor_inputs(inner_rows, scales)
+    with pytest.raises(T.TrainDisposition, match="INPUT_WITNESS_MISMATCH") as err:
+        T.replay_monitored(loaded.forecast_model, (alt_x, fit_t[1], fit_t[2]), inner_t,
+                           record, ids=(fit_rows["row_id"], inner_rows["row_id"]))
+    assert "row" in str(err.value)
+    # A record declaring another materialization never scores.
+    other = copy.deepcopy(record)
+    other["input_materialization"] = "float32_pipeline"
+    with pytest.raises(T.TrainDisposition, match="MONITOR_PATH_MISMATCH"):
+        T.replay_monitored(loaded.forecast_model, fit_t, inner_t, other,
+                           ids=(fit_rows["row_id"], inner_rows["row_id"]))
