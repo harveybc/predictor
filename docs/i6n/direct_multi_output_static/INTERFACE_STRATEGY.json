@@ -1,23 +1,48 @@
 {
   "schema": "i6dmo.interface.strategy.v1",
   "lane": "strategy",
-  "status": "DRAFT_EARLY_PUBLICATION",
+  "status": "ADAPTER_PREPARED_NOT_RUN (no strategy fit, no TEST, no trading)",
   "owned_files": [
     "tools/i6dmo/strategy_adapter.py",
     "tests/i6dmo/test_strategy_adapter.py",
     "docs/i6n/direct_multi_output_static/INTERFACE_STRATEGY.json",
+    "docs/i6n/direct_multi_output_static/STRATEGY_PLUGIN_MAP.json",
     "docs/i6n/direct_multi_output_static/STRATEGY_RETURN.md"
   ],
   "shared_files": "none; tools/i6dmo is imported as a namespace portion, this lane does not create tools/i6dmo/__init__.py",
   "strategy_pin": {
-    "repository": "heuristic-strategy (sibling checkout; resolved from env I6DMO_STRATEGY_REPO, else <predictor>/../heuristic-strategy)",
-    "branch": "satoshi/i6dmo-strategy-20261014",
+    "repository": "heuristic-strategy",
+    "branch": "satoshi/i6dmo-strategy-20261014 (pushed)",
+    "base": "origin/master 5c87a25 (legacy plugin blob 3a19b3f and policy blob 0940589 unchanged)",
     "commit": "d40fd3b054e4f952054a86ea203e8f74e6b295e1",
     "path": "app/policies/business_pair_policy.py",
     "blob": "79b6df7a7bffea7dd7f67c2ab33eeb64941bd44c",
     "sha256": "6b6c5d96cafed149d3d832462b1eea27c2cd1cb8ca88a3ac495e7b8f1cbccf80",
-    "load": "git show <commit>:<path> from the repository object store, sha256 verified, executed as an isolated module; never resolved through the heuristic_strategy.plugins entry point or sys.path"
+    "load": "git show <commit>:<path> from the heuristic-strategy object store, blob and sha256 verified, executed as an isolated module; never via the heuristic_strategy.plugins entry point or sys.path",
+    "repo_resolution": "$I6DMO_STRATEGY_REPO, else <checkout>/../heuristic-strategy, else <main-repo-of-worktree>/../heuristic-strategy; deploy must fetch the pinned branch on every host role that runs a pair unit"
   },
+  "plugin_map": "STRATEGY_PLUGIN_MAP.json: in the default interpreter the entry point resolves to an installed 2025 copy (sha256 3e1ebec1...), not the inspected checkout; the executor uses only the pinned blob",
   "families": {"short": [2, 3, 4, 5, 6, 12], "long": [18, 24, 36, 48, 60, 72]},
-  "note": "filled in completely on final publication"
+  "python_api": {
+    "load_pinned_policy(pin=STRATEGY_PIN) -> module": "STRATEGY_PIN_UNRESOLVED | STRATEGY_PIN_MISMATCH",
+    "map_strategy_resolution() -> dict": "also CLI: python -m tools.i6dmo.strategy_adapter map-plugin --json",
+    "build_family_heads(origin, family, predicted{h: float|None}, week: C1 OperationalWeek, role: C1 Role, validation_eligible=None) -> [record]": "record keys: family, index (position only), horizon_hours, role, origin, target_timestamp, eligible_until, week_id, operational_eligible, available, value (None unless available), reason",
+    "family_predictions_from_arrays(row_id, horizons_hours, predicted_price, family) -> {origin: {h: value|None}}": "consumes the model lane predictions/*.npz arrays by horizons_hours; the label mask is NOT consumed (it depends on future label existence)",
+    "parse_named_columns(row) -> {short:{h:v}, long:{h:v}}": "columns short_h2..long_h72; Prediction_h_i/Prediction_d_i refused",
+    "entry_decision_from_records(policy, current_price, long_records, params) -> dict": "long family only; ABSTAIN INSUFFICIENT_LONG_HEADS below min_valid_long_heads",
+    "management_decision(policy, direction, take_profit, stop_loss, short_records, long_records) -> dict": "EARLY_CLOSE/SL_FIRST, HOLD/TP_FIRST, HOLD/NO_SAMPLED_CROSSING, HOLD/NO_AVAILABLE_HEADS; consulted and skipped heads are receipted (U_h source)",
+    "pair_eligibility(short_report, long_report, min_valid_long_heads=2, min_valid_short_heads=1) -> dict": "report = {str(h): {mae, naive, n, [eligible]}}; strict MAE<naive; status ELIGIBLE | PAIR_NOT_ELIGIBLE with missing[]",
+    "run_backtest(bars, weeks, short_predictions, long_predictions, policy, entry_params, execution, validation_eligible, allow_test=False) -> dict": "trades, open_positions, cancelled_orders, failures, decisions (receipts), position_at, equity_curve, metrics, references; TEST_FORBIDDEN for any instant >= 2025-01-01 unless allow_test"
+  },
+  "consumed_contracts": {
+    "predictions": "model lane predictions/{validation}.npz: row_id (origin epoch s), horizons_hours, predicted_price (n,6) original USD/EUR",
+    "calendar": "C1 tools.i6n_contracts.eligibility.load_calendar config (versioned weeks O, C, K; offsets 12/12); an assumed FX calendar stays labelled as assumed",
+    "bars": "REQUESTED FROM DATA LANE: hourly EURUSD OHLC, close_time = instant the bar closes (bar covers (close_time-1h, close_time]); gaps allowed; split-bounded",
+    "eligibility_reports": "report units' {horizon_hours: {mae, naive, eligible, n}} per family (ops TERMINAL.eligibility)"
+  },
+  "execution_rules": "tools.i6dmo.strategy_adapter.EXECUTION_RULES (next-bar-open fills, force-close trigger t >= B-1h with fill by B, missing fill retained, SL first when both barriers touch in one bar, separate spread/slippage/commission/swap lines, one position per asset, 120-hour frequency window)",
+  "metrics": ["initial_equity=10000", "final_equity (mark to market)", "net_pnl", "return", "realized_pnl", "closed_trades", "open_trades", "winning/losing", "max_drawdown and fraction", "sharpe and sortino (UTC-day mark-to-market returns, 260 periods/year)", "profit_factor", "exposure", "turnover", "costs{spread, slippage, commission, swap}", "undefined values carry *_reason"],
+  "references": ["cash", "BUSINESS_MATCHED_PASSIVE_LONG", "CONVENTIONAL_BUY_AND_HOLD_VIOLATES_NO_WEEKEND_POSITION"],
+  "not_implemented_here": "the ops child entry `python -m tools.i6dmo.strategy run-unit` for the PAIR_VALIDATION unit; integration wires pair_eligibility + run_backtest after the long family closes. No pair run is possible before both families have report terminals.",
+  "owner_rulings_pending": "listed in STRATEGY_RETURN.md"
 }
