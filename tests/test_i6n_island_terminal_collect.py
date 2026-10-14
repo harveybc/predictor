@@ -125,6 +125,19 @@ def _documents(spec: dict) -> list[dict]:
             for path in sorted(output.glob("island-*.json"))]
 
 
+def test_collector_retains_absent_checkpoint_in_complete_terminal_receipts(tmp_path):
+    spec_path, spec = _spec(tmp_path)
+    responses = _responses(spec)
+    for url, value in responses.items():
+        if url.endswith('/chain/status'):
+            value.update(finalized_height=-1, finalized_hash='')
+    result = collector.tick(spec_path, fetch_json=Fetcher(responses))
+    assert result['state'] == 'COMPLETE'
+    for document in _documents(spec):
+        assert document['payload']['finalized_height'] == -1
+        assert document['payload']['finalized_hash'] == ''
+
+
 def test_one_concurrent_observation_atomically_publishes_four_successor_envelopes(tmp_path):
     spec_path, spec = _spec(tmp_path)
     fetcher = Fetcher(_responses(spec), threading.Barrier(8))

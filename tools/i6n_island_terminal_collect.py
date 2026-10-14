@@ -280,7 +280,9 @@ def _terminal_payloads(
     expected = spec["expected"]
     fleet = fleet_report["fleet"]
     finalized = fleet.get("finalized_checkpoint")
-    if not isinstance(finalized, Mapping) or not isinstance(finalized.get("hash"), str) or not finalized["hash"]:
+    if (not isinstance(finalized, Mapping) or not isinstance(finalized.get('hash'), str)
+            or (finalized.get('height') == -1 and finalized['hash'] != '')
+            or (finalized.get('height') != -1 and not finalized['hash'])):
         raise Refusal("MISSING_FINALIZED_HASH")
 
     terminal_rows: list[dict[str, Any]] = []
