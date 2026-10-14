@@ -212,7 +212,7 @@ def test_dmo10_train_unit_end_to_end_restore_and_reload(tmp_path):
     assert witness["ids"] == "row_id" and witness["code_witness"]
     assert len(witness["fit"]["batches"]) == -(-len(fit_x) // record["batch_size"])
     ids = (T.trainable_rows(data["fit"])[0]["row_id"], T.trainable_rows(data["inner"])[0]["row_id"])
-    fm_r, im_r, monitored = T.replay_monitored(loaded.forecast_model, (fit_x, fit_y, fit_m),
+    fm_r, im_r, monitored, tolerated = T.replay_monitored(loaded.forecast_model, (fit_x, fit_y, fit_m),
                                                (in_x, in_y, in_m), record, ids=ids)
     with pytest.raises(T.TrainDisposition, match="MONITOR_PATH_MISMATCH"):  # witness needs the ids
         T.replay_monitored(loaded.forecast_model, (fit_x, fit_y, fit_m), (in_x, in_y, in_m), record)
@@ -304,7 +304,7 @@ def test_monitor_evaluation_is_one_shared_procedure_and_path_mismatch_is_refused
     record = {"procedure": "i6dmo.monitor_eval.v2", "batch_size": 64,
               "graph": "inference", "partition": "sequential_row_id_fixed",
               "monitor_instance": "canonical_loader_rebuild"}
-    fm, im, monitored = T.replay_monitored(bundle.forecast_model, fit, inner, record)
+    fm, im, monitored, _ = T.replay_monitored(bundle.forecast_model, fit, inner, record)
     fm2, im2, monitored2, witness = T.evaluate_monitored(bundle.forecast_model, fit, inner, 64)
     assert witness["code_witness"] and witness["fit"]["batches"][0]["partial_sums"]
     assert monitored == monitored2 and fm["sums"] == fm2["sums"]  # same function, bitwise
@@ -325,7 +325,7 @@ def test_training_graph_evaluated_monitor_is_refused_and_self_check_is_typed():
     fit, inner = (x, y, mask), (x[:8], y[:8], mask[:8])
     good = {"procedure": "i6dmo.monitor_eval.v2", "batch_size": 20, "graph": "inference",
             "partition": "sequential_row_id_fixed", "monitor_instance": "canonical_loader_rebuild"}
-    _, _, monitored = T.replay_monitored(bundle.forecast_model, fit, inner, good)
+    _, _, monitored, _ = T.replay_monitored(bundle.forecast_model, fit, inner, good)
     with pytest.raises(T.TrainDisposition, match="MONITOR_PATH_MISMATCH"):
         T.replay_monitored(bundle.forecast_model, fit, inner, dict(good, graph="training"))
     for mixed in (dict(good, procedure="i6dmo.monitor_eval.v1"),
@@ -362,3 +362,56 @@ def test_self_check_is_not_trivial_a_corrupted_history_value_fails(tmp_path, mon
     with pytest.raises(T.TrainDisposition, match="MONITOR_SELF_CHECK_FAILED"):
         T.fit_dmo(bundle, (x, y, mask), (x[:8], y[:8], mask[:8]), training, 1,
                   ids=(np.arange(40, dtype=np.int64), np.arange(8, dtype=np.int64)))
+
+
+def test_static_algorithm_flags_are_forced_recorded_and_enforced(tmp_path):
+    """Process-level GPU autotune is disabled; a record from other flags never scores."""
+    import os
+    from tools.i6dmo import model as M
+    M.enable_determinism()
+    flags = T.current_determinism_flags()
+    assert flags["TF_CUDNN_USE_AUTOTUNE"] == "0" and flags["TF_DETERMINISTIC_OPS"] == "1"
+    assert flags["TF_CUDNN_DETERMINISTIC"] == "1" and flags["op_determinism"] is True
+    assert flags["jit_autoclustering"] is False
+    assert os.environ["TF_CUDNN_USE_AUTOTUNE"] == "0"
+    assert "--tf_xla_auto_jit=0" in os.environ.get("TF_XLA_FLAGS", "")
+    assert M.DETERMINISM["env"]["TF_CUDNN_USE_AUTOTUNE"] == "0"
+    bundle = M.build_dmo(M.model_config(["a", "b"]))
+    rng = np.random.default_rng(5)
+    x = rng.normal(size=(20, 13, 2)).astype("float32")
+    y, mask = rng.normal(size=(20, 6)), np.ones((20, 6), bool)
+    fit, inner = (x, y, mask), (x[:8], y[:8], mask[:8])
+    good = {"procedure": "i6dmo.monitor_eval.v2", "batch_size": 20, "graph": "inference",
+            "partition": "sequential_row_id_fixed", "monitor_instance": "canonical_loader_rebuild",
+            "determinism_flags": dict(flags, TF_CUDNN_USE_AUTOTUNE="1")}
+    with pytest.raises(T.TrainDisposition, match="DETERMINISM_FLAGS_MISMATCH"):
+        T.replay_monitored(bundle.forecast_model, fit, inner, good)
+
+
+def test_predeclared_tolerance_applies_only_with_static_flags_and_small_deltas(tmp_path):
+    import copy
+    from tools.i6dmo import model as M
+    bundle = M.build_dmo(M.model_config(["a", "b"]))
+    rng = np.random.default_rng(6)
+    x = rng.normal(size=(30, 13, 2)).astype("float32")
+    y, mask = rng.normal(size=(30, 6)), np.ones((30, 6), bool)
+    fit, inner = (x, y, mask), (x[:8], y[:8], mask[:8])
+    base = {"procedure": "i6dmo.monitor_eval.v2", "batch_size": 15, "graph": "inference",
+            "partition": "sequential_row_id_fixed", "monitor_instance": "canonical_loader_rebuild",
+            "determinism_flags": T.current_determinism_flags()}
+    _, _, monitored, witness = T.evaluate_monitored(bundle.forecast_model, fit, inner, 15)
+    record = dict(base, witness=witness, monitored=monitored)
+    perturbed = copy.deepcopy(record)
+    for row in perturbed["witness"]["fit"]["batches"]:
+        row["partial_sums"] = [v * (1 + 5e-6) for v in row["partial_sums"]]  # within 1e-5 relative
+    fm, im, got, tolerated = T.replay_monitored(bundle.forecast_model, fit, inner, perturbed)
+    assert tolerated and all(t["max_relative_delta"] <= 1e-5 for t in tolerated)
+    assert got == monitored  # the recompute itself is unchanged; only the comparison tolerates
+    big = copy.deepcopy(record)
+    big["witness"]["fit"]["batches"][0]["partial_sums"][0] *= 1.001  # beyond the bound
+    with pytest.raises(T.TrainDisposition, match="MONITOR_WITNESS_DIVERGENCE"):
+        T.replay_monitored(bundle.forecast_model, fit, inner, big)
+    unflagged = copy.deepcopy(perturbed)
+    del unflagged["determinism_flags"]  # tolerance never activates without confirmed static flags
+    with pytest.raises(T.TrainDisposition, match="MONITOR_WITNESS_DIVERGENCE"):
+        T.replay_monitored(bundle.forecast_model, fit, inner, unflagged)
