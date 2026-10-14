@@ -304,6 +304,22 @@ def evaluate_monitored(model, fit, inner, batch_size):
     return fm, im, 0.5 * (fm["loss"] + im["loss"])
 
 
+def monitor_self_check(model, fit, inner, record, expected):
+    """Recording-time self-check: the shared inference path must reproduce ``expected`` bitwise.
+
+    Called in-session on the restored weights before any receipt is written. A
+    mismatch means the monitored value early stopping read did not come from
+    the inference path (training-graph fusion/retrace), and the unit is a typed
+    MONITOR_SELF_CHECK_FAILED, never silently accepted.
+    """
+    fm, im, monitored = replay_monitored(model, fit, inner, record)
+    if monitored != expected:
+        raise TrainDisposition("MONITOR_SELF_CHECK_FAILED",
+                               f"inference-path recompute {monitored!r} != recorded {expected!r} "
+                               "(bitwise, same device, same session)")
+    return fm, im, monitored
+
+
 def replay_monitored(model, fit, inner, record, batch_size=None):
     """Recompute the monitored loss through the recorded identical procedure.
 
@@ -315,6 +331,10 @@ def replay_monitored(model, fit, inner, record, batch_size=None):
         raise TrainDisposition("MONITOR_PATH_MISMATCH",
                                f"recorded procedure {record.get('procedure') if isinstance(record, dict) else record!r}"
                                f" is not {MONITOR_EVAL}")
+    if record.get("graph", "inference") != "inference":
+        raise TrainDisposition("MONITOR_PATH_MISMATCH",
+                               f"a {record.get('graph')}-graph-evaluated monitor is not comparable; "
+                               "only the shared inference path is")
     recorded = record.get("batch_size")
     if type(recorded) is not int or recorded < 1:
         raise TrainDisposition("MONITOR_PATH_MISMATCH", "recorded batch_size missing")
@@ -407,6 +427,7 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None):
             if not math.isfinite(loss):
                 raise TrainDisposition("NONFINITE_LOSS", f"training batch loss {loss}")
             updates += 1
+        # The monitored value early stopping reads comes ONLY from the shared inference path.
         fm, im, _ = evaluate_monitored(model, (x_fit, y_fit, m_fit), (x_in, y_in, m_in), batch)
         stop = stopper.update(fm["loss"], im["loss"], model.get_weights())
         row = dict(stopper.history[-1], updates=updates, weights_sha256=weights_hash(model),
@@ -422,13 +443,20 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None):
     restored = weights_hash(model)
     if restored != rows[stopper.best_epoch - 1]["weights_sha256"]:
         raise TrainDisposition("RESTORE_MISMATCH", "restored weights differ from the selected epoch")
+    record = {"procedure": MONITOR_EVAL, "batch_size": batch, "graph": "inference",
+              "prediction_dtype": "float32 inputs, float64 per-batch outputs",
+              "accumulation": "global per-head float64 math.fsum sums/counts, "
+                              "equal-weight mean over supported heads"}
+    best_row = rows[stopper.best_epoch - 1]
+    fm_best, im_best, monitored_best = monitor_self_check(
+        model, (x_fit, y_fit, m_fit), (x_in, y_in, m_in), record, best_row["monitored"])
+    record.update(self_check="PASS", best_epoch=stopper.best_epoch, monitored=monitored_best,
+                  fit={"sums": fm_best["sums"], "counts": fm_best["counts"]},
+                  inner={"sums": im_best["sums"], "counts": im_best["counts"]})
     if int(optimizer.iterations.numpy()) != updates:
         raise TrainDisposition("UPDATE_COUNT_MISMATCH", "optimizer iterations disagree with updates")
     return {"history": rows, "best_epoch": stopper.best_epoch, "best_monitored": stopper.best_monitored,
-            "monitor_evaluation": {"procedure": MONITOR_EVAL, "batch_size": batch,
-                                   "prediction_dtype": "float32 inputs, float64 per-batch outputs",
-                                   "accumulation": "global per-head float64 math.fsum sums/counts, "
-                                                   "equal-weight mean over supported heads"},
+            "monitor_evaluation": record,
             "stop_reason": stopper.stop_reason, "epochs_completed": len(rows), "updates": updates,
             "initial_weights_sha256": initial, "last_weights_sha256": last,
             "restored_weights_sha256": restored, "early_stop": stopper.identity(),

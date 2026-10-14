@@ -163,3 +163,22 @@ implicit 4096 to the recorded training batch (256); tiny CPU fixtures are
 unaffected (one batch either way), and no sealed scientific run depends on the
 superseded implicit value. CPU POST: 56 passed across train/final/long (PRE:
 the 2 shared-path tests failed). GPU confirmation is lane 4's rerun.
+
+## Round 6: DMO10 in-session monitor identity (GPU replay 11/12 follow-up)
+
+The remaining bit-stable ~5e-6 gap means the fit loop's monitored value came
+from a different forward path than the shared inference path. Now the epoch-end
+monitored value is computed ONLY through `evaluate_monitored` on the inference
+graph (the exact call the replay makes), early stopping/patience/best-epoch
+read that value, and `TRAINING.json.monitor_evaluation` records it with the
+best-epoch per-head float64 sums/counts and `graph: "inference"`. At recording
+time an in-session self-check recomputes the monitored value on the restored
+weights through the same path and refuses the receipt bitwise-unequal as typed
+`MONITOR_SELF_CHECK_FAILED`; `replay_monitored` refuses a training-graph record
+(`MONITOR_PATH_MISMATCH`). No tolerance. This is the now-unambiguous
+implementation of the design's "same-weight mean fit/inner" rule — selection
+semantics unchanged, numeric path unified; the effective-config monitor text
+says so, so the effective sha changed again (design sha unchanged). CPU POST:
+94 passed (PRE: 2 failed). Lane 4 re-verifies on GPU; if its in-session gap
+persists there, the self-check now fails typed instead of recording a
+non-replayable value.

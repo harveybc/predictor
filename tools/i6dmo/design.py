@@ -479,7 +479,10 @@ def effective_config(design):
             "loss": t["loss"],
             "training_coordinate": "delta_from_origin_over_fit_naive_mae",
             "input_scaling": "fit_only_zscore_per_feature",
-            "monitor": "0.5*(fit_loss+inner_loss) at the same end-of-epoch weights",
+            "monitor": "0.5*(fit_loss+inner_loss) at the same end-of-epoch weights, computed ONLY "
+                       "through the shared inference evaluation path (i6dmo.monitor_eval.v1); the "
+                       "unambiguous implementation of the design's same-weight mean fit/inner rule — "
+                       "selection semantics unchanged, numeric path unified, bitwise self-checked",
             "patience_rule": "stale += 1 unless monitored < reference - min_delta",
             "restore": "lowest monitored epoch, first tie wins",
             "batch_order": "seeded_permutation_per_epoch",
