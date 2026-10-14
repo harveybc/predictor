@@ -283,7 +283,8 @@ def test_monitor_evaluation_is_one_shared_procedure_and_path_mismatch_is_refused
     y = rng.normal(size=(130, 6))
     mask = np.ones((130, 6), bool)
     fit, inner = (x, y, mask), (x[:40], y[:40], mask[:40])
-    record = {"procedure": "i6dmo.monitor_eval.v1", "batch_size": 64}
+    record = {"procedure": "i6dmo.monitor_eval.v1", "batch_size": 64,
+              "graph": "inference", "partition": "sequential_row_id_fixed"}
     fm, im, monitored = T.replay_monitored(bundle.forecast_model, fit, inner, record)
     fm2, im2, monitored2 = T.evaluate_monitored(bundle.forecast_model, fit, inner, 64)
     assert monitored == monitored2 and fm["sums"] == fm2["sums"]  # same function, bitwise

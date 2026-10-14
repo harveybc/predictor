@@ -286,17 +286,21 @@ def masked_split_metrics(y, pred, mask):
 
 
 MONITOR_EVAL = "i6dmo.monitor_eval.v1"
+MONITOR_PARTITION = "sequential_row_id_fixed"
 
 
 def evaluate_monitored(model, fit, inner, batch_size):
     """THE monitored-loss evaluation procedure (training and replay share it, DMO10).
 
-    One fixed path: frozen-weight predictions through ``predict_matrix`` at the
-    given batch size (float32 inputs, float64 outputs per batch, concatenated in
-    order), then :func:`masked_split_metrics` global per-head float64 ``fsum``
-    sums/counts, equal-weight mean over supported heads, and
-    ``0.5 * (fit_loss + inner_loss)``. Bitwise identity on one device requires
-    the identical batch size and order, which the training record pins.
+    One fixed path over the CANONICAL FIXED SEQUENTIAL partition: the split
+    arrays in row_id order, cut into consecutive batches of ``batch_size``
+    (``predict_matrix``; float32 inputs, float64 outputs per batch, concatenated
+    in order), then :func:`masked_split_metrics` global per-head float64
+    ``fsum`` sums/counts, equal-weight mean over supported heads, and
+    ``0.5 * (fit_loss + inner_loss)``. The training shuffle exists for gradient
+    steps ONLY and never reaches monitoring: on GPU a row's float32 forward
+    value legitimately varies with batch composition (GEMM tiling), so only
+    this fixed partition is bitwise comparable across sessions.
     """
     from tools.i6dmo.model import predict_matrix
     fm = masked_split_metrics(fit[1], predict_matrix(model, fit[0], batch_size=batch_size), fit[2])
@@ -335,6 +339,11 @@ def replay_monitored(model, fit, inner, record, batch_size=None):
         raise TrainDisposition("MONITOR_PATH_MISMATCH",
                                f"a {record.get('graph')}-graph-evaluated monitor is not comparable; "
                                "only the shared inference path is")
+    if record.get("partition") != MONITOR_PARTITION:
+        raise TrainDisposition("MONITOR_PATH_MISMATCH",
+                               f"monitor partition {record.get('partition')!r} is not the canonical "
+                               f"{MONITOR_PARTITION}; a permuted/shuffled monitor evaluation is a "
+                               "different batch composition and is never comparable")
     recorded = record.get("batch_size")
     if type(recorded) is not int or recorded < 1:
         raise TrainDisposition("MONITOR_PATH_MISMATCH", "recorded batch_size missing")
@@ -427,7 +436,8 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None):
             if not math.isfinite(loss):
                 raise TrainDisposition("NONFINITE_LOSS", f"training batch loss {loss}")
             updates += 1
-        # The monitored value early stopping reads comes ONLY from the shared inference path.
+        # The monitored value early stopping reads comes ONLY from the shared inference path on
+        # the canonical sequential partition; the per-epoch permutation above is gradient-only.
         fm, im, _ = evaluate_monitored(model, (x_fit, y_fit, m_fit), (x_in, y_in, m_in), batch)
         stop = stopper.update(fm["loss"], im["loss"], model.get_weights())
         row = dict(stopper.history[-1], updates=updates, weights_sha256=weights_hash(model),
@@ -444,6 +454,7 @@ def fit_dmo(bundle, fit, inner, training, seed, progress=None):
     if restored != rows[stopper.best_epoch - 1]["weights_sha256"]:
         raise TrainDisposition("RESTORE_MISMATCH", "restored weights differ from the selected epoch")
     record = {"procedure": MONITOR_EVAL, "batch_size": batch, "graph": "inference",
+              "partition": MONITOR_PARTITION,
               "prediction_dtype": "float32 inputs, float64 per-batch outputs",
               "accumulation": "global per-head float64 math.fsum sums/counts, "
                               "equal-weight mean over supported heads"}

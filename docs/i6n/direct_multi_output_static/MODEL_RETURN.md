@@ -197,3 +197,16 @@ lane 4's bounded GPU scope; logic CPU-tested) scores one identical batch
 through in_session / rebuild / full_load in one session and names the diverging
 pair. No tolerance. CPU POST: 66 passed across model/train/final/long (PRE: 3
 failed). GPU re-verification is lane 4's.
+
+## Round 8: DMO10 canonical monitor partition
+
+With the three-instance probe green, the last comparable-value hazard is batch
+COMPOSITION: on GPU a row's float32 forward value legitimately varies with its
+batch (GEMM tiling). `evaluate_monitored` is now documented and recorded as the
+CANONICAL FIXED SEQUENTIAL partition (row_id order, consecutive batches at the
+recorded size) in both the fit loop and the replay; the seeded per-epoch
+shuffle remains gradient-only and never reaches monitoring.
+`monitor_evaluation.partition = "sequential_row_id_fixed"` is recorded and
+`replay_monitored` refuses a permuted or unrecorded partition as typed
+`MONITOR_PATH_MISMATCH`. The CPU-only probe fixture now skips when a GPU is
+visible. No tolerance. CPU POST: 66 passed (PRE: 2 failed). Lane 4 reruns.
