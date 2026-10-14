@@ -128,5 +128,61 @@
       "fred.rates.dgs7.logret_5d"
     ],
     "role": "TEST gate input; short design keeps 9668898c"
+  },
+  "long_family": {
+    "experiment_id": "I6-DMO-LONG-DS12-STATIC-R0",
+    "sampling_rule": "DS12_ASOF_LAST_AVAILABLE (DS{spacing}_ASOF_LAST_AVAILABLE)",
+    "offsets_hours": [
+      -144,
+      -132,
+      -120,
+      -108,
+      -96,
+      -84,
+      -72,
+      -60,
+      -48,
+      -36,
+      -24,
+      -12,
+      0
+    ],
+    "horizons_hours": [
+      18,
+      24,
+      36,
+      48,
+      60,
+      72
+    ],
+    "build": "python -m tools.i6dmo.cli_data data-bundle --design EXPERIMENT.short.json --long-data-view --input-dir <data-root>/inputs/extended-no-stlfsi4 --out <new-dir> --code-commit <commit>",
+    "identity_note": "data_contract_sha256 covers asset/input/horizons/feature_policy/splits/business only; a model-lane sealed long design (derived_from, seal_sha256) has the same data contract, so this preparation bundle is reusable after short closure; design_sha256 in BUNDLE.json is the unsealed long data view",
+    "real_bundle": {
+      "code_commit": "0a6d9584",
+      "bundle_sha256": "e88f72aa93b478c6e175efc671e706ce85d1125127444b26b0017973b44277a1",
+      "bundle_json_file_sha256": "afcef506df02ceba74fac77b6b41e5e3b22ea4e2b2b69d0e4556403b880b9a75",
+      "data_contract_sha256": "6e354fe6f8ad1930aa75aa16bc516717b04f75b4c9ef60c84c2b59c911d85e75",
+      "design_view_sha256": "572b790a652adf805af384072741372ab8b6e959eda871695f05046f8cda6104",
+      "input_sha256": "ef22ddb54921ee9f9c774a550731dcd522c9d712f2a1882f1bf4e6a35e3942b8",
+      "rows": {
+        "fit": 15017,
+        "inner": 611,
+        "validation": 4043
+      },
+      "row_ids_sha256": {
+        "fit": "bcd3851803ca9db0c841d0258d05e370b0d906ba70115f2b7f24abbfec92b6c4",
+        "inner": "73ab737659a2ecc5063d6248a790583529ba3ce26e1b9c3b5673c8ff06d185f1",
+        "validation": "7c146e1c1a931c4809974311132a40c397edf278e8a64d828af32b03dbf0b231"
+      },
+      "fit_naive_mae": {
+        "18": 0.003520077603812118,
+        "24": 0.0041066740071937155,
+        "36": 0.0049606599392748715,
+        "48": 0.005832833627927531,
+        "60": 0.006581544885177455,
+        "72": 0.0074618939897981825
+      },
+      "earliest_consumed_bar": "2019-12-26T23:00:00+00:00 (before TRAIN start; after the DCA_2019 declared-assumption span 2019-03-11..2019-12-01, inside the declared, not quote-verified December-2019 warmup of the clock scope)"
+    }
   }
 }
