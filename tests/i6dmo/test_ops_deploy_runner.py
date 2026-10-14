@@ -166,3 +166,30 @@ def test_render_only_and_no_start_never_enable(tmp_path):
     assert out["render_only"] and log == [] and len(list((tmp_path / "rendered").iterdir())) == len(out["units"])
     deploy.deploy(root, unit_dir=tmp_path / "units", systemctl=_systemctl(log), start=False)
     assert not [a for a in log if a[0] == "enable"]
+
+
+def test_ssh_executor_reads_the_recorded_exit_code_never_a_collected_zero(tmp_path):
+    from types import SimpleNamespace
+    from tools.i6dmo import worker
+    calls = []
+
+    def run(argv, **kw):
+        calls.append(argv)
+        cmd = argv[-1] if argv[0] == "ssh" else ""
+        if "systemctl --user show" in cmd:
+            return SimpleNamespace(returncode=0, stdout="ActiveState=inactive\nExecMainStatus=0\n")
+        if cmd.startswith("cat ") and "EXIT_CODE" in cmd:
+            return SimpleNamespace(returncode=0 if run.code is not None else 1, stdout=f"{run.code}\n" if run.code is not None else "")
+        return SimpleNamespace(returncode=0, stdout="boot\n")
+    ex = worker.SshSystemdExecutor("role-alias", tmp_path, "/remote", run=run)
+    handle = dict(launch=dict(executor="ssh-systemd", name="u", remote_folder="/remote/a", boot_id="boot"), proc=None)
+    run.code = 75
+    assert ex.poll(handle) == 75  # launcher refusal is visible although systemd collected the unit
+    run.code = None
+    assert ex.poll(handle) == "GONE"
+    folder = tmp_path / "attempts" / "u" / "a01"
+    folder.mkdir(parents=True)
+    ex.start(name="u", argv=["python", "-m", "x", "--spec", str(folder / "UNIT_SPEC.json")], env={}, cwd="/w",
+             folder=folder, cap_bytes=1)
+    started = next(a for a in calls if a[0] == "ssh" and "systemd-run" in a[-1])[-1]
+    assert "--collect" in started and "EXIT_CODE" in started and "/remote/attempts/u/a01/UNIT_SPEC.json" in started

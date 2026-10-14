@@ -161,7 +161,10 @@ class SshSystemdExecutor:
                     *env.get("I6DMO_FORWARD_ENV", "").split(",")):
             if key and key in env and key != "I6DMO_FORWARD_ENV":
                 props += ["-E", f"{key}={env[key]}"]
-        command = " ".join(shlex.quote(p) for p in ["systemd-run", *props, "--", *argv])
+        # The child's own exit code is written next to its outputs: a collected transient unit forgets it.
+        exit_file = str(remote / "EXIT_CODE")
+        wrapper = ['/bin/sh', '-c', '"$@"; rc=$?; echo "$rc" > ' + shlex.quote(exit_file) + '; exit "$rc"', "i6dmo"]
+        command = " ".join(shlex.quote(p) for p in ["systemd-run", *props, "--", *wrapper, *argv])
         self._ssh(command)
         remote_boot = self._ssh("cat /proc/sys/kernel/random/boot_id").stdout.strip()
         launch = dict(executor="ssh-systemd", name=name, alias_role=None, boot_id=remote_boot,
@@ -187,8 +190,12 @@ class SshSystemdExecutor:
         values = self._show(handle["launch"]["name"])
         if values.get("ActiveState") in ("active", "activating", "reloading", "deactivating"):
             return None
-        status = values.get("ExecMainStatus")
-        return int(status) if status and status.lstrip("-").isdigit() else "GONE"
+        remote = handle["launch"]["remote_folder"]
+        out = self._ssh(f"cat {shlex.quote(remote + '/EXIT_CODE')}", check=False)
+        text = out.stdout.strip()
+        if out.returncode == 0 and text.lstrip("-").isdigit():
+            return int(text)
+        return "GONE"  # no recorded exit code: never read as success
 
     def stop(self, handle):
         self._ssh(f"systemctl --user stop {shlex.quote(handle['launch']['name'])}", check=False)
