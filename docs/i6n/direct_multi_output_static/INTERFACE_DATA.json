@@ -1,0 +1,132 @@
+{
+  "schema": "i6dmo.interface.data.v1",
+  "lane": "data",
+  "status": "IMPLEMENTED_CPU_TESTED",
+  "owner_modules": [
+    "tools/i6dmo/data.py",
+    "tools/i6dmo/naive.py",
+    "tools/i6dmo/provenance.py",
+    "tools/i6dmo/cli_data.py",
+    "tools/i6dmo/producer_recovery.v1.json"
+  ],
+  "owner_tests": [
+    "tests/i6dmo/test_data_dmo.py",
+    "tests/i6dmo/_synth.py"
+  ],
+  "shared_files_added": {
+    "tools/i6dmo/__init__.py": "EMPTY file (0 bytes); identical empty adds by other lanes merge cleanly",
+    "tests/i6dmo/__init__.py": "EMPTY file (0 bytes)"
+  },
+  "cli_registration": "tools/i6dmo/cli_data.py exposes register(subparsers) adding: data-bundle, data-verify, naive-replay. The CLI owner (ops) imports it additively; it is also runnable alone as `python -m tools.i6dmo.cli_data <cmd>`.",
+  "inputs": {
+    "input_dir": "a no-STLFSI4 input directory holding INPUT.npz (ts int64 UTC bar-END seconds, x float64 (rows,19) manifest order, price float64 EURUSD close), CLOCK.json, CALENDAR.json, DERIVATION.json, PREPARATION.json, CLOCK_SCOPE.json; resolved from the private deployment spec (never committed)",
+    "expected_identities": {
+      "feature_manifest_sha256": "2ff34fa21d5841da1befdd4d898db911128d959a5e460d04cc45b54955416470",
+      "availability_contract_sha256": "9668898c28cafeef2bc48e7d3a42e82a2655d699ff8f0d8d59e921bf120b1bc9",
+      "calendar": "FX_NY_17_ASSUMED_NOT_BROKER / i6n-v1 (ASSUMED, not a verified broker calendar)"
+    },
+    "test_rows": "refused: any ts >= splits.test.start raises TEST_ROWS_PRESENT before any array is materialized"
+  },
+  "api": {
+    "tools.i6dmo.data.WindowSpec.from_design(design) -> WindowSpec": "span_hours=24, spacing_hours=2, observations=13, include_origin=True, issuance_hours=1; offsets_hours() == (-24,-22,...,-2,0)",
+    "tools.i6dmo.data.load_input(input_dir, design) -> InputBundle": "ts, x, price, features, file digests; refuses TEST rows, manifest mismatch, STLFSI4 or alias columns",
+    "tools.i6dmo.data.build_origin_table(bundle, design) -> OriginTable": "every observed hourly bar is an origin candidate (no thinning); per origin: row_id 'EURUSD|<iso t>', split (FIT|INNER|VALIDATION), week_id, input_ok + reason, per-head label mask (C1 MANAGEMENT M), per-head entry mask (C1 ENTRY M), p(t), p(t+h) exact or NaN; counted reasons per split x head",
+    "tools.i6dmo.data.materialize(bundle, table, split) -> SplitArrays": "X float64 (n,13,19) RAW; y_price float64 (n,6) original price p(t+h) with NaN where mask False; mask bool (n,6); entry_mask bool (n,6); price_origin (n,); origin_ts (n,); row_ids (n,). Only rows with input_ok and >=1 valid head are included (keep_row_if_any_head_valid)",
+    "tools.i6dmo.data.fit_statistics(bundle, table) -> dict": "per-feature mean/std over FIT-row window bars only; per-head fit-only naive MAE (loss scale) ; zero scale -> typed ZERO_SCALE disposition, never an epsilon",
+    "tools.i6dmo.data.verify_bundle(out_dir) -> dict": "re-hashes every file and row id list; typed BUNDLE_DIGEST_MISMATCH on any change",
+    "tools.i6dmo.naive.naive_replay(input_dir_or_bundle, row_ids, horizons)": "independent of data.py target arrays: re-reads ts/price, looks up p(t) and p(t+h) by exact timestamp, returns per-head n, sum_abs, mae and row_ids_sha256",
+    "tools.i6dmo.naive.weekly_diagnostics(rows) -> dict": "per week x head sums/counts, explicit ABSENT weeks/heads; annual pooled MAE = sum/count, never mean of weekly MAEs",
+    "tools.i6dmo.provenance.availability_gate(features)": "reuses tools.i6n_contracts.feature_availability.gate; returns PASS + unverified list; confirmatory_test_blocked=True while any feature is UNVERIFIED",
+    "tools.i6dmo.provenance.producer_status()": "seven unresolved producers/clocks: RECOVERED (path@commit + reproduction match) or STILL_UNRESOLVED (missing object)",
+    "tools.i6dmo.data.load_split(bundle_dir, split) -> dict": "verify then merge model and aux arrays",
+    "tools.i6dmo.data.build_frozen_bundle(input_dir, design, out_dir, *, code_commit=None) -> dict": "writes ARRAYS_<split>.npz for FIT/INNER/VALIDATION and BUNDLE.json with digests: input files, calendar, manifest, availability contract, gate report, row_ids per split, arrays, origin-table reason counts, coverage report; bundle_sha256 is the identity consumed by model/ops",
+    "tools.i6dmo.naive.paired_metrics(arrays, predictions, design, *, input_dir, checkpoint, sealed_at) -> dict": "builds the C2 (tools.i6n_contracts.paired_metrics) input on identical row ids and physical h, scores it, and attaches a manual recomputation that must agree; relative error (MAE_h-naive_h)/naive_h, negative better"
+  },
+  "fixed_decisions_implemented": [
+    "origin t is the last completed observed hourly bar (bar-END clock); its value is included",
+    "inputs are 13 slot instants t-24h..t at 2 h spacing, each sampled as-of the last finite observation with available_time <= s (DS2_ASOF_LAST_AVAILABLE); staleness recorded; never the next row",
+    "targets p(t+h) at exact hourly endpoints h in {2,3,4,5,6,12}; never the next observed row",
+    "split membership: origin in split AND target in the same split (cross-boundary labels purged); FIT label_available_by = inner boundary",
+    "TRAIN [2020-01-01,2024-01-01); INNER = last 8 weeks (2023-11-06..2024-01-01); VALIDATION [2024-01-01,2025-01-01); TEST never materialized"
+  ],
+  "bundle_format": {
+    "conforms_to": "INTERFACE_MODEL.json consumed_data_bundle_contract (model lane @12e13752); its load_data_bundle() accepted the real bundle",
+    "BUNDLE.json": {
+      "schema": "i6dmo.data_bundle.v1",
+      "features": "19 names, MANIFEST_NO_STLFSI4 order",
+      "feature_manifest_sha256": "2ff34fa2...",
+      "horizons_hours": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        12
+      ],
+      "offsets_hours": [
+        -24,
+        -22,
+        -20,
+        -18,
+        -16,
+        -14,
+        -12,
+        -10,
+        -8,
+        -6,
+        -4,
+        -2,
+        0
+      ],
+      "splits": "{fit, inner, validation} -> {path, sha256 (file), aux_path, start, end, label_available_by, n_rows, row_ids_sha256, arrays_sha256, aux_sha256 (content), head_valid, head_entry_valid, counts (typed reasons), first/last_origin}",
+      "fit_statistics": "per-head fit-only naive MAE (naive_mae_fit) and per-feature fit-only mean/std; status OK|ZERO_SCALE|UNSUPPORTED_HEAD",
+      "other": "inputs{name:sha256}, calendar{id,version,sha256,label ASSUMED_NOT_BROKER}, availability_gate, producer_status, confirmatory_test_blocked, coverage, design_sha256, code{commit, files_sha256}, bundle_sha256 (content identity; excludes npz container digests, which carry write times), files{name: file sha256}"
+    },
+    "<split>.npz": "exactly row_id (n,) int64 origin epoch s, x (n,13,19) float64 RAW oldest->origin, origin_price (n,), target_price (n,6) NaN where mask False, mask (n,6) bool = C1 MANAGEMENT label support",
+    "<split>_aux.npz": "row_id (n,) int64 (same order), row_ids (n,) str 'EURUSD|<iso>', entry_mask (n,6) bool = C1 ENTRY support (subset of mask), week_ids (n,) str calendar week; slot_staleness_s (n,13,19) int64",
+    "test": "never present; load_input refuses TEST_ROWS_PRESENT"
+  },
+  "real_bundle_built": {
+    "code_commit": "e77cbbd2",
+    "bundle_sha256": "3e42c3f55dfffd275aa125f144144af26dfa0ec30d80b8e27f599d1511b1c205",
+    "bundle_json_file_sha256": "0140dfbc91d6234360bcb60790c9c36588ac56b1afde028ae38fa817cd01e03a",
+    "design_sha256": "541ce40ac1becceb16b14937e34e3452eee36aad8a370686dacf62860c86d381",
+    "input_sha256": "ef22ddb54921ee9f9c774a550731dcd522c9d712f2a1882f1bf4e6a35e3942b8",
+    "calendar_sha256": "782603fd26e879d6f837c83e9ec92d363500cb1dd150544e10a80c1ddeb88265",
+    "rows": {
+      "fit": 18144,
+      "inner": 739,
+      "validation": 4889
+    },
+    "row_ids_sha256": {
+      "fit": "a7965dbbd74f32f2dfdd9b2f0b5c96846500a2f64e52d56b59df33dc576e7236",
+      "inner": "c367a1a2ac82d617d28bfc59869e60c92f86fbbccf3b79978588a2abb6ad6ceb",
+      "validation": "cef0d08e3ad194b26c4ecf66f5113442cd6233ba80d34382124c81cfea3513c4"
+    },
+    "superseded": "5221615d... (exact-slot rule, before the ruling)",
+    "location": "<private-root>/i6dmo data bundle (not in Git); rebuild: python -m tools.i6dmo.cli_data data-bundle --design <design> --input-dir <data-root>/inputs/extended-no-stlfsi4 --out <new-dir> --code-commit <commit>"
+  },
+  "input_sampling": {
+    "rule": "DS2_ASOF_LAST_AVAILABLE",
+    "ruling": "Satoshi 2026-10-14 (PLAN section 4)",
+    "aux_array": "slot_staleness_s (n,13,19) int64 seconds in <split>_aux.npz; not a model input",
+    "refusal": "INPUT_NO_OBSERVATION_AVAILABLE only"
+  },
+  "successor_availability_contract": {
+    "path": "tools/i6dmo/feature_availability.successor.v2.json",
+    "contract_sha256": "c1c00b291829b69579ec8b9940775584b606094ef68d39ca25b5690ac64048d6",
+    "status": "PREPARED_NOT_ADOPTED",
+    "promoted": [
+      "fx.gbpusd.logret_1h",
+      "px.close_loc",
+      "px.log_co",
+      "px.rv5",
+      "rg.atr_ratio"
+    ],
+    "still_unverified": [
+      "fred.rates.dgs3mo.diff_5d",
+      "fred.rates.dgs7.logret_5d"
+    ],
+    "role": "TEST gate input; short design keeps 9668898c"
+  }
+}
