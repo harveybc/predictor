@@ -140,8 +140,8 @@ def test_dmo03_missing_endpoint_is_not_bridged_by_next_row(full, design):
 def test_dmo05_masks_equal_direct_c1_calls_including_dst_weeks(full, design):
     bundle, table = full["bundle"], full["table"]
     ref, weeks = c1.load_calendar(json.loads((full["src"] / "CALENDAR.json").read_text()))
-    observed = {datetime.fromtimestamp(int(v), UTC): datetime.fromtimestamp(int(v), UTC)
-                for v in bundle.ts}
+    observed = c1.ObservedTargets({datetime.fromtimestamp(int(v), UTC):
+                                   datetime.fromtimestamp(int(v), UTC) for v in bundle.ts})
     splits = data.split_bounds(design)
     chosen = [w for w in weeks if w.week_id in ("2021-03-07", "2021-03-14", "2021-10-31",
                                                 "2021-11-07", "2024-03-10", "2024-11-03")]
@@ -205,7 +205,7 @@ def test_dmo05_split_boundaries_purge_cross_boundary_labels(full, design):
     assert rec.split == "INNER"
     assert rec.label_ok[HORIZONS.index(2)] is True
     assert rec.label_ok[HORIZONS.index(4)] is False
-    assert rec.label_reasons[HORIZONS.index(4)][0] == "TARGET_AT_OR_AFTER_SPLIT_END"
+    assert "TARGET_AT_OR_AFTER_SPLIT_END" in rec.label_reasons[HORIZONS.index(4)]
 
 
 # --------------------------------------------------------------------------- DMO06
@@ -433,10 +433,17 @@ def test_dmo16_incomplete_coverage_is_refused_not_shortened(design, tmp_path):
     with pytest.raises(data.DataContractError) as err:
         data.load_input(src, design)
     assert err.value.code == "COVERAGE_INCOMPLETE"
-    late = _synth.make_input(tmp_path / "late", first_sunday=datetime(2020, 3, 1, tzinfo=UTC))
+    late = _synth.make_input(tmp_path / "late")
+    with np.load(late / "INPUT.npz") as z:
+        keep = z["ts"] >= _synth.epoch("2020-03-01T00:00:00+00:00")
+        _synth.rewrite_input(late, ts=z["ts"][keep], x=z["x"][keep], price=z["price"][keep])
     with pytest.raises(data.DataContractError) as err:
         data.load_input(late, design)
     assert err.value.code == "COVERAGE_INCOMPLETE"
+    nocal = _synth.make_input(tmp_path / "nocal", first_sunday=datetime(2020, 3, 1, tzinfo=UTC))
+    with pytest.raises(data.DataContractError) as err:
+        data.load_input(nocal, design)
+    assert err.value.code == "CALENDAR_INCOMPLETE"
 
 
 # --------------------------------------------------------------------------- bundle / provenance
@@ -448,18 +455,33 @@ def test_frozen_bundle_digests_and_tamper_detection(full, design, tmp_path):
     assert manifest["feature_manifest_sha256"] == provenance.EXPECTED_MANIFEST_SHA256
     assert manifest["availability_contract_sha256"] == provenance.EXPECTED_CONTRACT_SHA256
     assert manifest["confirmatory_test_blocked"] is True
-    assert set(manifest["splits"]) == {"FIT", "INNER", "VALIDATION"}
+    assert set(manifest["splits"]) == {"fit", "inner", "validation"}
     assert sorted(p.name for p in out.iterdir()) == [
-        "ARRAYS_FIT.npz", "ARRAYS_INNER.npz", "ARRAYS_VALIDATION.npz", "BUNDLE.json"]
+        "BUNDLE.json", "fit.npz", "fit_aux.npz", "inner.npz", "inner_aux.npz",
+        "validation.npz", "validation_aux.npz"]
+    # model-lane consumed contract (INTERFACE_MODEL.json)
+    for key in ("schema", "features", "feature_manifest_sha256", "horizons_hours",
+                "offsets_hours", "splits"):
+        assert key in manifest
+    assert manifest["offsets_hours"] == list(range(-24, 1, 2))
+    for name, info in manifest["splits"].items():
+        assert not info["path"].startswith("/")
+        assert provenance.file_sha256(out / info["path"]) == info["sha256"]
+        with np.load(out / info["path"]) as z:
+            assert sorted(z.files) == ["mask", "origin_price", "row_id", "target_price", "x"]
+            assert z["row_id"].dtype == np.int64 and len(np.unique(z["row_id"])) == len(z["row_id"])
+            assert z["x"].shape[1:] == (13, 19)
+            assert np.isfinite(z["target_price"][z["mask"]]).all()
+    assert set(manifest["fit_statistics"]["naive_mae_fit"]) == {str(h) for h in HORIZONS}
     for value in manifest["inputs"].values():
         assert not str(value.get("name", "")).startswith("/")
     assert data.verify_bundle(out)["status"] == "VERIFIED"
     again = data.build_frozen_bundle(full["src"], design, tmp_path / "bundle2")
     assert again["bundle_sha256"] == manifest["bundle_sha256"]
-    with np.load(out / "ARRAYS_INNER.npz") as z:
+    with np.load(out / "inner.npz") as z:
         arrays = {k: z[k] for k in z.files}
-    arrays["X"][0, 0, 0] += 1e-9
-    np.savez(out / "ARRAYS_INNER.npz", **arrays)
+    arrays["x"][0, 0, 0] += 1e-9
+    np.savez(out / "inner.npz", **arrays)
     with pytest.raises(data.DataContractError) as err:
         data.verify_bundle(out)
     assert err.value.code == "BUNDLE_DIGEST_MISMATCH"
