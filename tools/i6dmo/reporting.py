@@ -24,8 +24,8 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-SAMPLING_RULE = "DS2_ASOF_LAST_AVAILABLE"
-SAMPLING_BY_FAMILY = {"short": "DS2_ASOF_LAST_AVAILABLE", "long": "DS12_ASOF_LAST_AVAILABLE"}
+SAMPLING_RULE = "DS2_EXACT"
+SAMPLING_BY_FAMILY = {"short": "DS2_EXACT", "long": "DS12_EXACT"}
 SUPERSEDED_BUNDLE_PREFIXES = ("5221615d",)
 UNIT = "USD_per_EUR"
 

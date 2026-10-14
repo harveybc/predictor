@@ -219,8 +219,9 @@ def test_long_exact_default_has_empty_support_and_counts_it(lng, tmp_path):
     for split in ("FIT", "INNER", "VALIDATION"):
         c = table.counts[split]
         assert c["rows_materialized"] == 0
-        assert c["origins"]["INPUT_SLOT_NOT_OBSERVED"] + c["origins"]["ORIGIN_OUTSIDE_CALENDAR_WEEK"] \
+        assert c["origins"]["INPUT_SLOT_NOT_OBSERVED"] \
             + c["origins"]["INPUT_VALUE_NOT_FINITE"] == c["origins"]["candidates"]
+        assert c["origins"]["input_ok"] == 0
     m = data.build_frozen_bundle(lng["src"], long_design(), tmp_path / "empty")
     assert m["input_sampling"]["rule"] == "DS12_EXACT"
     assert m["fit_statistics"]["status"] == "NO_FIT_ROWS"

@@ -251,8 +251,8 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
 
 
 SUPERSEDED_BUNDLE_PREFIXES = ("5221615d",)  # exact-slot build, superseded by the as-of ruling
-BUNDLE_SAMPLING_RULE = "DS2_ASOF_LAST_AVAILABLE"
-BUNDLE_SAMPLING_BY_KEY = {"short_bundle": "DS2_ASOF_LAST_AVAILABLE", "long_bundle": "DS12_ASOF_LAST_AVAILABLE"}
+BUNDLE_SAMPLING_RULE = "DS2_EXACT"
+BUNDLE_SAMPLING_BY_KEY = {"short_bundle": "DS2_EXACT", "long_bundle": "DS12_EXACT"}
 
 
 def _check_bundle_pins(pins):
