@@ -1,0 +1,16 @@
+[Unit]
+Description=I6-DMO @CID@ publication (outbox exact readback, physical mirrors); never trains
+@MARK@
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=@WORKDIR@
+EnvironmentFile=@ENVFILE@
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=CUDA_VISIBLE_DEVICES=
+ExecStart=@PYTHON@ -m tools.i6dmo publish --root @ROOT@
+MemoryMax=1G
+TimeoutStartSec=1800
+Nice=10

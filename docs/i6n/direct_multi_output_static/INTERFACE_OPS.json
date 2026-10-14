@@ -1,0 +1,96 @@
+{
+ "schema": "i6dmo.interface.ops.v1",
+ "lane": "ops",
+ "status": "IMPLEMENTED_CPU_TESTED_NOT_DEPLOYED",
+ "owned_files": [
+  "tools/i6dmo/__main__.py",
+  "tools/i6dmo/cli.py",
+  "tools/i6dmo/queue.py",
+  "tools/i6dmo/campaign.py",
+  "tools/i6dmo/worker.py",
+  "tools/i6dmo/unit_runner.py",
+  "tools/i6dmo/preflight.py",
+  "tools/i6dmo/deploy.py",
+  "tools/i6dmo/status.py",
+  "tools/i6dmo/outbox.py",
+  "tools/i6dmo/mirror.py",
+  "tools/i6dmo/systemd/*.in",
+  "tools/i6dmo/bootstrap_private.sh.template",
+  "tests/i6dmo/ops_*.py",
+  "tests/i6dmo/test_ops_*.py"
+ ],
+ "shared_files": {
+  "tools/i6dmo/__init__.py": "empty (0 bytes)",
+  "tests/i6dmo/__init__.py": "empty (0 bytes)"
+ },
+ "cli": {
+  "registered_from_other_lanes": [
+   "validate-design via tools.i6dmo.design.add_cli (model)",
+   "data-bundle/data-verify/naive-replay via tools.i6dmo.cli_data.register (data)"
+  ],
+  "ops_commands": {
+   "preflight --design D --deployment SPEC [--data-pins PINS] [--out F]": "PRECHECK.json (default beside SPEC, mode 0600); typed checks with blocks LAUNCH|PAIR|TEST; exit 0 only when no LAUNCH blocker",
+   "probe --json [--run-root R --data-root R --file REL ... --check-strategy]": "read-only host facts; run on each host by preflight/worker over ssh",
+   "init --design D --deployment SPEC --root NEW --data-pins PINS [--long-design L] [--prior-root OLD ...] [--entrypoints E]": "sealed EFFECTIVE_CONFIG.json, PLAN.json, queue; 5 validation units; no TEST unit",
+   "seal-long --root R --design L": "seal the long design after init (identity fixed before any long fit)",
+   "deploy --root R --deployment SPEC [--no-start | --render-to DIR]": "write campaign units (marker X-I6DMO-Campaign), daemon-reload, enable --now timers; --no-start enables nothing; --render-to calls no systemctl",
+   "render-bootstrap --deployment SPEC --root R --out PRIVATE": "fills the template, mode 0700, refuses a path inside a Git work tree",
+   "tick --root R": "finite advance: dependencies, automatic gates, readiness, finals only when READY, STATUS.json",
+   "worker --root R --host-role ROLE --once": "admit + claim + supervise exactly one unit (or reattach/collect an orphan)",
+   "status --root R --level campaign|unit|stage|publication|fleet|all [--unit ID] --json": "bounded read",
+   "publish --root R [--no-mirror]": "outbox exact-readback pass + local/second-host mirrors (runs under the warehouse EnvironmentFile)",
+   "gate --root R --name G --receipt JSON": "record an external gate (DATA_PROVENANCE, SOFTWARE_TRACEABILITY, STRATEGY_OWNER_RULINGS); TEST reads refused",
+   "close --root R": "CLOSE.json only with complete populations, gates, DELIVERED publication and VERIFIED mirrors"
+  }
+ },
+ "dag": {
+  "short.fit": "kind fit, gpu, QUEUED at init",
+  "short.report": "kind report, cpu, after short.fit (never fits)",
+  "long.fit": "kind fit, gpu, after short.report; WAIT_ARTIFACT until the long design is sealed",
+  "long.report": "after long.fit",
+  "pair.validation": "kind pair, cpu, after short.report AND long.report; WAIT_OWNER_RULING until gates/STRATEGY_OWNER_RULINGS.json PASS",
+  "final.short_refit / final.long_refit": "kind final_refit, gpu, train [2021-01-01,2025-01-01); enumerated only by tick after TEST_READINESS READY",
+  "final.pair_test": "kind final_test, cpu, the only unit with test_open=true; after both refits"
+ },
+ "gates": {
+  "SHORT_VALIDATION": "auto",
+  "LONG_VALIDATION": "auto",
+  "PAIR_VALIDATION": "auto from the pair terminal (gates.pair_status PASS)",
+  "PROCEDURE_FREEZE": "auto after pair PASS (identities, family hashes, strategy version, costs, seed, cadence, final-fit policy)",
+  "VALIDATION_DELIVERY": "auto when every outbox item is DELIVERED and MIRRORS.json VERIFIED",
+  "DATA_PROVENANCE": "external, data lane; evidence.final_bundles {final_short_bundle, final_long_bundle: {relpath, sha256}} feeds the final refits",
+  "SOFTWARE_TRACEABILITY": "external, Satoshi",
+  "STRATEGY_OWNER_RULINGS": "external, owner: barrier_equality, costs_and_pip_value, fill_model, sharpe_convention, min_long_heads"
+ },
+ "readiness": "READY | BLOCKED {missing:[{gate, artifact, owner, reason}]} | TERMINAL {disposition: PAIR_NOT_ELIGIBLE | UNIT_FAILED:<id> | ...}",
+ "child_protocol": {
+  "argv": "<entry> run-unit --spec <attempt>/UNIT_SPEC.json --out <attempt>/out --progress <attempt>/progress.json",
+  "default_entries": "python -m tools.i6dmo.unit_runner --kind <kind>",
+  "fit/final_refit": "unit_runner runs `python -m tools.i6dmo.train --design <attempt>/design.json --bundle <data_root>/<pin.relpath parent> --out <out>/train --device gpu|cpu --json`; RECEIPT.json -> TERMINAL.json (exit 2/3/4 -> typed FAILED terminal, never retried; 137/124 -> FAILED_OOM/FAILED_TIMEOUT); PROGRESS.json -> progress.json",
+  "report": "hook tools.i6dmo.reporting.run_unit(spec, out_dir, progress_path) -> terminal dict  (NOT YET OWNED: data lane naive.paired_metrics + weekly_diagnostics on model predictions/validation.npz; must emit eligibility {h: {mae, naive, eligible, n}} and governed reports)",
+  "pair/final_test": "hook tools.i6dmo.strategy_adapter.run_unit(spec, out_dir, progress_path) -> terminal dict (strategy lane: pair_eligibility then run_backtest; must set gates {pair_status, strategy_version, costs_sha256})",
+  "terminal": "schema i6dmo.terminal.v1: unit_id, identity_sha256, status COMPLETE|FAILED|NOT_ELIGIBLE|PAIR_NOT_ELIGIBLE, disposition, artifacts {name: {path, sha256}}, costs {wall_seconds, fit_seconds, score_seconds, cgroup_peak_bytes, gpu_uuid}, eligibility, gates, reports[]",
+  "missing_hook_or_bundle": "worker marks WAIT_ARTIFACT (cause names module/pin and owner) before claiming: no attempt is burned"
+ },
+ "data_pins": "private JSON passed to init: {short_bundle: {relpath, sha256 of BUNDLE.json}, long_bundle: {...}}; relpath is under each GPU role's data_root",
+ "identity": "sha256 of {unit, family, kind, cadence (NONE|QUARTERLY|MONTHLY|WEEKLY), family effective sha, data_sha256, code_commit, seed, upstream identities}; adoption only by an exact, re-verified stored terminal",
+ "admission": "cap = max(refused cap for the unit, ceil(1.25 x measured peak of that device class and kind) else launcher.initial_cap_bytes); requires MemAvailable >= cap + reserve, slice >= cap, disk >= 20 GiB, GPU visible with >= 2 GiB free, no foreign heavy (>=1 GiB) GPU process on the host; preferred (lowest order) GPU role first; a later role takes a GPU unit only after earlier roles refused it or hold a heavy lease; one heavy lease per host_key",
+ "private_deployment_spec": "documented in tools/i6dmo/deploy.py PRIVATE_SPEC_DOC; never committed",
+ "deploy_sequence": [
+  "source <private bootstrap>   # defines I6DMO_PRIVATE_SPEC and I6DMO_ROOT (render-bootstrap)",
+  "python -m tools.i6dmo validate-design --design docs/i6n/direct_multi_output_static/EXPERIMENT.short.json",
+  "CUDA_VISIBLE_DEVICES='' python -m pytest -q tests/i6dmo",
+  "python -m tools.i6dmo preflight --design docs/i6n/direct_multi_output_static/EXPERIMENT.short.json --deployment \"$I6DMO_PRIVATE_SPEC\" --data-pins <private pins.json>",
+  "python -m tools.i6dmo init --design docs/i6n/direct_multi_output_static/EXPERIMENT.short.json --deployment \"$I6DMO_PRIVATE_SPEC\" --root \"$I6DMO_ROOT\" --data-pins <private pins.json> [--long-design <sealed long design>]",
+  "python -m tools.i6dmo gate --root \"$I6DMO_ROOT\" --name SOFTWARE_TRACEABILITY --receipt <TRACEABILITY receipt json>   # when true; DATA_PROVENANCE and STRATEGY_OWNER_RULINGS by their owners",
+  "python -m tools.i6dmo deploy --root \"$I6DMO_ROOT\" --deployment \"$I6DMO_PRIVATE_SPEC\"",
+  "python -m tools.i6dmo status --root \"$I6DMO_ROOT\" --level campaign --json   # once; then fleet: --level fleet"
+ ],
+ "verify_once_after_deploy": [
+  "EFFECTIVE_CONFIG seal and PLAN.effective_config_sha256",
+  "status --level fleet: running unit on the preferred role with device rtx5090 and its GPU uuid in UNIT_SPEC.json",
+  "fresh heartbeat_age_seconds",
+  "no other heavy attempt on the preferred host_key",
+  "DEPLOY.json observed: timers enabled/active"
+ ]
+}

@@ -1,0 +1,12 @@
+[Unit]
+Description=I6-DMO @CID@ tick timer
+@MARK@
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=@INTERVAL@s
+Persistent=true
+Unit=@PREFIX@tick.service
+
+[Install]
+WantedBy=timers.target
