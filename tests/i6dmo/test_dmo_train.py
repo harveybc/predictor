@@ -199,9 +199,14 @@ def test_dmo10_train_unit_end_to_end_restore_and_reload(tmp_path):
     in_x, in_y, in_m = T.transform(T.trainable_rows(data["inner"])[0], scales)
     record = training["monitor_evaluation"]
     assert record["procedure"] == "i6dmo.monitor_eval.v1" and record["batch_size"] == 256
-    _, _, monitored = T.replay_monitored(loaded.forecast_model, (fit_x, fit_y, fit_m),
-                                         (in_x, in_y, in_m), record)
+    assert record["graph"] == "inference" and record["self_check"] == "PASS"
+    assert record["best_epoch"] == training["best_epoch"]
+    assert record["monitored"] == hist[best]["monitored"]  # the value early stopping read
+    fm_r, im_r, monitored = T.replay_monitored(loaded.forecast_model, (fit_x, fit_y, fit_m),
+                                               (in_x, in_y, in_m), record)
     assert monitored == hist[best]["monitored"]  # bitwise: identical evaluation procedure
+    assert fm_r["sums"] == record["fit"]["sums"] and fm_r["counts"] == record["fit"]["counts"]
+    assert im_r["sums"] == record["inner"]["sums"] and im_r["counts"] == record["inner"]["counts"]
     # Saved predictions equal a fresh prediction from the reloaded artifact.
     with np.load(out / "predictions" / "validation.npz") as pz:
         vx, _, _ = T.transform(data["validation"], scales)
@@ -285,3 +290,21 @@ def test_monitor_evaluation_is_one_shared_procedure_and_path_mismatch_is_refused
         T.replay_monitored(bundle.forecast_model, fit, inner, record, batch_size=130)
     with pytest.raises(T.TrainDisposition, match="MONITOR_PATH_MISMATCH"):
         T.replay_monitored(bundle.forecast_model, fit, inner, {"procedure": "other", "batch_size": 64})
+
+
+def test_training_graph_evaluated_monitor_is_refused_and_self_check_is_typed():
+    """DMO10: only the inference-path monitor is comparable; the self-check is bitwise."""
+    from tools.i6dmo import model as M
+    rng = np.random.default_rng(1)
+    bundle = M.build_dmo(M.model_config(["a", "b"]))
+    x = rng.normal(size=(20, 13, 2)).astype("float32")
+    y = rng.normal(size=(20, 6))
+    mask = np.ones((20, 6), bool)
+    fit, inner = (x, y, mask), (x[:8], y[:8], mask[:8])
+    good = {"procedure": "i6dmo.monitor_eval.v1", "batch_size": 20, "graph": "inference"}
+    _, _, monitored = T.replay_monitored(bundle.forecast_model, fit, inner, good)
+    with pytest.raises(T.TrainDisposition, match="MONITOR_PATH_MISMATCH"):
+        T.replay_monitored(bundle.forecast_model, fit, inner, dict(good, graph="training"))
+    T.monitor_self_check(bundle.forecast_model, fit, inner, good, monitored)  # bitwise: passes
+    with pytest.raises(T.TrainDisposition, match="MONITOR_SELF_CHECK_FAILED"):
+        T.monitor_self_check(bundle.forecast_model, fit, inner, good, monitored + 1e-12)
