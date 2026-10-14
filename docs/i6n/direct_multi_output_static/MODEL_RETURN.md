@@ -24,7 +24,8 @@ Command:
 
 - `python -m tools.i6dmo.design validate-design --design <d> [--json]` is pure.
   It resolves the committed design to design sha `541ce40a…` and effective
-  config sha `56ba5324…`, with 19 features (manifest `2ff34fa2…`). The fit
+  config sha `cd78cc6c…` (was `56ba5324…` before the `family` key was added in
+  round 2), with 19 features (manifest `2ff34fa2…`). The fit
   window is `[2020-01-01, 2023-11-06)` and inner is `[2023-11-06, 2024-01-01)`.
   Seven features still have UNVERIFIED availability:
   dgs3mo.diff_5d, dgs7.logret_5d, gbpusd.logret_1h, px.close_loc, px.log_co,
@@ -51,13 +52,49 @@ fusion, `_validate_component`, `probe_alignment` and `weights_hash`.
 3. It labels horizons as multiples of `sample_hours`, so 3 h and 5 h would
    become 6 h and 10 h.
 
-## Risks / choices to confirm (not in section C)
+## Declared defaults (not fixed by section C; recorded in the effective config)
 
-- Batches are a seeded permutation per epoch. Core convolutions use ReLU.
-- The restored checkpoint is the lowest-loss epoch, with ties going to the
-  earliest. `min_delta` only drives patience, following the i6n convention.
+1. Seeded per-epoch shuffle: batch order is `np.random.default_rng(6102026)`
+   permutation each epoch (`batch_order: seeded_permutation_per_epoch`).
+2. ReLU in the core: both core Conv1D layers (8 then 4 filters) use ReLU; the
+   plan names only filters/kernel/stride for the core.
+3. Restore the lowest-loss epoch: the restored checkpoint is the epoch with the
+   lowest `0.5*(fit+inner)` (first tie wins); `min_delta` only drives patience
+   (stale unless `monitored < reference - min_delta`), the i6n convention.
+
+## Round 2: long family (Satoshi request)
+
+Tests `48c59ff0` (PRE: 10 failed, 11 errors in 6.64s), implementation in the
+following commit; POST for all four model-lane files: `81 passed in 41.42s`.
+
+- Long design adapter: `validate-design` accepts the short and the sealed long
+  design (family by `experiment_id`, schema stays `i6dmo.design.v1` for ops).
+  Long = short design with PLAN section 5 fields: heads 18/24/36/48/60/72,
+  span 144 h, spacing 12 h; 13 observations and hourly issuance are equal to
+  the short ones. Tamper is `LONG_DESIGN_SEAL`, an `UNDECIDED` field is
+  `LONG_DESIGN_UNDECIDED: <field>`.
+- `seal-long-design --short-design --short-terminal --out`: deterministic and
+  idempotent. It accepts only a `short.report` terminal with status COMPLETE or
+  NOT_ELIGIBLE and records unit/identity/file digest, never metrics. The long
+  hyperparameters are identical whatever the short outcome (tested). The ops
+  command `seal-long --root R --design EXPERIMENT.long.json` then seals it into
+  the campaign; the names do not collide (tested).
+- Open-field reading: PLAN.md leaves no long field open, so
+  `LONG_PLAN_OPEN_FIELDS = ()`. "Freeze its support/cost design before
+  fitting" is read as sealing the mirrored business (masks) and execution
+  (cost/admission) blocks. If Satoshi rules otherwise, adding the path makes the
+  seal stop with `LONG_DESIGN_UNDECIDED` (tested by monkeypatch).
+- Trainer: same entry point and the same masked normalized loss on heads
+  h18..h72; a short bundle fed to the long design is a typed bundle mismatch;
+  72 h fit labels reaching the inner boundary are `PURGE_VIOLATION`.
+- The data lane must build a long bundle (offsets -144..0 step 12, horizons
+  18..72). Its 144 h windows at 2020-01-01 need late-2019 input history.
+
+## Risks
+
 - Op determinism is off. Same-seed CPU runs were bitwise equal in tests; the
   GPU behaviour is untested.
 - `tf_gpu_memory_peak_bytes` is GPU-only and untested on CPU.
-- The bundle schema is my proposal. It must be reconciled with INTERFACE_DATA.
+- Bundle schema: the data lane reports that its real short bundle conforms and
+  was accepted by `load_data_bundle` (INTERFACE_DATA).
 - A tiny CPU smoke run (200 epochs) took 27 s. This is not an ETA.

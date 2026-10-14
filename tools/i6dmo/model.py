@@ -1,5 +1,9 @@
 """I6-DMO minimal modular model, bridged to the hierarchical modular_temporal plugin.
 
+Two families share the identical architecture: short (offsets -24..0 h every
+2 h, heads 2/3/4/5/6/12 h) and long (offsets -144..0 h every 12 h, heads
+18/24/36/48/60/72 h; PLAN.md section 5). Only the grid and head names differ.
+
 Fixed identity (owner order section C): one branch per feature ``(batch, 13, 1)``
 with causal Conv1D 4 filters / kernel 3 / stride 1 / ReLU; raw concatenation on
 the filter axis (the plugin's built-in weightless ``sequence_concat`` fusion);
@@ -52,8 +56,11 @@ _FIXED = {
              "activation": "relu"},
     "heads": {"hidden_units": 8, "hidden_activation": "relu", "output_activation": "linear"},
     "positional_encoding": "physical_offset_sinusoid_after_fusion",
-    "horizons_hours": [2, 3, 4, 5, 6, 12],
-    "offsets_hours": list(range(-24, 1, 2)),
+}
+#: Exact (input offsets, head horizons) pairs per family; nothing else is accepted.
+FAMILIES = {
+    "short": {"offsets_hours": list(range(-24, 1, 2)), "horizons_hours": [2, 3, 4, 5, 6, 12]},
+    "long": {"offsets_hours": list(range(-144, 1, 12)), "horizons_hours": [18, 24, 36, 48, 60, 72]},
 }
 
 
@@ -61,10 +68,19 @@ def _canonical(value):
     return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
 
 
-def model_config(features, seed=6102026):
-    """The fixed R0 model config for an ordered feature list."""
+def model_config(features, seed=6102026, family="short"):
+    """The fixed R0 model config for an ordered feature list and family (short or long)."""
     return normalize_model_config({"schema": MODEL_SCHEMA, "features": list(features), "regime": "R0",
-                                   "seed": seed, **json.loads(_canonical(_FIXED))})
+                                   "seed": seed, **json.loads(_canonical(_FIXED)),
+                                   **json.loads(_canonical(FAMILIES[family]))})
+
+
+def model_family(config):
+    for name, grid in FAMILIES.items():
+        if config["offsets_hours"] == grid["offsets_hours"] and config["horizons_hours"] == grid["horizons_hours"]:
+            return name
+    raise ValueError("FIXED_VALUE: offsets/horizons must be exactly one declared family pair "
+                     f"{json.dumps(FAMILIES)}")
 
 
 def normalize_model_config(config):
@@ -80,6 +96,7 @@ def normalize_model_config(config):
     for key, value in _FIXED.items():
         if c[key] != value:
             raise ValueError(f"FIXED_VALUE: model {key} is fixed to {value!r}")
+    model_family(c)
     names = c["features"]
     if (not isinstance(names, list) or not names or len(set(names)) != len(names)
             or any(not isinstance(n, str) or not n for n in names)):
