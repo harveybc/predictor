@@ -9,7 +9,7 @@
     "status": "STILL_UNRESOLVED"
    },
    "formula": "V_D - V_(D-5 observations) after dropping NaN observations (diff because the series is not all positive)",
-   "missing": "first-release publication clock: ALFRED vintage history (per-observation realtime_start) for DGS3MO over 2019-2024, or H.15 release timestamps; the retained parquet carries realtime_start=realtime_end=2026-05-01 on every row (current vintage only) and the producer itself labels the rule NO_VINTAGE",
+   "missing": "first-release publication clock for DGS3MO 2019-2024. Bounded recovery attempt 2026-10-14 against existing governed adapters: financial-data's only FRED adapter (_scripts/workers/stage13_gamma_macro_onchain_worker.py::fetch_fred @ef0ba6612) queries fred/series/observations WITHOUT realtime parameters (current vintage only); the retained parquet carries realtime_start=realtime_end=2026-05-01 on every row; no ALFRED/vintage adapter exists in any sibling repository. Missing artifact: ALFRED per-observation realtime_start for DGS3MO over 2019-2024 (fred/series/observations with realtime_start/realtime_end), or H.15 release timestamps. No new adapter or credential was created.",
    "note": "producer code and formula RECOVERED and reproduced exactly; only the publication clock remains unproven, so the feature stays UNRESOLVED for confirmatory TEST",
    "producer": {
     "commit": "18cabb583ed5606ec7865658974513af6b66ee95",
@@ -47,7 +47,7 @@
     "status": "STILL_UNRESOLVED"
    },
    "formula": "ln V_D - ln V_(D-5 observations) after dropping NaN observations",
-   "missing": "first-release publication clock: ALFRED vintage history (per-observation realtime_start) for DGS7 over 2019-2024, or H.15 release timestamps; the retained parquet carries realtime_start=realtime_end=2026-05-01 on every row (current vintage only) and the producer itself labels the rule NO_VINTAGE",
+   "missing": "first-release publication clock for DGS7 2019-2024. Bounded recovery attempt 2026-10-14 against existing governed adapters: financial-data's only FRED adapter (_scripts/workers/stage13_gamma_macro_onchain_worker.py::fetch_fred @ef0ba6612) queries fred/series/observations WITHOUT realtime parameters (current vintage only); the retained parquet carries realtime_start=realtime_end=2026-05-01 on every row; no ALFRED/vintage adapter exists in any sibling repository. Missing artifact: ALFRED per-observation realtime_start for DGS7 over 2019-2024 (fred/series/observations with realtime_start/realtime_end), or H.15 release timestamps. No new adapter or credential was created.",
    "note": "producer code and formula RECOVERED and reproduced exactly; only the publication clock remains unproven, so the feature stays UNRESOLVED for confirmatory TEST",
    "producer": {
     "commit": "18cabb583ed5606ec7865658974513af6b66ee95",
