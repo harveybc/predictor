@@ -157,8 +157,9 @@ class SshSystemdExecutor:
                  "-E", f"I6DMO_ATTEMPT={name}"]
         if cap_bytes:
             props += ["-p", f"MemoryMax={int(cap_bytes)}", "-p", "MemorySwapMax=0"]
-        for key in ("CUDA_VISIBLE_DEVICES", "PYTHONDONTWRITEBYTECODE", "TF_CPP_MIN_LOG_LEVEL"):
-            if key in env:
+        for key in ("CUDA_VISIBLE_DEVICES", "PYTHONDONTWRITEBYTECODE", "TF_CPP_MIN_LOG_LEVEL", "I6DMO_ATTEMPT",
+                    *env.get("I6DMO_FORWARD_ENV", "").split(",")):
+            if key and key in env and key != "I6DMO_FORWARD_ENV":
                 props += ["-E", f"{key}={env[key]}"]
         command = " ".join(shlex.quote(p) for p in ["systemd-run", *props, "--", *argv])
         self._ssh(command)
@@ -289,6 +290,11 @@ def _finish(root, q, unit, token, rc, folder, attempt_info):
     if rc in (137, -9):
         q.fail(unit_id, token, "FAILED_OOM", f"rc={rc}")
         return dict(result="FAILED", unit_id=unit_id, cause="FAILED_OOM", attempt_dir=rel)
+    if rc == 75:  # the launcher refused admission before starting anything: wait, never a failure
+        q.interrupt(token, "LAUNCHER_ADMISSION_REFUSED")
+        attempt = q.attempt_by_token(token)
+        q.record_admission(unit_id, attempt["role"], False, "LAUNCHER_ADMISSION_REFUSED", attempt["cap_bytes"])
+        return dict(result="WAIT_RESOURCE", unit_id=unit_id, cause="LAUNCHER_ADMISSION_REFUSED", attempt_dir=rel)
     if rc == 124:
         q.fail(unit_id, token, "FAILED_TIMEOUT", f"rc={rc}")
         return dict(result="FAILED", unit_id=unit_id, cause="FAILED_TIMEOUT", attempt_dir=rel)
@@ -523,8 +529,9 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
                          upstream={d: _upstream(root, q, d) for d in unit["depends_on"]})
         atomic_json(folder / "UNIT_SPEC.json", unit_spec)
         name = f"{plan['campaign_id']}-{unit['unit_id'].replace('.', '-')}-a{attempt['index']:02d}"
-        env = dict(os.environ, **extra_env, CUDA_VISIBLE_DEVICES=gpu["uuid"] if gpu else "",
-                   PYTHONDONTWRITEBYTECODE="1", TF_CPP_MIN_LOG_LEVEL="2")
+        role_env = {k: str(v) for k, v in (role_spec.get("environment") or {}).items() if k != "CUDA_VISIBLE_DEVICES"}
+        env = dict(os.environ, **extra_env, **role_env, CUDA_VISIBLE_DEVICES=gpu["uuid"] if gpu else "",
+                   PYTHONDONTWRITEBYTECODE="1", TF_CPP_MIN_LOG_LEVEL="2", I6DMO_FORWARD_ENV=",".join(sorted(role_env)))
         argv = _wrap(launcher, name, cap, _child_argv(effective["entrypoints"], unit["kind"],
                                                      role_spec.get("python", "python3"), folder))
         info = dict(index=attempt["index"], kind=attempt["kind"], role=role, device_class=device_class,

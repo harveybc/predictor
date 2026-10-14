@@ -20,6 +20,8 @@ from tools.i6n_swarm.common import atomic_json, boot_id, sha256_json
 GIB = 1024 ** 3
 HEAVY_GPU_PROCESS = GIB
 LEGACY_PREFIXES = ("i6n-", "doin-")
+# Deliberately left running by the handoff: archive delivery and warehouse transports (not training).
+LEGACY_KEEP = ("-archive-", "warehouse-tunnel")
 
 
 def _meminfo(path="/proc/meminfo"):
@@ -80,7 +82,7 @@ def _legacy_units(run):
     except (OSError, subprocess.TimeoutExpired):
         return None
     names = [line.split()[0] for line in out.stdout.splitlines() if line.strip()]
-    return sorted(n for n in names if n.startswith(LEGACY_PREFIXES))
+    return sorted(n for n in names if n.startswith(LEGACY_PREFIXES) and not any(k in n for k in LEGACY_KEEP))
 
 
 def _strategy_pin():
