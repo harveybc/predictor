@@ -215,6 +215,11 @@ def preflight(design_path, spec_path, *, adapter=None, probe=None, data_pins=Non
     if not pins:
         _check(checks, "data_pins", False, "LAUNCH", "no frozen bundle pins supplied (--data-pins)",
                owner="data lane", state="UNVERIFIED")
+    admissions = [c for c in checks if c["check"].startswith("admission_initial_cap:")]
+    if any(c["state"] == "PASS" for c in admissions):  # policy: a refused preferred host routes, never trims
+        for c in admissions:
+            if c["state"] != "PASS" and c["blocks"] == "LAUNCH":
+                c["blocks"] = "ROUTED_TO_NEXT_GPU_ROLE"
     launch_blockers = [c["check"] for c in checks if c["blocks"] == "LAUNCH" and c["state"] != "PASS"]
     doc = dict(schema="i6dmo.precheck.v1", state="PASS" if not launch_blockers else "FAIL",
                launch_blockers=launch_blockers, checks=checks, design_sha256=sha256_json(design),

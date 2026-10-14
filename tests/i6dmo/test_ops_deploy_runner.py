@@ -66,11 +66,13 @@ def test_preflight_types_blockers(tmp_path):
                               out=tmp_path / "PRECHECK.json")
     assert doc["state"] == "FAIL"
     blockers = set(doc["launch_blockers"])
-    assert {"admission_initial_cap:preferred", "legacy_units_stopped:secondary",
+    assert {"legacy_units_stopped:secondary",
             "non_parallel_slot:preferred:rtx5070ti", "data_pin:preferred:short_bundle"} <= blockers
     strategy = next(c for c in doc["checks"] if c["check"] == "strategy_pin:coordinator")
     assert strategy["state"] == "FAIL" and strategy["blocks"] == "PAIR"
     assert "strategy_pin:coordinator" not in blockers  # pair blocker, not a launch blocker
+    routed = next(c for c in doc["checks"] if c["check"] == "admission_initial_cap:preferred")
+    assert routed["state"] == "FAIL" and routed["blocks"] == "ROUTED_TO_NEXT_GPU_ROLE"  # secondary admits
 
 
 def _runner_spec(tmp_path, bundle_sha):
