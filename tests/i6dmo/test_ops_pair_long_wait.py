@@ -122,3 +122,24 @@ def test_publish_units_wait_without_a_warehouse_environment_file(tmp_path):
     log = []
     out = deploy.deploy(root, unit_dir=tmp_path / "units", systemctl=lambda *a: log.append(a) or dict(rc=0, stdout="x"))
     assert not [u for u in out["units"] if "publish" in u] and out["waiting"]
+
+
+def test_final_test_waits_until_the_strategy_lane_exports_run_final_backtest(tmp_path, monkeypatch):
+    from tools.i6dmo import campaign, queue, status, strategy_adapter
+    root = make_campaign(tmp_path)
+    unit = dict(unit_id="final.pair_test", identity_sha256="f" * 64, kind="final_test", family="pair",
+                device="cpu", depends_on=[], stage="FINAL_PAIR_TEST", test_open=True, windows={},
+                calls_fit=False, cadence="NONE", identity=None)
+    q = queue.Queue(root / "state" / "queue.sqlite3")
+    q.ensure_unit("final.pair_test", unit, state="QUEUED")
+    q.close()
+    plan = campaign.load_plan(root)
+    plan["units"].append(unit)
+    campaign._write_plan(root, plan)
+    assert not hasattr(strategy_adapter, "run_final_backtest")  # current strategy lane state
+    out = run_worker(root, "coordinator", tmp_path / "c.txt")
+    assert out["result"] == "WAIT_ARTIFACT" and out["cause"].startswith("FINAL_BACKTEST_EXPORT_MISSING")
+    assert status.compute(root, level="unit", unit="final.pair_test")["attempts"] == []
+    monkeypatch.setattr(strategy_adapter, "run_final_backtest", lambda *a, **k: None, raising=False)
+    out = run_worker(root, "coordinator", tmp_path / "c.txt")
+    assert not str(out.get("cause", "")).startswith("FINAL_BACKTEST_EXPORT_MISSING")

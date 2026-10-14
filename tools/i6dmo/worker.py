@@ -533,6 +533,7 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
         folder.mkdir(parents=True, exist_ok=True)
         (folder / "out").mkdir(exist_ok=True)
         unit_spec = dict(unit, schema="i6dmo.unit_spec.v1", campaign_id=plan["campaign_id"],
+                         campaign_root=str(root),
                          effective_config=effective, effective_config_sha256=plan["effective_config_sha256"],
                          device=dict(cls=device_class, gpu_uuid=gpu["uuid"] if gpu else None), cap_bytes=cap,
                          data_root=role_spec.get("data_root"), bundle=bundle,
@@ -592,6 +593,16 @@ def _artifacts(root, effective, unit, role_spec):
             return bundle, (f"EXECUTION_POLICY_{problem}: sealed at init/deploy from "
                             "effective_config.strategy_execution.instrument owner=Satoshi")
         # EXECUTION_POLICY_TAMPERED / MISMATCH stay claimable: the pinned hook refuses them FINALLY.
+        if unit["kind"] == "final_test":
+            try:
+                from tools.i6dmo import strategy_adapter as SA
+                exported = callable(getattr(SA, "run_final_backtest", None))
+            except ImportError:
+                exported = False
+            if not exported:
+                # Claimed now, the final hook would write a FINAL FAILED terminal; so it waits instead.
+                return bundle, ("FINAL_BACKTEST_EXPORT_MISSING owner=strategy lane "
+                                "(strategy_adapter.run_final_backtest)")
         cause = _pair_inputs_missing(root, effective, unit, role_spec)
         if cause:
             return bundle, cause

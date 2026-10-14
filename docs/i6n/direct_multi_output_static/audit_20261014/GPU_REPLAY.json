@@ -1,0 +1,26 @@
+{
+ "code_commit": "5047cef9",
+ "covered": [
+  "DMO01",
+  "DMO04",
+  "DMO10"
+ ],
+ "device": "rtx5090 (preferred role), fresh admission, one bounded crispdm-run job (-m 6G -t 540s)",
+ "failed": 1,
+ "failed_detail": {
+  "DMO10": {
+   "assertion": "np.array_equal(pz['predicted_price'], fresh)",
+   "finding": "bitwise save/load prediction identity holds on CPU but not on this GPU: a fresh reload predicts values that differ from the saved predictions (nondeterministic GPU kernel selection between sessions; the model lane's declared op_determinism limitation). Owner: model lane - enable op determinism or a declared tolerance for the GPU identity check.",
+   "test": "tests/i6dmo/test_dmo_train.py::test_dmo10_train_unit_end_to_end_restore_and_reload"
+  }
+ },
+ "gpu_devices": 1,
+ "note": "DMO01 causality and DMO04 masking replays passed on the GPU; this is acceptance evidence, not science",
+ "passed": 11,
+ "pytest_rc": 1,
+ "schema": "i6dmo.gpu_replay.v1",
+ "scope": "ENGINEERING_NOT_SCIENCE",
+ "tests": "test_dmo_model.py + test_dmo_train.py -k dmo01/dmo04/dmo10/causality (12 selected)",
+ "tf": "2.21.0",
+ "wall_seconds": 23.3
+}

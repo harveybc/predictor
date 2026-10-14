@@ -92,11 +92,13 @@ def build():
     for dmo, (owner, tests, code, evidence) in TABLE.items():
         bad = ([t for t in tests if not _test_pointer_ok(t)]
                + [f for f in code + evidence if not (ROOT / f).is_file()])
-        gpu = dmo in GPU_BACKED and replay is not None and replay.get("pytest_rc") == 0
+        gpu = (dmo in GPU_BACKED and replay is not None and dmo in (replay.get("covered") or [])
+               and dmo not in (replay.get("failed_detail") or {}))
         entries[dmo] = dict(
             owner=owner, tests=tests, code=code, evidence=evidence,
             result="POINTER_BROKEN" if bad else ("CPU_TESTS_PASS+GPU_REPLAY" if gpu else "CPU_TESTS_PASS"),
-            gpu_backed=gpu, broken_pointers=bad)
+            gpu_backed=gpu, broken_pointers=bad,
+            gpu_replay_failure=((replay.get("failed_detail") or {}).get(dmo) if replay else None))
         if bad:
             broken.append(dmo)
     return dict(schema="i6dmo.traceability.v1", code_commit=commit,

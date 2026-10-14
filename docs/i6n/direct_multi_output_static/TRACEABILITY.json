@@ -1,0 +1,363 @@
+{
+ "broken": [],
+ "code_commit": "249e787d09dde43ded37a98a9487d511bb87db1f",
+ "entries": {
+  "DMO01": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/model.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/MODEL_RETURN.md",
+    "docs/i6n/direct_multi_output_static/audit_20261014/GPU_REPLAY.json"
+   ],
+   "gpu_backed": true,
+   "gpu_replay_failure": null,
+   "owner": "model",
+   "result": "CPU_TESTS_PASS+GPU_REPLAY",
+   "tests": [
+    "tests/i6dmo/test_dmo_model.py::test_dmo01_",
+    "tests/i6dmo/test_dmo_model.py::causality"
+   ]
+  },
+  "DMO02": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/data.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/DATA_RETURN.md",
+    "docs/i6n/direct_multi_output_static/audit_20261014/AUDIT.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "data",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_data_dmo.py::test_dmo02_"
+   ]
+  },
+  "DMO03": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/data.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/DATA_RETURN.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "data",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_data_dmo.py::test_dmo03_"
+   ]
+  },
+  "DMO04": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/train.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/MODEL_RETURN.md",
+    "docs/i6n/direct_multi_output_static/audit_20261014/GPU_REPLAY.json"
+   ],
+   "gpu_backed": true,
+   "gpu_replay_failure": null,
+   "owner": "model",
+   "result": "CPU_TESTS_PASS+GPU_REPLAY",
+   "tests": [
+    "tests/i6dmo/test_dmo_train.py::test_dmo04_"
+   ]
+  },
+  "DMO05": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/data.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/DATA_RETURN.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "data",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_data_dmo.py::test_dmo05_"
+   ]
+  },
+  "DMO06": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/data.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/DATA_RETURN.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "data",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_data_dmo.py::test_dmo06_"
+   ]
+  },
+  "DMO07": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/campaign.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/OPS_RETURN.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "ops",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_ops_dmo07_units.py::test_dmo07_"
+   ]
+  },
+  "DMO08": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/naive.py",
+    "tools/i6dmo/reporting.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/DATA_RETURN.md",
+    "docs/i6n/direct_multi_output_static/OPS_RETURN.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "data+ops",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_data_dmo.py::test_dmo08_",
+    "tests/i6dmo/test_ops_dmo08_09_reporting.py::test_dmo08_"
+   ]
+  },
+  "DMO09": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/naive.py",
+    "tools/i6dmo/reporting.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/DATA_RETURN.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "data+ops",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_data_dmo.py::test_dmo09_",
+    "tests/i6dmo/test_ops_dmo08_09_reporting.py::test_dmo09_"
+   ]
+  },
+  "DMO10": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/model.py",
+    "tools/i6dmo/train.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/MODEL_RETURN.md",
+    "docs/i6n/direct_multi_output_static/audit_20261014/GPU_REPLAY.json"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": {
+    "assertion": "np.array_equal(pz['predicted_price'], fresh)",
+    "finding": "bitwise save/load prediction identity holds on CPU but not on this GPU: a fresh reload predicts values that differ from the saved predictions (nondeterministic GPU kernel selection between sessions; the model lane's declared op_determinism limitation). Owner: model lane - enable op determinism or a declared tolerance for the GPU identity check.",
+    "test": "tests/i6dmo/test_dmo_train.py::test_dmo10_train_unit_end_to_end_restore_and_reload"
+   },
+   "owner": "model",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_dmo_train.py::test_dmo10_",
+    "tests/i6dmo/test_dmo_model.py::test_dmo10_"
+   ]
+  },
+  "DMO11": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/queue.py",
+    "tools/i6dmo/worker.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/OPS_RETURN.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "ops",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_ops_dmo11_identity.py::test_dmo11_"
+   ]
+  },
+  "DMO12": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/outbox.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/OPS_RETURN.md",
+    "docs/i6n/direct_multi_output_static/audit_20261014/AUDIT.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "ops",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_ops_dmo12_outbox.py::test_dmo12_",
+    "tests/i6dmo/test_audit_warehouse_contract.py::test_"
+   ]
+  },
+  "DMO13": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/campaign.py",
+    "tools/i6dmo/data.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/OPS_RETURN.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "ops+data",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_ops_dmo13_test_closed.py::test_dmo13_",
+    "tests/i6dmo/test_data_dmo.py::test_test_rows_are_refused"
+   ]
+  },
+  "DMO14": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/strategy_adapter.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/STRATEGY_RETURN.md",
+    "docs/i6n/direct_multi_output_static/STRATEGY_PLUGIN_MAP.json"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "strategy",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_strategy_adapter.py::test_dmo14_"
+   ]
+  },
+  "DMO15": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/strategy_adapter.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/STRATEGY_RETURN.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "strategy",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_strategy_adapter.py::test_dmo15_"
+   ]
+  },
+  "DMO16": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/data.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/DATA_RETURN.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "data",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_data_dmo.py::test_dmo16_"
+   ]
+  },
+  "DMO17": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/queue.py",
+    "tools/i6dmo/worker.py",
+    "tools/i6dmo/preflight.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/OPS_RETURN.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "ops",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_ops_dmo17_host_lease.py::test_dmo17_"
+   ]
+  },
+  "DMO18": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/design.py",
+    "tools/i6dmo/data.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/MODEL_RETURN.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "model+data",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_dmo_train.py::test_dmo18_",
+    "tests/i6dmo/test_dmo_design.py::test_dmo18_",
+    "tests/i6dmo/test_data_dmo.py::test_stlfsi4_"
+   ]
+  },
+  "DMO19": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/status.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/OPS_RETURN.md",
+    "docs/i6n/direct_multi_output_static/audit_20261014/AUDIT.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "ops",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_ops_dmo19_status.py::test_dmo19_",
+    "tests/i6dmo/test_ops_audit_lane4.py::test_fit_eta_"
+   ]
+  },
+  "DMO20": {
+   "broken_pointers": [],
+   "code": [
+    "tools/i6dmo/campaign.py"
+   ],
+   "evidence": [
+    "docs/i6n/direct_multi_output_static/OPS_RETURN.md"
+   ],
+   "gpu_backed": false,
+   "gpu_replay_failure": null,
+   "owner": "ops",
+   "result": "CPU_TESTS_PASS",
+   "tests": [
+    "tests/i6dmo/test_ops_dmo20_cadence.py::test_dmo20_"
+   ]
+  }
+ },
+ "gpu_replay": {
+  "device": "rtx5090 (preferred role), fresh admission, one bounded crispdm-run job (-m 6G -t 540s)",
+  "pytest_rc": 1,
+  "receipt": "docs/i6n/direct_multi_output_static/audit_20261014/GPU_REPLAY.json",
+  "wall_seconds": 23.3
+ },
+ "schema": "i6dmo.traceability.v1",
+ "scope": "software acceptance evidence; not a scientific verdict and not TEST closure"
+}
