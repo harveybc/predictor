@@ -284,6 +284,31 @@ def _enqueue_reports(root, unit_id, doc, q):
     return rejected
 
 
+INFRA_PREFIT = "INFRA_PREFIT:"
+#: Codes a child returns when the HOST/infrastructure refused before any training or scoring
+#: started (wrong replica, missing GPU, wrong runtime). They are waits, never scientific terminals.
+INFRA_PREFIT_CODES = frozenset({
+    "BUNDLE_PIN_MISMATCH", "MATCHED_PIN_UNRESOLVED", "POPULATION_PIN_MISMATCH", "INPUT_PIN_MISMATCH",
+    "PIN_MISSING", "NO_GPU_VISIBLE", "RUNTIME_PIN_MISMATCH", "POPULATION_DIGEST_MISMATCH",
+    "FILE_DIGEST_MISMATCH", "SOURCE_DIGEST_MISMATCH", "CALENDAR_DIGEST_MISMATCH"})
+
+
+def _infra_prefit_refusal(unit, terminal_path):
+    """The child's typed pre-fit infrastructure refusal code, or None (anything else stays terminal)."""
+    if unit["kind"] not in ("fit", "final_refit", "report"):
+        return None
+    try:
+        doc = json.loads(Path(terminal_path).read_text())
+    except (OSError, ValueError):
+        return None
+    if doc.get("status") != "FAILED":
+        return None
+    code = str(doc.get("disposition") or "").split(":", 1)[0]
+    costs = doc.get("costs") or {}
+    started = bool(costs.get("fit_seconds")) or bool((doc.get("training") or {}).get("epochs_completed"))
+    return code if code in INFRA_PREFIT_CODES and not started else None
+
+
 def _store(root, unit, folder, attempt_info):
     out = Path(folder) / "out"
     raw = (out / "TERMINAL.json").read_bytes()
@@ -320,6 +345,16 @@ def _finish(root, q, unit, token, rc, folder, attempt_info):
         q.fail(unit_id, token, "FAILED_TIMEOUT", f"rc={rc}")
         return dict(result="FAILED", unit_id=unit_id, cause="FAILED_TIMEOUT", attempt_dir=rel)
     terminal = Path(folder) / "out" / "TERMINAL.json"
+    infra = _infra_prefit_refusal(unit, terminal) if rc in (0, "GONE") else None
+    if infra:
+        # Infrastructure refused BEFORE any training: never a terminal. The attempt is interrupted
+        # (not counted against the attempt budget), this role is recorded as refused so another can
+        # take it, and status turns it into a typed failure after a bounded threshold.
+        cause = f"{INFRA_PREFIT}{infra}@{attempt_info.get('role')}"
+        q.interrupt(token, cause[:200])
+        q.record_admission(unit_id, attempt_info.get("role"), False, cause[:120], attempt_info.get("cap_bytes"))
+        q.set_state(unit_id, "WAIT_RESOURCE", cause[:200])
+        return dict(result="WAIT_RESOURCE", unit_id=unit_id, cause=cause, attempt_dir=rel)
     if rc == "GONE" and not terminal.exists():
         q.interrupt(token, "CHILD_VANISHED")
         return dict(result="INTERRUPTED", unit_id=unit_id, cause="CHILD_VANISHED", attempt_dir=rel)
@@ -343,10 +378,17 @@ def _finish(root, q, unit, token, rc, folder, attempt_info):
 
 
 def _adoptable(root, unit, prior_roots, q):
+    effective = None
     for base in [Path(root), *map(Path, prior_roots)]:
         folder = base / "terminals" / unit["identity_sha256"]
         if not (folder / "TERMINAL.json").exists():
             continue
+        if base.resolve() != Path(root).resolve():
+            effective = effective or C.load_effective(root)
+            problem = C.donor_problem(base, effective)
+            if problem:  # the fit procedure binds adoption, not the identity alone
+                q.event("PRIOR_REJECTED", unit["unit_id"], dict(source=str(base.name), reason=problem[:200]))
+                continue
         try:
             doc = _verify_stored(folder, unit)
             if doc["terminal"].get("status") == "FAILED":
@@ -558,7 +600,8 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
         facts = facts_provider(role)
         ok, cause, evidence = admit(facts, cap=cap, gpu_uuid=gpu["uuid"] if gpu else None,
                                     reserve=int(role_spec.get("reserve_bytes", HOST_RESERVE)))
-        runtime = matched_runtime_problem(effective, unit, facts)
+        runtime = matched_runtime_problem(effective, unit, facts) or \
+            test_override_problem(effective, extra_env, role_spec)
         if ok and runtime:  # a refusal routes to another role; never a reseal, never a retry with other caps
             ok, cause = False, runtime[:200]
         q.record_admission(unit["unit_id"], role, ok, cause, cap, evidence)
@@ -612,13 +655,15 @@ def build_unit_spec(root, q, plan, effective, unit, role_spec, *, device_class, 
                      pins=resolved_pins(view, role_spec), attempt=dict(index=attempt["index"], kind=attempt["kind"]),
                      upstream={d: _upstream(root, q, d) for d in unit["depends_on"]})
     if unit.get("arm"):
-        # The model lane's matched report contract (reporting.run_unit switches on these keys).
+        # The model lane's matched report contract (reporting.run_unit switches on these keys);
+        # a scientific campaign's report refuses any fit that is not scientific on a GPU.
         pop, inp = unit_spec["pins"].get("common_population"), unit_spec["pins"].get("matched_input")
         if pop and pop.get("path"):
             unit_spec["common_population"] = dict(path=pop["path"], sha256=pop["population_sha256"])
         if inp and inp.get("path"):
             unit_spec["matched"] = dict(arm=unit["arm"], fit_unit=f"{unit['arm']}.fit",
-                                        input=dict(path=inp["path"], sha256=inp["sha256"]))
+                                        input=dict(path=inp["path"], sha256=inp["sha256"]),
+                                        require_scientific_fit=not effective.get("engineering_cpu_fixture"))
     if unit["kind"] == "strategy":
         # The trading stage's forecast inputs are authenticated digests, not assumptions: the
         # hook checks them against the digests the pair decision recorded for the same units.
@@ -858,6 +903,16 @@ def matched_unit_problem(effective, unit, role_spec, argv):
         if not path.is_file() or file_sha256(path) != pin["sha256"]:
             return f"MATCHED_INPUT_DIGEST_MISMATCH:{key} owner=Satoshi (replicate to the executing role)"
     return None
+
+
+def test_override_problem(effective, extra_env, role_spec):
+    """A scientific matched campaign never launches a child with an I6DMO_TEST_* override in reach
+    (worker environment, injected env or the role's forwarded environment)."""
+    if C.mode_of(effective) != C.MODE_MATCHED or effective.get("engineering_cpu_fixture"):
+        return None
+    keys = sorted(k for k in {*os.environ, *(extra_env or {}), *(role_spec.get("environment") or {})}
+                  if k.startswith("I6DMO_TEST_"))
+    return f"TEST_OVERRIDE_IN_SCIENTIFIC_ENVIRONMENT:{','.join(keys)}" if keys else None
 
 
 def matched_runtime_problem(effective, unit, facts):

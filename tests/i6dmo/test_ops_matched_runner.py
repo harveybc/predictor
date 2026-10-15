@@ -26,7 +26,10 @@ REPO = Path(__file__).resolve().parents[2]
 FAKE = Path(__file__).with_name("ops_matched_fake.py")
 MATCHED = REPO / "docs/i6n/direct_multi_output_static/matched_short"
 DESIGNS = {"mg1": MATCHED / "EXPERIMENT.mg1.json", "mg2m": MATCHED / "EXPERIMENT.mg2m.json"}
-RUNTIME = {"tensorflow": "2.18.0", "keras": "3.9.0"}
+#: Runtime pins are READ from the sealed designs (they are resealed by the data lane); never hard-coded.
+COMMITTED_RUNTIME = json.loads(DESIGNS["mg1"].read_text())["sealed_identities"]["runtime"]
+FIXTURE_RUNTIME = {"tensorflow": "9.9.9-fixture", "keras": "9.9.9-fixture"}  # synthetic designs only
+BOGUS_RUNTIME = {"tensorflow": "0.0.0-mismatch", "keras": "0.0.0-mismatch"}
 POPULATION = "b" * 64
 
 
@@ -81,7 +84,7 @@ def make_matched(tmp_path, *, name="matched", designs=None, data_pins=None, prio
 def provider(runtime=None, per_role=None):
     def probe(role):
         doc = facts()
-        doc["runtime"] = dict((per_role or {}).get(role) or runtime or RUNTIME)
+        doc["runtime"] = dict((per_role or {}).get(role) or runtime or COMMITTED_RUNTIME)
         return doc
     return probe
 
@@ -149,9 +152,9 @@ def test_graph_is_two_sealed_matched_arms_and_one_comparison_without_test(tmp_pa
         campaign.enumerate_test_units(root)
     effective = campaign.load_effective(root)
     assert effective["comparison"]["tolerance"] == 1e-8 and effective["comparison"]["tie_keeps"] == "mg2m"
-    # the sealed identities are carried verbatim (seals 4786951a / 6e8689d4 unchanged)
-    assert effective["arms"]["mg1"]["design"]["seal_sha256"].startswith("4786951a")
-    assert effective["arms"]["mg2m"]["design"]["seal_sha256"].startswith("6e8689d4")
+    # the sealed identities are carried verbatim (whatever the committed seals currently are)
+    for arm in ("mg1", "mg2m"):
+        assert effective["arms"][arm]["design"]["seal_sha256"] == json.loads(DESIGNS[arm].read_text())["seal_sha256"]
 
 
 def test_init_refuses_closed_relabelled_test_open_or_unfrozen_inputs(tmp_path):
@@ -286,10 +289,10 @@ def test_runtime_pin_mismatch_routes_away_and_never_runs_a_fit(tmp_path):
     counter = tmp_path / "c.txt"
     root = make_matched(tmp_path)
     campaign.tick(root)
-    probe = provider(per_role={"preferred": {"tensorflow": "2.21.0", "keras": "3.9.0"}})
+    probe = provider(per_role={"preferred": BOGUS_RUNTIME})
     out = worker(root, "preferred", {"I6DMO_FAKE_COUNTER": str(counter)}, facts_provider=probe)
     assert out["result"] == "WAIT_RESOURCE"
-    assert out["cause"].startswith("RUNTIME_PIN_MISMATCH:tensorflow=2.21.0!=2.18.0")
+    assert out["cause"].startswith(f"RUNTIME_PIN_MISMATCH:keras=0.0.0-mismatch!={COMMITTED_RUNTIME['keras']}")
     assert fits(counter) == []
     out = worker(root, "secondary", {"I6DMO_FAKE_COUNTER": str(counter)}, facts_provider=probe)
     assert out["result"] == "COMPLETE" and fits(counter) == ["fit:mg1.fit"]  # routed to the pinned runtime
@@ -417,7 +420,7 @@ def frozen(tmp_path_factory):
     short = _synth.load_design()
     dds = {a: CP.matched_data_design(short, a) for a in CP.ARMS}
     exps = {a: D.matched_market_time_design(short, a, dds, calendar={"calendar_id": "SYNTH_FX_NY17_FIXTURE",
-                                                                    "version": "synth-v1"}, runtime=RUNTIME)
+                                                                    "version": "synth-v1"}, runtime=FIXTURE_RUNTIME)
             for a in CP.ARMS}
     pop = CP.build_common_population(src, exps, dds, code_commit="TEST")
     pop_dir = storage / "i6dmo" / "matched-short-20261015" / "population"
@@ -469,7 +472,7 @@ def test_prepare_resolves_the_frozen_population_by_path_and_refuses_explicitly(f
     assert doc["data_pins"]["common_population"] == dict(
         base="experiment_storage", relpath="i6dmo/matched-short-20261015/population",
         sha256=_sha(frozen["pop_dir"] / "POPULATION.json"), population_sha256=frozen["digest"])
-    assert doc["designs"]["mg1"]["runtime"] == RUNTIME
+    assert doc["designs"]["mg1"]["runtime"] == FIXTURE_RUNTIME
     text = (private / "prepared.json").read_text()
     assert "SECRET_SHOULD_NEVER_BE_READ" not in text
     assert oct(os.stat(private / "prepared.json").st_mode)[-3:] == "600"
@@ -510,18 +513,18 @@ def test_preflight_checks_each_gpu_worker_runtime_against_the_sealed_pin(frozen,
     def probe(runtime):
         def run(role, files):
             doc = facts()
-            doc.update(runtime=dict(runtime.get(role, RUNTIME)),
+            doc.update(runtime=dict(runtime.get(role, FIXTURE_RUNTIME)),
                        files={inp_file: prepared["data_pins"]["matched_input"]["sha256"],
                               pop_file: prepared["data_pins"]["common_population"]["sha256"]})
             return doc
         return run
     ok = MR.preflight(private / "prepared.json", private / "pre", probe=probe({}))
-    assert ok["state"] == "PASS" and ok["runtime_pin"] == RUNTIME
+    assert ok["state"] == "PASS" and ok["runtime_pin"] == FIXTURE_RUNTIME
     bad = MR.preflight(private / "prepared.json", private / "pre2",
-                       probe=probe({"preferred": {"tensorflow": "2.21.0", "keras": "3.9.0"}}))
+                       probe=probe({"preferred": BOGUS_RUNTIME}))
     assert bad["state"] == "FAIL" and "preferred:runtime_pin" in bad["launch_blockers"]
     cause = next(c for c in bad["roles"]["preferred"] if c["check"] == "runtime_pin")["detail"]["cause"]
-    assert cause.startswith("RUNTIME_PIN_MISMATCH:tensorflow=2.21.0!=2.18.0") and "never reseal" in cause
+    assert cause.startswith("RUNTIME_PIN_MISMATCH:keras=0.0.0-mismatch!=9.9.9-fixture") and "never reseal" in cause
 
 
 def test_cli_matched_short_end_to_end_on_a_local_fixture(frozen, tmp_path, monkeypatch, capsys):
@@ -549,12 +552,12 @@ def test_cli_matched_short_end_to_end_on_a_local_fixture(frozen, tmp_path, monke
 
     def fake_probe(spec, role, files=(), check_strategy=False, run=None):
         base = facts()
-        base.update(runtime=dict(RUNTIME), files={f: (_sha(Path(spec["roles"][role]["data_root"]) / f)
+        base.update(runtime=dict(FIXTURE_RUNTIME), files={f: (_sha(Path(spec["roles"][role]["data_root"]) / f)
                                                       if not os.path.isabs(f) else _sha(f)) for f in files})
         return base
     monkeypatch.setattr(P, "probe_role", fake_probe)
     rc, out = run("matched-short", "preflight", "--prepared", str(prepared), "--out-dir", str(private / "pre"))
-    assert rc == 0 and out["state"] == "PASS" and out["runtime_pin"] == RUNTIME
+    assert rc == 0 and out["state"] == "PASS" and out["runtime_pin"] == FIXTURE_RUNTIME
     root = tmp_path / "campaign"
     fakes = private / "entrypoints.json"
     fakes.write_text(json.dumps(entrypoints()))
@@ -567,7 +570,7 @@ def test_cli_matched_short_end_to_end_on_a_local_fixture(frozen, tmp_path, monke
     assert rc == 0 and out["render_only"] is True and any(u.endswith("tick.timer") for u in out["units"])
     rc, out = run("tick", "--root", str(root))
     assert rc == 0 and out["campaign_state"] == "WAITING_FOR_WORKER"
-    drive(root, env={"I6DMO_FAKE_POPULATION": frozen["digest"]})
+    drive(root, env={"I6DMO_FAKE_POPULATION": frozen["digest"]}, facts_provider=provider(FIXTURE_RUNTIME))
     assert comparison(root)["disposition"] == "MG1_SELECTED"
     assert campaign.publish(root, warehouse=FakeWarehouse())["close"] == "CLOSED"
     for level, extra in (("campaign", []), ("arm", ["--arm", "mg2m"]), ("unit", ["--unit", "mg1.fit"])):
@@ -606,3 +609,146 @@ def test_run_document_names_only_existing_commands():
     for command in commands:
         argv = [a for a in shlex.split(command.split("#")[0])]
         parser.parse_args(argv)  # raises SystemExit on any unknown command/flag
+
+
+# ============================================ review aab9807f: D1 / D2 / D5 regressions
+def _close(root, **env):
+    from tools.i6dmo import campaign
+    drive(root, env=env or None)
+    campaign.publish(root, warehouse=FakeWarehouse())
+
+
+def test_review_d1_p6a_fake_procedure_donor_is_never_adopted_by_a_real_procedure_campaign(tmp_path):
+    """Reviewer p6 A: root A (real designs + pins, FAKE fit/report entry points) driven to CLOSE;
+    root B with the default real entry points and prior_roots=[A] must adopt NOTHING."""
+    from tools.i6dmo import campaign, matched_runner as MR, worker as W
+    donor = make_matched(tmp_path, name="A")
+    _close(donor)
+    assert (donor / "CLOSE.json").exists()
+    effective = campaign.load_effective(donor)
+    sealed = {a: dict(seal_sha256=effective["arms"][a]["design"]["seal_sha256"]) for a in ("mg1", "mg2m")}
+    with pytest.raises(MR.PrepareRefused, match="INCOMPATIBLE_DONOR:A ran other entry points"):
+        MR._check_donor(donor, sealed, effective["data_pins"])
+    real = make_matched(tmp_path, name="B", entries=None, prior_roots=[donor])
+    assert campaign.donor_problem(donor, campaign.load_effective(real)).startswith("DONOR_FIT_PROCEDURE_DIFFERS")
+    campaign.tick(real)
+
+    class NoLaunch(W.LocalExecutor):
+        def start(self, **kw):
+            raise RuntimeError("test: launching is the proof that nothing was adopted")
+    out = worker(real, "preferred", executor=NoLaunch())
+    assert out["result"] == "INTERRUPTED" and out["unit_id"] == "mg1.fit"  # it tried to fit, not adopt
+    q = campaign.open_queue(real)
+    try:
+        assert all(q.terminal(u) is None for u in ("mg1.fit", "mg1.report", "mg2m.fit", "mg2m.report", "comparison"))
+    finally:
+        q.close()
+    rejected = [e for e in campaign.events(real) if e["event"] == "PRIOR_REJECTED"]
+    assert rejected and "DONOR_FIT_PROCEDURE_DIFFERS" in json.dumps(rejected)
+
+
+@pytest.mark.parametrize("env,cause", [({"I6DMO_FAKE_SCIENTIFIC": "false"}, "scientific=False"),
+                                       ({"I6DMO_FAKE_DEVICE": "cpu"}, "device='cpu'")])
+def test_review_d1_non_scientific_or_cpu_donor_is_refused_and_genuine_reuse_still_works(tmp_path, env, cause):
+    from tools.i6dmo import campaign
+    counter = tmp_path / "c.txt"
+    bad = make_matched(tmp_path, name="bad")
+    drive(bad, env=dict(env, I6DMO_FAKE_COUNTER=str(counter)))
+    # D2 at the decision: a scientific campaign never publishes a decision from such fits
+    assert states(bad)["comparison"] == "FAILED"
+    from tools.i6dmo import status
+    assert "NON_SCIENTIFIC_FIT" in status.compute(bad, level="unit", unit="comparison")["cause"]
+    reuser = make_matched(tmp_path, name="reuser", prior_roots=[bad])
+    problem = campaign.donor_problem(bad, campaign.load_effective(reuser))
+    assert problem.startswith("DONOR_FIT_NOT_SCIENTIFIC:mg") and cause in problem
+    drive(reuser, env={"I6DMO_FAKE_COUNTER": str(counter)})
+    assert len(fits(counter)) == 4  # both arms refit; nothing adopted from the non-scientific donor
+    genuine = make_matched(tmp_path, name="genuine")
+    drive(genuine, env={"I6DMO_FAKE_COUNTER": str(counter)})
+    again = make_matched(tmp_path, name="again", prior_roots=[genuine])
+    assert campaign.donor_problem(genuine, campaign.load_effective(again)) is None
+    drive(again, env={"I6DMO_FAKE_COUNTER": str(counter)})
+    assert len(fits(counter)) == 6  # genuine scientific GPU receipts ARE reused (0 new fits)
+    assert states(again)["comparison"] == "COMPLETE"
+
+
+def test_review_d1_engineering_or_cpu_campaign_is_never_a_donor_for_science(tmp_path):
+    from tools.i6dmo import campaign
+    root = make_matched(tmp_path, name="scientific")
+    fake = tmp_path / "engineering_donor"
+    (fake / "terminals").mkdir(parents=True)
+    effective = campaign.load_effective(root)
+    (fake / "EFFECTIVE_CONFIG.json").write_text(json.dumps(dict(effective, engineering_cpu_fixture=True,
+                                                                fit_device="cpu")))
+    assert campaign.donor_problem(fake, effective).startswith("DONOR_FIT_PROCEDURE_DIFFERS")
+
+
+def test_review_d2_test_overrides_in_reach_refuse_a_scientific_claim(tmp_path):
+    from tools.i6dmo import campaign, status
+    root = make_matched(tmp_path)
+    campaign.tick(root)
+    out = worker(root, "preferred", {"I6DMO_TEST_TRAINING_OVERRIDES": json.dumps({"max_epochs": 2})})
+    assert out["result"] == "WAIT_RESOURCE"
+    assert out["cause"].startswith("TEST_OVERRIDE_IN_SCIENTIFIC_ENVIRONMENT:I6DMO_TEST_TRAINING_OVERRIDES")
+    spec_path = root / "private" / "deployment.json"
+    spec = json.loads(spec_path.read_text())
+    for role in spec["roles"].values():
+        role["environment"] = {"I6DMO_TEST_MAX_ROWS": "64"}
+    spec_path.write_text(json.dumps(spec))
+    out = worker(root, "preferred")
+    assert out["result"] == "WAIT_RESOURCE" and "I6DMO_TEST_MAX_ROWS" in out["cause"]
+    assert status.compute(root, level="unit", unit="mg1.fit")["attempts"] == []
+
+
+@pytest.mark.parametrize("code", ["POPULATION_PIN_MISMATCH", "NO_GPU_VISIBLE", "INPUT_PIN_MISMATCH"])
+def test_review_d5_prefit_infrastructure_refusal_waits_and_never_burns_the_contrast(tmp_path, code):
+    from tools.i6dmo import campaign, queue, status
+    counter = tmp_path / "c.txt"
+    root = make_matched(tmp_path)
+    campaign.tick(root)
+    bad = {"I6DMO_FAKE_INFRA_CODE": code, "I6DMO_FAKE_INFRA_UNIT": "mg1.fit", "I6DMO_FAKE_COUNTER": str(counter)}
+    for _ in range(queue.MAX_PHYSICAL_ATTEMPTS + 1):  # more refusals than the attempt budget
+        out = worker(root, "preferred", bad)
+        assert out["result"] == "WAIT_RESOURCE" and out["cause"] == f"INFRA_PREFIT:{code}@preferred"
+        assert states(root)["mg1.fit"] == "WAIT_RESOURCE"
+    unit = status.compute(root, level="unit", unit="mg1.fit")
+    assert unit["state"] == "WAIT_RESOURCE" and unit["cause"].startswith("INFRA_PREFIT:")
+    assert not (root / "terminals" / unit["identity_sha256"]).exists()  # no terminal was stored
+    later = status.compute(root, level="campaign", now=time.time() + 4000)
+    blocked = [f for f in later["failures"] if f["kind"] == "INFRA_PREFIT_BLOCKED"]
+    assert blocked and blocked[0]["unit"] == "mg1.fit" and blocked[0]["refusals"] == queue.MAX_PHYSICAL_ATTEMPTS + 1
+    assert later["state"] not in ("WAITING_FOR_WORKER", "RUNNING", "FAILED")
+    # the host is repaired: a fresh claim fits once, with the attempt budget intact
+    assert worker(root, "preferred", {"I6DMO_FAKE_COUNTER": str(counter)})["result"] == "COMPLETE"
+    assert states(root)["mg1.fit"] == "COMPLETE"
+
+
+def test_review_d5_a_failure_after_training_started_stays_terminal(tmp_path):
+    from tools.i6dmo import campaign
+    root = make_matched(tmp_path)
+    campaign.tick(root)
+    out = worker(root, "preferred", {"I6DMO_FAKE_INFRA_CODE": "NO_GPU_VISIBLE", "I6DMO_FAKE_INFRA_UNIT": "mg1.fit",
+                                     "I6DMO_FAKE_INFRA_AFTER_FIT": "1"})
+    assert out["result"] == "FAILED" and states(root)["mg1.fit"] == "FAILED"
+
+
+def test_review_d2_the_decision_refuses_non_scientific_or_cpu_fits_in_a_scientific_campaign():
+    from tools.i6dmo import reporting
+    plain = (_metrics("mg1", -0.02), _metrics("mg2m", -0.01))  # neither field present
+    with pytest.raises(reporting.ReportFailure, match="NON_SCIENTIFIC_FIT"):
+        reporting.decide_matched(*plain, require_scientific=True)
+    good = [dict(m, matched=dict(m["matched"], scientific_fit=True, fit_device="gpu")) for m in plain]
+    assert reporting.decide_matched(*good, require_scientific=True)["selected"] == "mg1"
+    cpu = [dict(m, matched=dict(m["matched"], scientific_fit=True, fit_device="cpu")) for m in plain]
+    with pytest.raises(reporting.ReportFailure, match="NON_SCIENTIFIC_FIT"):
+        reporting.decide_matched(*cpu, require_scientific=True)
+
+
+def test_review_d6_arm_help_and_runbook_name_the_real_arm_ids():
+    for argv in (["status", "--help"], ["matched-short", "status", "--help"]):
+        proc = subprocess.run([sys.executable, "-m", "tools.i6dmo", *argv], cwd=REPO, capture_output=True,
+                              text=True, timeout=120)
+        text = " ".join(proc.stdout.split())
+        assert "mg2m" in text and "mg1|mg2)" not in text and "mg1 | mg2)" not in text
+    runbook = (MATCHED / "RUN_MATCHED_SHORT.md").read_text()
+    assert "--arm mg2 " not in runbook and "4ab41bd8" not in runbook

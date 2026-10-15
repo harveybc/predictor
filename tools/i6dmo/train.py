@@ -1559,7 +1559,7 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
     effective = effective_from_design(design_path)
     out.mkdir(parents=True, exist_ok=True)
     receipt = {"schema": RECEIPT_SCHEMA, "experiment_id": effective["experiment_id"],
-               "started_at": started.isoformat(), "scientific": not overrides,
+               "started_at": started.isoformat(), "scientific": not overrides and device == "gpu",
                "overrides": overrides,
                "identity": {"design_sha256": effective["design_sha256"],
                             "effective_config_sha256": effective["effective_config_sha256"],

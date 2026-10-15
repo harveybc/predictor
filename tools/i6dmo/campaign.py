@@ -331,6 +331,57 @@ MATCHED_REQUIRED_PINS = ("common_population", "matched_input")
 ENGINEERING_FIXTURE_CALENDAR_PREFIX = "SYNTH_"
 
 
+def procedure_fingerprint(effective):
+    """What produced a terminal besides its identity: entry points, fit device and engineering mode."""
+    return sha256_json(dict(mode=mode_of(effective), entrypoints=effective.get("entrypoints"),
+                            fit_device=effective.get("fit_device"),
+                            engineering_cpu_fixture=bool(effective.get("engineering_cpu_fixture"))))
+
+
+def donor_fit_receipt_problem(prior_root):
+    """Every fit terminal of a scientific donor must carry a scientific GPU trainer receipt."""
+    for stored in sorted((Path(prior_root) / "terminals").glob("*/TERMINAL.json")):
+        try:
+            doc = json.loads(stored.read_text())
+        except ValueError:
+            return f"DONOR_TERMINAL_UNREADABLE:{stored.parent.name[:12]}"
+        if not str(doc.get("unit_id", "")).endswith(".fit"):
+            continue
+        receipt_path = stored.parent / "out" / "train" / "RECEIPT.json"
+        try:
+            receipt = json.loads(receipt_path.read_text())
+        except (OSError, ValueError):
+            return f"DONOR_FIT_RECEIPT_MISSING:{doc.get('unit_id')}"
+        if receipt.get("scientific") is not True or receipt.get("device") != "gpu" or receipt.get("overrides"):
+            return (f"DONOR_FIT_NOT_SCIENTIFIC:{doc.get('unit_id')} scientific={receipt.get('scientific')!r} "
+                    f"device={receipt.get('device')!r} overrides={bool(receipt.get('overrides'))}")
+    return None
+
+
+def donor_problem(prior_root, effective):
+    """Typed reason a prior root's terminals may NOT be adopted here, or None.
+
+    Identity alone does not cover the fit procedure. A donor must have the same procedure
+    fingerprint (entry points, fit device, engineering flag); a scientific matched campaign adopts
+    only from a scientific donor whose every fit receipt is ``scientific: true`` on a GPU device.
+    """
+    try:
+        donor = json.loads((Path(prior_root) / "EFFECTIVE_CONFIG.json").read_text())
+    except (OSError, ValueError):
+        return "DONOR_EFFECTIVE_CONFIG_UNREADABLE"
+    if mode_of(donor) != mode_of(effective):
+        return f"DONOR_MODE_DIFFERS:{mode_of(donor)}"
+    if procedure_fingerprint(donor) != procedure_fingerprint(effective):
+        return "DONOR_FIT_PROCEDURE_DIFFERS (entry points, fit device or engineering mode)"
+    if mode_of(effective) == MODE_MATCHED and not effective.get("engineering_cpu_fixture"):
+        if donor.get("engineering_cpu_fixture") or donor.get("fit_device") != "gpu":
+            return "DONOR_NOT_SCIENTIFIC: engineering or CPU donor"
+        problem = donor_fit_receipt_problem(prior_root)
+        if problem:
+            return problem
+    return None
+
+
 def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_commit=None, data_pins=None,
                           entrypoints=None, prior_roots=(), engineering_cpu_fixture=False):
     """Seal the two matched short R0 arms and enumerate the finite contrast graph.

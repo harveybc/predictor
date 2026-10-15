@@ -305,7 +305,7 @@ def build_parser():
     p.add_argument("--level", default="campaign",
                    choices=("campaign", "arm", "unit", "stage", "publication", "fleet", "all"))
     p.add_argument("--unit")
-    p.add_argument("--arm", help="with --level arm: one matched arm (mg1|mg2); default every arm")
+    p.add_argument("--arm", help="with --level arm: one matched arm (mg1|mg2m); default every arm")
     p.add_argument("--probe-systemd", action="store_true",
                    help="one bounded `systemctl --user show` reading of the campaign units (failed unit -> typed)")
     p.add_argument("--json", action="store_true")

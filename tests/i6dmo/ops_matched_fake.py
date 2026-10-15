@@ -47,6 +47,16 @@ def main():
     Path(args.progress).write_text(json.dumps(dict(done=1, total=1, unit="epoch", phase="fake", updated_at=time.time())))
     if os.environ.get("I6DMO_FAKE_FAIL_UNIT") == spec["unit_id"]:
         return 3
+    infra = os.environ.get("I6DMO_FAKE_INFRA_CODE", "")
+    if infra and os.environ.get("I6DMO_FAKE_INFRA_UNIT", spec["unit_id"]) == spec["unit_id"]:
+        # a typed refusal as unit_runner/train write it; fit_seconds is set only if training started
+        started = os.environ.get("I6DMO_FAKE_INFRA_AFTER_FIT") == "1"
+        Path(args.out).mkdir(parents=True, exist_ok=True)
+        (Path(args.out) / "TERMINAL.json").write_text(json.dumps(dict(
+            schema="i6dmo.terminal.v1", unit_id=spec["unit_id"], identity_sha256=spec["identity_sha256"],
+            status="FAILED", disposition=infra, artifacts={}, eligibility={}, gates={}, reports=[],
+            costs=dict(fit_seconds=12.5 if started else None))))
+        return 0
     arm = spec["arm"]
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -60,6 +70,12 @@ def main():
     if args.kind == "fit":
         (out / "predictions.json").write_text(json.dumps(dict(arm=arm, fake=True)))
         artifacts["predictions"] = dict(path="predictions.json", sha256=_sha(out / "predictions.json"))
+        # a receipt shaped like the trainer's (orchestration only; I6DMO_FAKE_SCIENTIFIC/DEVICE vary it)
+        (out / "train").mkdir()
+        (out / "train" / "RECEIPT.json").write_text(json.dumps(dict(
+            status="COMPLETED", scientific=os.environ.get("I6DMO_FAKE_SCIENTIFIC", "true") == "true",
+            device=os.environ.get("I6DMO_FAKE_DEVICE", "gpu"), overrides=None, fake=True)))
+        artifacts["RECEIPT"] = dict(path="train/RECEIPT.json", sha256=_sha(out / "train" / "RECEIPT.json"))
         costs.update(fit_seconds=0.5, cgroup_peak_bytes=int(os.environ.get("I6DMO_FAKE_PEAK", 1 << 30)))
     else:
         rel = float(os.environ.get(f"I6DMO_FAKE_REL_{arm.upper()}", DEFAULT_REL[arm]))
@@ -80,7 +96,12 @@ def main():
                   for h in HORIZONS if str(h) not in per_h]
         selection = dict(status="INCOMPLETE" if failed else "COMPLETE", score=None if failed else rel,
                          heads=list(HORIZONS), failed_heads=failed)
-        matched = dict(arm=arm, common_population_sha256=population,
+        fit = json.loads(Path(spec["upstream"][f"{arm}.fit"]["path"]).read_text())
+        fit_receipt = json.loads((Path(spec["upstream"][f"{arm}.fit"]["path"]).parent / "out" / "train" /
+                                  "RECEIPT.json").read_text())
+        assert fit["unit_id"] == f"{arm}.fit"
+        matched = dict(arm=arm, common_population_sha256=population, scientific_fit=fit_receipt["scientific"],
+                       fit_device=fit_receipt["device"],
                        development_row_ids_sha256=rows or hashlib.sha256(b"common-rows").hexdigest(),
                        development_head_mask_sha256=hashlib.sha256(b"common-mask").hexdigest(),
                        development_counts={str(h): 100 for h in HORIZONS},

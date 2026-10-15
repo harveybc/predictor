@@ -227,7 +227,11 @@ class Queue:
                 if busy is not None:
                     self._event(db, "HOST_HEAVY_LEASE_HELD", unit_id, dict(holder=busy["unit_id"], role=role))
                     return dict(result="WAIT_RESOURCE", cause="HOST_HEAVY_LEASE_HELD")
-            physical = db.execute("SELECT * FROM attempts WHERE unit_id=? ORDER BY attempt_id", (unit_id,)).fetchall()
+            physical = [a for a in db.execute("SELECT * FROM attempts WHERE unit_id=? ORDER BY attempt_id",
+                                              (unit_id,)).fetchall()
+                        if not (a["outcome"] == "INTERRUPTED" and str(a["cause"] or "").startswith("INFRA_PREFIT:"))]
+            # infrastructure refusals before any training are not attempts of the science
+            index_base = db.execute("SELECT COUNT(*) FROM attempts WHERE unit_id=?", (unit_id,)).fetchone()[0]
             kind = "INITIAL"
             if physical:
                 last = physical[-1]
@@ -243,7 +247,7 @@ class Queue:
                     return dict(result="REFUSED", cause="ATTEMPTS_EXHAUSTED")
                 kind = "RECOVERY"
             token = self._next_token(db)
-            index = len(physical) + 1
+            index = index_base + 1
             cur = db.execute(
                 "INSERT INTO attempts(unit_id, idx, kind, owner, role, host_key, boot_id, device_class, heavy, token, "
                 "started_at, renewed_at, lease_expires_at, outcome, cap_bytes) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,"
