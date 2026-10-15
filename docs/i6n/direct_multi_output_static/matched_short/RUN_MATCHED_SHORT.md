@@ -1,11 +1,17 @@
 # Run the matched short contrast (MG1 vs MG2m)
 
-**Status: PREPARING.** The runner is ready. Nothing in this pass ran the contrast: no
-prepare, init or deploy on a real host, no service or timer installed, no fit started. A fit
-cannot start yet anyway, because the model lane's matched adapters have not landed. Until
-they do, the worker holds `mg1.fit` and `mg2m.fit` as
-`WAIT_ARTIFACT MATCHED_FIT_ADAPTER_UNAVAILABLE:MATCHED_POPULATION_CLI owner=model lane`.
-No attempt is claimed while they wait.
+**Status: PREPARING.** The runner and the model lane's real adapters meet. Nothing in this
+pass ran the contrast: no prepare, init or deploy on a real host, no service or timer
+installed, no scientific fit started.
+
+Before it claims an arm unit, the worker checks the adapters statically:
+
+- `train.py` must register `--common-population`, `--common-population-digest` and
+  `--input-dir`;
+- `reporting.py` must define `run_matched_unit` and `decide_matched`.
+
+If either check fails, the unit waits as `WAIT_ARTIFACT MATCHED_*_ADAPTER_UNAVAILABLE`, and
+nothing is claimed.
 
 The plan is `NEXT_CONTRASTS_PLAN_20261015.md`, sections 2 and 4. The graph is finite and
 uses the existing queue, governed worker, terminal verifier, outbox, readback, mirrors and
@@ -220,5 +226,11 @@ Not verified here:
 
 - `prepare` against the real private population and storage root. `$EXPERIMENT_STORAGE_ROOT`
   is not configured on the implementation host.
-- Any real fit or report adapter. These belong to the model lane.
+- A real GPU fit, or a fit on the real sealed population. The real adapters ran only as a CPU
+  engineering fixture on a synthetic population: `tests/i6dmo/test_ops_matched_real_chain.py`.
+  That fixture covers init, a real worker claim, the real `unit_runner`, a real
+  `python -m tools.i6dmo.train --common-population` for both arms (2 epochs,
+  `scientific=false`), the real matched report, `decide_matched`, publish with readback,
+  mirrors, automatic CLOSE and `TIMERS_STOPPED`. The CPU engineering mode is refused for any
+  design sealed on a non-synthetic calendar.
 - Any deploy that enables timers.

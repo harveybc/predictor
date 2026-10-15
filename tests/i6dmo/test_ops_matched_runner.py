@@ -189,9 +189,11 @@ def test_full_contrast_decides_publishes_mirrors_and_closes_automatically(tmp_pa
     drive(root, env={"I6DMO_FAKE_COUNTER": str(counter)})
     assert set(states(root).values()) == {"COMPLETE"}
     doc = comparison(root)
-    assert doc["decision"]["disposition"] == "MG1_SELECTED" and doc["decision"]["selected"] == "mg1"
-    assert doc["decision"]["scores"]["mg1"] == pytest.approx(-0.02)
-    assert doc["decision"]["scores"]["mg2m"] == pytest.approx(-0.01)
+    assert doc["disposition"] == "MG1_SELECTED" and doc["verdict"]["selected"] == "mg1"
+    assert doc["rule"] == "reporting.decide_matched" and doc["verdict"]["decision"] == "LOWER_SCORE"
+    assert doc["verdict"]["scores"]["mg1"] == pytest.approx(-0.02)
+    assert doc["verdict"]["scores"]["mg2m"] == pytest.approx(-0.01)
+    assert doc["verdict"]["capacity_delta"]["delta"]["heads"] == 2304
     assert doc["common_population_sha256"] == POPULATION
     assert sorted(fits(counter)) == ["fit:mg1.fit", "fit:mg2m.fit"]
     out = campaign.publish(root, warehouse=FakeWarehouse())
@@ -204,14 +206,31 @@ def test_full_contrast_decides_publishes_mirrors_and_closes_automatically(tmp_pa
     assert sorted(fits(counter)) == ["fit:mg1.fit", "fit:mg2m.fit"]
 
 
-def test_tie_within_tolerance_keeps_mg2m_and_a_scientific_negative_is_complete():
-    from tools.i6dmo import matched_runner as MR
-    heads = lambda v: {h: v for h in MR.HORIZONS}  # noqa: E731
-    assert MR.decide(dict(mg1=heads(-0.01 - 5e-9), mg2m=heads(-0.01)))["disposition"] == "MG2_RETAINED_WITHIN_TOLERANCE"
-    assert MR.decide(dict(mg1=heads(-0.01 - 2e-8), mg2m=heads(-0.01)))["disposition"] == "MG1_SELECTED"
-    assert MR.decide(dict(mg1=heads(0.3), mg2m=heads(0.2)))["disposition"] == "MG2_SELECTED"  # both lose to naive
-    incomplete = MR.decide(dict(mg2m=heads(-0.01)))
-    assert incomplete["disposition"] == "INCOMPLETE_COMPARISON" and incomplete["missing"] == ["ARM_MISSING:mg1"]
+def _metrics(arm, score, failed=()):
+    """A METRICS document shaped as the model lane's matched report writes it."""
+    capacity = json.loads((MATCHED / "CAPACITY_MATCHED.json").read_text())["declared_capacity"]
+    heads = [2, 3, 4, 5, 6, 12]
+    return dict(per_horizon={str(h): dict(relative_error=score) for h in heads if h not in failed},
+                matched=dict(arm=arm, common_population_sha256=POPULATION, development_row_ids_sha256="r" * 64,
+                             development_head_mask_sha256="m" * 64, development_counts={"2": 1},
+                             capacity=dict(schema="i6dmo.capacity.v1", arm=arm,
+                                           counts=capacity["short_mg1" if arm == "mg1" else "short_mg2"]),
+                             selection=dict(status="INCOMPLETE" if failed else "COMPLETE",
+                                            score=None if failed else score, heads=heads,
+                                            failed_heads=[dict(horizon=h) for h in failed])))
+
+
+def test_one_decision_rule_tie_keeps_mg2m_and_a_scientific_negative_is_complete():
+    from tools.i6dmo import matched_runner as MR, reporting
+    decide = lambda a, b: MR.disposition_of(reporting.decide_matched(a, b))  # noqa: E731
+    assert decide(_metrics("mg1", -0.01 - 5e-9), _metrics("mg2m", -0.01)) == "MG2_RETAINED_WITHIN_TOLERANCE"
+    assert decide(_metrics("mg1", -0.01 - 2e-8), _metrics("mg2m", -0.01)) == "MG1_SELECTED"
+    assert decide(_metrics("mg1", 0.3), _metrics("mg2m", 0.2)) == "MG2_SELECTED"  # both lose to naive
+    verdict = reporting.decide_matched(_metrics("mg1", -0.1), _metrics("mg2m", -0.1, failed=(12,)))
+    assert MR.disposition_of(verdict) == "INCOMPLETE_COMPARISON"
+    assert MR.missing_evidence(verdict) == ["HEAD_MISSING:mg2m:h12"]
+    assert reporting.SELECTION_TIE == MR.TOLERANCE  # the campaign records the same tolerance it applies
+    assert not hasattr(MR, "decide")  # no second decision rule
 
 
 def test_a_failed_arm_closes_incomplete_comparison_with_the_missing_evidence(tmp_path):
@@ -222,8 +241,8 @@ def test_a_failed_arm_closes_incomplete_comparison_with_the_missing_evidence(tmp
     st = states(root)
     assert st["mg1.fit"] == "FAILED" and st["mg1.report"] == "BLOCKED" and st["comparison"] == "COMPLETE"
     doc = comparison(root)
-    assert doc["decision"]["disposition"] == "INCOMPLETE_COMPARISON"
-    assert doc["decision"]["missing"] == ["ARM_MISSING:mg1"]
+    assert doc["disposition"] == "INCOMPLETE_COMPARISON"
+    assert doc["missing"] == ["ARM_MISSING:mg1"]
     assert campaign.publish(root, warehouse=FakeWarehouse())["close"] == "CLOSED"
     assert json.loads((root / "CLOSE.json").read_text())["disposition"] == "INCOMPLETE_COMPARISON"
     assert fits(counter).count("fit:mg1.fit") == 1  # a technical failure is never retried
@@ -234,8 +253,8 @@ def test_a_missing_head_is_incomplete_and_population_or_row_mismatches_are_refus
     root = make_matched(tmp_path)
     drive(root, env={"I6DMO_FAKE_DROP_HEAD": "mg2m:12"})
     doc = comparison(root)
-    assert doc["decision"]["disposition"] == "INCOMPLETE_COMPARISON"
-    assert doc["decision"]["missing"] == ["HEAD_MISSING:mg2m:h12"]
+    assert doc["disposition"] == "INCOMPLETE_COMPARISON"
+    assert doc["missing"] == ["HEAD_MISSING:mg2m:h12"]
     other = make_matched(tmp_path, name="population")
     drive(other, env={"I6DMO_FAKE_POPULATION": "e" * 64})
     assert states(other)["comparison"] == "FAILED"
@@ -243,17 +262,21 @@ def test_a_missing_head_is_incomplete_and_population_or_row_mismatches_are_refus
     assert "COMMON_POPULATION_NOT_DECLARED_OR_DIFFERS:mg1.report" in cause
     third = make_matched(tmp_path, name="rows")
     drive(third, env={"I6DMO_FAKE_ROWS_MG1": "9" * 64})
-    assert "COMMON_ROWS_DIFFER:h2" in status.compute(third, level="unit", unit="comparison")["cause"]
+    assert "COMMON_POPULATION_MISMATCH:development_row_ids_sha256" in \
+        status.compute(third, level="unit", unit="comparison")["cause"]
 
 
-def test_real_adapters_are_never_claimed_before_the_model_lane_declares_them(tmp_path):
-    """The default (real) entry points hold arm units typed: no claim, no attempt, no fit."""
-    from tools.i6dmo import campaign, status
+def test_real_adapters_are_claimed_only_when_their_real_capability_exists(tmp_path, monkeypatch):
+    """Static capability check of the model lane's real files (no TF import in the worker)."""
+    from tools.i6dmo import campaign, status, worker as W
+    assert W._capability_missing(*W.MATCHED_CAPABILITIES["fit"][:3]) == []
+    assert W._capability_missing(*W.MATCHED_CAPABILITIES["report"][:3]) == []
     root = make_matched(tmp_path, entries=None)
     campaign.tick(root)
+    monkeypatch.setitem(W.MATCHED_CAPABILITIES, "fit", ("tools/i6dmo/train.py", ("--not-a-real-flag",), (), "model"))
     out = worker(root, "preferred")
     assert out["result"] == "WAIT_ARTIFACT"
-    assert out["cause"].startswith("MATCHED_FIT_ADAPTER_UNAVAILABLE:MATCHED_POPULATION_CLI owner=model lane")
+    assert out["cause"].startswith("MATCHED_FIT_ADAPTER_UNAVAILABLE:--not-a-real-flag")
     assert status.compute(root, level="unit", unit="mg1.fit")["attempts"] == []
 
 
@@ -545,7 +568,7 @@ def test_cli_matched_short_end_to_end_on_a_local_fixture(frozen, tmp_path, monke
     rc, out = run("tick", "--root", str(root))
     assert rc == 0 and out["campaign_state"] == "WAITING_FOR_WORKER"
     drive(root, env={"I6DMO_FAKE_POPULATION": frozen["digest"]})
-    assert comparison(root)["decision"]["disposition"] == "MG1_SELECTED"
+    assert comparison(root)["disposition"] == "MG1_SELECTED"
     assert campaign.publish(root, warehouse=FakeWarehouse())["close"] == "CLOSED"
     for level, extra in (("campaign", []), ("arm", ["--arm", "mg2m"]), ("unit", ["--unit", "mg1.fit"])):
         rc, out = run("matched-short", "status", "--root", str(root), "--level", level, *extra)

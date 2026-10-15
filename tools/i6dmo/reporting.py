@@ -434,6 +434,22 @@ def selection_score(per_horizon, horizons):
     return dict(doc, status="COMPLETE", score=math.fsum(rels) / len(rels), failed_heads=[])
 
 
+def _matched_expected_weeks(design, input_dir, observed_week_ids):
+    """Expected DEVELOPMENT weeks from the sealed calendar through the market_grid table, exactly as
+    the closed MG2 report derived them (the population identities carry no empty weeks). The input
+    directory's CALENDAR.json is the sealed calendar: load_common_population(input_dir=...) already
+    verified it against the population's calendar digest. Every observed common week must be one of
+    them (EXPECTED_WEEKS_MISMATCH otherwise); weeks without common rows stay explicit (Week_N = 0)."""
+    from tools.i6dmo import data as data_mod, market_grid, train as T
+    elapsed = T._elapsed_view(design)
+    table = market_grid.build_market_table(data_mod.load_input(input_dir, elapsed), elapsed)
+    expected = tuple(str(w) for w in table.split_weeks["VALIDATION"])
+    stray = sorted({str(w) for w in observed_week_ids} - set(expected))
+    if stray:
+        raise ReportFailure("EXPECTED_WEEKS_MISMATCH", f"observed weeks outside the calendar: {stray[:5]}")
+    return expected, "sealed_calendar_market_grid_validation_weeks"
+
+
 def run_matched_unit(spec, out, progress_path, *, started=None):
     started = time.time() if started is None else started
     out = Path(out)
@@ -490,10 +506,7 @@ def run_matched_unit(spec, out, progress_path, *, started=None):
         calendar = (identities.get("calendar") or {}).get("calendar_id")
         if not calendar:
             raise ReportFailure("CALENDAR_ID_MISSING", "population identities carry no calendar_id")
-        # The population does not declare DEVELOPMENT weeks without common rows; the weekly
-        # diagnostics therefore cover the observed common weeks (recorded, not hidden).
-        weeks_source = "observed_common_development_weeks"
-        expected = sorted({str(w) for w in arm_dev["week_ids"]})
+        expected, weeks_source = _matched_expected_weeks(design, input_pin["path"], arm_dev["week_ids"])
 
         class _View:
             pass

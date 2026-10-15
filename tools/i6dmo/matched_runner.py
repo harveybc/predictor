@@ -12,8 +12,9 @@ mode ``MATCHED_SHORT_CONTRAST``). This module adds only:
 
 - ``run_unit`` for the ``comparison`` kind (``unit_runner --kind comparison``): it authenticates
   both arm report terminals and their digest-pinned METRICS.json, requires that each report declares
-  the campaign's frozen common-population digest and that each head was scored on identical rows in
-  both arms, and applies the frozen decision rule. It never fits and never reads TEST.
+  the campaign's frozen common-population digest, and applies the ONE decision rule, the model lane's
+  ``reporting.decide_matched`` (same population/rows/mask/counts, declared capacity delta only). It
+  never fits and never reads TEST.
 - ``prepare`` / ``validate`` for the ``python -m tools.i6dmo matched-short`` entrypoint.
 
 Decision rule (plan section 2): per arm, the equal-head mean over horizons 2,3,4,5,6,12 of the
@@ -22,19 +23,16 @@ common DEVELOPMENT rows. The lower score wins; within 1e-8 the cheaper MG2 is re
 missing arm or head -> INCOMPLETE_COMPARISON with the missing evidence (never a selection from
 incomplete heads). A scientific negative is a completed result.
 
-Child interface for the arm units (consumed by the model lane's trainer/report adapters): the
-worker hands each arm unit (``spec["arm"]`` = ``mg1``|``mg2m``) an ``effective_config`` VIEW whose
-``design`` is that arm's sealed EXPERIMENT document, and ``spec["pins"]`` with
-``common_population`` (``path`` = the role's experiment storage root + relpath, ``sha256`` of
-POPULATION.json, ``population_sha256`` = the frozen digest) and ``matched_input`` (``path`` of the
-retained input directory, ``sha256`` of INPUT.npz). Consumers load with
-``common_population.load_common_population(path, expected_digest=population_sha256,
-input_dir=matched_input.path)`` and ``arm_tensors(pop, design, split)``. Reports must declare
-``common_population_sha256`` (terminal ``lineage`` or METRICS.json) and per-head ``row_ids_sha256``.
-The fit child is ``train --design --population --population-digest --input-dir --out --device``;
-the worker claims an arm fit/report only once ``tools/i6dmo/train.py`` declares
-``MATCHED_POPULATION_CLI = True`` / ``tools/i6dmo/reporting.py`` declares
-``MATCHED_POPULATION_REPORT = True`` (typed WAIT_ARTIFACT naming the model lane otherwise).
+Child interface for the arm units (the model lane's real adapters): the worker hands each arm
+unit (``spec["arm"]`` = ``mg1``|``mg2m``) an ``effective_config`` VIEW whose ``design`` is that arm's
+sealed EXPERIMENT document, ``spec["pins"]`` with the resolved ``common_population`` and
+``matched_input`` paths, and the model lane's report contract
+``spec["common_population"] = {path, sha256: <population digest>}`` and
+``spec["matched"] = {arm, fit_unit: "<arm>.fit", input: {path, sha256 of INPUT.npz}}``. The fit child
+is ``python -m tools.i6dmo.train --design --common-population --common-population-digest --input-dir
+--out --device --json`` (no ``--bundle``). The worker claims an arm fit/report only when a static
+read of ``train.py`` finds those three flags registered and ``reporting.py`` defines
+``run_matched_unit`` and ``decide_matched`` (typed MATCHED_*_ADAPTER_UNAVAILABLE otherwise).
 """
 import json
 import math
@@ -84,32 +82,23 @@ def _atomic(path, value):
 
 
 # ------------------------------------------------------------------------- decision rule
-def decide(arm_scores, *, tolerance=TOLERANCE):
-    """Pure decision. ``arm_scores``: {arm: {h: relative_error or None}} (missing arm = absent)."""
-    missing = []
-    for arm in ARMS:
-        heads = arm_scores.get(arm)
-        if heads is None:
-            missing.append(f"ARM_MISSING:{arm}")
-            continue
-        for h in HORIZONS:
-            value = heads.get(h)
-            if value is None or not isinstance(value, (int, float)) or isinstance(value, bool) \
-                    or not math.isfinite(value):
-                missing.append(f"HEAD_MISSING:{arm}:h{h}")
-    if missing:
-        return dict(disposition="INCOMPLETE_COMPARISON", selected=None, scores=None, missing=missing,
-                    rule=RULE, tolerance=tolerance)
-    scores = {arm: sum(arm_scores[arm][h] for h in HORIZONS) / len(HORIZONS) for arm in ARMS}
-    gap = scores["mg1"] - scores["mg2m"]
-    if abs(gap) <= tolerance:
-        disposition, selected = "MG2_RETAINED_WITHIN_TOLERANCE", TIE_KEEPS
-    elif gap < 0:
-        disposition, selected = "MG1_SELECTED", "mg1"
-    else:
-        disposition, selected = "MG2_SELECTED", "mg2m"
-    return dict(disposition=disposition, selected=selected, scores=scores, score_gap_mg1_minus_mg2m=gap,
-                missing=[], rule=RULE, tolerance=tolerance)
+#: The ONE decision rule is the model lane's ``reporting.decide_matched``; this table only names
+#: its verdicts as campaign dispositions.
+VERDICTS = {("LOWER_SCORE", "mg1"): "MG1_SELECTED", ("LOWER_SCORE", "mg2m"): "MG2_SELECTED",
+            ("TIE_RETAIN_CHEAPER", "mg2m"): "MG2_RETAINED_WITHIN_TOLERANCE",
+            ("INCOMPLETE_COMPARISON", None): "INCOMPLETE_COMPARISON"}
+
+
+def disposition_of(verdict):
+    key = (verdict.get("decision"), verdict.get("selected"))
+    if key not in VERDICTS:
+        raise ValueError(f"UNKNOWN_DECISION_VERDICT:{key}")
+    return VERDICTS[key]
+
+
+def missing_evidence(verdict):
+    """Readable missing evidence from a decide_matched verdict (failed heads per arm)."""
+    return [f"HEAD_MISSING:{m.get('arm')}:h{m.get('horizon')}" for m in verdict.get("missing") or []]
 
 
 # --------------------------------------------------------------------- comparison hook
@@ -120,7 +109,7 @@ class _Refusal(Exception):
 
 
 def _authenticated_report(unit_id, up, expected_population):
-    """(per-head rows, record) from an authenticated report terminal, or raise a typed refusal."""
+    """(METRICS.json document, input record) from an authenticated report terminal, or a typed refusal."""
     path = Path(up["path"])
     if not path.is_file() or _sha(path) != up.get("sha256"):
         raise _Refusal(f"UPSTREAM_DIGEST_MISMATCH:{unit_id}")
@@ -143,33 +132,22 @@ def _authenticated_report(unit_id, up, expected_population):
     if not metrics_path.is_file() or _sha(metrics_path) != art.get("sha256"):
         raise _Refusal(f"UPSTREAM_ARTIFACT_DIGEST:{unit_id}:metrics")
     metrics = json.loads(metrics_path.read_text())
-    declared = (child.get("lineage") or {}).get("common_population_sha256") or metrics.get("common_population_sha256")
-    if expected_population and declared != expected_population:
+    declared = {(child.get("lineage") or {}).get("common_population_sha256"),
+                (metrics.get("matched") or {}).get("common_population_sha256")}
+    if expected_population and declared != {expected_population}:
         raise _Refusal(f"COMMON_POPULATION_NOT_DECLARED_OR_DIFFERS:{unit_id}")
-    if any(str(s).lower() == "test" for s in (metrics.get("splits_read") or [])):
-        raise _Refusal(f"TEST_FEEDBACK:{unit_id}")
-    rows = {}
-    for h, row in (metrics.get("per_horizon") or {}).items():
-        rows[int(h)] = row
     record = dict(identity_sha256=folder.name, stored_terminal_sha256=up["sha256"],
-                  metrics_sha256=art["sha256"], common_population_sha256=declared)
-    return rows, record
-
-
-def _relative(row):
-    mae, naive, n = row.get("mae"), row.get("naive_mae"), row.get("n")
-    if not n or not all(isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
-                        for v in (mae, naive)) or naive <= 0:
-        return None
-    rel = (float(mae) - float(naive)) / float(naive)
-    declared = row.get("relative_error")
-    if declared is not None and abs(float(declared) - rel) > 1e-12 * max(1.0, abs(rel)):
-        raise _Refusal("RELATIVE_ERROR_DECLARATION_DISAGREES")
-    return rel
+                  metrics_sha256=art["sha256"], common_population_sha256=expected_population)
+    return metrics, record
 
 
 def run_unit(spec, out_dir, progress_path):
-    """``unit_runner`` hook for the ``comparison`` unit; returns an ``i6dmo.terminal.v1`` dict."""
+    """``unit_runner`` hook for the ``comparison`` unit; returns an ``i6dmo.terminal.v1`` dict.
+
+    Authenticates both arm reports, then applies the model lane's ``reporting.decide_matched`` (the
+    one decision rule). An arm without a report (technically failed or blocked) is the
+    INCOMPLETE_COMPARISON branch of that rule, never a selection from one arm.
+    """
     started = time.time()
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -187,63 +165,63 @@ def run_unit(spec, out_dir, progress_path):
         return terminal("FAILED", "TEST_OPEN_REFUSED")
     effective = spec.get("effective_config") or {}
     expected_population = ((effective.get("data_pins") or {}).get("common_population") or {}).get("population_sha256")
-    arm_scores, records, rows_by_arm = {}, {}, {}
+    metrics, records = {}, {}
     try:
         for arm in ARMS:
             unit_id = f"{arm}.report"
             up = (spec.get("upstream") or {}).get(unit_id)
             if not up:
                 continue  # technically failed/blocked arm: recorded as missing, never inferred
-            rows, record = _authenticated_report(unit_id, up, expected_population)
-            records[unit_id] = record
-            rows_by_arm[arm] = rows
-            arm_scores[arm] = {h: (_relative(rows[h]) if h in rows else None) for h in HORIZONS}
-        common_rows = {}
-        if all(a in rows_by_arm for a in ARMS):
-            for h in HORIZONS:
-                ids = [rows_by_arm[a].get(h, {}).get("row_ids_sha256") for a in ARMS]
-                if all(ids) and ids[0] != ids[1]:
-                    raise _Refusal(f"COMMON_ROWS_DIFFER:h{h}")
-                ns = [rows_by_arm[a].get(h, {}).get("n") for a in ARMS]
-                if all(n is not None for n in ns) and ns[0] != ns[1]:
-                    raise _Refusal(f"COMMON_COUNTS_DIFFER:h{h}")
-                common_rows[h] = dict(row_ids_sha256=ids[0], n=ns[0])
+            metrics[arm], records[unit_id] = _authenticated_report(unit_id, up, expected_population)
+        absent = [f"ARM_MISSING:{arm}" for arm in ARMS if arm not in metrics]
+        if absent:
+            verdict = dict(schema="i6dmo.matched_decision.v1", decision="INCOMPLETE_COMPARISON", selected=None,
+                           missing=[], scores=None, per_head=None,
+                           note="an arm has no report; decide_matched needs both arms")
+            missing = absent
+        else:
+            from tools.i6dmo import reporting
+            try:
+                verdict = reporting.decide_matched(metrics["mg1"], metrics["mg2m"])
+            except reporting.ReportFailure as exc:
+                raise _Refusal(f"{exc.code}:{str(exc).split(': ', 1)[-1][:120]}") from None
+            missing = missing_evidence(verdict)
+        disposition = disposition_of(verdict)
     except _Refusal as exc:
         return terminal("FAILED", exc.code)
-    decision = decide(arm_scores)
-    doc = dict(schema="i6dmo.matched_comparison.v1", decision=decision,
-               per_head={arm: {str(h): v for h, v in heads.items()} for arm, heads in arm_scores.items()},
-               per_head_rows={arm: {str(h): dict(n=r.get("n"), mae=r.get("mae"), naive_mae=r.get("naive_mae"))
-                                    for h, r in rows.items()} for arm, rows in rows_by_arm.items()},
-               common_rows={str(h): v for h, v in common_rows.items()}, inputs=records,
+    except ValueError as exc:
+        return terminal("FAILED", str(exc)[:200])
+    doc = dict(schema="i6dmo.matched_comparison.v1", disposition=disposition, missing=missing,
+               rule="reporting.decide_matched", verdict=verdict, inputs=records,
                common_population_sha256=expected_population, split="DEVELOPMENT", test_read=False,
                note="one seed establishes the recipe decision, not statistical superiority or a holdout")
     _atomic(out_dir / "COMPARISON.json", doc)
     artifacts = {"comparison": dict(path="COMPARISON.json", sha256=_sha(out_dir / "COMPARISON.json"))}
-    metrics = []
-    for arm, heads in arm_scores.items():
-        for h, value in heads.items():
+    rows = []
+    for h, values in (verdict.get("per_head") or {}).items():
+        for arm, value in values.items():
             if value is not None:
-                metrics.append(dict(metric=f"{arm.upper()}_Relative_Error", value=value, split="validation",
-                                    horizon=h, unit="ratio"))
-    for arm, score in (decision["scores"] or {}).items():
-        metrics.append(dict(metric=f"{arm.upper()}_Equal_Head_Mean_Relative_Error", value=score,
-                            split="validation", horizon=None, unit="ratio"))
-    metrics.append(dict(metric="Comparison_Complete", value=0 if decision["missing"] else 1, split="validation",
-                        horizon=None, unit="bool"))
+                rows.append(dict(metric=f"{arm.upper()}_Relative_Error", value=value, split="validation",
+                                 horizon=int(h), unit="ratio"))
+    for arm, score in (verdict.get("scores") or {}).items():
+        if score is not None:
+            rows.append(dict(metric=f"{arm.upper()}_Equal_Head_Mean_Relative_Error", value=score,
+                             split="validation", horizon=None, unit="ratio"))
+    rows.append(dict(metric="Comparison_Complete", value=0 if disposition == "INCOMPLETE_COMPARISON" else 1,
+                     split="validation", horizon=None, unit="bool"))
     report = dict(experiment_key=f"i6dmo:{spec['campaign_id']}:{spec['unit_id']}:decision",
                   experiment_set_key=f"i6dmo:{spec['campaign_id']}", actor="predictor", lake="LOCAL_RETAINED",
                   lineage="UNVERIFIED", config_sha256=spec["identity_sha256"], code_commit=effective.get("code_commit"),
                   project="predictor", phase="I6DMO",
                   tags={"unit": spec["unit_id"], "family": "comparison", "split": "development",
-                        "test_read": "false", "disposition": decision["disposition"],
-                        "selected": str(decision["selected"]), "rule": RULE,
+                        "test_read": "false", "disposition": disposition,
+                        "selected": str(verdict.get("selected")), "rule": RULE,
                         "relative_error": "(MAE_h-naive_h)/naive_h; negative is better",
                         "evidence_sha256": artifacts["comparison"]["sha256"],
-                        "missing": ",".join(decision["missing"])[:200]},
-                  metrics=metrics)
-    return terminal("COMPLETE", decision["disposition"], artifacts,
-                    dict(comparison_status=decision["disposition"], selected=decision["selected"]), [report])
+                        "missing": ",".join(missing)[:200]},
+                  metrics=rows)
+    return terminal("COMPLETE", disposition, artifacts,
+                    dict(comparison_status=disposition, selected=verdict.get("selected")), [report])
 
 
 # --------------------------------------------------------------------------- preparation

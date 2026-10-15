@@ -611,6 +611,14 @@ def build_unit_spec(root, q, plan, effective, unit, role_spec, *, device_class, 
                      data_root=role_spec.get("data_root"), bundle=bundle,
                      pins=resolved_pins(view, role_spec), attempt=dict(index=attempt["index"], kind=attempt["kind"]),
                      upstream={d: _upstream(root, q, d) for d in unit["depends_on"]})
+    if unit.get("arm"):
+        # The model lane's matched report contract (reporting.run_unit switches on these keys).
+        pop, inp = unit_spec["pins"].get("common_population"), unit_spec["pins"].get("matched_input")
+        if pop and pop.get("path"):
+            unit_spec["common_population"] = dict(path=pop["path"], sha256=pop["population_sha256"])
+        if inp and inp.get("path"):
+            unit_spec["matched"] = dict(arm=unit["arm"], fit_unit=f"{unit['arm']}.fit",
+                                        input=dict(path=inp["path"], sha256=inp["sha256"]))
     if unit["kind"] == "strategy":
         # The trading stage's forecast inputs are authenticated digests, not assumptions: the
         # hook checks them against the digests the pair decision recorded for the same units.
@@ -691,7 +699,10 @@ def _artifacts(root, effective, unit, role_spec):
     if key is not None and pin is None:
         return bundle, f"BUNDLE_PIN_MISSING:{key} owner=data lane (tools.i6dmo.data.build_frozen_bundle)"
     hook = importlib.import_module(module)
-    if hasattr(hook, "preconditions"):
+    # A matched arm's inputs (frozen population + retained input) were verified by
+    # matched_unit_problem above; the hook's bundle-based preconditions describe the
+    # per-family bundle path and do not apply to it.
+    if hasattr(hook, "preconditions") and not unit.get("arm"):
         cause = hook.preconditions(dict(unit=unit, effective_config=child_effective(effective, unit),
                                         data_root=role_spec.get("data_root")))
         if cause:
@@ -799,32 +810,41 @@ def resolved_pins(effective, role_spec):
     return out
 
 
-MATCHED_MARKERS = {"fit": ("tools/i6dmo/train.py", "MATCHED_POPULATION_CLI",
-                           "model lane (train.py --population/--population-digest/--input-dir)"),
-                   "report": ("tools/i6dmo/reporting.py", "MATCHED_POPULATION_REPORT",
-                              "model lane (reporting.py on the common DEVELOPMENT rows)")}
+#: Real capability of the model lane's adapters, checked statically (no TensorFlow import here):
+#: the trainer's argparse must register exactly the flags unit_runner passes, and the report module
+#: must define the matched report and the single decision rule.
+MATCHED_CAPABILITIES = {
+    "fit": ("tools/i6dmo/train.py", ("--common-population", "--common-population-digest", "--input-dir"), (),
+            "model lane (train.py matched CLI flags)"),
+    "report": ("tools/i6dmo/reporting.py", (), ("run_matched_unit", "decide_matched"),
+               "model lane (reporting.run_matched_unit / decide_matched)"),
+}
 
 
-def _declares(relpath, marker):
-    """Does a lane module declare ``MARKER = True`` at top level? Read without importing (no TF here)."""
+def _capability_missing(relpath, flags, functions):
+    """Missing flags/functions of a lane module, read from its source (never imported here)."""
     import ast
     path = Path(__file__).resolve().parents[2] / relpath
     try:
         tree = ast.parse(path.read_text())
     except (OSError, SyntaxError):
-        return False
-    return any(isinstance(n, ast.Assign) and any(getattr(t, "id", None) == marker for t in n.targets)
-               and isinstance(n.value, ast.Constant) and n.value.value is True for n in tree.body)
+        return ["UNREADABLE"]
+    registered = {node.args[0].value for node in ast.walk(tree)
+                  if isinstance(node, ast.Call) and getattr(node.func, "attr", None) == "add_argument"
+                  and node.args and isinstance(node.args[0], ast.Constant)}
+    defined = {n.name for n in tree.body if isinstance(n, ast.FunctionDef)}
+    return [f for f in flags if f not in registered] + [f for f in functions if f not in defined]
 
 
 def matched_unit_problem(effective, unit, role_spec, argv):
     """Typed WAIT_ARTIFACT cause for a matched arm unit that cannot be claimed yet, else None."""
-    if not unit.get("arm") or unit["kind"] not in MATCHED_MARKERS:
+    if not unit.get("arm") or unit["kind"] not in MATCHED_CAPABILITIES:
         return None
     if _uses_unit_runner(argv):
-        relpath, marker, owner = MATCHED_MARKERS[unit["kind"]]
-        if not _declares(relpath, marker):
-            return f"MATCHED_{unit['kind'].upper()}_ADAPTER_UNAVAILABLE:{marker} owner={owner}"
+        relpath, flags, functions, owner = MATCHED_CAPABILITIES[unit["kind"]]
+        missing = _capability_missing(relpath, flags, functions)
+        if missing:
+            return f"MATCHED_{unit['kind'].upper()}_ADAPTER_UNAVAILABLE:{','.join(missing)} owner={owner}"
     pins = resolved_pins(effective, role_spec)
     for key, name in (("common_population", "POPULATION.json"), ("matched_input", "INPUT.npz")):
         pin = (effective.get("data_pins") or {}).get(key)

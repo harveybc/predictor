@@ -328,8 +328,11 @@ MATCHED_DESIGN_SCHEMA = "i6dmo.matched_market_time_design.v1"
 MATCHED_REQUIRED_PINS = ("common_population", "matched_input")
 
 
+ENGINEERING_FIXTURE_CALENDAR_PREFIX = "SYNTH_"
+
+
 def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_commit=None, data_pins=None,
-                          entrypoints=None, prior_roots=()):
+                          entrypoints=None, prior_roots=(), engineering_cpu_fixture=False):
     """Seal the two matched short R0 arms and enumerate the finite contrast graph.
 
     Refuses (typed): a TEST-open design, anything but the two sealed matched identities
@@ -369,6 +372,13 @@ def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_co
             raise Refused(f"MATCHED_ARMS_DIFFER: {key}")
     if MR.runtime_pin(first) != MR.runtime_pin(second):
         raise Refused("MATCHED_ARMS_DIFFER: sealed runtime pin")
+    if engineering_cpu_fixture:
+        # CPU fits exist only for SYNTHETIC-calendar engineering fixtures (no CLI flag exposes this):
+        # a design sealed on a real calendar can never be fitted on CPU through this path.
+        for arm in MATCHED_ARMS:
+            calendar = ((arms[arm]["design"].get("sealed_identities") or {}).get("calendar") or {})
+            if not str(calendar.get("calendar_id", "")).startswith(ENGINEERING_FIXTURE_CALENDAR_PREFIX):
+                raise Refused(f"ENGINEERING_CPU_FIXTURE_REQUIRES_SYNTHETIC_CALENDAR: {arm}")
     if list(first["horizons_hours"]) != list(MR.HORIZONS):
         raise Refused(f"MATCHED_HORIZONS: {first['horizons_hours']}")
     root = Path(root)
@@ -395,7 +405,9 @@ def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_co
         seed=first["seed"], code_commit=code_commit or _git_head(), data_pins=data_pins,
         data_sha256=sha256_json(data_pins), entrypoints=entries, prior_roots=[str(p) for p in prior_roots],
         test_open=False, strategy_execution=None, mode=MODE_MATCHED, deployment_sha256=sha256_json(spec),
-        long=None, comparison=dict(rule=MR.RULE, tolerance=MR.TOLERANCE, tie_keeps=MR.TIE_KEEPS,
+        long=None, fit_device="cpu" if engineering_cpu_fixture else "gpu",
+        engineering_cpu_fixture=bool(engineering_cpu_fixture),
+        comparison=dict(rule=MR.RULE, tolerance=MR.TOLERANCE, tie_keeps=MR.TIE_KEEPS,
                                    horizons=list(MR.HORIZONS), split="DEVELOPMENT")))
     eff_sha = sha256_json(effective)
     campaign_id = "i6dmo-" + sha256_json(dict(experiment=effective["experiment_id"], cadence=effective["cadence"],
@@ -605,7 +617,8 @@ def _matched_units(effective):
         w = _windows(effective["arms"][arm]["design"])
         window = window or w
         sha = _family_sha(effective, arm)
-        for unit_id, kind, device, deps, calls_fit in ((f"{arm}.fit", "fit", "gpu", [], True),
+        for unit_id, kind, device, deps, calls_fit in ((f"{arm}.fit", "fit", effective.get("fit_device", "gpu"), [],
+                                                        True),
                                                        (f"{arm}.report", "report", "cpu", [f"{arm}.fit"], False)):
             unit = _base(unit_id, "short", kind, st[0], device, deps, w, calls_fit=calls_fit)
             unit.update(arm=arm, resource_class=effective["arms"][arm]["resource_class"])

@@ -93,7 +93,8 @@ def _matched_data_argv(spec):
     source = Path(inp["path"]) / "INPUT.npz"
     if not source.is_file() or _sha(source) != inp.get("sha256"):
         return None, "INPUT_PIN_MISMATCH"
-    return ["--population", str(population.parent), "--population-digest", pop["population_sha256"],
+    # the trainer's real matched flags; --bundle is omitted for a matched fit
+    return ["--common-population", str(population.parent), "--common-population-digest", pop["population_sha256"],
             "--input-dir", str(source.parent)], None
 
 

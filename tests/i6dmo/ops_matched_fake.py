@@ -22,6 +22,7 @@ import time
 from pathlib import Path
 
 HORIZONS = (2, 3, 4, 5, 6, 12)
+REPO = Path(__file__).resolve().parents[2]
 DEFAULT_REL = {"mg1": -0.02, "mg2m": -0.01}
 
 
@@ -71,7 +72,22 @@ def main():
             naive = 0.001 * h
             per_h[str(h)] = dict(n=100, mae=naive * (1 + rel), naive_mae=naive, relative_error=rel,
                                  row_ids_sha256=rows or hashlib.sha256(f"common-h{h}".encode()).hexdigest())
-        (out / "METRICS.json").write_text(json.dumps(dict(per_horizon=per_h, common_population_sha256=population,
+        # The model lane's METRICS "matched" block, shaped exactly as decide_matched consumes it.
+        capacity_doc = json.loads((REPO / "docs/i6n/direct_multi_output_static/matched_short/"
+                                          "CAPACITY_MATCHED.json").read_text())
+        model_family = {"mg1": "short_mg1", "mg2m": "short_mg2"}[arm]
+        failed = [dict(horizon=h, n=None, n_failed=None, relative_error=None, reason="missing_or_failed")
+                  for h in HORIZONS if str(h) not in per_h]
+        selection = dict(status="INCOMPLETE" if failed else "COMPLETE", score=None if failed else rel,
+                         heads=list(HORIZONS), failed_heads=failed)
+        matched = dict(arm=arm, common_population_sha256=population,
+                       development_row_ids_sha256=rows or hashlib.sha256(b"common-rows").hexdigest(),
+                       development_head_mask_sha256=hashlib.sha256(b"common-mask").hexdigest(),
+                       development_counts={str(h): 100 for h in HORIZONS},
+                       capacity=dict(schema="i6dmo.capacity.v1", arm=arm,
+                                     counts=capacity_doc["declared_capacity"][model_family]),
+                       selection=selection)
+        (out / "METRICS.json").write_text(json.dumps(dict(per_horizon=per_h, matched=matched,
                                                           splits_read=["train", "validation"])))
         artifacts["metrics"] = dict(path="METRICS.json", sha256=_sha(out / "METRICS.json"))
         lineage = dict(common_population_sha256=population)
