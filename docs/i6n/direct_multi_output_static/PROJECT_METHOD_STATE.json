@@ -1,8 +1,8 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-15",
- "current_stage": "S12_MARKET_TIME_PAIR_INTEGRATION",
- "execution_status": "MARKET_TIME_PAIR_OPS_INTEGRATED_AWAITING_LANE_SEALS_AND_REVIEW",
+ "current_stage": "S13_MARKET_TIME_PAIR_RUNNING",
+ "execution_status": "MARKET_TIME_PAIR_LAUNCHED_FIRST_FIT_RUNNING_NO_RESULT_YET",
  "design_artifacts": [
   "PLAN.md",
   "EXPERIMENT.short.json",
@@ -54,7 +54,11 @@
   {
    "date": "2026-10-15",
    "event": "Market-time pair ops integration: finite graph short.fit->short.report->long.fit->long.report->pair.eligibility->strategy.validation with long progression independent of short eligibility, typed PAIR_NOT_ELIGIBLE closure, no enumerable or claimable TEST unit, and cross-treatment adoption refused; 7 new regressions (PRE collection error, POST pass), suite 326 passed."
+  },
+  {
+   "date": "2026-10-15",
+   "event": "Market-time pair launched: campaign i6dmo-72809b6c88a6, designs 1fa48222/4da1d3e0 (seals 4b64b4ee/97541764, effective 920332ae/0853f6d9), bundles 21400c51/c3867b5c; storage adapter and gates added; two roots retired before any claim (instrument envelope, elapsed data-contract check on a market design); tests/i6dmo 404 passed."
   }
  ],
- "status_note": "Owner approved option (a). The ops finite graph for MG2/MG12 is integrated and tested (no new distributed runtime, no TEST stage); the measured elapsed-grid short baseline and the retained ASOF arm stay immutable and are never adopted by shape or horizon match. Scientific execution waits on the data and model lane seals and the independent reviewer."
+ "status_note": "Reviewer ACCEPT_FOR_SCIENTIFIC_EXECUTION (84360909). Release 24f5a6cc: the finite market-time graph is deployed and short.fit is running on the preferred GPU under the measured class cap. A launch receipt is not a completion; no market-time result exists. The experiment-storage policy is integrated: live databases, locks and private specs stay on ext4 and only immutable terminal artifacts are archived, digest-verified."
 }
