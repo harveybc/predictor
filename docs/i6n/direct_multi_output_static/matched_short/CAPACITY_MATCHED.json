@@ -1,0 +1,177 @@
+{
+ "arms": {
+  "mg1": {
+   "capacity_sha256": "a29c9f5871927d4351c863cf832ff492694360f281381d3a840b36886ee1632e",
+   "counts": {
+    "branches": 304,
+    "core": 1980,
+    "core_input_channels": 78,
+    "core_layers": [
+     1880,
+     100
+    ],
+    "features": 19,
+    "fusion": 0,
+    "heads": 4902,
+    "per_branch": 16,
+    "per_head": 817,
+    "per_head_hidden": 808,
+    "per_head_output": 9,
+    "slots": 25,
+    "time_encoder": 0,
+    "total": 7186
+   },
+   "family": "short_mg1",
+   "model_config_sha256": "e816ae066191b5298b1261414f60171089dc63bb6560de05d1558c53fe6a2344",
+   "per_head_detail": {
+    "h12": {
+     "hidden": 808,
+     "output": 9,
+     "total": 817
+    },
+    "h2": {
+     "hidden": 808,
+     "output": 9,
+     "total": 817
+    },
+    "h3": {
+     "hidden": 808,
+     "output": 9,
+     "total": 817
+    },
+    "h4": {
+     "hidden": 808,
+     "output": 9,
+     "total": 817
+    },
+    "h5": {
+     "hidden": 808,
+     "output": 9,
+     "total": 817
+    },
+    "h6": {
+     "hidden": 808,
+     "output": 9,
+     "total": 817
+    }
+   },
+   "sealed_design_sha256": "9f0d086edce5d16e5d8337d88d030b1b3e3681f0d20d154d6acecd63837b1928",
+   "sealed_effective_config_sha256": "fc83d0f4b4696038fc406d37f606e3be0b3d377cea2648330e76e82141c5b68f",
+   "sealed_experiment_id": "I6-DMO-SHORT-MG1-MATCHED-R0"
+  },
+  "mg2m": {
+   "capacity_sha256": "5b622fd0fe575cb662c13b50e1bdf645841451001f00c2bb690f35f3b570c325",
+   "counts": {
+    "branches": 304,
+    "core": 1980,
+    "core_input_channels": 78,
+    "core_layers": [
+     1880,
+     100
+    ],
+    "features": 19,
+    "fusion": 0,
+    "heads": 2598,
+    "per_branch": 16,
+    "per_head": 433,
+    "per_head_hidden": 424,
+    "per_head_output": 9,
+    "slots": 13,
+    "time_encoder": 0,
+    "total": 4882
+   },
+   "family": "short_mg2",
+   "model_config_sha256": "8c29a338a7312edbba15269666cf20fce4e5f31ee0a251c664727ca6875b5136",
+   "per_head_detail": {
+    "h12": {
+     "hidden": 424,
+     "output": 9,
+     "total": 433
+    },
+    "h2": {
+     "hidden": 424,
+     "output": 9,
+     "total": 433
+    },
+    "h3": {
+     "hidden": 424,
+     "output": 9,
+     "total": 433
+    },
+    "h4": {
+     "hidden": 424,
+     "output": 9,
+     "total": 433
+    },
+    "h5": {
+     "hidden": 424,
+     "output": 9,
+     "total": 433
+    },
+    "h6": {
+     "hidden": 424,
+     "output": 9,
+     "total": 433
+    }
+   },
+   "sealed_design_sha256": "a3e073c760545f0a1ae7863cd5328d5bf34dbfa15b9c41d7d0d5da3d75818272",
+   "sealed_effective_config_sha256": "313617d743acfbcd75e5e08475929b2a8531104743712d282f0a8b16281f8990",
+   "sealed_experiment_id": "I6-DMO-SHORT-MG2-MATCHED-R0"
+  }
+ },
+ "declared_capacity": {
+  "short_mg1": {
+   "branches": 304,
+   "core": 1980,
+   "core_input_channels": 78,
+   "core_layers": [
+    1880,
+    100
+   ],
+   "features": 19,
+   "fusion": 0,
+   "heads": 4902,
+   "per_branch": 16,
+   "per_head": 817,
+   "per_head_hidden": 808,
+   "per_head_output": 9,
+   "slots": 25,
+   "time_encoder": 0,
+   "total": 7186
+  },
+  "short_mg2": {
+   "branches": 304,
+   "core": 1980,
+   "core_input_channels": 78,
+   "core_layers": [
+    1880,
+    100
+   ],
+   "features": 19,
+   "fusion": 0,
+   "heads": 2598,
+   "per_branch": 16,
+   "per_head": 433,
+   "per_head_hidden": 424,
+   "per_head_output": 9,
+   "slots": 13,
+   "time_encoder": 0,
+   "total": 4882
+  }
+ },
+ "declared_head_delta_formula": "(25-13)*4*8*6",
+ "delta": {
+  "branches": 0,
+  "core": 0,
+  "fusion": 0,
+  "heads": 2304,
+  "time_encoder": 0,
+  "total": 2304
+ },
+ "guard": "tools.i6dmo.model.capacity_record refuses CAPACITY_UNREPORTED_CHANGE when a build differs from the recipe count or this declared disclosure; matched_capacity_delta refuses any MG1-MG2 difference other than the heads' 2304",
+ "interpretation": "practical input/readout recipe comparison; not proof that additional signal alone caused any gain",
+ "plan": "NEXT_CONTRASTS_PLAN_20261015.md section 2, Capacity disclosure and decision rule",
+ "recipe": "19 per-feature causal Conv1D(4,k3,s1) branches -> weightless concat fusion -> DynamicPhysicalTimeEncoder 1.0.0 (actual signed UTC offsets; +2 context channels) -> core Conv1D 8 then 4 (k3,s1) -> six Flatten->Dense(8,relu)->Dense(1) heads",
+ "schema": "i6dmo.matched_capacity_disclosure.v1",
+ "status": "MEASURED_ON_REAL_SEALED_BUILDS_NO_FIT"
+}
