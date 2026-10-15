@@ -191,5 +191,31 @@
     "availability": "declared in derived_from.availability_declaration; counts owned by the data lane market-grid study",
     "common_support": "COMMON_SUPPORT_RULES.json sha 9d61117f... frozen before scoring and bound into the sealed design; REUSED_MODEL_SUBSET_SCORE != trained-on-common-population; encoder/R2/cadence are distinct later designs",
     "data_bundle": "a bundle for this family must declare offsets -24..0 step 1 (25) and horizons 2..12; a 13-slot bundle is a typed BUNDLE_OFFSETS refusal"
+  },
+  "market_time": {
+    "status": "PUBLISHED_EARLY_IMPLEMENTATION_IN_PROGRESS",
+    "owned": [
+      "tools/i6dmo/design.py (market-time schema + seal-market-time)",
+      "tools/i6dmo/model.py (DynamicPhysicalTimeEncoder, market-time families)",
+      "tests/i6dmo/test_dmo_market_time.py"
+    ],
+    "designs": {
+      "short": "EXPERIMENT.mg2.json, I6-DMO-SHORT-MG2-MARKET-EXACT-R0: rule MG2_MARKET_EXACT, 13 obs, spacing 2 open-market hours, history 24 open-market hours, heads [2,3,4,5,6,12]",
+      "long": "EXPERIMENT.mg12.json, I6-DMO-LONG-MG12-MARKET-EXACT-R0: rule MG12_MARKET_EXACT, 13 obs, spacing 12, history 144, heads [18,24,36,48,60,72]"
+    },
+    "schema": "NEW typed schema i6dmo.market_time_design.v1 (separate from i6dmo.design.v1; history_span_hours keeps its old elapsed meaning and is ABSENT here). market_time block: rule, observations, spacing_open_market_hours, span_open_market_hours, include_origin, elapsed_span_fixed=false, require_exact_market_slots=true. A fixed-elapsed field (history_span_hours/spacing_hours/observations under input) alongside market_time is typed MARKET_TIME_CONTRADICTION.",
+    "seal": "inputs/formula identity (time_encoder), feature manifest, calendar (ASSUMED_NOT_BROKER), source-clock/availability contract, data candidate+support study digests, seed 6102026, runtime (tensorflow/keras) -> seal_sha256",
+    "cli": "python -m tools.i6dmo seal-market-time --short-design <EXPERIMENT.short.json> --candidate-dir <market_grid dir> --out-dir <dir> [--json]; validate-design accepts both sealed designs (family short_mg2 / long_mg12)",
+    "model_extension": {
+      "layer": "i6dmo.DynamicPhysicalTimeEncoder v1, serializable, immediately after branch fusion",
+      "inputs": "per-example offsets_hours (batch, slots) signed UTC hours from t (last exactly 0) and closure_crossed (batch, slots) 0/1; NEVER ordinal slot indices and never a fixed per-batch grid",
+      "encoding": "the same deterministic sinusoidal rule as PositionalEncoding evaluated on the ACTUAL offsets: sin/cos with rates 10000^(-2*(c//2)/C), added to the 76 fused value channels",
+      "context_channels": "then APPEND exactly two channels before the core: adjacent elapsed-hours/24 (fixed unit conversion, never fitted) and closure_crossed (0/1); first slot adjacent delta 0 and flag 0",
+      "shapes": "19 branches -> core input (batch, slots, 78) = 76 encoded + 2 context; dtype float32",
+      "metadata": "MODEL.json records market-slot order vs actual wall-clock time explicitly; no donor is compatible by shape alone (time_encoder + market_time identity must match)"
+    },
+    "unchanged": "branches 4/3/1, core 8->4 (k3,s1), six Flatten->Dense(8,relu)->Dense(1,linear) heads, AdamW 1e-3/1e-4, batch 256, 200 epochs, patience 10, min_delta 1e-8, equal-head masked normalized MAE, best-weight restore, mean end-of-epoch FIT/INNER monitor at identical weights, and the already-reviewed numerical policy (i6dmo.monitor_numeric_equivalence.v2) with NO broadened tolerance and DMO10 not reopened",
+    "ds2_preserved": "the old elapsed DS2/hourly/long families keep their exact behaviour under their own configs (no shared default change, no DOIN change); a DS2 replay test asserts the 13x19 input, 76-channel fusion and fixed-offset encoder are untouched",
+    "consumes_data_bundle": "BUNDLE.json market-time variant: features (19, MANIFEST_NO_STLFSI4), horizons_hours, rule, slots, spacing/span open-market hours, calendar+support-study digests, and per-split arrays adding offsets_hours (n, slots) float and closure_crossed (n, slots) bool/0-1 alongside row_id/x/origin_price/target_price/mask; a fixed offsets_hours list (elapsed grid) is refused"
   }
 }
