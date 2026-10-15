@@ -1,0 +1,172 @@
+{
+ "api": {
+  "ArmTensors (frozen dataclass)": {
+   "adjacent_delta_hours": "(n, slots) float64 raw hours between adjacent slots; first column 0 (the /24 conversion is the model's)",
+   "arm": "'mg1' | 'mg2m'",
+   "closure_crossed": "(n, slots) int64 0/1; first column 0",
+   "experiment_id": "sealed experiment id",
+   "head_mask/entry_mask/management_mask": "(n, 6) bool, identical to the SplitPopulation masks and identical across arms",
+   "offsets_hours": "(n, slots) float64 ACTUAL signed UTC offsets from t; last column exactly 0",
+   "origin_price": "(n,) float64 p(t)",
+   "row_id": "(n,) int64 == SplitPopulation.origin_row_ids",
+   "row_ids": "(n,) str",
+   "scaled_x(scaler)": "scaler.transform(x)",
+   "slot_instants": "(n, slots) int64 UTC epoch seconds; last column == row_id",
+   "split": "FIT|INNER|DEVELOPMENT",
+   "target_price": "(n, 6) float64 exact ELAPSED p(t+h) where head_mask, NaN elsewhere (never filled)",
+   "week_ids": "(n,) str calendar week id",
+   "x": "(n, slots, 19) float64 RAW exact values at the expected market slots, oldest -> t; slots = 25 (mg1) or 13 (mg2m)"
+  },
+  "CommonPopulation (frozen dataclass)": {
+   "digest": "population digest = canonical sha256 of POPULATION.json body (container file digests excluded); deterministic across rebuilds",
+   "horizons": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    12
+   ],
+   "identities": "dict: contrast_id, matched_population_rules_sha256, arms{mg1,mg2m: experiment_id, family, experiment_design_sha256, experiment_seal_sha256, data_design_sha256, data_identity_sha256, observations, spacing}, source{inputs{file: sha256}, input_sha256, source_clock, features, manifest/availability sha256}, calendar{calendar_id, version, status, sha256}, splits{bounds}, test{materialized: false}, code{commit, files_sha256}",
+   "naive_loss_scale": "dict[int, float | None] FIT-only naive MAE per horizon on the common FIT mask (math.fsum of |p(t+h)-p(t)| / n); None = typed UNSUPPORTED_HEAD / ZERO_SCALE_HEAD, never filled",
+   "report": "counts before/after intersection, typed exclusions, unsupported heads, scaler source-bar range (not part of the dataclass equality)",
+   "scaler": "SharedScaler (the SAME statistics serve both arms)",
+   "schema": "i6dmo.common_population.v1",
+   "splits": "dict[str, SplitPopulation] for FIT, INNER, DEVELOPMENT"
+  },
+  "SharedScaler (frozen dataclass)": {
+   "feature_names": "tuple[str, ...] the 19 MANIFEST_NO_STLFSI4 names in order",
+   "fit_row_digest": "array_sha256({'fit_source_bar_ts': sorted unique int64 UTC epochs of the union of MG1/MG2 slot bars of the common FIT origins})",
+   "mean": "np.ndarray float64 (19,)",
+   "n_rows": "int number of those unique source bars",
+   "std": "np.ndarray float64 (19,) ddof=0",
+   "transform(x)": "(x - mean) / std on the last axis; any zero std raises ZERO_SCALE (never an epsilon)"
+  },
+  "SplitPopulation (frozen dataclass)": {
+   "counts": "dict[int, int] per horizon = head_mask[:, j].sum()",
+   "digest": "sha256 over name, the four arrays, row-id digest and counts",
+   "entry_mask": "np.ndarray bool (n, 6) C1 ENTRY support under BOTH arms, subset of head_mask",
+   "head_mask": "np.ndarray bool (n, 6) common valid (origin, horizon) pairs; horizons order (2,3,4,5,6,12); every row has >= 1 True",
+   "management_mask": "np.ndarray bool (n, 6) C1 MANAGEMENT support under BOTH arms; identical to head_mask by construction (asserted on load)",
+   "name": "'FIT' | 'INNER' | 'DEVELOPMENT' (DEVELOPMENT = data-lane VALIDATION, full 2024)",
+   "origin_row_ids": "np.ndarray int64 (n,) origin UTC epoch seconds, strictly increasing",
+   "row_ids()": "np.ndarray str 'EURUSD|<UTC ISO origin>'"
+  },
+  "arm_tensors(pop, arm_design, split) -> ArmTensors": "THE per-arm accessor both trainers, checkpoint monitors, annual scorers and weekly diagnostics must use. arm_design = the sealed EXPERIMENT.<arm>.json document; its design_sha256 must equal identities.arms[arm].experiment_design_sha256 (DESIGN_IDENTITY_MISMATCH otherwise; closed MG2 / hourly -> MATCHED_IDENTITY_REQUIRED; split 'TEST' -> SPLIT_UNKNOWN). Rows/heads are exactly SplitPopulation rows/masks (re-asserted).",
+  "build_common_population(input_dir, experiments={'mg1': doc, 'mg2m': doc}, data_designs={'mg1': doc, 'mg2m': doc}, *, code_commit=None) -> CommonPopulation": "validates both sealed EXPERIMENTs (matched_arm) and DESIGNs, cross-checks data_design_sha256/data_identity_sha256/partner identity and the sealed calendar id/version against the input; refuses TEST bars (TEST_ROWS_PRESENT, before any array)",
+  "load_common_population(path, *, expected_digest, input_dir=None) -> CommonPopulation": "recomputes every row/head/mask/arm/exclusion/scaler/identity digest; typed refusals ROW_DIGEST_MISMATCH, HEAD_MASK_DIGEST_MISMATCH, MASK_DIGEST_MISMATCH, ARM_ARRAYS_MISMATCH, EXCLUSIONS_MISMATCH, SCALER_ROWS_MISMATCH, CALENDAR_DIGEST_MISMATCH, SOURCE_DIGEST_MISMATCH, DESIGN_IDENTITY_MISMATCH, SPLIT_BOUNDS_MISMATCH, FILE_DIGEST_MISMATCH, POPULATION_DIGEST_MISMATCH, SPLIT_UNKNOWN, TEST_ROWS_PRESENT; with input_dir the retained INPUT/CALENDAR/CLOCK files must hash to the sealed source",
+  "replay_against_input(tensors, input_dir)": "independent replay of inputs/p(t)/exact p(t+h) by timestamp from INPUT.npz; REPLAY_MISMATCH on any difference",
+  "verify_source(pop_or_body, input_dir)": "file digests of the retained input vs the sealed source/calendar",
+  "write_common_population(pop, out_dir) -> seal dict": "writes POPULATION.json, POPULATION_<SPLIT>.npz, EXCLUSIONS_<SPLIT>.npz, ARM_<arm>_<SPLIT>.npz, SCALER_ROWS.npz into a NEW/empty directory (POPULATION_EXISTS otherwise); returns the small committable seal (schema i6dmo.common_population.seal.v1)"
+ },
+ "cli": {
+  "build": "python -m tools.i6dmo.common_population build --matched-dir docs/i6n/direct_multi_output_static/matched_short --input-dir <data_root>/inputs/extended-no-stlfsi4 --out $EXPERIMENT_STORAGE_ROOT/i6dmo/matched-short-20261015/population --seal-out docs/i6n/direct_multi_output_static/matched_short/POPULATION_SEAL.json --code-commit <commit>",
+  "exit": "0 OK; 2 typed refusal printed as JSON {status: REFUSED, code}",
+  "verify": "python -m tools.i6dmo.common_population verify --population-dir <dir> --expected-digest <population_digest from POPULATION_SEAL.json> [--input-dir <input>]"
+ },
+ "designs": {
+  "arms": {
+   "mg1": {
+    "experiment_id": "I6-DMO-SHORT-MG1-MATCHED-R0",
+    "family": "short_mg1_matched",
+    "horizons_hours": [
+     2,
+     3,
+     4,
+     5,
+     6,
+     12
+    ],
+    "observations": 25,
+    "partner": "mg2m",
+    "role": "CONTROL",
+    "rule": "MG1_MARKET_EXACT",
+    "spacing_open_market_hours": 1,
+    "span_open_market_hours": 24
+   },
+   "mg2m": {
+    "experiment_id": "I6-DMO-SHORT-MG2-MATCHED-R0",
+    "family": "short_mg2_matched",
+    "horizons_hours": [
+     2,
+     3,
+     4,
+     5,
+     6,
+     12
+    ],
+    "observations": 13,
+    "partner": "mg1",
+    "role": "MATCHED_REFERENCE",
+    "rule": "MG2_MARKET_EXACT",
+    "spacing_open_market_hours": 2,
+    "span_open_market_hours": 24
+   }
+  },
+  "data_design_schema": "i6dmo.matched_market_design.v1",
+  "data_designs": {
+   "mg1": "matched_short/DESIGN.mg1.json",
+   "mg2m": "matched_short/DESIGN.mg2m.json"
+  },
+  "experiment_schema": "i6dmo.matched_market_time_design.v1",
+  "families": {
+   "short_mg1_matched": "matched_short/EXPERIMENT.mg1.json",
+   "short_mg2_matched": "matched_short/EXPERIMENT.mg2m.json"
+  },
+  "matched_identity_guard": "design.matched_arm(doc) -> 'mg1'|'mg2m'; any other family (closed short_mg2 full-population MG2, long_mg12, short_hourly ELAPSED, short, long) raises DesignError MATCHED_IDENTITY_REQUIRED; a relabelled closed MG2 raises MATCHED_SCHEMA_REQUIRED",
+  "model_lane_note": "model.py has no 'short_mg1_matched'/'short_mg2_matched' model_config family yet; the 25-slot model, per-component parameter counts and the 2304-parameter disclosure (SC07) are MODEL's",
+  "not_modified": [
+   "EXPERIMENT.short_hourly.json (ELAPSED, not MG1)",
+   "EXPERIMENT.mg2.json (seal 4b64b4ee)",
+   "EXPERIMENT.mg12.json (seal 97541764)",
+   "market_grid/DESIGN.mg2.json"
+  ],
+  "rules": "matched_short/MATCHED_POPULATION_RULES.json",
+  "rules_sha256": "5a2e3d20a17502110f533b342c16e9d95b107b6312a9973e938775755423d131",
+  "seal": "python -m tools.i6dmo.design seal-matched-short --short-design docs/i6n/direct_multi_output_static/EXPERIMENT.short.json --out-dir docs/i6n/direct_multi_output_static/matched_short --json (idempotent; refuses different content)",
+  "validate": "python -m tools.i6dmo.design validate-design --design <EXPERIMENT.mg1.json|EXPERIMENT.mg2m.json> --json"
+ },
+ "exclusion_codes": {
+  "head_reason": [
+   "COMMON_VALID",
+   "ORIGIN_OUTSIDE_CALENDAR_WEEK",
+   "OPERATIONALLY_INELIGIBLE",
+   "TARGET_NOT_OBSERVED",
+   "TARGET_AVAILABLE_AFTER_LABEL_CUTOFF",
+   "TARGET_BEFORE_SPLIT_START",
+   "TARGET_AT_OR_AFTER_SPLIT_END",
+   "TARGET_OUTSIDE_DECLARED_SPLITS",
+   "INPUT_INVALID_MG1_ONLY",
+   "INPUT_INVALID_MG2M_ONLY",
+   "INPUT_INVALID_BOTH"
+  ],
+  "input_reason": [
+   "INPUT_OK",
+   "ORIGIN_NOT_EXPECTED_MARKET_HOUR",
+   "INPUT_BEFORE_DATA_START",
+   "INPUT_SLOT_NOT_OBSERVED",
+   "INPUT_VALUE_NOT_FINITE"
+  ],
+  "precedence": "C1 business/label reason (treatment-independent) first, then INPUT_INVALID_MG1_ONLY / INPUT_INVALID_MG2M_ONLY / INPUT_INVALID_BOTH"
+ },
+ "invariants": [
+  "TEST never materialized; no TEST split, unit or file",
+  "no smoothing, interpolation, ASOF or next-observed-row targets; exact t+h only",
+  "missing open-session bars remain counted exclusions; slots are expected open-market hours of the versioned calendar; offsets are actual UTC",
+  "FIT-only shared scaler and naive loss scales; INNER/DEVELOPMENT cannot change them (SC04)",
+  "the closed full-population MG2 bundle/design is never accepted as the matched MG2 arm (SC06/SC10)"
+ ],
+ "lane": "data",
+ "module": "tools/i6dmo/common_population.py",
+ "order": "MUSASHI_TO_SATOSHI_SHORT_MATCHED_CONTROL_20261015 section A.1; NEXT_CONTRASTS_PLAN_20261015 section 2, SC01-SC04, SC10 (data part)",
+ "private_storage_layout": {
+  "ARM_<arm>_<SPLIT>.npz": "row_id, x, offsets_hours, adjacent_delta_hours, closure_crossed, slot_instants, origin_price, target_price, head_mask, entry_mask, management_mask, week_ids",
+  "EXCLUSIONS_<SPLIT>.npz": "candidate_row_ids (every candidate origin of the split), head_reason (m,6) int8, input_reason_mg1 (m,) int8, input_reason_mg2m (m,) int8",
+  "POPULATION.json": "full body incl. scaler values, identities, report, digest, file sha256 map",
+  "POPULATION_<SPLIT>.npz": "origin_row_ids, head_mask, entry_mask, management_mask",
+  "SCALER_ROWS.npz": "fit_source_bar_ts"
+ },
+ "schema": "i6dmo.interface.common_population.v1",
+ "status": "IMPLEMENTED_CPU_TESTED_NO_FIT",
+ "tests": "tests/i6dmo/test_matched_population.py"
+}
