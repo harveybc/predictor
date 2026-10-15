@@ -166,6 +166,45 @@
   "POPULATION_<SPLIT>.npz": "origin_row_ids, head_mask, entry_mask, management_mask",
   "SCALER_ROWS.npz": "fit_source_bar_ts"
  },
+ "real_population": {
+  "calendar_sha256": "782603fd26e879d6f837c83e9ec92d363500cb1dd150544e10a80c1ddeb88265",
+  "code_commit": "0c4310dc",
+  "consumers_load_with": "load_common_population(<private dir>, expected_digest=<population_digest>, input_dir=<input>) then arm_tensors(pop, <EXPERIMENT.<arm>.json doc>, split)",
+  "counts_after_intersection": {
+   "DEVELOPMENT": {
+    "12": 4196,
+    "2": 4724,
+    "3": 4671,
+    "4": 4618,
+    "5": 4565,
+    "6": 4512
+   },
+   "FIT": {
+    "12": 14618,
+    "2": 16397,
+    "3": 16219,
+    "4": 16041,
+    "5": 15863,
+    "6": 15685
+   },
+   "INNER": {
+    "12": 635,
+    "2": 715,
+    "3": 707,
+    "4": 699,
+    "5": 691,
+    "6": 683
+   }
+  },
+  "input_sha256": "ef22ddb54921ee9f9c774a550731dcd522c9d712f2a1882f1bf4e6a35e3942b8",
+  "observed_note": "INPUT_INVALID_MG2M_ONLY never occurs on the real input: for every origin the 13 MG2 slots are a subset of the 25 MG1 slots, so the common population equals the MG1 valid set and MG2 loses only MG1-invalid pairs",
+  "population_digest": "4ab41bd87987c6e790851fe1262210b13e0fdbabf971deae9b9fa06fc75014f8",
+  "population_json_sha256": "bb7524c1a94b167d4f61b75b0b640dd474069fbb2458f722729ad613eeb66051",
+  "private_location": "$EXPERIMENT_STORAGE_ROOT/i6dmo/matched-short-20261015/population (never committed)",
+  "scaler_fit_row_digest": "08f655df5abc0b1ee3ec6bc905e2c3e4a31da2ace8cab5268faa9a761796f4d1",
+  "seal": "matched_short/POPULATION_SEAL.json",
+  "status": "SEALED_BEFORE_ANY_FIT"
+ },
  "schema": "i6dmo.interface.common_population.v1",
  "status": "IMPLEMENTED_CPU_TESTED_NO_FIT",
  "tests": "tests/i6dmo/test_matched_population.py"
