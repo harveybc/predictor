@@ -255,6 +255,10 @@ class CommonPopulation:
     exclusion_arrays: Dict[str, Dict[str, np.ndarray]] = field(
         default_factory=dict, compare=False, repr=False)
     source_dir: Optional[str] = field(default=None, compare=False, repr=False)
+    #: arm -> split -> array_sha256 RECOMPUTED by the verified load (never the stored strings);
+    #: the source_dir accessor binds to these, so a post-load file+string edit is refused (D3).
+    verified_arm_digests: Dict[str, Dict[str, str]] = field(
+        default_factory=dict, compare=False, repr=False)
 
 
 @dataclass(frozen=True)
@@ -765,6 +769,7 @@ def load_common_population(path: str | Path, *, expected_digest: str,
         verify_source(body, input_dir)
     splits: Dict[str, SplitPopulation] = {}
     digests: Dict[str, str] = {}
+    verified_arm: Dict[str, Dict[str, str]] = {a: {} for a in ARMS}
     hs = tuple(int(h) for h in body["horizons_hours"])
     if hs != HORIZONS:
         raise CommonPopulationError("HORIZONS_INVALID", str(hs))
@@ -804,6 +809,7 @@ def load_common_population(path: str | Path, *, expected_digest: str,
             if digests[arm_info["path"]] != arm_info["arrays_sha256"]:
                 raise CommonPopulationError("ARM_ARRAYS_MISMATCH", f"{arm} {name} arrays changed")
             _check_arm_against_split(arm, sp, arrs)
+            verified_arm[arm][name] = digests[arm_info["path"]]
     scaler_rows = _load_npz(root / body["scaler"]["rows_path"])["fit_source_bar_ts"]
     if _scaler_rows_digest(scaler_rows) != body["scaler"]["fit_row_digest"] or \
             len(scaler_rows) != body["scaler"]["n_rows"]:
@@ -830,7 +836,7 @@ def load_common_population(path: str | Path, *, expected_digest: str,
     _check_no_test(pop)
     return CommonPopulation(splits=splits, scaler=scaler, naive_loss_scale=naive,
                             identities=ident, digest=recomputed, report=body["report"],
-                            source_dir=str(root))
+                            source_dir=str(root), verified_arm_digests=verified_arm)
 
 
 def verify_source(body_or_pop: Any, input_dir: str | Path) -> Dict[str, str]:
@@ -906,11 +912,15 @@ def arm_tensors(pop: CommonPopulation, arm_design: Mapping[str, Any], split: str
     if pop.arm_arrays:
         arrs = pop.arm_arrays[arm][split]
     elif pop.source_dir:
+        # D3: bind to the digest the verified load RECOMPUTED, never to a re-read stored string
+        expected = (pop.verified_arm_digests.get(arm) or {}).get(split)
+        if not expected:
+            raise CommonPopulationError("POPULATION_NOT_VERIFIED",
+                                        "source_dir access requires load_common_population")
         arrs = _load_npz(Path(pop.source_dir) / f"ARM_{arm}_{split}.npz")
-        body = json.loads((Path(pop.source_dir) / "POPULATION.json").read_text())
-        if body.get("digest") != pop.digest or provenance.array_sha256(arrs) != \
-                body["splits"][split]["arms"][arm]["arrays_sha256"]:
-            raise CommonPopulationError("ARM_ARRAYS_MISMATCH", f"{arm} {split} arrays changed")
+        if provenance.array_sha256(arrs) != expected:
+            raise CommonPopulationError("ARM_ARRAYS_MISMATCH",
+                                        f"{arm} {split} arrays changed after the verified load")
     else:
         raise CommonPopulationError("POPULATION_NOT_BUILT", "no arm arrays and no source dir")
     _check_arm_against_split(arm, sp, arrs)

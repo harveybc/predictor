@@ -207,6 +207,15 @@ MATCHED_POPULATION_RULES = {
     "full_population_fit_substitutes": False,
     "test": "no TEST row, unit, metadata scan or derived artifact",
 }
+#: Execution-role runtime the matched designs pin (both GPU roles run it; the reviewed bounded GPU
+#: replay ran under it). Not the coordinator's own install. Technical-lead ruling 2026-10-15.
+MATCHED_RUNTIME = {"tensorflow": "2.21.0", "keras": "3.13.2"}
+#: Seals superseded BEFORE any execution (runtime pin 2.18.0/3.9.0 taken from the coordinator);
+#: no fit, report or campaign used them. Refused as SUPERSEDED, never re-accepted.
+MATCHED_SUPERSEDED_SEALS = {
+    "4786951ae1024f1761848d9e8fc36d519e0de5aed136cce5d3bbda77f4e75e5a": "mg1 tf2.18.0/keras3.9.0",
+    "6e8689d4798b1c75333f054ab58bb0204c03b19ae1efd71378a0d6785f86da68": "mg2m tf2.18.0/keras3.9.0",
+}
 MATCHED_POPULATION_RULES["rules_sha256"] = hashlib.sha256(json.dumps(
     MATCHED_POPULATION_RULES, sort_keys=True, separators=(",", ":"),
     allow_nan=False).encode("utf-8")).hexdigest()
@@ -646,6 +655,11 @@ def validate_design(doc):
         _check(doc, MATCHED_SCHEMAS[fam], "")
         if doc["seal_sha256"] != _sha(_seal_body(doc)):
             raise DesignError("MATCHED_DESIGN_SEAL", "the sealed matched design was modified")
+        if doc["seal_sha256"] in MATCHED_SUPERSEDED_SEALS:
+            raise DesignError("MATCHED_IDENTITY_SUPERSEDED",
+                              f"seal {doc['seal_sha256'][:12]} "
+                              f"({MATCHED_SUPERSEDED_SEALS[doc['seal_sha256']]}) was superseded "
+                              "before execution; use the current matched_short design")
     elif fam == "short_hourly":
         open_paths = _undecided(doc)
         if open_paths:
@@ -1121,12 +1135,6 @@ def seal_market_time(short_design_path, candidate_dir, out_dir):
 MATCHED_CALENDAR = {"calendar_id": "FX_NY_17_ASSUMED_NOT_BROKER", "version": "i6n-v1"}
 
 
-def _runtime_pins():
-    import tensorflow as tf
-    from tools.i6dmo.model import keras_version
-    return {"tensorflow": tf.__version__, "keras": keras_version()}
-
-
 def matched_market_time_design(short_design, arm, data_designs, *, calendar=None, runtime=None):
     """Derive ONE sealed matched design (``mg1`` control or ``mg2m`` reference); pure, no data read.
 
@@ -1134,7 +1142,7 @@ def matched_market_time_design(short_design, arm, data_designs, *, calendar=None
     (:func:`tools.i6dmo.common_population.matched_data_design`); this design binds its own data
     design digest and data identity plus the partner's data identity, and the frozen
     MATCHED_POPULATION_RULES. ``calendar``/``runtime`` default to the real assumed calendar and
-    the installed TensorFlow/Keras pins.
+    the execution-role pins ``MATCHED_RUNTIME`` (not the sealing host's install).
     """
     from tools.i6dmo import common_population as CP
     base = validate_design(short_design)
@@ -1193,7 +1201,7 @@ def matched_market_time_design(short_design, arm, data_designs, *, calendar=None
             "data_identity_sha256": own["data_identity_sha256"],
             "partner_data_identity_sha256": partner["data_identity_sha256"],
             "seed": base["seed"],
-            "runtime": dict(runtime) if runtime is not None else _runtime_pins(),
+            "runtime": dict(runtime) if runtime is not None else dict(MATCHED_RUNTIME),
         },
     }
     doc["seal_sha256"] = _sha(_seal_body(doc))

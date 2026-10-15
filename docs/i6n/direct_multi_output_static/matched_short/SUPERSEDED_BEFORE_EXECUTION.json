@@ -1,0 +1,59 @@
+{
+ "changed_fields": [
+  "sealed_identities.runtime.tensorflow",
+  "sealed_identities.runtime.keras",
+  "seal_sha256 (and the resulting design/effective digests)"
+ ],
+ "date": "2026-10-15",
+ "designs": {
+  "mg1": {
+   "new_design_sha256": "64899668352f947b48a773d24c00642cb521bddcc25b049b3e76c3abd37612ba",
+   "new_effective_config_sha256": "894cda3b67c80fe60ccd94eaf71d99cd8aee7fab8174c553702f119626920140",
+   "new_experiment_file_sha256": "bd02a1327fa7de4e9a0ff9cfb58a741657f01faef8cc6717d3ae418ebdea21d8",
+   "new_runtime": {
+    "keras": "3.13.2",
+    "tensorflow": "2.21.0"
+   },
+   "new_seal_sha256": "b6fd008d596162744160bc8867b3eb92ccf095bed5e974e2719c24fe5fb16ef7",
+   "old_design_sha256": "9f0d086edce5d16e5d8337d88d030b1b3e3681f0d20d154d6acecd63837b1928",
+   "old_effective_config_sha256": "fc83d0f4b4696038fc406d37f606e3be0b3d377cea2648330e76e82141c5b68f",
+   "old_experiment_file_sha256": "cd434a044016b55cd186fd504ec64c16cca7fa54f3794038c226002512fe5619",
+   "old_runtime": {
+    "keras": "3.9.0",
+    "tensorflow": "2.18.0"
+   },
+   "old_seal_sha256": "4786951ae1024f1761848d9e8fc36d519e0de5aed136cce5d3bbda77f4e75e5a"
+  },
+  "mg2m": {
+   "new_design_sha256": "d71d2b3c555dc3fad855b30b97e68d04193bfb5e3df33179f8ef10eea5d04711",
+   "new_effective_config_sha256": "ad949872cd5c430598369049dc82dd6063707080f55ee8f906323ab7f47218c7",
+   "new_experiment_file_sha256": "01fdd83a775bc6729d787083502e44b623c05ed368370a5d418b4494a33dd12c",
+   "new_runtime": {
+    "keras": "3.13.2",
+    "tensorflow": "2.21.0"
+   },
+   "new_seal_sha256": "416c11563c30cc5cbc6345720d7a3d5521fc48d7fe5dae809e0aef33bd30a19e",
+   "old_design_sha256": "a3e073c760545f0a1ae7863cd5328d5bf34dbfa15b9c41d7d0d5da3d75818272",
+   "old_effective_config_sha256": "313617d743acfbcd75e5e08475929b2a8531104743712d282f0a8b16281f8990",
+   "old_experiment_file_sha256": "91fb6cc317859108e723a60829aab7e8ce4c7349836e103b741073ade67ff7a9",
+   "old_runtime": {
+    "keras": "3.9.0",
+    "tensorflow": "2.18.0"
+   },
+   "old_seal_sha256": "6e8689d4798b1c75333f054ab58bb0204c03b19ae1efd71378a0d6785f86da68"
+  }
+ },
+ "never_used": "no fit, report or campaign used the old identities; they are refused as MATCHED_IDENTITY_SUPERSEDED (design.MATCHED_SUPERSEDED_SEALS)",
+ "observation_not_a_regrade": "per the independent review, the closed MG2/MG12 receipts carry TensorFlow 2.21.0 under designs sealed with runtime 2.18.0; recorded only, those closed identities are not modified or re-graded",
+ "old_files": "retrievable from git at commit e546f1ec (matched_short/EXPERIMENT.mg1.json, EXPERIMENT.mg2m.json, POPULATION_SEAL.json)",
+ "population": {
+  "old_population_digest": "4ab41bd87987c6e790851fe1262210b13e0fdbabf971deae9b9fa06fc75014f8",
+  "old_population_json_sha256": "bb7524c1a94b167d4f61b75b0b640dd474069fbb2458f722729ad613eeb66051",
+  "old_private_location": "$EXPERIMENT_STORAGE_ROOT/i6dmo/matched-short-20261015/population (retained, not deleted)"
+ },
+ "reason": "the first matched seals pinned the sealing host's TensorFlow 2.18.0 / Keras 3.9.0; both GPU execution roles run TensorFlow 2.21.0 / Keras 3.13.2 and the reviewed bounded GPU replay passed under 2.21.0, so the pin is corrected to the execution runtime instead of installing an older, unverified second runtime on the workers",
+ "ruling": "technical-lead engineering correction to a never-executed seal",
+ "schema": "i6dmo.matched_supersession.v1",
+ "status": "SUPERSEDED_BEFORE_EXECUTION",
+ "unchanged": "recipe, data designs (DESIGN.mg1/mg2m byte-identical), features, seed, horizons, splits, calendar, MATCHED_POPULATION_RULES"
+}

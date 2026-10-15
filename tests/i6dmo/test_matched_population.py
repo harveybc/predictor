@@ -25,7 +25,7 @@ REPO = Path(__file__).resolve().parents[2]
 DOCS = REPO / "docs/i6n/direct_multi_output_static"
 MATCHED = DOCS / "matched_short"
 FIXTURE_CAL = {"calendar_id": "SYNTH_FX_NY17_FIXTURE", "version": "synth-v1"}
-RUNTIME = {"tensorflow": "2.18.0", "keras": "3.9.0"}
+RUNTIME = dict(D.MATCHED_RUNTIME)
 MISSING = _synth.epoch("2022-06-15T13:00:00+00:00")          # a Wednesday open-session bar
 #: Closed identities that must stay byte-identical (seals 4b64b4ee / 97541764).
 CLOSED_FILES = {
@@ -477,8 +477,10 @@ def test_committed_matched_designs_validate_and_reseal_identically(tmp_path):
         assert doc["sealed_identities"]["data_identity_sha256"] == dd["data_identity_sha256"]
         assert doc["matched_population"]["rules_sha256"] == \
             D.MATCHED_POPULATION_RULES["rules_sha256"]
-    runtime = json.loads((MATCHED / "EXPERIMENT.mg1.json").read_text())["sealed_identities"]["runtime"]
-    D.seal_matched_short(DOCS / "EXPERIMENT.short.json", tmp_path, runtime=runtime)
+    for arm in ("mg1", "mg2m"):
+        pins = json.loads((MATCHED / f"EXPERIMENT.{arm}.json").read_text())["sealed_identities"]["runtime"]
+        assert pins == {"tensorflow": "2.21.0", "keras": "3.13.2"} == D.MATCHED_RUNTIME
+    D.seal_matched_short(DOCS / "EXPERIMENT.short.json", tmp_path)       # default = execution pins
     for name in ("DESIGN.mg1.json", "DESIGN.mg2m.json", "EXPERIMENT.mg1.json",
                  "EXPERIMENT.mg2m.json", "MATCHED_POPULATION_RULES.json"):
         assert (tmp_path / name).read_bytes() == (MATCHED / name).read_bytes(), name
@@ -509,3 +511,52 @@ def test_relabelled_closed_mg2_is_not_a_matched_design():
     with pytest.raises(D.DesignError) as err:
         D.validate_design(doc)
     assert err.value.code in ("MISSING_FIELD", "UNKNOWN_FIELD")
+
+
+def test_superseded_runtime_seals_are_refused():
+    """The 2.18.0/3.9.0 seals were superseded before execution and can never be re-derived."""
+    short = D.load_design(DOCS / "EXPERIMENT.short.json")
+    dds = {a: CP.matched_data_design(short, a) for a in CP.ARMS}
+    for arm in CP.ARMS:
+        with pytest.raises(D.DesignError) as err:
+            D.matched_market_time_design(short, arm, dds,
+                                         runtime={"tensorflow": "2.18.0", "keras": "3.9.0"})
+        assert err.value.code == "MATCHED_IDENTITY_SUPERSEDED"
+    note = json.loads((MATCHED / "SUPERSEDED_BEFORE_EXECUTION.json").read_text())
+    assert note["status"] == "SUPERSEDED_BEFORE_EXECUTION"
+    assert {v["old_seal_sha256"] for v in note["designs"].values()} == set(D.MATCHED_SUPERSEDED_SEALS)
+    for arm in CP.ARMS:
+        assert note["designs"][arm]["new_seal_sha256"] == \
+            json.loads((MATCHED / f"EXPERIMENT.{arm}.json").read_text())["seal_sha256"]
+    for arm in CP.ARMS:
+        cur = D.load_design(MATCHED / f"EXPERIMENT.{arm}.json")
+        assert cur["seal_sha256"] not in D.MATCHED_SUPERSEDED_SEALS
+
+
+def test_d3_accessor_binds_to_the_verified_load_not_stored_strings(built, tmp_path):
+    """Review D3 / p8 h: after a verified load, a tampered ARM file whose stored digest string was
+    also updated must be refused by arm_tensors, exactly as a fresh verified load refuses it."""
+    dst = _tamper_copy(built, tmp_path)
+    pop = CP.load_common_population(dst, expected_digest=built["pop"].digest, input_dir=built["src"])
+    clean = CP.arm_tensors(pop, built["exps"]["mg1"], "FIT")
+    with np.load(dst / "ARM_mg1_FIT.npz", allow_pickle=False) as z:
+        arrs = {k: z[k].copy() for k in z.files}
+    arrs["x"][0, 0, 0] += 1.0
+    np.savez(dst / "ARM_mg1_FIT.npz", **arrs)
+    body = json.loads((dst / "POPULATION.json").read_text())
+    body["splits"]["FIT"]["arms"]["mg1"]["arrays_sha256"] = provenance.array_sha256(arrs)
+    (dst / "POPULATION.json").write_text(json.dumps(body, indent=1, sort_keys=True))
+    with pytest.raises(CP.CommonPopulationError) as err:
+        CP.arm_tensors(pop, built["exps"]["mg1"], "FIT")
+    assert _err(err) == "ARM_ARRAYS_MISMATCH"
+    with pytest.raises(CP.CommonPopulationError) as err:
+        CP.load_common_population(dst, expected_digest=built["pop"].digest, input_dir=built["src"])
+    assert _err(err) == "POPULATION_DIGEST_MISMATCH"
+    assert clean.x[0, 0, 0] == arrs["x"][0, 0, 0] - 1.0
+    unverified = CP.CommonPopulation(splits=pop.splits, scaler=pop.scaler,
+                                     naive_loss_scale=pop.naive_loss_scale,
+                                     identities=pop.identities, digest=pop.digest,
+                                     source_dir=str(dst))
+    with pytest.raises(CP.CommonPopulationError) as err:
+        CP.arm_tensors(unverified, built["exps"]["mg2m"], "INNER")
+    assert _err(err) == "POPULATION_NOT_VERIFIED"
