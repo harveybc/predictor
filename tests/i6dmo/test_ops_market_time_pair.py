@@ -123,20 +123,90 @@ def test_no_test_unit_can_be_enumerated_or_claimed(tmp_path):
 
 
 def test_an_elapsed_grid_terminal_is_never_adopted_by_shape_or_horizon_match(tmp_path):
+    """A real DS2 (elapsed) campaign terminal must not be adopted by a market-time identity."""
+    from tests.i6dmo.ops_fakes import make_campaign
     from tools.i6dmo import campaign
     counter = tmp_path / "c.txt"
-    donor = make_market_time_campaign(tmp_path, name="ds2", rule="DS2_EXACT")
+    donor = make_campaign(tmp_path, name="ds2")            # i6dmo.design.v1 elapsed campaign
     assert run_worker(donor, "preferred", counter)["result"] == "COMPLETE"
     donor_identity = next(p.name for p in (donor / "terminals").iterdir())
     root = make_market_time_campaign(tmp_path, name="mg2", prior_roots=[donor])
     target = {u["unit_id"]: u for u in campaign.load_plan(root)["units"]}["short.fit"]
-    assert target["identity_sha256"] != donor_identity  # different rule -> different identity
-    # Forge the donor terminal under the market-time identity: same shapes, same horizons.
-    forged = donor / "terminals" / target["identity_sha256"]
-    (donor / "terminals" / donor_identity).rename(forged)
+    assert target["identity_sha256"] != donor_identity     # different treatment -> different identity
+    # Forge the elapsed terminal under the market-time identity: same six heads, same window shape.
+    (donor / "terminals" / donor_identity).rename(donor / "terminals" / target["identity_sha256"])
     assert run_worker(root, "preferred", counter)["result"] == "COMPLETE"
-    assert fit_count(counter) == 2  # refitted; the elapsed-grid terminal was refused
+    assert fit_count(counter) == 2                         # refitted; the elapsed terminal was refused
     assert any(e["event"] == "PRIOR_REJECTED" for e in campaign.events(root))
+
+
+def test_init_accepts_the_real_sealed_designs_and_refuses_an_elapsed_one(tmp_path):
+    """The seam the fixtures used to hide: the campaign must seal exactly what the model lane produces."""
+    from tests.i6dmo.ops_fakes import elapsed_design_for_market_time, sealed_market_time_designs
+    from tools.i6dmo import campaign
+    short, long = sealed_market_time_designs()
+    root = make_market_time_campaign(tmp_path, name="sealed")
+    effective = campaign.load_effective(root)
+    for doc, path in ((effective["design"], short), (effective["long"]["design"], long)):
+        assert doc["schema"] == campaign.MARKET_TIME_DESIGN_SCHEMA
+        assert doc["seal_sha256"] == json.loads(path.read_text())["seal_sha256"]
+        assert doc["market_time"]["require_exact_market_slots"] is True
+        assert doc["market_time"]["elapsed_span_fixed"] is False
+        assert "input" not in doc and "history_span_hours" not in doc
+    assert effective["design"]["market_time"]["rule"] == "MG2_MARKET_EXACT"
+    assert effective["long"]["design"]["market_time"]["rule"] == "MG12_MARKET_EXACT"
+    with pytest.raises(campaign.Refused, match="ELAPSED_DESIGN_IN_MARKET_TIME_CAMPAIGN"):
+        make_market_time_campaign(tmp_path, name="elapsed",
+                                  short_design=elapsed_design_for_market_time(tmp_path))
+
+
+def test_a_contradictory_market_time_design_is_refused(tmp_path):
+    """Plan section 2: fixed elapsed fields beside a market_time block are a typed contradiction."""
+    from tests.i6dmo.ops_fakes import sealed_market_time_designs
+    from tools.i6dmo import campaign
+    short, _ = sealed_market_time_designs()
+    doc = json.loads(short.read_text())
+    doc["input"] = {"history_span_hours": 24, "spacing_hours": 2}      # elapsed ladder smuggled back in
+    bad = tmp_path / "contradictory.json"
+    bad.write_text(json.dumps(doc))
+    with pytest.raises(campaign.Refused, match="MARKET_TIME_CONTRADICTION"):
+        make_market_time_campaign(tmp_path, name="contradictory", short_design=bad)
+    doc.pop("input")
+    doc["market_time"] = dict(doc["market_time"], elapsed_span_fixed=True)
+    bad.write_text(json.dumps(doc))
+    # The model lane's sealed-scope validator refuses this one first (FIXED_VALUE); either layer
+    # is a typed refusal, and neither lets a fixed elapsed span into a market-time campaign.
+    with pytest.raises(campaign.Refused, match="FIXED_VALUE|MARKET_TIME_ELAPSED_SPAN_MUST_VARY"):
+        make_market_time_campaign(tmp_path, name="fixedspan", short_design=bad)
+
+
+def test_ops_market_time_design_gate_is_independent_of_the_upstream_validator(tmp_path):
+    """The ops-side gate alone must reject every contradictory or incomplete market-time design."""
+    from tests.i6dmo.ops_fakes import sealed_market_time_designs
+    from tools.i6dmo import campaign
+    short, _ = sealed_market_time_designs()
+    sealed = json.loads(short.read_text())
+    assert campaign._design_checks(sealed, mode=campaign.MODE_MARKET_TIME) == []
+    assert "SCHEMA" in campaign._design_checks(sealed, mode=campaign.MODE_ELAPSED)
+    cases = {
+        "MARKET_TIME_CONTRADICTION": dict(sealed, input={"history_span_hours": 24}),
+        "MARKET_TIME_ELAPSED_SPAN_MUST_VARY": dict(
+            sealed, market_time=dict(sealed["market_time"], elapsed_span_fixed=True)),
+        "MARKET_TIME_REQUIRES_EXACT_SLOTS": dict(
+            sealed, market_time=dict(sealed["market_time"], require_exact_market_slots=False)),
+        "MARKET_TIME_MUST_INCLUDE_ORIGIN": dict(
+            sealed, market_time=dict(sealed["market_time"], include_origin=False)),
+        "MARKET_TIME_FIELD_INVALID:observations": dict(
+            sealed, market_time=dict(sealed["market_time"], observations=0)),
+        "MARKET_TIME_FIELD_MISSING:rule": dict(
+            sealed, market_time={k: v for k, v in sealed["market_time"].items() if k != "rule"}),
+        "MARKET_TIME_BLOCK_MISSING": {k: v for k, v in sealed.items() if k != "market_time"},
+    }
+    for expected, design in cases.items():
+        assert expected in campaign._design_checks(design, mode=campaign.MODE_MARKET_TIME), expected
+    # the elapsed path is untouched by any of this
+    from tests.i6dmo.ops_fakes import load_design
+    assert campaign._design_checks(load_design(), mode=campaign.MODE_ELAPSED) == []
 
 
 def test_a_technical_failure_is_a_typed_terminal_without_retries(tmp_path):

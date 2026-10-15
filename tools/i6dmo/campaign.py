@@ -165,10 +165,47 @@ def _git_head():
     return out.stdout.strip()
 
 
-def _design_checks(design):
+ELAPSED_DESIGN_SCHEMA = "i6dmo.design.v1"
+MARKET_TIME_DESIGN_SCHEMA = "i6dmo.market_time_design.v1"
+# Elapsed-grid fields that must never appear beside a market_time block (plan section 2).
+ELAPSED_TIME_FIELDS = ("input", "history_span_hours", "spacing_hours")
+MARKET_TIME_REQUIRED = ("rule", "observations", "spacing_open_market_hours", "span_open_market_hours",
+                        "include_origin", "elapsed_span_fixed", "require_exact_market_slots")
+
+
+def _market_time_checks(design):
+    """Validate the sealed market-time schema: required block, no contradictory elapsed fields."""
     errors = []
-    if design.get("schema") != "i6dmo.design.v1":
+    block = design.get("market_time")
+    if not isinstance(block, dict):
+        return ["MARKET_TIME_BLOCK_MISSING"]
+    missing = [k for k in MARKET_TIME_REQUIRED if k not in block]
+    if missing:
+        errors.append(f"MARKET_TIME_FIELD_MISSING:{missing[0]}")
+    if any(f in design for f in ELAPSED_TIME_FIELDS):
+        errors.append("MARKET_TIME_CONTRADICTION")
+    if block.get("elapsed_span_fixed") is not False:
+        errors.append("MARKET_TIME_ELAPSED_SPAN_MUST_VARY")
+    if block.get("require_exact_market_slots") is not True:
+        errors.append("MARKET_TIME_REQUIRES_EXACT_SLOTS")
+    if block.get("include_origin") is not True:
+        errors.append("MARKET_TIME_MUST_INCLUDE_ORIGIN")
+    for key in ("observations", "spacing_open_market_hours", "span_open_market_hours"):
+        value = block.get(key)
+        if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+            errors.append(f"MARKET_TIME_FIELD_INVALID:{key}")
+    return errors
+
+
+def _design_checks(design, *, mode=None):
+    """Common design gates. ``mode`` selects which schema is admissible for this campaign."""
+    errors = []
+    schema = design.get("schema")
+    expected = MARKET_TIME_DESIGN_SCHEMA if mode == MODE_MARKET_TIME else ELAPSED_DESIGN_SCHEMA
+    if schema != expected:
         errors.append("SCHEMA")
+    elif schema == MARKET_TIME_DESIGN_SCHEMA:
+        errors.extend(_market_time_checks(design))
     splits = design.get("splits", {})
     if splits.get("test", {}).get("open") is not False:
         errors.append("TEST_OPEN_IN_DESIGN")
@@ -179,11 +216,11 @@ def _design_checks(design):
     return errors
 
 
-def _seal_family(design, adapter, family):
+def _seal_family(design, adapter, family, *, mode=None):
     verdict = adapter.validate_design(design)
     if not verdict.get("ok"):
         raise Refused(f"DESIGN_INVALID: {family}: {verdict.get('errors')}")
-    errors = _design_checks(design)
+    errors = _design_checks(design, mode=mode)
     if errors:
         raise Refused(f"{errors[0]}: {family}")
     return dict(design=design, design_sha256=sha256_json(design), validator=verdict,
@@ -198,10 +235,12 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
         raise Refused(f"UNKNOWN_CAMPAIGN_MODE: {mode}")
     if design.get("splits", {}).get("test", {}).get("open") is not False:
         raise Refused("TEST_OPEN_IN_DESIGN")
+    if mode == MODE_MARKET_TIME and design.get("schema") != MARKET_TIME_DESIGN_SCHEMA:
+        raise Refused(f"ELAPSED_DESIGN_IN_MARKET_TIME_CAMPAIGN: {design.get('schema')}")
     if mode == MODE_MARKET_TIME and long_design is None:
         raise Refused("MARKET_TIME_PAIR_REQUIRES_BOTH_DESIGNS: seal MG2 and MG12 before init")
     adapter = _adapter(adapter)
-    short = _seal_family(design, adapter, "short")
+    short = _seal_family(design, adapter, "short", mode=mode)
     root = Path(root)
     if root.exists() and any(root.iterdir()):
         raise Refused("ROOT_NOT_NEW: init never reuses or resurrects an existing campaign root")
@@ -220,7 +259,7 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
     entries = validate_entrypoints(dict(entrypoints or DEFAULT_ENTRYPOINTS))
     long_doc = None
     if long_design is not None:
-        long_doc = _seal_family(json.loads(Path(long_design).read_text()), adapter, "long")
+        long_doc = _seal_family(json.loads(Path(long_design).read_text()), adapter, "long", mode=mode)
         if long_doc["design"]["retraining_frequency"] != design["retraining_frequency"]:
             raise Refused("LONG_CADENCE_DIFFERS")
     effective = _seal(dict(
@@ -410,7 +449,8 @@ def seal_long(root, long_design_path, *, adapter=None):
     effective = load_effective(root)
     if effective.get("long") is not None:
         raise Refused("LONG_ALREADY_SEALED")
-    doc = _seal_family(json.loads(Path(long_design_path).read_text()), _adapter(adapter), "long")
+    doc = _seal_family(json.loads(Path(long_design_path).read_text()), _adapter(adapter), "long",
+                       mode=mode_of(load_effective(root)))
     sealed = _seal(dict(schema="i6dmo.long_effective_config.v1", campaign_effective_sha256=sha256_json(effective),
                         long=doc))
     atomic_json(_paths(root)["long"], sealed)

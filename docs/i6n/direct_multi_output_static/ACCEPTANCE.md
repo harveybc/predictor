@@ -104,5 +104,37 @@ strategy.validation (only on a qualified pair) -> publication/mirror closure`.
 | MTP06 | An elapsed-grid (DS2/ASOF) terminal is refused for a market-time identity even with matching shapes and horizons. | `test_an_elapsed_grid_terminal_is_never_adopted_by_shape_or_horizon_match` |
 | MTP07 | A technical failure is a typed terminal with no retry and no false COMPLETE. | `test_a_technical_failure_is_a_typed_terminal_without_retries` |
 
-All seven are in `tests/i6dmo/test_ops_market_time_pair.py`. PRE: collection error (the market-time
-mode did not exist). POST: 7 passed; whole suite 326 passed.
+All of these are in `tests/i6dmo/test_ops_market_time_pair.py`, and since the market-time review
+(`f07305a2`, B.1/K2) they run against the **real sealed designs** `EXPERIMENT.mg2.json` and
+`EXPERIMENT.mg12.json` through the real model-lane validator; fakes stand in only for the trainers.
+
+| ID | Required falsification / positive control | Test |
+|---|---|---|
+| MTP08 | `init` seals exactly the designs the model lane produced (schema, seal digests, rules, no elapsed fields) and refuses an elapsed `i6dmo.design.v1` design for a market-time campaign. | `test_init_accepts_the_real_sealed_designs_and_refuses_an_elapsed_one` |
+| MTP09 | A contradictory market-time design (elapsed block, or `elapsed_span_fixed=True`) is a typed refusal at whichever layer sees it first. | `test_a_contradictory_market_time_design_is_refused` |
+| MTP10 | The ops-side design gate alone rejects every contradictory or incomplete market-time design, and leaves the elapsed path unchanged. | `test_ops_market_time_design_gate_is_independent_of_the_upstream_validator` |
+
+### Lane coverage this graph depends on (plan section 2)
+
+These rows point at the owning lanes' own tests; the ops suite does not re-certify them.
+
+| Area | Property | Owner | Test |
+|---|---|---|---|
+| DATA | Typed market design; contradictory elapsed fields refused | data | `test_market_bundle.py::test_market_design_is_typed_and_rejects_contradictory_fields`, `::test_frozen_scope_fields_are_enforced` |
+| DATA | Per-example offsets, closure flags, first/last conventions | data | `test_market_bundle.py::test_per_example_offsets_closure_flags_and_first_last_conventions` |
+| DATA | Weekend/DST patterns distinct; unplanned gaps not compressed | data | `test_market_grid.py::test_monday_origin_crosses_weekend_with_exact_friday_slots`, `::test_dst_closures_change_elapsed_span`, `test_market_bundle.py::test_unplanned_gaps_are_not_compressed` |
+| DATA | Current-`t` inclusion and `t+1` perturbation change nothing | data | `test_market_grid.py::test_current_t_and_t_plus_1_perturbations`, `test_market_bundle.py::test_future_perturbation_changes_nothing` |
+| DATA | Exact elapsed targets, C1 masks, split/purge boundaries | data | `test_market_bundle.py::test_targets_are_exact_elapsed_hours_and_masks_are_c1`, `::test_split_and_purge_boundaries` |
+| DATA | Same-row per-horizon naive matches an independent replay | data | `test_market_bundle.py::test_same_row_per_horizon_naive_matches_independent_replay` |
+| DATA | Sealed identities/exclusions reconcile with support study `d2b6a238` | data | `test_market_bundle.py::test_bundle_seals_identities_timestamps_exclusions_and_support_hashes`, `::test_reconciliation_against_the_support_study_is_retained` |
+| DATA | A market bundle is not adoptable as a DS2 bundle; TEST rows refused | data | `test_market_bundle.py::test_market_bundle_is_not_adoptable_as_a_ds2_bundle`, `::test_test_rows_are_refused` |
+| MODEL | MG2/MG12 designs sealed with the frozen scope and every bound identity | model | `test_dmo_market_time.py::test_mg2_and_mg12_designs_are_sealed_with_the_frozen_scope`, `::test_seal_binds_every_required_identity` |
+| MODEL | Fixed elapsed fields beside `market_time` refused; typed refusals | model | `test_dmo_market_time.py::test_fixed_elapsed_fields_alongside_market_time_are_refused`, `::test_market_time_typed_refusals` |
+| MODEL | Encoder uses actual offsets, not slot indices; two context channels | model | `test_dmo_market_time.py::test_encoder_uses_actual_offsets_not_slot_indices_and_appends_two_context_channels` |
+| MODEL | Fixed per-batch grid substitution refused | model | `test_dmo_market_time.py::test_encoder_rejects_fixed_grid_substitution_and_bad_shapes` |
+| MODEL | Controlled weights prove the real time inputs reach the model | model | `test_dmo_market_time.py::test_controlled_weights_prove_actual_time_inputs_reach_the_model` |
+| MODEL | Serialization reloads all inputs including time and closure | model | `test_dmo_market_time.py::test_serialization_reloads_all_inputs_including_time_and_closure` |
+| MODEL | No donor compatible by shape alone; DS2 families untouched | model | `test_dmo_market_time.py::test_no_donor_is_compatible_by_shape_alone`, `::test_ds2_and_other_elapsed_families_are_untouched` |
+
+Independent review `f07305a2` reported FIX_REQUIRED with blockers B-1/B-2/B-4 in the model lane and
+B-3 (K2) in ops; the ops blocker is fixed here and MTP08-MTP10 are its regressions.
