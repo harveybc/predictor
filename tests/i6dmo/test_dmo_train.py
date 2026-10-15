@@ -195,7 +195,7 @@ def test_dmo10_train_unit_end_to_end_restore_and_reload(tmp_path):
                             capture_output=True, text=True, cwd=REPO, env=ENV, check=False)
     assert replay.returncode == 0, replay.stdout[-1500:] + replay.stderr[-1500:]
     verdict = json.loads(replay.stdout)
-    assert verdict["status"] == "MATCH" and verdict["bitwise"] is True
+    assert verdict["status"] == "EXACT"
     assert verdict["tf_imported_before_flags"] is False
     training = json.loads((out / "TRAINING.json").read_text())
     hist = training["history"]
@@ -241,7 +241,7 @@ def test_dmo10_train_unit_end_to_end_restore_and_reload(tmp_path):
     cpu_replay = subprocess.run([sys.executable, "-m", "tools.i6dmo.replay_monitor", "--design",
                                  str(DESIGN), "--bundle", str(bundle), "--unit", str(out), "--json"],
                                 capture_output=True, text=True, cwd=REPO, env=ENV, check=False)
-    assert json.loads(cpu_replay.stdout)["status"] == "MATCH"  # CPU end-to-end stays BITWISE
+    assert json.loads(cpu_replay.stdout)["status"] == "EXACT"  # CPU end-to-end stays exact
     assert monitored == hist[best]["monitored"]  # bitwise: identical evaluation procedure
     assert fm_r["sums"] == record["fit"]["sums"] and fm_r["counts"] == record["fit"]["counts"]
     assert im_r["sums"] == record["inner"]["sums"] and im_r["counts"] == record["inner"]["counts"]
@@ -407,9 +407,9 @@ def test_static_algorithm_flags_are_forced_recorded_and_enforced(tmp_path):
         T.replay_monitored(bundle.forecast_model, fit, inner, good)
 
 
-def test_monitor_tolerance_v2_bound_arithmetic_and_refusals(tmp_path):
-    """v2 floor: |delta| <= 1e-9 + 5e-5*|recorded| on partial sums/monitored, GPU-scope,
-    activating only with confirmed static flags; beyond-bound and unflagged stay hard."""
+def test_sealed_numeric_equivalence_protocol_scope_and_bounds(tmp_path, monkeypatch):
+    """Musashi points 1-2: sealed protocol identity; GPU AND cross-process proven, not inferred;
+    old receipts never inherit; near-zero/boundary/over-bound; CPU and same-process stay exact."""
     import copy
     from tools.i6dmo import model as M
     bundle = M.build_dmo(M.model_config(["a", "b"]))
@@ -417,34 +417,81 @@ def test_monitor_tolerance_v2_bound_arithmetic_and_refusals(tmp_path):
     x = rng.normal(size=(30, 13, 2)).astype("float32")
     y, mask = rng.normal(size=(30, 6)), np.ones((30, 6), bool)
     fit, inner = (x, y, mask), (x[:8], y[:8], mask[:8])
+    protocol = T.floor_protocol_identity()
+    assert protocol["formula"] == "abs(actual - reference) <= atol + rtol * abs(reference)"
+    assert protocol["reference"] == "recorded_fit_time_value"
+    assert (protocol["rtol"], protocol["atol"]) == (5e-5, 1e-9)
+    assert protocol["label"] == "NUMERICALLY_EQUIVALENT"
+    assert protocol["scope"] == "gpu_cross_process_monitor_replay_only"
+    assert protocol["dtype"] == "float64"
+    assert protocol["runtime"]["tensorflow"] and protocol["protocol_sha256"]
     base = {"procedure": "i6dmo.monitor_eval.v2", "batch_size": 15, "graph": "inference",
             "partition": "sequential_row_id_fixed", "monitor_instance": "canonical_loader_rebuild",
             "input_materialization": T.MONITOR_INPUT, "monitor_forward": T.monitor_forward_identity(),
-            "determinism_flags": T.current_determinism_flags()}
+            "determinism_flags": T.current_determinism_flags(), "floor_protocol": protocol,
+            "recording": {"device": "gpu", "process_uuid": "f" * 32}}
     _, _, monitored, witness = T.evaluate_monitored(bundle.forecast_model, fit, inner, 15)
     record = dict(base, witness=witness, monitored=monitored)
-    assert T.MONITOR_TOLERANCE == {"version": "v2", "rtol": 5e-5, "atol": 1e-9,
-                                   **{k: T.MONITOR_TOLERANCE[k] for k in T.MONITOR_TOLERANCE
-                                      if k not in ("version", "rtol", "atol")}}
-    exact = T.replay_monitored(bundle.forecast_model, fit, inner, record)
-    assert exact[3]["status"] == "BITWISE" and exact[3]["within_floor"] == []
-    within = copy.deepcopy(record)
-    for row in within["witness"]["fit"]["batches"]:
-        row["partial_sums"] = [v * (1 + 2e-5) + 5e-10 for v in row["partial_sums"]]  # inside floor
-    within["monitored"] = monitored * (1 + 2e-5)
-    fm, im, got, report = T.replay_monitored(bundle.forecast_model, fit, inner, within)
-    assert report["status"] == "WITHIN_DECLARED_FLOOR"
-    assert report["within_floor"] and all(e["max_abs_delta"] <= e["max_allowed"]
-                                          for e in report["within_floor"])
-    assert got == monitored  # the recompute itself is unchanged; only the comparison tolerates
+
+    def within(rec):  # a delta inside atol + rtol*|reference| on every sum and the monitored value
+        rec = copy.deepcopy(rec)
+        for split in ("fit", "inner"):
+            for row in rec["witness"][split]["batches"]:
+                row["partial_sums"] = [v * (1 + 2e-5) + 5e-10 for v in row["partial_sums"]]
+        rec["monitored"] = rec["monitored"] * (1 + 2e-5)
+        return rec
+
+    monkeypatch.setattr(T, "_gpu_visible", lambda: True)  # simulated same-environment GPU replay
+    fm, im, got, report = T.replay_monitored(bundle.forecast_model, fit, inner, within(record))
+    assert report["status"] == "NUMERICALLY_EQUIVALENT" and report["context"] == "gpu_cross_process"
+    assert report["within_floor"] and got == monitored
+    # Same-process corruption: proven context, not flags, gates the protocol.
+    same_proc = within(record)
+    same_proc["recording"]["process_uuid"] = T.PROCESS_IDENTITY["uuid"]
+    with pytest.raises(T.TrainDisposition, match="MONITOR_WITNESS_DIVERGENCE"):
+        T.replay_monitored(bundle.forecast_model, fit, inner, same_proc)
+    # CPU-recorded receipt with GPU-style flags: refused (scope is proven, never inferred).
+    cpu_rec = within(record)
+    cpu_rec["recording"]["device"] = "cpu"
+    with pytest.raises(T.TrainDisposition, match="MONITOR_WITNESS_DIVERGENCE"):
+        T.replay_monitored(bundle.forecast_model, fit, inner, cpu_rec)
+    # An old receipt (no sealed protocol) can never inherit the new rule: original FAIL kept.
+    old = within(record)
+    del old["floor_protocol"]
+    with pytest.raises(T.TrainDisposition, match="MONITOR_WITNESS_DIVERGENCE"):
+        T.replay_monitored(bundle.forecast_model, fit, inner, old)
+    # A different sealed protocol is a typed mismatch, not a silent inheritance.
+    foreign = within(record)
+    foreign["floor_protocol"] = dict(protocol, rtol=1e-3, protocol_sha256="0" * 64)
+    with pytest.raises(T.TrainDisposition, match="MONITOR_PROTOCOL_MISMATCH"):
+        T.replay_monitored(bundle.forecast_model, fit, inner, foreign)
+    # Near-zero handling (atol), boundary acceptance and over-bound rejection.
+    assert T.floor_satisfied(5e-10, 0.0) and not T.floor_satisfied(2e-9, 0.0)
+    ref = 2.0
+    assert T.floor_satisfied(ref + (1e-9 + 5e-5 * ref), ref)          # boundary inclusive
+    assert not T.floor_satisfied(ref + (1e-9 + 5e-5 * ref) * 1.01, ref)
     beyond = copy.deepcopy(record)
-    beyond["witness"]["fit"]["batches"][0]["partial_sums"][0] *= 1.001  # beyond the floor
+    beyond["witness"]["fit"]["batches"][0]["partial_sums"][0] *= 1.001
     with pytest.raises(T.TrainDisposition, match="MONITOR_WITNESS_DIVERGENCE"):
         T.replay_monitored(bundle.forecast_model, fit, inner, beyond)
-    unflagged = copy.deepcopy(within)
-    del unflagged["determinism_flags"]  # the floor never activates without confirmed static flags
-    with pytest.raises(T.TrainDisposition, match="MONITOR_WITNESS_DIVERGENCE"):
-        T.replay_monitored(bundle.forecast_model, fit, inner, unflagged)
+    # Cross-device (GPU record, no GPU here): separately typed, never graded as equal or defect.
+    monkeypatch.setattr(T, "_gpu_visible", lambda: False)
+    with pytest.raises(T.TrainDisposition, match="CROSS_DEVICE_NOT_COMPARABLE"):
+        T.replay_monitored(bundle.forecast_model, fit, inner, within(record))
+
+
+def test_decision_impact_near_tie_negative_control():
+    """Musashi point 4: REPORT whether the measured uncertainty could flip stopping decisions."""
+    near = [1.0, 0.993, 0.9929932, 0.9930]            # gaps ~7e-6 < 1.82e-5 relative scale
+    impact = T.stopping_decision_impact(near, min_delta=1e-8, patience=10,
+                                        relative_uncertainty=T.MEASURED_MONITOR_UNCERTAINTY_REL)
+    assert impact["could_change_best_epoch"] is True
+    assert impact["could_change_patience_or_stop"] is True
+    assert impact["relative_uncertainty"] == T.MEASURED_MONITOR_UNCERTAINTY_REL
+    separated = [1.0, 0.9, 0.8, 0.85]
+    impact = T.stopping_decision_impact(separated, min_delta=1e-8, patience=10,
+                                        relative_uncertainty=T.MEASURED_MONITOR_UNCERTAINTY_REL)
+    assert impact["could_change_best_epoch"] is False
 
 def test_init_order_witness_recorded_and_preimported_record_refused():
     """A record produced where TF initialized before the flags never scores."""
@@ -480,7 +527,7 @@ def test_weights_at_witness_and_row_forward_witness_recorded_and_enforced(tmp_pa
     # (1) weights-at-witness: recorded at monitor time, equal to the saved-file digests here.
     assert witness["weights_at_witness"] == model_doc["weight_tensors"]
     verdict = R.replay_unit(DESIGN, bundle, tmp_path / "u")
-    assert verdict["status"] == "MATCH" and verdict["weights_at_witness_match"] is True
+    assert verdict["status"] == "EXACT" and verdict["weights_at_witness_match"] is True
     # A mutated recorded digest is a typed mismatch naming the tensors.
     t_path = tmp_path / "u" / "TRAINING.json"
     corrupted = json.loads(t_path.read_text())
@@ -510,7 +557,9 @@ def test_weights_at_witness_and_row_forward_witness_recorded_and_enforced(tmp_pa
     _, _, _, report = T.replay_monitored(*args, record, ids=(fit_rows["row_id"], inner_rows["row_id"]))
     diag = report["row_forward_diagnostics"]["fit"]
     assert 3 in diag["first_divergent_rows"] and diag["uniform_delta_pattern"] is False
-    assert report["status"] == "BITWISE"  # diagnostics never grade; sums stayed bitwise
+    assert report["status"] == "EXACT"  # diagnostics never grade; monitor forward tensors are
+    # recorded diagnostics and are NEVER claimed bitwise; exported reload/serving equality is a
+    # separate exact check in its own named context (load_dmo, same process)
 
 
 def test_tf32_is_disabled_flags_first_and_recorded():
@@ -548,7 +597,7 @@ def test_input_witness_recorded_and_a_rederived_input_is_refused(tmp_path):
     assert witness["fit"]["batches"][0]["input_sha256"]
     assert len(witness["fit"]["batch0_input_row_sha256"]) == witness["fit"]["batches"][0]["rows"]
     assert len(witness["fit"]["batch0_input_rows_hex"]) == min(8, len(x32))
-    assert R.replay_unit(DESIGN, bundle, tmp_path / "u")["status"] == "MATCH"
+    assert R.replay_unit(DESIGN, bundle, tmp_path / "u")["status"] == "EXACT"
     # A deliberately RE-DERIVED input (float32-pipeline normalization instead of the canonical
     # float64-normalize-then-single-cast) is refused with the first divergent rows named.
     mean32 = np.asarray(scales["input_mean"], np.float32)
@@ -581,6 +630,11 @@ def test_dedicated_monitor_forward_recorded_and_training_graph_record_refused(tm
     training = json.loads((tmp_path / "u" / "TRAINING.json").read_text())
     record = training["monitor_evaluation"]
     assert record["monitor_forward"]["id"] == "i6dmo.monitor_forward.v1"
+    assert record["floor_protocol"]["protocol_sha256"] == T.floor_protocol_identity()["protocol_sha256"]
+    assert record["recording"]["device"] == "cpu" and record["recording"]["process_uuid"]
+    assert set(record["decision_impact"]) >= {"could_change_best_epoch",
+                                              "could_change_patience_or_stop",
+                                              "relative_uncertainty"}
     assert record["monitor_forward"]["source_sha256"] == T.monitor_forward_identity()["source_sha256"]
     assert record["witness"]["forward"] == record["monitor_forward"]
     assert R.replay_unit(DESIGN, bundle, tmp_path / "u")["status"] == "MATCH"
