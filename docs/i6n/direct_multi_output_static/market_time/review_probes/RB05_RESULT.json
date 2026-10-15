@@ -1,0 +1,360 @@
+{
+ "controls": {
+  "B1_sealed_model_block_builds": {
+   "mg12": {
+    "build_dmo": "ACCEPTED",
+    "byte_equal_to_model_config_control": true,
+    "control_sha256": "fa7e19b47e7ca923",
+    "core_input_channels": 78,
+    "counterexample_non_null_fixed_ladder": "ValueError:FIXED_VALUE: a market-time model has no fixed offsets_hours grid; offsets are per-example inputs",
+    "counterexample_tampered_fitted_flag": "ValueError:FIXED_VALUE: the sealed time_encoder identity does not match 1.0.0 DynamicPhysicalTimeEncoder",
+    "counterexample_tampered_unit_conversion": "ValueError:FIXED_VALUE: the sealed time_encoder identity does not match 1.0.0 DynamicPhysicalTimeEncoder",
+    "effective_config_sha256": "0853f6d95bc3b70166a469011ba7a8d7f92e740089378e355bb6692c3810dd2f",
+    "head_names": [
+     "h18",
+     "h24",
+     "h36",
+     "h48",
+     "h60",
+     "h72"
+    ],
+    "input_names": [
+     "observations",
+     "offsets_hours",
+     "closure_crossed"
+    ],
+    "model_block_keys": [
+     "branch",
+     "core",
+     "features",
+     "heads",
+     "horizons_hours",
+     "market_time",
+     "offsets_hours",
+     "positional_encoding",
+     "regime",
+     "schema",
+     "seed",
+     "slots",
+     "time_encoder"
+    ],
+    "normalize": "ACCEPTED",
+    "normalized_sha256": "fa7e19b47e7ca923",
+    "time_encoder_declares_24": true,
+    "time_encoder_fitted_false": true,
+    "time_encoder_identity": {
+     "context_channels": [
+      "adjacent_elapsed_hours_over_24",
+      "closure_crossed"
+     ],
+     "context_rule": "appended AFTER the encoded values and BEFORE the core; slot 0 has adjacent delta 0 and closure flag 0",
+     "dtype": "float32",
+     "fitted": false,
+     "formula": "code[s, c] = sin(offset_hours[s] * 10000^(-2*(c//2)/C)) for even c, cos(...) for odd c, added to the C fused value channels; evaluated on ACTUAL signed offsets, never ordinal slot indices",
+     "guards": "typed ORDINAL_OR_INVALID_OFFSETS when the last offset is not exactly 0, any offset is > 0, the first closure flag is not 0, or an adjacent elapsed delta is below the design's spacing_open_market_hours (ordinal slot indices, future offsets and compressed ladders are refused, not merely numerically different)",
+     "inputs": [
+      "fused_values(batch, slots, 4*n_features)",
+      "offsets_hours(batch, slots) signed UTC hours from t, last exactly 0",
+      "closure_crossed(batch, slots) 0/1, first slot 0"
+     ],
+     "layer": "i6dmo.DynamicPhysicalTimeEncoder",
+     "min_adjacent_hours": "design.market_time.spacing_open_market_hours",
+     "output_shape": "(batch, slots, C + 2)  # 19 branches -> 76 + 2 = 78",
+     "per_example_inputs_required": true,
+     "position": "immediately_after_branch_fusion",
+     "slot_order_is_not_wall_clock": true,
+     "unit_conversion_hours": 24,
+     "version": "1.0.0"
+    },
+    "time_encoder_two_context_channels": true,
+    "verdict": "PASS"
+   },
+   "mg2": {
+    "build_dmo": "ACCEPTED",
+    "byte_equal_to_model_config_control": true,
+    "control_sha256": "8c29a338a7312edb",
+    "core_input_channels": 78,
+    "counterexample_non_null_fixed_ladder": "ValueError:FIXED_VALUE: a market-time model has no fixed offsets_hours grid; offsets are per-example inputs",
+    "counterexample_tampered_fitted_flag": "ValueError:FIXED_VALUE: the sealed time_encoder identity does not match 1.0.0 DynamicPhysicalTimeEncoder",
+    "counterexample_tampered_unit_conversion": "ValueError:FIXED_VALUE: the sealed time_encoder identity does not match 1.0.0 DynamicPhysicalTimeEncoder",
+    "effective_config_sha256": "920332aed3997b56a0fce19ced25c2d48abeff77ebb227ce6cff368c311ad768",
+    "head_names": [
+     "h2",
+     "h3",
+     "h4",
+     "h5",
+     "h6",
+     "h12"
+    ],
+    "input_names": [
+     "observations",
+     "offsets_hours",
+     "closure_crossed"
+    ],
+    "model_block_keys": [
+     "branch",
+     "core",
+     "features",
+     "heads",
+     "horizons_hours",
+     "market_time",
+     "offsets_hours",
+     "positional_encoding",
+     "regime",
+     "schema",
+     "seed",
+     "slots",
+     "time_encoder"
+    ],
+    "normalize": "ACCEPTED",
+    "normalized_sha256": "8c29a338a7312edb",
+    "time_encoder_declares_24": true,
+    "time_encoder_fitted_false": true,
+    "time_encoder_identity": {
+     "context_channels": [
+      "adjacent_elapsed_hours_over_24",
+      "closure_crossed"
+     ],
+     "context_rule": "appended AFTER the encoded values and BEFORE the core; slot 0 has adjacent delta 0 and closure flag 0",
+     "dtype": "float32",
+     "fitted": false,
+     "formula": "code[s, c] = sin(offset_hours[s] * 10000^(-2*(c//2)/C)) for even c, cos(...) for odd c, added to the C fused value channels; evaluated on ACTUAL signed offsets, never ordinal slot indices",
+     "guards": "typed ORDINAL_OR_INVALID_OFFSETS when the last offset is not exactly 0, any offset is > 0, the first closure flag is not 0, or an adjacent elapsed delta is below the design's spacing_open_market_hours (ordinal slot indices, future offsets and compressed ladders are refused, not merely numerically different)",
+     "inputs": [
+      "fused_values(batch, slots, 4*n_features)",
+      "offsets_hours(batch, slots) signed UTC hours from t, last exactly 0",
+      "closure_crossed(batch, slots) 0/1, first slot 0"
+     ],
+     "layer": "i6dmo.DynamicPhysicalTimeEncoder",
+     "min_adjacent_hours": "design.market_time.spacing_open_market_hours",
+     "output_shape": "(batch, slots, C + 2)  # 19 branches -> 76 + 2 = 78",
+     "per_example_inputs_required": true,
+     "position": "immediately_after_branch_fusion",
+     "slot_order_is_not_wall_clock": true,
+     "unit_conversion_hours": 24,
+     "version": "1.0.0"
+    },
+    "time_encoder_two_context_channels": true,
+    "verdict": "PASS"
+   },
+   "verdict": "PASS"
+  },
+  "B2_trainer_consumes_the_market_bundle": {
+   "bundles_built": [
+    "mg2",
+    "mg12",
+    "ds2(elapsed, for the cross-adoption controls)"
+   ],
+   "mg12": {
+    "assembled_input_count": 3,
+    "assembled_shapes": [
+     [
+      15640,
+      13,
+      19
+     ],
+     [
+      15640,
+      13
+     ],
+     [
+      15640,
+      13
+     ]
+    ],
+    "cli_returncode": 0,
+    "counterexample_elapsed_bundle_under_market_design": "BUNDLE_SCHEMA:BUNDLE_SCHEMA: a market-time design requires i6dmo.market_bundle.v1, got 'i6dmo.data_bundle.v1'",
+    "counterexample_market_bundle_under_elapsed_design": "BUNDLE_SCHEMA:BUNDLE_SCHEMA: a market-time bundle is never adopted by an elapsed design",
+    "counterexample_wrong_market_rule": "MARKET_RULE_MISMATCH:MARKET_RULE_MISMATCH: bundle rule 'MG2_MARKET_EXACT' != design 'MG12_MARKET_EXACT'",
+    "fit_arrays": [
+     "closure_crossed",
+     "mask",
+     "offsets_hours",
+     "origin_price",
+     "row_id",
+     "target_price",
+     "x"
+    ],
+    "kind": "market",
+    "load_data_bundle": "LOADED",
+    "receipt_artifacts": [
+     "SCALES.json",
+     "TRAINING.json",
+     "model/MODEL.json",
+     "model/forecast_model.keras",
+     "predictions/fit.npz",
+     "predictions/inner.npz",
+     "predictions/validation.npz"
+    ],
+    "receipt_device": "cpu",
+    "receipt_effective_config_sha256": "0853f6d95bc3b70166a469011ba7a8d7f92e740089378e355bb6692c3810dd2f",
+    "receipt_epochs": 2,
+    "receipt_market_time": {
+     "bundle_schema": "i6dmo.market_bundle.v1",
+     "elapsed_span_fixed": false,
+     "include_origin": true,
+     "observations": 13,
+     "require_exact_market_slots": true,
+     "rule": "MG12_MARKET_EXACT",
+     "slot_order_is_not_wall_clock": true,
+     "spacing_open_market_hours": 12,
+     "span_open_market_hours": 144,
+     "time_inputs": [
+      "offsets_hours",
+      "closure_crossed"
+     ]
+    },
+    "receipt_scientific": false,
+    "receipt_status": "COMPLETED",
+    "splits_loaded": [
+     "fit",
+     "inner",
+     "validation"
+    ],
+    "verdict": "PASS"
+   },
+   "mg2": {
+    "assembled_input_count": 3,
+    "assembled_shapes": [
+     [
+      18856,
+      13,
+      19
+     ],
+     [
+      18856,
+      13
+     ],
+     [
+      18856,
+      13
+     ]
+    ],
+    "cli_returncode": 0,
+    "counterexample_elapsed_bundle_under_market_design": "BUNDLE_SCHEMA:BUNDLE_SCHEMA: a market-time design requires i6dmo.market_bundle.v1, got 'i6dmo.data_bundle.v1'",
+    "counterexample_market_bundle_under_elapsed_design": "BUNDLE_SCHEMA:BUNDLE_SCHEMA: a market-time bundle is never adopted by an elapsed design",
+    "counterexample_wrong_market_rule": "MARKET_RULE_MISMATCH:MARKET_RULE_MISMATCH: bundle rule 'MG12_MARKET_EXACT' != design 'MG2_MARKET_EXACT'",
+    "fit_arrays": [
+     "closure_crossed",
+     "mask",
+     "offsets_hours",
+     "origin_price",
+     "row_id",
+     "target_price",
+     "x"
+    ],
+    "kind": "market",
+    "load_data_bundle": "LOADED",
+    "receipt_artifacts": [
+     "SCALES.json",
+     "TRAINING.json",
+     "model/MODEL.json",
+     "model/forecast_model.keras",
+     "predictions/fit.npz",
+     "predictions/inner.npz",
+     "predictions/validation.npz"
+    ],
+    "receipt_device": "cpu",
+    "receipt_effective_config_sha256": "920332aed3997b56a0fce19ced25c2d48abeff77ebb227ce6cff368c311ad768",
+    "receipt_epochs": 2,
+    "receipt_market_time": {
+     "bundle_schema": "i6dmo.market_bundle.v1",
+     "elapsed_span_fixed": false,
+     "include_origin": true,
+     "observations": 13,
+     "require_exact_market_slots": true,
+     "rule": "MG2_MARKET_EXACT",
+     "slot_order_is_not_wall_clock": true,
+     "spacing_open_market_hours": 2,
+     "span_open_market_hours": 24,
+     "time_inputs": [
+      "offsets_hours",
+      "closure_crossed"
+     ]
+    },
+    "receipt_scientific": false,
+    "receipt_status": "COMPLETED",
+    "splits_loaded": [
+     "fit",
+     "inner",
+     "validation"
+    ],
+    "verdict": "PASS"
+   },
+   "verdict": "PASS"
+  },
+  "B3_campaign_accepts_and_validates_the_sealed_designs": {
+   "elapsed_path_unchanged": "ACCEPTED",
+   "improvised_write_market_time_designs_still_present": false,
+   "refusal_elapsed_design_in_market_time_mode": "Refused:SCHEMA: short",
+   "refusal_elapsed_span_fixed_true": "Refused:DESIGN_INVALID: short: ['FIXED_VALUE']",
+   "refusal_history_span_hours_alongside_market_time": "Refused:DESIGN_INVALID: short: ['MARKET_TIME_CONTRADICTION']",
+   "refusal_include_origin_false": "Refused:DESIGN_INVALID: short: ['FIXED_VALUE']",
+   "refusal_input_block_alongside_market_time": "Refused:DESIGN_INVALID: short: ['MARKET_TIME_CONTRADICTION']",
+   "refusal_market_design_in_elapsed_mode": "Refused:SCHEMA: short",
+   "refusal_require_exact_market_slots_false": "Refused:DESIGN_INVALID: short: ['FIXED_VALUE']",
+   "refusal_spacing_hours_alongside_market_time": "Refused:DESIGN_INVALID: short: ['MARKET_TIME_CONTRADICTION']",
+   "seal_family_mg12": "ACCEPTED",
+   "seal_family_mg2": "ACCEPTED",
+   "typed_token_in_init": true,
+   "verdict": "PASS"
+  },
+  "B4_ordinal_and_impossible_ladders_caught": {
+   "legitimate_ladder__encoder": "ACCEPTED",
+   "legitimate_ladder__model_predict": "ACCEPTED",
+   "legitimate_ladder__trainer_assembly": "ACCEPTED",
+   "ordinal_slot_indices__encoder": "InvalidArgumentError:Exception encountered when calling DynamicPhysicalTimeEncoder.call().\n\n\u001b[1mExpected 'tf.Tensor(False, shape=(), dtype=bo",
+   "ordinal_slot_indices__model_predict": "InvalidArgumentError:Exception encountered when calling DynamicPhysicalTimeEncoder.call().\n\n\u001b[1mExpected 'tf.Tensor(False, shape=(), dtype=bo",
+   "ordinal_slot_indices__trainer_assembly": "ORDINAL_OR_INVALID_OFFSETS:ORDINAL_OR_INVALID_OFFSETS: adjacent elapsed hours 1.0 below the tightest declared market spacing: ordinal slot indices ",
+   "positive_future_offset__encoder": "InvalidArgumentError:Exception encountered when calling DynamicPhysicalTimeEncoder.call().\n\n\u001b[1mExpected 'tf.Tensor(False, shape=(), dtype=bo",
+   "positive_future_offset__model_predict": "InvalidArgumentError:Exception encountered when calling DynamicPhysicalTimeEncoder.call().\n\n\u001b[1mExpected 'tf.Tensor(False, shape=(), dtype=bo",
+   "positive_future_offset__trainer_assembly": "ORDINAL_OR_INVALID_OFFSETS:ORDINAL_OR_INVALID_OFFSETS: the last offset must be exactly 0 (the origin tick)",
+   "verdict": "PASS"
+  },
+  "PIN_discipline_and_acceptance_rows": {
+   "acceptance_rows": {
+    "has_data_rows": true,
+    "mtp08_10_present": true,
+    "mtp_ids": [
+     "MTP01",
+     "MTP02",
+     "MTP03",
+     "MTP04",
+     "MTP05",
+     "MTP06",
+     "MTP07",
+     "MTP08",
+     "MTP08,",
+     "MTP09",
+     "MTP10"
+    ],
+    "references_test_market_time_fit_path": false
+   },
+   "mg12": {
+    "design_sha256_matches": true,
+    "effective_matches": true,
+    "file_sha256_matches": true,
+    "seal_sha256_matches": true,
+    "supersedes_recorded": "8c10a9ca (pre-review seal)"
+   },
+   "mg2": {
+    "design_sha256_matches": true,
+    "effective_matches": true,
+    "file_sha256_matches": true,
+    "seal_sha256_matches": true,
+    "supersedes_recorded": "169fbece (pre-review seal; the encoder identity gained the ordinal/compressed-ladder guards)"
+   },
+   "pins_asserted_by_the_suite": true,
+   "verdict": "PASS"
+  }
+ },
+ "pin": "116bbef4",
+ "probe": "RB05_reverification",
+ "verdict": {
+  "B1_sealed_model_block_builds": "PASS",
+  "B2_trainer_consumes_the_market_bundle": "PASS",
+  "B3_campaign_accepts_and_validates_the_sealed_designs": "PASS",
+  "B4_ordinal_and_impossible_ladders_caught": "PASS",
+  "PIN_discipline_and_acceptance_rows": "PASS"
+ }
+}

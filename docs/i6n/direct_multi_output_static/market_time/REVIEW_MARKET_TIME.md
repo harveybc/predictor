@@ -530,3 +530,81 @@ paths and host names.
 No statement in this review certifies any lane's code beyond what its own
 executed control shows. This reviewer wrote none of the reviewed implementation
 and does not self-certify the probes' subject.
+
+---
+
+## Re-verification: 116bbef4
+
+Bounded re-verification of the four blockers of section B.1 only, at
+`satoshi/i6dmo-static-20261014` @ `116bbef4` (model `3cfcb59d` + ops `0884cf9a`
+verified as ancestors; test-first discipline visible: `ca1d664b` adds the
+PRE-failing real-seam tests before the fix). The already-passing plan-section-6
+battery was **not** re-run (the candidate suite at this pin: **386 passed**,
+474 s, CPU, one bounded job — the coordinator's count reproduces) — `tools/i6dmo/market_grid.py` is byte-unchanged by
+these fixes, so RB01's data and metric controls still apply as recorded — and
+DMO10 was not reopened (`MONITOR_TOLERANCE` and the rtol/atol pair have **zero**
+diff lines between the two pins).
+
+**Verdict: ACCEPT_FOR_SCIENTIFIC_EXECUTION.** All four blockers are repaired and
+each repair holds against a counterexample of mine. Probe:
+`review_probes/rb05_reverification.py`, result `review_probes/RB05_RESULT.json`.
+
+| Claim | Verdict | Evidence |
+|---|---|---|
+| B-1 sealed model block builds | **PASS** | both families: `normalize_model_config` ACCEPTED and **byte-equal** to the `model_config(..., family=...)` control; `build_dmo` gives 3 inputs (`observations`, `offsets_hours`, `closure_crossed`) and 78 core channels; the sealed `time_encoder` declares 24 h, `fitted: false` and the two context channels |
+| B-2 trainer consumes the market bundle | **PASS** | `load_data_bundle` LOADED for both, assembling exactly 3 inputs ((18856,13,19)+(18856,13)+(18856,13) for MG2, 15640 rows for MG12); the **REAL CLI returned 0** on both sealed designs against real bundles, receipt `COMPLETED`, `scientific: false`, `overrides {max_epochs: 2, max_rows: 48}`, effective `920332ae` / `0853f6d9`, with the `market_time` receipt block (`bundle_schema`, `time_inputs`, `slot_order_is_not_wall_clock: true`) |
+| B-3 / K2 campaign accepts and validates the sealed schema | **PASS** | `_seal_family` ACCEPTED for both sealed designs under `MARKET_TIME_PAIR`; the elapsed path still ACCEPTS the elapsed design; `write_market_time_designs` is **gone** |
+| B-4 ordinal / impossible ladders caught | **PASS** | my two previously-accepted cases now raise at **both** seams |
+| Pin discipline | **PASS** | file, design, seal and effective digests all match `INTEGRATION_PINS.json`, with `supersedes` recorded, and the pins are asserted by the suite (MTP08) |
+
+Counterexamples executed (none accepted silently):
+
+- **B-1.** A non-null fixed `offsets_hours` ladder in the sealed block →
+  `FIXED_VALUE`; a tampered `unit_conversion_hours: 12` → `FIXED_VALUE`; a
+  tampered `fitted: true` → `FIXED_VALUE`.
+- **B-2.** A DS2 bundle under a market design → typed
+  `BUNDLE_SCHEMA: a market-time design requires i6dmo.market_bundle.v1` (read
+  from the **declared schema**, not a digest error, exactly as claimed); a
+  market bundle under the elapsed design → `BUNDLE_SCHEMA: a market-time bundle
+  is never adopted by an elapsed design`; an MG12 bundle under the MG2 design →
+  `MARKET_RULE_MISMATCH` (and vice versa).
+- **B-3.** `history_span_hours`, `spacing_hours` and an `input` block beside
+  `market_time` → `MARKET_TIME_CONTRADICTION`; `elapsed_span_fixed: true`,
+  `require_exact_market_slots: false` and `include_origin: false` →
+  `FIXED_VALUE`; an elapsed `i6dmo.design.v1` design in market-time mode →
+  `SCHEMA` refusal, with the typed `ELAPSED_DESIGN_IN_MARKET_TIME_CAMPAIGN`
+  token present in `init_campaign`; a market-time design on the **elapsed** path
+  → `SCHEMA`.
+- **B-4.** Ordinal slot indices `arange(-12..0)`: encoder and
+  `predict_matrix` → `InvalidArgumentError` from the layer's assert, trainer
+  assembly → `ORDINAL_OR_INVALID_OFFSETS: adjacent elapsed hours 1.0 below the
+  tightest declared market spacing`. A positive future offset: encoder and
+  `predict_matrix` → `InvalidArgumentError`, trainer assembly →
+  `ORDINAL_OR_INVALID_OFFSETS: the last offset must be exactly 0`. The
+  legitimate ladder is still ACCEPTED at all three seams, so the guards are not
+  blanket refusals.
+
+The reseal is legitimate and scoped: the only content change in
+`EXPERIMENT.mg2.json` / `.mg12.json` is the `time_encoder` identity gaining
+`guards` and `min_adjacent_hours`, plus the new `seal_sha256`. Features, splits,
+horizons, seed, model recipe and training knobs are untouched, and
+`short_effective_unchanged 287e4f11` still holds.
+
+### Non-blocking observations (not conditions)
+
+1. The trainer's assembly uses a **fixed 1.5 h** floor while the encoder uses
+   the design's `spacing_open_market_hours`. For MG12 a ladder compressed to
+   2 h adjacent passes the trainer check and is caught only later at the
+   encoder. Still caught, but the tighter design-derived bound belongs at both
+   seams.
+2. The acceptance matrix's DATA/MODEL rows do not reference
+   `tests/i6dmo/test_market_time_fit_path.py`, which is where the B-1/B-2/B-4
+   regressions live; MTP08-MTP10 and the lane rows are present and correct.
+
+### Missing coverage, unchanged from section B.4
+
+All GPU paths; the real private campaign bundles (`21400c51` / `c3867b5c`) —
+my bundles were rebuilt by the real data-lane code from the synthetic fixture,
+as the lane's own fit-path test also does; and deploy / preflight / init /
+publication against the private root. The CLI runs here are bounded engineering
+checks (48 rows, 2 epochs, `scientific: false`), **not** measurements.
