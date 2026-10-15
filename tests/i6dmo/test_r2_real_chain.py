@@ -184,6 +184,10 @@ def test_r2_contrast_real_chain_pretrain_import_fit_report_decide_publish_close_
         assert donor["campaign_id"] == plan["campaign_id"] and donor["code_pin"] == "c" * 40
         assert donor["objective"]["fit_settings"]["max_epochs"] == 2
         assert donor["learned_corpus"]["sha256"] == term["terminal"]["learned_corpus_sha256"]
+        # C2: the unit process imported the determinism flags BEFORE TensorFlow; C1: device class recorded
+        assert term["terminal"]["tf_imported_before_flags"] is False
+        assert term["terminal"]["determinism"]["init_order"]["tf_imported_before_flags"] is False
+        assert term["terminal"]["device_class"] == "cpu"
     # R2 fit: imports exactly these 19 donors and binds the import record; R0 carries no import
     r2_receipt = json.loads(_stored(root, terms["r2.fit"], "RECEIPT").read_text())
     r0_receipt = json.loads(_stored(root, terms["r0.fit"], "RECEIPT").read_text())
@@ -202,6 +206,14 @@ def test_r2_contrast_real_chain_pretrain_import_fit_report_decide_publish_close_
     assert terms["comparison"]["terminal"]["disposition"] in ("R2_SELECTED", "R0_RETAINED", "INCOMPLETE_COMPARISON")
     probe = json.loads(_stored(root, terms["r2.probe"], "probe").read_text())
     assert probe["use"] == "REPORT_ONLY_NEVER_A_GATE_NEVER_SELECTS"
+    # C3: the probe's actual runtime is disclosed, labelled, and not enforced
+    import tensorflow as tf
+    assert probe["runtime"] == dict(tensorflow=tf.__version__, keras=probe["runtime"]["keras"],
+                                    label="REPORT_ONLY_RUNTIME_NOT_PINNED")
+    probe_fact = next(r for r in terms["r2.probe"]["terminal"]["reports"]
+                      if r["tags"].get("fact") == "r2.pretraining.predictive_probe")
+    assert probe_fact["tags"]["runtime_label"] == "REPORT_ONLY_RUNTIME_NOT_PINNED"
+    assert probe_fact["tags"]["runtime_tensorflow"] == tf.__version__
     # every unit ran exactly once (no repeat of a completed pretraining or fit)
     done = [r[2] for r in chain["results"] if r[1] == "COMPLETE"]
     assert sorted(done) == sorted(chain["states"]) and len(done) == len(set(done)) == 25
@@ -468,3 +480,115 @@ def test_r2_fit_imports_only_this_campaigns_authenticated_donors(chain, tmp_path
         out.parent.mkdir()
         assert unit_runner.run_fit(dict(spec, regime=regime, r2_donors=payload), out, tmp_path / "p.json") == 0
         assert json.loads((out / "TERMINAL.json").read_text())["disposition"] == code
+
+
+TF_FIRST = """
+import json, sys
+import tensorflow  # noqa: F401  (TensorFlow BEFORE the determinism flags: an ungoverned process)
+from tools.i6dmo import r2_runner
+spec = json.load(open(sys.argv[1]))
+body = r2_runner.run_probe if spec["kind"] == "evaluation" else r2_runner.run_pretrain
+doc = body(spec, sys.argv[2], sys.argv[3])
+print("RESULT " + json.dumps(dict(status=doc["status"], disposition=doc["disposition"],
+                                  tf_first=doc.get("tf_imported_before_flags"), artifacts=doc["artifacts"])))
+"""
+
+
+def test_a_process_that_imported_tensorflow_first_is_refused(chain, tmp_path):
+    """C2: the pretraining/probe bodies refuse a process whose TensorFlow predates the static flags."""
+    import os
+    import subprocess
+    import sys
+    for unit_id in ("r2.pretrain.02", "r2.probe"):
+        spec_path = tmp_path / f"{unit_id}.json"
+        spec_path.write_text(json.dumps(_unit_spec(chain, unit_id)))
+        env = {k: v for k, v in os.environ.items() if not k.startswith("TF_")}
+        env.update(CUDA_VISIBLE_DEVICES="", TF_CPP_MIN_LOG_LEVEL="3")
+        proc = subprocess.run([sys.executable, "-c", TF_FIRST, str(spec_path), str(tmp_path / unit_id / "out"),
+                               str(tmp_path / f"{unit_id}.progress.json")], cwd=ROOT, env=env,
+                              capture_output=True, text=True, timeout=300)
+        line = next(x for x in proc.stdout.splitlines() if x.startswith("RESULT "))
+        doc = json.loads(line[len("RESULT "):])
+        assert doc == dict(status="FAILED", disposition="DETERMINISM_INIT_ORDER_INVALID", tf_first=True,
+                           artifacts={}), (unit_id, doc, proc.stderr[-800:])
+
+
+def test_fits_are_held_to_the_sealed_gpu_class_and_a_mixed_decision_is_never_reached(world, chain, tmp_path):
+    """C1: R0 and R2 fit only on the sealed (preferred-role) GPU class; pretraining runs on either GPU
+    role; a fit offered another class waits typed FIT_GPU_CLASS_HOLD (never failed, never relabelled)."""
+    from tools.i6dmo import campaign, status, worker as W
+    contract = json.loads(CONTRACT.read_text())
+    pins = _pins(world)
+    pins["common_population"]["population_sha256"] = contract["shared"]["population_sha256"]
+    root = tmp_path / "sci"
+    out = campaign.init_r2_contrast(CONTRACT, REAL_MG2M, _spec(world, tmp_path), root, code_commit="c" * 40,
+                                    data_pins=pins)
+    effective = campaign.load_effective(root)
+    assert out["fit_gpu_class"] == effective["fit_gpu_class"] == "rtx5090"
+    assert effective["fit_gpu_class_role"] == "preferred"
+    plan, spec = campaign.load_plan(root), campaign.load_deployment(root)
+    units = {u["unit_id"]: u for u in plan["units"]}
+    assert units["r0.fit"]["gpu_class"] == units["r2.fit"]["gpu_class"] == "rtx5090"
+    assert all("gpu_class" not in u for u in units.values() if u["kind"] == "pretrain")
+    picks = []
+    q = campaign.open_queue(root)
+    try:
+        # preferred busy with a pretraining unit: the secondary (other class) may take pretraining
+        busy = q.claim("r2.pretrain.00", owner="w", role="preferred", host_key="host-preferred", boot_id="b",
+                       device_class="rtx5090", heavy=True, ttl=600)
+        assert busy["result"] == "CLAIMED"
+        row = W._pick(q, plan, spec, "secondary")
+        assert row is not None and row["kind"] == "pretrain"
+        for i in range(19):
+            q.set_state(f"r2.pretrain.{i:02d}", "COMPLETE", "SIMULATED")
+        q.set_state("r2.fit", "QUEUED")  # what the tick does once all pretraining is terminal
+        for _ in range(4):  # both fits are ready; alternate the roles until nothing is pickable
+            for role in ("secondary", "preferred"):
+                row = W._pick(q, plan, spec, role)
+                if row is not None and row["kind"] == "fit":
+                    picks.append((role, row["unit_id"]))
+                    q.set_state(row["unit_id"], "COMPLETE", "SIMULATED")
+        held = {u["unit_id"]: (u["state"], u["cause"]) for u in q.units()}
+    finally:
+        q.close()
+    assert sorted(picks) == [("preferred", "r0.fit"), ("preferred", "r2.fit")]
+    # the secondary saw both fits first and held them, typed, without failing either
+    q = campaign.open_queue(root)
+    try:
+        events = [e for e in q.events() if e["event"] == "STATE"
+                  and str((e["detail"] or {}).get("cause", "")).startswith("FIT_GPU_CLASS_HOLD")]
+    finally:
+        q.close()
+    assert {e["unit_id"] for e in events} == {"r0.fit", "r2.fit"}
+    assert {e["detail"]["state"] for e in events} == {"WAIT_RESOURCE"}
+    assert not any(state == "FAILED" for state, _ in held.values())
+    # admission defence: a fit offered another class is held; the sealed class passes
+    assert W.fit_gpu_class_problem(units["r2.fit"], {"class": "rtx4090"}).startswith("FIT_GPU_CLASS_HOLD")
+    assert W.fit_gpu_class_problem(units["r2.fit"], {"class": "rtx5090"}) is None
+    assert W.fit_gpu_class_problem(units["r2.pretrain.03"], {"class": "rtx4090"}) is None
+    # a hold is visible in status while it lasts
+    root2 = tmp_path / "sci2"
+    campaign.init_r2_contrast(CONTRACT, REAL_MG2M, _spec(world, tmp_path), root2, code_commit="d" * 40,
+                              data_pins=pins)
+    q = campaign.open_queue(root2)
+    try:
+        for i in range(19):
+            q.set_state(f"r2.pretrain.{i:02d}", "COMPLETE", "SIMULATED")
+        q.set_state("r2.fit", "QUEUED")
+        q.claim("r0.fit", owner="w", role="preferred", host_key="host-preferred", boot_id="b",
+                device_class="rtx5090", heavy=True, ttl=600)
+        assert W._pick(q, campaign.load_plan(root2), campaign.load_deployment(root2), "secondary") is None
+    finally:
+        q.close()
+    holds = status.compute(root2, level="campaign")["r2"]["fit_gpu_class_holds"]
+    assert [h["unit_id"] for h in holds] == ["r2.fit"]
+    # and a mixed-class pair is never decided: the comparison refuses it (R2_FIT_PINNING), typed
+    root_c, terms = chain["root"], chain["terms"]
+    r0 = json.loads(_stored(root_c, terms["r0.report"], "metrics").read_text())
+    r2 = json.loads(_stored(root_c, terms["r2.report"], "metrics").read_text())
+    record = json.loads(_stored(root_c, terms["r2.fit"], "R2_IMPORT.json").read_text())
+    from tools.i6dmo import r2_design as R2
+    for doc, name in ((r0, "NVIDIA GeForce RTX 5090"), (r2, "NVIDIA GeForce RTX 4090 Laptop GPU")):
+        doc["matched"].update(scientific_fit=True, fit_device="gpu", fit_runtime="2.21.0", fit_gpu_class=name)
+    with pytest.raises(R2.R2DesignError, match="R2_FIT_PINNING"):
+        R2.decide_r2(r0, r2, r2_import_record=record)

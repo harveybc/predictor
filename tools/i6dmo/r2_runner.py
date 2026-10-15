@@ -124,17 +124,32 @@ def _terminal(spec, status, disposition, *, artifacts=None, reports=None, costs=
 
 
 # --------------------------------------------------------------------- pretraining unit
+def init_order_problem():
+    """Import the model module (it sets the static-algorithm flags) BEFORE TensorFlow, and refuse a
+    process that had already imported TensorFlow: its kernel selection is ungoverned (R2-14; the
+    trainer's own witness types the same condition DETERMINISM_INIT_ORDER_INVALID)."""
+    from tools.i6dmo import model as M  # noqa: F401  (flags first; TensorFlow is imported by it)
+    if M.INIT_ORDER["tf_imported_before_flags"] is not False:
+        return "DETERMINISM_INIT_ORDER_INVALID"
+    return None
+
+
 def run_pretrain(spec, out_dir, progress_path):
     """ONE branch-pretraining unit: the ruled objective on this feature's FIT/purged-INNER windows."""
-    import tensorflow as tf
-    from tools.i6dmo import model as M
     started = time.time()
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     spec = dict(spec, _folder=str(out.parent))
     if spec.get("test_open"):
         return _terminal(spec, "FAILED", "TEST_FORBIDDEN")
+    order = init_order_problem()  # imports tools.i6dmo.model (the flags) BEFORE tensorflow
+    from tools.i6dmo import model as M
+    if order:
+        return _terminal(spec, "FAILED", order, costs=dict(fit_seconds=None),
+                         extra=dict(tf_imported_before_flags=M.INIT_ORDER["tf_imported_before_flags"]))
+    import tensorflow as tf
     device = "gpu" if (spec.get("device") or {}).get("gpu_uuid") else "cpu"
+    device_class = (spec.get("device") or {}).get("cls") or device
     receipt_env = M.enable_determinism()
     if device == "gpu" and not tf.config.list_physical_devices("GPU"):
         return _terminal(spec, "FAILED", "NO_GPU_VISIBLE", costs=dict(fit_seconds=None))
@@ -198,12 +213,15 @@ def run_pretrain(spec, out_dir, progress_path):
                  "state": str(recon.get("state"))}),
         _report(spec, "compute", [_metric("Pretrain_Fit_Seconds", fit_seconds, "seconds"),
                                   _metric("Pretrain_Updates", fit.get("observed_updates"), "count")],
-                {"fact": "r2.pretraining.compute_cost", "feature": feature, "device": device})]
+                {"fact": "r2.pretraining.compute_cost", "feature": feature, "device": device,
+                 "device_class": str(device_class)})]
     _progress(progress_path, 4, 4, "done")
     return _terminal(spec, "COMPLETE", "DONOR_WRITTEN", artifacts=artifacts, reports=reports, costs=costs,
                      extra=dict(feature=feature, feature_index=index, applied_seed=pretrained["applied_seed"],
                                 learned_corpus_sha256=corpus["sha256"], determinism=receipt_env,
-                                donor_terminal_sha256=ref["sha256"]))
+                                donor_terminal_sha256=ref["sha256"], device_class=device_class,
+                                gpu_device_names=[d.name for d in tf.config.list_logical_devices("GPU")],
+                                tf_imported_before_flags=M.INIT_ORDER["tf_imported_before_flags"]))
 
 
 # --------------------------------------------------------------------- frozen predictive probe
@@ -236,15 +254,19 @@ def _ridge_probe(phi_fit, y_fit, m_fit, phi_in, y_in, m_in, alpha=1.0):
 def run_probe(spec, out_dir, progress_path):
     """The frozen predictive probe (R2-07): REPORT ONLY. Nothing in the graph depends on it; it never
     gates and never selects (the comparison reads only the two arm reports and the import record)."""
-    import tensorflow as tf
-    from tools.i6dmo import model as M
-    from tools.i6dmo import train as T
     started = time.time()
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     spec = dict(spec, _folder=str(out.parent))
     if spec.get("test_open"):
         return _terminal(spec, "FAILED", "TEST_FORBIDDEN")
+    order = init_order_problem()  # imports tools.i6dmo.model (the flags) BEFORE tensorflow
+    from tools.i6dmo import model as M
+    if order:
+        return _terminal(spec, "FAILED", order, costs=dict(fit_seconds=None),
+                         extra=dict(tf_imported_before_flags=M.INIT_ORDER["tf_imported_before_flags"]))
+    import tensorflow as tf
+    from tools.i6dmo import train as T
     M.enable_determinism()
     try:
         view, effective, population = _context(spec)
@@ -282,7 +304,11 @@ def run_probe(spec, out_dir, progress_path):
     doc = dict(schema="i6dmo.r2_probe.v1", use="REPORT_ONLY_NEVER_A_GATE_NEVER_SELECTS", alpha=1.0,
                population="INNER_COMMON_ORIGINS", coordinate="delta/naive_loss_scale",
                r0_init_mae=r0_probe, pretrained_mae=pre_probe, naive_mae=naive,
-               import_sha256=record["import_sha256"])
+               import_sha256=record["import_sha256"],
+               # C3 (disclosed, not enforced): the probe runs on the executing role's OWN runtime
+               runtime=dict(tensorflow=tf.__version__, keras=M.keras_version(),
+                            label="REPORT_ONLY_RUNTIME_NOT_PINNED"),
+               tf_imported_before_flags=M.INIT_ORDER["tf_imported_before_flags"])
     ratio = lambda v, n: None if v is None or not n else v / n  # noqa: E731
     doc["r0_ratio"] = [ratio(v, n) for v, n in zip(r0_probe, naive)]
     doc["pretrained_ratio"] = [ratio(v, n) for v, n in zip(pre_probe, naive)]
@@ -294,7 +320,10 @@ def run_probe(spec, out_dir, progress_path):
         metrics += [_metric("Probe_R0_Init_MAE_Ratio", a, "ratio", "inner", h),
                     _metric("Probe_Pretrained_MAE_Ratio", b, "ratio", "inner", h)]
     report = _report(spec, "probe", metrics, {"fact": "r2.pretraining.predictive_probe",
-                                              "use": "REPORT_ONLY_NEVER_A_GATE_NEVER_SELECTS"})
+                                              "use": "REPORT_ONLY_NEVER_A_GATE_NEVER_SELECTS",
+                                              "runtime_label": "REPORT_ONLY_RUNTIME_NOT_PINNED",
+                                              "runtime_tensorflow": str(doc["runtime"]["tensorflow"]),
+                                              "runtime_keras": str(doc["runtime"]["keras"])})
     return _terminal(spec, "COMPLETE", "PROBE_REPORTED",
                      artifacts={"probe": dict(path="PROBE.json", sha256=_sha(out / "PROBE.json"))},
                      reports=[report], costs=dict(fit_seconds=None, score_seconds=time.time() - started))

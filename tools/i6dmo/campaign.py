@@ -725,10 +725,12 @@ def _r2_units(effective):
         add(uid, "short", "pretrain", st[0], device, [], _family_sha(effective, "r2_pretrain"),
             feature=feature, feature_index=index, regime="R2_PRETRAIN", resource_class=R2_PRETRAIN_CLASS)
         pretrain.append(uid)
+    # C1: both fits carry the sealed GPU class; the worker holds them for it (FIT_GPU_CLASS_HOLD)
+    gpu_class = effective.get("fit_gpu_class")
     add("r0.fit", "short", "fit", st[1], device, [], _family_sha(effective, "r2_R0"),
-        regime="R0", resource_class=R2_FIT_CLASS["R0"])
+        regime="R0", resource_class=R2_FIT_CLASS["R0"], gpu_class=gpu_class)
     add("r2.fit", "short", "fit", st[1], device, pretrain, _family_sha(effective, "r2_R2"),
-        regime="R2", resource_class=R2_FIT_CLASS["R2"])
+        regime="R2", resource_class=R2_FIT_CLASS["R2"], gpu_class=gpu_class)
     add("r0.report", "short", "report", st[2], "cpu", ["r0.fit"], _family_sha(effective, "r2_R0"), regime="R0")
     add("r2.report", "short", "report", st[2], "cpu", ["r2.fit"], _family_sha(effective, "r2_R2"), regime="R2")
     add("r2.probe", "short", "evaluation", st[2], "cpu", pretrain, _family_sha(effective, "r2_pretrain"),
@@ -830,6 +832,15 @@ def init_r2_contrast(contract_path, design_path, spec_path, root, *, adapter=Non
         raise Refused("ROOT_NOT_NEW: init never reuses or resurrects an existing campaign root")
     spec = json.loads(Path(spec_path).read_text())
     _validate_spec(spec)
+    fit_gpu_class = fit_gpu_role = None
+    if not engineering_cpu_fixture:
+        # C1: R0 and R2 fit on ONE GPU class, sealed here as the preferred (lowest-order) GPU role's
+        # class; pretraining units may run on any GPU role after their own admission.
+        heavy = sorted((role.get("order", 0), name, gpu["class"]) for name, role in spec["roles"].items()
+                       for gpu in role.get("gpus", []) if gpu.get("heavy"))
+        if not heavy:
+            raise Refused("R2_NO_GPU_ROLE: a scientific R2 campaign needs a heavy GPU role")
+        _, fit_gpu_role, fit_gpu_class = heavy[0]
     entries = validate_entrypoints(dict(entrypoints or R2_ENTRYPOINTS),
                                    required=("fit", "report", "comparison", "pretrain", "evaluation"))
     if entries["fit"] in (entries["report"], entries["comparison"], entries["evaluation"]):
@@ -843,6 +854,7 @@ def init_r2_contrast(contract_path, design_path, spec_path, root, *, adapter=Non
         data_sha256=sha256_json(data_pins), entrypoints=entries, prior_roots=[], test_open=False,
         strategy_execution=None, mode=MODE_R2, deployment_sha256=sha256_json(spec), long=None,
         fit_device="cpu" if engineering_cpu_fixture else "gpu", engineering_cpu_fixture=bool(engineering_cpu_fixture),
+        fit_gpu_class=fit_gpu_class, fit_gpu_class_role=fit_gpu_role,
         class_caps=dict(R2_DEFAULT_CLASS_CAPS if class_caps is None else class_caps),
         r2=dict(contract_seal_sha256=contract["seal_sha256"], contract_file_sha256=file_sha256(contract_path),
                 objective=objective, engineering_objective_overrides=overrides, contract_binding=binding,
@@ -876,7 +888,7 @@ def init_r2_contrast(contract_path, design_path, spec_path, root, *, adapter=Non
     write_status(root)
     return dict(campaign_id=campaign_id, effective_config_sha256=eff_sha, root=str(root), mode=MODE_R2,
                 units=[u["unit_id"] for u in plan["units"]], contract_seal_sha256=contract["seal_sha256"],
-                fit_device=effective["fit_device"], contract_binding=binding)
+                fit_device=effective["fit_device"], fit_gpu_class=fit_gpu_class, contract_binding=binding)
 
 
 def _validation_units(effective, eff_sha):

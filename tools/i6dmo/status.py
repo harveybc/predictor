@@ -400,7 +400,11 @@ def compute(root, level="campaign", unit=None, now=None, systemd_probe=None, sil
                                                denominator=sum(1 for u in plan["units"] if u["kind"] == "pretrain"),
                                                failed=[u["unit_id"] for u in plan["units"] if u["kind"] == "pretrain"
                                                        and views[u["unit_id"]]["state"] in ("FAILED", "BLOCKED")]),
-                              probe_use="REPORT_ONLY_NEVER_A_GATE_NEVER_SELECTS")
+                              probe_use="REPORT_ONLY_NEVER_A_GATE_NEVER_SELECTS",
+                              fit_gpu_class=(effective or {}).get("fit_gpu_class"),
+                              fit_gpu_class_holds=[dict(unit_id=v["unit_id"], cause=v["cause"])
+                                                   for v in views.values()
+                                                   if str(v["cause"] or "").startswith("FIT_GPU_CLASS_HOLD")])
     if level == "arm":
         if arm is not None and arm not in arms:
             return dict(schema="i6dmo.status.v1", state="UNKNOWN_ARM", arm=arm)

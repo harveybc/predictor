@@ -456,6 +456,12 @@ def _pick(q, plan, spec, role):
         if row["device"] == "gpu":
             if gpu is None:
                 continue
+            hold = fit_gpu_class_problem(row["spec"], gpu)
+            if hold:
+                # C1: never fail, never relabel; the fit waits typed for its sealed GPU class
+                if row["state"] != "WAIT_RESOURCE" or row["cause"] != hold:
+                    q.set_state(unit["unit_id"], "WAIT_RESOURCE", hold)
+                continue
             refused = set(q.refused_roles(unit["unit_id"]))
             blocked = [r for r in earlier if r not in refused and spec["roles"][r]["host_key"] not in running_hosts]
             if blocked:
@@ -638,7 +644,8 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
         ok, cause, evidence = admit(facts, cap=cap, gpu_uuid=gpu["uuid"] if gpu else None,
                                     reserve=int(role_spec.get("reserve_bytes", HOST_RESERVE)))
         runtime = matched_runtime_problem(effective, unit, facts) or \
-            test_override_problem(effective, extra_env, role_spec) or scientific_device_problem(effective, unit)
+            test_override_problem(effective, extra_env, role_spec) or scientific_device_problem(effective, unit) \
+            or fit_gpu_class_problem(unit, gpu)
         if ok and runtime:  # a refusal routes to another role; never a reseal, never a retry with other caps
             ok, cause = False, runtime[:200]
         q.record_admission(unit["unit_id"], role, ok, cause, cap, evidence)
@@ -730,6 +737,21 @@ def r2_unit_spec(root, q, plan, effective, unit):
 
 #: The only units that receive donors; the R0 fit never does (no import binding on R0).
 R2_DONOR_CONSUMERS = ("r2.fit", "r2.probe")
+
+
+FIT_GPU_CLASS_HOLD = "FIT_GPU_CLASS_HOLD"
+
+
+def fit_gpu_class_problem(unit, gpu):
+    """C1: an R0/R2 fit sealed to a GPU class is claimed only on a role of that class. Anything else
+    is a typed wait (WAIT_RESOURCE FIT_GPU_CLASS_HOLD), never a failure and never a relabel."""
+    wanted = unit.get("gpu_class")
+    if not wanted or unit.get("kind") != "fit":
+        return None
+    actual = (gpu or {}).get("class")
+    if actual == wanted:
+        return None
+    return f"{FIT_GPU_CLASS_HOLD}:{unit['unit_id']} needs {wanted}, role offers {actual}"
 
 
 def scientific_device_problem(effective, unit):

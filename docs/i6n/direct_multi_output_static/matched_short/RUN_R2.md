@@ -59,6 +59,36 @@ Pre-execution refusals keep the existing rules:
 - Once a refusal persists past the bounded threshold, `status` reports it as
   `INFRASTRUCTURE_BLOCKED` or `ADMISSION_BLOCKED`.
 
+### Same GPU class for R0 and R2 (review C1)
+
+A scientific `init` seals `fit_gpu_class` in `EFFECTIVE_CONFIG.json`. It is the class of the
+preferred GPU role, the heavy GPU role with the lowest `order`, and `fit_gpu_class_role` names that
+role. Both `r0.fit` and `r2.fit` carry it as `gpu_class`.
+
+- The worker never claims either fit on a role of another class. The fit waits as `WAIT_RESOURCE`
+  with cause `FIT_GPU_CLASS_HOLD:...`; it is never failed and never relabelled. The same check
+  is repeated at admission.
+- Pretraining units carry no class. They may run on any GPU role after their own admission, and
+  each pretraining terminal records its `device_class` and the GPU device names.
+- Holds are listed under `r2.fit_gpu_class_holds` in campaign status.
+- If the preferred host stays unavailable, the existing bounded typed status applies (service,
+  infrastructure or admission). There is never a fall-back to another class.
+- `decide_r2` still refuses a mixed-class pair (`R2_FIT_PINNING`) as a second line of defence.
+
+### Determinism init order (review C2)
+
+`run_pretrain` and `run_probe` import `tools.i6dmo.model`, which sets the static-algorithm flags,
+before TensorFlow. A process that had already imported TensorFlow is refused with the typed
+terminal `DETERMINISM_INIT_ORDER_INVALID`, and no donor is written. Each pretraining terminal
+records `tf_imported_before_flags` (false in a correct unit process).
+
+### Probe runtime (review C3, disclosed only)
+
+`r2.probe` runs on the executing role's own runtime. The coordinator has TF 2.18.0 / Keras 3.9.0,
+not the 2.21.0 / 3.13.2 pin. `PROBE.json` and the `r2.pretraining.predictive_probe` fact record
+the actual versions with the label `REPORT_ONLY_RUNTIME_NOT_PINNED`. This is not enforced, because
+the probe never gates or selects.
+
 A scientific R2 campaign never admits a CPU fit or pretraining unit
 (`R2_SCIENTIFIC_CPU_FIT_REFUSED`). It never launches a child with an `I6DMO_TEST_*` override in
 reach (`TEST_OVERRIDE_IN_SCIENTIFIC_ENVIRONMENT`). It requires the sealed TF/Keras runtime pin on
@@ -185,4 +215,7 @@ All tests ran on CPU under `crispdm-run -m 3G -t 600s`.
 | Scientific init binds the contract, seals three separate admission classes, has no TEST, and the R2 fit waits for donors | `test_scientific_init_binds_contract_and_seals_separate_admission_classes` |
 | Restart, duplicate claim and outbox retry never repeat a completed pretraining unit or fit | `test_restart_duplicate_claim_and_outbox_retry_never_repeat` |
 | R2 imports only this campaign's authenticated donors, R0 never imports, and an R2 fit without donors never runs | `test_r2_fit_imports_only_this_campaigns_authenticated_donors` |
+| C1: both fits are held to the sealed preferred-role GPU class while pretraining may use either GPU role; a mixed-class decision is never reached | `test_fits_are_held_to_the_sealed_gpu_class_and_a_mixed_decision_is_never_reached`; `test_retsu_r2_runner_review.py::test_r2_fit_must_wait_for_the_r0_gpu_class` |
+| C2: the unit records `tf_imported_before_flags` = false; a process that imported TF first is refused with `DETERMINISM_INIT_ORDER_INVALID` | the real-chain test; `test_a_process_that_imported_tensorflow_first_is_refused` |
+| C3: the probe's actual runtime is recorded as `REPORT_ONLY_RUNTIME_NOT_PINNED` | the real-chain test |
 | Every `python -m tools.i6dmo` line in this document parses | `tests/i6dmo/test_r2_runner_ops.py::test_run_r2_document_names_only_existing_commands` |

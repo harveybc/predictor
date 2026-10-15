@@ -137,9 +137,10 @@ def test_r0_metrics_with_an_import_binding_and_cross_class_fits_are_refused(chai
         R2.decide_r2(a, b, r2_import_record=record)
 
 
-def test_cross_class_placement_is_not_held_at_claim_time(world, tmp_path):
-    """The worker places r2.fit on the secondary (4090) role while r0.fit holds the preferred (5090)
-    host: nothing holds R2 for the R0 class; the mismatch is only refused later, at the decision."""
+def test_cross_class_placement_is_held_at_claim_time(world, tmp_path):
+    """Was the C1 reproduction (r2.fit placed on the secondary 4090 role while r0.fit held the
+    preferred 5090 host). Since the C1 fix the secondary role never picks r2.fit: it is held typed
+    WAIT_RESOURCE FIT_GPU_CLASS_HOLD for the sealed class."""
     from tools.i6dmo import campaign, worker as W
     contract = json.loads(CONTRACT.read_text())
     pins = _pins(world)
@@ -157,14 +158,13 @@ def test_cross_class_placement_is_not_held_at_claim_time(world, tmp_path):
                        device_class="rtx5090", heavy=True, ttl=600)
         assert held["result"] == "CLAIMED"
         picked = W._pick(q, plan, spec, "secondary")
+        row = q.unit("r2.fit")
     finally:
         q.close()
-    assert picked is not None and picked["unit_id"] == "r2.fit"
+    assert picked is None or picked["unit_id"] != "r2.fit"
+    assert row["state"] == "WAIT_RESOURCE" and row["cause"].startswith("FIT_GPU_CLASS_HOLD")
 
 
-@pytest.mark.xfail(strict=True, reason="FAIRNESS: R0 and R2 fits must be placed on the same GPU class (held "
-                                       "until a same-class slot is free); today the decision refuses later "
-                                       "(R2_FIT_PINNING => comparison FAILED, a technical terminal)")
 def test_r2_fit_must_wait_for_the_r0_gpu_class(world, tmp_path):
     from tools.i6dmo import campaign, worker as W
     contract = json.loads(CONTRACT.read_text())
