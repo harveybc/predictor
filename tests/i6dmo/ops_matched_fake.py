@@ -30,6 +30,50 @@ def _sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def _canonical_sha(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def _genuine_shaped_fit(spec, view, out, arm, population):
+    """A trainer-shaped fit (R1 donor fixtures only): every field the donor verifier binds, built from
+    the spec exactly as the real trainer records it, WITHOUT a fake marker. It trains nothing; its
+    acceptance depends on the system's own custody (mirrors) and publication records."""
+    import zipfile
+    runtime = view["design"]["sealed_identities"]["runtime"]
+    train = out / "train"
+    (train / "model").mkdir(parents=True)
+    capacity_doc = json.loads((REPO / "docs/i6n/direct_multi_output_static/matched_short/"
+                                      "CAPACITY_MATCHED.json").read_text())
+    family = {"mg1": "short_mg1", "mg2m": "short_mg2"}[arm]
+    record = dict(schema="i6dmo.capacity.v1", arm=arm, family=family,
+                  counts=capacity_doc["declared_capacity"][family])
+    record["capacity_sha256"] = _canonical_sha(record)
+    (train / "CAPACITY.json").write_text(json.dumps(record))
+    with zipfile.ZipFile(train / "model" / "forecast_model.keras", "w") as z:
+        z.writestr("metadata.json", json.dumps({"keras_version": runtime["keras"]}))
+        z.writestr("model.weights.h5", hashlib.sha256(f"weights-{arm}".encode()).digest())
+    weights = hashlib.sha256(f"weights-{arm}".encode()).hexdigest()
+    (train / "model" / "MODEL.json").write_text(json.dumps(dict(weights_sha256=weights)))
+    arts = {rel: _sha(train / rel) for rel in ("CAPACITY.json", "model/forecast_model.keras", "model/MODEL.json")}
+    identity = dict(common_population_sha256=population, matched_arm=arm, design_sha256=view["design_sha256"],
+                    effective_config_sha256=view["adapter_effective"]["effective_config_sha256"],
+                    capacity_sha256=record["capacity_sha256"], weights_sha256=weights,
+                    model_archive_sha256=arts["model/forecast_model.keras"])
+    receipt = dict(schema="i6dmo.train_receipt.v1", status="COMPLETED", scientific=True, device="gpu", overrides={},
+                   identity=identity, artifacts=arts, matched=dict(arm=arm, capacity=record,
+                                                                  common_population_sha256=population),
+                   resources=dict(tensorflow_version=runtime["tensorflow"], device="gpu"))
+    (train / "RECEIPT.json").write_text(json.dumps(receipt))
+    artifacts = {rel: dict(path=f"train/{rel}", sha256=sha) for rel, sha in arts.items()}
+    artifacts["RECEIPT"] = dict(path="train/RECEIPT.json", sha256=_sha(train / "RECEIPT.json"))
+    cost = dict(experiment_key=f"i6dmo:{spec['campaign_id']}:{spec['unit_id']}:cost",
+                experiment_set_key=f"i6dmo:{spec['campaign_id']}", actor="predictor", lake="LOCAL_RETAINED",
+                lineage="UNVERIFIED", config_sha256=spec["identity_sha256"], code_commit="fixture", project="predictor",
+                phase="I6DMO", tags={"unit": spec["unit_id"], "test_read": "false", "weights_sha256": weights},
+                metrics=[dict(metric="Fit_Seconds", value=0.5, split="train", horizon=None, unit="seconds")])
+    return artifacts, dict(trainer_identity=identity, scientific=True), [cost]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--kind", required=True)
@@ -67,7 +111,11 @@ def main():
     population = os.environ.get("I6DMO_FAKE_POPULATION") or view["data_pins"]["common_population"]["population_sha256"]
     artifacts, reports, lineage = {}, [], {}
     costs = dict(wall_seconds=0.1, fit_seconds=0.0, score_seconds=0.1, cgroup_peak_bytes=None)
-    if args.kind == "fit":
+    extra = {}
+    if args.kind == "fit" and os.environ.get("I6DMO_FAKE_GENUINE_RECEIPT") == "1":
+        artifacts, extra, reports = _genuine_shaped_fit(spec, view, out, arm, population)
+        costs.update(fit_seconds=0.5, cgroup_peak_bytes=int(os.environ.get("I6DMO_FAKE_PEAK", 1 << 30)))
+    elif args.kind == "fit":
         (out / "predictions.json").write_text(json.dumps(dict(arm=arm, fake=True)))
         artifacts["predictions"] = dict(path="predictions.json", sha256=_sha(out / "predictions.json"))
         # a receipt shaped like the trainer's (orchestration only; I6DMO_FAKE_SCIENTIFIC/DEVICE vary it)
@@ -120,7 +168,7 @@ def main():
                                           unit="USD_per_EUR") for h, r in per_h.items()]))
     terminal = dict(schema="i6dmo.terminal.v1", unit_id=spec["unit_id"], identity_sha256=spec["identity_sha256"],
                     status="COMPLETE", disposition="FAKE_ORCHESTRATION_ONLY", artifacts=artifacts, costs=costs,
-                    eligibility={}, gates={}, reports=reports, lineage=lineage)
+                    eligibility={}, gates={}, reports=reports, lineage=lineage, **extra)
     (out / "TERMINAL.json").write_text(json.dumps(terminal, sort_keys=True))
     return 0
 
