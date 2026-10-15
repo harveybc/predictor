@@ -52,7 +52,7 @@
    "origin_row_ids": "np.ndarray int64 (n,) origin UTC epoch seconds, strictly increasing",
    "row_ids()": "np.ndarray str 'EURUSD|<UTC ISO origin>'"
   },
-  "arm_tensors(pop, arm_design, split) -> ArmTensors": "THE per-arm accessor both trainers, checkpoint monitors, annual scorers and weekly diagnostics must use. arm_design = the sealed EXPERIMENT.<arm>.json document; its design_sha256 must equal identities.arms[arm].experiment_design_sha256 (DESIGN_IDENTITY_MISMATCH otherwise; closed MG2 / hourly -> MATCHED_IDENTITY_REQUIRED; split 'TEST' -> SPLIT_UNKNOWN). Rows/heads are exactly SplitPopulation rows/masks (re-asserted).",
+  "arm_tensors(pop, arm_design, split) -> ArmTensors": "THE per-arm accessor both trainers, checkpoint monitors, annual scorers and weekly diagnostics must use. arm_design = the sealed EXPERIMENT.<arm>.json document; its design_sha256 must equal identities.arms[arm].experiment_design_sha256 (DESIGN_IDENTITY_MISMATCH otherwise; closed MG2 / hourly -> MATCHED_IDENTITY_REQUIRED; split 'TEST' -> SPLIT_UNKNOWN). Rows/heads are exactly SplitPopulation rows/masks (re-asserted). A population read from disk must come from load_common_population: the accessor re-reads ARM_*.npz and checks it against the digests RECOMPUTED by that verified load (CommonPopulation.verified_arm_digests), never the strings stored in POPULATION.json; an unverified source_dir population raises POPULATION_NOT_VERIFIED (review D3).",
   "build_common_population(input_dir, experiments={'mg1': doc, 'mg2m': doc}, data_designs={'mg1': doc, 'mg2m': doc}, *, code_commit=None) -> CommonPopulation": "validates both sealed EXPERIMENTs (matched_arm) and DESIGNs, cross-checks data_design_sha256/data_identity_sha256/partner identity and the sealed calendar id/version against the input; refuses TEST bars (TEST_ROWS_PRESENT, before any array)",
   "load_common_population(path, *, expected_digest, input_dir=None) -> CommonPopulation": "recomputes every row/head/mask/arm/exclusion/scaler/identity digest; typed refusals ROW_DIGEST_MISMATCH, HEAD_MASK_DIGEST_MISMATCH, MASK_DIGEST_MISMATCH, ARM_ARRAYS_MISMATCH, EXCLUSIONS_MISMATCH, SCALER_ROWS_MISMATCH, CALENDAR_DIGEST_MISMATCH, SOURCE_DIGEST_MISMATCH, DESIGN_IDENTITY_MISMATCH, SPLIT_BOUNDS_MISMATCH, FILE_DIGEST_MISMATCH, POPULATION_DIGEST_MISMATCH, SPLIT_UNKNOWN, TEST_ROWS_PRESENT; with input_dir the retained INPUT/CALENDAR/CLOCK files must hash to the sealed source",
   "replay_against_input(tensors, input_dir)": "independent replay of inputs/p(t)/exact p(t+h) by timestamp from INPUT.npz; REPLAY_MISMATCH on any difference",
@@ -103,6 +103,16 @@
     "span_open_market_hours": 24
    }
   },
+  "current_seals": {
+   "mg1": {
+    "design_sha256": "64899668352f947b48a773d24c00642cb521bddcc25b049b3e76c3abd37612ba",
+    "seal_sha256": "b6fd008d596162744160bc8867b3eb92ccf095bed5e974e2719c24fe5fb16ef7"
+   },
+   "mg2m": {
+    "design_sha256": "d71d2b3c555dc3fad855b30b97e68d04193bfb5e3df33179f8ef10eea5d04711",
+    "seal_sha256": "416c11563c30cc5cbc6345720d7a3d5521fc48d7fe5dae809e0aef33bd30a19e"
+   }
+  },
   "data_design_schema": "i6dmo.matched_market_design.v1",
   "data_designs": {
    "mg1": "matched_short/DESIGN.mg1.json",
@@ -123,6 +133,7 @@
   ],
   "rules": "matched_short/MATCHED_POPULATION_RULES.json",
   "rules_sha256": "5a2e3d20a17502110f533b342c16e9d95b107b6312a9973e938775755423d131",
+  "runtime_pin": "design.MATCHED_RUNTIME = tensorflow 2.21.0 / keras 3.13.2 (execution roles); superseded seals in design.MATCHED_SUPERSEDED_SEALS are refused as MATCHED_IDENTITY_SUPERSEDED",
   "seal": "python -m tools.i6dmo.design seal-matched-short --short-design docs/i6n/direct_multi_output_static/EXPERIMENT.short.json --out-dir docs/i6n/direct_multi_output_static/matched_short --json (idempotent; refuses different content)",
   "validate": "python -m tools.i6dmo.design validate-design --design <EXPERIMENT.mg1.json|EXPERIMENT.mg2m.json> --json"
  },
@@ -168,7 +179,7 @@
  },
  "real_population": {
   "calendar_sha256": "782603fd26e879d6f837c83e9ec92d363500cb1dd150544e10a80c1ddeb88265",
-  "code_commit": "0c4310dc",
+  "code_commit": "aee28dfb",
   "consumers_load_with": "load_common_population(<private dir>, expected_digest=<population_digest>, input_dir=<input>) then arm_tensors(pop, <EXPERIMENT.<arm>.json doc>, split)",
   "counts_after_intersection": {
    "DEVELOPMENT": {
@@ -198,12 +209,13 @@
   },
   "input_sha256": "ef22ddb54921ee9f9c774a550731dcd522c9d712f2a1882f1bf4e6a35e3942b8",
   "observed_note": "INPUT_INVALID_MG2M_ONLY never occurs on the real input: for every origin the 13 MG2 slots are a subset of the 25 MG1 slots, so the common population equals the MG1 valid set and MG2 loses only MG1-invalid pairs",
-  "population_digest": "4ab41bd87987c6e790851fe1262210b13e0fdbabf971deae9b9fa06fc75014f8",
-  "population_json_sha256": "bb7524c1a94b167d4f61b75b0b640dd474069fbb2458f722729ad613eeb66051",
-  "private_location": "$EXPERIMENT_STORAGE_ROOT/i6dmo/matched-short-20261015/population (never committed)",
+  "population_digest": "ba01f87a14e1ceb39d1a5770d4d00f3803cd29748c64edf7254c1e6c57b249d1",
+  "population_json_sha256": "8bb5ec84d0508f7a64e4e521106081edbfe15a6dfeb0de5b14d446a55a1d5a0d",
+  "private_location": "$EXPERIMENT_STORAGE_ROOT/i6dmo/matched-short-20261015/population-tf2210 (never committed)",
   "scaler_fit_row_digest": "08f655df5abc0b1ee3ec6bc905e2c3e4a31da2ace8cab5268faa9a761796f4d1",
   "seal": "matched_short/POPULATION_SEAL.json",
-  "status": "SEALED_BEFORE_ANY_FIT"
+  "status": "SEALED_BEFORE_ANY_FIT",
+  "supersedes": "population 4ab41bd8 (designs sealed with runtime 2.18.0/3.9.0), SUPERSEDED_BEFORE_EXECUTION; see SUPERSEDED_BEFORE_EXECUTION.json"
  },
  "schema": "i6dmo.interface.common_population.v1",
  "status": "IMPLEMENTED_CPU_TESTED_NO_FIT",
