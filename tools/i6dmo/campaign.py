@@ -229,7 +229,8 @@ def _seal_family(design, adapter, family, *, mode=None):
 
 # --------------------------------------------------------------------- init
 def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=None, data_pins=None, entrypoints=None,
-                  prior_roots=(), long_design=None, strategy_execution=None, mode=MODE_ELAPSED):
+                  prior_roots=(), long_design=None, strategy_execution=None, mode=MODE_ELAPSED,
+                  completed_short_fit_source=None):
     design = json.loads(Path(design_path).read_text())
     if mode not in MODES:
         raise Refused(f"UNKNOWN_CAMPAIGN_MODE: {mode}")
@@ -269,6 +270,10 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
         code_commit=code_commit or _git_head(), data_pins=data_pins, data_sha256=sha256_json(data_pins),
         entrypoints=entries, prior_roots=[str(p) for p in prior_roots], test_open=False,
         strategy_execution=strategy_execution, mode=mode, deployment_sha256=sha256_json(spec), long=long_doc))
+    if completed_short_fit_source is not None:
+        from tools.i6dmo import recovery
+        reused = recovery.prepare(completed_short_fit_source, effective)
+        effective = _seal(dict(effective, reused_short_fit=reused))
     eff_sha = sha256_json(effective)
     campaign_id = "i6dmo-" + sha256_json(dict(experiment=design["experiment_id"], cadence=effective["cadence"],
                                               effective=eff_sha))[:12]
@@ -293,6 +298,8 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
     try:
         for unit in units:
             q.ensure_unit(unit["unit_id"], unit, state=unit.pop("_state"))
+        if effective.get("reused_short_fit"):
+            recovery.install(root, effective["reused_short_fit"], q)
     finally:
         q.close()
     for unit in plan["units"]:
@@ -436,6 +443,9 @@ def _market_time_units(effective):
     for unit_id, family, kind, stage, device, deps, windows, calls_fit, fam_sha in spec:
         unit = _base(unit_id, family, kind, stage, device, deps, windows, calls_fit=calls_fit)
         _identify(unit, effective, fam_sha, [upstream[d] for d in deps])
+        if unit_id == "short.fit" and effective.get("reused_short_fit"):
+            unit = json.loads(json.dumps(effective["reused_short_fit"]["unit"]))
+            unit["execution_policy"] = "ADOPT_ONLY"
         upstream[unit_id] = unit["identity_sha256"]
         unit["_state"] = "QUEUED" if not deps else "WAIT_DEPENDENCY"
         units.append(unit)

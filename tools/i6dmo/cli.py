@@ -53,7 +53,8 @@ def cmd_init(args):
                           data_pins=_load_json(args.data_pins), entrypoints=_load_json(args.entrypoints),
                           prior_roots=args.prior_root or (), long_design=args.long_design,
                           strategy_execution=_load_json(getattr(args, "strategy_execution", None)),
-                          mode=getattr(args, "mode", "ELAPSED_STATIC"))
+                          mode=getattr(args, "mode", "ELAPSED_STATIC"),
+                          completed_short_fit_source=getattr(args, "completed_short_fit_source", None))
     _emit(doc)
     return 0
 
@@ -168,6 +169,7 @@ def build_parser():
                    help="MARKET_TIME_PAIR seals MG2/MG12 up front and enumerates no TEST stage")
     p.add_argument("--strategy-execution", help="JSON with the versioned instrument configuration")
     p.add_argument("--prior-root", action="append")
+    p.add_argument("--completed-short-fit-source", help="authenticate and reuse a completed short fit after a reporting-only repair")
     p.add_argument("--code-commit")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_init)

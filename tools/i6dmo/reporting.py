@@ -106,6 +106,18 @@ def materialize_validation(spec):
     """Default loader: re-materialize VALIDATION through the data lane's public API."""
     from tools.i6dmo import data
     design = _design(spec)
+    if design.get("schema") == "i6dmo.market_time_design.v1":
+        from tools.i6dmo import market_grid, train
+        elapsed = train._elapsed_view(design)
+        expected = market_grid.market_design(elapsed)
+        path = spec["pins"][f"{spec['family']}_bundle"]["path"]
+        market_grid.authenticate_market_bundle(market_grid.load_market_manifest(path), expected)
+        bundle = data.load_input(spec["pins"][f"{spec['family']}_input"]["path"], elapsed)
+        table = market_grid.build_market_table(bundle, elapsed)
+        arrays = market_grid.materialize(bundle, table, "VALIDATION")
+        arrays.expected_weeks = tuple(table.split_weeks["VALIDATION"])
+        arrays.calendar_id = table.identity["calendar_id"]
+        return arrays
     bundle = data.load_input(spec["pins"][f"{spec['family']}_input"]["path"], design)
     table = data.build_origin_table(bundle, design)
     return data.materialize(bundle, table, "VALIDATION")

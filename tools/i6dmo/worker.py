@@ -511,6 +511,10 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
                     identity_sha256=unit["identity_sha256"], source_detail=dict(source_root_name=source.name))
             _enqueue_reports(root, unit["unit_id"], doc["terminal"], q)
             return dict(result="ADOPTED", unit_id=unit["unit_id"])
+        if unit.get("execution_policy") == "ADOPT_ONLY":
+            cause = "REUSED_FIT_ARTIFACT_MISSING_OR_INVALID"
+            q.set_state(unit["unit_id"], "WAIT_ARTIFACT", cause)
+            return dict(result="WAIT_ARTIFACT", unit_id=unit["unit_id"], cause=cause)
         role_spec = spec["roles"][role]
         bundle, missing = _artifacts(root, effective, unit, role_spec)
         if missing:
