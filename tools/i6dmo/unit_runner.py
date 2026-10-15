@@ -22,7 +22,7 @@ import time
 from pathlib import Path
 
 HOOKS = {"report": "tools.i6dmo.reporting", "pair": "tools.i6dmo.strategy_adapter",
-         "final_test": "tools.i6dmo.final"}
+         "strategy": "tools.i6dmo.strategy_adapter", "final_test": "tools.i6dmo.final"}
 HOOK_OWNERS = {"tools.i6dmo.reporting": "ops lane (tools/i6dmo/reporting.py)",
                "tools.i6dmo.strategy_adapter": "strategy lane",
                "tools.i6dmo.final": "model lane (guarded final TEST path)"}
@@ -168,7 +168,8 @@ def run_hook(kind, spec, out, progress):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="python -m tools.i6dmo.unit_runner")
-    parser.add_argument("--kind", required=True, choices=("fit", "final_refit", "report", "pair", "final_test"))
+    parser.add_argument("--kind", required=True,
+                        choices=("fit", "final_refit", "report", "pair", "strategy", "final_test"))
     parser.add_argument("command", choices=("run-unit",))
     parser.add_argument("--spec", required=True)
     parser.add_argument("--out", required=True)

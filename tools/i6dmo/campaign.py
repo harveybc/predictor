@@ -26,11 +26,17 @@ from tools.i6dmo import queue as Q
 CADENCES = ("NONE", "QUARTERLY", "MONTHLY", "WEEKLY")
 STAGES = ("SHORT_DS_STATIC_VALIDATION", "LONG_DS_STATIC_VALIDATION", "PAIR_VALIDATION", "FINAL_PROCEDURE_FROZEN",
           "TEST_READINESS", "FINAL_PAIR_TEST", "CLOSED")
-UNIT_KINDS = ("fit", "report", "pair", "final_refit", "final_test")
+# Market-time pair (order 50d20d01): one finite development graph, no TEST stage at all.
+MARKET_TIME_STAGES = ("SHORT_MARKET_TIME_VALIDATION", "LONG_MARKET_TIME_VALIDATION", "PAIR_VALIDATION",
+                      "VALIDATION_STRATEGY", "CLOSED")
+MODE_ELAPSED = "ELAPSED_STATIC"
+MODE_MARKET_TIME = "MARKET_TIME_PAIR"
+MODES = (MODE_ELAPSED, MODE_MARKET_TIME)
+UNIT_KINDS = ("fit", "report", "pair", "strategy", "final_refit", "final_test")
 IDENTITY_KEYS = ("unit", "family", "kind", "cadence", "effective_config_sha256", "data_sha256", "code_commit",
                  "seed", "upstream")
 DEFAULT_ENTRYPOINTS = {kind: ["{python}", "-m", "tools.i6dmo.unit_runner", "--kind", kind]
-                       for kind in ("fit", "report", "pair", "final_refit", "final_test")}
+                       for kind in ("fit", "report", "pair", "strategy", "final_refit", "final_test")}
 FINAL_REFIT_TRAIN = ["2021-01-01T00:00:00Z", "2025-01-01T00:00:00Z"]
 # Gate -> (owner, artifact, produced automatically by tick?)
 GATES = {
@@ -186,10 +192,14 @@ def _seal_family(design, adapter, family):
 
 # --------------------------------------------------------------------- init
 def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=None, data_pins=None, entrypoints=None,
-                  prior_roots=(), long_design=None, strategy_execution=None):
+                  prior_roots=(), long_design=None, strategy_execution=None, mode=MODE_ELAPSED):
     design = json.loads(Path(design_path).read_text())
+    if mode not in MODES:
+        raise Refused(f"UNKNOWN_CAMPAIGN_MODE: {mode}")
     if design.get("splits", {}).get("test", {}).get("open") is not False:
         raise Refused("TEST_OPEN_IN_DESIGN")
+    if mode == MODE_MARKET_TIME and long_design is None:
+        raise Refused("MARKET_TIME_PAIR_REQUIRES_BOTH_DESIGNS: seal MG2 and MG12 before init")
     adapter = _adapter(adapter)
     short = _seal_family(design, adapter, "short")
     root = Path(root)
@@ -219,7 +229,7 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
         adapter_effective=short["adapter_effective"], cadence=design["retraining_frequency"], seed=design["seed"],
         code_commit=code_commit or _git_head(), data_pins=data_pins, data_sha256=sha256_json(data_pins),
         entrypoints=entries, prior_roots=[str(p) for p in prior_roots], test_open=False,
-        strategy_execution=strategy_execution, deployment_sha256=sha256_json(spec), long=long_doc))
+        strategy_execution=strategy_execution, mode=mode, deployment_sha256=sha256_json(spec), long=long_doc))
     eff_sha = sha256_json(effective)
     campaign_id = "i6dmo-" + sha256_json(dict(experiment=design["experiment_id"], cadence=effective["cadence"],
                                               effective=eff_sha))[:12]
@@ -231,10 +241,14 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
     for folder in ("gates", "terminals", "attempts"):
         (root / folder).mkdir(parents=True, exist_ok=True)
     units = _validation_units(effective, eff_sha)
+    market_time = mode == MODE_MARKET_TIME
     plan = dict(schema="i6dmo.plan.v1", campaign_id=campaign_id, effective_config_sha256=eff_sha,
-                effective_config_file_sha256=file_sha256(paths["effective"]), stages=list(STAGES), units=units,
-                test_units_enumerated=False, expected=dict(validation_units=len(units),
-                                                           final_units="NOT_ENUMERATED_UNTIL_READINESS"))
+                effective_config_file_sha256=file_sha256(paths["effective"]), mode=mode,
+                stages=list(MARKET_TIME_STAGES if market_time else STAGES), units=units,
+                test_units_enumerated=False,
+                expected=dict(validation_units=len(units),
+                              final_units=("NOT_ENUMERABLE_IN_MARKET_TIME_PAIR" if market_time
+                                           else "NOT_ENUMERATED_UNTIL_READINESS")))
     _write_plan(root, plan)
     q = open_queue(root)
     try:
@@ -332,7 +346,40 @@ def _family_sha(effective, family):
     return None if long_ is None else sha256_json(dict(short=short, long=long_))
 
 
+def mode_of(effective):
+    return effective.get("mode") or MODE_ELAPSED
+
+
+def _market_time_units(effective):
+    """short.fit -> short.report -> long.fit -> long.report -> pair.eligibility -> strategy.validation.
+
+    ``long.fit`` depends on the short REPORT TERMINAL, not on short eligibility: a scientifically
+    NOT_ELIGIBLE short family still answers the separate long question.
+    """
+    short_w, long_w = _windows(effective["design"]), _windows(effective["long"]["design"])
+    st = MARKET_TIME_STAGES
+    short_sha, long_sha = _family_sha(effective, "short"), _family_sha(effective, "long")
+    units, upstream = [], {}
+    spec = [("short.fit", "short", "fit", st[0], "gpu", [], short_w, True, short_sha),
+            ("short.report", "short", "report", st[0], "cpu", ["short.fit"], short_w, False, short_sha),
+            ("long.fit", "long", "fit", st[1], "gpu", ["short.report"], long_w, True, long_sha),
+            ("long.report", "long", "report", st[1], "cpu", ["long.fit"], long_w, False, long_sha),
+            ("pair.eligibility", "pair", "pair", st[2], "cpu", ["short.report", "long.report"],
+             dict(validation=short_w["validation"]), False, _family_sha(effective, "pair")),
+            ("strategy.validation", "pair", "strategy", st[3], "cpu", ["pair.eligibility"],
+             dict(validation=short_w["validation"]), False, _family_sha(effective, "pair"))]
+    for unit_id, family, kind, stage, device, deps, windows, calls_fit, fam_sha in spec:
+        unit = _base(unit_id, family, kind, stage, device, deps, windows, calls_fit=calls_fit)
+        _identify(unit, effective, fam_sha, [upstream[d] for d in deps])
+        upstream[unit_id] = unit["identity_sha256"]
+        unit["_state"] = "QUEUED" if not deps else "WAIT_DEPENDENCY"
+        units.append(unit)
+    return units
+
+
 def _validation_units(effective, eff_sha):
+    if mode_of(effective) == MODE_MARKET_TIME:
+        return _market_time_units(effective)
     design = effective["design"]
     short_w = _windows(design)
     long_w = _windows(effective["long"]["design"]) if effective.get("long") else None
@@ -545,6 +592,46 @@ def _auto_gates(root, plan, q):
     return written
 
 
+def pair_eligible(terminal):
+    """True only when the pair unit declares PASS; anything else disqualifies the strategy."""
+    doc = (terminal or {}).get("terminal") or {}
+    if doc.get("status") != "COMPLETE":
+        return False
+    gates = doc.get("gates") or {}
+    return gates.get("pair_status") == "PASS"
+
+
+def _gate_strategy_on_pair(root, q):
+    """Queue the validation strategy only on a qualified pair; otherwise close it PAIR_NOT_ELIGIBLE."""
+    row = q.unit("strategy.validation")
+    if row is None or row["state"] in ("COMPLETE", "FAILED", "RUNNING"):
+        return
+    pair = q.terminal("pair.eligibility")
+    if pair is None:
+        return
+    if pair_eligible(pair):
+        if row["state"] in ("WAIT_DEPENDENCY", "BLOCKED"):
+            q.set_state("strategy.validation", "QUEUED")
+        return
+    doc = (pair["terminal"].get("gates") or {})
+    cause = doc.get("pair_status") or pair["terminal"].get("status") or "PAIR_NOT_ELIGIBLE"
+    if row["state"] != "BLOCKED" or row["disposition"] != "PAIR_NOT_ELIGIBLE":
+        q.set_state("strategy.validation", "BLOCKED", f"PAIR_NOT_ELIGIBLE:{cause}",
+                    disposition="PAIR_NOT_ELIGIBLE")
+        q.event("PAIR_NOT_ELIGIBLE", "strategy.validation", dict(pair_cause=cause))
+
+
+def enumerate_test_units(root):
+    """Public entry: refused outright for a market-time pair campaign (no TEST stage exists)."""
+    if mode_of(load_effective(root)) == MODE_MARKET_TIME:
+        raise Refused("TEST_NOT_ENUMERABLE_IN_MARKET_TIME_PAIR: this development campaign has no TEST stage")
+    plan = load_plan(root)
+    ready = readiness(root)
+    if ready["state"] != "READY":
+        raise Refused(f"TEST_READINESS_NOT_READY: {ready['state']}")
+    return _enumerate_finals(root, plan, ready)
+
+
 def readiness(root):
     plan = load_plan(root)
     q = open_queue(root)
@@ -569,6 +656,21 @@ def readiness(root):
                         or "PAIR_NOT_ELIGIBLE", missing=[], cause="pair validation did not pass")
     finally:
         q.close()
+    if mode_of(load_effective(root)) == MODE_MARKET_TIME:
+        q = open_queue(root)
+        try:
+            strategy = q.unit("strategy.validation")
+            pair = q.terminal("pair.eligibility")
+        finally:
+            q.close()
+        if strategy is not None and strategy["disposition"] == "PAIR_NOT_ELIGIBLE":
+            return dict(state="TERMINAL", disposition="PAIR_NOT_ELIGIBLE", missing=[],
+                        cause=strategy["cause"])
+        if pair is not None and strategy is not None and strategy["state"] == "COMPLETE":
+            return dict(state="TERMINAL", disposition="MARKET_TIME_PAIR_VALIDATION_COMPLETE", missing=[],
+                        cause="development campaign; TEST is not part of this graph")
+        return dict(state="IN_PROGRESS", disposition=None, missing=[],
+                    cause="market-time pair validation is still advancing")
     missing = []
     for name, (owner, artifact, _auto) in GATES.items():
         problem = _gate_problem(root, name, plan)
@@ -705,9 +807,11 @@ def tick(root, now=None, adapter=None):
     """One finite, atomic advance. Never waits, never trains, never reads a token."""
     root = Path(root)
     load_effective(root)
+    effective = load_effective(root)
+    market_time = mode_of(effective) == MODE_MARKET_TIME
     design_block = _design_block(root)
     held = set((design_block or {}).get("units", ()))
-    if not held:
+    if not held and not market_time:
         _auto_seal_long(root, adapter=adapter)
     _apply_long(root)
     plan = load_plan(root)
@@ -735,12 +839,14 @@ def tick(root, now=None, adapter=None):
                 q.set_state(unit["unit_id"], "WAIT_ARTIFACT",
                             "LONG_DESIGN_NOT_SEALED: run `seal-long` with the sealed long design (model lane)")
         gates = _auto_gates(root, plan, q)
+        if market_time:
+            _gate_strategy_on_pair(root, q)
     finally:
         q.close()
     _apply_design_block(root)
     _delivery_gate(root, plan)
     ready = readiness(root)
-    opened = ready["state"] == "READY" and _enumerate_finals(root, load_plan(root), ready)
+    opened = (not market_time) and ready["state"] == "READY" and _enumerate_finals(root, load_plan(root), ready)
     status = write_status(root, now=now)
     return dict(activated=activated, blocked=blocked, gates_written=gates, readiness=ready, finals_enumerated=opened,
                 campaign_state=status["campaign"]["state"])

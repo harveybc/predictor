@@ -17,6 +17,23 @@ Implementar/revisar/sellar; luego corto y largo automaticamente con nueva
 identidad. El largo se mide aunque falle cientificamente el corto; la pareja
 no opera si no pasa elegibilidad. TEST cerrado, sin otro cambio a DOIN.
 
+## Integracion de operaciones MG2/MG12 (2026-10-15)
+
+El grafo finito de la pareja de mercado esta integrado y probado sobre el CLI
+existente, sin runtime distribuido nuevo: `short.fit -> short.report ->
+long.fit -> long.report -> pair.eligibility -> strategy.validation` (solo con
+pareja apta) `-> cierre de publicacion/espejo`. El largo se mide aunque el
+corto resulte NOT_ELIGIBLE; una pareja no apta cierra PAIR_NOT_ELIGIBLE sin
+gastar intento; no existe unidad TEST enumerable ni reclamable; un terminal de
+rejilla transcurrida (DS2/ASOF) se rechaza para una identidad de mercado aunque
+coincidan formas y horizontes. Siete regresiones nuevas (PRE: error de
+coleccion; POST: pasan), suite 326.
+
+Nada esta computando: no hay fit en marcha; la raiz ASOF sigue HELD con solo su
+timer de publicacion. La ejecucion cientifica espera los sellos de las lineas de
+datos y modelo y la revision independiente; los temporizadores no resuelven
+decisiones de diseno.
+
 ## Parada del programa anterior (registro 2026-10-14)
 
 Por orden del propietario, las cuatro islas POO-v2 y el timer de relevo

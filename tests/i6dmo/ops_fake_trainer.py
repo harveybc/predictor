@@ -34,6 +34,19 @@ def main():
         with open(counter, "a") as handle:
             handle.write(f"{args.kind}:{spec['unit_id']}\n")
     mode = os.environ.get("I6DMO_FAKE_MODE", "ok")
+    if args.kind in ("pair", "strategy"):
+        # Faithful chain: the pair verdict follows the upstream per-head eligibility, so a
+        # scientifically ineligible family really disqualifies the pair.
+        for up in (spec.get("upstream") or {}).values():
+            if not up or not up.get("path"):
+                continue
+            try:
+                stored = json.loads(Path(up["path"]).read_text())
+            except (OSError, ValueError):
+                continue
+            heads = (stored.get("terminal") or {}).get("eligibility") or {}
+            if heads and not any(h.get("eligible") for h in heads.values()):
+                mode = "ineligible"
     if spec.get("kind") != args.kind:
         print("KIND_MISMATCH", file=sys.stderr)
         return 4
@@ -62,7 +75,8 @@ def main():
         eligibility={str(h): dict(mae=1.0 if eligible else 2.0, naive=1.5, eligible=eligible, n=100)
                      for h in horizons} if args.kind == "report" else {},
         gates=dict(strategy_version="fake-1", costs_sha256="0" * 64,
-                   pair_status="PASS" if eligible else "PAIR_NOT_ELIGIBLE") if args.kind == "pair" else {},
+                   pair_status="PASS" if eligible else "PAIR_NOT_ELIGIBLE")
+        if args.kind in ("pair", "strategy") else {},
         reports=[dict(experiment_key=f"i6dmo:fake:{spec['unit_id']}", experiment_set_key="i6dmo:fake",
                       actor="predictor", lake="LOCAL_RETAINED", lineage="UNVERIFIED",
                       config_sha256=spec["identity_sha256"], code_commit="fake", project="predictor",
@@ -70,7 +84,9 @@ def main():
                       metrics=[dict(metric="Fit_Seconds", value=0.5, split="validation", horizon=2, unit="seconds")])],
     )
     if args.kind == "pair" and not eligible:
-        terminal["status"] = "PAIR_NOT_ELIGIBLE"
+        terminal["status"] = "COMPLETE"  # the pair unit reports its verdict through gates.pair_status
+    if args.kind == "report" and mode == "ineligible":
+        terminal["status"] = "NOT_ELIGIBLE"
     _atomic(out / "TERMINAL.json", terminal)
     raw = (out / "TERMINAL.json").read_bytes()
     print(json.dumps(dict(terminal_sha256=hashlib.sha256(raw).hexdigest())))

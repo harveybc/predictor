@@ -128,7 +128,7 @@ def test_missing_bundle_pin_or_hook_waits_for_artifact_without_an_attempt(tmp_pa
     import sys
     from tools.i6dmo import campaign, status
     entries = {k: [sys.executable, "-m", "tools.i6dmo.unit_runner", "--kind", k]
-               for k in ("fit", "report", "pair", "final_refit", "final_test")}
+               for k in ("fit", "report", "pair", "strategy", "final_refit", "final_test")}
     design = write_design(tmp_path)
     spec_path = tmp_path / "spec.json"
     from tests.i6dmo.ops_fakes import fake_adapter, private_spec

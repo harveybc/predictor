@@ -41,6 +41,58 @@ LONG_HORIZONS = [18, 24, 36, 48, 60, 72]
 SHORT_ID = "I6-DMO-SHORT-DS2-STATIC-R0"
 LONG_ID = "I6-DMO-LONG-DS12-STATIC-R0"
 SHORT_HOURLY_ID = "I6-DMO-SHORT-HOURLY-DS1-STATIC-R0"
+#: The already-reviewed numerical policy, shared verbatim by every family's effective config.
+#: UNCHANGED by the market-time work: no broadened tolerance, DMO10 not reopened.
+MONITOR_FLOOR_DECLARATION = {
+    "version": "v2", "rtol": 5e-5, "atol": 1e-9,
+    "scope": "cross-process GPU comparison of the monitored value and per-batch "
+             "per-head float64 partial sums ONLY; CPU end-to-end, self-check, reload, "
+             "predictions, input bytes, weight digests, forward identity and flags "
+             "stay bitwise",
+    "justification": "a reproduced, build/context-specific numerical discrepancy "
+                     "between in-session and fresh-instance GPU executions of this "
+                     "pinned TensorFlow build (cause not demonstrated; eight "
+                     "mechanisms excluded: autotune/init order, TF32, weights, input "
+                     "bytes, forward identity, grappler remapping/layout/AMP; "
+                     "observed max 1.82e-5), bounded by the versioned "
+                     "NUMERICALLY_EQUIVALENT protocol "
+                     "i6dmo.monitor_numeric_equivalence.v2",
+    "prospective": True,
+}
+MG2_ID = "I6-DMO-SHORT-MG2-MARKET-EXACT-R0"
+MG12_ID = "I6-DMO-LONG-MG12-MARKET-EXACT-R0"
+MARKET_TIME_SCHEMA = "i6dmo.market_time_design.v1"
+#: MARKET_TIME_PAIR_PLAN.md section 2, frozen. ``history_span_hours`` belongs to the OLD elapsed
+#: schema and keeps its meaning there; a market-time design has no such field at all.
+MARKET_TIME_SCOPE = {
+    "mg2": {"experiment_id": MG2_ID, "rule": "MG2_MARKET_EXACT", "observations": 13,
+            "spacing_open_market_hours": 2, "span_open_market_hours": 24,
+            "horizons_hours": [2, 3, 4, 5, 6, 12], "family": "short_mg2"},
+    "mg12": {"experiment_id": MG12_ID, "rule": "MG12_MARKET_EXACT", "observations": 13,
+             "spacing_open_market_hours": 12, "span_open_market_hours": 144,
+             "horizons_hours": [18, 24, 36, 48, 60, 72], "family": "long_mg12"},
+}
+#: Fields of the elapsed schema that contradict market-time sampling if present.
+FIXED_ELAPSED_FIELDS = ("input", "history_span_hours", "spacing_hours", "observations",
+                        "offsets_hours")
+#: Section 3, frozen: the ONLY model extension, sealed by formula/dtype/shape/version.
+TIME_ENCODER_IDENTITY = {
+    "layer": "i6dmo.DynamicPhysicalTimeEncoder", "version": "1.0.0",
+    "position": "immediately_after_branch_fusion",
+    "inputs": ["fused_values(batch, slots, 4*n_features)",
+               "offsets_hours(batch, slots) signed UTC hours from t, last exactly 0",
+               "closure_crossed(batch, slots) 0/1, first slot 0"],
+    "formula": ("code[s, c] = sin(offset_hours[s] * 10000^(-2*(c//2)/C)) for even c, cos(...) for "
+                "odd c, added to the C fused value channels; evaluated on ACTUAL signed offsets, "
+                "never ordinal slot indices"),
+    "context_channels": ["adjacent_elapsed_hours_over_24", "closure_crossed"],
+    "context_rule": ("appended AFTER the encoded values and BEFORE the core; slot 0 has adjacent "
+                     "delta 0 and closure flag 0"),
+    "unit_conversion_hours": 24, "fitted": False, "dtype": "float32",
+    "output_shape": "(batch, slots, C + 2)  # 19 branches -> 76 + 2 = 78",
+    "per_example_inputs_required": True,
+    "slot_order_is_not_wall_clock": True,
+}
 STLFSI4 = "fred.stress.stlfsi4.level"
 UNDECIDED = "UNDECIDED"
 #: PLAN.md section 5, verbatim decisions for the long family; everything else mirrors the short design.
@@ -302,6 +354,56 @@ def _hourly_schema():
 HOURLY_SCHEMA = _hourly_schema()
 
 
+def _market_time_schema(key):
+    scope = MARKET_TIME_SCOPE[key]
+    base = copy.deepcopy(SCHEMA)
+    schema = {
+        "schema": _fixed(MARKET_TIME_SCHEMA),
+        "status": base["status"],
+        "experiment_id": _fixed(scope["experiment_id"]),
+        "asset": base["asset"],
+        "seed": base["seed"],
+        "repetitions": base["repetitions"],
+        "evaluation_mode": base["evaluation_mode"],
+        "retraining_frequency": base["retraining_frequency"],
+        "market_time": {
+            "rule": _fixed(scope["rule"]),
+            "observations": _fixed(scope["observations"]),
+            "spacing_open_market_hours": _fixed(scope["spacing_open_market_hours"]),
+            "span_open_market_hours": _fixed(scope["span_open_market_hours"]),
+            "include_origin": _fixed(True),
+            "elapsed_span_fixed": _fixed(False),
+            "require_exact_market_slots": _fixed(True),
+        },
+        "horizons_hours": _fixed(scope["horizons_hours"]),
+        "feature_policy": base["feature_policy"],
+        "splits": base["splits"],
+        "business": base["business"],
+        "model": base["model"],
+        "training": base["training"],
+        "metrics": base["metrics"],
+        "execution": base["execution"],
+        "sealed_identities": {
+            "base_short_design_sha256": _HEX,
+            "time_encoder": {k: _fixed(v) for k, v in TIME_ENCODER_IDENTITY.items()},
+            "feature_manifest_sha256": _HEX,
+            "availability_contract_sha256": _HEX,
+            "calendar": {"calendar_id": _typ(str), "version": _typ(str),
+                         "status": _fixed("ASSUMED_NOT_BROKER")},
+            "candidate_sha256": _HEX,
+            "support_study_sha256": _HEX,
+            "seed": _fixed(6102026),
+            "runtime": {"tensorflow": _typ(str), "keras": _typ(str)},
+        },
+        "seal_sha256": _HEX,
+    }
+    return schema
+
+
+MARKET_TIME_SCHEMAS = {MARKET_TIME_SCOPE[k]["family"]: _market_time_schema(k)
+                       for k in MARKET_TIME_SCOPE}
+
+
 def mode(doc):
     """``FINAL_REFIT`` for a derived final design, otherwise ``VALIDATION``."""
     eid = doc.get("experiment_id") if isinstance(doc, dict) else None
@@ -315,6 +417,10 @@ def family(doc):
         return "long"
     if eid == SHORT_HOURLY_ID:
         return "short_hourly"
+    if eid == MG2_ID:
+        return "short_mg2"
+    if eid == MG12_ID:
+        return "long_mg12"
     return "short"
 
 
@@ -385,6 +491,19 @@ def validate_design(doc):
         _check(doc, FINAL_SCHEMAS[fam], "")
         if doc["seal_sha256"] != _sha(_seal_body(doc)):
             raise DesignError("FINAL_DESIGN_SEAL", "the sealed final design was modified")
+    elif fam in ("short_mg2", "long_mg12"):
+        contradictions = sorted(f for f in FIXED_ELAPSED_FIELDS if f in doc)
+        if contradictions:
+            raise DesignError("MARKET_TIME_CONTRADICTION",
+                              f"{contradictions} are fixed-elapsed fields of {DESIGN_SCHEMA}; a "
+                              "market-time design declares open-market spacing only (the old "
+                              "history_span_hours keeps its elapsed meaning in its own schema)")
+        open_paths = _undecided(doc)
+        if open_paths:
+            raise DesignError("MARKET_TIME_UNDECIDED", f"open fields {open_paths}; never improvised")
+        _check(doc, MARKET_TIME_SCHEMAS[fam], "")
+        if doc["seal_sha256"] != _sha(_seal_body(doc)):
+            raise DesignError("MARKET_TIME_SEAL", "the sealed market-time design was modified")
     elif fam == "short_hourly":
         open_paths = _undecided(doc)
         if open_paths:
@@ -498,10 +617,66 @@ def effective_config_sha256(effective):
     return _sha({k: v for k, v in effective.items() if k != "effective_config_sha256"})
 
 
+def _market_time_effective(d, features):
+    """Effective config for a sealed market-time design (variable elapsed offsets)."""
+    mt, m, t = d["market_time"], d["model"], d["training"]
+    fam = family(d)
+    s = d["splits"]
+    train_start, train_end = _parse(s["train"]["start"]), _parse(s["train"]["end"])
+    inner_start = train_end - timedelta(weeks=s["inner_tail_weeks"])
+    effective = {
+        "schema": EFFECTIVE_SCHEMA, "family": fam, "mode": "VALIDATION", "design": d,
+        "design_sha256": design_sha256(d), "experiment_id": d["experiment_id"], "seed": d["seed"],
+        "horizons_hours": list(d["horizons_hours"]),
+        "market_time": dict(mt),
+        "offsets_hours": None,   # variable per example; NEVER a fixed grid
+        "feature_manifest": features,
+        "splits": {"fit": {"start": _iso(train_start), "end": _iso(inner_start)},
+                   "inner": {"start": _iso(inner_start), "end": _iso(train_end)},
+                   "validation": dict(s["validation"]), "test": dict(s["test"]),
+                   "end_exclusive": True,
+                   "label_rule": "valid label requires origin+h < end of its own split "
+                                 "(fit: < inner start); targets stay exact ELAPSED t+h"},
+        "model": {"schema": "i6dmo.model.v1", "features": features["features"],
+                  "slots": mt["observations"], "offsets_hours": None,
+                  "market_time": dict(mt),
+                  "time_encoder": copy.deepcopy(TIME_ENCODER_IDENTITY),
+                  "horizons_hours": list(d["horizons_hours"]),
+                  "branch": {"filters": m["branch"]["filters"], "kernel_size": m["branch"]["kernel_size"],
+                             "strides": m["branch"]["stride"], "padding": "causal", "activation": "relu"},
+                  "core": {"filters": m["core"]["filters"], "kernel_sizes": m["core"]["kernel_sizes"],
+                           "strides": m["core"]["strides"], "padding": "causal", "activation": "relu"},
+                  "heads": {"hidden_units": m["heads"]["hidden_units"][0],
+                            "hidden_activation": m["heads"]["hidden_activation"],
+                            "output_activation": m["heads"]["output_activation"]},
+                  "positional_encoding": "dynamic_physical_time_after_fusion",
+                  "regime": m["regime"], "seed": d["seed"]},
+        "training": {"optimizer": t["optimizer"], "learning_rate": t["learning_rate"],
+                     "weight_decay": t["weight_decay"], "batch_size": t["batch_size"],
+                     "max_epochs": t["max_epochs"], "patience": t["patience"],
+                     "min_delta": t["min_delta"], "loss": t["loss"],
+                     "training_coordinate": "delta_from_origin_over_fit_naive_mae",
+                     "input_scaling": "fit_only_zscore_per_feature",
+                     "monitor": "0.5*(fit_loss+inner_loss) at the same end-of-epoch weights, "
+                                "computed ONLY through the shared inference evaluation path",
+                     "patience_rule": "stale += 1 unless monitored < reference - min_delta",
+                     "restore": "lowest monitored epoch, first tie wins",
+                     "batch_order": "seeded_permutation_per_epoch",
+                     "rows_without_valid_head": "excluded from fit/inner training, counted",
+                     "monitor_comparison_floor": MONITOR_FLOOR_DECLARATION,
+                     "outer_validation_for_checkpoint_selection": False},
+        "sealed_identities": copy.deepcopy(d["sealed_identities"]),
+    }
+    effective["effective_config_sha256"] = effective_config_sha256(effective)
+    return effective
+
+
 def effective_config(design):
     """Resolve a validated design to the sealed effective config used by train."""
     d = validate_design(design)
     features = check_feature_identity(list(fa.MANIFEST_NO_STLFSI4))
+    if family(d) in ("short_mg2", "long_mg12"):
+        return _market_time_effective(d, features)
     s = d["splits"]
     train_start, train_end = _parse(s["train"]["start"]), _parse(s["train"]["end"])
     inner_start = train_end - timedelta(weeks=s["inner_tail_weeks"])
@@ -562,22 +737,7 @@ def effective_config(design):
             "restore": "lowest monitored epoch, first tie wins",
             "batch_order": "seeded_permutation_per_epoch",
             "rows_without_valid_head": "excluded from fit/inner training, counted",
-            "monitor_comparison_floor": {
-                "version": "v2", "rtol": 5e-5, "atol": 1e-9,
-                "scope": "cross-process GPU comparison of the monitored value and per-batch "
-                         "per-head float64 partial sums ONLY; CPU end-to-end, self-check, reload, "
-                         "predictions, input bytes, weight digests, forward identity and flags "
-                         "stay bitwise",
-                "justification": "a reproduced, build/context-specific numerical discrepancy "
-                                 "between in-session and fresh-instance GPU executions of this "
-                                 "pinned TensorFlow build (cause not demonstrated; eight "
-                                 "mechanisms excluded: autotune/init order, TF32, weights, input "
-                                 "bytes, forward identity, grappler remapping/layout/AMP; "
-                                 "observed max 1.82e-5), bounded by the versioned "
-                                 "NUMERICALLY_EQUIVALENT protocol "
-                                 "i6dmo.monitor_numeric_equivalence.v2",
-                "prospective": True,
-            },
+            "monitor_comparison_floor": MONITOR_FLOOR_DECLARATION,
             "outer_validation_for_checkpoint_selection": False,
         },
     }
@@ -685,7 +845,8 @@ def hourly_control_design(short_design):
     """Derive the sealed hourly-input control design from the validated short design (pure)."""
     base = validate_design(short_design)
     if family(base) != "short" or mode(base) == "FINAL_REFIT":
-        raise DesignError("SHORT_DESIGN_REQUIRED", "the hourly control derives from the short design")
+        raise DesignError("SHORT_DESIGN_REQUIRED",
+                          "the hourly control derives from the elapsed short design")
     doc = copy.deepcopy(base)
     for path, value in HOURLY_FROM_PLAN.items():
         node = doc
@@ -723,6 +884,103 @@ def seal_hourly_control(short_design_path, out_dir):
             "experiment_id": SHORT_HOURLY_ID, "design_sha256": design_sha256(doc),
             "common_support_rules_sha256": COMMON_SUPPORT_RULES["rules_sha256"],
             "files": written, "fits_run": 0}
+
+
+def market_time_design(short_design, key, candidate_dir):
+    """Derive one sealed market-time design (MG2 or MG12) from the validated short design."""
+    import tensorflow as tf
+    from tools.i6dmo.model import keras_version
+    base = validate_design(short_design)
+    if family(base) != "short" or mode(base) == "FINAL_REFIT":
+        raise DesignError("SHORT_DESIGN_REQUIRED",
+                          "the market-time designs derive from the elapsed short design")
+    scope = MARKET_TIME_SCOPE[key]
+    candidates = Path(candidate_dir)
+    name = "CANDIDATE.short.json" if key == "mg2" else "CANDIDATE.long.json"
+    candidate_path = candidates / name
+    try:
+        candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+        study_bytes = (candidates / "SUPPORT_STUDY.json").read_bytes()
+    except OSError as exc:
+        raise DesignError("MARKET_TIME_CANDIDATE_MISSING", str(exc)) from None
+    if candidate.get("input_sampling", {}).get("rule") != scope["rule"]:
+        raise DesignError("MARKET_TIME_CANDIDATE_MISMATCH",
+                          f"{name} declares rule {candidate.get('input_sampling', {}).get('rule')!r}, "
+                          f"not {scope['rule']}")
+    if candidate.get("horizons_hours") != scope["horizons_hours"]:
+        raise DesignError("MARKET_TIME_CANDIDATE_MISMATCH", f"{name} horizons differ from the plan")
+    features = check_feature_identity(list(fa.MANIFEST_NO_STLFSI4))
+    calendar = candidate["calendar"]
+    doc = {
+        "schema": MARKET_TIME_SCHEMA,
+        "status": base["status"],
+        "experiment_id": scope["experiment_id"],
+        "asset": base["asset"], "seed": base["seed"], "repetitions": base["repetitions"],
+        "evaluation_mode": base["evaluation_mode"],
+        "retraining_frequency": base["retraining_frequency"],
+        "market_time": {"rule": scope["rule"], "observations": scope["observations"],
+                        "spacing_open_market_hours": scope["spacing_open_market_hours"],
+                        "span_open_market_hours": scope["span_open_market_hours"],
+                        "include_origin": True, "elapsed_span_fixed": False,
+                        "require_exact_market_slots": True},
+        "horizons_hours": list(scope["horizons_hours"]),
+        "feature_policy": copy.deepcopy(base["feature_policy"]),
+        "splits": copy.deepcopy(base["splits"]),
+        "business": copy.deepcopy(base["business"]),
+        "model": copy.deepcopy(base["model"]),
+        "training": copy.deepcopy(base["training"]),
+        "metrics": copy.deepcopy(base["metrics"]),
+        "execution": copy.deepcopy(base["execution"]),
+        "sealed_identities": {
+            "base_short_design_sha256": design_sha256(base),
+            "time_encoder": copy.deepcopy(TIME_ENCODER_IDENTITY),
+            "feature_manifest_sha256": features["manifest_sha256"],
+            "availability_contract_sha256": features["availability_contract_sha256"],
+            "calendar": {"calendar_id": calendar["calendar_id"], "version": calendar["version"],
+                         "status": "ASSUMED_NOT_BROKER"},
+            "candidate_sha256": hashlib.sha256(candidate_path.read_bytes()).hexdigest(),
+            "support_study_sha256": hashlib.sha256(study_bytes).hexdigest(),
+            "seed": base["seed"],
+            "runtime": {"tensorflow": tf.__version__, "keras": keras_version()},
+        },
+    }
+    doc["seal_sha256"] = _sha(_seal_body(doc))
+    return validate_design(doc)
+
+
+def seal_market_time(short_design_path, candidate_dir, out_dir):
+    """Write EXPERIMENT.mg2.json and EXPERIMENT.mg12.json (deterministic, idempotent, no fit)."""
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    result = {"schema": "i6dmo.seal_market_time.v1", "status": "SEALED", "fits_run": 0}
+    short = load_design(short_design_path)
+    for key, name in (("mg2", "EXPERIMENT.mg2.json"), ("mg12", "EXPERIMENT.mg12.json")):
+        doc = market_time_design(short, key, candidate_dir)
+        effective_config(doc)
+        text = json.dumps(doc, sort_keys=True, indent=2) + "\n"
+        path = out / name
+        if path.exists():
+            if path.read_text(encoding="utf-8") != text:
+                raise DesignError("MARKET_TIME_DESIGN_EXISTS", f"{path} holds different content")
+        else:
+            tmp = path.with_name(path.name + ".tmp")
+            tmp.write_text(text, encoding="utf-8")
+            os.replace(tmp, path)
+        result[key] = {"experiment_id": doc["experiment_id"], "design_sha256": design_sha256(doc),
+                       "seal_sha256": doc["seal_sha256"], "file": str(path),
+                       "effective_config_sha256": effective_config(doc)["effective_config_sha256"]}
+    return result
+
+
+def run_seal_market_time(args):
+    try:
+        result = seal_market_time(args.short_design, args.candidate_dir, args.out_dir)
+    except DesignError as exc:
+        result = {"schema": "i6dmo.seal_market_time.v1", "status": "FAILED", "code": exc.code,
+                  "detail": str(exc)}
+    print(json.dumps(result, sort_keys=True) if args.json
+          else f"{result['status']} {result.get('mg2', {}).get('design_sha256') or result.get('code')}")
+    return 0 if result["status"] == "SEALED" else 2
 
 
 def run_seal_hourly_control(args):
@@ -779,6 +1037,13 @@ def add_cli(subparsers):
     h.add_argument("--out-dir", required=True)
     h.add_argument("--json", action="store_true")
     h.set_defaults(func=run_seal_hourly_control)
+    m = subparsers.add_parser("seal-market-time",
+                              help="seal the MG2/MG12 market-time pair designs (no fit)")
+    m.add_argument("--short-design", required=True)
+    m.add_argument("--candidate-dir", required=True)
+    m.add_argument("--out-dir", required=True)
+    m.add_argument("--json", action="store_true")
+    m.set_defaults(func=run_seal_market_time)
     return p
 
 

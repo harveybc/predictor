@@ -453,3 +453,406 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+# =========================================================================== #
+# Training adapter (order 50d20d01 section 1.1; plan sections 2, 4, 6)        #
+# =========================================================================== #
+
+DESIGN_SCHEMA = "i6dmo.market_design.v1"
+BUNDLE_SCHEMA = "i6dmo.market_bundle.v1"
+#: Support study this adapter must reconcile against before any fit.
+STUDY_SHA256 = "d2b6a2380380cfcc6eaafd0ece7b3e3c3375bf28f178d43a8e0ca05163ee0475"
+#: Reference counts from that study. Plan section 1: reference counts for unchanged
+#: input/calendar identities, NEVER quotas to force by filling gaps.
+STUDY_REFERENCE = {
+    "MG2_MARKET_EXACT": {"fit": 16496, "inner": 715, "validation": 4772},
+    "MG12_MARKET_EXACT": {"fit": 13174, "inner": 546, "validation": 3804},
+    "shared": {"fit": 13123, "inner": 546, "validation": 3760},
+}
+#: Per-window model inputs (plan section 3). Raw hours; the /24 conversion is the model's.
+TIME_ENCODER = {
+    "offsets_unit": "HOURS",
+    "offsets_sign": "SIGNED_FROM_T",
+    "last_offset_exactly_zero": True,
+    "adjacent_delta_unit": "HOURS",
+    "adjacent_delta_first_slot": 0,
+    "closure_crossed_first_slot": 0,
+    "closure_crossed_values": [0, 1],
+    "model_applies_division_by": 24,
+    "model_requirement": ("sinusoidal position code evaluated on ACTUAL signed offsets (never "
+                          "ordinal slot indices), then two context channels appended before the "
+                          "core: adjacent elapsed-hours/24 and closure-crossed (0/1)"),
+    "value_channels": "19 branches x 4 filters = 76 encoded value channels plus the 2 context channels",
+    "dtypes": {"offsets_hours": "float64", "adjacent_delta_hours": "float64",
+               "closure_crossed": "int64", "slot_instants": "int64"},
+}
+MARKET_ARRAYS = ("row_id", "x", "origin_price", "target_price", "mask",
+                 "offsets_hours", "adjacent_delta_hours", "closure_crossed", "slot_instants")
+MARKET_AUX = ("row_id", "row_ids", "entry_mask", "week_ids")
+
+
+def market_design(design: Mapping[str, Any]) -> Dict[str, Any]:
+    """Typed MG design (data-lane sealed inputs) derived from a validated elapsed design.
+
+    Market spacing replaces the elapsed ``input`` block entirely: no
+    ``history_span_hours`` survives, so a fixed elapsed span can never be read
+    out of this document. The runtime/model seal is added by its owner lane.
+    """
+    base = data.validate_design(design)
+    spec = MarketWindowSpec.from_design(base)
+    doc: Dict[str, Any] = {
+        "schema": DESIGN_SCHEMA,
+        "status": "DATA_LANE_SEALED_INPUTS_NOT_A_RUNTIME_CONFIG",
+        "experiment_id": ("I6-DMO-SHORT-MG2-STATIC-R0" if spec.spacing_market_hours == 2
+                          else "I6-DMO-LONG-MG12-STATIC-R0"),
+        "derives_from_design_sha256": provenance.canonical_sha256(base),
+        "asset": base["asset"], "seed": base["seed"], "repetitions": base["repetitions"],
+        "evaluation_mode": base["evaluation_mode"],
+        "retraining_frequency": base["retraining_frequency"],
+        "input_sampling": {
+            "rule": market_rule_name(spec), "observations": spec.observations,
+            "spacing_open_market_hours": spec.spacing_market_hours,
+            "span_open_market_hours": spec.span_market_hours,
+            "elapsed_span_hours_fixed": False,
+            "include_origin": True, "issuance_hours": 1, "value_mode": "RAW",
+            "grid": ("expected whole-hour bar-END instants in (open, close] of the versioned "
+                     "calendar; never dataset row counts"),
+            "exactness": ("exact finite retained observation required at every expected endpoint; "
+                          "unplanned open-session gaps are counted exclusions"),
+            "no_asof_no_smoothing_no_interpolation_no_synthetic_prices": True,
+        },
+        "horizons_hours": list(data.horizons(base)),
+        "targets": "exact ELAPSED t+h, unmodified, under the original C1 business masks",
+        "naive": "p(t) vs p(t+h) in ELAPSED hours on exactly the model's rows, original price",
+        "splits": json.loads(json.dumps(base["splits"])),
+        "business": json.loads(json.dumps(base["business"])),
+        "feature_policy": json.loads(json.dumps(base["feature_policy"])),
+        "features": list(provenance.MANIFEST),
+        "feature_manifest_sha256": provenance.EXPECTED_MANIFEST_SHA256,
+        "availability_contract_sha256": provenance.EXPECTED_CONTRACT_SHA256,
+        "preprocessing": "scalers and loss scales fit on FIT rows only; selection is not redone",
+        "model": json.loads(json.dumps(base["model"])),
+        "training": json.loads(json.dumps(base["training"])),
+        "metrics": json.loads(json.dumps(base["metrics"])),
+        "time_encoder": dict(TIME_ENCODER),
+        "support_study_sha256": STUDY_SHA256,
+        "support_study_reference_counts_are_not_quotas": True,
+    }
+    doc["data_identity_sha256"] = data_identity_sha256(doc)
+    validate_market_design(doc)
+    return doc
+
+
+_IDENTITY_KEYS = ("experiment_id", "asset", "input_sampling", "horizons_hours", "targets",
+                  "naive", "splits", "business", "feature_policy", "features",
+                  "feature_manifest_sha256", "availability_contract_sha256", "preprocessing",
+                  "time_encoder")
+
+
+def data_identity_sha256(doc: Mapping[str, Any]) -> str:
+    """Identity of everything that determines the materialized arrays."""
+    return provenance.canonical_sha256({k: doc[k] for k in _IDENTITY_KEYS})
+
+
+def validate_market_design(doc: Mapping[str, Any]) -> Dict[str, Any]:
+    """Typed validation; refuses contradictory fixed-elapsed versus market-time fields."""
+    if not isinstance(doc, Mapping) or doc.get("schema") != DESIGN_SCHEMA:
+        raise data.DataContractError("MARKET_DESIGN_INVALID", f"schema must be {DESIGN_SCHEMA}")
+    for key in ("input", "history_span_hours", "spacing_hours"):
+        if key in doc:
+            raise data.DataContractError(
+                "CONTRADICTORY_TIME_FIELDS",
+                f"{key!r} is an elapsed-grid field and cannot appear in a market-time design")
+    s = doc.get("input_sampling")
+    if not isinstance(s, Mapping):
+        raise data.DataContractError("MARKET_DESIGN_INVALID", "input_sampling is mandatory")
+    if set(s) & {"history_span_hours", "spacing_hours"}:
+        raise data.DataContractError("CONTRADICTORY_TIME_FIELDS",
+                                     "elapsed span/spacing inside input_sampling")
+    if s.get("elapsed_span_hours_fixed") is not False:
+        raise data.DataContractError("CONTRADICTORY_TIME_FIELDS",
+                                     "elapsed spans vary across closures and DST")
+    if s.get("observations") != 13 or s.get("spacing_open_market_hours") not in (2, 12):
+        raise data.DataContractError("MARKET_DESIGN_INVALID", "13 slots, spacing 2 or 12")
+    if s.get("span_open_market_hours") != s["spacing_open_market_hours"] * 12:
+        raise data.DataContractError("MARKET_DESIGN_INVALID", "span must be spacing * 12")
+    if s.get("rule") != f"MG{s['spacing_open_market_hours']}_MARKET_EXACT":
+        raise data.DataContractError("MARKET_DESIGN_INVALID", "rule disagrees with spacing")
+    if doc.get("features") != list(provenance.MANIFEST) or \
+            doc.get("feature_manifest_sha256") != provenance.EXPECTED_MANIFEST_SHA256:
+        raise data.DataContractError("MARKET_DESIGN_INVALID", "19-feature manifest required")
+    if doc.get("time_encoder", {}).get("model_applies_division_by") != 24:
+        raise data.DataContractError("MARKET_DESIGN_INVALID", "time encoder contract altered")
+    if "data_identity_sha256" in doc and doc["data_identity_sha256"] != data_identity_sha256(doc):
+        raise data.DataContractError("MARKET_DESIGN_SEAL", "data identity does not verify")
+    return dict(doc)
+
+
+def _elapsed_design(doc: Mapping[str, Any]) -> Dict[str, Any]:
+    """The elapsed-schema document the audited data loaders consume (inputs excepted)."""
+    s = doc["input_sampling"]
+    base = {
+        "schema": "i6dmo.design.v1", "status": "DESIGN_NOT_RUNTIME_CONFIG",
+        "experiment_id": doc["experiment_id"], "asset": doc["asset"], "seed": doc["seed"],
+        "repetitions": doc["repetitions"], "evaluation_mode": doc["evaluation_mode"],
+        "retraining_frequency": doc["retraining_frequency"],
+        "input": {"value_mode": "RAW", "history_span_hours": s["span_open_market_hours"],
+                  "spacing_hours": s["spacing_open_market_hours"], "observations": 13,
+                  "include_origin": True, "issuance_hours": 1, "smoothing": False,
+                  "require_exact_timestamps": True},
+        "horizons_hours": list(doc["horizons_hours"]), "feature_policy": doc["feature_policy"],
+        "splits": doc["splits"], "business": doc["business"], "model": doc["model"],
+        "training": doc["training"], "metrics": doc["metrics"],
+        "execution": {"first_scientific_gpu": "preferred_5090", "one_heavy_job_per_host": True,
+                      "secondary_gpu": "4090_after_admission",
+                      "preferred_aux_gpu": "disabled_for_parallel_fits",
+                      "adopt_first_full_fit_as_cost_measurement": True, "cpu_fallback": False,
+                      "new_scientific_identity": True, "resume_retired_doin_campaign": False},
+    }
+    return data.validate_design(base)
+
+
+def authenticate_market_bundle(manifest: Mapping[str, Any], design: Mapping[str, Any]) -> str:
+    """Refuse a bundle whose schema or market rule differs from the design's."""
+    validate_market_design(design)
+    if manifest.get("schema") != BUNDLE_SCHEMA:
+        raise data.DataContractError("MARKET_BUNDLE_SCHEMA", str(manifest.get("schema")))
+    expected = design["input_sampling"]["rule"]
+    got = (manifest.get("input_sampling") or {}).get("rule")
+    if got != expected:
+        raise data.DataContractError("MARKET_RULE_MISMATCH", f"{got!r} != {expected!r}")
+    if manifest.get("data_identity_sha256") != design.get("data_identity_sha256"):
+        raise data.DataContractError("MARKET_DATA_IDENTITY_MISMATCH",
+                                     str(manifest.get("data_identity_sha256")))
+    return expected
+
+
+def time_inputs(arrays: MarketSplitArrays) -> Dict[str, np.ndarray]:
+    """Per-window model inputs: signed offsets (h), adjacent deltas (h), closure flags."""
+    off = arrays.actual_offsets_s.astype(np.float64) / HOUR
+    adj = np.zeros_like(off)
+    adj[:, 1:] = np.diff(off, axis=1)
+    flags = arrays.closure_crossed.astype(np.int64)
+    flags[:, 0] = 0
+    if off.size and not np.all(off[:, -1] == 0):
+        raise data.DataContractError("INTERNAL_OFFSET_NOT_ZERO", "the last offset must be 0")
+    return {"offsets_hours": off, "adjacent_delta_hours": adj, "closure_crossed": flags,
+            "slot_instants": arrays.slot_instants.astype(np.int64)}
+
+
+def market_fit_statistics(bundle: data.InputBundle, table: MarketOriginTable) -> dict:
+    """FIT-only feature mean/std over the slot source rows and per-head fit naive MAE."""
+    import math
+    sel = np.flatnonzero(table.materialized("FIT"))
+    if not len(sel):
+        return {"status": "NO_FIT_ROWS"}
+    bars = np.unique(table.slot_index[sel].reshape(-1))
+    xs = bundle.x[bars]
+    pos = {int(v): i for i, v in enumerate(bundle.ts)}
+    naive_mae, unsupported = {}, []
+    for j, h in enumerate(table.horizons):
+        rows = sel[table.label_ok[sel, j]]
+        if not len(rows):
+            naive_mae[str(h)] = None
+            unsupported.append(h)
+            continue
+        origins = table.origin_ts[rows]
+        p0 = bundle.price[[pos[int(t)] for t in origins]]
+        p1 = bundle.price[[pos[int(t) + h * HOUR] for t in origins]]
+        value = math.fsum(np.abs(p1 - p0).tolist()) / len(rows)
+        naive_mae[str(h)] = value
+        if value == 0.0:
+            unsupported.append(h)
+    std = xs.std(axis=0)
+    zero = [f for f, v in zip(bundle.features, std) if v == 0.0]
+    status = "UNSUPPORTED_HEAD" if unsupported else ("ZERO_SCALE" if zero else "OK")
+    return {"status": status,
+            "basis": "FIT rows only; unique exact slot source bars; std ddof=0",
+            "fit_rows": int(len(sel)), "fit_window_bars": int(len(bars)),
+            "feature_mean": {f: float(v) for f, v in zip(bundle.features, xs.mean(axis=0))},
+            "feature_std": {f: float(v) for f, v in zip(bundle.features, std)},
+            "zero_scale_features": zero, "naive_mae_fit": naive_mae,
+            "unsupported_heads": unsupported}
+
+
+def _reconciliation(rule: str, rows: Mapping[str, int], shared: Mapping[str, int]) -> dict:
+    reference = STUDY_REFERENCE[rule]
+    per_split, status = {}, "RECONCILED"
+    for split in ("fit", "inner", "validation"):
+        got, want = int(rows[split]), int(reference[split])
+        per_split[split] = {"materialized": got, "study_rows": want, "difference": got - want,
+                            "status": "MATCH" if got == want else "DIFFERENCE_RETAINED"}
+        if got != want:
+            status = "DIFFERENCE_RETAINED_BEFORE_ANY_FIT"
+    return {"study_sha256": STUDY_SHA256, "rule": rule,
+            "basis": "materialized rows (input_ok and >= 1 valid head) per split",
+            "per_split": per_split, "status": status,
+            "shared_usable_origins": dict(shared),
+            "shared_study_reference": dict(STUDY_REFERENCE["shared"]),
+            "counts_are_not_quotas": True,
+            "note": ("a difference is retained and reported, never closed by filling gaps, "
+                     "ASOF substitution or relabelling closures")}
+
+
+def build_market_bundle(input_dir: str | Path, market_doc: Mapping[str, Any],
+                        out_dir: str | Path, *, code_commit: Optional[str] = None,
+                        shared_with: Optional[str | Path] = None) -> dict:
+    """Materialize MG2/MG12 training bundles with sealed identities and reconciliation."""
+    doc = validate_market_design(market_doc)
+    out = Path(out_dir)
+    if out.exists() and any(out.iterdir()):
+        raise data.DataContractError("BUNDLE_EXISTS", "a frozen bundle is never overwritten")
+    elapsed = _elapsed_design(doc)
+    bundle = data.load_input(input_dir, elapsed)
+    table = build_market_table(bundle, elapsed)
+    gate = provenance.availability_gate(list(bundle.features))
+    out.mkdir(parents=True, exist_ok=True)
+    splits_json, files, rows, usable = {}, {}, {}, {}
+    for split, bounds in zip(data.SPLITS, data.split_bounds(elapsed)):
+        arrays = materialize(bundle, table, split)
+        key = split.lower()
+        model_npz = {"row_id": arrays.origin_ts.astype(np.int64), "x": arrays.X,
+                     "origin_price": arrays.price_origin, "target_price": arrays.y_price,
+                     "mask": arrays.mask, **time_inputs(arrays)}
+        aux_npz = {"row_id": arrays.origin_ts.astype(np.int64), "row_ids": arrays.row_ids,
+                   "entry_mask": arrays.entry_mask, "week_ids": arrays.week_ids}
+        name, aux = f"{key}.npz", f"{key}_aux.npz"
+        np.savez(out / name, **model_npz)
+        np.savez(out / aux, **aux_npz)
+        files[name] = provenance.file_sha256(out / name)
+        files[aux] = provenance.file_sha256(out / aux)
+        rows[key] = int(len(arrays.row_ids))
+        usable[key] = set(int(v) for v in arrays.origin_ts)
+        splits_json[key] = {
+            **bounds.to_json(), "path": name, "aux_path": aux, "n_rows": rows[key],
+            "row_ids_sha256": provenance.canonical_sha256(arrays.row_ids.tolist()),
+            "arrays_sha256": provenance.array_sha256(model_npz),
+            "aux_sha256": provenance.array_sha256(aux_npz),
+            "slot_instants_sha256": provenance.array_sha256(
+                {"slot_instants": model_npz["slot_instants"]}),
+            "offsets_sha256": provenance.array_sha256(
+                {"offsets_hours": model_npz["offsets_hours"],
+                 "adjacent_delta_hours": model_npz["adjacent_delta_hours"],
+                 "closure_crossed": model_npz["closure_crossed"]}),
+            "head_valid": {str(h): int(arrays.mask[:, j].sum())
+                           for j, h in enumerate(arrays.horizons)},
+            "head_entry_valid": {str(h): int(arrays.entry_mask[:, j].sum())
+                                 for j, h in enumerate(arrays.horizons)},
+            "counts": json.loads(json.dumps(table.counts[split])),
+            "elapsed_span_hours_distribution": table.counts[split]["elapsed_span_hours_distribution"],
+            "first_origin": data.iso(arrays.origin_ts.min()) if rows[key] else None,
+            "last_origin": data.iso(arrays.origin_ts.max()) if rows[key] else None,
+        }
+    shared = {k: len(v) for k, v in usable.items()}
+    if shared_with is not None:
+        other = json.loads((Path(shared_with) / "BUNDLE.json").read_text())
+        for key in rows:
+            with np.load(Path(shared_with) / other["splits"][key]["path"],
+                         allow_pickle=False) as z:
+                shared[key] = len(usable[key] & set(int(v) for v in z["row_id"]))
+    manifest = {
+        "schema": BUNDLE_SCHEMA,
+        "status": "TRAINING_ADAPTER_BUNDLE_NO_FIT_HAS_RUN",
+        "experiment_id": doc["experiment_id"],
+        "input_sampling": dict(doc["input_sampling"]),
+        "offsets_open_market_hours": list(range(-doc["input_sampling"]["span_open_market_hours"],
+                                                1, doc["input_sampling"]["spacing_open_market_hours"])),
+        "elapsed_offsets_vary_per_row": True,
+        "per_row_time_inputs": dict(TIME_ENCODER),
+        "model_arrays": list(MARKET_ARRAYS), "aux_arrays": list(MARKET_AUX),
+        "horizons_hours": list(doc["horizons_hours"]),
+        "targets": doc["targets"], "naive": doc["naive"],
+        "design_sha256": provenance.canonical_sha256(doc),
+        "data_identity_sha256": doc["data_identity_sha256"],
+        "derives_from_design_sha256": doc["derives_from_design_sha256"],
+        "features": list(bundle.features),
+        "feature_manifest_sha256": gate["manifest_sha256"],
+        "availability_contract_sha256": gate["contract_sha256"],
+        "availability_gate": gate, "producer_status": provenance.producer_status(),
+        "confirmatory_test_blocked": gate["confirmatory_test_blocked"],
+        "calendar": {**{k: table.identity[k] for k in ("calendar_id", "calendar_version")},
+                     "status": table.identity["calendar_status"],
+                     "sha256": bundle.files.get("CALENDAR.json")},
+        "source_clock": {k: bundle.clock.get(k) for k in
+                         ("status", "timestamp_semantics", "availability_policy", "clock_policy")},
+        "inputs": {name: {"name": name, "sha256": digest}
+                   for name, digest in bundle.files.items()},
+        "history_provenance": data.history_provenance(bundle, data.build_origin_table(
+            bundle, elapsed)) if False else {"earliest_consumed_bar": data.iso(
+                int(bundle.ts[table.slot_index[table.slot_index >= 0].min()]))},
+        "splits": splits_json,
+        "fit_statistics": market_fit_statistics(bundle, table),
+        "support_hashes": {"study_sha256": STUDY_SHA256,
+                           "row_ids": {k: v["row_ids_sha256"] for k, v in splits_json.items()},
+                           "arrays": {k: v["arrays_sha256"] for k, v in splits_json.items()},
+                           "slot_instants": {k: v["slot_instants_sha256"]
+                                             for k, v in splits_json.items()},
+                           "offsets": {k: v["offsets_sha256"] for k, v in splits_json.items()}},
+        "reconciliation": _reconciliation(doc["input_sampling"]["rule"], rows, shared),
+        "test_materialized": False,
+        "development_selection_used_2024": True,
+        "selection_redone": False,
+        "code": {"files_sha256": data._code_digests(), "commit": code_commit,
+                 "market_grid_sha256": provenance.file_sha256(Path(__file__))},
+    }
+    manifest["bundle_sha256"] = data._manifest_digest(manifest)
+    for info in splits_json.values():
+        info["sha256"] = files[info["path"]]
+    manifest["files"] = files
+    (out / "BUNDLE.json").write_text(json.dumps(manifest, indent=1, sort_keys=True))
+    return manifest
+
+
+def load_market_manifest(out_dir: str | Path) -> dict:
+    data.verify_bundle(out_dir)
+    return json.loads((Path(out_dir) / "BUNDLE.json").read_text())
+
+
+def load_market_split(out_dir: str | Path, split: str, *,
+                      design: Optional[Mapping[str, Any]] = None) -> Dict[str, np.ndarray]:
+    """Verified read of one market split (model + aux arrays), optionally authenticated."""
+    manifest = load_market_manifest(out_dir)
+    if design is not None:
+        authenticate_market_bundle(manifest, design)
+    info = manifest["splits"][split.lower()]
+    merged: Dict[str, np.ndarray] = {}
+    for key in ("path", "aux_path"):
+        with np.load(Path(out_dir) / info[key], allow_pickle=False) as z:
+            merged.update({k: z[k] for k in z.files})
+    return merged
+
+
+def paired_metrics(out_dir: str | Path, split: str, predictions: np.ndarray, *,
+                   input_dir: str | Path, checkpoint: str = "unfitted-contract-check") -> dict:
+    """C2 paired metrics on exactly the bundle's rows, elapsed horizons, original price."""
+    from tools.i6dmo import naive as naive_mod
+    manifest = load_market_manifest(out_dir)
+    arrays = load_market_split(out_dir, split)
+    info = manifest["splits"][split.lower()]
+
+    class _A:
+        pass
+    view = _A()
+    view.split = split.upper()
+    view.horizons = tuple(manifest["horizons_hours"])
+    view.features = tuple(manifest["features"])
+    view.mask = arrays["mask"]
+    view.entry_mask = arrays["entry_mask"]
+    view.y_price = arrays["target_price"]
+    view.price_origin = arrays["origin_price"]
+    view.origin_ts = arrays["row_id"]
+    view.row_ids = arrays["row_ids"]
+    view.week_ids = arrays["week_ids"]
+    view.expected_weeks = tuple(sorted(set(str(w) for w in arrays["week_ids"])))
+    view.calendar_id = manifest["calendar"]["calendar_id"]
+    design = {"experiment_id": manifest["experiment_id"],
+              "horizons_hours": manifest["horizons_hours"],
+              "data_identity_sha256": manifest["data_identity_sha256"]}
+    report = naive_mod.paired_metrics(view, predictions, design, input_dir=input_dir,
+                                      checkpoint=checkpoint,
+                                      sealed_at="2026-10-15T00:00:00+00:00")
+    report["bundle_sha256"] = manifest["bundle_sha256"]
+    report["rule"] = manifest["input_sampling"]["rule"]
+    report["row_ids_sha256"] = info["row_ids_sha256"]
+    return report
