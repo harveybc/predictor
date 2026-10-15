@@ -19,7 +19,9 @@
     "tools/i6dmo/replay_monitor.py",
     "tests/i6dmo/conftest.py",
     "tools/i6dmo/dmo10_isolation.py",
-    "tests/i6dmo/test_dmo10_isolation.py"
+    "tests/i6dmo/test_dmo10_isolation.py",
+    "tests/i6dmo/test_dmo_hourly.py",
+    "docs EXPERIMENT.short_hourly.json + COMMON_SUPPORT_RULES.json (sealed artifacts)"
   ],
   "python_api": {
     "tools.i6dmo.design.load_design(path) -> dict": "typed, unknown/missing fields rejected at every level; fixed C-section values enforced",
@@ -181,5 +183,13 @@
     "monitor_forward": "one dedicated eager forward (i6dmo.monitor_forward.v1, source sha256) owned by the monitor module; used by fit-time recording and replay_monitor; records/witnesses from any other forward are refused typed MONITOR_FORWARD_MISMATCH; grappler remapping/layout_optimizer/auto_mixed_precision disabled flags-first and enforced"
   },
   "decision_impact": "monitor_evaluation.decision_impact: near-tie negative control (stopping_decision_impact at measured 1.82e-5 relative uncertainty) reporting could_change_best_epoch / could_change_patience_or_stop; training decisions untouched; no invariance claim",
-  "dmo10_isolation": "python -m tools.i6dmo.dmo10_isolation {freeze|forward|diff|flags}: frozen batch digests to Git (arrays local), element-level diff before reduction, independent fsum reproduction, controlled flags-on/off child comparison (SUPPORTS/DOES_NOT_SUPPORT/NOT_INFORMATIVE_ON_CPU); retained checkpoint only, no fits"
+  "dmo10_isolation": "python -m tools.i6dmo.dmo10_isolation {freeze|forward|diff|flags}: frozen batch digests to Git (arrays local), element-level diff before reduction, independent fsum reproduction, controlled flags-on/off child comparison (SUPPORTS/DOES_NOT_SUPPORT/NOT_INFORMATIVE_ON_CPU); retained checkpoint only, no fits",
+  "hourly_control": {
+    "seal": "python -m tools.i6dmo seal-hourly-control --short-design <short> --out-dir <dir> [--json] (also tools.i6dmo.design); writes EXPERIMENT.short_hourly.json + COMMON_SUPPORT_RULES.json, deterministic/idempotent, no fit",
+    "identity": "I6-DMO-SHORT-HOURLY-DS1-STATIC-R0, design sha 971ba9c42a2dbbe86d2bd100f5f85c9e8e3ccbfbcbe3a62a9d0a18f83cec0767; 24 elapsed h, spacing 1 h, 25 obs incl. t, heads 2..12, same recipe/cadence/splits",
+    "forced_adjustment": "head Flatten input 25x4=100 (vs 13x4=52); everything else identical (branch/core params 304/1932)",
+    "availability": "declared in derived_from.availability_declaration; counts owned by the data lane market-grid study",
+    "common_support": "COMMON_SUPPORT_RULES.json sha 9d61117f... frozen before scoring and bound into the sealed design; REUSED_MODEL_SUBSET_SCORE != trained-on-common-population; encoder/R2/cadence are distinct later designs",
+    "data_bundle": "a bundle for this family must declare offsets -24..0 step 1 (25) and horizons 2..12; a 13-slot bundle is a typed BUNDLE_OFFSETS refusal"
+  }
 }

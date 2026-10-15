@@ -223,5 +223,16 @@
       },
       "earliest_consumed_bar": "2019-12-26T23:00:00+00:00 (before TRAIN start; after the DCA_2019 declared-assumption span 2019-03-11..2019-12-01, inside the declared, not quote-verified December-2019 warmup of the clock scope)"
     }
+  },
+  "market_grid_candidates": {
+    "module": "tools/i6dmo/market_grid.py",
+    "tests": "tests/i6dmo/test_market_grid.py",
+    "rules": [
+      "MG2_MARKET_EXACT",
+      "MG12_MARKET_EXACT"
+    ],
+    "study": "docs/i6n/direct_multi_output_static/market_grid/SUPPORT_STUDY.json (d2b6a238...)",
+    "cli": "python -m tools.i6dmo.market_grid --design <short design> --input-dir <input> --out <report.json>",
+    "status": "SUPPORT_STUDY_NOT_A_PREDICTIVE_MEASUREMENT; candidates not sealed, no fit"
   }
 }

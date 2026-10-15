@@ -1,0 +1,125 @@
+{
+ "config_sha256": "f244314197ae9eca3cbf92e1d8e5eb063ef02e907508af42f34419ba7a8abd94",
+ "config_version": "i6dmo-eurusd-costs-2026-10-15.v1",
+ "cost_verification": "NOT_BROKER_VERIFIED",
+ "fields": {
+  "costs.commission_per_lot_round_trip": {
+   "sources": [
+    "heuristic-strategy app/plugins/plugin_long_short_predictions.py blob 3a19b3f73917a9714d496d10a719135c9810c3ce (identical at 5c87a25 and at pin d40fd3b0); plugin_params comment: 'Trading costs (worst-case retail EURUSD)': commission_per_lot 7.0",
+    "lts plugins_broker/backtrader_simulation_broker.py blob ddeef86c @ lts 12bce5f: defaults spread_pips 2.0 / slippage_pips 1.0 / commission_per_lot 7.0 USD round-turn / swap_per_lot_day 10.0 USD, pip_value 0.0001 'for EUR/USD style pairs'; cost helpers multiply pips by pip_value and commission/swap by volume_lots",
+    "lts examples/configs/config_simulation.json blob 5750fe67 lines 33-36 and REFERENCE_plugins.md lines 322-325 (same four values)",
+    "consistent across all retained sources; no conflict"
+   ],
+   "status": "ASSUMED_NOT_BROKER_VERIFIED",
+   "value": 7.0
+  },
+  "costs.slippage_price": {
+   "conflict": {
+    "chosen": 0.0001,
+    "reason": "conservative (larger) cost, same pip-vs-point conflict as the spread",
+    "values": [
+     {
+      "source": "pinned plugin arithmetic: slippage_pips 1.0 x pip_cost 0.00001 (POINT)",
+      "value": 1e-05
+     },
+     {
+      "source": "lts simulation broker: slippage_pips 1.0 x pip_value 0.0001 (PIP)",
+      "value": 0.0001
+     }
+    ]
+   },
+   "sources": [
+    "heuristic-strategy app/plugins/plugin_long_short_predictions.py blob 3a19b3f73917a9714d496d10a719135c9810c3ce (identical at 5c87a25 and at pin d40fd3b0); plugin_params comment: 'Trading costs (worst-case retail EURUSD)'",
+    "lts plugins_broker/backtrader_simulation_broker.py blob ddeef86c @ lts 12bce5f: defaults spread_pips 2.0 / slippage_pips 1.0 / commission_per_lot 7.0 USD round-turn / swap_per_lot_day 10.0 USD, pip_value 0.0001 'for EUR/USD style pairs'; cost helpers multiply pips by pip_value and commission/swap by volume_lots",
+    "lts examples/configs/config_simulation.json blob 5750fe67 lines 33-36 and REFERENCE_plugins.md lines 322-325 (same four values)"
+   ],
+   "status": "ASSUMED_NOT_BROKER_VERIFIED",
+   "value": 0.0001
+  },
+  "costs.spread_price": {
+   "conflict": {
+    "chosen": 0.0002,
+    "reason": "conservative (larger) cost; matches the retained comment's intent '2 pip spread' in real pips; the plugin's point arithmetic understates the stated worst-case retail spread 10x",
+    "values": [
+     {
+      "source": "pinned plugin arithmetic: spread_pips 2.0 x pip_cost 0.00001 (POINT) = 0.2 real pips",
+      "value": 2e-05
+     },
+     {
+      "source": "lts simulation broker: spread_pips 2.0 x pip_value 0.0001 (PIP) = 2 real pips",
+      "value": 0.0002
+     }
+    ]
+   },
+   "sources": [
+    "heuristic-strategy app/plugins/plugin_long_short_predictions.py blob 3a19b3f73917a9714d496d10a719135c9810c3ce (identical at 5c87a25 and at pin d40fd3b0); plugin_params comment: 'Trading costs (worst-case retail EURUSD)'",
+    "heuristic-strategy 310e285 (2026-02-19) 'exit variants ..., realistic trading costs'",
+    "lts plugins_broker/backtrader_simulation_broker.py blob ddeef86c @ lts 12bce5f: defaults spread_pips 2.0 / slippage_pips 1.0 / commission_per_lot 7.0 USD round-turn / swap_per_lot_day 10.0 USD, pip_value 0.0001 'for EUR/USD style pairs'; cost helpers multiply pips by pip_value and commission/swap by volume_lots",
+    "lts examples/configs/config_simulation.json blob 5750fe67 lines 33-36 and REFERENCE_plugins.md lines 322-325 (same four values)",
+    "predictor satoshi/i6n-plan-audit-20261011 addendum strategy README S4/S7 and strategy-experiment-design 2026-09-29 (swap subtracted from reported PnL, never debited to the broker)"
+   ],
+   "status": "ASSUMED_NOT_BROKER_VERIFIED",
+   "value": 0.0002
+  },
+  "costs.swap_per_lot_per_day": {
+   "sources": [
+    "heuristic-strategy app/plugins/plugin_long_short_predictions.py blob 3a19b3f73917a9714d496d10a719135c9810c3ce (identical at 5c87a25 and at pin d40fd3b0); plugin_params comment: 'Trading costs (worst-case retail EURUSD)': swap_per_lot_per_day 10.0",
+    "lts plugins_broker/backtrader_simulation_broker.py blob ddeef86c @ lts 12bce5f: defaults spread_pips 2.0 / slippage_pips 1.0 / commission_per_lot 7.0 USD round-turn / swap_per_lot_day 10.0 USD, pip_value 0.0001 'for EUR/USD style pairs'; cost helpers multiply pips by pip_value and commission/swap by volume_lots (swap_per_lot_day)",
+    "lts examples/configs/config_simulation.json blob 5750fe67 lines 33-36 and REFERENCE_plugins.md lines 322-325 (same four values)",
+    "predictor satoshi/i6n-plan-audit-20261011 addendum strategy README S4/S7 and strategy-experiment-design 2026-09-29 (swap subtracted from reported PnL, never debited to the broker)",
+    "consistent value; sign/tier by position direction is NOT retained anywhere, so a flat per-day cost is the conservative assumption"
+   ],
+   "status": "ASSUMED_NOT_BROKER_VERIFIED",
+   "value": 10.0
+  },
+  "lot_units": {
+   "sources": [
+    "heuristic-strategy app/plugins/plugin_long_short_predictions.py blob 3a19b3f73917a9714d496d10a719135c9810c3ce (identical at 5c87a25 and at pin d40fd3b0); plugin_params comment: 'Trading costs (worst-case retail EURUSD)': '$7 per 100K lot round-trip', '$10 per 100K lot per night'",
+    "lts plugins_broker/backtrader_simulation_broker.py blob ddeef86c @ lts 12bce5f: defaults spread_pips 2.0 / slippage_pips 1.0 / commission_per_lot 7.0 USD round-turn / swap_per_lot_day 10.0 USD, pip_value 0.0001 'for EUR/USD style pairs'; cost helpers multiply pips by pip_value and commission/swap by volume_lots (volume_lots denominates commission/swap)"
+   ],
+   "status": "EVIDENCED",
+   "value": 100000.0
+  },
+  "pip_cost_parameter": {
+   "sources": [
+    "heuristic-strategy app/plugins/plugin_long_short_predictions.py blob 3a19b3f73917a9714d496d10a719135c9810c3ce (identical at 5c87a25 and at pin d40fd3b0); plugin_params comment: 'Trading costs (worst-case retail EURUSD)'",
+    "lts plugins_strategy/heuristic_strategy.py blob b8aee0dd (pip_cost 0.00001, same cost params)",
+    "i6dmo execution-policy conversion audit (tests at 1.10/0.95): pinned pip_cost 0.00001 is a POINT, 0.1 real pip",
+    "kept equal to point_size because changing it would change the pinned policy's threshold identity; reported 'pips' are therefore POINTS (0.1 real pip)"
+   ],
+   "status": "EVIDENCED",
+   "value": 1e-05
+  },
+  "pip_size": {
+   "sources": [
+    "lts plugins_broker/backtrader_simulation_broker.py blob ddeef86c @ lts 12bce5f: defaults spread_pips 2.0 / slippage_pips 1.0 / commission_per_lot 7.0 USD round-turn / swap_per_lot_day 10.0 USD, pip_value 0.0001 'for EUR/USD style pairs'; cost helpers multiply pips by pip_value and commission/swap by volume_lots",
+    "standard EURUSD pip = 4th decimal; lts pip_value comment names EUR/USD style pairs"
+   ],
+   "status": "EVIDENCED",
+   "value": 0.0001
+  },
+  "point_size": {
+   "sources": [
+    "heuristic-strategy app/plugins/plugin_long_short_predictions.py blob 3a19b3f73917a9714d496d10a719135c9810c3ce (identical at 5c87a25 and at pin d40fd3b0); plugin_params comment: 'Trading costs (worst-case retail EURUSD)': pip_cost 0.00001 operates as the 5th-decimal point",
+    "lts app/mt5_bridge_lab.py snapshot schema lines 314-315/492 records live bid/ask/spread/spread_points/point per symbol; retained lab rows exist but were not queried here"
+   ],
+   "status": "EVIDENCED",
+   "value": 1e-05
+  },
+  "price_decimals": {
+   "sources": [
+    "5-digit EURUSD quoting implied by point 0.00001 across heuristic-strategy app/plugins/plugin_long_short_predictions.py blob 3a19b3f73917a9714d496d10a719135c9810c3ce (identical at 5c87a25 and at pin d40fd3b0); plugin_params comment: 'Trading costs (worst-case retail EURUSD)'",
+    "lts app/mt5_bridge_lab.py snapshot schema lines 314-315/492 records live bid/ask/spread/spread_points/point per symbol; retained lab rows exist but were not queried here"
+   ],
+   "status": "EVIDENCED",
+   "value": 5
+  }
+ },
+ "instrument_id": "EURUSD",
+ "notes": [
+  "No broker statement, MT5 account history export or venue fee schedule with numeric EURUSD costs is retained in these repositories; every cost is therefore ASSUMED_NOT_BROKER_VERIFIED.",
+  "The MT5 bridge lab retains live spread snapshots in its lab database; transcribing them is a later evidence task, not done here."
+ ],
+ "recovered_under": "MUSASHI_TO_SATOSHI_STATIC_BASELINE_CLOSE_AND_MARKET_GRID_20261015.md sha256 85ea134e... section 3; no credentials used, no broker queried, no trading",
+ "schema": "i6dmo.instrument_config.v1"
+}

@@ -1,0 +1,141 @@
+{
+  "asset": "EURUSD",
+  "business": {
+    "calendar": "versioned_instrument_contract",
+    "entry_cutoff": "inherit_versioned_thursday_cutoff",
+    "entry_delay_after_open_hours": 12,
+    "force_flat_before_close_hours": 12,
+    "keep_row_if_any_head_valid": true,
+    "per_output_masks": true,
+    "preserve_observed_past_input_history": true
+  },
+  "derived_from": {
+    "availability_declaration": "DECLARED TRAIN/validation availability differences vs the 13-observation DS2 design: hourly exact slots across weekend-adjacent windows differ (a window needing 25 consecutive hourly observations loses more weekend-adjacent origins than the two-hour grid, and gains none); the exact per-split counts are owned by the data lane's market-grid support study and are not duplicated here; comparison is only valid under the frozen common-support rules",
+    "base_design_sha256": "541ce40ac1becceb16b14937e34e3452eee36aad8a370686dacf62860c86d381",
+    "base_experiment_id": "I6-DMO-SHORT-DS2-STATIC-R0",
+    "common_support_rules_sha256": "9d61117f3caeea14a556d77fbd208468fc23ed8b7791ab7be61aabf1de420a87",
+    "rule": "hourly control = validated short design with hourly spacing (25 observations over the same 24 elapsed hours, t included); six heads, model recipe and static cadence mirrored; only what 25-vs-13 observations forces changes in the model (each head flattens a 25x4 instead of a 13x4 core sequence); sealed as its own identity, prepared without fitting"
+  },
+  "evaluation_mode": "BUSINESS_STATIC_BASELINE",
+  "execution": {
+    "adopt_first_full_fit_as_cost_measurement": true,
+    "cpu_fallback": false,
+    "first_scientific_gpu": "preferred_5090",
+    "new_scientific_identity": true,
+    "one_heavy_job_per_host": true,
+    "preferred_aux_gpu": "disabled_for_parallel_fits",
+    "resume_retired_doin_campaign": false,
+    "secondary_gpu": "4090_after_admission"
+  },
+  "experiment_id": "I6-DMO-SHORT-HOURLY-DS1-STATIC-R0",
+  "feature_policy": {
+    "development_selection_used_2024": true,
+    "exclude": [
+      "fred.stress.stlfsi4.level"
+    ],
+    "reject_stlfsi4_aliases": true,
+    "source": "active_19_feature_point_in_time_manifest",
+    "unresolved_provenance_blocks_confirmatory_test": true
+  },
+  "horizons_hours": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    12
+  ],
+  "input": {
+    "history_span_hours": 24,
+    "include_origin": true,
+    "issuance_hours": 1,
+    "observations": 25,
+    "require_exact_timestamps": true,
+    "smoothing": false,
+    "spacing_hours": 1,
+    "value_mode": "RAW"
+  },
+  "metrics": {
+    "annual_aggregation": "pooled_absolute_error_sums_and_counts",
+    "negative_is_better": true,
+    "olap_write_and_readback": true,
+    "per_horizon": true,
+    "relative_error": "(MAE_h-naive_h)/naive_h",
+    "scale": "original_price_USD_per_EUR",
+    "weekly_diagnostics": true
+  },
+  "model": {
+    "branch": {
+      "filters": 4,
+      "kernel_size": 3,
+      "stride": 1,
+      "type": "causal_conv1d"
+    },
+    "core": {
+      "filters": [
+        8,
+        4
+      ],
+      "kernel_sizes": [
+        3,
+        3
+      ],
+      "strides": [
+        1,
+        1
+      ],
+      "transformer_blocks": 0,
+      "type": "causal_conv1d"
+    },
+    "fusion": "concatenate_filters",
+    "heads": {
+      "hidden_activation": "relu",
+      "hidden_units": [
+        8
+      ],
+      "independent_weights": true,
+      "output_activation": "linear",
+      "output_units": 1,
+      "readout": "flatten_core_sequence"
+    },
+    "positional_encoding": "immediately_after_fusion",
+    "regime": "R0"
+  },
+  "repetitions": 1,
+  "retraining_frequency": "NONE",
+  "schema": "i6dmo.design.v1",
+  "seal_sha256": "d29a766d2a765c1feac9f179854de279d036339a7605eebc99cdaf883ae42f61",
+  "seed": 6102026,
+  "splits": {
+    "end_exclusive": true,
+    "inner_tail_weeks": 8,
+    "purge_by_label_availability": true,
+    "test": {
+      "end": "2026-01-01T00:00:00Z",
+      "open": false,
+      "start": "2025-01-01T00:00:00Z"
+    },
+    "train": {
+      "end": "2024-01-01T00:00:00Z",
+      "start": "2020-01-01T00:00:00Z"
+    },
+    "validation": {
+      "end": "2025-01-01T00:00:00Z",
+      "start": "2024-01-01T00:00:00Z"
+    }
+  },
+  "status": "DESIGN_NOT_RUNTIME_CONFIG",
+  "training": {
+    "batch_size": 256,
+    "learning_rate": 0.001,
+    "loss": "equal_head_masked_mae_over_fit_only_naive",
+    "max_epochs": 200,
+    "min_delta": 1e-08,
+    "monitor": "mean_end_of_epoch_fit_and_inner_loss",
+    "optimizer": "AdamW",
+    "outer_validation_for_checkpoint_selection": false,
+    "patience": 10,
+    "restore_best_weights": true,
+    "weight_decay": 0.0001
+  }
+}

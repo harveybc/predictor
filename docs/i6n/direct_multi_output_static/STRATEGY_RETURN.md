@@ -127,3 +127,22 @@ NOT_BROKER_VERIFIED label) and typed refusals. No fit. PRE: 8 failed (export abs
 POST: 8 passed; strategy+final subset 79 passed; full tests/i6dmo green run recorded.
 One test fix during POST: an early close may be followed by a legitimate re-entry in the
 same week, so the counterexample asserts the first trade, not a single trade.
+
+## Addendum 4: versioned EURUSD instrument/cost configuration (order 85ea134e section 3)
+
+Recovered from retained evidence only (pinned plugin blob 3a19b3f with its 'worst-case retail'
+comments and commit 310e285; lts backtrader_simulation_broker blob ddeef86c @12bce5f with
+pip_value 0.0001; lts config_simulation.json / REFERENCE_plugins.md / heuristic_strategy copy;
+MT5 bridge lab snapshot schema; prior strategy audits). File
+tools/i6dmo/instrument_eurusd.v1.json, sealed config_sha256 f2443141..., every field with
+sources and status; all four costs are ASSUMED_NOT_BROKER_VERIFIED (no broker statement or fee
+schedule with numeric EURUSD costs is retained anywhere). Recorded conflict: the plugin's POINT
+arithmetic gives spread/slippage 0.00002/0.00001 while the lts broker's PIP arithmetic gives
+0.0002/0.0001 for the same nominal 2/1 pips; chosen 0.0002/0.0001 as the conservative larger
+cost matching the retained comment's intent. pip_cost_parameter stays 0.00001 (the pinned
+policy's POINT threshold identity). The execution-policy receipt now derives from this file
+(receipt carries instrument_config_sha256) and the pair unit's typed INSTRUMENT_CONFIG_MISSING
+wait clears exactly when the sealed file exists; unsourced fields, unknown statuses, missing
+conflict reasons and broker-verification overclaims are typed refusals. PRE: 12 failed/erred
+(file and API absent). POST: full tests/i6dmo 265 passed. MT5 lab live-spread rows remain
+untranscribed retained evidence (noted in the file).
