@@ -1,0 +1,8 @@
+revision a5ac7607bc9fe9012b5e221156d414eebcb857b8; 49 committed tests/i6dmo files, round-robin into 6 pieces; each: CUDA_VISIBLE_DEVICES="" crispdm-run -q -m 4G -t 600s -n i6dmo-r2run-full-pN -- python -m pytest -q -p no:cacheprovider <files>
+full_p0: 91 passed, 8 warnings in 108.10s (0:01:48) rc=0
+full_p1: 101 passed, 1 skipped, 2 warnings in 232.37s (0:03:52) rc=0
+full_p2: 271 passed, 5 warnings in 155.28s (0:02:35) rc=0
+full_p3: 95 passed, 2 warnings in 334.72s (0:05:34) rc=0
+full_p4: 96 passed, 11 warnings in 237.37s (0:03:57) rc=0
+full_p5: 145 passed, 29 warnings in 141.31s (0:02:21) rc=0
+TOTAL: 799 passed, 1 skipped, 0 failed (same revision, independently reproduces the OPS count)
