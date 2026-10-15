@@ -7,6 +7,21 @@ gobiernan la ejecución.
 
 ## 1. Autoridad vigente
 
+Rectificacion del propietario, 2026-10-15, posterior al lanzamiento R2:
+Musashi asume la ejecucion; no se delega trabajo nuevo a Satoshi. La prioridad
+es terminar la evaluacion RAW direct multi-output de las dos familias, primero
+submuestreadas y despues sus controles horarios, con naive propio por horizonte
+y simulacion de la estrategia solo con pareja elegible. El preentrenamiento
+de ramas R2 no es requisito para completar ese bloque y queda aplazado.
+Esta rectificacion sustituye el orden R2-antes-de-transferencia-larga citado
+mas abajo; esas menciones conservan procedencia historica, no autorizacion.
+Estado: corto MG1/MG2m comparado; larga MG12 medida, sin control horario largo
+emparejado; ninguna pareja habilitada para estrategia. Los 19 donantes y R0
+del ensayo R2 se conservan. R2 fallo antes de entrenar al no encontrar los
+donantes en el worker; no se reintenta en el camino critico RAW.
+Detalle ejecutable y criterios de cierre:
+[RAW_PRIORITY_20261015.md](../i6n/direct_multi_output_static/RAW_PRIORITY_20261015.md).
+
 Enmienda del propietario 2026-10-14, concretada por Musashi 2026-10-15: el despacho es
 [I6-DMO, direct multi-output estatico](../i6n/direct_multi_output_static/PLAN.md).
 El corto exacto DS2 cerro: seis cabezas no elegibles en desarrollo 2024. Su

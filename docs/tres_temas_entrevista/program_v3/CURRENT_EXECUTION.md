@@ -1,5 +1,39 @@
 # Estado de ejecución vigente
 
+## Actual: prioridad RAW; R2 aplazado, no ejecutandose
+
+Rectificacion del propietario, 2026-10-15: Musashi ejecuta sin nuevas tareas
+para Satoshi. El control corto RAW MG1/MG2m esta cerrado; falta el control
+largo horario emparejado y la evaluacion de una pareja elegible en estrategia.
+Los baselines MG2/MG12 ya medidos no habilitaron trading. No confundir esas
+mediciones con la comparacion RAW completa ni con un resultado de estrategia.
+[Orden vigente](../../i6n/direct_multi_output_static/RAW_PRIORITY_20261015.md).
+
+Lectura real 19:14 UTC: 19/19 donantes, R0 y sonda terminados. R2 fallo antes
+de entrenar con R2_DONOR_TERMINAL_DIGEST: ningun terminal donante estaba en
+el worker, aunque los 19 hashes locales verifican. No hay resultado predictivo
+R2 ni comparacion valida. Se conservan todos los bytes y el fallo; no se
+relanza R2 ni se repite pretraining en este camino critico. TEST cerrado.
+
+## Registro anterior: lanzamiento R0/R2
+
+Auditoria Musashi 2026-10-15 19:08 UTC: campana `i6dmo-9d3c198c77b1`,
+runtime `c34b1e48`, integracion publicada `813ef019`. Los 19 preentrenamientos
+terminaron; R0 y la sonda diagnostica arrancaron automaticamente, y R2 espera
+la misma clase 5090. La 4090 prepara donantes, no sustituye la clase fijada
+para comparar predictores. No hay error predictivo anual nuevo en este snapshot
+ni acceso a TEST.
+
+Se corrigio la cadencia: workers GPU 5 s, coordinador/tick 10 s, publicacion
+60 s. No se modificaron modelos, perdida, limites ni pin activo; ningun trabajo
+fue reiniciado. El criterio sellado de pretraining es INNER-only, no la media
+FIT/INNER pedida: se conserva y declara sin cambiar esta campana a mitad ni
+repetir donantes.
+[Auditoria](../../i6n/direct_multi_output_static/matched_short/MUSASHI_R2_AUDIT_20261015.md)
+y [rectificacion de prioridad](../../i6n/direct_multi_output_static/RAW_PRIORITY_20261015.md).
+
+## Antecedentes: contraste de muestreo cerrado
+
 Auditoria posterior de Musashi, 2026-10-15: campana `i6dmo-6004b711281c`,
 runtime `796ec8f4`. Los dos ajustes nuevos MG1/MG2m terminaron en 151.21 s y
 54.58 s, con identico soporte/scaler comun y hashes de ocho ficheros de codigo
@@ -24,7 +58,7 @@ la entrega completa y los espejos. No hay un fit vivo de esta campana.
 
 Calificacion de runtime (2026-10-15): los resultados cerrados MG2/MG12 son RUNTIME_SEAL_NONCONFORMANT_OBSERVED_TF_2_21 (declarado TF 2.18.0/Keras 3.9.0, los recibos registran TF 2.21.0); no certifican el runtime declarado ni sirven como donante/control con runtime emparejado. Cifras sin cambios. Registro: [RUNTIME_QUALIFICATION_MG2_MG12.json](../../i6n/direct_multi_output_static/RUNTIME_QUALIFICATION_MG2_MG12.json).
 
-Siguiente secuencia aceptada por el propietario: control corto MG1/MG2 con
+Secuencia anterior, sustituida por la rectificacion RAW de arriba: control corto MG1/MG2 con
 poblacion comun -> ramas preentrenadas R2 frente a R0 -> transferencia larga
 -> contraste trimestral frente a estatico. Estado del sucesor: PREPARING,
 no RUNNING. [Plan](../../i6n/direct_multi_output_static/NEXT_CONTRASTS_PLAN_20261015.md)

@@ -3,9 +3,12 @@
 Owner amendment: 2026-10-14; next-design decision: 2026-10-15.
 Status: exact-DS2 short CLOSED, six heads NOT_ELIGIBLE; MG2/MG12 successor
 also CLOSED / PAIR_NOT_ELIGIBLE. See [measured closure](RETURN_REPORT_RECOVERY_20261015.md).
-The next accepted work is [NEXT_CONTRASTS_PLAN_20261015.md](NEXT_CONTRASTS_PLAN_20261015.md):
-matched short sampling, compatible-branch R2, long transfer and then quarterly
-cadence. No successor fit is launched by this documentation update.
+The owner's latest correction supersedes the previous R2-before-long ordering:
+[RAW_PRIORITY_20261015.md](RAW_PRIORITY_20261015.md) governs execution by Musashi.
+Finish RAW short/long downsampled and hourly controls and eligible strategy
+evaluation BEFORE returning to branch pretraining/R2. The matched short control
+is complete; the matched long hourly control is not. Preserve all measured
+results and the 19 existing donors. No fit is launched by this documentation.
 The retained market baseline contract is [MARKET_TIME_PAIR_PLAN.md](MARKET_TIME_PAIR_PLAN.md).
 Sections below retain the measured exact-DS2 recipe and shared business rules;
 their elapsed-time input grids do not authorize another DS2 fit or an empty

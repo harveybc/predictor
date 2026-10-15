@@ -1,0 +1,17 @@
+{
+  "schema": "i6dmo.operational_cadence_amendment.v1",
+  "campaign_id": "i6dmo-9d3c198c77b1",
+  "runtime_code_commit": "c34b1e48c17d83d0f2eaa08cfc8daed4f1afb861",
+  "reason": "Short donor jobs were separated by 120-second idle intervals; fit-only ETA omitted scheduling waits.",
+  "previous_idle_seconds": {"preferred-worker": 120, "secondary-worker": 120, "coordinator-worker": 120, "tick": 300, "publish": 600},
+  "effective_idle_seconds": {"preferred-worker": 5, "secondary-worker": 5, "coordinator-worker": 10, "tick": 10, "publish": 60},
+  "accuracy_seconds": 1,
+  "boot_activation_seconds": 30,
+  "application": "Campaign-only timer drop-ins and user daemon-reload; effective properties read back.",
+  "running_jobs_restarted": false,
+  "scientific_design_changed": false,
+  "runtime_pin_changed": false,
+  "memory_limits_changed": false,
+  "second_preferred_gpu_enabled": false,
+  "observed_after": "Different donor units concurrently on preferred and secondary; 19/19 completed and R0 started automatically."
+}

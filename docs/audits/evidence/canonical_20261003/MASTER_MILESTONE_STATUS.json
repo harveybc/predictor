@@ -1,6 +1,6 @@
 {
-  "as_of": "2026-10-15T13:42:12+00:00",
-  "critical_path_eta": "Matched short 5/5 units DONE, MG2 selected; publication/closure pending",
+  "as_of": "2026-10-15T19:14:20+00:00",
+  "critical_path_eta": "RAW long matched hourly control not implemented; no measured ETA. R2 deferred after pre-fit donor transport failure.",
   "milestones": [
     {
       "eta": "1-3 development days",
@@ -30,10 +30,10 @@
       "title": "Exact literature controls"
     },
     {
-      "eta": "3-6 days after M2",
-      "evidence": "Modular engine and donors exist; ECL development contrast found R2 0.694% lower MAE than R0",
+      "eta": "Deferred behind RAW sampling/strategy block",
+      "evidence": "19/19 donors and R0 complete. R2 failed before training: donor terminals absent on GPU host. No R2 predictive verdict.",
       "id": "M4",
-      "next": "Repeat literature baseline vs modular R0/R1/R2 on the selected feature manifest",
+      "next": "Preserve donors/R0/failure; resume only after RAW block, with verified cross-host donor staging and reviewed recovery",
       "progress": 48,
       "state": "PARTIAL_MEASUREMENT",
       "title": "Pretrained branches: R0/R1/R2"
@@ -48,10 +48,10 @@
       "title": "Pretrained temporal core"
     },
     {
-      "eta": "Fits DONE; closure ETA unmeasured",
-      "evidence": "Matched 5/5 units DONE, MG2 selected. Mean relative error MG1 +4.321%, MG2m -0.00774%. Final publication/closure pending. TEST closed.",
+      "eta": "Unmeasured; long control missing",
+      "evidence": "RAW downsampled pair measured, not eligible. Short matched control CLOSED. Long hourly control missing; strategy not run. R2 deferred.",
       "id": "M6",
-      "next": "Finish matched reports/comparison and OLAP closure; verify queue/default fixes and donor trust before compatible-branch R2. TEST closed",
+      "next": "Implement/review missing RAW long matched sampling control, then pair eligibility and strategy only if eligible. TEST remains closed.",
       "progress": 24,
       "state": "PARTIAL_MEASUREMENT",
       "title": "Short/long forecasts + strategy",

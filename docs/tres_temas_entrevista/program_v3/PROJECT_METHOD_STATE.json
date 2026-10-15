@@ -74,7 +74,8 @@
     "Read RETURN_REPORT_RECOVERY_20261015.md: MG2/MG12 completed, pair not eligible, 110 reports and 3952 metric rows verified",
     "Retain original fit identities and closed campaign; no automatic scientific repetition",
     "Integrate the report repair and CPU-only eligibility/strategy/automatic-close corrections through the bounded handoff",
-    "Prepare a separately identified next validation contrast; retain closed TEST and all source/cost/calendar assumptions"
+    "Musashi implements and reviews the missing RAW long hourly/downsampled matched control; no new Satoshi delegation",
+    "Keep R2 deferred behind RAW sampling/pair/strategy closure; preserve its donors, R0 and typed pre-fit failure; TEST remains closed"
   ],
   "documents": {
     "horizon_resolution": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
@@ -702,8 +703,13 @@
     "successor_state": "CLOSED_PAIR_NOT_ELIGIBLE",
     "scientific_fits_running": false,
     "next_contrast": "I6-DMO-SHORT-MG1-MG2-MATCHED",
-    "next_contrast_state": "FIVE_UNITS_COMPLETE_MG2_SELECTED_CLOSURE_PENDING",
-    "next_contrast_plan": "../../i6n/direct_multi_output_static/NEXT_CONTRASTS_PLAN_20261015.md"
+    "next_contrast_state": "CLOSED_MG2_SELECTED",
+    "active_r2_campaign": "i6dmo-9d3c198c77b1",
+    "active_r2_state": "DEFERRED_PREFIT_DONOR_IMPORT_FAILURE_RAW_FIRST",
+    "active_r2_runtime": "c34b1e48c17d83d0f2eaa08cfc8daed4f1afb861",
+    "next_contrast_plan": "../../i6n/direct_multi_output_static/RAW_PRIORITY_20261015.md",
+    "execution_owner": "Musashi",
+    "immediate_gap": "MISSING_MATCHED_RAW_LONG_HOURLY_CONTROL"
   },
   "runtime_qualification_mg2_mg12": {"label": "RUNTIME_SEAL_NONCONFORMANT_OBSERVED_TF_2_21", "record": "docs/i6n/direct_multi_output_static/RUNTIME_QUALIFICATION_MG2_MG12.json", "record_sha256": "ea96d5a08ff2cd9544ff41d6447f29e60b0cbbf5e4fa160247f9610cc2486060", "statement": "closed MG2/MG12 results: declared TF 2.18.0/Keras 3.9.0, receipts record TF 2.21.0; numbers unchanged; not a runtime-matched donor/control"}
 }

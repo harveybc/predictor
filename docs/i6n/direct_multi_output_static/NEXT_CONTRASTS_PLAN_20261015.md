@@ -1,4 +1,10 @@
-# I6-DMO: controlled short sampling, then R2 and long transfer
+# I6-DMO: controlled sampling; RAW priority supersedes R2-first dispatch
+
+OWNER CORRECTION, 2026-10-15: the active order is
+[RAW_PRIORITY_20261015.md](RAW_PRIORITY_20261015.md). Short/long RAW prediction
+and eligible strategy evaluation precede R2. The earlier ordered questions
+below explain how R2 was dispatched; they no longer authorize R2 ahead of the
+unfinished RAW long control. Musashi executes; no new Satoshi assignment.
 
 Owner accepted this sequence on 2026-10-15. Status: APPROVED_FOR_DEFINITION_AND_IMPLEMENTATION.
 The MG2/MG12 campaign is CLOSED / PAIR_NOT_ELIGIBLE and must not be reopened.

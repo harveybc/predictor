@@ -7,7 +7,9 @@
 | MG2 short fit and recovered report | 6/12 h improve MAE 0.049615%/0.093170%; 2/3/4/5 h remain above naive; 54 reports and 2006 metrics readback verified | [Recovery return](RETURN_REPORT_RECOVERY_20261015.md) |
 | MG12 long | Six heads above naive by 24.08-41.08%; 37 epochs, best 27, 124.55 s | [Recovery return](RETURN_REPORT_RECOVERY_20261015.md#mg12-long-development-2024) |
 | Pair and strategy | CLOSED / PAIR_NOT_ELIGIBLE; no trading or TEST; 110 reports / 3952 metrics delivered, 58 files per mirror | [Closure](RETURN_REPORT_RECOVERY_20261015.md#pair-disposition-publication-and-remaining-engineering) |
-| Matched short MG1/MG2m | Five units complete; MG2_SELECTED. Mean relative MAE +4.321015% / -0.007738%; MG2m beats naive at 4/6/12 h; final publication/closure pending | [Audit and per-horizon results](matched_short/MUSASHI_AUDIT_20261015.md) |
+| Matched short MG1/MG2m | CLOSED, MG2_SELECTED. Mean relative MAE +4.321015% / -0.007738%; MG2m beats naive at 4/6/12 h | [Audit and per-horizon results](matched_short/MUSASHI_AUDIT_20261015.md) |
+| Compatible branch R0/R2 | 19/19 donors, R0/probe complete; R2 FAILED before training: donor terminals absent on GPU host. No R2 prediction comparison; deferred behind RAW | [R2 audit](matched_short/MUSASHI_R2_AUDIT_20261015.md) |
+| RAW long matched sampling/strategy | Hourly long control missing; no eligible full pair or trading result | [Active RAW priority](RAW_PRIORITY_20261015.md) |
 
 All reported 2024 results are development. TEST remains closed. Each stage
 keeps its own support, model identity and cost; these are not controlled
