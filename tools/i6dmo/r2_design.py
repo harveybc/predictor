@@ -49,7 +49,7 @@ OBJECTIVE_OPTIONS = {
            "implementation": "predictor_plugins.modular_temporal.objectives:AutoencoderReconstruction",
            "declared_params": ["decoder_channels", "loss"], "reconstruction": "MEASURED",
            "exists_in_repo": True},
-    "O2": {"name": "ts2vec_contrastive", "version": "1.0.1",
+    "O2": {"name": "ts2vec_contrastive", "version": "1.0.1",   # decorator version (authoritative)
            "implementation": "predictor_plugins.modular_temporal.objectives:TS2VecContrastive",
            "declared_params": ["alpha", "mask_probability", "min_overlap", "temporal_unit"],
            "reconstruction": "NOT_APPLICABLE", "exists_in_repo": True},
@@ -59,9 +59,41 @@ OBJECTIVE_OPTIONS = {
            "declared_params": [], "reconstruction": "MEASURED", "exists_in_repo": False},
 }
 RECOMMENDED_OPTION = "O1"
-#: Fit-setting keys a ruling must fix (all of them; nothing defaults silently).
+#: Fit-setting keys a ruling must fix (all of them, budgets included; nothing defaults silently).
 OBJECTIVE_FIT_SETTINGS = ("optimizer", "learning_rate", "weight_decay", "batch_size", "max_epochs",
-                          "patience", "min_delta", "seed_rule", "restore")
+                          "patience", "min_delta", "max_updates", "max_seconds", "monitor",
+                          "restore", "seed_rule", "budget_stop")
+#: Literal values the registered loop executes (anything else is not what would actually run).
+OBJECTIVE_FIXED_SETTINGS = {
+    "optimizer": "AdamW",
+    "monitor": "validation_loss_on_purged_INNER_inputs",
+    "restore": "best_monitored_epoch",
+    "seed_rule": ("keras.utils.set_random_seed(6102026 + feature_index) immediately before building "
+                  "each autoencoder; applied seed recorded in each donor terminal"),
+    "budget_stop": "TYPED_FAILURE_NO_DONOR_INCOMPLETE_COMPARISON",
+}
+RULING_KEYS = ("ruled_by", "review_commit", "review_verdict", "review_document", "review_document_sha256")
+#: Technical lead's ruling after Retsu review 93bff41d (ACCEPT_WITH_CONDITIONS), 2026-10-15.
+LEAD_RULING = {
+    "option": "O1", "name": "autoencoder_reconstruction", "version": "1.0.0",
+    "params": {"decoder_channels": 32, "loss": "mse"},
+    "fit_settings": dict({"learning_rate": 1e-3, "weight_decay": 1e-4, "batch_size": 256,
+                          "max_epochs": 100, "patience": 10, "min_delta": 1e-8,
+                          "max_updates": 100000, "max_seconds": 86400.0}, **OBJECTIVE_FIXED_SETTINGS),
+    "disclosures": [
+        "max_epochs 100 is the registered fit loop's cap; R0's fine-tune allows 200 (pretraining is "
+        "a separate stage)",
+        "INNER inputs (no labels) influence R2 twice (pretraining selection and fine-tune monitor) "
+        "and R0 once; DEVELOPMENT, the scoring split, is never touched by pretraining",
+        "O1 is an existing registered component without a prior end-to-end caller; the I6-B loop "
+        "is a sibling (Adam, decoder 16, train/tail monitor, another objective name), not O1",
+        "any max_updates/max_seconds budget stop is a typed failure: no donor is selected and the "
+        "comparison closes INCOMPLETE_COMPARISON",
+    ],
+    "ruling": {"ruled_by": "technical lead (Satoshi) after independent review",
+               "review_commit": "93bff41d", "review_verdict": "ACCEPT_WITH_CONDITIONS",
+               "review_document": "review/R2_DESIGN_REVIEW_7488e899.md"},
+}
 
 R0_REUSE_COMPONENTS = (
     "status_completed", "scientific", "no_overrides", "device_gpu", "design_sha256",
@@ -102,6 +134,22 @@ ACCEPTANCE_TESTS = {
              "declared numerical policy (no broadened tolerance)",
     "R2-12": "Scope: no core pretraining, cadence change, long family or TEST unit; any such field is "
              "refused (R2_SCOPE / TEST_FORBIDDEN)",
+    "R2-13": "Donor provenance: each imported donor references this campaign's pretraining-unit stored "
+             "terminal (authenticated) plus the learned-corpus digest (FIT windows and purged INNER "
+             "selection rows), the objective ruling seal, the applied seed and the code pin; a forged "
+             "or copied identity is refused (D3)",
+    "R2-14": "Pretraining determinism: seed bound immediately before the decoder is built; no "
+             "wall-clock budget stop selects a donor; bitwise-identical donor on CPU replay",
+    "R2-15": "The ruled objective is executable by the registered component at validation time (D1)",
+    "R2-16": "Decision integrity: decide_r2 requires scientific GPU fits and the R2 import record "
+             "binding all 19 donor terminal digests, and refuses an import binding on R0 (D4)",
+    "R2-17": "Automation (plan section 4) for the new graph: measured-peak admission class for "
+             "pretraining units (1.25x its own peak, never the fit's); crash/restart, duplicate claim "
+             "and outbox retry never repeat a completed pretraining or fit; status at every level; "
+             "CLOSE with mirrors; a failed pretraining unit is a typed INCOMPLETE_COMPARISON, never an "
+             "R0-only selection (OPS runner)",
+    "R2-18": "R0 and R2 fits run on the same runtime and the same recorded GPU class; a difference "
+             "is refused at decision time",
 }
 
 
@@ -164,6 +212,10 @@ def build_contract(matched_dir=MATCHED_DIR):
         "loss": "equal-head masked MAE in delta/naive_loss_scale[h] coordinates (FIT-only naive)",
         "training": copy.deepcopy(effective["training"]),
         "runtime": dict(D.MATCHED_RUNTIME),
+        "fit_pinning": {"runtime": dict(D.MATCHED_RUNTIME),
+                        "gpu_class": "R0 and R2 fits on the SAME recorded GPU class "
+                                     "(receipt resources.gpu_device_names); scientific GPU fits only",
+                        "enforced_by": "tools.i6dmo.r2_design.decide_r2"},
         "accessor": "tools.i6dmo.common_population.arm_tensors(pop, EXPERIMENT.mg2m.json, split)",
     }
     contract = {
@@ -209,7 +261,18 @@ def build_contract(matched_dir=MATCHED_DIR):
                      "purge": "INNER windows whose earliest slot instant precedes the INNER start "
                               "are excluded from selection (counted)",
                      "development": "NEVER", "test": "NEVER", "labels": "NONE_INPUTS_ONLY"},
-            "early_stopping": {"monitor": "INNER_ONLY_OBJECTIVE_LOSS", "restore": "best_inner_epoch"},
+            "early_stopping": {"monitor": "INNER_ONLY_OBJECTIVE_LOSS", "restore": "best_inner_epoch",
+                               "disclosure": "INNER inputs (no labels) influence R2 twice and R0 once; "
+                                             "DEVELOPMENT, the scoring split, is never touched"},
+            "unit_body": "tools.i6dmo.model.pretrain_branch (seed bound immediately before the "
+                         "autoencoder is built; budget stop = typed failure, no donor)",
+            "corpus": "tools.i6dmo.model.branch_pretraining_corpus (learned-corpus sha256 per feature)",
+            "provenance": "DONORS_ONLY_FROM_THIS_CAMPAIGNS_AUTHENTICATED_PRETRAINING_TERMINALS: "
+                          "tools.i6dmo.model.write_branch_donor_terminal / load_branch_donor bind "
+                          "campaign, unit, applied seed, code pin, ruling seal, learned corpus, "
+                          "objective and donor bytes; a self-declared manifest never passes",
+            "budgets": "max_updates and max_seconds fixed by the ruling; a budget stop is "
+                       "R2_PRETRAINING_BUDGET_STOP and the comparison closes INCOMPLETE_COMPARISON",
             "objective": UNDECIDED,
             "objective_options": sorted(OBJECTIVE_OPTIONS),
             "recommended_option": RECOMMENDED_OPTION,
@@ -242,6 +305,9 @@ def build_contract(matched_dir=MATCHED_DIR):
             "rule": "R2 selected iff score_R2 < score_R0 - 1e-8; otherwise R0 retained (no "
                     "pretraining cost); any failed head or arm -> INCOMPLETE_COMPARISON",
             "tie_tolerance": SELECTION_TIE, "function": "tools.i6dmo.r2_design.decide_r2",
+            "integrity": "scientific GPU fits on the same runtime and GPU class; the R2 fit identity "
+                         "binds the import record (r2_import_sha256) whose 19 donor terminal digests "
+                         "are present; the R0 fit carries no import binding",
             "per_head_primary": True,
             "limits": "one seed; DEVELOPMENT 2024 informed the feature set; no statistical "
                       "superiority, holdout or trading eligibility claim",
@@ -320,32 +386,76 @@ def _code_for(path):
     return "R2_CONTRACT_MISMATCH"
 
 
-def _validate_objective(objective):
-    """A ruled objective: a registered option with every parameter and fit setting fixed."""
-    if not isinstance(objective, dict) or set(objective) != {"option", "name", "version", "params",
-                                                             "fit_settings", "ruling"}:
-        raise R2DesignError("R2_OBJECTIVE_UNKNOWN",
-                            "a ruled objective needs exactly option/name/version/params/fit_settings/ruling")
+def _validate_objective(objective, matched_dir=MATCHED_DIR):
+    """A ruled objective must be EXECUTABLE by the registered component exactly as written (D1).
+
+    Registered option with its identity sha; every declared parameter and every fit setting
+    (budgets included) fixed; the literal settings the registered loop actually runs; the
+    registered settings validators (objectives._settings and the evaluator's fit-loop settings)
+    accept the values; and a review reference whose document bytes are bound by sha256.
+    """
+    keys = {"option", "name", "version", "identity_sha256", "params", "fit_settings", "disclosures",
+            "ruling"}
+    if not isinstance(objective, dict) or set(objective) != keys:
+        raise R2DesignError("R2_OBJECTIVE_UNKNOWN", f"a ruled objective needs exactly {sorted(keys)}")
     option = OBJECTIVE_OPTIONS.get(objective["option"])
     if option is None or not option["exists_in_repo"]:
         raise R2DesignError("R2_OBJECTIVE_UNKNOWN",
                             f"option {objective['option']!r} is not an implemented registered objective")
     if (objective["name"], objective["version"]) != (option["name"], option["version"]):
         raise R2DesignError("R2_OBJECTIVE_UNKNOWN", "objective name/version differ from the option")
-    if sorted(objective["params"]) != sorted(option["declared_params"]):
+    params, fit = objective["params"], objective["fit_settings"]
+    if not isinstance(params, dict) or sorted(params) != sorted(option["declared_params"]):
         raise R2DesignError("R2_OBJECTIVE_UNKNOWN",
                             f"every declared parameter must be fixed: {option['declared_params']}")
-    if sorted(objective["fit_settings"]) != sorted(OBJECTIVE_FIT_SETTINGS):
+    if not isinstance(fit, dict) or sorted(fit) != sorted(OBJECTIVE_FIT_SETTINGS):
         raise R2DesignError("R2_OBJECTIVE_UNKNOWN",
                             f"fit settings must be exactly {list(OBJECTIVE_FIT_SETTINGS)}")
-    for value in list(objective["params"].values()) + list(objective["fit_settings"].values()):
+    for value in list(params.values()) + list(fit.values()):
         if value is None or value == UNDECIDED or (isinstance(value, float) and not math.isfinite(value)):
             raise R2DesignError("R2_OBJECTIVE_UNDECIDED", "an objective parameter is still open")
+    for key, value in OBJECTIVE_FIXED_SETTINGS.items():
+        if fit[key] != value:
+            raise R2DesignError("R2_OBJECTIVE_NOT_EXECUTABLE",
+                                f"{key}={fit[key]!r}: the registered loop executes {value!r}")
+    from predictor_plugins.modular_temporal import objectives as O
+    from tools import modular_candidate_evaluator as E
+    numeric = {k: fit[k] for k in ("max_epochs", "patience", "batch_size", "learning_rate",
+                                   "weight_decay", "min_delta", "max_updates", "max_seconds")}
+    try:
+        _, identity = O.resolve_objective({"plugin": objective["name"], "params": params})
+        O._settings(dict(numeric, seed=6102026))
+        E._settings({"evaluator": dict(numeric, seed=6102026, loss=params.get("loss", "mse"))})
+    except ValueError as exc:
+        raise R2DesignError("R2_OBJECTIVE_NOT_EXECUTABLE", f"the registered component refuses: {exc}") from None
+    if identity["version"] != objective["version"] or identity["params"] != params:
+        raise R2DesignError("R2_OBJECTIVE_NOT_EXECUTABLE",
+                            "registered defaults would fill or change a parameter")
+    if objective["identity_sha256"] != O.objective_identity({"plugin": objective["name"],
+                                                              "params": params})["sha256"]:
+        raise R2DesignError("R2_OBJECTIVE_UNKNOWN", "identity_sha256 is not the registered identity")
+    if not isinstance(objective["disclosures"], list) or not objective["disclosures"] or \
+            not all(isinstance(d, str) and d for d in objective["disclosures"]):
+        raise R2DesignError("R2_OBJECTIVE_UNREVIEWED", "the ruling must carry its disclosures")
     ruling = objective["ruling"]
-    if not isinstance(ruling, dict) or not ruling.get("reviewer") or \
-            not isinstance(ruling.get("document_sha256"), str) or len(ruling["document_sha256"]) != 64:
-        raise R2DesignError("R2_OBJECTIVE_UNREVIEWED",
-                            "a ruling needs a reviewer and the sha256 of the ruling document")
+    if not isinstance(ruling, dict) or set(ruling) != set(RULING_KEYS) or \
+            not all(isinstance(ruling[k], str) and ruling[k] for k in RULING_KEYS):
+        raise R2DesignError("R2_OBJECTIVE_UNREVIEWED", f"a ruling needs exactly {list(RULING_KEYS)}")
+    document = Path(matched_dir) / ruling["review_document"]
+    if not document.is_file() or hashlib.sha256(document.read_bytes()).hexdigest() != \
+            ruling["review_document_sha256"]:
+        raise R2DesignError("R2_OBJECTIVE_UNREVIEWED", "the review document bytes are not the ruled ones")
+
+
+def lead_objective(matched_dir=MATCHED_DIR):
+    """The technical lead's ruling as a complete objective block (identity and review bound)."""
+    from predictor_plugins.modular_temporal import objectives as O
+    objective = copy.deepcopy(LEAD_RULING)
+    objective["identity_sha256"] = O.objective_identity({"plugin": objective["name"],
+                                                         "params": objective["params"]})["sha256"]
+    document = Path(matched_dir) / objective["ruling"]["review_document"]
+    objective["ruling"]["review_document_sha256"] = hashlib.sha256(document.read_bytes()).hexdigest()
+    return objective
 
 
 def validate_r2_design(doc, *, for_execution=False, matched_dir=MATCHED_DIR):
@@ -375,7 +485,7 @@ def validate_r2_design(doc, *, for_execution=False, matched_dir=MATCHED_DIR):
                                 "pretraining.objective is UNDECIDED_REQUIRES_REVIEW; R2 cannot be "
                                 "executed until the objective is ruled (R2_DESIGN_PROPOSAL.md)")
         return {"status": "PREPARING", "objective": UNDECIDED}
-    _validate_objective(objective)
+    _validate_objective(objective, matched_dir)
     return {"status": "READY_FOR_EXECUTION", "objective": objective}
 
 
@@ -443,11 +553,50 @@ def _selection_ok(selection):
         isinstance(selection.get("score"), float) and math.isfinite(selection["score"])
 
 
-def decide_r2(r0_metrics, r2_metrics):
-    """Frozen R0-vs-R2 decision from the two matched METRICS.json documents (both mg2m)."""
+def _import_record_sha(record):
+    return _sha({k: v for k, v in record.items() if k not in ("branches", "import_sha256")})
+
+
+def verify_import_record(record, n_features=19):
+    """The R2 import record (tools.i6dmo.model.import_branch_donors) is complete and self-consistent."""
+    if not isinstance(record, dict) or record.get("schema") != "i6dmo.r2_import.v1":
+        raise R2DesignError("R2_IMPORT_RECORD_MISSING", "decide_r2 needs the R2 import record")
+    terminals = record.get("donor_terminals") or {}
+    digests = list(terminals.values())
+    if len(terminals) != n_features or len(set(digests)) != n_features or \
+            not all(isinstance(d, str) and len(d) == 64 for d in digests):
+        raise R2DesignError("R2_IMPORT_RECORD_INVALID",
+                            f"the import record must bind {n_features} distinct donor terminal digests")
+    if record.get("import_sha256") != _import_record_sha(record) or record.get("trainable") is not True:
+        raise R2DesignError("R2_IMPORT_RECORD_INVALID", "import record digest or trainability differs")
+    return record["import_sha256"]
+
+
+def decide_r2(r0_metrics, r2_metrics, *, r2_import_record=None, require_scientific=True):
+    """Frozen R0-vs-R2 decision from the two matched METRICS.json documents (both mg2m).
+
+    Strict by default (R3 parity with decide_matched): both fits scientific on GPU, the same runtime
+    and the same recorded GPU class; only the literal ``require_scientific=False`` relaxes that for
+    engineering fixtures. Always: the R2 fit identity binds the import record (19 donor terminal
+    digests) and the R0 fit carries no import binding, so two plain R0 fits are never "R0 vs R2".
+    """
     a, b = (r0_metrics or {}).get("matched") or {}, (r2_metrics or {}).get("matched") or {}
     if a.get("arm") != SELECTED_ARM or b.get("arm") != SELECTED_ARM:
         raise R2DesignError("R2_ARM_CHANGE", "both R0 and R2 are scored on the mg2m arm")
+    if require_scientific is not False:
+        for name, block in (("R0", a), ("R2", b)):
+            if block.get("scientific_fit") is not True or block.get("fit_device") != "gpu":
+                raise R2DesignError("R2_NON_SCIENTIFIC_FIT",
+                                    f"{name}: scientific_fit={block.get('scientific_fit')!r} "
+                                    f"fit_device={block.get('fit_device')!r}")
+        for key in ("fit_runtime", "fit_gpu_class"):
+            if not a.get(key) or a.get(key) != b.get(key):
+                raise R2DesignError("R2_FIT_PINNING", f"{key}: R0 {a.get(key)!r} vs R2 {b.get(key)!r}")
+    bound = verify_import_record(r2_import_record)
+    if ((b.get("fit_identity") or {}).get("r2_import_sha256")) != bound:
+        raise R2DesignError("R2_IMPORT_NOT_BOUND", "the R2 fit identity does not bind this import record")
+    if (a.get("fit_identity") or {}).get("r2_import_sha256") is not None:
+        raise R2DesignError("R2_R0_HAS_IMPORT", "the R0 fit carries an import binding")
     for key in ("common_population_sha256", "development_row_ids_sha256",
                 "development_head_mask_sha256", "development_counts"):
         if a.get(key) != b.get(key):
@@ -459,8 +608,9 @@ def decide_r2(r0_metrics, r2_metrics):
     per_head = {str(h): {"R0": ((r0_metrics.get("per_horizon") or {}).get(str(h)) or {}).get("relative_error"),
                          "R2": ((r2_metrics.get("per_horizon") or {}).get(str(h)) or {}).get("relative_error")}
                 for h in heads}
-    doc = {"schema": "i6dmo.r2_decision.v1", "per_head": per_head,
+    doc = {"schema": "i6dmo.r2_decision.v1", "per_head": per_head, "r2_import_sha256": bound,
            "scores": {"R0": sa.get("score"), "R2": sb.get("score")}, "tie_tolerance": SELECTION_TIE,
+           "require_scientific": require_scientific is not False,
            "note": "one seed; a recipe decision, not statistical superiority; an aggregate never "
                    "makes a failed head trading-eligible"}
     missing = [dict(f, arm=arm) for arm, sel in (("R0", sa), ("R2", sb))
@@ -487,6 +637,19 @@ def seal(matched_dir, out):
     return {"status": "SEALED", "idempotent": False, "seal_sha256": contract["seal_sha256"]}
 
 
+def write_ruled(design_path, out, matched_dir=MATCHED_DIR):
+    base = _read(design_path)
+    validate_r2_design(base, matched_dir=matched_dir)
+    ruled = rule_objective(base, lead_objective(matched_dir))
+    validate_r2_design(ruled, for_execution=True, matched_dir=matched_dir)
+    text = json.dumps(ruled, indent=1, sort_keys=True) + "\n"
+    out = Path(out)
+    if out.exists() and out.read_text(encoding="utf-8") != text:
+        raise R2DesignError("R2_DESIGN_EXISTS", "a different ruled contract already exists at this path")
+    out.write_text(text, encoding="utf-8")
+    return {"status": "RULED", "seal_sha256": ruled["seal_sha256"]}
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="python -m tools.i6dmo.r2_design")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -494,6 +657,11 @@ def main(argv=None):
     s.add_argument("--matched-dir", default=str(MATCHED_DIR))
     s.add_argument("--out", required=True)
     s.add_argument("--json", action="store_true")
+    r = sub.add_parser("rule", help="write the ruled contract (LEAD_RULING) beside the base contract")
+    r.add_argument("--design", required=True)
+    r.add_argument("--matched-dir", default=str(MATCHED_DIR))
+    r.add_argument("--out", required=True)
+    r.add_argument("--json", action="store_true")
     v = sub.add_parser("validate")
     v.add_argument("--design", required=True)
     v.add_argument("--matched-dir", default=str(MATCHED_DIR))
@@ -503,6 +671,8 @@ def main(argv=None):
     try:
         if args.command == "seal":
             result = seal(args.matched_dir, args.out)
+        elif args.command == "rule":
+            result = write_ruled(args.design, args.out, args.matched_dir)
         else:
             result = validate_r2_design(_read(args.design), for_execution=args.for_execution,
                                         matched_dir=args.matched_dir)

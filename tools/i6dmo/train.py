@@ -1496,7 +1496,23 @@ def _resources(device):
     return {"tf_gpu_memory_peak_bytes": gpu_peak, "cpu_user_s": usage.ru_utime, "cpu_sys_s": usage.ru_stime, "max_rss_kib": usage.ru_maxrss,
             "cgroup_memory_peak_bytes": _cgroup_peak(), "device": device,
             "visible_gpus": len(tf.config.list_physical_devices("GPU")),
+            "gpu_device_names": _gpu_device_names(device),
             "tensorflow_version": tf.__version__}
+
+
+def _gpu_device_names(device):
+    """GPU class actually used (device_name per visible GPU); recorded so R0 and R2 can be pinned
+    to the same class (R2-18). Empty on CPU."""
+    import tensorflow as tf
+    if device != "gpu":
+        return []
+    names = []
+    for gpu in tf.config.list_physical_devices("GPU"):
+        try:
+            names.append(str(tf.config.experimental.get_device_details(gpu).get("device_name")))
+        except (ValueError, RuntimeError):
+            names.append(None)
+    return names
 
 
 def _code_identity():

@@ -11,7 +11,13 @@
   "R2-09": "Decision: equal-head mean of annual pooled relative MAE on the common DEVELOPMENT rows with each head's own naive; R2 selected iff score_R2 < score_R0 - 1e-8, ties retain R0; any failed head or arm closes INCOMPLETE_COMPARISON",
   "R2-10": "Pretraining loss/curves, pretraining compute, fine-tune FIT/INNER diagnostics and R0/R2 fit costs are separate OLAP facts with readback; one seed, no superiority claim",
   "R2-11": "Donor and R2-model serialization reload bitwise on CPU; bounded GPU replay under the declared numerical policy (no broadened tolerance)",
-  "R2-12": "Scope: no core pretraining, cadence change, long family or TEST unit; any such field is refused (R2_SCOPE / TEST_FORBIDDEN)"
+  "R2-12": "Scope: no core pretraining, cadence change, long family or TEST unit; any such field is refused (R2_SCOPE / TEST_FORBIDDEN)",
+  "R2-13": "Donor provenance: each imported donor references this campaign's pretraining-unit stored terminal (authenticated) plus the learned-corpus digest (FIT windows and purged INNER selection rows), the objective ruling seal, the applied seed and the code pin; a forged or copied identity is refused (D3)",
+  "R2-14": "Pretraining determinism: seed bound immediately before the decoder is built; no wall-clock budget stop selects a donor; bitwise-identical donor on CPU replay",
+  "R2-15": "The ruled objective is executable by the registered component at validation time (D1)",
+  "R2-16": "Decision integrity: decide_r2 requires scientific GPU fits and the R2 import record binding all 19 donor terminal digests, and refuses an import binding on R0 (D4)",
+  "R2-17": "Automation (plan section 4) for the new graph: measured-peak admission class for pretraining units (1.25x its own peak, never the fit's); crash/restart, duplicate claim and outbox retry never repeat a completed pretraining or fit; status at every level; CLOSE with mirrors; a failed pretraining unit is a typed INCOMPLETE_COMPARISON, never an R0-only selection (OPS runner)",
+  "R2-18": "R0 and R2 fits run on the same runtime and the same recorded GPU class; a difference is refused at decision time"
  },
  "arms": {
   "R0": {
@@ -36,6 +42,7 @@
  "contrast_id": "I6-DMO-SHORT-MG2M-R0-VS-R2-BRANCH",
  "decision": {
   "function": "tools.i6dmo.r2_design.decide_r2",
+  "integrity": "scientific GPU fits on the same runtime and GPU class; the R2 fit identity binds the import record (r2_import_sha256) whose 19 donor terminal digests are present; the R0 fit carries no import binding",
   "limits": "one seed; DEVELOPMENT 2024 informed the feature set; no statistical superiority, holdout or trading eligibility claim",
   "per_head_primary": true,
   "rule": "R2 selected iff score_R2 < score_R0 - 1e-8; otherwise R0 retained (no pretraining cost); any failed head or arm -> INCOMPLETE_COMPARISON",
@@ -51,6 +58,8 @@
   "objective or architecture search"
  ],
  "pretraining": {
+  "budgets": "max_updates and max_seconds fixed by the ruling; a budget stop is R2_PRETRAINING_BUDGET_STOP and the comparison closes INCOMPLETE_COMPARISON",
+  "corpus": "tools.i6dmo.model.branch_pretraining_corpus (learned-corpus sha256 per feature)",
   "data": {
    "development": "NEVER",
    "fit": "FIT_COMMON_ORIGINS",
@@ -80,6 +89,7 @@
   },
   "donor_policy": "FULL_IDENTITY_REQUIRED_NEVER_SHAPE_ALONE",
   "early_stopping": {
+   "disclosure": "INNER inputs (no labels) influence R2 twice and R0 once; DEVELOPMENT, the scoring split, is never touched",
    "monitor": "INNER_ONLY_OBJECTIVE_LOSS",
    "restore": "best_inner_epoch"
   },
@@ -118,10 +128,12 @@
    "O3",
    "O4"
   ],
+  "provenance": "DONORS_ONLY_FROM_THIS_CAMPAIGNS_AUTHENTICATED_PRETRAINING_TERMINALS: tools.i6dmo.model.write_branch_donor_terminal / load_branch_donor bind campaign, unit, applied seed, code pin, ruling seal, learned corpus, objective and donor bytes; a self-declared manifest never passes",
   "recommended_option": "O1",
   "start_weights": "R0_SEED_BUILD_BRANCH_WEIGHTS",
   "time_inputs": "not branch inputs; the windows are the identical MG2m market slots, so support, calendar and time identity are the fine-tune's own",
-  "unit": "ONE_DONOR_PER_FEATURE"
+  "unit": "ONE_DONOR_PER_FEATURE",
+  "unit_body": "tools.i6dmo.model.pretrain_branch (seed bound immediately before the autoencoder is built; budget stop = typed failure, no donor)"
  },
  "question": "On the selected MG2m input recipe, do compatible pretrained per-feature branch encoders, imported and fine-tuned (R2), improve on the matched R0 reference?",
  "r0_reference": {
@@ -167,7 +179,7 @@
   "separate_facts": true
  },
  "schema": "i6dmo.r2_contrast_design.v1",
- "seal_sha256": "3e46e005a13dbc47a6dcb98390ceba6f9dd9c771989d74041da1172f1ca2f251",
+ "seal_sha256": "12ee51b7b6fc7c4ff0af97c557eabd3cb5b58317a292be30c752176840b638d3",
  "selection": {
   "campaign_id": "i6dmo-6004b711281c",
   "comparison_sha256": "2ee85a125c3603e4069dbde42f1ccbf7ad32ac0b6c75ca798b7a8300cece13ee",
@@ -183,6 +195,14 @@
   "experiment_design_sha256": "d71d2b3c555dc3fad855b30b97e68d04193bfb5e3df33179f8ef10eea5d04711",
   "experiment_id": "I6-DMO-SHORT-MG2-MATCHED-R0",
   "experiment_seal_sha256": "416c11563c30cc5cbc6345720d7a3d5521fc48d7fe5dae809e0aef33bd30a19e",
+  "fit_pinning": {
+   "enforced_by": "tools.i6dmo.r2_design.decide_r2",
+   "gpu_class": "R0 and R2 fits on the SAME recorded GPU class (receipt resources.gpu_device_names); scientific GPU fits only",
+   "runtime": {
+    "keras": "3.13.2",
+    "tensorflow": "2.21.0"
+   }
+  },
   "horizons_hours": [
    2,
    3,

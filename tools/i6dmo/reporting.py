@@ -556,6 +556,8 @@ def run_matched_unit(spec, out, progress_path, *, started=None):
                    "input_replay": arm_dev["replay"],
                    "capacity": capacity, "fit_identity": receipt.get("identity"),
                    "scientific_fit": receipt.get("scientific"), "fit_device": receipt.get("device"),
+                   "fit_runtime": (receipt.get("resources") or {}).get("tensorflow_version"),
+                   "fit_gpu_class": ((receipt.get("resources") or {}).get("gpu_device_names") or [None])[0],
                    "require_scientific_fit": require_scientific_fit,
                    "manual_pooled_replay": manual, "selection": selection,
                    "same_rows": "model and naive per horizon on identical common rows, common "

@@ -12,7 +12,7 @@ Built-ins:
 ``autoencoder_reconstruction`` (1.0.0)
     The AE control: a learned decoder reconstructs the branch input; the shared
     early-stopping loop fits it. Reconstruction is MEASURED.
-``ts2vec_contrastive`` (1.0.0)
+``ts2vec_contrastive`` (1.0.1)
     TS2Vec-style objective (Yue et al., AAAI 2022, arXiv:2106.10466; reference
     code zhihanyue/ts2vec @ b0088e14): hierarchical instance-wise + temporal
     contrastive loss over max-pooled scales, with contextual consistency from
