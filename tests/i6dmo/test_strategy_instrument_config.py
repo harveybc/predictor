@@ -114,3 +114,76 @@ def test_missing_file_is_the_typed_wait(tmp_path):
     with pytest.raises(sa.StrategyAdapterError) as e:
         sa.load_instrument_config(tmp_path / "absent.json")
     assert e.value.code == "INSTRUMENT_CONFIG_MISSING"
+
+
+# ---------------------------------------------------------------------------
+# Reviewer refutation of the retained-MT5-rows claim
+# (retsu/i6dmo-market-time-review-20261015 @3508e149 market_time/provenance/
+#  MT5_COST_EVIDENCE.json: no mt5-bridge.sqlite exists; the retained artifacts
+#  are 2026-08 ETHUSD demo snapshots with zero symbol_snapshots rows).
+
+REFUTED_LOCATOR = "<home>/.local/state/lts/mt5-bridge.sqlite"
+
+
+def test_no_text_in_the_file_claims_retained_mt5_rows_or_spread_snapshots(doc):
+    blob = json.dumps(doc).lower()
+    for false_claim in ("retains live spread snapshots", "retained lab rows exist",
+                        "transcribing them is a later evidence task"):
+        assert false_claim not in blob, false_claim
+
+
+def test_refuted_evidence_is_recorded_typed_so_nobody_recites_it(doc):
+    entries = doc["refuted_evidence"]
+    assert isinstance(entries, list) and entries
+    entry = next(e for e in entries if e["locator"] == REFUTED_LOCATOR)
+    assert entry["status"] == "REFUTED_NOT_FOUND"
+    assert entry["reviewer"].startswith("retsu/i6dmo-market-time-review-20261015")
+    assert "MT5_COST_EVIDENCE.json" in entry["finding_artifact"]
+    # The five retained snapshots are described by content, with their digests.
+    assert entry["retained_snapshots"]["distinct_snapshots"] == 5
+    assert entry["retained_snapshots"]["symbol_snapshot_rows"] == 0
+    assert entry["retained_snapshots"]["contains_spread_field"] is False
+    assert entry["retained_snapshots"]["instrument"] == "ETHUSD"
+    assert entry["retained_snapshots"]["environment"] == "demo"
+    assert len(entry["retained_snapshots"]["sha256"]) == 5
+    assert all(len(h) == 64 for h in entry["retained_snapshots"]["sha256"])
+    assert "does not exist locally" in entry["consequence"]
+    assert entry["promotable_cost_fields"] == []
+
+
+def test_a_field_may_not_cite_refuted_evidence(tmp_path, doc):
+    doc["fields"]["costs.spread_price"]["sources"].append(
+        f"MT5 lab rows at {REFUTED_LOCATOR}")
+    path = tmp_path / "instrument.json"
+    path.write_text(json.dumps(_reseal(doc)))
+    with pytest.raises(sa.StrategyAdapterError) as e:
+        sa.derive_execution_policy_from_file(path)
+    assert e.value.code == "INSTRUMENT_CITES_REFUTED_EVIDENCE"
+
+
+def test_schema_citation_keeps_the_five_non_cost_fields_evidenced(doc):
+    evidenced = {n for n, f in doc["fields"].items() if f["status"] == "EVIDENCED"}
+    assert evidenced == {"price_decimals", "point_size", "pip_size", "pip_cost_parameter",
+                         "lot_units"}
+    assert all(doc["fields"][n]["status"] == "ASSUMED_NOT_BROKER_VERIFIED"
+               for n in doc["fields"] if n.startswith("costs."))
+    # The bridge-lab SCHEMA does exist, so citing it is still evidence; the two
+    # fields that cite it name the source file and claim nothing about rows.
+    citing = [n for n, f in doc["fields"].items()
+              if any("mt5_bridge_lab.py" in s for s in f["sources"])]
+    assert citing, "the schema citation is retained"
+    for name in citing:
+        assert doc["fields"][name]["status"] == "EVIDENCED"
+        for source in doc["fields"][name]["sources"]:
+            if "mt5_bridge_lab.py" in source:
+                assert "schema" in source.lower() and REFUTED_LOCATOR not in source
+
+
+def test_seal_changed_and_the_receipt_rederives():
+    doc = json.loads(FILE.read_text())
+    stale = "f244314197ae9eca3cbf92e1d8e5eb063ef02e907508af42f34419ba7a8abd94"
+    assert doc["config_sha256"] != stale
+    receipt = sa.derive_execution_policy_from_file(FILE)
+    assert receipt["instrument_config_sha256"] == doc["config_sha256"]
+    assert receipt["instrument"]["costs"]["spread_price"] == 0.0002
+    assert receipt["instrument"]["cost_verification"] == "NOT_BROKER_VERIFIED"

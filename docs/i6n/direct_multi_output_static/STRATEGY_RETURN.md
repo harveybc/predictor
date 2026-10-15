@@ -146,3 +146,24 @@ wait clears exactly when the sealed file exists; unsourced fields, unknown statu
 conflict reasons and broker-verification overclaims are typed refusals. PRE: 12 failed/erred
 (file and API absent). POST: full tests/i6dmo 265 passed. MT5 lab live-spread rows remain
 untranscribed retained evidence (noted in the file).
+
+## Addendum 5: retained-MT5-rows claim refuted (reviewer correction)
+
+The reviewer (retsu/i6dmo-market-time-review-20261015 @3508e149,
+market_time/provenance/MT5_COST_EVIDENCE.json) refuted my note that the MT5 bridge lab retains
+transcribable live spread snapshots: no mt5-bridge.sqlite exists on any searched root, and the
+only surviving MT5 artifacts are five distinct 2026-08-16 snapshots (six retained files, two
+byte-identical, 4964 bytes each) from an ETHUSD demo session with zero symbol_snapshots rows,
+no spread field and no EURUSD. Corroborated by lts mt5_unknown_outcome_20260926/NOTE.md.
+
+Corrections in tools/i6dmo/instrument_eurusd.v1.json: the false note is replaced by the
+finding (snapshot digests, content, and that EURUSD cost evidence does not exist locally); a
+typed `refuted_evidence` entry records the locator as REFUTED_NOT_FOUND with the reviewer,
+finding artifact, search roots and the empty promotable_cost_fields list; the two EVIDENCED
+fields that cited the bridge lab now cite only its SCHEMA (which does exist) and assert nothing
+about rows, so the five non-cost fields stay EVIDENCED and all four costs stay
+ASSUMED_NOT_BROKER_VERIFIED. `_refuse_refuted_citations` makes any future field citing a
+refuted locator a typed INSTRUMENT_CITES_REFUTED_EVIDENCE refusal. The seal moved
+f2443141 -> b5d37996 and the receipt re-derives (binding test green).
+
+PRE: 4 failed. POST: full tests/i6dmo 270 passed (CPU only).

@@ -988,7 +988,28 @@ def _instrument_fields(doc: Mapping[str, Any]) -> Dict[str, Any]:
                 raise _err("INSTRUMENT_FIELD_UNSOURCED",
                            f"{name} conflict must record both values, the chosen one and its reason")
         values[name] = field["value"]
+    _refuse_refuted_citations(doc, fields)
     return values
+
+
+def _refuse_refuted_citations(doc: Mapping[str, Any], fields: Mapping[str, Any]) -> None:
+    """A field may never cite evidence a review recorded as REFUTED_NOT_FOUND."""
+    refuted = doc.get("refuted_evidence") or []
+    if not isinstance(refuted, list):
+        raise _err("INSTRUMENT_FIELD_UNSOURCED", "refuted_evidence must be a list")
+    locators = []
+    for entry in refuted:
+        if not isinstance(entry, Mapping) or not isinstance(entry.get("locator"), str) or \
+                not entry["locator"].strip() or entry.get("status") != "REFUTED_NOT_FOUND":
+            raise _err("INSTRUMENT_FIELD_UNSOURCED",
+                       "each refuted_evidence entry needs a locator and status REFUTED_NOT_FOUND")
+        locators.append(entry["locator"])
+    for name, field in fields.items():
+        for source in field["sources"]:
+            for locator in locators:
+                if locator in source:
+                    raise _err("INSTRUMENT_CITES_REFUTED_EVIDENCE",
+                               f"{name} cites {locator}, recorded as REFUTED_NOT_FOUND")
 
 
 def instrument_from_config(doc: Mapping[str, Any]) -> Dict[str, Any]:

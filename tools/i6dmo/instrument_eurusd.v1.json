@@ -1,5 +1,5 @@
 {
- "config_sha256": "f244314197ae9eca3cbf92e1d8e5eb063ef02e907508af42f34419ba7a8abd94",
+ "config_sha256": "b5d379963ab873de58c4d0ace1de19142f93c59628715e63bcbdd95941de6334",
  "config_version": "i6dmo-eurusd-costs-2026-10-15.v1",
  "cost_verification": "NOT_BROKER_VERIFIED",
  "fields": {
@@ -101,7 +101,7 @@
   "point_size": {
    "sources": [
     "heuristic-strategy app/plugins/plugin_long_short_predictions.py blob 3a19b3f73917a9714d496d10a719135c9810c3ce (identical at 5c87a25 and at pin d40fd3b0); plugin_params comment: 'Trading costs (worst-case retail EURUSD)': pip_cost 0.00001 operates as the 5th-decimal point",
-    "lts app/mt5_bridge_lab.py snapshot schema lines 314-315/492 records live bid/ask/spread/spread_points/point per symbol; retained lab rows exist but were not queried here"
+    "lts app/mt5_bridge_lab.py snapshot SCHEMA lines 314-315/492 declares per-symbol bid/ask/spread/spread_points/point columns, which evidences 5-decimal point quoting for the bridge's instruments; the source file exists, no row is cited (see refuted_evidence)"
    ],
    "status": "EVIDENCED",
    "value": 1e-05
@@ -109,7 +109,7 @@
   "price_decimals": {
    "sources": [
     "5-digit EURUSD quoting implied by point 0.00001 across heuristic-strategy app/plugins/plugin_long_short_predictions.py blob 3a19b3f73917a9714d496d10a719135c9810c3ce (identical at 5c87a25 and at pin d40fd3b0); plugin_params comment: 'Trading costs (worst-case retail EURUSD)'",
-    "lts app/mt5_bridge_lab.py snapshot schema lines 314-315/492 records live bid/ask/spread/spread_points/point per symbol; retained lab rows exist but were not queried here"
+    "lts app/mt5_bridge_lab.py snapshot SCHEMA lines 314-315/492 declares per-symbol bid/ask/spread/spread_points/point columns, which evidences 5-decimal point quoting for the bridge's instruments; the source file exists, no row is cited (see refuted_evidence)"
    ],
    "status": "EVIDENCED",
    "value": 5
@@ -118,8 +118,62 @@
  "instrument_id": "EURUSD",
  "notes": [
   "No broker statement, MT5 account history export or venue fee schedule with numeric EURUSD costs is retained in these repositories; every cost is therefore ASSUMED_NOT_BROKER_VERIFIED.",
-  "The MT5 bridge lab retains live spread snapshots in its lab database; transcribing them is a later evidence task, not done here."
+  "EURUSD cost evidence does not exist locally: the earlier note claiming the MT5 bridge lab retains transcribable live spread snapshots was REFUTED by review (see refuted_evidence). No cost field can be promoted to EVIDENCED from local artifacts."
  ],
  "recovered_under": "MUSASHI_TO_SATOSHI_STATIC_BASELINE_CLOSE_AND_MARKET_GRID_20261015.md sha256 85ea134e... section 3; no credentials used, no broker queried, no trading",
+ "refuted_evidence": [
+  {
+   "claim_refuted": "the MT5 bridge lab retains live EURUSD spread snapshots in its lab database that could be transcribed as cost evidence",
+   "consequence": "EURUSD cost evidence does not exist locally; even a recovered snapshot would be a 2026 ETHUSD demo quote and could not evidence 2020-2024 EURUSD spread, slippage, commission or swap. Do not re-cite this locator.",
+   "corroborating_record": "lts docs/audits/evidence/mt5_unknown_outcome_20260926/NOTE.md: verified 2026-09-26, no mt5-bridge.sqlite exists anywhere on the filesystem",
+   "exact_missing_artifacts": [
+    "MT5 symbol_snapshots rows for EURUSD covering the validation window, with terminal_observed_at, bid, ask, spread, spread_points and point.",
+    "A broker statement or venue fee schedule giving EURUSD commission per lot round trip and the signed per-direction swap tiers."
+   ],
+   "finding_artifact": "docs/i6n/direct_multi_output_static/market_time/provenance/MT5_COST_EVIDENCE.json (verdict NO_TRANSCRIBABLE_EVIDENCE_EXISTS_ON_THIS_HOST)",
+   "locator": "<home>/.local/state/lts/mt5-bridge.sqlite",
+   "promotable_cost_fields": [],
+   "retained_snapshots": {
+    "bridge_tables_present": [
+     "order_rows",
+     "position_rows",
+     "service_state_rows"
+    ],
+    "bytes_each": 4964,
+    "capture_window": "2026-08-16T01:46Z .. 2026-08-16T04:22Z",
+    "contains_EURUSD": false,
+    "contains_spread_field": false,
+    "distinct_snapshots": 5,
+    "environment": "demo",
+    "instrument": "ETHUSD",
+    "retained_files": 6,
+    "retained_files_note": "latest.json is byte-identical to mt5_direct_evidence_20260816T042239Z.json",
+    "sha256": [
+     "0b339bfad2e6b11abc369d2a25e48da4f97eeabcb4e011178b0ae2042610acb3",
+     "3968e6b93eee65e9d3cb1eb3a6c14b134ede32cfc976f187cf8a3bb0083c9cf2",
+     "3b0ddc8037bdf6742d886671ca30dcc7b65f3df05e1018e18219c24daa9c7b63",
+     "3442861682c09284c2938f7101fa4d84a8a7b3e7d7a410cdbb6f6b78e56ad126",
+     "3848764c21688b6dcaa0aefc3cd3cfc53bc5c44a087e4b6a383437e6d2b09929"
+    ],
+    "symbol_snapshot_rows": 0
+   },
+   "reviewer": "retsu/i6dmo-market-time-review-20261015 @3508e149",
+   "search": {
+    "hits": 0,
+    "pattern": "mt5-bridge.sqlite* / *mt5*bridge*.sqlite*",
+    "roots_searched": [
+     "<home>",
+     "/var/tmp",
+     "/srv",
+     "/opt",
+     "/mnt",
+     "/media",
+     "/tmp"
+    ],
+    "verdict": "ABSENT"
+   },
+   "status": "REFUTED_NOT_FOUND"
+  }
+ ],
  "schema": "i6dmo.instrument_config.v1"
 }
