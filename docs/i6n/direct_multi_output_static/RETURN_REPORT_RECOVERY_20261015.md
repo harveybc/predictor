@@ -115,3 +115,5 @@ them as runtime-compatible donors or claim a runtime-matched comparison.
 No retroactive reseal or automatic refit is authorized. The new matched
 control has separately sealed runtime identities. See the
 [follow-up audit](matched_short/MUSASHI_AUDIT_20261015.md).
+Machine-readable record, label `RUNTIME_SEAL_NONCONFORMANT_OBSERVED_TF_2_21`, citing both design seals, both
+receipt hashes and the observed versions: [RUNTIME_QUALIFICATION_MG2_MG12.json](RUNTIME_QUALIFICATION_MG2_MG12.json).

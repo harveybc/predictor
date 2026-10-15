@@ -7,6 +7,8 @@ the completed experiment's contract, not a current launch order. The next
 accepted sequence is [NEXT_CONTRASTS_PLAN_20261015.md](NEXT_CONTRASTS_PLAN_20261015.md).
 This was a fixed I6-DMO experiment, not a DOIN search or a claim of optimality.
 
+Runtime qualification (2026-10-15): the closed MG2/MG12 results are RUNTIME_SEAL_NONCONFORMANT_OBSERVED_TF_2_21 (declared TF 2.18.0/Keras 3.9.0, receipts record TF 2.21.0); they cannot attest the declared runtime or serve as a runtime-matched donor/control. Numbers unchanged. Record: [RUNTIME_QUALIFICATION_MG2_MG12.json](RUNTIME_QUALIFICATION_MG2_MG12.json).
+
 ## 1. Question and limits
 
 Can one small static R0 short/long pair, using real market-time input slots,

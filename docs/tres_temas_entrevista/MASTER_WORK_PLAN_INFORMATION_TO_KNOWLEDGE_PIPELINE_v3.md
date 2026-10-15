@@ -40,6 +40,8 @@ reajuste semanal obligatorio, barridos por horizonte y relevo H4->H72.
 No borra resultados ni autoriza reutilizar sus identidades. Las cuatro islas
 POO-v2 y su relevo estan detenidos; sus archivos y entregas OLAP se conservan.
 
+Calificacion de runtime (2026-10-15): los resultados cerrados MG2/MG12 son RUNTIME_SEAL_NONCONFORMANT_OBSERVED_TF_2_21 (declarado TF 2.18.0/Keras 3.9.0, los recibos registran TF 2.21.0); no certifican el runtime declarado ni sirven como donante/control con runtime emparejado. Cifras sin cambios. Registro: [RUNTIME_QUALIFICATION_MG2_MG12.json](../i6n/direct_multi_output_static/RUNTIME_QUALIFICATION_MG2_MG12.json).
+
 Prioridad inmediata: mascara y disponibilidad del negocio; utilidad predictiva
 y trading de la pareja; despues valor/coste de reajustes trimestrales,
 mensuales y semanales. La primera prueba es un modelo modular pequeno R0,

@@ -14,6 +14,8 @@ under new identities. This dispatch supersedes automatic H4 -> H72 searches,
 per-horizon sweeps and mandatory weekly fits for this experiment. Historical
 chains, fits, metrics and conclusions remain immutable.
 
+Runtime qualification (2026-10-15): the closed MG2/MG12 results are RUNTIME_SEAL_NONCONFORMANT_OBSERVED_TF_2_21 (declared TF 2.18.0/Keras 3.9.0, receipts record TF 2.21.0); they cannot attest the declared runtime or serve as a runtime-matched donor/control. Numbers unchanged. Record: [RUNTIME_QUALIFICATION_MG2_MG12.json](RUNTIME_QUALIFICATION_MG2_MG12.json).
+
 ## 1. Priorities and sequence
 
 1. Point-in-time inputs and business-masked targets, including the current tick.

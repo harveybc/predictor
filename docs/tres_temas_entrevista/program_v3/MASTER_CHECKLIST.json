@@ -247,5 +247,6 @@
     "static business baseline labelled as weekly adaptation",
     "six independent full models substituted for shared six-head model"
   ],
-  "active_dispatch": "I6-DMO"
+  "active_dispatch": "I6-DMO",
+  "runtime_qualification_mg2_mg12": {"label": "RUNTIME_SEAL_NONCONFORMANT_OBSERVED_TF_2_21", "record": "docs/i6n/direct_multi_output_static/RUNTIME_QUALIFICATION_MG2_MG12.json", "record_sha256": "ea96d5a08ff2cd9544ff41d6447f29e60b0cbbf5e4fa160247f9610cc2486060", "statement": "closed MG2/MG12 results: declared TF 2.18.0/Keras 3.9.0, receipts record TF 2.21.0; numbers unchanged; not a runtime-matched donor/control"}
 }

@@ -90,6 +90,8 @@ never presented as a worker's free space, and it is not mounted on the workers.
 
 Campaign `i6dmo-72809b6c88a6`, root on the local ext4 scratch filesystem.
 
+Runtime qualification (2026-10-15): the closed MG2/MG12 results are RUNTIME_SEAL_NONCONFORMANT_OBSERVED_TF_2_21 (declared TF 2.18.0/Keras 3.9.0, receipts record TF 2.21.0); they cannot attest the declared runtime or serve as a runtime-matched donor/control. Numbers unchanged. Record: [RUNTIME_QUALIFICATION_MG2_MG12.json](RUNTIME_QUALIFICATION_MG2_MG12.json).
+
 - `validate-design` PASS for both designs at the expected identities; `preflight` PASS with no
   launch blockers (coordinator, preferred and secondary disk all pass; experiment storage PASS).
 - `init` sealed both designs and the execution-policy receipt; the plan has the six units and

@@ -14,3 +14,4 @@ keeps its own support, model identity and cost; these are not controlled
 ablations of sampling alone. Generated STATUS supersedes snapshot run states.
 The closed MG2/MG12 pair has a [runtime-seal qualification](RETURN_REPORT_RECOVERY_20261015.md#runtime-qualification-added-2026-10-15):
 actual TF 2.21.0 differed from declared TF 2.18.0; do not claim runtime compliance.
+Machine-readable qualification `RUNTIME_SEAL_NONCONFORMANT_OBSERVED_TF_2_21`: [RUNTIME_QUALIFICATION_MG2_MG12.json](RUNTIME_QUALIFICATION_MG2_MG12.json).

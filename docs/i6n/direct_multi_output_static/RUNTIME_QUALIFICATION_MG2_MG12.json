@@ -1,0 +1,119 @@
+{
+ "citation_tokens": [
+  "i6dmo-9e1ebad89ff2",
+  "i6dmo-72809b6c88a6",
+  "8ca83a7b6d4be5c9",
+  "afa5b09418cf4e3f",
+  "0.049615",
+  "0.093170",
+  "24.08-41.08",
+  "RETURN_REPORT_RECOVERY_20261015"
+ ],
+ "consequences": [
+  "the observed predictions, errors and percentages remain the measured results and are NOT erased, changed or re-graded",
+  "these results cannot attest compliance with their declared runtime (TensorFlow 2.18.0 / Keras 3.9.0)",
+  "they cannot serve as a runtime-matched donor or a runtime-matched control; a runtime seal mismatch is an incompatible donor",
+  "every comparison or return citing them carries this qualification"
+ ],
+ "date": "2026-10-15",
+ "declared_runtime": {
+  "long": {
+   "design_file": "docs/i6n/direct_multi_output_static/EXPERIMENT.mg12.json",
+   "design_file_sha256": "c5e3b3da91a3bfeba98d2908997bfa515d642c823f9422cbecff9542b2125b88",
+   "design_sha256": "4da1d3e09fc8df36445a080b0c07b1ca58a6c9674e0fa8249c10bc2d66166039",
+   "experiment_id": "I6-DMO-LONG-MG12-MARKET-EXACT-R0",
+   "runtime": {
+    "keras": "3.9.0",
+    "tensorflow": "2.18.0"
+   },
+   "seal_sha256": "97541764436cc1356600999dd7b68e702a66fab37d82e676522709744dda89c6"
+  },
+  "short": {
+   "design_file": "docs/i6n/direct_multi_output_static/EXPERIMENT.mg2.json",
+   "design_file_sha256": "89dea96d72430f3f3a1233c24698727a74da30a9f7e70cb4bbf4f5525a2f9cd5",
+   "design_sha256": "1fa48222a7136111b245f70ae07c47c3c67cf56e276e50e3d52edeadd35e3cb2",
+   "experiment_id": "I6-DMO-SHORT-MG2-MARKET-EXACT-R0",
+   "runtime": {
+    "keras": "3.9.0",
+    "tensorflow": "2.18.0"
+   },
+   "seal_sha256": "4b64b4ee321e23ce3c2dcb183fda00fd1488af2494bb15f68c89dd9775344ec8"
+  }
+ },
+ "distinct_from_matched_reseal": {
+  "matched_campaign": "i6dmo-6004b711281c",
+  "matched_current_receipts": {
+   "mg1.fit": {
+    "declared": "2.21.0",
+    "design_sha256": "64899668352f947b48a773d24c00642cb521bddcc25b049b3e76c3abd37612ba",
+    "receipt_sha256": "553189d15457a3e397d47a450f023525589f8e2b9534407728c86845805fa96d",
+    "tensorflow_version": "2.21.0"
+   },
+   "mg2m.fit": {
+    "declared": "2.21.0",
+    "design_sha256": "d71d2b3c555dc3fad855b30b97e68d04193bfb5e3df33179f8ef10eea5d04711",
+    "receipt_sha256": "da1a6efd27fb75d916dc81b8e4542fcb6c9e58b2040325100de0e51100c5a42f",
+    "tensorflow_version": "2.21.0"
+   }
+  },
+  "matched_equality_witness": "docs/i6n/direct_multi_output_static/matched_short/POPULATION_RESEAL_EQUALITY.json",
+  "matched_supersession_note": "docs/i6n/direct_multi_output_static/matched_short/SUPERSEDED_BEFORE_EXECUTION.json",
+  "statement": "the matched short designs were resealed BEFORE any execution (runtime pin only, retained equality witness POPULATION_RESEAL_EQUALITY.json, superseded seals refused) and their current GPU receipts record TensorFlow 2.21.0 under designs that declare 2.21.0; that is a conforming pre-execution correction, not a retroactive reseal of completed fits. The closed MG2/MG12 case is a completed-fit nonconformance and is only qualified."
+ },
+ "exemptions": {
+  "docs/i6n/direct_multi_output_static/automation_repair/E2E_RECEIPT.md": "an OPS engineering receipt that only states the closed campaigns were not touched; it cites no result",
+  "docs/i6n/direct_multi_output_static/matched_short/review/": "frozen independent-review evidence (scripts and outputs); not edited"
+ },
+ "gate": "tools/i6dmo/runtime_qualification.citation_problems; tests/i6dmo/test_runtime_qualification.py scans docs/i6n/direct_multi_output_static and docs/tres_temas_entrevista",
+ "gate_scope_limit": "docs/handoffs (owner/auditor orders) and docs/audits are historical orders/evidence and are not scanned or edited",
+ "label": "RUNTIME_SEAL_NONCONFORMANT_OBSERVED_TF_2_21",
+ "not_done": [
+  "no reseal of EXPERIMENT.mg2.json/EXPERIMENT.mg12.json",
+  "no rerun or refit",
+  "no edit of the closed receipts, terminals, CLOSE.json, reports or metrics",
+  "no re-grade of any number"
+ ],
+ "observed_runtime": {
+  "close_sha256": "b2ef04ee6bd2fd52d18a0e121b5c55c917e82f714c29fd28fb3128c571f4ba86",
+  "long.fit": {
+   "device": "gpu",
+   "keras_version": "NOT_RECORDED_IN_RECEIPT",
+   "model_sha256": "f9bd8ce25d0d82782578bd06c7da469292e1df0de85d7d5b8661cb32248b0fa7",
+   "receipt": "<campaign-root>/market-time-report-recovery-20261015/terminals/afa5b09418cf4e3fa689b9181d0ed1a65fa2ee1755329de63e761ed1d7920e90/out/train/RECEIPT.json",
+   "receipt_design_sha256": "4da1d3e09fc8df36445a080b0c07b1ca58a6c9674e0fa8249c10bc2d66166039",
+   "receipt_sha256": "c1caae79f1297175348c7a2380e21f21b0c12719b9d4e3ee23f9c9994d316f9c",
+   "scientific": true,
+   "status": "COMPLETED",
+   "tensorflow_version": "2.21.0",
+   "terminal_sha256": "630cc068dd030126c247f7d17fd1ea9c08334b308c052901188ccebb157e071e",
+   "unit_identity_sha256": "afa5b09418cf4e3fa689b9181d0ed1a65fa2ee1755329de63e761ed1d7920e90"
+  },
+  "short.fit": {
+   "device": "gpu",
+   "keras_version": "NOT_RECORDED_IN_RECEIPT",
+   "model_sha256": "361d7e4efcda8d31180bf77abbf97617c98dbc8579f19f1f3381444e509b753f",
+   "receipt": "<campaign-root>/market-time-report-recovery-20261015/terminals/8ca83a7b6d4be5c9e9f48ab72edd6cfb4015d3cf8ce29c203329e6194e5c9913/out/train/RECEIPT.json",
+   "receipt_design_sha256": "1fa48222a7136111b245f70ae07c47c3c67cf56e276e50e3d52edeadd35e3cb2",
+   "receipt_sha256": "0f32247f31e01bb1d1c86ac57c44033c3cb1ed8eb996e4572974ee95cd47ea20",
+   "same_bytes_as_source_attempt": "<campaign-root>/market-time-pair-20261015-r3/attempts/short.fit/a01/out/train/RECEIPT.json (campaign i6dmo-72809b6c88a6)",
+   "scientific": true,
+   "status": "COMPLETED",
+   "tensorflow_version": "2.21.0",
+   "terminal_sha256": "f054636297456483c7d02b9fad34f615455af3e332788fb33847921675cbf8a2",
+   "unit_identity_sha256": "8ca83a7b6d4be5c9e9f48ab72edd6cfb4015d3cf8ce29c203329e6194e5c9913"
+  }
+ },
+ "qualification_id": "RQ-I6DMO-MG2-MG12-20261015",
+ "qualified_results": {
+  "closure": "CLOSED / PAIR_NOT_ELIGIBLE (2026-10-15 08:30 UTC)",
+  "closure_campaign": "i6dmo-9e1ebad89ff2",
+  "results_index": "docs/i6n/direct_multi_output_static/RESULTS_INDEX.md",
+  "returns": [
+   "docs/i6n/direct_multi_output_static/RETURN_REPORT_RECOVERY_20261015.md"
+  ],
+  "source_campaign": "i6dmo-72809b6c88a6"
+ },
+ "record_sha256": "ea96d5a08ff2cd9544ff41d6447f29e60b0cbbf5e4fa160247f9610cc2486060",
+ "schema": "i6dmo.runtime_qualification.v1",
+ "source_finding": "docs/i6n/direct_multi_output_static/matched_short/MUSASHI_AUDIT_20261015.md finding 1; order MUSASHI_TO_SATOSHI_MATCHED_AUDIT_FOLLOWUP_20261015 section 3"
+}

@@ -22,6 +22,8 @@ Cierre 2026-10-15 08:30 UTC. Campana `i6dmo-9e1ebad89ff2`, runtime
 `a169fcba`, CLOSED / PAIR_NOT_ELIGIBLE. Timers deshabilitados tras verificar
 la entrega completa y los espejos. No hay un fit vivo de esta campana.
 
+Calificacion de runtime (2026-10-15): los resultados cerrados MG2/MG12 son RUNTIME_SEAL_NONCONFORMANT_OBSERVED_TF_2_21 (declarado TF 2.18.0/Keras 3.9.0, los recibos registran TF 2.21.0); no certifican el runtime declarado ni sirven como donante/control con runtime emparejado. Cifras sin cambios. Registro: [RUNTIME_QUALIFICATION_MG2_MG12.json](../../i6n/direct_multi_output_static/RUNTIME_QUALIFICATION_MG2_MG12.json).
+
 Siguiente secuencia aceptada por el propietario: control corto MG1/MG2 con
 poblacion comun -> ramas preentrenadas R2 frente a R0 -> transferencia larga
 -> contraste trimestral frente a estatico. Estado del sucesor: PREPARING,
