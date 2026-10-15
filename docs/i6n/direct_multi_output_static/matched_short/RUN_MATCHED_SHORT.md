@@ -48,7 +48,8 @@ All of these are private and never committed:
 | `$I6DMO_ROOT` | A NEW campaign root on ext4 |
 
 Each role in `deployment.json` must declare `experiment_storage_root`, the root that holds
-`i6dmo/matched-short-20261015/population`. Without it, a role cannot resolve the population
+the population directory named by `private_location` in the committed
+`POPULATION_SEAL.json`, relative to `$EXPERIMENT_STORAGE_ROOT`. Without it, a role cannot resolve the population
 pin and the worker refuses that role with `MATCHED_PIN_UNRESOLVED`. The warehouse
 `environment_file` is checked **by path only**. Its contents are never opened or echoed.
 
@@ -64,14 +65,15 @@ export CUDA_VISIBLE_DEVICES=""
 ```bash
 SEAL=docs/i6n/direct_multi_output_static/matched_short/POPULATION_SEAL.json
 DIGEST="$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["population_digest"])' "$SEAL")"
+POPDIR="$EXPERIMENT_STORAGE_ROOT/$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["private_location"].split("/", 1)[1])' "$SEAL")"
 crispdm-run -m 3G -t 600s -n i6dmo-matched-verify -- python -m tools.i6dmo.common_population verify \
-  --population-dir "$EXPERIMENT_STORAGE_ROOT/i6dmo/matched-short-20261015/population" \
+  --population-dir "$POPDIR" \
   --expected-digest "$DIGEST" \
   --input-dir "$DATA_ROOT/inputs/extended-no-stlfsi4"
 ```
 
-The digest is read from the committed `POPULATION_SEAL.json`; it is never typed by hand. A
-reseal of the designs or a rebuilt population changes it.
+The digest and the directory are both read from the committed `POPULATION_SEAL.json`; neither
+is typed by hand. A reseal of the designs or a rebuilt population changes both.
 
 ## 2. Prepare: write the private, host-specific JSON
 
