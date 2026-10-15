@@ -17,7 +17,9 @@
     "tests/i6dmo/test_dmo_final.py",
     "tools/i6dmo/gpu_probe_dmo10.py",
     "tools/i6dmo/replay_monitor.py",
-    "tests/i6dmo/conftest.py"
+    "tests/i6dmo/conftest.py",
+    "tools/i6dmo/dmo10_isolation.py",
+    "tests/i6dmo/test_dmo10_isolation.py"
   ],
   "python_api": {
     "tools.i6dmo.design.load_design(path) -> dict": "typed, unknown/missing fields rejected at every level; fixed C-section values enforced",
@@ -161,7 +163,7 @@
   },
   "dmo10_probe": "CUDA_VISIBLE_DEVICES=<scope> python -m tools.i6dmo.gpu_probe_dmo10 [--out DIR]: one session, in_session vs rebuild vs full_load per-head sums on one batch; exit 1 + divergent_pairs names the diverging pair (lane 4 bounded GPU scope; CPU logic tested)",
   "monitor_tolerance": {
-    "version": "v2 (supersedes the 1e-5 v1; approved by Satoshi as the single final round)",
+    "version": "v2 sealed as i6dmo.monitor_numeric_equivalence.v2 (floor_protocol_identity): formula/reference/rtol/atol/scope/dtype/label/flags/runtime; label NUMERICALLY_EQUIVALENT never BITWISE/PASS; old receipts keep their FAIL; activation requires PROVEN gpu_cross_process (recorded device+process identity, GPU visible), never flag inference; cross-device replay is typed CROSS_DEVICE_NOT_COMPARABLE",
     "scope": "cross-process GPU comparison of the monitored value and per-batch per-head float64 partial sums ONLY; CPU end-to-end, in-session self-check, reload identity, saved-vs-reloaded predictions, input witness bytes, weight digests, forward identity and determinism flags stay BITWISE",
     "bound": "|delta| <= 1e-9 + 5e-5*|recorded| per partial sum and for the monitored value",
     "calibration": "recorded witness distribution across eight excluded-mechanism rounds, observed max 1.82e-5, margin against flapping, far below any scientific effect",
@@ -177,5 +179,7 @@
     "tensor_float_32": "disabled flags-first in enable_determinism and recorded in determinism_flags",
     "input_witness": "post-normalization float32 byte digests (split, per batch, batch-0 per row, first 8 rows byte-complete) recorded before any forward and diffed first at replay; typed INPUT_WITNESS_MISMATCH names batches/rows/elements; input_materialization pinned to i6dmo.monitor_input.v1 (bundle arrays, float64 CPU normalization, single float32 cast in materialize_monitor_inputs, shared by fit and replay)",
     "monitor_forward": "one dedicated eager forward (i6dmo.monitor_forward.v1, source sha256) owned by the monitor module; used by fit-time recording and replay_monitor; records/witnesses from any other forward are refused typed MONITOR_FORWARD_MISMATCH; grappler remapping/layout_optimizer/auto_mixed_precision disabled flags-first and enforced"
-  }
+  },
+  "decision_impact": "monitor_evaluation.decision_impact: near-tie negative control (stopping_decision_impact at measured 1.82e-5 relative uncertainty) reporting could_change_best_epoch / could_change_patience_or_stop; training decisions untouched; no invariance claim",
+  "dmo10_isolation": "python -m tools.i6dmo.dmo10_isolation {freeze|forward|diff|flags}: frozen batch digests to Git (arrays local), element-level diff before reduction, independent fsum reproduction, controlled flags-on/off child comparison (SUPPORTS/DOES_NOT_SUPPORT/NOT_INFORMATIVE_ON_CPU); retained checkpoint only, no fits"
 }

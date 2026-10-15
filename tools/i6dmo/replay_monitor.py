@@ -49,10 +49,16 @@ def replay_unit(design_path, bundle_dir, unit_dir):
         T.materialize_monitor_inputs(inner_rows, scales),
         record, ids=(fit_rows["row_id"], inner_rows["row_id"]))
     recorded = record["monitored"]
-    bitwise = monitored == recorded and report["status"] == "BITWISE"
+    exact = monitored == recorded and report["status"] == "EXACT"
+    # Monitor forward tensors are recorded diagnostics and are never claimed bitwise; the
+    # exported checkpoint reload/serving equality is the separate EXACT check inside load_dmo
+    # (same process, canonical loader path), already enforced above.
+    label = ("EXACT" if exact and not report["row_forward_diagnostics"]
+             else "EXACT_SUMS_WITH_FORWARD_DIAGNOSTICS" if exact else "NUMERICALLY_EQUIVALENT")
     return {"schema": "i6dmo.replay_monitor.v1",
-            "status": "MATCH" if bitwise else "WITHIN_DECLARED_FLOOR",
-            "bitwise": bitwise, "monitored": monitored, "recorded": recorded,
+            "status": "EXACT" if exact else "NUMERICALLY_EQUIVALENT",
+            "label": label, "context": report.get("context"),
+            "monitored": monitored, "recorded": recorded,
             "within_floor": report["within_floor"],
             "monitored_abs_delta": report.get("monitored_abs_delta"),
             "row_forward_diagnostics": report["row_forward_diagnostics"],
@@ -74,9 +80,10 @@ def main(argv=None):
     try:
         verdict = replay_unit(args.design, args.bundle, args.unit)
     except (T.TrainDisposition, T.ContractError) as exc:
-        print(json.dumps({"schema": "i6dmo.replay_monitor.v1", "status": "DIVERGED",
+        status = "CROSS_DEVICE" if exc.code == "CROSS_DEVICE_NOT_COMPARABLE" else "DIVERGED"
+        print(json.dumps({"schema": "i6dmo.replay_monitor.v1", "status": status,
                           "code": exc.code, "detail": str(exc)}))
-        return 5
+        return 6 if status == "CROSS_DEVICE" else 5
     print(json.dumps(verdict, sort_keys=True) if args.json
           else f"{verdict['status']} monitored={verdict['monitored']!r} recorded={verdict['recorded']!r}")
     return 0

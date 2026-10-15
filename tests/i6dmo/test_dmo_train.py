@@ -637,7 +637,7 @@ def test_dedicated_monitor_forward_recorded_and_training_graph_record_refused(tm
                                               "relative_uncertainty"}
     assert record["monitor_forward"]["source_sha256"] == T.monitor_forward_identity()["source_sha256"]
     assert record["witness"]["forward"] == record["monitor_forward"]
-    assert R.replay_unit(DESIGN, bundle, tmp_path / "u")["status"] == "MATCH"
+    assert R.replay_unit(DESIGN, bundle, tmp_path / "u")["status"] == "EXACT"
     eff = T.effective_from_design(DESIGN)
     data = T.load_data_bundle(bundle, eff)
     scales = json.loads((tmp_path / "u" / "SCALES.json").read_text())
