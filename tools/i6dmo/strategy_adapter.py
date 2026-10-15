@@ -1132,9 +1132,10 @@ def execution_from_policy(receipt: Mapping[str, Any]) -> Dict[str, Any]:
 
 def _campaign_root(spec) -> Path:
     roots = set()
-    for value in (spec.get("upstream") or {}).values():
-        if isinstance(value, Mapping) and value.get("path"):
-            roots.add(Path(value["path"]).parents[2])  # <root>/terminals/<identity>/TERMINAL.json
+    for field in ("upstream", "forecast_upstream"):
+        for value in (spec.get(field) or {}).values():
+            if isinstance(value, Mapping) and value.get("path"):
+                roots.add(Path(value["path"]).parents[2])  # <root>/terminals/<identity>/TERMINAL.json
     if len(roots) != 1:
         raise _Refusal("FAILED", "CAMPAIGN_ROOT_UNRESOLVED")
     root = roots.pop()
@@ -1181,6 +1182,115 @@ def _family_upstream(spec, family):
     if child.get("status") != "COMPLETE":
         raise _Refusal("FAILED", f"UPSTREAM_NOT_COMPLETE:{unit_id}")
     return unit_id, path.parent, child
+
+
+# --------------------------------------------------------------------------
+# Market-time graph: pair.eligibility decides; strategy.validation trades.
+#
+# In a MARKET_TIME_PAIR campaign the ``pair`` unit computes ONLY the eligibility
+# decision from authenticated report metrics and the sealed minimum-head policy;
+# it never reads OHLC bars, the calendar or predictions, so a negative decision
+# needs no strategy input pin. The ``strategy`` unit is the trading stage: it
+# re-authenticates the pair decision and the forecast reports the decision was
+# computed from (digests recorded by the pair unit), and only then resolves the
+# pinned bars/calendar (typed refusal when absent, never fabricated).
+
+MARKET_TIME_MODE = "MARKET_TIME_PAIR"
+PAIR_DECISION_UNIT = "pair.eligibility"
+PAIR_DECISION_SCHEMA = "i6dmo.pair_decision.v1"
+
+
+def eligibility_only(spec) -> bool:
+    """True for the market-time pair unit: it decides eligibility and never trades."""
+    return spec.get("kind") == "pair" and \
+        ((spec.get("effective_config") or {}).get("mode") == MARKET_TIME_MODE)
+
+
+def _authenticated_stored(unit_id, up, *, expected=None):
+    """A stored terminal whose digest, child envelope and identity folder all agree."""
+    if not isinstance(up, Mapping) or not up.get("path"):
+        raise _Refusal("FAILED", f"UPSTREAM_MISSING:{unit_id}")
+    path = Path(up["path"])
+    if not path.is_file() or _file_sha(path) != up.get("sha256"):
+        raise _Refusal("FAILED", f"UPSTREAM_DIGEST_MISMATCH:{unit_id}")
+    stored = json.loads(path.read_text())
+    folder = path.parent
+    if stored.get("schema") != "i6dmo.stored_terminal.v1" or stored.get("unit_id") != unit_id \
+            or stored.get("identity_sha256") != folder.name:
+        raise _Refusal("FAILED", f"UPSTREAM_IDENTITY_MISMATCH:{unit_id}")
+    child_path = folder / "CHILD_TERMINAL.json"
+    if not child_path.is_file() or _file_sha(child_path) != stored.get("child_terminal_sha256") \
+            or json.loads(child_path.read_text()) != stored.get("terminal"):
+        raise _Refusal("FAILED", f"UPSTREAM_CHILD_TERMINAL_MISMATCH:{unit_id}")
+    if expected is not None and (expected.get("identity_sha256") != folder.name
+                                 or expected.get("stored_terminal_sha256") != up.get("sha256")):
+        raise _Refusal("FAILED", f"FORECAST_UPSTREAM_NOT_THE_DECIDED_INPUT:{unit_id}")
+    return folder, stored, stored["terminal"]
+
+
+def _authenticated_report(spec, family, field="upstream", expected=None):
+    """Report terminal + its digest-pinned METRICS.json; the eligibility rows must be those metrics."""
+    unit_id = FAMILY_REPORT_UNITS[family]
+    up = (spec.get(field) or {}).get(unit_id)
+    folder, stored, child = _authenticated_stored(unit_id, up, expected=expected)
+    if child.get("status") != "COMPLETE":
+        raise _Refusal("FAILED", f"UPSTREAM_NOT_COMPLETE:{unit_id}")
+    art = (child.get("artifacts") or {}).get("metrics")
+    if not isinstance(art, Mapping):
+        raise _Refusal("FAILED", f"UPSTREAM_ARTIFACT_MISSING:{unit_id}:metrics")
+    metrics_path = folder / "out" / art["path"]
+    if not metrics_path.is_file() or _file_sha(metrics_path) != art.get("sha256"):
+        raise _Refusal("FAILED", f"UPSTREAM_ARTIFACT_DIGEST:{unit_id}:metrics")
+    per_h = json.loads(metrics_path.read_text()).get("per_horizon") or {}
+    eligibility = child.get("eligibility") or {}
+    if not eligibility or set(eligibility) != set(per_h):
+        raise _Refusal("FAILED", f"REPORT_METRICS_HEADS_DISAGREE:{unit_id}")
+    for h, row in eligibility.items():
+        source = per_h[h]
+        if (row.get("n"), row.get("mae"), row.get("naive"), row.get("eligible")) != \
+                (source.get("n"), source.get("mae"), source.get("naive_mae"),
+                 source.get("eligible_mae_below_naive")):
+            raise _Refusal("FAILED", f"REPORT_METRICS_DISAGREE:{unit_id}:h{h}")
+    record = {"identity_sha256": folder.name, "stored_terminal_sha256": up["sha256"],
+              "child_terminal_sha256": stored["child_terminal_sha256"],
+              "metrics_sha256": art["sha256"]}
+    return unit_id, folder, child, record
+
+
+def _decision_report(spec, decision, evidence_sha256):
+    eligible = decision["status"] == "ELIGIBLE"
+    rows = [("Eligible_Short_Heads", len(decision["eligible"]["short"]), "count"),
+            ("Eligible_Long_Heads", len(decision["eligible"]["long"]), "count"),
+            ("Min_Valid_Short_Heads", decision["rule"]["min_valid_short_heads"], "count"),
+            ("Min_Valid_Long_Heads", decision["rule"]["min_valid_long_heads"], "count"),
+            ("Pair_Eligible", 1 if eligible else 0, "bool"),
+            ("Strategy_Skipped", 0 if eligible else 1, "bool")]
+    return dict(experiment_key=f"i6dmo:{spec['campaign_id']}:{spec['unit_id']}:decision",
+                experiment_set_key=f"i6dmo:{spec['campaign_id']}", actor="predictor",
+                lake="LOCAL_RETAINED", lineage="UNVERIFIED", config_sha256=spec["identity_sha256"],
+                code_commit=(spec.get("effective_config") or {}).get("code_commit"),
+                project="predictor", phase="I6DMO",
+                tags={"unit": spec["unit_id"], "family": "pair", "split": "validation",
+                      "test_read": "false", "disposition": decision["status"],
+                      "evidence_sha256": evidence_sha256},
+                metrics=[dict(metric=n, value=v, split="validation", horizon=None, unit=u)
+                         for n, v, u in rows])
+
+
+def _authenticated_pair_decision(spec):
+    """strategy.validation's direct upstream: the pair decision and the inputs it recorded."""
+    folder, _, child = _authenticated_stored(PAIR_DECISION_UNIT,
+                                             (spec.get("upstream") or {}).get(PAIR_DECISION_UNIT))
+    art = (child.get("artifacts") or {}).get("eligibility")
+    if not isinstance(art, Mapping):
+        raise _Refusal("FAILED", f"UPSTREAM_ARTIFACT_MISSING:{PAIR_DECISION_UNIT}:eligibility")
+    path = folder / "out" / art["path"]
+    if not path.is_file() or _file_sha(path) != art.get("sha256"):
+        raise _Refusal("FAILED", f"UPSTREAM_ARTIFACT_DIGEST:{PAIR_DECISION_UNIT}:eligibility")
+    decision = json.loads(path.read_text())
+    if decision.get("schema") != PAIR_DECISION_SCHEMA:
+        raise _Refusal("FAILED", f"PAIR_DECISION_SCHEMA:{decision.get('schema')}")
+    return child, decision
 
 
 def _family_predictions(unit_id, folder, child, family, window):
@@ -1264,14 +1374,39 @@ def _business_report(spec, backtest, pair_status):
                 metrics=metrics)
 
 
-def run_unit(spec: Mapping[str, Any], out_dir, progress_path) -> Dict[str, Any]:
-    """Ops hook for the PAIR_VALIDATION unit; returns an ``i6dmo.terminal.v1`` dict.
+def _validation_window(spec):
+    val = ((spec.get("effective_config") or {}).get("design") or {}).get("splits", {}).get("validation")
+    if not isinstance(val, Mapping):
+        raise _Refusal("FAILED", "VALIDATION_WINDOW_MISSING")
+    window = (parse_time(val["start"]), parse_time(val["end"]))
+    if window[1] > TEST_START:
+        raise _Refusal("FAILED", "TEST_FORBIDDEN")
+    return window
 
-    Refuses (typed FAILED terminal, nothing computed) while the owner-rulings gate is
-    not PASS, for any TEST access and for the not-yet-prepared final_test kind.
-    With a PASS gate it uses the OWNER-RULED parameters (never the declared
-    defaults), gates the pair on per-head validation eligibility, and runs the
-    business backtest on validation predictions only.
+
+def _decide_pair(ups, ruled):
+    return pair_eligibility(ups["short"][2].get("eligibility") or {},
+                            ups["long"][2].get("eligibility") or {},
+                            min_valid_long_heads=ruled["min_long"],
+                            min_valid_short_heads=ruled["min_short"])
+
+
+def run_unit(spec: Mapping[str, Any], out_dir, progress_path) -> Dict[str, Any]:
+    """Ops hook for the pair and strategy units; returns an ``i6dmo.terminal.v1`` dict.
+
+    * ``pair`` in an elapsed campaign (``pair.validation``): eligibility gate, then the
+      business backtest on validation predictions (unchanged contract).
+    * ``pair`` in a MARKET_TIME_PAIR campaign (``pair.eligibility``): the eligibility
+      DECISION only, from authenticated report metrics and the sealed minimum-head
+      policy. It reads no bars, calendar or predictions, so a negative decision is
+      computed even when the strategy OHLC pins are absent. Its decision report is
+      published like any other report.
+    * ``strategy`` (``strategy.validation``): the trading stage. It re-authenticates
+      the pair decision and the forecast reports it was computed from; a disqualified
+      pair is a typed abstention (PAIR_NOT_ELIGIBLE, nothing read); a qualified pair
+      resolves the pinned bars/calendar (typed refusal when absent) and backtests.
+
+    Refuses (typed FAILED terminal) any TEST access and the final_test kind.
     """
     import time
     started, cpu0 = time.time(), time.process_time()
@@ -1294,10 +1429,39 @@ def run_unit(spec: Mapping[str, Any], out_dir, progress_path) -> Dict[str, Any]:
         _atomic_json(out_dir / rel, value)
         artifacts[name] = {"path": rel, "sha256": _file_sha(out_dir / rel)}
 
+    def backtest(ups, eligibility, policy, sealed, ruled, window, folder, pins_first):
+        if pins_first:  # trading stage: the source pins are resolved before anything else is read
+            bars_path = _pinned_input(spec, "strategy_bars")
+            calendar_path = _pinned_input(spec, "strategy_calendar")
+        preds = {f: _family_predictions(*ups[f][:3], f, window) for f in ("short", "long")}
+        if not pins_first:
+            bars_path = _pinned_input(spec, "strategy_bars")
+        bars = _bars(bars_path, window)
+        if not pins_first:
+            calendar_path = _pinned_input(spec, "strategy_calendar")
+        _, weeks = c1.load_calendar(json.loads(calendar_path.read_text()))
+        _progress(progress_path, 2, "score")
+        result = run_backtest(bars=bars, weeks=weeks, short_predictions=preds["short"],
+                              long_predictions=preds["long"], policy=policy,
+                              entry_params=ruled["entry"], execution=ruled["execution"],
+                              validation_eligible=eligibility["eligible"])
+        result["eligibility"] = {k: v for k, v in eligibility.items() if k not in ("inputs", "schema")}
+        result["execution_policy_sha256"] = sealed["receipt_sha256"]
+        result["cost_verification"] = ruled["cost_verification"]
+        pair_status = "PASS" if not result["failures"] else "EXECUTION_FAILURES"
+        put("backtest", f"{folder}/BACKTEST.json", result)
+        _progress(progress_path, 3, "publish")
+        reports.append(_business_report(spec, result, pair_status))
+        _progress(progress_path, 4, "publish")
+        return pair_status
+
     try:
-        if spec.get("kind") == "final_test":
+        kind = spec.get("kind")
+        if kind == "final_test":
             raise _Refusal("FAILED", "FINAL_TEST_HOOK_NOT_PREPARED")
-        if spec.get("kind") != "pair":
+        if kind not in ("pair", "strategy"):
+            raise _Refusal("FAILED", "KIND_INVALID")
+        if kind == "strategy" and (spec.get("effective_config") or {}).get("mode") != MARKET_TIME_MODE:
             raise _Refusal("FAILED", "KIND_INVALID")
         if spec.get("test_open"):
             raise _Refusal("FAILED", "TEST_OPEN_REFUSED")
@@ -1306,42 +1470,58 @@ def run_unit(spec: Mapping[str, Any], out_dir, progress_path) -> Dict[str, Any]:
         policy = load_pinned_policy()
         sealed = _sealed_policy_for(spec, root, policy)
         ruled = execution_from_policy(sealed)
-        put("execution_policy", "pair/EXECUTION_POLICY.json", sealed)
+        folder = "strategy" if kind == "strategy" else "pair"
+        put("execution_policy", f"{folder}/EXECUTION_POLICY.json", sealed)
         gates.update(strategy_version=f"{STRATEGY_PIN['sha256']}:{policy.RULES_VERSION}",
                      costs_sha256=ruled["costs_sha256"],
                      execution_policy_sha256=sealed["receipt_sha256"])
+
+        if eligibility_only(spec):
+            ups = {f: _authenticated_report(spec, f) for f in ("short", "long")}
+            decision = dict(_decide_pair(ups, ruled), schema=PAIR_DECISION_SCHEMA,
+                            execution_policy_sha256=sealed["receipt_sha256"],
+                            inputs={ups[f][0]: ups[f][3] for f in ("short", "long")},
+                            reads=["report terminals", "report METRICS.json", "sealed execution policy"])
+            put("eligibility", "pair/ELIGIBILITY.json", decision)
+            reports.append(_decision_report(spec, decision, artifacts["eligibility"]["sha256"]))
+            _progress(progress_path, 4, "publish")
+            if decision["status"] != "ELIGIBLE":
+                raise _Refusal("PAIR_NOT_ELIGIBLE", ";".join(decision["missing"]),
+                               {"pair_status": "PAIR_NOT_ELIGIBLE"})
+            return terminal("COMPLETE", "ELIGIBLE", {"pair_status": "ELIGIBLE"})
+
+        if kind == "strategy":
+            pair_child, decision = _authenticated_pair_decision(spec)
+            gates["pair_decision_sha256"] = _canonical_sha(decision)
+            qualified = pair_child.get("status") == "COMPLETE" and \
+                (pair_child.get("gates") or {}).get("pair_status") == "ELIGIBLE" and \
+                decision.get("status") == "ELIGIBLE"
+            if not qualified:
+                raise _Refusal("PAIR_NOT_ELIGIBLE",
+                               "PAIR_NOT_ELIGIBLE:" + ";".join(decision.get("missing") or []),
+                               {"pair_status": "PAIR_NOT_ELIGIBLE", "strategy_status": "ABSTAINED"})
+            inputs = decision.get("inputs") or {}
+            ups = {f: _authenticated_report(spec, f, field="forecast_upstream",
+                                            expected=inputs.get(FAMILY_REPORT_UNITS[f]) or {})
+                   for f in ("short", "long")}
+            replay = _decide_pair(ups, ruled)
+            if {k: replay[k] for k in ("status", "eligible", "missing", "rule")} != \
+                    {k: decision.get(k) for k in ("status", "eligible", "missing", "rule")}:
+                raise _Refusal("FAILED", "PAIR_DECISION_NOT_REPRODUCED")
+            _progress(progress_path, 1, "score")
+            window = _validation_window(spec)
+            status = backtest(ups, decision, policy, sealed, ruled, window, "strategy", pins_first=True)
+            return terminal("COMPLETE", status, {"pair_status": status, "strategy_status": status})
+
         ups = {f: _family_upstream(spec, f) for f in ("short", "long")}
-        eligibility = pair_eligibility(ups["short"][2].get("eligibility") or {},
-                                       ups["long"][2].get("eligibility") or {},
-                                       min_valid_long_heads=ruled["min_long"],
-                                       min_valid_short_heads=ruled["min_short"])
+        eligibility = _decide_pair(ups, ruled)
         put("eligibility", "pair/ELIGIBILITY.json", eligibility)
         _progress(progress_path, 1, "score")
         if eligibility["status"] != "ELIGIBLE":
             raise _Refusal("PAIR_NOT_ELIGIBLE", ";".join(eligibility["missing"]),
                            {"pair_status": "PAIR_NOT_ELIGIBLE"})
-        val = ((spec.get("effective_config") or {}).get("design") or {}).get("splits", {}).get("validation")
-        if not isinstance(val, Mapping):
-            raise _Refusal("FAILED", "VALIDATION_WINDOW_MISSING")
-        window = (parse_time(val["start"]), parse_time(val["end"]))
-        if window[1] > TEST_START:
-            raise _Refusal("FAILED", "TEST_FORBIDDEN")
-        preds = {f: _family_predictions(*ups[f], f, window) for f in ("short", "long")}
-        bars = _bars(_pinned_input(spec, "strategy_bars"), window)
-        _, weeks = c1.load_calendar(json.loads(_pinned_input(spec, "strategy_calendar").read_text()))
-        _progress(progress_path, 2, "score")
-        result = run_backtest(bars=bars, weeks=weeks, short_predictions=preds["short"],
-                              long_predictions=preds["long"], policy=policy,
-                              entry_params=ruled["entry"], execution=ruled["execution"],
-                              validation_eligible=eligibility["eligible"])
-        result["eligibility"] = eligibility
-        result["execution_policy_sha256"] = sealed["receipt_sha256"]
-        result["cost_verification"] = ruled["cost_verification"]
-        pair_status = "PASS" if not result["failures"] else "EXECUTION_FAILURES"
-        put("backtest", "pair/BACKTEST.json", result)
-        _progress(progress_path, 3, "publish")
-        reports.append(_business_report(spec, result, pair_status))
-        _progress(progress_path, 4, "publish")
+        window = _validation_window(spec)
+        pair_status = backtest(ups, eligibility, policy, sealed, ruled, window, "pair", pins_first=False)
         return terminal("COMPLETE", pair_status, {"pair_status": pair_status})
     except _Refusal as refusal:
         return terminal(refusal.status, refusal.disposition, refusal.gates)

@@ -7,7 +7,13 @@ trains nothing and tails no log. Rules:
 - a fit's in-flight ETA is only an upper bound at the declared epoch ceiling (early stopping may end
   sooner); campaign ETAs are MEASURED only from completed production timings of the same phase
   (fit, score, publication separately), otherwise UNMEASURED;
-- nothing is COMPLETE/CLOSED unless its terminals exist; stale or failed work is never complete.
+- nothing is COMPLETE/CLOSED unless its terminals exist; stale or failed work is never complete;
+- every unit shows its source-code identity (the pin its identity was computed with versus the
+  campaign's successor pin), imported-fit reuse (ADOPT_ONLY with the original identity, pin and
+  digests) and its decision (PAIR_NOT_ELIGIBLE, abstentions, eligible heads) as first-class fields;
+- a dead timer, a crashing service, a failed systemd unit (optional bounded reading) or a stale
+  attempt is a typed failure after a bounded threshold (``services.SILENT_AFTER``), never an
+  indefinite WAITING.
 """
 import json
 import statistics
@@ -31,14 +37,65 @@ def _open(root):
     return Queue.open_readonly(path) if path.exists() else None
 
 
-def _unit_view(root, row, attempts, now):
+def _code_view(row, effective):
+    identity = (row["spec"] or {}).get("identity") or {}
+    unit_pin = identity.get("code_commit")
+    campaign_pin = (effective or {}).get("code_commit")
+    if unit_pin is None:
+        relation = "IDENTITY_NOT_SEALED"
+    elif unit_pin == campaign_pin:
+        relation = "CAMPAIGN_PIN"
+    elif (row["spec"] or {}).get("execution_policy") == "ADOPT_ONLY":
+        relation = "ORIGINAL_PIN_IMPORTED"
+    else:
+        relation = "DIFFERS_UNEXPLAINED"
+    return dict(unit_code_commit=unit_pin, campaign_code_commit=campaign_pin, relation=relation)
+
+
+def _reuse_view(row, terminal, effective):
+    adopted = terminal is not None and terminal.get("source") == "ADOPTED"
+    if (row["spec"] or {}).get("execution_policy") != "ADOPT_ONLY" and not adopted:
+        return None
+    receipt = (effective or {}).get("reused_short_fit") or {}
+    detail = (terminal or {}).get("source_detail") or {}
+    return dict(policy=(row["spec"] or {}).get("execution_policy") or "ADOPTED_PRIOR_TERMINAL",
+                terminal_source=None if terminal is None else terminal.get("source"),
+                original_identity_sha256=row["identity_sha256"],
+                original_code_commit=receipt.get("source_code_commit") or detail.get("source_code_commit"),
+                reporting_code_commit=receipt.get("reporting_code_commit"),
+                source_campaign=receipt.get("source_campaign") or detail.get("source_campaign")
+                or detail.get("source_root_name"),
+                source_terminal_sha256=receipt.get("source_terminal_sha256"),
+                terminal_sha256=None if terminal is None else terminal.get("terminal_sha256"),
+                training_repeated=receipt.get("training_repeated", False if receipt else None))
+
+
+def _decision_view(row, terminal):
+    doc = (terminal or {}).get("terminal") or {}
+    gates = doc.get("gates") or {}
+    if row["kind"] in ("pair", "strategy") and doc:
+        return dict(decision=gates.get("pair_status") or doc.get("status"), status=doc.get("status"),
+                    detail=doc.get("disposition"), strategy_status=gates.get("strategy_status"))
+    if row["disposition"] == "PAIR_NOT_ELIGIBLE":
+        return dict(decision="PAIR_NOT_ELIGIBLE", status="ABSTAINED", detail=row["cause"], strategy_status="ABSTAINED")
+    if row["kind"] == "report" and doc.get("eligibility"):
+        heads = doc["eligibility"]
+        return dict(decision=doc.get("status"), eligible_heads=sorted(int(h) for h, r in heads.items()
+                                                                      if r.get("eligible")),
+                    heads=len(heads), detail=doc.get("disposition"))
+    return None
+
+
+def _unit_view(root, row, attempts, now, effective=None, terminal=None):
     view = dict(unit_id=row["unit_id"], kind=row["kind"], family=row["spec"].get("family"),
                 stage=row["spec"].get("stage"), state=row["state"], cause=row["cause"], disposition=row["disposition"],
                 identity_sha256=row["identity_sha256"], test_open=bool(row["spec"].get("test_open")),
                 attempts=[dict(index=a["idx"], kind=a["kind"], outcome=a["outcome"], cause=a["cause"], role=a["role"],
                                device_class=a["device_class"], started_at=a["started_at"], ended_at=a["ended_at"],
                                cap_bytes=a["cap_bytes"], peak_bytes=a["peak_bytes"]) for a in attempts],
-                progress=None, heartbeat_age_seconds=None, eta=dict(kind="UNMEASURED"))
+                progress=None, heartbeat_age_seconds=None, eta=dict(kind="UNMEASURED"),
+                code=_code_view(row, effective), reuse=_reuse_view(row, terminal, effective),
+                decision=_decision_view(row, terminal))
     running = [a for a in attempts if a["outcome"] == "RUNNING"]
     if not running:
         if row["state"] == "COMPLETE":
@@ -103,7 +160,8 @@ def _publication(root):
     return dict(base, state=state, **summary)
 
 
-def compute(root, level="campaign", unit=None, now=None):
+def compute(root, level="campaign", unit=None, now=None, systemd_probe=None, silent_after=None):
+    from tools.i6dmo import services
     root = Path(root)
     now = time.time() if now is None else now
     plan = _read_json(root / "PLAN.json")
@@ -114,13 +172,16 @@ def compute(root, level="campaign", unit=None, now=None):
         rows = {u["unit_id"]: u for u in q.units()} if q else {}
         attempts = q.attempts() if q else []
         admissions = q.admissions(limit=20) if q else []
+        terminals = {t["unit_id"]: t for t in q.terminals()} if q else {}
     finally:
         if q:
             q.close()
+    effective = _read_json(root / "EFFECTIVE_CONFIG.json")
     by_unit = {}
     for a in attempts:
         by_unit.setdefault(a["unit_id"], []).append(a)
-    views = {uid: _unit_view(root, row, by_unit.get(uid, []), now) for uid, row in rows.items()}
+    views = {uid: _unit_view(root, row, by_unit.get(uid, []), now, effective, terminals.get(uid))
+             for uid, row in rows.items()}
     if level == "unit":
         if unit not in views:
             return dict(schema="i6dmo.status.v1", state="UNKNOWN_UNIT", unit_id=unit)
@@ -182,12 +243,27 @@ def compute(root, level="campaign", unit=None, now=None):
     close = _read_json(root / "CLOSE.json")
     hold = _read_json(root / "AUDIT_HOLD.json")
     readiness = _read_json(root / "gates" / "TEST_READINESS.json")
-    if close and close.get("state") == "CLOSED":
+    closed = bool(close and close.get("state") == "CLOSED")
+    service_views, failures = {}, []
+    if not closed:
+        service_views, service_failures = services.assess(
+            root, now=now, silent_after=services.SILENT_AFTER if silent_after is None else silent_after,
+            probe=systemd_probe)
+        failures.extend(service_failures)
+        failures.extend(dict(kind="UNIT_FAILED", unit=v["unit_id"], cause=v["cause"])
+                        for u, v in views.items() if v["state"] == "FAILED")
+        failures.extend(dict(kind="ATTEMPT_STALE", unit=v["unit_id"], cause=v["cause"],
+                             heartbeat_age_seconds=v["heartbeat_age_seconds"])
+                        for u, v in views.items() if v["state"] == "STALE")
+    service_failed = any(f["kind"].startswith("SERVICE_") for f in failures)
+    if closed:
         state = "CLOSED"
     elif hold is not None:
         state = "HELD"
     elif counts["FAILED"]:
         state = "FAILED"
+    elif service_failed:
+        state = "SERVICE_FAILED"
     elif counts["STALE"]:
         state = "STALE"
     elif counts["RUNNING"]:
@@ -212,7 +288,19 @@ def compute(root, level="campaign", unit=None, now=None):
                            complete=sum(1 for m in members if views[m]["state"] == "COMPLETE"),
                            failed=sum(1 for m in members if views[m]["state"] in ("FAILED", "BLOCKED")),
                            states={m: views[m]["state"] for m in members}))
+    decisions = [dict(unit_id=v["unit_id"], **v["decision"]) for v in views.values()
+                 if v["decision"] and v["decision"].get("decision") in ("PAIR_NOT_ELIGIBLE", "NOT_ELIGIBLE")]
+    pins = {}
+    for v in views.values():
+        pins.setdefault(v["code"]["unit_code_commit"] or "UNSEALED", []).append(v["unit_id"])
     campaign = dict(schema="i6dmo.status.v1", campaign_id=plan["campaign_id"], state=state, counts=counts,
+                    failures=failures, services=service_views, decisions=decisions,
+                    code_identity=dict(campaign_code_commit=(effective or {}).get("code_commit"),
+                                       units_by_code_commit={k: sorted(v) for k, v in sorted(pins.items())}),
+                    reuse=[dict(unit_id=v["unit_id"], **v["reuse"]) for v in views.values() if v["reuse"]],
+                    close=None if not close else dict(
+                        state=close.get("state"), disposition=close.get("disposition"),
+                        trigger=close.get("trigger"), closure_inputs=close.get("closure_inputs")),
                     hold=None if hold is None else dict(
                         verdict=hold.get("verdict"), reason=hold.get("reason"),
                         publication_continues=bool(hold.get("publication_of_retained_cost_facts_allowed"))),

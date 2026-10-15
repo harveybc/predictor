@@ -100,8 +100,9 @@ def cmd_worker(args):
 
 
 def cmd_status(args):
-    from tools.i6dmo import status
-    doc = status.compute(args.root, level=args.level, unit=args.unit)
+    from tools.i6dmo import services, status
+    probe = services.systemd_probe if getattr(args, "probe_systemd", False) else None
+    doc = status.compute(args.root, level=args.level, unit=args.unit, systemd_probe=probe)
     _emit(doc if args.json else json.dumps(doc, indent=1, sort_keys=True, default=str), as_json=args.json)
     return 0
 
@@ -210,6 +211,8 @@ def build_parser():
     p.add_argument("--root", required=True)
     p.add_argument("--level", default="campaign", choices=("campaign", "unit", "stage", "publication", "fleet", "all"))
     p.add_argument("--unit")
+    p.add_argument("--probe-systemd", action="store_true",
+                   help="one bounded `systemctl --user show` reading of the campaign units (failed unit -> typed)")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_status)
 

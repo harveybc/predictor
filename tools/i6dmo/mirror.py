@@ -88,8 +88,12 @@ def sync_all(root, spec, run=None):
         bad = _sync_local(root, mirrors["second_host_path"], entries)
     targets["second_host"] = dict(state="VERIFIED" if not bad else "MISMATCH", files=len(entries), bad=bad[:20],
                                   role=mirrors.get("second_host_role"))
+    # Bind the verified copies to the exact publication (and closure) they carry, so a closure can
+    # prove its mirrors hold THIS publication and not an earlier one.
     doc = dict(schema="i6dmo.mirrors.v1", state="VERIFIED" if all(t["state"] == "VERIFIED" for t in targets.values())
-               else "MISMATCH", manifest_sha256=digest, files=len(entries), targets=targets, verified_at=time.time())
+               else "MISMATCH", manifest_sha256=digest, files=len(entries), targets=targets,
+               publication_sha256=entries.get("PUBLICATION.json"), close_sha256=entries.get("CLOSE.json"),
+               verified_at=time.time())
     atomic_json(root / "MIRRORS.json", doc)
     return doc
 

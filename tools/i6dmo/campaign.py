@@ -668,13 +668,18 @@ def _auto_gates(root, plan, q):
     return written
 
 
+#: pair_status values that qualify the strategy: PASS (elapsed pair.validation, decided and
+#: backtested) or ELIGIBLE (market-time pair.eligibility, the decision alone).
+PAIR_QUALIFYING_STATUSES = ("PASS", "ELIGIBLE")
+
+
 def pair_eligible(terminal):
-    """True only when the pair unit declares PASS; anything else disqualifies the strategy."""
+    """True only when the pair unit declares a qualifying status; anything else disqualifies the strategy."""
     doc = (terminal or {}).get("terminal") or {}
     if doc.get("status") != "COMPLETE":
         return False
     gates = doc.get("gates") or {}
-    return gates.get("pair_status") == "PASS"
+    return gates.get("pair_status") in PAIR_QUALIFYING_STATUSES
 
 
 def _gate_strategy_on_pair(root, q):
@@ -691,6 +696,9 @@ def _gate_strategy_on_pair(root, q):
         return
     doc = (pair["terminal"].get("gates") or {})
     cause = doc.get("pair_status") or pair["terminal"].get("status") or "PAIR_NOT_ELIGIBLE"
+    detail = pair["terminal"].get("disposition")
+    if detail and detail != cause:
+        cause = f"{cause}:{detail}"
     if row["state"] != "BLOCKED" or row["disposition"] != "PAIR_NOT_ELIGIBLE":
         q.set_state("strategy.validation", "BLOCKED", f"PAIR_NOT_ELIGIBLE:{cause}",
                     disposition="PAIR_NOT_ELIGIBLE")
@@ -741,7 +749,10 @@ def readiness(root):
             q.close()
         if strategy is not None and strategy["disposition"] == "PAIR_NOT_ELIGIBLE":
             return dict(state="TERMINAL", disposition="PAIR_NOT_ELIGIBLE", missing=[],
-                        cause=strategy["cause"])
+                        cause=strategy["cause"] or "PAIR_NOT_ELIGIBLE")
+        if strategy is not None and strategy["state"] in ("FAILED", "BLOCKED"):
+            return dict(state="TERMINAL", disposition=f"UNIT_{strategy['state']}:strategy.validation",
+                        cause=strategy["cause"], missing=[])
         if pair is not None and strategy is not None and strategy["state"] == "COMPLETE":
             return dict(state="TERMINAL", disposition="MARKET_TIME_PAIR_VALIDATION_COMPLETE", missing=[],
                         cause="development campaign; TEST is not part of this graph")
@@ -880,8 +891,25 @@ def _apply_design_block(root):
 
 
 def tick(root, now=None, adapter=None):
-    """One finite, atomic advance. Never waits, never trains, never reads a token."""
+    """One finite, atomic advance. Never waits, never trains, never reads a token.
+
+    A CLOSED campaign is inert: the tick returns without writing anything. Otherwise it advances
+    the graph and, when the scientific disposition is terminal and delivery plus mirrors verify,
+    writes the explicit CLOSE (``maybe_close``).
+    """
     root = Path(root)
+    closed = closed_doc(root)
+    if closed is not None:
+        return dict(activated=[], blocked=[], gates_written=[], readiness=closed.get("readiness"),
+                    finals_enumerated=False, campaign_state="CLOSED", close="ALREADY_CLOSED")
+    from tools.i6dmo import services
+    with services.run(root, "tick") as outcome:
+        out = _tick(root, now=now, adapter=adapter)
+        outcome["result"] = out["campaign_state"]
+    return out
+
+
+def _tick(root, now=None, adapter=None):
     load_effective(root)
     effective = load_effective(root)
     market_time = mode_of(effective) == MODE_MARKET_TIME
@@ -923,9 +951,11 @@ def tick(root, now=None, adapter=None):
     _delivery_gate(root, plan)
     ready = readiness(root)
     opened = (not market_time) and ready["state"] == "READY" and _enumerate_finals(root, load_plan(root), ready)
+    closing = maybe_close(root)
     status = write_status(root, now=now)
     return dict(activated=activated, blocked=blocked, gates_written=gates, readiness=ready, finals_enumerated=opened,
-                campaign_state=status["campaign"]["state"])
+                campaign_state=status["campaign"]["state"], close=closing["result"],
+                close_problems=closing.get("problems", []))
 
 
 def _delivery_gate(root, plan):
@@ -955,10 +985,38 @@ def _delivery_gate(root, plan):
 
 # ------------------------------------------------------------------- publish
 def publish(root, *, warehouse=None, mirror=True, run=None):
-    """Bounded delivery pass (outbox + exact readback) and physical mirrors. Never trains."""
+    """Bounded delivery pass (outbox + exact readback) and physical mirrors. Never trains.
+
+    After the mirrors verify, a terminal campaign advances to CLOSE automatically and one more
+    mirror pass copies CLOSE.json and its closure-input snapshots. Once the mirrors carry that
+    CLOSE, publication of a closed campaign is a no-op.
+    """
+    from tools.i6dmo import mirror as M
+    from tools.i6dmo import services
+    root = Path(root)
+    closed = closed_doc(root)
+    if closed is not None:
+        mirrors = _read_json_file(root / "MIRRORS.json") or {}
+        if mirrors.get("state") == "VERIFIED" and mirrors.get("close_sha256") == file_sha256(_paths(root)["close"]):
+            return dict(result="ALREADY_CLOSED_AND_MIRRORED", close="ALREADY_CLOSED",
+                        publication=_read_json_file(root / "PUBLICATION.json"), mirrors=mirrors)
+    with services.run(root, "publish") as outcome:
+        out = _publish(root, warehouse=warehouse, mirror=mirror, run=run)
+        if closed is None and mirror:
+            closing = maybe_close(root)
+            out.update(close=closing["result"], close_problems=closing.get("problems", []))
+            if closing["result"] == "CLOSED":
+                out["mirrors"] = M.sync_all(root, load_deployment(root), run=run)
+                write_status(root)
+        elif closed is not None:
+            out["close"] = "ALREADY_CLOSED"
+        outcome["result"] = out["publication"]["state"]
+    return out
+
+
+def _publish(root, *, warehouse=None, mirror=True, run=None):
     from tools.i6dmo import mirror as M
     from tools.i6dmo.outbox import HttpWarehouse, Outbox
-    root = Path(root)
     spec = load_deployment(root)
     if warehouse is None:
         wh = spec["warehouse"]
@@ -981,15 +1039,137 @@ def publish(root, *, warehouse=None, mirror=True, run=None):
 
 
 # --------------------------------------------------------------------- close
-def close_campaign(root):
+#: Scientific dispositions that advance to CLOSE automatically once delivery and mirrors verify.
+#: A unit failure is never closed automatically: it stays FAILED in status for a human ruling.
+AUTO_CLOSE_DISPOSITIONS = ("PAIR_NOT_ELIGIBLE", "MARKET_TIME_PAIR_VALIDATION_COMPLETE", "FINAL_PAIR_TEST_COMPLETE")
+CLOSURE_INPUTS_DIR = Path("backup") / "closure_inputs"
+CLOSURE_INPUT_FILES = ("PUBLICATION.json", "MIRRORS.json", "REPORTS.json")
+
+
+def _read_json_file(path):
+    try:
+        return json.loads(Path(path).read_text())
+    except (OSError, ValueError):
+        return None
+
+
+def closed_doc(root):
+    """The CLOSE.json document when the campaign is CLOSED, else None."""
+    doc = _read_json_file(_paths(root)["close"])
+    return doc if isinstance(doc, dict) and doc.get("state") == "CLOSED" else None
+
+
+def _snapshot(root, name, data):
+    """Content-addressed, never rewritten: backup/closure_inputs/<stem>.<sha256>.<ext> (read-only)."""
+    import hashlib
+    digest = hashlib.sha256(data).hexdigest()
+    stem, _, ext = name.rpartition(".")
+    rel = CLOSURE_INPUTS_DIR / f"{stem}.{digest}.{ext}"
+    path = Path(root) / rel
+    if path.exists():
+        if file_sha256(path) != digest:
+            raise Refused(f"CLOSURE_SNAPSHOT_TAMPERED: {rel}")
+        return dict(snapshot=str(rel), sha256=digest)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(f".{path.name}.tmp")
+    tmp.write_bytes(data)
+    os.chmod(tmp, 0o444)
+    os.replace(tmp, path)
+    if file_sha256(path) != digest:
+        raise Refused(f"CLOSURE_SNAPSHOT_WRITE: {rel}")
+    return dict(snapshot=str(rel), sha256=digest)
+
+
+def _outbox_readback(root):
+    """Exact-readback proof of every outbox item (digest, state, readback digest == expected rows)."""
+    from tools.i6dmo.outbox import Outbox, _rows_sha, expected_rows
+    path = _paths(root)["outbox"]
+    if not path.exists():
+        return None, ["OUTBOX_ABSENT"]
+    box = Outbox.open_readonly(path)
+    try:
+        items, summary = box.items(), box.summary()
+    finally:
+        box.close()
+    problems, rows = [], []
+    for item in items:
+        expected = _rows_sha(expected_rows(json.loads(item["body"])))
+        if item["state"] != "DELIVERED" or item["readback_sha256"] != expected:
+            problems.append(f"READBACK_NOT_EXACT:{item['report_sha256'][:12]}:{item['state']}")
+        rows.append(dict(report_sha256=item["report_sha256"], source_unit=item["source_unit"], state=item["state"],
+                         readback_sha256=item["readback_sha256"], expected_rows_sha256=expected))
+    summary = {k: v for k, v in summary.items() if k not in ("delivery_seconds", "last_errors")}
+    if not summary["expected"] or summary["pending"] or summary["mismatch"] or \
+            summary["delivered"] != summary["expected"]:
+        problems.append("OUTBOX_NOT_FULLY_DELIVERED:" + canonical(summary))
+    return dict(schema="i6dmo.outbox_readback.v1", summary=summary, items=rows), problems
+
+
+def closure_problems(root):
+    """Why automatic CLOSE may not happen now (empty list = every closure input verifies)."""
     root = Path(root)
+    problems = []
+    if (root / "AUDIT_HOLD.json").exists():
+        problems.append("AUDIT_HOLD")
+    ready = readiness(root)
+    disposition = ready.get("disposition")
+    if ready["state"] == "READY":
+        disposition = "FINAL_PAIR_TEST_COMPLETE"
+    elif ready["state"] != "TERMINAL":
+        problems.append(f"READINESS_{ready['state']}")
+    if disposition not in AUTO_CLOSE_DISPOSITIONS:
+        problems.append(f"DISPOSITION_NOT_AUTO_CLOSABLE:{disposition}")
+    readback, readback_problems = _outbox_readback(root)
+    problems += readback_problems
+    pub = _read_json_file(root / "PUBLICATION.json")
+    if pub is None or pub.get("state") != "DELIVERED":
+        problems.append("PUBLICATION_NOT_DELIVERED")
+    elif readback is not None and any(pub.get(k) != readback["summary"].get(k)
+                                      for k in ("expected", "delivered", "pending", "mismatch")):
+        problems.append("PUBLICATION_STALE: the outbox changed after the last publication pass")
+    mirrors = _read_json_file(root / "MIRRORS.json")
+    if mirrors is None or mirrors.get("state") != "VERIFIED" or not mirrors.get("targets") or \
+            any(t.get("state") != "VERIFIED" for t in mirrors["targets"].values()):
+        problems.append("MIRRORS_NOT_VERIFIED")
+    elif pub is not None and mirrors.get("publication_sha256") != file_sha256(root / "PUBLICATION.json"):
+        problems.append("MIRRORS_NOT_BOUND_TO_THIS_PUBLICATION")
+    q = open_queue(root)
+    try:
+        rejected = [e for e in q.events(1_000_000) if e["event"] == "REPORT_REJECTED"]
+    finally:
+        q.close()
+    if rejected:
+        problems.append(f"REPORTS_REJECTED_AT_ENQUEUE:{len(rejected)}")
+    return problems, ready, readback
+
+
+def maybe_close(root):
+    """Advance to an explicit CLOSE when the scientific disposition is terminal and every closure
+    input verifies. Idempotent: an existing CLOSE is returned untouched."""
+    root = Path(root)
+    existing = closed_doc(root)
+    if existing is not None:
+        return dict(result="ALREADY_CLOSED", close=existing)
+    problems, ready, readback = closure_problems(root)
+    if problems:
+        return dict(result="NOT_CLOSABLE", problems=problems, readiness=ready)
+    doc = close_campaign(root, automatic=True, readback=readback)
+    return dict(result="CLOSED" if doc.get("state") == "CLOSED" else "REFUSED", close=doc,
+                problems=[m["reason"] for m in doc.get("missing", [])])
+
+
+def close_campaign(root, *, automatic=False, readback=None):
+    root = Path(root)
+    existing = closed_doc(root)
+    if existing is not None:
+        return existing
     plan = load_plan(root)
     missing = []
     ready = readiness(root)
     q = open_queue(root)
     try:
         rows = {u["unit_id"]: u for u in q.units()}
-        validation = [u["unit_id"] for u in plan["units"] if u["kind"] in ("fit", "report", "pair")]
+        validation = [u["unit_id"] for u in plan["units"] if u["kind"] in ("fit", "report", "pair", "strategy")]
         for unit_id in validation:
             if rows[unit_id]["state"] not in ("COMPLETE", "FAILED", "BLOCKED"):
                 missing.append(dict(item=unit_id, reason=f"NOT_TERMINAL_{rows[unit_id]['state']}"))
@@ -1016,10 +1196,23 @@ def close_campaign(root):
         missing.append(dict(item="MIRRORS.json", reason="MIRRORS_NOT_VERIFIED"))
     if missing:
         return dict(state="REFUSED", missing=missing, readiness=ready)
+    if readback is None:
+        readback, _ = _outbox_readback(root)
+    # Preserve the proof BEFORE any later publication/mirror pass rewrites these mutable receipts.
+    inputs = {name: _snapshot(root, name, (root / name).read_bytes())
+              for name in CLOSURE_INPUT_FILES if (root / name).exists()}
+    if readback is not None:
+        inputs["OUTBOX_READBACK.json"] = _snapshot(root, "OUTBOX_READBACK.json",
+                                                   (canonical(readback) + "\n").encode())
     doc = dict(schema="i6dmo.close.v1", state="CLOSED", campaign_id=plan["campaign_id"], readiness=ready,
                disposition=ready.get("disposition") or "FINAL_PAIR_TEST_COMPLETE",
                terminals={k: v["terminal_sha256"] for k, v in sorted(terminals.items())},
-               publication_sha256=file_sha256(pub), mirrors_sha256=file_sha256(mirrors), closed_at=time.time())
+               publication_sha256=file_sha256(pub), mirrors_sha256=file_sha256(mirrors),
+               closure_inputs=inputs, trigger="AUTOMATIC" if automatic else "MANUAL_CLI",
+               code_commit=load_effective(root)["code_commit"], closed_at=time.time())
+    if inputs["PUBLICATION.json"]["sha256"] != doc["publication_sha256"] or \
+            inputs["MIRRORS.json"]["sha256"] != doc["mirrors_sha256"]:
+        raise Refused("CLOSURE_INPUT_CHANGED_DURING_CLOSE")
     atomic_json(_paths(root)["close"], doc)
     write_status(root)
     return doc

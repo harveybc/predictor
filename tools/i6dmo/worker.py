@@ -263,8 +263,8 @@ def _validate_child(doc, unit):
         raise ValueError("TERMINAL_IDENTITY_MISMATCH")
     if doc.get("status") not in TERMINAL_STATUSES:
         raise ValueError("TERMINAL_STATUS")
-    if unit["kind"] in ("report", "pair", "final_test") and doc.get("costs", {}).get("fit_seconds"):
-        raise ValueError("REPORT_UNIT_FITTED: a report/pair/test unit must not fit")
+    if unit["kind"] in ("report", "pair", "strategy", "final_test") and doc.get("costs", {}).get("fit_seconds"):
+        raise ValueError("REPORT_UNIT_FITTED: a report/pair/strategy/test unit must not fit")
 
 
 def _enqueue_reports(root, unit_id, doc, q):
@@ -452,6 +452,9 @@ def _supervise(root, q, unit, token, handle, executor, folder, ttl, poll_interva
         if not q.heartbeat(unit["unit_id"], token, ttl, executor.progress(handle, folder)):
             executor.stop(handle)
             return dict(result="LOST_LEASE", unit_id=unit["unit_id"])
+        if attempt_info.get("role"):
+            from tools.i6dmo import services
+            services.alive(root, f"worker-{attempt_info['role']}")
         time.sleep(poll_interval)
     progress = executor.progress(handle, folder)
     if progress:
@@ -462,7 +465,10 @@ def _supervise(root, q, unit, token, handle, executor, folder, ttl, poll_interva
 
 def worker_once(root, role, *, facts_provider=None, executor=None, poll_interval=POLL, ttl=TTL, extra_env=None,
                 clock=time.time):
+    from tools.i6dmo import services
     root = Path(root)
+    if C.closed_doc(root) is not None:  # a CLOSED campaign is inert: nothing is claimed or written
+        return dict(result="CLOSED", role=role)
     effective = C.load_effective(root)
     spec = C.load_deployment(root)
     if role not in spec["roles"]:
@@ -476,8 +482,11 @@ def worker_once(root, role, *, facts_provider=None, executor=None, poll_interval
         lock.close()
         return dict(result="BUSY", role=role)
     try:
-        return _worker_locked(root, role, effective, spec, facts_provider, executor, poll_interval, ttl,
-                              extra_env or {}, clock)
+        with services.run(root, f"worker-{role}") as outcome:
+            out = _worker_locked(root, role, effective, spec, facts_provider, executor, poll_interval, ttl,
+                                 extra_env or {}, clock)
+            outcome["result"] = out.get("result")
+        return out
     finally:
         fcntl.flock(lock, fcntl.LOCK_UN)
         lock.close()
@@ -555,13 +564,8 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
         folder = attempt_dir(root, unit["unit_id"], attempt["index"])
         folder.mkdir(parents=True, exist_ok=True)
         (folder / "out").mkdir(exist_ok=True)
-        unit_spec = dict(unit, schema="i6dmo.unit_spec.v1", campaign_id=plan["campaign_id"],
-                         campaign_root=str(root),
-                         effective_config=effective, effective_config_sha256=plan["effective_config_sha256"],
-                         device=dict(cls=device_class, gpu_uuid=gpu["uuid"] if gpu else None), cap_bytes=cap,
-                         data_root=role_spec.get("data_root"), bundle=bundle,
-                         pins=resolved_pins(effective, role_spec), attempt=dict(index=attempt["index"], kind=attempt["kind"]),
-                         upstream={d: _upstream(root, q, d) for d in unit["depends_on"]})
+        unit_spec = build_unit_spec(root, q, plan, effective, unit, role_spec, device_class=device_class,
+                                    gpu=gpu, cap=cap, bundle=bundle, attempt=attempt)
         atomic_json(folder / "UNIT_SPEC.json", unit_spec)
         name = f"{plan['campaign_id']}-{unit['unit_id'].replace('.', '-')}-a{attempt['index']:02d}"
         role_env = {k: str(v) for k, v in (role_spec.get("environment") or {}).items() if k != "CUDA_VISIBLE_DEVICES"}
@@ -581,6 +585,22 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
         return _supervise(root, q, unit, claim["token"], handle, executor, folder, ttl, poll_interval, info)
     finally:
         q.close()
+
+
+def build_unit_spec(root, q, plan, effective, unit, role_spec, *, device_class, gpu, cap, bundle, attempt):
+    """The UNIT_SPEC.json a claimed child receives (one definition for the worker and its tests)."""
+    unit_spec = dict(unit, schema="i6dmo.unit_spec.v1", campaign_id=plan["campaign_id"],
+                     campaign_root=str(root),
+                     effective_config=effective, effective_config_sha256=plan["effective_config_sha256"],
+                     device=dict(cls=device_class, gpu_uuid=gpu["uuid"] if gpu else None), cap_bytes=cap,
+                     data_root=role_spec.get("data_root"), bundle=bundle,
+                     pins=resolved_pins(effective, role_spec), attempt=dict(index=attempt["index"], kind=attempt["kind"]),
+                     upstream={d: _upstream(root, q, d) for d in unit["depends_on"]})
+    if unit["kind"] == "strategy":
+        # The trading stage's forecast inputs are authenticated digests, not assumptions: the
+        # hook checks them against the digests the pair decision recorded for the same units.
+        unit_spec["forecast_upstream"] = {d: _upstream(root, q, d) for d in forecast_dependencies(q, unit)}
+    return unit_spec
 
 
 def _uses_unit_runner(argv):
@@ -616,7 +636,7 @@ def _artifacts(root, effective, unit, role_spec):
         cause = _data_identity_problem(effective, unit, bundle, key, pin)
         if cause:
             return bundle, cause
-    if unit["kind"] in ("pair", "final_test"):
+    if unit["kind"] in ("pair", "strategy", "final_test"):
         problem = C._execution_policy_problem(root)
         if problem in ("INSTRUMENT_CONFIG_MISSING", "ABSENT"):
             return bundle, (f"EXECUTION_POLICY_{problem}: sealed at init/deploy from "
@@ -662,26 +682,57 @@ STRATEGY_PINS = ("strategy_bars", "strategy_calendar")
 PREDICTION_ARTIFACTS = ("validation_predictions", "predictions/validation.npz")
 
 
+def trading_stage(effective, unit):
+    """Does this unit read OHLC bars and trade? Only those units need the strategy source pins.
+
+    The market-time ``pair`` unit (pair.eligibility) decides eligibility from authenticated report
+    metrics and the sealed minimum-head policy only; its trading stage is ``strategy``. The elapsed
+    ``pair.validation`` unit both decides and backtests, so it keeps the pin precondition.
+    """
+    if unit["kind"] in ("strategy", "final_test"):
+        return True
+    return unit["kind"] == "pair" and C.mode_of(effective) != C.MODE_MARKET_TIME
+
+
+def forecast_dependencies(q, unit):
+    """The forecast report units a strategy unit trades on: the inputs of its pair decision."""
+    deps = []
+    for dep in unit["depends_on"]:
+        row = q.unit(dep)
+        if row is not None and row["kind"] == "pair":
+            deps.extend(d for d in row["spec"]["depends_on"] if d not in deps)
+    return deps
+
+
 def _pair_inputs_missing(root, effective, unit, role_spec):
-    """Keep a pair/test unit unclaimed while its hook would only return a final FAILED terminal."""
-    pins = effective.get("data_pins") or {}
-    data_root = Path(role_spec.get("data_root") or "")
-    for key in STRATEGY_PINS:
-        pin = pins.get(key)
-        if not pin or "relpath" not in pin:
-            return f"STRATEGY_INPUT_PIN_MISSING:{key} owner=data lane / Satoshi (private pins)"
-        path = data_root / pin["relpath"]
-        if not path.is_file() or file_sha256(path) != pin.get("sha256"):
-            return f"STRATEGY_INPUT_DIGEST_MISMATCH:{key} owner=Satoshi (replicate to the executing role)"
+    """Keep a pair/strategy/test unit unclaimed while its hook would only return a final FAILED terminal."""
+    trading = trading_stage(effective, unit)
+    if trading:
+        pins = effective.get("data_pins") or {}
+        data_root = Path(role_spec.get("data_root") or "")
+        for key in STRATEGY_PINS:
+            pin = pins.get(key)
+            if not pin or "relpath" not in pin:
+                return f"STRATEGY_INPUT_PIN_MISSING:{key} owner=data lane / Satoshi (private pins)"
+            path = data_root / pin["relpath"]
+            if not path.is_file() or file_sha256(path) != pin.get("sha256"):
+                return f"STRATEGY_INPUT_DIGEST_MISMATCH:{key} owner=Satoshi (replicate to the executing role)"
     q = C.open_queue(root)
     try:
-        for dep in unit["depends_on"]:
+        deps = list(unit["depends_on"])
+        if unit["kind"] == "strategy":
+            for dep in deps:
+                term = q.terminal(dep)
+                if term is not None and not C.pair_eligible(term):
+                    return f"PAIR_NOT_QUALIFIED:{dep} (the tick closes this unit PAIR_NOT_ELIGIBLE)"
+            deps += [d for d in forecast_dependencies(q, unit) if d not in deps]
+        for dep in deps:
             term = q.terminal(dep)
             if term is None:
                 return f"UPSTREAM_NOT_TERMINAL:{dep}"
             stored = Path(root) / "terminals" / (term["identity_sha256"] or "none") / "TERMINAL.json"
             arts = (term["terminal"].get("artifacts") or {}) if stored.exists() else {}
-            if dep.endswith(".report") and not any(n in arts for n in PREDICTION_ARTIFACTS):
+            if trading and dep.endswith(".report") and not any(n in arts for n in PREDICTION_ARTIFACTS):
                 return f"UPSTREAM_ARTIFACT_MISSING:{dep}:validation_predictions owner=ops report unit"
     finally:
         q.close()
