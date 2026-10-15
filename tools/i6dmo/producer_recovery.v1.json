@@ -1,16 +1,81 @@
 {
  "as_of": "2026-10-14",
- "availability_contract_unchanged": "the sealed contract 9668898c still declares these seven UNVERIFIED; this record does not edit it. A successor contract version is required to promote the five hourly features.",
+ "availability_contract_unchanged": "the sealed contract 9668898c still declares these seven UNVERIFIED; this record does not edit it. The prepared successor contract carries the ALFRED evidence and keeps both FRED features UNVERIFIED.",
  "features": {
   "fred.rates.dgs3mo.diff_5d": {
+   "blocks": "confirmatory TEST only; labelled development execution (the MG2/MG12 development fits) is NOT blocked",
    "clock": {
-    "declared_by_producer": "as-of last value from (D+2) 00:00 UTC, NaN if older than 168 h (NO_VINTAGE)",
+    "covered_if": "H.15's documented 4:15pm ET posting on the observation day is accepted as the availability instant (federalreserve.gov/releases/h15/about.htm, retrieved 2026-10-14); that acceptance is a ruling, not evidence in this record",
+    "declared_by_producer": "as-of last value from (D+2) 00:00 UTC, NaN if older than 168 h (producer label NO_VINTAGE)",
+    "declared_rule": "(D+2) 00:00 UTC, as-of last value, NaN if older than 168 h",
+    "evidence": {
+     "artifacts": [
+      {
+       "path": "docs/i6n/direct_multi_output_static/market_time/provenance/ALFRED_PROVENANCE.json",
+       "sha256": "48115d60060ed73ad7542ad7b4835f27d0b53f5cbd4567467d132bf0b2d9b56b"
+      },
+      {
+       "path": "docs/i6n/direct_multi_output_static/market_time/provenance/PROV01_RESULT.json",
+       "sha256": "d794a1cc9b13a7139b60708d3a42b83fceefbc55aecdb7141acb15a1f07a4479"
+      },
+      {
+       "path": "docs/i6n/direct_multi_output_static/market_time/provenance/PROV02_BACKFILL.json",
+       "sha256": "e79edfcb7efbf126ee7f4945f90d8225e6d7c420f67691fcae4965973e2afd03"
+      },
+      {
+       "path": "docs/i6n/direct_multi_output_static/market_time/provenance/H15_RELEASE_CLOCK.json",
+       "sha256": "dd7e7d561d887c4f22a7fa41ff81493eec2e9b48174b36aad85efc3261727372"
+      },
+      {
+       "path": "docs/i6n/direct_multi_output_static/market_time/provenance/DGS3MO_realtime_start_2019_2024.csv",
+       "sha256": "bdeebfdfb0edd910f59b59379f9924ebaa450a5f36c720a2a5b47455df2f1091"
+      }
+     ],
+     "authentication": "NONE"
+    },
+    "measurement": {
+     "artifact": "PROV01_RESULT.json (probe PROV01_fred_publication_clock)",
+     "fraction_not_covered": 0.2136,
+     "interpretation": "ALFRED realtime_start is the date a value entered the FRED/ALFRED database and is an UPPER bound on public availability, so a realtime_start later than the declared instant REFUTES coverage of the declared clock by this artifact; it does not by itself prove look-ahead. Whether the documented H.15 4:15pm ET posting may be accepted as the availability instant is a ruling for Musashi/the owner, not for this record.",
+     "lag_histogram_calendar_days": {
+      "1": 1176,
+      "2": 72,
+      "3": 269,
+      "4": 68,
+      "5": 2
+     },
+     "not_a_claim_of": "proven look-ahead in the retained features",
+     "observations_compared": 1587,
+     "observations_not_covered_by_declared_clock": 339,
+     "pattern": "Fridays and the Thursday before a holiday (ALFRED lag 3-5 calendar days)",
+     "realtime_start_never_precedes_its_observation": true,
+     "ruling_owner": "Musashi/owner"
+    },
     "proven": false,
-    "status": "STILL_UNRESOLVED"
+    "replay_rule": {
+     "chunking": "one calendar quarter of observations, vintage set = quarter +/- 20 days; defeats left-censoring and stays under ALFRED's 450-vintage cap",
+     "determinism": "ALFRED vintages are append-only; a replay reproduces every retained digest unless a NEW vintage touches a 2018-12..2024-12 observation",
+     "script": "docs/i6n/direct_multi_output_static/market_time/review_probes/fetch_alfred_provenance.py",
+     "source": "docs/i6n/direct_multi_output_static/market_time/provenance/ALFRED_PROVENANCE.json",
+     "value_level_exceptions": [
+      {
+       "artifact": "PROV02_BACKFILL.json",
+       "backfilled_at_vintage": "2020-08-25",
+       "binding_on": "any future TEST replay must honour this value-level exception",
+       "last_vintage_still_empty": "2020-08-24",
+       "never_reads": "0.11",
+       "observation": "2020-08-19",
+       "published_initially": "EMPTY",
+       "under_declared_asof_rule": "STALE_OR_NAN_NEVER_THE_BACKFILLED_VALUE"
+      }
+     ]
+    },
+    "state": "PARTIAL_COVERAGE_REFUTED_BY_ALFRED_NOT_PROVEN_LOOKAHEAD",
+    "still_missing": "per-release H.15 timestamps for 2019-2024: dated archive pages are not served (/releases/h15/20190102/default.htm returns HTTP 404) and the RSS feed carries only the current release"
    },
    "formula": "V_D - V_(D-5 observations) after dropping NaN observations (diff because the series is not all positive)",
-   "missing": "first-release publication clock for DGS3MO 2019-2024. Bounded recovery attempt 2026-10-14 against existing governed adapters: financial-data's only FRED adapter (_scripts/workers/stage13_gamma_macro_onchain_worker.py::fetch_fred @ef0ba6612) queries fred/series/observations WITHOUT realtime parameters (current vintage only); the retained parquet carries realtime_start=realtime_end=2026-05-01 on every row; no ALFRED/vintage adapter exists in any sibling repository. Missing artifact: ALFRED per-observation realtime_start for DGS3MO over 2019-2024 (fred/series/observations with realtime_start/realtime_end), or H.15 release timestamps. No new adapter or credential was created. Second bounded attempt 2026-10-15 (order 85ea134e section 3): a governed ALFRED fetch is NOT possible on this host \u2014 the only FRED adapter (financial-data _scripts/workers/stage13_gamma_macro_onchain_worker.py::fetch_fred @ef0ba6612) requires FRED_API_KEY from its process environment, and no governed EnvironmentFile provisions it (~/.config/financial-data/point-in-time-capture.env carries only FD_* variables; no other governed unit declares it). The 2026-05-01 acquisition ran with an ad-hoc key that was not retained. Missing artifacts: (a) ALFRED per-observation realtime_start for 2019-2024 (fred/series/observations with realtime_start/realtime_end) or H.15 release timestamps, and (b) a governed FRED_API_KEY EnvironmentFile for the adapter. No key was searched for in editor logs or printed.",
-   "note": "producer code and formula RECOVERED and reproduced exactly; only the publication clock remains unproven, so the feature stays UNRESOLVED for confirmatory TEST",
+   "missing": "per-release H.15 publication timestamps for 2019-2024; dated archive pages return HTTP 404 and the RSS feed carries only the current release. ALFRED per-observation first-release dates are now RETAINED (public, unauthenticated), so the missing object is the intraday release instant, not the vintage history; 339 of 1587 observations per series are not covered by the declared (D+2) 00:00 UTC rule.",
+   "note": "producer code and formula RECOVERED and reproduced exactly; the publication clock is in the typed PARTIAL state PARTIAL_COVERAGE_REFUTED_BY_ALFRED_NOT_PROVEN_LOOKAHEAD, so the feature stays UNRESOLVED for the confirmatory TEST while labelled development execution proceeds.",
    "producer": {
     "commit": "18cabb583ed5606ec7865658974513af6b66ee95",
     "path": "tools/eurusd_ps/covariates.py::fred_series+daily_features",
@@ -41,14 +106,79 @@
    "status": "STILL_UNRESOLVED"
   },
   "fred.rates.dgs7.logret_5d": {
+   "blocks": "confirmatory TEST only; labelled development execution (the MG2/MG12 development fits) is NOT blocked",
    "clock": {
-    "declared_by_producer": "as-of last value from (D+2) 00:00 UTC, NaN if older than 168 h (NO_VINTAGE)",
+    "covered_if": "H.15's documented 4:15pm ET posting on the observation day is accepted as the availability instant (federalreserve.gov/releases/h15/about.htm, retrieved 2026-10-14); that acceptance is a ruling, not evidence in this record",
+    "declared_by_producer": "as-of last value from (D+2) 00:00 UTC, NaN if older than 168 h (producer label NO_VINTAGE)",
+    "declared_rule": "(D+2) 00:00 UTC, as-of last value, NaN if older than 168 h",
+    "evidence": {
+     "artifacts": [
+      {
+       "path": "docs/i6n/direct_multi_output_static/market_time/provenance/ALFRED_PROVENANCE.json",
+       "sha256": "48115d60060ed73ad7542ad7b4835f27d0b53f5cbd4567467d132bf0b2d9b56b"
+      },
+      {
+       "path": "docs/i6n/direct_multi_output_static/market_time/provenance/PROV01_RESULT.json",
+       "sha256": "d794a1cc9b13a7139b60708d3a42b83fceefbc55aecdb7141acb15a1f07a4479"
+      },
+      {
+       "path": "docs/i6n/direct_multi_output_static/market_time/provenance/PROV02_BACKFILL.json",
+       "sha256": "e79edfcb7efbf126ee7f4945f90d8225e6d7c420f67691fcae4965973e2afd03"
+      },
+      {
+       "path": "docs/i6n/direct_multi_output_static/market_time/provenance/H15_RELEASE_CLOCK.json",
+       "sha256": "dd7e7d561d887c4f22a7fa41ff81493eec2e9b48174b36aad85efc3261727372"
+      },
+      {
+       "path": "docs/i6n/direct_multi_output_static/market_time/provenance/DGS7_realtime_start_2019_2024.csv",
+       "sha256": "f78d6c09398007013de614a992e6fb9b4388749852675f28563189b40b0a8dbd"
+      }
+     ],
+     "authentication": "NONE"
+    },
+    "measurement": {
+     "artifact": "PROV01_RESULT.json (probe PROV01_fred_publication_clock)",
+     "fraction_not_covered": 0.2136,
+     "interpretation": "ALFRED realtime_start is the date a value entered the FRED/ALFRED database and is an UPPER bound on public availability, so a realtime_start later than the declared instant REFUTES coverage of the declared clock by this artifact; it does not by itself prove look-ahead. Whether the documented H.15 4:15pm ET posting may be accepted as the availability instant is a ruling for Musashi/the owner, not for this record.",
+     "lag_histogram_calendar_days": {
+      "1": 1176,
+      "2": 72,
+      "3": 269,
+      "4": 68,
+      "5": 2
+     },
+     "not_a_claim_of": "proven look-ahead in the retained features",
+     "observations_compared": 1587,
+     "observations_not_covered_by_declared_clock": 339,
+     "pattern": "Fridays and the Thursday before a holiday (ALFRED lag 3-5 calendar days)",
+     "realtime_start_never_precedes_its_observation": true,
+     "ruling_owner": "Musashi/owner"
+    },
     "proven": false,
-    "status": "STILL_UNRESOLVED"
+    "replay_rule": {
+     "chunking": "one calendar quarter of observations, vintage set = quarter +/- 20 days; defeats left-censoring and stays under ALFRED's 450-vintage cap",
+     "determinism": "ALFRED vintages are append-only; a replay reproduces every retained digest unless a NEW vintage touches a 2018-12..2024-12 observation",
+     "script": "docs/i6n/direct_multi_output_static/market_time/review_probes/fetch_alfred_provenance.py",
+     "source": "docs/i6n/direct_multi_output_static/market_time/provenance/ALFRED_PROVENANCE.json",
+     "value_level_exceptions": [
+      {
+       "artifact": "PROV02_BACKFILL.json",
+       "backfilled_at_vintage": "2020-08-25",
+       "binding_on": "any future TEST replay must honour this value-level exception",
+       "last_vintage_still_empty": "2020-08-24",
+       "never_reads": "0.48",
+       "observation": "2020-08-19",
+       "published_initially": "EMPTY",
+       "under_declared_asof_rule": "STALE_OR_NAN_NEVER_THE_BACKFILLED_VALUE"
+      }
+     ]
+    },
+    "state": "PARTIAL_COVERAGE_REFUTED_BY_ALFRED_NOT_PROVEN_LOOKAHEAD",
+    "still_missing": "per-release H.15 timestamps for 2019-2024: dated archive pages are not served (/releases/h15/20190102/default.htm returns HTTP 404) and the RSS feed carries only the current release"
    },
    "formula": "ln V_D - ln V_(D-5 observations) after dropping NaN observations",
-   "missing": "first-release publication clock for DGS7 2019-2024. Bounded recovery attempt 2026-10-14 against existing governed adapters: financial-data's only FRED adapter (_scripts/workers/stage13_gamma_macro_onchain_worker.py::fetch_fred @ef0ba6612) queries fred/series/observations WITHOUT realtime parameters (current vintage only); the retained parquet carries realtime_start=realtime_end=2026-05-01 on every row; no ALFRED/vintage adapter exists in any sibling repository. Missing artifact: ALFRED per-observation realtime_start for DGS7 over 2019-2024 (fred/series/observations with realtime_start/realtime_end), or H.15 release timestamps. No new adapter or credential was created. Second bounded attempt 2026-10-15 (order 85ea134e section 3): a governed ALFRED fetch is NOT possible on this host \u2014 the only FRED adapter (financial-data _scripts/workers/stage13_gamma_macro_onchain_worker.py::fetch_fred @ef0ba6612) requires FRED_API_KEY from its process environment, and no governed EnvironmentFile provisions it (~/.config/financial-data/point-in-time-capture.env carries only FD_* variables; no other governed unit declares it). The 2026-05-01 acquisition ran with an ad-hoc key that was not retained. Missing artifacts: (a) ALFRED per-observation realtime_start for 2019-2024 (fred/series/observations with realtime_start/realtime_end) or H.15 release timestamps, and (b) a governed FRED_API_KEY EnvironmentFile for the adapter. No key was searched for in editor logs or printed.",
-   "note": "producer code and formula RECOVERED and reproduced exactly; only the publication clock remains unproven, so the feature stays UNRESOLVED for confirmatory TEST",
+   "missing": "per-release H.15 publication timestamps for 2019-2024; dated archive pages return HTTP 404 and the RSS feed carries only the current release. ALFRED per-observation first-release dates are now RETAINED (public, unauthenticated), so the missing object is the intraday release instant, not the vintage history; 339 of 1587 observations per series are not covered by the declared (D+2) 00:00 UTC rule.",
+   "note": "producer code and formula RECOVERED and reproduced exactly; the publication clock is in the typed PARTIAL state PARTIAL_COVERAGE_REFUTED_BY_ALFRED_NOT_PROVEN_LOOKAHEAD, so the feature stays UNRESOLVED for the confirmatory TEST while labelled development execution proceeds.",
    "producer": {
     "commit": "18cabb583ed5606ec7865658974513af6b66ee95",
     "path": "tools/eurusd_ps/covariates.py::fred_series+daily_features",
@@ -257,6 +387,41 @@
   }
  },
  "lineage": "I6N INPUT (bf8587b1 -> no-STLFSI4 ef22ddb5) <- statistical72_v1 INPUT 897caee1 <- i6b train_selected20 <- FS lane A PS1 batches 001-003 (feature-eng docs/eurusd_ps/batch_00X/digests.json; code_commit 79bb09d / 18cabb5 / 42272ad)",
+ "reviewer_recovery": {
+  "artifacts": [
+   {
+    "path": "docs/i6n/direct_multi_output_static/market_time/provenance/ALFRED_PROVENANCE.json",
+    "sha256": "48115d60060ed73ad7542ad7b4835f27d0b53f5cbd4567467d132bf0b2d9b56b"
+   },
+   {
+    "path": "docs/i6n/direct_multi_output_static/market_time/provenance/PROV01_RESULT.json",
+    "sha256": "d794a1cc9b13a7139b60708d3a42b83fceefbc55aecdb7141acb15a1f07a4479"
+   },
+   {
+    "path": "docs/i6n/direct_multi_output_static/market_time/provenance/PROV02_BACKFILL.json",
+    "sha256": "e79edfcb7efbf126ee7f4945f90d8225e6d7c420f67691fcae4965973e2afd03"
+   },
+   {
+    "path": "docs/i6n/direct_multi_output_static/market_time/provenance/H15_RELEASE_CLOCK.json",
+    "sha256": "dd7e7d561d887c4f22a7fa41ff81493eec2e9b48174b36aad85efc3261727372"
+   },
+   {
+    "path": "docs/i6n/direct_multi_output_static/market_time/provenance/DGS3MO_realtime_start_2019_2024.csv",
+    "sha256": "bdeebfdfb0edd910f59b59379f9924ebaa450a5f36c720a2a5b47455df2f1091"
+   },
+   {
+    "path": "docs/i6n/direct_multi_output_static/market_time/provenance/DGS7_realtime_start_2019_2024.csv",
+    "sha256": "f78d6c09398007013de614a992e6fb9b4388749852675f28563189b40b0a8dbd"
+   }
+  ],
+  "authentication": "NONE - public ALFRED Download Data form, output 'Observations, Initial Release Only', column realtime_start_date",
+  "branch": "retsu/i6dmo-market-time-review-20261015",
+  "commit": "3508e149",
+  "corrects": "the earlier record FALSELY claimed that no unauthenticated vintage path existed and that a governed FRED_API_KEY EnvironmentFile was a missing artifact; ALFRED's public form needs no credential and 1,587 per-observation first-publication rows per series were retrieved",
+  "coverage": "2018-12-03..2024-12-31, 1,587 observations per series",
+  "directory": "docs/i6n/direct_multi_output_static/market_time/provenance",
+  "no_redownload": "cited by path and digest; this lane re-downloaded nothing"
+ },
  "schema": "i6dmo.producer_recovery.v1",
  "why_prior_audit_missed": "producer lives in feature-eng tools/eurusd_ps on origin/master (78600f9) and satoshi/eurusd-ps0-ps1-20261003, absent from a stale local master; the audit compared against market_data/forex/g10/eurusd/1h.parquet instead of the 5m source the producer aggregates"
 }

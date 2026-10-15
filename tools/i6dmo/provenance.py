@@ -33,6 +33,22 @@ MANIFEST = tuple(fa.MANIFEST_NO_STLFSI4)
 EXCLUDED = tuple(fa.EXCLUDED_FEATURES)
 _ALIAS = re.compile(r"stlfsi", re.IGNORECASE)
 
+#: Typed clock states. PARTIAL carries a measurement: declared-rule coverage is
+#: refuted by a retained artifact without that being a claim of look-ahead.
+CLOCK_PROVEN = "PROVEN"
+CLOCK_PARTIAL = "PARTIAL_COVERAGE_REFUTED_BY_ALFRED_NOT_PROVEN_LOOKAHEAD"
+CLOCK_UNRESOLVED = "UNRESOLVED"
+CLOCK_STATES = (CLOCK_PROVEN, CLOCK_PARTIAL, CLOCK_UNRESOLVED)
+CLOCK_REFUTATION_NOTE = (
+    "ALFRED realtime_start is the date a value entered the FRED/ALFRED database and is an UPPER "
+    "bound on public availability, so a realtime_start later than the declared instant REFUTES "
+    "coverage of the declared clock by this artifact; it does not by itself prove look-ahead. "
+    "Whether the documented H.15 4:15pm ET posting may be accepted as the availability instant "
+    "is a ruling for Musashi/the owner, not for this record.")
+#: Incomplete provenance blocks the confirmatory TEST only.
+BLOCKS_TEST_ONLY = ("confirmatory TEST only; labelled development execution (the MG2/MG12 "
+                    "development fits) is NOT blocked")
+
 UNRESOLVED_SEVEN = (
     "fred.rates.dgs3mo.diff_5d",
     "fred.rates.dgs7.logret_5d",
@@ -114,6 +130,9 @@ def availability_gate(features: Sequence[str], contract: Mapping[str, Any] | Non
     report["producer_unresolved"] = unresolved
     report["confirmatory_test_blocked"] = bool(report["unverified_features"] or unresolved)
     report["mode"] = "DEVELOPMENT_VALIDATION_ONLY"
+    report["blocks"] = BLOCKS_TEST_ONLY
+    report["clock_states"] = {f: (status[f].get("clock") or {}).get("state")
+                              for f in unresolved}
     return report
 
 
@@ -130,6 +149,29 @@ def producer_status() -> dict:
         elif row["status"] == "STILL_UNRESOLVED":
             if not row.get("missing"):
                 raise ProvenanceError("PRODUCER_RECORD_INVALID", f"{name}: missing object required")
+            clock = row.get("clock") or {}
+            if clock.get("state") not in CLOCK_STATES:
+                raise ProvenanceError("PRODUCER_RECORD_INVALID",
+                                      f"{name}: clock.state must be one of {CLOCK_STATES}")
+            if clock["state"] == CLOCK_PARTIAL:
+                m = clock.get("measurement") or {}
+                for field in ("observations_compared",
+                              "observations_not_covered_by_declared_clock",
+                              "fraction_not_covered", "pattern", "interpretation",
+                              "not_a_claim_of", "ruling_owner"):
+                    if field not in m:
+                        raise ProvenanceError("PRODUCER_RECORD_INVALID",
+                                              f"{name}: clock.measurement.{field} required")
+                if m["interpretation"] != CLOCK_REFUTATION_NOTE:
+                    raise ProvenanceError("PRODUCER_RECORD_INVALID",
+                                          f"{name}: clock interpretation was altered")
+                for artifact in (clock.get("evidence") or {}).get("artifacts", ()):
+                    if len(artifact.get("sha256", "")) != 64 or not artifact.get("path"):
+                        raise ProvenanceError("PRODUCER_RECORD_INVALID",
+                                              f"{name}: cited artifact needs path + sha256")
+            if row.get("blocks") != BLOCKS_TEST_ONLY:
+                raise ProvenanceError("PRODUCER_RECORD_INVALID",
+                                      f"{name}: blocks must state TEST-only scope")
         else:
             raise ProvenanceError("PRODUCER_RECORD_INVALID", f"{name}: status {row['status']}")
     return deepcopy(rows)

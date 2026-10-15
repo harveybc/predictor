@@ -157,3 +157,15 @@ Per-window model inputs, verified on the real bundles: `offsets_hours` signed fr
 Data identities `d5d97a6e…` (MG2) and `0449cd4e…` (MG12); input `ef22ddb5…`; calendar `782603fd…` ASSUMED_NOT_BROKER. Reconciliation against study `d2b6a238`: every split MATCH (difference 0) and shared usable origins 13,123 / 546 / 3,760 equal to the study — status RECONCILED, recorded in each manifest with `counts_are_not_quotas: true`.
 
 Fit-only naive MAE (equals the independent disk replay on identical rows): MG2 h2 0.00104852 … h12 0.00276528; MG12 h18 0.00353112 … h72 0.00753410. Exclusions are typed and retained, e.g. MG2 fit 1,394 slot-not-observed + 730 non-finite + 186 outside-week + 4,358 no-valid-head, with 919 unplanned missing expected open-market hours never compressed.
+
+## FRED point-in-time provenance after the reviewer's ALFRED recovery (2026-10-15)
+
+Tests first (`79359d56`, 6 failing), record update in this commit; `tests/i6dmo/test_fred_provenance.py` 6 passed. Reviewer artifacts (`retsu/i6dmo-market-time-review-20261015` @3508e149, `market_time/provenance/`) are cited by path and digest; nothing was re-downloaded and no credential was used.
+
+**Withdrawn as FALSE:** my earlier claim that no unauthenticated vintage path existed and that a governed `FRED_API_KEY` EnvironmentFile was a missing artifact. ALFRED's public Download Data form ("Observations, Initial Release Only", column `realtime_start_date`) needs no credential.
+
+**Typed PARTIAL clock state** for `fred.rates.dgs3mo.diff_5d` and `fred.rates.dgs7.logret_5d`: `PARTIAL_COVERAGE_REFUTED_BY_ALFRED_NOT_PROVEN_LOOKAHEAD`, carrying the measurement — 1,587 per-observation first-release rows per series (2018-12-03..2024-12-31), none earlier than its observation, but 339 (21.4%; Fridays and the Thursday before a holiday, ALFRED lag 3-5 days) available LATER than the declared (D+2) 00:00 UTC instant. Because ALFRED `realtime_start` is an upper bound on availability, this is a bounded refutation of the declared clock's coverage by that artifact, **not** proven look-ahead; accepting H.15's documented 4:15pm ET posting as the availability instant is a ruling for Musashi/the owner. Per-release H.15 timestamps for 2019-2024 remain genuinely missing (dated archive pages 404; RSS carries only the current release).
+
+**Value-level exception recorded** in the replay rule and in the successor availability contract (now sha `5f5de7d8...22ee`): observation 2020-08-19 was published EMPTY and back-filled at vintage 2020-08-25, so under the declared as-of rule the feature reads stale/NaN there and never 0.11 (DGS3MO) / 0.48 (DGS7). Any future TEST replay must honour it. The replay rule also records the quarter-chunking that defeats left-censoring and stays under ALFRED's 450-vintage cap.
+
+**Gate unchanged:** `confirmatory_gate()` still refuses with `PROVENANCE_UNRESOLVED`, and every record states that incomplete provenance blocks the confirmatory TEST **only** — labelled development execution, including the MG2/MG12 development fits, is not blocked.

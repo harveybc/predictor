@@ -153,7 +153,7 @@
   },
   "successor_availability_contract": {
     "path": "tools/i6dmo/feature_availability.successor.v2.json",
-    "contract_sha256": "c1c00b291829b69579ec8b9940775584b606094ef68d39ca25b5690ac64048d6",
+    "contract_sha256": "5f5de7d82e7eb1cf9984909570f6ca17f27cdcbd0cfd979b642f87583f8622ee",
     "status": "PREPARED_NOT_ADOPTED",
     "promoted": [
       "fx.gbpusd.logret_1h",
@@ -342,5 +342,16 @@
       "calendar is ASSUMED, not a verified broker schedule",
       "no fit has run under this design"
     ]
+  },
+  "fred_provenance": {
+    "reviewer": "retsu/i6dmo-market-time-review-20261015 @3508e149, docs/i6n/direct_multi_output_static/market_time/provenance/ (cited by path+digest; nothing re-downloaded)",
+    "correction": "the earlier data-lane claim that no unauthenticated vintage path existed, and that a governed FRED_API_KEY EnvironmentFile was a missing artifact, is WITHDRAWN as FALSE: ALFRED's public Download Data form needs no credential",
+    "clock_state": "PARTIAL_COVERAGE_REFUTED_BY_ALFRED_NOT_PROVEN_LOOKAHEAD for dgs3mo.diff_5d and dgs7.logret_5d (typed in tools/i6dmo/provenance.py; carried in producer_recovery.v1.json)",
+    "measurement": "1,587 per-observation first-release rows per series (2018-12-03..2024-12-31); none earlier than its observation; 339 (21.4%, Fridays and Thursday-before-holiday) available LATER than the declared (D+2) 00:00 UTC instant",
+    "interpretation": "ALFRED realtime_start is an UPPER bound on availability, so this REFUTES coverage of the declared clock by that artifact; it is NOT a claim of proven look-ahead. Accepting H.15's documented 4:15pm ET posting as the availability instant is a ruling for Musashi/the owner",
+    "still_missing": "per-release H.15 timestamps 2019-2024 (dated archive pages return HTTP 404; RSS carries only the current release)",
+    "value_level_exception": "observation 2020-08-19 was published EMPTY and back-filled at vintage 2020-08-25; under the declared as-of rule it reads stale/NaN, never 0.11 (DGS3MO) / 0.48 (DGS7). Recorded in the replay rule and in the successor contract evidence; binding on any future TEST replay",
+    "successor_contract_sha256": "5f5de7d82e7eb1cf9984909570f6ca17f27cdcbd0cfd979b642f87583f8622ee",
+    "gate": "confirmatory TEST still REFUSES with PROVENANCE_UNRESOLVED; incomplete provenance blocks the confirmatory TEST ONLY \u2014 the labelled MG2/MG12 development fits are not blocked"
   }
 }

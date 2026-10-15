@@ -3,7 +3,7 @@
   "end": "2024-12-31",
   "start": "2019-01-01"
  },
- "contract_sha256": "c1c00b291829b69579ec8b9940775584b606094ef68d39ca25b5690ac64048d6",
+ "contract_sha256": "5f5de7d82e7eb1cf9984909570f6ca17f27cdcbd0cfd979b642f87583f8622ee",
  "contract_version": "2.0.0",
  "declarations": [
   {
@@ -41,7 +41,7 @@
    "timezone": "UTC"
   },
   {
-   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): as-of identified at source date + 48 h, match 0.856 over 35398 rows (below the audit's 0.95 identification threshold: as-of rule NOT identified; formula match only; secondary transition-lag diagnostic confounded); publication instant not in retained evidence; producer/formula RECOVERED (feature-eng tools/eurusd_ps/covariates.py::fred_series+daily_features @ 18cabb583ed5606ec7865658974513af6b66ee95) but publication clock unproven: missing first-release publication clock: ALFRED vintage history (per-observation realtime_start) for DGS3MO over 2019-2024, or H.15 release timestamps; the retained parquet carries realtime_start=realtime_end=2026-05-01 on every row (current vintage only) and the producer itself labels the rule NO_VINTAGE",
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): as-of identified at source date + 48 h, match 0.856 over 35398 rows (below the audit's 0.95 identification threshold: as-of rule NOT identified; formula match only; secondary transition-lag diagnostic confounded); publication instant not in retained evidence; ALFRED public first-release evidence RETAINED (reviewer 3508e149, market_time/provenance/PROV01_RESULT.json): 1,587 per-observation realtime_start_date rows 2018-12-03..2024-12-31, none earlier than its observation, but 339 of 1587 (21.4%, Fridays and Thursday-before-holiday) became available LATER than the declared (D+2) 00:00 UTC instant, so the declared clock's coverage is REFUTED by this artifact unless the documented H.15 4:15pm ET posting is accepted as the availability instant (a ruling, not evidence here); per-release H.15 timestamps for 2019-2024 remain missing (dated archive pages 404). Value-level exception: observation 2020-08-19 was published EMPTY and back-filled at vintage 2020-08-25, so under the declared as-of rule it reads stale/NaN and never 0.11.",
    "availability_source": "UNVERIFIED",
    "available_time": {
     "basis": "primary publisher, same business day: the U.S. Treasury daily par yield curve (nominal and TIPS real) for business day D is released after the New York close of D, no later than 23:00 UTC (18:00 EST); D 00:00 UTC + 24 h bounds that release from above and is more conservative than the audit strict bound D + 20 h (SPEC.json). The FRED/H.15 mirror posts D on the next business day and is NOT the clock used here.",
@@ -109,7 +109,7 @@
    "timezone": "UTC"
   },
   {
-   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): as-of identified at source date + 48 h, match 0.8119 over 35398 rows (below the audit's 0.95 identification threshold: as-of rule NOT identified; formula match only; secondary transition-lag diagnostic confounded); publication instant not in retained evidence; producer/formula RECOVERED (feature-eng tools/eurusd_ps/covariates.py::fred_series+daily_features @ 18cabb583ed5606ec7865658974513af6b66ee95) but publication clock unproven: missing first-release publication clock: ALFRED vintage history (per-observation realtime_start) for DGS7 over 2019-2024, or H.15 release timestamps; the retained parquet carries realtime_start=realtime_end=2026-05-01 on every row (current vintage only) and the producer itself labels the rule NO_VINTAGE",
+   "availability_evidence": "FEATURE_AVAILABILITY.json (audit addendum d0642119): as-of identified at source date + 48 h, match 0.8119 over 35398 rows (below the audit's 0.95 identification threshold: as-of rule NOT identified; formula match only; secondary transition-lag diagnostic confounded); publication instant not in retained evidence; ALFRED public first-release evidence RETAINED (reviewer 3508e149, market_time/provenance/PROV01_RESULT.json): 1,587 per-observation realtime_start_date rows 2018-12-03..2024-12-31, none earlier than its observation, but 339 of 1587 (21.4%, Fridays and Thursday-before-holiday) became available LATER than the declared (D+2) 00:00 UTC instant, so the declared clock's coverage is REFUTED by this artifact unless the documented H.15 4:15pm ET posting is accepted as the availability instant (a ruling, not evidence here); per-release H.15 timestamps for 2019-2024 remain missing (dated archive pages 404). Value-level exception: observation 2020-08-19 was published EMPTY and back-filled at vintage 2020-08-25, so under the declared as-of rule it reads stale/NaN and never 0.48.",
    "availability_source": "UNVERIFIED",
    "available_time": {
     "basis": "primary publisher, same business day: the U.S. Treasury daily par yield curve (nominal and TIPS real) for business day D is released after the New York close of D, no later than 23:00 UTC (18:00 EST); D 00:00 UTC + 24 h bounds that release from above and is more conservative than the audit strict bound D + 20 h (SPEC.json). The FRED/H.15 mirror posts D on the next business day and is NOT the clock used here.",
@@ -717,6 +717,26 @@
   ],
   "record": "tools/i6dmo/producer_recovery.v1.json",
   "repository": "feature-eng"
+ },
+ "provenance_recovery": {
+  "artifacts": [
+   {
+    "path": "docs/i6n/direct_multi_output_static/market_time/provenance/PROV01_RESULT.json",
+    "sha256": "d794a1cc9b13a7139b60708d3a42b83fceefbc55aecdb7141acb15a1f07a4479"
+   },
+   {
+    "path": "docs/i6n/direct_multi_output_static/market_time/provenance/PROV02_BACKFILL.json",
+    "sha256": "e79edfcb7efbf126ee7f4945f90d8225e6d7c420f67691fcae4965973e2afd03"
+   },
+   {
+    "path": "docs/i6n/direct_multi_output_static/market_time/provenance/H15_RELEASE_CLOCK.json",
+    "sha256": "dd7e7d561d887c4f22a7fa41ff81493eec2e9b48174b36aad85efc3261727372"
+   }
+  ],
+  "authentication": "NONE - public ALFRED Download Data form",
+  "blocks": "confirmatory TEST only; labelled development execution (the MG2/MG12 development fits) is NOT blocked",
+  "branch": "retsu/i6dmo-market-time-review-20261015",
+  "commit": "3508e149"
  },
  "schema": "i6n.feature_availability.contract.v1",
  "source_vocabulary": {
