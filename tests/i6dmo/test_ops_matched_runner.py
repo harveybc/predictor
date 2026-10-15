@@ -563,3 +563,23 @@ def test_every_documented_command_has_help(command):
     proc = subprocess.run([sys.executable, "-m", "tools.i6dmo", *command], cwd=REPO, capture_output=True, text=True,
                           timeout=120)
     assert proc.returncode == 0 and "usage:" in proc.stdout
+
+
+def test_the_documented_data_lane_verify_command_has_help():
+    proc = subprocess.run([sys.executable, "-m", "tools.i6dmo.common_population", "verify", "--help"], cwd=REPO,
+                          capture_output=True, text=True, timeout=120)
+    assert proc.returncode == 0 and "--expected-digest" in proc.stdout
+
+
+def test_run_document_names_only_existing_commands():
+    """Every `python -m tools.i6dmo ...` line in RUN_MATCHED_SHORT.md is a parser-accepted command."""
+    import re
+    import shlex
+    from tools.i6dmo import cli
+    text = (MATCHED / "RUN_MATCHED_SHORT.md").read_text().replace("\\\n", " ")
+    commands = re.findall(r"python -m tools\.i6dmo (?!\.)([^\n`]+)", text)
+    assert len(commands) >= 11
+    parser = cli.build_parser()
+    for command in commands:
+        argv = [a for a in shlex.split(command.split("#")[0])]
+        parser.parse_args(argv)  # raises SystemExit on any unknown command/flag
