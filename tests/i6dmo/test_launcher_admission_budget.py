@@ -85,4 +85,14 @@ def test_completed_terminal_is_adopted_without_another_attempt(queue):
 
 
 def test_no_tensorflow_loaded():
-    assert "tensorflow" not in sys.modules
+    """Hermetic (C2): the queue under test is imported in a CLEAN interpreter, so the package conftest
+    (which imports TensorFlow for the model tests) cannot mask or fake the result."""
+    import subprocess
+    from pathlib import Path
+    repo = Path(__file__).resolve().parents[2]
+    code = ("import sys; import tools.i6dmo.queue as q; "
+            "assert 'tensorflow' not in sys.modules, sorted(m for m in sys.modules if m.startswith('tensorflow'))[:3]; "
+            "print(q.__file__)")
+    out = subprocess.run([sys.executable, "-c", code], cwd=repo, capture_output=True, text=True, timeout=120)
+    assert out.returncode == 0, out.stderr[-1000:]
+    assert out.stdout.strip() == str(repo / "tools" / "i6dmo" / "queue.py")  # provenance: this checkout

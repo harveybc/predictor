@@ -3,8 +3,8 @@ R2 (matched dispatch fairness) and R3 (strict scientific defaults).
 
 Real queue, real worker (claim -> governed child -> _finish -> stored terminal), real reporting;
 the arm children are ``retsu_adversarial_child.py`` (orchestration only: no fit, no data read).
-Tests marked ``xfail(strict=True)`` encode the CORRECT behaviour that the patch does not yet have:
-each is a minimal reproduction of a refutation and flips to a failure once it is fixed.
+The three ``xfail(strict=True)`` refutations of the review (C1 x2, C3) are fixed and now pass as
+ordinary tests; the observations that recorded the old behaviour assert the corrected one.
 """
 import json
 import sys
@@ -102,7 +102,7 @@ def test_r4_timeout_is_terminal_and_never_retried(campaign_root, tmp_path):
 def test_r4_genuine_refusals_keep_history_and_do_not_spend_budget(campaign_root, tmp_path):
     n = MAX_PHYSICAL_ATTEMPTS + 2
     env = env_for(tmp_path, mg1_fit=",".join(["refuse75"] * n + ["crash"]), mg2m_fit="refuse75")
-    for _ in range(n + 1):
+    for _ in range(2 * (n + 2)):  # C3: proven refusals rotate the arms, so mg1 is re-picked every other round
         run_worker(campaign_root, "preferred", env)
         if unit_state(campaign_root, "mg1.fit")[0] == "FAILED":
             break
@@ -112,9 +112,6 @@ def test_r4_genuine_refusals_keep_history_and_do_not_spend_budget(campaign_root,
     assert rows[-1][1:] == ("FAILED", "EXIT_1")                              # the real crash still ends it
 
 
-@pytest.mark.xfail(strict=True, reason="REFUTES R4: a child that STARTED (stdout + COMPLETE out/TERMINAL.json) "
-                                       "and then exited 75 is classified LAUNCHER_ADMISSION_REFUSED, spends no "
-                                       "budget and is re-executed without bound; the written terminal is ignored")
 def test_r4_started_then_75_must_spend_budget_and_terminate(campaign_root, tmp_path):
     env = env_for(tmp_path, mg1_fit="started_then_75", mg2m_fit="refuse75")
     for _ in range(MAX_PHYSICAL_ATTEMPTS + 3):
@@ -123,9 +120,6 @@ def test_r4_started_then_75_must_spend_budget_and_terminate(campaign_root, tmp_p
     assert unit_state(campaign_root, "mg1.fit")[0] in ("FAILED", "COMPLETE")
 
 
-@pytest.mark.xfail(strict=True, reason="REFUTES R4: stderr claiming 'nothing was started' with stdout and out/ "
-                                       "present is still accepted as a pre-execution refusal (rc 75 is the only "
-                                       "evidence consulted)")
 def test_r4_claims_not_started_with_outputs_must_spend_budget(campaign_root, tmp_path):
     env = env_for(tmp_path, mg1_fit="claims_not_started", mg2m_fit="refuse75")
     for _ in range(MAX_PHYSICAL_ATTEMPTS + 3):
@@ -134,17 +128,15 @@ def test_r4_claims_not_started_with_outputs_must_spend_budget(campaign_root, tmp
     assert unit_state(campaign_root, "mg1.fit")[0] == "FAILED"
 
 
-def test_r4_observation_started_then_75_is_unbounded_today(campaign_root, tmp_path):
-    """Records today's behaviour (the xfail above states the required one)."""
+def test_r4_started_then_75_is_a_spent_failure_not_a_refusal(campaign_root, tmp_path):
+    """C1 (was the 'unbounded today' observation): exit 75 after the child left output is a failure."""
     env = env_for(tmp_path, mg1_fit="started_then_75", mg2m_fit="refuse75")
     for _ in range(2 * MAX_PHYSICAL_ATTEMPTS):
         run_worker(campaign_root, "preferred", env)
     rows = attempts(campaign_root, "mg1.fit")
-    assert len(invocations(tmp_path, "mg1.fit")) == len(rows) > MAX_PHYSICAL_ATTEMPTS
-    assert {r[2] for r in rows} == {REFUSAL}
-    assert unit_state(campaign_root, "mg1.fit")[0] not in ("FAILED", "COMPLETE")
-    folder = campaign_root / "attempts"
-    assert any(p.name == "TERMINAL.json" for p in folder.rglob("TERMINAL.json"))   # written, then ignored
+    assert len(invocations(tmp_path, "mg1.fit")) == len(rows) == 1
+    assert rows[0][1:] == ("FAILED", "EXIT_75") and REFUSAL not in {r[2] for r in rows}
+    assert unit_state(campaign_root, "mg1.fit")[0] == "FAILED"
 
 
 # =========================================================================== R4 (queue, mixed sequences)
@@ -197,14 +189,16 @@ def test_r4_refusal_after_exhaustion_cannot_reopen(queue):
     assert len(q.attempts("u")) == MAX_PHYSICAL_ATTEMPTS
 
 
-def test_r4_observation_persistent_refusal_has_no_typed_status_failure(campaign_root, tmp_path):
-    """Unlike INFRA_PREFIT, a persistent launcher refusal is never typed in status (bounded WAIT only)."""
+def test_r4_persistent_refusal_is_typed_admission_blocked_after_the_threshold(campaign_root, tmp_path):
+    """C3 (was the 'no typed status' observation): a persistent launcher refusal surfaces typed."""
     env = env_for(tmp_path, mg1_fit="refuse75", mg2m_fit="refuse75")
     drive_preferred(campaign_root, env, 3)
     doc = status.compute(campaign_root, level="campaign", now=10 ** 10)
-    kinds = {f["kind"] for f in doc.get("failures") or []}
-    assert "INFRA_PREFIT_BLOCKED" not in kinds
-    assert not any("ADMISSION" in k for k in kinds)
+    blocked = [f for f in doc.get("failures") or [] if f["kind"] == "ADMISSION_BLOCKED"]
+    assert blocked and {f["cause"] for f in blocked} == {REFUSAL}
+    assert "INFRA_PREFIT_BLOCKED" not in {f["kind"] for f in doc["failures"]}
+    early = status.compute(campaign_root, level="campaign")
+    assert not [f for f in early["failures"] if f["kind"] == "ADMISSION_BLOCKED"]  # bounded threshold
 
 
 # =========================================================================== R2
@@ -233,11 +227,14 @@ def test_r2_post_training_failure_is_terminal_and_not_refusal_rotation(campaign_
     assert unit_state(campaign_root, "mg2m.fit")[0] == "COMPLETE"
 
 
-def test_r2_admission_refusals_do_not_rotate_but_are_harmless(campaign_root, tmp_path):
-    """LAUNCHER_ADMISSION_REFUSED is not an INFRA_PREFIT count: the declared order is kept."""
+def test_r2_admission_refusals_rotate_and_are_harmless(campaign_root, tmp_path):
+    """C3: a proven LAUNCHER_ADMISSION_REFUSED now counts in the fairness rank like INFRA_PREFIT (it
+    was 'do not rotate' at 9f8bd67a): the other arm runs next, then the refused arm completes."""
     env = env_for(tmp_path, mg1_fit="refuse75,fake", mg2m_fit="fake")
     drive_preferred(campaign_root, env, 1)
     assert attempts(campaign_root, "mg1.fit")[0][2] == REFUSAL
+    drive_preferred(campaign_root, env, 1)
+    assert unit_state(campaign_root, "mg2m.fit")[0] == "COMPLETE"
     drive_preferred(campaign_root, env, 1)
     assert unit_state(campaign_root, "mg1.fit")[0] == "COMPLETE"
 
@@ -287,16 +284,20 @@ def test_r3_real_report_json_false_opts_out(report_case):
     assert result["status"] == "COMPLETE" and metrics["matched"]["require_scientific_fit"] is False
 
 
-@pytest.mark.xfail(strict=True, reason="R2 gap: rotation counts only INFRA_PREFIT; an arm whose launch the "
-                                       "launcher persistently refuses (exit 75, e.g. its larger class cap does not "
-                                       "fit) is re-picked every round and the other arm never runs")
 def test_r2_persistent_launcher_refusal_of_one_arm_must_not_starve_the_other(campaign_root, tmp_path):
     env = env_for(tmp_path, mg1_fit="refuse75", mg2m_fit="fake")
     drive_preferred(campaign_root, env, 4)
     assert unit_state(campaign_root, "mg2m.fit")[0] == "COMPLETE"
 
 
-def test_r2_observation_launcher_refusal_starves_other_arm_today(campaign_root, tmp_path):
+def test_r2_launcher_refusal_rotates_arms_and_never_lowers_the_cap(campaign_root, tmp_path):
+    """C3 (was the 'starves today' observation): the refused arm yields; its cap is never lowered."""
     env = env_for(tmp_path, mg1_fit="refuse75", mg2m_fit="fake")
     drive_preferred(campaign_root, env, 4)
-    assert len(invocations(tmp_path, "mg1.fit")) == 4 and invocations(tmp_path, "mg2m.fit") == []
+    assert invocations(tmp_path, "mg2m.fit") and len(invocations(tmp_path, "mg1.fit")) < 4
+    q = campaign.open_queue(campaign_root)
+    try:
+        caps = {a["cap_bytes"] for a in q.attempts("mg1.fit")}
+    finally:
+        q.close()
+    assert len(caps) == 1  # every refused attempt asked for the same cap

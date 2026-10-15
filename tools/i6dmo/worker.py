@@ -330,13 +330,28 @@ def _store(root, unit, folder, attempt_info):
     return doc, child_sha
 
 
+def _left_no_child_output(folder):
+    """True only when an attempt left no trace of a started child (pre-execution refusal proof)."""
+    folder = Path(folder)
+    out = folder / "out"
+    if (out / "TERMINAL.json").exists() or (folder / "progress.json").exists():
+        return False
+    if out.is_dir() and any(out.iterdir()):
+        return False
+    stdout = folder / "child.stdout"
+    return not (stdout.exists() and stdout.stat().st_size > 0)
+
+
 def _finish(root, q, unit, token, rc, folder, attempt_info):
     unit_id = unit["unit_id"]
     rel = str(Path(folder).relative_to(root))
     if rc in (137, -9):
         q.fail(unit_id, token, "FAILED_OOM", f"rc={rc}")
         return dict(result="FAILED", unit_id=unit_id, cause="FAILED_OOM", attempt_dir=rel)
-    if rc == 75:  # the launcher refused admission before starting anything: wait, never a failure
+    if rc == 75 and _left_no_child_output(folder):
+        # The launcher refused admission before starting anything: wait, never a failure. Exit 75
+        # alone is NOT that proof: any child output (a terminal, progress, stdout, anything under
+        # out/) means something ran, and the ordinary failure path below applies (budget spent).
         q.interrupt(token, "LAUNCHER_ADMISSION_REFUSED")
         attempt = q.attempt_by_token(token)
         q.record_admission(unit_id, attempt["role"], False, "LAUNCHER_ADMISSION_REFUSED", attempt["cap_bytes"])
@@ -419,10 +434,13 @@ def _pick(q, plan, spec, role):
     running_hosts = {a["host_key"] for a in q.running() if a["heavy"]}
     units = plan["units"]
     if plan.get("mode") == "MATCHED_SHORT_CONTRAST":
-        # Persisted pre-fit refusals rotate arms instead of repeatedly starving the next one.
+        # Persisted pre-execution refusals (INFRA_PREFIT and proven launcher admission refusals)
+        # rotate arms instead of repeatedly starving the next one; ties keep plan order.
         refusals = {}
         for attempt in q.attempts():
-            if attempt["outcome"] == "INTERRUPTED" and str(attempt.get("cause") or "").startswith(INFRA_PREFIT):
+            cause = str(attempt.get("cause") or "")
+            if attempt["outcome"] == "INTERRUPTED" and (cause.startswith(INFRA_PREFIT)
+                                                         or cause == "LAUNCHER_ADMISSION_REFUSED"):
                 key = attempt["unit_id"]
                 refusals[key] = refusals.get(key, 0) + 1
         units = sorted(units, key=lambda unit: refusals.get(unit["unit_id"], 0))

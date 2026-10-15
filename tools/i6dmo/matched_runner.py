@@ -400,29 +400,23 @@ def _local_probe(run_root, data_root):
     return dict(mem_available_bytes=mem.get("MemAvailable", 0), disk_free_bytes=shutil.disk_usage(run_root).free)
 
 
-def _check_donor(prior, sealed, pins):
-    """A prior root is adoptable only when it is a matched contrast with the same sealed arms and data."""
+def _check_donor(prior, sealed, pins, *, entrypoints=None):
+    """Preparation's donor check: the ONE verifier (``donor_trust.verify_donor``) with the target
+    this preparation would seal (its designs, pins and the real adapters' entry points)."""
+    from tools.i6dmo import campaign as C, donor_trust
     prior = Path(prior)
-    try:
-        effective = json.loads((prior / "EFFECTIVE_CONFIG.json").read_text())
-    except (OSError, ValueError):
-        raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} has no sealed effective config")
-    if effective.get("mode") != "MATCHED_SHORT_CONTRAST":
-        raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} is not a matched short contrast")
-    from tools.i6dmo import campaign as C
-    if effective.get("engineering_cpu_fixture") or effective.get("fit_device") != "gpu":
-        raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} is an engineering/CPU campaign")
-    if effective.get("entrypoints") != C.MATCHED_ENTRYPOINTS:
-        raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} ran other entry points than the real adapters")
-    problem = C.donor_fit_receipt_problem(prior)
-    if problem:
-        raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} {problem}")
+    docs = {}
     for arm in ARMS:
-        if ((effective.get("arms") or {}).get(arm) or {}).get("design", {}).get("seal_sha256") != sealed[arm]["seal_sha256"]:
-            raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} {arm} design differs")
-    for key, pin in pins.items():
-        if (effective.get("data_pins") or {}).get(key, {}).get("sha256") != pin["sha256"]:
-            raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} {key} differs")
+        path = Path((sealed.get(arm) or {}).get("path") or MATCHED_DIR / f"EXPERIMENT.{arm}.json")
+        doc = json.loads(path.read_text())
+        if doc.get("seal_sha256") != sealed[arm]["seal_sha256"]:
+            raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} {arm} design differs from the prepared seal")
+        docs[arm] = doc
+    target = donor_trust.target_from_designs(docs, pins, entrypoints or C.MATCHED_ENTRYPOINTS)
+    verdict = donor_trust.verify_donor(prior, target)
+    if verdict["verdict"] != "ACCEPTED":
+        raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} {';'.join(verdict['problems'])[:600]}")
+    return verdict
 
 
 def validate(prepared_path):
