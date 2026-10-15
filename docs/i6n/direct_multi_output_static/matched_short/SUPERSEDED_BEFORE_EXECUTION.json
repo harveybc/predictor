@@ -47,6 +47,13 @@
  "observation_not_a_regrade": "per the independent review, the closed MG2/MG12 receipts carry TensorFlow 2.21.0 under designs sealed with runtime 2.18.0; recorded only, those closed identities are not modified or re-graded",
  "old_files": "retrievable from git at commit e546f1ec (matched_short/EXPERIMENT.mg1.json, EXPERIMENT.mg2m.json, POPULATION_SEAL.json)",
  "population": {
+  "changed": "identities.arms (experiment design/seal digests), identities.code (commit, common_population.py/design.py digests), identity_digests.arms, top digest",
+  "equality_proof": "POPULATION_RESEAL_EQUALITY.json",
+  "identical": "all three split digests, row ids, head/entry/management masks, per-head counts, exclusions, both arms' tensors, scaler row digest 08f655df and values fe444e63, naive loss scales, report",
+  "new_code_commit": "aee28dfb",
+  "new_population_digest": "ba01f87a14e1ceb39d1a5770d4d00f3803cd29748c64edf7254c1e6c57b249d1",
+  "new_population_json_sha256": "8bb5ec84d0508f7a64e4e521106081edbfe15a6dfeb0de5b14d446a55a1d5a0d",
+  "new_private_location": "$EXPERIMENT_STORAGE_ROOT/i6dmo/matched-short-20261015/population-tf2210",
   "old_population_digest": "4ab41bd87987c6e790851fe1262210b13e0fdbabf971deae9b9fa06fc75014f8",
   "old_population_json_sha256": "bb7524c1a94b167d4f61b75b0b640dd474069fbb2458f722729ad613eeb66051",
   "old_private_location": "$EXPERIMENT_STORAGE_ROOT/i6dmo/matched-short-20261015/population (retained, not deleted)"
