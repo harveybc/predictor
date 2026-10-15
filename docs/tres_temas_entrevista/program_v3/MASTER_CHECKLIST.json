@@ -149,6 +149,8 @@
       "id": "I6-DMO",
       "name": "static_direct_multi_output_business_pair",
       "state": "EVIDENCE_PARTIAL",
+      "latest_raw_control": "i6dmo-0f9e6c8d5d74 CLOSED / PAIR_NOT_ELIGIBLE: matched MG12m/MG1l complete; zero long heads beat their naive, retained short eligible 4/6/12 h. 112 reports read back, 61 files per mirror. No strategy or TEST; R2 deferred.",
+      "latest_raw_result": "../../i6n/direct_multi_output_static/matched_long/RETURN.md",
       "depends_on": [
         "I0",
         "I5"

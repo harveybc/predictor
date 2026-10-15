@@ -17,6 +17,12 @@
     "full_suite_claim": false
   },
   "scope": "Static RAW matched long comparison; retained short pairing; conditional DEVELOPMENT strategy; TEST closed",
+  "post_science_status_qualification": {
+    "scope": "status(root) presentation only; scientific execution remains ac635820",
+    "parent_tests_passed": 18,
+    "independent_tests_passed": 14,
+    "past_fits_resealed": false
+  },
   "code_files": {
     "tools/i6dmo/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "tools/i6dmo/__main__.py": "00e44737ab666963cbdcdf02bf383b7aee02d0362e5ef4f62e9415174b509fb4",
@@ -43,7 +49,7 @@
     "tools/i6dmo/queue.py": "68bb7059c15bcfeb74d41dab73ba840d33cdb23710723e19e614f384f7e0d0af",
     "tools/i6dmo/r2_design.py": "3337766caaa407b288c45cb74862fa07557fc7103b0eb761f495a085959d2a08",
     "tools/i6dmo/r2_runner.py": "8d9643f55169d428f7a1aa3a7a1035bd495fbe45dc9bca774657e9cfe5463f8c",
-    "tools/i6dmo/raw_long_campaign.py": "366caf4d1005037319f9ed8563154b72f0cbc8ce9df2430f5d16ff6b67c212cd",
+    "tools/i6dmo/raw_long_campaign.py": "4a2a411499f9ca9d3ed1bd7fab037ce3ce60c2589a9ad90f0ecd8432edfa32ce",
     "tools/i6dmo/raw_pair.py": "1bbb7377630167d39ce173e608f5a07a47b0f5b834ff0822ff2f384d41fbe3e3",
     "tools/i6dmo/recovery.py": "191022598772d3a06ac04597d5aae3a9fadd4e60cbab12c780331f738f3e7b0e",
     "tools/i6dmo/replay_monitor.py": "73b46e70d910f8882372f4a0b07c88876b3ff116f310e83b0b893c980edfced8",

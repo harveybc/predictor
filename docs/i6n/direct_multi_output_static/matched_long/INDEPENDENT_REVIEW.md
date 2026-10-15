@@ -376,3 +376,31 @@ prefit dispatch i6dmo-6672a4eb53ae and retirement evidence; do not hot-patch or
 retry that identity. The reported private source-repository correction is a
 successor deployment-config change, not a reviewed code change here. Existing
 population/runtime/admission gates and the closed TEST boundary still apply.
+
+## Status-Only Acceptance - 2026-10-15
+
+**ACCEPT for the reporting-only status projection. No blocker in this delta.**
+Reviewed only raw_long_campaign.status(root) and the new
+`tests/i6dmo/test_raw_long_status.py`. The returned top-level state, ETA,
+completion count, denominator and timestamp now follow actual campaign status;
+the original launcher journal is retained separately and not rewritten.
+Incomplete/failed counts are not fabricated into full completion merely because
+the campaign is CLOSED. run, prepare and _existing_status are unchanged.
+
+Independent CPU-only replay under `crispdm-run -q -m 2G -t 180s`, hidden CUDA,
+and `pytest --noconftest -q -p no:cacheprovider --tb=short` on
+test_raw_long_status.py and test_raw_long_launcher.py:
+**14 passed in 0.13 s, exit 0**. Hashes were unchanged across the run:
+
+```text
+4a2a411499f9ca9d3ed1bd7fab037ce3ce60c2589a9ad90f0ecd8432edfa32ce  tools/i6dmo/raw_long_campaign.py
+903766e38d3efab28d5bc6f48629b0be39aa4b0b25f0defdf10079c79a8f5f83  tests/i6dmo/test_raw_long_status.py
+```
+
+This qualifies a post-execution reporting change only. It does not retroactively
+change or reseal the reported ac635 scientific execution, its models, metrics,
+closed campaign i6dmo-0f9e6c8d5d74, or its original accepted manifest. The owner's
+6/6, 112-report, 61-file-mirror and timers-off statements were not independently
+rechecked here. Tests use temporary journals and mocked status computation;
+this reviewer did not open that campaign, run fits, access GPU/TEST/network,
+change services or perform monitoring.

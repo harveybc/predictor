@@ -9,7 +9,7 @@
 | Pair and strategy | CLOSED / PAIR_NOT_ELIGIBLE; no trading or TEST; 110 reports / 3952 metrics delivered, 58 files per mirror | [Closure](RETURN_REPORT_RECOVERY_20261015.md#pair-disposition-publication-and-remaining-engineering) |
 | Matched short MG1/MG2m | CLOSED, MG2_SELECTED. Mean relative MAE +4.321015% / -0.007738%; MG2m beats naive at 4/6/12 h | [Audit and per-horizon results](matched_short/MUSASHI_AUDIT_20261015.md) |
 | Compatible branch R0/R2 | 19/19 donors, R0/probe complete; R2 FAILED before training: donor terminals absent on GPU host. No R2 prediction comparison; deferred behind RAW | [R2 audit](matched_short/MUSASHI_R2_AUDIT_20261015.md) |
-| RAW long matched sampling/strategy | Hourly long control missing; no eligible full pair or trading result | [Active RAW priority](RAW_PRIORITY_20261015.md) |
+| RAW long matched sampling/strategy | CLOSED / PAIR_NOT_ELIGIBLE. MG12m selected: mean relative MAE +26.285134% versus +47.377774% hourly MG1l; zero eligible long heads. Both GPU fits complete; 112 reports read back, 61 files per mirror; strategy correctly abstained | [Long result and per-horizon table](matched_long/RETURN.md) |
 
 All reported 2024 results are development. TEST remains closed. Each stage
 keeps its own support, model identity and cost; these are not controlled

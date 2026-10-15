@@ -55,7 +55,16 @@ def status(root):
     journal = root / "AUTOMATION_STATUS.json"
     doc = json.loads(journal.read_text()) if journal.exists() else dict(state="NOT_PREPARED", eta="UNMEASURED")
     if (root / "campaign" / "PLAN.json").exists():
-        doc["execution"] = _existing_status(root / "campaign")
+        from tools.i6dmo import status as S
+        execution = S.compute(root / "campaign", level="campaign")
+        counts = execution.get("counts") or {}
+        doc = dict(doc, launcher_journal=dict(doc), execution=execution,
+                   state=execution["state"], eta=execution.get("eta", dict(kind="UNMEASURED")),
+                   completed=counts.get("COMPLETE", 0),
+                   total=(execution.get("expected") or {}).get("validation_units", sum(counts.values())),
+                   phase="closed" if execution["state"] == "CLOSED" else "execution")
+        if "generated_at" in execution:
+            doc["as_of"] = execution["generated_at"]
     return doc
 
 

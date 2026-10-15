@@ -1,6 +1,6 @@
 {
-  "as_of": "2026-10-15T19:14:20+00:00",
-  "critical_path_eta": "RAW long matched hourly control not implemented; no measured ETA. R2 deferred after pre-fit donor transport failure.",
+  "as_of": "2026-10-15T20:27:10+00:00",
+  "critical_path_eta": "RAW matched long and pair block CLOSED; no eligible long heads. Follow-up capacity/window or cadence contrasts are not running and have no measured ETA. TEST and R2 remain deferred.",
   "milestones": [
     {
       "eta": "1-3 development days",
@@ -48,10 +48,10 @@
       "title": "Pretrained temporal core"
     },
     {
-      "eta": "Unmeasured; long control missing",
-      "evidence": "RAW downsampled pair measured, not eligible. Short matched control CLOSED. Long hourly control missing; strategy not run. R2 deferred.",
+      "eta": "RAW matched block complete; follow-up unmeasured",
+      "evidence": "RAW long MG12m/MG1l CLOSED: relative MAE +26.285134%/+47.377774%; zero eligible long heads. PAIR_NOT_ELIGIBLE with retained short 4/6/12 h. 112 reports read back, 61 files per mirror. No trading or TEST.",
       "id": "M6",
-      "next": "Implement/review missing RAW long matched sampling control, then pair eligibility and strategy only if eligible. TEST remains closed.",
+      "next": "Retain negative RAW result; separately freeze capacity/window or cadence contrasts before further fitting. Do not restart deferred R2 implicitly.",
       "progress": 24,
       "state": "PARTIAL_MEASUREMENT",
       "title": "Short/long forecasts + strategy",
@@ -85,7 +85,7 @@
   "regenerated_by": {
     "from": "fs_closure/STATUS.json",
     "tool": "tools/fs_close_manifest.py",
-    "i6dmo_update": "2026-10-15: authenticated MG2/MG12 closure and retained selection closure; all milestone percentages unchanged"
+    "i6dmo_update": "2026-10-15: RAW long matched campaign i6dmo-0f9e6c8d5d74 automatically CLOSED; all milestone percentages unchanged; matched_long/RETURN.md records per-horizon results"
   },
   "schema": "predictor.master_milestones.v1"
 }

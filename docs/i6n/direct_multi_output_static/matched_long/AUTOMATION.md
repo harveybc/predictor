@@ -35,6 +35,8 @@ python -m tools.i6dmo matched-long status --root "$WORK_ROOT/campaign" --level c
 
 Both commands are finite reads. Execution contains per-unit progress, measured
 ETA when available, typed failures, OLAP delivery/readback and mirror state.
+The top-level status follows execution, not a stale dispatch journal; the
+original journal is retained separately as `launcher_journal`.
 No agent should remain polling logs. GPU work is on the preferred 5090 and,
 if independently admissible, the 4090. The 5070 Ti is not a parallel slot.
 Coordinator handles bounded CPU scoring/publication only.
@@ -56,3 +58,18 @@ make their parameter counts differ; this is not an isolated sampling ablation.
 The calendar and trading costs remain assumed, not broker-certified. Existing
 feature-selection development reuse and unresolved source-age clocks must be
 retained in every interpretation. TEST stays closed.
+
+## Plot
+
+The public summary and retained milestone file can regenerate the progress PNG
+without data, models, warehouse credentials or TEST:
+
+```bash
+python tools/plot_i6dmo_raw_result.py \
+  --milestones docs/audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json \
+  --result docs/i6n/direct_multi_output_static/matched_long/RESULT.json \
+  --output docs/i6n/direct_multi_output_static/matched_long/PROGRESS.png
+```
+
+The plot never assigns new milestone percentages. M6 includes unfinished
+strategy/model work beyond this completed negative RAW contrast.

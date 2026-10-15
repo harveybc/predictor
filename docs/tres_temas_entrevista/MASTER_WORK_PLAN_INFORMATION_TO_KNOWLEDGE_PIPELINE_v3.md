@@ -15,9 +15,13 @@ y simulacion de la estrategia solo con pareja elegible. El preentrenamiento
 de ramas R2 no es requisito para completar ese bloque y queda aplazado.
 Esta rectificacion sustituye el orden R2-antes-de-transferencia-larga citado
 mas abajo; esas menciones conservan procedencia historica, no autorizacion.
-Estado: corto MG1/MG2m comparado; larga MG12 medida, sin resultado del control
-horario largo emparejado; ninguna pareja habilitada para estrategia. El control
-RAW MG12m/MG1l ya tiene implementacion y revision independiente; su flujo finito
+Estado: corto MG1/MG2m comparado; control largo RAW MG12m/MG1l cerrado
+automaticamente en i6dmo-0f9e6c8d5d74. MG12m gana la comparacion (error relativo
+medio +26.285134% frente a +47.377774%), pero ninguna cabeza larga supera su
+naive; la pareja cierra PAIR_NOT_ELIGIBLE, sin trading ni TEST. Los 112 reportes
+tienen lectura de vuelta y 61 archivos se verificaron por espejo fisico.
+[Resultado por horizonte](../i6n/direct_multi_output_static/matched_long/RETURN.md).
+El control tiene implementacion y revision independiente; su flujo finito
 compara 13/145 observaciones en las mismas 144 horas de mercado, informa las
 seis cabezas largas y evalua la pareja sin repetir el corto. Solo una pareja
 elegible ejecuta la estrategia. Publicacion OLAP, lectura de vuelta, dos espejos

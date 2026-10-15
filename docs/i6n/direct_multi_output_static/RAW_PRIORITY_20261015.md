@@ -11,8 +11,8 @@ It does not rewrite scientific identities or launch a fit by itself.
 | RAW exact-DS2 short | Six heads worse than their own naive | Complete, negative |
 | RAW market-time MG2/MG12 pair | Both families measured; no eligible long head | Complete, PAIR_NOT_ELIGIBLE; strategy correctly not run |
 | Matched RAW short MG1/MG2m | Common FIT/INNER/DEVELOPMENT, MG2_SELECTED | Complete; MG2m beats its naive only at 4/6/12 h |
-| Matched RAW long downsampled/hourly | No matched hourly long arm retained | Not complete; immediate design/implementation gap |
-| Complete eligible RAW pair in strategy | No eligible pair | Not executed, not evidence of trading failure |
+| Matched RAW long downsampled/hourly | MG12m/MG1l measured on common support, mean relative MAE +26.285134%/+47.377774%; zero long heads beat naive | CLOSED, MG12_SELECTED; [result](matched_long/RETURN.md) |
+| Complete eligible RAW pair in strategy | Retained short has 4/6/12 h eligible, long has zero | CLOSED / PAIR_NOT_ELIGIBLE; strategy abstained, not evidence of trading failure |
 | Branch R2 | 19/19 donors, R0 and diagnostic probe complete; R2 import failed before fitting | Deferred; not a prerequisite for RAW |
 
 The historical MG2/MG12 receipts declared TF 2.18 but recorded TF 2.21.
