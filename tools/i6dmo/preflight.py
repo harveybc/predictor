@@ -227,9 +227,38 @@ def preflight(design_path, spec_path, *, adapter=None, probe=None, data_pins=Non
         for c in admissions:
             if c["state"] != "PASS" and c["blocks"] == "LAUNCH":
                 c["blocks"] = "ROUTED_TO_NEXT_GPU_ROLE"
+    # Experiment storage (coordinator only): the archival target for large immutable artifacts.
+    storage_estimate = int((spec or {}).get("storage", {}).get("estimate_bytes", 0) or 0)
+    if storage_estimate:
+        from tools.i6dmo import storage as S
+        try:
+            base = S.storage_root(os.environ)
+            facts = S.probe_mount(base)
+            S._check_target(base, facts, storage_estimate,
+                            int((spec or {}).get("storage", {}).get("reserve_bytes",
+                                                                    S.DEFAULT_RESERVE_BYTES)))
+            _check(checks, "experiment_storage", True, "LAUNCH",
+                   dict(filesystem=facts.get("fstype"), available_bytes=facts.get("available_bytes"),
+                        estimate_bytes=storage_estimate, scope="coordinator only; not a worker path"))
+        except S.StorageRefusal as exc:
+            _check(checks, "experiment_storage", False, "LAUNCH", dict(code=exc.code, detail=exc.detail))
     launch_blockers = [c["check"] for c in checks if c["blocks"] == "LAUNCH" and c["state"] != "PASS"]
+    disk = None
+    if spec:
+        from tools.i6dmo import storage as S
+        probed = {}
+        for role, role_spec in sorted(spec["roles"].items()):
+            for check in checks:
+                if check["check"] == f"probe:{role}" and isinstance(check.get("detail"), dict):
+                    probed[role] = dict(disk_free_bytes=check["detail"].get("disk_free_bytes"),
+                                        scope="this worker's own filesystem")
+        disk = S.disk_report(roles=sorted(spec["roles"]),
+                             worker_disk=lambda r: probed.get(r) or (_ for _ in ()).throw(
+                                 RuntimeError("worker did not report disk")),
+                             storage_root=(os.environ.get(S.BASE_ENV) or None))
     doc = dict(schema="i6dmo.precheck.v1", state="PASS" if not launch_blockers else "FAIL",
-               launch_blockers=launch_blockers, checks=checks, design_sha256=sha256_json(design),
+               launch_blockers=launch_blockers, checks=checks, disk=disk,
+               design_sha256=sha256_json(design),
                note="PRECHECK is evidence of headroom at probe time, not a launch")
     out = Path(out) if out else Path(spec_path).resolve().parent / "PRECHECK.json"
     atomic_json(out, doc, mode=0o600)

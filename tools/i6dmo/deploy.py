@@ -92,6 +92,7 @@ def deploy(root, *, unit_dir=None, systemctl=None, start=True, roles=None, rende
     root = Path(root).resolve()
     if (root / "CLOSE.json").exists() or (root / "RETIRED").exists():
         raise C.Refused("CAMPAIGN_CLOSED_OR_RETIRED: refusing resurrection")
+    C._storage_gate(C.load_deployment(root), "deploy")
     C.ensure_execution_policy(root)  # idempotent; a typed wait is reported through readiness/worker
     rendered = render_units(root, roles)
     cid = C.load_plan(root)["campaign_id"]

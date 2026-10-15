@@ -35,6 +35,8 @@ CPU_CAP = 4 * GIB
 TTL = 900
 POLL = 30.0
 TERMINAL_STATUSES = ("COMPLETE", "FAILED", "NOT_ELIGIBLE", "PAIR_NOT_ELIGIBLE")
+#: Units that produce large immutable artifacts; their claim re-checks experiment storage.
+ARTIFACT_WRITING_KINDS = ("fit", "final_refit", "report")
 # A terminal may only be adopted when its own recorded identity components match this unit's.
 # Shape or horizon similarity is never sufficient: an elapsed-grid (DS2/ASOF) terminal must not be
 # reused for a market-time identity even though both carry six heads and the same window shape.
@@ -528,6 +530,12 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
                           measured_peak=measured)
         else:
             cap = max(int(launcher.get("cpu_cap_bytes", CPU_CAP)), q.min_cap(unit["unit_id"]))
+        if unit["kind"] in ARTIFACT_WRITING_KINDS:
+            try:
+                C._storage_gate(spec, f"claim:{unit['unit_id']}")
+            except C.Refused as exc:
+                q.record_admission(unit["unit_id"], role, False, str(exc)[:120], None)
+                return dict(result="WAIT_RESOURCE", unit_id=unit["unit_id"], cause=str(exc)[:160])
         facts = facts_provider(role)
         ok, cause, evidence = admit(facts, cap=cap, gpu_uuid=gpu["uuid"] if gpu else None,
                                     reserve=int(role_spec.get("reserve_bytes", HOST_RESERVE)))

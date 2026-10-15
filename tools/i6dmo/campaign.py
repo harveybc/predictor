@@ -298,6 +298,7 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
     for unit in plan["units"]:
         unit.pop("_state", None)
     _write_plan(root, plan)
+    _storage_gate(spec, "init")
     policy_wait = ensure_execution_policy(root)
     write_status(root)
     return dict(campaign_id=campaign_id, effective_config_sha256=eff_sha, root=str(root),
@@ -341,6 +342,25 @@ def pin_file(key, pin):
     """The file whose digest a pin carries: BUNDLE.json for *_bundle, INPUT.npz for *_input."""
     suffix = "BUNDLE.json" if key.endswith("_bundle") else "INPUT.npz" if key.endswith("_input") else None
     return pin["relpath"] if suffix is None else f"{pin['relpath'].rstrip('/')}/{suffix}"
+
+
+def _storage_gate(spec, stage):
+    """Run the versioned storage preflight before a stage that will produce archived artifacts."""
+    config = (spec or {}).get("storage") or {}
+    estimate = int(config.get("estimate_bytes", 0) or 0)
+    if not estimate:
+        return None
+    from tools.i6dmo import storage as S
+    try:
+        base = S.storage_root()
+    except S.StorageRefusal as exc:
+        raise Refused(f"STORAGE_GATE_{exc.code}: stage={stage}") from None
+    result = S.run_preflight(Path(base) / S.APP_SUBDIR, estimate,
+                             int(config.get("reserve_bytes", S.DEFAULT_RESERVE_BYTES)))
+    if result["returncode"] != 0:
+        raise Refused(f"STORAGE_GATE_REFUSED: stage={stage} rc={result['returncode']} "
+                      f"{result['stderr'][:120]}")
+    return result
 
 
 def _validate_spec(spec):
