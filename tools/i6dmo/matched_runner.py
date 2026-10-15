@@ -2,9 +2,9 @@
 
 Finite graph inside the existing campaign machinery (no independent scheduler)::
 
-    mg1.fit -> mg1.report \\
-                           comparison -> publish/readback -> mirrors -> CLOSE
-    mg2.fit -> mg2.report /
+    mg1.fit  -> mg1.report  \\
+                             comparison -> publish/readback -> mirrors -> CLOSE
+    mg2m.fit -> mg2m.report /
 
 The queue, governed worker, stored-terminal verifier, outbox with exact readback, physical
 mirrors and the automatic CLOSE are the ones every I6-DMO campaign uses (``tools.i6dmo.campaign``
@@ -23,10 +23,18 @@ missing arm or head -> INCOMPLETE_COMPARISON with the missing evidence (never a 
 incomplete heads). A scientific negative is a completed result.
 
 Child interface for the arm units (consumed by the model lane's trainer/report adapters): the
-worker hands each arm unit an ``effective_config`` VIEW in which ``design`` is that arm's sealed
-design and the arm's ``<arm>_bundle``/``<arm>_input`` pins appear as ``short_bundle``/``short_input``;
-the campaign's ``common_population`` pin (relpath, sha256, population_sha256) is passed through
-unchanged. Reports must declare ``common_population_sha256`` (terminal ``lineage`` or METRICS.json).
+worker hands each arm unit (``spec["arm"]`` = ``mg1``|``mg2m``) an ``effective_config`` VIEW whose
+``design`` is that arm's sealed EXPERIMENT document, and ``spec["pins"]`` with
+``common_population`` (``path`` = the role's experiment storage root + relpath, ``sha256`` of
+POPULATION.json, ``population_sha256`` = the frozen digest) and ``matched_input`` (``path`` of the
+retained input directory, ``sha256`` of INPUT.npz). Consumers load with
+``common_population.load_common_population(path, expected_digest=population_sha256,
+input_dir=matched_input.path)`` and ``arm_tensors(pop, design, split)``. Reports must declare
+``common_population_sha256`` (terminal ``lineage`` or METRICS.json) and per-head ``row_ids_sha256``.
+The fit child is ``train --design --population --population-digest --input-dir --out --device``;
+the worker claims an arm fit/report only once ``tools/i6dmo/train.py`` declares
+``MATCHED_POPULATION_CLI = True`` / ``tools/i6dmo/reporting.py`` declares
+``MATCHED_POPULATION_REPORT = True`` (typed WAIT_ARTIFACT naming the model lane otherwise).
 """
 import json
 import math
@@ -36,13 +44,15 @@ import subprocess
 import time
 from pathlib import Path
 
-ARMS = ("mg1", "mg2")
-ARM_SLOTS = {"mg1": 25, "mg2": 13}
-ARM_SPACING = {"mg1": 1, "mg2": 2}
-ARM_RESOURCE_CLASS = {"mg1": "short_mg1_matched", "mg2": "short_mg2_matched"}
+#: Arm ids are the data lane's (``design.matched_arm``): ``mg1`` control, ``mg2m`` matched reference.
+ARMS = ("mg1", "mg2m")
+ARM_SLOTS = {"mg1": 25, "mg2m": 13}
+ARM_SPACING = {"mg1": 1, "mg2m": 2}
+ARM_RESOURCE_CLASS = {"mg1": "short_mg1_matched", "mg2m": "short_mg2_matched"}
+MATCHED_DIR = Path(__file__).resolve().parents[2] / "docs/i6n/direct_multi_output_static/matched_short"
 HORIZONS = (2, 3, 4, 5, 6, 12)
 TOLERANCE = 1e-8
-TIE_KEEPS = "mg2"
+TIE_KEEPS = "mg2m"
 RULE = "EQUAL_HEAD_MEAN_ANNUAL_POOLED_RELATIVE_MAE_COMMON_DEVELOPMENT"
 SEED = 6102026
 DISPOSITIONS = ("MG1_SELECTED", "MG2_SELECTED", "MG2_RETAINED_WITHIN_TOLERANCE", "INCOMPLETE_COMPARISON")
@@ -91,14 +101,14 @@ def decide(arm_scores, *, tolerance=TOLERANCE):
         return dict(disposition="INCOMPLETE_COMPARISON", selected=None, scores=None, missing=missing,
                     rule=RULE, tolerance=tolerance)
     scores = {arm: sum(arm_scores[arm][h] for h in HORIZONS) / len(HORIZONS) for arm in ARMS}
-    gap = scores["mg1"] - scores["mg2"]
+    gap = scores["mg1"] - scores["mg2m"]
     if abs(gap) <= tolerance:
         disposition, selected = "MG2_RETAINED_WITHIN_TOLERANCE", TIE_KEEPS
     elif gap < 0:
         disposition, selected = "MG1_SELECTED", "mg1"
     else:
-        disposition, selected = "MG2_SELECTED", "mg2"
-    return dict(disposition=disposition, selected=selected, scores=scores, score_gap_mg1_minus_mg2=gap,
+        disposition, selected = "MG2_SELECTED", "mg2m"
+    return dict(disposition=disposition, selected=selected, scores=scores, score_gap_mg1_minus_mg2m=gap,
                 missing=[], rule=RULE, tolerance=tolerance)
 
 
@@ -243,16 +253,12 @@ def _inside_git(path):
     return out.returncode == 0 and out.stdout.strip() == "true"
 
 
-def _rel(data_root, path, what):
-    path, data_root = Path(path).resolve(), Path(data_root).resolve()
+def _under(base, path, what):
+    path, base = Path(path).resolve(), Path(base).resolve()
     try:
-        return str(path.relative_to(data_root))
+        return str(path.relative_to(base))
     except ValueError:
-        raise PrepareRefused(f"MISSING_ARTIFACT:{what} is not under the role data_root (replicate it there)")
-
-
-def _design_market(doc):
-    return doc.get("market_time") or {}
+        raise PrepareRefused(f"MISSING_ARTIFACT:{what} is not under its declared root (replicate it there)")
 
 
 def _check_test_free(design, what):
@@ -267,28 +273,56 @@ def _check_test_free(design, what):
             raise PrepareRefused(f"TEST_REQUEST:{what} split {name} ends after {TEST_START}")
 
 
-def load_common_population(path, expected_digest, loader=None):
-    """The data lane's frozen population, verified; an absent API is an unfrozen comparison."""
-    if loader is None:
-        try:
-            from tools.i6dmo.common_population import load_common_population as loader
-        except ImportError:
-            raise PrepareRefused("UNFROZEN_COMPARISON: tools.i6dmo.common_population is not available "
-                                 "(data lane) - the common population cannot be verified")
+def storage_root_for(role_spec, env=None):
+    """The role's experiment storage root: the private spec's ``experiment_storage_root`` or
+    ``$EXPERIMENT_STORAGE_ROOT``; it must be a mounted, readable directory."""
+    env = os.environ if env is None else env
+    base = role_spec.get("experiment_storage_root") or env.get("EXPERIMENT_STORAGE_ROOT")
+    if not base:
+        raise PrepareRefused("UNAVAILABLE_MOUNT:experiment_storage_root is not configured "
+                             "(private spec role.experiment_storage_root or $EXPERIMENT_STORAGE_ROOT)")
+    base = Path(base)
+    if not base.is_dir() or not os.access(base, os.R_OK):
+        raise PrepareRefused("UNAVAILABLE_MOUNT:experiment_storage_root is not a readable directory")
+    return base
+
+
+def population_dir_from_seal(seal, storage_root):
+    location = str(seal.get("private_location") or "")
+    prefix = "$EXPERIMENT_STORAGE_ROOT/"
+    if not location.startswith(prefix):
+        raise PrepareRefused("UNFROZEN_COMPARISON: the committed seal names no private storage location")
+    return Path(storage_root) / location[len(prefix):]
+
+
+def verify_population(population_dir, expected_digest, input_dir=None):
+    """The data lane's verified load; every typed refusal is an unfrozen comparison."""
     try:
-        return loader(path, expected_digest=expected_digest)
+        from tools.i6dmo import common_population as CP
+    except ImportError:
+        raise PrepareRefused("UNFROZEN_COMPARISON: tools.i6dmo.common_population is not available (data lane)")
+    try:
+        pop = CP.load_common_population(population_dir, expected_digest=expected_digest, input_dir=input_dir)
     except Exception as exc:
-        raise PrepareRefused(f"UNFROZEN_COMPARISON: common population refused: "
-                             f"{getattr(exc, 'code', type(exc).__name__)}") from None
+        raise PrepareRefused(f"UNFROZEN_COMPARISON:{getattr(exc, 'code', type(exc).__name__)}") from None
+    if pop.digest != expected_digest:
+        raise PrepareRefused("UNFROZEN_COMPARISON:POPULATION_DIGEST_MISMATCH")
+    return pop
 
 
-def prepare(*, deployment, designs, bundles, inputs, common_population, population_digest, out,
-            prior_roots=(), test=False, probe=None, population_loader=None, role="coordinator"):
-    """Resolve pins BY PATH for the matched contrast and write the host-specific private JSON.
+def runtime_pin(design):
+    return dict((design.get("sealed_identities") or {}).get("runtime") or {})
 
-    Never opens the warehouse EnvironmentFile (existence/regular-file check only) and never prints
-    a secret. Refuses explicitly: TEST requests, unfrozen comparison, incompatible donor, missing
-    artifact, unavailable mount, inadequate memory/disk.
+
+def prepare(*, deployment, input_dir, out, role="coordinator", designs=None, population_seal=None,
+            population_dir=None, prior_roots=(), test=False, probe=None, env=None):
+    """Resolve the matched contrast's private pins BY PATH and write host-specific private JSON.
+
+    The population directory and its expected digest come from the private spec (storage root) plus
+    the COMMITTED ``POPULATION_SEAL.json``. The warehouse EnvironmentFile is checked by path only
+    (never opened). Refusals are typed: TEST_REQUEST, PRIVATE_OUTPUT_INSIDE_GIT, MISSING_ARTIFACT,
+    UNAVAILABLE_MOUNT, UNFROZEN_COMPARISON (digest/identity mismatch included), INCOMPATIBLE_DESIGN,
+    INCOMPATIBLE_DONOR, INADEQUATE_MEMORY, INADEQUATE_DISK.
     """
     if test:
         raise PrepareRefused("TEST_REQUEST: the matched contrast has no TEST stage")
@@ -304,11 +338,13 @@ def prepare(*, deployment, designs, bundles, inputs, common_population, populati
     spec = json.loads(deployment.read_text())
     if role not in (spec.get("roles") or {}):
         raise PrepareRefused(f"MISSING_ARTIFACT:role {role} not in the deployment spec")
-    data_root = Path(spec["roles"][role].get("data_root") or "")
-    run_root = Path(spec["roles"][role].get("run_root") or "")
-    for what, path in (("data_root", data_root), ("run_root", run_root)):
-        if not str(path) or not path.is_dir() or not os.access(path, os.W_OK if what == "run_root" else os.R_OK):
+    role_spec = spec["roles"][role]
+    data_root = Path(role_spec.get("data_root") or "")
+    run_root = Path(role_spec.get("run_root") or "")
+    for what, path, mode in (("data_root", data_root, os.R_OK), ("run_root", run_root, os.W_OK)):
+        if not str(path) or str(path) == "." or not path.is_dir() or not os.access(path, mode):
             raise PrepareRefused(f"UNAVAILABLE_MOUNT:{what}")
+    storage = storage_root_for(role_spec, env)
     env_file = (spec.get("warehouse") or {}).get("environment_file")
     env_state = "ABSENT_PUBLICATION_WAITS"
     if env_file:
@@ -316,47 +352,48 @@ def prepare(*, deployment, designs, bundles, inputs, common_population, populati
         if not Path(env_file).is_file():
             raise PrepareRefused("MISSING_ARTIFACT:warehouse environment_file (configured path does not exist)")
         env_state = "PRESENT_BY_PATH"
+    seal_path = Path(population_seal or MATCHED_DIR / "POPULATION_SEAL.json")
+    if not seal_path.is_file():
+        raise PrepareRefused("UNFROZEN_COMPARISON: committed POPULATION_SEAL.json missing")
+    seal = json.loads(seal_path.read_text())
+    if seal.get("schema") != "i6dmo.common_population.seal.v1" or seal.get("test_materialized") is not False:
+        raise PrepareRefused("UNFROZEN_COMPARISON: not a TEST-free common population seal")
+    digest = seal.get("population_digest")
+    pop_dir = Path(population_dir) if population_dir else population_dir_from_seal(seal, storage)
+    if not pop_dir.is_dir():
+        raise PrepareRefused("UNAVAILABLE_MOUNT:population directory absent under the experiment storage root")
+    if not (pop_dir / "POPULATION.json").is_file() or _sha(pop_dir / "POPULATION.json") != seal.get(
+            "population_json_sha256"):
+        raise PrepareRefused("UNFROZEN_COMPARISON:POPULATION_FILE_DIGEST_MISMATCH")
+    input_dir = Path(input_dir)
+    if not (input_dir / "INPUT.npz").is_file():
+        raise PrepareRefused("MISSING_ARTIFACT:input INPUT.npz")
+    pop = verify_population(pop_dir, digest, input_dir=input_dir)
+    from tools.i6dmo import design as D
     sealed = {}
     for arm in ARMS:
-        path = Path(designs[arm])
+        path = Path((designs or {}).get(arm) or MATCHED_DIR / f"EXPERIMENT.{arm}.json")
         if not path.is_file():
             raise PrepareRefused(f"MISSING_ARTIFACT:{arm} design")
         doc = json.loads(path.read_text())
         _check_test_free(doc, arm)
-        market = _design_market(doc)
-        if market.get("observations") != ARM_SLOTS[arm] or market.get("spacing_open_market_hours") != ARM_SPACING[arm]:
-            raise PrepareRefused(f"INCOMPATIBLE_DESIGN:{arm} must have {ARM_SLOTS[arm]} slots at "
-                                 f"{ARM_SPACING[arm]} open-market hour spacing")
-        if list(doc.get("horizons_hours") or []) != list(HORIZONS):
-            raise PrepareRefused(f"INCOMPATIBLE_DESIGN:{arm} horizons must be {list(HORIZONS)}")
-        if doc.get("seed") != SEED:
-            raise PrepareRefused(f"INCOMPATIBLE_DESIGN:{arm} seed must be {SEED}")
+        try:
+            D.validate_design(doc)
+            if D.matched_arm(doc) != arm:
+                raise PrepareRefused(f"INCOMPATIBLE_DESIGN:{arm} is not the {arm} matched identity")
+        except D.DesignError as exc:
+            raise PrepareRefused(f"INCOMPATIBLE_DESIGN:{arm}:{exc.code}") from None
+        identity = (pop.identities.get("arms") or {}).get(arm) or {}
+        if identity.get("experiment_seal_sha256") != doc.get("seal_sha256"):
+            raise PrepareRefused(f"UNFROZEN_COMPARISON:{arm} design is not the one the population was frozen for")
+        if not runtime_pin(doc):
+            raise PrepareRefused(f"INCOMPATIBLE_DESIGN:{arm} declares no sealed runtime pin")
         sealed[arm] = dict(path=str(path.resolve()), sha256=_sha(path), seal_sha256=doc.get("seal_sha256"),
-                           rule=market.get("rule"))
-    pins = {}
-    for arm in ARMS:
-        bundle = Path(bundles[arm])
-        manifest_path = bundle / "BUNDLE.json"
-        if not manifest_path.is_file():
-            raise PrepareRefused(f"MISSING_ARTIFACT:{arm} bundle BUNDLE.json")
-        manifest = json.loads(manifest_path.read_text())
-        rule = (manifest.get("input_sampling") or {}).get("rule")
-        if rule != sealed[arm]["rule"]:
-            raise PrepareRefused(f"INCOMPATIBLE_BUNDLE:{arm} bundle rule {rule} != design rule {sealed[arm]['rule']}")
-        pins[f"{arm}_bundle"] = dict(relpath=_rel(data_root, bundle, f"{arm} bundle"), sha256=_sha(manifest_path),
-                                     bundle_sha256=manifest.get("bundle_sha256"), input_sampling=rule)
-        source = Path(inputs[arm])
-        if not (source / "INPUT.npz").is_file():
-            raise PrepareRefused(f"MISSING_ARTIFACT:{arm} input INPUT.npz")
-        pins[f"{arm}_input"] = dict(relpath=_rel(data_root, source, f"{arm} input"), sha256=_sha(source / "INPUT.npz"))
-    population = Path(common_population)
-    if not population.exists():
-        raise PrepareRefused("UNFROZEN_COMPARISON: common population artifact missing")
-    if not population_digest or len(str(population_digest)) != 64:
-        raise PrepareRefused("UNFROZEN_COMPARISON: the expected population digest is required")
-    load_common_population(population, population_digest, loader=population_loader)
-    pins["common_population"] = dict(relpath=_rel(data_root, population, "common population"),
-                                     sha256=artifact_sha256(population), population_sha256=population_digest)
+                           runtime=runtime_pin(doc), family=D.MATCHED_SCOPE[arm]["family"])
+    pins = dict(
+        common_population=dict(base="experiment_storage", relpath=_under(storage, pop_dir, "population"),
+                               sha256=_sha(pop_dir / "POPULATION.json"), population_sha256=digest),
+        matched_input=dict(relpath=_under(data_root, input_dir, "input"), sha256=_sha(input_dir / "INPUT.npz")))
     for prior in prior_roots:
         _check_donor(prior, sealed, pins)
     facts = (probe or _local_probe)(run_root, data_root)
@@ -366,6 +403,8 @@ def prepare(*, deployment, designs, bundles, inputs, common_population, populati
         raise PrepareRefused(f"INADEQUATE_DISK: {facts.get('disk_free_bytes')} < {MIN_DISK}")
     doc = dict(schema="i6dmo.matched_short_prepared.v1", deployment=str(deployment.resolve()),
                deployment_sha256=_sha(deployment), role=role, designs=sealed, data_pins=pins,
+               experiment_storage_root=str(storage), population_seal=dict(path=str(seal_path.resolve()),
+                                                                           sha256=_sha(seal_path)),
                warehouse_environment_file=env_state, prior_roots=[str(Path(p).resolve()) for p in prior_roots],
                decision_rule=dict(rule=RULE, tolerance=TOLERANCE, tie_keeps=TIE_KEEPS, horizons=list(HORIZONS)),
                host_facts=dict(mem_available_bytes=facts.get("mem_available_bytes"),
@@ -374,16 +413,6 @@ def prepare(*, deployment, designs, bundles, inputs, common_population, populati
     _atomic(out, doc)
     os.chmod(out, 0o600)
     return doc
-
-
-def artifact_sha256(path):
-    """File digest, or for a directory the digest of its sorted (relative path, file digest) listing."""
-    path = Path(path)
-    if path.is_file():
-        return _sha(path)
-    listing = [[str(p.relative_to(path)), _sha(p)] for p in sorted(path.rglob("*")) if p.is_file()]
-    import hashlib
-    return hashlib.sha256(json.dumps(listing, sort_keys=True).encode()).hexdigest()
 
 
 def _local_probe(run_root, data_root):
@@ -404,13 +433,13 @@ def _check_donor(prior, sealed, pins):
     for arm in ARMS:
         if ((effective.get("arms") or {}).get(arm) or {}).get("design", {}).get("seal_sha256") != sealed[arm]["seal_sha256"]:
             raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} {arm} design differs")
-    for key in ("mg1_bundle", "mg2_bundle", "mg1_input", "mg2_input", "common_population"):
-        if (effective.get("data_pins") or {}).get(key, {}).get("sha256") != pins[key]["sha256"]:
+    for key, pin in pins.items():
+        if (effective.get("data_pins") or {}).get(key, {}).get("sha256") != pin["sha256"]:
             raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} {key} differs")
 
 
-def validate(prepared_path, *, population_loader=None):
-    """Re-verify a prepared JSON: designs, bundles, inputs and the common population still match."""
+def validate(prepared_path):
+    """Re-verify a prepared JSON: designs, input, population (digest) still match; launches nothing."""
     doc = json.loads(Path(prepared_path).read_text())
     if doc.get("schema") != "i6dmo.matched_short_prepared.v1" or doc.get("test_open") is not False:
         raise PrepareRefused("PREPARED_SCHEMA")
@@ -423,18 +452,103 @@ def validate(prepared_path, *, population_loader=None):
     for arm, design in doc["designs"].items():
         if not Path(design["path"]).is_file() or _sha(design["path"]) != design["sha256"]:
             problems.append(f"DESIGN_CHANGED:{arm}")
-    for key, pin in doc["data_pins"].items():
-        base = data_root / pin["relpath"]
-        if key.endswith("_bundle") or key.endswith("_input"):
-            target = base / ("BUNDLE.json" if key.endswith("_bundle") else "INPUT.npz")
-            ok = target.is_file() and _sha(target) == pin["sha256"]
-        else:
-            ok = base.exists() and artifact_sha256(base) == pin["sha256"]
-        if not ok:
-            problems.append(f"PIN_CHANGED:{key}")
+    seal = doc["population_seal"]
+    if not Path(seal["path"]).is_file() or _sha(seal["path"]) != seal["sha256"]:
+        problems.append("POPULATION_SEAL_CHANGED")
+    inp = doc["data_pins"]["matched_input"]
+    if not (data_root / inp["relpath"] / "INPUT.npz").is_file() or \
+            _sha(data_root / inp["relpath"] / "INPUT.npz") != inp["sha256"]:
+        problems.append("PIN_CHANGED:matched_input")
     pop = doc["data_pins"]["common_population"]
-    load_common_population(data_root / pop["relpath"], pop["population_sha256"], loader=population_loader)
+    pop_dir = Path(doc["experiment_storage_root"]) / pop["relpath"]
+    if not (pop_dir / "POPULATION.json").is_file() or _sha(pop_dir / "POPULATION.json") != pop["sha256"]:
+        problems.append("PIN_CHANGED:common_population")
     if problems:
         raise PrepareRefused("MISSING_ARTIFACT:" + ",".join(problems))
+    verify_population(pop_dir, pop["population_sha256"], input_dir=data_root / inp["relpath"])
     return dict(state="VALID", designs={a: d["seal_sha256"] for a, d in doc["designs"].items()},
+                runtime={a: d["runtime"] for a, d in doc["designs"].items()},
                 pins=sorted(doc["data_pins"]), common_population_sha256=pop["population_sha256"])
+
+
+def runtime_problem(pin, facts):
+    """Typed refusal when the executing worker's TF/Keras differ from the sealed runtime pin."""
+    if not pin:
+        return None
+    actual = (facts or {}).get("runtime")
+    if not actual:
+        return "RUNTIME_UNVERIFIED: the worker probe reported no TensorFlow/Keras versions"
+    wrong = [f"{k}={actual.get(k)}!={v}" for k, v in sorted(pin.items()) if actual.get(k) != v]
+    return ("RUNTIME_PIN_MISMATCH:" + ",".join(wrong) + " (install the pinned runtime; never reseal)") if wrong else None
+
+
+def preflight(prepared_path, out_dir, *, probe=None):
+    """Per-role, read-only host preflight for the matched contrast (no launch, no fit).
+
+    For every role: the probe answers; disk; the pinned input and population are present with their
+    digests (relative to that role's data_root / experiment_storage_root); and on every GPU role that
+    can run a fit, the ACTUAL TensorFlow/Keras equal the sealed runtime pin (typed
+    RUNTIME_PIN_MISMATCH otherwise) and the initial-cap admission passes on the preferred role.
+    """
+    from tools.i6dmo import preflight as P, worker as W
+    validate(prepared_path)
+    doc = json.loads(Path(prepared_path).read_text())
+    spec = json.loads(Path(doc["deployment"]).read_text())
+    pins = doc["data_pins"]
+    pin_runtime = next(iter(doc["designs"].values()))["runtime"]
+    if any(d["runtime"] != pin_runtime for d in doc["designs"].values()):
+        raise PrepareRefused("INCOMPATIBLE_DESIGN: the arms pin different runtimes")
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    roles = {}
+    gpu_orders = [v.get("order", 0) for v in spec["roles"].values() if any(g.get("heavy") for g in v.get("gpus", []))]
+    for role, role_spec in sorted(spec["roles"].items()):
+        checks = []
+
+        def check(name, ok, blocks, detail=None):
+            checks.append(dict(check=name, state="PASS" if ok else "FAIL", blocks=blocks, detail=detail))
+        files = [f"{pins['matched_input']['relpath']}/INPUT.npz"]
+        storage = role_spec.get("experiment_storage_root") or (doc["experiment_storage_root"] if role == doc["role"]
+                                                                else None)
+        if storage:
+            files.append(str(Path(storage) / pins["common_population"]["relpath"] / "POPULATION.json"))
+        try:
+            facts = (probe or (lambda r, f: P.probe_role(spec, r, files=f, check_strategy=False)))(role, files)
+        except Exception as exc:
+            check("probe", False, "LAUNCH", str(exc)[:200])
+            roles[role] = checks
+            continue
+        heavy = next((g for g in role_spec.get("gpus", []) if g.get("heavy")), None)
+        blocks = "LAUNCH" if heavy else "INFO"
+        check("probe", True, "LAUNCH", dict(mem_available_bytes=facts.get("mem_available_bytes"),
+                                            disk_free_bytes=facts.get("disk_free_bytes")))
+        check("disk", facts.get("disk_free_bytes", 0) >= P.MIN_DISK, "LAUNCH",
+              dict(disk_free_bytes=facts.get("disk_free_bytes"), required_bytes=P.MIN_DISK))
+        found = facts.get("files") or {}
+        check("pin:matched_input", found.get(files[0]) == pins["matched_input"]["sha256"], "LAUNCH")
+        if storage:
+            check("pin:common_population", found.get(files[1]) == pins["common_population"]["sha256"], blocks)
+        else:
+            check("pin:common_population", False, blocks, "role declares no experiment_storage_root")
+        problem = runtime_problem(pin_runtime, facts)
+        check("runtime_pin", problem is None, blocks, dict(pinned=pin_runtime, actual=facts.get("runtime"),
+                                                           cause=problem))
+        if heavy:
+            visible = heavy["uuid"] in (facts.get("gpu_free_bytes") or {})
+            check("gpu_visible", visible, "LAUNCH")
+            launcher = dict(spec["launcher"], **role_spec.get("launcher", {}))
+            ok, cause, evidence = W.admit(facts, cap=int(launcher["initial_cap_bytes"]), gpu_uuid=heavy["uuid"],
+                                          reserve=int(role_spec.get("reserve_bytes", W.HOST_RESERVE)))
+            first = role_spec.get("order", 0) == min(gpu_orders)
+            check("admission_initial_cap", ok, "LAUNCH" if first else "ROUTED_TO_NEXT_GPU_ROLE",
+                  dict(evidence, cause=cause, note="no measured 25-slot peak exists: initial cap, never a "
+                                                   "13-slot peak"))
+        roles[role] = checks
+    blockers = [f"{r}:{c['check']}" for r, cs in roles.items() for c in cs
+                if c["state"] != "PASS" and c["blocks"] == "LAUNCH"]
+    result = dict(schema="i6dmo.matched_precheck.v1", state="PASS" if not blockers else "FAIL",
+                  launch_blockers=blockers, roles=roles, runtime_pin=pin_runtime,
+                  note="PRECHECK is evidence of headroom at probe time, not a launch")
+    _atomic(out_dir / "PRECHECK.matched.json", result)
+    os.chmod(out_dir / "PRECHECK.matched.json", 0o600)
+    return result

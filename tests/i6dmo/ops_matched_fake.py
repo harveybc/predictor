@@ -6,7 +6,7 @@ adapters. The comparison unit itself is always the REAL ``unit_runner --kind com
 
 Env:
   I6DMO_FAKE_COUNTER            append '<kind>:<unit_id>' per invocation (counts fits)
-  I6DMO_FAKE_REL_<ARM>          relative error of every head of that arm (default mg1 -0.02, mg2 -0.01)
+  I6DMO_FAKE_REL_<ARM>          relative error of every head of that arm (default mg1 -0.02, mg2m -0.01)
   I6DMO_FAKE_FAIL_UNIT          unit_id that exits 3 (technical failure)
   I6DMO_FAKE_DROP_HEAD          '<arm>:<h>' omitted from that arm's METRICS (missing head)
   I6DMO_FAKE_POPULATION         population digest the report declares (default: the campaign pin)
@@ -22,7 +22,7 @@ import time
 from pathlib import Path
 
 HORIZONS = (2, 3, 4, 5, 6, 12)
-DEFAULT_REL = {"mg1": -0.02, "mg2": -0.01}
+DEFAULT_REL = {"mg1": -0.02, "mg2m": -0.01}
 
 
 def _sha(path):
@@ -50,7 +50,9 @@ def main():
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     view = spec["effective_config"]
-    assert view.get("arm") == arm and "short_bundle" in view["data_pins"], "arm view missing"
+    assert view.get("arm") == arm and view["design"] == view["arms"][arm]["design"], "arm view missing"
+    assert Path(spec["pins"]["common_population"]["path"], "POPULATION.json").is_file(), "population pin unresolved"
+    assert Path(spec["pins"]["matched_input"]["path"], "INPUT.npz").is_file(), "input pin unresolved"
     population = os.environ.get("I6DMO_FAKE_POPULATION") or view["data_pins"]["common_population"]["population_sha256"]
     artifacts, reports, lineage = {}, [], {}
     costs = dict(wall_seconds=0.1, fit_seconds=0.0, score_seconds=0.1, cgroup_peak_bytes=None)

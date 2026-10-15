@@ -106,6 +106,22 @@ def _file_sha(path):
     return digest.hexdigest()
 
 
+def runtime_versions():
+    """Installed TensorFlow/Keras versions from package metadata (never imports TensorFlow)."""
+    from importlib import metadata
+    out = {}
+    for key, names in (("tensorflow", ("tensorflow", "tensorflow-cpu", "tensorflow-gpu", "tf-nightly")),
+                       ("keras", ("keras",))):
+        out[key] = None
+        for name in names:
+            try:
+                out[key] = metadata.version(name)
+                break
+            except metadata.PackageNotFoundError:
+                continue
+    return out
+
+
 def probe_local(*, run_root=None, data_root=None, files=(), check_strategy=False, run=subprocess.run):
     mem = _meminfo()
     slice_free = _cgroup_available()
@@ -119,7 +135,7 @@ def probe_local(*, run_root=None, data_root=None, files=(), check_strategy=False
                  slice_limited=slice_free is not None, disk_free_bytes=shutil.disk_usage(target).free,
                  gpus=gpu["gpus"], gpu_free_bytes=gpu["gpu_free_bytes"], nvidia_smi=gpu["nvidia_smi"],
                  heavy_gpu_processes=gpu["heavy_processes"], foreign_heavy_gpu_processes=len(gpu["heavy_processes"]),
-                 legacy_active_units=_legacy_units(run))
+                 legacy_active_units=_legacy_units(run), runtime=runtime_versions())
     if files:
         found = {}
         for rel in files:

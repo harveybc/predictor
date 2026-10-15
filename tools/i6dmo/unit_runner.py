@@ -81,21 +81,43 @@ def _progress_from_trainer(src, dst):
                       monitored=doc.get("monitored")))
 
 
+def _matched_data_argv(spec):
+    """Matched arm: the frozen common population + retained input, digest-checked before the trainer."""
+    pins = spec.get("pins") or {}
+    pop, inp = pins.get("common_population") or {}, pins.get("matched_input") or {}
+    if not pop.get("path") or not inp.get("path"):
+        return None, "MATCHED_PIN_UNRESOLVED"
+    population = Path(pop["path"]) / "POPULATION.json"
+    if not population.is_file() or _sha(population) != pop.get("sha256"):
+        return None, "POPULATION_PIN_MISMATCH"
+    source = Path(inp["path"]) / "INPUT.npz"
+    if not source.is_file() or _sha(source) != inp.get("sha256"):
+        return None, "INPUT_PIN_MISMATCH"
+    return ["--population", str(population.parent), "--population-digest", pop["population_sha256"],
+            "--input-dir", str(source.parent)], None
+
+
 def run_fit(spec, out, progress, python=sys.executable, poll=5.0):
     out = Path(out)
     folder = out.parent
-    bundle = spec.get("bundle") or {}
-    manifest = Path(bundle.get("path", "")) / "BUNDLE.json"
-    if not manifest.exists() or _sha(manifest) != bundle.get("sha256"):
-        return _terminal(spec, out, "FAILED", "BUNDLE_PIN_MISMATCH", {}, {}, [])
-    identity = json.loads(manifest.read_text()).get("bundle_sha256")
-    if bundle.get("bundle_sha256") and identity != bundle["bundle_sha256"]:
-        return _terminal(spec, out, "FAILED", "BUNDLE_PIN_MISMATCH", {}, {}, [])
+    if spec.get("arm"):
+        data_argv, problem = _matched_data_argv(spec)
+        if problem:
+            return _terminal(spec, out, "FAILED", problem, {}, {}, [])
+    else:
+        bundle = spec.get("bundle") or {}
+        manifest = Path(bundle.get("path", "")) / "BUNDLE.json"
+        if not manifest.exists() or _sha(manifest) != bundle.get("sha256"):
+            return _terminal(spec, out, "FAILED", "BUNDLE_PIN_MISMATCH", {}, {}, [])
+        identity = json.loads(manifest.read_text()).get("bundle_sha256")
+        if bundle.get("bundle_sha256") and identity != bundle["bundle_sha256"]:
+            return _terminal(spec, out, "FAILED", "BUNDLE_PIN_MISMATCH", {}, {}, [])
+        data_argv = ["--bundle", str(manifest.parent)]
     design_path = folder / "design.json"
     _atomic(design_path, _family_design(spec))
     train_out = out / "train"
     device = "gpu" if (spec.get("device") or {}).get("gpu_uuid") else "cpu"
-    argv = [python, "-m", TRAINER_MODULE, "--design", str(design_path), "--bundle", str(manifest.parent),
+    argv = [python, "-m", TRAINER_MODULE, "--design", str(design_path), *data_argv,
             "--out", str(train_out), "--device", device, "--json"]
     started = time.time()
     with open(folder / "trainer.stdout", "ab") as so, open(folder / "trainer.stderr", "ab") as se:

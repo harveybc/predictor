@@ -558,6 +558,9 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
         facts = facts_provider(role)
         ok, cause, evidence = admit(facts, cap=cap, gpu_uuid=gpu["uuid"] if gpu else None,
                                     reserve=int(role_spec.get("reserve_bytes", HOST_RESERVE)))
+        runtime = matched_runtime_problem(effective, unit, facts)
+        if ok and runtime:  # a refusal routes to another role; never a reseal, never a retry with other caps
+            ok, cause = False, runtime[:200]
         q.record_admission(unit["unit_id"], role, ok, cause, cap, evidence)
         if not ok:
             return dict(result="WAIT_RESOURCE", unit_id=unit["unit_id"], cause=cause, cap_bytes=cap)
@@ -621,7 +624,9 @@ def _uses_unit_runner(argv):
 
 def bundle_pin(root, effective, unit):
     """Data-lane bundle pin: sealed data_pins for validation fits; DATA_PROVENANCE evidence for final refits."""
-    family = unit.get("arm") or unit["family"]
+    if unit.get("arm"):
+        return None, None  # matched arms read the frozen common population, not a per-arm bundle
+    family = unit["family"]
     if unit["kind"] == "fit":
         key, pins = f"{family}_bundle", effective["data_pins"]
     elif unit["kind"] == "final_refit":
@@ -667,6 +672,9 @@ def _artifacts(root, effective, unit, role_spec):
         cause = _pair_inputs_missing(root, effective, unit, role_spec)
         if cause:
             return bundle, cause
+    cause = matched_unit_problem(effective, unit, role_spec, argv)
+    if cause:
+        return bundle, cause
     if not _uses_unit_runner(argv):
         return bundle, None
     module = unit_runner.hook_module(unit["kind"])
@@ -774,10 +782,70 @@ def _data_identity_problem(effective, unit, bundle, key, pin):
 
 
 def resolved_pins(effective, role_spec):
-    """Every sealed data pin as an absolute path on the executing role's data root."""
+    """Every sealed data pin as an absolute path on the executing role: relative to its data root, or
+    to its experiment storage root for pins declared ``base: experiment_storage`` (the frozen common
+    population). A storage pin the role cannot resolve gets no path (the child refuses it typed)."""
     root = Path(role_spec.get("data_root") or "")
-    return {key: dict(pin, path=str(root / pin["relpath"])) for key, pin in (effective.get("data_pins") or {}).items()
-            if "relpath" in pin}
+    out = {}
+    for key, pin in (effective.get("data_pins") or {}).items():
+        if "relpath" not in pin:
+            continue
+        if pin.get("base") == "experiment_storage":
+            storage = role_spec.get("experiment_storage_root")
+            if storage:
+                out[key] = dict(pin, path=str(Path(storage) / pin["relpath"]))
+            continue
+        out[key] = dict(pin, path=str(root / pin["relpath"]))
+    return out
+
+
+MATCHED_MARKERS = {"fit": ("tools/i6dmo/train.py", "MATCHED_POPULATION_CLI",
+                           "model lane (train.py --population/--population-digest/--input-dir)"),
+                   "report": ("tools/i6dmo/reporting.py", "MATCHED_POPULATION_REPORT",
+                              "model lane (reporting.py on the common DEVELOPMENT rows)")}
+
+
+def _declares(relpath, marker):
+    """Does a lane module declare ``MARKER = True`` at top level? Read without importing (no TF here)."""
+    import ast
+    path = Path(__file__).resolve().parents[2] / relpath
+    try:
+        tree = ast.parse(path.read_text())
+    except (OSError, SyntaxError):
+        return False
+    return any(isinstance(n, ast.Assign) and any(getattr(t, "id", None) == marker for t in n.targets)
+               and isinstance(n.value, ast.Constant) and n.value.value is True for n in tree.body)
+
+
+def matched_unit_problem(effective, unit, role_spec, argv):
+    """Typed WAIT_ARTIFACT cause for a matched arm unit that cannot be claimed yet, else None."""
+    if not unit.get("arm") or unit["kind"] not in MATCHED_MARKERS:
+        return None
+    if _uses_unit_runner(argv):
+        relpath, marker, owner = MATCHED_MARKERS[unit["kind"]]
+        if not _declares(relpath, marker):
+            return f"MATCHED_{unit['kind'].upper()}_ADAPTER_UNAVAILABLE:{marker} owner={owner}"
+    pins = resolved_pins(effective, role_spec)
+    for key, name in (("common_population", "POPULATION.json"), ("matched_input", "INPUT.npz")):
+        pin = (effective.get("data_pins") or {}).get(key)
+        if pin is None:
+            return f"MATCHED_PIN_MISSING:{key} owner=Satoshi (matched-short prepare)"
+        if key not in pins:
+            return f"MATCHED_PIN_UNRESOLVED:{key} (role declares no experiment_storage_root) owner=Satoshi"
+        if role_spec.get("ssh_alias"):
+            continue  # a remote role's files are verified by its preflight probe and by the child
+        path = Path(pins[key]["path"]) / name
+        if not path.is_file() or file_sha256(path) != pin["sha256"]:
+            return f"MATCHED_INPUT_DIGEST_MISMATCH:{key} owner=Satoshi (replicate to the executing role)"
+    return None
+
+
+def matched_runtime_problem(effective, unit, facts):
+    """A matched arm fit runs only on a worker whose actual TF/Keras equal the sealed runtime pin."""
+    if not unit.get("arm") or unit["kind"] not in ("fit",):
+        return None
+    from tools.i6dmo import matched_runner as MR
+    return MR.runtime_problem(MR.runtime_pin(C.unit_design(effective, unit)), facts)
 
 
 def _upstream(root, q, unit_id):

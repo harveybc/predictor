@@ -208,10 +208,11 @@ def _design_checks(design, *, mode=None):
     """Common design gates. ``mode`` selects which schema is admissible for this campaign."""
     errors = []
     schema = design.get("schema")
-    expected = MARKET_TIME_DESIGN_SCHEMA if mode == MODE_MARKET_TIME else ELAPSED_DESIGN_SCHEMA
+    expected = {MODE_MARKET_TIME: MARKET_TIME_DESIGN_SCHEMA,
+                MODE_MATCHED: "i6dmo.matched_market_time_design.v1"}.get(mode, ELAPSED_DESIGN_SCHEMA)
     if schema != expected:
         errors.append("SCHEMA")
-    elif schema == MARKET_TIME_DESIGN_SCHEMA:
+    elif schema != ELAPSED_DESIGN_SCHEMA:
         errors.extend(_market_time_checks(design))
     splits = design.get("splits", {})
     if splits.get("test", {}).get("open") is not False:
@@ -320,19 +321,24 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
                 units=[u["unit_id"] for u in plan["units"]])
 
 
-MATCHED_ARMS = ("mg1", "mg2")
-MATCHED_REQUIRED_PINS = ("mg1_bundle", "mg1_input", "mg2_bundle", "mg2_input", "common_population")
+MATCHED_ARMS = ("mg1", "mg2m")  # the data lane's arm ids (design.matched_arm)
+MATCHED_DESIGN_SCHEMA = "i6dmo.matched_market_time_design.v1"
+#: The matched arms read the frozen common population (ARM_<arm>_<SPLIT>.npz) plus the retained
+#: input; there are no per-arm bundles.
+MATCHED_REQUIRED_PINS = ("common_population", "matched_input")
 
 
 def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_commit=None, data_pins=None,
                           entrypoints=None, prior_roots=()):
     """Seal the two matched short R0 arms and enumerate the finite contrast graph.
 
-    Refuses (typed): a TEST-open design, a non-market-time design, arms that differ in anything the
-    plan fixes (seed, cadence, horizons, splits, recipe spacing/slots per arm), an unfrozen
-    comparison (no common-population pin with its digest), and bundle pins whose sampling rule is not
-    the arm design's own rule.
+    Refuses (typed): a TEST-open design, anything but the two sealed matched identities
+    (``design.matched_arm`` must name the arm; the closed full-population MG2 or the elapsed hourly
+    design is MATCHED_IDENTITY_REQUIRED), arms that differ in anything the plan fixes (seed, cadence,
+    horizons, splits, recipe slots/spacing per arm, runtime pin), and an unfrozen comparison (no
+    common-population pin with its frozen digest, or no retained-input pin).
     """
+    from tools.i6dmo import design as D
     from tools.i6dmo import matched_runner as MR
     adapter = _adapter(adapter)
     if set(arm_designs) != set(MATCHED_ARMS):
@@ -342,9 +348,15 @@ def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_co
         design = json.loads(Path(arm_designs[arm]).read_text())
         if design.get("splits", {}).get("test", {}).get("open") is not False:
             raise Refused(f"TEST_OPEN_IN_DESIGN: {arm}")
-        if design.get("schema") != MARKET_TIME_DESIGN_SCHEMA:
-            raise Refused(f"ELAPSED_DESIGN_IN_MATCHED_CONTRAST: {arm} {design.get('schema')}")
-        sealed = _seal_family(design, adapter, arm, mode=MODE_MARKET_TIME)
+        if design.get("schema") != MATCHED_DESIGN_SCHEMA:
+            raise Refused(f"MATCHED_IDENTITY_REQUIRED: {arm} schema {design.get('schema')}")
+        try:
+            declared = D.matched_arm(design)
+        except D.DesignError as exc:
+            raise Refused(f"{exc.code}: {arm}") from None
+        if declared != arm:
+            raise Refused(f"MATCHED_IDENTITY_REQUIRED: {arm} design declares arm {declared}")
+        sealed = _seal_family(design, adapter, arm, mode=MODE_MATCHED)
         block = design["market_time"]
         if block.get("observations") != MR.ARM_SLOTS[arm] or \
                 block.get("spacing_open_market_hours") != MR.ARM_SPACING[arm]:
@@ -352,9 +364,11 @@ def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_co
                           f"{MR.ARM_SPACING[arm]} open-market hour spacing")
         arms[arm] = dict(sealed, resource_class=MR.ARM_RESOURCE_CLASS[arm])
     first, second = (arms[a]["design"] for a in MATCHED_ARMS)
-    for key in ("seed", "retraining_frequency", "horizons_hours", "splits", "repetitions"):
+    for key in ("seed", "retraining_frequency", "horizons_hours", "splits", "repetitions", "training"):
         if first.get(key) != second.get(key):
             raise Refused(f"MATCHED_ARMS_DIFFER: {key}")
+    if MR.runtime_pin(first) != MR.runtime_pin(second):
+        raise Refused("MATCHED_ARMS_DIFFER: sealed runtime pin")
     if list(first["horizons_hours"]) != list(MR.HORIZONS):
         raise Refused(f"MATCHED_HORIZONS: {first['horizons_hours']}")
     root = Path(root)
@@ -370,15 +384,10 @@ def init_matched_contrast(arm_designs, spec_path, root, *, adapter=None, code_co
         raise Refused("UNFROZEN_COMPARISON: common_population needs its frozen population_sha256")
     if not all(isinstance(p, dict) and len(str(p.get("sha256", ""))) == 64 for p in data_pins.values()):
         raise Refused("DATA_PINS_REQUIRED: every pin needs a sha256")
-    for arm in MATCHED_ARMS:
-        pin = data_pins[f"{arm}_bundle"]
-        rule = arms[arm]["design"]["market_time"]["rule"]
-        if pin.get("input_sampling") != rule or len(str(pin.get("bundle_sha256", ""))) != 64:
-            raise Refused(f"BUNDLE_SAMPLING: {arm}_bundle must be {rule} with its bundle_sha256")
     entries = validate_entrypoints(dict(entrypoints or MATCHED_ENTRYPOINTS), required=("fit", "report", "comparison"))
     if entries["report"] in (entries["fit"],) or entries["comparison"] in (entries["fit"],):
         raise Refused("REPORT_ENTRY_CALLS_FIT")
-    base = arms["mg2"]
+    base = arms["mg2m"]
     effective = _seal(dict(
         schema="i6dmo.effective_config.v1", experiment_id="I6-DMO-MATCHED-SHORT-MG1-MG2-R0",
         design=base["design"], design_sha256=base["design_sha256"], validator=base["validator"],
