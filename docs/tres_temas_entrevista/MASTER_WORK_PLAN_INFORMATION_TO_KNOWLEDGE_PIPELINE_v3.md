@@ -105,7 +105,12 @@ en la misma población.
    métricas científicas prueban hipótesis; shadow/paper prueba integración.
 9. **Paralelismo útil.** Un bloqueo local no detiene perfiles, referencias,
    preparación ni entrenamientos independientes y elegibles.
-10. **El negocio gobierna la evaluacion financiera.** Calendario, disponibilidad,
+10. **Espacio de salida.** En omega, las salidas grandes nuevas usan
+    [`EXPERIMENT_STORAGE_ROOT`](../EXPERIMENT_STORAGE_POLICY.md) después de
+    comprobar montaje escribible y espacio disponible. Bases vivas, SQLite,
+    bloqueos, secretos, repositorios y worktrees siguen en ext4. No mover
+    históricos ni rutas de servicios activos en esta fase.
+11. **El negocio gobierna la evaluacion financiera.** Calendario, disponibilidad,
    mascaras por salida, cierre forzoso y costes son obligatorios en todos los
    modos. La frecuencia de reajuste es explicita: NONE, QUARTERLY, MONTHLY o
    WEEKLY, con identidad propia. I6-DMO empieza por BUSINESS_STATIC_BASELINE:
