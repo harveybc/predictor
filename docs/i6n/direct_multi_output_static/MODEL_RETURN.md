@@ -383,3 +383,76 @@ Tolerance unchanged at the declared 1e-5. If lane 4's round STILL diverges
 with same bytes, same weights, same function and remapping off, Satoshi has
 pre-approved a transparent bound revision as a NEW declaration at the measured
 maximum — to be recorded here only if that branch is taken.
+
+## Round 15: declared monitor comparison floor (tolerance v2) — library floor reached
+
+Satoshi approved the transparent bound revision as the single final round. The
+honest endpoint, declared prospectively:
+
+- Scope: ONLY the cross-process GPU comparison of the monitored value and the
+  per-batch per-head float64 partial sums. Bound `|delta| <= 1e-9 + 5e-5*|recorded|`,
+  calibrated from the recorded witness distribution (observed max 1.82e-5)
+  with margin against flapping yet far below any scientific effect.
+- Everything else stays BITWISE: CPU end-to-end, the in-session self-check
+  (which now refuses any non-bitwise outcome by declaration), reload identity,
+  saved-vs-reloaded predictions, input witness bytes, weight digests, forward
+  identity and determinism flags.
+- The row-level hex forward witness remains recorded as a DIAGNOSTIC: reported
+  in `row_forward_diagnostics`, never pass/fail at row level.
+- Justification, written into the effective config
+  (`training.monitor_comparison_floor`) and here: eight rounds excluded
+  cuDNN/cuBLAS autotune and init order, TF32, weights-at-witness digests,
+  post-normalization input bytes, the dedicated forward's identity, and
+  grappler remapping/layout/auto-mixed-precision; the remaining deltas are
+  bit-stable within each side and are a property of in-session vs
+  fresh-instance GPU execution contexts of this TensorFlow build. Applied
+  prospectively: no scientific fit has run under the corrected protocol and no
+  past run is re-graded.
+- Typed outcomes: `WITHIN_DECLARED_FLOOR` (reported with max deltas and the
+  allowance) vs `MONITOR_WITNESS_DIVERGENCE` beyond the floor (still hard);
+  the floor activates only with the static-algorithm flags recorded and equal
+  on both sides. The effective-config sha changes once more with this
+  declaration (design sha unchanged).
+
+## Round 16: Musashi numerical-replay corrections (binding)
+
+Per `MUSASHI_TO_SATOSHI_DMO10_NUMERICAL_REPLAY_20261014.md` (sha cba02e7e),
+with the owed retraction first: the round-15 "library floor" framing was an
+OVERCLAIM. Exclusion of eight hypotheses is not proof of cause; the observed
+discrepancy is specific to this TensorFlow build and these execution contexts;
+autotune/trace/stream selection remains a HYPOTHESIS pending the controlled
+isolation. The retained 8f8c4c1f witness is not bounded by 1e-5 (three heads
+exceed it, max 1.8244613879748877e-5) and KEEPS its original FAIL: records
+without the sealed protocol can never inherit the new rule (tested).
+
+1. Sealed protocol identity (`floor_protocol_identity`,
+   `i6dmo.monitor_numeric_equivalence.v2`): formula
+   `abs(actual - reference) <= atol + rtol*abs(reference)` with the reference
+   direction (recorded fit-time value), rtol 5e-5 / atol 1e-9, scope, dtype
+   float64, label NUMERICALLY_EQUIVALENT (never BITWISE/PASS), required flags
+   and runtime versions; a different or absent identity is typed
+   (`MONITOR_PROTOCOL_MISMATCH` / hard divergence).
+2. Scope PROVEN, not inferred: the record carries the recording device and
+   process identity; the floor activates only for a GPU-recorded monitor
+   replayed in a DIFFERENT process with a GPU visible. CPU records, same-process
+   corruption, near-zero sums, boundary and over-bound are all covered by
+   regressions; a GPU record replayed without a GPU is the separately typed
+   `CROSS_DEVICE_NOT_COMPARABLE` (5090==4090 is never required).
+3. Monitor forward tensors remain recorded DIAGNOSTICS and are never claimed
+   bitwise; exported checkpoint reload/serving prediction equality stays EXACT
+   in its named context (canonical loader, same process).
+4. Decision impact is REPORTED, never claimed invariant:
+   `stopping_decision_impact` (near-tie negative control at the measured
+   1.82e-5 relative uncertainty vs min_delta 1e-8) is recorded per unit in
+   `monitor_evaluation.decision_impact`; training min_delta/patience/selection
+   untouched.
+5. ONE bounded diagnostic, `tools/i6dmo/dmo10_isolation.py`: freeze (digests
+   to Git, arrays local), element-by-element prediction diff before any
+   reduction (tensor hashes, first differing element, abs/rel/max/mean),
+   independent fsum reproduction, and a controlled flags-on/off comparison in
+   fresh processes that can SUPPORT or NOT the autotune hypothesis — honestly
+   NOT_INFORMATIVE_ON_CPU on this host; same-environment vs cross-device
+   recorded separately. Reuses the retained checkpoint; no production fits.
+
+Statuses renamed: EXACT / NUMERICALLY_EQUIVALENT (WITHIN_DECLARED_FLOOR and
+"bitwise" claims removed from verdicts).

@@ -1,5 +1,5 @@
 {
- "code_commit": "5998e9f5",
+ "code_commit": "95c4c714",
  "covered": [
   "DMO01",
   "DMO04",
@@ -9,26 +9,41 @@
  "failed": 1,
  "failed_detail": {
   "DMO10": {
-   "excluded": [
-    "kernel autotune/init order",
-    "TF32",
-    "weights (digest-equal)",
-    "inputs (byte-equal)",
-    "forward function identity (dedicated eager monitor_forward, enforced both sides)",
-    "grappler remapping/layout/auto-mixed-precision"
-   ],
-   "library_floor": {
-    "caveat": "the deltas are bit-stable across six execution regimes; that is consistent with two fixed deterministic computations (training math never changed, so the same weight trajectory meets the same two forward contexts each round), but it also means no flag ever moved either side - the floor is a property of the in-session versus fresh-instance GPU contexts of this TF build, not of any governed knob. The max relative delta likely sits on a near-zero prediction (relative inflation); an absolute-plus-relative bound would characterize the floor more honestly than a pure relative one.",
-    "declared": true,
-    "deltas": "per-row relative 6.028e-08 .. 1.211e-04 over 96/96 rows; monitored sums pair recorded 0.9923369350252383 / recomputed 0.9923319867401985 (partial-sum max rel 1.82e-5)"
+   "closure": {
+    "declared_floor": "abs 1e-9 + 5e-5*|recorded| (monitor comparison only; everything else bitwise)",
+    "max_partial_sum_relative_delta": "4.597e-08",
+    "note": "first observable movement of the recomputed sums in nine rounds: the dedicated monitor path now reproduces the recorded sums to ~1e-8, versus 1.8e-5 before - the earlier monitor fixes were not reaching the GPU path until this revision",
+    "partial_sum_relative_deltas": [
+     "1.267e-08",
+     "1.847e-08",
+     "4.597e-08",
+     "3.362e-08",
+     "3.452e-08",
+     "1.073e-08"
+    ],
+    "sealed_protocol_label": "NUMERICALLY_EQUIVALENT"
    },
-   "test": "tests/i6dmo/test_dmo_train.py::test_dmo10_train_unit_end_to_end_restore_and_reload",
-   "typed": "MONITOR_WITNESS_DIVERGENCE: fit batch 0 row-level forward witness: rows ['row 0'..'row 4'] of 96 diverge (96 total), relative deltas [6.028e-08, 1.211e-04], uniform_delta_pattern=False",
-   "verdict": "declared library floor per the coordinator's criterion: same bytes, same weights, same function, remapping off, still beyond the 1e-5 relative bound. Stopped; the bound revision is the coordinator's single final round. Nothing relaxed here."
+   "decision_impact": {
+    "could_change_best_epoch": false,
+    "could_change_patience_or_stop": false,
+    "note": "reported negative control; never claims cross-context decision invariance",
+    "relative_uncertainty": 1.8244613879748877e-05
+   },
+   "isolation_diagnostic": {
+    "evidence": "flags-on and flags-off fresh GPU children produce byte-identical predictions",
+    "fits_run": 0,
+    "test_rows_read": 0,
+    "verdict": "DOES_NOT_SUPPORT_AUTOTUNE_HYPOTHESIS"
+   },
+   "retained_old_witness": {
+    "row_level": "96/96 rows diverge, relative deltas [6.028e-08, 1.211e-04] (max on a near-zero row)",
+    "status": "FAIL kept by design (Musashi clarification: the old witness keeps its FAIL)"
+   },
+   "test": "tests/i6dmo/test_dmo_train.py::test_dmo10_train_unit_end_to_end_restore_and_reload"
   }
  },
  "gpu_devices": 1,
- "note": "DMO01/DMO04 green on GPU across all rounds; DMO10 characterized to a stable library floor pending the transparent bound revision",
+ "note": "DMO01/DMO04 green on GPU; DMO10 closure label NUMERICALLY_EQUIVALENT under the sealed versioned monitor-replay protocol; the pytest selection stays red on GPU because the old bitwise witness keeps its FAIL by order; never read as plain PASS",
  "passed": 12,
  "probe": {
   "meaning": "in_session vs rebuild vs full_load per-head sums agree in ONE session on the GPU",

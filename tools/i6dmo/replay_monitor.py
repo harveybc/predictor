@@ -44,15 +44,24 @@ def replay_unit(design_path, bundle_dir, unit_dir):
             "saved weights file: a post-evaluation weight mutation (optimizer slot/weight-decay/"
             "save-path). A CPU pass alongside this mismatch would mean the mutation is GPU-only "
             "(e.g., a GPU-resident slot or cast applied on save), which the digests now decide.")
-    fm, im, monitored, tolerated = T.replay_monitored(
+    fm, im, monitored, report = T.replay_monitored(
         loaded.forecast_model, T.materialize_monitor_inputs(fit_rows, scales),
         T.materialize_monitor_inputs(inner_rows, scales),
         record, ids=(fit_rows["row_id"], inner_rows["row_id"]))
     recorded = record["monitored"]
+    exact = monitored == recorded and report["status"] == "EXACT"
+    # Monitor forward tensors are recorded diagnostics and are never claimed bitwise; the
+    # exported checkpoint reload/serving equality is the separate EXACT check inside load_dmo
+    # (same process, canonical loader path), already enforced above.
+    label = ("EXACT" if exact and not report["row_forward_diagnostics"]
+             else "EXACT_SUMS_WITH_FORWARD_DIAGNOSTICS" if exact else "NUMERICALLY_EQUIVALENT")
     return {"schema": "i6dmo.replay_monitor.v1",
-            "status": "MATCH" if monitored == recorded else "TOLERATED",
-            "bitwise": monitored == recorded, "monitored": monitored, "recorded": recorded,
-            "tolerated_batches": tolerated,
+            "status": "EXACT" if exact else "NUMERICALLY_EQUIVALENT",
+            "label": label, "context": report.get("context"),
+            "monitored": monitored, "recorded": recorded,
+            "within_floor": report["within_floor"],
+            "monitored_abs_delta": report.get("monitored_abs_delta"),
+            "row_forward_diagnostics": report["row_forward_diagnostics"],
             "tf_imported_before_flags": M.INIT_ORDER["tf_imported_before_flags"],
             "determinism_flags": T.current_determinism_flags(),
             "weights_sha256": document["weights_sha256"], "load_path": document["load_path"],
@@ -71,9 +80,10 @@ def main(argv=None):
     try:
         verdict = replay_unit(args.design, args.bundle, args.unit)
     except (T.TrainDisposition, T.ContractError) as exc:
-        print(json.dumps({"schema": "i6dmo.replay_monitor.v1", "status": "DIVERGED",
+        status = "CROSS_DEVICE" if exc.code == "CROSS_DEVICE_NOT_COMPARABLE" else "DIVERGED"
+        print(json.dumps({"schema": "i6dmo.replay_monitor.v1", "status": status,
                           "code": exc.code, "detail": str(exc)}))
-        return 5
+        return 6 if status == "CROSS_DEVICE" else 5
     print(json.dumps(verdict, sort_keys=True) if args.json
           else f"{verdict['status']} monitored={verdict['monitored']!r} recorded={verdict['recorded']!r}")
     return 0
