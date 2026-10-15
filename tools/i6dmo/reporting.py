@@ -26,6 +26,17 @@ from pathlib import Path
 
 SAMPLING_RULE = "DS2_EXACT"
 SAMPLING_BY_FAMILY = {"short": "DS2_EXACT", "long": "DS12_EXACT"}
+MARKET_SAMPLING_BY_FAMILY = {"short": "MG2_MARKET_EXACT", "long": "MG12_MARKET_EXACT"}
+
+
+def _expected_rule(spec, family):
+    """The sampling rule this unit's bundle must declare, from the sealed design's own schema."""
+    effective = spec.get("effective_config") or {}
+    design = (effective.get("long") or {}).get("design") if family == "long" else effective.get("design")
+    block = (design or {}).get("market_time")
+    if isinstance(block, dict) and block.get("rule"):
+        return block["rule"]
+    return SAMPLING_BY_FAMILY.get(family, SAMPLING_RULE)
 SUPERSEDED_BUNDLE_PREFIXES = ("5221615d",)
 UNIT = "USD_per_EUR"
 
@@ -75,7 +86,7 @@ def _design(spec):
     return effective["long"]["design"] if spec["family"] == "long" else effective["design"]
 
 
-def _check_bundle(pin, family="short"):
+def _check_bundle(pin, family="short", expected_rule=None):
     manifest_path = Path(pin["path"]) / "BUNDLE.json"
     if not manifest_path.exists() or _sha(manifest_path) != pin["sha256"]:
         raise ReportFailure("BUNDLE_PIN_MISMATCH", "BUNDLE.json digest differs from the pin")
@@ -85,7 +96,8 @@ def _check_bundle(pin, family="short"):
         raise ReportFailure("SUPERSEDED_BUNDLE", identity[:8])
     if pin.get("bundle_sha256") and pin["bundle_sha256"] != identity:
         raise ReportFailure("BUNDLE_PIN_MISMATCH", "bundle_sha256 differs from the pin")
-    if (manifest.get("input_sampling") or {}).get("rule") != SAMPLING_BY_FAMILY.get(family, SAMPLING_RULE):
+    want = expected_rule or SAMPLING_BY_FAMILY.get(family, SAMPLING_RULE)
+    if (manifest.get("input_sampling") or {}).get("rule") != want:
         raise ReportFailure("BUNDLE_SAMPLING", str((manifest.get("input_sampling") or {}).get("rule")))
     return manifest
 
@@ -148,7 +160,7 @@ def _key(text):
 
 def _report(spec, suffix, tags, metrics, manifest):
     base_tags = {"unit": spec["unit_id"], "family": spec["family"], "split": "validation", "test_read": "false",
-                 "sampling": SAMPLING_BY_FAMILY.get(spec["family"], SAMPLING_RULE), "bundle_sha256": str(manifest.get("bundle_sha256")),
+                 "sampling": _expected_rule(spec, spec["family"]), "bundle_sha256": str(manifest.get("bundle_sha256")),
                  "cadence": str(spec.get("cadence")), "relative_error": "(MAE_h-naive_h)/naive_h; negative is better",
                  "scale": "original_price"}
     return dict(experiment_key=f"i6dmo:{spec['campaign_id']}:{spec['unit_id']}:{suffix}"[:128],
@@ -236,7 +248,7 @@ def run_unit(spec, out_dir, progress_path, *, arrays_loader=None):
         pins = spec.get("pins") or {}
         if f"{family}_bundle" not in pins or f"{family}_input" not in pins:
             raise ReportFailure("PIN_MISSING", "bundle/input pins absent")
-        manifest = _check_bundle(pins[f"{family}_bundle"], family)
+        manifest = _check_bundle(pins[f"{family}_bundle"], family, _expected_rule(spec, family))
         input_pin = pins[f"{family}_input"]
         if _sha(Path(input_pin["path"]) / "INPUT.npz") != input_pin["sha256"]:
             raise ReportFailure("INPUT_PIN_MISMATCH", "INPUT.npz digest differs from the pin")

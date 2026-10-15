@@ -255,7 +255,7 @@ def init_campaign(design_path, spec_path, root, *, adapter=None, code_commit=Non
     if not data_pins or not all(isinstance(p, dict) and len(str(p.get("sha256", ""))) == 64
                                 for p in data_pins.values()):
         raise Refused("DATA_PINS_REQUIRED: every pin needs a sha256")
-    _check_bundle_pins(data_pins)
+    _check_bundle_pins(data_pins, mode=mode)
     entries = validate_entrypoints(dict(entrypoints or DEFAULT_ENTRYPOINTS))
     long_doc = None
     if long_design is not None:
@@ -311,10 +311,16 @@ SUPERSEDED_BUNDLE_PREFIXES = ("5221615d",)  # pre-ruling exact-slot build
 ASOF_DIAGNOSTIC_PREFIXES = ("3e42c3f5", "e88f72aa")
 BUNDLE_SAMPLING_RULE = "DS2_EXACT"
 BUNDLE_SAMPLING_BY_KEY = {"short_bundle": "DS2_EXACT", "long_bundle": "DS12_EXACT"}
+MARKET_TIME_SAMPLING_BY_KEY = {"short_bundle": "MG2_MARKET_EXACT", "long_bundle": "MG12_MARKET_EXACT"}
 
 
-def _check_bundle_pins(pins):
-    """*_bundle pins: {relpath (bundle dir), sha256 (BUNDLE.json file), bundle_sha256, input_sampling}."""
+def _check_bundle_pins(pins, *, mode=None):
+    """*_bundle pins: {relpath (bundle dir), sha256 (BUNDLE.json file), bundle_sha256, input_sampling}.
+
+    The expected sampling rule follows the campaign mode, so an elapsed-grid bundle can never be
+    pinned into a market-time campaign (nor the reverse).
+    """
+    expected = MARKET_TIME_SAMPLING_BY_KEY if mode == MODE_MARKET_TIME else BUNDLE_SAMPLING_BY_KEY
     for key, pin in pins.items():
         if not key.endswith("_bundle"):
             continue
@@ -326,7 +332,7 @@ def _check_bundle_pins(pins):
         if identity.startswith(ASOF_DIAGNOSTIC_PREFIXES):
             raise Refused(f"ASOF_DIAGNOSTIC_ARM: {key} {identity[:8]} is the retained ASOF diagnostic, "
                           "not the exact-DS2 identity")
-        rule = BUNDLE_SAMPLING_BY_KEY.get(key, BUNDLE_SAMPLING_RULE)
+        rule = expected.get(key, BUNDLE_SAMPLING_RULE)
         if pin.get("input_sampling") != rule:
             raise Refused(f"BUNDLE_SAMPLING: {key} must be {rule}")
 

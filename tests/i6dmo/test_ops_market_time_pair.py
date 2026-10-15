@@ -226,3 +226,16 @@ def test_a_technical_failure_is_a_typed_terminal_without_retries(tmp_path):
     assert run_worker(root, "preferred", counter)["result"] in ("IDLE", "REFUSED")
     assert fit_count(counter) == 1  # no retry of a typed failure
     assert status.compute(root, level="campaign")["state"] == "FAILED"
+
+
+def test_market_time_campaign_refuses_elapsed_grid_bundle_pins(tmp_path):
+    """A market-time campaign must pin MG2/MG12 bundles; an elapsed-grid pin is a typed refusal."""
+    from tools.i6dmo import campaign
+    elapsed = {"relpath": "b", "sha256": "1" * 64, "bundle_sha256": "5f3d6782" + "0" * 56,
+               "input_sampling": "DS2_EXACT"}
+    with pytest.raises(campaign.Refused, match="BUNDLE_SAMPLING: short_bundle must be MG2_MARKET_EXACT"):
+        campaign._check_bundle_pins({"short_bundle": elapsed}, mode=campaign.MODE_MARKET_TIME)
+    market = dict(elapsed, bundle_sha256="21400c51" + "0" * 56, input_sampling="MG2_MARKET_EXACT")
+    campaign._check_bundle_pins({"short_bundle": market}, mode=campaign.MODE_MARKET_TIME)
+    with pytest.raises(campaign.Refused, match="BUNDLE_SAMPLING: short_bundle must be DS2_EXACT"):
+        campaign._check_bundle_pins({"short_bundle": market}, mode=campaign.MODE_ELAPSED)
