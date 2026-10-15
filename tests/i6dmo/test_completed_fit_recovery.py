@@ -60,7 +60,14 @@ def test_reuse_rejects_corrupted_source_terminal(tmp_path, monkeypatch):
         recovery.prepare(source, campaign.load_effective(source))
 
 
-def test_reuse_rejects_training_code_changes(monkeypatch):
-    monkeypatch.setattr(recovery.subprocess, "run", lambda *a, **k: SimpleNamespace(stdout="tools/i6dmo/train.py\n"))
+@pytest.mark.parametrize("changed", ["tools/i6dmo/train.py", "docs/i6n/direct_multi_output_static/EXPERIMENT.mg2.json"])
+def test_reuse_rejects_training_code_changes(monkeypatch, changed):
+    monkeypatch.setattr(recovery.subprocess, "run", lambda *a, **k: SimpleNamespace(stdout=changed + "\n"))
     with pytest.raises(ValueError, match="FIT_REUSE_TRAINING_CODE_CHANGED"):
         recovery.reporting_only_changes("source", "target")
+
+
+def test_reuse_allows_only_the_named_progress_metadata(monkeypatch):
+    progress = "docs/audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json"
+    monkeypatch.setattr(recovery.subprocess, "run", lambda *a, **k: SimpleNamespace(stdout=progress + "\n"))
+    assert recovery.reporting_only_changes("source", "target") == [progress]

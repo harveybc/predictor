@@ -16,7 +16,10 @@ def reporting_only_changes(source_commit, target_commit):
     out = subprocess.run(["git", "diff", "--name-only", source_commit, target_commit], cwd=repo,
                          capture_output=True, text=True, check=True)
     allowed = {"tools/i6dmo/reporting.py", "tools/i6dmo/recovery.py",
-               "tools/i6dmo/campaign.py", "tools/i6dmo/cli.py", "tools/i6dmo/worker.py"}
+               "tools/i6dmo/campaign.py", "tools/i6dmo/cli.py", "tools/i6dmo/worker.py",
+               "docs/audits/evidence/canonical_20261003/MASTER_MILESTONE_PROGRESS.png",
+               "docs/audits/evidence/canonical_20261003/MASTER_MILESTONE_STATUS.json",
+               "docs/i6n/direct_multi_output_static/PROJECT_METHOD_STATE.json"}
     changed = out.stdout.splitlines()
     rejected = [p for p in changed if p not in allowed and not p.startswith("tests/")
                 and not (p.startswith("docs/") and p.endswith(".md"))]
