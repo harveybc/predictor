@@ -163,6 +163,53 @@ COMMON_SUPPORT_RULES = {
                            "designs; changes are never combined and attributed to downsampling"),
     "no_test": "TEST rows never enter the comparison; development 2024 disclosure applies to both",
 }
+#: NEXT_CONTRASTS_PLAN_20261015 section 2: the matched short MG1-vs-MG2 control. Two NEW,
+#: independently sealed market-time identities. The closed EXPERIMENT.mg2.json (full-population
+#: MG2) and the ELAPSED EXPERIMENT.short_hourly.json are NOT these designs and are never accepted
+#: where a matched identity is required (typed MATCHED_IDENTITY_REQUIRED).
+MATCHED_SCHEMA = "i6dmo.matched_market_time_design.v1"
+MATCHED_CONTRAST_ID = "I6-DMO-SHORT-MG1-VS-MG2-MATCHED-R0"
+MG1_MATCHED_ID = "I6-DMO-SHORT-MG1-MATCHED-R0"
+MG2_MATCHED_ID = "I6-DMO-SHORT-MG2-MATCHED-R0"
+MATCHED_SCOPE = {
+    "mg1": {"experiment_id": MG1_MATCHED_ID, "rule": "MG1_MARKET_EXACT", "observations": 25,
+            "spacing_open_market_hours": 1, "span_open_market_hours": 24,
+            "horizons_hours": [2, 3, 4, 5, 6, 12], "family": "short_mg1_matched",
+            "role": "CONTROL", "partner": "mg2m"},
+    "mg2m": {"experiment_id": MG2_MATCHED_ID, "rule": "MG2_MARKET_EXACT", "observations": 13,
+             "spacing_open_market_hours": 2, "span_open_market_hours": 24,
+             "horizons_hours": [2, 3, 4, 5, 6, 12], "family": "short_mg2_matched",
+             "role": "MATCHED_REFERENCE", "partner": "mg1"},
+}
+MATCHED_FAMILIES = tuple(v["family"] for v in MATCHED_SCOPE.values())
+#: Frozen BEFORE either fit (plan section 2 "Common population"); both sealed designs bind its sha256.
+MATCHED_POPULATION_RULES = {
+    "schema": "i6dmo.matched_population_rules.v1",
+    "contrast_id": MATCHED_CONTRAST_ID,
+    "population_schema": "i6dmo.common_population.v1",
+    "splits": {"FIT": "TRAIN [2020-01-01, 2024-01-01) minus the chronological last eight weeks",
+               "INNER": "the chronological last eight TRAIN weeks",
+               "DEVELOPMENT": "full 2024 [2024-01-01, 2025-01-01) (the data lane's VALIDATION split)"},
+    "population": ("per split separately, the intersection of the (origin row_id, horizon) pairs "
+                   "valid under BOTH treatments (exact market slots, C1 MANAGEMENT label "
+                   "support, split purge and label maturity); only origins with >= 1 common "
+                   "valid head are retained; frozen with ordered row ids, per-head counts, "
+                   "entry/management masks and typed exclusions BEFORE either fit"),
+    "consumers": ("both trainers, checkpoint monitors, annual scorers and weekly diagnostics "
+                  "consume exactly these masks"),
+    "targets": "exact ELAPSED p(t+h); no smoothing, interpolation or next-observed-row targets",
+    "missing_bars": "a missing open-session bar is a counted exclusion, never filled",
+    "unsupported_heads": "typed, never filled",
+    "scaler": ("ONE FIT-only feature mean/std (ddof=0) over the UNION of MG1/MG2 input-source "
+               "bars of the common FIT origins, with its exact source-row digest; the same "
+               "statistics serve both arms; INNER/DEVELOPMENT cannot change them"),
+    "loss_scale": "FIT-only naive MAE per horizon on the common FIT mask, shared by both arms",
+    "full_population_fit_substitutes": False,
+    "test": "no TEST row, unit, metadata scan or derived artifact",
+}
+MATCHED_POPULATION_RULES["rules_sha256"] = hashlib.sha256(json.dumps(
+    MATCHED_POPULATION_RULES, sort_keys=True, separators=(",", ":"),
+    allow_nan=False).encode("utf-8")).hexdigest()
 SHORT_CLOSURE_UNIT = "short.report"
 SHORT_CLOSURE_STATUSES = ("COMPLETE", "NOT_ELIGIBLE")
 TERMINAL_SCHEMA = "i6dmo.terminal.v1"
@@ -409,6 +456,59 @@ MARKET_TIME_SCHEMAS = {MARKET_TIME_SCOPE[k]["family"]: _market_time_schema(k)
                        for k in MARKET_TIME_SCOPE}
 
 
+def _matched_schema(arm):
+    """Matched MG1/MG2 design schema: market-time scope + the frozen common-population rules."""
+    scope = MATCHED_SCOPE[arm]
+    partner = MATCHED_SCOPE[scope["partner"]]
+    base = copy.deepcopy(SCHEMA)
+    return {
+        "schema": _fixed(MATCHED_SCHEMA),
+        "status": base["status"],
+        "experiment_id": _fixed(scope["experiment_id"]),
+        "asset": base["asset"], "seed": base["seed"], "repetitions": base["repetitions"],
+        "evaluation_mode": base["evaluation_mode"],
+        "retraining_frequency": base["retraining_frequency"],
+        "market_time": {
+            "rule": _fixed(scope["rule"]),
+            "observations": _fixed(scope["observations"]),
+            "spacing_open_market_hours": _fixed(scope["spacing_open_market_hours"]),
+            "span_open_market_hours": _fixed(scope["span_open_market_hours"]),
+            "include_origin": _fixed(True),
+            "elapsed_span_fixed": _fixed(False),
+            "require_exact_market_slots": _fixed(True),
+        },
+        "horizons_hours": _fixed(scope["horizons_hours"]),
+        "feature_policy": base["feature_policy"], "splits": base["splits"],
+        "business": base["business"], "model": base["model"], "training": base["training"],
+        "metrics": base["metrics"], "execution": base["execution"],
+        "matched_population": {
+            "arm": _fixed(arm), "role": _fixed(scope["role"]),
+            "contrast_id": _fixed(MATCHED_CONTRAST_ID),
+            "partner_arm": _fixed(scope["partner"]),
+            "partner_experiment_id": _fixed(partner["experiment_id"]),
+            "rules_sha256": _fixed(MATCHED_POPULATION_RULES["rules_sha256"]),
+            "full_population_fit_substitutes": _fixed(False),
+        },
+        "sealed_identities": {
+            "base_short_design_sha256": _HEX,
+            "time_encoder": {k: _fixed(v) for k, v in TIME_ENCODER_IDENTITY.items()},
+            "feature_manifest_sha256": _HEX,
+            "availability_contract_sha256": _HEX,
+            "calendar": {"calendar_id": _typ(str), "version": _typ(str),
+                         "status": _fixed("ASSUMED_NOT_BROKER")},
+            "data_design_sha256": _HEX,
+            "data_identity_sha256": _HEX,
+            "partner_data_identity_sha256": _HEX,
+            "seed": _fixed(6102026),
+            "runtime": {"tensorflow": _typ(str), "keras": _typ(str)},
+        },
+        "seal_sha256": _HEX,
+    }
+
+
+MATCHED_SCHEMAS = {MATCHED_SCOPE[k]["family"]: _matched_schema(k) for k in MATCHED_SCOPE}
+
+
 def mode(doc):
     """``FINAL_REFIT`` for a derived final design, otherwise ``VALIDATION``."""
     eid = doc.get("experiment_id") if isinstance(doc, dict) else None
@@ -426,7 +526,28 @@ def family(doc):
         return "short_mg2"
     if eid == MG12_ID:
         return "long_mg12"
+    if eid == MG1_MATCHED_ID:
+        return "short_mg1_matched"
+    if eid == MG2_MATCHED_ID:
+        return "short_mg2_matched"
     return "short"
+
+
+def matched_arm(doc):
+    """Arm key (``mg1``/``mg2m``) of a VALIDATED matched design; anything else is refused.
+
+    The closed full-population MG2 (``short_mg2``), the ELAPSED hourly control and every other
+    family raise ``MATCHED_IDENTITY_REQUIRED``: none can stand in for a matched identity.
+    """
+    fam = family(doc)
+    for arm, scope in MATCHED_SCOPE.items():
+        if scope["family"] == fam:
+            validate_design(doc)
+            return arm
+    eid = doc.get("experiment_id") if isinstance(doc, dict) else None
+    raise DesignError("MATCHED_IDENTITY_REQUIRED",
+                      f"family {fam!r} ({eid!r}) is not a matched MG1/MG2 identity; a "
+                      "full-population or elapsed design never substitutes for one")
 
 
 def _same(a, b):
@@ -509,6 +630,22 @@ def validate_design(doc):
         _check(doc, MARKET_TIME_SCHEMAS[fam], "")
         if doc["seal_sha256"] != _sha(_seal_body(doc)):
             raise DesignError("MARKET_TIME_SEAL", "the sealed market-time design was modified")
+    elif fam in MATCHED_FAMILIES:
+        contradictions = sorted(f for f in FIXED_ELAPSED_FIELDS if f in doc)
+        if contradictions:
+            raise DesignError("MARKET_TIME_CONTRADICTION",
+                              f"{contradictions} are fixed-elapsed fields of {DESIGN_SCHEMA}; a "
+                              "matched market-time design declares open-market spacing only")
+        if doc.get("schema") != MATCHED_SCHEMA:
+            raise DesignError("MATCHED_SCHEMA_REQUIRED",
+                              f"schema must be {MATCHED_SCHEMA}; a relabelled market-time or "
+                              "elapsed design is not a matched identity")
+        open_paths = _undecided(doc)
+        if open_paths:
+            raise DesignError("MATCHED_DESIGN_UNDECIDED", f"open fields {open_paths}; never improvised")
+        _check(doc, MATCHED_SCHEMAS[fam], "")
+        if doc["seal_sha256"] != _sha(_seal_body(doc)):
+            raise DesignError("MATCHED_DESIGN_SEAL", "the sealed matched design was modified")
     elif fam == "short_hourly":
         open_paths = _undecided(doc)
         if open_paths:
@@ -672,6 +809,9 @@ def _market_time_effective(d, features):
                      "outer_validation_for_checkpoint_selection": False},
         "sealed_identities": copy.deepcopy(d["sealed_identities"]),
     }
+    if fam in MATCHED_FAMILIES:
+        effective["matched_population"] = copy.deepcopy(d["matched_population"])
+        effective["matched_population_rules"] = copy.deepcopy(MATCHED_POPULATION_RULES)
     effective["effective_config_sha256"] = effective_config_sha256(effective)
     return effective
 
@@ -680,7 +820,7 @@ def effective_config(design):
     """Resolve a validated design to the sealed effective config used by train."""
     d = validate_design(design)
     features = check_feature_identity(list(fa.MANIFEST_NO_STLFSI4))
-    if family(d) in ("short_mg2", "long_mg12"):
+    if family(d) in ("short_mg2", "long_mg12") + MATCHED_FAMILIES:
         return _market_time_effective(d, features)
     s = d["splits"]
     train_start, train_end = _parse(s["train"]["start"]), _parse(s["train"]["end"])
@@ -977,6 +1117,140 @@ def seal_market_time(short_design_path, candidate_dir, out_dir):
     return result
 
 
+#: The real input's versioned ASSUMED calendar (same identity the closed MG2/MG12 designs sealed).
+MATCHED_CALENDAR = {"calendar_id": "FX_NY_17_ASSUMED_NOT_BROKER", "version": "i6n-v1"}
+
+
+def _runtime_pins():
+    import tensorflow as tf
+    from tools.i6dmo.model import keras_version
+    return {"tensorflow": tf.__version__, "keras": keras_version()}
+
+
+def matched_market_time_design(short_design, arm, data_designs, *, calendar=None, runtime=None):
+    """Derive ONE sealed matched design (``mg1`` control or ``mg2m`` reference); pure, no data read.
+
+    ``data_designs`` maps both arms to their data-lane DESIGN documents
+    (:func:`tools.i6dmo.common_population.matched_data_design`); this design binds its own data
+    design digest and data identity plus the partner's data identity, and the frozen
+    MATCHED_POPULATION_RULES. ``calendar``/``runtime`` default to the real assumed calendar and
+    the installed TensorFlow/Keras pins.
+    """
+    from tools.i6dmo import common_population as CP
+    base = validate_design(short_design)
+    if family(base) != "short" or mode(base) == "FINAL_REFIT":
+        raise DesignError("SHORT_DESIGN_REQUIRED",
+                          "the matched designs derive from the elapsed short design")
+    if arm not in MATCHED_SCOPE:
+        raise DesignError("MATCHED_ARM_UNKNOWN", f"{arm!r}; one of {sorted(MATCHED_SCOPE)}")
+    scope = MATCHED_SCOPE[arm]
+    own, partner = data_designs[arm], data_designs[scope["partner"]]
+    for key, doc in ((arm, own), (scope["partner"], partner)):
+        try:
+            CP.validate_matched_data_design(doc, arm=key)
+        except CP.CommonPopulationError as exc:
+            raise DesignError(exc.code, str(exc)) from None
+        if doc["derives_from_design_sha256"] != design_sha256(base):
+            raise DesignError("MATCHED_DATA_DESIGN_MISMATCH",
+                              f"{key} data design derives from another short design")
+    features = check_feature_identity(list(fa.MANIFEST_NO_STLFSI4))
+    cal = dict(calendar or MATCHED_CALENDAR)
+    doc = {
+        "schema": MATCHED_SCHEMA,
+        "status": base["status"],
+        "experiment_id": scope["experiment_id"],
+        "asset": base["asset"], "seed": base["seed"], "repetitions": base["repetitions"],
+        "evaluation_mode": base["evaluation_mode"],
+        "retraining_frequency": base["retraining_frequency"],
+        "market_time": {"rule": scope["rule"], "observations": scope["observations"],
+                        "spacing_open_market_hours": scope["spacing_open_market_hours"],
+                        "span_open_market_hours": scope["span_open_market_hours"],
+                        "include_origin": True, "elapsed_span_fixed": False,
+                        "require_exact_market_slots": True},
+        "horizons_hours": list(scope["horizons_hours"]),
+        "feature_policy": copy.deepcopy(base["feature_policy"]),
+        "splits": copy.deepcopy(base["splits"]),
+        "business": copy.deepcopy(base["business"]),
+        "model": copy.deepcopy(base["model"]),
+        "training": copy.deepcopy(base["training"]),
+        "metrics": copy.deepcopy(base["metrics"]),
+        "execution": copy.deepcopy(base["execution"]),
+        "matched_population": {
+            "arm": arm, "role": scope["role"], "contrast_id": MATCHED_CONTRAST_ID,
+            "partner_arm": scope["partner"],
+            "partner_experiment_id": MATCHED_SCOPE[scope["partner"]]["experiment_id"],
+            "rules_sha256": MATCHED_POPULATION_RULES["rules_sha256"],
+            "full_population_fit_substitutes": False,
+        },
+        "sealed_identities": {
+            "base_short_design_sha256": design_sha256(base),
+            "time_encoder": copy.deepcopy(TIME_ENCODER_IDENTITY),
+            "feature_manifest_sha256": features["manifest_sha256"],
+            "availability_contract_sha256": features["availability_contract_sha256"],
+            "calendar": {"calendar_id": cal["calendar_id"], "version": cal["version"],
+                         "status": "ASSUMED_NOT_BROKER"},
+            "data_design_sha256": _sha(own),
+            "data_identity_sha256": own["data_identity_sha256"],
+            "partner_data_identity_sha256": partner["data_identity_sha256"],
+            "seed": base["seed"],
+            "runtime": dict(runtime) if runtime is not None else _runtime_pins(),
+        },
+    }
+    doc["seal_sha256"] = _sha(_seal_body(doc))
+    return validate_design(doc)
+
+
+def _write_once(path, payload, code):
+    text = json.dumps(payload, sort_keys=True, indent=2) + "\n"
+    if path.exists():
+        if path.read_text(encoding="utf-8") != text:
+            raise DesignError(code, f"{path.name} holds different content; never overwritten")
+    else:
+        tmp = path.with_name(path.name + ".tmp")
+        tmp.write_text(text, encoding="utf-8")
+        os.replace(tmp, path)
+
+
+def seal_matched_short(short_design_path, out_dir, *, calendar=None, runtime=None):
+    """Write DESIGN.mg1/mg2m, MATCHED_POPULATION_RULES and EXPERIMENT.mg1/mg2m (idempotent, no fit).
+
+    Never touches EXPERIMENT.short_hourly.json, EXPERIMENT.mg2.json or EXPERIMENT.mg12.json.
+    """
+    from tools.i6dmo import common_population as CP
+    short = load_design(short_design_path)
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    data_designs = {arm: CP.matched_data_design(short, arm) for arm in MATCHED_SCOPE}
+    result = {"schema": "i6dmo.seal_matched_short.v1", "status": "SEALED", "fits_run": 0,
+              "contrast_id": MATCHED_CONTRAST_ID,
+              "matched_population_rules_sha256": MATCHED_POPULATION_RULES["rules_sha256"]}
+    _write_once(out / "MATCHED_POPULATION_RULES.json", MATCHED_POPULATION_RULES, "MATCHED_DESIGN_EXISTS")
+    for arm in MATCHED_SCOPE:
+        doc = matched_market_time_design(short, arm, data_designs, calendar=calendar, runtime=runtime)
+        effective = effective_config(doc)
+        _write_once(out / f"DESIGN.{arm}.json", data_designs[arm], "MATCHED_DESIGN_EXISTS")
+        _write_once(out / f"EXPERIMENT.{arm}.json", doc, "MATCHED_DESIGN_EXISTS")
+        result[arm] = {"experiment_id": doc["experiment_id"], "family": family(doc),
+                       "design_sha256": design_sha256(doc), "seal_sha256": doc["seal_sha256"],
+                       "effective_config_sha256": effective["effective_config_sha256"],
+                       "data_design_sha256": doc["sealed_identities"]["data_design_sha256"],
+                       "data_identity_sha256": doc["sealed_identities"]["data_identity_sha256"],
+                       "experiment_file_sha256": _file_sha(out / f"EXPERIMENT.{arm}.json"),
+                       "data_design_file_sha256": _file_sha(out / f"DESIGN.{arm}.json")}
+    return result
+
+
+def run_seal_matched_short(args):
+    try:
+        result = seal_matched_short(args.short_design, args.out_dir)
+    except DesignError as exc:
+        result = {"schema": "i6dmo.seal_matched_short.v1", "status": "FAILED", "code": exc.code,
+                  "detail": str(exc)}
+    print(json.dumps(result, sort_keys=True) if args.json
+          else f"{result['status']} {result.get('mg1', {}).get('design_sha256') or result.get('code')}")
+    return 0 if result["status"] == "SEALED" else 2
+
+
 def run_seal_market_time(args):
     try:
         result = seal_market_time(args.short_design, args.candidate_dir, args.out_dir)
@@ -1049,6 +1323,12 @@ def add_cli(subparsers):
     m.add_argument("--out-dir", required=True)
     m.add_argument("--json", action="store_true")
     m.set_defaults(func=run_seal_market_time)
+    k = subparsers.add_parser("seal-matched-short",
+                              help="seal the matched short MG1/MG2 designs (no data, no fit)")
+    k.add_argument("--short-design", required=True)
+    k.add_argument("--out-dir", required=True)
+    k.add_argument("--json", action="store_true")
+    k.set_defaults(func=run_seal_matched_short)
     return p
 
 
