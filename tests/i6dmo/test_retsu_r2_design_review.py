@@ -3,6 +3,10 @@
 CPU only; models are BUILT (seed init) but never fitted; no pretraining runs; no data or TEST read.
 ``xfail(strict=True)`` tests state a REQUIRED behaviour the design does not have yet: each is a
 minimal reproduction of a review finding and flips to a failure when it is fixed.
+
+MODEL lane follow-up (D1-D4 fixed after the lead's ruling on review 93bff41d): the four strict
+xfails now pass as ordinary tests; observation tests that documented a defect now assert the
+fixed behaviour. Each edited line says so.
 """
 import copy
 import hashlib
@@ -36,10 +40,12 @@ def test_o1_registered_component_has_no_end_to_end_caller_and_i6b_uses_its_own_l
 
 
 def test_recommended_o1_ruling_is_not_executable_by_the_registered_fit_loop():
-    """r2_design validates the ruling READY, but the registered loop caps max_epochs at 100."""
-    ruled = R2.rule_objective(L._contract(), L._ruled_o1())
-    assert R2.validate_r2_design(ruled, for_execution=True)["status"] == "READY_FOR_EXECUTION"
-    fs = L._ruled_o1()["fit_settings"]
+    """The 7488e899 recommendation (max_epochs 200) is not executable by the registered loop.
+    MODEL fix D1: r2_design now refuses it at validation instead of returning READY."""
+    ruled = R2.rule_objective(L._contract(), L._ruled_o1_v0())
+    with pytest.raises(R2.R2DesignError):
+        R2.validate_r2_design(ruled, for_execution=True)
+    fs = L._ruled_o1_v0()["fit_settings"]
     with pytest.raises(ValueError, match=r"max_epochs must be an integer in \[1, 100\]"):
         E._settings({"evaluator": {"max_epochs": fs["max_epochs"], "patience": fs["patience"],
                                    "batch_size": fs["batch_size"], "learning_rate": fs["learning_rate"],
@@ -47,10 +53,10 @@ def test_recommended_o1_ruling_is_not_executable_by_the_registered_fit_loop():
                                    "seed": 6102026, "loss": "mse"}})
 
 
-@pytest.mark.xfail(strict=True, reason="DEFECT: _validate_objective checks presence, not executability; a "
-                                       "ruling the registered component would refuse is READY_FOR_EXECUTION")
-def test_a_non_executable_ruling_must_be_refused_at_validation():
-    ruled = R2.rule_objective(L._contract(), L._ruled_o1())
+def test_a_non_executable_ruling_must_be_refused_at_validation():      # was strict xfail; fixed (D1)
+    objective = L._ruled_o1()
+    objective["fit_settings"]["max_epochs"] = 200
+    ruled = R2.rule_objective(L._contract(), objective)
     with pytest.raises(R2.R2DesignError):
         R2.validate_r2_design(ruled, for_execution=True)
 
@@ -61,7 +67,7 @@ def test_o1_fit_loop_ignores_the_seed_and_has_unruled_budget_stops():
     body = inspect.getsource(E.fit_with_early_stopping)
     assert "set_random_seed" not in body and 'settings["seed"]' not in body
     assert O._SETTINGS["max_seconds"] == 3600.0 and O._SETTINGS["max_updates"] == 100000
-    assert not {"max_updates", "max_seconds"} & set(R2.OBJECTIVE_FIT_SETTINGS)
+    assert {"max_updates", "max_seconds"} <= set(R2.OBJECTIVE_FIT_SETTINGS)   # fixed (D1): ruled now
     assert "time.monotonic() - started >= settings[\"max_seconds\"]" in body
 
 
@@ -101,21 +107,18 @@ SOURCES = {
 
 @pytest.mark.parametrize("source", sorted(SOURCES))
 def test_observation_forged_identity_with_foreign_real_shaped_weights_is_imported(source):
+    """Was ACCEPTED at 7488e899; MODEL fix D3: a self-declared manifest is now refused atomically."""
     foreign = L._pretend_pretrained(_bundle_from(SOURCES[source]))
     target = L._bundle()
+    before = [np.array(w) for w in target.forecast_model.get_weights()]
     weights = {f: foreign.branch_models[f].get_weights() for f in target.config["features"]}
     donors, ctx = _forged(target, weights)
-    record = M.import_branch_donors(target, donors, ctx)          # ACCEPTED today
-    assert record["trainable"] is True
-    f0 = target.config["features"][0]
-    assert all(np.array_equal(a, b) for a, b in zip(target.branch_models[f0].get_weights(), weights[f0]))
+    with pytest.raises(M.DonorImportError, match="R2_DONOR_PROVENANCE_MISSING"):
+        M.import_branch_donors(target, donors, ctx)
+    assert all(np.array_equal(a, b) for a, b in zip(before, target.forecast_model.get_weights()))
 
 
-@pytest.mark.xfail(strict=True, reason="DEFECT: donor identity is self-declared; a manifest copied from the "
-                                       "target with another population's real weights is imported. Import "
-                                       "must bind donors to the campaign's own authenticated pretraining "
-                                       "terminals (learned-corpus FIT digest, objective run, code pin)")
-def test_a_forged_identity_block_must_be_refused_before_any_weight_is_set():
+def test_a_forged_identity_block_must_be_refused_before_any_weight_is_set():   # was strict xfail (D3)
     foreign = L._pretend_pretrained(_bundle_from(SOURCES["closed_full_population_mg2"]))
     target = L._bundle()
     donors, ctx = _forged(target, {f: foreign.branch_models[f].get_weights() for f in target.config["features"]})
@@ -155,7 +158,8 @@ def test_r0_reuse_is_fresh_because_trainer_code_files_changed_since_the_deployed
     deployed = {rel: at("796ec8f4", rel) for rel in T.CODE_FILES}
     current = T._code_identity()
     changed = sorted(rel for rel in T.CODE_FILES if deployed[rel] != current[rel])
-    assert changed == ["tools/i6dmo/design.py", "tools/i6dmo/model.py"]
+    # MODEL follow-up also touched train.py (GPU class recorded for R2-18): still FRESH_R0_REQUIRED.
+    assert changed == ["tools/i6dmo/design.py", "tools/i6dmo/model.py", "tools/i6dmo/train.py"]
     receipt = L._agreeing_receipt(L._contract()["shared"])
     receipt["identity"]["code_files_sha256"] = deployed
     out = R2.r0_reuse_decision(receipt, dict(L.MONITOR), L._contract(), expected_code_files=current,
@@ -166,17 +170,13 @@ def test_r0_reuse_is_fresh_because_trainer_code_files_changed_since_the_deployed
 
 # ======================================================================== decision (item 6 gaps)
 
-@pytest.mark.xfail(strict=True, reason="GAP: decide_r2 does not require scientific GPU fits (R3 parity with "
-                                       "decide_matched)")
-def test_decide_r2_must_refuse_non_scientific_fits():
+def test_decide_r2_must_refuse_non_scientific_fits():            # was strict xfail; fixed (D4)
     r0, r2 = L._metrics(-0.01), L._metrics(-0.02)
     r2["matched"].update(scientific_fit=False, fit_device="cpu")
     with pytest.raises(R2.R2DesignError):
         R2.decide_r2(r0, r2)
 
 
-@pytest.mark.xfail(strict=True, reason="GAP: decide_r2 has no evidence that the R2 arm imported donors (and "
-                                       "R0 did not); two R0 fits can be decided as R0 vs R2")
-def test_decide_r2_must_require_the_import_record():
+def test_decide_r2_must_require_the_import_record():             # was strict xfail; fixed (D4)
     with pytest.raises(R2.R2DesignError):
         R2.decide_r2(L._metrics(-0.01), L._metrics(-0.02))

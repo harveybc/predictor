@@ -34,6 +34,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -777,8 +778,28 @@ def _array_digests(arrays):
     return out
 
 
-def branch_donor_context(bundle, *, population_sha256, scaler_sha256, objective):
-    """The identity every donor for ``bundle`` must match (derived from the BUILT network)."""
+R2_SEED_BASE = 6102026
+R2_SEED_RULE = ("keras.utils.set_random_seed(6102026 + feature_index) immediately before building "
+                "each autoencoder; applied seed recorded in each donor terminal")
+R2_PRETRAIN_TERMINAL_SCHEMA = "i6dmo.r2_pretraining_terminal.v1"
+R2_PURGE_RULE = "INNER selection windows whose earliest slot instant precedes the INNER start are purged"
+R2_PROVENANCE_KEYS = ("campaign_id", "ruling_seal_sha256", "code_pin", "units", "corpus")
+#: Hard budget stops of the registered loop. Reaching max_epochs is an ordinary end (best epoch
+#: restored); a max_updates / max_seconds stop is a typed failure and never yields a donor.
+R2_BUDGET_STOPS = ("max_updates", "max_seconds")
+
+
+def r2_seed(feature_index):
+    return R2_SEED_BASE + int(feature_index)
+
+
+def branch_donor_context(bundle, *, population_sha256, scaler_sha256, objective, provenance=None):
+    """The identity every donor for ``bundle`` must match (derived from the BUILT network).
+
+    ``provenance`` (campaign_id, ruling_seal_sha256, code_pin, units{feature: unit_id},
+    corpus{feature: learned-corpus sha256}) is what binds a donor to THIS campaign's own
+    authenticated pretraining terminals; without it nothing is importable (D3).
+    """
     c = bundle.config
     family = market_family(c)
     arm = next((a for a, f in MATCHED_ARMS.items() if f == family), None)
@@ -799,7 +820,8 @@ def branch_donor_context(bundle, *, population_sha256, scaler_sha256, objective)
             "features": features,
             "feature_names_sha256": hashlib.sha256(_canonical(features).encode()).hexdigest(),
             "branch_params": _branch_params(c), "scaler_sha256": scaler_sha256,
-            "population_sha256": population_sha256, "objective": objective, "branches": branches}
+            "population_sha256": population_sha256, "objective": objective, "branches": branches,
+            "provenance": provenance}
 
 
 def branch_donor_manifest(bundle, feature, context):
@@ -819,7 +841,8 @@ def branch_donor_manifest(bundle, feature, context):
 
 
 def check_branch_donor(manifest, weights, expected, feature):
-    """Typed compatibility check of one donor against the expected context; never by shape alone."""
+    """Typed IDENTITY check of one donor (never by shape alone). Identity is necessary but NOT
+    sufficient: a self-declared manifest is only importable through an authenticated terminal."""
     if not isinstance(manifest, dict) or manifest.get("schema") != BRANCH_DONOR_SCHEMA:
         raise DonorImportError("R2_DONOR_SCHEMA", f"{feature}: donor schema must be {BRANCH_DONOR_SCHEMA}")
     missing = [k for k in BRANCH_DONOR_KEYS if k not in manifest]
@@ -870,6 +893,143 @@ def check_branch_donor(manifest, weights, expected, feature):
     return actual
 
 
+# --- learned corpus, seeded pretraining unit body, authenticated donor terminals (D2/D3) ---------
+
+def branch_pretraining_corpus(fit_x, fit_row_ids, inner_x, inner_row_ids, inner_slot_instants, *,
+                              feature_index, scaler_mean, scaler_std, inner_start_epoch):
+    """FIT windows and purged INNER selection windows of ONE feature, z-scored by the shared scaler.
+
+    ``fit_x``/``inner_x`` are the arm tensors' RAW ``x`` (n, slots, n_features). Returns the
+    (n, slots, 1) float32 arrays the objective consumes and the learned-corpus digest that binds a
+    donor to exactly these windows (population rows, feature index, purge rule, scaler values).
+    """
+    j = int(feature_index)
+    mean, std = float(np.asarray(scaler_mean)[j]), float(np.asarray(scaler_std)[j])
+    if not (math.isfinite(mean) and math.isfinite(std) and std > 0):
+        raise DonorImportError("R2_CORPUS_SCALER", f"feature {j}: invalid shared scaler entry")
+    keep = np.asarray(inner_slot_instants, np.int64)[:, 0] >= int(inner_start_epoch)
+    fit = ((np.asarray(fit_x, np.float64)[:, :, j:j + 1] - mean) / std).astype(np.float32)
+    sel = ((np.asarray(inner_x, np.float64)[keep][:, :, j:j + 1] - mean) / std).astype(np.float32)
+    fit_ids = np.asarray(fit_row_ids, np.int64)
+    sel_ids = np.asarray(inner_row_ids, np.int64)[keep]
+    if len(fit) < 1 or len(sel) < 1:
+        raise DonorImportError("R2_CORPUS_EMPTY", f"feature {j}: FIT {len(fit)} / selection {len(sel)}")
+    body = {"feature_index": j, "purge_rule": R2_PURGE_RULE,
+            "scaler": [float(mean).hex(), float(std).hex()],
+            "fit_row_ids": _array_digests([fit_ids])[0]["sha256"],
+            "fit_windows": _array_digests([fit])[0]["sha256"],
+            "selection_row_ids": _array_digests([sel_ids])[0]["sha256"],
+            "selection_windows": _array_digests([sel])[0]["sha256"],
+            "counts": {"fit": int(len(fit)), "selection": int(len(sel)), "purged": int((~keep).sum())}}
+    return fit, sel, dict(body, sha256=hashlib.sha256(_canonical(body).encode()).hexdigest())
+
+
+def _objective_fit_settings(objective):
+    fs = objective["fit_settings"]
+    return {k: fs[k] for k in ("max_epochs", "patience", "batch_size", "learning_rate", "weight_decay",
+                               "min_delta", "max_updates", "max_seconds")}
+
+
+def pretrain_branch(bundle, feature, fit_windows, selection_windows, objective):
+    """ONE pretraining unit body: the ruled registered objective trains this branch IN PLACE.
+
+    The seed is bound immediately before the autoencoder is built (D2):
+    ``keras.utils.set_random_seed(6102026 + feature_index)``. A budget stop (max_updates /
+    max_seconds) is a typed failure (R2_PRETRAINING_BUDGET_STOP): no donor is ever selected from it.
+    """
+    from predictor_plugins.modular_temporal import objectives as O
+    if objective == R2_OBJECTIVE_UNDECIDED or not isinstance(objective, dict):
+        raise DonorImportError("R2_OBJECTIVE_UNDECIDED", "no pretraining before the objective is ruled")
+    index = list(bundle.config["features"]).index(feature)
+    cls, identity = O.resolve_objective({"plugin": objective["name"], "params": objective["params"]})
+    if identity["version"] != objective["version"] or identity["params"] != objective["params"]:
+        raise DonorImportError("R2_OBJECTIVE_UNKNOWN", "registered objective differs from the ruling")
+    settings = dict(_objective_fit_settings(objective), seed=r2_seed(index))
+    branch = bundle.branch_models[feature]
+    branch.trainable = True
+    seed = r2_seed(index)
+    keras.utils.set_random_seed(seed)                       # immediately before the AE is built
+    result = cls(identity["params"]).fit(branch, fit_windows, selection_windows, settings)
+    if result.get("stop_reason") in R2_BUDGET_STOPS:
+        raise DonorImportError("R2_PRETRAINING_BUDGET_STOP",
+                               f"{feature}: stopped by {result.get('stop_reason')}; no donor selected")
+    return {"applied_seed": seed, "objective_identity": identity,
+            "weights": [np.array(w) for w in branch.get_weights()],
+            "fit": {k: result.get(k) for k in ("selected_epoch", "selected_updates", "observed_updates",
+                                               "best_validation_loss", "stop_reason", "stop_class",
+                                               "elapsed_seconds", "history")},
+            "reconstruction": result.get("reconstruction")}
+
+
+def write_branch_donor_terminal(out_dir, *, bundle, feature, context, unit_id, corpus, pretrained):
+    """The pretraining unit's atomic terminal (donor weights + full identity + provenance)."""
+    prov = context.get("provenance") or {}
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    index = context["branches"][feature]["feature_index"]
+    weights_path = out / "donor.npz"
+    np.savez(weights_path, kernel=pretrained["weights"][0], bias=pretrained["weights"][1])
+    manifest = branch_donor_manifest(bundle, feature, context)
+    if manifest["weights"] != _array_digests(pretrained["weights"]):
+        raise DonorImportError("R2_DONOR_WEIGHTS_DIGEST", f"{feature}: branch is not the pretrained one")
+    terminal = {"schema": R2_PRETRAIN_TERMINAL_SCHEMA, "status": "COMPLETE",
+                "campaign_id": prov.get("campaign_id"), "unit_id": unit_id,
+                "feature": feature, "feature_index": index,
+                "applied_seed": pretrained["applied_seed"], "seed_rule": R2_SEED_RULE,
+                "code_pin": prov.get("code_pin"), "ruling_seal_sha256": prov.get("ruling_seal_sha256"),
+                "objective": context["objective"], "learned_corpus": corpus,
+                "fit": json.loads(json.dumps(pretrained["fit"], default=float)),
+                "reconstruction": json.loads(json.dumps(pretrained["reconstruction"], default=float)),
+                "artifacts": {"donor.npz": _file_hash(weights_path)}, "manifest": manifest}
+    path = out / "TERMINAL.json"
+    tmp = out / ".TERMINAL.json.tmp"
+    tmp.write_text(json.dumps(terminal, sort_keys=True, indent=1, allow_nan=False))
+    tmp.replace(path)
+    return {"path": str(path), "sha256": _file_hash(path)}
+
+
+def load_branch_donor(reference, expected, feature):
+    """Load ONE donor through its authenticated stored terminal (D3); typed refusal otherwise.
+
+    ``reference`` = {"path", "sha256"} as authenticated by the OPS store (the digest it retained
+    when the pretraining unit completed). The trust boundary is that retained reference: unkeyed
+    hashes cannot authenticate a fully rewritten store on their own.
+    """
+    prov = expected.get("provenance")
+    if not isinstance(prov, dict) or any(k not in prov for k in R2_PROVENANCE_KEYS):
+        raise DonorImportError("R2_DONOR_PROVENANCE_MISSING", "no campaign provenance to bind donors to")
+    if not isinstance(reference, dict) or set(reference) != {"path", "sha256"}:
+        raise DonorImportError("R2_DONOR_PROVENANCE_MISSING",
+                               f"{feature}: donors are importable only through an authenticated terminal")
+    path = Path(reference["path"])
+    if not path.is_file() or _file_hash(path) != reference["sha256"]:
+        raise DonorImportError("R2_DONOR_TERMINAL_DIGEST", f"{feature}: terminal bytes differ from the reference")
+    terminal = json.loads(path.read_text())
+    index = expected["branches"][feature]["feature_index"] if feature in expected["branches"] else None
+    wanted = {"schema": R2_PRETRAIN_TERMINAL_SCHEMA, "status": "COMPLETE",
+              "campaign_id": prov["campaign_id"], "unit_id": prov["units"].get(feature),
+              "feature": feature, "feature_index": index, "applied_seed": None if index is None
+              else r2_seed(index), "seed_rule": R2_SEED_RULE, "code_pin": prov["code_pin"],
+              "ruling_seal_sha256": prov["ruling_seal_sha256"], "objective": expected["objective"]}
+    for key, value in wanted.items():
+        if _canonical(terminal.get(key)) != _canonical(value):
+            raise DonorImportError("R2_DONOR_PROVENANCE_MISMATCH",
+                                   f"{feature}: terminal {key}={terminal.get(key)!r} != {value!r}")
+    corpus = (terminal.get("learned_corpus") or {}).get("sha256")
+    if corpus is None or corpus != prov["corpus"].get(feature):
+        raise DonorImportError("R2_DONOR_CORPUS_MISMATCH",
+                               f"{feature}: donor learned from other windows than this population's")
+    if (terminal.get("fit") or {}).get("stop_reason") in R2_BUDGET_STOPS:
+        raise DonorImportError("R2_PRETRAINING_BUDGET_STOP", f"{feature}: a budget stop is not a donor")
+    weights_path = path.parent / "donor.npz"
+    if _file_hash(weights_path) != (terminal.get("artifacts") or {}).get("donor.npz"):
+        raise DonorImportError("R2_DONOR_WEIGHTS_DIGEST", f"{feature}: donor artifact bytes differ")
+    with np.load(weights_path, allow_pickle=False) as z:
+        weights = [z["kernel"], z["bias"]]
+    check_branch_donor(terminal.get("manifest"), weights, expected, feature)
+    return weights, reference["sha256"]
+
+
 def _non_branch_digest(bundle):
     weights = list(bundle.core_model.get_weights())
     for head in bundle.head_models.values():
@@ -880,9 +1040,13 @@ def _non_branch_digest(bundle):
 def import_branch_donors(bundle, donors, expected):
     """R2 initialization: import ALL 19 branch donors into a fresh R0-seeded ``bundle``.
 
-    ``donors`` maps every feature to ``{"manifest": ..., "weights": [kernel, bias]}``. Each is
-    checked by :func:`check_branch_donor`; core and head weights must stay bitwise identical to
-    the R0 seed build, and every branch stays trainable (R2, never R1-frozen).
+    ``donors`` maps every feature to ``{"terminal": {"path", "sha256"}}``: the authenticated
+    stored terminal of THIS campaign's pretraining unit for that feature. A bare
+    ``{"manifest", "weights"}`` entry is identity-checked (so a wrong recipe keeps its specific
+    code) and then refused R2_DONOR_PROVENANCE_MISSING: a self-declared manifest never passes.
+    Every donor is verified before any weight is set; a failure while setting weights rolls every
+    branch back (R2_DONOR_IMPORT_ROLLED_BACK). Core and head weights stay bitwise identical to the
+    R0 seed build and every branch stays trainable (R2, never R1-frozen).
     """
     features = expected["features"]
     if list(bundle.config["features"]) != features:
@@ -890,29 +1054,57 @@ def import_branch_donors(bundle, donors, expected):
     if set(donors) != set(features):
         raise DonorImportError("R2_DONOR_SET", f"missing {sorted(set(features) - set(donors))}, "
                                                f"unexpected {sorted(set(donors) - set(features))}")
-    verified = {f: check_branch_donor(donors[f]["manifest"], donors[f]["weights"], expected, f)
-                for f in features}
-    before = _non_branch_digest(bundle)
-    branches = {}
+    loaded, terminals = {}, {}
     for feature in features:
-        model = bundle.branch_models[feature]
-        prior = _array_digests(model.get_weights())
-        model.set_weights([np.asarray(w) for w in donors[feature]["weights"]])
-        model.trainable = True
-        after = _array_digests(model.get_weights())
-        if after != verified[feature]:
-            raise DonorImportError("R2_DONOR_WEIGHTS_DIGEST", f"{feature}: imported weights differ")
-        branches[feature] = {"r0_init": prior, "imported": after}
+        entry = donors[feature]
+        if isinstance(entry, dict) and "terminal" not in entry and "manifest" in entry:
+            check_branch_donor(entry["manifest"], entry.get("weights") or [], expected, feature)
+            raise DonorImportError("R2_DONOR_PROVENANCE_MISSING",
+                                   f"{feature}: a self-declared manifest is never importable; donors come "
+                                   "only from this campaign's authenticated pretraining terminals")
+        weights, digest = load_branch_donor((entry or {}).get("terminal"), expected, feature)
+        loaded[feature], terminals[feature] = weights, digest
+    before = _non_branch_digest(bundle)
+    snapshot = {f: [np.array(w) for w in bundle.branch_models[f].get_weights()] for f in features}
+    branches, touched = {}, []
+    try:
+        for feature in features:
+            model = bundle.branch_models[feature]
+            touched.append(feature)
+            model.set_weights([np.asarray(w) for w in loaded[feature]])
+            model.trainable = True
+            branches[feature] = {"r0_init": _array_digests(snapshot[feature]),
+                                 "imported": _array_digests(model.get_weights()),
+                                 "terminal_sha256": terminals[feature]}
+    except Exception as exc:
+        failed = []
+        for feature in touched:
+            model = bundle.branch_models[feature]
+            try:
+                model.set_weights(snapshot[feature])
+            except Exception:  # noqa: BLE001 - fall back to per-variable assignment
+                for variable, value in zip(model.weights, snapshot[feature]):
+                    variable.assign(value)
+            if _array_digests(model.get_weights()) != _array_digests(snapshot[feature]):
+                failed.append(feature)
+        if failed:
+            raise DonorImportError("R2_DONOR_IMPORT_ROLLBACK_FAILED",
+                                   f"{failed}: discard this network and rebuild from the seed") from None
+        raise DonorImportError("R2_DONOR_IMPORT_ROLLED_BACK", f"{type(exc).__name__}: {exc}") from None
     if _non_branch_digest(bundle) != before:
         raise DonorImportError("R2_NON_BRANCH_CHANGED", "core/head weights changed during import")
     if not all(bundle.branch_models[f].trainable for f in features) or not bundle.forecast_model.trainable:
         raise DonorImportError("R2_FROZEN_BRANCH", "R2 branches must stay trainable")
-    return {"schema": "i6dmo.r2_import.v1", "arm": expected["arm"],
-            "population_sha256": expected["population_sha256"],
-            "scaler_sha256": expected["scaler_sha256"], "objective": expected["objective"],
-            "non_branch_weights_sha256": before, "branches": branches, "trainable": True,
-            "trainable_parameters": int(sum(int(np.prod(w.shape))
-                                            for w in bundle.forecast_model.trainable_weights))}
+    record = {"schema": "i6dmo.r2_import.v1", "arm": expected["arm"],
+              "population_sha256": expected["population_sha256"],
+              "scaler_sha256": expected["scaler_sha256"], "objective": expected["objective"],
+              "provenance": expected["provenance"], "non_branch_weights_sha256": before,
+              "donor_terminals": dict(terminals), "branches": branches, "trainable": True,
+              "trainable_parameters": int(sum(int(np.prod(w.shape))
+                                              for w in bundle.forecast_model.trainable_weights))}
+    record["import_sha256"] = hashlib.sha256(_canonical(
+        {k: v for k, v in record.items() if k != "branches"}).encode()).hexdigest()
+    return record
 
 
 def predict_matrix(model, x, batch_size=4096):

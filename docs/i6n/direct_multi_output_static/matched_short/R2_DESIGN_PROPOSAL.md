@@ -9,7 +9,7 @@ Until a reviewer rules on the objective, this command refuses the contract with
 `R2_OBJECTIVE_UNDECIDED`:
 
 ```
-python -m tools.i6dmo design validate-design --design matched_short/R2_CONTRAST_DESIGN.json --json
+python -m tools.i6dmo validate-design --design matched_short/R2_CONTRAST_DESIGN.json --json
 ```
 
 The same refusal comes from `python -m tools.i6dmo.r2_design validate --for-execution`.
@@ -293,3 +293,153 @@ predicate.
    (fresh unless the predicate passes), then the R2 fit, then both reports, then
    the comparison, then publication, mirror and close.
 4. Until then the successor stays PREPARING.
+
+## 9. Corrections and ruling after review 93bff41d (added; earlier text kept)
+
+The independent review `review/R2_DESIGN_REVIEW_7488e899.md` (Retsu, ACCEPT_WITH_CONDITIONS)
+found four defects (D1–D4). The technical lead then ruled the objective. This section records
+the corrections. Sections 1–8 are kept as originally written, with one exception: the
+`validate-design` command in the header was wrong (`python -m tools.i6dmo design …`) and is now
+`python -m tools.i6dmo validate-design …`.
+
+### 9.1 Correction: I6-B did NOT use O1 end to end (the review REFUTED this)
+
+Section 3's claims that O1 was "exercised end to end … in `tools/i6b_branch_pretraining.py`" and
+that it is "the only branch objective already used end to end" are wrong.
+
+`tools/i6b_branch_pretraining.py` runs its own Keras loop, which differs from O1 in four ways:
+
+| | I6-B loop | Registered O1 |
+|---|---|---|
+| Optimizer | Adam, no weight decay | AdamW |
+| Decoder | 16 channels | 32 channels |
+| Monitor | `MeanTrainTailEarlyStopping`, mean of running train loss and inner tail | validation loss |
+| Objective identity | `branch_autoencoder_reconstruction` | `autoencoder_reconstruction` 1.0.0 |
+
+What I6-B shares with O1 is only the decoder family (`branch_autoencoder` / `build_autoencoder`).
+
+**Corrected statement:** O1 is an existing, registered, identity-bearing component
+(`objectives.py:228`, defaults `{decoder_channels: 32, loss: mse}`). It has **no prior
+end-to-end caller** in this repository. This R2 contrast is its first end-to-end donor use.
+
+Ruling O1 still invents neither an objective nor an architecture:
+- the branch is the R0 branch;
+- the decoder is discarded.
+
+The O2 version is 1.0.1, as the decorator declares; the `objectives.py` docstring now says so too.
+
+### 9.2 The ruling
+
+The ruling was registered with `rule_objective` (review reference `93bff41d`).
+
+| Contract | File | Seal | Status |
+|---|---|---|---|
+| Base | `R2_CONTRAST_DESIGN.json` | `12ee51b7b6fc7c4ff0af97c557eabd3cb5b58317a292be30c752176840b638d3` | PREPARING. `validate-design` → `R2_OBJECTIVE_UNDECIDED` |
+| Ruled | `R2_CONTRAST_DESIGN.ruled.json` | `0cad8817dffa2729164d55273a40814dcf794e348b95f9b02e1227ef641e4066` | `validate-design` PASS / READY_FOR_EXECUTION |
+
+**Objective**
+
+- O1 `autoencoder_reconstruction` 1.0.0.
+- Registered identity sha256 `8f0fa272e6a64d368738ffc85ea4d1aedcbfbef712bd33b1d227e9dbe2a5b3e0`.
+- `decoder_channels` 32, `loss` mse.
+
+**Optimizer and stopping**
+
+- AdamW, lr 1e-3, weight decay 1e-4, batch 256.
+- `max_epochs` **100**: the registered loop's cap. **Disclosed: R0's fine-tune allows 200.**
+- patience 10, min_delta 1e-8.
+- Restore the best monitored epoch. Reaching max_epochs is an ordinary end.
+
+**Budgets**
+
+- `max_updates` 100000 and `max_seconds` 86400, both fixed explicitly.
+- A `max_updates` or `max_seconds` stop is the typed failure `R2_PRETRAINING_BUDGET_STOP`:
+  - no donor is selected;
+  - the comparison closes `INCOMPLETE_COMPARISON`.
+
+**Seed**
+
+`keras.utils.set_random_seed(6102026 + feature_index)` is called immediately before each
+autoencoder is built (`tools.i6dmo.model.pretrain_branch`). The applied seed is recorded in each
+donor terminal and checked at import.
+
+**Monitor**
+
+Validation loss on the purged INNER windows, which are inputs only (no labels), exactly as the
+registered loop computes it.
+
+**Disclosures, carried in the contract**
+
+- INNER inputs influence R2 twice and R0 once.
+- DEVELOPMENT, the scoring split, is never touched.
+
+### 9.3 Fixes D1–D4 and minor items (all CPU-tested; no pretraining on real data, no fit)
+
+- **D1.** `_validate_objective` now proves the ruling is executable.
+  - It requires every parameter and every fit setting, budgets included.
+  - It requires the literal settings the registered loop actually runs (AdamW, validation-loss
+    monitor, restore-best, the seed rule, typed budget stop).
+  - It runs the registered validators (`objectives._settings` and the evaluator fit-loop
+    `_settings`) and checks the registered identity sha.
+  - It binds the review document bytes.
+  - Example: `max_epochs` 200 is now refused (`R2_OBJECTIVE_NOT_EXECUTABLE`).
+- **D2.** `pretrain_branch` binds the seed. The test checks that a tiny CPU branch pretraining
+  replays bitwise even after the global RNG is perturbed.
+- **D3 (blocker).** Donors are importable only through this campaign's own pretraining-unit
+  stored terminals.
+  - **Pipeline.**
+    1. `write_branch_donor_terminal` writes the terminal.
+    2. The OPS store authenticates it with a digest reference.
+    3. `load_branch_donor` loads it.
+    4. `import_branch_donors` imports it, taking `{feature: {"terminal": {path, sha256}}}`.
+  - **Identity binds:**
+    - campaign and unit;
+    - applied seed;
+    - code pin;
+    - objective ruling seal;
+    - learned-corpus digest from `branch_pretraining_corpus`: FIT windows, purged INNER selection
+      rows, feature index, purge rule and scaler values;
+    - objective;
+    - donor artifact bytes;
+    - terminal digest.
+  - **A self-declared manifest never passes**, even with a perfect identity
+    (`R2_DONOR_PROVENANCE_MISSING`).
+  - **Trust boundary:** the OPS store's retained terminal reference. Unkeyed hashes cannot
+    authenticate a fully rewritten store.
+- **D4.** `decide_r2` is strict by default; only the literal `require_scientific=False` relaxes
+  it. It requires:
+  - scientific GPU fits on the same runtime and the same recorded GPU class (R2-18);
+  - the import record binding all 19 donor terminal digests;
+  - the R2 fit identity's `r2_import_sha256` to equal that record;
+  - the R0 fit to carry no import binding.
+
+  Two plain R0 fits are refused.
+- **Minor.**
+  - The import is transactional: a mid-way `set_weights` failure rolls every touched branch back
+    (`R2_DONOR_IMPORT_ROLLED_BACK`; `…_ROLLBACK_FAILED` means rebuild from the seed).
+  - The trainer records `resources.gpu_device_names`, and the matched report carries
+    `fit_runtime` and `fit_gpu_class`.
+  - The contract gained `shared.fit_pinning`.
+
+### 9.4 Acceptance rows added (R2-13…R2-18, as the reviewer listed them)
+
+| ID | Mandatory observable acceptance | Status |
+|---|---|---|
+| R2-13 | Each donor references this campaign's authenticated pretraining terminal plus the learned-corpus digest, ruling seal, applied seed and code pin; a forged or copied identity is refused | DESIGN-TESTED |
+| R2-14 | Seed bound before the decoder is built; no wall-clock budget stop selects a donor; bitwise CPU replay | DESIGN-TESTED (tiny CPU fixture) |
+| R2-15 | The ruled objective is executable by the registered component at validation | DESIGN-TESTED |
+| R2-16 | `decide_r2` requires scientific GPU fits and the 19-terminal import record; refuses an import binding on R0 | DESIGN-TESTED |
+| R2-17 | Automation (plan §4) for pretraining → R0 → R2 → reports → comparison → close: measured-peak admission class, no repeated completed unit, status at every level, a failed pretraining unit gives INCOMPLETE_COMPARISON | **runner pending (OPS)** |
+| R2-18 | R0 and R2 fits on the same runtime and recorded GPU class | DESIGN-TESTED (decision); recording in trainer receipts |
+
+### 9.5 Hooks for the future R2 fit path and OPS runner (not implemented here)
+
+- **The R2 fit receipt.** It must record `identity.r2_import_sha256 = record["import_sha256"]`,
+  and the runner must keep the import record.
+- **The OPS runner.** It must:
+  1. compute each feature's corpus with `branch_pretraining_corpus` from the authenticated
+     population;
+  2. call `pretrain_branch` in a pretraining unit;
+  3. write `write_branch_donor_terminal`;
+  4. retain the terminal digest;
+  5. pass those references and the campaign provenance into `import_branch_donors`.

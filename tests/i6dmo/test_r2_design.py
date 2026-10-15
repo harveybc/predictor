@@ -10,6 +10,7 @@ from __future__ import annotations
 import copy
 import json
 import shutil
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -25,7 +26,16 @@ def _contract():
     return json.loads(CONTRACT.read_text())
 
 
+RULED = MATCHED / "R2_CONTRAST_DESIGN.ruled.json"
+
+
 def _ruled_o1():
+    """The technical lead's ruling (LEAD_RULING, review 93bff41d) as a complete objective block."""
+    return R2.lead_objective()
+
+
+def _ruled_o1_v0():
+    """The ruling RECOMMENDED at 7488e899 (200 epochs, no budgets): refused since D1."""
     return {"option": "O1", "name": "autoencoder_reconstruction", "version": "1.0.0",
             "params": {"decoder_channels": 32, "loss": "mse"},
             "fit_settings": {"optimizer": "AdamW", "learning_rate": 1e-3, "weight_decay": 1e-4,
@@ -60,7 +70,8 @@ def test_committed_contract_is_the_deterministic_derivation_and_is_preparing(tmp
     assert shared["effective_config_sha256"].startswith("ad949872")
     assert shared["seed"] == 6102026 and shared["targets"] == "RAW_EXACT_T_PLUS_H_PRICE"
     assert doc["selection"]["comparison_sha256"].startswith("2ee85a12")
-    assert sorted(doc["acceptance_tests"]) == [f"R2-{i:02d}" for i in range(1, 13)]
+    assert sorted(doc["acceptance_tests"]) == [f"R2-{i:02d}" for i in range(1, 19)]
+    assert doc["shared"]["fit_pinning"]["runtime"] == {"tensorflow": "2.21.0", "keras": "3.13.2"}
     assert PROPOSAL.exists()
 
 
@@ -136,29 +147,61 @@ def test_the_contract_binds_the_sealed_matched_artifacts(tmp_path):
         R2.build_contract(copy_dir)
 
 
-def test_a_reviewed_registered_objective_unlocks_execution_and_nothing_else_does(tmp_path):
-    ruled = R2.rule_objective(_contract(), _ruled_o1())
+def test_the_committed_ruled_contract_carries_the_lead_ruling_and_is_executable(tmp_path):
+    ruled = json.loads(RULED.read_text())
+    assert ruled == R2.rule_objective(_contract(), _ruled_o1())
     assert R2.validate_r2_design(ruled, for_execution=True)["status"] == "READY_FOR_EXECUTION"
-    path = tmp_path / "ruled.json"
-    path.write_text(json.dumps(ruled))
-    assert D.validate_design_report(path)["status"] == "PASS"
-    bad = []
-    o3 = _ruled_o1() | {"option": "O3", "name": "masked_point_reconstruction", "version": None}
-    bad.append((o3, "R2_OBJECTIVE_UNKNOWN"))
-    partial = _ruled_o1()
-    del partial["params"]["loss"]
-    bad.append((partial, "R2_OBJECTIVE_UNKNOWN"))
-    open_param = _ruled_o1()
-    open_param["fit_settings"]["patience"] = R2.UNDECIDED
-    bad.append((open_param, "R2_OBJECTIVE_UNDECIDED"))
-    unreviewed = _ruled_o1()
-    unreviewed["ruling"] = {"reviewer": "", "document_sha256": "short"}
-    bad.append((unreviewed, "R2_OBJECTIVE_UNREVIEWED"))
-    renamed = _ruled_o1() | {"name": "ts2vec_contrastive"}
-    bad.append((renamed, "R2_OBJECTIVE_UNKNOWN"))
-    for objective, code in bad:
-        with pytest.raises(R2.R2DesignError, match=code):
-            R2.validate_r2_design(R2.rule_objective(_contract(), objective), for_execution=True)
+    assert D.validate_design_report(RULED)["status"] == "PASS"
+    o = ruled["pretraining"]["objective"]
+    assert (o["option"], o["name"], o["version"], o["params"]) == \
+        ("O1", "autoencoder_reconstruction", "1.0.0", {"decoder_channels": 32, "loss": "mse"})
+    fs = o["fit_settings"]
+    assert (fs["optimizer"], fs["learning_rate"], fs["weight_decay"], fs["batch_size"], fs["max_epochs"],
+            fs["patience"], fs["min_delta"], fs["max_updates"], fs["max_seconds"]) == \
+        ("AdamW", 1e-3, 1e-4, 256, 100, 10, 1e-8, 100000, 86400.0)
+    assert fs["restore"] == "best_monitored_epoch" and "6102026 + feature_index" in fs["seed_rule"]
+    assert fs["monitor"] == "validation_loss_on_purged_INNER_inputs"
+    assert fs["budget_stop"].startswith("TYPED_FAILURE")
+    assert o["ruling"]["review_commit"] == "93bff41d"
+    assert any("200" in d for d in o["disclosures"]) and any("twice" in d for d in o["disclosures"])
+    assert any("DEVELOPMENT" in d for d in o["disclosures"])
+    out = tmp_path / "ruled.json"
+    assert R2.write_ruled(CONTRACT, out)["seal_sha256"] == ruled["seal_sha256"]
+    assert out.read_text() == RULED.read_text()
+
+
+def _edit(mutate):
+    objective = _ruled_o1()
+    mutate(objective)
+    return R2.rule_objective(_contract(), objective)
+
+
+@pytest.mark.parametrize(("mutate", "code"), [
+    (lambda o: o["fit_settings"].update(max_epochs=200), "R2_OBJECTIVE_NOT_EXECUTABLE"),   # D1
+    (lambda o: o["fit_settings"].update(max_seconds=90000.0), "R2_OBJECTIVE_NOT_EXECUTABLE"),
+    (lambda o: o["fit_settings"].update(patience=0), "R2_OBJECTIVE_NOT_EXECUTABLE"),
+    (lambda o: o["fit_settings"].update(optimizer="Adam"), "R2_OBJECTIVE_NOT_EXECUTABLE"),
+    (lambda o: o["fit_settings"].update(monitor="train_validation_mean"), "R2_OBJECTIVE_NOT_EXECUTABLE"),
+    (lambda o: o["fit_settings"].pop("max_updates"), "R2_OBJECTIVE_UNKNOWN"),               # budgets fixed
+    (lambda o: o["fit_settings"].pop("max_seconds"), "R2_OBJECTIVE_UNKNOWN"),
+    (lambda o: o["fit_settings"].update(max_updates=R2.UNDECIDED), "R2_OBJECTIVE_UNDECIDED"),
+    (lambda o: o["params"].update(loss="huber"), "R2_OBJECTIVE_UNKNOWN"),                   # identity sha
+    (lambda o: o["params"].pop("loss"), "R2_OBJECTIVE_UNKNOWN"),
+    (lambda o: o.update(option="O3", name="masked_point_reconstruction", version=None), "R2_OBJECTIVE_UNKNOWN"),
+    (lambda o: o.update(name="ts2vec_contrastive"), "R2_OBJECTIVE_UNKNOWN"),
+    (lambda o: o.update(identity_sha256="0" * 64), "R2_OBJECTIVE_UNKNOWN"),
+    (lambda o: o["ruling"].update(review_document_sha256="0" * 64), "R2_OBJECTIVE_UNREVIEWED"),
+    (lambda o: o["ruling"].pop("review_commit"), "R2_OBJECTIVE_UNREVIEWED"),
+    (lambda o: o.update(disclosures=[]), "R2_OBJECTIVE_UNREVIEWED"),
+])
+def test_a_ruling_must_be_executable_complete_and_reviewed(mutate, code):
+    with pytest.raises(R2.R2DesignError, match=code):
+        R2.validate_r2_design(_edit(mutate), for_execution=True)
+
+
+def test_the_7488e899_recommendation_is_refused_and_status_follows_the_objective():
+    with pytest.raises(R2.R2DesignError, match="R2_OBJECTIVE_UNKNOWN"):
+        R2.validate_r2_design(R2.rule_objective(_contract(), _ruled_o1_v0()), for_execution=True)
     stale = R2.rule_objective(_contract(), _ruled_o1())
     stale["status"] = "FROZEN_BEFORE_FIT_DESIGN_ONLY"
     with pytest.raises(R2.R2DesignError, match="R2_CONTRACT_MISMATCH"):
@@ -251,31 +294,82 @@ def test_a_full_population_or_unverified_receipt_is_never_r0():
 
 # ============================================================================ decision (R2-09)
 
-def _metrics(score, *, failed=(), arm="mg2m", rows="r" * 64, capacity="5b62"):
+def _metrics(score, *, failed=(), arm="mg2m", rows="r" * 64, capacity="5b62", import_sha=None):
     heads = [2, 3, 4, 5, 6, 12]
     selection = {"status": "INCOMPLETE" if failed else "COMPLETE", "score": None if failed else score,
                  "heads": heads, "failed_heads": [{"horizon": h} for h in failed]}
+    identity = {"common_population_sha256": "p" * 64}
+    if import_sha is not None:
+        identity["r2_import_sha256"] = import_sha
     return {"per_horizon": {str(h): {"relative_error": None if h in failed else score} for h in heads},
             "matched": {"arm": arm, "common_population_sha256": "p" * 64,
                         "development_row_ids_sha256": rows, "development_head_mask_sha256": "m" * 64,
                         "development_counts": {"2": 10}, "capacity": {"capacity_sha256": capacity},
+                        "scientific_fit": True, "fit_device": "gpu", "fit_runtime": "2.21.0",
+                        "fit_gpu_class": "GPU-CLASS-A", "fit_identity": identity,
                         "selection": selection}}
 
 
+def _record():
+    record = {"schema": "i6dmo.r2_import.v1", "arm": "mg2m", "trainable": True,
+              "donor_terminals": {f"f{i:02d}": f"{i:02d}" * 32 for i in range(19)},
+              "non_branch_weights_sha256": "n" * 64, "branches": {}}
+    record["import_sha256"] = R2._import_record_sha(record)
+    return record
+
+
+def _pair(r0_score, r2_score, **kw):
+    rec = _record()
+    return _metrics(r0_score), _metrics(r2_score, import_sha=rec["import_sha256"], **kw), rec
+
+
 def test_decision_rule_lower_score_ties_retain_r0_and_failed_heads_are_incomplete():
-    assert R2.decide_r2(_metrics(0.001), _metrics(-0.002))["selected"] == "R2"
-    tie = R2.decide_r2(_metrics(0.001), _metrics(0.001 - 5e-9))
+    r0, r2, rec = _pair(0.001, -0.002)
+    assert R2.decide_r2(r0, r2, r2_import_record=rec)["selected"] == "R2"
+    r0, r2, rec = _pair(0.001, 0.001 - 5e-9)
+    tie = R2.decide_r2(r0, r2, r2_import_record=rec)
     assert tie["selected"] == "R0" and tie["decision"] == "R0_RETAINED"
-    assert R2.decide_r2(_metrics(-0.001), _metrics(0.0))["selected"] == "R0"
-    out = R2.decide_r2(_metrics(0.001), _metrics(-0.5, failed=(12,)))
+    r0, r2, rec = _pair(-0.001, 0.0)
+    assert R2.decide_r2(r0, r2, r2_import_record=rec)["selected"] == "R0"
+    r0, r2, rec = _pair(0.001, -0.5, failed=(12,))
+    out = R2.decide_r2(r0, r2, r2_import_record=rec)
     assert out["decision"] == "INCOMPLETE_COMPARISON" and out["selected"] is None
     assert out["missing"] == [{"horizon": 12, "arm": "R2"}]
-    with pytest.raises(R2.R2DesignError, match="R2_POPULATION_MISMATCH"):
-        R2.decide_r2(_metrics(0.0), _metrics(0.0, rows="x" * 64))
-    with pytest.raises(R2.R2DesignError, match="R2_ARM_CHANGE"):
-        R2.decide_r2(_metrics(0.0), _metrics(0.0, arm="mg1"))
-    with pytest.raises(R2.R2DesignError, match="R2_ARCHITECTURE_CHANGE"):
-        R2.decide_r2(_metrics(0.0), _metrics(0.0, capacity="other"))
+    for kw, code in (({"rows": "x" * 64}, "R2_POPULATION_MISMATCH"), ({"arm": "mg1"}, "R2_ARM_CHANGE"),
+                     ({"capacity": "other"}, "R2_ARCHITECTURE_CHANGE")):
+        r0, r2, rec = _pair(0.0, 0.0, **kw)
+        with pytest.raises(R2.R2DesignError, match=code):
+            R2.decide_r2(r0, r2, r2_import_record=rec)
+
+
+@pytest.mark.parametrize(("edit", "code"), [
+    (lambda r0, r2, rec: r2["matched"].update(scientific_fit=False), "R2_NON_SCIENTIFIC_FIT"),
+    (lambda r0, r2, rec: r0["matched"].update(fit_device="cpu"), "R2_NON_SCIENTIFIC_FIT"),
+    (lambda r0, r2, rec: r2["matched"].update(fit_runtime="2.18.0"), "R2_FIT_PINNING"),
+    (lambda r0, r2, rec: r2["matched"].update(fit_gpu_class="GPU-CLASS-B"), "R2_FIT_PINNING"),
+    (lambda r0, r2, rec: [m["matched"].update(fit_gpu_class=None) for m in (r0, r2)], "R2_FIT_PINNING"),
+    (lambda r0, r2, rec: rec.clear(), "R2_IMPORT_RECORD_MISSING"),
+    (lambda r0, r2, rec: rec["donor_terminals"].pop("f03"), "R2_IMPORT_RECORD_INVALID"),
+    (lambda r0, r2, rec: rec.update(trainable=False), "R2_IMPORT_RECORD_INVALID"),
+    (lambda r0, r2, rec: r2["matched"]["fit_identity"].pop("r2_import_sha256"), "R2_IMPORT_NOT_BOUND"),
+    (lambda r0, r2, rec: r0["matched"]["fit_identity"].update(r2_import_sha256=rec["import_sha256"]),
+     "R2_R0_HAS_IMPORT"),
+])
+def test_decision_integrity_is_strict_by_default(edit, code):
+    r0, r2, rec = _pair(0.001, -0.002)
+    edit(r0, r2, rec)
+    with pytest.raises(R2.R2DesignError, match=code):
+        R2.decide_r2(r0, r2, r2_import_record=rec or None)
+
+
+def test_two_plain_r0_fits_are_never_r0_vs_r2_even_for_engineering():
+    with pytest.raises(R2.R2DesignError, match="R2_IMPORT_RECORD_MISSING"):
+        R2.decide_r2(_metrics(-0.01), _metrics(-0.02))
+    r0, r2, rec = _pair(0.001, -0.002)
+    r0["matched"].update(scientific_fit=False, fit_device="cpu", fit_gpu_class=None)
+    assert R2.decide_r2(r0, r2, r2_import_record=rec, require_scientific=False)["selected"] == "R2"
+    with pytest.raises(R2.R2DesignError, match="R2_NON_SCIENTIFIC_FIT"):
+        R2.decide_r2(r0, r2, r2_import_record=rec, require_scientific=0)     # only literal False relaxes
 
 
 # ============================================================================ donor import (R2-02/03)
@@ -297,10 +391,11 @@ def _bundle(arm="mg2m"):
     return M.build_dmo(T.effective_from_design(MATCHED / f"EXPERIMENT.{arm}.json")["model"])
 
 
-def _context(bundle, *, objective=None, population=POP, scaler=None):
+def _context(bundle, *, objective=None, population=POP, scaler=None, provenance=None):
     return M.branch_donor_context(bundle, population_sha256=population,
                                   scaler_sha256=scaler or _scaler_sha(),
-                                  objective=objective if objective is not None else _ruled_o1())
+                                  objective=objective if objective is not None else _ruled_o1(),
+                                  provenance=provenance)
 
 
 def _pretend_pretrained(bundle):
@@ -324,14 +419,70 @@ def target():
     return _bundle()
 
 
-def test_import_replaces_only_branches_and_keeps_them_trainable(donors):
+# ---------------------------------------------------------------- authenticated terminals (D3)
+
+INNER_START = 1_700_000_000
+
+
+def _tiny_corpus(feature_index, n_fit=24, n_inner=12, seed=0):
+    rng = np.random.default_rng(seed)
+    fit_x = rng.normal(size=(n_fit, 13, 19))
+    inner_x = rng.normal(size=(n_inner, 13, 19))
+    fit_ids = np.arange(n_fit, dtype=np.int64) * 3600 + 1_600_000_000
+    inner_ids = np.arange(n_inner, dtype=np.int64) * 3600 + INNER_START + 25 * 3600
+    slots = inner_ids[:, None] + np.arange(-24, 1, 2)[None, :] * 3600
+    slots[:2, 0] = INNER_START - 3600                      # two windows overlap FIT bars: purged
+    return M.branch_pretraining_corpus(fit_x, fit_ids, inner_x, inner_ids, slots,
+                                       feature_index=feature_index, scaler_mean=np.zeros(19),
+                                       scaler_std=np.ones(19), inner_start_epoch=INNER_START)
+
+
+def _provenance(features, corpus, campaign="i6dmo-r2-test"):
+    return {"campaign_id": campaign, "ruling_seal_sha256": json.loads(RULED.read_text())["seal_sha256"],
+            "code_pin": {"commit": "test-pin"},
+            "units": {f: f"r2.pretrain.{i:02d}" for i, f in enumerate(features)},
+            "corpus": {f: corpus[f]["sha256"] for f in features}}
+
+
+def _write_terminals(source, root, provenance, *, stop_reason="patience"):
+    ctx = _context(source, provenance=provenance)
+    refs = {}
+    for i, f in enumerate(source.config["features"]):
+        pretrained = {"applied_seed": M.r2_seed(i),
+                      "weights": [np.array(w) for w in source.branch_models[f].get_weights()],
+                      "fit": {"stop_reason": stop_reason, "stop_class": "no_improvement",
+                              "selected_epoch": 1}, "reconstruction": {"state": "MEASURED"}}
+        refs[f] = {"terminal": M.write_branch_donor_terminal(
+            root / f"unit_{i:02d}", bundle=source, feature=f, context=ctx,
+            unit_id=provenance["units"][f], corpus=_CORPUS[f], pretrained=pretrained)}
+    return refs
+
+
+_CORPUS = {}
+
+
+@pytest.fixture(scope="module")
+def genuine(tmp_path_factory):
+    source = _pretend_pretrained(_bundle())
+    features = source.config["features"]
+    for i, f in enumerate(features):
+        _CORPUS[f] = _tiny_corpus(i)[2]
+    prov = _provenance(features, _CORPUS)
+    root = tmp_path_factory.mktemp("terminals")
+    return {"source": source, "prov": prov, "refs": _write_terminals(source, root, prov), "root": root}
+
+
+def test_genuine_terminal_donors_import_and_bind_all_19_terminal_digests(genuine):
     r0, r2 = _bundle(), _bundle()
-    expected = _context(r2)
-    record = M.import_branch_donors(r2, copy.deepcopy(donors), expected)
+    record = M.import_branch_donors(r2, copy.deepcopy(genuine["refs"]),
+                                    _context(r2, provenance=genuine["prov"]))
     assert record["trainable"] is True and record["trainable_parameters"] == 4882
     assert record["non_branch_weights_sha256"] == M._non_branch_digest(r0)
+    assert sorted(record["donor_terminals"]) == sorted(r2.config["features"])
+    assert R2.verify_import_record(record) == record["import_sha256"]
     for feature in r2.config["features"]:
-        for a, b in zip(r2.branch_models[feature].get_weights(), donors[feature]["weights"]):
+        for a, b in zip(r2.branch_models[feature].get_weights(),
+                        genuine["source"].branch_models[feature].get_weights()):
             assert np.array_equal(a, b)
         assert r2.branch_models[feature].trainable
     assert M.capacity_record(r2)["capacity_sha256"] == M.capacity_record(r0)["capacity_sha256"]
@@ -340,6 +491,125 @@ def test_import_replaces_only_branches_and_keeps_them_trainable(donors):
     x = [np.zeros((2, 13, 19), np.float32), np.tile(np.arange(-24.0, 1.0, 2.0, dtype=np.float32), (2, 1)),
          np.zeros((2, 13), np.float32)]
     assert not np.array_equal(M.predict_matrix(r0.forecast_model, x), M.predict_matrix(r2.forecast_model, x))
+
+
+def test_a_self_declared_manifest_never_passes_even_with_a_perfect_identity(genuine, target):
+    forged = {f: {"manifest": M.branch_donor_manifest(target, f, _context(target)),
+                  "weights": [np.array(w) for w in target.branch_models[f].get_weights()]}
+              for f in target.config["features"]}
+    before = [np.array(w) for w in target.forecast_model.get_weights()]
+    with pytest.raises(M.DonorImportError, match="R2_DONOR_PROVENANCE_MISSING"):
+        M.import_branch_donors(target, forged, _context(target, provenance=genuine["prov"]))
+    with pytest.raises(M.DonorImportError, match="R2_DONOR_PROVENANCE_MISSING"):
+        M.import_branch_donors(target, genuine["refs"], _context(target))          # no provenance
+    assert all(np.array_equal(a, b) for a, b in zip(before, target.forecast_model.get_weights()))
+
+
+def _rewrite_terminal(ref, edit):
+    path = Path(ref["path"])
+    doc = json.loads(path.read_text())
+    edit(doc, path)
+    path.write_text(json.dumps(doc, sort_keys=True, indent=1))
+    return {"path": str(path), "sha256": M._file_hash(path)}
+
+
+@pytest.mark.parametrize(("case", "code"), [
+    ("stale_reference", "R2_DONOR_TERMINAL_DIGEST"),
+    ("other_campaign", "R2_DONOR_PROVENANCE_MISMATCH"),
+    ("other_seed", "R2_DONOR_PROVENANCE_MISMATCH"),
+    ("other_code_pin", "R2_DONOR_PROVENANCE_MISMATCH"),
+    ("other_ruling", "R2_DONOR_PROVENANCE_MISMATCH"),
+    ("other_corpus", "R2_DONOR_CORPUS_MISMATCH"),
+    ("budget_stop", "R2_PRETRAINING_BUDGET_STOP"),
+    ("foreign_artifact", "R2_DONOR_WEIGHTS_DIGEST"),
+])
+def test_terminal_provenance_refusals(genuine, target, tmp_path, case, code):
+    features = target.config["features"]
+    f0 = features[0]
+    root = tmp_path / "copy"
+    shutil.copytree(genuine["root"], root)
+    refs = {f: {"terminal": {"path": str(root / Path(r["terminal"]["path"]).relative_to(genuine["root"])),
+                             "sha256": r["terminal"]["sha256"]}} for f, r in genuine["refs"].items()}
+    prov = copy.deepcopy(genuine["prov"])
+    ref = refs[f0]["terminal"]
+    if case == "stale_reference":
+        Path(ref["path"]).write_text(Path(ref["path"]).read_text() + " ")
+    elif case in ("other_campaign", "other_seed", "other_code_pin", "other_ruling", "budget_stop"):
+        key, value = {"other_campaign": ("campaign_id", "another-campaign"),
+                      "other_seed": ("applied_seed", 42), "other_code_pin": ("code_pin", {"commit": "x"}),
+                      "other_ruling": ("ruling_seal_sha256", "0" * 64),
+                      "budget_stop": ("fit", {"stop_reason": "max_seconds", "stop_class": "budget"})}[case]
+        refs[f0]["terminal"] = _rewrite_terminal(ref, lambda d, p: d.update({key: value}))
+    elif case == "other_corpus":
+        prov["corpus"][f0] = _tiny_corpus(0, seed=1)[2]["sha256"]
+    elif case == "foreign_artifact":
+        foreign = _pretend_pretrained(_bundle("mg1")).branch_models[f0].get_weights()
+        np.savez(Path(ref["path"]).parent / "donor.npz", kernel=foreign[0] + 1.0, bias=foreign[1])
+    before = [np.array(w) for w in target.forecast_model.get_weights()]
+    with pytest.raises(M.DonorImportError, match=code):
+        M.import_branch_donors(target, refs, _context(target, provenance=prov))
+    assert all(np.array_equal(a, b) for a, b in zip(before, target.forecast_model.get_weights()))
+
+
+def test_import_rolls_back_every_branch_when_setting_weights_fails(genuine, monkeypatch):
+    r0, r2 = _bundle(), _bundle()
+    features = r2.config["features"]
+    victim = r2.branch_models[features[5]]
+
+    def boom(*a, **k):
+        raise RuntimeError("simulated failure while setting weights")
+    monkeypatch.setattr(victim, "set_weights", boom)
+    with pytest.raises(M.DonorImportError, match="R2_DONOR_IMPORT_ROLLED_BACK"):
+        M.import_branch_donors(r2, copy.deepcopy(genuine["refs"]), _context(r2, provenance=genuine["prov"]))
+    for f in features:
+        assert all(np.array_equal(a, b) for a, b in zip(r2.branch_models[f].get_weights(),
+                                                         r0.branch_models[f].get_weights()))
+
+
+def test_learned_corpus_digest_binds_fit_and_kept_inner_windows_only():
+    fit, sel, corpus = _tiny_corpus(3)
+    assert fit.shape == (24, 13, 1) and sel.shape == (10, 13, 1)
+    assert corpus["counts"] == {"fit": 24, "selection": 10, "purged": 2}
+    assert corpus["feature_index"] == 3 and corpus["purge_rule"] == M.R2_PURGE_RULE
+    assert _tiny_corpus(3)[2]["sha256"] == corpus["sha256"]
+    assert _tiny_corpus(4)[2]["sha256"] != corpus["sha256"]                  # feature index bound
+
+
+# ---------------------------------------------------------------- seeded pretraining unit (D2)
+
+def _test_objective(**fit):
+    objective = _ruled_o1()
+    objective["fit_settings"] = dict(objective["fit_settings"], max_epochs=3, **fit)   # TEST ONLY
+    return objective
+
+
+def test_pretraining_is_seeded_before_the_autoencoder_and_replays_bitwise_on_cpu():
+    fit, sel, _ = _tiny_corpus(3)
+    runs = []
+    for noise in (0, 1):
+        bundle = _bundle()
+        tf.random.normal((7,))                                   # perturb global RNG state first
+        np.random.default_rng(noise).normal(size=5)
+        feature = bundle.config["features"][3]
+        before = [np.array(w) for w in bundle.branch_models[feature].get_weights()]
+        out = M.pretrain_branch(bundle, feature, fit, sel, _test_objective())
+        assert out["applied_seed"] == 6102029 and out["fit"]["stop_reason"] not in M.R2_BUDGET_STOPS
+        assert out["reconstruction"]["state"] == "MEASURED"
+        assert not all(np.array_equal(a, b) for a, b in zip(before, out["weights"]))
+        runs.append(out)
+    for a, b in zip(runs[0]["weights"], runs[1]["weights"]):
+        assert np.array_equal(a, b)                                # bitwise CPU replay
+    assert runs[0]["fit"]["history"] == runs[1]["fit"]["history"]
+
+
+def test_a_budget_stop_is_a_typed_failure_and_undecided_objective_never_pretrains():
+    fit, sel, _ = _tiny_corpus(2)
+    bundle = _bundle()
+    feature = bundle.config["features"][2]
+    with pytest.raises(M.DonorImportError, match="R2_PRETRAINING_BUDGET_STOP"):
+        M.pretrain_branch(bundle, feature, fit, sel, _test_objective(max_updates=1))
+    with pytest.raises(M.DonorImportError, match="R2_OBJECTIVE_UNDECIDED"):
+        M.pretrain_branch(bundle, feature, fit, sel, M.R2_OBJECTIVE_UNDECIDED)
 
 
 def _one(donors, feature, mutate):
