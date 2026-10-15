@@ -907,6 +907,22 @@ def effective_config(design):
 def validate_design_report(path):
     """Pure validate-design result: PASS with identities, or FAILED with a typed code."""
     try:
+        peek = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        peek = None
+    if isinstance(peek, dict) and peek.get("schema") == "i6dmo.r2_contrast_design.v1":
+        # The R0-vs-R2 contract (tools/i6dmo/r2_design.py) is validated FOR EXECUTION here: an
+        # objective still UNDECIDED_REQUIRES_REVIEW is a typed R2_OBJECTIVE_UNDECIDED refusal.
+        from tools.i6dmo import r2_design
+        try:
+            result = r2_design.validate_r2_design(peek, for_execution=True)
+        except (r2_design.R2DesignError, DesignError) as exc:
+            return {"schema": "i6dmo.validate_design.v1", "status": "FAILED", "code": exc.code,
+                    "detail": str(exc), "pure": True}
+        return {"schema": "i6dmo.validate_design.v1", "status": "PASS", "pure": True,
+                "family": "r2_contrast", "contrast_id": peek.get("contrast_id"),
+                "seal_sha256": peek.get("seal_sha256"), "r2": result, "test_open": False}
+    try:
         effective = effective_config(load_design(path))
     except DesignError as exc:
         return {"schema": "i6dmo.validate_design.v1", "status": "FAILED", "code": exc.code,

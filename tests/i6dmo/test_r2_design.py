@@ -1,0 +1,422 @@
+"""R0-versus-R2 design contract (design layer only): typed refusals, R0-reuse predicate,
+decision rule and the shape-proof branch-donor import. No pretraining, no fit, CPU only.
+
+Acceptance rows exercised here: R2-01, R2-02, R2-03, R2-06, R2-08, R2-09, R2-12 (design layer)
+and the contract halves of R2-04/R2-05/R2-07. Rows needing the future runner stay open.
+"""
+
+from __future__ import annotations
+
+import copy
+import json
+import shutil
+
+import numpy as np
+import pytest
+
+from tools.i6dmo import design as D, r2_design as R2
+
+MATCHED = R2.MATCHED_DIR
+CONTRACT = MATCHED / "R2_CONTRAST_DESIGN.json"
+PROPOSAL = MATCHED / "R2_DESIGN_PROPOSAL.md"
+
+
+def _contract():
+    return json.loads(CONTRACT.read_text())
+
+
+def _ruled_o1():
+    return {"option": "O1", "name": "autoencoder_reconstruction", "version": "1.0.0",
+            "params": {"decoder_channels": 32, "loss": "mse"},
+            "fit_settings": {"optimizer": "AdamW", "learning_rate": 1e-3, "weight_decay": 1e-4,
+                             "batch_size": 256, "max_epochs": 200, "patience": 10, "min_delta": 1e-8,
+                             "seed_rule": "6102026 + feature_index", "restore": "best_inner_epoch"},
+            "ruling": {"reviewer": "test-reviewer", "document_sha256": "a" * 64}}
+
+
+# ============================================================================ contract (R2-01/06/12)
+
+def test_committed_contract_is_the_deterministic_derivation_and_is_preparing(tmp_path):
+    built = R2.build_contract()
+    assert CONTRACT.read_text() == json.dumps(built, indent=1, sort_keys=True) + "\n"
+    assert R2.seal(MATCHED, CONTRACT)["idempotent"] is True
+    with pytest.raises(R2.R2DesignError, match="R2_DESIGN_EXISTS"):
+        other = tmp_path / "x.json"
+        other.write_text("{}")
+        R2.seal(MATCHED, other)
+    doc = _contract()
+    assert doc["pretraining"]["objective"] == R2.UNDECIDED == "UNDECIDED_REQUIRES_REVIEW"
+    assert R2.validate_r2_design(doc) == {"status": "PREPARING", "objective": R2.UNDECIDED}
+    with pytest.raises(R2.R2DesignError, match="R2_OBJECTIVE_UNDECIDED"):
+        R2.validate_r2_design(doc, for_execution=True)
+    report = D.validate_design_report(CONTRACT)
+    assert report["status"] == "FAILED" and report["code"] == "R2_OBJECTIVE_UNDECIDED"
+    # The matched arm designs themselves are untouched.
+    assert D.validate_design_report(MATCHED / "EXPERIMENT.mg2m.json")["status"] == "PASS"
+    shared = doc["shared"]
+    assert shared["arm"] == "mg2m" and shared["parameter_total"] == 4882
+    assert shared["population_sha256"].startswith("ba01f87a")
+    assert shared["experiment_design_sha256"].startswith("d71d2b3c")
+    assert shared["effective_config_sha256"].startswith("ad949872")
+    assert shared["seed"] == 6102026 and shared["targets"] == "RAW_EXACT_T_PLUS_H_PRICE"
+    assert doc["selection"]["comparison_sha256"].startswith("2ee85a12")
+    assert sorted(doc["acceptance_tests"]) == [f"R2-{i:02d}" for i in range(1, 13)]
+    assert PROPOSAL.exists()
+
+
+def _set(doc, path, value):
+    node = doc
+    for key in path[:-1]:
+        node = node[key]
+    if value is _DELETE:
+        del node[path[-1]]
+    else:
+        node[path[-1]] = value
+
+
+_DELETE = object()
+
+
+@pytest.mark.parametrize(("path", "value", "code"), [
+    (("shared", "population_sha256"), "0" * 64, "R2_POPULATION_MISMATCH"),
+    (("shared", "scaler_fit_row_digest"), "0" * 64, "R2_POPULATION_MISMATCH"),
+    (("shared", "masks"), "R2-only masks", "R2_POPULATION_MISMATCH"),
+    (("shared", "targets"), "RECONSTRUCTED_DENOISED_TARGET", "R2_TARGET_NOT_RAW"),
+    (("shared", "seed"), 1, "R2_TRAINING_CHANGE"),
+    (("shared", "training", "learning_rate"), 3e-4, "R2_TRAINING_CHANGE"),
+    (("shared", "parameter_total"), 4883, "R2_ARCHITECTURE_CHANGE"),
+    (("shared", "experiment_design_sha256"), "0" * 64, "R2_ARCHITECTURE_CHANGE"),
+    (("shared", "splits", "DEVELOPMENT", "end"), "2025-06-01T00:00:00Z", "R2_SPLIT_MISMATCH"),
+    (("arms", "R2", "branches_trainable"), False, "R2_FROZEN_BRANCH"),
+    (("arms", "R2", "non_branch_init"), "PRETRAINED_CORE", "R2_ARM_CHANGE"),
+    (("selection", "decision"), "MG1_SELECTED", "R2_SELECTION_MISMATCH"),
+    (("pretraining", "data", "development"), "SELECTION", "R2_PRETRAINING_SPLIT"),
+    (("pretraining", "data", "fit"), "FIT_AND_DEVELOPMENT", "R2_PRETRAINING_SPLIT"),
+    (("pretraining", "early_stopping", "monitor"), "DEVELOPMENT_LOSS", "R2_PRETRAINING_SPLIT"),
+    (("pretraining", "donor_policy"), "SHAPE_MATCH_ACCEPTED", "R2_DONOR_POLICY"),
+    (("pretraining", "donor_architecture", "params", "filters"), 8, "R2_DONOR_POLICY"),
+    (("pretraining", "frozen_evaluations", "predictive", "use"), "GATE", "R2_EVALUATION_CHANGE"),
+    (("pretraining", "objective_options"), ["O1", "O9"], "R2_OBJECTIVE_UNKNOWN"),
+    (("r0_reference", "policy"), "ALWAYS_REUSE", "R2_R0_POLICY_CHANGE"),
+    (("decision", "tie_tolerance"), 1e-6, "R2_DECISION_CHANGE"),
+    (("out_of_scope",), ["TEST"], "R2_SCOPE"),
+    (("core_pretraining",), {"objective": "masked"}, "R2_SCOPE"),
+    (("cadence",), "quarterly", "R2_SCOPE"),
+    (("status",), "READY", "R2_CONTRACT_MISMATCH"),
+])
+def test_every_frozen_field_change_is_a_typed_refusal(path, value, code):
+    doc = _contract()
+    _set(doc, path, value)
+    doc["seal_sha256"] = R2._sha({k: v for k, v in doc.items() if k != "seal_sha256"})  # resealed
+    with pytest.raises(R2.R2DesignError, match=code):
+        R2.validate_r2_design(doc)
+
+
+def test_seal_and_schema_refusals():
+    doc = _contract()
+    doc["seal_sha256"] = "0" * 64
+    with pytest.raises(R2.R2DesignError, match="R2_SEAL"):
+        R2.validate_r2_design(doc)
+    with pytest.raises(R2.R2DesignError, match="R2_SCHEMA_REQUIRED"):
+        R2.validate_r2_design(json.loads((MATCHED / "EXPERIMENT.mg2m.json").read_text()))
+
+
+def test_the_contract_binds_the_sealed_matched_artifacts(tmp_path):
+    copy_dir = tmp_path / "matched"
+    shutil.copytree(MATCHED, copy_dir, ignore=shutil.ignore_patterns("review"))
+    seal = json.loads((copy_dir / "POPULATION_SEAL.json").read_text())
+    seal["population_digest"] = "1" * 64
+    (copy_dir / "POPULATION_SEAL.json").write_text(json.dumps(seal))
+    with pytest.raises(R2.R2DesignError, match="R2_POPULATION_MISMATCH"):
+        R2.validate_r2_design(_contract(), matched_dir=copy_dir)
+    cap = json.loads((copy_dir / "CAPACITY_MATCHED.json").read_text())
+    cap["arms"]["mg2m"]["sealed_design_sha256"] = "2" * 64
+    (copy_dir / "CAPACITY_MATCHED.json").write_text(json.dumps(cap))
+    with pytest.raises(R2.R2DesignError, match="R2_RECIPE_MISMATCH"):
+        R2.build_contract(copy_dir)
+
+
+def test_a_reviewed_registered_objective_unlocks_execution_and_nothing_else_does(tmp_path):
+    ruled = R2.rule_objective(_contract(), _ruled_o1())
+    assert R2.validate_r2_design(ruled, for_execution=True)["status"] == "READY_FOR_EXECUTION"
+    path = tmp_path / "ruled.json"
+    path.write_text(json.dumps(ruled))
+    assert D.validate_design_report(path)["status"] == "PASS"
+    bad = []
+    o3 = _ruled_o1() | {"option": "O3", "name": "masked_point_reconstruction", "version": None}
+    bad.append((o3, "R2_OBJECTIVE_UNKNOWN"))
+    partial = _ruled_o1()
+    del partial["params"]["loss"]
+    bad.append((partial, "R2_OBJECTIVE_UNKNOWN"))
+    open_param = _ruled_o1()
+    open_param["fit_settings"]["patience"] = R2.UNDECIDED
+    bad.append((open_param, "R2_OBJECTIVE_UNDECIDED"))
+    unreviewed = _ruled_o1()
+    unreviewed["ruling"] = {"reviewer": "", "document_sha256": "short"}
+    bad.append((unreviewed, "R2_OBJECTIVE_UNREVIEWED"))
+    renamed = _ruled_o1() | {"name": "ts2vec_contrastive"}
+    bad.append((renamed, "R2_OBJECTIVE_UNKNOWN"))
+    for objective, code in bad:
+        with pytest.raises(R2.R2DesignError, match=code):
+            R2.validate_r2_design(R2.rule_objective(_contract(), objective), for_execution=True)
+    stale = R2.rule_objective(_contract(), _ruled_o1())
+    stale["status"] = "FROZEN_BEFORE_FIT_DESIGN_ONLY"
+    with pytest.raises(R2.R2DesignError, match="R2_CONTRACT_MISMATCH"):
+        R2.validate_r2_design(stale)
+
+
+def test_cli_validate_and_seal(tmp_path, capsys):
+    assert R2.main(["validate", "--design", str(CONTRACT), "--json"]) == 0
+    assert json.loads(capsys.readouterr().out)["status"] == "PREPARING"
+    assert R2.main(["validate", "--design", str(CONTRACT), "--for-execution", "--json"]) == 2
+    assert json.loads(capsys.readouterr().out)["code"] == "R2_OBJECTIVE_UNDECIDED"
+    assert R2.main(["seal", "--out", str(tmp_path / "c.json"), "--json"]) == 0
+    assert (tmp_path / "c.json").read_text() == CONTRACT.read_text()
+
+
+# ============================================================================ R0 reuse (R2-08)
+
+CODE = {"tools/i6dmo/train.py": "c" * 64, "tools/i6dmo/model.py": "d" * 64}
+SCALES = "e" * 64
+MONITOR = {"procedure": "i6dmo.monitor_eval.v2", "partition": "sequential_row_id_fixed",
+           "input_materialization": "i6dmo.monitor_input.v1", "monitor_forward": {"id": "f"}}
+
+
+def _agreeing_receipt(shared):
+    return {"status": "COMPLETED", "scientific": True, "overrides": {}, "device": "gpu",
+            "identity": {"design_sha256": shared["experiment_design_sha256"],
+                         "effective_config_sha256": shared["effective_config_sha256"],
+                         "common_population_sha256": shared["population_sha256"],
+                         "matched_arm": "mg2m", "capacity_sha256": shared["capacity_sha256"],
+                         "scales_sha256": SCALES, "code_files_sha256": dict(CODE)},
+            "matched": {"scaler": {"fit_row_digest": shared["scaler_fit_row_digest"]}},
+            "resources": {"tensorflow_version": shared["runtime"]["tensorflow"]}}
+
+
+def _decide(receipt, monitor=MONITOR, verdict="ACCEPT"):
+    return R2.r0_reuse_decision(receipt, dict(monitor), _contract(), expected_code_files=dict(CODE),
+                                expected_scales_sha256=SCALES, current_monitor_identity=MONITOR,
+                                r1_verdict=verdict)
+
+
+def test_r0_is_reused_only_when_every_component_agrees():
+    shared = _contract()["shared"]
+    ok = _decide(_agreeing_receipt(shared))
+    assert ok["decision"] == "REUSE_R0" and ok["failed"] == []
+    assert tuple(ok["components"]) == R2.R0_REUSE_COMPONENTS
+
+
+_MUTATIONS = {
+    "status_completed": lambda r: r.update(status="FAILED_TYPED"),
+    "scientific": lambda r: r.update(scientific=False),
+    "no_overrides": lambda r: r.update(overrides={"max_epochs": 2}),
+    "device_gpu": lambda r: r.update(device="cpu"),
+    "design_sha256": lambda r: r["identity"].update(design_sha256="0" * 64),
+    "effective_config_sha256": lambda r: r["identity"].update(effective_config_sha256="0" * 64),
+    "common_population_sha256": lambda r: r["identity"].update(common_population_sha256="0" * 64),
+    "matched_arm": lambda r: r["identity"].update(matched_arm="mg1"),
+    "capacity_sha256": lambda r: r["identity"].update(capacity_sha256="0" * 64),
+    "scales_sha256": lambda r: r["identity"].update(scales_sha256="0" * 64),
+    "scaler_fit_row_digest": lambda r: r["matched"]["scaler"].update(fit_row_digest="0" * 64),
+    "runtime_tensorflow": lambda r: r["resources"].update(tensorflow_version="2.18.0"),
+    "code_files_sha256": lambda r: r["identity"]["code_files_sha256"].update(
+        {"tools/i6dmo/model.py": "0" * 64}),
+}
+
+
+@pytest.mark.parametrize("component", R2.R0_REUSE_COMPONENTS)
+def test_any_disagreeing_component_requires_a_fresh_r0(component):
+    receipt = _agreeing_receipt(_contract()["shared"])
+    monitor, verdict = MONITOR, "ACCEPT"
+    if component == "monitor_identity":
+        monitor = dict(MONITOR, partition="permuted")
+    elif component == "r1_donor_verifier":
+        verdict = "REJECT:FAKE_RECEIPT"
+    else:
+        _MUTATIONS[component](receipt)
+    out = _decide(receipt, monitor, verdict)
+    assert out["decision"] == "FRESH_R0_REQUIRED" and out["failed"] == [component]
+
+
+def test_a_full_population_or_unverified_receipt_is_never_r0():
+    shared = _contract()["shared"]
+    closed = _agreeing_receipt(shared)
+    for key in ("common_population_sha256", "matched_arm", "capacity_sha256"):
+        closed["identity"].pop(key)
+    out = _decide(closed)
+    assert out["decision"] == "FRESH_R0_REQUIRED"
+    assert {"common_population_sha256", "matched_arm", "capacity_sha256"} <= set(out["failed"])
+    assert _decide(None, {}, None)["decision"] == "FRESH_R0_REQUIRED"
+
+
+# ============================================================================ decision (R2-09)
+
+def _metrics(score, *, failed=(), arm="mg2m", rows="r" * 64, capacity="5b62"):
+    heads = [2, 3, 4, 5, 6, 12]
+    selection = {"status": "INCOMPLETE" if failed else "COMPLETE", "score": None if failed else score,
+                 "heads": heads, "failed_heads": [{"horizon": h} for h in failed]}
+    return {"per_horizon": {str(h): {"relative_error": None if h in failed else score} for h in heads},
+            "matched": {"arm": arm, "common_population_sha256": "p" * 64,
+                        "development_row_ids_sha256": rows, "development_head_mask_sha256": "m" * 64,
+                        "development_counts": {"2": 10}, "capacity": {"capacity_sha256": capacity},
+                        "selection": selection}}
+
+
+def test_decision_rule_lower_score_ties_retain_r0_and_failed_heads_are_incomplete():
+    assert R2.decide_r2(_metrics(0.001), _metrics(-0.002))["selected"] == "R2"
+    tie = R2.decide_r2(_metrics(0.001), _metrics(0.001 - 5e-9))
+    assert tie["selected"] == "R0" and tie["decision"] == "R0_RETAINED"
+    assert R2.decide_r2(_metrics(-0.001), _metrics(0.0))["selected"] == "R0"
+    out = R2.decide_r2(_metrics(0.001), _metrics(-0.5, failed=(12,)))
+    assert out["decision"] == "INCOMPLETE_COMPARISON" and out["selected"] is None
+    assert out["missing"] == [{"horizon": 12, "arm": "R2"}]
+    with pytest.raises(R2.R2DesignError, match="R2_POPULATION_MISMATCH"):
+        R2.decide_r2(_metrics(0.0), _metrics(0.0, rows="x" * 64))
+    with pytest.raises(R2.R2DesignError, match="R2_ARM_CHANGE"):
+        R2.decide_r2(_metrics(0.0), _metrics(0.0, arm="mg1"))
+    with pytest.raises(R2.R2DesignError, match="R2_ARCHITECTURE_CHANGE"):
+        R2.decide_r2(_metrics(0.0), _metrics(0.0, capacity="other"))
+
+
+# ============================================================================ donor import (R2-02/03)
+
+tf = pytest.importorskip("tensorflow")
+from tools.i6dmo import model as M, train as T  # noqa: E402
+
+POP = "ba01f87a14e1ceb39d1a5770d4d00f3803cd29748c64edf7254c1e6c57b249d1"
+
+
+
+def _scaler_sha(seed=0):
+    rng = np.random.default_rng(seed)
+    return M.scaler_identity_sha256([f"f{i}" for i in range(19)], rng.normal(size=19),
+                                    rng.uniform(0.5, 2.0, size=19), "8" * 64, 1234)
+
+
+def _bundle(arm="mg2m"):
+    return M.build_dmo(T.effective_from_design(MATCHED / f"EXPERIMENT.{arm}.json")["model"])
+
+
+def _context(bundle, *, objective=None, population=POP, scaler=None):
+    return M.branch_donor_context(bundle, population_sha256=population,
+                                  scaler_sha256=scaler or _scaler_sha(),
+                                  objective=objective if objective is not None else _ruled_o1())
+
+
+def _pretend_pretrained(bundle):
+    """Stand-in for future pretrained weights: deterministic edits of each branch (no fitting)."""
+    for i, model in enumerate(bundle.branch_models.values()):
+        model.set_weights([w + 0.01 * (i + 1) for w in model.get_weights()])
+    return bundle
+
+
+@pytest.fixture(scope="module")
+def donors():
+    source = _pretend_pretrained(_bundle())
+    ctx = _context(source)
+    return {f: {"manifest": M.branch_donor_manifest(source, f, ctx),
+                "weights": [np.array(w) for w in source.branch_models[f].get_weights()]}
+            for f in source.config["features"]}
+
+
+@pytest.fixture(scope="module")
+def target():
+    return _bundle()
+
+
+def test_import_replaces_only_branches_and_keeps_them_trainable(donors):
+    r0, r2 = _bundle(), _bundle()
+    expected = _context(r2)
+    record = M.import_branch_donors(r2, copy.deepcopy(donors), expected)
+    assert record["trainable"] is True and record["trainable_parameters"] == 4882
+    assert record["non_branch_weights_sha256"] == M._non_branch_digest(r0)
+    for feature in r2.config["features"]:
+        for a, b in zip(r2.branch_models[feature].get_weights(), donors[feature]["weights"]):
+            assert np.array_equal(a, b)
+        assert r2.branch_models[feature].trainable
+    assert M.capacity_record(r2)["capacity_sha256"] == M.capacity_record(r0)["capacity_sha256"]
+    for a, b in zip(r2.core_model.get_weights(), r0.core_model.get_weights()):
+        assert np.array_equal(a, b)
+    x = [np.zeros((2, 13, 19), np.float32), np.tile(np.arange(-24.0, 1.0, 2.0, dtype=np.float32), (2, 1)),
+         np.zeros((2, 13), np.float32)]
+    assert not np.array_equal(M.predict_matrix(r0.forecast_model, x), M.predict_matrix(r2.forecast_model, x))
+
+
+def _one(donors, feature, mutate):
+    out = copy.deepcopy(donors)
+    mutate(out, feature)
+    return out
+
+
+def _first(target):
+    return target.config["features"][0]
+
+
+def test_shape_is_never_compatibility_mg1_and_closed_population_branches(target, donors):
+    """MG1 and MG2m branch kernels have IDENTICAL shapes; identity, not shape, decides."""
+    mg1 = _pretend_pretrained(_bundle("mg1"))
+    feature = _first(target)
+    assert [w.shape for w in mg1.branch_models[feature].get_weights()] == \
+        [w.shape for w in target.branch_models[feature].get_weights()]
+    mg1_ctx = _context(mg1)
+    offered = copy.deepcopy(donors)
+    offered[feature] = {"manifest": M.branch_donor_manifest(mg1, feature, mg1_ctx),
+                        "weights": [np.array(w) for w in mg1.branch_models[feature].get_weights()]}
+    before = [np.array(w) for w in target.forecast_model.get_weights()]
+    with pytest.raises(M.DonorImportError, match="R2_DONOR_ARM_MISMATCH"):
+        M.import_branch_donors(target, offered, _context(target))
+    # A same-recipe branch from ANOTHER population (e.g., the closed full-population MG2 fit).
+    with pytest.raises(M.DonorImportError, match="R2_DONOR_POPULATION_MISMATCH"):
+        M.import_branch_donors(target, donors, _context(target, population="7" * 64))
+    with pytest.raises(M.DonorImportError, match="R2_DONOR_SCALER_MISMATCH"):
+        M.import_branch_donors(target, donors, _context(target, scaler=_scaler_sha(seed=1)))
+    after = target.forecast_model.get_weights()
+    assert all(np.array_equal(a, b) for a, b in zip(before, after))      # atomic: nothing imported
+
+
+def _set_manifest(key, value):
+    def mutate(d, f):
+        d[f]["manifest"][key] = value
+    return mutate
+
+
+@pytest.mark.parametrize(("mutate", "code"), [
+    (lambda d, f: d[f].update(manifest={"schema": M.BRANCH_DONOR_SCHEMA, "input_shape": [13, 1],
+                                        "output_shape": [13, 4], "weights": d[f]["manifest"]["weights"]}),
+     "R2_DONOR_IDENTITY_INCOMPLETE"),                              # shape-only manifest
+    (lambda d, f: d[f].update(manifest={"input_shape": [13, 1]}), "R2_DONOR_SCHEMA"),
+    (_set_manifest("rule", "DS2_EXACT"), "R2_DONOR_SAMPLING_MISMATCH"),         # elapsed DS2
+    (_set_manifest("spacing_open_market_hours", 1), "R2_DONOR_SAMPLING_MISMATCH"),  # hourly/lagged
+    (_set_manifest("slots", 24), "R2_DONOR_SAMPLING_MISMATCH"),                 # I6-B 24-step grid
+    (_set_manifest("feature_names_sha256", "0" * 64), "R2_DONOR_FEATURE_ORDER"),
+    (_set_manifest("conv_layer_name", "branch_00_dense"), "R2_DONOR_LAYER_MISMATCH"),
+    (_set_manifest("branch_params", {"filters": 16, "kernel_size": 3, "strides": 1,
+                                     "activation": "relu"}), "R2_DONOR_ARCHITECTURE_MISMATCH"),
+    (_set_manifest("objective", {"option": "O2"}), "R2_DONOR_OBJECTIVE_MISMATCH"),
+    (lambda d, f: d[f]["weights"][0].__setitem__((0, 0, 0), 9.0), "R2_DONOR_WEIGHTS_DIGEST"),
+    (lambda d, f: d[f].update(weights=[np.zeros((3, 1, 16), np.float32), np.zeros(16, np.float32)]),
+     "R2_DONOR_ARCHITECTURE_MISMATCH"),                            # FS4/I6-B-like widths
+    (lambda d, f: d.pop(f), "R2_DONOR_SET"),
+])
+def test_donor_refusals_are_typed_and_atomic(target, donors, mutate, code):
+    feature = _first(target)
+    offered = _one(donors, feature, mutate)
+    before = [np.array(w) for w in target.forecast_model.get_weights()]
+    with pytest.raises(M.DonorImportError, match=code):
+        M.import_branch_donors(target, offered, _context(target))
+    assert all(np.array_equal(a, b) for a, b in zip(before, target.forecast_model.get_weights()))
+
+
+def test_feature_order_swap_and_undecided_objective_are_refused(target, donors):
+    features = target.config["features"]
+    swapped = copy.deepcopy(donors)
+    swapped[features[0]], swapped[features[1]] = swapped[features[1]], swapped[features[0]]
+    with pytest.raises(M.DonorImportError, match="R2_DONOR_FEATURE_ORDER"):
+        M.import_branch_donors(target, swapped, _context(target))
+    with pytest.raises(M.DonorImportError, match="R2_OBJECTIVE_UNDECIDED"):
+        M.import_branch_donors(target, donors, _context(target, objective=M.R2_OBJECTIVE_UNDECIDED))
+    assert M.R2_OBJECTIVE_UNDECIDED == R2.UNDECIDED
+    with pytest.raises(M.DonorImportError, match="R2_DONOR_ARM_MISMATCH"):
+        elapsed = M.build_dmo(T.effective_from_design(MATCHED.parent / "EXPERIMENT.short.json")["model"])
+        M.branch_donor_context(elapsed, population_sha256=POP, scaler_sha256=_scaler_sha(),
+                               objective=_ruled_o1())

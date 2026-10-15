@@ -732,6 +732,189 @@ def matched_capacity_delta(record_mg1, record_mg2):
                               "additional signal alone caused any gain"}
 
 
+# ----------------------------------------------------------------------------- R2 branch donors
+#
+# NEXT_CONTRASTS_PLAN section 3 / R2_DESIGN_PROPOSAL.md: R2 = the SAME network as R0 whose 19
+# per-feature branch encoders start from compatible pretrained weights, imported and kept
+# TRAINABLE. Conv1D kernel shapes (3, 1, 4) do not depend on the slot count, so an MG1 (25-slot),
+# DS2/hourly/lagged, closed full-population or FS4/I6-B branch has weights of IDENTICAL shape:
+# shape is never evidence of compatibility. Every donor must carry and match the full identity
+# below; anything else is a typed refusal. Design layer only: no pretraining runner here.
+
+BRANCH_DONOR_SCHEMA = "i6dmo.branch_donor.v1"
+R2_OBJECTIVE_UNDECIDED = "UNDECIDED_REQUIRES_REVIEW"
+BRANCH_DONOR_KEYS = ("schema", "arm", "rule", "slots", "spacing_open_market_hours", "feature_name",
+                     "feature_index", "feature_names_sha256", "branch_model_name", "conv_layer_name",
+                     "branch_params", "input_shape", "output_shape", "scaler_sha256",
+                     "population_sha256", "objective", "weights")
+
+
+class DonorImportError(ValueError):
+    """Typed refusal of an R2 branch-donor import (the message starts with the code)."""
+
+    def __init__(self, code, detail=""):
+        self.code = code
+        super().__init__(f"{code}: {detail}" if detail else code)
+
+
+def scaler_identity_sha256(feature_names, mean, std, fit_row_digest, n_rows):
+    """Identity of the shared FIT-only scaler (exact float64 values, feature order, row digest)."""
+    mean = [float(v).hex() for v in np.asarray(mean, dtype=np.float64).reshape(-1)]
+    std = [float(v).hex() for v in np.asarray(std, dtype=np.float64).reshape(-1)]
+    return hashlib.sha256(_canonical({"feature_names": list(feature_names), "mean": mean, "std": std,
+                                      "fit_row_digest": str(fit_row_digest),
+                                      "n_rows": int(n_rows)}).encode()).hexdigest()
+
+
+def _array_digests(arrays):
+    out = []
+    for value in arrays:
+        value = np.ascontiguousarray(value)
+        digest = hashlib.sha256()
+        digest.update(_canonical([list(value.shape), str(value.dtype)]).encode("ascii"))
+        digest.update(value.tobytes())
+        out.append({"shape": list(value.shape), "dtype": str(value.dtype), "sha256": digest.hexdigest()})
+    return out
+
+
+def branch_donor_context(bundle, *, population_sha256, scaler_sha256, objective):
+    """The identity every donor for ``bundle`` must match (derived from the BUILT network)."""
+    c = bundle.config
+    family = market_family(c)
+    arm = next((a for a, f in MATCHED_ARMS.items() if f == family), None)
+    if arm is None or not is_market_time(c):
+        raise DonorImportError("R2_DONOR_ARM_MISMATCH", "R2 imports only into a matched market-time arm")
+    features = list(c["features"])
+    branches = {}
+    for index, feature in enumerate(features):
+        model = bundle.branch_models[feature]
+        branches[feature] = {"feature_index": index, "branch_model_name": model.name,
+                             "conv_layer_name": model.name + "_conv",
+                             "input_shape": list(model.input_shape[1:]),
+                             "output_shape": list(model.output_shape[1:]),
+                             "weights": [{"shape": list(w.shape), "dtype": str(np.asarray(w).dtype)}
+                                         for w in model.get_weights()]}
+    return {"arm": arm, "rule": c["market_time"]["rule"], "slots": int(c["slots"]),
+            "spacing_open_market_hours": c["market_time"]["spacing_open_market_hours"],
+            "features": features,
+            "feature_names_sha256": hashlib.sha256(_canonical(features).encode()).hexdigest(),
+            "branch_params": _branch_params(c), "scaler_sha256": scaler_sha256,
+            "population_sha256": population_sha256, "objective": objective, "branches": branches}
+
+
+def branch_donor_manifest(bundle, feature, context):
+    """Manifest of ONE branch of ``bundle`` (e.g., after pretraining) under ``context``."""
+    model = bundle.branch_models[feature]
+    entry = context["branches"][feature]
+    return {"schema": BRANCH_DONOR_SCHEMA, "arm": context["arm"], "rule": context["rule"],
+            "slots": context["slots"], "spacing_open_market_hours": context["spacing_open_market_hours"],
+            "feature_name": feature, "feature_index": entry["feature_index"],
+            "feature_names_sha256": context["feature_names_sha256"],
+            "branch_model_name": model.name, "conv_layer_name": model.name + "_conv",
+            "branch_params": dict(context["branch_params"]),
+            "input_shape": list(model.input_shape[1:]), "output_shape": list(model.output_shape[1:]),
+            "scaler_sha256": context["scaler_sha256"], "population_sha256": context["population_sha256"],
+            "objective": json.loads(_canonical(context["objective"])),
+            "weights": _array_digests(model.get_weights())}
+
+
+def check_branch_donor(manifest, weights, expected, feature):
+    """Typed compatibility check of one donor against the expected context; never by shape alone."""
+    if not isinstance(manifest, dict) or manifest.get("schema") != BRANCH_DONOR_SCHEMA:
+        raise DonorImportError("R2_DONOR_SCHEMA", f"{feature}: donor schema must be {BRANCH_DONOR_SCHEMA}")
+    missing = [k for k in BRANCH_DONOR_KEYS if k not in manifest]
+    if missing:
+        raise DonorImportError("R2_DONOR_IDENTITY_INCOMPLETE",
+                               f"{feature}: donor lacks {missing}; a shape match alone is never accepted")
+    objective = expected["objective"]
+    if objective == R2_OBJECTIVE_UNDECIDED or not isinstance(objective, dict):
+        raise DonorImportError("R2_OBJECTIVE_UNDECIDED",
+                               "the pretraining objective has not been ruled; no donor is importable")
+    entry = expected["branches"].get(feature)
+    if entry is None:
+        raise DonorImportError("R2_DONOR_SET", f"{feature} is not a branch of the target network")
+    checks = (
+        ("R2_DONOR_ARM_MISMATCH", ("arm",)),
+        ("R2_DONOR_SAMPLING_MISMATCH", ("rule", "slots", "spacing_open_market_hours")),
+        ("R2_DONOR_FEATURE_ORDER", ("feature_names_sha256",)),
+        ("R2_DONOR_ARCHITECTURE_MISMATCH", ("branch_params",)),
+        ("R2_DONOR_SCALER_MISMATCH", ("scaler_sha256",)),
+        ("R2_DONOR_POPULATION_MISMATCH", ("population_sha256",)),
+    )
+    for code, keys in checks:
+        for key in keys:
+            if manifest[key] != expected[key]:
+                raise DonorImportError(code, f"{feature}: donor {key}={manifest[key]!r} != "
+                                             f"expected {expected[key]!r}")
+    if manifest["feature_name"] != feature or manifest["feature_index"] != entry["feature_index"]:
+        raise DonorImportError("R2_DONOR_FEATURE_ORDER",
+                               f"donor {manifest['feature_name']!r}@{manifest['feature_index']} offered "
+                               f"for {feature!r}@{entry['feature_index']}")
+    if (manifest["branch_model_name"], manifest["conv_layer_name"]) != \
+            (entry["branch_model_name"], entry["conv_layer_name"]):
+        raise DonorImportError("R2_DONOR_LAYER_MISMATCH",
+                               f"{feature}: donor layers {manifest['branch_model_name']}/"
+                               f"{manifest['conv_layer_name']} != {entry['branch_model_name']}/"
+                               f"{entry['conv_layer_name']}")
+    if (manifest["input_shape"], manifest["output_shape"]) != (entry["input_shape"], entry["output_shape"]):
+        raise DonorImportError("R2_DONOR_ARCHITECTURE_MISMATCH", f"{feature}: donor branch shapes differ")
+    if _canonical(manifest["objective"]) != _canonical(objective):
+        raise DonorImportError("R2_DONOR_OBJECTIVE_MISMATCH",
+                               f"{feature}: donor objective differs from the ruled objective")
+    actual = _array_digests(weights)
+    if [{k: d[k] for k in ("shape", "dtype")} for d in actual] != entry["weights"]:
+        raise DonorImportError("R2_DONOR_ARCHITECTURE_MISMATCH", f"{feature}: weight tensors differ in shape")
+    if actual != manifest["weights"]:
+        raise DonorImportError("R2_DONOR_WEIGHTS_DIGEST",
+                               f"{feature}: supplied weights do not hash to the donor manifest")
+    return actual
+
+
+def _non_branch_digest(bundle):
+    weights = list(bundle.core_model.get_weights())
+    for head in bundle.head_models.values():
+        weights.extend(head.get_weights())
+    return hashlib.sha256(_canonical(_array_digests(weights)).encode()).hexdigest()
+
+
+def import_branch_donors(bundle, donors, expected):
+    """R2 initialization: import ALL 19 branch donors into a fresh R0-seeded ``bundle``.
+
+    ``donors`` maps every feature to ``{"manifest": ..., "weights": [kernel, bias]}``. Each is
+    checked by :func:`check_branch_donor`; core and head weights must stay bitwise identical to
+    the R0 seed build, and every branch stays trainable (R2, never R1-frozen).
+    """
+    features = expected["features"]
+    if list(bundle.config["features"]) != features:
+        raise DonorImportError("R2_DONOR_FEATURE_ORDER", "target network feature order differs")
+    if set(donors) != set(features):
+        raise DonorImportError("R2_DONOR_SET", f"missing {sorted(set(features) - set(donors))}, "
+                                               f"unexpected {sorted(set(donors) - set(features))}")
+    verified = {f: check_branch_donor(donors[f]["manifest"], donors[f]["weights"], expected, f)
+                for f in features}
+    before = _non_branch_digest(bundle)
+    branches = {}
+    for feature in features:
+        model = bundle.branch_models[feature]
+        prior = _array_digests(model.get_weights())
+        model.set_weights([np.asarray(w) for w in donors[feature]["weights"]])
+        model.trainable = True
+        after = _array_digests(model.get_weights())
+        if after != verified[feature]:
+            raise DonorImportError("R2_DONOR_WEIGHTS_DIGEST", f"{feature}: imported weights differ")
+        branches[feature] = {"r0_init": prior, "imported": after}
+    if _non_branch_digest(bundle) != before:
+        raise DonorImportError("R2_NON_BRANCH_CHANGED", "core/head weights changed during import")
+    if not all(bundle.branch_models[f].trainable for f in features) or not bundle.forecast_model.trainable:
+        raise DonorImportError("R2_FROZEN_BRANCH", "R2 branches must stay trainable")
+    return {"schema": "i6dmo.r2_import.v1", "arm": expected["arm"],
+            "population_sha256": expected["population_sha256"],
+            "scaler_sha256": expected["scaler_sha256"], "objective": expected["objective"],
+            "non_branch_weights_sha256": before, "branches": branches, "trainable": True,
+            "trainable_parameters": int(sum(int(np.prod(w.shape))
+                                            for w in bundle.forecast_model.trainable_weights))}
+
+
 def predict_matrix(model, x, batch_size=4096):
     """(n, heads) float64 predictions in horizon order, in the training coordinate.
 
