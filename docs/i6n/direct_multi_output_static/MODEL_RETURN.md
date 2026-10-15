@@ -508,3 +508,49 @@ Per MUSASHI_TO_SATOSHI_STATIC_BASELINE_CLOSE_AND_MARKET_GRID_20261015 section 3
   population; encoder/R2 and cadence contrasts remain distinct later sealed
   designs, never combined and attributed to downsampling.
 - The short design's FINAL effective sha `287e4f11…` is unchanged (verified).
+
+## Round 19: market-time pair MODEL ownership (order 1.2) - prepared, no fit
+
+Plan sections 2/3/6 treated as FROZEN. CPU only, no fit, no GPU.
+
+1. NEW typed schema `i6dmo.market_time_design.v1`, separate from
+   `i6dmo.design.v1`: a `market_time` block (rule, observations, spacing and
+   span in OPEN-MARKET hours, include_origin, `elapsed_span_fixed: false`,
+   `require_exact_market_slots: true`). `history_span_hours` keeps its elapsed
+   meaning in the old schema and is ABSENT here; any fixed-elapsed field
+   (`input`, `history_span_hours`, `spacing_hours`, `observations`,
+   `offsets_hours`) alongside `market_time` is typed
+   `MARKET_TIME_CONTRADICTION`. Sealed designs (committed):
+   - `EXPERIMENT.mg2.json` I6-DMO-SHORT-MG2-MARKET-EXACT-R0 design sha
+     `169fbece…` seal `e7c2f3e7…` effective `5798baaa…`
+   - `EXPERIMENT.mg12.json` I6-DMO-LONG-MG12-MARKET-EXACT-R0 design sha
+     `8c10a9ca…` seal `ef562ba4…` effective `0b1b63e3…`
+   The seal binds the time-encoder formula identity, feature manifest,
+   availability contract, calendar (ASSUMED_NOT_BROKER), the data lane's
+   candidate + support-study digests, seed 6102026 and runtime versions.
+   `seal-market-time` is deterministic and idempotent; a market-time design is
+   refused as a base for the final/hourly derivations.
+2. The ONLY model extension: `DynamicPhysicalTimeEncoder` (serializable,
+   version 1.0.0) immediately after branch fusion. It applies the same
+   deterministic sinusoidal rule to the ACTUAL signed UTC offsets in hours
+   (asserted different from the ordinal-index code, and equal to the plugin
+   formula evaluated at those offsets), then appends exactly two context
+   channels before the core: adjacent elapsed-hours/24 (fixed unit conversion,
+   never fitted) and closure-crossed 0/1, with slot 0 delta 0 / flag 0 and the
+   last offset exactly 0. With 19 branches the core input is 76 + 2 = 78.
+   Per-example time inputs are mandatory (a fixed per-batch grid is refused),
+   and model metadata records that slot order is not wall-clock time.
+   Controlled-weight tests prove the actual time inputs reach the output
+   (a 50 h weekend gap yields 50/24 + 1 against 2/24 for a regular window).
+3. Everything else is the frozen recipe (branches 4/3/1, core 8->4, six
+   Flatten->Dense(8,relu)->Dense(1,linear) heads, AdamW 1e-3/1e-4, batch 256,
+   200 epochs, patience 10, min_delta 1e-8, equal-head masked normalized MAE,
+   best-weight restore, mean end-of-epoch FIT/INNER monitor), and the
+   already-reviewed numerical policy is UNCHANGED (rtol 5e-5 / atol 1e-9,
+   `i6dmo.monitor_numeric_equivalence.v2`; DMO10 not reopened).
+4. Old DS2 behaviour preserved under its own config: a replay test asserts the
+   elapsed short/long/hourly families still build single-input models with the
+   fixed-offset encoder, 76-channel core input and 4,834 parameters; the short
+   FINAL effective sha `287e4f11…` is unchanged. Serialization/reload covers
+   ALL inputs including the time/closure channels; identity refusals are typed
+   (`MARKET_TIME_INCOMPATIBLE`, `WEIGHTS_DIGEST_MISMATCH`).

@@ -140,6 +140,18 @@ FAMILIES = {
     # The only forced recipe change: each head flattens a 25x4 instead of a 13x4 core sequence.
     "short_hourly": {"offsets_hours": list(range(-24, 1, 1)), "horizons_hours": [2, 3, 4, 5, 6, 12]},
 }
+#: Market-time families (MARKET_TIME_PAIR_PLAN section 2/3): offsets are NOT a fixed grid, so the
+#: config declares the slot count and the market_time block instead of offsets_hours, and the model
+#: takes per-example time inputs. Elapsed spans vary across closures and DST by construction.
+MARKET_FAMILIES = {
+    "short_mg2": {"slots": 13, "horizons_hours": [2, 3, 4, 5, 6, 12], "rule": "MG2_MARKET_EXACT",
+                  "spacing_open_market_hours": 2, "span_open_market_hours": 24},
+    "long_mg12": {"slots": 13, "horizons_hours": [18, 24, 36, 48, 60, 72], "rule": "MG12_MARKET_EXACT",
+                  "spacing_open_market_hours": 12, "span_open_market_hours": 144},
+}
+MARKET_KEYS = {"schema", "features", "slots", "market_time", "horizons_hours", "branch", "core",
+               "heads", "positional_encoding", "regime", "seed"}
+TIME_ENCODER_VERSION = "1.0.0"
 
 
 def _canonical(value):
@@ -147,10 +159,28 @@ def _canonical(value):
 
 
 def model_config(features, seed=6102026, family="short"):
-    """The fixed R0 model config for an ordered feature list and family (short or long)."""
+    """The fixed R0 model config for an ordered feature list and family."""
+    if family in MARKET_FAMILIES:
+        spec = MARKET_FAMILIES[family]
+        return normalize_model_config({
+            "schema": MODEL_SCHEMA, "features": list(features), "regime": "R0", "seed": seed,
+            "branch": json.loads(_canonical(_FIXED["branch"])),
+            "core": json.loads(_canonical(_FIXED["core"])),
+            "heads": json.loads(_canonical(_FIXED["heads"])),
+            "positional_encoding": "dynamic_physical_time_after_fusion",
+            "slots": spec["slots"], "horizons_hours": list(spec["horizons_hours"]),
+            "market_time": {"rule": spec["rule"],
+                            "spacing_open_market_hours": spec["spacing_open_market_hours"],
+                            "span_open_market_hours": spec["span_open_market_hours"],
+                            "observations": spec["slots"], "include_origin": True,
+                            "elapsed_span_fixed": False, "require_exact_market_slots": True}})
     return normalize_model_config({"schema": MODEL_SCHEMA, "features": list(features), "regime": "R0",
                                    "seed": seed, **json.loads(_canonical(_FIXED)),
                                    **json.loads(_canonical(FAMILIES[family]))})
+
+
+def is_market_time(config):
+    return "market_time" in config
 
 
 def model_family(config):
@@ -161,7 +191,44 @@ def model_family(config):
                      f"{json.dumps(FAMILIES)}")
 
 
+def _normalize_market_config(config):
+    c = json.loads(_canonical(config))
+    if set(c) != MARKET_KEYS:
+        raise ValueError(f"UNKNOWN_FIELD/schema mismatch in market-time model config: "
+                         f"{sorted(set(c) ^ MARKET_KEYS)}")
+    if c["schema"] != MODEL_SCHEMA:
+        raise ValueError(f"model schema must be {MODEL_SCHEMA}")
+    if c["regime"] != "R0":
+        raise ValueError("only R0 is built here; no donor is compatible by shape alone")
+    if c["positional_encoding"] != "dynamic_physical_time_after_fusion":
+        raise ValueError("FIXED_VALUE: market-time models use the dynamic physical-time encoder")
+    for key in ("branch", "core", "heads"):
+        if c[key] != _FIXED[key]:
+            raise ValueError(f"FIXED_VALUE: model {key} is fixed to {_FIXED[key]!r}")
+    mt = c["market_time"]
+    match = next((spec for spec in MARKET_FAMILIES.values()
+                  if spec["rule"] == mt.get("rule")), None)
+    if match is None:
+        raise ValueError(f"FIXED_VALUE: unknown market-time rule {mt.get('rule')!r}")
+    if (c["slots"], c["horizons_hours"]) != (match["slots"], match["horizons_hours"]) or \
+            mt.get("spacing_open_market_hours") != match["spacing_open_market_hours"] or \
+            mt.get("span_open_market_hours") != match["span_open_market_hours"] or \
+            mt.get("elapsed_span_fixed") is not False or \
+            mt.get("require_exact_market_slots") is not True or \
+            mt.get("include_origin") is not True:
+        raise ValueError("FIXED_VALUE: market-time scope contradicts the frozen plan")
+    names = c["features"]
+    if (not isinstance(names, list) or not names or len(set(names)) != len(names)
+            or any(not isinstance(n, str) or not n for n in names)):
+        raise ValueError("features must be unique nonempty names")
+    if type(c["seed"]) is not int:
+        raise ValueError("seed must be an integer")
+    return c
+
+
 def normalize_model_config(config):
+    if isinstance(config, dict) and "market_time" in config:
+        return _normalize_market_config(config)
     if not isinstance(config, dict) or set(config) != _KEYS:
         extra = sorted(set(config) - _KEYS) if isinstance(config, dict) else []
         raise ValueError(f"UNKNOWN_FIELD/schema mismatch in model config: {extra or 'missing keys'}")
@@ -212,6 +279,67 @@ class PhysicalOffsetEncoding(PositionalEncoding):
 
     def get_config(self):
         return {**super().get_config(), "offsets_hours": list(self.offsets_hours)}
+
+
+@keras.utils.register_keras_serializable(package="i6dmo")
+class DynamicPhysicalTimeEncoder(keras.layers.Layer):
+    """Dynamic physical-time encoder: the ONLY model extension for the market-time pair.
+
+    Call signature ``[values, offsets_hours, closure_crossed]`` where ``values`` is the fused
+    branch output ``(batch, slots, C)``, ``offsets_hours`` is the per-example signed UTC offset
+    from the origin in hours ``(batch, slots)`` (the last entry exactly 0) and
+    ``closure_crossed`` is the per-example adjacent-closure flag ``(batch, slots)`` (slot 0 is 0).
+
+    It adds the same deterministic sinusoidal code as the plugin's ``PositionalEncoding`` but
+    evaluated on the ACTUAL offsets instead of ordinal slot indices, then APPENDS exactly two
+    context channels before the core: the adjacent elapsed hours divided by
+    ``unit_conversion_hours`` (a fixed unit conversion, never fitted) and the closure flag.
+    Output is ``(batch, slots, C + 2)``; with 19 branches that is 76 + 2 = 78. The layer has no
+    weights and no fixed per-batch grid can replace its per-example inputs.
+    """
+
+    def __init__(self, unit_conversion_hours=24.0, version=TIME_ENCODER_VERSION, **kwargs):
+        super().__init__(**kwargs)
+        if float(unit_conversion_hours) <= 0:
+            raise ValueError("unit_conversion_hours must be positive")
+        if version != TIME_ENCODER_VERSION:
+            raise ValueError(f"unsupported time encoder version {version!r}")
+        self.unit_conversion_hours = float(unit_conversion_hours)
+        self.version = version
+
+    def build(self, input_shape):
+        values, offsets, closure = input_shape
+        if len(values) != 3 or len(offsets) != 2 or len(closure) != 2:
+            raise ValueError("expected [values(batch, slots, C), offsets(batch, slots), "
+                             "closure(batch, slots)]; a fixed per-batch grid is not accepted")
+        if offsets[1] != values[1] or closure[1] != values[1]:
+            raise ValueError("per-example time inputs must have one entry per slot")
+        super().build(input_shape)
+
+    def call(self, inputs):
+        values, offsets, closure = inputs
+        offsets = tf.cast(offsets, values.dtype)
+        closure = tf.cast(closure, values.dtype)
+        width = tf.shape(values)[2]
+        channel = tf.range(width)[None, None, :]
+        rates = tf.pow(tf.cast(10000.0, values.dtype),
+                       -2.0 * tf.cast(channel // 2, values.dtype) / tf.cast(width, values.dtype))
+        angle = offsets[:, :, None] * rates
+        code = tf.where(channel % 2 == 0, tf.sin(angle), tf.cos(angle))
+        encoded = values + code
+        # Adjacent elapsed hours: slot 0 has delta 0 by declaration.
+        deltas = offsets[:, 1:] - offsets[:, :-1]
+        adjacent = tf.concat([tf.zeros_like(offsets[:, :1]), deltas], axis=1)
+        context = tf.stack([adjacent / self.unit_conversion_hours, closure], axis=-1)
+        return tf.concat([encoded, context], axis=-1)
+
+    def compute_output_shape(self, input_shape):
+        values = input_shape[0]
+        return (*values[:-1], None if values[-1] is None else values[-1] + 2)
+
+    def get_config(self):
+        return {**super().get_config(), "unit_conversion_hours": self.unit_conversion_hours,
+                "version": self.version}
 
 
 @component("branch", "1.0.0", {"filters", "kernel_size", "strides", "activation"},
@@ -272,13 +400,22 @@ class DmoBundle:
             "schema": 1,
             "model_config_sha256": hashlib.sha256(_canonical(c).encode()).hexdigest(),
             "branch": {**_identity(dmo_branch), "params": _branch_params(c), "count": len(self.branch_models),
-                       "input_shape": [len(c["offsets_hours"]), 1]},
+                       "input_shape": [c["slots"] if is_market_time(c) else len(c["offsets_hours"]), 1]},
             "fusion": self.fusion_identity,
-            "positional_encoding": {"layer": "tools.i6dmo.model:PhysicalOffsetEncoding",
-                                    "base": "predictor_plugins.modular_temporal:PositionalEncoding",
-                                    "offsets_hours": c["offsets_hours"]},
+            "positional_encoding": ({"layer": "tools.i6dmo.model:DynamicPhysicalTimeEncoder",
+                                     "offsets": "per_example_actual_utc_hours"}
+                                    if is_market_time(c) else
+                                    {"layer": "tools.i6dmo.model:PhysicalOffsetEncoding",
+                                     "base": "predictor_plugins.modular_temporal:PositionalEncoding",
+                                     "offsets_hours": c["offsets_hours"]}),
             "core": {**_identity(dmo_core), "params": _core_params(c),
                      "output_shape": list(self.core_model.output_shape[1:])},
+            "time_encoder": (dict(DynamicPhysicalTimeEncoder().get_config(),
+                                  layer="i6dmo.DynamicPhysicalTimeEncoder",
+                                  position="immediately_after_branch_fusion",
+                                  context_channels=["adjacent_elapsed_hours_over_24",
+                                                    "closure_crossed"])
+                             if is_market_time(c) else None),
             "heads": {**_identity(dmo_head), "params": c["heads"], "names": list(self.head_models),
                       "horizons_hours": c["horizons_hours"]},
             "parameters": {"branches": int(sum(m.count_params() for m in self.branch_models.values())),
@@ -323,9 +460,16 @@ def build_dmo(config):
     c = normalize_model_config(config)
     enable_determinism()
     keras.utils.set_random_seed(c["seed"])
-    grid = tuple(c["offsets_hours"])
-    steps, n = len(grid), len(c["features"])
+    market = is_market_time(c)
+    if market:
+        steps, n = c["slots"], len(c["features"])
+        grid = tuple(range(steps))          # SLOT ORDER ONLY (not wall-clock time) for the probes
+    else:
+        grid = tuple(c["offsets_hours"])
+        steps, n = len(grid), len(c["features"])
     inputs = keras.Input((steps, n), name="observations")
+    time_inputs = ([keras.Input((steps,), name="offsets_hours"),
+                    keras.Input((steps,), name="closure_crossed")] if market else [])
     branches, sequences = {}, []
     for i, feature in enumerate(c["features"]):
         name = f"branch_{i:02d}"
@@ -342,10 +486,15 @@ def build_dmo(config):
     if fusion.weights:
         raise ValueError("fusion must be weightless concatenation")
     fused = fusion(sequences)
-    encoded = PhysicalOffsetEncoding(grid, name="positional_encoding")(fused)
-    core_comp = dmo_core(input_shape=tuple(fused.shape[1:]), time_grid=grid, name="temporal_core",
+    if market:
+        encoder = DynamicPhysicalTimeEncoder(name="physical_time_encoder")
+        encoded = encoder([fused, *time_inputs])
+    else:
+        encoded = PhysicalOffsetEncoding(grid, name="positional_encoding")(fused)
+    core_shape = tuple(encoded.shape[1:])
+    core_comp = dmo_core(input_shape=core_shape, time_grid=grid, name="temporal_core",
                          params=_core_params(c))
-    core = _validate_component(core_comp, [tuple(fused.shape[1:])], grid, c["core"]["filters"][-1])
+    core = _validate_component(core_comp, [core_shape], grid, c["core"]["filters"][-1])
     _probe_causal(core, grid, grid, "core")
     latent = core(encoded)
     heads, outputs = {}, []
@@ -354,17 +503,28 @@ def build_dmo(config):
         head = dmo_head(input_shape=tuple(latent.shape[1:]), horizon_hours=h, name=name, params=c["heads"])
         heads[name] = head
         outputs.append(head(latent))
-    forecast = keras.Model(inputs, outputs, name="i6dmo_forecast")
+    forecast = keras.Model([inputs, *time_inputs], outputs, name="i6dmo_forecast")
     fusion_model = keras.Model(inputs, fused, name="fusion_model")
     return DmoBundle(c, forecast, branches, fusion_model, core, heads, fusion_identity)
 
 
 def predict_matrix(model, x, batch_size=4096):
-    """(n, heads) float64 predictions in horizon order, in the training coordinate."""
-    x = np.asarray(x, dtype=np.float32)
+    """(n, heads) float64 predictions in horizon order, in the training coordinate.
+
+    ``x`` is one array, or a list of arrays for a market-time model
+    ``[observations, offsets_hours, closure_crossed]`` (all sliced consistently).
+    """
+    if isinstance(x, (list, tuple)):
+        arrays = [np.asarray(part, dtype=np.float32) for part in x]
+        if len({len(part) for part in arrays}) != 1:
+            raise ValueError("every model input must carry the same number of examples")
+    else:
+        arrays = [np.asarray(x, dtype=np.float32)]
+    x = arrays[0]
     parts = []
     for start in range(0, len(x), batch_size):
-        out = model(x[start:start + batch_size], training=False)
+        batch = [part[start:start + batch_size] for part in arrays]
+        out = model(batch if len(batch) > 1 else batch[0], training=False)
         parts.append(np.concatenate([np.asarray(o, dtype=np.float64) for o in out], axis=1))
     width = len(model.outputs)
     return np.concatenate(parts, axis=0) if parts else np.zeros((0, width))
@@ -390,8 +550,15 @@ def save_dmo(bundle, directory, extra=None):
     bundle.forecast_model.save(archive)
     weights_file = out / "model.weights.h5"
     bundle.forecast_model.save_weights(weights_file)
+    market = is_market_time(bundle.config)
     document = {"schema": ARTIFACT_SCHEMA, "config": bundle.config, "keras_version": keras_version(),
                 "determinism": json.loads(_canonical(DETERMINISM)),
+                "input_names": [t.name.split(":")[0].split("/")[0] for t in bundle.forecast_model.inputs],
+                "market_time": (dict(bundle.config["market_time"],
+                                     slot_order_is_not_wall_clock=True,
+                                     time_inputs=["offsets_hours", "closure_crossed"],
+                                     time_encoder_version=TIME_ENCODER_VERSION)
+                                if market else None),
                 "weight_tensors": weight_tensor_digests(bundle.forecast_model),
                 "weights_file_sha256": _file_hash(weights_file),
                 "tensorflow_version": tf.__version__, "output_names": list(bundle.forecast_model.output_names),
@@ -422,6 +589,9 @@ def load_dmo(directory, compatibility_check=True):
     weights_file = src / "model.weights.h5"
     if _file_hash(weights_file) != document["weights_file_sha256"]:
         raise ValueError("weights file hash mismatch")
+    if (document.get("market_time") is not None) != is_market_time(document["config"]):
+        raise ValueError("MARKET_TIME_INCOMPATIBLE: artifact metadata and config disagree; no "
+                         "donor is compatible by shape alone")
     rebuilt = build_dmo(document["config"])
     rebuilt.forecast_model.load_weights(weights_file)
     tensors = weight_tensor_digests(rebuilt.forecast_model)
