@@ -1,5 +1,27 @@
 # Matched short contrast: launch receipt (2026-10-15)
 
+> **ADDENDUM (2026-10-15, later state).** The text below is the launch-time snapshot, kept
+> unchanged. It is not a description of the present.
+>
+> - **Fits.** Both fits COMPLETE on GPU, scientific, seed 6102026:
+>   - MG1: 38 epochs, best epoch 28, 151.2136 s, cgroup peak 2,791,206,912 B;
+>   - MG2m: 12 epochs, best epoch 2, 54.5837 s, cgroup peak 2,867,683,328 B.
+> - **R4 recovery.** `mg1.report` had exhausted its attempt budget on three launcher admission
+>   refusals without ever executing. Musashi recovered it once, under lock with a queue backup,
+>   and recorded it in `gates/mg1.report.admission-recovery.json`. Both reports then completed.
+> - **Comparison.** The comparison returned **MG2_SELECTED** (`COMPARISON.json` `2ee85a12…`).
+>   Equal-head relative scores: MG1 +0.0432, MG2m −0.0000774.
+> - **Closure.** CLOSE was automatic: CLOSED / MG2_SELECTED, `CLOSE.json` `3547fc9e…`.
+>   `TIMERS_STOPPED.json` is STOPPED for this campaign's 10 units (trigger `CLOSED:MG2_SELECTED`).
+> - **Evidence.** See `MUSASHI_AUDIT_20261015.md`. The R1 read-only donor verification of this
+>   closed campaign is in `R1_DONOR_READONLY_RECEIPT.json`.
+>
+> **Correction to the CPU wording.** Only the orchestration engineering mode
+> (`engineering_cpu_fixture`) is restricted to synthetic-calendar fixtures. A direct
+> `train_unit` / `train --device cpu` run is allowed and is stamped `scientific: false`. That is
+> not a universal CPU ban. The protections are the scientific campaign's GPU rule and the
+> strict scientific report and decision gates (audit finding 8).
+
 **State: RUNNING.** The campaign is deployed. `mg1.fit` is running on the preferred RTX 5090 and
 `mg2m.fit` is queued. Neither arm has completed, and the campaign is not CLOSED. This receipt names
 roles only. The private copies of every output below are outside git, in `$PRIVATE/` (`deploy.json`,

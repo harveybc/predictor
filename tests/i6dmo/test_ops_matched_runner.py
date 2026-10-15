@@ -97,7 +97,10 @@ def worker(root, role, env=None, **kw):
 
 
 def drive(root, env=None, rounds=10, **kw):
+    """Finite tick/worker rounds. The fake child is NON-scientific by default (R1); these orchestration
+    tests ask it for scientific-labelled receipts explicitly so a scientific campaign can decide."""
     from tools.i6dmo import campaign
+    env = dict({"I6DMO_FAKE_SCIENTIFIC": "true"}, **(env or {}))
     for _ in range(rounds):
         campaign.tick(root)
         progressed = False
@@ -362,11 +365,13 @@ def test_a_measured_peak_of_one_arm_never_caps_the_other(tmp_path):
 def test_identical_identity_is_adopted_and_a_changed_source_or_code_never_reuses(tmp_path):
     from tools.i6dmo import campaign
     counter = tmp_path / "c.txt"
-    donor = make_matched(tmp_path, name="donor")
-    drive(donor, env={"I6DMO_FAKE_COUNTER": str(counter)})
+    donor = make_matched(tmp_path / "donor", name="donor")
+    # a donor is reusable only with trainer-bound receipts, published and mirrored (R1)
+    drive(donor, env={"I6DMO_FAKE_COUNTER": str(counter), "I6DMO_FAKE_GENUINE_RECEIPT": "1"})
+    campaign.publish(donor, warehouse=FakeWarehouse())
     assert len(fits(counter)) == 2
     same = make_matched(tmp_path, name="same", prior_roots=[donor])
-    drive(same, env={"I6DMO_FAKE_COUNTER": str(counter)})
+    drive(same, env={"I6DMO_FAKE_COUNTER": str(counter), "I6DMO_FAKE_GENUINE_RECEIPT": "1"})
     assert len(fits(counter)) == 2  # identical identities: verified terminals adopted, nothing refit
     spec_path, data, storage = host(tmp_path)
     source = pins(data, storage, matched_input=dict(relpath="input", sha256="3" * 64))
@@ -628,7 +633,7 @@ def test_review_d1_p6a_fake_procedure_donor_is_never_adopted_by_a_real_procedure
     assert (donor / "CLOSE.json").exists()
     effective = campaign.load_effective(donor)
     sealed = {a: dict(seal_sha256=effective["arms"][a]["design"]["seal_sha256"]) for a in ("mg1", "mg2m")}
-    with pytest.raises(MR.PrepareRefused, match="INCOMPATIBLE_DONOR:A ran other entry points"):
+    with pytest.raises(MR.PrepareRefused, match="INCOMPATIBLE_DONOR:A DONOR_FIT_PROCEDURE_DIFFERS"):
         MR._check_donor(donor, sealed, effective["data_pins"])
     real = make_matched(tmp_path, name="B", entries=None, prior_roots=[donor])
     assert campaign.donor_problem(donor, campaign.load_effective(real)).startswith("DONOR_FIT_PROCEDURE_DIFFERS")
@@ -661,11 +666,12 @@ def test_review_d1_non_scientific_or_cpu_donor_is_refused_and_genuine_reuse_stil
     assert "NON_SCIENTIFIC_FIT" in status.compute(bad, level="unit", unit="comparison")["cause"]
     reuser = make_matched(tmp_path, name="reuser", prior_roots=[bad])
     problem = campaign.donor_problem(bad, campaign.load_effective(reuser))
-    assert problem.startswith("DONOR_FIT_NOT_SCIENTIFIC:mg") and cause in problem
+    assert "DONOR_FIT_NOT_SCIENTIFIC:mg" in problem and cause in problem
     drive(reuser, env={"I6DMO_FAKE_COUNTER": str(counter)})
     assert len(fits(counter)) == 4  # both arms refit; nothing adopted from the non-scientific donor
-    genuine = make_matched(tmp_path, name="genuine")
-    drive(genuine, env={"I6DMO_FAKE_COUNTER": str(counter)})
+    genuine = make_matched(tmp_path / "genuine", name="genuine")
+    drive(genuine, env={"I6DMO_FAKE_COUNTER": str(counter), "I6DMO_FAKE_GENUINE_RECEIPT": "1"})
+    campaign.publish(genuine, warehouse=FakeWarehouse())
     again = make_matched(tmp_path, name="again", prior_roots=[genuine])
     assert campaign.donor_problem(genuine, campaign.load_effective(again)) is None
     drive(again, env={"I6DMO_FAKE_COUNTER": str(counter)})
@@ -679,8 +685,9 @@ def test_review_d1_engineering_or_cpu_campaign_is_never_a_donor_for_science(tmp_
     fake = tmp_path / "engineering_donor"
     (fake / "terminals").mkdir(parents=True)
     effective = campaign.load_effective(root)
-    (fake / "EFFECTIVE_CONFIG.json").write_text(json.dumps(dict(effective, engineering_cpu_fixture=True,
-                                                                fit_device="cpu")))
+    forged = {k: v for k, v in dict(effective, engineering_cpu_fixture=True, fit_device="cpu").items()
+              if k != "seal_sha256"}
+    (fake / "EFFECTIVE_CONFIG.json").write_text(json.dumps(campaign._seal(forged)))
     assert campaign.donor_problem(fake, effective).startswith("DONOR_FIT_PROCEDURE_DIFFERS")
 
 

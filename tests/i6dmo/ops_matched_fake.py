@@ -121,7 +121,7 @@ def main():
         # a receipt shaped like the trainer's (orchestration only; I6DMO_FAKE_SCIENTIFIC/DEVICE vary it)
         (out / "train").mkdir()
         (out / "train" / "RECEIPT.json").write_text(json.dumps(dict(
-            status="COMPLETED", scientific=os.environ.get("I6DMO_FAKE_SCIENTIFIC", "true") == "true",
+            status="COMPLETED", scientific=os.environ.get("I6DMO_FAKE_SCIENTIFIC", "false") == "true",  # non-scientific by default (R1)
             device=os.environ.get("I6DMO_FAKE_DEVICE", "gpu"), overrides=None, fake=True)))
         artifacts["RECEIPT"] = dict(path="train/RECEIPT.json", sha256=_sha(out / "train" / "RECEIPT.json"))
         costs.update(fit_seconds=0.5, cgroup_peak_bytes=int(os.environ.get("I6DMO_FAKE_PEAK", 1 << 30)))
