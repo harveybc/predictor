@@ -149,8 +149,12 @@ MARKET_FAMILIES = {
     "long_mg12": {"slots": 13, "horizons_hours": [18, 24, 36, 48, 60, 72], "rule": "MG12_MARKET_EXACT",
                   "spacing_open_market_hours": 12, "span_open_market_hours": 144},
 }
+#: The sealed effective config's model block is the authority: it carries ``offsets_hours: None``
+#: (variable per example, never a fixed grid) and the sealed ``time_encoder`` identity, so both
+#: are accepted here and normalized away. Review B-1 (RB04).
 MARKET_KEYS = {"schema", "features", "slots", "market_time", "horizons_hours", "branch", "core",
                "heads", "positional_encoding", "regime", "seed"}
+MARKET_OPTIONAL_KEYS = {"offsets_hours", "time_encoder"}
 TIME_ENCODER_VERSION = "1.0.0"
 
 
@@ -193,9 +197,23 @@ def model_family(config):
 
 def _normalize_market_config(config):
     c = json.loads(_canonical(config))
-    if set(c) != MARKET_KEYS:
+    extra = set(c) - MARKET_KEYS - MARKET_OPTIONAL_KEYS
+    missing = MARKET_KEYS - set(c)
+    if extra or missing:
         raise ValueError(f"UNKNOWN_FIELD/schema mismatch in market-time model config: "
-                         f"{sorted(set(c) ^ MARKET_KEYS)}")
+                         f"{sorted(extra | missing)}")
+    if c.pop("offsets_hours", None) is not None:
+        raise ValueError("FIXED_VALUE: a market-time model has no fixed offsets_hours grid; "
+                         "offsets are per-example inputs")
+    encoder = c.pop("time_encoder", None)
+    if encoder is not None:
+        if encoder.get("layer") != "i6dmo.DynamicPhysicalTimeEncoder" or \
+                encoder.get("version") != TIME_ENCODER_VERSION or \
+                encoder.get("unit_conversion_hours") != 24 or encoder.get("fitted") is not False or \
+                encoder.get("context_channels") != ["adjacent_elapsed_hours_over_24",
+                                                    "closure_crossed"]:
+            raise ValueError("FIXED_VALUE: the sealed time_encoder identity does not match "
+                             f"{TIME_ENCODER_VERSION} DynamicPhysicalTimeEncoder")
     if c["schema"] != MODEL_SCHEMA:
         raise ValueError(f"model schema must be {MODEL_SCHEMA}")
     if c["regime"] != "R0":
@@ -298,13 +316,21 @@ class DynamicPhysicalTimeEncoder(keras.layers.Layer):
     weights and no fixed per-batch grid can replace its per-example inputs.
     """
 
-    def __init__(self, unit_conversion_hours=24.0, version=TIME_ENCODER_VERSION, **kwargs):
+    def __init__(self, unit_conversion_hours=24.0, min_adjacent_hours=2.0,
+                 version=TIME_ENCODER_VERSION, **kwargs):
         super().__init__(**kwargs)
         if float(unit_conversion_hours) <= 0:
             raise ValueError("unit_conversion_hours must be positive")
+        if float(min_adjacent_hours) <= 0:
+            raise ValueError("min_adjacent_hours must be positive")
         if version != TIME_ENCODER_VERSION:
             raise ValueError(f"unsupported time encoder version {version!r}")
         self.unit_conversion_hours = float(unit_conversion_hours)
+        # The declared market spacing in open-market hours: adjacent ELAPSED hours can only be
+        # larger (closures stretch them), so a tighter ladder - an ordinal index sequence above
+        # all - is physically impossible for this design and is refused. Default 2.0 is the
+        # tightest declared market grid (MG2). Review B-4.
+        self.min_adjacent_hours = float(min_adjacent_hours)
         self.version = version
 
     def build(self, input_shape):
@@ -320,6 +346,23 @@ class DynamicPhysicalTimeEncoder(keras.layers.Layer):
         values, offsets, closure = inputs
         offsets = tf.cast(offsets, values.dtype)
         closure = tf.cast(closure, values.dtype)
+        # Review B-4: an ordinal-index encoding or a physically impossible future offset must be
+        # CAUGHT, not merely numerically different. The origin is the last slot (offset exactly 0),
+        # every offset is in the past, and slot 0 has no adjacent delta and no closure flag.
+        zero = tf.cast(0.0, values.dtype)
+        checks = [
+            tf.debugging.Assert(tf.reduce_all(tf.equal(offsets[:, -1], zero)),
+                                ["ORDINAL_OR_INVALID_OFFSETS: the last offset must be exactly 0",
+                                 offsets[:, -1]]),
+            tf.debugging.Assert(tf.reduce_all(offsets <= zero),
+                                ["ORDINAL_OR_INVALID_OFFSETS: offsets must be <= 0 (no future "
+                                 "offsets, no ordinal slot indices)", tf.reduce_max(offsets)]),
+            tf.debugging.Assert(tf.reduce_all(tf.equal(closure[:, 0], zero)),
+                                ["ORDINAL_OR_INVALID_OFFSETS: the first closure flag must be 0",
+                                 closure[:, 0]]),
+        ]
+        with tf.control_dependencies(checks):
+            offsets = tf.identity(offsets)
         width = tf.shape(values)[2]
         channel = tf.range(width)[None, None, :]
         rates = tf.pow(tf.cast(10000.0, values.dtype),
@@ -329,6 +372,13 @@ class DynamicPhysicalTimeEncoder(keras.layers.Layer):
         encoded = values + code
         # Adjacent elapsed hours: slot 0 has delta 0 by declaration.
         deltas = offsets[:, 1:] - offsets[:, :-1]
+        minimum = tf.cast(self.min_adjacent_hours, values.dtype)
+        with tf.control_dependencies([tf.debugging.Assert(
+                tf.reduce_all(deltas >= minimum),
+                ["ORDINAL_OR_INVALID_OFFSETS: adjacent elapsed hours below the declared market "
+                 "spacing (ordinal slot indices or a compressed ladder)",
+                 tf.reduce_min(deltas), minimum])]):
+            deltas = tf.identity(deltas)
         adjacent = tf.concat([tf.zeros_like(offsets[:, :1]), deltas], axis=1)
         context = tf.stack([adjacent / self.unit_conversion_hours, closure], axis=-1)
         return tf.concat([encoded, context], axis=-1)
@@ -339,7 +389,7 @@ class DynamicPhysicalTimeEncoder(keras.layers.Layer):
 
     def get_config(self):
         return {**super().get_config(), "unit_conversion_hours": self.unit_conversion_hours,
-                "version": self.version}
+                "min_adjacent_hours": self.min_adjacent_hours, "version": self.version}
 
 
 @component("branch", "1.0.0", {"filters", "kernel_size", "strides", "activation"},
@@ -410,7 +460,9 @@ class DmoBundle:
                                      "offsets_hours": c["offsets_hours"]}),
             "core": {**_identity(dmo_core), "params": _core_params(c),
                      "output_shape": list(self.core_model.output_shape[1:])},
-            "time_encoder": (dict(DynamicPhysicalTimeEncoder().get_config(),
+            "time_encoder": (dict(DynamicPhysicalTimeEncoder(
+                                      min_adjacent_hours=float(c["market_time"]["spacing_open_market_hours"])
+                                  ).get_config(),
                                   layer="i6dmo.DynamicPhysicalTimeEncoder",
                                   position="immediately_after_branch_fusion",
                                   context_channels=["adjacent_elapsed_hours_over_24",
@@ -487,7 +539,9 @@ def build_dmo(config):
         raise ValueError("fusion must be weightless concatenation")
     fused = fusion(sequences)
     if market:
-        encoder = DynamicPhysicalTimeEncoder(name="physical_time_encoder")
+        encoder = DynamicPhysicalTimeEncoder(
+            min_adjacent_hours=float(c["market_time"]["spacing_open_market_hours"]),
+            name="physical_time_encoder")
         encoded = encoder([fused, *time_inputs])
     else:
         encoded = PhysicalOffsetEncoding(grid, name="positional_encoding")(fused)

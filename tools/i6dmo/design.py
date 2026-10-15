@@ -88,6 +88,11 @@ TIME_ENCODER_IDENTITY = {
     "context_channels": ["adjacent_elapsed_hours_over_24", "closure_crossed"],
     "context_rule": ("appended AFTER the encoded values and BEFORE the core; slot 0 has adjacent "
                      "delta 0 and closure flag 0"),
+    "guards": ("typed ORDINAL_OR_INVALID_OFFSETS when the last offset is not exactly 0, any "
+               "offset is > 0, the first closure flag is not 0, or an adjacent elapsed delta is "
+               "below the design's spacing_open_market_hours (ordinal slot indices, future "
+               "offsets and compressed ladders are refused, not merely numerically different)"),
+    "min_adjacent_hours": "design.market_time.spacing_open_market_hours",
     "unit_conversion_hours": 24, "fitted": False, "dtype": "float32",
     "output_shape": "(batch, slots, C + 2)  # 19 branches -> 76 + 2 = 78",
     "per_example_inputs_required": True,

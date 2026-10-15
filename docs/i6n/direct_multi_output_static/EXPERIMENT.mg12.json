@@ -96,7 +96,7 @@
   "repetitions": 1,
   "retraining_frequency": "NONE",
   "schema": "i6dmo.market_time_design.v1",
-  "seal_sha256": "ef562ba41405ff7fe61f6abcf58202b62d4aac3bb4ff629be21e7aa4cba85bf8",
+  "seal_sha256": "97541764436cc1356600999dd7b68e702a66fab37d82e676522709744dda89c6",
   "sealed_identities": {
     "availability_contract_sha256": "9668898c28cafeef2bc48e7d3a42e82a2655d699ff8f0d8d59e921bf120b1bc9",
     "base_short_design_sha256": "541ce40ac1becceb16b14937e34e3452eee36aad8a370686dacf62860c86d381",
@@ -122,12 +122,14 @@
       "dtype": "float32",
       "fitted": false,
       "formula": "code[s, c] = sin(offset_hours[s] * 10000^(-2*(c//2)/C)) for even c, cos(...) for odd c, added to the C fused value channels; evaluated on ACTUAL signed offsets, never ordinal slot indices",
+      "guards": "typed ORDINAL_OR_INVALID_OFFSETS when the last offset is not exactly 0, any offset is > 0, the first closure flag is not 0, or an adjacent elapsed delta is below the design's spacing_open_market_hours (ordinal slot indices, future offsets and compressed ladders are refused, not merely numerically different)",
       "inputs": [
         "fused_values(batch, slots, 4*n_features)",
         "offsets_hours(batch, slots) signed UTC hours from t, last exactly 0",
         "closure_crossed(batch, slots) 0/1, first slot 0"
       ],
       "layer": "i6dmo.DynamicPhysicalTimeEncoder",
+      "min_adjacent_hours": "design.market_time.spacing_open_market_hours",
       "output_shape": "(batch, slots, C + 2)  # 19 branches -> 76 + 2 = 78",
       "per_example_inputs_required": true,
       "position": "immediately_after_branch_fusion",
