@@ -4,6 +4,14 @@ Cierre 2026-10-15 08:30 UTC. Campana `i6dmo-9e1ebad89ff2`, runtime
 `a169fcba`, CLOSED / PAIR_NOT_ELIGIBLE. Timers deshabilitados tras verificar
 la entrega completa y los espejos. No hay un fit vivo de esta campana.
 
+Siguiente secuencia aceptada por el propietario: control corto MG1/MG2 con
+poblacion comun -> ramas preentrenadas R2 frente a R0 -> transferencia larga
+-> contraste trimestral frente a estatico. Estado del sucesor: PREPARING,
+no RUNNING. [Plan](../../i6n/direct_multi_output_static/NEXT_CONTRASTS_PLAN_20261015.md)
+y [orden de implementacion](../../handoffs/MUSASHI_TO_SATOSHI_SHORT_MATCHED_CONTROL_20261015.md).
+La orden esta escrita para Satoshi; no constituye un mensaje entregado a su
+sesion ni una afirmacion de que la haya ejecutado.
+
 ## Estado vigente: MG2 y MG12 medidos; pareja no elegible
 
 El fit corto MG2 termino en 54.2 s; su reporte fallo en la ruta heredada

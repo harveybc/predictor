@@ -1,9 +1,11 @@
 # I6-DMO market-time pair: implementation and execution decision
 
 Decision: Musashi, 2026-10-15, based on support-study return `98ffdf28`.
-State: APPROVED_FOR_IMPLEMENTATION_AND_GATED_EXECUTION. No new runtime is
-certified by this document. No scientific fit has run under this design.
-This is the next I6-DMO experiment, not a DOIN search or a claim of optimality.
+State: CLOSED / PAIR_NOT_ELIGIBLE, measured 2026-10-15 08:30 UTC. See
+[closure](RETURN_REPORT_RECOVERY_20261015.md). Retain the following design as
+the completed experiment's contract, not a current launch order. The next
+accepted sequence is [NEXT_CONTRASTS_PLAN_20261015.md](NEXT_CONTRASTS_PLAN_20261015.md).
+This was a fixed I6-DMO experiment, not a DOIN search or a claim of optimality.
 
 ## 1. Question and limits
 
