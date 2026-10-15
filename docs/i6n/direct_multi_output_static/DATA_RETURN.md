@@ -140,3 +140,20 @@ Candidates `MG2_MARKET_EXACT` / `MG12_MARKET_EXACT`: 13 slots every 2 / 12 EXPEC
 Usable rows (vs retained elapsed grids): MG2 16,496 / 715 / 4,772 — a strict superset of DS2_EXACT (14,279 / 624 / 4,122; ds2-only = 0). MG12 13,174 / 546 / 3,804 where DS12_EXACT has 0; long heads get real support (fit S_72 = 4,019). Shared usable short+long origins: 13,123 / 546 / 3,760. Worked examples executed: Monday 2020-01-06T10Z crossing the weekend (slots end Friday 22:00, one closure flag, 72 h elapsed), DST spans 71 vs 72-73 h, the midweek-gap and current-t / t+1 perturbation cases run in tests.
 
 **FRED (section 3, bounded):** a governed ALFRED fetch is impossible on this host — the only FRED adapter requires `FRED_API_KEY` from its environment and no governed EnvironmentFile provisions it (the point-in-time capture env carries only FD_* variables); the 2026-05-01 acquisition's key was not retained. Missing artifacts recorded in `producer_recovery.v1.json`: ALFRED per-observation `realtime_start` 2019-2024 (or H.15 release timestamps) and a governed `FRED_API_KEY` EnvironmentFile. Confirmatory TEST stays closed.
+
+## Market-time pair training adapter (order 50d20d01 §1.1, 2026-10-15)
+
+Tests first (`8d18bc54`: 3 failed / 12 errors), implementation `08b9fb5c`; `tests/i6dmo/test_market_bundle.py` 15 passed, `test_market_grid.py` 9 passed. CPU only, bounded crispdm jobs, no GPU, no TEST bar, no DOIN. Interface published in `INTERFACE_DATA.json` → `market_time`.
+
+Sealed data-lane designs `market_grid/DESIGN.mg2.json` and `DESIGN.mg12.json` (schema `i6dmo.market_design.v1`): market spacing replaces the elapsed `input` block entirely, so no fixed elapsed span can be read out of them; any elapsed field or `elapsed_span_hours_fixed: true` raises `CONTRADICTORY_TIME_FIELDS`. Bundles use schema `i6dmo.market_bundle.v1` (never `i6dmo.data_bundle.v1`), publish no fixed `offsets_hours` ladder, and refuse cross-adoption (`MARKET_RULE_MISMATCH`, `MARKET_DATA_IDENTITY_MISMATCH`, `SAMPLING_RULE_MISMATCH` against the DS2 contract).
+
+Per-window model inputs, verified on the real bundles: `offsets_hours` signed from t with the last column exactly 0, `adjacent_delta_hours` in RAW hours with the first column 0 (the /24 conversion is the model's), `closure_crossed` 0/1 with the first column 0, plus `slot_instants` UTC. Value channels come from the exact slot source rows; all finite.
+
+| Bundle | bundle_sha256 | BUNDLE.json | Rows fit/inner/validation | Elapsed span range | Rows crossing a closure |
+|---|---|---|---|---|---|
+| MG2 | `21400c51…a55da` | `471ea311…f047d` | 16,496 / 715 / 4,772 | 24–73 h | 2,217 |
+| MG12 | `c3867b5c…7670b` | `e6595c0e…5d866` | 13,174 / 546 / 3,804 | 191–241 h | 13,174 |
+
+Data identities `d5d97a6e…` (MG2) and `0449cd4e…` (MG12); input `ef22ddb5…`; calendar `782603fd…` ASSUMED_NOT_BROKER. Reconciliation against study `d2b6a238`: every split MATCH (difference 0) and shared usable origins 13,123 / 546 / 3,760 equal to the study — status RECONCILED, recorded in each manifest with `counts_are_not_quotas: true`.
+
+Fit-only naive MAE (equals the independent disk replay on identical rows): MG2 h2 0.00104852 … h12 0.00276528; MG12 h18 0.00353112 … h72 0.00753410. Exclusions are typed and retained, e.g. MG2 fit 1,394 slot-not-observed + 730 non-finite + 186 outside-week + 4,358 no-valid-head, with 919 unplanned missing expected open-market hours never compressed.
