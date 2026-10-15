@@ -1,8 +1,23 @@
 # Estado de ejecución vigente
 
-Observado: 2026-10-14. Este archivo sustituye estados operativos anteriores.
+Ultimo retorno auditado: `98ffdf28`, estudio 2026-10-15. Este archivo no es
+un sondeo en vivo de los hosts. Estado posterior depende de STATUS generado.
 
-## Estado vigente: parada y cambio de experimento
+## Estado vigente: corto exacto cerrado; sucesor de mercado aprobado
+
+El corto exacto DS2 cerro: seis cabezas NOT_ELIGIBLE en desarrollo 2024.
+Publicacion: 55 reportes, 2011 filas de metricas, lectura de vuelta y 28
+archivos verificados por espejo. Estudio de soporte MG2/MG12 terminado;
+Musashi reprodujo 36 pruebas focalizadas CPU. No hay fit corriendo segun
+ese retorno; no se ha sondeado el hardware de nuevo para esta decision.
+
+Siguiente: [MG2/MG12](../../i6n/direct_multi_output_static/MARKET_TIME_PAIR_PLAN.md),
+con [orden precisa](../../handoffs/MUSASHI_TO_SATOSHI_MARKET_TIME_PAIR_20261015.md).
+Implementar/revisar/sellar; luego corto y largo automaticamente con nueva
+identidad. El largo se mide aunque falle cientificamente el corto; la pareja
+no opera si no pasa elegibilidad. TEST cerrado, sin otro cambio a DOIN.
+
+## Parada del programa anterior (registro 2026-10-14)
 
 Por orden del propietario, las cuatro islas POO-v2 y el timer de relevo
 H4->H72 estan detenidos/deshabilitados. Los cuatro servicios agotaron el
@@ -11,12 +26,8 @@ No hay fit vigente de esta campana. Conservar cadenas, checkpoints y
 resultados terminados; parciales interrumpidos no equivalen a terminales validos.
 Las entregas de archivo/OLAP y sus transportes permanecen activos, sin fits.
 
-Siguiente trabajo: [I6-DMO](../../i6n/direct_multi_output_static/PLAN.md),
-diseno entregado a Satoshi. Corto 2/3/4/5/6/12 h en un modelo de seis heads,
-ventana inclusiva de 24 h, 13 muestras cada 2 h, RAW, seed 6102026, R0,
-sin updates dentro del ano. Luego largo 18/24/36/48/60/72 h y evaluacion de la
-pareja. Codigo nuevo no implementado ni iniciado por este cambio documental.
-TEST cerrado; R2/uncertainty/cadencia creciente quedan posteriores.
+Ese registro antecede al baseline exacto ahora cerrado. No ordena repetirlo.
+R2, incertidumbre y comparaciones de cadencia siguen como contrastes posteriores.
 
 Las secciones que siguen conservan resultados y estados observados hasta
 2026-10-11. Sus menciones a trabajos vivos, timers y siguientes compuertas

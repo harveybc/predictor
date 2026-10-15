@@ -1,7 +1,13 @@
 # I6-DMO: static direct multi-output business experiment
 
-Owner amendment: 2026-10-14. Status: DESIGN_AND_HANDOFF, not implemented or
-running. This is the next dispatch and supersedes automatic H4 -> H72 searches,
+Owner amendment: 2026-10-14; next-design decision: 2026-10-15.
+Status: exact-DS2 short CLOSED, six heads NOT_ELIGIBLE; market-time successor
+APPROVED_FOR_IMPLEMENTATION, not yet implemented, sealed or running.
+The governing successor is [MARKET_TIME_PAIR_PLAN.md](MARKET_TIME_PAIR_PLAN.md).
+Sections below retain the measured exact-DS2 recipe and shared business rules;
+their elapsed-time input grids do not authorize another DS2 fit or an empty
+DS12 fit. The successor changes input sampling and its time encoding only,
+under new identities. This dispatch supersedes automatic H4 -> H72 searches,
 per-horizon sweeps and mandatory weekly fits for this experiment. Historical
 chains, fits, metrics and conclusions remain immutable.
 
@@ -26,7 +32,7 @@ They cannot reuse TEST as a new independent holdout after its results are seen.
 
 ## 2. Fixed first experiment
 
-Use `EXPERIMENT.short.json` as the authoritative design, not an immediately
+For the closed exact-DS2 measurement, `EXPERIMENT.short.json` is its authoritative design, not an immediately
 runnable legacy predictor config. A typed adapter must produce an effective
 config, reject unknown fields and preserve every design field in its identity.
 
@@ -128,7 +134,10 @@ The existing six-long contract is `[18, 24, 36, 48, 60, 72]` physical hours,
 as recorded in `docs/i6n/swarm/I6N_SEARCH_PLAN_v1_2.json`. Do not revert to
 unsupported 96/120/144 h endpoints. Prepare a separate long design after short
 closure: initial 144-hour inclusive span, input spacing 12 h, 13 observations,
-same small modular family. Every hourly origin still gets exact endpoint heads.
+same small modular family. This elapsed DS12 grid proved to have empty support
+and must not be fitted. The successor uses MG12 as defined in the linked plan,
+not padding or substitution into this sealed recipe.
+Every hourly origin still gets exact endpoint heads.
 Freeze its support/cost design before fitting; it is not twelve-hour issuance.
 
 Six declared heads need not all be available near the end of the market week.

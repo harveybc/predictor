@@ -1,12 +1,13 @@
 {
  "schema": "i6dmo.method_state.v1",
  "updated_on": "2026-10-15",
- "current_stage": "S11_SHORT_BASELINE_CLOSED",
- "execution_status": "SHORT_CLOSED_NOT_ELIGIBLE_LONG_SUPPORT_REDESIGN",
+ "current_stage": "S8_MARKET_TIME_SUCCESSOR_TEST_DESIGN",
+ "execution_status": "EXACT_SHORT_CLOSED_MARKET_PAIR_APPROVED_NOT_IMPLEMENTED",
  "design_artifacts": [
   "PLAN.md",
   "EXPERIMENT.short.json",
-  "ACCEPTANCE.md"
+  "ACCEPTANCE.md",
+  "MARKET_TIME_PAIR_PLAN.md"
  ],
  "completed_definition_stages": [
   "S0_DISCOVERY",
@@ -18,11 +19,11 @@
   "S6_COMPONENT_DESIGN",
   "S7_INTEGRATION_TEST_DESIGN"
  ],
- "definition_gate": "SATOSHI_MUST_REVIEW_AND_MAP_DMO01_DMO20_BEFORE_RUNTIME_IMPLEMENTATION",
+ "definition_gate": "MAP_MARKET_TIME_REQUIREMENTS_AND_UNIT_TEST_DESIGN_BEFORE_NEW_RUNTIME; EXISTING_DEFINITION_STAGES_REFER_TO_CLOSED_DS2",
  "next_allowed_actions": [
-  "CPU-only calendar market-time candidate-support study (short 13x2h, long 13x12h open-market slots)",
-  "Prepare, without fitting, the paired short hourly-input control with frozen common-support rules",
-  "Recover the versioned instrument/cost configuration and FRED publication evidence",
+  "Implement and independently verify MARKET_TIME_PAIR_PLAN.md with per-example physical time encoding",
+  "Seal new MG2/MG12 identities and deploy finite short then long then gated pair development graph after acceptance",
+  "Recover value-level point-in-time FRED evidence and measured instrument costs independently; keep TEST closed",
   "Keep the retained ASOF arm and the measured exact baseline immutable"
  ],
  "blocked_actions": [
@@ -34,6 +35,10 @@
   "Restart retired H4/H72 DOIN campaign"
  ],
  "history": [
+  {
+   "date": "2026-10-15",
+   "event": "Support return 98ffdf28 complete; Musashi reran 36 focused CPU tests. MG2/MG12 adopted for a new development pair, not an accuracy claim; new runtime, review and seals still required. No scientific fit launched by this decision."
+  },
   {
    "date": "2026-10-14",
    "event": "Owner changed next experiment to short direct multi-output DS2 static business baseline; implementation delegated to Satoshi."

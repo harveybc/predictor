@@ -1,9 +1,9 @@
 {
   "schema": "experiment_execution_queue.v2",
-  "updated_on": "2026-10-14",
+  "updated_on": "2026-10-15",
   "authority": "MASTER_WORK_PLAN_INFORMATION_TO_KNOWLEDGE_PIPELINE_v3.md and its program_v3 subplans",
   "policy": {
-    "focus": "I6_DMO_SHORT_DS2_STATIC_THEN_LONG_AND_STRATEGY",
+    "focus": "I6_DMO_NEW_MG2_STATIC_THEN_MG12_AND_GATED_PAIR",
     "parallelism": "Parallel bounded implementation/data/strategy/OLAP lanes; first scientific fixed fit on preferred 5090 only, one heavy process per host. No duplicate fits to fill GPUs.",
     "seed_default": 6102026,
     "seed_maximum": 3,
@@ -13,7 +13,7 @@
       "dragon_4090",
       "omega_4070"
     ],
-    "gpu_use_now": "Four POO-v2 services stopped and disabled; no new scientific fit yet. Satoshi implements/tests/preflights I6-DMO before deployment.",
+    "gpu_use_now": "No scientific fit running in return 98ffdf28. Closed exact DS2 stays immutable; MG2/MG12 runtime requires implementation, independent review and fresh admission before new fits.",
     "financial_gate": "MAE in original price must beat naive para el horizonte de X horas on identical rows before strategy evaluation",
     "test_policy": "2024 is development due to feature selection. TEST 2025 closed until full pair, procedure freeze and source provenance gates pass.",
     "warehouse_policy": "all metrics decisions ranks costs and identities require submit plus readback",
@@ -32,12 +32,12 @@
       "priority": 0,
       "id": "I6-DMO",
       "resource": "bounded_parallel_CPU_implementation_then_preferred_5090",
-      "state": "DESIGNED_NOT_IMPLEMENTED",
+      "state": "EXACT_DS2_CLOSED_MARKET_TIME_SUCCESSOR_APPROVED_NOT_IMPLEMENTED",
       "dispatch_enabled": true,
-      "work": "Implement and run short six-head DS2 R0 static baseline; automatically advance eligible long/pair stages, no TEST before frozen readiness gates.",
+      "work": "Implement, seal, review and run new MG2 short then MG12 long R0 static models; long runs even after scientifically ineligible short, pair trades only after predictive gates. No TEST.",
       "depends_on": [],
       "produces": "Generated STATUS, effective configs, per-horizon naive/MAE, model pairs, OLAP readback and eventual frozen TEST trading metrics",
-      "work_plan": "../../i6n/direct_multi_output_static/PLAN.md"
+      "work_plan": "../../i6n/direct_multi_output_static/MARKET_TIME_PAIR_PLAN.md"
     },
     {
       "priority": -1,

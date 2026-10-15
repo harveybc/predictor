@@ -1,6 +1,6 @@
 {
   "schema": "master_checklist.v1",
-  "updated_on": "2026-10-14",
+  "updated_on": "2026-10-15",
   "states": [
     "NOT_STARTED",
     "DESIGNED",
@@ -148,14 +148,14 @@
     {
       "id": "I6-DMO",
       "name": "static_direct_multi_output_business_pair",
-      "state": "DESIGNED",
+      "state": "EVIDENCE_PARTIAL",
       "depends_on": [
         "I0",
         "I5"
       ],
-      "gate": "Short DS2 static six heads, long six heads, frozen-pair validation and TEST forecast/trading metrics after gates",
-      "work_plan": "../../i6n/direct_multi_output_static/PLAN.md",
-      "evidence": "2026-10-14 owner amendment; four POO-v2 services stopped/disabled and successor disabled; implementation delegated, no new fit or TEST read"
+      "gate": "New MG2/MG12 static pair with per-example actual offsets and closure flags; six heads per family; strategy only after naive gates; TEST remains closed",
+      "work_plan": "../../i6n/direct_multi_output_static/MARKET_TIME_PAIR_PLAN.md",
+      "evidence": "98ffdf28: exact DS2 short closed, six heads NOT_ELIGIBLE; 55 reports, 2011 metric rows readback, 28 files per mirror. Market support measured; successor approved for implementation, not running. Musashi focused rerun: 36 passed."
     },
     {
       "id": "I7-H",

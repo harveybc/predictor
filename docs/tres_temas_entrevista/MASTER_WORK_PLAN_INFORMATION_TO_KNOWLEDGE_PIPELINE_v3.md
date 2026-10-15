@@ -1,17 +1,23 @@
 # Plan maestro v3: de información a conocimiento y operación
 
-Actualizado: 2026-10-14. Este documento contiene sólo el plan vigente. Los
+Actualizado: 2026-10-15. Este documento contiene sólo el plan vigente. Los
 retornos RP, snapshots de máquinas, restricciones ya levantadas y dictámenes
 superados son evidencia histórica en `docs/audits/` y `docs/handoffs/`; no
 gobiernan la ejecución.
 
 ## 1. Autoridad vigente
 
-Enmienda del propietario 2026-10-14: el siguiente despacho es
+Enmienda del propietario 2026-10-14, concretada por Musashi 2026-10-15: el despacho es
 [I6-DMO, direct multi-output estatico](../i6n/direct_multi_output_static/PLAN.md).
-Primero corto 2/3/4/5/6/12 h con entradas cada 2 h, 13 observaciones que cubren
-24 h e incluyen t; luego largo 18/24/36/48/60/72 h; despues evaluar la pareja
-completa en la estrategia. Reajustes durante el ano desactivados en esta
+El corto exacto DS2 cerro: seis cabezas no elegibles en desarrollo 2024. Su
+identidad y resultado se conservan. El siguiente experimento aprobado es
+[la pareja en tiempo de mercado MG2/MG12](../i6n/direct_multi_output_static/MARKET_TIME_PAIR_PLAN.md):
+corto 2/3/4/5/6/12 h y luego largo 18/24/36/48/60/72 h. Cada entrada tiene
+13 observaciones reales, incluye t y separa 2/12 horas de mercado abierto;
+los offsets UTC reales y cruces de cierre entran al modelo. Los targets
+siguen siendo t+h en horas transcurridas, no en horas de mercado. Despues
+se evalua la pareja completa solo si pasa las compuertas predictivas.
+Reajustes durante el ano desactivados en esta
 primera identidad. Esta enmienda prevalece sobre instrucciones antiguas de
 reajuste semanal obligatorio, barridos por horizonte y relevo H4->H72.
 No borra resultados ni autoriza reutilizar sus identidades. Las cuatro islas
@@ -134,7 +140,8 @@ despacho. Un punto sólo cambia de estado mediante evidencia enlazada.
   con 11 salidas (1-6, 24, 48, 72, 96 y 120 h), ramas preentrenadas en R2,
   cuatro anos moviles y 52 semanas de VALIDATION. 1 h es solo diagnostico.
   [Contrato historico](program_v3/I7_MULTI_HORIZON_WORK_PLAN.md); no es el siguiente despacho.
-- [ ] I6-DMO. Prioridad vigente: corto multisalida DS2 estatico, luego largo
+- [ ] I6-DMO. DS2 exacto corto cerrado, seis cabezas no elegibles. Prioridad
+  vigente: nuevo corto MG2 estatico, luego largo MG12
   multisalida, pareja en VALIDATION y confirmacion predictiva/trading en TEST
   solo tras congelar procedimiento y resolver procedencia. Seis cabezales por
   familia, sin reajustes durante el ano; naive por horizonte y mascaras C1/C2.

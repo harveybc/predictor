@@ -1,6 +1,6 @@
 {
   "schema": "research_program_method_state.v1",
-  "updated_on": "2026-10-14",
+  "updated_on": "2026-10-15",
   "current_stage": "S8_UNIT_TEST_DESIGN",
   "completed_stages": [
     "discovery",
@@ -8,7 +8,7 @@
   ],
   "program_owner": "Harvey",
   "execution_owner": "Musashi",
-  "handoff_status": "I6_DMO_DESIGNED_SATOSHI_IMPLEMENTATION_ORDER_PUBLISHED",
+  "handoff_status": "I6_DMO_EXACT_SHORT_CLOSED_MARKET_PAIR_IMPLEMENTATION_ORDER_PUBLISHED",
   "i6e_compact": {
     "neural_cells_complete": 156,
     "neural_cells_expected": 156,
@@ -71,10 +71,10 @@
   },
   "first_experiment": "MOD-E0-DEV",
   "next_allowed_actions": [
-    "Follow docs/i6n/direct_multi_output_static/PLAN.md and handoff dated 2026-10-14",
-    "Implement executable DMO01-DMO20 tests before runtime changes",
-    "Build fixed six-head short DS2 model and static annual pipeline",
-    "Deploy only after software/data/resource gates; use timers, not agent polling"
+    "Follow docs/i6n/direct_multi_output_static/MARKET_TIME_PAIR_PLAN.md and market-time handoff dated 2026-10-15",
+    "Design and run temporal/identity/restart negative controls before changing runtime",
+    "Build and seal new MG2/MG12 designs with per-window physical time metadata, preserving closed DS2 evidence",
+    "Deploy short then long then eligibility-gated pair after independent review and resource gates; use timers, not agent polling"
   ],
   "documents": {
     "horizon_resolution": "I6E_MULTI_HORIZON_RESOLUTION_WORK_PLAN.md",
@@ -695,6 +695,9 @@
     "method_state": "../../i6n/direct_multi_output_static/PROJECT_METHOD_STATE.json",
     "retraining_frequency": "NONE",
     "test_read": false,
-    "runtime_implemented": false
+    "runtime_implemented": true,
+    "runtime_scope": "CLOSED_EXACT_DS2_BASELINE_ONLY",
+    "successor_runtime_implemented": false,
+    "successor": "MG2_MG12_STATIC_PAIR"
   }
 }
