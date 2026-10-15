@@ -182,7 +182,8 @@ def run_unit(spec, out_dir, progress_path):
         else:
             from tools.i6dmo import reporting
             try:
-                verdict = reporting.decide_matched(metrics["mg1"], metrics["mg2m"])
+                verdict = reporting.decide_matched(metrics["mg1"], metrics["mg2m"],
+                                                   require_scientific=not effective.get("engineering_cpu_fixture"))
             except reporting.ReportFailure as exc:
                 raise _Refusal(f"{exc.code}:{str(exc).split(': ', 1)[-1][:120]}") from None
             missing = missing_evidence(verdict)
@@ -408,6 +409,14 @@ def _check_donor(prior, sealed, pins):
         raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} has no sealed effective config")
     if effective.get("mode") != "MATCHED_SHORT_CONTRAST":
         raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} is not a matched short contrast")
+    from tools.i6dmo import campaign as C
+    if effective.get("engineering_cpu_fixture") or effective.get("fit_device") != "gpu":
+        raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} is an engineering/CPU campaign")
+    if effective.get("entrypoints") != C.MATCHED_ENTRYPOINTS:
+        raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} ran other entry points than the real adapters")
+    problem = C.donor_fit_receipt_problem(prior)
+    if problem:
+        raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} {problem}")
     for arm in ARMS:
         if ((effective.get("arms") or {}).get(arm) or {}).get("design", {}).get("seal_sha256") != sealed[arm]["seal_sha256"]:
             raise PrepareRefused(f"INCOMPATIBLE_DONOR:{prior.name} {arm} design differs")

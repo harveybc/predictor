@@ -62,13 +62,16 @@ export CUDA_VISIBLE_DEVICES=""
 ## 1. Verify the frozen population (data lane CLI)
 
 ```bash
+SEAL=docs/i6n/direct_multi_output_static/matched_short/POPULATION_SEAL.json
+DIGEST="$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["population_digest"])' "$SEAL")"
 crispdm-run -m 3G -t 600s -n i6dmo-matched-verify -- python -m tools.i6dmo.common_population verify \
   --population-dir "$EXPERIMENT_STORAGE_ROOT/i6dmo/matched-short-20261015/population" \
-  --expected-digest 4ab41bd87987c6e790851fe1262210b13e0fdbabf971deae9b9fa06fc75014f8 \
+  --expected-digest "$DIGEST" \
   --input-dir "$DATA_ROOT/inputs/extended-no-stlfsi4"
 ```
 
-The digest is `population_digest` in the committed `POPULATION_SEAL.json`.
+The digest is read from the committed `POPULATION_SEAL.json`; it is never typed by hand. A
+reseal of the designs or a rebuilt population changes it.
 
 ## 2. Prepare: write the private, host-specific JSON
 
@@ -94,7 +97,7 @@ these.
 | `UNAVAILABLE_MOUNT:*` | data root, run root or storage root missing, or population directory absent |
 | `UNFROZEN_COMPARISON:*` | Any typed refusal from `load_common_population`, including `POPULATION_DIGEST_MISMATCH`; a POPULATION.json digest mismatch; or a design that is not the one the population was frozen for |
 | `INCOMPATIBLE_DESIGN:*` | Not the matched identity, or no sealed runtime pin |
-| `INCOMPATIBLE_DONOR:*` | `--prior-root` is not a matched contrast with identical seals and pins |
+| `INCOMPATIBLE_DONOR:*` | `--prior-root` is not a matched contrast with identical seals and pins; or it ran other entry points than the real adapters, is an engineering/CPU campaign, or has a fit receipt that is not `scientific: true` on a GPU without overrides |
 | `MISSING_ARTIFACT:*` | Deployment spec, input or design missing |
 | `INADEQUATE_MEMORY` / `INADEQUATE_DISK` | Below 4 GiB available memory or 20 GiB free disk |
 
@@ -121,12 +124,34 @@ For each role it checks:
   - GPU visibility;
   - initial-cap admission (no measured 25-slot peak exists, so the initial cap is used,
     never a 13-slot peak);
-  - the worker's **actual** TensorFlow/Keras from package metadata against the sealed pin
-    (TF 2.18.0 / Keras 3.9.0).
+  - the worker's **actual** TensorFlow/Keras from package metadata against the runtime pin in
+    the sealed designs (`sealed_identities.runtime`, whatever the current seal says).
 
 A mismatch is `RUNTIME_PIN_MISMATCH:...`. Fix it by installing the pinned runtime. It is
 never a reason to reseal. Worker admission applies the same runtime check at claim time: a
 mismatched role is refused, and the unit routes to the next GPU role.
+
+### What the automation refuses or waits on
+
+- **Reuse.** A prior root's terminals are adopted only when its fit procedure matches: the same
+  entry points, fit device and engineering mode. A scientific campaign also requires every donor
+  fit receipt to be `scientific: true` on a GPU without overrides. Anything else is
+  `PRIOR_REJECTED` with a typed `DONOR_*` reason, and the unit is fitted fresh.
+- **Science only.** A scientific campaign's report refuses a fit receipt that is not
+  `scientific: true` on a GPU (`NON_SCIENTIFIC_FIT`), and so does the decision. The trainer
+  stamps every CPU fit `scientific: false`. A worker whose environment, injected environment
+  or role `environment` carries any `I6DMO_TEST_*` variable is refused with
+  `TEST_OVERRIDE_IN_SCIENTIFIC_ENVIRONMENT`.
+- **Infrastructure before any training.** These codes mean the host refused before any training
+  started:
+  - `POPULATION_PIN_MISMATCH`, `INPUT_PIN_MISMATCH`, `MATCHED_PIN_UNRESOLVED`;
+  - `NO_GPU_VISIBLE`, `RUNTIME_PIN_MISMATCH`;
+  - a population/source/calendar digest refusal.
+
+  None of them is a terminal. The unit waits as `WAIT_RESOURCE INFRA_PREFIT:<code>@<role>`,
+  does not consume the attempt budget, and is claimed again later. After 1800 s, status
+  reports `INFRA_PREFIT_BLOCKED` and `INFRASTRUCTURE_BLOCKED`. A failure after training started
+  stays a terminal, and a fit is never retried with an altered cap or altered data.
 
 ## 5. Init, then deploy
 
@@ -222,7 +247,10 @@ CUDA_VISIBLE_DEVICES="" crispdm-run -q -m 3G -t 600s -n i6dmo-repair -- \
   python -m pytest -q -p no:cacheprovider tests/i6dmo/test_ops_matched_runner.py
 ```
 
-Not verified here:
+Not verified here, as typed limitations:
+
+- `tools.i6dmo.replay_monitor` has no matched/common-population mode (review D7). A GPU replay
+  of a matched fit needs its own driver, as the reviewer's `review/p7_gpu_replay.py` did.
 
 - `prepare` against the real private population and storage root. `$EXPERIMENT_STORAGE_ROOT`
   is not configured on the implementation host.

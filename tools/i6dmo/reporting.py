@@ -472,6 +472,10 @@ def run_matched_unit(spec, out, progress_path, *, started=None):
         if receipt.get("status") != "COMPLETED":
             raise ReportFailure("UPSTREAM_FIT_NOT_COMPLETED", str(receipt.get("code")))
         T.verify_matched_identity(receipt.get("identity"), population.digest, arm)
+        if matched.get("require_scientific_fit") and (receipt.get("scientific") is not True
+                                                      or receipt.get("device") != "gpu"):
+            raise ReportFailure("NON_SCIENTIFIC_FIT", f"a scientific matched report needs a scientific GPU fit; "
+                                f"receipt scientific={receipt.get('scientific')!r} device={receipt.get('device')!r}")
         block = receipt.get("matched") or {}
         if block.get("common_population_sha256") != population.digest or block.get("arm") != arm:
             raise ReportFailure("NOT_A_MATCHED_FIT", "receipt matched block differs")
@@ -550,7 +554,8 @@ def run_matched_unit(spec, out, progress_path, *, started=None):
                    "development_counts": counts, "expected_weeks_source": weeks_source,
                    "input_replay": arm_dev["replay"],
                    "capacity": capacity, "fit_identity": receipt.get("identity"),
-                   "scientific_fit": receipt.get("scientific"),
+                   "scientific_fit": receipt.get("scientific"), "fit_device": receipt.get("device"),
+                   "require_scientific_fit": bool(matched.get("require_scientific_fit")),
                    "manual_pooled_replay": manual, "selection": selection,
                    "same_rows": "model and naive per horizon on identical common rows, common "
                                 "mask and original-price units; C2, saved-prediction replay "
@@ -598,7 +603,7 @@ def run_matched_unit(spec, out, progress_path, *, started=None):
                 selection=selection)
 
 
-def decide_matched(mg1_metrics, mg2_metrics):
+def decide_matched(mg1_metrics, mg2_metrics, *, require_scientific=False):
     """Deterministic recipe decision from the two matched METRICS.json documents.
 
     Lower selection score wins; within SELECTION_TIE the cheaper MG2 is retained; any failed
@@ -610,6 +615,11 @@ def decide_matched(mg1_metrics, mg2_metrics):
     a, b = (mg1_metrics or {}).get("matched") or {}, (mg2_metrics or {}).get("matched") or {}
     if a.get("arm") != "mg1" or b.get("arm") != "mg2m":
         raise ReportFailure("ARM_DESIGN_MISMATCH", f"arms {a.get('arm')!r}/{b.get('arm')!r}")
+    if require_scientific:  # a scientific campaign decides only from scientific GPU fits
+        for block in (a, b):
+            if block.get("scientific_fit") is not True or block.get("fit_device") != "gpu":
+                raise ReportFailure("NON_SCIENTIFIC_FIT", f"{block.get('arm')}: scientific_fit="
+                                    f"{block.get('scientific_fit')!r} fit_device={block.get('fit_device')!r}")
     for key in ("common_population_sha256", "development_row_ids_sha256",
                 "development_head_mask_sha256", "development_counts"):
         if a.get(key) != b.get(key):

@@ -177,3 +177,44 @@ def test_engineering_cpu_fixture_is_refused_for_the_real_sealed_designs(world, t
     with pytest.raises(campaign.Refused, match="ENGINEERING_CPU_FIXTURE_REQUIRES_SYNTHETIC_CALENDAR"):
         campaign.init_matched_contrast(DESIGNS, spec_path, tmp_path / "c", adapter=None, code_commit="c" * 40,
                                        data_pins=pins(data, storage), engineering_cpu_fixture=True)
+
+
+def test_review_d2_cpu_fit_is_never_scientific_and_a_scientific_report_refuses_it(world):
+    """Reviewer p8 g: ``train --device cpu`` WITHOUT any override stamped scientific=true (seen on a
+    receipt that stopped at a wrong digest). Now a CPU fit is never scientific, and a scientific
+    campaign's real report refuses a non-scientific fit typed."""
+    import os
+    import subprocess
+    import sys
+    from tests.i6dmo.test_matched_fit_path import _spec, _stored_terminal
+    from tools.i6dmo import reporting
+    repo = Path(__file__).resolve().parents[2]
+
+    def train(out, digest, overrides):
+        env = {k: v for k, v in os.environ.items() if not k.startswith("I6DMO_TEST_")}
+        env["CUDA_VISIBLE_DEVICES"] = ""
+        if overrides:
+            env["I6DMO_TEST_TRAINING_OVERRIDES"] = OVERRIDES
+        return subprocess.run([sys.executable, "-m", "tools.i6dmo.train", "--design", str(world["designs"]["mg2m"]),
+                               "--out", str(out), "--device", "cpu", "--json",
+                               "--common-population", str(world["storage"] / "population"),
+                               "--common-population-digest", digest, "--input-dir", str(world["input"])],
+                              capture_output=True, text=True, env=env, cwd=repo, timeout=500)
+    stopped = world["base"] / "cpu_no_override" / "out" / "train"
+    train(stopped, "0" * 64, overrides=False)  # the reviewer's probe: no override, wrong digest
+    receipt = json.loads((stopped / "RECEIPT.json").read_text())
+    assert not receipt["overrides"] and receipt["scientific"] is False
+    out = world["base"] / "cpu_fit" / "out" / "train"
+    run = train(out, world["digest"], overrides=True)
+    assert run.returncode == 0, run.stdout[-2000:] + run.stderr[-2000:]
+    model_world = dict(population=world["storage"] / "population", input=world["input"], digest=world["digest"],
+                       exps=world["exps"])
+    spec = _spec(model_world, "mg2m", _stored_terminal(out))
+    spec["matched"]["require_scientific_fit"] = True
+    refused = reporting.run_unit(spec, world["base"] / "cpu_report", world["base"] / "cpu_report.progress")
+    assert refused["status"] == "FAILED" and refused["disposition"] == "NON_SCIENTIFIC_FIT"
+    spec["matched"]["require_scientific_fit"] = False  # an engineering campaign may still score it
+    allowed = reporting.run_unit(spec, world["base"] / "cpu_report2", world["base"] / "cpu_report2.progress")
+    assert allowed["status"] == "COMPLETE"
+    metrics = json.loads((world["base"] / "cpu_report2" / "METRICS.json").read_text())
+    assert metrics["matched"]["scientific_fit"] is False and metrics["matched"]["fit_device"] == "cpu"
