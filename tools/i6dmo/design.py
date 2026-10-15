@@ -493,10 +493,14 @@ def effective_config(design):
                          "per-head float64 partial sums ONLY; CPU end-to-end, self-check, reload, "
                          "predictions, input bytes, weight digests, forward identity and flags "
                          "stay bitwise",
-                "justification": "library floor of in-session vs fresh-instance GPU contexts of "
-                                 "this TF build, after excluding autotune/init order, TF32, "
-                                 "weights, input bytes, forward identity and grappler "
-                                 "remapping/layout/AMP (observed max 1.82e-5)",
+                "justification": "a reproduced, build/context-specific numerical discrepancy "
+                                 "between in-session and fresh-instance GPU executions of this "
+                                 "pinned TensorFlow build (cause not demonstrated; eight "
+                                 "mechanisms excluded: autotune/init order, TF32, weights, input "
+                                 "bytes, forward identity, grappler remapping/layout/AMP; "
+                                 "observed max 1.82e-5), bounded by the versioned "
+                                 "NUMERICALLY_EQUIVALENT protocol "
+                                 "i6dmo.monitor_numeric_equivalence.v2",
                 "prospective": True,
             },
             "outer_validation_for_checkpoint_selection": False,

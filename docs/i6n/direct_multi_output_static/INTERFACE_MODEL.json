@@ -146,7 +146,7 @@
   },
   "short_identities": {
     "design_sha256": "541ce40ac1becceb16b14937e34e3452eee36aad8a370686dacf62860c86d381",
-    "effective_config_sha256": "cd78cc6ce9c03d2202d73cc7e5a0624f60f72a66f7abe498b5b027e5c148513f (changed from 56ba5324... by the added effective 'family' key; design sha unchanged)"
+    "effective_config_sha256": "287e4f11e4ef385234becf02d9ed31864d8a3a58fc0b4c7f3e4c6a765a76e097 (FINAL pre-release identity; supersedes cd78cc6c/9106 8420/7f7b2aed intermediates)"
   },
   "final_refit": {
     "protocol": "typed FINAL_REFIT design = design.final_refit_design(validation design): experiment_id + '-FINAL', TRAIN [2021-01-01, 2025-01-01) with the same 8-week inner tail (fit [2021-01-01, 2024-11-06), inner [2024-11-06, 2025-01-01)), validation split removed, sealed; effective mode FINAL_REFIT; FINAL_PLAN_OPEN_FIELDS (empty) -> FINAL_DESIGN_UNDECIDED",
@@ -167,7 +167,7 @@
     "scope": "cross-process GPU comparison of the monitored value and per-batch per-head float64 partial sums ONLY; CPU end-to-end, in-session self-check, reload identity, saved-vs-reloaded predictions, input witness bytes, weight digests, forward identity and determinism flags stay BITWISE",
     "bound": "|delta| <= 1e-9 + 5e-5*|recorded| per partial sum and for the monitored value",
     "calibration": "recorded witness distribution across eight excluded-mechanism rounds, observed max 1.82e-5, margin against flapping, far below any scientific effect",
-    "justification": "in-session vs fresh-instance GPU execution contexts of this TF build after excluding autotune/init order, TF32, weights, input bytes, forward identity, grappler remapping/layout/AMP; prospective, no past run re-graded",
+    "justification": "a reproduced, build/context-specific numerical discrepancy between in-session and fresh-instance GPU executions of this pinned TF build, cause not demonstrated (eight mechanisms excluded), bounded by the versioned NUMERICALLY_EQUIVALENT protocol; prospective, no past run re-graded",
     "activation": "only with static-algorithm determinism flags recorded and equal on both sides",
     "outcomes": "WITHIN_DECLARED_FLOOR (reported with max deltas and allowance; row-level hex stays a diagnostic in row_forward_diagnostics) vs MONITOR_WITNESS_DIVERGENCE beyond the floor (hard)",
     "declared_in": "EFFECTIVE config training.monitor_comparison_floor (effective sha changes; design sha unchanged)"

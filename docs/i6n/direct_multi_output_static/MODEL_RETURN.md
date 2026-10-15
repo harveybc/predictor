@@ -282,11 +282,14 @@ the declared bound and the tolerance closes it with the deltas on record.
 
 ## Round 11: subprocess-path fidelity and the init-ordering witness
 
-Lane 4 found the flags round bit-identical to the pre-flags round: the flags
-were set after TensorFlow had already initialized. The init-ordering witness
-then caught the SAME defect in the production CLI itself: `train_unit` imported
-TensorFlow before `tools.i6dmo.model`, so even `python -m tools.i6dmo.train`
-ran with ungoverned kernel selection. Fixes:
+Lane 4 found the flags round bit-identical to the pre-flags round. HYPOTHESIS
+(reviewer wording ruling: NOT demonstrated - the diff changes no
+forward-execution code): the flags were set after TensorFlow had already
+initialized, so earlier flag fixes may never have reached the GPU execution
+path. The init-ordering witness found the same ordering defect in the
+production CLI itself (`train_unit` imported TensorFlow before
+`tools.i6dmo.model`), which is a proven import-order fact; whether that
+ordering CAUSED the unchanged bits remains the hypothesis. Fixes:
 
 1. `tools/i6dmo/train.py` imports `tools.i6dmo.model` FIRST (the module sets
    the static-algorithm env before importing TF itself), and `train_unit`
@@ -456,3 +459,20 @@ without the sealed protocol can never inherit the new rule (tested).
 
 Statuses renamed: EXACT / NUMERICALLY_EQUIVALENT (WITHIN_DECLARED_FLOOR and
 "bitwise" claims removed from verdicts).
+
+## Round 17: reviewer wording items (final pre-release identity)
+
+Reviewer verdict on a33cfe70: ACCEPT_FOR_RELEASE with two non-blocking wording
+items, both applied as the last pre-release change:
+
+1. Round 11's stale-path explanation is now labelled a HYPOTHESIS (the diff
+   changed no forward-execution code; the import-order defect is a proven fact,
+   its causal role in the unchanged bits is not demonstrated).
+2. `training.monitor_comparison_floor.justification` in the sealed effective
+   config no longer says "library floor": it states a reproduced,
+   build/context-specific numerical discrepancy, cause not demonstrated,
+   bounded by the versioned NUMERICALLY_EQUIVALENT protocol.
+
+FINAL effective config sha (the identity the scientific fit runs under):
+`287e4f11e4ef385234becf02d9ed31864d8a3a58fc0b4c7f3e4c6a765a76e097`
+(design sha unchanged `541ce40a…`). Nothing else changes after this commit.

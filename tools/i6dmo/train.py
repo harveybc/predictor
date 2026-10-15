@@ -346,9 +346,12 @@ MONITOR_TOLERANCE = {
     "version": "v2", "rtol": 5e-5, "atol": 1e-9, "label": "NUMERICALLY_EQUIVALENT",
     "scope": "cross_process_gpu_monitored_value_and_partial_sums_only",
     "calibration": "recorded witness distribution across eight excluded-mechanism rounds, max 1.82e-5",
-    "justification": ("in-session vs fresh-instance GPU execution contexts of this TensorFlow "
-                      "build; library floor after excluding autotune/init order, TF32, weights, "
-                      "input bytes, forward identity and grappler remapping/layout/AMP"),
+    "justification": ("a reproduced, build/context-specific numerical discrepancy between "
+                      "in-session and fresh-instance GPU executions of this pinned TensorFlow "
+                      "build, cause not demonstrated (eight mechanisms excluded: autotune/init "
+                      "order, TF32, weights, input bytes, forward identity, grappler "
+                      "remapping/layout/AMP), bounded by the versioned NUMERICALLY_EQUIVALENT "
+                      "protocol"),
     "prospective": True, "requires_static_flags": True,
 }
 
