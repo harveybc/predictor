@@ -1,0 +1,171 @@
+{
+ "arms": {
+  "MG1": {
+   "capacity_sha256": "44ce75b3b45af977afe20869c4a351c39112a791a7752165dd605ad1d31c6d26",
+   "counts": {
+    "branches": 304,
+    "core": 1980,
+    "core_input_channels": 78,
+    "core_layers": [
+     1880,
+     100
+    ],
+    "features": 19,
+    "fusion": 0,
+    "heads": 4902,
+    "per_branch": 16,
+    "per_head": 817,
+    "per_head_hidden": 808,
+    "per_head_output": 9,
+    "slots": 25,
+    "time_encoder": 0,
+    "total": 7186
+   },
+   "family": "short_mg1",
+   "model_config_sha256": "e816ae066191b5298b1261414f60171089dc63bb6560de05d1558c53fe6a2344",
+   "per_head_detail": {
+    "h12": {
+     "hidden": 808,
+     "output": 9,
+     "total": 817
+    },
+    "h2": {
+     "hidden": 808,
+     "output": 9,
+     "total": 817
+    },
+    "h3": {
+     "hidden": 808,
+     "output": 9,
+     "total": 817
+    },
+    "h4": {
+     "hidden": 808,
+     "output": 9,
+     "total": 817
+    },
+    "h5": {
+     "hidden": 808,
+     "output": 9,
+     "total": 817
+    },
+    "h6": {
+     "hidden": 808,
+     "output": 9,
+     "total": 817
+    }
+   }
+  },
+  "MG2": {
+   "capacity_sha256": "b65089954c57955162ac59c2005e9b5b485fc17c8841a7dba70267a37684cf55",
+   "counts": {
+    "branches": 304,
+    "core": 1980,
+    "core_input_channels": 78,
+    "core_layers": [
+     1880,
+     100
+    ],
+    "features": 19,
+    "fusion": 0,
+    "heads": 2598,
+    "per_branch": 16,
+    "per_head": 433,
+    "per_head_hidden": 424,
+    "per_head_output": 9,
+    "slots": 13,
+    "time_encoder": 0,
+    "total": 4882
+   },
+   "family": "short_mg2",
+   "model_config_sha256": "8c29a338a7312edbba15269666cf20fce4e5f31ee0a251c664727ca6875b5136",
+   "per_head_detail": {
+    "h12": {
+     "hidden": 424,
+     "output": 9,
+     "total": 433
+    },
+    "h2": {
+     "hidden": 424,
+     "output": 9,
+     "total": 433
+    },
+    "h3": {
+     "hidden": 424,
+     "output": 9,
+     "total": 433
+    },
+    "h4": {
+     "hidden": 424,
+     "output": 9,
+     "total": 433
+    },
+    "h5": {
+     "hidden": 424,
+     "output": 9,
+     "total": 433
+    },
+    "h6": {
+     "hidden": 424,
+     "output": 9,
+     "total": 433
+    }
+   }
+  }
+ },
+ "declared_capacity": {
+  "short_mg1": {
+   "branches": 304,
+   "core": 1980,
+   "core_input_channels": 78,
+   "core_layers": [
+    1880,
+    100
+   ],
+   "features": 19,
+   "fusion": 0,
+   "heads": 4902,
+   "per_branch": 16,
+   "per_head": 817,
+   "per_head_hidden": 808,
+   "per_head_output": 9,
+   "slots": 25,
+   "time_encoder": 0,
+   "total": 7186
+  },
+  "short_mg2": {
+   "branches": 304,
+   "core": 1980,
+   "core_input_channels": 78,
+   "core_layers": [
+    1880,
+    100
+   ],
+   "features": 19,
+   "fusion": 0,
+   "heads": 2598,
+   "per_branch": 16,
+   "per_head": 433,
+   "per_head_hidden": 424,
+   "per_head_output": 9,
+   "slots": 13,
+   "time_encoder": 0,
+   "total": 4882
+  }
+ },
+ "declared_head_delta_formula": "(25-13)*4*8*6",
+ "delta": {
+  "branches": 0,
+  "core": 0,
+  "fusion": 0,
+  "heads": 2304,
+  "time_encoder": 0,
+  "total": 2304
+ },
+ "guard": "tools.i6dmo.model.capacity_record refuses CAPACITY_UNREPORTED_CHANGE when a build differs from the recipe count or this declared disclosure; matched_capacity_delta refuses any MG1-MG2 difference other than the heads' 2304",
+ "interpretation": "practical input/readout recipe comparison; not proof that additional signal alone caused any gain",
+ "plan": "NEXT_CONTRASTS_PLAN_20261015.md section 2, Capacity disclosure and decision rule",
+ "recipe": "19 per-feature causal Conv1D(4,k3,s1) branches -> weightless concat fusion -> DynamicPhysicalTimeEncoder 1.0.0 (actual signed UTC offsets; +2 context channels) -> core Conv1D 8 then 4 (k3,s1) -> six Flatten->Dense(8,relu)->Dense(1) heads",
+ "schema": "i6dmo.matched_capacity_disclosure.v1",
+ "status": "MEASURED_ON_REAL_BUILDS_NO_FIT"
+}

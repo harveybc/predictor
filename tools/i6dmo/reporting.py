@@ -21,6 +21,8 @@ import json
 import math
 import re
 import time
+
+import numpy as np
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -123,18 +125,23 @@ def materialize_validation(spec):
     return data.materialize(bundle, table, "VALIDATION")
 
 
+def _fit_key(spec):
+    """The upstream fit unit: ``<family>.fit`` or the matched spec's declared fit unit."""
+    return (spec.get("matched") or {}).get("fit_unit") or f"{spec['family']}.fit"
+
+
 def pred_doc_path(spec):
-    up = spec["upstream"][f"{spec['family']}.fit"]
+    up = spec["upstream"][_fit_key(spec)]
     stored = json.loads(Path(up["path"]).read_text())
     art = stored["terminal"]["artifacts"]["predictions/validation.npz"]
     return Path(up["path"]).parent / "out" / art["path"]
 
 
 def _predictions(spec):
-    up = spec["upstream"].get(f"{spec['family']}.fit") or {}
+    up = spec["upstream"].get(_fit_key(spec)) or {}
     path = Path(up.get("path", ""))
     if not path.exists() or _sha(path) != up.get("sha256"):
-        raise ReportFailure("UPSTREAM_TERMINAL_DIGEST", f"{spec['family']}.fit")
+        raise ReportFailure("UPSTREAM_TERMINAL_DIGEST", _fit_key(spec))
     stored = json.loads(path.read_text())
     terminal = stored["terminal"]
     art = (terminal.get("artifacts") or {}).get("predictions/validation.npz")
@@ -254,6 +261,11 @@ def run_unit(spec, out_dir, progress_path, *, arrays_loader=None):
     out.mkdir(parents=True, exist_ok=True)
     if spec.get("test_open") or spec.get("kind") != "report":
         return _failed("NOT_A_VALIDATION_REPORT", "report units never read TEST", started)
+    if spec.get("common_population") is not None:
+        if arrays_loader is not None:
+            return _failed("MATCHED_LOADER_INJECTION", "the matched report reads the frozen "
+                           "population and the arm source itself; no arrays loader", started)
+        return run_matched_unit(spec, out, progress_path, started=started)
     from tools.i6dmo import naive
     try:
         family = spec["family"]
@@ -310,3 +322,316 @@ def run_unit(spec, out_dir, progress_path, *, arrays_loader=None):
                 costs=dict(fit_seconds=0.0, score_seconds=time.time() - started),
                 lineage=dict(bundle_sha256=manifest["bundle_sha256"], predictions_sha256=pred_sha,
                              checkpoint=checkpoint, c2=result["c2"]))
+
+
+# =========================================================================== matched report (SC05/SC06)
+#
+# NEXT_CONTRASTS_PLAN section 2: each matched arm is scored on the FROZEN common DEVELOPMENT rows
+# and per-head masks of the data lane's common population. Model and naive per horizon use the
+# same rows, the same mask and original-price units; C2 scoring, the manual pooled replay from
+# the SAVED predictions and the independent disk naive replay must agree. Per-head numbers are
+# primary; the equal-head selection score never hides a failed head.
+
+MATCHED_REPORT_SCHEMA = "i6dmo.matched_report.v1"
+SELECTION_TIE = 1e-8
+_REPLAY_REL_TOL = 1e-12
+
+
+def _close(a, b):
+    if a is None or b is None:
+        return a is b
+    return abs(a - b) <= _REPLAY_REL_TOL * max(1.0, abs(a), abs(b))
+
+
+def _upstream_receipt(spec):
+    """The matched fit's RECEIPT.json through the upstream terminal's digest chain."""
+    up = spec["upstream"].get(_fit_key(spec)) or {}
+    path = Path(up.get("path", ""))
+    if not path.exists() or _sha(path) != up.get("sha256"):
+        raise ReportFailure("UPSTREAM_TERMINAL_DIGEST", _fit_key(spec))
+    stored = json.loads(path.read_text())
+    terminal = stored.get("terminal") or {}
+    art = (terminal.get("artifacts") or {}).get("RECEIPT")
+    if art is None:
+        raise ReportFailure("NOT_A_MATCHED_FIT", "the upstream fit terminal carries no RECEIPT")
+    file = path.parent / "out" / art["path"]
+    if not file.exists() or _sha(file) != art["sha256"]:
+        raise ReportFailure("RECEIPT_DIGEST", art["path"])
+    receipt = json.loads(file.read_text())
+    if terminal.get("trainer_identity") is not None and terminal["trainer_identity"] != receipt.get("identity"):
+        raise ReportFailure("NOT_A_MATCHED_FIT", "terminal trainer identity differs from the receipt")
+    return receipt
+
+
+def _input_pin(spec):
+    matched = spec.get("matched") or {}
+    pin = matched.get("input") or (spec.get("pins") or {}).get(f"{spec['family']}_input")
+    if not pin:
+        raise ReportFailure("PIN_MISSING", "matched report needs the retained INPUT pin")
+    if _sha(Path(pin["path"]) / "INPUT.npz") != pin["sha256"]:
+        raise ReportFailure("INPUT_PIN_MISMATCH", "INPUT.npz digest differs from the pin")
+    return pin
+
+
+def _arm_development(spec, population, design):
+    """DEVELOPMENT prices/weeks of exactly the common rows, re-read from the arm source."""
+    from tools.i6dmo import train as T
+    source = (spec.get("matched") or {}).get("arm_source") or {}
+    root = Path(source.get("path", ""))
+    dev = population.splits["DEVELOPMENT"]
+    if T._is_market_bundle(root):
+        manifest = json.loads((root / "BUNDLE.json").read_text())
+        if source.get("sha256") and _sha(root / "BUNDLE.json") != source["sha256"]:
+            raise ReportFailure("ARM_SOURCE_PIN_MISMATCH", "BUNDLE.json digest differs from the pin")
+        raw = T.load_market_split_arrays(root, "validation", design)
+        calendar = (manifest.get("calendar") or {}).get("calendar_id")
+    else:
+        cp = T._common_population_module()
+        accessor = getattr(cp, "arm_split_arrays", None)
+        if accessor is None:
+            raise ReportFailure("COMMON_POPULATION_ACCESSOR_MISSING", "arm_split_arrays")
+        raw = accessor(population, root, "DEVELOPMENT", design=design)
+        calendar = None
+    idx = T.common_row_index(raw["row_id"], dev.origin_row_ids, "validation")
+    out = {"origin_price": np.asarray(raw["origin_price"], np.float64)[idx],
+           "target_price": np.asarray(raw["target_price"], np.float64)[idx],
+           "calendar_id": calendar}
+    if "mask" in raw and (np.asarray(dev.head_mask) & ~np.asarray(raw["mask"], bool)[idx]).any():
+        raise ReportFailure("COMMON_MASK_UNSUPPORTED_BY_ARM", "DEVELOPMENT")
+    if "week_ids" not in raw:
+        raise ReportFailure("WEEK_IDS_MISSING", "the arm source must carry week_ids")
+    out["week_ids"] = np.asarray(raw["week_ids"])[idx]
+    out["expected_weeks"] = raw.get("expected_weeks")
+    return out
+
+
+def manual_pooled_replay(pred_doc, horizons):
+    """Per-head pooled MAE/naive/relative error recomputed ONLY from the saved predictions file."""
+    out = {}
+    mask = np.asarray(pred_doc["mask"], bool)
+    pred = np.asarray(pred_doc["predicted_price"], np.float64)
+    target = np.asarray(pred_doc["target_price"], np.float64)
+    origin = np.asarray(pred_doc["origin_price"], np.float64)
+    for j, h in enumerate(horizons):
+        sel = mask[:, j]
+        n = int(sel.sum())
+        if not n:
+            out[str(h)] = {"n": 0, "mae": None, "naive_mae": None, "relative_error": None}
+            continue
+        model_sum = math.fsum(np.abs(pred[sel, j] - target[sel, j]).tolist())
+        naive_sum = math.fsum(np.abs(target[sel, j] - origin[sel]).tolist())
+        mae, naive_mae = model_sum / n, naive_sum / n
+        out[str(h)] = {"n": n, "sum_abs_error": model_sum, "naive_sum_abs_error": naive_sum,
+                       "mae": mae, "naive_mae": naive_mae,
+                       "relative_error": (mae - naive_mae) / naive_mae if naive_mae > 0 else None}
+    return out
+
+
+def selection_score(per_horizon, horizons):
+    """Equal-head mean of annual pooled relative MAE; INCOMPLETE (score None) on any failed head."""
+    failed, rels = [], []
+    for h in horizons:
+        row = per_horizon.get(str(h)) or {}
+        if not row.get("n") or row.get("relative_error") is None or row.get("n_failed"):
+            failed.append({"horizon": int(h), "n": row.get("n"), "n_failed": row.get("n_failed"),
+                           "relative_error": row.get("relative_error"),
+                           "reason": row.get("relative_error_undefined_reason") or "missing_or_failed"})
+        else:
+            rels.append(float(row["relative_error"]))
+    doc = {"definition": "equal-head mean over the six heads of annual pooled relative MAE "
+                         "(MAE_h-naive_h)/naive_h on the frozen common DEVELOPMENT rows; "
+                         "negative is better; per-head numbers stay primary",
+           "heads": [int(h) for h in horizons]}
+    if failed:
+        return dict(doc, status="INCOMPLETE", score=None, failed_heads=failed)
+    return dict(doc, status="COMPLETE", score=math.fsum(rels) / len(rels), failed_heads=[])
+
+
+def run_matched_unit(spec, out, progress_path, *, started=None):
+    started = time.time() if started is None else started
+    out = Path(out)
+    from tools.i6dmo import data as data_mod, naive, train as T
+    from tools.i6n_contracts.feature_availability import MANIFEST_NO_STLFSI4
+    try:
+        design = _design(spec)
+        horizons = [int(h) for h in design["horizons_hours"]]
+        matched = spec.get("matched") or {}
+        arm = matched.get("arm")
+        if arm not in ("MG1", "MG2") or T.ARM_BY_RULE.get(
+                (design.get("market_time") or {}).get("rule")) != arm:
+            raise ReportFailure("ARM_DESIGN_MISMATCH", f"arm {arm!r} vs design rule "
+                                f"{(design.get('market_time') or {}).get('rule')!r}")
+        pin = spec["common_population"]
+        population = T.load_matched_population(pin["path"], pin.get("sha256"), horizons,
+                                               list(MANIFEST_NO_STLFSI4))
+        input_pin = _input_pin(spec)
+        _progress(progress_path, 1, "verify")
+        receipt = _upstream_receipt(spec)
+        if receipt.get("status") != "COMPLETED":
+            raise ReportFailure("UPSTREAM_FIT_NOT_COMPLETED", str(receipt.get("code")))
+        T.verify_matched_identity(receipt.get("identity"), population.digest, arm,
+                                  scientific=receipt.get("scientific", True))
+        block = receipt.get("matched") or {}
+        if block.get("common_population_sha256") != population.digest or block.get("arm") != arm:
+            raise ReportFailure("NOT_A_MATCHED_FIT", "receipt matched block differs")
+        from tools.i6dmo import model as M
+        capacity = block.get("capacity") or {}
+        literal = M.DECLARED_CAPACITY[M.MATCHED_ARMS[arm]]
+        if capacity.get("arm") != arm or any(capacity.get("counts", {}).get(k) != v
+                                             for k, v in literal.items()):
+            raise ReportFailure("CAPACITY_UNREPORTED_CHANGE", f"{arm} capacity record")
+        pred_doc, checkpoint, sealed_at, pred_sha = _predictions(spec)
+        if (receipt.get("artifacts") or {}).get("predictions/validation.npz") != pred_sha:
+            raise ReportFailure("PREDICTIONS_DIGEST", "terminal predictions differ from the receipt")
+        _progress(progress_path, 2, "load")
+        dev = population.splits["DEVELOPMENT"]
+        if [int(h) for h in pred_doc["horizons_hours"]] != horizons:
+            raise ReportFailure("HORIZON_MISMATCH", "prediction head order differs from the design")
+        if not np.array_equal(np.asarray(pred_doc["row_id"], np.int64), dev.origin_row_ids):
+            raise ReportFailure("ROW_ID_MISMATCH", "predictions are not the common DEVELOPMENT rows")
+        mask = np.asarray(dev.head_mask, bool)
+        if not np.array_equal(np.asarray(pred_doc["mask"], bool), mask):
+            raise ReportFailure("MASK_MISMATCH", "prediction support differs from the common mask")
+        values = np.asarray(pred_doc["predicted_price"], np.float64)
+        if values.shape != mask.shape:
+            raise ReportFailure("PREDICTION_SHAPE", str(values.shape))
+        arm_dev = _arm_development(spec, population, design)
+        saved_target = np.asarray(pred_doc["target_price"], np.float64)
+        if not np.array_equal(np.asarray(pred_doc["origin_price"], np.float64), arm_dev["origin_price"]) \
+                or not np.array_equal(saved_target[mask], arm_dev["target_price"][mask]):
+            raise ReportFailure("PRICE_REPLAY_MISMATCH",
+                                "saved origin/target prices differ from the arm source")
+        identities = getattr(population, "identities", None) or {}
+        calendar = (identities.get("calendar") or {}).get("calendar_id") or arm_dev["calendar_id"]
+        if not calendar:
+            raise ReportFailure("CALENDAR_ID_MISSING", "population identities carry no calendar_id")
+        expected = (identities.get("expected_weeks") or {}).get("DEVELOPMENT") or arm_dev["expected_weeks"]
+        weeks_source = "population_or_arm_declared" if expected is not None else "observed_weeks_only"
+        if expected is None:
+            expected = sorted({str(w) for w in arm_dev["week_ids"]})
+
+        class _View:
+            pass
+        view = _View()
+        view.split, view.horizons = "DEVELOPMENT", tuple(horizons)
+        view.mask, view.entry_mask = mask, np.asarray(dev.entry_mask, bool)
+        view.y_price = np.where(mask, arm_dev["target_price"], np.nan)
+        view.price_origin, view.origin_ts = arm_dev["origin_price"], np.asarray(dev.origin_row_ids)
+        view.row_ids = np.asarray([data_mod.row_id(int(t)) for t in dev.origin_row_ids], dtype=str)
+        view.week_ids = np.asarray([str(w) for w in arm_dev["week_ids"]], dtype=object)
+        view.expected_weeks, view.calendar_id = tuple(str(w) for w in expected), calendar
+        c2_design = {"experiment_id": design["experiment_id"], "horizons_hours": horizons,
+                     "arm": arm, "common_population_sha256": population.digest}
+        _progress(progress_path, 3, "score")
+        try:
+            result = naive.paired_metrics(view, values, c2_design, input_dir=input_pin["path"],
+                                          checkpoint=checkpoint, sealed_at=sealed_at)
+        except naive.NaiveReplayMismatch as exc:
+            raise ReportFailure("NAIVE_REPLAY_DISAGREES", str(exc)) from None
+        manual = manual_pooled_replay(pred_doc, horizons)
+        problems = []
+        for h in horizons:
+            got, ref = result["per_horizon"][str(h)], manual[str(h)]
+            if got["n"] != ref["n"] or not all(_close(got[a], ref[b]) for a, b in (
+                    ("mae", "mae"), ("naive_mae", "naive_mae"), ("relative_error", "relative_error"))):
+                problems.append(f"h{h}: reported {got['mae']}/{got['naive_mae']}/{got['relative_error']} "
+                                f"vs saved-prediction replay {ref['mae']}/{ref['naive_mae']}/{ref['relative_error']}")
+        if problems:
+            raise ReportFailure("MANUAL_REPLAY_DISAGREES", "; ".join(problems))
+        selection = selection_score(result["per_horizon"], horizons)
+    except ReportFailure as exc:
+        return _failed(exc.code, exc, started)
+    except Exception as exc:  # typed errors from other lanes keep their code
+        return _failed(getattr(exc, "code", type(exc).__name__), exc, started)
+    counts = {str(h): int(c) for h, c in sorted(dict(dev.counts).items())}
+    matched_doc = {"schema": MATCHED_REPORT_SCHEMA, "arm": arm, "rule": design["market_time"]["rule"],
+                   "population": "COMMON_DEVELOPMENT",
+                   "common_population_sha256": population.digest,
+                   "development_row_ids_sha256": T._ids_digest(dev.origin_row_ids),
+                   "development_head_mask_sha256": T._array_digest(mask),
+                   "development_counts": counts, "expected_weeks_source": weeks_source,
+                   "capacity": capacity, "fit_identity": receipt.get("identity"),
+                   "scientific_fit": receipt.get("scientific"),
+                   "manual_pooled_replay": manual, "selection": selection,
+                   "same_rows": "model and naive per horizon on identical common rows, common "
+                                "mask and original-price units; C2, saved-prediction replay "
+                                "and disk naive replay agree"}
+    _atomic(out / "METRICS.json", dict(result, matched=matched_doc, predictions_sha256=pred_sha))
+    import shutil
+    shutil.copyfile(pred_doc_path(spec), out / "validation_predictions.npz")
+    if _sha(out / "validation_predictions.npz") != pred_sha:
+        return _failed("PREDICTIONS_COPY_DIGEST", "copy differs", started)
+    support = dict(population="COMMON_DEVELOPMENT", common_population_sha256=population.digest,
+                   head_valid=counts, n_rows=int(len(dev.origin_row_ids)),
+                   head_entry_valid={str(h): int(np.asarray(dev.entry_mask)[:, j].sum())
+                                     for j, h in enumerate(horizons)},
+                   origins={"common_development": int(len(dev.origin_row_ids))},
+                   scored={h: row["n"] for h, row in result["per_horizon"].items()})
+    _atomic(out / "SUPPORT.json", support)
+    _progress(progress_path, 4, "publish")
+    eligibility = {h: dict(n=row["n"], mae=row["mae"], naive=row["naive_mae"],
+                           relative_error=row["relative_error"],
+                           eligible=row["eligible_mae_below_naive"], n_declared=row["n_declared"],
+                           n_failed=row["n_failed"], state=row["state"],
+                           row_ids_sha256=row["row_ids_sha256"])
+                   for h, row in result["per_horizon"].items()}
+    manifest = {"bundle_sha256": (receipt.get("identity") or {}).get("bundle_manifest_sha256")}
+    reports = [_annual_report(spec, result, support, manifest)] + \
+        _weekly_reports(spec, result["weekly"], manifest)
+    reports[0]["metrics"].append(dict(metric="Selection_Score_Equal_Head_Relative_MAE",
+                                      value=selection["score"], split="validation", horizon=None,
+                                      unit="ratio"))
+    reports[0]["metrics"] = [m for m in reports[0]["metrics"] if m["value"] is not None]
+    for report in reports:
+        report["tags"].update(population="COMMON_DEVELOPMENT", arm=arm,
+                              common_population_sha256=population.digest,
+                              selection_status=selection["status"])
+    _progress(progress_path, 5, "done")
+    return dict(status="COMPLETE", disposition="MATCHED_PAIRED_METRICS_AGREE",
+                artifacts={"metrics": dict(path="METRICS.json", sha256=_sha(out / "METRICS.json")),
+                           "support": dict(path="SUPPORT.json", sha256=_sha(out / "SUPPORT.json")),
+                           "validation_predictions": dict(path="validation_predictions.npz",
+                                                          sha256=pred_sha)},
+                eligibility=eligibility, gates={}, reports=reports,
+                costs=dict(fit_seconds=0.0, score_seconds=time.time() - started),
+                lineage=dict(common_population_sha256=population.digest, predictions_sha256=pred_sha,
+                             checkpoint=checkpoint, c2=result["c2"], arm=arm),
+                selection=selection)
+
+
+def decide_matched(mg1_metrics, mg2_metrics):
+    """Deterministic recipe decision from the two matched METRICS.json documents.
+
+    Lower selection score wins; within SELECTION_TIE the cheaper MG2 is retained; any failed
+    head or arm closes INCOMPLETE_COMPARISON with the missing evidence (never a selection from
+    incomplete heads). Both arms must carry the same common population, the same DEVELOPMENT
+    rows/mask/counts and the declared capacity difference only.
+    """
+    from tools.i6dmo import model as M
+    a, b = (mg1_metrics or {}).get("matched") or {}, (mg2_metrics or {}).get("matched") or {}
+    if a.get("arm") != "MG1" or b.get("arm") != "MG2":
+        raise ReportFailure("ARM_DESIGN_MISMATCH", f"arms {a.get('arm')!r}/{b.get('arm')!r}")
+    for key in ("common_population_sha256", "development_row_ids_sha256",
+                "development_head_mask_sha256", "development_counts"):
+        if a.get(key) != b.get(key):
+            raise ReportFailure("COMMON_POPULATION_MISMATCH", key)
+    try:
+        delta = M.matched_capacity_delta(a.get("capacity"), b.get("capacity"))
+    except M.CapacityError as exc:
+        raise ReportFailure(exc.code, str(exc)) from None
+    per_head = {str(h): {"MG1": (mg1_metrics["per_horizon"].get(str(h)) or {}).get("relative_error"),
+                         "MG2": (mg2_metrics["per_horizon"].get(str(h)) or {}).get("relative_error")}
+                for h in a["selection"]["heads"]}
+    doc = {"schema": "i6dmo.matched_decision.v1", "capacity_delta": delta, "per_head": per_head,
+           "scores": {"MG1": a["selection"]["score"], "MG2": b["selection"]["score"]},
+           "tie_tolerance": SELECTION_TIE,
+           "note": "one seed establishes a recipe decision, not statistical superiority; an "
+                   "aggregate never makes a failed head trading-eligible"}
+    missing = [dict(f, arm=arm) for arm, sel in (("MG1", a["selection"]), ("MG2", b["selection"]))
+               for f in sel.get("failed_heads", [])]
+    if missing or a["selection"]["status"] != "COMPLETE" or b["selection"]["status"] != "COMPLETE":
+        return dict(doc, decision="INCOMPLETE_COMPARISON", selected=None, missing=missing)
+    diff = a["selection"]["score"] - b["selection"]["score"]
+    if abs(diff) <= SELECTION_TIE:
+        return dict(doc, decision="TIE_RETAIN_CHEAPER", selected="MG2", difference=diff)
+    return dict(doc, decision="LOWER_SCORE", selected="MG1" if diff < 0 else "MG2", difference=diff)

@@ -148,6 +148,11 @@ MARKET_FAMILIES = {
                   "spacing_open_market_hours": 2, "span_open_market_hours": 24},
     "long_mg12": {"slots": 13, "horizons_hours": [18, 24, 36, 48, 60, 72], "rule": "MG12_MARKET_EXACT",
                   "spacing_open_market_hours": 12, "span_open_market_hours": 144},
+    # NEXT_CONTRASTS_PLAN section 2, MG1 matched control: 25 real observations including t, one
+    # expected open-market hour apart, the same 24 open-market-hour span and the same six heads.
+    # Recipe unchanged; the only consequence is the wider head Flatten (25x4 instead of 13x4).
+    "short_mg1": {"slots": 25, "horizons_hours": [2, 3, 4, 5, 6, 12], "rule": "MG1_MARKET_EXACT",
+                  "spacing_open_market_hours": 1, "span_open_market_hours": 24},
 }
 #: The sealed effective config's model block is the authority: it carries ``offsets_hours: None``
 #: (variable per example, never a fixed grid) and the sealed ``time_encoder`` identity, so both
@@ -185,6 +190,14 @@ def model_config(features, seed=6102026, family="short"):
 
 def is_market_time(config):
     return "market_time" in config
+
+
+def market_family(config):
+    """The MARKET_FAMILIES key whose rule the config declares (None for elapsed configs)."""
+    if not is_market_time(config):
+        return None
+    rule = (config.get("market_time") or {}).get("rule")
+    return next((name for name, spec in MARKET_FAMILIES.items() if spec["rule"] == rule), None)
 
 
 def model_family(config):
@@ -560,6 +573,160 @@ def build_dmo(config):
     forecast = keras.Model([inputs, *time_inputs], outputs, name="i6dmo_forecast")
     fusion_model = keras.Model(inputs, fused, name="fusion_model")
     return DmoBundle(c, forecast, branches, fusion_model, core, heads, fusion_identity)
+
+
+# ----------------------------------------------------------------------------- capacity (SC07)
+
+CAPACITY_SCHEMA = "i6dmo.capacity.v1"
+#: NEXT_CONTRASTS_PLAN "Capacity disclosure": the ONLY declared capacity difference between the
+#: matched arms is the wider head Flatten, (25 - 13) slots * 4 core channels * 8 hidden units *
+#: 6 heads. Any other difference (branch, fusion, time encoder, core, head width/depth) is an
+#: unreported capacity change and is refused.
+MATCHED_ARMS = {"MG1": "short_mg1", "MG2": "short_mg2"}
+MATCHED_HEAD_DELTA = (25 - 13) * 4 * 8 * 6
+#: Declared per-component trainable parameter counts of the fixed R0 recipe with the 19 RAW
+#: features, written out literally so a code change that alters capacity cannot pass silently:
+#: the build must reproduce BOTH the analytic recipe count and this literal disclosure.
+DECLARED_CAPACITY = {
+    "short_mg1": {"slots": 25, "features": 19, "core_input_channels": 78,
+                  "branches": 304, "per_branch": 16, "fusion": 0, "time_encoder": 0,
+                  "core": 1980, "core_layers": [1880, 100],
+                  "per_head": 817, "per_head_hidden": 808, "per_head_output": 9,
+                  "heads": 4902, "total": 7186},
+    "short_mg2": {"slots": 13, "features": 19, "core_input_channels": 78,
+                  "branches": 304, "per_branch": 16, "fusion": 0, "time_encoder": 0,
+                  "core": 1980, "core_layers": [1880, 100],
+                  "per_head": 433, "per_head_hidden": 424, "per_head_output": 9,
+                  "heads": 2598, "total": 4882},
+}
+
+
+class CapacityError(ValueError):
+    """Typed CAPACITY_UNREPORTED_CHANGE: the built network differs from the declared recipe."""
+
+    code = "CAPACITY_UNREPORTED_CHANGE"
+
+    def __init__(self, detail):
+        super().__init__(f"{self.code}: {detail}")
+
+
+def declared_parameter_counts(config):
+    """Analytic trainable parameter counts implied by the declared fixed recipe."""
+    c = normalize_model_config(config)
+    market = is_market_time(c)
+    slots = c["slots"] if market else len(c["offsets_hours"])
+    n = len(c["features"])
+    b, k, hd = c["branch"], c["core"], c["heads"]
+    per_branch = b["kernel_size"] * 1 * b["filters"] + b["filters"]
+    channels = n * b["filters"] + (2 if market else 0)
+    core_input = channels
+    core_layers = []
+    for filters, kernel in zip(k["filters"], k["kernel_sizes"]):
+        core_layers.append(kernel * channels * filters + filters)
+        channels = filters
+    flat = slots * channels
+    hidden = flat * hd["hidden_units"] + hd["hidden_units"]
+    output = hd["hidden_units"] * 1 + 1
+    heads = len(c["horizons_hours"])
+    total = per_branch * n + sum(core_layers) + heads * (hidden + output)
+    return {"slots": slots, "features": n, "core_input_channels": core_input,
+            "branches": per_branch * n, "per_branch": per_branch, "fusion": 0, "time_encoder": 0,
+            "core": sum(core_layers), "core_layers": core_layers,
+            "per_head": hidden + output, "per_head_hidden": hidden, "per_head_output": output,
+            "heads": heads * (hidden + output), "total": total}
+
+
+def measured_parameter_counts(bundle):
+    """Per-component trainable parameter counts MEASURED on the built Keras graph."""
+    c = bundle.config
+    model = bundle.forecast_model
+    branches = {f: int(m.count_params()) for f, m in bundle.branch_models.items()}
+    core_layers = [int(layer.count_params()) for layer in bundle.core_model.layers
+                   if layer.weights]
+    heads = {}
+    for name, head in bundle.head_models.items():
+        heads[name] = {"hidden": int(head.get_layer(name + "_hidden").count_params()),
+                       "output": int(head.get_layer(name + "_out").count_params()),
+                       "total": int(head.count_params())}
+    encoder = sum(int(layer.count_params()) for layer in model.layers
+                  if isinstance(layer, (DynamicPhysicalTimeEncoder, PhysicalOffsetEncoding)))
+    fusion = int(bundle.fusion_model.count_params()) - sum(branches.values())
+    trainable = int(sum(np.prod(w.shape) for w in model.trainable_weights))
+    total = int(model.count_params())
+    per_head = sorted({v["total"] for v in heads.values()})
+    out = {"slots": int(bundle.core_model.input_shape[1]), "features": len(branches),
+           "core_input_channels": int(bundle.core_model.input_shape[-1]),
+           "branches": sum(branches.values()),
+           "per_branch": (sorted(set(branches.values())) if len(set(branches.values())) != 1
+                          else next(iter(branches.values()))),
+           "fusion": fusion, "time_encoder": encoder,
+           "core": int(bundle.core_model.count_params()), "core_layers": core_layers,
+           "per_head": per_head[0] if len(per_head) == 1 else per_head,
+           "per_head_hidden": (heads[next(iter(heads))]["hidden"]
+                               if len({v["hidden"] for v in heads.values()}) == 1
+                               else sorted({v["hidden"] for v in heads.values()})),
+           "per_head_output": (heads[next(iter(heads))]["output"]
+                               if len({v["output"] for v in heads.values()}) == 1
+                               else sorted({v["output"] for v in heads.values()})),
+           "heads": sum(v["total"] for v in heads.values()), "total": total}
+    out["_detail"] = {"branches": branches, "heads": heads, "trainable_total": trainable,
+                      "non_trainable_total": total - trainable}
+    return out
+
+
+def capacity_record(bundle):
+    """Machine-readable capacity disclosure; raises CapacityError on any unreported change.
+
+    The build must reproduce (a) the analytic count implied by the declared recipe, (b) the
+    literal DECLARED_CAPACITY entry for a matched arm, and (c) the accounting identity
+    total = branches + fusion + time_encoder + core + heads with no non-trainable weights.
+    """
+    declared = declared_parameter_counts(bundle.config)
+    measured = measured_parameter_counts(bundle)
+    detail = measured.pop("_detail")
+    problems = [f"{k}: measured {measured[k]!r} != recipe {declared[k]!r}"
+                for k in declared if measured.get(k) != declared[k]]
+    family = market_family(bundle.config)
+    literal = DECLARED_CAPACITY.get(family)
+    if literal is not None:
+        problems += [f"{k}: measured {measured[k]!r} != declared disclosure {literal[k]!r}"
+                     for k in literal if measured.get(k) != literal[k]]
+    parts = sum(measured[k] for k in ("branches", "fusion", "time_encoder", "core", "heads"))
+    if parts != measured["total"] or detail["non_trainable_total"] != 0:
+        problems.append(f"unaccounted parameters: components {parts}, total {measured['total']}, "
+                        f"non-trainable {detail['non_trainable_total']}")
+    if problems:
+        raise CapacityError("; ".join(problems))
+    record = {"schema": CAPACITY_SCHEMA, "family": family,
+              "arm": next((a for a, f in MATCHED_ARMS.items() if f == family), None),
+              "model_config_sha256": hashlib.sha256(_canonical(bundle.config).encode()).hexdigest(),
+              "counts": measured, "per_branch_detail": detail["branches"],
+              "per_head_detail": detail["heads"], "recipe_match": True,
+              "declared_disclosure_match": literal is not None}
+    record["capacity_sha256"] = hashlib.sha256(_canonical(record).encode()).hexdigest()
+    return record
+
+
+def matched_capacity_delta(record_mg1, record_mg2):
+    """The disclosed MG1-minus-MG2 difference; refuses anything but the declared head delta."""
+    for record, arm in ((record_mg1, "MG1"), (record_mg2, "MG2")):
+        if not isinstance(record, dict) or record.get("schema") != CAPACITY_SCHEMA or \
+                record.get("arm") != arm:
+            raise CapacityError(f"{arm} capacity record missing or not the {arm} arm")
+        literal = DECLARED_CAPACITY[MATCHED_ARMS[arm]]
+        if any(record["counts"].get(k) != v for k, v in literal.items()):
+            raise CapacityError(f"{arm} record disagrees with the declared disclosure")
+    a, b = record_mg1["counts"], record_mg2["counts"]
+    delta = {k: a[k] - b[k] for k in ("branches", "fusion", "time_encoder", "core", "heads",
+                                       "total")}
+    expected = {"branches": 0, "fusion": 0, "time_encoder": 0, "core": 0,
+                "heads": MATCHED_HEAD_DELTA, "total": MATCHED_HEAD_DELTA}
+    if delta != expected:
+        raise CapacityError(f"MG1-MG2 delta {delta} != declared {expected}")
+    return {"schema": "i6dmo.capacity_delta.v1", "delta": delta,
+            "formula": "(25-13)*4*8*6", "declared_head_delta": MATCHED_HEAD_DELTA,
+            "interpretation": "practical input/readout recipe comparison; not proof that "
+                              "additional signal alone caused any gain"}
 
 
 def predict_matrix(model, x, batch_size=4096):
