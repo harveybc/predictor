@@ -185,3 +185,36 @@ def test_ds2_elapsed_path_is_untouched(tmp_path):
     bundle = M.build_dmo(effective["model"])
     assert len(bundle.forecast_model.inputs) == 1
     assert T.MONITOR_TOLERANCE["rtol"] == 5e-5 and T.MONITOR_TOLERANCE["atol"] == 1e-9
+
+
+@pytest.mark.parametrize(("key", "spacing", "compressed"), [
+    ("mg12", 12.0, 2.0),    # the reviewer's RB05 case: an MG12 ladder compressed to 2 h
+    ("mg2", 2.0, 1.0),      # and an MG2 ladder compressed to hourly
+])
+def test_trainer_bound_comes_from_the_design_spacing_not_a_fixed_floor(market, key, spacing,
+                                                                      compressed):
+    """RB05 item 1: BOTH seams derive the minimum adjacent spacing from the design."""
+    arrays = T.load_market_split_arrays(market[key], "fit", SEALED[key])
+    design = json.loads(SEALED[key].read_text())
+    assert design["market_time"]["spacing_open_market_hours"] == spacing
+    rows = len(arrays["row_id"])
+    ladder = np.tile(np.arange(-12.0 * compressed, 0.5 * compressed, compressed), (rows, 1))
+    ladder[:, -1] = 0.0
+    bad = {**{k: v for k, v in arrays.items()}, "offsets_hours": ladder}
+    # Refused at the trainer, typed, BEFORE any forward pass.
+    with pytest.raises(T.TrainDisposition, match="ORDINAL_OR_INVALID_OFFSETS") as err:
+        T.market_time_inputs(bad, design=design)
+    assert str(spacing) in str(err.value) or f"{spacing:g}" in str(err.value)
+    # And the real sealed arrays still pass under the same bound.
+    assert len(T.market_time_inputs(arrays, design=design)) == 3
+    # The loader applies the design's bound without being told separately.
+    effective = T.effective_from_design(SEALED[key])
+    assert T.market_spacing_hours(effective) == spacing
+
+
+def test_an_mg2_valid_ladder_is_refused_under_the_mg12_design(market):
+    """A 2 h ladder is legitimate for MG2 and physically impossible for MG12."""
+    mg2 = T.load_market_split_arrays(market["mg2"], "fit", SEALED["mg2"])
+    mg12_design = json.loads(SEALED["mg12"].read_text())
+    with pytest.raises(T.TrainDisposition, match="ORDINAL_OR_INVALID_OFFSETS"):
+        T.market_time_inputs(mg2, design=mg12_design)
