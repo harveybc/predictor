@@ -119,13 +119,27 @@ def is_market_time(effective):
     return bool((effective.get("design") or {}).get("market_time"))
 
 
-def market_time_inputs(arrays):
+def market_spacing_hours(effective_or_design):
+    """The design's ``spacing_open_market_hours`` — the bound BOTH seams derive (RB05 item 1)."""
+    doc = effective_or_design
+    block = (doc.get("market_time") if isinstance(doc, dict) else None) or \
+            ((doc.get("design") or {}).get("market_time") if isinstance(doc, dict) else None)
+    if not block or "spacing_open_market_hours" not in block:
+        raise TrainDisposition("ORDINAL_OR_INVALID_OFFSETS",
+                               "the market-time spacing bound must come from the sealed design")
+    return float(block["spacing_open_market_hours"])
+
+
+def market_time_inputs(arrays, design=None):
     """[observations, offsets_hours, closure_crossed] with the declared conventions enforced.
 
     Typed ORDINAL_OR_INVALID_OFFSETS (review B-4) when the last offset is not exactly 0, any
     offset is positive, the first adjacent delta is nonzero, the first closure flag is nonzero,
-    or the ladder is tighter than the slot grid can physically be (ordinal slot indices).
+    or the adjacent elapsed hours fall below the DESIGN's ``spacing_open_market_hours`` — the
+    same bound the encoder enforces, derived from the design at both seams (RB05 item 1), never
+    a fixed floor. Elapsed hours can only exceed the market spacing (closures stretch them).
     """
+    minimum = market_spacing_hours(design) if design is not None else None
     offsets = np.asarray(arrays["offsets_hours"], dtype=np.float64)
     closure = np.asarray(arrays["closure_crossed"], dtype=np.float64)
     x = np.asarray(arrays["x"])
@@ -145,11 +159,13 @@ def market_time_inputs(arrays):
         if not np.all(deltas > 0):
             raise TrainDisposition("ORDINAL_OR_INVALID_OFFSETS",
                                    "offsets must increase towards the origin")
-        minimum = float(deltas.min())
-        if minimum < 1.5:   # no declared market grid is tighter than 2 open-market hours
+        observed = float(deltas.min())
+        bound = minimum if minimum is not None else 2.0   # tightest declared grid when unbound
+        if observed < bound:
             raise TrainDisposition("ORDINAL_OR_INVALID_OFFSETS",
-                                   f"adjacent elapsed hours {minimum} below the tightest declared "
-                                   "market spacing: ordinal slot indices or a compressed ladder")
+                                   f"adjacent elapsed hours {observed} below the design's "
+                                   f"spacing_open_market_hours {bound}: ordinal slot indices or a "
+                                   "compressed ladder")
         if not np.all(closure[:, 0] == 0):
             raise TrainDisposition("ORDINAL_OR_INVALID_OFFSETS", "the first closure flag must be 0")
         if not np.all(np.isin(closure, (0.0, 1.0))):
@@ -240,12 +256,13 @@ def _load_market_bundle(bundle_dir, effective, design_path):
             raise TrainDisposition("NONFINITE_INPUT", name)
         if not np.isfinite(np.asarray(arrays["target_price"])[mask]).all():
             raise TrainDisposition("NONFINITE_LABEL", f"{name}: a valid label is not finite")
-        kept = {"row_id": origin, "x": np.asarray(arrays["x"], dtype=np.float64),
+        kept = {"_spacing_open_market_hours": market_spacing_hours(effective),
+                "row_id": origin, "x": np.asarray(arrays["x"], dtype=np.float64),
                 "origin_price": np.asarray(arrays["origin_price"], dtype=np.float64),
                 "target_price": np.asarray(arrays["target_price"], dtype=np.float64), "mask": mask,
                 "offsets_hours": np.asarray(arrays["offsets_hours"], dtype=np.float64),
                 "closure_crossed": np.asarray(arrays["closure_crossed"], dtype=np.float64)}
-        market_time_inputs(kept)          # enforce the conventions at load time
+        market_time_inputs(kept, design=effective)   # conventions + the design's spacing bound
         out[name] = kept
     return out
 
@@ -340,8 +357,9 @@ def load_data_bundle(bundle_dir, effective, design_path=None):
 def trainable_rows(arrays):
     """Rows with at least one valid head; the others are counted, not trained."""
     keep = arrays["mask"].any(axis=1)
-    return ({k: (v[keep] if isinstance(v, np.ndarray) and len(v) == len(keep) else v)
-             for k, v in arrays.items() if isinstance(v, np.ndarray)}, int((~keep).sum()))
+    kept = {k: (v[keep] if isinstance(v, np.ndarray) and v.ndim >= 1 and len(v) == len(keep) else v)
+            for k, v in arrays.items() if isinstance(v, (np.ndarray, int, float))}
+    return kept, int((~keep).sum())
 
 
 def fit_scales(fit):
@@ -508,7 +526,9 @@ def materialize_monitor_inputs(rows, scales):
     x, y, mask = transform(rows, scales)
     x = np.ascontiguousarray(x, dtype=np.float32)
     if "offsets_hours" in rows:
-        return market_time_inputs({**rows, "x": x}), y, mask
+        design = {"market_time": {"spacing_open_market_hours": rows["_spacing_open_market_hours"]}} \
+            if "_spacing_open_market_hours" in rows else None
+        return market_time_inputs({**rows, "x": x}, design=design), y, mask
     return x, y, mask
 #: Pre-declared, PROSPECTIVE monitor comparison floor (v2, approved by Satoshi after eight
 #: rounds): scope is ONLY the cross-process GPU comparison of the monitored value and the

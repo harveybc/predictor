@@ -135,9 +135,18 @@ These rows point at the owning lanes' own tests; the ops suite does not re-certi
 | MODEL | Controlled weights prove the real time inputs reach the model | model | `test_dmo_market_time.py::test_controlled_weights_prove_actual_time_inputs_reach_the_model` |
 | MODEL | Serialization reloads all inputs including time and closure | model | `test_dmo_market_time.py::test_serialization_reloads_all_inputs_including_time_and_closure` |
 | MODEL | No donor compatible by shape alone; DS2 families untouched | model | `test_dmo_market_time.py::test_no_donor_is_compatible_by_shape_alone`, `::test_ds2_and_other_elapsed_families_are_untouched` |
+| MODEL | The SEALED effective config builds its network (review B-1 / RB04) | model | `test_market_time_fit_path.py::test_the_sealed_effective_config_builds_its_model` |
+| MODEL | The trainer consumes the real market bundle and assembles the three inputs (B-2 / RB03 J1) | model | `test_market_time_fit_path.py::test_trainer_loads_the_real_market_bundle_and_assembles_three_inputs` |
+| MODEL | The REAL trainer CLI completes on both sealed designs against real bundles (B-2) | model | `test_market_time_fit_path.py::test_real_cli_end_to_end_on_the_sealed_design_and_real_bundle` |
+| MODEL | Ordinal, future or compressed time ladders are CAUGHT typed at the encoder (B-4 / RB02 E2) | model | `test_market_time_fit_path.py::test_encoder_refuses_ordinal_or_impossible_time_inputs`, `::test_encoder_accepts_the_valid_convention_and_stays_numerically_unchanged` |
+| MODEL | The same refusal fires at the trainer's input assembly (B-4) | model | `test_market_time_fit_path.py::test_trainer_input_assembly_refuses_ordinal_offsets` |
+| MODEL | The spacing bound comes from the design at BOTH seams, so a compressed MG12 ladder is refused at the trainer (RB05 item 1) | model | `test_market_time_fit_path.py::test_trainer_bound_comes_from_the_design_spacing_not_a_fixed_floor`, `::test_an_mg2_valid_ladder_is_refused_under_the_mg12_design` |
+| MODEL | Market and elapsed bundles are never adopted across designs; the DS2 fit path is unchanged | model | `test_market_time_fit_path.py::test_a_ds2_bundle_is_refused_under_a_market_design_and_vice_versa`, `::test_ds2_elapsed_path_is_untouched` |
 
 Independent review `f07305a2` reported FIX_REQUIRED with blockers B-1/B-2/B-4 in the model lane and
 B-3 (K2) in ops. The ops blocker was fixed at `0884cf9a` (MTP08-MTP10 are its regressions) and the
-model lane landed B-1/B-2/B-4 at `3cfcb59d`, which RESEALED both designs; the integrated identities
+model lane landed B-1/B-2/B-4 at `3cfcb59d`, which RESEALED both designs; their regressions are the
+seven MODEL rows citing `tests/i6dmo/test_market_time_fit_path.py` above, and RB05 item 1 (the
+design-derived spacing bound at both seams) left the seals unchanged. The integrated identities
 are pinned in `market_time/INTEGRATION_PINS.json` and asserted by MTP08, so a later reseal fails
 the suite until the integration pin is updated deliberately.

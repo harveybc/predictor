@@ -597,3 +597,25 @@ Because the encoder identity gained those guards, both designs were RESEALED:
 the frozen recipe and the numerical policy are untouched; the short FINAL
 effective sha `287e4f11…` is unchanged. B-3 (campaign `_design_checks`
 hard-requiring `i6dmo.design.v1`) is the ops lane's seam.
+
+## Round 21: RB05 non-blocking items (ACCEPT_FOR_SCIENTIFIC_EXECUTION)
+
+1. The spacing bound is now derived from the sealed design at BOTH seams:
+   `train.market_spacing_hours(design|effective)` feeds
+   `market_time_inputs(arrays, design=...)`, so the trainer no longer uses a
+   fixed 1.5 h floor. The reviewer's compressed-MG12 case (a 2 h ladder under
+   MG12) is refused typed `ORDINAL_OR_INVALID_OFFSETS` at the trainer, with
+   the design's spacing in the message, and an MG2-legitimate ladder is
+   likewise refused under the MG12 design; the real sealed arrays still pass.
+   The encoder keeps its own design-derived bound.
+2. The acceptance matrix now cites `tests/i6dmo/test_market_time_fit_path.py`
+   in seven MODEL rows covering B-1 (sealed effective config builds), B-2
+   (market bundle consumed; REAL CLI end to end on both designs), B-4
+   (encoder and trainer refusals) and RB05 item 1, plus the cross-design
+   bundle refusals and the untouched DS2 fit path. The MODEL rows live in the
+   lane-coverage table I own; no ops ids were changed.
+
+The encoder identity did NOT change, so **both seals are unchanged**: MG2
+design `1fa48222…` / seal `4b64b4ee…` / effective `920332ae…`, MG12 design
+`4da1d3e0…` / seal `97541764…` / effective `0853f6d9…`. INTEGRATION_PINS.json
+needs no update.
