@@ -14,6 +14,7 @@ SHORT_DS_STATIC_VALIDATION -> LONG_DS_STATIC_VALIDATION -> PAIR_VALIDATION -> FI
 - Gate receipts derived from TEST reads are refused, and selection inputs ignore TEST terminals.
 """
 import json
+import math
 import os
 import subprocess
 import time
@@ -35,15 +36,24 @@ MATCHED_STAGES = ("MATCHED_ARMS_VALIDATION", "PAIRED_COMPARISON", "CLOSED")
 MODE_ELAPSED = "ELAPSED_STATIC"
 MODE_MARKET_TIME = "MARKET_TIME_PAIR"
 MODE_MATCHED = "MATCHED_SHORT_CONTRAST"
-MODES = (MODE_ELAPSED, MODE_MARKET_TIME, MODE_MATCHED)
+# R0-versus-R2 branch-pretraining contrast (R2_CONTRAST_DESIGN.ruled.json): 19 pretraining units,
+# fresh R0 and R2 fits on the mg2m arm, reports, decide_r2, publication, CLOSE.
+MODE_R2 = "R2_CONTRAST"
+R2_STAGES = ("BRANCH_PRETRAINING", "R0_R2_FITS", "REPORTS", "R2_DECISION", "CLOSED")
+MODES = (MODE_ELAPSED, MODE_MARKET_TIME, MODE_MATCHED, MODE_R2)
+#: Modes built from matched arms (arm views, population pins, runtime pins, fairness, strict science).
+MATCHED_FAMILY_MODES = (MODE_MATCHED, MODE_R2)
 BASE_UNIT_KINDS = ("fit", "report", "pair", "strategy", "final_refit", "final_test")
-UNIT_KINDS = BASE_UNIT_KINDS + ("comparison",)
+UNIT_KINDS = BASE_UNIT_KINDS + ("comparison", "pretrain", "evaluation")
 IDENTITY_KEYS = ("unit", "family", "kind", "cadence", "effective_config_sha256", "data_sha256", "code_commit",
                  "seed", "upstream")
 DEFAULT_ENTRYPOINTS = {kind: ["{python}", "-m", "tools.i6dmo.unit_runner", "--kind", kind]
                        for kind in BASE_UNIT_KINDS}
 MATCHED_ENTRYPOINTS = dict(DEFAULT_ENTRYPOINTS,
                            comparison=["{python}", "-m", "tools.i6dmo.unit_runner", "--kind", "comparison"])
+R2_ENTRYPOINTS = dict(MATCHED_ENTRYPOINTS,
+                      pretrain=["{python}", "-m", "tools.i6dmo.unit_runner", "--kind", "pretrain"],
+                      evaluation=["{python}", "-m", "tools.i6dmo.unit_runner", "--kind", "evaluation"])
 FINAL_REFIT_TRAIN = ["2021-01-01T00:00:00Z", "2025-01-01T00:00:00Z"]
 # Gate -> (owner, artifact, produced automatically by tick?)
 GATES = {
@@ -554,6 +564,15 @@ def _identify(unit, effective, family_sha, upstream):
 
 
 def _family_sha(effective, family):
+    if family == "r2_pretrain":
+        return sha256_json(dict(arm=_family_sha(effective, "mg2m"), objective=effective["r2"]["objective"],
+                                contract=effective["r2"]["contract_seal_sha256"]))
+    if family in ("r2_R0", "r2_R2"):
+        return sha256_json(dict(arm=_family_sha(effective, "mg2m"), regime=family[3:],
+                                contract=effective["r2"]["contract_seal_sha256"]))
+    if family == "r2_comparison":
+        return sha256_json(dict(arm=_family_sha(effective, "mg2m"), rule=effective["comparison"],
+                                contract=effective["r2"]["contract_seal_sha256"]))
     if family in (effective.get("arms") or {}):
         entry = effective["arms"][family]
         return sha256_json(dict(design=entry["design"], adapter=entry["adapter_effective"]))
@@ -653,7 +672,216 @@ def _matched_units(effective):
     return units
 
 
+R2_PRETRAIN_CLASS = "r2_branch_pretrain"
+R2_FIT_CLASS = {"R0": "r2_contrast_r0_fit", "R2": "r2_contrast_r2_fit"}
+#: Closed matched campaign i6dmo-6004b711281c, mg2m.fit (same arm, recipe, population and runtime as
+#: R0): measured cgroup peak 2,867,683,328 B (LAUNCH_RECEIPT.md / MUSASHI_AUDIT_20261015.md).
+MG2M_MEASURED_FIT_PEAK_BYTES = 2_867_683_328
+_SEEDED_CAP = math.ceil(1.25 * MG2M_MEASURED_FIT_PEAK_BYTES)
+#: Provisional admission caps per measured-peak class (R2-17). Each class is measured separately: the
+#: first unit of a class runs under this cap and IS the measurement; afterwards 1.25x that class's own
+#: peak governs (worker.cap_for), never another class's (a pretraining peak is never the fit's).
+R2_DEFAULT_CLASS_CAPS = {
+    f"{R2_FIT_CLASS['R0']}.fit": dict(
+        cap_bytes=_SEEDED_CAP, basis="1.25x the measured cgroup peak of the closed matched mg2m.fit "
+        "(2,867,683,328 B): R0 is that recipe, arm, population and runtime, fitted fresh"),
+    f"{R2_FIT_CLASS['R2']}.fit": dict(
+        cap_bytes=_SEEDED_CAP, basis="PROVISIONAL: the R0 recipe on the identical network after an in-place "
+        "import of 19 branch weight sets (tens of floats each); seeded from the mg2m peak until the R2 "
+        "fit's own peak is measured"),
+    f"{R2_PRETRAIN_CLASS}.pretrain": dict(
+        cap_bytes=_SEEDED_CAP, basis="PROVISIONAL upper bound: one branch + a 32-channel decoder on ONE "
+        "feature's FIT/INNER windows, with the same population load and TF runtime as the fit; the first "
+        "pretraining unit is the measurement, then 1.25x the pretraining class's own peak"),
+}
+
+
+def r2_features(effective):
+    return list(effective["arms"]["mg2m"]["adapter_effective"]["feature_manifest"]["features"])
+
+
+def r2_pretrain_unit_id(index):
+    return f"r2.pretrain.{int(index):02d}"
+
+
+def _r2_units(effective):
+    """19 pretraining units -> r2.fit; r0.fit; reports; r2.probe (report only); comparison."""
+    st = R2_STAGES
+    w = _windows(effective["arms"]["mg2m"]["design"])
+    device = effective.get("fit_device", "gpu")
+    units, upstream = [], {}
+
+    def add(unit_id, family, kind, stage, dev, deps, sha, **extra):
+        unit = _base(unit_id, family, kind, stage, dev, deps, w, calls_fit=kind in ("fit", "pretrain"))
+        unit.update(arm="mg2m", **extra)
+        _identify(unit, effective, sha, [upstream[d] for d in deps])
+        upstream[unit_id] = unit["identity_sha256"]
+        unit["_state"] = "QUEUED" if not deps else "WAIT_DEPENDENCY"
+        units.append(unit)
+
+    pretrain = []
+    for index, feature in enumerate(r2_features(effective)):
+        uid = r2_pretrain_unit_id(index)
+        add(uid, "short", "pretrain", st[0], device, [], _family_sha(effective, "r2_pretrain"),
+            feature=feature, feature_index=index, regime="R2_PRETRAIN", resource_class=R2_PRETRAIN_CLASS)
+        pretrain.append(uid)
+    add("r0.fit", "short", "fit", st[1], device, [], _family_sha(effective, "r2_R0"),
+        regime="R0", resource_class=R2_FIT_CLASS["R0"])
+    add("r2.fit", "short", "fit", st[1], device, pretrain, _family_sha(effective, "r2_R2"),
+        regime="R2", resource_class=R2_FIT_CLASS["R2"])
+    add("r0.report", "short", "report", st[2], "cpu", ["r0.fit"], _family_sha(effective, "r2_R0"), regime="R0")
+    add("r2.report", "short", "report", st[2], "cpu", ["r2.fit"], _family_sha(effective, "r2_R2"), regime="R2")
+    add("r2.probe", "short", "evaluation", st[2], "cpu", pretrain, _family_sha(effective, "r2_pretrain"),
+        regime="R2_PROBE")
+    add("comparison", "comparison", "comparison", st[3], "cpu", ["r0.report", "r2.report", "r2.fit"],
+        _family_sha(effective, "r2_comparison"), regime="DECISION")
+    return units
+
+
+def r2_provenance(effective, plan):
+    """The campaign provenance every donor binds (model.R2_PROVENANCE_KEYS minus the corpus, which
+    the consumer recomputes from the authenticated population)."""
+    return {"campaign_id": plan["campaign_id"], "ruling_seal_sha256": effective["r2"]["contract_seal_sha256"],
+            "code_pin": effective["code_commit"],
+            "units": {f: r2_pretrain_unit_id(i) for i, f in enumerate(r2_features(effective))}}
+
+
+def r2_donor_references(root, q, effective):
+    """{feature: {"terminal": {path, sha256}}} from the STORE: each pretraining unit's stored terminal
+    (verified when stored) and the donor-terminal digest its child terminal recorded."""
+    refs = {}
+    for index, feature in enumerate(r2_features(effective)):
+        term = q.terminal(r2_pretrain_unit_id(index))
+        if term is None:
+            return None
+        art = (term["terminal"].get("artifacts") or {}).get("donor_terminal")
+        if not art:
+            return None
+        path = Path(root) / "terminals" / term["identity_sha256"] / "out" / art["path"]
+        refs[feature] = {"terminal": {"path": str(path), "sha256": art["sha256"]}}
+    return refs
+
+
+def init_r2_contrast(contract_path, design_path, spec_path, root, *, adapter=None, code_commit=None, data_pins=None,
+                     entrypoints=None, engineering_cpu_fixture=False, engineering_objective_overrides=None,
+                     class_caps=None, r0_reuse=None):
+    """Seal the R0-versus-R2 contrast from the RULED contract and enumerate its finite graph.
+
+    Scientific campaigns bind the contract exactly (the mg2m design seal, the population digest and
+    the runtime pin it names) and refuse any objective override. The engineering CPU fixture is
+    refused for any design not sealed on a synthetic calendar; there its fixture design/population
+    replace the contract's real bindings (recorded) and only ``max_epochs``/``patience`` of the
+    ruled objective may be shortened (recorded, non-scientific). No TEST unit exists.
+    """
+    import copy
+    from tools.i6dmo import design as D
+    from tools.i6dmo import r2_design as R2
+    adapter = _adapter(adapter)
+    contract = json.loads(Path(contract_path).read_text())
+    try:
+        R2.validate_r2_design(contract, for_execution=True)
+    except R2.R2DesignError as exc:
+        raise Refused(f"{exc.code}: {str(exc)[:160]}") from None
+    design = json.loads(Path(design_path).read_text())
+    if design.get("splits", {}).get("test", {}).get("open") is not False:
+        raise Refused("TEST_OPEN_IN_DESIGN: mg2m")
+    try:
+        if D.matched_arm(design) != "mg2m":
+            raise Refused("R2_ARM_CHANGE: the R2 contrast runs on the selected mg2m arm only")
+    except D.DesignError as exc:
+        raise Refused(f"{exc.code}: mg2m") from None
+    sealed = _seal_family(design, adapter, "mg2m", mode=MODE_MATCHED)
+    data_pins = dict(data_pins or {})
+    missing = [k for k in MATCHED_REQUIRED_PINS if k not in data_pins]
+    if missing or len(str(data_pins["common_population"].get("population_sha256", ""))) != 64:
+        raise Refused(f"UNFROZEN_COMPARISON_OR_MISSING_PIN: {missing or ['common_population.population_sha256']}")
+    if not all(isinstance(p, dict) and len(str(p.get("sha256", ""))) == 64 for p in data_pins.values()):
+        raise Refused("DATA_PINS_REQUIRED: every pin needs a sha256")
+    shared = contract["shared"]
+    if list(design["horizons_hours"]) != list(shared["horizons_hours"]):
+        raise Refused(f"R2_HORIZONS: {design['horizons_hours']}")
+    objective = copy.deepcopy(contract["pretraining"]["objective"])
+    overrides = dict(engineering_objective_overrides or {})
+    if engineering_cpu_fixture:
+        calendar = ((design.get("sealed_identities") or {}).get("calendar") or {})
+        if not str(calendar.get("calendar_id", "")).startswith(ENGINEERING_FIXTURE_CALENDAR_PREFIX):
+            raise Refused("ENGINEERING_CPU_FIXTURE_REQUIRES_SYNTHETIC_CALENDAR: mg2m")
+        if set(overrides) - {"max_epochs", "patience"}:
+            raise Refused("R2_OBJECTIVE_OVERRIDE: only max_epochs/patience may be shortened for a fixture")
+        objective["fit_settings"].update(overrides)
+        binding = "ENGINEERING_FIXTURE: the fixture design/population replace the contract's real bindings"
+    else:
+        if overrides:
+            raise Refused("R2_OBJECTIVE_OVERRIDE: a scientific campaign runs the ruled objective exactly")
+        problems = [name for name, ok in (
+            ("design_seal", design.get("seal_sha256") == shared["experiment_seal_sha256"]),
+            ("design_sha256", sealed["design_sha256"] == shared["experiment_design_sha256"]),
+            ("population", data_pins["common_population"]["population_sha256"] == shared["population_sha256"]),
+            ("runtime", ((design.get("sealed_identities") or {}).get("runtime") or {})
+             == shared["fit_pinning"]["runtime"])) if not ok]
+        if problems:
+            raise Refused(f"R2_CONTRACT_BINDING: {problems}")
+        binding = "SCIENTIFIC: design seal, design digest, population and runtime equal the ruled contract"
+    if r0_reuse is not None and r0_reuse.get("decision") != "FRESH_R0_REQUIRED":
+        raise Refused("R0_REUSE_NOT_SUPPORTED_BY_THIS_RUNNER: the graph fits a fresh R0 (the predicate must "
+                      "say FRESH_R0_REQUIRED)")
+    root = Path(root)
+    if root.exists() and any(root.iterdir()):
+        raise Refused("ROOT_NOT_NEW: init never reuses or resurrects an existing campaign root")
+    spec = json.loads(Path(spec_path).read_text())
+    _validate_spec(spec)
+    entries = validate_entrypoints(dict(entrypoints or R2_ENTRYPOINTS),
+                                   required=("fit", "report", "comparison", "pretrain", "evaluation"))
+    if entries["fit"] in (entries["report"], entries["comparison"], entries["evaluation"]):
+        raise Refused("REPORT_ENTRY_CALLS_FIT")
+    arms = {"mg2m": dict(sealed, resource_class="short_mg2_matched")}
+    effective = _seal(dict(
+        schema="i6dmo.effective_config.v1", experiment_id=contract["contrast_id"],
+        design=sealed["design"], design_sha256=sealed["design_sha256"], validator=sealed["validator"],
+        adapter_effective=sealed["adapter_effective"], arms=arms, cadence=design["retraining_frequency"],
+        seed=design["seed"], code_commit=code_commit or _git_head(), data_pins=data_pins,
+        data_sha256=sha256_json(data_pins), entrypoints=entries, prior_roots=[], test_open=False,
+        strategy_execution=None, mode=MODE_R2, deployment_sha256=sha256_json(spec), long=None,
+        fit_device="cpu" if engineering_cpu_fixture else "gpu", engineering_cpu_fixture=bool(engineering_cpu_fixture),
+        class_caps=dict(R2_DEFAULT_CLASS_CAPS if class_caps is None else class_caps),
+        r2=dict(contract_seal_sha256=contract["seal_sha256"], contract_file_sha256=file_sha256(contract_path),
+                objective=objective, engineering_objective_overrides=overrides, contract_binding=binding,
+                r0_reuse=(r0_reuse or {}).get("decision", "NOT_EVALUATED_FRESH_R0_FIT")),
+        comparison=dict(rule="tools.i6dmo.r2_design.decide_r2", tolerance=1e-8, tie_keeps="R0",
+                        horizons=list(shared["horizons_hours"]), split="DEVELOPMENT")))
+    eff_sha = sha256_json(effective)
+    campaign_id = "i6dmo-" + sha256_json(dict(experiment=effective["experiment_id"], cadence=effective["cadence"],
+                                              effective=eff_sha))[:12]
+    paths = _paths(root)
+    paths["deployment"].parent.mkdir(parents=True, exist_ok=True)
+    os.chmod(paths["deployment"].parent, 0o700)
+    atomic_json(paths["deployment"], spec, mode=0o600)
+    atomic_json(paths["effective"], effective)
+    for folder in ("gates", "terminals", "attempts"):
+        (root / folder).mkdir(parents=True, exist_ok=True)
+    units = _r2_units(effective)
+    plan = dict(schema="i6dmo.plan.v1", campaign_id=campaign_id, effective_config_sha256=eff_sha,
+                effective_config_file_sha256=file_sha256(paths["effective"]), mode=MODE_R2,
+                stages=list(R2_STAGES), units=units, test_units_enumerated=False,
+                expected=dict(validation_units=len(units), pretraining_units=len(r2_features(effective)),
+                              final_units="NOT_ENUMERABLE_IN_R2_CONTRAST"))
+    q = open_queue(root)
+    try:
+        for unit in units:
+            q.ensure_unit(unit["unit_id"], unit, state=unit.pop("_state"))
+    finally:
+        q.close()
+    _write_plan(root, plan)
+    _storage_gate(spec, "init")
+    write_status(root)
+    return dict(campaign_id=campaign_id, effective_config_sha256=eff_sha, root=str(root), mode=MODE_R2,
+                units=[u["unit_id"] for u in plan["units"]], contract_seal_sha256=contract["seal_sha256"],
+                fit_device=effective["fit_device"], contract_binding=binding)
+
+
 def _validation_units(effective, eff_sha):
+    if mode_of(effective) == MODE_R2:
+        return _r2_units(effective)
     if mode_of(effective) == MODE_MATCHED:
         return _matched_units(effective)
     if mode_of(effective) == MODE_MARKET_TIME:
@@ -912,7 +1140,7 @@ def enumerate_test_units(root):
     """Public entry: refused outright for a market-time pair campaign (no TEST stage exists)."""
     if mode_of(load_effective(root)) == MODE_MARKET_TIME:
         raise Refused("TEST_NOT_ENUMERABLE_IN_MARKET_TIME_PAIR: this development campaign has no TEST stage")
-    if mode_of(load_effective(root)) == MODE_MATCHED:
+    if mode_of(load_effective(root)) in MATCHED_FAMILY_MODES:
         raise Refused("TEST_NOT_ENUMERABLE_IN_MATCHED_CONTRAST: this development contrast has no TEST stage")
     plan = load_plan(root)
     ready = readiness(root)
@@ -937,7 +1165,7 @@ def _matched_readiness(root):
 
 
 def readiness(root):
-    if mode_of(load_effective(root)) == MODE_MATCHED:
+    if mode_of(load_effective(root)) in MATCHED_FAMILY_MODES:
         return _matched_readiness(root)
     plan = load_plan(root)
     q = open_queue(root)
@@ -1342,7 +1570,8 @@ def _publish(root, *, warehouse=None, mirror=True, run=None):
 # --------------------------------------------------------------------- close
 #: Scientific dispositions that advance to CLOSE automatically once delivery and mirrors verify.
 #: A unit failure is never closed automatically: it stays FAILED in status for a human ruling.
-AUTO_CLOSE_DISPOSITIONS = ("PAIR_NOT_ELIGIBLE", "MARKET_TIME_PAIR_VALIDATION_COMPLETE", "FINAL_PAIR_TEST_COMPLETE",
+AUTO_CLOSE_DISPOSITIONS = ("R2_SELECTED", "R0_RETAINED",
+                           "PAIR_NOT_ELIGIBLE", "MARKET_TIME_PAIR_VALIDATION_COMPLETE", "FINAL_PAIR_TEST_COMPLETE",
                            "MG1_SELECTED", "MG2_SELECTED", "MG2_RETAINED_WITHIN_TOLERANCE", "INCOMPLETE_COMPARISON")
 CLOSURE_INPUTS_DIR = Path("backup") / "closure_inputs"
 CLOSURE_INPUT_FILES = ("PUBLICATION.json", "MIRRORS.json", "REPORTS.json")
@@ -1472,7 +1701,7 @@ def close_campaign(root, *, automatic=False, readback=None):
     try:
         rows = {u["unit_id"]: u for u in q.units()}
         validation = [u["unit_id"] for u in plan["units"]
-                      if u["kind"] in ("fit", "report", "pair", "strategy", "comparison")]
+                      if u["kind"] in ("fit", "report", "pair", "strategy", "comparison", "pretrain", "evaluation")]
         for unit_id in validation:
             if rows[unit_id]["state"] not in ("COMPLETE", "FAILED", "BLOCKED"):
                 missing.append(dict(item=unit_id, reason=f"NOT_TERMINAL_{rows[unit_id]['state']}"))

@@ -7,6 +7,9 @@
   RECEIPT.json (the atomic terminal marker) into ``O/TERMINAL.json``. Exit 2/3/4 of the trainer are
   typed terminals (FAILED with the trainer's code), never retried here. A killed trainer (137/124)
   leaves no terminal, so the worker records FAILED_OOM/FAILED_TIMEOUT.
+- R2 contrast: an ``R2`` regime fit passes ``--r2-donors`` (this campaign's authenticated donor
+  references); an ``R0`` regime fit never does. ``pretrain`` / ``evaluation`` delegate to
+  ``tools.i6dmo.r2_runner``.
 - report / pair / strategy / comparison / final_test: delegates to ``run_unit(spec, out_dir, progress_path) -> terminal``
   of the hook module named in HOOKS (owned by another lane). The worker checks the hook is
   importable before claiming, so a missing hook is a WAIT_ARTIFACT, never a burned attempt.
@@ -23,10 +26,12 @@ from pathlib import Path
 
 HOOKS = {"report": "tools.i6dmo.reporting", "pair": "tools.i6dmo.strategy_adapter",
          "strategy": "tools.i6dmo.strategy_adapter", "final_test": "tools.i6dmo.final",
-         "comparison": "tools.i6dmo.matched_runner"}
+         "comparison": "tools.i6dmo.matched_runner", "pretrain": "tools.i6dmo.r2_runner",
+         "evaluation": "tools.i6dmo.r2_runner"}
 HOOK_OWNERS = {"tools.i6dmo.reporting": "ops lane (tools/i6dmo/reporting.py)",
                "tools.i6dmo.strategy_adapter": "strategy lane",
                "tools.i6dmo.matched_runner": "ops lane (tools/i6dmo/matched_runner.py)",
+               "tools.i6dmo.r2_runner": "ops lane (tools/i6dmo/r2_runner.py)",
                "tools.i6dmo.final": "model lane (guarded final TEST path)"}
 TRAINER_MODULE = "tools.i6dmo.train"
 FIT_KINDS = ("fit", "final_refit")
@@ -114,6 +119,16 @@ def run_fit(spec, out, progress, python=sys.executable, poll=5.0):
         if bundle.get("bundle_sha256") and identity != bundle["bundle_sha256"]:
             return _terminal(spec, out, "FAILED", "BUNDLE_PIN_MISMATCH", {}, {}, [])
         data_argv = ["--bundle", str(manifest.parent)]
+    regime = spec.get("regime")
+    if regime == "R0" and spec.get("r2_donors") is not None:
+        return _terminal(spec, out, "FAILED", "R2_R0_HAS_IMPORT", {}, {}, [])
+    if regime == "R2":
+        # An R2 fit without its 19 authenticated donor references would silently be an R0 fit.
+        if not spec.get("r2_donors") or not spec.get("arm"):
+            return _terminal(spec, out, "FAILED", "R2_DONOR_REFERENCES_MISSING", {}, {}, [])
+        donors_path = folder / "r2_donors.json"
+        _atomic(donors_path, spec["r2_donors"])
+        data_argv = [*data_argv, "--r2-donors", str(donors_path)]
     design_path = folder / "design.json"
     _atomic(design_path, _family_design(spec))
     train_out = out / "train"
@@ -147,6 +162,8 @@ def run_fit(spec, out, progress, python=sys.executable, poll=5.0):
                  device=resources.get("device"))
     training = receipt.get("training") or {}
     reports = [_cost_report(spec, receipt, costs, training)] if status == "COMPLETE" else []
+    if status == "COMPLETE" and regime in ("R0", "R2"):
+        reports.append(_fit_inner_report(spec, train_out / "TRAINING.json", receipt))
     return _terminal(spec, out, status, receipt.get("code") or receipt.get("status"), artifacts, costs, reports,
                      extra=dict(trainer_identity=receipt.get("identity"), training=training,
                                 scientific=receipt.get("scientific")))
@@ -166,8 +183,48 @@ def _cost_report(spec, receipt, costs, training):
                 code_commit=spec["effective_config"]["code_commit"], project="predictor", phase="I6DMO",
                 tags={"unit": spec["unit_id"], "family": spec["family"], "kind": spec["kind"], "test_read": "false",
                       "cadence": str(spec.get("cadence")), "stop_reason": str(training.get("stop_reason")),
+                      **({"fact": "r0_r2.fit.compute_cost", "regime": spec["regime"]}
+                         if spec.get("regime") in ("R0", "R2") else {}),
                       "weights_sha256": str((receipt.get("identity") or {}).get("weights_sha256"))},
                 metrics=[m for m in metrics if m["value"] is not None])
+
+
+def _fit_inner_report(spec, training_path, receipt):
+    """R0/R2 fine-tune FIT/INNER diagnostics: a separate OLAP fact from the fit cost (R2-10)."""
+    regime = spec["regime"]
+    try:
+        doc = json.loads(Path(training_path).read_text())
+    except (OSError, ValueError):
+        doc = {}
+
+    def metric(name, value, unit, split):
+        return dict(metric=name, value=float(value), split=split, horizon=None, unit=unit)
+    metrics = []
+    for row in doc.get("history") or []:
+        epoch = int(row.get("epoch") or 0)
+        for key, split in (("fit_loss", "train"), ("inner_loss", "inner")):
+            value = row.get(key)
+            if isinstance(value, (int, float)) and not isinstance(value, bool) and value == value \
+                    and abs(value) != float("inf"):
+                metrics.append(metric(f"Fit_{key}_epoch_{epoch:03d}", value, "loss", split))
+    training = receipt.get("training") or {}
+    for name, key, unit in (("Best_Inner_Monitored", "best_monitored", "loss"), ("Best_Epoch", "best_epoch", "count"),
+                            ("Epochs_Completed", "epochs_completed", "count"), ("Updates", "updates", "count")):
+        value = training.get(key)
+        if isinstance(value, (int, float)) and not isinstance(value, bool) and value == value \
+                and abs(value) != float("inf"):
+            metrics.append(metric(name, value, unit, "inner" if unit == "loss" else "train"))
+    if not metrics:
+        metrics.append(metric("Fit_Inner_Diagnostics_Reported", 0, "bool", "train"))
+    return dict(experiment_key=f"i6dmo:{spec['campaign_id']}:{spec['unit_id']}:fit_inner",
+                experiment_set_key=f"i6dmo:{spec['campaign_id']}", actor="predictor", lake="LOCAL_RETAINED",
+                lineage="UNVERIFIED", config_sha256=spec["identity_sha256"],
+                code_commit=spec["effective_config"]["code_commit"], project="predictor", phase="I6DMO",
+                tags={"unit": spec["unit_id"], "family": spec["family"], "kind": spec["kind"], "test_read": "false",
+                      "fact": f"{regime.lower()}.fit.fit_inner_diagnostics", "regime": regime,
+                      "contrast": "R0_VS_R2", "stop_reason": str(training.get("stop_reason")),
+                      "r2_import_sha256": str((receipt.get("identity") or {}).get("r2_import_sha256"))},
+                metrics=metrics)
 
 
 def _terminal(spec, out, status, disposition, artifacts, costs, reports, extra=None):
@@ -194,7 +251,8 @@ def run_hook(kind, spec, out, progress):
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="python -m tools.i6dmo.unit_runner")
     parser.add_argument("--kind", required=True,
-                        choices=("fit", "final_refit", "report", "pair", "strategy", "comparison", "final_test"))
+                        choices=("fit", "final_refit", "report", "pair", "strategy", "comparison", "final_test",
+                                 "pretrain", "evaluation"))
     parser.add_argument("command", choices=("run-unit",))
     parser.add_argument("--spec", required=True)
     parser.add_argument("--out", required=True)

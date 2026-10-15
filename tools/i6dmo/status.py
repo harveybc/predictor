@@ -22,6 +22,14 @@ from pathlib import Path
 
 STALE_AFTER = 900.0
 FIT_KINDS = ("fit", "final_refit")
+#: Units whose completed fit time is a measured ETA basis for the remaining units of THEIR class
+#: (a pretraining unit's time is never a fit's ETA, and the reverse).
+ETA_FIT_KINDS = FIT_KINDS + ("pretrain",)
+
+
+def _group_key(unit):
+    """ETA/status class: the R2 regime (R2_PRETRAIN, R0, R2, ...), else the matched arm, else the family."""
+    return unit.get("regime") or unit.get("arm") or unit["family"]
 
 
 def _read_json(path):
@@ -160,12 +168,13 @@ def _publication(root):
     return dict(base, state=state, **summary)
 
 
-def _arm_views(plan, views, attempts_by_unit, now):
+def _arm_views(plan, views, attempts_by_unit, now, key=None):
     """Per-arm status (matched contrast): state, count/denominator, live child, progress time,
-    failure cause and a measured-or-UNKNOWN ETA from this arm's OWN completed fit only."""
+    failure cause and a measured-or-UNKNOWN ETA from this arm's OWN completed fit only. With
+    ``key`` (the R2 contrast: ``unit["regime"]``) the same view is computed per regime."""
     arms = {}
     for unit in plan["units"]:
-        arm = unit.get("arm")
+        arm = (key or (lambda u: u.get("arm")))(unit)
         if not arm or unit["unit_id"] not in views:
             continue
         arms.setdefault(arm, []).append(views[unit["unit_id"]])
@@ -235,10 +244,10 @@ def compute(root, level="campaign", unit=None, now=None, systemd_probe=None, sil
     completed = [a for a in attempts if a["outcome"] == "COMPLETE" and a["costs"]]
     kind_of = {uid: row["kind"] for uid, row in rows.items()}
     # the ETA family key: a matched arm is its own class (its fit is never another arm's ETA)
-    family_of = {u["unit_id"]: u.get("arm") or u["family"] for u in plan["units"]}
+    family_of = {u["unit_id"]: _group_key(u) for u in plan["units"]}
     fit_times = {}
     for a in completed:
-        if kind_of.get(a["unit_id"]) in FIT_KINDS:
+        if kind_of.get(a["unit_id"]) in ETA_FIT_KINDS:
             fit_times.setdefault(family_of.get(a["unit_id"]), []).append(
                 a["costs"].get("fit_seconds") or (a["ended_at"] - a["started_at"]))
     score_times = [a["costs"]["score_seconds"] for a in completed if a["costs"].get("score_seconds") is not None]
@@ -248,8 +257,8 @@ def compute(root, level="campaign", unit=None, now=None, systemd_probe=None, sil
 
     remaining_fit_families, all_fit_families = {}, set()
     for u in plan["units"]:
-        if u["kind"] in FIT_KINDS:
-            key = u.get("arm") or u["family"]
+        if u["kind"] in ETA_FIT_KINDS:
+            key = _group_key(u)
             all_fit_families.add(key)
             if _open_unit(u["unit_id"]):
                 remaining_fit_families[key] = remaining_fit_families.get(key, 0) + 1
@@ -375,10 +384,23 @@ def compute(root, level="campaign", unit=None, now=None, systemd_probe=None, sil
                     expected=plan["expected"], test_units_enumerated=plan["test_units_enumerated"],
                     test_readiness=None if readiness is None else readiness.get("state"), eta=eta, generated_at=now,
                     progress_note="stage progress counts declared terminals; no invented percentages")
-    arms = _arm_views(plan, views, by_unit, now)
+    r2_mode = plan.get("mode") == "R2_CONTRAST"
+    arms = _arm_views(plan, views, by_unit, now, key=(lambda u: u.get("regime")) if r2_mode else None)
     if arms:
-        campaign["arms"] = {a: dict(state=v["state"], complete=v["complete"], denominator=v["denominator"],
-                                    eta=v["eta"]) for a, v in arms.items()}
+        campaign["regimes" if r2_mode else "arms"] = {
+            a: dict(state=v["state"], complete=v["complete"], denominator=v["denominator"], eta=v["eta"])
+            for a, v in arms.items()}
+    if r2_mode:
+        comparison = views.get("comparison") or {}
+        campaign["r2"] = dict(stage=next((s["stage"] for s in stages if s["terminal"] < s["expected"]), "CLOSED"),
+                              decision=(comparison.get("disposition") if comparison.get("state") == "COMPLETE"
+                                        else None),
+                              pretraining=dict(complete=sum(1 for u in plan["units"] if u["kind"] == "pretrain"
+                                                            and views[u["unit_id"]]["state"] == "COMPLETE"),
+                                               denominator=sum(1 for u in plan["units"] if u["kind"] == "pretrain"),
+                                               failed=[u["unit_id"] for u in plan["units"] if u["kind"] == "pretrain"
+                                                       and views[u["unit_id"]]["state"] in ("FAILED", "BLOCKED")]),
+                              probe_use="REPORT_ONLY_NEVER_A_GATE_NEVER_SELECTS")
     if level == "arm":
         if arm is not None and arm not in arms:
             return dict(schema="i6dmo.status.v1", state="UNKNOWN_ARM", arm=arm)

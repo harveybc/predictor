@@ -164,6 +164,9 @@ def run_unit(spec, out_dir, progress_path):
     if spec.get("test_open"):
         return terminal("FAILED", "TEST_OPEN_REFUSED")
     effective = spec.get("effective_config") or {}
+    if effective.get("mode") == "R2_CONTRAST":  # the R0-vs-R2 contrast decides with r2_design.decide_r2
+        from tools.i6dmo import r2_runner
+        return r2_runner.run_comparison(spec, out_dir, progress_path)
     expected_population = ((effective.get("data_pins") or {}).get("common_population") or {}).get("population_sha256")
     metrics, records = {}, {}
     try:

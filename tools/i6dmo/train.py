@@ -1540,8 +1540,30 @@ def _summary(arrays, pred_price):
     return rows
 
 
+def r2_import_into(bundle, common_population, effective, r2_donors):
+    """R2 initialization of a freshly seed-built matched ``bundle`` (OPS runner hook, section 9.5).
+
+    ``r2_donors`` = {"donors": {feature: {"terminal": {path, sha256}}}, "objective": <ruled>,
+    "provenance": {campaign_id, ruling_seal_sha256, code_pin, units}} from the OPS store. The
+    learned-corpus digests are recomputed HERE from the authenticated population, so a donor binds
+    exactly this population's FIT windows and purged INNER selection rows."""
+    from tools.i6dmo import model as M
+    from tools.i6dmo import r2_runner
+    population = load_matched_population(common_population["path"], common_population["expected_digest"],
+                                         effective["horizons_hours"], effective["feature_manifest"]["features"],
+                                         input_dir=common_population.get("input_dir"))
+    provenance = dict(r2_donors["provenance"], corpus=r2_runner.corpora(population, effective))
+    context = M.branch_donor_context(bundle, population_sha256=population.digest,
+                                     scaler_sha256=r2_runner.scaler_sha256(population),
+                                     objective=r2_donors["objective"], provenance=provenance)
+    try:
+        return M.import_branch_donors(bundle, r2_donors["donors"], context)
+    except M.DonorImportError as exc:
+        raise TrainDisposition(exc.code, str(exc)[:400]) from None
+
+
 def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=None,
-               common_population=None):
+               common_population=None, r2_donors=None):
     """Run one unit end to end; returns the receipt (also written as RECEIPT.json).
 
     ``training_overrides`` (``max_epochs``/``patience`` only) exist for software
@@ -1572,6 +1594,8 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
                                 "population; --bundle must be omitted or name that directory")
     elif bundle_dir is None:
         raise ContractError("BUNDLE_REQUIRED", "--bundle is required outside the matched path")
+    if r2_donors is not None and common_population is None:
+        raise ContractError("R2_ARGS", "an R2 fit imports donors into a matched arm (--common-population)")
     effective = effective_from_design(design_path)
     out.mkdir(parents=True, exist_ok=True)
     receipt = {"schema": RECEIPT_SCHEMA, "experiment_id": effective["experiment_id"],
@@ -1634,6 +1658,10 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
                     raise TrainDisposition("CAPACITY_UNREPORTED_CHANGE",
                                            f"built {matched['capacity']['arm']} network for arm {matched['arm']}")
                 receipt["identity"]["capacity_sha256"] = matched["capacity"]["capacity_sha256"]
+            r2_record = None
+            if r2_donors is not None:  # R2: authenticated donors into the R0 seed build, then the R0 recipe
+                r2_record = r2_import_into(bundle, common_population, effective, r2_donors)
+                receipt["identity"]["r2_import_sha256"] = r2_record["import_sha256"]
             result = fit_dmo(bundle, materialize_monitor_inputs(fit_rows, scales),
                              materialize_monitor_inputs(inner_rows, scales),
                              training, effective["seed"], progress,
@@ -1663,6 +1691,9 @@ def train_unit(design_path, bundle_dir, out_dir, device, *, training_overrides=N
         if matched is not None:
             _atomic_json(out / "CAPACITY.json", matched["capacity"])
             files.append("CAPACITY.json")
+        if r2_record is not None:
+            _atomic_json(out / "R2_IMPORT.json", r2_record)
+            files.append("R2_IMPORT.json")
         receipt["artifacts"] = {rel: file_sha256(out / rel) for rel in files}
         receipt["identity"].update(weights_sha256=model_doc["weights_sha256"],
                                    model_archive_sha256=model_doc["archive_sha256"],
@@ -1717,6 +1748,9 @@ def main(argv=None):
                         help="matched arm: the expected common-population digest (64 hex)")
     parser.add_argument("--input-dir", default=None,
                         help="matched arm: retained input directory; verifies the sealed source")
+    parser.add_argument("--r2-donors", default=None,
+                        help="R2 fit: JSON with this campaign's authenticated pretraining terminal "
+                             "references, the ruled objective and the campaign provenance")
     args = parser.parse_args(argv)
     matched = None
     if (args.common_population is None) != (args.common_population_digest is None):
@@ -1741,8 +1775,9 @@ def main(argv=None):
                               "detail": "I6DMO_TEST_TRAINING_OVERRIDES is not JSON"}))
             return 2
     try:
+        r2_donors = json.loads(Path(args.r2_donors).read_text()) if args.r2_donors else None
         receipt = train_unit(args.design, args.bundle, args.out, args.device,
-                             training_overrides=overrides, common_population=matched)
+                             training_overrides=overrides, common_population=matched, r2_donors=r2_donors)
     except ContractError as exc:
         print(json.dumps({"status": "CONTRACT_ERROR", "code": exc.code, "detail": str(exc)}))
         return 2

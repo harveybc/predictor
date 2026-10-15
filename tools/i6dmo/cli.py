@@ -221,6 +221,91 @@ def _add_matched(sub):
     p.set_defaults(func=cmd_matched)
 
 
+R2_HELP = """R0-versus-R2 branch-pretraining contrast (ruled R2_CONTRAST_DESIGN.ruled.json), finite:
+
+prepare   matched pins by path + the RULED contract binding -> private prepared JSON (no TEST)
+validate  re-verify the prepared pins, population and contract binding (launches nothing)
+preflight read-only per-role probe incl. the TF/Keras runtime pin and initial-cap admission
+init      seal the graph: 19 r2.pretrain.NN -> r2.fit; r0.fit (fresh); r0/r2 reports;
+          r2.probe (report only); comparison (r2_design.decide_r2) -> publish -> CLOSE
+status    campaign / stage / regime / unit status (never launches or alters a fit)
+Deploy with the existing `deploy` command; tick/worker/publish are the ordinary i6dmo services."""
+
+
+def cmd_r2(args):
+    from tools.i6dmo import matched_runner as MR
+    from tools.i6dmo import r2_runner as R
+    try:
+        if args.r2_command == "prepare":
+            doc = R.prepare(deployment=args.deployment, input_dir=args.input_dir, out=args.out, role=args.role,
+                            contract=args.contract, mg2m_design=args.mg2m_design,
+                            population_seal=args.population_seal, population_dir=args.population_dir,
+                            test=args.test)
+            _emit(dict(state="PREPARED", out=str(args.out), contract_seal_sha256=doc["contract"]["seal_sha256"],
+                       matched=doc["matched"]["path"], r0_policy=doc["r0_policy"]))
+            return 0
+        if args.r2_command == "validate":
+            _emit(R.validate(args.prepared))
+            return 0
+        if args.r2_command == "preflight":
+            result = R.preflight(args.prepared, args.out_dir)
+            _emit(dict(state=result["state"], launch_blockers=result["launch_blockers"],
+                       runtime_pin=result["runtime_pin"], contract_seal_sha256=result["contract_seal_sha256"],
+                       out=str(Path(args.out_dir) / "PRECHECK.matched.json")))
+            return 0 if result["state"] == "PASS" else 3
+        if args.r2_command == "init":
+            _emit(R.init(args.prepared, args.root, code_commit=args.code_commit,
+                         entrypoints=_load_json(args.entrypoints)))
+            return 0
+        if args.r2_command == "status":
+            from tools.i6dmo import status
+            _emit(status.compute(args.root, level=args.level, unit=args.unit, arm=args.regime))
+            return 0
+    except MR.PrepareRefused as exc:
+        _emit(dict(state="REFUSED", cause=str(exc)))
+        return 2
+    raise SystemExit("unknown r2 command")
+
+
+def _add_r2(sub):
+    p = sub.add_parser("r2", help="R0-vs-R2 branch-pretraining contrast (prepare, validate, preflight, init, status)",
+                       description=R2_HELP, formatter_class=argparse.RawDescriptionHelpFormatter)
+    rsub = p.add_subparsers(dest="r2_command", required=True)
+    q = rsub.add_parser("prepare", help="matched pins by path + ruled contract binding -> private prepared JSON")
+    q.add_argument("--deployment", required=True, help="existing private deployment JSON (never committed)")
+    q.add_argument("--input-dir", required=True, help="retained INPUT.npz directory under the role's data_root")
+    q.add_argument("--out", required=True, help="private output JSON (refused inside a git checkout); a "
+                                                "<out>.matched.json companion is written beside it")
+    q.add_argument("--role", default="coordinator", help="role whose data_root/run_root/storage root are resolved")
+    q.add_argument("--contract", help="default: the committed matched_short/R2_CONTRAST_DESIGN.ruled.json")
+    q.add_argument("--mg2m-design", help="default: the committed matched_short/EXPERIMENT.mg2m.json")
+    q.add_argument("--population-seal", help="default: the committed matched_short/POPULATION_SEAL.json")
+    q.add_argument("--population-dir", help="default: the seal's private_location under the storage root")
+    q.add_argument("--test", action="store_true", help="request TEST (always refused: this contrast has no TEST)")
+    q.add_argument("--json", action="store_true")
+    q = rsub.add_parser("validate", help="re-verify a prepared JSON; launches nothing")
+    q.add_argument("--prepared", required=True)
+    q.add_argument("--json", action="store_true")
+    q = rsub.add_parser("preflight", help="read-only per-role probe incl. the TF/Keras runtime pin")
+    q.add_argument("--prepared", required=True)
+    q.add_argument("--out-dir", required=True, help="private directory for PRECHECK.matched.json")
+    q.add_argument("--json", action="store_true")
+    q = rsub.add_parser("init", help="seal the finite R0-vs-R2 graph from a validated preparation")
+    q.add_argument("--prepared", required=True)
+    q.add_argument("--root", required=True, help="NEW campaign root on ext4")
+    q.add_argument("--code-commit", help="runtime commit (default: git HEAD of this checkout)")
+    q.add_argument("--entrypoints", help="optional JSON {kind: argv} (fixtures only; default: unit_runner per kind)")
+    q.add_argument("--json", action="store_true")
+    q = rsub.add_parser("status", help="campaign / stage / regime / unit status; never launches or alters a fit")
+    q.add_argument("--root", required=True)
+    q.add_argument("--level", default="campaign", choices=("campaign", "stage", "arm", "unit", "fleet",
+                                                          "publication", "all"))
+    q.add_argument("--regime", help="with --level arm: R2_PRETRAIN | R0 | R2 | R2_PROBE | DECISION")
+    q.add_argument("--unit", help="e.g. r2.pretrain.00 (with --level unit)")
+    q.add_argument("--json", action="store_true")
+    p.set_defaults(func=cmd_r2)
+
+
 def build_parser():
     parser = argparse.ArgumentParser(prog="python -m tools.i6dmo", description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -325,6 +410,7 @@ def build_parser():
     p.set_defaults(func=cmd_gate)
 
     _add_matched(sub)
+    _add_r2(sub)
 
     p = sub.add_parser("close")
     p.add_argument("--root", required=True)

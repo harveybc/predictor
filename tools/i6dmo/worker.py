@@ -36,7 +36,7 @@ TTL = 900
 POLL = 30.0
 TERMINAL_STATUSES = ("COMPLETE", "FAILED", "NOT_ELIGIBLE", "PAIR_NOT_ELIGIBLE")
 #: Units that produce large immutable artifacts; their claim re-checks experiment storage.
-ARTIFACT_WRITING_KINDS = ("fit", "final_refit", "report")
+ARTIFACT_WRITING_KINDS = ("fit", "final_refit", "report", "pretrain")
 # A terminal may only be adopted when its own recorded identity components match this unit's.
 # Shape or horizon similarity is never sufficient: an elapsed-grid (DS2/ASOF) terminal must not be
 # reused for a market-time identity even though both carry six heads and the same window shape.
@@ -263,9 +263,9 @@ def _validate_child(doc, unit):
         raise ValueError("TERMINAL_IDENTITY_MISMATCH")
     if doc.get("status") not in TERMINAL_STATUSES:
         raise ValueError("TERMINAL_STATUS")
-    if unit["kind"] in ("report", "pair", "strategy", "comparison", "final_test") and \
+    if unit["kind"] in ("report", "pair", "strategy", "comparison", "final_test", "evaluation") and \
             doc.get("costs", {}).get("fit_seconds"):
-        raise ValueError("REPORT_UNIT_FITTED: a report/pair/strategy/comparison/test unit must not fit")
+        raise ValueError("REPORT_UNIT_FITTED: a report/pair/strategy/comparison/test/probe unit must not fit")
 
 
 def _enqueue_reports(root, unit_id, doc, q):
@@ -295,7 +295,7 @@ INFRA_PREFIT_CODES = frozenset({
 
 def _infra_prefit_refusal(unit, terminal_path):
     """The child's typed pre-fit infrastructure refusal code, or None (anything else stays terminal)."""
-    if unit["kind"] not in ("fit", "final_refit", "report"):
+    if unit["kind"] not in ("fit", "final_refit", "report", "pretrain"):
         return None
     try:
         doc = json.loads(Path(terminal_path).read_text())
@@ -433,7 +433,7 @@ def _pick(q, plan, spec, role):
     rows = {u["unit_id"]: u for u in q.units()}
     running_hosts = {a["host_key"] for a in q.running() if a["heavy"]}
     units = plan["units"]
-    if plan.get("mode") == "MATCHED_SHORT_CONTRAST":
+    if plan.get("mode") in C.MATCHED_FAMILY_MODES:
         # Persisted pre-execution refusals (INFRA_PREFIT and proven launcher admission refusals)
         # rotate arms instead of repeatedly starving the next one; ties keep plan order.
         refusals = {}
@@ -588,8 +588,14 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
         unit = dict(row["spec"], identity_sha256=row["identity_sha256"])
         doc, source = _adoptable(root, unit, effective.get("prior_roots", []), q)
         if doc is not None:
-            q.adopt(unit["unit_id"], doc["terminal"], doc["child_terminal_sha256"],
-                    identity_sha256=unit["identity_sha256"], source_detail=dict(source_root_name=source.name))
+            adopted = q.adopt(unit["unit_id"], doc["terminal"], doc["child_terminal_sha256"],
+                              identity_sha256=unit["identity_sha256"],
+                              source_detail=dict(source_root_name=source.name))
+            if adopted["result"] == "ALREADY_TERMINAL":
+                # The queue already holds this unit's verified terminal: the row is repaired to
+                # COMPLETE and nothing is launched or re-adopted (no repeat, no spin).
+                q.set_state(unit["unit_id"], "COMPLETE", "ALREADY_TERMINAL_IN_QUEUE")
+                return dict(result="ALREADY_TERMINAL", unit_id=unit["unit_id"])
             _enqueue_reports(root, unit["unit_id"], doc["terminal"], q)
             return dict(result="ADOPTED", unit_id=unit["unit_id"])
         if unit.get("execution_policy") == "ADOPT_ONLY":
@@ -614,7 +620,11 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
             measured = (q.measured_peak(kind=unit["kind"], family=unit["family"], resource_class=unit["resource_class"])
                         if unit.get("resource_class") else q.measured_peak(kind=unit["kind"], family=unit["family"])) \
                 or (launcher.get("measured_class_peaks") or {}).get(class_key)
-            cap = cap_for(q, unit["unit_id"], device_class, initial_cap=launcher["initial_cap_bytes"],
+            # A campaign may seal a PROVISIONAL cap per class with its basis (R2-17): used only until
+            # the first unit of that class has its own measured peak (then 1.25x that peak governs).
+            provisional = (effective.get("class_caps") or {}).get(class_key) or {}
+            cap = cap_for(q, unit["unit_id"], device_class,
+                          initial_cap=provisional.get("cap_bytes") or launcher["initial_cap_bytes"],
                           measured_peak=measured)
         else:
             cap = max(int(launcher.get("cpu_cap_bytes", CPU_CAP)), q.min_cap(unit["unit_id"]))
@@ -628,7 +638,7 @@ def _worker_locked(root, role, effective, spec, facts_provider, executor, poll_i
         ok, cause, evidence = admit(facts, cap=cap, gpu_uuid=gpu["uuid"] if gpu else None,
                                     reserve=int(role_spec.get("reserve_bytes", HOST_RESERVE)))
         runtime = matched_runtime_problem(effective, unit, facts) or \
-            test_override_problem(effective, extra_env, role_spec)
+            test_override_problem(effective, extra_env, role_spec) or scientific_device_problem(effective, unit)
         if ok and runtime:  # a refusal routes to another role; never a reseal, never a retry with other caps
             ok, cause = False, runtime[:200]
         q.record_admission(unit["unit_id"], role, ok, cause, cap, evidence)
@@ -691,11 +701,45 @@ def build_unit_spec(root, q, plan, effective, unit, role_spec, *, device_class, 
             unit_spec["matched"] = dict(arm=unit["arm"], fit_unit=f"{unit['arm']}.fit",
                                         input=dict(path=inp["path"], sha256=inp["sha256"]),
                                         require_scientific_fit=not effective.get("engineering_cpu_fixture"))
+    if C.mode_of(effective) == C.MODE_R2:
+        unit_spec.update(r2_unit_spec(root, q, plan, effective, unit))
+        fit_unit = unit_spec.pop("regime_fit_unit", None)
+        if fit_unit and unit_spec.get("matched"):
+            unit_spec["matched"]["fit_unit"] = fit_unit
     if unit["kind"] == "strategy":
         # The trading stage's forecast inputs are authenticated digests, not assumptions: the
         # hook checks them against the digests the pair decision recorded for the same units.
         unit_spec["forecast_upstream"] = {d: _upstream(root, q, d) for d in forecast_dependencies(q, unit)}
     return unit_spec
+
+
+def r2_unit_spec(root, q, plan, effective, unit):
+    """The R2 keys of a child's UNIT_SPEC: the ruled objective + this campaign's provenance for every
+    unit, the regime's own fit unit for a report, and for ``r2.fit``/``r2.probe`` the donor references
+    the STORE retained when each pretraining unit completed (``campaign.r2_donor_references``)."""
+    r2 = dict(effective["r2"], provenance=C.r2_provenance(effective, plan))
+    extra = dict(r2=r2)
+    if unit["kind"] == "report" and unit.get("regime") in ("R0", "R2"):
+        extra["regime_fit_unit"] = f"{unit['regime'].lower()}.fit"
+    if unit["unit_id"] in R2_DONOR_CONSUMERS:
+        refs = C.r2_donor_references(root, q, effective)
+        extra["r2_donors"] = None if refs is None else dict(donors=refs, objective=r2["objective"],
+                                                             provenance=r2["provenance"])
+    return extra
+
+
+#: The only units that receive donors; the R0 fit never does (no import binding on R0).
+R2_DONOR_CONSUMERS = ("r2.fit", "r2.probe")
+
+
+def scientific_device_problem(effective, unit):
+    """A scientific R2 campaign never admits a CPU fit or pretraining unit (only the engineering
+    CPU fixture may, and its receipts are non-scientific)."""
+    if C.mode_of(effective) != C.MODE_R2 or effective.get("engineering_cpu_fixture"):
+        return None
+    if unit["kind"] in ("fit", "pretrain") and unit["device"] != "gpu":
+        return f"R2_SCIENTIFIC_CPU_FIT_REFUSED:{unit['unit_id']}"
+    return None
 
 
 def _uses_unit_runner(argv):
@@ -752,7 +796,7 @@ def _artifacts(root, effective, unit, role_spec):
         cause = _pair_inputs_missing(root, effective, unit, role_spec)
         if cause:
             return bundle, cause
-    cause = matched_unit_problem(effective, unit, role_spec, argv)
+    cause = matched_unit_problem(effective, unit, role_spec, argv) or r2_donor_problem(root, effective, unit)
     if cause:
         return bundle, cause
     if not _uses_unit_runner(argv):
@@ -891,6 +935,15 @@ MATCHED_CAPABILITIES = {
     "report": ("tools/i6dmo/reporting.py", (), ("run_matched_unit", "decide_matched"),
                "model lane (reporting.run_matched_unit / decide_matched)"),
 }
+#: R2 contrast: the trainer must accept the donor import flag; the R2 bodies must exist.
+R2_CAPABILITIES = {
+    "fit": ("tools/i6dmo/train.py", ("--common-population", "--common-population-digest", "--input-dir",
+                                     "--r2-donors"), ("r2_import_into",), "model lane (train.py --r2-donors)"),
+    "report": MATCHED_CAPABILITIES["report"],
+    "pretrain": ("tools/i6dmo/r2_runner.py", (), ("run_pretrain", "run_unit"), "ops lane (r2_runner.run_pretrain)"),
+    "evaluation": ("tools/i6dmo/r2_runner.py", (), ("run_probe",), "ops lane (r2_runner.run_probe)"),
+    "comparison": ("tools/i6dmo/r2_runner.py", (), ("run_comparison",), "ops lane (r2_runner.run_comparison)"),
+}
 
 
 def _capability_missing(relpath, flags, functions):
@@ -910,10 +963,11 @@ def _capability_missing(relpath, flags, functions):
 
 def matched_unit_problem(effective, unit, role_spec, argv):
     """Typed WAIT_ARTIFACT cause for a matched arm unit that cannot be claimed yet, else None."""
-    if not unit.get("arm") or unit["kind"] not in MATCHED_CAPABILITIES:
+    table = R2_CAPABILITIES if C.mode_of(effective) == C.MODE_R2 else MATCHED_CAPABILITIES
+    if not unit.get("arm") or unit["kind"] not in table:
         return None
     if _uses_unit_runner(argv):
-        relpath, flags, functions, owner = MATCHED_CAPABILITIES[unit["kind"]]
+        relpath, flags, functions, owner = table[unit["kind"]]
         missing = _capability_missing(relpath, flags, functions)
         if missing:
             return f"MATCHED_{unit['kind'].upper()}_ADAPTER_UNAVAILABLE:{','.join(missing)} owner={owner}"
@@ -932,10 +986,23 @@ def matched_unit_problem(effective, unit, role_spec, argv):
     return None
 
 
+def r2_donor_problem(root, effective, unit):
+    """``r2.fit``/``r2.probe`` wait until every pretraining terminal is stored with its donor digest:
+    an R2 fit is never launched without its 19 authenticated donor references (it would be an R0)."""
+    if C.mode_of(effective) != C.MODE_R2 or unit["unit_id"] not in R2_DONOR_CONSUMERS:
+        return None
+    q = C.open_queue(root)
+    try:
+        refs = C.r2_donor_references(root, q, effective)
+    finally:
+        q.close()
+    return None if refs is not None else "R2_DONOR_REFERENCES_INCOMPLETE owner=ops (pretraining store)"
+
+
 def test_override_problem(effective, extra_env, role_spec):
     """A scientific matched campaign never launches a child with an I6DMO_TEST_* override in reach
     (worker environment, injected env or the role's forwarded environment)."""
-    if C.mode_of(effective) != C.MODE_MATCHED or effective.get("engineering_cpu_fixture"):
+    if C.mode_of(effective) not in C.MATCHED_FAMILY_MODES or effective.get("engineering_cpu_fixture"):
         return None
     keys = sorted(k for k in {*os.environ, *(extra_env or {}), *(role_spec.get("environment") or {})}
                   if k.startswith("I6DMO_TEST_"))
@@ -944,7 +1011,7 @@ def test_override_problem(effective, extra_env, role_spec):
 
 def matched_runtime_problem(effective, unit, facts):
     """A matched arm fit runs only on a worker whose actual TF/Keras equal the sealed runtime pin."""
-    if not unit.get("arm") or unit["kind"] not in ("fit",):
+    if not unit.get("arm") or unit["kind"] not in ("fit", "pretrain"):
         return None
     from tools.i6dmo import matched_runner as MR
     return MR.runtime_problem(MR.runtime_pin(C.unit_design(effective, unit)), facts)
