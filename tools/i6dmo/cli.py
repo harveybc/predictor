@@ -51,7 +51,9 @@ def cmd_init(args):
     from tools.i6dmo import campaign as C
     doc = C.init_campaign(args.design, args.deployment, args.root, code_commit=args.code_commit,
                           data_pins=_load_json(args.data_pins), entrypoints=_load_json(args.entrypoints),
-                          prior_roots=args.prior_root or (), long_design=args.long_design)
+                          prior_roots=args.prior_root or (), long_design=args.long_design,
+                          strategy_execution=_load_json(getattr(args, "strategy_execution", None)),
+                          mode=getattr(args, "mode", "ELAPSED_STATIC"))
     _emit(doc)
     return 0
 
@@ -162,6 +164,9 @@ def build_parser():
     p.add_argument("--data-pins", help="private JSON {short_bundle: {relpath, sha256}, ...}")
     p.add_argument("--entrypoints", help="optional JSON {kind: argv} overriding the unit_runner defaults")
     p.add_argument("--long-design")
+    p.add_argument("--mode", default="ELAPSED_STATIC", choices=("ELAPSED_STATIC", "MARKET_TIME_PAIR"),
+                   help="MARKET_TIME_PAIR seals MG2/MG12 up front and enumerates no TEST stage")
+    p.add_argument("--strategy-execution", help="JSON with the versioned instrument configuration")
     p.add_argument("--prior-root", action="append")
     p.add_argument("--code-commit")
     p.add_argument("--json", action="store_true")
