@@ -170,7 +170,7 @@ def test_preflight_reports_local_and_worker_disk_separately(tmp_path):
     assert doc["workers"]["preferred"]["disk_free_bytes"] == 400 * GIB
     assert doc["workers"]["secondary"]["state"] == "UNAVAILABLE"
     assert doc["note"].startswith("local and worker filesystems are reported separately")
-    # omega's experiment storage is never presented as a worker's free space
+    # the coordinator's experiment storage is never presented as a worker's free space
     assert "experiment_storage" not in doc["workers"]["preferred"]
 
 
