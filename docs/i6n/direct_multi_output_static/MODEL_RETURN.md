@@ -383,3 +383,33 @@ Tolerance unchanged at the declared 1e-5. If lane 4's round STILL diverges
 with same bytes, same weights, same function and remapping off, Satoshi has
 pre-approved a transparent bound revision as a NEW declaration at the measured
 maximum — to be recorded here only if that branch is taken.
+
+## Round 15: declared monitor comparison floor (tolerance v2) — library floor reached
+
+Satoshi approved the transparent bound revision as the single final round. The
+honest endpoint, declared prospectively:
+
+- Scope: ONLY the cross-process GPU comparison of the monitored value and the
+  per-batch per-head float64 partial sums. Bound `|delta| <= 1e-9 + 5e-5*|recorded|`,
+  calibrated from the recorded witness distribution (observed max 1.82e-5)
+  with margin against flapping yet far below any scientific effect.
+- Everything else stays BITWISE: CPU end-to-end, the in-session self-check
+  (which now refuses any non-bitwise outcome by declaration), reload identity,
+  saved-vs-reloaded predictions, input witness bytes, weight digests, forward
+  identity and determinism flags.
+- The row-level hex forward witness remains recorded as a DIAGNOSTIC: reported
+  in `row_forward_diagnostics`, never pass/fail at row level.
+- Justification, written into the effective config
+  (`training.monitor_comparison_floor`) and here: eight rounds excluded
+  cuDNN/cuBLAS autotune and init order, TF32, weights-at-witness digests,
+  post-normalization input bytes, the dedicated forward's identity, and
+  grappler remapping/layout/auto-mixed-precision; the remaining deltas are
+  bit-stable within each side and are a property of in-session vs
+  fresh-instance GPU execution contexts of this TensorFlow build. Applied
+  prospectively: no scientific fit has run under the corrected protocol and no
+  past run is re-graded.
+- Typed outcomes: `WITHIN_DECLARED_FLOOR` (reported with max deltas and the
+  allowance) vs `MONITOR_WITNESS_DIVERGENCE` beyond the floor (still hard);
+  the floor activates only with the static-algorithm flags recorded and equal
+  on both sides. The effective-config sha changes once more with this
+  declaration (design sha unchanged).

@@ -44,15 +44,18 @@ def replay_unit(design_path, bundle_dir, unit_dir):
             "saved weights file: a post-evaluation weight mutation (optimizer slot/weight-decay/"
             "save-path). A CPU pass alongside this mismatch would mean the mutation is GPU-only "
             "(e.g., a GPU-resident slot or cast applied on save), which the digests now decide.")
-    fm, im, monitored, tolerated = T.replay_monitored(
+    fm, im, monitored, report = T.replay_monitored(
         loaded.forecast_model, T.materialize_monitor_inputs(fit_rows, scales),
         T.materialize_monitor_inputs(inner_rows, scales),
         record, ids=(fit_rows["row_id"], inner_rows["row_id"]))
     recorded = record["monitored"]
+    bitwise = monitored == recorded and report["status"] == "BITWISE"
     return {"schema": "i6dmo.replay_monitor.v1",
-            "status": "MATCH" if monitored == recorded else "TOLERATED",
-            "bitwise": monitored == recorded, "monitored": monitored, "recorded": recorded,
-            "tolerated_batches": tolerated,
+            "status": "MATCH" if bitwise else "WITHIN_DECLARED_FLOOR",
+            "bitwise": bitwise, "monitored": monitored, "recorded": recorded,
+            "within_floor": report["within_floor"],
+            "monitored_abs_delta": report.get("monitored_abs_delta"),
+            "row_forward_diagnostics": report["row_forward_diagnostics"],
             "tf_imported_before_flags": M.INIT_ORDER["tf_imported_before_flags"],
             "determinism_flags": T.current_determinism_flags(),
             "weights_sha256": document["weights_sha256"], "load_path": document["load_path"],

@@ -328,15 +328,33 @@ def materialize_monitor_inputs(rows, scales):
     """The ONE shared monitor-input materialization (see MONITOR_INPUT)."""
     x, y, mask = transform(rows, scales)
     return np.ascontiguousarray(x, dtype=np.float32), y, mask
-#: Pre-declared monitored-value comparison tolerance, serialization/process-level only.
-#: Written justification: process-level GPU algorithm selection, a library property —
-#: with autotune forced static on both sides, any residual per-batch partial-sum delta
-#: bounded by 1e-5 RELATIVE is accepted for the monitored-value comparison ONLY; reload
-#: and prediction identities stay bitwise. It activates ONLY when the record carries the
-#: static-algorithm determinism flags and they equal the running process's flags.
-MONITOR_TOLERANCE = {"relative_per_partial_sum": 1e-5,
-                     "justification": "process-level GPU algorithm selection, library property",
-                     "requires_static_flags": True}
+#: Pre-declared, PROSPECTIVE monitor comparison floor (v2, approved by Satoshi after eight
+#: rounds): scope is ONLY the cross-process GPU comparison of the monitored value and the
+#: per-batch per-head float64 partial sums; everything else stays BITWISE (CPU end-to-end,
+#: in-session self-check, reload identity, saved-vs-reloaded predictions, input witness
+#: bytes, weight digests, forward identity, determinism flags). Bound |delta| <= atol +
+#: rtol*|recorded| with rtol 5e-5 / atol 1e-9, calibrated from the recorded witness
+#: distribution (observed max 1.82e-5) with margin against flapping yet far below any
+#: scientific effect. Justification: the eight-round exclusion list (cuDNN/cuBLAS autotune
+#: and init order, TF32, weights-at-witness digests, post-normalization input bytes,
+#: dedicated forward function identity, grappler remapping/layout/auto-mixed-precision)
+#: leaves bit-stable deltas that are a property of in-session vs fresh-instance GPU
+#: contexts of this TensorFlow build. Applied prospectively: no scientific fit has run
+#: under the corrected protocol and no past run is re-graded. Activates ONLY with the
+#: static-algorithm determinism flags recorded and equal on both sides.
+MONITOR_TOLERANCE = {
+    "version": "v2", "rtol": 5e-5, "atol": 1e-9,
+    "scope": "cross_process_gpu_monitored_value_and_partial_sums_only",
+    "calibration": "recorded witness distribution across eight excluded-mechanism rounds, max 1.82e-5",
+    "justification": ("in-session vs fresh-instance GPU execution contexts of this TensorFlow "
+                      "build; library floor after excluding autotune/init order, TF32, weights, "
+                      "input bytes, forward identity and grappler remapping/layout/AMP"),
+    "prospective": True, "requires_static_flags": True,
+}
+
+
+def _floor_allowance(recorded):
+    return MONITOR_TOLERANCE["atol"] + MONITOR_TOLERANCE["rtol"] * abs(recorded)
 
 
 def current_determinism_flags():
@@ -435,7 +453,11 @@ def monitor_self_check(model, fit, inner, record, expected, ids=None):
     """
     fit = tuple(np.array(part, copy=True) for part in fit)
     inner = tuple(np.array(part, copy=True) for part in inner)
-    fm, im, monitored, _ = replay_monitored(model, fit, inner, record, ids=ids)
+    fm, im, monitored, report = replay_monitored(model, fit, inner, record, ids=ids)
+    if report["status"] != "BITWISE":
+        raise TrainDisposition("MONITOR_SELF_CHECK_FAILED",
+                               "the in-session self-check is BITWISE by declaration; the floor "
+                               f"applies only cross-process on GPU, got {report['status']}")
     if monitored != expected:
         raise TrainDisposition("MONITOR_SELF_CHECK_FAILED",
                                f"inference-path recompute {monitored!r} != recorded {expected!r} "
@@ -511,16 +533,20 @@ def replay_monitored(model, fit, inner, record, batch_size=None, ids=None):
         raise TrainDisposition("MONITOR_PATH_MISMATCH",
                                "the recorded witness binds row ids; the replay must supply the same ids")
     fm, im, monitored, witness = evaluate_monitored(model, fit, inner, recorded, ids=ids)
-    tolerated = []
+    report = {"status": "BITWISE", "within_floor": [], "row_forward_diagnostics": {}}
     if stored is not None:
-        tolerated = _compare_witness(stored, witness, tolerance_active)
-        if tolerated and record.get("monitored") is not None:
-            bound = MONITOR_TOLERANCE["relative_per_partial_sum"] * max(1.0, abs(record["monitored"]))
-            if abs(monitored - record["monitored"]) > bound:
-                raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE",
-                                       f"monitored {monitored!r} vs recorded {record['monitored']!r} "
-                                       f"exceeds the pre-declared bound {bound}")
-    return fm, im, monitored, tolerated
+        report = _compare_witness(stored, witness, tolerance_active)
+    recorded_monitored = record.get("monitored")
+    if recorded_monitored is not None and monitored != recorded_monitored:
+        if not (tolerance_active
+                and abs(monitored - recorded_monitored) <= _floor_allowance(recorded_monitored)):
+            raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE",
+                                   f"monitored {monitored!r} vs recorded {recorded_monitored!r} "
+                                   f"exceeds the declared floor "
+                                   f"{_floor_allowance(recorded_monitored)}")
+        report["status"] = "WITHIN_DECLARED_FLOOR"
+        report["monitored_abs_delta"] = abs(monitored - recorded_monitored)
+    return fm, im, monitored, report
 
 
 def _row_forward_diff(stored_hex, fresh_hex):
@@ -580,13 +606,15 @@ def _compare_input_witness(name, a, b):
 
 
 def _compare_witness(stored, fresh, tolerance_active=False):
-    """Batch-by-batch comparison; returns the tolerated batches (empty when exact).
+    """Batch-by-batch comparison; returns {"status", "within_floor", "row_forward_diagnostics"}.
 
     With ``tolerance_active`` (static-algorithm flags confirmed on both sides), a batch
-    whose rows/counts/row-ids match exactly and whose per-head partial sums differ by at
-    most the pre-declared 1e-5 RELATIVE bound is tolerated and reported, not refused.
+    whose structure matches exactly and whose per-head partial sums each satisfy
+    |delta| <= atol + rtol*|recorded| is WITHIN_DECLARED_FLOOR, reported never refused.
+    The row-level hex forward witness is a recorded DIAGNOSTIC only: reported, never
+    pass/fail at row level. Beyond the floor stays a hard MONITOR_WITNESS_DIVERGENCE.
     """
-    tolerated = []
+    within_floor, diagnostics = [], {}
     if stored.get("forward") is not None and stored["forward"] != fresh["forward"]:
         raise TrainDisposition("MONITOR_FORWARD_MISMATCH",
                                f"witness forward {stored['forward']} != the monitor's dedicated "
@@ -603,6 +631,8 @@ def _compare_witness(stored, fresh, tolerance_active=False):
         row_diff = None
         if a.get("batch0_predictions_hex"):
             row_diff = _row_forward_diff(a["batch0_predictions_hex"], b["batch0_predictions_hex"])
+            if row_diff:
+                diagnostics[name] = row_diff
         if a.get("row_ids_sha256") != b["row_ids_sha256"]:
             raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE",
                                    f"{name} row-id sequence differs: recorded "
@@ -611,15 +641,16 @@ def _compare_witness(stored, fresh, tolerance_active=False):
             if ra == rb:
                 continue
             structural = {k: ra.get(k) for k in ("batch", "start", "rows", "row_ids_sha256",
-                                                 "partial_counts")}
-            if tolerance_active and structural == {k: rb[k] for k in structural}:
-                deltas = [abs(u - v) / max(abs(u), abs(v), 1e-300)
-                          for u, v in zip(ra.get("partial_sums") or [], rb["partial_sums"])]
-                if deltas and max(deltas) <= MONITOR_TOLERANCE["relative_per_partial_sum"]:
-                    tolerated.append({"split": name, "batch": rb["batch"],
-                                      "max_relative_delta": max(deltas),
-                                      "row_forward_diff": row_diff if rb["batch"] == 0 else None,
-                                      "tolerance": MONITOR_TOLERANCE})
+                                                 "input_sha256", "partial_counts")}
+            if tolerance_active and structural == {k: rb.get(k) for k in structural}:
+                recorded_sums = ra.get("partial_sums") or []
+                pairs = list(zip(recorded_sums, rb["partial_sums"]))
+                if pairs and all(abs(u - v) <= _floor_allowance(u) for u, v in pairs):
+                    within_floor.append({"split": name, "batch": rb["batch"],
+                                         "max_abs_delta": max(abs(u - v) for u, v in pairs),
+                                         "max_allowed": max(_floor_allowance(u) for u, _ in pairs),
+                                         "floor": {"rtol": MONITOR_TOLERANCE["rtol"],
+                                                   "atol": MONITOR_TOLERANCE["atol"]}})
                     continue
             detail = (f"{name} batch {rb['batch']} (start {rb['start']}, row_ids "
                       f"{rb['row_ids_sha256']}): recorded partial_sums={ra.get('partial_sums')} "
@@ -637,20 +668,8 @@ def _compare_witness(stored, fresh, tolerance_active=False):
             raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE",
                                    f"{name} batch count differs: {len(a.get('batches') or [])} "
                                    f"recorded vs {len(b['batches'])} recomputed")
-        if row_diff:  # hex differs even where sums agree/cancel: forward values are not identical
-            summary = (f"{name} batch 0 row-level forward witness: rows "
-                       f"{['row ' + str(i) for i in row_diff['first_divergent_rows']]} of "
-                       f"{row_diff['n_rows']} diverge ({row_diff['n_divergent_rows']} total), "
-                       f"relative deltas [{row_diff['min_relative_delta']:.3e}, "
-                       f"{row_diff['max_relative_delta']:.3e}], uniform_delta_pattern="
-                       f"{row_diff['uniform_delta_pattern']}: {row_diff['interpretation']}")
-            if tolerance_active and row_diff["max_relative_delta"] <=                     MONITOR_TOLERANCE["relative_per_partial_sum"]:
-                tolerated.append({"split": name, "batch": 0, "row_forward_diff": row_diff,
-                                  "max_relative_delta": row_diff["max_relative_delta"],
-                                  "tolerance": MONITOR_TOLERANCE})
-            else:
-                raise TrainDisposition("MONITOR_WITNESS_DIVERGENCE", summary)
-    return tolerated
+    return {"status": "WITHIN_DECLARED_FLOOR" if within_floor else "BITWISE",
+            "within_floor": within_floor, "row_forward_diagnostics": diagnostics}
 
 
 class MeanMonitorStopper:

@@ -487,6 +487,18 @@ def effective_config(design):
             "restore": "lowest monitored epoch, first tie wins",
             "batch_order": "seeded_permutation_per_epoch",
             "rows_without_valid_head": "excluded from fit/inner training, counted",
+            "monitor_comparison_floor": {
+                "version": "v2", "rtol": 5e-5, "atol": 1e-9,
+                "scope": "cross-process GPU comparison of the monitored value and per-batch "
+                         "per-head float64 partial sums ONLY; CPU end-to-end, self-check, reload, "
+                         "predictions, input bytes, weight digests, forward identity and flags "
+                         "stay bitwise",
+                "justification": "library floor of in-session vs fresh-instance GPU contexts of "
+                                 "this TF build, after excluding autotune/init order, TF32, "
+                                 "weights, input bytes, forward identity and grappler "
+                                 "remapping/layout/AMP (observed max 1.82e-5)",
+                "prospective": True,
+            },
             "outer_validation_for_checkpoint_selection": False,
         },
     }

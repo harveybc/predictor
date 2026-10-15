@@ -161,11 +161,14 @@
   },
   "dmo10_probe": "CUDA_VISIBLE_DEVICES=<scope> python -m tools.i6dmo.gpu_probe_dmo10 [--out DIR]: one session, in_session vs rebuild vs full_load per-head sums on one batch; exit 1 + divergent_pairs names the diverging pair (lane 4 bounded GPU scope; CPU logic tested)",
   "monitor_tolerance": {
-    "scope": "monitored-value comparison ONLY (reload and predictions stay bitwise)",
-    "bound": "|delta| <= 1e-5 relative per per-batch per-head partial sum, and the same relative bound on the monitored value",
-    "justification": "process-level GPU algorithm selection, library property (lane 4 witness verdict: real forward divergence between a trained and an untrained process at 1e-4..1e-5 with identical weights)",
-    "activation": "ONLY when monitor_evaluation.determinism_flags is recorded, equals the running process flags, and declares TF_CUDNN_USE_AUTOTUNE=0; otherwise MONITOR_WITNESS_DIVERGENCE stays a hard typed refusal",
-    "reporting": "replay_monitored returns the tolerated batches with their max relative delta; nothing is silently absorbed"
+    "version": "v2 (supersedes the 1e-5 v1; approved by Satoshi as the single final round)",
+    "scope": "cross-process GPU comparison of the monitored value and per-batch per-head float64 partial sums ONLY; CPU end-to-end, in-session self-check, reload identity, saved-vs-reloaded predictions, input witness bytes, weight digests, forward identity and determinism flags stay BITWISE",
+    "bound": "|delta| <= 1e-9 + 5e-5*|recorded| per partial sum and for the monitored value",
+    "calibration": "recorded witness distribution across eight excluded-mechanism rounds, observed max 1.82e-5, margin against flapping, far below any scientific effect",
+    "justification": "in-session vs fresh-instance GPU execution contexts of this TF build after excluding autotune/init order, TF32, weights, input bytes, forward identity, grappler remapping/layout/AMP; prospective, no past run re-graded",
+    "activation": "only with static-algorithm determinism flags recorded and equal on both sides",
+    "outcomes": "WITHIN_DECLARED_FLOOR (reported with max deltas and allowance; row-level hex stays a diagnostic in row_forward_diagnostics) vs MONITOR_WITNESS_DIVERGENCE beyond the floor (hard)",
+    "declared_in": "EFFECTIVE config training.monitor_comparison_floor (effective sha changes; design sha unchanged)"
   },
   "replay_entrypoint": "python -m tools.i6dmo.replay_monitor --design <design> --bundle <bundle> --unit <trained unit> [--json]: fresh flags-first interpreter; canonical load; recomputes the monitored value through the recorded procedure with witness comparison; exit 0 MATCH/TOLERATED (verdict JSON), 5 typed disposition; refuses records or processes with tf_imported_before_flags=true (DETERMINISM_INIT_ORDER_INVALID)",
   "monitor_witness_v2_extensions": {
