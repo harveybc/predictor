@@ -1,0 +1,358 @@
+{
+ "cases": {
+  "arm_tensor_target_mg2m_dev": {
+   "all_refused": true,
+   "arm": "mg2m",
+   "load": {
+    "code": "ARM_ARRAYS_MISMATCH",
+    "refused": true
+   },
+   "report": {
+    "code": "ARM_ARRAYS_MISMATCH",
+    "refused": true,
+    "status": "FAILED"
+   },
+   "trainer": {
+    "argv_flags": [
+     "--design",
+     "--common-population",
+     "--common-population-digest",
+     "--input-dir",
+     "--out",
+     "--device"
+    ],
+    "code": "ARM_ARRAYS_MISMATCH",
+    "exit": 3,
+    "fit_ran": false,
+    "refused": true,
+    "seconds": 4.2,
+    "status": "FAILED_TYPED"
+   }
+  },
+  "arm_tensor_x_mg1_fit": {
+   "all_refused": true,
+   "arm": "mg1",
+   "load": {
+    "code": "ARM_ARRAYS_MISMATCH",
+    "refused": true
+   },
+   "report": {
+    "code": "ARM_ARRAYS_MISMATCH",
+    "refused": true,
+    "status": "FAILED"
+   },
+   "trainer": {
+    "argv_flags": [
+     "--design",
+     "--common-population",
+     "--common-population-digest",
+     "--input-dir",
+     "--out",
+     "--device"
+    ],
+    "code": "ARM_ARRAYS_MISMATCH",
+    "exit": 3,
+    "fit_ran": false,
+    "refused": true,
+    "seconds": 4.2,
+    "status": "FAILED_TYPED"
+   }
+  },
+  "calendar_identity": {
+   "all_refused": true,
+   "arm": "mg2m",
+   "load": {
+    "code": "CALENDAR_DIGEST_MISMATCH",
+    "refused": true
+   },
+   "report": {
+    "code": "CALENDAR_DIGEST_MISMATCH",
+    "refused": true,
+    "status": "FAILED"
+   },
+   "trainer": {
+    "argv_flags": [
+     "--design",
+     "--common-population",
+     "--common-population-digest",
+     "--input-dir",
+     "--out",
+     "--device"
+    ],
+    "code": "CALENDAR_DIGEST_MISMATCH",
+    "exit": 3,
+    "fit_ran": false,
+    "refused": true,
+    "seconds": 3.9,
+    "status": "FAILED_TYPED"
+   }
+  },
+  "calendar_input_file": {
+   "all_refused": true,
+   "arm": "mg1",
+   "load": {
+    "code": "CALENDAR_DIGEST_MISMATCH",
+    "refused": true
+   },
+   "report": {
+    "code": "CALENDAR_DIGEST_MISMATCH",
+    "refused": true,
+    "status": "FAILED"
+   },
+   "trainer": {
+    "argv_flags": [
+     "--design",
+     "--common-population",
+     "--common-population-digest",
+     "--input-dir",
+     "--out",
+     "--device"
+    ],
+    "code": "CALENDAR_DIGEST_MISMATCH",
+    "exit": 3,
+    "fit_ran": false,
+    "refused": true,
+    "seconds": 3.8,
+    "status": "FAILED_TYPED"
+   }
+  },
+  "head_mask": {
+   "all_refused": true,
+   "arm": "mg1",
+   "load": {
+    "code": "HEAD_MASK_DIGEST_MISMATCH",
+    "refused": true
+   },
+   "report": {
+    "code": "HEAD_MASK_DIGEST_MISMATCH",
+    "refused": true,
+    "status": "FAILED"
+   },
+   "trainer": {
+    "argv_flags": [
+     "--design",
+     "--common-population",
+     "--common-population-digest",
+     "--input-dir",
+     "--out",
+     "--device"
+    ],
+    "code": "HEAD_MASK_DIGEST_MISMATCH",
+    "exit": 3,
+    "fit_ran": false,
+    "refused": true,
+    "seconds": 4.3,
+    "status": "FAILED_TYPED"
+   }
+  },
+  "naive_loss_scale": {
+   "all_refused": true,
+   "arm": "mg1",
+   "load": {
+    "code": "POPULATION_DIGEST_MISMATCH",
+    "refused": true
+   },
+   "report": {
+    "code": "POPULATION_DIGEST_MISMATCH",
+    "refused": true,
+    "status": "FAILED"
+   },
+   "trainer": {
+    "argv_flags": [
+     "--design",
+     "--common-population",
+     "--common-population-digest",
+     "--input-dir",
+     "--out",
+     "--device"
+    ],
+    "code": "POPULATION_DIGEST_MISMATCH",
+    "exit": 3,
+    "fit_ran": false,
+    "refused": true,
+    "seconds": 4.3,
+    "status": "FAILED_TYPED"
+   }
+  },
+  "row": {
+   "all_refused": true,
+   "arm": "mg1",
+   "load": {
+    "code": "ROW_DIGEST_MISMATCH",
+    "refused": true
+   },
+   "report": {
+    "code": "ROW_DIGEST_MISMATCH",
+    "refused": true,
+    "status": "FAILED"
+   },
+   "trainer": {
+    "argv_flags": [
+     "--design",
+     "--common-population",
+     "--common-population-digest",
+     "--input-dir",
+     "--out",
+     "--device"
+    ],
+    "code": "ROW_DIGEST_MISMATCH",
+    "exit": 3,
+    "fit_ran": false,
+    "refused": true,
+    "seconds": 6.1,
+    "status": "FAILED_TYPED"
+   }
+  },
+  "row_resealed_body": {
+   "all_refused": true,
+   "arm": "mg2m",
+   "load": {
+    "code": "POPULATION_ARM_MISMATCH",
+    "refused": true
+   },
+   "report": {
+    "code": "POPULATION_ARM_MISMATCH",
+    "refused": true,
+    "status": "FAILED"
+   },
+   "trainer": {
+    "argv_flags": [
+     "--design",
+     "--common-population",
+     "--common-population-digest",
+     "--input-dir",
+     "--out",
+     "--device"
+    ],
+    "code": "POPULATION_ARM_MISMATCH",
+    "exit": 3,
+    "fit_ran": false,
+    "refused": true,
+    "seconds": 4.1,
+    "status": "FAILED_TYPED"
+   }
+  },
+  "scaler_mean": {
+   "all_refused": true,
+   "arm": "mg2m",
+   "load": {
+    "code": "POPULATION_DIGEST_MISMATCH",
+    "refused": true
+   },
+   "report": {
+    "code": "POPULATION_DIGEST_MISMATCH",
+    "refused": true,
+    "status": "FAILED"
+   },
+   "trainer": {
+    "argv_flags": [
+     "--design",
+     "--common-population",
+     "--common-population-digest",
+     "--input-dir",
+     "--out",
+     "--device"
+    ],
+    "code": "POPULATION_DIGEST_MISMATCH",
+    "exit": 3,
+    "fit_ran": false,
+    "refused": true,
+    "seconds": 4.3,
+    "status": "FAILED_TYPED"
+   }
+  },
+  "scaler_mean_resealed_body": {
+   "all_refused": true,
+   "arm": "mg1",
+   "load": {
+    "code": "POPULATION_DIGEST_MISMATCH",
+    "refused": true
+   },
+   "report": {
+    "code": "POPULATION_DIGEST_MISMATCH",
+    "refused": true,
+    "status": "FAILED"
+   },
+   "trainer": {
+    "argv_flags": [
+     "--design",
+     "--common-population",
+     "--common-population-digest",
+     "--input-dir",
+     "--out",
+     "--device"
+    ],
+    "code": "POPULATION_DIGEST_MISMATCH",
+    "exit": 3,
+    "fit_ran": false,
+    "refused": true,
+    "seconds": 4.2,
+    "status": "FAILED_TYPED"
+   }
+  },
+  "scaler_rows": {
+   "all_refused": true,
+   "arm": "mg2m",
+   "load": {
+    "code": "SCALER_ROWS_MISMATCH",
+    "refused": true
+   },
+   "report": {
+    "code": "SCALER_ROWS_MISMATCH",
+    "refused": true,
+    "status": "FAILED"
+   },
+   "trainer": {
+    "argv_flags": [
+     "--design",
+     "--common-population",
+     "--common-population-digest",
+     "--input-dir",
+     "--out",
+     "--device"
+    ],
+    "code": "SCALER_ROWS_MISMATCH",
+    "exit": 3,
+    "fit_ran": false,
+    "refused": true,
+    "seconds": 4.2,
+    "status": "FAILED_TYPED"
+   }
+  },
+  "wrong_expected_digest": {
+   "all_refused": true,
+   "arm": "mg1",
+   "load": {
+    "code": "POPULATION_DIGEST_MISMATCH",
+    "refused": true
+   },
+   "report": {
+    "code": "POPULATION_DIGEST_MISMATCH",
+    "refused": true,
+    "status": "FAILED"
+   },
+   "trainer": {
+    "argv_flags": [
+     "--design",
+     "--common-population",
+     "--common-population-digest",
+     "--input-dir",
+     "--out",
+     "--device"
+    ],
+    "code": "POPULATION_DIGEST_MISMATCH",
+    "exit": 3,
+    "fit_ran": false,
+    "refused": true,
+    "seconds": 4.2,
+    "status": "FAILED_TYPED"
+   }
+  }
+ },
+ "control_untampered_load": {
+  "code": "ACCEPTED",
+  "refused": false
+ },
+ "population_digest_expected": "4ab41bd87987c6e790851fe1262210b13e0fdbabf971deae9b9fa06fc75014f8",
+ "verdict": "ALL_REFUSED"
+}

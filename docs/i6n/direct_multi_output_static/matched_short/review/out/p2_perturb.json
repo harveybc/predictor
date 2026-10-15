@@ -1,0 +1,117 @@
+{
+ "INNER_START": "2023-11-06T00:00:00+00:00",
+ "T1": "2024-07-10T13:00:00+00:00",
+ "base": {
+  "digest": "4ab41bd87987c6e790851fe1262210b13e0fdbabf971deae9b9fa06fc75014f8",
+  "reproduces_sealed_digest": true,
+  "sealed": "4ab41bd87987c6e790851fe1262210b13e0fdbabf971deae9b9fa06fc75014f8",
+  "seconds": 5.0
+ },
+ "executed_on": "secondary worker CPU (CUDA hidden) under its crispdm-run 6G; exact pin tree staged",
+ "gt_t": {
+  "bars_perturbed": 2969,
+  "digest_differs": true,
+  "masks_equal": {
+   "DEVELOPMENT": true,
+   "FIT": true,
+   "INNER": true
+  },
+  "naive_loss_scale_equal": true,
+  "per_arm_split": {
+   "mg1.DEVELOPMENT": {
+    "every_slot_instant_le_origin": true,
+    "inputs_byte_identical_for_origin_le_T1": true,
+    "labels_with_t_plus_h_gt_T1_all_changed": true,
+    "labels_with_t_plus_h_gt_T1_and_t_le_T1": 32,
+    "labels_with_t_plus_h_le_T1": 14261,
+    "labels_with_t_plus_h_le_T1_unchanged": true,
+    "origin_price_identical_for_origin_le_T1": true,
+    "rows_with_origin_le_T1": 2473,
+    "x_changed_rows_with_origin_gt_T1": 2252
+   },
+   "mg1.FIT": {
+    "every_slot_instant_le_origin": true,
+    "inputs_byte_identical_for_origin_le_T1": true,
+    "labels_with_t_plus_h_gt_T1_all_changed": null,
+    "labels_with_t_plus_h_gt_T1_and_t_le_T1": 0,
+    "labels_with_t_plus_h_le_T1": 94823,
+    "labels_with_t_plus_h_le_T1_unchanged": true,
+    "origin_price_identical_for_origin_le_T1": true,
+    "rows_with_origin_le_T1": 16397,
+    "x_changed_rows_with_origin_gt_T1": 0
+   },
+   "mg1.INNER": {
+    "every_slot_instant_le_origin": true,
+    "inputs_byte_identical_for_origin_le_T1": true,
+    "labels_with_t_plus_h_gt_T1_all_changed": null,
+    "labels_with_t_plus_h_gt_T1_and_t_le_T1": 0,
+    "labels_with_t_plus_h_le_T1": 4130,
+    "labels_with_t_plus_h_le_T1_unchanged": true,
+    "origin_price_identical_for_origin_le_T1": true,
+    "rows_with_origin_le_T1": 715,
+    "x_changed_rows_with_origin_gt_T1": 0
+   },
+   "mg2m.DEVELOPMENT": {
+    "every_slot_instant_le_origin": true,
+    "inputs_byte_identical_for_origin_le_T1": true,
+    "labels_with_t_plus_h_gt_T1_all_changed": true,
+    "labels_with_t_plus_h_gt_T1_and_t_le_T1": 32,
+    "labels_with_t_plus_h_le_T1": 14261,
+    "labels_with_t_plus_h_le_T1_unchanged": true,
+    "origin_price_identical_for_origin_le_T1": true,
+    "rows_with_origin_le_T1": 2473,
+    "x_changed_rows_with_origin_gt_T1": 2252
+   },
+   "mg2m.FIT": {
+    "every_slot_instant_le_origin": true,
+    "inputs_byte_identical_for_origin_le_T1": true,
+    "labels_with_t_plus_h_gt_T1_all_changed": null,
+    "labels_with_t_plus_h_gt_T1_and_t_le_T1": 0,
+    "labels_with_t_plus_h_le_T1": 94823,
+    "labels_with_t_plus_h_le_T1_unchanged": true,
+    "origin_price_identical_for_origin_le_T1": true,
+    "rows_with_origin_le_T1": 16397,
+    "x_changed_rows_with_origin_gt_T1": 0
+   },
+   "mg2m.INNER": {
+    "every_slot_instant_le_origin": true,
+    "inputs_byte_identical_for_origin_le_T1": true,
+    "labels_with_t_plus_h_gt_T1_all_changed": null,
+    "labels_with_t_plus_h_gt_T1_and_t_le_T1": 0,
+    "labels_with_t_plus_h_le_T1": 4130,
+    "labels_with_t_plus_h_le_T1_unchanged": true,
+    "origin_price_identical_for_origin_le_T1": true,
+    "rows_with_origin_le_T1": 715,
+    "x_changed_rows_with_origin_gt_T1": 0
+   }
+  },
+  "scaler_mean_bitwise": true,
+  "scaler_n_rows_equal": true,
+  "scaler_row_digest_equal": true,
+  "scaler_std_bitwise": true,
+  "seconds": 4.9
+ },
+ "inner_dev": {
+  "bars_perturbed": 7187,
+  "fit_arm_arrays_bitwise": {
+   "mg1": true,
+   "mg2m": true
+  },
+  "inner_x_changed": {
+   "mg1": true,
+   "mg2m": true
+  },
+  "masks_equal": {
+   "DEVELOPMENT": true,
+   "FIT": true,
+   "INNER": true
+  },
+  "naive_loss_scale_equal": true,
+  "scaler_mean_bitwise": true,
+  "scaler_n_rows_equal": true,
+  "scaler_row_digest_equal": true,
+  "scaler_std_bitwise": true,
+  "seconds": 4.9
+ },
+ "verdict": "PASS"
+}

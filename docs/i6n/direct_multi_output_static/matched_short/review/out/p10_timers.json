@@ -1,0 +1,68 @@
+{
+ "actions": [
+  [
+   "<foreign>",
+   "REFUSED_NOT_THIS_CAMPAIGN"
+  ],
+  [
+   "<foreign>",
+   "REFUSED_NOT_THIS_CAMPAIGN"
+  ],
+  [
+   "<foreign>",
+   "REFUSED_NOT_THIS_CAMPAIGN"
+  ],
+  [
+   "<foreign>",
+   "REFUSED_NOT_THIS_CAMPAIGN"
+  ],
+  [
+   "i6dmo-32beee8c5653-tick.timer",
+   "systemctl --user disable --now i6dmo-32beee8c5653-tick.timer"
+  ],
+  [
+   "i6dmo-32beee8c5653-tick.service",
+   "SELF_NOT_STOPPED"
+  ],
+  [
+   "i6dmo-32beee8c5653-publish.timer",
+   "systemctl --user disable --now i6dmo-32beee8c5653-publish.timer"
+  ],
+  [
+   "i6dmo-32beee8c5653-coordinator-worker.service",
+   "systemctl --user stop i6dmo-32beee8c5653-coordinator-worker.service"
+  ]
+ ],
+ "calls_first_pass": [
+  [
+   "disable",
+   "--now",
+   "i6dmo-32beee8c5653-tick.timer"
+  ],
+  [
+   "disable",
+   "--now",
+   "i6dmo-32beee8c5653-publish.timer"
+  ],
+  [
+   "stop",
+   "i6dmo-32beee8c5653-coordinator-worker.service"
+  ]
+ ],
+ "calls_second_pass": 3,
+ "foreign_untouched": true,
+ "only_own_units_touched": true,
+ "other_campaign_record": {
+  "calls": 0,
+  "state": "TIMER_STOP_FAILED"
+ },
+ "receipt_failed": [
+  "i6dmo-9e1ebad89ff2-tick.timer",
+  "i6dmo-32beee8c5653-*.timer",
+  "crispdm-batch.slice",
+  "dbus.service"
+ ],
+ "receipt_state_first": "TIMER_STOP_FAILED",
+ "second_pass_retried": "TIMER_STOP_FAILED",
+ "self_service_not_stopped": true
+}
