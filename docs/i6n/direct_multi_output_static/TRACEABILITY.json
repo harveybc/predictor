@@ -1,6 +1,6 @@
 {
  "broken": [],
- "code_commit": "d73bc3f2588327ddf9f87527d72484b7d70634ae",
+ "code_commit": "5998e9f53e37b4e19448377f06b73f937dbd1f98",
  "entries": {
   "DMO01": {
    "broken_pointers": [],
@@ -170,12 +170,19 @@
     "excluded": [
      "kernel autotune/init order",
      "TF32",
-     "weights (digest-equal at witness)",
-     "inputs (post-normalization float32 bytes identical on both sides)"
+     "weights (digest-equal)",
+     "inputs (byte-equal)",
+     "forward function identity (dedicated eager monitor_forward, enforced both sides)",
+     "grappler remapping/layout/auto-mixed-precision"
     ],
+    "library_floor": {
+     "caveat": "the deltas are bit-stable across six execution regimes; that is consistent with two fixed deterministic computations (training math never changed, so the same weight trajectory meets the same two forward contexts each round), but it also means no flag ever moved either side - the floor is a property of the in-session versus fresh-instance GPU contexts of this TF build, not of any governed knob. The max relative delta likely sits on a near-zero prediction (relative inflation); an absolute-plus-relative bound would characterize the floor more honestly than a pure relative one.",
+     "declared": true,
+     "deltas": "per-row relative 6.028e-08 .. 1.211e-04 over 96/96 rows; monitored sums pair recorded 0.9923369350252383 / recomputed 0.9923319867401985 (partial-sum max rel 1.82e-5)"
+    },
     "test": "tests/i6dmo/test_dmo_train.py::test_dmo10_train_unit_end_to_end_restore_and_reload",
-    "typed": "MONITOR_WITNESS_DIVERGENCE: fit batch 0 row-level forward witness: rows ['row 0'..'row 4'] of 96 diverge (96 total), relative deltas [6.028e-08, 1.211e-04], uniform_delta_pattern=False (INPUT_WITNESS_MISMATCH did NOT fire)",
-    "verdict": "same bytes in, same weights, different deterministic outputs per side: the remaining difference is the EXECUTION GRAPH of the forward itself. The training-side monitor forward runs in the training session where the call can be embedded in or alongside the outer @tf.function training step (train.py:699) and grappler applies different fusions (fused matmul+bias+relu remapping) than the freshly traced/loaded instance the replay uses - XLA autoclustering is already off, but grappler remapper fusion is not. Remedy to evaluate: the monitor must own ONE dedicated forward function (eager, or a single tf.function created by the monitor module itself) and BOTH the recording side and the replay must call exactly that function, never the training step's graph; alternatively disable grappler remapper for the monitored forward. Nothing relaxed."
+    "typed": "MONITOR_WITNESS_DIVERGENCE: fit batch 0 row-level forward witness: rows ['row 0'..'row 4'] of 96 diverge (96 total), relative deltas [6.028e-08, 1.211e-04], uniform_delta_pattern=False",
+    "verdict": "declared library floor per the coordinator's criterion: same bytes, same weights, same function, remapping off, still beyond the 1e-5 relative bound. Stopped; the bound revision is the coordinator's single final round. Nothing relaxed here."
    },
    "owner": "model",
    "result": "CPU_TESTS_PASS",
@@ -362,7 +369,7 @@
   "device": "rtx5090 (preferred role), fresh admission, one bounded crispdm-run job (-m 6G -t 540s)",
   "pytest_rc": 1,
   "receipt": "docs/i6n/direct_multi_output_static/audit_20261014/GPU_REPLAY.json",
-  "wall_seconds": 33.6
+  "wall_seconds": 31.1
  },
  "schema": "i6dmo.traceability.v1",
  "scope": "software acceptance evidence; not a scientific verdict and not TEST closure"
