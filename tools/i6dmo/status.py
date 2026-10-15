@@ -298,17 +298,20 @@ def compute(root, level="campaign", unit=None, now=None, systemd_probe=None, sil
         for v in views.values():
             # pre-fit infrastructure refusals wait (the science is not burned) but surface typed
             # once they persist beyond the bounded threshold
-            trailing = []
-            for a in reversed(v["attempts"]):
-                if a["outcome"] == "INTERRUPTED" and str(a["cause"] or "").startswith("INFRA_PREFIT:"):
-                    trailing.append(a)
-                else:
-                    break
-            if trailing and v["state"] in ("WAIT_RESOURCE", "INTERRUPTED", "QUEUED"):
-                first = min(a["ended_at"] or a["started_at"] for a in trailing)
-                if now - first > limit:
-                    failures.append(dict(kind="INFRA_PREFIT_BLOCKED", unit=v["unit_id"], cause=trailing[0]["cause"],
-                                         refusals=len(trailing), age_seconds=now - first, threshold_seconds=limit))
+            for kind, match in (("INFRA_PREFIT_BLOCKED", lambda c: c.startswith("INFRA_PREFIT:")),
+                                ("ADMISSION_BLOCKED", lambda c: c == "LAUNCHER_ADMISSION_REFUSED")):
+                trailing = []
+                for a in reversed(v["attempts"]):
+                    if a["outcome"] == "INTERRUPTED" and match(str(a["cause"] or "")):
+                        trailing.append(a)
+                    else:
+                        break
+                if trailing and v["state"] in ("WAIT_RESOURCE", "INTERRUPTED", "QUEUED"):
+                    first = min(a["ended_at"] or a["started_at"] for a in trailing)
+                    if now - first > limit:
+                        failures.append(dict(kind=kind, unit=v["unit_id"], cause=trailing[0]["cause"],
+                                             refusals=len(trailing), age_seconds=now - first,
+                                             threshold_seconds=limit))
     timers = _read_json(root / "TIMERS_STOPPED.json")
     if timers and timers.get("state") == "TIMER_STOP_FAILED":  # visible even after CLOSE; never reopens it
         failures.append(dict(kind="TIMER_STOP_FAILED", units=timers.get("failed"), trigger=timers.get("trigger"),
@@ -324,6 +327,8 @@ def compute(root, level="campaign", unit=None, now=None, systemd_probe=None, sil
         state = "SERVICE_FAILED"
     elif any(f["kind"] == "INFRA_PREFIT_BLOCKED" for f in failures):
         state = "INFRASTRUCTURE_BLOCKED"
+    elif any(f["kind"] == "ADMISSION_BLOCKED" for f in failures):
+        state = "ADMISSION_BLOCKED"
     elif counts["STALE"]:
         state = "STALE"
     elif counts["RUNNING"]:
