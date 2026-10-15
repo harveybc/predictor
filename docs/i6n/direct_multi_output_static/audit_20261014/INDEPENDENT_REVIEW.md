@@ -199,3 +199,90 @@ CUDA_VISIBLE_DEVICES='' python docs/i6n/direct_multi_output_static/audit_2026101
 
 RP04 exits 0 when its observations (including the three confirmed defects)
 reproduce; the defects are blocking regardless of that exit code.
+
+---
+
+# Addendum: a33cfe70
+
+Repeat of the step-2 DMO10 scope (blocking items a-d) against the integration
+tip `a33cfe70`, same constraints (CPU only, governed runner, no fit, no TEST,
+retained GPU artifacts read as evidence only). The `0bcf7f6b..a33cfe70` diff
+touches ONLY DMO10-scope files (train.py, replay_monitor.py, design.py,
+dmo10_isolation.py, their tests, MODEL_RETURN/TRACEABILITY/GPU_REPLAY/
+INTERFACE_MODEL and the handoff copy), so every non-DMO10 verdict of the main
+review carries over unchanged.
+
+## Verdict: ACCEPT_FOR_RELEASE (DMO10 scope at a33cfe70)
+
+All four blocking items are closed, each verified by execution
+(`review_probes/rp07_dmo10_v2_addendum.py`, 12/12 controls, exit 0; RP05
+re-run green; test_dmo_train + test_dmo_model + test_dmo10_isolation: 40
+passed on CPU):
+
+- **(a)** `floor_protocol_identity()` seals `i6dmo.monitor_numeric_equivalence.v2`:
+  the formula `abs(actual - reference) <= atol + rtol*abs(reference)` with
+  reference = recorded fit-time value, rtol 5e-5 / atol 1e-9, scope, dtype
+  float64, label NUMERICALLY_EQUIVALENT, required flags and runtime versions
+  under a protocol sha256. A foreign identity is typed
+  `MONITOR_PROTOCOL_MISMATCH`; a pre-v2 receipt (no protocol, no recording
+  identity) KEEPS its FAIL at both retained magnitudes (1.82e-5, 1.211e-4 →
+  `MONITOR_WITNESS_DIVERGENCE`), even though 1.82e-5 would sit inside the new
+  floor — no inheritance.
+- **(b)** Scope is PROVEN, not flag-inferred: executed outcomes — CPU-recorded
+  record refused strict; same-process record refused strict; same-process
+  corruption typed `MONITOR_SELF_CHECK_FAILED` (self-check additionally
+  demands report status EXACT); GPU-recorded record replayed without a GPU is
+  the separately typed `CROSS_DEVICE_NOT_COMPARABLE` (never graded equal or
+  defective); only GPU-recorded + different process + GPU visible activates
+  the floor (simulated in memory: NUMERICALLY_EQUIVALENT within floor;
+  1.211e-4 still refused in scope). Boundary inclusive, atol covers near-zero,
+  over-bound refused.
+- **(c)** Forward tensors are recorded DIAGNOSTICS only: a diverging batch-0
+  hex row with equal sums yields status EXACT for the sums comparison plus a
+  `row_forward_diagnostics` report, never leniency and never a bitwise claim —
+  replay_monitor labels it `EXACT_SUMS_WITH_FORWARD_DIAGNOSTICS`. Exported
+  reload/serving equality re-verified exact in the named CPU context.
+- **(d)** Training knobs untouched (`min_delta=1e-8, patience=10,
+  max_epochs=200`); `MONITOR_TOLERANCE` still referenced only by train.py.
+  `stopping_decision_impact` is recorded per unit with the note "never claims
+  cross-context decision invariance"; executed: on a near-tie history it
+  reports `could_change_best_epoch=True` — my main-review finding is carried
+  faithfully, not contradicted. The GPU closure's `false/false` applies to
+  that one actual history only.
+
+## Adjudications
+
+- **Retained GPU evidence** (GPU_REPLAY.json @ code 95c4c714, read-only):
+  closure NUMERICALLY_EQUIVALENT with max partial-sum relative delta 4.597e-8
+  (~1000x inside the floor); old witness FAIL kept; pytest selection
+  deliberately red on GPU so it is never read as plain PASS. Honest.
+- **Isolation verdict** DOES_NOT_SUPPORT_AUTOTUNE_HYPOTHESIS: consistent with
+  the tool's verdict logic (flags-on/off fresh GPU children byte-identical ⇒
+  the flag cannot be the mechanism) and honestly refutes the author's own
+  earlier hypothesis. I could not re-run it on GPU; on this host it would be
+  NOT_INFORMATIVE_ON_CPU by design.
+- **Round 16 wording in MODEL_RETURN**: supported — it leads with the
+  retraction of the round-15 "library floor" OVERCLAIM, keeps autotune a
+  hypothesis, keeps the old FAIL, and claims no PASS.
+- **Stale-path explanation** ("the earlier monitor fixes were not reaching the
+  GPU path until this revision", GPU_REPLAY/TRACEABILITY note): NOT
+  demonstrated by the retained evidence. The 0bcf7f6b→95c4c714 diff changes no
+  forward-execution code (model.py untouched; train.py changes are
+  protocol/scope/reporting; the end-to-end test already spawned flags-first
+  subprocesses). The evidence shows the measurement moved (1.8e-5 → ≤4.6e-8);
+  WHY it moved remains unestablished. Stated as fact, this is the same class
+  of overclaim Round 16 retracted — reword as hypothesis. Non-blocking: the
+  acceptance label does not rest on the explanation.
+- **Wording inconsistency, non-blocking:** the sealed design's
+  `monitor_comparison_floor.justification` still says "library floor ...
+  (observed max 1.82e-5)" while Round 16 retracts that framing and the
+  closure note implies 1.82e-5 was never a floor. Align the texts in the next
+  design revision note; the bound itself was pre-approved prospectively.
+
+## Addendum missing coverage
+
+GPU-side: the closure replay, the isolation flags-on/off GPU comparison and
+CROSS_DEVICE behavior on real GPU records were not reproduced here (CPU-only);
+retained artifacts were consumed as evidence. The gpu_cross_process branch was
+exercised via an in-memory `_gpu_visible` stub, not real hardware. The private
+campaign root remains unreadable locally.
