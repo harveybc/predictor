@@ -93,3 +93,44 @@ actual gates are satisfied. No chat polling or new owner permission prompt.
 
 Check supported settings against the installed toolkit/build, not just the
 latest documentation version.
+
+## Follow-up: proposed rtol 5e-5 / atol 1e-9
+
+The revised bound is acceptable as a prospectively versioned
+NUMERICALLY_EQUIVALENT monitor-replay protocol, conditional on independent
+verification, not as retrospective BITWISE_IDENTICAL acceptance. Do not
+inflate it again to fit a failing witness. State the observed discrepancy as
+specific to the tested build/contexts; exclusion of eight hypotheses is not
+proof of a universal or irreducible library property.
+
+At inspected tip `0bcf7f6b`, the published source still uses rtol 1e-5 and no
+new combined bound. Its tolerance activation at `train.py:508` checks only
+TF_CUDNN_USE_AUTOTUNE==0. It does not enforce the claimed GPU/cross-process
+scope. `_compare_witness` also tolerates monitor forward tensor differences,
+not just sums. Inspect the NEW actual implementation, not the proposed prose.
+
+Before release, the independent reviewer must verify these concrete points:
+
+1. The new protocol's identity seals rtol/atol, reference direction and formula
+   `abs(actual-reference) <= atol + rtol*abs(reference)`, scope, dtype, flags
+   and runtime version. Old receipts cannot silently inherit the new rule.
+2. CPU and same-process self-check paths remain strictly exact. A GPU
+   cross-process diagnostic is explicitly identified and proven, rather than
+   inferred from an environment flag. Tests cover CPU with GPU-style flags,
+   same-process corruption, near-zero sums, boundaries and over-bound rejection.
+3. Distinguish monitor_forward tensors from exported serving predictions.
+   The retained witness has differing monitor tensors, so do not claim those
+   are bitwise. Keep exported checkpoint reload/serving equality tests exact
+   in the same explicitly named context. Altered inputs, masks, counts, graph,
+   weights or metadata cannot be excused by a small metric delta.
+4. The tolerance affects only replay verification, never the training stopper,
+   min_delta, patience, best-weight restoration, naive eligibility, DOIN or
+   OLAP. Test a near-tie early-stopping history. Report any inability to
+   reproduce checkpoint selection across contexts rather than claiming full
+   decision invariance merely because replay sums are close.
+
+Start the independent review on the frozen candidate now; do not wait for an
+author-declared green to begin reviewing. Use bounded synthetic/retained-artifact
+tests, no new scientific fit and no new sequence of eight diagnosis rounds.
+Proceed through the established automation once the revised, honestly labelled
+acceptance passes. No additional owner approval is required for these steps.
